@@ -1,7 +1,7 @@
 import { Overlay } from "@libitums/ui-lynx/overlay";
 import { useFirstUnitGuide } from "../../components/first-unit-guide";
 import "../../components/first-unit-guide.css";
-import { useMemo, useRef } from "@lynx-js/react";
+import { useMemo, useRef, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 import type { ScrollEvent } from "@lynx-js/types";
 
@@ -16,6 +16,7 @@ import { mapTopLayout } from "./journey-map-insets";
 import { noCatalogMapSections } from "./catalog-map";
 import { mapScrollTargetOf } from "./journey-map-next-unit";
 import { useAutoScrollToNext } from "./useAutoScrollToNext";
+import { rememberedMapScroll, rememberMapScroll } from "./journey-map-scroll-memory";
 import { useStepSheet } from "./useStepSheet";
 import { lightStatusBarIcons } from "../../lib/status-bar-icons";
 import { useLayerBack } from "../../lib/use-back-handler";
@@ -90,6 +91,8 @@ export function JourneyMapScreen({
   // 스크롤 상자가 화면 맨 위(상태 표시줄 뒤)에서 시작하도록 화면 위 여백을 스크롤 안쪽으로 옮기고, 위 모서리
   // 기준의 띠 · 로딩 줄은 상태 표시줄 높이만큼 내립니다.
   const top = mapTopLayout(statusBarInset);
+  // 이 실행에서 맵을 연 적이 있으면 그 자리에서 엽니다(마운트 때 한 번 읽습니다).
+  const [restoredScrollTop] = useState(rememberedMapScroll);
   const {
     sheetState,
     sheetTop,
@@ -143,12 +146,14 @@ export function JourneyMapScreen({
       catalogProgress: catalog?.progress ?? {},
     }),
     blocked: sheetOpen || guide.visible,
+    restoredScrollTop,
   });
 
   // 스크롤 한 번에 둘이 답합니다 — 말풍선 자리 · 자동 스크롤의 잠금입니다. 인라인
   // 화살표로 묶으면 `"background only"`가 중첩돼 바인딩이 서지 않습니다.
   const handleMapScroll = (event: ScrollEvent) => {
     "background only";
+    rememberMapScroll(event.detail.scrollTop);
     handleScroll(event);
     autoScroll.handleScroll(event);
   };
@@ -196,6 +201,7 @@ export function JourneyMapScreen({
         scroll-orientation="vertical"
         scroll-bar-enable={false}
         bindscroll={handleMapScroll}
+        initial-scroll-offset={restoredScrollTop ?? undefined}
         enable-scroll={guide.visible ? false : undefined}
       >
         <view

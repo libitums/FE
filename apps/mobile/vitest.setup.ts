@@ -9,3 +9,12 @@
 // `docs/screens.md`가 정한 "무엇이 보이는가가 아니라 무엇이 있는가"와 같은 선이다.
 // 시각 판정은 `docs/e2e/`의 수동 확인 몫이다.
 import "@testing-library/jest-dom/vitest";
+
+// 여정 맵의 마지막 스크롤 자리는 앱이 떠 있는 동안 모듈에 남습니다 — 테스트마다 「이 실행에서 처음 여는 맵」으로
+// 시작하게 지웁니다.
+import { afterEach } from "vitest";
+import { forgetMapScroll } from "./src/screens/journey-map/journey-map-scroll-memory";
+
+afterEach(() => {
+  forgetMapScroll();
+});

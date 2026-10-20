@@ -13,6 +13,21 @@ import {
 import { renderSignedInApp } from "./test-helpers/signed-in-app";
 import { stubHost, type HostStub } from "../screens/journey-map/JourneyMapScreen.test-support";
 
+// 부드러운 이동은 앱이 프레임마다 옮기지만(`animateMapScroll`), 이 파일은 「어디로 부드럽게 갔나」만 봅니다 —
+// 대역이 끝 위치로 부드러운 `scrollTo` 한 번을 남깁니다. 프레임의 모양은 unit(`journey-map-scroll-animation`)이 집니다.
+vi.mock("../screens/journey-map/journey-map-scroll-animation", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("../screens/journey-map/journey-map-scroll-animation")>();
+  const scroll = await import("../screens/journey-map/journey-map-scroll");
+  return {
+    ...actual,
+    animateMapScroll: (_from: number, to: number) => {
+      scroll.scrollMapTo(to, "smooth");
+      return () => {};
+    },
+  };
+});
+
 // `integration` 계층: 호스트가 보낸 글자 배율 · 화면 폭(globalProps)이 App을 거쳐 맵의 줄 구조에 닿는지.
 // 열 수 판정 · 줄 나누기 자체는 unit · ui가 진다 — 여기서는 공급 경로만 봅니다.
 

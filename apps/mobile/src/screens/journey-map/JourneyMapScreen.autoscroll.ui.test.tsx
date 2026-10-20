@@ -19,6 +19,20 @@ import {
   type Rect,
 } from "./JourneyMapScreen.test-support";
 
+// 부드러운 이동은 앱이 프레임마다 옮기지만(`animateMapScroll`), 이 파일은 「어디로 부드럽게 갔나」만 봅니다 —
+// 대역이 끝 위치로 부드러운 `scrollTo` 한 번을 남깁니다. 프레임의 모양은 unit(`journey-map-scroll-animation`)이 집니다.
+vi.mock("./journey-map-scroll-animation", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("./journey-map-scroll-animation")>();
+  const scroll = await import("./journey-map-scroll");
+  return {
+    ...actual,
+    animateMapScroll: (_from: number, to: number) => {
+      scroll.scrollMapTo(to, "smooth");
+      return () => {};
+    },
+  };
+});
+
 // `ui` 계층: 맵이 열릴 때 다음에 풀 유닛으로 자동 스크롤하는지 — 호스트에 나가는 측정 · `scrollTo` ·
 // `scrollIntoView`의 횟수와 인자만 봅니다. 호스트의 질의는 대역이고, 재는 값은 이 파일이 정합니다.
 // 목적지 식(`autoScrollOffset`)은 unit이 지므로 여기서는 손으로 맞춘 수 하나로만 이어 봅니다.
@@ -333,7 +347,7 @@ function mountArrived(element: ReactElement = mapScreen({ progress: twoStepsDone
 }
 
 describe("JourneyMapScreen 도착 뒤 보정", () => {
-  test("AC1. 도착하면 대상 셀 · 스크롤 · 머리 카드를 다시 재고 30만큼 되돌린 목적지로 한 번 더 간다(보정은 늘 즉시)", () => {
+  test("AC1. 도착하면 대상 셀 · 스크롤 · 머리 카드를 다시 재고 30만큼 되돌린 목적지로 한 번 더 간다(보정은 짧은 부드러운 이동)", () => {
     const { host } = mountArrived();
     const measuredBefore = host.measured().length;
     swapToArrived(host);
@@ -345,7 +359,7 @@ describe("JourneyMapScreen 도착 뒤 보정", () => {
     );
     expect(host.scrollTos()).toEqual([
       scrollToCall(arrival, true),
-      scrollToCall(arrival - 30, false),
+      scrollToCall(arrival - 30, true),
     ]);
     expect(host.scrollIntoViews()).toEqual([]);
   });
@@ -406,7 +420,7 @@ describe("JourneyMapScreen 도착 뒤 보정", () => {
 
     const calls = host.scrollTos();
     expect(calls).toHaveLength(2);
-    expect(calls[1]?.params?.smooth).toBe(false);
+    expect(calls[1]?.params?.smooth).toBe(true);
     expect(calls[1]?.params?.offset).toBeCloseTo(arrival - 0.4 - 30, 9);
   });
 
@@ -519,7 +533,7 @@ describe("JourneyMapScreen 도착 뒤 보정", () => {
     expect(host.scrollTos()).toEqual([
       scrollToCall(arrival, true),
       scrollToCall(648, true),
-      scrollToCall(648 - 30, false),
+      scrollToCall(648 - 30, true),
     ]);
   });
 });
