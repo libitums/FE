@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
+import { color, opacity } from "@libitums/design-tokens";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -12,6 +13,7 @@ import {
   judgeSentenceOrder,
   sentenceOrderAnnouncement,
   sentenceOrderChipClassName,
+  sentenceOrderChipPlaceholderClassName,
   sentenceOrderCompletionAnnouncement,
   sentenceOrderResultAt,
   sentenceOrderSessionReducer,
@@ -20,6 +22,19 @@ import {
   type SentenceOrderSessionState,
 } from "./sentence-order";
 import { uiCopyEn } from "../../lib/ui-copy-en";
+import {
+  compositeOver,
+  contrastRatio,
+  cssDeclaration,
+  cssRuleBody,
+  cssRuleIndex,
+  DARK_SURFACE_WORST,
+  parseCssColor,
+  readCssWithoutComments,
+  rgbaInValue,
+  tokenColorAt,
+  tokenColorValue,
+} from "../../lib/wcag-contrast.test-support";
 
 // 기대값을 구현에서 베끼지 않습니다.
 //
@@ -366,5 +381,130 @@ describe("sentence-order-chip.css", () => {
     expect(nonIdentity).toEqual([]);
     expect(ruleBody(/\.sentence-order-chip-placed/)).not.toMatch(/transform/);
     expect(ruleBody(/\.sentence-order-chip-placeholder/)).not.toMatch(/transform/);
+  });
+});
+
+describe("surface 변형 클래스", () => {
+  const darkMark = " sentence-order-chip-surface-dark";
+  const lightClasses = [
+    ["bank", "standard", "sentence-order-chip sentence-order-chip-bank"],
+    [
+      "bank",
+      "reduced",
+      "sentence-order-chip sentence-order-chip-bank sentence-order-chip-motion-reduced",
+    ],
+    ["placed", "standard", "sentence-order-chip sentence-order-chip-placed"],
+    [
+      "placed",
+      "reduced",
+      "sentence-order-chip sentence-order-chip-placed sentence-order-chip-motion-reduced",
+    ],
+  ] as const;
+
+  it("[SOS1] 칩 클래스: light(생략 포함)는 지금 문자열, dark는 끝에 어두운 면 표지", () => {
+    for (const [variant, motion, light] of lightClasses) {
+      expect(sentenceOrderChipClassName(variant, motion)).toBe(light);
+      expect(sentenceOrderChipClassName(variant, motion, "light")).toBe(light);
+      expect(sentenceOrderChipClassName(variant, motion, "dark")).toBe(`${light}${darkMark}`);
+    }
+    expect(sentenceOrderChipClassName("bank", "reduced", "dark")).toBe(
+      "sentence-order-chip sentence-order-chip-bank sentence-order-chip-motion-reduced sentence-order-chip-surface-dark",
+    );
+    expect(sentenceOrderChipClassName("placed", "standard", "dark")).toBe(
+      "sentence-order-chip sentence-order-chip-placed sentence-order-chip-surface-dark",
+    );
+  });
+
+  it("[SOS2] 빈칸 클래스: light(생략 포함)는 지금 문자열, dark는 끝에 어두운 면 표지", () => {
+    const light = "sentence-order-chip sentence-order-chip-placeholder";
+    expect(sentenceOrderChipPlaceholderClassName()).toBe(light);
+    expect(sentenceOrderChipPlaceholderClassName("light")).toBe(light);
+    expect(sentenceOrderChipPlaceholderClassName("dark")).toBe(`${light}${darkMark}`);
+  });
+});
+
+describe("sentence-order-chip.css 어두운 면", () => {
+  const css = readCssWithoutComments("src/screens/sentence-order/sentence-order-chip.css");
+  const body = (selector: RegExp): string => cssRuleBody(css, selector);
+  const declaration = (selector: RegExp, property: string): string | undefined =>
+    cssDeclaration(body(selector), property);
+
+  const darkBank = /\.sentence-order-chip-surface-dark\.sentence-order-chip-bank/;
+  const darkLabel =
+    /\.sentence-order-chip-surface-dark\.sentence-order-chip-bank \.sentence-order-chip-label/;
+  const darkActive = /\.sentence-order-chip-surface-dark\.sentence-order-chip-bank:active/;
+  const darkPlaceholder = /\.sentence-order-chip-surface-dark\.sentence-order-chip-placeholder/;
+  const none = { rgb: [0, 0, 0], alpha: 0 } as const;
+
+  it("[SOC1] 창고 타일은 흰 x 16 % 면에 gray-700 테두리다", () => {
+    expect(rgbaInValue(declaration(darkBank, "background-color"))).toEqual(
+      tokenColorAt(color.white, opacity["16"]),
+    );
+    expect(declaration(darkBank, "border-color")).toBe("var(--libitum-color-gray-700)");
+  });
+
+  it("[SOC2] 창고 타일 글자는 gray-50이다", () => {
+    expect(declaration(darkLabel, "color")).toBe("var(--libitum-color-gray-50)");
+  });
+
+  it("[SOC3] 눌림 면은 흰 x pressed-shade이고 transform을 더하지 않는다", () => {
+    expect(rgbaInValue(declaration(darkActive, "background-color"))).toEqual(
+      tokenColorAt(color.white, opacity["pressed-shade"]),
+    );
+    expect(declaration(darkActive, "transform")).toBeUndefined();
+  });
+
+  it("[SOC4] 빈칸은 흰 x 8 %이고 transform이 없으며, 어두운 규칙마다 짝 light 규칙 뒤에 선다", () => {
+    expect(rgbaInValue(declaration(darkPlaceholder, "background-color"))).toEqual(
+      tokenColorAt(color.white, opacity["8"]),
+    );
+    expect(declaration(darkPlaceholder, "transform")).toBeUndefined();
+
+    const pairs: readonly (readonly [RegExp, RegExp])[] = [
+      [darkBank, /\.sentence-order-chip-bank/],
+      [darkLabel, /\.sentence-order-chip-bank \.sentence-order-chip-label/],
+      [darkActive, /\.sentence-order-chip-bank:active/],
+      [darkPlaceholder, /\.sentence-order-chip-placeholder/],
+    ];
+    for (const [dark, light] of pairs) {
+      const lightIndex = cssRuleIndex(css, light);
+      expect(lightIndex).toBeGreaterThanOrEqual(0);
+      expect(cssRuleIndex(css, dark)).toBeGreaterThan(lightIndex);
+    }
+  });
+
+  it("[SOC5] light는 지금 값 그대로다", () => {
+    expect(declaration(/\.sentence-order-chip-bank/, "background-color")).toBe(
+      "var(--libitum-color-white)",
+    );
+    expect(declaration(/\.sentence-order-chip-bank/, "border-color")).toBe(
+      "var(--libitum-color-gray-300)",
+    );
+    expect(declaration(/\.sentence-order-chip-bank \.sentence-order-chip-label/, "color")).toBe(
+      "var(--libitum-color-gray-900)",
+    );
+    expect(declaration(/\.sentence-order-chip-bank:active/, "background-color")).toBe(
+      "var(--libitum-color-gray-100)",
+    );
+    expect(declaration(/\.sentence-order-chip-placeholder/, "background-color")).toBe(
+      "var(--libitum-color-gray-100)",
+    );
+  });
+
+  it("[FDK1] 어두운 판 최악의 배경에서 타일 글자 4.5:1 · 눌림 글자 4.5:1 · 테두리 3:1 이상", () => {
+    const inkValue = declaration(darkLabel, "color");
+    const borderValue = declaration(darkBank, "border-color");
+    expect(inkValue).toBeDefined();
+    expect(borderValue).toBeDefined();
+    const ink = parseCssColor(tokenColorValue(inkValue ?? "#313336")).rgb;
+    const tile = rgbaInValue(declaration(darkBank, "background-color")) ?? none;
+    const pressed = rgbaInValue(declaration(darkActive, "background-color")) ?? none;
+    const border = parseCssColor(tokenColorValue(borderValue ?? "#313336")).rgb;
+
+    expect(contrastRatio(ink, compositeOver(tile, DARK_SURFACE_WORST))).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio(ink, compositeOver(pressed, DARK_SURFACE_WORST))).toBeGreaterThanOrEqual(
+      4.5,
+    );
+    expect(contrastRatio(border, DARK_SURFACE_WORST)).toBeGreaterThanOrEqual(3);
   });
 });
