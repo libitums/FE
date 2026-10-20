@@ -447,7 +447,7 @@ test("SM10: the layoutEdgeToEdge defaults must stay and never turn the navigatio
   );
 });
 
-test("SM11: statusBarSurfaceRegistry matches the contract (nine routes, four CSS layers)", () => {
+test("SM11: statusBarSurfaceRegistry matches the contract (nine routes, five CSS layers)", () => {
   const { fullBleedRoutes, fixedLayers } = statusBarSurfaceRegistry;
   assert.deepEqual(Object.keys(fullBleedRoutes).sort(), [
     "catalog-cover",
@@ -484,8 +484,12 @@ test("SM11: statusBarSurfaceRegistry matches the contract (nine routes, four CSS
     "components/learning-item-guide.css",
     "screens/gem-purchase/gem-purchase-screen.css",
     "screens/journey-map/journey-stat-modal.css",
+    "screens/tickets/tickets.css",
   ]);
   const layerText = (path) => JSON.stringify(fixedLayers[path]);
+  // 학습 티켓(ADR-0074) — 모달은 지표 모달의 표지를 함께 달고, 대화상자는 기본 스크림이라 표지가 없다.
+  assert.match(layerText("screens/journey-map/journey-stat-modal.css"), /TicketStatModal/);
+  assert.match(layerText("screens/tickets/tickets.css"), /default-scrim/);
   assert.match(layerText("screens/journey-map/journey-stat-modal.css"), /light-icons/);
   assert.match(layerText("screens/journey-map/journey-stat-modal.css"), /JourneyStatModal/);
   assert.match(layerText("screens/gem-purchase/gem-purchase-screen.css"), /unreachable/);

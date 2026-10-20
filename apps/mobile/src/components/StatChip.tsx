@@ -10,6 +10,7 @@ import { motionDurationMs, useMotion } from "@libitums/ui-lynx/motion";
 import { statBumpStart } from "../lib/stat-bump";
 
 import { statChipClassName } from "./stat-chip-class";
+import { ticketIcon } from "./ticket-icon";
 import type { StatChipHeight, StatChipSurface } from "./stat-chip-class";
 
 import "./stat-chip.css";
@@ -28,17 +29,23 @@ import "./stat-chip-motion.css";
 
 export type { StatChipHeight, StatChipSurface } from "./stat-chip-class";
 
-export type StatChipTone = "streak" | "trophy" | "diamond";
+export type StatChipTone = "streak" | "trophy" | "diamond" | "ticket";
 
 // 다이아 색은 디자인 값(#00C3FF, Figma 65-466)이고 맞는 색 토큰이 패키지에 없어 적어 둡니다.
 export const statChipDiamondColor = "#00C3FF";
 
-const iconByTone: Record<StatChipTone, string> = { streak: fire, trophy, diamond };
+const iconByTone: Record<StatChipTone, string> = {
+  streak: fire,
+  trophy,
+  diamond,
+  ticket: ticketIcon,
+};
 
 const iconColorByTone: Record<StatChipTone, string> = {
   streak: color.brand.secondary,
   trophy: color.feedback.warning,
   diamond: statChipDiamondColor,
+  ticket: color.brand.primary,
 };
 
 const sparkSlots = [0, 1, 2, 3, 4, 5] as const;

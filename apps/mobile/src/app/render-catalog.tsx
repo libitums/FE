@@ -244,6 +244,7 @@ export function renderCatalogFlow(screen: CatalogFlowScreen, wiring: ScreenWirin
           streakDays={wiring.streakDays}
           trophyCount={wiring.trophyCount}
           reward={lessonRewardPlaceholder}
+          ticketsLeft={wiring.ticketsLeft}
           onExit={() => wiring.onExitCatalogUnitComplete(episodeId, unitKey, verdict)}
           onRetry={() => wiring.onStartCatalogUnit(episodeId, unitKey)}
         />

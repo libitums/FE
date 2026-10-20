@@ -1,6 +1,8 @@
 // 여정 진행과 연속 학습 상태입니다. 미전송 기록·계정별 복구·재시도는 journey-progress-sync가 담당합니다.
 
 import type { CatalogCompletionKeysOf, CatalogProgress } from "../lib/catalog-progress";
+import { fullTicketLedger } from "../lib/learning-tickets";
+import type { TicketLedger } from "../lib/learning-tickets";
 import { useEffect, useRef, useState } from "@lynx-js/react";
 
 import { localDayFrom } from "../lib/progress-api";
@@ -49,6 +51,8 @@ export function useJourneyProgress(
   >(initialCompletedEpisodeIntroIds);
   // 카탈로그 에피소드 진행 — 표지 컷을 끝내면 결선이 setter로 적습니다.
   const [catalogProgress, setCatalogProgress] = useState<CatalogProgress>({});
+  // 학습 티켓 원장 — 진행과 같은 저장 · 병합 경로를 탑니다(`lib/learning-tickets.ts`).
+  const [tickets, setTickets] = useState<TicketLedger>(fullTicketLedger);
   const [streakDays, setStreakDays] = useState(0);
   // 빈 초기값은 신규 사용자라는 뜻이 아닙니다. 유효한 서버 기록을 합친 뒤에만 안내를 판단합니다.
   // 기기 저장본을 적용한 것만으로는 참이 아닙니다.
@@ -75,6 +79,7 @@ export function useJourneyProgress(
     completedEpisodeFinalIds,
     completedEpisodeIntroIds,
     catalogProgress,
+    tickets,
   };
   const latest = useRef(state);
   latest.current = state;
@@ -109,6 +114,7 @@ export function useJourneyProgress(
     setCompletedEpisodeFinalIds(next.completedEpisodeFinalIds);
     setCompletedEpisodeIntroIds(next.completedEpisodeIntroIds);
     setCatalogProgress(next.catalogProgress);
+    setTickets(next.tickets ?? fullTicketLedger);
   };
 
   /** 로그인 뒤 호출합니다. 로컬 미전송 진행을 즉시 복구한 다음 서버와 합칩니다. */
@@ -183,6 +189,7 @@ export function useJourneyProgress(
     completedEpisodeFinalIds,
     completedEpisodeIntroIds,
     catalogProgress,
+    tickets,
   ]);
 
   const onStatBumped = (kind: StatBumpKind): void =>
@@ -194,6 +201,7 @@ export function useJourneyProgress(
 
   return {
     ...state,
+    tickets,
     hasLoadedProgress,
     progressLoadPhase: progressLoad.phase,
     wiring: {
@@ -214,6 +222,7 @@ export function useJourneyProgress(
     setCompletedEpisodeFinalIds,
     setCompletedEpisodeIntroIds,
     setCatalogProgress,
+    setTickets,
     streakDays,
     streakCelebration,
     onStreakCelebrated: () => setStreakCelebration(false),

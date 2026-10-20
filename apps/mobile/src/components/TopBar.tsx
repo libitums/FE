@@ -13,7 +13,7 @@ import { hasTopBarNotificationsShade, topBarNotificationsClassName } from "./top
 
 import "./top-bar.css";
 
-// 화면들이 함께 쓰는 상단 줄입니다 — 왼쪽에 연속 학습 · 트로피, 오른쪽에 알림 버튼.
+// 화면들이 함께 쓰는 상단 줄입니다 — 왼쪽에 연속 학습 · 트로피 · 학습 티켓, 오른쪽에 알림 버튼.
 // 젬 구매가 준비될 때까지 젬 칩과 구매 진입점은 표시하지 않습니다. 화면 제목은 여기 없습니다. 여정 맵에서는
 // 에피소드 헤더 카드가, 학습 화면에서는 세션 헤더가 「지금 어디인가」를 이미 말하므로
 // 제목 줄을 따로 두면 같은 말이 두 번 섭니다.
@@ -27,6 +27,9 @@ export type TopBarProps = {
   /** 칩을 누르면 부릅니다. 모달을 여닫는 일은 화면이 집니다. */
   readonly onOpenStreak?: () => void;
   readonly onOpenTrophy?: () => void;
+  /** 남은 학습 티켓 수입니다. 넘기지 않거나 `null`이면 칩을 그리지 않습니다. */
+  readonly ticketCount?: number | null;
+  readonly onOpenTickets?: () => void;
   /** 활동으로 오르기 전 값입니다(ADR-0064). 칩이 그 값에서 지금 값으로 한 번 굴립니다. */
   readonly bumps?: StatBumps;
   /** 참인 동안 오름 재생을 미룹니다 — 모달이 덮고 있거나 곧 열릴 때입니다. */
@@ -40,6 +43,8 @@ export function TopBar({
   onOpenNotifications,
   onOpenStreak,
   onOpenTrophy,
+  ticketCount = null,
+  onOpenTickets,
   bumps = noStatBumps,
   bumpHeld = false,
   onBumped,
@@ -59,6 +64,10 @@ export function TopBar({
   const handleOpenTrophy = () => {
     "background only";
     onOpenTrophy?.();
+  };
+  const handleOpenTickets = () => {
+    "background only";
+    onOpenTickets?.();
   };
 
   // 막은 있을 때와 없을 때를 갈래로 나눕니다 — 조건 자식 한 칸을 두면 렌더러가 그 칸을 감싸는
@@ -120,6 +129,18 @@ export function TopBar({
             bumpFrom={bumps.trophy}
             bumpHeld={bumpHeld}
             onBumped={() => onBumped?.("trophy")}
+          />
+        )}
+        {/* 학습 티켓은 숫자만 섭니다(시안 E1). 활동으로 오르지 않으므로 굴리지 않습니다. */}
+        {ticketCount === null ? null : (
+          <StatChip
+            tone="ticket"
+            value={ticketCount}
+            accessibilityLabel={copy.tickets.ticketsLeft(ticketCount)}
+            testId="top-bar-tickets"
+            surface="white"
+            height="touch-target"
+            onTap={onOpenTickets === undefined ? undefined : handleOpenTickets}
           />
         )}
       </view>

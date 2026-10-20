@@ -1,11 +1,15 @@
 import type { ReactNode } from "@lynx-js/react";
 
+import { color } from "@libitums/design-tokens";
+
+import { ticketIcon } from "../../components/ticket-icon";
 import { useLayerBack } from "../../lib/use-back-handler";
 import { useUiCopy } from "../../lib/ui-copy";
 import { playSound } from "../../lib/sound-effects";
 import { stepSheetProgress } from "./journey-map-sheet";
 
 import "./step-sheet.css";
+import "../tickets/tickets.css";
 
 /**
  * 유닛을 누르면 그 유닛에 붙어 뜨는 말풍선입니다(Figma 79-5791). 낭독 순서는
@@ -30,6 +34,8 @@ export type StepSheetProps = {
   unitLabel?: string;
   completedActivityCount: number;
   totalActivityCount: number;
+  /** 시작하면 쓰는 학습 티켓 수입니다 — 새 레슨 1, 다시 하기 0(기본). 1이면 Start에 티켓 태그가 섭니다(시안 E3). */
+  ticketCost?: 0 | 1;
   onStart: () => void;
   onClose: () => void;
 };
@@ -42,6 +48,7 @@ export function StepSheet({
   unitLabel,
   completedActivityCount,
   totalActivityCount,
+  ticketCost = 0,
   onStart,
   onClose,
 }: StepSheetProps): ReactNode {
@@ -139,11 +146,25 @@ export function StepSheet({
             className="step-sheet-start"
             data-testid="step-sheet-start"
             accessibility-element={true}
-            accessibility-label={copy.journeyMap.start}
+            accessibility-label={
+              ticketCost === 1
+                ? `${copy.journeyMap.start}. ${copy.tickets.startCost}`
+                : copy.journeyMap.start
+            }
             accessibility-traits="button"
             bindtap={handleStart}
           >
             <text className="step-sheet-start-label">{copy.journeyMap.start}</text>
+            {ticketCost === 1 ? (
+              <view className="ticket-cost-tag" data-testid="step-sheet-ticket-cost">
+                <svg
+                  className="ticket-cost-icon"
+                  content={ticketIcon}
+                  current-color={color.white}
+                />
+                <text className="ticket-cost-label">1</text>
+              </view>
+            ) : null}
           </view>
         </view>
       </view>

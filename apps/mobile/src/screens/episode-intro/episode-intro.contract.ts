@@ -9,6 +9,7 @@ import type {
 import type { SafeAreaInsets } from "../../lib/safe-area";
 import type { EpisodeNarrative } from "../episode-narrative/episode-narrative";
 import type { JourneyMapNodeStatus } from "../journey-map/journey-map";
+import type { TicketEvent } from "../tickets/tickets.contract";
 
 export type EpisodeIntroUnitId = "tutorial-intro";
 /**
@@ -120,7 +121,8 @@ export type EpisodeIntroEvent =
   | CatalogLearningEvent
   | LearnerProfileSavedEvent
   | LearnerProfileSkippedEvent
-  | ProgressLoadEvent;
+  | ProgressLoadEvent
+  | TicketEvent;
 /** 보내지 않을 때는 `null`입니다 — no-op 함수로 수집을 가장하지 않습니다(`MessengerEventSink`와 같은 규약). */
 export type EpisodeIntroEventSink = ((event: EpisodeIntroEvent) => void) | null;
 export type EpisodeIntroAppProps = { readonly episodeIntroEventSink?: EpisodeIntroEventSink };

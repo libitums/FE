@@ -45,4 +45,6 @@ export type AnalyticsEventName =
   | "learner_profile_opened"
   | "progress_load_delayed"
   | "progress_load_failed"
-  | "progress_load_recovered";
+  | "progress_load_recovered"
+  | "tickets_ran_out"
+  | "ticket_more_tapped";

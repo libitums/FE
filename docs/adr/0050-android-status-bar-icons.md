@@ -362,3 +362,9 @@ SwiftShader에서도 앱 안의 값은 그대로였다 — 「앱이 늦게 바�
 - **뜰 때 한 번 · 닫을 때 한 번 뒤집힌다**(비주얼 노벨 위는 뒤집히지 않는다). 새 사용자는 튜토리얼에서 이 안내를 다섯 번(밝은 화면 위) 더 보므로 D4가 적은 뒤집힘의 대가가 그만큼 는다.
 
 고친 곳: D2 끝의 ⟨2026-10-09⟩ 한 줄과 이 절. D1 ~ D8의 결정 문장 · 「대가」 · 「재검토 조건」은 그대로다.
+
+## 적용 기록 ⟨2026-10-20 — 학습 티켓⟩
+
+- **등록부**: `fixedLayers`의 `screens/journey-map/journey-stat-modal.css` carriers에 `screens/tickets/TicketStatModal.tsx`를 더했다 — 티켓 모달([ADR-0074](0074-learning-tickets.md) E1)이 지표 모달의 뼈대 · 짙은 바탕(0.9)을 그대로 쓰고 같은 표지를 단다.
+- **새 키** `screens/tickets/tickets.css`(분류 `default-scrim`, carriers 없음) — 티켓 없음 대화상자(E6m)의 `position: fixed` 루트다. 띠를 덮는 것은 ui-lynx 기본 스크림 0.45뿐이라 다른 확인 대화상자처럼 표지가 없다(D8 「0.45가 아닌 스크림」 밖).
+- D1 ~ D8의 결정 문장은 그대로다.

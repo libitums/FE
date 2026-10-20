@@ -11,6 +11,14 @@ import {
 } from "../lib/catalog-progress";
 import type { CatalogCompletionKeysOf, CatalogProgress } from "../lib/catalog-progress";
 import type { LearningProgressSnapshotV1 } from "../lib/learning-progress.contract";
+import {
+  fullTicketLedger,
+  isFullTicketLedger,
+  mergeTicketLedgers,
+  ticketLedgerCovers,
+  ticketLedgerFrom,
+} from "../lib/learning-tickets";
+import type { TicketLedger } from "../lib/learning-tickets";
 import type { EpisodeFinalUnitId } from "../screens/episode-final/episode-final.contract";
 import type { EpisodeIntroUnitId } from "../screens/episode-intro/episode-intro.contract";
 import { isMapItemComplete } from "../screens/journey-map/journey-map-progress";
@@ -27,6 +35,8 @@ export type JourneyProgressState = AppJourneySeed & {
   readonly completedEpisodeIntroIds: readonly EpisodeIntroUnitId[];
   /** 카탈로그 에피소드 진행(`lib/catalog-progress.ts`). 없으면 `{}`. */
   readonly catalogProgress: CatalogProgress;
+  /** 학습 티켓 원장(`lib/learning-tickets.ts`). 없으면 가득입니다. */
+  readonly tickets?: TicketLedger;
 };
 
 const introUnits: Record<EpisodeIntroUnitId, true> = { "tutorial-intro": true };
@@ -76,6 +86,9 @@ export function learningProgressSnapshotFrom(
     ...(Object.keys(state.catalogProgress).length > 0
       ? { catalogProgress: state.catalogProgress }
       : {}),
+    ...(state.tickets === undefined || isFullTicketLedger(state.tickets)
+      ? {}
+      : { tickets: state.tickets }),
   };
 }
 
@@ -109,6 +122,7 @@ export function journeyProgressFrom(raw: unknown): JourneyProgressState | null {
     completedEpisodeFinalIds: finals,
     // 모양이 틀린 값은 그 부분만 버립니다 — 스냅숏 전체를 버리지 않습니다.
     catalogProgress: catalogProgressFrom(record["catalogProgress"]),
+    ...(record["tickets"] === undefined ? {} : { tickets: ticketLedgerFrom(record["tickets"]) }),
   };
 }
 
@@ -196,11 +210,22 @@ export function mergeJourneyProgress(
     visualNovelProgress: aheadVisualNovel,
     completedEpisodeFinalIds: union(a.completedEpisodeFinalIds, b.completedEpisodeFinalIds),
     catalogProgress: mergeCatalogProgress(a.catalogProgress, b.catalogProgress),
+    // 남은 장수가 적은 쪽을 따릅니다(필드마다 큰 값). 둘 다 없으면 싣지 않습니다.
+    ...(a.tickets === undefined && b.tickets === undefined
+      ? {}
+      : {
+          tickets: mergeTicketLedgers(a.tickets ?? fullTicketLedger, b.tickets ?? fullTicketLedger),
+        }),
   };
 }
 
 /** 상단 지표 칩 둘의 값입니다(연속 학습 일수 · 트로피). 화면 결선이 머리 칩을 그리는 화면들에 내립니다. */
-export type JourneyStats = { readonly streakDays: number; readonly trophyCount: number };
+export type JourneyStats = {
+  readonly streakDays: number;
+  readonly trophyCount: number;
+  /** 남은 학습 티켓 수입니다 — 레슨 결과 화면의 한 줄(시안 E5). 티켓 결선(`ticket-wiring.ts`)이 채웁니다. */
+  readonly ticketsLeft?: number;
+};
 
 /** 화면 결선이 받는 진행 쪽 값입니다 — 칩 둘, 로그인 뒤 서버 진행을 불러오는 함수, 맵이 받는 불러오기 상태. */
 export type ProgressWiringArgs = JourneyStats &
@@ -238,6 +263,7 @@ export function journeyProgressCovers(
     includesAll(server.completedPhoneCallUnitIds, local.completedPhoneCallUnitIds) &&
     includesAll(server.completedEpisodeFinalIds, local.completedEpisodeFinalIds) &&
     server.visualNovelProgress.beatIndex >= local.visualNovelProgress.beatIndex &&
-    catalogCovers(server.catalogProgress, local.catalogProgress)
+    catalogCovers(server.catalogProgress, local.catalogProgress) &&
+    ticketLedgerCovers(server.tickets ?? fullTicketLedger, local.tickets ?? fullTicketLedger)
   );
 }

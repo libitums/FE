@@ -34,6 +34,7 @@ import type { EpisodeFinalUnitId } from "../episode-final/episode-final.contract
 import type { EpisodeIntroUnitId } from "../episode-intro/episode-intro.contract";
 import type { JourneyMapCatalogProps } from "./catalog-map.contract";
 import { knownProgressLoad, nodeAccessOf } from "./journey-map-load";
+import { journeyStepOrdinal } from "./journey-map-progress";
 import type { JourneyMapProgressLoad } from "./journey-map-load.contract";
 
 import "./journey-map-screen.css";
@@ -251,6 +252,8 @@ export function JourneyMapScreen({
           top={sheetTop}
           caretOffset={sheetCaretOffset}
           {...stepSheetFiguresFor(openStep.id, completedStepCount)}
+          /* 끝낸 스텝은 다시 하기라 티켓을 쓰지 않습니다(시안 E3 — 새 레슨에만 태그). */
+          ticketCost={journeyStepOrdinal(openStep.id) - 1 < completedStepCount ? 0 : 1}
           /* `시작`의 목적지는 이 화면이 정하지 않습니다 — 열린 스텝의 id를 그대로
              위로 올립니다. 화면 전환은 `App`의 것입니다. */
           onStart={() => onStartStep(openStep.id)}

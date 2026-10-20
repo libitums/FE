@@ -176,9 +176,9 @@ function renderScreenBody(screen: Screen, wiring: ScreenWiring) {
           statBumps={wiring.statBumps}
           onStatBumped={wiring.onStatBumped}
           reward={lessonRewardPlaceholder}
+          ticketsLeft={wiring.ticketsLeft}
           onExit={wiring.onExitAssessment}
-          // 미통과에서만 씁니다 — 같은 스텝을 첫 활동부터 새로 엽니다. 맵을 거쳐
-          // 노드를 다시 누르는 것과 같은 일이고, 그 길을 한 번에 줄인 것입니다.
+          // 미통과에서만 씁니다 — 같은 스텝을 첫 활동부터 새로 엽니다(맵에서 노드를 다시 누르는 길을 줄인 것).
           onRetry={() => wiring.onStartStep(screen.stepId)}
         />
       );

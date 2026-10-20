@@ -343,6 +343,11 @@ sink는 던지지 않는다 — 매핑 · `capture`를 `try`로 감싸 삼킨다
   | 〃 | `questionCount`(기존) | **뜻 불변** — 계획의 채점 문항 수(건너뛴 낱말 말하기도 든다). 통과 기준의 분모(판정한 채점 문항 수)와 다를 수 있다 | 〃 |
 
   - **`skippedItemCount`(시작 이벤트)와 다르다** — 그쪽은 **매핑 때** 화면이 서지 않은 문항 수이고, 이쪽은 화면에 섰다가 사용자가 넘긴 수다. 이 변경부터 말하기는 매핑에서 빠지지 않아 `S5`의 `skippedItemCount`가 줄었다(u01 6 → 3).
+- ⟨2026-10-20 — 학습 티켓. 적용 기록이고 결정을 바꾸지 않는다⟩ **이벤트 둘이 더해져 이름이 40 → 42개다**(모양 44 → 46). 결정은 [ADR-0074](0074-learning-tickets.md) D6.
+  sink는 새로 만들지 않았다 — 앱 훅(`useLearningTickets`)이 `episodeIntroEventSink`로 낸다. 타입 정본은 `screens/tickets/tickets.contract.ts`(`TicketEvent`)이고 `EpisodeIntroEvent` union에 든다.
+  - **`tickets_ran_out`** — 티켓 0에서 새 레슨을 열려 해 대화상자가 선 순간. 속성 없음.
+  - **`ticket_more_tapped`** — `Get more tickets`를 누름. 속성 `surface`(`ticket_modal` | `out_of_tickets`) · `granted`(불리언 — 하루 한 장 무료를 받았는가).
+  - Meta 앱 이벤트 매핑은 둘을 옮기지 않는다. PostHog 도착은 보지 않았다.
   - **읽는 법** — `S5`(말하기는 읽기만 있는 단계)의 `skippedCount > 0` ⇔ 그 기기에서 인식을 쓸 수 없었다(권한 거부 · 인식기 없음 · 인식 실패 — 읽기의 사용자 넘김은 `Next`라 세지 않는다) → **인식 불가 비율의 깨끗한 신호**.
     `S6` · `S8`의 `skippedCount`는 사용자 `Skip`이 섞인 상한이다. 그 두 단계의 판정 분모 = `questionCount − skippedCount`(한 단계에 말하기 유형이 하나뿐이라 성립 — 섞이면 ADR-0067 재검토 조건 2), 정답률 = `correctCount ÷ (questionCount − skippedCount)`.
   - **연속성** — 이 변경 전 모든 카탈로그 활동은 건너뜀 0을 냈으므로 **`skippedCount`가 없는 옛 이벤트는 `"0"`으로 읽는다.** `questionCount`의 뜻은 바뀌지 않았다.
