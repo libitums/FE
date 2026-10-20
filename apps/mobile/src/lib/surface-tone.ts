@@ -23,6 +23,5 @@ export function rgbaOfHex(hex: string, alpha: number): string {
   if (!Number.isFinite(alpha) || alpha < 0 || alpha > 1) {
     throw new RangeError(`alpha must be within [0, 1], got ${alpha}`);
   }
-  const channel = (index: number): number => parseInt(matched[index] ?? "", 16);
-  return `rgba(${channel(1)}, ${channel(2)}, ${channel(3)}, ${alpha})`;
+  return `rgba(${parseInt(matched[1], 16)}, ${parseInt(matched[2], 16)}, ${parseInt(matched[3], 16)}, ${alpha})`;
 }
