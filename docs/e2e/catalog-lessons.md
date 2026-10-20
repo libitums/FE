@@ -165,9 +165,9 @@ unit(면 표기 · 판정 면 색 · 칩 · 정답 표시 · 화면 CSS의 어�
 
 **회차 1 ⟨2026-10-20⟩ — iPhone 17 Pro 시뮬레이터(FE-catalog-e2e), `feat/final-test-dark` da30a9a1 번들(`--bundle-url=main.lynx`), 에피소드 1 `Final test` 다시 하기.** 확인 · 판정은 에이전트(눈 + 스크린숏 픽셀).
 FDE1 · FDE3 · FDE4 통과, FDE2 부분, FDE5 미실행(공유 부품의 기본 `light`는 ui 테스트가 고정한다) — FDE2 · FDE5는 아래 회차 2에서 보완. 대사 상자 · 답안 판이 한 톤으로 서고 그림이 비친다 — 판 안의 가로 띠는 판이 움직여도 화면의 같은 높이에 남는 뒤 그림(계산대 가장자리 · 바닥선)이다. 줄 선(`border-top`의 `rgba()`)은 그려졌다.
-스크린숏(커밋한 것은 402×874 1× 축소본 — 아래 픽셀 측정은 원본 2× 스크린숏으로 했다): [만드는 중](evidence/ios-catalog-final-dark-building.png) · [정답](evidence/ios-catalog-final-dark-correct.png) · [오답](evidence/ios-catalog-final-dark-incorrect.png).
+스크린숏(커밋한 것은 402×874 1× 축소본 — 아래 픽셀 측정은 원본 3× 스크린숏(1206×2622)으로 했다): [만드는 중](evidence/ios-catalog-final-dark-building.png) · [정답](evidence/ios-catalog-final-dark-correct.png) · [오답](evidence/ios-catalog-final-dark-incorrect.png).
 
-| 쌍(픽셀 실측, 원본 2× 스크린숏) | 바탕 | 글자 · 선 | 대비 |
+| 쌍(픽셀 실측, 원본 3× 스크린숏) | 바탕 | 글자 · 선 | 대비 |
 |---|---|---|---|
 | 지시문 | (48, 49, 52) | (220, 222, 227) | 9.66 |
 | 힌트 | (44, 45, 47) | (176, 179, 186) | 6.57 |
