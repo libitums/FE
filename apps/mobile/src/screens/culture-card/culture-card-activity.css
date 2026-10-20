@@ -71,24 +71,26 @@
   box-shadow: var(--libitum-elevation-shadow-s2);
 }
 
-/* 뒤집기 — 세로축으로 옆면에서 돌아 들어옵니다. Lynx의 `perspective`는 부분 지원이라 쓰지 않습니다 — 원근 없이
-   가로로 접혔다 펴지는 모양입니다. 동작 줄이기에서는 이 클래스가 붙지 않아 면이 즉시 바뀝니다(ADR-0053 D3). */
+/* 뒤집기 — 가운데를 축으로 가로 배율이 0에서 1로 펴지며 면이 들어옵니다. Lynx의 `perspective`는 부분 지원이라 쓰지
+   않습니다. ⟨2026-10-20⟩ 세로축 회전(`rotateY`)에서 바꿨습니다 — iOS에서 회전 중 축 오른쪽 반이 덱 뒤 두 장 뒤로
+   그려져 옅은 주황에 덮였습니다. 2D 배율에는 깊이가 없어 그럴 일이 없습니다. 동작 줄이기에서는 이 클래스가 붙지
+   않아 면이 즉시 바뀝니다(ADR-0053 D3). */
 /* 앞 · 뒤 같은 움직임을 이름만 둘로 둡니다. 노드를 다시 세우지 않으므로, 이름이 바뀌어야 움직임이 처음부터 돕니다. */
 @keyframes culture-card-activity-face-flip-front {
   from {
-    transform: rotateY(90deg);
+    transform: scaleX(0);
   }
   to {
-    transform: rotateY(0deg);
+    transform: scaleX(1);
   }
 }
 
 @keyframes culture-card-activity-face-flip-back {
   from {
-    transform: rotateY(90deg);
+    transform: scaleX(0);
   }
   to {
-    transform: rotateY(0deg);
+    transform: scaleX(1);
   }
 }
 
