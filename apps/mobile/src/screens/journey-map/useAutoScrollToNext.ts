@@ -75,6 +75,8 @@ export function useAutoScrollToNext({
   // 부드러우면 main thread가 프레임마다 옮기고, 동작 줄이기면 한 번에 옮깁니다.
   const moveTo = (offset: number, durationMs?: number): void => {
     if (behavior !== "smooth") {
+      // 동작 줄이기로 바뀐 사이 돌고 있던 부드러운 이동이 있으면 먼저 멈춥니다 — 두 이동이 자리를 다투지 않게.
+      glider.stop();
       scrollMapTo(offset, "instant");
       return;
     }
