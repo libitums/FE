@@ -72,6 +72,17 @@ export function cultureCardFaceClassName(
   return flipped && motion === "standard" ? `${faceClass} ${faceClass}-flip-${face}` : faceClass;
 }
 
+const deckClass = "culture-card-activity-deck";
+
+/** 덱 상자의 클래스입니다. */
+export function cultureCardDeckClassName(
+  _face: CultureCardFace,
+  _flipped: boolean,
+  _motion: Motion,
+): string {
+  return deckClass;
+}
+
 /** 앞면에 세울 사진 주소입니다. 주소가 없거나 그 주소가 한 번 실패했으면 `null` — 브랜드 면이 섭니다. */
 export function cultureCardPhotoOf(
   imageUrl: string | null,

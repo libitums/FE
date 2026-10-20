@@ -6,6 +6,7 @@ import { describe, expect, test } from "vitest";
 import type { LessonPosition } from "../learning/activity-finish";
 import {
   cultureCardActionOf,
+  cultureCardDeckClassName,
   cultureCardFaceClassName,
   cultureCardLabelOf,
   cultureCardPhotoOf,
@@ -119,6 +120,19 @@ describe("cultureCardFaceClassName (CC5)", () => {
   });
 });
 
+describe("cultureCardDeckClassName (CC9)", () => {
+  test("CC9. 뒤집어 선 면에서만(표준 움직임) 덱에 면마다 다른 숨김 클래스가 붙는다", () => {
+    expect(cultureCardDeckClassName("front", false, "standard")).toBe("culture-card-activity-deck");
+    expect(cultureCardDeckClassName("back", true, "standard")).toBe(
+      "culture-card-activity-deck culture-card-activity-deck-flip-back",
+    );
+    expect(cultureCardDeckClassName("front", true, "standard")).toBe(
+      "culture-card-activity-deck culture-card-activity-deck-flip-front",
+    );
+    expect(cultureCardDeckClassName("back", true, "reduced")).toBe("culture-card-activity-deck");
+  });
+});
+
 describe("cultureCardPhotoOf (CC6)", () => {
   test("CC6. 주소가 있고 실패하지 않았으면 그 주소다", () => {
     expect(cultureCardPhotoOf("https://cdn/a.jpg", null)).toBe("https://cdn/a.jpg");
@@ -204,6 +218,31 @@ describe("culture-card-activity.css (CC7)", () => {
     expect(ruleBody("culture-card-activity-face")).not.toContain("transform-origin");
     expect(css).not.toContain("perspective");
     expect(css).not.toContain("backface-visibility");
+  });
+
+  test("CC10. 뒤집는 동안 덱 두 장이 숨는다 — 면과 같은 길이 · 곡선, 끝나면 원래 불투명도로 돌아온다", () => {
+    for (const face of ["front", "back"]) {
+      const name = `culture-card-activity-deck-hide-${face}`;
+      expect(keyframe(name, "from")).toMatch(/opacity:\s*0\s*;?/);
+      expect(keyframe(name, "to")).toMatch(/opacity:\s*0\s*;?/);
+      for (const layer of ["far", "near"]) {
+        const rule = new RegExp(
+          `\\.culture-card-activity-deck-flip-${face}\\s+\\.culture-card-activity-layer-${layer}\\s*[,{]`,
+        );
+        expect(css).toMatch(rule);
+      }
+      const body =
+        new RegExp(
+          `\\.culture-card-activity-deck-flip-${face}\\s+\\.culture-card-activity-layer-near\\s*\\{([^}]*)\\}`,
+        ).exec(css)?.[1] ?? "";
+      expect(body).toMatch(
+        new RegExp(
+          `animation:\\s*${name}\\s+var\\(--libitum-motion-duration-d6\\)\\s+var\\(--libitum-motion-easing-enter\\)\\s*;`,
+        ),
+      );
+      // 채움 모드가 없어야 끝난 뒤 원래 불투명도(16 · 35 %)로 돌아온다.
+      expect(body).not.toMatch(/\b(both|forwards)\b/);
+    }
   });
 
   test("CC7. 미디어 질의 · 시간 리터럴이 없다(ADR-0053 D1)", () => {
