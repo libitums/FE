@@ -3,7 +3,11 @@ import type { ReactNode } from "@lynx-js/react";
 import { Card } from "@libitums/ui-lynx/card";
 
 import { LearningShellWorkspace } from "./LearningShellWorkspace";
-import type { LearningShellArrangement, LearningWorkspaceMode } from "./learning-shell.contract";
+import type {
+  LearningShellArrangement,
+  LearningShellScene,
+  LearningWorkspaceMode,
+} from "./learning-shell.contract";
 import type { LearningShellStage } from "./learning-shell-props";
 import {
   questionTransitionAttributes,
@@ -24,6 +28,8 @@ export type LearningShellBodyProps = {
   readonly onViewportHeight: (height: number) => void;
   /** 문항 전환의 현재 단계와 모션 모드입니다. idle이면 전환 클래스 · 속성이 붙지 않습니다. */
   readonly transition: QuestionTransition;
+  /** 지금 장면입니다. 완료면 무대가 남는 세로의 가운데에 섭니다(`learningShellSceneClasses`). */
+  readonly scene: LearningShellScene;
 };
 
 /**
@@ -43,6 +49,7 @@ export function LearningShellBody({
   workspaceMode,
   onViewportHeight,
   transition,
+  scene: _scene,
 }: LearningShellBodyProps): ReactNode {
   // 전환 속성은 스프레드로 둡니다(idle이면 속성 자체가 없다). `<scroll-view>`에서는 스프레드가
   // `scroll-bar-enable={false}`보다 앞에 와야 lint:scroll-bars를 지납니다(ADR-0055 D1).
