@@ -126,10 +126,10 @@ describe("LearnerCountryScreen", () => {
     choose("BR");
     const row = screen.getByTestId("learner-country-screen-row-BR");
     expect(row).toHaveAttribute("data-selected", "true");
-    expect(row).toHaveAttribute("accessibility-label", "Brazil, selected");
+    expect(row).toHaveAttribute("accessibility-label", "Brazil · 브라질, selected");
     expect(screen.getByTestId("learner-country-screen-row-DE")).toHaveAttribute(
       "accessibility-label",
-      "Germany",
+      "Germany · 독일",
     );
     const preview = screen.getByTestId("learner-country-screen-preview");
     expect(preview).toHaveTextContent("저는 브라질에서 왔어요.");

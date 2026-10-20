@@ -27,7 +27,8 @@ import "../login/login-screen.css";
 import "../vocab-card/vocab-card-activity.css";
 import "./learner-signup-screen.css";
 
-const letterId = (letter: string) => `learner-country-letter-${letter}`;
+// 「#」(A~Z 밖) 묶음은 선택자에서 특수 문자라 id에는 `other`로 적습니다.
+const letterId = (letter: string) => `learner-country-letter-${letter === "#" ? "other" : letter}`;
 
 // 글자 머리로 목록을 내립니다. `invoke`는 ID 선택자만 받습니다. 못 내려도 손으로 스크롤할 수 있습니다.
 function jumpTo(letter: string): void {
@@ -192,7 +193,11 @@ export function LearnerCountryScreen({
                       data-selected={selected ? "true" : "false"}
                       accessibility-element={true}
                       accessibility-traits="button"
-                      accessibility-label={selected ? `${row.en}, selected` : row.en}
+                      accessibility-label={
+                        selected
+                          ? `${copy.picker.row(row.en, row.ko)}, selected`
+                          : copy.picker.row(row.en, row.ko)
+                      }
                       bindtap={() => choose(row.code)}
                     >
                       <text className="learner-signup-row-label" accessibility-element={false}>
