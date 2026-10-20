@@ -50,6 +50,18 @@
 | NBE6 | 미확인 | 롤플레이 · 설정 탭을 `main`과 대조하지 않았다 |
 | NBA1 | 미확인 | Android 미실행 |
 
+## 회차 2 — 2026-10-20, Android 에뮬레이터 — 학습 화면에서 상단 줄을 걷은 변경
+
+- 기기: AVD `R6_API30`(Android 11 · 1080 × 2340 · 440 dpi = 392.7 × 851 dp, 글자 1.0). Debug APK + 로컬 HTTP 번들(모의 Supabase), 계측 픽스처 `SignedInScreenFixtureTest`로 로그인. 번들: `feat/learning-hide-header-chips` `3a6bb84b`, 비교는 같은 APK에 `origin/main` `d937f3bf` 번들. 분석은 [성능 기록](../performance/reports/learning-hide-header-chips-android-r6-api30-01.md).
+
+| 화면 | 결과 | 증거 |
+|---|---|---|
+| 튜토리얼 `Ordering` 첫 문항 | 통과 — 칩 · 알림 버튼 없음. 세션 헤더(× · `Lesson 1 / 1` · 진행)가 상태 표시줄(아래 모서리 145 px) 아래 33 px(12 dp)에서 시작 — 변경 전 칩 줄이 서던 자리. 변경 전보다 166 px(60.4 dp) 위, 빈 띠 없음 | [tutorial-q1](evidence/android-learning-hide-chips-tutorial-q1.png) · [전/후](evidence/android-learning-hide-chips-before-after.png) |
+| 카탈로그 에피소드 1 레슨 2 첫 문항(대화 순서) | 통과 — 같은 자리(178 px)에서 헤더 시작 | [catalog-q1](evidence/android-learning-hide-chips-catalog-q1.png) |
+| 완료 카드(`All questions done`) | 통과 — 칩 없음, 세션 헤더 유지 | [done-card](evidence/android-learning-hide-chips-done-card.png) |
+| 결과 화면 `PERFECT LESSON!` | 통과 — 연속 학습 · 트로피 칩이 다시 선다(알림 버튼은 이 화면에 원래 없음) | [result](evidence/android-learning-hide-chips-result.png) |
+| 맵 복귀 | 통과 — 탭 루트 상단 줄(칩 둘 · 알림 버튼) 그대로 | [map-back](evidence/android-learning-hide-chips-map-back.png) |
+
 ## 미확인 · 후속
 
 - **눌림 · 동작 줄이기(NBE3 · NBE4)** — 축소 비율과 막 색을 스크린샷으로 잰다.
