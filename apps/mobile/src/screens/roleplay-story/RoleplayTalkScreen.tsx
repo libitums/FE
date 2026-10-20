@@ -60,7 +60,7 @@ export function RoleplayTalkScreen({
       });
       return;
     }
-    dispatch({ type: "unavailable" });
+    dispatch({ type: "unavailable", reason: outcome.reason });
   });
 
   const cueSource = correct ? turn.replyAudioSource : turn.counterpartAudioSource;
@@ -250,6 +250,7 @@ export function RoleplayTalkScreen({
           ) : (
             <RoleplaySpeakControls
               phase={state.phase}
+              unavailableReason={state.unavailableReason}
               hint={state.hintShown ? turn.replyTranslation : null}
               canShowHint={turn.replyTranslation !== null && !state.hintShown}
               onMic={tapMic}

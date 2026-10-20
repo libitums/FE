@@ -5,11 +5,13 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
+import android.provider.Settings;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
@@ -82,6 +84,19 @@ final class SpeechRecognitionController {
 
   void invalidArguments(Callback callback) {
     main.post(() -> callback.invoke(resultPayload("invalid-arguments", null, 0, "")));
+  }
+
+  /** Opens this app's details page in system settings; failing to open leaves the app in place. */
+  void openSettings() {
+    main.post(() -> {
+      Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+      intent.setData(Uri.fromParts("package", activity.getPackageName(), null));
+      try {
+        activity.startActivity(intent);
+      } catch (RuntimeException ignored) {
+        // Nothing to open; the screen stays as it is.
+      }
+    });
   }
 
   void stop() {

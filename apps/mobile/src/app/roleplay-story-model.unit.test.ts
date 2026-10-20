@@ -47,6 +47,10 @@ test("[RM1] 준비된 에피소드마다 구획 하나 · 항목 하나(상대 �
     items: [{ form: "story", unitId: "story-u01-water", episodeId: "u01-water", lineCount: 3 }],
   });
   expect(result[0]?.items[0]?.title).toBe("Buying Water");
+  // 카드 바탕은 그 에피소드 표지의 첫 그림입니다.
+  expect(result[0]?.items[0]).toMatchObject({
+    imageUrl: "https://cdn/content/images/u01-water/pre-1.jpg",
+  });
   expect(result.map((section) => section.items[0])).toMatchObject([
     { lineCount: 3 },
     { lineCount: 5 },

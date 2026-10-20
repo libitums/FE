@@ -45,6 +45,8 @@ export type StoryRoleplayItem = {
   readonly episodeId: string;
   readonly title: string;
   readonly lineCount: number;
+  /** 카드 바탕 그림 — 그 에피소드 표지의 첫 그림(절대 URL). 없으면 단색 면입니다. */
+  readonly imageUrl: string | null;
 };
 
 export type RoleplayItem =

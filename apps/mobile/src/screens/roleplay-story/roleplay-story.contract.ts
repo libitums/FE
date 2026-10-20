@@ -2,6 +2,7 @@
 // 턴 모양은 최종 테스트의 것을 그대로 받습니다 — 같은 콘텐츠(`RP` 스텝)를 같은 계획 함수로 만듭니다.
 
 import type { AnswerResult } from "../../lib/answer-result";
+import type { SpeechUnavailableReason } from "../../lib/speech-attempt";
 import type { SafeAreaInsets } from "../../lib/safe-area";
 import type { CatalogRoleplayTurns } from "../catalog-final/catalog-final.contract";
 
@@ -17,6 +18,8 @@ export type RoleplayTalkState = {
   readonly verdict: AnswerResult | null;
   /** 힌트(내가 할 말의 뜻)를 펼쳤는가입니다. 턴이 바뀌면 접힙니다. */
   readonly hintShown: boolean;
+  /** 듣지 못한 까닭 — `unavailable`에서만 값이 있습니다(권한 · 인식기 / 받아쓰기 꺼짐 / 그 한 번의 실패). */
+  readonly unavailableReason: SpeechUnavailableReason | null;
   /** 넘긴 턴의 판정입니다. 건너뛴 턴은 싣지 않습니다(인식 불가 · 말할 수 없음을 오답으로 접지 않습니다). */
   readonly results: readonly AnswerResult[];
   readonly skippedCount: number;
@@ -25,11 +28,21 @@ export type RoleplayTalkState = {
 export type RoleplayTalkAction =
   | { readonly type: "start" }
   | { readonly type: "heard"; readonly text: string; readonly verdict: AnswerResult }
-  | { readonly type: "unavailable" }
+  | { readonly type: "unavailable"; readonly reason: SpeechUnavailableReason }
   | { readonly type: "hint" }
   | { readonly type: "retry" }
   | { readonly type: "next" }
   | { readonly type: "skip" };
+
+/**
+ * 시작 전 말하기 준비 — `ready` 곧장 시작 · `ask` 시스템 권한 창을 먼저 · `blocked` 거부(설정으로) ·
+ * `unsupported` 이 기기에서 인식기를 쓸 수 없음.
+ */
+export type SpeechReadiness = "ready" | "ask" | "blocked" | "unsupported";
+
+/** 미리보기에 뜨는 안내 모달 — 거부(설정 열기)와 인식기 없음(그래도 시작). */
+export type RoleplaySpeechNotice = "blocked" | "unsupported";
+export type RoleplaySpeechNoticeAction = "settings" | "anyway" | "dismiss";
 
 export type RoleplayPreviewScreenProps = {
   readonly insets: SafeAreaInsets;
@@ -43,6 +56,9 @@ export type RoleplayPreviewScreenProps = {
   readonly imageUrl: string | null;
   readonly onStart: () => void;
   readonly onExit: () => void;
+  /** 말하기를 쓸 수 없어 뜬 안내. 없으면 `null`. */
+  readonly speechNotice: RoleplaySpeechNotice | null;
+  readonly onSpeechNoticeAction: (action: RoleplaySpeechNoticeAction) => void;
 };
 
 export type RoleplayTalkScreenProps = {
@@ -87,5 +103,14 @@ export type RoleplayStoryCopy = {
   readonly youSaid: (heard: string) => string;
   readonly heardNothing: string;
   readonly unavailable: string;
+  readonly blocked: string;
+  readonly permissionTitle: string;
+  readonly permissionBody: string;
+  readonly openSettings: string;
+  readonly notNow: string;
+  readonly unsupportedTitle: string;
+  readonly unsupportedBody: string;
+  readonly startAnyway: string;
+  readonly retryHeard: string;
   readonly playAgain: string;
 };

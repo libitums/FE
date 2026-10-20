@@ -272,3 +272,32 @@ describe("RoleplayCard — 동작 줄이기", () => {
     expect(onSelect).toHaveBeenCalledWith(messengerItem);
   });
 });
+
+describe("RoleplayCard — 에피소드 롤플레이 카드의 바탕 그림", () => {
+  const story = (imageUrl: string | null): RoleplayItem => ({
+    form: "story",
+    unitId: "story-u01-water",
+    episodeId: "u01-water",
+    title: "Buying Water",
+    lineCount: 3,
+    imageUrl,
+  });
+
+  it("[RC-IMG1] 그림이 있으면 카드 바탕에 깔리고, 잠겨도 그대로 섭니다", () => {
+    render(
+      <RoleplayCard item={story("https://cdn/pre-1.jpg")} locked layout="row" onSelect={vi.fn()} />,
+    );
+    expect(screen.getByTestId("roleplay-list-item-image-story-u01-water")).toHaveAttribute(
+      "src",
+      "https://cdn/pre-1.jpg",
+    );
+    expect(screen.getByTestId("roleplay-list-item-lock-story-u01-water")).toBeInTheDocument();
+  });
+
+  it("[RC-IMG2] 그림이 없으면 단색 면 그대로입니다", () => {
+    render(<RoleplayCard item={story(null)} locked={false} layout="row" onSelect={vi.fn()} />);
+    expect(
+      screen.queryByTestId("roleplay-list-item-image-story-u01-water"),
+    ).not.toBeInTheDocument();
+  });
+});

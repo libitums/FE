@@ -177,3 +177,20 @@ export function stopSpeechRecognition(): void {
 
   host.stop();
 }
+
+/**
+ * 이 앱의 시스템 설정 화면(마이크 · 음성 인식 권한)을 엽니다. 거부된 권한의 처방입니다 — 요청을 다시 부르면
+ * 사용자 눈에는 아무 일도 일어나지 않습니다. 모듈 · 메서드가 없으면 `"unavailable"`이고 던지지 않습니다.
+ */
+export function openSpeechSettings(): SpeechRequestOutcome {
+  const host = nativeModule();
+  if (host === undefined || typeof host.openSettings !== "function") {
+    return "unavailable";
+  }
+  try {
+    host.openSettings();
+  } catch {
+    return "unavailable";
+  }
+  return "requested";
+}

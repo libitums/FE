@@ -40,7 +40,7 @@ afterEach(() => {
 });
 
 // 학습 데이터·배정·진행·채점은 실제 코드. 외부 인증과 네이티브 재생 완료만 대역합니다.
-test("처음 여정부터 이야기·여덟 연습·스페셜·세 문항 복습을 거쳐 롤플레이를 연다", async () => {
+test("처음 여정부터 이야기·여덟 연습·스페셜·세 문항 복습을 거쳐 최종 테스트를 끝낸다", async () => {
   let finishAudio: (() => void) | undefined;
   const play = vi.fn((_source: string, done: () => void) => {
     finishAudio = done;
@@ -281,11 +281,6 @@ test("처음 여정부터 이야기·여덟 연습·스페셜·세 문항 복습
   expect(screen.getByTestId("lesson-complete-screen-title")).toHaveTextContent("PERFECT LESSON!");
   button("lesson-complete-screen-exit");
   expect(screen.getByTestId(unit("tutorial-final-test"))).toHaveAttribute("data-status", "clear");
-  tap("ui-lynx-bottom-navigator-item-roleplay");
-  expect(screen.getByTestId("roleplay-list-section-tutorial")).toHaveAttribute(
-    "data-unlocked",
-    "true",
-  );
   expect(recognize).not.toHaveBeenCalled();
 });
 

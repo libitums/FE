@@ -621,14 +621,4 @@ describe.each(specialUnits)("[IL8] $name의 나가기", ({ unitId, exitTestId })
     fireEvent.tap(screen.getByTestId(exitTestId), {});
     expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   });
-
-  test("롤플레이에서 연 화면은 Back to list이고 누르면 롤플레이 목록으로 돌아간다", async () => {
-    await bootJourney(finishedTutorial);
-    fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
-    fireEvent.tap(screen.getByTestId(`roleplay-list-item-${unitId}`), {});
-
-    expect(screen.getByTestId(exitTestId)).toHaveAttribute("accessibility-label", "Back to list");
-    fireEvent.tap(screen.getByTestId(exitTestId), {});
-    expect(screen.getByTestId("roleplay-list-screen-title")).toBeInTheDocument();
-  });
 });

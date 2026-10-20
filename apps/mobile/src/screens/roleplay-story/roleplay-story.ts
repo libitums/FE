@@ -3,8 +3,13 @@
 import type { AnswerResult } from "../../lib/answer-result";
 import type { NonEmpty } from "../../lib/non-empty";
 import { judgeSpeaking, speakingWords } from "../../lib/speaking-judge";
+import type { SpeechStatus } from "../../lib/speech-recognition";
 import type { CatalogCuts } from "../catalog-cover/catalog-cover.contract";
-import type { RoleplayTalkAction, RoleplayTalkState } from "./roleplay-story.contract";
+import type {
+  RoleplayTalkAction,
+  RoleplayTalkState,
+  SpeechReadiness,
+} from "./roleplay-story.contract";
 
 export const initialRoleplayTalkState: RoleplayTalkState = {
   turnIndex: 0,
@@ -12,6 +17,7 @@ export const initialRoleplayTalkState: RoleplayTalkState = {
   heard: "",
   verdict: null,
   hintShown: false,
+  unavailableReason: null,
   results: [],
   skippedCount: 0,
 };
@@ -31,7 +37,7 @@ export function roleplayTalkReducer(
   switch (action.type) {
     case "start":
       return state.phase === "ready" || state.phase === "unavailable"
-        ? { ...state, phase: "listening" }
+        ? { ...state, phase: "listening", unavailableReason: null }
         : state;
     case "heard":
       return state.phase === "listening"
@@ -39,7 +45,7 @@ export function roleplayTalkReducer(
         : state;
     case "unavailable":
       return state.phase === "listening" || state.phase === "ready"
-        ? { ...state, phase: "unavailable" }
+        ? { ...state, phase: "unavailable", unavailableReason: action.reason }
         : state;
     case "hint":
       return state.hintShown ? state : { ...state, hintShown: true };
@@ -112,4 +118,15 @@ export function roleplayStoryCutsOf(cuts: CatalogCuts, firstLine: string): Catal
   const kept = sameAsFirstTurn ? cuts.slice(0, -1) : [...cuts];
   const [first, ...rest] = kept;
   return first === undefined ? null : [first, ...rest];
+}
+
+/**
+ * 시작 전 말하기 준비입니다. 아직 묻지 않은 권한이 하나라도 있으면 먼저 묻고(`ask`), 거부 · 제한이면 설정으로
+ * 보내고(`blocked`), 권한은 있는데 인식기가 없으면 `unsupported`입니다.
+ */
+export function speechReadinessOf(status: SpeechStatus): SpeechReadiness {
+  const permissions = [status.microphone, status.speechRecognition];
+  if (permissions.includes("not-determined")) return "ask";
+  if (permissions.some((state) => state !== "granted")) return "blocked";
+  return status.recognizerAvailable ? "ready" : "unsupported";
 }

@@ -25,6 +25,14 @@ export type RoleplayStoryModel = {
   readonly wildcards: readonly string[];
 };
 
+/** 에피소드 표지의 첫 그림(절대 URL)입니다 — 롤플레이 카드의 바탕. 없으면 `null`. */
+export function firstCoverImageOf(content: EpisodeContent, episodeId: string): string | null {
+  const entry = content.catalog.find((item) => item.id === episodeId);
+  if (entry === undefined || entry.status !== "ready") return null;
+  const path = entry.episode.prologue.find((cut) => cut.imageUrl !== undefined)?.imageUrl;
+  return path === undefined ? null : content.imageUrlOf(path);
+}
+
 /** 판정에서 뺄 낱말 — 채워 넣은 이름 · 나라(한국어 표기)입니다. */
 export function roleplayWildcardsOf(profile: LearnerProfile): readonly string[] {
   const country = typeof profile.country === "string" ? profile.country : profile.country?.ko;
@@ -94,6 +102,7 @@ export function catalogRoleplaySectionsOf(
             episodeId: section.episodeId,
             title: section.titleEn ?? section.title,
             lineCount: plan.turns.length,
+            imageUrl: firstCoverImageOf(content, section.episodeId),
           },
         ],
         premiumItems: [],

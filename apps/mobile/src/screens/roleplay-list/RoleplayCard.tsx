@@ -55,6 +55,15 @@ export function RoleplayCard({ item, locked, layout, onSelect }: RoleplayCardPro
           data-testid={`roleplay-list-item-pressed-shade-${item.unitId}`}
         />
       ) : null}
+      {item.form === "story" && item.imageUrl !== null ? (
+        <image
+          className="roleplay-card-image"
+          data-testid={`roleplay-list-item-image-${item.unitId}`}
+          src={item.imageUrl}
+          mode="aspectFill"
+          accessibility-element={false}
+        />
+      ) : null}
       <view className="roleplay-card-shade" />
       <view className="roleplay-card-text">
         <text

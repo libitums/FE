@@ -2,7 +2,12 @@ import { afterEach, expect, test, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import type { AnswerResult } from "../../lib/answer-result";
-import { audioFailed, recognized, stubSpeechHost } from "../../lib/speech-host.test-support";
+import {
+  audioFailed,
+  dictationOff,
+  recognized,
+  stubSpeechHost,
+} from "../../lib/speech-host.test-support";
 import type { CatalogRoleplayTurn } from "../catalog-final/catalog-final.contract";
 import { RoleplayPreviewScreen } from "./RoleplayPreviewScreen";
 import { RoleplayTalkScreen } from "./RoleplayTalkScreen";
@@ -115,7 +120,8 @@ test("[RT5] 인식 불가는 안내를 띄우고, 건너뛰기는 판정 없이 
   });
   const { onFinish } = mount();
   fireEvent.tap(id("roleplay-talk-mic"), {});
-  expect(id("roleplay-talk-unavailable")).toBeInTheDocument();
+  expect(id("roleplay-talk-unavailable")).toHaveAttribute("data-reason", "failed");
+  expect(id("roleplay-talk-unavailable")).toHaveTextContent("I didn't catch that.");
   fireEvent.tap(id("roleplay-talk-skip"), {});
   fireEvent.tap(id("roleplay-talk-mic"), {});
   expect(id("roleplay-talk-next")).toHaveTextContent("See results");
@@ -162,6 +168,8 @@ test("[RP1] 미리보기 — 에피소드 · Roleplay · 제목, 상대 · 대�
       imageUrl={null}
       onStart={onStart}
       onExit={() => {}}
+      speechNotice={null}
+      onSpeechNoticeAction={() => {}}
     />,
   );
   expect(id("roleplay-preview-title")).toHaveTextContent("Episode 1.");
@@ -174,4 +182,44 @@ test("[RP1] 미리보기 — 에피소드 · Roleplay · 제목, 상대 · 대�
   );
   tapButton("roleplay-preview-start");
   expect(onStart).toHaveBeenCalledTimes(1);
+});
+
+test("[RT8] 듣지 못한 까닭마다 안내가 다르다 — 받아쓰기 꺼짐 · 권한 거부", () => {
+  stubSpeechHost({ result: () => dictationOff });
+  mount();
+  fireEvent.tap(id("roleplay-talk-mic"), {});
+  expect(id("roleplay-talk-unavailable")).toHaveAttribute("data-reason", "dictation-off");
+  expect(id("roleplay-talk-unavailable")).toHaveTextContent("Enable Dictation");
+  cleanup();
+  stubSpeechHost({ microphone: "denied" });
+  mount();
+  fireEvent.tap(id("roleplay-talk-mic"), {});
+  expect(id("roleplay-talk-unavailable")).toHaveAttribute("data-reason", "blocked");
+  expect(id("roleplay-talk-unavailable")).toHaveTextContent(
+    "Allow Microphone and Speech Recognition",
+  );
+});
+
+test("[RP2] 권한이 거부되면 미리보기에 「Open Settings」 · 「Not now」 안내가 뜨고 고른 것을 알린다", () => {
+  const onAction = vi.fn<(action: string) => void>();
+  render(
+    <RoleplayPreviewScreen
+      insets={insets}
+      ordinal={1}
+      title="Buying Water"
+      counterpartName="편의점 점원"
+      lineCount={3}
+      imageUrl={null}
+      onStart={() => {}}
+      onExit={() => {}}
+      speechNotice="blocked"
+      onSpeechNoticeAction={onAction}
+    />,
+  );
+  const notice = id("roleplay-preview-speech-notice");
+  expect(notice).toHaveTextContent("Turn on the microphone");
+  expect(notice).toHaveTextContent("Open Settings");
+  expect(notice).toHaveTextContent("Not now");
+  fireEvent.tap(within(id("ui-lynx-dialog-action-settings")).getByTestId("ui-lynx-button"), {});
+  expect(onAction).toHaveBeenCalledWith("settings");
 });

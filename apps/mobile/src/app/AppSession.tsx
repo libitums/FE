@@ -38,7 +38,7 @@ import type {
 import { episodePrologueFor as productEpisodePrologueFor } from "./episode-prologues";
 import type { EpisodeFinalTest } from "../screens/episode-final/episode-final.contract";
 import { episodeFinalTestFor as productEpisodeFinalTestFor } from "../screens/episode-final/episode-final-tests";
-import { completedVisualNovelUnitIdsFrom, productJourneySeed } from "./journey-progress";
+import { productJourneySeed } from "./journey-progress";
 import { roleplaySectionsOf } from "./roleplay-sections";
 import type { AppJourneySeed } from "./journey-progress";
 import { catalogCompletionKeysOf, catalogMapSectionsOf } from "../screens/journey-map/catalog-map";
@@ -148,17 +148,9 @@ export function AppSession({
   // 낭독에서 빠집니다. 화면이 내려가면 화면이 스스로 `false`를 알립니다.
   const [screenLayerOpen, setScreenLayerOpen] = useState(false);
 
-  // 롤플레이 구획 — 튜토리얼 · 본편 에피소드, 진행에서 파생합니다(roleplay-sections.ts).
+  // 롤플레이 구획 — 본편 에피소드마다 하나, 진행에서 파생합니다(roleplay-sections.ts).
   const catalog = { episodeContent, catalogSections, catalogProgress };
   const roleplaySections = roleplaySectionsOf({
-    journey: {
-      completedStepCount,
-      completedEpisodeIntroIds,
-      completedMessengerUnitIds,
-      completedPhoneCallUnitIds,
-      completedVisualNovelUnitIds: completedVisualNovelUnitIdsFrom(visualNovelProgress),
-      completedEpisodeFinalIds,
-    },
     catalog,
     learnerFill: learner.learnerFill,
     episodeLabel: uiCopyFor(entryLanguage).catalogMap.episodeLabel,

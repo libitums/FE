@@ -303,23 +303,6 @@ test("[IB9] 설정 → 프로필에서 누르면 설정 루트, 여정 맵, 떠�
   ]);
 });
 
-test("[IB10] 롤플레이 메신저에서 누르면 롤플레이 목록으로 돌아온다 — 여정 맵이 아니다", async () => {
-  const host = stubBackHost();
-  await renderSignedInApp(
-    <App journeySeed={finishedTutorial} completedEpisodeIntroIds={completedIntros} />,
-  );
-  openTab("roleplay");
-  tap("roleplay-list-item-appointment-confirmation");
-  expect(screen.getByTestId("messenger-screen")).toBeInTheDocument();
-
-  const token = pressBack();
-
-  expectOneResponse(host, token, "handled");
-  expect(screen.getByTestId("roleplay-list-screen-title")).toBeInTheDocument();
-  expect(screen.queryByTestId("journey-map-screen")).not.toBeInTheDocument();
-  expect(isSelected("roleplay")).toBe(true);
-});
-
 test("[IB11] 설정의 로그아웃 확인이 열려 있으면 확인창만 닫히고 세션은 유지된다", async () => {
   const host = stubBackHost();
   await renderSignedInApp(

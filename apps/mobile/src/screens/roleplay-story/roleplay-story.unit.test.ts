@@ -7,6 +7,7 @@ import {
   judgeRoleplayReply,
   roleplayStoryCutsOf,
   roleplayTalkReducer,
+  speechReadinessOf,
 } from "./roleplay-story";
 
 const text = (ko: string) => ({ ko, en: null, roman: null });
@@ -83,7 +84,7 @@ test("[RS5] 틀리면 다시 말할 수 있고, 맞힌 뒤에는 다시 하기�
 test("[RS6] 건너뛰기는 판정 없이 넘기고 수만 센다 — 듣는 중에는 받지 않는다", () => {
   const listening = roleplayTalkReducer(initialRoleplayTalkState, { type: "start" });
   expect(roleplayTalkReducer(listening, { type: "skip" })).toBe(listening);
-  const unavailable = roleplayTalkReducer(listening, { type: "unavailable" });
+  const unavailable = roleplayTalkReducer(listening, { type: "unavailable", reason: "failed" });
   const skipped = roleplayTalkReducer(unavailable, { type: "skip" });
   expect(skipped).toMatchObject({ turnIndex: 1, results: [], skippedCount: 1 });
   expect(isRoleplayTalkDone(skipped, 1)).toBe(true);
@@ -105,4 +106,14 @@ test("[RS8] 표지 마지막 컷이 첫 턴 대사와 같으면 빼고, 다르�
   expect(roleplayStoryCutsOf(cuts, "봉투 드릴까요?")).toEqual([cuts[0]]);
   expect(roleplayStoryCutsOf(cuts, "삼천 원입니다.")).toEqual(cuts);
   expect(roleplayStoryCutsOf([line(1, "봉투 드릴까요?")], "봉투 드릴까요?")).toBeNull();
+});
+
+test("[RS10] 시작 전 말하기 준비 — 묻지 않음은 ask, 거부 · 제한은 blocked, 인식기 없음은 unsupported", () => {
+  const status = (microphone: string, speechRecognition: string, recognizerAvailable = true) =>
+    ({ microphone, speechRecognition, recognizerAvailable }) as never;
+  expect(speechReadinessOf(status("granted", "granted"))).toBe("ready");
+  expect(speechReadinessOf(status("not-determined", "granted"))).toBe("ask");
+  expect(speechReadinessOf(status("granted", "denied"))).toBe("blocked");
+  expect(speechReadinessOf(status("restricted", "granted"))).toBe("blocked");
+  expect(speechReadinessOf(status("granted", "granted", false))).toBe("unsupported");
 });

@@ -214,17 +214,6 @@ test("[II8] iOS · 메신저: 자판이 있는 동안 묶음 34px, 대화가 끝
   expect(shellPaddingBottom()).toBe("0px");
 });
 
-test("[II9] 3버튼 · 롤플레이 메신저: 셸 0px · 탭 바 없음 · 묶음 48px", async () => {
-  await bootMessenger(threeButton, finishedTutorial);
-  openTab("roleplay");
-  tap(`roleplay-list-item-${messengerUnitId}`);
-
-  expect(screen.getByTestId("messenger-screen")).toBeInTheDocument();
-  expect(hasNavigator()).toBe(false);
-  expect(shellPaddingBottom()).toBe("0px");
-  expect(rowsMargin()).toBe("48px");
-});
-
 test("[II10] 3버튼 · 메신저에서 시스템 뒤로 가면 맵에서 셸 48px와 바닥 면 48px가 돌아온다", async () => {
   await bootJourneyMessenger(threeButton);
   expect(shellPaddingBottom()).toBe("0px");
