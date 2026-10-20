@@ -386,10 +386,9 @@ test("[I3] 제목 축 닫힌 집합이 상태 roleplay-list에서 계약이 고�
   expect(screen.getByTestId("roleplay-list-screen-title")).toBeInTheDocument();
 
   // 화면 제목 뒤에 구획 머리가 에피소드마다 하나씩 섭니다. 롤플레이 항목이 있는
-  // 에피소드만 구획이 되고, 오늘은 튜토리얼과 내장 본편 셋입니다.
+  // 에피소드만 구획이 되고, 오늘은 내장 본편 셋입니다(튜토리얼 롤플레이는 2026-10-20에 뺐습니다).
   expect(headingAxis(container)).toEqual([
     "roleplay-list-screen-title",
-    "roleplay-list-section-header-tutorial",
     "roleplay-list-section-header-u01-water",
     "roleplay-list-section-header-u02-checkin",
     "roleplay-list-section-header-u03-mina",

@@ -381,35 +381,6 @@ test("[IG11] 새 사용자의 첫 단원: 기존 안내 넷이 전과 같이 뜨
 
 // ------------------------------------------------------------ IG12
 
-test("[IG12] 롤플레이 탭에서 연 메신저도 출처를 가리지 않고 한 번 뜨며 같은 키에 적힌다", async () => {
-  const finished: AppJourneySeed = {
-    completedStepCount: journeySteps.length,
-    completedMessengerUnitIds: ["appointment-confirmation"],
-    completedPhoneCallUnitIds: ["appointment-confirmation-phone-call"],
-    visualNovelProgress: { status: "completed", beatIndex: 2 },
-    completedEpisodeFinalIds: ["tutorial-final-test"],
-  };
-  const open = (): void => {
-    tap("ui-lynx-bottom-navigator-item-roleplay");
-    tap("roleplay-list-item-appointment-confirmation");
-  };
-
-  const seen = newStorage({ seen: ["messenger"] });
-  await boot(finished, seen);
-  open();
-  expect(screen.getByTestId("messenger-screen")).toBeInTheDocument();
-  expect(guideRoots()).toHaveLength(0);
-
-  cleanup();
-  vi.unstubAllGlobals();
-  const unseen = newStorage();
-  await boot(finished, unseen);
-  open();
-  expect(guide("messenger")).not.toBeNull();
-  dismiss("messenger");
-  expect(unseen.savedKinds()).toEqual(["messenger"]);
-});
-
 // ------------------------------------------------------------ IG13 · IG14
 
 test("[IG13] 헬퍼 기본값은 안내를 본 설치다 — 옵션 없이 연 greeting · 메신저에 안내가 없다", async () => {

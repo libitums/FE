@@ -155,24 +155,6 @@ test("I3. 완료가 아닌 이벤트(열기 · 중도 이탈 · 설정 · 알림
   expect(calls).toEqual([]);
 });
 
-test("I3. 롤플레이에서 연 메신저를 끝내도 trackEvent 0회이고 PostHog에는 completed가 실린다", async () => {
-  const calls = stubAirbridgeHost("ok");
-  const { transport, calls: sent } = fakeTransport();
-  await renderSignedInApp(
-    <App
-      {...assembleSinks(transport)}
-      journeySeed={finishedTutorial}
-      completedEpisodeIntroIds={completedIntros}
-    />,
-  );
-  tap("ui-lynx-bottom-navigator-item-roleplay");
-  tap(`roleplay-list-item-${messengerUnit}`);
-  answerMessengerReplies();
-
-  await vi.waitFor(() => expect(sentEventNames(sent)).toContain("messenger_unit_completed"));
-  expect(calls).toEqual([]);
-});
-
 test.each<AirbridgeHostMode>(["absent", "throws"])(
   "I4/I5. 호스트 모듈이 %s여도 흐름이 끝까지 가고 PostHog 전송이 유지되며 처리되지 않은 예외가 없다",
   async (mode) => {

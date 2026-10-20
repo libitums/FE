@@ -6,7 +6,7 @@
 
 | # | 절차 | 기대 |
 | --- | --- | --- |
-| ER1 | 롤플레이 탭을 연다 | 튜토리얼 구획 아래 `Episode 1. Buying Water.` · `Episode 2.` · `Episode 3.` 구획. 1편 카드는 열림(제목 `Buying Water` · `Roleplay · 3 lines`), 2 · 3편은 자물쇠 |
+| ER1 | 롤플레이 탭을 연다 | 튜토리얼 구획 · Plus 줄 없이 `Episode 1. Buying Water.` · `Episode 2.` · `Episode 3.` 구획. 카드마다 그 에피소드 표지의 첫 그림이 바탕에 깔린다. 1편 카드는 열림(제목 `Buying Water` · `Roleplay · 3 lines`), 2 · 3편은 그림 위 자물쇠 |
 | ER2 | 2편 카드를 누른다 | 아무 일도 없다 |
 | ER3 | 1편 카드를 누른다 | 미리보기 — 계산대 그림, `Episode 1.` · `Roleplay · Buying Water`, 알약 `with 편의점 점원` · `3 lines`, 안내 다이얼로그, `Start roleplay` |
 | ER4 | `Start roleplay` → 표지 컷을 넘긴다 | 표지 컷 다섯(「봉투 드릴까요?」 컷은 없다) 뒤 대화 — 점원 다이얼로그 「봉투 드릴까요?」 · `Line 1 / 3` · 소리 한 번 · 마이크 · `Show hint` · `Can't speak now`(배경 면 없음) |

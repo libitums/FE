@@ -101,29 +101,6 @@ test("[EFA2] 앞 항목을 모두 끝내면 열리고, 문항을 다 풀면 학�
   expect(finalUnit()).toHaveAttribute("data-status", "clear");
 });
 
-test("[EFA3] 최종 테스트를 끝내야 롤플레이 에피소드가 열린다", async () => {
-  await renderSignedInApp(
-    <App journeySeed={readyForFinal} completedEpisodeIntroIds={["tutorial-intro"]} />,
-  );
-
-  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
-  expect(screen.getByTestId("roleplay-list-section-tutorial")).toHaveAttribute(
-    "data-unlocked",
-    "false",
-  );
-
-  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
-  fireEvent.tap(finalUnit(), {});
-  solveAll();
-  tapButtonIn("lesson-complete-screen-exit");
-  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
-
-  expect(screen.getByTestId("roleplay-list-section-tutorial")).toHaveAttribute(
-    "data-unlocked",
-    "true",
-  );
-});
-
 test("[EFA4] 풀던 도중 뒤로 가면 맵으로 돌아가고 완료로 적지 않는다", async () => {
   await renderSignedInApp(
     <App journeySeed={readyForFinal} completedEpisodeIntroIds={["tutorial-intro"]} />,
@@ -176,23 +153,4 @@ test("[EFA5] 통화 형식의 최종 테스트는 통화 화면 위에서 풀고
   expect(screen.getByTestId("lesson-complete-screen")).toBeInTheDocument();
   tapButtonIn("lesson-complete-screen-exit");
   expect(finalUnit()).toHaveAttribute("data-status", "clear");
-});
-
-test("[EFA6] 통과해도 도착 이야기를 마치기 전에 나가면 해금하지 않는다", async () => {
-  await renderSignedInApp(
-    <App journeySeed={readyForFinal} completedEpisodeIntroIds={["tutorial-intro"]} />,
-  );
-  fireEvent.tap(finalUnit(), {});
-  solveAll(false);
-  expect(screen.queryByTestId("lesson-complete-screen")).toBeNull();
-  fireEvent.tap(
-    within(screen.getByTestId("episode-narrative-screen-back")).getByTestId("ui-lynx-round-button"),
-    {},
-  );
-  expect(finalUnit()).toHaveAttribute("data-status", "available");
-  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
-  expect(screen.getByTestId("roleplay-list-section-tutorial")).toHaveAttribute(
-    "data-unlocked",
-    "false",
-  );
 });
