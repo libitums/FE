@@ -3,7 +3,8 @@ import type { ScrollEvent } from "@lynx-js/types";
 
 import { useMotion } from "@libitums/ui-lynx/motion";
 import type { MapScrollTarget } from "./journey-map-next-unit";
-import { animateMapScroll, mapScrollDurationMs } from "./journey-map-scroll-animation";
+import { mapScrollDurationMs } from "./journey-map-scroll-animation";
+import type { MapGlider } from "./use-map-glide";
 import {
   headerCardId,
   measureRects,
@@ -34,6 +35,8 @@ export type AutoScrollToNextInput = {
   readonly blocked: boolean;
   /** 스택에 있던 맵으로 돌아와 마지막 자리에서 열렸습니다 — 이 마운트에서는 옮기지 않습니다. 값은 그 자리입니다. */
   readonly restoredScrollTop: number | null;
+  /** 부드러운 이동을 main thread에서 돌리는 손잡이입니다(`useMapGlide`). */
+  readonly glider: MapGlider;
 };
 
 export type AutoScrollToNextControls = {
@@ -58,6 +61,7 @@ export function useAutoScrollToNext({
   target,
   blocked,
   restoredScrollTop,
+  glider,
 }: AutoScrollToNextInput): AutoScrollToNextControls {
   const behavior = mapScrollBehaviorFor(useMotion());
   // 돌아온 맵은 손댄 것처럼 처음부터 잠급니다 — 기억한 자리에서 움직이지 않습니다.
@@ -68,21 +72,16 @@ export function useAutoScrollToNext({
   );
   // 스크롤 이벤트로 따라가는 지금 자리입니다 — 호스트에 「지금 자리」를 묻는 길이 없습니다.
   const scrollTop = useRef(restoredScrollTop ?? 0);
-  // 돌고 있는 부드러운 이동을 멈추는 함수입니다.
-  const stopAnimation = useRef<(() => void) | null>(null);
-  // 부드러우면 앱이 프레임마다 옮기고, 동작 줄이기면 한 번에 옮깁니다.
+  // 부드러우면 main thread가 프레임마다 옮기고, 동작 줄이기면 한 번에 옮깁니다.
   const moveTo = (offset: number, durationMs?: number): void => {
-    stopAnimation.current?.();
     if (behavior !== "smooth") {
       scrollMapTo(offset, "instant");
       return;
     }
-    // oxlint-disable-next-line react/immutability
-    stopAnimation.current = animateMapScroll(
+    glider.glide(
       scrollTop.current,
       offset,
       durationMs ?? mapScrollDurationMs(offset - scrollTop.current),
-      (next) => scrollMapTo(next, "instant"),
     );
   };
   // 대상 객체는 매 렌더 새로 만들어지므로 effect는 DOM id 문자열에 겁니다.
@@ -119,7 +118,7 @@ export function useAutoScrollToNext({
     return () => {
       // oxlint-disable-next-line react/immutability
       mounted.current = false;
-      stopAnimation.current?.();
+      glider.stop();
     };
   }, []);
 
@@ -217,7 +216,7 @@ export function useAutoScrollToNext({
 
   const handleTouchStart = (): void => {
     "background only";
-    stopAnimation.current?.();
+    glider.stop();
     dispatch({ type: "interact" });
     cancelCorrection();
   };

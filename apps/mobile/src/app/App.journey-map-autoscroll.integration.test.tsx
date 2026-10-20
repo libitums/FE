@@ -20,18 +20,17 @@ import { catalogUnitDomId } from "../screens/journey-map/catalog-map";
 import { mapUnitDomId } from "../screens/journey-map/journey-map-scroll";
 import { stubHost, type HostStub } from "../screens/journey-map/JourneyMapScreen.test-support";
 
-// 부드러운 이동은 앱이 프레임마다 옮기지만(`animateMapScroll`), 이 파일은 「어디로 부드럽게 갔나」만 봅니다 —
-// 대역이 끝 위치로 부드러운 `scrollTo` 한 번을 남깁니다. 프레임의 모양은 unit(`journey-map-scroll-animation`)이 집니다.
-vi.mock("../screens/journey-map/journey-map-scroll-animation", async (importOriginal) => {
-  const actual =
-    await importOriginal<typeof import("../screens/journey-map/journey-map-scroll-animation")>();
+// 부드러운 이동은 main thread가 프레임마다 옮기지만(`useMapGlide`), 이 파일은 「어디로 부드럽게 갔나」만 봅니다 —
+// 대역이 끝 위치로 부드러운 `scrollTo` 한 번을 남깁니다.
+vi.mock("../screens/journey-map/use-map-glide", async () => {
   const scroll = await import("../screens/journey-map/journey-map-scroll");
+  const react = await import("@lynx-js/react");
   return {
-    ...actual,
-    animateMapScroll: (_from: number, to: number) => {
-      scroll.scrollMapTo(to, "smooth");
-      return () => {};
-    },
+    useMapGlide: () => ({
+      scrollRef: react.useMainThreadRef(null),
+      glide: (_from: number, to: number) => scroll.scrollMapTo(to, "smooth"),
+      stop: () => {},
+    }),
   };
 });
 

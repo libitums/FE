@@ -16,6 +16,7 @@ import { mapTopLayout } from "./journey-map-insets";
 import { noCatalogMapSections } from "./catalog-map";
 import { mapScrollTargetOf } from "./journey-map-next-unit";
 import { useAutoScrollToNext } from "./useAutoScrollToNext";
+import { useMapGlide } from "./use-map-glide";
 import { rememberedMapScroll, rememberMapScroll } from "./journey-map-scroll-memory";
 import { useStepSheet } from "./useStepSheet";
 import { lightStatusBarIcons } from "../../lib/status-bar-icons";
@@ -93,6 +94,7 @@ export function JourneyMapScreen({
   const top = mapTopLayout(statusBarInset);
   // 이 실행에서 맵을 연 적이 있으면 그 자리에서 엽니다(마운트 때 한 번 읽습니다).
   const [restoredScrollTop] = useState(rememberedMapScroll);
+  const glider = useMapGlide();
   const {
     sheetState,
     sheetTop,
@@ -147,6 +149,7 @@ export function JourneyMapScreen({
     }),
     blocked: sheetOpen || guide.visible,
     restoredScrollTop,
+    glider,
   });
 
   // 스크롤 한 번에 둘이 답합니다 — 말풍선 자리 · 자동 스크롤의 잠금입니다. 인라인
@@ -200,6 +203,7 @@ export function JourneyMapScreen({
         data-testid="journey-map-screen-scroll"
         scroll-orientation="vertical"
         scroll-bar-enable={false}
+        main-thread:ref={glider.scrollRef}
         bindscroll={handleMapScroll}
         initial-scroll-offset={restoredScrollTop ?? undefined}
         enable-scroll={guide.visible ? false : undefined}
