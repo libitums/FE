@@ -7,6 +7,7 @@ import type { SentenceOrderQuestion } from "./sentence-order";
 import type { JourneyStepId } from "../journey-map/journey-map";
 import { UiCopyContext } from "../../lib/ui-copy";
 import { markedUiCopy } from "../../lib/ui-copy.test-support";
+import { expectCompleteScene, expectQuestionScene } from "../learning/complete-scene.test-support";
 
 // `ui` 계층: 컴포넌트 렌더와 상호작용 (ADR-0006 D4). 뼈대(상단 바 · 세션 헤더 · 지시문 ·
 // 무대 카드 · 아래 버튼 · 스크롤)는 `LearningShell`이 집니다 — 그 모양은
@@ -579,4 +580,14 @@ test("[FDU7] 튜토리얼 문장 순서는 기본값을 받는다 — 창고 칩
   tapAction("Check");
 
   expect(screen.getByTestId("answer-verdict")).toHaveAttribute("data-surface", "light");
+});
+
+// ACS-SO — 완료 장면: 무대가 완료 장면이고 내용 상자 안은 완료 카드 하나다. 문항 장면은 그대로다.
+test("[ACS-SO] 완료 때 무대가 완료 장면이고 내용 상자의 유일한 자식이 완료 카드이며 문항 장면에는 표시가 없다", () => {
+  renderOrdering();
+  expectQuestionScene();
+
+  completeAllQuestions();
+
+  expectCompleteScene("sentence-order-screen-content", "sentence-order-screen-complete");
 });
