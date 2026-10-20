@@ -116,10 +116,12 @@ export function TypingActivity({
           scrollCard
           card={
             <view className="typing-activity-content" data-testid="typing-activity-content">
-              {/* 판정 배지 자리입니다 — 비어 있어도 높이를 지켜 배지가 뜨고 질 때 카드가 흔들리지 않습니다. */}
-              <view className="typing-activity-verdict-slot">
-                {result === null ? null : <AnswerVerdict result={result} />}
-              </view>
+              {/* 판정 배지 자리입니다 — 문항 장면에서는 비어 있어도 높이를 지켜 배지가 뜨고 질 때 카드가 흔들리지 않습니다. */}
+              {complete ? null : (
+                <view className="typing-activity-verdict-slot">
+                  {result === null ? null : <AnswerVerdict result={result} />}
+                </view>
+              )}
 
               {question == null ? (
                 <LearningActivityComplete

@@ -195,10 +195,12 @@ export function SentenceOrderActivity({
             className="sentence-order-screen-content"
             data-testid="sentence-order-screen-content"
           >
-            {/* 판정 배지 자리 — 비어 있어도 자리를 지켜 카드 높이가 흔들리지 않습니다(듣기와 같음). */}
-            <view className="sentence-order-screen-verdict-slot">
-              {result === null ? null : <AnswerVerdict result={result} />}
-            </view>
+            {/* 판정 배지 자리 — 문항 장면에서는 비어 있어도 자리를 지켜 카드 높이가 흔들리지 않습니다(듣기와 같음). */}
+            {complete ? null : (
+              <view className="sentence-order-screen-verdict-slot">
+                {result === null ? null : <AnswerVerdict result={result} />}
+              </view>
+            )}
 
             {question == null ? (
               <LearningActivityComplete

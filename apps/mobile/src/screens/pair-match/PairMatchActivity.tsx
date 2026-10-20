@@ -159,26 +159,28 @@ export function PairMatchActivity({
           data-testid="pair-match-content"
           data-phase={state.phase}
         >
-          {/* 판정 자리입니다 — 맺는 동안은 진행 표식이, 확인 뒤에는 판정 배지가 섭니다. 비어 있어도 높이를
+          {/* 판정 자리입니다 — 맺는 동안은 진행 표식이, 확인 뒤에는 판정 배지가 섭니다. 문항 장면에서는 비어 있어도 높이를
               지켜 배지가 뜨고 질 때 카드가 흔들리지 않습니다. */}
-          <view className="pair-match-activity-verdict-slot">
-            {question == null ? null : result === null ? (
-              <view className="pair-match-activity-progress">
-                <text
-                  className="pair-match-activity-progress-text"
-                  data-testid="pair-match-progress"
-                  accessibility-label={copy.pairMatch.progressLabel(
-                    state.links.length,
-                    question.words.length,
-                  )}
-                >
-                  {copy.pairMatch.progress(state.links.length, question.words.length)}
-                </text>
-              </view>
-            ) : (
-              <AnswerVerdict result={result} />
-            )}
-          </view>
+          {complete ? null : (
+            <view className="pair-match-activity-verdict-slot">
+              {question == null ? null : result === null ? (
+                <view className="pair-match-activity-progress">
+                  <text
+                    className="pair-match-activity-progress-text"
+                    data-testid="pair-match-progress"
+                    accessibility-label={copy.pairMatch.progressLabel(
+                      state.links.length,
+                      question.words.length,
+                    )}
+                  >
+                    {copy.pairMatch.progress(state.links.length, question.words.length)}
+                  </text>
+                </view>
+              ) : (
+                <AnswerVerdict result={result} />
+              )}
+            </view>
+          )}
 
           {question == null ? (
             <LearningActivityComplete
