@@ -184,6 +184,10 @@ Section 3의 Supabase 행에 「learner profile (name and country you enter)」�
 
   > The copy of your learning progress on your device is kept until you delete your account or uninstall the App.
 
+⟨2026-10-20 — 학습 티켓([ADR-0075](adr/0075-learning-tickets.md))⟩ 진행 스냅숏에 선택 필드 `tickets`(충전이 끝나는 시각 · 무료로 받은 시간의 합 · 마지막으로 받은 날짜)가 더해졌다.
+새 저장 키는 없고 위 표의 두 키(저장본 · 미전송)와 서버 `learning_progress.progress` 안에 산다 — 보존 · 삭제도 그대로다. 식별 정보가 아니고 App Store 신고 항목은 바뀌지 않는다.
+새 PostHog 이벤트 둘(`tickets_ran_out` · `ticket_more_tapped`)은 화면 자리와 불리언만 싣는다.
+
 ## 배포 산출물 확인
 
 1. `pnpm bundle:host`로 production 번들을 준비합니다.

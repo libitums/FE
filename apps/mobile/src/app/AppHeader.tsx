@@ -6,6 +6,8 @@ import type { FeedbackRating } from "../lib/feedback.contract";
 import type { StatBumpWiring } from "./learning-progress";
 import { EpisodeSurveySheet } from "../screens/episode-survey/EpisodeSurveySheet";
 import { JourneyStatModal } from "../screens/journey-map/JourneyStatModal";
+import { TicketStatModal } from "../screens/tickets/TicketStatModal";
+import type { TicketHeaderWiring } from "./use-learning-tickets";
 import {
   streakTrack,
   trophyTrack,
@@ -19,7 +21,7 @@ import {
 // `Nav`가 관여하지 않습니다(ADR-0007 D3). 전에는 여정 맵이 지표 모달을 소유했는데,
 // 머리가 셸로 올라오면서 모달도 함께 올라왔습니다.
 
-type AppHeaderLayer = JourneyStatKind | "survey";
+type AppHeaderLayer = JourneyStatKind | "survey" | "tickets";
 
 export type AppHeaderProps = {
   readonly streakDays: number;
@@ -60,6 +62,8 @@ export type AppHeaderProps = {
    * (`celebrateStreak`) 그 모달을 닫은 뒤입니다. 모달이 「4 day streak」을 말하고, 닫으면 칩이 3 → 4로 오릅니다.
    */
   readonly statBump?: StatBumpWiring;
+  /** 학습 티켓 칩과 그 모달(시안 E1)입니다. 없으면 칩을 그리지 않습니다. */
+  readonly tickets?: TicketHeaderWiring;
 };
 
 export function AppHeader({
@@ -75,9 +79,18 @@ export function AppHeader({
   onAnswerEpisodeSurvey,
   onSkipEpisodeSurvey,
   statBump,
+  tickets,
 }: AppHeaderProps): ReactNode {
   const [openLayer, setOpenLayer] = useState<AppHeaderLayer | null>(null);
   const close = () => setOpenLayer(null);
+  const ticketModalOpen = openLayer === "tickets";
+  // 티켓 모달이 떠 있는 동안 1초마다 다시 그리도록 알립니다(카운트다운). 닫히거나 머리가 내려가면 거둡니다.
+  useEffect(() => {
+    if (!ticketModalOpen) return;
+    tickets?.onModalChange(true);
+    return () => tickets?.onModalChange(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ticketModalOpen]);
 
   // 다른 레이어가 떠 있거나 화면 쪽 레이어가 덮고 있으면 기다립니다 — 겹쳐 띄우지 않습니다.
   useEffect(() => {
@@ -109,6 +122,8 @@ export function AppHeader({
           onOpenNotifications={onOpenNotifications}
           onOpenStreak={() => setOpenLayer("streak")}
           onOpenTrophy={() => setOpenLayer("trophy")}
+          ticketCount={tickets?.status.available ?? null}
+          onOpenTickets={() => setOpenLayer("tickets")}
           bumps={statBump?.statBumps}
           bumpHeld={openLayer !== null || obscured || celebrateStreak}
           onBumped={statBump?.onStatBumped}
@@ -123,6 +138,14 @@ export function AppHeader({
               ? streakTrack(streakDays, todayWeekday ?? new Date().getDay())
               : trophyTrack(trophyCount ?? 0)
           }
+          onClose={close}
+        />
+      ) : null}
+      {ticketModalOpen && tickets !== undefined ? (
+        <TicketStatModal
+          status={tickets.status}
+          more={tickets.more}
+          onGetMore={tickets.onGetMore}
           onClose={close}
         />
       ) : null}

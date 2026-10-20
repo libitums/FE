@@ -56,6 +56,10 @@ import { useProgressLoadEvents } from "./use-progress-load-events";
 import { useLearnerProfile } from "./use-learner-profile";
 import { useCatalogFinishGuard } from "./catalog-finish-guard";
 import { episodeSurveyWiring } from "./episode-survey-wiring";
+import { firstUnitGuideEnabled } from "./first-unit-guide-enabled";
+import { OutOfTicketsDialog } from "../screens/tickets/OutOfTicketsDialog";
+import { withLearningTickets } from "./ticket-wiring";
+import { useLearningTickets } from "./use-learning-tickets";
 import type { AppProps } from "./app-props";
 import type { AppSessionControl } from "./leave-app.contract";
 
@@ -110,6 +114,7 @@ export function AppSession({
   );
   useProgressLoadEvents(progress.progressLoadPhase, episodeIntroEventSink);
   const learner = useLearnerProfile();
+  const tickets = useLearningTickets(progress.tickets, progress.setTickets, episodeIntroEventSink);
   const {
     completedStepCount,
     setCompletedStepCount,
@@ -161,7 +166,7 @@ export function AppSession({
   const globalProps = useGlobalProps();
   const insets = safeAreaInsetsFrom(globalProps);
   const tappableBottom = tappableBottomInsetFrom(globalProps);
-  const wiring = screenWiring({
+  const screens = screenWiring({
     safeAreaInsets: insets,
     gemCount,
     phoneSignIn,
@@ -208,6 +213,7 @@ export function AppSession({
     ...learner,
     finishGuard,
   });
+  const wiring = withLearningTickets(screens, tickets, progress, catalogSections);
 
   // 셸이 가장자리 여백을 잡고 배경을 칠합니다(자판 화면은 위만 — shell-edges.ts). 스플래시만 브랜드색.
   // 아래쪽만 예외입니다 — 바가 서면 셸은 터치를 가로채는 시스템 바만큼(`tappableBottomInset`,
@@ -231,18 +237,7 @@ export function AppSession({
 
   return (
     <UiCopyContext.Provider value={uiCopyFor(entryLanguage)}>
-      <FirstUnitGuideProvider
-        enabled={
-          progress.hasLoadedProgress &&
-          completedStepCount === 0 &&
-          completedEpisodeIntroIds.length === 0 &&
-          completedMessengerUnitIds.length === 0 &&
-          completedPhoneCallUnitIds.length === 0 &&
-          completedEpisodeFinalIds.length === 0 &&
-          visualNovelProgress.status === "active" &&
-          visualNovelProgress.beatIndex === 0
-        }
-      >
+      <FirstUnitGuideProvider enabled={firstUnitGuideEnabled(progress)}>
         <ErrorBoundary>
           <view
             className={
@@ -267,6 +262,7 @@ export function AppSession({
                   celebrateStreak={progress.streakCelebration}
                   onStreakCelebrated={progress.onStreakCelebrated}
                   statBump={progress.wiring}
+                  tickets={tickets.header}
                   episodeSurvey={progress.episodeSurvey}
                   {...episodeSurveyWiring({
                     episodeIntroEventSink,
@@ -292,6 +288,10 @@ export function AppSession({
                 }}
               />
             ) : null}
+            {/* 티켓 없이 새 레슨을 열려 하면 어느 화면 위에서든 가운데 대화상자가 뜹니다(시안 E6m). */}
+            {tickets.outOfTickets === null ? null : (
+              <OutOfTicketsDialog {...tickets.outOfTickets} />
+            )}
           </view>
         </ErrorBoundary>
       </FirstUnitGuideProvider>

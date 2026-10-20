@@ -66,3 +66,7 @@
 .stat-chip-value-diamond {
   color: #00c3ff;
 }
+
+.stat-chip-value-ticket {
+  color: var(--libitum-color-brand-secondary);
+}

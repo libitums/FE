@@ -278,3 +278,50 @@ test.each([
     expect(await load(writerA)).toEqual({ ...first, catalogProgress: { a: ["intro"] } });
   },
 );
+
+const ticketsA = { refillAtMs: 1_800_003_600_000, grantedMs: 0, grantDay: "" };
+const ticketsB = { refillAtMs: 1_800_000_000_000, grantedMs: 3_600_000, grantDay: "2027-01-15" };
+
+test("T1 학습 티켓 원장을 처음 저장하면 그대로 읽힌다", async () => {
+  await save(writerA, { ...empty, tickets: ticketsA });
+  expect(await load(writerB)).toEqual({ ...empty, tickets: ticketsA });
+});
+
+test("T2 두 원장은 필드마다 큰 값으로 합쳐진다(grantDay는 사전순) — 순서를 바꿔도 같다", async () => {
+  const expected = { refillAtMs: 1_800_003_600_000, grantedMs: 3_600_000, grantDay: "2027-01-15" };
+  await save(writerA, { ...empty, tickets: ticketsA });
+  await save(writerB, { ...empty, tickets: ticketsB });
+  expect(await load(writerA)).toEqual({ ...empty, tickets: expected });
+  await db.admin.query("truncate public.learning_progress");
+  await save(writerA, { ...empty, tickets: ticketsB });
+  await save(writerB, { ...empty, tickets: ticketsA });
+  expect(await load(writerA)).toEqual({ ...empty, tickets: expected });
+});
+
+test("T3 원장이 없는 저장(옛 앱 · 가득)은 저장된 원장을 지우지 않는다", async () => {
+  await save(writerA, { ...empty, tickets: ticketsA });
+  await save(writerB, first);
+  expect(await load(writerA)).toEqual({ ...first, tickets: ticketsA });
+});
+
+test("T4 양쪽 모두 원장이 없으면 결과에도 키가 없다", async () => {
+  await save(writerA, first);
+  await save(writerB, second);
+  expect(await load(writerA)).not.toHaveProperty("tickets");
+});
+
+test.each([
+  ["객체가 아님", "x"],
+  ["음수", { refillAtMs: -1, grantedMs: 0, grantDay: "" }],
+  ["소수", { refillAtMs: 1.5, grantedMs: 0, grantDay: "" }],
+  ["문자열 숫자", { refillAtMs: "1", grantedMs: 0, grantDay: "" }],
+  ["필드 없음", { refillAtMs: 1, grantDay: "" }],
+  ["날짜 모양이 아님", { refillAtMs: 1, grantedMs: 0, grantDay: "어제" }],
+] as const)("T5 잘못된 원장(%s)은 22023으로 거절하고 기존 진행을 보존한다", async (_name, bad) => {
+  await save(writerA, { ...first, tickets: ticketsA });
+  await expect(save(writerB, { ...empty, tickets: bad })).rejects.toMatchObject({
+    code: "22023",
+    message: "invalid learning tickets",
+  });
+  expect(await load(writerA)).toEqual({ ...first, tickets: ticketsA });
+});

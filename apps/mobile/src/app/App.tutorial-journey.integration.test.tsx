@@ -13,11 +13,18 @@ import { getPhoneCallConversation } from "../screens/phone-call/phone-call";
 import { episodeFinalTestFor } from "../screens/episode-final/episode-final-tests";
 import { episodeFinalAdvanceDelayMs } from "../screens/episode-final/episode-final";
 import { mapUnitTestId } from "./test-helpers/map-unit-testid";
+import { ticketRefillMs } from "../lib/learning-tickets";
 
 const tap = (id: string) => fireEvent.tap(screen.getByTestId(id), {});
 const button = (id: string) =>
   fireEvent.tap(within(screen.getByTestId(id)).getByTestId("ui-lynx-button"), {});
 const unit = (id: string) => mapUnitTestId(id);
+// 새 레슨마다 학습 티켓을 한 장 씁니다(최대 3장 · 1시간에 1장). 이 여정은 레슨을 셋보다 많이 이어 가므로 시작
+// 직전에 시계를 세 시간 넘겨 티켓을 가득 채웁니다 — 티켓 규칙 자체는 `App.learning-tickets`가 봅니다.
+const startStep = () => {
+  vi.setSystemTime(Date.now() + 3 * ticketRefillMs);
+  tap("step-sheet-start");
+};
 
 function dismissFirstUnitGuide(): void {
   for (const kind of ["story", "messenger", "call"]) {
@@ -136,7 +143,7 @@ test("처음 여정부터 이야기·여덟 연습·스페셜·세 문항 복습
   function completeStep(id: (typeof journeySteps)[number]["id"]) {
     expect(screen.getByTestId(unit(id))).toHaveAttribute("data-status", "active");
     tap(unit(id));
-    tap("step-sheet-start");
+    startStep();
     const question = sentenceOrderQuestionsForStep(id)[0]!;
     for (const index of question.answerOrder) tap(`sentence-order-chip-${index}`);
     tap("learning-shell-action");
@@ -225,7 +232,7 @@ test("처음 여정부터 이야기·여덟 연습·스페셜·세 문항 복습
   completeStep("directions");
   expect(screen.getByTestId(unit("tutorial-final-test"))).toHaveAttribute("data-status", "default");
   tap(unit("tutorial-listening"));
-  tap("step-sheet-start");
+  startStep();
   tap("listening-choice-0");
   tap("learning-shell-advance");
   tap("learning-shell-action");
@@ -234,7 +241,7 @@ test("처음 여정부터 이야기·여덟 연습·스페셜·세 문항 복습
   // 말하기는 `Skip`으로 넘긴다. ⟨2026-10-19⟩ 쓰기에는 `Skip`이 없다 — 따라 쓰고 `Check`로 판정받는다(정답).
   for (const id of ["tutorial-speaking", "tutorial-writing"]) {
     tap(unit(id));
-    tap("step-sheet-start");
+    startStep();
     if (id === "tutorial-speaking") {
       button("speaking-screen-skip");
     } else {
