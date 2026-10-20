@@ -68,6 +68,7 @@ function contentOf(catalog: readonly CatalogEntry[]): EpisodeContent {
     catalog,
     imageUrlOf: (path) => `https://cdn/${path}`,
     fillText: fillPlaceholders,
+    audioTimingOf: () => null,
   };
 }
 

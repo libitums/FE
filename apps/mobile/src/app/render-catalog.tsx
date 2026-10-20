@@ -243,6 +243,8 @@ export function renderCatalogFlow(screen: CatalogFlowScreen, wiring: ScreenWirin
           verdict={verdict}
           streakDays={wiring.streakDays}
           trophyCount={wiring.trophyCount}
+          statBumps={wiring.statBumps}
+          onStatBumped={wiring.onStatBumped}
           reward={lessonRewardPlaceholder}
           ticketsLeft={wiring.ticketsLeft}
           onExit={() => wiring.onExitCatalogUnitComplete(episodeId, unitKey, verdict)}

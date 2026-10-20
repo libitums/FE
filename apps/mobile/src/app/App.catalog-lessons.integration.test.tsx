@@ -726,6 +726,19 @@ test("L6. (AC6) 최종 테스트: 턴을 타일로 맞히면 결과 → 통과 �
   ]);
 });
 
+test("L6c. 최종 테스트 통과 결과 화면에서 트로피 칩이 오름을 재생한다(튜토리얼 결과 화면과 같은 연결)", async () => {
+  await boot({ progress: throughS9 });
+  const plan = finalPlan(u01, 1);
+
+  tapNode(u01, "RP");
+  solveFinal(plan.turns, true);
+  expect(title()).toHaveTextContent("PERFECT LESSON!");
+
+  await vi.waitFor(() =>
+    expect(screen.getByTestId("lesson-complete-screen-trophy-roll")).toBeInTheDocument(),
+  );
+});
+
 test("L6b. 최종 테스트를 전부 틀리면 통과 뒤 컷 없이 Try again이 서고 기록 · final_passed가 없다", async () => {
   const { rpcs, events } = await boot({ progress: throughS9 });
   const plan = finalPlan(u01, 1);

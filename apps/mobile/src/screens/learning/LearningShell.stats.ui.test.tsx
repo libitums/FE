@@ -2,13 +2,13 @@ import { afterEach, expect, test } from "vitest";
 import { cleanup, render, screen } from "@lynx-js/react/testing-library";
 
 import { LearningShell } from "./LearningShell";
-import { LearningStatsContext } from "./LearningTopBar";
 
-// `ui` 계층: 학습 화면 머리 칩이 앱이 공급한 연속 학습 · 트로피를 보이는지만 봅니다.
+// `ui` 계층: 학습 중에는 상단 줄(연속 학습 · 트로피 칩 · 알림 버튼)이 서지 않는다 — 칩은 결과
+// 화면(PERFECT LESSON 등)에서 다시 선다. 머리에는 세션 헤더(`×` · 진행)만 남는다.
 afterEach(cleanup);
 
-function shell(overrides: Partial<Parameters<typeof LearningShell>[0]> = {}) {
-  return (
+test("학습 껍데기에는 연속 학습 · 트로피 칩과 알림 버튼이 없다", () => {
+  render(
     <LearningShell
       form="listening"
       questionIndex={0}
@@ -18,36 +18,11 @@ function shell(overrides: Partial<Parameters<typeof LearningShell>[0]> = {}) {
       card={<text>카드 안</text>}
       actionLabel="Check"
       onAction={() => {}}
-      {...overrides}
-    />
-  );
-}
-
-test("공급된 연속 학습 · 트로피가 머리 칩에 선다", () => {
-  render(
-    <LearningStatsContext.Provider value={{ streakDays: 5, trophyCount: 2 }}>
-      {shell()}
-    </LearningStatsContext.Provider>,
+    />,
   );
 
-  expect(screen.getByTestId("top-bar-streak")).toHaveTextContent("5");
-  expect(screen.getByTestId("top-bar-trophy")).toHaveTextContent("2");
-});
-
-test("prop으로 준 값이 공급된 값보다 먼저다", () => {
-  render(
-    <LearningStatsContext.Provider value={{ streakDays: 5, trophyCount: 2 }}>
-      {shell({ streakDays: 9, trophyCount: 7 })}
-    </LearningStatsContext.Provider>,
-  );
-
-  expect(screen.getByTestId("top-bar-streak")).toHaveTextContent("9");
-  expect(screen.getByTestId("top-bar-trophy")).toHaveTextContent("7");
-});
-
-test("공급이 없으면 0이다", () => {
-  render(shell());
-
-  expect(screen.getByTestId("top-bar-streak")).toHaveTextContent("0");
-  expect(screen.getByTestId("top-bar-trophy")).toHaveTextContent("0");
+  expect(screen.queryByTestId("top-bar-streak")).toBeNull();
+  expect(screen.queryByTestId("top-bar-trophy")).toBeNull();
+  expect(screen.queryByTestId("top-bar-notifications")).toBeNull();
+  expect(screen.getByTestId("learning-shell")).toBeInTheDocument();
 });

@@ -526,10 +526,8 @@ test("응답 전 조작 단위가 나가기 + 보기 넷이다", () => {
     el.getAttribute("data-testid"),
   );
 
-  // 상단 바의 알림 버튼이 껍데기와 함께 딸려 옵니다 — 화면의 것이 아니지만 조작
-  // 단위의 순서는 화면 전체에서 세므로 여기 셉니다.
+  // 학습 중에는 상단 바(알림 버튼)가 서지 않으므로 나가기가 첫 조작 단위입니다.
   expect(tappables).toEqual([
-    "top-bar-notifications",
     "learning-shell-exit",
     "word-choice-option-0",
     "word-choice-option-1",
@@ -548,7 +546,6 @@ test("응답 뒤 조작 단위가 나가기 + 보기 넷 + 넘김 층이다", ()
   );
 
   expect(tappables).toEqual([
-    "top-bar-notifications",
     "learning-shell-exit",
     "word-choice-option-0",
     "word-choice-option-1",
@@ -567,11 +564,7 @@ test("완료 상태의 조작 단위가 나가기와 결과 보기다", () => {
     el.getAttribute("data-testid"),
   );
 
-  expect(tappables).toEqual([
-    "top-bar-notifications",
-    "learning-shell-exit",
-    "learning-shell-action",
-  ]);
+  expect(tappables).toEqual(["learning-shell-exit", "learning-shell-action"]);
 });
 
 // ---------------------------------------------------------------- 스크롤 영역

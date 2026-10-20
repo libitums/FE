@@ -5,7 +5,6 @@ import { useMotion } from "@libitums/ui-lynx/motion";
 import { Dialog } from "@libitums/ui-lynx/dialog";
 import { LearningShellActions } from "./LearningShellActions";
 import { LearningShellBody } from "./LearningShellBody";
-import { LearningTopBar } from "./LearningTopBar";
 import { useLearningShellFlow } from "./use-learning-shell-flow";
 import { useQuestionTransition } from "./use-question-transition";
 import {
@@ -51,9 +50,6 @@ export function LearningShell({
   onAction,
   actionSound = "button",
   advance,
-  streakDays,
-  trophyCount,
-  onOpenNotifications = () => {},
   obscured,
   runProgress,
   actionButton,
@@ -164,11 +160,6 @@ export function LearningShell({
       // 이 화면이 서는 한 바퀴를 SDK가 재게 하는 표식입니다 — 값과 근거는 계약이 집니다.
       __lynx_timing_flag={learningTimingFlag(form)}
     >
-      <LearningTopBar
-        streakDays={streakDays}
-        trophyCount={trophyCount}
-        onOpenNotifications={onOpenNotifications}
-      />
       <LearningShellHeader
         form={form}
         questionIndex={questionIndex}

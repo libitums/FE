@@ -85,8 +85,15 @@
   padding: 0 var(--libitum-layout-screen-padding-x) var(--libitum-spacing-12);
 }
 
-/* 답안 판 — 흰 면에 위 두 모서리만 둥글고 그림자가 섭니다(자판 판과 같은 갈래). 판 안쪽은 스크롤하고
-   버튼은 그 밖에 붙어 큰 글꼴에서도 밀려나지 않습니다. */
+/* 번역 줄은 밝은 그림 위 반투명 패널에서 기본 gray-700이 모자라 한 단 밝힙니다(비주얼 노벨 대사와 같은
+   덮어쓰기). */
+.catalog-final-screen-line .ui-lynx-visual-novel-dialog-translation {
+  color: var(--libitum-color-gray-600);
+}
+
+/* 답안 판 — 어두운 반투명 면이고 위 두 모서리만 둥글게 둡니다. 면은 gray-950 × opacity-surface이고 알파 색
+   토큰이 없어 rgba로 적습니다(ADR-0014). 그림자는 없습니다. 판 안쪽은 스크롤하고 버튼은 그 밖에 붙어
+   큰 글꼴에서도 밀려나지 않습니다. */
 .catalog-final-screen-panel {
   flex-shrink: 0;
   display: flex;
@@ -98,8 +105,7 @@
   padding-bottom: var(--libitum-layout-screen-padding-bottom);
   border-top-left-radius: var(--libitum-radius-xl);
   border-top-right-radius: var(--libitum-radius-xl);
-  background: var(--libitum-color-white);
-  box-shadow: var(--libitum-elevation-shadow-s3);
+  background-color: rgba(26, 28, 32, 0.9);
 }
 
 .catalog-final-screen-panel-scroll {
@@ -116,7 +122,7 @@
 
 /* 지시문 — 대답을 어떻게 만드는지 한 줄입니다. */
 .catalog-final-screen-instruction {
-  color: var(--libitum-color-fg-neutral-muted);
+  color: var(--libitum-color-gray-400);
   text-align: center;
   font-family: var(--libitum-typography-label-l-font-family);
   font-weight: var(--libitum-typography-label-l-font-weight);
@@ -136,14 +142,14 @@
   gap: var(--libitum-spacing-8);
   min-height: calc(var(--libitum-spacing-48) + var(--libitum-spacing-12));
   padding: var(--libitum-spacing-6) var(--libitum-spacing-16);
-  border-top: var(--libitum-stroke-width-thin) solid var(--libitum-color-gray-100);
-  border-bottom: var(--libitum-stroke-width-thin) solid var(--libitum-color-gray-100);
+  border-top: var(--libitum-stroke-width-thin) solid rgba(255, 255, 255, 0.16);
+  border-bottom: var(--libitum-stroke-width-thin) solid rgba(255, 255, 255, 0.16);
   flex-shrink: 0;
 }
 
 /* 내 대답의 뜻 힌트 — 지시문과 같은 한 단 뒤의 색입니다. */
 .catalog-final-screen-hint {
-  color: var(--libitum-color-fg-neutral-muted);
+  color: var(--libitum-color-gray-600);
   text-align: center;
   font-family: var(--libitum-typography-body-m-font-family);
   font-weight: var(--libitum-typography-body-m-font-weight);

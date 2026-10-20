@@ -34,6 +34,7 @@ const content: EpisodeContent = {
   catalog: realCatalog,
   imageUrlOf: (path) => `https://cdn/${path}`,
   fillText: fillPlaceholders,
+  audioTimingOf: () => null,
 };
 
 // 최종 테스트(RP)까지 끝나야 다음 에피소드의 표지가 열립니다.
