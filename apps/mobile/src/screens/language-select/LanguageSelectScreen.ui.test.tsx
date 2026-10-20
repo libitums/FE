@@ -20,6 +20,15 @@ function option(language: string): HTMLElement {
 }
 
 describe("LanguageSelectScreen", () => {
+  it("[LS-U0] 머리에 가입 직후 세 화면의 마지막 칸(3/3) 진행 막대가 선다", () => {
+    render(<LanguageSelectScreen selected="en" onSelect={vi.fn()} onContinue={vi.fn()} />);
+
+    const bar = within(screen.getByTestId("language-select-screen-header")).getByTestId(
+      "entry-step-bar",
+    );
+    expect(bar).toHaveAttribute("accessibility-label", "Step 3 of 3");
+  });
+
   it("[LS-U1] 제목 · 안내가 서고 언어 넷이 어휘 순서로 선다", () => {
     const { container } = render(
       <LanguageSelectScreen selected="en" onSelect={vi.fn()} onContinue={vi.fn()} />,

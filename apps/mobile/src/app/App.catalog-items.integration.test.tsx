@@ -287,8 +287,6 @@ const tapNode = (episodeId: string, key: string): void => {
   const start = screen.queryByTestId("step-sheet-start");
   if (start !== null) fireEvent.tap(start, {});
 };
-// u02 · u03은 이름 · 나라가 드는 에피소드라 기록이 없으면 첫 유닛 앞에 가드 화면이 섭니다 - 건너뛰면 기본 문구로 이어집니다.
-const skipProfileGate = (): void => tapButtonIn("learner-profile-gate-skip");
 const status = (episodeId: string, key: string) => node(episodeId, key).getAttribute("data-status");
 const exitResult = () => tapButtonIn("lesson-complete-screen-exit");
 const title = () => screen.getByTestId("lesson-complete-screen-title");
@@ -360,8 +358,9 @@ function typeAnswer(question: TypingQuestion): void {
 }
 
 /** 카드는 문항 수만큼 버튼을 누릅니다 — 마지막 카드의 버튼이 곧 다음 걸음이라 완료 카드가 없습니다. */
+// ⟨2026-10-19⟩ 카드의 버튼은 껍데기의 기본 버튼이 아니라 `Got it`(ui-lynx `Button`)입니다(ADR-0073).
 function flipCards(count: number): void {
-  for (let index = 0; index < count; index += 1) action();
+  for (let index = 0; index < count; index += 1) tapButtonIn("vocab-card-got-it");
 }
 
 /** 짝 하나를 잇습니다 — 틀릴 때는 모든 낱말을 뜻 한 칸씩 밀어 잇습니다. */
@@ -461,13 +460,15 @@ test("I1. (AC1 · 2) S1: 카드 셋(결과 없음) → 단어 선택 셋 → 결
   tapNode(u01, "S1");
   expect(screen.getByTestId("vocab-card-content")).toBeInTheDocument();
   expect(screen.getByTestId("vocab-card-word")).toHaveTextContent("물");
-  expect(chapter()).toHaveTextContent("Lesson 1 / 6");
+  // 카드 구간은 레슨 카운터 대신 카드 진행 헤더입니다(ADR-0073).
+  expect(screen.queryByTestId("learning-shell-chapter")).not.toBeInTheDocument();
+  expect(screen.getByTestId("learning-run-header-caption")).toHaveTextContent("Word 1 of 3");
   flipCards(3);
 
-  // 카드를 넘기면 완료 카드도 결과 화면도 없이 곧바로 단어 선택이다.
+  // 카드를 넘기면 완료 카드도 결과 화면도 없이 곧바로 단어 선택이고, 카운터는 카드를 뺀 3에서 1부터다.
   expect(screen.queryByTestId("lesson-complete-screen")).not.toBeInTheDocument();
   expect(screen.getByTestId("word-choice-screen-content")).toBeInTheDocument();
-  expect(chapter()).toHaveTextContent("Lesson 4 / 6");
+  expect(chapter()).toHaveTextContent("Lesson 1 / 3");
   solveActivity(wordChoiceAt(plan, 1), true, true);
   expect(title()).toHaveTextContent("PERFECT LESSON!");
   exitResult();
@@ -549,7 +550,6 @@ test("I3. (AC3) u03 S9: 짝 맞추기가 단어 선택 · 받아쓰기 사이에
   expect(status(u03, "S9")).toBe("available");
 
   tapNode(u03, "S9");
-  skipProfileGate();
   const seen: string[] = [];
   let pairScreens = 0;
   plan.activities.forEach((activity, index) => {
@@ -612,7 +612,7 @@ test("I4. (AC4) 캐시에서 온 그림 문항: 그림이 서고 error면 뜻 �
 
   // 카드 셋 뒤 단어 선택 화면이 하나로 이어지고 그 둘째 문항에서 그림이 선다.
   expect(screen.getByTestId("word-choice-screen-content")).toBeInTheDocument();
-  expect(chapter()).toHaveTextContent("Lesson 5 / 7");
+  expect(chapter()).toHaveTextContent("Lesson 2 / 4");
   const picture = wordChoiceAt(plan, 1).questions[1];
   expect(picture.picture).toBeDefined();
   expect(screen.getByTestId("word-choice-picture")).toBeInTheDocument();
@@ -688,7 +688,7 @@ test("I4c. 그림 이벤트가 영영 오지 않아도 6초 뒤 뜻 글자로 �
   expect(screen.getByTestId("answer-verdict")).toHaveAttribute("data-result", "correct");
 });
 
-test("I4d. (AC2 카드뿐인 유닛) 채점 문항이 없어도 카드를 한 장씩 보이고, 마지막 카드의 See results로 통과 · 기록된다", async () => {
+test("I4d. (AC2 카드뿐인 유닛) 채점 문항이 없어도 카드를 한 장씩 보이고, 마지막 카드의 Got it으로 통과 · 기록된다", async () => {
   const cache = cardsOnlyCache();
   const plan = seededPlan(cache, "S1");
   expect(spanOf(plan)).toEqual(["C3"]);
@@ -698,10 +698,10 @@ test("I4d. (AC2 카드뿐인 유닛) 채점 문항이 없어도 카드를 한 �
   tapNode(u01, "S1");
   expect(screen.getByTestId("vocab-card-content")).toBeInTheDocument();
   expect(screen.queryByTestId("lesson-complete-screen")).not.toBeInTheDocument();
-  expect(screen.getByTestId("learning-shell-action")).toHaveTextContent("Next");
+  expect(screen.getByTestId("learning-run-header-caption")).toHaveTextContent("Word 1 of 3");
   flipCards(2);
-  expect(screen.getByTestId("learning-shell-action")).toHaveTextContent("See results");
-  action();
+  expect(screen.getByTestId("learning-run-header-caption")).toHaveTextContent("Word 3 of 3");
+  flipCards(1);
   exitResult();
   await vi.waitFor(() => expect(savedUnits(rpcs, u01)).toContain("S1"));
 
@@ -743,13 +743,12 @@ test("I6. 카드 화면의 나가기와 짝 화면의 시스템 뒤로는 기록
 
   tapNode(u01, "S1");
   expect(screen.getByTestId("vocab-card-content")).toBeInTheDocument();
-  tapId("learning-shell-exit");
+  tapId("learning-run-header-exit");
   tapButtonIn("ui-lynx-dialog-action-leave");
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
 
   const plan = lessonPlan(u03, "S9");
   tapNode(u03, "S9");
-  skipProfileGate();
   solveActivity(plan.activities[0] as CatalogActivity, true, false);
   expect(screen.getByTestId("pair-match-content")).toBeInTheDocument();
   pressBack("1");

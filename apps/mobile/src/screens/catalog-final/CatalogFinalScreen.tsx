@@ -179,7 +179,7 @@ export function CatalogFinalScreen({
               translation={turn.line.en ?? turn.line.roman ?? undefined}
               reveal="instant"
               continueIndicator="off"
-              surface="opaque"
+              surface="translucent"
               contentLanguage="learning"
               languageTag="ko"
               reducedMotion={reducedMotion}
@@ -187,8 +187,8 @@ export function CatalogFinalScreen({
           </view>
         </view>
 
-        {/* 답안 판입니다 — 흰 면이라 기존 칩 · 판정 배지 · 버튼을 변형 없이 씁니다. 안쪽이 스크롤해서
-            큰 글꼴에서도 버튼이 밀려나지 않습니다. */}
+        {/* 답안 판입니다 — 어두운 반투명 면이라 칩 · 판정 배지 · 정답 표시는 dark 면을 받고 버튼은
+            그대로입니다. 안쪽이 스크롤해서 큰 글꼴에서도 버튼이 밀려나지 않습니다. */}
         <view className="catalog-final-screen-panel">
           <scroll-view
             className="catalog-final-screen-panel-scroll"
@@ -223,6 +223,7 @@ export function CatalogFinalScreen({
                     text={turn.tiles[tileIndex]?.ko ?? ""}
                     placedOrdinal={position + 1}
                     disabled={checked}
+                    surface="dark"
                     onTap={toggle}
                   />
                 ))}
@@ -238,7 +239,7 @@ export function CatalogFinalScreen({
               <view className="catalog-final-screen-verdict-slot">
                 {result === null ? null : (
                   <view data-testid="catalog-final-screen-verdict">
-                    <AnswerVerdict result={result} />
+                    <AnswerVerdict result={result} surface="dark" />
                   </view>
                 )}
               </view>
@@ -246,6 +247,7 @@ export function CatalogFinalScreen({
                 <AnswerReveal
                   testId="catalog-final-screen-answer"
                   text={copy.catalogFinal.correctAnswer(turn.accepted[0])}
+                  surface="dark"
                 />
               ) : null}
 
@@ -256,6 +258,7 @@ export function CatalogFinalScreen({
                       key={tileIndex}
                       index={tileIndex}
                       text={tile.ko}
+                      surface="dark"
                     />
                   ) : (
                     <SentenceOrderChip
@@ -264,6 +267,7 @@ export function CatalogFinalScreen({
                       text={tile.ko}
                       placedOrdinal={null}
                       disabled={checked}
+                      surface="dark"
                       onTap={toggle}
                     />
                   ),

@@ -12,10 +12,12 @@ import {
   messengerCompletionStatus,
   messengerConversationFor,
   messengerExitOutcome,
+  messengerReplyArea,
   messengerSessionReducer,
   practiceMessengerCompletionStatus,
   visibleMessengerMessages,
 } from "./messenger";
+import { keyboardConversation } from "./messenger-keyboard-fixture.test-support";
 
 const id = "appointment-confirmation" as const;
 const expected = [
@@ -126,5 +128,37 @@ describe("practiceMessengerCompletionStatus", () => {
     expect(state).toEqual({ mode: "active", replyIndex: 0 });
     expect(visibleMessengerMessages(conversation, state)).toHaveLength(1);
     expect(currentMessengerReply(conversation, state)?.id).toBe("self-accept");
+  });
+});
+
+// -------------------------------------------------------------- 답장 자리
+
+describe("messengerReplyArea", () => {
+  const replyOf = (replyId: string): SelfMessage => {
+    const found = keyboardConversation.messages.find((message) => message.id === replyId);
+    if (found === undefined || found.sender !== "self") throw new Error(`${replyId} 가 없습니다`);
+    return found;
+  };
+  const typingReply = replyOf("self-accept");
+  const choiceReply = replyOf("self-thanks");
+
+  it("RA1. 대화가 끝나 답장이 없으면 판정과 무관하게 finish다", () => {
+    for (const verdict of ["typing", "correct", "incorrect"] as const) {
+      expect(messengerReplyArea(null, verdict)).toBe("finish");
+    }
+  });
+
+  it("RA1. 자판 답장은 치는 중 · 맞힘이면 keyboard, 틀리면 retry다", () => {
+    expect(typingReply.choices).toBeUndefined();
+    expect(messengerReplyArea(typingReply, "typing")).toBe("keyboard");
+    expect(messengerReplyArea(typingReply, "correct")).toBe("keyboard");
+    expect(messengerReplyArea(typingReply, "incorrect")).toBe("retry");
+  });
+
+  it("RA1. 보기 답장은 치는 중 · 맞힘이면 choices, 틀리면 retry다", () => {
+    expect(choiceReply.choices).toBeDefined();
+    expect(messengerReplyArea(choiceReply, "typing")).toBe("choices");
+    expect(messengerReplyArea(choiceReply, "correct")).toBe("choices");
+    expect(messengerReplyArea(choiceReply, "incorrect")).toBe("retry");
   });
 });

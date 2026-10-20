@@ -7,8 +7,8 @@ import { useUiCopy } from "../../lib/ui-copy";
 import {
   hasRoleplayCardPressedShade,
   roleplayCardClassName,
-  roleplayFormLabel,
   roleplayItemAccessibilityLabel,
+  roleplayItemSubtitle,
 } from "./roleplay-list";
 import type { RoleplayCardProps } from "./roleplay-list.contract";
 
@@ -55,6 +55,15 @@ export function RoleplayCard({ item, locked, layout, onSelect }: RoleplayCardPro
           data-testid={`roleplay-list-item-pressed-shade-${item.unitId}`}
         />
       ) : null}
+      {item.form === "story" && item.imageUrl !== null ? (
+        <image
+          className="roleplay-card-image"
+          data-testid={`roleplay-list-item-image-${item.unitId}`}
+          src={item.imageUrl}
+          mode="aspectFill"
+          accessibility-element={false}
+        />
+      ) : null}
       <view className="roleplay-card-shade" />
       <view className="roleplay-card-text">
         <text
@@ -65,7 +74,7 @@ export function RoleplayCard({ item, locked, layout, onSelect }: RoleplayCardPro
           {item.title}
         </text>
         <text className="roleplay-card-form" data-testid={`roleplay-list-item-form-${item.unitId}`}>
-          {roleplayFormLabel(item.form, copy)}
+          {roleplayItemSubtitle(item, copy)}
         </text>
       </view>
       {locked ? (

@@ -9,6 +9,7 @@ import type { JourneyStepId } from "../journey-map/journey-map";
 import { initialSessionOptions } from "../../lib/session-options";
 import { UiCopyContext } from "../../lib/ui-copy";
 import { markedUiCopy } from "../../lib/ui-copy.test-support";
+import { expectCompleteScene, expectQuestionScene } from "../learning/complete-scene.test-support";
 
 // 무대(가운데 카드) 안만 세는 헬퍼입니다. 뼈대는 `LearningShell`의 것이고 그 계약은
 // 껍데기 자신의 테스트가 답니다 — 여기서 화면 전체를 세면 상단 바의 칩 · 알림 버튼과
@@ -1224,4 +1225,14 @@ test("[LS1] 답하기 전과 넘김 구간에는 아래 fog가 서고 마치기�
   expect(screen.queryByTestId("learning-shell-rest-fog")).toBeNull();
   expect(screen.queryByTestId("learning-shell-scroll-end")).toBeNull();
   expect(screen.queryAllByTestId("ui-lynx-fog")).toHaveLength(1);
+});
+
+// ACS-LI — 완료 장면: 무대가 완료 장면이고 내용 상자 안은 완료 카드 하나다. 문항 장면은 그대로다.
+test("[ACS-LI] 완료 때 무대가 완료 장면이고 내용 상자의 유일한 자식이 완료 카드이며 문항 장면에는 표시가 없다", () => {
+  renderOrdering();
+  expectQuestionScene();
+
+  completeAllThree();
+
+  expectCompleteScene("listening-screen-content", "listening-screen-complete");
 });

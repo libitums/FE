@@ -45,6 +45,15 @@
   opacity: var(--libitum-opacity-pressed-shade, 0.08);
 }
 
+/* 카드 바탕 그림(본편 에피소드 표지의 첫 그림) — 면을 가득 채우고 아래 그늘 · 글자가 그 위에 섭니다. */
+.roleplay-card-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
 .roleplay-card-row {
   width: 160px;
 }

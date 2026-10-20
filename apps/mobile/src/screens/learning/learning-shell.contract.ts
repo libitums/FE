@@ -116,6 +116,18 @@ export function learningSessionHeader(
   };
 }
 
+/** 카드 진행 막대의 칸 하나입니다 — 지난 칸 · 지금 칸 · 남은 칸입니다. */
+export type LearningRunSegment = "done" | "current" | "upcoming";
+
+/**
+ * 세션 헤더 대신 서는 가벼운 헤더의 값입니다 — 칸마다 상태 하나, 그리고 캡션 겸 접근성 이름
+ * (`Word 4 of 7`) 하나입니다. 칸 자체는 낭독에서 빠지고 이 이름이 같은 것을 말합니다.
+ */
+export type LearningRunProgress = {
+  readonly segments: readonly LearningRunSegment[];
+  readonly label: string;
+};
+
 /** 진행 바 채움의 클래스 문자열입니다. 동작 줄이기에서는 너비 전환을 끄는 변형 클래스가 붙습니다. */
 export function learningProgressFillClassName(motion: Motion): string {
   const block = "learning-shell-progress-fill";
@@ -202,4 +214,42 @@ export function learningShellArrangement({
 }: LearningShellArrangementInput): LearningShellArrangement {
   if (scrollCard) return "card-scroll";
   return flow;
+}
+
+/** 껍데기가 지금 보이는 장면입니다 — 문항을 푸는 중인가, 활동을 끝내 완료 카드가 섰는가. */
+export type LearningShellScene = "question" | "complete";
+
+/** 껍데기의 `complete`를 장면으로 바꿉니다. */
+export function learningShellScene(complete: boolean): LearningShellScene {
+  return complete ? "complete" : "question";
+}
+
+/** 장면이 무대 · 합친 흐름 상자의 base 클래스 뒤에 더해 붙이는 클래스입니다. */
+export type LearningShellSceneClasses = {
+  readonly stage: readonly string[];
+  readonly flow: readonly string[];
+};
+
+/** 완료 장면에서 무대 카드를 내용 높이로 두고 머리와 아래 버튼 사이 세로 가운데에 세우는 클래스입니다. */
+export function learningShellSceneClasses(
+  arrangement: LearningShellArrangement,
+  scene: LearningShellScene,
+): LearningShellSceneClasses {
+  if (scene === "question") return { stage: [], flow: [] };
+  if (arrangement === "split") {
+    return {
+      stage: ["learning-shell-stage-scene-complete", "learning-shell-stage-fill-rest"],
+      flow: [],
+    };
+  }
+  if (arrangement === "merged") {
+    return {
+      stage: ["learning-shell-stage-scene-complete", "learning-shell-stage-fill-flow"],
+      flow: ["learning-shell-flow-fill-scroll"],
+    };
+  }
+  return {
+    stage: ["learning-shell-stage-scene-complete", "learning-shell-stage-fill-scroll"],
+    flow: [],
+  };
 }

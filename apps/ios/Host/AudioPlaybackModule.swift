@@ -31,9 +31,11 @@ import Foundation
 /// 한다. D3이 *"녹음. 마이크는 말하기이고 이 모듈에 얹지 않는다"* 를 명시로 막았는데,
 /// 이름이 그 경계를 거스르면 다음 사람이 이름을 근거로 얹는다. **이름이 경계를 진다.**
 ///
-/// **오디오 세션을 건드리지 않는다** (D3). `AVAudioSession.setCategory`를 부르지 않고
-/// `UIBackgroundModes`도 넣지 않는다. 기본 카테고리는 무음 스위치에 묶인다 — 실기에서
-/// 안 들리면 그것은 이 파일의 버그가 아니라 ADR-0017의 재검토 조건이 가리키는 자리다.
+/// **오디오 세션은 아래 `PlaybackAudioSession` 하나가 정한다** (ADR-0017 D3 2026-10-18 정정).
+/// 처음에는 세션을 건드리지 않았고, 기본 카테고리가 무음 스위치에 묶여 진동 모드에서 학습 음원이
+/// 들리지 않았다(#200 — D3의 재검토 조건이 가리키던 바로 그 자리). 이 모듈은 재생 직전에
+/// `beginVoice`, 끝 · 멈춤 · 일시정지에 `endVoice`를 부를 뿐 카테고리를 직접 고르지 않는다.
+/// `UIBackgroundModes`는 여전히 넣지 않는다.
 @objc(AudioPlaybackModule)
 final class AudioPlaybackModule: NSObject, LynxModule {
   @objc static var name: String { "AudioPlaybackModule" }
@@ -79,6 +81,8 @@ final class AudioPlaybackModule: NSObject, LynxModule {
         NotificationCenter.default.removeObserver(token)
       }
       observation?.invalidate()
+      // 재생 중에 사라지면 다른 앱 소리를 줄인 채 두지 않는다.
+      PlaybackAudioSession.shared.endVoice()
     }
   }
 
@@ -97,12 +101,14 @@ final class AudioPlaybackModule: NSObject, LynxModule {
     let pending = PendingDone(done)
 
     DispatchQueue.main.async {
-      self.teardown()
+      // 대체 재생이면 줄인 상태를 유지한다 — 문장마다 껐다 켜면 다른 앱 소리 크기가 오르내린다.
+      self.teardown(endingVoice: false)
 
       guard let url = Self.resolve(source) else {
         // 해석에 실패했다. 재생하지 않고 `done`을 한 번 부른다 — 실패를 조용히
         // 삼키지 않는다. 자산 15개가 번들에 있는 지금 이 경로로 가는 것은 **등록되지
         // 않았거나 이름이 어긋난 `source`뿐이다** (`docs/e2e/listening.md`).
+        PlaybackAudioSession.shared.endVoice()
         pending.fire()
         return
       }
@@ -150,6 +156,7 @@ final class AudioPlaybackModule: NSObject, LynxModule {
         self.observers.append(token)
       }
 
+      PlaybackAudioSession.shared.beginVoice()
       player.play()
     }
   }
@@ -169,7 +176,11 @@ final class AudioPlaybackModule: NSObject, LynxModule {
   /// 대기 중인 `done`도 그대로 남고, `resume`이 그 자리부터 잇는다. `done`을 버리지
   /// 않는 이유는 단순하다: 일시정지는 끝이 아니고, 이어서 끝까지 가면 그때 끝난다.
   @objc func pause() {
-    DispatchQueue.main.async { self.player?.pause() }
+    DispatchQueue.main.async {
+      self.player?.pause()
+      // 멈춰 둔 동안 다른 앱 소리를 줄인 채 두지 않는다.
+      PlaybackAudioSession.shared.endVoice()
+    }
   }
 
   /// 멈춰 둔 것을 **그 자리부터** 잇는다. 멈춰 둔 것이 없으면 아무 일도 하지 않는다.
@@ -178,7 +189,11 @@ final class AudioPlaybackModule: NSObject, LynxModule {
   /// 으로 두고, 이 메서드는 시크하지 않는다(D3의 제외 목록). 처음부터 다시 듣는 것은
   /// `play`를 다시 부르는 것이다.
   @objc func resume() {
-    DispatchQueue.main.async { self.player?.play() }
+    DispatchQueue.main.async {
+      guard let player = self.player else { return }
+      PlaybackAudioSession.shared.beginVoice()
+      player.play()
+    }
   }
 
   // MARK: - 해석 — **원격 https 주소 또는 번들 리소스 조회**
@@ -204,15 +219,24 @@ final class AudioPlaybackModule: NSObject, LynxModule {
   /// 그래서 이 몸통은 추측이 아니라 사실 위에 서 있다 — 그것이 이 자리를 비워 뒀던
   /// 이유가 없어진 지점이다.
   ///
-  /// **원격 분기가 하나 있다.** `source`가 `https` 스킴에 호스트가 있는 절대 URL이면 그
+  /// **분기가 둘 더 있다.** 하나는 원격이고, 하나는 받아 둔 파일이다.
+  ///
+  /// **원격.** `source`가 `https` 스킴에 호스트가 있는 절대 URL이면 그
   /// URL을 그대로 돌려준다(콘텐츠 음성은 버킷에서 스트리밍한다 — ADR-0060). 반환 타입이
   /// `URL?`이고 재생 수단이 `AVPlayer`인 것이 그 여지를 위한 것이었다(`AVAudioPlayer`는
   /// 로컬만 받는다). 원격 로드 실패는 아래 `.failed` 관찰이 `done` 한 번으로 모은다.
   ///
+  /// **받아 둔 파일.** `file` 스킴이고 표준화한 경로가 `ContentFileStore` 루트 아래면 그 URL을 로컬로 연다
+  /// (`ContentFileModule`이 받은 에피소드 소리 — 오프라인 재생). 루트 밖 `file`(앱 번들 · 임의 경로)은
+  /// 여전히 거부한다: JS가 만든 문자열이 앱 샌드박스의 아무 파일을 열게 하지 않는다.
+  /// `contentFiles`는 테스트가 임시 폴더를 주입하는 자리다.
+  ///
   /// `nil`을 돌려주면 `play`는 재생하지 않고 `done`을 한 번 부른다. 등록되지 않았거나
   /// 이름이 어긋난 `source`가 그 경로로 간다.
-  static func resolve(_ source: String) -> URL? {
+  ///
+  static func resolve(_ source: String, contentFiles: ContentFileStore = .shared) -> URL? {
     if let remote = remoteURL(source) { return remote }
+    if let local = contentFileURL(source, in: contentFiles) { return local }
     // 번들 id는 경로 조각 하나다. 빈 이름은 `Bundle`이 폴더의 아무 파일로 풀어 버리고,
     // `/` · `..`은 폴더 밖을 가리킨다 — Android `AudioAssetPath`와 같은 경계.
     guard !source.isEmpty, !source.contains("/"), !source.contains("..") else { return nil }
@@ -221,6 +245,13 @@ final class AudioPlaybackModule: NSObject, LynxModule {
       withExtension: audioFileExtension,
       subdirectory: audioSubdirectory
     )
+  }
+
+  private static func contentFileURL(_ source: String, in store: ContentFileStore) -> URL? {
+    guard let url = URL(string: source), url.scheme?.lowercased() == "file",
+      store.contains(fileURL: url)
+    else { return nil }
+    return url
   }
 
   /// `https` 스킴에 호스트가 있는 절대 URL만 원격으로 본다. 그 밖의 스킴(`http` · `file` ·
@@ -245,7 +276,7 @@ final class AudioPlaybackModule: NSObject, LynxModule {
   ///
   /// `AVPlayer`에는 `stop`이 없어서 `pause` 뒤에 참조를 버린다. **일시정지 기능이
   /// 아니다** (D3의 제외 목록) — 재개할 대상 자체를 여기서 없앤다.
-  private func teardown(firing pending: PendingDone? = nil) {
+  private func teardown(firing pending: PendingDone? = nil, endingVoice: Bool = true) {
     for token in observers {
       NotificationCenter.default.removeObserver(token)
     }
@@ -254,6 +285,7 @@ final class AudioPlaybackModule: NSObject, LynxModule {
     statusObservation = nil
     player?.pause()
     player = nil
+    if endingVoice { PlaybackAudioSession.shared.endVoice() }
     self.pending = nil
     pending?.fire()
   }
@@ -277,5 +309,77 @@ private final class PendingDone {
     let done = self.done
     self.done = nil
     done?(NSNull())
+  }
+}
+
+/// 앱의 재생 정책 — **메인 큐 전용**(재생 모듈 · 효과음과 같은 큐).
+///
+/// 무음(진동) 모드에서도 학습 음원이 들려야 한다(#200, ADR-0017 2026-10-18 정정). 기본 카테고리
+/// `.soloAmbient`는 무음 스위치를 따르므로 앱 시작에 `.playback`으로 정한다. 카테고리는 앱 전체에 하나라
+/// 효과음도 무음 스위치와 무관하게 난다 — iOS가 스위치 상태를 앱에 알려 주지 않아 효과음만 따로 둘 수 없다.
+///
+/// 다른 앱 소리(음악 · 팟캐스트)는 **평소에는 섞고**(`.mixWithOthers` — 버튼 효과음이 사용자 음악을 흔들지
+/// 않게), **학습 음원이 나오는 동안만 줄인다**(`.duckOthers`, 사용자 결정). 줄이기는 세션을 끌 때 풀리므로
+/// 음원이 끝나거나 멈추면 세션을 끄고 섞기로 돌아간다. 녹음(`RecordingAudioSession`)은 녹음 전 설정을
+/// 되돌리므로 이 정책 위에서 그대로 돈다.
+final class PlaybackAudioSession {
+  static let shared = PlaybackAudioSession()
+
+  private let session: RecordingAudioSessionClient
+  private var voiceActive = false
+
+  init(session: RecordingAudioSessionClient = AVAudioSession.sharedInstance()) {
+    self.session = session
+  }
+
+  /// 앱 시작에 한 번. 켜지는 않는다 — 켜는 순간 다른 앱 소리에 닿는다. 재생이 시작될 때 시스템이 켠다.
+  func configureDefault() {
+    setCategory(options: [.mixWithOthers])
+  }
+
+  /// 학습 음원이 나오기 직전. 이미 켰으면 아무 일도 하지 않는다. 녹음 중(`.record`)이면 세션을 건드리지
+  /// 않는다 — 녹음이 세션을 빌린 동안 카테고리를 덮으면 녹음이 끊긴다.
+  func beginVoice() {
+    guard !voiceActive, session.category != .record else { return }
+    voiceActive = true
+    setCategory(options: [.duckOthers])
+    do {
+      try session.setActive(true, options: [])
+    } catch {
+      NSLog("Playback audio session activation failed: %@", String(describing: error))
+    }
+  }
+
+  /// 학습 음원이 끝나거나 멈춘 뒤. 켠 적 없으면 아무 일도 하지 않는다 — 녹음 중 세션을 건드리지 않는다.
+  /// 효과음이 세션을 쥐고 있어 끄기가 실패해도 섞기로는 돌아간다.
+  /// 녹음이 녹음 전 설정을 되돌린 직후(SpeechRecognitionModule이 메인 큐로 부른다). 녹음 전이 줄이기였다면 그대로
+  /// 살아나 효과음마다 다른 앱 소리가 줄어들므로, 지금 학습 음원이 나오는 중이 아니면 섞기로 돌린다.
+  func recordingDidRestore() {
+    guard !voiceActive, session.category == .playback else { return }
+    if session.categoryOptions.contains(.duckOthers) {
+      setCategory(options: [.mixWithOthers])
+    }
+  }
+
+  func endVoice() {
+    guard voiceActive else { return }
+    voiceActive = false
+    // 듣기 → 말하기에서 재생의 끝이 녹음 시작 뒤에 도착할 수 있다. 녹음 중이면 끄지도 덮지도 않는다 —
+    // 녹음 복원 뒤 `recordingDidRestore`가 섞기로 돌린다.
+    guard session.category == .playback else { return }
+    do {
+      try session.setActive(false, options: .notifyOthersOnDeactivation)
+    } catch {
+      NSLog("Playback audio session deactivation failed: %@", String(describing: error))
+    }
+    setCategory(options: [.mixWithOthers])
+  }
+
+  private func setCategory(options: AVAudioSession.CategoryOptions) {
+    do {
+      try session.setCategory(.playback, mode: .default, options: options)
+    } catch {
+      NSLog("Playback audio session configuration failed: %@", String(describing: error))
+    }
   }
 }

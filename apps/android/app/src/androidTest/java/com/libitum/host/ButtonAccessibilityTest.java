@@ -121,7 +121,7 @@ public final class ButtonAccessibilityTest {
         UiAutomation.FLAG_DONT_SUPPRESS_ACCESSIBILITY_SERVICES);
     LynxView lynxView = (LynxView) ((android.view.ViewGroup) activity.findViewById(android.R.id.content)).getChildAt(0);
     assertNotNull("Next accessibility node missing", await(automation, "Next"));
-    assertNotNull("progress accessibility node missing", await(automation, "Step 1 of 4"));
+    assertNotNull("progress accessibility node missing", await(automation, "Step 1 of 3"));
     assertNotNull("onboarding dialogue accessibility node missing",
         await(automation, "Staff: 어서 오세요! 찾으시는 거 있으세요?, Welcome! Are you looking for anything?"));
     assertHeading(automation, "with Story");
@@ -138,8 +138,6 @@ public final class ButtonAccessibilityTest {
     activate(automation, "Next");
     activate(automation, "Next");
     assertHeading(automation, "Just 5 minutes");
-    activate(automation, "Next");
-    assertHeading(automation, "Make it yours");
     activate(automation, "Get started");
     assertHeading(automation, "Log in or Sign up");
     for (String label : new String[] {"Sign in with Apple", "Connect with Google", "Connect with Facebook"}) {

@@ -6,6 +6,7 @@ import { Button } from "@libitums/ui-lynx/button";
 import { OptionSelector } from "@libitums/ui-lynx/option-selector";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
 
+import { EntryStepBar } from "../../components/EntryStepBar";
 import {
   entryLanguageLabel,
   entryLanguages,
@@ -52,6 +53,8 @@ export function LanguageSelectScreen({
             bindtap={onBack}
           />
         ) : null}
+        {/* 가입 직후 세 화면(이름 → 나라 → 언어)의 마지막 칸입니다. */}
+        <EntryStepBar current={3} total={3} />
       </view>
 
       <scroll-view

@@ -124,6 +124,10 @@ export type JourneyMapHeaderSlotProps = {
   readonly tutorialSections: readonly JourneyMapSection[];
   readonly progress: JourneyProgress;
   readonly load: JourneyMapProgressLoad;
+  /** 띠 자리 · 띠의 위 모서리(`mapTopLayout`). 없으면 CSS 기본값(64)과 같다. */
+  readonly bandTop?: number;
+  /** 로딩 줄의 위 모서리(`mapTopLayout`). 없으면 CSS 기본값(72)과 같다. */
+  readonly progressRowTop?: number;
   /** 화면 겹침 레이어가 떠 있으면 참 — 실패 줄의 재시도 버튼을 낭독에서 가립니다(ADR-0016 D9). */
   readonly obscured?: boolean;
   /** 열려 있는 말풍선의 유닛입니다 — 띠의 unit 번호가 그 유닛을 따릅니다. 없으면 `null`과 같습니다. */
@@ -157,6 +161,8 @@ export type CatalogMapTestId =
   | `catalog-section-${string}`
   | `catalog-unavailable-${string}`
   | `catalog-unavailable-caption-${string}`
+  // 받는 중인 에피소드의 「준비 중」 구획(ADR-0071)
+  | `catalog-pending-${string}`
   | "catalog-header-unavailable"
   // CatalogMapSections 루트(가림 속성 자리)
   | "journey-map-screen-catalog";

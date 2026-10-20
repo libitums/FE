@@ -48,11 +48,6 @@
   align-items: center;
 }
 
-.writing-screen-skip {
-  align-self: stretch;
-  margin-top: var(--libitum-spacing-12);
-}
-
 /* 문항을 모두 마쳤을 때의 한 줄입니다 — 말하기와 같은 모양입니다. */
 .writing-screen-complete {
   margin-top: var(--libitum-spacing-48);

@@ -1,5 +1,6 @@
 import type { ReactNode } from "@lynx-js/react";
 
+import { isCatalogUnitDone } from "../../lib/catalog-progress";
 import { useUiCopy } from "../../lib/ui-copy";
 import { StepSheet } from "./StepSheet";
 import { catalogUnitNodeTitle, catalogUnitNodesOf } from "./catalog-map";
@@ -52,6 +53,7 @@ export function CatalogUnitSheet({
       unitLabel={catalogUnitNodeTitle(node, copy)}
       completedActivityCount={figures.completedActivityCount}
       totalActivityCount={figures.totalActivityCount}
+      ticketCost={isCatalogUnitDone(catalog.progress, target.episodeId, target.unitKey) ? 0 : 1}
       onStart={() => catalog.onStartUnit(target.episodeId, target.unitKey)}
       onClose={onClose}
       {...(entrance === undefined ? {} : { entrance })}

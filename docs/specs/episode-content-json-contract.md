@@ -187,14 +187,15 @@ FE 제안: 단일 `Text = { ko, roman, en? }`로 통일한다. `en`은 어디서
 | `PARTICLE_FILL` | 6 | choice | R | `prompt` · `stimulus`(`text` …) · `options`(2개) · `feedback.correct` | — | 단어 선택 — 제시문 = `stimulus.text`(빈칸 문장) |
 | `PARTICLE_SWAP` | 9 | choice | R | `prompt` · `stimulus`(`text` …) · `options`(3개) · `feedback.correct` | — | 단어 선택 — 제시문 = `stimulus.text`(틀린 구) |
 | `CULTURE_CHECK` | 9 | choice | R | `prompt` · `context` · `options` · `feedback.correct` | — (`ref` 없음) | ~~건너뜀(`screen-pending`)~~ ⟨PR ②⟩ **단어 선택** — 제시문 `context`(+ `roman` · `en` 줄), 보기 `options[].ko` 파일 순서, **보기마다 번역 줄 `options[].en`**(전부 있을 때만) |
-| `CULTURE_CARD` | 9 | card | E | `context` · `stimulus`(`text` …) · `feedback.correct` | — (`prompt` · `ref` 없음) | ~~건너뜀(`screen-pending`)~~ ⟨PR ②⟩ **문화 카드** — 제목 `context.ko` · `roman` · `en`, 본문 `stimulus.text.en`(크게) · `.ko`(작게) |
+| `CULTURE_CARD` | 9 | card | E | `context` · `stimulus`(`text` …) · `feedback.correct` | — (`prompt` · `ref` 없음) | ~~건너뜀(`screen-pending`)~~ ⟨PR ②⟩ **문화 카드** — 제목 `context.ko` · `roman` · `en`, 본문 `stimulus.text.en`(크게) · `.ko`(작게). ⟨2026-10-19 — G2⟩ 앞면 그림 `stimulus.image_url` |
 | `LISTEN_BUILD` | 13 | tiles | R | `prompt` · `stimulus`(`audio` …) · `tiles`(오답 조각 포함) · `answers` | `tiles[].en` | 건너뜀(~~`screen-pending`~~ ⟨PR ②⟩ **`audio-missing`** — 문항 음성이 오면 그때 화면을 만든다. 소리가 와도 저절로 서지 않는다) |
 | `SYLLABLE_BUILD` | 7 | tiles | R | `prompt` · `stimulus`(`en` · `audio_url` · `image_url`) · `tiles`(음절, 오답 포함) · `answers` | `tiles[].en` · `answers[].en` | ~~건너뜀(`screen-pending`)~~ ⟨PR ②⟩ **음절 조립** — 뜻 `stimulus.en`, 타일 `tiles[].ko`(섞음), 정답 `answers[].ko`(공백 제거) |
 | `SHADOW` | 9 | speech | E | `prompt` · `stimulus`(`text` · `audio` …) · `answers` | — | ~~건너뜀(`screen-pending` — 말하기)~~ ⟨PR ③⟩ **읽기**(채점 없음) — 문장 · 로마자 · 영어를 한 묶음에서(`answers[0]`, 한국어가 비면 `stimulus.text`) |
 | `SPEAK_WORD` | 6 | speech | R | `prompt` · `stimulus`(`image_brief` · `image_url` · `audio_url`) · `answers` | — | ~~건너뜀(`screen-pending` — 말하기)~~ ⟨PR ③⟩ **낱말 말하기**(채점) — 그림 `stimulus.image_url`(필수) · 뜻 `answers[0].en` · 정답 `answers[].ko` · 로마자 `answers[0].roman` |
 
 - ⟨2026-10-16 — PR ②⟩ **세 유형에서 앱이 읽는 것과 읽지 않는 것**(결정은 [ADR-0066](../adr/0066-episode-format-screens.md)):
-  - `CULTURE_CARD` — 읽음: 제목 `context.ko`(비면 건너뜀 `malformed`) · `context.roman`(제목 아래 로마자) · `context.en`(영어 제목), 본문 `stimulus.text.en`(비면 `no-gloss`) · `stimulus.text.ko`. **읽지 않음**: `stimulus.text.roman`(본문 로마자 — 최대 226자 산문이라 싣지 않는다) · `feedback.correct`(요령) · `stimulus.audio_url` · `image_url`(9/9 빈 값).
+  - `CULTURE_CARD` — 읽음: 제목 `context.ko`(비면 건너뜀 `malformed`) · `context.roman`(제목 아래 로마자) · `context.en`(영어 제목), 본문 `stimulus.text.en`(비면 `no-gloss`) · `stimulus.text.ko`. **읽지 않음**: `stimulus.text.roman`(본문 로마자 — 최대 226자 산문이라 싣지 않는다) · `feedback.correct`(요령) · `stimulus.audio_url`(9/9 빈 값 — 듣기 자리 없음).
+    ⟨2026-10-19 — G2, [ADR-0072](../adr/0072-culture-card-flip.md) D4⟩ **`stimulus.image_url`을 읽는다** — 앞면 사진. 다른 그림과 같은 콘텐츠 그림 경로(예: `content/images/u01-water/cult-1.jpg`)로 풀고, 빈 값 · 못 푸는 경로 · 내려받기 실패면 브랜드 면이 대신 선다 — **건너뛰지 않는다**(그림 고르기의 `image-missing`과 다르다). 지금 9/9 빈 값.
   - `CULTURE_CHECK` — 보기 번역 `options[].en`은 27/27 있고 **고르기 전부터 보인다**. 하나라도 비면 그 문항은 번역 줄 없이 선다. `options[].roman` · `why_wrong` · `feedback`은 읽지 않는다. 보기는 섞지 않는다(정답 자리가 이미 흩어져 있다).
   - `SYLLABLE_BUILD` — **타일은 정답 순서로 실려 오고 오답 음절이 뒤에 붙는다**(7/7, 예 `괜 찮 아 요 | 세 원`). 그대로 보이면 앞에서부터 누르는 것이 답이라 **앱이 섞는다**(문항마다 정해진 순서). 같은 음절 타일이 두 장인 문항(u02 `일주일` · `와이파이`)도 받는다 — 판정은 놓은 음절을 이은 **낱말 문자열**이다.
     정답은 앱이 **공백을 모두 지운** 꼴로 비교하고, 칸 수는 첫 정답을 타일로 맞춰 정한다(타일로 만들 수 없는 정답이면 건너뜀 `malformed`). 정답이 둘 이상이면 첫 정답과 길이가 같은 것만 만들 수 있다. 뜻은 `stimulus.en`(7/7) → `answers[].en`(6/7) 순이다. `tiles[].roman` · `stimulus.audio_url`은 읽지 않는다.
@@ -285,6 +286,7 @@ u01 · u02는 전부 해결, u03은 18문항이 같은 세 id(에피소드 2의 
 | 컷 | `audio_url` ⟨2026-10-14 — 새 선택 키⟩ | 10/25 채움(내장본) |
 | 대화 | `audio_url` | 0/34 채움 ⟨2026-10-14⟩ 7/34(내장본) |
 | 문항 `stimulus` | `audio_url` · `image_url` | 0/121 채움. IMG_MATCH조차 `image_url: ""` ⟨2026-10-16 — 새 형식⟩ `audio_url`은 여전히 전부 빈 값, `image_url`은 26문항에 채움(`IMG_MATCH` 7 · `SPEAK_WORD` 6 · `ROLEPLAY_TURN` 13 — §7.2 끝) |
+| 음성 정보 파일 ⟨2026-10-19⟩ | `audio/manifest.json`의 `audio.<음성 id>` | 에피소드 JSON 밖의 별도 파일 — 컷 `audio_url`의 id → 길이(`duration_ms` · 선택 `speech_end_ms`). 카탈로그 컷 타자기가 이 길이에 맞춰 쓴다. 2026-10-19 버킷에 올라감. 형식 · 규칙은 부록 E, 결정은 [ADR-0074](../adr/0074-voice-synced-typing.md) |
 
 앱의 현재 자산 경로(참고): 이미지는 번들 import → `/static/…`(Android는 호스트가 재작성, ADR-0051). 오디오는 확장자 없는 **불투명 id**를 호스트 `AudioPlaybackModule`이 번들에서 찾는다(ADR-0017 D3). 원격 fallback은 아직 없다(ADR README 보류 표 「오디오 자산의 출처·형식」). → 합의 Q6 · Q21.
 ⟨2026-10-14 — 위 문장의 오디오 부분은 그때의 상태다⟩ **에피소드 음성은 버킷에서 재생한다.** 앱(JS 한 자리 `lib/content-audio.ts`)이 id를 규약으로 검사해 `audio/<id>.m4a` → 버킷 절대 URL로 바꾸고, 재생 모듈은 `https` 절대 URL을 받아 스트리밍한다. 튜토리얼의 번들 id는 지금처럼 번들에서 난다. 지금 재생하는 자리는 카탈로그 컷 · 최종 테스트뿐이고 **학습 문항의 `stimulus.audio_url`은 읽지 않는다**(ADR README 보류 표 「학습 문항 오디오의 연결」). 결정은 [ADR-0060](../adr/0060-episode-voice-remote-audio.md).
@@ -623,3 +625,73 @@ id 규약(Q6 제안): `<episode_id>/<kind>-<n>` — 확장자 없는 불투명 i
 - **크기**: 941 × 1672 · 평균 440 KB는 번들에 실을 수 없다(현재 `static/image` 8.3 MB / 상한 11.5 MB — 에피소드 셋이면 약 +11 MB). 번들 내장분은 **긴 변 1,200 px · JPEG 품질 80 · 장당 ≤ 180 KB**를 목표로 다시 내보내고, 원본은 서버(3단계 원격 소스)에 둔다. 어느 쪽이든 경로 규약은 같다 → 결정 D-IMG.
 - 대체 텍스트(Q23)는 아직 없다. 수령본 7장의 `image_brief`를 alt 초안으로 쓸 수 있는지는 Q23 답에 달렸다.
 - ⟨2026-10-12 — 3b-2⟩ 위 표의 u01 행은 처음에 「수령 0」으로 머리 문장(7장 수령)과 어긋나 있었다 — 고쳤다. **D-IMG 결정**: 3b-2는 컷 그림을 번들에 싣지 않고 버킷에서 받는다(`static/image` 변화 0 — [ADR-0056](../adr/0056-episode-content-delivery.md) 「적용 기록」). 컷 화면은 alt를 비우고(장식) 대사 · 지문 텍스트가 장면을 전한다.
+
+## 부록 E. 음성 정보 파일 (`audio/manifest.json`, `audio-manifest-1` — 2026-10-19)
+
+카탈로그 컷의 대사 타자기가 음성 길이에 맞춰 쓰도록, 음성 id마다 길이를 적은 **에피소드 JSON 밖의 파일 하나**다. 결정은 [ADR-0074](../adr/0074-voice-synced-typing.md)가 진다.
+**정본은 콘텐츠 납품 쪽에 보낸 요청문**(2026-10-19, 「음성 정보 파일 만들기 · 갱신하기」)이고 아래는 그 요약이다 — 둘이 다르면 요청문을 따르고 이 부록을 고친다.
+
+### 위치 · 형식
+
+| 항목 | 값 |
+|---|---|
+| 버킷 · 경로 | `content` / `audio/manifest.json` — 음성 파일(`audio/<id>.m4a`)과 같은 폴더의 맨 위 |
+| 인코딩 | UTF-8 JSON(BOM 없음), 업로드 Content-Type `application/json`, `cacheControl`은 짧게(예 60초 — 기본 1시간이면 갱신이 그만큼 늦게 닿는다) |
+| 없을 때 | 버킷은 **HTTP 400**(본문 `"statusCode":"404"`, `NoSuchKey`)을 낸다. 앱은 400 · 403 · 404 · 410을 「없음」으로 보고 모든 컷을 기본 속도(35ms)로 쓴다 |
+
+```json
+{
+  "schema": "audio-manifest-1",
+  "generated_at": "2026-10-19T08:41:18Z",
+  "audio": {
+    "u01-water/pre-3": { "duration_ms": 2299, "speech_end_ms": 1763 },
+    "u02-checkin/pre-1": { "duration_ms": 2027, "speech_end_ms": 2027 }
+  }
+}
+```
+
+| 키 | 필수 | 규칙 | 앱이 틀린 값을 만나면 |
+|---|---|---|---|
+| `schema` | 필수 | 정확히 `"audio-manifest-1"` | 파일 전체를 쓰지 않는다(다른 판 이름도) |
+| `generated_at` | 필수 | 만든 시각, ISO 8601 UTC | 읽지 않는다 — 사람이 판을 구별하는 값 |
+| `audio` | 필수 | 객체. 키 = 음성 id, 값 = 길이 | 객체가 아니면 파일 전체를 쓰지 않는다 |
+| `duration_ms` | 필수 | 파일 전체 길이, 1 이상의 정수 ms | 그 항목만 버린다 → 그 컷은 35ms |
+| `speech_end_ms` | 선택 | 말소리가 끝나는 때(끝까지 이어지는 무음의 시작), 1 이상의 정수 ms, `duration_ms` 이하. 끝 무음이 없으면 `duration_ms`와 같은 값 | 정수가 아니면 그 항목만 버린다. `duration_ms`보다 크면 `duration_ms`를 쓴다 |
+
+- 앱은 `speech_end_ms`가 있으면 그것에, 없으면 `duration_ms`에 글 끝을 맞춘다. 글자 간격 = 맞출 길이 ÷ 대사(`ko`) 글자 수를 [35, 300] ms로 묶은 값이다. 끝 무음을 어떻게 다룰지는 기기에서 본 뒤 정한다 — 그 전까지 납품 쪽은 **둘 다** 넣는다.
+- 모르는 키는 무시한다. 키 이름 · 단위를 바꾸려면 `schema`를 올리고 앱 쪽과 먼저 맞춘다(옛 앱은 새 판을 통째로 쓰지 않는다).
+
+### 키(음성 id) 규칙
+
+- 키는 에피소드 JSON의 `audio_url` 값과 **글자 하나까지 같다**(`audio_url: "u01-water/d-01"` → 파일 `audio/u01-water/d-01.m4a` → 키 `"u01-water/d-01"`). `audio/` 접두사 · `.m4a` · 대문자 · 공백 · `.`을 넣지 않는다 — 콘텐츠 id 규약(§9 · [ADR-0060](../adr/0060-episode-voice-remote-audio.md) D2)과 같고, 어긋나면 앱이 그 항목을 버린다.
+- 버킷에 **올라가 있는 음성 파일 하나당 항목 하나**. 파일이 없는 id(녹음하지 않은 줄)는 넣지 않는다. 같은 id가 두 번 나오지 않게 하고, id 오름차순을 권한다.
+
+### 측정 방법
+
+입력은 **버킷에 올리는 바로 그 m4a**다.
+
+1. `duration_ms` — `ffprobe -v error -show_entries format=duration -of csv=p=0 <파일>`의 초를 ms로 반올림.
+2. `speech_end_ms` — `ffmpeg -i <파일> -af silencedetect=noise=-40dB:d=0.1 -f null -`에서 **파일 끝까지 이어지는 마지막 무음의 시작**을 ms로 반올림(마지막 `silence_start` 뒤에 `silence_end`가 없거나 그 끝이 파일 길이 ±0.01초). 가운데 쉼은 쓰지 않는다. 그런 무음이 없으면 `duration_ms`와 같다.
+3. 요청문에 생성 스크립트 예시가 있다. 결과가 위 정의와 같으면 어떤 도구를 써도 된다(확인 값: `u01-water/pre-3` → 2299 · 1763, `u03-mina/pre-2` → 4894 · 4894).
+
+### 갱신 규칙
+
+| 일 | 정보 파일 |
+|---|---|
+| 음성을 새로 올림 | 그 id 항목을 더해 다시 만든다 |
+| 같은 id의 음성을 다시 녹음 · 교체 | 그 id를 **다시 잰다** — 파일만 바꾸면 글과 소리가 어긋나고 앱은 그것을 알 수 없다 |
+| 음성을 내림 | 그 id 항목을 뺀다 |
+| `audio_url`만 바뀜(같은 파일을 다른 id로) | 새 id로 항목을 옮긴다 |
+| 대사(`ko`)만 바뀜 | 다시 만들 필요 없다 — 앱이 글자 수를 센다 |
+
+- **순서**: 올릴 때는 음성 → 정보 파일, 내릴 때는 정보 파일 → 음성. 매번 **전체를 다시 만들어** 덮어쓰고 `generated_at`도 새로 쓴다.
+- 앱은 실행 시작 · 연결 복귀 · 포그라운드 복귀마다 이 파일을 다시 받고 원문이 같으면 아무것도 하지 않는다. **깨진 파일**(JSON 오류 · `schema` 다름)을 올리면 기기는 전에 받아 둔 정보를 계속 쓰고, 파일을 **지우면** 기기도 기본 속도로 돌아간다.
+- 올리기 전 검사: JSON 문법 · `schema` · 항목 수 = 버킷 `audio/` 아래 m4a 수 · 모든 키가 어느 에피소드 JSON의 `audio_url`과 같음 · 모든 값이 1 이상의 정수이고 `speech_end_ms ≤ duration_ms` · 단위가 ms · 올린 뒤 공개 주소로 받아 200과 같은 내용.
+
+### 지금의 판 ⟨2026-10-19⟩
+
+- 앱 쪽이 지금 음성 **16개**(u01 6 · u02 4 · u03 6)를 위 방법으로 재 만들어 두었다(`generated_at` 2026-10-19T08:41:18Z). 2026-10-19 사용자가 이 판을 버킷에 올렸다(공개 주소 200).
+- 앞 무음은 모두 0, 끝 무음은 u01 · u02 0.16 ~ 0.54초(u01 `pre-3`이 가장 긴 0.54초), u02 `pre-1`과 u03 6개는 0이다.
+  컷 대사 글자당 간격은 `speech_end_ms` 기준 110 ~ 274 ms, `duration_ms` 기준 136 ~ 328 ms다(파일 길이만 쓰면 u01 `pre-3` 하나가 상한 300에 걸린다).
+- **부록 C 업로드 현황과 다른 점**: 내장 본문이 참조하는 음성 id 13개 가운데 **`u03-mina/d-01`(대화 seq 1 · 표지 컷 pre-4가 다시 씀)은 버킷이 400**이다 — 부록 C의 ⟨2026-10-14⟩ 표는 이 파일을 「올라감」으로 적었지만 지금은 없다(녹음 없음 — [ADR-0071](../adr/0071-episode-background-download.md) D3의 「400」 관찰 · [백그라운드 받기 e2e](../e2e/episode-background-download.md) 실행 기록과 같다).
+  그래서 정보 파일에도 그 항목이 없고 그 줄은 소리 없이 35ms다. 정보 파일의 u03 `d-03` · `d-09` · `d-11` · `post-1`은 지금 내장 본문이 쓰지 않는 id다 — 앱은 쓰이지 않는 키를 무시한다.

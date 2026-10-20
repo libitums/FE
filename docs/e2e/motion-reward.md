@@ -309,12 +309,12 @@ e2e-green 회차가 iOS와 같은 빌드로 돌았다(산출물 · 측정 방식
 
 「Episode clear!」 배너는 기기에서 선 적이 없다([카탈로그 레슨 e2e](catalog-lessons.md) C7).
 
-## 유닛 탭 등장 모션 (2026-10-19, ADR-0070)
+## 유닛 탭 등장 모션 (2026-10-19, ADR-0077)
 
-⟨2026-10-19⟩ Android 에뮬레이터 회차를 한 번 돌렸고(`d94ea84b`), 실패한 SM6만 수정 뒤 두 번 더 돌렸다(`2f7c3968` 통과 · `b524ef74` 경계 탭 확인 — 아래 「결과」, 에이전트 실행 · 사람 미확인). SM1 ~ SM9 통과 · SM10 기록이고, 대기 → 등장 경계 프레임의 시작 탭 무반응은 결함 판정 밖의 남은 위험이다([ADR-0070](../adr/0070-journey-map-sheet-entrance-motion.md) 「남은 위험」 A11Y-3). iOS 칸은 아직 비어 있다(미실행). 끈 = 동작 줄이기 끔(standard), 켠 = 켬(reduced).
+⟨2026-10-19⟩ Android 에뮬레이터 회차를 한 번 돌렸고(`d94ea84b`), 실패한 SM6만 수정 뒤 두 번 더 돌렸다(`2f7c3968` 통과 · `b524ef74` 경계 탭 확인 — 아래 「결과」, 에이전트 실행 · 사람 미확인). SM1 ~ SM9 통과 · SM10 기록이고, 대기 → 등장 경계 프레임의 시작 탭 무반응은 결함 판정 밖의 남은 위험이다([ADR-0077](../adr/0077-journey-map-sheet-entrance-motion.md) 「남은 위험」 A11Y-3). iOS 칸은 아직 비어 있다(미실행). 끈 = 동작 줄이기 끔(standard), 켠 = 켬(reduced).
 
 여정 맵에서 유닛 탭을 누르면 노드가 한 번 튀고, 필요하면 맵이 스크롤한 뒤, 에피소드 띠가 위에서 내려오며 튀고, 조금 늦게 말풍선이 꼬리 끝에서 커진다.
-결정은 [ADR-0070](../adr/0070-journey-map-sheet-entrance-motion.md)이고, 가정 A1 ~ A5 · 관찰 O-1 · 케이스 id는 저장소 밖 하네스 작업 폴더의 계약 · 테스트 계획에서 왔다. 이 절은 기기에서만 닫히는 열 가지(SM1 ~ SM10)만 본다.
+결정은 [ADR-0077](../adr/0077-journey-map-sheet-entrance-motion.md)이고, 가정 A1 ~ A5 · 관찰 O-1 · 케이스 id는 저장소 밖 하네스 작업 폴더의 계약 · 테스트 계획에서 왔다. 이 절은 기기에서만 닫히는 열 가지(SM1 ~ SM10)만 본다.
 
 | 이미 지는 층 | 무엇을 |
 |---|---|
@@ -439,6 +439,18 @@ e2e-green 회차가 iOS와 같은 빌드로 돌았다(산출물 · 측정 방식
 - 앱 ui: `StepSheet.motion.ui.test.tsx` · `StepSheet.countup.ui.test.tsx` · `JourneyMapEpisodeHeader.motion.ui.test.tsx` · `MapUnitStage.ui.test.tsx` · `JourneyMapScreen.sheet-motion.ui.test.tsx` · `JourneyMapScreen.sheet-motion-close.ui.test.tsx`
 - 앱 integration: `App.journey-map-sheet-motion.integration.test.tsx`
 - ui-lynx: `EpisodeHeader.unit.test.ts` · `EpisodeHeader.ui.test.tsx`
+
+## 결과 화면의 머리 칩 오름 — Android 회차 (2026-10-20)
+
+[ADR-0064](../adr/0064-stat-motion.md) D2 · D4의 칩 오름(아이콘 커짐 → 숫자 굴림 → 빛 띠)이 학습 결과 화면에서 재생되는지, 맵에 돌아가 다시 굴리지 않는지를 AVD `R6_API30`(API 30 · 392.7 × 851 dp, Debug APK + 로컬 HTTP 번들, 계측 픽스처 로그인)에서 봤다. 번들은 `feat/learning-hide-header-chips` `a68cd5af`, 대조는 같은 APK에 `origin/main` `d937f3bf` 번들. 연속 학습이 오르는 조건은 픽스처가 연속 학습 RPC 둘을 임시로 답하게 해서 만들었다(`learning_streak` 0, `record_learning_days` 1 — 저장소에 넣지 않음). 결과 화면이 서는 순간부터 `screenrecord`로 찍고 프레임을 뽑았다. 분석은 [성능 기록](../performance/reports/result-chip-bump-android-r6-api30-01.md).
+
+| 항목 | 결과 | 증거(칩 줄만 잘라 시간순으로 놓은 프레임) |
+|---|---|---|
+| 튜토리얼 `Ordering` 통과 → `PERFECT LESSON!` · 연속 학습 0 → 1 | 재생됨 — 불꽃 아이콘이 커지고 숫자가 0 → 1로 굴러간 뒤 칩 면이 주황으로 차며 빛 띠가 지나가고, 정지 칩(1)으로 돌아온다. `1 Day Streak` 배지와 함께 | [tutorial-streak](evidence/android-result-chip-bump-tutorial-streak-frames.png) |
+| 카탈로그 에피소드 1 최종 테스트 통과 → `PERFECT LESSON!` · 연속 학습 0 → 1 · 트로피 1 → 2 | 재생됨 — 두 칩이 함께 오른다(굴림 중 숫자가 반쯤 걸린 프레임, 두 칩에 빛 띠) | [catalog-final](evidence/android-result-chip-bump-catalog-final-frames.png) |
+| 결과 → 맵 복귀(마무리 컷 · 연속 학습 축하 화면을 지나서) | 다시 굴리지 않음 — 맵 칩이 1 · 2로 정지해 선다 | [map-after](evidence/android-result-chip-bump-map-after-frames.png) |
+| 대조: `origin/main` 같은 최종 테스트 결과 | 오름 없음 — 결과 화면 칩이 처음부터 1 · 2로 정지 | [catalog-final-base](evidence/android-result-chip-bump-catalog-final-base-frames.png) |
+| 대조: `origin/main` 맵 복귀 | 맵에서 뒤늦게 오름 — 칩이 0 · 1로 섰다가 1 · 2로 굴러간다 | [map-after-base](evidence/android-result-chip-bump-map-after-base-frames.png) |
 
 ## 복원
 

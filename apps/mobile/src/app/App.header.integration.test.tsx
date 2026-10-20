@@ -6,6 +6,9 @@ import { fireEvent, screen } from "@lynx-js/react/testing-library";
 import { App } from "./App";
 import type { AppJourneySeed } from "./App";
 import { renderSignedInApp } from "./test-helpers/signed-in-app";
+import notification03 from "@libitums/icons/lynx/notification-03";
+import { color } from "@libitums/design-tokens";
+import { statChipClassName } from "../components/stat-chip-class";
 
 // App · 전역 머리(`AppHeader`) · 바텀 네비게이션 의 실제 결선을 봅니다.
 // 목킹하지 않습니다(외부 IO 없음).
@@ -101,4 +104,38 @@ test("[AH-I7] 젬 잔액이 있어도 탭과 학습 화면의 상단 젬 칩은 
 
   expect(screen.getByTestId("learning-shell")).toBeInTheDocument();
   expect(screen.queryByTestId("top-bar-gem")).not.toBeInTheDocument();
+});
+
+function expectTopBarShape(): void {
+  const icon = screen.getByTestId("top-bar-notifications-icon");
+  expect(icon.getAttribute("content")).toBe(notification03);
+  expect(icon.getAttribute("current-color")).toBe(color.fg.neutral);
+  for (const id of ["top-bar-streak", "top-bar-trophy"]) {
+    expect(screen.getByTestId(id).getAttribute("class")).toBe(
+      statChipClassName("white", "touch-target"),
+    );
+  }
+}
+
+test("[NBI1] 탭 루트 셋은 같은 알림 아이콘 · 칩 높이를 그리고, 학습 화면에는 상단 줄이 없다", async () => {
+  await renderSignedInApp(
+    <App
+      journeySeed={journeySeedBefore("ordering")}
+      completedEpisodeIntroIds={["tutorial-intro"]}
+    />,
+  );
+  for (const tab of ["journey", "roleplay", "settings"] as const) {
+    fireEvent.tap(screen.getByTestId(`ui-lynx-bottom-navigator-item-${tab}`), {});
+    expectTopBarShape();
+  }
+
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), {});
+  fireEvent.tap(screen.getByTestId("step-sheet-start"), {});
+  expect(screen.getByTestId("learning-shell-exit")).toBeInTheDocument();
+
+  // 학습 중에는 연속 학습 · 트로피 칩과 알림 버튼이 서지 않는다 — 결과 화면에서 다시 선다.
+  expect(screen.queryByTestId("top-bar-streak")).toBeNull();
+  expect(screen.queryByTestId("top-bar-trophy")).toBeNull();
+  expect(screen.queryByTestId("top-bar-notifications")).toBeNull();
 });

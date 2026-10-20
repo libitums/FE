@@ -96,6 +96,8 @@ export type LearningShellCopy = {
   readonly exitLesson: string;
   readonly completionDescription: string;
   readonly completedQuestions: (count: number) => string;
+  readonly completedActivities: (count: number) => string;
+  readonly completionStats: { readonly questions: string; readonly activities: string };
   readonly leaveDialog: {
     readonly title: string;
     readonly description: string;
@@ -234,7 +236,7 @@ export type VisualNovelCopy = {
 
 export type RoleplayCopy = {
   readonly title: string;
-  readonly form: Readonly<Record<"messenger" | "phone-call" | "visual-novel", string>>;
+  readonly form: Readonly<Record<"messenger" | "phone-call" | "visual-novel" | "story", string>>;
   readonly viewAll: string;
   readonly viewAllLabel: (sectionLabel: string) => string;
   readonly plus: string;

@@ -20,7 +20,7 @@ const questionOf = (mapped: CatalogMappedItem): Record<string, unknown> | undefi
 const skippedWith = (reason: string) => expect.objectContaining({ kind: "skipped", reason });
 
 describe("문화 카드 매핑 (CCM)", () => {
-  test("CCM1. u01 CULT-01 꼴은 제목 둘 · 제목 로마자 · 영어 본문 · 한국어 본문을 싣는다", () => {
+  test("CCM1. u01 CULT-01 꼴은 제목 둘 · 제목 로마자 · 영어 본문 · 한국어 본문 · 그림 주소를 싣는다", () => {
     const mapped = cultureCardItemOf(cultureCard(), port);
 
     expect(mapped.kind).toBe("culture-card");
@@ -31,6 +31,7 @@ describe("문화 카드 매핑 (CCM)", () => {
       titleRomanization: "pyeonuijeom bongtu",
       body: "At Korean convenience stores, you buy bags separately.",
       koreanBody: "한국 편의점에서는 봉투를 따로 사요.",
+      imageUrl: "https://cdn/images/a.jpg",
     });
   });
 
@@ -46,6 +47,7 @@ describe("문화 카드 매핑 (CCM)", () => {
       titleRomanization: null,
       body: "Bags cost extra.",
       koreanBody: null,
+      imageUrl: null,
     });
   });
 
@@ -111,17 +113,41 @@ describe("문화 카드 매핑 (CCM)", () => {
     expect(spy).toHaveBeenCalledWith("{이름}이 샀어요.", "ko");
   });
 
-  test("CCM5. 요령 · 본문 로마자 · 음원 · 그림은 결과에 어떤 키로도 실리지 않는다", () => {
+  test("CCM5. 요령 · 본문 로마자 · 음원은 결과에 어떤 키로도 실리지 않는다(그림 주소만 실린다)", () => {
     const question = questionOf(cultureCardItemOf(cultureCard(), port)) ?? {};
 
     expect(Object.keys(question).sort()).toEqual(
-      ["body", "koreanBody", "title", "titleRomanization", "titleTranslation"].sort(),
+      ["body", "imageUrl", "koreanBody", "title", "titleRomanization", "titleTranslation"].sort(),
     );
     const dumped = JSON.stringify(question);
     expect(dumped).not.toContain("hanguk pyeonuijeomeseoneun");
     expect(dumped).not.toContain("a.mp3");
-    expect(dumped).not.toContain("a.jpg");
     expect(dumped).not.toContain("맞아요");
+  });
+
+  test("CCM7. 그림 주소는 콘텐츠 그림 포트(imageUrlOf)로만 풀고, 경로가 없거나 풀리지 않으면 null이며 카드는 건너뛰지 않는다", () => {
+    const resolver = vi.fn((path: string) => `https://cdn/${path}`);
+    const withPath = cultureCard({
+      stimulus: {
+        text: t("한국어", "r", "English body."),
+        imageUrl: "content/images/u01-water/cult-1.jpg",
+      },
+    });
+
+    expect(
+      questionOf(cultureCardItemOf(withPath, { ...port, imageUrlOf: resolver })),
+    ).toMatchObject({ imageUrl: "https://cdn/content/images/u01-water/cult-1.jpg" });
+    expect(resolver).toHaveBeenCalledWith("content/images/u01-water/cult-1.jpg");
+
+    // 디코더가 빈 문자열을 키 없음으로 바꾸므로 「없음」은 키가 없는 꼴입니다.
+    const noPath = cultureCard({ stimulus: { text: t("한국어", "r", "English body.") } });
+    const unresolvedPort = { ...port, imageUrlOf: () => null };
+    expect(cultureCardItemOf(noPath, port).kind).toBe("culture-card");
+    expect(questionOf(cultureCardItemOf(noPath, port))).toMatchObject({ imageUrl: null });
+    expect(cultureCardItemOf(withPath, unresolvedPort).kind).toBe("culture-card");
+    expect(questionOf(cultureCardItemOf(withPath, unresolvedPort))).toMatchObject({
+      imageUrl: null,
+    });
   });
 
   test("CCM6. 같은 문항을 두 번 매핑하면 같고 입력은 바뀌지 않는다", () => {

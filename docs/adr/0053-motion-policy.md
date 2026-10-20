@@ -55,6 +55,7 @@
 - **`transform`의 scale도 토큰이다**(4단계). `scale(0.95)` · `scale(0.96)` · `scale(0.8)` 다섯 자리(`round-button.css` · `learning-unit.css` `:active`, `dialog.css` enter from · exit to,
   `lesson-complete-screen.css` reward from)를 `scale(var(--libitum-motion-scale-pressed | enter | reward))`로 바꿨다 — D6. *(2026-10-11 주: 눌림 확장이 `button.css` · `card.css` ·
   `option-selector.css` · `sentence-order-chip.css` · `roleplay-card.css`의 `:active`에 같은 꼴 다섯 자리를 더해 **열 자리**다 — 정정 기록 1. 규칙 · allowlist는 그대로다.)*
+  *(2026-10-19 주: `top-bar.css` 알림 버튼이 더해져 **열하나** — D3 적용 기록 ⟨2026-10-19⟩.)*
   **항등값 `scale(1)`은 리터럴로 둔다**(「원상태」이지 토큰의 세 경우가
   아니다). **거울 반전 `scaleX(-1)`도 리터럴이다**(`card.css` RTL 화살표 — 토큰이 없는 방향 반전이지 크기가 아니다). 규칙의 항등 예외는 「숫자 인자의 절댓값이 전부 1」이다.
 - **`.ts` · `.tsx`의 inline style도 같은 정책이다**(4단계). 객체 리터럴의 `transition*` · `animation*` 속성(camelCase · kebab 둘 다)의 **문자열 리터럴 값**과 JSX `style="…"` 문자열에
@@ -66,6 +67,7 @@
   리터럴 하나의 이유로만 실패한다**(ADR-0006 D1).
 - **Content 예외는 allowlist 한 파일이다** — `episode-narrative/narrative-background.css`(서사 배경 연출, 비항등 scale 13줄 포함). 사유 문장은 allowlist 자체에 있고, 없는 파일 · 위반 0인
   항목은 실패다. `scale(0)` · `scale(1.2)` 같은 새 값은 allowlist 사유로만 들어온다(토큰 추가는 design-system 몫).
+  *(2026-10-20 주: 지금 항목은 **넷**이다 — 서사 배경 · 지표 칩 연출(`stat-chip-motion.css`) · 지표 모달 반복(`journey-stat-modal-motion.css`) — 이 둘은 D4 적용 기록 ⟨2026-10-16⟩ — · 문화 카드 뒤집기(`culture-card-activity.css`, D3 적용 기록 ⟨2026-10-20⟩). 각 사유는 이 문서에 옮겨 적지 않고 allowlist 항목의 `reason`이 진다.)*
 - 검증: unit은 숫자 대조 대신 **문자열 단언**(`scale(var(--libitum-motion-scale-pressed))`)과 **비항등 리터럴 0** 개수를 센다 — 토큰 값이 바뀌어도 CSS를 고칠 일이 없고 테스트는
   「토큰을 쓰는가」만 묻는다. 샌드박스 통합 테스트가 `.tsx`의 `style={{ transition: "opacity 150ms" }}` · `style="transition: …"`에서 exit 1, 토큰만 쓴 inline에서 exit 0을 고정한다.
 
@@ -82,7 +84,7 @@
 - *(1단계에서 정함. 4단계가 더한 소비자는 `LearningSessionHeader` 하나 — D5.)*
 - ⟨2026-10-19 — 적용 기록이고 결정을 바꾸지 않는다⟩ **「standard DOM byte 불변」의 예외가 하나 생겼다** — 여정 맵 유닛 탭 등장 모션이 새 래퍼 다섯(`.step-sheet-pop` · `.step-sheet-progress-percent-pop` ·
   `.step-sheet-start-wrap` · `.journey-step-node-stage` · `.journey-step-node-pop`)을 standard · reduced 모두에 늘 세운다. 단계마다 DOM 모양이 바뀌면 다시 마운트되어 애니메이션이 다시 돌기 때문이다.
-  reduced 표식(클래스 + `data-motion`)은 조건부 spread · 움직이는 요소에만 — 규칙 그대로다([ADR-0070](0070-journey-map-sheet-entrance-motion.md) D9).
+  reduced 표식(클래스 + `data-motion`)은 조건부 spread · 움직이는 요소에만 — 규칙 그대로다([ADR-0077](0077-journey-map-sheet-entrance-motion.md) D9).
 
 ### D3. reduced에서 걷는 것과 남는 것은 정본 표 그대로다 — Spinner는 예외, 눌림은 막, 변형이 없는 컴포넌트에는 변형을 만들지 않고, 카탈로그는 컴포넌트별 `ReducedMotion` 스토리로 보인다
 
@@ -103,6 +105,17 @@
   호스트가 정한다** — 앱이 넘기는 것은 boolean 하나라 D1의 토큰 규칙 밖이고 `lint:motion`의 대상도 아니다(호출 인자는 CSS · inline style이 아니다). Android에서는 거리와 무관하게
   약 0.23 ~ 0.27초였다(3,673dp도 같아 긴 이동은 사실상 점프로 보인다 — 보류 표). iOS는 재지 않았다. 「항상 부드럽게」는 사용자 결정이다. 근거 · 기기 기록은
   [ADR-0022](0022-scroll-regions-and-fixed-affordances.md) 적용 기록 ⟨2026-10-14⟩ · [동작 줄이기 e2e](../e2e/motion-reduced.md) E-M1 · E-M2.)*
+- ⟨2026-10-19 — 적용 기록이고 결정을 바꾸지 않는다⟩ **세로축 회전(`rotateY`)의 첫 소비자가 섰다**(평면 회전은 진행 불러오기 고리가 먼저다) — 문화 카드의 앞 · 뒤 뒤집기([ADR-0072](0072-culture-card-flip.md) D3).
+  `rotateY(90deg → 0deg)` keyframe 한 번, 시간 · 곡선은 토큰(`d6` · `enter`)이고 각도는 D1의 다섯 규칙 밖(시간 · easing · scale만 본다)이다. 뒤집을 때만 돌고(처음 선 면 · 다음 카드는 돌지 않는다),
+  reduced는 이 표의 「회전은 즉시」대로 클래스를 붙이지 않는다 — 불투명도도 걸지 않는다(사용자 요구 「즉시」). reduced 표식은 조건부 spread `data-motion="reduced"`(D2). `perspective`는 Lynx 부분 지원이라 쓰지 않았다.
+  새 토큰 · allowlist · `lint:motion` 규칙 변경은 0이다. 기기에서는 보지 않았다(문화 카드 e2e CF2 · CF5 미실행).
+  *(2026-10-20 주: 이 기록의 「세로축 회전」 · 「allowlist 변경 0」은 그날의 사실이다 — 다음 적용 기록에서 가로 배율로 바뀌었다.)*
+- ⟨2026-10-20 — 적용 기록이고 결정을 바꾸지 않는다⟩ **문화 카드 뒤집기가 세로축 회전에서 가로 배율로 바뀌었다**([ADR-0072](0072-culture-card-flip.md) `정정 기록` 2026-10-20, 사용자 결정).
+  iOS 시뮬레이터 녹화(2026-10-20)에서 `rotateY` 회전 중 카드의 한쪽 반이 덱 뒤 두 장 뒤로 그려져 옅은 주황이 비쳤고, keyframe 두 개를 `scaleX(0) → scaleX(1)`로 바꿨다.
+  이 표에서는 「회전은 즉시」가 아니라 **「확대는 즉시」** 줄에 든다 — reduced 처리는 같다(클래스를 붙이지 않아 면이 즉시 바뀌고 불투명도도 걸지 않는다). 시간 · 곡선은 그대로 토큰(`d6` · `enter`)이다.
+  시작 값 `scaleX(0)`은 D1의 `scale-literal`에 걸린다 — 토큰 셋(pressed · enter · reward)이 모두 0보다 커 표현할 수 없다. 그래서 D1의 경로대로 **allowlist 넷째 항목**으로 이 파일을 올렸다(사유는 allowlist). 끝 값 `scaleX(1)`은 항등 예외다.
+  새 토큰 · `lint:motion` 규칙 변경은 0이다. 기기 확인은 [새 형식 화면 e2e](../e2e/episode-format-screens.md) 「G2」 CF10 · CF10-A — CF10은 2026-10-20 iOS 시뮬레이터에서 통과, CF10-A(Android)는 미실행.
+- ⟨2026-10-20, 이어서 — 적용 기록이고 결정을 바꾸지 않는다⟩ **뒤집는 동안 덱 뒤 두 장을 숨긴다**([ADR-0072](0072-culture-card-flip.md) `정정 기록` 2026-10-20 「같은 날, 이어서」, 사용자 결정). 덱 두 장에 `opacity` keyframe 둘(`deck-hide-front` · `-back`), 시간 · 곡선은 면과 같은 토큰(`d6` · `enter`)이고 **채움 모드가 없어** 끝나면 각 장의 불투명도로 돌아온다. reduced에서는 면이 즉시 바뀌므로 클래스가 붙지 않는다. `opacity`는 D1 `scale-literal`의 대상이 아니라 allowlist 항목 수는 넷 그대로이고, 새 토큰 · 규칙 변경도 0이다.
 - **카탈로그(Storybook)는 컴포넌트별 `motion` arg + `ReducedMotion` 스토리다**(4단계). 새 다섯(Round Button · Learning Unit · Page Indicator · Settings Cell · Chat Bubble)은 **컨텍스트 경로** —
   엔트리가 `<MotionProvider motion={data.motion}>`로 감싸고 컴포넌트에 prop을 주지 않는다(제품 앱과 같은 길). 기존 넷은 prop 경로 그대로, Visual Novel Dialog는 `reducedMotion` prop arg로 스토리만.
   Chat Bubble은 `reveal: "instant" | "typewriter"` arg와 `Typewriter` 스토리를 더했다 — `reveal` 없이는 reduced가 보일 것이 없다. 순수 함수 `normalizeStoryMotion(value)`(`"reduced"`만 reduced)을
@@ -112,6 +125,14 @@
   그래서 정본 매핑의 「회전은 즉시」를 따른다 — reduced에서는 고리 대신 `time` 아이콘을 멈춘 채 그리고 루트에 `data-motion="reduced"`를 단다. `Try again`을 누른 뒤의 로딩도 같은 줄이라 멈춘다.
   회전 길이 · 가속은 토큰(`--libitum-motion-duration-spinner` · `--libitum-motion-easing-linear`), 줄의 등장은 불투명도만(standard `d4` · `enter`, reduced `d2` · `linear`)이다.
   고리 규칙은 Button 안 스피너와 같은 모양을 앱 CSS에 한 벌 더 둔 것이다(Button의 선택자가 `.ui-lynx-button-loading`에 묶여 있다). 기기에서 reduced 정지 표시는 보지 않았다.
+- ⟨2026-10-19 — 적용 기록이고 결정을 바꾸지 않는다⟩ **상단 줄의 알림 버튼이 눌림 축소의 여섯째 자리가 됐다**(`apps/mobile/src/components/top-bar.css` — 여정 맵 · 롤플레이 · 설정 탭과
+  학습 화면이 함께 쓰는 `TopBar`). 정정 기록 1의 「LearningUnit 꼴」 그대로다 — 버튼 루트 base 규칙에 `transition: transform duration.pressed easing.easing`, `:active`에
+  `scale(var(--libitum-motion-scale-pressed))`. D1의 scale `var()` 자리는 **열 → 열하나**다. reduced 표지는 루트(`top-bar-notifications-motion-reduced` + `data-motion="reduced"`, standard에는
+  속성 없음)이고 `transform: none` · `transition: none`(전환이 transform뿐이다). 버튼은 흰 면이고 `:active` 색 변화가 없어 **black 막**이다(「밝은 면 black」 — DS-Q11의 읽기 그대로) —
+  `top-bar-notifications-shade`, 버튼 첫 자식, `opacity.pressed-shade`(0.08), reduced일 때만 DOM에 선다. 막의 유무를 조건 자식 한 칸이 아니라 **버튼 트리 두 갈래**로 나눴다 — jsdom 테스트 렌더러가 조건 칸을
+  이름 없는 `<wrapper>`로 감싸 TB4의 「첫 자식」 단언(`firstElementChild`)이 깨지기 때문이다(기기 트리 사정이 아니다 — 같은 꼴의 `RoleplayCard` 조건 첫 자식 막은 iOS에서 동작한다). 같은 줄의 연속 학습 · 트로피 칩은 **넣지 않았다** — 학습 화면에서는 버튼이 아니고(`onTap` 없음), 여정 맵에서 버튼인 칩까지 줄일지는
+  범위 밖이라 같은 줄에서 반응이 갈린다(「미확인 · 후속」 11). `lint:motion` allowlist 변경 0. 검증은 unit(`top-bar.css.unit.test.ts` · `top-bar-press.unit.test.ts`) · ui(`TopBar.ui.test.tsx`) ·
+  integration(`App.motion.integration.test.tsx` NBI2), 기기는 [알림 버튼 e2e](../e2e/notification-button.md) — 2026-10-19 회차 1에서 **눌림 · 동작 줄이기는 보지 않았다**.
 
 ### D4. 보상 모션은 한 화면에서 한 번이고 순수 파생이며 퇴장이 없다 — 재화 자리는 없다
 
@@ -133,9 +154,17 @@
   배너가 머무는 시간(1,600 ms)은 전환의 시간이 아니라 화면 상수이고 토큰이 아니다 — 그 근거는 ADR-0058 쪽이 진다.
   ⚠ 기기에서는 배너가 서고 스스로 닫히는 것만 봤다 — **등장 모션의 체감과 reduced 변형은 미확인**이다([보상 모션 e2e](../e2e/motion-reward.md) 「둘째 자리」).
 
+- ⟨2026-10-19 — 적용 기록이고 결정을 바꾸지 않는다⟩ **보상 조합 일부(`reward` · `enter-expressive` · `scale.reward`)를 쓰는 셋째 자리 — 활동 완료 카드의 링 + 체크**(시안 A, 사용자 결정 —
+  폭죽 없음 · XP 없음 · 바탕 그대로). 결과 화면 앞, 학습 껍데기 카드 안의 `LearningActivityComplete`다. 링은 `d8` · `linear` 두 번(두 반쪽 회전 마스크 — Lynx `<svg content>`는 정지 그림이라
+  `stroke-dashoffset`을 움직일 수 없다), 안쪽 원은 `reward` · `enter-expressive` · `scale.reward` → 1(시작 `d9`), 체크 · 제목 · 숫자 타일은 앞부분을 멈춘 keyframe(`d8` · `d9`, 시작 `d9` · `d8`)이다.
+  시안의 넘침(1.06)과 ≈ 1.7초는 토큰에 없어 버렸다(1.2초 · 넘침 없음). 새 토큰 · allowlist · `lint:motion` 규칙 변경은 0이다. 세 규칙은 그대로 지킨다 — ① **한 화면 한 번**: 결과 화면(배지 · 폭죽)과 다른 화면이고
+  카드 안에 다른 보상 모션이 없다. ② **순수 파생**: 클래스는 `activityCompleteMotionOf(useMotion())`(`ring` · `still`)이고 ref · phase · `key`가 없다. ③ **퇴장 없음**: `See results`가 곧장 넘어간다.
+  **reduced는 불투명도 변형도 두지 않고 처음부터 끝 모습이다**(모션 클래스 0 · 루트 `data-motion="reduced"`) — D3 표의 「불투명도는 유지」보다 덜 움직이는 쪽이고 사용자 지시다.
+  ⚠ 제목 · 타일의 올라옴은 불투명도를 0에서 올리므로 D7의 iOS 창(≈ 1.6초)에 같은 조건으로 걸린다 — 결과 화면 제목 묶음의 올라옴과 같은 처지다. 기기 · 보조기술 모두 미확인이다([완료 화면 e2e](../e2e/learning-completion.md) 「시안 A」).
+
 - ⟨2026-10-16 — 적용 기록⟩ **학습 완료 화면은 「한 화면 한 번」의 예외가 됐다**(사용자 결정 — [ADR-0064](0064-stat-motion.md) D4). 통과 배지에 폭죽 · 글 올라옴 · 머리 칩 오름이 이어진다.
   순수 파생 · 퇴장 없음은 그대로다. 지표 모달의 반복 · 칩의 연출 크기는 D1 allowlist 두 줄(사유는 allowlist)이다. 정본에 되묻는 것으로 남는다.
-- ⟨2026-10-19 — 적용 기록⟩ **여정 맵 유닛 탭이 「한 화면 한 번」의 둘째 예외가 됐다**(사용자 결정 「playful」 — [ADR-0070](0070-journey-map-sheet-entrance-motion.md) D10). 한 번의 탭에 띠 · 말풍선 등장 · 노드 튕김 · 반짝임 · 띠 빛이 서고
+- ⟨2026-10-19 — 적용 기록⟩ **여정 맵 유닛 탭이 「한 화면 한 번」의 둘째 예외가 됐다**(사용자 결정 「playful」 — [ADR-0077](0077-journey-map-sheet-entrance-motion.md) D10). 한 번의 탭에 띠 · 말풍선 등장 · 노드 튕김 · 반짝임 · 띠 빛이 서고
   시작 버튼이 세 번 숨 쉰다. 순수 파생(`(motion, 열린 유닛, 단계)`의 클래스 — 「한 번」은 마운트 수명이 보장) · 퇴장 없음은 그대로다. 연출 크기 · 숨쉬기 주기는 D1 allowlist 두 줄이다. 정본에 되묻는 것으로 남는다.
 
 ### D5. 전환은 등장만 있고 입력을 막지 않으며 타이머로 끝난다 — 진행 바 채움은 `progress` · `enter`로 차오르고, custom 화면 전환은 0이다
@@ -159,9 +188,9 @@
 - **custom 화면 전환은 0이다.** `AppSession`은 스택 최상단 하나만 그리고 이전 화면은 즉시 언마운트돼 퇴장을 걸 요소가 없으며, `Nav`는 방향을 모른다. 등장만 거는 반쪽 전환은 짝 규칙과 어긋나고
   모든 화면의 첫 프레임을 바꿔 e2e · 성능 보고서의 비교선을 흔든다. 5단계 설계 후보(결정 아님): 들어오는 화면만 crossfade, `app-screen` 호스트(`key` = 화면 정체), outgoing layer 없음, 제외 목록.
   선행: `AppSession` 300줄 해소, DS-Q3 · DS-Q5 답변, 사용자 결정 Q1 · Q3 · Q4, e2e · 성능 기준선 재설정.
-- ⟨2026-10-19 — 적용 기록이고 결정을 바꾸지 않는다⟩ **여정 맵 유닛 탭의 띠 · 말풍선 등장**([ADR-0070](0070-journey-map-sheet-entrance-motion.md)). 등장만 있고 닫기는 즉시다.
+- ⟨2026-10-19 — 적용 기록이고 결정을 바꾸지 않는다⟩ **여정 맵 유닛 탭의 띠 · 말풍선 등장**([ADR-0077](0077-journey-map-sheet-entrance-motion.md)). 등장만 있고 닫기는 즉시다.
   ① 등장이 **스크롤 도착을 기다린다** — 이미 제자리 · 도착(목적지 1 이내) · `d4` 조용함 · 열린 뒤 `d9` 상한 중 먼저. 대기 중에는 말풍선 · 띠가 불투명도 0이고, 그 자리 탭은 말풍선 래퍼가 잡아 닫는다.
-  **시작 버튼은 대기 중에도 탭을 받는다** — 이 D의 「입력을 막지 않는다」를 근거로 했고, 「대기는 보이는 전환이 아니다」라는 접근성 지적에 사용자가 「지금처럼」을 골랐다(ADR-0070 D6).
+  **시작 버튼은 대기 중에도 탭을 받는다** — 이 D의 「입력을 막지 않는다」를 근거로 했고, 「대기는 보이는 전환이 아니다」라는 접근성 지적에 사용자가 「지금처럼」을 골랐다(ADR-0077 D6).
   ② 카운트업 · 숫자 pop · 대기 끝은 **타이머**(`motionDurationMs`) — `bindtransitionend`가 없다는 위 사실 그대로. ③ 말풍선 · 띠의 막대 채움은 `width` 전환이 아니라 채움의 `transform: translateX` keyframe이다 —
   iOS 플랫폼 keyframe 애니메이터가 transform · opacity · background-color만 읽는다. 위 학습 진행 바의 `width` 전환은 그대로다. Android 에뮬레이터만 확인([보상 모션 e2e](../e2e/motion-reward.md) 「유닛 탭 등장 모션」).
 
@@ -313,6 +342,8 @@ e2e의 판정 조건은 플랫폼으로 가른다 — 즉시성(정착 전 나�
 9. **Storybook 브라우저에서 reduced 스토리가 실제로 막 · 즉시 반영을 그리는지** — 테스트는 id · 정규화 · 엔트리 텍스트까지(카탈로그 README 「한계」와 같다).
 10. **눌림 확장(정정 기록 1)의 Android 회차** — M5-A1 ~ M5-A6은 절차만 있고 실행하지 않았다. iOS에서도 reduced 열린 롤플레이 카드의 흰 막 · reduced bank 칩 · reduced 로딩 스피너(M5-I6)는
     미측정이다(계정 진행도 · playground에 `MotionProvider` 없음). 결과 칸은 `motion-tokens.md` 「눌림 확장 회차」.
+11. **상단 줄 칩의 눌림(D3 적용 기록 ⟨2026-10-19⟩)** — 알림 버튼만 줄어들고, 여정 맵에서 지표 모달을 여는 연속 학습 · 트로피 칩은 반응이 없다(정정 기록 1이 고친 「같은 화면에서 반응이 갈림」과
+    같은 모양). 칩은 학습 화면에서는 버튼이 아니라 `onTap` 유무로 갈라야 한다. 알림 버튼의 기기 눌림 · reduced 막도 아직 보지 않았다([알림 버튼 e2e](../e2e/notification-button.md) NBE3 · NBE4).
 
 ## 재검토 조건
 

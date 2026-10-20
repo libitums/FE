@@ -12,7 +12,10 @@ export type VocabCardQuestion = {
   readonly word: string;
   readonly romanization: string | null;
   readonly meaning: string;
-  /** 예문이 없거나 표제어와 같으면 `null`입니다. */
+  /**
+   * 예문이 없거나 표제어와 같으면 `null`입니다. ⟨2026-10-19⟩ 카드 화면은 예문을 그리지 않습니다
+   * (ADR-0073 — 정보가 너무 많다는 사용자 결정). 매핑은 그대로 두어 되돌릴 자리가 화면 하나입니다.
+   */
   readonly example: VocabCardExample | null;
 };
 
@@ -35,10 +38,12 @@ export type VocabCardActivityProps = {
 export type VocabCardCopy = {
   readonly instruction: string;
   readonly badge: string;
-  readonly exampleTitle: string;
+  /** 카드 아래 단 하나의 버튼입니다 — 마지막 카드에서도 같은 라벨입니다. */
+  readonly gotIt: string;
+  /** 카드 진행 헤더의 캡션 겸 접근성 이름입니다 — `Word 4 of 7`. */
+  readonly runLabel: (ordinal: number, total: number) => string;
   readonly pronunciation: (romanization: string) => string;
   readonly meaning: (meaning: string) => string;
-  readonly example: (text: string) => string;
 };
 
 export type VocabCardTestId =
@@ -47,9 +52,4 @@ export type VocabCardTestId =
   | "vocab-card-word"
   | "vocab-card-romanization"
   | "vocab-card-meaning"
-  | "vocab-card-example"
-  | "vocab-card-example-title"
-  | "vocab-card-example-text"
-  | "vocab-card-example-support"
-  | "vocab-card-example-romanization"
-  | "vocab-card-example-translation";
+  | "vocab-card-got-it";

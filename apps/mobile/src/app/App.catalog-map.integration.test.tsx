@@ -292,12 +292,6 @@ afterEach(() => {
 const cover = (episodeId: string) =>
   screen.getByTestId(`ui-lynx-special-unit-catalog-cover-${episodeId}`);
 const tapCover = (episodeId: string) => void fireEvent.tap(cover(episodeId), {});
-// 이름이 드는 표지는 기록이 없으면 앞에 가드 화면이 섭니다 - 건너뛰면 기본 문구(「이름」)로 표지가 이어집니다.
-const skipProfileGate = () =>
-  void fireEvent.tap(
-    within(screen.getByTestId("learner-profile-gate-skip")).getByTestId("ui-lynx-button"),
-    {},
-  );
 const tapNext = () =>
   void fireEvent.tap(
     within(screen.getByTestId("catalog-cover-screen-next")).getByTestId("ui-lynx-button"),
@@ -460,13 +454,13 @@ test("I4. (AC6) 본문 없는 넷째 에피소드는 준비 중 구획으로 서
     holdBodies: true,
   });
 
-  expect(screen.getByTestId("catalog-unavailable-caption-u04-x")).toHaveTextContent("COMING SOON");
+  expect(screen.getByTestId("catalog-pending-u04-x")).toBeInTheDocument();
   expect(screen.queryByTestId("catalog-section-u04-x")).not.toBeInTheDocument();
 
   releaseBodies();
 
   await vi.waitFor(() => expect(screen.getByTestId("catalog-section-u04-x")).toBeInTheDocument());
-  expect(screen.queryByTestId("catalog-unavailable-u04-x")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("catalog-pending-u04-x")).not.toBeInTheDocument();
   const refreshed = events.filter((event) => event.name === "episode_content_refreshed");
   expect(refreshed).toHaveLength(1);
   expect(refreshed[0]).toMatchObject({ manifest: "unchanged", fetchedCount: "1" });
@@ -489,7 +483,6 @@ test("I5. (AC4) 넷째 표지의 {이름}은 프로필이 없으면 「이름」
 
   expect(cover("u04-x")).toHaveAttribute("data-status", "available");
   tapCover("u04-x");
-  skipProfileGate();
   tapIntroNext();
 
   // 대사는 타자기로 쓰이므로 끝까지 보일 때까지 기다립니다.
@@ -547,7 +540,6 @@ test("I6b. (AC5) 이미지 경로가 비어 있는 컷은 이미지 요소 없�
   releaseBodies();
   await vi.waitFor(() => expect(screen.getByTestId("catalog-section-u04-x")).toBeInTheDocument());
   tapCover("u04-x");
-  skipProfileGate();
   tapIntroNext();
 
   expect(screen.queryByTestId("narrative-background-image")).not.toBeInTheDocument();

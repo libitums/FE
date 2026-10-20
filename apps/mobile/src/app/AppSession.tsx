@@ -7,11 +7,9 @@ import type { AnswerResult } from "../lib/answer-result";
 import type { EntryAppProps } from "../lib/entry-flow";
 import { loadUiLanguage } from "../lib/ui-language";
 import type { EntryLanguage } from "../lib/entry-language";
-import { safeAreaInsetsFrom, tappableBottomInsetFrom, zeroSafeAreaInsets } from "../lib/safe-area";
+import { safeAreaInsetsFrom, tappableBottomInsetFrom } from "../lib/safe-area";
 import { UiCopyContext, uiCopyFor } from "../lib/ui-copy";
 import { initialSessionOptions } from "../lib/session-options";
-import { isMapItemComplete, journeyMapSections } from "../screens/journey-map/journey-map";
-import { roleplaySectionsFrom } from "../screens/roleplay-list/roleplay-list";
 import type { MessengerAppProps, MessengerUnitId } from "../screens/messenger/messenger.contract";
 import type {
   NotificationAppProps,
@@ -40,11 +38,13 @@ import type {
 import { episodePrologueFor as productEpisodePrologueFor } from "./episode-prologues";
 import type { EpisodeFinalTest } from "../screens/episode-final/episode-final.contract";
 import { episodeFinalTestFor as productEpisodeFinalTestFor } from "../screens/episode-final/episode-final-tests";
-import { completedVisualNovelUnitIdsFrom, productJourneySeed } from "./journey-progress";
+import { productJourneySeed } from "./journey-progress";
+import { roleplaySectionsOf } from "./roleplay-sections";
 import type { AppJourneySeed } from "./journey-progress";
 import { catalogCompletionKeysOf, catalogMapSectionsOf } from "../screens/journey-map/catalog-map";
 import type { AppSessionContent } from "./episode-content";
-import { isFullBleedScreen } from "./full-bleed-screens";
+import { shellHeaderTop } from "./full-bleed-screens";
+import { shellInsetsOf } from "./shell-edges";
 import { renderScreen } from "./render-screen";
 import { screenWiring } from "./screen-wiring";
 import { useOpenedPush } from "./use-opened-push";
@@ -55,6 +55,10 @@ import { useProgressLoadEvents } from "./use-progress-load-events";
 import { useLearnerProfile } from "./use-learner-profile";
 import { useCatalogFinishGuard } from "./catalog-finish-guard";
 import { episodeSurveyWiring } from "./episode-survey-wiring";
+import { firstUnitGuideEnabled } from "./first-unit-guide-enabled";
+import { OutOfTicketsDialog } from "../screens/tickets/OutOfTicketsDialog";
+import { withLearningTickets } from "./ticket-wiring";
+import { useLearningTickets } from "./use-learning-tickets";
 import type { AppProps } from "./app-props";
 import type { AppSessionControl } from "./leave-app.contract";
 
@@ -109,6 +113,7 @@ export function AppSession({
   );
   useProgressLoadEvents(progress.progressLoadPhase, episodeIntroEventSink);
   const learner = useLearnerProfile();
+  const tickets = useLearningTickets(progress.tickets, progress.setTickets, episodeIntroEventSink);
   const {
     completedStepCount,
     setCompletedStepCount,
@@ -139,29 +144,22 @@ export function AppSession({
   // 가진 젬 수입니다. 결제 서비스가 아직 없어 바뀌는 길이 없고, `Pay`는 「결제 준비 중」
   // 안내만 띄웁니다. 결제가 붙으면 setter가 여기 생깁니다.
   const [gemCount] = useState(initialGemCount);
-  // 탭 루트 화면 안에 겹침 레이어가 떠 있는가입니다. 화면이 알려 오고(`onScreenLayerChange`)
-  // 전역 머리가 그 동안 낭독에서 빠집니다. 화면이 내려가면 화면이 스스로 `false`를
-  // 알립니다.
+  // 탭 루트 화면 안에 겹침 레이어가 떠 있는가입니다. 화면이 알려 오고(`onScreenLayerChange`) 전역 머리가 그 동안
+  // 낭독에서 빠집니다. 화면이 내려가면 화면이 스스로 `false`를 알립니다.
   const [screenLayerOpen, setScreenLayerOpen] = useState(false);
 
-  // 롤플레이 구획입니다. **진행에서 파생합니다** — 에피소드는 여정에서 그 에피소드의
-  // 항목을 전부 끝냈을 때 열리고, 그 판정의 출처는 위의 진행 넷입니다. 상태로 따로 두면
-  // 진행과 어긋날 자리가 생깁니다(ADR-0007 D3). 결제 전에는 Plus 예고 항목을 싣지 않습니다.
-  const roleplaySections = roleplaySectionsFrom(journeyMapSections, (item) =>
-    isMapItemComplete(item, {
-      completedStepCount,
-      completedEpisodeIntroIds,
-      completedMessengerUnitIds,
-      completedPhoneCallUnitIds,
-      completedVisualNovelUnitIds: completedVisualNovelUnitIdsFrom(visualNovelProgress),
-      completedEpisodeFinalIds,
-    }),
-  );
+  // 롤플레이 구획 — 본편 에피소드마다 하나, 진행에서 파생합니다(roleplay-sections.ts).
+  const catalog = { episodeContent, catalogSections, catalogProgress };
+  const roleplaySections = roleplaySectionsOf({
+    catalog,
+    learnerFill: learner.learnerFill,
+    episodeLabel: uiCopyFor(entryLanguage).catalogMap.episodeLabel,
+  });
 
   const globalProps = useGlobalProps();
   const insets = safeAreaInsetsFrom(globalProps);
   const tappableBottom = tappableBottomInsetFrom(globalProps);
-  const wiring = screenWiring({
+  const screens = screenWiring({
     safeAreaInsets: insets,
     gemCount,
     phoneSignIn,
@@ -201,15 +199,14 @@ export function AppSession({
     entryLanguage,
     setEntryLanguage,
     ...progress.wiring,
-    episodeContent,
-    catalogSections,
-    catalogProgress,
+    ...catalog,
     setCatalogProgress,
     ...learner,
     finishGuard,
   });
+  const wiring = withLearningTickets(screens, tickets, progress, catalogSections);
 
-  // 셸이 가려지는 가장자리만큼 안쪽 여백을 잡고 셸 배경이 칠합니다 — 스플래시만 브랜드색(lib/safe-area.ts).
+  // 셸이 가장자리 여백을 잡고 배경을 칠합니다(자판 화면은 위만 — shell-edges.ts). 스플래시만 브랜드색.
   // 아래쪽만 예외입니다 — 바가 서면 셸은 터치를 가로채는 시스템 바만큼(`tappableBottomInset`,
   // Android 3버튼)만 비우고 탭 바 묶음이 그 밑을 덧댑니다. iOS · 제스처는 0입니다.
   // 누른 서버 푸시는 앱 구간에 들어선 뒤에 엽니다(ADR-0034).
@@ -221,9 +218,8 @@ export function AppSession({
   const screenNow = currentScreen(nav);
   const isPhoneCall = screenNow.name === "phone-call" || screenNow.name === "roleplay-phone-call";
   const showsNavigator = showsTabNavigator(nav);
-  // 가장자리까지 그림을 까는 화면은 셸이 여백을 잡지 않습니다 — 셸 배경이 칠하는 띠가
-  // 그림을 끊습니다. 여백은 화면이 자기 안에서 잡습니다(`wiring.safeAreaInsets`).
-  const shellInsets = isFullBleedScreen(screenNow) ? zeroSafeAreaInsets : insets;
+  // 셸 여백: 그림 화면 0 · 여정 맵 위 0 · 자판 화면 위만 — 비운 쪽은 화면이 잡습니다(`shell-edges`).
+  const shellInsets = shellInsetsOf(screenNow, insets, wiring);
   const bottomLayout = shellBottomLayout({
     showsNavigator,
     safeBottom: shellInsets.bottom,
@@ -232,18 +228,7 @@ export function AppSession({
 
   return (
     <UiCopyContext.Provider value={uiCopyFor(entryLanguage)}>
-      <FirstUnitGuideProvider
-        enabled={
-          progress.hasLoadedProgress &&
-          completedStepCount === 0 &&
-          completedEpisodeIntroIds.length === 0 &&
-          completedMessengerUnitIds.length === 0 &&
-          completedPhoneCallUnitIds.length === 0 &&
-          completedEpisodeFinalIds.length === 0 &&
-          visualNovelProgress.status === "active" &&
-          visualNovelProgress.beatIndex === 0
-        }
-      >
+      <FirstUnitGuideProvider enabled={firstUnitGuideEnabled(progress)}>
         <ErrorBoundary>
           <view
             className={
@@ -262,11 +247,13 @@ export function AppSession({
               {/* 탭 루트에서는 전역 머리가 콘텐츠 위에 겹칩니다. */}
               {showsNavigator ? (
                 <AppHeader
+                  top={shellHeaderTop(screenNow, insets)}
                   streakDays={progress.streakDays}
                   trophyCount={progress.headerTrophyCount}
                   celebrateStreak={progress.streakCelebration}
                   onStreakCelebrated={progress.onStreakCelebrated}
                   statBump={progress.wiring}
+                  tickets={tickets.header}
                   episodeSurvey={progress.episodeSurvey}
                   {...episodeSurveyWiring({
                     episodeIntroEventSink,
@@ -292,6 +279,10 @@ export function AppSession({
                 }}
               />
             ) : null}
+            {/* 티켓 없이 새 레슨을 열려 하면 어느 화면 위에서든 가운데 대화상자가 뜹니다(시안 E6m). */}
+            {tickets.outOfTickets === null ? null : (
+              <OutOfTicketsDialog {...tickets.outOfTickets} />
+            )}
           </view>
         </ErrorBoundary>
       </FirstUnitGuideProvider>

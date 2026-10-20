@@ -104,7 +104,7 @@ export const learningItemGuideEn: LearningItemGuideCopy = {
     description: "Tap Speak and read the sentence out loud, or tap Skip if you're not ready.",
   },
   writing: {
-    title: "Trace it, or skip it",
-    description: "Follow the pale letter with your finger and tap Check, or tap Skip to move on.",
+    title: "Trace the letter",
+    description: "Follow the pale letter with your finger, then tap Check.",
   },
 };

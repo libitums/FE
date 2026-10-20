@@ -42,7 +42,7 @@ export function DialoguePanel({
           accessibilityLabel={[speakerName, dialogue, romanization, translation]
             .filter(Boolean)
             .join(", ")}
-          surface={speakerRole === "self" ? "opaque" : "translucent"}
+          surface="translucent"
           contentLanguage="learning"
           languageTag="ko"
           continueIndicator="off"

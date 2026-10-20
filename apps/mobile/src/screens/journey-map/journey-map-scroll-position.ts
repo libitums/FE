@@ -35,6 +35,8 @@ export function headerBandCard(
 export type MapUnitMeasure = {
   /** 유닛 상자입니다(위 모서리 · 가로 중심). */
   readonly unit: MeasuredRect;
+  /** 누른 표식의 높이입니다. 없으면 레슨 원(`stepUnitSize`)입니다. */
+  readonly unitSize?: number;
   readonly scroll: MeasuredRect;
   readonly screen: MeasuredRect;
   /** 띠 손잡이입니다. 못 쟀으면 null. */
@@ -48,6 +50,7 @@ export function mapUnitPlacement(measure: MapUnitMeasure): StepPlacement {
   return stepSheetPlacementBelowHeader(
     {
       unitTop: measure.unit.top,
+      ...(measure.unitSize === undefined ? {} : { unitSize: measure.unitSize }),
       scrollViewTop: measure.scroll.top,
       scrollViewHeight: measure.scroll.height,
       screenTop: measure.screen.top,

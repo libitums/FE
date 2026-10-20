@@ -102,3 +102,15 @@ describe("문화 카드 · 문화 확인 단계의 계획 (PL)", () => {
     expect(plan).toMatchObject({ questionCount: 2, shownItemCount: 2, skippedItemCount: 0 });
   });
 });
+
+describe("레슨 계획의 상대 이름 (PC)", () => {
+  test("PC1. 계획은 에피소드 상위 상대 이름을 앞뒤 공백을 걷어 싣는다 — 대화 조립 아바타가 씁니다", () => {
+    const source = entryWith(cards(1));
+    const entry: ReadyEntry = {
+      ...source,
+      episode: { ...source.episode, counterpart: "  편의점 점원 " },
+    };
+
+    expect(catalogLessonPlanOf(entry, "S1", fill, noImageUrl)?.counterpartName).toBe("편의점 점원");
+  });
+});

@@ -68,6 +68,7 @@ export function catalogCoverModelOf(
   const cuts = catalogCutsOf(
     catalogCutViewsOf(entry.episode.prologue, {
       imageUrlOf: content.imageUrlOf,
+      audioTimingOf: content.audioTimingOf,
       fill: (text, script) => content.fillText(text, profile, script),
     }),
   );
@@ -94,6 +95,7 @@ export function catalogEpilogueModelOf(
   const cuts = catalogCutsOf(
     catalogCutViewsOf(entry.episode.epilogue, {
       imageUrlOf: content.imageUrlOf,
+      audioTimingOf: content.audioTimingOf,
       fill: (text, script) => content.fillText(text, profile, script),
     }),
   );

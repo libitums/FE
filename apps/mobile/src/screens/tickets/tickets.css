@@ -1,0 +1,371 @@
+/* 학습 티켓 화면들 — 머리 모달(E1) · 티켓 없음 대화상자(E6m) · 공용 버튼. 토큰은 CSS 커스텀 프로퍼티로만
+   소비합니다(ADR-0014 D1). 맞는 토큰이 없는 치수는 시안 값을 px로 적고 그 자리에 이유를 남깁니다. */
+
+/* ---------------------------------------------------------------- E1 머리 모달 */
+
+/* 지표 모달의 큰 숫자 자리와 같은 높이에 섭니다. 알약이 더 붙어 위 여백을 지표 모달(128)보다 줄입니다. */
+.ticket-modal-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: var(--libitum-spacing-96);
+  flex-shrink: 0;
+}
+
+.ticket-modal-value {
+  color: var(--libitum-color-brand-primary);
+}
+
+.ticket-modal-title {
+  color: var(--libitum-color-brand-secondary);
+}
+
+/* 티켓 56 × 56 — 숫자 오른쪽 위 끝에 비스듬히 걸칩니다(시안 E1 실측). 숫자 폭이 바뀌어도 끝을 따라갑니다. */
+.ticket-modal-icon {
+  position: absolute;
+  top: -6px;
+  right: -54px;
+  width: 56px;
+  height: 56px;
+  transform: rotate(-8deg);
+}
+
+.ticket-modal-icon-art {
+  width: 56px;
+  height: 56px;
+}
+
+/* 「Next ticket in」 알약 — 흰 8% 면은 짙은 바탕 위의 시안 값이라 rgba로 적습니다. */
+.ticket-modal-next {
+  margin-top: var(--libitum-spacing-12);
+  padding: var(--libitum-spacing-6) var(--libitum-spacing-12);
+  border-radius: var(--libitum-radius-full);
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.ticket-modal-next-label {
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: var(--libitum-typography-label-m-font-size);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  line-height: var(--libitum-typography-label-m-line-height);
+  color: var(--libitum-color-white);
+}
+
+.ticket-modal-next-clock {
+  font-family: var(--libitum-typography-accent-metric-font-family);
+  font-weight: var(--libitum-typography-accent-metric-font-weight);
+  color: var(--libitum-color-brand-secondary);
+}
+
+.ticket-modal-slots {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 28px;
+  flex-shrink: 0;
+}
+
+.ticket-modal-slot-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-8);
+}
+
+/* 티켓 칸 64 × 44 · 모서리 10 — 시안 E1 실측값입니다(맞는 반경 토큰이 없어 px). */
+.ticket-slot {
+  position: relative;
+  width: 64px;
+  height: 44px;
+  border-radius: 10px;
+  border-width: 2px;
+  border-style: solid;
+  overflow: hidden;
+}
+
+.ticket-slot-ready {
+  background-color: var(--libitum-color-brand-primary);
+  border-color: var(--libitum-color-brand-secondary);
+}
+
+.ticket-slot-charging,
+.ticket-slot-waiting {
+  border-color: var(--libitum-color-gray-800);
+}
+
+/* 지금 차는 칸 — 왼쪽에서 오른쪽으로 찹니다. 폭은 컴포넌트가 진행률로 줍니다. 55%는 짙은 바탕 위 시안 값입니다. */
+.ticket-slot-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  background-color: rgba(244, 107, 24, 0.55);
+}
+
+.ticket-slot-time {
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: var(--libitum-typography-label-m-font-size);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  line-height: var(--libitum-typography-label-m-line-height);
+}
+
+.ticket-slot-time-ready {
+  color: var(--libitum-color-gray-700);
+}
+
+.ticket-slot-time-charging,
+.ticket-slot-time-waiting {
+  font-family: var(--libitum-typography-accent-metric-font-family);
+  color: var(--libitum-color-brand-secondary);
+}
+
+.ticket-modal-message {
+  margin-top: var(--libitum-spacing-32);
+  padding: 0 var(--libitum-spacing-24);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: var(--libitum-typography-body-m-font-size);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  line-height: var(--libitum-typography-body-m-line-height);
+  color: var(--libitum-color-white);
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.ticket-modal-footer {
+  align-self: stretch;
+  margin-top: var(--libitum-spacing-24);
+  margin-bottom: var(--libitum-spacing-16);
+  padding: 0 var(--libitum-spacing-24);
+  flex-shrink: 0;
+}
+
+/* ---------------------------------------------------------------- 공용 버튼 · 안내 */
+
+.ticket-more {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--libitum-spacing-8);
+}
+
+/* 버튼 xl과 같은 치수(모서리 16 · 여백 16/24 · 라벨 button-xl)입니다. 아이콘을 라벨 앞에 두려고 앱에서 짓습니다. */
+.ticket-button {
+  min-height: var(--libitum-spacing-48);
+  padding: var(--libitum-spacing-16) var(--libitum-spacing-24);
+  border-radius: var(--libitum-radius-lg);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: var(--libitum-spacing-8);
+}
+
+.ticket-button-brand {
+  background-color: var(--libitum-color-brand-primary);
+}
+
+.ticket-button-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.ticket-button-label {
+  font-family: var(--libitum-typography-button-xl-font-family);
+  font-size: var(--libitum-typography-button-xl-font-size);
+  font-weight: var(--libitum-typography-button-xl-font-weight);
+  line-height: var(--libitum-typography-button-xl-line-height);
+  letter-spacing: var(--libitum-typography-button-xl-letter-spacing);
+}
+
+.ticket-button-label-brand {
+  color: var(--libitum-color-fg-neutral-inverted);
+}
+
+.ticket-button-label-text {
+  color: var(--libitum-color-fg-brand);
+}
+
+.ticket-more-notice {
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  font-weight: var(--libitum-typography-body-s-font-weight);
+  line-height: var(--libitum-typography-body-s-line-height);
+  text-align: center;
+}
+
+.ticket-more-notice-dark {
+  color: var(--libitum-color-gray-500);
+}
+
+.ticket-more-notice-light {
+  color: var(--libitum-color-fg-neutral-muted);
+}
+
+/* ---------------------------------------------------------------- E6m 티켓 없음 대화상자 */
+
+/* 화면 전체를 덮고 가운데에 상자를 세웁니다. 딤은 이 `fixed` 안의 `absolute`입니다 — Lynx에서 fixed 안의
+   fixed가 의도대로 돌지 않습니다(ui-lynx dialog.css와 같은 처리). */
+.ticket-dialog {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: var(--libitum-elevation-z-dialog);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--libitum-spacing-24);
+}
+
+.ticket-dialog .ui-lynx-overlay {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 0;
+}
+
+.ticket-dialog-container {
+  position: relative;
+  z-index: 1;
+  align-self: stretch;
+  padding: var(--libitum-spacing-24) var(--libitum-spacing-20) var(--libitum-spacing-20);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-12);
+  background-color: var(--libitum-color-white);
+  border-radius: var(--libitum-radius-xl);
+  box-shadow: var(--libitum-elevation-shadow-s3);
+}
+
+.ticket-dialog-title {
+  font-family: var(--libitum-typography-heading-m-font-family);
+  font-size: var(--libitum-typography-heading-m-font-size);
+  font-weight: var(--libitum-typography-heading-m-font-weight);
+  line-height: var(--libitum-typography-heading-m-line-height);
+  color: var(--libitum-color-fg-neutral);
+  text-align: center;
+}
+
+/* 원 200 × 200은 시안 E6m 실측값입니다. */
+.ticket-ring {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  margin: var(--libitum-spacing-4) 0;
+}
+
+.ticket-ring-art {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 200px;
+  height: 200px;
+}
+
+.ticket-ring-center {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--libitum-spacing-4);
+}
+
+.ticket-ring-icon {
+  width: 32px;
+  height: 32px;
+}
+
+/* 40px 숫자는 한 번뿐인 크기라 토큰이 없습니다. 글꼴 · 굵기는 accent-display를 따릅니다. */
+.ticket-ring-clock {
+  font-family: var(--libitum-typography-accent-display-font-family);
+  font-weight: var(--libitum-typography-accent-display-font-weight);
+  font-size: 40px;
+  line-height: 44px;
+  color: var(--libitum-color-fg-neutral);
+}
+
+.ticket-ring-caption {
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: var(--libitum-typography-label-m-font-size);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  line-height: var(--libitum-typography-label-m-line-height);
+  color: var(--libitum-color-fg-neutral-subtle);
+}
+
+.ticket-dialog-message {
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: var(--libitum-typography-body-m-font-size);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  line-height: var(--libitum-typography-body-m-line-height);
+  color: var(--libitum-color-fg-neutral-muted);
+  text-align: center;
+}
+
+.ticket-dialog-actions {
+  align-self: stretch;
+  margin-top: var(--libitum-spacing-8);
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-8);
+}
+
+/* ---------------------------------------------------------------- E3 · E5 */
+
+/* 말풍선 Start 버튼 안의 「티켓 1」 태그 — 흰 22%는 주황 버튼 위의 시안 값입니다. */
+.ticket-cost-tag {
+  margin-left: var(--libitum-spacing-8);
+  padding: var(--libitum-spacing-2) var(--libitum-spacing-8) var(--libitum-spacing-2)
+    var(--libitum-spacing-6);
+  border-radius: var(--libitum-radius-full);
+  background-color: rgba(255, 255, 255, 0.22);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 3px;
+}
+
+.ticket-cost-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.ticket-cost-label {
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: var(--libitum-typography-label-m-font-size);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  line-height: var(--libitum-typography-label-m-line-height);
+  color: var(--libitum-color-white);
+}
+
+/* 결과 화면의 「N tickets left」 줄. */
+.ticket-left-line {
+  margin-top: var(--libitum-spacing-20);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: var(--libitum-spacing-6);
+}
+
+.ticket-left-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.ticket-left-label {
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-size: var(--libitum-typography-label-l-font-size);
+  font-weight: var(--libitum-typography-label-l-font-weight);
+  line-height: var(--libitum-typography-label-l-line-height);
+  color: var(--libitum-color-fg-brand);
+}

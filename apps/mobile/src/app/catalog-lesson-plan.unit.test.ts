@@ -68,6 +68,7 @@ function contentOf(catalog: readonly CatalogEntry[]): EpisodeContent {
     catalog,
     imageUrlOf: (path) => `https://cdn/${path}`,
     fillText: fillPlaceholders,
+    audioTimingOf: () => null,
   };
 }
 
@@ -732,17 +733,17 @@ describe("catalogActivityPositionOf", () => {
     return plan.activities.map((_, index) => catalogActivityPositionOf(plan, index));
   };
 
-  test("LP-E1. 활동의 오프셋은 앞 활동들의 문항 수 합이고 전체는 계획 문항 수다", () => {
+  test("LP-E1. 활동의 오프셋은 앞 활동들의 문항 수 합이고 전체는 계획 문항 수다(카드가 없는 유닛)", () => {
     expect(positions("u01-water", "S3")).toEqual([
-      { offset: 0, total: 6, last: false },
-      { offset: 3, total: 6, last: true },
+      { offset: 0, total: 6, last: false, activityCount: 2 },
+      { offset: 3, total: 6, last: true, activityCount: 2 },
     ]);
     expect(positions("u02-checkin", "S3")).toEqual([
-      { offset: 0, total: 10, last: false },
-      { offset: 2, total: 10, last: false },
-      { offset: 4, total: 10, last: false },
-      { offset: 6, total: 10, last: false },
-      { offset: 9, total: 10, last: true },
+      { offset: 0, total: 10, last: false, activityCount: 5 },
+      { offset: 2, total: 10, last: false, activityCount: 5 },
+      { offset: 4, total: 10, last: false, activityCount: 5 },
+      { offset: 6, total: 10, last: false, activityCount: 5 },
+      { offset: 9, total: 10, last: true, activityCount: 5 },
     ]);
   });
 
@@ -755,10 +756,12 @@ describe("catalogActivityPositionOf", () => {
       expect(found[0]?.offset).toBe(0);
       expect(found.length).toBe((runs.match(/[A-Z]/g) ?? []).length);
     }
-    expect(positions("u01-water", "S6")).toEqual([{ offset: 0, total: 12, last: true }]);
+    expect(positions("u01-water", "S6")).toEqual([
+      { offset: 0, total: 12, last: true, activityCount: 1 },
+    ]);
   });
 
-  test("LP-E1. 마지막 활동의 오프셋 + 문항 수는 전체와 같다", () => {
+  test("LP-E1. 마지막 활동의 오프셋 + 문항 수는 전체와 같다(카드가 없는 유닛)", () => {
     const plan = catalogLessonPlanOf(readyOf("u02-checkin"), "S9", fill, noImageUrl);
     const lastIndex = (plan?.activities.length ?? 0) - 1;
     const last = plan?.activities[lastIndex];
@@ -766,6 +769,54 @@ describe("catalogActivityPositionOf", () => {
     const position = plan === null ? null : catalogActivityPositionOf(plan, lastIndex);
 
     expect((position?.offset ?? 0) + (last?.questions.length ?? 0)).toBe(plan?.shownItemCount);
+  });
+
+  test("LP-E2. 단어 카드는 카운터에 세지 않는다 — 카드 뒤 첫 문항의 오프셋이 0이고 전체는 카드를 뺀 수다", () => {
+    // C5W2T1W1 — 카드 다섯은 오프셋 · 전체 어디에도 들어가지 않습니다.
+    expect(positions("u01-water", "S4")).toEqual([
+      { offset: 0, total: 4, last: false, activityCount: 4 },
+      { offset: 0, total: 4, last: false, activityCount: 4 },
+      { offset: 2, total: 4, last: false, activityCount: 4 },
+      { offset: 3, total: 4, last: true, activityCount: 4 },
+    ]);
+    // C6W4O1W3 — 카드 사이가 아니라 앞에만 있어도 전체는 8입니다.
+    expect(positions("u02-checkin", "S1").map((position) => position?.total)).toEqual([8, 8, 8, 8]);
+  });
+
+  test("LP-E2. 문화 카드는 채점하지 않아도 카운터에는 그대로 센다 — 빠지는 것은 단어 카드뿐이다", () => {
+    const card = (form: CatalogActivity["form"], count: number) =>
+      ({
+        form,
+        questions: Array.from({ length: count }, () => ({})),
+      }) as unknown as CatalogActivity;
+    const plan = {
+      episodeId: "x",
+      unitKey: "S1",
+      activities: [card("vocab-card", 3), card("culture-card", 2), card("word-choice", 2)],
+      questionCount: 2,
+      shownItemCount: 7,
+      skippedItemCount: 0,
+      counterpartName: "",
+    };
+
+    expect(plan.activities.map((_, index) => catalogActivityPositionOf(plan, index))).toEqual([
+      { offset: 0, total: 4, last: false, activityCount: 3 },
+      { offset: 0, total: 4, last: false, activityCount: 3 },
+      { offset: 2, total: 4, last: true, activityCount: 3 },
+    ]);
+  });
+
+  test("LP-E2. 단어 카드만 있는 레슨은 전체가 0이다", () => {
+    const plan = catalogLessonPlanOf(readyOf("u01-water"), "S1", fill, noImageUrl);
+    if (plan === null) throw new Error("no plan");
+    const cardsOnly = { ...plan, activities: plan.activities.slice(0, 1) };
+
+    expect(catalogActivityPositionOf(cardsOnly, 0)).toEqual({
+      offset: 0,
+      total: 0,
+      last: true,
+      activityCount: 1,
+    });
   });
 
   test("LP-E1. 없는 활동 순번은 위치가 없다", () => {
@@ -1090,14 +1141,15 @@ describe("catalogLessonPlanOf — 채점 문항 수와 표시 문항 수", () =>
     expect(checked).toBe(24);
   });
 
-  test("LP-G5. u01 S1의 활동 위치는 카드를 센 분모 6에서 시작한다", () => {
+  // ⟨2026-10-19⟩ 카드를 센 분모 6에서 카드를 뺀 분모 3으로 바뀌었습니다(ADR-0073).
+  test("LP-G5. u01 S1의 활동 위치는 카드를 뺀 분모 3이고 카드 뒤 첫 문항이 오프셋 0이다", () => {
     const plan = catalogLessonPlanOf(readyOf("u01-water"), "S1", fill, noImageUrl);
 
     expect(
       plan === null ? [] : [0, 1].map((index) => catalogActivityPositionOf(plan, index)),
     ).toEqual([
-      { offset: 0, total: 6, last: false },
-      { offset: 3, total: 6, last: true },
+      { offset: 0, total: 3, last: false, activityCount: 2 },
+      { offset: 0, total: 3, last: true, activityCount: 2 },
     ]);
   });
 

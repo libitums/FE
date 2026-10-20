@@ -163,7 +163,13 @@ test("[IG4] 말하기 · 쓰기 단원은 각자의 안내가 한 번 뜨고, �
   startSheet("tutorial-writing");
   expect(guide("writing")).not.toBeNull();
   dismiss("writing");
-  tapButtonIn("writing-screen-skip");
+  // ⟨2026-10-19⟩ 쓰기에는 `Skip`이 없다. 이 계층에는 판정 모듈이 없어 `Check` 뒤 「판정할 수 없음」의 `Next`로 넘어간다.
+  const surface = screen.getByTestId("drawing-surface");
+  fireEvent.touchstart(surface, { touches: [{ x: 100, y: 100 }] });
+  fireEvent.touchmove(surface, { touches: [{ x: 150, y: 150 }] });
+  fireEvent.touchend(surface, {});
+  tap("learning-shell-action"); // Check
+  tap("learning-shell-action"); // Next
   expect(screen.getByTestId("writing-screen-complete")).toBeInTheDocument();
   expect(storage.savedKinds()).toEqual(["speaking", "writing"]);
 });
@@ -374,35 +380,6 @@ test("[IG11] 새 사용자의 첫 단원: 기존 안내 넷이 전과 같이 뜨
 });
 
 // ------------------------------------------------------------ IG12
-
-test("[IG12] 롤플레이 탭에서 연 메신저도 출처를 가리지 않고 한 번 뜨며 같은 키에 적힌다", async () => {
-  const finished: AppJourneySeed = {
-    completedStepCount: journeySteps.length,
-    completedMessengerUnitIds: ["appointment-confirmation"],
-    completedPhoneCallUnitIds: ["appointment-confirmation-phone-call"],
-    visualNovelProgress: { status: "completed", beatIndex: 2 },
-    completedEpisodeFinalIds: ["tutorial-final-test"],
-  };
-  const open = (): void => {
-    tap("ui-lynx-bottom-navigator-item-roleplay");
-    tap("roleplay-list-item-appointment-confirmation");
-  };
-
-  const seen = newStorage({ seen: ["messenger"] });
-  await boot(finished, seen);
-  open();
-  expect(screen.getByTestId("messenger-screen")).toBeInTheDocument();
-  expect(guideRoots()).toHaveLength(0);
-
-  cleanup();
-  vi.unstubAllGlobals();
-  const unseen = newStorage();
-  await boot(finished, unseen);
-  open();
-  expect(guide("messenger")).not.toBeNull();
-  dismiss("messenger");
-  expect(unseen.savedKinds()).toEqual(["messenger"]);
-});
 
 // ------------------------------------------------------------ IG13 · IG14
 

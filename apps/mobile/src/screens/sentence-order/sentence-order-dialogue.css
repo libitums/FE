@@ -1,7 +1,7 @@
 /* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). 대화 조립(대화 순서 문항)의 카드 안입니다.
    말풍선 모양은 문장 순서의 상대 · 내 말풍선(`sentence-order-screen.css`)과 같은 값입니다 — 꼬리 쪽
-   한 모서리만 각지고(상대는 왼쪽 아래, 나는 오른쪽 아래) 폭은 내용을 따르되 카드 폭의 80%를 넘지
-   않습니다. */
+   한 모서리만 각지고(상대는 왼쪽 아래, 나는 오른쪽 아래) 폭은 내용을 따릅니다. 줄마다 36px 아바타가
+   말풍선 옆에 붙어, 말풍선은 줄 폭의 76%를 넘지 않습니다(아바타 없던 때 80%). */
 .sentence-order-dialogue {
   display: flex;
   flex-direction: column;
@@ -9,8 +9,24 @@
   gap: var(--libitum-spacing-12);
 }
 
+/* 한 줄 = 아바타 + 말풍선입니다. 아바타는 말풍선 아래 끝에 맞춥니다(꼬리 쪽 모서리 옆). */
+.sentence-order-dialogue-row {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  gap: var(--libitum-spacing-8);
+}
+
+.sentence-order-dialogue-row-counterpart {
+  justify-content: flex-start;
+}
+
+.sentence-order-dialogue-row-me {
+  justify-content: flex-end;
+}
+
 .sentence-order-dialogue-bubble {
-  max-width: 80%;
+  max-width: 76%;
   padding: var(--libitum-spacing-24);
   border: var(--libitum-stroke-width-thin) solid transparent;
   border-radius: var(--libitum-radius-md);
@@ -18,13 +34,11 @@
 }
 
 .sentence-order-dialogue-bubble-counterpart {
-  align-self: flex-start;
   background-color: var(--libitum-color-gray-100);
   border-bottom-left-radius: 0;
 }
 
 .sentence-order-dialogue-bubble-me {
-  align-self: flex-end;
   background-color: var(--libitum-color-brand-primary);
   border-bottom-right-radius: 0;
 }
@@ -55,4 +69,32 @@
 /* 빈 칸의 표시는 어느 화자 쪽이든 같은 회색 글자입니다. */
 .sentence-order-dialogue-bubble-empty .sentence-order-dialogue-text {
   color: var(--libitum-color-gray-700);
+}
+
+/* 아바타 — ui-lynx `Avatar`의 크기 표(24 · 32 · 48)에 36px이 없어, `sm`(머리글자 label-m)을 쓰고
+   지름만 32 + 4로 넓힙니다. 색은 화자를 따릅니다: 상대는 짙은 중립 면에 흰 글자, 나는 브랜드 띄운 면에
+   브랜드 짙은 글자입니다. 선택자를 래퍼 · 아바타 두 겹으로 걸어 ui-lynx 기본값보다 앞섭니다. */
+.sentence-order-dialogue-avatar {
+  flex-shrink: 0;
+}
+
+.sentence-order-dialogue-avatar .ui-lynx-avatar {
+  width: calc(var(--libitum-spacing-32) + var(--libitum-spacing-4));
+  height: calc(var(--libitum-spacing-32) + var(--libitum-spacing-4));
+}
+
+.sentence-order-dialogue-avatar-counterpart .ui-lynx-avatar {
+  background-color: var(--libitum-color-gray-900);
+}
+
+.sentence-order-dialogue-avatar-counterpart .ui-lynx-avatar .ui-lynx-avatar-initials {
+  color: var(--libitum-color-white);
+}
+
+.sentence-order-dialogue-avatar-me .ui-lynx-avatar {
+  background-color: var(--libitum-color-background-elevated);
+}
+
+.sentence-order-dialogue-avatar-me .ui-lynx-avatar .ui-lynx-avatar-initials {
+  color: var(--libitum-color-brand-strong);
 }

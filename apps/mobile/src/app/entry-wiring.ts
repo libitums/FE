@@ -1,4 +1,4 @@
-// 진입 흐름 콜백 열둘을 만듭니다. 토큰 저장·진입 이벤트·전이가 여기 모입니다.
+// 진입 흐름 콜백을 만듭니다. 토큰 저장·진입 이벤트·전이가 여기 모입니다.
 
 import type { Dispatch, SetStateAction } from "@lynx-js/react";
 
@@ -11,7 +11,7 @@ import {
   saveAuthSession,
   sessionRefreshDisposition,
 } from "../lib/auth-session";
-import { authUserIdFrom } from "../lib/auth-user-id";
+import { authDisplayNameFrom, authUserIdFrom } from "../lib/auth-user-id";
 import { legalDocumentOpenedEvent, openLegalDocument } from "../lib/legal-document";
 import type { LegalDocument } from "../lib/legal-document.contract";
 import {
@@ -22,12 +22,8 @@ import {
 } from "../lib/entry-flow";
 import type { EntryEventSink, EntryLoginMethod } from "../lib/entry-flow";
 import type { EntryLanguage } from "../lib/entry-language";
-import {
-  learnerProfileSavedEvent,
-  learnerProfileSkippedEvent,
-  sameLearnerProfile,
-} from "../lib/learner-profile";
-import type { LearnerProfileOutcome, LearnerProfileRecord } from "../lib/learner-profile.contract";
+import { learnerProfileSavedEvent, sameLearnerProfile } from "../lib/learner-profile";
+import type { LearnerProfilePort, LearnerProfileRecord } from "../lib/learner-profile.contract";
 import { loadReturningUiLanguage, saveUiLanguage } from "../lib/ui-language";
 import type {
   AuthSession,
@@ -52,13 +48,18 @@ export type EntryWiringArgs = {
   readonly setEntryLanguage: Dispatch<SetStateAction<EntryLanguage>>;
   // 로그인 뒤 서버 진행을 불러와 합칩니다(ADR-0035). 기다리지 않습니다 — 실패해도 진입은 이어집니다.
   readonly syncProgress: () => Promise<void>;
-  // 온보딩 넷째 스텝의 결과를 담고(로그인 전이라 손님 칸), 로그인 뒤 서버와 맞춥니다. 던지지 않습니다.
+  // 가입 직후 ① 이름 · ② 나라 화면의 결과를 담고, 로그인 뒤 서버와 맞춥니다. 던지지 않습니다.
   readonly learnerRecord: LearnerProfileRecord | null;
+  readonly learnerPort: LearnerProfilePort;
   readonly saveLearnerProfile: (record: LearnerProfileRecord) => unknown;
-  readonly markLearnerProfileAsked: () => void;
-  // 온보딩에서 사용자가 건너뛴 값이 손님 칸에 남아 로그인 뒤 서버로 올라가지 않게 지웁니다.
-  readonly clearGuestLearnerProfile: () => void;
   readonly syncLearnerProfile: () => Promise<void>;
+};
+
+/** 가입 직후 ① 이름 · ② 나라 화면의 콜백 셋입니다(ADR-0059 D7 2026-10-20). */
+export type LearnerSignupWiring = {
+  readonly onContinueLearnerName: (name: string) => void;
+  readonly onContinueLearnerCountry: (record: LearnerProfileRecord) => void;
+  readonly onLearnerProfileStepBack: () => void;
 };
 
 export function entryWiring({
@@ -69,9 +70,8 @@ export function entryWiring({
   setEntryLanguage,
   syncProgress,
   learnerRecord,
+  learnerPort,
   saveLearnerProfile,
-  markLearnerProfileAsked,
-  clearGuestLearnerProfile,
   syncLearnerProfile,
 }: EntryWiringArgs) {
   // 세션을 저장한 자리마다 그 사용자로 분석을 식별합니다(ADR-0029 D8). 저장한 세션에는 사용자
@@ -104,9 +104,16 @@ export function entryWiring({
         void syncPushDevice({ ask: true });
         return;
       }
+      // 새 사용자는 언어 선택 앞에 ① 이름 → ② 나라를 지납니다(ADR-0059 D7 2026-10-20). 이름 칸은 이 기기에 남은
+      // 값 → 소셜 로그인의 표시 이름 → 무작위 이름 순으로 미리 채웁니다.
       case "language-select": {
-        entryEventSink?.(entryScreenViewedEvent("language-select"));
-        dispatch({ type: "push", screen: { name: "language-select" } });
+        const session = loadAuthSession();
+        const initialName =
+          learnerRecord?.name ??
+          (session === null ? null : authDisplayNameFrom(session.accessToken)) ??
+          learnerPort.randomName(null);
+        entryEventSink?.(entryScreenViewedEvent("learner-name"));
+        dispatch({ type: "push", screen: { name: "learner-name", initialName } });
         return;
       }
     }
@@ -151,21 +158,30 @@ export function entryWiring({
         }
       }
     },
-    // 온보딩 완료 → (이름 · 나라 저장 또는 건너뜀) → 로그인 열람 → push. 건너뛰면 이번 실행에는 에피소드 전에 다시
-    // 묻지 않습니다. 이미 담은 같은 값을 다시 누른 것은 저장도 이벤트도 아닙니다.
-    onOnboardingComplete: (outcome: LearnerProfileOutcome) => {
-      if (outcome.kind === "saved") {
-        if (!sameLearnerProfile(learnerRecord, outcome.record)) {
-          saveLearnerProfile(outcome.record);
-          entryEventSink?.(learnerProfileSavedEvent("onboarding", learnerRecord));
-        }
-      } else {
-        clearGuestLearnerProfile();
-        markLearnerProfileAsked();
-        entryEventSink?.(learnerProfileSkippedEvent("onboarding"));
-      }
+    // 온보딩 완료 → 로그인 열람 → push. 온보딩은 기능을 맛보는 카드뿐이라 넘길 값이 없습니다.
+    onOnboardingComplete: () => {
       entryEventSink?.(entryScreenViewedEvent("login"));
       dispatch({ type: "push", screen: { name: "login" } });
+    },
+    // ① 이름의 Continue — 친 이름을 이 route에 남겨(② 나라에서 뒤로 오면 그대로 서도록) ② 나라로 갑니다.
+    onContinueLearnerName: (name: string) => {
+      dispatch({ type: "replace", screen: { name: "learner-name", initialName: name } });
+      entryEventSink?.(entryScreenViewedEvent("learner-country"));
+      dispatch({ type: "push", screen: { name: "learner-country", learnerName: name } });
+    },
+    // ② 나라의 Continue — 여기서 저장합니다(로그인 뒤라 서버 동기화로 바로 갑니다). 같은 값이면 저장도 이벤트도
+    // 아닙니다. 그다음 ③ 언어 선택입니다.
+    onContinueLearnerCountry: (record: LearnerProfileRecord) => {
+      if (!sameLearnerProfile(learnerRecord, record)) {
+        saveLearnerProfile(record);
+        entryEventSink?.(learnerProfileSavedEvent("signup", learnerRecord));
+      }
+      entryEventSink?.(entryScreenViewedEvent("language-select"));
+      dispatch({ type: "push", screen: { name: "language-select" } });
+    },
+    // ① · ② 의 뒤로가기입니다 — 진입 스택에서 한 칸 뒤(로그인 · 코드 검증 · ①)로 갑니다.
+    onLearnerProfileStepBack: () => {
+      dispatch({ type: "back" });
     },
     // 소셜 셋 선택입니다 — `signInWithSocialProvider`가 창 · 교환을 끝까지 진
     // 뒤, `signed-in`일 때만 **저장 → 이벤트 → 전이** 순서로 잇습니다. 그 밖(`cancelled` · `failed`)은 결과를 그대로
@@ -226,8 +242,7 @@ export function entryWiring({
     onLoginBack: () => {
       dispatch({ type: "back" });
     },
-    // 언어 선택의 뒤로가기입니다 — 진입 스택에서 한 칸 뒤(코드 검증 또는
-    // 로그인)로 갑니다.
+    // 언어 선택의 뒤로가기입니다 — 진입 스택에서 한 칸 뒤(② 나라)로 갑니다.
     onLanguageSelectBack: () => {
       dispatch({ type: "back" });
     },

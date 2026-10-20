@@ -178,6 +178,13 @@ export function journeyWiring(args: JourneyWiringArgs) {
           });
           break;
         }
+        case "story": {
+          args.episodeIntroEventSink?.({
+            name: "roleplay_story_opened",
+            episodeId: item.episodeId,
+          });
+          break;
+        }
         default: {
           const exhaustive: never = item;
           return exhaustive;

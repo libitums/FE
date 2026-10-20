@@ -204,11 +204,32 @@ async function boot(options: BootOptions = {}): Promise<Booted> {
 
 afterEach(() => {
   cleanup();
+  setHostInsets(undefined);
   resetPushWiringForTests();
   vi.useRealTimers();
   vi.unstubAllGlobals();
   vi.unstubAllEnvs();
 });
+
+// ---------------------------------------------------------------- 호스트 인셋 (자판 도킹)
+
+type HostInsets = {
+  readonly safeAreaInsets: { top: number; bottom: number; left: number; right: number };
+  readonly tappableBottomInset: number;
+};
+const threeButton: HostInsets = {
+  safeAreaInsets: { top: 24, bottom: 48, left: 0, right: 0 },
+  tappableBottomInset: 48,
+};
+function setHostInsets(value: HostInsets | undefined): void {
+  (lynx as unknown as { __globalProps: unknown }).__globalProps = value;
+}
+const shellPaddingBottom = (): string => screen.getByTestId("app-shell").style.paddingBottom;
+const shellPaddingTop = (): string => screen.getByTestId("app-shell").style.paddingTop;
+const keyRowsMargin = (): string =>
+  screen.getByTestId("messenger-keyboard-rows").style.marginBottom;
+const typingBodyMargin = (): string =>
+  screen.getByTestId("typing-activity-body").style.marginBottom;
 
 // ---------------------------------------------------------------- 조작 · 관찰 헬퍼
 
@@ -344,9 +365,9 @@ function solveActivity(activity: CatalogActivity, right: boolean, last = true): 
       }
       break;
     case "vocab-card":
-      // 카드는 문항 수만큼 버튼을 누릅니다 — 마지막 카드의 버튼이 곧 다음 걸음이라 완료 카드가 없습니다.
+      // 카드는 문항 수만큼 `Got it`을 누릅니다 — 마지막 카드의 버튼이 곧 다음 걸음이라 완료 카드가 없습니다.
       for (let index = 0; index < activity.questions.length; index += 1) {
-        tapId("learning-shell-action");
+        tapButtonIn("vocab-card-got-it");
       }
       return;
     case "pair-match":
@@ -543,7 +564,7 @@ test("L3. (AC2 · 4) S3: 소리 없는 듣기는 계획에서 빠져 활동 둘�
   });
 });
 
-test("L3b. (E-1) 다학습형 레슨: 중간 활동은 완료 카드 없이 이어지고 카운터는 레슨 전체 기준이며 결과 화면은 한 번이다", async () => {
+test("L3b. (E-1) 다학습형 레슨: 중간 활동은 완료 카드 없이 이어지고 카운터는 레슨 전체(카드 제외) 기준이며 결과 화면은 한 번이다", async () => {
   const { rpcs, events } = await boot({ progress: upTo("S1", "S3") });
   const plan = lessonPlan(u01, "S4");
   expect(plan.activities.map((activity) => activity.form)).toEqual([
@@ -556,15 +577,19 @@ test("L3b. (E-1) 다학습형 레슨: 중간 활동은 완료 카드 없이 이�
   expect(plan.shownItemCount).toBe(9);
 
   tapNode(u01, "S4");
-  expect(screen.getByTestId("learning-shell-chapter")).toHaveTextContent("Lesson 1 / 9");
+  // ⟨2026-10-19⟩ 카드 다섯은 카운터에 세지 않습니다(ADR-0073) — 카드 구간에는 카운터가 없고, 그 뒤가
+  // 카드를 뺀 4에서 1부터입니다.
+  expect(screen.queryByTestId("learning-shell-chapter")).not.toBeInTheDocument();
   let ordinal = 0;
   plan.activities.forEach((activity, index) => {
     const last = index === plan.activities.length - 1;
     expect(screen.getByTestId(contentIdOf[activity.form])).toBeInTheDocument();
-    expect(screen.getByTestId("learning-shell-chapter")).toHaveTextContent(
-      `Lesson ${ordinal + 1} / 9`,
-    );
-    ordinal += activity.questions.length;
+    if (activity.form !== "vocab-card") {
+      expect(screen.getByTestId("learning-shell-chapter")).toHaveTextContent(
+        `Lesson ${ordinal + 1} / 4`,
+      );
+      ordinal += activity.questions.length;
+    }
     solveActivity(activity, true, last);
     // 중간 활동이 끝난 자리에는 완료 카드도 결과 화면도 없고 곧바로 다음 학습형의 첫 문항이다.
     if (!last) {
@@ -699,6 +724,19 @@ test("L6. (AC6) 최종 테스트: 턴을 타일로 맞히면 결과 → 통과 �
     },
     { name: "episode_final_passed", episodeId: u01, correctCount: count, turnCount: count },
   ]);
+});
+
+test("L6c. 최종 테스트 통과 결과 화면에서 트로피 칩이 오름을 재생한다(튜토리얼 결과 화면과 같은 연결)", async () => {
+  await boot({ progress: throughS9 });
+  const plan = finalPlan(u01, 1);
+
+  tapNode(u01, "RP");
+  solveFinal(plan.turns, true);
+  expect(title()).toHaveTextContent("PERFECT LESSON!");
+
+  await vi.waitFor(() =>
+    expect(screen.getByTestId("lesson-complete-screen-trophy-roll")).toBeInTheDocument(),
+  );
 });
 
 test("L6b. 최종 테스트를 전부 틀리면 통과 뒤 컷 없이 Try again이 서고 기록 · final_passed가 없다", async () => {
@@ -868,4 +906,56 @@ test("L12. 카탈로그 학습을 하지 않은 실행은 학습 이벤트를 �
   tapRoundIn("episode-intro-screen-back");
 
   expect(learningEvents(events)).toEqual([]);
+});
+
+test("KL1. (자판 도킹) 3버튼 · S6 받아쓰기: 셸 아래 0px에 자판 묶음 48px, Check 뒤 몸통이 48px를 이어받고 셸은 0px 그대로다", async () => {
+  setHostInsets(threeButton);
+  await boot({ progress: throughS5 });
+  const activity = lessonPlan(u01, "S6").activities[0];
+  if (activity?.form !== "typing") throw new Error("S6 is typing");
+
+  tapNode(u01, "S6");
+  expect(screen.getByTestId("typing-activity")).toBeInTheDocument();
+  expect(shellPaddingTop()).toBe("24px");
+  expect(shellPaddingBottom()).toBe("0px");
+  expect(screen.queryByTestId("app-navigator")).not.toBeInTheDocument();
+  expect(typingBodyMargin()).toBe("0px");
+  expect(keyRowsMargin()).toBe("48px");
+
+  typeAnswer(activity.questions[0]);
+  tapId("learning-shell-action");
+
+  expect(screen.queryByTestId("messenger-keyboard")).not.toBeInTheDocument();
+  expect(typingBodyMargin()).toBe("48px");
+  expect(shellPaddingBottom()).toBe("0px");
+});
+
+test("KL2. (자판 도킹 회귀 가드) 3버튼 · S1 단어 카드: 셸 아래 48px에 위 24px, 받아쓰기 화면이 없다", async () => {
+  setHostInsets(threeButton);
+  // 표지를 끝낸 진행이어야 S1이 열립니다 — 아니면 맵에 남아 셸 값이 맵의 것이 됩니다.
+  await boot({ progress: upTo() });
+
+  tapNode(u01, "S1");
+  expect(screen.getByTestId("vocab-card-content")).toBeInTheDocument();
+  expect(screen.queryByTestId("typing-activity")).not.toBeInTheDocument();
+  expect(shellPaddingBottom()).toBe("48px");
+  expect(shellPaddingTop()).toBe("24px");
+});
+
+test("KL3. (자판 도킹) 3버튼 · 다학습형 S4: 받아쓰기 활동에서만 셸이 0px이고 자판 묶음이 48px, 다음 선택 활동에서 다시 48px다", async () => {
+  setHostInsets(threeButton);
+  await boot({ progress: upTo("S1", "S3") });
+  const plan = lessonPlan(u01, "S4");
+
+  tapNode(u01, "S4");
+  const bottoms: string[] = [];
+  const keyRows: (string | null)[] = [];
+  plan.activities.forEach((activity, index) => {
+    bottoms.push(shellPaddingBottom());
+    keyRows.push(screen.queryByTestId("messenger-keyboard-rows")?.style.marginBottom ?? null);
+    solveActivity(activity, true, index === plan.activities.length - 1);
+  });
+
+  expect(keyRows).toEqual([null, null, "48px", null]);
+  expect(bottoms).toEqual(["48px", "48px", "0px", "48px"]);
 });

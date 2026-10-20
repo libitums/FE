@@ -52,6 +52,12 @@ export function roleplayFormLabel(form: RoleplayUnitForm, copy: UiCopy): string 
   return copy.roleplay.form[form];
 }
 
+/** 카드 둘째 줄입니다 — 형태 낱말, 에피소드 롤플레이는 대사 수를 덧붙입니다. */
+export function roleplayItemSubtitle(item: RoleplayItem, copy: UiCopy): string {
+  const form = roleplayFormLabel(item.form, copy);
+  return item.form === "story" ? `${form} · ${copy.roleplayStory.lineCount(item.lineCount)}` : form;
+}
+
 // 잠긴 항목은 이름 뒤에 상태를 붙입니다 — 구분자와 낱말은 문구표의 `common.locked`이고
 // 여정 스텝의 잠김과 같습니다(ADR-0016 D3).
 export function roleplayItemAccessibilityLabel(
@@ -59,7 +65,7 @@ export function roleplayItemAccessibilityLabel(
   locked: boolean,
   copy: UiCopy,
 ): string {
-  const name = `${item.title}, ${roleplayFormLabel(item.form, copy)}`;
+  const name = `${item.title}, ${roleplayItemSubtitle(item, copy)}`;
   return locked ? copy.common.locked(name) : name;
 }
 

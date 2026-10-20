@@ -1,5 +1,6 @@
 // 타자 입력 활동의 계약입니다. 타입만 둡니다.
 
+import type { SafeAreaInsets } from "../../lib/safe-area";
 import type { ActivityFinish, LessonPosition } from "../learning/activity-finish";
 
 export type TypingCueKind = "dictation" | "translation" | "pattern";
@@ -42,6 +43,8 @@ export type TypingActivityProps = {
   readonly onFinish: ActivityFinish;
   /** 카탈로그 레슨 안의 위치입니다. 주지 않으면 이 활동이 한 세션입니다. */
   readonly lesson?: LessonPosition;
+  /** 호스트 안전 영역(`wiring.safeAreaInsets`)입니다. 이 활동에서 셸은 위만 비우므로 화면이 아래 · 좌 · 우를 집니다. */
+  readonly insets: SafeAreaInsets;
 };
 
 export type TypingCopy = {
@@ -52,6 +55,8 @@ export type TypingCopy = {
 };
 
 export type TypingTestId =
+  | "typing-activity"
+  | "typing-activity-body"
   | "typing-activity-content"
   | "typing-activity-cue"
   | "typing-activity-cue-support"

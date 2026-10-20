@@ -9,6 +9,7 @@ import { entryLoginMethods, entrySplashDurationMs } from "../lib/entry-flow";
 import type { EntryEvent, EntryLoginMethod } from "../lib/entry-flow";
 import { entryLanguageLabel, initialEntryLanguage } from "../lib/entry-language";
 import { uiLanguageStorageKey } from "../lib/ui-language";
+import { passLearnerSignup } from "./test-helpers/learner-signup";
 import {
   contentNotFoundResponse,
   isContentRequest,
@@ -389,11 +390,10 @@ function tapResend(): void {
   );
 }
 
-// 온보딩 네 스텝을 끝까지 넘깁니다(0→1→2→3→onComplete). `onboarding-screen-next`는
-// 스텝마다 같은 testid입니다 — 네 번 누르면 로그인에 닿습니다. 넷째(이름 · 나라) 스텝은 빈 채
-// `Get started`이므로 건너뜀입니다.
+// 온보딩 세 스텝을 끝까지 넘깁니다(0→1→2→onComplete). `onboarding-screen-next`는
+// 스텝마다 같은 testid입니다 — 세 번 누르면 로그인에 닿습니다. 이름 · 나라는 가입 직후 화면이 묻습니다.
 function completeOnboarding(): void {
-  for (let step = 0; step < 4; step += 1) {
+  for (let step = 0; step < 3; step += 1) {
     fireEvent.tap(
       within(screen.getByTestId("onboarding-screen-next")).getByTestId("ui-lynx-button"),
       {},
@@ -568,7 +568,7 @@ test("[IA3] ⭐ 코드 화면에 서 있는 동안 저장소 키가 0개다(OTP�
 });
 
 // -------------------------------------------------------------------- IA4
-test("[IA4] 6자리 검증 성공 → 언어 선택. 검증 요청 본문과 저장된 세션이 계약대로다", async () => {
+test("[IA4] 6자리 검증 성공 → ① 이름. 검증 요청 본문과 저장된 세션이 계약대로다", async () => {
   const store = emptyStorageStub();
   const calls = stubSupabase({
     otp: { status: 200, body: otpSentBody },
@@ -592,7 +592,7 @@ test("[IA4] 6자리 검증 성공 → 언어 선택. 검증 요청 본문과 저
     phone: "+821012345678",
     token: "123456",
   });
-  expect(screen.getByTestId("language-select-screen-title")).toBeInTheDocument();
+  expect(screen.getByTestId("learner-name-screen-title")).toBeInTheDocument();
 
   expect(Array.from(store.keys())).toEqual([authSessionStorageKey]);
   const stored = JSON.parse(store.get(authSessionStorageKey)!) as Record<string, unknown>;
@@ -607,7 +607,7 @@ test("[IA4] 6자리 검증 성공 → 언어 선택. 검증 요청 본문과 저
 // 부재·무동작을 재는 칸입니다 — 먼저 코드 검증 화면이 **그대로 남아 있다**는
 // 존재 앵커를 걸어, 언어 선택으로 못 간 것이 「화면 자체가 없어서」가 아니라
 // 「제출이 무동작이라서」임을 갈라 짓습니다.
-test("[IE5] 코드 6자리를 채우고 확인하면 언어 선택이 선다(5자리에서는 무동작)", async () => {
+test("[IE5] 코드 6자리를 채우고 확인하면 ① 이름이 선다(5자리에서는 무동작)", async () => {
   emptyStorageStub();
   stubSupabase({
     otp: { status: 200, body: otpSentBody },
@@ -620,11 +620,11 @@ test("[IE5] 코드 6자리를 채우고 확인하면 언어 선택이 선다(5�
   await submitPhoneNumber("10 1234 5678");
 
   await submitVerificationCode("12345");
-  expect(screen.queryByTestId("language-select-screen-title")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("learner-name-screen-title")).not.toBeInTheDocument();
   expect(screen.getByTestId("verification-code-screen-title")).toBeInTheDocument();
 
   await submitVerificationCode("123456");
-  expect(screen.getByTestId("language-select-screen-title")).toBeInTheDocument();
+  expect(screen.getByTestId("learner-name-screen-title")).toBeInTheDocument();
 });
 
 // -------------------------------------------------------------------- IA5
@@ -643,7 +643,7 @@ test("[IA5] 검증이 403 otp_expired면 코드 화면이 그대로이고 저장
   await submitVerificationCode("123456");
 
   expect(screen.getByTestId("verification-code-screen-title")).toBeInTheDocument();
-  expect(screen.queryByTestId("language-select-screen-title")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("learner-name-screen-title")).not.toBeInTheDocument();
   expect(screen.getByTestId("verification-code-screen-error")).toHaveTextContent(
     authFailureMessage("invalid-code"),
   );
@@ -832,7 +832,7 @@ test("[IA11] 설정이 없으면 Continue를 눌러도 fetch가 0회이고 uncon
 // **비동기**로 언어 선택에 닿는지를 봅니다. google · facebook은 웹 창 · PKCE 교환,
 // apple은 네이티브 시트 · id_token 교환입니다(`stubHostWithApple` · `stubSupabase`).
 // 콜백의 값 자체가 화면에 노출되지 않으므로 검증은 여전히 「없다」입니다.
-test("[IE6] 구글·애플·페이스북은 코드 검증을 건너뛰고 언어 선택이 선다(비동기)", async () => {
+test("[IE6] 구글·애플·페이스북은 코드 검증을 건너뛰고 ① 이름이 선다(비동기)", async () => {
   const nonPhoneMethods = entryLoginMethods.filter((method) => method !== "phone");
   expect(nonPhoneMethods.length).toBeGreaterThan(0);
 
@@ -855,7 +855,7 @@ test("[IE6] 구글·애플·페이스북은 코드 검증을 건너뛰고 언어
     expect(appleStarts).toHaveLength(method === "apple" ? 1 : 0);
     expect(webStarts).toHaveLength(method === "apple" ? 0 : 1);
     expect(calls).toHaveLength(1);
-    expect(screen.getByTestId("language-select-screen-title")).toBeInTheDocument();
+    expect(screen.getByTestId("learner-name-screen-title")).toBeInTheDocument();
     expect(screen.queryByTestId("verification-code-screen-title")).not.toBeInTheDocument();
 
     unmount();
@@ -882,6 +882,7 @@ test("[IE7] 언어를 고르고 다음을 누르면 여정 입장에 그 언어�
   expect(starts).toHaveLength(1);
   expect(calls).toHaveLength(1);
 
+  passLearnerSignup();
   selectLanguage("en");
   continueLanguageSelect();
 
@@ -892,7 +893,7 @@ test("[IE7] 언어를 고르고 다음을 누르면 여정 입장에 그 언어�
 
 // 2026-09-21 디자인 반영 — 언어 선택의 뒤로가기는 진입 스택에서 한 칸 뒤로
 // 갑니다 — 전화번호 경로면 코드 검증입니다.
-test("[IE6b] 언어 선택에서 뒤로가기를 누르면 코드 검증이 선다", async () => {
+test("[IE6b] 언어 선택 → ② 나라 → ① 이름 → 코드 검증 순으로 뒤로 한 칸씩 간다", async () => {
   emptyStorageStub();
   stubSupabase({
     otp: { status: 200, body: otpSentBody },
@@ -904,14 +905,26 @@ test("[IE6b] 언어 선택에서 뒤로가기를 누르면 코드 검증이 선�
   completeOnboarding();
   await submitPhoneNumber("10 1234 5678");
   await submitVerificationCode("123456");
+  passLearnerSignup();
   expect(screen.getByTestId("language-select-screen-title")).toBeInTheDocument();
 
   fireEvent.tap(
     within(screen.getByTestId("language-select-screen-header")).getByTestId("ui-lynx-round-button"),
     {},
   );
-
   expect(screen.queryByTestId("language-select-screen-title")).not.toBeInTheDocument();
+  expect(screen.getByTestId("learner-country-screen-title")).toBeInTheDocument();
+
+  fireEvent.tap(
+    within(screen.getByTestId("learner-country-screen-back")).getByTestId("ui-lynx-round-button"),
+    {},
+  );
+  expect(screen.getByTestId("learner-name-screen-title")).toBeInTheDocument();
+
+  fireEvent.tap(
+    within(screen.getByTestId("learner-name-screen-back")).getByTestId("ui-lynx-round-button"),
+    {},
+  );
   expect(screen.getByTestId("verification-code-screen-title")).toBeInTheDocument();
 });
 
@@ -930,6 +943,7 @@ test("[IE7b] 여정 입장에서 뒤로가기를 누르면 언어 선택이 선�
   expect(starts).toHaveLength(1);
   expect(calls).toHaveLength(1);
 
+  passLearnerSignup();
   continueLanguageSelect();
   expect(screen.getByTestId("journey-entry-screen-title")).toBeInTheDocument();
 
@@ -957,6 +971,7 @@ test("[IE8] 여정 입장에서 진행하면 여정 맵이 서고 바텀 네비�
   expect(starts).toHaveLength(1);
   expect(calls).toHaveLength(1);
 
+  passLearnerSignup();
   selectLanguage("en");
   continueLanguageSelect();
 
@@ -974,7 +989,7 @@ test("[IE8] 여정 입장에서 진행하면 여정 맵이 서고 바텀 네비�
 // IE9) — **어느 수단이든 `authSessionStorageKey` 하나**이고, apple은 Apple 시트
 // 대역으로 돕니다.
 // 언어를 **고른 뒤**라 키가 하나 더 늘어납니다 — ADR-0007 D1의 둘째 예외(`libitum.ui.language`).
-test("[IE9] 어느 수단으로 진행해도 저장된 키가 authSessionStorageKey와 UI 언어 키 둘뿐이다", async () => {
+test("[IE9] 어느 수단으로 진행해도 저장된 키가 authSessionStorageKey · UI 언어 키 · 프로필 캐시 칸 하나뿐이다", async () => {
   expect(entryLoginMethods.length).toBeGreaterThan(0);
 
   for (const method of entryLoginMethods) {
@@ -1002,12 +1017,18 @@ test("[IE9] 어느 수단으로 진행해도 저장된 키가 authSessionStorage
     } else {
       await selectLoginMethodAsync(method);
     }
+    passLearnerSignup();
     selectLanguage("en");
     continueLanguageSelect();
     startJourney();
 
     expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
-    expect(Array.from(store.keys()).sort()).toEqual(
+    // ② 나라에서 저장한 이름 · 나라는 프로필 캐시 칸 하나에 섭니다(ADR-0059 D3) — 이 픽스처의 토큰은 JWT가 아니라
+    // 사용자 ID를 못 읽어 손님 칸입니다.
+    const keys = Array.from(store.keys());
+    const profileKeys = keys.filter((key) => key.startsWith("libitum.learner-profile."));
+    expect(profileKeys).toHaveLength(1);
+    expect(keys.filter((key) => !profileKeys.includes(key)).sort()).toEqual(
       [authSessionStorageKey, uiLanguageStorageKey].sort(),
     );
 
@@ -1094,6 +1115,7 @@ test("[IE12] 언어가 진입 흐름 동안 유지되고, 빈 저장소로 새�
   expect(first.starts).toHaveLength(1);
   expect(firstCalls).toHaveLength(1);
 
+  passLearnerSignup();
   selectLanguage("en");
   continueLanguageSelect();
 
@@ -1119,6 +1141,7 @@ test("[IE12] 언어가 진입 흐름 동안 유지되고, 빈 저장소로 새�
   advanceSplash();
   completeOnboarding();
   await selectLoginMethodAsync("google");
+  passLearnerSignup();
   continueLanguageSelect();
 
   expect(screen.getByTestId("journey-entry-screen-language")).toHaveTextContent(
@@ -1134,7 +1157,7 @@ test("[IE12] 언어가 진입 흐름 동안 유지되고, 빈 저장소로 새�
 // (스플래시 부재는 이 배열 안에 "splash"가 없다는 것으로 직접 확인합니다).
 // 개정(test-plan §4.2) — `stubSupabase`로 경로를 통과하고 코드는 6자리입니다. 열람
 // 순서 배열은 그대로입니다.
-test("[IE13] entry_screen_viewed가 화면 다섯에 대해 각 전이 직전 1회씩 순서대로 나고 스플래시에는 나지 않는다", async () => {
+test("[IE13] entry_screen_viewed가 화면 일곱에 대해 각 전이 직전 1회씩 순서대로 나고 스플래시에는 나지 않는다", async () => {
   emptyStorageStub();
   stubSupabase({
     otp: { status: 200, body: otpSentBody },
@@ -1147,6 +1170,7 @@ test("[IE13] entry_screen_viewed가 화면 다섯에 대해 각 전이 직전 1�
   completeOnboarding();
   await submitPhoneNumber("10 1234 5678");
   await submitVerificationCode("123456");
+  passLearnerSignup();
   continueLanguageSelect();
 
   const viewedScreens = events
@@ -1160,6 +1184,8 @@ test("[IE13] entry_screen_viewed가 화면 다섯에 대해 각 전이 직전 1�
     "onboarding",
     "login",
     "verification-code",
+    "learner-name",
+    "learner-country",
     "language-select",
     "journey-entry",
   ]);
@@ -1187,6 +1213,7 @@ test("[IE14] entry_login_method_selected가 수단과 함께 1회이고, entry_c
   expect(appleStarts).toHaveLength(1);
   expect(calls).toHaveLength(1);
 
+  passLearnerSignup();
   selectLanguage("en");
   continueLanguageSelect();
   startJourney();
@@ -1246,7 +1273,7 @@ test("[IE14e] apple 취소 뒤 다시 성공하면 entry_login_method_selected�
   expect(screen.getByTestId("login-screen-title")).toBeInTheDocument();
 
   await selectLoginMethodAsync("apple");
-  expect(screen.getByTestId("language-select-screen-title")).toBeInTheDocument();
+  expect(screen.getByTestId("learner-name-screen-title")).toBeInTheDocument();
 
   expect(appleStarts).toHaveLength(2);
   expect(events.filter((event) => event.name === "entry_login_method_selected")).toEqual([
@@ -1354,7 +1381,7 @@ test("[IS1] google 탭 → start 1회(SS4의 authorize 주소) · randomBytes(32
 // IS2 — ⭐ 성공 경로의 저장 시점 · 저장 값입니다. 저장 키가
 // `authSessionStorageKey` 하나뿐임을 짓습니다(임시 토큰 키가 나타나지 않습니다,
 // C3 · C9 개정).
-test("[IS2] ⭐ 콜백 code=abc → 교환 1회(정확한 본문) → 언어 선택 · 저장 키가 authSessionStorageKey 하나뿐이다", async () => {
+test("[IS2] ⭐ 콜백 code=abc → 교환 1회(정확한 본문) → ① 이름 · 저장 키가 authSessionStorageKey 하나뿐이다", async () => {
   const { store } = stubHostWithWebAuthentication(completedWebAuthentication);
   const calls = stubSupabase({
     pkce: {
@@ -1376,7 +1403,7 @@ test("[IS2] ⭐ 콜백 code=abc → 교환 1회(정확한 본문) → 언어 선
     code_verifier: "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk",
   });
 
-  expect(screen.getByTestId("language-select-screen-title")).toBeInTheDocument();
+  expect(screen.getByTestId("learner-name-screen-title")).toBeInTheDocument();
 
   expect(Array.from(store.keys())).toEqual([authSessionStorageKey]);
   const stored = JSON.parse(store.get(authSessionStorageKey)!) as Record<string, unknown>;
@@ -1426,7 +1453,7 @@ test("[IS4] 교환 400 flow_state_not_found → 로그인 · sign-in-incomplete 
   await selectLoginMethodAsync("google");
 
   expect(screen.getByTestId("login-screen-title")).toBeInTheDocument();
-  expect(screen.queryByTestId("language-select-screen-title")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("learner-name-screen-title")).not.toBeInTheDocument();
   expect(screen.getByTestId("login-screen-error")).toHaveTextContent(
     authFailureMessage("sign-in-incomplete"),
   );
@@ -1553,7 +1580,7 @@ test("[IS9] ⭐ 소셜로 로그인한 저장소를 그대로 들고 App을 새�
   completeOnboarding();
   await selectLoginMethodAsync("google");
 
-  expect(screen.getByTestId("language-select-screen-title")).toBeInTheDocument();
+  expect(screen.getByTestId("learner-name-screen-title")).toBeInTheDocument();
   expect(Array.from(store.keys())).toEqual([authSessionStorageKey]);
 
   vi.useRealTimers();
@@ -1629,7 +1656,7 @@ test("[IN1] apple 탭 → Apple start 1회(인자는 해시 nonce 하나) · ran
 
 // IN2 — ⭐ 성공 경로의 교환 본문 · 저장 시점 · 저장 값입니다. 본문의 `nonce`는 시트에
 // 넘긴 해시가 아니라 **원본**입니다(서버가 해시를 다시 계산해 비교합니다).
-test("[IN2] ⭐ 시트 completed → id_token 교환 1회(정확한 본문) → 언어 선택 · 저장 키가 authSessionStorageKey 하나이고 값이 세 필드다", async () => {
+test("[IN2] ⭐ 시트 completed → id_token 교환 1회(정확한 본문) → ① 이름 · 저장 키가 authSessionStorageKey 하나이고 값이 세 필드다", async () => {
   const { store } = stubHostWithApple(completedAppleSignIn);
   const calls = stubSupabase({
     idToken: {
@@ -1653,7 +1680,7 @@ test("[IN2] ⭐ 시트 completed → id_token 교환 1회(정확한 본문) → 
     nonce: fixedNonceRaw,
   });
 
-  expect(screen.getByTestId("language-select-screen-title")).toBeInTheDocument();
+  expect(screen.getByTestId("learner-name-screen-title")).toBeInTheDocument();
 
   expect(Array.from(store.keys())).toEqual([authSessionStorageKey]);
   const stored = JSON.parse(store.get(authSessionStorageKey)!) as Record<string, unknown>;
@@ -1719,7 +1746,7 @@ test("[IN4] Apple 모듈 없음(저장소 · 웹 인증만) → 웹 OAuth · PKC
     auth_code: "abc",
     code_verifier: "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk",
   });
-  expect(screen.getByTestId("language-select-screen-title")).toBeInTheDocument();
+  expect(screen.getByTestId("learner-name-screen-title")).toBeInTheDocument();
   expect(Array.from(store.keys())).toEqual([authSessionStorageKey]);
   expect(JSON.parse(store.get(authSessionStorageKey)!)).toMatchObject({
     accessToken: "apple-web-access",
@@ -1740,7 +1767,7 @@ test("[IN5] id_token 교환 400 → 로그인 · sign-in-incomplete 문구 · �
   await selectLoginMethodAsync("apple");
 
   expect(screen.getByTestId("login-screen-title")).toBeInTheDocument();
-  expect(screen.queryByTestId("language-select-screen-title")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("learner-name-screen-title")).not.toBeInTheDocument();
   expect(screen.getByTestId("login-screen-error")).toHaveTextContent(
     authFailureMessage("sign-in-incomplete"),
   );
@@ -1902,11 +1929,11 @@ test("[ID4] 로그인이 실패하거나 토큰에서 사용자를 못 읽으면
 
   await selectLoginMethodAsync("google");
 
-  expect(screen.getByTestId("language-select-screen-title")).toBeInTheDocument();
+  expect(screen.getByTestId("learner-name-screen-title")).toBeInTheDocument();
   expect(analyticsIdentify).not.toHaveBeenCalled();
 });
 
-test("[ID5] 식별이 던져도 로그인은 언어 선택으로 넘어간다", async () => {
+test("[ID5] 식별이 던져도 로그인은 ① 이름으로 넘어간다", async () => {
   stubHostWithWebAuthentication(completedWebAuthentication);
   stubSupabase({
     pkce: { status: 200, body: sessionResponseBody({ accessToken: accessTokenFor("user-x") }) },
@@ -1927,7 +1954,7 @@ test("[ID5] 식별이 던져도 로그인은 언어 선택으로 넘어간다", 
 
   await selectLoginMethodAsync("google");
 
-  expect(screen.getByTestId("language-select-screen-title")).toBeInTheDocument();
+  expect(screen.getByTestId("learner-name-screen-title")).toBeInTheDocument();
 });
 
 // ------------------------------------------------------------------------- 연결 실패 응답(#154)

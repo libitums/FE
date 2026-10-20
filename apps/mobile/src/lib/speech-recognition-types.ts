@@ -8,6 +8,8 @@ export interface SpeechRecognitionModule {
   requestPermissions(callback: (payload: unknown) => void): void;
   start(args: Record<string, unknown>, callback: (payload: unknown) => void): void;
   stop(): void;
+  /** 이 앱의 시스템 설정(마이크 · 음성 인식 권한) 화면을 엽니다. 이 메서드가 없는 옛 호스트가 있어 선택입니다. */
+  openSettings?(): void;
 }
 
 /**

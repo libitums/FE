@@ -44,6 +44,7 @@ function wiringOf(progress: CatalogProgress, pendingResults: readonly AnswerResu
       catalog,
       imageUrlOf: (path) => `https://cdn/${path}`,
       fillText: fillPlaceholders,
+      audioTimingOf: () => null,
     },
     catalogSections: catalogMapSectionsOf(catalog),
     catalogProgress: progress,

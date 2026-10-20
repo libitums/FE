@@ -38,6 +38,22 @@
   transform: scale(var(--libitum-motion-scale-pressed));
 }
 
+/* 어두운 반투명 면 위의 창고 조각입니다. 알파 색 토큰이 없어 색 토큰 × 불투명도 토큰을 rgba로 적습니다
+   (ADR-0014). 면은 white × opacity-16, 눌림은 white × opacity-pressed-shade이고 눌림 scale은 위
+   규칙이 그대로 집니다. */
+.sentence-order-chip-surface-dark.sentence-order-chip-bank {
+  background-color: rgba(255, 255, 255, 0.16);
+  border-color: var(--libitum-color-gray-700);
+}
+
+.sentence-order-chip-surface-dark.sentence-order-chip-bank .sentence-order-chip-label {
+  color: var(--libitum-color-gray-50);
+}
+
+.sentence-order-chip-surface-dark.sentence-order-chip-bank:active {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
 /* 움직임 줄이기: 줄이지 않고 색 변화만 남깁니다. */
 /* 움직임 줄이기에서는 transform 전환 자체를 끕니다 — bank 칩에 다른 전환은 없습니다. */
 .sentence-order-chip-motion-reduced.sentence-order-chip-bank {
@@ -60,6 +76,11 @@
 /* 빠져나간 자리 — 회색 빈칸. */
 .sentence-order-chip-placeholder {
   background-color: var(--libitum-color-gray-100);
+}
+
+/* 어두운 면 위의 빈칸 — white × opacity-8. */
+.sentence-order-chip-surface-dark.sentence-order-chip-placeholder {
+  background-color: rgba(255, 255, 255, 0.08);
 }
 
 .sentence-order-chip-label-hidden {

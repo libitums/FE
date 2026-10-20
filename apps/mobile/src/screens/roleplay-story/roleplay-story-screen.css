@@ -1,0 +1,210 @@
+/* 에피소드 롤플레이 — 미리보기 · 대화. 틀(바탕 · 장면 · 위 그늘 · 머리 · 아래 묶음)은 표지
+   (`catalog-cover-screen.css`)와 같은 값입니다. 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). */
+
+.roleplay-story-screen {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.roleplay-story-screen-backdrop,
+.roleplay-story-screen-scene {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+.roleplay-story-screen-backdrop {
+  background-color: var(--libitum-color-gray-950);
+}
+
+.roleplay-story-screen-shade {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: calc(var(--libitum-spacing-64) * 4);
+  background-image: linear-gradient(to bottom, var(--libitum-color-gray-950), transparent);
+}
+
+.roleplay-story-screen-safe {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.roleplay-story-screen-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-layout-gap-inline);
+  padding: var(--libitum-layout-screen-padding-top) var(--libitum-layout-screen-padding-x);
+  flex-shrink: 0;
+}
+
+.roleplay-story-screen-header-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-4);
+}
+
+.roleplay-story-screen-title {
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-heading-m-font-family);
+  font-size: var(--libitum-typography-heading-m-font-size);
+  font-weight: var(--libitum-typography-heading-m-font-weight);
+  line-height: var(--libitum-typography-heading-m-line-height);
+  letter-spacing: var(--libitum-typography-heading-m-letter-spacing);
+}
+
+.roleplay-story-screen-progress {
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: var(--libitum-typography-label-m-font-size);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  line-height: var(--libitum-typography-label-m-line-height);
+  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
+}
+
+.roleplay-story-screen-spacer {
+  flex: 1;
+}
+
+.roleplay-story-screen-bottom {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-12);
+  padding: 0 var(--libitum-layout-screen-padding-x) var(--libitum-layout-screen-padding-bottom);
+  flex-shrink: 0;
+}
+
+/* 미리보기의 알약 — 장면 위에서 읽히도록 짙은 반투명 면(72%)입니다. 맞는 면 토큰이 없어 값으로 적습니다. */
+.roleplay-story-chips {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: var(--libitum-spacing-6);
+}
+
+.roleplay-story-chip {
+  padding: var(--libitum-spacing-4) var(--libitum-spacing-8);
+  border-radius: var(--libitum-radius-full);
+  background-color: rgba(26, 28, 32, 0.72);
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: var(--libitum-typography-label-m-font-size);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  line-height: var(--libitum-typography-label-m-line-height);
+}
+
+.roleplay-story-line {
+  position: relative;
+}
+
+/* 다시 듣기 — 다이얼로그 오른쪽 위 모서리에 겹칩니다. */
+.roleplay-story-replay {
+  position: absolute;
+  top: var(--libitum-spacing-12);
+  right: var(--libitum-spacing-12);
+}
+
+.roleplay-story-verdict {
+  align-self: flex-start;
+  margin-bottom: var(--libitum-spacing-8);
+  padding: var(--libitum-spacing-2) var(--libitum-spacing-8);
+  border-radius: var(--libitum-radius-full);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: var(--libitum-typography-label-m-font-size);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  line-height: var(--libitum-typography-label-m-line-height);
+}
+
+.roleplay-story-verdict-correct {
+  background-color: var(--libitum-color-feedback-correct-surface);
+  color: var(--libitum-color-feedback-correct-text);
+}
+
+.roleplay-story-verdict-incorrect {
+  background-color: var(--libitum-color-feedback-incorrect-surface);
+  color: var(--libitum-color-feedback-incorrect-text);
+}
+
+.roleplay-story-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-8);
+}
+
+/* 말하기 묶음 — 바탕 면 없이 장면 위에 바로 섭니다(시안 「진행 1」). */
+.roleplay-story-speak {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-8);
+  padding-top: var(--libitum-spacing-12);
+}
+
+.roleplay-story-hint {
+  color: var(--libitum-color-white);
+  text-align: center;
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: var(--libitum-typography-body-m-font-size);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  line-height: var(--libitum-typography-body-m-line-height);
+}
+
+/* 마이크 72 — 시안 실측. 둘레의 옅은 주색 고리는 주색 24%입니다(맞는 토큰이 없어 값). */
+.roleplay-story-mic {
+  width: 72px;
+  height: 72px;
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-brand-primary);
+  border-width: 8px;
+  border-style: solid;
+  border-color: rgba(244, 107, 24, 0.24);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.roleplay-story-mic-listening {
+  border-color: rgba(244, 107, 24, 0.48);
+}
+
+.roleplay-story-mic-icon {
+  width: var(--libitum-icon-size-lg);
+  height: var(--libitum-icon-size-lg);
+}
+
+.roleplay-story-mic-label {
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: var(--libitum-typography-label-m-font-size);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  line-height: var(--libitum-typography-label-m-line-height);
+}
+
+.roleplay-story-links {
+  align-self: stretch;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.roleplay-story-link {
+  padding: var(--libitum-spacing-12) var(--libitum-spacing-4);
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-button-m-font-family);
+  font-size: var(--libitum-typography-button-m-font-size);
+  font-weight: var(--libitum-typography-button-m-font-weight);
+  line-height: var(--libitum-typography-button-m-line-height);
+}
+
+.roleplay-story-link-hint {
+  color: var(--libitum-color-brand-secondary);
+}

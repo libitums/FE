@@ -1,0 +1,76 @@
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1).
+
+   세션 헤더 대신 서는 가벼운 헤더입니다(ADR-0073) — 면 · 그림자 없이 `×`와 칸 막대가 한 줄에 서고,
+   그 아래 캡션 한 줄이 섭니다. 칸 색은 상태 셋뿐입니다: 지난 칸 `brand-primary`, 지금 칸
+   `brand-secondary`(한 단계 밝은 브랜드), 남은 칸 `gray-300`. */
+
+/* 스스로 넘어가는 층(`-advance`)보다 위에 서야 `×`로 나가는 길이 막히지 않습니다 — 세션 헤더 층과
+   같은 이유 · 같은 값입니다. */
+.learning-run-header {
+  position: relative;
+  z-index: var(--libitum-elevation-z-sticky);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: var(--libitum-spacing-12);
+}
+
+/* 나가기 — 투명 아이콘 버튼입니다. 하한이지 고정이 아닙니다(ADR-0020 D5). 세션 헤더의 24보다 큰
+   40인 것은 이 헤더가 회색 상자의 안 여백을 쓰지 않아 줄 높이 예산이 남기 때문입니다. */
+.learning-run-header-exit {
+  min-width: var(--libitum-spacing-40);
+  min-height: var(--libitum-spacing-40);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.learning-run-header-exit-icon {
+  width: var(--libitum-spacing-24);
+  height: var(--libitum-spacing-24);
+}
+
+/* 막대와 캡션의 묶음 — 한 접근성 요소입니다. 막대가 `×`의 세로 가운데에 오도록 위 여백을 둡니다
+   ((40 − 8) / 2 = 16). */
+.learning-run-header-progress {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-12);
+  padding-top: var(--libitum-spacing-16);
+}
+
+.learning-run-header-bar {
+  display: flex;
+  flex-direction: row;
+  gap: var(--libitum-spacing-4);
+}
+
+.learning-run-header-segment {
+  flex: 1;
+  height: var(--libitum-spacing-8);
+  border-radius: var(--libitum-radius-full);
+}
+
+.learning-run-header-segment-done {
+  background-color: var(--libitum-color-brand-primary);
+}
+
+.learning-run-header-segment-current {
+  background-color: var(--libitum-color-brand-secondary);
+}
+
+.learning-run-header-segment-upcoming {
+  background-color: var(--libitum-color-gray-300);
+}
+
+.learning-run-header-caption {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-label-s-font-family);
+  font-weight: var(--libitum-typography-label-s-font-weight);
+  font-size: var(--libitum-typography-label-s-font-size);
+  line-height: var(--libitum-typography-label-s-line-height);
+  letter-spacing: var(--libitum-typography-label-s-letter-spacing);
+}

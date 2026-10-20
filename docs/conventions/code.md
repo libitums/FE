@@ -125,7 +125,9 @@ ADR-0003 D7의 표에 행을 먼저 더한다.
 - **상태를 테스트가 보는 경로는 클래스가 아니다.** `toHaveClass`를 쓰지 않으므로(아래)
   클래스는 **시각 전용**이다. 단언이 필요하면 속성을 둔다 — 아래 **관찰 채널 넷**.
   상태 클래스마다 `data-testid`를 새로 만들지 않는다.
-- **변형(variant)은 이 규칙 밖이다.** 아직 정하지 않았다 (`docs/adr/README.md` 보류 표).
+- **변형(variant)은 이 규칙 밖이다** — 상태어 목록에 넣지 않는다. ⟨2026-10-20⟩ 표기는
+  `블록-축-값`(`.sentence-order-chip-surface-dark`)이고, 기본값에는 클래스가 없으며, 테스트 채널은
+  늘 붙는 `data-<축>`이다. 규칙 전문은 ADR-0003 D7의 변형 항목이 진다.
 
 ([ADR-0003 D6·D7](../adr/0003-workspace-and-directory-structure.md),
 [ADR-0006 D4·D7](../adr/0006-command-interface-and-test-layers.md))

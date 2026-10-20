@@ -7,6 +7,7 @@ import type { WordChoiceQuestion } from "./word-choice";
 import { WordChoiceScreen } from "./WordChoiceScreen";
 import { UiCopyContext } from "../../lib/ui-copy";
 import { markedUiCopy } from "../../lib/ui-copy.test-support";
+import { expectCompleteScene, expectQuestionScene } from "../learning/complete-scene.test-support";
 
 // `ui` 계층: 실제 컴포넌트를 렌더하고 상태·상호작용을 봅니다(ADR-0006 D4). 순수
 // 함수(word-choice.ts의 세션 리듀서·판정·문구 합성)는 mock하지 않습니다 — 화면이
@@ -526,10 +527,8 @@ test("응답 전 조작 단위가 나가기 + 보기 넷이다", () => {
     el.getAttribute("data-testid"),
   );
 
-  // 상단 바의 알림 버튼이 껍데기와 함께 딸려 옵니다 — 화면의 것이 아니지만 조작
-  // 단위의 순서는 화면 전체에서 세므로 여기 셉니다.
+  // 학습 중에는 상단 바(알림 버튼)가 서지 않으므로 나가기가 첫 조작 단위입니다.
   expect(tappables).toEqual([
-    "top-bar-notifications",
     "learning-shell-exit",
     "word-choice-option-0",
     "word-choice-option-1",
@@ -548,7 +547,6 @@ test("응답 뒤 조작 단위가 나가기 + 보기 넷 + 넘김 층이다", ()
   );
 
   expect(tappables).toEqual([
-    "top-bar-notifications",
     "learning-shell-exit",
     "word-choice-option-0",
     "word-choice-option-1",
@@ -567,11 +565,7 @@ test("완료 상태의 조작 단위가 나가기와 결과 보기다", () => {
     el.getAttribute("data-testid"),
   );
 
-  expect(tappables).toEqual([
-    "top-bar-notifications",
-    "learning-shell-exit",
-    "learning-shell-action",
-  ]);
+  expect(tappables).toEqual(["learning-shell-exit", "learning-shell-action"]);
 });
 
 // ---------------------------------------------------------------- 스크롤 영역
@@ -880,4 +874,14 @@ test("[LA2-M] 문구표를 주입하고 문항을 마치면 완료 문구 · 마
   expect(completion).toHaveLength(1);
   expect(completion[0]?.content).toBe("⟦common.allQuestionsDone⟧, ⟦common.seeResults⟧");
   expect(builtin).toHaveLength(0);
+});
+
+// ACS-WC — 완료 장면: 무대가 완료 장면이고 내용 상자 안은 완료 카드 하나다. 문항 장면은 그대로다.
+test("[ACS-WC] 완료 때 무대가 완료 장면이고 내용 상자의 유일한 자식이 완료 카드이며 문항 장면에는 표시가 없다", () => {
+  renderOrdering();
+  expectQuestionScene();
+
+  completeAllThree();
+
+  expectCompleteScene("word-choice-screen-content", "word-choice-screen-complete");
 });

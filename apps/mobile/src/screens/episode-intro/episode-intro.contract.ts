@@ -2,13 +2,11 @@
 
 import type { CatalogLearningEvent } from "../../lib/catalog-learning-event.contract";
 import type { ProgressLoadEvent } from "../../lib/progress-load-event.contract";
-import type {
-  LearnerProfileSavedEvent,
-  LearnerProfileSkippedEvent,
-} from "../../lib/learner-profile.contract";
 import type { SafeAreaInsets } from "../../lib/safe-area";
 import type { EpisodeNarrative } from "../episode-narrative/episode-narrative";
 import type { JourneyMapNodeStatus } from "../journey-map/journey-map";
+import type { TicketEvent } from "../tickets/tickets.contract";
+import type { RoleplayStoryEvent } from "../roleplay-story/roleplay-story.contract";
 
 export type EpisodeIntroUnitId = "tutorial-intro";
 /**
@@ -118,9 +116,9 @@ export type EpisodeIntroEvent =
   | EpisodeSurveyAnsweredEvent
   | EpisodeSurveySkippedEvent
   | CatalogLearningEvent
-  | LearnerProfileSavedEvent
-  | LearnerProfileSkippedEvent
-  | ProgressLoadEvent;
+  | ProgressLoadEvent
+  | TicketEvent
+  | RoleplayStoryEvent;
 /** 보내지 않을 때는 `null`입니다 — no-op 함수로 수집을 가장하지 않습니다(`MessengerEventSink`와 같은 규약). */
 export type EpisodeIntroEventSink = ((event: EpisodeIntroEvent) => void) | null;
 export type EpisodeIntroAppProps = { readonly episodeIntroEventSink?: EpisodeIntroEventSink };

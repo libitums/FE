@@ -1,3 +1,4 @@
+import { zeroSafeAreaInsets } from "../../lib/safe-area";
 import { describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
@@ -15,6 +16,7 @@ describe("MessengerScreen 나가기 라벨", () => {
   it("[X1] exitTo=roleplay → 나가기 accessibility-label이 Back to list다", () => {
     render(
       <MessengerScreen
+        insets={zeroSafeAreaInsets}
         conversation={conversation}
         completionStatus="available"
         exitTo="roleplay"
@@ -34,6 +36,7 @@ describe("MessengerScreen 나가기 라벨", () => {
     const onExit = vi.fn();
     render(
       <MessengerScreen
+        insets={zeroSafeAreaInsets}
         conversation={conversation}
         completionStatus="available"
         exitTo="roleplay"
@@ -52,6 +55,7 @@ describe("MessengerScreen 나가기 라벨", () => {
   it("[X3] exitTo=journey → 나가기 accessibility-label이 Back to map이다", () => {
     render(
       <MessengerScreen
+        insets={zeroSafeAreaInsets}
         conversation={conversation}
         completionStatus="available"
         exitTo="journey"
@@ -68,6 +72,7 @@ describe("MessengerScreen 나가기 라벨", () => {
   it("[X4] exitTo 생략 → 기본값 Back to map", () => {
     render(
       <MessengerScreen
+        insets={zeroSafeAreaInsets}
         conversation={conversation}
         completionStatus="available"
         onExit={vi.fn()}

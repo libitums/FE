@@ -4,6 +4,7 @@ import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/
 
 import { readFinalStory } from "./test-helpers/final-story";
 import { App } from "./App";
+import { passLearnerSignup } from "./test-helpers/learner-signup";
 import type { AppJourneySeed } from "./App";
 import { hangulIn, hangulOutside } from "./test-helpers/hangul";
 import type { ContentTestId } from "./test-helpers/hangul";
@@ -184,9 +185,11 @@ async function walkEntryFlow(
   act(() => {
     vi.advanceTimersByTime(entrySplashDurationMs);
   });
-  for (let index = 0; index < 4; index += 1) tapButtonIn("onboarding-screen-next");
+  for (let index = 0; index < 3; index += 1) tapButtonIn("onboarding-screen-next");
   tapButtonIn("login-screen-method-google");
   await advanceTimersAsync(0);
+  expect(screen.getByTestId("learner-name-screen-title")).toBeInTheDocument();
+  passLearnerSignup();
   expect(screen.getByTestId("language-select-screen-title")).toBeInTheDocument();
 
   if (options.pickLanguage) {
@@ -272,7 +275,7 @@ test("[IL3] ⭐ 언어 선택의 Continue가 고른 언어를 1회 저장하고,
   // 고르지 않고 Continue만 누른 흐름도 확정 순간에 같은 값을 1회 저장한다(spec §5 개정 — 저장은 확정 때).
   expect(languageKeyCalls(controlStorage).sets).toEqual(["en"]);
   expect(events.length).toBeGreaterThan(0);
-  // 온보딩 넷째 스텝을 빈 채 넘기면 건너뜀 이벤트(`learner_profile_skipped`)가 진입 sink로 한 번 나갑니다.
+  // 가입 직후 ② 나라에서 저장 이벤트(`learner_profile_saved`)가 진입 sink로 한 번 나갑니다.
   expect(
     events.every(
       (event) => event.name.startsWith("entry_") || event.name.startsWith("learner_profile_"),
@@ -309,10 +312,17 @@ test("[IL4] ⭐ 고른 언어는 App을 내렸다 다시 그려도 부팅에서 
   expectEnglishJourneyTabs();
 });
 
-test("[IL5] 진입 흐름을 마친 뒤의 저장 키는 세션과 UI 언어 둘이다 — 언어를 누르지 않고 Continue만 눌러도 같다", async () => {
+// ② 나라에서 저장한 이름 · 나라의 프로필 캐시 칸(ADR-0059 D3)은 언어와 무관해 따로 셉니다.
+const withoutProfile = (keys: readonly string[]): string[] =>
+  keys.filter((key) => !key.startsWith("libitum.learner-profile."));
+
+test("[IL5] 진입 흐름을 마친 뒤의 저장 키는 세션 · UI 언어와 프로필 칸 하나다 — 언어를 누르지 않고 Continue만 눌러도 같다", async () => {
   const picked = recordedStorage();
   await walkEntryFlow(picked, { pickLanguage: true });
-  expect(keysOf(picked)).toEqual([authSessionStorageKey, uiLanguageStorageKey].sort());
+  expect(withoutProfile(keysOf(picked))).toEqual(
+    [authSessionStorageKey, uiLanguageStorageKey].sort(),
+  );
+  expect(keysOf(picked).length - withoutProfile(keysOf(picked)).length).toBe(1);
   cleanup();
   vi.useRealTimers();
   vi.unstubAllGlobals();
@@ -320,7 +330,9 @@ test("[IL5] 진입 흐름을 마친 뒤의 저장 키는 세션과 UI 언어 둘
 
   const skipped = recordedStorage();
   await walkEntryFlow(skipped, { pickLanguage: false });
-  expect(keysOf(skipped)).toEqual([authSessionStorageKey, uiLanguageStorageKey].sort());
+  expect(withoutProfile(keysOf(skipped))).toEqual(
+    [authSessionStorageKey, uiLanguageStorageKey].sort(),
+  );
 });
 
 // ------------------------------------------------------------ IL6 · 탭 화면 둘러보기
@@ -608,15 +620,5 @@ describe.each(specialUnits)("[IL8] $name의 나가기", ({ unitId, exitTestId })
     expect(screen.getByTestId(exitTestId)).toHaveAttribute("accessibility-label", "Back to map");
     fireEvent.tap(screen.getByTestId(exitTestId), {});
     expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
-  });
-
-  test("롤플레이에서 연 화면은 Back to list이고 누르면 롤플레이 목록으로 돌아간다", async () => {
-    await bootJourney(finishedTutorial);
-    fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
-    fireEvent.tap(screen.getByTestId(`roleplay-list-item-${unitId}`), {});
-
-    expect(screen.getByTestId(exitTestId)).toHaveAttribute("accessibility-label", "Back to list");
-    fireEvent.tap(screen.getByTestId(exitTestId), {});
-    expect(screen.getByTestId("roleplay-list-screen-title")).toBeInTheDocument();
   });
 });

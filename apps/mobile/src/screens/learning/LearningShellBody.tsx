@@ -3,7 +3,13 @@ import type { ReactNode } from "@lynx-js/react";
 import { Card } from "@libitums/ui-lynx/card";
 
 import { LearningShellWorkspace } from "./LearningShellWorkspace";
-import type { LearningShellArrangement, LearningWorkspaceMode } from "./learning-shell.contract";
+import {
+  learningShellSceneClasses,
+  type LearningShellArrangement,
+  type LearningShellScene,
+  type LearningWorkspaceMode,
+} from "./learning-shell.contract";
+import type { LearningShellStage } from "./learning-shell-props";
 import {
   questionTransitionAttributes,
   questionTransitionClassName,
@@ -16,11 +22,15 @@ export type LearningShellBodyProps = {
   readonly instruction: string | undefined;
   /** 가운데 카드 안입니다. 무대 상자(`learning-shell-stage`)는 이 컴포넌트가 만듭니다. */
   readonly card: ReactNode;
+  /** 무대의 면 — `bare`면 `Card`로 감싸지 않습니다(`LearningShellProps.stage`). */
+  readonly stage: LearningShellStage;
   readonly workspace: ReactNode | undefined;
   readonly workspaceMode: LearningWorkspaceMode;
   readonly onViewportHeight: (height: number) => void;
   /** 문항 전환의 현재 단계와 모션 모드입니다. idle이면 전환 클래스 · 속성이 붙지 않습니다. */
   readonly transition: QuestionTransition;
+  /** 지금 장면입니다. 완료면 무대가 남는 세로의 가운데에 섭니다(`learningShellSceneClasses`). */
+  readonly scene: LearningShellScene;
 };
 
 /**
@@ -35,33 +45,41 @@ export function LearningShellBody({
   arrangement,
   instruction,
   card,
+  stage: stageSurface,
   workspace,
   workspaceMode,
   onViewportHeight,
   transition,
+  scene,
 }: LearningShellBodyProps): ReactNode {
   // 전환 속성은 스프레드로 둡니다(idle이면 속성 자체가 없다). `<scroll-view>`에서는 스프레드가
   // `scroll-bar-enable={false}`보다 앞에 와야 lint:scroll-bars를 지납니다(ADR-0055 D1).
   const attributes = questionTransitionAttributes(transition);
   const stageCarriesTransition = arrangement === "split";
+  const sceneClasses = learningShellSceneClasses(arrangement, scene);
   const stage = (
     <view
       className={
         stageCarriesTransition
           ? questionTransitionClassName(
               "learning-shell-stage",
-              [],
+              sceneClasses.stage,
               transition.phase,
               transition.motion,
             )
-          : "learning-shell-stage"
+          : ["learning-shell-stage", ...sceneClasses.stage].join(" ")
       }
       data-testid="learning-shell-stage"
+      {...(scene === "complete" ? { "data-scene": "complete" } : {})}
       {...(stageCarriesTransition ? attributes : {})}
     >
-      <Card elevation="stage">
-        <Card.Content>{card}</Card.Content>
-      </Card>
+      {stageSurface === "bare" ? (
+        card
+      ) : (
+        <Card elevation="stage">
+          <Card.Content>{card}</Card.Content>
+        </Card>
+      )}
     </view>
   );
 
@@ -103,7 +121,10 @@ export function LearningShellBody({
         onViewportHeight={onViewportHeight}
         transition={transition}
       >
-        <view className="learning-shell-flow" data-testid="learning-shell-flow">
+        <view
+          className={["learning-shell-flow", ...sceneClasses.flow].join(" ")}
+          data-testid="learning-shell-flow"
+        >
           {instructionNode}
           {stage}
           {workspace}

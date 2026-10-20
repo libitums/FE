@@ -23,6 +23,7 @@ import { SyllableBuildActivity } from "../screens/syllable-build/SyllableBuildAc
 import { TypingActivity } from "../screens/typing/TypingActivity";
 import { VocabCardActivity } from "../screens/vocab-card/VocabCardActivity";
 import { WordChoiceActivity } from "../screens/word-choice/WordChoiceScreen";
+import { catalogLessonOrdinalOf } from "../screens/journey-map/catalog-map";
 import { CatalogEpilogueFlow } from "./CatalogCutsFlow";
 import { catalogEpilogueModelOf } from "./catalog-cover-wiring";
 import { catalogFinalPlanFor } from "./catalog-final-model";
@@ -47,11 +48,13 @@ function nonEmptyTurns(turns: readonly CatalogRoleplayTurn[]): CatalogRoleplayTu
 }
 
 // 활동 하나를 그 학습형의 화면으로 그립니다. 망라 `switch`가 새 학습형을 컴파일 타임에 강제합니다.
+// `counterpartName`은 대화 조립 아바타만 씁니다 — 학습자 이름과 함께 문장 순서 활동에 넘깁니다.
 function renderActivity(
   activity: CatalogActivity,
   lesson: LessonPosition,
   screen: LessonScreen,
   wiring: ScreenWiring,
+  counterpartName: string,
 ): ReactNode {
   const { episodeId, unitKey, activityIndex } = screen;
   const key = `${episodeId}:${unitKey}:${activityIndex}`;
@@ -80,6 +83,7 @@ function renderActivity(
           onExit={onExit}
           onFinish={onFinish}
           lesson={lesson}
+          speakerNames={{ counterpart: counterpartName, me: wiring.learnerFill.name }}
         />
       );
     case "word-choice":
@@ -101,6 +105,7 @@ function renderActivity(
           onExit={onExit}
           onFinish={onFinish}
           lesson={lesson}
+          insets={wiring.safeAreaInsets}
         />
       );
     case "vocab-card":
@@ -188,12 +193,19 @@ export function renderCatalogFlow(screen: CatalogFlowScreen, wiring: ScreenWirin
       );
       const activity = plan?.activities[screen.activityIndex];
       const lesson = plan === null ? null : catalogActivityPositionOf(plan, screen.activityIndex);
-      if (activity === undefined || lesson === null) {
+      if (plan === null || activity === undefined || lesson === null) {
         throw new Error(
           `Catalog lesson has no activity: ${screen.episodeId}/${screen.unitKey}/${screen.activityIndex}`,
         );
       }
-      return renderActivity(activity, lesson, screen, wiring);
+      // 완료 카드의 `Lesson n` 칩은 맵 노드와 같은 순번입니다 — 계획은 구획을 모르므로 여기서 붙입니다.
+      const ordinal = catalogLessonOrdinalOf(
+        wiring.catalogSections,
+        screen.episodeId,
+        screen.unitKey,
+      );
+      const placed = ordinal === undefined ? lesson : { ...lesson, ordinal };
+      return renderActivity(activity, placed, screen, wiring, plan.counterpartName);
     }
     case "catalog-final": {
       const { episodeId } = screen;
@@ -231,7 +243,10 @@ export function renderCatalogFlow(screen: CatalogFlowScreen, wiring: ScreenWirin
           verdict={verdict}
           streakDays={wiring.streakDays}
           trophyCount={wiring.trophyCount}
+          statBumps={wiring.statBumps}
+          onStatBumped={wiring.onStatBumped}
           reward={lessonRewardPlaceholder}
+          ticketsLeft={wiring.ticketsLeft}
           onExit={() => wiring.onExitCatalogUnitComplete(episodeId, unitKey, verdict)}
           onRetry={() => wiring.onStartCatalogUnit(episodeId, unitKey)}
         />

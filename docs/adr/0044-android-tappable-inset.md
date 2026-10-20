@@ -102,6 +102,7 @@ Android 3버튼 바(◁ ○ □, Pixel_8에서 48dp)는 터치를 가로챈다. 
    기대지 않는다 — 이 호스트에서 0이다. `BottomSheet`를 새로 쓰면 위 두 시트처럼 마지막 자식으로 빈 상자를 둔다.
 2. `position: fixed`로 셸의 padding을 벗어나는 층만 이 규칙의 대상이다. 셸 안에 서는 화면은 셸이 `safeAreaInsets.bottom`을 비우므로
    해당하지 않는다(쌓인 화면 · 진입 구간).
+   ⟨2026-10-19⟩ **자판 화면은 예외다** — 셸 안에 서지만 셸이 아래를 비우지 않고 화면이 `safeAreaInsets.bottom`을 진다(끝의 「적용 기록」 · [ADR-0070](0070-keyboard-dock.md)).
 3. 이미 `safeAreaInsets.bottom`을 스스로 피하는 층(`JourneyStatModal` 등)은 3버튼의 48을 같은 경로로 피한다 — 둘을 더하지 않는다.
 4. 빈 상자는 값이 0이면 만들지 않고, flex 축 안에 두면 줄지 않게 한다. 접근성 속성은 붙이지 않는다(ADR-0016 D5 — 잎 `<view>`).
 
@@ -205,3 +206,17 @@ I lynx: "TBDBG changed-hook {...,"tappableBottomInset":0}"
 - **iOS 호스트가 `tappableBottomInset`을 보내야 할 사정이 생기면** → D1의 「Android만」.
 - **가로 모드 지원이 요구되면** → D1. `tappableElement`의 좌 · 우 값과 셸의 좌우 여백을 함께 본다.
 - **탭 바 높이(68)나 고정 몫 12가 바뀌면** → D2. 바닥 면의 높이는 바뀌지 않지만 화면들의 스크롤 끝 여백이 그 값을 따라야 한다.
+
+## 적용 기록
+
+### ⟨2026-10-19⟩ 자판 화면은 셸이 위만 비운다 — D3 규칙 2의 예외
+
+적용 기록이고 **위 결정 문장을 뒤집지 않는다.** 결정은 [ADR-0070](0070-keyboard-dock.md)이 진다.
+
+- 셸의 가장자리 처리에 셋째 모드 `keyboard-dock`이 생겼다 — `messenger` · `roleplay-messenger` 전부와 카탈로그 레슨의 타자 입력 활동에서 셸은 **위만** 비우고 아래 · 좌 · 우는 0이다.
+  이 화면들은 `position: fixed` 층이 아니라 셸 안에 서지만, D3 규칙 2의 「셸이 `safeAreaInsets.bottom`을 비우므로 해당하지 않는다」가 맞지 않는다 — **화면이 스스로 아래를 진다**
+  (자판이 서면 자판의 키 줄 묶음, 아니면 화면 몸통의 바깥 여백).
+- 화면이 지는 값은 `safeAreaInsets.bottom` 하나다. `tappableBottomInset`은 더하지 않는다 — 규칙 3 그대로다(호스트가 `min(tappable, safe)`로 자르므로 3버튼의 48도 같은 값으로 피한다 — D1).
+- `env(safe-area-inset-*)`에 기대지 않는다 — 규칙 1의 근거(이 호스트에서 0) 그대로다.
+- 탭 루트 · 바텀 시트 · 바닥 고정 층의 수치(D2 · D3)는 바뀌지 않았다. 3버튼에서 자판의 흰 면이 시스템 바 밑까지 깔리는 것은 D2의 바닥 면과 같은 그림이다.
+- ⚠ Android 실기 확인(3버튼 · 제스처)은 아직 없다 — [자판 바닥 붙이기 e2e](../e2e/keyboard-dock.md) KDA1 · KDA2 미실행. 통합 테스트(`App.system-insets` II7 ~ II10)가 수치를 진다.

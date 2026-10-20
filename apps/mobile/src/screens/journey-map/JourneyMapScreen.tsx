@@ -10,8 +10,9 @@ import { JourneyMapHeaderSlot } from "./JourneyMapHeaderSlot";
 import { MapUnitEntranceProvider } from "./MapUnitStage";
 import { StepSheet } from "./StepSheet";
 import { CatalogUnitSheet } from "./CatalogUnitSheet";
-import { catalogSheetKey, catalogSheetTargetOf } from "./catalog-sheet";
+import { catalogSheetKey, catalogSheetTargetOf, catalogSheetUnitSize } from "./catalog-sheet";
 import { screenId, scrollId } from "./journey-map-scroll";
+import { mapTopLayout } from "./journey-map-insets";
 import { noCatalogMapSections } from "./catalog-map";
 import { mapScrollTargetOf } from "./journey-map-next-unit";
 import { useAutoScrollToNext } from "./useAutoScrollToNext";
@@ -34,6 +35,7 @@ import type { EpisodeFinalUnitId } from "../episode-final/episode-final.contract
 import type { EpisodeIntroUnitId } from "../episode-intro/episode-intro.contract";
 import type { JourneyMapCatalogProps } from "./catalog-map.contract";
 import { knownProgressLoad, nodeAccessOf } from "./journey-map-load";
+import { journeyStepOrdinal } from "./journey-map-progress";
 import type { JourneyMapProgressLoad } from "./journey-map-load.contract";
 
 import "./journey-map-screen.css";
@@ -57,6 +59,11 @@ export type JourneyMapScreenProps = {
   onLayerChange?: (open: boolean) => void;
   /** 카탈로그 구획 슬롯입니다. 없으면 튜토리얼만 있는 맵입니다. */
   readonly catalog?: JourneyMapCatalogProps;
+  /**
+   * 위 안전 영역(상태 표시줄) 높이입니다. ⟨2026-10-19⟩ 맵은 상태 표시줄 뒤까지 스크롤하고 셸은 여정 맵에서 위 여백을
+   * 잡지 않으므로, 맵이 이 높이만큼 첫 내용 · 띠 · 로딩 줄을 내립니다(`mapTopLayout`). 없으면 0입니다.
+   */
+  readonly statusBarInset?: number;
   readonly progressLoad?: JourneyMapProgressLoad;
 };
 
@@ -78,8 +85,12 @@ export function JourneyMapScreen({
   onLayerChange,
   catalog,
   progressLoad = knownProgressLoad,
+  statusBarInset = 0,
 }: JourneyMapScreenProps): ReactNode {
   const guide = useFirstUnitGuide("map");
+  // 스크롤 상자가 화면 맨 위(상태 표시줄 뒤)에서 시작하도록 화면 위 여백을 스크롤 안쪽으로 옮기고, 위 모서리
+  // 기준의 띠 · 로딩 줄은 상태 표시줄 높이만큼 내립니다.
+  const top = mapTopLayout(statusBarInset);
   const {
     sheetState,
     sheetTop,
@@ -135,7 +146,11 @@ export function JourneyMapScreen({
 
   // 카탈로그 노드의 탭 핸들러(`"background only"`)가 부릅니다 — 여기에 지시문을 다시 두지 않습니다.
   const handleSelectCatalogUnit = (episodeId: string, unitKey: string, tapY: number) =>
-    handleSelectStep(catalogSheetKey(episodeId, unitKey), tapY);
+    handleSelectStep(
+      catalogSheetKey(episodeId, unitKey),
+      tapY,
+      catalogSheetUnitSize(catalog?.sections ?? noCatalogMapSections, episodeId, unitKey),
+    );
 
   const access = nodeAccessOf(progressLoad);
   const actions = {
@@ -148,7 +163,12 @@ export function JourneyMapScreen({
   };
 
   return (
-    <view id={screenId} className="journey-map-screen" data-testid="journey-map-screen">
+    <view
+      id={screenId}
+      className="journey-map-screen"
+      data-testid="journey-map-screen"
+      style={{ paddingTop: `${top.screenPaddingTop}px` }}
+    >
       {/* 머리(칩 · 알림 버튼)는 이 화면이 아니라 전역 레이아웃이 집니다(`app/AppHeader`).
           머리는 이 화면 위에 겹치고, 그 몫의 위 여백은 맵 상자가 잡습니다. */}
       {/* [흐름] 내용 슬롯 — 스크롤 컨테이너 하나가 맵 컨테이너를 감쌉니다. 가림
@@ -168,6 +188,7 @@ export function JourneyMapScreen({
         <view
           className="journey-map-screen-map"
           data-testid="journey-map-screen-map"
+          style={{ paddingTop: `${top.mapPaddingTop}px` }}
           accessibility-elements-hidden={sheetOpen}
           bindtouchstart={autoScroll.handleTouchStart}
         >
@@ -220,6 +241,8 @@ export function JourneyMapScreen({
         tutorialSections={journeyMapSections}
         progress={progress}
         load={progressLoad}
+        bandTop={top.bandTop}
+        progressRowTop={top.progressRowTop}
         obscured={sheetOpen || guide.visible}
         openStepId={sheetState.openStepId}
         catalogSections={catalog?.sections}
@@ -236,6 +259,8 @@ export function JourneyMapScreen({
           top={sheetTop}
           caretOffset={sheetCaretOffset}
           {...stepSheetFiguresFor(openStep.id, completedStepCount)}
+          /* 끝낸 스텝은 다시 하기라 티켓을 쓰지 않습니다(시안 E3 — 새 레슨에만 태그). */
+          ticketCost={journeyStepOrdinal(openStep.id) - 1 < completedStepCount ? 0 : 1}
           /* `시작`의 목적지는 이 화면이 정하지 않습니다 — 열린 스텝의 id를 그대로
              위로 올립니다. 화면 전환은 `App`의 것입니다. */
           onStart={() => onStartStep(openStep.id)}

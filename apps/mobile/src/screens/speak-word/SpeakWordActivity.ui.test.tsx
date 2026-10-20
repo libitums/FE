@@ -14,6 +14,7 @@ import { markedUiCopy } from "../../lib/ui-copy.test-support";
 import type { LessonPosition } from "../learning/activity-finish";
 import { SpeakWordActivity } from "./SpeakWordActivity";
 import type { SpeakWordQuestion } from "./speak-word.contract";
+import { expectCompleteScene, expectQuestionScene } from "../learning/complete-scene.test-support";
 
 // `ui` 계층: 낱말 말하기 활동 — 그림 로딩 · 실패 · 뜻 줄 · 말하기 · 판정 배지 · 정답 상자 · 자동 넘김 · 건너뜀 ·
 // 잠금 · 완료 · 넘김을 실제 컴포넌트로 본다. 문항은 손으로 세웠다(매핑은 unit이 진다).
@@ -340,4 +341,18 @@ test("USW9. 문구는 모두 문구표에서 온다", () => {
 
   expect(id("speak-word-reveal")).toHaveTextContent("⟦typing.answerReveal⟧(카드 · kadeu)");
   expect(hintText()).toBe("⟦speaking.tapToContinue⟧");
+});
+
+// ACS-SW — 완료 장면: 무대가 완료 장면이고 내용 상자 안은 완료 카드 하나다. 문항 장면은 그대로다.
+test("[ACS-SW] 완료 때 무대가 완료 장면이고 내용 상자의 유일한 자식이 완료 카드이며 문항 장면에는 표시가 없다", () => {
+  host({ result: () => recognized("카드") });
+  mount([cardQuestion, passport]);
+  loadPicture();
+  expectQuestionScene();
+
+  tapAction("Speak");
+  fireEvent.tap(id("learning-shell-advance"), {});
+  tapSecondary("skip", "Skip");
+
+  expectCompleteScene("speak-word-content", "speak-word-complete");
 });

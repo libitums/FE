@@ -9,8 +9,8 @@
   gap: var(--libitum-layout-gap-block);
   /* 화면 여백은 축마다 값이 다릅니다. `padding-x`를 네 방향에 쓰면 상하가 틀립니다. */
   /* 위 여백은 화면 여백에 전역 머리(`.app-header`) 몫을 더한 것입니다 — 머리가 이 화면
-     위에 겹치므로 더하지 않으면 제목이 칩 · 알림 버튼에 가립니다. 머리 높이 40pt(알림
-     버튼 기준)에 열 간격을 더합니다(여정 맵의 `.journey-map-screen-map`과 같은 수).
+     위에 겹치므로 더하지 않으면 제목이 칩 · 알림 버튼에 가립니다. 머리 높이는 44pt(알림
+     버튼 기준)지만 값은 옛 40pt에 열 간격을 더한 그대로라 간격이 4 좁습니다(여정 맵의 `.journey-map-screen-map`과 같은 수).
      shorthand에 `calc(…)`가 섞이면 Lynx가 선언 전체를 버리므로(`.roleplay-list-screen`과
      같은 까닭) longhand로 나눠 적습니다. */
   padding-top: calc(

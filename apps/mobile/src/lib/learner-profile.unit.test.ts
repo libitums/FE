@@ -6,8 +6,8 @@ import {
   learnerNameFrom,
   learnerProfileRecordFrom,
   learnerProfileSavedEvent,
-  learnerProfileSkippedEvent,
   noLearnerProfilePort,
+  pickLearnerName,
   sameLearnerProfile,
 } from "./learner-profile";
 
@@ -188,16 +188,13 @@ describe("sameLearnerProfile", () => {
 });
 
 describe("이벤트", () => {
-  test.each(["onboarding", "episode", "settings"] as const)(
-    "PR-4. 이전 기록이 없으면 created다: %s",
-    (entry) => {
-      expect(learnerProfileSavedEvent(entry, null)).toEqual({
-        name: "learner_profile_saved",
-        entry,
-        change: "created",
-      });
-    },
-  );
+  test.each(["signup", "settings"] as const)("PR-4. 이전 기록이 없으면 created다: %s", (entry) => {
+    expect(learnerProfileSavedEvent(entry, null)).toEqual({
+      name: "learner_profile_saved",
+      entry,
+      change: "created",
+    });
+  });
 
   test("PR-4. 이전 기록이 있으면 updated다", () => {
     expect(learnerProfileSavedEvent("settings", emma)).toEqual({
@@ -208,23 +205,13 @@ describe("이벤트", () => {
   });
 
   test("PR-4. 이벤트의 키는 name · entry · change뿐이고 값(이름 · 나라)이 새지 않는다", () => {
-    const created = learnerProfileSavedEvent("episode", null);
+    const created = learnerProfileSavedEvent("signup", null);
     const updated = learnerProfileSavedEvent("settings", emma);
 
     expect(Object.keys(created).sort()).toEqual(["change", "entry", "name"]);
     expect(Object.keys(updated).sort()).toEqual(["change", "entry", "name"]);
     expect(JSON.stringify([created, updated])).not.toMatch(/Emma|"DE"/);
   });
-
-  test.each(["onboarding", "episode"] as const)(
-    "PR-5. 건너뜀 이벤트의 키는 name · entry 둘이다: %s",
-    (entry) => {
-      const event = learnerProfileSkippedEvent(entry);
-
-      expect(event).toEqual({ name: "learner_profile_skipped", entry });
-      expect(Object.keys(event).sort()).toEqual(["entry", "name"]);
-    },
-  );
 });
 
 describe("noLearnerProfilePort", () => {
@@ -233,5 +220,30 @@ describe("noLearnerProfilePort", () => {
     expect(noLearnerProfilePort.search("")).toEqual([]);
     expect(noLearnerProfilePort.byCode("KR")).toBeNull();
     expect(noLearnerProfilePort.previewOf("Emma", null)).toEqual({ kind: "example", lines: [] });
+    expect(noLearnerProfilePort.randomName(null)).toBe("");
+  });
+});
+
+describe("pickLearnerName", () => {
+  const names = ["Emma", "Leo", "Mai"] as const;
+
+  test("PR-7. random 값의 구간으로 고른다 — 0은 첫째, 1에 가까우면 마지막", () => {
+    expect(pickLearnerName(names, null, () => 0)).toBe("Emma");
+    expect(pickLearnerName(names, null, () => 0.5)).toBe("Leo");
+    expect(pickLearnerName(names, null, () => 0.9999)).toBe("Mai");
+  });
+
+  test("PR-7. 지난 이름은 빼고 고른다(Shuffle이 같은 이름을 다시 내지 않는다)", () => {
+    for (const value of [0, 0.3, 0.6, 0.9999]) {
+      expect(pickLearnerName(names, "Leo", () => value)).not.toBe("Leo");
+    }
+    expect(pickLearnerName(names, "Emma", () => 0)).toBe("Leo");
+  });
+
+  test("PR-7. 목록에 없는 지난 이름 · 한 개뿐인 목록 · 빈 목록 · 1을 내는 random도 다룬다", () => {
+    expect(pickLearnerName(names, "Zoe", () => 0)).toBe("Emma");
+    expect(pickLearnerName(["Emma"], "Emma", () => 0.5)).toBe("Emma");
+    expect(pickLearnerName([], null, () => 0.5)).toBe("");
+    expect(pickLearnerName(names, null, () => 1)).toBe("Mai");
   });
 });

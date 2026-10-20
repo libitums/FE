@@ -64,17 +64,24 @@ export const typingEn: TypingCopy = {
 export const vocabCardEn: VocabCardCopy = {
   instruction: "Learn this word.",
   badge: "New word",
-  exampleTitle: "Example",
+  gotIt: "Got it",
+  runLabel: (ordinal, total) => `Word ${ordinal} of ${total}`,
   pronunciation: (romanization) => `Pronunciation: ${romanization}`,
   meaning: (meaning) => `Meaning: ${meaning}`,
-  example: (text) => `Example: ${text}`,
 };
 
 export const cultureCardEn: CultureCardCopy = {
   instruction: "Learn about life in Korea.",
-  badge: "Culture",
+  eyebrow: "CULTURE",
+  tapToFlip: "Tap to flip",
+  flipCard: "Flip card",
+  nextCard: "Next card",
   koreanBodyTitle: "In Korean",
+  counter: (position, total) => `${position} / ${total}`,
   pronunciation: (romanization) => `Pronunciation: ${romanization}`,
+  frontPlace: (position, total) => `Culture card ${position} of ${total}, front.`,
+  backPlace: (position, total) => `Culture card ${position} of ${total}, back.`,
+  flipBackHint: "Tap to flip back.",
 };
 
 export const syllableBuildEn: SyllableBuildCopy = {

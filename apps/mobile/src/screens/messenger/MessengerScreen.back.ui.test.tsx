@@ -1,3 +1,4 @@
+import { zeroSafeAreaInsets } from "../../lib/safe-area";
 import { afterEach, expect, test, vi } from "vitest";
 import { act, cleanup, render } from "@lynx-js/react/testing-library";
 
@@ -28,6 +29,7 @@ test("[US10] 미완료 뒤로가기 → onExit('incomplete') 1회(나가기 버�
   const onExit = vi.fn();
   render(
     <MessengerScreen
+      insets={zeroSafeAreaInsets}
       conversation={messengerConversationFor("appointment-confirmation")}
       completionStatus="available"
       onExit={onExit}

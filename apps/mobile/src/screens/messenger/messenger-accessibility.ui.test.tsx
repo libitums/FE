@@ -1,3 +1,4 @@
+import { zeroSafeAreaInsets } from "../../lib/safe-area";
 import { describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
@@ -8,6 +9,7 @@ import { keyboardConversation as conversation } from "./messenger-keyboard-fixtu
 function renderActive() {
   render(
     <MessengerScreen
+      insets={zeroSafeAreaInsets}
       conversation={conversation}
       completionStatus="available"
       onExit={vi.fn()}
@@ -69,6 +71,7 @@ describe("messenger accessibility static regression guard", () => {
   it("완료 재진입도 첫 답장의 보내기 접근성 계약을 유지한다", () => {
     render(
       <MessengerScreen
+        insets={zeroSafeAreaInsets}
         conversation={conversation}
         completionStatus="completed"
         onExit={vi.fn()}

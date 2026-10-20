@@ -116,9 +116,3 @@
   z-index: var(--libitum-elevation-z-floating);
   background: var(--libitum-color-background-primary);
 }
-
-/* 넷째 스텝의 양식 자리입니다. 다른 스텝의 카드 영역(400)보다 양식이 길어져도 점과 제목이 겹치지
-   않게 `min-height`로 잡습니다. */
-.onboarding-screen-profile {
-  min-height: 400px;
-}

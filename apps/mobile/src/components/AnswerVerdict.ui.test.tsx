@@ -33,3 +33,28 @@ test.each(["correct", "incorrect"] as const)(
     expect(badge).toHaveTextContent(`⟦common.answerResult.${result}⟧`);
   },
 );
+
+test("[FDU5] surface를 생략하면 data-surface가 light이고 dark를 주면 dark다", () => {
+  const first = render(<AnswerVerdict result="correct" />);
+  expect(screen.getByTestId("answer-verdict")).toHaveAttribute("data-surface", "light");
+  first.unmount();
+
+  render(<AnswerVerdict result="correct" surface="dark" />);
+  expect(screen.getByTestId("answer-verdict")).toHaveAttribute("data-surface", "dark");
+});
+
+test.each(["correct", "incorrect"] as const)(
+  "[FDU5] %s 판정은 면이 달라도 data-result · 낭독 이름 · 글자가 같다",
+  (result) => {
+    const word = result === "correct" ? "Correct" : "Incorrect";
+    for (const surface of ["light", "dark"] as const) {
+      const rendered = render(<AnswerVerdict result={result} surface={surface} />);
+      const badge = screen.getByTestId("answer-verdict");
+      expect(badge).toHaveAttribute("data-surface", surface);
+      expect(badge).toHaveAttribute("data-result", result);
+      expect(badge).toHaveAttribute("accessibility-label", word);
+      expect(badge).toHaveTextContent(word);
+      rendered.unmount();
+    }
+  },
+);

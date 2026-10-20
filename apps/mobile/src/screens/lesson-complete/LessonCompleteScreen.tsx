@@ -10,6 +10,7 @@ import { Button } from "@libitums/ui-lynx/button";
 import { useMotion } from "@libitums/ui-lynx/motion";
 
 import { StatChip, statChipDiamondColor } from "../../components/StatChip";
+import { ticketIcon } from "../../components/ticket-icon";
 import { announce } from "../../lib/accessibility";
 import { playSound } from "../../lib/sound-effects";
 import { useScreenBack } from "../../lib/use-back-handler";
@@ -34,6 +35,7 @@ import { noStatBumps } from "../../lib/stat-bump";
 import type { StatBumpKind, StatBumps } from "../../lib/stat-bump";
 
 import "./lesson-complete-screen.css";
+import "../tickets/tickets.css";
 
 // 학습 유닛을 마치면 뜨는 화면입니다(Figma 65-466). ⟨2026-09-28⟩ **통과와 미통과가 이
 // 화면 하나입니다** — 그전에는 통과만 여기였고 미통과는 옆의 평가 화면이라, 같은 순간의
@@ -76,6 +78,8 @@ export type LessonCompleteScreenProps = {
    */
   readonly statBumps?: StatBumps;
   readonly onStatBumped?: (kind: StatBumpKind) => void;
+  /** 남은 학습 티켓 수입니다(시안 E5). 넘기지 않으면 줄이 서지 않습니다 — 레슨이 아닌 결과 화면입니다. */
+  readonly ticketsLeft?: number;
 };
 
 export function LessonCompleteScreen({
@@ -90,6 +94,7 @@ export function LessonCompleteScreen({
   onRetry,
   statBumps = noStatBumps,
   onStatBumped,
+  ticketsLeft,
 }: LessonCompleteScreenProps): ReactNode {
   const copy = useUiCopy();
   // `reward` prop(재화)과 이름이 겹치지 않도록 배지 모션은 `rewardMotion`으로 둡니다.
@@ -227,6 +232,22 @@ export function LessonCompleteScreen({
             />
             <text className="lesson-complete-screen-reward-label">{reward.grade}</text>
           </view>
+        </view>
+      )}
+
+      {ticketsLeft === undefined ? null : (
+        <view
+          className="ticket-left-line"
+          data-testid="lesson-complete-tickets"
+          accessibility-element={true}
+          accessibility-label={copy.tickets.ticketsLeft(ticketsLeft)}
+        >
+          <svg
+            className="ticket-left-icon"
+            content={ticketIcon}
+            current-color={color.brand.primary}
+          />
+          <text className="ticket-left-label">{copy.tickets.ticketsLeft(ticketsLeft)}</text>
         </view>
       )}
 

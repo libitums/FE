@@ -231,14 +231,16 @@ export function WordChoiceActivity({
         // 문항이 있을 때만 서므로 앵커가 될 수 없습니다: 실물 문항 표가 아직 비어 있어
         // 마운트가 곧 완료인 갈래가 있습니다.
         <view className="word-choice-screen-content" data-testid="word-choice-screen-content">
-          {/* 판정 배지 자리입니다 — 비어 있어도 높이를 지킵니다. 배지가 뜨고 질 때 카드
+          {/* 판정 배지 자리입니다 — 문항 장면에서는 비어 있어도 높이를 지킵니다. 배지가 뜨고 질 때 카드
               높이가 흔들리면 그 아래 보기가 함께 밀립니다(듣기가 같은 자리를 같은
               이유로 비워 둡니다). 디자인도 카드 위쪽을 이렇게 씁니다(Figma 65-327). */}
-          <view className="word-choice-screen-verdict-slot">
-            {question === null || !hasAnswered(state) ? null : (
-              <AnswerVerdict result={answeredResultOf(state, question)} />
-            )}
-          </view>
+          {complete ? null : (
+            <view className="word-choice-screen-verdict-slot">
+              {question === null || !hasAnswered(state) ? null : (
+                <AnswerVerdict result={answeredResultOf(state, question)} />
+              )}
+            </view>
+          )}
 
           {question === null ? null : (
             <WordChoicePresentation
@@ -255,14 +257,16 @@ export function WordChoiceActivity({
           {question === null ? (
             <LearningActivityComplete
               questionCount={questions.length}
+              lesson={lesson}
               testId="word-choice-screen-complete"
             />
           ) : null}
 
           {/* 배지 자리와 마주 보는 빈 자리입니다 — 왜 필요한지는 CSS에 적혀 있습니다.
-              글자 제시문과 완료 상태에는 언제나 섭니다(배지 자리가 언제나 서므로, 조건부로 두면
-              완료 상태에서만 다시 쏠립니다). 그림 문항만 뺍니다 — 그림 틀이 카드를 채웁니다. */}
-          {question?.picture === undefined ? (
+              글자 제시문에는 언제나 섭니다(배지 자리가 언제나 서므로, 조건부로 두면 다시 쏠립니다).
+              그림 문항은 뺍니다 — 그림 틀이 카드를 채웁니다. 완료 장면도 뺍니다 — 배지 자리가 같이
+              없어 쏠릴 것이 없고, 카드가 내용 높이로 가운데에 섭니다. */}
+          {!complete && question?.picture === undefined ? (
             <view className="word-choice-screen-verdict-balance" />
           ) : null}
         </view>

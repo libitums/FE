@@ -302,6 +302,13 @@ sink는 던지지 않는다 — 매핑 · `capture`를 `try`로 감싸 삼킨다
   - sink는 새로 만들지 않았다 — 온보딩 `entryEventSink` · 에피소드 전 `episodeIntroEventSink` · 설정 `settingsEventSink`. 셋째 계약 union에 같은 이벤트 타입이 들어간다.
   - 묻는 질문: 「학습자가 이름 · 나라를 넣는가」 = 진입점별 `saved` / (`saved` + `skipped`). 건너뜀 비율이 높으면 ADR-0059 재검토 조건 5.
   - **한계** — 에피소드 전 화면이 보인 수는 세지 않는다(보임 이벤트 없음 — 뒤로 나간 수는 모른다). GitHub wiki 이벤트 사전은 저장소 밖이라 따로 고친다. PostHog 도착은 보지 않았다.
+- ⟨2026-10-20 — 가입 직후 이름 · 나라(ADR-0059 D7 적용 기록). 적용 기록이고 결정을 바꾸지 않는다⟩ **`learner_profile_skipped`를 지워 이름이 하나 준다**(42 → 41, 모양 46 → 45 — 같은 날 먼저 병합된 에피소드 롤플레이(ADR-0076)의 둘과 합쳐 44 → 43, 모양 48 → 47).
+  - 건너뛸 길(온보딩 넷째 스텝을 빈 채 · 에피소드 전 `Skip`)이 둘 다 없어졌다 — 이름은 늘 미리 채워지고 화면에 건너뛰기가 없다.
+  - `learner_profile_saved`의 `entry`는 `signup`(가입 직후 ② 나라의 Continue) | `settings`다. `onboarding` · `episode`는 더 나지 않는다. 진입 sink로만 나고 서사 sink(`episodeIntroEventSink`)
+    union에서 빠졌다.
+  - `entry_screen_viewed`의 `screen`에 `learner-name` · `learner-country`가 더해졌다(로그인 → ① → ② → `language-select` 순).
+  - 묻는 질문: 「가입자가 ②를 통과하는가」 = `entry_screen_viewed(learner-country)` 대비 `learner_profile_saved(entry = signup)`.
+  - **한계** — 옛 앱 버전의 `skipped` 이벤트는 PostHog에 남는다(버전으로 가른다). GitHub wiki 이벤트 사전은 저장소 밖이라 따로 고친다. PostHog 도착은 보지 않았다.
 - ⟨2026-10-14 — 카탈로그 표지 화면 · 시작/클리어 배너. 적용 기록이고 결정을 바꾸지 않는다⟩ **카탈로그 표지에서도 서사 이벤트 다섯이 모두 난다.**
   새 이름 · 속성 · 타입은 **0**이고 sink도 그대로다 — 이미 있는 이벤트를 카탈로그 `episodeId`로 낸다. 바뀐 것은 발생 시점이다
   (화면과 결선은 [ADR-0058](0058-catalog-learning-session.md) 적용 기록 ⟨2026-10-14⟩).
@@ -343,6 +350,16 @@ sink는 던지지 않는다 — 매핑 · `capture`를 `try`로 감싸 삼킨다
   | 〃 | `questionCount`(기존) | **뜻 불변** — 계획의 채점 문항 수(건너뛴 낱말 말하기도 든다). 통과 기준의 분모(판정한 채점 문항 수)와 다를 수 있다 | 〃 |
 
   - **`skippedItemCount`(시작 이벤트)와 다르다** — 그쪽은 **매핑 때** 화면이 서지 않은 문항 수이고, 이쪽은 화면에 섰다가 사용자가 넘긴 수다. 이 변경부터 말하기는 매핑에서 빠지지 않아 `S5`의 `skippedItemCount`가 줄었다(u01 6 → 3).
+- ⟨2026-10-20 — 학습 티켓. 적용 기록이고 결정을 바꾸지 않는다⟩ **이벤트 둘이 더해져 이름이 40 → 42개다**(모양 44 → 46). 결정은 [ADR-0075](0075-learning-tickets.md) D6.
+  sink는 새로 만들지 않았다 — 앱 훅(`useLearningTickets`)이 `episodeIntroEventSink`로 낸다. 타입 정본은 `screens/tickets/tickets.contract.ts`(`TicketEvent`)이고 `EpisodeIntroEvent` union에 든다.
+  - **`tickets_ran_out`** — 티켓 0에서 새 레슨을 열려 해 대화상자가 선 순간. 속성 없음.
+  - **`ticket_more_tapped`** — `Get more tickets`를 누름. 속성 `surface`(`ticket_modal` | `out_of_tickets`) · `granted`(불리언 — 하루 한 장 무료를 받았는가).
+  - Meta 앱 이벤트 매핑은 둘을 옮기지 않는다. PostHog 도착은 보지 않았다.
+- ⟨2026-10-20 — 에피소드 롤플레이. 적용 기록이고 결정을 바꾸지 않는다⟩ **이벤트 둘이 더해져 이름이 42 → 44개다**(모양 46 → 48). 결정은 [ADR-0076](0076-episode-roleplay.md) D5.
+  sink는 새로 만들지 않았다 — 열림은 롤플레이 목록 결선(`journey-wiring.ts`), 끝은 `roleplay-story-wiring.ts`가 `episodeIntroEventSink`로 낸다. 타입 정본은 `screens/roleplay-story/roleplay-story.contract.ts`(`RoleplayStoryEvent`)이고 `EpisodeIntroEvent` union에 든다.
+  - **`roleplay_story_opened`** — 롤플레이 탭에서 에피소드 롤플레이 카드를 누름. 속성 `episodeId`.
+  - **`roleplay_story_completed`** — 마지막 턴을 넘김. 속성 `episodeId` · `correctCount` · `judgedCount` · `skippedCount`(10진 문자열). 대사 · 들은 문장은 싣지 않는다.
+  - Meta 앱 이벤트 매핑은 둘을 옮기지 않는다. PostHog 도착은 보지 않았다.
   - **읽는 법** — `S5`(말하기는 읽기만 있는 단계)의 `skippedCount > 0` ⇔ 그 기기에서 인식을 쓸 수 없었다(권한 거부 · 인식기 없음 · 인식 실패 — 읽기의 사용자 넘김은 `Next`라 세지 않는다) → **인식 불가 비율의 깨끗한 신호**.
     `S6` · `S8`의 `skippedCount`는 사용자 `Skip`이 섞인 상한이다. 그 두 단계의 판정 분모 = `questionCount − skippedCount`(한 단계에 말하기 유형이 하나뿐이라 성립 — 섞이면 ADR-0067 재검토 조건 2), 정답률 = `correctCount ÷ (questionCount − skippedCount)`.
   - **연속성** — 이 변경 전 모든 카탈로그 활동은 건너뜀 0을 냈으므로 **`skippedCount`가 없는 옛 이벤트는 `"0"`으로 읽는다.** `questionCount`의 뜻은 바뀌지 않았다.

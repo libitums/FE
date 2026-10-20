@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 
-import { authProvidersFrom, authUserIdFrom } from "./auth-user-id";
+import { authDisplayNameFrom, authProvidersFrom, authUserIdFrom } from "./auth-user-id";
 
 function base64Url(value: string): string {
   return Buffer.from(value, "utf8").toString("base64url");
@@ -97,5 +97,33 @@ describe("authProvidersFrom", () => {
   ])("AP1: %s는 []이고 던지지 않는다", (_label, token) => {
     expect(() => authProvidersFrom(token)).not.toThrow();
     expect(authProvidersFrom(token)).toStrictEqual([]);
+  });
+});
+
+describe("authDisplayNameFrom", () => {
+  test("AU-N1. user_metadata.full_name을 먼저, 없으면 name을 읽고 공백을 접는다", () => {
+    expect(
+      authDisplayNameFrom(tokenWith({ user_metadata: { full_name: " Mia  Kim ", name: "M" } })),
+    ).toBe("Mia Kim");
+    expect(authDisplayNameFrom(tokenWith({ user_metadata: { name: "Leo" } }))).toBe("Leo");
+    expect(authDisplayNameFrom(tokenWith({ user_metadata: { full_name: "김세현" } }))).toBe(
+      "김세현",
+    );
+  });
+
+  test("AU-N2. 이름 규칙을 어기는 값은 건너뛰고 다음 키를 본다", () => {
+    expect(
+      authDisplayNameFrom(tokenWith({ user_metadata: { full_name: "{x}", name: "Leo" } })),
+    ).toBe("Leo");
+    expect(
+      authDisplayNameFrom(tokenWith({ user_metadata: { full_name: "a".repeat(31) } })),
+    ).toBeNull();
+  });
+
+  test("AU-N3. 메타데이터가 없거나 모양이 틀리거나 JWT가 아니면 null이다", () => {
+    expect(authDisplayNameFrom(tokenWith({ sub: "u" }))).toBeNull();
+    expect(authDisplayNameFrom(tokenWith({ user_metadata: ["Leo"] }))).toBeNull();
+    expect(authDisplayNameFrom(tokenWith({ user_metadata: { full_name: 3 } }))).toBeNull();
+    expect(authDisplayNameFrom("not-a-jwt")).toBeNull();
   });
 });

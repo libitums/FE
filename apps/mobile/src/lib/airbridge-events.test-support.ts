@@ -1,7 +1,7 @@
 // airbridge-events 단위 테스트가 함께 쓰는 입력 표입니다. 계약: ADR-0063.
 import type { AnalyticsEvent, AnalyticsEventName, AnalyticsEventSinks } from "./analytics.contract";
 
-/** 계약의 이름 40개 전부입니다 — 손으로 적고 타입에 묶습니다. */
+/** 계약의 이름 41개 전부입니다 — 손으로 적고 타입에 묶습니다. */
 export const allEventNames = [
   "entry_screen_viewed",
   "entry_login_method_selected",
@@ -38,14 +38,17 @@ export const allEventNames = [
   "episode_lesson_finished",
   "episode_final_passed",
   "learner_profile_saved",
-  "learner_profile_skipped",
   "learner_profile_opened",
   "progress_load_delayed",
   "progress_load_failed",
   "progress_load_recovered",
+  "tickets_ran_out",
+  "ticket_more_tapped",
+  "roleplay_story_opened",
+  "roleplay_story_completed",
 ] as const satisfies readonly AnalyticsEventName[];
 
-/** 위 셋을 뺀 37개 이름마다 최소 이벤트 하나입니다. */
+/** 위 셋을 뺀 40개 이름마다 최소 이벤트 하나입니다. */
 export const unmappedEvents = [
   { name: "entry_screen_viewed", screen: "onboarding" },
   { name: "entry_login_method_selected", method: "phone" },
@@ -130,14 +133,24 @@ export const unmappedEvents = [
     skippedCount: "0",
   },
   { name: "episode_final_passed", episodeId: "u01", correctCount: "2", turnCount: "2" },
-  { name: "learner_profile_saved", entry: "onboarding", change: "created" },
-  { name: "learner_profile_skipped", entry: "episode" },
+  { name: "learner_profile_saved", entry: "signup", change: "created" },
   { name: "learner_profile_opened" },
   { name: "progress_load_delayed" },
   { name: "progress_load_failed", attempt: "first" },
   { name: "progress_load_failed", attempt: "retry" },
   { name: "progress_load_recovered", trigger: "auto" },
   { name: "progress_load_recovered", trigger: "manual" },
+  { name: "tickets_ran_out" },
+  { name: "ticket_more_tapped", surface: "ticket_modal", granted: true },
+  { name: "ticket_more_tapped", surface: "out_of_tickets", granted: false },
+  { name: "roleplay_story_opened", episodeId: "u01-water" },
+  {
+    name: "roleplay_story_completed",
+    episodeId: "u01-water",
+    correctCount: "2",
+    judgedCount: "3",
+    skippedCount: "0",
+  },
 ] as const satisfies readonly AnalyticsEvent[];
 
 export const entryCompleted = { name: "entry_completed" } as const satisfies AnalyticsEvent;

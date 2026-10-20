@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
   <uses-permission android:name="android.permission.INTERNET" />
+  <!-- 기본 네트워크가 끊김 → 연결로 바뀔 때 에피소드 받기를 깨운다(ConnectivityManager 콜백). -->
+  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
   <!-- Airbridge 광고 측정(Android 설치 귀속)이 쓰는 광고 ID. Play Console의 광고 ID 선언이 따라야 한다. -->
   <uses-permission android:name="com.google.android.gms.permission.AD_ID" />
   <uses-permission android:name="android.permission.RECORD_AUDIO" />

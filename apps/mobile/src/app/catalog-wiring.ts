@@ -1,25 +1,20 @@
-// 카탈로그 결선의 합침입니다 — 표지 결선과 학습(레슨 · 최종 테스트) 결선에 학습자 프로필의 가드를 얹어 한 묶음으로 내립니다.
+// 카탈로그 결선의 합침입니다 — 표지 결선과 학습(레슨 · 최종 테스트) 결선을 한 묶음으로 내립니다. 학습자 프로필의
+// 에피소드 전 가드는 2026-10-20에 걷었습니다(이름 · 나라는 가입 직후 화면이 묻습니다 — ADR-0059 D7 적용 기록).
 
 import { catalogCoverWiring } from "./catalog-cover-wiring";
 import type { CatalogCoverWiring, CatalogCoverWiringArgs } from "./catalog-cover-wiring";
 import { catalogLessonWiring } from "./catalog-lesson-wiring";
 import type { CatalogLessonWiring, CatalogLessonWiringArgs } from "./catalog-lesson-wiring";
-import { learnerProfileWiring } from "./learner-profile-wiring";
-import type { LearnerProfileWiring, LearnerProfileWiringArgs } from "./learner-profile-wiring";
+import { roleplayStoryWiring } from "./roleplay-story-wiring";
+import type { RoleplayStoryWiring } from "./roleplay-story-wiring";
 
-export type CatalogWiring = CatalogCoverWiring & CatalogLessonWiring & LearnerProfileWiring;
-export type CatalogWiringArgs = CatalogCoverWiringArgs &
-  CatalogLessonWiringArgs &
-  LearnerProfileWiringArgs;
+export type CatalogWiring = CatalogCoverWiring & CatalogLessonWiring & RoleplayStoryWiring;
+export type CatalogWiringArgs = CatalogCoverWiringArgs & CatalogLessonWiringArgs;
 
 export function catalogWiring(args: CatalogWiringArgs): CatalogWiring {
-  const profile = learnerProfileWiring(args, (learnerFill) => {
-    const withFill = { ...args, learnerFill };
-    return {
-      cover: catalogCoverWiring(withFill).onStartCatalogCover,
-      unit: catalogLessonWiring(withFill).onStartCatalogUnit,
-    };
-  });
-  // 가드가 선 시작 함수 둘이 마지막에 놓여 원래 시작을 덮습니다.
-  return { ...catalogCoverWiring(args), ...catalogLessonWiring(args), ...profile };
+  return {
+    ...catalogCoverWiring(args),
+    ...catalogLessonWiring(args),
+    ...roleplayStoryWiring(args),
+  };
 }

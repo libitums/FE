@@ -11,8 +11,10 @@ import {
   learnerCountryTextOf,
   learnerProfilePort,
   learnerProfilePreviewOf,
+  learnerRandomNames,
   searchLearnerCountries,
 } from "./learner-profile-data";
+import { learnerNameFrom } from "./learner-profile";
 
 // `unit` 계층: 나라 표의 무결성 · 접기 · 검색 순위 · 문장에 서는 세 표기 · 미리보기의 입출력만 봅니다.
 
@@ -278,6 +280,30 @@ describe("learnerProfilePort", () => {
   test("CT-12. search는 검색 규칙과 같다", () => {
     expect(codesOf(learnerProfilePort.search("korea"))).toEqual(["KP", "KR"]);
     expect(learnerProfilePort.search("")).toHaveLength(199);
+  });
+});
+
+describe("무작위 이름 목록", () => {
+  test("CT-13. 40개이고 겹치지 않으며 모두 이름 규칙을 그대로 지난다(정규화해도 같다)", () => {
+    expect(learnerRandomNames).toHaveLength(40);
+    expect(new Set(learnerRandomNames).size).toBe(40);
+    for (const name of learnerRandomNames) {
+      expect(learnerNameFrom(name)).toEqual({ ok: true, name });
+    }
+  });
+
+  test("CT-13. 짧은 라틴 이름이다 — 한국어 대사에 끼워 발음하기 쉽다(2 ~ 6자, 공백 없음)", () => {
+    for (const name of learnerRandomNames) {
+      expect([name, /^[A-Z][a-z]{1,5}$/.test(name)]).toEqual([name, true]);
+    }
+  });
+
+  test("CT-13. 포트의 randomName은 목록 안에서 지난 이름과 다른 값을 낸다", () => {
+    for (let round = 0; round < 50; round += 1) {
+      const name = learnerProfilePort.randomName("Emma");
+      expect(learnerRandomNames).toContain(name);
+      expect(name).not.toBe("Emma");
+    }
   });
 });
 

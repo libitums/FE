@@ -1,7 +1,7 @@
 /* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). */
 
-/* 지표 칩 — 높이는 디자인 실측값 그대로라, 버튼으로 쓸 때 Apple HIG의 44pt에는 못
-   미칩니다(여정 맵 알림 버튼과 같은 사정입니다). */
+/* 지표 칩 — 기본 높이는 내용 그대로(아이콘 24 + 세로 여백 6 × 2 + 테두리 2 × 2 = 40)입니다.
+   상단 줄은 아래 `-height-touch-target`으로 44에 맞춥니다. */
 .stat-chip {
   display: flex;
   flex-direction: row;
@@ -21,6 +21,14 @@
    있어, 면이 없으면 뒤로 지나가는 유닛 · 카드와 칩이 섞여 읽힙니다(2026-09-28). */
 .stat-chip-surface-white {
   background-color: var(--libitum-color-white);
+}
+
+/* 상단 줄 높이 — 세로 여백만 8로 키워 24 + 8 × 2 + 2 × 2 = 44입니다(알림 버튼과 같은 높이).
+   가로 여백 · 간격 · 아이콘 · 숫자는 그대로입니다. 같은 특이도의 `.stat-chip`을 이기도록
+   위 규칙들 뒤에 둡니다. */
+.stat-chip-height-touch-target {
+  padding-top: var(--libitum-spacing-8);
+  padding-bottom: var(--libitum-spacing-8);
 }
 
 .stat-chip-icon-box {
@@ -57,4 +65,8 @@
 /* 다이아 색은 맞는 토큰이 없어 디자인 값을 적습니다(`statChipDiamondColor`와 같은 값). */
 .stat-chip-value-diamond {
   color: #00c3ff;
+}
+
+.stat-chip-value-ticket {
+  color: var(--libitum-color-brand-secondary);
 }

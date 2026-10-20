@@ -124,8 +124,8 @@ Section 3(제3자) 표에는 Airbridge(AB180) 행을 더한다 — 기능 「adv
 > **App Store Connect 신고 갱신 필요.** 아래 대조는 코드 근거만 정리했다. 신고 화면 · 앱 manifest(`PrivacyInfo.xcprivacy`) · 공개 처리방침은 **아직 바꾸지 않았다**
 > (ADR README 보류 표). 3d-2 출시 전에 사용자가 갱신한다.
 
-3d-2([ADR-0059](adr/0059-learner-profile.md))가 **사용자가 직접 입력한 학습용 이름과 고른 나라**를 받는다. 온보딩 마지막 스텝 · 에피소드 전 화면 · 설정
-`Name and country in lessons`에서 입력하고, 레슨 문장의 `{이름}` · `{나라}`를 채우는 데만 쓴다. 둘 다 있어야 저장되고 건너뛰면 아무것도 저장하지 않는다.
+3d-2([ADR-0059](adr/0059-learner-profile.md))가 **사용자가 직접 입력한 학습용 이름과 고른 나라**를 받는다. ⟨2026-10-20⟩ 가입 직후 ① 이름 · ② 나라 화면과 설정
+`Name and country in lessons`에서 입력하고(온보딩 마지막 스텝 · 에피소드 전 화면은 걷혔다), 레슨 문장의 `{이름}` · `{나라}`를 채우는 데만 쓴다. 둘 다 있어야 저장되고 건너뛰면 아무것도 저장하지 않는다.
 
 | 데이터 | 어디에 저장하나 | 목적 | 사용자 연결 | 추적 | 코드 근거 |
 | --- | --- | --- | --- | --- | --- |
@@ -136,7 +136,9 @@ Section 3(제3자) 표에는 Airbridge(AB180) 행을 더한다 — 기능 「adv
   `libitum.learner-profile.guest`(로그인 직후 사용자별 칸으로 옮기고 지운다). 위 「앱의 API 사용 사유」의 UserDefaults `CA92.1` 범위 안이다 — 앱 자체 정보다.
 - **보존 · 삭제**: 서버 행은 계정을 지우면 `auth.users` CASCADE로 지워진다. 기기 칸은 계정 삭제 성공에 지우고, **로그아웃에는 남긴다**(같은 계정으로 다시 들어오면
   미전송 값을 이어 올리려고 — 다른 계정은 읽지 않는다). 앱을 지우면 기기 칸도 사라진다. 사용자가 기록만 지우는 기능은 아직 없다(바꾸기만 된다).
-- **분석에는 값이 없다.** PostHog 이벤트 `learner_profile_saved` · `learner_profile_skipped` · `learner_profile_opened`는 진입점과 처음/수정 여부만 싣고,
+- **이름 칸의 미리 채움** ⟨2026-10-20⟩ — 소셜 로그인 토큰에 표시 이름(`user_metadata.full_name` · `name`)이 있으면 ① 이름 칸에 미리 채운다. 사용자가 Continue로 확정할 때만 위
+  표대로 저장되고, 그 전에는 화면에만 있다. 없으면 앱에 내장된 무작위 이름을 채운다(개인정보가 아니다).
+- **분석에는 값이 없다.** PostHog 이벤트 `learner_profile_saved` · `learner_profile_opened`(⟨2026-10-20⟩ `learner_profile_skipped`는 없어졌다)는 진입점과 처음/수정 여부만 싣고,
   이름 · 나라 · 그 길이 같은 파생값을 싣지 않는다([ADR-0029](adr/0029-product-analytics-posthog.md) D14 적용 기록). 로그에도 남기지 않는다.
 - **나라는 위치 추정이 아니다.** 사용자가 스스로 고른 값이고, PostHog GeoIP의 「대략적인 위치」(위 표)와 따로 있으며 서로 합치지 않는다.
 
@@ -183,6 +185,10 @@ Section 3의 Supabase 행에 「learner profile (name and country you enter)」�
 - 5 Section 4의 마지막 문장:
 
   > The copy of your learning progress on your device is kept until you delete your account or uninstall the App.
+
+⟨2026-10-20 — 학습 티켓([ADR-0075](adr/0075-learning-tickets.md))⟩ 진행 스냅숏에 선택 필드 `tickets`(충전이 끝나는 시각 · 무료로 받은 시간의 합 · 마지막으로 받은 날짜)가 더해졌다.
+새 저장 키는 없고 위 표의 두 키(저장본 · 미전송)와 서버 `learning_progress.progress` 안에 산다 — 보존 · 삭제도 그대로다. 식별 정보가 아니고 App Store 신고 항목은 바뀌지 않는다.
+새 PostHog 이벤트 둘(`tickets_ran_out` · `ticket_more_tapped`)은 화면 자리와 불리언만 싣는다.
 
 ## 배포 산출물 확인
 

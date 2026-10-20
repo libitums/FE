@@ -39,6 +39,7 @@ const u01 = realCatalog[0] as Extract<CatalogEntry, { status: "ready" }>;
 function portFor(profile: LearnerProfile): CatalogCutPort {
   return {
     imageUrlOf: (path) => `https://cdn/${path}`,
+    audioTimingOf: () => null,
     fill: (text, script) => fillPlaceholders(text, profile, script),
   };
 }

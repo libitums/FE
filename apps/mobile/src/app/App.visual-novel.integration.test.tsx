@@ -51,7 +51,7 @@ test("each scene includes the learner's reply before moving to the next scene", 
     );
     expect(screen.getByTestId("ui-lynx-visual-novel-dialog")).toHaveAttribute(
       "data-surface",
-      "opaque",
+      "translucent",
     );
     expect(screen.getByTestId("ui-lynx-visual-novel-dialog-line")).toHaveTextContent(reply);
     expect(screen.queryByTestId("lesson-complete-screen")).toBeNull();

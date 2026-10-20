@@ -1,7 +1,6 @@
 import { learningPassCriterionForStep } from "./learning-assessment";
-// `Screen` 유니온을 화면 컴포넌트로 옮기는 `switch` 하나를 소유합니다. `never`
-// 망라가 여기 섭니다 — 값(`initialCompletedStepCount` · `journeyStepOrdinal` ·
-// `completeStep`)은 App이 읽어 props로 내립니다. 화면끼리는 타입만 공유합니다.
+// `Screen` 유니온을 화면 컴포넌트로 옮기는 `switch` 하나를 소유합니다. `never` 망라가 여기 섭니다 —
+// 값(`initialCompletedStepCount` 등)은 App이 읽어 props로 내립니다. 화면끼리는 타입만 공유합니다.
 
 import { judgeAssessment } from "../screens/assessment/assessment";
 import { CultureScreen } from "../screens/culture/CultureScreen";
@@ -40,32 +39,18 @@ import { renderShellLearningScreen, renderWordChoiceScreen } from "./render-lear
 import { renderMessengerCompleteScreen } from "./render-messenger-complete";
 import { renderEpisodeIntroFlow } from "./render-episode-intro";
 import { renderEntryScreen } from "./render-entry-screen";
-import {
-  learnerSettingsSummary,
-  renderLearnerProfileGate,
-  renderLearnerProfileSettings,
-} from "./render-learner-profile";
+import { learnerSettingsSummary, renderLearnerProfileSettings } from "./render-learner-profile";
 import { renderEpisodeFinalFlow } from "./render-episode-final";
 import { renderRoleplayUnitScreen } from "./render-roleplay-screen";
-import { LearningStatsContext } from "../screens/learning/LearningTopBar";
+import { renderRoleplayStory } from "./render-roleplay-story";
 import type { ScreenWiring } from "./screen-wiring";
 
-// 학습 화면의 머리 칩(연속 학습 · 트로피)은 여기서 한 번 공급합니다 — 학습형마다 prop으로 내리지 않습니다.
 export function renderScreen(screen: Screen, wiring: ScreenWiring) {
-  return (
-    <LearningStatsContext.Provider
-      value={{ streakDays: wiring.streakDays, trophyCount: wiring.trophyCount }}
-    >
-      {renderScreenBody(screen, wiring)}
-    </LearningStatsContext.Provider>
-  );
-}
-
-function renderScreenBody(screen: Screen, wiring: ScreenWiring) {
   switch (screen.name) {
     case "journey-map":
       return (
         <JourneyMapScreen
+          statusBarInset={wiring.safeAreaInsets.top}
           completedStepCount={wiring.completedStepCount}
           onStartStep={wiring.onStartStep}
           completedEpisodeIntroIds={wiring.completedEpisodeIntroIds}
@@ -129,8 +114,6 @@ function renderScreenBody(screen: Screen, wiring: ScreenWiring) {
       return <AccountProfileScreen onExit={wiring.onExitSettingsStack} />;
     case "learner-profile":
       return renderLearnerProfileSettings(wiring);
-    case "learner-profile-gate":
-      return renderLearnerProfileGate(screen, wiring);
     case "feedback":
       return (
         <FeedbackScreen onSubmit={wiring.onSubmitFeedback} onExit={wiring.onExitSettingsStack} />
@@ -156,8 +139,7 @@ function renderScreenBody(screen: Screen, wiring: ScreenWiring) {
           onFinish={(id, results, skippedCount) =>
             wiring.onFinishLearning(id, screen.activityIndex, results, skippedCount)
           }
-          // App의 `sessionOptions` 상태로 결선합니다 — 이 경로가 유일한
-          // 소비자입니다.
+          // App의 `sessionOptions` 상태로 결선합니다 — 이 경로가 유일한 소비자입니다.
           sessionOptions={wiring.sessionOptions}
           gemCount={wiring.gemCount}
         />
@@ -177,9 +159,9 @@ function renderScreenBody(screen: Screen, wiring: ScreenWiring) {
           statBumps={wiring.statBumps}
           onStatBumped={wiring.onStatBumped}
           reward={lessonRewardPlaceholder}
+          ticketsLeft={wiring.ticketsLeft}
           onExit={wiring.onExitAssessment}
-          // 미통과에서만 씁니다 — 같은 스텝을 첫 활동부터 새로 엽니다. 맵을 거쳐
-          // 노드를 다시 누르는 것과 같은 일이고, 그 길을 한 번에 줄인 것입니다.
+          // 미통과에서만 씁니다 — 같은 스텝을 첫 활동부터 새로 엽니다(맵에서 노드를 다시 누르는 길을 줄인 것).
           onRetry={() => wiring.onStartStep(screen.stepId)}
         />
       );
@@ -228,6 +210,7 @@ function renderScreenBody(screen: Screen, wiring: ScreenWiring) {
           onExit={(outcome) => wiring.onMessengerExit(screen.unitId, outcome)}
           onComplete={wiring.onMessengerComplete}
           onFinish={wiring.onMessengerFinish}
+          insets={wiring.safeAreaInsets}
         />
       );
     case "special-unit-complete":
@@ -265,12 +248,14 @@ function renderScreenBody(screen: Screen, wiring: ScreenWiring) {
     case "roleplay-phone-call":
     case "roleplay-visual-novel":
       return renderRoleplayUnitScreen(screen, wiring.roleplay, wiring.safeAreaInsets);
-    // 진입 흐름 화면 여섯입니다 — 스플래시부터 여정 입구까지가 한 흐름이라
+    // 진입 흐름 화면 여덟입니다 — 스플래시부터 여정 입구까지가 한 흐름이라
     // `render-entry-screen.tsx`가 한 자리에서 집니다.
     case "splash":
     case "onboarding":
     case "login":
     case "verification-code":
+    case "learner-name":
+    case "learner-country":
     case "language-select":
     case "journey-entry":
       return renderEntryScreen(screen, wiring);
@@ -292,6 +277,9 @@ function renderScreenBody(screen: Screen, wiring: ScreenWiring) {
     // 위 case와 같은 자리·같은 근거입니다 — 결선이 없고 **아무 코드도 이 화면을 push하지 않습니다.**
     case "speech-probe":
       return <SpeechProbeScreen />;
+    case "roleplay-story":
+    case "roleplay-story-complete":
+      return renderRoleplayStory(screen, wiring);
     default: {
       const exhaustive: never = screen;
       return exhaustive;

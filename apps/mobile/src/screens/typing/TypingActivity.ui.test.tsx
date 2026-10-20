@@ -1,3 +1,4 @@
+import { zeroSafeAreaInsets } from "../../lib/safe-area";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
@@ -6,6 +7,7 @@ import type { AnswerResult } from "../../lib/answer-result";
 import { composeHangul, keystrokesFor } from "../messenger/hangul-keyboard";
 import { TypingActivity } from "./TypingActivity";
 import type { TypingQuestion } from "./typing.contract";
+import { expectCompleteScene, expectQuestionScene } from "../learning/complete-scene.test-support";
 
 // `ui` 계층: 타자 입력 활동 — 단서 · 꺼진 재생 조작 · 한글 자판 입력 · 한 번 답하고 정답 공개 · 결과.
 // 판정과 리듀서 전이는 순수 함수 unit이 지므로(여기서 다시 계산하지 않습니다) 렌더가 그 결과를
@@ -57,7 +59,13 @@ function mount(
   motion?: "reduced",
 ) {
   const element = (
-    <TypingActivity questions={list} gemCount={0} onExit={() => {}} onFinish={onFinish} />
+    <TypingActivity
+      insets={zeroSafeAreaInsets}
+      questions={list}
+      gemCount={0}
+      onExit={() => {}}
+      onFinish={onFinish}
+    />
   );
   return render(
     motion === undefined ? element : <MotionProvider motion={motion}>{element}</MotionProvider>,
@@ -217,4 +225,22 @@ describe("TypingActivity", () => {
 
     expect(onFinish).toHaveBeenCalledWith(["correct"], 0);
   });
+});
+
+// ACS-TY — 완료 장면: 무대가 완료 장면이고 내용 상자 안은 완료 카드 하나다. 문항 장면은 그대로다.
+test("[ACS-TY] 완료 때 무대가 완료 장면이고 내용 상자의 유일한 자식이 완료 카드이며 문항 장면에는 표시가 없다", () => {
+  mount();
+  expectQuestionScene();
+
+  typeText("여권 여기 있어요");
+  tapAction("Check");
+  tapAction("Next");
+  typeText("일주일");
+  tapAction("Check");
+  tapAction("Next");
+  typeText("화장실 어디예요");
+  tapAction("Check");
+  tapAction("Next");
+
+  expectCompleteScene("typing-activity-content", "typing-activity-complete");
 });

@@ -440,6 +440,24 @@ describe("decodeEpisode", () => {
     expect(warnings).toEqual([]);
   });
 
+  test("U12b. 문화 카드의 stimulus.image_url은 값이 있으면 imageUrl로 남고 빈 문자열이면 키가 없다", () => {
+    const card = (imageUrl: string) =>
+      item("CULTURE_CARD", "S1-01", {
+        stimulus: { text: t3("문화 본문"), image_url: imageUrl, audio_url: "" },
+      });
+
+    const filled = unitItem(
+      passed(decodeEpisode(withItem(card("content/images/u01-water/cult-1.jpg")))).episode,
+    );
+    expect(Reflect.get(filled, "stimulus")).toEqual({
+      text: { ko: "문화 본문", roman: "r-문화 본문", en: "e-문화 본문" },
+      imageUrl: "content/images/u01-water/cult-1.jpg",
+    });
+
+    const empty = unitItem(passed(decodeEpisode(withItem(card("")))).episode);
+    expect(Object.keys(Reflect.get(empty, "stimulus") as object)).toEqual(["text"]);
+  });
+
   test("U13. words · patterns에 없는 ref는 성공하되 unresolved-ref 경고 하나", () => {
     const { warnings } = passed(decodeEpisode(withItem(roleLine("S1-01", { ref: "voca:none" }))));
     expect(codeAndPath(warnings)).toEqual([

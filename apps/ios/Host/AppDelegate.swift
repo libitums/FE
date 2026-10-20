@@ -19,6 +19,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     // 스플래시 로고 애니메이션(animated WebP)이 이것에 기대고 있다.
     SDImageCodersManager.shared.addCoder(SDImageWebPCoder.shared)
 
+    // 무음(진동) 모드에서도 학습 음원이 들리게 재생 정책을 정한다(#200). 켜지는 않는다.
+    PlaybackAudioSession.shared.configureDefault()
+
     // 알림을 눌러 앱이 켜진 경우에도 그 응답을 받으려면 실행이 끝나기 전에 대리자를 둬야 한다(ADR-0034).
     UNUserNotificationCenter.current().delegate = PushNotificationHub.shared
 

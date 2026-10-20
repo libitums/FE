@@ -106,3 +106,16 @@
 .typing-activity-answer-incorrect .typing-activity-answer-text {
   color: var(--libitum-color-feedback-incorrect-text);
 }
+
+/* 바깥 상자 · 몸통 — 자판은 몸통(껍데기) 밖 형제로 화면 바닥에 섭니다. 인셋은 몸통의 인라인 바깥 여백입니다. */
+.typing-activity {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.typing-activity-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}

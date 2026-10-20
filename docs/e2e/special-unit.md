@@ -109,3 +109,15 @@ SUE5의 보간은 보간이 안 돌아 즉시 이동이어도 결과 위치가 �
 | SUE3 | 통과(끝남) — 카탈로그 `Culture`가 원형 노드(체크 · 높이 100 · 이름 `Episode 1. Culture, completed`)이고 `Final test`만 스페셜 배지(높이 124 · `special, Episode 1. Final test, completed`). 최종 배지를 탭하면 그 아래 카탈로그 말풍선(`Final test: “Check-in”` · Start)이 선다 — 탭 좌표 전달 확인 |
 | SUE1 · SUE2 잠김 · SUE5 · SUE6 | 미실행 — 진행 기록이 없는 계정이 없다 |
 
+
+## 특별 유닛 화면의 어두운 반투명 면 — Android 회차 (2026-10-19)
+
+비주얼 노벨 내 대사 패널과 전화 답장 버튼을 어두운 반투명 면으로 바꾼 변경(`463b6c5d`)을 AVD `R6_API30`(API 30 · 392.7 × 851 dp · 글자 1.0, Debug APK + 로컬 HTTP 번들, 계측 픽스처 로그인)에서 봤다. 분석과 대비 수치는 [성능 기록](../performance/reports/special-unit-dark-surface-android-r6-api30-01.md)에 있다.
+
+| 화면 | 결과 | 증거 |
+| --- | --- | --- |
+| 비주얼 노벨 상대 대사 | 통과 — 어두운 반투명 면, 이름 · 사진 왼쪽 | [vn-partner](evidence/android-special-unit-dark-vn-partner.png) |
+| 비주얼 노벨 내 대사 | 통과 — 상대와 같은 면 · 글자 색, 오른쪽으로 24 dp, `Me` · 이니셜이 화자 줄 오른쪽 | [vn-self](evidence/android-special-unit-dark-vn-self.png) |
+| 전화 답장 버튼 | 통과 — 어두운 면 · 테두리 없음, 답장 문장 흰 글자, 보조 줄 gray-400. 누르면 다음 대사로 넘어감 | [phone-reply](evidence/android-special-unit-dark-phone-reply.png) · [다음](evidence/android-special-unit-dark-phone-reply-next.png) |
+
+관찰: 비주얼 노벨 로마자 · 번역 줄(두 화자 공통 색)의 대비가 사진이 밝은 자리에서 3.76:1로 4.5:1 밑이다 — 이번 변경 전부터 상대 대사가 쓰던 색이다.

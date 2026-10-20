@@ -1,6 +1,7 @@
 import AVFoundation
 import Foundation
 import Speech
+import UIKit
 
 /// 마이크로 소리를 받아 한국어로 읽어 올리는 호스트 네이티브 모듈이다.
 /// 호스트의 **다섯째** 모듈이고, 권한을 요구하는 **첫** 모듈이다.
@@ -68,6 +69,7 @@ final class SpeechRecognitionModule: NSObject, LynxModule {
       "requestPermissions": NSStringFromSelector(#selector(requestPermissions(_:))),
       "start": NSStringFromSelector(#selector(start(_:callback:))),
       "stop": NSStringFromSelector(#selector(stop)),
+      "openSettings": NSStringFromSelector(#selector(openSettings)),
     ]
   }
 
@@ -141,6 +143,15 @@ final class SpeechRecognitionModule: NSObject, LynxModule {
   @objc func stop() {
     Self.queue.async {
       Self.end()
+    }
+  }
+
+  /// 이 앱의 설정 화면을 연다 — 마이크 · 음성 인식 스위치가 거기 있다. 거부된 권한의 처방이다(다시 요청하면
+  /// 시스템이 아무것도 띄우지 않는다). 콜백이 없다 — 열었는지는 사용자가 돌아왔을 때 `getStatus`로 다시 본다.
+  @objc func openSettings() {
+    DispatchQueue.main.async {
+      guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
+      UIApplication.shared.open(url)
     }
   }
 
@@ -461,6 +472,8 @@ final class SpeechRecognitionModule: NSObject, LynxModule {
     current.request.endAudio()
     // stop 직후 복원한다. 최종 인식 결과/3초 타임아웃까지 .record를 남기지 않는다.
     current.audioSession.restore()
+    // 녹음 전 설정이 학습 음원의 줄이기였다면 섞기로 돌린다(재생 정책은 메인 큐 전용).
+    DispatchQueue.main.async { PlaybackAudioSession.shared.recordingDidRestore() }
   }
 
   /// 콜백을 **정확히 한 번** 올린다. 올리는 자리가 여기 하나뿐이고, 올린 즉시 콜백을

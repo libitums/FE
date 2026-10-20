@@ -7,7 +7,6 @@ import { englishOf, koOf, latinOf, skippedItem } from "./catalog-item-text";
 import type {
   CatalogFill,
   CatalogGlossOf,
-  CatalogItemPort,
   CatalogLessonItemPort,
   CatalogMappedItem,
 } from "./catalog-lesson-types";
@@ -53,11 +52,15 @@ export function vocabCardItemOf(
 
 /**
  * 문화 카드(CULTURE_CARD)입니다 — 판정 순서: 제목 malformed → 본문 없음 malformed → 영어 본문 no-gloss.
- * 요령(`feedback`) · 본문 로마자 · 음원 · 그림은 싣지 않습니다.
+ * 요령(`feedback`) · 본문 로마자 · 음원은 싣지 않습니다.
+ *
+ * 그림(`stimulus.image_url`)은 콘텐츠 그림 포트(`imageUrlOf`) 하나로만 풉니다 — 원격 · 기기 안 해석이 다른 화면과 같은
+ * 길입니다. 경로가 없거나 풀리지 않으면 `null`이고 **건너뛰지 않습니다**: 그림 고르기와 달리 그림이 문항의 뜻을 지지
+ * 않아, 화면이 브랜드 면으로 대신 섭니다.
  */
 export function cultureCardItemOf(
   item: Extract<LearningItem, { type: "CULTURE_CARD" }>,
-  port: CatalogItemPort,
+  port: CatalogLessonItemPort,
 ): CatalogMappedItem {
   const title = koOf(port, item.context.ko);
   if (title === "") return skippedItem(item, "malformed");
@@ -66,6 +69,7 @@ export function cultureCardItemOf(
   const body = englishOf(port, text.en);
   if (body === undefined) return skippedItem(item, "no-gloss");
   const koreanBody = koOf(port, text.ko);
+  const imagePath = item.stimulus.imageUrl;
   return {
     kind: "culture-card",
     itemId: item.id,
@@ -75,6 +79,7 @@ export function cultureCardItemOf(
       titleRomanization: latinOf(port, item.context.roman) ?? null,
       body,
       koreanBody: koreanBody === "" ? null : koreanBody,
+      imageUrl: imagePath === undefined ? null : port.imageUrlOf(imagePath),
     },
   };
 }

@@ -1,8 +1,9 @@
 import { afterEach, expect, test, vi } from "vitest";
-import { cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
+import { cleanup, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
 import { returningLearnerWaitMs } from "./returning-learner";
+import { passLearnerSignup } from "./test-helpers/learner-signup";
 import { resetPushWiringForTests } from "./push-wiring";
 import {
   accessTokenWithSub,
@@ -24,7 +25,6 @@ import {
   stubServer,
   tapButtonIn,
   tapSocial,
-  typeText,
   unavailableReply,
   waitFor,
 } from "./test-helpers/returning-login-harness";
@@ -56,13 +56,13 @@ test("[RL1] 서버 진행이 있는 계정은 구글 로그인 뒤 언어 선택
   await tapSocial("google");
 
   expect(onMap()).toBe(true);
-  expect(present("language-select-screen-title")).toBe(false);
+  expect(present("learner-name-screen-title")).toBe(false);
   expect(present("journey-entry-screen-title")).toBe(false);
   expect(present("ui-lynx-bottom-navigator")).toBe(true);
   const names = eventNames(events);
   expect(names.slice(-2)).toEqual(["entry_login_method_selected:google", entered("google")]);
   expect(names).not.toContain("entry_completed");
-  expect(names).not.toContain("viewed:language-select");
+  expect(names).not.toContain("viewed:learner-name");
   expect(names).not.toContain("viewed:journey-entry");
   expect(host.register).toHaveBeenCalledTimes(1);
 });
@@ -93,7 +93,7 @@ test("[RL3] 전화 로그인도 비주얼 노벨 진행만으로 맵으로 간�
 });
 
 test.each(["google", "phone"] as const)(
-  "[RL4] 기록이 없는 계정(%s)은 지금 흐름대로 언어 선택 → 여정 입장 → 맵이다",
+  "[RL4] 기록이 없는 계정(%s)은 ① 이름 → ② 나라 → 언어 선택 → 여정 입장 → 맵이다",
   async (method) => {
     stubServer({ progress: noRecord, profile: noRecord });
     const host = stubHost();
@@ -106,6 +106,8 @@ test.each(["google", "phone"] as const)(
     } else {
       await tapSocial(method);
     }
+    expect(present("learner-name-screen-title")).toBe(true);
+    passLearnerSignup();
     expect(present("language-select-screen-title")).toBe(true);
     tapButtonIn("language-select-screen-next");
     tapButtonIn("journey-entry-screen-start");
@@ -126,7 +128,7 @@ const failures: readonly (readonly [string, Responder, Responder])[] = [
 ];
 
 test.each(failures)(
-  "[RL5] 조회가 실패해도(%s) 언어 선택으로 간다",
+  "[RL5] 조회가 실패해도(%s) ① 이름으로 간다",
   async (_name, progress, profile) => {
     stubServer({ progress, profile });
     stubHost();
@@ -134,13 +136,13 @@ test.each(failures)(
     completeOnboarding();
     await tapSocial("google");
 
-    expect(present("language-select-screen-title")).toBe(true);
+    expect(present("learner-name-screen-title")).toBe(true);
     expect(present("login-screen-error")).toBe(false);
     expect(onMap()).toBe(false);
   },
 );
 
-test("[RL6] 판정이 늦으면 소셜 버튼이 로딩인 채 3초까지 기다리다 언어 선택으로 간다", async () => {
+test("[RL6] 판정이 늦으면 소셜 버튼이 로딩인 채 3초까지 기다리다 ① 이름으로 간다", async () => {
   const progress = deferredReply();
   const profile = deferredReply();
   stubServer({ progress: waitFor(progress), profile: waitFor(profile) });
@@ -162,10 +164,10 @@ test("[RL6] 판정이 늦으면 소셜 버튼이 로딩인 채 3초까지 기다
   expect(host.webStarts).toHaveLength(starts);
 
   await advance(1);
-  expect(present("language-select-screen-title")).toBe(true);
+  expect(present("learner-name-screen-title")).toBe(true);
   progress.resolve(jsonReply(startedProgress));
   await settle();
-  expect(present("language-select-screen-title")).toBe(true);
+  expect(present("learner-name-screen-title")).toBe(true);
   expect(present("ui-lynx-bottom-navigator")).toBe(false);
   expect(eventNames(events)).not.toContain(entered("google"));
 });
@@ -201,7 +203,7 @@ test("[RL8] 전화 로그인도 판정이 끝날 때까지 확인 버튼이 로�
   progress.resolve(jsonReply(null));
   profile.resolve(jsonReply(null));
   await settle();
-  expect(present("language-select-screen-title")).toBe(true);
+  expect(present("learner-name-screen-title")).toBe(true);
 });
 
 test("[RL9] 맵으로 바로 가도 UI 언어는 영어로 저장되고, 이미 저장된 언어는 덮지 않는다", async () => {
@@ -242,26 +244,15 @@ test("[RL10] 세션 갱신 부팅은 알림 권한을 묻지 않는다", async (
   expect(host.register).not.toHaveBeenCalled();
 });
 
-function pickProfileOnLastOnboardingStep(): void {
-  for (let step = 0; step < 3; step += 1) tapButtonIn("onboarding-screen-next");
-  typeText("Emma");
-  fireEvent.tap(
-    within(screen.getByTestId("ui-lynx-settings-group-item-country")).getByTestId(
-      "ui-lynx-settings-cell",
-    ),
-    {},
-  );
-  fireEvent.tap(screen.getByTestId("ui-lynx-option-selector-item-DE"), {});
-  tapButtonIn("onboarding-screen-next");
-}
-
 test("[RL11] 프로필 업로드는 서버 조회(판정) 뒤에 한 번 나간다", async () => {
   const server = stubServer({ progress: noRecord, profile: noRecord });
   stubHost();
   bootToOnboarding();
-  pickProfileOnLastOnboardingStep();
+  completeOnboarding();
   await tapSocial("google");
   await advance(0);
+  passLearnerSignup("DE");
+  await settle();
 
   expect(present("language-select-screen-title")).toBe(true);
   const firstLoad = server.rpcs.indexOf("load_learner_profile");

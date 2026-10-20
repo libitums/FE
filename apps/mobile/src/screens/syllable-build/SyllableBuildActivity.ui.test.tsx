@@ -5,6 +5,7 @@ import type { AnswerResult } from "../../lib/answer-result";
 import type { LessonPosition } from "../learning/activity-finish";
 import { SyllableBuildActivity } from "./SyllableBuildActivity";
 import type { SyllableBuildQuestion } from "./syllable-build.contract";
+import { expectCompleteScene, expectQuestionScene } from "../learning/complete-scene.test-support";
 
 // `ui` 계층: 음절 조립 활동 — 칸 · 창고 · 놓기 · 되돌리기 · 확인 · 판정 · 다음 · 완료 · 낭독을 실제 컴포넌트로
 // 본다. 문항은 매핑이 내는 꼴로 손으로 세웠다(철자 탐색 · 섞기는 unit이 진다). 정답 상자는 타자 입력과 같이
@@ -301,9 +302,41 @@ describe("SyllableBuildActivity", () => {
     expect(onFinish).toHaveBeenCalledWith(["correct"], 0);
   });
 
+  test("USB7d. 레슨의 끝이면 완료 카드가 레슨 순번 · 전체 문항 수 · 활동 수를 보인다", () => {
+    mount([card], { offset: 3, total: 9, last: true, activityCount: 3, ordinal: 3 });
+
+    tapTile(2);
+    tapTile(1);
+    tapAction("Check");
+    tapAction("Next");
+
+    expect(id("syllable-build-complete")).toBeInTheDocument();
+    expect(id("learning-activity-complete-lesson")).toHaveTextContent("Lesson 3");
+    expect(id("learning-activity-complete-questions")).toHaveTextContent("9");
+    expect(id("learning-activity-complete-activities")).toHaveTextContent("3");
+  });
+
   test("USB7c. 레슨 안에서는 카운터가 오프셋을 더한다", () => {
     mount([card], { offset: 3, total: 9, last: true });
 
     expect(id("learning-shell-chapter")).toHaveTextContent("Lesson 4 / 9");
   });
+});
+
+// ACS-SB — 완료 장면: 무대가 완료 장면이고 내용 상자 안은 완료 카드 하나다. 문항 장면은 그대로다.
+test("[ACS-SB] 완료 때 무대가 완료 장면이고 내용 상자의 유일한 자식이 완료 카드이며 문항 장면에는 표시가 없다", () => {
+  mount([card, week]);
+  expectQuestionScene();
+
+  tapTile(2);
+  tapTile(1);
+  tapAction("Check");
+  tapAction("Next");
+  tapTile(0);
+  tapTile(1);
+  tapTile(2);
+  tapAction("Check");
+  tapAction("Next");
+
+  expectCompleteScene("syllable-build-content", "syllable-build-complete");
 });

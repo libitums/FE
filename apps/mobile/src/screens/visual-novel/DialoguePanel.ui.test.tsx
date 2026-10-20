@@ -59,4 +59,24 @@ describe("DialoguePanel UI", () => {
     fireEvent.tap(button, {});
     expect(onSelect).toHaveBeenCalledTimes(1);
   });
+
+  it("draws the learner's line on the same dark translucent surface as the partner", () => {
+    render(
+      <DialoguePanel
+        beatId="arrive"
+        speakerRole="self"
+        speakerName="Me"
+        dialogue="안녕하세요!"
+        action={{ kind: "advance", label: "Next", onSelect: vi.fn<() => void>() }}
+      />,
+    );
+    expect(screen.getByTestId("visual-novel-dialogue-arrive")).toHaveAttribute(
+      "data-speaker",
+      "self",
+    );
+    expect(screen.getByTestId("ui-lynx-visual-novel-dialog")).toHaveAttribute(
+      "data-surface",
+      "translucent",
+    );
+  });
 });

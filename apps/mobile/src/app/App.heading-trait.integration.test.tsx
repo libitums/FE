@@ -4,6 +4,7 @@ import { afterEach, expect, test, vi } from "vitest";
 import { act, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
+import { chooseLearnerCountry, continueLearnerName } from "./test-helpers/learner-signup";
 import type { JourneyStepId } from "../screens/journey-map/journey-map";
 import type { LearningForm } from "../lib/learning-form";
 import { questionsForStep } from "../screens/listening/listening";
@@ -385,10 +386,12 @@ test("[I3] 제목 축 닫힌 집합이 상태 roleplay-list에서 계약이 고�
   expect(screen.getByTestId("roleplay-list-screen-title")).toBeInTheDocument();
 
   // 화면 제목 뒤에 구획 머리가 에피소드마다 하나씩 섭니다. 롤플레이 항목이 있는
-  // 에피소드만 구획이 되고, 오늘은 튜토리얼 하나입니다.
+  // 에피소드만 구획이 되고, 오늘은 내장 본편 셋입니다(튜토리얼 롤플레이는 2026-10-20에 뺐습니다).
   expect(headingAxis(container)).toEqual([
     "roleplay-list-screen-title",
-    "roleplay-list-section-header-tutorial",
+    "roleplay-list-section-header-u01-water",
+    "roleplay-list-section-header-u02-checkin",
+    "roleplay-list-section-header-u03-mina",
   ]);
 });
 
@@ -585,7 +588,7 @@ async function submitVerificationCode(value: string): Promise<void> {
 // HT-E1 개정(test-plan §4.2) — 전화번호 경로가 네트워크를 타므로 번호 입력 +
 // `stubSupabase`를 거쳐야 코드 화면 · 언어 선택에 닿습니다. 제목 축 기대 목록
 // 자체는 그대로입니다(경로만 바뀝니다).
-test("[HT-E1] 제목 축 닫힌 집합이 진입 상태 여섯 각각에서 계약이 고정한 목록과 정확히 같다", async () => {
+test("[HT-E1] 제목 축 닫힌 집합이 진입 상태 여덟 각각에서 계약이 고정한 목록과 정확히 같다", async () => {
   emptyStorageStub();
   stubSupabase({
     otp: { status: 200, body: otpSentBody },
@@ -624,15 +627,6 @@ test("[HT-E1] 제목 축 닫힌 집합이 진입 상태 여섯 각각에서 계�
     {},
   );
 
-  // 상태 onboarding profile - 넷째 스텝도 제목 하나(heading)만 갖습니다.
-  expect(screen.getByTestId("onboarding-screen")).toHaveAttribute("data-step", "3");
-  expect(headingAxis(container)).toEqual(["onboarding-screen-title"]);
-
-  fireEvent.tap(
-    within(screen.getByTestId("onboarding-screen-next")).getByTestId("ui-lynx-button"),
-    {},
-  );
-
   // 상태 login
   expect(screen.getByTestId("login-screen-title")).toBeInTheDocument();
   expect(headingAxis(container)).toEqual(["login-screen-title"]);
@@ -644,6 +638,14 @@ test("[HT-E1] 제목 축 닫힌 집합이 진입 상태 여섯 각각에서 계�
   expect(headingAxis(container)).toEqual(["verification-code-screen-title"]);
 
   await submitVerificationCode("123456");
+
+  // 상태 ① 이름 · ② 나라 — 가입 직후 화면도 제목 하나(heading)만 갖습니다.
+  expect(screen.getByTestId("learner-name-screen-title")).toBeInTheDocument();
+  expect(headingAxis(container)).toEqual(["learner-name-screen-title"]);
+  continueLearnerName();
+  expect(screen.getByTestId("learner-country-screen-title")).toBeInTheDocument();
+  expect(headingAxis(container)).toEqual(["learner-country-screen-title"]);
+  chooseLearnerCountry();
 
   // 상태 language-select
   expect(screen.getByTestId("language-select-screen-title")).toBeInTheDocument();

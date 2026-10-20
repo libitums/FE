@@ -1,3 +1,4 @@
+import { zeroSafeAreaInsets } from "../../lib/safe-area";
 import type { ReactNode } from "@lynx-js/react";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@lynx-js/react/testing-library";
@@ -19,7 +20,7 @@ import type { LessonPosition } from "./activity-finish";
 type Finish = (results: readonly AnswerResult[], skippedCount: number) => void;
 
 const middle: LessonPosition = { offset: 3, total: 12, last: false };
-const final: LessonPosition = { offset: 10, total: 12, last: true };
+const final: LessonPosition = { offset: 10, total: 12, last: true, activityCount: 4, ordinal: 2 };
 
 afterEach(() => {
   cleanup();
@@ -150,6 +151,7 @@ const cases: readonly Case[] = [
     completeId: "typing-activity-complete",
     mount: (lesson, onFinish) => (
       <TypingActivity
+        insets={zeroSafeAreaInsets}
         questions={[typingQuestion("T1"), typingQuestion("T2")]}
         gemCount={0}
         onExit={() => {}}
@@ -209,6 +211,10 @@ describe.each(cases)("$name — 레슨 안의 위치", (item) => {
 
     expect(onFinish).toHaveBeenCalledTimes(0);
     expect(screen.getByTestId(item.completeId)).toBeInTheDocument();
+    // 완료 카드는 레슨의 순번 · 전체 문항 수 · 활동 수를 그대로 받습니다(시안 A).
+    expect(screen.getByTestId("learning-activity-complete-lesson")).toHaveTextContent("Lesson 2");
+    expect(screen.getByTestId("learning-activity-complete-questions")).toHaveTextContent("12");
+    expect(screen.getByTestId("learning-activity-complete-activities")).toHaveTextContent("4");
     // 완료 카드 위에서도 카운터는 레슨의 마지막 문항을 가리킵니다.
     expect(chapter()).toHaveTextContent("Lesson 12 / 12");
     expect(screen.getByTestId("learning-shell-action")).toHaveAttribute(

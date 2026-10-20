@@ -10,6 +10,12 @@
   background: var(--libitum-color-feedback-correct-surface);
 }
 
+/* 어두운 반투명 면 위의 정답 상자 — feedback-correct × opacity-16(알파 색 토큰이 없어 rgba로 적습니다,
+   ADR-0014). */
+.answer-reveal-surface-dark {
+  background: rgba(53, 166, 111, 0.16);
+}
+
 .answer-reveal-text {
   color: var(--libitum-color-feedback-correct-text);
   font-family: var(--libitum-typography-heading-s-font-family);
@@ -18,4 +24,8 @@
   line-height: var(--libitum-typography-heading-s-line-height);
   letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
   text-align: center;
+}
+
+.answer-reveal-surface-dark .answer-reveal-text {
+  color: var(--libitum-color-gray-50);
 }

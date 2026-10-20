@@ -1,0 +1,156 @@
+/* 가입 직후 ① 이름 · ② 나라 화면입니다 — 언어 선택(`language-select-screen.css`)과 같은 틀(고정 머리 · 스크롤 ·
+   고정 주 버튼)이고, 제목 · 설명 · 미리보기 상자는 학습자 프로필 양식의 클래스(`login-screen.css` ·
+   `vocab-card-activity.css`)를 그대로 씁니다. 토큰은 `@libitums/design-tokens/css/variables.css`가 정의한 것만 씁니다. */
+.learner-signup-screen {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: var(--libitum-layout-gap-block);
+  padding: var(--libitum-layout-screen-padding-top) var(--libitum-layout-screen-padding-x)
+    var(--libitum-layout-screen-padding-bottom);
+  background: var(--libitum-color-background-primary);
+}
+
+.learner-signup-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: calc(var(--libitum-spacing-48) + var(--libitum-spacing-8));
+  flex-shrink: 0;
+}
+
+.learner-signup-scroll {
+  flex: 1;
+  justify-content: flex-start;
+}
+
+.learner-signup-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: var(--libitum-spacing-16);
+}
+
+/* 이름 칸과 Shuffle 버튼 — 버튼은 칸의 입력 줄 높이에 맞춰 위쪽에 섭니다(칸 아래 도움말 줄은 칸만 차지). */
+.learner-signup-name-row {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: var(--libitum-spacing-8);
+}
+
+.learner-signup-name-field {
+  flex: 1;
+  min-width: 0;
+}
+
+.learner-signup-shuffle {
+  flex-shrink: 0;
+  margin-top: var(--libitum-spacing-24);
+}
+
+.learner-signup-footer {
+  width: 100%;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-12);
+}
+
+/* ② 나라 — 검색 칸 아래 목록 머리 줄(`ALL COUNTRIES · 199` · 검색 결과 수)입니다. */
+.learner-signup-count {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
+}
+
+/* 목록과 오른쪽 끝 글자 막대가 한 줄에 섭니다. 목록만 스크롤합니다. */
+.learner-signup-list-row {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  gap: var(--libitum-spacing-8);
+  min-height: 0;
+}
+
+.learner-signup-list {
+  flex: 1;
+}
+
+.learner-signup-list-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-8);
+  padding-bottom: var(--libitum-spacing-16);
+}
+
+.learner-signup-letter {
+  margin-top: var(--libitum-spacing-8);
+  color: var(--libitum-color-fg-brand);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-weight: var(--libitum-typography-label-l-font-weight);
+  font-size: var(--libitum-typography-label-l-font-size);
+  line-height: var(--libitum-typography-label-l-line-height);
+}
+
+/* 나라 줄 — OptionSelector outlined s와 같은 치수(최소 높이 48 · radius md · 얇은 경계)이고, 고른 줄은 brand 경계와
+   오른쪽 체크가 섭니다. */
+.learner-signup-row {
+  min-height: var(--libitum-spacing-48);
+  padding: var(--libitum-spacing-12);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-8);
+  border-width: var(--libitum-stroke-width-thin);
+  border-style: solid;
+  border-color: var(--libitum-color-gray-400);
+  border-radius: var(--libitum-radius-md);
+  background-color: var(--libitum-color-white);
+}
+
+.learner-signup-row-selected {
+  border-color: var(--libitum-color-brand-primary);
+}
+
+.learner-signup-row-label {
+  flex: 1;
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-button-m-font-family);
+  font-weight: var(--libitum-typography-button-m-font-weight);
+  font-size: var(--libitum-typography-button-m-font-size);
+  line-height: var(--libitum-typography-button-m-line-height);
+}
+
+.learner-signup-row-check {
+  width: var(--libitum-icon-size-xs);
+  height: var(--libitum-icon-size-xs);
+  flex-shrink: 0;
+}
+
+/* 글자 막대 — 칸마다 누를 자리(폭 24 · 높이 20)를 갖고, 목록 높이 안에서 위에서부터 섭니다. */
+.learner-signup-jump {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.learner-signup-jump-letter {
+  width: var(--libitum-spacing-24);
+  height: var(--libitum-spacing-20);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.learner-signup-jump-label {
+  color: var(--libitum-color-fg-brand);
+  font-family: var(--libitum-typography-label-s-font-family);
+  font-weight: var(--libitum-typography-label-s-font-weight);
+  font-size: var(--libitum-typography-label-s-font-size);
+  line-height: var(--libitum-typography-label-s-line-height);
+}

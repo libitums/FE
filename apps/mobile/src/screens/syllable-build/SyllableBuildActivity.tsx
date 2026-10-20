@@ -145,14 +145,17 @@ export function SyllableBuildActivity({
       }
       card={
         <view className="syllable-build-screen-content" data-testid="syllable-build-content">
-          {/* 판정 배지 자리입니다 — 비어 있어도 높이를 지켜 배지가 뜨고 질 때 카드가 흔들리지 않습니다. */}
-          <view className="syllable-build-screen-verdict-slot">
-            {result === null ? null : <AnswerVerdict result={result} />}
-          </view>
+          {/* 판정 배지 자리입니다 — 문항 장면에서는 비어 있어도 높이를 지켜 배지가 뜨고 질 때 카드가 흔들리지 않습니다. */}
+          {complete ? null : (
+            <view className="syllable-build-screen-verdict-slot">
+              {result === null ? null : <AnswerVerdict result={result} />}
+            </view>
+          )}
 
           {question == null ? (
             <LearningActivityComplete
               questionCount={questions.length}
+              lesson={lesson}
               testId="syllable-build-complete"
             />
           ) : (

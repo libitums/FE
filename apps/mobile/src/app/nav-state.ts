@@ -52,9 +52,6 @@ export type Screen =
   | { name: "feedback" }
   // 설정 탭의 「레슨에 쓰는 이름 · 나라」 화면입니다. 필드가 없습니다 - 지금 값은 App이 넘깁니다.
   | { name: "learner-profile" }
-  // 이름 · 나라가 드는 에피소드에 들어서기 전 묻는 화면입니다. 열려던 유닛을 들고 있다가(표지는 표지 키)
-  // 저장 · 건너뜀으로 풀 때 그 유닛을 시작합니다.
-  | { name: "learner-profile-gate"; episodeId: string; unitKey: CatalogUnitKey }
   // 필드가 없습니다 — 목록은 App이 넘기고 알림 화면에는 진행이 없습니다.
   | { name: "notifications" }
   // 에피소드의 서사 표지입니다. 필드는 **표지 유닛 id 하나**입니다 — 표지가 스스로 맵에
@@ -136,12 +133,24 @@ export type Screen =
   // — 항목과 잠김은 App이 진행에서 파생해 내립니다(넣으면 진행이 바뀌어도 스택에 옛
   // 값이 남습니다).
   | { name: "roleplay-episode"; episodeId: RoleplayEpisodeId }
+  // 본편 에피소드의 롤플레이입니다 — 미리보기 → 표지 컷 → 말하기 대화를 한 route가 집니다.
+  | { name: "roleplay-story"; episodeId: string }
+  | {
+      name: "roleplay-story-complete";
+      episodeId: string;
+      results: readonly AnswerResult[];
+      skippedCount: number;
+    }
   // 진입 흐름 화면들입니다. 전부 필드가 없습니다 — 온보딩 `step`은 화면 로컬,
   // 언어는 App 상태, 코드 값은 화면 로컬입니다.
   | { name: "splash" }
   | { name: "onboarding" }
   | { name: "login" }
   | { name: "verification-code"; phoneNumber: PhoneNumber }
+  // 가입 직후 ① 이름 · ② 나라입니다(ADR-0059 D7 2026-10-20). ①은 미리 채울 이름을, ②는 ①에서 정한 이름을 듭니다
+  // — 뒤로 돌아왔을 때 친 값이 그대로 서도록 route가 값을 집니다.
+  | { name: "learner-name"; initialName: string }
+  | { name: "learner-country"; learnerName: string }
   | { name: "language-select" }
   | { name: "journey-entry" }
   // 손글씨 탐침 route입니다. 필드가 없습니다 — 탐침 화면은 스텝도 유닛도 받지

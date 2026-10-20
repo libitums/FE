@@ -2,7 +2,7 @@ import { expect, test, vi } from "vitest";
 import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
 import { MotionProvider } from "@libitums/ui-lynx/motion";
 
-import { SentenceOrderChip } from "./SentenceOrderChip";
+import { SentenceOrderChip, SentenceOrderChipPlaceholder } from "./SentenceOrderChip";
 import { UiCopyContext } from "../../lib/ui-copy";
 import { markedUiCopy } from "../../lib/ui-copy.test-support";
 
@@ -297,4 +297,85 @@ test("UI-S2. reduced disabled 칩도 traits가 disabled이고 tap을 전달하�
   expect(root).toHaveAttribute("accessibility-traits", "disabled");
   fireEvent.tap(root, {});
   expect(onTap).not.toHaveBeenCalled();
+});
+
+// ------------------------------------------------------------- 면 밝기(surface)
+
+// 생략하면 light — 속성은 늘 붙습니다(조건부로 빼지 않습니다).
+test("[FDU3] surface를 생략하면 창고 · 놓인 칩의 data-surface가 light이고 dark를 주면 dark다", () => {
+  const bank = render(
+    <SentenceOrderChip index={0} text="밥을" placedOrdinal={null} onTap={() => {}} />,
+  );
+  expect(screen.getByTestId("sentence-order-chip-0")).toHaveAttribute("data-surface", "light");
+  bank.unmount();
+
+  const placed = render(
+    <SentenceOrderChip index={0} text="밥을" placedOrdinal={1} onTap={() => {}} />,
+  );
+  expect(screen.getByTestId("sentence-order-chip-0")).toHaveAttribute("data-surface", "light");
+  placed.unmount();
+
+  const dark = render(
+    <SentenceOrderChip
+      index={0}
+      text="밥을"
+      placedOrdinal={null}
+      surface="dark"
+      onTap={() => {}}
+    />,
+  );
+  expect(screen.getByTestId("sentence-order-chip-0")).toHaveAttribute("data-surface", "dark");
+  dark.unmount();
+
+  render(
+    <SentenceOrderChip index={0} text="밥을" placedOrdinal={2} surface="dark" onTap={() => {}} />,
+  );
+  expect(screen.getByTestId("sentence-order-chip-0")).toHaveAttribute("data-surface", "dark");
+});
+
+test("[FDU3] 면이 달라도 data-placed · 낭독 이름 · traits · 탭은 같다", () => {
+  for (const surface of ["light", "dark"] as const) {
+    const onTap = vi.fn<(index: number) => void>();
+    const placed = render(
+      <SentenceOrderChip index={3} text="밥을" placedOrdinal={2} surface={surface} onTap={onTap} />,
+    );
+    const root = screen.getByTestId("sentence-order-chip-3");
+    expect(root).toHaveAttribute("data-surface", surface);
+    expect(root).toHaveAttribute("data-placed", "2");
+    expect(root).toHaveAttribute("accessibility-label", "밥을, position 2");
+    expect(root).toHaveAttribute("accessibility-traits", "button");
+    fireEvent.tap(root, {});
+    expect(onTap).toHaveBeenCalledTimes(1);
+    expect(onTap).toHaveBeenCalledWith(3);
+    placed.unmount();
+
+    const disabled = render(
+      <SentenceOrderChip
+        index={3}
+        text="밥을"
+        placedOrdinal={null}
+        disabled={true}
+        surface={surface}
+        onTap={onTap}
+      />,
+    );
+    expect(screen.getByTestId("sentence-order-chip-3")).toHaveAttribute(
+      "accessibility-traits",
+      "disabled",
+    );
+    disabled.unmount();
+  }
+});
+
+test("[FDU4] 빈칸은 surface를 생략하면 light, dark를 주면 dark이고 둘 다 낭독에서 가려진다", () => {
+  const light = render(<SentenceOrderChipPlaceholder index={1} text="밥을" />);
+  const lightSlot = screen.getByTestId("sentence-order-bank-slot-1");
+  expect(lightSlot).toHaveAttribute("data-surface", "light");
+  expect(lightSlot).toHaveAttribute("accessibility-elements-hidden", "true");
+  light.unmount();
+
+  render(<SentenceOrderChipPlaceholder index={1} text="밥을" surface="dark" />);
+  const darkSlot = screen.getByTestId("sentence-order-bank-slot-1");
+  expect(darkSlot).toHaveAttribute("data-surface", "dark");
+  expect(darkSlot).toHaveAttribute("accessibility-elements-hidden", "true");
 });

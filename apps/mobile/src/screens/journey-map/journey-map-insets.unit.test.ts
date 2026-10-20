@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 
 import { describe, expect, test } from "vitest";
 
-import { mapContentInsets } from "./journey-map-insets";
+import { mapContentInsets, mapTopLayout } from "./journey-map-insets";
 import {
   autoScrollDestination,
   headerBandCard,
@@ -93,4 +93,36 @@ describe("mapContentInsets", () => {
       }
     },
   );
+});
+
+// ⟨2026-10-19⟩ 맵은 상태 표시줄 뒤까지 스크롤한다(사용자 결정) — 셸이 위 안전 영역을 칠하지 않고, 맵이 그 높이를
+// 스스로 안쪽에 더한다. 칩 · 띠 · 첫 유닛은 예전과 같은 화면 자리에 서야 한다.
+describe("mapTopLayout", () => {
+  test("TL1. 안전 영역이 없으면 예전 배치 그대로다(화면 위 여백만 스크롤 안으로 옮긴다)", () => {
+    expect(mapTopLayout(0)).toEqual({
+      screenPaddingTop: 0,
+      mapPaddingTop: mapContentInsets.top + 12,
+      bandTop: 64,
+      progressRowTop: 72,
+      headerTop: 12,
+    });
+  });
+
+  test("TL2. 안전 영역만큼 칩 · 띠 · 로딩 줄 · 첫 내용이 함께 내려온다", () => {
+    const inset = 47;
+    const base = mapTopLayout(0);
+    const shifted = mapTopLayout(inset);
+    expect(shifted.screenPaddingTop).toBe(0);
+    expect(shifted.mapPaddingTop - base.mapPaddingTop).toBe(inset);
+    expect(shifted.bandTop - base.bandTop).toBe(inset);
+    expect(shifted.progressRowTop - base.progressRowTop).toBe(inset);
+    expect(shifted.headerTop - base.headerTop).toBe(inset);
+  });
+
+  test("TL3. 첫 내용의 화면 위치는 예전(셸 여백 + 화면 여백 12 + 맵 여백)과 같다", () => {
+    const inset = 59;
+    const before = inset + 12 + mapContentInsets.top;
+    const after = 0 + mapTopLayout(inset).screenPaddingTop + mapTopLayout(inset).mapPaddingTop;
+    expect(after).toBe(before);
+  });
 });

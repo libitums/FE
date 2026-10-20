@@ -8,6 +8,7 @@ import { uiCopyEn } from "../../lib/ui-copy-en";
 import { PairMatchActivity } from "./PairMatchActivity";
 import { pairMatchRevealText } from "./pair-match";
 import type { PairLink, PairMatchQuestion } from "./pair-match.contract";
+import { expectCompleteScene, expectQuestionScene } from "../learning/complete-scene.test-support";
 
 // `ui` 계층: 짝 맞추기 활동 — 낱말과 뜻을 잇고 되돌리며, 확인 한 번에 문항 하나를 판정하고 틀린 짝의
 // 정답만 공개합니다. 문항은 매핑 모듈이 내는 꼴로 손으로 세웠습니다(뜻 열은 섞인 순서). 정답 탭은
@@ -313,4 +314,26 @@ test("UP11. 나가기 버튼 → 확인창에서 Leave를 고르면 onExit이 �
 
   expect(onExit).toHaveBeenCalledTimes(1);
   expect(onFinish).toHaveBeenCalledTimes(0);
+});
+
+// ACS-PM — 완료 장면: 무대가 완료 장면이고 내용 상자 안은 완료 카드 하나다. 문항 장면은 그대로다.
+test("[ACS-PM] 완료 때 무대가 완료 장면이고 내용 상자의 유일한 자식이 완료 카드이며 문항 장면에는 표시가 없다", () => {
+  mount();
+  expectQuestionScene();
+
+  for (const w of [0, 1, 2, 3]) linkCorrect(w);
+  tapAction();
+  tapAction();
+  const a0 = question.answer[0] ?? -1;
+  const a1 = question.answer[1] ?? -1;
+  tap(word(0));
+  tap(meaning(a1));
+  tap(word(1));
+  tap(meaning(a0));
+  linkCorrect(2);
+  linkCorrect(3);
+  tapAction();
+  tapAction();
+
+  expectCompleteScene("pair-match-content", "pair-match-complete");
 });

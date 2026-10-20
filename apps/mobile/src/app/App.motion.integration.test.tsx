@@ -166,3 +166,23 @@ test("[IM4] reducedMotion: true면 진행 바 채움이 reduced 클래스와 dat
   expect(standard.hasAttribute("data-motion")).toBe(false);
   expect(standard).not.toHaveClass("learning-shell-progress-fill-motion-reduced");
 });
+
+test("[NBI2] reducedMotion이면 알림 버튼에 reduced 표지와 막이 서고, 없으면 셋 다 없다", async () => {
+  await boot({ safeAreaInsets: iosInsets, reducedMotion: true });
+  const reduced = screen.getByTestId("top-bar-notifications");
+  expect(reduced).toHaveClass("top-bar-notifications-motion-reduced");
+  expect(reduced.getAttribute("data-motion")).toBe("reduced");
+  expect(screen.getByTestId("top-bar-notifications-shade")).toBeInTheDocument();
+  tap("top-bar-notifications");
+  expect(screen.getByTestId("notifications-screen-title")).toBeInTheDocument();
+  cleanup();
+  vi.unstubAllGlobals();
+
+  await boot({ safeAreaInsets: iosInsets });
+  const standard = screen.getByTestId("top-bar-notifications");
+  expect(standard).not.toHaveClass("top-bar-notifications-motion-reduced");
+  expect(standard.hasAttribute("data-motion")).toBe(false);
+  expect(screen.queryByTestId("top-bar-notifications-shade")).not.toBeInTheDocument();
+  tap("top-bar-notifications");
+  expect(screen.getByTestId("notifications-screen-title")).toBeInTheDocument();
+});

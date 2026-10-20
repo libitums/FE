@@ -13,11 +13,18 @@ import { getPhoneCallConversation } from "../screens/phone-call/phone-call";
 import { episodeFinalTestFor } from "../screens/episode-final/episode-final-tests";
 import { episodeFinalAdvanceDelayMs } from "../screens/episode-final/episode-final";
 import { mapUnitTestId } from "./test-helpers/map-unit-testid";
+import { ticketRefillMs } from "../lib/learning-tickets";
 
 const tap = (id: string) => fireEvent.tap(screen.getByTestId(id), {});
 const button = (id: string) =>
   fireEvent.tap(within(screen.getByTestId(id)).getByTestId("ui-lynx-button"), {});
 const unit = (id: string) => mapUnitTestId(id);
+// 새 레슨마다 학습 티켓을 한 장 씁니다(최대 3장 · 1시간에 1장). 이 여정은 레슨을 셋보다 많이 이어 가므로 시작
+// 직전에 시계를 세 시간 넘겨 티켓을 가득 채웁니다 — 티켓 규칙 자체는 `App.learning-tickets`가 봅니다.
+const startStep = () => {
+  vi.setSystemTime(Date.now() + 3 * ticketRefillMs);
+  tap("step-sheet-start");
+};
 
 function dismissFirstUnitGuide(): void {
   for (const kind of ["story", "messenger", "call"]) {
@@ -33,7 +40,7 @@ afterEach(() => {
 });
 
 // 학습 데이터·배정·진행·채점은 실제 코드. 외부 인증과 네이티브 재생 완료만 대역합니다.
-test("처음 여정부터 이야기·여덟 연습·스페셜·세 문항 복습을 거쳐 롤플레이를 연다", async () => {
+test("처음 여정부터 이야기·여덟 연습·스페셜·세 문항 복습을 거쳐 최종 테스트를 끝낸다", async () => {
   let finishAudio: (() => void) | undefined;
   const play = vi.fn((_source: string, done: () => void) => {
     finishAudio = done;
@@ -42,6 +49,21 @@ test("처음 여정부터 이야기·여덟 연습·스페셜·세 문항 복습
   vi.stubGlobal("NativeModules", {
     AudioPlaybackModule: { play, stop: vi.fn() },
     SpeechRecognitionModule: { start: recognize, stop: vi.fn() },
+    // 쓰기는 호스트의 픽셀 유사도로 판정합니다 — 따라 쓴 획이 안내와 겹친 것으로 답합니다.
+    HandwritingTraceModule: {
+      guide: (_args: unknown, callback: (payload: unknown) => void) =>
+        callback({ status: "rendered", image: "aGVsbG8=", box: "0,0,1,1", font: "Stub" }),
+      compare: (_args: unknown, callback: (payload: unknown) => void) =>
+        callback({
+          status: "compared",
+          coverage: "1",
+          stay: "1",
+          drawnArea: "10",
+          guideArea: "10",
+          font: "Stub",
+          guideBox: "0,0,1,1",
+        }),
+    },
   });
   await renderSignedInApp(<App />);
   expect(screen.getByTestId(unit("greeting"))).toHaveAttribute("data-status", "default");
@@ -121,7 +143,7 @@ test("처음 여정부터 이야기·여덟 연습·스페셜·세 문항 복습
   function completeStep(id: (typeof journeySteps)[number]["id"]) {
     expect(screen.getByTestId(unit(id))).toHaveAttribute("data-status", "active");
     tap(unit(id));
-    tap("step-sheet-start");
+    startStep();
     const question = sentenceOrderQuestionsForStep(id)[0]!;
     for (const index of question.answerOrder) tap(`sentence-order-chip-${index}`);
     tap("learning-shell-action");
@@ -210,25 +232,29 @@ test("처음 여정부터 이야기·여덟 연습·스페셜·세 문항 복습
   completeStep("directions");
   expect(screen.getByTestId(unit("tutorial-final-test"))).toHaveAttribute("data-status", "default");
   tap(unit("tutorial-listening"));
-  tap("step-sheet-start");
+  startStep();
   tap("listening-choice-0");
   tap("learning-shell-advance");
   tap("learning-shell-action");
   expect(screen.getByTestId("lesson-complete-screen-title")).toHaveTextContent("PERFECT LESSON!");
   button("lesson-complete-screen-exit");
-  for (const [id, skip] of [
-    ["tutorial-speaking", "speaking-screen-skip"],
-    ["tutorial-writing", "writing-screen-skip"],
-  ]) {
-    tap(unit(id!));
-    tap("step-sheet-start");
-    button(skip!);
+  // 말하기는 `Skip`으로 넘긴다. ⟨2026-10-19⟩ 쓰기에는 `Skip`이 없다 — 따라 쓰고 `Check`로 판정받는다(정답).
+  for (const id of ["tutorial-speaking", "tutorial-writing"]) {
+    tap(unit(id));
+    startStep();
+    if (id === "tutorial-speaking") {
+      button("speaking-screen-skip");
+    } else {
+      drawStroke();
+      tap("learning-shell-action"); // Check
+      tap("learning-shell-action"); // Next
+    }
     tap("learning-shell-action");
     expect(screen.getByTestId("lesson-complete-screen-title")).toHaveTextContent(
-      "LESSON COMPLETE!",
+      id === "tutorial-speaking" ? "LESSON COMPLETE!" : "PERFECT LESSON!",
     );
     button("lesson-complete-screen-exit");
-    expect(screen.getByTestId(unit(id!))).toHaveAttribute("data-status", "clear");
+    expect(screen.getByTestId(unit(id))).toHaveAttribute("data-status", "clear");
   }
 
   expect(screen.getByTestId(unit("tutorial-final-test"))).toHaveAttribute(
@@ -255,10 +281,12 @@ test("처음 여정부터 이야기·여덟 연습·스페셜·세 문항 복습
   expect(screen.getByTestId("lesson-complete-screen-title")).toHaveTextContent("PERFECT LESSON!");
   button("lesson-complete-screen-exit");
   expect(screen.getByTestId(unit("tutorial-final-test"))).toHaveAttribute("data-status", "clear");
-  tap("ui-lynx-bottom-navigator-item-roleplay");
-  expect(screen.getByTestId("roleplay-list-section-tutorial")).toHaveAttribute(
-    "data-unlocked",
-    "true",
-  );
   expect(recognize).not.toHaveBeenCalled();
 });
+
+function drawStroke(): void {
+  const surface = screen.getByTestId("drawing-surface");
+  fireEvent.touchstart(surface, { touches: [{ x: 100, y: 100 }] });
+  fireEvent.touchmove(surface, { touches: [{ x: 150, y: 150 }] });
+  fireEvent.touchend(surface, {});
+}

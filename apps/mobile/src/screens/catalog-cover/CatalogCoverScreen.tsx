@@ -23,6 +23,7 @@ import {
   nextCatalogCutScript,
 } from "./catalog-cover";
 import type { CatalogCoverScreenProps, CatalogCutScript } from "./catalog-cover.contract";
+import { voiceRevealIntervalMs } from "./voice-reveal";
 
 import "./catalog-cover-screen.css";
 
@@ -39,7 +40,7 @@ function claimCompletion(guard: { done: boolean }): boolean {
 //
 // 그림과 글은 **형제 층**입니다. 글 층은 그림의 상태를 읽지 않으므로 그림이 없거나 늦거나 실패해도 머리 ·
 // 대사 · 버튼이 첫 프레임부터 섭니다. 로드 전 투명 처리는 그림 층에만 걸립니다.
-// 대사는 튜토리얼처럼 타자기로 쓰이고, 쓰는 중 첫 탭은 대사를 완성하며 다음 탭이 컷을 넘깁니다.
+// 대사는 튜토리얼처럼 타자기로 쓰이고(소리 길이를 알면 그 길이에 맞춰), 쓰는 중 첫 탭은 대사를 완성하며 다음 탭이 컷을 넘깁니다.
 export function CatalogCoverScreen({
   insets,
   stage,
@@ -64,6 +65,7 @@ export function CatalogCoverScreen({
     text: cut.text.ko,
     resetKey: index,
     reducedMotion,
+    intervalMs: voiceRevealIntervalMs(cut.voiceSyncMs ?? null, cut.text.ko),
   });
   const translation = catalogCutTranslation(cut.text, script) ?? undefined;
   const dialogCommon = {
