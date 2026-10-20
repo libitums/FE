@@ -368,3 +368,7 @@ SwiftShader에서도 앱 안의 값은 그대로였다 — 「앱이 늦게 바�
 - **등록부**: `fixedLayers`의 `screens/journey-map/journey-stat-modal.css` carriers에 `screens/tickets/TicketStatModal.tsx`를 더했다 — 티켓 모달([ADR-0075](0075-learning-tickets.md) E1)이 지표 모달의 뼈대 · 짙은 바탕(0.9)을 그대로 쓰고 같은 표지를 단다.
 - **새 키** `screens/tickets/tickets.css`(분류 `default-scrim`, carriers 없음) — 티켓 없음 대화상자(E6m)의 `position: fixed` 루트다. 띠를 덮는 것은 ui-lynx 기본 스크림 0.45뿐이라 다른 확인 대화상자처럼 표지가 없다(D8 「0.45가 아닌 스크림」 밖).
 - D1 ~ D8의 결정 문장은 그대로다.
+
+## 적용 기록 ⟨2026-10-20 — 에피소드 롤플레이⟩
+
+- **등록부**: `fullBleedRoutes`에 `roleplay-story`를 더했다 — 표지를 다는 컴포넌트는 `RoleplayPreviewScreen` · `CatalogCoverScreen` · `RoleplayTalkScreen`(셋 다 짙은 장면 위, [ADR-0076](0076-episode-roleplay.md) D2). `componentFiles`에 앞의 둘과 뒤의 하나의 파일을 더했다. 새 `position: fixed` 층은 없다.

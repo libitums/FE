@@ -40,6 +40,8 @@ export const statusBarSurfaceRegistry = {
     "catalog-cover": ["EpisodeIntroScreen", "CatalogCoverScreen", "EpisodeBannerScreen"],
     "catalog-final": ["CatalogFinalScreen"],
     "catalog-epilogue": ["CatalogCoverScreen", "EpisodeBannerScreen"],
+    // 에피소드 롤플레이 — 미리보기 → 표지 컷(같은 컷 화면) → 말하기 대화. 셋 다 짙은 장면 위입니다.
+    "roleplay-story": ["RoleplayPreviewScreen", "CatalogCoverScreen", "RoleplayTalkScreen"],
   },
   /** 표지를 다는 컴포넌트 이름 → 파일(`apps/mobile/src` 기준). */
   componentFiles: {
@@ -51,6 +53,8 @@ export const statusBarSurfaceRegistry = {
     CatalogCoverScreen: "screens/catalog-cover/CatalogCoverScreen.tsx",
     EpisodeBannerScreen: "screens/catalog-cover/EpisodeBannerScreen.tsx",
     CatalogFinalScreen: "screens/catalog-final/CatalogFinalScreen.tsx",
+    RoleplayPreviewScreen: "screens/roleplay-story/RoleplayPreviewScreen.tsx",
+    RoleplayTalkScreen: "screens/roleplay-story/RoleplayTalkScreen.tsx",
   },
   /** `position: fixed` CSS → 분류와 표지를 다는 요소. `className`이 있으면 그 요소의 여는 태그에만 단다. */
   fixedLayers: {

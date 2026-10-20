@@ -16,7 +16,9 @@ import type { RoleplayUnitScreen, Screen } from "./nav-state";
 
 // `default` 없는 `switch (item.form)`입니다. 필드는 둘뿐이고 던지지 않습니다 —
 // `learningScreenFor`와 같은 자리·같은 근거입니다.
-export function roleplayScreenFor(item: RoleplayItem): RoleplayUnitScreen {
+export function roleplayScreenFor(
+  item: RoleplayItem,
+): RoleplayUnitScreen | Extract<Screen, { name: "roleplay-story" }> {
   switch (item.form) {
     case "messenger": {
       return { name: "roleplay-messenger", unitId: item.unitId };
@@ -26,6 +28,9 @@ export function roleplayScreenFor(item: RoleplayItem): RoleplayUnitScreen {
     }
     case "visual-novel": {
       return { name: "roleplay-visual-novel", unitId: item.unitId };
+    }
+    case "story": {
+      return { name: "roleplay-story", episodeId: item.episodeId };
     }
   }
 }

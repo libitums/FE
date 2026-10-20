@@ -109,6 +109,8 @@ const CARRIER_PATHS = {
   catalogCover: "screens/catalog-cover/CatalogCoverScreen.tsx",
   catalogFinal: "screens/catalog-final/CatalogFinalScreen.tsx",
   episodeBanner: "screens/catalog-cover/EpisodeBannerScreen.tsx",
+  roleplayPreview: "screens/roleplay-story/RoleplayPreviewScreen.tsx",
+  roleplayTalk: "screens/roleplay-story/RoleplayTalkScreen.tsx",
   statModal: "screens/journey-map/JourneyStatModal.tsx",
   guide: "components/FirstUnitGuide.tsx",
   map: "screens/journey-map/JourneyMapScreen.tsx",
@@ -127,6 +129,7 @@ const appSession = (
     "catalog-cover",
     "catalog-final",
     "catalog-epilogue",
+    "roleplay-story",
   ],
 ) => `function isFullBleedScreen(screen: Screen): boolean {
   return (
@@ -224,6 +227,11 @@ function healthyBase(overrides = {}) {
       [CARRIER_PATHS.entry]: carrierComponent("JourneyEntryScreen", "journey-entry-screen"),
       [CARRIER_PATHS.catalogCover]: carrierComponent("CatalogCoverScreen", "catalog-cover-screen"),
       [CARRIER_PATHS.catalogFinal]: carrierComponent("CatalogFinalScreen", "catalog-final-screen"),
+      [CARRIER_PATHS.roleplayPreview]: carrierComponent(
+        "RoleplayPreviewScreen",
+        "roleplay-story-screen",
+      ),
+      [CARRIER_PATHS.roleplayTalk]: carrierComponent("RoleplayTalkScreen", "roleplay-story-screen"),
       [CARRIER_PATHS.episodeBanner]: carrierComponent(
         "EpisodeBannerScreen",
         "episode-banner-screen",
@@ -447,7 +455,7 @@ test("SM10: the layoutEdgeToEdge defaults must stay and never turn the navigatio
   );
 });
 
-test("SM11: statusBarSurfaceRegistry matches the contract (nine routes, five CSS layers)", () => {
+test("SM11: statusBarSurfaceRegistry matches the contract (ten routes, five CSS layers)", () => {
   const { fullBleedRoutes, fixedLayers } = statusBarSurfaceRegistry;
   assert.deepEqual(Object.keys(fullBleedRoutes).sort(), [
     "catalog-cover",
@@ -457,6 +465,7 @@ test("SM11: statusBarSurfaceRegistry matches the contract (nine routes, five CSS
     "episode-intro",
     "episode-prologue",
     "journey-entry",
+    "roleplay-story",
     "roleplay-visual-novel",
     "visual-novel",
   ]);
@@ -478,6 +487,9 @@ test("SM11: statusBarSurfaceRegistry matches the contract (nine routes, five CSS
   );
   assert.match(routeText("catalog-final"), /CatalogFinalScreen/);
   assert.match(routeText("catalog-epilogue"), /CatalogCoverScreen/);
+  assert.match(routeText("roleplay-story"), /RoleplayPreviewScreen/);
+  assert.match(routeText("roleplay-story"), /CatalogCoverScreen/);
+  assert.match(routeText("roleplay-story"), /RoleplayTalkScreen/);
 
   assert.deepEqual(Object.keys(fixedLayers).sort(), [
     "components/first-unit-guide.css",

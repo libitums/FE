@@ -9,7 +9,7 @@ import type { MessengerConversation, MessengerUnitId } from "../messenger/messen
 import type { PhoneCallConversation, PhoneCallUnitId } from "../phone-call/phone-call.contract";
 import type { VisualNovelTitle, VisualNovelUnitId } from "../visual-novel/visual-novel.contract";
 
-export type RoleplayUnitForm = "messenger" | "phone-call" | "visual-novel";
+export type RoleplayUnitForm = "messenger" | "phone-call" | "visual-novel" | "story";
 
 export type MessengerRoleplayItem = {
   readonly form: "messenger";
@@ -34,14 +34,31 @@ export type VisualNovelRoleplayItem = {
  * 항목에 `status`·`locked`·`completed` 필드가 없으므로 완료·잠김 표식을 그릴 입력이
  * 타입에 존재하지 않습니다.
  */
-export type RoleplayItem = MessengerRoleplayItem | PhoneCallRoleplayItem | VisualNovelRoleplayItem;
+/**
+ * 본편 에피소드의 롤플레이입니다 — 표지 컷을 보고 최종 테스트의 대사를 말로 주고받습니다(`roleplay-story`).
+ * 제목은 에피소드의 영어 제목이고(탭 화면에는 한글을 두지 않습니다), 카드 둘째 줄이 대사 수를 말합니다.
+ */
+export type StoryRoleplayItem = {
+  readonly form: "story";
+  /** `story-<episodeId>` — 카드 testid가 다른 항목과 겹치지 않게 접두를 둡니다. */
+  readonly unitId: `story-${string}`;
+  readonly episodeId: string;
+  readonly title: string;
+  readonly lineCount: number;
+};
+
+export type RoleplayItem =
+  | MessengerRoleplayItem
+  | PhoneCallRoleplayItem
+  | VisualNovelRoleplayItem
+  | StoryRoleplayItem;
 
 /**
  * 에피소드를 가려내는 이름입니다. 여정의 `JourneyEpisode.id`와 같은 값입니다 —
  * **주석이 말하던 것을 타입이 말하게 합니다.** 별칭이라 에피소드가 늘면 한 곳
  * (`JourneyEpisodeId`)만 고칩니다.
  */
-export type RoleplayEpisodeId = JourneyEpisodeId;
+export type RoleplayEpisodeId = JourneyEpisodeId | string;
 
 /**
  * 롤플레이 화면의 한 구획입니다 — 에피소드 하나와 그 에피소드의 롤플레이 항목들입니다.

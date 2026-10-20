@@ -136,6 +136,14 @@ export type Screen =
   // — 항목과 잠김은 App이 진행에서 파생해 내립니다(넣으면 진행이 바뀌어도 스택에 옛
   // 값이 남습니다).
   | { name: "roleplay-episode"; episodeId: RoleplayEpisodeId }
+  // 본편 에피소드의 롤플레이입니다 — 미리보기 → 표지 컷 → 말하기 대화를 한 route가 집니다.
+  | { name: "roleplay-story"; episodeId: string }
+  | {
+      name: "roleplay-story-complete";
+      episodeId: string;
+      results: readonly AnswerResult[];
+      skippedCount: number;
+    }
   // 진입 흐름 화면들입니다. 전부 필드가 없습니다 — 온보딩 `step`은 화면 로컬,
   // 언어는 App 상태, 코드 값은 화면 로컬입니다.
   | { name: "splash" }

@@ -145,7 +145,13 @@ test("[I1] 실제 데이터로 선 구획 — 에피소드 하나에 카드 셋�
 
   const list = screen.getByTestId("roleplay-list-screen-list");
   const sectionTestIds = Array.from(list.children).map((el) => el.getAttribute("data-testid"));
-  expect(sectionTestIds).toEqual(["roleplay-list-section-tutorial"]);
+  // 튜토리얼 구획 뒤에 본편 에피소드 구획이 섭니다(에피소드 롤플레이 — App.roleplay-story가 봅니다).
+  expect(sectionTestIds).toEqual([
+    "roleplay-list-section-tutorial",
+    "roleplay-list-section-u01-water",
+    "roleplay-list-section-u02-checkin",
+    "roleplay-list-section-u03-mina",
+  ]);
   expect(screen.getByTestId("roleplay-list-section-tutorial")).toHaveAttribute(
     "data-unlocked",
     "true",
@@ -197,10 +203,11 @@ test("[I1] 실제 데이터로 선 구획 — 에피소드 하나에 카드 셋�
   );
 
   // 열린 에피소드에는 완료 표식도 잠김 표식도 없습니다 — 롤플레이는 몇 번을 해도
-  // 「끝낸 것」이 되지 않습니다.
-  expect(list).not.toHaveTextContent("completed");
-  expect(list.querySelectorAll("[data-status]")).toHaveLength(0);
-  expect(list.querySelectorAll('[data-locked="true"]')).toHaveLength(0);
+  // 「끝낸 것」이 되지 않습니다. (본편 구획은 끝내지 않은 에피소드라 잠겨 있으므로 튜토리얼 구획만 봅니다.)
+  const tutorial = screen.getByTestId("roleplay-list-section-tutorial");
+  expect(tutorial).not.toHaveTextContent("completed");
+  expect(tutorial.querySelectorAll("[data-status]")).toHaveLength(0);
+  expect(tutorial.querySelectorAll('[data-locked="true"]')).toHaveLength(0);
 });
 
 // -------------------------------------------------------------- I2 (AC2)
