@@ -111,7 +111,8 @@
   iOS 시뮬레이터 녹화(2026-10-20)에서 `rotateY` 회전 중 카드의 한쪽 반이 덱 뒤 두 장 뒤로 그려져 옅은 주황이 비쳤고, keyframe 두 개를 `scaleX(0) → scaleX(1)`로 바꿨다.
   이 표에서는 「회전은 즉시」가 아니라 **「확대는 즉시」** 줄에 든다 — reduced 처리는 같다(클래스를 붙이지 않아 면이 즉시 바뀌고 불투명도도 걸지 않는다). 시간 · 곡선은 그대로 토큰(`d6` · `enter`)이다.
   시작 값 `scaleX(0)`은 D1의 `scale-literal`에 걸린다 — 토큰 셋(pressed · enter · reward)이 모두 0보다 커 표현할 수 없다. 그래서 D1의 경로대로 **allowlist 넷째 항목**으로 이 파일을 올렸다(사유는 allowlist). 끝 값 `scaleX(1)`은 항등 예외다.
-  새 토큰 · `lint:motion` 규칙 변경은 0이다. 기기 확인은 [새 형식 화면 e2e](../e2e/episode-format-screens.md) 「G2」 CF10 · CF10-A(미실행).
+  새 토큰 · `lint:motion` 규칙 변경은 0이다. 기기 확인은 [새 형식 화면 e2e](../e2e/episode-format-screens.md) 「G2」 CF10 · CF10-A — CF10은 2026-10-20 iOS 시뮬레이터에서 통과, CF10-A(Android)는 미실행.
+- ⟨2026-10-20, 이어서 — 적용 기록이고 결정을 바꾸지 않는다⟩ **뒤집는 동안 덱 뒤 두 장을 숨긴다**([ADR-0072](0072-culture-card-flip.md) `정정 기록` 2026-10-20 「같은 날, 이어서」, 사용자 결정). 덱 두 장에 `opacity` keyframe 둘(`deck-hide-front` · `-back`), 시간 · 곡선은 면과 같은 토큰(`d6` · `enter`)이고 **채움 모드가 없어** 끝나면 각 장의 불투명도로 돌아온다. reduced에서는 면이 즉시 바뀌므로 클래스가 붙지 않는다. `opacity`는 D1 `scale-literal`의 대상이 아니라 allowlist 항목 수는 넷 그대로이고, 새 토큰 · 규칙 변경도 0이다.
 - **카탈로그(Storybook)는 컴포넌트별 `motion` arg + `ReducedMotion` 스토리다**(4단계). 새 다섯(Round Button · Learning Unit · Page Indicator · Settings Cell · Chat Bubble)은 **컨텍스트 경로** —
   엔트리가 `<MotionProvider motion={data.motion}>`로 감싸고 컴포넌트에 prop을 주지 않는다(제품 앱과 같은 길). 기존 넷은 prop 경로 그대로, Visual Novel Dialog는 `reducedMotion` prop arg로 스토리만.
   Chat Bubble은 `reveal: "instant" | "typewriter"` arg와 `Typewriter` 스토리를 더했다 — `reveal` 없이는 reduced가 보일 것이 없다. 순수 함수 `normalizeStoryMotion(value)`(`"reduced"`만 reduced)을

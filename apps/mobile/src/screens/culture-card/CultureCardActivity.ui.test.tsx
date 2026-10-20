@@ -298,7 +298,7 @@ describe("CultureCardActivity — 접근성 · 움직임", () => {
     expect(id("culture-card-face")).toHaveAttribute("data-motion", "reduced");
   });
 
-  test("UCC10. 표준 움직임에서 뒤집으면 덱에 그 면의 숨김 클래스가 붙고, 동작 줄이기에서는 붙지 않는다", () => {
+  test("UCC10. 표준 움직임에서 뒤집으면 덱에 그 면의 숨김 클래스가 붙는다", () => {
     mount(two);
     expect(id("culture-card-deck").getAttribute("class")).toBe("culture-card-activity-deck");
     tapCard();
