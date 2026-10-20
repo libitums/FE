@@ -1,0 +1,22 @@
+/* 가입 직후 세 화면의 진행 막대입니다(캔버스 ProfName · ProfCountry · ProfLang). 머리 행에서 뒤로 버튼 옆의
+   남은 폭을 채웁니다. 칸 높이 6은 맞는 토큰이 없어 spacing-4 + spacing-2로 짓습니다. */
+.entry-step-bar {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-6);
+  margin-left: var(--libitum-spacing-16);
+  margin-right: calc(var(--libitum-spacing-48) + var(--libitum-spacing-16));
+}
+
+.entry-step-bar-segment {
+  flex: 1;
+  height: calc(var(--libitum-spacing-4) + var(--libitum-spacing-2));
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-gray-300);
+}
+
+.entry-step-bar-segment-done {
+  background-color: var(--libitum-color-brand-primary);
+}

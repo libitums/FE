@@ -39,11 +39,7 @@ import { renderShellLearningScreen, renderWordChoiceScreen } from "./render-lear
 import { renderMessengerCompleteScreen } from "./render-messenger-complete";
 import { renderEpisodeIntroFlow } from "./render-episode-intro";
 import { renderEntryScreen } from "./render-entry-screen";
-import {
-  learnerSettingsSummary,
-  renderLearnerProfileGate,
-  renderLearnerProfileSettings,
-} from "./render-learner-profile";
+import { learnerSettingsSummary, renderLearnerProfileSettings } from "./render-learner-profile";
 import { renderEpisodeFinalFlow } from "./render-episode-final";
 import { renderRoleplayUnitScreen } from "./render-roleplay-screen";
 import { renderRoleplayStory } from "./render-roleplay-story";
@@ -118,8 +114,6 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
       return <AccountProfileScreen onExit={wiring.onExitSettingsStack} />;
     case "learner-profile":
       return renderLearnerProfileSettings(wiring);
-    case "learner-profile-gate":
-      return renderLearnerProfileGate(screen, wiring);
     case "feedback":
       return (
         <FeedbackScreen onSubmit={wiring.onSubmitFeedback} onExit={wiring.onExitSettingsStack} />
@@ -254,12 +248,14 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
     case "roleplay-phone-call":
     case "roleplay-visual-novel":
       return renderRoleplayUnitScreen(screen, wiring.roleplay, wiring.safeAreaInsets);
-    // 진입 흐름 화면 여섯입니다 — 스플래시부터 여정 입구까지가 한 흐름이라
+    // 진입 흐름 화면 여덟입니다 — 스플래시부터 여정 입구까지가 한 흐름이라
     // `render-entry-screen.tsx`가 한 자리에서 집니다.
     case "splash":
     case "onboarding":
     case "login":
     case "verification-code":
+    case "learner-name":
+    case "learner-country":
     case "language-select":
     case "journey-entry":
       return renderEntryScreen(screen, wiring);

@@ -13,13 +13,8 @@ export type LearnerNameResult =
   | { readonly ok: true; readonly name: string }
   | { readonly ok: false; readonly issue: LearnerNameIssue };
 
-export type LearnerProfileEntry = "onboarding" | "episode" | "settings";
-export type LearnerProfileOutcome =
-  | { readonly kind: "saved"; readonly record: LearnerProfileRecord }
-  | { readonly kind: "skipped" };
-
-/** 이번 App 세션에서 이미 물었는가입니다(건너뜀 포함). 저장하지 않습니다. */
-export type LearnerProfilePrompt = "open" | "asked";
+/** 저장한 자리입니다 — 가입 직후 이름 · 나라 화면, 또는 설정. */
+export type LearnerProfileEntry = "signup" | "settings";
 /** 기기 캐시가 서버와 맞았는가입니다. 기록이 없거나 로그인 전이면 `none`. */
 export type LearnerProfileSyncState = "none" | "pending" | "synced";
 
@@ -29,15 +24,8 @@ export type LearnerProfileSavedEvent = {
   readonly entry: LearnerProfileEntry;
   readonly change: "created" | "updated";
 };
-export type LearnerProfileSkippedEvent = {
-  readonly name: "learner_profile_skipped";
-  readonly entry: Exclude<LearnerProfileEntry, "settings">;
-};
 export type LearnerProfileOpenedEvent = { readonly name: "learner_profile_opened" };
-export type LearnerProfileEvent =
-  | LearnerProfileSavedEvent
-  | LearnerProfileSkippedEvent
-  | LearnerProfileOpenedEvent;
+export type LearnerProfileEvent = LearnerProfileSavedEvent | LearnerProfileOpenedEvent;
 
 export type LoadLearnerProfilePath = "/rest/v1/rpc/load_learner_profile";
 export type SaveLearnerProfilePath = "/rest/v1/rpc/save_learner_profile";
@@ -82,4 +70,6 @@ export type LearnerProfilePort = {
     name: string | null,
     country: LearnerCountry | null,
   ) => LearnerProfilePreview;
+  /** 이름 칸에 미리 채울 무작위 이름입니다 — `previous`와 다른 값을 고릅니다. 자산이 닫히기 전이면 빈 문자열. */
+  readonly randomName: (previous: string | null) => string;
 };

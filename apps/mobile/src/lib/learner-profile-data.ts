@@ -9,7 +9,7 @@ import type {
   LearnerProfilePort,
   LearnerProfilePreview,
 } from "./learner-profile.contract";
-import { learnerCountryTextOf } from "./learner-profile";
+import { learnerCountryTextOf, learnerNameFrom, pickLearnerName } from "./learner-profile";
 import { fillPlaceholders } from "./placeholder-fill";
 
 export { learnerCountryTextOf };
@@ -20,6 +20,7 @@ type Asset = {
   readonly name: PreviewTemplate;
   readonly country: PreviewTemplate;
   readonly countries: readonly LearnerCountry[];
+  readonly randomNames: readonly string[];
 };
 
 const isText = (value: unknown): value is string => typeof value === "string" && value !== "";
@@ -53,24 +54,41 @@ function countryFrom(row: unknown): LearnerCountry {
 // 내장 자산은 코드와 함께 배포되는 데이터라, 디코드 실패는 빌드 시점 결함입니다. 런타임 무예외 원칙의
 // 예외로 모듈 평가에서 던집니다(`episode-bundled.ts`의 매니페스트와 같습니다).
 function assetFrom(raw: unknown): Asset {
-  const { preview, countries } = (raw ?? {}) as { preview?: unknown; countries?: unknown };
+  const { preview, countries, randomNames } = (raw ?? {}) as {
+    preview?: unknown;
+    countries?: unknown;
+    randomNames?: unknown;
+  };
   const { sampleName, name, country } = (preview ?? {}) as {
     sampleName?: unknown;
     name?: unknown;
     country?: unknown;
   };
-  if (!isText(sampleName) || !Array.isArray(countries)) {
+  if (!isText(sampleName) || !Array.isArray(countries) || !Array.isArray(randomNames)) {
     throw new Error("learner profile asset: invalid shape");
   }
+  // 무작위 이름은 그대로 이름 칸에 서므로 이름 규칙(ADR-0059 D5)을 지켜야 합니다.
+  const names = (randomNames as unknown[]).map((name) => {
+    const checked = typeof name === "string" ? learnerNameFrom(name) : null;
+    if (checked === null || !checked.ok || checked.name !== name) {
+      throw new Error(`learner profile asset: invalid random name ${JSON.stringify(name)}`);
+    }
+    return checked.name;
+  });
+  if (names.length < 2) throw new Error("learner profile asset: too few random names");
   return {
     sampleName,
     name: templateFrom(name),
     country: templateFrom(country),
     countries: (countries as unknown[]).map(countryFrom),
+    randomNames: names,
   };
 }
 
 const asset = assetFrom(assetJson);
+
+/** 이름 칸에 미리 채우는 무작위 이름 목록입니다(여러 문화권의 짧은 이름). */
+export const learnerRandomNames: readonly string[] = asset.randomNames;
 
 /** 영어 이름 순으로 실린 나라 표입니다. */
 export const learnerCountries: readonly LearnerCountry[] = asset.countries;
@@ -171,4 +189,5 @@ export const learnerProfilePort: LearnerProfilePort = {
   search: (query) => searchLearnerCountries(learnerCountries, query),
   byCode: (code) => countriesByCode.get(code) ?? null,
   previewOf: learnerProfilePreviewOf,
+  randomName: (previous) => pickLearnerName(learnerRandomNames, previous, Math.random),
 };

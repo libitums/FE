@@ -1,7 +1,6 @@
 import { afterEach, expect, test, vi } from "vitest";
 import { fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
-import { noLearnerProfilePort } from "../../lib/learner-profile";
 import { OnboardingScreen } from "./OnboardingScreen";
 
 afterEach(() => vi.unstubAllGlobals());
@@ -11,13 +10,7 @@ test("온보딩의 다음·뒤로·시작 버튼은 탭마다 가벼운 버튼�
   vi.stubGlobal("NativeModules", {
     SoundEffectsModule: { play: (id: string) => sounds.push(id), stopRing: () => {} },
   });
-  render(
-    <OnboardingScreen
-      onComplete={() => sounds.push("complete")}
-      learnerRecord={null}
-      learnerPort={noLearnerProfilePort}
-    />,
-  );
+  render(<OnboardingScreen onComplete={() => sounds.push("complete")} />);
 
   const next = () =>
     fireEvent.tap(
@@ -32,7 +25,6 @@ test("온보딩의 다음·뒤로·시작 버튼은 탭마다 가벼운 버튼�
   next();
   next();
   next();
-  next();
 
-  expect(sounds).toEqual(["button", "button", "button", "button", "button", "button", "complete"]);
+  expect(sounds).toEqual(["button", "button", "button", "button", "button", "complete"]);
 });

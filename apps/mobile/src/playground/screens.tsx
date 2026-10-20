@@ -14,7 +14,6 @@ import { JourneyEntryScreen } from "../screens/journey-entry/JourneyEntryScreen"
 import { JourneyMapScreen } from "../screens/journey-map/JourneyMapScreen";
 import { LanguageSelectScreen } from "../screens/language-select/LanguageSelectScreen";
 import { LoginScreen } from "../screens/login/LoginScreen";
-import { noLearnerProfilePort } from "../lib/learner-profile";
 import { OnboardingScreen } from "../screens/onboarding/OnboardingScreen";
 import { SplashScreen } from "../screens/splash/SplashScreen";
 import { VerificationCodeScreen } from "../screens/verification-code/VerificationCodeScreen";
@@ -136,13 +135,7 @@ export const playgroundScreens = {
     />
   ),
   splash: (go: Go) => <SplashScreen onTimeout={() => go("onboarding")} />,
-  onboarding: (go: Go) => (
-    <OnboardingScreen
-      learnerRecord={null}
-      learnerPort={noLearnerProfilePort}
-      onComplete={() => go("login")}
-    />
-  ),
+  onboarding: (go: Go) => <OnboardingScreen onComplete={() => go("login")} />,
   login: (go: Go) => (
     <LoginScreen
       // 플레이그라운드는 제품이 숨긴 전화번호 수단도 그립니다 — 코드 검증 화면으로 가는 길입니다.

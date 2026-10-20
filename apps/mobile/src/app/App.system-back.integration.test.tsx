@@ -384,7 +384,6 @@ test("[IB14] 온보딩 둘째 스텝은 앞 스텝으로, 로그인은 온보딩
   onboardingNext();
   onboardingNext();
   onboardingNext();
-  onboardingNext();
   expect(screen.getByTestId("login-screen-title")).toBeInTheDocument();
 
   const onLogin = pressBack();

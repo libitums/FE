@@ -11,7 +11,6 @@ import { learnerNameFrom } from "./learner-profile";
 import type {
   LearnerCountry,
   LearnerNameIssue,
-  LearnerProfileOutcome,
   LearnerProfilePort,
   LearnerProfilePreview,
   LearnerProfileRecord,
@@ -157,13 +156,26 @@ export function learnerProfileSummary(
   return sync === "pending" ? copy.summary.pending(summary) : summary;
 }
 
+/** 전체 목록의 한 묶음입니다 — 영어 이름 첫 글자(대문자 A–Z) 하나와 그 나라들. */
+export type LearnerCountrySection = {
+  readonly letter: string;
+  readonly countries: readonly LearnerCountry[];
+};
+
 /**
- * 온보딩 마지막 스텝의 완료 판정입니다 - `ready` -> 저장 · `empty` -> 건너뜀 · `incomplete`와 `invalid` ->
- * `null`(머문다).
+ * 나라 줄을 영어 이름 첫 글자로 묶습니다. 입력 순서(영어 이름 순)를 지키고, 같은 글자가 떨어져 나오면 앞
+ * 묶음에 붙입니다. 라틴 대문자가 아닌 첫 글자는 `#`입니다(`normalize`는 PrimJS에 기대지 않습니다).
  */
-export function onboardingProfileOutcome(
-  status: LearnerProfileDraftStatus,
-): LearnerProfileOutcome | null {
-  if (status.kind === "ready") return { kind: "saved", record: status.record };
-  return status.kind === "empty" ? { kind: "skipped" } : null;
+export function learnerCountrySectionsOf(
+  countries: readonly LearnerCountry[],
+): readonly LearnerCountrySection[] {
+  const byLetter = new Map<string, LearnerCountry[]>();
+  for (const country of countries) {
+    const first = country.en.charAt(0).toUpperCase();
+    const letter = /^[A-Z]$/.test(first) ? first : "#";
+    const bucket = byLetter.get(letter);
+    if (bucket === undefined) byLetter.set(letter, [country]);
+    else bucket.push(country);
+  }
+  return Array.from(byLetter, ([letter, members]) => ({ letter, countries: members }));
 }

@@ -20,6 +20,7 @@ const countries: readonly LearnerCountry[] = [
 const port: LearnerProfilePort = {
   search: () => countries,
   byCode: (code) => countries.find((country) => country.code === code) ?? null,
+  randomName: () => "Leo",
   previewOf: () => ({
     kind: "example",
     lines: [{ ko: "Emma로 예약했어요.", en: "I booked under Emma." }],

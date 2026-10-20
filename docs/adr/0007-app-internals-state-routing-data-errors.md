@@ -894,6 +894,8 @@ LIB-257의 리뷰가 이 어긋남을 찾았다.
   「이번 세션에서 이미 물었다」는 저장하지 않는 세션 상태다 — 로그아웃 · 계정 삭제로 App 세션이 다시 서면 처음으로 돌아간다.
 - **D3 적용 기록 — route 둘.** 설정 탭 `{ name: "learner-profile" }` · 여정 탭 `{ name: "learner-profile-gate"; episodeId; unitKey }`. 가드 route는 「넘긴 뒤 열 유닛」을 들고
   `back`과 함께 사라진다 — 파생값이 아니라 그 화면 인스턴스의 인자다. 탭 루트가 아니라 탭 바 · 전역 머리는 서지 않는다.
+  ⟨2026-10-20⟩ 가드 route는 지웠고 진입 구간에 route 둘이 더해졌다 — `{ name: "learner-name"; initialName }` · `{ name: "learner-country"; learnerName }`(ADR-0059 D7 적용 기록).
+  둘 다 「뒤로 돌아왔을 때 친 값이 그대로 서야 한다」는 화면 인스턴스의 값이라 route가 든다(①의 Continue는 친 이름으로 자기 route를 `replace`한 뒤 ②를 `push`한다).
 
 **2026-10-13 — 크래시 수집이 섰다([ADR-0061](0061-crash-reporting-sentry.md)). D4는 적용 기록이다.** 결정은 그대로다.
 크래시 · 오류 수집의 축은 ADR-0058이 진다.

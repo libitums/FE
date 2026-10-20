@@ -2,10 +2,6 @@
 
 import type { CatalogLearningEvent } from "../../lib/catalog-learning-event.contract";
 import type { ProgressLoadEvent } from "../../lib/progress-load-event.contract";
-import type {
-  LearnerProfileSavedEvent,
-  LearnerProfileSkippedEvent,
-} from "../../lib/learner-profile.contract";
 import type { SafeAreaInsets } from "../../lib/safe-area";
 import type { EpisodeNarrative } from "../episode-narrative/episode-narrative";
 import type { JourneyMapNodeStatus } from "../journey-map/journey-map";
@@ -120,8 +116,6 @@ export type EpisodeIntroEvent =
   | EpisodeSurveyAnsweredEvent
   | EpisodeSurveySkippedEvent
   | CatalogLearningEvent
-  | LearnerProfileSavedEvent
-  | LearnerProfileSkippedEvent
   | ProgressLoadEvent
   | TicketEvent
   | RoleplayStoryEvent;

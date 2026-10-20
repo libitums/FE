@@ -1,25 +1,20 @@
-// 세션의 학습자 프로필 상태입니다 — 기록 · 치환용 프로필 · 동기화 상태 · 포트 · 물음 여부. 캐시 ↔ 서버는
-// learner-profile-sync가, 치환용 프로필 만들기는 learner-profile-gate가 맡습니다.
+// 세션의 학습자 프로필 상태입니다 — 기록 · 치환용 프로필 · 동기화 상태 · 포트. 캐시 ↔ 서버는
+// learner-profile-sync가, 치환용 프로필 만들기는 learner-profile-fill이 맡습니다.
 
 import { useEffect, useRef, useState } from "@lynx-js/react";
 
-import {
-  clearGuestLearnerProfile,
-  readGuestLearnerProfile,
-  writeGuestLearnerProfile,
-} from "../lib/learner-profile-cache";
+import { readGuestLearnerProfile, writeGuestLearnerProfile } from "../lib/learner-profile-cache";
 import { learnerProfilePort } from "../lib/learner-profile-data";
 import { noLearnerProfilePort, sameLearnerProfile } from "../lib/learner-profile";
 import type {
   LearnerProfileCacheEntry,
   LearnerProfilePort,
-  LearnerProfilePrompt,
   LearnerProfileRecord,
   LearnerProfileSyncState,
 } from "../lib/learner-profile.contract";
 import type { LearnerProfile } from "../lib/placeholder-fill";
 import { noLearnerProfile } from "./catalog-cover-wiring";
-import { learnerFillOf } from "./learner-profile-gate";
+import { learnerFillOf } from "./learner-profile-fill";
 import { createLearnerProfileSync } from "./learner-profile-sync";
 import type { LearnerProfileSync } from "./learner-profile-sync";
 import { progressUserId } from "./pending-learning-progress";
@@ -32,12 +27,8 @@ export type LearnerProfileValues = {
 };
 
 export type LearnerProfileControls = {
-  readonly learnerPrompt: LearnerProfilePrompt;
   /** 저장하고(로그인 전이면 손님 칸) **다음 렌더의 `learnerFill`과 같은 참조**를 돌려줍니다. */
   readonly saveLearnerProfile: (record: LearnerProfileRecord) => LearnerProfile;
-  readonly markLearnerProfileAsked: () => void;
-  /** 로그인 전 손님 칸과 거기서 온 담은 값을 지웁니다(온보딩에서 비우고 건너뛴 경우). 로그인 뒤에는 하지 않습니다. */
-  readonly clearGuestLearnerProfile: () => void;
   /** 로그인 뒤 부릅니다. 캐시를 곧바로 반영한 다음 서버와 맞춥니다. 던지지 않습니다. */
   readonly syncLearnerProfile: () => Promise<void>;
 };
@@ -76,7 +67,6 @@ function fillFor(record: LearnerProfileRecord | null, port: LearnerProfilePort):
 
 export function useLearnerProfile(): LearnerProfileValues & LearnerProfileControls {
   const [state, setState] = useState<ProfileState>(firstState);
-  const [prompt, setPrompt] = useState<LearnerProfilePrompt>("open");
   const sync = useRef<LearnerProfileSync | null>(null);
   // 포트는 마운트 효과가 백그라운드에서 닫습니다 - 저장이 같은 포트로 치환 프로필을 만들도록 ref에도 둡니다.
   const port = useRef<LearnerProfilePort>(noLearnerProfilePort);
@@ -136,17 +126,6 @@ export function useLearnerProfile(): LearnerProfileValues & LearnerProfileContro
     return fill;
   };
 
-  const clearGuest = (): void => {
-    "background only";
-    if (sync.current !== null) return;
-    clearGuestLearnerProfile();
-    setState((previous) =>
-      previous.signedIn || previous.entry === null
-        ? previous
-        : { ...previous, entry: null, fill: noLearnerProfile },
-    );
-  };
-
   const syncLearnerProfile = async (): Promise<void> => {
     "background only";
     const userId = progressUserId();
@@ -163,10 +142,7 @@ export function useLearnerProfile(): LearnerProfileValues & LearnerProfileContro
     learnerRecord: state.entry?.record ?? null,
     learnerSync: state.signedIn && state.entry !== null ? state.entry.sync : "none",
     learnerPort: state.port,
-    learnerPrompt: prompt,
     saveLearnerProfile,
-    markLearnerProfileAsked: () => setPrompt("asked"),
-    clearGuestLearnerProfile: clearGuest,
     syncLearnerProfile,
   };
 }

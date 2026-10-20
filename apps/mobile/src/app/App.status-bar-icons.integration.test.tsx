@@ -2,6 +2,7 @@ import { afterEach, expect, test, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
+import { passLearnerSignup } from "./test-helpers/learner-signup";
 import { episodePrologueFor } from "./episode-prologues";
 import type { AppJourneySeed } from "./App";
 import { productJourneySeed } from "./journey-progress";
@@ -155,8 +156,7 @@ function advanceSplash(): void {
 }
 
 function completeOnboarding(): void {
-  // 온보딩 네 스텝(넷째는 빈 채 건너뜀) — `onboarding-screen-next`는 스텝마다 같은 testid입니다.
-  tapButtonIn("onboarding-screen-next");
+  // 온보딩 세 스텝 — `onboarding-screen-next`는 스텝마다 같은 testid입니다.
   tapButtonIn("onboarding-screen-next");
   tapButtonIn("onboarding-screen-next");
   tapButtonIn("onboarding-screen-next");
@@ -177,7 +177,7 @@ const sessionBody = JSON.stringify({
   user: { id: "user-1" },
 });
 
-/** 구글 로그인으로 언어 선택 화면까지 갑니다(`App.entry.integration.test.tsx`의 IE7b와 같은 대역). */
+/** 구글 로그인으로 ① 이름 · ② 나라를 지나 언어 선택 화면까지 갑니다(`App.entry.integration.test.tsx`의 IE7b와 같은 대역). */
 async function signInWithGoogleToLanguageSelect(): Promise<void> {
   const store = new Map<string, string>();
   vi.stubGlobal("NativeModules", {
@@ -206,6 +206,8 @@ async function signInWithGoogleToLanguageSelect(): Promise<void> {
   completeOnboarding();
   tapButtonIn("login-screen-method-google");
   await flush();
+  expect(screen.getByTestId("learner-name-screen-title")).toBeInTheDocument();
+  passLearnerSignup();
   expect(screen.getByTestId("language-select-screen-title")).toBeInTheDocument();
 }
 

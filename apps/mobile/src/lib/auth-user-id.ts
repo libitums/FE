@@ -5,6 +5,7 @@
 // 검증하지 않습니다** — 이 값은 접근 판정에 쓰지 않고, 토큰은 방금 서버가 준 것입니다.
 
 import type { AuthProvidersFrom } from "./account.contract";
+import { learnerNameFrom } from "./learner-profile";
 
 const base64UrlAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
 
@@ -102,3 +103,23 @@ export const authProvidersFrom: AuthProvidersFrom = (accessToken) => {
   }
   return result;
 };
+
+/**
+ * 소셜 로그인이 준 표시 이름입니다 — `user_metadata.full_name` 다음 `name`(Google · Apple이 싣는 키). 학습자 이름
+ * 규칙(ADR-0059 D5)을 지나면 정규화한 값, 없거나 어기면 `null`. 던지지 않습니다.
+ */
+export function authDisplayNameFrom(accessToken: string): string | null {
+  const payload = payloadRecordFrom(accessToken);
+  const metadata = payload === null ? null : payload["user_metadata"];
+  if (typeof metadata !== "object" || metadata === null || Array.isArray(metadata)) {
+    return null;
+  }
+  const record = metadata as Record<string, unknown>;
+  for (const key of ["full_name", "name"]) {
+    const value = record[key];
+    if (typeof value !== "string") continue;
+    const checked = learnerNameFrom(value);
+    if (checked.ok) return checked.name;
+  }
+  return null;
+}

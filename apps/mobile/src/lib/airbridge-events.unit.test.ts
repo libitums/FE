@@ -54,10 +54,10 @@ describe("airbridgeEventFrom", () => {
     expect(Object.keys(mapped?.semanticAttributes ?? {})).toHaveLength(2);
   });
 
-  test("U3. the 41 table rows plus the three mapped names cover all 44 names", () => {
+  test("U3. the 40 table rows plus the three mapped names cover all 43 names", () => {
     const tableNames = new Set<string>(unmappedEvents.map((e) => e.name));
     const mapped = ["entry_completed", "messenger_unit_completed", "visual_novel_unit_completed"];
-    expect(tableNames.size).toBe(41);
+    expect(tableNames.size).toBe(40);
     expect([...tableNames, ...mapped].sort()).toEqual([...allEventNames].sort());
   });
 

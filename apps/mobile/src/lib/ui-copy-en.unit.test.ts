@@ -214,7 +214,10 @@ test("UC-L. 학습자 프로필 문구 함수가 인자를 문장에 싣는다",
     "I booked under Emma.",
   );
   expect(p.nameIssue.empty).not.toBe(p.nameIssue["forbidden-character"]);
-  expect(p.nameEmptyOnGate).not.toBe(p.nameIssue.empty);
+  expect(p.signup.country.searchPlaceholder(199)).toBe("Search 199 countries");
+  expect(p.signup.country.allCountries(199)).toBe("ALL COUNTRIES · 199");
+  expect(p.signup.country.jumpTo("A")).toBe("Jump to A");
+  expect(p.signup.name.shuffleLabel).not.toBe(p.signup.name.shuffle);
   expect(p.countryMissing).not.toBe(p.nameIssue.empty);
 });
 
