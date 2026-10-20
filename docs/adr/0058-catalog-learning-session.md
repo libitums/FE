@@ -697,4 +697,4 @@ route · 진행 저장 형식 · 이벤트 이름은 그대로라 새 ADR을 만
   바뀌기 전과 같다(unit). 더해진 것은 속성 `data-surface="light"` 하나다(시각 무관).
 - testid · 낭독 이름 · traits · 탭 · 채점 · 흐름 · 소리 · route · 이벤트는 바뀌지 않았다. 새 컴포넌트 · 새 토큰 · 새 의존성은 없다.
 - 번들 +3,157 bytes, 상한 2,241,000 → 2,245,000(사용자 사전 승인) — [성능 보고서](../performance/reports/catalog-final-dark-surface-iphone-17-pro-simulator-01.md).
-- ⚠ **기기에서 보지 않았다** — [카탈로그 레슨 e2e](../e2e/catalog-lessons.md) 「최종 테스트 어두운 면」 FDE1 ~ FDE5가 미실행이다. Lynx가 반투명 면을 토큰 계산보다 밝게 그린 기록(#270, 실효 약 0.84)이 있어 실제 대비는 기기 렌더로 다시 잰다.
+- ⚠ **기기 확인은 부분이다** — 2026-10-20 iOS 시뮬레이터 회차 1에서 만드는 중 · 정답 · 오답을 봤고(FDE1 · FDE3 · FDE4 통과, FDE2 부분), 스크린숏 픽셀 대비는 가장 낮은 창고 타일 테두리도 4.08:1이었다([카탈로그 레슨 e2e](../e2e/catalog-lessons.md) 「최종 테스트 어두운 면」). 누르는 동안의 타일 · 동작 줄이기 · 다른 화면 회귀(FDE5) · VoiceOver · Android는 보지 않았다.
