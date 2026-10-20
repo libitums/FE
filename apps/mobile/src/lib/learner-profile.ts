@@ -8,7 +8,6 @@ import type {
   LearnerProfilePort,
   LearnerProfileRecord,
   LearnerProfileSavedEvent,
-  LearnerProfileSkippedEvent,
 } from "./learner-profile.contract";
 import type { LearnerCountryText } from "./placeholder-fill";
 
@@ -19,6 +18,7 @@ export const noLearnerProfilePort: LearnerProfilePort = {
   search: () => [],
   byCode: () => null,
   previewOf: () => ({ kind: "example", lines: [] }),
+  randomName: () => "",
 };
 
 // 공백류(NBSP · 전각 공백 · 줄바꿈 · 줄 · 문단 구분자 포함)입니다 — 연속은 한 칸으로 접습니다.
@@ -107,10 +107,18 @@ export function learnerProfileSavedEvent(
   };
 }
 
-export function learnerProfileSkippedEvent(
-  entry: Exclude<LearnerProfileEntry, "settings">,
-): LearnerProfileSkippedEvent {
-  return { name: "learner_profile_skipped", entry };
+/**
+ * 무작위 이름 하나입니다 — `previous`가 목록에 있으면 그것을 뺀 나머지에서 고릅니다(Shuffle이 같은 이름을 다시
+ * 내지 않게). `random()`은 [0, 1)이고, 목록이 비면 빈 문자열입니다.
+ */
+export function pickLearnerName(
+  names: readonly string[],
+  previous: string | null,
+  random: () => number,
+): string {
+  const pool = names.length > 1 ? names.filter((name) => name !== previous) : names;
+  const index = Math.min(pool.length - 1, Math.floor(random() * pool.length));
+  return pool[index] ?? "";
 }
 
 /** 문장에 서는 세 표기입니다 - 관사가 있으면 `en` 앞에 붙습니다. 나라 표(백그라운드 전용)를 값으로 들이지 않고도 쓰입니다. */

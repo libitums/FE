@@ -302,6 +302,13 @@ sink는 던지지 않는다 — 매핑 · `capture`를 `try`로 감싸 삼킨다
   - sink는 새로 만들지 않았다 — 온보딩 `entryEventSink` · 에피소드 전 `episodeIntroEventSink` · 설정 `settingsEventSink`. 셋째 계약 union에 같은 이벤트 타입이 들어간다.
   - 묻는 질문: 「학습자가 이름 · 나라를 넣는가」 = 진입점별 `saved` / (`saved` + `skipped`). 건너뜀 비율이 높으면 ADR-0059 재검토 조건 5.
   - **한계** — 에피소드 전 화면이 보인 수는 세지 않는다(보임 이벤트 없음 — 뒤로 나간 수는 모른다). GitHub wiki 이벤트 사전은 저장소 밖이라 따로 고친다. PostHog 도착은 보지 않았다.
+- ⟨2026-10-20 — 가입 직후 이름 · 나라(ADR-0059 D7 적용 기록). 적용 기록이고 결정을 바꾸지 않는다⟩ **`learner_profile_skipped`를 지워 이름이 하나 준다**(42 → 41, 모양 46 → 45 — 같은 날 먼저 병합된 에피소드 롤플레이(ADR-0076)의 둘과 합쳐 44 → 43, 모양 48 → 47).
+  - 건너뛸 길(온보딩 넷째 스텝을 빈 채 · 에피소드 전 `Skip`)이 둘 다 없어졌다 — 이름은 늘 미리 채워지고 화면에 건너뛰기가 없다.
+  - `learner_profile_saved`의 `entry`는 `signup`(가입 직후 ② 나라의 Continue) | `settings`다. `onboarding` · `episode`는 더 나지 않는다. 진입 sink로만 나고 서사 sink(`episodeIntroEventSink`)
+    union에서 빠졌다.
+  - `entry_screen_viewed`의 `screen`에 `learner-name` · `learner-country`가 더해졌다(로그인 → ① → ② → `language-select` 순).
+  - 묻는 질문: 「가입자가 ②를 통과하는가」 = `entry_screen_viewed(learner-country)` 대비 `learner_profile_saved(entry = signup)`.
+  - **한계** — 옛 앱 버전의 `skipped` 이벤트는 PostHog에 남는다(버전으로 가른다). GitHub wiki 이벤트 사전은 저장소 밖이라 따로 고친다. PostHog 도착은 보지 않았다.
 - ⟨2026-10-14 — 카탈로그 표지 화면 · 시작/클리어 배너. 적용 기록이고 결정을 바꾸지 않는다⟩ **카탈로그 표지에서도 서사 이벤트 다섯이 모두 난다.**
   새 이름 · 속성 · 타입은 **0**이고 sink도 그대로다 — 이미 있는 이벤트를 카탈로그 `episodeId`로 낸다. 바뀐 것은 발생 시점이다
   (화면과 결선은 [ADR-0058](0058-catalog-learning-session.md) 적용 기록 ⟨2026-10-14⟩).

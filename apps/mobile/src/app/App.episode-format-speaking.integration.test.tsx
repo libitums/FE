@@ -321,8 +321,6 @@ test("SPK6. (AC4 분모) u02 S6: 낱말을 건너뛰고 나머지 11 중 7만 �
   });
 
   tapNode(u02, "S6");
-  const gate = screen.queryByTestId("learner-profile-gate-skip");
-  if (gate !== null) tapButtonIn("learner-profile-gate-skip");
   let graded = 0;
   plan.activities.forEach((activity, index) => {
     if (activity.form === "speak-word") {

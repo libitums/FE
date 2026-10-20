@@ -57,8 +57,6 @@ export type LearnerProfileForm = {
 export type LearnerProfileCopy = {
   readonly nameLabel: string;
   readonly nameIssue: Readonly<Record<LearnerNameIssue, string>>;
-  /** 에피소드 전 묻기에서 빈 채 저장했을 때 — 건너뛰기를 함께 알립니다. */
-  readonly nameEmptyOnGate: string;
   readonly countryLabel: string;
   readonly notSet: string;
   /** 이름은 찼는데 나라를 안 골랐을 때 나라 줄에 서는 오류입니다. */
@@ -85,7 +83,29 @@ export type LearnerProfileCopy = {
     readonly row: (en: string, ko: string) => string;
     readonly countrySet: (en: string) => string;
   };
-  readonly gate: { readonly title: string; readonly body: string; readonly submit: string };
+  /** 가입 직후 ① 이름 · ② 나라 화면입니다(언어 선택과 같은 틀). */
+  readonly signup: {
+    readonly continue: string;
+    readonly back: string;
+    readonly name: {
+      readonly title: string;
+      readonly caption: string;
+      readonly helper: string;
+      readonly shuffle: string;
+      readonly shuffleLabel: string;
+      readonly previewHeading: string;
+    };
+    readonly country: {
+      readonly title: string;
+      readonly caption: string;
+      readonly searchPlaceholder: (count: number) => string;
+      /** 전체 목록 머리 — `ALL COUNTRIES · 199` */
+      readonly allCountries: (count: number) => string;
+      /** 글자 막대 한 칸의 접근성 이름 — `Jump to A` */
+      readonly jumpTo: (letter: string) => string;
+      readonly jumpBar: string;
+    };
+  };
   readonly settings: {
     readonly title: string;
     readonly body: string;

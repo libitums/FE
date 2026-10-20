@@ -41,6 +41,7 @@ const port: LearnerProfilePort = {
         );
   },
   byCode: (code) => countries.find((country) => country.code === code) ?? null,
+  randomName: () => "Leo",
   previewOf: (name, country) => {
     const lines: { ko: string; en: string }[] = [];
     if (name !== null) lines.push({ ko: `${name}로 예약했어요.`, en: `I booked under ${name}.` });

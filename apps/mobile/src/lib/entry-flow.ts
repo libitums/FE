@@ -1,11 +1,8 @@
-// 진입 흐름 공용 어휘 자리입니다. 화면 여섯이 공유하는 이름은 전부 여기 있습니다 —
+// 진입 흐름 공용 어휘 자리입니다. 진입 화면들이 공유하는 이름은 전부 여기 있습니다 —
 // `screens/` 사이 값 import를 만들지 않기 위해서입니다(`code.md` 「import」 승격
 // 규칙: 화면 셋 이상이 쓰는 어휘). 이 모듈은 `screens/`를 import하지 않습니다.
 
-import type {
-  LearnerProfileSavedEvent,
-  LearnerProfileSkippedEvent,
-} from "./learner-profile.contract";
+import type { LearnerProfileSavedEvent } from "./learner-profile.contract";
 import type { LegalDocumentOpenedEvent } from "./legal-document.contract";
 
 export type EntryScreenName =
@@ -13,6 +10,8 @@ export type EntryScreenName =
   | "onboarding"
   | "login"
   | "verification-code"
+  | "learner-name"
+  | "learner-country"
   | "language-select"
   | "journey-entry";
 
@@ -71,9 +70,8 @@ export type EntryEvent =
   | EntryReturningLearnerEnteredEvent
   // 로그인 화면의 방침 · 약관 링크입니다(ADR-0033). 설정 sink와 같은 모양입니다.
   | LegalDocumentOpenedEvent
-  // 온보딩 넷째 스텝의 저장 · 건너뜀입니다. 값(이름 · 나라)은 싣지 않습니다.
-  | LearnerProfileSavedEvent
-  | LearnerProfileSkippedEvent;
+  // 가입 직후 ② 나라에서의 저장입니다. 값(이름 · 나라)은 싣지 않습니다.
+  | LearnerProfileSavedEvent;
 export type EntryEventSink = ((event: EntryEvent) => void) | null;
 export type EntryAppProps = { readonly entryEventSink?: EntryEventSink };
 

@@ -2,7 +2,7 @@
 
 import type { OnboardingActionLabel, OnboardingCopy, OnboardingStep } from "./onboarding.contract";
 
-export const onboardingSteps: readonly OnboardingStep[] = [0, 1, 2, 3];
+export const onboardingSteps: readonly OnboardingStep[] = [0, 1, 2];
 
 // 문구 표는 자리표입니다 — `ui` 테스트가 리터럴을 단언하지 않습니다.
 // 본문의 `\n`은 읽기 좋게 의미 단위로 끊은 줄바꿈입니다(2026-09-21 디자인 반영).
@@ -33,13 +33,6 @@ export function onboardingCopy(step: OnboardingStep): OnboardingCopy {
         body: "Short daily units fit into your day.\nClear one in just five minutes.",
       };
     }
-    case 3: {
-      // 이름 · 나라 양식 스텝입니다 — 강조어 없이 한 색으로 섭니다(강조색은 배경 대비가 모자랍니다).
-      return {
-        title: "Make it yours",
-        body: "Add your name and country and we'll put them\ninto the sentences you practice. Optional.",
-      };
-    }
   }
 }
 
@@ -54,9 +47,6 @@ export function nextOnboardingStep(step: OnboardingStep): OnboardingStep | null 
       return 2;
     }
     case 2: {
-      return 3;
-    }
-    case 3: {
       return null;
     }
   }
@@ -75,9 +65,6 @@ export function previousOnboardingStep(step: OnboardingStep): OnboardingStep | n
     case 2: {
       return 1;
     }
-    case 3: {
-      return 2;
-    }
   }
 }
 
@@ -85,11 +72,10 @@ export function previousOnboardingStep(step: OnboardingStep): OnboardingStep | n
 export function onboardingActionLabel(step: OnboardingStep): OnboardingActionLabel {
   switch (step) {
     case 0:
-    case 1:
-    case 2: {
+    case 1: {
       return "Next";
     }
-    case 3: {
+    case 2: {
       return "Get started";
     }
   }

@@ -6,13 +6,8 @@ import arrowRight from "@libitums/icons/lynx/arrow-right";
 import { Button } from "@libitums/ui-lynx/button";
 import { PageIndicator } from "@libitums/ui-lynx/page-indicator";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
-import { LearnerProfileFields } from "../../components/LearnerProfileFields";
-import { LearnerProfileFrame } from "../../components/LearnerProfileFrame";
-import { useLearnerProfileForm } from "../../components/use-learner-profile-form";
-import { onboardingProfileOutcome } from "../../lib/learner-profile-form";
 import { playSound } from "../../lib/sound-effects";
 import { useScreenBack } from "../../lib/use-back-handler";
-import { useUiCopy } from "../../lib/ui-copy";
 
 import {
   nextOnboardingStep,
@@ -31,22 +26,11 @@ import "./onboarding-screen.css";
 /**
  * 온보딩 스텝을 소유하고 머리·스크롤 골격·진행 점·제목/본문·다음 버튼을
  * 그립니다. `step`은 화면 로컬 상태입니다 — 전이 없이 이 컴포넌트 안에서만
- * 돕니다. 마지막(넷째) 스텝은 이름 · 나라 양식이고, 거기서 `nextOnboardingStep`이
- * `null`을 주면 양식의 판정으로 `onComplete`를 부릅니다 — 둘 다 빈 채면 건너뜀입니다.
+ * 돕니다. 마지막 스텝에서 `nextOnboardingStep`이 `null`을 주면 `onComplete`를
+ * 부릅니다. 이름 · 나라는 여기서 묻지 않습니다 — 가입 직후 화면이 묻습니다.
  */
-export function OnboardingScreen({
-  onComplete,
-  learnerRecord,
-  learnerPort,
-}: OnboardingScreenProps): ReactNode {
+export function OnboardingScreen({ onComplete }: OnboardingScreenProps): ReactNode {
   const [step, setStep] = useState<OnboardingStep>(0);
-  const copyTable = useUiCopy();
-  // 양식 상태는 스텝과 무관하게 한 번 듭니다 — 앞 스텝으로 갔다 와도 친 값이 남습니다.
-  const form = useLearnerProfileForm({
-    initial: learnerRecord,
-    port: learnerPort,
-    emptyMessage: copyTable.learnerProfile.nameIssue.empty,
-  });
   const copy = onboardingCopy(step);
   const actionLabel = onboardingActionLabel(step);
   const previous = previousOnboardingStep(step);
@@ -64,23 +48,11 @@ export function OnboardingScreen({
   function handleNext() {
     playSound("button");
     const next = nextOnboardingStep(step);
-    if (next !== null) {
-      setStep(next);
+    if (next === null) {
+      onComplete();
       return;
     }
-    const status = form.submit();
-    const outcome = onboardingProfileOutcome(status);
-    if (outcome !== null) onComplete(outcome);
-    else if (status.kind === "incomplete") form.noticeIncomplete();
-  }
-
-  // 나라 고르기는 화면 전체를 대신합니다 — 돌아오면 이 스텝 그대로입니다.
-  if (step === 3 && form.draft.view === "picker") {
-    return (
-      <LearnerProfileFrame form={form} header={null} footer={null}>
-        {null}
-      </LearnerProfileFrame>
-    );
+    setStep(next);
   }
 
   return (
@@ -109,14 +81,10 @@ export function OnboardingScreen({
         <view className="onboarding-screen-content">
           {/* 2026-09-21 디자인 반영: 스텝마다 400 높이 카드 영역이 갈립니다 — 첫 스텝은
               그림 카드와 대화 카드, 둘째는 겹쳐 쌓인 듣기 카드, 셋째는 학습 유닛 카드
-              하나, 넷째는 이름 · 나라 양식입니다. 카드가 스텝을 떠나며 언마운트되면 재생·칠하기·완료 표시
+              하나입니다. 카드가 스텝을 떠나며 언마운트되면 재생·칠하기·완료 표시
               상태도 함께 사라집니다 — 되돌아왔을 때 처음부터 다시 보이는 것은 이
               언마운트 때문입니다. */}
-          {step === 3 ? (
-            <view className="onboarding-screen-profile" data-testid="onboarding-screen-profile">
-              <LearnerProfileFields form={form} />
-            </view>
-          ) : step === 2 ? (
+          {step === 2 ? (
             <OnboardingUnitCard />
           ) : step === 1 ? (
             <OnboardingQuizCards />

@@ -20,6 +20,7 @@ import { resolveAirbridgeEventTracker } from "../../lib/airbridge-events-module"
 import { createAnalyticsSession } from "../../lib/posthog-client";
 import { contentNotFoundResponse, isContentRequest } from "./content-requests";
 import { passSplash } from "./pass-splash";
+import { passLearnerSignup } from "./learner-signup";
 
 const config: AnalyticsConfig | null = analyticsConfigFrom("phc_integration_test", "development");
 
@@ -128,10 +129,11 @@ export async function runEntryFlow(
   vi.useFakeTimers();
   render(<App phoneSignIn="visible" {...sinks} />);
   await passSplash();
-  // 온보딩은 네 스텝입니다(넷째 = 이름 · 나라, 비운 채 넘기면 건너뜀 — ADR-0059).
-  for (let step = 0; step < 4; step++) tapButton("onboarding-screen-next");
+  // 온보딩은 세 스텝이고, 가입 직후 ① 이름 · ② 나라를 지나 언어 선택에 섭니다(ADR-0059 D7 2026-10-20).
+  for (let step = 0; step < 3; step++) tapButton("onboarding-screen-next");
   tapButton("login-screen-method-apple");
   await advance(0);
+  passLearnerSignup();
   fireEvent.tap(screen.getByTestId("ui-lynx-option-selector-item-en"), {});
   tapButton("language-select-screen-next");
   beforeStart();

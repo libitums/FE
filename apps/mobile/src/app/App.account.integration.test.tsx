@@ -2,6 +2,7 @@ import { afterEach, expect, test, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
+import { passLearnerSignup } from "./test-helpers/learner-signup";
 import { renderSignedInApp } from "./test-helpers/signed-in-app";
 import type { StorageModuleDouble } from "./test-helpers/signed-in-app";
 import type { AnalyticsConfig, AnalyticsTransport } from "../lib/analytics.contract";
@@ -337,7 +338,9 @@ test("[IA4] 로그아웃 → 다시 로그인하면 알림이 처음 값이고 �
     within(screen.getByTestId("login-screen-method-google")).getByTestId("ui-lynx-button"),
     {},
   );
-  await vi.waitFor(() => expect(screen.getByTestId("language-select-screen-title")).toBeTruthy());
+  await vi.waitFor(() => expect(screen.getByTestId("learner-name-screen-title")).toBeTruthy());
+  passLearnerSignup();
+  expect(screen.getByTestId("language-select-screen-title")).toBeTruthy();
   fireEvent.tap(screen.getByTestId("ui-lynx-option-selector-item-en"), {});
   fireEvent.tap(
     within(screen.getByTestId("language-select-screen-next")).getByTestId("ui-lynx-button"),

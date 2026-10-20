@@ -11,11 +11,11 @@ import {
   initialLearnerProfileDraft,
   learnerCountryAnnounceDelayMs,
   learnerCountryRowsOf,
+  learnerCountrySectionsOf,
   learnerProfileDraftReducer,
   learnerProfileDraftStatus,
   learnerProfilePreviewFor,
   learnerProfileSummary,
-  onboardingProfileOutcome,
   visibleLearnerCountryIssue,
   visibleLearnerNameIssue,
 } from "./learner-profile-form";
@@ -25,10 +25,11 @@ import type {
   LearnerProfilePreview,
   LearnerProfileRecord,
 } from "./learner-profile.contract";
+import { learnerProfilePort } from "./learner-profile-data";
 import { uiCopyEn } from "./ui-copy-en";
 
 // `unit` 계층: 초안 전이 · 제출 판정 · 보일 오류 · 미리보기 인자 · 나라 줄 · 안내 줄 · 낭독 · 설정 요약 ·
-// 온보딩 완료 판정의 입출력만 봅니다. 나라 표는 작은 대역 포트로 대신합니다.
+// 나라 목록 묶음(첫 글자)의 입출력만 봅니다. 나라 표는 작은 대역 포트로 대신합니다.
 
 const copy = uiCopyEn.learnerProfile;
 
@@ -50,6 +51,7 @@ function portOf(): LearnerProfilePort & { previewOf: ReturnType<typeof vi.fn> } 
       return q === "" ? TABLE : TABLE.filter((country) => country.en.toLowerCase().includes(q));
     },
     byCode: (code) => TABLE.find((country) => country.code === code) ?? null,
+    randomName: () => "Leo",
     previewOf,
   };
 }
@@ -357,14 +359,46 @@ describe("learnerProfileSummary", () => {
   });
 });
 
-describe("onboardingProfileOutcome", () => {
-  test("FM-10. ready는 저장, empty는 건너뜀, incomplete · invalid는 머문다", () => {
-    const record: LearnerProfileRecord = { name: "Emma", countryCode: "DE" };
+describe("learnerCountrySectionsOf", () => {
+  const country = (code: string, en: string): LearnerCountry => ({
+    code,
+    ko: code,
+    roman: code.toLowerCase(),
+    en,
+  });
 
-    expect(onboardingProfileOutcome({ kind: "ready", record })).toEqual({ kind: "saved", record });
-    expect(onboardingProfileOutcome({ kind: "empty" })).toEqual({ kind: "skipped" });
-    expect(onboardingProfileOutcome({ kind: "incomplete", missing: "country" })).toBeNull();
-    expect(onboardingProfileOutcome({ kind: "incomplete", missing: "name" })).toBeNull();
-    expect(onboardingProfileOutcome({ kind: "invalid", issue: "too-long" })).toBeNull();
+  test("FM-10. 영어 이름 첫 글자로 묶고 입력 순서를 지킨다", () => {
+    const rows = [
+      country("AF", "Afghanistan"),
+      country("AL", "Albania"),
+      country("BS", "Bahamas"),
+      country("ZW", "Zimbabwe"),
+    ];
+
+    expect(learnerCountrySectionsOf(rows)).toEqual([
+      { letter: "A", countries: [rows[0], rows[1]] },
+      { letter: "B", countries: [rows[2]] },
+      { letter: "Z", countries: [rows[3]] },
+    ]);
+  });
+
+  test("FM-10. 떨어져 나온 같은 글자는 앞 묶음에 붙고, 라틴 대문자가 아니면 #이다", () => {
+    const rows = [country("AF", "Afghanistan"), country("CI", "Côte"), country("AX", "Åland")];
+
+    expect(learnerCountrySectionsOf(rows).map((section) => section.letter)).toEqual([
+      "A",
+      "C",
+      "#",
+    ]);
+    expect(learnerCountrySectionsOf([])).toEqual([]);
+  });
+
+  test("FM-10. 실제 나라 표 199개를 빠짐없이 한 번씩 담는다", () => {
+    const sections = learnerCountrySectionsOf(learnerProfilePort.search(""));
+    const codes = sections.flatMap((section) => section.countries.map((row) => row.code));
+
+    expect(codes).toHaveLength(199);
+    expect(new Set(codes).size).toBe(199);
+    expect(sections.every((section) => /^[A-Z]$/.test(section.letter))).toBe(true);
   });
 });

@@ -1,8 +1,8 @@
-// 진입 흐름 화면 여섯의 route를 화면으로 옮깁니다 — 스플래시 → 온보딩 → 로그인 →
-// 인증 코드 → 언어 고르기 → 여정 입구. `render-learning-screen.tsx` ·
+// 진입 흐름 화면 여덟의 route를 화면으로 옮깁니다 — 스플래시 → 온보딩 → 로그인 →
+// 인증 코드 → ① 이름 → ② 나라 → 언어 고르기 → 여정 입구. `render-learning-screen.tsx` ·
 // `render-episode-intro.tsx` · `render-roleplay-screen.tsx`와 같은 갈래입니다.
 //
-// **묶음의 근거가 파일 크기가 아니라 흐름입니다.** 이 여섯은 앱을 처음 여는 한 흐름이고,
+// **묶음의 근거가 파일 크기가 아니라 흐름입니다.** 이 여덟은 앱을 처음 여는 한 흐름이고,
 // 그래서 새 진입 화면이 늘 때 어디에 넣을지가 이름만으로 정해집니다. 크기로 자르면
 // 다음 사람이 그 자리를 못 찾습니다.
 //
@@ -11,6 +11,8 @@
 
 import { JourneyEntryScreen } from "../screens/journey-entry/JourneyEntryScreen";
 import { LanguageSelectScreen } from "../screens/language-select/LanguageSelectScreen";
+import { LearnerCountryScreen } from "../screens/learner-profile/LearnerCountryScreen";
+import { LearnerNameScreen } from "../screens/learner-profile/LearnerNameScreen";
 import { LoginScreen } from "../screens/login/LoginScreen";
 import { OnboardingScreen } from "../screens/onboarding/OnboardingScreen";
 import { SplashScreen } from "../screens/splash/SplashScreen";
@@ -18,7 +20,7 @@ import { VerificationCodeScreen } from "../screens/verification-code/Verificatio
 import type { Screen } from "./nav-state";
 import type { ScreenWiring } from "./screen-wiring";
 
-/** 진입 흐름의 route 여섯입니다. `renderScreen`의 `switch`가 이 여섯을 한 자리로 보냅니다. */
+/** 진입 흐름의 route 여덟입니다. `renderScreen`의 `switch`가 이 여덟을 한 자리로 보냅니다. */
 export type EntryScreen = Extract<
   Screen,
   {
@@ -27,6 +29,8 @@ export type EntryScreen = Extract<
       | "onboarding"
       | "login"
       | "verification-code"
+      | "learner-name"
+      | "learner-country"
       | "language-select"
       | "journey-entry";
   }
@@ -39,13 +43,7 @@ export function renderEntryScreen(screen: EntryScreen, wiring: ScreenWiring) {
     case "splash":
       return <SplashScreen onTimeout={wiring.onSplashTimeout} />;
     case "onboarding":
-      return (
-        <OnboardingScreen
-          learnerRecord={wiring.learnerRecord}
-          learnerPort={wiring.learnerPort}
-          onComplete={wiring.onOnboardingComplete}
-        />
-      );
+      return <OnboardingScreen onComplete={wiring.onOnboardingComplete} />;
     case "login":
       return (
         <LoginScreen
@@ -63,6 +61,25 @@ export function renderEntryScreen(screen: EntryScreen, wiring: ScreenWiring) {
           onVerifyCode={wiring.onVerifyPhoneOtp}
           onResendCode={wiring.onResendPhoneOtp}
           onExit={wiring.onVerificationCodeExit}
+        />
+      );
+    case "learner-name":
+      return (
+        <LearnerNameScreen
+          initialName={screen.initialName}
+          port={wiring.learnerPort}
+          onContinue={wiring.onContinueLearnerName}
+          onBack={wiring.onLearnerProfileStepBack}
+        />
+      );
+    case "learner-country":
+      return (
+        <LearnerCountryScreen
+          learnerName={screen.learnerName}
+          initialCountryCode={wiring.learnerRecord?.countryCode ?? null}
+          port={wiring.learnerPort}
+          onContinue={wiring.onContinueLearnerCountry}
+          onBack={wiring.onLearnerProfileStepBack}
         />
       );
     case "language-select":

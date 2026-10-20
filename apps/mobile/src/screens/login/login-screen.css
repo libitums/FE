@@ -185,11 +185,6 @@
   width: 100%;
 }
 
-/* 에피소드 전 묻기의 Skip을 머리 행 오른쪽 끝으로 보냅니다. */
-.learner-profile-skip {
-  margin-left: auto;
-}
-
 /* 플랫폼 로고는 라벨 옆이 아니라 버튼 왼쪽 끝에 붙입니다. 라벨은 가운데
    그대로입니다. */
 .login-screen-social .ui-lynx-button-surface {

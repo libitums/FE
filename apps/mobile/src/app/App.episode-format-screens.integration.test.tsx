@@ -222,7 +222,6 @@ test("ES4. (AC3) u02 S3 일주일: 두 일 타일을 바꿔 놓아도 문자열�
   expect(exchanged).not.toEqual(path);
 
   tapNode(u02, "S3");
-  tapButtonIn("learner-profile-gate-skip");
   for (const activity of plan.activities) {
     if (activity.form !== "syllable-build") {
       solveActivity(activity, true, false);

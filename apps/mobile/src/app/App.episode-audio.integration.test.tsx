@@ -437,7 +437,6 @@ test("EA5. (개정 A) u02 표지: 컷 1 · 3 · 5가 u02 버킷 주소로 재생
   });
 
   fireEvent.tap(cover(u02), {});
-  tapButtonIn("learner-profile-gate-skip");
   tapButtonIn("episode-intro-screen-next");
   expect(cutIndex()).toBe("0");
   expect(firstArgs(play)).toEqual([url("u02-checkin/pre-1")]);

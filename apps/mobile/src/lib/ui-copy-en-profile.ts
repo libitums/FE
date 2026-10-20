@@ -9,7 +9,6 @@ export const learnerProfileEn: LearnerProfileCopy = {
     "too-long": "Use 30 characters or fewer.",
     "forbidden-character": "Names can't include { or }.",
   },
-  nameEmptyOnGate: "Enter your name, or tap Skip.",
   countryLabel: "Country",
   notSet: "Not set",
   countryMissing: "Select your country.",
@@ -30,10 +29,25 @@ export const learnerProfileEn: LearnerProfileCopy = {
     row: (en, ko) => `${en} · ${ko}`,
     countrySet: (en) => `Country set to ${en}`,
   },
-  gate: {
-    title: "Make this episode yours",
-    body: "This episode uses your name and country in its sentences. Add them once — you can change them anytime in Settings.",
-    submit: "Save and continue",
+  signup: {
+    continue: "Continue",
+    back: "Back",
+    name: {
+      title: "What's your name?",
+      caption: "We'll put it into the sentences you practice",
+      helper: "We picked one for you — keep it, shuffle, or type your own.",
+      shuffle: "Shuffle",
+      shuffleLabel: "Pick another random name",
+      previewHeading: "In a lesson it sounds like",
+    },
+    country: {
+      title: "Where are you from?",
+      caption: "You'll say it when you meet people in the story",
+      searchPlaceholder: (count) => `Search ${count} countries`,
+      allCountries: (count) => `ALL COUNTRIES · ${count}`,
+      jumpTo: (letter) => `Jump to ${letter}`,
+      jumpBar: "Jump to letter",
+    },
   },
   settings: {
     title: "Name and country",
