@@ -309,6 +309,18 @@ e2e-green 회차가 iOS와 같은 빌드로 돌았다(산출물 · 측정 방식
 
 「Episode clear!」 배너는 기기에서 선 적이 없다([카탈로그 레슨 e2e](catalog-lessons.md) C7).
 
+## 결과 화면의 머리 칩 오름 — Android 회차 (2026-10-20)
+
+[ADR-0064](../adr/0064-stat-motion.md) D2 · D4의 칩 오름(아이콘 커짐 → 숫자 굴림 → 빛 띠)이 학습 결과 화면에서 재생되는지, 맵에 돌아가 다시 굴리지 않는지를 AVD `R6_API30`(API 30 · 392.7 × 851 dp, Debug APK + 로컬 HTTP 번들, 계측 픽스처 로그인)에서 봤다. 번들은 `feat/learning-hide-header-chips` `a68cd5af`, 대조는 같은 APK에 `origin/main` `d937f3bf` 번들. 연속 학습이 오르는 조건은 픽스처가 연속 학습 RPC 둘을 임시로 답하게 해서 만들었다(`learning_streak` 0, `record_learning_days` 1 — 저장소에 넣지 않음). 결과 화면이 서는 순간부터 `screenrecord`로 찍고 프레임을 뽑았다. 분석은 [성능 기록](../performance/reports/result-chip-bump-android-r6-api30-01.md).
+
+| 항목 | 결과 | 증거(칩 줄만 잘라 시간순으로 놓은 프레임) |
+|---|---|---|
+| 튜토리얼 `Ordering` 통과 → `PERFECT LESSON!` · 연속 학습 0 → 1 | 재생됨 — 불꽃 아이콘이 커지고 숫자가 0 → 1로 굴러간 뒤 칩 면이 주황으로 차며 빛 띠가 지나가고, 정지 칩(1)으로 돌아온다. `1 Day Streak` 배지와 함께 | [tutorial-streak](evidence/android-result-chip-bump-tutorial-streak-frames.png) |
+| 카탈로그 에피소드 1 최종 테스트 통과 → `PERFECT LESSON!` · 연속 학습 0 → 1 · 트로피 1 → 2 | 재생됨 — 두 칩이 함께 오른다(굴림 중 숫자가 반쯤 걸린 프레임, 두 칩에 빛 띠) | [catalog-final](evidence/android-result-chip-bump-catalog-final-frames.png) |
+| 결과 → 맵 복귀(마무리 컷 · 연속 학습 축하 화면을 지나서) | 다시 굴리지 않음 — 맵 칩이 1 · 2로 정지해 선다 | [map-after](evidence/android-result-chip-bump-map-after-frames.png) |
+| 대조: `origin/main` 같은 최종 테스트 결과 | 오름 없음 — 결과 화면 칩이 처음부터 1 · 2로 정지 | [catalog-final-base](evidence/android-result-chip-bump-catalog-final-base-frames.png) |
+| 대조: `origin/main` 맵 복귀 | 맵에서 뒤늦게 오름 — 칩이 0 · 1로 섰다가 1 · 2로 굴러간다 | [map-after-base](evidence/android-result-chip-bump-map-after-base-frames.png) |
+
 ## 복원
 
 끝에 다음을 되돌린다 — 값을 적어 두지 않고 시작하지 않는다.
