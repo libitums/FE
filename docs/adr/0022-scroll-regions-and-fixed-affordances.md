@@ -1125,3 +1125,13 @@ Lynx에서 Card가 가진 z-index 때문에 스크롤의 overflow만으로는 �
 - **문항 장면은 그대로다.** 문항 장면에서는 더하는 클래스가 없고 `data-scene`도 붙지 않는다 — 무대 · 흐름 상자의 클래스 문자열 · DOM이 바뀌기 전과 같다. 테스트 채널은 완료 장면의 무대에만 붙는 `data-scene="complete"`다. 이름 표기는 [ADR-0003](0003-workspace-and-directory-structure.md) D7 적용 기록 ⟨2026-10-20⟩.
 - **위험.** `split`의 버튼 몫은 토큰 근사라 큰 글꼴로 버튼이 커지면 가운데가 조금 내려가고, 빠듯하면 카드 아래가 버튼에 닿는다 — 떠 있는 버튼이라 지금도 같은 조건에서 겹친다. Lynx에서 이 조합(`flex-grow` + `justify-content: center` + `calc` 아래 여백, 흐름 상자의 `min-height: 100%`)이 실제로 가운데가 되는지는 기기에서 본 적이 없다. *(2026-10-20 주: 같은 날 iOS 시뮬레이터에서 `split` · `card-scroll`은 가운데가 됐고, `merged`는 큰 글꼴에서 위에서부터 흘렀다 — 아래 「확인」. Android는 아직 본 적이 없다.)*
 - **확인.** unit(장면 순수 함수 · 셸 CSS) · ui(셸 세 배치 · 아홉 화면) · integration(튜토리얼 듣기 완료). 기기는 [완료 화면 e2e](../e2e/learning-completion.md) 「완료 카드 자리」 CS-1 ~ CS-8 — 2026-10-20 iOS 시뮬레이터에서 CS-1 · CS-3 · CS-4 · CS-5 · CS-6 통과(가운데 위아래 차 0 ~ 1pt), CS-2 · CS-7 · CS-8과 Android는 미실행. 번들은 [성능 보고서](../performance/reports/complete-card-and-culture-flip-iphone-17-pro-simulator-01.md).
+
+## 적용 기록 ⟨2026-10-20 — 여정 맵 자동 스크롤 · 스크롤 자리 기억 · 말풍선 스크롤 비용⟩
+
+- **스택에 있던 맵은 마지막 자리에서 곧바로 연다 — 사용자 결정.** 맵의 마지막 스크롤 자리를 앱 실행 동안 모듈에 기억하고(`journey-map-scroll-memory.ts`, 기기에 적지 않음), 다시 서는 맵은 `initial-scroll-offset`으로 그 자리에서 열며 그 마운트의 자동 스크롤을 처음부터 잠근다. 위 「맵은 다른 화면이 서면 언마운트되고 돌아오면 다시 마운트되므로 입장과 복귀가 같은 규칙」은 이 기록으로 대체된다 — **이 실행에서 처음 여는 맵만** 다음 유닛으로 옮긴다.
+- **자동 스크롤은 main thread가 프레임마다 옮긴다.** 호스트 `scrollTo({ smooth })`는 길이를 정할 수 없고(UIScrollView 고정 애니메이션) 짧게 휙 지나갔다(사용자 지적). 백그라운드 스레드에서 프레임마다 `scrollTo`를 보내면 기기에서 몰아서 반영돼 여전히 한 번에 넘어갔다. 그래서 `runOnMainThread` · `useMainThreadRef`(`main-thread:ref`)로 main thread의 `requestAnimationFrame`에서 옮긴다(`use-map-glide.ts`) — 이 저장소의 첫 main thread 스크립트다.
+  곡선은 ease-in-out cubic, 길이는 거리 비례 1.0 ~ 1.6초. ease-out quint는 첫 0.2초에 거리의 3분의 2를 가 기기에서 순간 이동처럼 보였다. 2026-10-20 iPhone 13 mini 콘솔 로그 — 이동 약 1.5초 · 스크롤 이벤트 93(60fps).
+- **보정은 본 이동이 끝난 뒤 짧은(250ms) 부드러운 이동이다.** 위 「보정은 늘 즉시(E-C1)」는 호스트 부드러운 스크롤이 본 이동의 끝과 겹쳐 반동으로 보였기 때문이었다. 이제 본 이동을 앱이 끝까지 옮기고 같은 손잡이가 앞 이동을 멈추므로 겹칠 것이 없다. 동작 줄이기는 그대로 즉시다.
+- **말풍선이 열린 동안 맵 본문을 다시 그리지 않는다.** 말풍선 자리를 따라가는 상태가 화면 전체에 걸려 스크롤 한 프레임마다 노드 수십 개가 다시 그려졌다. 본문을 `JourneyMapBody`(`memo`)로 떼고 동작은 ref로 넘긴다(ui MS1 — 고치기 전 빨강).
+- **손으로 끌 · 튕길 때의 끊김은 원인을 못 가렸다.** 말풍선이 닫혀 있으면 스크롤 중 앱 쪽 다시 그리기는 0이다(ui 탐침). 기기 측정(Instruments hitch)은 하지 않았다.
+
