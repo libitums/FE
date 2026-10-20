@@ -117,7 +117,7 @@ function expectTopBarShape(): void {
   }
 }
 
-test("[NBI1] 탭 루트 셋과 학습 화면의 상단 줄이 같은 알림 아이콘 · 칩 높이를 그린다", async () => {
+test("[NBI1] 탭 루트 셋은 같은 알림 아이콘 · 칩 높이를 그리고, 학습 화면에는 상단 줄이 없다", async () => {
   await renderSignedInApp(
     <App
       journeySeed={journeySeedBefore("ordering")}
@@ -134,13 +134,8 @@ test("[NBI1] 탭 루트 셋과 학습 화면의 상단 줄이 같은 알림 아�
   fireEvent.tap(screen.getByTestId("step-sheet-start"), {});
   expect(screen.getByTestId("learning-shell-exit")).toBeInTheDocument();
 
-  const streak = screen.getByTestId("top-bar-streak");
-  expect(streak.getAttribute("class")).toBe(statChipClassName("white", "touch-target"));
-  expect(screen.getByTestId("top-bar-notifications-icon").getAttribute("content")).toBe(
-    notification03,
-  );
-
-  expect(screen.getByTestId("top-bar-notifications").getAttribute("accessibility-traits")).toBe(
-    "button",
-  );
+  // 학습 중에는 연속 학습 · 트로피 칩과 알림 버튼이 서지 않는다 — 결과 화면에서 다시 선다.
+  expect(screen.queryByTestId("top-bar-streak")).toBeNull();
+  expect(screen.queryByTestId("top-bar-trophy")).toBeNull();
+  expect(screen.queryByTestId("top-bar-notifications")).toBeNull();
 });

@@ -50,10 +50,22 @@
 | NBE6 | 미확인 | 롤플레이 · 설정 탭을 `main`과 대조하지 않았다 |
 | NBA1 | 미확인 | Android 미실행 |
 
+## 회차 2 — 2026-10-20, Android 에뮬레이터 — 학습 화면에서 상단 줄을 걷은 변경
+
+- 기기: AVD `R6_API30`(Android 11 · 1080 × 2340 · 440 dpi = 392.7 × 851 dp, 글자 1.0). Debug APK + 로컬 HTTP 번들(모의 Supabase), 계측 픽스처 `SignedInScreenFixtureTest`로 로그인. 번들: `feat/learning-hide-header-chips` `3a6bb84b`, 비교는 같은 APK에 `origin/main` `d937f3bf` 번들. 분석은 [성능 기록](../performance/reports/learning-hide-header-chips-android-r6-api30-01.md).
+
+| 화면 | 결과 | 증거 |
+|---|---|---|
+| 튜토리얼 `Ordering` 첫 문항 | 통과 — 칩 · 알림 버튼 없음. 세션 헤더(× · `Lesson 1 / 1` · 진행)가 상태 표시줄(아래 모서리 145 px) 아래 33 px(12 dp)에서 시작 — 변경 전 칩 줄이 서던 자리. 변경 전보다 166 px(60.4 dp) 위, 빈 띠 없음 | [tutorial-q1](evidence/android-learning-hide-chips-tutorial-q1.png) · [전/후](evidence/android-learning-hide-chips-before-after.png) |
+| 카탈로그 에피소드 1 레슨 2 첫 문항(대화 순서) | 통과 — 같은 자리(178 px)에서 헤더 시작 | [catalog-q1](evidence/android-learning-hide-chips-catalog-q1.png) |
+| 완료 카드(`All questions done`) | 통과 — 칩 없음, 세션 헤더 유지 | [done-card](evidence/android-learning-hide-chips-done-card.png) |
+| 결과 화면 `PERFECT LESSON!` | 통과 — 연속 학습 · 트로피 칩이 다시 선다(알림 버튼은 이 화면에 원래 없음) | [result](evidence/android-learning-hide-chips-result.png) |
+| 맵 복귀 | 통과 — 탭 루트 상단 줄(칩 둘 · 알림 버튼) 그대로 | [map-back](evidence/android-learning-hide-chips-map-back.png) |
+
 ## 미확인 · 후속
 
 - **눌림 · 동작 줄이기(NBE3 · NBE4)** — 축소 비율과 막 색을 스크린샷으로 잰다.
-- **학습 화면 상단 줄(NBE2)** — 모양은 같은 `TopBar`라 같아야 한다.
+- **학습 화면 상단 줄(NBE2)** — 모양은 같은 `TopBar`라 같아야 한다. ⟨2026-10-20⟩ 학습 화면에서 상단 줄을 걷어 NBE2는 대상이 없다(아래 줄 참고).
 - **학습 화면의 알림 버튼은 눌러도 열리지 않는다(이번 변경 전부터)** — `LearningShell`의 `onOpenNotifications` 기본값이 빈 함수라, 버튼이라고 낭독하고 눌림 반응까지 보이면서 아무 일도 하지 않는다.
-  이번 변경이 만든 동작이 아니고 고치지 않았다 — 학습 화면에서 알림을 열지, 버튼을 읽기 전용으로 둘지는 후속 결정이다. 이 문서의 NBE3 기대(알림 화면이 열린다)는 여정 맵에서만 본다.
+  이번 변경이 만든 동작이 아니고 고치지 않았다 — 학습 화면에서 알림을 열지, 버튼을 읽기 전용으로 둘지는 후속 결정이다. 이 문서의 NBE3 기대(알림 화면이 열린다)는 여정 맵에서만 본다. ⟨2026-10-20⟩ **해소** — 학습 중(결과 화면 전)에는 상단 줄(연속 학습 · 트로피 칩 · 알림 버튼)을 아예 세우지 않는다. 칩은 결과 화면(`PERFECT LESSON!` 등)에서 다시 선다.
 - **VoiceOver(NBE5)** · **롤플레이 · 설정 탭(NBE6)** · **Android(NBA1)**.

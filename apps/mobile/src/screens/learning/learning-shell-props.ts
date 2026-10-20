@@ -74,10 +74,7 @@ export type LearningShellProps = {
    * 되지 않게 하는 자리입니다.
    */
   advance?: { readonly label: string; readonly run: () => void; readonly delayMs: number };
-  streakDays?: number;
-  trophyCount?: number;
   gemCount?: number;
-  onOpenNotifications?: () => void;
   /** 학습 문항 안내가 위를 덮는 동안 true입니다. 루트를 낭독에서 가립니다(닫히면 false). */
   obscured?: boolean;
   /** 주면 세션 헤더 대신 가벼운 헤더(`×` · 칸 막대)가 섭니다 — 단어 카드 구간(ADR-0073). */
