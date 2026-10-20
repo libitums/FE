@@ -104,6 +104,38 @@
     var(--libitum-motion-easing-enter) both;
 }
 
+/* 뒤집는 동안 덱 뒤 두 장을 숨깁니다 — 면과 같은 길이 · 곡선이고 채움 모드가 없어 끝나면 각 장의 불투명도(16 · 35 %)로
+   돌아옵니다. 면처럼 이름을 둘로 둬 뒤집을 때마다 처음부터 돕니다(사용자 결정 2026-10-20). */
+@keyframes culture-card-activity-deck-hide-front {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes culture-card-activity-deck-hide-back {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.culture-card-activity-deck-flip-front .culture-card-activity-layer-far,
+.culture-card-activity-deck-flip-front .culture-card-activity-layer-near {
+  animation: culture-card-activity-deck-hide-front var(--libitum-motion-duration-d6)
+    var(--libitum-motion-easing-enter);
+}
+
+.culture-card-activity-deck-flip-back .culture-card-activity-layer-far,
+.culture-card-activity-deck-flip-back .culture-card-activity-layer-near {
+  animation: culture-card-activity-deck-hide-back var(--libitum-motion-duration-d6)
+    var(--libitum-motion-easing-enter);
+}
+
 .culture-card-activity-dots {
   display: flex;
   flex-direction: row;
