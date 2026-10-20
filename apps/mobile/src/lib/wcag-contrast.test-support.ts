@@ -79,3 +79,38 @@ export function tokenColorValue(cssValue: string): string {
   }
   return (declared[1] ?? "").trim();
 }
+
+/** Reads a css file under the mobile app root with comments removed. */
+export function readCssWithoutComments(relativePath: string): string {
+  return readFileSync(resolve(process.cwd(), relativePath), "utf8").replace(
+    /\/\*[\s\S]*?\*\//g,
+    "",
+  );
+}
+
+/** Body of the first rule whose selector matches; empty when missing, so later assertions fail on value. */
+export function cssRuleBody(css: string, selector: RegExp): string {
+  return new RegExp(`(?:^|\\})\\s*${selector.source}\\s*\\{([^}]*)\\}`).exec(css)?.[1] ?? "";
+}
+
+/** File offset of the first rule whose selector matches; -1 when missing. */
+export function cssRuleIndex(css: string, selector: RegExp): number {
+  const matched = new RegExp(`(?:^|\\})\\s*${selector.source}\\s*\\{`).exec(css);
+  return matched === null ? -1 : matched.index;
+}
+
+/** Value of `property` in a rule body, trimmed; undefined when absent. */
+export function cssDeclaration(body: string, property: string): string | undefined {
+  return new RegExp(`(?:^|[\\s;])${property}\\s*:\\s*([^;]+);`).exec(body)?.[1]?.trim();
+}
+
+/** The `rgba(...)` of a declaration value as a color, or undefined when it holds no rgba. */
+export function rgbaInValue(value: string | undefined): CssColor | undefined {
+  const matched = /rgba\([^)]*\)/.exec(value ?? "");
+  return matched === null ? undefined : parseCssColor(matched[0]);
+}
+
+/** Expected css color for a token color (#RRGGBB) at an opacity token. */
+export function tokenColorAt(hex: string, alpha: number): CssColor {
+  return { rgb: parseCssColor(hex).rgb, alpha };
+}
