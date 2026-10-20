@@ -1,5 +1,6 @@
 // 카탈로그 표지 컷의 순수 표시 모델입니다 — 컷 → 표시 모델, 번역 · 토글 · 다음 · 낭독.
 
+import { audioSyncLengthMs } from "../../lib/audio-manifest";
 import { contentAudioSourceOf } from "../../lib/content-audio";
 import type { EpisodeCut, Text } from "../../lib/episode-content.model";
 import type { FillScript } from "../../lib/placeholder-fill";
@@ -51,9 +52,16 @@ function speakerOf(speaker: string): CatalogCutSpeaker | null {
 }
 
 // 소리는 치환 전 원문 ko로 판정합니다 - 프로필이 채워져 중괄호가 사라져도 자리표시자 줄은 소리가 없습니다.
-function audioOf(cut: EpisodeCut, rawKo: string, port: CatalogCutPort): { audioSource?: string } {
+// 맞출 길이는 소리가 나는 컷에만 싣습니다 - 음성 정보 파일에 항목이 없으면 타자기는 기본 간격입니다.
+function audioOf(
+  cut: EpisodeCut,
+  rawKo: string,
+  port: CatalogCutPort,
+): { audioSource?: string; voiceSyncMs?: number } {
   const source = contentAudioSourceOf(cut.audioUrl, rawKo, port.imageUrlOf);
-  return source === null ? {} : { audioSource: source };
+  if (source === null || cut.audioUrl === undefined) return {};
+  const length = audioSyncLengthMs(port.audioTimingOf(cut.audioUrl));
+  return length === null ? { audioSource: source } : { audioSource: source, voiceSyncMs: length };
 }
 
 function viewOf(cut: EpisodeCut, port: CatalogCutPort): CatalogCutView | null {

@@ -5,6 +5,7 @@ import type { CatalogSourceText } from "./episode-catalog";
 import { getItem, isStorageAvailable, removeItem, setItem } from "./storage";
 
 export const CONTENT_MANIFEST_KEY = "libitum.content.manifest";
+export const CONTENT_AUDIO_MANIFEST_KEY = "libitum.content.audio-manifest";
 export const contentEpisodeKey = (id: string): string => `libitum.content.episode.${id}`;
 
 export type ContentStore = {

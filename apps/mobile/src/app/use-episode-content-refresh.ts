@@ -1,5 +1,6 @@
 import { useEffect, useLynxGlobalEventListener, useRef, useState } from "@lynx-js/react";
 
+import { changesAudioTiming, refreshAudioManifest } from "../lib/audio-manifest-refresh";
 import { hostContentStore } from "../lib/episode-cache";
 import { bundledCatalogInput } from "../lib/episode-bundled";
 import { refreshEpisodeCatalog } from "../lib/episode-refresh";
@@ -61,7 +62,11 @@ export function useEpisodeContentRefresh(sink: EpisodeIntroEventSink): EpisodeCo
         reported.current = true;
         sinkRef.current?.(event);
       }
-      if (refreshChangesCatalog(summary)) reload();
+      const audio = await refreshAudioManifest({
+        fetchText: fetchContentText,
+        store: hostContentStore,
+      });
+      if (refreshChangesCatalog(summary) || changesAudioTiming(audio)) reload();
     });
     void runner.current.request();
   }, []);

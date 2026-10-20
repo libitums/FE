@@ -42,6 +42,7 @@ const contentOf = (fillText: EpisodeContent["fillText"] = fillPlaceholders): Epi
   catalog: [],
   imageUrlOf: (path) => `https://cdn/${path}`,
   fillText,
+  audioTimingOf: () => null,
 });
 
 function entryWith(patch: Partial<Episode>): ReadyEntry {

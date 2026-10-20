@@ -278,6 +278,7 @@ describe("catalogFinalPlanFor — 프로필 참조가 메모 키다", () => {
     catalog,
     imageUrlOf,
     fillText: fillPlaceholders,
+    audioTimingOf: () => null,
   });
   const sections = catalogMapSectionsOf(realCatalog);
 
@@ -329,6 +330,7 @@ describe("catalogFinalPlanFor — 메모", () => {
     catalog,
     imageUrlOf,
     fillText: fillPlaceholders,
+    audioTimingOf: () => null,
   });
 
   test("FM6. 같은 ready 항목이면 같은 계획 참조를 돌려준다", () => {
