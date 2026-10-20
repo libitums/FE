@@ -1,5 +1,6 @@
 // 카탈로그 표지 컷 화면의 계약입니다. 타입만 둡니다.
 
+import type { AudioTiming } from "../../lib/audio-manifest";
 import type { FillScript } from "../../lib/placeholder-fill";
 import type { SafeAreaInsets } from "../../lib/safe-area";
 
@@ -27,6 +28,8 @@ export type CatalogCutView =
       readonly imageUrl: string | null;
       /** 재생할 전체 주소. 소리가 없으면 키가 없습니다. */
       readonly audioSource?: string;
+      /** 타자기를 맞출 음성 길이(ms) - 소리가 있고 음성 정보 파일에 그 id가 있을 때만 있습니다. */
+      readonly voiceSyncMs?: number;
     }
   | {
       readonly kind: "narration";
@@ -35,6 +38,8 @@ export type CatalogCutView =
       readonly imageUrl: string | null;
       /** 재생할 전체 주소. 소리가 없으면 키가 없습니다. */
       readonly audioSource?: string;
+      /** 타자기를 맞출 음성 길이(ms) - 소리가 있고 음성 정보 파일에 그 id가 있을 때만 있습니다. */
+      readonly voiceSyncMs?: number;
     };
 
 export type CatalogCuts = readonly [CatalogCutView, ...CatalogCutView[]];
@@ -43,6 +48,8 @@ export type CatalogCutPort = {
   readonly imageUrlOf: (relativePath: string) => string | null;
   /** 프로필을 묶은 치환입니다. */
   readonly fill: (text: string, script: FillScript) => string;
+  /** 음성 id → 길이. 모르면 `null`. */
+  readonly audioTimingOf: (audioId: string) => AudioTiming | null;
 };
 
 /** 같은 컷 화면이 서는 자리 — 에피소드 앞(표지)과 최종 테스트 통과 뒤. */

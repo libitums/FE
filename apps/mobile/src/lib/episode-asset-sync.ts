@@ -27,7 +27,7 @@ export const contentAssetsKey = (id: string): string => `libitum.content.assets.
 
 // Supabase Storage는 없는 파일에 404가 아니라 400을 냅니다(본문 `{"statusCode":"404","error":"not_found"}`, 기기 관찰
 // 2026-10-19 — `audio/u03-mina/d-01.m4a`). 호스트는 상태 코드만 넘기므로 400도 「서버에 없음」으로 봅니다.
-const ABSENT_CODES = new Set([400, 403, 404, 410]);
+export const ABSENT_HTTP_CODES: ReadonlySet<number> = new Set([400, 403, 404, 410]);
 
 async function safeDownload(deps: AssetDeps, url: string, path: string): Promise<DownloadResult> {
   try {
@@ -48,7 +48,7 @@ export async function syncEpisodeAssets(
     if (url === null) return { state: "incomplete" };
     const result = await safeDownload(deps, url, path);
     if (result.status === "saved") continue;
-    if (result.status === "http" && ABSENT_CODES.has(result.code)) {
+    if (result.status === "http" && ABSENT_HTTP_CODES.has(result.code)) {
       missing.push(path);
       continue;
     }
