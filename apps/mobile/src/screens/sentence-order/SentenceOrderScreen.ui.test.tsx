@@ -568,3 +568,15 @@ test("[LA3-M] 문구표를 주입하고 문항을 마치면 완료 문구 · 마
   expect(completion).toHaveLength(1);
   expect(completion[0]?.content).toBe("⟦common.allQuestionsDone⟧, ⟦common.seeResults⟧");
 });
+
+test("[FDU7] 튜토리얼 문장 순서는 기본값을 받는다 — 창고 칩과 판정 배지가 light다", () => {
+  renderOrdering();
+
+  expect(chip(0)).toHaveAttribute("data-surface", "light");
+  expect(chip(1)).toHaveAttribute("data-surface", "light");
+
+  placeAllCorrectly(ORDERING_QUESTIONS[0]);
+  tapAction("Check");
+
+  expect(screen.getByTestId("answer-verdict")).toHaveAttribute("data-surface", "light");
+});
