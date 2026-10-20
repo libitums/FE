@@ -563,6 +563,6 @@ test("[MG23] 같은 걸음이 새 객체로 다시 오거나 관계없는 프롭
   again({ advance: newAdvance() });
   expect(scrollToCalls(invocations)).toHaveLength(1);
 
-  again({ advance: newAdvance(), gemCount: 3 });
+  again({ advance: newAdvance(), actionSound: "none" });
   expect(scrollToCalls(invocations)).toHaveLength(1);
 });
