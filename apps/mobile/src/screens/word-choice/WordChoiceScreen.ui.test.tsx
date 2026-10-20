@@ -564,10 +564,7 @@ test("완료 상태의 조작 단위가 나가기와 결과 보기다", () => {
     el.getAttribute("data-testid"),
   );
 
-  expect(tappables).toEqual([
-    "learning-shell-exit",
-    "learning-shell-action",
-  ]);
+  expect(tappables).toEqual(["learning-shell-exit", "learning-shell-action"]);
 });
 
 // ---------------------------------------------------------------- 스크롤 영역
