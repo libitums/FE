@@ -118,3 +118,11 @@
 - **모션 정책과의 관계.** 시작 값 `scaleX(0)`은 비항등 scale 리터럴이라 [ADR-0053](0053-motion-policy.md) D1의 `scale-literal`에 걸린다 — 「버린 대안」 3이 버린 이유가 이것이다. 이번에는 D1이 열어 둔 경로대로 `devtools/motion-literals/allowlist.json`에 이 파일을 사유와 함께 올렸다(넷째 항목 — 사유 문장은 allowlist에 있다). 끝 값 `scaleX(1)`은 항등이라 규칙 밖이다. 새 토큰 · 규칙 변경은 0이다(ADR-0053 D3 적용 기록 ⟨2026-10-20⟩).
 - **확인.** 단위 테스트가 keyframe 값(`scaleX`, 파일 어디에도 `rotateY` 없음)과 `transform-origin` 선언 없음을 본다. 기기 확인은 [새 형식 화면 e2e](../e2e/episode-format-screens.md) 「G2」 CF2(문구 바뀜) · CF10 · CF10-A — 미실행.
 - **번들.** 이 파일의 변경은 −18 bytes였다. 같은 PR의 완료 카드 변경과 함께 잰 값은 [성능 보고서](../performance/reports/complete-card-and-culture-flip-iphone-17-pro-simulator-01.md).
+
+### 2026-10-20 (같은 날, 이어서) — 뒤집는 동안 덱 뒤 두 장을 숨긴다
+
+- **무엇을 봤나.** 가로 배율로 바꾼 뒤 시뮬레이터 녹화에서, 글 위로 주황이 겹치는 일은 사라졌지만 면이 좁아졌다 펴지는 약 0.4초 동안 **좁아진 카드 양옆으로 덱 뒤 두 장(D1의 옅은 주황 두 단)이 크게 드러났다** — 두 장이 맨 앞 카드와 거의 같은 크기라서다.
+- **무엇으로 바꿨나(사용자 결정 2026-10-20 「뒤집는 동안 숨김」).** 면이 뒤집혀 들어오는 동안 덱 상자에 `culture-card-activity-deck-flip-front` · `-flip-back`(면 클래스와 같은 조건 · 같은 이름 규칙 — 순수 함수 `cultureCardDeckClassName`)이 붙고, 두 장이 `opacity: 0` keyframe(`deck-hide-front` · `-back`, 길이 `d6` · 곡선 `enter` — 면과 같음)을 돈다. **채움 모드가 없어** 끝나면 각 장의 불투명도(16 · 35 %)로 돌아온다. 동작 줄이기는 면이 즉시 바뀌므로 클래스가 붙지 않는다.
+- **확인.** 단위 CC9 · CC10, ui UCC10 · UCC10b. 시뮬레이터 녹화(30fps)에서 뒤집는 동안 주황 0, 끝난 뒤 덱 복귀를 봤다 — 기기 판정은 CF10.
+- **번들.** 이 변경은 +1,366 bytes(로컬 설정)였다 — [성능 보고서](../performance/reports/complete-card-and-culture-flip-iphone-17-pro-simulator-01.md).
+
