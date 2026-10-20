@@ -9,6 +9,7 @@ import { lessonCounter } from "../learning/activity-finish";
 import { LearningShell } from "../learning/LearningShell";
 import {
   cultureCardActionOf,
+  cultureCardDeckClassName,
   cultureCardFaceClassName,
   cultureCardLabelOf,
   cultureCardPhotoOf,
@@ -104,7 +105,10 @@ export function CultureCardActivity({
             </text>
           </view>
 
-          <view className="culture-card-activity-deck">
+          <view
+            className={cultureCardDeckClassName(state.face, state.flipped, motion)}
+            data-testid="culture-card-deck"
+          >
             {/* 뒤에 깔린 두 장 — 장식입니다(글이 없는 면이라 접근성 트리에 서지 않습니다). */}
             <view
               className="culture-card-activity-layer-far"

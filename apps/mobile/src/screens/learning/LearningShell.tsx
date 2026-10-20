@@ -9,6 +9,7 @@ import { useLearningShellFlow } from "./use-learning-shell-flow";
 import { useQuestionTransition } from "./use-question-transition";
 import {
   learningShellArrangement,
+  learningShellScene,
   learningTimingFlag,
   learningWorkspaceMode,
 } from "./learning-shell.contract";
@@ -177,6 +178,7 @@ export function LearningShell({
         workspaceMode={workspaceMode}
         onViewportHeight={reportViewportHeight}
         transition={{ phase, motion }}
+        scene={learningShellScene(complete)}
       />
       {/* 스스로 넘어가는 동안 화면 전체가 이 이름의 조작 단위입니다 — 보이는 버튼은
           없지만 기다리는 것 말고 할 수 있는 일이 있어야 합니다(WCAG 2.2.1). 세션 헤더는

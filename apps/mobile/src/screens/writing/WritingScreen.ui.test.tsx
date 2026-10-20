@@ -8,6 +8,7 @@ import type { JourneyStepId } from "../journey-map/journey-map";
 import { WritingScreen } from "./WritingScreen";
 import { UiCopyContext } from "../../lib/ui-copy";
 import { markedUiCopy } from "../../lib/ui-copy.test-support";
+import { expectCompleteScene, expectQuestionScene } from "../learning/complete-scene.test-support";
 
 // `ui` 계층: 실제 화면을 렌더하고 상태 · 상호작용을 봅니다(ADR-0006 D4). 공용 핵심(리듀서 ·
 // 판정 · 캔버스)은 대역하지 않습니다 — 화면이 그것을 실제로 부르는지가 이 파일이 보는 것의
@@ -355,4 +356,27 @@ test("[LA5-M] 문구표를 주입하고 문항이 없는 스텝이면 완료 문
     "⟦common.allQuestionsDone⟧",
   );
   expect(action()).toHaveAttribute("accessibility-label", "⟦common.seeResults⟧");
+});
+
+// ACS-WR — 완료 장면: 무대가 완료 장면이고 내용 상자 안은 완료 카드 하나다. 문항 장면은 그대로다.
+test("[ACS-WR] 완료 때 무대가 완료 장면이고 내용 상자의 유일한 자식이 완료 카드이며 문항 장면에는 표시가 없다", () => {
+  stubHost([
+    ["0.9", "0.9"],
+    ["0.1", "0.9"],
+    ["0.9", "0.9"],
+  ]);
+  renderScreen();
+  expectQuestionScene();
+
+  draw();
+  fireEvent.tap(action(), {});
+  fireEvent.tap(action(), {});
+  draw();
+  fireEvent.tap(action(), {});
+  fireEvent.tap(action(), {});
+  draw();
+  fireEvent.tap(action(), {});
+  fireEvent.tap(action(), {});
+
+  expectCompleteScene("writing-screen-content", "writing-screen-complete");
 });

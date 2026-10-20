@@ -10,5 +10,9 @@
   {
     "path": "apps/mobile/src/screens/journey-map/journey-stat-modal-motion.css",
     "reason": "지표 모달의 잔잔한 반복 연출(사용자 결정 2026-10-16, 시안 ②C 「계속 살아 있음」, ADR-0064). 불꽃 숨 2400ms · 트로피 빛 4000ms · 운석 둥실 5500 · 6000 · 7000ms와 그 시작 시각(700 · 900 · 1100 · 1600ms), 불꽃의 일렁임 크기(scaleX/scaleY 0.96 ~ 1.08)는 가장 긴 UI 토큰(d9 1000ms)과 scale 토큰으로 표현할 수 없다. 등장 · 한 번뿐인 움직임의 길이 · 가속은 토큰이다. 반복은 모달이 떠 있는 동안만 돌고, 움직임 줄이기에서는 반복 층의 클래스가 붙지 않는다(등장은 d2 페이드)."
+  },
+  {
+    "path": "apps/mobile/src/screens/culture-card/culture-card-activity.css",
+    "reason": "문화 카드 뒤집기(사용자 결정 2026-10-20, ADR-0072 D3 정정 기록). 세로축 회전 rotateY(90deg → 0deg)는 iOS에서 회전 중 카드의 축 오른쪽 반이 z < 0으로 들어가 절대 배치된 덱 뒤 두 장(옅은 주황) 뒤로 그려져, 뒤집는 약 0.4초 동안 그 반쪽이 주황에 덮이고 글이 비쳤다(2026-10-20 시뮬레이터 녹화). 원근(perspective)을 쓰지 않아 겉모양이 같은, 깊이 없는 가로 배율 scaleX(0) → scaleX(1)로 바꿨다. 시작 값 scaleX(0)(접힌 면)은 scale 토큰(pressed · enter · reward — 모두 0보다 크다)으로 표현할 수 없다. 끝 값 scaleX(1)은 항등이라 규칙 밖이다. 길이 · 가속은 토큰(d6 · enter)이고 이 파일 밖의 새 리터럴은 허용하지 않는다. 움직임 줄이기에서는 뒤집기 클래스가 붙지 않아 면이 즉시 바뀐다(ADR-0053 D3)."
   }
 ]

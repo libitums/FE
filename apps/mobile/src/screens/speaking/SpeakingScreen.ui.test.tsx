@@ -7,6 +7,7 @@ import { SpeakingScreen } from "./SpeakingScreen";
 import type { SpeakingQuestion } from "./speaking";
 import { UiCopyContext } from "../../lib/ui-copy";
 import { markedUiCopy } from "../../lib/ui-copy.test-support";
+import { expectCompleteScene, expectQuestionScene } from "../learning/complete-scene.test-support";
 
 // `ui` 계층: 컴포넌트 렌더와 상호작용 (ADR-0006 D4). 뼈대 모양은 `LearningShell.ui.test.tsx`가
 // 보고, 여기서는 카드 안 · 아래 버튼 · 인식 결선을 봅니다. 문항은 대역입니다.
@@ -519,4 +520,15 @@ test("받아쓰기 안내와 재시도 라벨도 주입한 문구표를 사용�
   expect(
     within(screen.getByTestId("speaking-screen-retry")).getByTestId("ui-lynx-button"),
   ).toHaveAttribute("accessibility-label", "⟦speaking.tryAgain⟧");
+});
+
+// ACS-SP — 완료 장면: 무대가 완료 장면이고 내용 상자 안은 완료 카드 하나다. 문항 장면은 그대로다.
+test("[ACS-SP] 완료 때 무대가 완료 장면이고 내용 상자의 유일한 자식이 완료 카드이며 문항 장면에는 표시가 없다", () => {
+  renderSpeaking();
+  expectQuestionScene();
+
+  tapSkip();
+  tapSkip();
+
+  expectCompleteScene("speaking-screen-content", "speaking-screen-complete");
 });

@@ -72,6 +72,20 @@ export function cultureCardFaceClassName(
   return flipped && motion === "standard" ? `${faceClass} ${faceClass}-flip-${face}` : faceClass;
 }
 
+const deckClass = "culture-card-activity-deck";
+
+/**
+ * 덱 상자의 클래스입니다. 면이 뒤집혀 들어오는 동안 뒤 두 장을 숨깁니다 — 좁아진 맨 앞 카드 양옆으로 옅은 주황 두 장이
+ * 크게 드러나지 않게(사용자 결정 2026-10-20). 면 클래스와 같은 조건 · 같은 이름 규칙이라 뒤집을 때마다 다시 돕니다.
+ */
+export function cultureCardDeckClassName(
+  face: CultureCardFace,
+  flipped: boolean,
+  motion: Motion,
+): string {
+  return flipped && motion === "standard" ? `${deckClass} ${deckClass}-flip-${face}` : deckClass;
+}
+
 /** 앞면에 세울 사진 주소입니다. 주소가 없거나 그 주소가 한 번 실패했으면 `null` — 브랜드 면이 섭니다. */
 export function cultureCardPhotoOf(
   imageUrl: string | null,

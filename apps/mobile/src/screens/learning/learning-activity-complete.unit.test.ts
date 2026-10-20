@@ -1,3 +1,6 @@
+import { readdirSync, readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
 import { describe, expect, test } from "vitest";
 
 import {
@@ -59,5 +62,25 @@ describe("activityCompleteSummaryOf (AC-S)", () => {
       activityCount: null,
       lessonOrdinal: null,
     });
+  });
+});
+
+describe("완료 카드를 띄우는 화면의 장면 결선 (ACW1)", () => {
+  const screens = resolve(process.cwd(), "src/screens");
+  const collect = (dir: string): string[] =>
+    readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+      const path = resolve(dir, entry.name);
+      if (entry.isDirectory()) return collect(path);
+      return entry.name.endsWith(".tsx") && !entry.name.includes(".test.") ? [path] : [];
+    });
+
+  test("ACW1. 완료 카드를 그리는 화면은 모두 셸에 complete를 넘긴다", () => {
+    const users = collect(screens).filter((path) =>
+      readFileSync(path, "utf8").includes("<LearningActivityComplete"),
+    );
+    expect(users.length).toBeGreaterThanOrEqual(1);
+    for (const path of users) {
+      expect(readFileSync(path, "utf8"), path).toContain("complete={");
+    }
   });
 });

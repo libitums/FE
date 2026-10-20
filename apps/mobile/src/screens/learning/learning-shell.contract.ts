@@ -215,3 +215,41 @@ export function learningShellArrangement({
   if (scrollCard) return "card-scroll";
   return flow;
 }
+
+/** 껍데기가 지금 보이는 장면입니다 — 문항을 푸는 중인가, 활동을 끝내 완료 카드가 섰는가. */
+export type LearningShellScene = "question" | "complete";
+
+/** 껍데기의 `complete`를 장면으로 바꿉니다. */
+export function learningShellScene(complete: boolean): LearningShellScene {
+  return complete ? "complete" : "question";
+}
+
+/** 장면이 무대 · 합친 흐름 상자의 base 클래스 뒤에 더해 붙이는 클래스입니다. */
+export type LearningShellSceneClasses = {
+  readonly stage: readonly string[];
+  readonly flow: readonly string[];
+};
+
+/** 완료 장면에서 무대 카드를 내용 높이로 두고 머리와 아래 버튼 사이 세로 가운데에 세우는 클래스입니다. */
+export function learningShellSceneClasses(
+  arrangement: LearningShellArrangement,
+  scene: LearningShellScene,
+): LearningShellSceneClasses {
+  if (scene === "question") return { stage: [], flow: [] };
+  if (arrangement === "split") {
+    return {
+      stage: ["learning-shell-stage-scene-complete", "learning-shell-stage-fill-rest"],
+      flow: [],
+    };
+  }
+  if (arrangement === "merged") {
+    return {
+      stage: ["learning-shell-stage-scene-complete", "learning-shell-stage-fill-flow"],
+      flow: ["learning-shell-flow-fill-scroll"],
+    };
+  }
+  return {
+    stage: ["learning-shell-stage-scene-complete", "learning-shell-stage-fill-scroll"],
+    flow: [],
+  };
+}

@@ -100,14 +100,15 @@ test("PO7′. loadAllowlist는 모양이 틀리면 던진다", () => {
   assert.throws(() => loadAllowlist([{}]));
 });
 
-test("PO8′. 실제 allowlist.json은 검증을 통과하고 항목이 셋이다(서사 배경 · 지표 모션 둘), 문자열 입력은 던진다", () => {
+test("PO8′. 실제 allowlist.json은 검증을 통과하고 항목이 넷이다(서사 배경 · 지표 모션 둘 · 문화 카드 뒤집기), 문자열 입력은 던진다", () => {
   assert.throws(() => loadAllowlist("[]"));
   const json = readFileSync(new URL("./allowlist.json", import.meta.url), "utf8");
   const entries = loadAllowlist(JSON.parse(json));
-  assert.equal(entries.length, 3);
+  assert.equal(entries.length, 4);
   assert.ok(entries[0].path.endsWith("narrative-background.css"));
   assert.ok(entries[1].path.endsWith("stat-chip-motion.css"));
   assert.ok(entries[2].path.endsWith("journey-stat-modal-motion.css"));
+  assert.ok(entries[3].path.endsWith("culture-card-activity.css"));
   for (const entry of entries) assert.ok(entry.reason.trim().length > 0);
 });
 

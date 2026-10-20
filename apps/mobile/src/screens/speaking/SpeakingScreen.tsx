@@ -234,10 +234,12 @@ export function SpeakingScreen({ stepId, onExit, onFinish }: SpeakingScreenProps
         }
         card={
           <view className="speaking-screen-content" data-testid="speaking-screen-content">
-            {/* 판정 배지 자리 — 비어 있어도 자리를 지켜 카드 높이가 흔들리지 않습니다. */}
-            <view className="speaking-screen-verdict-slot">
-              {result === null ? null : <AnswerVerdict result={result} />}
-            </view>
+            {/* 판정 배지 자리 — 문항 장면에서는 비어 있어도 자리를 지켜 카드 높이가 흔들리지 않습니다. */}
+            {complete ? null : (
+              <view className="speaking-screen-verdict-slot">
+                {result === null ? null : <AnswerVerdict result={result} />}
+              </view>
+            )}
 
             {question == null ? (
               <LearningActivityComplete

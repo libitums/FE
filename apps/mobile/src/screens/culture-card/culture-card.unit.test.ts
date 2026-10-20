@@ -6,6 +6,7 @@ import { describe, expect, test } from "vitest";
 import type { LessonPosition } from "../learning/activity-finish";
 import {
   cultureCardActionOf,
+  cultureCardDeckClassName,
   cultureCardFaceClassName,
   cultureCardLabelOf,
   cultureCardPhotoOf,
@@ -119,6 +120,19 @@ describe("cultureCardFaceClassName (CC5)", () => {
   });
 });
 
+describe("cultureCardDeckClassName (CC9)", () => {
+  test("CC9. 뒤집어 선 면에서만(표준 움직임) 덱에 면마다 다른 숨김 클래스가 붙는다", () => {
+    expect(cultureCardDeckClassName("front", false, "standard")).toBe("culture-card-activity-deck");
+    expect(cultureCardDeckClassName("back", true, "standard")).toBe(
+      "culture-card-activity-deck culture-card-activity-deck-flip-back",
+    );
+    expect(cultureCardDeckClassName("front", true, "standard")).toBe(
+      "culture-card-activity-deck culture-card-activity-deck-flip-front",
+    );
+    expect(cultureCardDeckClassName("back", true, "reduced")).toBe("culture-card-activity-deck");
+  });
+});
+
 describe("cultureCardPhotoOf (CC6)", () => {
   test("CC6. 주소가 있고 실패하지 않았으면 그 주소다", () => {
     expect(cultureCardPhotoOf("https://cdn/a.jpg", null)).toBe("https://cdn/a.jpg");
@@ -181,16 +195,53 @@ describe("culture-card-activity.css (CC7)", () => {
     new RegExp(`@keyframes\\s+${name}\\s*\\{[\\s\\S]*?${edge}\\s*\\{([^}]*)\\}`).exec(css)?.[1] ??
     "";
 
-  test("CC7. 뒤집기는 세로축 회전 keyframe이고 시간 · 곡선은 모션 토큰이다", () => {
+  test("CC7. 뒤집기는 가로 배율 keyframe이고 시간 · 곡선은 모션 토큰이다", () => {
+    expect(css).not.toContain("rotateY");
     for (const face of ["front", "back"]) {
       const name = `culture-card-activity-face-flip-${face}`;
-      expect(keyframe(name, "from")).toMatch(/transform:\s*rotateY\(90deg\)/);
-      expect(keyframe(name, "to")).toMatch(/transform:\s*rotateY\(0deg\)/);
+      expect(keyframe(name, "from")).toMatch(/transform:\s*scaleX\(0\)/);
+      expect(keyframe(name, "to")).toMatch(/transform:\s*scaleX\(1\)/);
       expect(ruleBody(name)).toMatch(
         new RegExp(
           `animation:\\s*${name}\\s+var\\(--libitum-motion-duration-[a-z0-9-]+\\)\\s+var\\(--libitum-motion-easing-[a-z-]+\\)`,
         ),
       );
+    }
+  });
+
+  test("CC7b. 면마다 이름이 다른 keyframe 둘이고 회전축 선언은 더하지 않는다", () => {
+    const front = "culture-card-activity-face-flip-front";
+    const back = "culture-card-activity-face-flip-back";
+    expect(front).not.toBe(back);
+    expect(css).toContain(`@keyframes ${front}`);
+    expect(css).toContain(`@keyframes ${back}`);
+    expect(ruleBody("culture-card-activity-face")).not.toContain("transform-origin");
+    expect(css).not.toContain("perspective");
+    expect(css).not.toContain("backface-visibility");
+  });
+
+  test("CC10. 뒤집는 동안 덱 두 장이 숨는다 — 면과 같은 길이 · 곡선, 끝나면 원래 불투명도로 돌아온다", () => {
+    for (const face of ["front", "back"]) {
+      const name = `culture-card-activity-deck-hide-${face}`;
+      expect(keyframe(name, "from")).toMatch(/opacity:\s*0\s*;?/);
+      expect(keyframe(name, "to")).toMatch(/opacity:\s*0\s*;?/);
+      for (const layer of ["far", "near"]) {
+        const rule = new RegExp(
+          `\\.culture-card-activity-deck-flip-${face}\\s+\\.culture-card-activity-layer-${layer}\\s*[,{]`,
+        );
+        expect(css).toMatch(rule);
+      }
+      const body =
+        new RegExp(
+          `\\.culture-card-activity-deck-flip-${face}\\s+\\.culture-card-activity-layer-near\\s*\\{([^}]*)\\}`,
+        ).exec(css)?.[1] ?? "";
+      expect(body).toMatch(
+        new RegExp(
+          `animation:\\s*${name}\\s+var\\(--libitum-motion-duration-d6\\)\\s+var\\(--libitum-motion-easing-enter\\)\\s*;`,
+        ),
+      );
+      // 채움 모드가 없어야 끝난 뒤 원래 불투명도(16 · 35 %)로 돌아온다.
+      expect(body).not.toMatch(/\b(both|forwards)\b/);
     }
   });
 

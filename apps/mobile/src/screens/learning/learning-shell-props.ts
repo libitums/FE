@@ -20,7 +20,10 @@ export type LearningShellProps = {
    */
   questionIndex: number;
   questionCount: number;
-  /** 완료 화면은 문항이 아니며 문제 지시문을 표시하지 않습니다. */
+  /**
+   * 완료 화면은 문항이 아니며 문제 지시문을 표시하지 않습니다. 완료면 무대 카드가 내용
+   * 높이로 머리와 아래 버튼 사이 가운데에 섭니다.
+   */
   complete?: boolean;
   /** 카드 위 회색 한 줄 — 「무엇을 하라」입니다. */
   instruction: string;

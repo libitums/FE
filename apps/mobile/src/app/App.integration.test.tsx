@@ -6,7 +6,7 @@ vi.mock("../screens/journey-map/journey-map", async (importOriginal) => ({
 }));
 
 import { afterEach, expect, test, vi } from "vitest";
-import { cleanup, fireEvent, screen } from "@lynx-js/react/testing-library";
+import { cleanup, fireEvent, screen, within } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
 import { speakingQuestionsForStep } from "../screens/speaking/speaking";
@@ -395,6 +395,22 @@ test("학습 화면에는 탭이 없고, 나갔다 다시 들어가면 문항은
 
   expect(screen.getByTestId("listening-screen-content")).toBeInTheDocument();
   expect(screen.getByTestId("learning-shell-chapter")).toHaveTextContent("Lesson 1 / 3");
+});
+
+// CSI1 — 완료 장면 신호가 라우팅을 지나서도 무대에 닿는다.
+test("[CSI1] 듣기를 끝내면 무대가 완료 장면이 되고 그 직전 문항 장면에는 표시가 없다", async () => {
+  await renderSignedInApp(
+    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
+  );
+  startStep("ordering");
+
+  expect(screen.getByTestId("learning-shell-stage").hasAttribute("data-scene")).toBe(false);
+
+  answerAllQuestions("ordering", mixedPick);
+
+  const stage = screen.getByTestId("learning-shell-stage");
+  expect(stage.getAttribute("data-scene")).toBe("complete");
+  expect(within(stage).getByTestId("listening-screen-complete")).toBeInTheDocument();
 });
 
 // 루프 한 판이 진행을 갱신합니다.

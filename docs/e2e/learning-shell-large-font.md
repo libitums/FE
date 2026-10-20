@@ -508,6 +508,8 @@ python3 "$TOOLS/bandrows.py" "$OUT/L5-after-rest.png" 2170 2210 10
 
 듣기 픽스처는 문항이 **하나**라 보기를 고르고 약 4초 뒤 「All questions done / See results」가 선다(`hide-scrollbars`의 r02b 실측). 그 화면이 액션 행 화면이다. **수정 전에는 글꼴 2.2에서만 닿는다**(2.35는 보기에 닿지 못한다).
 
+⟨2026-10-20⟩ 완료 카드가 내용 높이로 머리와 버튼 사이 가운데에 서도록 바뀌었다(완료 때 빈 판정 자리도 서지 않는다) — 이 케이스의 「자리가 수정 전과 같다」는 그 전 번들의 기준이다. 다음 회차부터 완료 화면의 기준은 [완료 화면 e2e](learning-completion.md) 「완료 카드 자리」 CS-6이다.
+
 ```sh
 l6() {                       # l6 before|after 글꼴 — 2.2 또는 2.35
   local W=$1 F=$2 XY

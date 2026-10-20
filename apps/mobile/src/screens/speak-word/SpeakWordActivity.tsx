@@ -220,10 +220,12 @@ export function SpeakWordActivity({
           data-phase={phase.kind}
           data-reason={phase.kind === "unavailable" ? phase.reason : undefined}
         >
-          {/* 판정 배지 자리 — 비어 있어도 자리를 지켜 카드 높이가 흔들리지 않습니다. */}
-          <view className="speak-word-activity-verdict-slot">
-            {result === null ? null : <AnswerVerdict result={result} />}
-          </view>
+          {/* 판정 배지 자리 — 문항 장면에서는 비어 있어도 자리를 지켜 카드 높이가 흔들리지 않습니다. */}
+          {complete ? null : (
+            <view className="speak-word-activity-verdict-slot">
+              {result === null ? null : <AnswerVerdict result={result} />}
+            </view>
+          )}
 
           {question == null ? (
             <LearningActivityComplete
