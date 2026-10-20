@@ -236,7 +236,7 @@ export type VisualNovelCopy = {
 
 export type RoleplayCopy = {
   readonly title: string;
-  readonly form: Readonly<Record<"messenger" | "phone-call" | "visual-novel", string>>;
+  readonly form: Readonly<Record<"messenger" | "phone-call" | "visual-novel" | "story", string>>;
   readonly viewAll: string;
   readonly viewAllLabel: (sectionLabel: string) => string;
   readonly plus: string;

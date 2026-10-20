@@ -6,8 +6,13 @@ import { catalogLessonWiring } from "./catalog-lesson-wiring";
 import type { CatalogLessonWiring, CatalogLessonWiringArgs } from "./catalog-lesson-wiring";
 import { learnerProfileWiring } from "./learner-profile-wiring";
 import type { LearnerProfileWiring, LearnerProfileWiringArgs } from "./learner-profile-wiring";
+import { roleplayStoryWiring } from "./roleplay-story-wiring";
+import type { RoleplayStoryWiring } from "./roleplay-story-wiring";
 
-export type CatalogWiring = CatalogCoverWiring & CatalogLessonWiring & LearnerProfileWiring;
+export type CatalogWiring = CatalogCoverWiring &
+  CatalogLessonWiring &
+  LearnerProfileWiring &
+  RoleplayStoryWiring;
 export type CatalogWiringArgs = CatalogCoverWiringArgs &
   CatalogLessonWiringArgs &
   LearnerProfileWiringArgs;
@@ -21,5 +26,10 @@ export function catalogWiring(args: CatalogWiringArgs): CatalogWiring {
     };
   });
   // 가드가 선 시작 함수 둘이 마지막에 놓여 원래 시작을 덮습니다.
-  return { ...catalogCoverWiring(args), ...catalogLessonWiring(args), ...profile };
+  return {
+    ...catalogCoverWiring(args),
+    ...catalogLessonWiring(args),
+    ...profile,
+    ...roleplayStoryWiring(args),
+  };
 }

@@ -45,9 +45,11 @@ export const allEventNames = [
   "progress_load_recovered",
   "tickets_ran_out",
   "ticket_more_tapped",
+  "roleplay_story_opened",
+  "roleplay_story_completed",
 ] as const satisfies readonly AnalyticsEventName[];
 
-/** 위 셋을 뺀 39개 이름마다 최소 이벤트 하나입니다. */
+/** 위 셋을 뺀 41개 이름마다 최소 이벤트 하나입니다. */
 export const unmappedEvents = [
   { name: "entry_screen_viewed", screen: "onboarding" },
   { name: "entry_login_method_selected", method: "phone" },
@@ -143,6 +145,14 @@ export const unmappedEvents = [
   { name: "tickets_ran_out" },
   { name: "ticket_more_tapped", surface: "ticket_modal", granted: true },
   { name: "ticket_more_tapped", surface: "out_of_tickets", granted: false },
+  { name: "roleplay_story_opened", episodeId: "u01-water" },
+  {
+    name: "roleplay_story_completed",
+    episodeId: "u01-water",
+    correctCount: "2",
+    judgedCount: "3",
+    skippedCount: "0",
+  },
 ] as const satisfies readonly AnalyticsEvent[];
 
 export const entryCompleted = { name: "entry_completed" } as const satisfies AnalyticsEvent;

@@ -88,7 +88,12 @@ export const visualNovelEn: VisualNovelCopy = {
 
 export const roleplayEn: RoleplayCopy = {
   title: "Roleplay",
-  form: { messenger: "Messenger", "phone-call": "Phone call", "visual-novel": "Visual novel" },
+  form: {
+    messenger: "Messenger",
+    "phone-call": "Phone call",
+    "visual-novel": "Visual novel",
+    story: "Roleplay",
+  },
   viewAll: "View all",
   viewAllLabel: (sectionLabel) => `View all, ${sectionLabel}`,
   plus: "Plus",

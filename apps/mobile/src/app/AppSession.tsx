@@ -10,8 +10,6 @@ import type { EntryLanguage } from "../lib/entry-language";
 import { safeAreaInsetsFrom, tappableBottomInsetFrom } from "../lib/safe-area";
 import { UiCopyContext, uiCopyFor } from "../lib/ui-copy";
 import { initialSessionOptions } from "../lib/session-options";
-import { isMapItemComplete, journeyMapSections } from "../screens/journey-map/journey-map";
-import { roleplaySectionsFrom } from "../screens/roleplay-list/roleplay-list";
 import type { MessengerAppProps, MessengerUnitId } from "../screens/messenger/messenger.contract";
 import type {
   NotificationAppProps,
@@ -41,6 +39,7 @@ import { episodePrologueFor as productEpisodePrologueFor } from "./episode-prolo
 import type { EpisodeFinalTest } from "../screens/episode-final/episode-final.contract";
 import { episodeFinalTestFor as productEpisodeFinalTestFor } from "../screens/episode-final/episode-final-tests";
 import { completedVisualNovelUnitIdsFrom, productJourneySeed } from "./journey-progress";
+import { roleplaySectionsOf } from "./roleplay-sections";
 import type { AppJourneySeed } from "./journey-progress";
 import { catalogCompletionKeysOf, catalogMapSectionsOf } from "../screens/journey-map/catalog-map";
 import type { AppSessionContent } from "./episode-content";
@@ -149,19 +148,21 @@ export function AppSession({
   // 낭독에서 빠집니다. 화면이 내려가면 화면이 스스로 `false`를 알립니다.
   const [screenLayerOpen, setScreenLayerOpen] = useState(false);
 
-  // 롤플레이 구획입니다. **진행에서 파생합니다** — 에피소드는 여정에서 그 에피소드의
-  // 항목을 전부 끝냈을 때 열리고, 그 판정의 출처는 위의 진행 넷입니다. 상태로 따로 두면
-  // 진행과 어긋날 자리가 생깁니다(ADR-0007 D3). 결제 전에는 Plus 예고 항목을 싣지 않습니다.
-  const roleplaySections = roleplaySectionsFrom(journeyMapSections, (item) =>
-    isMapItemComplete(item, {
+  // 롤플레이 구획 — 튜토리얼 · 본편 에피소드, 진행에서 파생합니다(roleplay-sections.ts).
+  const catalog = { episodeContent, catalogSections, catalogProgress };
+  const roleplaySections = roleplaySectionsOf({
+    journey: {
       completedStepCount,
       completedEpisodeIntroIds,
       completedMessengerUnitIds,
       completedPhoneCallUnitIds,
       completedVisualNovelUnitIds: completedVisualNovelUnitIdsFrom(visualNovelProgress),
       completedEpisodeFinalIds,
-    }),
-  );
+    },
+    catalog,
+    learnerFill: learner.learnerFill,
+    episodeLabel: uiCopyFor(entryLanguage).catalogMap.episodeLabel,
+  });
 
   const globalProps = useGlobalProps();
   const insets = safeAreaInsetsFrom(globalProps);
@@ -206,9 +207,7 @@ export function AppSession({
     entryLanguage,
     setEntryLanguage,
     ...progress.wiring,
-    episodeContent,
-    catalogSections,
-    catalogProgress,
+    ...catalog,
     setCatalogProgress,
     ...learner,
     finishGuard,

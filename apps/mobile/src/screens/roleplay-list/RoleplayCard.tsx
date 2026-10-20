@@ -7,8 +7,8 @@ import { useUiCopy } from "../../lib/ui-copy";
 import {
   hasRoleplayCardPressedShade,
   roleplayCardClassName,
-  roleplayFormLabel,
   roleplayItemAccessibilityLabel,
+  roleplayItemSubtitle,
 } from "./roleplay-list";
 import type { RoleplayCardProps } from "./roleplay-list.contract";
 
@@ -65,7 +65,7 @@ export function RoleplayCard({ item, locked, layout, onSelect }: RoleplayCardPro
           {item.title}
         </text>
         <text className="roleplay-card-form" data-testid={`roleplay-list-item-form-${item.unitId}`}>
-          {roleplayFormLabel(item.form, copy)}
+          {roleplayItemSubtitle(item, copy)}
         </text>
       </view>
       {locked ? (

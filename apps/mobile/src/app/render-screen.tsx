@@ -46,6 +46,7 @@ import {
 } from "./render-learner-profile";
 import { renderEpisodeFinalFlow } from "./render-episode-final";
 import { renderRoleplayUnitScreen } from "./render-roleplay-screen";
+import { renderRoleplayStory } from "./render-roleplay-story";
 import type { ScreenWiring } from "./screen-wiring";
 
 export function renderScreen(screen: Screen, wiring: ScreenWiring) {
@@ -280,6 +281,9 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
     // 위 case와 같은 자리·같은 근거입니다 — 결선이 없고 **아무 코드도 이 화면을 push하지 않습니다.**
     case "speech-probe":
       return <SpeechProbeScreen />;
+    case "roleplay-story":
+    case "roleplay-story-complete":
+      return renderRoleplayStory(screen, wiring);
     default: {
       const exhaustive: never = screen;
       return exhaustive;

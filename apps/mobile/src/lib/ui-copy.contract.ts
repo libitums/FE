@@ -8,6 +8,7 @@ import type { EntryLanguage } from "./entry-language";
 import type { AudioUnavailableCopy } from "../components/audio-unavailable.contract";
 import type { LearnerProfileCopy } from "../components/learner-profile.contract";
 import type { TicketsCopy } from "../screens/tickets/tickets.contract";
+import type { RoleplayStoryCopy } from "../screens/roleplay-story/roleplay-story.contract";
 import type { CatalogCoverCopy } from "../screens/catalog-cover/catalog-cover.contract";
 import type { CatalogFinalCopy } from "../screens/catalog-final/catalog-final.contract";
 import type { CatalogMapCopy } from "../screens/journey-map/catalog-map.contract";
@@ -101,6 +102,7 @@ export type UiCopy = {
   readonly progressLoad: ProgressLoadCopy;
   readonly specialUnitMap: SpecialUnitMapCopy;
   readonly tickets: TicketsCopy;
+  readonly roleplayStory: RoleplayStoryCopy;
 };
 
 /**
