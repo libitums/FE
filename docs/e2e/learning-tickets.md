@@ -1,4 +1,4 @@
-# 학습 티켓 e2e (ADR-0074)
+# 학습 티켓 e2e (ADR-0075)
 
 기기(iOS · Android)에서 사람이 보는 절차다. **미실행** — 2026-10-20 현재 테스트(unit · ui · integration · SQL)만 돌았다.
 

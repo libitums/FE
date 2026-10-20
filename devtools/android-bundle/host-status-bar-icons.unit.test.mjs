@@ -487,7 +487,7 @@ test("SM11: statusBarSurfaceRegistry matches the contract (nine routes, five CSS
     "screens/tickets/tickets.css",
   ]);
   const layerText = (path) => JSON.stringify(fixedLayers[path]);
-  // 학습 티켓(ADR-0074) — 모달은 지표 모달의 표지를 함께 달고, 대화상자는 기본 스크림이라 표지가 없다.
+  // 학습 티켓(ADR-0075) — 모달은 지표 모달의 표지를 함께 달고, 대화상자는 기본 스크림이라 표지가 없다.
   assert.match(layerText("screens/journey-map/journey-stat-modal.css"), /TicketStatModal/);
   assert.match(layerText("screens/tickets/tickets.css"), /default-scrim/);
   assert.match(layerText("screens/journey-map/journey-stat-modal.css"), /light-icons/);
