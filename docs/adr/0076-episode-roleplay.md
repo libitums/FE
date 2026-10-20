@@ -75,3 +75,14 @@
   튜토리얼의 메신저 · 전화 · 비주얼 노벨은 여정 맵에서 그대로 열린다. 롤플레이 탭에서 그 셋을 열던 route(`roleplay-messenger` · `roleplay-phone-call` · `roleplay-visual-novel` · `roleplay-episode`)와 Plus 예고 코드는 들어갈 길이 없어졌고, 걷는 일은 따로 한다. 그 진입을 보던 통합 테스트(`App.roleplay` 전체 · 롤플레이에서 연 메신저 · 전화 · 비주얼 노벨 · 해금 확인)는 지웠다.
 - **카드 바탕 그림 — 사용자 요청.** 카드는 그 에피소드 표지의 첫 그림(`pre_cuts` 중 그림이 있는 첫 컷)을 바탕에 깔고, 그 위에 아래 그늘 · 글자 · 잠김 막이 선다. 그림이 없으면 단색 면 그대로다(`firstCoverImageOf`).
 
+## 적용 기록 ⟨2026-10-20 — 시작 전 권한 확인 · 듣지 못한 까닭 안내⟩
+
+- **시작 전 권한 확인 — 사용자 요청.** 미리보기의 `Start roleplay`가 먼저 말하기 준비를 본다(`speechReadinessOf`). [ADR-0026](0026-permission-entry-conditions-and-denial-handling.md) D3의 세 갈래를 그대로 따른다.
+  - 미요청이면 시스템 권한 창을 띄우고, 허용되면 그대로 시작한다.
+  - 거부 · 제한이면 시작하지 않고 모달 「Turn on the microphone」 — `Open Settings`(이 앱의 설정 화면) · `Not now`.
+  - 권한은 있는데 인식기가 없으면 모달 「Speaking isn't available」 — `Start anyway`(줄마다 건너뛰며 장면을 본다) · `Not now`.
+  - 접점이 없으면(개발 루프 · 옛 호스트) 조용히 시작한다.
+- **설정 열기는 말하기 모듈의 새 메서드 `openSettings`다**(호스트 변경 — iOS `UIApplication.openSettingsURLString`, Android `ACTION_APPLICATION_DETAILS_SETTINGS`). 알림 모듈의 `openSettings`는 Android에서 알림 설정을 열어 마이크 스위치에 닿지 않는다. 이 메서드가 없는 옛 호스트에서는 아무 일도 없다.
+- **듣지 못한 까닭마다 안내가 다르다** — 받아쓰기 꺼짐은 설정 경로(말하기 학습형과 같은 문구), 권한 · 인식기는 허용 안내, 그 한 번의 실패는 「I didn't catch that. Tap the mic and try again.」 — 셋 다 마이크로 다시 시도할 수 있다. 그전에는 셋 모두 같은 「Speaking isn't available right now」였다(실기에서 원인을 가를 수 없었다).
+- **녹음은 스스로 멈추지 않는다**(네이티브 모듈이 침묵을 재지 않는다) — 듣는 중 안내를 「Listening… Tap again when you're done.」으로 바꿨다.
+

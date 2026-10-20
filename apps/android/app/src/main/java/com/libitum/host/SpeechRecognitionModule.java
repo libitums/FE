@@ -46,4 +46,7 @@ public final class SpeechRecognitionModule extends LynxModule {
   }
 
   @LynxMethod public void stop() { recognition.stop(); }
+
+  /** Opens this app's system settings page, where the microphone permission lives. */
+  @LynxMethod public void openSettings() { recognition.openSettings(); }
 }

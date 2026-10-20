@@ -39,10 +39,23 @@ const env = {
   store: new Map<string, string>(),
   events: [] as EpisodeIntroEvent[],
   heard: [] as string[],
+  /** 기기의 권한 · 인식기 상태입니다. 요청하면 `afterRequest`가 됩니다. */
+  status: { microphone: "granted", speechRecognition: "granted", recognizerAvailable: true },
+  afterRequest: { microphone: "granted", speechRecognition: "granted", recognizerAvailable: true },
+  openedSettings: 0,
   saves: 0,
 };
 
-async function boot(catalogProgress: Record<string, readonly string[]>): Promise<void> {
+const granted = { microphone: "granted", speechRecognition: "granted", recognizerAvailable: true };
+
+async function boot(
+  catalogProgress: Record<string, readonly string[]>,
+  status: typeof granted = granted,
+  afterRequest: typeof granted = granted,
+): Promise<void> {
+  env.status = status;
+  env.afterRequest = afterRequest;
+  env.openedSettings = 0;
   env.store = new Map();
   env.store.set(
     authSessionStorageKey,
@@ -58,13 +71,14 @@ async function boot(catalogProgress: Record<string, readonly string[]>): Promise
       remove: (key: string) => void env.store.delete(key),
     },
     SpeechRecognitionModule: {
-      getStatus: () => {},
-      requestPermissions: (callback: (payload: unknown) => void) =>
-        callback({
-          microphone: "granted",
-          speechRecognition: "granted",
-          recognizerAvailable: true,
-        }),
+      getStatus: (callback: (payload: unknown) => void) => callback(env.status),
+      requestPermissions: (callback: (payload: unknown) => void) => {
+        env.status = env.afterRequest;
+        callback(env.status);
+      },
+      openSettings: () => {
+        env.openedSettings += 1;
+      },
       start: (_args: unknown, callback: (payload: unknown) => void) =>
         callback({ status: "recognized", text: env.heard.shift() ?? "", isFinal: true }),
       stop: () => {},
@@ -191,4 +205,37 @@ test("[IR4] 잠긴 카드는 눌러도 열리지 않는다", async () => {
   fireEvent.tap(id("roleplay-list-item-story-u01-water"), {});
   expect(maybe("roleplay-preview-screen")).not.toBeInTheDocument();
   expect(env.events.filter((event) => event.name === "roleplay_story_opened")).toHaveLength(0);
+});
+
+test("[IR5] 권한을 아직 묻지 않았으면 시작 때 묻고, 허용하면 그대로 표지 컷으로 간다", async () => {
+  const unasked = { ...granted, microphone: "not-determined", speechRecognition: "not-determined" };
+  await boot({ "u01-water": u01Complete }, unasked, granted);
+  fireEvent.tap(id("roleplay-list-item-story-u01-water"), {});
+  tapButton("roleplay-preview-start");
+  expect(maybe("roleplay-preview-speech-notice")).not.toBeInTheDocument();
+  expect(id("catalog-cover-screen")).toBeInTheDocument();
+});
+
+test("[IR6] 권한이 거부돼 있으면 시작 대신 안내 — Open Settings는 설정을 열고, Not now는 닫는다", async () => {
+  const denied = { ...granted, microphone: "denied" };
+  await boot({ "u01-water": u01Complete }, denied, denied);
+  fireEvent.tap(id("roleplay-list-item-story-u01-water"), {});
+  tapButton("roleplay-preview-start");
+  expect(id("roleplay-preview-speech-notice")).toHaveAttribute("data-notice", "blocked");
+  expect(maybe("catalog-cover-screen")).not.toBeInTheDocument();
+  fireEvent.tap(within(id("ui-lynx-dialog-action-settings")).getByTestId("ui-lynx-button"), {});
+  expect(env.openedSettings).toBe(1);
+  expect(maybe("roleplay-preview-speech-notice")).not.toBeInTheDocument();
+  tapButton("roleplay-preview-start");
+  fireEvent.tap(within(id("ui-lynx-dialog-action-dismiss")).getByTestId("ui-lynx-button"), {});
+  expect(maybe("roleplay-preview-speech-notice")).not.toBeInTheDocument();
+  expect(id("roleplay-preview-screen")).toBeInTheDocument();
+});
+
+test("[IR7] 묻고 나서도 거부하면 안내가 뜬다", async () => {
+  const unasked = { ...granted, speechRecognition: "not-determined" };
+  await boot({ "u01-water": u01Complete }, unasked, { ...granted, speechRecognition: "denied" });
+  fireEvent.tap(id("roleplay-list-item-story-u01-water"), {});
+  tapButton("roleplay-preview-start");
+  expect(id("roleplay-preview-speech-notice")).toHaveAttribute("data-notice", "blocked");
 });

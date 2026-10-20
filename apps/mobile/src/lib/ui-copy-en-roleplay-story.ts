@@ -12,7 +12,7 @@ export const roleplayStoryEn: RoleplayStoryCopy = {
   me: "Me",
   speak: "Speak",
   stop: "Stop",
-  listening: "Listening…",
+  listening: "Listening… Tap again when you're done.",
   showHint: "Show hint",
   hint: (translation) => `Say: ${translation}`,
   cantSpeak: "Can't speak now",
@@ -21,5 +21,16 @@ export const roleplayStoryEn: RoleplayStoryCopy = {
   youSaid: (heard) => `You said: ${heard}`,
   heardNothing: "I didn't catch that.",
   unavailable: "Speaking isn't available right now. You can skip this line.",
+  blocked: "Allow Microphone and Speech Recognition for this app in Settings, or skip this line.",
+  permissionTitle: "Turn on the microphone",
+  permissionBody:
+    "Roleplay is spoken. Allow Microphone and Speech Recognition for this app in Settings.",
+  openSettings: "Open Settings",
+  notNow: "Not now",
+  unsupportedTitle: "Speaking isn't available",
+  unsupportedBody:
+    "Speech recognition isn't available on this device right now. You can still play the scene and skip each line.",
+  startAnyway: "Start anyway",
+  retryHeard: "I didn't catch that. Tap the mic and try again.",
   playAgain: "Play again",
 };

@@ -15,4 +15,7 @@
 | ER7 | 마지막 턴 → `See results` | 결과 화면(레슨과 같음, 티켓 줄 없음) → `Back to list`로 목록. 여정 맵 진행 · 트로피 · 티켓 칩이 그대로 |
 | ER8 | 2편을 끝내고 2편 롤플레이를 한다(프로필 이름 Emma) | 대답 「Emma(으)로 예약했어요」에서 인식기가 이름을 다르게 적어도(「엠마로 예약했어요」) `Great` |
 | ER9 | 음성 인식 권한을 거부한 상태에서 마이크 | 안내 「Speaking isn't available right now. You can skip this line.」, `Can't speak now`로 넘김 — 결과에서 그 줄은 판정에 들지 않는다 |
+| ER11 | 설정에서 마이크를 끈 채 `Start roleplay` | 시작하지 않고 모달 「Turn on the microphone」 · `Open Settings` → 이 앱의 설정 화면(마이크 · 음성 인식 스위치) · 돌아와 켠 뒤 다시 누르면 시작 |
+| ER12 | 앱을 지우고 새로 깔아 `Start roleplay` | 시스템 권한 창 둘(마이크 · 음성 인식) → 허용하면 표지 컷 |
+| ER13 | 듣는 중 바로 다시 누름(말 없이) | 「I didn't catch that. Tap the mic and try again.」, 마이크로 다시 시도 |
 | ER10 | PostHog | `roleplay_story_opened`(episodeId) · `roleplay_story_completed`(episodeId · correctCount · judgedCount · skippedCount) 도착 |

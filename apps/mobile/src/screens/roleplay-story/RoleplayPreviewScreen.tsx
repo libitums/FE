@@ -3,6 +3,7 @@ import type { ReactNode } from "@lynx-js/react";
 import arrowLeft03 from "@libitums/icons/lynx/arrow-left-03";
 import mic from "@libitums/icons/lynx/mic";
 import { Button } from "@libitums/ui-lynx/button";
+import { Dialog } from "@libitums/ui-lynx/dialog";
 import { resolveReducedMotion, useMotion } from "@libitums/ui-lynx/motion";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
 import { VisualNovelDialog } from "@libitums/ui-lynx/visual-novel-dialog";
@@ -28,10 +29,13 @@ export function RoleplayPreviewScreen({
   imageUrl,
   onStart,
   onExit,
+  speechNotice,
+  onSpeechNoticeAction,
 }: RoleplayPreviewScreenProps): ReactNode {
   const copy = useUiCopy();
   const reducedMotion = resolveReducedMotion(undefined, useMotion());
-  useScreenBack(onExit);
+  // 안내가 떠 있으면 뒤로가기는 안내를 닫습니다.
+  useScreenBack(speechNotice === null ? onExit : () => onSpeechNoticeAction("dismiss"));
   const chips = [
     copy.roleplayStory.withCounterpart(counterpartName),
     copy.roleplayStory.lineCount(lineCount),
@@ -132,6 +136,32 @@ export function RoleplayPreviewScreen({
           </view>
         </view>
       </view>
+      {speechNotice === null ? null : (
+        <view data-testid="roleplay-preview-speech-notice" data-notice={speechNotice}>
+          <Dialog
+            title={
+              speechNotice === "blocked"
+                ? copy.roleplayStory.permissionTitle
+                : copy.roleplayStory.unsupportedTitle
+            }
+            description={
+              speechNotice === "blocked"
+                ? copy.roleplayStory.permissionBody
+                : copy.roleplayStory.unsupportedBody
+            }
+            actions={[
+              speechNotice === "blocked"
+                ? { id: "settings", label: copy.roleplayStory.openSettings }
+                : { id: "anyway", label: copy.roleplayStory.startAnyway },
+              { id: "dismiss", label: copy.roleplayStory.notNow },
+            ]}
+            phase="visible"
+            bindaction={(id) =>
+              onSpeechNoticeAction(id === "settings" || id === "anyway" ? id : "dismiss")
+            }
+          />
+        </view>
+      )}
     </view>
   );
 }
