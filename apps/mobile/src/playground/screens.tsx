@@ -231,7 +231,6 @@ export const playgroundScreens = {
       }
       actionLabel="Check"
       onAction={noop}
-      streakDays={3}
     />
   ),
   "catalog:button": () => <ButtonCatalog />,

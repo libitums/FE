@@ -46,21 +46,9 @@ import {
 } from "./render-learner-profile";
 import { renderEpisodeFinalFlow } from "./render-episode-final";
 import { renderRoleplayUnitScreen } from "./render-roleplay-screen";
-import { LearningStatsContext } from "../screens/learning/LearningTopBar";
 import type { ScreenWiring } from "./screen-wiring";
 
-// 학습 화면의 머리 칩(연속 학습 · 트로피)은 여기서 한 번 공급합니다 — 학습형마다 prop으로 내리지 않습니다.
 export function renderScreen(screen: Screen, wiring: ScreenWiring) {
-  return (
-    <LearningStatsContext.Provider
-      value={{ streakDays: wiring.streakDays, trophyCount: wiring.trophyCount }}
-    >
-      {renderScreenBody(screen, wiring)}
-    </LearningStatsContext.Provider>
-  );
-}
-
-function renderScreenBody(screen: Screen, wiring: ScreenWiring) {
   switch (screen.name) {
     case "journey-map":
       return (

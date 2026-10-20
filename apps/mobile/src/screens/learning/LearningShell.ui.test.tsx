@@ -253,36 +253,10 @@ test("같은 걸음을 두 번 tap해도 run은 한 번만 불린다", () => {
   expect(run).toHaveBeenCalledTimes(1);
 });
 
-// ---------------------------------------------------------------- 상단 칩 (2026-09-28)
+// ---------------------------------------------------------------- 상단 칩 (2026-10-20)
 //
-// 상단 바는 여정 맵과 함께 쓰는 컴포넌트입니다. 거기서는 칩을 눌러 지표 모달이 뜨지만
-// 학습 화면에는 열 모달이 없습니다 — 껍데기가 콜백을 안 넘깁니다.
-//
-// 그때 칩이 `button`으로 읽히면 **누르면 무언가 일어난다고 말해 놓고 아무 일도 안 하는
-// 정지점**이 됩니다. 이름은 남아야 합니다: 숫자만 낭독되면 무엇의 3인지 알 수 없는 것은
-// 누를 수 있든 없든 같습니다.
-test("[SH2-E] 학습 화면의 상단 칩은 이름을 내되 조작 단위로 읽히지 않는다", () => {
-  renderShell({ streakDays: 3, trophyCount: 7 });
-
-  const streak = screen.getByTestId("top-bar-streak");
-  expect(streak).toHaveAttribute("accessibility-label", "3-day streak");
-  expect(streak).not.toHaveAttribute("accessibility-traits");
-
-  const trophy = screen.getByTestId("top-bar-trophy");
-  expect(trophy).toHaveAttribute("accessibility-label", "7 trophies");
-  expect(trophy).not.toHaveAttribute("accessibility-traits");
-});
-
-// 알림 버튼은 껍데기가 콜백을 넘기므로 그대로 조작 단위입니다 — 위 규칙이 상단 바
-// 전체를 끄는 것이 아니라는 것을 답니다.
-test("학습 화면에서도 알림 버튼은 조작 단위다", () => {
-  renderShell();
-
-  expect(screen.getByTestId("top-bar-notifications")).toHaveAttribute(
-    "accessibility-traits",
-    "button",
-  );
-});
+// 학습 중에는 상단 줄(연속 학습 · 트로피 칩 · 알림 버튼)이 서지 않습니다 — 칩은 결과 화면에서
+// 다시 섭니다. 없는 것은 `LearningShell.stats.ui.test.tsx`가 봅니다.
 
 // 표식이 화면 루트에 실제로 붙는지는 ui가 봅니다 — 계약이 낱말을 맞게 만들어도 그것을
 // DOM에 안 얹으면 캡처는 여전히 비어 있고, 그 실패는 기기에서 재 보기 전까지 조용합니다.
@@ -390,14 +364,12 @@ function renderMarkedShell() {
         card={<text data-testid="fixture-card">카드 안</text>}
         actionLabel="Check"
         onAction={() => {}}
-        streakDays={3}
-        trophyCount={7}
       />
     </UiCopyContext.Provider>,
   );
 }
 
-test("[LS1-M] 문구표를 주입하면 나가기 · 진행 이름 · 상단 칩이 표의 경로로 나온다", () => {
+test("[LS1-M] 문구표를 주입하면 나가기 · 진행 이름이 표의 경로로 나온다", () => {
   renderMarkedShell();
 
   expect(screen.getByTestId("learning-shell-exit")).toHaveAttribute(
@@ -407,18 +379,6 @@ test("[LS1-M] 문구표를 주입하면 나가기 · 진행 이름 · 상단 칩
   expect(screen.getByTestId("learning-shell-progress")).toHaveAttribute(
     "accessibility-label",
     "⟦learningShell.headerQuestionOf⟧(Listening, 2, 4)",
-  );
-  expect(screen.getByTestId("top-bar-streak")).toHaveAttribute(
-    "accessibility-label",
-    "⟦common.count.streakDays⟧(3)",
-  );
-  expect(screen.getByTestId("top-bar-trophy")).toHaveAttribute(
-    "accessibility-label",
-    "⟦common.count.trophies⟧(7)",
-  );
-  expect(screen.getByTestId("top-bar-notifications")).toHaveAttribute(
-    "accessibility-label",
-    "⟦shell.notifications⟧",
   );
 });
 

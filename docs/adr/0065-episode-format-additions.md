@@ -81,7 +81,7 @@
   `completedCatalogEpisodeCount(progress, completionKeysOf)` = 진행에 있는 에피소드 가운데 완료인 수.
 - 완료 키의 출처는 **맵 구획**이다 — `CatalogReadySection.completionKeys` = `episode.completion?.requires ?? [episode.finalTest.id]`. 콘텐츠를 모르는 id(진행에만 남은 에피소드 · 준비 안 된 구획)는
   기본값 — **지금 규칙과 같은 결과**다.
-- 소비자 셋: ① 다음 에피소드 표지 열림(`catalogCoverStatus`), ② 트로피(`trophyCountFrom`의 셋째 인자), ③ (간접) 학습 화면 머리 칩. 진행 훅(`useJourneyProgress`)은 콘텐츠를 모르므로
+- 소비자 셋: ① 다음 에피소드 표지 열림(`catalogCoverStatus`), ② 트로피(`trophyCountFrom`의 셋째 인자), ③ (간접) 학습 화면 머리 칩(⟨2026-10-20⟩ 학습 중 상단 줄을 걷어 지금은 결과 화면의 칩만). 진행 훅(`useJourneyProgress`)은 콘텐츠를 모르므로
   **판정 규칙을 셋째 인자로 주입받는다** — 세션이 맵 구획에서 만든 `catalogCompletionKeysOf(sections)`.
 - **지웠다**: `isCatalogEpisodePassed` · `passedCatalogEpisodeCount`. 이름이 「`RP` 통과」를 뜻해 남기면 잘못 쓰인다.
 - **바꾸지 않았다**: 사슬 잠금(표지 → 레슨들 → 최종), 최종 테스트 통과 뒤 컷 · 「Episode clear!」 배너 · `episode_final_passed`(모두 「`RP` 통과」라는 **사건**이다).
