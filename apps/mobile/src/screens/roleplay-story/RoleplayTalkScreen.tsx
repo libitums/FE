@@ -77,7 +77,7 @@ export function RoleplayTalkScreen({
     if (!done || finished.current) return;
     finished.current = true;
     onFinish(state.results, state.skippedCount);
-  }, [done]);
+  }, [done, onFinish, state.results, state.skippedCount]);
 
   useEffect(() => {
     if (state.verdict !== null) {

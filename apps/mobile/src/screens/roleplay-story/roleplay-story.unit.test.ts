@@ -50,6 +50,11 @@ test("[RS3] 이름과 나라가 함께 든 문장 — 나머지 낱말이 차례
   );
 });
 
+test("[RS9] 정답이 이름뿐이면 무언가 말해야 맞다 — 빈 인식은 오답", () => {
+  expect(judgeRoleplayReply(["Emma"], "", ["Emma"])).toBe("incorrect");
+  expect(judgeRoleplayReply(["Emma"], "엠마", ["Emma"])).toBe("correct");
+});
+
 test("[RS4] 한 턴 — 말하기 → 판정 → 다음, 결과가 쌓이고 힌트는 접힌다", () => {
   let state = roleplayTalkReducer(initialRoleplayTalkState, { type: "hint" });
   state = roleplayTalkReducer(state, { type: "start" });

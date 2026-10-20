@@ -72,6 +72,8 @@ function matchesWithWildcards(sentence: string, heard: string, wildcards: readon
   const pieces = wildcards.flatMap((wildcard) => speakingWords(wildcard));
   const required = speakingWords(sentence).filter((word) => !containsWildcard(word, pieces));
   const heardWords = speakingWords(heard);
+  // 정답이 이름 · 나라뿐이면 남는 낱말이 없습니다 — 그때는 무언가 말했어야 맞습니다.
+  if (required.length === 0) return heardWords.length > 0;
   let cursor = 0;
   for (const word of required) {
     const found = heardWords.indexOf(word, cursor);
