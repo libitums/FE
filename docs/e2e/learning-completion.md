@@ -59,7 +59,7 @@ iPhone 17 Pro / iOS 26.5 개발 playground에서 7번과 완료 후 맵 복귀�
 - **CS-3** 에피소드 1 `Lesson 6`(끝 활동 = 타자 입력, `card-scroll` 배치) — 머리 아랫변 175pt → 카드 233pt(58), 카드 703pt → 버튼 762pt(59) — 차 1pt. [스크린숏](evidence/ios-complete-card-center-CS-3.png).
 - **CS-4** 튜토리얼 `Listen to a Hello`(칩 하나) — 175 → 255(80), 681 → 762(81) — 차 1pt, 작은 카드가 같은 규칙으로 가운데. [스크린숏](evidence/ios-complete-card-center-CS-4.png).
 - **CS-5** iPhone SE(3세대, iOS 26.5 시뮬레이터, 375 × 667) · 기본 글꼴 · 에피소드 1 `Culture` — 링이 머리 밑에 가리지 않고 `See results`가 보이며 눌러 결과로 간다. **관찰:** 내용이 남는 높이와 거의 같아 카드 아랫변이 버튼 윗변에 맞닿는다(가운데 열의 마지막 흰 줄 586.5pt · 버튼 587pt) — 칩까지 내용은 모두 보인다. [스크린숏](evidence/ios-complete-card-center-CS-5-se.png).
-- **CS-6** 접근성 최대 글꼴(`accessibility-extra-extra-extra-large`) · 튜토리얼 듣기 — 카드가 남는 높이보다 커서 **위에서부터** 서고 링이 머리 밑에 가리지 않으며, 끝까지 끌면 칩이 온전하고 버튼이 내용을 덮지 않는다. **기존 결함(이 변경 밖):** 제목 `All questions done`의 낱말 `questions`가 한 줄 폭보다 넓어 「questio」로 잘린다 — 제목 스타일은 이 변경이 손대지 않았다(후속). [스크린숏 — 처음 · 끝까지 끈 뒤](evidence/ios-complete-card-center-CS-6-large-font.png).
+- **CS-6** 접근성 최대 글꼴(`accessibility-extra-extra-extra-large`) · 튜토리얼 듣기 — 카드가 남는 높이보다 커서 **위에서부터** 서고 링이 머리 밑에 가리지 않으며, 끝까지 끌면 칩이 온전하고 버튼이 내용을 덮지 않는다. **기존 결함(이 변경 밖):** 제목 `All questions done`의 낱말 `questions`가 한 줄 폭보다 넓어 「questio」로 잘린다 — 제목 스타일은 이 변경이 손대지 않았다(후속). 「기존」이라는 판단은 코드 차이(제목 · 카드 폭 규칙 변경 없음)에 근거하며, 바꾸기 전 번들로 같은 글꼴에서 찍은 캡처는 없다. [스크린숏 — 처음 · 끝까지 끈 뒤](evidence/ios-complete-card-center-CS-6-large-font.png).
 - CS-2 · CS-7 · CS-8은 미실행.
 
 - 판정 기준: CS-1 ~ CS-4는 「가운데」(위아래 차 ≤ 2pt)와 「빈 띠 없음」을 함께 본다 — 가운데여도 판정 띠가 남으면 **실패**다. CS-5 · CS-6은 가운데보다 「위에서부터 · 버튼에 닿음」이 앞선다.
