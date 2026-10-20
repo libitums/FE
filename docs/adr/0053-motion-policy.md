@@ -67,6 +67,7 @@
   리터럴 하나의 이유로만 실패한다**(ADR-0006 D1).
 - **Content 예외는 allowlist 한 파일이다** — `episode-narrative/narrative-background.css`(서사 배경 연출, 비항등 scale 13줄 포함). 사유 문장은 allowlist 자체에 있고, 없는 파일 · 위반 0인
   항목은 실패다. `scale(0)` · `scale(1.2)` 같은 새 값은 allowlist 사유로만 들어온다(토큰 추가는 design-system 몫).
+  *(2026-10-20 주: 지금 항목은 **넷**이다 — 서사 배경 · 지표 칩 연출(`stat-chip-motion.css`) · 지표 모달 반복(`journey-stat-modal-motion.css`) — 이 둘은 D4 적용 기록 ⟨2026-10-16⟩ — · 문화 카드 뒤집기(`culture-card-activity.css`, D3 적용 기록 ⟨2026-10-20⟩). 각 사유는 이 문서에 옮겨 적지 않고 allowlist 항목의 `reason`이 진다.)*
 - 검증: unit은 숫자 대조 대신 **문자열 단언**(`scale(var(--libitum-motion-scale-pressed))`)과 **비항등 리터럴 0** 개수를 센다 — 토큰 값이 바뀌어도 CSS를 고칠 일이 없고 테스트는
   「토큰을 쓰는가」만 묻는다. 샌드박스 통합 테스트가 `.tsx`의 `style={{ transition: "opacity 150ms" }}` · `style="transition: …"`에서 exit 1, 토큰만 쓴 inline에서 exit 0을 고정한다.
 
@@ -105,6 +106,12 @@
   `rotateY(90deg → 0deg)` keyframe 한 번, 시간 · 곡선은 토큰(`d6` · `enter`)이고 각도는 D1의 다섯 규칙 밖(시간 · easing · scale만 본다)이다. 뒤집을 때만 돌고(처음 선 면 · 다음 카드는 돌지 않는다),
   reduced는 이 표의 「회전은 즉시」대로 클래스를 붙이지 않는다 — 불투명도도 걸지 않는다(사용자 요구 「즉시」). reduced 표식은 조건부 spread `data-motion="reduced"`(D2). `perspective`는 Lynx 부분 지원이라 쓰지 않았다.
   새 토큰 · allowlist · `lint:motion` 규칙 변경은 0이다. 기기에서는 보지 않았다(문화 카드 e2e CF2 · CF5 미실행).
+  *(2026-10-20 주: 이 기록의 「세로축 회전」 · 「allowlist 변경 0」은 그날의 사실이다 — 다음 적용 기록에서 가로 배율로 바뀌었다.)*
+- ⟨2026-10-20 — 적용 기록이고 결정을 바꾸지 않는다⟩ **문화 카드 뒤집기가 세로축 회전에서 가로 배율로 바뀌었다**([ADR-0072](0072-culture-card-flip.md) `정정 기록` 2026-10-20, 사용자 결정).
+  iOS 시뮬레이터 녹화(2026-10-20)에서 `rotateY` 회전 중 카드의 한쪽 반이 덱 뒤 두 장 뒤로 그려져 옅은 주황이 비쳤고, keyframe 두 개를 `scaleX(0) → scaleX(1)`로 바꿨다.
+  이 표에서는 「회전은 즉시」가 아니라 **「확대는 즉시」** 줄에 든다 — reduced 처리는 같다(클래스를 붙이지 않아 면이 즉시 바뀌고 불투명도도 걸지 않는다). 시간 · 곡선은 그대로 토큰(`d6` · `enter`)이다.
+  시작 값 `scaleX(0)`은 D1의 `scale-literal`에 걸린다 — 토큰 셋(pressed · enter · reward)이 모두 0보다 커 표현할 수 없다. 그래서 D1의 경로대로 **allowlist 넷째 항목**으로 이 파일을 올렸다(사유는 allowlist). 끝 값 `scaleX(1)`은 항등 예외다.
+  새 토큰 · `lint:motion` 규칙 변경은 0이다. 기기 확인은 [새 형식 화면 e2e](../e2e/episode-format-screens.md) 「G2」 CF10 · CF10-A(미실행).
 - **카탈로그(Storybook)는 컴포넌트별 `motion` arg + `ReducedMotion` 스토리다**(4단계). 새 다섯(Round Button · Learning Unit · Page Indicator · Settings Cell · Chat Bubble)은 **컨텍스트 경로** —
   엔트리가 `<MotionProvider motion={data.motion}>`로 감싸고 컴포넌트에 prop을 주지 않는다(제품 앱과 같은 길). 기존 넷은 prop 경로 그대로, Visual Novel Dialog는 `reducedMotion` prop arg로 스토리만.
   Chat Bubble은 `reveal: "instant" | "typewriter"` arg와 `Typewriter` 스토리를 더했다 — `reveal` 없이는 reduced가 보일 것이 없다. 순수 함수 `normalizeStoryMotion(value)`(`"reduced"`만 reduced)을

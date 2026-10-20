@@ -284,6 +284,18 @@ D6이 적지 않은 넷을 닫는다. **넷 다 코드에는 이미 패턴이 �
       `.sentence-order-chip-motion-reduced`는 꼴은 같지만 기기 설정이 고르는 환경 표지다.
     - **기존 예외**: `StatChip.tsx`는 `data-surface` · `data-height`를 달지 않는다 — 위 테스트 채널
       규칙보다 먼저 만들어졌다. 코드는 그대로 두고 예외로 적는다. 다음에 그 부품을 고칠 때 맞춘다.
+  - ⟨2026-10-20 — 적용 기록이고 결정을 바꾸지 않는다⟩ **시간에 따라 바뀌는 축-값 표기의 셋째 사례가 섰다.**
+    상태어 목록 밖이면서 호출자가 고르지도 않는 꼴 — 화면이 지나는 단계가 고르는 `블록-요소-축-값` — 은 이 D7이
+    따로 적지 않았다. 앞선 두 사례는 학습 껍데기의 문항 전환 `.learning-shell-stage-page-primed`(축 `page`)와
+    동작 줄이기 `-motion-reduced`(축 `motion`, 위 「앞선 같은 꼴」)다. 셋째는 같은 껍데기의 완료 장면이다 —
+    `.learning-shell-stage-scene-complete`(축 `scene`, 값 `complete`)와 남는 세로를 받는 방법을 고르는
+    `.learning-shell-stage-fill-rest` · `-fill-flow` · `-fill-scroll` · `.learning-shell-flow-fill-scroll`(축 `fill`)
+    ([ADR-0022](0022-scroll-regions-and-fixed-affordances.md) 적용 기록 2026-10-20).
+    - base에 **더해** 붙이고, 같은 파일에서 base 바로 뒤에 선언한다(위 상태 클래스의 순서 규칙).
+    - 테스트 채널은 **그 장면에서만 붙는** `data-scene="complete"`다 — 같은 상자의 `data-page`(전환 중에만 붙음)와
+      같은 꼴이다. 기본 장면(문항)에는 속성도 클래스도 없다. 변형의 「늘 붙는 `data-<축>`」과 다른 것은, 이 축은 호출자가
+      고르는 모양이 아니라 화면이 지나는 단계라서 기본 장면의 DOM을 바꾸지 않는 쪽을 골랐기 때문이다.
+    - `complete` · `rest` · `flow` · `scroll`은 예약 상태어가 아니다. 상태어 목록은 아홉 그대로이고 읽는 규칙도 그대로다.
 
 - **`data-testid`는 테스트가 실제로 질의하는 요소에만 붙인다.** 클래스와 문자열이
   같아질 수 있지만 **다른 계약**이다 — 클래스는 시각, testid는 테스트다. 한쪽을 바꿔도
