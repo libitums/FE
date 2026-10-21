@@ -61,27 +61,4 @@ export const learningItemGuideEn: LearningItemGuideCopy = {
     description:
       "Usually you put several pieces in order. Here there's only one, so tap it, then tap Check.",
   },
-  messenger: {
-    title: "Just one reply this time",
-    description:
-      "Usually you choose a reply or type your own. Here there's only one, so tap it and send.",
-  },
-  "phone-call": {
-    title: "Reply with a tap",
-    description:
-      "Tap Accept and listen. You don't need to speak, so just tap your reply when it's your turn.",
-  },
-  "visual-novel": {
-    title: "Your lines are ready",
-    description:
-      "Tap Next to read each line. Your replies are already written, so there's nothing to choose.",
-  },
-  speaking: {
-    title: "Try it, or skip it",
-    description: "Tap Speak and read the sentence out loud, or tap Skip if you're not ready.",
-  },
-  writing: {
-    title: "Trace the letter",
-    description: "Follow the pale letter with your finger, then tap Check.",
-  },
 };

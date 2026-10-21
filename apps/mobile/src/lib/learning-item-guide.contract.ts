@@ -3,25 +3,16 @@
 // `components/LearningItemGuide.tsx`가 집니다.
 
 /** 안내의 종류입니다. 종류마다 기기에서 한 번만 뜹니다. */
-export type LearningItemGuideKind =
-  | "sentence-order"
-  | "messenger"
-  | "phone-call"
-  | "visual-novel"
-  | "speaking"
-  | "writing";
+export type LearningItemGuideKind = "sentence-order";
 
 /**
  * 화면이 설 때의 첫 문항(첫 답장)에서 뽑은 판정 입력입니다. 화면은 자기 데이터의 필드를
  * 그대로 옮기기만 하고 판정하지 않습니다. 문항이 없으면 `null`을 넘깁니다.
  */
-export type LearningItemGuideSubject =
-  | { readonly form: "sentence-order"; readonly chips: readonly string[] }
-  | { readonly form: "messenger"; readonly choices: readonly string[] | undefined }
-  | { readonly form: "phone-call" }
-  | { readonly form: "visual-novel" }
-  | { readonly form: "speaking"; readonly optionalPractice: boolean | undefined }
-  | { readonly form: "writing"; readonly optionalPractice: boolean | undefined };
+export type LearningItemGuideSubject = {
+  readonly form: "sentence-order";
+  readonly chips: readonly string[];
+};
 
 /** 호스트 저장소(StorageModule)의 키입니다. 값은 종류 문자열의 JSON 배열입니다. */
 export type LearningItemGuideSeenStorageKey = "libitum.learning-item-guides.seen";
