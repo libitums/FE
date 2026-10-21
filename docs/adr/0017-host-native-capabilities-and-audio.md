@@ -460,6 +460,10 @@ Supabase OAuth)이고, iOS 호스트가 `WebAuthenticationModule`(`start` · `ra
 - **일시정지 · 재개** — `stop` 뒤 다시 `play`로 대체한다. 재개 지점을 들고 있으면
   상태 기계가 하나 더 생기고, 그 상태를 네이티브와 JS가 나눠 갖게 된다
 - **시크 · 배속 · 볼륨 · 페이드**
+  ⟨2026-10-22 — [ADR-0080](0080-item-audio-and-slow-playback.md)이 「배속」 한 낱말을 부분 대체한다⟩ **배속은 하나만 열렸다** — 다섯째 메서드
+  `playAtRate(source, rate, done)`가 학습 듣기 문항의 「천천히」(0.85배 · 음높이 유지)를 낸다. `play`는 바뀌지 않았고 옛 호스트는 메서드
+  존재로 감지해 1.0 `play`로 간다(인자를 늘리면 옛 iOS 호스트가 메서드를 부르지 않는다). 값 0.85는 JS 한 자리이고 네이티브는 0.5 ~ 2.0 밖을
+  1.0으로 정규화한다. **시크 · 볼륨 · 페이드 · 0.85 밖의 배속 선택은 그대로 하지 않는다.** 이 문단의 「메서드는 둘」(그 뒤 넷)은 이제 다섯이다
 - **동시 재생** — 한 번에 하나다. 새 `play`가 이전 것을 대체한다
 - **재생 상태 조회 API** — 상태는 JS가 콜백으로 들고 있는다. 조회를 열면 진실이 둘이 되고,
   둘이 어긋나는 순간을 판정할 수단이 없다
@@ -715,3 +719,12 @@ LIB-253이 더한 셋째 항목은 **종료 발화 priority API**다. Android에
 
 - **D3 — `source`의 「번들 id(튜토리얼 판정용 자산)」 갈래에 제품 쪽 소비자가 없어졌다.** 옛 튜토리얼 문항 · 프롤로그 통화 음성 15와 전화 음성 3을 `apps/ios/Host/audio`에서 지웠다(18). 남은 셋(`greeting-1` · `ordering-2` · `tutorial-cabin-announcement`)은 **호스트 테스트 고정물**이다 — iOS `AudioPlaybackModuleTests` · `RecordingAudioSessionTests` · `SoundEffectsModuleTests`, Android `AudioAssetPathTest` · `AudioContentFileTest` · `AudioRemoteSourceTest` · `SoundEffectAssetTest` · androidTest `AudioPlaybackModuleTest`가 이름으로 쥔다.
 - 번들 id 갈래 자체(호스트의 자산 경로 판정)는 지우지 않았다 — 호스트 코드 변경 0. 제품 음성은 모두 원격(`https`) 또는 받아 둔 파일(`file://`)이다(ADR-0060 · 0071).
+
+## 적용 기록 ⟨2026-10-22 — 학습 문항 음성 · 「천천히」⟩
+
+결정은 [ADR-0080](0080-item-audio-and-slow-playback.md) D1 ~ D3. 입장 조건(D1)은 바뀌지 않았다 — 새 모듈이 아니라 기존 재생 모듈의 메서드 하나다.
+
+- **D3 메서드 표면이 넷 → 다섯이다** — `play` · `playAtRate` · `stop` · `pause` · `resume`. 위 D3 제외 목록의 「배속」에 표시를 달았다. 나머지 제외(시크 · 볼륨 · 페이드 · 동시 재생 · 재생 상태 조회 · 배경 재생 · 녹음 · 재생목록 · 프리로드 · 캐시)는 그대로 산다.
+- **재검토 조건 「한 모듈의 메서드가 다섯을 넘는 시점」에는 닿지 않았다** — 다섯이다. 다음 메서드 하나가 그 조건이다.
+- **`source`의 세 갈래(번들 id · `https` · 받아 둔 `file://`)는 그대로다** — 속도는 해석 뒤 플레이어에만 걸린다. 학습 문항의 `stimulus.audio_url`이 이제 이 경로로 재생된다([ADR-0060](0060-episode-voice-remote-audio.md) 재검토 조건 1의 처리).
+- 재진술 둘 — iOS `AudioPlaybackModule.swift`와 JS `lib/audio.ts`의 머리 주석(「메서드는 다섯」)은 같은 변경에서 고쳤다.

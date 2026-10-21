@@ -184,13 +184,13 @@ FE 제안: 단일 `Text = { ko, roman, en? }`로 통일한다. `en`은 어디서
 | type | n | mode | event | 필수(전부 있음) | 선택(일부만) | 앱 처리 |
 |---|---|---|---|---|---|---|
 | `CLOZE_CHOICE` | 4 | choice | R | `prompt` · `context`(`ko`에 `___`) · `options` · `answers` · `feedback.correct` | `answers[].en` | 단어 선택 — 보기는 `options` 파일 순서 그대로 |
-| `REPLY_SELECT` | 16 | choice | R | `prompt` · `stimulus`(`audio: Text` · `audio_url` · `image_url`) · `options` · `feedback.correct` | — | 단어 선택 — 제시문 = `stimulus.audio`(상대 말). 소리 없이 글로 보인다 |
-| `MIN_PAIR_AB` | 6 | choice | **D** | `prompt` · `stimulus`(`audio` …) · `options`(2개) · `feedback.correct` | `stimulus.audio.en`(1/6) | 듣기 모양이지만 문항 음성이 없어 건너뜀(`audio-missing`) |
+| `REPLY_SELECT` | 16 | choice | R | `prompt` · `stimulus`(`audio: Text` · `audio_url` · `image_url`) · `options` · `feedback.correct` | — | 단어 선택 — 제시문 = `stimulus.audio`(상대 말). 소리 없이 글로 보인다 ⟨2026-10-22⟩ 글은 그대로이고, `audio_url`이 있으면 그 다음 간이 줄(다시 듣기 · `Slow`)이 서고 문항이 설 때 한 번 재생한다 |
+| `MIN_PAIR_AB` | 6 | choice | **D** | `prompt` · `stimulus`(`audio` …) · `options`(2개) · `feedback.correct` | `stimulus.audio.en`(1/6) | 듣기 모양이지만 문항 음성이 없어 건너뜀(`audio-missing`) ⟨2026-10-22⟩ `audio_url`이 있으면 **듣기**로 선다(없으면 건너뜀) |
 | `PARTICLE_FILL` | 6 | choice | R | `prompt` · `stimulus`(`text` …) · `options`(2개) · `feedback.correct` | — | 단어 선택 — 제시문 = `stimulus.text`(빈칸 문장) |
 | `PARTICLE_SWAP` | 9 | choice | R | `prompt` · `stimulus`(`text` …) · `options`(3개) · `feedback.correct` | — | 단어 선택 — 제시문 = `stimulus.text`(틀린 구) |
 | `CULTURE_CHECK` | 9 | choice | R | `prompt` · `context` · `options` · `feedback.correct` | — (`ref` 없음) | ~~건너뜀(`screen-pending`)~~ ⟨PR ②⟩ **단어 선택** — 제시문 `context`(+ `roman` · `en` 줄), 보기 `options[].ko` 파일 순서, **보기마다 번역 줄 `options[].en`**(전부 있을 때만) |
 | `CULTURE_CARD` | 9 | card | E | `context` · `stimulus`(`text` …) · `feedback.correct` | — (`prompt` · `ref` 없음) | ~~건너뜀(`screen-pending`)~~ ⟨PR ②⟩ **문화 카드** — 제목 `context.ko` · `roman` · `en`, 본문 `stimulus.text.en`(크게) · `.ko`(작게). ⟨2026-10-19 — G2⟩ 앞면 그림 `stimulus.image_url` |
-| `LISTEN_BUILD` | 13 | tiles | R | `prompt` · `stimulus`(`audio` …) · `tiles`(오답 조각 포함) · `answers` | `tiles[].en` | 건너뜀(~~`screen-pending`~~ ⟨PR ②⟩ **`audio-missing`** — 문항 음성이 오면 그때 화면을 만든다. 소리가 와도 저절로 서지 않는다) |
+| `LISTEN_BUILD` | 13 | tiles | R | `prompt` · `stimulus`(`audio` …) · `tiles`(오답 조각 포함) · `answers` | `tiles[].en` | 건너뜀(~~`screen-pending`~~ ⟨PR ②⟩ **`audio-missing`** — 문항 음성이 오면 그때 화면을 만든다. 소리가 와도 저절로 서지 않는다) ⟨2026-10-22⟩ `audio_url`이 있으면 **문장 순서**(기존 화면 — 상대 말풍선 자리에 재생 줄, 대본 없음)로 선다. 정답 `answers[0].ko`를 공백으로 나눈 조각마다 같은 글자 타일이 있어야 한다(없으면 `malformed`). 소리가 없으면 건너뜀 |
 | `SYLLABLE_BUILD` | 7 | tiles | R | `prompt` · `stimulus`(`en` · `audio_url` · `image_url`) · `tiles`(음절, 오답 포함) · `answers` | `tiles[].en` · `answers[].en` | ~~건너뜀(`screen-pending`)~~ ⟨PR ②⟩ **음절 조립** — 뜻 `stimulus.en`, 타일 `tiles[].ko`(섞음), 정답 `answers[].ko`(공백 제거) |
 | `SHADOW` | 9 | speech | E | `prompt` · `stimulus`(`text` · `audio` …) · `answers` | — | ~~건너뜀(`screen-pending` — 말하기)~~ ⟨PR ③⟩ **읽기**(채점 없음) — 문장 · 로마자 · 영어를 한 묶음에서(`answers[0]`, 한국어가 비면 `stimulus.text`) |
 | `SPEAK_WORD` | 6 | speech | R | `prompt` · `stimulus`(`image_brief` · `image_url` · `audio_url`) · `answers` | — | ~~건너뜀(`screen-pending` — 말하기)~~ ⟨PR ③⟩ **낱말 말하기**(채점) — 그림 `stimulus.image_url`(필수) · 뜻 `answers[0].en` · 정답 `answers[].ko` · 로마자 `answers[0].roman` |
@@ -292,6 +292,7 @@ u01 · u02는 전부 해결, u03은 18문항이 같은 세 id(에피소드 2의 
 
 앱의 현재 자산 경로(참고): 이미지는 번들 import → `/static/…`(Android는 호스트가 재작성, ADR-0051). 오디오는 확장자 없는 **불투명 id**를 호스트 `AudioPlaybackModule`이 번들에서 찾는다(ADR-0017 D3). 원격 fallback은 아직 없다(ADR README 보류 표 「오디오 자산의 출처·형식」). → 합의 Q6 · Q21.
 ⟨2026-10-14 — 위 문장의 오디오 부분은 그때의 상태다⟩ **에피소드 음성은 버킷에서 재생한다.** 앱(JS 한 자리 `lib/content-audio.ts`)이 id를 규약으로 검사해 `audio/<id>.m4a` → 버킷 절대 URL로 바꾸고, 재생 모듈은 `https` 절대 URL을 받아 스트리밍한다. 튜토리얼의 번들 id는 지금처럼 번들에서 난다. 지금 재생하는 자리는 카탈로그 컷 · 최종 테스트뿐이고 **학습 문항의 `stimulus.audio_url`은 읽지 않는다**(ADR README 보류 표 「학습 문항 오디오의 연결」). 결정은 [ADR-0060](../adr/0060-episode-voice-remote-audio.md).
+⟨2026-10-22 — [ADR-0080](../adr/0080-item-audio-and-slow-playback.md)⟩ **학습 문항의 `stimulus.audio_url`도 읽는다** — 위 문장의 「학습 문항의 `stimulus.audio_url`은 읽지 않는다」는 그때의 상태다. 소리가 붙는 유형은 열두 가지다 — 듣기 여섯(`LISTEN_SELECT` · `MIN_PAIR_AB` · `REPLY_SELECT` · `LISTEN_BUILD` · `DICTATION` · `SHADOW`)은 문항이 설 때 한 번 · 다시 듣기 · 「천천히」(0.85), 그 밖 여섯(`TRANSLATE_TO_KO` · `TRANSLATE_TO_EN` · `WORD_ORDER` · `SYLLABLE_BUILD` · `SPEAK_WORD` · `IMG_MATCH`)은 판정 순간 1.0으로 한 번. 같은 규약(`audio/<id>.m4a`, 자리표시자가 든 원문이면 소리 없음)이고 `-slow` 같은 별도 파일은 쓰지 않는다. `CULTURE_CARD` · `PARTICLE_*`의 `audio_url`은 읽지 않는다(지금 데이터도 전부 빈 값).
 
 ## 10. 매니페스트 — 계약 (`manifest-1`, 2026-10-12)
 

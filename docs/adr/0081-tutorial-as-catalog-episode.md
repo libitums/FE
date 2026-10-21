@@ -117,7 +117,8 @@
 ### D12. 음성 — u00 음성 id 12, 첫 온라인 실행에 받는다. 학습 문항 음성은 아직 연결되지 않는다
 
 - `2026-10-21.3`판은 음성 id 12개를 쓴다(`audio_url` 27 · `example_audio_url` 1 · `player_audio_url` 3). 내장하지 않는다 — **첫 온라인 실행에서 받고**(그림은 0), 오프라인 첫 설치는 그림까지 열리고 소리는 없다. 경로는 카탈로그 그대로(`contentAudioPathOf` · ADR-0060 · 0071 · 0074).
-- ⚠ **학습 문항의 소리는 아직 연결되지 않았다** [코드 — `app/catalog-choice-map.ts` · `catalog-item-map.ts`]. 소리가 없는 듣기 문항은 `audio-missing`으로 건너뛰므로, **문항이 하나뿐인 `S2`(`LISTEN_SELECT`) · `S7`(`LISTEN_BUILD`)은 빈 레슨이 된다.** 후속 PR(`feat/audio-slow-playback`, ADR-0082 예정)이 고친다 — 그때 테스트 AU2의 기대값이 뒤집힌다.
+- ⚠ **학습 문항의 소리는 아직 연결되지 않았다** [코드 — `app/catalog-choice-map.ts` · `catalog-item-map.ts`]. 소리가 없는 듣기 문항은 `audio-missing`으로 건너뛰므로, **문항이 하나뿐인 `S2`(`LISTEN_SELECT`) · `S7`(`LISTEN_BUILD`)은 빈 레슨이 된다.** 후속 PR(`feat/audio-slow-playback`, ADR-0081 예정)이 고친다 — 그때 테스트 AU2의 기대값이 뒤집힌다.
+  ⟨2026-10-22 해소⟩ **고쳤다** — [ADR-0080](0080-item-audio-and-slow-playback.md). 소리가 있는 `S2` · `S7`은 이제 선다. 아래 「적용 기록」.
 - 내장 음성(iOS `apps/ios/Host/audio` — Android gradle이 같은 폴더를 복사): 옛 튜토리얼 문항 · 프롤로그 통화 15 + 전화 3 = **18 지움**. 남은 셋(`greeting-1` · `ordering-2` · `tutorial-cabin-announcement`)은 **호스트 테스트 고정물**이다(iOS `AudioPlaybackModuleTests` 등 · Android `AudioAssetPathTest` 등이 이름으로 쥔다) — **제품이 쓰는 내장 음성은 0**.
 
 ### D13. 지운 범위
@@ -151,6 +152,7 @@
 5. **퍼널이 둘로 갈린다** — 교체 전후는 `episodeId` 값으로만 이어지고, 최종 통과 단계는 교체 뒤에만 있다.
 6. **Airbridge `achieveLevel`의 뜻이 바뀐다** — 「튜토리얼 메신저 · 비주얼 노벨 완료」 → 「에피소드 최종 통과」. 매체 쪽 전환 이름 · 값 매핑 갱신은 사용자 몫이다([Airbridge 이벤트](../airbridge-events.md)).
 7. **S2 · S7 빈 레슨**(D12) — 후속 PR 전까지 u00의 듣기 두 단계가 비어 지나간다.
+   ⟨2026-10-22 해소⟩ [ADR-0080](0080-item-audio-and-slow-playback.md)로 걷혔다 — 아래 「적용 기록」.
 8. **문화 노드 둘이 같은 이름 `Culture`로 연달아 선다** — 위치로만 구별된다.
 9. **구획 번호가 콘텐츠의 `order`를 따른다** — 콘텐츠가 order를 건너뛰면 번호도 건너뛴다.
 10. **그리지 않는 그림 하나를 싣는다** — 내장 WebP 14장 가운데 `u00-tutorial/rp-end.webp`(130,588 B)는 콘텐츠 `closing_image_url`이 가리키지만 그 필드를 그리는 화면이 없다. 받기 생략(D2 `has`)의 몫만 한다. 화면이 쓰게 할지 내장에서 뺄지는 후속 판단이다(아래 「후속」).
@@ -166,10 +168,19 @@
 
 ## 후속
 
-- **학습 문항 음성 연결** — `feat/audio-slow-playback`(ADR-0082 예정). S2 · S7 빈 레슨이 풀린다.
+- **학습 문항 음성 연결** — `feat/audio-slow-playback`(ADR-0081 예정). S2 · S7 빈 레슨이 풀린다.
+  ⟨2026-10-22 — 끝남⟩ [ADR-0080](0080-item-audio-and-slow-playback.md).
 - **기기 확인 남은 것**(D-A) — [튜토리얼 u00 e2e](../e2e/tutorial-u00.md) 1차에서 남은 판정: 제품 번들 오프라인 `/static` 그림(iOS 리소스 · Android `asset:///` 재작성) · 실제 로그인 · 저장소 시드 옛 사용자(EU-0 · EU-4) · 서버 동기화 · 음성 12개 받기와 그림 받기 0(EU-6) · 티켓 수(EU-2) · Android(EU-8) · VoiceOver 실제 낭독(EU-3).
 - **Android Maestro 흐름 셋**(D-B) — 완료 낭독 · 앱 리뷰 · 말하기 권한의 좌표를 u00 경로로(Q5를 후속으로 넘김).
 - **`rp-end.webp`** — 화면이 `closing_image_url`을 그리게 할지, 내장에서 뺄지(130.6 kB) 정한다(대가 10).
 - **성능 보고서** — 1차는 부분 측정([tutorial-u00-iphone-13-mini-simulator-01](../performance/reports/tutorial-u00-iphone-13-mini-simulator-01.md) — 번들 · 정적 그림 크기). 남은 것: 제품 번들의 첫 실행 · 맵 첫 그리기 · u00 표지 컷 그림(내장 `/static`) 렌더 · 메모리.
 - **호스트 테스트 고정물 음성 셋** — 바꾸려면 두 호스트 테스트를 기기 빌드로 다시 돌려야 한다.
 - GitHub wiki 이벤트 사전(이름 44 → 36 · `episodeId` 값 · `prologueKind`)은 저장소 밖이라 따로 고친다.
+
+## 적용 기록 ⟨2026-10-22 — 학습 문항 음성 · 「천천히」⟩
+
+결정은 [ADR-0080](0080-item-audio-and-slow-playback.md). 이 문서의 결정은 바뀌지 않는다.
+
+- **D12 · 「대가」 7의 「`S2` · `S7` 빈 레슨」이 해소됐다** — 학습 문항 음성이 연결되어 `S2`(`LISTEN_SELECT`)는 듣기 화면으로, `S7`(`LISTEN_BUILD`)은 기존 문장 순서 화면(상대 말풍선 자리에 재생 줄)으로 선다. 통합 테스트가 u00 `S2` 실데이터로 「처음엔 대본 없음 → 답하면 보임」을 지킨다.
+- **D12의 「음성 id 12는 첫 온라인 실행에 받는다 · 오프라인 첫 설치는 소리가 없다」는 그대로다** — 다만 이제 문항은 소리 주소만으로 선다. 오프라인 첫 설치에서는 `S2` · `S7`이 **소리 없이 서고 듣기 대본은 답할 때까지 숨는다**(ADR-0080 「대가」 4 [추론 — 기기 미확인]). [튜토리얼 u00 e2e](../e2e/tutorial-u00.md) EU-1의 「소리는 없다」 판정에 이 모양이 들어온다.
+- u00의 그 밖의 소리 있는 문항(음성 id 12의 `audio_url` 27)도 유형에 따라 서면 한 번 또는 판정 순간 한 번 소리를 낸다(ADR-0080 D5 · D6).

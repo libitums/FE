@@ -381,6 +381,13 @@ expect(headingAxis(container)).toEqual(["listening-screen-title"]);
   단어 선택의 import · 테스트가 그대로다. 근거는 한글 자판과 같다 — 경로를 읽는 테스트가 없다.
   화면 둘이 쓰는 **훅 · 부품**(`useWordChoicePicture` · `WordChoicePicture`)은 단어 선택의 testid · 이름표에 묶여 옮기지
   않았고, 낱말 말하기는 자기 것을 둔다. 위 예외 표는 바뀌지 않았다.
+  ⟨2026-10-21⟩ **듣기 재생 어휘도 올라왔다** — `screens/listening/listening-playback.ts`의 본문(`ListeningPlaybackState` ·
+  `ListeningPlaybackAction` · `playbackActionFor` · `playbackStateAfterPlay`)이 `lib/listen-playback.ts`로 옮겨졌다(듣기 · 단어 선택 · 타자 ·
+  따라 읽기 · 문장 순서 다섯 화면이 문항 음성의 재생 상태를 쓴다 — [ADR-0080](../adr/0080-item-audio-and-slow-playback.md) D6). 옛 경로는 재수출 한 줄로 남았다. 근거는 한글 자판과
+  같다 — 경로를 읽는 테스트가 없다. 다섯 화면이 쓰는 **훅 · 부품**(`use-listen-audio` · `SlowPlaybackToggle` · `ListenPlaybackControls` ·
+  `ItemListenControls`)은 화면 폴더 사이 값 import가 막혀 있어 처음부터 `components/`에 두었고(화면 둘 이상 — 아래 「컴포넌트」), 옛 화면 훅
+  `screens/listening/use-listening-playback.ts`는 지웠다. 순수 어휘 `lib/listen-pace.ts`(속도 · 0.85 한 자리) · `lib/question-audio.ts`(문항
+  음성 두 갈래)는 새로 `lib/`에 섰다. 위 예외 표는 바뀌지 않았다.
 
 ([ADR-0004 D3·D4·D5](../adr/0004-package-boundaries-and-dependency-direction.md) ·
 [ADR-0003 D5](../adr/0003-workspace-and-directory-structure.md))
@@ -601,7 +608,9 @@ expect(headingAxis(container)).toEqual(["listening-screen-title"]);
 원문에는 계약 절 번호가 함께 달려 있고 그 번호는 이 문서에서 풀리지 않는다. 그 번호들은
 [comments.md](comments.md) 조문 ④가 지우기로 한 것이라, 발췌는 정리가 끝나는 대로 갱신한다.
 
-> ⟨2026-10-21 — [ADR-0081](../adr/0081-tutorial-as-catalog-episode.md)⟩ **아래 사례 가운데 옛 튜토리얼의 것은 코드에서 사라졌다** — `journey-map-learning-form.ts`(`learningFormsByStep`) · `culture.ts` · `culture-quiz.ts`는 지워졌다. `ListeningQuestion.audioSource`는 남았다(지금 자리는 `listening-questions.ts` — 카탈로그 듣기 활동이 쓴다). 아래 「셋째 규칙」 문단의 「다섯 스텝 전부 빈 배열」인 문항 `Record`와 `vi.mock` 부분 대역 테스트도 튜토리얼 문항 표와 함께 없어졌다. 서술은 이음매 규칙이 어떻게 섰는지의 기록으로 남긴다 — 남은 사례는 듣기 문항의 `audioSource` · 알림 목록 · 프로필 항목 · 온보딩 문구 · 언어 라벨이다.
+> ⟨2026-10-21 — [ADR-0080](../adr/0080-tutorial-as-catalog-episode.md)⟩ **아래 사례 가운데 옛 튜토리얼의 것은 코드에서 사라졌다** — `journey-map-learning-form.ts`(`learningFormsByStep`) · `culture.ts` · `culture-quiz.ts`는 지워졌다. `ListeningQuestion.audioSource`는 남았다(지금 자리는 `listening-questions.ts` — 카탈로그 듣기 활동이 쓴다). 아래 「셋째 규칙」 문단의 「다섯 스텝 전부 빈 배열」인 문항 `Record`와 `vi.mock` 부분 대역 테스트도 튜토리얼 문항 표와 함께 없어졌다. 서술은 이음매 규칙이 어떻게 섰는지의 기록으로 남긴다 — 남은 사례는 듣기 문항의 `audioSource` · 알림 목록 · 프로필 항목 · 온보딩 문구 · 언어 라벨이다.
+>
+> ⟨2026-10-21 — [ADR-0080](../adr/0080-item-audio-and-slow-playback.md)⟩ **`ListeningQuestion.audioSource`도 사라졌다** — 문항 음성이 실제로 와서 `audio: ListenAudio | null`(갈래 · 주소 · 문항 참조)로 이름째 바뀌었다. 아래 첫 사례의 「자산이 오면 해석만 붙는다」는 **형태가 바뀐 둘째 사례**다 — 소리가 오자 「무엇을 · 언제 들려주나」(듣기 · 판정 뒤 두 갈래)가 함께 왔다. 「옵셔널 금지」는 지켰다(`null`이 「소리 없는 문항」).
 
 - **`listening.ts`의 `ListeningQuestion.audioSource` — 한 필드가 「격리」 · 「옵셔널 금지」 ·
   「주석이 교체 지점을 적는다」 셋을 전부 진다.**

@@ -5,6 +5,8 @@
 결정은 [ADR-0066](../adr/0066-episode-format-screens.md), 화면은 [화면 명세](../screens.md) 「여정 탭」의 문화 카드 · 음절 조립 · 카탈로그 레슨 행, 파일 모양은
 [콘텐츠 계약](../specs/episode-content-json-contract.md) §6 · §7.2가 진다. PR ①의 흐름(단계 · 완료 키 · 트로피 · 새 유형의 단어 선택 · 대화 조립 화자)은 [새 에피소드 형식 e2e](episode-format.md)가 지고 여기서 되풀이하지 않는다.
 
+> ⟨2026-10-22 — [ADR-0080](../adr/0080-item-audio-and-slow-playback.md)⟩ 아래 unit 행의 **`LISTEN_BUILD` = `audio-missing`은 소리 없는 문항의 것이다** — 소리가 있으면 문장 순서 화면(상대 말풍선 자리에 재생 줄 · 대본 없음)으로 선다. 그 확인은 [학습 문항 음성 e2e](item-audio.md) EU8이다. 음절 조립은 판정 순간 정답 음성을 한 번 낸다.
+
 | 이미 지는 층 | 무엇을 |
 |---|---|
 | unit | 세 유형의 매핑(판정 순서 · 보기 번역은 전부 있을 때만) · `LISTEN_BUILD` = `audio-missing` · 철자 탐색(같은 음절 두 장 · 여러 글자 타일) · 음절 리듀서와 문자열 판정 · 카드 걸음 · 계획(`CULT` 채점 3 · 표시 6) · 문화 키 판별 · 노드 role · 한 줄 배치 · 낭독 문자열(칸 수 포함) |
