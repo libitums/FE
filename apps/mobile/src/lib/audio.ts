@@ -22,13 +22,20 @@
 // 유효기간**입니다 — 어느 재생이 「지금 것」인지만 가리고, 재생 중인지 아닌지를
 // 답하지 않습니다. 조회 API가 아니므로 위 제외 목록을 넓히지 않습니다.
 
+import type { PlaybackRate } from "./listen-pace";
+
 /** 호스트가 `AudioPlaybackModule`이라는 이름으로 등록합니다. */
 interface AudioPlaybackModule {
   play(source: string, done: (result: unknown) => void): void;
+  /** 속도를 받는 재생입니다. 옛 호스트에는 없습니다. */
+  playAtRate?(source: string, rate: number, done: (result: unknown) => void): void;
   stop(): void;
   pause(): void;
   resume(): void;
 }
+
+/** 호스트가 속도 재생(`playAtRate`)을 가졌는가입니다. */
+export type SlowPlaybackSupport = "supported" | "unsupported";
 
 /**
  * 재생 **요청 한 번의 결과**입니다. 재생 상태 조회가 아닙니다.
@@ -104,6 +111,11 @@ export function isAudioAvailable(): boolean {
   return nativeModule() !== undefined;
 }
 
+/** 모듈이 있고 `playAtRate`가 함수일 때만 `"supported"`입니다. */
+export function slowPlaybackSupport(): SlowPlaybackSupport {
+  return "unsupported";
+}
+
 /**
  * `source`를 **처음부터** 재생하도록 호스트에 넘깁니다. 던지지 않습니다.
  *
@@ -111,7 +123,11 @@ export function isAudioAvailable(): boolean {
  * 부르지 않습니다. 늦게 온 완료 신호는 버리고(세대), 전달한 완료는 **한 번만**
  * 올라갑니다.
  */
-export function playAudio(source: string, onFinished: () => void): AudioPlayOutcome {
+export function playAudio(
+  source: string,
+  onFinished: () => void,
+  _rate?: PlaybackRate,
+): AudioPlayOutcome {
   const host = nativeModule();
   if (host === undefined) {
     return "unavailable";

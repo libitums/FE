@@ -62,6 +62,9 @@ export type TypingTestId =
   | "typing-activity-cue-support"
   | "typing-activity-hint"
   | "typing-activity-audio"
+  | "typing-activity-listen"
+  | "typing-activity-listen-again"
+  | "typing-activity-listen-slow"
   | "typing-activity-answer"
   | "typing-activity-reveal"
   | "typing-activity-complete";

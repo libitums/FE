@@ -5,7 +5,10 @@ import type {
   EpisodeFinalPassedEvent,
   EpisodeLessonFinishedEvent,
   EpisodeLessonStartedEvent,
+  EpisodeListenItemAnsweredEvent,
 } from "../lib/catalog-learning-event.contract";
+import type { CatalogUnitKey } from "../lib/catalog-progress";
+import type { ListenItemReport } from "../lib/question-audio";
 import type { AnswerResult } from "../lib/answer-result";
 import type { AssessmentVerdict } from "../screens/assessment/assessment";
 
@@ -64,5 +67,24 @@ export function finalPassedEventOf(
     episodeId,
     correctCount: correctCountOf(results),
     turnCount: String(turnCount),
+  };
+}
+
+export function listenItemAnsweredEventOf(
+  episodeId: string,
+  unitKey: CatalogUnitKey,
+  report: ListenItemReport,
+): EpisodeListenItemAnsweredEvent {
+  return {
+    name: "episode_listen_item_answered",
+    episodeId,
+    unitKey,
+    itemId: report.ref.itemId,
+    itemType: report.ref.itemType,
+    result: report.result,
+    pace: report.pace,
+    slowTurnedOn: report.slowTurnedOn,
+    replayCount: "",
+    slowReplayCount: "",
   };
 }

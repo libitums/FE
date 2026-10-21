@@ -89,10 +89,15 @@ export type CatalogGlossOf = (ref: string | undefined) => string | null;
 
 export type CatalogImageUrlOf = (relativePath: string) => string | null;
 
+/** 문항 음성 주소입니다. 모듈이 없거나 경로를 풀 수 없으면 `null`. */
+export type CatalogAudioUrlOf = (relativePath: string) => string | null;
+
 /** 레슨 문항 매핑의 포트입니다. `CatalogItemPort`(최종 테스트 모델과 공유)는 그대로입니다. */
 export type CatalogLessonItemPort = CatalogItemPort & {
   readonly glossOf: CatalogGlossOf;
   readonly imageUrlOf: CatalogImageUrlOf;
+  /** 없으면 모든 문항이 소리 없음입니다. */
+  readonly audioUrlOf?: CatalogAudioUrlOf;
 };
 
 export type CatalogLessonPlan = {

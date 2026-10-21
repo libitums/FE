@@ -2,6 +2,8 @@
 // 이벤트는 `EpisodeIntroEventSink`로 나갑니다 — 수는 10진 문자열입니다(ADR-0029).
 
 import type { AssessmentVerdict } from "../screens/assessment/assessment";
+import type { ListenPace } from "./listen-pace";
+import type { ListenItemResult, ListenItemType } from "./question-audio";
 
 export type CatalogUnitRole = "lesson" | "final";
 
@@ -34,6 +36,23 @@ export type EpisodeFinalPassedEvent = {
   readonly episodeId: string;
   readonly correctCount: string;
   readonly turnCount: string;
+};
+
+export type EpisodeListenItemAnsweredEvent = {
+  readonly name: "episode_listen_item_answered";
+  readonly episodeId: string;
+  readonly unitKey: string;
+  readonly itemId: string;
+  readonly itemType: ListenItemType;
+  readonly result: ListenItemResult;
+  /** 판정 순간의 속도입니다. */
+  readonly pace: ListenPace;
+  /** 이 문항에서 「천천히」를 켰는가입니다. */
+  readonly slowTurnedOn: boolean;
+  /** 1.0일 때 누른 다시 듣기 수입니다(10진 문자열). */
+  readonly replayCount: string;
+  /** 0.85일 때 누른 다시 듣기 수입니다(10진 문자열). */
+  readonly slowReplayCount: string;
 };
 
 export type CatalogLearningEvent =

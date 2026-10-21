@@ -14,6 +14,7 @@ import { catalogItemOf } from "./catalog-item-map";
 import type {
   CatalogActivity,
   CatalogActivityForm,
+  CatalogAudioUrlOf,
   CatalogActivityScoring,
   CatalogFill,
   CatalogImageUrlOf,
@@ -27,6 +28,7 @@ import type { EpisodeContent } from "./episode-content";
 export type {
   CatalogActivity,
   CatalogActivityForm,
+  CatalogAudioUrlOf,
   CatalogActivityScoring,
   CatalogFill,
   CatalogGlossOf,
@@ -39,6 +41,9 @@ export type {
   NonEmpty,
 } from "./catalog-lesson-types";
 export { catalogItemOf } from "./catalog-item-map";
+
+/** 문항 음성 주소를 풀지 않는 포트 값입니다 — 모든 문항이 소리 없음으로 간다. */
+export const noCatalogAudioUrl: CatalogAudioUrlOf = () => null;
 export { shuffledOrder } from "./catalog-shuffle";
 
 /** 활동 문항이 채점되는가의 표입니다 — 새 학습형이 생기면 tsc가 답을 강제합니다. */
@@ -153,6 +158,7 @@ export function catalogLessonPlanOf(
   unitKey: CatalogUnitKey,
   fill: CatalogFill,
   imageUrlOf: CatalogImageUrlOf,
+  audioUrlOf: CatalogAudioUrlOf = noCatalogAudioUrl,
 ): CatalogLessonPlan | null {
   const unit = entry.episode.units.find((candidate) => candidate.id === unitKey);
   if (unit === undefined) return null;
@@ -161,6 +167,7 @@ export function catalogLessonPlanOf(
     episodeId: entry.id,
     glossOf: catalogGlossOf(entry.episode.words, fill),
     imageUrlOf,
+    audioUrlOf,
   };
   const mapped = unit.items.map((item) => catalogItemOf(item, port));
   const activities = catalogActivitiesOf(mapped);

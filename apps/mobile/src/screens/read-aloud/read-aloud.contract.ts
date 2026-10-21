@@ -64,4 +64,7 @@ export type ReadAloudTestId =
   | "read-aloud-translation"
   | "read-aloud-waves"
   | "read-aloud-hint"
-  | "read-aloud-secondary";
+  | "read-aloud-secondary"
+  | "read-aloud-listen"
+  | "read-aloud-listen-again"
+  | "read-aloud-listen-slow";

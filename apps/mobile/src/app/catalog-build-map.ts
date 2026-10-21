@@ -36,6 +36,14 @@ export function catalogSpellingOf(
   return walk(0) ? path : null;
 }
 
+/** 듣기 조립(LISTEN_BUILD)입니다. */
+export function listenBuildItemOf(
+  item: Extract<LearningItem, { type: "LISTEN_BUILD" }>,
+  _port: CatalogLessonItemPort,
+): CatalogMappedItem {
+  return skippedItem(item, "audio-missing");
+}
+
 const withoutSpaces = (text: string): string => text.replace(/\s+/g, "");
 const isNonEmpty = (values: readonly string[]): values is NonEmpty<string> => values.length > 0;
 
