@@ -122,15 +122,28 @@ test("[LP6] 둘 다 꺼짐 — play 0회이고 대본이 없다", () => {
   expect(screen.queryByTestId("listening-prompt-text")).not.toBeInTheDocument();
 });
 
-// LP7 (가드·앵커) — 「켜면 지금 동작 그대로」가 여기 섭니다. 스텁에서도 통과하므로
-// red로 세지 않습니다.
-test("[LP7] 초기값(둘 다 켜짐) — play 1회 · 이름 'Pause' · 대본 있음", () => {
+// LP7 (가드·앵커) — 「둘 다 켜면 지금 동작 그대로」가 여기 섭니다. 초기값이 아니라 명시한
+// 켠 값으로 섭니다(초기값은 대본 꺼짐으로 바뀌었다 — LP8).
+const bothOn: SessionOptions = { "auto-play-audio": true, "show-transcript": true };
+
+test("[LP7] 둘 다 켬 — play 1회 · 이름 'Pause' · 대본 있음", () => {
+  const calls = stubHost();
+
+  renderPrompt(bothOn);
+
+  expect(playSources(calls)).toEqual([SOURCE]);
+  expect(control()).toHaveAttribute("accessibility-label", "Pause");
+  expect(control()).toHaveAttribute("accessibility-label", "Pause");
+  expect(screen.getByTestId("listening-prompt-text")).toHaveTextContent(TEXT);
+});
+
+// LP8 — 초기값 앵커: 자동 재생은 켜져 있고 대본은 없다(V2-1).
+test("[LP8] 초기값 — play 1회 · 이름 'Pause' · 대본 없음", () => {
   const calls = stubHost();
 
   renderPrompt(initialSessionOptions);
 
   expect(playSources(calls)).toEqual([SOURCE]);
   expect(control()).toHaveAttribute("accessibility-label", "Pause");
-  expect(control()).toHaveAttribute("accessibility-label", "Pause");
-  expect(screen.getByTestId("listening-prompt-text")).toHaveTextContent(TEXT);
+  expect(screen.queryByTestId("listening-prompt-text")).not.toBeInTheDocument();
 });

@@ -7,11 +7,14 @@ import { color } from "@libitums/design-tokens";
 import { PlaybackPrompt } from "./ListeningPrompt.test-support";
 // 크기 단계는 문장 길이에서 나옵니다 — 리터럴로 적지 않고 같은 함수에서 뽑습니다.
 import { listeningPromptScale } from "./listening";
-// sessionOptions가 필수 prop이 됐습니다. 이 파일의 fixture는 언제나 초기값(둘
-// 다 켜짐)을 줍니다 — 단언은 한 글자도 바꾸지 않습니다.
-import { initialSessionOptions } from "../../lib/session-options";
+// sessionOptions가 필수 prop입니다. 이 파일의 fixture는 언제나 대본 표시를 켠 값을 줍니다 —
+// 초기값은 대본 꺼짐으로 바뀌었고(v2), 단언은 대본이 보이는 화면을 봅니다.
+import type { SessionOptions } from "../../lib/session-options";
 import { UiCopyContext } from "../../lib/ui-copy";
 import { markedUiCopy } from "../../lib/ui-copy.test-support";
+
+// 대본 표시를 켠 fixture입니다 — 기본값이 꺼짐(v2)이 되어도 이 파일의 단언은 대본이 보이는 화면을 봅니다.
+const transcriptOn: SessionOptions = { "auto-play-audio": true, "show-transcript": true };
 
 // `ui` 계층: 렌더 결과와 상호작용만 봅니다 (ADR-0006 D4). `toHaveClass`·`toHaveStyle`·
 // `toBeVisible`을 쓰지 않습니다 (docs/conventions/code.md).
@@ -96,7 +99,7 @@ function renderPrompt(overrides: { text?: string; audioSource?: string } = {}) {
       text={overrides.text ?? TEXT}
       romanization={ROMANIZATION}
       audioSource={overrides.audioSource ?? SOURCE}
-      sessionOptions={initialSessionOptions}
+      sessionOptions={transcriptOn}
     />,
   );
 }
@@ -161,7 +164,7 @@ test("audioSource가 바뀌면 호출 순서가 play(a) → stop → play(b)다"
       text={TEXT}
       romanization={ROMANIZATION}
       audioSource={OTHER_SOURCE}
-      sessionOptions={initialSessionOptions}
+      sessionOptions={transcriptOn}
     />,
   );
 
@@ -181,7 +184,7 @@ test("text만 바뀌면 play도 stop도 다시 불리지 않는다", () => {
       text={OTHER_TEXT}
       romanization={ROMANIZATION}
       audioSource={SOURCE}
-      sessionOptions={initialSessionOptions}
+      sessionOptions={transcriptOn}
     />,
   );
 
@@ -506,7 +509,7 @@ test("[LA1-M] 문구표를 주입하면 다시듣기 · 재생 조작의 이름�
         text={TEXT}
         romanization={ROMANIZATION}
         audioSource={SOURCE}
-        sessionOptions={initialSessionOptions}
+        sessionOptions={transcriptOn}
       />
     </UiCopyContext.Provider>,
   );
@@ -523,7 +526,7 @@ test("[LA1-M] 문구표를 주입하면 재생 중 이름이 pause 경로로, �
         text={TEXT}
         romanization={ROMANIZATION}
         audioSource={SOURCE}
-        sessionOptions={initialSessionOptions}
+        sessionOptions={transcriptOn}
       />
     </UiCopyContext.Provider>,
   );

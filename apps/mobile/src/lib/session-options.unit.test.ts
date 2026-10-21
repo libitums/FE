@@ -19,9 +19,9 @@ import { uiCopyEn } from "./ui-copy-en";
 const allKeys: readonly SessionOptionKey[] = ["auto-play-audio", "show-transcript"];
 
 describe("initialSessionOptions", () => {
-  it("SO1. 두 키가 전부 true다 — 수용 기준 5·6·7의 「지금 동작 = 기본」(spec §0.3 D-a)", () => {
+  it("SO1. 자동 재생은 true, 대본 표시는 false다 — 문항 음성이 진짜 음성이라 대본은 답한 뒤에만 보인다(V2-1)", () => {
     expect(initialSessionOptions["auto-play-audio"]).toBe(true);
-    expect(initialSessionOptions["show-transcript"]).toBe(true);
+    expect(initialSessionOptions["show-transcript"]).toBe(false);
   });
 });
 
