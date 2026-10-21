@@ -13,6 +13,10 @@ import {
 import type { LessonAudio } from "../../lib/question-audio";
 import { WordChoiceActivity } from "./WordChoiceScreen";
 import type { WordChoiceQuestion } from "./word-choice-questions";
+import {
+  expectListenAgainAccessible,
+  listenAgainParts,
+} from "../../components/listen-controls.test-support";
 
 // `ui` 계층: 단어 선택 활동의 문항 음성 — REPLY_SELECT(듣기 갈래)는 간이 줄과 자동 재생, 그림 고르기 ·
 // 영어 뜻 고르기(정답 뒤 재생 갈래)는 고른 순간 한 번 재생합니다. 재생 접점(`lib/audio`)만 대역입니다.
@@ -117,7 +121,7 @@ describe("REPLY_SELECT — 듣기 갈래", () => {
     const { lesson, onTogglePace } = lessonAudioStub();
     mount([replyWithSound()], lesson);
 
-    fireEvent.tap(screen.getByTestId("word-choice-listen-again"), {});
+    fireEvent.tap(listenAgainParts("word-choice-listen").button, {});
     expect(playAudio).toHaveBeenCalledTimes(2);
 
     fireEvent.tap(screen.getByTestId("word-choice-listen-slow"), {});
@@ -148,10 +152,7 @@ describe("REPLY_SELECT — 듣기 갈래", () => {
       "word-choice-listen-again",
       "word-choice-listen-slow",
     ]);
-    expect(screen.getByTestId("word-choice-listen-again")).toHaveAttribute(
-      "accessibility-label",
-      "Play again",
-    );
+    expectListenAgainAccessible("word-choice-listen", "Play again");
     expect(screen.getByTestId("word-choice-listen-slow")).toHaveAttribute(
       "accessibility-label",
       "Slow, off",

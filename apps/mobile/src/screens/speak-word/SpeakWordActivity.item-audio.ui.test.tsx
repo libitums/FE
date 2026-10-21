@@ -24,7 +24,7 @@ const audio = vi.hoisted(() => ({
   slowPlaybackSupport: vi.fn<() => string>(),
 }));
 vi.mock("../../lib/audio", () => audio);
-const { playAudio } = audio;
+const { playAudio, stopAudio } = audio;
 
 const cardBase: SpeakWordQuestion = {
   pictureUrl: "https://cdn/card.jpg",
@@ -59,7 +59,16 @@ function tapAction(label: string): void {
   fireEvent.tap(action, {});
 }
 
+function tapRetry(): void {
+  const slot = screen.getByTestId("speak-word-secondary");
+  expect(slot).toHaveAttribute("data-control", "retry");
+  const button = slot.querySelector('[data-testid="ui-lynx-button"]');
+  expect(button).not.toBeNull();
+  fireEvent.tap(button as Element, {});
+}
+
 beforeEach(() => {
+  stopAudio.mockReset();
   playAudio.mockReset();
   playAudio.mockReturnValue("started");
 });
@@ -133,5 +142,25 @@ describe("SPEAK_WORD — 정답 뒤 재생 갈래", () => {
     act(() => host.pending[0]?.({ status: "recognized", text: "카드", isFinal: true }));
 
     expect(playAudio).not.toHaveBeenCalled();
+  });
+
+  test("EC7. Try again으로 마이크를 켜기 전에 재생을 멈춘다(정답 음성이 마이크로 들어가지 않게)", () => {
+    const order: string[] = [];
+    stubSpeechHost({
+      result: () => {
+        order.push("mic");
+        return dictationOff;
+      },
+    });
+    stopAudio.mockImplementation(() => void order.push("stop"));
+    const { lesson } = lessonAudioStub();
+    mount([card], lesson);
+    loadPicture();
+    tapAction("Speak");
+    order.length = 0;
+
+    tapRetry();
+
+    expect(order).toEqual(["stop", "mic"]);
   });
 });

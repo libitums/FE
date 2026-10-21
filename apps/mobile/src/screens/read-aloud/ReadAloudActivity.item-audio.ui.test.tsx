@@ -12,6 +12,10 @@ import type { LessonAudio } from "../../lib/question-audio";
 import { dictationOff, stubSpeechHost } from "../../lib/speech-host.test-support";
 import { ReadAloudActivity } from "./ReadAloudActivity";
 import type { ReadAloudQuestion } from "./read-aloud.contract";
+import {
+  expectListenAgainAccessible,
+  listenAgainParts,
+} from "../../components/listen-controls.test-support";
 
 // `ui` 계층: 따라 읽기 활동의 문항 음성 — 간이 줄과 자동 재생, 말하기 전 재생 멈춤, 녹음 중 다시 듣기, 결말 보고.
 // 재생 접점(`lib/audio`)만 대역이고 말하기 호스트는 `stubSpeechHost`입니다.
@@ -98,10 +102,7 @@ describe("따라 읽기 — 문항 음성", () => {
     const { lesson, onTogglePace } = lessonAudioStub();
     mount([fine], lesson);
 
-    expect(screen.getByTestId("read-aloud-listen-again")).toHaveAttribute(
-      "accessibility-label",
-      "Play again",
-    );
+    expectListenAgainAccessible("read-aloud-listen", "Play again");
     expect(screen.getByTestId("read-aloud-listen-slow")).toHaveAttribute(
       "accessibility-label",
       "Slow, off",
@@ -136,7 +137,7 @@ describe("따라 읽기 — 문항 음성", () => {
       return "started";
     });
 
-    fireEvent.tap(screen.getByTestId("read-aloud-listen-again"), {});
+    fireEvent.tap(listenAgainParts("read-aloud-listen").button, {});
 
     expect(host.calls.stop).toBeGreaterThanOrEqual(1);
     expect(stopsAtPlay).toEqual([host.calls.stop]);

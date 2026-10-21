@@ -315,11 +315,31 @@ describe("정답 뒤 재생 · 문장 순서 듣기 · 따라 읽기", () => {
 });
 
 describe("회귀 · 측정", () => {
-  test("IT8. 「천천히」를 켠 레슨을 지난 뒤에도 최종 테스트 재생은 play 인자 둘이고 playAtRate는 늘지 않는다", async () => {
+  test("IT8. 「천천히」를 켠 채 나가서 최종으로 가도 최종 재생은 play 인자 둘이고 playAtRate는 늘지 않는다", async () => {
     const { host } = await bootItemAudioApp({ progress: throughCult });
     tapNode(u01, "S2");
     tapId("listening-prompt-slow");
+    expect(dataState("listening-prompt-slow")).toBe("on");
     leaveLesson();
+    const slowCalls = host.playAtRate.mock.calls.length;
+    const before = host.play.mock.calls.length;
+
+    tapNode(u01, "RP");
+
+    expect(screen.getByTestId("catalog-final-screen")).toBeInTheDocument();
+    const added = host.play.mock.calls.slice(before);
+    expect(added.length).toBeGreaterThan(0);
+    for (const call of added) expect(call).toHaveLength(2);
+    expect(host.playAtRate.mock.calls.length).toBe(slowCalls);
+  });
+
+  test("IT8. 「천천히」를 켠 채 레슨을 끝까지 풀고 바로 최종으로 가도 최종 재생은 play 인자 둘이다", async () => {
+    const { host } = await bootItemAudioApp({ progress: throughCult });
+    tapNode(u01, "S2");
+    tapId("listening-prompt-slow");
+    expect(dataState("listening-prompt-slow")).toBe("on");
+    solveLesson(lessonPlanWith(u01, "S2"), true);
+    exitResult();
     const slowCalls = host.playAtRate.mock.calls.length;
     const before = host.play.mock.calls.length;
 

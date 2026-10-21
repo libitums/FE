@@ -15,6 +15,10 @@ import { zeroSafeAreaInsets } from "../../lib/safe-area";
 import { keystrokesFor } from "../messenger/hangul-keyboard";
 import { TypingActivity } from "./TypingActivity";
 import type { TypingQuestion } from "./typing.contract";
+import {
+  expectListenAgainAccessible,
+  listenAgainParts,
+} from "../../components/listen-controls.test-support";
 
 // `ui` 계층: 타자 활동의 문항 음성 — DICTATION(듣기 갈래)은 간이 줄과 자동 재생, TRANSLATE_TO_KO(정답 뒤 재생
 // 갈래)는 확인한 순간 한 번 재생합니다. 재생 접점(`lib/audio`)만 대역입니다.
@@ -115,7 +119,7 @@ describe("DICTATION — 듣기 갈래", () => {
     expect(playAudio).toHaveBeenCalledTimes(1);
     expect(playAudio).toHaveBeenCalledWith(LISTEN_SOURCE, expect.any(Function), 1);
 
-    fireEvent.tap(screen.getByTestId("typing-activity-listen-again"), {});
+    fireEvent.tap(listenAgainParts("typing-activity-listen").button, {});
     expect(playAudio).toHaveBeenCalledTimes(2);
 
     fireEvent.tap(screen.getByTestId("typing-activity-listen-slow"), {});
@@ -167,10 +171,7 @@ describe("DICTATION — 듣기 갈래", () => {
     const { lesson } = lessonAudioStub();
     mount([dictation], lesson);
 
-    expect(screen.getByTestId("typing-activity-listen-again")).toHaveAttribute(
-      "accessibility-label",
-      "Play again",
-    );
+    expectListenAgainAccessible("typing-activity-listen", "Play again");
     expect(screen.getByTestId("typing-activity-listen-slow")).toHaveAttribute(
       "accessibility-label",
       "Slow, off",

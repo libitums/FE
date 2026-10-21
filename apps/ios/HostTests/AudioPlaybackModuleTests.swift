@@ -105,8 +105,10 @@ final class AudioPlaybackModuleTests: XCTestCase {
     }
   }
 
-  // AI7: 세 해석 결과(원격 · 받아 둔 파일 · 번들)에 같은 속도 적용이 닿는다.
-  func testAI7ApplyRateReachesEveryResolvedSource() throws {
+  // AI7: `applyRate`는 소스와 무관하다 — 해석된 주소가 어떤 종류든 같은 AVPlayerItem/AVPlayer 설정을 한다.
+  // 이 테스트는 원격 https와 받아 둔 file://이 실제로 0.85로 *들린다*는 증명이 아니다(그건 기기 확인 EU1).
+  // 여기서는 세 종류 주소로 만든 항목에 같은 설정이 서는 것만 판정한다.
+  func testAI7ApplyRateIsSourceIndependent() throws {
     let base = FileManager.default.temporaryDirectory
       .appendingPathComponent("audio-rate-\(UUID().uuidString)", isDirectory: true)
     defer { try? FileManager.default.removeItem(at: base) }

@@ -2,22 +2,33 @@ import { expect, test } from "vitest";
 import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
 import { ItemListenControls } from "./ItemListenControls";
-import { controlStub } from "./listen-controls.test-support";
+import {
+  controlStub,
+  expectListenAgainAccessible,
+  listenAgainParts,
+} from "./listen-controls.test-support";
 
 // `ui` 계층: 문항 곁 간이 줄(다시 듣기 · 「천천히」)이 접두 testid로 서고 조작을 위로 올린다.
 
 const T = "word-choice-listen";
 
-test("LC3. 다시 듣기 단추의 이름은 Play again이고 탭하면 replay다", () => {
+test("LC3. 다시 듣기의 이름은 안쪽 접근성 단추에 Play again이고 탭하면 replay 한 번이다", () => {
   const { control, replay } = controlStub();
   render(<ItemListenControls control={control} testId={T} />);
 
-  const again = screen.getByTestId(`${T}-again`);
-  expect(again).toHaveAttribute("accessibility-label", "Play again");
-
-  fireEvent.tap(again, {});
+  expectListenAgainAccessible(T, "Play again");
+  fireEvent.tap(listenAgainParts(T).button, {});
 
   expect(replay).toHaveBeenCalledTimes(1);
+});
+
+test("LC3. 바깥 상자는 탭을 받지 않는다 — 조작은 안쪽 단추 하나뿐이다", () => {
+  const { control, replay } = controlStub();
+  render(<ItemListenControls control={control} testId={T} />);
+
+  fireEvent.tap(listenAgainParts(T).outer, {});
+
+  expect(replay).not.toHaveBeenCalled();
 });
 
 test("LC3. 호스트가 속도 재생을 지원할 때만 slow가 서고 탭하면 togglePace다", () => {
