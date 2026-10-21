@@ -3,6 +3,8 @@ import type { ScrollEvent } from "@lynx-js/types";
 
 import { useMotion } from "@libitums/ui-lynx/motion";
 import type { MapScrollTarget } from "./journey-map-next-unit";
+import { mapScrollDurationMs } from "./journey-map-scroll-animation";
+import type { MapGlider } from "./use-map-glide";
 import {
   headerCardId,
   measureRects,
@@ -31,6 +33,10 @@ export type AutoScrollToNextInput = {
   readonly target: MapScrollTarget;
   /** 말풍선이 열려 있거나 첫 유닛 가이드가 떠 있습니다 — 그동안은 옮기지 않고, 이 마운트에서 잠급니다. */
   readonly blocked: boolean;
+  /** 스택에 있던 맵으로 돌아와 마지막 자리에서 열렸습니다 — 이 마운트에서는 옮기지 않습니다. 값은 그 자리입니다. */
+  readonly restoredScrollTop: number | null;
+  /** 부드러운 이동을 main thread에서 돌리는 손잡이입니다(`useMapGlide`). */
+  readonly glider: MapGlider;
 };
 
 export type AutoScrollToNextControls = {
@@ -54,11 +60,32 @@ export type AutoScrollToNextControls = {
 export function useAutoScrollToNext({
   target,
   blocked,
+  restoredScrollTop,
+  glider,
 }: AutoScrollToNextInput): AutoScrollToNextControls {
   const behavior = mapScrollBehaviorFor(useMotion());
-  const state = useRef(initialAutoScrollState);
+  // 돌아온 맵은 손댄 것처럼 처음부터 잠급니다 — 기억한 자리에서 움직이지 않습니다.
+  const state = useRef(
+    restoredScrollTop === null
+      ? initialAutoScrollState
+      : autoScrollReducer(initialAutoScrollState, { type: "interact" }),
+  );
   // 스크롤 이벤트로 따라가는 지금 자리입니다 — 호스트에 「지금 자리」를 묻는 길이 없습니다.
-  const scrollTop = useRef(0);
+  const scrollTop = useRef(restoredScrollTop ?? 0);
+  // 부드러우면 main thread가 프레임마다 옮기고, 동작 줄이기면 한 번에 옮깁니다.
+  const moveTo = (offset: number, durationMs?: number): void => {
+    if (behavior !== "smooth") {
+      // 동작 줄이기로 바뀐 사이 돌고 있던 부드러운 이동이 있으면 먼저 멈춥니다 — 두 이동이 자리를 다투지 않게.
+      glider.stop();
+      scrollMapTo(offset, "instant");
+      return;
+    }
+    glider.glide(
+      scrollTop.current,
+      offset,
+      durationMs ?? mapScrollDurationMs(offset - scrollTop.current),
+    );
+  };
   // 대상 객체는 매 렌더 새로 만들어지므로 effect는 DOM id 문자열에 겁니다.
   const targetDomId = target.kind === "unit" ? target.domId : null;
 
@@ -93,6 +120,7 @@ export function useAutoScrollToNext({
     return () => {
       // oxlint-disable-next-line react/immutability
       mounted.current = false;
+      glider.stop();
     };
   }, []);
 
@@ -136,7 +164,7 @@ export function useAutoScrollToNext({
         autoScrollPlacement,
       );
       dispatchCorrection({ type: "sent", domId: pending, offset });
-      scrollMapTo(offset, behavior);
+      moveTo(offset);
     });
   }, [targetDomId, blocked]);
 
@@ -169,10 +197,10 @@ export function useAutoScrollToNext({
         scrollTop: scrollTop.current,
       };
       const next = autoScrollCorrection(measure, autoScrollPlacement, autoScrollTolerance);
-      // 보정은 늘 즉시 옮깁니다 — 부드럽게 보내면 본 이동의 끝과 겹쳐 반동이나 한 프레임 점프로
-      // 갈려 보였습니다(사용자 결정, docs/e2e/journey-map.md E-C1).
+      // 보정은 본 이동이 **끝난 뒤** 짧게 이어 옮깁니다. 호스트 부드러운 스크롤일 때는 본 이동의 끝과 겹쳐 반동이
+      // 보여 즉시로 옮겼지만(E-C1), 이제 본 이동을 앱이 직접 끝까지 옮기므로 겹칠 것이 없습니다.
       if (next !== null) {
-        scrollMapTo(next, "instant");
+        moveTo(next, 250);
       }
     });
   }, [arrivedDomId]);
@@ -190,6 +218,7 @@ export function useAutoScrollToNext({
 
   const handleTouchStart = (): void => {
     "background only";
+    glider.stop();
     dispatch({ type: "interact" });
     cancelCorrection();
   };

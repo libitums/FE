@@ -1,11 +1,12 @@
 import { Overlay } from "@libitums/ui-lynx/overlay";
 import { useFirstUnitGuide } from "../../components/first-unit-guide";
 import "../../components/first-unit-guide.css";
+import { useMemo, useRef, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 import type { ScrollEvent } from "@lynx-js/types";
 
-import { TutorialEpisodeSection } from "./TutorialEpisodeSection";
-import { JourneyMapCatalogSlot } from "./JourneyMapCatalogSlot";
+import { JourneyMapBody } from "./JourneyMapBody";
+import type { JourneyMapBodyHandlers } from "./JourneyMapBody";
 import { JourneyMapHeaderSlot } from "./JourneyMapHeaderSlot";
 import { StepSheet } from "./StepSheet";
 import { CatalogUnitSheet } from "./CatalogUnitSheet";
@@ -15,11 +16,12 @@ import { mapTopLayout } from "./journey-map-insets";
 import { noCatalogMapSections } from "./catalog-map";
 import { mapScrollTargetOf } from "./journey-map-next-unit";
 import { useAutoScrollToNext } from "./useAutoScrollToNext";
+import { useMapGlide } from "./use-map-glide";
+import { rememberedMapScroll, rememberMapScroll } from "./journey-map-scroll-memory";
 import { useStepSheet } from "./useStepSheet";
 import { lightStatusBarIcons } from "../../lib/status-bar-icons";
 import { useLayerBack } from "../../lib/use-back-handler";
 import { useScreenLayer } from "../../lib/use-screen-layer";
-import { EpisodePendingSection } from "./EpisodePendingSection";
 import {
   findStep,
   journeySteps,
@@ -90,6 +92,9 @@ export function JourneyMapScreen({
   // 스크롤 상자가 화면 맨 위(상태 표시줄 뒤)에서 시작하도록 화면 위 여백을 스크롤 안쪽으로 옮기고, 위 모서리
   // 기준의 띠 · 로딩 줄은 상태 표시줄 높이만큼 내립니다.
   const top = mapTopLayout(statusBarInset);
+  // 이 실행에서 맵을 연 적이 있으면 그 자리에서 엽니다(마운트 때 한 번 읽습니다).
+  const [restoredScrollTop] = useState(rememberedMapScroll);
+  const glider = useMapGlide();
   const {
     sheetState,
     sheetTop,
@@ -113,14 +118,25 @@ export function JourneyMapScreen({
   useLayerBack(guide.visible ? guide.dismiss : null);
 
   // 진행의 출처 여섯을 한 묶음으로 모읍니다 — 에피소드마다 따로 넘기면 하나를 빠뜨립니다.
-  const progress = {
-    completedStepCount,
-    completedEpisodeIntroIds,
-    completedMessengerUnitIds,
-    completedPhoneCallUnitIds,
-    completedVisualNovelUnitIds,
-    completedEpisodeFinalIds,
-  };
+  // 참조를 지킵니다 — 맵 본문(`JourneyMapBody`)이 이 값이 같으면 스크롤 프레임마다 다시 그리지 않습니다.
+  const progress = useMemo(
+    () => ({
+      completedStepCount,
+      completedEpisodeIntroIds,
+      completedMessengerUnitIds,
+      completedPhoneCallUnitIds,
+      completedVisualNovelUnitIds,
+      completedEpisodeFinalIds,
+    }),
+    [
+      completedStepCount,
+      completedEpisodeIntroIds,
+      completedMessengerUnitIds,
+      completedPhoneCallUnitIds,
+      completedVisualNovelUnitIds,
+      completedEpisodeFinalIds,
+    ],
+  );
 
   // 다음에 풀 유닛으로 맵이 서자마자 스스로 스크롤합니다. 말풍선이 열려 있거나 첫 유닛 가이드가
   // 떠 있으면 옮기지 않고 이 마운트에서 잠급니다.
@@ -132,12 +148,15 @@ export function JourneyMapScreen({
       catalogProgress: catalog?.progress ?? {},
     }),
     blocked: sheetOpen || guide.visible,
+    restoredScrollTop,
+    glider,
   });
 
   // 스크롤 한 번에 둘이 답합니다 — 말풍선 자리 · 자동 스크롤의 잠금입니다. 인라인
   // 화살표로 묶으면 `"background only"`가 중첩돼 바인딩이 서지 않습니다.
   const handleMapScroll = (event: ScrollEvent) => {
     "background only";
+    rememberMapScroll(event.detail.scrollTop);
     handleScroll(event);
     autoScroll.handleScroll(event);
   };
@@ -151,13 +170,17 @@ export function JourneyMapScreen({
     );
 
   const access = nodeAccessOf(progressLoad);
-  const actions = {
+  // 본문이 부르는 동작은 렌더마다 최신으로 갈아 끼우는 ref로 넘깁니다 — 함수가 새로 만들어져도 본문은 다시 그리지 않습니다.
+  const bodyHandlers = useRef<JourneyMapBodyHandlers>(null as unknown as JourneyMapBodyHandlers);
+  bodyHandlers.current = {
     onSelectStep: handleSelectStep,
     onStartEpisodeIntroUnit,
     onStartMessengerUnit,
     onStartPhoneCallUnit,
     onStartVisualNovelUnit,
     onStartEpisodeFinal,
+    onSelectCatalogUnit: handleSelectCatalogUnit,
+    dismissGuide: guide.dismiss,
   };
 
   return (
@@ -180,7 +203,9 @@ export function JourneyMapScreen({
         data-testid="journey-map-screen-scroll"
         scroll-orientation="vertical"
         scroll-bar-enable={false}
+        main-thread:ref={glider.scrollRef}
         bindscroll={handleMapScroll}
+        initial-scroll-offset={restoredScrollTop ?? undefined}
         enable-scroll={guide.visible ? false : undefined}
       >
         <view
@@ -190,32 +215,13 @@ export function JourneyMapScreen({
           accessibility-elements-hidden={sheetOpen}
           bindtouchstart={autoScroll.handleTouchStart}
         >
-          {journeyMapSections.map((section) =>
-            // 에피소드 하나가 헤더 + 유닛 줄입니다. 조각(Fragment)이 아니라 상자로
-            // 감쌉니다 — 유닛 사이 간격은 맵이 주지만 에피소드 사이는 더 벌어져야 하고,
-            // 그 간격을 이 상자가 집니다.
-            // 준비 중 에피소드는 머리만 읽히고 그 아래가 가려집니다 — 줄에 세울 항목이
-            // 없으므로 구획을 통째로 다른 조각이 그립니다.
-            section.episode.kind === "pending" ? (
-              <EpisodePendingSection key={section.episode.id} episode={section.episode} />
-            ) : (
-              <TutorialEpisodeSection
-                key={section.episode.id}
-                episode={section.episode}
-                items={section.items}
-                progress={progress}
-                access={access}
-                guide={guide}
-                actions={actions}
-              />
-            ),
-          )}
-          <JourneyMapCatalogSlot
+          <JourneyMapBody
+            progress={progress}
+            access={access}
+            guideVisible={guide.visible}
             catalog={catalog}
             completedEpisodeFinalIds={completedEpisodeFinalIds}
-            hidden={guide.visible}
-            access={access}
-            onSelectUnit={handleSelectCatalogUnit}
+            handlers={bodyHandlers}
           />
         </view>
       </scroll-view>

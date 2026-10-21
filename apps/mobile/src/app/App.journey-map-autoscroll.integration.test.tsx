@@ -20,6 +20,20 @@ import { catalogUnitDomId } from "../screens/journey-map/catalog-map";
 import { mapUnitDomId } from "../screens/journey-map/journey-map-scroll";
 import { stubHost, type HostStub } from "../screens/journey-map/JourneyMapScreen.test-support";
 
+// 부드러운 이동은 main thread가 프레임마다 옮기지만(`useMapGlide`), 이 파일은 「어디로 부드럽게 갔나」만 봅니다 —
+// 대역이 끝 위치로 부드러운 `scrollTo` 한 번을 남깁니다.
+vi.mock("../screens/journey-map/use-map-glide", async () => {
+  const scroll = await import("../screens/journey-map/journey-map-scroll");
+  const react = await import("@lynx-js/react");
+  return {
+    useMapGlide: () => ({
+      scrollRef: react.useMainThreadRef(null),
+      glide: (_from: number, to: number) => scroll.scrollMapTo(to, "smooth"),
+      stop: () => {},
+    }),
+  };
+});
+
 // `integration` 계층: 앱 세션에서만 생기는 자동 스크롤의 연결 — 진행 상태 → 다음 유닛 → 호스트 `scrollTo`,
 // 화면 전환으로 다시 마운트될 때의 재실행, 늦게 닿는 서버 진행, 호스트가 보낸 동작 줄이기. 대역은 경계 둘뿐입니다 —
 // 호스트 질의(`createSelectorQuery`)와 네트워크(`fetch` · 저장소). 목적지 식 · 전이 규칙은 unit · ui가 지고,
@@ -225,10 +239,11 @@ test("I8. 튜토리얼 통과 + 카탈로그 진행이면 대상이 카탈로그
 
 // 도착 뒤 한 번 바로잡기(정정 2) — D-1의 재현 조건: 도착 전에는 한 줄 카드(아래 228), 도착 뒤에는 30 큰 카드(아래
 // 258)이고 대상은 정렬선(282) 위 30(252)에 서 있다. 씨앗은 I8과 같다(대상은 S2). 보정은 늘 즉시 옮긴다.
+// 보정은 본 이동이 끝난 뒤 짧은 부드러운 이동입니다(앱이 직접 옮겨 본 이동과 겹치지 않습니다).
 const correctedTo = (offset: number) => ({
   selector: scrollSelector,
   method: "scrollTo",
-  params: { offset, smooth: false },
+  params: { offset, smooth: true },
 });
 
 const tutorialDoneSeed: AppJourneySeed = {
@@ -280,12 +295,13 @@ test("I11. 앱 세션에서 도착하면 카드가 30 커진 만큼 되돌린 �
   expect(scrollsOnMap().at(-1)).toEqual(correctedTo(offsetFor(unitTop) - 30));
 });
 
-test("I12. 도착 뒤 탭을 바꿨다 돌아오면 새 마운트에서 다시 이동 한 번 · 보정 한 번이다", async () => {
+test("I12. 도착 뒤 탭을 바꿨다 돌아오면 마지막 스크롤 자리에서 곧바로 열리고 움직이지 않는다", async () => {
   const s2 = catalogUnitDomId("u01-water", "S2");
   await bootCatalogLesson(s2);
   arrive(s2);
   const first = scrollsOnMap().length;
   expect(scrollsOnMap().at(-1)).toEqual(correctedTo(offsetFor(unitTop) - 30));
+  host.scroll(offsetFor(unitTop) - 30);
 
   tapTab("roleplay");
   expect(screen.queryByTestId("journey-map-screen")).not.toBeInTheDocument();
@@ -293,12 +309,9 @@ test("I12. 도착 뒤 탭을 바꿨다 돌아오면 새 마운트에서 다시 �
   tapTab("journey");
   await flushAsync();
 
-  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
-  expect(scrollsOnMap()).toHaveLength(first + 1);
-  expect(scrollsOnMap().at(-1)).toEqual(smoothTo(unitTop));
-
-  arrive(s2);
-
-  expect(scrollsOnMap()).toHaveLength(first + 2);
-  expect(scrollsOnMap().at(-1)).toEqual(correctedTo(offsetFor(unitTop) - 30));
+  expect(screen.getByTestId("journey-map-screen-scroll")).toHaveAttribute(
+    "initial-scroll-offset",
+    String(offsetFor(unitTop) - 30),
+  );
+  expect(scrollsOnMap()).toHaveLength(first);
 });
