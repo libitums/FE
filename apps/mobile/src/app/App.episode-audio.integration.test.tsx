@@ -2,7 +2,6 @@ import { afterEach, expect, test, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
-import type { AppJourneySeed } from "./journey-progress";
 import { catalogFinalPlanOf } from "./catalog-final-model";
 import type { CatalogRoleplayTurn } from "./catalog-final-model";
 import { resetPushWiringForTests } from "./push-wiring";
@@ -18,8 +17,11 @@ import { fillPlaceholders } from "../lib/placeholder-fill";
 import { systemBackEventName } from "../lib/system-back";
 import type { EpisodeIntroEvent } from "../screens/episode-intro/episode-intro.contract";
 import { EPISODE_BANNER_HOLD_MS } from "../screens/catalog-cover/episode-banner";
-import { journeySteps } from "../screens/journey-map/journey-map";
-import { tutorialDoneProgress } from "./test-helpers/progress-seed";
+import {
+  legacyPassedRecord,
+  legacyPassedSeed,
+  tutorialDoneProgress,
+} from "./test-helpers/progress-seed";
 import { catalogNodeTestId } from "./test-helpers/map-unit-testid";
 
 // `integration` 계층: 내장 u01 원문의 소리 id가 디코드 · 모델 · 화면 · 결선을 지나 실제 공개 버킷 주소
@@ -43,17 +45,11 @@ const refreshedBody = JSON.stringify({
   user: { id: "u" },
 });
 
-const tutorialDoneSeed: AppJourneySeed = {
-  completedStepCount: journeySteps.length,
-  completedMessengerUnitIds: ["appointment-confirmation"],
-  completedPhoneCallUnitIds: ["appointment-confirmation-phone-call"],
-  visualNovelProgress: { status: "completed", beatIndex: 2 },
-  completedEpisodeFinalIds: ["tutorial-final-test"],
-};
+const tutorialDoneSeed = legacyPassedSeed;
 
 const tutorialDoneSnapshot = {
   version: 1,
-  completedStepCount: journeySteps.length,
+  completedStepCount: legacyPassedRecord.completedStepCount,
   completedEpisodeIntroIds: ["tutorial-intro"],
   completedMessengerUnitIds: ["appointment-confirmation"],
   completedPhoneCallUnitIds: ["appointment-confirmation-phone-call"],
@@ -149,11 +145,7 @@ async function boot(options: BootOptions): Promise<Booted> {
   const events: EpisodeIntroEvent[] = [];
   vi.useFakeTimers();
   render(
-    <App
-      journeySeed={tutorialDoneSeed}
-      completedEpisodeIntroIds={["tutorial-intro"]}
-      episodeIntroEventSink={(event) => events.push(event)}
-    />,
+    <App progressSeed={tutorialDoneSeed} episodeIntroEventSink={(event) => events.push(event)} />,
   );
   act(() => {
     vi.advanceTimersByTime(entrySplashDurationMs);

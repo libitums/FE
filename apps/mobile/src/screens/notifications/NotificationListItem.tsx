@@ -1,9 +1,6 @@
 import { useRef } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 import type { TouchEvent } from "@lynx-js/types";
-import book from "@libitums/icons/lynx/no-padding/book";
-import message02 from "@libitums/icons/lynx/no-padding/message-02";
-import phone from "@libitums/icons/lynx/no-padding/phone";
 import userGroup from "@libitums/icons/lynx/no-padding/user-group";
 import { color } from "@libitums/design-tokens";
 
@@ -24,16 +21,11 @@ import "./notification-list-item.css";
 // 컴포넌트는 로직을 다시 짓지 않습니다 — 두 문구는 `notifications.ts` 결과를
 // 그대로 그립니다.
 
-// export하지 않는 사상 표입니다 — 대상 종류 → 목적지 아이콘입니다. 특별 유닛 셋은
-// 여정 맵 항목 · 롤플레이 항목과 같은 아이콘이고, 롤플레이 목록은 롤플레이 탭
-// 아이콘과 같습니다 — 목적지가 이미 입고 있는 아이콘을 그대로 쓰고, 새 아이콘을
-// 고르지 않습니다. 여백 없는 판(`no-padding`)을 씁니다 — 디자인의 아이콘이 자리(32)를
+// export하지 않는 사상 표입니다 — 대상 종류 → 목적지 아이콘입니다. 롤플레이 목록은 롤플레이 탭
+// 아이콘과 같습니다 — 목적지가 이미 입고 있는 아이콘을 그대로 쓰고, 새 아이콘을 고르지 않습니다. 여백 없는 판(`no-padding`)을 씁니다 — 디자인의 아이콘이 자리(32)를
 // 꽉 채웁니다. 디자인(Figma 64-1793)의 불꽃은 연속 학습 알림의 아이콘이고, 그
 // 종류의 알림은 아직 없습니다.
 const notificationItemIconByTargetKind: Record<NotificationTargetKind, string> = {
-  messenger: message02,
-  "phone-call": phone,
-  "visual-novel": book,
   "roleplay-list": userGroup,
 };
 

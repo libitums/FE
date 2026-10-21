@@ -7,11 +7,6 @@
 export const screenId = "journey-map-screen";
 export const scrollId = "journey-map-screen-scroll";
 
-/** 튜토리얼 유닛 셀의 id입니다 — `journey-map-unit-<itemId>`. 옛 진행 씨앗을 쓰는 통합 테스트가 지워질 때 함께 지웁니다. */
-export function mapUnitDomId(itemId: string): string {
-  return `journey-map-unit-${itemId}`;
-}
-
 /** 머리 카드 상자의 id입니다 — 자동 스크롤이 가려지는 위쪽 띠를 잽니다. */
 export const headerCardId = "journey-map-screen-header";
 

@@ -2,7 +2,6 @@ import { afterEach, expect, test, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
-import type { AppJourneySeed } from "./journey-progress";
 import { resetPushWiringForTests } from "./push-wiring";
 import {
   contentNotFoundResponse,
@@ -21,7 +20,6 @@ import { allLearningItemGuidesSeenValue } from "../lib/learning-item-guide.test-
 import { EPISODE_BANNER_HOLD_MS } from "../screens/catalog-cover/episode-banner";
 import { voiceRevealIntervalMs } from "../screens/catalog-cover/voice-reveal";
 import type { EpisodeIntroEvent } from "../screens/episode-intro/episode-intro.contract";
-import { journeySteps } from "../screens/journey-map/journey-map";
 import {
   bootContentApp,
   manifestOf,
@@ -29,7 +27,11 @@ import {
   settle,
 } from "./test-helpers/episode-content-boot";
 import { episodeAssetPaths } from "../lib/episode-assets";
-import { tutorialDoneProgress } from "./test-helpers/progress-seed";
+import {
+  legacyPassedRecord,
+  legacyPassedSeed,
+  tutorialDoneProgress,
+} from "./test-helpers/progress-seed";
 
 // `integration` 계층: 실행기 한 차례(에피소드 받기 -> 음성 정보 파일 받기)가 전송 대역 -> 기기 저장소 -> 로더 ->
 // 컷 모델 -> 화면 -> 타자기까지 닿는지 한 트리에서 봅니다. 대역은 경계뿐입니다 - `NativeModules`
@@ -52,16 +54,10 @@ const refreshedBody = JSON.stringify({
   user: { id: "u" },
 });
 
-const tutorialDoneSeed: AppJourneySeed = {
-  completedStepCount: journeySteps.length,
-  completedMessengerUnitIds: ["appointment-confirmation"],
-  completedPhoneCallUnitIds: ["appointment-confirmation-phone-call"],
-  visualNovelProgress: { status: "completed", beatIndex: 2 },
-  completedEpisodeFinalIds: ["tutorial-final-test"],
-};
+const tutorialDoneSeed = legacyPassedSeed;
 const tutorialDoneSnapshot = {
   version: 1,
-  completedStepCount: journeySteps.length,
+  completedStepCount: legacyPassedRecord.completedStepCount,
   completedEpisodeIntroIds: ["tutorial-intro"],
   completedMessengerUnitIds: ["appointment-confirmation"],
   completedPhoneCallUnitIds: ["appointment-confirmation-phone-call"],
@@ -156,11 +152,7 @@ async function boot(options: BootOptions = {}): Promise<Booted> {
   const events: EpisodeIntroEvent[] = [];
   vi.useFakeTimers();
   render(
-    <App
-      journeySeed={tutorialDoneSeed}
-      completedEpisodeIntroIds={["tutorial-intro"]}
-      episodeIntroEventSink={(event) => events.push(event)}
-    />,
+    <App progressSeed={tutorialDoneSeed} episodeIntroEventSink={(event) => events.push(event)} />,
   );
   act(() => {
     vi.advanceTimersByTime(entrySplashDurationMs);

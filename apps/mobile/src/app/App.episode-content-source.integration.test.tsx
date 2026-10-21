@@ -169,7 +169,7 @@ async function bootApp(mode: ContentFetchMode): Promise<Booted> {
   });
 
   vi.useFakeTimers();
-  render(<App completedEpisodeIntroIds={["tutorial-intro"]} />);
+  render(<App />);
   act(() => {
     vi.advanceTimersByTime(entrySplashDurationMs);
   });

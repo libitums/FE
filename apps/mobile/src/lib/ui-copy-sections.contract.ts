@@ -71,17 +71,11 @@ export type ShellCopy = {
 };
 
 export type JourneyMapCopy = {
-  /** 스텝 이름 뒤 상태 접미 낱말 */
-  readonly stepStatus: Readonly<Record<"done" | "current" | "locked", string>>;
   readonly start: string;
   /** 스텝 말풍선의 `1/4 activities` — 복수는 전체 수 기준 */
   readonly activityCount: (completed: number, total: number) => string;
   /** 진행의 접근성 이름 — `n of N`(보이는 `n/N`은 분수로 읽힌다). */
   readonly activityProgressLabel: (completed: number, total: number) => string;
-  /** 아직 유닛이 없는 에피소드 구획에 **보이는** 문구입니다. */
-  readonly episodePendingLabel: string;
-  /** 같은 구획의 접근성 이름입니다 — `${이름}, ${상태낱말}`로 스텝·롤플레이와 같은 자리입니다. */
-  readonly episodePending: (label: string, title: string) => string;
   /** 띠 설명 줄 — `("Episode 0.", 3)` → `Episode 0, unit 03`. */
   readonly episodeUnitLabel: (episodeLabel: string, unit: number) => string;
   readonly statModal: {
@@ -128,34 +122,6 @@ export type SpeakingCopy = {
   readonly recognitionUnavailable: string;
 };
 
-export type WritingCopy = {
-  readonly instruction: string;
-  readonly erase: string;
-  readonly rewrite: string;
-  readonly recognitionUnavailable: string;
-  readonly guideGlyph: (glyph: string) => string;
-  readonly slotsAllWritten: (total: number, written: string) => string;
-  /** 쓰는 중 — `written`이 빈 문자열이면 쓴 글자 부분을 읽지 않습니다. */
-  readonly slotsCurrent: (
-    total: number,
-    position: number,
-    current: string,
-    written: string,
-  ) => string;
-};
-
-export type CultureCopy = {
-  /** 「문화」 — `common.stepTitle`의 둘째 인자 */
-  readonly activity: string;
-  readonly takeQuiz: string;
-};
-
-export type CultureQuizCopy = {
-  readonly activity: string;
-  readonly instruction: string;
-  readonly progress: (ordinal: number, total: number) => string;
-};
-
 export type AssessmentCopy = {
   readonly activity: string;
   readonly verdict: Readonly<Record<"passed" | "failed", string>>;
@@ -177,9 +143,6 @@ export type EpisodeIntroCopy = {
   readonly guide: {
     readonly map: string;
     readonly continue: string;
-    readonly story: { readonly title: string; readonly description: string };
-    readonly messenger: { readonly title: string; readonly description: string };
-    readonly call: { readonly title: string; readonly description: string };
   };
   readonly skipDialog: {
     readonly title: string;
@@ -187,29 +150,9 @@ export type EpisodeIntroCopy = {
     readonly skip: string;
     readonly keepWatching: string;
   };
-  readonly call: {
-    readonly volumeDown: string;
-    readonly volumeUp: string;
-    readonly volumeLevel: (level: number, max: number) => string;
-    readonly volume: string;
-    readonly volumeExpanded: string;
-    readonly mute: (on: boolean) => string;
-    readonly endCall: string;
-  };
-};
-
-export type EpisodeNarrativeCopy = {
-  readonly nextLine: (ordinal: number, total: number) => string;
-};
-
-export type EpisodeFinalCopy = {
-  /** 보기 뒤 접미 — `idle`은 빈 문자열 */
-  readonly optionSuffix: Readonly<Record<"idle" | "correct" | "incorrect", string>>;
 };
 
 export type MessengerCopy = {
-  readonly chooseReply: string;
-  readonly placeholder: string;
   readonly keyboard: {
     readonly shift: string;
     readonly shiftOn: string;
@@ -219,14 +162,6 @@ export type MessengerCopy = {
     readonly space: string;
     readonly questionMark: string;
   };
-};
-
-export type PhoneCallCopy = {
-  readonly status: Readonly<
-    Record<"incoming" | "ready" | "playing" | "reply-ready" | "completed", string>
-  >;
-  readonly play: Readonly<Record<"start" | "listen" | "listen-again", string>>;
-  readonly voiceCall: (callerName: string) => string;
 };
 
 export type VisualNovelCopy = {
@@ -253,9 +188,7 @@ export type NotificationsCopy = {
   readonly emptyTitle: string;
   readonly emptyBody: string;
   readonly deleteLabel: (message: string) => string;
-  readonly destination: Readonly<
-    Record<"messenger" | "phone-call" | "visual-novel" | "roleplay-list", string>
-  >;
+  readonly destination: Readonly<Record<"roleplay-list", string>>;
 };
 
 export type SettingsCopy = {

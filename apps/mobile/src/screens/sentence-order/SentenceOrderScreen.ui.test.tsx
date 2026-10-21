@@ -2,9 +2,8 @@ import { afterEach, expect, test, vi } from "vitest";
 import { fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import type { AnswerResult } from "../../lib/answer-result";
-import { SentenceOrderScreen } from "./SentenceOrderScreen";
+import { SentenceOrderActivity } from "./SentenceOrderScreen";
 import type { SentenceOrderQuestion } from "./sentence-order";
-import type { JourneyStepId } from "../journey-map/journey-map";
 import { UiCopyContext } from "../../lib/ui-copy";
 import { markedUiCopy } from "../../lib/ui-copy.test-support";
 import { expectCompleteScene, expectQuestionScene } from "../learning/complete-scene.test-support";
@@ -14,8 +13,7 @@ import { expectCompleteScene, expectQuestionScene } from "../learning/complete-s
 // `LearningShell.ui.test.tsx`가 보고, 여기서는 카드 안 · 창고 · 아래 버튼이 무엇을 하는가만
 // 봅니다.
 //
-// 문항은 대역입니다 — 실물 표(`sentenceOrderQuestionsByStep`)는 임시 값이라 단언하지
-// 않습니다. 둘째 문항에 오답 낱말(`버스`)이 섞여 있습니다.
+// 문항은 대역입니다 — 제품 표는 사라졌습니다. 둘째 문항에 오답 낱말(`버스`)이 섞여 있습니다.
 const ORDERING_QUESTIONS: readonly SentenceOrderQuestion[] = [
   {
     prompt: "뭐 했어?",
@@ -31,14 +29,27 @@ const ORDERING_QUESTIONS: readonly SentenceOrderQuestion[] = [
   },
 ] as const;
 
-vi.mock("./sentence-order", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("./sentence-order")>();
-  return {
-    ...actual,
-    sentenceOrderQuestionsForStep: (id: JourneyStepId) =>
-      id === "ordering" ? ORDERING_QUESTIONS : [],
-  };
-});
+type StepId = "ordering" | "greeting" | "introduction";
+
+/** 옛 route 어댑터를 대신하는 테스트 안 어댑터입니다 — 스텝 대신 이 파일의 고정 문항을 활동에 넘깁니다. */
+function SentenceOrderScreen({
+  stepId,
+  onExit,
+  onFinish,
+}: {
+  stepId: StepId;
+  onExit: () => void;
+  onFinish: (id: StepId, results: readonly AnswerResult[], skippedCount: number) => void;
+}) {
+  return (
+    <SentenceOrderActivity
+      questions={stepId === "ordering" ? ORDERING_QUESTIONS : []}
+      gemCount={0}
+      onExit={onExit}
+      onFinish={(results, skippedCount) => onFinish(stepId, results, skippedCount)}
+    />
+  );
+}
 
 afterEach(() => {
   // announce 대역이 세운 전역을 원복합니다 — 지우지 않으면 다른 파일로 샙니다.
@@ -48,7 +59,7 @@ afterEach(() => {
 function renderOrdering(
   overrides: {
     onExit?: () => void;
-    onFinish?: (id: JourneyStepId, results: readonly AnswerResult[]) => void;
+    onFinish?: (id: StepId, results: readonly AnswerResult[]) => void;
   } = {},
 ) {
   return render(
@@ -297,7 +308,7 @@ test("[SO13] 다음을 누르면 둘째 문항으로 넘어가고 배치 · 판�
 });
 
 test("[SO14] 문항을 다 마치면 완료 문구와 결과 보기가 서고, 결과 보기는 onFinish를 판정 배열로 한 번 부른다", () => {
-  const onFinish = vi.fn<(id: JourneyStepId, results: readonly AnswerResult[]) => void>();
+  const onFinish = vi.fn<(id: StepId, results: readonly AnswerResult[]) => void>();
   renderOrdering({ onFinish });
 
   placeAllCorrectly(ORDERING_QUESTIONS[0]);
@@ -470,7 +481,7 @@ test("마지막 다음 뒤 custom 완료 발화가 한 번이고 builtin 채점 
 
 test("나가기를 누르고 그만두기를 고르면 onExit이 한 번, onFinish는 불리지 않는다", () => {
   const onExit = vi.fn<() => void>();
-  const onFinish = vi.fn<(id: JourneyStepId, results: readonly AnswerResult[]) => void>();
+  const onFinish = vi.fn<(id: StepId, results: readonly AnswerResult[]) => void>();
   const { container } = renderOrdering({ onExit, onFinish });
 
   fireEvent.tap(screen.getByTestId("learning-shell-exit"), {});

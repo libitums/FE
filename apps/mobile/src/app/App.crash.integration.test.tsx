@@ -21,7 +21,7 @@ vi.mock("../screens/journey-map/JourneyMapScreen", async (importOriginal) => {
 
 import { App } from "./App";
 import { uiCopyEn } from "../lib/ui-copy-en";
-import { journeySeedBefore } from "./test-helpers/journey-seed";
+import { legacyPassedSeed } from "./test-helpers/progress-seed";
 import { renderSignedInApp } from "./test-helpers/signed-in-app";
 
 // `integration` 계층: App 루트에서 에러 경계 · 문구 컨텍스트 · 보고 통로(`lynx.reportError`)가
@@ -45,7 +45,7 @@ afterEach(() => {
 });
 
 test("I1 화면이 렌더 중 던지면 App의 문구로 에러 화면이 뜨고 lynx.reportError가 같은 오류로 정확히 1회 불린다", async () => {
-  await renderSignedInApp(<App journeySeed={journeySeedBefore("ordering")} />);
+  await renderSignedInApp(<App progressSeed={legacyPassedSeed} />);
 
   // 던졌다는 사실부터 못 박습니다 — 이게 없으면 아래 단언이 아무 일도 없었던 화면을 보게 됩니다.
   expect(crash.thrown).not.toBeNull();
@@ -59,7 +59,7 @@ test("I1 화면이 렌더 중 던지면 App의 문구로 에러 화면이 뜨고
 });
 
 test("I1 재시도하면 앱 셸이 다시 보이고 보고 횟수는 1 그대로다", async () => {
-  await renderSignedInApp(<App journeySeed={journeySeedBefore("ordering")} />);
+  await renderSignedInApp(<App progressSeed={legacyPassedSeed} />);
   expect(reportError).toHaveBeenCalledTimes(1);
 
   fireEvent.tap(screen.getByTestId("error-boundary-retry"), {});
@@ -75,7 +75,7 @@ test("I1 보고 통로가 던져도 App의 에러 화면은 그대로 뜬다", a
     throw new Error("channel down");
   });
 
-  await renderSignedInApp(<App journeySeed={journeySeedBefore("ordering")} />);
+  await renderSignedInApp(<App progressSeed={legacyPassedSeed} />);
 
   expect(reportError).toHaveBeenCalledTimes(1);
   expect(screen.getByTestId("error-boundary-title")).toBeInTheDocument();

@@ -1,28 +1,9 @@
-import { learningPassCriterionForStep } from "./learning-assessment";
 // `Screen` 유니온을 화면 컴포넌트로 옮기는 `switch` 하나를 소유합니다. `never` 망라가 여기 섭니다 —
-// 값(`initialCompletedStepCount` 등)은 App이 읽어 props로 내립니다. 화면끼리는 타입만 공유합니다.
+// 값은 App이 읽어 props로 내립니다. 화면끼리는 타입만 공유합니다.
 
-import { judgeAssessment } from "../screens/assessment/assessment";
-import { CultureScreen } from "../screens/culture/CultureScreen";
-import { cultureNarrativeForStep } from "../screens/culture/culture";
-import { CultureQuizScreen } from "../screens/culture-quiz/CultureQuizScreen";
 import { HandwritingProbeScreen } from "../screens/handwriting-probe/HandwritingProbeScreen";
 import { JourneyMapScreen } from "../screens/journey-map/JourneyMapScreen";
-import { journeyStepOrdinal } from "../screens/journey-map/journey-map";
-import { LessonCompleteScreen } from "../screens/lesson-complete/LessonCompleteScreen";
-import { lessonRewardPlaceholder } from "../screens/lesson-complete/lesson-complete";
-import { ListeningScreen } from "../screens/listening/ListeningScreen";
-import { MessengerScreen } from "../screens/messenger/MessengerScreen";
-import {
-  messengerCompletionStatus,
-  messengerConversationFor,
-} from "../screens/messenger/messenger";
 import { NotificationsScreen } from "../screens/notifications/NotificationsScreen";
-import { PhoneCallScreen } from "../screens/phone-call/PhoneCallScreen";
-import {
-  getPhoneCallConversation,
-  phoneCallCompletionStatus,
-} from "../screens/phone-call/phone-call";
 import { AccountProfileScreen } from "../screens/profile/AccountProfileScreen";
 import { FeedbackScreen } from "../screens/feedback/FeedbackScreen";
 import { RoleplayEpisodeScreen } from "../screens/roleplay-list/RoleplayEpisodeScreen";
@@ -30,19 +11,11 @@ import { RoleplayListScreen } from "../screens/roleplay-list/RoleplayListScreen"
 import { findRoleplaySection } from "../screens/roleplay-list/roleplay-list";
 import { SettingsScreen } from "../screens/settings/SettingsScreen";
 import { SpeechProbeScreen } from "../screens/speech-probe/SpeechProbeScreen";
-import { VisualNovelScreen } from "../screens/visual-novel/VisualNovelScreen";
-import { visualNovelStoryFor } from "../screens/visual-novel/visual-novel";
-import { LEGACY_TUTORIAL_FINAL_ID } from "./legacy-tutorial-progress";
 import type { Screen } from "./nav-state";
 import { renderCatalogFlow } from "./render-catalog";
 import { renderCatalogCover } from "./render-catalog-cover";
-import { renderShellLearningScreen, renderWordChoiceScreen } from "./render-learning-screen";
-import { renderMessengerCompleteScreen } from "./render-messenger-complete";
-import { renderEpisodeIntroFlow } from "./render-episode-intro";
 import { renderEntryScreen } from "./render-entry-screen";
 import { learnerSettingsSummary, renderLearnerProfileSettings } from "./render-learner-profile";
-import { renderEpisodeFinalFlow } from "./render-episode-final";
-import { renderRoleplayUnitScreen } from "./render-roleplay-screen";
 import { renderRoleplayStory } from "./render-roleplay-story";
 import type { ScreenWiring } from "./screen-wiring";
 
@@ -57,8 +30,7 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
           catalog={{
             sections: wiring.catalogSections,
             progress: wiring.catalogProgress,
-            legacyTutorialPassed:
-              wiring.completedEpisodeFinalIds.includes(LEGACY_TUTORIAL_FINAL_ID),
+            legacyTutorialPassed: wiring.legacyTutorialPassed,
             onStartCover: wiring.onStartCatalogCover,
             onStartUnit: wiring.onStartCatalogUnit,
             unitItemCountOf: wiring.catalogUnitItemCountOf,
@@ -107,10 +79,6 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
       return (
         <FeedbackScreen onSubmit={wiring.onSubmitFeedback} onExit={wiring.onExitSettingsStack} />
       );
-    case "episode-intro":
-    case "episode-prologue":
-    case "episode-prologue-complete":
-      return renderEpisodeIntroFlow(screen, wiring);
     case "notifications":
       return (
         <NotificationsScreen
@@ -120,123 +88,6 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
           onExit={wiring.onExitNotifications}
         />
       );
-    case "listening":
-      return (
-        <ListeningScreen
-          stepId={screen.stepId}
-          onExit={wiring.onExitLearning}
-          onFinish={(id, results, skippedCount) =>
-            wiring.onFinishLearning(id, screen.activityIndex, results, skippedCount)
-          }
-          // App의 `sessionOptions` 상태로 결선합니다 — 이 경로가 유일한 소비자입니다.
-          sessionOptions={wiring.sessionOptions}
-          gemCount={wiring.gemCount}
-        />
-      );
-    // ⟨2026-09-28⟩ **통과도 미통과도 같은 화면입니다.** 갈리는 것은 화면이 아니라
-    // 그 화면 안의 셋입니다(표식 · 제목 · 보상). 판정은 셸(`onFinishLearning`)과
-    // 같은 순수 함수 · 같은 상수로 다시 냅니다. 연속 · 트로피는 규칙이 없어 0입니다.
-    case "assessment": {
-      const verdict = judgeAssessment(screen.results, learningPassCriterionForStep(screen.stepId));
-      return (
-        <LessonCompleteScreen
-          results={screen.results}
-          skippedCount={screen.skippedCount}
-          verdict={verdict}
-          streakDays={wiring.streakDays}
-          trophyCount={wiring.trophyCount}
-          statBumps={wiring.statBumps}
-          onStatBumped={wiring.onStatBumped}
-          reward={lessonRewardPlaceholder}
-          ticketsLeft={wiring.ticketsLeft}
-          onExit={wiring.onExitAssessment}
-          // 미통과에서만 씁니다 — 같은 스텝을 첫 활동부터 새로 엽니다(맵에서 노드를 다시 누르는 길을 줄인 것).
-          onRetry={() => wiring.onStartStep(screen.stepId)}
-        />
-      );
-    }
-    case "culture":
-      return (
-        <CultureScreen
-          stepOrdinal={journeyStepOrdinal(screen.stepId)}
-          narrative={cultureNarrativeForStep(screen.stepId)}
-          onExit={wiring.onExitCulture}
-          onStartQuiz={() => wiring.onStartCultureQuiz(screen.stepId)}
-        />
-      );
-    // 문화 퀴즈입니다. `onExit`은 학습 화면 셋이 쓰는 그 콜백을 그대로 씁니다
-    // — 하는 일이 문자 그대로 같습니다. 그 하는 일은 `back` 하나가 아니라
-    // 활성 스택의 루트로 곧장 닿는 것입니다(ADR-0007 D6). `onFinish`가 없습니다
-    // — 판정이 화면 밖으로 나가지 않습니다.
-    case "culture-quiz":
-      return (
-        <CultureQuizScreen
-          stepId={screen.stepId}
-          stepOrdinal={journeyStepOrdinal(screen.stepId)}
-          onExit={wiring.onExitLearning}
-        />
-      );
-    // 결선은 `onStartStep`이 `learningFormForStep`을 거쳐 `learningScreenFor`가
-    // 돌려주는 화면을 push하므로 이 case들이 실제로 열립니다. 학습 화면은 props가 같지만
-    // `Record`나 공통 렌더 헬퍼로 묶지 않습니다 — 묶으면 `switch`의 exhaustiveness가 죽고,
-    // 그것이 이 저장소가 「빠진 결선」을 컴파일 타임에 잡는 유일한 장치입니다. 분기의
-    // 중복은 그 장치의 가격이지 결함이 아닙니다.
-    case "sentence-order":
-    case "speaking":
-    case "writing":
-      return renderShellLearningScreen(screen, wiring);
-    case "word-choice":
-      return renderWordChoiceScreen(screen, wiring);
-    case "messenger":
-      return (
-        <MessengerScreen
-          conversation={messengerConversationFor(screen.unitId)}
-          completionStatus={messengerCompletionStatus(
-            wiring.completedMessengerUnitIds,
-            screen.unitId,
-          )}
-          exitTo="journey"
-          onExit={(outcome) => wiring.onMessengerExit(screen.unitId, outcome)}
-          onComplete={wiring.onMessengerComplete}
-          onFinish={wiring.onMessengerFinish}
-          insets={wiring.safeAreaInsets}
-        />
-      );
-    case "special-unit-complete":
-    case "messenger-complete":
-      return renderMessengerCompleteScreen(screen, wiring);
-    case "phone-call":
-      return (
-        <PhoneCallScreen
-          unitId={screen.unitId}
-          conversation={getPhoneCallConversation()}
-          completionStatus={phoneCallCompletionStatus(
-            wiring.completedPhoneCallUnitIds,
-            screen.unitId,
-          )}
-          exitTo="journey"
-          onComplete={wiring.onPhoneCallComplete}
-          onExit={wiring.onPhoneCallExit}
-        />
-      );
-    case "visual-novel":
-      return (
-        <VisualNovelScreen
-          insets={wiring.safeAreaInsets}
-          story={visualNovelStoryFor(screen.unitId)}
-          progress={wiring.visualNovelProgress}
-          exitTo="journey"
-          onAdvance={wiring.onVisualNovelAdvance}
-          onExit={wiring.onVisualNovelExit}
-          onFinish={wiring.onVisualNovelFinish}
-        />
-      );
-    // 롤플레이 route 셋입니다. `renderRoleplayUnitScreen`이 연습 경계를 진
-    // 매개변수 타입으로 세 화면을 잇습니다.
-    case "roleplay-messenger":
-    case "roleplay-phone-call":
-    case "roleplay-visual-novel":
-      return renderRoleplayUnitScreen(screen, wiring.roleplay, wiring.safeAreaInsets);
     // 진입 흐름 화면 여덟입니다 — 스플래시부터 여정 입구까지가 한 흐름이라
     // `render-entry-screen.tsx`가 한 자리에서 집니다.
     case "splash":
@@ -248,9 +99,6 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
     case "language-select":
     case "journey-entry":
       return renderEntryScreen(screen, wiring);
-    case "episode-final":
-    case "episode-final-complete":
-      return renderEpisodeFinalFlow(screen, wiring);
     case "catalog-cover":
       return renderCatalogCover(screen, wiring);
     case "catalog-lesson":

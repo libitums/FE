@@ -41,7 +41,6 @@ test("UE1. 복수형 — 활동 수 · 에피소드 · 젬 팩 · 잔액", () =>
   // 접근성 이름은 `n of N` — 분수(「one quarter」)로 읽히지 않게(a11y W1).
   expect(c.journeyMap.activityProgressLabel(1, 1)).toBe("1 of 1 activity done");
   expect(c.journeyMap.activityProgressLabel(1, 4)).toBe("1 of 4 activities done");
-  expect(c.episodeNarrative.nextLine(1, 3)).toBe("Next line, 1 of 3");
   expect(c.journeyMap.statModal.episodesClearedHero(1)).toBe("1 episode cleared");
   expect(c.gemPurchase.packAmount(1200, "1,200")).toBe("1,200 gems");
   expect(c.gemPurchase.balance(1, "1")).toBe("You have 1 gem");
@@ -55,14 +54,9 @@ test("UE2. 조건부 문구 — 실수 · 건너뜀", () => {
   expect(c.lessonComplete.skippedSuffix(3)).toBe(", 3 skipped questions");
 });
 
-test("UE2. 조건부 문구 — 쓰기 · 통화 · 결과 낭독", () => {
-  expect(c.writing.slotsCurrent(3, 1, "주", "")).toBe("Letter 1 of 3, 주");
-  expect(c.writing.slotsCurrent(3, 2, "세", "주")).toBe("Letter 2 of 3, 세, written 주");
-  expect(c.writing.slotsAllWritten(3, "주세요")).toBe("3 letters to write, all written, 주세요");
-  expect(c.episodeIntro.call.mute(true)).toBe("Mute, on");
+test("UE2. 조건부 문구 — 결과 낭독", () => {
   expect(c.common.resultAnnouncement("incorrect")).toBe("Result, incorrect");
   expect(c.assessment.announcement("failed")).toBe("Assessment result, not passed");
-  expect(c.episodeFinal.optionSuffix.idle).toBe("");
 });
 
 test("UE3. 표 전체(문자열 잎 + 함수 잎)에 한글이 없다", () => {
@@ -93,7 +87,6 @@ test("UE5. 부록 B 대표 문구와 문자열이 같다", () => {
   expect(c.learningShell.leaveDialog.title).toBe("Leave this lesson?");
   expect(c.settings.nav["privacy-policy"]).toBe("Privacy Policy");
   expect(c.settings.nav["terms-of-use"]).toBe("Terms of Use");
-  expect(c.phoneCall.status.playing).toBe("Speaking…");
   expect(c.roleplay.premiumNotice("T")).toBe("“T” is a Plus roleplay. Plus isn't available yet.");
 });
 

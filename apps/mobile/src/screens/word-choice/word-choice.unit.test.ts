@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 
-import type { JourneyStepId } from "../journey-map/journey-map";
 import {
   choiceResultAt,
   hasAnswered,
@@ -9,8 +8,6 @@ import {
   judgeWordChoice,
   optionAccessibilityLabel,
   wordChoiceCompletionAnnouncement,
-  wordChoiceQuestionsByStep,
-  wordChoiceQuestionsForStep,
   wordChoiceSessionReducer,
   wordChoiceSessionResults,
   type WordChoiceQuestion,
@@ -28,17 +25,6 @@ import { uiCopyEn } from "../../lib/ui-copy-en";
 // 배열입니다. 그래서 이 파일의 픽스처는 상수를 읽지 않고 **파일 안에서 직접
 // 만듭니다**. 「데이터 불변식」(answerOrder/answerIndex 범위·문항이 서로 다른가)
 // 단언은 값이 없는 지금 세우지 않습니다.
-
-const stepIds: readonly JourneyStepId[] = [
-  "greeting",
-  "introduction",
-  "ordering",
-  "appointment",
-  "directions",
-  "tutorial-listening",
-  "tutorial-speaking",
-  "tutorial-writing",
-];
 
 // 픽스처 — answerIndex가 0인 문항입니다. "answerIndex가 0인 문항에서 0번 보기가
 // correct다" 단언을 세우는 데 씁니다(0을 거짓으로 다루는 자리를 만들지 않습니다).
@@ -400,94 +386,6 @@ describe("wordChoiceSessionResults", () => {
     expect(wordChoiceSessionResults([], [0, 1])).toEqual([]);
   });
 });
-
-describe("wordChoiceQuestionsForStep", () => {
-  it("다섯 스텝 전부 wordChoiceQuestionsByStep[id]를 그대로 낸다", () => {
-    for (const id of stepIds) {
-      expect(wordChoiceQuestionsForStep(id)).toEqual(wordChoiceQuestionsByStep[id]);
-    }
-  });
-
-  it("던지지 않는다 — Record가 다섯 스텝 전부를 덮는다", () => {
-    for (const id of stepIds) {
-      expect(() => wordChoiceQuestionsForStep(id)).not.toThrow();
-    }
-  });
-});
-
-// 고정 데이터의 불변식입니다 — 듣기(`listening.unit.test.ts`)가 자기 표에 거는 것과
-// 같은 줄들입니다. **값 자체는 단언하지 않습니다**: 문항 문구는 컨텐츠라 바뀔 것이고,
-// 여기서 박으면 문구를 고칠 때마다 계약이 아니라 이 테스트가 갈립니다.
-describe("wordChoiceQuestionsByStep (고정 데이터 불변식)", () => {
-  it("다섯 스텝 전부가 있다", () => {
-    expect(Object.keys(wordChoiceQuestionsByStep).sort()).toEqual([...stepIds].sort());
-  });
-
-  // ⟨2026-09-28⟩ 문항을 가진 스텝이 `introduction` 하나입니다. **어느 스텝인지를 여기서
-  // 박지 않습니다** — 그것은 배정이고, 배정과 문항의 짝은 `journey-map.unit.test.ts`의
-  // 교차 불변식이 집니다. 이 파일이 보는 것은 「비어 있지 않은 스텝은 세 문항을
-  // 갖는다」입니다.
-  it("문항이 있는 스텝은 문항이 셋이다", () => {
-    for (const id of stepIds) {
-      const questions = wordChoiceQuestionsByStep[id];
-      if (questions.length === 0) {
-        continue;
-      }
-
-      expect(questions).toHaveLength(3);
-    }
-  });
-
-  it("어느 스텝에도 문항이 하나도 없지는 않다 — 표 전체가 비면 화면이 못 선다", () => {
-    const total = stepIds.reduce((sum, id) => sum + wordChoiceQuestionsByStep[id].length, 0);
-
-    expect(total).toBeGreaterThan(0);
-  });
-
-  it("모든 문항의 보기가 넷이고 서로 다르다", () => {
-    for (const id of stepIds) {
-      for (const question of wordChoiceQuestionsByStep[id]) {
-        expect(question.choices).toHaveLength(4);
-        expect(new Set(question.choices).size).toBe(4);
-      }
-    }
-  });
-
-  it("모든 문항의 answerIndex가 0..3 안에 있다", () => {
-    for (const id of stepIds) {
-      for (const question of wordChoiceQuestionsByStep[id]) {
-        expect(question.answerIndex).toBeGreaterThanOrEqual(0);
-        expect(question.answerIndex).toBeLessThanOrEqual(3);
-      }
-    }
-  });
-
-  it("모든 문항의 prompt와 보기 넷이 빈 문자열이 아니다", () => {
-    for (const id of stepIds) {
-      for (const question of wordChoiceQuestionsByStep[id]) {
-        expect(question.prompt.length).toBeGreaterThan(0);
-        for (const choice of question.choices) {
-          expect(choice.length).toBeGreaterThan(0);
-        }
-      }
-    }
-  });
-
-  // 「정답 인덱스」 행입니다: 이것이 깨지면 한 인덱스만 계속 골라 전부 맞는 경로가
-  // 생기고, 실기에서 오답 경로가 한 번도 안 나올 수 있습니다.
-  it("한 스텝 안에서 문항들의 정답 인덱스가 서로 다르다", () => {
-    for (const id of stepIds) {
-      const answerIndexes = wordChoiceQuestionsByStep[id].map((question) => question.answerIndex);
-
-      expect(new Set(answerIndexes).size).toBe(answerIndexes.length);
-    }
-  });
-});
-
-// ---------------------------------------------------------------- 완료 전이 발화
-// 기대값의 정본은 계약입니다 — word-choice.ts에서 베끼지 않습니다.
-//
-// 「정확히 한 번」은 이 계층이 지지 않습니다 — 그것은 `ui`의 X-C입니다.
 
 describe("wordChoiceCompletionAnnouncement", () => {
   // U1 — 나아가는 라벨로 부르면 정해진 문자열과 **문자 그대로** 같습니다 (RL7).

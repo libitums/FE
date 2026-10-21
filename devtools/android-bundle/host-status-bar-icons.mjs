@@ -31,11 +31,6 @@ const MAP_SCRIM = "first-unit-map-scrim";
 export const statusBarSurfaceRegistry = {
   /** route → 그 route에서 띠를 어둡게 칠하는 컴포넌트(채팅 · 통화 구간은 밝아 표지가 없다). */
   fullBleedRoutes: {
-    "episode-intro": ["EpisodeIntroScreen"],
-    "episode-prologue": ["EpisodeNarrativeScreen"],
-    "episode-final": ["EpisodeNarrativeScreen", "EpisodeFinalScreen"],
-    "visual-novel": ["VisualNovelScreen"],
-    "roleplay-visual-novel": ["VisualNovelScreen"],
     "journey-entry": ["JourneyEntryScreen"],
     "catalog-cover": ["EpisodeIntroScreen", "CatalogCoverScreen", "EpisodeBannerScreen"],
     "catalog-final": ["CatalogFinalScreen"],
@@ -46,9 +41,6 @@ export const statusBarSurfaceRegistry = {
   /** 표지를 다는 컴포넌트 이름 → 파일(`apps/mobile/src` 기준). */
   componentFiles: {
     EpisodeIntroScreen: "screens/episode-intro/EpisodeIntroScreen.tsx",
-    EpisodeNarrativeScreen: "screens/episode-narrative/EpisodeNarrativeScreen.tsx",
-    EpisodeFinalScreen: "screens/episode-final/EpisodeFinalScreen.tsx",
-    VisualNovelScreen: "screens/visual-novel/VisualNovelScreen.tsx",
     JourneyEntryScreen: "screens/journey-entry/JourneyEntryScreen.tsx",
     CatalogCoverScreen: "screens/catalog-cover/CatalogCoverScreen.tsx",
     EpisodeBannerScreen: "screens/catalog-cover/EpisodeBannerScreen.tsx",
@@ -79,7 +71,6 @@ export const statusBarSurfaceRegistry = {
     "components/first-unit-guide.css": {
       classification: "light-icons",
       carriers: [
-        { component: "FirstUnitGuide", file: "components/FirstUnitGuide.tsx" },
         {
           component: "JourneyMapScreen",
           file: "screens/journey-map/JourneyMapScreen.tsx",

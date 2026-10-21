@@ -1,11 +1,11 @@
 // 제품 사용 이벤트를 PostHog로 보내는 계약입니다(ADR-0029). 타입만 둡니다 — 구현 · 값은 없습니다.
 // 이벤트 이름과 필드는 **새로 정하지 않습니다** — 각 화면 계약(`entry-flow.ts` · `*.contract.ts`)이
-// 이미 고정한 일곱 union을 그대로 모읍니다. 이 파일이 더하는 것은 「그 이벤트가 PostHog 요청의
+// 이미 고정한 네 union을 그대로 모읍니다. 이 파일이 더하는 것은 「그 이벤트가 PostHog 요청의
 // 어디로 가는가」뿐입니다.
 //
 // 모듈 셋이 이 타입을 나눠 가집니다.
 //   - `lib/analytics-config.ts`  — 순수. 키 · 환경 판정 · 호스트 상수. 어느 스레드든 안전
-//   - `lib/analytics-events.ts`  — 순수. 이벤트 → capture 매핑 · sink 일곱 만들기. 어느 스레드든 안전
+//   - `lib/analytics-events.ts`  — 순수. 이벤트 → capture 매핑 · sink 넷 만들기. 어느 스레드든 안전
 //   - `lib/posthog-client.ts`    — `import "background-only"`. SDK · 어댑터 · 전송 해석
 //
 // SDK 타입은 **type import만** 합니다 — 값 import는 `posthog-client.ts` 한 파일뿐이라,
@@ -22,30 +22,15 @@ import type {
   EpisodeIntroEventSink,
 } from "../screens/episode-intro/episode-intro.contract";
 import type {
-  MessengerAppProps,
-  MessengerEvent,
-  MessengerEventSink,
-} from "../screens/messenger/messenger.contract";
-import type {
   NotificationAppProps,
   NotificationEvent,
   NotificationEventSink,
 } from "../screens/notifications/notifications.contract";
 import type {
-  PhoneCallAppProps,
-  PhoneCallEvent,
-  PhoneCallEventSink,
-} from "../screens/phone-call/phone-call.contract";
-import type {
   SettingsAppProps,
   SettingsEvent,
   SettingsEventSink,
 } from "../screens/settings/settings.contract";
-import type {
-  VisualNovelAppProps,
-  VisualNovelEvent,
-  VisualNovelEventSink,
-} from "../screens/visual-novel/visual-novel.contract";
 
 // ------------------------------------------------------------------ 설정
 
@@ -77,15 +62,8 @@ export type AnalyticsConfigFrom = (
 
 // ------------------------------------------------------------------ 이벤트 → capture
 
-/** sink 일곱이 내는 이벤트 전부입니다(이름 43개 · 모양 47개 — 열림 이벤트 셋이 출처별 두 모양). */
-export type AnalyticsEvent =
-  | EntryEvent
-  | MessengerEvent
-  | VisualNovelEvent
-  | PhoneCallEvent
-  | NotificationEvent
-  | SettingsEvent
-  | EpisodeIntroEvent;
+/** sink 넷이 내는 이벤트 전부입니다(이름 36개). */
+export type AnalyticsEvent = EntryEvent | NotificationEvent | SettingsEvent | EpisodeIntroEvent;
 
 /**
  * PostHog 이벤트 이름입니다. 목록은 `analytics-event-names.ts`에 손으로 적습니다 — 화면 계약에
@@ -123,22 +101,19 @@ export type AnalyticsCaptureClient = {
 };
 
 /**
- * App이 받는 sink 일곱입니다. 키 이름이 App props 이름과 같습니다. **옵셔널이 없습니다**
+ * App이 받는 sink 넷입니다. 키 이름이 App props 이름과 같습니다. **옵셔널이 없습니다**
  * (ADR-0007 D5) — 보낼 곳이 하나도 없을 때는 각 값이 `null`입니다(Airbridge tracker 합성은 진입점,
  * docs/adr/0063-airbridge-events.md D9). no-op 함수로 수집을 가장하지 않는다는 기존 sink 규약을 따릅니다.
  */
 export type AnalyticsEventSinks = {
   readonly entryEventSink: EntryEventSink;
-  readonly messengerEventSink: MessengerEventSink;
-  readonly visualNovelEventSink: VisualNovelEventSink;
-  readonly phoneCallEventSink: PhoneCallEventSink;
   readonly notificationEventSink: NotificationEventSink;
   readonly settingsEventSink: SettingsEventSink;
   readonly episodeIntroEventSink: EpisodeIntroEventSink;
 };
 
 /**
- * 클라이언트가 있으면 일곱 모두 그 클라이언트로 `capture`하는 함수, 없으면 일곱 모두
+ * 클라이언트가 있으면 넷 모두 그 클라이언트로 `capture`하는 함수, 없으면 넷 모두
  * `null`입니다. 만든 sink는 **던지지 않습니다** — 매핑 · capture의 예외를 안에서 삼킵니다.
  */
 export type AnalyticsEventSinksFrom = (
@@ -187,7 +162,7 @@ export type ResolveAnalyticsTransport = () => AnalyticsTransport | null;
 
 /**
  * 설정과 전송이 **둘 다** 있을 때만 클라이언트를 하나 만듭니다. 하나라도 `null`이면
- * 클라이언트를 만들지 않고 sink 일곱 `null` · `identify` `null`을 돌려줍니다 — 요청 0건.
+ * 클라이언트를 만들지 않고 sink 넷 `null` · `identify` `null`을 돌려줍니다 — 요청 0건.
  */
 export type CreateAnalyticsSession = (
   config: AnalyticsConfig | null,
@@ -245,7 +220,7 @@ type Same<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
  * 값이 없는 검사 묶음입니다. 하나라도 거짓이 되면 `tsc`가 이 줄에서 멈춥니다.
  *   ① 화면 계약의 이벤트 이름 집합 = `AnalyticsEventName`(늘거나 줄면 섬)
  *   ② 모든 이벤트가 `name` + 스칼라 필드뿐이다(PostHog properties로 그대로 갈 수 있다)
- *   ③ sink 일곱 = App이 받는 sink props 일곱(키와 값 타입 모두, 옵셔널을 걷은 모양)
+ *   ③ sink 넷 = App이 받는 sink props 넷(키와 값 타입 모두, 옵셔널을 걷은 모양)
  *   ④ `PostHogCore` 인스턴스가 `AnalyticsCaptureClient` 자리에 그대로 들어간다
  */
 export type AnalyticsContractChecks = [
@@ -256,15 +231,7 @@ export type AnalyticsContractChecks = [
   Assert<
     Same<
       AnalyticsEventSinks,
-      Required<
-        EntryAppProps &
-          MessengerAppProps &
-          VisualNovelAppProps &
-          PhoneCallAppProps &
-          NotificationAppProps &
-          SettingsAppProps &
-          EpisodeIntroAppProps
-      >
+      Required<EntryAppProps & NotificationAppProps & SettingsAppProps & EpisodeIntroAppProps>
     >
   >,
   Assert<[PostHogCore] extends [AnalyticsCaptureClient] ? true : false>,

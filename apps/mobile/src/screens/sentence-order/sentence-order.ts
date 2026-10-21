@@ -1,4 +1,4 @@
-// 문장 순서 화면의 순수 로직과 고정 데이터를 소유합니다(ADR-0006 D4 — 순수
+// 문장 순서 활동의 순수 로직을 소유합니다(ADR-0006 D4 — 순수
 // 로직은 unit 계층 대상입니다). UI를 import하지 않습니다 — 화면 폴더에 있지만
 // 화면 컴포넌트를 참조하지 않는 순수 모듈입니다(listening.ts · assessment.ts와
 // 같은 판단입니다).
@@ -9,11 +9,8 @@ import type { UiCopy } from "../../lib/ui-copy.contract";
 import type { AnswerResult } from "../../lib/answer-result";
 import { surfaceToneClassName } from "../../lib/surface-tone";
 import type { SurfaceTone } from "../../lib/surface-tone";
-import type { JourneyStepId } from "../journey-map/journey-map";
 
-import { sentenceOrderQuestionsByStep } from "./sentence-order-questions";
 import type { DialogueSpeaker, SentenceOrderQuestion } from "./sentence-order-questions";
-export { sentenceOrderQuestionsByStep } from "./sentence-order-questions";
 export type { SentenceOrderQuestion } from "./sentence-order-questions";
 
 // ---------------------------------------------------------------- 도메인 타입
@@ -45,15 +42,7 @@ export const initialSentenceOrderSessionState: SentenceOrderSessionState = {
 };
 
 // ---------------------------------------------------------------- 순수 함수
-// 열둘 전부 부수효과가 없습니다. 방어 분기를 두지 않습니다 — Record가 다섯
-// 스텝을 전부 갖는 것은 tsc가 지고, 범위 밖 입력에도 아래 식이 그대로
-// 적용됩니다.
-
-// Record가 JourneyStepId 다섯을 전부 갖는 것을 tsc가 강제하므로 조회는
-// 총함수입니다.
-export function sentenceOrderQuestionsForStep(id: JourneyStepId): readonly SentenceOrderQuestion[] {
-  return sentenceOrderQuestionsByStep[id];
-}
+// 전부 부수효과가 없습니다. 방어 분기를 두지 않습니다 — 범위 밖 입력에도 아래 식이 그대로 적용됩니다.
 
 // 정답 순서와 배치가 길이·각 원소 전부 같으면 correct, 아니면 incorrect
 // 입니다. 인덱스로 비교하므로 같은 낱말이 두 번 나오는 문항에서도 어느

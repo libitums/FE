@@ -2,14 +2,11 @@
 
 import type {
   AssessmentCopy,
-  CultureCopy,
-  CultureQuizCopy,
   LessonCompleteCopy,
   ListeningCopy,
   SentenceOrderCopy,
   SpeakingCopy,
   WordChoiceCopy,
-  WritingCopy,
 } from "./ui-copy-sections.contract";
 import type { LearningItemGuideCopy } from "./learning-item-guide.contract";
 import { n } from "./ui-copy-en-plural";
@@ -39,26 +36,6 @@ export const speakingEn: SpeakingCopy = {
     "Siri or Dictation is off. Turn on Settings > General > Keyboard > Enable Dictation, then try again.",
   tapToContinue: "Tap the screen to continue",
   recognitionUnavailable: "Speech recognition isn't available right now. Tap Skip to continue.",
-};
-
-export const writingEn: WritingCopy = {
-  instruction: "Trace the letters in the blank.",
-  erase: "Erase",
-  rewrite: "Write again",
-  recognitionUnavailable: "Handwriting can't be checked right now. Moving on.",
-  guideGlyph: (glyph) => `Guide letter ${glyph}`,
-  slotsAllWritten: (total, written) =>
-    `${n(total, "letter", "letters")} to write, all written, ${written}`,
-  slotsCurrent: (total, position, current, written) =>
-    `Letter ${position} of ${total}, ${current}${written === "" ? "" : `, written ${written}`}`,
-};
-
-export const cultureEn: CultureCopy = { activity: "Culture", takeQuiz: "Take the quiz" };
-
-export const cultureQuizEn: CultureQuizCopy = {
-  activity: "Culture quiz",
-  instruction: "Choose the right answer.",
-  progress: (ordinal, total) => `Question ${ordinal} / ${total}`,
 };
 
 export const assessmentEn: AssessmentCopy = {

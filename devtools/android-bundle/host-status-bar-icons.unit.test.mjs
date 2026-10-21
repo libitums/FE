@@ -102,9 +102,6 @@ export function JourneyMapScreen() {
 
 const CARRIER_PATHS = {
   intro: "screens/episode-intro/EpisodeIntroScreen.tsx",
-  narrative: "screens/episode-narrative/EpisodeNarrativeScreen.tsx",
-  final: "screens/episode-final/EpisodeFinalScreen.tsx",
-  visualNovel: "screens/visual-novel/VisualNovelScreen.tsx",
   entry: "screens/journey-entry/JourneyEntryScreen.tsx",
   catalogCover: "screens/catalog-cover/CatalogCoverScreen.tsx",
   catalogFinal: "screens/catalog-final/CatalogFinalScreen.tsx",
@@ -112,7 +109,6 @@ const CARRIER_PATHS = {
   roleplayPreview: "screens/roleplay-story/RoleplayPreviewScreen.tsx",
   roleplayTalk: "screens/roleplay-story/RoleplayTalkScreen.tsx",
   statModal: "screens/journey-map/JourneyStatModal.tsx",
-  guide: "components/FirstUnitGuide.tsx",
   map: "screens/journey-map/JourneyMapScreen.tsx",
 };
 
@@ -120,11 +116,6 @@ const CHAT_PATH = "screens/prologue/PrologueChatScreen.tsx";
 
 const appSession = (
   routes = [
-    "episode-intro",
-    "episode-prologue",
-    "episode-final",
-    "visual-novel",
-    "roleplay-visual-novel",
     "journey-entry",
     "catalog-cover",
     "catalog-final",
@@ -221,9 +212,6 @@ function healthyBase(overrides = {}) {
     syncSource: syncSource(),
     componentSources: {
       [CARRIER_PATHS.intro]: carrierComponent("EpisodeIntroScreen", "episode-intro-screen"),
-      [CARRIER_PATHS.narrative]: carrierComponent("EpisodeNarrativeScreen", "episode-narrative"),
-      [CARRIER_PATHS.final]: carrierComponent("EpisodeFinalScreen", "episode-final-screen"),
-      [CARRIER_PATHS.visualNovel]: carrierComponent("VisualNovelScreen", "visual-novel-screen"),
       [CARRIER_PATHS.entry]: carrierComponent("JourneyEntryScreen", "journey-entry-screen"),
       [CARRIER_PATHS.catalogCover]: carrierComponent("CatalogCoverScreen", "catalog-cover-screen"),
       [CARRIER_PATHS.catalogFinal]: carrierComponent("CatalogFinalScreen", "catalog-final-screen"),
@@ -237,7 +225,6 @@ function healthyBase(overrides = {}) {
         "episode-banner-screen",
       ),
       [CARRIER_PATHS.statModal]: statModalComponent(),
-      [CARRIER_PATHS.guide]: carrierComponent("FirstUnitGuide", "first-unit-guide"),
       [CARRIER_PATHS.map]: journeyMapScreen(),
       [CHAT_PATH]: plainComponent("PrologueChatScreen", "prologue-chat-screen"),
       "screens/splash/SplashScreen.tsx": plainComponent("SplashScreen", "splash-screen"),
@@ -302,11 +289,11 @@ test("SM3: a component attribute that is not the host dataset key is a marker-ke
 test("SM4: a registered component that lost its marker is a carrier issue naming the file", () => {
   assertRule(
     withComponent(
-      CARRIER_PATHS.final,
-      plainComponent("EpisodeFinalScreen", "episode-final-screen"),
+      CARRIER_PATHS.catalogFinal,
+      plainComponent("CatalogFinalScreen", "catalog-final-screen"),
     ),
     "carrier",
-    CARRIER_PATHS.final,
+    CARRIER_PATHS.catalogFinal,
   );
 });
 
@@ -346,15 +333,7 @@ test("SM6: a literal or conditional marker value is a stray-marker issue", () =>
 test("SM7: a new full-bleed route without a registry entry is a full-bleed-registry issue", () => {
   assertRule(
     healthy({
-      appSessionSource: appSession([
-        "episode-intro",
-        "episode-prologue",
-        "episode-final",
-        "visual-novel",
-        "roleplay-visual-novel",
-        "journey-entry",
-        "brand-new-route",
-      ]),
+      appSessionSource: appSession(["journey-entry", "brand-new-route"]),
     }),
     "full-bleed-registry",
     "brand-new-route",
@@ -513,7 +492,6 @@ test("SM11: statusBarSurfaceRegistry matches the contract (five routes, five CSS
   const guide = layerText("components/first-unit-guide.css");
   assert.match(guide, /light-icons/);
   assert.doesNotMatch(guide, /dark-icons/);
-  assert.match(guide, /FirstUnitGuide\.tsx/);
   assert.match(guide, /JourneyMapScreen\.tsx/);
   assert.match(guide, /first-unit-map-scrim/);
 });

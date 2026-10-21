@@ -5,7 +5,7 @@ import { afterEach, expect, test, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
-import type { AppJourneySeed } from "./journey-progress";
+import type { AppProgressSeed } from "./app-props";
 import { resetPushWiringForTests } from "./push-wiring";
 import { pushOpenedEventName } from "./use-opened-push";
 import {
@@ -24,11 +24,14 @@ import { allLearningItemGuidesSeenValue } from "../lib/learning-item-guide.test-
 import { sha256Hex, utf8Bytes } from "../lib/sha256";
 import { systemBackEventName } from "../lib/system-back";
 import { EPISODE_BANNER_HOLD_MS } from "../screens/catalog-cover/episode-banner";
-import { journeySteps } from "../screens/journey-map/journey-map";
 import { catalogMapSectionsOf } from "../screens/journey-map/catalog-map";
 import type { EpisodeIntroEvent } from "../screens/episode-intro/episode-intro.contract";
 import { catalogNodeTestId } from "./test-helpers/map-unit-testid";
-import { legacyPassedSeed, tutorialDoneProgress } from "./test-helpers/progress-seed";
+import {
+  legacyPassedRecord,
+  legacyPassedSeed,
+  tutorialDoneProgress,
+} from "./test-helpers/progress-seed";
 
 // `integration` 계층: 앱 세션에서 「카탈로그 읽기 → 맵 구획 → 표지 열기 → 컷 끝 → 진행 저장 → 다음 실행」과
 // 「갱신 뒤 같은 트리에서 구획이 서는 것」, 이벤트 sink 경계를 한 트리에서 봅니다. 대역은 경계뿐입니다 —
@@ -48,18 +51,12 @@ const refreshedBody = JSON.stringify({
 });
 
 // 튜토리얼 최종 테스트까지 끝낸 진행(씨앗)입니다 — 첫 표지가 열리는 조건입니다.
-const tutorialDoneSeed: AppJourneySeed = {
-  completedStepCount: journeySteps.length,
-  completedMessengerUnitIds: ["appointment-confirmation"],
-  completedPhoneCallUnitIds: ["appointment-confirmation-phone-call"],
-  visualNovelProgress: { status: "completed", beatIndex: 2 },
-  completedEpisodeFinalIds: ["tutorial-final-test"],
-};
+const tutorialDoneSeed = legacyPassedSeed;
 
 // 같은 진행을 서버 스냅숏으로 내린 것입니다.
 const tutorialDoneSnapshot = {
   version: 1,
-  completedStepCount: journeySteps.length,
+  completedStepCount: legacyPassedRecord.completedStepCount,
   completedEpisodeIntroIds: ["tutorial-intro"],
   completedMessengerUnitIds: ["appointment-confirmation"],
   completedPhoneCallUnitIds: ["appointment-confirmation-phone-call"],
@@ -161,7 +158,7 @@ function remoteManifestText(): string {
 // ---------------------------------------------------------------- 부팅
 
 type BootOptions = {
-  readonly seed?: AppJourneySeed;
+  readonly seed?: AppProgressSeed;
   /** `load_learning_progress`의 답입니다. 기본 `null`(서버에 진행 없음). */
   readonly load?: object | null;
   /** 서버가 내주는 콘텐츠입니다. 없으면 버킷 요청은 전부 404입니다. */
@@ -282,9 +279,8 @@ async function boot(options: BootOptions = {}): Promise<Booted> {
   vi.useFakeTimers();
   render(
     <App
-      {...(options.seed === undefined ? {} : { journeySeed: options.seed })}
+      {...(options.seed === undefined ? {} : { progressSeed: options.seed })}
       {...(options.seed === undefined ? {} : ({ progressSeed: legacyPassedSeed } as object))}
-      completedEpisodeIntroIds={["tutorial-intro"]}
       episodeIntroEventSink={(event) => events.push(event)}
     />,
   );

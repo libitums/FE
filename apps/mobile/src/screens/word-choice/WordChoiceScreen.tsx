@@ -17,19 +17,17 @@ import {
   initialWordChoiceSessionState,
   isWordChoiceSessionComplete,
   wordChoiceCompletionAnnouncement,
-  wordChoiceQuestionsForStep,
   wordChoiceSessionReducer,
   wordChoiceSessionResults,
 } from "./word-choice";
 import type { AnswerResult } from "../../lib/answer-result";
-import type { JourneyStepId } from "../journey-map/journey-map";
 import { handsOffAfter, lessonCounter } from "../learning/activity-finish";
 import type { ActivityFinish, LessonPosition } from "../learning/activity-finish";
 import type { WordChoiceQuestion } from "./word-choice-questions";
 
 import "./word-choice-screen.css";
 
-// `ListeningScreen`의 형태를 그대로 잇되 **제시 채널에서 오디오가 빠집니다**
+// `ListeningActivity`의 형태를 그대로 잇되 **제시 채널에서 오디오가 빠집니다**
 // — `ListeningPrompt` · `lib/audio.ts` · 재생 상태를 이 화면이 가져오지
 // 않습니다. 제시문은 `<text>` 하나입니다 — 카드 표면을 두지 않습니다.
 //
@@ -44,17 +42,11 @@ import "./word-choice-screen.css";
 // 그것으로 갈렸습니다: 보기의 ✓/✗ 표식이 걷히고 판정은 무대 카드의 배지가 내며,
 // 보기는 줄을 채우는 행이 아니라 낱말만 한 칩이 가로로 섭니다. 배지는 듣기와 같은
 // 조각(`components/AnswerVerdict`)입니다 — 두 화면이 같은 말을 같은 모양으로 합니다.
-export type WordChoiceScreenProps = {
-  stepId: JourneyStepId;
-  onExit: () => void;
-  onFinish: (id: JourneyStepId, results: readonly AnswerResult[], skippedCount: number) => void;
-};
-
 export type WordChoiceActivityProps = {
   readonly questions: readonly WordChoiceQuestion[];
   readonly onExit: () => void;
   readonly onFinish: ActivityFinish;
-  /** 카탈로그 레슨 안의 위치입니다. 튜토리얼처럼 활동 하나가 한 세션이면 주지 않습니다. */
+  /** 카탈로그 레슨 안의 위치입니다. 활동 하나가 한 세션이면 주지 않습니다. */
   readonly lesson?: LessonPosition;
 };
 
@@ -85,17 +77,6 @@ function optionsClassName(question: WordChoiceQuestion, answerable: boolean): st
   const layout = choiceLayoutOf(question);
   const layoutClass = layout === "row" ? "" : ` word-choice-screen-options-${layout}`;
   return `word-choice-screen-options${layoutClass}${answerable ? "" : " word-choice-screen-options-disabled"}`;
-}
-
-/** 튜토리얼 스텝의 문항 표를 읽어 활동에 넘기는 얇은 어댑터입니다. */
-export function WordChoiceScreen({ stepId, onExit, onFinish }: WordChoiceScreenProps): ReactNode {
-  return (
-    <WordChoiceActivity
-      questions={wordChoiceQuestionsForStep(stepId)}
-      onExit={onExit}
-      onFinish={(results, skippedCount) => onFinish(stepId, results, skippedCount)}
-    />
-  );
 }
 
 export function WordChoiceActivity({

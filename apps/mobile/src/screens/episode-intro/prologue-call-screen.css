@@ -1,6 +1,0 @@
-.prologue-call-screen-safe {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  background: var(--libitum-color-background-secondary);
-}

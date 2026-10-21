@@ -29,6 +29,12 @@ export type ProgressSeedShape = {
 
 export const legacyPassedSeed: ProgressSeedShape = { legacyTutorial: legacyPassedRecord };
 
+/** 옛 튜토리얼을 마치고 u01 표지까지 끝낸 씨앗입니다 — u01의 첫 유닛(S1)이 열려 있습니다. */
+export const u01OpenSeed: ProgressSeedShape = {
+  legacyTutorial: legacyPassedRecord,
+  catalogProgress: { "u01-water": ["intro"] },
+};
+
 /** u00을 다 끝낸 진행입니다 — 완료 키 14 + 표지. */
 export function tutorialDoneProgress(): CatalogProgress {
   return { [TUTORIAL_EPISODE_ID]: ["intro", ...TUTORIAL_LESSON_KEYS, "RP"] };

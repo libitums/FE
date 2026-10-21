@@ -1,10 +1,9 @@
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
-import { act, cleanup, fireEvent, screen } from "@lynx-js/react/testing-library";
+import { act, cleanup, screen } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
-import { productJourneySeed, type AppJourneySeed } from "./journey-progress";
+import type { AppProgressSeed } from "./app-props";
 import { learningProgressSnapshotFrom } from "./learning-progress";
-import { journeySeedBefore } from "./test-helpers/journey-seed";
 import {
   flushAsync,
   frameRects,
@@ -14,10 +13,11 @@ import {
   setGlobalProps,
   tapTab,
 } from "./test-helpers/journey-map-host";
+import { exitResult, flush, lessonPlan, tapNode } from "./test-helpers/episode-format-harness";
+import { solveLesson } from "./test-helpers/episode-format-solvers";
+import { legacyPassedRecord, tutorialDoneProgress } from "./test-helpers/progress-seed";
 import { renderSignedInApp } from "./test-helpers/signed-in-app";
-import { answerMessengerReplies } from "../screens/messenger/messenger.test-support";
 import { catalogUnitDomId } from "../screens/journey-map/catalog-map";
-import { mapUnitDomId } from "../screens/journey-map/journey-map-scroll";
 import { stubHost, type HostStub } from "../screens/journey-map/JourneyMapScreen.test-support";
 
 // 부드러운 이동은 main thread가 프레임마다 옮기지만(`useMapGlide`), 이 파일은 「어디로 부드럽게 갔나」만 봅니다 —
@@ -39,8 +39,8 @@ vi.mock("../screens/journey-map/use-map-glide", async () => {
 // 호스트 질의(`createSelectorQuery`)와 네트워크(`fetch` · 저장소). 목적지 식 · 전이 규칙은 unit · ui가 지고,
 // 여기서는 그 결과가 앱 트리를 거쳐 호스트에 닿는지만 봅니다.
 
-const completedIntros = ["tutorial-intro"] as const;
 const unitTop = 700;
+const u01 = "u01-water";
 
 let host: HostStub;
 
@@ -73,10 +73,15 @@ const smoothTo = (top: number, smooth = true) => ({
   params: { offset: offsetFor(top), smooth },
 });
 
-const emptySnapshot = learningProgressSnapshotFrom({
-  ...productJourneySeed,
-  completedEpisodeIntroIds: [],
-  catalogProgress: {},
+/** 옛 튜토리얼을 통과한 학습자의 진행입니다 — 맵의 다음 유닛이 u00이 아니라 u01 쪽에서 정해집니다. */
+const legacyWith = (catalogProgress: Record<string, readonly string[]>): AppProgressSeed => ({
+  legacyTutorial: legacyPassedRecord,
+  catalogProgress,
+});
+
+/** u00을 끝낸 새 앱 학습자의 진행입니다. */
+const tutorialDoneWith = (catalogProgress: Record<string, readonly string[]>): AppProgressSeed => ({
+  catalogProgress: { ...tutorialDoneProgress(), ...catalogProgress },
 });
 
 // 서버 진행 조회는 사용자를 식별할 수 있는(JWT 모양) 토큰이 있을 때만 일어난다.
@@ -84,11 +89,13 @@ const learner = {
   refreshedAccessToken: `e30.${btoa(JSON.stringify({ sub: "returning-learner" }))}.sig`,
 };
 
-const twoStepsSnapshotBody = JSON.stringify({
-  ...emptySnapshot,
-  completedStepCount: 2,
-  completedEpisodeIntroIds: ["tutorial-intro"],
-});
+const bodyOf = (seed: AppProgressSeed): string =>
+  JSON.stringify(
+    learningProgressSnapshotFrom({
+      legacyTutorial: seed.legacyTutorial ?? legacyPassedRecord,
+      catalogProgress: seed.catalogProgress ?? {},
+    }),
+  );
 
 function deferredReply() {
   let resolve!: (reply: { status: number; body: string }) => void;
@@ -98,12 +105,12 @@ function deferredReply() {
   return { promise, resolve };
 }
 
-async function bootWithSeed(seed: AppJourneySeed) {
-  await renderSignedInApp(<App journeySeed={seed} completedEpisodeIntroIds={completedIntros} />);
+async function bootWithSeed(seed: AppProgressSeed) {
+  await renderSignedInApp(<App progressSeed={seed} />);
 }
 
 test("I1. (AC4) 진행 없는 앱의 맵은 스크롤하지 않고 대상도 재지 않는다", async () => {
-  await renderSignedInApp(<App journeySeed={{ ...productJourneySeed, completedStepCount: 0 }} />);
+  await renderSignedInApp(<App />);
 
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(host.actions()).toEqual([]);
@@ -111,49 +118,47 @@ test("I1. (AC4) 진행 없는 앱의 맵은 스크롤하지 않고 대상도 재
 });
 
 test("I2. 진행 씨앗 → 다음 유닛 → 맵 스크롤 상자의 scrollTo 한 번", async () => {
-  unitRect(mapUnitDomId("ordering"));
-  await bootWithSeed(journeySeedBefore("ordering"));
+  const s2 = catalogUnitDomId(u01, "S2");
+  unitRect(s2);
+  await bootWithSeed(tutorialDoneWith({ [u01]: ["intro", "S1"] }));
 
-  expect(measuredUnits()).toEqual(["#journey-map-unit-ordering"]);
+  expect(measuredUnits()).toEqual([`#${s2}`]);
   expect(scrollsOnMap()).toEqual([smoothTo(unitTop)]);
 });
 
 test("I3. (AC5) 다음 유닛을 끝내고 맵으로 돌아오면 새 대상으로 한 번 더 움직인다", async () => {
-  unitRect(mapUnitDomId("appointment-confirmation"));
-  unitRect(mapUnitDomId("appointment-confirmation-phone-call"), 900);
-  await bootWithSeed(journeySeedBefore("appointment-confirmation"));
-  expect(measuredUnits()).toEqual(["#journey-map-unit-appointment-confirmation"]);
+  const s1 = catalogUnitDomId(u01, "S1");
+  const s2 = catalogUnitDomId(u01, "S2");
+  unitRect(s1);
+  unitRect(s2, 900);
+  await bootWithSeed(tutorialDoneWith({ [u01]: ["intro"] }));
+  expect(measuredUnits()).toEqual([`#${s1}`]);
   expect(scrollsOnMap()).toHaveLength(1);
 
-  fireEvent.tap(screen.getByTestId("ui-lynx-special-unit-appointment-confirmation"), {});
+  tapNode(u01, "S1");
   expect(screen.queryByTestId("journey-map-screen")).not.toBeInTheDocument();
-  vi.useFakeTimers();
-  answerMessengerReplies();
-  act(() => {
-    vi.advanceTimersByTime(1000);
-  });
-  fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
-  vi.useRealTimers();
+  solveLesson(lessonPlan(u01, "S1"), true);
+  exitResult();
+  await flush();
 
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
-  expect(measuredUnits()).toEqual([
-    "#journey-map-unit-appointment-confirmation",
-    "#journey-map-unit-appointment-confirmation-phone-call",
-  ]);
-  expect(scrollsOnMap()).toEqual([smoothTo(unitTop), smoothTo(900)]);
+  // 말풍선을 여는 사이 도착 보정이 첫 대상을 한 번 더 재므로, 잰 유닛은 중복을 걷고 이동은 처음과 마지막을 견줍니다.
+  expect([...new Set(measuredUnits())]).toEqual([`#${s1}`, `#${s2}`]);
+  expect(scrollsOnMap()[0]).toEqual(smoothTo(unitTop));
+  expect(scrollsOnMap().at(-1)).toEqual(smoothTo(900));
 });
 
 test("I4. (AC6) 호스트의 reducedMotion: true는 App의 MotionProvider를 거쳐 smooth: false로 닿는다", async () => {
   setGlobalProps({ safeAreaInsets: insets, reducedMotion: true });
-  unitRect(mapUnitDomId("ordering"));
-  await bootWithSeed(journeySeedBefore("ordering"));
+  unitRect(catalogUnitDomId(u01, "S2"));
+  await bootWithSeed(tutorialDoneWith({ [u01]: ["intro", "S1"] }));
 
   expect(scrollsOnMap()).toEqual([smoothTo(unitTop, false)]);
 });
 
 test("I5. 탭을 롤플레이로 갔다가 여정으로 돌아오면 다시 마운트되어 한 번 더 움직인다", async () => {
-  unitRect(mapUnitDomId("ordering"));
-  await bootWithSeed(journeySeedBefore("ordering"));
+  unitRect(catalogUnitDomId(u01, "S2"));
+  await bootWithSeed(tutorialDoneWith({ [u01]: ["intro", "S1"] }));
   expect(scrollsOnMap()).toHaveLength(1);
 
   tapTab("roleplay");
@@ -166,7 +171,8 @@ test("I5. 탭을 롤플레이로 갔다가 여정으로 돌아오면 다시 마�
 
 test("I6. 씨앗 0으로 선 맵에 서버 진행이 늦게 닿으면 닿은 뒤 한 번 움직인다", async () => {
   const reply = deferredReply();
-  unitRect(mapUnitDomId("ordering"));
+  const s2 = catalogUnitDomId(u01, "S2");
+  unitRect(s2);
   await renderSignedInApp(<App />, {
     ...learner,
     keepFakeTimers: true,
@@ -175,17 +181,17 @@ test("I6. 씨앗 0으로 선 맵에 서버 진행이 늦게 닿으면 닿은 뒤
   expect(scrollsOnMap()).toHaveLength(0);
 
   await act(async () => {
-    reply.resolve({ status: 200, body: twoStepsSnapshotBody });
+    reply.resolve({ status: 200, body: bodyOf(legacyWith({ [u01]: ["intro", "S1"] })) });
     await vi.advanceTimersByTimeAsync(0);
   });
 
-  expect(measuredUnits()).toContain("#journey-map-unit-ordering");
+  expect(measuredUnits()).toContain(`#${s2}`);
   expect(scrollsOnMap()).toEqual([smoothTo(unitTop)]);
 });
 
 test("I7. (AC7) 진행이 닿기 전에 사용자가 맵을 스크롤하면 닿은 뒤에도 따라가지 않는다", async () => {
   const reply = deferredReply();
-  unitRect(mapUnitDomId("ordering"));
+  unitRect(catalogUnitDomId(u01, "S2"));
   await renderSignedInApp(<App />, {
     ...learner,
     keepFakeTimers: true,
@@ -194,7 +200,7 @@ test("I7. (AC7) 진행이 닿기 전에 사용자가 맵을 스크롤하면 닿�
 
   host.scroll(80);
   await act(async () => {
-    reply.resolve({ status: 200, body: twoStepsSnapshotBody });
+    reply.resolve({ status: 200, body: bodyOf(legacyWith({ [u01]: ["intro", "S1"] })) });
     await vi.advanceTimersByTimeAsync(0);
   });
   await act(async () => {
@@ -202,37 +208,24 @@ test("I7. (AC7) 진행이 닿기 전에 사용자가 맵을 스크롤하면 닿�
   });
 
   // 진행이 실제로 닿았음을 먼저 확인합니다 — 안 닿았다면 0회는 공허합니다.
-  expect(screen.getByTestId("ui-lynx-learning-unit-ordering")).toHaveAttribute(
+  expect(screen.getByTestId(`ui-lynx-learning-unit-catalog-unit-${u01}-S2`)).toHaveAttribute(
     "data-status",
-    "active",
+    "available",
   );
   expect(scrollsOnMap()).toHaveLength(0);
 });
 
-test("I8. 튜토리얼 통과 + 카탈로그 진행이면 대상이 카탈로그의 다음 레슨으로 넘어간다", async () => {
-  const s2 = catalogUnitDomId("u01-water", "S2");
+test("I8. 옛 튜토리얼 통과 + 카탈로그 진행이면 대상이 u00이 아니라 카탈로그의 다음 레슨이다", async () => {
+  const s2 = catalogUnitDomId(u01, "S2");
   unitRect(s2, 1234);
-  const tutorialDone: AppJourneySeed = {
-    completedStepCount: journeySeedBefore("tutorial-final-test").completedStepCount,
-    completedMessengerUnitIds: ["appointment-confirmation"],
-    completedPhoneCallUnitIds: ["appointment-confirmation-phone-call"],
-    visualNovelProgress: { status: "completed", beatIndex: 2 },
-    completedEpisodeFinalIds: ["tutorial-final-test"],
-  };
-  const body = JSON.stringify(
-    learningProgressSnapshotFrom({
-      ...tutorialDone,
-      completedEpisodeIntroIds: ["tutorial-intro"],
-      catalogProgress: { "u01-water": ["intro", "S1"] },
-    }),
-  );
-  await renderSignedInApp(
-    <App journeySeed={tutorialDone} completedEpisodeIntroIds={completedIntros} />,
-    { ...learner, loadProgress: async () => ({ status: 200, body }) },
-  );
+  const seed = legacyWith({ [u01]: ["intro", "S1"] });
+  await renderSignedInApp(<App progressSeed={seed} />, {
+    ...learner,
+    loadProgress: async () => ({ status: 200, body: bodyOf(seed) }),
+  });
   await flushAsync();
 
-  // u01의 레슨 순서는 S1 → S2입니다 — 표지와 S1이 끝났으니 대상은 S2이고, 튜토리얼 안의 유닛이 아니다.
+  // u01의 레슨 순서는 S1 → S2입니다 — 표지와 S1이 끝났으니 대상은 S2이고, 열려 있는 u00의 유닛이 아니다.
   expect(measuredUnits().at(-1)).toBe(`#${s2}`);
   expect(scrollsOnMap().at(-1)).toEqual(smoothTo(1234));
 });
@@ -246,27 +239,13 @@ const correctedTo = (offset: number) => ({
   params: { offset, smooth: true },
 });
 
-const tutorialDoneSeed: AppJourneySeed = {
-  completedStepCount: journeySeedBefore("tutorial-final-test").completedStepCount,
-  completedMessengerUnitIds: ["appointment-confirmation"],
-  completedPhoneCallUnitIds: ["appointment-confirmation-phone-call"],
-  visualNovelProgress: { status: "completed", beatIndex: 2 },
-  completedEpisodeFinalIds: ["tutorial-final-test"],
-};
-
 async function bootCatalogLesson(domId: string): Promise<void> {
   unitRect(domId, unitTop);
-  const body = JSON.stringify(
-    learningProgressSnapshotFrom({
-      ...tutorialDoneSeed,
-      completedEpisodeIntroIds: ["tutorial-intro"],
-      catalogProgress: { "u01-water": ["intro", "S1"] },
-    }),
-  );
-  await renderSignedInApp(
-    <App journeySeed={tutorialDoneSeed} completedEpisodeIntroIds={completedIntros} />,
-    { ...learner, loadProgress: async () => ({ status: 200, body }) },
-  );
+  const seed = legacyWith({ [u01]: ["intro", "S1"] });
+  await renderSignedInApp(<App progressSeed={seed} />, {
+    ...learner,
+    loadProgress: async () => ({ status: 200, body: bodyOf(seed) }),
+  });
   await flushAsync();
 }
 

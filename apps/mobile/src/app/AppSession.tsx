@@ -1,47 +1,23 @@
 import { useEffect, useGlobalProps, useMemo, useReducer, useState } from "@lynx-js/react";
 
 import { FirstUnitGuideProvider } from "../components/first-unit-guide";
-import type { AnalyticsUserAppProps } from "../lib/analytics.contract";
 import { announce } from "../lib/accessibility";
 import type { AnswerResult } from "../lib/answer-result";
-import type { EntryAppProps } from "../lib/entry-flow";
 import { loadUiLanguage } from "../lib/ui-language";
 import type { EntryLanguage } from "../lib/entry-language";
 import { safeAreaInsetsFrom, tappableBottomInsetFrom } from "../lib/safe-area";
 import { UiCopyContext, uiCopyFor } from "../lib/ui-copy";
 import { initialSessionOptions } from "../lib/session-options";
-import type { MessengerAppProps, MessengerUnitId } from "../screens/messenger/messenger.contract";
-import type {
-  NotificationAppProps,
-  NotificationItem,
-} from "../screens/notifications/notifications.contract";
-import type { PhoneCallAppProps, PhoneCallUnitId } from "../screens/phone-call/phone-call.contract";
-import type { SettingsAppProps } from "../screens/settings/settings.contract";
-import type {
-  VisualNovelAppProps,
-  VisualNovelProgress,
-} from "../screens/visual-novel/visual-novel.contract";
-import type { EpisodeFinalUnitId } from "../screens/episode-final/episode-final.contract";
+import type { NotificationItem } from "../screens/notifications/notifications.contract";
 import { productPhoneSignIn } from "../screens/login/login";
-import type { PhoneSignInVisibility } from "../screens/login/login.contract";
 import { AppHeader } from "./AppHeader";
 import { AppNavigator } from "./AppNavigator";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { currentScreen, navReducer, showsTabNavigator } from "./nav-reducer";
 import { shellBottomLayout } from "./shell-bottom-layout";
 import { notificationList } from "./app-content";
-import type {
-  EpisodeIntroUnitId,
-  EpisodeIntroAppProps,
-  EpisodePrologue,
-} from "../screens/episode-intro/episode-intro.contract";
-import { episodePrologueFor as productEpisodePrologueFor } from "./episode-prologues";
-import type { EpisodeFinalTest } from "../screens/episode-final/episode-final.contract";
-import { episodeFinalTestFor as productEpisodeFinalTestFor } from "../screens/episode-final/episode-final-tests";
-import { productJourneySeed } from "./journey-progress";
 import { roleplaySectionsOf } from "./roleplay-sections";
-import type { AppJourneySeed } from "./journey-progress";
-import { catalogCompletionKeysOf, catalogMapSectionsOf } from "../screens/journey-map/catalog-map";
+import { catalogMapSectionsOf } from "../screens/journey-map/catalog-map";
 import type { AppSessionContent } from "./episode-content";
 import { shellHeaderTop } from "./full-bleed-screens";
 import { shellInsetsOf } from "./shell-edges";
@@ -60,23 +36,18 @@ import { firstUnitGuideEnabled } from "./first-unit-guide-enabled";
 import { OutOfTicketsDialog } from "../screens/tickets/OutOfTicketsDialog";
 import { withLearningTickets } from "./ticket-wiring";
 import { useLearningTickets } from "./use-learning-tickets";
-import type { AppProps } from "./app-props";
+import type { AppProgressSeed, AppProps } from "./app-props";
 import type { AppSessionControl } from "./leave-app.contract";
 
 import "./app.css";
 
+const noProgressSeed: AppProgressSeed = {};
+
 // 루트 구성의 몸통입니다(`App`이 key로 세웁니다) — 화면 전환 · 에러 경계 · 프로바이더가 여기 모입니다(ADR-0003 D5).
-// `phoneCallEventSink`는 메신저·비주얼 노벨과 같은 방식으로 App 경계에서 `null`로 정규화됩니다.
 export function AppSession({
-  journeySeed = productJourneySeed,
-  completedEpisodeIntroIds: initialCompletedEpisodeIntroIds = [],
-  episodePrologueFor = productEpisodePrologueFor,
-  episodeFinalTestFor = productEpisodeFinalTestFor,
+  progressSeed = noProgressSeed,
   initialGemCount = 0,
   phoneSignIn = productPhoneSignIn,
-  messengerEventSink = null,
-  visualNovelEventSink = null,
-  phoneCallEventSink = null,
   notificationEventSink = null,
   settingsEventSink = null,
   entryEventSink = null,
@@ -107,39 +78,19 @@ export function AppSession({
     [episodeContent.catalog],
   );
   // **진행의 진실의 출처입니다** — `Nav`에 적지 않고(ADR-0007 D3) 서버에 저장합니다(ADR-0035). 트로피의 완료 규칙은 구획에서 받습니다.
-  const progress = useJourneyProgress(
-    journeySeed,
-    initialCompletedEpisodeIntroIds,
-    catalogCompletionKeysOf(catalogSections),
-  );
+  const progress = useJourneyProgress(progressSeed, catalogSections);
   useProgressLoadEvents(progress.progressLoadPhase, episodeIntroEventSink);
   const learner = useLearnerProfile();
   const tickets = useLearningTickets(progress.tickets, progress.setTickets, episodeIntroEventSink);
-  const {
-    completedStepCount,
-    setCompletedStepCount,
-    completedMessengerUnitIds,
-    setCompletedMessengerUnitIds,
-    completedPhoneCallUnitIds,
-    setCompletedPhoneCallUnitIds,
-    visualNovelProgress,
-    setVisualNovelProgress,
-    completedEpisodeFinalIds,
-    setCompletedEpisodeFinalIds,
-    completedEpisodeIntroIds,
-    setCompletedEpisodeIntroIds,
-    catalogProgress,
-    setCatalogProgress,
-  } = progress;
+  const { catalogProgress, setCatalogProgress } = progress;
   // 남아 있는 알림입니다. 지운 알림은 세션 동안만 빠집니다 — **영속하지 않습니다**
   // (ADR-0007 D1). 앱을 다시 켜면 `notificationList`로 돌아갑니다.
   const [notifications, setNotifications] = useState<readonly NotificationItem[]>(notificationList);
   const sessionOptions = initialSessionOptions;
-  // 한 스텝의 활동들이 지나오며 쌓는 결과입니다. 유닛 하나가 활동 여럿을 잇고 평가는
-  // 마지막에 한 번만 돌므로, 그때까지의 정오를 여기 모읍니다(journey-wiring.ts).
+  // 한 유닛의 활동들이 지나오며 쌓는 결과입니다. 유닛 하나가 활동 여럿을 잇고 평가는 마지막에 한 번만 돌므로,
+  // 그때까지의 정오를 여기 모읍니다(catalog-lesson-wiring.ts). 건너뛴 문항 수도 같은 자리 · 같은 모양입니다 —
+  // 둘이 함께 만들어지고 함께 버려져야 수가 새지 않습니다.
   const [pendingResults, setPendingResults] = useState<readonly AnswerResult[]>([]);
-  // 같은 스텝에서 건너뛴 문항 수입니다. `pendingResults`와 같은 자리 · 같은 모양으로
-  // 듭니다 — 둘이 함께 만들어지고 함께 버려져야 수가 새지 않습니다.
   const [pendingSkippedCount, setPendingSkippedCount] = useState(0);
   const finishGuard = useCatalogFinishGuard();
   // 가진 젬 수입니다. 결제 서비스가 아직 없어 바뀌는 길이 없고, `Pay`는 「결제 준비 중」
@@ -165,11 +116,6 @@ export function AppSession({
     gemCount,
     phoneSignIn,
     setScreenLayerOpen,
-    episodePrologueFor,
-    episodeFinalTestFor,
-    messengerEventSink,
-    phoneCallEventSink,
-    visualNovelEventSink,
     notificationEventSink,
     settingsEventSink,
     entryEventSink,
@@ -177,24 +123,12 @@ export function AppSession({
     analyticsUser,
     leaveApp: onLeaveApp,
     dispatch,
-    completedMessengerUnitIds,
-    setCompletedMessengerUnitIds,
-    completedPhoneCallUnitIds,
-    setCompletedPhoneCallUnitIds,
-    visualNovelProgress,
-    setVisualNovelProgress,
-    completedEpisodeFinalIds,
-    setCompletedEpisodeFinalIds,
-    legacyTutorialPassed: completedEpisodeFinalIds.includes("tutorial-final-test"),
-    completedStepCount,
-    setCompletedStepCount,
+    legacyTutorialPassed: progress.legacyTutorialPassed,
     notifications,
     setNotifications,
     sessionOptions,
     pendingResults,
     setPendingResults,
-    completedEpisodeIntroIds,
-    setCompletedEpisodeIntroIds,
     pendingSkippedCount,
     setPendingSkippedCount,
     roleplaySections,
@@ -219,7 +153,6 @@ export function AppSession({
 
   const screenNow = currentScreen(nav);
   useTrackingAuthorizationPrompt(nav.entry.length === 0 && screenNow.name === "journey-map");
-  const isPhoneCall = screenNow.name === "phone-call" || screenNow.name === "roleplay-phone-call";
   const showsNavigator = showsTabNavigator(nav);
   // 셸 여백: 그림 화면 0 · 여정 맵 위 0 · 자판 화면 위만 — 비운 쪽은 화면이 잡습니다(`shell-edges`).
   const shellInsets = shellInsetsOf(screenNow, insets, wiring);
@@ -231,12 +164,16 @@ export function AppSession({
 
   return (
     <UiCopyContext.Provider value={uiCopyFor(entryLanguage)}>
-      <FirstUnitGuideProvider enabled={firstUnitGuideEnabled(progress)}>
+      <FirstUnitGuideProvider
+        enabled={firstUnitGuideEnabled({
+          hasLoadedProgress: progress.hasLoadedProgress,
+          legacyTutorial: progress.legacyTutorial,
+          catalogProgress,
+        })}
+      >
         <ErrorBoundary>
           <view
-            className={
-              screenNow.name === "splash" ? "app app-splash" : isPhoneCall ? "app app-call" : "app"
-            }
+            className={screenNow.name === "splash" ? "app app-splash" : "app"}
             data-testid="app-shell"
             style={{
               paddingTop: `${shellInsets.top}px`,

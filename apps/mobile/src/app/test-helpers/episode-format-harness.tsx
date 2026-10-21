@@ -8,7 +8,6 @@ import { vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { App } from "../App";
-import type { AppJourneySeed } from "../journey-progress";
 import { catalogLessonPlanOf } from "../catalog-lesson-plan";
 import type { CatalogActivity, CatalogLessonPlan } from "../catalog-lesson-plan";
 import { resetPushWiringForTests } from "../push-wiring";
@@ -21,9 +20,8 @@ import { allLearningItemGuidesSeenValue } from "../../lib/learning-item-guide.te
 import { fillPlaceholders } from "../../lib/placeholder-fill";
 import type { FillScript } from "../../lib/placeholder-fill";
 import type { EpisodeIntroEvent } from "../../screens/episode-intro/episode-intro.contract";
-import { journeySteps } from "../../screens/journey-map/journey-map";
 import { catalogNodeTestId } from "./map-unit-testid";
-import { tutorialDoneProgress } from "./progress-seed";
+import { legacyPassedRecord, legacyPassedSeed, tutorialDoneProgress } from "./progress-seed";
 import { passSplash } from "./pass-splash";
 
 const supabaseUrl = "https://test.supabase.co";
@@ -38,17 +36,11 @@ const refreshedBody = JSON.stringify({
   user: { id: "u" },
 });
 
-const tutorialDoneSeed: AppJourneySeed = {
-  completedStepCount: journeySteps.length,
-  completedMessengerUnitIds: ["appointment-confirmation"],
-  completedPhoneCallUnitIds: ["appointment-confirmation-phone-call"],
-  visualNovelProgress: { status: "completed", beatIndex: 2 },
-  completedEpisodeFinalIds: ["tutorial-final-test"],
-};
+const tutorialDoneSeed = legacyPassedSeed;
 
 const tutorialDoneSnapshot = {
   version: 1,
-  completedStepCount: journeySteps.length,
+  completedStepCount: legacyPassedRecord.completedStepCount,
   completedEpisodeIntroIds: ["tutorial-intro"],
   completedMessengerUnitIds: ["appointment-confirmation"],
   completedPhoneCallUnitIds: ["appointment-confirmation-phone-call"],
@@ -167,11 +159,7 @@ export async function boot(
   const events: EpisodeIntroEvent[] = [];
   vi.useFakeTimers();
   render(
-    <App
-      journeySeed={tutorialDoneSeed}
-      completedEpisodeIntroIds={["tutorial-intro"]}
-      episodeIntroEventSink={(event) => events.push(event)}
-    />,
+    <App progressSeed={tutorialDoneSeed} episodeIntroEventSink={(event) => events.push(event)} />,
   );
   await passSplash();
   vi.useRealTimers();

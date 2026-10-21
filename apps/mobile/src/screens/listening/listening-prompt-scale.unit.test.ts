@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { listeningPromptScale } from "./listening-prompt-scale";
-import { listeningQuestionsByStep } from "./listening-questions";
+import { listeningQuestionsByStep } from "./listening-steps.test-support";
 
 // `unit` 계층: 순수 함수의 입출력만 봅니다 (ADR-0006 D4).
 describe("listeningPromptScale", () => {

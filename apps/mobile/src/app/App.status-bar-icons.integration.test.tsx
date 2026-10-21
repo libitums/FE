@@ -3,18 +3,12 @@ import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/
 
 import { App } from "./App";
 import { passLearnerSignup } from "./test-helpers/learner-signup";
-import { episodePrologueFor } from "./episode-prologues";
-import type { AppJourneySeed } from "./App";
-import { productJourneySeed } from "./journey-progress";
-import { journeySeedBefore } from "./test-helpers/journey-seed";
-import { readFinalStory } from "./test-helpers/final-story";
-import { advanceNarrative } from "./test-helpers/narrative";
+import { legacyPassedSeed, u01OpenSeed } from "./test-helpers/progress-seed";
+import { catalogNodeTestId } from "./test-helpers/map-unit-testid";
 import { renderSignedInApp } from "./test-helpers/signed-in-app";
 import { entrySplashDurationMs } from "../lib/entry-flow";
 import { lightStatusBarIcons } from "../lib/status-bar-icons";
 import { systemBackEventName } from "../lib/system-back";
-import { episodeFinalAdvanceDelayMs } from "../screens/episode-final/episode-final";
-import { episodeFinalTestFor } from "../screens/episode-final/episode-final-tests";
 
 // `integration` 계층: 상태바 아이콘 표지(`data-statusbar`)가 App 전체 트리에서 화면 흐름을 따라
 // 0 ↔ 1(첫 단원 안내가 서사 위에 겹칠 때만 2)로 오가는지 봅니다. 호스트가 읽는 값이라 판정식은
@@ -48,9 +42,7 @@ const openTab = (tab: "journey" | "roleplay" | "settings"): void =>
 const catchTap = (id: string): void =>
   void fireEvent.tap(screen.getByTestId(id), { eventType: "catchEvent" });
 
-const introUnit = "ui-lynx-special-unit-tutorial-intro";
-const finalUnit = "ui-lynx-special-unit-tutorial-final-test";
-const completedIntros = ["tutorial-intro"] as const;
+const introUnit = "ui-lynx-special-unit-catalog-cover-u00-tutorial";
 
 function pressBack(): void {
   act(() => {
@@ -71,69 +63,15 @@ async function bootWithoutGuide(ui: Parameters<typeof renderSignedInApp>[0]): Pr
   await renderSignedInApp(ui);
 }
 
-/** 안내가 서는 준비입니다 — `App.first-unit-guide.integration.test.tsx`의 새 사용자입니다. */
+/** 안내가 서는 준비입니다 — 새 사용자입니다. */
 const newLearner = {
   refreshedAccessToken: `e30.${btoa(JSON.stringify({ sub: "new-learner" }))}.sig`,
   loadProgress: async () => ({ status: 200, body: "null" }),
 };
-const freshSeed: AppJourneySeed = { ...productJourneySeed, completedStepCount: 0 };
 
 function openIntro(): void {
   openTab("journey");
   tap(introUnit);
-}
-
-function withFakeTimers(run: () => void): void {
-  vi.useFakeTimers();
-  try {
-    run();
-  } finally {
-    vi.useRealTimers();
-  }
-}
-
-// ------------------------------------------------------------ 튜토리얼 서사의 구간
-
-type Segment =
-  NonNullable<ReturnType<typeof episodePrologueFor>> extends infer Prologue
-    ? Prologue extends { kind: "sequence"; segments: readonly (infer S)[] }
-      ? S
-      : never
-    : never;
-
-function tutorialSegments(): readonly Segment[] {
-  const prologue = episodePrologueFor("tutorial");
-  if (prologue?.kind !== "sequence") throw new Error("Expected tutorial sequence");
-  return prologue.segments;
-}
-
-/**
- * 구간 하나를 실제 조작으로 마칩니다 — 마치면 다음 구간(또는 결과 화면)이 섭니다. 채팅의 대사는 타이머로
- * 흐르므로 부르는 쪽이 구간이 서기 전에 `vi.useFakeTimers()`를 켜 둡니다.
- */
-function finishSegment(segment: Segment): void {
-  switch (segment.kind) {
-    case "visual-novel":
-      for (const _beat of segment.narrative.beats) advanceNarrative();
-      break;
-    case "messenger":
-      for (const message of segment.chat.messages) {
-        if (message.sender === "other") {
-          act(() => {
-            vi.advanceTimersByTime(1500);
-          });
-        } else {
-          tap("prologue-chat-screen-send");
-        }
-      }
-      tap("prologue-chat-screen-complete");
-      break;
-    case "call":
-      tap("prologue-call-screen-accept");
-      tap("prologue-call-screen-end");
-      tap("prologue-call-screen-complete");
-      break;
-  }
 }
 
 // ------------------------------------------------------------ 진입 구간(스플래시 · 온보딩 · 로그인)
@@ -211,32 +149,6 @@ async function signInWithGoogleToLanguageSelect(): Promise<void> {
   expect(screen.getByTestId("language-select-screen-title")).toBeInTheDocument();
 }
 
-// ------------------------------------------------------------ 최종 테스트
-
-const readyForFinal: AppJourneySeed = {
-  completedStepCount: Number.MAX_SAFE_INTEGER,
-  completedMessengerUnitIds: ["appointment-confirmation"],
-  completedPhoneCallUnitIds: ["appointment-confirmation-phone-call"],
-  visualNovelProgress: { status: "completed", beatIndex: 2 },
-  completedEpisodeFinalIds: [],
-};
-
-function answerFinalTest(correct: number): void {
-  const test = episodeFinalTestFor("tutorial-final-test");
-  if (test.format !== "visual-novel") throw new Error("Expected visual novel final test");
-  withFakeTimers(() => {
-    for (const [index, question] of test.questions.entries()) {
-      if (question.kind !== "word-choice") throw new Error("Expected word choice");
-      const choice = index < correct ? question.answerIndex : (question.answerIndex + 1) % 3;
-      tap(`episode-final-screen-option-${choice}`);
-      act(() => {
-        vi.advanceTimersByTime(episodeFinalAdvanceDelayMs);
-      });
-    }
-  });
-}
-
-/** `journey-entry`의 루트에는 testid가 없다 — 표지가 하나이고 그 요소 안에 화면 제목이 있는지로 본다. */
 function expectJourneyEntryMarker(): void {
   const [only, ...rest] = markerElements();
   expect(rest).toHaveLength(0);
@@ -277,44 +189,8 @@ test("[IS2] 여정 맵 → 표지 항목 탭(episode-intro) → 뒤로: 0 → 1 
   expect(markers()).toBe(0);
 });
 
-test("[IS3] 안내가 서지 않는 튜토리얼 서사: 표지 1 → 서사 1 → 채팅 0 → 서사 1 → 통화 0 → 서사 1 → 완료 0, 어느 시점에도 2 이상이 아니다", async () => {
-  await bootWithoutGuide(<App />);
-  const observed: number[] = [];
-  const observe = (): void => void observed.push(markers());
-
-  openIntro();
-  expect(screen.getByTestId("episode-intro-screen")).toBeInTheDocument();
-  observe();
-  vi.useFakeTimers();
-
-  tapButtonIn("episode-intro-screen-next");
-  expect(screen.getByTestId("episode-narrative-screen")).toBeInTheDocument();
-  expect(screen.queryByTestId("first-unit-guide-story")).not.toBeInTheDocument();
-  observe();
-
-  const segments = tutorialSegments();
-  for (const segment of segments) {
-    finishSegment(segment);
-    observe();
-  }
-
-  expect(screen.getByTestId("lesson-complete-screen")).toBeInTheDocument();
-  expect(segments.map((segment) => segment.kind)).toEqual([
-    "visual-novel",
-    "messenger",
-    "visual-novel",
-    "call",
-    "visual-novel",
-  ]);
-  // 표지(1) · 서사(1) · [채팅 0 · 서사 1 · 통화 0 · 서사 1 · 완료 0]
-  expect(observed).toEqual([1, 1, 0, 1, 0, 1, 0]);
-  expect(Math.max(...observed)).toBeLessThanOrEqual(1);
-});
-
 test("[IS4] 맵에서 연속 칩 → 지표 모달 → 닫기, 트로피 칩도 같게. 롤플레이 · 설정 탭 루트는 0", async () => {
-  await bootWithoutGuide(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
+  await bootWithoutGuide(<App progressSeed={legacyPassedSeed} />);
   expect(markers()).toBe(0);
 
   for (const kind of ["streak", "trophy"] as const) {
@@ -351,56 +227,6 @@ test("[IS5] 표지에서 Skip → 확인창 → 머무르기: 1 → 1 → 1", as
   expect(markerIds()).toEqual(["episode-intro-screen"]);
 });
 
-test("[IS6] episode-final: 도입 서사 → 시험 → (실패) 재시도 서사 → 시험 → 마무리 서사는 1, 완료 화면은 0", async () => {
-  await bootWithoutGuide(
-    <App journeySeed={readyForFinal} completedEpisodeIntroIds={completedIntros} />,
-  );
-  expect(markers()).toBe(0);
-  const observed: number[] = [];
-
-  tap(finalUnit);
-  expect(screen.getByTestId("episode-narrative-screen")).toBeInTheDocument();
-  observed.push(markers());
-
-  readFinalStory("introduction");
-  expect(screen.getByTestId("episode-final-screen")).toBeInTheDocument();
-  observed.push(markers());
-
-  answerFinalTest(1);
-  expect(screen.getByTestId("episode-narrative-screen")).toBeInTheDocument();
-  observed.push(markers());
-
-  readFinalStory("retry");
-  expect(screen.getByTestId("episode-final-screen")).toBeInTheDocument();
-  observed.push(markers());
-
-  answerFinalTest(3);
-  expect(screen.getByTestId("episode-narrative-screen")).toBeInTheDocument();
-  observed.push(markers());
-  expect(observed).toEqual([1, 1, 1, 1, 1]);
-
-  readFinalStory("ending");
-  expect(screen.getByTestId("lesson-complete-screen")).toBeInTheDocument();
-  expect(markers()).toBe(0);
-});
-
-test("[IS7] visual-novel 진입 → 나가기: 1 → 0", async () => {
-  const unitId = "cafe-arrival-visual-novel";
-  await bootWithoutGuide(
-    <App journeySeed={journeySeedBefore(unitId)} completedEpisodeIntroIds={completedIntros} />,
-  );
-  expect(markers()).toBe(0);
-
-  tap(`ui-lynx-special-unit-${unitId}`);
-  expect(screen.getByTestId("visual-novel-screen")).toBeInTheDocument();
-  expect(markerIds()).toEqual(["visual-novel-screen"]);
-
-  tap("visual-novel-exit-button");
-  expect(screen.queryByTestId("visual-novel-screen")).not.toBeInTheDocument();
-  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
-  expect(markers()).toBe(0);
-});
-
 test("[IS8] 언어 선택 → journey-entry → 뒤로 → 다시 → 여정 시작(맵): 0 → 1 → 0 → 1 → 0", async () => {
   await signInWithGoogleToLanguageSelect();
   expect(markers()).toBe(0);
@@ -426,9 +252,7 @@ test("[IS8] 언어 선택 → journey-entry → 뒤로 → 다시 → 여정 시
 
 test("[IS9] 설정의 로그아웃 확인창 · 학습 화면의 나가기 확인 · 로그인의 국가 시트를 연 상태: 0 (스크림 0.45는 표지가 없다)", async () => {
   // (a) 설정의 로그아웃 확인 Dialog
-  await bootWithoutGuide(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
+  await bootWithoutGuide(<App progressSeed={legacyPassedSeed} />);
   openTab("settings");
   fireEvent.tap(
     within(screen.getByTestId("ui-lynx-settings-group-item-sign-out")).getByTestId(
@@ -441,12 +265,10 @@ test("[IS9] 설정의 로그아웃 확인창 · 학습 화면의 나가기 확�
   cleanup();
 
   // (b) 학습 화면의 나가기 확인 Dialog
-  await bootWithoutGuide(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
-  tap("ui-lynx-learning-unit-ordering");
+  await bootWithoutGuide(<App progressSeed={u01OpenSeed} />);
+  tap(catalogNodeTestId("u01-water", "S1"));
   tap("step-sheet-start");
-  expect(screen.getByTestId("learning-shell-exit")).toBeInTheDocument();
+  expect(screen.getByTestId("learning-run-header-exit")).toBeInTheDocument();
   pressBack();
   expect(screen.getByTestId("ui-lynx-dialog")).toBeInTheDocument();
   expect(markers()).toBe(0);
@@ -465,7 +287,7 @@ test("[IS9] 설정의 로그아웃 확인창 · 학습 화면의 나가기 확�
 });
 
 test("[IS10] 안내가 뜬 여정 맵: 표지 1(first-unit-guide-map, 화면 루트가 아니다) → 스크림 탭으로 닫으면 0", async () => {
-  await renderSignedInApp(<App journeySeed={freshSeed} />, newLearner);
+  await renderSignedInApp(<App />, newLearner);
 
   expect(screen.getByTestId("first-unit-guide-map")).toBeInTheDocument();
   expect(markerIds()).toEqual(["first-unit-guide-map"]);
@@ -477,56 +299,16 @@ test("[IS10] 안내가 뜬 여정 맵: 표지 1(first-unit-guide-map, 화면 루
   expect(markers()).toBe(0);
 });
 
-test("[IS11] 첫 사용자의 튜토리얼 서사(안내가 서는 준비): 0이 되는 것은 안내가 닫힌 뒤뿐이고, 서사 위 안내는 2다", async () => {
-  await renderSignedInApp(<App journeySeed={freshSeed} />, newLearner);
+test("[IS11] 첫 사용자의 u00 표지: 안내를 닫은 뒤 표지를 열면 표지 하나, 돌아오면 0이다", async () => {
+  await renderSignedInApp(<App />, newLearner);
   expect(markerIds()).toEqual(["first-unit-guide-map"]);
   catchTap("first-unit-guide-map");
   expect(markers()).toBe(0);
 
   tap(introUnit);
   expect(markerIds()).toEqual(["episode-intro-screen"]);
-  vi.useFakeTimers();
 
-  // 표지 → Next → 서사 + 안내(1 → 2). 안내가 서사 위에 겹쳐도 표지 둘이 함께 선다.
-  tapButtonIn("episode-intro-screen-next");
-  expect(screen.getByTestId("first-unit-guide-story")).toBeInTheDocument();
-  expect(markerIds()).toEqual(["episode-narrative-screen", "first-unit-guide-story"]);
-
-  // 안내를 닫으면 서사의 표지 하나가 남는다(2 → 1).
-  catchTap("first-unit-guide-story");
-  expect(screen.queryByTestId("first-unit-guide-story")).not.toBeInTheDocument();
-  expect(markerIds()).toEqual(["episode-narrative-screen"]);
-
-  const segments = tutorialSegments();
-  const [first, chat, second, call, third] = segments;
-  if (!first || !chat || !second || !call || !third) {
-    throw new Error("Expected the tutorial sequence to have five segments");
-  }
-
-  // 서사 → 채팅 + 안내: 서사의 표지가 빠지고 안내의 표지가 든다 — 교체 직후도 1이다.
-  finishSegment(first);
-  expect(screen.getByTestId("first-unit-guide-messenger")).toBeInTheDocument();
-  expect(markerIds()).toEqual(["first-unit-guide-messenger"]);
-  catchTap("first-unit-guide-messenger");
-  expect(markers()).toBe(0);
-
-  // 채팅 → 서사(안내는 이미 닫혔다): 1
-  finishSegment(chat);
-  expect(screen.getByTestId("episode-narrative-screen")).toBeInTheDocument();
-  expect(markerIds()).toEqual(["episode-narrative-screen"]);
-
-  // 서사 → 통화 + 안내: 1, 닫으면 0
-  finishSegment(second);
-  expect(screen.getByTestId("first-unit-guide-call")).toBeInTheDocument();
-  expect(markerIds()).toEqual(["first-unit-guide-call"]);
-  catchTap("first-unit-guide-call");
-  expect(markers()).toBe(0);
-
-  // 통화 → 서사: 1, 서사 → 완료 화면: 0
-  finishSegment(call);
-  expect(screen.getByTestId("episode-narrative-screen")).toBeInTheDocument();
-  expect(markerIds()).toEqual(["episode-narrative-screen"]);
-  finishSegment(third);
-  expect(screen.getByTestId("lesson-complete-screen")).toBeInTheDocument();
+  tapRoundButtonIn("episode-intro-screen-back");
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(markers()).toBe(0);
 });

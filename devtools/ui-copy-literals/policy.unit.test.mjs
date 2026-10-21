@@ -82,8 +82,8 @@ test("PO2. 한글이 전부 「」 안인 리터럴은 위반이 아니다", () 
 
 test("PO2. 학습 콘텐츠 선언 표의 파일#선언은 위반이 아니다", () => {
   const found = violationsFrom(
-    [literal({ declaration: "listeningQuestionsByStep" })],
-    "apps/mobile/src/screens/listening/listening-questions.ts",
+    [literal({ declaration: "PLACEHOLDER_TOKENS" })],
+    "apps/mobile/src/lib/placeholder-fill.ts",
     uiCopyLiteralPolicy,
   );
 
@@ -93,10 +93,10 @@ test("PO2. 학습 콘텐츠 선언 표의 파일#선언은 위반이 아니다",
 test("PO2. 같은 파일의 다른 선언은 위반이다", () => {
   const found = violationsFrom(
     [
-      literal({ declaration: "listeningQuestionsByStep" }),
+      literal({ declaration: "PLACEHOLDER_TOKENS" }),
       literal({ line: 40, declaration: "somethingElse" }),
     ],
-    "apps/mobile/src/screens/listening/listening-questions.ts",
+    "apps/mobile/src/lib/placeholder-fill.ts",
     uiCopyLiteralPolicy,
   );
 
