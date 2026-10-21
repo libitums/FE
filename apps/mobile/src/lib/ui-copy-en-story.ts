@@ -33,18 +33,12 @@ export const messengerEn: MessengerCopy = {
 };
 
 export const visualNovelEn: VisualNovelCopy = {
-  storyComplete: "Story complete",
   sceneProgress: (ordinal, total) => `Scene ${ordinal} / ${total}`,
 };
 
 export const roleplayEn: RoleplayCopy = {
   title: "Roleplay",
-  form: {
-    messenger: "Messenger",
-    "phone-call": "Phone call",
-    "visual-novel": "Visual novel",
-    story: "Roleplay",
-  },
+  form: { story: "Roleplay" },
   viewAll: "View all",
   viewAllLabel: (sectionLabel) => `View all, ${sectionLabel}`,
   plus: "Plus",

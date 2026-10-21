@@ -21,9 +21,7 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidJUnit4.class)
 public final class AudioPlaybackModuleTest {
   private static final String[] SOURCES = {
-      "greeting-1", "ordering-2",
-      "phone-call-confirm-01", "phone-call-confirm-02", "phone-call-confirm-03",
-      "tutorial-cabin-announcement"
+      "greeting-1", "ordering-2", "tutorial-cabin-announcement"
   };
 
   private Context context;

@@ -165,13 +165,12 @@ export type MessengerCopy = {
 };
 
 export type VisualNovelCopy = {
-  readonly storyComplete: string;
   readonly sceneProgress: (ordinal: number, total: number) => string;
 };
 
 export type RoleplayCopy = {
   readonly title: string;
-  readonly form: Readonly<Record<"messenger" | "phone-call" | "visual-novel" | "story", string>>;
+  readonly form: Readonly<Record<"story", string>>;
   readonly viewAll: string;
   readonly viewAllLabel: (sectionLabel: string) => string;
   readonly plus: string;
