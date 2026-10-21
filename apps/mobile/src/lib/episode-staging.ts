@@ -210,7 +210,7 @@ export function promoteStagedEpisodes(store: ContentStore): PromoteResult {
   }
   const order = new Map(manifest.episodes.map((entry) => [entry.id, entry.order] as const));
   const promoted = [...staged.keys()].sort(
-    (a, b) => (order.get(a) ?? 0) - (order.get(b) ?? 0) || (a < b ? -1 : 1),
+    (a, b) => (order.get(a) ?? 0) - (order.get(b) ?? 0) || (a < b ? -1 : a > b ? 1 : 0),
   );
   return { promoted, persisted };
 }
