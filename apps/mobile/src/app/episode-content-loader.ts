@@ -40,9 +40,12 @@ function imageUrlOf(relativePath: string): string | null {
   return localOrRemoteUrl(relativePath, remoteContentUrlOf, bundledContentImageUrl);
 }
 
-// 재생 모듈이 없으면 문항이 소리 없음과 같은 길로 갑니다. 부를 때마다 판정해 스레드 · 메모와 무관합니다.
+// 학습 문항 음성은 기기에 받아 둔 파일의 file:// 주소만 돌려줍니다(v4) — 원격 주소로 내려가지 않습니다. 재생 모듈이
+// 없거나 받은 파일이 없으면 null이라 문항이 소리 없음과 같은 길로 갑니다. 부를 때마다 판정해 스레드 · 메모와 무관합니다.
 function audioUrlOf(relativePath: string): string | null {
-  return isAudioAvailable() ? imageUrlOf(relativePath) : null;
+  if (!isAudioAvailable()) return null;
+  const relative = resolveContentUrlSafe("", relativePath);
+  return relative === null ? null : contentFileUrl(relative);
 }
 
 function cachedManifestText(): string | null {

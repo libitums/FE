@@ -47,9 +47,8 @@ export function listeningItemOf(
   }
   // 보기가 둘 · 넷이 아니면 소리 사유보다 먼저 모양이 틀린 문항입니다.
   if (!isPair(choices) && !isQuad(choices)) return skippedItem(item, "malformed");
-  // 모양이 맞아도 소리가 없는 듣기는 보이지 않습니다(E-2) — 소리가 있어야 섭니다.
+  // 소리가 없어도(받은 파일 없음 · 모듈 없음) 건너뛰지 않습니다 — audio가 null이면 대본이 보이는 제시로 섭니다(v4).
   const audio = catalogListenAudioOf(item, port);
-  if (audio === null) return skippedItem(item, "audio-missing");
   const common = {
     prompt,
     romanization,

@@ -11,6 +11,7 @@ import type { CatalogEntry } from "../lib/episode-catalog";
 import type { LearnerProfile } from "../lib/placeholder-fill";
 import type { AssessmentPassCriterion } from "../screens/assessment/assessment";
 import type { LessonPosition } from "../screens/learning/activity-finish";
+import { appended, startedBy } from "./catalog-activity-join";
 import { catalogItemOf } from "./catalog-item-map";
 import type {
   CatalogActivity,
@@ -61,79 +62,6 @@ export const catalogActivityScoring: Readonly<Record<CatalogActivityForm, Catalo
     "read-aloud": "ungraded",
     "speak-word": "graded",
   };
-
-type PlayableItem = Exclude<CatalogMappedItem, { kind: "skipped" }>;
-
-/** 학습형이 같으면 앞 활동에 잇고, 아니면 `null`입니다. */
-function appended(last: CatalogActivity, item: PlayableItem): CatalogActivity | null {
-  switch (item.kind) {
-    case "listening":
-      return last.form === "listening"
-        ? { form: "listening", questions: [...last.questions, item.question] }
-        : null;
-    case "sentence-order":
-      return last.form === "sentence-order"
-        ? { form: "sentence-order", questions: [...last.questions, item.question] }
-        : null;
-    case "word-choice":
-      return last.form === "word-choice"
-        ? { form: "word-choice", questions: [...last.questions, item.question] }
-        : null;
-    case "typing":
-      return last.form === "typing"
-        ? { form: "typing", questions: [...last.questions, item.question] }
-        : null;
-    case "vocab-card":
-      return last.form === "vocab-card"
-        ? { form: "vocab-card", questions: [...last.questions, item.question] }
-        : null;
-    case "pair-match":
-      return last.form === "pair-match"
-        ? { form: "pair-match", questions: [...last.questions, item.question] }
-        : null;
-    case "culture-card":
-      return last.form === "culture-card"
-        ? { form: "culture-card", questions: [...last.questions, item.question] }
-        : null;
-    case "syllable-build":
-      return last.form === "syllable-build"
-        ? { form: "syllable-build", questions: [...last.questions, item.question] }
-        : null;
-    case "read-aloud":
-      return last.form === "read-aloud"
-        ? { form: "read-aloud", questions: [...last.questions, item.question] }
-        : null;
-    case "speak-word":
-      return last.form === "speak-word"
-        ? { form: "speak-word", questions: [...last.questions, item.question] }
-        : null;
-  }
-}
-
-function startedBy(item: PlayableItem): CatalogActivity {
-  switch (item.kind) {
-    case "listening":
-      return { form: "listening", questions: [item.question] };
-    case "sentence-order":
-      return { form: "sentence-order", questions: [item.question] };
-    case "word-choice":
-      return { form: "word-choice", questions: [item.question] };
-    case "typing":
-      return { form: "typing", questions: [item.question] };
-    case "vocab-card":
-      return { form: "vocab-card", questions: [item.question] };
-    case "pair-match":
-      return { form: "pair-match", questions: [item.question] };
-    case "culture-card":
-      return { form: "culture-card", questions: [item.question] };
-    case "syllable-build":
-      return { form: "syllable-build", questions: [item.question] };
-    case "read-aloud":
-      return { form: "read-aloud", questions: [item.question] };
-    case "speak-word":
-      return { form: "speak-word", questions: [item.question] };
-  }
-}
 
 /** 건너뜀을 빼고, 같은 학습형이 이어지는 구간을 한 활동으로 묶습니다. */
 export function catalogActivitiesOf(
@@ -256,10 +184,14 @@ export function catalogFillOf(content: EpisodeContent, profile: LearnerProfile):
   return (text, script) => content.fillText(text, profile, script);
 }
 
-// 같은 ready 항목 참조 + 같은 프로필 참조 + 같은 키면 같은 계획 참조입니다 — 활동 화면의 자동 넘김 걸음이
-// 문항 참조에 걸려 있어, 렌더마다 새 문항을 만들면 관계없는 리렌더가 기다림을 되돌립니다. 프로필 참조가 키에
-// 들어서, 프로필이 바뀌면 새 계획이 서고 같은 참조로 돌아오면 먼저 만든 계획이 돌아옵니다.
-const memo = new WeakMap<object, WeakMap<object, Map<string, CatalogLessonPlan | null>>>();
+// 같은 ready 항목 · 프로필 참조 · 키면 같은 계획 참조입니다(자동 넘김 걸음이 문항 참조에 걸려 있어 렌더마다 새로
+// 만들면 안 됩니다). 문항 음성은 받은 파일 유무로 풀려(v4) 같은 콘텐츠 참조에서도 달라지므로, 계획을 만들 때 물어본
+// 음성 경로와 답을 적어 두고 다시 찾을 때 같은 답일 때만 메모를 씁니다. 판정 시점은 레슨 계획을 만드는 때입니다.
+type MemoPlan = {
+  readonly plan: CatalogLessonPlan | null;
+  readonly probes: readonly (readonly [string, string | null])[];
+};
+const memo = new WeakMap<object, WeakMap<object, Map<string, MemoPlan>>>();
 
 /** 같은 ready 항목 · 프로필 참조 · 키면 같은 계획 참조를 돌려줍니다(메모). */
 export function catalogLessonPlanFor(
@@ -280,18 +212,29 @@ export function catalogLessonPlanFor(
     plans = new Map();
     byProfile.set(profile, plans);
   }
-  // 문항 음성이 풀리는지는 계획 모양을 가릅니다(소리 없는 문항은 건너뜁니다). 재생 모듈이 있고 없고가 같은 항목 ·
-  // 프로필 참조에서도 달라질 수 있어 메모 키에 넣습니다.
+  // 재생 모듈이 있고 없고도 계획 모양을 가르므로 키에 넣습니다.
   const sound = content.itemAudioEnabled === true ? "sound" : "mute";
   const planKey = `${sound}:${unitKey}`;
-  if (plans.has(planKey)) return plans.get(planKey) ?? null;
+  const cached = plans.get(planKey);
+  if (
+    cached !== undefined &&
+    cached.probes.every(([path, url]) => content.audioUrlOf(path) === url)
+  ) {
+    return cached.plan;
+  }
+  const probes: [string, string | null][] = [];
+  const probedAudioUrlOf = (path: string): string | null => {
+    const url = content.audioUrlOf(path);
+    probes.push([path, url]);
+    return url;
+  };
   const plan = catalogLessonPlanOf(
     entry,
     unitKey,
     catalogFillOf(content, profile),
     content.imageUrlOf,
-    content.audioUrlOf,
+    probedAudioUrlOf,
   );
-  plans.set(planKey, plan);
+  plans.set(planKey, { plan, probes });
   return plan;
 }
