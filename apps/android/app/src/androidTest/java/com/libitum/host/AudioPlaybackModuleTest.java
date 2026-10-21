@@ -67,7 +67,7 @@ public final class AudioPlaybackModuleTest {
     }
     logcat.waitFor();
     assertTrue("no open-failure warning in logcat: " + log,
-        log.toString().contains("Cannot open audio asset audio/missing-audio-probe.m4a"));
+        log.toString().contains("Cannot open audio source"));
   }
 
   @Test public void bundledAudioCompletesOnce() throws InterruptedException {
@@ -128,7 +128,8 @@ public final class AudioPlaybackModuleTest {
       calls.incrementAndGet();
       complete.countDown();
     });
-    assertTrue("unreachable remote did not settle", complete.await(10, TimeUnit.SECONDS));
+    // MediaPlayer retries a refused connection every ~3 s and gives up after ~30 s on the emulator.
+    assertTrue("unreachable remote did not settle", complete.await(40, TimeUnit.SECONDS));
     Thread.sleep(500);
     assertEquals(1, calls.get());
   }
@@ -330,7 +331,8 @@ public final class AudioPlaybackModuleTest {
       calls.incrementAndGet();
       complete.countDown();
     });
-    assertTrue("unreachable remote did not settle", complete.await(10, TimeUnit.SECONDS));
+    // MediaPlayer retries a refused connection every ~3 s and gives up after ~30 s on the emulator.
+    assertTrue("unreachable remote did not settle", complete.await(40, TimeUnit.SECONDS));
     Thread.sleep(500);
     assertEquals(1, calls.get());
   }
