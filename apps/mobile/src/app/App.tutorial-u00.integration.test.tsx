@@ -74,6 +74,12 @@ async function walkCoverExpecting(srcOf: (cutNumber: number) => string | null): 
 
 const isImageRequest = (url: string): boolean => /\.(webp|jpe?g|png)(\?|$)/.test(url);
 
+const U00_ITEM_IMAGES = new Set(["images/items/hello.webp", "images/items/thanks.webp"]);
+
+function isU00ImagePath(path: string) {
+  return path.startsWith("images/u00-tutorial/") || U00_ITEM_IMAGES.has(path);
+}
+
 describe("TU1 새 설치 · 오프라인", () => {
   test("TU1. 맵 첫 구획이 u00이고 표지 컷 그림이 모두 내장 주소이며 받기 호출 0 · 그림 요청 0이다", async () => {
     const download = vi.fn<(url: string, path: string, callback: (p: unknown) => void) => void>();
@@ -111,11 +117,7 @@ describe("TU1 새 설치 · 오프라인", () => {
 
     await vi.waitFor(() => expect(store.get(`libitum.content.assets.${U00}`)).toBeDefined());
     const downloaded = download.mock.calls.map((call) => call[1]);
-    expect(
-      downloaded.filter(
-        (path) => path.startsWith("images/u00-tutorial/") || path.startsWith("images/items/"),
-      ),
-    ).toEqual([]);
+    expect(downloaded.filter(isU00ImagePath)).toEqual([]);
   });
 });
 
@@ -261,12 +263,7 @@ describe("TU7 새 버전 교체", () => {
     });
     const contentFiles = { download, fileUrl: (path: string) => files.get(path) ?? "" };
     const newPath = "images/u00-tutorial/pre-1-v2.webp";
-    const u00Paths = () =>
-      download.mock.calls
-        .map((call) => call[1])
-        .filter(
-          (path) => path.startsWith("images/u00-tutorial/") || path.startsWith("images/items/"),
-        );
+    const u00Paths = () => download.mock.calls.map((call) => call[1]).filter(isU00ImagePath);
 
     const first = await bootTutorialApp({ serve, contentFiles });
     await vi.waitFor(() => expect(u00Paths()).toEqual([newPath]));
