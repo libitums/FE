@@ -13,6 +13,7 @@ export function portOf(overrides: { glossOf?: CatalogGlossOf; fill?: CatalogFill
     episodeId: "u01-water",
     glossOf: overrides.glossOf ?? (() => null),
     imageUrlOf: (path) => `https://cdn/${path}`,
+    audioUrlOf: () => null,
   };
   return port;
 }

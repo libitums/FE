@@ -1,5 +1,6 @@
 // 따라 읽기 활동(카탈로그 SHADOW)의 계약입니다. 타입만 둡니다.
 
+import type { ListenAudio } from "../../lib/question-audio";
 import type {
   SpeechAttemptOutcome,
   SpeechAttemptPhase,
@@ -14,6 +15,8 @@ export type ReadAloudQuestion = {
   readonly romanization: string | null;
   /** 같은 묶음의 영어 — 없거나 비면 null. */
   readonly translation: string | null;
+  /** 문장을 들려 주는 음성입니다. 없으면 키가 없습니다. */
+  readonly audio?: ListenAudio;
 };
 
 export type ReadAloudSessionState = {

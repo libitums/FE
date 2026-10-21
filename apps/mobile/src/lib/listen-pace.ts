@@ -10,14 +10,16 @@ export type PlaybackRate = typeof NORMAL_PLAYBACK_RATE | typeof SLOW_PLAYBACK_RA
 
 export const initialListenPace: ListenPace = "normal";
 
-export function playbackRateOf(_pace: ListenPace): PlaybackRate {
-  return NORMAL_PLAYBACK_RATE;
+export function playbackRateOf(pace: ListenPace): PlaybackRate {
+  return pace === "slow" ? SLOW_PLAYBACK_RATE : NORMAL_PLAYBACK_RATE;
 }
 
 export function toggledListenPace(pace: ListenPace): ListenPace {
-  return pace;
+  return pace === "slow" ? "normal" : "slow";
 }
 
-export function listenPaceAccessibilityLabel(_pace: ListenPace, _copy: UiCopy): string {
-  return "";
+/** 토글의 접근성 이름입니다 — 보이는 글자 뒤에 상태를 붙입니다(`Slow, on` / `Slow, off`). */
+export function listenPaceAccessibilityLabel(pace: ListenPace, copy: UiCopy): string {
+  const state = pace === "slow" ? copy.settings.optionState.on : copy.settings.optionState.off;
+  return `${copy.listening.slow}, ${state}`;
 }

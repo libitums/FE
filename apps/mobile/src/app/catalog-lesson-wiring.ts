@@ -5,6 +5,8 @@ import type { Dispatch, SetStateAction } from "@lynx-js/react";
 import type { AnswerResult } from "../lib/answer-result";
 import type { CatalogProgress, CatalogUnitKey } from "../lib/catalog-progress";
 import { markCatalogUnitDone } from "../lib/catalog-progress";
+import { initialListenPace } from "../lib/listen-pace";
+import type { ListenPace } from "../lib/listen-pace";
 import { assessmentCompletesStep, judgeAssessment } from "../screens/assessment/assessment";
 import type { AssessmentVerdict } from "../screens/assessment/assessment";
 import type { EpisodeIntroEventSink } from "../screens/episode-intro/episode-intro.contract";
@@ -56,6 +58,8 @@ export type CatalogLessonWiringArgs = CatalogWiringValues & {
    * 보지 못하므로, 렌더 사이에 살아남는 가변 값(ref)이어야 합니다.
    */
   readonly finishGuard: CatalogFinishGuard;
+  /** 「천천히」 상태의 setter입니다 — 세션을 비우는 자리에서 함께 되돌립니다. */
+  readonly setListenPace: Dispatch<SetStateAction<ListenPace>>;
 };
 
 export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLessonWiring {
@@ -72,6 +76,7 @@ export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLesso
     pendingSkippedCount,
     setPendingSkippedCount,
     finishGuard,
+    setListenPace,
   } = args;
 
   // 같은 활동 · 같은 최종 테스트의 두 번째 finish를 거릅니다 — 처음 오면 표식을 남기고 true.
@@ -85,10 +90,11 @@ export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLesso
     finishGuard.current = null;
   };
 
-  // 세션이 드는 둘을 한 자리에서 비웁니다 — 한쪽만 리셋하는 자리가 생기지 않게 합니다.
+  // 세션이 드는 셋을 한 자리에서 비웁니다 — 한쪽만 리셋하는 자리가 생기지 않게 합니다.
   const clearSession = (): void => {
     setPendingResults([]);
     setPendingSkippedCount(0);
+    setListenPace(initialListenPace);
   };
 
   const markDone = (episodeId: string, unitKey: CatalogUnitKey): void => {

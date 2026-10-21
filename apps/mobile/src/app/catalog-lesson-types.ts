@@ -96,8 +96,7 @@ export type CatalogAudioUrlOf = (relativePath: string) => string | null;
 export type CatalogLessonItemPort = CatalogItemPort & {
   readonly glossOf: CatalogGlossOf;
   readonly imageUrlOf: CatalogImageUrlOf;
-  /** 없으면 모든 문항이 소리 없음입니다. */
-  readonly audioUrlOf?: CatalogAudioUrlOf;
+  readonly audioUrlOf: CatalogAudioUrlOf;
 };
 
 export type CatalogLessonPlan = {

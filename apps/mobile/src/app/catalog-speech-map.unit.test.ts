@@ -16,6 +16,7 @@ const portOf = (overrides: Partial<CatalogLessonItemPort> = {}): CatalogLessonIt
   episodeId: "u01-water",
   glossOf: () => null,
   imageUrlOf: (path) => `https://cdn/${path}`,
+  audioUrlOf: () => null,
   ...overrides,
 });
 

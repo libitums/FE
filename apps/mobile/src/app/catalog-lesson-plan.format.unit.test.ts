@@ -168,6 +168,7 @@ describe("새 내장본의 단계별 수업 계획 (MAP11)", () => {
         episodeId,
         glossOf: catalogGlossOf(entry.episode.words, fill),
         imageUrlOf,
+        audioUrlOf: () => null,
       };
       return entry.episode.units.flatMap((unit) =>
         unit.items.map((item) => {
@@ -189,6 +190,7 @@ describe("새 내장본의 단계별 수업 계획 (MAP11)", () => {
         episodeId,
         glossOf: catalogGlossOf(entry.episode.words, fill),
         imageUrlOf,
+        audioUrlOf: () => null,
       };
       const skipped = entry.episode.units.flatMap((unit) =>
         unit.items.flatMap((item) =>

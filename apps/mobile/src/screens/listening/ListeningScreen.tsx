@@ -62,7 +62,7 @@ export function ListeningActivity({
   const question = complete ? null : questions[state.questionIndex];
 
   // 재생의 주인은 이 화면입니다 — 껍데기가 무대를 다시 세워도 소리가 끊기지 않습니다.
-  const playback = useListeningPlayback(question?.audioSource ?? undefined, sessionOptions);
+  const playback = useListeningPlayback(question?.audio?.source, sessionOptions);
 
   // 종료 상태가 **처음 존재하게 되는 순간**, 정확히 한 번입니다(ADR-0016 D11-2).
   // dep이 `complete` 하나입니다 — 리듀서가 `questionIndex`를 늘리기만 하므로 이
@@ -176,7 +176,7 @@ export function ListeningActivity({
           )}
 
           {/* 제시 채널입니다. 오디오가 생기면 **이 컴포넌트만** 통째로 갈립니다. */}
-          {question === null ? null : question.audioSource === null ? (
+          {question === null ? null : question.audio === null ? (
             // 소리가 없는 문항입니다 — 대본이 유일한 단서라 `show-transcript`와 무관하게 섭니다.
             <ListeningSilentPrompt text={question.prompt} romanization={question.romanization} />
           ) : (

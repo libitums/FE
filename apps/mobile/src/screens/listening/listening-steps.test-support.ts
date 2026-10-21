@@ -1,6 +1,8 @@
 // 듣기 활동 테스트가 쓰는 고정 문항 표입니다(스텝 이름 → 문항). 튜토리얼 route와 그 문항 표가 사라진 뒤에도
 // 활동 테스트가 같은 모양의 입력(문항 셋 · 보기 넷 · 음성 id)으로 서게 합니다. 제품 코드가 import하지 않습니다.
 
+import { listenAudioOf } from "../../lib/question-audio.test-support";
+import type { ListenAudio } from "../../lib/question-audio";
 import type { ListeningQuestion } from "./listening-questions";
 
 export type ListeningStepId =
@@ -13,8 +15,8 @@ export type ListeningStepId =
   | "tutorial-speaking"
   | "tutorial-writing";
 
-/** 오디오가 늘 있는 문항입니다(`audioSource`가 문자열로 좁혀집니다). */
-export type TutorialListeningQuestion = ListeningQuestion & { readonly audioSource: string };
+/** 오디오가 늘 있는 문항입니다(`audio`가 듣기 갈래로 좁혀집니다). */
+export type TutorialListeningQuestion = ListeningQuestion & { readonly audio: ListenAudio };
 
 export const listeningQuestionsByStep: Readonly<
   Record<ListeningStepId, readonly TutorialListeningQuestion[]>
@@ -24,7 +26,7 @@ export const listeningQuestionsByStep: Readonly<
     {
       prompt: "안녕하세요",
       romanization: "annyeonghaseyo",
-      audioSource: "phone-call-confirm-01",
+      audio: listenAudioOf("LISTEN_SELECT", "phone-call-confirm-01", "phone-call-confirm-01"),
       choices: ["Hello", "Thank you"],
       answerIndex: 0,
       instruction:
@@ -38,7 +40,7 @@ export const listeningQuestionsByStep: Readonly<
     {
       prompt: "이름이 어떻게 되세요?",
       romanization: "ireumi eotteoke doeseyo?",
-      audioSource: "introduction-1",
+      audio: listenAudioOf("LISTEN_SELECT", "introduction-1", "introduction-1"),
       choices: [
         "Asking your age",
         "Asking where you live",
@@ -50,7 +52,7 @@ export const listeningQuestionsByStep: Readonly<
     {
       prompt: "저는 민준이라고 합니다.",
       romanization: "jeoneun minjunirago hamnida",
-      audioSource: "introduction-2",
+      audio: listenAudioOf("LISTEN_SELECT", "introduction-2", "introduction-2"),
       choices: [
         "Saying their own name",
         "Calling the other person's name",
@@ -62,7 +64,7 @@ export const listeningQuestionsByStep: Readonly<
     {
       prompt: "만나서 반가워요.",
       romanization: "mannaseo bangawoyo",
-      audioSource: "introduction-3",
+      audio: listenAudioOf("LISTEN_SELECT", "introduction-3", "introduction-3"),
       choices: [
         "Promising to meet again",
         "Saying it's nice to meet you",
@@ -76,7 +78,7 @@ export const listeningQuestionsByStep: Readonly<
     {
       prompt: "따뜻한 아메리카노 한 잔 주세요.",
       romanization: "ttatteutan amerikano han jan juseyo",
-      audioSource: "ordering-1",
+      audio: listenAudioOf("LISTEN_SELECT", "ordering-1", "ordering-1"),
       choices: [
         "Ordering two iced coffees",
         "Canceling an order",
@@ -89,7 +91,7 @@ export const listeningQuestionsByStep: Readonly<
       prompt: "주문하시겠어요? 음료는 따뜻한 것과 차가운 것 중에 무엇으로 드릴까요?",
       romanization:
         "jumunhasigesseoyo? eumnyoneun ttatteutan geotgwa chagaun geot junge mueoseuro deurilkkayo?",
-      audioSource: "ordering-2",
+      audio: listenAudioOf("LISTEN_SELECT", "ordering-2", "ordering-2"),
       choices: [
         "Asking whether you want your drink hot or iced",
         "Asking how you'll pay",
@@ -101,7 +103,7 @@ export const listeningQuestionsByStep: Readonly<
     {
       prompt: "카드로 결제할게요.",
       romanization: "kadeuro gyeoljehalgeyo",
-      audioSource: "ordering-3",
+      audio: listenAudioOf("LISTEN_SELECT", "ordering-3", "ordering-3"),
       choices: [
         "Saying they'll pay in cash",
         "Saying they'll pay later",
@@ -115,7 +117,7 @@ export const listeningQuestionsByStep: Readonly<
     {
       prompt: "내일 세 시에 만날까요?",
       romanization: "naeil se sie mannalkkayo?",
-      audioSource: "appointment-1",
+      audio: listenAudioOf("LISTEN_SELECT", "appointment-1", "appointment-1"),
       choices: [
         "Canceling a meeting",
         "Suggesting a time to meet",
@@ -127,7 +129,7 @@ export const listeningQuestionsByStep: Readonly<
     {
       prompt: "그때는 좀 어려울 것 같아요.",
       romanization: "geuttaeneun jom eoryeoul geot gatayo",
-      audioSource: "appointment-2",
+      audio: listenAudioOf("LISTEN_SELECT", "appointment-2", "appointment-2"),
       choices: [
         "Insisting on meeting at that time",
         "Saying they don't know the time",
@@ -139,7 +141,7 @@ export const listeningQuestionsByStep: Readonly<
     {
       prompt: "그럼 토요일 저녁은 어때요?",
       romanization: "geureom toyoil jeonyeogeun eottaeyo?",
-      audioSource: "appointment-3",
+      audio: listenAudioOf("LISTEN_SELECT", "appointment-3", "appointment-3"),
       choices: [
         "Suggesting a different time",
         "Calling off the plan",
@@ -153,7 +155,7 @@ export const listeningQuestionsByStep: Readonly<
     {
       prompt: "혹시 지하철역이 어디예요?",
       romanization: "hoksi jihacheollyeogi eodiyeyo?",
-      audioSource: "directions-1",
+      audio: listenAudioOf("LISTEN_SELECT", "directions-1", "directions-1"),
       choices: [
         "Asking the subway fare",
         "Asking for the subway schedule",
@@ -165,7 +167,7 @@ export const listeningQuestionsByStep: Readonly<
     {
       prompt: "이 길로 쭉 가시면 됩니다.",
       romanization: "i gillo jjuk gasimyeon doemnida",
-      audioSource: "directions-2",
+      audio: listenAudioOf("LISTEN_SELECT", "directions-2", "directions-2"),
       choices: [
         "Telling you to go straight",
         "Telling you to turn left",
@@ -177,7 +179,7 @@ export const listeningQuestionsByStep: Readonly<
     {
       prompt: "여기서 얼마나 걸려요?",
       romanization: "yeogiseo eolmana geollyeoyo?",
-      audioSource: "directions-3",
+      audio: listenAudioOf("LISTEN_SELECT", "directions-3", "directions-3"),
       choices: [
         "Asking the name of the street",
         "Asking how long it takes to get there",

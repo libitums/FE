@@ -13,6 +13,7 @@ const port: CatalogLessonItemPort = {
   episodeId: "u01-water",
   glossOf: () => null,
   imageUrlOf: (path) => `https://cdn/${path}`,
+  audioUrlOf: () => null,
 };
 
 const t = (ko: string, roman = `r-${ko}`, en?: string): Text =>

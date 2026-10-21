@@ -14,6 +14,11 @@ export type EpisodeContent = {
   readonly catalog: readonly CatalogEntry[];
   /** 버킷 기준 상대 경로(컷 그림 · 음성) → 절대 URL. 설정 없음 · 경로 거부면 null. */
   readonly imageUrlOf: (relativePath: string) => string | null;
+  /**
+   * 문항 음성 주소입니다 — `imageUrlOf`와 같은 해석에 재생 모듈이 없으면 null을 더합니다(소리 없는 문항과 같은 길).
+   * 레슨 계획만 씁니다.
+   */
+  readonly audioUrlOf: (relativePath: string) => string | null;
   readonly fillText: FillText;
   /** 음성 id → 길이(음성 정보 파일). 모르면 null. */
   readonly audioTimingOf: (audioId: string) => AudioTiming | null;
@@ -22,6 +27,7 @@ export type EpisodeContent = {
 export const noEpisodeContent: EpisodeContent = {
   catalog: [],
   imageUrlOf: () => null,
+  audioUrlOf: () => null,
   fillText: (text) => text,
   audioTimingOf: () => null,
 };

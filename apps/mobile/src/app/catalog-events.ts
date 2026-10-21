@@ -84,7 +84,7 @@ export function listenItemAnsweredEventOf(
     result: report.result,
     pace: report.pace,
     slowTurnedOn: report.slowTurnedOn,
-    replayCount: "",
-    slowReplayCount: "",
+    replayCount: String(report.replayCount),
+    slowReplayCount: String(report.slowReplayCount),
   };
 }

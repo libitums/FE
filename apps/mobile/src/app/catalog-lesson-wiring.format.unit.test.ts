@@ -43,6 +43,7 @@ function wiringOf(progress: CatalogProgress, pendingResults: readonly AnswerResu
     episodeContent: {
       catalog,
       imageUrlOf: (path) => `https://cdn/${path}`,
+      audioUrlOf: () => null,
       fillText: fillPlaceholders,
       audioTimingOf: () => null,
     },
@@ -65,6 +66,7 @@ function wiringOf(progress: CatalogProgress, pendingResults: readonly AnswerResu
     pendingSkippedCount: 0,
     setPendingSkippedCount: () => undefined,
     finishGuard: newCatalogFinishGuard(),
+    setListenPace: () => {},
   };
   return { wiring: catalogLessonWiring(args), log, updaters };
 }

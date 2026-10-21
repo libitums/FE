@@ -3,9 +3,11 @@
 import type { Dispatch, SetStateAction } from "@lynx-js/react";
 
 import type { CatalogUnitKey } from "../lib/catalog-progress";
+import { toggledListenPace } from "../lib/listen-pace";
 import type { ListenPace } from "../lib/listen-pace";
 import type { ListenItemReport } from "../lib/question-audio";
 import type { EpisodeIntroEventSink } from "../screens/episode-intro/episode-intro.contract";
+import { listenItemAnsweredEventOf } from "./catalog-events";
 
 export type CatalogListenWiring = {
   readonly listenPace: ListenPace;
@@ -24,9 +26,12 @@ export type CatalogListenWiringArgs = {
 };
 
 export function catalogListenWiring(args: CatalogListenWiringArgs): CatalogListenWiring {
+  const sink = args.episodeIntroEventSink;
   return {
     listenPace: args.listenPace,
-    onToggleListenPace: () => {},
-    onListenItemAnswered: () => {},
+    onToggleListenPace: () => args.setListenPace((pace) => toggledListenPace(pace)),
+    onListenItemAnswered: (episodeId, unitKey, report) => {
+      sink?.(listenItemAnsweredEventOf(episodeId, unitKey, report));
+    },
   };
 }

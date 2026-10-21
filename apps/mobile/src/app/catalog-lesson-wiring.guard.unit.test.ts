@@ -37,6 +37,7 @@ function setup(progress: CatalogProgress, pending: readonly AnswerResult[] = [])
       episodeContent: {
         catalog,
         imageUrlOf: (path) => `https://cdn/${path}`,
+        audioUrlOf: () => null,
         fillText: fillPlaceholders,
         audioTimingOf: () => null,
       },
@@ -55,6 +56,7 @@ function setup(progress: CatalogProgress, pending: readonly AnswerResult[] = [])
       pendingSkippedCount: 0,
       setPendingSkippedCount: () => undefined,
       finishGuard: guard,
+      setListenPace: () => {},
     });
   return { wiring: make(pending), make, events, dispatches, progressWrites };
 }

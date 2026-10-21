@@ -58,4 +58,5 @@ export type EpisodeListenItemAnsweredEvent = {
 export type CatalogLearningEvent =
   | EpisodeLessonStartedEvent
   | EpisodeLessonFinishedEvent
-  | EpisodeFinalPassedEvent;
+  | EpisodeFinalPassedEvent
+  | EpisodeListenItemAnsweredEvent;

@@ -1,6 +1,7 @@
 // 그림 보고 낱말 말하기 활동(카탈로그 SPEAK_WORD)의 계약입니다. 타입만 둡니다.
 
 import type { NonEmpty } from "../../lib/non-empty";
+import type { AnswerEchoAudio } from "../../lib/question-audio";
 import type { PictureLoadState } from "../../lib/picture-load";
 import type {
   SpeechAttemptOutcome,
@@ -20,6 +21,8 @@ export type SpeakWordQuestion = {
   readonly romanization: string | null;
   /** 있으면 `copy.speakWord.instruction` 대신 서는 지시문입니다(콘텐츠 `prompt.en`). */
   readonly instruction?: string;
+  /** 판정 뒤 한 번 들려 주는 정답 음성입니다. 없으면 키가 없습니다. */
+  readonly audio?: AnswerEchoAudio;
 };
 
 /** 판정을 적지 않습니다 — 지나간 문항마다 들은 글자(건너뜀은 null)만 적고 결과는 파생입니다. */

@@ -285,6 +285,7 @@ export function catalogLessonPlanFor(
     unitKey,
     catalogFillOf(content, profile),
     content.imageUrlOf,
+    content.audioUrlOf,
   );
   plans.set(unitKey, plan);
   return plan;

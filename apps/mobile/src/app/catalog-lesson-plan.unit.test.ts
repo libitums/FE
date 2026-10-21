@@ -43,6 +43,7 @@ const port = {
   episodeId: "u01-water",
   glossOf: () => null,
   imageUrlOf: () => null,
+  audioUrlOf: () => null,
 } as const;
 
 const noImageUrl = (): null => null;
@@ -67,6 +68,7 @@ function contentOf(catalog: readonly CatalogEntry[]): EpisodeContent {
   return {
     catalog,
     imageUrlOf: (path) => `https://cdn/${path}`,
+    audioUrlOf: () => null,
     fillText: fillPlaceholders,
     audioTimingOf: () => null,
   };
@@ -458,7 +460,7 @@ describe("catalogItemOf — 타자 입력", () => {
         cueSupport: "Here's my passport.",
         hint: null,
         answers: ["여권 여기 있어요.", "여권 여기 있어요"],
-        audioSource: null,
+        audio: null,
       },
     });
   });
@@ -529,7 +531,7 @@ describe("catalogActivitiesOf", () => {
     question: {
       prompt: `l${n}`,
       romanization: `l${n}`,
-      audioSource: null,
+      audio: null,
       choices: ["a", "b"],
       answerIndex: 0,
     },

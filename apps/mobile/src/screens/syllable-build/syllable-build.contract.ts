@@ -1,5 +1,6 @@
 // 음절 조립 활동의 계약입니다. 타입만 둡니다.
 
+import type { AnswerEchoAudio } from "../../lib/question-audio";
 import type { NonEmpty } from "../../lib/non-empty";
 import type { ActivityFinish, LessonPosition } from "../learning/activity-finish";
 
@@ -14,6 +15,8 @@ export type SyllableBuildQuestion = {
   readonly answers: NonEmpty<string>;
   /** 있으면 `copy.syllableBuild.instruction` 대신 서는 지시문입니다(콘텐츠 `prompt.en`). */
   readonly instruction?: string;
+  /** 판정 뒤 한 번 들려 주는 정답 음성입니다. 없으면 키가 없습니다. */
+  readonly audio?: AnswerEchoAudio;
 };
 
 export type SyllableBuildPhase = "building" | "checked";

@@ -35,6 +35,7 @@ function contentOf(catalog: readonly CatalogEntry[]): EpisodeContent {
   return {
     catalog,
     imageUrlOf: (path) => `https://cdn/${path}`,
+    audioUrlOf: () => null,
     fillText: fillPlaceholders,
     audioTimingOf: () => null,
   };
@@ -107,6 +108,7 @@ function harness(
     setPendingSkippedCount: (action) =>
       void log.push({ kind: "skipped", value: resolveAction(action, pendingSkippedCount) }),
     finishGuard: newCatalogFinishGuard(),
+    setListenPace: () => {},
   };
   const setCompletedStepCount = vi.fn<(count: number) => void>();
   // 튜토리얼 진행 setter도 인자에 함께 넣어 카탈로그가 건드리지 않는지 봅니다.
@@ -801,7 +803,11 @@ describe("catalogWiring — 표지 결선과 레슨 결선을 합친다", () => 
   test("LW14. 표지 콜백 여섯 · 학습 콜백 여섯 · 값 셋이 모두 있고 에피소드 전 가드 콜백은 없다", () => {
     const { args } = harness({ progress: { "u01-water": ["intro", "S1"] } });
 
-    const wiring: Record<string, unknown> = catalogWiring({ ...args, legacyTutorialPassed: false });
+    const wiring: Record<string, unknown> = catalogWiring({
+      ...args,
+      legacyTutorialPassed: false,
+      listenPace: "normal",
+    });
 
     for (const name of [
       "onStartCatalogCover",

@@ -53,8 +53,8 @@ export type LessonAudio = {
   readonly onListenItemAnswered: (report: ListenItemReport) => void;
 };
 
-export function autoPlayAudioOf(_options: SessionOptions): AutoPlayAudio {
-  return "off";
+export function autoPlayAudioOf(options: SessionOptions): AutoPlayAudio {
+  return options["auto-play-audio"] ? "on" : "off";
 }
 
 /** 레슨 밖(테스트 · 단독 활동)의 소리 설정입니다. */
@@ -71,18 +71,19 @@ export function standaloneLessonAudio(options: SessionOptions): LessonAudio {
 export type ListenCue = { readonly key: string; readonly audio: ListenAudio };
 
 export function listenCueOf(
-  _questionKey: string,
-  _audio: QuestionAudio | null | undefined,
+  questionKey: string,
+  audio: QuestionAudio | null | undefined,
 ): ListenCue | null {
-  return null;
+  return audio?.kind === "listen" ? { key: questionKey, audio } : null;
 }
 
 /** 판정이 난 순간에만 서는 정답 뒤 재생 신호입니다. */
 export function answerEchoCueOf(
-  _questionKey: string,
-  _audio: QuestionAudio | null | undefined,
-  _judged: boolean,
-  _autoPlay: AutoPlayAudio,
+  questionKey: string,
+  audio: QuestionAudio | null | undefined,
+  judged: boolean,
+  autoPlay: AutoPlayAudio,
 ): AudioCue | null {
-  return null;
+  if (audio?.kind !== "answer-echo" || !judged || autoPlay === "off") return null;
+  return { key: `${questionKey}:echo`, source: audio.source };
 }

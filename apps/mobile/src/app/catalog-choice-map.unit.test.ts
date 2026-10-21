@@ -32,6 +32,7 @@ describe("listeningItemOf — u00 S2", () => {
       episodeId: TUTORIAL_EPISODE_ID,
       glossOf: catalogGlossOf(entry.episode.words, fill),
       imageUrlOf: (path) => `https://cdn/${path}`,
+      audioUrlOf: () => null,
     };
     const item = entry.episode.units
       .find((unit) => unit.id === "S2")

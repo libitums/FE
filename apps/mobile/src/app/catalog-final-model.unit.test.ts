@@ -277,6 +277,7 @@ describe("catalogFinalPlanFor — 프로필 참조가 메모 키다", () => {
   const contentOf = (catalog: readonly CatalogEntry[]): EpisodeContent => ({
     catalog,
     imageUrlOf,
+    audioUrlOf: () => null,
     fillText: fillPlaceholders,
     audioTimingOf: () => null,
   });
@@ -329,6 +330,7 @@ describe("catalogFinalPlanFor — 메모", () => {
   const contentOf = (catalog: readonly CatalogEntry[]): EpisodeContent => ({
     catalog,
     imageUrlOf,
+    audioUrlOf: () => null,
     fillText: fillPlaceholders,
     audioTimingOf: () => null,
   });

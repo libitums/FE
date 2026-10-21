@@ -1,5 +1,6 @@
 // 타자 입력 활동의 계약입니다. 타입만 둡니다.
 
+import type { QuestionAudio } from "../../lib/question-audio";
 import type { SafeAreaInsets } from "../../lib/safe-area";
 import type { ActivityFinish, LessonPosition } from "../learning/activity-finish";
 
@@ -14,8 +15,8 @@ export type TypingQuestion = {
   readonly hint: string | null;
   /** 첫째 = 공개용 정답입니다. */
   readonly answers: readonly [string, ...string[]];
-  /** 오디오가 아직 연결되지 않았습니다 — 받아쓰기면 꺼진 재생 조작이 섭니다. */
-  readonly audioSource: null;
+  /** 문항 음성입니다 — 받아쓰기는 듣기 갈래, 한국어로 쓰기는 판정 뒤 재생 갈래, 없으면 `null`(받아쓰기면 꺼진 재생 조작이 섭니다). */
+  readonly audio: QuestionAudio | null;
 };
 
 export type TypingPhase = "typing" | "checked";

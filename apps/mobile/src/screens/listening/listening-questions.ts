@@ -1,5 +1,7 @@
 // 듣기 활동의 문항 타입을 소유합니다(ADR-0006 D4 — 순수 로직은 unit 계층 대상입니다). UI를 import하지 않습니다.
 
+import type { ListenAudio } from "../../lib/question-audio";
+
 // ---------------------------------------------------------------- 도메인 타입
 
 export type ListeningQuestion = {
@@ -14,12 +16,9 @@ export type ListeningQuestion = {
    * 비어 버립니다.
    */
   readonly romanization: string;
-  // 호스트가 해석하는 **불투명 문자열**입니다 — 번들 키인지 원격 URL인지는
-  // 아직 정해지지 않았습니다. 데이터가 지는 것은 **안정적 식별자** 하나뿐이고,
-  // 자산이 오면 `AudioPlaybackModule.resolve`에 **해석만** 붙습니다.
-  // 옵셔널이 아닙니다 — `audioSource?`면 "아직 없는 문항"이 타입에 생깁니다. 오디오가
-  // 없는 문항은 `null`로 **명시**합니다(카탈로그 문항 — 대본을 늘 보이고 재생 조작을 끕니다).
-  readonly audioSource: string | null;
+  // 문항 음성입니다 — 소리가 없는 문항은 `null`로 **명시**합니다(카탈로그 문항 — 대본을 늘 보이고 재생 조작을
+  // 끕니다). 옵셔널이 아닙니다: `audio?`면 "아직 없는 문항"이 타입에 생깁니다.
+  readonly audio: ListenAudio | null;
   readonly instruction?: string;
 } & (
   | {

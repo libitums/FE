@@ -30,7 +30,7 @@ import { uiCopyEn } from "../../lib/ui-copy-en";
 const questionAnswer0: ListeningQuestion = {
   prompt: "주문하시겠어요? 음료는 따뜻한 것과 차가운 것 중에 무엇으로 드릴까요?",
   romanization: "fixture",
-  audioSource: "ordering-2",
+  audio: null,
   choices: [
     "음료 온도를 묻고 있다",
     "계산 방법을 묻고 있다",
@@ -43,7 +43,7 @@ const questionAnswer0: ListeningQuestion = {
 const questionAnswer2: ListeningQuestion = {
   prompt: "따뜻한 아메리카노 한 잔 주세요.",
   romanization: "fixture",
-  audioSource: "ordering-1",
+  audio: null,
   choices: [
     "차가운 커피를 두 잔 주문하고 있다",
     "주문을 취소하고 있다",
