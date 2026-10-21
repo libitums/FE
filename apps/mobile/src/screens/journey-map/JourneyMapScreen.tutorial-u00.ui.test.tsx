@@ -21,8 +21,17 @@ const nodeOf = (key: string) =>
   screen.getByTestId(
     `ui-lynx-${key === "RP" ? "special" : "learning"}-unit-catalog-unit-${TUTORIAL_EPISODE_ID}-${key}`,
   );
+// 가림은 자손에만 걸린다(ADR-0016 D5) — 접근성 요소(accessibility-element)는 자기 속성을 세지 않고 부모부터 찾는다.
+// 래퍼(셀 · 구획 상자)는 자신의 속성이 자손을 가리므로 자신부터 찾는다.
+const hiderOf = (element: Element): Element | null | undefined =>
+  (element.getAttribute("accessibility-element") === "true"
+    ? element.parentElement
+    : element
+  )?.closest("[accessibility-elements-hidden]");
 const hiddenFromReaders = (element: Element): boolean =>
-  element.closest('[accessibility-elements-hidden="true"]') !== null;
+  hiderOf(element)?.getAttribute("accessibility-elements-hidden") === "true";
+const coverAttrOf = (element: Element): string | null | undefined =>
+  hiderOf(element)?.getAttribute("accessibility-elements-hidden");
 
 describe("맵 구획", () => {
   test("MU1. 실데이터 구획에서 튜토리얼 셀은 없고 u00 구획이 첫째이며 그 안 셀이 15(표지 + 14)다", () => {
@@ -116,6 +125,48 @@ describe("첫 유닛 안내", () => {
     expect(hiddenFromReaders(cellOf("RP"))).toBe(true);
     expect(hiddenFromReaders(screen.getByTestId("catalog-section-u01-water"))).toBe(true);
     expect(hiddenFromReaders(screen.getByTestId("catalog-section-u03-mina"))).toBe(true);
+  });
+
+  test("TA1. 안내 중 준비 중 · 잠김 · 맨 끝 coming soon 구획도 부모 래퍼로 가려지고, 닫으면 false가 남는다", () => {
+    const [u00, next] = realSections;
+    if (u00 === undefined || next === undefined) throw new Error("fixture");
+    const sections = [
+      u00,
+      {
+        kind: "catalog-unavailable",
+        episodeId: "u91-pending",
+        ordinal: 1,
+        title: "P",
+        reason: "pending",
+      },
+      {
+        kind: "catalog-unavailable",
+        episodeId: "u92-locked",
+        ordinal: 2,
+        title: "L",
+        reason: "client-too-old",
+      },
+      { ...next, episodeId: "u93-last", ordinal: 3 },
+    ] as const;
+    render(guided(u00Catalog({ sections })));
+    const ids = [
+      "catalog-pending-u91-pending",
+      "catalog-unavailable-u92-locked",
+      "catalog-coming-soon",
+    ];
+
+    for (const id of ids) {
+      expect(hiddenFromReaders(screen.getByTestId(id))).toBe(true);
+    }
+    expect(screen.getByTestId("catalog-section-u93-last").parentElement).toHaveClass(
+      "catalog-map-section-cover",
+    );
+
+    fireEvent.tap(screen.getByTestId(coverId), {});
+
+    for (const id of ids) {
+      expect(coverAttrOf(screen.getByTestId(id))).toBe("false");
+    }
   });
 
   test("MU6. 안내 중 표지를 누르면 안내가 닫히고 시작이 u00 id로 정확히 한 번 올라간다", () => {

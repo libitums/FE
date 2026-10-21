@@ -66,7 +66,10 @@ describe("CatalogEpisodeSection guide", () => {
     mount({ dismiss: vi.fn<() => void>() });
 
     const hidden = (element: Element) =>
-      element.closest('[accessibility-elements-hidden="true"]') !== null;
+      (element.getAttribute("accessibility-element") === "true"
+        ? element.parentElement
+        : element
+      )?.closest('[accessibility-elements-hidden="true"]') != null;
     expect(hidden(cover())).toBe(false);
     expect(hidden(screen.getByTestId("journey-map-cell-catalog-u00-tutorial-S1"))).toBe(true);
     expect(hidden(screen.getByTestId("journey-map-cell-catalog-u00-tutorial-RP"))).toBe(true);
