@@ -21,7 +21,10 @@ const ready = (episodeId: string, ordinal: number): CatalogMapSection => ({
   completionKeys: ["RP"],
   cultureKeys: [],
 });
-const gate: CatalogGate = { tutorialPassed: true, progress: {} };
+const gate = {
+  legacyTutorialPassed: true,
+  progress: {},
+} as unknown as CatalogGate;
 
 function mount(sections: readonly CatalogMapSection[]) {
   const onStartCover = vi.fn<(episodeId: string) => void>();
