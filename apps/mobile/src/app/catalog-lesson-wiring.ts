@@ -7,7 +7,6 @@ import type { CatalogProgress, CatalogUnitKey } from "../lib/catalog-progress";
 import { markCatalogUnitDone } from "../lib/catalog-progress";
 import { assessmentCompletesStep, judgeAssessment } from "../screens/assessment/assessment";
 import type { AssessmentVerdict } from "../screens/assessment/assessment";
-import type { EpisodeFinalUnitId } from "../screens/episode-final/episode-final.contract";
 import type { EpisodeIntroEventSink } from "../screens/episode-intro/episode-intro.contract";
 import { canStartCatalogUnit, catalogUnitRoleOf } from "../screens/journey-map/catalog-map";
 import type { CatalogReadySection } from "../screens/journey-map/catalog-map.contract";
@@ -46,7 +45,6 @@ export type CatalogLessonWiring = {
 
 export type CatalogLessonWiringArgs = CatalogWiringValues & {
   readonly setCatalogProgress: Dispatch<SetStateAction<CatalogProgress>>;
-  readonly completedEpisodeFinalIds: readonly EpisodeFinalUnitId[];
   readonly dispatch: Dispatch<NavAction>;
   readonly episodeIntroEventSink: EpisodeIntroEventSink;
   readonly pendingResults: readonly AnswerResult[];

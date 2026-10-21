@@ -245,7 +245,10 @@ describe("표지 잠금 — 첫 구획은 늘 열리고, 튜토리얼 다음 구
     expect(catalogCoverStatus(real, u02, gate(true, { "u01-water": ["intro", "S1"] }))).toBe(
       "locked",
     );
-    expect(catalogCoverStatus(real, u02, gate(true, { "u01-water": ["RP"] }))).toBe("available");
+    const u01 = real[indexOf("u01-water")] as CatalogReadySection;
+    expect(catalogCoverStatus(real, u02, gate(true, { "u01-water": u01.completionKeys }))).toBe(
+      "available",
+    );
   });
 
   test("CG7. 앞 구획이 준비 안 된 u00이어도 옛 통과 기록이면 u01이 열리고, 아니면 잠긴다", () => {

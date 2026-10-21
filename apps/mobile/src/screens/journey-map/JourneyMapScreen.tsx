@@ -142,10 +142,11 @@ export function JourneyMapScreen({
   // 떠 있으면 옮기지 않고 이 마운트에서 잠급니다.
   const autoScroll = useAutoScrollToNext({
     target: mapScrollTargetOf({
-      tutorialSections: journeyMapSections,
-      progress,
       catalogSections: catalog?.sections ?? noCatalogMapSections,
-      catalogProgress: catalog?.progress ?? {},
+      gate: {
+        legacyTutorialPassed: completedEpisodeFinalIds.includes("tutorial-final-test"),
+        progress: catalog?.progress ?? {},
+      },
     }),
     blocked: sheetOpen || guide.visible,
     restoredScrollTop,

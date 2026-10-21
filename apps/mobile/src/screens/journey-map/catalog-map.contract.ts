@@ -23,7 +23,7 @@ export type CatalogUnavailableReason = "pending" | LockReason;
 export type CatalogReadySection = {
   readonly kind: "catalog-ready";
   readonly episodeId: string;
-  /** 카탈로그 안 1-based 자리 — 「Episode n.」 */
+  /** 매니페스트 `order` — 「Episode n.」 */
   readonly ordinal: number;
   /** 매니페스트(이긴 쪽) 제목 */
   readonly title: string;
@@ -50,7 +50,8 @@ export type CatalogUnavailableSection = {
 export type CatalogMapSection = CatalogReadySection | CatalogUnavailableSection;
 
 export type CatalogGate = {
-  readonly tutorialPassed: boolean;
+  /** 옛 튜토리얼 최종 테스트를 통과한 기록이 있는가 — 사용자 기록의 사실(파생 입력)입니다. */
+  readonly legacyTutorialPassed: boolean;
   readonly progress: CatalogProgress;
 };
 

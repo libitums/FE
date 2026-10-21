@@ -1,7 +1,17 @@
 {
   "schema": "manifest-1",
-  "generated_at": "2026-10-16T00:00:00Z",
+  "generated_at": "2026-10-21T00:00:00Z",
   "episodes": [
+    {
+      "id": "u00-tutorial",
+      "order": 0,
+      "title": "튜토리얼",
+      "schema": "delivery-2",
+      "version": "2026-10-21.1",
+      "sha256": "786bf60d382f18c9f5cc50a843a000b90d170eb1fc1d7eaa1fe14e296b7e7ba7",
+      "bytes": 30963,
+      "url": "episodes/u00-tutorial.json"
+    },
     {
       "id": "u01-water",
       "order": 1,

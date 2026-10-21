@@ -1,7 +1,6 @@
 import type { ReactNode } from "@lynx-js/react";
 
 import { CatalogMapSections } from "./CatalogMapSections";
-import { tutorialPassedFrom } from "./catalog-map";
 import "./catalog-map.css";
 import type { CatalogUnitSelect, JourneyMapCatalogProps } from "./catalog-map.contract";
 import type { JourneyMapNodeAccess } from "./journey-map-load.contract";
@@ -33,7 +32,7 @@ export function JourneyMapCatalogSlot({
       <CatalogMapSections
         sections={catalog.sections}
         gate={{
-          tutorialPassed: tutorialPassedFrom(completedEpisodeFinalIds),
+          legacyTutorialPassed: completedEpisodeFinalIds.includes("tutorial-final-test"),
           progress: catalog.progress,
         }}
         access={access}

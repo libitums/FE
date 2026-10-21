@@ -58,7 +58,6 @@ function wiringOf(progress: CatalogProgress, pendingResults: readonly AnswerResu
       }
       log.push({ kind: "progress", value: resolveAction(action, progress) });
     },
-    completedEpisodeFinalIds: [],
     dispatch: (action) => void log.push({ kind: "dispatch", value: action }),
     episodeIntroEventSink: (event) => void log.push({ kind: "event", value: event }),
     pendingResults,

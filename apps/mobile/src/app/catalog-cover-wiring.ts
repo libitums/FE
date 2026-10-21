@@ -7,12 +7,11 @@ import type { CatalogProgress } from "../lib/catalog-progress";
 import type { LearnerProfile } from "../lib/placeholder-fill";
 import { catalogCutViewsOf, catalogCutsOf } from "../screens/catalog-cover/catalog-cover";
 import type { CatalogCuts } from "../screens/catalog-cover/catalog-cover.contract";
-import type { EpisodeFinalUnitId } from "../screens/episode-final/episode-final.contract";
 import type {
   EpisodeIntroEventSink,
   EpisodeIntroExitStage,
 } from "../screens/episode-intro/episode-intro.contract";
-import { canStartCatalogCover, tutorialPassedFrom } from "../screens/journey-map/catalog-map";
+import { canStartCatalogCover } from "../screens/journey-map/catalog-map";
 import type { CatalogMapSection } from "../screens/journey-map/catalog-map.contract";
 import type { EpisodeContent } from "./episode-content";
 import type { NavAction } from "./nav-state";
@@ -40,7 +39,8 @@ export type CatalogCoverWiring = CatalogWiringValues & {
 
 export type CatalogCoverWiringArgs = CatalogWiringValues & {
   readonly setCatalogProgress: Dispatch<SetStateAction<CatalogProgress>>;
-  readonly completedEpisodeFinalIds: readonly EpisodeFinalUnitId[];
+  /** 옛 튜토리얼 최종 테스트를 통과한 기록이 있는가 — 튜토리얼 다음 구획의 문 입력입니다. */
+  readonly legacyTutorialPassed: boolean;
   readonly dispatch: Dispatch<NavAction>;
   readonly episodeIntroEventSink: EpisodeIntroEventSink;
 };
@@ -108,7 +108,7 @@ export function catalogCoverWiring(args: CatalogCoverWiringArgs): CatalogCoverWi
     catalogSections,
     catalogProgress,
     setCatalogProgress,
-    completedEpisodeFinalIds,
+    legacyTutorialPassed,
     dispatch,
     episodeIntroEventSink,
     learnerFill,
@@ -140,10 +140,7 @@ export function catalogCoverWiring(args: CatalogCoverWiringArgs): CatalogCoverWi
     learnerSync,
     learnerPort,
     onStartCatalogCover: (episodeId) => {
-      const gate = {
-        tutorialPassed: tutorialPassedFrom(completedEpisodeFinalIds),
-        progress: catalogProgress,
-      };
+      const gate = { legacyTutorialPassed, progress: catalogProgress };
       if (!canStartCatalogCover(catalogSections, episodeId, gate)) return;
       const entry = episodeContent.catalog.find((item) => item.id === episodeId);
       if (entry === undefined || entry.status !== "ready") return;

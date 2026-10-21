@@ -185,6 +185,7 @@ export function AppSession({
     setVisualNovelProgress,
     completedEpisodeFinalIds,
     setCompletedEpisodeFinalIds,
+    legacyTutorialPassed: completedEpisodeFinalIds.includes("tutorial-final-test"),
     completedStepCount,
     setCompletedStepCount,
     notifications,
