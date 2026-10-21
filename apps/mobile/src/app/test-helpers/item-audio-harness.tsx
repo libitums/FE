@@ -27,9 +27,12 @@ import type { EpisodeIntroEvent } from "../../screens/episode-intro/episode-intr
 const supabaseUrl = "https://test.supabase.co";
 const contentBase = `${supabaseUrl}/storage/v1/object/public/content/`;
 
-/** 내장 사본의 문항 음성이 앱에서 풀리는 재생 주소입니다. */
+/** 호스트가 받아 둔 음성 파일의 주소입니다 — 학습 문항 음성은 받은 파일만 소리가 됩니다. */
+const fileUrlOf = (path: string): string => `file:///c/${path}`;
+
+/** 내장 사본의 문항 음성이 앱에서 풀리는 재생 주소(받아 둔 파일)입니다. */
 export const itemAudioUrl = (episodeId: string, itemId: string): string =>
-  `${contentBase}audio/${itemAudioId(episodeId, itemId)}.m4a`;
+  fileUrlOf(`audio/${itemAudioId(episodeId, itemId)}.m4a`);
 
 export type Done = (result: unknown) => void;
 export type HostSpies = {
@@ -52,6 +55,8 @@ export type ItemAudioBooted = {
 export type ItemAudioBootOptions = {
   readonly progress: Record<string, string[]>;
   readonly host?: AudioHostKind;
+  /** `all`(기본) = 음성을 모두 받아 둔 기기, `none` = 받아 둔 파일이 없는 첫 설치. */
+  readonly files?: "all" | "none";
   /** 주면 말하기 모듈 대역을 세웁니다 — `heard(n)`이 n번째 시도의 인식 글자입니다. */
   readonly heard?: (attempt: number) => string | null;
 };
@@ -102,6 +107,14 @@ export async function bootItemAudioApp(options: ItemAudioBootOptions): Promise<I
             resume: host.resume,
           },
         };
+  const fileModule = {
+    ContentFileModule: {
+      download: vi.fn<() => void>(),
+      remove: vi.fn<() => void>(),
+      fileUrl: (path: string) =>
+        options.files !== "none" && path.startsWith("audio/") ? fileUrlOf(path) : null,
+    },
+  };
   const heard = options.heard;
   let attempts = 0;
   const speechModule =
@@ -136,6 +149,7 @@ export async function bootItemAudioApp(options: ItemAudioBootOptions): Promise<I
       remove: (key: string) => void store.delete(key),
     },
     ...audioModule,
+    ...fileModule,
     ...speechModule,
   });
   vi.stubEnv("PUBLIC_SUPABASE_URL", supabaseUrl);
@@ -179,6 +193,7 @@ const catalog = buildEpisodeCatalog({
 });
 const fill = (text: string, script: FillScript) => fillPlaceholders(text, {}, script);
 const urlOf = (path: string): string => `${contentBase}${path}`;
+const audioFileUrlOf = (path: string): string => fileUrlOf(path);
 
 /** 문항 음성이 풀리는 레슨 계획입니다(`withSound` 거짓이면 소리 없는 계획). */
 export function lessonPlanWith(
@@ -189,7 +204,7 @@ export function lessonPlanWith(
   const entry = catalog.find((candidate) => candidate.id === episodeId);
   if (entry === undefined || entry.status !== "ready") throw new Error(`not ready: ${episodeId}`);
   const plan = withSound
-    ? catalogLessonPlanOf(entry, key, fill, urlOf, urlOf)
+    ? catalogLessonPlanOf(entry, key, fill, urlOf, audioFileUrlOf)
     : catalogLessonPlanOf(entry, key, fill, urlOf);
   if (plan === null) throw new Error(`no unit: ${key}`);
   return plan;

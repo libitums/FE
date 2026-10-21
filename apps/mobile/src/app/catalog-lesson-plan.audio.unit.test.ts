@@ -155,4 +155,23 @@ describe("catalogLessonPlanFor — 콘텐츠 포트", () => {
 
     expect(plan).toMatchObject({ questionCount: 0, skippedItemCount: 1 });
   });
+
+  test("V4-4. 같은 콘텐츠 참조라도 파일 유무가 다르면 다른 계획이다 — 메모가 낡은 판정을 쓰지 않는다", () => {
+    const entry = { ...readyOf(TUTORIAL_EPISODE_ID) };
+    let downloaded = false;
+    const content = {
+      ...noEpisodeContent,
+      catalog: [entry],
+      imageUrlOf,
+      itemAudioEnabled: true,
+      audioUrlOf: (path: string) => (downloaded ? `file:///f/${path}` : null),
+    };
+
+    const before = catalogLessonPlanFor(content, TUTORIAL_EPISODE_ID, "S2", noLearnerProfile);
+    downloaded = true;
+    const after = catalogLessonPlanFor(content, TUTORIAL_EPISODE_ID, "S2", noLearnerProfile);
+
+    expect(before).toMatchObject({ questionCount: 0, skippedItemCount: 1 });
+    expect(after).toMatchObject({ questionCount: 1, skippedItemCount: 0 });
+  });
 });
