@@ -25,7 +25,7 @@ function u00(): Extract<CatalogEntry, { status: "ready" }> {
 }
 
 describe("listeningItemOf — u00 S2", () => {
-  test("AU2. u00 S2 듣기 문항은 소리 주소가 있어도 학습 문항 소리가 아직 연결되지 않아 audio-missing으로 건너뛴다", () => {
+  test("AU2. u00 S2 듣기 문항은 소리 주소가 풀리지 않아도 건너뛰지 않고 audio null 듣기 문항으로 선다", () => {
     const entry = u00();
     const port: CatalogLessonItemPort = {
       fill,
@@ -45,6 +45,8 @@ describe("listeningItemOf — u00 S2", () => {
     expect(item.stimulus.audioUrl).toMatch(/^u00-tutorial\//);
 
     const mapped = listeningItemOf(item, port);
-    expect(mapped).toMatchObject({ kind: "skipped", itemId: item.id, reason: "audio-missing" });
+    expect(mapped).toMatchObject({ kind: "listening", itemId: item.id });
+    if (mapped.kind !== "listening") return;
+    expect(mapped.question.audio).toBeNull();
   });
 });

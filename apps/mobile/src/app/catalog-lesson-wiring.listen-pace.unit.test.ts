@@ -91,7 +91,7 @@ describe("catalogLessonWiring — 「천천히」 되돌리기", () => {
       Array.from({ length: 5 }, () => correct),
     );
 
-    wiring.onFinishCatalogActivity("u01-water", "S3", 1, [correct], 1);
+    wiring.onFinishCatalogActivity("u01-water", "S3", 4, [correct], 1);
 
     expect(setListenPace).toHaveBeenCalledWith("normal");
   });

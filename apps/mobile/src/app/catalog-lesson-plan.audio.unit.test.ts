@@ -58,13 +58,17 @@ describe("catalogLessonPlanOf — 음성 포트", () => {
     const plan = catalogLessonPlanOf(entry, "S2", fill, imageUrlOf);
 
     expect(plan).toEqual(catalogLessonPlanOf(entry, "S2", fill, imageUrlOf, noCatalogAudioUrl));
-    expect(plan).toMatchObject({ questionCount: 8, shownItemCount: 8, skippedItemCount: 6 });
+    expect(plan).toMatchObject({ questionCount: 13, shownItemCount: 13, skippedItemCount: 1 });
     expect(formsOf(plan)).toEqual([
+      "listening1",
       "sentence-order1",
+      "listening1",
       "word-choice3",
       "sentence-order2",
+      "listening1",
       "word-choice1",
       "sentence-order1",
+      "listening2",
     ]);
   });
 
@@ -91,12 +95,19 @@ describe("catalogLessonPlanOf — 음성 포트", () => {
     ]);
   });
 
-  test("PL2. 같은 판을 소리 없는 포트로 짜면 지금과 같이 여섯 문항이 빠진다", () => {
+  test("PL2. 같은 판을 소리 없는 포트로 짜면 LISTEN_BUILD 하나만 빠지고 듣기 다섯은 audio null로 선다", () => {
     const entry = withItemAudio(readyOf("u01-water"));
 
     const plan = catalogLessonPlanOf(entry, "S2", fill, imageUrlOf);
 
-    expect(plan).toMatchObject({ questionCount: 8, skippedItemCount: 6 });
+    expect(plan).toMatchObject({ questionCount: 13, skippedItemCount: 1 });
+    const listening = (plan?.activities ?? []).filter((activity) => activity.form === "listening");
+    expect(listening.flatMap((activity) => activity.questions)).toHaveLength(5);
+    for (const activity of listening) {
+      for (const question of activity.questions) {
+        expect((question as unknown as { audio: unknown }).audio).toBeNull();
+      }
+    }
   });
 
   test("PL2. u00 S2의 듣기 문항은 d-04 음성을 단 listening 활동이 된다", () => {
@@ -153,7 +164,9 @@ describe("catalogLessonPlanFor — 콘텐츠 포트", () => {
 
     const plan = catalogLessonPlanFor(content, TUTORIAL_EPISODE_ID, "S2", noLearnerProfile);
 
-    expect(plan).toMatchObject({ questionCount: 0, skippedItemCount: 1 });
+    expect(plan).toMatchObject({ questionCount: 1, skippedItemCount: 0 });
+    const question = plan?.activities[0]?.questions[0] as unknown as { audio: unknown };
+    expect(question.audio).toBeNull();
   });
 
   test("V4-4. 같은 콘텐츠 참조라도 파일 유무가 다르면 다른 계획이다 — 메모가 낡은 판정을 쓰지 않는다", () => {
@@ -171,7 +184,9 @@ describe("catalogLessonPlanFor — 콘텐츠 포트", () => {
     downloaded = true;
     const after = catalogLessonPlanFor(content, TUTORIAL_EPISODE_ID, "S2", noLearnerProfile);
 
-    expect(before).toMatchObject({ questionCount: 0, skippedItemCount: 1 });
-    expect(after).toMatchObject({ questionCount: 1, skippedItemCount: 0 });
+    const audioOf = (plan: typeof before) =>
+      (plan?.activities[0]?.questions[0] as unknown as { audio: { source: string } | null }).audio;
+    expect(audioOf(before)).toBeNull();
+    expect(audioOf(after)?.source).toBe("file:///f/audio/u00-tutorial/d-04.m4a");
   });
 });

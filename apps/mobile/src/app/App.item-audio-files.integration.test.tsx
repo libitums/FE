@@ -1,7 +1,8 @@
 import { afterEach, describe, expect, test } from "vitest";
 import { screen } from "@lynx-js/react/testing-library";
 
-import { bootItemAudioApp, lessonPlanWith } from "./test-helpers/item-audio-harness";
+import { bootItemAudioApp } from "./test-helpers/item-audio-harness";
+import type { ItemAudioBooted } from "./test-helpers/item-audio-harness";
 import { resetApp, tapId, tapNode } from "./test-helpers/episode-format-harness";
 
 // `integration` 계층: 학습 문항 음성은 기기에 받아 둔 파일만 소리가 됩니다(V4-1~V4-4). 받은 파일이 없는 첫 설치에서
@@ -15,23 +16,43 @@ const afterS1 = { [u00]: ["intro", "S1"] };
 const afterS6 = { [u00]: ["intro", "S1", "S2", "S3", "S4", "S5", "S6"] };
 const D04_FILE = "file:///c/audio/u00-tutorial/d-04.m4a";
 
+const SENTENCE = "진짜요? 감사합니다!";
+const ROMAN = "jinjjayo? gamsahamnida!";
+
+const answered = (booted: ItemAudioBooted) =>
+  booted.events.filter((event) => (event.name as string) === "episode_listen_item_answered");
+
 const present = (id: string): boolean => screen.queryByTestId(id) !== null;
 
 describe("받은 파일이 없는 부팅", () => {
-  test("AF1. u00 S2는 소리 없는 계획과 같은 모양이고 듣기 재생 조작도 재생 호출도 없다", async () => {
-    const { host, events } = await bootItemAudioApp({ progress: afterS1, files: "none" });
-    const mute = lessonPlanWith(u00, "S2", false);
+  test("AF1. u00 S2는 소리 없는 제시로 서서 대본이 처음부터 보이고 재생 조작 · play 없이 답할 수 있다", async () => {
+    const { host } = await bootItemAudioApp({ progress: afterS1, files: "none" });
 
     tapNode(u00, "S2");
 
-    expect(events.find((event) => event.name === "episode_lesson_started")).toMatchObject({
-      questionCount: String(mute.questionCount),
-      skippedItemCount: String(mute.skippedItemCount),
-    });
+    expect(present("listening-silent-prompt")).toBe(true);
+    expect(screen.getByTestId("listening-silent-prompt-text")).toHaveTextContent(SENTENCE);
+    expect(screen.getByTestId("listening-silent-prompt-romanization")).toHaveTextContent(ROMAN);
     expect(present("listening-prompt-playback")).toBe(false);
     expect(present("listening-prompt-replay")).toBe(false);
+    expect(present("listening-prompt-slow")).toBe(false);
     expect(host.play).not.toHaveBeenCalled();
     expect(host.playAtRate).not.toHaveBeenCalled();
+    expect(screen.getByTestId("listening-choice-0")).toBeInTheDocument();
+
+    tapId("listening-choice-1");
+
+    expect(screen.getByTestId("answer-verdict")).toHaveAttribute("data-result", "correct");
+    expect(host.play).not.toHaveBeenCalled();
+  });
+
+  test("AF5. 소리 없는 제시 문항에 답해도 듣기 측정 이벤트(episode_listen_item_answered)는 나가지 않는다", async () => {
+    const booted = await bootItemAudioApp({ progress: afterS1, files: "none" });
+    tapNode(u00, "S2");
+
+    tapId("listening-choice-1");
+
+    expect(answered(booted)).toEqual([]);
   });
 
   test("AF2. u00 S7의 LISTEN_BUILD는 건너뛰어 표시 0 · 건너뜀 1이다", async () => {
@@ -58,6 +79,15 @@ describe("받은 파일이 있는 부팅", () => {
     expect(host.play).toHaveBeenCalledWith(D04_FILE, expect.any(Function));
     tapId("listening-prompt-slow");
     expect(host.playAtRate).toHaveBeenCalledWith(D04_FILE, 0.85, expect.any(Function));
+  });
+
+  test("AF6. 받은 파일이 있는 기기에서는 같은 문항에 답하면 듣기 측정 이벤트가 하나 나간다(AF5의 가드)", async () => {
+    const booted = await bootItemAudioApp({ progress: afterS1, files: "all" });
+    tapNode(u00, "S2");
+
+    tapId("listening-choice-1");
+
+    expect(answered(booted)).toHaveLength(1);
   });
 
   test("AF4. u00 S7의 LISTEN_BUILD가 서서 표시 1 · 건너뜀 0이다", async () => {

@@ -109,10 +109,12 @@ describe("MP1. LISTEN_SELECT · MIN_PAIR_AB", () => {
     });
   });
 
-  test("MP1. 같은 문항을 소리 없는 포트로 매핑하면 audio-missing이다(가드)", () => {
+  test("MP1. 같은 문항을 소리 없는 포트로 매핑하면 건너뛰지 않고 audio null 듣기 문항이다", () => {
     const result = listeningItemOf(u00Item("S2-01", "LISTEN_SELECT"), u00Port(noCatalogAudioUrl));
 
-    expect(result).toMatchObject({ kind: "skipped", itemId: "S2-01", reason: "audio-missing" });
+    expect(result).toMatchObject({ kind: "listening", itemId: "S2-01" });
+    if (result.kind !== "listening") return;
+    expect(audioOf(result)).toBeNull();
   });
 
   test("MP2. 보기 0개는 소리가 있어도 no-options다", () => {
@@ -134,11 +136,30 @@ describe("MP1. LISTEN_SELECT · MIN_PAIR_AB", () => {
     expect(catalogItemOf(three, withSound)).toMatchObject({ kind: "skipped", reason: "malformed" });
   });
 
-  test("MP2. 모양이 맞고 소리가 없으면 audio-missing이다", () => {
-    expect(catalogItemOf(listenSelect(), noSound)).toMatchObject({
-      kind: "skipped",
-      reason: "audio-missing",
-    });
+  test("MP2. 모양이 맞고 소리가 없으면 건너뛰지 않고 audio null 듣기 문항이다", () => {
+    const result = catalogItemOf(listenSelect(), noSound);
+
+    expect(result.kind).toBe("listening");
+    if (result.kind !== "listening") return;
+    expect(audioOf(result)).toBeNull();
+  });
+
+  test("MP2. MIN_PAIR_AB도 소리가 없으면 audio null 듣기 문항이다", () => {
+    const result = catalogItemOf(minPairAb(), noSound);
+
+    expect(result.kind).toBe("listening");
+    if (result.kind !== "listening") return;
+    expect(audioOf(result)).toBeNull();
+  });
+
+  test("MP2. 소리가 없어도 보기 3개는 audio-missing이 아니라 malformed다", () => {
+    const base = listenSelect();
+    const three = {
+      ...base,
+      options: [...base.options!, { ...base.options![0]!, id: "o3", correct: false }],
+    };
+
+    expect(catalogItemOf(three, noSound)).toMatchObject({ kind: "skipped", reason: "malformed" });
   });
 
   test("MP2. MIN_PAIR_AB는 소리가 있으면 보기 둘의 listening이다", () => {

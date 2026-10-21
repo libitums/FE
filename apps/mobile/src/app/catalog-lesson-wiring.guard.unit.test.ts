@@ -72,8 +72,8 @@ describe("결선의 끝낸 활동 가드", () => {
       many(5),
     );
 
-    wiring.onFinishCatalogActivity("u01-water", "S3", 1, [correct], 0);
-    wiring.onFinishCatalogActivity("u01-water", "S3", 1, [], 0);
+    wiring.onFinishCatalogActivity("u01-water", "S3", 4, [correct], 0);
+    wiring.onFinishCatalogActivity("u01-water", "S3", 4, [], 0);
 
     expect(names(events)).toEqual(["episode_lesson_finished"]);
     expect(events[0]).toMatchObject({ verdict: "passed", correctCount: "6" });
@@ -99,7 +99,7 @@ describe("결선의 끝낸 활동 가드", () => {
     const { wiring, make, events } = setup({ "u01-water": ["intro", "S1"] });
 
     wiring.onFinishCatalogActivity("u01-water", "S3", 0, many(5), 0);
-    make(many(5)).onFinishCatalogActivity("u01-water", "S3", 1, [correct], 0);
+    make(many(5)).onFinishCatalogActivity("u01-water", "S3", 4, [correct], 0);
 
     expect(names(events)).toEqual(["episode_lesson_finished"]);
   });
@@ -118,9 +118,9 @@ describe("결선의 끝낸 활동 가드", () => {
   test("G5. 같은 유닛을 다시 시작하면(재시도) 다시 끝낼 수 있다", () => {
     const { wiring, events } = setup({ "u01-water": ["intro", "S1"] });
 
-    wiring.onFinishCatalogActivity("u01-water", "S3", 1, many(1), 0);
+    wiring.onFinishCatalogActivity("u01-water", "S3", 4, many(1), 0);
     wiring.onStartCatalogUnit("u01-water", "S3");
-    wiring.onFinishCatalogActivity("u01-water", "S3", 1, many(1), 0);
+    wiring.onFinishCatalogActivity("u01-water", "S3", 4, many(1), 0);
 
     expect(names(events)).toEqual([
       "episode_lesson_finished",

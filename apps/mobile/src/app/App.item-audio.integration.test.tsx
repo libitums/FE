@@ -184,8 +184,8 @@ describe("재생 경로 — 속도", () => {
 });
 
 describe("재생 모듈이 없을 때", () => {
-  test("IT6. 모듈 없는 부팅은 표시 · 건너뜀 수가 소리 없는 계획과 같고 받아쓰기 꺼진 단추 · 글만 보인다", async () => {
-    const { events } = await bootItemAudioApp({ progress: afterS1, host: "none" });
+  test("IT6. 모듈 없는 부팅은 표시 · 건너뜀 수가 소리 없는 계획과 같고 듣기는 소리 없는 제시, 단어 선택은 재생 단추 없이 글만 보인다", async () => {
+    const { events, host } = await bootItemAudioApp({ progress: afterS1, host: "none" });
     const plan = lessonPlanWith(u01, "S2", false);
     tapNode(u01, "S2");
 
@@ -194,15 +194,19 @@ describe("재생 모듈이 없을 때", () => {
       shownItemCount: String(plan.shownItemCount),
       skippedItemCount: String(plan.skippedItemCount),
     });
-    expect(plan.skippedItemCount).toBeGreaterThan(0);
-    expect(present("listening-screen-content")).toBe(false);
+    expect(plan.skippedItemCount).toBe(1);
+    expect(present("listening-screen-content")).toBe(true);
+    expect(present("listening-prompt-playback")).toBe(false);
     solveActivity(plan.activities[0] as CatalogActivity, true, false);
-    const words = plan.activities[1];
-    if (words?.form !== "word-choice") throw new Error("S2 둘째 활동은 단어 선택");
+    solveActivity(plan.activities[1] as CatalogActivity, true, false);
+    solveActivity(plan.activities[2] as CatalogActivity, true, false);
+    const words = plan.activities[3];
+    if (words?.form !== "word-choice") throw new Error("S2 넷째 활동은 단어 선택");
     tapId(`word-choice-option-${words.questions[0].answerIndex}`);
     tapId("learning-shell-advance");
     expect(screen.getByTestId("word-choice-screen-prompt")).toBeInTheDocument();
     expect(present("word-choice-listen")).toBe(false);
+    expect(host.play).not.toHaveBeenCalled();
   });
 
   test("IT6. 모듈이 없으면 S5의 받아쓰기는 꺼진 재생 단추 그대로다", async () => {

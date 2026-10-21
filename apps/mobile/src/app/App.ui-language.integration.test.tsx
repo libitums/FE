@@ -399,7 +399,7 @@ const screenCases: readonly ScreenCase[] = [
   },
   {
     name: "문장 순서",
-    open: () => openLesson("S2"),
+    open: () => openLesson("S2", true),
     screenTestId: "sentence-order-screen-content",
     // 표현을 짚는 조작 안내도 문항의 학습 콘텐츠입니다.
     content: [/^sentence-order-/, /^learning-shell-instruction$/],

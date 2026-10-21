@@ -525,20 +525,22 @@ test("L2b. (D5 고정) 실데이터의 어느 레슨 · 최종 테스트도 보�
   }
 });
 
-test("L3. (AC2 · 4) S3: 소리 없는 듣기는 계획에서 빠져 활동 둘이 서고 전부 맞히면 기록된다", async () => {
+test("L3. (AC2 · 4) S3: 소리 없는 듣기도 소리 없는 제시로 서서 활동 다섯이 서고 전부 맞히면 기록된다", async () => {
   const { rpcs, events, play } = await boot({ progress: upTo("S1") });
   const plan = lessonPlan(u01, "S3");
   expect(plan.activities.map((activity) => activity.form)).toEqual([
     "word-choice",
+    "listening",
+    "sentence-order",
+    "listening",
     "sentence-order",
   ]);
-  expect(plan.skippedItemCount).toBeGreaterThan(0);
+  expect(plan.skippedItemCount).toBe(0);
 
   tapNode(u01, "S3");
   expect(solveLesson(plan, true)).toEqual(
     plan.activities.map((activity) => contentIdOf[activity.form]),
   );
-  expect(screen.queryByTestId("listening-screen-content")).not.toBeInTheDocument();
   expect(play).toHaveBeenCalledTimes(0);
   expect(title()).toHaveTextContent("PERFECT LESSON!");
   exitResult();
