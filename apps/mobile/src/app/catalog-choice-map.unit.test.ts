@@ -10,7 +10,7 @@ import { catalogGlossOf } from "./catalog-card-map";
 import { listeningItemOf } from "./catalog-choice-map";
 import type { CatalogFill, CatalogLessonItemPort } from "./catalog-lesson-types";
 
-// `unit` 계층: 튜토리얼(u00) S2 듣기 문항의 매핑 — 학습 문항의 소리는 아직 콘텐츠 `audio_url`에 연결되지 않았다.
+// `unit` 계층: 튜토리얼(u00) S2 듣기 문항의 매핑 — 학습 문항의 소리는 콘텐츠에 `audio_url`이 있어도 아직 연결되지 않았다.
 
 const catalog = buildEpisodeCatalog({
   bundled: bundledCatalogInput,
@@ -25,7 +25,7 @@ function u00(): Extract<CatalogEntry, { status: "ready" }> {
 }
 
 describe("listeningItemOf — u00 S2", () => {
-  test("AU2. 소리 주소가 없는 u00 S2 듣기 문항은 audio-missing으로 건너뛴다(소리 없음 처리)", () => {
+  test("AU2. u00 S2 듣기 문항은 소리 주소가 있어도 학습 문항 소리가 아직 연결되지 않아 audio-missing으로 건너뛴다", () => {
     const entry = u00();
     const port: CatalogLessonItemPort = {
       fill,
@@ -41,7 +41,7 @@ describe("listeningItemOf — u00 S2", () => {
       );
     expect(item).toBeDefined();
     if (item === undefined) return;
-    expect(item.stimulus.audioUrl ?? "").toBe("");
+    expect(item.stimulus.audioUrl).toMatch(/^u00-tutorial\//);
 
     const mapped = listeningItemOf(item, port);
     expect(mapped).toMatchObject({ kind: "skipped", itemId: item.id, reason: "audio-missing" });

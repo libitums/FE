@@ -31,6 +31,22 @@ const U00_IMAGE_PATHS: readonly string[] = [
   "images/items/thanks.webp",
 ];
 
+/** 내장 u00 본문이 가리키는 음성 12개(`audio/<id>.m4a`)입니다 — 파일은 앱에 넣지 않고 버킷에서 받습니다. */
+const U00_AUDIO_PATHS: readonly string[] = [
+  "audio/u00-tutorial/d-01.m4a",
+  "audio/u00-tutorial/d-02.m4a",
+  "audio/u00-tutorial/d-03.m4a",
+  "audio/u00-tutorial/d-04.m4a",
+  "audio/u00-tutorial/d-05.m4a",
+  "audio/u00-tutorial/d-06.m4a",
+  "audio/u00-tutorial/post-1.m4a",
+  "audio/u00-tutorial/post-2.m4a",
+  "audio/u00-tutorial/pre-5-dream.m4a",
+  "audio/u00-tutorial/rp-01-reask.m4a",
+  "audio/u00-tutorial/s1-01-word.m4a",
+  "audio/u00-tutorial/s4-01-answer.m4a",
+];
+
 const u00Wire = (): unknown => bundledCatalogInput.episodes[TUTORIAL_EPISODE_ID];
 const lessonKeys = Array.from({ length: 13 }, (_, i) => `S${i + 1}`);
 
@@ -45,8 +61,8 @@ describe("내장 u00-tutorial", () => {
     ]);
     const first = manifest.episodes[0];
     expect(first?.order).toBe(0);
-    expect(first?.version).toBe("2026-10-21.1");
-    expect(first?.bytes).toBe(30963);
+    expect(first?.version).toBe("2026-10-21.3");
+    expect(first?.bytes).toBe(37777);
     const text = readFileSync(
       resolve(process.cwd(), `content/episodes/${TUTORIAL_EPISODE_ID}.json`),
       "utf8",
@@ -91,10 +107,14 @@ describe("내장 u00-tutorial", () => {
     ]);
   });
 
-  test("BD4. u00 본문의 자산 경로는 그림 14장이고 음성은 없다", () => {
+  test("BD4. u00 본문의 자산 경로는 그림 14장과 음성 12개다", () => {
     const paths = episodeAssetPaths(u00Wire());
-    expect(new Set(paths)).toEqual(new Set(U00_IMAGE_PATHS));
-    expect(paths).toHaveLength(14);
-    expect(paths.filter((path) => path.startsWith("audio/"))).toEqual([]);
+    expect(new Set(paths.filter((path) => path.startsWith("images/")))).toEqual(
+      new Set(U00_IMAGE_PATHS),
+    );
+    expect(new Set(paths.filter((path) => path.startsWith("audio/")))).toEqual(
+      new Set(U00_AUDIO_PATHS),
+    );
+    expect(paths).toHaveLength(26);
   });
 });

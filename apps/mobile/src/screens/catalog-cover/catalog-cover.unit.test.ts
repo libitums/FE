@@ -525,17 +525,18 @@ describe("컷 음성", () => {
     });
   });
 
-  test("AU1. u00 표지 5번 컷의 audio_url에 음성 id를 넣으면 소리 주소가 imageUrlOf(audio/<id>.m4a)가 된다", () => {
+  test("AU1. u00 표지 컷의 audio_url 음성 id는 소리 주소 imageUrlOf(audio/<id>.m4a)가 되고, 빈 컷은 소리가 없다", () => {
     const wire = structuredClone(bundledCatalogInput.episodes["u00-tutorial"]) as {
       pre_cuts: { audio_url: string }[];
     };
-    wire.pre_cuts[4]!.audio_url = "u00-pre-5";
+    wire.pre_cuts[0]!.audio_url = "u00-pre-1";
     const decoded = decodeEpisode(wire);
     expect(decoded.ok).toBe(true);
     if (!decoded.ok) return;
     const views = catalogCutViewsOf(decoded.episode.prologue, portFor({}));
-    expect(views[4]?.audioSource).toBe("https://cdn/audio/u00-pre-5.m4a");
-    expect(views.filter((view) => view.audioSource !== undefined)).toHaveLength(1);
+    expect(views[0]?.audioSource).toBe("https://cdn/audio/u00-pre-1.m4a");
+    expect(views[4]?.audioSource).toBe("https://cdn/audio/u00-tutorial/pre-5-dream.m4a");
+    expect(views[1]?.audioSource).toBeUndefined();
   });
 
   test("CCA5. catalogCutAudioCueOf: 소리가 있으면 index를 key로 한 단서, 없으면 null", () => {
