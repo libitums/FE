@@ -112,7 +112,7 @@ export function AppHeader({
           있습니다(`obscured`). */}
       <view
         className={
-          tickets?.dropFrom === null || tickets === undefined
+          tickets === undefined || tickets.dropFrom === null
             ? "app-header"
             : "app-header app-header-raised"
         }

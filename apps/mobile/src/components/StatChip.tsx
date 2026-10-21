@@ -139,6 +139,8 @@ export function StatChip({
   const [dropPhase, setDropPhase] = useState<"waiting" | "playing" | "done">("waiting");
 
   useEffect(() => {
+    // 표식이 거둬지면 처음으로 되돌립니다 — `done`이 남으면 다음 표식의 첫 그림이 새 값이 되어 한 번 깜빡입니다.
+    if (drop === null) setDropPhase("waiting");
     if (dropFrom !== null && drop === null) {
       onDropped?.();
       return;

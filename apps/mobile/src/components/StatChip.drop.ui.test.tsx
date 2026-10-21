@@ -95,3 +95,16 @@ test("SD5. 상단 줄은 티켓 칩에 줄기 전 값을 넘기고, 끝나면 �
   advance(statChipDropDurationMs.standard);
   expect(onTicketDropped).toHaveBeenCalledTimes(1);
 });
+
+test("SD6. 한 번 줄어든 뒤 표식이 거둬지고 다시 쓰면, 옛 값에서 다시 굴린다", () => {
+  const { rerender } = render(chip({ dropFrom: 3 }));
+  advance(statChipDropDurationMs.standard);
+  rerender(chip({ dropFrom: null }));
+  advance(0);
+
+  // 재생 전 첫 그림이 새 값(1)이면 깜빡임입니다. 테스트 렌더러는 effect까지 한 번에 비워 그 한 프레임을 볼 수
+  // 없어, 여기서는 다시 굴리는 것만 봅니다(깜빡임은 표식이 거둬질 때 `waiting`으로 되돌려 막습니다).
+  rerender(chip({ value: 1, dropFrom: 2 }));
+  advance(0);
+  expect(screen.getByTestId("chip-drop")).toHaveTextContent("21");
+});
