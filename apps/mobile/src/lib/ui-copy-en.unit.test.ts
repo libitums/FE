@@ -232,3 +232,9 @@ test("CP1. 스플래시 갱신 문구는 영어 Updating episodes와 진행률�
   expect(splash?.updatingLabel(40)).toBe("Updating episodes, 40%");
   expect(splash?.updatingLabel(100)).toBe("Updating episodes, 100%");
 });
+
+test("CP1. 듣기 문구는 Slow · Play again이고 켜짐 · 꺼짐 접미사는 그대로다", () => {
+  expect(c.listening.slow).toBe("Slow");
+  expect(c.listening.playAgain).toBe("Play again");
+  expect(c.settings.optionState).toEqual({ on: "on", off: "off" });
+});
