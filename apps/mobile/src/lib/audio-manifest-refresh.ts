@@ -29,7 +29,7 @@ function storeAvailable(store: ContentStore): boolean {
 /** 전송 호출이 reject하면 연결 실패로 봅니다. */
 async function safeFetch(fetchText: FetchText): Promise<FetchTextResult> {
   try {
-    return await fetchText(AUDIO_MANIFEST_PATH);
+    return await fetchText(AUDIO_MANIFEST_PATH, { kind: "fresh" });
   } catch {
     return { ok: false, reason: "network" };
   }

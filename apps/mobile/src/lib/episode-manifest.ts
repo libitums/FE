@@ -101,3 +101,22 @@ export function decodeManifest(input: unknown): ManifestDecodeResult {
     };
   }
 }
+
+/** 앱 모양 매니페스트를 `manifest-1` 원문으로 씁니다. 순수 · 던지지 않음. */
+export function encodeManifestText(manifest: EpisodeManifest): string {
+  return JSON.stringify({
+    schema: "manifest-1",
+    generated_at: manifest.generatedAt,
+    ...(manifest.minClientLevel === undefined ? {} : { min_client_level: manifest.minClientLevel }),
+    episodes: manifest.episodes.map((entry) => ({
+      id: entry.id,
+      order: entry.order,
+      title: entry.title,
+      schema: entry.schema,
+      version: entry.version,
+      sha256: entry.sha256,
+      bytes: entry.bytes,
+      url: entry.url,
+    })),
+  });
+}

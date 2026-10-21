@@ -7,6 +7,7 @@ import type {
   ShellCopy,
 } from "./ui-copy-sections.contract";
 import type { ProgressLoadCopy } from "../screens/journey-map/journey-map-load.contract";
+import type { SplashCopy } from "../screens/splash/splash.contract";
 import type { SpecialUnitMapCopy } from "../screens/journey-map/journey-special-unit.contract";
 import { n } from "./ui-copy-en-plural";
 
@@ -97,4 +98,9 @@ export const progressLoadEn: ProgressLoadCopy = {
   loadingAnnouncement: "Loading your progress",
   failed: "Couldn't load your progress.",
   retry: "Try again",
+};
+
+export const splashEn: SplashCopy = {
+  updating: "Updating episodes",
+  updatingLabel: (percent) => `Updating episodes, ${percent}%`,
 };

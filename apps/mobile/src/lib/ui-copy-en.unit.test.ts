@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
 
+import type { SplashCopy } from "../screens/splash/splash.contract";
 import { uiCopyEn } from "./ui-copy-en";
 
 type Leaf = { readonly path: string; readonly value: string | ((...args: never[]) => unknown) };
@@ -228,4 +229,13 @@ test("JS4. 맵 스페셜 항목 문구는 영어 SPECIAL과 special, 낭독이�
   );
   expect(leavesOf(c.specialUnitMap).length).toBe(2);
   expect(JSON.stringify(c.specialUnitMap.eyebrow)).not.toMatch(/[\u3131-\uD79D]/);
+});
+
+test("CP1. 스플래시 갱신 문구는 영어 Updating episodes와 진행률을 함께 읽는 라벨이다", () => {
+  // 문구 타입이 아직 UiCopy에 없을 때도 모양 하나로 읽습니다 — 값이 없으면 단언이 실패합니다.
+  const splash = (c as { readonly splash?: SplashCopy }).splash;
+
+  expect(splash?.updating).toBe("Updating episodes");
+  expect(splash?.updatingLabel(40)).toBe("Updating episodes, 40%");
+  expect(splash?.updatingLabel(100)).toBe("Updating episodes, 100%");
 });

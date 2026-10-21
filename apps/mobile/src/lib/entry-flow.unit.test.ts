@@ -8,6 +8,7 @@ import {
   entryScreenViewedEvent,
   entrySplashDurationMs,
   requiresVerificationCode,
+  splashUpdateWaitMs,
   type EntryLoginMethod,
   type EntryViewedScreenName,
 } from "./entry-flow";
@@ -83,4 +84,11 @@ test("EF7. entryReturningLearnerEnteredEvent(method)가 이름과 입력 method�
     expect(event).toEqual({ name: "entry_returning_learner_entered", method });
     expect(Object.keys(event).sort()).toEqual(["method", "name"]);
   }
+});
+
+test("EF8. splashUpdateWaitMs가 3000(양의 정수)이고 entrySplashDurationMs는 4000 그대로다", () => {
+  expect(Number.isInteger(splashUpdateWaitMs)).toBe(true);
+  expect(splashUpdateWaitMs).toBeGreaterThan(0);
+  expect(splashUpdateWaitMs).toBe(3000);
+  expect(entrySplashDurationMs).toBe(4000);
 });

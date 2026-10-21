@@ -44,6 +44,7 @@ import {
   progressLoadEn,
   shellEn,
   specialUnitMapEn,
+  splashEn,
 } from "./ui-copy-en-shell";
 import {
   episodeFinalEn,
@@ -96,6 +97,7 @@ export const uiCopyEn: UiCopy = {
   audioUnavailable: audioUnavailableEn,
   learnerProfile: learnerProfileEn,
   progressLoad: progressLoadEn,
+  splash: splashEn,
   specialUnitMap: specialUnitMapEn,
   tickets: ticketsEn,
   roleplayStory: roleplayStoryEn,

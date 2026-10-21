@@ -1,5 +1,6 @@
 // 에피소드 서사 표지의 타입 전용 계약입니다 — 구현 · JSX를 두지 않습니다.
 
+import type { EpisodeUpdateSplashClosedEvent } from "../../lib/episode-update-event.contract";
 import type { CatalogLearningEvent } from "../../lib/catalog-learning-event.contract";
 import type { ProgressLoadEvent } from "../../lib/progress-load-event.contract";
 import type { SafeAreaInsets } from "../../lib/safe-area";
@@ -113,6 +114,7 @@ export type EpisodeIntroEvent =
   | EpisodeIntroExitedEvent
   | EpisodePrologueCompletedEvent
   | EpisodeContentRefreshedEvent
+  | EpisodeUpdateSplashClosedEvent
   | EpisodeSurveyAnsweredEvent
   | EpisodeSurveySkippedEvent
   | CatalogLearningEvent

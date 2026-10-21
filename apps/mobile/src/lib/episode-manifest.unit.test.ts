@@ -1,6 +1,12 @@
 import { describe, expect, test } from "vitest";
 
-import { decodeManifest, type ManifestDecodeResult } from "./episode-manifest";
+import { bundledCatalogInput } from "./episode-bundled";
+import {
+  decodeManifest,
+  encodeManifestText,
+  type EpisodeManifest,
+  type ManifestDecodeResult,
+} from "./episode-manifest";
 
 // `unit` 계층: 순수 함수 `decodeManifest`의 입출력만 봅니다. message는 비교하지 않습니다.
 
@@ -99,5 +105,62 @@ describe("decodeManifest", () => {
     expect(JSON.stringify(withLevel)).not.toContain("extra");
     const without = passed(decodeManifest(manifest([entry("u01-a", 1)])));
     expect(without.minClientLevel).toBeUndefined();
+  });
+});
+
+function parseOrNull(text: string): unknown {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
+}
+
+describe("encodeManifestText", () => {
+  const withLevel: EpisodeManifest = {
+    generatedAt: "2026-10-12T00:00:00Z",
+    minClientLevel: 2,
+    episodes: [
+      {
+        id: "u04-x",
+        order: 4,
+        title: "제목",
+        schema: "delivery-2",
+        version: "2026-10-12.1",
+        sha256: HASH,
+        bytes: 10,
+        url: "episodes/u04-x.json",
+      },
+    ],
+  };
+
+  test("EM1. 내장 · min_client_level 있는 매니페스트가 디코드로 왕복하고 키 순서가 계약대로다", () => {
+    for (const manifest of [bundledCatalogInput.manifest, withLevel]) {
+      const text = encodeManifestText(manifest);
+      expect(decodeManifest(parseOrNull(text))).toEqual({ ok: true, manifest });
+    }
+
+    const keysOf = (manifest: EpisodeManifest): string[] =>
+      Object.keys((parseOrNull(encodeManifestText(manifest)) as object | null) ?? {});
+    expect(keysOf(withLevel)).toEqual(["schema", "generated_at", "min_client_level", "episodes"]);
+    expect(keysOf(bundledCatalogInput.manifest)).toEqual(["schema", "generated_at", "episodes"]);
+    expect(encodeManifestText(bundledCatalogInput.manifest)).not.toContain("min_client_level");
+  });
+
+  test("EM1. 항목의 키 순서는 id, order, title, schema, version, sha256, bytes, url이고 공백이 없다", () => {
+    const text = encodeManifestText(withLevel);
+    const parsed = parseOrNull(text) as { schema?: unknown; episodes?: object[] } | null;
+    expect(parsed?.schema).toBe("manifest-1");
+    expect(Object.keys(parsed?.episodes?.[0] ?? {})).toEqual([
+      "id",
+      "order",
+      "title",
+      "schema",
+      "version",
+      "sha256",
+      "bytes",
+      "url",
+    ]);
+    expect(text).toBe(JSON.stringify(parseOrNull(text)));
   });
 });

@@ -35,6 +35,7 @@ export type AnalyticsEventName =
   | "episode_intro_exited"
   | "episode_prologue_completed"
   | "episode_content_refreshed"
+  | "episode_update_splash_closed"
   | "episode_survey_answered"
   | "episode_survey_skipped"
   | "episode_lesson_started"

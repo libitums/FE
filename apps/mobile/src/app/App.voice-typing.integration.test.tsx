@@ -4,7 +4,11 @@ import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/
 import { App } from "./App";
 import type { AppJourneySeed } from "./journey-progress";
 import { resetPushWiringForTests } from "./push-wiring";
-import { contentNotFoundResponse, isContentRequest } from "./test-helpers/content-requests";
+import {
+  contentNotFoundResponse,
+  contentPathOf,
+  isContentRequest,
+} from "./test-helpers/content-requests";
 import { authSessionStorageKey, serializeAuthSession } from "../lib/auth-session";
 import { audioSyncLengthMs } from "../lib/audio-manifest";
 import { manifestTextOf, ABSENT_BODY } from "../lib/audio-manifest.test-support";
@@ -20,7 +24,6 @@ import type { EpisodeIntroEvent } from "../screens/episode-intro/episode-intro.c
 import { journeySteps } from "../screens/journey-map/journey-map";
 import {
   bootContentApp,
-  contentBase,
   manifestOf,
   minimalEpisodeText,
   settle,
@@ -35,7 +38,6 @@ const supabaseUrl = "https://test.supabase.co";
 const u01 = "u01-water";
 const audioUrl = (id: string): string =>
   `${supabaseUrl}/storage/v1/object/public/content/audio/${id}.m4a`;
-const AUDIO_MANIFEST_URL_TAIL = "/content/audio/manifest.json";
 
 const PRE_3 = { duration_ms: 2299, speech_end_ms: 1763 };
 const MANIFEST_TEXT = manifestTextOf({ "u01-water/pre-3": PRE_3 });
@@ -130,7 +132,7 @@ async function boot(options: BootOptions = {}): Promise<Booted> {
     }
     if (isContentRequest(target)) {
       if (options.offline === true) return Promise.reject(new Error("offline"));
-      if (target.endsWith(AUDIO_MANIFEST_URL_TAIL)) {
+      if (contentPathOf(target) === "audio/manifest.json") {
         const reply = options.audioManifest;
         if (reply === "reject") return Promise.reject(new Error("offline"));
         if (reply !== undefined) {
@@ -370,8 +372,9 @@ const remoteContent = {
   "episodes/u04-x.json": episode,
   "audio/manifest.json": MANIFEST_TEXT,
 };
+const paths = (urls: readonly string[]) => urls.map((url) => contentPathOf(url));
 const audioRequests = (urls: readonly string[]) =>
-  urls.filter((url) => url === `${contentBase}audio/manifest.json`);
+  urls.filter((url) => contentPathOf(url) === "audio/manifest.json");
 const bundledPaths = bundledCatalogInput.manifest.episodes.flatMap((entry) =>
   episodeAssetPaths(bundledCatalogInput.episodes[entry.id]),
 );
@@ -408,7 +411,7 @@ test("VTI4. 정보 파일은 그 차례의 에피소드 받기(본문 · 자산)
   await settle();
 
   // 자산 받기가 끝나지 않았으므로 정보 파일은 아직 요청되지 않는다.
-  expect(urls).toContain(`${contentBase}episodes/u04-x.json`);
+  expect(paths(urls)).toContain("episodes/u04-x.json");
   expect(audioRequests(urls)).toHaveLength(0);
 
   await act(async () => {
@@ -416,8 +419,8 @@ test("VTI4. 정보 파일은 그 차례의 에피소드 받기(본문 · 자산)
   });
   await settle();
   expect(audioRequests(urls)).toHaveLength(1);
-  expect(urls.indexOf(`${contentBase}audio/manifest.json`)).toBeGreaterThan(
-    urls.indexOf(`${contentBase}episodes/u04-x.json`),
+  expect(paths(urls).indexOf("audio/manifest.json")).toBeGreaterThan(
+    paths(urls).indexOf("episodes/u04-x.json"),
   );
   expect(store.get(CONTENT_AUDIO_MANIFEST_KEY)).toBe(MANIFEST_TEXT);
 

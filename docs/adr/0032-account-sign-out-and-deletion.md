@@ -158,6 +158,7 @@
 | `libitum.ui.language` | 그대로 | 그대로 |
 | `libitum.learning-item-guides.seen` ⟨2026-10-09 — 적용 기록⟩ | 그대로 | 그대로 |
 | `libitum.content.manifest` · `libitum.content.episode.<id>` ⟨2026-10-12 — 적용 기록⟩ | 그대로 | 그대로 |
+| `libitum.content.manifest.received` · `libitum.content.staged.episode.<id>` · `libitum.content.staged.entry.<id>` · `libitum.content.staged.assets.<id>` ⟨2026-10-20 — 적용 기록, [ADR-0078](0078-episode-update-on-splash.md) D1⟩ | 그대로 | 그대로 |
 | `libitum.learner-profile.<userId>` ⟨2026-10-13 — 적용 기록⟩ | 그대로 | **지움**(그 사용자의 칸) |
 | `libitum.learner-profile.guest` ⟨2026-10-13 — 적용 기록⟩ | — (로그인 뒤 첫 동기화가 지운다) | — |
 | `libitum.progress.cached.<userId>` ⟨2026-10-15 — 적용 기록⟩ | 그대로 | **지움**(그 사용자의 키) |
