@@ -123,7 +123,14 @@ export function loadEpisodeContent(): EpisodeContent {
   }
   const audioTable = audioTableOf(cachedAudioManifestText());
   const audioTimingOf = (audioId: string) => audioTable?.get(audioId) ?? null;
-  return { catalog, imageUrlOf, audioUrlOf, fillText: fillPlaceholders, audioTimingOf };
+  return {
+    catalog,
+    imageUrlOf,
+    audioUrlOf,
+    itemAudioEnabled: isAudioAvailable(),
+    fillText: fillPlaceholders,
+    audioTimingOf,
+  };
 }
 
 /**

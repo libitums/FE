@@ -48,6 +48,9 @@ export function useListenAudio(cue: ListenCue | null, lesson: LessonAudio): List
   const [playback, setPlayback] = useState<ListeningPlaybackState>("idle");
   const lessonRef = useRef(lesson);
   lessonRef.current = lesson;
+  // 다시 그려지기 전에 연달아 눌러도 최신 속도를 읽도록, 토글이 바로 갱신하는 ref입니다(그릴 때 부모 값으로 맞춤).
+  const paceRef = useRef(lesson.pace);
+  paceRef.current = lesson.pace;
   const cueRef = useRef(cue);
   cueRef.current = cue;
   const tallyRef = useRef<ItemTally>(freshTally());
@@ -101,7 +104,7 @@ export function useListenAudio(cue: ListenCue | null, lesson: LessonAudio): List
     "background only";
     if (source === undefined) return;
     playSound("button");
-    if (lessonRef.current.pace === "slow") tallyRef.current.slowReplayCount += 1;
+    if (paceRef.current === "slow") tallyRef.current.slowReplayCount += 1;
     else tallyRef.current.replayCount += 1;
     start(currentRate());
   };
@@ -111,7 +114,8 @@ export function useListenAudio(cue: ListenCue | null, lesson: LessonAudio): List
     "background only";
     if (source === undefined) return;
     playSound("button");
-    const turningOn = lessonRef.current.pace === "normal";
+    const turningOn = paceRef.current === "normal";
+    paceRef.current = turningOn ? "slow" : "normal";
     lessonRef.current.onTogglePace();
     if (turningOn) {
       tallyRef.current.slowTurnedOn = true;

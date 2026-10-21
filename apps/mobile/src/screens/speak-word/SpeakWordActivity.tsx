@@ -8,6 +8,7 @@ import { AnswerVerdict } from "../../components/AnswerVerdict";
 import { SpeechWaves } from "../../components/SpeechWaves";
 import { useSpeechAttempt } from "../../components/use-speech-attempt";
 import { announce, announceCompletion } from "../../lib/accessibility";
+import { stopAudio } from "../../lib/audio";
 import { answerEchoCueOf, standaloneLessonAudio } from "../../lib/question-audio";
 import { initialSessionOptions } from "../../lib/session-options";
 import { useAudioCue } from "../../lib/use-audio-cue";
@@ -107,6 +108,8 @@ export function SpeakWordActivity({
     switch (control) {
       case "speak":
       case "retry":
+        // 말하기 전에 소리를 멈춥니다 — 정답 음성이 마이크로 들어가지 않게 합니다.
+        stopAudio();
         dispatch({ type: "start" });
         attempt.start();
         return;

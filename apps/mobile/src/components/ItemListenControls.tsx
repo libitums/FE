@@ -19,24 +19,21 @@ export type ItemListenControlsProps = {
  * 중이라고 따로 표시하지 않습니다. 양쪽 슬롯이 같은 폭이라 토글이 켜져 넓어져도 다시 듣기 단추는 움직이지
  * 않고, 토글이 없어도(속도 재생 미지원) 슬롯 폭을 지킵니다.
  *
- * 다시 듣기의 탭 · testid는 감싼 상자가 집니다. 안의 `RoundButton`은 모양과 이름을 빌립니다 — 탭은 위로
- * 올라가 상자의 핸들러 하나만 불립니다.
+ * 다시 듣기의 이름 · 탭은 안쪽 `RoundButton`이 집니다(스크린 리더가 읽는 요소와 같음). 감싼 상자는 testid만
+ * 가집니다.
  */
 export function ItemListenControls({ control, testId }: ItemListenControlsProps): ReactNode {
   const copy = useUiCopy();
   return (
     <view className="item-listen-controls" data-testid={testId}>
       <view className="item-listen-controls-start">
-        <view
-          data-testid={`${testId}-again`}
-          accessibility-label={copy.listening.playAgain}
-          bindtap={control.replay}
-        >
+        <view data-testid={`${testId}-again`}>
           <RoundButton
             accessibilityLabel={copy.listening.playAgain}
             icon={volume}
             variant="neutral"
             size="l"
+            bindtap={control.replay}
           />
         </view>
       </view>
