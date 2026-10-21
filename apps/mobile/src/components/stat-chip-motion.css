@@ -127,6 +127,10 @@
   border-color: var(--libitum-color-feedback-warning);
 }
 
+.stat-chip-glow-ticket {
+  border-color: var(--libitum-color-brand-primary);
+}
+
 @keyframes stat-chip-glow {
   0% {
     opacity: 0;
@@ -186,5 +190,62 @@
   }
   to {
     transform: translateX(250%);
+  }
+}
+
+/* 학습 티켓 줄어듦(시안 E4) — 칩 전체가 1.14배로 커졌다 돌아옵니다. 1.14는 시안의 값이고 scale 토큰(모두 1보다
+   작다)으로 표현할 수 없습니다. 「−1」이 칩 아래로 나가므로 재생하는 동안만 자르지 않습니다. */
+.stat-chip-drop {
+  overflow: visible;
+  animation: stat-chip-drop-pop var(--libitum-motion-duration-d6)
+    var(--libitum-motion-easing-enter-expressive) both;
+}
+
+@keyframes stat-chip-drop-pop {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.14);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* 「−1」 — 칩 오른쪽 아래에서 나타났다가 20만큼 떨어지며 사라집니다(시안 E4). 낭독하지 않습니다 — 칩 이름이 이미
+   새 장수를 말합니다. 글자색은 시안의 brand-strong이고, 칩과 같은 흰 알약 위에 섭니다 — 떨어지는 자리에 맵의 주황
+   에피소드 띠가 붙어 있어 맨 글자로는 띠와 구분되지 않았습니다(2026-10-21 Android, 띠 위 명도비 1.12:1). 흰 면 위
+   brand-strong은 5.9:1입니다. */
+.stat-chip-minus {
+  position: absolute;
+  top: 100%;
+  right: var(--libitum-spacing-4);
+  padding: 0 var(--libitum-spacing-6);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-white);
+  color: var(--libitum-color-brand-strong);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: var(--libitum-typography-label-m-font-size);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  line-height: var(--libitum-typography-label-m-line-height);
+  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
+  opacity: 0;
+  animation: stat-chip-minus var(--libitum-motion-duration-d8) var(--libitum-motion-easing-easing)
+    both;
+}
+
+@keyframes stat-chip-minus {
+  0% {
+    opacity: 0;
+    transform: translateY(0px);
+  }
+  20% {
+    opacity: 1;
+    transform: translateY(0px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(20px);
   }
 }

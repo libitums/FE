@@ -1,10 +1,12 @@
-import { afterEach, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
+import { statChipDropDurationMs } from "../components/StatChip";
 import { App } from "./App";
 import { productJourneySeed } from "./journey-progress";
 import { learningProgressSnapshotFrom } from "./learning-progress";
 import { resetPushWiringForTests } from "./push-wiring";
+import { setTicketDropWaitForTests } from "./use-learning-tickets";
 import { authSessionStorageKey, serializeAuthSession } from "../lib/auth-session";
 import { entrySplashDurationMs } from "../lib/entry-flow";
 import { learningItemGuideSeenStorageKey } from "../lib/learning-item-guide";
@@ -107,6 +109,11 @@ async function boot(load: () => Promise<Reply>, seed: Record<string, string> = {
   await flush();
 }
 
+// 이 파일은 앱 그대로 — 머리 칩이 줄어드는 것을 보인 뒤 학습을 엽니다(시안 E4).
+beforeEach(() => {
+  setTicketDropWaitForTests(true);
+});
+
 afterEach(() => {
   cleanup();
   resetPushWiringForTests();
@@ -117,11 +124,17 @@ afterEach(() => {
 
 const tap = (id: string) => fireEvent.tap(screen.getByTestId(id), {});
 const chip = () => screen.getByTestId("top-bar-tickets");
+/** 새 레슨 Start 뒤 칩의 줄어듦을 끝까지 돌려 학습을 엽니다. 다시 하기는 이미 열려 있어 아무 일도 없습니다. */
+const finishTicketDrop = () =>
+  act(() => {
+    vi.advanceTimersByTime(statChipDropDurationMs.standard);
+  });
 
 /** 스텝을 시작하고(말풍선 Start) 레슨이 열렸으면 나가기 확인으로 맵에 돌아옵니다. */
 function startStep(id: string): boolean {
   tap(mapUnitTestId(id));
   tap("step-sheet-start");
+  finishTicketDrop();
   const opened = screen.queryByTestId("learning-shell") !== null;
   if (opened) {
     tap("learning-shell-exit");
@@ -139,6 +152,7 @@ test("[IT1] 새 레슨은 티켓 1장 — 칩 3 → 2, 말풍선에 태그, 서�
   tap(mapUnitTestId("greeting"));
   expect(screen.getByTestId("step-sheet-ticket-cost")).toBeInTheDocument();
   tap("step-sheet-start");
+  finishTicketDrop();
   expect(screen.getByTestId("learning-shell")).toBeInTheDocument();
   tap("learning-shell-exit");
   fireEvent.tap(
@@ -191,6 +205,7 @@ test("[IT4] 대화상자에서 Get more → 오늘 1장, Start lesson이 막혔�
   expect(screen.getByTestId("out-of-tickets-more-notice")).toHaveTextContent("free ticket");
   tap("out-of-tickets-start");
   expect(screen.queryByTestId("out-of-tickets")).not.toBeInTheDocument();
+  finishTicketDrop();
   expect(screen.getByTestId("learning-shell")).toBeInTheDocument();
 });
 
@@ -234,4 +249,47 @@ test("[IT6] 오프라인(서버 실패)에서도 기기 저장본으로 쓰고, 
     tickets?: unknown;
   } | null;
   expect(pending?.tickets).toMatchObject({ grantedMs: 0, grantDay: "" });
+});
+
+test("[IT7] 새 레슨 Start → 칩이 3 → 2로 줄며 −1이 떨어지고, 재생이 끝난 뒤 학습이 열린다(시안 E4)", async () => {
+  await boot(async () => ok(progressOf(0)));
+  tap(mapUnitTestId("greeting"));
+  tap("step-sheet-start");
+
+  expect(screen.queryByTestId("learning-shell")).not.toBeInTheDocument();
+  expect(screen.getByTestId("top-bar-tickets-drop")).toHaveTextContent("32");
+  expect(screen.getByTestId("top-bar-tickets-minus")).toHaveTextContent("−1");
+  expect(chip()).toHaveAttribute("accessibility-label", "2 tickets left");
+
+  act(() => {
+    vi.advanceTimersByTime(statChipDropDurationMs.standard);
+  });
+  expect(screen.getByTestId("learning-shell")).toBeInTheDocument();
+});
+
+test("[IT8] 재생을 기다리는 동안 Start를 또 눌러도 한 장만 쓰고 한 번만 연다", async () => {
+  await boot(async () => ok(progressOf(0)));
+  tap(mapUnitTestId("greeting"));
+  tap("step-sheet-start");
+  tap("step-sheet-start");
+  tap("step-sheet-start");
+  act(() => {
+    vi.advanceTimersByTime(statChipDropDurationMs.standard * 3);
+  });
+  expect(screen.getAllByTestId("learning-shell")).toHaveLength(1);
+  tap("learning-shell-exit");
+  fireEvent.tap(
+    within(screen.getByTestId("ui-lynx-dialog-action-leave")).getByTestId("ui-lynx-button"),
+    {},
+  );
+  await flush();
+  expect(chip()).toHaveTextContent("2");
+});
+
+test("[IT9] 다시 하기는 줄어듦 없이 바로 연다", async () => {
+  await boot(async () => ok(progressOf(2)));
+  tap(mapUnitTestId("greeting"));
+  tap("step-sheet-start");
+  expect(screen.queryByTestId("top-bar-tickets-drop")).not.toBeInTheDocument();
+  expect(screen.getByTestId("learning-shell")).toBeInTheDocument();
 });

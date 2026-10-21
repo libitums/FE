@@ -2,6 +2,8 @@
 
 /* 상단 줄 — 지표 칩(왼쪽)과 알림 버튼(오른쪽)을 양끝으로 밉니다. */
 .top-bar {
+  /* 티켓 칩의 「−1」(시안 E4)이 줄 아래로 떨어지므로 자르지 않습니다. */
+  overflow: visible;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -11,6 +13,7 @@
 
 /* 칩 사이 9px은 디자인 실측값이고 이 치수에 맞는 토큰이 없어 px로 적습니다. */
 .top-bar-stats {
+  overflow: visible;
   display: flex;
   flex-direction: row;
   align-items: center;

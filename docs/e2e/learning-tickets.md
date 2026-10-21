@@ -16,3 +16,6 @@
 | LT8 | 비행기 모드에서 앱을 다시 켜고 새 레슨 시작 | 칩이 줄고, 연결 뒤 서버 `learning_progress.progress.tickets`에 실린다(SQL로 확인) |
 | LT9 | 동작 줄이기 · VoiceOver | 모달 숫자가 페이드로만 서고, 칩 「N tickets left」 · 칸 줄 · 원형 카운트다운이 한 문장으로 읽힌다 |
 | LT10 | PostHog | `tickets_ran_out` · `ticket_more_tapped`(surface · granted) 도착 |
+| LT11 | (2026-10-21, 시안 E4) 맵에서 새 레슨 `Start` | 머리 티켓 칩이 살짝 커지며 숫자 3 → 2, 칩 아래 「−1」이 떨어지며 사라진 뒤(약 0.6초) 학습이 열린다. 다시 하기는 움직임 없이 바로. 동작 줄이기에서는 숫자만 바뀌고 열린다 |
+
+**Android R6 API30 2026-10-21: 결과** (LT11 · LT6 경로, 작업 트리 `83d0fa30` + 커밋 전 변경 — 재생 동안 머리를 띠 위로 올리는 `app-header-raised` · 「−1」 흰 알약 포함, Debug APK + 로컬 번들, 계측 픽스처 로그인) — 새 레슨 `Start`: 칩이 커지고(1.14, 잘림 없음) 숫자 3 → 2로 굴러가며 테두리가 주황으로 물들었다 걷히고, 흰 알약 「−1」이 띠 **위로** 떨어지며 옅어진 뒤 약 0.65초에 학습이 열렸다. 알약은 잘리지 않고 띠 위에서도 또렷하다(글자 #B94208 : 알약 5.46:1, 알약 : 띠 2.59:1). 재생 뒤 칩 탭(모달) · 말풍선 바깥 탭(닫힘)은 평소대로. 맵 복귀 칩 「2」. 다시 하기는 움직임 없이 다음 프레임에 열렸다. 0장 → `Get more tickets` → `Start lesson`도 칩 1 → 0 움직임 뒤 열렸다. 동작 줄이기 · iOS는 미실행. 증거 `evidence/android-ticket-drop-*.png`, 분석 [성능 기록](../performance/reports/ticket-drop-motion-android-r6-api30-01.md).

@@ -111,7 +111,11 @@ export function AppHeader({
           아닙니다(ADR-0016 D9). 레이어는 머리가 연 것일 수도, 화면이 연 것일 수도
           있습니다(`obscured`). */}
       <view
-        className="app-header"
+        className={
+          tickets?.dropFrom === null || tickets === undefined
+            ? "app-header"
+            : "app-header app-header-raised"
+        }
         data-testid="app-header"
         style={{ top: `${top}px` }}
         accessibility-elements-hidden={openLayer !== null || obscured}
@@ -127,6 +131,8 @@ export function AppHeader({
           bumps={statBump?.statBumps}
           bumpHeld={openLayer !== null || obscured || celebrateStreak}
           onBumped={statBump?.onStatBumped}
+          ticketDropFrom={tickets?.dropFrom ?? null}
+          onTicketDropped={tickets?.onDropped}
         />
       </view>
       {openLayer === "streak" || openLayer === "trophy" ? (

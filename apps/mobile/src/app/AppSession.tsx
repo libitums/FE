@@ -113,7 +113,10 @@ export function AppSession({
   );
   useProgressLoadEvents(progress.progressLoadPhase, episodeIntroEventSink);
   const learner = useLearnerProfile();
-  const tickets = useLearningTickets(progress.tickets, progress.setTickets, episodeIntroEventSink);
+  // 머리 칩이 서 있으면 쓴 티켓이 줄어드는 것을 보인 뒤 레슨을 엽니다(시안 E4).
+  const tickets = useLearningTickets(progress.tickets, progress.setTickets, episodeIntroEventSink, {
+    chipShown: showsTabNavigator(nav),
+  });
   const {
     completedStepCount,
     setCompletedStepCount,
