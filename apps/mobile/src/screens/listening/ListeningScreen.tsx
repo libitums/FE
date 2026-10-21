@@ -196,6 +196,7 @@ export function ListeningActivity({
               text={question.prompt}
               romanization={question.romanization}
               sessionOptions={sessionOptions}
+              revealed={question !== null && hasAnswered(state)}
               playback={playback}
             />
           )}

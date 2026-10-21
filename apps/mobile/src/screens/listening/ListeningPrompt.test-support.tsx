@@ -13,7 +13,7 @@ export type PlaybackPromptProps = {
   romanization: string;
   audioSource: string | undefined;
   sessionOptions: SessionOptions;
-  /** 판정이 난 뒤 대본을 보일지입니다. 안 주면 prop 없이 그립니다. */
+  /** 판정이 난 뒤 대본을 보일지입니다. 안 주면 false입니다. */
   revealed?: boolean;
 };
 
@@ -39,9 +39,7 @@ export function PlaybackPrompt({
       romanization={romanization}
       sessionOptions={sessionOptions}
       playback={playback}
-      // `ListeningPrompt`에 `revealed` prop이 생기기 전이라 타입에 없습니다 — 스프레드로 넘겨
-      // 타입 검사를 피합니다(JSX 스프레드는 초과 속성 검사를 받지 않습니다).
-      {...(revealed === undefined ? {} : { revealed })}
+      revealed={revealed ?? false}
     />
   );
 }

@@ -30,6 +30,8 @@ export type ListeningPromptProps = {
   romanization: string;
   /** 대본을 보일지(`show-transcript`)만 읽습니다. */
   sessionOptions: SessionOptions;
+  /** 판정이 나서 대본을 열어 보일 때 true — 설정이 꺼져 있어도 대본이 섭니다. */
+  revealed: boolean;
   /** 재생 상태와 조작을 묶어 받습니다 — 주인은 화면의 `useListenAudio`입니다. */
   playback: ListenAudioControl;
 };
@@ -38,6 +40,7 @@ export function ListeningPrompt({
   text,
   romanization,
   sessionOptions,
+  revealed,
   playback,
 }: ListeningPromptProps): ReactNode {
   const scale = listeningPromptScale(text);
@@ -53,7 +56,7 @@ export function ListeningPrompt({
           `display:none`은 ui 계층이 원리적으로 못 보고, 숨긴 `<text>`는 보조기술
           정지점으로 남습니다 — 「보이지 않는다」가 거짓이 됩니다. 로마자 줄도 같은
           가림을 받습니다: 그것도 소리를 글자로 옮긴 것이라 대본입니다. */}
-      {sessionOptions["show-transcript"] ? (
+      {sessionOptions["show-transcript"] || revealed ? (
         // 크기 단계가 문장 길이에서 나옵니다 — 긴 문장을 큰 글자로 두면 카드가 늘어나
         // 아래 보기를 화면 밖으로 밉니다. 로마자 줄도 같은 단계를 받습니다: 둘의 크기
         // 차이가 유지돼야 한글이 주인공이라는 것이 읽힙니다.
