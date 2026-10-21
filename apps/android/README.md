@@ -501,7 +501,7 @@ Play는 64비트 네이티브 라이브러리가 16 KB 페이지를 지원하기
 `sh apps/android/test-web-auth-contract.sh`는 인증 URL·콜백 검증을, Android 계측
 `WebAuthenticationModuleTest`는 난수와 잘못된 요청의 반환을 확인한다.
 `LegalDocumentModuleTest`는 법률 문서 이름을 두 고정 HTTPS 주소로만 연결하는지 확인한다.
-`AudioPlaybackModuleTest`는 공통 `.m4a` 자산 21개, 실제 재생 완료, 대체, 일시정지·재개,
+`AudioPlaybackModuleTest`는 공통 `.m4a` 자산 3개(호스트 테스트 고정물 `greeting-1` · `ordering-2` · `tutorial-cabin-announcement` — 2026-10-21 옛 튜토리얼 · 전화 음성 18을 지웠다, ADR-0079), 실제 재생 완료, 대체, 일시정지·재개,
 중단·백그라운드 전환·오디오 포커스 손실과 복귀, 자산을 열지 못했을 때의 경고 로그를 확인한다.
 `SoundEffectAssetTest`·`SoundEffectsSessionTest`(JUnit)는 효과음 id 8개와 `apps/ios/Host/sfx`의 1:1 대응, 로드 전 요청·벨
 상태를, 계측 `SoundEffectsModuleTest`는 8개 자산 열기·벨 반복과 `stopRing`·`stopAll`을 확인한다.
@@ -524,7 +524,8 @@ Gradle 산출물 자체는 `node --test devtools/android-bundle/packaged-assets.
 말하기 화면의 마이크 권한 Maestro 절차는
 [Android 음성 인식 검증](../../docs/e2e/android-speech-recognition.md)에 있다.
 `HandwritingTraceMathTest`와 `HandwritingTraceModuleTest`는 안내 그림의 마스크 정렬,
-팽창 판정, PNG와 채점 영역의 일치를 확인한다. 쓰기 화면의 터치·판정 Maestro 절차는
+팽창 판정, PNG와 채점 영역의 일치를 확인한다. 쓰기 화면과 그 Maestro 절차는 2026-10-21
+옛 튜토리얼과 함께 지웠다(ADR-0079) — 모듈은 개발 탐침이 쓰고, 계측 절차는
 [Android 손글씨 검증](../../docs/e2e/android-handwriting-trace.md)에 있다.
 `ReviewRequestGateTest`와 `AppReviewModuleTest`는 Play 리뷰 요청의 중복 방지,
 `FakeReviewManager`를 통한 요청·실행 및 실패 후 재시도를 확인한다. 설문에서 호스트까지의
@@ -604,12 +605,8 @@ E2E_UDID=<전용 에뮬레이터 ID> pnpm test:e2e:android
 Apple·Google·Facebook의 인증 URL·PKCE·모의 딥링크 복귀를 각각 확인한다.
 `test:e2e:android:legal`은 로그인 화면의 두 법률 문서 링크가 정해진 주소를
 Custom Tab으로 열고 뒤로가기로 앱에 복귀하는지 확인한다.
-`E2E_UDID=<전용 에뮬레이터 ID> pnpm test:e2e:android:audio`는 모의 진행으로 듣기
-화면을 열어 자동 재생·다시듣기·이탈 시 중단을 확인한다.
 `E2E_UDID=<전용 에뮬레이터 ID> pnpm test:e2e:android:speech`는 모의 진행으로 말하기
 화면을 열어 마이크 권한 요청과 인식 서비스가 없는 AOSP의 건너뛰기 안내를 확인한다.
-`E2E_UDID=<전용 에뮬레이터 ID> pnpm test:e2e:android:handwriting`은 모의 진행으로
-쓰기 화면을 열어 안내 PNG, 터치 획, 네이티브 판정과 결과 화면을 확인한다.
 `E2E_UDID=<전용 에뮬레이터 ID> pnpm test:e2e:android:review`는 모의 완료 상태에서
 에피소드 설문 5점을 골라 `AppReviewModule.requestReview` 호출 1회를 확인한다.
 `E2E_UDID=<전용 에뮬레이터 ID> pnpm test:e2e:android:push`는 모의 로그인 상태에서

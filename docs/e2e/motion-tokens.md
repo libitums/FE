@@ -1,5 +1,7 @@
 # 0.4.0 motion 토큰 소비가 기기에서 보인다 — 눌림 축소 · Spinner 회전 · Button Loading 폭 · reduced 눌림 막 · VN 정지 (iOS · Android)
 
+> ⟨2026-10-21 — [ADR-0079](../adr/0079-tutorial-as-catalog-episode.md)⟩ 옛 튜토리얼(고정 목록 · 스텝 · 프롤로그 · 최종 스토리 · 손글씨)과 메신저 · 전화 · 비주얼 노벨 화면이 지워졌다. 이 문서에서 그 화면을 단계로 쓰는 절은 **더 실행할 수 없다 — 기록으로 남긴다.** 튜토리얼은 이제 카탈로그 에피소드 `u00-tutorial`(맵 첫 구획 `Episode 0.`)이고 절차는 [튜토리얼 u00 e2e](tutorial-u00.md)다.
+
 토큰 0.4.0을 소비하도록 바꾼 결과를 시뮬레이터 · 에뮬레이터에서 확인하는 **수동 절차**다. 계약은 작업 `motion-tokens-stage2`의 `spec.md` §6(AC1 ~ AC4 · AC10) ·
 §11(가정 A1 ~ A5), 막의 합성 색은 같은 작업 `design.md` §4, Button Loading 폭은 §3이 진다. 이 문서는 아래 다섯 가지만 본다.
 

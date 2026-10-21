@@ -409,3 +409,20 @@ PR에서 wiki를 고친다」 규약이고 PR 작성자가 손으로 한다. 이
 - **Fresco를 올리거나 걷어 낼 때** → D14. dex 한도를 다시 잰다.
 - **App Store 또는 Play 심사가 이 변경을 이유로 거절한 때** → D10 · D13.
 - **`size:check`가 실패한 때** → 실측으로 상한을 올리고 「사용자 확인 필요」 16을 닫는다.
+
+## 적용 기록 ⟨2026-10-21 — 튜토리얼 u00⟩
+
+적용 기록이고 이 ADR의 구조(모듈 · 값 주입 · 「초기화하지 않음」 판정 · PostHog와 독립)를 바꾸지 않는다. 결정은 [ADR-0079](0079-tutorial-as-catalog-episode.md) D9 — **사용자 결정**(2026-10-21, Q4).
+
+- **D7 매핑이 바뀌었다** — `messenger_unit_completed` · `visual_novel_unit_completed`(출처 journey) 두 줄과 「위 둘 · 출처 roleplay」 줄을 지우고 한 줄을 더했다:
+
+  | 기존 제품 이벤트 | 조건 | Airbridge 카테고리 | 시맨틱 속성 |
+  |---|---|---|---|
+  | `entry_completed` | — | `airbridge.user.signup` | 없음(그대로) |
+  | `episode_final_passed` | — | `airbridge.achieveLevel` | `level` = `episodeId` · `label` = `"episode_final"` |
+  | 그 밖의 이름 전부 | — | 보내지 않는다 | — |
+
+  근거: 메신저 · 비주얼 노벨 화면이 지워져 옛 두 줄은 한 건도 나지 않는다. 「레슨(단계) 완료」를 에피소드 단위로 읽는다 — 레슨마다 보내면 튜토리얼 하나에 14건이다. 신규 사용자의 첫 건이 튜토리얼(`u00-tutorial`) 완료다.
+- **D9 전달 sink는 `entryEventSink` · `episodeIntroEventSink` 둘**이다(`withAirbridgeEvents`) — `messengerEventSink` · `visualNovelEventSink`가 지워졌고, 카탈로그 학습 이벤트(`episode_final_passed`)는 `episodeIntroEventSink`로 나간다.
+- 와이어 값 넷(`airbridge.user.signup` · `airbridge.achieveLevel` · `level` · `label`)은 그대로다 — 호스트 · SDK 변경 0.
+- **매체 쪽 전환 설정이 옛 `messenger` · `visual_novel` 라벨을 쓰고 있으면 대시보드 갱신이 필요하다** — 사용자 몫([Airbridge 이벤트](../airbridge-events.md)).

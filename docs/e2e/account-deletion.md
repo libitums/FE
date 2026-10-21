@@ -1,5 +1,7 @@
 # 계정 삭제 · 로그아웃 — iOS 수동 e2e
 
+> ⟨2026-10-21 — [ADR-0079](../adr/0079-tutorial-as-catalog-episode.md)⟩ 옛 튜토리얼(고정 목록 · 스텝 · 프롤로그 · 최종 스토리 · 손글씨)과 메신저 · 전화 · 비주얼 노벨 화면이 지워졌다. 이 문서에서 그 화면을 단계로 쓰는 절은 **더 실행할 수 없다 — 기록으로 남긴다.** 튜토리얼은 이제 카탈로그 에피소드 `u00-tutorial`(맵 첫 구획 `Episode 0.`)이고 절차는 [튜토리얼 u00 e2e](tutorial-u00.md)다.
+
 `account-deletion.e2e.test.ts`로 옮길 흐름이다. 자동 E2E는 not applicable(runner/command 없음) —
 이 문서를 세우는 것이 이 계층의 「테스트」다([README](README.md)). 계약은
 `.agent-harness/work/account-deletion/spec.md`, 셈하는 자리는 같은 폴더 `test-plan.md` §5이고 이 문서는 그

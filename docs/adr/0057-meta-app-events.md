@@ -369,3 +369,7 @@ ADR-0029 D1의 「같은 PR에서 wiki를 고친다」 규약이고 PR 작성자
   프라이버시 매니페스트 · R8 통과 · 앱 용량을 다시 본다.
 - **App Store 또는 Play 심사가 이 변경을 이유로 거절한 때** → D9 · D13.
 - **`size:check`가 실패한 때** → 실측으로 상한을 올리고 「사용자 확인 필요」 9를 닫는다.
+
+## 적용 기록 ⟨2026-10-21 — 튜토리얼 u00⟩
+
+이 ADR은 대체됐다(ADR-0063). 기록만 단다 — **D6 표의 `messenger_unit_completed` · `visual_novel_unit_completed`는 이름째 지워졌다**([ADR-0079](0079-tutorial-as-catalog-episode.md) D9 · D10). 지금의 매핑은 ADR-0063 적용 기록 2026-10-21(`episode_final_passed` → `achieveLevel`)이 진다.

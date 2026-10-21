@@ -86,3 +86,11 @@
 - **듣지 못한 까닭마다 안내가 다르다** — 받아쓰기 꺼짐은 설정 경로(말하기 학습형과 같은 문구), 권한 · 인식기는 허용 안내, 그 한 번의 실패는 「I didn't catch that. Tap the mic and try again.」 — 셋 다 마이크로 다시 시도할 수 있다. 그전에는 셋 모두 같은 「Speaking isn't available right now」였다(실기에서 원인을 가를 수 없었다).
 - **녹음은 스스로 멈추지 않는다**(네이티브 모듈이 침묵을 재지 않는다) — 듣는 중 안내를 「Listening… Tap again when you're done.」으로 바꿨다.
 
+## 적용 기록 ⟨2026-10-21 — 튜토리얼 u00⟩
+
+결정은 [ADR-0079](0079-tutorial-as-catalog-episode.md) D10 — **사용자 결정**(2026-10-21, Q2).
+
+- 위 적용 기록 2026-10-20의 **「걷는 일은 따로 한다」를 이 변경이 닫았다** — 롤플레이 route `roleplay-messenger` · `roleplay-phone-call` · `roleplay-visual-novel` · 완료 route `messenger-complete` · `special-unit-complete` · 롤플레이 결선(`render-roleplay-screen.tsx` · `roleplay-wiring.ts`) · `roleplay-premium-items.ts`와 메신저 · 전화 · 비주얼 노벨 화면 · 데이터를 지웠다. 「튜토리얼의 메신저 · 전화 · 비주얼 노벨은 여정 맵에서 그대로 열린다」는 그때의 상태다.
+- **남긴 것**: `roleplay-episode` route · `RoleplayEpisodeScreen`(이야기 롤플레이 구획의 「전체 보기」), `PremiumRoleplayCard` · 구획의 `premiumItems`(늘 빈 목록 — 결제 예고 UI). `RoleplayItem = StoryRoleplayItem` · `RoleplayUnitForm = "story"`.
+- **튜토리얼 u00은 롤플레이 구획을 만들지 않는다**(`roleplaySectionsOf`가 `TUTORIAL_EPISODE_ID`를 뺀다) — 2026-10-20 사용자 결정 「튜토리얼 구획을 롤플레이 탭에서 뺐다」를 그대로 지킨다. 롤플레이 탭은 u01 ~ 의 이야기 롤플레이다.
+- 구획 머리 `Episode n.`은 매니페스트 `order`를 쓴다(ADR-0079 D3) — u01 ~ 는 값이 같다.

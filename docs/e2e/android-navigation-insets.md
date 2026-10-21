@@ -1,5 +1,7 @@
 # Android 내비게이션 바와 하단 탭 바 (3버튼 · 제스처)
 
+> ⟨2026-10-21 — [ADR-0079](../adr/0079-tutorial-as-catalog-episode.md)⟩ 옛 튜토리얼(고정 목록 · 스텝 · 프롤로그 · 최종 스토리 · 손글씨)과 메신저 · 전화 · 비주얼 노벨 화면이 지워졌다. 이 문서에서 그 화면을 단계로 쓰는 절은 **더 실행할 수 없다 — 기록으로 남긴다.** 튜토리얼은 이제 카탈로그 에피소드 `u00-tutorial`(맵 첫 구획 `Episode 0.`)이고 절차는 [튜토리얼 u00 e2e](tutorial-u00.md)다.
+
 Android 3버튼 내비게이션(◁ ○ □)에서 하단 탭 바의 알약이 시스템 버튼 밑에 깔려 눌리지 않던 문제가 고쳐졌는지,
 제스처 모드 · iOS의 모습이 그대로인지를 에뮬레이터의 실제 창에서 확인한다. 순수 계산(`shellBottomLayout` ·
 `tappableBottomInsetFrom` · 호스트 `SafeAreaInsets`)과 컴포넌트 · 셸 트리는 `unit` · `ui` · `integration` · JUnit이 이미 진다 —

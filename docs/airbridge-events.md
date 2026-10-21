@@ -100,7 +100,9 @@ grep -c 'AIRBRIDGE_APP_NAME = "";' apps/android/app/build/generated/source/build
 |---|---|---|
 | Install · Open(앱 실행) · 세션 | 설치 뒤 첫 실행 · 앱이 전경으로 올 때 | SDK 자동 |
 | `airbridge.user.signup` (가입 완료) — 속성 없음 | 진입 흐름 끝의 「여정 시작하기」 | 앱 |
-| `airbridge.achieveLevel` (레슨 완료) — `level`(유닛 ID) · `label`(`messenger` \| `visual_novel`) | 여정의 메신저 유닛을 처음 끝낼 때 · 여정의 비주얼 노벨 유닛이 끝날 때 | 앱 |
+| `airbridge.achieveLevel` (에피소드 최종 통과) — `level`(에피소드 id, 예: `u00-tutorial` · `u01-water`) · `label`(`episode_final`) | 에피소드의 최종 테스트를 통과할 때(`episode_final_passed`) — 신규 사용자의 첫 건이 튜토리얼 u00 완료 | 앱 |
+
+⟨2026-10-21 — [ADR-0079](adr/0079-tutorial-as-catalog-episode.md) D9, 사용자 결정⟩ **`achieveLevel`의 뜻이 바뀌었다** — 이전에는 「여정의 메신저 유닛을 처음 끝낼 때 · 비주얼 노벨 유닛이 끝날 때」(`level` = 유닛 ID · `label` = `messenger` | `visual_novel`)였고, 그 화면이 옛 튜토리얼과 함께 지워져 한 건도 나지 않게 됐다. **매체 쪽 전환 이름 · 값 매핑이 옛 `messenger` · `visual_novel` 라벨을 쓰고 있으면 대시보드에서 `episode_final`로 고친다**(아래 「대시보드에서 할 일」 9 — 사용자 몫).
 
 읽을 때 알아 둘 것(매핑의 정본과 이유는 [ADR-0063 D7](adr/0063-airbridge-events.md)).
 
@@ -153,7 +155,7 @@ grep -c 'AIRBRIDGE_APP_NAME = "";' apps/android/app/build/generated/source/build
 2. 값을 넣고 호스트를 다시 빌드해 **새로 설치**한다(설치 이벤트를 보려면 기존 앱을 지운다).
 3. Airbridge 대시보드의 **Real-time Logs**를 열어 둔다. 이벤트는 수 분 늦게 올 수 있다. 앱을 홈으로 보냈다 되돌리면 전송이
    당겨질 수 있다.
-4. 앱에서 진입 흐름을 끝까지 가고(「여정 시작하기」 — 로그인 필요), 여정의 메신저 유닛을 끝낸다.
+4. 앱에서 진입 흐름을 끝까지 가고(「여정 시작하기」 — 로그인 필요), ~~여정의 메신저 유닛을 끝낸다~~ ⟨2026-10-21⟩ 튜토리얼 u00(맵 첫 구획 `Episode 0.`)의 최종 테스트를 통과한다.
    ⟨2026-10-18⟩ **서버에 기록이 없는 새 계정으로 로그인한다** — 기록 있는 계정은 바로 맵으로 가 `airbridge.user.signup`이 나지 않는다(위 「읽을 때 알아 둘 것」).
 5. 기대: **Install** · **Open**, `airbridge.user.signup`, `airbridge.achieveLevel`(`level` · `label` 포함)이 보인다.
 6. 함께 보고 결과를 적는다 — iOS 설치 이벤트가 실행 직후 곧바로 나가는지(ATT 대기 없음), 속성에 개인정보가 없는지, 결제
@@ -163,6 +165,7 @@ grep -c 'AIRBRIDGE_APP_NAME = "";' apps/android/app/build/generated/source/build
 같은 PR에서 할 일이 하나 더 있다 — GitHub wiki 「[이벤트 사전](https://github.com/libitums/FE/wiki/Analytics-Events)」의
 세 이벤트(`entry_completed` · `messenger_unit_completed` · `visual_novel_unit_completed`)의 「Meta로도 전달」 표시를
 「Airbridge로 전달」과 카테고리 · 속성(위 표)으로 바꾼다. wiki는 저장소 밖이라 PR 작성자가 손으로 한다.
+⟨2026-10-21⟩ `messenger_unit_completed` · `visual_novel_unit_completed`는 이름째 지워졌다 — wiki에서는 「Airbridge로 전달」을 `episode_final_passed`(→ `airbridge.achieveLevel`, `label` `episode_final`)로 옮긴다.
 
 ## 스토어 고지에서 바뀌는 것
 

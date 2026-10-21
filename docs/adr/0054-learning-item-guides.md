@@ -412,3 +412,11 @@ TalkBack의 낭독은 개발자 설정 「Display speech output」이 화면에 
 
 [ADR-0010](0010-convention-docs-and-design-done-criteria.md) D10의 「없던 축을 처음 정하면 — 기존 ADR의 `다루는 축`이 덮지 않으면 새 번호」가 걸린다. 학습 문항 위의 「처음 한 번」 안내는 어느 ADR의 축도 덮지 않는다 — 기존 첫 단원 안내 자체를 정한 ADR도 없다(ADR-0043 · 0050이 그 위의 뒤로가기와 상태바를 다룰 뿐이다).
 ADR-0016은 `대체됨`이 아니다. D9의 결정(겹침 뒤쪽을 `accessibility-elements-hidden`으로 가린다 · 속성을 늘 붙이고 값만 갈린다 · 셸은 가리지 않는다)은 그대로이고 이 안내도 그것을 따른다. 바뀐 것은 그 결정이 딛고 선 **사실**이다 — 그 속성이 Android에서 하는 일과 「선례 0건」 — 그래서 그 문서에는 제자리에 `정정 기록`을 남겼다. 탭 바 없는 전체 화면 모달 안내에서 두 속성을 함께 쓰는 것은 이 문서가 진다.
+
+## 적용 기록 ⟨2026-10-21 — 튜토리얼 u00⟩
+
+결정은 [ADR-0079](0079-tutorial-as-catalog-episode.md) D10 · D13.
+
+- **안내 종류가 여섯 → 하나**(`sentence-order`)다 — 메신저 · 전화 · 비주얼 노벨 · 말하기 · 쓰기 화면이 지워져 그 종류 · 판정 갈래 · 문구(`ui-copy-en-learning.ts`)를 함께 지웠다(`LearningItemGuideKind = "sentence-order"`). 남은 하나는 카탈로그 레슨의 문장 만들기(`SentenceOrderActivity`)가 띄운다.
+- 맥락 2 · U6의 「튜토리얼의 문항」은 옛 튜토리얼의 것이다 — 튜토리얼 u00은 다른 에피소드와 같은 카탈로그 문항이다. 「새 사용자는 튜토리얼에서 안내를 열 번」도 그때의 수다.
+- 저장 키(`libitum.learning-item-guides.seen`)는 그대로다.

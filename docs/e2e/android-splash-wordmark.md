@@ -1,5 +1,7 @@
 # Android 스플래시 워드마크 — 콜드 스타트에서 이미지가 간헐적으로 실패하지 않는가
 
+> ⟨2026-10-21 — [ADR-0079](../adr/0079-tutorial-as-catalog-episode.md)⟩ 옛 튜토리얼(고정 목록 · 스텝 · 프롤로그 · 최종 스토리 · 손글씨)과 메신저 · 전화 · 비주얼 노벨 화면이 지워졌다. 이 문서에서 그 화면을 단계로 쓰는 절은 **더 실행할 수 없다 — 기록으로 남긴다.** 튜토리얼은 이제 카탈로그 에피소드 `u00-tutorial`(맵 첫 구획 `Episode 0.`)이고 절차는 [튜토리얼 u00 e2e](tutorial-u00.md)다.
+
 Android 앱을 콜드 스타트하면 스플래시의 워드마크 이미지 요청이 간헐적으로 `Unsupported uri scheme`으로 실패하고, `binderror={finish}`가 스플래시를 3 ~ 283 ms 만에 닫던 결함(정상은 약 2.4 ~ 3.4 s)이
 고쳐졌는지를 **실제 기기의 콜드 스타트를 반복해서** 확인한다. 원인은 Lynx 4.0.1 `LynxImageManager`의 경합이다 — `LynxMediaResourceFetcher`가 달려 있으면 URL 재작성이 다른 스레드로 넘어가
 재작성되지 않은 `/static/…`으로 이미지 요청이 먼저 나갈 수 있다. 수정은 Android 호스트 Java만이다: 이미지 URL 재작성을 fetcher에서 동기 `ImageInterceptor`로 옮긴다.

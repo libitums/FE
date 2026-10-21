@@ -1,5 +1,7 @@
 # 최종 복습 이미지 제작
 
+> **대체됨 — [ADR-0079](../adr/0079-tutorial-as-catalog-episode.md) (2026-10-21).** 옛 내장 튜토리얼(고정 목록 · 스텝 · 프롤로그 · 특별 유닛 · 최종 스토리)은 카탈로그 에피소드 `u00-tutorial`로 바뀌었고, 이 스펙이 정한 화면 · 데이터 · 자산은 지워졌다. 기록으로 남긴다 — 지금 튜토리얼은 다른 에피소드와 같은 형식이다([콘텐츠 계약](episode-content-json-contract.md)).
+
 Built-in image_gen으로 생성했습니다. 첫 서사 이미지는 스타일·장소 참조로 사용했습니다. 원본은 output/imagegen/tutorial-final-story에 보관하고 런타임에는 810×1440 JPEG를 사용합니다.
 
 ## final-flight.jpg

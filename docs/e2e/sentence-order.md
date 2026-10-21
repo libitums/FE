@@ -1,6 +1,8 @@
 # 문장 순서 화면에서 조각을 눌러 문장을 만들고, 채점을 받고, 스텝을 마친다
 
-> 나머지 일반 유닛도 한 문항 안내로 바뀌었습니다. [초급 일반 유닛 흐름](tutorial-beginner-units.md)을 따릅니다.
+> ⟨2026-10-21⟩ **대체됨 — [ADR-0079](../adr/0079-tutorial-as-catalog-episode.md).** 옛 튜토리얼의 문장 순서 route(`sentence-order`)와 문항 표가 지워졌다. 남은 것은 카탈로그 레슨이 쓰는 조립 활동(`SentenceOrderActivity`)이고, 그 절차는 [카탈로그 레슨 e2e](catalog-lessons.md)다. 이 문서는 기록이다.
+
+> 나머지 일반 유닛도 한 문항 안내로 바뀌었습니다. 초급 일반 유닛 흐름(`tutorial-beginner-units.md`, 2026-10-21 지움)을 따랐습니다.
 
 > 진행률과 완료 카드의 최신 기대값은 [일반 활동 완료 흐름](learning-completion.md)을 따릅니다.
 
