@@ -232,7 +232,7 @@ test.each<[string, ContentFetchMode]>([
   expect(unhandled).toEqual([]);
 });
 
-test("[I4] 내장 카탈로그와 저장소 가짜 기반 캐시 읽기를 합치면 실제 JSON 모듈로 u01 · u02 · u03이 ready다", () => {
+test("[I4] 내장 카탈로그와 저장소 가짜 기반 캐시 읽기를 합치면 실제 JSON 모듈로 u00 · u01 · u02 · u03이 ready다", () => {
   const data = new Map<string, string>();
   const store: ContentStore = {
     available: () => true,
@@ -243,9 +243,14 @@ test("[I4] 내장 카탈로그와 저장소 가짜 기반 캐시 읽기를 합�
 
   const catalog = buildEpisodeCatalog({
     bundled: bundledCatalogInput,
-    cache: readCachedSource(store, ["u01-water", "u02-checkin", "u03-mina"]),
+    cache: readCachedSource(store, ["u00-tutorial", "u01-water", "u02-checkin", "u03-mina"]),
   });
 
-  expect(catalog.map((entry) => entry.id)).toEqual(["u01-water", "u02-checkin", "u03-mina"]);
-  expect(catalog.map((entry) => entry.status)).toEqual(["ready", "ready", "ready"]);
+  expect(catalog.map((entry) => entry.id)).toEqual([
+    "u00-tutorial",
+    "u01-water",
+    "u02-checkin",
+    "u03-mina",
+  ]);
+  expect(catalog.map((entry) => entry.status)).toEqual(["ready", "ready", "ready", "ready"]);
 });

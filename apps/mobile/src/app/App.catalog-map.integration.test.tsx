@@ -28,6 +28,7 @@ import { journeySteps } from "../screens/journey-map/journey-map";
 import { catalogMapSectionsOf } from "../screens/journey-map/catalog-map";
 import type { EpisodeIntroEvent } from "../screens/episode-intro/episode-intro.contract";
 import { catalogNodeTestId } from "./test-helpers/map-unit-testid";
+import { legacyPassedSeed, tutorialDoneProgress } from "./test-helpers/progress-seed";
 
 // `integration` 계층: 앱 세션에서 「카탈로그 읽기 → 맵 구획 → 표지 열기 → 컷 끝 → 진행 저장 → 다음 실행」과
 // 「갱신 뒤 같은 트리에서 구획이 서는 것」, 이벤트 sink 경계를 한 트리에서 봅니다. 대역은 경계뿐입니다 —
@@ -231,6 +232,21 @@ async function boot(options: BootOptions = {}): Promise<Booted> {
 
   const rpcs: Rpc[] = [];
   const urls: string[] = [];
+  // 옛 튜토리얼을 지난 설치는 튜토리얼 에피소드(u00)도 끝낸 것으로 둡니다 — u01 표지가 열리려면 앞 구획을 끝냈어야 합니다.
+  const loaded = options.load ?? (options.seed === undefined ? null : tutorialDoneSnapshot);
+  const loadBody =
+    loaded !== null &&
+    (loaded as { completedEpisodeFinalIds?: string[] }).completedEpisodeFinalIds?.includes(
+      "tutorial-final-test",
+    ) === true
+      ? {
+          ...loaded,
+          catalogProgress: {
+            ...tutorialDoneProgress(),
+            ...((loaded as { catalogProgress?: object }).catalogProgress ?? {}),
+          },
+        }
+      : loaded;
   let release: () => void = () => undefined;
   const gate = new Promise<void>((resolve) => {
     release = resolve;
@@ -255,7 +271,7 @@ async function boot(options: BootOptions = {}): Promise<Booted> {
     rpcs.push({ name, body: JSON.parse(init?.body ?? "{}") as Record<string, unknown> });
     const reply =
       name === "load_learning_progress"
-        ? { status: 200, body: JSON.stringify(options.load ?? null) }
+        ? { status: 200, body: JSON.stringify(loadBody) }
         : name === "learning_streak" || name === "record_learning_days"
           ? { status: 200, body: "1" }
           : { status: 204, body: "" };
@@ -267,6 +283,7 @@ async function boot(options: BootOptions = {}): Promise<Booted> {
   render(
     <App
       {...(options.seed === undefined ? {} : { journeySeed: options.seed })}
+      {...(options.seed === undefined ? {} : ({ progressSeed: legacyPassedSeed } as object))}
       completedEpisodeIntroIds={["tutorial-intro"]}
       episodeIntroEventSink={(event) => events.push(event)}
     />,
@@ -374,17 +391,17 @@ function precedes(a: Element, b: Element): boolean {
 
 // ---------------------------------------------------------------- 테스트
 
-test("I1. (AC1) 콘텐츠 404 · 진행 없음: 튜토리얼 다음에 에피소드 1 · 2 · 3 구획이 서고 표지는 모두 잠겨 있다", async () => {
+test("I1. (AC1) 콘텐츠 404 · 진행 없음: 맵 첫 구획이 튜토리얼 u00이고 그 뒤에 에피소드 1 · 2 · 3 구획이 서며 u00 표지만 열려 있다", async () => {
   await boot();
 
-  const tutorial = screen.getByTestId("ui-lynx-learning-unit-greeting");
-  const sections = ["u01-water", "u02-checkin", "u03-mina"].map((id) =>
-    screen.getByTestId(`catalog-section-${id}`),
-  );
-  expect(precedes(tutorial, sections[0] as Element)).toBe(true);
+  const ids = ["u00-tutorial", "u01-water", "u02-checkin", "u03-mina"];
+  const sections = ids.map((id) => screen.getByTestId(`catalog-section-${id}`));
   expect(precedes(sections[0] as Element, sections[1] as Element)).toBe(true);
   expect(precedes(sections[1] as Element, sections[2] as Element)).toBe(true);
+  expect(precedes(sections[2] as Element, sections[3] as Element)).toBe(true);
+  expect(screen.queryByTestId("ui-lynx-learning-unit-greeting")).not.toBeInTheDocument();
   expect(screen.queryByTestId("episode-pending-customs")).not.toBeInTheDocument();
+  expect(cover("u00-tutorial")).toHaveAttribute("data-status", "available");
   for (const id of ["u01-water", "u02-checkin", "u03-mina"]) {
     expect(cover(id)).toHaveAttribute("data-status", "default");
   }
@@ -504,7 +521,7 @@ test("I5. (AC4) 넷째 표지의 {이름}은 프로필이 없으면 「이름」
   );
 });
 
-test("I5c. 내장 카탈로그(세 에피소드)로 맵이 서면 u03 구획 뒤 맨 끝에 Episode 4. 준비 중 구획이 하나 선다", async () => {
+test("I5c. 내장 카탈로그(네 에피소드)로 맵이 서면 u03 구획 뒤 맨 끝에 Episode 4. 준비 중 구획이 하나 선다", async () => {
   await boot({ seed: tutorialDoneSeed });
 
   const comingSoon = screen.getByTestId("catalog-coming-soon");

@@ -23,6 +23,7 @@ import type { FillScript } from "../../lib/placeholder-fill";
 import type { EpisodeIntroEvent } from "../../screens/episode-intro/episode-intro.contract";
 import { journeySteps } from "../../screens/journey-map/journey-map";
 import { catalogNodeTestId } from "./map-unit-testid";
+import { tutorialDoneProgress } from "./progress-seed";
 import { passSplash } from "./pass-splash";
 
 const supabaseUrl = "https://test.supabase.co";
@@ -142,7 +143,11 @@ export async function boot(
   vi.stubEnv("PUBLIC_SUPABASE_ANON_KEY", "test-anon-key");
 
   const rpcs: Rpc[] = [];
-  const snapshot = { ...tutorialDoneSnapshot, catalogProgress: progress };
+  // 튜토리얼(u00)을 끝낸 진행을 함께 둡니다 — u01 표지가 열리려면 앞 에피소드를 끝냈어야 합니다.
+  const snapshot = {
+    ...tutorialDoneSnapshot,
+    catalogProgress: { ...tutorialDoneProgress(), ...progress },
+  };
   vi.stubGlobal("fetch", (url: string, init?: { body?: string }) => {
     if (url.includes("grant_type=refresh_token")) {
       return Promise.resolve({ status: 200, text: async () => refreshedBody });

@@ -29,6 +29,7 @@ import {
   settle,
 } from "./test-helpers/episode-content-boot";
 import { episodeAssetPaths } from "../lib/episode-assets";
+import { tutorialDoneProgress } from "./test-helpers/progress-seed";
 
 // `integration` 계층: 실행기 한 차례(에피소드 받기 -> 음성 정보 파일 받기)가 전송 대역 -> 기기 저장소 -> 로더 ->
 // 컷 모델 -> 화면 -> 타자기까지 닿는지 한 트리에서 봅니다. 대역은 경계뿐입니다 - `NativeModules`
@@ -125,7 +126,8 @@ async function boot(options: BootOptions = {}): Promise<Booted> {
   vi.stubEnv("PUBLIC_SUPABASE_URL", supabaseUrl);
   vi.stubEnv("PUBLIC_SUPABASE_ANON_KEY", "test-anon-key");
 
-  const snapshot = { ...tutorialDoneSnapshot, catalogProgress: {} };
+  // 튜토리얼(u00)을 끝낸 진행을 함께 둡니다 — u01 표지가 열리려면 앞 에피소드를 끝냈어야 합니다.
+  const snapshot = { ...tutorialDoneSnapshot, catalogProgress: tutorialDoneProgress() };
   vi.stubGlobal("fetch", (target: string) => {
     if (target.includes("grant_type=refresh_token")) {
       return Promise.resolve({ status: 200, text: async () => refreshedBody });

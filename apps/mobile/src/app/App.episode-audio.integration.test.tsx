@@ -19,6 +19,7 @@ import { systemBackEventName } from "../lib/system-back";
 import type { EpisodeIntroEvent } from "../screens/episode-intro/episode-intro.contract";
 import { EPISODE_BANNER_HOLD_MS } from "../screens/catalog-cover/episode-banner";
 import { journeySteps } from "../screens/journey-map/journey-map";
+import { tutorialDoneProgress } from "./test-helpers/progress-seed";
 import { catalogNodeTestId } from "./test-helpers/map-unit-testid";
 
 // `integration` 계층: 내장 u01 원문의 소리 id가 디코드 · 모델 · 화면 · 결선을 지나 실제 공개 버킷 주소
@@ -124,7 +125,11 @@ async function boot(options: BootOptions): Promise<Booted> {
   vi.stubEnv("PUBLIC_SUPABASE_ANON_KEY", "test-anon-key");
 
   const rpcs: Rpc[] = [];
-  const snapshot = { ...tutorialDoneSnapshot, catalogProgress: options.progress };
+  // 튜토리얼(u00)을 끝낸 진행을 함께 둡니다 — u01 표지가 열리려면 앞 에피소드를 끝냈어야 합니다.
+  const snapshot = {
+    ...tutorialDoneSnapshot,
+    catalogProgress: { ...tutorialDoneProgress(), ...options.progress },
+  };
   vi.stubGlobal("fetch", (target: string, init?: { body?: string }) => {
     if (target.includes("grant_type=refresh_token")) {
       return Promise.resolve({ status: 200, text: async () => refreshedBody });
