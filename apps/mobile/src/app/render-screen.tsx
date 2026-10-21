@@ -32,6 +32,7 @@ import { SettingsScreen } from "../screens/settings/SettingsScreen";
 import { SpeechProbeScreen } from "../screens/speech-probe/SpeechProbeScreen";
 import { VisualNovelScreen } from "../screens/visual-novel/VisualNovelScreen";
 import { visualNovelStoryFor } from "../screens/visual-novel/visual-novel";
+import { LEGACY_TUTORIAL_FINAL_ID } from "./legacy-tutorial-progress";
 import type { Screen } from "./nav-state";
 import { renderCatalogFlow } from "./render-catalog";
 import { renderCatalogCover } from "./render-catalog-cover";
@@ -51,25 +52,13 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
       return (
         <JourneyMapScreen
           statusBarInset={wiring.safeAreaInsets.top}
-          completedStepCount={wiring.completedStepCount}
-          onStartStep={wiring.onStartStep}
-          completedEpisodeIntroIds={wiring.completedEpisodeIntroIds}
-          onStartEpisodeIntroUnit={wiring.onStartEpisodeIntroUnit}
-          completedMessengerUnitIds={wiring.completedMessengerUnitIds}
-          onStartMessengerUnit={wiring.onStartMessengerUnit}
-          completedPhoneCallUnitIds={wiring.completedPhoneCallUnitIds}
-          onStartPhoneCallUnit={wiring.onStartPhoneCallUnit}
-          completedVisualNovelUnitIds={
-            wiring.visualNovelProgress.status === "completed" ? ["cafe-arrival-visual-novel"] : []
-          }
-          onStartVisualNovelUnit={wiring.onStartVisualNovelUnit}
-          completedEpisodeFinalIds={wiring.completedEpisodeFinalIds}
-          onStartEpisodeFinal={wiring.onStartEpisodeFinal}
           onLayerChange={wiring.onScreenLayerChange}
           progressLoad={wiring.journeyMapProgressLoad}
           catalog={{
             sections: wiring.catalogSections,
             progress: wiring.catalogProgress,
+            legacyTutorialPassed:
+              wiring.completedEpisodeFinalIds.includes(LEGACY_TUTORIAL_FINAL_ID),
             onStartCover: wiring.onStartCatalogCover,
             onStartUnit: wiring.onStartCatalogUnit,
             unitItemCountOf: wiring.catalogUnitItemCountOf,

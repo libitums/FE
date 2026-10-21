@@ -1,13 +1,8 @@
-import { afterEach, expect, test, vi } from "vitest";
+import { afterEach, expect, test } from "vitest";
 import { cleanup, render, screen } from "@lynx-js/react/testing-library";
 
-import type { EpisodeFinalUnitId } from "../episode-final/episode-final.contract";
-import type { EpisodeIntroUnitId } from "../episode-intro/episode-intro.contract";
-import type { MessengerUnitId } from "../messenger/messenger.contract";
-import type { PhoneCallUnitId } from "../phone-call/phone-call.contract";
-import type { VisualNovelUnitId } from "../visual-novel/visual-novel.contract";
 import { JourneyMapScreen } from "./JourneyMapScreen";
-import type { JourneyStepId } from "./journey-map";
+import { catalogProps } from "./JourneyMapScreen.test-support";
 
 // `ui` 계층: ⟨2026-10-19⟩ 맵은 상태 표시줄 뒤까지 스크롤한다(사용자 결정). 셸이 위 안전 영역을 칠하지 않으므로
 // 맵이 그 높이를 받아 첫 내용 · 띠 자리 · 로딩 줄을 그만큼 내린다. 값은 `mapTopLayout`이 정하고 여기서는 결선만 본다.
@@ -17,18 +12,7 @@ afterEach(cleanup);
 function renderMap(statusBarInset?: number) {
   render(
     <JourneyMapScreen
-      completedStepCount={0}
-      onStartStep={vi.fn<(id: JourneyStepId) => void>()}
-      completedEpisodeIntroIds={[]}
-      onStartEpisodeIntroUnit={vi.fn<(id: EpisodeIntroUnitId) => void>()}
-      completedMessengerUnitIds={[]}
-      onStartMessengerUnit={vi.fn<(id: MessengerUnitId) => void>()}
-      completedPhoneCallUnitIds={[]}
-      onStartPhoneCallUnit={vi.fn<(id: PhoneCallUnitId) => void>()}
-      completedVisualNovelUnitIds={[]}
-      onStartVisualNovelUnit={vi.fn<(id: VisualNovelUnitId) => void>()}
-      completedEpisodeFinalIds={[]}
-      onStartEpisodeFinal={vi.fn<(id: EpisodeFinalUnitId) => void>()}
+      catalog={catalogProps()}
       progressLoad={{ status: "loading" }}
       {...(statusBarInset === undefined ? {} : { statusBarInset })}
     />,

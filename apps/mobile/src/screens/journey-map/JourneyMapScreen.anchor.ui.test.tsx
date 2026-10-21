@@ -1,9 +1,8 @@
-// 말풍선 배치 검증은 두 학습을 완료한 상태에서 진행한다.
-const initialCompletedStepCount = 2;
 import { afterEach, expect, test, vi } from "vitest";
 import { act, fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
-import { JourneyMapScreen } from "./JourneyMapScreen";
+import { catalogUnitDomId } from "./catalog-map";
+import { catalogProps, mapScreen } from "./JourneyMapScreen.test-support";
 
 // `ui` 계층: 말풍선이 탭 좌표가 아니라 **잰 유닛 자리**에 서는지, 그리고 스크롤이 계산한
 // 목적지로 가는지를 봅니다. 호스트의 질의는 jsdom에 없으므로 여기서 대역을 세웁니다 —
@@ -17,9 +16,14 @@ type Invocation = {
 
 type Rect = { top: number; height: number; left?: number; width?: number };
 
+// 첫째 유닛(S1)은 아래쪽, 둘째 유닛(S3)은 위쪽에 선다고 잰 값입니다.
+const nodeOf = (unitKey: string): string => `#${catalogUnitDomId("u01-water", unitKey)}`;
+const unitTestId = (unitKey: string): string =>
+  `ui-lynx-learning-unit-catalog-unit-u01-water-${unitKey}`;
+
 const rects: Record<string, Rect> = {
-  "#journey-step-node-ordering": { top: 700, height: 124 },
-  "#journey-step-node-greeting": { top: 200, height: 124 },
+  [nodeOf("S1")]: { top: 700, height: 124 },
+  [nodeOf("S3")]: { top: 200, height: 124 },
   "#journey-map-screen-scroll": { top: 60, height: 800 },
   "#journey-map-screen": { top: 0, height: 900 },
 };
@@ -71,25 +75,9 @@ function stubSelectorQuery(
 }
 
 function renderMap(): void {
-  render(
-    // ⟨개정 2026-09-29⟩ 표지 완료를 넘깁니다 — 미완료면 스텝 다섯이 통째로 잠겨(D6)
-    // 말풍선이 아예 열리지 않고, 이 파일이 보는 것(잰 자리 · 스크롤 목적지)이
-    // 관찰되지 않습니다.
-    <JourneyMapScreen
-      completedStepCount={initialCompletedStepCount}
-      onStartStep={() => {}}
-      completedEpisodeIntroIds={["tutorial-intro"]}
-      onStartEpisodeIntroUnit={() => {}}
-      completedMessengerUnitIds={[]}
-      onStartMessengerUnit={() => {}}
-      completedPhoneCallUnitIds={[]}
-      onStartPhoneCallUnit={() => {}}
-      completedVisualNovelUnitIds={[]}
-      onStartVisualNovelUnit={() => {}}
-      completedEpisodeFinalIds={[]}
-      onStartEpisodeFinal={() => {}}
-    />,
-  );
+  // 표지와 첫 레슨(S1)을 끝낸 진행으로 엽니다 — 열린 유닛이 없으면 말풍선이 열리지 않고, 이 파일이 보는 것
+  // (잰 자리 · 스크롤 목적지)이 관찰되지 않습니다.
+  render(mapScreen({ catalog: catalogProps({ progress: { "u01-water": ["intro", "S1"] } }) }));
 }
 
 function sheetTop(): string | null {
@@ -106,7 +94,7 @@ test("말풍선이 탭 좌표가 아니라 잰 유닛의 아래 모서리 밑에
 
   // 손가락이 유닛의 위쪽 끝을 눌렀습니다 — 탭 좌표만 믿으면 말풍선이 유닛에 걸칩니다.
   act(() => {
-    fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), { detail: { y: 705 } });
+    fireEvent.tap(screen.getByTestId(unitTestId("S1")), { detail: { y: 705 } });
   });
 
   // 유닛 아래 모서리 800 + 간격 8입니다. 끝(900 − 68 − 16 − 250 = 566)에 걸려 가둡니다 —
@@ -122,7 +110,7 @@ test("유닛을 스크롤 가운데로 옮기고, 말풍선이 그 스크롤을 
   const invocations = stubSelectorQuery(true);
 
   act(() => {
-    fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), { detail: { y: 705 } });
+    fireEvent.tap(screen.getByTestId(unitTestId("S1")), { detail: { y: 705 } });
   });
 
   // 유닛 중심 750을 가운데 460으로 — 스크롤 목적지는 290입니다.
@@ -145,13 +133,13 @@ test("자리를 못 재면 탭 좌표로 서고 가운데 정렬을 호스트에
   renderMap();
 
   act(() => {
-    fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), { detail: { y: 750 } });
+    fireEvent.tap(screen.getByTestId(unitTestId("S1")), { detail: { y: 750 } });
   });
 
   // 탭을 유닛 한가운데로 어림합니다: 750 + 반지름 50 + 간격 8.
   expect(sheetTop()).toContain("808px");
   expect(invocations).toContainEqual({
-    selector: "#journey-step-node-ordering",
+    selector: nodeOf("S1"),
     method: "scrollIntoView",
     params: { scrollIntoViewOptions: { block: "center", behavior: "smooth" } },
   });
@@ -168,7 +156,7 @@ test("재는 사이에 말풍선이 닫히면 늦게 온 답이 화면을 스크
   renderMap();
 
   act(() => {
-    fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), { detail: { y: 750 } });
+    fireEvent.tap(screen.getByTestId(unitTestId("S1")), { detail: { y: 750 } });
   });
   act(() => {
     fireEvent.tap(screen.getByTestId("step-sheet-close"), {});
@@ -179,19 +167,19 @@ test("재는 사이에 말풍선이 닫히면 늦게 온 답이 화면을 스크
   expect(invocations.filter((call) => call.method !== "boundingClientRect")).toEqual([]);
 });
 
-test("재는 사이에 다른 스텝을 누르면 옛 스텝의 답은 버리고 새 스텝으로만 스크롤한다", () => {
+test("재는 사이에 다른 유닛을 누르면 옛 유닛의 답은 버리고 새 유닛으로만 스크롤한다", () => {
   const invocations = stubSelectorQuery(true, true);
   renderMap();
 
   act(() => {
-    fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), { detail: { y: 750 } });
+    fireEvent.tap(screen.getByTestId(unitTestId("S1")), { detail: { y: 750 } });
   });
   act(() => {
-    fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-greeting"), { detail: { y: 250 } });
+    fireEvent.tap(screen.getByTestId(unitTestId("S3")), { detail: { y: 250 } });
   });
   flushDeferred();
 
-  // 첫 인사의 중심 250을 가운데 460으로 — 위로는 더 못 가므로 목적지는 0입니다.
+  // 둘째 유닛의 중심 250을 가운데 460으로 — 위로는 더 못 가므로 목적지는 0입니다.
   expect(invocations.filter((call) => call.method !== "boundingClientRect")).toEqual([
     {
       selector: "#journey-map-screen-scroll",
@@ -199,15 +187,15 @@ test("재는 사이에 다른 스텝을 누르면 옛 스텝의 답은 버리고
       params: { offset: 0, smooth: true },
     },
   ]);
-  expect(screen.getByTestId("step-sheet-title")).toHaveTextContent("Your First Hello");
-  // 첫 인사의 아래 모서리 300 + 간격 8입니다.
+  expect(screen.getByTestId("step-sheet-title")).toHaveTextContent("Lesson 2");
+  // 둘째 유닛의 아래 모서리 300 + 간격 8입니다.
   expect(sheetTop()).toContain("308px");
 });
 
 // 머리 카드 회피(정정 2) — 낮은 화면: 화면 800 · 스크롤 상자 높이 400이면 가운데 정렬이 표식을 위 210에 세워
 // 카드(아래 228) 뒤로 보냅니다. 카드 아래 + 24(252)에 세우는 목적지는 700 − 252 = 448입니다.
 const headerId = "#journey-map-screen-header";
-const nodeId = "#journey-step-node-ordering";
+const nodeId = nodeOf("S1");
 const shortTable = (stepLeft: number): Record<string, Rect> => ({
   ...rects,
   [nodeId]: { top: 700, height: 124, left: stepLeft, width: 100 },
@@ -225,7 +213,7 @@ const stepIntoViews = (invocations: Invocation[]) =>
 
 function tapOrdering(): void {
   act(() => {
-    fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), { detail: { y: 750 } });
+    fireEvent.tap(screen.getByTestId(unitTestId("S1")), { detail: { y: 750 } });
   });
 }
 

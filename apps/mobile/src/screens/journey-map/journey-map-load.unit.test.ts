@@ -10,7 +10,6 @@ import {
   mapNodeStatusUnder,
   nodeAccessOf,
   progressLoadRowAnnouncementFor,
-  stepNodeStatusUnder,
 } from "./journey-map-load";
 import type { JourneyMapNodeAccess, JourneyMapProgressLoad } from "./journey-map-load.contract";
 import type { JourneyMapItemStatus, JourneyMapNodeStatus } from "./journey-map-types";
@@ -40,23 +39,6 @@ describe("ML2 mapNodeStatusUnder", () => {
 
   test.each(statuses)("ML2. checking이면 %s가 checking으로 덮인다", (status) => {
     expect(mapNodeStatusUnder("checking", status)).toBe("checking");
-  });
-});
-
-describe("ML3 stepNodeStatusUnder", () => {
-  const rows = [
-    ["locked", 0, 0, "locked"],
-    ["available", 0, 0, "current"],
-    ["completed", 0, 2, "done"],
-    ["available", 3, 1, "locked"],
-  ] as const;
-
-  test.each(rows)("ML3. open (%s, %i, %i) -> %s", (itemStatus, index, count, expected) => {
-    expect(stepNodeStatusUnder("open", itemStatus, index, count)).toBe(expected);
-  });
-
-  test.each(rows)("ML3. checking (%s, %i, %i) -> checking", (itemStatus, index, count) => {
-    expect(stepNodeStatusUnder("checking", itemStatus, index, count)).toBe("checking");
   });
 });
 
@@ -110,18 +92,10 @@ function withoutComments(source: string): string {
   return source.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
 }
 
-describe("SC1 노드 일곱의 잠금 가드", () => {
+describe("SC1 노드의 잠금 가드", () => {
   // 스페셜 항목의 잠금 가드는 공유 항목 `SpecialUnitMapItem` 한 곳이 집니다. 어댑터는 그것에 위임하고,
   // 카탈로그 레슨 노드는 `LearningUnit` 쪽 가드를 스스로 집니다.
-  const adapters = [
-    "EpisodeIntroMapItem",
-    "MessengerMapItem",
-    "PhoneCallMapItem",
-    "VisualNovelMapItem",
-    "EpisodeFinalMapItem",
-    "CatalogCoverMapItem",
-    "CatalogUnitNode",
-  ];
+  const adapters = ["CatalogCoverMapItem", "CatalogUnitNode"];
   const guards = ["SpecialUnitMapItem", "CatalogUnitNode"];
 
   test.each([...adapters, "SpecialUnitMapItem"])('SC1. %s — `!== "locked"` 0건', (name) => {
@@ -144,7 +118,7 @@ describe("SC3 화면 쪽 새 파일", () => {
       (name) => /^journey-map-load.*\.ts$/.test(name) && !name.includes(".test."),
     ),
     "JourneyProgressLoadRow.tsx",
-    "TutorialMapItem.tsx",
+    "FirstUnitMapTooltip.tsx",
   ];
 
   const limitedFiles = [

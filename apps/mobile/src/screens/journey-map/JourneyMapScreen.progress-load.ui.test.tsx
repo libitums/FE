@@ -2,66 +2,45 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
 import { FirstUnitGuideProvider } from "../../components/first-unit-guide";
-import type { EpisodeFinalUnitId } from "../episode-final/episode-final.contract";
-import type { EpisodeIntroUnitId } from "../episode-intro/episode-intro.contract";
-import type { MessengerUnitId } from "../messenger/messenger.contract";
-import type { PhoneCallUnitId } from "../phone-call/phone-call.contract";
-import type { VisualNovelUnitId } from "../visual-novel/visual-novel.contract";
 import { JourneyMapScreen, type JourneyMapScreenProps } from "./JourneyMapScreen";
-import { journeySteps } from "./journey-map";
-import type { JourneyMapCatalogProps } from "./catalog-map.contract";
+import type { CatalogProgress } from "../../lib/catalog-progress";
+import { tutorialDoneProgress } from "../../app/test-helpers/progress-seed";
+import type { CatalogMapSection, JourneyMapCatalogProps } from "./catalog-map.contract";
 import type { JourneyMapProgressLoad } from "./journey-map-load.contract";
+import { realSections } from "./JourneyMapScreen.tutorial-u00.test-support";
 
 // `ui` 계층: 맵 화면이 progressLoad를 노드 상태와 로딩 줄로 옮기는지 봅니다. 상태 전이 · 덮기 규칙은
-// unit이 지므로 여기서는 렌더 결과(data-status · 줄 · 콜백)만 봅니다.
+// unit이 지므로 여기서는 렌더 결과(data-status · 줄 · 콜백)만 봅니다. 맵은 내장 카탈로그(u00 ~ u03)입니다.
 
 afterEach(() => {
   cleanup();
 });
 
-const catalogIds = ["u01-water", "u02-checkin"] as const;
-const lessonKeys = ["S1", "S3"];
-
 function handlers() {
   return {
-    onStartStep: vi.fn<(id: string) => void>(),
-    onStartEpisodeIntroUnit: vi.fn<(id: EpisodeIntroUnitId) => void>(),
-    onStartMessengerUnit: vi.fn<(id: MessengerUnitId) => void>(),
-    onStartPhoneCallUnit: vi.fn<(id: PhoneCallUnitId) => void>(),
-    onStartVisualNovelUnit: vi.fn<(id: VisualNovelUnitId) => void>(),
-    onStartEpisodeFinal: vi.fn<(id: EpisodeFinalUnitId) => void>(),
     onStartCover: vi.fn<(episodeId: string) => void>(),
     onStartUnit: vi.fn<(episodeId: string, unitKey: string) => void>(),
   };
 }
 type Handlers = ReturnType<typeof handlers>;
 
-function catalogOf(h: Handlers, withUnavailable = false): JourneyMapCatalogProps {
+const pendingSection: CatalogMapSection = {
+  kind: "catalog-unavailable",
+  episodeId: "u09-later",
+  ordinal: 9,
+  title: "Later",
+  reason: "pending",
+};
+
+function catalogOf(
+  h: Handlers,
+  withUnavailable = false,
+  progress: CatalogProgress = {},
+): JourneyMapCatalogProps {
   return {
-    sections: [
-      ...catalogIds.map((episodeId, i) => ({
-        kind: "catalog-ready" as const,
-        episodeId,
-        ordinal: i + 1,
-        title: "Title",
-        lessonKeys,
-        finalKey: "RP",
-        completionKeys: ["RP"],
-        cultureKeys: [],
-      })),
-      ...(withUnavailable
-        ? [
-            {
-              kind: "catalog-unavailable" as const,
-              episodeId: "u09-later",
-              ordinal: 9,
-              title: "Later",
-              reason: "pending" as const,
-            },
-          ]
-        : []),
-    ],
-    progress: {},
+    sections: withUnavailable ? [...realSections, pendingSection] : realSections,
+    progress,
+    legacyTutorialPassed: false,
     onStartCover: h.onStartCover,
     onStartUnit: h.onStartUnit,
   };
@@ -70,27 +49,10 @@ function catalogOf(h: Handlers, withUnavailable = false): JourneyMapCatalogProps
 type Overrides = Partial<JourneyMapScreenProps>;
 
 function mapScreen(h: Handlers, overrides: Overrides = {}) {
-  return (
-    <JourneyMapScreen
-      completedStepCount={0}
-      completedEpisodeIntroIds={[]}
-      completedMessengerUnitIds={[]}
-      completedPhoneCallUnitIds={[]}
-      completedVisualNovelUnitIds={[]}
-      completedEpisodeFinalIds={[]}
-      onStartStep={h.onStartStep}
-      onStartEpisodeIntroUnit={h.onStartEpisodeIntroUnit}
-      onStartMessengerUnit={h.onStartMessengerUnit}
-      onStartPhoneCallUnit={h.onStartPhoneCallUnit}
-      onStartVisualNovelUnit={h.onStartVisualNovelUnit}
-      onStartEpisodeFinal={h.onStartEpisodeFinal}
-      catalog={catalogOf(h)}
-      {...overrides}
-    />
-  );
+  return <JourneyMapScreen catalog={catalogOf(h)} {...overrides} />;
 }
 
-// 스텝 · 레슨은 `LearningUnit`, 스페셜은 `SpecialUnit`이 그립니다 — 둘 다 루트에만 `data-status`가 있습니다.
+// 레슨은 `LearningUnit`, 스페셜은 `SpecialUnit`이 그립니다 — 둘 다 루트에만 `data-status`가 있습니다.
 const nodeSelector =
   '[data-testid^="ui-lynx-learning-unit-"][data-status], [data-testid^="ui-lynx-special-unit-"][data-status]';
 const nodes = (): Element[] =>
@@ -98,38 +60,28 @@ const nodes = (): Element[] =>
 const statusOf = (testId: string): string | null =>
   screen.getByTestId(testId).getAttribute("data-status");
 
-const intro = "ui-lynx-special-unit-tutorial-intro";
-const tutorialFinal = "ui-lynx-special-unit-tutorial-final-test";
-const specialIds = [
-  "appointment-confirmation",
-  "appointment-confirmation-phone-call",
-  "cafe-arrival-visual-novel",
-] as const;
 const coverId = (id: string) => `ui-lynx-special-unit-catalog-cover-${id}`;
 const unitId = (id: string, key: string) =>
   `ui-lynx-${key === "RP" ? "special" : "learning"}-unit-catalog-unit-${id}-${key}`;
+// 첫 구획(내장 튜토리얼)의 표지입니다.
+const intro = coverId("u00-tutorial");
 
 function expectEveryNode(status: string): void {
   const all = nodes();
-  // 튜토리얼 열 + 카탈로그 표지 · 레슨 · 최종 — 비어 있으면 아래 단언이 헛돕니다.
-  expect(all.length).toBeGreaterThanOrEqual(10 + catalogIds.length * (1 + lessonKeys.length + 1));
+  // 구획마다 표지 · 레슨 · 최종이 있습니다 — 비어 있으면 아래 단언이 헛돕니다.
+  expect(all.length).toBeGreaterThanOrEqual(15);
   for (const node of all) {
     expect(node.getAttribute("data-status")).toBe(status);
   }
 }
 
 describe("JourneyMapScreen progressLoad — 확인 중", () => {
-  test("MN1. checking이면 튜토리얼 · 특별 유닛 · 최종 · 카탈로그 노드 전부가 checking이고 누를 수 없다", () => {
+  test("MN1. checking이면 표지 · 레슨 · 최종 노드 전부가 checking이고 누를 수 없다", () => {
     render(mapScreen(handlers(), { progressLoad: { status: "checking" } }));
 
     expect(statusOf(intro)).toBe("checking");
-    for (const step of journeySteps) {
-      expect(statusOf(`ui-lynx-learning-unit-${step.id}`)).toBe("checking");
-    }
-    for (const id of specialIds) {
-      expect(statusOf(`ui-lynx-special-unit-${id}`)).toBe("checking");
-    }
-    expect(statusOf(tutorialFinal)).toBe("checking");
+    expect(statusOf(unitId("u00-tutorial", "S1"))).toBe("checking");
+    expect(statusOf(unitId("u00-tutorial", "RP"))).toBe("checking");
     expect(statusOf(coverId("u01-water"))).toBe("checking");
     expect(statusOf(unitId("u01-water", "S1"))).toBe("checking");
     expect(statusOf(unitId("u01-water", "RP"))).toBe("checking");
@@ -177,16 +129,15 @@ describe("JourneyMapScreen progressLoad — 확인 중", () => {
     rerender(
       mapScreen(h, {
         progressLoad: { status: "known" },
-        completedStepCount: 2,
-        completedEpisodeIntroIds: ["tutorial-intro"],
+        catalog: catalogOf(h, false, { "u00-tutorial": ["intro", "S1"] }),
       }),
     );
 
     expect(screen.getByTestId(intro)).toBe(cover);
     expect(statusOf(intro)).toBe("clear");
-    expect(statusOf(`ui-lynx-learning-unit-${journeySteps[0]?.id}`)).toBe("clear");
-    expect(statusOf(`ui-lynx-learning-unit-${journeySteps[1]?.id}`)).toBe("clear");
-    expect(statusOf(`ui-lynx-learning-unit-${journeySteps[2]?.id}`)).toBe("active");
+    expect(statusOf(unitId("u00-tutorial", "S1"))).toBe("clear");
+    expect(statusOf(unitId("u00-tutorial", "S2"))).toBe("available");
+    expect(statusOf(unitId("u00-tutorial", "S3"))).toBe("default");
   });
 
   test("MN8. (§20) checking에서는 노드를 눌러도 말풍선이 없으니 머리 띠가 없다 (자리 막대도 없다)", () => {
@@ -196,7 +147,7 @@ describe("JourneyMapScreen progressLoad — 확인 중", () => {
     expect(
       screen.queryByTestId("ui-lynx-episode-header-count-placeholder"),
     ).not.toBeInTheDocument();
-    fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-${journeySteps[0]!.id}`), {});
+    fireEvent.tap(screen.getByTestId(unitId("u00-tutorial", "S1")), {});
     expect(screen.queryByTestId("ui-lynx-episode-header")).not.toBeInTheDocument();
   });
 
@@ -256,7 +207,7 @@ describe("JourneyMapScreen progressLoad — 실패 · 재시도", () => {
     expect(onRetry).toHaveBeenCalledTimes(1);
   });
 
-  test("MN5(§18). failed에서는 노드가 열린다 — 씨앗이면 튜토리얼 표지만 available, 나머지 locked", () => {
+  test("MN5(§18). failed에서는 노드가 열린다 — 씨앗이면 첫 구획의 표지만 available, 나머지 locked", () => {
     const h = handlers();
     render(mapScreen(h, { progressLoad: { status: "failed", onRetry: vi.fn<() => void>() } }));
 
@@ -266,20 +217,21 @@ describe("JourneyMapScreen progressLoad — 실패 · 재시도", () => {
       expect(node.getAttribute("data-status")).toBe("default");
     }
     fireEvent.tap(screen.getByTestId(intro), {});
-    expect(h.onStartEpisodeIntroUnit).toHaveBeenCalledWith("tutorial-intro");
+    expect(h.onStartCover).toHaveBeenCalledWith("u00-tutorial");
   });
 
-  test("MN11. failed 줄이 선 채 스텝 말풍선이 열리면 재시도 버튼이 낭독에서 가려진다", () => {
+  test("MN11. failed 줄이 선 채 말풍선이 열리면 재시도 버튼이 낭독에서 가려진다", () => {
+    const h = handlers();
     render(
-      mapScreen(handlers(), {
-        completedEpisodeIntroIds: ["tutorial-intro"],
+      mapScreen(h, {
+        catalog: catalogOf(h, false, { "u00-tutorial": ["intro"] }),
         progressLoad: { status: "failed", onRetry: vi.fn<() => void>() },
       }),
     );
     const retry = () => screen.getByTestId("journey-progress-load-row-retry");
     expect(retry()).toHaveAttribute("accessibility-elements-hidden", "false");
 
-    fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-${journeySteps[0]!.id}`), {});
+    fireEvent.tap(screen.getByTestId(unitId("u00-tutorial", "S1")), {});
 
     expect(screen.getByTestId("step-sheet-panel")).toBeInTheDocument();
     expect(retry()).toHaveAttribute("accessibility-elements-hidden", "true");
@@ -296,34 +248,31 @@ describe("JourneyMapScreen progressLoad — 실패 · 재시도", () => {
     expect(statusOf(intro)).toBe("available");
     expect(nodes().some((node) => node.getAttribute("data-status") === "checking")).toBe(false);
     fireEvent.tap(screen.getByTestId(intro), {});
-    expect(h.onStartEpisodeIntroUnit).toHaveBeenCalledTimes(1);
+    expect(h.onStartCover).toHaveBeenCalledTimes(1);
   });
 });
 
 describe("JourneyMapScreen progressLoad — 가드", () => {
-  const allDone: Overrides = {
-    completedStepCount: journeySteps.length,
-    completedEpisodeIntroIds: ["tutorial-intro"],
-    completedMessengerUnitIds: ["appointment-confirmation"],
-    completedPhoneCallUnitIds: ["appointment-confirmation-phone-call"],
-    completedVisualNovelUnitIds: ["cafe-arrival-visual-novel"],
-    completedEpisodeFinalIds: ["tutorial-final-test"],
-  };
-  const tables: readonly (readonly [string, Overrides])[] = [
+  const tables: readonly (readonly [string, CatalogProgress])[] = [
     ["빈 씨앗", {}],
-    ["스텝 2 + 표지", { completedStepCount: 2, completedEpisodeIntroIds: ["tutorial-intro"] }],
-    ["전부 완료", allDone],
+    ["표지 + 첫 레슨", { "u00-tutorial": ["intro", "S1"] }],
+    ["튜토리얼 전부 완료", tutorialDoneProgress()],
   ];
 
   test.each(tables)(
     "MN6. %s — progressLoad를 생략한 것과 known의 DOM이 같다",
-    (_name, overrides) => {
+    (_name, progress) => {
       const h = handlers();
-      const omitted = render(mapScreen(h, overrides));
+      const omitted = render(mapScreen(h, { catalog: catalogOf(h, false, progress) }));
       const omittedHtml = screen.getByTestId("journey-map-screen").outerHTML;
       omitted.unmount();
 
-      render(mapScreen(h, { ...overrides, progressLoad: { status: "known" } }));
+      render(
+        mapScreen(h, {
+          catalog: catalogOf(h, false, progress),
+          progressLoad: { status: "known" },
+        }),
+      );
 
       expect(screen.getByTestId("journey-map-screen").outerHTML).toBe(omittedHtml);
       expect(screen.queryByTestId("journey-progress-load-row")).not.toBeInTheDocument();
@@ -331,15 +280,16 @@ describe("JourneyMapScreen progressLoad — 가드", () => {
     },
   );
 
-  test("MN6. 상태 표 — 빈 씨앗은 표지만 available, 스텝 2는 앞 둘 clear · 셋째 active", () => {
+  test("MN6. 상태 표 — 빈 씨앗은 표지만 available, 표지 + 첫 레슨은 앞 둘 clear · 셋째 available", () => {
     const h = handlers();
     const empty = render(mapScreen(h));
     expect(statusOf(intro)).toBe("available");
-    expect(statusOf(`ui-lynx-learning-unit-${journeySteps[0]?.id}`)).toBe("default");
+    expect(statusOf(unitId("u00-tutorial", "S1"))).toBe("default");
     empty.unmount();
 
-    render(mapScreen(h, tables[1]?.[1] ?? {}));
-    expect(statusOf(`ui-lynx-learning-unit-${journeySteps[1]?.id}`)).toBe("clear");
-    expect(statusOf(`ui-lynx-learning-unit-${journeySteps[2]?.id}`)).toBe("active");
+    render(mapScreen(h, { catalog: catalogOf(h, false, tables[1]?.[1] ?? {}) }));
+    expect(statusOf(intro)).toBe("clear");
+    expect(statusOf(unitId("u00-tutorial", "S1"))).toBe("clear");
+    expect(statusOf(unitId("u00-tutorial", "S2"))).toBe("available");
   });
 });

@@ -1,25 +1,13 @@
 // 여정 맵이 호스트에 묻고 시키는 일입니다 — 요소의 자리를 재고, 스크롤을 옮깁니다.
 // 계산은 여기 없습니다(`journey-map-sheet.ts`의 `stepSheetPlacement`).
 
-import type { JourneyStepId } from "./journey-map";
-
 // 질의가 집는 손잡이 둘입니다. **클래스가 아니라 `id`입니다** — Lynx의 `invoke`는 ID
 // 선택자만 받습니다(`SELECTOR_NOT_SUPPORTED`). 클래스로 고르면 아무 일도 일어나지
 // 않습니다.
 export const screenId = "journey-map-screen";
 export const scrollId = "journey-map-screen-scroll";
 
-/** 구획 하나의 상자 id입니다 — 구획이 어디서 시작하는지 `#id`로 잴 수 있게 둡니다. */
-export function episodeSectionId(episodeId: string): string {
-  return `journey-map-screen-episode-${episodeId}`;
-}
-
-/** 스텝 상자의 `id`입니다 — `JourneyStepNode`가 붙이고 맵이 집습니다. */
-export function stepNodeId(id: JourneyStepId): string {
-  return `journey-step-node-${id}`;
-}
-
-/** 튜토리얼 유닛 셀의 id입니다 — `journey-map-unit-<itemId>`. */
+/** 튜토리얼 유닛 셀의 id입니다 — `journey-map-unit-<itemId>`. 옛 진행 씨앗을 쓰는 통합 테스트가 지워질 때 함께 지웁니다. */
 export function mapUnitDomId(itemId: string): string {
   return `journey-map-unit-${itemId}`;
 }

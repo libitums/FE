@@ -16,7 +16,10 @@ import "./catalog-map.css";
 
 // 본문이 없거나 잠긴 에피소드의 구획입니다 — 구분선 · 흐린 자물쇠 표식 · 사유 캡션이고, 구획 전체가 낭독
 // 요소 하나입니다(`EpisodePendingSection`과 같은 꼴). 머리는 그리지 않습니다.
-export function CatalogUnavailableSection({ section }: CatalogUnavailableSectionProps): ReactNode {
+export function CatalogUnavailableSection({
+  section,
+  hidden,
+}: CatalogUnavailableSectionProps): ReactNode {
   const copy = useUiCopy();
   const caption = copy.catalogMap.caption[catalogCaptionKindOf(section.reason)];
 
@@ -28,6 +31,7 @@ export function CatalogUnavailableSection({ section }: CatalogUnavailableSection
       data-testid={`catalog-unavailable-${section.episodeId}`}
       accessibility-element={true}
       accessibility-label={catalogUnavailableAccessibilityLabel(section, copy)}
+      {...(hidden === undefined ? {} : { "accessibility-elements-hidden": hidden })}
     >
       <view className="episode-pending-divider" />
       <view className="episode-pending-veil" accessibility-elements-hidden={true}>

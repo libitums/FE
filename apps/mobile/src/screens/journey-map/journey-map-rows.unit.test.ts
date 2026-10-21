@@ -2,17 +2,7 @@ import { describe, expect, test } from "vitest";
 
 import { catalogUnitNodesOf } from "./catalog-map";
 import type { CatalogReadySection, CatalogUnitNode } from "./catalog-map.contract";
-import { journeyMapSections } from "./journey-map";
-import type { JourneyMapItem } from "./journey-map";
-import {
-  catalogNodePlacement,
-  catalogRowsOf,
-  mapRowItems,
-  mapRowsOf,
-  tutorialItemId,
-  tutorialItemPlacement,
-  tutorialRowsOf,
-} from "./journey-map-rows";
+import { catalogNodePlacement, catalogRowsOf, mapRowItems, mapRowsOf } from "./journey-map-rows";
 import type { MapRow, MapUnitPlacement } from "./journey-map-rows";
 
 // `unit` 계층: 줄 나누기의 입출력만 봅니다 — DOM · 컴포넌트를 import하지 않습니다.
@@ -40,8 +30,6 @@ function readySection(
     cultureKeys,
   };
 }
-
-const tutorialItems = journeyMapSections[0]!.items;
 
 describe("mapRowsOf", () => {
   test("R1. 빈 목록은 빈 줄 목록이다", () => {
@@ -146,45 +134,12 @@ describe("mapRowItems", () => {
 });
 
 describe("배치 표", () => {
-  test("R11. 표 둘이 계약의 값과 리터럴로 같다", () => {
-    expect(tutorialItemPlacement).toEqual({
-      standard: "paired",
-      "episode-intro": "solo",
-      messenger: "solo",
-      "phone-call": "solo",
-      "visual-novel": "solo",
-      "episode-final": "solo",
-    });
+  test("R11. 표가 계약의 값과 리터럴로 같다", () => {
     expect(catalogNodePlacement).toEqual({ lesson: "paired", culture: "solo", final: "solo" });
   });
 });
 
-describe("tutorialRowsOf · catalogRowsOf", () => {
-  test("R8. 실데이터 튜토리얼 구획은 아홉 줄이고 첫 pair가 greeting · introduction이다", () => {
-    const rows = tutorialRowsOf(tutorialItems, 2);
-
-    expect(kindsOf(rows)).toEqual([
-      "solo",
-      "pair",
-      "pair",
-      "solo",
-      "solo",
-      "solo",
-      "pair",
-      "pair",
-      "solo",
-    ]);
-    const first = rows[1];
-    expect(first?.kind).toBe("pair");
-    if (first?.kind === "pair") {
-      expect(first.left).toBe(tutorialItems[1]);
-      expect(first.right).toBe(tutorialItems[2]);
-      expect((first.left as { step: { id: string } }).step.id).toBe("greeting");
-      expect((first.right as { step: { id: string } }).step.id).toBe("introduction");
-    }
-    expect(rows.flatMap(mapRowItems)).toHaveLength(13);
-  });
-
+describe("catalogRowsOf", () => {
   test("R9. 레슨 8 + 최종은 pair 넷 뒤 solo 하나다", () => {
     const nodes = catalogUnitNodesOf(readySection(8), {});
     const rows = catalogRowsOf(nodes, 2);
@@ -250,13 +205,6 @@ describe("tutorialRowsOf · catalogRowsOf", () => {
   });
 
   test("R13. 열 1이면 모든 줄이 solo이고 줄 수 = 유닛 수이며 순서가 보존된다", () => {
-    const tutorial = tutorialRowsOf(tutorialItems, 1);
-    expect(tutorial).toHaveLength(13);
-    expect(tutorial.every((row) => row.kind === "solo")).toBe(true);
-    tutorial.forEach((row, index) => {
-      expect(mapRowItems(row)[0]).toBe(tutorialItems[index]);
-    });
-
     for (const lessons of [8, 7]) {
       const nodes = catalogUnitNodesOf(readySection(lessons), {});
       const rows = catalogRowsOf(nodes, 1);
@@ -264,26 +212,5 @@ describe("tutorialRowsOf · catalogRowsOf", () => {
       expect(rows.every((row) => row.kind === "solo")).toBe(true);
       expect(rows.flatMap(mapRowItems)).toEqual(nodes);
     }
-  });
-});
-
-describe("tutorialItemId", () => {
-  test("R14. 스텝은 step.id, 특별 유닛은 id다", () => {
-    const expected = [
-      "tutorial-intro",
-      "greeting",
-      "introduction",
-      "ordering",
-      "appointment",
-      "appointment-confirmation",
-      "appointment-confirmation-phone-call",
-      "cafe-arrival-visual-novel",
-      "directions",
-      "tutorial-listening",
-      "tutorial-speaking",
-      "tutorial-writing",
-      "tutorial-final-test",
-    ];
-    expect(tutorialItems.map((item: JourneyMapItem) => tutorialItemId(item))).toEqual(expected);
   });
 });

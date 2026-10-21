@@ -35,7 +35,6 @@ import {
   catalogUnitStatus,
   noCatalogMapSections,
 } from "./catalog-map";
-import { episodeSectionId } from "./journey-map-scroll";
 
 // `unit` 계층: 카탈로그 → 구획 파생, 잠금, 셀렉터 토큰, 진행, 캡션, 라벨의 입출력만 봅니다.
 
@@ -191,11 +190,9 @@ describe("셀렉터 토큰", () => {
     expect(catalogSelectorToken("a_b")).not.toBe(catalogSelectorToken("a b"));
   });
 
-  test("CM5. 구획 DOM id는 카탈로그 접두에 토큰을 붙이고 튜토리얼 접두와 다르다", () => {
+  test("CM5. 구획 DOM id는 카탈로그 접두에 토큰을 붙인다", () => {
     expect(catalogSectionDomId("u01-water")).toBe("journey-map-screen-catalog-u01-water");
     expect(catalogSectionDomId("a:b")).toBe("journey-map-screen-catalog-a_3a_b");
-    expect(catalogSectionDomId("tutorial")).not.toBe(episodeSectionId("tutorial"));
-    expect(episodeSectionId("tutorial").startsWith("journey-map-screen-catalog-")).toBe(false);
   });
 });
 
