@@ -111,6 +111,12 @@ export type CatalogCoverMapItemProps = {
   readonly onSelect: (episodeId: string) => void;
 };
 
+export type FirstUnitMapTooltipProps = {
+  /** 고를 수 있을 때만 onSelect가 불립니다. */
+  readonly status: JourneyMapNodeStatus;
+  readonly onSelect: () => void;
+};
+
 export type CatalogUnitNodeProps = {
   readonly episodeId: string;
   readonly episodeOrdinal: number;
@@ -162,4 +168,5 @@ export type CatalogMapTestId =
   | `catalog-pending-${string}`
   | "catalog-header-unavailable"
   // CatalogMapSections 루트(가림 속성 자리)
-  | "journey-map-screen-catalog";
+  | "journey-map-screen-catalog"
+  | "first-unit-map-tooltip";
