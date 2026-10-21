@@ -54,23 +54,25 @@ export function CatalogMapSections({
           );
         }
         // 받는 중인 에피소드는 맨 끝 「준비 중」과 같은 그림입니다 — 곧 열리는 에피소드라 같은 말을 합니다(ADR-0071).
-        return section.reason === "pending" ? (
-          <CatalogComingSoonSection
+        // 낭독 요소 자신에 붙인 가림은 자손만 가리므로(ADR-0016 D5) 구획마다 래퍼가 대신 가립니다.
+        return (
+          <view
             key={section.episodeId}
-            ordinal={section.ordinal}
-            episodeId={section.episodeId}
-            hidden={guiding ? covered : undefined}
-          />
-        ) : (
-          <CatalogUnavailableSection
-            key={section.episodeId}
-            section={section}
-            hidden={guiding ? covered : undefined}
-          />
+            className="catalog-map-section-cover"
+            accessibility-elements-hidden={covered}
+          >
+            {section.reason === "pending" ? (
+              <CatalogComingSoonSection ordinal={section.ordinal} episodeId={section.episodeId} />
+            ) : (
+              <CatalogUnavailableSection section={section} />
+            )}
+          </view>
         );
       })}
       {comingSoon === null ? null : (
-        <CatalogComingSoonSection ordinal={comingSoon} hidden={guiding ? true : undefined} />
+        <view className="catalog-map-section-cover" accessibility-elements-hidden={guiding}>
+          <CatalogComingSoonSection ordinal={comingSoon} />
+        </view>
       )}
     </view>
   );

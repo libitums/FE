@@ -526,7 +526,9 @@ test("I5c. 내장 카탈로그(네 에피소드)로 맵이 서면 u03 구획 뒤
     "accessibility-label",
     "Episode 4. Coming soon. We're preparing the next story.",
   );
-  expect(screen.getByTestId("journey-map-screen-catalog").lastElementChild).toBe(comingSoon);
+  expect(screen.getByTestId("journey-map-screen-catalog").lastElementChild).toBe(
+    comingSoon.parentElement,
+  );
   expect(screen.getAllByTestId("catalog-coming-soon")).toHaveLength(1);
 });
 

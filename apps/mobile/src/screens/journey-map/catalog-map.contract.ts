@@ -112,8 +112,6 @@ export type CatalogEpisodeSectionProps = {
 
 export type CatalogUnavailableSectionProps = {
   readonly section: CatalogUnavailableSection;
-  /** 참이면 구획 전체를 낭독에서 가립니다(첫 유닛 안내가 다른 구획을 가리키는 동안). */
-  readonly hidden?: boolean;
 };
 
 export type CatalogCoverMapItemProps = {

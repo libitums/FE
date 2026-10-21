@@ -57,7 +57,7 @@ describe("CatalogComingSoonSection", () => {
     );
     expect(section).not.toHaveAttribute("accessibility-traits", "button");
     const root = screen.getByTestId("journey-map-screen-catalog");
-    expect(root.lastElementChild).toBe(section);
+    expect(root.lastElementChild).toBe(section.parentElement);
   });
 
   test("CSU2. 마지막이 준비 중이거나 구획이 없으면 서지 않는다", () => {

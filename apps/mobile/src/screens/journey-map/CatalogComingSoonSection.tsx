@@ -17,8 +17,6 @@ export type CatalogComingSoonSectionProps = {
    * `catalog-pending-<id>`를 답니다 — 다 받으면 같은 자리에 열린 구획이 섭니다(ADR-0071 D4). 없으면 맨 끝 구획입니다.
    */
   readonly episodeId?: string;
-  /** 참이면 구획 전체를 낭독에서 가립니다(첫 유닛 안내가 다른 구획을 가리키는 동안). */
-  readonly hidden?: boolean;
 };
 
 // 빈 지도의 줄입니다 — 표지 하나, 두 열 두 줄(실제 배치와 같습니다). 줄마다 조금씩 더 흐립니다.
@@ -30,7 +28,6 @@ const ghostRows = [["cover"], ["a", "b"], ["c", "d"]] as const;
 export function CatalogComingSoonSection({
   ordinal,
   episodeId,
-  hidden,
 }: CatalogComingSoonSectionProps): ReactNode {
   const copy = useUiCopy();
   const episodeLabel = copy.catalogMap.episodeLabel(ordinal);
@@ -42,7 +39,6 @@ export function CatalogComingSoonSection({
       data-testid={episodeId === undefined ? "catalog-coming-soon" : `catalog-pending-${episodeId}`}
       accessibility-element={true}
       accessibility-label={copy.catalogMap.comingSoon.label(episodeLabel)}
-      {...(hidden === undefined ? {} : { "accessibility-elements-hidden": hidden })}
     >
       <view className="episode-pending-divider" />
       <view className="catalog-coming-soon-stage" accessibility-elements-hidden={true}>
