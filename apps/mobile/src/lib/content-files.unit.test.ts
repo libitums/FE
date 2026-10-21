@@ -103,4 +103,48 @@ describe("localOrRemoteUrl", () => {
     expect(localOrRemoteUrl("../x.jpg", remote)).toBeNull();
     expect(fileUrl).not.toHaveBeenCalledWith("../x.jpg");
   });
+
+  type WithBundled = (
+    path: string,
+    remoteUrlOf: (path: string) => string | null,
+    bundledUrlOf?: (relative: string) => string | null,
+  ) => string | null;
+  const resolveUrl = localOrRemoteUrl as unknown as WithBundled;
+
+  test("BI3. 받아 둔 파일 > 내장 > 원격 순이고, 규칙 밖 경로는 파일 · 내장을 찾지 않고 원격 규칙에 맡긴다", () => {
+    const fileUrl = vi.fn((path: string) =>
+      path === "images/a.webp" ? "file:///c/images/a.webp" : "",
+    );
+    vi.stubGlobal("NativeModules", { ContentFileModule: { download: vi.fn(), fileUrl } });
+    const remote = (path: string) => `https://cdn.example/${path}`;
+    const bundled = vi.fn((relative: string) =>
+      relative === "images/a.webp" || relative === "images/b.webp"
+        ? `/static/image/${relative}`
+        : null,
+    );
+
+    expect(resolveUrl("images/a.webp", remote, bundled)).toBe("file:///c/images/a.webp");
+    expect(resolveUrl("content/images/b.webp", remote, bundled)).toBe(
+      "/static/image/images/b.webp",
+    );
+    expect(resolveUrl("images/c.webp", remote, bundled)).toBe("https://cdn.example/images/c.webp");
+
+    bundled.mockClear();
+    expect(resolveUrl("../x.webp", remote, bundled)).toBe("https://cdn.example/../x.webp");
+    expect(bundled).not.toHaveBeenCalled();
+    expect(fileUrl).not.toHaveBeenCalledWith("../x.webp");
+  });
+
+  test("BI5. 셋째 인자를 주지 않으면 내장 조회 없이 지금 동작 그대로다", () => {
+    vi.stubGlobal("NativeModules", {
+      ContentFileModule: {
+        download: vi.fn(),
+        fileUrl: (path: string) => (path === "images/a.jpg" ? "file:///c/images/a.jpg" : ""),
+      },
+    });
+    const remote = (path: string) => `https://cdn.example/${path}`;
+
+    expect(resolveUrl("images/a.jpg", remote)).toBe("file:///c/images/a.jpg");
+    expect(resolveUrl("images/b.jpg", remote)).toBe("https://cdn.example/images/b.jpg");
+  });
 });

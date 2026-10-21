@@ -1,7 +1,12 @@
 import assert from "node:assert/strict";
+import { readdirSync } from "node:fs";
+import path from "node:path";
 import test from "node:test";
+import { fileURLToPath } from "node:url";
 
 import { hangulOutsideCornerQuotes, uiCopyLiteralPolicy, violationsFrom } from "./policy.mjs";
+
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 
 const literal = (overrides = {}) => ({
   line: 3,
@@ -125,26 +130,8 @@ test("PO3. 전환 목록에 없는 깨끗한 파일은 위반 0이다", () => {
 });
 
 // 학습 콘텐츠와 자모 표에 튜토리얼 혼합 대본 선언을 더합니다. 파일 전체를 허용하지 않습니다.
-test("PO4. 학습 콘텐츠 선언 표가 허용한 31항목과 같다", () => {
+test("PO4. 학습 콘텐츠 선언 표가 허용한 13항목과 같다 — 지운 튜토리얼 대본 · 문항 선언이 없다", () => {
   const expected = [
-    "listening-questions.ts#listeningQuestionsByStep",
-    "word-choice-questions.ts#wordChoiceQuestionsByStep",
-    "sentence-order-questions.ts#sentenceOrderQuestionsByStep",
-    "speaking.ts#speakingQuestionsByStep",
-    "writing.ts#writingQuestionsByStep",
-    "episode-final-tests.ts#episodeFinalTests",
-    "episode-narrative.ts#placeholderNarrative",
-    "tutorial-prologue.ts#tutorialPrologue",
-    "tutorial-final-story.ts#tutorialFinalStory",
-    "messenger.ts#conversations",
-    "phone-call.ts#conversation",
-    "phone-call.contract.ts#ConfirmTimePhoneCallTurn",
-    "phone-call.contract.ts#ConfirmPlacePhoneCallTurn",
-    "phone-call.contract.ts#GoodbyePhoneCallTurn",
-    "visual-novel.ts#visualNovelStoryFor",
-    "visual-novel.contract.ts#ArriveVisualNovelBeat",
-    "visual-novel.contract.ts#FindVisualNovelBeat",
-    "visual-novel.contract.ts#EnterVisualNovelBeat",
     "OnboardingQuizCards.tsx#quizSyllables",
     "OnboardingStoryCards.tsx#onboardingStoryMessages",
     "hangul-keyboard.ts#initials",
@@ -160,9 +147,27 @@ test("PO4. 학습 콘텐츠 선언 표가 허용한 31항목과 같다", () => {
     "catalog-cover.ts#CATALOG_SELF_SPEAKER",
   ];
 
-  assert.equal(expected.length, 31);
+  assert.equal(expected.length, 13);
   assert.deepEqual(
     [...uiCopyLiteralPolicy.learningContentDeclarations].sort(),
     [...expected].sort(),
   );
+});
+
+// DP1 — 목록의 파일은 모두 소스 트리에 있어야 한다(지운 파일이 목록에 남지 않게).
+test("DP1. 학습 콘텐츠 선언 표의 파일이 모두 apps/mobile/src 안에 있다", () => {
+  const sourceRoot = path.join(repoRoot, "apps", "mobile", "src");
+  const files = new Set();
+  const walk = (dir) => {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      if (entry.isDirectory()) walk(path.join(dir, entry.name));
+      else files.add(entry.name);
+    }
+  };
+  walk(sourceRoot);
+
+  for (const declaration of uiCopyLiteralPolicy.learningContentDeclarations) {
+    const fileName = declaration.slice(0, declaration.indexOf("#"));
+    assert.ok(files.has(fileName), `${declaration}: ${fileName} 파일이 없다`);
+  }
 });

@@ -455,27 +455,16 @@ test("SM10: the layoutEdgeToEdge defaults must stay and never turn the navigatio
   );
 });
 
-test("SM11: statusBarSurfaceRegistry matches the contract (ten routes, five CSS layers)", () => {
+test("SM11: statusBarSurfaceRegistry matches the contract (five routes, five CSS layers)", () => {
   const { fullBleedRoutes, fixedLayers } = statusBarSurfaceRegistry;
   assert.deepEqual(Object.keys(fullBleedRoutes).sort(), [
     "catalog-cover",
     "catalog-epilogue",
     "catalog-final",
-    "episode-final",
-    "episode-intro",
-    "episode-prologue",
     "journey-entry",
     "roleplay-story",
-    "roleplay-visual-novel",
-    "visual-novel",
   ]);
   const routeText = (route) => JSON.stringify(fullBleedRoutes[route]);
-  assert.match(routeText("episode-intro"), /EpisodeIntroScreen/);
-  assert.match(routeText("episode-prologue"), /EpisodeNarrativeScreen/);
-  assert.match(routeText("episode-final"), /EpisodeNarrativeScreen/);
-  assert.match(routeText("episode-final"), /EpisodeFinalScreen/);
-  assert.match(routeText("visual-novel"), /VisualNovelScreen/);
-  assert.match(routeText("roleplay-visual-novel"), /VisualNovelScreen/);
   assert.match(routeText("journey-entry"), /JourneyEntryScreen/);
   assert.match(routeText("catalog-cover"), /CatalogCoverScreen/);
   assert.match(routeText("catalog-cover"), /EpisodeIntroScreen/);
@@ -490,6 +479,22 @@ test("SM11: statusBarSurfaceRegistry matches the contract (ten routes, five CSS 
   assert.match(routeText("roleplay-story"), /RoleplayPreviewScreen/);
   assert.match(routeText("roleplay-story"), /CatalogCoverScreen/);
   assert.match(routeText("roleplay-story"), /RoleplayTalkScreen/);
+
+  // DP1 — 지운 route · 컴포넌트는 등록부에 없다.
+  for (const route of [
+    "episode-prologue",
+    "episode-final",
+    "visual-novel",
+    "roleplay-visual-novel",
+  ]) {
+    assert.ok(!(route in fullBleedRoutes), `${route} route must be gone`);
+  }
+  for (const component of ["EpisodeNarrativeScreen", "EpisodeFinalScreen", "VisualNovelScreen"]) {
+    assert.ok(
+      !(component in statusBarSurfaceRegistry.componentFiles),
+      `${component} must be gone from componentFiles`,
+    );
+  }
 
   assert.deepEqual(Object.keys(fixedLayers).sort(), [
     "components/first-unit-guide.css",
@@ -645,7 +650,7 @@ function withLearningGuide({ tsx, css } = {}) {
   });
 }
 
-test("SG1: the registry has its own fixed layer for learning-item-guide.css; first-unit-guide.css keeps its two carriers", () => {
+test("SG1: the registry has its own fixed layer for learning-item-guide.css; first-unit-guide.css keeps its one carrier (the map scrim)", () => {
   const { fixedLayers } = statusBarSurfaceRegistry;
   const own = fixedLayers[LEARNING_GUIDE_CSS];
   assert.ok(own !== undefined, `fixedLayers must have a ${LEARNING_GUIDE_CSS} key`);
@@ -656,7 +661,6 @@ test("SG1: the registry has its own fixed layer for learning-item-guide.css; fir
   );
   const first = fixedLayers["components/first-unit-guide.css"];
   assert.deepEqual(first.carriers.map((carrier) => carrier.file).sort(), [
-    "components/FirstUnitGuide.tsx",
     "screens/journey-map/JourneyMapScreen.tsx",
   ]);
   assert.ok(

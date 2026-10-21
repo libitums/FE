@@ -51,6 +51,14 @@ function readyOf(catalog: readonly CatalogEntry[], index: number): CatalogReadyS
   return section;
 }
 
+function readyById(catalog: readonly CatalogEntry[], episodeId: string): CatalogReadySection {
+  const section = catalogMapSectionsOf(catalog).find(
+    (candidate) => candidate.episodeId === episodeId,
+  );
+  if (section === undefined || section.kind !== "catalog-ready") throw new Error("ready 아님");
+  return section;
+}
+
 const throughS8 = ["intro", "S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8"];
 
 describe("catalogCultureKeysOf (CN1)", () => {
@@ -102,13 +110,17 @@ describe("catalogCultureKeysOf (CN1)", () => {
 
 describe("catalogMapSectionsOf — cultureKeys (CN2)", () => {
   test("CN2. 내장 u01 구획은 cultureKeys가 [CULT]다", () => {
-    expect(readyOf(realCatalog, 0).cultureKeys).toEqual(["CULT"]);
+    expect(readyById(realCatalog, "u01-water").cultureKeys).toEqual(["CULT"]);
   });
 
-  test("CN2. 세 내장 에피소드 모두 CULT가 문화 유닛이다", () => {
-    for (const index of [0, 1, 2]) {
-      expect(readyOf(realCatalog, index).cultureKeys).toEqual(["CULT"]);
+  test("CN2. u01 ~ u03 모두 CULT가 문화 유닛이다", () => {
+    for (const episodeId of ["u01-water", "u02-checkin", "u03-mina"]) {
+      expect(readyById(realCatalog, episodeId).cultureKeys).toEqual(["CULT"]);
     }
+  });
+
+  test("CN2. 튜토리얼(u00)은 S12 · S13 둘이 문화 유닛이다", () => {
+    expect(readyById(realCatalog, "u00-tutorial").cultureKeys).toEqual(["S12", "S13"]);
   });
 
   test("CN2. 옛 픽스처 에피소드에는 문화 유닛이 없다", () => {
@@ -132,13 +144,15 @@ describe("catalogMapSectionsOf — cultureKeys (CN2)", () => {
 
 describe("catalogUnitNodesOf — 문화 노드 (CN3)", () => {
   test("CN3. 문화 키 노드는 role culture이고 번호는 레슨 키 순번 그대로다", () => {
-    const nodes = catalogUnitNodesOf(readyOf(realCatalog, 0), { "u01-water": throughS8 });
+    const nodes = catalogUnitNodesOf(readyById(realCatalog, "u01-water"), {
+      "u01-water": throughS8,
+    });
 
     expect(nodes[8]).toEqual({ key: "CULT", role: "culture", ordinal: 9, status: "available" });
   });
 
   test("CN3. 나머지 레슨은 lesson이고 최종은 레슨 수 + 1번이다", () => {
-    const nodes = catalogUnitNodesOf(readyOf(realCatalog, 0), {});
+    const nodes = catalogUnitNodesOf(readyById(realCatalog, "u01-water"), {});
 
     expect(nodes.slice(0, 8).map((node) => node.role)).toEqual(Array(8).fill("lesson"));
     expect(nodes.slice(0, 8).map((node) => node.ordinal)).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
@@ -146,7 +160,7 @@ describe("catalogUnitNodesOf — 문화 노드 (CN3)", () => {
   });
 
   test("CN3. 문화 노드의 상태는 사슬 그대로다 — 잠김 · 열림 · 끝", () => {
-    const section = readyOf(realCatalog, 0);
+    const section = readyById(realCatalog, "u01-water");
     const statusOf = (done: readonly string[]) =>
       catalogUnitNodesOf(section, { "u01-water": done }).find((node) => node.key === "CULT")
         ?.status;
@@ -199,7 +213,7 @@ describe("문화 노드 제목 · 낭독 (CN4)", () => {
 });
 
 describe("변하지 않는 것 (CN5)", () => {
-  const u01 = () => readyOf(realCatalog, 0);
+  const u01 = () => readyById(realCatalog, "u01-water");
 
   test("CN5. 결선이 쓰는 역할은 문화 키도 lesson이다", () => {
     expect(catalogUnitRoleOf(u01(), "CULT")).toBe("lesson");

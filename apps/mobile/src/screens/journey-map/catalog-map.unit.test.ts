@@ -5,6 +5,8 @@ import { bundledCatalogInput } from "../../lib/episode-bundled";
 import { buildEpisodeCatalog } from "../../lib/episode-catalog";
 import type { CatalogEntry, LockReason } from "../../lib/episode-catalog";
 import { legacyCatalogInput } from "../../lib/episode-legacy.test-support";
+import { TUTORIAL_EPISODE_ID } from "../../lib/tutorial-episode";
+import { tutorialDoneProgress } from "../../app/test-helpers/progress-seed";
 import { uiCopyEn } from "../../lib/ui-copy-en";
 import type {
   CatalogGate,
@@ -15,7 +17,6 @@ import type {
 } from "./catalog-map.contract";
 import * as catalogMap from "./catalog-map";
 import {
-  TUTORIAL_GATE_UNIT,
   canStartCatalogCover,
   catalogCaptionKindOf,
   catalogCompletionKeysOf,
@@ -33,7 +34,6 @@ import {
   catalogUnitRoleOf,
   catalogUnitStatus,
   noCatalogMapSections,
-  tutorialPassedFrom,
 } from "./catalog-map";
 import { episodeSectionId } from "./journey-map-scroll";
 
@@ -45,7 +45,7 @@ const realCatalog = buildEpisodeCatalog({
   bundled: bundledCatalogInput,
   cache: { manifest: null, episodes: {} },
 });
-const baseReady = realCatalog[0] as ReadyEntry;
+const baseReady = realCatalog.find((entry) => entry.id === "u01-water") as ReadyEntry;
 
 function ready(id: string, order: number, title = `제목 ${id}`): ReadyEntry {
   return { ...baseReady, id, order, title };
@@ -74,30 +74,45 @@ function readySection(sections: readonly CatalogMapSection[], index: number): Ca
   return section as CatalogReadySection;
 }
 
-function gate(tutorialPassed: boolean, progress: CatalogProgress = {}): CatalogGate {
-  return { tutorialPassed, progress };
+// 문 입력은 `legacyTutorialPassed`(옛 튜토리얼 통과 기록)와 카탈로그 진행입니다.
+function u01Of(sections: readonly CatalogMapSection[]): CatalogReadySection {
+  const index = sections.findIndex((section) => section.episodeId === "u01-water");
+  return readySection(sections, index);
+}
+
+function gate(legacyTutorialPassed: boolean, progress: CatalogProgress = {}): CatalogGate {
+  return { legacyTutorialPassed, progress } as unknown as CatalogGate;
 }
 
 describe("catalogMapSectionsOf", () => {
-  test("CM1. 실데이터 카탈로그는 준비된 구획 셋을 자리 순서대로 낸다", () => {
+  test("CM1. 실데이터 카탈로그는 준비된 구획 넷을 order 순서대로 낸다(u00 = 0, u01 ~ u03 = 1 ~ 3)", () => {
     const sections = catalogMapSectionsOf(realCatalog);
 
-    expect(sections.map((section) => section.kind)).toEqual([
-      "catalog-ready",
-      "catalog-ready",
-      "catalog-ready",
-    ]);
-    expect(sections.map((section) => section.ordinal)).toEqual([1, 2, 3]);
+    expect(sections.map((section) => section.kind)).toEqual(Array(4).fill("catalog-ready"));
+    expect(sections.map((section) => section.ordinal)).toEqual([0, 1, 2, 3]);
     expect(sections.map((section) => section.episodeId)).toEqual([
+      TUTORIAL_EPISODE_ID,
       "u01-water",
       "u02-checkin",
       "u03-mina",
     ]);
-    const first = readySection(sections, 0);
+    const first = u01Of(sections);
     expect(first.lessonKeys).toEqual(["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "CULT"]);
     expect(first.finalKey).toBe("RP");
-    expect(first.title).toBe(realCatalog[0]?.title);
+    expect(first.title).toBe(realCatalog.find((entry) => entry.id === "u01-water")?.title);
     expect(first.title).toBe("물 사기");
+  });
+
+  test("CG1. 구획 번호는 항목 order 그대로다 — 건너뛰어도 그 값이다", () => {
+    const sections = catalogMapSectionsOf([
+      ready("a", 0),
+      ready("b", 1),
+      ready("c", 2),
+      ready("d", 7),
+    ]);
+    expect(sections.map((section) => section.ordinal)).toEqual([0, 1, 2, 7]);
+    const sparse = catalogMapSectionsOf([ready("x", 5), pending("y", 9)]);
+    expect(sparse.map((section) => section.ordinal)).toEqual([5, 9]);
   });
 
   test("CM2. pending · locked 항목은 사유가 붙은 unavailable 구획이 된다", () => {
@@ -184,7 +199,7 @@ describe("셀렉터 토큰", () => {
   });
 });
 
-describe("표지 잠금", () => {
+describe("표지 잠금 — 첫 구획은 늘 열리고, 튜토리얼 다음 구획은 u00 완료 또는 옛 통과로 열린다", () => {
   // A ready · B ready · C unavailable · D ready
   const sections = catalogMapSectionsOf([
     legacyReady("A", 1),
@@ -192,59 +207,88 @@ describe("표지 잠금", () => {
     pending("C", 3),
     legacyReady("D", 4),
   ]);
+  const real = catalogMapSectionsOf(realCatalog);
+  const indexOf = (episodeId: string) =>
+    real.findIndex((section) => section.episodeId === episodeId);
 
-  test("CM6. 첫 표지는 튜토리얼을 통과해야 열린다", () => {
-    expect(catalogCoverStatus(sections, 0, gate(false))).toBe("locked");
-    expect(catalogCoverStatus(sections, 0, gate(true))).toBe("available");
-  });
-
-  test("CM6. 끝낸 표지는 앞 조건과 무관하게 completed다", () => {
+  test("CG2. 끝낸 표지는 앞 조건과 무관하게 completed다", () => {
     expect(catalogCoverStatus(sections, 0, gate(false, { A: ["intro"] }))).toBe("completed");
     expect(catalogCoverStatus(sections, 0, gate(true, { A: ["intro"] }))).toBe("completed");
     expect(catalogCoverStatus(sections, 1, gate(false, { B: ["intro"] }))).toBe("completed");
   });
 
-  test("CM6. 둘째 이후는 앞 에피소드의 최종 테스트를 끝내야 열린다", () => {
-    expect(catalogCoverStatus(sections, 1, gate(true))).toBe("locked");
-    expect(catalogCoverStatus(sections, 1, gate(true, { A: ["intro", "S1"] }))).toBe("locked");
-    expect(catalogCoverStatus(sections, 1, gate(false, { A: ["RP"] }))).toBe("available");
+  test("CG3. 첫 구획(자리 0)은 진행이 없어도 · 옛 통과가 없어도 열려 있다", () => {
+    expect(catalogCoverStatus(sections, 0, gate(false))).toBe("available");
+    expect(catalogCoverStatus(sections, 0, gate(true))).toBe("available");
+    expect(catalogCoverStatus(real, 0, gate(false))).toBe("available");
+    expect(real[0]?.episodeId).toBe(TUTORIAL_EPISODE_ID);
   });
 
-  test("CM6. unavailable 구획은 어떤 진행이어도 locked다", () => {
+  test("CG4. u01은 u00의 완료 키 14를 모두 끝내면 열리고 하나라도 빠지면 잠긴다", () => {
+    const done = tutorialDoneProgress();
+    const u01 = indexOf("u01-water");
+    expect(catalogCoverStatus(real, u01, gate(false, done))).toBe("available");
+    const missingOne = {
+      [TUTORIAL_EPISODE_ID]: done[TUTORIAL_EPISODE_ID]!.filter((key) => key !== "S7"),
+    };
+    expect(catalogCoverStatus(real, u01, gate(false, missingOne))).toBe("locked");
+    expect(catalogCoverStatus(real, u01, gate(false))).toBe("locked");
+  });
+
+  test("CG5. 옛 튜토리얼 통과 기록이 있으면 u00 진행 없이도 u01이 열린다", () => {
+    expect(catalogCoverStatus(real, indexOf("u01-water"), gate(true))).toBe("available");
+  });
+
+  test("CG6. 우회는 튜토리얼 다음 구획 하나뿐이다 — u02는 옛 통과여도 u01 완료 전 잠긴다", () => {
+    const u02 = indexOf("u02-checkin");
+    expect(catalogCoverStatus(real, u02, gate(true))).toBe("locked");
+    expect(catalogCoverStatus(real, u02, gate(true, { "u01-water": ["intro", "S1"] }))).toBe(
+      "locked",
+    );
+    expect(catalogCoverStatus(real, u02, gate(true, { "u01-water": ["RP"] }))).toBe("available");
+  });
+
+  test("CG7. 앞 구획이 준비 안 된 u00이어도 옛 통과 기록이면 u01이 열리고, 아니면 잠긴다", () => {
+    const withLockedU00 = catalogMapSectionsOf([
+      locked(TUTORIAL_EPISODE_ID, 0, "client-too-old"),
+      ready("u01-water", 1),
+    ]);
+    expect(catalogCoverStatus(withLockedU00, 1, gate(true))).toBe("available");
+    expect(catalogCoverStatus(withLockedU00, 1, gate(false))).toBe("locked");
+    expect(catalogCoverStatus(withLockedU00, 0, gate(true))).toBe("locked");
+  });
+
+  test("CG8. canStartCatalogCover는 위 규칙과 같은 답이다", () => {
+    expect(canStartCatalogCover(real, TUTORIAL_EPISODE_ID, gate(false))).toBe(true);
+    expect(canStartCatalogCover(real, "u01-water", gate(false))).toBe(false);
+    expect(canStartCatalogCover(real, "u01-water", gate(true))).toBe(true);
+    expect(canStartCatalogCover(real, "u01-water", gate(false, tutorialDoneProgress()))).toBe(true);
+    expect(canStartCatalogCover(real, "u02-checkin", gate(true))).toBe(false);
+    expect(canStartCatalogCover(real, "nope", gate(true))).toBe(false);
+    expect(canStartCatalogCover(sections, "A", gate(false, { A: ["intro"] }))).toBe(true);
+  });
+
+  test("CG9. 준비 안 된 구획 · 범위 밖 index는 어떤 진행이어도 locked다", () => {
     expect(catalogCoverStatus(sections, 2, gate(true))).toBe("locked");
     expect(catalogCoverStatus(sections, 2, gate(true, { B: ["RP"], C: ["intro", "RP"] }))).toBe(
       "locked",
     );
+    expect(catalogCoverStatus(sections, 9, gate(true))).toBe("locked");
+    expect(catalogCoverStatus(sections, -1, gate(true))).toBe("locked");
   });
 
-  test("CM6. 앞이 unavailable이어도 그 id의 최종 테스트가 진행에 있으면 열린다", () => {
+  test("CM6. 둘째 이후(튜토리얼 다음이 아닌)는 앞 에피소드의 완료 키를 끝내야 열린다", () => {
+    expect(catalogCoverStatus(sections, 1, gate(true))).toBe("locked");
+    expect(catalogCoverStatus(sections, 1, gate(true, { A: ["intro", "S1"] }))).toBe("locked");
+    expect(catalogCoverStatus(sections, 1, gate(false, { A: ["RP"] }))).toBe("available");
     expect(catalogCoverStatus(sections, 3, gate(true))).toBe("locked");
     expect(catalogCoverStatus(sections, 3, gate(true, { C: ["RP"] }))).toBe("available");
-  });
-
-  test("CM7. 열린 표지만 시작할 수 있다", () => {
-    const open = gate(true);
-
-    expect(canStartCatalogCover(sections, "A", open)).toBe(true);
-    expect(canStartCatalogCover(sections, "B", open)).toBe(false);
-    expect(canStartCatalogCover(sections, "C", gate(true, { B: ["RP"] }))).toBe(false);
-    expect(canStartCatalogCover(sections, "nope", open)).toBe(false);
-    expect(canStartCatalogCover(sections, "A", gate(false, { A: ["intro"] }))).toBe(true);
-    expect(canStartCatalogCover(sections, "A", gate(false))).toBe(false);
-  });
-});
-
-describe("튜토리얼 통과", () => {
-  test("CM12. 튜토리얼 최종 id가 있어야 통과다", () => {
-    expect(tutorialPassedFrom([])).toBe(false);
-    expect(tutorialPassedFrom(["tutorial-final-test"])).toBe(true);
-    expect(TUTORIAL_GATE_UNIT).toBe("tutorial-final-test");
   });
 });
 
 describe("잠긴 노드와 진행", () => {
   // 수집 단계에서 던지지 않도록 테스트 안에서 만듭니다.
-  const u01Section = () => readySection(catalogMapSectionsOf(realCatalog), 0);
+  const u01Section = () => u01Of(catalogMapSectionsOf(realCatalog));
 
   test("CM8′. 레슨 여덟 + 문화 + 최종 하나, 순서 · 번호 · 상태가 맞다", () => {
     const u01 = u01Section();
@@ -261,7 +305,7 @@ describe("잠긴 노드와 진행", () => {
 });
 
 describe("사슬 잠금 — 표지 → 레슨들 → 최종", () => {
-  const u01Section = () => readySection(catalogMapSectionsOf(realCatalog), 0);
+  const u01Section = () => u01Of(catalogMapSectionsOf(realCatalog));
   const statusesOf = (progress: CatalogProgress) =>
     Object.fromEntries(
       catalogUnitNodesOf(u01Section(), progress).map((node) => [node.key, node.status]),
@@ -414,7 +458,7 @@ describe("완료 키 (CMF)", () => {
   });
 
   test("CMF4′. u01은 레슨 아홉(CULT가 아홉째, 문화 노드)과 최종으로 이어지고 사슬 잠금이 CULT를 지난다", () => {
-    const u01 = readySection(catalogMapSectionsOf(realCatalog), 0);
+    const u01 = u01Of(catalogMapSectionsOf(realCatalog));
     const statusesOf = (progress: CatalogProgress) =>
       Object.fromEntries(catalogUnitNodesOf(u01, progress).map((node) => [node.key, node.status]));
     const throughS8 = ["intro", "S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8"];

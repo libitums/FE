@@ -1,166 +1,102 @@
 import { describe, expect, test } from "vitest";
 
+import { tutorialDoneProgress } from "../../app/test-helpers/progress-seed";
 import type { CatalogProgress } from "../../lib/catalog-progress";
-import { catalogCoverStatus, catalogUnitDomId, catalogUnitNodesOf } from "./catalog-map";
+import { bundledCatalogInput } from "../../lib/episode-bundled";
+import { buildEpisodeCatalog } from "../../lib/episode-catalog";
+import { TUTORIAL_EPISODE_ID } from "../../lib/tutorial-episode";
+import {
+  catalogCoverStatus,
+  catalogMapSectionsOf,
+  catalogUnitDomId,
+  catalogUnitNodesOf,
+} from "./catalog-map";
 import type {
   CatalogGate,
   CatalogMapSection,
   CatalogReadySection,
   CatalogUnavailableSection,
 } from "./catalog-map.contract";
-import { journeyMapSections, mapItemStatus } from "./journey-map";
-import type { JourneyProgress } from "./journey-map";
 import {
-  catalogUnitEntries,
-  mapScrollTargetOf,
+  catalogUnitEntries as catalogUnitEntriesRaw,
+  mapScrollTargetOf as mapScrollTargetOfRaw,
   nextMapScrollTarget,
-  tutorialUnitEntries,
 } from "./journey-map-next-unit";
-import type { MapUnitEntry } from "./journey-map-next-unit";
-import { mapUnitDomId } from "./journey-map-scroll";
+import type { MapScrollTarget, MapUnitEntry } from "./journey-map-next-unit";
 
-// `unit` 계층: 「다음에 풀 유닛」 판정의 입출력만 봅니다.
+// `unit` 계층: 「다음에 풀 유닛」 판정의 입출력만 봅니다. 맵은 카탈로그 구획만 있고, 첫 구획은 u00 튜토리얼입니다.
 
-const tutorialItems = journeyMapSections[0]!.items;
+// 입력은 `{ catalogSections, gate }`, 문은 `{ legacyTutorialPassed, progress }`입니다.
+type Input = { catalogSections: readonly CatalogMapSection[]; gate: ContractGate };
+type ContractGate = { legacyTutorialPassed: boolean; progress: CatalogProgress };
+const mapScrollTargetOf = mapScrollTargetOfRaw as unknown as (input: Input) => MapScrollTarget;
+const catalogUnitEntries = catalogUnitEntriesRaw as unknown as (
+  sections: readonly CatalogMapSection[],
+  gate: ContractGate,
+) => readonly MapUnitEntry[];
 
-const empty: JourneyProgress = {
-  completedStepCount: 0,
-  completedEpisodeIntroIds: [],
-  completedMessengerUnitIds: [],
-  completedPhoneCallUnitIds: [],
-  completedVisualNovelUnitIds: [],
-  completedEpisodeFinalIds: [],
+const sections = catalogMapSectionsOf(
+  buildEpisodeCatalog({ bundled: bundledCatalogInput, cache: { manifest: null, episodes: {} } }),
+);
+const readyOf = (id: string): CatalogReadySection => {
+  const found = sections.find((section) => section.episodeId === id);
+  if (found?.kind !== "catalog-ready") throw new Error(`no ready section ${id}`);
+  return found;
 };
-
-// 끝낸 맵 항목 수 n(0 ~ 13) → 진행. 맵 순서대로 완료 기록을 적습니다(제품의 상태 함수를 쓰지 않습니다).
-function progressAfter(count: number): JourneyProgress {
-  if (count === 0) return empty;
-  return {
-    completedStepCount: Math.min(count - 1, 4) + Math.max(0, Math.min(count - 8, 4)),
-    completedEpisodeIntroIds: ["tutorial-intro"],
-    completedMessengerUnitIds: count >= 6 ? ["appointment-confirmation"] : [],
-    completedPhoneCallUnitIds: count >= 7 ? ["appointment-confirmation-phone-call"] : [],
-    completedVisualNovelUnitIds: count >= 8 ? ["cafe-arrival-visual-novel"] : [],
-    completedEpisodeFinalIds: count >= 13 ? ["tutorial-final-test"] : [],
-  };
-}
-
-const tutorialDone = progressAfter(13);
-
-function ready(id: string, lessonCount: number): CatalogReadySection {
-  return {
-    kind: "catalog-ready",
-    episodeId: id,
-    ordinal: 1,
-    title: `T ${id}`,
-    lessonKeys: Array.from({ length: lessonCount }, (_, index) => `S${index + 1}`),
-    finalKey: "RP",
-    completionKeys: ["RP"],
-    cultureKeys: [],
-  };
-}
-
-function unavailable(id: string): CatalogUnavailableSection {
-  return {
-    kind: "catalog-unavailable",
-    episodeId: id,
-    ordinal: 1,
-    title: `T ${id}`,
-    reason: "pending",
-  };
-}
-
+const u00 = () => readyOf(TUTORIAL_EPISODE_ID);
+const u01 = () => readyOf("u01-water");
 const allKeys = (section: CatalogReadySection) => [
   "intro",
   ...section.lessonKeys,
   section.finalKey,
 ];
 
-const u01 = ready("u01-water", 3);
-const u02 = ready("u02-checkin", 3);
-const u03 = ready("u03-mina", 3);
-const threeSections: readonly CatalogMapSection[] = [u01, u02, u03];
-
-function targetOf(
-  progress: JourneyProgress,
-  catalogSections: readonly CatalogMapSection[],
-  catalogProgress: CatalogProgress,
-) {
-  return mapScrollTargetOf({
-    tutorialSections: journeyMapSections,
-    progress,
-    catalogSections,
-    catalogProgress,
-  });
-}
+const targetOf = (legacyTutorialPassed: boolean, progress: CatalogProgress) =>
+  mapScrollTargetOf({ catalogSections: sections, gate: { legacyTutorialPassed, progress } });
 
 const unit = (domId: string) => ({ kind: "unit", domId }) as const;
 const top = { kind: "top" } as const;
+const domOf = (episodeId: string, key: string) => catalogUnitDomId(episodeId, key);
 
 describe("mapScrollTargetOf", () => {
-  test("N1. 진행이 없으면 top이다", () => {
-    expect(targetOf(progressAfter(0), [], {})).toEqual(top);
+  test("NU1. 신규(진행 0)는 첫 available이 u00 표지(자리 0)라 top이다", () => {
+    expect(targetOf(false, {})).toEqual(top);
   });
 
-  test("N2. 표지만 끝났으면 greeting이다", () => {
-    expect(targetOf(progressAfter(1), [], {})).toEqual(unit(mapUnitDomId("greeting")));
-  });
-
-  test("N3. 표지 + 스텝 넷 뒤 메신저가 대상이다(한 줄 전용도 대상)", () => {
-    expect(targetOf(progressAfter(5), [], {})).toEqual(
-      unit(mapUnitDomId("appointment-confirmation")),
+  test("NU2. u00 표지를 끝내면 대상은 u00의 S1이다", () => {
+    expect(targetOf(false, { [TUTORIAL_EPISODE_ID]: ["intro"] })).toEqual(
+      unit(domOf(TUTORIAL_EPISODE_ID, "S1")),
     );
   });
 
-  test("N4. 튜토리얼 전부 끝, 카탈로그 없음이면 최종 테스트(마지막 completed)다", () => {
-    expect(targetOf(tutorialDone, [], {})).toEqual(unit(mapUnitDomId("tutorial-final-test")));
+  test("NU3. 옛 통과 · u00 진행 0이면 대상은 u01 표지다(u00 표지 · 레슨은 후보가 아니다)", () => {
+    expect(targetOf(true, {})).toEqual(unit(domOf("u01-water", "intro")));
   });
 
-  test("N5. 튜토리얼 통과 뒤 카탈로그 첫 표지가 대상이다", () => {
-    expect(targetOf(tutorialDone, threeSections, {})).toEqual(
-      unit(catalogUnitDomId("u01-water", "intro")),
+  test("NU4. 옛 통과 · u01 표지 + S1을 끝내면 대상은 u01의 S2다", () => {
+    expect(targetOf(true, { "u01-water": ["intro", "S1"] })).toEqual(
+      unit(domOf("u01-water", "S2")),
     );
   });
 
-  test("N6. 표지를 끝내면 첫 레슨이 대상이다", () => {
-    expect(targetOf(tutorialDone, threeSections, { "u01-water": ["intro"] })).toEqual(
-      unit(catalogUnitDomId("u01-water", "S1")),
-    );
+  test("NU5. 옛 통과여도 u00을 끝냈으면 우회가 아니다 — 일반 규칙으로 u01 표지다", () => {
+    expect(targetOf(true, tutorialDoneProgress())).toEqual(unit(domOf("u01-water", "intro")));
+    expect(targetOf(false, tutorialDoneProgress())).toEqual(unit(domOf("u01-water", "intro")));
   });
 
-  test("N7. 한 에피소드를 최종까지 끝내면 다음 에피소드 표지다", () => {
-    expect(targetOf(tutorialDone, threeSections, { "u01-water": allKeys(u01) })).toEqual(
-      unit(catalogUnitDomId("u02-checkin", "intro")),
-    );
-  });
-
-  test("N8. 모두 끝내면 마지막 구획의 RP다", () => {
-    const progress = {
-      "u01-water": allKeys(u01),
-      "u02-checkin": allKeys(u02),
-      "u03-mina": allKeys(u03),
-    };
-    expect(targetOf(tutorialDone, threeSections, progress)).toEqual(
-      unit(catalogUnitDomId("u03-mina", "RP")),
-    );
-  });
-
-  test("N9. 앞 구획이 unavailable이면 길이 막혀 최종 테스트에 선다", () => {
-    expect(targetOf(tutorialDone, [unavailable("u01-water"), u02], {})).toEqual(
-      unit(mapUnitDomId("tutorial-final-test")),
-    );
-  });
-
-  test("N10. 구멍 있는 진행은 목록 순서로 첫 available이다", () => {
-    expect(targetOf(tutorialDone, threeSections, { "u01-water": ["intro", "S3"] })).toEqual(
-      unit(catalogUnitDomId("u01-water", "S1")),
-    );
-  });
-
-  test("N15. 튜토리얼 미통과면 카탈로그 진행이 있어도 대상은 튜토리얼 안이다", () => {
-    expect(targetOf(progressAfter(1), threeSections, { "u01-water": ["intro"] })).toEqual(
-      unit(mapUnitDomId("greeting")),
-    );
+  test("NU6. 열린 것이 없으면 마지막 completed다 — 맵 전체를 끝내면 마지막 구획의 최종이다", () => {
+    const done: Record<string, readonly string[]> = {};
+    for (const section of sections) {
+      if (section.kind === "catalog-ready") done[section.episodeId] = allKeys(section);
+    }
+    const last = sections[sections.length - 1] as CatalogReadySection;
+    expect(targetOf(true, done)).toEqual(unit(domOf(last.episodeId, last.finalKey)));
+    expect(
+      mapScrollTargetOf({
+        catalogSections: [],
+        gate: { legacyTutorialPassed: false, progress: {} },
+      }),
+    ).toEqual(top);
   });
 });
 
@@ -194,47 +130,26 @@ describe("nextMapScrollTarget", () => {
   });
 });
 
-describe("유닛 목록", () => {
-  test("N13. 튜토리얼 목록은 항목 순서 그대로이고 상태가 mapItemStatus와 같다", () => {
-    const progress = progressAfter(5);
-    const entries = tutorialUnitEntries(journeyMapSections, progress);
-
-    expect(entries.map((entry) => entry.domId)).toEqual(
-      [
-        "tutorial-intro",
-        "greeting",
-        "introduction",
-        "ordering",
-        "appointment",
-        "appointment-confirmation",
-        "appointment-confirmation-phone-call",
-        "cafe-arrival-visual-novel",
-        "directions",
-        "tutorial-listening",
-        "tutorial-speaking",
-        "tutorial-writing",
-        "tutorial-final-test",
-      ].map(mapUnitDomId),
-    );
-    expect(entries.map((entry) => entry.status)).toEqual(
-      tutorialItems.map((item) => mapItemStatus(item, tutorialItems, progress)),
-    );
-    expect(new Set(entries.map((entry) => entry.status)).size).toBe(3);
+describe("catalogUnitEntries", () => {
+  const unavailable = (id: string): CatalogUnavailableSection => ({
+    kind: "catalog-unavailable",
+    episodeId: id,
+    ordinal: 9,
+    title: id,
+    reason: "pending",
   });
 
-  test("N14. 카탈로그 목록은 표지 → 레슨 → 최종 순이고 unavailable은 0개다", () => {
-    const sections: readonly CatalogMapSection[] = [ready("a", 8), unavailable("b"), ready("c", 3)];
-    const gate: CatalogGate = { tutorialPassed: true, progress: { a: ["intro", "S1"] } };
-    const entries = catalogUnitEntries(sections, gate);
-
-    expect(entries).toHaveLength(10 + 0 + 5);
+  test("N14. 표지 → 레슨 → 최종 순이고 unavailable은 0개이며 상태는 문 규칙과 같다", () => {
+    const withPending: readonly CatalogMapSection[] = [u00(), u01(), unavailable("late")];
+    const gate = { legacyTutorialPassed: false, progress: { [TUTORIAL_EPISODE_ID]: ["intro"] } };
+    const entries = catalogUnitEntries(withPending, gate);
 
     const expected: MapUnitEntry[] = [];
-    sections.forEach((section, index) => {
+    withPending.forEach((section, index) => {
       if (section.kind !== "catalog-ready") return;
       expected.push({
         domId: catalogUnitDomId(section.episodeId, "intro"),
-        status: catalogCoverStatus(sections, index, gate),
+        status: catalogCoverStatus(withPending, index, gate as unknown as CatalogGate),
       });
       for (const node of catalogUnitNodesOf(section, gate.progress)) {
         expected.push({
@@ -244,6 +159,28 @@ describe("유닛 목록", () => {
       }
     });
     expect(entries).toEqual(expected);
-    expect(new Set(entries.map((entry) => entry.domId)).size).toBe(15);
+    expect(entries).toHaveLength(1 + u00().lessonKeys.length + 1 + 1 + u01().lessonKeys.length + 1);
+    expect(new Set(entries.map((e) => e.domId)).size).toBe(entries.length);
+  });
+
+  test("NU3. 옛 통과 · u00 미완료면 u00 구획 항목의 available은 locked로 나가고 u01 표지가 available이다", () => {
+    const entries = catalogUnitEntries(sections, { legacyTutorialPassed: true, progress: {} });
+    const statusOf = (key: string, episodeId = TUTORIAL_EPISODE_ID) =>
+      entries.find((e) => e.domId === catalogUnitDomId(episodeId, key))?.status;
+    expect(statusOf("intro")).toBe("locked");
+    expect(statusOf("S1")).toBe("locked");
+    expect(statusOf("intro", "u01-water")).toBe("available");
+  });
+
+  test("NU5. 완료 · 잠김은 우회에서도 그대로다", () => {
+    const entries = catalogUnitEntries(sections, {
+      legacyTutorialPassed: true,
+      progress: { [TUTORIAL_EPISODE_ID]: ["intro", "S1"] },
+    });
+    const statusOf = (key: string) =>
+      entries.find((e) => e.domId === catalogUnitDomId(TUTORIAL_EPISODE_ID, key))?.status;
+    expect(statusOf("intro")).toBe("completed");
+    expect(statusOf("S1")).toBe("completed");
+    expect(statusOf("S2")).toBe("locked");
   });
 });

@@ -5,6 +5,7 @@ import { describe, expect, test } from "vitest";
 import { bundledCatalogInput } from "../../lib/episode-bundled";
 import { buildEpisodeCatalog } from "../../lib/episode-catalog";
 import type { CatalogEntry } from "../../lib/episode-catalog";
+import { decodeEpisode } from "../../lib/episode-content";
 import type { EpisodeCut, Text } from "../../lib/episode-content.model";
 import { fillPlaceholders } from "../../lib/placeholder-fill";
 import type { LearnerProfile } from "../../lib/placeholder-fill";
@@ -34,7 +35,10 @@ const realCatalog = buildEpisodeCatalog({
   bundled: bundledCatalogInput,
   cache: { manifest: null, episodes: {} },
 });
-const u01 = realCatalog[0] as Extract<CatalogEntry, { status: "ready" }>;
+const u01 = realCatalog.find((entry) => entry.id === "u01-water") as Extract<
+  CatalogEntry,
+  { status: "ready" }
+>;
 
 function portFor(profile: LearnerProfile): CatalogCutPort {
   return {
@@ -519,6 +523,19 @@ describe("컷 음성", () => {
       3: "https://cdn/audio/u01-water/pre-3.m4a",
       6: "https://cdn/audio/u01-water/d-01.m4a",
     });
+  });
+
+  test("AU1. u00 표지 5번 컷의 audio_url에 음성 id를 넣으면 소리 주소가 imageUrlOf(audio/<id>.m4a)가 된다", () => {
+    const wire = structuredClone(bundledCatalogInput.episodes["u00-tutorial"]) as {
+      pre_cuts: { audio_url: string }[];
+    };
+    wire.pre_cuts[4]!.audio_url = "u00-pre-5";
+    const decoded = decodeEpisode(wire);
+    expect(decoded.ok).toBe(true);
+    if (!decoded.ok) return;
+    const views = catalogCutViewsOf(decoded.episode.prologue, portFor({}));
+    expect(views[4]?.audioSource).toBe("https://cdn/audio/u00-pre-5.m4a");
+    expect(views.filter((view) => view.audioSource !== undefined)).toHaveLength(1);
   });
 
   test("CCA5. catalogCutAudioCueOf: 소리가 있으면 index를 key로 한 단서, 없으면 null", () => {

@@ -33,8 +33,15 @@ const emma: LearnerProfile = {
   country: { ko: "독일", roman: "dogil", en: "Germany" },
 };
 
+// 모델은 준비된 구획 전부(튜토리얼 포함)를 내고, 탭에서 튜토리얼을 빼는 일은 `roleplaySectionsOf`가 합니다.
+// 이 파일은 본편(u01 ~ u03)의 성질을 봅니다.
+const bookSectionsOf = (progress: Record<string, readonly string[]>) =>
+  catalogRoleplaySectionsOf(content, sections, progress, noLearnerProfile, label).filter(
+    (section) => section.episodeId !== "u00-tutorial",
+  );
+
 test("[RM1] 준비된 에피소드마다 구획 하나 · 항목 하나(상대 이름 · 대사 수), 진행이 없으면 잠김", () => {
-  const result = catalogRoleplaySectionsOf(content, sections, {}, noLearnerProfile, label);
+  const result = bookSectionsOf({});
   expect(result.map((section) => section.episodeId)).toEqual([
     "u01-water",
     "u02-checkin",
@@ -62,7 +69,7 @@ test("[RM2] 에피소드의 완료 키를 모두 끝내면 그 구획만 열린�
   const u01 = sections.find((section) => section.episodeId === "u01-water");
   if (u01 === undefined || u01.kind !== "catalog-ready") throw new Error("u01 not ready");
   const progress = { "u01-water": u01.completionKeys };
-  const result = catalogRoleplaySectionsOf(content, sections, progress, noLearnerProfile, label);
+  const result = bookSectionsOf(progress);
   expect(result.map((section) => section.unlocked)).toEqual([true, false, false]);
 });
 

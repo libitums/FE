@@ -9,21 +9,21 @@ describe("PT1 pushTargetFrom", () => {
     expect(pushTargetFrom({ kind: "roleplay-list" })).toEqual({ kind: "roleplay-list" });
   });
 
-  test("있는 유닛만 받는다", () => {
-    expect(pushTargetFrom({ kind: "messenger", unitId: "appointment-confirmation" })).toEqual({
-      kind: "messenger",
-      unitId: "appointment-confirmation",
-    });
+  test("PN1. 메신저 · 전화 · 비주얼 노벨 목적지는 유닛과 무관하게 여정 맵으로 읽는다", () => {
+    const toMap = { kind: "journey-map" };
+    expect(pushTargetFrom({ kind: "messenger", unitId: "appointment-confirmation" })).toEqual(
+      toMap,
+    );
+    expect(pushTargetFrom({ kind: "messenger", unitId: "unknown" })).toEqual(toMap);
+    expect(pushTargetFrom({ kind: "messenger" })).toEqual(toMap);
     expect(
       pushTargetFrom({ kind: "phone-call", unitId: "appointment-confirmation-phone-call" }),
-    ).toEqual({ kind: "phone-call", unitId: "appointment-confirmation-phone-call" });
-    expect(pushTargetFrom({ kind: "visual-novel", unitId: "cafe-arrival-visual-novel" })).toEqual({
-      kind: "visual-novel",
-      unitId: "cafe-arrival-visual-novel",
-    });
-    expect(pushTargetFrom({ kind: "messenger", unitId: "unknown" })).toBeNull();
-    expect(pushTargetFrom({ kind: "messenger", unitId: "toString" })).toBeNull();
-    expect(pushTargetFrom({ kind: "phone-call" })).toBeNull();
+    ).toEqual(toMap);
+    expect(pushTargetFrom({ kind: "phone-call" })).toEqual(toMap);
+    expect(pushTargetFrom({ kind: "visual-novel", unitId: "cafe-arrival-visual-novel" })).toEqual(
+      toMap,
+    );
+    expect(pushTargetFrom({ kind: "visual-novel", unitId: "toString" })).toEqual(toMap);
   });
 
   test("빈 사전은 여정 맵, 모르는 목적지 · 모양 오류는 null", () => {
