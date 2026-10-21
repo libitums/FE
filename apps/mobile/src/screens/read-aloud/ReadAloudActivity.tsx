@@ -130,6 +130,7 @@ export function ReadAloudActivity({
       case "retry":
         // 말하기 전에 소리를 멈춥니다 — 재생 소리가 마이크로 들어가지 않게 합니다.
         stopAudio();
+        listen.markStopped?.();
         dispatch({ type: "start" });
         attempt.start();
         return;

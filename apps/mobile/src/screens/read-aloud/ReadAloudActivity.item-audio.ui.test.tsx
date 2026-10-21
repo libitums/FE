@@ -97,12 +97,12 @@ describe("따라 읽기 — 문항 음성", () => {
     expect(playAudio).not.toHaveBeenCalled();
   });
 
-  test("RA1. 줄의 slow와 다시 듣기가 조작을 위로 올리고 이름이 붙는다", () => {
+  test("RA1. 줄의 slow와 자동 재생 중 Stop이 조작을 위로 올리고 이름이 붙는다", () => {
     stubSpeechHost();
     const { lesson, onTogglePace } = lessonAudioStub();
     mount([fine], lesson);
 
-    expectListenAgainAccessible("read-aloud-listen", "Play again");
+    expectListenAgainAccessible("read-aloud-listen", "Stop");
     expect(screen.getByTestId("read-aloud-listen-slow")).toHaveAttribute(
       "accessibility-label",
       "Slow, off",

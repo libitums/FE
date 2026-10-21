@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { cleanup, fireEvent, render, screen } from "@lynx-js/react/testing-library";
+import { act, cleanup, fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
 import {
   echoAudioOf,
@@ -113,11 +113,16 @@ describe("DICTATION — 듣기 갈래", () => {
     expect(block?.querySelector('[data-testid="typing-activity-listen"]')).not.toBeNull();
   });
 
-  test("TY1. 서면 자동 재생이 한 번 나고 줄의 다시 듣기 · slow가 조작을 올린다", () => {
+  test("TY1. 서면 자동 재생이 한 번 나고 줄의 다시 듣기 · slow가 조작을 올린다", async () => {
     const { lesson, onTogglePace } = lessonAudioStub();
     mount([dictation], lesson);
     expect(playAudio).toHaveBeenCalledTimes(1);
     expect(playAudio).toHaveBeenCalledWith(LISTEN_SOURCE, expect.any(Function), 1);
+    const onFinished = playAudio.mock.calls[0]?.[1];
+    if (onFinished === undefined) throw new Error("자동 재생이 안 났다");
+    await act(async () => {
+      onFinished();
+    });
 
     fireEvent.tap(listenAgainParts("typing-activity-listen").button, {});
     expect(playAudio).toHaveBeenCalledTimes(2);
@@ -167,11 +172,11 @@ describe("DICTATION — 듣기 갈래", () => {
     );
   });
 
-  test("AX1. 줄 안 이름은 Play again · Slow, off이고 다시 듣기가 먼저다", () => {
+  test("AX1. 줄 안 이름은 자동 재생 중 Stop · Slow, off이고 다시 듣기가 먼저다", () => {
     const { lesson } = lessonAudioStub();
     mount([dictation], lesson);
 
-    expectListenAgainAccessible("typing-activity-listen", "Play again");
+    expectListenAgainAccessible("typing-activity-listen", "Stop");
     expect(screen.getByTestId("typing-activity-listen-slow")).toHaveAttribute(
       "accessibility-label",
       "Slow, off",

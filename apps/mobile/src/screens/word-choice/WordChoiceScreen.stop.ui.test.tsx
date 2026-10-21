@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
-import { cleanup, fireEvent, render } from "@lynx-js/react/testing-library";
+import { act, cleanup, fireEvent, render } from "@lynx-js/react/testing-library";
 
 import { lessonAudioStub, listenAudioOf, withAudio } from "../../lib/question-audio.test-support";
 import { listenAgainParts } from "../../components/listen-controls.test-support";
@@ -66,12 +66,14 @@ test("ST4. 자동 재생 중이면 Stop이고 탭하면 stopAudio가 불리며 P
   expect(button()).toHaveAttribute("accessibility-label", "Play again");
 });
 
-test("ST5. 재생이 끝나면(콜백) Play again이고, 그 탭은 다시 재생한다", () => {
+test("ST5. 재생이 끝나면(콜백) Play again이고, 그 탭은 다시 재생한다", async () => {
   mount();
   const onFinished = playAudio.mock.calls[0]?.[1];
   if (onFinished === undefined) throw new Error("자동 재생이 안 났다");
 
-  onFinished();
+  await act(async () => {
+    onFinished();
+  });
   expect(button()).toHaveAttribute("accessibility-label", "Play again");
   fireEvent.tap(button(), {});
 

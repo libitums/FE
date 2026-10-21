@@ -108,6 +108,7 @@ export type ListeningCopy = {
   readonly playFromStart: string;
   readonly slow: string;
   readonly playAgain: string;
+  readonly stop: string;
 };
 
 export type WordChoiceCopy = { readonly instruction: string };

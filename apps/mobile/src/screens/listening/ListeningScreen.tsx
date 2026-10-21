@@ -2,9 +2,10 @@ import { useUiCopy } from "../../lib/ui-copy";
 import { useEffect, useMemo, useReducer } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
-import { announceCompletion } from "../../lib/accessibility";
+import { announce, announceCompletion } from "../../lib/accessibility";
 import { LearningShell } from "../learning/LearningShell";
 import { LearningActivityComplete } from "../learning/LearningActivityComplete";
+import { listeningRevealAnnouncement } from "./listening-copy";
 import { ListeningPrompt } from "./ListeningPrompt";
 import { ListeningSilentPrompt } from "./ListeningSilentPrompt";
 import { ListeningChoice } from "./ListeningChoice";
@@ -162,8 +163,24 @@ export function ListeningActivity({
                 // null입니다.
                 result={choiceResultAt(state, question, choiceIndex)}
                 onSelect={(index) => {
+                  const result = index === question.answerIndex ? "correct" : "incorrect";
+                  // 대본이 숨겨져 있다가 판정으로 처음 나타나는 순간, 문항당 한 번 낭독합니다.
+                  if (
+                    !hasAnswered(state) &&
+                    question.audio !== null &&
+                    !sessionOptions["show-transcript"]
+                  ) {
+                    announce(
+                      listeningRevealAnnouncement(
+                        result,
+                        question.prompt,
+                        question.romanization,
+                        copy,
+                      ),
+                    );
+                  }
                   dispatch({ type: "selectChoice", choiceIndex: index });
-                  playback.answered(index === question.answerIndex ? "correct" : "incorrect");
+                  playback.answered(result);
                 }}
               />
             ))}

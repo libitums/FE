@@ -35,3 +35,13 @@ export function choiceAccessibilityLabel(
 export function listeningCompletionAnnouncement(nextActionLabel: string, copy: UiCopy): string {
   return `${copy.common.allQuestionsDone}, ${nextActionLabel}`;
 }
+
+/** 대본이 숨겨진 채 판정이 났을 때의 낭독입니다 — 정오, 한국어 대본, 로마자를 한 번에 읽습니다. */
+export function listeningRevealAnnouncement(
+  result: AnswerResult,
+  text: string,
+  romanization: string,
+  copy: UiCopy,
+): string {
+  return `${copy.common.answerResult[result]}. ${text}. ${romanization}`;
+}

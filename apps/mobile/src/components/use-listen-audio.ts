@@ -26,6 +26,8 @@ export type ListenAudioControl = {
   /** 처음부터, 지금 속도로 다시 듣습니다. */
   readonly replay: () => void;
   readonly togglePace: () => void;
+  /** 간이 줄이 소리를 멈춘 뒤 재생 상태를 idle로 돌립니다(`stopAudio`는 끝 콜백을 부르지 않음). */
+  readonly markStopped?: () => void;
   /** 문항당 처음 한 번만 보고합니다. */
   readonly answered: (result: ListenItemResult) => void;
 };
@@ -123,6 +125,11 @@ export function useListenAudio(cue: ListenCue | null, lesson: LessonAudio): List
     }
   };
 
+  const markStopped = (): void => {
+    "background only";
+    setPlayback("idle");
+  };
+
   const answered = (result: ListenItemResult): void => {
     "background only";
     const current = cueRef.current;
@@ -146,6 +153,7 @@ export function useListenAudio(cue: ListenCue | null, lesson: LessonAudio): List
     toggle,
     replay,
     togglePace,
+    markStopped,
     answered,
   };
 }

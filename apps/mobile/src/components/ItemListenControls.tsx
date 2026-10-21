@@ -1,8 +1,10 @@
 import type { ReactNode } from "@lynx-js/react";
 
+import pause from "@libitums/icons/lynx/pause";
 import volume from "@libitums/icons/lynx/volume";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
 
+import { stopAudio } from "../lib/audio";
 import { useUiCopy } from "../lib/ui-copy";
 import { SlowPlaybackToggle } from "./SlowPlaybackToggle";
 import type { ListenAudioControl } from "./use-listen-audio";
@@ -15,8 +17,7 @@ export type ItemListenControlsProps = {
 };
 
 /**
- * 문항 곁에 얹는 간이 줄(다시 듣기 · 「천천히」)입니다. 일시정지는 없고 누르면 처음부터 다시 들려 줍니다. 재생
- * 중이라고 따로 표시하지 않습니다. 양쪽 슬롯이 같은 폭이라 토글이 켜져 넓어져도 다시 듣기 단추는 움직이지
+ * 문항 곁에 얹는 간이 줄(다시 듣기 · 「천천히」)입니다. 누르면 처음부터 다시 들려 주고, 재생 중에는 같은 단추가 멈춤이 됩니다(WCAG 1.4.2). 양쪽 슬롯이 같은 폭이라 토글이 켜져 넓어져도 다시 듣기 단추는 움직이지
  * 않고, 토글이 없어도(속도 재생 미지원) 슬롯 폭을 지킵니다.
  *
  * 다시 듣기의 이름 · 탭은 안쪽 `RoundButton`이 집니다(스크린 리더가 읽는 요소와 같음). 감싼 상자는 testid만
@@ -24,16 +25,22 @@ export type ItemListenControlsProps = {
  */
 export function ItemListenControls({ control, testId }: ItemListenControlsProps): ReactNode {
   const copy = useUiCopy();
+  const playing = control.playback === "playing";
+  const stop = (): void => {
+    "background only";
+    stopAudio();
+    control.markStopped?.();
+  };
   return (
     <view className="item-listen-controls" data-testid={testId}>
       <view className="item-listen-controls-start">
         <view data-testid={`${testId}-again`}>
           <RoundButton
-            accessibilityLabel={copy.listening.playAgain}
-            icon={volume}
+            accessibilityLabel={playing ? copy.listening.stop : copy.listening.playAgain}
+            icon={playing ? pause : volume}
             variant="neutral"
             size="l"
-            bindtap={control.replay}
+            bindtap={playing ? stop : control.replay}
           />
         </view>
       </view>

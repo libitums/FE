@@ -17,6 +17,7 @@ export const listeningEn: ListeningCopy = {
   playFromStart: "Play from the start",
   slow: "Slow",
   playAgain: "Play again",
+  stop: "Stop",
 };
 
 export const wordChoiceEn: WordChoiceCopy = { instruction: "Choose the word that fits." };
