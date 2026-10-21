@@ -5,6 +5,15 @@ export function isContentRequest(url: string): boolean {
   return url.includes(contentBucketPath);
 }
 
+// 콘텐츠 버킷 URL에서 기준과 쿼리(`?v=` · `?m=` 기기 캐시 키)를 뗀 상대 경로입니다. 버킷 밖 주소는 null.
+export function contentPathOf(url: string): string | null {
+  const at = url.indexOf(contentBucketPath);
+  if (at < 0) return null;
+  const rest = url.slice(at + contentBucketPath.length);
+  const query = rest.indexOf("?");
+  return query < 0 ? rest : rest.slice(0, query);
+}
+
 // 콘텐츠 요청에 주는 가짜 응답입니다 — 갱신은 실패로 끝나고 앱은 번들 콘텐츠를 그대로 씁니다.
 export function contentNotFoundResponse(): { status: number; text: () => Promise<string> } {
   return { status: 404, text: async () => "" };

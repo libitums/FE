@@ -4,7 +4,10 @@ import "background-only";
 import type { CatalogSourceText } from "./episode-catalog";
 import { getItem, isStorageAvailable, removeItem, setItem } from "./storage";
 
+/** 활성 매니페스트 — 카탈로그가 여는 본문들의 항목입니다(받은 원문에서 보류된 id만 지금 항목으로 둔 것). */
 export const CONTENT_MANIFEST_KEY = "libitum.content.manifest";
+/** 받은 매니페스트 원문 — 보류된 id가 있을 때만 둡니다. 없으면 활성과 같습니다. */
+export const CONTENT_RECEIVED_MANIFEST_KEY = "libitum.content.manifest.received";
 export const CONTENT_AUDIO_MANIFEST_KEY = "libitum.content.audio-manifest";
 export const contentEpisodeKey = (id: string): string => `libitum.content.episode.${id}`;
 
@@ -22,11 +25,38 @@ export const hostContentStore: ContentStore = {
   remove: removeItem,
 };
 
-function safeGet(store: ContentStore, key: string): string | null {
+export function safeGet(store: ContentStore, key: string): string | null {
   try {
     return store.get(key);
   } catch {
     return null;
+  }
+}
+
+/** 쓰기 하나 — 저장소가 없거나 쓰기가 던지면 `false`입니다. */
+export function trySet(store: ContentStore, key: string, value: string): boolean {
+  try {
+    store.set(key, value);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function tryRemove(store: ContentStore, key: string): boolean {
+  try {
+    store.remove(key);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function safeAvailable(store: ContentStore): boolean {
+  try {
+    return store.available();
+  } catch {
+    return false;
   }
 }
 

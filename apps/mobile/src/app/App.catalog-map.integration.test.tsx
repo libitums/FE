@@ -8,7 +8,11 @@ import { App } from "./App";
 import type { AppJourneySeed } from "./journey-progress";
 import { resetPushWiringForTests } from "./push-wiring";
 import { pushOpenedEventName } from "./use-opened-push";
-import { contentNotFoundResponse, isContentRequest } from "./test-helpers/content-requests";
+import {
+  contentNotFoundResponse,
+  contentPathOf,
+  isContentRequest,
+} from "./test-helpers/content-requests";
 import { authSessionStorageKey, serializeAuthSession } from "../lib/auth-session";
 import { CONTENT_MANIFEST_KEY } from "../lib/episode-cache";
 import { minimalRoleplayTurnWire } from "../lib/episode-content.test-support";
@@ -31,7 +35,6 @@ import { catalogNodeTestId } from "./test-helpers/map-unit-testid";
 // 카탈로그 · 갱신 · 캐시 · 진행 모듈은 실물입니다.
 
 const supabaseUrl = "https://test.supabase.co";
-const manifestSuffix = "/storage/v1/object/public/content/manifest.json";
 
 type Rpc = { readonly name: string; readonly body: Record<string, unknown> };
 
@@ -239,10 +242,10 @@ async function boot(options: BootOptions = {}): Promise<Booted> {
     }
     if (isContentRequest(url)) {
       if (options.serve === undefined) return Promise.resolve(contentNotFoundResponse());
-      if (url.endsWith(manifestSuffix)) {
+      if (contentPathOf(url) === "manifest.json") {
         return Promise.resolve({ status: 200, text: async () => options.serve?.manifest ?? "" });
       }
-      const id = /\/episodes\/([^/]+)\.json$/.exec(url)?.[1];
+      const id = /^episodes\/([^/]+)\.json$/.exec(contentPathOf(url) ?? "")?.[1];
       const body = id === undefined ? undefined : options.serve.episodes[id];
       if (body === undefined) return Promise.resolve(contentNotFoundResponse());
       const reply = { status: 200, text: async () => body };

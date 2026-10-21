@@ -299,3 +299,40 @@ describe("analyticsEventSinksFrom", () => {
     expect(() => sink({ name: "settings_opened" })).not.toThrow();
   });
 });
+
+describe("episode_update_splash_closed", () => {
+  const event = {
+    name: "episode_update_splash_closed",
+    outcome: "timed-out",
+    waitMs: "3000",
+    splashMs: "5400",
+    episodeCount: "2",
+    replacedCount: "1",
+  } as const satisfies AnalyticsEvent;
+  const properties = {
+    outcome: "timed-out",
+    waitMs: "3000",
+    splashMs: "5400",
+    episodeCount: "2",
+    replacedCount: "1",
+  };
+
+  test("EV1. 이름은 그대로, properties는 name만 뺀 다섯 필드다", () => {
+    expect(analyticsCaptureFrom(event)).toStrictEqual({
+      event: "episode_update_splash_closed",
+      properties,
+    });
+  });
+
+  test("EV1. episodeIntroEventSink가 이 이벤트를 capture 한 번으로 보낸다", () => {
+    const { client, capture } = fakeClient();
+    const sink = analyticsEventSinksFrom(client).episodeIntroEventSink as unknown as (
+      e: AnalyticsEvent,
+    ) => void;
+
+    sink(event);
+
+    expect(capture).toHaveBeenCalledTimes(1);
+    expect(capture).toHaveBeenCalledWith("episode_update_splash_closed", properties);
+  });
+});

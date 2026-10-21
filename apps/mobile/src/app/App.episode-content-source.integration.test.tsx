@@ -2,6 +2,7 @@ import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { act, cleanup, render, screen } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
+import { contentPathOf } from "./test-helpers/content-requests";
 import { signedInBootSession } from "./test-helpers/signed-in-app";
 import { authSessionStorageKey, serializeAuthSession } from "../lib/auth-session";
 import { bundledCatalogInput } from "../lib/episode-bundled";
@@ -23,7 +24,6 @@ import { sha256Hex, utf8Bytes } from "../lib/sha256";
 // Supabase 설정(`vi.stubEnv`). 갱신 · 원격 · 캐시 모듈은 실물입니다.
 
 const supabaseUrl = "https://test.supabase.co";
-const manifestSuffix = "/storage/v1/object/public/content/manifest.json";
 
 type ContentFetchMode = "serve" | "reject" | "status-zero";
 
@@ -157,10 +157,10 @@ async function bootApp(mode: ContentFetchMode): Promise<Booted> {
     if (url.includes("/storage/v1/object/public/content/")) {
       if (mode === "reject") return Promise.reject(new Error("network down"));
       if (mode === "status-zero") return Promise.resolve({ status: 0, text: async () => "" });
-      if (url.endsWith(manifestSuffix)) {
+      if (contentPathOf(url) === "manifest.json") {
         return Promise.resolve({ status: 200, text: async () => remoteManifestText });
       }
-      if (url.endsWith("/episodes/u04-x.json")) {
+      if (contentPathOf(url) === "episodes/u04-x.json") {
         return Promise.resolve({ status: 200, text: async () => episodeText });
       }
       return Promise.resolve({ status: 404, text: async () => "" });
@@ -181,7 +181,7 @@ async function bootApp(mode: ContentFetchMode): Promise<Booted> {
 }
 
 const manifestRequests = (urls: readonly string[]): string[] =>
-  urls.filter((url) => url.endsWith(manifestSuffix));
+  urls.filter((url) => contentPathOf(url) === "manifest.json");
 
 async function settle(): Promise<void> {
   for (let i = 0; i < 5; i += 1) {

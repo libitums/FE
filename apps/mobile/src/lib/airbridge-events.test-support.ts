@@ -1,7 +1,7 @@
 // airbridge-events 단위 테스트가 함께 쓰는 입력 표입니다. 계약: ADR-0063.
 import type { AnalyticsEvent, AnalyticsEventName, AnalyticsEventSinks } from "./analytics.contract";
 
-/** 계약의 이름 41개 전부입니다 — 손으로 적고 타입에 묶습니다. */
+/** 계약의 이름 44개 전부입니다 — 손으로 적고 타입에 묶습니다. */
 export const allEventNames = [
   "entry_screen_viewed",
   "entry_login_method_selected",
@@ -32,6 +32,7 @@ export const allEventNames = [
   "episode_intro_exited",
   "episode_prologue_completed",
   "episode_content_refreshed",
+  "episode_update_splash_closed",
   "episode_survey_answered",
   "episode_survey_skipped",
   "episode_lesson_started",
@@ -48,7 +49,7 @@ export const allEventNames = [
   "roleplay_story_completed",
 ] as const satisfies readonly AnalyticsEventName[];
 
-/** 위 셋을 뺀 40개 이름마다 최소 이벤트 하나입니다. */
+/** 위 셋을 뺀 41개 이름마다 최소 이벤트 하나입니다. */
 export const unmappedEvents = [
   { name: "entry_screen_viewed", screen: "onboarding" },
   { name: "entry_login_method_selected", method: "phone" },
@@ -110,6 +111,14 @@ export const unmappedEvents = [
     lockReasons: "",
     failReasons: "",
     persisted: true,
+  },
+  {
+    name: "episode_update_splash_closed",
+    outcome: "complete",
+    waitMs: "1200",
+    splashMs: "3600",
+    episodeCount: "1",
+    replacedCount: "1",
   },
   { name: "episode_survey_answered", episodeId: "tutorial", rating: "4" },
   { name: "episode_survey_skipped", episodeId: "tutorial" },

@@ -367,6 +367,11 @@ sink는 던지지 않는다 — 매핑 · `capture`를 `try`로 감싸 삼킨다
   - 불변식(분석 쪽 점검용): `correctCount ≤ questionCount − skippedCount`는 레슨에 읽기 건너뜀이 없을 때만 참이다(읽기 건너뜀은 채점 밖이라 빼면 안 된다) — 늘 참인 것은 `correctCount ≤ questionCount`다.
   - **한계** — 막힘과 사용자 `Skip`을 가르지 않는다(`S5`만 깨끗하다). 권한 거부 · 인식기 없음 · 일반 실패도 가르지 않는다. PostHog 도착은 보지 않았다.
     **GitHub wiki 이벤트 사전은 저장소 밖이라 이 변경에 들어 있지 않다** — 위 표의 `skippedCount` 행 · 읽는 법 · 연속성을 옮겨야 한다(후속 — wiki 갱신 필요).
+- ⟨2026-10-20 — 에피소드 갱신 스플래시 게이지. 적용 기록이고 결정을 바꾸지 않는다⟩ **이벤트 하나가 더해져 이름이 43 → 44개다**(모양 47 → 48). 결정은 [ADR-0078](0078-episode-update-on-splash.md) D8.
+  sink는 새로 만들지 않았다 — App 루트 훅(`useEpisodeContentRefresh`)이 `episodeIntroEventSink`로 낸다(`episode_content_refreshed`와 같은 자리). 타입 정본은 `lib/episode-update-event.contract.ts`이고 `EpisodeIntroEvent` union에 든다.
+  - **`episode_update_splash_closed`** — 스플래시가 나가는 순간, **실행당 최대 1회**. 매니페스트가 로고 끝 전에 답하지 않았으면 **교체가 있었을 때만** `unchecked`로 내고 아니면 내지 않는다. 속성(10진 문자열 · 문자열) `outcome`(`unchecked` · `nothing` · `complete` · `timed-out` · `failed`) · `waitMs`(로고 끝 → 나감, 로고 끝이 없었으면 `"0"`) · `splashMs`(받기 시작 → 나감) · `episodeCount`(스플래시가 기다린 새 · 바뀐 에피소드 수) · `replacedCount`(이번 시작에 활성으로 올린 수 — 시작 직후 + 나갈 때). 에피소드 id는 싣지 않는다.
+  - 묻는 질문 → 읽는 법: 게이지 노출 실행 비율 = `outcome ∈ {complete, timed-out, failed}` ÷ (`unchecked`를 뺀 전체) — 분모는 「매니페스트가 로고 끝 전에 답한 실행」이다. 대기 시간 = 게이지 실행의 `waitMs` 분포(설계상 ≤ 약 3000). 3초 넘김 비율 = `timed-out` ÷ 게이지 실행. 교체된 에피소드 수 = `replacedCount`의 합 · 분포(`unchecked`는 오프라인 시작의 교체).
+  - **한계** — 매니페스트가 로고 끝 뒤에 답한 실행(느린 망)은 교체가 없으면 세지 않는다 — 「느려서 게이지를 못 띄운 비율」은 잴 수 없다(ADR-0078 재검토 조건 1). Airbridge · Meta 앱 이벤트 매핑은 옮기지 않는다. PostHog 도착은 보지 않았다. GitHub wiki 이벤트 사전은 저장소 밖이라 따로 고친다(후속).
 
 ### D15. 나라 · 주 · 시간대만 IP로 추정하고, IP는 저장하지 않는다
 
