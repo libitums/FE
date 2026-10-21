@@ -233,6 +233,8 @@ final class AudioPlaybackController {
     prepared = false;
     paused = false;
     resumeAfterFocusGain = false;
+    // 기억된 속도는 재생과 함께 끝납니다. 다음 재생은 play가 자기 속도를 다시 기억합니다.
+    currentRate = AudioPlaybackRate.NORMAL;
     if (previous != null) {
       previous.setOnPreparedListener(null);
       previous.setOnCompletionListener(null);
