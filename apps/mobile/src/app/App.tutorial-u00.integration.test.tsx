@@ -121,6 +121,29 @@ describe("TU1 새 설치 · 오프라인", () => {
   });
 });
 
+describe("TU1d 음성 받기(v3)", () => {
+  test("TU1d. 내장과 같은 매니페스트로 온라인 시작하면 u00 그림 받기는 0이고 음성은 audio/u00-tutorial 12개를 받는다", async () => {
+    const manifest = readFileSync(resolve(process.cwd(), "content/manifest.json"), "utf8");
+    const download = vi.fn<(url: string, path: string, callback: (p: unknown) => void) => void>(
+      (_url, _path, callback) => callback({ status: "saved", bytes: "1" }),
+    );
+    await bootTutorialApp({
+      serve: { manifest, episodes: {} },
+      contentFiles: { download, fileUrl: () => "" },
+    });
+
+    await vi.waitFor(() => {
+      const paths = download.mock.calls.map((call) => call[1]);
+      expect(paths.filter((path) => path.startsWith("audio/u00-tutorial/"))).toHaveLength(12);
+    });
+    const downloaded = download.mock.calls.map((call) => call[1]);
+    expect(downloaded.filter(isU00ImagePath)).toEqual([]);
+    expect(new Set(downloaded.filter((path) => path.startsWith("audio/u00-tutorial/"))).size).toBe(
+      12,
+    );
+  });
+});
+
 describe("TU2 u00 → Episode 1", () => {
   test("TU2. 최종(RP)만 남은 진행에서는 u01 표지를 눌러도 화면이 바뀌지 않고, 끝내면 열려 Episode 1.이 선다", async () => {
     await bootTutorialApp({ progressSeed: { catalogProgress: { [U00]: keysWithout("RP") } } });
@@ -208,23 +231,26 @@ describe("TU5 · TU6 롤플레이 회귀 · 지운 진입", () => {
     }
     tapCover();
     expect(screen.getByTestId("episode-intro-screen")).toBeInTheDocument();
-    for (const id of ["messenger-screen", "phone-call-screen", "visual-novel-screen"]) {
-      expect(screen.queryAllByTestId(id).length).toBe(0);
-    }
   });
 
-  test("TU6. 서버 푸시의 메신저 목적지는 여정 탭 루트(맵)에 머물고 push_notification_opened는 journey-map으로 한 번 난다", async () => {
-    const { events } = await bootTutorialApp({
-      pushOpened: { kind: "messenger", unitId: "appointment-confirmation" },
-    });
-    await flushAsync();
+  test.each([
+    { kind: "messenger", unitId: "appointment-confirmation" },
+    { kind: "phone-call", unitId: "appointment-confirmation" },
+    { kind: "visual-novel", unitId: "cafe-arrival" },
+  ])(
+    "TU6. 서버 푸시의 $kind 목적지는 여정 탭 루트(맵)에 서서 u00 표지가 보이고 push_notification_opened는 journey-map으로 한 번 난다",
+    async (pushOpened) => {
+      const { events } = await bootTutorialApp({ pushOpened });
+      await flushAsync();
 
-    expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
-    expect(screen.queryAllByTestId("messenger-screen").length).toBe(0);
-    expect(events.filter((event) => event.name === "push_notification_opened")).toEqual([
-      { name: "push_notification_opened", target: "journey-map" },
-    ]);
-  });
+      expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
+      expect(cover(U00)).toHaveAttribute("data-status", "available");
+      expect(screen.queryAllByTestId("episode-intro-screen").length).toBe(0);
+      expect(events.filter((event) => event.name === "push_notification_opened")).toEqual([
+        { name: "push_notification_opened", target: "journey-map" },
+      ]);
+    },
+  );
 });
 
 describe("TU7 새 버전 교체", () => {

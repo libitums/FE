@@ -52,23 +52,67 @@ export const emptyContractState: ContractProgressState = {
   catalogProgress: {},
 };
 
-/** 서버 RPC(`merge_learning_progress_v1`)가 요구하는 조건을 TS로 적은 검사입니다. */
-export function serverAcceptsSnapshot(snapshot: unknown): boolean {
-  if (typeof snapshot !== "object" || snapshot === null || Array.isArray(snapshot)) return false;
-  const record = snapshot as Record<string, unknown>;
-  const steps = record["completedStepCount"];
-  const visualNovel = record["visualNovel"] as Record<string, unknown> | null | undefined;
+const LIST_FIELDS = [
+  "completedEpisodeIntroIds",
+  "completedMessengerUnitIds",
+  "completedPhoneCallUnitIds",
+  "completedEpisodeFinalIds",
+] as const;
+
+const isPlainObject = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+const isIdList = (value: unknown): boolean =>
+  Array.isArray(value) && value.every((item) => typeof item === "string" && item !== "");
+
+const isSafeCount = (value: unknown): boolean =>
+  typeof value === "number" && Number.isSafeInteger(value) && value >= 0;
+
+function visualNovelOk(value: unknown): boolean {
+  if (!isPlainObject(value)) return false;
+  const { status, beatIndex } = value;
   return (
-    record["version"] === 1 &&
-    typeof steps === "number" &&
-    Number.isInteger(steps) &&
-    Array.isArray(record["completedEpisodeIntroIds"]) &&
-    Array.isArray(record["completedMessengerUnitIds"]) &&
-    Array.isArray(record["completedPhoneCallUnitIds"]) &&
-    Array.isArray(record["completedEpisodeFinalIds"]) &&
-    typeof visualNovel === "object" &&
-    visualNovel !== null &&
-    (visualNovel["status"] === "active" || visualNovel["status"] === "completed") &&
-    typeof visualNovel["beatIndex"] === "number"
+    (status === "active" && (beatIndex === 0 || beatIndex === 1)) ||
+    (status === "completed" && beatIndex === 2)
+  );
+}
+
+function catalogProgressOk(value: unknown): boolean {
+  return (
+    isPlainObject(value) &&
+    Object.entries(value).every(([key, units]) => key !== "" && isIdList(units))
+  );
+}
+
+function ticketsOk(value: unknown): boolean {
+  if (!isPlainObject(value)) return false;
+  const day = value["grantDay"];
+  return (
+    isSafeCount(value["refillAtMs"]) &&
+    isSafeCount(value["grantedMs"]) &&
+    typeof day === "string" &&
+    (day === "" || /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(day))
+  );
+}
+
+/**
+ * 서버 RPC(`merge_learning_progress_v1`, supabase/migrations/20261020120000…sql)가 요구하는 조건을 TS로 적은 검사입니다.
+ * 버전 · 16384 바이트 상한 · 스텝 수(0 이상 안전 정수) · 목록 넷(비지 않은 문자열) · 비주얼 노벨(status와 beatIndex 짝) ·
+ * 선택 필드 catalogProgress · tickets를 같은 규칙으로 봅니다.
+ */
+export function serverAcceptsSnapshot(snapshot: unknown): boolean {
+  if (!isPlainObject(snapshot)) return false;
+  if (
+    snapshot["version"] !== 1 ||
+    new TextEncoder().encode(JSON.stringify(snapshot)).length > 16384
+  ) {
+    return false;
+  }
+  return (
+    isSafeCount(snapshot["completedStepCount"]) &&
+    LIST_FIELDS.every((field) => isIdList(snapshot[field])) &&
+    visualNovelOk(snapshot["visualNovel"]) &&
+    (!("catalogProgress" in snapshot) || catalogProgressOk(snapshot["catalogProgress"])) &&
+    (!("tickets" in snapshot) || ticketsOk(snapshot["tickets"]))
   );
 }
