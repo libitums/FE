@@ -1,0 +1,87 @@
+/* 「천천히」 토글의 스타일입니다(ADR-0015 D2). 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1).
+
+   꺼짐은 회색 면만, 켜짐은 흰 면 + 2pt 테두리 + 앞의 체크 아이콘입니다. 테두리 두께를 꺼짐에서도 같은 색으로
+   미리 잡아 두어 켜질 때 크기가 변하지 않습니다. 높이는 하한만 정하고 고정하지 않습니다 — 글자 크기 설정을
+   따라 커집니다(ADR-0020 D5). */
+.slow-playback-toggle {
+  position: relative;
+  min-height: var(--libitum-spacing-48);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: var(--libitum-spacing-4);
+  padding-left: var(--libitum-spacing-16);
+  padding-right: var(--libitum-spacing-16);
+  border-radius: var(--libitum-radius-full);
+  border-width: var(--libitum-stroke-width-strong);
+  border-style: solid;
+  border-color: var(--libitum-color-gray-100);
+  background-color: var(--libitum-color-gray-100);
+  transition:
+    transform var(--libitum-motion-duration-pressed) var(--libitum-motion-easing-easing),
+    background-color var(--libitum-motion-duration-color) var(--libitum-motion-easing-easing),
+    border-color var(--libitum-motion-duration-color) var(--libitum-motion-easing-easing);
+}
+
+.slow-playback-toggle-on {
+  border-color: var(--libitum-color-brand-strong);
+  background-color: var(--libitum-color-background-elevated);
+}
+
+.slow-playback-toggle-label {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-weight: var(--libitum-typography-label-l-font-weight);
+  font-size: var(--libitum-typography-label-l-font-size);
+  line-height: var(--libitum-typography-label-l-line-height);
+  letter-spacing: var(--libitum-typography-label-l-letter-spacing);
+}
+
+.slow-playback-toggle-on .slow-playback-toggle-label {
+  color: var(--libitum-color-fg-brand);
+}
+
+/* 체크 아이콘은 크기 · 회전 전환 없이 즉시 붙고 떨어집니다. 색은 `current-color` 속성이 집니다. */
+.slow-playback-toggle-icon {
+  width: var(--libitum-icon-size-xs);
+  height: var(--libitum-icon-size-xs);
+  flex-shrink: 0;
+}
+
+.slow-playback-toggle:active {
+  transform: scale(var(--libitum-motion-scale-pressed));
+}
+
+.slow-playback-toggle:focus-visible {
+  box-shadow:
+    0 0 0 var(--libitum-stroke-width-strong) var(--libitum-color-white),
+    0 0 0 var(--libitum-spacing-4) var(--libitum-color-border-strong);
+}
+
+/* 움직임 줄이기: 면을 줄이지 않고 검정 막을 깔았다가 걷습니다. 색 전환은 유지하되 짧고 직선입니다. */
+.slow-playback-toggle-reduced {
+  transition:
+    background-color var(--libitum-motion-duration-d2) var(--libitum-motion-easing-linear),
+    border-color var(--libitum-motion-duration-d2) var(--libitum-motion-easing-linear);
+}
+
+.slow-playback-toggle-reduced:active {
+  transform: none;
+}
+
+.slow-playback-toggle-shade {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-black);
+  opacity: 0;
+}
+
+.slow-playback-toggle-reduced:active .slow-playback-toggle-shade {
+  opacity: var(--libitum-opacity-pressed-shade);
+}

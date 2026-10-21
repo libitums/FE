@@ -30,6 +30,12 @@
   gap: var(--libitum-spacing-12);
 }
 
+/* 소리가 있는 받아쓰기는 칸을 세로로 바꿉니다 — 간이 줄이 위, 단서 글이 아래. 가로 줄에 토글까지 넣으면 단서 글 폭이
+   좁아져 줄바꿈이 늘기 때문입니다. */
+.typing-activity-cue-block-listen {
+  flex-direction: column;
+}
+
 .typing-activity-cue-text {
   flex-shrink: 1;
   display: flex;

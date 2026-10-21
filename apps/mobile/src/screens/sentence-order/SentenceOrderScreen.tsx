@@ -4,16 +4,23 @@ import type { ReactNode } from "@lynx-js/react";
 
 import { AnswerVerdict } from "../../components/AnswerVerdict";
 import { LearningItemGuide } from "../../components/LearningItemGuide";
+import { useListenAudio } from "../../components/use-listen-audio";
 import { useLearningItemGuide } from "../../components/use-learning-item-guide";
 import { announce, announceCompletion } from "../../lib/accessibility";
+import { answerEchoCueOf, listenCueOf, standaloneLessonAudio } from "../../lib/question-audio";
+import type { LessonAudio } from "../../lib/question-audio";
+import { initialSessionOptions } from "../../lib/session-options";
+import { useAudioCue } from "../../lib/use-audio-cue";
 import { LearningShell } from "../learning/LearningShell";
 import { LearningActivityComplete } from "../learning/LearningActivityComplete";
 import { SentenceOrderChip, SentenceOrderChipPlaceholder } from "./SentenceOrderChip";
 import { SentenceOrderDialogue } from "./SentenceOrderDialogue";
+import { SentenceOrderPartnerSlot } from "./SentenceOrderPartnerSlot";
 import {
   canCheckArrangement,
   canPlaceChip,
   composedSentence,
+  judgeSentenceOrder,
   dialogueSpeakersOf,
   initialSentenceOrderSessionState,
   isSentenceOrderSessionComplete,
@@ -45,6 +52,8 @@ export type SentenceOrderActivityProps = {
   readonly lesson?: LessonPosition;
   /** 대화 조립 아바타의 이름(에피소드 상대 · 학습자)입니다. */
   readonly speakerNames?: DialogueSpeakerNames;
+  /** 레슨의 소리 설정(속도 · 자동 재생 · 보고)입니다. 없으면 단독 활동의 기본값입니다. */
+  readonly lessonAudio?: LessonAudio;
 };
 
 /** 내 말풍선이 비어 있을 때의 표시입니다 — 디자인 표기 그대로입니다. */
@@ -57,6 +66,7 @@ export function SentenceOrderActivity({
   onFinish,
   lesson,
   speakerNames,
+  lessonAudio,
 }: SentenceOrderActivityProps): ReactNode {
   const copy = useUiCopy();
   const [state, dispatch] = useReducer(
@@ -72,6 +82,15 @@ export function SentenceOrderActivity({
   const complete = isSentenceOrderSessionComplete(state, questions.length);
   const question = complete ? null : questions[state.questionIndex];
   const result = question == null ? null : sentenceOrderResultAt(question, state);
+
+  // 문항 음성입니다. 듣기 조립은 듣기 갈래 — 상대 말풍선 자리의 3열 · 자동 재생 · 보고, 문장 순서는 정답 뒤 재생
+  // 갈래 — 확인한 순간 1.0으로 한 번(정오 무관, 조작 없음)입니다.
+  const audioLesson = lessonAudio ?? standaloneLessonAudio(initialSessionOptions);
+  const audioKey = String(state.questionIndex);
+  const listen = useListenAudio(listenCueOf(audioKey, question?.audio), audioLesson);
+  useAudioCue(
+    answerEchoCueOf(audioKey, question?.audio, state.phase === "checked", audioLesson.autoPlay),
+  );
 
   // 채점 전이마다 한 번 판정을 낭독합니다.
   useEffect(() => {
@@ -116,7 +135,14 @@ export function SentenceOrderActivity({
                 : dispatch({ type: "nextQuestion" }),
           }
         : canCheckArrangement(question, state)
-          ? { label: copy.common.check, run: () => dispatch({ type: "check" }), sound: "none" }
+          ? {
+              label: copy.common.check,
+              run: () => {
+                dispatch({ type: "check" });
+                listen.answered(judgeSentenceOrder(question, state.placedChipIndexes));
+              },
+              sound: "none",
+            }
           : undefined;
 
   const bankFull = question == null ? true : !canPlaceChip(question, state);
@@ -192,31 +218,8 @@ export function SentenceOrderActivity({
               />
             ) : (
               <>
-                {/* 상대의 말 — 왼쪽 말풍선. */}
-                <view className="sentence-order-screen-partner">
-                  <text
-                    className="sentence-order-screen-partner-text"
-                    data-testid="sentence-order-screen-prompt"
-                  >
-                    {question.prompt}
-                  </text>
-                  {question.support === undefined ? null : (
-                    <>
-                      <text
-                        className="sentence-order-screen-support"
-                        data-testid="sentence-order-screen-romanization"
-                      >
-                        {question.support.romanization}
-                      </text>
-                      <text
-                        className="sentence-order-screen-support"
-                        data-testid="sentence-order-screen-translation"
-                      >
-                        {question.support.translation}
-                      </text>
-                    </>
-                  )}
-                </view>
+                {/* 상대의 말 — 왼쪽 말풍선(듣기 조립은 그 자리에 듣기 3열). */}
+                <SentenceOrderPartnerSlot question={question} listen={listen} />
 
                 {/* 내 말 — 오른쪽 말풍선. 채우는 동안은 빈 표시(`----`)이고 낭독하지 않습니다.
                     채점하면 만든 문장이 섭니다. */}

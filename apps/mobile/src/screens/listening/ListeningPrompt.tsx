@@ -1,15 +1,9 @@
 import type { ReactNode } from "@lynx-js/react";
 
-import pause from "@libitums/icons/lynx/pause";
-import play from "@libitums/icons/lynx/play";
-import refresh from "@libitums/icons/lynx/refresh";
-import { color } from "@libitums/design-tokens";
-
-import { listeningPromptScale, playbackActionFor } from "./listening";
-import type { ListeningPlaybackAction } from "./listening";
-import type { ListeningPlayback } from "./use-listening-playback";
+import { ListenPlaybackRow } from "../../components/ListenPlaybackControls";
+import type { ListenAudioControl } from "../../components/use-listen-audio";
 import type { SessionOptions } from "../../lib/session-options";
-import { useUiCopy } from "../../lib/ui-copy";
+import { listeningPromptScale } from "./listening";
 
 import "./listening-prompt.css";
 
@@ -24,50 +18,28 @@ import "./listening-prompt.css";
 // 하나는 처음부터 다시 텁니다.
 //
 // **이 컴포넌트는 표시만 합니다.** 재생 상태 · 자동 재생 · 조작은 화면의
-// `useListeningPlayback`이 주인이고(학습 껍데기가 배치를 바꿀 때 무대 내용을 다시 세워도
+// `useListenAudio`가 주인이고(학습 껍데기가 배치를 바꿀 때 무대 내용을 다시 세워도
 // 소리가 끊기지 않게 하려는 것입니다), 여기에는 `playback` 묶음 하나로 내려옵니다.
 // `NativeModules`도 직접 만지지 않습니다(ADR-0017 D3) — 접점은 `lib/audio.ts` 하나입니다.
 //
 // **`<audio>`·`<video>`를 렌더하지 않습니다.** 판정 환경(Pod 4.0.1)에 미등록이라
 // 렌더하면 페이지 전체가 죽습니다 — 소리는 네이티브 모듈이 냅니다.
 
-// 아이콘 모양이 **색과 독립인 채널**입니다(WCAG 1.4.1). 리터럴을 적지 않고 패키지
-// 모듈을 가져옵니다(ADR-0014 D6). 전체 index를 import하지 않습니다 — 819개가 번들에
-// 들어갑니다.
-//
-// **이제 `pause`(❚❚)를 씁니다.** 안 쓰던 근거는 *"❚❚를 그리면 누르면 이어서 재생된다를
-// 약속하는데 다시 누르면 처음부터 난다"* 였습니다. 그 약속이 이제 참입니다.
-const playbackIconByAction: Record<ListeningPlaybackAction, string> = {
-  pause,
-  resume: play,
-  play,
-};
-
-// **보이는 낱말이 없으므로 이름은 `accessibility-label`이 혼자 집니다.** 동그란 아이콘
-// 버튼이라 라벨 자리가 없습니다 — 그래서 아이콘이 크기를 못 받아 안 보이면 남는 채널이
-// 이름 하나뿐입니다. 그 위험을 아이콘 상자를 크게(48) 잡는 것으로 갚습니다.
-//
-// 상태가 라벨 접미사로 붙지 않습니다: 이 버튼은 상태가 갈리는 것이 아니라 **하는 일이
-// 갈립니다**(`Play`·`Resume`·`Pause`는 서로 다른 이름입니다 — 문구표 `listening.playback`).
-
 export type ListeningPromptProps = {
   text: string;
   romanization: string;
   /** 대본을 보일지(`show-transcript`)만 읽습니다. */
   sessionOptions: SessionOptions;
-  /** 재생 상태와 조작을 묶어 받습니다 — 주인은 화면의 `useListeningPlayback`입니다. */
-  playback: ListeningPlayback;
+  /** 재생 상태와 조작을 묶어 받습니다 — 주인은 화면의 `useListenAudio`입니다. */
+  playback: ListenAudioControl;
 };
 
 export function ListeningPrompt({
   text,
   romanization,
   sessionOptions,
-  playback: { playback, toggle, replay },
+  playback,
 }: ListeningPromptProps): ReactNode {
-  const copy = useUiCopy();
-
-  const action = playbackActionFor(playback);
   const scale = listeningPromptScale(text);
 
   return (
@@ -98,50 +70,9 @@ export function ListeningPrompt({
         </view>
       ) : null}
 
-      {/* 컨트롤 둘. 다시듣기가 왼쪽 · 작고, 재생/일시정지가 **줄 한가운데** · 큽니다 —
-          크기와 자리가 둘 중 어느 것이 주된 조작인지를 말합니다(Figma 53-14231에서
-          재생의 중심이 카드 중심과 같습니다). */}
-      <view className="listening-prompt-controls">
-        <view
-          className="listening-prompt-replay"
-          data-testid="listening-prompt-replay"
-          accessibility-element={true}
-          accessibility-label={copy.listening.playFromStart}
-          accessibility-traits="button"
-          bindtap={replay}
-        >
-          {/* 아이콘은 장식이 아니라 **유일한 보이는 채널**입니다. 그래도 접근성 속성을
-              붙이지 않습니다 — 이름은 감싼 상자가 지고(ADR-0016 D5), `<svg>`에 붙이면
-              정지점이 둘이 됩니다. */}
-          <svg
-            className="listening-prompt-replay-icon"
-            data-testid="listening-prompt-replay-icon"
-            content={refresh}
-            current-color={color.fg.neutral}
-          />
-        </view>
-        <view
-          className="listening-prompt-playback"
-          data-testid="listening-prompt-playback"
-          // **언제나 렌더됩니다.** 모듈이 없다고 숨기지 않습니다 — 숨기면 「없는 환경」과
-          // 「빠뜨린 구현」이 구별되지 않습니다. `disabled`도 두지 않습니다
-          // (ADR-0016 D10): 모듈 부재는 영구 불가가 아니라 「이 환경에 아직 없음」입니다.
-          accessibility-element={true}
-          accessibility-label={copy.listening.playback[action]}
-          accessibility-traits="button"
-          bindtap={toggle}
-        >
-          <svg
-            className="listening-prompt-playback-icon"
-            data-testid="listening-prompt-playback-icon"
-            content={playbackIconByAction[action]}
-            current-color={color.fg.neutral}
-          />
-        </view>
-        {/* 다시듣기와 마주 보는 빈 자리입니다 — 같은 폭을 져야 재생이 줄 한가운데
-            섭니다. 보이는 것이 없으므로 접근성 트리에 올리지 않습니다. */}
-        <view className="listening-prompt-controls-spacer" />
-      </view>
+      {/* 컨트롤 줄 — 다시듣기(작음) · 재생/일시정지(큼, 줄 한가운데) · 「천천히」(속도 재생을 지원할 때만)입니다.
+          줄의 모양과 이름은 `ListenPlaybackRow`가 집니다. */}
+      <ListenPlaybackRow control={playback} testIdPrefix="listening-prompt" />
     </view>
   );
 }

@@ -8,6 +8,9 @@ import { AnswerVerdict } from "../../components/AnswerVerdict";
 import { SpeechWaves } from "../../components/SpeechWaves";
 import { useSpeechAttempt } from "../../components/use-speech-attempt";
 import { announce, announceCompletion } from "../../lib/accessibility";
+import { answerEchoCueOf, standaloneLessonAudio } from "../../lib/question-audio";
+import { initialSessionOptions } from "../../lib/session-options";
+import { useAudioCue } from "../../lib/use-audio-cue";
 import { playSound } from "../../lib/sound-effects";
 import { speechControlLabel, speechWavesStateOf } from "../../lib/speech-attempt";
 import type { SpeechControl } from "../../lib/speech-attempt";
@@ -45,6 +48,7 @@ export function SpeakWordActivity({
   onExit,
   onFinish,
   lesson,
+  lessonAudio,
 }: SpeakWordActivityProps): ReactNode {
   const copy = useUiCopy();
   const [state, dispatch] = useReducer(speakWordSessionReducer, initialSpeakWordSessionState);
@@ -67,6 +71,12 @@ export function SpeakWordActivity({
       : speakWordControlsOf(phase, picture.state);
   const hint = question == null ? null : speakWordHintOf(phase, copy);
   const dictationOff = phase.kind === "unavailable" && phase.reason === "dictation-off";
+
+  // 판정이 난 국면(들음)에서 정답 음성을 1.0으로 한 번 들려 줍니다. 불가 · 건너뜀에서는 내지 않습니다.
+  const autoPlay = (lessonAudio ?? standaloneLessonAudio(initialSessionOptions)).autoPlay;
+  useAudioCue(
+    answerEchoCueOf(String(state.questionIndex), question?.audio, phase.kind === "heard", autoPlay),
+  );
 
   // 판정은 서는 순간, 불가 안내(또는 받아쓰기 지시문)도 서는 순간 한 번 알립니다. 듣는 중에는 알리지 않습니다 —
   // 마이크가 켜진 동안의 화면 낭독은 인식기에 그대로 들어갑니다.

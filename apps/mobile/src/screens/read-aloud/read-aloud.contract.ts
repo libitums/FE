@@ -1,6 +1,6 @@
 // 따라 읽기 활동(카탈로그 SHADOW)의 계약입니다. 타입만 둡니다.
 
-import type { ListenAudio } from "../../lib/question-audio";
+import type { LessonAudio, ListenAudio } from "../../lib/question-audio";
 import type {
   SpeechAttemptOutcome,
   SpeechAttemptPhase,
@@ -47,6 +47,8 @@ export type ReadAloudActivityProps = {
   readonly onFinish: ActivityFinish;
   /** 카탈로그 레슨 안의 위치입니다. 주지 않으면 이 활동이 한 세션입니다. */
   readonly lesson?: LessonPosition;
+  /** 레슨의 소리 설정(속도 · 자동 재생 · 보고)입니다. 없으면 단독 활동의 기본값입니다. */
+  readonly lessonAudio?: LessonAudio;
 };
 
 export type ReadAloudCopy = {

@@ -8,8 +8,8 @@ import { LearningActivityComplete } from "../learning/LearningActivityComplete";
 import { ListeningPrompt } from "./ListeningPrompt";
 import { ListeningSilentPrompt } from "./ListeningSilentPrompt";
 import { ListeningChoice } from "./ListeningChoice";
-import { useListeningPlayback } from "./use-listening-playback";
 import { AnswerVerdict } from "../../components/AnswerVerdict";
+import { useListenAudio } from "../../components/use-listen-audio";
 import {
   answeredResultOf,
   choiceResultAt,
@@ -20,6 +20,8 @@ import {
   listeningSessionReducer,
   sessionAnswerResults,
 } from "./listening";
+import { listenCueOf, standaloneLessonAudio } from "../../lib/question-audio";
+import type { LessonAudio } from "../../lib/question-audio";
 import type { SessionOptions } from "../../lib/session-options";
 import { handsOffAfter, lessonCounter } from "../learning/activity-finish";
 import type { ActivityFinish, LessonPosition } from "../learning/activity-finish";
@@ -43,6 +45,8 @@ export type ListeningActivityProps = {
   readonly gemCount: number;
   /** 카탈로그 레슨 안의 위치입니다. 활동 하나가 한 세션이면 주지 않습니다. */
   readonly lesson?: LessonPosition;
+  /** 레슨의 소리 설정(속도 · 자동 재생 · 보고)입니다. 없으면 단독 활동의 기본값입니다. */
+  readonly lessonAudio?: LessonAudio;
 };
 
 export function ListeningActivity({
@@ -52,6 +56,7 @@ export function ListeningActivity({
   sessionOptions,
   gemCount,
   lesson,
+  lessonAudio,
 }: ListeningActivityProps): ReactNode {
   const copy = useUiCopy();
   const [state, dispatch] = useReducer(listeningSessionReducer, initialListeningSessionState);
@@ -62,7 +67,11 @@ export function ListeningActivity({
   const question = complete ? null : questions[state.questionIndex];
 
   // 재생의 주인은 이 화면입니다 — 껍데기가 무대를 다시 세워도 소리가 끊기지 않습니다.
-  const playback = useListeningPlayback(question?.audio?.source, sessionOptions);
+  // 문항 순번이 재생의 키입니다 — 같은 음성이 두 문항 연속이어도 둘째가 자동 재생됩니다.
+  const playback = useListenAudio(
+    listenCueOf(String(state.questionIndex), question?.audio),
+    lessonAudio ?? standaloneLessonAudio(sessionOptions),
+  );
 
   // 종료 상태가 **처음 존재하게 되는 순간**, 정확히 한 번입니다(ADR-0016 D11-2).
   // dep이 `complete` 하나입니다 — 리듀서가 `questionIndex`를 늘리기만 하므로 이
@@ -152,7 +161,10 @@ export function ListeningActivity({
                 // 판정을 지는 보기는 고른 하나뿐입니다 — 고르지 않은 정답 보기는
                 // null입니다.
                 result={choiceResultAt(state, question, choiceIndex)}
-                onSelect={(index) => dispatch({ type: "selectChoice", choiceIndex: index })}
+                onSelect={(index) => {
+                  dispatch({ type: "selectChoice", choiceIndex: index });
+                  playback.answered(index === question.answerIndex ? "correct" : "incorrect");
+                }}
               />
             ))}
           </view>
