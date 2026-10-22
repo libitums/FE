@@ -1,10 +1,10 @@
 // 체험판 전이 → GA4 이벤트입니다(순수). 속성은 전부 문자열이고 들은 문장 · 대사 · 이름을 싣지 않습니다.
 
 import type { AnalyticsEvent, TrialTurnCount } from "../scripts/analytics.contract";
-import type { TrialEventsOf, TrialStoreClickOf } from "./trial-events.contract";
+import type { TrialEventsOf, TrialPreregEventOf } from "./trial-events.contract";
 import type { TrialFunnelStep, TurnRecord } from "./trial-machine.contract";
 
-/** 이탈 측정의 단계 차례 — `ordinal` "1" ~ "8". */
+/** 이탈 측정의 단계 차례 — `ordinal` "1" ~ "9". */
 const FUNNEL: readonly TrialFunnelStep[] = [
   "prologue",
   "vocab",
@@ -13,6 +13,7 @@ const FUNNEL: readonly TrialFunnelStep[] = [
   "culture",
   "roleplay",
   "epilogue",
+  "clear",
   "complete",
 ];
 
@@ -23,14 +24,14 @@ const countOf = (count: number): TrialTurnCount => COUNTS[Math.min(count, 3)] ??
 const countWhere = (records: readonly TurnRecord[], test: (record: TurnRecord) => boolean) =>
   countOf(records.filter(test).length);
 
-/** 전이 하나에 보낼 이벤트(차례: 결과 → 단계 → 완료). */
+/** 전이 하나에 보낼 이벤트(차례: 시작 → 결과 → 단계 → 완료). */
 export const trialEventsOf: TrialEventsOf = (prev, next, action) => {
   if (prev === next) return [];
   const events: AnalyticsEvent[] = [];
-  if (action.type === "start" && prev.step === "start") {
+  if (action.type === "begin" && !prev.begun && next.begun) {
     events.push({
       name: "trial_start",
-      params: { speech: prev.speech === "supported" ? "supported" : "unsupported" },
+      params: { speech: next.speech === "supported" ? "supported" : "unsupported" },
     });
   }
   const { verdict, records } = next.roleplay;
@@ -58,6 +59,8 @@ export const trialEventsOf: TrialEventsOf = (prev, next, action) => {
   return events;
 };
 
-/** 완료 화면의 `data-trial-store` → trial_store_click. 모르는 값 · 없음 → null. */
-export const trialStoreClickOf: TrialStoreClickOf = (store) =>
-  store === "ios" || store === "android" ? { name: "trial_store_click", params: { store } } : null;
+/** 사전 등록 결과 → trial_preregister. 이메일은 받지도 싣지도 않습니다. */
+export const trialPreregEventOf: TrialPreregEventOf = (outcome) => ({
+  name: "trial_preregister",
+  params: { status: outcome },
+});

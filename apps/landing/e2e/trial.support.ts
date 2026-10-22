@@ -54,6 +54,10 @@ export interface TrialCopy {
   notQuite: string;
   noticeDenied: string;
   noticeUnsupported: string;
+  teaserTitle: string;
+  preregDone: string;
+  preregFailed: string;
+  preregRetry: string;
 }
 
 export async function pageData(page: Page): Promise<{ model: TrialModel; copy: TrialCopy }> {
@@ -100,9 +104,10 @@ export const root = (page: Page) => page.getByTestId("trial");
 /** 지금 보이는 그 test-id 요소들. */
 export const shown = (page: Page, id: string) => page.getByTestId(id).filter({ visible: true });
 
+/** 체험판을 엽니다 — 표지 없이 컷 1(prologue)이 첫 화면입니다. */
 export async function openTrial(page: Page, path = "/try/") {
   await page.goto(path, { waitUntil: "load" });
-  await expect(root(page)).toHaveAttribute("data-step", "start");
+  await expect(root(page)).toHaveAttribute("data-step", "prologue");
   await expect(root(page)).toHaveAttribute("data-motion", /^(reduced|full)$/);
 }
 
@@ -140,10 +145,9 @@ export async function passCuts(page: Page, step: "prologue" | "epilogue", cuts: 
   }
 }
 
-/** 시작 → 컷 → 단어 → 고르기 둘(정답) → 문화(뒤집기) → 롤플레이 첫 턴. */
-export async function playToRoleplay(page: Page, model: TrialModel) {
-  await tap(page, "trial-start-button");
-  await passCuts(page, "prologue", model.prologue.length);
+/** 컷 1(첫 탭이 시작) → 컷 → 단어 → 고르기 둘(정답) → 문화(뒤집기) → 롤플레이 첫 턴. `cutsDone`만큼은 이미 넘긴 것으로 친다. */
+export async function playToRoleplay(page: Page, model: TrialModel, cutsDone = 0) {
+  await passCuts(page, "prologue", model.prologue.length - cutsDone);
   await expectStep(page, "vocab");
   await tap(page, "trial-vocab-next");
   await expectStep(page, "image-match");
@@ -158,9 +162,36 @@ export async function playToRoleplay(page: Page, model: TrialModel) {
   await expectStep(page, "roleplay");
 }
 
+/** Episode clear — 배너를 눌러 예고로, 예고 Next로 완료로. */
+export async function passClear(page: Page) {
+  await expectStep(page, "clear");
+  const banner = shown(page, "trial-clear-banner");
+  // 유지 시간(1.6초)이 먼저 지나 예고로 넘어갔을 수도 있다 — 배너가 보일 때만 누른다.
+  if ((await banner.count()) > 0) await banner.click().catch(() => undefined);
+  await expect(page.getByTestId("trial-step-clear")).toHaveAttribute("data-phase", "teaser");
+  await tap(page, "trial-clear-next");
+  await expectStep(page, "complete");
+}
+
+/** 엔딩 컷 넷 → Episode clear → 완료. */
+export async function passEnding(page: Page, model: TrialModel) {
+  await passCuts(page, "epilogue", model.epilogue.length);
+  await passClear(page);
+}
+
 export async function tileTurn(page: Page, order: readonly number[]) {
   for (const index of order) await tap(page, "trial-tile", index);
   await tap(page, "trial-turn-check");
 }
 
 export const turnShown = (page: Page) => shown(page, "trial-turn");
+
+/** 타일로 세 턴을 맞히고 Episode clear를 지나 완료 화면까지(말하기 없는 브라우저 기준). */
+export async function playToComplete(page: Page, model: TrialModel, cutsDone = 0) {
+  await playToRoleplay(page, model, cutsDone);
+  for (const turn of model.roleplay.turns) {
+    await tileTurn(page, correctTiles(turn));
+    await tap(page, "trial-turn-next");
+  }
+  await passEnding(page, model);
+}

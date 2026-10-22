@@ -81,7 +81,6 @@
   background: var(--libitum-color-gray-300);
 }
 
-.trial[data-step="start"] .trial-progress,
 .trial[data-step="complete"] .trial-progress {
   visibility: hidden;
 }

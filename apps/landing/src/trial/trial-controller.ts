@@ -4,28 +4,64 @@
 import type { TrialPageData } from "../components/trial/trial-components.contract";
 import { currentCutOf, applyTrialState } from "./trial-dom";
 import { currentTurnOf } from "./trial-dom-turn";
-import { trialEventsOf, trialStoreClickOf } from "./trial-events";
+import { trialEventsOf } from "./trial-events";
 import { initialTrialState, reduceTrial } from "./trial-machine";
+import { TRIAL_CLEAR_HOLD_MS } from "./trial-machine.contract";
 import type { TrialAction, TrialState } from "./trial-machine.contract";
 import { createTrialMotion } from "./trial-motion";
 import type { InitTrial, ReadTrialModel, SpeechOutcome } from "./trial-ports.contract";
 import { stepVoiceUrls } from "./trial-prefetch";
+import { bindTrialPrereg } from "./trial-prereg-form";
+import { trialTransitionOf } from "./trial-transition";
 import { trialSfxOf, trialVoiceCueOf } from "./trial-view";
 
 type ButtonHandler = (button: HTMLElement) => void;
 
 /** 체험판을 붙입니다. 처음 상태를 그리고, 루트 하나의 클릭 위임으로 모든 버튼을 받습니다. */
 export const initTrial: InitTrial = (deps) => {
-  const { root, model, copy, audio, speech, send, reducedMotion } = deps;
+  const { root, model, copy, audio, speech, send, reducedMotion, fullscreen } = deps;
   const motion = createTrialMotion(root, reducedMotion);
-  let state: TrialState = initialTrialState(speech.support);
+  const view = root.ownerDocument.defaultView as Window;
+  let state: TrialState = initialTrialState();
   let voiceKey: string | null = null;
   /** 듣기 차례 번호 — 멈춘 뒤 늦게 온 결과는 번호가 달라 버립니다. */
   let listenTurn = 0;
   let disposed = false;
+  /** Episode clear 배너의 유지 시간 — 배너일 때만 걸려 있습니다. */
+  let clearTimer: number | null = null;
 
   root.setAttribute("data-motion", reducedMotion ? "reduced" : "full");
   applyTrialState({ root, model, copy, prev: null, next: state });
+  // 표지가 없어 열자마자 컷 1이 섭니다 — 음성이 없으니 기본 간격으로 드러냅니다.
+  const firstCut = currentCutOf(root, state);
+  if (firstCut !== null) motion.revealCut(firstCut, null);
+  const disposePrereg = bindTrialPrereg({
+    root,
+    copy,
+    port: deps.prereg ?? null,
+    locale: deps.locale ?? "en",
+    send,
+  });
+
+  function stopClearTimer(): void {
+    if (clearTimer !== null) view.clearTimeout(clearTimer);
+    clearTimer = null;
+  }
+
+  /** 배너에 들어서면 유지 시간 뒤 예고로 — 그때도 배너일 때만 넘깁니다(탭이 먼저면 타이머를 지움). */
+  function syncClearTimer(prev: TrialState, next: TrialState): void {
+    const banner = (value: TrialState) => value.step === "clear" && value.clearPhase === "banner";
+    if (!banner(next)) {
+      stopClearTimer();
+      return;
+    }
+    if (banner(prev)) return;
+    stopClearTimer();
+    clearTimer = view.setTimeout(() => {
+      clearTimer = null;
+      if (banner(state)) dispatch({ type: "next" });
+    }, TRIAL_CLEAR_HOLD_MS);
+  }
 
   function playCue(): void {
     const cue = trialVoiceCueOf(state, model);
@@ -44,6 +80,9 @@ export const initTrial: InitTrial = (deps) => {
     state = next;
     applyTrialState({ root, model, copy, prev, next });
     motion.afterTransition(prev, next);
+    motion.playTransition(trialTransitionOf(prev, next, model));
+    syncClearTimer(prev, next);
+    if (prev.step !== "complete" && next.step === "complete") fullscreen?.exit();
     const cut = currentCutOf(root, next);
     if (cut !== null && (prev.step !== next.step || prev.cutIndex !== next.cutIndex)) {
       const url = trialVoiceCueOf(next, model)?.url ?? null;
@@ -94,16 +133,20 @@ export const initTrial: InitTrial = (deps) => {
     dispatch({ type: "speech-failed", reason: "aborted" });
   }
 
+  /** 첫 버튼 탭 — 그 처리기 앞에서 동기로 소리 잠금 해제 · 전체화면 · 시작 · 받아 두기. */
+  function begin(): void {
+    if (state.begun) return;
+    audio.unlock();
+    fullscreen?.request();
+    dispatch({ type: "begin", speech: speech.support });
+    audio.prefetch(stepVoiceUrls(model, state.step));
+  }
+
   const urlOf = (value: string | null | undefined) => {
     if (value) void audio.playVoice(value);
   };
 
   const handlers: Record<string, ButtonHandler> = {
-    "trial-start-button": (button) => {
-      if (state.step !== "start" || (button as HTMLButtonElement).disabled) return;
-      audio.unlock();
-      dispatch({ type: "start" });
-    },
     "trial-cuts-next": () => {
       if (!motion.completeReveal()) dispatch({ type: "next" });
     },
@@ -135,19 +178,23 @@ export const initTrial: InitTrial = (deps) => {
       dispatch({ type: "toggle-tile", tileIndex: Number(button.getAttribute("data-tile-index")) }),
     "trial-turn-check": () => dispatch({ type: "check" }),
     "trial-turn-next": () => dispatch({ type: "next" }),
+    "trial-clear-banner": () => dispatch({ type: "next" }),
+    "trial-clear-next": () => dispatch({ type: "next" }),
   };
 
   function onClick(event: Event): void {
     const target = event.target as Element | null;
-    const store = target?.closest<HTMLElement>("[data-trial-store]");
-    if (store) {
-      const click = trialStoreClickOf(store.getAttribute("data-trial-store") ?? undefined);
-      if (click !== null) send(click);
+    // 나가기 · 완료 홈 링크 — 이동은 그대로 두고 전체화면만 풉니다.
+    if (target?.closest('[data-testid="trial-exit"], [data-testid="trial-complete-home"]')) {
+      fullscreen?.exit();
       return;
     }
     const button = target?.closest<HTMLElement>("button[data-testid]");
     if (!button || !root.contains(button)) return;
-    handlers[button.getAttribute("data-testid") ?? ""]?.(button);
+    const handler = handlers[button.getAttribute("data-testid") ?? ""];
+    if (handler === undefined || (button as HTMLButtonElement).disabled) return;
+    begin();
+    handler(button);
   }
 
   root.addEventListener("click", onClick);
@@ -156,6 +203,8 @@ export const initTrial: InitTrial = (deps) => {
       disposed = true;
       root.removeEventListener("click", onClick);
       if (listening()) speech.abort();
+      stopClearTimer();
+      disposePrereg();
       motion.dispose();
       audio.stopVoice();
     },

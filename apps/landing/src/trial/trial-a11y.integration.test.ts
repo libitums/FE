@@ -61,9 +61,8 @@ const firstTile = (harness: Harness) =>
     '[data-testid="trial-tile"][data-tile-index="0"]',
   );
 
-/** 시작 → 컷 → 단어 → 고르기 둘(정답) → 문화 카드 앞면까지. */
+/** 연 화면(컷 1) → 컷 → 단어 → 고르기 둘(정답) → 문화 카드 앞면까지. */
 async function playToCulture(harness: Harness): Promise<void> {
-  await press(harness, "trial-start-button");
   for (let cut = 0; cut < harness.data.model.prologue.length; cut += 1)
     await press(harness, "trial-cuts-next");
   await press(harness, "trial-vocab-next");
@@ -348,7 +347,6 @@ function expectPhraseLang(
 describe("W2 섞인 언어의 lang — live region · 들은 말", () => {
   it("en: 컷 낭독의 한국어 대사 lang=ko · 번역 lang=en", async () => {
     h = await mountTrial();
-    await press(h, "trial-start-button");
     await press(h, "trial-cuts-next");
     const cut = h.data.model.prologue[1];
     const live = shown(h, "trial-live");
@@ -358,7 +356,6 @@ describe("W2 섞인 언어의 lang — live region · 들은 말", () => {
 
   it("en: 고르기 오답 낭독 「Answer: …」의 한국어 정답 lang=ko", async () => {
     h = await mountTrial();
-    await press(h, "trial-start-button");
     for (let cut = 0; cut < 6; cut += 1) await press(h, "trial-cuts-next");
     await press(h, "trial-vocab-next");
     const { imageMatch } = h.data.model;

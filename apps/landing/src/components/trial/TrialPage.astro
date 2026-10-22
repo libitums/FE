@@ -7,40 +7,38 @@ import "./trial-learning.css";
 import "./trial-culture.css";
 import "./trial-complete.css";
 import "./trial-motion.css";
+import "./trial-transition.css";
+import "./trial-clear.css";
+import "./trial-prereg.css";
 import "./trial-site.css";
 
 import { trialEn } from "../../i18n/trial-copy";
 import { trialKo } from "../../i18n/trial-ko";
 import Base from "../../layouts/Base.astro";
 import { robotsNoindex } from "../../seo/head-meta";
-import { type Language, languages, pages, pathFor, storeLinks, trialPathFor } from "../../site";
+import { type Language, languages, pages, pathFor, trialPathFor } from "../../site";
 import Analytics from "../Analytics.astro";
 import type {
   TrialCopy,
   TrialPageData,
   TrialPageProps,
   TrialScriptCopy,
-  TrialStoreLink,
 } from "./trial-components.contract";
 import TrialBar from "./TrialBar.astro";
+import TrialClear from "./TrialClear.astro";
 import TrialComplete from "./TrialComplete.astro";
 import TrialCultureCard from "./TrialCultureCard.astro";
 import TrialCuts from "./TrialCuts.astro";
 import TrialImageMatch from "./TrialImageMatch.astro";
 import TrialReplySelect from "./TrialReplySelect.astro";
 import TrialRoleplay from "./TrialRoleplay.astro";
-import TrialStart from "./TrialStart.astro";
 import TrialVocabCard from "./TrialVocabCard.astro";
 
 type Props = TrialPageProps;
 
-const { language, model, measurementId } = Astro.props;
+const { language, model, measurementId, prereg } = Astro.props;
 const copies: Record<Language, TrialCopy> = { en: trialEn, ko: trialKo };
 const t = copies[language];
-const stores: readonly TrialStoreLink[] = [
-  { id: "ios", platform: "iPhone", name: "App Store", href: storeLinks.ios },
-  { id: "android", platform: "Android", name: "Google Play", href: storeLinks.android },
-];
 
 // 스크립트가 쓰는 문구만 모델과 함께 페이지 JSON에 싣습니다.
 const scriptCopyKeys = [
@@ -62,9 +60,17 @@ const scriptCopyKeys = [
   "completeBodyMissed",
   "cultureFlipToBack",
   "cultureFlipToFront",
+  "teaserLabel",
+  "teaserTitle",
+  "teaserBody",
+  "preregSubmit",
+  "preregSending",
+  "preregRetry",
+  "preregDone",
+  "preregFailed",
 ] as const satisfies readonly (keyof TrialScriptCopy)[];
 const copy = Object.fromEntries(scriptCopyKeys.map((key) => [key, t[key]])) as TrialScriptCopy;
-const data: TrialPageData = { model, copy };
+const data: TrialPageData = { model, copy, prereg, locale: language };
 const otherLanguages = languages.filter((code) => code !== language);
 // `</script>`로 끝나지 않게 `<`를 유니코드 이스케이프로 씁니다(JSON.parse는 같은 값을 돌려줍니다).
 const dataJson = JSON.stringify(data).replace(/</g, "\\u003c");
@@ -89,14 +95,9 @@ const dataJson = JSON.stringify(data).replace(/</g, "\\u003c");
       <a class="trial-site__link trial-type-button-m" href={pathFor(language)}>{t.backToSite}</a>
     </nav>
   </header>
-  <main id="main" class="trial" data-testid="trial" data-step="start" lang={language}>
+  <main id="main" class="trial" data-testid="trial" data-step="prologue" lang={language}>
     <TrialBar language={language} t={t} />
-    <TrialStart
-      t={t}
-      imageUrl={model.startImageUrl}
-      counterpartName={model.counterpartName}
-      lineCount={model.roleplay.turns.length}
-    />
+    <div class="trial-veil" aria-hidden="true" data-testid="trial-veil"></div>
     <TrialCuts t={t} step="prologue" cuts={model.prologue} />
     <TrialVocabCard t={t} vocab={model.vocab} />
     <TrialImageMatch t={t} item={model.imageMatch} />
@@ -109,7 +110,8 @@ const dataJson = JSON.stringify(data).replace(/</g, "\\u003c");
       turns={model.roleplay.turns}
     />
     <TrialCuts t={t} step="epilogue" cuts={model.epilogue} />
-    <TrialComplete t={t} language={language} stores={stores} />
+    <TrialClear t={t} imageUrl={model.epilogue[model.epilogue.length - 1]?.imageUrl ?? null} />
+    <TrialComplete t={t} language={language} prereg={prereg !== null} />
     <div class="trial-sr-only" aria-live="polite" data-testid="trial-live"></div>
     <script
       type="application/json"

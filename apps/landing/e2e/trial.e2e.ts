@@ -13,7 +13,7 @@ import {
   imageLoaded,
   openTrial,
   pageData,
-  passCuts,
+  passEnding,
   playToRoleplay,
   shown,
   spoken,
@@ -48,10 +48,11 @@ test.describe("TE1 타일 경로(말하기 없음) — 클릭으로 완료까지
     const errors = watchErrors(page);
     await openTrial(page);
     const { model, copy } = await pageData(page);
-    await imageLoaded(page.getByTestId("trial-start-image"));
-    await expect(page.getByTestId("trial-progress")).toHaveAttribute("aria-valuenow", "0");
+    // TE-B1 표지 없이 컷 1이 첫 화면.
+    await expect(page.getByTestId("trial-step-start")).toHaveCount(0);
+    await expect(shown(page, "trial-cut")).toHaveAttribute("data-cut-index", "1");
+    await expect(page.getByTestId("trial-progress")).toHaveAttribute("aria-valuenow", "1");
 
-    await tap(page, "trial-start-button");
     for (const cut of model.prologue) {
       await expectStep(page, "prologue");
       const article = shown(page, "trial-cut");
@@ -123,6 +124,8 @@ test.describe("TE1 타일 경로(말하기 없음) — 클릭으로 완료까지
       await tap(page, "trial-turn-next");
     }
 
+    // TE-C1 엔딩 4컷 → Episode clear(배너 → 예고) → 완료.
+    expect(model.epilogue).toHaveLength(4);
     for (const cut of model.epilogue) {
       await expectStep(page, "epilogue");
       await expect(shown(page, "trial-cut").getByTestId("trial-cut-line")).toContainText(
@@ -132,15 +135,29 @@ test.describe("TE1 타일 경로(말하기 없음) — 클릭으로 완료까지
       await tap(page, "trial-cuts-next");
     }
 
+    await expectStep(page, "clear");
+    await expect(shown(page, "trial-clear-title")).toHaveText("Episode clear!");
+    // 배너는 유지 시간(1.6초) 뒤 스스로 예고로 넘어간다.
+    await expect(page.getByTestId("trial-step-clear")).toHaveAttribute("data-phase", "teaser");
+    await expect(shown(page, "trial-clear-teaser-title")).toHaveText(copy.teaserTitle);
+    await imageLoaded(shown(page, "trial-clear-image"));
+    await tap(page, "trial-clear-next");
+
     await expectStep(page, "complete");
     await expect(page.getByTestId("trial-step-complete")).toHaveAttribute("data-result", "passed");
     await expect(page.getByTestId("trial-progress")).toHaveAttribute("aria-valuenow", "7");
-    await expect(shown(page, "trial-store")).toHaveCount(2);
+    await expect(page.getByTestId("trial-store")).toHaveCount(0);
+    await expect(page.locator('a[href*="apps.apple.com"], a[href*="play.google.com"]')).toHaveCount(
+      0,
+    );
+    await expect(shown(page, "trial-prereg-email")).toBeVisible();
     await expect(shown(page, "trial-complete-home")).toHaveAttribute("href", "/");
     expect(errors).toEqual([]);
   });
 
-  test("롤플레이를 둘 틀려도 엔딩을 지나 완료(미통과 문구)로 간다", async ({ page }) => {
+  test("TE-C1 롤플레이를 둘 틀려도 엔딩 · Episode clear를 지나 완료(미통과 문구)로 간다", async ({
+    page,
+  }) => {
     await openTrial(page);
     const { model } = await pageData(page);
     await playToRoleplay(page, model);
@@ -149,8 +166,7 @@ test.describe("TE1 타일 경로(말하기 없음) — 클릭으로 완료까지
       await tileTurn(page, order);
       await tap(page, "trial-turn-next");
     }
-    await passCuts(page, "epilogue", model.epilogue.length);
-    await expectStep(page, "complete");
+    await passEnding(page, model);
     await expect(page.getByTestId("trial-step-complete")).toHaveAttribute("data-result", "failed");
     await expect(page.locator("[data-complete-missed]")).toContainText("1");
   });
@@ -207,8 +223,7 @@ test.describe("TE2 말하기(가짜 인식기)", () => {
     await expect(shown(page, "trial-turn-reply")).toHaveAttribute("data-verdict", "correct");
     await tap(page, "trial-turn-next");
     await finishTiles(page, model, 2);
-    await passCuts(page, "epilogue", model.epilogue.length);
-    await expectStep(page, "complete");
+    await passEnding(page, model);
     await expect(page.getByTestId("trial-step-complete")).toHaveAttribute("data-result", "passed");
     expect(errors).toEqual([]);
   });

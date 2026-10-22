@@ -38,14 +38,16 @@ function turnOf(index: number, speech: SpeechAvailability): TrialTurnState {
 
 const freshChoice = { selected: null, verdict: null } as const;
 
-/** 시작 화면 상태 — 말하기 지원 여부로 첫 턴의 모드가 정해집니다. */
-export const initialTrialState: InitialTrialState = (speech) => ({
-  step: "start",
+/** 연 화면 상태 — 표지 없이 컷 1. 말하기 지원은 첫 탭(begin)이 정하고, 그 전 speech는 자리값입니다. */
+export const initialTrialState: InitialTrialState = () => ({
+  step: "prologue",
   cutIndex: 0,
+  begun: false,
+  clearPhase: "banner",
   choice: freshChoice,
   cultureFace: "front",
-  speech,
-  roleplay: { turn: turnOf(0, speech), records: [], verdict: null },
+  speech: "unsupported",
+  roleplay: { turn: turnOf(0, "unsupported"), records: [], verdict: null },
   reached: [],
 });
 
@@ -63,7 +65,20 @@ function reduceCuts(state: TrialState, model: TrialModel): TrialState {
   const prologue = state.step === "prologue";
   const cuts = prologue ? model.prologue : model.epilogue;
   if (state.cutIndex + 1 < cuts.length) return { ...state, cutIndex: state.cutIndex + 1 };
-  return prologue ? enter(state, "vocab") : enter(state, "complete");
+  return prologue ? enter(state, "vocab") : enter(state, "clear", { clearPhase: "banner" });
+}
+
+/** Episode clear — 배너 다음 예고, 예고 다음 완료. */
+function reduceClear(state: TrialState): TrialState {
+  return state.clearPhase === "banner"
+    ? { ...state, clearPhase: "teaser" }
+    : enter(state, "complete");
+}
+
+/** 첫 탭 — 말하기 지원을 정하고 지금 단계에 닿은 것으로 칩니다. 두 번째부터는 같은 참조. */
+function begin(state: TrialState, speech: "supported" | "unsupported"): TrialState {
+  if (state.begun) return state;
+  return enter({ ...state, begun: true, speech }, state.step);
 }
 
 function reduceChoice(state: TrialState, action: TrialAction, model: TrialModel): TrialState {
@@ -197,9 +212,8 @@ function reduceRoleplay(state: TrialState, action: TrialAction, model: TrialMode
 
 /** 행동 하나 → 새 상태. 바뀔 것이 없으면 같은 참조. */
 export const reduceTrial: ReduceTrial = (state, action, model) => {
+  if (action.type === "begin") return begin(state, action.speech);
   switch (state.step) {
-    case "start":
-      return action.type === "start" ? enter(state, "prologue", { cutIndex: 0 }) : state;
     case "prologue":
     case "epilogue":
       return action.type === "next" ? reduceCuts(state, model) : state;
@@ -219,6 +233,8 @@ export const reduceTrial: ReduceTrial = (state, action, model) => {
         : state;
     case "roleplay":
       return reduceRoleplay(state, action, model);
+    case "clear":
+      return action.type === "next" ? reduceClear(state) : state;
     case "complete":
       return state;
   }

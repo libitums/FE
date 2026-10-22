@@ -3,11 +3,12 @@ import type { AnalyticsEvent } from "../scripts/analytics.contract";
 import type { SpeechFailure, TrialSfx } from "./trial-machine.contract";
 import type { TrialModel } from "./trial-model.contract";
 import type { TrialPageData, TrialScriptCopy } from "../components/trial/trial-components.contract";
+import type { PreregLocale, TrialPreregPort } from "./trial-prereg.contract";
 
 export type VoiceOutcome = "ended" | "failed" | "stopped";
 
 export interface TrialAudio {
-  /** Start 탭 처리기 안에서 **동기로** 부른다 — AudioContext 생성 · resume · 무음 1샘플 · audioSession 'playback'. */
+  /** 체험판 안 첫 버튼 탭 처리기 안에서 **동기로** 부른다 — AudioContext 생성 · resume · 무음 1샘플 · audioSession 'playback'. */
   unlock(): void;
   /** 이전 음성을 멈추고 낸다. 받기 · 해독 실패 · 잠금 전이면 "failed"(던지지 않음). */
   playVoice(url: string): Promise<VoiceOutcome>;
@@ -48,6 +49,18 @@ export type SpeechSupportOf = (scope: object) => "supported" | "unsupported";
 
 export type SendEvent = (event: AnalyticsEvent) => void;
 
+/** 모바일 전체화면 — 둘 다 던지지 않는다. request는 한 번만 효과가 있다. */
+export interface TrialFullscreen {
+  request(): void;
+  exit(): void;
+}
+/** `(pointer: coarse)` 이고 `(hover: none)`이면 참. 순수. */
+export type FullscreenWanted = (env: {
+  readonly coarsePointer: boolean;
+  readonly noHover: boolean;
+}) => boolean;
+export type CreateTrialFullscreen = (scope: Window) => TrialFullscreen;
+
 export type TrialControllerDeps = {
   readonly root: HTMLElement;
   readonly model: TrialModel;
@@ -56,6 +69,11 @@ export type TrialControllerDeps = {
   readonly speech: TrialSpeech;
   readonly send: SendEvent;
   readonly reducedMotion: boolean;
+  /** 없으면 전체화면을 부르지 않는다. */
+  readonly fullscreen?: TrialFullscreen;
+  /** 사전 등록 접점 — null · 없음이면 폼은 unavailable. */
+  readonly prereg?: TrialPreregPort | null;
+  readonly locale?: PreregLocale;
 };
 export type TrialController = { readonly dispose: () => void };
 /** 페이지 스크립트의 유일한 진입 — DOM 결선 · 상태 · 부작용. */

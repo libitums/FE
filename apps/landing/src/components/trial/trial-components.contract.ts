@@ -2,6 +2,7 @@
 import type { NonEmpty } from "@libitums/episode-core/judge";
 
 import type { Language } from "../../site";
+import type { PreregLocale, TrialPreregConfig } from "../../trial/trial-prereg.contract";
 import type {
   TrialCulture,
   TrialCut,
@@ -21,13 +22,8 @@ export type TrialCopy = {
   noscript: string;
   exit: string;
   progressLabel: string;
-  startTitle: string;
-  startBody: string;
-  /** {name} — 시작 화면 알약: 대화 상대. */
-  startWith: Template;
-  /** {count} — 시작 화면 알약: 롤플레이 줄 수. */
-  startLines: Template;
-  start: string;
+  /** 컷 묶음의 숨은 단계 제목(r1 표지 제목 값). */
+  storyTitle: string;
   next: string;
   me: string;
   thinking: string;
@@ -73,8 +69,23 @@ export type TrialCopy = {
   completeTitleMissed: string;
   /** {correct} {total} — 롤플레이 결과가 failed일 때의 완료 본문. */
   completeBodyMissed: Template;
-  storeGet: string;
-  storeSoon: string;
+  /** Episode clear 배너 — 앱 배너와 같은 글(두 언어 모두 영어). */
+  clearTitle: string;
+  teaserLabel: string;
+  teaserTitle: string;
+  teaserBody: string;
+  preregTitle: string;
+  preregBody: string;
+  preregEmailLabel: string;
+  preregSubmit: string;
+  preregSending: string;
+  preregRetry: string;
+  preregInvalid: string;
+  preregDone: string;
+  preregFailed: string;
+  /** 「출시 소식만 보낸다」 한 줄. */
+  preregPrivacy: string;
+  preregUnavailable: string;
   backHome: string;
   /** 데스크톱 머리 띠의 사이트로 돌아가기 링크. */
   backToSite: string;
@@ -101,36 +112,36 @@ export type TrialScriptCopy = Pick<
   | "completeBodyMissed"
   | "cultureFlipToBack"
   | "cultureFlipToFront"
+  | "teaserLabel"
+  | "teaserTitle"
+  | "teaserBody"
+  | "preregSubmit"
+  | "preregSending"
+  | "preregRetry"
+  | "preregDone"
+  | "preregFailed"
 >;
-export type TrialPageData = { readonly model: TrialModel; readonly copy: TrialScriptCopy };
+export type TrialPageData = {
+  readonly model: TrialModel;
+  readonly copy: TrialScriptCopy;
+  /** 사전 등록 보낼 곳 — 비프로덕션에 key가 없으면 null(폼은 unavailable). */
+  readonly prereg: TrialPreregConfig | null;
+  readonly locale: PreregLocale;
+};
 /** 순수 — `{name}`을 값으로. 모르는 이름은 그대로 둔다. */
 export type FormatCopy = (template: Template, values: Readonly<Record<string, string>>) => string;
-
-export type TrialStoreLink = {
-  readonly id: "ios" | "android";
-  readonly platform: string;
-  readonly name: string;
-  readonly href: string;
-};
 
 export interface TrialPageProps {
   language: Language;
   model: TrialModel;
   measurementId: string;
+  prereg: TrialPreregConfig | null;
 }
 export interface TrialBarProps {
   language: Language;
   t: TrialCopy;
 }
-export interface TrialStartProps {
-  t: TrialCopy;
-  imageUrl: string | null;
-  /** 알약 「With …」 — 콘텐츠의 대화 상대 이름. */
-  counterpartName: string;
-  /** 알약 「N lines」 — 롤플레이 턴 수. */
-  lineCount: number;
-}
-/** 컷 묶음 — 표지 앞(prologue)과 끝(epilogue)이 같은 모양이라 이름 붙은 변형으로 가른다. */
+/** 컷 묶음 — 학습 앞(prologue)과 끝(epilogue)이 같은 모양이라 이름 붙은 변형으로 가른다. */
 export interface TrialCutsProps {
   t: TrialCopy;
   step: "prologue" | "epilogue";
@@ -176,7 +187,18 @@ export interface TrialTurnProps {
 export interface TrialCompleteProps {
   t: TrialCopy;
   language: Language;
-  stores: readonly TrialStoreLink[];
+  /** 사전 등록 설정이 있는가 — 값은 페이지 JSON이 싣는다. */
+  prereg: boolean;
+}
+/** Episode clear — 배너 + 예고. 그림은 epilogue 마지막 컷 그림. */
+export interface TrialClearProps {
+  t: TrialCopy;
+  imageUrl: string | null;
+}
+/** 완료 화면의 사전 등록 폼 — 설정이 없으면 unavailable 글만. */
+export interface TrialPreregProps {
+  t: TrialCopy;
+  available: boolean;
 }
 
 export type TrialTestId =
@@ -187,10 +209,7 @@ export type TrialTestId =
   | "trial-bar"
   | "trial-exit"
   | "trial-progress"
-  | "trial-step-start"
-  | "trial-start-image"
-  | "trial-start-title"
-  | "trial-start-button"
+  | "trial-veil"
   | "trial-step-prologue"
   | "trial-step-epilogue"
   | "trial-cut"
@@ -248,9 +267,20 @@ export type TrialTestId =
   | "trial-turn-composed"
   | "trial-turn-check"
   | "trial-turn-next"
+  | "trial-step-clear"
+  | "trial-clear-title"
+  | "trial-clear-banner"
+  | "trial-clear-teaser"
+  | "trial-clear-image"
+  | "trial-clear-teaser-title"
+  | "trial-clear-next"
   | "trial-step-complete"
-  | "trial-store"
-  | "trial-store-state"
+  | "trial-prereg"
+  | "trial-prereg-email"
+  | "trial-prereg-error"
+  | "trial-prereg-submit"
+  | "trial-prereg-privacy"
+  | "trial-prereg-status"
   | "trial-complete-home"
   | "hero-trial-link"
   | "download-trial-link";

@@ -1,5 +1,5 @@
 /*
- * 장면 틀(시작 · 이야기 컷 · 대화) — 어두운 바탕 위 그림, 머리 그늘, 아래 묶음.
+ * 장면 틀(이야기 컷 · 대화 · 예고) — 어두운 바탕 위 그림, 머리 그늘, 아래 묶음.
  * 그림은 장면 전체를 덮고(z 0), 그늘(z 1) 위에 글 · 버튼(z 2)이 섭니다.
  */
 .trial-scene {
@@ -22,7 +22,7 @@
 }
 
 /* 발 그늘(웹 추가) — 밝은 그림에서도 아래 글 · 링크가 AA를 넘게 받칩니다. */
-.trial-step[data-testid="trial-step-start"]::after,
+.trial-clear__teaser::after,
 .trial-scene--talk::after {
   position: absolute;
   inset: auto 0 0;
@@ -81,23 +81,6 @@
   display: flex;
   flex-direction: column;
   gap: var(--libitum-spacing-12);
-}
-
-.trial-start__chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--libitum-spacing-6);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.trial-start__chips .trial-chip {
-  align-self: auto;
-}
-
-.trial-start__title {
-  color: var(--libitum-color-white);
 }
 
 /* 대사 상자(앱 visual-novel-dialog) — 불투명 짙은 면. 긴 글은 상자 안에서 스크롤합니다. */

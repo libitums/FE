@@ -6,6 +6,8 @@ import hello from "../assets/trial/images/items/hello.webp";
 import cultJalhasineyo from "../assets/trial/images/u00-tutorial/cult-u00-jalhasineyo.webp";
 import post1 from "../assets/trial/images/u00-tutorial/post-1.webp";
 import post2 from "../assets/trial/images/u00-tutorial/post-2.webp";
+import post3 from "../assets/trial/images/u00-tutorial/post-3.webp";
+import post4 from "../assets/trial/images/u00-tutorial/post-4.webp";
 import pre1 from "../assets/trial/images/u00-tutorial/pre-1.webp";
 import pre2 from "../assets/trial/images/u00-tutorial/pre-2.webp";
 import pre3 from "../assets/trial/images/u00-tutorial/pre-3.webp";
@@ -19,6 +21,8 @@ export const TRIAL_IMAGES: Readonly<Record<string, ImageMetadata>> = {
   "images/u00-tutorial/cult-u00-jalhasineyo.webp": cultJalhasineyo,
   "images/u00-tutorial/post-1.webp": post1,
   "images/u00-tutorial/post-2.webp": post2,
+  "images/u00-tutorial/post-3.webp": post3,
+  "images/u00-tutorial/post-4.webp": post4,
   "images/u00-tutorial/pre-1.webp": pre1,
   "images/u00-tutorial/pre-2.webp": pre2,
   "images/u00-tutorial/pre-3.webp": pre3,

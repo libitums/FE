@@ -264,3 +264,15 @@ FAQ의 키보드 조작, 스크립트 없는 화면, 404, 폭별 넘침, 그림 
   값을 넣는 것은 사용자 몫이다(D12 · [앱 README](../../apps/landing/README.md) 「배포」).
 - D9 — 테스트 계층 셋 · Playwright에 체험판 파일이 더해졌다(e2e 일곱 · 가짜 버킷 주소 `https://content.example.test`). 실기 소리 · 마이크 ·
   보조 기술은 [웹 체험판 e2e](../e2e/web-trial.md)(수동)다.
+
+**2026-10-22 — 웹 체험판 r2: 표지 제거 · 꿈 전환 · Episode clear · 사전 등록 · 모바일 전체화면** ([ADR-0081](0081-web-trial-and-episode-core.md) r2).
+
+- **랜딩이 처음으로 쓰기 요청을 한다.** 체험판 완료 화면의 이메일 사전 등록이 Supabase PostgREST `POST /rest/v1/pre_registrations`로
+  간다(공개 키 · `apikey` 머리만 · 새 의존 0 — `fetch`). 맥락의 「정적 HTML뿐」은 페이지 생성에 대해서는 그대로이고, 런타임 요청이 하나 는다.
+  표 · RLS는 [`apps/supabase-functions`](../../apps/supabase-functions/README.md) 「웹 체험판 사전 등록 표」.
+- **새 빌드 env `PUBLIC_SUPABASE_ANON_KEY`**(공개 키). `PUBLIC_SUPABASE_URL`과 같은 자리 · 같은 규칙 — 비프로덕션에서 비면 폼이 「지금은 등록할
+  수 없어요」, **`VERCEL_ENV=production`에서 비면 빌드 실패**, 모양이 틀리면 빌드 실패(출력에 값을 싣지 않는다).
+- **D10 — 이벤트 수는 열하나 그대로**: `trial_store_click`을 지우고(완료 화면에 스토어 링크가 없다) `trial_preregister`(`status`: submitted ·
+  duplicate · failed — 이메일 없음)를 더했다. 랜딩 Download 섹션의 `download_click`은 그대로다.
+- D2 — 체험판 스크립트에 사전 등록 · 전체화면 · 전환이 더해져도 상한 40,000 bytes 안이다(빌드 테스트 IB5).
+

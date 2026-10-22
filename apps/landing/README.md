@@ -26,10 +26,11 @@ pnpm test:trial-assets                           # 체험판 사본(u00 JSON · 
 ```
 
 2026-10-08 기준 unit 99 · ui 100 · integration 35 · e2e 190건이다. ⟨2026-10-22⟩ 체험판이 더해져 vitest 49 파일 481건(unit · ui · integration 합) ·
-e2e 272건 통과 · 18 skip이다.
+e2e 272건 통과 · 18 skip, 같은 날 r2(표지 제거 · 꿈 전환 · Episode clear · 사전 등록 · 전체화면) 뒤 vitest 55 파일 555건(unit 224 · ui 188 · integration 143) ·
+e2e 315건 통과 · 27 skip이다.
 
 브라우저 e2e는 처음 한 번 `pnpm --filter @libitums/landing exec playwright install chromium firefox webkit`로 브라우저를 받는다.
-**빌드는 둘, 프로젝트는 여섯이다**(`playwright.config.ts`). `SITE_URL=https://example.test` · `PUBLIC_SUPABASE_URL=https://content.example.test`(체험판 음성의 가짜 버킷 — 요청은 테스트가 가로채 작은 소리나 404로 답한다)로 `.e2e-dist/`에 지어 4399에 띄우고,
+**빌드는 둘, 프로젝트는 여섯이다**(`playwright.config.ts`). `SITE_URL=https://example.test` · `PUBLIC_SUPABASE_URL=https://content.example.test`(체험판 음성 · 사전 등록의 가짜 주소 — 요청은 테스트가 가로채 작은 소리 · 404 · 가짜 PostgREST 응답으로 답한다) · `PUBLIC_SUPABASE_ANON_KEY`(가짜 공개 키)로 `.e2e-dist/`에 지어 4399에 띄우고,
 거기에 테스트용 측정 ID `G-E2ETEST00`을 더해 `.e2e-dist-ga/`에 지어 4398에 띄운다(한 `e2e/serve.mjs` 프로세스가 둘 다 내리므로 개발 서버 4321과
 부딪히지 않는다). chromium · firefox · webkit · 모바일(Pixel 7) 넷은 4399를 보고, `analytics`(Desktop Chrome) · `analytics-mobile`(Pixel 7)
 둘만 4398에서 `analytics.e2e.ts` · `trial-analytics.e2e.ts`를 돈다 — 측정 ID를 넣어도 `googletagmanager.com` 요청은 빈 스크립트로 막으므로 밖으로 나가는 것은 없다.
@@ -64,12 +65,12 @@ e2e 272건 통과 · 18 skip이다.
 | `src/scripts/analytics-events.ts` · `analytics.contract.ts` | 화면의 행동을 이벤트로 옮기는 **순수 함수 셋**(`clickEventOf` · `faqEventOf` · `sectionEventOf`)과 그 타입. DOM이 아니라 거기서 읽은 값만 받고 아무것도 import하지 않는다 — `src/seo/`와 같은 모양 |
 | `src/scripts/analytics.ts` | 접착 — DOM에서 값을 읽어 위 함수에 넘기고 결과를 gtag에 전달한다. 섹션의 「한 번만」(`unobserve`)도 여기다 |
 | `src/scripts/main.ts` | 스크롤 연출과 탭. 없어도 본문은 다 보인다 |
-| `src/trial/` | **웹 체험판의 로직**(아래 「웹 체험판」). 순수 모듈(`trial-model*` · `trial-machine` · `trial-view` · `trial-events` · `trial-copy-format` · `trial-env` · `trial-speech`의 분류 함수)과 브라우저 접점(`trial-audio` · `trial-prefetch` · `trial-speech`의 인식기 · `trial-controller` · `trial-dom*` · `trial-motion` · 진입 `trial-main`). 계약은 `*.contract.ts` 넷 |
+| `src/trial/` | **웹 체험판의 로직**(아래 「웹 체험판」). 순수 모듈(`trial-model*` · `trial-machine` · `trial-view` · `trial-transition`(꿈 전환 판정) · `trial-events` · `trial-copy-format` · `trial-env` · `trial-prereg`(사전 등록 정규화 · 형식 · 요청 · 상태 · env) · `trial-speech`의 분류 함수 · `trial-fullscreen`의 판정)과 브라우저 접점(`trial-audio` · `trial-prefetch` · `trial-speech`의 인식기 · `trial-prereg-client`(PostgREST) · `trial-prereg-form` · `trial-fullscreen` · `trial-controller` · `trial-dom*` · `trial-motion` · 진입 `trial-main`). 계약은 `*.contract.ts` 다섯 |
 | ↳ `src/trial/content/u00-tutorial.json` | 앱 내장 u00의 **바이트 같은 사본**. 포매터 대상에서 뺐다(한 바이트도 바뀌면 동기 검사가 실패한다). 판 · 길이 · sha256 핀은 `trial-content.ts`의 `TRIAL_CONTENT` |
-| `src/components/trial/` | 체험판 장면 컴포넌트(`TrialPage` · `TrialStart` · `TrialCuts` · `TrialVocabCard` · `TrialImageMatch` · `TrialReplySelect` · `TrialCultureCard` · `TrialRoleplay` · `TrialTurn` · `TrialComplete` 등)와 CSS 아홉. props · 문구 · test-id 타입은 `trial-components.contract.ts` |
+| `src/components/trial/` | 체험판 장면 컴포넌트(`TrialPage` · `TrialCuts` · `TrialVocabCard` · `TrialImageMatch` · `TrialReplySelect` · `TrialCultureCard` · `TrialRoleplay` · `TrialTurn` · `TrialClear` · `TrialComplete` · `TrialPrereg` 등)와 CSS 열둘(r2: `trial-transition` · `trial-clear` · `trial-prereg`). props · 문구 · test-id 타입은 `trial-components.contract.ts` |
 | `src/i18n/trial-copy.ts` · `trial-ko.ts` | 체험판 문구(`TrialCopy` — 영어 원본 · 한국어 전부). 학습 내용(한국어 대사 · 영어 번역)은 콘텐츠에서 온다 |
-| `src/assets/trial/images/` · `public/trial/sfx/` | 체험판 그림 10(앱 `src/assets/content/images/`의 사본 — 표는 `src/trial/trial-images.ts`) · 효과음 5(`apps/ios/Host/sfx/`의 사본) |
-| `e2e/` | Playwright. 체험판은 `trial.e2e.ts`(흐름 · 말하기 · 랜딩 링크) · `trial-sound.e2e.ts`(소리 요청) · `trial-a11y.e2e.ts`(키보드 · 초점 · axe · 움직임 줄이기) · `trial-layout.e2e.ts` · `trial-reflow.e2e.ts`(폭 · 낮은 화면) · `trial-contrast.e2e.ts`(그림 위 글 대비) · `trial-analytics.e2e.ts`(GA) · `trial.support.ts` · `trial-fakes.support.ts`(가짜 인식기 · 버킷). 랜딩은 `landing.e2e.ts`(넘침 · 제목 단계 · 키보드 · 포커스 · axe · 서체 · 404) · `content.e2e.ts`(산출물 내용, chromium만) · `layout.e2e.ts`(Features · Story · Phrases · FAQ · 휴대폰 틀) · `layout-page.e2e.ts`(머리 · 히어로 · 섹션 간격) · `layout.support.ts`(폭 상수 1440 · 390, 좌표 · 계산값 · 스크롤 도구) · `analytics.e2e.ts`(측정 ID 빌드의 `dataLayer`) · `serve.mjs`(정적 서버). 설정은 `playwright.config.ts` |
+| `src/assets/trial/images/` · `public/trial/sfx/` | 체험판 그림 12(앱 `src/assets/content/images/`의 사본 — 표는 `src/trial/trial-images.ts`) · 효과음 5(`apps/ios/Host/sfx/`의 사본) |
+| `e2e/` | Playwright. 체험판은 `trial.e2e.ts`(흐름 · 말하기 · 랜딩 링크) · `trial-sound.e2e.ts`(소리 요청) · `trial-a11y.e2e.ts`(키보드 · 초점 · axe · 움직임 줄이기) · `trial-layout.e2e.ts` · `trial-reflow.e2e.ts`(폭 · 낮은 화면) · `trial-contrast.e2e.ts`(그림 위 글 대비) · `trial-analytics.e2e.ts`(GA) · `trial-transition.e2e.ts`(꿈 전환) · `trial-prereg.e2e.ts`(사전 등록, 가짜 응답) · `trial-fullscreen.e2e.ts`(모바일 전체화면, 가짜 함수) · `trial.support.ts` · `trial-fakes.support.ts`(가짜 인식기 · 버킷 · PostgREST). 랜딩은 `landing.e2e.ts`(넘침 · 제목 단계 · 키보드 · 포커스 · axe · 서체 · 404) · `content.e2e.ts`(산출물 내용, chromium만) · `layout.e2e.ts`(Features · Story · Phrases · FAQ · 휴대폰 틀) · `layout-page.e2e.ts`(머리 · 히어로 · 섹션 간격) · `layout.support.ts`(폭 상수 1440 · 390, 좌표 · 계산값 · 스크롤 도구) · `analytics.e2e.ts`(측정 ID 빌드의 `dataLayer`) · `serve.mjs`(정적 서버). 설정은 `playwright.config.ts` |
 | `src/assets/img/` | 앱 튜토리얼 그림의 WebP 사본. Astro가 크기별로 다시 굽는다 |
 | `public/` | 아이콘과 공유 카드 그림(`og-*.jpg`) — 그대로 복사된다 |
 | ↳ `public/naver….html` · `google….html` | 네이버 서치어드바이저 · Google Search Console의 소유 확인 파일. **지우거나 고치지 않는다** — 두 곳 모두 주기적으로 다시 확인한다. 검색엔진 확인 파일(`naver*.html` · `google*.html`)만 포매터 대상에서 뺐다 — 한 글자도 바뀌면 안 된다 |
@@ -132,9 +133,10 @@ Footer 링크의 `rel`을 지우면 UI-FO2가 `expected '' to contain 'noopener'
     `download_click`(스토어 링크, `store`) · `language_switch`(`to`) · `faq_open`(`question`) · ⟨2026-10-22⟩ `trial_link_click`(Hero · 받기 카드 아래의
     체험판 링크, `location`: `hero` · `download`). 404에는 스크립트가 없어 수집하지 않는다.
   - 체험판(`src/trial/trial-events.ts` — 전이마다 순수 함수가 정한다): `trial_start`(`speech`: supported · unsupported) · `trial_step`(그 단계에
-    처음 들어설 때, `step` · `ordinal` "1" ~ "8") · `trial_roleplay_result`(마지막 턴 뒤, `verdict` · `correct` · `by_speech` · `by_tiles` "0" ~ "3" ·
-    `speech`: supported · unsupported · denied) · `trial_complete`(`verdict`) · `trial_store_click`(완료 화면 스토어 링크, `store`: ios · android).
-    속성은 전부 문자열이고 **들은 문장 · 대사 · 고른 보기 글 · 이름을 싣지 않는다**(타입이 막는다). 체험판 페이지는 랜딩 `initAnalytics`를
+    처음 닿을 때, `step` · `ordinal` "1" ~ "9" — prologue는 첫 탭, clear 8 · complete 9) · `trial_roleplay_result`(마지막 턴 뒤, `verdict` · `correct` · `by_speech` · `by_tiles` "0" ~ "3" ·
+    `speech`: supported · unsupported · denied) · `trial_complete`(`verdict`) · ⟨r2⟩ `trial_preregister`(완료 화면 사전 등록 응답 뒤, `status`: submitted · duplicate · failed).
+    `trial_start`는 Start가 아니라 **첫 탭**에 나간다. ~~`trial_store_click`~~은 지웠다(완료 화면에 스토어 링크가 없다).
+    속성은 전부 문자열이고 **들은 문장 · 대사 · 고른 보기 글 · 이름 · 이메일을 싣지 않는다**(타입이 막는다). 체험판 페이지는 랜딩 `initAnalytics`를
     부르지 않고, 같은 측정 ID · 같은 동의 규칙(`Analytics.astro`)으로 `gtag("event", …)`만 보낸다.
   **어느 요소가 어떤 이벤트가 되는가는 `src/scripts/analytics-events.ts`의 순수 함수 셋이 정한다** — 눌린 링크는 스토어 링크 →
   체험판 링크(`data-trial-link`) → 머리의 받기 버튼(`#download`) → 언어 메뉴 순으로 하나만, FAQ는 열릴 때만, 섹션은 `id`가 있는 `main section`만 한 번. 함수는
@@ -216,7 +218,7 @@ Footer 링크의 `rel`을 지우면 UI-FO2가 `expected '' to contain 'noopener'
   안쪽 여백. `analytics.e2e.ts`는 GA 이벤트(위 「분석」). **여전히 보지 않는 것**: 색 · 대비 · 글꼴 · 그림의 **시각 품질**
   (스크린샷 비교를 하지 않는다), 실제 Safari · 스크린리더 낭독 · 외부 검증기.
 - **체험판(자동)** — unit · ui · integration이 리듀서 전이 · 모델 · 파생(음성 단서 · 효과음 · 이벤트) · 장면 마크업(en · ko) · 컨트롤러 결선(JSDOM에서
-  끝까지) · 빌드(env 검사 · sitemap 제외 · 스크립트 상한 40,000 bytes · zod 없음)를 보고, Playwright `trial*.e2e.ts`가 엔진별 클릭 · 소리 요청 ·
+  끝까지) · 빌드(env 검사 · sitemap 제외 · 스크립트 상한 40,000 bytes — r2 실측 39,813 · zod 없음)를 보고, Playwright `trial*.e2e.ts`가 엔진별 클릭 · 소리 요청 ·
   키보드 · axe · 레이아웃 · GA를 본다. 루트 `pnpm test:trial-assets`(TA1 ~ TA5)가 사본을 본다. **여전히 보지 않는 것**: 실기에서 소리가 실제로
   나는가 · iOS 무음 스위치 · 실제 음성 인식 · 권한 창 · VoiceOver · TalkBack — [웹 체험판 e2e](../../docs/e2e/web-trial.md) EU1 ~ EU8(미실행).
 - **사람** — [랜딩 SEO · GEO e2e](../../docs/e2e/landing-seo-geo.md)의 E1~E9(Lighthouse · 구조화 데이터 검증기 ·
@@ -230,17 +232,20 @@ Footer 링크의 `rel`을 지우면 UI-FO2가 `expected '' to contain 'noopener'
 앱을 설치하지 않고 튜토리얼 u00의 첫 장면을 브라우저에서 3~5분 해 보는 페이지다. 결정과 버린 대안은
 [ADR-0081](../../docs/adr/0081-web-trial-and-episode-core.md)에 있고, 여기는 고칠 때 알아야 할 것만 적는다.
 
-- **흐름**: 시작(Start) → 표지 컷 1~6 → 새 단어 카드(S1) → 그림 고르기(S3) → 대답 고르기(S9) → 문화 카드(S12) → 롤플레이 3턴(RP) →
-  통과 뒤 컷 1~2 → 완료 · 설치 안내. 롤플레이 결과와 무관하게 끝까지 가고, 완료 화면의 문구만 결과(3턴 중 2 이상)에 따라 다르다.
-- **어떻게 도나**: 장면 전부를 Astro가 한 페이지에 굽고(처음엔 시작만 보인다) `src/trial/trial-main.ts`가 페이지 안의 JSON
+- **흐름**(r2): 열자마자 컷 1(표지 없음 — **첫 탭**이 소리 잠금 해제 · 시작 이벤트 · 모바일 전체화면) → 컷 1~6 → 새 단어 카드(S1) → 그림 고르기(S3) →
+  대답 고르기(S9) → 문화 카드(S12) → 롤플레이 3턴(RP) → 엔딩 컷 1~4 → **Episode clear**(검정 배너 1.6초 또는 탭 → 「다음은 어떤 일이 벌어질까?」 예고) →
+  완료 · 이메일 사전 등록. 롤플레이 결과와 무관하게 끝까지 가고, 완료 화면의 문구만 결과(3턴 중 2 이상)에 따라 다르다.
+- **꿈 전환**: 컷 사이 · 롤플레이 → 엔딩 · 배너 → 예고에 구름빛(`data-transition="dream"`, 600ms), 꿈 → 승무원(prologue 마지막 컷으로)에
+  눈 뜨기(`wake`, 1000ms). 판정은 순수 `trialTransitionOf`, 모양은 `trial-transition.css`. 움직임 줄이기면 없다.
+- **어떻게 도나**: 장면 전부를 Astro가 한 페이지에 굽고(처음엔 컷 1만 보인다) `src/trial/trial-main.ts`가 페이지 안의 JSON
   (`script#trial-model`)을 읽어 컨트롤러를 띄운다. 행동 → 순수 리듀서(`reduceTrial`) → DOM 반영 → 파생(음성 · 효과음 · 이벤트).
   **판정 · 전이는 리듀서만 한다** — DOM 코드에 계산을 넣지 않는다. 판정 함수는 앱과 같은 `@libitums/episode-core/judge`다.
 - **콘텐츠는 빌드 때 읽는다** — `src/trial/content/u00-tutorial.json`(사본)을 `@libitums/episode-core/episode`의 디코더로 읽어 화면 모델을
   페이지에 굽는다. 디코드 · 모델이 실패하면 **빌드가 실패한다**. 클라이언트 스크립트에는 zod · 디코더가 없다(상한 40,000 bytes — 2026-10-22 34,804).
-- **사본을 고칠 때** — u00 JSON · 그림 10 · 효과음 5는 앱 원본의 바이트 그대로다. 앱 쪽이 바뀌면 같은 파일을 복사하고, JSON이면
+- **사본을 고칠 때** — u00 JSON · 그림 12 · 효과음 5는 앱 원본의 바이트 그대로다. 앱 쪽이 바뀌면 같은 파일을 복사하고, JSON이면
   `TRIAL_CONTENT`(version · bytes · sha256)도 앱 매니페스트의 u00 항목과 같게 고친다. 어긋나면 `pnpm test:trial-assets`(따라서 `pnpm verify`)가 실패한다.
   그림을 다시 인코딩하지 않는다(위 「그림」의 `cwebp` 절차는 랜딩 소개 그림만이다).
-- **음성** — 버킷의 `audio/<id>.m4a`를 받는다(빌드 env `PUBLIC_SUPABASE_URL`, 아래 「배포」). Start 탭에서 Web Audio를 열고, 그 전에는 소리 요청이
+- **음성** — 버킷의 `audio/<id>.m4a`를 받는다(빌드 env `PUBLIC_SUPABASE_URL`, 아래 「배포」). 첫 탭에서 Web Audio를 열고, 그 전에는 소리 요청이
   0이다. 받기 실패 · 404 · 해독 실패면 그 소리만 없고 진행은 막히지 않는다. 로컬에서 소리를 들으려면 앱 `.env.local`의 같은 값을 주고 짓는다.
 
   ```sh
@@ -251,7 +256,13 @@ Footer 링크의 `rel`을 지우면 UI-FO2가 `expected '' to contain 'noopener'
 - **말하기** — 브라우저 음성 인식(`SpeechRecognition` · `webkitSpeechRecognition`, `ko-KR`). 보안 컨텍스트(`https` 또는 `localhost`)에서만
   마이크가 열린다. 인식기가 없거나(Firefox) · 권한 거부 · 실패 · `Can't speak now`면 같은 턴을 낱말 타일로 푼다.
 - **문구** — `src/i18n/trial-copy.ts`(영어 원본, `TrialCopy`) · `trial-ko.ts`(한국어, 전부 채워야 타입 검사를 지난다). `{name}` 자리표시자는 `formatCopy`가 채운다.
-- **랜딩 링크** — Hero와 받기 카드 아래에 `trialPathFor(language)`(`src/site.ts`) 링크. 완료 화면의 스토어 링크는 `storeLinks` 그대로다.
+- **랜딩 링크** — Hero와 받기 카드 아래에 `trialPathFor(language)`(`src/site.ts`) 링크.
+- **사전 등록**(r2) — 완료 화면 폼이 `POST <PUBLIC_SUPABASE_URL>/rest/v1/pre_registrations`(머리 `apikey` · `Prefer: return=minimal`, 몸 `{email, locale, source}`)로
+  보낸다. 201 · 409(중복)는 「등록했어요」, 그 밖 · 네트워크 · 10초는 「다시 시도」. 형식이 틀리면 요청하지 않는다. 표 · RLS는
+  [`apps/supabase-functions`](../supabase-functions/README.md) 「웹 체험판 사전 등록 표」. 빌드에 `PUBLIC_SUPABASE_ANON_KEY`가 없으면(비프로덕션) 폼 대신
+  「지금은 등록할 수 없어요」가 선다. 이메일은 GA · 낭독 · 로그에 싣지 않는다.
+- **모바일 전체화면**(r2) — `(pointer: coarse) and (hover: none)`이면 첫 탭에 `requestFullscreen`(주소창 · 탭바 숨김), 완료 · 나가기에서 푼다.
+  지원하지 않으면(iPhone Safari) 아무 일도 없다.
 - **색인하지 않는다** — `noindex`, canonical · hreflang · JSON-LD 없음, sitemap에서 `/try/`를 뺀다(`astro.config.ts`의 sitemap `filter`).
 
 ## 배포 (Vercel)
@@ -286,6 +297,10 @@ Footer 링크의 `rel`을 지우면 UI-FO2가 `expected '' to contain 'noopener'
   번들에 그대로 들어가는 공개 값). **Production에 반드시 넣는다 — 없으면 프로덕션 빌드가 실패한다**(`VERCEL_ENV=production`일 때만 검사).
   Preview에도 넣어야 프리뷰에서 소리가 난다(없으면 프리뷰는 소리 없는 체험판으로 성공한다 — [웹 체험판 e2e](../../docs/e2e/web-trial.md)의 실기 확인은 프리뷰에서 한다).
   **아직 넣지 않았다 — 사용자 작업이다**(Vercel 랜딩 프로젝트 → Settings → Environment Variables).
+- ⟨2026-10-22 r2⟩ `PUBLIC_SUPABASE_ANON_KEY` — 같은 Supabase 프로젝트의 **공개 키**(publishable `sb_publishable_…` 또는 옛 anon JWT, 앱 `.env.local`과 같은 값 ·
+  번들에 그대로 들어가는 공개 값). 체험판 완료 화면의 사전 등록이 쓴다. **Production에 반드시 넣는다 — 없으면 프로덕션 빌드가 실패한다**, 모양이 틀려도
+  실패한다(출력에 값을 싣지 않는다). Preview에 없으면 폼이 「지금은 등록할 수 없어요」로 선다. 넣기 전에 마이그레이션 `20261022120000_pre_registrations.sql`을
+  원격에 적용해야 등록이 성공한다. **아직 넣지 않았다 — 사용자 작업이다.**
 
 배포 환경에 따라 달라지는 것(`src/seo/deploy-env.ts`):
 
@@ -296,6 +311,7 @@ Footer 링크의 `rel`을 지우면 UI-FO2가 `expected '' to contain 'noopener'
 | canonical · hreflang · sitemap | 있음 | 없음 |
 | GA4 | 측정 ID가 있으면 실림 | 실리지 않음 |
 | 체험판 음성 주소 `PUBLIC_SUPABASE_URL` | 없으면 **빌드 실패** | 없으면 소리 없는 체험판 |
+| 사전 등록 공개 키 `PUBLIC_SUPABASE_ANON_KEY` | 없으면 **빌드 실패** | 없으면 폼 대신 「지금은 등록할 수 없어요」 |
 
 올린 뒤에는 Google Search Console · 네이버 서치어드바이저에 사이트를 등록하고 `sitemap-index.xml`을 낸다.
 확인 절차는 [수동 절차](../../docs/e2e/landing-seo-geo.md)의 「배포 뒤」 절에 있다.

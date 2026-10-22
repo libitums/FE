@@ -1,6 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Locator, type Page } from "@playwright/test";
-import { routeSound, say, withFakeSpeech } from "./trial-fakes.support";
+import { routePrereg, routeSound, say, withFakeSpeech } from "./trial-fakes.support";
 import {
   correctTiles,
   expectStep,
@@ -76,9 +76,10 @@ test.describe("TE4 키보드만으로", () => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await withFakeSpeech(page);
     await routeSound(page);
+    await routePrereg(page, [201]);
   });
 
-  test("Tab · Enter · Space로 완료까지, 단계가 바뀔 때마다 초점은 제목 · 롤플레이 안에서는 초점이 다음 조작으로", async ({
+  test("Tab · Enter · Space로 완료 · 사전 등록까지, 단계가 바뀔 때마다 초점은 제목 · 롤플레이 안에서는 초점이 다음 조작으로", async ({
     page,
     browserName,
   }) => {
@@ -91,8 +92,7 @@ test.describe("TE4 키보드만으로", () => {
       await page.keyboard.press(toggle % 2 === 0 ? "Space" : "Enter");
     };
 
-    await press("trial-start-button");
-    await expectHeadingFocused(page, "prologue");
+    // 표지가 없어 첫 조작은 컷 1의 Next다.
     for (let cut = 0; cut < model.prologue.length; cut += 1) {
       await press("trial-cuts-next");
       if (cut < model.prologue.length - 1)
@@ -162,8 +162,24 @@ test.describe("TE4 키보드만으로", () => {
     await pressHere(shown(page, "trial-turn-next"), "턴 3 Check 뒤");
     await expectHeadingFocused(page, "epilogue");
     for (let cut = 0; cut < model.epilogue.length; cut += 1) await press("trial-cuts-next");
+    // Episode clear — 배너 제목에 초점, 유지 시간 뒤 예고 제목으로, 예고 Next → 완료 제목.
+    await expectHeadingFocused(page, "clear");
+    await expect(page.getByTestId("trial-step-clear")).toHaveAttribute("data-phase", "teaser");
+    await expectFocusedOn(page, shown(page, "trial-clear-teaser-title"), "배너 → 예고 뒤");
+    await press("trial-clear-next");
     await expectHeadingFocused(page, "complete");
     await expect(page.getByTestId("trial-step-complete")).toHaveAttribute("data-result", "passed");
+    // 사전 등록 — Tab으로 입력에, 형식 오류는 입력으로 돌아오고, Enter로 보내면 상태 글에 초점.
+    await tabTo(page, "trial-prereg-email", browserName);
+    await page.keyboard.type("not-an-email");
+    await page.keyboard.press("Enter");
+    await expect(shown(page, "trial-prereg-error")).toBeVisible();
+    await expectFocusedOn(page, shown(page, "trial-prereg-email"), "형식 오류 뒤");
+    await page.keyboard.press("ControlOrMeta+A");
+    await page.keyboard.type("keyboard.user@example.test");
+    await page.keyboard.press("Enter");
+    await expect(page.getByTestId("trial-prereg")).toHaveAttribute("data-state", "done");
+    await expectFocusedOn(page, shown(page, "trial-prereg-status"), "등록 뒤");
   });
 });
 
@@ -203,8 +219,7 @@ test.describe("TE5 axe — 단계마다 위반 0", () => {
       const found: string[] = [];
       const check = async (label: string) => found.push(...(await audit(page, label)));
 
-      await check("start");
-      await tap(page, "trial-start-button");
+      await routePrereg(page, [201]);
       for (const cut of model.prologue) {
         await check(`prologue ${cut.index}`);
         await tap(page, "trial-cuts-next");
@@ -254,8 +269,21 @@ test.describe("TE5 axe — 단계마다 위반 0", () => {
       }
       await check("epilogue");
       await passCuts(page, "epilogue", model.epilogue.length);
+      await expectStep(page, "clear");
+      await check("clear (banner · 예고 중 그때 보이는 것)");
+      await expect(page.getByTestId("trial-step-clear")).toHaveAttribute("data-phase", "teaser");
+      await check("clear teaser");
+      await tap(page, "trial-clear-next");
       await expectStep(page, "complete");
       await check("complete");
+      await shown(page, "trial-prereg-email").fill("not-an-email");
+      await tap(page, "trial-prereg-submit");
+      await expect(page.getByTestId("trial-prereg")).toHaveAttribute("data-state", "invalid");
+      await check("prereg invalid");
+      await shown(page, "trial-prereg-email").fill("axe.check@example.test");
+      await tap(page, "trial-prereg-submit");
+      await expect(page.getByTestId("trial-prereg")).toHaveAttribute("data-state", "done");
+      await check("prereg done");
       expect(found).toEqual([]);
     });
   }

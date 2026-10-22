@@ -21,15 +21,16 @@ function imageOf(path: string): string {
 const u00Image = (name: string) => imageOf(`images/u00-tutorial/${name}.webp`);
 
 describe("trialModelOf — u00", () => {
-  it("TM1 실제 사본이 ok이고 prologue 6 · epilogue 2 · 턴 3", () => {
+  it("TM1 · TM-R1 실제 사본이 ok이고 prologue 6 · epilogue 4 · 턴 3, 시작 그림 필드 없음", () => {
     const result = trialModelOf(decodedU00(), port);
     expect(result.ok).toBe(true);
     const model = u00TrialModel();
     expect(model.episodeId).toBe("u00-tutorial");
     expect(model.version).toBe(TRIAL_CONTENT.version);
     expect(model.prologue).toHaveLength(6);
-    expect(model.epilogue).toHaveLength(2);
+    expect(model.epilogue).toHaveLength(4);
     expect(model.roleplay.turns).toHaveLength(3);
+    expect(Object.keys(model)).not.toContain("startImageUrl");
   });
 
   it("TM2 prologue 컷 — 독백 둘 · 지문 둘 · 말 둘, 음성은 5 · 6에만", () => {
@@ -77,8 +78,8 @@ describe("trialModelOf — u00", () => {
     );
   });
 
-  it("TM2 epilogue는 post_cuts 앞 둘 — 지문 post-1 · 승무원 post-2", () => {
-    const [e1, e2] = u00TrialModel().epilogue;
+  it("TM2 · TM-R1 epilogue는 post_cuts 넷 — 지문 post-1 · 승무원 post-2 · 독백 post-3 · post-4", () => {
+    const [e1, e2, e3, e4] = u00TrialModel().epilogue;
     expect(e1).toMatchObject({
       index: 1,
       voice: "narration",
@@ -95,6 +96,23 @@ describe("trialModelOf — u00", () => {
       audioUrl: u00AudioUrl("post-2"),
     });
     expect(e2?.imageUrl).toBe(u00Image("post-2"));
+    expect(e3).toMatchObject({
+      index: 3,
+      voice: "thought",
+      speaker: { kind: "self" },
+      text: { ko: "꿈은 벌써 희미하다. 그래도 그 목소리는 남아 있다. 다음에 또… 누구였을까?" },
+      audioUrl: null,
+    });
+    expect(e4).toMatchObject({
+      index: 4,
+      voice: "thought",
+      text: { ko: "여행은 이제 시작이다. 먼저 익선동 숙소부터 가 볼까?" },
+      audioUrl: null,
+    });
+    expect(e3?.imageUrl).toBe(u00Image("post-3"));
+    expect(e4?.imageUrl).toBe(u00Image("post-4"));
+    expect(e3?.imageUrl).not.toBeNull();
+    expect(e4?.imageUrl).not.toBeNull();
   });
 
   it("TM3 vocab — 낱말 · 예문 · 음성 두 주소", () => {
@@ -209,7 +227,6 @@ describe("trialModelOf — u00", () => {
       replyAudioUrl: u00AudioUrl("d-06"),
     });
     expect(model.roleplay.imageUrl).toBe(u00Image("pre-6"));
-    expect(model.startImageUrl).toBe(u00Image("pre-6"));
     expect(model.counterpartName).toBe("승무원");
   });
 
@@ -233,8 +250,8 @@ describe("trialModelOf — u00", () => {
       return value;
     };
     expect(silent).toEqual(nullAudio(withAudio, "model"));
-    // 컷 8 · 단어 2 · 고르기 2 · 턴 6 — 음성 자리가 모두 있다
-    expect(audioKeys).toHaveLength(18);
+    // 컷 10(prologue 6 · epilogue 4) · 단어 2 · 고르기 2 · 턴 6 — 음성 자리가 모두 있다
+    expect(audioKeys).toHaveLength(20);
   });
 });
 
@@ -278,10 +295,12 @@ describe("trialModelOf — 경계", () => {
     expect(errorsOf(episode).map((error) => error.code)).toContain("item-malformed");
   });
 
-  it("TM8 post_cuts가 하나뿐이면 step-missing", () => {
+  it("TM8 post_cuts가 넷보다 적으면(하나 · 셋) step-missing", () => {
     const u00 = decodedU00();
-    const errors = errorsOf({ ...u00, epilogue: u00.epilogue.slice(0, 1) });
-    expect(errors.map((error) => error.code)).toContain("step-missing");
+    for (const count of [1, 3]) {
+      const errors = errorsOf({ ...u00, epilogue: u00.epilogue.slice(0, count) });
+      expect(errors.map((error) => error.code)).toContain("step-missing");
+    }
   });
 });
 
@@ -291,6 +310,8 @@ describe("그림 표", () => {
     "images/u00-tutorial/cult-u00-jalhasineyo.webp",
     "images/u00-tutorial/post-1.webp",
     "images/u00-tutorial/post-2.webp",
+    "images/u00-tutorial/post-3.webp",
+    "images/u00-tutorial/post-4.webp",
     "images/u00-tutorial/pre-1.webp",
     "images/u00-tutorial/pre-2.webp",
     "images/u00-tutorial/pre-3.webp",
@@ -299,7 +320,7 @@ describe("그림 표", () => {
     "images/u00-tutorial/pre-6.webp",
   ];
 
-  it("TM9 표의 키 집합 = 모델이 참조하는 그림 경로 10개", () => {
+  it("TM9 표의 키 집합 = 모델이 참조하는 그림 경로 12개", () => {
     expect(Object.keys(TRIAL_IMAGES).sort()).toEqual(expectedKeys);
     const u00 = decodedU00();
     const items = [...u00.units.flatMap((unit) => unit.items), ...u00.finalTest.items];
@@ -308,7 +329,7 @@ describe("그림 표", () => {
     const pick = new Set(["S3-01", "S12-01", "RP-01", "RP-02", "RP-03"]);
     const referenced = [
       ...u00.prologue.map((cut) => cut.imageUrl),
-      ...u00.epilogue.slice(0, 2).map((cut) => cut.imageUrl),
+      ...u00.epilogue.map((cut) => cut.imageUrl),
       ...items.filter((item) => pick.has(item.id)).map(stimulusImage),
     ]
       .filter((path): path is string => path !== undefined)
@@ -320,13 +341,12 @@ describe("그림 표", () => {
     const url = imageOf("images/items/hello.webp");
     expect(trialImageUrlOf("content/images/items/hello.webp")).toBe(url);
     expect(trialImageUrlOf("images/items/thanks.webp")).toBeNull();
-    expect(new Set(expectedKeys.map(imageOf)).size).toBe(10);
+    expect(new Set(expectedKeys.map(imageOf)).size).toBe(12);
   });
 
   it("TM9 모델의 그림 주소는 모두 표에서 왔다", () => {
     const model: TrialModel = u00TrialModel();
     const used = [
-      model.startImageUrl,
       ...model.prologue.map((cut) => cut.imageUrl),
       ...model.epilogue.map((cut) => cut.imageUrl),
       model.imageMatch.imageUrl,

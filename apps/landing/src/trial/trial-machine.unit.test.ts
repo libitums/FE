@@ -20,33 +20,44 @@ const failed = (
 const reduce = (state: TrialState, action: TrialAction, model: TrialModel) =>
   reduceTrial(state, action, model);
 
-describe("시작 · 컷", () => {
-  it("TR1 처음 상태 — start · cut 0 · 말하기 지원 · reached 비어 있음", () => {
-    const state = initialTrialState("supported");
+describe("첫 탭 · 컷", () => {
+  it("TR-B1 처음 상태 — 표지 없이 prologue · cut 0 · begun false · reached 비어 있음", () => {
+    const state = initialTrialState();
     expect(state).toMatchObject({
-      step: "start",
+      step: "prologue",
       cutIndex: 0,
-      speech: "supported",
+      begun: false,
+      clearPhase: "banner",
       reached: [],
       choice: { selected: null, verdict: null },
       cultureFace: "front",
       roleplay: { records: [], verdict: null },
     });
-    expect(initialTrialState("unsupported").speech).toBe("unsupported");
   });
 
-  it("TR1 start → prologue · cut 0 · reached [prologue]", () => {
+  it("TR-B2 begin → begun · speech · reached [prologue], 두 번째 begin은 같은 참조", () => {
     const model = u00TrialModel();
-    const state = reduce(initialTrialState("supported"), { type: "start" }, model);
-    expect(state).toMatchObject({ step: "prologue", cutIndex: 0, reached: ["prologue"] });
+    const begun = reduce(initialTrialState(), { type: "begin", speech: "supported" }, model);
+    expect(begun).toMatchObject({
+      step: "prologue",
+      cutIndex: 0,
+      begun: true,
+      speech: "supported",
+      reached: ["prologue"],
+    });
+    expect(reduce(begun, { type: "begin", speech: "unsupported" }, model)).toBe(begun);
+    const unsupported = reduce(
+      initialTrialState(),
+      { type: "begin", speech: "unsupported" },
+      model,
+    );
+    expect(unsupported.speech).toBe("unsupported");
   });
 
-  it("TR1 start 화면의 next · 두 번째 start는 같은 참조", () => {
+  it("TR-B2 begin이 정한 말하기 지원으로 롤플레이 첫 턴 모드가 정해진다", () => {
     const model = u00TrialModel();
-    const initial = initialTrialState("supported");
-    expect(reduce(initial, next, model)).toBe(initial);
-    const started = reduce(initial, { type: "start" }, model);
-    expect(reduce(started, { type: "start" }, model)).toBe(started);
+    expect(stateAt("roleplay", model, "supported").roleplay.turn.mode).toBe("speech");
+    expect(stateAt("roleplay", model, "unsupported").roleplay.turn.mode).toBe("tiles");
   });
 
   it("TR2 prologue next ×5 → cut 5, 여섯째 → vocab", () => {
@@ -58,15 +69,27 @@ describe("시작 · 컷", () => {
     expect(vocab.reached).toEqual(["prologue", "vocab"]);
   });
 
-  it("TR2 epilogue 끝 next → complete, complete의 next는 같은 참조", () => {
+  it("TR-C1 epilogue 4컷 → 마지막 next → clear banner → teaser → complete, complete의 next는 같은 참조", () => {
     const model = u00TrialModel();
     const epilogue = stateAt("epilogue", model);
     expect(epilogue).toMatchObject({ step: "epilogue", cutIndex: 0 });
-    const second = reduce(epilogue, next, model);
-    expect(second).toMatchObject({ step: "epilogue", cutIndex: 1 });
-    const complete = reduce(second, next, model);
+    const fourth = run(epilogue, [next, next, next], model);
+    expect(fourth).toMatchObject({ step: "epilogue", cutIndex: 3 });
+    const banner = reduce(fourth, next, model);
+    expect(banner).toMatchObject({ step: "clear", clearPhase: "banner" });
+    const teaser = reduce(banner, next, model);
+    expect(teaser).toMatchObject({ step: "clear", clearPhase: "teaser" });
+    const complete = reduce(teaser, next, model);
     expect(complete.step).toBe("complete");
+    expect(complete.reached.slice(-3)).toEqual(["epilogue", "clear", "complete"]);
     expect(reduce(complete, next, model)).toBe(complete);
+  });
+
+  it("TR-C1 clear 안의 다른 행동은 같은 참조", () => {
+    const model = u00TrialModel();
+    const banner = stateAt("clear", model);
+    expect(reduce(banner, { type: "flip" }, model)).toBe(banner);
+    expect(reduce(banner, { type: "check" }, model)).toBe(banner);
   });
 });
 
@@ -300,14 +323,18 @@ describe("롤플레이 끝 → 엔딩", () => {
     expect(done.reached).toContain("epilogue");
   });
 
-  it("TR10 1/3 정답 → 역시 epilogue · cut 0 · verdict failed, 그 뒤는 보통 엔딩 흐름", () => {
+  it("TR10 1/3 정답 → 역시 epilogue · cut 0 · verdict failed, 그 뒤는 보통 엔딩 흐름(4컷 → clear 둘 → complete)", () => {
     const model = u00TrialModel();
     const rp = stateAt("roleplay", model, "unsupported");
     const done = run(rp, [...tilesTurn([0, 1, 2]), ...tilesTurn([0, 1]), ...tilesTurn([0])], model);
     expect(done).toMatchObject({ step: "epilogue", cutIndex: 0 });
     expect(done.roleplay.verdict).toBe("failed");
     expect(reduce(done, { type: "retry" }, model)).toBe(done);
-    expect(run(done, [next, next], model).step).toBe("complete");
+    expect(run(done, [next, next, next, next], model)).toMatchObject({
+      step: "clear",
+      clearPhase: "banner",
+    });
+    expect(run(done, [next, next, next, next, next, next], model).step).toBe("complete");
   });
 
   it("TR10 말하기 세 턴을 모두 맞히면 passed", () => {

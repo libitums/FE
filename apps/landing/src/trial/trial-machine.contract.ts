@@ -3,7 +3,6 @@ import type { AnswerResult, PassVerdict } from "@libitums/episode-core/judge";
 import type { TrialModel } from "./trial-model.contract";
 
 export type TrialStepId =
-  | "start"
   | "prologue"
   | "vocab"
   | "image-match"
@@ -11,10 +10,14 @@ export type TrialStepId =
   | "culture"
   | "roleplay"
   | "epilogue"
+  | "clear"
   | "complete";
 
-/** 이탈 측정에 쓰는 단계 — 시작 화면(페이지 보기)은 뺀다. */
-export type TrialFunnelStep = Exclude<TrialStepId, "start">;
+/** 이탈 측정에 쓰는 단계 — 표지가 없어 모든 단계다(prologue는 첫 탭 `begin`에서 닿는다). */
+export type TrialFunnelStep = TrialStepId;
+
+/** Episode clear 장면의 두 자리 — 배너(유지 시간 · 탭) 뒤 예고. */
+export type TrialClearPhase = "banner" | "teaser";
 
 /** 브라우저 말하기 — 생성자 유무로 시작, 거부되면 denied(그 뒤 턴은 타일). */
 export type SpeechAvailability = "supported" | "unsupported" | "denied";
@@ -55,6 +58,9 @@ export type TrialState = {
   readonly step: TrialStepId;
   /** prologue · epilogue의 컷 자리(0부터). */
   readonly cutIndex: number;
+  /** 첫 탭(begin) 전이면 false — 소리 · 이벤트가 그때 시작한다. */
+  readonly begun: boolean;
+  readonly clearPhase: TrialClearPhase;
   readonly choice: TrialChoiceState;
   readonly cultureFace: "front" | "back";
   readonly speech: SpeechAvailability;
@@ -66,7 +72,7 @@ export type TrialState = {
 export type SpeechFailure = "no-speech" | "denied" | "unsupported" | "unavailable" | "aborted";
 
 export type TrialAction =
-  | { readonly type: "start" }
+  | { readonly type: "begin"; readonly speech: "supported" | "unsupported" }
   | { readonly type: "next" }
   | { readonly type: "choose"; readonly optionIndex: number }
   | { readonly type: "flip" }
@@ -79,13 +85,14 @@ export type TrialAction =
   | { readonly type: "toggle-tile"; readonly tileIndex: number }
   | { readonly type: "check" };
 
-export type InitialTrialState = (speech: Exclude<SpeechAvailability, "denied">) => TrialState;
+/** 열 때의 상태 — 컷 1 · begun false. 말하기 지원은 begin이 정한다(그 전 speech는 자리값 "unsupported"). */
+export type InitialTrialState = () => TrialState;
 /** 바뀔 것이 없으면 같은 참조. */
 export type ReduceTrial = (state: TrialState, action: TrialAction, model: TrialModel) => TrialState;
 
 // ------------------------------------------------------------ 파생
 
-/** start 0 · prologue 1 · vocab 2 · image-match 3 · reply-select 4 · culture 5 · roleplay 6 · epilogue · complete 7. */
+/** prologue 1 · vocab 2 · image-match 3 · reply-select 4 · culture 5 · roleplay 6 · epilogue · clear · complete 7. */
 export type TrialProgress = { readonly ordinal: number; readonly total: 7 };
 export type TrialProgressOf = (state: TrialState) => TrialProgress;
 
@@ -106,3 +113,15 @@ export type TrialSfxOf = (
 ) => TrialSfx | null;
 
 export type TrialRoleplayVerdictOf = (records: readonly TurnRecord[]) => PassVerdict;
+
+/** 컷 · 장면 사이 전환 — dream: 구름빛에서 또렷해짐, wake: 눈을 뜨듯 위아래에서 열림. */
+export type TrialTransition = "dream" | "wake";
+/** 전이 하나에 쓸 전환. 학습 단계 사이 · 그 밖은 null(r1 페이드가 맡는다). 순수. */
+export type TrialTransitionOf = (
+  prev: TrialState,
+  next: TrialState,
+  model: TrialModel,
+) => TrialTransition | null;
+
+/** 배너가 스스로 넘어가기까지(ms) — 앱 EPISODE_BANNER_HOLD_MS와 같다. */
+export const TRIAL_CLEAR_HOLD_MS = 1600;

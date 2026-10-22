@@ -17,6 +17,8 @@ const astroBin = join(appDir, "node_modules", "astro", "bin", "astro.mjs");
 const buildRoot = join(appDir, "node_modules", ".trial-build");
 mkdirSync(buildRoot, { recursive: true });
 const SUPABASE = "https://x.supabase.co";
+/** 빌드 검사용 가짜 공개 키(어디에도 보내지 않음). */
+const ANON_KEY = "sb_publishable_build_test_key_0000";
 const AUDIO_BASE = `${SUPABASE}/storage/v1/object/public/content/audio/`;
 
 interface BuildResult {
@@ -34,6 +36,7 @@ function runBuild(extra: Record<string, string>): BuildResult {
   delete env.SITE_URL;
   delete env.PUBLIC_GA_MEASUREMENT_ID;
   delete env.PUBLIC_SUPABASE_URL;
+  delete env.PUBLIC_SUPABASE_ANON_KEY;
   Object.assign(env, extra);
   const result = spawnSync(process.execPath, [astroBin, "build", "--outDir", dir], {
     cwd: appDir,
@@ -105,10 +108,14 @@ const TRIAL_PAGES = [
   { file: "ko/try/index.html", language: "ko" },
 ] as const;
 
-describe("빌드 T-A — PUBLIC_SUPABASE_URL · SITE_URL 있음", () => {
+describe("빌드 T-A — PUBLIC_SUPABASE_URL · PUBLIC_SUPABASE_ANON_KEY · SITE_URL 있음", () => {
   let build: BuildResult;
   beforeAll(() => {
-    build = runBuild({ SITE_URL: "https://example.test", PUBLIC_SUPABASE_URL: SUPABASE });
+    build = runBuild({
+      SITE_URL: "https://example.test",
+      PUBLIC_SUPABASE_URL: SUPABASE,
+      PUBLIC_SUPABASE_ANON_KEY: ANON_KEY,
+    });
   });
   afterAll(() => clean(build));
 
@@ -122,7 +129,16 @@ describe("빌드 T-A — PUBLIC_SUPABASE_URL · SITE_URL 있음", () => {
       expect(document.documentElement.getAttribute("lang")).toBe(language);
       const data = pageData(document);
       expect(data.model.episodeId).toBe("u00-tutorial");
-      expect(Object.keys(data.copy)).toHaveLength(18);
+      expect(Object.keys(data.copy)).toHaveLength(26);
+      expect(data.locale).toBe(language);
+      // IB-R1 사전 등록 보낼 곳 = <PUBLIC_SUPABASE_URL>/rest/v1/pre_registrations · 공개 키
+      expect(data.prereg).toEqual({
+        endpoint: `${SUPABASE}/rest/v1/pre_registrations`,
+        apiKey: ANON_KEY,
+      });
+      expect(
+        document.querySelector('[data-testid="trial-prereg"]')?.getAttribute("data-state"),
+      ).toBe("idle");
       const robots = document.querySelector('meta[name="robots"]')?.getAttribute("content") ?? "";
       expect(robots).toContain("noindex");
     }
@@ -151,7 +167,7 @@ describe("빌드 T-A — PUBLIC_SUPABASE_URL · SITE_URL 있음", () => {
     expect(text).not.toContain("schema-mismatch");
   });
 
-  it("IB6 그림 10이 _astro/에 해시 파일로 · 효과음 5가 trial/sfx/에", () => {
+  it("IB6 그림 12가 _astro/에 해시 파일로 · 효과음 5가 trial/sfx/에", () => {
     const assets = readdirSync(join(build.dir, "_astro"));
     const images = [
       "pre-1",
@@ -162,6 +178,8 @@ describe("빌드 T-A — PUBLIC_SUPABASE_URL · SITE_URL 있음", () => {
       "pre-6",
       "post-1",
       "post-2",
+      "post-3",
+      "post-4",
       "cult-u00-jalhasineyo",
       "hello",
     ];
@@ -209,6 +227,14 @@ describe("빌드 T-B — 프리뷰 · 음성 env 없음", () => {
     expect(urls.length).toBeGreaterThan(0);
     expect(urls.every((url) => url === null)).toBe(true);
   });
+
+  it("IB-R2 공개 키가 없으면 사전 등록 null · 폼은 unavailable(빌드는 된다)", () => {
+    const document = page(build, "try/index.html");
+    expect(pageData(document).prereg).toBeNull();
+    expect(document.querySelector('[data-testid="trial-prereg"]')?.getAttribute("data-state")).toBe(
+      "unavailable",
+    );
+  });
 });
 
 describe("IB4 음성 env 검사", () => {
@@ -220,6 +246,30 @@ describe("IB4 음성 env 검사", () => {
     builds.push(build);
     expect(build.status).not.toBe(0);
     expect(build.output).toContain("PUBLIC_SUPABASE_URL");
+  });
+
+  it("IB-R3 VERCEL_ENV=production + URL 있음 · 공개 키 없음 → 빌드 실패(이름을 말함)", () => {
+    const build = runBuild({
+      VERCEL_ENV: "production",
+      VERCEL_PROJECT_PRODUCTION_URL: "duru.vercel.app",
+      PUBLIC_SUPABASE_URL: SUPABASE,
+    });
+    builds.push(build);
+    expect(build.status).not.toBe(0);
+    expect(build.output).toContain("PUBLIC_SUPABASE_ANON_KEY");
+  });
+
+  it("IB-R3 공개 키 모양이 틀리면 빌드 실패 · 출력에 키 값이 없다", () => {
+    const bad = "bad key with spaces 1234567890";
+    const build = runBuild({
+      VERCEL_ENV: "preview",
+      PUBLIC_SUPABASE_URL: SUPABASE,
+      PUBLIC_SUPABASE_ANON_KEY: bad,
+    });
+    builds.push(build);
+    expect(build.status).not.toBe(0);
+    expect(build.output).toContain("PUBLIC_SUPABASE_ANON_KEY");
+    expect(build.output).not.toContain(bad);
   });
 
   it("VERCEL_ENV=production + 없음 → 빌드 실패", () => {

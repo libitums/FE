@@ -150,3 +150,51 @@ export const speechStarts = (page: Page) =>
         }
       ).__speechStarts,
   );
+
+export interface PreregRequest {
+  method: string;
+  headers: Record<string, string>;
+  body: unknown;
+}
+
+const CORS = {
+  "access-control-allow-origin": "*",
+  "access-control-allow-headers": "apikey, content-type, prefer",
+  "access-control-allow-methods": "POST, OPTIONS",
+} as const;
+
+/**
+ * 사전 등록(PostgREST `POST /rest/v1/pre_registrations`)을 가로채 차례대로 답합니다 — 실제 주소 · 실제 DB에 닿지 않습니다.
+ * `statuses`는 요청마다 낼 상태(마지막 값이 계속 쓰임), `"abort"`는 네트워크 실패. 보낸 요청(POST만)을 기록합니다.
+ */
+export async function routePrereg(
+  page: Page,
+  statuses: readonly (number | "abort")[],
+): Promise<PreregRequest[]> {
+  const log: PreregRequest[] = [];
+  let served = 0;
+  await page.route(`${supabaseUrl}/rest/v1/**`, async (route) => {
+    const request = route.request();
+    if (request.method() === "OPTIONS") {
+      await route.fulfill({ status: 204, headers: CORS, body: "" });
+      return;
+    }
+    log.push({
+      method: request.method(),
+      headers: request.headers(),
+      body: JSON.parse(request.postData() ?? "null") as unknown,
+    });
+    const status = statuses[Math.min(served, statuses.length - 1)] ?? 201;
+    served += 1;
+    if (status === "abort") {
+      await route.abort("failed");
+      return;
+    }
+    await route.fulfill({
+      status,
+      headers: { ...CORS, "content-type": "application/json" },
+      body: status === 409 ? '{"code":"23505","message":"duplicate key value"}' : "",
+    });
+  });
+  return log;
+}

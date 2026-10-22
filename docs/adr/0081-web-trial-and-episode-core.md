@@ -2,7 +2,7 @@
 
 - 상태: **채택 — 클라이언트(랜딩 · 공유 패키지 · 앱 재수출).** 서버 · 버킷 변경 0, 호스트 변경 0, 앱 동작 변경 0.
   ⚠ **실기 확인 전이다** — unit · ui · integration · Playwright(chromium · firefox · webkit · Pixel 7 · analytics 둘)와 번들 · 스크립트 크기만 확인했다. iPhone Safari · Android Chrome의 소리 · 마이크 · 무음 스위치 · 보조 기술은 [웹 체험판 e2e](../e2e/web-trial.md) EU1 ~ EU8(미실행)이다.
-- 날짜: 2026-10-22.
+- 날짜: 2026-10-22. **r2 갱신 같은 날**(D12 ~ D16 — 표지 제거 · 첫 탭 잠금 해제 · 꿈 전환 · Episode clear · 이메일 사전 등록 · 모바일 전체화면, 사용자 요청).
 - **사용자 결정**(2026-10-22): 랜딩(Astro)에 **앱 설치 없이** 브라우저에서 튜토리얼 u00을 3 ~ 5분 체험하는 페이지 · 주소 `/try/` · 흐름은 「이야기 + 핵심 다섯」 · 순수 함수는 **공유 패키지로 분리** · 음성은 **버킷** · 기준은 `feat/tutorial-u00` 위.
   같은 날 계약 v1.1의 답: **롤플레이 결과와 무관하게 엔딩 · 완료로 간다**(완료 화면이 결과에 따라 문구만 다름) · 주 버튼 · 놓인 타일 라벨은 **앱처럼 흰 글자** · 체험판은 **색인하지 않는다**(noindex · sitemap 제외) · 아이콘은 `@libitums/icons` 0.5.0을 랜딩 의존성으로.
 - 다루는 축: 순수 규칙(디코더 · 판정 · 콘텐츠 주소 · 섞기)의 첫 `packages/` 이관과 그 경계 · 앱이 패키지를 import하는 방식 · 랜딩의 두 번째 페이지(상호작용 방식 · 콘텐츠 · 그림 · 효과음 · 음성의 출처 · 말하기 · 실패 처리 · 측정 · 색인).
@@ -60,26 +60,26 @@
 
 ### D5. 체험판은 정적 마크업 + 순수 리듀서 + 바닐라 컨트롤러다 — 새 런타임 의존 0
 
-- Astro가 장면 전부(시작 · 컷 묶음 둘 · 단어 카드 · 고르기 둘 · 문화 · 롤플레이 3턴 · 완료)를 **한 페이지에 굽고** 처음엔 시작만 보인다. 페이지 JSON(`script#trial-model`)을 읽은 컨트롤러가 행동 → `reduceTrial`(순수) → DOM 반영(`hidden` · 속성 · 글자 · 초점) → 파생(음성 단서 · 효과음 · 이벤트)으로 부작용을 낸다. **판정 · 전이는 리듀서만** 한다.
-- 순서: `start → prologue(pre_cuts 1 ~ 6) → vocab(S1) → image-match(S3) → reply-select(S9) → culture(S12) → roleplay(RP 3턴) → epilogue(post_cuts 1 ~ 2) → complete`. **롤플레이 결과와 무관하게 epilogue로 간다 — 사용자 결정** — 통과 기준(`catalogPassCriterion(3)` = 2)은 완료 문구와 측정에만 쓰인다. 고르기 문항은 통과에 들지 않는다(틀려도 정답을 보이고 넘어간다).
-- 페이지 스크립트(같은 출처 `_astro/*.js` 합)는 **≤ 40,000 bytes**이고 zod · 디코더 문자열이 없다(빌드 테스트 IB5). 2026-10-22 실측 34,804 B [실측].
-- 주소 `/try/` · `/ko/try/`(`trialPathFor`). Hero · Download에 체험판 링크(`data-trial-link`). 완료 화면의 스토어 링크는 랜딩 `storeLinks` 그대로 — 비면 「Coming soon」.
+- Astro가 장면 전부(컷 묶음 둘 · 단어 카드 · 고르기 둘 · 문화 · 롤플레이 3턴 · Episode clear · 완료)를 **한 페이지에 굽고** 처음엔 컷 1만 보인다(r2 — 표지 없음, D12). 페이지 JSON(`script#trial-model`)을 읽은 컨트롤러가 행동 → `reduceTrial`(순수) → DOM 반영(`hidden` · 속성 · 글자 · 초점) → 파생(음성 단서 · 효과음 · 이벤트)으로 부작용을 낸다. **판정 · 전이는 리듀서만** 한다.
+- 순서(r2): `prologue(pre_cuts 1 ~ 6) → vocab(S1) → image-match(S3) → reply-select(S9) → culture(S12) → roleplay(RP 3턴) → epilogue(post_cuts 1 ~ 4) → clear(배너 → 예고) → complete`. **롤플레이 결과와 무관하게 epilogue로 간다 — 사용자 결정** — 통과 기준(`catalogPassCriterion(3)` = 2)은 완료 문구와 측정에만 쓰인다. 고르기 문항은 통과에 들지 않는다(틀려도 정답을 보이고 넘어간다).
+- 페이지 스크립트(같은 출처 `_astro/*.js` 합)는 **≤ 40,000 bytes**이고 zod · 디코더 문자열이 없다(빌드 테스트 IB5). 2026-10-22 실측 34,804 B → r2 **39,813 B**(여유 187 B) [실측].
+- 주소 `/try/` · `/ko/try/`(`trialPathFor`). Hero · Download에 체험판 링크(`data-trial-link`). ~~완료 화면의 스토어 링크~~ → r2 이메일 사전 등록(D15).
 
 ### D6. 콘텐츠 · 그림 · 효과음은 랜딩의 바이트 같은 사본이고, 음성만 버킷에서 받는다
 
 | 무엇 | 방식 |
 |---|---|
 | u00 JSON | 앱 내장본의 사본 `apps/landing/src/trial/content/u00-tutorial.json`. **빌드 때** `decodeEpisode` → 화면 모델 → 페이지 JSON. 디코드 · 모델이 실패하면 빌드가 실패한다. 클라이언트에 zod · 디코더가 없다. 포매터에서 뺐다(바이트를 지킨다) |
-| 그림 10 | 앱 `src/assets/content/images/…`의 사본을 Astro 자산으로(해시 주소 · 같은 출처). 약 1.0 MB |
+| 그림 12 | 앱 `src/assets/content/images/…`의 사본을 Astro 자산으로(해시 주소 · 같은 출처). r2에 엔딩 3 · 4(post-3 · post-4)가 더해져 약 1.4 MB |
 | 효과음 5 | `apps/ios/Host/sfx/`의 사본 `public/trial/sfx/`(button · correct_answer · wrong_answer · pass_lesson · lesson_complete). 약 212 KB |
 | 음성 | 버킷 `<base>audio/<id>.m4a`. 주소는 빌드 때 `contentAudioSourceOf` · `resolveContentUrlSafe`로 모델에 박힌다 |
 
 - **동기 검사** `devtools/trial-assets/sync.unit.test.mjs`(TA1 ~ TA5, `pnpm test:trial-assets` — `pnpm verify`에 들어 있다): JSON · 그림 · 효과음이 원본과 바이트가 같고, 앱 매니페스트의 u00 version · sha256이 체험판 핀(`TRIAL_CONTENT`)과 같다. 루트 도구라 두 앱을 읽어도 패키지 의존이 아니다.
 - **빌드 env `PUBLIC_SUPABASE_URL`**(앱과 같은 이름 · 공개 값): `astro.config.ts`가 `resolveTrialContentBase`로 한 번 검사한다. 빈 값 + 비프로덕션 → 소리 없는 체험판, **빈 값 + 프로덕션(`VERCEL_ENV=production`) → 빌드 실패**, `https://<호스트>` 꼴이 아니면 → 빌드 실패.
 
-### D7. 소리는 Web Audio 컨텍스트 하나 — Start 탭에서 잠금을 푼다
+### D7. 소리는 Web Audio 컨텍스트 하나 — 첫 탭에서 잠금을 푼다
 
-- Start 클릭 처리기 안에서 **동기로** 잠금 해제(컨텍스트 생성 · `resume()` · 1샘플 무음 · 있으면 `navigator.audioSession.type = "playback"`) 뒤 시작한다. **Start 전에는 음성 · 효과음 요청이 0이다**(e2e TE3).
+- ~~Start~~ r2: 체험판 안 **첫 버튼 탭**의 처리기 앞에서 **동기로** 잠금 해제(컨텍스트 생성 · `resume()` · 1샘플 무음 · 있으면 `navigator.audioSession.type = "playback"`) 뒤 시작한다(D12). **첫 탭 전에는 음성 · 효과음 요청이 0이다**(e2e TE3).
 - 음성은 상태에서 파생된 단서다(앱 `AudioCue`와 같은 꼴) — 컷 · 단어 카드 · 고르기 자극 · 롤플레이 상대 줄(턴이 서면) · 내 줄(맞힌 뒤). 단계에 들어서면 다음 단계의 음성을 받아 둔다. 받기 8초 상한 · 해독 실패 · 404는 무음이고 진행에 닿지 않는다.
 - 컷 타자 효과는 해독한 음성의 길이(`voiceLengthMs`)에 맞춘다 — 앱은 음성 정보 파일의 길이를 쓴다(ADR-0074). 계약에 없던 선택 포트다.
 
@@ -94,14 +94,14 @@
 | 이벤트 | 속성(전부 문자열) | 시점 |
 |---|---|---|
 | `trial_link_click` | `location`: hero · download | 랜딩의 체험판 링크 |
-| `trial_start` | `speech`: supported · unsupported | Start |
-| `trial_step` | `step` · `ordinal` "1" ~ "8" | 단계에 처음 들어설 때 |
+| `trial_start` | `speech`: supported · unsupported | 첫 탭(r2 — ~~Start~~) |
+| `trial_step` | `step` · `ordinal` "1" ~ "9"(r2 — clear 8 · complete 9) | 단계에 처음 닿을 때(prologue는 첫 탭) |
 | `trial_roleplay_result` | `verdict` · `correct` · `by_speech` · `by_tiles`("0" ~ "3") · `speech`(supported · unsupported · denied) | 마지막 턴 `next` |
 | `trial_complete` | `verdict`: passed · failed | 완료에 들어설 때 |
-| `trial_store_click` | `store`: ios · android | 완료 화면 스토어 링크 |
+| ~~`trial_store_click`~~ → `trial_preregister` | `status`: submitted · duplicate · failed(r2, D15) | 사전 등록 응답 뒤 |
 
 - 들은 문장 · 대사 · 고른 보기 글 · 이름을 싣지 않는다 — 타입이 막는다. 랜딩과 같은 규칙(프로덕션만 · 동의 지역 기본값)이다. 체험판 페이지는 랜딩 `initAnalytics`를 부르지 않는다.
-- 잴 것: 랜딩 → 체험 시작률(`trial_start` ÷ 랜딩 `page_view`) · 단계별 이탈(`trial_step` 유입 경로) · 완료율 · 완료 → 설치 클릭률(스토어 주소가 빈 동안은 잴 수 없다).
+- 잴 것: 랜딩 → 체험 시작률(`trial_start` ÷ 랜딩 `page_view`) · 단계별 이탈(`trial_step` 유입 경로) · 완료율 · ~~완료 → 설치 클릭률~~ r2 완료 → 사전 등록률(`trial_preregister{submitted|duplicate}` ÷ `trial_complete`).
 
 ### D10. 체험판은 색인하지 않는다 — 사용자 결정
 
@@ -115,6 +115,34 @@
 - 낮은 화면(200% 확대)에서 턴 안쪽이 세로로 스크롤된다(C2). 섞인 언어에 `lang`(live region 조각 · 정답 글, W2). 타일 모드 안내 줄의 대비를 그늘 · 면으로 올렸다(W4 — 고치기 전 en 3.79:1, 지금은 e2e `trial-contrast`가 4.5:1 이상을 단언).
 - 움직임 줄이기: 루트 `data-motion="reduced"` — 타자 효과 · 뒤집기 · 장면 전환 · 폭죽 없음. 타자 효과는 장식이고 글은 처음부터 DOM에 온전히 있다.
 - **주 버튼 · 놓인 타일의 흰 글자 / 주황(3.02:1)은 앱과 같은 승인 예외다 — 사용자 결정** — axe `color-contrast`에서 그 두 선택자만 뺀다(ADR-0025 「미달로 반영」 사례의 웹 적용).
+
+### D12. (r2) 표지가 없다 — 열자마자 컷 1, 첫 탭이 시작이다
+
+- `start` 단계 · `TrialStart` · 시작 문구를 지웠다. 리듀서 처음 상태 = `prologue` · cut 0 · `begun: false`. 컨트롤러가 체험판 안 첫 버튼 탭의 처리기 **앞에서 동기로** ① 소리 잠금 해제 ② 전체화면 요청(D16) ③ `begin{speech}`(말하기 지원 판정 · `trial_start` · `trial_step prologue`) ④ prologue 음성 받기를 하고, 그다음 버튼 처리기가 돈다(첫 탭이 타자 중이면 글을 끝까지 보이기만).
+- 근거: 컷 1 ~ 4는 음성이 없어 첫 탭 전 무음이 잃는 것이 없다 [실측 — u00 pre_cuts]. **버림**: 「탭하여 시작」 막(표지 제거 요청과 어긋난다).
+
+### D13. (r2) 꿈 전환 — 컷 사이는 구름빛, 꿈에서 승무원으로는 깨어남
+
+- 순수 `trialTransitionOf(prev, next, model)` → `"dream"`(prologue · epilogue 컷 사이, roleplay → epilogue, 배너 → 예고) · `"wake"`(**prologue 마지막 자리로 들어가는 전환** — u00 컷 5 「누군가: 다음에 또…」 → 컷 6 승무원) · null(학습 단계 사이는 r1 페이드). 컨트롤러가 루트 `data-transition`을 `motion.duration.d8`(600ms) · `d9`(1000ms) 동안 붙이고, 장식 베일(`aria-hidden` · `pointer-events:none`)과 그림 흐림이 모양을 진다. 움직임 줄이기면 붙이지 않는다.
+- DOM은 즉시 바뀌고 새 장면이 구름빛(최고점)에서 또렷해지는 **한 번의 모션**이다 — 초점 · 낭독이 타이머에 묶이지 않는다.
+- **버림**: 꿈 컷을 음성 id 글자(`pre-5-dream`)로 판정(콘텐츠 명명에 기대 조용히 틀린다 — 순번 규칙을 unit이 u00 핀으로 잰다), 흐려짐 → DOM 교체 → 또렷의 두 번 모션(초점 · 테스트가 타이머에 묶인다).
+
+### D14. (r2) Episode clear — 앱 배너 뒤 다음 이야기 예고
+
+- 엔딩(post_cuts **1 ~ 4** — r1은 앞 둘) 뒤 `clear` 단계: 배너(검정 면 · 주황 「Episode clear!」 · 보상 모션, 앱 `EpisodeBannerScreen`과 같은 글 — ko 페이지도 영어) → **1600ms 뒤 또는 탭**에 예고(엔딩 마지막 컷 그림 위 「다음은 어떤 일이 벌어질까?」 · Next) → 완료. `lesson_complete` 효과음은 엔딩 → 배너로 옮겼다. 실패(failed)도 같은 길이다(r1 결정 유지).
+- 예고 글은 컷과 같은 불투명 대사 상자 안이다 — 발 그늘만으로는 그림 위 제목이 2.88:1이었다(e2e 화소 표본).
+
+### D15. (r2) 완료 화면은 이메일 사전 등록 — Supabase 표 하나, PostgREST insert만
+
+- 스토어 링크 대신 폼(레이블 · `type=email` · 개인정보 한 줄 「출시 소식만 보낸다」). 상태: 입력 → 보내는 중 → 완료(201 · 409 중복도 완료 — 등록 여부를 남에게 알리지 않는다) / 실패(네트워크 · 그 밖 · 10초 → 다시 시도). 형식은 클라이언트가 먼저 본다(`x@y.zz` · 254자).
+- 요청: `POST <PUBLIC_SUPABASE_URL>/rest/v1/pre_registrations`, 머리 `apikey`(새 publishable 키는 JWT가 아니라 `Authorization: Bearer`로 보내지 않는다) · `Prefer: return=minimal`, 몸 `{email, locale, source:"web-trial"}`. 새 의존 0(`fetch`).
+- 표 `public.pre_registrations`(마이그레이션 `20261022120000`): email 소문자 정규화 트리거 · 고유, RLS — anon은 세 열의 insert만, 읽기 · 고치기 · 지우기 불가, authenticated 불가(embedded-postgres MG1 ~ MG8).
+- 새 빌드 env **`PUBLIC_SUPABASE_ANON_KEY`** — 프로덕션(`VERCEL_ENV=production`)에 없으면 빌드 실패, 비프로덕션에 없으면 폼이 「지금은 등록할 수 없어요」. 이벤트 `trial_preregister{status}`만 — 이메일은 DB에만 간다.
+- **버림**: Edge Function(함수 배포가 하나 늘고 같은 경계가 RLS로 선다), 중복을 오류로 보이기(열거), `trial_store_click` 유지(링크가 없어 영영 0).
+
+### D16. (r2) 모바일은 첫 탭에 전체화면
+
+- `(pointer: coarse) and (hover: none)`이면 첫 탭에 `document.documentElement.requestFullscreen({ navigationUI: "hide" })`(없으면 webkit 접두) 한 번. 거부 · 던짐은 삼키고, 함수가 없으면(iPhone Safari) 아무 일도 없다. 완료에 들어설 때 · 나가기 · 홈 링크에서 푼다. 데스크톱은 부르지 않는다(폰 틀 그대로).
 
 ## 버린 대안
 
@@ -142,6 +170,10 @@
 6. **패키지 경계가 테스트로만 지켜진다** — 17개 목록(EM1) · 금지 import(EC4)를 고치려면 테스트를 함께 고친다.
 7. **접근성 감사 제안 다섯을 미뤘다** — 진행 막대 `aria-valuetext`(S2) · h1과 장면 제목(S4) · 마이크 권한 안내와 「Listening」 낭독(S6) · 새 탭 알림(S8) · 장면 글 대비 자동 검사(S9). 문구 키 · 계획 몫이다.
 8. **프로덕션 HTML에 `data-testid`가 남는다**(ADR-0043 대가와 같다).
+9. (r2) **사전 등록에 남용 방지가 없다** — 공개 키로 insert가 열려 있어 요청 빈도 제한 · 봇 막기가 없다. 메일 발송 · 동의 철회 경로도 없다(개인정보처리방침 갱신은 사용자 몫).
+10. (r2) **iPhone Safari는 전체화면이 되지 않는다**(플랫폼 한계 — 지금처럼 주소창이 남는다). 배너 1.6초 자동 넘김은 앱과 같게 두었다 — 낭독기 사용자는 제목 낭독 중에 예고로 넘어갈 수 있다(접근성 점검 r2 W1).
+11. (r2) **스크립트 여유가 187 B다**(39,813 / 40,000) — 다음 기능은 상한을 실측으로 올리거나 덜어 내야 한다.
+12. (r2) 새 env 둘째(`PUBLIC_SUPABASE_ANON_KEY`) — Production에 없으면 배포가 멈춘다. 표(마이그레이션)를 먼저 원격에 적용해야 폼이 성공한다.
 
 ## 재검토 조건
 
@@ -151,11 +183,13 @@
 4. **앱이나 체험판이 「네?」 다시 묻기 · `modes`를 쓰기 시작하면** — D4의 RP 필드 디코드를 연다.
 5. **패키지를 import하는 앱 파일이 늘어야 할 때 · 병행 브랜치가 다 병합되면** — 재수출 모듈(D3)을 걷고 직접 import로 바꿀지 본다.
 6. **세 번째 소비자가 오면** — subpath 다섯의 경계가 맞는지 다시 본다.
-7. **스토어 주소가 열리면** — 완료 → 설치 클릭률을 잰다(D9).
+7. **스토어 주소가 열리면** — 완료 화면을 사전 등록에서 설치 안내로 되돌릴지(또는 둘 다) 본다(D15).
+8. (r2) **사전 등록에 스팸 · 대량 insert가 보이면** — Edge Function + captcha 또는 DB 빈도 제한으로 옮긴다(D15).
 
 ## 후속
 
 - **실기 확인** — [웹 체험판 e2e](../e2e/web-trial.md) EU1 ~ EU8(미실행).
-- **Vercel** — 랜딩 프로젝트 Production에 `PUBLIC_SUPABASE_URL`(사용자 작업, [랜딩 README](../../apps/landing/README.md) 「배포」).
+- **Vercel** — 랜딩 프로젝트 Production에 `PUBLIC_SUPABASE_URL` · (r2) `PUBLIC_SUPABASE_ANON_KEY`(사용자 작업, [랜딩 README](../../apps/landing/README.md) 「배포」).
+- (r2) **마이그레이션 원격 적용** — `apps/supabase-functions/supabase/migrations/20261022120000_pre_registrations.sql`(사용자 확인 뒤, 랜딩 배포보다 먼저).
 - 접근성 감사 제안 S2 · S4 · S6 · S8 · S9.
 - 성능 보고서: [웹 체험판 — 번들만](../performance/reports/web-trial-iphone-17-pro-simulator-01.md)(앱 번들 +614 B, 상한 그대로).

@@ -3,12 +3,13 @@
 
 import type { AnalyticsEvent } from "../scripts/analytics.contract";
 import type { TrialAction, TrialState } from "./trial-machine.contract";
+import type { PreregOutcome } from "./trial-prereg.contract";
 
 export type { AnalyticsEvent, TrialTurnCount } from "../scripts/analytics.contract";
 
 /**
- * 전이 하나 → 보낼 이벤트(차례: trial_roleplay_result → trial_step → trial_complete).
- * - `start` → trial_start, funnel 단계에 **처음** 들어설 때 trial_step(`ordinal` "1" ~ "8")
+ * 전이 하나 → 보낼 이벤트(차례: trial_start → trial_roleplay_result → trial_step → trial_complete).
+ * - `begin`(첫 탭) → trial_start, funnel 단계에 **처음** 닿을 때 trial_step(`ordinal` "1" ~ "9")
  * - 마지막 턴 `next` → trial_roleplay_result(같은 전이의 trial_step보다 먼저)
  * - complete에 들어설 때 trial_step 뒤 trial_complete
  */
@@ -18,5 +19,5 @@ export type TrialEventsOf = (
   action: TrialAction,
 ) => readonly AnalyticsEvent[];
 
-/** 완료 화면의 `data-trial-store` → trial_store_click. 모르는 값 · 없음 → null. */
-export type TrialStoreClickOf = (store: string | undefined) => AnalyticsEvent | null;
+/** 사전 등록 결과 → trial_preregister. 이메일은 받지도 싣지도 않는다. */
+export type TrialPreregEventOf = (outcome: PreregOutcome) => AnalyticsEvent;

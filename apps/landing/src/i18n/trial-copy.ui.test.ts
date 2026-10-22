@@ -43,11 +43,35 @@ describe("TK1 체험판 문구", () => {
     expect(trialEn.showHint).toBe("Show hint");
     expect(trialEn.cantSpeak).toBe("Can't speak now");
     expect(trialEn.me).toBe("Me");
+    // 앱 EpisodeBannerScreen의 episodeClear와 같은 글 — 두 언어 모두 영어(브랜드 표현, spec-r2 A1).
+    expect(trialEn.clearTitle).toBe("Episode clear!");
+    expect(trialKo.clearTitle).toBe("Episode clear!");
+  });
+
+  it("r2 — 표지 · 스토어 문구는 없고 꿈 예고 · 사전 등록 문구가 있다", () => {
+    for (const gone of [
+      "startTitle",
+      "startBody",
+      "startWith",
+      "startLines",
+      "start",
+      "storeGet",
+      "storeSoon",
+    ]) {
+      expect(Object.keys(trialEn), gone).not.toContain(gone);
+    }
+    expect(trialKo.teaserTitle).toBe("다음은 어떤 일이 벌어질까?");
+    expect(trialEn.teaserTitle).toBe("What happens next?");
+    expect(trialEn.preregPrivacy).toMatch(/launch/i);
+    expect(trialKo.preregPrivacy).toContain("출시");
   });
 
   it("ko 값이 en 값을 그대로 베끼지 않는다(자리표시자만인 문구 제외)", () => {
     const copied = (Object.keys(trialEn) as (keyof typeof trialEn)[]).filter(
-      (key) => trialKo[key] === trialEn[key] && trialEn[key].replace(/\{[^}]+\}|[\s·]/g, "") !== "",
+      (key) =>
+        key !== "clearTitle" &&
+        trialKo[key] === trialEn[key] &&
+        trialEn[key].replace(/\{[^}]+\}|[\s·]/g, "") !== "",
     );
     expect(copied).toEqual([]);
   });

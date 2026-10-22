@@ -4,7 +4,6 @@ import type { TrialStepId } from "./trial-machine.contract";
 import type { TrialModel } from "./trial-model.contract";
 
 const ORDER: readonly TrialStepId[] = [
-  "start",
   "prologue",
   "vocab",
   "image-match",
@@ -12,6 +11,7 @@ const ORDER: readonly TrialStepId[] = [
   "culture",
   "roleplay",
   "epilogue",
+  "clear",
   "complete",
 ];
 

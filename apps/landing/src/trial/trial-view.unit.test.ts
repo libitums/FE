@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { reduceTrial } from "./trial-machine";
+import { initialTrialState, reduceTrial } from "./trial-machine";
 import type { TrialAction, TrialState, TrialStepId } from "./trial-machine.contract";
 import { trialProgressOf, trialRoleplayVerdictOf, trialSfxOf, trialVoiceCueOf } from "./trial-view";
 import { run, stateAt, tilesTurn, u00AudioUrl, u00TrialModel } from "./trial.test-support";
@@ -12,10 +12,9 @@ const speak: TrialAction = { type: "speak" };
 const heard = (...alternatives: string[]): TrialAction => ({ type: "heard", alternatives });
 
 describe("trialProgressOf", () => {
-  it("TV1 단계마다 진행 값 — start 0 … roleplay 6 · epilogue · complete 7, 전체 7", () => {
+  it("TV-R1 단계마다 진행 값 — prologue 1 … roleplay 6 · epilogue · clear · complete 7, 전체 7", () => {
     const model = u00TrialModel();
     const expected: Record<TrialStepId, number> = {
-      start: 0,
       prologue: 1,
       vocab: 2,
       "image-match": 3,
@@ -23,6 +22,7 @@ describe("trialProgressOf", () => {
       culture: 5,
       roleplay: 6,
       epilogue: 7,
+      clear: 7,
       complete: 7,
     };
     for (const [step, ordinal] of Object.entries(expected) as [TrialStepId, number][]) {
@@ -56,9 +56,12 @@ describe("trialVoiceCueOf", () => {
       key: "epilogue:1",
       url: u00AudioUrl("post-2"),
     });
+    // 엔딩 3 · 4(독백)는 음성이 없다.
+    expect(trialVoiceCueOf(run(epilogue, [next, next], model), model)).toBeNull();
+    expect(trialVoiceCueOf(run(epilogue, [next, next, next], model), model)).toBeNull();
   });
 
-  it("TV2 단어 · 고르기 둘은 단계 이름 키, 문화 · 시작 · 완료는 null", () => {
+  it("TV2 · TV-R3 단어 · 고르기 둘은 단계 이름 키, 문화 · clear(배너 · 예고) · 완료는 null", () => {
     const model = u00TrialModel();
     expect(trialVoiceCueOf(stateAt("vocab", model), model)).toEqual({
       key: "vocab",
@@ -73,7 +76,10 @@ describe("trialVoiceCueOf", () => {
       url: u00AudioUrl("d-03"),
     });
     expect(trialVoiceCueOf(stateAt("culture", model), model)).toBeNull();
-    expect(trialVoiceCueOf(stateAt("start", model), model)).toBeNull();
+    const banner = stateAt("clear", model);
+    expect(banner.step).toBe("clear");
+    expect(trialVoiceCueOf(banner, model)).toBeNull();
+    expect(trialVoiceCueOf(reduceTrial(banner, next, model), model)).toBeNull();
     expect(trialVoiceCueOf(stateAt("complete", model), model)).toBeNull();
   });
 
@@ -135,9 +141,13 @@ describe("trialSfxOf", () => {
     return trialSfxOf(prev, reduceTrial(prev, action, m), action);
   };
 
-  it("TV3 start · vocab next · culture next → button, prologue next · flip · 고르기 Continue → null", () => {
+  it("TV3 · TV-R2 vocab next · culture next → button, begin · prologue next · flip · 고르기 Continue → null", () => {
     const m = model();
-    expect(sfxOf(stateAt("start", m), { type: "start" })).toBe("button");
+    const opened = run(stateAt("prologue", m), [], m);
+    expect(opened.begun).toBe(true);
+    expect(
+      trialSfxOf(initialTrialState(), opened, { type: "begin", speech: "supported" }),
+    ).toBeNull();
     expect(sfxOf(stateAt("prologue", m), next)).toBeNull();
     expect(sfxOf(stateAt("vocab", m), next)).toBe("button");
     expect(sfxOf(stateAt("culture", m), { type: "flip" })).toBeNull();
@@ -189,11 +199,16 @@ describe("trialSfxOf", () => {
     expect(sfxOf(failLast, next)).toBeNull();
   });
 
-  it("TV3 epilogue → complete는 lesson_complete, epilogue 안의 next는 null", () => {
+  it("TV-R2 epilogue → clear는 lesson_complete, epilogue 안 · banner → teaser · clear → complete는 null", () => {
     const m = model();
     const epilogue = stateAt("epilogue", m);
     expect(sfxOf(epilogue, next)).toBeNull();
-    expect(sfxOf(reduceTrial(epilogue, next, m), next)).toBe("lesson_complete");
+    const lastCut = run(epilogue, [next, next, next], m);
+    expect(lastCut).toMatchObject({ step: "epilogue", cutIndex: 3 });
+    expect(sfxOf(lastCut, next)).toBe("lesson_complete");
+    const banner = stateAt("clear", m);
+    expect(sfxOf(banner, next)).toBeNull();
+    expect(sfxOf(reduceTrial(banner, next, m), next)).toBeNull();
   });
 });
 

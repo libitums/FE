@@ -37,9 +37,10 @@ describe("UT4 TrialCuts", () => {
   const speakerOf = (element: Element) =>
     element.querySelector('[data-testid="trial-cut-speaker"]');
 
-  it("prologue section · 제목 · 컷 6 · 첫째만 보임", () => {
+  it("prologue section · 제목 · 컷 6 · 첫째만 보임 · 표지가 없어 section은 처음부터 보임(UT-P1)", () => {
     const section = oneByTestId(document, "trial-step-prologue");
     expectStepHeading(section);
+    expect(section.hasAttribute("hidden")).toBe(false);
     const cuts = allByTestId(section, "trial-cut");
     expect(cuts.map((c) => c.tagName)).toEqual(Array(6).fill("ARTICLE"));
     expect(cuts.map((c) => c.getAttribute("data-cut-index"))).toEqual([
@@ -103,7 +104,7 @@ describe("UT4 TrialCuts", () => {
     expectButton(next, t.next);
   });
 
-  it("epilogue 변형 — 같은 꼴 · 컷 2", async () => {
+  it("epilogue 변형 — 같은 꼴 · 컷 4(post_cuts 전부)", async () => {
     const { document: epilogue } = await render(TrialCuts, {
       props: { t, step: "epilogue", cuts: model.epilogue },
     });
@@ -113,6 +114,8 @@ describe("UT4 TrialCuts", () => {
     expect(allByTestId(section, "trial-cut").map((c) => c.getAttribute("data-cut-index"))).toEqual([
       "1",
       "2",
+      "3",
+      "4",
     ]);
     oneByTestId(epilogue, "trial-cuts-next");
     expect(allByTestId(epilogue, "trial-step-prologue")).toHaveLength(0);

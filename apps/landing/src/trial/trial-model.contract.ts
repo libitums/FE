@@ -90,8 +90,6 @@ export type TrialModel = {
   /** 사본의 판 — `TRIAL_CONTENT.version`. */
   readonly version: string;
   readonly counterpartName: string;
-  /** 시작 장면 = pre_cuts 마지막 컷의 그림. */
-  readonly startImageUrl: string | null;
   readonly prologue: NonEmpty<TrialCut>;
   readonly vocab: TrialVocab;
   readonly imageMatch: TrialImageMatch;
@@ -115,7 +113,8 @@ export type TrialPick = {
   readonly imageMatch: "S3";
   readonly replySelect: "S9";
   readonly culture: "S12";
-  readonly epilogueCuts: 2;
+  /** post_cuts 전부(u00 4) — 3 · 4의 「누구였을까?」가 예고로 이어진다. */
+  readonly epilogueCuts: 4;
 };
 
 export type TrialModelError = {

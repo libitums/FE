@@ -2,17 +2,16 @@ import { expect, test, type Page } from "@playwright/test";
 import {
   contentHost,
   correctTiles,
-  expectStep,
   openTrial,
   pageData,
-  passCuts,
+  passEnding,
   playToRoleplay,
   shown,
   spoken,
   tap,
   tileTurn,
 } from "./trial.support";
-import { routeSound, say, withFakeSpeech, withoutSpeech } from "./trial-fakes.support";
+import { routePrereg, routeSound, say, withFakeSpeech, withoutSpeech } from "./trial-fakes.support";
 
 // 측정 ID가 든 빌드(analytics 프로젝트)에서 체험판 이벤트의 dataLayer를 봅니다(GT1 ~ GT3).
 // googletagmanager 요청은 빈 JS로 막고, 음성 버킷은 무음 소리로 답합니다.
@@ -84,7 +83,7 @@ test.describe("체험판 — 측정 ID가 있는 빌드", () => {
     ).toEqual([]);
   });
 
-  test("GT1 말하기 경로 — trial_start · step ×8 · roleplay_result · complete 차례", async ({
+  test("GT1 말하기 경로 — trial_start · step ×9 · roleplay_result · complete 차례", async ({
     page,
   }) => {
     await withFakeSpeech(page);
@@ -98,8 +97,7 @@ test.describe("체험판 — 측정 ID가 있는 빌드", () => {
       await expect(shown(page, "trial-turn-reply")).toHaveAttribute("data-verdict", "correct");
       await tap(page, "trial-turn-next");
     }
-    await passCuts(page, "epilogue", model.epilogue.length);
-    await expectStep(page, "complete");
+    await passEnding(page, model);
     const expected: GaEvent[] = [
       { name: "trial_start", params: { speech: "supported" } },
       step("prologue", "1"),
@@ -119,7 +117,8 @@ test.describe("체험판 — 측정 ID가 있는 빌드", () => {
         },
       },
       step("epilogue", "7"),
-      step("complete", "8"),
+      step("clear", "8"),
+      step("complete", "9"),
       { name: "trial_complete", params: { verdict: "passed" } },
     ];
     await expect.poll(() => trialEvents(page)).toEqual(expected);
@@ -137,8 +136,7 @@ test.describe("체험판 — 측정 ID가 있는 빌드", () => {
       await tileTurn(page, correctTiles(turn));
       await tap(page, "trial-turn-next");
     }
-    await passCuts(page, "epilogue", model.epilogue.length);
-    await expectStep(page, "complete");
+    await passEnding(page, model);
     await expect
       .poll(() => trialEvents(page))
       .toEqual([
@@ -160,26 +158,30 @@ test.describe("체험판 — 측정 ID가 있는 빌드", () => {
           },
         },
         step("epilogue", "7"),
-        step("complete", "8"),
+        step("clear", "8"),
+        step("complete", "9"),
         { name: "trial_complete", params: { verdict: "passed" } },
       ]);
     for (const event of await events(page))
       expect(JSON.stringify(event.params)).not.toMatch(hangul);
   });
 
-  test("GT1 Start 연타는 trial_start 하나", async ({ page }) => {
+  test("GT1 첫 탭(컷 1 Next) 연타는 trial_start 하나 — 열기만 하면 0", async ({ page }) => {
     await withoutSpeech(page);
     await openTrial(page);
-    await page.getByTestId("trial-start-button").dblclick();
+    await page.waitForTimeout(300);
+    expect(await trialEvents(page)).toEqual([]);
+    await page.getByTestId("trial-cuts-next").filter({ visible: true }).dblclick();
     await expect
       .poll(async () => (await trialEvents(page)).map((event) => event.name))
       .toEqual(["trial_start", "trial_step"]);
   });
 
-  test("GT3 스토어 주소가 없는 빌드 — 완료 화면에 스토어 링크가 없고 눌러도 이벤트 0", async ({
+  test("GT3 사전 등록 — trial_preregister{status}만 · 이메일 · @ 없음 · 스토어 이벤트 없음", async ({
     page,
   }) => {
     await withoutSpeech(page);
+    await routePrereg(page, [201]);
     await openTrial(page);
     const { model } = await pageData(page);
     await playToRoleplay(page, model);
@@ -187,18 +189,18 @@ test.describe("체험판 — 측정 ID가 있는 빌드", () => {
       await tileTurn(page, correctTiles(turn));
       await tap(page, "trial-turn-next");
     }
-    await passCuts(page, "epilogue", model.epilogue.length);
-    await expectStep(page, "complete");
-    const stores = shown(page, "trial-store");
-    await expect(stores).toHaveCount(2);
-    await expect(page.locator("a[data-trial-store]")).toHaveCount(0);
-    for (const store of await stores.all()) await store.click();
-    // 늦게 오는 이벤트가 없음을 확인할 기준점 — 클릭 뒤 한 프레임 넘긴다.
-    await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(resolve)));
-    const names = (await events(page)).map((event) => event.name);
-    expect(
-      names.filter((name) => name === "trial_store_click" || name === "download_click"),
-    ).toEqual([]);
+    await passEnding(page, model);
+    await expect(page.getByTestId("trial-store")).toHaveCount(0);
+    await shown(page, "trial-prereg-email").fill("ga.check@example.com");
+    await tap(page, "trial-prereg-submit");
+    await expect(page.getByTestId("trial-prereg")).toHaveAttribute("data-state", "done");
+    await expect
+      .poll(async () => (await events(page)).filter((event) => event.name === "trial_preregister"))
+      .toEqual([{ name: "trial_preregister", params: { status: "submitted" } }]);
+    const all = JSON.stringify(await events(page));
+    expect(all).not.toContain("@");
+    expect(all).not.toContain("ga.check");
+    expect(all).not.toContain("trial_store_click");
   });
 });
 

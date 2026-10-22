@@ -1,9 +1,9 @@
-// 체험판 움직임입니다 — 컷 대사 타자 효과 · 단계 전환 표식 · 완료 폭죽. 전부 장식이라 글은 DOM에 처음부터 온전히 있고,
+// 체험판 움직임입니다 — 컷 대사 타자 효과 · 단계 전환 표식 · 꿈 전환 · 완료 폭죽. 전부 장식이라 글은 DOM에 처음부터 온전히 있고,
 // 움직임 줄이기면 아무것도 붙이지 않습니다. 시간은 디자인 토큰 JS 출구에서 읽습니다(CSS 값을 옮겨 적지 않음).
 
 import { motion } from "@libitums/design-tokens";
 
-import type { TrialState } from "./trial-machine.contract";
+import type { TrialState, TrialTransition } from "./trial-machine.contract";
 
 const msOf = (value: string): number => Number.parseFloat(value);
 
@@ -12,6 +12,11 @@ const REVEAL_MIN_MS = msOf(motion.duration.reveal);
 const REVEAL_MAX_MS = 300;
 /** 단계 전환 표식이 머무는 시간 — 장면 교차(d6)와 같습니다. */
 const ENTER_MS = msOf(motion.duration.d6);
+/** 꿈 전환이 머무는 시간 — 구름빛(d8) · 깨어남(d9). CSS(trial-transition.css)와 같은 토큰입니다. */
+const TRANSITION_MS: Readonly<Record<TrialTransition, number>> = {
+  dream: msOf(motion.duration.d8),
+  wake: msOf(motion.duration.d9),
+};
 /** 폭죽 조각 수 · 거리(근 · 중 · 원) — 디자인 3.7. */
 const CONFETTI_PIECES = 28;
 const CONFETTI_DISTANCES = [110, 150, 190] as const;
@@ -36,6 +41,8 @@ export type TrialMotion = {
   completeReveal(): boolean;
   /** 전이 뒤 — 단계 전환 표식 · 완료 폭죽. */
   afterTransition(prev: TrialState, next: TrialState): void;
+  /** 꿈 전환 — 루트 data-transition을 붙였다 뗍니다(움직임 줄이기 · null이면 아무것도 없음). */
+  playTransition(kind: TrialTransition | null): void;
   dispose(): void;
 };
 
@@ -46,6 +53,7 @@ export function createTrialMotion(root: HTMLElement, reducedMotion: boolean): Tr
   const view = root.ownerDocument.defaultView as Window;
   let reveal: Reveal | null = null;
   const enterTimers = new Set<number>();
+  let transitionTimer: number | null = null;
 
   function endReveal(): void {
     if (reveal === null) return;
@@ -127,11 +135,27 @@ export function createTrialMotion(root: HTMLElement, reducedMotion: boolean): Tr
     if (next.step === "complete" && next.roleplay.verdict === "passed") addConfetti(section);
   }
 
+  function endTransition(): void {
+    if (transitionTimer !== null) view.clearTimeout(transitionTimer);
+    transitionTimer = null;
+    root.removeAttribute("data-transition");
+  }
+
+  function playTransition(kind: TrialTransition | null): void {
+    if (reducedMotion || kind === null) return;
+    endTransition();
+    // 같은 값을 다시 붙여도 CSS 애니메이션이 처음부터 돌도록 한 번 그린 뒤 붙입니다.
+    void root.offsetWidth;
+    root.setAttribute("data-transition", kind);
+    transitionTimer = view.setTimeout(endTransition, TRANSITION_MS[kind]);
+  }
+
   function dispose(): void {
     endReveal();
+    endTransition();
     for (const timer of enterTimers) view.clearTimeout(timer);
     enterTimers.clear();
   }
 
-  return { revealCut, completeReveal, afterTransition, dispose };
+  return { revealCut, completeReveal, afterTransition, playTransition, dispose };
 }

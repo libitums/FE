@@ -1,7 +1,15 @@
 import { expect, test } from "@playwright/test";
 import { box, narrow, wide } from "./layout.support";
 import { routeSound, withoutSpeech } from "./trial-fakes.support";
-import { correctTiles, openTrial, pageData, passCuts, root, tap } from "./trial.support";
+import {
+  correctTiles,
+  expectStep,
+  openTrial,
+  pageData,
+  passCuts,
+  root,
+  tap,
+} from "./trial.support";
 
 // 웹 체험판의 배치(TE7)와 랜딩 링크(TE8)입니다.
 
@@ -46,8 +54,6 @@ test.describe("TE7 390 · 1440 폭", () => {
         }
       };
 
-      await measure("start");
-      await tap(page, "trial-start-button");
       for (const cut of model.prologue) {
         await measure(`prologue ${cut.index}`);
         await tap(page, "trial-cuts-next");
@@ -75,6 +81,18 @@ test.describe("TE7 390 · 1440 폭", () => {
       }
       await measure("epilogue");
       await passCuts(page, "epilogue", model.epilogue.length);
+      await expectStep(page, "clear");
+      await expect(page.getByTestId("trial-step-clear")).toHaveAttribute("data-phase", "teaser");
+      await measure("clear teaser");
+      // 예고 글 · Next는 컷 장면처럼 아래에 모인다(그림이 위를 채움).
+      const next = await box(page.getByTestId("trial-clear-next").filter({ visible: true }));
+      const stage = await box(root(page));
+      if (stage.bottom - next.bottom > 120) {
+        problems.push(
+          `clear teaser: Next가 무대 아래에서 ${Math.round(stage.bottom - next.bottom)}px 떠 있다`,
+        );
+      }
+      await tap(page, "trial-clear-next");
       await measure("complete");
       expect(problems).toEqual([]);
     });
@@ -95,8 +113,8 @@ test.describe("TE8 랜딩에서 체험판으로", () => {
         await link.scrollIntoViewIfNeeded();
         await link.click();
         await expect(page).toHaveURL(new RegExp(`${target.replace(/\//g, "\\/")}$`));
-        await expect(root(page)).toHaveAttribute("data-step", "start");
-        await expect(page.getByTestId("trial-start-button")).toBeVisible();
+        await expect(root(page)).toHaveAttribute("data-step", "prologue");
+        await expect(page.getByTestId("trial-cuts-next").filter({ visible: true })).toBeVisible();
         await expect(page.locator("html")).toHaveAttribute("lang", home === "/" ? "en" : "ko");
       });
     }

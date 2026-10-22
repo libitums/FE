@@ -1,6 +1,17 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { routeSound, say, withFakeSpeech } from "./trial-fakes.support";
-import { openTrial, pageData, playToRoleplay, shown, turnShown } from "./trial.support";
+import {
+  correctTiles,
+  expectStep,
+  openTrial,
+  pageData,
+  passCuts,
+  playToRoleplay,
+  shown,
+  tap,
+  tileTurn,
+  turnShown,
+} from "./trial.support";
 
 // 그림 위 장면 글의 명도 대비 — axe는 발 그늘(::after) 때문에 이 글을 incomplete로 넘깁니다.
 // 글 색을 잠시 투명하게 한 뒤 글 상자 스크린샷에서 가장 밝은 화소를 배경으로 삼아 최악의 대비를 잽니다.
@@ -102,6 +113,35 @@ test.describe("W4 타일 모드 안내 줄 대비", () => {
       expect(ratio, `타일 모드 안내 줄 대비 ${ratio.toFixed(2)}:1`).toBeGreaterThanOrEqual(
         MIN_RATIO,
       );
+      await decoder.close();
+    });
+  }
+
+  for (const path of ["/try/", "/ko/try/"]) {
+    test(`${path} Episode clear 예고 — 라벨 · 제목 · 본문 ≥ ${MIN_RATIO}:1(그림 위 최악 화소 기준)`, async ({
+      page,
+    }) => {
+      const decoder = await page.context().newPage();
+      await openTrial(page, path);
+      const { model } = await pageData(page);
+      await playToRoleplay(page, model);
+      for (const turn of model.roleplay.turns) {
+        await tap(page, "trial-turn-cant-speak");
+        await tileTurn(page, correctTiles(turn));
+        await tap(page, "trial-turn-next");
+      }
+      await passCuts(page, "epilogue", model.epilogue.length);
+      await expectStep(page, "clear");
+      await expect(page.getByTestId("trial-step-clear")).toHaveAttribute("data-phase", "teaser");
+      const teaser = shown(page, "trial-clear-teaser");
+      for (const [label, target] of [
+        ["라벨", teaser.locator(".trial-chip")],
+        ["제목", shown(page, "trial-clear-teaser-title")],
+        ["본문", teaser.locator(".trial-clear__teaser-body")],
+      ] as const) {
+        const ratio = await worstContrast(page, decoder, target);
+        expect(ratio, `예고 ${label} 대비 ${ratio.toFixed(2)}:1`).toBeGreaterThanOrEqual(MIN_RATIO);
+      }
       await decoder.close();
     });
   }

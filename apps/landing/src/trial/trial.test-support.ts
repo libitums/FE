@@ -75,17 +75,17 @@ function correctTurns(speech: "supported" | "unsupported"): TrialAction[] {
   );
 }
 
-/** 시작 화면에서 그 단계의 첫 자리까지 가는 행동(고르기는 정답으로). u00: 컷 6 · 보기 정답 0 · 2. */
+/** 연 화면(컷 1)에서 그 단계의 첫 자리까지 가는 행동 — 첫 탭 `begin`부터(고르기는 정답으로). u00: 컷 6 · 보기 정답 0 · 2 · 엔딩 4. */
 export function actionsTo(step: TrialStepId, speech: "supported" | "unsupported"): TrialAction[] {
-  const prologue: TrialAction[] = [{ type: "start" }];
+  const prologue: TrialAction[] = [{ type: "begin", speech }];
   const vocab = [...prologue, next, next, next, next, next, next];
   const imageMatch = [...vocab, next];
   const replySelect: TrialAction[] = [...imageMatch, { type: "choose", optionIndex: 0 }, next];
   const culture: TrialAction[] = [...replySelect, { type: "choose", optionIndex: 2 }, next];
   const roleplay = [...culture, next];
   const epilogue = [...roleplay, ...correctTurns(speech)];
+  const clear = [...epilogue, next, next, next, next];
   const byStep: Record<TrialStepId, TrialAction[]> = {
-    start: [],
     prologue,
     vocab,
     "image-match": imageMatch,
@@ -93,18 +93,19 @@ export function actionsTo(step: TrialStepId, speech: "supported" | "unsupported"
     culture,
     roleplay,
     epilogue,
-    complete: [...epilogue, next, next],
+    clear,
+    complete: [...clear, next, next],
   };
   return byStep[step];
 }
 
-/** 시작 화면에서 `step`의 첫 자리까지 몬 상태. */
+/** 연 화면에서 `step`의 첫 자리까지 몬 상태. */
 export function stateAt(
   step: TrialStepId,
   model: TrialModel,
   speech: "supported" | "unsupported" = "supported",
 ): TrialState {
-  return run(initialTrialState(speech), actionsTo(step, speech), model);
+  return run(initialTrialState(), actionsTo(step, speech), model);
 }
 
 export type TrialStep = {

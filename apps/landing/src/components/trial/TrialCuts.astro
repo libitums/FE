@@ -7,6 +7,7 @@ type Props = TrialCutsProps;
 const { t, step, cuts } = Astro.props;
 const headingId = `trial-heading-${step}`;
 const lastIndex = cuts.length - 1;
+// 표지가 없어 prologue가 첫 화면입니다 — 열 때부터 보입니다(JS가 꺼져도 컷 1은 보임).
 
 // 독백은 괄호로 감싸 말과 가릅니다(앱과 같음).
 const lineOf = (cut: TrialCut) => (cut.voice === "thought" ? `(${cut.text.ko})` : cut.text.ko);
@@ -18,9 +19,9 @@ const speakerOf = (cut: TrialCut) =>
   class="trial-step trial-scene"
   data-testid={`trial-step-${step}`}
   aria-labelledby={headingId}
-  hidden
+  hidden={step !== "prologue"}
 >
-  <h2 class="trial-sr-only" id={headingId} data-step-heading tabindex="-1">{t.startTitle}</h2>
+  <h2 class="trial-sr-only" id={headingId} data-step-heading tabindex="-1">{t.storyTitle}</h2>
   {
     cuts.map((cut, position) => (
       <article

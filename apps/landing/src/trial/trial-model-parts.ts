@@ -29,9 +29,9 @@ import type {
   TrialVocab,
 } from "./trial-model.contract";
 
-/** 고른 단계 — 낱말 카드 · 그림 고르기 · 대답 고르기 · 문화 카드. 엔딩은 post_cuts 앞 둘. */
+/** 고른 단계 — 낱말 카드 · 그림 고르기 · 대답 고르기 · 문화 카드. 엔딩은 post_cuts 넷 전부. */
 export const PICK = { vocab: "S1", imageMatch: "S3", replySelect: "S9", culture: "S12" } as const;
-export const EPILOGUE_CUTS = 2;
+export const EPILOGUE_CUTS = 4;
 
 export type Built<T> =
   | { readonly ok: true; readonly value: T }

@@ -11,24 +11,39 @@ import { render } from "../components/render.support";
 import type { AnalyticsEvent } from "../scripts/analytics.contract";
 import type { Language } from "../site";
 import { initTrial } from "./trial-controller";
-import type { SpeechFailure, TrialSfx } from "./trial-machine.contract";
-import type {
-  SpeechOutcome,
-  TrialAudio,
-  TrialController,
-  TrialSpeech,
-  VoiceOutcome,
-} from "./trial-ports.contract";
+import {
+  type FakeAudio,
+  type FakeFullscreen,
+  type FakePrereg,
+  type FakeSpeech,
+  fakeAudio,
+  fakeFullscreen,
+  fakePrereg,
+  fakeSpeech,
+} from "./trial-fakes.test-support";
+import type { SpeechOutcome, TrialController, VoiceOutcome } from "./trial-ports.contract";
+import type { TrialPreregConfig } from "./trial-prereg.contract";
 import { u00TrialModel } from "./trial.test-support";
 
 const pageHtml = new Map<Language, string>();
+
+/** 테스트 빌드의 사전 등록 설정(en 페이지만 — ko는 key 없는 빌드처럼 null). 주소는 어디에도 닿지 않는다. */
+export const TEST_PREREG: TrialPreregConfig = {
+  endpoint: "https://proj.example.test/rest/v1/pre_registrations",
+  apiKey: "sb_publishable_test_key_0000000000",
+};
 
 /** 실제 TrialPage(u00 모델) HTML — 언어마다 한 번만 렌더합니다. */
 export async function trialPageHtml(language: Language): Promise<string> {
   const cached = pageHtml.get(language);
   if (cached !== undefined) return cached;
   const { html } = await render(TrialPage, {
-    props: { language, model: u00TrialModel(), measurementId: "" },
+    props: {
+      language,
+      model: u00TrialModel(),
+      measurementId: "",
+      prereg: language === "en" ? TEST_PREREG : null,
+    },
   });
   pageHtml.set(language, html);
   return html;
@@ -70,104 +85,15 @@ export async function flush(): Promise<void> {
 /** 모든 움직임(타자 · 전환 · 폭죽)이 끝날 만큼 시계를 돌립니다. */
 export const settle = (ms = 30_000) => vi.advanceTimersByTimeAsync(ms);
 
-export type AudioCall =
-  | { kind: "unlock"; step: string | null }
-  | { kind: "voice"; url: string }
-  | { kind: "sfx"; name: TrialSfx }
-  | { kind: "prefetch"; urls: readonly string[] }
-  | { kind: "stop" };
-
-export type FakeAudio = TrialAudio & { readonly calls: AudioCall[] };
-
-/** 부른 기록을 값으로 남기는 소리 접점. `voice`가 failed면 모든 음성이 실패합니다. */
-export function fakeAudio(root: () => HTMLElement, voice: VoiceOutcome = "ended"): FakeAudio {
-  const calls: AudioCall[] = [];
-  return {
-    calls,
-    unlock: () => {
-      calls.push({ kind: "unlock", step: root().getAttribute("data-step") });
-    },
-    playVoice: (url) => {
-      calls.push({ kind: "voice", url });
-      return Promise.resolve(voice);
-    },
-    playSfx: (name) => {
-      calls.push({ kind: "sfx", name });
-    },
-    prefetch: (urls) => {
-      calls.push({ kind: "prefetch", urls });
-    },
-    stopVoice: () => {
-      calls.push({ kind: "stop" });
-    },
-  };
-}
-
-export const voicesOf = (audio: FakeAudio) =>
-  audio.calls.flatMap((call) => (call.kind === "voice" ? [call.url] : []));
-export const sfxOf = (audio: FakeAudio) =>
-  audio.calls.flatMap((call) => (call.kind === "sfx" ? [call.name] : []));
-
-export type FakeSpeech = TrialSpeech & {
-  readonly listens: number;
-  readonly stops: number;
-  readonly aborts: number;
-  /** 다음 listen()이 바로 낼 결과를 줄 세웁니다. 줄이 비면 listen은 `resolvePending`을 기다립니다. */
-  queue(outcome: SpeechOutcome): void;
-  resolvePending(outcome: SpeechOutcome): void;
-};
-
-export function fakeSpeech(support: "supported" | "unsupported"): FakeSpeech {
-  const queued: SpeechOutcome[] = [];
-  let pending: ((outcome: SpeechOutcome) => void) | null = null;
-  const counts = { listens: 0, stops: 0, aborts: 0 };
-  return {
-    support,
-    get listens() {
-      return counts.listens;
-    },
-    get stops() {
-      return counts.stops;
-    },
-    get aborts() {
-      return counts.aborts;
-    },
-    queue: (outcome) => {
-      queued.push(outcome);
-    },
-    resolvePending: (outcome) => {
-      const resolve = pending;
-      pending = null;
-      resolve?.(outcome);
-    },
-    listen: () => {
-      counts.listens += 1;
-      const next = queued.shift();
-      if (next !== undefined) return Promise.resolve(next);
-      return new Promise<SpeechOutcome>((resolve) => {
-        pending = resolve;
-      });
-    },
-    stop: () => {
-      counts.stops += 1;
-    },
-    abort: () => {
-      counts.aborts += 1;
-    },
-  };
-}
-
-export const heard = (...alternatives: string[]): SpeechOutcome => ({
-  kind: "heard",
-  alternatives,
-});
-export const failed = (reason: SpeechFailure): SpeechOutcome => ({ kind: "failed", reason });
+export * from "./trial-fakes.test-support";
 
 export type MountOptions = {
   readonly language?: Language;
   readonly speech?: "supported" | "unsupported";
   readonly voice?: VoiceOutcome;
   readonly reducedMotion?: boolean;
+  /** 사전 등록 접점 — 기본은 가짜 접점, false면 없음(null). */
+  readonly prereg?: boolean;
 };
 
 export type Harness = {
@@ -179,6 +105,8 @@ export type Harness = {
   readonly speech: FakeSpeech;
   readonly sent: AnalyticsEvent[];
   readonly errors: unknown[];
+  readonly fullscreen: FakeFullscreen;
+  readonly prereg: FakePrereg;
   readonly controller: TrialController;
 };
 
@@ -198,6 +126,8 @@ export async function mountTrial(options: MountOptions = {}): Promise<Harness> {
   const audio = fakeAudio(() => root, options.voice);
   const speech = fakeSpeech(options.speech ?? "supported");
   const sent: AnalyticsEvent[] = [];
+  const fullscreen = fakeFullscreen();
+  const prereg = fakePrereg();
   const controller = initTrial({
     root,
     model: data.model,
@@ -206,8 +136,11 @@ export async function mountTrial(options: MountOptions = {}): Promise<Harness> {
     speech,
     send: (event) => sent.push(event),
     reducedMotion: options.reducedMotion ?? true,
+    fullscreen,
+    prereg: options.prereg === false ? null : prereg,
+    locale: data.locale,
   });
-  return { window, doc, root, data, audio, speech, sent, errors, controller };
+  return { window, doc, root, data, audio, speech, sent, errors, fullscreen, prereg, controller };
 }
 
 export function unmount(harness: Harness | undefined): void {
@@ -254,9 +187,9 @@ export async function tap(h: Harness, id: TrialTestId, index?: number): Promise<
   await settle();
 }
 
-/** 시작 → 컷 6 → 단어 → 그림 고르기(정답 0) → 대답 고르기(정답 2) → 문화(뒤집기) → 롤플레이 첫 턴. */
+/** 연 화면(컷 1 · 타자 효과가 끝날 때까지 기다림) → 첫 탭(begin)부터 컷 6 → 단어 → 그림 고르기(정답 0) → 대답 고르기(정답 2) → 문화(뒤집기) → 롤플레이 첫 턴. */
 export async function playToRoleplay(h: Harness): Promise<void> {
-  await tap(h, "trial-start-button");
+  await settle();
   for (let cut = 0; cut < 6; cut += 1) await tap(h, "trial-cuts-next");
   await tap(h, "trial-vocab-next");
   await tap(h, "trial-option", 0);
@@ -279,8 +212,13 @@ export async function tileTurn(h: Harness, placed: readonly number[]): Promise<v
   await tap(h, "trial-turn-check");
 }
 
-/** 엔딩 컷 둘을 넘겨 완료로. */
+/** 엔딩 컷 넷을 넘겨 Episode clear로(시계를 돌리므로 배너는 유지 시간이 지나 예고에 서 있다). */
+export async function toClear(h: Harness): Promise<void> {
+  for (let cut = 0; cut < 4; cut += 1) await tap(h, "trial-cuts-next");
+}
+
+/** 엔딩 컷 넷 → Episode clear(배너 → 예고) → 예고 Next → 완료. */
 export async function finishEpilogue(h: Harness): Promise<void> {
-  await tap(h, "trial-cuts-next");
-  await tap(h, "trial-cuts-next");
+  await toClear(h);
+  await tap(h, "trial-clear-next");
 }

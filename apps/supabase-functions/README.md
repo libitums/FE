@@ -163,3 +163,20 @@ Firebase 프로젝트에 Android 앱을 등록하고 FCM HTTP v1 API 권한이 �
 완료 목록은 합집합, 스텝 수와 활성 장면은 최댓값으로 합치고 비주얼 노벨 완료는 유지한다.
 지원하지 않는 버전이나 깨진 스냅숏은 오류를 반환하며 기존 값을 보존한다. 새로운 스냅숏 버전 배포 전에는 서버 검증·합치기부터 확장한다.
 병합 결과가 기존 16 KiB 상한을 넘으면 요청 전체가 실패한다. 진행을 감소시키는 리셋 동작은 이 RPC의 계약이 아니다.
+
+## 웹 체험판 사전 등록 표 (ADR-0081 r2)
+
+`20261022120000_pre_registrations.sql` — 랜딩 체험판(`/try/`) 완료 화면의 이메일 사전 등록이 쌓이는 표 `public.pre_registrations`
+(`email` · `locale` en/ko · `source` web-trial · `created_at`). 함수가 아니라 표 하나와 정책이다.
+
+- **랜딩은 공개 키(anon)로 PostgREST `POST /rest/v1/pre_registrations`만 한다**(`Prefer: return=minimal`, `apikey` 머리만). RLS를 켜고
+  anon에 insert 정책 하나, 표 권한은 `email` · `locale` · `source` 세 열의 insert뿐이다 — 읽기 · 고치기 · 지우기 · `id` · `created_at` 지정은
+  42501, authenticated(앱 사용자)는 표에 닿지 않는다. 운영자는 대시보드(service role)로 읽는다.
+- `email`은 insert 트리거가 소문자 · 앞뒤 공백을 맞추고 고유하다 — 같은 주소를 다시 넣으면 23505(PostgREST 409)이고, 랜딩은 그것도
+  「등록했어요」로 보인다(등록 여부를 남에게 알리지 않는다). 형식 · locale · source가 틀리면 23514.
+- **email은 개인정보다** — 분석 · 로그에 남기지 않는다(랜딩 GA 이벤트 `trial_preregister`는 결과 `status`만 싣는다). 메일 발송 · 동의 철회
+  경로는 아직 없다(개인정보처리방침 갱신은 사용자 몫).
+- 통합 테스트 `supabase/migrations/pre-registrations.integration.test.ts`(MG1 ~ MG8, embedded-postgres)가 위 권한 · 정규화 · 고유 · 검사를 고정한다.
+- **적용**: 원격 프로젝트에는 아직 적용하지 않았다. 검토한 뒤 `supabase db push --dry-run` → `supabase db push`(또는 SQL 편집기). 랜딩 배포
+  (Vercel `PUBLIC_SUPABASE_ANON_KEY`)보다 **먼저** 적용한다 — 표가 없으면 폼이 404를 받아 「등록하지 못했어요」를 보인다.
+- 남은 위험: 요청 빈도 제한 · 봇 막기가 없다(공개 키로 insert만 열려 있다). 문제가 되면 Edge Function + captcha 또는 DB 쪽 빈도 제한을 더한다.

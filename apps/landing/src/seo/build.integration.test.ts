@@ -532,8 +532,9 @@ describe("빌드 E — Vercel 배포 환경", () => {
     const build = runBuild(undefined, undefined, {
       VERCEL_ENV: "production",
       VERCEL_PROJECT_PRODUCTION_URL: "duru.vercel.app",
-      // 프로덕션 빌드는 체험판 음성 주소가 있어야 통과합니다(없으면 astro.config가 멈춥니다).
+      // 프로덕션 빌드는 체험판 음성 주소 · 사전 등록 공개 키가 있어야 통과합니다(없으면 astro.config가 멈춥니다).
       PUBLIC_SUPABASE_URL: "https://x.supabase.co",
+      PUBLIC_SUPABASE_ANON_KEY: "sb_publishable_build_test_key_0000",
     });
     try {
       expect(build.status, build.output).toBe(0);

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { AnalyticsEvent } from "../scripts/analytics.contract";
-import { trialEventsOf, trialStoreClickOf } from "./trial-events";
+import { trialEventsOf, trialPreregEventOf } from "./trial-events";
 import { initialTrialState, reduceTrial } from "./trial-machine";
 import type { TrialAction, TrialState } from "./trial-machine.contract";
 import type { TrialModel } from "./trial-model.contract";
@@ -45,33 +45,28 @@ function failingTiles(): TrialAction[] {
 }
 
 describe("trialEventsOf", () => {
-  it("EV1 start → trial_start(speech) · trial_step(prologue, 1)", () => {
+  it("EV-R1 begin(첫 탭) → trial_start(speech) · trial_step(prologue, 1)", () => {
     const model = u00TrialModel();
-    expect(eventsOf(initialTrialState("supported"), { type: "start" }, model)).toEqual([
+    expect(eventsOf(initialTrialState(), { type: "begin", speech: "supported" }, model)).toEqual([
       { name: "trial_start", params: { speech: "supported" } },
       { name: "trial_step", params: { step: "prologue", ordinal: "1" } },
     ]);
-    expect(eventsOf(initialTrialState("unsupported"), { type: "start" }, model)[0]).toEqual({
-      name: "trial_start",
-      params: { speech: "unsupported" },
-    });
+    expect(
+      eventsOf(initialTrialState(), { type: "begin", speech: "unsupported" }, model)[0],
+    ).toEqual({ name: "trial_start", params: { speech: "unsupported" } });
   });
 
   it("EV1 바뀌지 않은 전이 · 같은 단계 안의 전이는 이벤트가 없다", () => {
     const model = u00TrialModel();
     const started = stateAt("prologue", model);
-    expect(eventsOf(started, { type: "start" }, model)).toEqual([]);
+    expect(eventsOf(started, { type: "begin", speech: "supported" }, model)).toEqual([]);
     expect(eventsOf(started, next, model)).toEqual([]);
     expect(eventsOf(stateAt("culture", model), { type: "flip" }, model)).toEqual([]);
   });
 
-  it("EV2 처음부터 끝까지 trial_step은 단계마다 한 번 · ordinal 1 ~ 8 차례", () => {
+  it("EV2 · EV-R1 처음부터 끝까지 trial_step은 단계마다 한 번 · ordinal 1 ~ 9 차례", () => {
     const model = u00TrialModel();
-    const events = eventsAlong(
-      initialTrialState("supported"),
-      actionsTo("complete", "supported"),
-      model,
-    );
+    const events = eventsAlong(initialTrialState(), actionsTo("complete", "supported"), model);
     const steps = events
       .filter((event) => event.name === "trial_step")
       .map((event) => event.params);
@@ -83,7 +78,8 @@ describe("trialEventsOf", () => {
       { step: "culture", ordinal: "5" },
       { step: "roleplay", ordinal: "6" },
       { step: "epilogue", ordinal: "7" },
-      { step: "complete", ordinal: "8" },
+      { step: "clear", ordinal: "8" },
+      { step: "complete", ordinal: "9" },
     ]);
     expect(events.filter((event) => event.name === "trial_start")).toHaveLength(1);
   });
@@ -149,60 +145,59 @@ describe("trialEventsOf", () => {
     });
   });
 
-  it("EV4 epilogue → complete: trial_step(complete, 8) 다음 trial_complete(verdict)", () => {
+  it("EV-R1 epilogue → clear: trial_step(clear, 8)만, clear → complete: trial_step(complete, 9) 다음 trial_complete(verdict)", () => {
     const model = u00TrialModel();
-    const lastCut = run(stateAt("epilogue", model), [next], model);
+    const lastCut = run(stateAt("epilogue", model), [next, next, next], model);
     expect(eventsOf(lastCut, next, model)).toEqual([
-      { name: "trial_step", params: { step: "complete", ordinal: "8" } },
+      { name: "trial_step", params: { step: "clear", ordinal: "8" } },
+    ]);
+    const banner = stateAt("clear", model);
+    expect(eventsOf(banner, next, model)).toEqual([]);
+    const teaser = run(banner, [next], model);
+    expect(eventsOf(teaser, next, model)).toEqual([
+      { name: "trial_step", params: { step: "complete", ordinal: "9" } },
       { name: "trial_complete", params: { verdict: "passed" } },
     ]);
-    const failedCut = run(
+    const failedTeaser = run(
       stateAt("roleplay", model, "unsupported"),
-      [...failingTiles(), next],
+      [...failingTiles(), next, next, next, next, next],
       model,
     );
-    expect(eventsOf(failedCut, next, model)).toEqual([
-      { name: "trial_step", params: { step: "complete", ordinal: "8" } },
+    expect(failedTeaser).toMatchObject({ step: "clear", clearPhase: "teaser" });
+    expect(eventsOf(failedTeaser, next, model)).toEqual([
+      { name: "trial_step", params: { step: "complete", ordinal: "9" } },
       { name: "trial_complete", params: { verdict: "failed" } },
     ]);
   });
 });
 
-describe("trialStoreClickOf", () => {
-  it("EV5 ios · android → trial_store_click, 모르는 값 · 없음 → null", () => {
-    expect(trialStoreClickOf("ios")).toEqual({
-      name: "trial_store_click",
-      params: { store: "ios" },
-    });
-    expect(trialStoreClickOf("android")).toEqual({
-      name: "trial_store_click",
-      params: { store: "android" },
-    });
-    expect(trialStoreClickOf(undefined)).toBeNull();
-    expect(trialStoreClickOf("web")).toBeNull();
-    expect(trialStoreClickOf("")).toBeNull();
+describe("trialPreregEventOf", () => {
+  it("EV-R2 결과 셋 → trial_preregister { status } 하나뿐", () => {
+    for (const outcome of ["submitted", "duplicate", "failed"] as const) {
+      const event = trialPreregEventOf(outcome);
+      expect(event).toEqual({ name: "trial_preregister", params: { status: outcome } });
+      expect(Object.keys(event.params)).toEqual(["status"]);
+    }
   });
 });
 
 describe("이벤트 속성", () => {
-  it("EV6 모든 이벤트의 속성 값은 문자열이고 한글이 없다", () => {
+  it("EV6 모든 이벤트의 속성 값은 문자열이고 한글 · @(이메일)가 없다", () => {
     const model = u00TrialModel();
     const all: AnalyticsEvent[] = [
-      ...eventsAlong(initialTrialState("supported"), actionsTo("complete", "supported"), model),
-      ...eventsAlong(initialTrialState("unsupported"), actionsTo("complete", "unsupported"), model),
+      ...eventsAlong(initialTrialState(), actionsTo("complete", "supported"), model),
+      ...eventsAlong(initialTrialState(), actionsTo("complete", "unsupported"), model),
       ...eventsAlong(
-        initialTrialState("supported"),
-        [...actionsTo("roleplay", "supported"), ...mixedTurns(), next, next],
+        initialTrialState(),
+        [...actionsTo("roleplay", "supported"), ...mixedTurns(), ...Array(6).fill(next)],
         model,
       ),
       ...eventsAlong(
-        initialTrialState("unsupported"),
-        [...actionsTo("roleplay", "unsupported"), ...failingTiles(), next, next],
+        initialTrialState(),
+        [...actionsTo("roleplay", "unsupported"), ...failingTiles(), ...Array(6).fill(next)],
         model,
       ),
-      ...[trialStoreClickOf("ios"), trialStoreClickOf("android")].filter(
-        (event): event is AnalyticsEvent => event !== null,
-      ),
+      ...(["submitted", "duplicate", "failed"] as const).map(trialPreregEventOf),
     ];
     const names = new Set(all.map((event) => event.name));
     expect([...names].sort()).toEqual(
@@ -211,13 +206,14 @@ describe("이벤트 속성", () => {
         "trial_roleplay_result",
         "trial_start",
         "trial_step",
-        "trial_store_click",
+        "trial_preregister",
       ].sort(),
     );
     for (const event of all) {
       for (const value of Object.values(event.params)) {
         expect(typeof value).toBe("string");
         expect(value).not.toMatch(/[ᄀ-ᇿ㄰-㆏가-힣]/);
+        expect(value).not.toContain("@");
       }
     }
   });

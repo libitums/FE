@@ -1,5 +1,5 @@
 /*
- * 완료(앱 LessonCompleteScreen) + 설치 안내(랜딩 Download 축소판).
+ * 완료(앱 LessonCompleteScreen) + 이메일 사전 등록(trial-prereg.css).
  * 통과 · 미통과 문구는 둘 다 마크업에 있고 data-result가 하나를 가립니다.
  */
 .trial-complete {
@@ -89,54 +89,6 @@
   width: 100%;
   margin-top: var(--libitum-spacing-16);
   text-align: start;
-}
-
-.trial-store {
-  display: grid;
-  gap: var(--libitum-spacing-4);
-  justify-items: start;
-  padding: var(--libitum-spacing-20);
-  border-radius: var(--libitum-radius-xl);
-  background: var(--libitum-color-gray-900);
-  color: var(--libitum-color-white);
-  transition: background-color var(--libitum-motion-duration-color)
-    var(--libitum-motion-easing-easing);
-}
-
-.trial-store__platform {
-  color: var(--libitum-color-gray-600);
-}
-
-.trial-store__name {
-  font-family: var(--libitum-font-family-accent);
-  font-size: var(--libitum-typography-heading-m-font-size);
-  font-weight: var(--libitum-typography-heading-m-font-weight);
-  line-height: var(--libitum-typography-heading-m-line-height);
-}
-
-.trial-store__state {
-  margin-top: var(--libitum-spacing-12);
-  padding: var(--libitum-spacing-8) var(--libitum-spacing-16);
-  border: 1px solid var(--libitum-color-border-default);
-  border-radius: var(--libitum-radius-full);
-  color: var(--libitum-color-gray-500);
-}
-
-a.trial-store .trial-store__state {
-  border-color: transparent;
-  background: var(--libitum-color-brand-secondary);
-  color: var(--libitum-color-fg-neutral);
-}
-
-@media (hover: hover) {
-  a.trial-store:hover {
-    background: var(--libitum-color-gray-800);
-  }
-}
-
-.trial .trial-store:focus-visible {
-  border-radius: var(--libitum-radius-xl);
-  outline-offset: var(--libitum-spacing-4);
 }
 
 .trial-link--home {

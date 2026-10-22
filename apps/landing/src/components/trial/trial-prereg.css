@@ -1,0 +1,93 @@
+/*
+ * 완료 화면 사전 등록 폼 — 밝은 카드, 레이블 · 입력 · 오류 · 주 버튼 · 개인정보 줄. 상태는 data-state가 고릅니다.
+ */
+.trial-prereg {
+  display: grid;
+  gap: var(--libitum-spacing-12);
+  padding: var(--libitum-spacing-20);
+  border-radius: var(--libitum-radius-xl);
+  background: var(--libitum-color-background-elevated);
+  color: var(--libitum-color-fg-neutral);
+  text-align: start;
+}
+
+.trial-prereg__title,
+.trial-prereg p {
+  margin: 0;
+}
+
+.trial-prereg__body,
+.trial-prereg__privacy {
+  color: var(--libitum-color-fg-neutral-muted);
+}
+
+.trial-prereg__field {
+  display: grid;
+  gap: var(--libitum-spacing-6);
+}
+
+.trial-prereg__input {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: calc(var(--libitum-spacing-48) + var(--libitum-spacing-8));
+  padding: 0 var(--libitum-spacing-16);
+  border: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
+  border-radius: var(--libitum-radius-lg);
+  background: var(--libitum-color-background-primary);
+  color: var(--libitum-color-fg-neutral);
+}
+
+.trial-prereg__input[aria-invalid="true"] {
+  border: var(--libitum-stroke-width-strong) solid var(--libitum-color-feedback-incorrect-text);
+}
+
+.trial .trial-prereg__input:focus-visible {
+  border-radius: var(--libitum-radius-lg);
+}
+
+.trial-prereg__error {
+  color: var(--libitum-color-feedback-incorrect-text);
+}
+
+/* 상태 글 — 비면 자리를 차지하지 않습니다. */
+.trial-prereg__status {
+  display: flex;
+  align-items: center;
+  gap: var(--libitum-spacing-8);
+}
+
+.trial-prereg__status:focus {
+  outline: none;
+}
+
+.trial-prereg__status:has([data-prereg-message]:empty) {
+  display: none;
+}
+
+.trial-prereg__done-icon {
+  display: none;
+  color: var(--libitum-color-feedback-correct-text);
+}
+
+.trial-prereg[data-state="done"] .trial-prereg__done-icon {
+  display: inline-flex;
+}
+
+.trial-prereg[data-state="done"] .trial-prereg__status {
+  color: var(--libitum-color-feedback-correct-text);
+}
+
+.trial-prereg[data-state="failed"] .trial-prereg__status {
+  color: var(--libitum-color-feedback-incorrect-text);
+}
+
+.trial-prereg[data-state="unavailable"] .trial-prereg__status {
+  color: var(--libitum-color-fg-neutral-muted);
+}
+
+/* 완료 — 입력 · 버튼 · 본문을 접고 제목 + 상태 글 + 개인정보 줄만. */
+.trial-prereg[data-state="done"] .trial-prereg__body,
+.trial-prereg[data-state="done"] .trial-prereg__field,
+.trial-prereg[data-state="done"] .trial-button {
+  display: none;
+}

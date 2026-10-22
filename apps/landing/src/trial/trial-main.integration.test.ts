@@ -82,6 +82,8 @@ type Boot = {
   readonly h: Harness;
   readonly gtag: unknown[][];
   readonly window: Window;
+  /** 창의 fetch가 받은 주소 차례. */
+  readonly fetches: string[];
 };
 
 /** 페이지 HTML을 띄우고 전역을 그 창으로 바꾼 뒤 trial-main을 새로 import합니다. */
@@ -90,6 +92,10 @@ async function boot(
     reduce?: boolean;
     recognition?: boolean;
     audio?: boolean;
+    /** 모바일처럼 `(pointer: coarse)` · `(hover: none)`이 참. */
+    coarse?: boolean;
+    /** 사전 등록 요청에 답할 가짜 fetch(오디오 fetch보다 먼저 본다). */
+    preregFetch?: (url: string, init: RequestInit) => Promise<Response>;
     edit?: (doc: Document) => void;
   } = {},
 ): Promise<Boot> {
@@ -101,7 +107,9 @@ async function boot(
   installClock(window);
   const scope = window as unknown as Record<string, unknown>;
   scope.matchMedia = (query: string) => ({
-    matches: options.reduce === true && query.includes("prefers-reduced-motion: reduce"),
+    matches:
+      (options.reduce === true && query.includes("prefers-reduced-motion: reduce")) ||
+      (options.coarse === true && (query === "(pointer: coarse)" || query === "(hover: none)")),
     media: query,
     onchange: null,
     addEventListener: () => undefined,
@@ -119,6 +127,15 @@ async function boot(
     scope.AudioContext = FakeAudioContext;
     scope.fetch = okFetch;
   }
+  const fetches: string[] = [];
+  const audioFetch = scope.fetch as ((input: unknown) => Promise<unknown>) | undefined;
+  scope.fetch = (input: unknown, init?: RequestInit) => {
+    fetches.push(String(input));
+    if (String(input).includes("/rest/v1/") && options.preregFetch) {
+      return options.preregFetch(String(input), init ?? {});
+    }
+    return audioFetch ? audioFetch(input) : Promise.reject(new TypeError("offline"));
+  };
   for (const name of ["window", "document", "HTMLElement", "Element", "Node", "Event"] as const) {
     vi.stubGlobal(name, name === "window" ? window : scope[name]);
   }
@@ -130,6 +147,7 @@ async function boot(
     h: { root, doc: window.document } as unknown as Harness,
     gtag,
     window,
+    fetches,
   };
 }
 
@@ -150,25 +168,28 @@ describe("TI13 readTrialModel · 모델 없음", () => {
     expect(readTrialModel(broken)).toBeNull();
   });
 
-  it("trial-main: 모델 JSON이 없으면 시작 버튼 disabled · 눌러도 시작하지 않는다", async () => {
+  it("trial-main: 모델 JSON이 없으면 컷 1의 Next disabled · 안내가 보이고 눌러도 시작하지 않는다", async () => {
     const { h, gtag } = await boot({
       edit: (doc) => doc.querySelector("#trial-model")?.remove(),
     });
-    const start = shown(h, "trial-start-button") as HTMLButtonElement;
-    expect(start.disabled).toBe(true);
-    start.click();
+    const next = shown(h, "trial-cuts-next") as HTMLButtonElement;
+    expect(next.disabled).toBe(true);
+    expect(h.root.querySelector("[data-trial-unavailable]")?.hasAttribute("hidden")).toBe(false);
+    next.click();
     await settle();
-    expect(stepOf(h)).toBe("start");
+    expect(stepOf(h)).toBe("prologue");
+    expect(shown(h, "trial-cut").getAttribute("data-cut-index")).toBe("1");
     expect(gtagEvents(gtag)).toEqual([]);
   });
 });
 
 describe("TI14 trial-main 결선 — 실제 어댑터", () => {
-  it("움직임 줄이기 미디어 쿼리 → data-motion=reduced, Start → gtag trial_start(인식기 없음 → unsupported)", async () => {
+  it("움직임 줄이기 미디어 쿼리 → data-motion=reduced, 첫 Next → gtag trial_start(인식기 없음 → unsupported)", async () => {
     const { h, gtag } = await boot({ reduce: true });
     expect(h.root.getAttribute("data-motion")).toBe("reduced");
-    expect((shown(h, "trial-start-button") as HTMLButtonElement).disabled).toBe(false);
-    await tap(h, "trial-start-button");
+    expect((shown(h, "trial-cuts-next") as HTMLButtonElement).disabled).toBe(false);
+    expect(gtagEvents(gtag)).toEqual([]);
+    await tap(h, "trial-cuts-next");
     expect(stepOf(h)).toBe("prologue");
     expect(gtagEvents(gtag).slice(0, 2)).toEqual([
       { name: "trial_start", params: { speech: "unsupported" } },
@@ -431,9 +452,9 @@ describe("TI16 시작 뒤 멈춘 컨텍스트(iOS 통화 · 백그라운드 · �
     },
   );
 
-  it("trial-main: Start 뒤 interrupted → 다음 Next 클릭이 resume하고 다음 컷 음성을 낸다", async () => {
+  it("trial-main: 첫 탭 뒤 interrupted → 다음 Next 클릭이 resume하고 다음 컷 음성을 낸다", async () => {
     const { h } = await boot({ reduce: true, audio: true });
-    await tap(h, "trial-start-button");
+    await tap(h, "trial-cuts-next");
     await settle();
     const context = FakeAudioContext.instances[0];
     expect(context).toBeDefined();
@@ -442,7 +463,8 @@ describe("TI16 시작 뒤 멈춘 컨텍스트(iOS 통화 · 백그라운드 · �
     const prologue = pageDataOf(h.doc).model.prologue;
     const voiced = prologue.findIndex((cut) => cut.audioUrl !== null);
     expect(voiced).toBeGreaterThan(0);
-    for (let index = 1; index < voiced; index += 1) {
+    // 첫 탭이 이미 컷 2(자리 1)로 넘겼다.
+    for (let index = 2; index < voiced; index += 1) {
       await tap(h, "trial-cuts-next");
       await settle();
     }
@@ -473,7 +495,7 @@ describe("TI16 시작 뒤 멈춘 컨텍스트(iOS 통화 · 백그라운드 · �
     "trial-main: 체험판 안의 %s(사용자 활성화)마다 멈춘 컨텍스트를 resume — 던지지 않는다",
     async (_name, make) => {
       const { h } = await boot({ reduce: true, audio: true });
-      await tap(h, "trial-start-button");
+      await tap(h, "trial-cuts-next");
       await settle();
       const context = FakeAudioContext.instances[0];
       context?.interrupt("suspended");
@@ -487,4 +509,60 @@ describe("TI16 시작 뒤 멈춘 컨텍스트(iOS 통화 · 백그라운드 · �
       expect(context?.resumes).toBe(before + 1);
     },
   );
+});
+
+describe("TI-B1 trial-main — 열 때 소리 요청 0, 첫 탭에 시작", () => {
+  it("열고 기다려도 AudioContext 0 · fetch 0, 첫 Next에 컨텍스트 하나 · 효과음 받기", async () => {
+    const { h, fetches } = await boot({ reduce: true, audio: true });
+    await settle();
+    expect(FakeAudioContext.instances).toHaveLength(0);
+    expect(fetches).toEqual([]);
+    await tap(h, "trial-cuts-next");
+    expect(FakeAudioContext.instances).toHaveLength(1);
+    expect(fetches.some((url) => url.includes("/trial/sfx/"))).toBe(true);
+    expect(fetches.some((url) => url.includes("pre-5-dream"))).toBe(true);
+  });
+});
+
+describe("TI-F trial-main — 모바일 전체화면", () => {
+  it("coarse + hover none이면 첫 탭에 documentElement.requestFullscreen 한 번(navigationUI hide)", async () => {
+    const calls: unknown[] = [];
+    const { h } = await boot({
+      reduce: true,
+      coarse: true,
+      edit: (doc) => {
+        (doc.documentElement as unknown as Record<string, unknown>).requestFullscreen = (
+          options: unknown,
+        ) => {
+          calls.push(options);
+          return Promise.resolve();
+        };
+      },
+    });
+    expect(calls).toEqual([]);
+    await tap(h, "trial-cuts-next");
+    await tap(h, "trial-cuts-next");
+    expect(calls).toEqual([{ navigationUI: "hide" }]);
+  });
+
+  it("데스크톱(가는 포인터)은 부르지 않는다 · 함수가 없어도 오류 0", async () => {
+    const calls: unknown[] = [];
+    const { h, window } = await boot({
+      reduce: true,
+      edit: (doc) => {
+        (doc.documentElement as unknown as Record<string, unknown>).requestFullscreen = () => {
+          calls.push("called");
+          return Promise.resolve();
+        };
+      },
+    });
+    const errors: unknown[] = [];
+    window.addEventListener("error", (event) => errors.push(event.error));
+    await tap(h, "trial-cuts-next");
+    expect(calls).toEqual([]);
+    const mobile = await boot({ reduce: true, coarse: true });
+    await tap(mobile.h, "trial-cuts-next");
+    expect(stepOf(mobile.h)).toBe("prologue");
+    expect(errors).toEqual([]);
+  });
 });

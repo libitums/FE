@@ -62,7 +62,7 @@ export function shapeOf(element: Element): string {
   return `<${element.tagName.toLowerCase()} ${attributes}>${children}</>`;
 }
 
-/** 스크립트가 쓰는 18키(계약 `TrialScriptCopy`). */
+/** 스크립트가 쓰는 26키(계약 `TrialScriptCopy`). */
 export const SCRIPT_COPY_KEYS = [
   "correctAnswer",
   "choiceCorrect",
@@ -82,6 +82,14 @@ export const SCRIPT_COPY_KEYS = [
   "completeBodyMissed",
   "cultureFlipToBack",
   "cultureFlipToFront",
+  "teaserLabel",
+  "teaserTitle",
+  "teaserBody",
+  "preregSubmit",
+  "preregSending",
+  "preregRetry",
+  "preregDone",
+  "preregFailed",
 ] as const satisfies readonly (keyof TrialScriptCopy)[];
 
 /** 체험판 페이지가 내는 test-id 전부(계약 `TrialTestId` 중 랜딩 링크 둘을 뺀 것). */
@@ -93,10 +101,7 @@ export const TRIAL_PAGE_TEST_IDS = [
   "trial-bar",
   "trial-exit",
   "trial-progress",
-  "trial-step-start",
-  "trial-start-image",
-  "trial-start-title",
-  "trial-start-button",
+  "trial-veil",
   "trial-step-prologue",
   "trial-step-epilogue",
   "trial-cut",
@@ -154,9 +159,20 @@ export const TRIAL_PAGE_TEST_IDS = [
   "trial-turn-composed",
   "trial-turn-check",
   "trial-turn-next",
+  "trial-step-clear",
+  "trial-clear-title",
+  "trial-clear-banner",
+  "trial-clear-teaser",
+  "trial-clear-image",
+  "trial-clear-teaser-title",
+  "trial-clear-next",
   "trial-step-complete",
-  "trial-store",
-  "trial-store-state",
+  "trial-prereg",
+  "trial-prereg-email",
+  "trial-prereg-error",
+  "trial-prereg-submit",
+  "trial-prereg-privacy",
+  "trial-prereg-status",
   "trial-complete-home",
 ] as const satisfies readonly TrialTestId[];
 
@@ -174,10 +190,14 @@ export function expectStepHeading(section: Element): Element {
   return heading as Element;
 }
 
-/** 버튼은 `type=button`이고 접근 이름이 비지 않는다. */
-export function expectButton(element: Element, name?: string): void {
+/** 버튼은 `type=button`(폼 제출 버튼은 `submit`)이고 접근 이름이 비지 않는다. */
+export function expectButton(
+  element: Element,
+  name?: string,
+  type: "button" | "submit" = "button",
+): void {
   expect(element.tagName, `${element.getAttribute("data-testid")} 태그`).toBe("BUTTON");
-  expect(element.getAttribute("type")).toBe("button");
+  expect(element.getAttribute("type")).toBe(type);
   const accessible = accessibleNameOf(element);
   if (name === undefined) expect(accessible).not.toBe("");
   else expect(accessible).toBe(name);

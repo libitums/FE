@@ -1,13 +1,14 @@
 ---
 // 완료 — 통과(passed) · 미통과(failed) 문구를 둘 다 굽고 data-result로 하나만 보입니다.
-// 미통과 본문의 맞힌 수는 스크립트가 채웁니다. 스토어 주소가 비면 링크가 아니라 「곧 출시」 카드입니다.
+// 미통과 본문의 맞힌 수는 스크립트가 채웁니다. 스토어 링크 대신 이메일 사전 등록 폼이 섭니다.
 import { pathFor } from "../../site";
 import type { TrialCompleteProps } from "./trial-components.contract";
 import TrialIcon from "./TrialIcon.astro";
+import TrialPrereg from "./TrialPrereg.astro";
 
 type Props = TrialCompleteProps;
 
-const { t, language, stores } = Astro.props;
+const { t, language, prereg } = Astro.props;
 ---
 
 <section
@@ -35,34 +36,7 @@ const { t, language, stores } = Astro.props;
     <p class="trial-muted trial-type-body-m" data-result-copy="failed" data-complete-missed></p>
   </div>
   <div class="trial-install">
-    {
-      stores.map((store) =>
-        store.href ? (
-          <a
-            class="trial-store"
-            href={store.href}
-            target="_blank"
-            rel="noopener noreferrer"
-            data-trial-store={store.id}
-            data-testid="trial-store"
-          >
-            <span class="trial-store__platform trial-type-label-l">{store.platform}</span>
-            <span class="trial-store__name">{store.name}</span>
-            <span class="trial-store__state trial-type-label-l" data-testid="trial-store-state">
-              {t.storeGet}
-            </span>
-          </a>
-        ) : (
-          <div class="trial-store" data-testid="trial-store">
-            <span class="trial-store__platform trial-type-label-l">{store.platform}</span>
-            <span class="trial-store__name">{store.name}</span>
-            <span class="trial-store__state trial-type-label-l" data-testid="trial-store-state">
-              {t.storeSoon}
-            </span>
-          </div>
-        ),
-      )
-    }
+    <TrialPrereg t={t} available={prereg} />
     <a class="trial-link trial-link--home trial-type-button-m" href={pathFor(language)} data-testid="trial-complete-home">
       {t.backHome}
     </a>

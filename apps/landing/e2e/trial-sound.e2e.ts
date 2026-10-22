@@ -5,6 +5,7 @@ import {
   expectStep,
   openTrial,
   pageData,
+  passClear,
   root,
   shown,
   tap,
@@ -21,22 +22,27 @@ test.describe("TE3 소리 요청", () => {
   });
 
   for (const mode of ["ok", "missing"] as const) {
-    test(`Start 전 요청 0 · 장면마다 그 음성 요청 · 끝까지 감(${mode})`, async ({ page }) => {
+    test(`TE3 첫 탭 전 요청 0 · 장면마다 그 음성 요청 · 끝까지 감(${mode})`, async ({ page }) => {
       const errors = watchErrors(page);
       const log = await routeSound(page, mode);
       await page.goto("/try/", { waitUntil: "networkidle" });
       const { model } = await pageData(page);
       expect(log.voice).toEqual([]);
       expect(log.sfx).toEqual([]);
+      // 표지 없이 컷 1이 서 있어도 첫 탭 전에는 소리 요청이 없다(조금 기다려도).
+      await page.waitForTimeout(500);
+      expect(log.voice).toEqual([]);
+      expect(log.sfx).toEqual([]);
       const requested = (url: string | null) =>
         url ? expect.poll(() => log.voice.includes(url), { message: url }).toBe(true) : null;
 
-      await tap(page, "trial-start-button");
-      await expect.poll(() => new Set(log.sfx).size, { message: "효과음 다섯" }).toBe(5);
-      for (const cut of model.prologue) {
+      for (const [position, cut] of model.prologue.entries()) {
         await expect(shown(page, "trial-cut")).toHaveAttribute("data-cut-index", String(cut.index));
         await requested(cut.audioUrl);
         await tap(page, "trial-cuts-next");
+        if (position === 0) {
+          await expect.poll(() => new Set(log.sfx).size, { message: "효과음 다섯" }).toBe(5);
+        }
       }
       await expectStep(page, "vocab");
       await requested(model.vocab.audioUrl);
@@ -61,7 +67,7 @@ test.describe("TE3 소리 요청", () => {
         await requested(cut.audioUrl);
         await tap(page, "trial-cuts-next");
       }
-      await expectStep(page, "complete");
+      await passClear(page);
       const host = new URL(log.voice[0] ?? "https://x.invalid").hostname;
       expect(host).toBe("content.example.test");
       for (const url of log.voice) expect(url).toMatch(/\/audio\/u00-tutorial\/[\w-]+\.m4a$/);
@@ -82,9 +88,8 @@ test.describe("TE6 움직임 줄이기", () => {
     const { model } = await pageData(page);
     await expect(root(page)).toHaveAttribute("data-motion", "reduced");
     for (const cut of model.prologue.slice(0, 2)) {
-      await (cut.index === model.prologue[0]?.index
-        ? tap(page, "trial-start-button")
-        : tap(page, "trial-cuts-next"));
+      // 컷 1은 연 화면 그대로, 컷 2는 첫 탭 뒤.
+      if (cut.index !== model.prologue[0]?.index) await tap(page, "trial-cuts-next");
       const article = shown(page, "trial-cut");
       await expect(article).toHaveAttribute("data-cut-index", String(cut.index));
       // 클릭 직후 같은 틱에서 — 기다리지 않고 바로 잰다.
@@ -94,6 +99,7 @@ test.describe("TE6 움직임 줄이기", () => {
         line: node.querySelector('[data-testid="trial-cut-line"]')?.textContent?.trim() ?? "",
         animations: node.closest("section")?.getAnimations({ subtree: true }).length ?? -1,
         entering: node.closest("section")?.getAttribute("data-entering") ?? null,
+        transition: node.closest("main")?.getAttribute("data-transition") ?? null,
         opacity: getComputedStyle(node.querySelector('[data-testid="trial-cut-line"]') as Element)
           .opacity,
       }));
@@ -103,6 +109,7 @@ test.describe("TE6 움직임 줄이기", () => {
         line: expect.stringContaining(cut.text.ko) as unknown as string,
         animations: 0,
         entering: null,
+        transition: null,
         opacity: "1",
       });
     }
@@ -114,7 +121,7 @@ test.describe("TE6 움직임 줄이기", () => {
     await page.emulateMedia({ reducedMotion: "no-preference" });
     await openTrial(page);
     await expect(root(page)).toHaveAttribute("data-motion", "full");
-    await tap(page, "trial-start-button");
+    // 열자마자 컷 1이 타자 효과로 드러난다.
     await expect(shown(page, "trial-cut")).toHaveAttribute("data-revealing", "true");
     // 타자 중 Next는 먼저 끝까지 보인다(넘기지 않음).
     await tap(page, "trial-cuts-next");

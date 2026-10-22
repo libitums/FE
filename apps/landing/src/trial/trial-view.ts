@@ -12,7 +12,6 @@ import type {
 } from "./trial-machine.contract";
 
 const PROGRESS: Readonly<Record<TrialStepId, number>> = {
-  start: 0,
   prologue: 1,
   vocab: 2,
   "image-match": 3,
@@ -20,13 +19,14 @@ const PROGRESS: Readonly<Record<TrialStepId, number>> = {
   culture: 5,
   roleplay: 6,
   epilogue: 7,
+  clear: 7,
   complete: 7,
 };
 
 /** 체험판의 롤플레이는 세 턴입니다 — 통과 기준은 앱과 같은 `catalogPassCriterion(3)`(= 2). */
 const ROLEPLAY_TURNS = 3;
 
-/** 진행 막대의 값 — 엔딩과 완료는 끝까지 찬 막대. */
+/** 진행 막대의 값 — 엔딩 · Episode clear · 완료는 끝까지 찬 막대. */
 export const trialProgressOf: TrialProgressOf = (state) => ({
   ordinal: PROGRESS[state.step],
   total: 7,
@@ -67,14 +67,13 @@ export const trialVoiceCueOf: TrialVoiceCueOf = (state, model) => {
   }
 };
 
-/** 전이 하나에 낼 효과음 — 시작 · 카드 넘김은 버튼, 판정이 생기면 정답/오답, 엔딩 · 완료는 축하. */
+/** 전이 하나에 낼 효과음 — 카드 넘김은 버튼, 판정이 생기면 정답/오답, 롤플레이 통과 · Episode clear는 축하. 첫 탭(begin)은 없음. */
 export const trialSfxOf: TrialSfxOf = (prev, next, action) => {
-  if (prev === next) return null;
-  if (action.type === "start") return "button";
+  if (prev === next || action.type === "begin") return null;
   if (prev.step === "roleplay" && next.step === "epilogue") {
     return next.roleplay.verdict === "passed" ? "pass_lesson" : null;
   }
-  if (prev.step === "epilogue" && next.step === "complete") return "lesson_complete";
+  if (prev.step === "epilogue" && next.step === "clear") return "lesson_complete";
   if (action.type === "next" && (prev.step === "vocab" || prev.step === "culture")) {
     return "button";
   }

@@ -1,0 +1,84 @@
+/*
+ * Episode clear(앱 EpisodeBannerScreen) — 검정 면에 주황 한 줄, 등장은 보상 모션. 그 뒤 예고는 컷 장면 틀.
+ */
+.trial-clear__banner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--libitum-layout-screen-padding-x);
+  background: var(--libitum-color-black);
+}
+
+.trial-clear[data-phase="teaser"] .trial-clear__banner {
+  display: none;
+}
+
+.trial-clear__title {
+  margin: 0;
+  color: var(--libitum-color-brand-primary);
+  text-align: center;
+  animation: trial-clear-reward var(--libitum-motion-duration-reward)
+    var(--libitum-motion-easing-enter-expressive) both;
+}
+
+/* 배너 전체가 조작 하나 — 투명 버튼이 면을 덮습니다. 초점 고리는 면 안쪽에. */
+.trial-clear__skip {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.trial .trial-clear__skip:focus-visible {
+  outline-offset: calc(var(--libitum-spacing-4) * -1);
+}
+
+@keyframes trial-clear-reward {
+  from {
+    opacity: 0;
+    transform: scale(var(--libitum-motion-scale-reward));
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* 예고는 컷 장면 틀(.trial-scene)을 쓰되 단계 section이 아니라 그 안의 면이라, 세로 flex를 직접 겁니다(글 · Next가 아래로). */
+.trial-clear__teaser {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.trial-clear__teaser .trial-chip {
+  margin: 0;
+}
+
+.trial-clear__teaser-box {
+  display: grid;
+  gap: var(--libitum-spacing-8);
+}
+
+.trial-clear__teaser-title {
+  margin: 0;
+  color: var(--libitum-color-white);
+}
+
+.trial-clear__teaser-title:focus {
+  outline: none;
+}
+
+.trial-clear__teaser-body {
+  margin: 0;
+  color: var(--libitum-color-gray-300);
+}

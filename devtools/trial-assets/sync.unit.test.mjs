@@ -4,7 +4,7 @@ import { dirname, join, relative, sep } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 
-// 랜딩 체험판의 사본(u00 JSON · 그림 10 · 효과음 5)이 앱 원본과 바이트가 같은지 봅니다.
+// 랜딩 체험판의 사본(u00 JSON · 그림 12 · 효과음 5)이 앱 원본과 바이트가 같은지 봅니다.
 // 루트 도구라 두 앱을 함께 읽어도 패키지 의존이 아닙니다.
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -35,6 +35,8 @@ const TRIAL_IMAGES = [
   "u00-tutorial/cult-u00-jalhasineyo.webp",
   "u00-tutorial/post-1.webp",
   "u00-tutorial/post-2.webp",
+  "u00-tutorial/post-3.webp",
+  "u00-tutorial/post-4.webp",
   "u00-tutorial/pre-1.webp",
   "u00-tutorial/pre-2.webp",
   "u00-tutorial/pre-3.webp",
@@ -58,7 +60,7 @@ test("TA1: 랜딩 u00 사본은 앱 내장본과 바이트가 같다", () => {
   );
 });
 
-test("TA2: 그림 사본은 정해진 10개이고 각각 앱 원본과 바이트가 같다", () => {
+test("TA2: 그림 사본은 정해진 12개이고 각각 앱 원본과 바이트가 같다", () => {
   const copyRoot = at("apps/landing/src/assets/trial/images");
   assert.deepEqual(filesUnder(copyRoot), TRIAL_IMAGES);
   for (const path of TRIAL_IMAGES) {

@@ -78,7 +78,6 @@ export function buildTrialModel(
       episodeId: episode.id,
       version,
       counterpartName: episode.counterpart.trim(),
-      startImageUrl: prologue[prologue.length - 1]?.imageUrl ?? null,
       prologue,
       vocab,
       imageMatch,

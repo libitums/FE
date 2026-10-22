@@ -119,13 +119,12 @@ test.describe("C2 짧은 뷰포트 — 조작이 잘리지 않고 휠로 닿는�
         if (problem !== null) problems.push(problem);
       };
 
-      await tap(page, "trial-start-button");
       await expect(root(page)).toHaveAttribute("data-step", "prologue");
       await check("trial-cuts-next", "컷 1 Next");
       await resetScroll(page);
 
       await page.goto("/try/", { waitUntil: "load" });
-      await expect(root(page)).toHaveAttribute("data-step", "start");
+      await expect(root(page)).toHaveAttribute("data-step", "prologue");
       await playToRoleplay(page, model);
       await check("trial-turn-speak", "턴 1 Speak");
       await check("trial-turn-hint-button", "턴 1 Show hint");

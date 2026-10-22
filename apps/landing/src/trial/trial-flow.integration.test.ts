@@ -1,7 +1,7 @@
 // 체험판 흐름 통합 — 실제 TrialPage 마크업 + initTrial(실제 리듀서 · 파생 · DOM 반영) + 가짜 접점.
 // 버튼을 실제로 눌러(click) 화면 · 소리 · 말하기 · 이벤트가 함께 맞는지 봅니다. 움직임은 줄인 상태(기본).
 
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { textOf } from "../components/trial/trial-ui.support";
 import { trialKo } from "../i18n/trial-ko";
@@ -10,11 +10,13 @@ import {
   type Harness,
   failed,
   finishEpilogue,
+  flush,
   heard,
   liveText,
   mountTrial,
   noneShown,
   playToRoleplay,
+  toClear,
   progressOf,
   settle,
   sfxOf,
@@ -27,6 +29,7 @@ import {
   visibleSteps,
   voicesOf,
 } from "./trial-flow.test-support";
+import { TRIAL_CLEAR_HOLD_MS } from "./trial-machine.contract";
 import { SPEECH_CORRECT, TILES_CORRECT, u00AudioUrl } from "./trial.test-support";
 
 let h: Harness | undefined;
@@ -50,7 +53,7 @@ const turnIndexOf = (harness: Harness) =>
 async function speechPath(harness: Harness): Promise<string[]> {
   const steps: string[] = [];
   const mark = () => steps.push(`${stepOf(harness)}:${progressOf(harness)}`);
-  await tap(harness, "trial-start-button");
+  await settle();
   mark();
   for (let cut = 0; cut < 6; cut += 1) await tap(harness, "trial-cuts-next");
   mark();
@@ -70,7 +73,9 @@ async function speechPath(harness: Harness): Promise<string[]> {
     await tap(harness, "trial-turn-next");
   }
   mark();
-  await finishEpilogue(harness);
+  await toClear(harness);
+  mark();
+  await tap(harness, "trial-clear-next");
   mark();
   return steps;
 }
@@ -83,14 +88,14 @@ const SPEECH_PATH_STEPS = [
   "culture:5",
   "roleplay:6",
   "epilogue:7",
+  "clear:7",
   "complete:7",
 ];
 
 describe("TI1 말하기 경로 — 처음부터 완료까지", () => {
   it("단계마다 보이는 section 하나 · data-step · 진행 aria 값", async () => {
     h = await mountTrial();
-    expectStep(h, "start", "0");
-    await tap(h, "trial-start-button");
+    // 표지 없이 열자마자 컷 1(TI-B1).
     expectStep(h, "prologue", "1");
     expect(cutIndexOf(h)).toBe("1");
     for (const expected of ["2", "3", "4", "5", "6"]) {
@@ -132,9 +137,13 @@ describe("TI1 말하기 경로 — 처음부터 완료까지", () => {
     }
     expectStep(h, "epilogue", "7");
     expect(cutIndexOf(h)).toBe("1");
+    for (const expected of ["2", "3", "4"]) {
+      await tap(h, "trial-cuts-next");
+      expect(cutIndexOf(h)).toBe(expected);
+    }
     await tap(h, "trial-cuts-next");
-    expect(cutIndexOf(h)).toBe("2");
-    await tap(h, "trial-cuts-next");
+    expectStep(h, "clear", "7");
+    await tap(h, "trial-clear-next");
     expectStep(h, "complete", "7");
     expect(shown(h, "trial-step-complete").getAttribute("data-result")).toBe("passed");
     expect(h.errors).toEqual([]);
@@ -164,20 +173,20 @@ describe("TI2 소리 — 음성 단서 · 잠금 해제 · 효과음 차례", ()
     );
   });
 
-  it("unlock은 Start 클릭 안에서 start 전이보다 먼저 한 번", async () => {
+  it("TI-B1 unlock은 첫 탭 안에서 한 번 — 소리 호출 중 첫째(컷 1에서)", async () => {
     h = await mountTrial();
+    await settle();
     expect(h.audio.calls).toEqual([]);
     await speechPath(h);
     const unlocks = h.audio.calls.filter((call) => call.kind === "unlock");
-    expect(unlocks).toEqual([{ kind: "unlock", step: "start" }]);
-    expect(h.audio.calls[0]).toEqual({ kind: "unlock", step: "start" });
+    expect(unlocks).toEqual([{ kind: "unlock", step: "prologue" }]);
+    expect(h.audio.calls[0]).toEqual({ kind: "unlock", step: "prologue" });
   });
 
-  it("playSfx 차례 = 효과음 파생 규칙(통과 → pass_lesson, 완료 → lesson_complete)", async () => {
+  it("playSfx 차례 = 효과음 파생 규칙(첫 탭 무음 · 통과 → pass_lesson, Episode clear → lesson_complete)", async () => {
     h = await mountTrial();
     await speechPath(h);
     expect(sfxOf(h.audio)).toEqual([
-      "button",
       "button",
       "correct_answer",
       "correct_answer",
@@ -192,7 +201,7 @@ describe("TI2 소리 — 음성 단서 · 잠금 해제 · 효과음 차례", ()
 });
 
 describe("TI3 전송 — 말하기 경로의 GA 이벤트 차례", () => {
-  it("trial_start · trial_step ×8 · trial_roleplay_result · trial_complete{verdict}", async () => {
+  it("trial_start · trial_step ×9 · trial_roleplay_result · trial_complete{verdict}", async () => {
     h = await mountTrial();
     const steps = await speechPath(h);
     expect(steps).toEqual(SPEECH_PATH_STEPS);
@@ -219,7 +228,8 @@ describe("TI3 전송 — 말하기 경로의 GA 이벤트 차례", () => {
         },
       },
       step("epilogue", "7"),
-      step("complete", "8"),
+      step("clear", "8"),
+      step("complete", "9"),
       { name: "trial_complete", params: { verdict: "passed" } },
     ]);
   });
@@ -386,10 +396,8 @@ describe("TI9 접근성 결선", () => {
   it("단계 전환마다 초점 = 그 단계 h2 · 컷 전환은 Next에 초점 · 컷 낭독", async () => {
     h = await mountTrial();
     const focusedHeading = () => h?.doc.activeElement?.closest("[data-step-heading]") ?? null;
-    await tap(h, "trial-start-button");
-    expect(focusedHeading()).toBe(
-      shown(h, "trial-step-prologue").querySelector("[data-step-heading]"),
-    );
+    // 열 때는 초점을 옮기지 않는다(첫 렌더).
+    expect(h.doc.activeElement).toBe(h.doc.body);
     const next = shown(h, "trial-cuts-next");
     next.focus();
     await tap(h, "trial-cuts-next");
@@ -449,14 +457,15 @@ describe("TI10 ko 페이지", () => {
 });
 
 describe("TI12 연타 · 늦은 결과", () => {
-  it("Start 두 번 → trial_start 하나 · unlock 하나", async () => {
+  it("TI-B1 첫 탭 연타 → trial_start 하나 · unlock 하나 · 전체화면 요청 하나", async () => {
     h = await mountTrial();
-    const start = shown(h, "trial-start-button");
-    start.click();
-    start.click();
+    const next = shown(h, "trial-cuts-next");
+    next.click();
+    next.click();
     await tap(h, "trial-cuts-next");
     expect(h.sent.filter((event) => event.name === "trial_start")).toHaveLength(1);
     expect(h.audio.calls.filter((call) => call.kind === "unlock")).toHaveLength(1);
+    expect(h.fullscreen.calls.filter((call) => call === "request")).toHaveLength(1);
   });
 
   it("듣는 중 Stop → speech.stop · 다시 listen 없음", async () => {
@@ -483,5 +492,138 @@ describe("TI12 연타 · 늦은 결과", () => {
     expect(turn.getAttribute("data-phase")).toBe("ready");
     noneShown(h, "trial-turn-reply");
     expect(sfxOf(h.audio).slice(sfxBefore)).not.toContain("correct_answer");
+  });
+});
+
+describe("TI-B1 첫 탭 — 열 때 소리 · 이벤트 · 전체화면 0, 첫 탭에 잠금 해제 → 시작 이벤트 → 받아 두기", () => {
+  it("열고 기다려도 호출 0, 첫 Next에 unlock · request · trial_start · trial_step(prologue) · prologue 음성 받기", async () => {
+    h = await mountTrial();
+    await settle();
+    expect(h.audio.calls).toEqual([]);
+    expect(h.sent).toEqual([]);
+    expect(h.fullscreen.calls).toEqual([]);
+    await tap(h, "trial-cuts-next");
+    expect(h.audio.calls[0]).toEqual({ kind: "unlock", step: "prologue" });
+    const prefetch = h.audio.calls.find((call) => call.kind === "prefetch");
+    expect(prefetch?.kind === "prefetch" ? prefetch.urls : []).toEqual(
+      expect.arrayContaining([u00AudioUrl("pre-5-dream"), u00AudioUrl("d-01")]),
+    );
+    expect(h.fullscreen.calls).toEqual(["request"]);
+    expect(h.sent).toEqual([
+      { name: "trial_start", params: { speech: "supported" } },
+      { name: "trial_step", params: { step: "prologue", ordinal: "1" } },
+    ]);
+    // 첫 탭도 Next — 컷 2로 넘어갔다(움직임 줄이기라 타자 효과가 없다).
+    expect(cutIndexOf(h)).toBe("2");
+    await tap(h, "trial-cuts-next");
+    expect(h.audio.calls.filter((call) => call.kind === "unlock")).toHaveLength(1);
+    expect(h.fullscreen.calls).toEqual(["request"]);
+  });
+
+  it("말하기 미지원 판정도 첫 탭에서 — trial_start{unsupported}", async () => {
+    h = await mountTrial({ speech: "unsupported" });
+    await tap(h, "trial-cuts-next");
+    expect(h.sent[0]).toEqual({ name: "trial_start", params: { speech: "unsupported" } });
+  });
+
+  it("나가기 링크를 누르면 전체화면을 푼다(이동은 막지 않음)", async () => {
+    h = await mountTrial();
+    await tap(h, "trial-cuts-next");
+    const exit = h.root.querySelector('[data-testid="trial-exit"]') as HTMLElement;
+    let prevented = false;
+    exit.addEventListener("click", (event) => {
+      prevented = event.defaultPrevented;
+      event.preventDefault();
+    });
+    exit.click();
+    expect(h.fullscreen.calls).toEqual(["request", "exit"]);
+    expect(prevented).toBe(false);
+  });
+});
+
+describe("TI-C1 엔딩 4컷 → Episode clear(배너 → 예고) → 완료", () => {
+  /** 롤플레이를 지정한 결과로 마치고 엔딩 마지막 컷에 선다. */
+  async function toLastEpilogueCut(harness: Harness, pass: boolean): Promise<void> {
+    await playToRoleplay(harness);
+    for (const index of [0, 1, 2]) {
+      if (pass) await speakTurn(harness, heard(SPEECH_CORRECT[index] ?? ""));
+      else {
+        await tap(harness, "trial-turn-cant-speak");
+        await tileTurn(harness, index === 2 ? [0] : index === 1 ? [0, 1] : [0, 1, 2]);
+      }
+      await tap(harness, "trial-turn-next");
+    }
+    for (let cut = 0; cut < 3; cut += 1) await tap(harness, "trial-cuts-next");
+    expect(cutIndexOf(harness)).toBe("4");
+  }
+
+  const phaseOf = (harness: Harness) =>
+    shown(harness, "trial-step-clear").getAttribute("data-phase");
+
+  it.each([true, false])(
+    "엔딩 마지막 Next → 배너(lesson_complete · 초점 제목) → 1600ms 뒤 예고(초점 · 낭독) → Next → 완료 (통과 %s)",
+    async (pass) => {
+      h = await mountTrial();
+      await toLastEpilogueCut(h, pass);
+      shown(h, "trial-cuts-next").click();
+      await flush();
+      expectStep(h, "clear", "7");
+      expect(phaseOf(h)).toBe("banner");
+      shown(h, "trial-clear-banner");
+      noneShown(h, "trial-clear-teaser");
+      expect(sfxOf(h.audio).at(-1)).toBe("lesson_complete");
+      expect(h.doc.activeElement).toBe(shown(h, "trial-clear-title"));
+      expect(textOf(shown(h, "trial-clear-title"))).toBe("Episode clear!");
+      await vi.advanceTimersByTimeAsync(TRIAL_CLEAR_HOLD_MS - 1);
+      expect(phaseOf(h)).toBe("banner");
+      await vi.advanceTimersByTimeAsync(1);
+      expect(phaseOf(h)).toBe("teaser");
+      shown(h, "trial-clear-teaser");
+      noneShown(h, "trial-clear-banner");
+      expect(h.doc.activeElement).toBe(shown(h, "trial-clear-teaser-title"));
+      expect(liveText(h)).toContain(h.data.copy.teaserTitle);
+      expect(h.fullscreen.calls).toEqual(["request"]);
+      await tap(h, "trial-clear-next");
+      expectStep(h, "complete", "7");
+      expect(shown(h, "trial-step-complete").getAttribute("data-result")).toBe(
+        pass ? "passed" : "failed",
+      );
+      expect(h.fullscreen.calls).toEqual(["request", "exit"]);
+      expect(h.sent.at(-1)).toEqual({
+        name: "trial_complete",
+        params: { verdict: pass ? "passed" : "failed" },
+      });
+      expect(h.errors).toEqual([]);
+    },
+  );
+
+  it("배너를 누르면 바로 예고 — 남은 유지 시간이 완료로 넘기지 않는다", async () => {
+    h = await mountTrial();
+    await toLastEpilogueCut(h, true);
+    shown(h, "trial-cuts-next").click();
+    await flush();
+    await vi.advanceTimersByTimeAsync(500);
+    shown(h, "trial-clear-banner").click();
+    await flush();
+    expect(phaseOf(h)).toBe("teaser");
+    await vi.advanceTimersByTimeAsync(TRIAL_CLEAR_HOLD_MS * 2);
+    expect(stepOf(h)).toBe("clear");
+    expect(phaseOf(h)).toBe("teaser");
+  });
+
+  it("엔딩 4컷 글이 차례로 — 3 · 4는 「누구였을까?」 · 「여행은 이제 시작이다」 독백(음성 없음)", async () => {
+    h = await mountTrial();
+    await playToRoleplay(h);
+    for (const index of [0, 1, 2]) {
+      await speakTurn(h, heard(SPEECH_CORRECT[index] ?? ""));
+      await tap(h, "trial-turn-next");
+    }
+    const voices = voicesOf(h.audio).length;
+    await tap(h, "trial-cuts-next");
+    await tap(h, "trial-cuts-next");
+    expect(textOf(shown(h, "trial-cut-line"))).toContain("누구였을까?");
+    await tap(h, "trial-cuts-next");
+    expect(textOf(shown(h, "trial-cut-line"))).toContain("여행은 이제 시작이다");
+    expect(voicesOf(h.audio).slice(voices)).toEqual([u00AudioUrl("post-2")]);
   });
 });

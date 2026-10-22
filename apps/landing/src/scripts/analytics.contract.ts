@@ -3,6 +3,7 @@
 // 입력은 DOM 요소가 아니라 그 요소에서 읽은 값뿐이라, unit 테스트가 jsdom 없이 잴 수 있습니다.
 
 import type { SpeechAvailability, TrialFunnelStep } from "../trial/trial-machine.contract";
+import type { PreregOutcome } from "../trial/trial-prereg.contract";
 
 /** 랜딩 · 체험판이 보내는 이벤트 열하나의 이름입니다. README 「분석 (GA4)」의 목록과 같습니다. */
 export type AnalyticsEventName =
@@ -16,7 +17,7 @@ export type AnalyticsEventName =
   | "trial_step"
   | "trial_roleplay_result"
   | "trial_complete"
-  | "trial_store_click";
+  | "trial_preregister";
 
 /** 체험판 링크가 놓인 자리(`data-trial-link`). */
 export type TrialLinkLocation = "hero" | "download";
@@ -44,7 +45,7 @@ export type AnalyticsEvent =
       };
     }
   | { name: "trial_complete"; params: { verdict: "passed" | "failed" } }
-  | { name: "trial_store_click"; params: { store: "ios" | "android" } };
+  | { name: "trial_preregister"; params: { status: PreregOutcome } };
 
 /**
  * 눌린 `<a>`에서 읽은 값입니다. 누른 자리에서 가장 가까운 `<a>`가 없으면 함수에 `null`을 넘깁니다.

@@ -6,6 +6,7 @@ import { resolveMeasurementId } from "../../analytics/gtag";
 import { deployEnvironment } from "../../seo/deploy-env";
 import { loadTrialModel } from "../../trial/trial-content";
 import { trialImageUrlOf } from "../../trial/trial-images";
+import { resolvePreregConfig } from "../../trial/trial-prereg";
 import { defaultLanguage } from "../../site";
 
 // 화면 모델은 빌드 때 사본에서 한 번 만듭니다. 음성 주소의 모양은 astro.config가 먼저 검사합니다.
@@ -16,9 +17,15 @@ const model = loadTrialModel({
   imageUrlOf: trialImageUrlOf,
   contentBase: supabaseUrl === "" ? "" : contentBaseUrl(supabaseUrl),
 });
+// 사전 등록 보낼 곳(공개 키) — 프로덕션 검사는 astro.config가 먼저 했고, 없으면 폼이 unavailable입니다.
+const prereg = resolvePreregConfig(
+  import.meta.env.PUBLIC_SUPABASE_URL,
+  import.meta.env.PUBLIC_SUPABASE_ANON_KEY,
+  false,
+);
 const measurementId = indexable
   ? resolveMeasurementId(import.meta.env.PUBLIC_GA_MEASUREMENT_ID)
   : "";
 ---
 
-<TrialPage language={defaultLanguage} model={model} measurementId={measurementId} />
+<TrialPage language={defaultLanguage} model={model} measurementId={measurementId} prereg={prereg} />
