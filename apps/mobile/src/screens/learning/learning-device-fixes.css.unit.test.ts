@@ -16,7 +16,7 @@ const readCss = (file: string): string => {
 
 const bodyOf = (css: string, selector: string): string =>
   [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)]
-    .filter((match) => (match[1] ?? "").trim() === selector)
+    .filter((match) => (match[1] ?? "").trim().replace(/\s+/g, " ") === selector)
     .map((match) => (match[2] ?? "").replace(/\s+/g, " "))
     .join(" ");
 
@@ -46,5 +46,20 @@ describe("iOS Lynx 기기 확인 결함 (LDF)", () => {
       (body.includes("border-top-left-radius: var(--libitum-radius-xl);") &&
         body.includes("border-top-right-radius: var(--libitum-radius-xl);"));
     expect(rounded).toBe(true);
+  });
+
+  test("LDF4. 보조 버튼과 짝인 행은 넘치면 줄을 바꾸고 주 버튼의 기준 폭이 내용 폭이다(큰 글자 Speak 잘림)", () => {
+    const css = readCss("screens/learning/learning-shell.css");
+    const row = bodyOf(css, ".learning-shell-actions-paired");
+    expect(row).toContain("flex-wrap: wrap;");
+    expect(row).toContain("justify-content: center;");
+    const primary = bodyOf(
+      css,
+      ".learning-shell-actions-paired .learning-shell-action, .learning-shell-actions-paired .learning-shell-action-slot",
+    );
+    expect(primary).toContain("flex: 1 1 auto;");
+    // 짝이 아닌 행 · 버튼은 그대로 — 기준 폭 0으로 한 줄을 채웁니다.
+    expect(bodyOf(css, ".learning-shell-actions")).not.toContain("flex-wrap");
+    expect(bodyOf(css, ".learning-shell-action")).toContain("flex: 1;");
   });
 });

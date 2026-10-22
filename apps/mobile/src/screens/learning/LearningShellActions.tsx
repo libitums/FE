@@ -22,13 +22,16 @@ export function LearningShellActions({
   feedback?: LearningShellFeedback;
 }): ReactNode {
   const flowed = inFlow || feedback !== undefined;
+  // 보조 버튼과 짝이면 행이 넘칠 때(큰 글자) 두 버튼이 위아래로 쌓입니다 — 주 버튼 글자가 잘리지 않게(ADR-0020 결정 5).
+  const rowClass = [
+    "learning-shell-actions",
+    flowed ? "learning-shell-actions-in-flow" : null,
+    secondaryAction === undefined ? null : "learning-shell-actions-paired",
+  ]
+    .filter((name) => name !== null)
+    .join(" ");
   const row = (
-    <view
-      className={
-        flowed ? "learning-shell-actions learning-shell-actions-in-flow" : "learning-shell-actions"
-      }
-      data-testid="learning-shell-actions"
-    >
+    <view className={rowClass} data-testid="learning-shell-actions">
       {secondaryAction}
       {button === undefined ? (
         <view

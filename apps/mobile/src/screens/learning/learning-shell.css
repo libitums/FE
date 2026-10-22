@@ -372,6 +372,19 @@
   flex-shrink: 0;
 }
 
+/* 보조 버튼과 짝인 행(말하기 화면) — 두 버튼이 한 줄에 들지 않으면(큰 글자) 줄을 바꿔 위아래로 쌓습니다. 주 버튼의
+   기준 폭을 내용 폭(`auto`)으로 두어야 넘침이 셈에 들어갑니다(`0`이면 늘 한 줄에 든다고 셉니다). 보통 크기에서는 한 줄에
+   들고 주 버튼이 남는 폭을 다 채워 모양이 그대로입니다. 쌓이면 보조 버튼은 내용 폭으로 가운데에 섭니다. */
+.learning-shell-actions-paired {
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.learning-shell-actions-paired .learning-shell-action,
+.learning-shell-actions-paired .learning-shell-action-slot {
+  flex: 1 1 auto;
+}
+
 .learning-shell-action {
   flex: 1;
   /* ⚠ **알려진 대비 위반입니다.** 흰 라벨이 `brand-primary`(#F46B18) 위에서 3.02:1이고
