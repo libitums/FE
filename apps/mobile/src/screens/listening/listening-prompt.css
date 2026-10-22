@@ -111,3 +111,9 @@
   line-height: var(--libitum-typography-heading-s-line-height);
   letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
 }
+
+/* 답하기 전 혼자 서는 로마자 참고 줄입니다. 한글 아래에 붙는 `gray-600`은 흰 카드 위 대비가 약 2.1:1이라 혼자
+   읽히는 줄로는 모자랍니다 — `fg-neutral-muted`(약 7:1)로 올립니다. */
+.listening-prompt-romanization-hint {
+  color: var(--libitum-color-fg-neutral-muted);
+}

@@ -15,6 +15,7 @@ export type PlaybackPromptProps = {
   sessionOptions: SessionOptions;
   /** 판정이 난 뒤 대본을 보일지입니다. 안 주면 false입니다. */
   revealed?: boolean;
+  readonly romanizationHint?: boolean;
 };
 
 export function PlaybackPrompt({
@@ -23,6 +24,7 @@ export function PlaybackPrompt({
   audioSource,
   sessionOptions,
   revealed,
+  romanizationHint,
 }: PlaybackPromptProps): ReactNode {
   const cue =
     audioSource === undefined
@@ -40,6 +42,7 @@ export function PlaybackPrompt({
       sessionOptions={sessionOptions}
       playback={playback}
       revealed={revealed ?? false}
+      romanizationHint={romanizationHint ?? false}
     />
   );
 }

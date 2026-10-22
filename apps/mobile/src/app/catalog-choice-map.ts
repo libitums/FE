@@ -54,6 +54,8 @@ export function listeningItemOf(
     romanization,
     audio,
     ...optionalField("instruction", instructionOf(port, item.prompt)),
+    // 최소 대립쌍은 로마자가 곧 정답(소리 차이)이라 답하기 전에 보이지 않습니다.
+    ...(item.type === "LISTEN_SELECT" ? { romanizationHint: true } : {}),
   };
   let question: ListeningQuestion;
   if (isPair(choices)) {

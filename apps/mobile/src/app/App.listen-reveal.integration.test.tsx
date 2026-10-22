@@ -18,7 +18,7 @@ const ROMAN = "jinjjayo? gamsahamnida!";
 const text = () => screen.queryByTestId("listening-prompt-text");
 const romanization = () => screen.queryByTestId("listening-prompt-romanization");
 
-test("LR1. u00 S2 듣기 문항은 처음에 대본이 없고 재생 조작과 보기만 있다", async () => {
+test("LR1. u00 S2 듣기 문항은 처음에 한글 대본이 없고 로마자 참고 줄 · 재생 조작 · 보기가 있다", async () => {
   await bootItemAudioApp({ progress: afterS1 });
 
   tapNode(u00, "S2");
@@ -26,7 +26,7 @@ test("LR1. u00 S2 듣기 문항은 처음에 대본이 없고 재생 조작과 �
   expect(screen.getByTestId("listening-screen-content")).toBeInTheDocument();
   expect(screen.getByTestId("listening-prompt-playback")).toBeInTheDocument();
   expect(text()).not.toBeInTheDocument();
-  expect(romanization()).not.toBeInTheDocument();
+  expect(romanization()).toHaveTextContent(ROMAN);
   expect(screen.getByTestId("listening-choice-0")).toBeInTheDocument();
 });
 

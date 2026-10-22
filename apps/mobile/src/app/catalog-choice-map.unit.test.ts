@@ -48,5 +48,35 @@ describe("listeningItemOf — u00 S2", () => {
     expect(mapped).toMatchObject({ kind: "listening", itemId: item.id });
     if (mapped.kind !== "listening") return;
     expect(mapped.question.audio).toBeNull();
+    // V5: 듣고 고르기는 답하기 전 로마자 참고 줄을 켭니다.
+    expect(mapped.question.romanizationHint).toBe(true);
+  });
+
+  test("V5. 최소 대립쌍(MIN_PAIR_AB)은 로마자 참고를 켜지 않는다 — 로마자가 곧 정답이다", () => {
+    const entry = u00();
+    const port: CatalogLessonItemPort = {
+      fill,
+      episodeId: TUTORIAL_EPISODE_ID,
+      glossOf: catalogGlossOf(entry.episode.words, fill),
+      imageUrlOf: (path) => `https://cdn/${path}`,
+      audioUrlOf: () => null,
+    };
+    const listen = entry.episode.units
+      .find((unit) => unit.id === "S2")
+      ?.items.find(
+        (candidate): candidate is Extract<LearningItem, { type: "LISTEN_SELECT" }> =>
+          candidate.type === "LISTEN_SELECT",
+      );
+    expect(listen).toBeDefined();
+    if (listen === undefined) return;
+    const pair = { ...listen, type: "MIN_PAIR_AB" } as unknown as Extract<
+      LearningItem,
+      { type: "MIN_PAIR_AB" }
+    >;
+
+    const mapped = listeningItemOf(pair, port);
+    expect(mapped.kind).toBe("listening");
+    if (mapped.kind !== "listening") return;
+    expect(mapped.question.romanizationHint).toBeUndefined();
   });
 });

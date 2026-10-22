@@ -34,6 +34,8 @@ export type ListeningPromptProps = {
   revealed: boolean;
   /** 재생 상태와 조작을 묶어 받습니다 — 주인은 화면의 `useListenAudio`입니다. */
   playback: ListenAudioControl;
+  /** 대본이 가려진 동안에도 로마자 줄만 참고로 세울 때 true입니다(문항이 정합니다). */
+  romanizationHint?: boolean;
 };
 
 export function ListeningPrompt({
@@ -42,8 +44,10 @@ export function ListeningPrompt({
   sessionOptions,
   revealed,
   playback,
+  romanizationHint = false,
 }: ListeningPromptProps): ReactNode {
   const scale = listeningPromptScale(text);
+  const transcriptShown = sessionOptions["show-transcript"] || revealed;
 
   return (
     <view className="listening-prompt">
@@ -56,7 +60,7 @@ export function ListeningPrompt({
           `display:none`은 ui 계층이 원리적으로 못 보고, 숨긴 `<text>`는 보조기술
           정지점으로 남습니다 — 「보이지 않는다」가 거짓이 됩니다. 로마자 줄도 같은
           가림을 받습니다: 그것도 소리를 글자로 옮긴 것이라 대본입니다. */}
-      {sessionOptions["show-transcript"] || revealed ? (
+      {transcriptShown ? (
         // 크기 단계가 문장 길이에서 나옵니다 — 긴 문장을 큰 글자로 두면 카드가 늘어나
         // 아래 보기를 화면 밖으로 밉니다. 로마자 줄도 같은 단계를 받습니다: 둘의 크기
         // 차이가 유지돼야 한글이 주인공이라는 것이 읽힙니다.
@@ -66,6 +70,16 @@ export function ListeningPrompt({
           </text>
           <text
             className="listening-prompt-romanization"
+            data-testid="listening-prompt-romanization"
+          >
+            {romanization}
+          </text>
+        </view>
+      ) : romanizationHint ? (
+        // 답하기 전 참고 줄입니다 — 한글 대본은 가린 채 로마자 한 줄만 섭니다. 크기 단계는 대본과 같습니다.
+        <view className={`listening-prompt-script listening-prompt-scale-${scale}`}>
+          <text
+            className="listening-prompt-romanization listening-prompt-romanization-hint"
             data-testid="listening-prompt-romanization"
           >
             {romanization}
