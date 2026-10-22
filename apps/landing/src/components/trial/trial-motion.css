@@ -1,0 +1,177 @@
+/*
+ * 스크립트가 붙이는 움직임 표식의 모양 — 타자 효과(data-revealing · [data-trial-reveal]), 장면 전환(data-entering),
+ * 완료 폭죽([data-trial-confetti]), 판정 기다림(data-judging · 스피너). 움직임 줄이기면 스크립트가 표식을 붙이지 않습니다.
+ */
+
+/* 타자 효과 — 온전한 대사를 투명하게 깔아 상자 높이를 고정하고, 그 위에 드러나는 층을 겹칩니다. */
+.trial-cut [data-testid="trial-cut-line"] {
+  position: relative;
+}
+
+.trial-cut[data-revealing="true"] [data-testid="trial-cut-line"] {
+  -webkit-text-fill-color: transparent;
+}
+
+.trial-reveal-layer {
+  position: absolute;
+  inset: 0;
+  -webkit-text-fill-color: currentColor;
+}
+
+/* 장면 전환 — 새로 선 단계가 어두운 바탕 위로 섭니다. */
+.trial-step[data-entering] {
+  animation: trial-step-enter var(--libitum-motion-duration-d6) var(--libitum-motion-easing-easing)
+    both;
+}
+
+.trial-learning[data-entering] {
+  animation:
+    trial-step-enter var(--libitum-motion-duration-d6) var(--libitum-motion-easing-easing) both,
+    trial-item-enter var(--libitum-motion-duration-page) var(--libitum-motion-easing-enter) both;
+}
+
+@keyframes trial-step-enter {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+/* 완료 폭죽 — 배지 가운데 0×0 기준점에서 조각이 각도별로 퍼집니다. 배지가 조각을 덮습니다. */
+.trial-complete__badge {
+  position: relative;
+  z-index: 1;
+}
+
+.trial-confetti {
+  position: relative;
+  z-index: 0;
+  width: 0;
+  height: 0;
+  margin-bottom: calc(var(--libitum-spacing-24) * -1);
+  pointer-events: none;
+}
+
+.trial-confetti__piece {
+  position: absolute;
+  top: calc(
+    var(--libitum-spacing-24) +
+      (var(--libitum-spacing-96) + var(--libitum-spacing-24) + var(--libitum-spacing-6)) / 2
+  );
+  left: 0;
+  width: 7px;
+  height: 13px;
+  border-radius: var(--libitum-radius-sm);
+  background: var(--libitum-color-brand-primary);
+  opacity: 0;
+  animation: trial-confetti-burst var(--libitum-motion-duration-d9)
+    var(--libitum-motion-easing-enter-expressive) var(--libitum-motion-duration-d1) 1 both;
+}
+
+.trial-confetti__piece:nth-child(3n) {
+  width: 5px;
+  height: 11px;
+}
+
+.trial-confetti__piece[data-color="1"] {
+  background: var(--libitum-color-brand-secondary);
+}
+
+.trial-confetti__piece[data-color="2"] {
+  background: var(--libitum-color-feedback-warning);
+}
+
+.trial-confetti__piece[data-color="3"] {
+  background: var(--libitum-color-brand-gem);
+}
+
+.trial-confetti__piece[data-color="4"] {
+  background: var(--libitum-color-feedback-correct);
+}
+
+.trial-confetti__piece[data-color="5"] {
+  background: var(--libitum-color-feedback-incorrect);
+}
+
+@keyframes trial-confetti-burst {
+  0% {
+    opacity: 1;
+    transform: rotate(var(--trial-confetti-angle)) translateY(0) scale(0.4);
+  }
+
+  70% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: rotate(var(--trial-confetti-angle))
+      translateY(calc(var(--trial-confetti-distance) * -1))
+      rotate(calc(var(--trial-confetti-spin) * 180deg));
+  }
+}
+
+/* 마이크 라벨 — 기다림 · 듣는 중 · 그 밖 셋 중 하나만. */
+.trial-mic__label [data-mic-label] {
+  display: none;
+}
+
+.trial-turn:not([data-phase="listening"]) [data-mic-label="idle"],
+.trial-turn[data-phase="listening"]:not([data-judging]) [data-mic-label="listening"],
+.trial-turn[data-phase="listening"][data-judging] [data-mic-label="judging"] {
+  display: inline;
+}
+
+/* 판정 기다림 — 마이크 아이콘 자리에 스피너, 탭은 무시합니다. */
+.trial-spinner {
+  display: none;
+  width: var(--libitum-icon-size-md);
+  height: var(--libitum-icon-size-md);
+  border: var(--libitum-stroke-width-strong) solid
+    color-mix(
+      in srgb,
+      var(--libitum-color-white) calc(var(--libitum-opacity-16) * 100%),
+      transparent
+    );
+  border-top-color: var(--libitum-color-white);
+  border-radius: var(--libitum-radius-full);
+  animation: trial-spin var(--libitum-motion-duration-spinner) var(--libitum-motion-easing-linear)
+    infinite;
+}
+
+.trial-turn[data-judging] .trial-mic {
+  pointer-events: none;
+  animation: none;
+}
+
+.trial-turn[data-judging] .trial-mic .trial-icon {
+  display: none;
+}
+
+.trial-turn[data-judging] .trial-spinner {
+  display: block;
+}
+
+@keyframes trial-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 스피너는 유일한 진행 표시라 움직임 줄이기에서도 돕니다(전역 줄이기 규칙을 이것만 되돌림). */
+.trial[data-motion="reduced"] .trial-spinner {
+  animation: trial-spin var(--libitum-motion-duration-spinner) var(--libitum-motion-easing-linear)
+    infinite !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trial .trial-spinner {
+    animation: trial-spin var(--libitum-motion-duration-spinner) var(--libitum-motion-easing-linear)
+      infinite !important;
+    animation-duration: var(--libitum-motion-duration-spinner) !important;
+    animation-iteration-count: infinite !important;
+  }
+}

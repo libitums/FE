@@ -1,0 +1,31 @@
+---
+import { pathFor } from "../../site";
+import type { TrialBarProps } from "./trial-components.contract";
+import TrialIcon from "./TrialIcon.astro";
+
+type Props = TrialBarProps;
+
+const { language, t } = Astro.props;
+---
+
+<header class="trial-bar" data-testid="trial-bar">
+  <a
+    class="trial-round trial-round--xl"
+    href={pathFor(language)}
+    aria-label={t.exit}
+    data-testid="trial-exit"
+  >
+    <TrialIcon name="arrow-left" />
+  </a>
+  <div
+    class="trial-progress"
+    role="progressbar"
+    aria-valuemin="0"
+    aria-valuemax="7"
+    aria-valuenow="0"
+    aria-label={t.progressLabel}
+    data-testid="trial-progress"
+  >
+    <span class="trial-progress__fill"></span>
+  </div>
+</header>

@@ -2,6 +2,8 @@
 //
 // 화면 경로가 닿는 파일이라 `lib/episode-*`는 타입만 가져옵니다.
 
+import { roleplayLinesOf, type RoleplayLines } from "@libitums/episode-core/lines";
+
 import { isTypedAnswerAccepted } from "../lib/hangul-keyboard";
 import type { CatalogEntry } from "../lib/episode-catalog";
 import { contentAudioSourceOf } from "../lib/content-audio";
@@ -76,27 +78,13 @@ export function catalogRoleplayTurnOf(
   };
 }
 
-const LINE_ID = /^D([1-9][0-9]*)$/;
+export type CatalogRoleplayLines = RoleplayLines;
 
-export type CatalogRoleplayLines = {
-  readonly counterpart: DialogueLine;
-  readonly player: DialogueLine;
-};
-
-/** `line_id`가 가리키는 플레이어 줄과 그 앞 상대 줄입니다. 어긋나면 `null`입니다. */
-export function catalogRoleplayLinesOf(
-  lineId: string,
-  dialogue: readonly DialogueLine[],
-): CatalogRoleplayLines | null {
-  const matched = LINE_ID.exec(lineId);
-  if (matched === null) return null;
-  const seq = Number(matched[1]);
-  const player = dialogue.find((line) => line.seq === seq);
-  const counterpart = dialogue.find((line) => line.seq === seq - 1);
-  if (player === undefined || counterpart === undefined) return null;
-  if (player.role !== "player" || counterpart.role !== "counterpart") return null;
-  return { counterpart, player };
-}
+/**
+ * `line_id`가 가리키는 플레이어 줄과 그 앞 상대 줄입니다. 어긋나면 `null`입니다 — 정본은
+ * `@libitums/episode-core/lines`(zod 없는 입구 · 랜딩 체험판과 공유)입니다.
+ */
+export { roleplayLinesOf as catalogRoleplayLinesOf };
 
 export type CatalogRoleplayAudio = Pick<
   CatalogRoleplayTurn,
@@ -110,7 +98,7 @@ export function catalogRoleplayAudioOf(
   contentUrlOf: (relativePath: string) => string | null,
 ): CatalogRoleplayAudio {
   if (item.type !== "ROLEPLAY_TURN") return {};
-  const lines = catalogRoleplayLinesOf(item.roleplay.lineId, dialogue);
+  const lines = roleplayLinesOf(item.roleplay.lineId, dialogue);
   if (lines === null) return {};
   const counterpart = contentAudioSourceOf(
     lines.counterpart.audioUrl,

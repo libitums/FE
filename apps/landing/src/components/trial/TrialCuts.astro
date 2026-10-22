@@ -1,0 +1,67 @@
+---
+import type { TrialCut } from "../../trial/trial-model.contract";
+import type { TrialCutsProps } from "./trial-components.contract";
+
+type Props = TrialCutsProps;
+
+const { t, step, cuts } = Astro.props;
+const headingId = `trial-heading-${step}`;
+const lastIndex = cuts.length - 1;
+// 표지가 없어 prologue가 첫 화면입니다 — 열 때부터 보입니다(JS가 꺼져도 컷 1은 보임).
+
+// 독백은 괄호로 감싸 말과 가릅니다(앱과 같음).
+const lineOf = (cut: TrialCut) => (cut.voice === "thought" ? `(${cut.text.ko})` : cut.text.ko);
+const speakerOf = (cut: TrialCut) =>
+  cut.speaker === null ? null : cut.speaker.kind === "self" ? t.me : cut.speaker.name;
+---
+
+<section
+  class="trial-step trial-scene"
+  data-testid={`trial-step-${step}`}
+  aria-labelledby={headingId}
+  hidden={step !== "prologue"}
+>
+  <h2 class="trial-sr-only" id={headingId} data-step-heading tabindex="-1">{t.storyTitle}</h2>
+  {
+    cuts.map((cut, position) => (
+      <article
+        class="trial-cut"
+        data-testid="trial-cut"
+        data-cut-index={cut.index}
+        data-last={position === lastIndex ? "true" : undefined}
+        hidden={position !== 0}
+      >
+        {cut.imageUrl !== null && (
+          <img class="trial-scene__image" src={cut.imageUrl} alt="" data-testid="trial-cut-image" />
+        )}
+        <div class={`trial-dialog trial-dialog--${cut.voice}`}>
+          {speakerOf(cut) !== null && (
+            <p class="trial-dialog__speaker trial-type-dialogue-speaker" data-testid="trial-cut-speaker">
+              {speakerOf(cut)}
+              {cut.voice === "thought" && <span class="trial-sr-only">{` · ${t.thinking}`}</span>}
+            </p>
+          )}
+          {cut.aside !== null && (
+            <p class="trial-dialog__aside trial-type-body-s" lang="ko">
+              {cut.aside.ko}
+            </p>
+          )}
+          <p class="trial-dialog__line trial-type-dialogue-body" lang="ko" data-testid="trial-cut-line">
+            {lineOf(cut)}
+          </p>
+          <div class="trial-dialog__translation">
+            <p class="trial-dialog__roman trial-type-body-s" lang="ko-Latn" data-testid="trial-cut-roman">
+              {cut.text.roman ?? ""}
+            </p>
+            <p class="trial-type-body-m" lang="en" data-testid="trial-cut-translation">
+              {cut.text.en ?? ""}
+            </p>
+          </div>
+        </div>
+      </article>
+    ))
+  }
+  <div class="trial-scene__bottom">
+    <button class="trial-button" type="button" data-testid="trial-cuts-next">{t.next}</button>
+  </div>
+</section>

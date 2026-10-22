@@ -1,0 +1,141 @@
+---
+// 롤플레이 한 턴 — 말하기 · 타일 조작을 둘 다 굽고 data-mode로 하나만 보입니다.
+// 판정 문구(Great · Not quite)도 둘 다 굽고 data-verdict로 하나만 보입니다. 들은 말만 스크립트가 채웁니다.
+import { formatCopy } from "../../trial/trial-copy-format";
+import type { TrialTurnProps } from "./trial-components.contract";
+import TrialAnswerCopy from "./TrialAnswerCopy.astro";
+import TrialIcon from "./TrialIcon.astro";
+
+type Props = TrialTurnProps;
+
+const { t, turn, index, total, counterpartName, collects } = Astro.props;
+// 수집이 켜진 빌드면 마이크 아래 안내 한 줄 — 마이크 버튼이 설명으로 가리킵니다.
+const savedId = collects ? `trial-turn-saved-${index}` : undefined;
+const hint =
+  turn.replyTranslation !== null && turn.replyRoman !== null
+    ? formatCopy(t.hint, { translation: turn.replyTranslation, roman: turn.replyRoman })
+    : (turn.replyTranslation ?? turn.replyRoman ?? "");
+---
+
+<article
+  class="trial-turn"
+  data-testid="trial-turn"
+  data-turn-index={index}
+  data-mode="speech"
+  data-phase="ready"
+  hidden={index !== 0}
+>
+  <p class="trial-chip trial-type-label-m" tabindex="-1" data-testid="trial-turn-progress">
+    {formatCopy(t.lineProgress, { ordinal: String(index + 1), total: String(total) })}
+  </p>
+  <div class="trial-turn__spacer"></div>
+  <div class="trial-dialog trial-dialog--speech trial-turn__line">
+    <p class="trial-dialog__speaker trial-type-dialogue-speaker" lang="ko" data-testid="trial-turn-counterpart">
+      {counterpartName}
+    </p>
+    <p class="trial-dialog__line trial-type-dialogue-body" lang="ko" data-testid="trial-turn-line">
+      {turn.line.ko}
+    </p>
+    {
+      turn.line.en !== null && (
+        <div class="trial-dialog__translation">
+          <p class="trial-type-body-m" lang="en">
+            {turn.line.en}
+          </p>
+        </div>
+      )
+    }
+    {
+      turn.counterpartAudioUrl !== null && (
+        <button
+          class="trial-round trial-round--m trial-turn__replay"
+          type="button"
+          aria-label={t.replay}
+          data-testid="trial-turn-replay"
+        >
+          <TrialIcon name="volume" />
+        </button>
+      )
+    }
+  </div>
+  <div class="trial-turn__reply" data-verdict="" data-testid="trial-turn-reply" hidden>
+    <p class="trial-pill trial-type-label-m" data-testid="trial-turn-verdict">
+      <span data-verdict-copy="correct">{t.great}</span>
+      <span data-verdict-copy="incorrect">{t.notQuite}</span>
+    </p>
+    <div class="trial-dialog trial-dialog--thought">
+      <p class="trial-dialog__speaker trial-type-dialogue-speaker">{t.me}</p>
+      <p class="trial-dialog__line trial-type-dialogue-body" lang="ko" data-testid="trial-turn-heard">
+      </p>
+      <p class="trial-dialog__answer trial-type-body-m" data-testid="trial-turn-answer"><TrialAnswerCopy template={t.correctAnswer} answer={turn.accepted[0]} /></p>
+    </div>
+  </div>
+  <p class="trial-turn__notice trial-type-body-m" data-notice="" data-testid="trial-turn-notice" hidden>
+  </p>
+  <div class="trial-speak">
+    <p class="trial-turn__hint trial-type-body-m" data-testid="trial-turn-hint" tabindex="-1" hidden>{hint}</p>
+    <button
+      class="trial-mic"
+      type="button"
+      aria-label={t.speak}
+      aria-describedby={savedId}
+      data-testid="trial-turn-speak"
+    >
+      <TrialIcon name="mic" />
+      <span class="trial-spinner" aria-hidden="true"></span>
+    </button>
+    <p class="trial-mic__label trial-type-label-m" aria-hidden="true">
+      <span data-mic-label="idle">{t.speak}</span>
+      <span data-mic-label="listening">{t.listening}</span>
+      <span data-mic-label="judging">{t.checking}</span>
+    </p>
+    <div class="trial-speak__links">
+      <button class="trial-link trial-link--hint trial-type-button-m" type="button" data-testid="trial-turn-hint-button">
+        {t.showHint}
+      </button>
+      <button class="trial-link trial-type-button-m" type="button" data-testid="trial-turn-cant-speak">
+        {t.cantSpeak}
+      </button>
+    </div>
+    <button class="trial-button" type="button" data-testid="trial-turn-retry" hidden>
+      {t.tryAgain}
+    </button>
+    {
+      collects && (
+        <p class="trial-turn__saved trial-type-body-s" id={savedId} data-testid="trial-turn-saved">
+          {t.speechSaved}
+        </p>
+      )
+    }
+  </div>
+  <div class="trial-tiles">
+    <p
+      class="trial-tiles__answer trial-type-label-l"
+      data-placeholder={t.replyEmpty}
+      data-testid="trial-turn-composed"
+    >
+    </p>
+    <div class="trial-tiles__bank" data-testid="trial-turn-tiles">
+      {
+        turn.tiles.map((tile, tileIndex) => (
+          <button
+            class="trial-tile trial-type-label-l"
+            type="button"
+            aria-pressed="false"
+            lang="ko"
+            data-tile-index={tileIndex}
+            data-testid="trial-tile"
+          >
+            {tile.ko}
+          </button>
+        ))
+      }
+    </div>
+    <button class="trial-button" type="button" aria-disabled="true" data-testid="trial-turn-check">
+      {t.check}
+    </button>
+  </div>
+  <button class="trial-button" type="button" data-testid="trial-turn-next" hidden>
+    {t.continue}
+  </button>
+</article>

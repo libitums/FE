@@ -6,6 +6,8 @@
 // import하지 않습니다** — 세션 리듀서는 승격하지 않습니다. 문자 그대로 같아
 // 보여도 각자 자기 모듈에 구현합니다.
 
+import { judgeChoice } from "@libitums/episode-core/judge";
+
 import type { UiCopy } from "../../lib/ui-copy.contract";
 import type { AnswerResult } from "../../lib/answer-result";
 import type { WordChoiceQuestion } from "./word-choice-questions";
@@ -37,10 +39,10 @@ export const initialWordChoiceSessionState: WordChoiceSessionState = {
 // 스텝을 전부 갖는 것은 tsc가 지고, 범위 밖 입력에도 아래 식이 그대로
 // 적용됩니다.
 
-// 일치 비교라 answerIndex가 0인 문항에서도 0번 보기가 correct로 나옵니다 —
-// 0을 거짓으로 다루는 자리를 만들지 않습니다.
+// 일치 비교(`judgeChoice`, `@libitums/episode-core/judge`)라 answerIndex가 0인 문항에서도 0번 보기가
+// correct로 나옵니다 — 0을 거짓으로 다루는 자리를 만들지 않습니다.
 export function judgeWordChoice(question: WordChoiceQuestion, choiceIndex: number): AnswerResult {
-  return choiceIndex === question.answerIndex ? "correct" : "incorrect";
+  return judgeChoice(question.answerIndex, choiceIndex);
 }
 
 // 판정을 지는 보기는 고른 하나뿐입니다 — 고르지 않은 보기는 정답이어도

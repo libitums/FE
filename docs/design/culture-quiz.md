@@ -13,7 +13,7 @@
 
 > ⟨2026-10-22 — 상태 표시⟩ **이 문서는 기록이다 — 지금 화면의 정본이 아니다.** 이 문서가 그린 튜토리얼 문화 퀴즈 화면은 옛 튜토리얼과 함께 지워졌고([ADR-0081](../adr/0081-tutorial-as-catalog-episode.md)),
 > 아래 §0이 잇는 두 보기(`ListeningChoice` · `WordChoiceOption`)도 지워졌다. 문화 확인은 카탈로그 학습형(단어 선택 위 `CULTURE_CHECK`)으로 서며, 보기는 ui-lynx `OptionSelector` `outlined-subtle`이고
-> 제시는 **장면**(짝 문화 카드의 그림 + 상대 말풍선) 또는 **질문 카드**, 답한 뒤는 고른 보기만 남고 **해설 판**(`feedback.correct`) + `Continue`다 — 결정은 [ADR-0083](../adr/0083-lesson-item-redesign.md) D5 · D15, 화면은 [화면 명세](../screens.md) 「카탈로그 레슨」 행.
+> 제시는 **장면**(짝 문화 카드의 그림 + 상대 말풍선) 또는 **질문 카드**, 답한 뒤는 고른 보기만 남고 **해설 판**(`feedback.correct`) + `Continue`다 — 결정은 [ADR-0084](../adr/0084-lesson-item-redesign.md) D5 · D15, 화면은 [화면 명세](../screens.md) 「카탈로그 레슨」 행.
 > 이 문서의 토큰 · 대비 근거(판정 색 · 액션 행)는 당시 값으로 남긴다.
 
 ## 0. 이 화면은 새로 그리는 것이 아니라 **잇는** 것이다

@@ -1,12 +1,13 @@
 ---
 import type { Copy } from "../i18n/copy";
-import { storeLinks } from "../site";
+import { type Language, storeLinks, trialPathFor } from "../site";
 
 interface Props {
+  language: Language;
   t: Copy;
 }
 
-const { t } = Astro.props;
+const { language, t } = Astro.props;
 const stores = [
   { id: "ios", platform: "iPhone", name: "App Store", href: storeLinks.ios },
   { id: "android", platform: "Android", name: "Google Play", href: storeLinks.android },
@@ -42,5 +43,13 @@ const stores = [
         )
       }
     </div>
+    <a
+      class="download__trial"
+      href={trialPathFor(language)}
+      data-trial-link="download"
+      data-testid="download-trial-link"
+    >
+      {t.trialDownload}
+    </a>
   </div>
 </section>

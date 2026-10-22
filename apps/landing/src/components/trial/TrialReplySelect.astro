@@ -1,0 +1,70 @@
+---
+import type { TrialReplySelectProps } from "./trial-components.contract";
+import TrialAnswerCopy from "./TrialAnswerCopy.astro";
+import TrialChoiceFooter from "./TrialChoiceFooter.astro";
+import TrialIcon from "./TrialIcon.astro";
+import TrialOptionList from "./TrialOptionList.astro";
+
+type Props = TrialReplySelectProps;
+
+const { t, item } = Astro.props;
+const answer = item.options[item.answerIndex]?.ko ?? "";
+---
+
+<section
+  class="trial-step trial-learning"
+  data-testid="trial-step-reply-select"
+  aria-labelledby="trial-heading-reply-select"
+  hidden
+>
+  <div class="trial-learning__body">
+    <h2
+      class="trial-learning__instruction trial-type-heading-m"
+      id="trial-heading-reply-select"
+      data-step-heading
+      tabindex="-1"
+      data-testid="trial-choice-instruction"
+    >
+      {item.instruction}
+    </h2>
+    <div class="trial-card trial-reply-prompt">
+      <div class="trial-prompt">
+        <p
+          class="trial-reply-prompt__line trial-type-heading-m"
+          lang="ko"
+          data-testid="trial-reply-select-line"
+        >
+          {item.line.ko}
+        </p>
+        {
+          item.audioUrl !== null && (
+            <button
+              class="trial-round trial-round--m"
+              type="button"
+              aria-label={t.listen}
+              data-testid="trial-choice-listen"
+            >
+              <TrialIcon name="volume" />
+            </button>
+          )
+        }
+      </div>
+      {
+        item.line.roman !== null && (
+          <p class="trial-muted trial-type-body-m" lang="ko-Latn">
+            {item.line.roman}
+          </p>
+        )
+      }
+      {
+        item.line.en !== null && (
+          <p class="trial-muted trial-type-body-m" lang="en">
+            {item.line.en}
+          </p>
+        )
+      }
+    </div>
+    <TrialOptionList options={item.options} />
+  </div>
+  <TrialChoiceFooter t={t}><TrialAnswerCopy template={t.correctAnswer} answer={answer} /></TrialChoiceFooter>
+</section>

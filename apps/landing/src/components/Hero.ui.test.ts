@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import { en } from "../i18n/copy";
+import { ko } from "../i18n/ko";
 import Hero from "./Hero.astro";
 import { render } from "./render.support";
 
@@ -7,7 +8,7 @@ describe("Hero", () => {
   let document: Document;
 
   beforeAll(async () => {
-    ({ document } = await render(Hero, { props: { t: en } }));
+    ({ document } = await render(Hero, { props: { language: "en", t: en } }));
   });
 
   const image = (panel: number) => {
@@ -41,5 +42,27 @@ describe("Hero", () => {
       expect(img.closest('[aria-hidden="true"]')).not.toBeNull();
     }
     expect(document.querySelectorAll("h1#hero-title")).toHaveLength(1);
+  });
+
+  it("UT13 체험판 링크(en) — /try/ · data-trial-link=hero · trialCta", () => {
+    const links = document.querySelectorAll('[data-testid="hero-trial-link"]');
+    expect(links).toHaveLength(1);
+    const link = links[0] as Element;
+    expect(link.tagName).toBe("A");
+    expect(link.getAttribute("href")).toBe("/try/");
+    expect(link.getAttribute("data-trial-link")).toBe("hero");
+    expect(en.trialCta).toBeTruthy();
+    expect(link.textContent?.trim()).toBe(en.trialCta);
+    // 보조기술에 숨은 패널 묶음 밖에 있다.
+    expect(link.closest('[aria-hidden="true"]')).toBeNull();
+  });
+
+  it("UT13 체험판 링크(ko) — /ko/try/", async () => {
+    const { document: korean } = await render(Hero, { props: { language: "ko", t: ko } });
+    const link = korean.querySelector('[data-testid="hero-trial-link"]');
+    expect(link?.getAttribute("href")).toBe("/ko/try/");
+    expect(link?.getAttribute("data-trial-link")).toBe("hero");
+    expect(ko.trialCta).toBeTruthy();
+    expect(link?.textContent?.trim()).toBe(ko.trialCta);
   });
 });

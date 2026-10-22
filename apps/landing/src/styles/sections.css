@@ -141,6 +141,22 @@
   transform: translateX(-50%);
 }
 
+/* 체험판 링크 — 히어로 문장 아래, 받기 알약과 같은 주황 면 + 짙은 글자. */
+.hero__trial {
+  justify-self: start;
+  margin-top: 28px;
+  background: var(--brand-secondary);
+  color: var(--fg);
+}
+
+.hero__trial:hover {
+  background: var(--fg-inverted);
+}
+
+.is-enhanced .hero__trial {
+  grid-area: 2 / 1;
+}
+
 html:lang(ko) .hero__cue {
   letter-spacing: 0.04em;
 }
@@ -265,6 +281,19 @@ html:lang(ko) .hero__cue {
   border-color: transparent;
   background: var(--brand-secondary);
   color: var(--fg);
+}
+
+.download__trial {
+  display: inline-block;
+  margin-top: 28px;
+  color: var(--brand-secondary);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.download__trial:hover {
+  color: var(--fg-inverted);
 }
 
 /* 404 */

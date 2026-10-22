@@ -1,0 +1,48 @@
+/*
+ * 데스크톱 머리 띠(> 480px) — 브랜드 · 언어 바꾸기 · 사이트로 돌아가기. 모바일에서는 무대가 화면 전체라 숨깁니다.
+ * 사이트 바깥 틀이라 랜딩 별칭(--fg · --header-height)을 씁니다.
+ */
+.trial-site {
+  display: none;
+}
+
+@media (min-width: 481px) {
+  .trial-site {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: min(100%, 960px);
+    height: var(--header-height);
+    margin: 0 auto;
+    padding: 0 var(--libitum-layout-screen-padding-x);
+    color: var(--fg);
+  }
+
+  .trial-site__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--libitum-spacing-8);
+  }
+
+  .trial-site__link {
+    display: inline-flex;
+    align-items: center;
+    min-height: calc(var(--libitum-spacing-40) + var(--libitum-spacing-4));
+    padding: var(--libitum-spacing-4) var(--libitum-spacing-12);
+    color: var(--fg);
+  }
+
+  @media (hover: hover) {
+    .trial-site__link:hover {
+      text-decoration: underline;
+      text-decoration-thickness: var(--libitum-stroke-width-strong);
+      text-underline-offset: var(--libitum-spacing-4);
+    }
+  }
+
+  /* 머리 띠가 선 만큼 무대를 줄입니다. */
+  .trial-site + .trial {
+    height: min(calc(100dvh - var(--header-height) - var(--libitum-spacing-32)), 932px);
+    margin: 0 auto var(--libitum-spacing-32);
+  }
+}

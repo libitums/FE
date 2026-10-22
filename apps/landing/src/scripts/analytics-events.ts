@@ -7,10 +7,13 @@ import type {
   SectionThresholdOf,
 } from "./analytics.contract";
 
-/** 눌린 링크 → 이벤트. 우선순위: 스토어 링크 → 머리의 받기 버튼 → 언어 메뉴. */
+/** 눌린 링크 → 이벤트. 우선순위: 스토어 링크 → 체험판 링크 → 머리의 받기 버튼 → 언어 메뉴. */
 export const clickEventOf: ClickEventOf = (link) => {
   if (!link) return null;
   if (link.store) return { name: "download_click", params: { store: link.store } };
+  if (link.trialLink === "hero" || link.trialLink === "download") {
+    return { name: "trial_link_click", params: { location: link.trialLink } };
+  }
   if (link.hash === "#download") return { name: "cta_click", params: { location: "header" } };
   if (link.inLanguageMenu) return { name: "language_switch", params: { to: link.hreflang } };
   return null;

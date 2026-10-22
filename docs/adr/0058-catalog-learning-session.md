@@ -728,11 +728,11 @@ route · 진행 저장 형식 · 이벤트 이름은 그대로라 새 ADR을 만
 
 ## 적용 기록 ⟨2026-10-22 — 학습 문항 리디자인⟩
 
-결정은 [ADR-0083](0083-lesson-item-redesign.md). 이 문서의 결정 문장(매핑 · 레슨 · 통과 기준 · 최종 테스트 흐름)은 바뀌지 않는다 — 레슨 계획의 필드 둘, 대화 조립 아바타, 최종 테스트 정답 상자에 닿는 자리만 적는다.
+결정은 [ADR-0084](0084-lesson-item-redesign.md). 이 문서의 결정 문장(매핑 · 레슨 · 통과 기준 · 최종 테스트 흐름)은 바뀌지 않는다 — 레슨 계획의 필드 둘, 대화 조립 아바타, 최종 테스트 정답 상자에 닿는 자리만 적는다.
 
-- **레슨 계획에 필드 둘** — `itemRefs`(활동마다 문항 순서대로 그 문항의 id · 유형 — 문항 판정 이벤트 `episode_item_answered`가 화면의 문항 순번에서 콘텐츠 문항을 찾는 표, ADR-0083 「측정」)와 `counterpartAvatarUrl`(에피소드 최상위 `counterpart_avatar`를 `imageUrlOf`로 푼 주소 — 받아 둔 파일 > 내장 > 원격, 없으면 `null`).
+- **레슨 계획에 필드 둘** — `itemRefs`(활동마다 문항 순서대로 그 문항의 id · 유형 — 문항 판정 이벤트 `episode_item_answered`가 화면의 문항 순번에서 콘텐츠 문항을 찾는 표, ADR-0084 「측정」)와 `counterpartAvatarUrl`(에피소드 최상위 `counterpart_avatar`를 `imageUrlOf`로 푼 주소 — 받아 둔 파일 > 내장 > 원격, 없으면 `null`).
   레슨 계획 포트에 선택 함수 `cultureCardOf`가 더해졌다 — 문화 확인이 짝 문화 카드(같은 단계 k번째, 없으면 바로 앞 단계)를 찾는다. **D4(레슨 = 같은 학습형 연속 구간)는 그대로** — u00 `S13`의 계획이 다른 단계(`S12`)의 카드를 볼 수 있게 포트로 넘긴 것이다.
-- **대화 조립 아바타(⟨2026-10-19⟩ 기록)** — 「상대는 머리글자, 이름 없는 상대는 실루엣」에 **그림**이 앞선다: `counterpartAvatarUrl`이 있으면 ui-lynx `Avatar`의 `imageSource`로 그리고, 없거나 로드에 실패하면 지금처럼 머리글자 · 실루엣이다. `SentenceOrderActivity`가 받는 것이 `speakerNames`에서 `cast`(상대 · 나의 이름 · 그림)로 바뀌었다. 아바타 크기는 sm, 칸 하한 48 · 간격 8 · 내 칸은 `brand-primary` 면(ADR-0083 D14). 낭독 제외 · 칸 낭독은 그대로다.
+- **대화 조립 아바타(⟨2026-10-19⟩ 기록)** — 「상대는 머리글자, 이름 없는 상대는 실루엣」에 **그림**이 앞선다: `counterpartAvatarUrl`이 있으면 ui-lynx `Avatar`의 `imageSource`로 그리고, 없거나 로드에 실패하면 지금처럼 머리글자 · 실루엣이다. `SentenceOrderActivity`가 받는 것이 `speakerNames`에서 `cast`(상대 · 나의 이름 · 그림)로 바뀌었다. 아바타 크기는 sm, 칸 하한 48 · 간격 8 · 내 칸은 `brand-primary` 면(ADR-0084 D14). 낭독 제외 · 칸 낭독은 그대로다.
 - **최종 테스트 정답 상자(⟨2026-10-20⟩ 기록의 「정답 표시」 행)** — 어두운 면 변형(`feedback-correct` × 0.16 · 글자 gray-50)을 걷고 **불투명 `feedback-correct-surface` + `-text`**(6.73, 어두운 판 위 16.9)에 머리 줄 `Answer`를 단다(`AnswerReveal`의 `label`). 표의 다른 행(창고 타일 · 빠져나간 자리 · 판정 배지)과 대사 패널 · 답안 판은 그대로다.
-- **D3 · ⟨2026-10-22 — 학습 문항 음성⟩ 기록의 듣기 모양** — 듣기 3열 줄은 부품 셋(`ListenControls`)으로 다시 지었고 순서 · 이름은 같다. 소리 있는 `LISTEN_BUILD`는 카드 없는 줄 배치다(ADR-0083 D12).
+- **D3 · ⟨2026-10-22 — 학습 문항 음성⟩ 기록의 듣기 모양** — 듣기 3열 줄은 부품 셋(`ListenControls`)으로 다시 지었고 순서 · 이름은 같다. 소리 있는 `LISTEN_BUILD`는 카드 없는 줄 배치다(ADR-0084 D12).
 - ⚠ 기기에서 보지 않았다([학습 문항 리디자인 e2e](../e2e/lesson-redesign.md) EU1 · EU6, 미실행).

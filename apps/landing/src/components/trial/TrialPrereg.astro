@@ -1,0 +1,71 @@
+---
+// 완료 화면의 이메일 사전 등록 폼 — 스크립트가 data-state(idle · invalid · sending · done · failed)를 바꿉니다.
+// 설정(공개 키)이 없는 빌드면 입력 없이 안내 글만 굽습니다(unavailable).
+import type { TrialPreregProps } from "./trial-components.contract";
+import TrialIcon from "./TrialIcon.astro";
+
+type Props = TrialPreregProps;
+
+const { t, available } = Astro.props;
+---
+
+<form
+  class="trial-prereg"
+  data-testid="trial-prereg"
+  data-state={available ? "idle" : "unavailable"}
+  aria-labelledby="trial-prereg-title"
+  novalidate
+>
+  <h3 class="trial-prereg__title trial-type-heading-s" id="trial-prereg-title">{t.preregTitle}</h3>
+  {
+    available && (
+      <>
+        <p class="trial-prereg__body trial-type-body-m">{t.preregBody}</p>
+        <div class="trial-prereg__field">
+          <label class="trial-prereg__label trial-type-label-l" for="trial-prereg-email">
+            {t.preregEmailLabel}
+          </label>
+          <input
+            class="trial-prereg__input trial-type-body-l"
+            id="trial-prereg-email"
+            type="email"
+            name="email"
+            autocomplete="email"
+            inputmode="email"
+            autocapitalize="off"
+            spellcheck="false"
+            required
+            aria-describedby="trial-prereg-error trial-prereg-privacy"
+            data-testid="trial-prereg-email"
+          />
+          <p
+            class="trial-prereg__error trial-type-body-s"
+            id="trial-prereg-error"
+            data-testid="trial-prereg-error"
+            hidden
+          >
+            {t.preregInvalid}
+          </p>
+        </div>
+        <button class="trial-button" type="submit" data-testid="trial-prereg-submit">
+          {t.preregSubmit}
+        </button>
+      </>
+    )
+  }
+  <p class="trial-prereg__status trial-type-body-m" role="status" tabindex="-1" data-testid="trial-prereg-status">
+    <span class="trial-prereg__done-icon"><TrialIcon name="tick" /></span>
+    <span data-prereg-message>{available ? "" : t.preregUnavailable}</span>
+  </p>
+  {
+    available && (
+      <p
+        class="trial-prereg__privacy trial-type-body-s"
+        id="trial-prereg-privacy"
+        data-testid="trial-prereg-privacy"
+      >
+        {t.preregPrivacy}
+      </p>
+    )
+  }
+</form>

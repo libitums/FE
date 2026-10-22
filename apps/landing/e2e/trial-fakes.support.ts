@@ -1,0 +1,238 @@
+import type { Page } from "@playwright/test";
+import { supabaseUrl } from "../playwright.config";
+import { contentHost } from "./trial.support";
+
+// 체험판 e2e의 가짜 접점입니다 — 음성 버킷 가로채기(무음 소리 · 404)와 말하기 인식기(가짜 · 없음).
+
+/** 0.05초 무음 WAV — 어느 엔진의 decodeAudioData도 풉니다(받은 뒤 진행은 소리 성공 · 실패와 무관). */
+function silentWav(): Buffer {
+  const rate = 8_000;
+  const samples = 400;
+  const data = samples * 2;
+  const buffer = Buffer.alloc(44 + data);
+  buffer.write("RIFF", 0);
+  buffer.writeUInt32LE(36 + data, 4);
+  buffer.write("WAVE", 8);
+  buffer.write("fmt ", 12);
+  buffer.writeUInt32LE(16, 16);
+  buffer.writeUInt16LE(1, 20);
+  buffer.writeUInt16LE(1, 22);
+  buffer.writeUInt32LE(rate, 24);
+  buffer.writeUInt32LE(rate * 2, 28);
+  buffer.writeUInt16LE(2, 32);
+  buffer.writeUInt16LE(16, 34);
+  buffer.write("data", 36);
+  buffer.writeUInt32LE(data, 40);
+  return buffer;
+}
+
+export interface SoundLog {
+  /** 버킷에 간 요청의 전체 주소. */
+  voice: string[];
+  /** 같은 출처 효과음 요청의 경로. */
+  sfx: string[];
+}
+
+/** 버킷 요청을 가로챕니다 — `ok`면 무음 소리, `missing`이면 404. 요청 기록을 돌려줍니다. */
+export async function routeSound(page: Page, mode: "ok" | "missing" = "ok"): Promise<SoundLog> {
+  const log: SoundLog = { voice: [], sfx: [] };
+  const body = silentWav();
+  await page.route(`${supabaseUrl}/**`, (route) =>
+    // PostgREST(사전 등록 · 인식 글자 수집)는 소리가 아니다 — CORS 사전 요청 · 201로 조용히 받는다.
+    // 요청을 세어 보는 테스트는 그 뒤에 routePrereg · routeSamples를 따로 건다(나중에 건 route가 먼저).
+    new URL(route.request().url()).pathname.startsWith("/rest/v1/")
+      ? route.fulfill({
+          status: route.request().method() === "OPTIONS" ? 204 : 201,
+          headers: CORS,
+          body: "",
+        })
+      : mode === "ok"
+        ? route.fulfill({
+            status: 200,
+            contentType: "audio/mp4",
+            headers: { "access-control-allow-origin": "*" },
+            body,
+          })
+        : route.fulfill({
+            status: 404,
+            contentType: "text/plain",
+            headers: { "access-control-allow-origin": "*" },
+            body: "not found",
+          }),
+  );
+  page.on("request", (request) => {
+    const url = new URL(request.url());
+    if (url.hostname === contentHost) log.voice.push(request.url());
+    else if (url.pathname.startsWith("/trial/sfx/")) log.sfx.push(url.pathname);
+  });
+  return log;
+}
+
+/** 말하기 생성자 둘을 지웁니다 → 처음부터 타일. */
+export function withoutSpeech(page: Page) {
+  return page.addInitScript(() => {
+    for (const name of ["SpeechRecognition", "webkitSpeechRecognition"]) {
+      Object.defineProperty(window, name, {
+        value: undefined,
+        configurable: true,
+        writable: true,
+      });
+    }
+  });
+}
+
+export type FakeOutcome = { heard: string[] } | { error: string };
+
+/** 가짜 인식기를 넣습니다. `start()`는 줄 세운 결과(`say`)를 하나 꺼내 비동기로 냅니다. */
+export function withFakeSpeech(page: Page) {
+  return page.addInitScript(() => {
+    type Outcome = { heard: string[] } | { error: string };
+    const scope = window as unknown as {
+      __speechQueue: Outcome[];
+      __speechStarts: { lang: string; maxAlternatives: number }[];
+    };
+    scope.__speechQueue = [];
+    scope.__speechStarts = [];
+    class FakeRecognition {
+      lang = "";
+      continuous = true;
+      interimResults = true;
+      maxAlternatives = 1;
+      onresult: ((event: unknown) => void) | null = null;
+      onerror: ((event: unknown) => void) | null = null;
+      onend: (() => void) | null = null;
+      private ended = false;
+      start() {
+        scope.__speechStarts.push({
+          lang: this.lang,
+          maxAlternatives: this.maxAlternatives,
+        });
+        const next = scope.__speechQueue.shift();
+        if (!next) return;
+        setTimeout(() => {
+          if (this.ended) return;
+          if ("error" in next) this.onerror?.({ error: next.error });
+          else
+            this.onresult?.({
+              results: [next.heard.map((transcript) => ({ transcript }))],
+            });
+          this.end();
+        }, 30);
+      }
+      stop() {
+        setTimeout(() => this.end(), 0);
+      }
+      abort() {
+        if (this.ended) return;
+        this.onerror?.({ error: "aborted" });
+        this.end();
+      }
+      private end() {
+        if (this.ended) return;
+        this.ended = true;
+        this.onend?.();
+      }
+    }
+    for (const name of ["SpeechRecognition", "webkitSpeechRecognition"]) {
+      Object.defineProperty(window, name, {
+        value: FakeRecognition,
+        configurable: true,
+        writable: true,
+      });
+    }
+  });
+}
+
+/** 다음 인식 결과를 줄 세웁니다. */
+export const say = (page: Page, outcome: FakeOutcome) =>
+  page.evaluate((value) => {
+    (window as unknown as { __speechQueue: unknown[] }).__speechQueue.push(value);
+  }, outcome);
+
+export const speechStarts = (page: Page) =>
+  page.evaluate(
+    () =>
+      (
+        window as unknown as {
+          __speechStarts: { lang: string; maxAlternatives: number }[];
+        }
+      ).__speechStarts,
+  );
+
+export interface PreregRequest {
+  method: string;
+  headers: Record<string, string>;
+  body: unknown;
+}
+
+const CORS = {
+  "access-control-allow-origin": "*",
+  "access-control-allow-headers": "apikey, content-type, prefer",
+  "access-control-allow-methods": "POST, OPTIONS",
+} as const;
+
+/**
+ * 사전 등록(PostgREST `POST /rest/v1/pre_registrations`)을 가로채 차례대로 답합니다 — 실제 주소 · 실제 DB에 닿지 않습니다.
+ * `statuses`는 요청마다 낼 상태(마지막 값이 계속 쓰임), `"abort"`는 네트워크 실패. 보낸 요청(POST만)을 기록합니다.
+ */
+export async function routePrereg(
+  page: Page,
+  statuses: readonly (number | "abort")[],
+): Promise<PreregRequest[]> {
+  const log: PreregRequest[] = [];
+  let served = 0;
+  await page.route(`${supabaseUrl}/rest/v1/**`, async (route) => {
+    const request = route.request();
+    if (request.method() === "OPTIONS") {
+      await route.fulfill({ status: 204, headers: CORS, body: "" });
+      return;
+    }
+    log.push({
+      method: request.method(),
+      headers: request.headers(),
+      body: JSON.parse(request.postData() ?? "null") as unknown,
+    });
+    const status = statuses[Math.min(served, statuses.length - 1)] ?? 201;
+    served += 1;
+    if (status === "abort") {
+      await route.abort("failed");
+      return;
+    }
+    await route.fulfill({
+      status,
+      headers: { ...CORS, "content-type": "application/json" },
+      body: status === 409 ? '{"code":"23505","message":"duplicate key value"}' : "",
+    });
+  });
+  return log;
+}
+
+export interface SamplesRequest {
+  headers: Record<string, string>;
+  body: Record<string, unknown>;
+}
+
+/**
+ * 인식 글자 수집(PostgREST `POST /rest/v1/trial_speech_samples`)을 가로채 `status`로 답합니다(`"abort"`는 끊김).
+ * 실제 주소 · 실제 DB에 닿지 않습니다. 보낸 요청(POST만)을 기록합니다.
+ */
+export async function routeSamples(
+  page: Page,
+  status: number | "abort" = 201,
+): Promise<SamplesRequest[]> {
+  const log: SamplesRequest[] = [];
+  await page.route(`${supabaseUrl}/rest/v1/trial_speech_samples`, async (route) => {
+    const request = route.request();
+    if (request.method() === "OPTIONS") {
+      await route.fulfill({ status: 204, headers: CORS, body: "" });
+      return;
+    }
+    log.push({
+      headers: request.headers(),
+      body: JSON.parse(request.postData() ?? "null") as Record<string, unknown>,
+    });
+    if (status === "abort") await route.abort("failed");
+    else await route.fulfill({ status, headers: CORS, body: "" });
+  });
+  return log;
+}

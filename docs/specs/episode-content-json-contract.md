@@ -58,7 +58,7 @@
 | `words` | 필수 | Word[] | 10 ~ 15개 ⟨새 형식⟩ 13 ~ 15개 |
 | `patterns` | 필수 | Pattern[] | 1 ~ 2개 ⟨새 형식⟩ 1 ~ 3개 |
 | `completion` ⟨2026-10-16 — 새 형식⟩ | **선택** | `{ requires: string[] }` | 옛 파일 0/3 · 새 파일 3/3. `requires` = `["S1" … "S8", "CULT", "RP"]`(셋 같음). 앱은 **목록의 스텝이 모두 끝나야 에피소드 완료**로 보고(트로피 · 다음 에피소드 표지), 키가 없으면 `["RP"]`로 본다. 목록이 비었거나 `steps[].id`에 없는 값(`"intro"` 포함)을 가리키면 그 에피소드 전체가 디코드 실패(`completion-malformed`)다. 중복은 앞의 것만 남긴다 — [ADR-0065](../adr/0065-episode-format-additions.md) D5 · D6 |
-| `counterpart_avatar` ⟨2026-10-22 — 앱이 먼저 받는 새 선택 키⟩ | **선택** | string | 지금 데이터 0/4(내장 u00 ~ u03 · 버킷 판 모두 없음). **상대역(`counterpart`)의 아바타 그림 경로**다. 규칙은 다른 그림 경로와 같다 — **버킷 기준 상대 경로**(예 `images/u04-directions/avatar.webp`, 선두 `content/`는 허용 · 앱이 뗀다), 선두 `/` · `..` · 스킴(`https:` 등) 금지, 확장자는 `.webp` · `.png` · `.jpg` · `.jpeg`(대소문자 무관), 공백 · `?` · `#` 없음. 앞뒤 공백은 걷고, 비었거나 `null`이면 없는 것과 같다. **규칙에 어긋나면 그 키만 버리고 경고**(`invalid-asset-path`, 경로 `counterpart_avatar`)를 남긴다 — **에피소드 디코드는 실패하지 않는다.** 앱은 이 그림을 다른 그림처럼 **받아 둔다**(§9) — 없거나 받기 실패 · 로드 실패면 대화 조립의 상대 아바타가 **이니셜**(이름 첫 글자)로 선다. 권장 256×256 WebP(§13 규칙 2). 올리는 순서는 §13 규칙 4(그림 먼저 → 에피소드 JSON → `manifest.json`), 고칠 때는 새 이름(규칙 1). 결정은 [ADR-0083](../adr/0083-lesson-item-redesign.md) D16 |
+| `counterpart_avatar` ⟨2026-10-22 — 앱이 먼저 받는 새 선택 키⟩ | **선택** | string | 지금 데이터 0/4(내장 u00 ~ u03 · 버킷 판 모두 없음). **상대역(`counterpart`)의 아바타 그림 경로**다. 규칙은 다른 그림 경로와 같다 — **버킷 기준 상대 경로**(예 `images/u04-directions/avatar.webp`, 선두 `content/`는 허용 · 앱이 뗀다), 선두 `/` · `..` · 스킴(`https:` 등) 금지, 확장자는 `.webp` · `.png` · `.jpg` · `.jpeg`(대소문자 무관), 공백 · `?` · `#` 없음. 앞뒤 공백은 걷고, 비었거나 `null`이면 없는 것과 같다. **규칙에 어긋나면 그 키만 버리고 경고**(`invalid-asset-path`, 경로 `counterpart_avatar`)를 남긴다 — **에피소드 디코드는 실패하지 않는다.** 앱은 이 그림을 다른 그림처럼 **받아 둔다**(§9) — 없거나 받기 실패 · 로드 실패면 대화 조립의 상대 아바타가 **이니셜**(이름 첫 글자)로 선다. 권장 256×256 WebP(§13 규칙 2). 올리는 순서는 §13 규칙 4(그림 먼저 → 에피소드 JSON → `manifest.json`), 고칠 때는 새 이름(규칙 1). 결정은 [ADR-0084](../adr/0084-lesson-item-redesign.md) D16 |
 
 없는 것: 에피소드 **순서**, 버전, 콘텐츠 해시. 식별자는 있지만 이름이 `unit_id`다. → §10, 합의 Q1.
 ⟨2026-10-16 — 새 형식⟩ 최상위에 `completion` 하나가 더해졌다. 그 밖의 최상위 키는 같다.
@@ -156,7 +156,7 @@ FE 제안: 단일 `Text = { ko, roman, en? }`로 통일한다. `en`은 어디서
 
 | type | n | mode | event | context | stimulus | tiles | answers | options | 고유 |
 |---|---|---|---|---|---|---|---|---|---|
-| `VOCAB_CARD` | 28 | card | E | ● `{ko,roman}` | | | | | `example: Text`(en 16/28) · `card_kind: "단어"` |
+| `VOCAB_CARD` | 28 | card | E | ● `{ko,roman}` | | | | | `example: Text`(en 16/28) · `card_kind: "단어"` · ⟨2026-10-22 관찰⟩ 문항 최상위 `audio_url` · `example_audio_url`(음성 id — u00 1/1 채움, 내장 u01 ~ u03 37/37 빈 값) |
 | `CLOZE` | 41 | tiles | E 4 / R 37 | ● `{ko,roman}` ko에 `___` | | ● 3개 | ● 1개 | | |
 | `IMG_MATCH` | 10 | choice | R | | ● `{image_brief, image_url:"", audio_url:""}` | | | ● 4개 (en 필수) | |
 | `WORD_ORDER` | 3 | tiles | R | | | ● 3개 | ● 1개 (en 2/3) | | |
@@ -174,7 +174,7 @@ FE 제안: 단일 `Text = { ko, roman, en? }`로 통일한다. `en`은 어디서
 
 | type | 앱이 읽는 필드 | 읽지 않는 필드 | 건너뛰는 조건 |
 |---|---|---|---|
-| `VOCAB_CARD` | 표제어 `context.ko` · `context.roman`, 예문 `example`(`ko` · `roman` · `en`), **뜻 = 그 에피소드 `words[]`에서 `ref`와 같은 `id`를 찾은 `gloss_en`**(없으면 `context.en`) | `card_kind` · `prompt` | 뜻이 어디에도 없으면 건너뜀(`no-gloss`). 표제어가 비면 건너뜀. 예문이 비었거나 표제어와 같으면 **예문 없이 선다**(건너뛰지 않는다) |
+| `VOCAB_CARD` | 표제어 `context.ko` · `context.roman`, 예문 `example`(`ko` · `roman` · `en`), **뜻 = 그 에피소드 `words[]`에서 `ref`와 같은 `id`를 찾은 `gloss_en`**(없으면 `context.en`) | `card_kind` · `prompt` · ⟨2026-10-22⟩ `audio_url` · `example_audio_url`(디코더는 읽어 모델에 싣지만 앱 화면은 쓰지 않는다 — 아래 주) | 뜻이 어디에도 없으면 건너뜀(`no-gloss`). 표제어가 비면 건너뜀. 예문이 비었거나 표제어와 같으면 **예문 없이 선다**(건너뛰지 않는다) |
 | `IMG_MATCH` | 그림 `stimulus.image_url`(버킷 기준 상대 경로 — 컷과 같은 규약), 보기 `options[].ko` · `correct`, **정답 보기의 `en`**(그림을 못 보일 때의 대체 글자이자 그림의 낭독 이름, 없으면 `words[]`의 뜻) · 정답 보기의 `roman`(답한 뒤 이름표), 지시문 `prompt.en` | `stimulus.image_brief`(Q23) · `stimulus.audio_url` | **`image_url`이 비었으면 그 문항을 건너뛴다**(`image-missing`). 지금 10문항이 전부 여기에 든다 — 주소가 채워지면 앱 변경 없이 선다 |
 | `PAIR_MATCH` | 정답 문자열 `answers[0].ko`(`"a=b \| c=d"`)를 디코더가 푼 짝 — 낱말 = `=` 왼쪽, 뜻 = `=` 오른쪽. `tiles`는 개수 대조에만 | **`tiles_gloss_en`**(Q17) · `tiles[].roman` · `prompt`(지시문은 앱 문구) | 짝이 둘 미만 · 짝 수 ≠ 타일 수 · 빈 낱말이나 뜻 · 같은 낱말 둘 |
 
@@ -229,7 +229,9 @@ FE 제안: 단일 `Text = { ko, roman, en? }`로 통일한다. `en`은 어디서
 | `LISTEN_SELECT.ref` | 56/58 | 이미 선택 |
 | `ROLEPLAY_TURN.stimulus.image_url` | 13/13 장면 그림 | 읽지 않는다 — 최종 테스트 장면은 지금처럼 표지 컷에서 고른다 |
 
-⟨2026-10-22 — 학습 문항 리디자인, [ADR-0083](../adr/0083-lesson-item-redesign.md)⟩ **앱이 새로 읽는 필드와 보이는 시점**(와이어 모양은 바뀌지 않는다 — `counterpart_avatar` 하나만 §2에 더해졌다).
+⟨2026-10-22 — 단어 카드 음성 두 키⟩ **`VOCAB_CARD`의 문항 최상위 `audio_url`(표제어 음성) · `example_audio_url`(예문 음성)을 디코드한다** — 도메인 `audioUrl?` · `exampleAudioUrl?`(값은 부록 C의 음성 id, 컷 `audio_url`과 같은 규약). 없음 · 빈 문자열은 키가 서지 않는다(§11 Q6의 FE 처리와 같다). 두 키 모두 **선택**이라 옛 파일 · 키가 없는 파일은 그대로 디코드된다. 지금 값이 있는 것은 u00 `S1-01`뿐이다(`u00-tutorial/s1-01-word` · `u00-tutorial/d-02`). **소비자는 랜딩 웹 체험판뿐이다** — 단어 카드의 `Listen` · `Listen to the example`이 이 음성을 낸다. 앱은 읽지 않는다(모델에 선택 필드 둘이 늘었을 뿐 앱의 동작은 같다). 결정은 [ADR-0083](../adr/0083-web-trial-and-episode-core.md) D4 — 롤플레이의 `lead` · `reask` · `player_audio_url` · `modes` · `accepted_answers`는 여전히 디코드하지 않는다(§7.4, 체험판의 상대 · 내 음성은 `dialogue`의 `line_id` 규칙에서 나온다).
+
+⟨2026-10-22 — 학습 문항 리디자인, [ADR-0084](../adr/0084-lesson-item-redesign.md)⟩ **앱이 새로 읽는 필드와 보이는 시점**(와이어 모양은 바뀌지 않는다 — `counterpart_avatar` 하나만 §2에 더해졌다).
 
 | type | 새로 읽는 것 · 바뀐 시점 | 그대로인 것 |
 |---|---|---|
@@ -417,6 +419,8 @@ u01 · u02는 전부 해결, u03은 18문항이 같은 세 id(에피소드 2의 
 그래서 **`src/` 안에서 `zod`를 import하는 파일은 넷**이다(콘텐츠 스키마 셋 + 매니페스트 스키마 — unit 테스트가 목록을 고정한다). 위 표의 「둘뿐」과 「13종」은 그 전의 상태다.
 
 런타임 모듈 넷의 첫 줄은 `import "background-only";`다 — 메인 스레드 번들에 실리면 빌드가 깨진다(`posthog-client.ts` 선례, ADR-0029 D3). `zod` `4.6.5`는 `apps/mobile` `dependencies`에 있다(ADR-0013 D5 「첫 설치 뒤 더해진 `dependencies`」).
+
+⟨2026-10-22 — 공유 패키지⟩ **디코더 일곱 파일이 `packages/episode-core/src/episode/`로 옮겨졌다**(같은 이름, `@libitums/episode-core/episode` — [ADR-0083](../adr/0083-web-trial-and-episode-core.md) D1 ~ D3). 랜딩 웹 체험판이 같은 디코더로 u00 사본을 빌드 때 읽는다. 패키지 쪽 파일에는 `background-only`가 없고, 앱에는 재수출 모듈 `lib/episode-content.ts`(첫 줄 `background-only` 유지 — 앱 소비자는 여전히 이 경로 하나) · `lib/episode-content.model.ts`(타입 재수출)만 남았다. 그래서 **앱 `src/`에서 `zod`를 import하는 파일은 매니페스트 스키마 하나**이고, 콘텐츠 스키마 셋은 패키지 안에 있다(패키지 테스트 EC4 · 앱 테스트 U25′가 목록을 고정한다). 위 표의 파일 위치 · 「넷」은 그 전의 상태다. 음성 id → 주소(`lib/content-audio.ts` · `lib/episode-remote.ts`의 주소 함수)도 `@libitums/episode-core/content-url`로 옮겨졌고 옛 경로는 재수출이다. 상대 아바타 경로 규칙 `counterpartAvatarPathOf`([ADR-0084](../adr/0084-lesson-item-redesign.md) D16 — 디코더의 `counterpartAvatar` · `invalid-asset-path` 경고와 앱의 자산 받기 목록이 함께 쓴다)도 같은 `content-url`에 있고, 앱은 `lib/episode-remote.ts`의 재수출로 읽는다.
 
 **픽스처** — `apps/mobile/content/episodes/u01-water.json` · `u02-checkin.json` · `u03-mina.json`. 원본의 **바이트 사본**(sha256 동일, 포맷터 글롭에서 제외). ⟨2026-10-12⟩ 3a부터 **번들에 들어간다** — `src/lib/episode-bundled.ts`가 내장 에피소드로 import한다(ADR-0056 D1). 그래서 이 사본이 곧 내장본이고, 바꾸면 `content/manifest.json`의 `sha256` · `bytes`도 바꾼다. 콘텐츠의 사본이므로 손으로 고치지 않는다 — 합의로 원본이 바뀌면 통째로 바꾼다(Q4가 「제안대로」면 u03은 고쳐진 파일로).
 ⟨2026-10-16 — 새 형식⟩ **통째로 바꿨다** — 내장 셋은 새 형식 원본에 음성 id 14개를 문장 대조로 다시 붙인 바이트다(원본과 바이트가 같지 않다 — 부록 C · [ADR-0060](../adr/0060-episode-voice-remote-audio.md) 적용 기록). 손으로 고친 자리는 없다.

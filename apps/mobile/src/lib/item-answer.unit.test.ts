@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 
-import { KNOWN_ITEM_TYPES } from "./episode-content.schema";
+import { KNOWN_ITEM_TYPES } from "./episode-content";
 import { scoredItemTypeOf } from "./item-answer";
 
 // `unit` 계층: 문항 유형이 채점 유형인지 가르는 순수 함수의 입출력만 봅니다.

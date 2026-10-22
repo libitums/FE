@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@libitums/design-tokens": "0.5.0",
+    "@libitums/episode-core": "workspace:*",
     "@libitums/icons": "0.5.0",
     "@libitums/ui-lynx": "workspace:*",
     "@lynx-js/react": "0.125.0",
