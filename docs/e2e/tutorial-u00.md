@@ -3,7 +3,7 @@
 결정은 [ADR-0079](../adr/0079-tutorial-as-catalog-episode.md)가 진다. 자동 테스트(unit · ui · integration)는 내장 본문 · 그림 표와 우선순위 · 문 규칙 · 옛 기록 스냅숏 · 첫 유닛 안내 · 티켓 비용 · Airbridge 매핑을 지키지만,
 **실제 기기 네트워크 차단에서 번들 `/static` 그림이 서는지(iOS 리소스 · Android 재작성) · 실행 사이 저장소 시드(옛 사용자) · VoiceOver 안내 낭독 · 큰 글꼴 배치**는 기기에서만 판정한다.
 
-⚠ **아직 실행하지 않았다**(2026-10-21) — 사용자 폰(iPhone 13 mini)에 `915a4e58` 빌드를 설치해 사용자가 보는 중이고, 시뮬레이터 회차는 로그인 대기다. 아래는 절차만이다.
+⚠ **실제 앱 흐름으로는 아직 돌리지 못했다** — 시뮬레이터 앱은 소셜 로그인만 되어 진입할 수 없다. 2026-10-22에 개발 전용 플레이그라운드 회차(1차, 아래 「결과」)로 화면 판정을 먼저 했고, 로그인 · 저장소 시드 · 네트워크 차단 · Android가 필요한 판정은 남았다.
 
 ## 준비
 
@@ -41,4 +41,25 @@
 
 ## 결과
 
-- 아직 없다.
+### 1차 — 2026-10-22, 플레이그라운드 회차(iPhone 13 mini 시뮬레이터, iOS 26.5, `3658bfd8`)
+
+방법: 시뮬레이터 앱이 소셜 로그인만 되어 실제 흐름에 들어갈 수 없어, `apps/mobile/src/playground`에 임시 화면(커밋하지 않고 회차 뒤 되돌림)을 두고 `rspeedy dev`의 `playground.lynx.bundle`을 Debug 호스트에 띄웠다.
+임시 화면은 **실제 결선**을 쓴다 — `catalogWiring`(표지 · 레슨 · 최종 테스트 결선) · `navReducer` · `renderScreen` · `FirstUnitGuideProvider` · `shellInsetsOf` · 호스트가 넘긴 안전 영역. 콘텐츠는 내장 카탈로그(`bundledCatalogInput`)뿐이고 그림 주소는 **내장 그림 표만** 쓴다(원격 · 받아 둔 파일 없음).
+빠진 것: 서버 진행 불러오기 · 저장, 티켓 원장(`withLearningTickets` — 남은 수는 고정값), 음성, 전역 머리 칩, 이벤트 전송(콘솔로만 받음).
+탭은 `idb ui tap --duration 0.15`로 했다 — 길이 없는 탭은 ui-lynx `Button`에 닿지 않았고, 화면 아래 약 720 pt 밑의 탭은 시스템 제스처 영역에 먹혔다(도구 · 시뮬레이터 쪽 사정이라 결함으로 보지 않았다).
+
+| id | 결과 | 근거 · 남은 것 |
+|---|---|---|
+| EU-0 | 미실행 | 옛 진행이 있는 실제 설치 위에 덮어 실행해야 한다 — 로그인 필요 |
+| EU-1 | **부분 통과** | u00 노드 15(표지 + 레슨 11 + `Culture` 둘 + `Final test`) · 노드 이름 `Episode 0. …` · 말풍선 띠 `Episode 0, unit 01` / `Tutorial` / `1 / 15`. 내장 그림이 모두 섬 — 표지 배경 · 컷 6장 · S3 `hello` · S5 `thanks` · S12 문화 카드 앞면 · 최종 테스트 배경 · 마무리 컷 4장, 빈 회색 면 0. **네트워크 차단 · 제품 번들의 `/static`(iOS 리소스)은 보지 못했다** — 개발 서버가 그림을 HTTP로 내줬다. `rp-end.webp`는 내장돼 있지만 그리는 화면이 없다(콘텐츠 `closing_image_url`을 읽는 코드 없음) |
+| EU-2 | **부분 통과** | 표지 → 컷 6 → 「Episode start!」 → S1 ~ S13 → 최종 테스트 3턴 → 결과 → 마무리 컷 4 → 「Episode clear!」 → 맵까지 끝까지 감. `RP` 전 Episode 1 표지를 눌러도 반응 없음(잠김), 통과 뒤 열림. S2 · S7은 빈 레슨이라 열자마자 결과(「PERFECT LESSON!」)로 바뀜. 레슨 말풍선에 티켓 태그 없음. **티켓 수 그대로는 판정하지 못했다** — 임시 화면에 티켓 원장이 없다(결과 화면의 「5 tickets left」는 고정값) |
+| EU-3 | **통과**(VoiceOver 낭독은 접근성 트리로 대신) | 가림막 · 표지 들림 · 표지 아래 말풍선 「Tap to start your lesson!」. 안내 중 접근성 트리에 **말풍선과 표지 둘만** 남음. 표지 탭 → 안내 닫힘 · 표지 화면. 표지 노드 자리가 안내 유무와 같음(y 399) — 래퍼 `.catalog-map-section-cover`가 배치를 밀지 않음. 말풍선은 가림막 위에서 레슨 1 · 2 노드에 겹쳐 선다(안내 중이라 노드는 가려짐) |
+| EU-4 | **부분 통과** | 옛 튜토리얼 통과(`legacyTutorialPassed = true`)를 결선에 직접 넣음 — Episode 1 표지 열림 · u00 표지 열림 · 레슨 잠김 · 안내 없음 · 맵이 Episode 1 쪽으로 스크롤. **저장소 시드(`defaults import`) · 스냅숏 읽기 · 트로피 1은 보지 못했다** — 로그인 필요, 트로피는 임시 화면에 없음 |
+| EU-5 | **부분 통과** | 롤플레이 탭: u00 구획 없음, Episode 1 ~ 3 구획 · 메신저 · 전화 · 비주얼 노벨 항목 없음. u01 미완료라 모두 잠김 — 미리보기 → 컷 → 대화는 열어 보지 못했다 |
+| EU-6 | 미실행 | 받기 루프 · 버킷 · 앱 컨테이너가 필요하다 — 임시 화면은 받기를 돌리지 않는다 |
+| EU-7 | **통과** | 접근성 크기 최대(`content_size accessibility-extra-extra-extra-large`)에서 맵 한 열, u00 노드 15의 틀이 서로 겹치지 않음(접근성 트리 좌표로 셈) |
+| EU-8 | 미실행 | Android 에뮬레이터 회차는 하지 않았다 |
+
+관찰(이 PR 밖, 후속): 단어 선택의 제시문에 빈칸이 없으면(S9 · S10 · S13) 한국어 · 로마자 줄의 접근성 라벨이 빈 값으로 잡힌다(`WordChoicePresentation`이 `accessibility-label={undefined}`를 넘김 — 이 브랜치에서 바뀌지 않은 파일). VoiceOver가 그 줄을 읽는지는 기기에서 확인해야 한다.
+
+성능 기록: [tutorial-u00-iphone-13-mini-simulator-01](../performance/reports/tutorial-u00-iphone-13-mini-simulator-01.md).
