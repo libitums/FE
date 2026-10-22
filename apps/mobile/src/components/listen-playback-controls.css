@@ -12,11 +12,14 @@
   /* 가운데 정렬 세로 상자 안에서도 부모 폭을 다 받습니다 — 줄어든 부모 안의 `width: 100%`는 양쪽 슬롯을 0 폭으로
      두어 「천천히」 글자가 잘립니다. */
   align-self: stretch;
-  display: flex;
-  flex-direction: row;
+  /* 세 칸 격자입니다 — 양쪽 칸은 같은 폭(`1fr`)을 나누되 내용 폭보다 좁아지지 않습니다(`minmax(max-content, …)`).
+     큰 글자에서 「천천히」가 칸보다 넓어지면 그 칸이 토글 폭까지 넓어지고 맞은편 칸이 내줍니다 — 줄 밖으로 넘치거나
+     낱말 중간에서 줄이 바뀌지 않습니다. Lynx flex는 내용 기반 최소 폭을 만들지 않아(`min-width: max-content`도
+     무시합니다) 격자로 둡니다. 평소 글자 크기에서는 양쪽 칸이 같은 폭이라 재생이 한가운데입니다. */
+  display: grid;
+  grid-template-columns: minmax(max-content, 1fr) auto minmax(max-content, 1fr);
   align-items: center;
-  justify-content: center;
-  gap: var(--libitum-spacing-12);
+  column-gap: var(--libitum-spacing-12);
 }
 
 /* 속도 재생을 지원하지 않을 때 다시듣기와 마주 보는 빈 자리입니다 — 같은 폭이어야 가운데가 맞습니다. */
@@ -25,11 +28,10 @@
   flex-shrink: 0;
 }
 
-/* 속도 재생을 지원할 때의 양쪽 슬롯입니다 — 같은 폭(`flex: 1 1 0`)을 나눠 가지므로 「천천히」가 켜져 넓어져도
+/* 속도 재생을 지원할 때의 양쪽 슬롯입니다 — 격자의 같은 폭(`1fr`) 칸을 나눠 가지므로 「천천히」가 켜져 넓어져도
    재생 원이 줄 한가운데에서 움직이지 않습니다. 다시듣기는 안쪽(오른쪽), 토글은 안쪽(왼쪽)으로 붙습니다. */
 .listening-prompt-controls-start,
 .listening-prompt-controls-end {
-  flex: 1 1 0;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -67,6 +69,9 @@
 }
 
 .listening-prompt-replay {
+  /* 속도 재생을 지원하지 않아 슬롯 없이 격자 칸에 바로 설 때 재생 쪽(오른쪽)으로 붙습니다. 슬롯 안에서는 슬롯이
+     정렬을 집니다. */
+  justify-self: end;
   width: 44px;
   height: 44px;
 }
