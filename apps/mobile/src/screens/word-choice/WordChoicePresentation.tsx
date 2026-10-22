@@ -66,7 +66,8 @@ export function WordChoicePresentation({
   answer = null,
 }: WordChoicePresentationProps): ReactNode {
   const copy = useUiCopy();
-  // 빈칸이 있는 줄만 낭독 라벨을 둡니다 — 없으면 보이는 글자가 그대로 읽힙니다.
+  // 빈칸이 있는 줄은 빈칸을 말로 푼 문장을 낭독 라벨로 둡니다. 없으면 `undefined`이고, 부르는 쪽이 보이는 글자를
+  // 이름으로 채웁니다 — 라벨을 비워 두면 호스트가 빈 이름을 붙입니다(시뮬레이터 접근성 트리 관찰).
   const spokenOf = (text: string): string | undefined => {
     const spoken = wordChoiceSpokenText(text, copy.common.blank);
     return spoken === text ? undefined : spoken;
@@ -123,7 +124,7 @@ export function WordChoicePresentation({
       <text
         className={`word-choice-screen-prompt korean-text-${step} korean-text-tone-${koreanBrandToneOf(step)}`}
         data-testid="word-choice-screen-prompt"
-        accessibility-label={spokenOf(question.prompt)}
+        accessibility-label={spokenOf(question.prompt) ?? question.prompt}
       >
         {question.prompt}
       </text>
