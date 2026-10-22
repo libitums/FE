@@ -674,7 +674,7 @@ ANDROID_HOME="$HOME/Library/Android/sdk" FCM_UDID=emulator-5554 ./apps/android/t
 
 ## Airbridge 앱 이벤트
 
-광고 측정용 Airbridge(MMP) SDK `io.airbridge:sdk-android` `4.11.3`이 들어 있다 — 2026-10-13에 Meta 앱 이벤트 SDK(`facebook-core`, [ADR-0057](../../docs/adr/0057-meta-app-events.md))를 대신했다. 결정은 [ADR-0063](../../docs/adr/0063-airbridge-events.md), 값 넣기 · 대시보드 연동 · Play Console 순서는 [운영 안내](../../docs/airbridge-events.md), 기기 절차와 결과는 [Airbridge 앱 이벤트 e2e](../../docs/e2e/airbridge-events.md)가 진다. 여기는 이 호스트에서 달라진 것만 적는다.
+광고 측정용 Airbridge(MMP) SDK `io.airbridge:sdk-android` `4.12.0`이 들어 있다(2026-10-22에 4.11.3에서 올림) — 2026-10-13에 Meta 앱 이벤트 SDK(`facebook-core`, [ADR-0057](../../docs/adr/0057-meta-app-events.md))를 대신했다. 결정은 [ADR-0063](../../docs/adr/0063-airbridge-events.md), 값 넣기 · 대시보드 연동 · Play Console 순서는 [운영 안내](../../docs/airbridge-events.md), 기기 절차와 결과는 [Airbridge 앱 이벤트 e2e](../../docs/e2e/airbridge-events.md)가 진다. 여기는 이 호스트에서 달라진 것만 적는다.
 
 **저장소.** Airbridge SDK는 Maven Central에 없다. `settings.gradle`의 `dependencyResolutionManagement`에 vendor-maven 블록 다음 · `google()` 앞으로 두 번째 `exclusiveContent`가 있다 — 저장소 `https://sdk-download.airbridge.io/maven`에서 `io.airbridge` 그룹만 받고, 그 그룹은 그 저장소에서만 받는다. 첫 `exclusiveContent`는 여전히 vendor-maven이라 정적 검사 RC4는 그대로 통과한다.
 
