@@ -33,7 +33,7 @@
 ### D1. iOS는 일반판 `airbridge-ios-sdk` 4.12.0 — 정확 버전, restricted와 함께 두지 않는다
 
 `apps/ios/Podfile`의 한 줄을 `pod 'airbridge-ios-sdk', '4.12.0'`으로 바꿨다. lock에서 restricted가 빠졌다 [실측 — `pod install`].
-정적 검사 I-S7이 「일반판 4.12.0 한 줄 · restricted 0」을 지킨다. Android는 4.11.3 그대로다(이번 범위 밖).
+정적 검사 I-S7이 「일반판 4.12.0 한 줄 · restricted 0」을 지킨다. Android는 이 결정 범위 밖이다 — 같은 날 ADR-0063 D1 적용 기록으로 4.12.0에 맞췄다.
 
 ### D2. 묻는 때 — 가입을 마친 뒤 여정 맵에 들어선 순간, 한 세션에 한 번
 

@@ -146,6 +146,20 @@ grep -c 'AIRBRIDGE_APP_NAME = "";' apps/android/app/build/generated/source/build
 - 인앱 구매 자동 추적의 기본값은 확인하지 못했다(앱에 젬 구매 화면이 있으나 호스트에 결제 코드는 없다). 결제 이벤트는
   범위 밖이므로 대시보드에 인앱 구매 관련 토글이 보이면 끈다 — 실제 동작은 수신 확인 때 함께 본다.
 
+## 딥링크 대시보드 설정 ⟨2026-10-22 — [ADR-0080](adr/0080-airbridge-deeplink.md)⟩
+
+| 칸 | 값 |
+|---|---|
+| iOS URI scheme · Android URI scheme | `duru://` |
+| iOS App ID(universal link) | `7SJJT6G6JK.com.libitum.host` |
+| Android 패키지 · SHA256 지문 | `libitum.duru.android` · Play 앱 서명 키(Play Console › 앱 무결성) + 업로드 키(`keytool -list -v -keystore ~/duru-upload.jks`) + 디버그 키 |
+| 트래킹 링크의 딥링크 주소 | `duru://journey` · `duru://roleplay` · `duru://settings` 가운데 하나. 그 밖은 앱만 연다 |
+
+- 앱은 Airbridge 도메인 `duru.airbridge.io` · `duru.abr.ge`를 universal link · App Link로 받는다. App Name이 `duru`라서 이 이름이다 —
+  App Name이 바뀌면 `Host.entitlements` · `AndroidManifest.xml`도 바꾼다.
+- 지연 딥링크(설치 전에 누른 링크)는 가입을 마치고 「여정 시작하기」 뒤에 열린다.
+- 확인 절차: [e2e 시나리오 E](e2e/airbridge-events.md#e--딥링크--지연-딥링크-adr-0080).
+
 ## Real-time Logs에서 수신 확인
 
 ⚠ 실행된 적이 없는 절차다. 기록은 [e2e 시나리오 C](e2e/airbridge-events.md#c--실제-값으로-airbridge-대시보드-수신-확인-사용자-몫-이번-범위-밖)의

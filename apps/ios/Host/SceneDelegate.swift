@@ -17,6 +17,18 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // If using a storyboard, the `window` property will automatically be initialized and attached to the scene.
         // This delegate does not imply the connecting scene or session are new (see `application:configurationForConnectingSceneSession` instead).
         guard let _ = (scene as? UIWindowScene) else { return }
+        // 앱이 꺼져 있다가 Airbridge 딥링크로 켜진 경우(ADR-0080).
+        AirbridgeDeeplinks.handle(connectionOptions: connectionOptions)
+    }
+
+    // 켜져 있는 앱이 scheme 링크(`duru://…`)로 열릴 때(ADR-0080).
+    func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+        AirbridgeDeeplinks.handle(openURLContexts: URLContexts)
+    }
+
+    // 켜져 있는 앱이 universal link(`duru.airbridge.io` · `duru.abr.ge`)로 열릴 때(ADR-0080).
+    func scene(_ scene: UIScene, continue userActivity: NSUserActivity) {
+        AirbridgeDeeplinks.handle(userActivity: userActivity)
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {

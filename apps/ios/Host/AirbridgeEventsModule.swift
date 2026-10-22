@@ -14,6 +14,7 @@ final class AirbridgeEventsModule: NSObject, LynxModule {
     [
       "trackEvent": NSStringFromSelector(#selector(trackEvent(_:semanticAttributes:))),
       "requestTrackingAuthorization": NSStringFromSelector(#selector(requestTrackingAuthorization)),
+      "takeOpenedDeeplink": NSStringFromSelector(#selector(takeOpenedDeeplink(_:))),
     ]
   }
 
@@ -29,6 +30,11 @@ final class AirbridgeEventsModule: NSObject, LynxModule {
   /// 여정 맵에 들어설 때 JS가 부른다(ADR-0079 D2). 아직 정하지 않은 때만 시스템 대화상자가 뜬다. 응답이 없다.
   @objc func requestTrackingAuthorization() {
     AirbridgeEvents.requestTrackingAuthorizationIfUndetermined()
+  }
+
+  /// ⟨ADR-0080⟩ 받아 둔 딥링크를 **한 번** 꺼낸다. 없으면 `url: null`. 해석은 JS가 한다.
+  @objc func takeOpenedDeeplink(_ callback: @escaping LynxCallbackBlock) {
+    callback(["url": (AirbridgeDeeplinks.take() as Any?) ?? NSNull()])
   }
 
   /// 문자열 값만 남긴다. 순수.

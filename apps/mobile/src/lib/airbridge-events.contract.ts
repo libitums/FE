@@ -72,6 +72,11 @@ export interface AirbridgeEventsModule {
    * Android 모듈에는 이 메서드가 없습니다. 응답 · 콜백이 없습니다(`lib/tracking-authorization.ts`).
    */
   requestTrackingAuthorization?(): void;
+  /**
+   * ⟨ADR-0080⟩ 호스트가 받아 둔 Airbridge 딥링크를 **한 번** 꺼냅니다(`{ url: string | null }`). 두 플랫폼에 있습니다.
+   * 짝이 되는 전역 이벤트는 `airbridgeDeeplinkOpened`(인자 없음)입니다(`lib/deeplink-host.ts`).
+   */
+  takeOpenedDeeplink?(callback: (payload: unknown) => void): void;
 }
 
 // ------------------------------------------------------------------ JS 결선
