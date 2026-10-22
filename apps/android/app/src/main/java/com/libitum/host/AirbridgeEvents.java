@@ -68,7 +68,8 @@ final class AirbridgeEvents {
   private static final Object deeplinkLock = new Object();
   private static String pendingDeeplink;
   private static volatile Runnable deeplinkListener;
-  private static Intent lastHandledIntent;
+  /** 처리한 Intent에 남기는 표시. 다시 선 Activity(글자 배율 변경 · 프로세스 복원)가 같은 링크를 두 번 열지 않는다. */
+  static final String HANDLED_EXTRA = "libitum.duru.DEEPLINK_HANDLED";
 
   /** 우리 scheme(duru)이고 로그인 콜백이 아닐 때만 받는다. 순수. */
   static boolean isOwnDeeplink(String url) {
@@ -82,12 +83,23 @@ final class AirbridgeEvents {
     deeplinkListener = listener;
   }
 
-  /** MainActivity.onResume — Airbridge 문서의 자리. 같은 Intent를 두 번 처리하지 않는다. */
+  /** MainActivity.onDestroy — 그 Activity가 건 것일 때만 푼다(다시 선 Activity가 먼저 건 것은 두고). */
+  static void clearDeeplinkListener(Runnable listener) {
+    synchronized (deeplinkLock) {
+      if (deeplinkListener == listener) deeplinkListener = null;
+    }
+  }
+
+  static boolean hasDeeplinkListener() {
+    return deeplinkListener != null;
+  }
+
+  /** MainActivity.onResume — Airbridge 문서의 자리. 표시가 있는 Intent는 다시 처리하지 않는다. */
   static void handleDeeplink(Intent intent) {
     if (!started() || intent == null || intent.getData() == null) return;
     synchronized (deeplinkLock) {
-      if (intent == lastHandledIntent) return;
-      lastHandledIntent = intent;
+      if (intent.getBooleanExtra(HANDLED_EXTRA, false)) return;
+      intent.putExtra(HANDLED_EXTRA, true);
     }
     try {
       boolean isAirbridge =

@@ -31,11 +31,11 @@
 - iOS `AirbridgeDeeplinks`(`AirbridgeEvents.swift`): `SceneDelegate`의 `willConnectTo` · `openURLContexts` · `continue userActivity`가
   Airbridge 예제 그대로 `trackDeeplink` + `handleDeeplink`를 부른다. Airbridge 링크가 아니면 `duru://` scheme URL을 그대로 받는다.
   지연 딥링크는 `initializeSDK` 직후 `handleDeferredDeeplink` 한 번.
-- Android `AirbridgeEvents`: `MainActivity.onResume`에서 `handleDeeplink(getIntent())`(같은 Intent는 한 번만), 시작 직후
+- Android `AirbridgeEvents`: `MainActivity.onResume`에서 `handleDeeplink(getIntent())`(처리한 Intent에 표시를 남겨 다시 선 Activity에서도 한 번만), 시작 직후
   `handleDeferredDeeplink` 한 번.
 - 받는 것은 **`duru://`이고 `duru://auth-callback`이 아닌 것**뿐이다(`isOwnDeeplink`, HostTests N-I10 · JVM N-A5). 마지막 한 개를
   들고 있다가 `AirbridgeEventsModule.takeOpenedDeeplink(callback)`이 `{ url }`로 한 번 꺼낸다. 켜진 앱에 오면 전역 이벤트
-  `airbridgeDeeplinkOpened`(인자 없음)로 알린다.
+  `airbridgeDeeplinkOpened`(인자 없음)로 알린다. Android 리스너는 `MainActivity.onDestroy`에서 푼다.
 - **SDK가 시작되지 않은 빌드(값 없음)에서는 아무것도 하지 않는다** — 모듈도 없어 꺼낼 쪽이 없다. 링크는 앱만 연다.
 
 ### D2. 목적지 — `duru://journey` · `duru://roleplay` · `duru://settings`

@@ -52,6 +52,8 @@ public final class MainActivity extends Activity {
   private final ReducedMotionWatcher reducedMotionWatcher = new ReducedMotionWatcher();
   private Boolean lastReducedMotion;
   private final SystemBackGate backGate = new SystemBackGate();
+  /** 링크가 오면 JS에 알린다. static에 걸리므로 onDestroy에서 푼다(ADR-0080). */
+  private Runnable deeplinkListener;
   private OnBackInvokedCallback backCallback;
   private final PushTokenRefreshRelay.Listener tokenRefreshListener = this::sendPushTokenRefreshed;
   private ContentSyncSignal contentSync;
@@ -92,9 +94,10 @@ public final class MainActivity extends Activity {
     AirbridgeEvents.configure(builder);
     lynxView = builder.build(this);
     // Airbridge 딥링크가 들어오면 JS에 알린다 — 링크는 싣지 않고 JS가 takeOpenedDeeplink로 꺼낸다(ADR-0080).
-    AirbridgeEvents.setDeeplinkListener(() -> mainHandler.post(() -> {
+    deeplinkListener = () -> mainHandler.post(() -> {
       if (lynxView != null) lynxView.sendGlobalEvent("airbridgeDeeplinkOpened", new JavaOnlyArray());
-    }));
+    });
+    AirbridgeEvents.setDeeplinkListener(deeplinkListener);
     lynxView.setImageInterceptor(new HostImageInterceptor(bundled, templateUrl));
     lynxView.addLynxViewClient(new LynxViewClient() {
       @Override public void onFirstScreen() {
@@ -355,6 +358,7 @@ public final class MainActivity extends Activity {
       networkCallback = null;
     }
     PushTokenRefreshRelay.PROCESS.detach(tokenRefreshListener);
+    AirbridgeEvents.clearDeeplinkListener(deeplinkListener);
     if (backTimeout != null) {
       mainHandler.removeCallbacks(backTimeout);
       backTimeout = null;
