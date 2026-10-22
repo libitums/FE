@@ -3,7 +3,7 @@
 카탈로그 레슨의 학습 문항이 **문항 음성을 실제로 들려주는지**, 듣기 문항의 `Slow`가 **길이만 늘리고 음높이를 지키는지**, 레슨 안에서 유지되고 나가면 꺼지는지, 소리와 스크린리더 낭독이 어떻게 겹치는지를 기기에서 확인하는 **수동 절차**다.
 결정은 [ADR-0082](../adr/0082-item-audio-and-slow-playback.md), 컷 · 최종 테스트의 음성은 [에피소드 음성 e2e](episode-audio.md), Android 호스트 계측은 [Android 오디오 재생 검증](android-audio-playback.md)이 진다.
 
-> ⟨2026-10-22 — [ADR-0081](../adr/0081-lesson-item-redesign.md)⟩ **화면 모양이 바뀌었다** — 듣기 조작은 부품 셋(`ListenControls` — 다시 듣기 RoundButton l · 재생 xl · `Slow`)이고 testid · 이름 · 순서는 같다. `LISTEN_SELECT`는 **답하기 전부터 정답 문장의 로마자**가 재생 줄 아래 구분선 밑에 보이고(한글은 답한 뒤), `MIN_PAIR_AB`는 답 전 아무것도 없다. `LISTEN_BUILD`는 카드 없는 줄 배치 — 위 줄이 **주황(brand) 재생 단추**(`sentence-order-listen-playback`) + [정답 로마자 / 다시 듣기 `sentence-order-listen-replay` · `Slow` `sentence-order-listen-slow`]다. 아래 EU8의 기대 모양을 그에 맞췄다. 화면 전체의 확인은 [학습 문항 리디자인 e2e](lesson-redesign.md).
+> ⟨2026-10-22 — [ADR-0083](../adr/0083-lesson-item-redesign.md)⟩ **화면 모양이 바뀌었다** — 듣기 조작은 부품 셋(`ListenControls` — 다시 듣기 RoundButton l · 재생 xl · `Slow`)이고 testid · 이름 · 순서는 같다. `LISTEN_SELECT`는 **답하기 전부터 정답 문장의 로마자**가 재생 줄 아래 구분선 밑에 보이고(한글은 답한 뒤), `MIN_PAIR_AB`는 답 전 아무것도 없다. `LISTEN_BUILD`는 카드 없는 줄 배치 — 위 줄이 **주황(brand) 재생 단추**(`sentence-order-listen-playback`) + [정답 로마자 / 다시 듣기 `sentence-order-listen-replay` · `Slow` `sentence-order-listen-slow`]다. 아래 EU8의 기대 모양을 그에 맞췄다. 화면 전체의 확인은 [학습 문항 리디자인 e2e](lesson-redesign.md).
 
 | 이미 지는 층 | 무엇을 |
 |---|---|

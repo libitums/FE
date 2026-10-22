@@ -1,4 +1,4 @@
-# ADR-0081 — 학습 문항 화면을 한 규칙으로 다시 그린다: 밀도 둘 · 판정은 지시문 자리 · 글 역할 셋 · 보기는 OptionSelector `outlined-subtle` · 문화 확인은 장면과 해설 판 · 상대 아바타 그림 `counterpart_avatar`
+# ADR-0083 — 학습 문항 화면을 한 규칙으로 다시 그린다: 밀도 둘 · 판정은 지시문 자리 · 글 역할 셋 · 보기는 OptionSelector `outlined-subtle` · 문화 확인은 장면과 해설 판 · 상대 아바타 그림 `counterpart_avatar`
 
 - 상태: **채택 — 클라이언트 쪽.** 호스트 · 서버 변경 0. 콘텐츠 형식은 **선택 키 하나**(`counterpart_avatar`)가 더해졌고 지금 데이터(내장 u00 ~ u03)에는 그 키가 없다 — 그림 · JSON 업로드는 사용자 몫이다.
   ui-lynx 표면이 넓어졌다 — `OptionSelector`(variant `outlined-subtle` · 판정 축 `feedback` · 뜻 줄 `meaning` · 확정이면 1개 허용), `ChatBubble`(`annotation`).
@@ -14,20 +14,20 @@
   **긴 콘텐츠 몇 문항은 13 mini에서 한 번 스크롤을 허용**(「대가」 2) · 아바타는 에피소드마다 그 에피소드 인물(통일하지 않음 — 콘텐츠 몫) · S13 장면 5:2 · S5 정답 로마자도 글 역할 규칙 ·
   새 문구 `What do you say?` / `Nice reply!` / `That's right!` / `Not quite` · 셸 아래 버튼 요소는 그대로(Check만 ui-lynx `Button`).
 - 다루는 축: 문항 화면의 **세로 밀도와 그 판정 · 판정 표시의 자리 · 한글 · 로마자 · 영어 뜻의 모양 구별 · 문항 보기 컴포넌트 · 듣기 조작 부품 · 줄 배치 조립의 채점 시점 · 대화 조립의 화자 표시 · 문화 확인의 제시와 해설 · 상대 아바타 그림의 출처 · 최종 테스트 정답 상자의 면 · 문항 단위 측정**.
-  **다루지 않는 것**: 문항 순서 · 채점 규칙 · 통과 기준([ADR-0058](0058-catalog-learning-session.md) 그대로), 단어 카드(S1 — [ADR-0073](0073-new-word-cards.md)) · 문화 카드(S12 — [ADR-0072](0072-culture-card-flip.md)) · 타자 입력 단서 · 온보딩의 모양, 소리 재생 시점([ADR-0080](0080-item-audio-and-slow-playback.md) 그대로), 셸 아래 기본 버튼 요소, 콘텐츠 문구.
+  **다루지 않는 것**: 문항 순서 · 채점 규칙 · 통과 기준([ADR-0058](0058-catalog-learning-session.md) 그대로), 단어 카드(S1 — [ADR-0073](0073-new-word-cards.md)) · 문화 카드(S12 — [ADR-0072](0072-culture-card-flip.md)) · 타자 입력 단서 · 온보딩의 모양, 소리 재생 시점([ADR-0082](0082-item-audio-and-slow-playback.md) 그대로), 셸 아래 기본 버튼 요소, 콘텐츠 문구.
 - 부분 대체:
-  - [ADR-0080](0080-item-audio-and-slow-playback.md) D13(v2) **「듣기 대본은 답한 뒤에만」 가운데 `LISTEN_SELECT`의 로마자** — 답하기 전에 **로마자만** 보인다(D7). 한글 대본은 여전히 답한 뒤다. `MIN_PAIR_AB`는 답 전 아무것도 없다.
-  - [ADR-0080](0080-item-audio-and-slow-playback.md) D8 표 **`LISTEN_BUILD` 행의 「상대 말풍선 자리에 3열 줄 · 내 말풍선 · 답 줄 · 창고 그대로」** — 카드 없는 줄 배치(D12)다. 대본이 정답이라 처음부터 보이지 않던 것은 그대로이고, **정답 로마자는 위 줄에 늘 보인다**(사용자가 고른 캔버스 S7v2).
+  - [ADR-0082](0082-item-audio-and-slow-playback.md) D13(v2) **「듣기 대본은 답한 뒤에만」 가운데 `LISTEN_SELECT`의 로마자** — 답하기 전에 **로마자만** 보인다(D7). 한글 대본은 여전히 답한 뒤다. `MIN_PAIR_AB`는 답 전 아무것도 없다.
+  - [ADR-0082](0082-item-audio-and-slow-playback.md) D8 표 **`LISTEN_BUILD` 행의 「상대 말풍선 자리에 3열 줄 · 내 말풍선 · 답 줄 · 창고 그대로」** — 카드 없는 줄 배치(D12)다. 대본이 정답이라 처음부터 보이지 않던 것은 그대로이고, **정답 로마자는 위 줄에 늘 보인다**(사용자가 고른 캔버스 S7v2).
   - [ADR-0067](0067-episode-format-speaking.md) D6의 **「영어 뜻 줄을 보인다 — 사용자 결정(Q1)」** — 이번 사용자 결정(요구사항 6)으로 카드의 뜻 줄을 걷었다(D8 ~ D11). 뜻은 그림 낭독 이름 · 그림 실패 대체 글자에 남는다.
   - [ADR-0016](0016-assistive-technology-semantics.md) D10 적용 기록 ⟨2026-10-16⟩의 **「단어 선택은 응답 뒤에도 보기를 `button`으로 둔다」** — 답한 뒤 나머지 보기는 `disabled`다(D5). 셸의 「아직 할 수 없는 버튼은 없는 것으로 말한다」에 **줄 배치 Check 하나가 예외**다(D12).
 - 이어받는 결정: [ADR-0022](0022-scroll-regions-and-fixed-affordances.md)(합친 흐름 `learningShellFlow`가 마지막 안전망) · [ADR-0020](0020-dynamic-type-font-scale.md) 결정 5(고정 높이는 하한 — 큰 글자에서 잘리지 않고 자란다) · [ADR-0030](0030-app-fonts-jost.md) D3(Pretendard 없음 — 기울임이 진짜 기울임인 이유) ·
   [ADR-0066](0066-episode-format-screens.md)(문화 확인 · 음절 조립 학습형) · [ADR-0065](0065-episode-format-additions.md)(대화 조립 화자) · [ADR-0067](0067-episode-format-speaking.md)(따라 읽기 · 낱말 말하기) · [ADR-0073](0073-new-word-cards.md) D4(지시문 heading-m) ·
-  [ADR-0072](0072-culture-card-flip.md)(문화 카드 그림) · [ADR-0071](0071-episode-background-download.md) · [ADR-0079](0079-tutorial-as-catalog-episode.md) D2(그림 주소 우선순위) · [ADR-0029](0029-product-analytics-posthog.md) D14. 각 ADR에 적용 기록을 달았다.
+  [ADR-0072](0072-culture-card-flip.md)(문화 카드 그림) · [ADR-0071](0071-episode-background-download.md) · [ADR-0081](0081-tutorial-as-catalog-episode.md) D2(그림 주소 우선순위) · [ADR-0029](0029-product-analytics-posthog.md) D14. 각 ADR에 적용 기록을 달았다.
 
 근거 표시: **[코드]** 저장소 코드(`apps/mobile/src/` 기준) · **[데이터]** 내장 4 에피소드(u00 ~ u03) 실측 · **[캔버스]** 시안 캔버스 · **[실측]** 테스트 · 빌드 · **[사용자]** · **[추론]** 관찰 없이 이어 붙인 것.
 계약의 정본은 저장소 밖 작업 폴더의 spec(고정 v1 · 사용자 확인 결과)과 design(디자인 고정)이고 이 문서는 그중 **결정**만 옮긴다. 시그니처 · 클래스 · testid는 코드가 진다.
 
-**왜 새 번호인가** — 열 개 가까운 학습 화면의 결정(판정 자리 · 보기 · 대본 공개 · 조립 채점 시점 · 문화 확인 제시)이 한꺼번에 바뀌고, 그 가운데 ADR-0080 · ADR-0016 적용 기록의 실체화된 문장을 뒤집는다(ADR README 「형식」 둘째 줄 — 여럿이 한꺼번에).
+**왜 새 번호인가** — 열 개 가까운 학습 화면의 결정(판정 자리 · 보기 · 대본 공개 · 조립 채점 시점 · 문화 확인 제시)이 한꺼번에 바뀌고, 그 가운데 ADR-0082 · ADR-0016 적용 기록의 실체화된 문장을 뒤집는다(ADR README 「형식」 둘째 줄 — 여럿이 한꺼번에).
 
 ## 맥락
 
@@ -82,7 +82,7 @@
 
 ### D6. 듣기 조작은 부품 셋이다
 
-- `ListenControls.Replay`(RoundButton l) · `.Playback`(xl, 색 갈래 `neutral` 기본 · `brand`) · `.Slow`(지원할 때만 — ADR-0080 D8). 이름 · 탭은 안쪽 RoundButton이 지고 바깥 상자는 testid만 진다.
+- `ListenControls.Replay`(RoundButton l) · `.Playback`(xl, 색 갈래 `neutral` 기본 · `brand`) · `.Slow`(지원할 때만 — ADR-0082 D8). 이름 · 탭은 안쪽 RoundButton이 지고 바깥 상자는 testid만 진다.
 - S2 = 다시 듣기 · 재생 · `Slow` 한 줄(재생이 가운데). S7 = **brand 재생** + [정답 로마자 / 다시 듣기 · `Slow`]. 간이 줄(S8 · S9)은 그대로.
 
 ### D7. S2 듣기 대본 — `LISTEN_SELECT`는 답하기 전 로마자만 (사용자 결정)
@@ -133,7 +133,7 @@
 - 와이어: 최상위 선택 문자열. 디코더(`lib/episode-avatar.ts`, 백그라운드 전용): trim해 비면 없음. **버킷 상대 경로**(선두 `/` · `..` · 스킴 금지, 선두 `content/` 허용 — 다른 그림 경로와 같은 해석) **그리고** 확장자 `.webp` · `.png` · `.jpg` · `.jpeg` **그리고** 공백 · `?` · `#` 없음이면 받는다.
   어긋나면 키를 버리고 **경고** `invalid-asset-path`(`counterpart_avatar`)를 남긴다 — **에피소드 디코드는 실패하지 않는다.**
 - 받기: 자산 목록(`episodeAssetPaths`)에 들어간다. 받기 실패 규칙은 다른 그림과 같다(서버에 없음은 적고 넘어감 — 아바타가 에피소드를 묶지 않는다).
-- 주소: 레슨 계획 `counterpartAvatarUrl` = 받아 둔 파일 > 내장 > 원격(ADR-0079 D2의 `imageUrlOf` 그대로). 원격이 오프라인이면 이니셜.
+- 주소: 레슨 계획 `counterpartAvatarUrl` = 받아 둔 파일 > 내장 > 원격(ADR-0081 D2의 `imageUrlOf` 그대로). 원격이 오프라인이면 이니셜.
 - 내장 에피소드가 이 키를 가지면 그 그림도 내장 표에 함께 실어야 한다 — 가드 테스트가 내장 u00 본문의 모든 그림 경로(아바타 포함)를 표와 대조한다. 지금 u00 JSON에는 키가 없다.
 - 형식 · 업로드 순서는 [콘텐츠 계약](../specs/episode-content-json-contract.md) §2 · §9 · §13.
 

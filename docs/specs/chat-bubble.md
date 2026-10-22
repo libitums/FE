@@ -33,7 +33,7 @@
    end-end(오른쪽 아래) 모서리만 0px이다. 정렬도 각각 `flex-start`, `flex-end`를 사용한다.
 8. Incoming은 `gray.100`/`fg.neutral`, Outgoing은 `brand.strong`/`fg.neutral-inverted`를 쓴다.
    ⟨2026-10-22 확인⟩ **코드의 Outgoing 면은 `brand-primary`다**(`chat-bubble.css`) — 이 줄의 `brand.strong`과 다르다. 흰 글자 대비 3.02로
-   ([ADR-0081](../adr/0081-lesson-item-redesign.md) 「대가」 1) 문화 확인 내 말풍선이 이 값을 그대로 쓴다. 어느 쪽이 맞는지는 design-system 원본과 대조해 정한다(코드는 고치지 않았다).
+   ([ADR-0083](../adr/0083-lesson-item-redesign.md) 「대가」 1) 문화 확인 내 말풍선이 이 값을 그대로 쓴다. 어느 쪽이 맞는지는 design-system 원본과 대조해 정한다(코드는 고치지 않았다).
    S/M/L은 design-system의 정확한 spacing과 `typography.body.s|m|l`을 사용한다.
 9. root 하나를 `speaker: message` 접근성 이름과 text trait으로 노출하고 message 자손은 별도
    접근성 node가 되지 않게 한다. Outgoing의 non-default delivery는 한국어 상태 문구를
@@ -80,7 +80,7 @@ Storybook은 Incoming, Outgoing, Small, Large, Failed, Learning Language, Long C
 ## FE 확장 — `annotation` ⟨2026-10-22⟩
 
 학습 문항의 문화 확인 장면(상대 말풍선 — 한글 · 로마자 · 뜻)을 위해 FE가 더한 선택 prop이다.
-design-system 원본에는 없다 — 결정은 [ADR-0081](../adr/0081-lesson-item-redesign.md) D5 · D15이고, design-system에
+design-system 원본에는 없다 — 결정은 [ADR-0083](../adr/0083-lesson-item-redesign.md) D5 · D15이고, design-system에
 보고할 항목으로 남아 있다.
 
 ```ts
