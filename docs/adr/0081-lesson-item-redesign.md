@@ -4,10 +4,11 @@
   ui-lynx 표면이 넓어졌다 — `OptionSelector`(variant `outlined-subtle` · 판정 축 `feedback` · 뜻 줄 `meaning` · 확정이면 1개 허용), `ChatBubble`(`annotation`).
   **e2e는 iPhone 13 mini 시뮬레이터 한 회차(부분)** — EU2 · EU4 · EU8과 EU1 일부를 봤고, 거기서 나온 iOS 결함 셋(흐름 안 `Check` 넘침 · 빈칸 밑줄 색 · 그림 위 모서리)을 고친 뒤 같은 시뮬레이터에서 다시 봤다(D18 · 재검토 조건 6 · D8 ~ D11).
   ⟨2026-10-22, 최종 HEAD⟩ 캔버스 대조(EU1 — 불일치 둘 기록) · regular 기기(EU3 — iPhone 15 시뮬레이터 통과) · 큰 글꼴(EU9 — 13 mini 통과)을 더 봤다.
-  Android · 스크린리더 · 아바타 그림 · 세 구간 시간(EU1-A · EU5 ~ EU7 · EU8 Android)은 미실행이다 — [학습 문항 리디자인 e2e](../e2e/lesson-redesign.md) 「결과」.
+  Android · 스크린리더 · 아바타 그림 · 세 구간 시간(EU1-A · EU5 ~ EU7 · EU8 Android)은 미실행이며 사용자 결정(2026-10-22)으로 후속에 둔다 — [학습 문항 리디자인 e2e](../e2e/lesson-redesign.md) 「결과」.
   성능 보고서는 [부분 측정 01](../performance/reports/lesson-redesign-iphone-13-mini-simulator-01.md)(번들 증가량 · 13 mini 화면별 높이)이고 렌더 · 프레임 · 메모리 · 세 구간 시간은 미측정이다(「미확인 · 후속」 1).
   접근성 감사(코드 · CSS · 토큰 대비, 기기 청취 없음)의 지적을 반영했다(D15 · D18 · D19).
 - 날짜: 2026-10-22.
+- **사용자 결정**(2026-10-22, 마무리): ① 문화 확인(`CULTURE_CHECK`, S13 등) 문항의 세션 머리 학습형 이름표는 `Word choice`가 아니라 **`Culture quiz`**(다른 낱말 고르기는 `Word choice` 그대로, 문구는 영어 문구표 키). ② 듣기 `RoundButton` neutral 아이콘의 회색(`fg-neutral-subtle`)은 디자인 시스템대로 유지 — 캔버스와의 차이는 의도적이다. ③ EU5(VoiceOver · TalkBack 청취) · EU7(실기 Release 세 구간 시간) · Android 회차(EU1-A · EU8)는 후속으로 미루고 병합한다.
 - **사용자 결정**(2026-10-22): 시안은 Design 캔버스 셋째 ~ 다섯째 줄 수정안(S12 제외) · ui-lynx `OptionSelector`에 새 variant `outlined-subtle` · 아래 그림자 버튼 금지 ·
   S13 답한 뒤 **고른 보기만 남긴다**(고르지 않은 보기 · 장면 그림은 접힘) · TURN_ORDER 내 칸 · 내 조각은 **`brand-primary`**(시안 색 — 흰 글씨 대비 3.02, 「대가」 1) · 조각 안 뜻 줄은 흰색 ·
   **긴 콘텐츠 몇 문항은 13 mini에서 한 번 스크롤을 허용**(「대가」 2) · 아바타는 에피소드마다 그 에피소드 인물(통일하지 않음 — 콘텐츠 몫) · S13 장면 5:2 · S5 정답 로마자도 글 역할 규칙 ·
@@ -219,8 +220,8 @@
 
 ## 미확인 · 후속
 
-1. **성능 — 세 구간 시간** — [성능 보고서 01](../performance/reports/lesson-redesign-iphone-13-mini-simulator-01.md)은 번들 증가량 · 13 mini 화면별 높이만 쟀다. 남은 것: 실제 13 mini 기기 Release 빌드 baseline(49dc553e) / candidate 각 3회 — 레슨 시작 → 첫 문항 첫 그리기(u00 S2 · S7 · S13, 회귀 ≤ 10 %) · 보기 탭 → 판정 배지(≤ 100 ms) · S13 보기 탭 → 해설 판(≤ 150 ms), 렌더 · 프레임 · 메모리(e2e EU7).
-2. **남은 기기 확인** — [학습 문항 리디자인 e2e](../e2e/lesson-redesign.md) 「결과」의 미실행 항목: Android(EU1-A · EU8) · VoiceOver · TalkBack 청취(EU5 — 해설 판 → `Continue` 도달, 판정 뒤 지시문 미낭독, `Check` → `Next` 초점 유지 포함) · 아바타 그림(EU6). ⟨2026-10-22⟩ 캔버스 대조(EU1) · regular 기기(EU3, iPhone 15 시뮬레이터) · 큰 글꼴(EU9, 해설 판 글 스크롤과 `Continue` 화면 안)은 최종 HEAD에서 실행했다 — EU3 · EU9 통과, EU1은 불일치 둘(neutral 듣기 아이콘 회색 · `S13` 머리 학습형 이름)을 기록만 했다.
+1. **성능 — 세 구간 시간(EU7, 사용자 결정으로 후속, 2026-10-22)** — [성능 보고서 01](../performance/reports/lesson-redesign-iphone-13-mini-simulator-01.md)은 번들 증가량 · 13 mini 화면별 높이만 쟀다. 남은 것: 실제 13 mini 기기 Release 빌드 baseline(49dc553e) / candidate 각 3회 — 레슨 시작 → 첫 문항 첫 그리기(u00 S2 · S7 · S13, 회귀 ≤ 10 %) · 보기 탭 → 판정 배지(≤ 100 ms) · S13 보기 탭 → 해설 판(≤ 150 ms), 렌더 · 프레임 · 메모리(e2e EU7).
+2. **남은 기기 확인(사용자 결정으로 후속, 2026-10-22)** — [학습 문항 리디자인 e2e](../e2e/lesson-redesign.md) 「결과」의 미실행 항목: Android(EU1-A · EU8) · VoiceOver · TalkBack 청취(EU5 — 해설 판 → `Continue` 도달, 판정 뒤 지시문 미낭독, `Check` → `Next` 초점 유지 포함) · 아바타 그림(EU6). ⟨2026-10-22⟩ 캔버스 대조(EU1) · regular 기기(EU3, iPhone 15 시뮬레이터) · 큰 글꼴(EU9, 해설 판 글 스크롤과 `Continue` 화면 안)은 최종 HEAD에서 실행했다 — EU3 · EU9 통과, EU1의 불일치 둘 중 `S13` 머리 학습형 이름은 `Culture quiz`로 고쳤고(사용자 결정 3), neutral 듣기 아이콘 회색은 디자인 시스템대로 둔다(사용자 결정 2).
 3. **아바타 그림 업로드와 JSON 갱신** — 사용자(256×256 WebP 준비 중). 순서는 [콘텐츠 계약](../specs/episode-content-json-contract.md) §13 규칙 4.
 4. **design-system 보고** — `outlined-subtle` 상태 대비(기본 테두리 1.15) · `meaning` · Feedback 축 · ChatBubble `annotation`.
 5. GitHub wiki 이벤트 사전(`episode_item_answered`)은 저장소 밖이라 따로 고친다.

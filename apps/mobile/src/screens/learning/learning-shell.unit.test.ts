@@ -73,6 +73,12 @@ describe("learningSessionHeader", () => {
     expect(learningTimingFlag("speak-word")).toBe("libitum:navigation:learning-speak-word");
   });
 
+  it("LS-I3. 이름표를 갈음하면 머리 이름과 접근성 이름이 그것을 따른다(문화 확인)", () => {
+    const header = learningSessionHeader("word-choice", 0, 2, uiCopyEn, "Culture quiz");
+    expect(header.formLabel).toBe("Culture quiz");
+    expect(header.accessibilityLabel).toBe("Culture quiz, question 1 of 2");
+  });
+
   it("학습형마다 이름이 갈린다", () => {
     expect(learningSessionHeader("sentence-order", 0, 1, uiCopyEn).formLabel).toBe("Word order");
     expect(learningSessionHeader("culture", 0, 1, uiCopyEn).formLabel).toBe("Culture");

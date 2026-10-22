@@ -59,6 +59,7 @@ export function LearningShell({
   feedback,
   actionPlacement = "floating",
   densityOverride,
+  formLabel,
 }: LearningShellProps): ReactNode {
   const copy = useUiCopy();
   const deviceDensity = useLearningDensity();
@@ -176,6 +177,7 @@ export function LearningShell({
         questionCount={questionCount}
         runProgress={runProgress}
         onExit={handleExit}
+        formLabel={formLabel}
       />
       {/* 카드 스크롤 모드는 버튼 행의 실제 높이를 먼저 확보합니다. */}
       <LearningShellBody

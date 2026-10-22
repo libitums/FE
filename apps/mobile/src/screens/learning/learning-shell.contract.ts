@@ -66,7 +66,8 @@ export type LearningSessionHeader = {
 };
 
 /**
- * 문항 순번(0부터)과 활동의 전체 문항 수에서 세션 헤더의 값을 뽑습니다.
+ * 문항 순번(0부터)과 활동의 전체 문항 수에서 세션 헤더의 값을 뽑습니다. `formLabelOverride`가 있으면
+ * 학습형 이름표를 그것으로 갈음합니다(문화 확인 문항 — 같은 낱말 고르기 형이어도 이름표가 다릅니다).
  *
  * ⟨2026-09-28⟩ **세는 단위가 활동에서 문항으로 갈렸습니다.** 전에는 `Chapter n / N`이
  * 유닛 안의 활동 순번이었고 문항 순번은 오른쪽에 따로 섰는데, 한 줄에 숫자 쌍이 둘이라
@@ -84,16 +85,18 @@ export function learningSessionHeader(
   questionIndex: number,
   questionCount: number,
   copy: UiCopy,
+  formLabelOverride?: string,
 ): LearningSessionHeader {
+  const formLabel = formLabelOverride ?? formLabels[form];
   if (!Number.isInteger(questionCount) || questionCount < 0) {
     throw new Error(`활동의 문항 수는 0 이상의 정수여야 합니다: ${questionCount}`);
   }
   if (questionCount === 0) {
     return {
       progressLabel: undefined,
-      formLabel: formLabels[form],
+      formLabel,
       fillPercent: 0,
-      accessibilityLabel: copy.learningShell.headerNoQuestions(formLabels[form]),
+      accessibilityLabel: copy.learningShell.headerNoQuestions(formLabel),
     };
   }
   if (!Number.isInteger(questionIndex) || questionIndex < 0) {
@@ -107,13 +110,9 @@ export function learningSessionHeader(
 
   return {
     progressLabel: `Lesson ${String(ordinal)} / ${String(questionCount)}`,
-    formLabel: formLabels[form],
+    formLabel,
     fillPercent: (ordinal / questionCount) * 100,
-    accessibilityLabel: copy.learningShell.headerQuestionOf(
-      formLabels[form],
-      ordinal,
-      questionCount,
-    ),
+    accessibilityLabel: copy.learningShell.headerQuestionOf(formLabel, ordinal, questionCount),
   };
 }
 

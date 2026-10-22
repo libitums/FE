@@ -190,6 +190,8 @@ export function WordChoiceActivity({
   return (
     <LearningShell
       form="word-choice"
+      // 문화 확인 문항은 같은 낱말 고르기 형이어도 이름표가 `Culture quiz`입니다.
+      formLabel={question?.culture === undefined ? undefined : copy.learningShell.cultureQuizLabel}
       // 세션 헤더가 세는 것은 문항입니다. 완료 상태에는 지금 푸는 문항이 없으므로
       // 마지막 문항 자리에 둡니다 — 문항이 0개인 스텝에서는 계약이 순번을 안 읽습니다.
       questionIndex={counter.questionIndex}

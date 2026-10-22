@@ -25,6 +25,8 @@ export type LearningShellFeedback = {
 /** 껍데기가 받는 것입니다 — 각 줄의 뜻은 `LearningShell`의 머리 주석과 함께 읽습니다. */
 export type LearningShellProps = {
   form: LearningActivityForm;
+  /** 세션 헤더의 학습형 이름표를 갈음합니다 — 문화 확인 문항이 `Culture quiz`를 줍니다. */
+  formLabel?: string;
   /**
    * 활동 안에서 지금 몇 번째 문항인가입니다(0부터). 세션 헤더의 `Lesson n / N`과 진행
    * 막대가 이 값에서 납니다.

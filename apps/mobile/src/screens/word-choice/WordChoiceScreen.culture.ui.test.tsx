@@ -113,6 +113,15 @@ const maybe = (testId: string) => screen.queryByTestId(testId);
 const tapChoice = (index: number): void => void fireEvent.tap(id(choiceItemId(index)), {});
 
 describe("문화 확인 장면 — 질문", () => {
+  test("CC-H. 문화 확인 문항의 세션 머리 이름표는 Culture quiz이고, 다른 낱말 고르기는 Word choice 그대로다", () => {
+    mount([sceneQuestion]);
+    expect(id("learning-shell-form")).toHaveTextContent("Culture quiz");
+    cleanup();
+
+    mount([{ prompt: "사과", choices: ["사과", "배"], answerIndex: 0 }]);
+    expect(id("learning-shell-form")).toHaveTextContent("Word choice");
+  });
+
   test("CC8. 장면 문항은 그림 · 상대 말풍선(로마자 · 뜻) · 상대 아바타 · 지시문 · 보기 뜻 줄로 선다", () => {
     mount([sceneQuestion]);
 
