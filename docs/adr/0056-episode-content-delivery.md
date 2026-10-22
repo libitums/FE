@@ -227,7 +227,7 @@
 
 ### 2026-10-21 — 튜토리얼 u00: 내장 에피소드가 넷이 되고, 내장 그림이 생겼다
 
-결정은 [ADR-0080](0080-tutorial-as-catalog-episode.md) D1 · D2가 진다. 이 문서에 닿는 자리만 적는다.
+결정은 [ADR-0081](0081-tutorial-as-catalog-episode.md) D1 · D2가 진다. 이 문서에 닿는 자리만 적는다.
 
 - **내장 에피소드가 넷이다** — `u00-tutorial`(order 0 · `2026-10-21.3` · 37,777 B)이 내장 매니페스트 첫 항목으로 들었다. 항목 값은 버킷 `manifest.json`의 u00 항목과 같아 D2(같은 version이면 내장)로 본문을 받지 않는다.
 - **D10 「사전 다운로드 없음 · 원격 URL」의 예외 하나 — 내장 그림.** u00이 쓰는 그림 14장(WebP, 버킷 바이트 그대로)이 번들에 있고(`src/assets/content/images/…` = 버킷 상대 경로, 표 `lib/bundled-content-images.ts`), 그림 주소는 **받아 둔 파일 > 내장(`/static/image/…`) > 원격**이다. 호스트 변경은 여전히 0이다(Android는 ADR-0051 재작성). 내장 그림은 받지 않는다.

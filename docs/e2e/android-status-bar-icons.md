@@ -1,6 +1,6 @@
 # Android 상태바 아이콘 명암 — 표면에 따라 바뀌는가
 
-> ⟨2026-10-21 — [ADR-0080](../adr/0080-tutorial-as-catalog-episode.md)⟩ 등록부(`devtools/android-bundle/host-status-bar-icons.mjs`)에서 `episode-intro` · `episode-prologue` · `episode-final` · `visual-novel` · `roleplay-visual-novel` route와 `EpisodeNarrativeScreen` · `EpisodeFinalScreen` · `VisualNovelScreen` · `FirstUnitGuide`가 빠졌다 — 그 화면이 지워졌다. 그 표면을 보는 단계는 기록이다.
+> ⟨2026-10-21 — [ADR-0081](../adr/0081-tutorial-as-catalog-episode.md)⟩ 등록부(`devtools/android-bundle/host-status-bar-icons.mjs`)에서 `episode-intro` · `episode-prologue` · `episode-final` · `visual-novel` · `roleplay-visual-novel` route와 `EpisodeNarrativeScreen` · `EpisodeFinalScreen` · `VisualNovelScreen` · `FirstUnitGuide`가 빠졌다 — 그 화면이 지워졌다. 그 표면을 보는 단계는 기록이다.
 
 Android 앱의 상단 띠를 칠하는 표면(밝은 화면 · 어두운 화면 · 레이어 · 스크림)이 바뀔 때, **시스템이 그린 상태바의 시계 · 아이콘 색**이 그 표면 위에서 읽히는지를
 에뮬레이터의 `dumpsys` · 무손실 캡처 · 화면 녹화로 확인한다. 어두운 표면(`episode-intro` · 서사 · 최종 테스트 · 비주얼 노벨 · 지표 모달 · 첫 단원 안내)에서는 **밝은 아이콘**,

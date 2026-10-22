@@ -1,6 +1,6 @@
 # LIB-254 계약 — 약속 확인 메신저 특별 유닛
 
-> **대체됨 — [ADR-0080](../adr/0080-tutorial-as-catalog-episode.md) (2026-10-21).** 메신저 특별 유닛의 화면 · 데이터 · 맵 항목 · 롤플레이 route가 지워졌다(D10). 자판(`MessengerKeyboard` · `hangul-keyboard.ts`)만 카탈로그 타자 입력이 쓰려고 남았다. 기록으로 남긴다.
+> **대체됨 — [ADR-0081](../adr/0081-tutorial-as-catalog-episode.md) (2026-10-21).** 메신저 특별 유닛의 화면 · 데이터 · 맵 항목 · 롤플레이 route가 지워졌다(D10). 자판(`MessengerKeyboard` · `hangul-keyboard.ts`)만 카탈로그 타자 입력이 쓰려고 남았다. 기록으로 남긴다.
 
 > **개정 (2026-10-19) — 자판을 화면 바닥에 붙임.** 결정은 [ADR-0070](../adr/0070-keyboard-dock.md)이 진다. 자판(`MessengerKeyboard`)은
 > 답장 구역 밖, **화면 루트의 마지막 자식**으로 선다 — 흰 면이 화면 아래 · 좌우 끝까지 닿고 키는 안전 영역 안이다(키 아래 = 24 + 아래 인셋).

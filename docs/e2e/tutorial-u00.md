@@ -1,9 +1,9 @@
 # 튜토리얼 u00 — 새 설치 오프라인 · Episode 1의 문 · 옛 사용자 · 롤플레이 회귀
 
-결정은 [ADR-0080](../adr/0080-tutorial-as-catalog-episode.md)가 진다. 자동 테스트(unit · ui · integration)는 내장 본문 · 그림 표와 우선순위 · 문 규칙 · 옛 기록 스냅숏 · 첫 유닛 안내 · 티켓 비용 · Airbridge 매핑을 지키지만,
+결정은 [ADR-0081](../adr/0081-tutorial-as-catalog-episode.md)가 진다. 자동 테스트(unit · ui · integration)는 내장 본문 · 그림 표와 우선순위 · 문 규칙 · 옛 기록 스냅숏 · 첫 유닛 안내 · 티켓 비용 · Airbridge 매핑을 지키지만,
 **실제 기기 네트워크 차단에서 번들 `/static` 그림이 서는지(iOS 리소스 · Android 재작성) · 실행 사이 저장소 시드(옛 사용자) · VoiceOver 안내 낭독 · 큰 글꼴 배치**는 기기에서만 판정한다.
 
-⚠ **실제 앱 흐름으로는 아직 돌리지 못했다** — 시뮬레이터 앱은 소셜 로그인만 되어 진입할 수 없다. 2026-10-22에 개발 전용 플레이그라운드 회차(1차, 아래 「결과」)로 화면 판정을 먼저 했고, 사용자가 이 PR의 기기 확인을 그 부분 회차로 받아들였다(2026-10-22, [ADR-0080](../adr/0080-tutorial-as-catalog-episode.md) 머리). 제품 번들 오프라인 `/static` 그림(iOS 리소스 · Android 재작성) · 실제 로그인 · 저장소 시드 옛 사용자 · 서버 동기화 · 음성 12개 받기와 그림 받기 0 · 티켓 수 · Android(EU-8) · VoiceOver 실제 낭독은 후속 회차에 남았다.
+⚠ **실제 앱 흐름으로는 아직 돌리지 못했다** — 시뮬레이터 앱은 소셜 로그인만 되어 진입할 수 없다. 2026-10-22에 개발 전용 플레이그라운드 회차(1차, 아래 「결과」)로 화면 판정을 먼저 했고, 사용자가 이 PR의 기기 확인을 그 부분 회차로 받아들였다(2026-10-22, [ADR-0081](../adr/0081-tutorial-as-catalog-episode.md) 머리). 제품 번들 오프라인 `/static` 그림(iOS 리소스 · Android 재작성) · 실제 로그인 · 저장소 시드 옛 사용자 · 서버 동기화 · 음성 12개 받기와 그림 받기 0 · 티켓 수 · Android(EU-8) · VoiceOver 실제 낭독은 후속 회차에 남았다.
 
 ## 준비
 
@@ -11,8 +11,8 @@
 - 판정: 화면 녹화 프레임 · 스크린숏 · Accessibility Inspector · 앱 컨테이너의 저장소(`defaults export`) · 콘텐츠 폴더.
 - iOS `StorageModule`은 `UserDefaults.standard`에 키 앞 `libitum.`을 **하나 더** 붙여 쓴다 — 진행 캐시는 `libitum.libitum.progress.cached.<사용자>`다.
 - 앱 컨테이너: `xcrun simctl get_app_container booted com.libitum.host data`(아래 `<data>`).
-- ⚠ **u00의 `S2`(듣기 고르기) · `S7`(듣고 조립)은 빈 레슨이다** — 학습 문항 음성이 아직 연결되지 않아 그 단계의 문항 하나가 `audio-missing`으로 건너뛰어진다(ADR-0080 D12, 후속 `feat/audio-slow-playback`). 아래 판정은 그 둘을 「열리고 끝남으로 바뀐다」까지만 본다.
-- u00은 티켓을 쓰지 않는다(ADR-0080 D8) — EU-2는 티켓 대기 없이 끝까지 간다.
+- ⚠ **u00의 `S2`(듣기 고르기) · `S7`(듣고 조립)은 빈 레슨이다** — 학습 문항 음성이 아직 연결되지 않아 그 단계의 문항 하나가 `audio-missing`으로 건너뛰어진다(ADR-0081 D12, 후속 `feat/audio-slow-playback`). 아래 판정은 그 둘을 「열리고 끝남으로 바뀐다」까지만 본다.
+- u00은 티켓을 쓰지 않는다(ADR-0081 D8) — EU-2는 티켓 대기 없이 끝까지 간다.
 
 ## 흐름
 

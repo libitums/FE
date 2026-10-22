@@ -1,6 +1,6 @@
 # 학습 문항 첫 열기 안내 — 처음 열 때 한 번 뜨고, 뒤 화면은 안내가 닫힐 때까지 움직이지 않는가
 
-> ⟨2026-10-21 — [ADR-0080](../adr/0080-tutorial-as-catalog-episode.md)⟩ 안내 종류는 **`sentence-order` 하나**만 남았다 — 메신저 · 전화 · 비주얼 노벨 · 말하기 · 쓰기 화면과 그 안내(종류 · 판정 갈래 · 문구)가 지워졌다. 그 종류를 여는 절과 튜토리얼 맵 노드(`Ordering` · `Asking names` 등)를 쓰는 절은 기록으로 남긴다. 옛 `tutorial-beginner-units.md`는 지웠다.
+> ⟨2026-10-21 — [ADR-0081](../adr/0081-tutorial-as-catalog-episode.md)⟩ 안내 종류는 **`sentence-order` 하나**만 남았다 — 메신저 · 전화 · 비주얼 노벨 · 말하기 · 쓰기 화면과 그 안내(종류 · 판정 갈래 · 문구)가 지워졌다. 그 종류를 여는 절과 튜토리얼 맵 노드(`Ordering` · `Asking names` 등)를 쓰는 절은 기록으로 남긴다. 옛 `tutorial-beginner-units.md`는 지웠다.
 
 학습 단원 여섯 종류(문장 만들기 · 메신저 · 전화 · 비주얼 노벨 · 말하기 · 쓰기)를 **이 기기에서 처음 열 때** 뜨는 오버레이 안내(작업 `learning-item-guides`)를
 **기기에서 본다.** 판정 규칙(어느 문항이 대상인가 · 저장값 해석)은 unit이, 표시 · 가림 · 정지 · 닫기의 렌더 결과는 ui · integration이 진다.

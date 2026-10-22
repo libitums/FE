@@ -130,7 +130,7 @@ Android의 FCM 전송은 [ADR-0041](0041-android-push-transport.md), 수신 호�
 
 ## 적용 기록 ⟨2026-10-21 — 튜토리얼 u00⟩
 
-결정은 [ADR-0080](0080-tutorial-as-catalog-episode.md) D11. **서버(send-push · `push_devices`) · 호스트는 바뀌지 않았다.**
+결정은 [ADR-0081](0081-tutorial-as-catalog-episode.md) D11. **서버(send-push · `push_devices`) · 호스트는 바뀌지 않았다.**
 
 - **D3 — 특별 유닛 목적지 셋(`messenger` · `phone-call` · `visual-novel`)은 그 화면이 지워져 앱이 `{ kind: "journey-map" }`으로 읽는다** — `unitId`를 보지 않는다. 서버가 같은 모양을 계속 보내도 맵이 열린다. 「이 앱에 있는 유닛 ID만 받는다」의 표는 지워졌다.
 - 알림 목록 항목의 목적지(`NotificationTarget`)는 `roleplay-list`만 남았고, 앱이 여는 곳은 `journey-map` · `notifications` · `roleplay-list` 셋이다(`push-routing`). 위 표의 「닫힌 목록 여섯」은 그때의 수다.

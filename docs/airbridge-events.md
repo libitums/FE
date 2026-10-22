@@ -102,7 +102,7 @@ grep -c 'AIRBRIDGE_APP_NAME = "";' apps/android/app/build/generated/source/build
 | `airbridge.user.signup` (가입 완료) — 속성 없음 | 진입 흐름 끝의 「여정 시작하기」 | 앱 |
 | `airbridge.achieveLevel` (에피소드 최종 통과) — `level`(에피소드 id, 예: `u00-tutorial` · `u01-water`) · `label`(`episode_final`) | 에피소드의 최종 테스트를 통과할 때(`episode_final_passed`) — 신규 사용자의 첫 건이 튜토리얼 u00 완료 | 앱 |
 
-⟨2026-10-21 — [ADR-0080](adr/0080-tutorial-as-catalog-episode.md) D9, 사용자 결정⟩ **`achieveLevel`의 뜻이 바뀌었다** — 이전에는 「여정의 메신저 유닛을 처음 끝낼 때 · 비주얼 노벨 유닛이 끝날 때」(`level` = 유닛 ID · `label` = `messenger` | `visual_novel`)였고, 그 화면이 옛 튜토리얼과 함께 지워져 한 건도 나지 않게 됐다. **매체 쪽 전환 이름 · 값 매핑이 옛 `messenger` · `visual_novel` 라벨을 쓰고 있으면 대시보드에서 `episode_final`로 고친다**(아래 「대시보드에서 할 일」 9 — 사용자 몫).
+⟨2026-10-21 — [ADR-0081](adr/0081-tutorial-as-catalog-episode.md) D9, 사용자 결정⟩ **`achieveLevel`의 뜻이 바뀌었다** — 이전에는 「여정의 메신저 유닛을 처음 끝낼 때 · 비주얼 노벨 유닛이 끝날 때」(`level` = 유닛 ID · `label` = `messenger` | `visual_novel`)였고, 그 화면이 옛 튜토리얼과 함께 지워져 한 건도 나지 않게 됐다. **매체 쪽 전환 이름 · 값 매핑이 옛 `messenger` · `visual_novel` 라벨을 쓰고 있으면 대시보드에서 `episode_final`로 고친다**(아래 「대시보드에서 할 일」 9 — 사용자 몫).
 
 읽을 때 알아 둘 것(매핑의 정본과 이유는 [ADR-0063 D7](adr/0063-airbridge-events.md)).
 

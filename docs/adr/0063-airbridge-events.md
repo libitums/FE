@@ -414,7 +414,7 @@ PR에서 wiki를 고친다」 규약이고 PR 작성자가 손으로 한다. 이
 
 ## 적용 기록 ⟨2026-10-21 — 튜토리얼 u00⟩
 
-적용 기록이고 이 ADR의 구조(모듈 · 값 주입 · 「초기화하지 않음」 판정 · PostHog와 독립)를 바꾸지 않는다. 결정은 [ADR-0080](0080-tutorial-as-catalog-episode.md) D9 — **사용자 결정**(2026-10-21, Q4).
+적용 기록이고 이 ADR의 구조(모듈 · 값 주입 · 「초기화하지 않음」 판정 · PostHog와 독립)를 바꾸지 않는다. 결정은 [ADR-0081](0081-tutorial-as-catalog-episode.md) D9 — **사용자 결정**(2026-10-21, Q4).
 
 - **D7 매핑이 바뀌었다** — `messenger_unit_completed` · `visual_novel_unit_completed`(출처 journey) 두 줄과 「위 둘 · 출처 roleplay」 줄을 지우고 한 줄을 더했다:
 

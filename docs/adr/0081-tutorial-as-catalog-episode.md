@@ -1,4 +1,4 @@
-# ADR-0080 — 튜토리얼은 카탈로그 에피소드 `u00-tutorial`이다: 앱에 내장하고 `Episode 0`으로 세우며, 옛 튜토리얼과 메신저 · 전화 · 비주얼 노벨을 같은 변경에서 지운다
+# ADR-0081 — 튜토리얼은 카탈로그 에피소드 `u00-tutorial`이다: 앱에 내장하고 `Episode 0`으로 세우며, 옛 튜토리얼과 메신저 · 전화 · 비주얼 노벨을 같은 변경에서 지운다
 
 - 상태: **채택 — 클라이언트 · 호스트 자산.** 서버(RPC · 표 · send-push) · 버킷 형식 변경 0. 호스트 코드 변경 0(내장 음성 파일 18 지움 · androidTest 목록 고침).
   ⚠ **기기 확인은 부분 회차다** — unit · ui · integration 테스트와 번들 크기에 더해, 2026-10-22 iOS 시뮬레이터 플레이그라운드 1차 회차([튜토리얼 u00 e2e](../e2e/tutorial-u00.md) 「결과 1차」 — EU-3 · EU-7 통과, EU-1 · EU-2 · EU-4 · EU-5 부분, EU-0 · EU-6 · EU-8 미실행)를 돌렸다. **사용자 결정(2026-10-22, D-A)**: 이 PR의 기기 확인은 이 부분 회차로 받아들인다. 제품 번들 오프라인 `/static` 그림(iOS · Android 재작성) · 실제 로그인 · 저장소 시드 옛 사용자 · 서버 동기화 · 음성 12개 받기와 그림 받기 0 · 티켓 수 · Android(EU-8) · VoiceOver 실제 낭독은 후속이다.
@@ -117,7 +117,7 @@
 ### D12. 음성 — u00 음성 id 12, 첫 온라인 실행에 받는다. 학습 문항 음성은 아직 연결되지 않는다
 
 - `2026-10-21.3`판은 음성 id 12개를 쓴다(`audio_url` 27 · `example_audio_url` 1 · `player_audio_url` 3). 내장하지 않는다 — **첫 온라인 실행에서 받고**(그림은 0), 오프라인 첫 설치는 그림까지 열리고 소리는 없다. 경로는 카탈로그 그대로(`contentAudioPathOf` · ADR-0060 · 0071 · 0074).
-- ⚠ **학습 문항의 소리는 아직 연결되지 않았다** [코드 — `app/catalog-choice-map.ts` · `catalog-item-map.ts`]. 소리가 없는 듣기 문항은 `audio-missing`으로 건너뛰므로, **문항이 하나뿐인 `S2`(`LISTEN_SELECT`) · `S7`(`LISTEN_BUILD`)은 빈 레슨이 된다.** 후속 PR(`feat/audio-slow-playback`, ADR-0081 예정)이 고친다 — 그때 테스트 AU2의 기대값이 뒤집힌다.
+- ⚠ **학습 문항의 소리는 아직 연결되지 않았다** [코드 — `app/catalog-choice-map.ts` · `catalog-item-map.ts`]. 소리가 없는 듣기 문항은 `audio-missing`으로 건너뛰므로, **문항이 하나뿐인 `S2`(`LISTEN_SELECT`) · `S7`(`LISTEN_BUILD`)은 빈 레슨이 된다.** 후속 PR(`feat/audio-slow-playback`, ADR-0082 예정)이 고친다 — 그때 테스트 AU2의 기대값이 뒤집힌다.
 - 내장 음성(iOS `apps/ios/Host/audio` — Android gradle이 같은 폴더를 복사): 옛 튜토리얼 문항 · 프롤로그 통화 15 + 전화 3 = **18 지움**. 남은 셋(`greeting-1` · `ordering-2` · `tutorial-cabin-announcement`)은 **호스트 테스트 고정물**이다(iOS `AudioPlaybackModuleTests` 등 · Android `AudioAssetPathTest` 등이 이름으로 쥔다) — **제품이 쓰는 내장 음성은 0**.
 
 ### D13. 지운 범위
@@ -166,7 +166,7 @@
 
 ## 후속
 
-- **학습 문항 음성 연결** — `feat/audio-slow-playback`(ADR-0081 예정). S2 · S7 빈 레슨이 풀린다.
+- **학습 문항 음성 연결** — `feat/audio-slow-playback`(ADR-0082 예정). S2 · S7 빈 레슨이 풀린다.
 - **기기 확인 남은 것**(D-A) — [튜토리얼 u00 e2e](../e2e/tutorial-u00.md) 1차에서 남은 판정: 제품 번들 오프라인 `/static` 그림(iOS 리소스 · Android `asset:///` 재작성) · 실제 로그인 · 저장소 시드 옛 사용자(EU-0 · EU-4) · 서버 동기화 · 음성 12개 받기와 그림 받기 0(EU-6) · 티켓 수(EU-2) · Android(EU-8) · VoiceOver 실제 낭독(EU-3).
 - **Android Maestro 흐름 셋**(D-B) — 완료 낭독 · 앱 리뷰 · 말하기 권한의 좌표를 u00 경로로(Q5를 후속으로 넘김).
 - **`rp-end.webp`** — 화면이 `closing_image_url`을 그리게 할지, 내장에서 뺄지(130.6 kB) 정한다(대가 10).

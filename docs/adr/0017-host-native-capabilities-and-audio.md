@@ -711,7 +711,7 @@ LIB-253이 더한 셋째 항목은 **종료 발화 priority API**다. Android에
 
 ## 적용 기록 ⟨2026-10-21 — 튜토리얼 u00⟩
 
-결정은 [ADR-0080](0080-tutorial-as-catalog-episode.md) D12. 입장 조건(D1) · 오디오 모듈 경계(D3)는 바뀌지 않았다.
+결정은 [ADR-0081](0081-tutorial-as-catalog-episode.md) D12. 입장 조건(D1) · 오디오 모듈 경계(D3)는 바뀌지 않았다.
 
 - **D3 — `source`의 「번들 id(튜토리얼 판정용 자산)」 갈래에 제품 쪽 소비자가 없어졌다.** 옛 튜토리얼 문항 · 프롤로그 통화 음성 15와 전화 음성 3을 `apps/ios/Host/audio`에서 지웠다(18). 남은 셋(`greeting-1` · `ordering-2` · `tutorial-cabin-announcement`)은 **호스트 테스트 고정물**이다 — iOS `AudioPlaybackModuleTests` · `RecordingAudioSessionTests` · `SoundEffectsModuleTests`, Android `AudioAssetPathTest` · `AudioContentFileTest` · `AudioRemoteSourceTest` · `SoundEffectAssetTest` · androidTest `AudioPlaybackModuleTest`가 이름으로 쥔다.
 - 번들 id 갈래 자체(호스트의 자산 경로 판정)는 지우지 않았다 — 호스트 코드 변경 0. 제품 음성은 모두 원격(`https`) 또는 받아 둔 파일(`file://`)이다(ADR-0060 · 0071).

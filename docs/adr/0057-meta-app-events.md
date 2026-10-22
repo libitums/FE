@@ -372,4 +372,4 @@ ADR-0029 D1의 「같은 PR에서 wiki를 고친다」 규약이고 PR 작성자
 
 ## 적용 기록 ⟨2026-10-21 — 튜토리얼 u00⟩
 
-이 ADR은 대체됐다(ADR-0063). 기록만 단다 — **D6 표의 `messenger_unit_completed` · `visual_novel_unit_completed`는 이름째 지워졌다**([ADR-0080](0080-tutorial-as-catalog-episode.md) D9 · D10). 지금의 매핑은 ADR-0063 적용 기록 2026-10-21(`episode_final_passed` → `achieveLevel`)이 진다.
+이 ADR은 대체됐다(ADR-0063). 기록만 단다 — **D6 표의 `messenger_unit_completed` · `visual_novel_unit_completed`는 이름째 지워졌다**([ADR-0081](0081-tutorial-as-catalog-episode.md) D9 · D10). 지금의 매핑은 ADR-0063 적용 기록 2026-10-21(`episode_final_passed` → `achieveLevel`)이 진다.
