@@ -5,7 +5,7 @@
   },
   {
     "path": "apps/mobile/src/components/stat-chip-motion.css",
-    "reason": "지표 칩 오름 재생(사용자 결정 2026-10-16, 시안 ①D 「불씨 + 빛 훑기」, ADR-0064). 아이콘이 튀는 크기 scale(1.4) · scale(0.94)는 토큰 scale.pressed · enter · reward(모두 1보다 작다)로 표현할 수 없는 연출 값이다. 길이 · 가속은 전부 토큰이고 이 파일 밖의 새 리터럴은 허용하지 않는다. 움직임 줄이기에서는 재생 요소가 서지 않고 숫자 페이드(d2 · linear)만 남는다."
+    "reason": "지표 칩 오름 재생(사용자 결정 2026-10-16, 시안 ①D 「불씨 + 빛 훑기」, ADR-0064). 아이콘이 튀는 크기 scale(1.4) · scale(0.94)는 토큰 scale.pressed · enter · reward(모두 1보다 작다)로 표현할 수 없는 연출 값이다. 길이 · 가속은 전부 토큰이고 이 파일 밖의 새 리터럴은 허용하지 않는다. 움직임 줄이기에서는 재생 요소가 서지 않고 숫자 페이드(d2 · linear)만 남는다. ⟨2026-10-21⟩ 학습 티켓 줄어듦(시안 E4, ADR-0075 적용 기록): 칩 전체가 커지는 scale(1.14)과 「−1」이 떨어지는 translateY(20px)도 시안의 연출 값이라 토큰으로 표현할 수 없다. 길이 · 가속은 토큰(d6 · d8 · enter-expressive · easing)이고, 움직임 줄이기에서는 숫자 페이드(d2)만 남는다."
   },
   {
     "path": "apps/mobile/src/screens/journey-map/journey-stat-modal-motion.css",

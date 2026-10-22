@@ -38,3 +38,11 @@ export function clearStatBump(bumps: StatBumps, kind: StatBumpKind): StatBumps {
 export function statBumpStart(bumpFrom: number | null, value: number): number | null {
   return bumpFrom !== null && bumpFrom < value ? bumpFrom : null;
 }
+
+/**
+ * 학습 티켓 칩이 줄어들 시작 값입니다(시안 E4). 오름과 반대로, 표식이 지금 값보다 **클** 때만 그 값이고 아니면
+ * `null`입니다 — 쓴 뒤 다른 경로로 장수가 다시 찼으면(충전 · 무료 1장) 굴릴 것이 없습니다.
+ */
+export function ticketDropStart(dropFrom: number | null, value: number): number | null {
+  return dropFrom !== null && dropFrom > value ? dropFrom : null;
+}

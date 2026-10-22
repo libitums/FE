@@ -35,6 +35,9 @@ export type TopBarProps = {
   /** 참인 동안 오름 재생을 미룹니다 — 모달이 덮고 있거나 곧 열릴 때입니다. */
   readonly bumpHeld?: boolean;
   readonly onBumped?: (kind: StatBumpKind) => void;
+  /** 학습 티켓을 쓰기 전 장수입니다(시안 E4). 티켓 칩이 그 값에서 지금 값으로 한 번 줄어듭니다. */
+  readonly ticketDropFrom?: number | null;
+  readonly onTicketDropped?: () => void;
 };
 
 export function TopBar({
@@ -48,6 +51,8 @@ export function TopBar({
   bumps = noStatBumps,
   bumpHeld = false,
   onBumped,
+  ticketDropFrom = null,
+  onTicketDropped,
 }: TopBarProps): ReactNode {
   const copy = useUiCopy();
   const motion = useMotion();
@@ -131,7 +136,7 @@ export function TopBar({
             onBumped={() => onBumped?.("trophy")}
           />
         )}
-        {/* 학습 티켓은 숫자만 섭니다(시안 E1). 활동으로 오르지 않으므로 굴리지 않습니다. */}
+        {/* 학습 티켓은 숫자만 섭니다(시안 E1). 오르지는 않고, 새 레슨에 한 장을 쓴 순간 한 번 줄어듭니다(시안 E4). */}
         {ticketCount === null ? null : (
           <StatChip
             tone="ticket"
@@ -141,6 +146,8 @@ export function TopBar({
             surface="white"
             height="touch-target"
             onTap={onOpenTickets === undefined ? undefined : handleOpenTickets}
+            dropFrom={ticketDropFrom}
+            onDropped={onTicketDropped}
           />
         )}
       </view>

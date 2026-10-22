@@ -2,6 +2,7 @@ import { expect, test, vi } from "vitest";
 import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
 import { AppHeader } from "./AppHeader";
+import type { TicketHeaderWiring } from "./use-learning-tickets";
 import { UiCopyContext } from "../lib/ui-copy";
 import { markedUiCopy } from "../lib/ui-copy.test-support";
 
@@ -242,4 +243,27 @@ test("[AH-S3] 연속 축하가 먼저다 — 연속 모달을 닫은 뒤에 설�
   tapInside("journey-stat-modal-back");
 
   expect(screen.getByTestId("episode-survey-options")).toBeInTheDocument();
+});
+
+test("AH-D1. 티켓 칩이 줄어드는 동안만 머리를 말풍선 층 위로 올린다 — 「−1」이 맵의 띠 뒤로 가지 않게(시안 E4)", () => {
+  const tickets = (dropFrom: number | null): TicketHeaderWiring => ({
+    status: { available: 2, slots: [], nextInMs: null },
+    more: null,
+    onGetMore: vi.fn(),
+    onModalChange: vi.fn(),
+    dropFrom,
+    onDropped: vi.fn(),
+  });
+  const header = (dropFrom: number | null) => (
+    <AppHeader
+      streakDays={1}
+      trophyCount={0}
+      onOpenNotifications={vi.fn()}
+      tickets={tickets(dropFrom)}
+    />
+  );
+  const { rerender } = render(header(3));
+  expect(screen.getByTestId("app-header")).toHaveClass("app-header-raised");
+  rerender(header(null));
+  expect(screen.getByTestId("app-header")).not.toHaveClass("app-header-raised");
 });
