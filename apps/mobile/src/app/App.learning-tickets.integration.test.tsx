@@ -3,8 +3,8 @@ import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/
 
 import { statChipDropDurationMs } from "../components/StatChip";
 import { App } from "./App";
-import { legacyPassedRecord } from "./test-helpers/progress-seed";
 import { learningProgressSnapshotFrom } from "./learning-progress";
+import { emptyLegacyTutorialRecord } from "./legacy-tutorial-progress";
 import { resetPushWiringForTests } from "./push-wiring";
 import { setTicketDropWaitForTests } from "./use-learning-tickets";
 import { authSessionStorageKey, serializeAuthSession } from "../lib/auth-session";
@@ -12,9 +12,11 @@ import { entrySplashDurationMs } from "../lib/entry-flow";
 import { learningItemGuideSeenStorageKey } from "../lib/learning-item-guide";
 import { allLearningItemGuidesSeenValue } from "../lib/learning-item-guide.test-support";
 import { ticketRefillMs } from "../lib/learning-tickets";
+import { TUTORIAL_EPISODE_ID } from "../lib/tutorial-episode";
 import type { EpisodeIntroEvent } from "../screens/episode-intro/episode-intro.contract";
 import { contentNotFoundResponse, isContentRequest } from "./test-helpers/content-requests";
 import { catalogNodeTestId } from "./test-helpers/map-unit-testid";
+import { legacyPassedRecord, tutorialCoverDoneProgress } from "./test-helpers/progress-seed";
 
 // 학습 티켓을 App 한 트리에서 봅니다 — 머리 칩 · 말풍선 태그 · 새 레슨의 문지기 · 티켓 없음 대화상자 · 「Get more
 // tickets」 · 진행 저장(서버 · 기기 미전송). 대역은 경계뿐입니다 — `StorageModule` · `fetch` · 이벤트 sink.
@@ -252,8 +254,8 @@ test("[IT6] 오프라인(서버 실패)에서도 기기 저장본으로 쓰고, 
 });
 
 test("[IT7] 새 레슨 Start → 칩이 3 → 2로 줄며 −1이 떨어지고, 재생이 끝난 뒤 학습이 열린다(시안 E4)", async () => {
-  await boot(async () => ok(progressOf(0)));
-  tap(mapUnitTestId("greeting"));
+  await boot(async () => ok(progressOf([])));
+  tap(catalogNodeTestId(u01, "S1"));
   tap("step-sheet-start");
 
   expect(screen.queryByTestId("learning-shell")).not.toBeInTheDocument();
@@ -268,8 +270,8 @@ test("[IT7] 새 레슨 Start → 칩이 3 → 2로 줄며 −1이 떨어지고, 
 });
 
 test("[IT8] 재생을 기다리는 동안 Start를 또 눌러도 한 장만 쓰고 한 번만 연다", async () => {
-  await boot(async () => ok(progressOf(0)));
-  tap(mapUnitTestId("greeting"));
+  await boot(async () => ok(progressOf([])));
+  tap(catalogNodeTestId(u01, "S1"));
   tap("step-sheet-start");
   tap("step-sheet-start");
   tap("step-sheet-start");
@@ -277,7 +279,7 @@ test("[IT8] 재생을 기다리는 동안 Start를 또 눌러도 한 장만 쓰�
     vi.advanceTimersByTime(statChipDropDurationMs.standard * 3);
   });
   expect(screen.getAllByTestId("learning-shell")).toHaveLength(1);
-  tap("learning-shell-exit");
+  tap("learning-run-header-exit");
   fireEvent.tap(
     within(screen.getByTestId("ui-lynx-dialog-action-leave")).getByTestId("ui-lynx-button"),
     {},
@@ -287,8 +289,25 @@ test("[IT8] 재생을 기다리는 동안 Start를 또 눌러도 한 장만 쓰�
 });
 
 test("[IT9] 다시 하기는 줄어듦 없이 바로 연다", async () => {
-  await boot(async () => ok(progressOf(2)));
-  tap(mapUnitTestId("greeting"));
+  await boot(async () => ok(progressOf(["S1"])));
+  tap(catalogNodeTestId(u01, "S1"));
+  tap("step-sheet-start");
+  expect(screen.queryByTestId("top-bar-tickets-drop")).not.toBeInTheDocument();
+  expect(screen.getByTestId("learning-shell")).toBeInTheDocument();
+});
+
+test("[IT10] u00 튜토리얼 레슨 Start는 티켓을 쓰지 않아 칩이 줄지 않고 바로 연다(ADR-0081)", async () => {
+  await boot(async () =>
+    ok(
+      learningProgressSnapshotFrom({
+        legacyTutorial: emptyLegacyTutorialRecord,
+        catalogProgress: tutorialCoverDoneProgress(),
+      }),
+    ),
+  );
+  expect(chip()).toHaveTextContent("3");
+  tap(catalogNodeTestId(TUTORIAL_EPISODE_ID, "S1"));
+  expect(screen.queryByTestId("step-sheet-ticket-cost")).not.toBeInTheDocument();
   tap("step-sheet-start");
   expect(screen.queryByTestId("top-bar-tickets-drop")).not.toBeInTheDocument();
   expect(screen.getByTestId("learning-shell")).toBeInTheDocument();
