@@ -85,9 +85,11 @@ const testIdsOf = (parent: Element): (string | null)[] =>
 const classesOf = (el: Element): string[] => (el.getAttribute("class") ?? "").split(/\s+/);
 const accessibilityAttrsOf = (el: Element): string[] =>
   el.getAttributeNames().filter((name) => name.startsWith("accessibility-"));
-/** 지시문은 루트의 직계이고 스크롤 밖입니다(split · 카드 스크롤 모두). */
+/** 지시문 줄(`learning-shell-prompt`, 지시문은 그 안)은 루트의 직계이고 스크롤 밖입니다(split · 카드 스크롤 모두). */
 function expectInstructionOutsideScroll(): void {
-  expect(testIdsOf(byId("learning-shell"))).toContain("learning-shell-instruction");
+  expect(testIdsOf(byId("learning-shell"))).toContain("learning-shell-prompt");
+  expect(byId("learning-shell-prompt").contains(byId("learning-shell-instruction"))).toBe(true);
+  expect(scroll().contains(byId("learning-shell-prompt"))).toBe(false);
   expect(scroll().contains(byId("learning-shell-instruction"))).toBe(false);
 }
 
@@ -150,11 +152,12 @@ test("[MG1] 높이 0을 보고하면 지시문 · 무대 · 작업 영역이 한
   expect(flowBox).not.toBeNull();
   expect(within(scroll()).getByTestId("learning-shell-flow")).toBe(flowBox);
   expect(testIdsOf(flowBox as HTMLElement)).toEqual([
-    "learning-shell-instruction",
+    "learning-shell-prompt",
     "learning-shell-stage",
     "fixture-workspace",
   ]);
   expect(screen.getAllByTestId("learning-shell-instruction")).toHaveLength(1);
+  expect(byId("learning-shell-prompt").contains(byId("learning-shell-instruction"))).toBe(true);
   expect(screen.getAllByTestId("learning-shell-stage")).toHaveLength(1);
 });
 

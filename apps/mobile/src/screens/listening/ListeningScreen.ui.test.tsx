@@ -785,23 +785,21 @@ test("응답 전 무대의 <svg>가 컨트롤 아이콘 둘이다", () => {
   expect(screen.getByTestId("listening-prompt-text")).toBeInTheDocument();
   expect(screen.getByTestId("ui-lynx-option-selector-item-choice-0")).toBeInTheDocument();
 
-  expect(stageIcons()).toEqual(["listening-prompt-replay-icon", "listening-prompt-playback-icon"]);
+  expect(stageIcons()).toEqual(["ui-lynx-round-button-icon", "ui-lynx-round-button-icon"]);
 });
 
-// 고른 보기의 표식이 걷히고 **판정 배지**가 그 자리를 대신합니다. 배지는 무대 안,
-// 보기는 무대 밖 — 그래서 무대의 아이콘은 배지 하나가 늘어납니다.
-test("응답 뒤 무대의 <svg>가 판정 배지 + 컨트롤 아이콘 둘이다", () => {
+// 판정 배지는 무대 밖 **지시문 자리**(`learning-shell-verdict`)에 서므로 무대의 아이콘은
+// 응답 뒤에도 컨트롤 둘 그대로이고, 배지 아이콘은 지시문 자리에 하나 생깁니다.
+test("응답 뒤 무대의 <svg>는 컨트롤 아이콘 둘 그대로이고 판정 배지는 지시문 자리에 선다", () => {
   renderOrdering();
 
   const answerIndex = ORDERING_QUESTIONS[0].answerIndex;
   fireEvent.tap(screen.getByTestId(`ui-lynx-option-selector-item-choice-${answerIndex}`), {});
 
-  expect(stageIcons()).toEqual([
-    "answer-verdict-icon",
-    "listening-prompt-replay-icon",
-    "listening-prompt-playback-icon",
-  ]);
-  expect(screen.getByTestId("answer-verdict")).toHaveAttribute("data-result", "correct");
+  expect(stageIcons()).toEqual(["ui-lynx-round-button-icon", "ui-lynx-round-button-icon"]);
+  const slot = screen.getByTestId("learning-shell-verdict");
+  expect(within(slot).getByTestId("answer-verdict")).toHaveAttribute("data-result", "correct");
+  expect(within(slot).getByTestId("answer-verdict-icon")).toBeInTheDocument();
 });
 
 test("완료 상태에는 재생 아이콘 없이 장식용 완료 아이콘만 있다", () => {

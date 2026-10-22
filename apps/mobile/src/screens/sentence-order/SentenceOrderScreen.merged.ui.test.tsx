@@ -102,10 +102,14 @@ test("[SO2] 합친 흐름에서 칸을 채우는 동안은 보내지 않고, Che
     tapAction("Check");
 
     expect(scrollTos).toEqual([`#${learningShellScrollId}`]);
-    const verdict = within(screen.getByTestId("learning-shell-stage")).getByTestId(
+    // 판정 배지는 무대가 아니라 지시문 자리(`learning-shell-verdict`)에 선다.
+    const verdict = within(screen.getByTestId("learning-shell-verdict")).getByTestId(
       "answer-verdict",
     );
     expect(verdict).toBeInTheDocument();
+    expect(
+      within(screen.getByTestId("learning-shell-stage")).queryByTestId("answer-verdict"),
+    ).toBeNull();
 
     tapAction("Next");
 

@@ -157,9 +157,10 @@ describe("LISTEN_BUILD — 듣기 갈래", () => {
       "accessibility-label",
       "Play from the start",
     );
+    // 마운트 때 자동 재생이 시작돼 재생 중이므로 이름은 Pause다(듣기 화면 규칙과 같다).
     expect(listenButtonIn("sentence-order-listen-playback")).toHaveAttribute(
       "accessibility-label",
-      "Play",
+      "Pause",
     );
     expect(screen.getByTestId("sentence-order-listen-slow")).toHaveAttribute(
       "accessibility-label",

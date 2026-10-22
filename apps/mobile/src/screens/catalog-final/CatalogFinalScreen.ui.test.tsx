@@ -233,7 +233,8 @@ describe("CatalogFinalScreen", () => {
     expect(answer).not.toHaveAttribute("data-surface");
     expect(screen.getByTestId("answer-reveal-label")).toHaveTextContent("Answer");
     expect(document.querySelector('[accessibility-label="Answer, 카드로 할게요."]')).not.toBeNull();
-    expect(document.body.innerHTML).not.toContain("surface-dark");
+    // 정답 상자(answer-reveal)에 어두운 변형 클래스가 없다(칩의 `sentence-order-chip-surface-dark`는 별개).
+    expect(answer.outerHTML).not.toContain("surface-dark");
   });
 
   test("UF5. 마지막 턴 뒤 See results를 두 번 눌러도 결과는 한 번 올라간다", () => {

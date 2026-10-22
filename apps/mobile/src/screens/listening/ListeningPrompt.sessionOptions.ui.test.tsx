@@ -55,7 +55,11 @@ function renderPrompt(sessionOptions: SessionOptions) {
 }
 
 const control = () => listenButtonIn("listening-prompt-playback");
-const icon = () => screen.getByTestId("listening-prompt-playback-icon");
+const icon = () => {
+  const found = control().querySelector<HTMLElement>('[data-testid="ui-lynx-round-button-icon"]');
+  if (found === null) throw new Error("재생 단추에 아이콘이 없음");
+  return found;
+};
 
 const autoPlayOff: SessionOptions = { "auto-play-audio": false, "show-transcript": true };
 const transcriptOff: SessionOptions = { "auto-play-audio": true, "show-transcript": false };
@@ -69,7 +73,9 @@ test("[LP1] 자동 재생 꺼짐 — 마운트 시 play 0회 · 이름 'Play' ·
   expect(playSources(calls)).toEqual([]);
   expect(control()).toHaveAttribute("accessibility-label", "Play");
   expect(control()).toHaveAttribute("accessibility-label", "Play");
-  expect(icon()).toHaveAttribute("content", play);
+  // 아이콘 색은 `current-color` 속성으로 넘어가 content의 currentColor가 그 값으로 바뀐다.
+  const color = icon().getAttribute("current-color") ?? "";
+  expect(icon()).toHaveAttribute("content", play.replace(/currentColor/g, color));
 });
 
 test("[LP2] 자동 재생 꺼짐 + 탭 → play가 audioSource로 1회 · 이름 'Pause'", () => {
