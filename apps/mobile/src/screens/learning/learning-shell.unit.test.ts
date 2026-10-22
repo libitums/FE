@@ -363,4 +363,20 @@ describe("껍데기 장면 (LSN)", () => {
       expect(new Set(stage).size).toBe(stage.length);
     }
   });
+
+  it("LSN6. 나뉜 배치라도 버튼 행이 흐름 안이면 완료 무대는 떠 있는 버튼 몫을 비우지 않는다", () => {
+    // 흐름 안 행은 제 높이를 스스로 차지합니다 — 무대가 떠 있는 버튼 몫(아래 여백)까지 비우면 두 번 비워
+    // 행이 안전 영역 밖으로 밀립니다(u00 S7 · S11 완료 카드의 See results, iPhone 13 mini 749~805).
+    expect(learningShellSceneClasses("split", "complete", "in-flow")).toEqual({
+      stage: ["learning-shell-stage-scene-complete", "learning-shell-stage-fill-flow"],
+      flow: [],
+    });
+    expect(learningShellSceneClasses("split", "complete", "floating").stage).toContain(
+      "learning-shell-stage-fill-rest",
+    );
+    expect(learningShellSceneClasses("split", "question", "in-flow")).toEqual({
+      stage: [],
+      flow: [],
+    });
+  });
 });

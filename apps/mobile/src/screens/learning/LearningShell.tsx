@@ -69,6 +69,7 @@ export function LearningShell({
   const workspaceMode = learningWorkspaceMode({ scrolls: workspaceScrolls, actionsShown });
   const { flow, reportViewportHeight } = useLearningShellFlow(workspaceMode);
   const arrangement = learningShellArrangement({ scrollCard, flow });
+  const actionsInFlow = arrangement !== "split" || actionPlacement === "in-flow";
   useLearningShellScrollReset({
     arrangement,
     questionIndex,
@@ -191,6 +192,7 @@ export function LearningShell({
         onViewportHeight={reportViewportHeight}
         transition={{ phase, motion }}
         scene={learningShellScene(complete)}
+        actions={actionsShown && actionsInFlow ? "in-flow" : "floating"}
       />
       {/* 스스로 넘어가는 동안 화면 전체가 이 이름의 조작 단위입니다 — 보이는 버튼은
           없지만 기다리는 것 말고 할 수 있는 일이 있어야 합니다(WCAG 2.2.1). 세션 헤더는
@@ -211,7 +213,7 @@ export function LearningShell({
           label={actionLabel ?? ""}
           onAction={handleAction}
           secondaryAction={secondaryAction}
-          inFlow={arrangement !== "split" || actionPlacement === "in-flow"}
+          inFlow={actionsInFlow}
           feedback={complete ? undefined : feedback}
         />
       ) : null}

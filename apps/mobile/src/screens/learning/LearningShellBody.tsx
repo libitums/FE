@@ -11,7 +11,7 @@ import {
   type LearningShellScene,
   type LearningWorkspaceMode,
 } from "./learning-shell.contract";
-import type { LearningShellStage } from "./learning-shell-props";
+import type { LearningShellActionPlacement, LearningShellStage } from "./learning-shell-props";
 import {
   questionTransitionAttributes,
   questionTransitionClassName,
@@ -35,6 +35,8 @@ export type LearningShellBodyProps = {
   readonly transition: QuestionTransition;
   /** 지금 장면입니다. 완료면 무대가 남는 세로의 가운데에 섭니다(`learningShellSceneClasses`). */
   readonly scene: LearningShellScene;
+  /** 아래 버튼 행이 흐름 안인가 떠 있는가입니다 — 완료 무대가 버튼 몫을 비울지 가릅니다. */
+  readonly actions: LearningShellActionPlacement;
 };
 
 /**
@@ -56,12 +58,13 @@ export function LearningShellBody({
   onViewportHeight,
   transition,
   scene,
+  actions,
 }: LearningShellBodyProps): ReactNode {
   // 전환 속성은 스프레드로 둡니다(idle이면 속성 자체가 없다). `<scroll-view>`에서는 스프레드가
   // `scroll-bar-enable={false}`보다 앞에 와야 lint:scroll-bars를 지납니다(ADR-0055 D1).
   const attributes = questionTransitionAttributes(transition);
   const stageCarriesTransition = arrangement === "split";
-  const sceneClasses = learningShellSceneClasses(arrangement, scene);
+  const sceneClasses = learningShellSceneClasses(arrangement, scene, actions);
   const stage = (
     <view
       className={

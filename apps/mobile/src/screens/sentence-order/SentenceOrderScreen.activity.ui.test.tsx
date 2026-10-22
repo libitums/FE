@@ -108,3 +108,17 @@ test("US3. 두 문항을 정답 · 오답으로 풀고 결과를 보면 판정 �
   expect(onFinish).toHaveBeenCalledTimes(1);
   expect(onFinish).toHaveBeenCalledWith(["correct", "incorrect"], 0);
 });
+
+test("US4. 완료 카드의 See results는 다른 학습 화면과 같은 아래 자리 — 무대가 떠 있는 버튼 몫을 따로 비우지 않는다", () => {
+  // 실기기(u00 S7 · S11): 흐름 안 행 + 떠 있는 버튼 몫 여백이 겹쳐 See results가 안전 영역 밖(749~805)으로 밀렸습니다.
+  mount([wordOrder]);
+  placeInAnswerOrder(wordOrder);
+  tapAction("Check");
+  tapAction("Next");
+
+  expect(screen.getByTestId("learning-shell-stage")).toHaveAttribute("data-scene", "complete");
+  const stageClass = screen.getByTestId("learning-shell-stage").getAttribute("class") ?? "";
+  expect(stageClass.split(" ")).not.toContain("learning-shell-stage-fill-rest");
+  expect(stageClass.split(" ")).toContain("learning-shell-stage-fill-flow");
+  expect(screen.getByTestId("learning-shell-actions")).toHaveTextContent("See results");
+});

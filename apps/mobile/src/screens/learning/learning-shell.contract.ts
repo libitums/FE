@@ -5,7 +5,7 @@ import { motionClassName, type Motion } from "@libitums/ui-lynx/motion";
 
 import type { UiCopy } from "../../lib/ui-copy.contract";
 import type { LearningActivityForm } from "../../lib/learning-form";
-import type { LearningShellFeedback } from "./learning-shell-props";
+import type { LearningShellActionPlacement, LearningShellFeedback } from "./learning-shell-props";
 
 /**
  * 세션 헤더에 서는 학습형 이름입니다. 영문인 것은 디자인(Figma 65-14)의 어휘이고,
@@ -230,13 +230,26 @@ export type LearningShellSceneClasses = {
   readonly flow: readonly string[];
 };
 
-/** 완료 장면에서 무대 카드를 내용 높이로 두고 머리와 아래 버튼 사이 세로 가운데에 세우는 클래스입니다. */
+/**
+ * 완료 장면에서 무대 카드를 내용 높이로 두고 머리와 아래 버튼 사이 세로 가운데에 세우는 클래스입니다.
+ *
+ * 나뉜 배치에서 버튼 몫을 아래 여백으로 비우는 것(`-fill-rest`)은 행이 **떠 있을 때**만입니다. 행이 흐름 안이면
+ * 행이 제 높이를 스스로 차지하므로 남는 세로만 받습니다(`-fill-flow`) — 둘 다 비우면 행이 그만큼 아래로 밀려
+ * 안전 영역 밖에 섭니다(u00 S7 · S11 완료 카드, iPhone 13 mini See results 749~805).
+ */
 export function learningShellSceneClasses(
   arrangement: LearningShellArrangement,
   scene: LearningShellScene,
+  actions: LearningShellActionPlacement = "floating",
 ): LearningShellSceneClasses {
   if (scene === "question") return { stage: [], flow: [] };
   if (arrangement === "split") {
+    if (actions === "in-flow") {
+      return {
+        stage: ["learning-shell-stage-scene-complete", "learning-shell-stage-fill-flow"],
+        flow: [],
+      };
+    }
     return {
       stage: ["learning-shell-stage-scene-complete", "learning-shell-stage-fill-rest"],
       flow: [],
