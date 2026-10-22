@@ -52,7 +52,11 @@ function ReplayPart({ control, testId }: ListenControlPartProps): ReactNode {
   );
 }
 
-function PlaybackPart({ control, testId, variant = "neutral" }: ListenPlaybackPartProps): ReactNode {
+function PlaybackPart({
+  control,
+  testId,
+  variant = "neutral",
+}: ListenPlaybackPartProps): ReactNode {
   const copy = useUiCopy();
   const action = playbackActionFor(control.playback);
   return (

@@ -74,7 +74,7 @@ describe("자산 목록의 counterpart_avatar", () => {
 });
 
 describe("내장 그림 표 가드", () => {
-  test("BI3. 내장 u00 본문의 모든 그림 경로(아바타 포함)가 내장 표에서 풀린다", () => {
+  test("AV-BI3. 내장 u00 본문의 모든 그림 경로(아바타 포함)가 내장 표에서 풀린다", () => {
     const images = episodeAssetPaths(u00).filter((path) => path.startsWith("images/"));
 
     expect(images.length).toBeGreaterThan(0);

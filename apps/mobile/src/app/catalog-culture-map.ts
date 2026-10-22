@@ -46,8 +46,8 @@ export function catalogCultureCardFor(
   return pickPaired(units[unitIndex - 1]?.items.filter(isCard) ?? [], k);
 }
 
-const OPEN_CORNER = "「";
-const CLOSE_CORNER = "」";
+const OPEN_CORNER = "\u300c";
+const CLOSE_CORNER = "\u300d";
 const QUOTE_PAIRS: readonly (readonly [string, string])[] = [
   ['"', '"'],
   ["“", "”"],
