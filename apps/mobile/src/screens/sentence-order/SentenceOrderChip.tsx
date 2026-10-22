@@ -1,5 +1,6 @@
 import { useUiCopy } from "../../lib/ui-copy";
 import type { ReactNode } from "@lynx-js/react";
+import { color } from "@libitums/design-tokens";
 import { useMotion } from "@libitums/ui-lynx/motion";
 
 import {
@@ -7,6 +8,7 @@ import {
   sentenceOrderChipClassName,
   sentenceOrderChipPlaceholderClassName,
 } from "./sentence-order";
+import { SentenceOrderResultMark } from "./SentenceOrderResultMark";
 import type { AnswerResult } from "../../lib/answer-result";
 import { playSound } from "../../lib/sound-effects";
 import type { SurfaceTone } from "../../lib/surface-tone";
@@ -65,12 +67,19 @@ export function SentenceOrderChip({
       data-placed={placedOrdinal ?? "none"}
       {...(judged === null ? {} : { "data-result": judged })}
       accessibility-element={true}
-      accessibility-label={chipAccessibilityLabel(text, placedOrdinal, copy)}
+      accessibility-label={chipAccessibilityLabel(text, placedOrdinal, copy, judged)}
       accessibility-traits={disabled ? "disabled" : "button"}
       bindtap={disabled ? undefined : handleTap}
     >
       {/* 보이는 이름을 지는 요소는 가리지 않습니다(ADR-0016 D5) — 접근성 속성이 없습니다. */}
       <text className="sentence-order-chip-label">{text}</text>
+      {judged === null ? null : (
+        <SentenceOrderResultMark
+          result={judged}
+          tint={color.feedback[judged === "correct" ? "correct-text" : "incorrect-text"]}
+          testId={`sentence-order-chip-${index}-mark`}
+        />
+      )}
     </view>
   );
 }

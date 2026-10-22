@@ -43,12 +43,14 @@ test("TR1. Romanization(s)는 -s 클래스를 더하고 강조 없는 한 조각
   expect(roman.innerHTML).not.toContain("text-role-romanization-answer");
 });
 
-test("TR2. Divider는 text-role-divider이고 낭독에서 빠진다", () => {
+test("TR2. Divider는 text-role-divider이고 접근성 정지점이 아니다(가림 속성 없음)", () => {
   render(<TextRoles.Divider testId="divider" />);
 
   const divider = screen.getByTestId("divider");
   expect(divider).toHaveClass("text-role-divider");
-  expect(divider).toHaveAttribute("accessibility-elements-hidden", "true");
+  expect(divider).not.toHaveAttribute("accessibility-element");
+  expect(divider).not.toHaveAttribute("accessibility-label");
+  expect(divider).not.toHaveAttribute("accessibility-elements-hidden");
 });
 
 test("TR3. Meaning은 m · s 클래스로 글을 그린다", () => {
@@ -67,7 +69,7 @@ test("TR3. Meaning은 m · s 클래스로 글을 그린다", () => {
   expect(small).toHaveClass("text-role-meaning-s");
 });
 
-test("TR4. Romanization의 accessibilityLabel을 주면 그 이름이고 안 주면 보이는 글이 이름이다", () => {
+test("TR4. Romanization의 accessibilityLabel을 주면 그 이름이고 안 주면 Pronunciation 접두를 붙인 로마자가 이름이다", () => {
   const first = render(
     <TextRoles.Romanization
       testId="roman"
@@ -93,7 +95,7 @@ test("TR4. Romanization의 accessibilityLabel을 주면 그 이름이고 안 주
     />,
   );
   const roman = screen.getByTestId("roman");
-  const name = roman.getAttribute("accessibility-label");
-  expect(name === null || name === "annyeonghaseyo!").toBe(true);
+  expect(roman).toHaveAttribute("accessibility-element", "true");
+  expect(roman).toHaveAttribute("accessibility-label", "Pronunciation: annyeonghaseyo!");
   expect(roman).toHaveTextContent("annyeonghaseyo!");
 });

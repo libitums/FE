@@ -1,6 +1,8 @@
 import { expect, test, vi } from "vitest";
 import { fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
+import { MotionProvider } from "@libitums/ui-lynx/motion";
+
 import { LearningShell } from "./LearningShell";
 import { learningShellFeedbackLabel } from "./learning-shell.contract";
 import type { LearningShellFeedback, LearningShellProps } from "./learning-shell-props";
@@ -38,21 +40,67 @@ test("SH3. feedback이 없으면 해설 판이 없다", () => {
   expect(screen.queryByTestId("learning-shell-feedback")).not.toBeInTheDocument();
 });
 
-test("SH3. feedback은 tone · 제목 · 줄 순서로 서고 판 전체가 하나의 이름이다", () => {
+test("SH3. feedback은 tone · 제목 · 줄 순서로 서고 글 부분(body)이 하나의 이름이다", () => {
   renderShell({ feedback });
 
   const panel = screen.getByTestId("learning-shell-feedback");
   expect(panel).toHaveAttribute("data-tone", "correct");
-  expect(panel).toHaveAttribute("accessibility-element", "true");
-  expect(panel).toHaveAttribute("accessibility-label", learningShellFeedbackLabel(feedback));
-  expect(panel).toHaveAttribute(
+  // 판 루트는 접근성 요소가 아닙니다 — 조작 단위(Continue)를 접근성 요소 안에 넣지 않습니다(ADR-0016 D5).
+  expect(panel).not.toHaveAttribute("accessibility-element");
+  expect(panel).not.toHaveAttribute("accessibility-label");
+  const body = within(panel).getByTestId("learning-shell-feedback-body");
+  expect(body).toHaveAttribute("accessibility-element", "true");
+  expect(body).toHaveAttribute("accessibility-label", learningShellFeedbackLabel(feedback));
+  expect(body).toHaveAttribute(
     "accessibility-label",
     "Nice reply!, Koreans love it when you reply with a smile., 웃으며 대답하면 좋아해요.",
   );
-  const text = panel.textContent ?? "";
+  const text = body.textContent ?? "";
   expect(text.indexOf("Nice reply!")).toBeGreaterThanOrEqual(0);
   expect(text.indexOf("Nice reply!")).toBeLessThan(text.indexOf("Koreans love it"));
   expect(text.indexOf("Koreans love it")).toBeLessThan(text.indexOf("웃으며"));
+});
+
+test("SH3. 아래 버튼 행은 글 body의 자손이 아닌 형제이고 글 부분만 스크롤 안에 선다", () => {
+  renderShell({ feedback });
+
+  const panel = screen.getByTestId("learning-shell-feedback");
+  const body = within(panel).getByTestId("learning-shell-feedback-body");
+  const button = within(panel).getByTestId("learning-shell-action");
+  expect(body.contains(button)).toBe(false);
+  expect(panel.contains(button)).toBe(true);
+  const scroll = body.parentElement;
+  expect(scroll?.tagName.toLowerCase()).toBe("scroll-view");
+  expect(scroll).toHaveClass("learning-shell-feedback-scroll");
+  expect(scroll?.contains(button)).toBe(false);
+});
+
+test("SH3. 동작 줄이기에서는 해설 판이 줄이기 클래스를 얻고 보통 동작에서는 얻지 않는다", () => {
+  const standard = renderShell({ feedback });
+  expect(screen.getByTestId("learning-shell-feedback")).not.toHaveClass(
+    "learning-shell-feedback-motion-reduced",
+  );
+  standard.unmount();
+
+  render(
+    <MotionProvider motion="reduced">
+      <LearningShell
+        form="word-choice"
+        questionIndex={0}
+        questionCount={4}
+        instruction="What do you say?"
+        onExit={() => {}}
+        card={<text>카드 안</text>}
+        actionLabel="Continue"
+        onAction={() => {}}
+        feedback={feedback}
+      />
+    </MotionProvider>,
+  );
+
+  expect(screen.getByTestId("learning-shell-feedback")).toHaveClass(
+    "learning-shell-feedback-motion-reduced",
+  );
 });
 
 test("SH3. 오답 tone도 판에 실린다", () => {

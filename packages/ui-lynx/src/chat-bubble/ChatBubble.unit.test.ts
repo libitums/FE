@@ -169,6 +169,25 @@ describe("ChatBubble annotation", () => {
     );
   });
 
+  test("CB1b: spokenRomanization을 주면 낭독에서 로마자 자리에 그 말을 읽고 화면 로마자는 그대로다", () => {
+    const contract = getChatBubbleContract({
+      ...annotationBase,
+      annotation: {
+        romanization: "hangugeo jalhasineyo!",
+        meaning: "Your Korean is so good!",
+        spokenRomanization: "Pronunciation: hangugeo jalhasineyo!",
+      },
+    });
+
+    expect(contract.accessibilityLabel).toBe(
+      "민서: 한국어 잘하시네요!, Pronunciation: hangugeo jalhasineyo!, Your Korean is so good!",
+    );
+    expect(contract.annotation).toEqual({
+      romanization: "hangugeo jalhasineyo!",
+      meaning: "Your Korean is so good!",
+    });
+  });
+
   test("CB2: translation과 함께 오면 던진다", () => {
     expect(() =>
       getChatBubbleContract({

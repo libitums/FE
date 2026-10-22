@@ -204,6 +204,16 @@ describe("chipAccessibilityLabel", () => {
   it("placedOrdinal이 2면 `${text}, 2번째`다", () => {
     expect(chipAccessibilityLabel("저는", 2, uiCopyEn)).toBe("저는, position 2");
   });
+
+  it("판정이 있으면 이름 뒤에 정오 접미사가 붙는다", () => {
+    expect(chipAccessibilityLabel("저는", 2, uiCopyEn, "correct")).toBe(
+      "저는, position 2, correct",
+    );
+    expect(chipAccessibilityLabel("저는", 1, uiCopyEn, "incorrect")).toBe(
+      "저는, position 1, incorrect",
+    );
+    expect(chipAccessibilityLabel("저는", 2, uiCopyEn, null)).toBe("저는, position 2");
+  });
 });
 
 describe("sentenceOrderResultAt", () => {

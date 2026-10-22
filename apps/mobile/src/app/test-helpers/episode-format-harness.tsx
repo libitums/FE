@@ -20,6 +20,7 @@ import { allLearningItemGuidesSeenValue } from "../../lib/learning-item-guide.te
 import { fillPlaceholders } from "../../lib/placeholder-fill";
 import type { FillScript } from "../../lib/placeholder-fill";
 import type { EpisodeIntroEvent } from "../../screens/episode-intro/episode-intro.contract";
+import { tapTargetById } from "../../screens/sentence-order/sentence-order-check.test-support";
 import { catalogNodeTestId } from "./map-unit-testid";
 import { legacyPassedRecord, legacyPassedSeed, tutorialDoneProgress } from "./progress-seed";
 import { passSplash } from "./pass-splash";
@@ -177,7 +178,7 @@ export function resetApp(): void {
 
 // ---------------------------------------------------------------- 조작 · 관찰 헬퍼
 
-export const tapId = (id: string): void => void fireEvent.tap(screen.getByTestId(id), {});
+export const tapId = (id: string): void => void fireEvent.tap(tapTargetById(id), {});
 export const tapButtonIn = (id: string): void =>
   void fireEvent.tap(within(screen.getByTestId(id)).getByTestId("ui-lynx-button"), {});
 // 듣기 조작은 바깥 상자가 testid만 지고 탭은 안쪽 둥근 버튼이 받습니다.

@@ -404,11 +404,12 @@ test("트리의 조작 단위가 다시듣기 · 재생 둘이다", () => {
   expect(screen.getByTestId("listening-prompt-text")).toHaveTextContent(TEXT);
 
   const expected = ["ui-lynx-round-button", "ui-lynx-round-button"];
+  // 접근성 요소는 조작 단위 둘과 로마자 줄(「Pronunciation: …」 이름, 조작 단위 아님)입니다.
   expect(
     [...container.querySelectorAll("[accessibility-element]")].map((el) =>
       el.getAttribute("data-testid"),
     ),
-  ).toEqual(expected);
+  ).toEqual([...expected, "listening-prompt-romanization"]);
   expect(
     [...container.querySelectorAll('[accessibility-traits="button"]')].map((el) =>
       el.getAttribute("data-testid"),

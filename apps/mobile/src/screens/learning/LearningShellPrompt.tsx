@@ -9,7 +9,7 @@ export type LearningShellPromptProps = {
   readonly verdict?: AnswerResult;
 };
 
-// 지시문 줄입니다. 판정이 서면 지시문 글은 흐름에 남은 채 가려지고(낭독에서도 빠짐) 배지가 그 줄 위에 겹쳐 서므로
+// 지시문 줄입니다. 판정이 서면 지시문 글은 흐름에 남은 채 가려지고(잎 `<text>`라 `accessibility-element={false}`로 낭독에서도 뺌 — 가림 속성은 자손에만 듭니다, ADR-0016 D5) 배지가 그 줄 위에 겹쳐 서므로
 // 줄 높이가 판정 때문에 바뀌지 않습니다 — 두 줄 지시문도 마찬가지입니다. 줄 상자의 하한은 배지 높이(36)입니다.
 export function LearningShellPrompt({ instruction, verdict }: LearningShellPromptProps): ReactNode {
   const covered = verdict !== undefined;
@@ -22,7 +22,7 @@ export function LearningShellPrompt({ instruction, verdict }: LearningShellPromp
             : "learning-shell-instruction"
         }
         data-testid="learning-shell-instruction"
-        accessibility-elements-hidden={covered ? true : undefined}
+        accessibility-element={covered ? false : undefined}
       >
         {instruction}
       </text>

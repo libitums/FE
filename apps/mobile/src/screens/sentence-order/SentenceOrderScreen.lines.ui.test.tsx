@@ -11,7 +11,12 @@ import {
   withAudio,
 } from "../../lib/question-audio.test-support";
 import { SentenceOrderActivity } from "./SentenceOrderScreen";
-import { checkButton, checkState, tapAction } from "./sentence-order-check.test-support";
+import {
+  bottomAction,
+  checkButton,
+  checkState,
+  tapAction,
+} from "./sentence-order-check.test-support";
 import type { SentenceOrderQuestion } from "./sentence-order-questions";
 
 // `ui` 계층: 줄 배치(LISTEN_BUILD · WORD_ORDER) — 위 줄 · 답 줄 둘 · 뭉치 · 흐름 안 Check. 다 놓아도 저절로 채점되지
@@ -120,7 +125,7 @@ describe("LISTEN_BUILD — 줄 배치", () => {
       expect(within(bank).getByTestId(`sentence-order-chip-${index}`)).toBeInTheDocument();
     }
     expect(checkState()).toBe("disabled");
-    expect(screen.queryByTestId("learning-shell-action")).toBeNull();
+    expect(screen.queryByTestId("sentence-order-action")).toBeNull();
   });
 
   test("SO8. 조각 하나로 Check가 켜지고 정답 길이만큼 놓아도 판정이 나지 않는다", () => {
@@ -167,10 +172,7 @@ describe("LISTEN_BUILD — 줄 배치", () => {
     expect(screen.getByTestId("learning-shell-actions")).toHaveClass(
       "learning-shell-actions-in-flow",
     );
-    expect(screen.getByTestId("learning-shell-action")).toHaveAttribute(
-      "accessibility-label",
-      "Next",
-    );
+    expect(bottomAction()).toHaveAttribute("accessibility-label", "Next");
   });
 
   test("SO10. 쓴 자리는 폭을 지키는 빈칸이고 낭독에서 빠진다", () => {

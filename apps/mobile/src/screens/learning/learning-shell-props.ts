@@ -96,8 +96,11 @@ export type LearningShellProps = {
   obscured?: boolean;
   /** 주면 세션 헤더 대신 가벼운 헤더(`×` · 칸 막대)가 섭니다 — 단어 카드 구간(ADR-0073). */
   runProgress?: LearningRunProgress;
-  /** 기본 아래 버튼 대신 서는 ui-lynx `Button`입니다. 누름 소리 · 동작은 그 버튼의 몫입니다. */
-  actionButton?: ReactNode;
+  /**
+   * 기본 아래 버튼 대신 서는 ui-lynx `Button`입니다. 요소를 주면 누름 소리 · 동작은 그 버튼의 몫이고, 함수를 주면
+   * 셸의 아래 버튼 동작(`press` — 누름 소리 · 합친 흐름 맨 위로 · `onAction`)을 받아 그 버튼에 걸 수 있습니다.
+   */
+  actionButton?: ReactNode | ((press: () => void) => ReactNode);
   /** 주면 지시문 자리에 판정 배지가 겹쳐 섭니다. 지시문 글은 흐름에 남아 높이가 변하지 않습니다. */
   verdict?: AnswerResult;
   /** 주면 아래 버튼 위에 해설 판이 섭니다. */

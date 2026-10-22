@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
+import { MotionProvider } from "@libitums/ui-lynx/motion";
 
 import {
   choiceItemId,
@@ -131,6 +132,11 @@ describe("문화 확인 장면 — 질문", () => {
     expect(within(partner).getByTestId("ui-lynx-chat-bubble-annotation-meaning")).toHaveTextContent(
       "Your Korean is so good!",
     );
+    // 말풍선의 낭독 이름은 로마자를 「Pronunciation: …」 접두로 읽습니다.
+    expect(within(partner).getByTestId("ui-lynx-chat-bubble")).toHaveAttribute(
+      "accessibility-label",
+      "Partner: 한국어 잘하시네요!, Pronunciation: hangugeo jalhasineyo!, Your Korean is so good!",
+    );
     expect(within(partner).getByTestId("ui-lynx-avatar-initials")).toHaveTextContent("M");
     expect(id("learning-shell-instruction")).toHaveTextContent("What do you say?");
     expect(id(choiceMeaningId(0))).toHaveTextContent("Thanks for the meal!");
@@ -218,13 +224,41 @@ describe("문화 확인 장면 — 답한 뒤", () => {
     ).toHaveAttribute("accessibility-label", "Continue");
   });
 
-  test("CC9. 판은 하나의 이름이고 답하는 순간 한 번만 낭독한다", () => {
+  test("CC9. 내 말풍선은 동작 줄이기에서 줄이기 클래스를 얻고 보통 동작에서는 얻지 않는다", () => {
+    const standard = mount([sceneQuestion]);
+    tapChoice(2);
+    expect(id("word-choice-culture-scene-reply")).not.toHaveClass(
+      "culture-check-scene-reply-motion-reduced",
+    );
+    standard.unmount();
+
+    render(
+      <MotionProvider motion="reduced">
+        <WordChoiceActivity
+          questions={[sceneQuestion]}
+          onExit={() => {}}
+          onFinish={() => {}}
+          cast={cast}
+        />
+      </MotionProvider>,
+    );
+    tapChoice(2);
+
+    expect(id("word-choice-culture-scene-reply")).toHaveClass(
+      "culture-check-scene-reply-motion-reduced",
+    );
+  });
+
+  test("CC9. 판의 글은 하나의 이름이고(버튼은 그 형제) 답하는 순간 한 번만 낭독한다", () => {
     mount([sceneQuestion]);
 
     tapChoice(2);
     tapChoice(2);
 
-    expect(id("learning-shell-feedback")).toHaveAttribute("accessibility-element", "true");
+    const body = within(id("learning-shell-feedback")).getByTestId("learning-shell-feedback-body");
+    expect(id("learning-shell-feedback")).not.toHaveAttribute("accessibility-element");
+    expect(body).toHaveAttribute("accessibility-element", "true");
+    expect(body.contains(id("learning-shell-action"))).toBe(false);
     expect(spoken).toEqual(['Nice reply!. Answer a compliment with "Thank you."']);
   });
 

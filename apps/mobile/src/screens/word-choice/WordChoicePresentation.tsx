@@ -71,6 +71,12 @@ export function WordChoicePresentation({
     const spoken = wordChoiceSpokenText(text, copy.common.blank);
     return spoken === text ? undefined : spoken;
   };
+  // 로마자는 「Pronunciation: …」 접두로 읽힙니다 — 빈칸이 있으면 빈칸을 말로 푼 문장에 접두를 붙이고, 없으면 TextRoles의
+  // 기본 이름에 맡깁니다.
+  const romanizationNameOf = (text: string): { readonly accessibilityLabel?: string } => {
+    const spoken = spokenOf(text);
+    return spoken === undefined ? {} : { accessibilityLabel: copy.readAloud.pronunciation(spoken) };
+  };
   if (question.picture !== undefined) {
     // 그림 문항은 제시문 대신 그림이 가장자리까지 서는 무대 카드입니다. 문항마다 새 요소로 세워 앞 문항 그림의 늦은
     // 이벤트가 새 문항에 닿지 않게 합니다.
@@ -128,7 +134,7 @@ export function WordChoicePresentation({
           segments={romanizationSegmentsOf(question.romanization, question.romanizationEmphasis)}
           size={size}
           testId="word-choice-screen-romanization"
-          accessibilityLabel={spokenOf(question.romanization)}
+          {...romanizationNameOf(question.romanization)}
         />
       )}
       {question.translation === undefined || folded ? null : (

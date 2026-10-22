@@ -7,7 +7,12 @@ import type { SentenceOrderQuestion } from "./sentence-order";
 import { UiCopyContext } from "../../lib/ui-copy";
 import { markedUiCopy } from "../../lib/ui-copy.test-support";
 import { expectCompleteScene, expectQuestionScene } from "../learning/complete-scene.test-support";
-import { actionLabel, checkState, tapAction } from "./sentence-order-check.test-support";
+import {
+  actionLabel,
+  bottomAction,
+  checkState,
+  tapAction,
+} from "./sentence-order-check.test-support";
 
 // `ui` 계층: 컴포넌트 렌더와 상호작용 (ADR-0006 D4). 뼈대(상단 바 · 세션 헤더 · 지시문 ·
 // 무대 카드 · 아래 버튼 · 스크롤)는 `LearningShell`이 집니다 — 그 모양은
@@ -265,7 +270,7 @@ test("[SO9] 덜 놓았으면 Check는 늘 서 있되 꺼져 있다 — 조각 �
   renderOrdering();
 
   expect(checkState()).toBe("disabled");
-  expect(screen.queryByTestId("learning-shell-action")).toBeNull();
+  expect(screen.queryByTestId("sentence-order-action")).toBeNull();
   fireEvent.tap(chip(1), {});
   expect(checkState()).toBe("enabled");
   fireEvent.tap(chip(1), {});
@@ -556,10 +561,7 @@ test("[LA3-M] 문구표를 주입하고 조각을 놓으면 조각 이름 · 확
     within(screen.getByTestId("sentence-order-check")).getByTestId("ui-lynx-button"),
     {},
   );
-  expect(screen.getByTestId("learning-shell-action")).toHaveAttribute(
-    "accessibility-label",
-    "⟦common.next⟧",
-  );
+  expect(bottomAction()).toHaveAttribute("accessibility-label", "⟦common.next⟧");
 });
 
 test("[LA3-M] 문구표를 주입하고 채점하면 낭독이 resultAnnouncement 경로로 나온다", () => {
@@ -585,16 +587,13 @@ test("[LA3-M] 문구표를 주입하고 문항을 마치면 완료 문구 · 마
       within(screen.getByTestId("sentence-order-check")).getByTestId("ui-lynx-button"),
       {},
     );
-    fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
+    fireEvent.tap(bottomAction(), {});
   }
 
   expect(screen.getByTestId("sentence-order-screen-complete")).toHaveTextContent(
     "⟦common.allQuestionsDone⟧",
   );
-  expect(screen.getByTestId("learning-shell-action")).toHaveAttribute(
-    "accessibility-label",
-    "⟦common.seeResults⟧",
-  );
+  expect(bottomAction()).toHaveAttribute("accessibility-label", "⟦common.seeResults⟧");
   expect(completion).toHaveLength(1);
   expect(completion[0]?.content).toBe("⟦common.allQuestionsDone⟧, ⟦common.seeResults⟧");
 });

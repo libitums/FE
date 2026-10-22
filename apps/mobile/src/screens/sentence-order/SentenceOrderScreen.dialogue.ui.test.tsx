@@ -304,6 +304,41 @@ test("SO11. 채점하면 창고가 접히고 칸 테두리가 판정 클래스�
   }
 });
 
+test("SO11. 채점 뒤 칸은 색뿐 아니라 이름 접미사와 tick 아이콘으로 정오를 말한다", () => {
+  mount([turns]);
+
+  for (const index of turns.answerOrder) tapChip(index);
+  tapAction();
+
+  for (const position of [0, 1, 2, 3]) {
+    expect(slot(position).getAttribute("accessibility-label")).toMatch(/, correct$/);
+    expect(screen.getByTestId(`sentence-order-dialogue-slot-${position}-mark`)).toHaveAttribute(
+      "data-result",
+      "correct",
+    );
+  }
+});
+
+test("SO11. 틀린 칸은 이름 접미사 incorrect와 cross 아이콘을 지고, 채점 전에는 둘 다 없다", () => {
+  mount([turns]);
+
+  for (const index of [...turns.answerOrder].reverse()) tapChip(index);
+  expect(screen.queryByTestId("sentence-order-dialogue-slot-0-mark")).not.toBeInTheDocument();
+  expect(slot(0).getAttribute("accessibility-label")).not.toMatch(/correct$/);
+  tapAction();
+
+  const wrong = [0, 1, 2, 3].filter((position) =>
+    slot(position).getAttribute("accessibility-label")?.endsWith(", incorrect"),
+  );
+  expect(wrong.length).toBeGreaterThan(0);
+  for (const position of wrong) {
+    expect(screen.getByTestId(`sentence-order-dialogue-slot-${position}-mark`)).toHaveAttribute(
+      "data-result",
+      "incorrect",
+    );
+  }
+});
+
 test("SO11. 틀린 순서로 채점하면 어긋난 칸이 incorrect 클래스를 진다", () => {
   mount([turns]);
 

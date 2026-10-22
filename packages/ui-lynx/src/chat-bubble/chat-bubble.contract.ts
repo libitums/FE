@@ -7,6 +7,11 @@ export type ChatBubbleContentLanguage = "ui" | "learning";
 export type ChatBubbleAnnotation = {
   readonly romanization: string;
   readonly meaning: string;
+  /**
+   * 낭독에서 로마자 자리에 읽을 말입니다(예: 앱 문구의 「Pronunciation: …」). 없으면 로마자 그대로 읽습니다. 화면에
+   * 그리는 글은 바꾸지 않습니다.
+   */
+  readonly spokenRomanization?: string;
 };
 
 type ChatBubbleBaseProps = {
@@ -94,8 +99,9 @@ export function getChatBubbleContract(props: ChatBubbleProps): ChatBubbleContrac
   const deliveryLabel = chatBubbleDeliveryLabels[delivery];
   const translation = props.translation?.trim() || undefined;
   const annotation = annotationOf(props);
+  const spokenRomanization = props.annotation?.spokenRomanization?.trim();
   const spokenTail = annotation
-    ? `, ${annotation.romanization}, ${annotation.meaning}`
+    ? `, ${spokenRomanization || annotation.romanization}, ${annotation.meaning}`
     : translation
       ? `, ${translation}`
       : "";

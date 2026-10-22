@@ -35,7 +35,7 @@ test("UBL1. 빈칸 제시문은 보이는 글자는 그대로, 낭독은 blank�
   expect(prompt.getAttribute("accessibility-label")).toBe("카드 blank 할게요.");
   expect(
     screen.getByTestId("word-choice-screen-romanization").getAttribute("accessibility-label"),
-  ).toBe("kadeu blank halgeyo.");
+  ).toBe("Pronunciation: kadeu blank halgeyo.");
 });
 
 test("UBL2. 빈칸이 없는 제시문은 낭독 라벨을 따로 두지 않는다", () => {

@@ -30,7 +30,8 @@ test("SH1. verdict가 없으면 판정 배지가 없고 지시문이 보인다",
   expect(screen.queryByTestId("learning-shell-verdict")).not.toBeInTheDocument();
   const instruction = screen.getByTestId("learning-shell-instruction");
   expect(instruction).toHaveTextContent("Listen and choose the answer.");
-  expect(instruction).not.toHaveAttribute("accessibility-elements-hidden", "true");
+  expect(instruction).not.toHaveAttribute("accessibility-element");
+  expect(instruction).not.toHaveAttribute("accessibility-elements-hidden");
 });
 
 test.each(["correct", "incorrect"] as const)(
@@ -43,7 +44,9 @@ test.each(["correct", "incorrect"] as const)(
     expect(within(verdict).getByTestId("answer-verdict")).toHaveAttribute("data-result", result);
     const instruction = within(prompt).getByTestId("learning-shell-instruction");
     expect(instruction).toHaveTextContent("Listen and choose the answer.");
-    expect(instruction).toHaveAttribute("accessibility-elements-hidden", "true");
+    // 잎 `<text>`는 가림 속성이 무동작이라(ADR-0016 D5) 접근성 요소 자체를 끕니다.
+    expect(instruction).toHaveAttribute("accessibility-element", "false");
+    expect(instruction).not.toHaveAttribute("accessibility-elements-hidden");
   },
 );
 

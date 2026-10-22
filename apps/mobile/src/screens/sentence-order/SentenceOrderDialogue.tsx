@@ -1,4 +1,5 @@
 import type { ReactNode } from "@lynx-js/react";
+import { color } from "@libitums/design-tokens";
 import { Avatar } from "@libitums/ui-lynx/avatar";
 
 import type { AnswerResult } from "../../lib/answer-result";
@@ -6,6 +7,7 @@ import type { ConversationCast } from "../../lib/conversation-cast";
 import { playSound } from "../../lib/sound-effects";
 import { useUiCopy } from "../../lib/ui-copy";
 import { dialogueAvatarNameOf } from "./sentence-order-avatar";
+import { SentenceOrderResultMark } from "./SentenceOrderResultMark";
 import type { SentenceOrderInteraction } from "./sentence-order-layout";
 import type { DialogueSpeaker } from "./sentence-order-questions";
 
@@ -38,6 +40,15 @@ export type SentenceOrderDialogueProps = {
 
 /** 칸이 비어 있을 때 말풍선 안에 서는 표시입니다 — 낭독하지 않고 칸 이름이 대신 읽힙니다. */
 const emptySlotMark = "----";
+
+// 채점 뒤 칸 이름 뒤에 정오 접미사를 붙입니다 — 정오가 색 · 모양에만 실리지 않게 합니다.
+function withResultSuffix(
+  label: string,
+  result: AnswerResult | null,
+  suffix: Readonly<Record<AnswerResult, string>>,
+): string {
+  return result === null ? label : `${label}, ${suffix[result]}`;
+}
 
 export function SentenceOrderDialogue({
   speakers,
@@ -87,11 +98,13 @@ export function SentenceOrderDialogue({
             data-speaker={speaker}
             data-filled={filled ? "true" : "false"}
             accessibility-element={true}
-            accessibility-label={
+            accessibility-label={withResultSuffix(
               filled
                 ? copy.sentenceOrder.dialogueTurn(speakerName, position + 1, text)
-                : copy.sentenceOrder.dialogueEmptyTurn(speakerName, position + 1)
-            }
+                : copy.sentenceOrder.dialogueEmptyTurn(speakerName, position + 1),
+              judged,
+              copy.common.answerResultSuffix,
+            )}
             accessibility-traits={filled ? (locked ? "disabled" : "button") : "text"}
             bindtap={filled && !locked ? handleTap : undefined}
           >
@@ -100,6 +113,13 @@ export function SentenceOrderDialogue({
             >
               {filled ? text : emptySlotMark}
             </text>
+            {judged === null ? null : (
+              <SentenceOrderResultMark
+                result={judged}
+                tint={speaker === "me" ? color.white : color.fg.neutral}
+                testId={`sentence-order-dialogue-slot-${position}-mark`}
+              />
+            )}
           </view>
         );
         // 상대 줄은 아바타 · 말풍선, 내 줄은 말풍선 · 아바타 순서입니다 — 줄이 양 끝으로 붙여 줍니다.

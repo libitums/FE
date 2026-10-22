@@ -144,31 +144,36 @@ export function SentenceOrderActivity({
   const handsOff = handsOffAfter(lesson, state.questionIndex, questions.length);
   const finish = () => onFinish(sentenceOrderSessionResults(questions, state.submittedOrders), 0);
 
-  // 아래 버튼입니다: `Check`(줄 배치는 늘 · 대화는 칸이 다 차면) · `Next`(채점 뒤) · `See results`(완료). Check만 상태가
-  // 읽히는 버튼이라 ui-lynx `Button`이고, 나머지는 셸 기본 버튼입니다. 레슨의 중간 활동은 마지막 문항 뒤 완료 카드 없이
-  // 곧바로 결과를 올립니다.
+  // 아래 버튼입니다: `Check`(줄 배치는 늘 · 대화는 칸이 다 차면) · `Next`(채점 뒤) · `See results`(완료). 셋 모두 같은 자리의
+  // 같은 ui-lynx `Button`이라 Check를 누른 뒤에도 요소가 유지됩니다 — 문구 · 동작만 바뀌어 스크린리더 초점이 남고 새 이름이
+  // 읽힙니다. 레슨의 중간 활동은 마지막 문항 뒤 완료 카드 없이 곧바로 결과를 올립니다.
   const action: { label: string; run: () => void } | undefined =
-    bottom.kind === "results"
-      ? { label: copy.common.seeResults, run: finish }
-      : bottom.kind === "next"
-        ? {
-            label: copy.common.next,
-            run: () => (handsOff ? finish() : dispatch({ type: "nextQuestion" })),
-          }
-        : undefined;
-  const checkButton =
-    bottom.kind === "check" ? (
-      <view className="sentence-order-check" data-testid="sentence-order-check">
+    bottom.kind === "check"
+      ? { label: copy.common.check, run: check }
+      : bottom.kind === "results"
+        ? { label: copy.common.seeResults, run: finish }
+        : bottom.kind === "next"
+          ? {
+              label: copy.common.next,
+              run: () => (handsOff ? finish() : dispatch({ type: "nextQuestion" })),
+            }
+          : undefined;
+  const renderAction = (press: () => void): ReactNode =>
+    action === undefined ? undefined : (
+      <view
+        className="sentence-order-check"
+        data-testid={bottom.kind === "check" ? "sentence-order-check" : "sentence-order-action"}
+      >
         <Button
-          label={copy.common.check}
+          label={action.label}
           variant="brand"
           size="xl"
           width="fill"
-          disabled={bottom.availability === "disabled"}
-          bindtap={check}
+          disabled={bottom.kind === "check" && bottom.availability === "disabled"}
+          bindtap={bottom.kind === "check" ? action.run : press}
         />
       </view>
-    ) : undefined;
+    );
 
   const counter = lessonCounter(
     lesson,
@@ -244,7 +249,7 @@ export function SentenceOrderActivity({
         onExit={onExit}
         actionLabel={action?.label}
         onAction={action?.run}
-        actionButton={checkButton}
+        actionButton={action === undefined ? undefined : renderAction}
         actionPlacement={layout === "lines" ? "in-flow" : "floating"}
         stage={question != null && layout === "lines" ? "bare" : "card"}
         verdict={result ?? undefined}

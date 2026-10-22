@@ -104,11 +104,11 @@ test("WC2. CLOZE 로마자는 채운 문장이 조각 셋으로 서고 정답 �
   ]);
 });
 
-test("WC2. CLOZE 로마자 줄의 이름은 채운 문장 그대로이고 한글 제시문은 빈칸을 blank로 읽는다", () => {
+test("WC2. CLOZE 로마자 줄의 이름은 Pronunciation 접두를 붙인 채운 문장이고 한글 제시문은 빈칸을 blank로 읽는다", () => {
   mount(cloze);
 
   const name = id("word-choice-screen-romanization").getAttribute("accessibility-label");
-  expect(name === null || name === "hangugeun cheoeum iseyo?").toBe(true);
+  expect(name).toBe("Pronunciation: hangugeun cheoeum iseyo?");
   expect(id("word-choice-screen-prompt")).toHaveAttribute(
     "accessibility-label",
     "한국은 blank 이세요?",

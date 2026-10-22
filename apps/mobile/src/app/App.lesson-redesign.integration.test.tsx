@@ -130,13 +130,14 @@ describe("줄 배치와 Check", () => {
     const [first, ...rest] = question.answerOrder;
     if (first === undefined) throw new Error("정답 없음");
     tapId(sentenceChipId(question, first));
-    expect(checkButton()).not.toHaveAttribute("accessibility-traits", "disabled");
+    expect(checkButton()).toHaveAttribute("accessibility-traits", "button");
 
     for (const chip of rest) tapId(sentenceChipId(question, chip));
     expect(present("answer-verdict")).toBe(false);
     expect(present("learning-shell-verdict")).toBe(false);
-    expect(checkButton()).not.toHaveAttribute("accessibility-traits", "disabled");
+    expect(checkButton()).toHaveAttribute("accessibility-traits", "button");
 
+    const checkElement = checkButton();
     tapCheck();
 
     expect(
@@ -144,7 +145,19 @@ describe("줄 배치와 Check", () => {
     ).toHaveAttribute("data-result", "correct");
     for (const chip of question.answerOrder) {
       expect(attr(`sentence-order-chip-${chip}`, "data-result")).toBe("correct");
+      // 정오는 색뿐 아니라 이름 접미사와 tick 아이콘으로도 갈립니다.
+      expect(attr(`sentence-order-chip-${chip}`, "accessibility-label")).toMatch(/, correct$/);
+      expect(screen.getByTestId(`sentence-order-chip-${chip}-mark`)).toHaveAttribute(
+        "data-result",
+        "correct",
+      );
     }
+    // Check가 Next로 바뀌어도 같은 ui-lynx Button 요소가 남아 스크린리더 초점이 보존됩니다(문구만 바뀜).
+    const nextElement = within(screen.getByTestId("sentence-order-action")).getByTestId(
+      "ui-lynx-button",
+    );
+    expect(nextElement).toBe(checkElement);
+    expect(nextElement).toHaveAttribute("accessibility-label", "Next");
 
     tapId("learning-shell-action");
     tapId("learning-shell-action");

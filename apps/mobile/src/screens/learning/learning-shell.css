@@ -511,6 +511,19 @@
     var(--libitum-motion-easing-enter);
 }
 
+/* 글 부분만 판 안에서 스크롤합니다 — 상한은 셸 높이의 절반이라 큰 글꼴에서도 아래 버튼이 화면 안에 남습니다. 보통
+   글꼴에서는 내용이 상한보다 작아 모양이 바뀌지 않습니다. */
+.learning-shell-feedback-scroll {
+  max-height: 50vh;
+  width: 100%;
+}
+
+.learning-shell-feedback-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-4);
+}
+
 .learning-shell-feedback-correct {
   background: var(--libitum-color-feedback-correct-surface);
 }

@@ -79,9 +79,9 @@ describe("getRoundButtonContract", () => {
 describe("getRoundButtonForegroundColor", () => {
   test.each([
     [{ variant: "neutral" }, color.fg["neutral-subtle"]],
-    [{ variant: "brand" }, color.brand.primary],
+    [{ variant: "brand" }, color.fg.brand],
     [{ variant: "neutral", loading: true }, color.fg["neutral-subtle"]],
-    [{ variant: "brand", loading: true }, color.brand.primary],
+    [{ variant: "brand", loading: true }, color.fg.brand],
     [{ variant: "neutral", disabled: true }, color.gray[500]],
     [{ variant: "brand", disabled: true }, color.brand["reward-disabled-surface"]],
     [{ variant: "neutral", disabled: true, loading: true }, color.gray[500]],

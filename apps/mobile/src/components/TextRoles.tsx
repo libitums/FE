@@ -1,5 +1,7 @@
 import type { ReactNode } from "@lynx-js/react";
 
+import { useUiCopy } from "../lib/ui-copy";
+
 import type { RomanizationSegment, TextRoleSize } from "../lib/romanization-segments";
 
 import "./text-roles.css";
@@ -10,6 +12,7 @@ export type TextRolesRomanizationProps = {
   readonly segments: readonly RomanizationSegment[];
   readonly size: TextRoleSize;
   readonly testId: string;
+  /** 낭독 이름을 통째로 대신합니다. 없으면 `Pronunciation: <로마자>`입니다. */
   readonly accessibilityLabel?: string;
 };
 
@@ -38,10 +41,12 @@ function Romanization({
   testId,
   accessibilityLabel,
 }: TextRolesRomanizationProps): ReactNode {
-  const named =
-    accessibilityLabel === undefined
-      ? {}
-      : { "accessibility-element": true, "accessibility-label": accessibilityLabel };
+  const copy = useUiCopy();
+  // 로마자는 모든 화면에서 「Pronunciation: …」 접두로 읽힙니다 — 한글 · 로마자 · 뜻의 역할 구별이 모양뿐 아니라
+  // 낭독에도 서게 합니다. 부르는 쪽이 이름을 따로 주면(예: 빈칸을 말로 푼 문장) 그 이름이 먼저입니다.
+  const spoken =
+    accessibilityLabel ?? copy.readAloud.pronunciation(segments.map((s) => s.text).join(""));
+  const named = { "accessibility-element": true, "accessibility-label": spoken };
   return (
     <text
       className={
@@ -59,11 +64,9 @@ function Romanization({
   );
 }
 
-// 장식 줄입니다 — 낭독에서 뺍니다.
+// 장식 줄입니다 — 자식 없는 view라 접근성 정지점이 아닙니다(ADR-0016 D5), 그래서 가림 속성을 붙이지 않습니다.
 function Divider({ testId }: TextRolesDividerProps): ReactNode {
-  return (
-    <view className="text-role-divider" data-testid={testId} accessibility-elements-hidden={true} />
-  );
+  return <view className="text-role-divider" data-testid={testId} />;
 }
 
 function Meaning({ text, size, testId }: TextRolesMeaningProps): ReactNode {

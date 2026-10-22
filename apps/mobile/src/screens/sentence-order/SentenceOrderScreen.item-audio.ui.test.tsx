@@ -13,7 +13,7 @@ import {
 import type { LessonAudio } from "../../lib/question-audio";
 import { listenButtonIn } from "../../components/listen-round-buttons.test-support";
 import { SentenceOrderActivity } from "./SentenceOrderScreen";
-import { tapCheck } from "./sentence-order-check.test-support";
+import { bottomAction, tapCheck } from "./sentence-order-check.test-support";
 import type { SentenceOrderQuestion } from "./sentence-order-questions";
 
 // `ui` 계층: 문장 순서 활동의 문항 음성 — LISTEN_BUILD(듣기 갈래)는 상대 말풍선 자리의 3열과 자동 재생,
@@ -213,7 +213,7 @@ describe("WORD_ORDER — 정답 뒤 재생 갈래", () => {
     check();
     stopAudio.mockClear();
 
-    fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
+    fireEvent.tap(bottomAction(), {});
 
     expect(stopAudio).toHaveBeenCalledTimes(1);
   });

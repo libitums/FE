@@ -205,7 +205,7 @@ export function LearningShell({
       )}
       {actionsShown ? (
         <LearningShellActions
-          button={actionButton}
+          button={typeof actionButton === "function" ? actionButton(handleAction) : actionButton}
           label={actionLabel ?? ""}
           onAction={handleAction}
           secondaryAction={secondaryAction}

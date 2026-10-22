@@ -30,6 +30,7 @@ import { systemBackEventName } from "../lib/system-back";
 import type { TypingQuestion } from "../screens/typing/typing.contract";
 import type { EpisodeIntroEvent } from "../screens/episode-intro/episode-intro.contract";
 import { EPISODE_BANNER_HOLD_MS } from "../screens/catalog-cover/episode-banner";
+import { tapTargetById } from "../screens/sentence-order/sentence-order-check.test-support";
 import { catalogNodeTestId } from "./test-helpers/map-unit-testid";
 
 // 옛 형식 내장본(2026-10-14)의 흐름을 걷는 테스트입니다 — 내장본 자리를 옛 픽스처로 바꿉니다.
@@ -225,7 +226,7 @@ const typingBodyMargin = (): string =>
 
 // ---------------------------------------------------------------- 조작 · 관찰 헬퍼
 
-const tapId = (id: string): void => void fireEvent.tap(screen.getByTestId(id), {});
+const tapId = (id: string): void => void fireEvent.tap(tapTargetById(id), {});
 const tapButtonIn = (id: string): void =>
   void fireEvent.tap(within(screen.getByTestId(id)).getByTestId("ui-lynx-button"), {});
 const tapRoundIn = (id: string): void =>

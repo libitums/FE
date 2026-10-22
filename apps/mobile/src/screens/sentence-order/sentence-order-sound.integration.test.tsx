@@ -2,6 +2,7 @@ import { afterEach, expect, test, vi } from "vitest";
 import { fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { StepSentenceOrder } from "./StepSentenceOrder.test-support";
+import { bottomAction } from "./sentence-order-check.test-support";
 import { stepQuestions } from "./sentence-order-steps.test-support";
 
 afterEach(() => vi.unstubAllGlobals());
@@ -27,6 +28,6 @@ test("문장 만들기는 칩 클릭, 채점 판정, 다음 버튼 소리를 순
   );
   expect(calls).toEqual([...first.answerOrder.map(() => "button"), "correct_answer"]);
 
-  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
+  fireEvent.tap(bottomAction(), {});
   expect(calls.slice(-2)).toEqual(["button", "lesson_complete"]);
 });

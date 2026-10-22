@@ -62,8 +62,8 @@ export function getRoundButtonForegroundColor(props: RoundButtonProps): string {
     return props.variant === "brand" ? color.brand["reward-disabled-surface"] : color.gray[500];
   }
   if (props.variant === "overlay") return color.white;
-  // FE override(2026-09-21 디자인 반영): brand 아이콘은 정본의 fg.brand 대신 brand.primary.
-  return props.variant === "brand" ? color.brand.primary : color.fg["neutral-subtle"];
+  // brand 아이콘은 정본의 fg.brand입니다 — 면(gray-100) 위 대비 5.14로 비텍스트 3:1을 넘깁니다(brand.primary는 2.84).
+  return props.variant === "brand" ? color.fg.brand : color.fg["neutral-subtle"];
 }
 
 /** reduced이고 overlay가 아니면 true — 눌림 막을 렌더한다. */
