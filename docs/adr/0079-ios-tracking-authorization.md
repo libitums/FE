@@ -1,8 +1,9 @@
 # ADR-0079 — iOS 추적 허용(ATT)을 연다: Airbridge 일반판 SDK, 가입을 마친 뒤 여정 맵에 들어설 때 한 번 묻는다
 
 - 상태: **채택 — iOS 호스트 · 클라이언트.** Android · 서버 변경 0.
-  ⚠ **기기 확인 전이다** — 대화상자가 맵 첫 진입 때 뜨는지, 허용 · 거부 뒤 Airbridge Real-time Logs에 Install · Open이
-  오는지는 [e2e 시나리오 D](../e2e/airbridge-events.md#d--추적-허용att-대화상자-adr-0079)에서 본다.
+  ⚠ **기기 확인은 일부다** — 2026-10-22 iPhone 13 mini · Release · 실제 값에서 맵 진입 때 요청 1회(콘솔)와 대화상자(사용자
+  관찰)를 봤다. 진입 흐름 중 0회 · 다시 묻지 않음 · Real-time Logs의 Install · Open은 남았다
+  ([e2e 시나리오 D](../e2e/airbridge-events.md#d--추적-허용att-대화상자-adr-0079)).
 - 날짜: 2026-10-22.
 - **사용자 결정**(2026-10-22): ATT를 **지금** 연다 · 묻는 때는 **가입을 마친 뒤 여정 맵에 들어설 때** · 문구는
   「Allow tracking so we can measure which ads helped you find Duru. We never sell your data.」 그대로.
