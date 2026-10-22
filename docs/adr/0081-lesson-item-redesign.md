@@ -2,8 +2,10 @@
 
 - 상태: **채택 — 클라이언트 쪽.** 호스트 · 서버 변경 0. 콘텐츠 형식은 **선택 키 하나**(`counterpart_avatar`)가 더해졌고 지금 데이터(내장 u00 ~ u03)에는 그 키가 없다 — 그림 · JSON 업로드는 사용자 몫이다.
   ui-lynx 표면이 넓어졌다 — `OptionSelector`(variant `outlined-subtle` · 판정 축 `feedback` · 뜻 줄 `meaning` · 확정이면 1개 허용), `ChatBubble`(`annotation`).
-  ⚠ **e2e 회차가 없다** — unit · ui · integration과 번들 크기만 확인했다. 구현 중 iOS 시뮬레이터에서 화면 몇 개를 보고 고친 것(문화 확인 그림 기준점 · 듣고 조립 재생 단추 색 · 무대 카드 폭 · 밑줄 표기)은 있지만,
-  13 mini 스크롤 없음 · 캔버스 대조 · 스크린리더 절차는 [학습 문항 리디자인 e2e](../e2e/lesson-redesign.md) EU1 ~ EU9(미실행)다. 성능 보고서는 아직 없다(「미확인 · 후속」 1).
+  **e2e는 iPhone 13 mini 시뮬레이터 한 회차(부분)** — EU2 · EU4 · EU8과 EU1 일부를 봤고, 거기서 나온 iOS 결함 셋(흐름 안 `Check` 넘침 · 빈칸 밑줄 색 · 그림 위 모서리)을 고친 뒤 같은 시뮬레이터에서 다시 봤다(D18 · 재검토 조건 6 · D8 ~ D11).
+  Android · regular 기기 · 스크린리더 · 아바타 그림 · 큰 글꼴 · 세 구간 시간(EU1-A · EU3 · EU5 ~ EU7 · EU9)은 미실행이다 — [학습 문항 리디자인 e2e](../e2e/lesson-redesign.md) 「결과」.
+  성능 보고서는 [부분 측정 01](../performance/reports/lesson-redesign-iphone-13-mini-simulator-01.md)(번들 증가량 · 13 mini 화면별 높이)이고 렌더 · 프레임 · 메모리 · 세 구간 시간은 미측정이다(「미확인 · 후속」 1).
+  접근성 감사(코드 · CSS · 토큰 대비, 기기 청취 없음)의 지적을 반영했다(D15 · D18 · D19).
 - 날짜: 2026-10-22.
 - **사용자 결정**(2026-10-22): 시안은 Design 캔버스 셋째 ~ 다섯째 줄 수정안(S12 제외) · ui-lynx `OptionSelector`에 새 variant `outlined-subtle` · 아래 그림자 버튼 금지 ·
   S13 답한 뒤 **고른 보기만 남긴다**(고르지 않은 보기 · 장면 그림은 접힘) · TURN_ORDER 내 칸 · 내 조각은 **`brand-primary`**(시안 색 — 흰 글씨 대비 3.02, 「대가」 1) · 조각 안 뜻 줄은 흰색 ·
@@ -56,7 +58,7 @@
 - `components/TextRoles`: **로마자** = 기울임 · medium · `fg-neutral-muted` · **구분선** = thin `gray-300`(낭독 제외) · **뜻** = 구분선 아래 semibold · `fg-neutral`. 보기 · 조각 안의 뜻은 구분선 없이 한글 아래 작은 줄(body-s · muted).
 - 로마자 크기는 한글 단계에서 나온다(큰 두 단계 → m, 작은 두 단계 → s).
 - 적용 화면: S2 듣기(소리 없는 제시 포함) · S6 · S9 · S10 · S13 질문 카드 · S7 · WORD_ORDER · S8 · S5. **범위 밖**: 단어 카드 · 문화 카드 · 타자 입력 단서 · 온보딩.
-- Lynx에서 안쪽 `<text>`는 바깥 글꼴을 물려받지 않는다 — 강조 조각이 있는 로마자는 조각마다 역할 클래스를 다시 준다 [실측]. 밑줄은 longhand가 지워져 `text-decoration: underline` 한 줄로 쓴다 [실측].
+- Lynx에서 안쪽 `<text>`는 바깥 글꼴을 물려받지 않는다 — 강조 조각이 있는 로마자는 조각마다 역할 클래스를 다시 준다 [실측]. 밑줄은 longhand가 지워져 `text-decoration: underline` 한 줄로 쓴다 [실측]. iOS Lynx는 `text-decoration-color` · 두께도 읽지 않아 밑줄이 글자색을 따른다 [실측 — 시뮬레이터] — 색을 바꾸려면 글자색을 바꾼다(재검토 조건 6).
 
 ### D4. 한글 주인공 줄은 네 단계이고 작은 단계에서 색을 바꾼다
 
@@ -88,15 +90,15 @@
 
 ### D8 ~ D11. 화면별 — 그림 · 음절 칸 · 낱말 말하기 · 질문 카드
 
-- **S3 그림 고르기** — 그림이 카드 가장자리까지 채운다. 그림 비율은 기기가 아니라 **보기 행 수**로: 2지(1행) 1:1, 3 ~ 4지(2행) 4:3. 보기 2열 m.
+- **S3 그림 고르기** — 그림이 카드 가장자리까지 채운다. iOS Lynx는 바깥 `Card.Media`의 둥근 모서리로 안쪽 그림을 자르지 않아 [실측 — 시뮬레이터] 그림 틀 · 그림에 카드와 같은 반지름(`radius-xl`)을 직접 준다(S13 장면 띠도 위 두 모서리를 직접). 그림 비율은 기기가 아니라 **보기 행 수**로: 2지(1행) 1:1, 3 ~ 4지(2행) 4:3. 보기 2열 m.
 - **S4 음절 조립** — 답 칸은 음절마다 한 칸(48×56, `CompactNumericInput` s 모양 — 자판을 띄우면 안 되는 칸이라 컴포넌트는 쓰지 않는다). 칸 상태 `filled` · `current`(흰 면 + `brand-strong` 테두리) · `empty`, 채점 뒤 판정 색.
   **쓴 타일은 자리를 지키고 비활성 색으로 남으며 `X, used`로 읽힌다**(traits `disabled`) — 전에는 숨기고 낭독에서 뺐다.
 - **S5 그림 보고 말하기** — 카드 = 그림 + 정답 로마자(글 역할). **영어 뜻 줄을 지웠다**(뜻은 그림 이름 · 실패 대체 글자에 남는다). 파형은 카드와 버튼 사이(하한 56). 그림 비율 regular 5:4 · compact 4:3.
-- **S6 · S9 · S10 · S13 질문 카드** — 한글(D4) → 로마자 → 구분선(뜻이 있을 때) → 뜻. **빈칸 채우기(`CLOZE`)의 로마자 줄은 첫 `___`를 정답 로마자(`answers[0].roman`)로 바꾼 전체 문장**이고, 그 조각에 `brand-primary` 밑줄이 선다. 정답 로마자가 비면 문맥 로마자 그대로(강조 없음).
+- **S6 · S9 · S10 · S13 질문 카드** — 한글(D4) → 로마자 → 구분선(뜻이 있을 때) → 뜻. **빈칸 채우기(`CLOZE`)의 로마자 줄은 첫 `___`를 정답 로마자(`answers[0].roman`)로 바꾼 전체 문장**이고, 그 조각은 **`fg-brand` 글자색 + 기본 밑줄**이다(재검토 조건 6의 결과 — 처음 정한 `brand-primary` 밑줄 색은 iOS가 그리지 않았다. `fg-brand`는 흰 바탕 5.46). 정답 로마자가 비면 문맥 로마자 그대로(강조 없음).
 
 ### D12. `LISTEN_BUILD` · `WORD_ORDER`는 카드 없는 「줄」 배치이고, 채점은 `Check`로만
 
-- 위 줄(LISTEN_BUILD = D6의 S7 줄 · WORD_ORDER = 영어 문장) → 답 줄 둘(아래 선 2px `gray-300`) → 조각 뭉치(쓴 자리는 폭 유지 빈칸) → **흐름 안 `Check`**(셸 `actionPlacement="in-flow"` — 떠 있으면 뭉치가 버튼 밑으로 72 들어간다) → 같은 자리 `Next`.
+- 위 줄(LISTEN_BUILD = D6의 S7 줄 · WORD_ORDER = 영어 문장) → 답 줄 둘(아래 선 2px `gray-300`) → 조각 뭉치(쓴 자리는 폭 유지 빈칸) → **흐름 안 `Check`**(셸 `actionPlacement="in-flow"` — 떠 있으면 뭉치가 버튼 밑으로 72 들어간다) → 같은 자리 `Next`. `Check` · `Next` · `See results`는 **같은 ui-lynx `Button` 요소**이고 문구 · 동작만 바뀐다(D19 — 초점 유지).
 - **`Check`는 문항 내내 서 있다** — 놓은 조각이 하나 이상이면 켜지고, 없으면 꺼진 채 상태가 읽힌다(ui-lynx `Button`, traits `disabled`). **조각을 다 놓아도 저절로 채점하지 않는다.** 대화 배치(TURN_ORDER)는 지금처럼 칸이 다 차면 선다(캔버스에 버튼 없음).
 - 로마자: LISTEN_BUILD는 정답 로마자(`answers[0].roman`, 없으면 `stimulus.audio.roman`)가 **늘** 보인다. WORD_ORDER는 `answers[0].roman`이 **Check 뒤에만** 보인다(답 전 노출 없음).
 - 옛 내 말풍선 · 문장 줄 · 상대 칸(`SentenceOrderPartnerSlot`) · `support` 필드를 지웠다(카탈로그 생산자가 없었다). 판정 규칙 · 놓을 수 있는 수는 그대로.
@@ -120,7 +122,9 @@
 - 장면 그림은 9:16 원본을 틀 폭으로 크게 그려 위쪽 약 5 %가 틀 위에 오게 한다(Lynx `image`의 가운데 자르기로는 몸통만 남는다 [실측 — 시뮬레이터]).
 - **답한 뒤**(사용자 결정): 자동 넘김 없음. 장면 그림 · 고르지 않은 보기 접힘, 상대 말풍선은 한글만, **정답이면** 내 말풍선(outgoing, 고른 보기 한글) + 내 아바타. 아래 **해설 판**(tone = 정오, 제목 `Nice reply!` · `That's right!` · `Not quite`, 줄 = `feedback.correct`의 en → ko) + `Continue`.
   오답도 같은 해설을 보인다 — 정답을 알려 주는 글이고, `why_wrong`은 범용 문구라 쓰지 않는다.
-- 낭독: 답하는 순간 `제목. en`을 한 번 알린다. 판은 접근성 요소 하나(제목 + 해설). 판정 배지(D2)는 서지 않는다.
+- 낭독: 답하는 순간 `제목. en`을 한 번 알린다. 판정 배지(D2)는 서지 않는다.
+- **해설 판의 접근성 구조**: 판 루트는 접근성 요소가 아니다. **글(아이콘 · 제목 · 해설 줄)만 감싸는 안쪽 view**가 접근성 요소 하나(이름 = 제목 + 해설)이고, 아래 버튼 행(`Continue`)은 그 view의 **형제**라 따로 닿는다 — 조작 단위를 접근성 요소 안에 넣지 않는다([ADR-0016](0016-assistive-technology-semantics.md) D5). 이 문항은 자동 넘김이 없어 `Continue`가 유일한 진행 수단이다.
+- **글만 판 안에서 스크롤한다** — 글 부분 `scroll-view`의 상한 `50vh`. 큰 글꼴에서도 `Continue`가 화면 안에 남고, 보통 글꼴에서는 내용이 상한보다 작아 모양이 같다.
 
 ### D16. `counterpart_avatar` — 에피소드 최상위 선택 그림 경로
 
@@ -139,12 +143,21 @@
 
 - `LearningShell`에 `verdict` · `feedback`(해설 판) · `actionPlacement`(`floating` 기본 | `in-flow`) · `densityOverride`가 더해졌다. 루트에 밀도 클래스 · `data-density`.
 - `feedback`이 있으면 아래 버튼 행이 흐름 안으로 오고 그 위에 판이 화면 가장자리까지 선다(`LearningShellFeedbackPanel`).
-- **아래 기본 버튼 요소는 그대로다**(design의 「ui-lynx `Button`으로 교체」를 하지 않았다 — 값이 이미 Button xl brand와 같고 그 testid를 읽는 테스트가 36파일 190곳이다). 상태가 필요한 Check만 `actionButton`(ui-lynx `Button`).
+- **아래 기본 버튼 요소는 그대로다**(design의 「ui-lynx `Button`으로 교체」를 하지 않았다 — 값이 이미 Button xl brand와 같고 그 testid를 읽는 테스트가 36파일 190곳이다). `actionButton`(ui-lynx `Button`)은 문장 순서 화면만 쓴다 — `Check`와 그 뒤 `Next` · `See results`가 모두 그 자리의 같은 `Button`이다(D19).
+  `actionButton`은 요소 또는 함수를 받는다 — 함수면 셸의 아래 버튼 동작(누름 소리 · 합친 흐름 맨 위로 · `onAction`)을 받아 그 버튼에 건다.
+- **아래 버튼 행의 하한 높이는 56이다**(버튼 높이와 같은 값 — 떠 있을 때도 흐름 안에 설 때도). iOS Lynx가 ui-lynx `Button`이 든 행의 높이를 배치에서 0으로 세어, 떠 있는 행은 `bottom`이 높이 0 기준이 되고 흐름 안의 행은 위 `flex: 1` 스크롤이 행 몫까지 차지했다 —
+  13 mini 시뮬레이터에서 줄 배치 `Check`의 아래 끝이 안전 영역 경계 778을 27.6 ~ 27.9 pt 넘었다 [실측 — [성능 보고서 01](../performance/reports/lesson-redesign-iphone-13-mini-simulator-01.md)]. 하한을 준 뒤 같은 화면(S7 · S11 · u01 문장 조립)의 `Check`가 셸 버튼 자리 698 ~ 754에 선다 [실측 — 시뮬레이터 재확인]. 큰 글자에서는 내용이 하한을 넘어 자란다(ADR-0020 결정 5).
 
 ### D19. 접근성
 
-- 새 이름: `Check`(꺼지면 traits `disabled`) · 쓴 음절 타일(`X, used`) · 창고 대화 조각(화자 + 글 + 뜻) · 문화 장면 말풍선(화자 + 한글 + 로마자 + 뜻) · 해설 판(제목 + 해설) · 보기(판정 · 뜻 포함).
-- 낭독 제외: 아바타 · 구분선 · 장식 장면 그림. 그림 문항(S3)의 그림 이름 `Picture: <뜻>`은 그대로.
+- 새 이름: `Check`(꺼지면 traits `disabled`, 켜지면 `button`) · 쓴 음절 타일(`X, used`) · 창고 대화 조각(화자 + 글 + 뜻) · 문화 장면 말풍선(화자 + 한글 + `Pronunciation: <로마자>` + 뜻) · 해설 판 글(제목 + 해설 — D15) · 보기(판정 · 뜻 포함).
+- **로마자는 모든 화면에서 `Pronunciation: <로마자>` 접두로 읽는다** — 한글 · 로마자 · 뜻의 구별(D3)이 모양뿐 아니라 낭독에도 서게 한다. 따라 읽기 · 단어 카드 · 문화 카드가 이미 쓰던 꼴(`readAloud.pronunciation`)로 맞췄다.
+  `TextRoles.Romanization`은 부르는 쪽이 이름을 주지 않으면 이 이름을 진다(빈칸 문장은 빈칸을 말로 푼 문장에 접두). ChatBubble `annotation`은 낭독용 `spokenRomanization`을 받아 화면 글은 그대로 두고 낭독만 바꾼다.
+- **줄 배치 조각 · 대화 칸의 정오는 색만이 아니다** — 채점 뒤 이름 뒤에 `correct` / `incorrect` 접미사, 라벨 옆에 `tick` / `cross` 아이콘(이름 없음 — 낭독은 접미사가 진다). WCAG 1.4.1.
+- **`Check` → `Next` · `See results`에서 초점이 남는다** — 같은 자리의 같은 ui-lynx `Button` 요소라 이름만 바뀌어 스크린리더가 새 이름을 다시 읽는다(D12 · D18).
+- **판정 뒤 가린 지시문 `<text>`는 `accessibility-element={false}`** — 가림 속성(`accessibility-elements-hidden`)은 자손에만 들어 잎 `<text>`에는 무동작이다(ADR-0016 D5). 가리지 않을 때는 속성을 넘기지 않는다.
+- 낭독 제외: 아바타 · 장식 장면 그림. 구분선은 자식 없는 view라 처음부터 정지점이 아니다 — 가림 속성을 붙이지 않는다. 그림 문항(S3)의 그림 이름 `Picture: <뜻>`은 그대로.
+- **S7 재생 단추 아이콘은 `fg-brand`다** — 면(`gray-100`) 위 `brand-primary`는 2.84로 비텍스트 3:1에 못 미쳤다. ui-lynx `RoundButton`의 FE override(2026-09-21 — brand 아이콘 = `brand-primary`)를 걷어 정본 `fg.brand`(5.14)로 되돌렸으므로 **brand `RoundButton`을 쓰는 다른 화면의 아이콘도 함께 `fg-brand`가 된다.**
 - 판정 낭독은 지금 규칙(화면마다 한 번) — 배지 자리만 옮겼다. 정답 노출 방지: `MIN_PAIR_AB` · `WORD_ORDER`는 답 전 로마자 없음, 그림 문항 낭독에 한글 없음.
 
 ### 측정
@@ -189,7 +202,7 @@
 5. **밀도 문턱 756은 기기 목록 가정이다** — iOS 기준으로 잡았고 Android dp는 다양하다(낮으면 compact — 안전 쪽).
 6. **outlined-subtle 기본 테두리 `gray-300`/흰 1.15** — 비글자 3:1 미달이다. outlined `gray-400`(1.35)의 design-system 승인 예외와 같은 부류로 둔다 — 항목은 라벨(17:1)과 누름 영역 전체로 식별된다. 새 variant이므로 design-system에 수치를 보고한다.
 7. **`meaning` · `annotation`은 design-system 확장 규칙 3과 어긋나는 FE 확장이다** — 기록하고 보고한다(D5 · 버린 대안 5).
-8. **번들** — ui-lynx `dist` 실측 547,900 bytes, 상한 530,000 → 549,000(OptionSelector · ChatBubble 확장, 사용자 사전 승인 규칙). 앱 `main.lynx.bundle`은 `.env.local` 있는 로컬 실측 2,152,833 bytes로 상한 2,385,000 안이라 올리지 않았다. 새 의존성 · 미디어 없음.
+8. **번들** — ui-lynx `dist` 실측 547,900 bytes(기준 49dc553e 528,482 대비 +19,418), 상한 530,000 → 549,000(OptionSelector · ChatBubble 확장, 사용자 사전 승인 규칙). 앱 `main.lynx.bundle`은 `.env.local` 없는 같은 설정으로 기준 2,103,053 → 2,153,057 bytes(+50,004)이고 상한 2,385,000 안이라 올리지 않았다. 새 의존성 · 미디어 없음. 몫 나눔은 [성능 보고서 01](../performance/reports/lesson-redesign-iphone-13-mini-simulator-01.md) 「번들」.
 9. **기존 ui · integration 단언이 대량으로 바뀌었다** — 보기 testid가 `ui-lynx-option-selector-item-choice-<i>`로 바뀌고 판정 칸 · 옛 보기 파일 셋이 지워졌다.
 
 ## 재검토 조건
@@ -199,12 +212,12 @@
 3. **주황 면 토큰을 다시 정하면** — 사용자가 `brand-strong`으로 가거나 design-system이 `brand-primary` 위 흰 글자를 고치면 대화 조립 · ChatBubble outgoing · 셸 아래 버튼을 함께 본다(「대가」 1).
 4. **기기 목록이 바뀌면** — 쓸 수 있는 높이 756 근처의 지원 기기가 생기거나(Android 포함) e2e EU3에서 regular 기기가 넘치면 문턱을 다시 잰다.
 5. **design-system이 Feedback 축 · 설명 붙은 선택지 · 말풍선 주석을 정식으로 내면** — FE 확장을 그 표면으로 옮긴다.
-6. **e2e EU8에서 빈칸 밑줄 색 · 두께가 서지 않으면** — 강조 조각을 `fg-brand` 색 + 기본 밑줄로 바꾼다.
+6. ~~**e2e EU8에서 빈칸 밑줄 색 · 두께가 서지 않으면** — 강조 조각을 `fg-brand` 색 + 기본 밑줄로 바꾼다.~~ **⟨2026-10-22 발동 · 적용⟩** iOS(13 mini 시뮬레이터)가 `text-decoration-color`를 무시해 밑줄이 글자색이었다. 강조 조각을 `fg-brand` 글자색 + 기본 밑줄로 바꿨다(D3 · D11). Android 확인은 남았다(e2e EU8).
 
 ## 미확인 · 후속
 
-1. **성능 보고서** — iPhone 13 mini 시뮬레이터 baseline(49dc553e) / candidate 각 3회: 레슨 시작 → 첫 문항 첫 그리기(u00 S2 · S7 · S13, 회귀 ≤ 10 %) · 보기 탭 → 판정 배지(≤ 100 ms) · S13 보기 탭 → 해설 판(≤ 150 ms). 측정이 필요해 이 문서 단계 밖이다.
-2. **기기 확인 전부** — [학습 문항 리디자인 e2e](../e2e/lesson-redesign.md) EU1 ~ EU9(13 mini 스크롤 없음 · 캔버스 대조 · 기울임 · VoiceOver · TalkBack · 아바타 · 밑줄).
+1. **성능 — 세 구간 시간** — [성능 보고서 01](../performance/reports/lesson-redesign-iphone-13-mini-simulator-01.md)은 번들 증가량 · 13 mini 화면별 높이만 쟀다. 남은 것: 실제 13 mini 기기 Release 빌드 baseline(49dc553e) / candidate 각 3회 — 레슨 시작 → 첫 문항 첫 그리기(u00 S2 · S7 · S13, 회귀 ≤ 10 %) · 보기 탭 → 판정 배지(≤ 100 ms) · S13 보기 탭 → 해설 판(≤ 150 ms), 렌더 · 프레임 · 메모리(e2e EU7).
+2. **남은 기기 확인** — [학습 문항 리디자인 e2e](../e2e/lesson-redesign.md) 「결과」의 미실행 항목: Android(EU1-A · EU8) · regular 기기(EU3) · VoiceOver · TalkBack 청취(EU5 — 해설 판 → `Continue` 도달, 판정 뒤 지시문 미낭독, `Check` → `Next` 초점 유지 포함) · 아바타 그림(EU6) · 큰 글꼴(EU9 — 해설 판 글 스크롤) · 캔버스와 나란히 둔 대조(EU1).
 3. **아바타 그림 업로드와 JSON 갱신** — 사용자(256×256 WebP 준비 중). 순서는 [콘텐츠 계약](../specs/episode-content-json-contract.md) §13 규칙 4.
 4. **design-system 보고** — `outlined-subtle` 상태 대비(기본 테두리 1.15) · `meaning` · Feedback 축 · ChatBubble `annotation`.
 5. GitHub wiki 이벤트 사전(`episode_item_answered`)은 저장소 밖이라 따로 고친다.
