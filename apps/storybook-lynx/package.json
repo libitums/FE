@@ -27,7 +27,7 @@
     "concurrently": "10.0.3",
     "react": "19.2.8",
     "react-dom": "19.2.8",
-    "storybook": "10.5.3",
+    "storybook": "10.6.2",
     "storybook-lynx-rsbuild": "0.1.0",
     "typescript": "5.9.3",
     "vitest": "3.2.7"
