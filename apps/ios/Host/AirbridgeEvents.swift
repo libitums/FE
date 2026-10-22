@@ -37,12 +37,29 @@ struct AirbridgeEventsConfig: Equatable {
 enum AirbridgeEvents {
   static private(set) var isStarted = false
 
-  /// 두 번 불러도 한 번만 시작한다. 옵션은 기본값이다 — 설치 · 실행은 SDK가 자동으로 잰다.
+  /// 설치 이벤트가 추적 허용 결정을 기다리는 시간(초)입니다(ADR-0079 D3). 허용을 묻는 때가 가입을 마친 뒤
+  /// 여정 맵이라, SDK 기본 30초로는 온보딩 · 가입 중에 끝나 IDFA 없이 설치가 나갑니다.
+  static let trackingAuthorizationTimeoutSeconds: Double = 600
+
+  /// 두 번 불러도 한 번만 시작한다. 설치 · 실행은 SDK가 자동으로 잰다.
   static func start(_ config: AirbridgeEventsConfig) {
     guard !isStarted else { return }
     isStarted = true
-    let option = AirbridgeOptionBuilder(name: config.appName, token: config.sdkToken).build()
+    let option = AirbridgeOptionBuilder(name: config.appName, token: config.sdkToken)
+      .setAutoDetermineTrackingAuthorizationTimeout(second: trackingAuthorizationTimeoutSeconds)
+      .build()
     Airbridge.initializeSDK(option: option)
+  }
+
+  /// 추적 허용(ATT)을 **아직 정하지 않았을 때만** 시스템 대화상자를 띄운다(ADR-0079 D2). 이미 정했으면 아무것도
+  /// 하지 않는다 — 시스템도 다시 묻지 않는다. 시작되지 않은 빌드에서는 묻지 않는다(보낼 곳이 없다).
+  /// 대화상자는 앱이 활성일 때만 뜨므로 메인 큐에서 부른다.
+  static func requestTrackingAuthorizationIfUndetermined() {
+    guard isStarted else { return }
+    DispatchQueue.main.async {
+      guard Airbridge.trackingAuthorizationStatus() == .notDetermined else { return }
+      Airbridge.requestTrackingAuthorization { _ in }
+    }
   }
 
   /// 시작되지 않았거나 카테고리가 비면 아무것도 하지 않는다(이중 방어). 속성이 비면 속성 없는 오버로드를 쓴다.

@@ -47,6 +47,7 @@ import { shellHeaderTop } from "./full-bleed-screens";
 import { shellInsetsOf } from "./shell-edges";
 import { renderScreen } from "./render-screen";
 import { screenWiring } from "./screen-wiring";
+import { useTrackingAuthorizationPrompt } from "./use-tracking-authorization-prompt";
 import { useOpenedPush } from "./use-opened-push";
 import { usePushTokenRefresh } from "./use-push-token-refresh";
 import { useSystemBack } from "./use-system-back";
@@ -216,6 +217,7 @@ export function AppSession({
   useSystemBack(nav, dispatch);
 
   const screenNow = currentScreen(nav);
+  useTrackingAuthorizationPrompt(nav.entry.length === 0 && screenNow.name === "journey-map");
   const isPhoneCall = screenNow.name === "phone-call" || screenNow.name === "roleplay-phone-call";
   const showsNavigator = showsTabNavigator(nav);
   // 셸 여백: 그림 화면 0 · 여정 맵 위 0 · 자판 화면 위만 — 비운 쪽은 화면이 잡습니다(`shell-edges`).

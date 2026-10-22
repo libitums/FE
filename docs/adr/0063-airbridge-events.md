@@ -25,6 +25,9 @@
   `AirbridgeEventsModule`로 바뀌었다(개수는 그대로, [호스트 모듈 표](README.md#호스트-모듈-표)).
   [ADR-0052](0052-android-release-shrinking.md) D5 — 산출물 가드 A1(`.so` 개수) · A3(dex 한도) · A4(호스트 모듈 수)의 숫자가
   바뀌었다(D14, 그 문서의 「적용 기록」).
+- **부분 대체됨(2026-10-22)**: **D6**(iOS restricted 변형 · ATT 없음 · IDFA 미수집)과 D13의 iOS SDK 매니페스트 서술은
+  [ADR-0079](0079-ios-tracking-authorization.md)가 대신한다 — iOS는 일반판 `airbridge-ios-sdk` 4.12.0, 가입 뒤 여정 맵 첫 진입에
+  추적 허용을 묻는다(사용자 결정). 「재검토 조건」의 「ATT 팝업을 열기로 한 때」가 발동했다. 나머지 결정은 그대로다.
 - 받은 적용 기록(결정을 바꾸지 않는다):
   2026-10-18 [ADR-0069](0069-returning-learner-login.md) D6 — 가입 완료가 기록 있는 계정의 재로그인 · 재설치에서 더 나지 않는다(「사용자 확인 필요」 5에 주).
 
@@ -135,7 +138,7 @@ App Name 규칙이 토큰보다 좁은 이유: 대시보드 고유 ID라 공백 
   못했다(Android의 `setTrackMetaDeferredAppLinkEnabled(false)`는 Meta 지연 앱 링크만 끈다). 사용자가 보는 팝업은 없었다 — iOS
   붙여넣기 허용 팝업도 뜨지 않았다(e2e A · B).
 
-### D6. iOS는 restricted 변형 — 「IDFA 미수집」을 SDK 선택으로 지킨다
+### D6. iOS는 restricted 변형 — 「IDFA 미수집」을 SDK 선택으로 지킨다 ⟨2026-10-22 대체됨 → [ADR-0079](0079-ios-tracking-authorization.md)⟩
 
 - 근거: 사용자 결정 「ATT 팝업 없음 · IDFA 미수집」을 **코드 설정이 아니라 바이너리가** 보장한다(맥락 1 — AdSupport · ATT 링크
   없음, IDFA 문자열 0). 덧붙여 ① SDK 매니페스트가 `NSPrivacyTracking = false` · 추적 도메인 0이라 0057의 「앱은 추적 안 함 ·

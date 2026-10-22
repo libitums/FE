@@ -1,6 +1,7 @@
 import Foundation
 
-/// Airbridge 이벤트 한 건을 SDK로 넘기는 호스트 네이티브 모듈이다(ADR-0063). 메서드 하나뿐이다.
+/// Airbridge 이벤트 한 건을 SDK로 넘기는 호스트 네이티브 모듈이다(ADR-0063). ⟨ADR-0079⟩ 추적 허용을 묻는
+/// 메서드가 하나 더 있다 — iOS에만 있고 Android 모듈에는 없다.
 ///
 /// **설정이 있는 빌드에서만 등록된다**(`ViewController`가 `AirbridgeEvents.isStarted`를 본다).
 /// 카테고리 허용 목록은 호스트에 두지 않는다 — JS의 순수 매핑 하나가 정본이다.
@@ -10,7 +11,10 @@ final class AirbridgeEventsModule: NSObject, LynxModule {
   @objc static var name: String { "AirbridgeEventsModule" }
 
   @objc static var methodLookup: [String: String] {
-    ["trackEvent": NSStringFromSelector(#selector(trackEvent(_:semanticAttributes:)))]
+    [
+      "trackEvent": NSStringFromSelector(#selector(trackEvent(_:semanticAttributes:))),
+      "requestTrackingAuthorization": NSStringFromSelector(#selector(requestTrackingAuthorization)),
+    ]
   }
 
   @objc override init() { super.init() }
@@ -20,6 +24,11 @@ final class AirbridgeEventsModule: NSObject, LynxModule {
   @objc func trackEvent(_ category: String, semanticAttributes: [String: Any]?) {
     AirbridgeEvents.track(
       category, semanticAttributes: Self.stringAttributes(from: semanticAttributes ?? [:]))
+  }
+
+  /// 여정 맵에 들어설 때 JS가 부른다(ADR-0079 D2). 아직 정하지 않은 때만 시스템 대화상자가 뜬다. 응답이 없다.
+  @objc func requestTrackingAuthorization() {
+    AirbridgeEvents.requestTrackingAuthorizationIfUndetermined()
   }
 
   /// 문자열 값만 남긴다. 순수.

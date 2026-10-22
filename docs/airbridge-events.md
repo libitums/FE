@@ -112,8 +112,10 @@ grep -c 'AIRBRIDGE_APP_NAME = "";' apps/android/app/build/generated/source/build
 - **「레슨 완료」는 사용자당 최대 2회다.** 여정의 메신저 유닛 하나와 비주얼 노벨 유닛 하나뿐이고, 표준 학습 유닛 · 전화
   유닛 · 카탈로그 레슨은 보낼 이벤트가 없다. 롤플레이(연습)에서 끝낸 것은 보내지 않는다.
 - 사용자 ID · 이메일 · 전화번호 · 로그인 수단은 싣지 않는다. Airbridge의 `setUserID` 등 사용자 식별 기능을 쓰지 않는다.
-- iOS는 IDFA 코드가 없는 SDK 변형(restricted)이고 추적 허용 팝업을 띄우지 않는다. iOS 설치 귀속은 SKAdNetwork · Apple
-  Ads(AdServices) · Airbridge의 비식별 매칭에 기댄다 — Android보다 늦고 거칠게 보인다.
+- ~~iOS는 IDFA 코드가 없는 SDK 변형(restricted)이고 추적 허용 팝업을 띄우지 않는다.~~ ⟨2026-10-22 — [ADR-0079](adr/0079-ios-tracking-authorization.md)⟩
+  iOS는 일반판 SDK이고, **가입을 마친 뒤 여정 맵에 처음 들어설 때** 아직 정하지 않았으면 추적 허용을 한 번 묻는다. 허용하면
+  IDFA가 실린다. 설치 이벤트는 그 결정을 **최대 600초** 기다린다 — Real-time Logs에 Install이 늦게 보일 수 있다. 거부 ·
+  미결정이면 SKAdNetwork · Apple Ads(AdServices) · Airbridge의 비식별 매칭에 기댄다.
 - ⚠ **값이 있는 빌드는 시작 직후 지연 딥링크 조회 요청을 낸다**(iOS `tracking-link.airbridge.io`, Android logcat의
   `fetching deferred-deeplink` — 가짜 값 빌드에서 관찰). 앱은 딥링크를 쓰지 않는다. 이 요청을 끄는 옵션은 확인하지 못했다
   (ADR-0063 「확인하지 못한 것」).
@@ -190,7 +192,8 @@ Meta SDK에서 Airbridge로 바뀌며 병합 매니페스트에서 **빠진 것*
 
 1. App Store Connect → 앱이 수집하는 개인정보: **제품 상호작용** · **기기 ID**의 용도에 **개발자의 광고 또는 마케팅**
    (앱의 `PrivacyInfo.xcprivacy`가 이미 그렇게 선언한다. #242에서 바꿨다면 그대로).
-2. **「추적」 질문은 여전히 사용자 판단이다.** 근거가 #242 때보다 단순해졌다 — 앱 매니페스트도 SDK 매니페스트도
+2. ⟨2026-10-22⟩ **「추적」은 「예」로 답한다** — iOS가 허용을 묻고 IDFA를 싣는다(ADR-0079). 아래는 옛 기록이다.
+   ~~**「추적」 질문은 여전히 사용자 판단이다.**~~ 근거가 #242 때보다 단순해졌다 — 앱 매니페스트도 SDK 매니페스트도
    `NSPrivacyTracking = false`이고, SDK 바이너리에 IDFA · ATT 코드가 없다. 근거와 한계는
    [iOS 프라이버시 문서](ios-privacy.md#airbridge-sdk와-추적-선언)에 있다.
 3. 공개 개인정보처리방침의 제3자를 Meta에서 Airbridge(AB180)로 바꾼다 — 문안 초안은 같은 문서에 있다.
@@ -201,7 +204,8 @@ Meta SDK에서 Airbridge로 바뀌며 병합 매니페스트에서 **빠진 것*
 |---|---|---|
 | 보내기를 멈춘다(SDK는 둔다) | 두 값 파일을 지우고 다시 빌드 | 없음. 권한 · 용량은 그대로다 |
 | Android 광고 ID 권한을 뺀다 | 의존을 `io.airbridge:sdk-android-restricted:4.11.3`으로 바꾸고 `AndroidManifest.xml`의 `AD_ID` 줄을 `tools:node="remove"`로 | 정적 검사 `host-airbridge-events.integration.test.mjs`의 권한 단언을 함께 고친다. Play 선언을 되돌린다. Android의 Meta · TikTok 귀속이 거칠어진다 |
-| iOS에서 IDFA를 받을 수 있게 한다(ATT를 연다) | pod을 일반판 `airbridge-ios-sdk`로 바꾸고 ATT 요청 · `NSUserTrackingUsageDescription`을 더한다 | 새 결정이다(ADR-0063 재검토 조건). SDK 매니페스트가 tracking `true`로 바뀐다 |
+| ~~iOS에서 IDFA를 받을 수 있게 한다(ATT를 연다)~~ | ⟨2026-10-22⟩ 했다 — ADR-0079 | — |
+| iOS ATT를 다시 닫는다 | pod을 `airbridge-ios-sdk-restricted`로 되돌리고 `NSUserTrackingUsageDescription` · `requestTrackingAuthorization` · 앱 manifest의 tracking을 되돌린다 | ADR-0079를 대체하는 새 결정. App Store 「추적」 응답을 되돌린다 |
 | SDK를 걷어 낸다 | 이 변경을 되돌린다(pod · Gradle 의존과 저장소 블록 · 호스트 파일 · 매니페스트 · `Info.plist` · JS 모듈 셋 · 진입점 · 가드 숫자) | 스토어 고지를 되돌린다. 결정을 뒤집는 일이므로 ADR-0063을 `대체됨`으로. release-shrink A1 · A3 · A4와 정렬 검사 NA3의 숫자가 다시 바뀐다 |
 
 ## 확인 명령
