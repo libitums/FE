@@ -311,6 +311,139 @@ e2e-green 회차가 iOS와 같은 빌드로 돌았다(산출물 · 측정 방식
 
 「Episode clear!」 배너는 기기에서 선 적이 없다([카탈로그 레슨 e2e](catalog-lessons.md) C7).
 
+## 유닛 탭 등장 모션 (2026-10-19, ADR-0077)
+
+> ⟨2026-10-22 — main 병합⟩ 옛 튜토리얼 스텝 노드(`JourneyStepNode`)가 지워지고 튜토리얼이 카탈로그 에피소드 `u00-tutorial`(맵 첫 구획 `Episode 0.`)이 됐다([ADR-0081](../adr/0081-tutorial-as-catalog-episode.md)). 노드 튕김 · 반짝임은 이제 카탈로그 레슨(`CatalogUnitNode`)과 최종 · 특별 표식(`SpecialUnitMapItem`)의 `MapUnitStage`만 진다. 아래 「도달 길」의 씨앗은 u00 · 카탈로그 레슨 기준으로 고쳤고, 그 아래 회차 기록(옛 튜토리얼 스텝 표본)은 고치지 않는다. ⚠ **병합 뒤 기기에서 다시 보지 않았다** — SM1 ~ SM10을 u00 레슨 · 카탈로그 레슨으로 다시 돌려야 하고, 첫 유닛 안내가 떠 있는 동안 **u00 표지가 가림막 위에 보이는지**(가림막 위 표지와 등장 무대가 겹쳐 그려지지 않는지)도 함께 본다.
+
+⟨2026-10-19⟩ Android 에뮬레이터 회차를 한 번 돌렸고(`d94ea84b`), 실패한 SM6만 수정 뒤 두 번 더 돌렸다(`2f7c3968` 통과 · `b524ef74` 경계 탭 확인 — 아래 「결과」, 에이전트 실행 · 사람 미확인). SM1 ~ SM9 통과 · SM10 기록이고, 대기 → 등장 경계 프레임의 시작 탭 무반응은 결함 판정 밖의 남은 위험이다([ADR-0077](../adr/0077-journey-map-sheet-entrance-motion.md) 「남은 위험」 A11Y-3). iOS 칸은 아직 비어 있다(미실행). 끈 = 동작 줄이기 끔(standard), 켠 = 켬(reduced).
+
+여정 맵에서 유닛 탭을 누르면 노드가 한 번 튀고, 필요하면 맵이 스크롤한 뒤, 에피소드 띠가 위에서 내려오며 튀고, 조금 늦게 말풍선이 꼬리 끝에서 커진다.
+결정은 [ADR-0077](../adr/0077-journey-map-sheet-entrance-motion.md)이고, 가정 A1 ~ A5 · 관찰 O-1 · 케이스 id는 저장소 밖 하네스 작업 폴더의 계약 · 테스트 계획에서 왔다. 이 절은 기기에서만 닫히는 열 가지(SM1 ~ SM10)만 본다.
+
+| 이미 지는 층 | 무엇을 |
+|---|---|
+| unit | 등장 상태 기계(열림 → 측정 → 이동 → 등장 전이 · 늦은 답 버림 · 조용함 · 상한 타이머 상수), 모션 종류 · 클래스 · 말풍선 기준점 · 카운트업 값 · 노드 단계, CSS 텍스트(토큰 · reduced · `overflow: visible` 사슬 · 숨쉬기 반복 횟수) |
+| ui | 말풍선 · 띠 · 노드의 클래스 · DOM · 타이머와 화면 순서(스크롤 필요/불필요 · 조용함 · 상한 · 닫기 · reduced), 대기 중 말풍선 래퍼의 탭 잡기(대기면 닫음 · 등장 뒤면 아무것도 안 함 · 시작은 받음) |
+| integration | 호스트 `reducedMotion` → `MotionProvider` → 훅 → 띠 · 말풍선 · 노드가 App 경계에서 한 값인지 |
+
+### 이 절차로 확인하지 못하는 것 · 이 절차만 닫는 것
+
+자동 검사가 못 지는 것: 첫 프레임 깜박임(A1) · 스크롤 이벤트 간격 < 200 ms(A2) · 대기 중 말풍선 자리의 자손 탭이 `.step-sheet-pop`까지 올라와 닫는가(A3 — 테스트 DOM은 올림을 흉내 내지 않는다) · 같은 클래스 유지 시 애니메이션 재시작 없음(A4) ·
+인라인 px `transform-origin`이 두 플랫폼에서 그려지는가(A5) · `overflow` 잘림(D5 · O-1) · 실제 곡선 체감 · 프레임 비용.
+
+- **곡선 · 정확한 시간은 재지 않는다.** 판정은 「순서」(무엇이 무엇보다 먼저/뒤에 시작하는가), 「있다/없다」(깜박임 · 잘림 · 이동), 「어느 쪽에서 커지는가」뿐이다. 값은 unit(CSS 텍스트)이 진다.
+- **보조기술** 점검은 이 절의 범위 밖이다. 이 절은 켜지 않고 돈다.
+- **iOS 실기**는 닿으면 SM1 · SM6 · SM9를 한 번 더 한다. 못 하면 「미확인」이고 시뮬레이터 통과를 실기 통과로 적지 않는다.
+
+### 전제
+
+준비(전용 시뮬레이터 · 에뮬레이터, 전역 설정 값 기록 후 복원, 「같다 = 정지, 다르다 = 움직임」, iOS · Android 빌드 · 설치 · 캡처 · 녹화)는 [동작 줄이기 e2e](motion-reduced.md)의
+「전제」 · 「iOS 준비」 · 「Android 준비」 · 「연속 두 장 비교」를, 측정 단위(css px)와 Android 탭 입력은 이 문서 위쪽의 「전제」 4와 「Android 항목」 도입을 **그대로** 따르고 되풀이하지 않는다.
+이 절만의 부분:
+
+1. **호스트와 번들을 둘 다 새로 빌드한다.** 번들만 새로 만들면 호스트가 `reducedMotion`을 보내지 않아 켠 상태에서도 움직이고 SM7이 「안 됨」으로 읽힌다. 결과 칸에 호스트 SHA와 번들 SHA를 따로 적는다.
+2. **도달 길.** 로그인된 계정으로 여정 맵 탭에 들어간다. 진행 상태는 **(P1)** 튜토리얼 `u00-tutorial` 진행 중(u00 표지 + 레슨 몇 개 완료, 다음 유닛이 u00 레슨)과
+   **(P2)** u00 전부 완료(또는 옛 튜토리얼 통과) + 카탈로그 레슨이 열린 계정이다(⟨2026-10-22⟩ 옛 「표지 + 스텝 몇 개」 씨앗을 고쳤다). 저장 서버에 진행이 남으므로 두 계정이 필요하다. 「스크롤이 필요한 유닛」은 입장 직후 화면 **아래쪽**에 보이는 레슨이다 —
+   (P1)에서 자동 스크롤이 다음 유닛을 스크롤 상자 가운데쯤에 세운 뒤, 그 **아래** 레슨을 누른다. 「제자리에 선 유닛」은 자동 스크롤이 멈춘 자리의 그 유닛이다(자리 통일 — 누르면 맵이 움직이지 않는다).
+3. **동작 줄이기 켜는 법(호스트 `reducedMotion`).** 설정은 앱을 **다시 실행**해야 호스트가 읽는다([동작 줄이기 e2e](motion-reduced.md) M-I1 · M-A1).
+   - iOS: 설정 앱 › 손쉬운 사용 › 동작 › 동작 줄이기, 또는 `defaults write com.apple.Accessibility ReduceMotionEnabled -bool true` 뒤 시뮬레이터 재부팅(읽기값 1 확인). 켜고 `terminate` → `launch --bundle-url=main.lynx`.
+   - Android: (i) `settings put global transition_animation_scale 0` · `animator_duration_scale 1`, 또는 (ii) 접근성 「애니메이션 삭제」(세 배율 0). 켠 직후 값을 읽어 확인하고 픽스처를 새로 시작한다(`pm clear` → `am instrument …`).
+   - 끝에 시작 값으로 되돌린다(아래 「복원」).
+4. **슬로 확인 방법 — 화면 녹화 · 프레임 단위.** 앱의 모션 속도를 바꾸지 않고 **녹화를 느리게 읽는다**. 녹화는 60 fps 이상이어야 한다.
+   - iOS: `xcrun simctl io "$UDID" recordVideo --codec h264 /tmp/sheet-motion-ios-<id>-<off|on>.mov &` → 조작 → `kill -INT`.
+   - Android: `A shell screenrecord --time-limit 10 --bit-rate 20000000 /sdcard/sm.mp4` → 조작 → `A pull`. **`screenrecord`는 화면이 바뀔 때만 프레임을 만든다**(약 12 fps · 60 ~ 90 ms, 정지 구간 프레임 없음) — 이 간격이
+     SM2의 「0 ~ 약 250 ms」 판정 오차를 정한다. 순서가 가려지지 않으면 「판정 불가」로 적고, `screencap` 연속(한 장 0.4 ~ 1.2 s)은 보조로만 쓴다.
+   - 프레임 뽑기: `ffprobe -v error -select_streams v -show_entries frame=pts_time -of csv=p=0 <영상>`으로 프레임 시각을 읽고, `ffmpeg -i <영상> -vsync 0 <프레임>-%03d.png`로 **전 프레임**을 뽑아 시각순으로 본다.
+     슬로 재생은 `ffplay -vf "setpts=4.0*PTS" <영상>` 또는 영상 플레이어의 프레임 단위 이동을 쓴다. 표시 시각은 영상 시각이고 오차는 ±한 프레임이다.
+   - Android 탭은 `adb emu event send`(좌표 css × 32767 / 390 · / 844)로 넣어 tap 시각을 영상 ±한 프레임으로 맞춘다. 맞추지 못한 회차는 SM2 · SM6의 시각 판정을 「판정 불가」로 둔다.
+5. **「깜박임」의 정의(A1).** 탭 직후 ~ 띠 등장 시작 사이 프레임에서 **말풍선 또는 띠가 한 프레임이라도 설 자리에 보이면** 깜박임이다.
+6. **증거 파일 이름**: `docs/e2e/evidence/motion-reward-<ios|android>-SM<n>-<off|on>-<대상>-<프레임>.png`, `<대상>`은 `map` · `band`(띠) · `sheet`(말풍선) · `node` · `halo`(SM9), `<프레임>`은 `f00` …(녹화에서 뽑았으면 시각을 비고에). 영상은 같은 이름의 `.mov` · `.mp4`로 두고 저장소에 커밋하지 않는다.
+7. **Android 에뮬레이터는 다른 세션과 번갈아 쓴다** — 위 「전제」 6과 같다(사용 중이면 「미실행: 에뮬레이터 점유」).
+
+### 항목 (iOS 시뮬레이터 iPhone 17 Pro · Android 에뮬레이터 Pixel_8 API 37 — 같은 표로 둘 다 돈다)
+
+| id | 조건 | 절차 | 기대(통과 조건) |
+|---|---|---|---|
+| SM1 | standard · P1 · 스크롤이 필요한 스텝(화면 아래쪽) | 맵에서 그 스텝을 누르고 녹화 | 탭 ~ 스크롤 멈춤 동안 말풍선 · 띠가 **보이지 않고**(깜박임 없음 — A1), 노드는 탭 직후 한 번 튄다. 스크롤이 멈춘 뒤 띠가 위에서 내려오며 튀고, 조금 늦게 말풍선이 꼬리 끝에서 커진다 |
+| SM2 | SM1 | 녹화에서 「스크롤 마지막 이동 프레임」과 「띠 첫 이동 프레임」 | 띠가 스크롤 끝 **뒤**(0 ~ 약 250 ms 안)에 시작한다. 스크롤 도중 시작하면 실패(A2). 맨 아래 유닛(끝에서 멈춤)은 끝 뒤 약 200 ms — 있는 그대로 기록(Q3) |
+| SM3 | standard · 자동 스크롤로 제자리에 선 유닛 | 입장 → 자동 스크롤 멈춤 → 그 유닛 탭 | 맵이 움직이지 않고 **바로** 등장한다. 노드 튕김이 대기 → 등장 사이에 두 번 튀지 않는다(A4) |
+| SM4 | SM1 · 두 열의 왼쪽 · 오른쪽 칸 | 각각 | 말풍선이 **꼬리 끝(유닛 쪽)** 에서 커진다 — 패널 가운데에서 커지면 실패(A5). 두 플랫폼 모두에서 본다(인라인 px 기준점이 그려지는가) |
+| SM5 | SM1 · 끝낸 스텝(100 %) / 안 끝낸 스텝(0 %) | 말풍선 진행 줄 · 띠 막대를 녹화 | 100 %: 막대가 왼쪽에서 차오르고 숫자가 0 → 100으로 오르며 끝에 한 번 튄다, 띠 채움이 차오른 뒤 노랑 빛이 한 번 지나간다. 0 %: 숫자가 `0%`에 머물고 튀지 않는다 |
+| SM6 | SM1 · 대기 중(탭 ~ 띠 등장 전) | 대기 중 말풍선이 설 자리(제목 · 패널 · 시작 버튼 자리)와 말풍선 밖을 누른다, 뒤로가기도 한 번. 비교로 등장 뒤 패널 자리 | 대기 중 **제목 · 패널 자리** → 말풍선이 즉시 **닫히고** 뒤의 도착에도 다시 서지 않는다(D6 · A3). 대기 중 **시작 자리** → 세션이 열린다 — 입력을 막지 않음(ADR-0053 D5). 대기 중 **말풍선 밖** 탭 · 뒤로가기 → 즉시 닫힌다. 등장 뒤(expressive) 패널 탭은 닫히지 않는다 |
+| SM7 | 동작 줄이기 켬(iOS 설정 · Android 「애니메이션 삭제」) | SM1 · SM5 | 스크롤 즉시, 띠 · 말풍선이 불투명도만(이동 · 확대 없음), 노드 튕김 · 반짝임 · 빛 · 숨쉬기 없음, 막대 · 백분율 처음부터 최종값 |
+| SM8 | SM1 등장 중 · 숨쉬기 중 | 가림막 탭 / 시작 탭 / 뒤로가기 | 매번 즉시(남는 잔상 · 반짝임 없음), 시작은 세션 화면으로 즉시 |
+| SM9 | SM1 · 노드 둘레 | 반짝임 · 후광이 최대일 때 스크린샷 | 조각 · 고리가 셀 · 줄 경계에서 **잘리지 않는다**(D5). 잘리면 어느 조상인지 기록. 다른 유닛의 포커스 링 · 그림자가 새로 셀 밖으로 보이는지 있는 그대로 |
+| SM10 | standard · SM1을 5회 연속 | 녹화 · (Android) `adb shell dumpsys gfxinfo <패키지> reset` 뒤 회차마다 `dumpsys gfxinfo` | 등장 동안 눈에 띄는 끊김 없음(수동 판정), Janky frames 비율을 있는 그대로 기록. 숨쉬기 세 번 뒤 멈춤 |
+
+보충:
+
+- **SM6**: A3의 판정은 대기 중 제목 · 패널 자리 탭이 **닫는지**다(투명한 `.step-sheet-pop`이 탭을 삼켜 말풍선이 뒤늦게 서면 실패). 시작 자리는 대기 중에도 탭을 받으므로 세션이 열리는 것이 기대다
+  (ADR-0053 D5 — 전환은 입력을 막지 않는다). 대기 중인지는 녹화에서 터치 시각이 띠 첫 프레임보다 앞인지로 가린다 — Android는 `settings put system show_touches 1`로 터치 점을 녹화에 남기고 끝에 `delete`한다.
+- **SM9 (O-1)**: `overflow: visible`을 준 조상 사슬로 새로 **드러나는** 요소가 있는지 함께 본다 — 노드 반짝임 조각 · 후광뿐 아니라 말풍선 1.06 넘침(아래로 약 6 %), 다른 유닛의 포커스 링 · 그림자.
+  그리고 **학습 완료 폭죽**(`.lesson-complete-confetti`, 0 × 0 축)이 Lynx `overflow` 기본값 `hidden` 때문에 조상에서 **잘리는지**를 학습 완료 화면에서 한 번 본다 — 이 작업이 고치지 않는 관찰 항목이다
+  (잘리면 「잘림: <어느 조상에서>」로 적고 지표 모션 절(ADR-0064)의 미확인 항목으로 넘긴다). 폭죽이 안 보이는 것과 잘린 것을 가르려면 폭죽 퍼짐이 최대인 프레임을 녹화에서 뽑아 본다.
+- **SM7**: 판정은 「이동 · 확대가 없다」이므로 SM1과 같은 녹화에서 띠의 y와 말풍선의 크기가 모든 프레임에서 같은지를 본다. 켠 상태 한 장만으로 통과를 적지 않고 SM1(끈)과 짝지어 적는다.
+- 판정은 `통과` / `실패: <관찰>` / `판정 불가: <이유>` / `미확인` / `미실행: <이유>`로만 적는다. 「있는 그대로 기록」 항목(SM2의 맨 아래 유닛 · SM9의 다른 유닛 · SM10)은 관찰한 값을 적는다.
+
+### 결과 — Android 1회차 (2026-10-19, iOS 미실행)
+
+실행 회차가 채운다. 「실행 중」인 행은 통과가 아니다.
+
+**이 회차의 방법(Android).** 로그인 픽스처 `SignedInScreenFixtureTest`에 `-e audioProgress true`(표지 + 스텝 다섯 완료 — (P1))를 주고, 픽스처의 180초 대기를 늘리는 **임시 인자**를 더해 계측 APK를 다시 빌드했다(끝에 되돌림, 커밋 없음).
+자동 스크롤이 이제 다음 유닛을 화면 가운데쯤에 세우므로(위 「전제」 2의 「머리 카드 아래」는 낡음), 「스크롤이 필요한 스텝」은 입장 뒤 맵을 손으로 270 css px 내려(`input swipe 195 250 195 520 1200`)
+`Asking for directions`(왼쪽, 끝냄 100 %) · `Listen to a Hello`(오른쪽, 다음 유닛 0 %) 줄을 화면 아래(y ≈ 713)에 둔 뒤 누르는 것으로 만들었다. 탭은 콘솔 `emu event send`.
+`screenrecord`는 이 기기에서 **화면이 바뀌는 동안 약 60 fps(16 ~ 17 ms)** 로 프레임을 냈다(위 4의 「약 12 fps」보다 촘촘 — 정지 구간은 여전히 프레임 없음). 판정은 전 프레임을 뽑아 시각순으로 보고,
+맵 이동은 프레임 사이 세로 어긋남(맵 띠 y 185 ~ 470의 픽셀 상관), 띠 등장은 y 55 ~ 175의 주황 픽셀 비율로 읽었다. 측정 단위는 css px(390 × 844 · 160 dpi에서 1 px = 1 css px).
+증거(녹화 · 프레임 묶음 · `gfxinfo` 로그)는 **저장소 밖** 작업 폴더 `logs/`의 `sheet-motion-android-SM<n>-*`이고 `docs/e2e/evidence/`에는 올리지 않았다.
+
+**SM6 재실행(같은 날, SM6 + 회귀 SM1 · SM8).** 같은 방법에 호스트 · 번들을 `2f7c3968`로 새로 빌드했다. 다른 점: 에뮬레이터를 `-gpu host`로 띄웠다(기본 선택 `swangle`에서는 녹화가 약 10 fps로 떨어져 바꿈 — 다시 약 60 fps),
+`show_touches`를 켜 녹화의 터치 점으로 터치 시각을 읽었다(끝에 `delete`), 탭은 콘솔 `event mouse <물리 px>`(이 이미지에서 `event send`의 터치는 다음 입력까지 전달되지 않았다), 뒤로가기는 `input keyevent`.
+맵을 손으로 내린 뒤 `Listen to a Hello`(오른쪽, 0 %)를 누르고 0.25 s 뒤 둘째 입력을 넣었다 — 이 기기에서 대기(탭 ~ 띠 첫 프레임)는 약 0.3 ~ 0.6 s다. 회차마다 픽스처를 새로 시작했다.
+증거는 같은 `logs/`의 `sheet-motion-android-SM6-r2-*`(녹화 · 끝 화면 · 프레임 묶음 · 프레임별 띠/시작 버튼 픽셀 비율 `-analysis.log` · 터치 점 `-touch.log`).
+
+| 항목 | 플랫폼 | 결과 | 비고(설정 · 측정값 · 증거 파일) |
+|---|---|---|---|
+| SM1 | iOS 시뮬레이터 | | |
+| SM1 | Android 에뮬레이터 | 통과 | 끈 · (P1) · 왼쪽 `Asking for directions`(r1) · 오른쪽 `Listen to a Hello`(r2) · 같은 조건 5회(SM10). 탭 직후 노드가 한 번 튄다(작아졌다 커졌다 돌아옴, 탭 뒤 약 0.03 ~ 0.13 s — 스크롤 중). 스크롤(약 0.2 s, 270 css px) 동안 띠 · 말풍선이 **어느 프레임에도 없다**(깜박임 없음, 7회 모두). 스크롤이 멈춘 뒤 띠가 위에서 옅게 내려오며 서고, 두세 프레임(약 50 ms) 뒤 말풍선이 꼬리 쪽에서 커진다(1.06 넘침 프레임이 보인다). 노드 반짝임 조각 · 후광은 띠 시작 약 0.1 s 뒤. 증거 `sheet-motion-android-SM1-off-r1.mp4` · `-r2.mp4` · `-SM1-off-r1-map-frames.png` · `-node-frames.png`. **SM6 재실행 회귀**(`2f7c3968`, 오른쪽 1회): 통과 — 스크롤 동안 띠 · 말풍선 없음, 멈춘 뒤 띠가 내려오고 다음 프레임쯤 말풍선이 커진다. `sheet-motion-android-SM6-r2-SM1-off.mp4` · `-SM1-off-frames.png` |
+| SM2 | iOS 시뮬레이터 | | |
+| SM2 | Android 에뮬레이터 | 통과 | 띠 첫 프레임 = 스크롤 마지막 이동 프레임 뒤 **약 17 ~ 50 ms**(±한 프레임 17 ms, 7회: r1 1.728 → 1.777 s, r2 1.781 → 1.797 s, SM10 r1 ~ r5 16 ~ 33 ms). 스크롤 도중 시작한 회차 없음. **맨 아래 유닛(끝에서 멈춤)**: 미측정 — (P1)에서 열리는 유닛이 스크롤 끝에 서지 않았다. `sheet-motion-android-SM2.log` · `-SM2-SM10-frames.log` |
+| SM3 | iOS 시뮬레이터 | | |
+| SM3 | Android 에뮬레이터 | 통과 | 자동 스크롤이 세운 `Listen to a Hello`(오른쪽)를 바로 탭: 맵 이동 0(프레임 사이 어긋남 0), 노드 튕김 시작 약 50 ms 뒤 띠가 서고 말풍선이 뒤따른다. 노드 튕김은 **한 번**(대기 → 등장 사이 다시 튀지 않음 — A4). `sheet-motion-android-SM3-off.mp4` · `-SM3-off-map-frames.png` · `-SM3-off-node-frames.png` |
+| SM4 | iOS 시뮬레이터 | | |
+| SM4 | Android 에뮬레이터 | 통과 | 왼쪽 칸: 첫 말풍선 프레임이 **왼쪽 위(꼬리 · 누른 유닛 쪽)** 에 작게 서서 오른쪽 아래로 커진다. 오른쪽 칸(SM1 r2 · SM3): **오른쪽 위**에서 커진다. 패널 가운데에서 커지는 프레임 없음 — 인라인 px 기준점이 Android에서 그려진다(A5). 녹화 해상도 390 px라 기준점의 정확한 px는 재지 않았다. `sheet-motion-android-SM4-off-left-sheet-frames.png` · `-right-sheet-frames.png` |
+| SM5 | iOS 시뮬레이터 | | |
+| SM5 | Android 에뮬레이터 | 통과 | **100 %**(`Asking for directions`): 숫자가 띠 시작 약 0.3 s 뒤 `0 → 29 → 47 → 61 → 71 → 79 → 85 → 90 → 94 → 97 → 99 → 100%`로 오르고 끝 프레임에서 한 번 커졌다 돌아온다. 막대가 같은 시각에 왼쪽에서 차올라 숫자와 함께 끝난다. 띠 채움(흰색)은 왼쪽에서 차오르고(약 0.2 ~ 0.85 s) 이어 노랑 빛이 한 번 지나간다(약 1.25 ~ 1.7 s). **0 %**(`Listen to a Hello`): `0%`에 머물고 튀지 않으며 막대 채움이 없다. 백분율 글자는 원래 옅은 색(`gray-300`, 알려진 대비 위반)이라 녹화에서 흐리다. `sheet-motion-android-SM5-off-100-percent-frames.png` · `-100-bar-frames.png` · `-band-bar-frames.png` · `-0-percent-frames.png` |
+| SM6 | iOS 시뮬레이터 | | |
+| SM6 | Android 에뮬레이터 | 통과(재실행, `2f7c3968`) | 첫 실행(`d94ea84b`) 실패 — 대기 중 말풍선 자리(제목 · 시작) 탭이 투명한 `.step-sheet-pop`(`user-interaction-enabled={false}`)에 삼켜져 형제 가림막에 닿지 않아 닫히지 않았다(3/3) → 수정 `51b61ce6`(대기 중 `.step-sheet-pop`에 `catchtap={onClose}`) · `2f7c3968`(대기 중에도 시작은 막지 않음). **재실행**(각 3회, 터치 점 기준): **제목 자리**(150, 555) 3/3 · **패널 자리**(195, 612) 3/3 — 터치가 스크롤 끝 무렵 띠 첫 프레임 전에 닿고, 띠 · 말풍선이 어느 프레임에도 서지 않는다(녹화 끝 약 7 s까지 다시 서지 않음). **시작 자리**(195, 698) 3/3 — 터치 뒤 0.28 ~ 0.41 s에 세션 화면(`Lesson 1 / 1`), 그 사이 띠 · 말풍선 프레임 없음. **말풍선 밖**(195, 300) 3/3 — 닫힘(두 회는 탭이 스크롤을 목적지 앞에서 멈춤, 한 회는 터치가 경계에 걸려 띠 첫 프레임 하나 뒤 닫힘 — 말풍선은 서지 않음). **뒤로가기** 3/3 — 띠 · 말풍선이 한 프레임도 서지 않음. **등장 뒤 패널 자리**(탭 1.0 s 뒤) 3/3 — 닫히지 않고 말풍선이 남는다(띠 등장 직후 · 말풍선 전의 제목 자리 탭 3회도 같음). 경계 관찰(판정 밖): 시작 자리 터치가 띠 첫 프레임과 같은 프레임(대기 → 등장 경계)에 닿은 두 회(`start-3` · `start-5`)는 세션도 열리지 않고 닫히지도 않아 말풍선이 열린 채 남았다. `sheet-motion-android-SM6-r2-title-<1~3>` · `-panel-<1~3>` · `-start-<1,2,4>` · `-outside-<1~3>` · `-back-<1~3>` · `-expressive-panel-<1~3>`(`.mp4` · `-after.png`) · `-start-<3,5>-boundary-frames.png` · `-analysis.log` · `-touch.log`. 첫 실행 증거 `sheet-motion-android-SM6-off-*`. **r3**(`b524ef74` — 래퍼 탭 잡기를 늘 걸고 대기일 때만 닫음, 호스트 · 번들 새로 빌드, 같은 방법 · 확인자 에이전트 실행 · 사람 미확인): **경계 시작 탭 실패 8/8** — 시작 버튼 왼쪽(110, 700, 대기 중 흰 바탕이라 터치 점이 읽힘)을 눌러 터치가 띠 첫 프레임 한 프레임 앞 ~ 말풍선 첫 프레임 앞(띠 기준 −0.016 ~ +0.050 s)에 닿은 8회(`b1` · `b2` · `b6` ~ `b11`)가 모두 세션도 열리지 않고 닫히지도 않아 말풍선이 열린 채 남았다(r2와 같은 무반응, 경계 폭이 r2보다 넓게 보임). 띠 기준 −0.034 s 이전(2회 → 세션) · 말풍선 첫 프레임 이후(+0.067 ~ +0.150 s, 3회 → 세션)는 정상. 기본 경우 회귀 각 1회 통과 — 대기 중 제목 자리 → 닫힘(띠 · 말풍선 안 섬), 대기 중 시작 → 세션, 등장 뒤 패널 → 안 닫힘, 등장 뒤 시작 → 세션, 등장 뒤 말풍선 밖 → 닫힘. `sheet-motion-android-SM6-r3-b<1~11>` · `-awaiting-<title,start,start-2>` · `-entered-<panel,start,outside>`(`.mp4` · `-after.png`) · `-b1-boundary-frames.png` · `-b2-boundary-frames.png` · `-analysis.log` · `-touch.log` · `-host-times.log` · `-restore-diff.log` |
+| SM7 | iOS 시뮬레이터 | | |
+| SM7 | Android 에뮬레이터 | 통과 | 켬 (i) `transition_animation_scale 0` · `animator_duration_scale 1`, (ii) 세 배율 0(「애니메이션 삭제」와 같은 값) — 각각 픽스처 재시작 뒤 SM1 왼쪽(100 %). 스크롤이 **한 프레임에** 도착, 띠 · 말풍선이 같은 자리 · 같은 크기에서 불투명도만 약 0.08 s에 오른다(SM1 끈과 짝: 끈은 띠가 위에서 내려오고 말풍선이 커진다). 노드 튕김 · 반짝임 · 빛 · 숨쉬기 없음(마지막 프레임 이후 화면 변화 0), 막대 · `100%`가 처음부터 최종값. `sheet-motion-android-SM7-on-r1.mp4` · `-on-ii.mp4` · `-SM7-on-i-frames.png` · `-on-ii-frames.png` · `-SM7-settings.log` |
+| SM8 | iOS 시뮬레이터 | | |
+| SM8 | Android 에뮬레이터 | 통과 | 등장 중(탭 0.5 s 뒤) 가림막 탭 → 다음 프레임에 맵만 남음, 잔상 · 반짝임 없음. 숨쉬기 중(탭 3.3 s 뒤) 뒤로가기 → 한 프레임에 닫힘, 숨쉬기 층 잔상 없음. 숨쉬기 중 `Start` → 다음 프레임(약 33 ms)에 세션 화면(`Lesson 1 / 1`). `sheet-motion-android-SM8-off-scrim-entering.mp4` · `-back-breathing.mp4` · `-start-breathing.mp4` · `*-frames.png`. **SM6 재실행 회귀**(`2f7c3968`, 각 1회): 통과 — 등장 중 가림막 탭 · 숨쉬기 중 뒤로가기는 한 프레임에 맵만 남고(잔상 · 반짝임 없음), 숨쉬기 중 `Start`는 세션 화면으로 바뀐다. 터치 점 기준 응답은 가림막 약 0.2 s · `Start` 약 0.25 s(첫 실행의 「다음 프레임」과는 터치 시각을 읽는 방법이 달라 비교하지 않는다). `sheet-motion-android-SM6-r2-SM8-scrim-entering` · `-SM8-start-breathing` · `-SM8-back-breathing`(`.mp4` · `-after.png`) |
+| SM9 | iOS 시뮬레이터 | | |
+| SM9 | Android 에뮬레이터 | 통과 | 반짝임 조각 · 후광이 최대일 때(띠 시작 약 0.1 ~ 0.3 s) 셀 · 줄 경계에서 **잘리는 직선이 없다** — 조각이 바깥 고리 밖 약 10 ~ 18 css px까지 보인다(왼쪽 · 오른쪽 칸 모두). 후광 대부분은 노드 바깥 고리에 가려 고리 밖으로 옅게만 보인다. 말풍선 1.06 넘침도 잘리지 않는다. 다른 유닛의 포커스 링 · 그림자가 새로 셀 밖으로 보이는 것은 관찰되지 않았다. 말풍선 꼬리가 누른 유닛 라벨 가운데를 덮는 것(`Asking fo▲irections`)은 이전부터의 모양이다. **학습 완료 폭죽**: 잘림 없음 — 퍼짐 최대 프레임(약 0.25 s)에서 배지 둘레로 고르게 퍼지고 직선 경계가 없다. 녹화 해상도 390 px. `sheet-motion-android-SM9-off-left-halo-frames.png` · `-right-halo-frames.png` · `-SM9-off-confetti.mp4` · `-confetti-frames.png` |
+| SM10 | iOS 시뮬레이터 | | |
+| SM10 | Android 에뮬레이터 | 기록 | 끈 · SM1 왼쪽 5회 연속. 등장 구간(띠 시작 ~ +1.2 s)에 영상 프레임 공백 > 50 ms 없음 — 눈에 띄는 끊김 없음(에이전트 판정). `gfxinfo`(탭 직전 reset → 약 7 s 뒤 dump, 숨쉬기 포함): Janky frames **0.93 ~ 1.85 %**(5회: 1.84 · 1.54 · 0.93 · 1.85 · 0.93 %, 총 324 ~ 326 프레임), p50 16 ~ 17 ms · p90 17 ~ 29 ms · p95 17 ~ 31 ms · p99 17 ~ 32 ms. 숨쉬기 세 번(약 1.6 s 간격 세 번 번짐) 뒤 멈춤 — 띠 시작 약 5.57 s 뒤 화면 변화가 끝난다. 참고: SM1 r1 · r2 1.85 · 3.21 %, SM3 5.05 %(p99 200 ms 한 번). `sheet-motion-android-gfxinfo-summary.log` · `-SM10-off-r<n>.mp4` · `-SM10-off-breathing-frames.png` |
+| (실기) SM1 · SM6 · SM9 | iOS 실기 | | |
+
+| 칸 | 값 |
+|---|---|
+| 시작 값(실행 전 기록) | Android: `animator_duration_scale` null · `transition_animation_scale` 1.0 · `window_animation_scale` 1.0 · `font_scale` 1.0 · `wm size` 1080x2400 · `wm density` 420 · 내비게이션 제스처(2). iOS: 미실행 |
+| 확인자 | 에이전트 실행 · 사람 미확인 |
+| 날짜 | 2026-10-19 |
+| 빌드 SHA (호스트 · 번들) | Android: 호스트 `d94ea84b`(Debug APK + 계측 APK) · 번들 `d94ea84b`(로컬 HTTP 18790, 모의 Supabase 값). SM6 재실행(SM1 · SM8 회귀 포함): 호스트 · 번들 `2f7c3968`. iOS: 미실행 |
+| 기기 · OS · 빌드 종류 | Android 에뮬레이터 AVD `Pixel_8`(API 37) 별도 인스턴스 `-read-only -no-snapshot-save -port 5558`, `wm size 390x844` · `wm density 160`(390 × 844 dp) · 글자 배율 1.0 · Debug |
+| 에뮬레이터 점유 확인 · 알림 | `emulator-5556`(같은 AVD의 읽기 전용 인스턴스)이 이미 떠 있어 건드리지 않고 5558에 따로 띄웠다. 끝에 5558만 `emu kill` — 5556은 그대로 |
+| 설정 복원 확인 | Android: 세 배율(`animator_duration_scale` delete · 나머지 1.0) · `wm size` · `wm density` reset(빈 `display_size_forced` · `display_density_forced` 키 삭제), 전역 · 보안 · 시스템 설정 덤프 전후 diff 0, 정적 서버 18790 종료, 5558 인스턴스 종료(읽기 전용이라 AVD 데이터 변경 없음), 계측 픽스처 임시 인자 되돌림, `git status --short`는 이 문서 한 줄뿐. SM6 재실행도 같다: 시작 값 같음, `show_touches` delete · `wm size` · `wm density` reset, 보안 · 시스템 덤프 diff 0, 전역은 Play 서비스가 스스로 바꾸는 `Phenotype_boot_count` · `phenotype_test_setting` 두 줄만 다름(재부팅 카운터 — 이 절차가 건드린 키 아님), 정적 서버 종료, 5558만 `emu kill`(5556 그대로), 픽스처 임시 인자 되돌림 |
+
+### 자동 검사
+
+위 열 가지 가운데 기기 없이 닫히는 부분은 다음이 진다. 이 절은 그 테스트가 못 보는 것만 본다.
+
+- 앱 unit: `journey-map-sheet-entrance.unit.test.ts` · `journey-map-sheet-motion.unit.test.ts` · `journey-map-sheet-motion.percent.unit.test.ts` · `journey-map-sheet-motion.css.unit.test.ts`
+- 앱 ui: `StepSheet.motion.ui.test.tsx` · `StepSheet.countup.ui.test.tsx` · `JourneyMapEpisodeHeader.motion.ui.test.tsx` · `MapUnitStage.ui.test.tsx` · `JourneyMapScreen.sheet-motion.ui.test.tsx` · `JourneyMapScreen.sheet-motion-close.ui.test.tsx`
+- 앱 integration: `App.journey-map-sheet-motion.integration.test.tsx`
+- ui-lynx: `EpisodeHeader.unit.test.ts` · `EpisodeHeader.ui.test.tsx`
+
 ## 결과 화면의 머리 칩 오름 — Android 회차 (2026-10-20)
 
 [ADR-0064](../adr/0064-stat-motion.md) D2 · D4의 칩 오름(아이콘 커짐 → 숫자 굴림 → 빛 띠)이 학습 결과 화면에서 재생되는지, 맵에 돌아가 다시 굴리지 않는지를 AVD `R6_API30`(API 30 · 392.7 × 851 dp, Debug APK + 로컬 HTTP 번들, 계측 픽스처 로그인)에서 봤다. 번들은 `feat/learning-hide-header-chips` `a68cd5af`, 대조는 같은 APK에 `origin/main` `d937f3bf` 번들. 연속 학습이 오르는 조건은 픽스처가 연속 학습 RPC 둘을 임시로 답하게 해서 만들었다(`learning_streak` 0, `record_learning_days` 1 — 저장소에 넣지 않음). 결과 화면이 서는 순간부터 `screenrecord`로 찍고 프레임을 뽑았다. 분석은 [성능 기록](../performance/reports/result-chip-bump-android-r6-api30-01.md).

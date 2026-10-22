@@ -34,7 +34,8 @@ function stubRects(table: Record<string, Rect>): void {
 }
 
 function sheetTop(): string | null {
-  return screen.getByTestId("step-sheet-panel").parentElement?.getAttribute("style") ?? null;
+  // 패널의 부모는 등장 래퍼라 세로 자리는 그 위 자리 상자(`step-sheet-anchor`)가 집니다.
+  return screen.getByTestId("step-sheet-anchor").getAttribute("style");
 }
 
 afterEach(() => {

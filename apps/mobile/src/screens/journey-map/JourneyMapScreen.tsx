@@ -1,13 +1,14 @@
 import { Overlay } from "@libitums/ui-lynx/overlay";
 import { useFirstUnitGuide } from "../../components/first-unit-guide";
 import "../../components/first-unit-guide.css";
-import { useRef, useState } from "@lynx-js/react";
+import { useMemo, useRef, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 import type { ScrollEvent } from "@lynx-js/types";
 
 import { JourneyMapBody } from "./JourneyMapBody";
 import type { JourneyMapBodyHandlers } from "./JourneyMapBody";
 import { JourneyMapHeaderSlot } from "./JourneyMapHeaderSlot";
+import { MapUnitEntranceProvider } from "./MapUnitStage";
 import { CatalogUnitSheet } from "./CatalogUnitSheet";
 import { catalogSheetKey, catalogSheetTargetOf, catalogSheetUnitSize } from "./catalog-sheet";
 import { mapGuideTargetOf } from "./catalog-gate";
@@ -63,6 +64,7 @@ export function JourneyMapScreen({
     handleScroll,
     handleSelectStep,
     handleCloseSheet,
+    sheetEntrance,
   } = useStepSheet();
 
   const openCatalog = catalogSheetTargetOf(sheetState.openStepId);
@@ -110,6 +112,13 @@ export function JourneyMapScreen({
     onSelectCatalogUnit: handleSelectCatalogUnit,
     dismissGuide: guide.dismiss,
   };
+  // 노드들에 내리는 등장 상태입니다. 두 값이 그대로면 같은 객체를 내려, 스크롤 프레임마다 모든 무대가 다시 그려지지
+  // 않게 합니다(본문 `memo`가 지키는 것을 문맥 값이 깨지 않도록).
+  const openStepId = sheetState.openStepId;
+  const unitEntrance = useMemo(
+    () => ({ targetId: openStepId, entrance: sheetEntrance }),
+    [openStepId, sheetEntrance],
+  );
 
   return (
     <view
@@ -143,12 +152,14 @@ export function JourneyMapScreen({
           accessibility-elements-hidden={sheetOpen}
           bindtouchstart={autoScroll.handleTouchStart}
         >
-          <JourneyMapBody
-            catalog={catalog}
-            access={access}
-            guideVisible={guide.visible}
-            handlers={bodyHandlers}
-          />
+          <MapUnitEntranceProvider value={unitEntrance}>
+            <JourneyMapBody
+              catalog={catalog}
+              access={access}
+              guideVisible={guide.visible}
+              handlers={bodyHandlers}
+            />
+          </MapUnitEntranceProvider>
         </view>
       </scroll-view>
       {/* [겹침 레이어] 머리 띠입니다 — 말풍선이 열린 동안만 **스크롤 밖에** 섭니다(구획마다
@@ -171,6 +182,7 @@ export function JourneyMapScreen({
         openStepId={sheetState.openStepId}
         catalogSections={catalog.sections}
         catalogProgress={catalog.progress}
+        sheetEntrance={sheetEntrance}
       />
 
       {/* [겹침 레이어] 스크롤 밖, 화면 루트의 직계 자식입니다. */}
@@ -181,6 +193,7 @@ export function JourneyMapScreen({
           top={sheetTop}
           caretOffset={sheetCaretOffset}
           onClose={handleCloseSheet}
+          entrance={sheetEntrance}
         />
       )}
     </view>

@@ -49,8 +49,7 @@ const tapStep = (id: string, y: number): void => {
 };
 const caretOffset = (): string | null | undefined =>
   screen.queryByTestId("step-sheet-caret")?.getAttribute("data-caret-offset");
-const sheetTop = (): string =>
-  screen.getByTestId("step-sheet-panel").parentElement?.getAttribute("style") ?? "";
+const sheetTop = (): string => screen.getByTestId("step-sheet-anchor").getAttribute("style") ?? "";
 
 describe("말풍선 꼬리의 가로 치우침", () => {
   test("SH1. 유닛 중심이 화면 중심보다 왼쪽이면 꼬리가 그 차이만큼 왼쪽으로 치우친다", () => {
@@ -105,9 +104,14 @@ describe("말풍선 꼬리의 가로 치우침", () => {
 
     tapStep("S1", 750);
 
-    expect(measured.scrollTos()).toEqual([
-      { selector: scrollSelector, method: "scrollTo", params: { offset: 290, smooth: false } },
-    ]);
+    // 맵이 서며 자동 스크롤도 다음 유닛(S3)으로 한 번 갑니다(목적지 0 — 이미 맨 위). 마지막이 말풍선의 것이고,
+    // 둘 다 즉시입니다.
+    expect(measured.scrollTos().at(-1)).toEqual({
+      selector: scrollSelector,
+      method: "scrollTo",
+      params: { offset: 290, smooth: false },
+    });
+    expect(measured.scrollTos().every((call) => call.params?.smooth === false)).toBe(true);
 
     cleanup();
     vi.restoreAllMocks();

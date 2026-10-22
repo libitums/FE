@@ -7,7 +7,8 @@ import { mapScrollDurationMs } from "./journey-map-scroll-animation";
 import type { MapGlider } from "./use-map-glide";
 import {
   headerCardId,
-  measureRects,
+  measureRectsWithOptional,
+  screenId,
   scrollId,
   scrollMapTo,
   scrollNodeIntoView,
@@ -15,8 +16,7 @@ import {
 import {
   autoScrollCorrection,
   autoScrollCorrectionReducer,
-  autoScrollOffset,
-  autoScrollPlacement,
+  autoScrollDestination,
   autoScrollReducer,
   autoScrollTolerance,
   canCorrectAutoScroll,
@@ -26,7 +26,6 @@ import {
   mapScrollBehaviorFor,
   type AutoScrollAction,
   type AutoScrollCorrectionAction,
-  type AutoScrollMeasure,
 } from "./journey-map-scroll-position";
 
 export type AutoScrollToNextInput = {
@@ -53,8 +52,8 @@ export type AutoScrollToNextControls = {
  * 탑니다. 진행은 마운트 **뒤에** 올 수 있어서(콜드 스타트) 「대상(DOM id)당 한 번, 사용자가
  * 손대기 전까지」입니다.
  *
- * 도착한 뒤에는 한 번 바로잡습니다 — 잰 순간의 카드가 도착한 자리의 카드와 다를 수 있어서(제목이 한
- * 줄에서 두 줄이 되는 식) 대상이 정렬선보다 위로 숨을 수 있습니다. 도착은 스크롤 이벤트의 자리가
+ * 도착한 뒤에는 한 번 바로잡습니다 — 도착하는 사이 레이아웃이 바뀌어 자리가 어긋날 수 있어서(위
+ * 내용이 늘거나 줄어드는 식) 바로잡습니다. 도착은 스크롤 이벤트의 자리가
  * 보낸 목적지와 맞는 것으로 알고, 다시 재는 일은 도착을 적은 상태가 커밋된 **뒤의** effect가 합니다.
  */
 export function useAutoScrollToNext({
@@ -141,64 +140,59 @@ export function useAutoScrollToNext({
     if (pending === null || pending === before) {
       return;
     }
-    measureRects([pending, scrollId, headerCardId], (rects) => {
+    measureRectsWithOptional([pending, scrollId, screenId], [headerCardId], (rects, [band]) => {
       // 재는 사이에 맵이 내려갔거나 사용자가 손댔거나 대상이 바뀌었으면 늦게 온 답을 버립니다.
       if (!mounted.current || !canSettleAutoScroll(state.current, pending)) {
         return;
       }
       // 먼저 정착으로 적습니다 — 옮기는 순간 오는 스크롤 이벤트가 사용자의 손길로 읽히지 않게.
       dispatch({ type: "settle", domId: pending });
-      const [unit, scroll, header] = rects ?? [];
-      if (unit === undefined || scroll === undefined || header === undefined) {
+      const [unit, scroll, screen] = rects ?? [];
+      if (unit === undefined || scroll === undefined || screen === undefined) {
         scrollNodeIntoView(pending, behavior);
         return;
       }
-      const offset = autoScrollOffset(
-        {
-          targetTop: unit.top,
-          scrollViewTop: scroll.top,
-          scrollViewHeight: scroll.height,
-          headerBottom: header.top + header.height,
-          scrollTop: scrollTop.current,
-        },
-        autoScrollPlacement,
-      );
+      // 띠 손잡이는 없어도 됩니다 — 못 재면 띠를 피하지 않습니다(유닛 탭과 같은 규칙).
+      const offset = autoScrollDestination({
+        unit,
+        scroll,
+        screen,
+        band: band ?? null,
+        scrollTop: scrollTop.current,
+      });
       dispatchCorrection({ type: "sent", domId: pending, offset });
       moveTo(offset);
     });
   }, [targetDomId, blocked]);
 
-  // 도착한 뒤 카드와 대상을 다시 재서, 대상이 정렬선보다 위로 숨었으면 한 번 옮깁니다.
+  // 도착한 뒤 다시 재서, 같은 규칙의 자리와 1 넘게 어긋나면 한 번 옮깁니다.
   useEffect(() => {
     if (arrivedDomId === null) {
       return;
     }
     const domId = arrivedDomId;
-    measureRects([domId, scrollId, headerCardId], (rects) => {
+    measureRectsWithOptional([domId, scrollId, screenId], [headerCardId], (rects, [band]) => {
       // 재는 사이에 맵이 내려갔거나 손댔거나 대상이 바뀌었으면 버립니다.
       if (!mounted.current || !canCorrectAutoScroll(correction.current, domId)) {
         return;
       }
       dispatchCorrection({ type: "done", domId });
-      const [unit, scroll, header] = rects ?? [];
+      const [unit, scroll, screen] = rects ?? [];
       if (
         state.current.locked ||
         unit === undefined ||
         scroll === undefined ||
-        header === undefined
+        screen === undefined
       ) {
         return;
       }
-      const measure: AutoScrollMeasure = {
-        targetTop: unit.top,
-        scrollViewTop: scroll.top,
-        scrollViewHeight: scroll.height,
-        headerBottom: header.top + header.height,
-        scrollTop: scrollTop.current,
-      };
-      const next = autoScrollCorrection(measure, autoScrollPlacement, autoScrollTolerance);
-      // 보정은 본 이동이 **끝난 뒤** 짧게 이어 옮깁니다. 호스트 부드러운 스크롤일 때는 본 이동의 끝과 겹쳐 반동이
-      // 보여 즉시로 옮겼지만(E-C1), 이제 본 이동을 앱이 직접 끝까지 옮기므로 겹칠 것이 없습니다.
+      const next = autoScrollCorrection(
+        { unit, scroll, screen, band: band ?? null, scrollTop: scrollTop.current },
+        autoScrollTolerance,
+      );
+      // 보정은 본 이동이 **끝난 뒤** 짧게 이어 옮깁니다(사용자 결정 2026-10-22, ADR-0022 — E-C1 「늘 즉시」를
+      // 대체). 호스트 부드러운 스크롤일 때는 본 이동의 끝과 겹쳐 반동이 보여 즉시로 옮겼지만, 이제 본 이동을 앱이
+      // 직접 끝까지 옮기므로 겹칠 것이 없습니다. 자리는 유닛 탭과 같은 규칙(`mapUnitPlacement`)으로 잽니다.
       if (next !== null) {
         moveTo(next, 250);
       }

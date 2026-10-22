@@ -3,6 +3,7 @@
 import type { LockReason } from "../../lib/episode-catalog";
 import type { CatalogProgress, CatalogUnitKey } from "../../lib/catalog-progress";
 import type { ReactNode } from "@lynx-js/react";
+import type { SheetEntranceMotion } from "./journey-map-sheet-entrance.contract";
 
 import type { JourneyMapItemStatus, JourneyMapNodeStatus } from "./journey-map-types";
 import type { SpecialUnitMapLayer } from "./journey-special-unit.contract";
@@ -151,6 +152,8 @@ export type JourneyMapHeaderSlotProps = {
   /** 카탈로그 유닛의 말풍선이면 이 구획 · 진행으로 띠를 세웁니다. */
   readonly catalogSections?: readonly CatalogMapSection[];
   readonly catalogProgress?: CatalogProgress;
+  /** 띠의 등장 모션입니다. 없으면 `none`(모션 없음)과 같습니다. */
+  readonly sheetEntrance?: SheetEntranceMotion;
 };
 
 export type CatalogMapCopy = {

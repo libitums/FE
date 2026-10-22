@@ -7,6 +7,7 @@ import { catalogUnitNodeTitle, catalogUnitNodesOf } from "./catalog-map";
 import type { JourneyMapCatalogProps } from "./catalog-map.contract";
 import { catalogSectionTitle, catalogSheetFigures } from "./catalog-sheet";
 import type { CatalogSheetTarget } from "./catalog-sheet";
+import type { SheetEntranceMotion } from "./journey-map-sheet-motion";
 
 export type CatalogUnitSheetProps = {
   readonly target: CatalogSheetTarget;
@@ -14,6 +15,8 @@ export type CatalogUnitSheetProps = {
   readonly top: number;
   readonly caretOffset: number;
   readonly onClose: () => void;
+  /** 말풍선의 등장 모션입니다. 없으면 `none`(모션 없음). */
+  readonly entrance?: SheetEntranceMotion;
 };
 
 /**
@@ -27,6 +30,7 @@ export function CatalogUnitSheet({
   top,
   caretOffset,
   onClose,
+  entrance,
 }: CatalogUnitSheetProps): ReactNode {
   const copy = useUiCopy();
   const section = catalog.sections.find((candidate) => candidate.episodeId === target.episodeId);
@@ -52,6 +56,7 @@ export function CatalogUnitSheet({
       ticketCost={catalogUnitTicketCost(catalog.progress, target.episodeId, target.unitKey)}
       onStart={() => catalog.onStartUnit(target.episodeId, target.unitKey)}
       onClose={onClose}
+      {...(entrance === undefined ? {} : { entrance })}
     />
   );
 }

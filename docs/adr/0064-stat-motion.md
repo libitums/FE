@@ -71,3 +71,5 @@
 1. 기기 회차 — e2e 「지표 모션」 항목 전부(iOS · Android).
 2. `overflow: hidden` + 둥근 모서리가 빛 띠를 모서리 안에서 자르는가. 안 잘리면 빛 띠를 빼고 테두리 막만 남긴다.
 3. `transform-origin`의 % 값 · `scaleX`/`scaleY` 조합이 두 플랫폼에서 같게 그려지는가.
+4. ⟨2026-10-19⟩ Lynx `overflow` 기본값이 `hidden`이라 0 × 0 축의 학습 완료 폭죽(`.lesson-complete-confetti`)이 조상에서 잘릴 수 있다는 지적이 [ADR-0077](0077-journey-map-sheet-entrance-motion.md) 조사에서 나왔다.
+   그 기기 회차(Android 에뮬레이터 SM9, 에이전트 실행)에서 퍼짐 최대 프레임에 **잘림은 보이지 않았다**. iOS는 미확인이다. 결정 문면은 고치지 않는다.

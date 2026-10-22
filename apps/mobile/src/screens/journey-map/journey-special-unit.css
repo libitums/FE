@@ -4,6 +4,7 @@
    집습니다. 여기 남는 것은 표식과 두 줄 라벨을 세로로 묶는 상자와 라벨 글자뿐입니다.
    줄은 「SPECIAL」(label-s)과 제목(label-m)이고, 색은 상태 톤 수식자가 정합니다. */
 .journey-special-unit {
+  overflow: visible;
   display: flex;
   flex-direction: column;
   align-items: center;

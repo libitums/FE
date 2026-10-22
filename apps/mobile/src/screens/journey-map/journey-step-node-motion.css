@@ -1,0 +1,122 @@
+/* 유닛 탭의 노드 반응입니다(ADR-0077). 누른 노드가 한 번 튀고(`-pop-enter`), 말풍선이 열리는 순간 후광과 반짝임이
+   표식 둘레로 퍼집니다. 길이 · 가속은 전부 토큰이고, 튕김 정점 1.12 · 후광 0.6 → 1.5 · 조각 시작 0.3만 scale 토큰에
+   없는 연출 값이라 이 파일이 `lint:motion` allowlist에 있습니다 — 사유는 allowlist가 집니다. 움직임 줄이기에서는
+   클래스도 요소도 서지 않아 이 파일에 reduced 규칙이 없습니다.
+
+   Lynx의 `overflow` 기본값은 `hidden`이라, 표식 밖으로 퍼지는 요소가 잘리지 않으려면 사이의 조상이 전부
+   `overflow: visible`이어야 합니다 — 이 파일의 래퍼와 노드 · 칸 · 줄 CSS가 그 사슬입니다. 측정 대상(노드 · 칸)에는
+   transform을 걸지 않고 튕김은 그 안쪽 래퍼가 집니다. */
+.journey-step-node-stage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: visible;
+}
+
+/* 튕김 — 눌림(안쪽 표식의 `:active`)과 다른 요소라 서로 덮어쓰지 않고 곱해집니다. */
+.journey-step-node-pop {
+  overflow: visible;
+}
+
+.journey-step-node-pop-enter {
+  animation: journey-step-node-pop var(--libitum-motion-duration-d6)
+    var(--libitum-motion-easing-enter-expressive) both;
+}
+
+@keyframes journey-step-node-pop {
+  0% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(var(--libitum-motion-scale-pressed));
+  }
+  65% {
+    transform: scale(1.12);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* 반짝임 묶음 — 표식 가운데의 0 × 0 기준점입니다. 표식 앞(DOM 앞)에 깔려 면에 가려 있다가 가장자리 밖에서 보입니다. */
+.journey-step-node-burst {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  overflow: visible;
+}
+
+/* 후광 고리 — 면 가장자리에서 번져 사라집니다. 지름 80의 절반만큼 당겨 가운데를 맞춥니다. */
+.journey-step-node-halo {
+  position: absolute;
+  top: calc(0px - var(--libitum-spacing-40));
+  left: calc(0px - var(--libitum-spacing-40));
+  width: var(--libitum-spacing-80);
+  height: var(--libitum-spacing-80);
+  border: var(--libitum-spacing-4) solid var(--libitum-color-brand-primary);
+  border-radius: var(--libitum-radius-full);
+  opacity: 0;
+  animation: journey-step-node-halo var(--libitum-motion-duration-d8)
+    var(--libitum-motion-easing-enter) var(--libitum-motion-duration-d1) both;
+}
+
+@keyframes journey-step-node-halo {
+  from {
+    opacity: var(--libitum-opacity-90);
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.5);
+  }
+}
+
+/* 조각 여덟 — 축(`-ray`)을 45°씩 돌려 두고(인라인 `rotate`, 정지값) 조각이 축의 위쪽으로 날아갑니다. keyframe은
+   하나입니다. 짝수는 주황 사각, 홀수는 노랑 원입니다. */
+.journey-step-node-ray {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  overflow: visible;
+}
+
+.journey-step-node-spark {
+  position: absolute;
+  opacity: 0;
+  animation: journey-step-node-spark var(--libitum-motion-duration-d8)
+    var(--libitum-motion-easing-enter) var(--libitum-motion-duration-d1) both;
+}
+
+.journey-step-node-spark-square {
+  top: calc(0px - var(--libitum-spacing-6));
+  left: calc(0px - var(--libitum-spacing-6));
+  width: var(--libitum-spacing-12);
+  height: var(--libitum-spacing-12);
+  border-radius: var(--libitum-spacing-2);
+  background: var(--libitum-color-brand-primary);
+}
+
+.journey-step-node-spark-round {
+  top: calc(0px - var(--libitum-spacing-4));
+  left: calc(0px - var(--libitum-spacing-4));
+  width: var(--libitum-spacing-8);
+  height: var(--libitum-spacing-8);
+  border-radius: var(--libitum-radius-full);
+  background: var(--libitum-color-feedback-warning);
+}
+
+@keyframes journey-step-node-spark {
+  from {
+    opacity: 1;
+    transform: translateY(-20px) scale(0.3);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-62px) scale(1);
+  }
+}

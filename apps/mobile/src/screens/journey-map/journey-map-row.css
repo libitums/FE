@@ -1,6 +1,7 @@
 /* 맵의 줄 — 구획 상자의 직계 자식입니다. 줄 사이 간격은 구획 상자의 `gap`이 줍니다.
    종류는 클래스로 가릅니다(Lynx CSS의 속성 선택자 지원을 확인하지 못했습니다). */
 .journey-map-row {
+  overflow: visible;
   align-self: stretch;
 }
 
@@ -28,12 +29,14 @@
 /* 셀 — 유닛 하나의 칸입니다. 안쪽 유닛을 칸 가운데에 세우고, 칸 폭을 넘지 못하게 합니다(라벨이
    칸 폭에서 줄바꿈되도록). 가림 상자(`.journey-map-cell-body`)도 같은 폭 안에 있습니다. */
 .journey-map-cell {
+  overflow: visible;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
 .journey-map-cell-body {
+  overflow: visible;
   display: flex;
   flex-direction: column;
   align-items: center;

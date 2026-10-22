@@ -90,7 +90,7 @@
 }
 
 /* 띠 자리의 측정 손잡이입니다 — 자동 스크롤과 말풍선이 이 상자의 아래 모서리에 맞춥니다. 띠가 없으면
-   높이 0이라 칩 줄 아래 모서리가 기준이 됩니다. 보이는 것도 탭을 받는 것도 없습니다. */
+   높이 0이고, 자리 계산은 그때 띠 높이 어림을 씁니다. 보이는 것도 탭을 받는 것도 없습니다. */
 .journey-map-screen-header-anchor {
   position: absolute;
   top: calc(var(--libitum-spacing-12) + var(--libitum-spacing-40) + var(--libitum-spacing-12));

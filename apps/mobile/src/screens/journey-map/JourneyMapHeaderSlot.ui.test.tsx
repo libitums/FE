@@ -8,6 +8,7 @@ import type {
   SheetTargetId,
 } from "./catalog-map.contract";
 import { catalogSheetKey } from "./catalog-sheet";
+import { sheetEntranceClasses } from "./journey-map-sheet-motion";
 import type { JourneyMapProgressLoad } from "./journey-map-load.contract";
 import { realSections } from "./JourneyMapScreen.tutorial-u00.test-support";
 
@@ -228,5 +229,19 @@ describe("JourneyMapHeaderSlot 줄 자리", () => {
     render(slot({ openStepId: lesson(1) }));
 
     expect(() => fireEvent.layoutchange(band(), { detail: { height: 132 } })).not.toThrow();
+  });
+});
+
+describe("JourneyMapHeaderSlot 등장 종류", () => {
+  test("HS-E1. 열린 유닛에 expressive를 주면 띠 래퍼에 등장 클래스가, 안 주면 기본 클래스만 선다", () => {
+    // 채움 빛은 채움이 있을 때만 섭니다 — 표지와 첫 레슨을 끝낸 진행으로 봅니다.
+    const progress = { catalogProgress: { "u00-tutorial": ["intro", "S1"] } };
+    const view = render(slot({ ...progress, openStepId: lesson(2), sheetEntrance: "expressive" }));
+    expect(band().getAttribute("class")).toBe(sheetEntranceClasses("expressive").band);
+    expect(screen.queryByTestId("ui-lynx-episode-header-fill-sheen")).toBeInTheDocument();
+
+    view.rerender(slot({ ...progress, openStepId: lesson(2) }));
+    expect(band().getAttribute("class")).toBe("journey-map-screen-episode-header");
+    expect(screen.queryByTestId("ui-lynx-episode-header-fill-sheen")).not.toBeInTheDocument();
   });
 });

@@ -14,5 +14,13 @@
   {
     "path": "apps/mobile/src/screens/culture-card/culture-card-activity.css",
     "reason": "문화 카드 뒤집기(사용자 결정 2026-10-20, ADR-0072 D3 정정 기록). 세로축 회전 rotateY(90deg → 0deg)는 iOS에서 회전 중 카드의 축 오른쪽 반이 z < 0으로 들어가 절대 배치된 덱 뒤 두 장(옅은 주황) 뒤로 그려져, 뒤집는 약 0.4초 동안 그 반쪽이 주황에 덮이고 글이 비쳤다(2026-10-20 시뮬레이터 녹화). 원근(perspective)을 쓰지 않아 겉모양이 같은, 깊이 없는 가로 배율 scaleX(0) → scaleX(1)로 바꿨다. 시작 값 scaleX(0)(접힌 면)은 scale 토큰(pressed · enter · reward — 모두 0보다 크다)으로 표현할 수 없다. 끝 값 scaleX(1)은 항등이라 규칙 밖이다. 길이 · 가속은 토큰(d6 · enter)이고 이 파일 밖의 새 리터럴은 허용하지 않는다. 움직임 줄이기에서는 뒤집기 클래스가 붙지 않아 면이 즉시 바뀐다(ADR-0053 D3)."
+  },
+  {
+    "path": "apps/mobile/src/screens/journey-map/step-sheet-motion.css",
+    "reason": "여정 맵 유닛 탭의 말풍선 · 띠 등장 연출(사용자 결정 2026-10-19 「playful」, ADR-0077). 말풍선 팝의 시작 · 넘침 · 되돌림 크기 scale(0.35) · scale(1.06) · scale(0.98)와 백분율 pop scale(1.3)은 scale 토큰 셋(0.95 · 0.96 · 0.8)으로 표현할 수 없는 연출 값이고, 시작 버튼 숨쉬기 주기 1600ms는 가장 긴 UI 토큰(d9 1000ms)보다 길다. 숨쉬기는 3회(약 4.8초)로 끝나고 말풍선이 떠 있는 동안만 돌며(WCAG 2.2.2) 움직임 줄이기에서는 서지 않는다. 띠 시작 크기는 scale.enter 토큰이고 나머지 길이 · 가속은 전부 토큰이다. 이 파일 밖의 새 리터럴은 허용하지 않는다."
+  },
+  {
+    "path": "apps/mobile/src/screens/journey-map/journey-step-node-motion.css",
+    "reason": "여정 맵 유닛 탭의 노드 튕김 · 후광 · 반짝임 연출(사용자 결정 2026-10-19 「playful」, ADR-0077). 튕김 정점 scale(1.12), 후광 scale(0.6) → scale(1.5), 조각 시작 scale(0.3)은 1보다 크거나 0.8보다 작아 scale 토큰 셋(0.95 · 0.96 · 0.8)으로 표현할 수 없는 연출 값이다. 튕김 바닥은 scale.pressed 토큰이고 길이 · 가속은 전부 토큰이다. 움직임 줄이기에서는 클래스도 요소도 서지 않는다. 이 파일 밖의 새 리터럴은 허용하지 않는다."
   }
 ]

@@ -12,18 +12,19 @@ import {
 } from "./journey-map-scroll";
 import { catalogUnitDomId } from "./catalog-map";
 import { catalogSheetTargetOf } from "./catalog-sheet";
-import { autoScrollPlacement, mapScrollBehaviorFor } from "./journey-map-scroll-position";
+import { mapScrollBehaviorFor, mapUnitPlacement } from "./journey-map-scroll-position";
 import {
   initialStepSheetState,
   stepSheetCaretLimit,
   stepSheetCaretOffset,
-  stepSheetPlacementBelowHeader,
   stepSheetReducer,
   stepSheetTop,
   stepUnitSize,
   type StepSheetState,
 } from "./journey-map-sheet";
 import type { SheetTargetId } from "./catalog-map.contract";
+import { sheetEntranceMotionFor, type SheetEntranceMotion } from "./journey-map-sheet-motion";
+import { useSheetEntrance } from "./useSheetEntrance";
 
 /** 말풍선이 붙을 유닛의 상자 id입니다 — 카탈로그 유닛 셀입니다. 열림 키가 카탈로그 키가 아니면 못 찾는 id입니다. */
 function sheetNodeDomId(id: SheetTargetId): string {
@@ -41,6 +42,8 @@ export type StepSheetControls = {
   /** `unitSize`는 누른 표식의 높이입니다 — 없으면 레슨 원(`stepUnitSize`)입니다. */
   readonly handleSelectStep: (id: SheetTargetId, tapY: number, unitSize?: number) => void;
   readonly handleCloseSheet: () => void;
+  /** 말풍선 · 띠 · 노드의 등장 모션입니다. */
+  readonly sheetEntrance: Exclude<SheetEntranceMotion, "none">;
 };
 
 /**
@@ -60,7 +63,9 @@ export function useStepSheet(): StepSheetControls {
   // 상태 객체 · 배치 계산은 건드리지 않으려고 지역 상태로 둡니다.
   const [caretOffset, setCaretOffset] = useState(0);
   // 동작 줄이기에서는 이동이 즉시입니다(ADR-0053 D3).
-  const behavior = mapScrollBehaviorFor(useMotion());
+  const motion = useMotion();
+  const behavior = mapScrollBehaviorFor(motion);
+  const entrance = useSheetEntrance();
   // 지금 자리를 재고 있는 스텝입니다. 재는 일이 비동기라, 그 사이에 말풍선이 닫히거나
   // 다른 스텝으로 바뀌면 늦게 온 답이 화면을 옛 유닛 쪽으로 끌고 갑니다 — 답이 왔을 때
   // 이 값이 자기 스텝이 아니면 버립니다.
@@ -72,6 +77,7 @@ export function useStepSheet(): StepSheetControls {
     latestScrollTop.current = event.detail.scrollTop;
     if (sheetState.openStepId !== null) {
       setOpenScrollTop(event.detail.scrollTop);
+      entrance.scroll(event.detail.scrollTop);
     }
   };
 
@@ -82,6 +88,7 @@ export function useStepSheet(): StepSheetControls {
     const tapScrollTop = latestScrollTop.current;
     // oxlint-disable-next-line react/immutability
     measuringStepId.current = id;
+    entrance.open(id);
     dispatch({
       type: "openStep",
       stepId: id,
@@ -93,7 +100,7 @@ export function useStepSheet(): StepSheetControls {
     // 그다음 유닛을 실제로 재서 자리를 바로잡고, 유닛을 스크롤 가운데로 옮깁니다 —
     // 탭 좌표는 손가락이 유닛의 어디를 눌렀는지에 따라 달라지므로, 그 값만으로는
     // 말풍선이 유닛에 맞지 않습니다. 못 재도 탭을 막지 않습니다: 말풍선은 이미 떴습니다.
-    // 머리 카드는 없어도 됩니다 — 못 재면 카드를 피하지 않고 말풍선은 지금처럼 섭니다.
+    // 띠 손잡이는 없어도 됩니다 — 재면 띠가 설 때의 아래 모서리(`headerBandCard`)를 피합니다.
     measureRectsWithOptional(
       [sheetNodeDomId(id), scrollId, screenId],
       [headerCardId],
@@ -106,26 +113,19 @@ export function useStepSheet(): StepSheetControls {
         measuringStepId.current = null;
         const [unit, scroll, screen] = rects ?? [];
         if (unit === undefined || scroll === undefined || screen === undefined) {
+          entrance.measured(id, null, latestScrollTop.current);
           scrollNodeIntoView(sheetNodeDomId(id), behavior);
           return;
         }
         const scrollTop = latestScrollTop.current;
-        const placement = stepSheetPlacementBelowHeader(
-          {
-            unitTop: unit.top,
-            unitSize,
-            scrollViewTop: scroll.top,
-            scrollViewHeight: scroll.height,
-            screenTop: screen.top,
-            screenHeight: screen.height,
-            scrollTop,
-          },
-          unit.centerX,
-          card === undefined || card === null
-            ? null
-            : { bottom: card.top + card.height, left: card.left, width: card.width },
-          autoScrollPlacement.gap,
-        );
+        const placement = mapUnitPlacement({
+          unit,
+          unitSize,
+          scroll,
+          screen,
+          band: card ?? null,
+          scrollTop,
+        });
         dispatch({
           type: "anchorStep",
           stepId: id,
@@ -135,6 +135,7 @@ export function useStepSheet(): StepSheetControls {
         });
         setOpenScrollTop(scrollTop);
         setCaretOffset(stepSheetCaretOffset(unit.centerX, screen.centerX, stepSheetCaretLimit));
+        entrance.measured(id, placement.targetScrollTop, scrollTop);
         scrollMapTo(placement.targetScrollTop, behavior);
       },
     );
@@ -144,6 +145,7 @@ export function useStepSheet(): StepSheetControls {
     "background only";
     // oxlint-disable-next-line react/immutability
     measuringStepId.current = null;
+    entrance.close();
     dispatch({ type: "closeSheet" });
     setCaretOffset(0);
   };
@@ -155,5 +157,6 @@ export function useStepSheet(): StepSheetControls {
     handleScroll,
     handleSelectStep,
     handleCloseSheet,
+    sheetEntrance: sheetEntranceMotionFor(entrance.phase, motion),
   };
 }

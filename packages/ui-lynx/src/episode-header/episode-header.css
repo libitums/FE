@@ -48,6 +48,9 @@
 .ui-lynx-episode-header-track {
   flex: 1;
   height: 10px;
+  /* 등장 때 왼쪽 밖에서 밀려 들어오는 채움을 트랙의 둥근 왼끝에서 자릅니다. 안쪽은 트랙과 같은 상자 안의
+     채움뿐이라 정지 화면은 그대로입니다. */
+  overflow: hidden;
   border-radius: var(--libitum-radius-full);
   background: var(--libitum-color-brand-reward-border);
 }
@@ -68,4 +71,51 @@
   font-weight: var(--libitum-typography-body-s-font-weight);
   line-height: var(--libitum-typography-body-s-line-height);
   letter-spacing: var(--libitum-typography-body-s-letter-spacing);
+}
+
+/* 등장 — `progressEntrance="fill"`일 때만 붙습니다. 채움이 트랙 왼쪽 밖에서 밀려 들어옵니다(폭 전환이 아니라
+   transform이라 처음 그리는 요소에도 시작값이 있고, 둥근 오른끝이 찌그러지지 않습니다). 시작 지연은 띠가 먼저 내려오는
+   동안 기다리는 시간입니다. 길이 · 가속은 전부 토큰입니다. */
+.ui-lynx-episode-header-fill-enter {
+  animation: ui-lynx-episode-header-fill-in var(--libitum-motion-duration-d8)
+    var(--libitum-motion-easing-enter) var(--libitum-motion-duration-d4) both;
+}
+
+@keyframes ui-lynx-episode-header-fill-in {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0px);
+  }
+}
+
+/* 채움 위를 한 번 지나가는 빛입니다. 채움(흰색) 안의 자식 하나가 단색 노랑으로 왼쪽 밖에서 오른쪽 밖까지 지나가며
+   불투명도가 올랐다 내립니다. 채움이 끝난 뒤에 서도록 한 토큰(d9)만큼 기다립니다. 장식이라 접근성 트리에 오르지 않고
+   탭도 받지 않습니다. */
+.ui-lynx-episode-header-fill-sheen {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 40%;
+  border-radius: var(--libitum-radius-full);
+  background: var(--libitum-color-feedback-warning);
+  opacity: 0;
+  animation: ui-lynx-episode-header-sheen var(--libitum-motion-duration-d9)
+    var(--libitum-motion-easing-easing) var(--libitum-motion-duration-d9) both;
+}
+
+@keyframes ui-lynx-episode-header-sheen {
+  0% {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+  50% {
+    opacity: var(--libitum-opacity-45);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(250%);
+  }
 }

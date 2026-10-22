@@ -82,6 +82,9 @@
   (`data-motion={cond ? "reduced" : undefined}`는 테스트 렌더러가 `"null"` 문자열을 남긴다). 넷(Dialog · BottomSheet · Overlay · ProgressHeader)은 전부터 `data-motion="standard"`를 늘 냈다 —
   받아들인 비대칭(ADR-0025 「2026-10-09 확장」).
 - *(1단계에서 정함. 4단계가 더한 소비자는 `LearningSessionHeader` 하나 — D5.)*
+- ⟨2026-10-19 — 적용 기록이고 결정을 바꾸지 않는다⟩ **「standard DOM byte 불변」의 예외가 하나 생겼다** — 여정 맵 유닛 탭 등장 모션이 새 래퍼 다섯(`.step-sheet-pop` · `.step-sheet-progress-percent-pop` ·
+  `.step-sheet-start-wrap` · `.journey-step-node-stage` · `.journey-step-node-pop`)을 standard · reduced 모두에 늘 세운다. 단계마다 DOM 모양이 바뀌면 다시 마운트되어 애니메이션이 다시 돌기 때문이다.
+  reduced 표식(클래스 + `data-motion`)은 조건부 spread · 움직이는 요소에만 — 규칙 그대로다([ADR-0077](0077-journey-map-sheet-entrance-motion.md) D9).
 
 ### D3. reduced에서 걷는 것과 남는 것은 정본 표 그대로다 — Spinner는 예외, 눌림은 막, 변형이 없는 컴포넌트에는 변형을 만들지 않고, 카탈로그는 컴포넌트별 `ReducedMotion` 스토리로 보인다
 
@@ -161,6 +164,8 @@
 
 - ⟨2026-10-16 — 적용 기록⟩ **학습 완료 화면은 「한 화면 한 번」의 예외가 됐다**(사용자 결정 — [ADR-0064](0064-stat-motion.md) D4). 통과 배지에 폭죽 · 글 올라옴 · 머리 칩 오름이 이어진다.
   순수 파생 · 퇴장 없음은 그대로다. 지표 모달의 반복 · 칩의 연출 크기는 D1 allowlist 두 줄(사유는 allowlist)이다. 정본에 되묻는 것으로 남는다.
+- ⟨2026-10-19 — 적용 기록⟩ **여정 맵 유닛 탭이 「한 화면 한 번」의 둘째 예외가 됐다**(사용자 결정 「playful」 — [ADR-0077](0077-journey-map-sheet-entrance-motion.md) D10). 한 번의 탭에 띠 · 말풍선 등장 · 노드 튕김 · 반짝임 · 띠 빛이 서고
+  시작 버튼이 세 번 숨 쉰다. 순수 파생(`(motion, 열린 유닛, 단계)`의 클래스 — 「한 번」은 마운트 수명이 보장) · 퇴장 없음은 그대로다. 연출 크기 · 숨쉬기 주기는 D1 allowlist 두 줄이다. 정본에 되묻는 것으로 남는다.
 
 ### D5. 전환은 등장만 있고 입력을 막지 않으며 타이머로 끝난다 — 진행 바 채움은 `progress` · `enter`로 차오르고, custom 화면 전환은 0이다
 
@@ -183,6 +188,11 @@
 - **custom 화면 전환은 0이다.** `AppSession`은 스택 최상단 하나만 그리고 이전 화면은 즉시 언마운트돼 퇴장을 걸 요소가 없으며, `Nav`는 방향을 모른다. 등장만 거는 반쪽 전환은 짝 규칙과 어긋나고
   모든 화면의 첫 프레임을 바꿔 e2e · 성능 보고서의 비교선을 흔든다. 5단계 설계 후보(결정 아님): 들어오는 화면만 crossfade, `app-screen` 호스트(`key` = 화면 정체), outgoing layer 없음, 제외 목록.
   선행: `AppSession` 300줄 해소, DS-Q3 · DS-Q5 답변, 사용자 결정 Q1 · Q3 · Q4, e2e · 성능 기준선 재설정.
+- ⟨2026-10-19 — 적용 기록이고 결정을 바꾸지 않는다⟩ **여정 맵 유닛 탭의 띠 · 말풍선 등장**([ADR-0077](0077-journey-map-sheet-entrance-motion.md)). 등장만 있고 닫기는 즉시다.
+  ① 등장이 **스크롤 도착을 기다린다** — 이미 제자리 · 도착(목적지 1 이내) · `d4` 조용함 · 열린 뒤 `d9` 상한 중 먼저. 대기 중에는 말풍선 · 띠가 불투명도 0이고, 그 자리 탭은 말풍선 래퍼가 잡아 닫는다.
+  **시작 버튼은 대기 중에도 탭을 받는다** — 이 D의 「입력을 막지 않는다」를 근거로 했고, 「대기는 보이는 전환이 아니다」라는 접근성 지적에 사용자가 「지금처럼」을 골랐다(ADR-0077 D6).
+  ② 카운트업 · 숫자 pop · 대기 끝은 **타이머**(`motionDurationMs`) — `bindtransitionend`가 없다는 위 사실 그대로. ③ 말풍선 · 띠의 막대 채움은 `width` 전환이 아니라 채움의 `transform: translateX` keyframe이다 —
+  iOS 플랫폼 keyframe 애니메이터가 transform · opacity · background-color만 읽는다. 위 학습 진행 바의 `width` 전환은 그대로다. Android 에뮬레이터만 확인([보상 모션 e2e](../e2e/motion-reward.md) 「유닛 탭 등장 모션」).
 
 ### D6. scale 리터럴은 `var()`로 전환했다 — 두 플랫폼의 일반 규칙 근거 · iOS keyframe 탐색 · Android keyframe은 회귀 행이 게이트다
 

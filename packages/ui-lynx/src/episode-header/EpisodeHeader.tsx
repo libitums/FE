@@ -4,6 +4,7 @@ import { getEpisodeHeaderContract, type EpisodeHeaderProps } from "./episode-hea
 
 export function EpisodeHeader(props: EpisodeHeaderProps) {
   const contract = getEpisodeHeaderContract(props);
+  const entering = contract.progressEntrance === "fill";
 
   return (
     // 카드 전체가 접근성 요소 하나입니다 — 번호 · 이름 · 진행이 따로 읽히면 「7 / 20」이
@@ -26,10 +27,23 @@ export function EpisodeHeader(props: EpisodeHeaderProps) {
           {/* 채움은 0%일 때 그리지 않습니다 — 폭 0짜리 상자는 「아직 시작 안 함」을 「조금 했음」으로 읽히게 합니다. */}
           {contract.fillPercent === 0 ? null : (
             <view
-              className="ui-lynx-episode-header-fill"
+              className={
+                entering
+                  ? "ui-lynx-episode-header-fill ui-lynx-episode-header-fill-enter"
+                  : "ui-lynx-episode-header-fill"
+              }
               data-testid="ui-lynx-episode-header-fill"
               style={{ width: `${contract.fillPercent}%` }}
-            />
+            >
+              {/* 채움 위를 한 번 지나가는 빛입니다. 장식이라 접근성 트리에 올리지 않습니다. */}
+              {entering ? (
+                <view
+                  className="ui-lynx-episode-header-fill-sheen"
+                  data-testid="ui-lynx-episode-header-fill-sheen"
+                  user-interaction-enabled={false}
+                />
+              ) : null}
+            </view>
           )}
         </view>
         <text className="ui-lynx-episode-header-count" data-testid="ui-lynx-episode-header-count">

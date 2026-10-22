@@ -171,3 +171,60 @@ describe("episode-header.css", () => {
     expect(styles).toMatch(/\.ui-lynx-episode-header-fill\s*\{[^}]*overflow:\s*hidden/);
   });
 });
+
+describe("progressEntrance", () => {
+  const props = { ...base, completedUnitCount: 7 } as const;
+
+  test("EH1-a. 없으면 none, fill · none은 그대로, 잘못된 값은 던지지 않고 none이다", () => {
+    expect(getEpisodeHeaderContract(props).progressEntrance).toBe("none");
+    expect(getEpisodeHeaderContract({ ...props, progressEntrance: "fill" }).progressEntrance).toBe(
+      "fill",
+    );
+    expect(getEpisodeHeaderContract({ ...props, progressEntrance: "none" }).progressEntrance).toBe(
+      "none",
+    );
+    const bogus = getEpisodeHeaderContract({ ...props, progressEntrance: "bogus" as never });
+    expect(bogus.progressEntrance).toBe("none");
+  });
+
+  test("EH1-b. 기존 필드는 progressEntrance와 무관하게 같다", () => {
+    const plain = getEpisodeHeaderContract(props);
+    const filled = getEpisodeHeaderContract({ ...props, progressEntrance: "fill" });
+    // 가드: 값이 실제로 파생되어야 이 비교가 뜻이 있다.
+    expect(filled.progressEntrance).toBe("fill");
+    expect({ ...filled, progressEntrance: "none" }).toEqual(plain);
+  });
+});
+
+describe("episode-header.css 등장 규칙", () => {
+  const css = readFileSync(
+    resolve(process.cwd(), "src/episode-header/episode-header.css"),
+    "utf8",
+  ).replace(/\/\*[\s\S]*?\*\//g, "");
+
+  const bodyOf = (selector: string): string => {
+    const escaped = selector.replace(/\./g, "\\.");
+    const match = new RegExp(`${escaped}\\s*\\{([^}]*)\\}`).exec(css);
+    return match?.[1] ?? "";
+  };
+
+  test("EH1-c. 트랙은 overflow: hidden이다(밀려 들어오는 채움을 자른다)", () => {
+    expect(bodyOf(".ui-lynx-episode-header-track")).toMatch(/overflow:\s*hidden/);
+  });
+
+  test("EH1-d. 채움 등장 · 빛 규칙이 있고 시간 · 곡선은 토큰, scale 리터럴은 없다", () => {
+    expect(bodyOf(".ui-lynx-episode-header-fill-enter")).toContain("animation");
+    expect(bodyOf(".ui-lynx-episode-header-fill-sheen")).toContain("animation");
+    const animations = [...css.matchAll(/animation(?:-[a-z-]+)?:\s*([^;}]+)/g)].map((match) =>
+      (match[1] ?? "").replace(/var\([^)]*\)/g, " "),
+    );
+    for (const value of animations) {
+      expect(value).not.toMatch(/\b\d+(?:\.\d+)?m?s\b/);
+      expect(value).not.toMatch(/\b(?:ease-in-out|ease-in|ease-out|ease|linear|cubic-bezier)\b/);
+    }
+    const scaleCalls = [...css.matchAll(/\bscale\(([^()]*)\)/g)].map((match) => match[1] ?? "");
+    for (const argument of scaleCalls) {
+      expect(argument).not.toMatch(/^\s*(?!1\s*$)[+-]?(?:\d+\.?\d*|\.\d+)\s*$/);
+    }
+  });
+});

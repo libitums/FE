@@ -1,3 +1,6 @@
+/** 진행 막대 채움의 등장 모션입니다. `fill`이면 채움이 밀려 들어오고 빛이 지나갑니다. */
+export type EpisodeHeaderProgressEntrance = "none" | "fill";
+
 export type EpisodeHeaderProps = {
   /** 에피소드 번호 줄입니다 — 설명 줄입니다 — 「Episode 1, unit 02」처럼 호출자가 만들어 넘깁니다. */
   readonly episodeLabel: string;
@@ -7,6 +10,8 @@ export type EpisodeHeaderProps = {
   readonly completedUnitCount: number;
   /** 이 에피소드의 유닛 수입니다. */
   readonly totalUnitCount: number;
+  /** "fill"이면 채움이 트랙 왼끝에서 밀려 들어오고 빛이 한 번 지나갑니다. 기본 "none" — 지금 그대로. */
+  readonly progressEntrance?: EpisodeHeaderProgressEntrance;
 };
 
 export type EpisodeHeaderContract = {
@@ -16,6 +21,8 @@ export type EpisodeHeaderContract = {
   /** 진행 막대 채움 폭입니다(0~100). 0이면 채움을 그리지 않습니다. */
   readonly fillPercent: number;
   readonly accessibilityLabel: string;
+  /** 잘못된 값은 "none"으로 읽습니다. */
+  readonly progressEntrance: EpisodeHeaderProgressEntrance;
 };
 
 function isCount(value: unknown): value is number {
@@ -51,6 +58,7 @@ export function getEpisodeHeaderContract(props: EpisodeHeaderProps): EpisodeHead
     episodeLabel,
     title,
     countLabel: `${props.completedUnitCount} / ${props.totalUnitCount}`,
+    progressEntrance: props.progressEntrance === "fill" ? "fill" : "none",
     fillPercent: (props.completedUnitCount / props.totalUnitCount) * 100,
     // 「7 / 20」은 눈으로 보면 막대 옆이라 뜻이 붙지만, 낭독되면 무엇의 7인지 알 수
     // 없습니다. 이름에서 단위를 밝힙니다.
