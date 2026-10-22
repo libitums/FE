@@ -93,6 +93,10 @@ test("LC4. 호스트가 속도 재생을 지원하지 않으면 slow가 없고 �
   expect(screen.getByTestId(`${P}-replay`)).toBeInTheDocument();
   expect(screen.getByTestId(`${P}-playback`)).toBeInTheDocument();
   expect(screen.getByTestId(P).children.length).toBe(supportedChildren);
+  // 미지원 경로에서는 다시 듣기가 `.listening-prompt-replay` 상자(빈 칸과 같은 폭)에 담깁니다.
+  expect(screen.getByTestId(`${P}-replay`).parentElement?.getAttribute("class")).toBe(
+    "listening-prompt-replay",
+  );
 });
 
 test("LC4. 줄에서 slow · replay · playback을 탭하면 각각의 조작이 불린다(안쪽 RoundButton)", () => {
