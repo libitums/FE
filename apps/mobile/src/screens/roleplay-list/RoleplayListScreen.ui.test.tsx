@@ -16,21 +16,30 @@ import { markedUiCopy } from "../../lib/ui-copy.test-support";
 // `toHaveStyle`을 쓰지 않습니다. 텍스트 질의(`getByText`)를 쓰지 않습니다.
 
 const messengerItem: RoleplayItem = {
-  form: "messenger",
-  unitId: "appointment-confirmation",
+  form: "story",
+  unitId: "story-u01-water",
+  episodeId: "u01-water",
   title: "A Message from Minseo",
+  lineCount: 3,
+  imageUrl: null,
 };
 
 const phoneCallItem: RoleplayItem = {
-  form: "phone-call",
-  unitId: "appointment-confirmation-phone-call",
+  form: "story",
+  unitId: "story-u02-checkin",
+  episodeId: "u02-checkin",
   title: "A Call from Minseo",
+  lineCount: 3,
+  imageUrl: null,
 };
 
 const visualNovelItem: RoleplayItem = {
-  form: "visual-novel",
-  unitId: "cafe-arrival-visual-novel",
+  form: "story",
+  unitId: "story-u03-mina",
+  episodeId: "u03-mina",
   title: "Our Imagined Café",
+  lineCount: 3,
+  imageUrl: null,
 };
 
 const wrongOrder: PremiumRoleplayItem = {
@@ -142,8 +151,8 @@ test("[S2] 구획이 받은 순서대로 서고, 구획 안 카드도 받은 순
 
   const row = screen.getByTestId("roleplay-list-section-row-tutorial");
   expect(Array.from(row.children).map((el) => el.getAttribute("data-testid"))).toEqual([
-    "roleplay-list-item-appointment-confirmation",
-    "roleplay-list-item-appointment-confirmation-phone-call",
+    "roleplay-list-item-story-u01-water",
+    "roleplay-list-item-story-u02-checkin",
   ]);
 });
 
@@ -159,7 +168,7 @@ test("[S4] 열린 구획의 카드 tap → onSelectItem이 정확히 1회, 인�
   const onSelectItem = vi.fn<(item: RoleplayItem) => void>();
   renderScreen({ onSelectItem });
 
-  fireEvent.tap(screen.getByTestId("roleplay-list-item-appointment-confirmation-phone-call"), {});
+  fireEvent.tap(screen.getByTestId("roleplay-list-item-story-u02-checkin"), {});
 
   expect(onSelectItem).toHaveBeenCalledTimes(1);
   expect(onSelectItem).toHaveBeenCalledWith(phoneCallItem);
@@ -209,7 +218,7 @@ test("[L2] 잠긴 구획의 카드 tap → onSelectItem 0회", () => {
   const onSelectItem = vi.fn<(item: RoleplayItem) => void>();
   renderScreen({ onSelectItem });
 
-  fireEvent.tap(screen.getByTestId("roleplay-list-item-cafe-arrival-visual-novel"), {});
+  fireEvent.tap(screen.getByTestId("roleplay-list-item-story-u03-mina"), {});
 
   expect(onSelectItem).not.toHaveBeenCalled();
 });

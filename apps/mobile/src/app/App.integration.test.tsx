@@ -1,24 +1,10 @@
-import { journeySeedBefore } from "./test-helpers/journey-seed";
-// 범용 학습 흐름은 명시적 다중 활동 픽스처로 검증합니다. 제품 튜토리얼은 별도 실물 테스트가 집니다.
-vi.mock("../screens/journey-map/journey-map", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("../screens/journey-map/journey-map")>()),
-  ...(await import("./test-helpers/learning-route-fixture")),
-}));
-
+import { u01OpenSeed } from "./test-helpers/progress-seed";
+import { catalogNodeTestId } from "./test-helpers/map-unit-testid";
 import { afterEach, expect, test, vi } from "vitest";
-import { cleanup, fireEvent, screen, within } from "@lynx-js/react/testing-library";
+import { fireEvent, screen } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
-import { speakingQuestionsForStep } from "../screens/speaking/speaking";
-import { sentenceOrderQuestionsForStep } from "../screens/sentence-order/sentence-order";
-import type { JourneyStepId } from "../screens/journey-map/journey-map";
-import { questionsForStep } from "../screens/listening/listening";
-import { wordChoiceQuestionsForStep } from "../screens/word-choice/word-choice";
 import { renderSignedInApp } from "./test-helpers/signed-in-app";
-
-// 서사 표지를 이미 끝낸 채로 부팅합니다 — 이 파일이 보는 것은 표지 뒤의 흐름입니다. 표지
-// 자체는 `App.episode-intro.integration.test.tsx`가 봅니다.
-const completedIntros = ["tutorial-intro"] as const;
 
 // `integration` 계층: 여러 실제 모듈의 협력을 봅니다(ADR-0006 D4).
 // 여기서는 App · navReducer · BottomNavigator · 화면 셋 · ErrorBoundary가 맞물립니다.
@@ -27,14 +13,14 @@ const completedIntros = ["tutorial-intro"] as const;
 // 텍스트 질의(`getByText`)는 쓰지 않습니다 — 화면 제목과 탭 라벨이 같은 문자열을
 // 공유하는 조합이 있어(`홈`, `설정`) 모호합니다. 전부 `data-testid`로 질의합니다.
 
+const S1 = catalogNodeTestId("u01-water", "S1");
+
 afterEach(() => {
   vi.unstubAllGlobals();
 });
 
 test("루트가 현재 탭 스택의 최상단 화면을 렌더한다", async () => {
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
+  await renderSignedInApp(<App progressSeed={u01OpenSeed} />);
 
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.getByTestId("ui-lynx-bottom-navigator-item-journey")).toHaveAttribute(
@@ -53,9 +39,7 @@ test("루트가 현재 탭 스택의 최상단 화면을 렌더한다", async ()
 });
 
 test("설정 탭에서 여정 탭으로 전환하면 여정 맵 화면이 나오고 설정 화면은 사라진다", async () => {
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
+  await renderSignedInApp(<App progressSeed={u01OpenSeed} />);
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
   expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
 
@@ -74,9 +58,7 @@ test("설정 탭에서 여정 탭으로 전환하면 여정 맵 화면이 나오
 });
 
 test("여정 탭에서 롤플레이 탭으로 전환하면 롤플레이 화면이 나오고 여정 맵 화면은 사라진다", async () => {
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
+  await renderSignedInApp(<App progressSeed={u01OpenSeed} />);
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
 
@@ -95,9 +77,7 @@ test("여정 탭에서 롤플레이 탭으로 전환하면 롤플레이 화면�
 });
 
 test("여정 탭에서 설정 탭으로 전환하면 설정 화면이 나오고 여정 맵 화면은 사라진다", async () => {
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
+  await renderSignedInApp(<App progressSeed={u01OpenSeed} />);
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
 
@@ -116,9 +96,7 @@ test("여정 탭에서 설정 탭으로 전환하면 설정 화면이 나오고 
 });
 
 test("설정 → 여정 → 설정으로 왕복하면 설정의 루트 화면이 그대로 다시 나온다", async () => {
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
+  await renderSignedInApp(<App progressSeed={u01OpenSeed} />);
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
   expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
@@ -140,30 +118,24 @@ test("설정 → 여정 → 설정으로 왕복하면 설정의 루트 화면이
 // `App` · `navReducer` · `BottomNavigator` · `JourneyMapScreen` · `JourneyStepNode` ·
 // `StepSheet`가 실제로 맞물리는지를 봅니다. 목킹하지 않습니다 — 외부 IO가 없습니다.
 
-test("여정 탭으로 전환하면 스텝 다섯이 전부 렌더된다", async () => {
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
+test("여정 탭으로 전환하면 u01의 레슨 노드가 렌더된다", async () => {
+  await renderSignedInApp(<App progressSeed={u01OpenSeed} />);
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 
-  expect(screen.getByTestId("ui-lynx-learning-unit-greeting")).toBeInTheDocument();
-  expect(screen.getByTestId("ui-lynx-learning-unit-introduction")).toBeInTheDocument();
-  expect(screen.getByTestId("ui-lynx-learning-unit-ordering")).toBeInTheDocument();
-  expect(screen.getByTestId("ui-lynx-learning-unit-appointment")).toBeInTheDocument();
-  expect(screen.getByTestId("ui-lynx-learning-unit-directions")).toBeInTheDocument();
+  for (const key of ["S1", "S2", "S3"]) {
+    expect(screen.getByTestId(catalogNodeTestId("u01-water", key))).toBeInTheDocument();
+  }
 });
 
 // 스택 깊이 불변의 **대리 관찰**입니다. `Nav` 스택 깊이는 밖으로 노출되지 않으므로
 // 직접 셀 수 없습니다 — 시트가 열려도 셸(탭 셋 · 여정 탭의 선택 상태)이 그대로라는
 // 것으로 대신 봅니다. 셸이 사라지거나 선택이 바뀌면 스택이 깊어졌다는 신호입니다.
 test("스텝을 누르면 시트가 열리고 셸이 그대로다", async () => {
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
+  await renderSignedInApp(<App progressSeed={u01OpenSeed} />);
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 
-  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), {});
+  fireEvent.tap(screen.getByTestId(S1), {});
 
   expect(screen.getByTestId("step-sheet-panel")).toBeInTheDocument();
   expect(screen.getByTestId("ui-lynx-bottom-navigator-item-journey")).toHaveAttribute(
@@ -176,11 +148,9 @@ test("스텝을 누르면 시트가 열리고 셸이 그대로다", async () => 
 });
 
 test("시트를 닫으면 시트만 사라지고 화면 제목과 셸은 그대로다", async () => {
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
+  await renderSignedInApp(<App progressSeed={u01OpenSeed} />);
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
-  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), {});
+  fireEvent.tap(screen.getByTestId(S1), {});
   expect(screen.getByTestId("step-sheet-panel")).toBeInTheDocument();
 
   fireEvent.tap(screen.getByTestId("step-sheet-close"), {});
@@ -197,11 +167,9 @@ test("시트를 닫으면 시트만 사라지고 화면 제목과 셸은 그대�
 // 되돌아왔을 때 시트는 닫혀 있는 것이 정상입니다. 「다른 탭」은 설정입니다(홈
 // 탭이 없으므로).
 test("시트를 연 채 다른 탭으로 갔다 여정 탭으로 돌아오면 시트가 닫혀 있다", async () => {
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
+  await renderSignedInApp(<App progressSeed={u01OpenSeed} />);
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
-  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), {});
+  fireEvent.tap(screen.getByTestId(S1), {});
   expect(screen.getByTestId("step-sheet-panel")).toBeInTheDocument();
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
@@ -212,11 +180,9 @@ test("시트를 연 채 다른 탭으로 갔다 여정 탭으로 돌아오면 �
 });
 
 test("시트가 열린 동안에도 탭 전환이 동작한다", async () => {
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
+  await renderSignedInApp(<App progressSeed={u01OpenSeed} />);
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
-  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), {});
+  fireEvent.tap(screen.getByTestId(S1), {});
   expect(screen.getByTestId("step-sheet-panel")).toBeInTheDocument();
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
@@ -226,890 +192,6 @@ test("시트가 열린 동안에도 탭 전환이 동작한다", async () => {
   expect(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay")).toHaveAttribute(
     "data-selected",
     "true",
-  );
-});
-
-// ---------------------------------------------------------------------- 학습 루프
-// `App` · `navReducer` · `BottomNavigator` · `JourneyMapScreen` · `StepSheet` ·
-// `ListeningScreen` · `ListeningChoice` · 순수 함수 셋(`journeyStepOrdinal` ·
-// `completeStep` · `listeningSessionReducer`)이 **함께 돌 때만** 관찰되는 것들입니다.
-// 목킹하지 않습니다 — 외부 IO가 없습니다.
-//
-// 기대값을 이 파일이 지어내지 않습니다: 어느 보기가 정답인지의 정본은 계약이
-// 고정한 `listeningQuestionsByStep`이므로 `questionsForStep`으로 읽어서 누릅니다.
-// 문항 수(3)도 그 목록의 길이에서 옵니다.
-
-// 여정 탭 → 스텝 tap → 시트 `시작` tap입니다. 시트가 실제로 떠 있는 것을 먼저
-// 앵커로 잡습니다 — 뒤에 오는 부재 단언(`step-sheet-panel`이 없음을 보는 단언)이
-// 공허해지지 않도록.
-// 학습 화면을 실제로 떠납니다 ⟨2026-09-28⟩. `×`는 묻기만 하고 실제로 떠나는 것은 모달의
-// `Leave`입니다 — 되돌릴 수 없는 일(진행이 저장되지 않습니다) 앞이라 두 걸음입니다.
-// 그 계약은 껍데기의 ui 테스트가 지고, 여기서는 「끝까지 나간다」를 한 줄로 부릅니다.
-function exitLearning(): void {
-  fireEvent.tap(screen.getByTestId("learning-shell-exit"), {});
-  const leave = [...document.querySelectorAll('[data-testid="ui-lynx-button"]')].find(
-    (el) => el.getAttribute("accessibility-label") === "Leave",
-  );
-  if (leave === undefined) throw new Error("나가기 확인 모달에 `Leave`가 없습니다");
-  fireEvent.tap(leave, {});
-}
-
-function startStep(stepId: JourneyStepId): void {
-  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
-  fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-${stepId}`), {});
-  expect(screen.getByTestId("step-sheet-panel")).toBeInTheDocument();
-  fireEvent.tap(screen.getByTestId("step-sheet-start"), {});
-}
-
-// 문항을 순서대로 전부 응답하고 매번 `다음`을 누릅니다. `pick`은 그 문항의 정답
-// 인덱스와 문항 자리를 받아 **실제로 누를 보기 인덱스**를 돌려줍니다.
-function answerAllQuestions(
-  stepId: JourneyStepId,
-  pick: (answerIndex: number, questionIndex: number) => number,
-): void {
-  questionsForStep(stepId).forEach((question, questionIndex) => {
-    const choiceIndex = pick(question.answerIndex, questionIndex);
-
-    fireEvent.tap(screen.getByTestId(`listening-choice-${choiceIndex}`), {});
-    // 문항 사이는 버튼이 아니라 넘김 층입니다(2026-09-28).
-    fireEvent.tap(screen.getByTestId("learning-shell-advance"), {});
-  });
-}
-
-// 정답/오답을 섞습니다 — 가운데 문항만 정답이 아닌 보기를 고릅니다.
-function mixedPick(answerIndex: number, questionIndex: number): number {
-  return questionIndex === 1 ? (answerIndex + 1) % 4 : answerIndex;
-}
-
-// 전부 오답입니다. 한 스텝 안에서 세 문항의 정답 인덱스가 서로 다르므로 고정된
-// 한 인덱스를 계속 누르는 방식은 쓰지 않습니다.
-function incorrectPick(answerIndex: number): number {
-  return (answerIndex + 1) % 4;
-}
-
-// 통과 경로의 나가기입니다. 완료 화면의 `Check`는 ui-lynx `Button`이라 testid가
-// 버튼 자신이 아니라 감싸는 상자에 붙어 있습니다.
-// 문장 만들기를 실제 문항 표대로 정답 순서로 놓고 끝까지 마칩니다 — 확인 · 다음을 문항마다
-// 누르고, 끝에 결과 보기를 누릅니다(아래 버튼은 `LearningShell`의 것 하나입니다).
-function completeSentenceOrder(stepId: JourneyStepId): void {
-  for (const question of sentenceOrderQuestionsForStep(stepId)) {
-    for (const chipIndex of question.answerOrder) {
-      fireEvent.tap(screen.getByTestId(`sentence-order-chip-${chipIndex}`), {});
-    }
-    fireEvent.tap(screen.getByTestId("learning-shell-action"), {}); // 확인
-    fireEvent.tap(screen.getByTestId("learning-shell-action"), {}); // 다음
-  }
-  fireEvent.tap(screen.getByTestId("learning-shell-action"), {}); // 결과 보기
-}
-
-// 학습 결과 화면이 아직 서지 않았음을 봅니다 — 서 있으면 그 나가기를 돌려줍니다.
-function lessonCompleteExitOrNull(): Element | null {
-  const exit = screen.queryByTestId("lesson-complete-screen-exit");
-  return exit === null ? null : exit;
-}
-
-function lessonCompleteExit(): Element {
-  const button = screen
-    .getByTestId("lesson-complete-screen-exit")
-    .querySelector('[data-testid="ui-lynx-button"]');
-  if (button === null) throw new Error("lesson-complete-screen-exit 안에 버튼이 없습니다");
-  return button;
-}
-
-// 맵 → 시트 → `시작` → 학습 화면이 활성 스택 최상단에 옵니다.
-test("현재 스텝의 시트에서 시작을 tap하면 학습 화면이 맵을 덮고 최상단에 온다", async () => {
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
-
-  startStep("ordering");
-
-  expect(screen.getByTestId("listening-screen-content")).toBeInTheDocument();
-  expect(screen.getByTestId("learning-shell-chapter")).toHaveTextContent("Lesson 1 / 3");
-  expect(screen.queryByTestId("journey-map-screen")).not.toBeInTheDocument();
-  expect(screen.queryByTestId("step-sheet-panel")).not.toBeInTheDocument();
-});
-
-// 결선 쪽 관찰입니다: 서로 다른 두 스텝에서 들어가면 화면에 렌더되는 값이
-// 갈립니다. `stepId`가 union을 타고 화면까지 도달하지 않으면 둘이 같아집니다.
-// (`greeting`은 done이지만 시트가 열리고 시작됩니다.)
-test("서로 다른 두 스텝에서 시작하면 문항 텍스트가 갈린다", async () => {
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
-
-  startStep("ordering");
-
-  expect(screen.getByTestId("listening-screen-content")).toBeInTheDocument();
-  expect(screen.getByTestId("listening-prompt-text")).toHaveTextContent(
-    questionsForStep("ordering")[0].prompt,
-  );
-
-  exitLearning();
-  startStep("introduction");
-
-  expect(screen.getByTestId("listening-screen-content")).toBeInTheDocument();
-  expect(screen.getByTestId("listening-prompt-text")).toHaveTextContent(
-    questionsForStep("introduction")[0].prompt,
-  );
-  expect(screen.getByTestId("listening-prompt-text")).not.toHaveTextContent(
-    questionsForStep("ordering")[0].prompt,
-  );
-});
-
-// 학습 화면은 셸을 가리지도 잠그지도 않습니다. 되돌아왔을 때 화면은 스택에 남고
-// **세션만** 버려진다는 것을 함께 봅니다 — 그래서 먼저 문항을 하나 넘겨 버려질
-// 로컬 상태를 만듭니다.
-// **뒤집힙니다**(ADR-0007 2026-09-27 개정). 예전에는 「학습 화면에서도 탭 셋이 그대로
-// 조작된다」를 봤습니다. 이제 학습은 탭 루트 위에 쌓인 자리라 **탭이 하나도 없습니다** —
-// 세션을 중간에 버리는 길을 화면 바닥에 깔아 두지 않습니다.
-//
-// 나가는 수단은 그대로 하나입니다(`×`). 그것으로 나가면 맵 루트에서 탭이 다시 서고,
-// 다시 들어가면 문항은 처음부터입니다 — 진행이 남지 않는다는 것은 그대로 봅니다.
-test("학습 화면에는 탭이 없고, 나갔다 다시 들어가면 문항은 처음부터다", async () => {
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
-  startStep("ordering");
-
-  expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(0);
-
-  fireEvent.tap(
-    screen.getByTestId(`listening-choice-${questionsForStep("ordering")[0].answerIndex}`),
-    {},
-  );
-  fireEvent.tap(screen.getByTestId("learning-shell-advance"), {});
-  expect(screen.getByTestId("learning-shell-chapter")).toHaveTextContent("Lesson 2 / 3");
-
-  exitLearning();
-
-  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
-  expect(screen.queryByTestId("listening-screen-content")).not.toBeInTheDocument();
-  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-journey")).toHaveAttribute(
-    "data-selected",
-    "true",
-  );
-  expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(3);
-
-  startStep("ordering");
-
-  expect(screen.getByTestId("listening-screen-content")).toBeInTheDocument();
-  expect(screen.getByTestId("learning-shell-chapter")).toHaveTextContent("Lesson 1 / 3");
-});
-
-// CSI1 — 완료 장면 신호가 라우팅을 지나서도 무대에 닿는다.
-test("[CSI1] 듣기를 끝내면 무대가 완료 장면이 되고 그 직전 문항 장면에는 표시가 없다", async () => {
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
-  startStep("ordering");
-
-  expect(screen.getByTestId("learning-shell-stage").hasAttribute("data-scene")).toBe(false);
-
-  answerAllQuestions("ordering", mixedPick);
-
-  const stage = screen.getByTestId("learning-shell-stage");
-  expect(stage.getAttribute("data-scene")).toBe("complete");
-  expect(within(stage).getByTestId("listening-screen-complete")).toBeInTheDocument();
-});
-
-// 루프 한 판이 진행을 갱신합니다.
-//
-// `onFinishLearning`은 `assessment` route로 `replace`하고, 통과면 학습 완료 화면이 뜹니다 —
-// `결과 보기` 탭 뒤 곧장 맵이 뜨지 않습니다. 완료 화면의 `Check`를 눌러야 맵에 닿습니다. 경로가 길어질 뿐
-// 단언의 끝은 같습니다.
-test("루프 한 판을 마치고 맵으로 돌아오면 그 스텝이 done, 다음이 current다", async () => {
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
-  startStep("ordering");
-
-  answerAllQuestions("ordering", mixedPick);
-
-  expect(screen.getByTestId("listening-screen-complete")).toHaveTextContent("All questions done");
-
-  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
-  fireEvent.tap(lessonCompleteExit(), {});
-
-  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
-  expect(screen.getByTestId("ui-lynx-learning-unit-ordering")).toHaveAttribute(
-    "data-status",
-    "clear",
-  );
-  expect(screen.getByTestId("ui-lynx-learning-unit-appointment")).toHaveAttribute(
-    "data-status",
-    "active",
-  );
-  expect(screen.getByTestId("ui-lynx-learning-unit-directions")).toHaveAttribute(
-    "data-status",
-    "default",
-  );
-});
-
-// 이 자리에 있던 "전부 오답으로 마쳐도 진행은 같은 결과로 갱신된다" 케이스는
-// 이후 뒤집힌 규칙(*"미통과도 완료를 건다"*)을 그대로 못박고 있어 무효가
-// 됐습니다. 대체하는 케이스는 아래 "평가 화면" 절의 I6입니다 — 같은 입력(전부
-// 오답)에서 기대가 반대로 뒤집힙니다: 완료가 걸리지 않고 그 스텝이 여전히
-// `current`로 남습니다.
-
-// 완료 전 이탈은 진행을 바꾸지 않습니다. 응답을 하나 남긴 채 나갑니다 — 아무것도
-// 안 한 채 나가면 "진행이 안 바뀐다"가 이탈 때문인지 아무 일도 없었기 때문인지
-// 갈리지 않습니다.
-test("완료 전에 맵으로 빠지면 진행이 바뀌지 않는다", async () => {
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
-  startStep("ordering");
-
-  const answerIndex = questionsForStep("ordering")[0].answerIndex;
-  fireEvent.tap(screen.getByTestId(`listening-choice-${answerIndex}`), {});
-  expect(screen.getByTestId(`listening-choice-${answerIndex}`)).toHaveAttribute(
-    "data-result",
-    "correct",
-  );
-  // 고른 뒤에는 넘김 층입니다 — 세션이 끝나지 않았으므로 아래 버튼(`결과 보기`)이
-  // 서지 않습니다.
-  expect(screen.getByTestId("learning-shell-advance")).toBeInTheDocument();
-  expect(screen.queryByTestId("learning-shell-action")).not.toBeInTheDocument();
-  expect(screen.queryByTestId("listening-screen-complete")).not.toBeInTheDocument();
-
-  exitLearning();
-
-  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
-  expect(screen.getByTestId("ui-lynx-learning-unit-ordering")).toHaveAttribute(
-    "data-status",
-    "active",
-  );
-  expect(screen.getByTestId("ui-lynx-learning-unit-appointment")).toHaveAttribute(
-    "data-status",
-    "default",
-  );
-});
-
-// **결선 쪽** 관찰입니다(순수 함수 쪽은 journey-map.unit.test.ts). 진행이 3이 된
-// 뒤 서수 1인 스텝을 다시 돌아도 3에서 줄지 않습니다. 두 finish 탭 모두 평가
-// 화면을 거칩니다 — 각 탭 뒤에 완료 화면의 `Check`를 눌러야 다음 단언(맵의 스텝
-// 상태)에 닿습니다.
-test("이미 마친 스텝을 다시 돌아도 진행이 되돌아가지 않는다", async () => {
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
-  startStep("ordering");
-  answerAllQuestions("ordering", mixedPick);
-  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
-  fireEvent.tap(lessonCompleteExit(), {});
-  expect(screen.getByTestId("ui-lynx-learning-unit-appointment")).toHaveAttribute(
-    "data-status",
-    "active",
-  );
-
-  startStep("greeting");
-  expect(screen.queryByTestId("listening-screen-content")).not.toBeInTheDocument();
-  expect(screen.getByTestId("sentence-order-screen-translation")).toHaveTextContent("Hello");
-  expect(screen.getByTestId("sentence-order-screen-romanization")).toHaveTextContent(
-    "annyeonghaseyo",
-  );
-  // 첫 인사는 오답 조각 없이 인사 한 번으로 마칩니다.
-  expect(screen.getByTestId("sentence-order-chip-0")).toHaveTextContent("안녕하세요");
-  expect(screen.queryByTestId("sentence-order-chip-1")).not.toBeInTheDocument();
-  expect(screen.getByTestId("sentence-order-screen-content")).toBeInTheDocument();
-  completeSentenceOrder("greeting");
-  fireEvent.tap(lessonCompleteExit(), {});
-
-  expect(screen.getByTestId("ui-lynx-learning-unit-greeting")).toHaveAttribute(
-    "data-status",
-    "clear",
-  );
-  expect(screen.getByTestId("ui-lynx-learning-unit-ordering")).toHaveAttribute(
-    "data-status",
-    "clear",
-  );
-  expect(screen.getByTestId("ui-lynx-learning-unit-appointment")).toHaveAttribute(
-    "data-status",
-    "active",
-  );
-});
-
-// 두 경로(완료 · 중도 이탈) 모두 시트가 닫힌 채로 돌아옵니다. `JourneyMapScreen`이
-// 언마운트되며 시트 상태가 버려지는 것의 결과입니다. 맵 제목을 함께 읽어 "맵이
-// 떠 있는데 시트만 없다"를 봅니다 — 부재만 보면 화면이 통째로 비어도
-// 통과합니다(공허하게 통과할 수 있는 자리입니다). 완료 경로는 평가 화면을
-// 거칩니다 — 완료 화면의 `Check`까지 눌러야 맵에 닿습니다.
-test("완료로 돌아와도 중도 이탈로 돌아와도 시트는 닫혀 있다", async () => {
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
-  startStep("ordering");
-  answerAllQuestions("ordering", mixedPick);
-  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
-  fireEvent.tap(lessonCompleteExit(), {});
-
-  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
-  expect(screen.queryByTestId("step-sheet-panel")).not.toBeInTheDocument();
-
-  startStep("appointment");
-  exitLearning();
-
-  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
-  expect(screen.queryByTestId("step-sheet-panel")).not.toBeInTheDocument();
-});
-
-// 잠긴 스텝에서는 시작할 수 없습니다(회귀 단언). 잠김이라는 것을 먼저 읽어
-// 앵커로 삼습니다.
-test("잠긴 스텝을 tap하면 시트도 학습 화면도 뜨지 않는다", async () => {
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
-  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
-  expect(screen.getByTestId("ui-lynx-learning-unit-directions")).toHaveAttribute(
-    "data-status",
-    "default",
-  );
-
-  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-directions"), {});
-
-  expect(screen.queryByTestId("step-sheet-panel")).not.toBeInTheDocument();
-  expect(screen.queryByTestId("listening-screen-content")).not.toBeInTheDocument();
-  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
-});
-
-// "storage를 import·호출하지 않는다"는 diff·grep의 몫이지만, 그 결과로 관찰되는
-// 사실 — **진행이 App 인스턴스 밖으로 나가지 않는다** — 은 여기서 실행 가능합니다.
-// 진행을 3으로 만든 뒤 앱을 통째로 내리고 다시 띄웁니다. 어딘가에 영속됐다면 새
-// 인스턴스가 3을 복원해 여기서 갈립니다(실기의 "앱 재시작 후 초기값 복귀"는 이
-// 단언의 대체가 아니라 나머지 절반입니다). 완료를 확인하려면 완료 화면의 Check까지
-// 눌러야 맵의 스텝 상태를 읽을 수 있습니다.
-test("진행이 영속되지 않는다 — 앱을 다시 띄우면 초기 진행으로 돌아온다", async () => {
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
-  startStep("ordering");
-  answerAllQuestions("ordering", mixedPick);
-  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
-  fireEvent.tap(lessonCompleteExit(), {});
-  expect(screen.getByTestId("ui-lynx-learning-unit-ordering")).toHaveAttribute(
-    "data-status",
-    "clear",
-  );
-
-  cleanup();
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
-  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
-
-  expect(screen.getByTestId("ui-lynx-learning-unit-ordering")).toHaveAttribute(
-    "data-status",
-    "active",
-  );
-  expect(screen.getByTestId("ui-lynx-learning-unit-appointment")).toHaveAttribute(
-    "data-status",
-    "default",
-  );
-});
-
-// ---------------------------------------------------------------------- 평가 화면
-// `App` · `navReducer`(`replace`) · `JourneyMapScreen` · `ListeningScreen` ·
-// `AssessmentScreen`이 실제로 맞물릴 때만 보이는 것들입니다 — `Screen` union 확장
-// · `replace` 결선 · 듣기에서 평가로 넘어가는 데이터 · **판정이 진행에 닿는
-// 자리**는 `ui`가 못 봅니다. 목킹하지 않습니다.
-//
-// 위에 있던 구 "전부 오답으로 마쳐도 진행은 같은 결과로 갱신된다" 케이스는
-// 이후 뒤집힌 규칙을 못박고 있어 무효가 됐고, 아래 I6이 그 자리를 대체합니다.
-
-// I1 · 마지막 문항 뒤 `결과 보기`를 누르면 — 통과이므로 — 평가 화면이 아니라 학습 완료
-// 화면이 뜹니다. `mixedPick`은 가운데 문항만 오답이라 2/3 — `minCorrectCount: 2`에서
-// 정확히 통과 경로이고, 실수가 하나라 제목이 `PERFECT`가 아닙니다.
-test("I1: 문항 셋을 통과 경로로 마치고 결과 보기를 누르면 학습 완료 화면이 뜬다", async () => {
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
-  startStep("ordering");
-
-  answerAllQuestions("ordering", mixedPick);
-  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
-
-  expect(screen.getByTestId("lesson-complete-screen-title")).toHaveTextContent("LESSON COMPLETE!");
-  expect(screen.queryByTestId("assessment-screen-title")).not.toBeInTheDocument();
-  expect(screen.queryByTestId("listening-screen-title")).not.toBeInTheDocument();
-});
-
-// I2: 완료 화면의 실수 수가 실제로 고른 보기의 정오와 일치합니다 — 듣기의 이력이 완료
-// 화면까지 옵니다. `mixedPick`은 인덱스 1만 오답이고, 전부 정답이면 `PERFECT`입니다.
-test("I2: 완료 화면의 실수 수가 실제로 고른 보기의 정오와 일치한다", async () => {
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
-  startStep("ordering");
-  answerAllQuestions("ordering", mixedPick);
-  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
-
-  expect(screen.getByTestId("lesson-complete-screen-subtitle")).toHaveTextContent(
-    "YOU MADE 1 MISTAKE IN THIS LESSON",
-  );
-  fireEvent.tap(lessonCompleteExit(), {});
-
-  startStep("appointment");
-  answerAllQuestions("appointment", (answerIndex) => answerIndex);
-  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
-
-  expect(screen.getByTestId("lesson-complete-screen-title")).toHaveTextContent("PERFECT LESSON!");
-});
-
-// I3: 완료 화면의 `Check`가 `backToRoot` 하나로 맵에 닿습니다. 나가기가 활성 스택의
-// 루트로 곧장 가므로(ADR-0007 D6) 이 관찰은 진입이 push였든 replace였든
-// 같습니다 — 이 테스트는 목적지를 짓고 진입 동작을 짓지 않습니다.
-test("I3: 완료 화면의 Check를 누르면 backToRoot 하나로 맵에 닿는다", async () => {
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
-  startStep("ordering");
-  answerAllQuestions("ordering", mixedPick);
-  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
-  expect(screen.getByTestId("lesson-complete-screen-title")).toBeInTheDocument();
-
-  fireEvent.tap(lessonCompleteExit(), {});
-
-  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
-  expect(screen.queryByTestId("lesson-complete-screen-title")).not.toBeInTheDocument();
-  expect(screen.queryByTestId("listening-screen-title")).not.toBeInTheDocument();
-});
-
-// I4: 통과가 완료를 겁니다 — 전에는 "듣기가 걸었다"였습니다.
-test("I4: 통과 뒤 맵으로 돌아오면 그 스텝이 done이고 다음이 current다", async () => {
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
-  startStep("ordering");
-  answerAllQuestions("ordering", mixedPick);
-  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
-  fireEvent.tap(lessonCompleteExit(), {});
-
-  expect(screen.getByTestId("ui-lynx-learning-unit-ordering")).toHaveAttribute(
-    "data-status",
-    "clear",
-  );
-  expect(screen.getByTestId("ui-lynx-learning-unit-appointment")).toHaveAttribute(
-    "data-status",
-    "active",
-  );
-});
-
-// I5: 중도 이탈에는 평가가 없습니다 — 문항 하나만 응답하고 헤더 `맵으로`로 나가면
-// 진행이 안 바뀌고 평가 화면 자체가 뜨지 않습니다.
-test("I5: 문항 하나만 응답하고 헤더 맵으로 나가면 진행이 안 바뀌고 평가가 뜨지 않는다", async () => {
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
-  startStep("ordering");
-
-  const answerIndex = questionsForStep("ordering")[0].answerIndex;
-  fireEvent.tap(screen.getByTestId(`listening-choice-${answerIndex}`), {});
-
-  exitLearning();
-
-  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
-  expect(screen.queryByTestId("assessment-screen-title")).not.toBeInTheDocument();
-  expect(screen.getByTestId("ui-lynx-learning-unit-ordering")).toHaveAttribute(
-    "data-status",
-    "active",
-  );
-  expect(screen.getByTestId("ui-lynx-learning-unit-appointment")).toHaveAttribute(
-    "data-status",
-    "default",
-  );
-});
-
-// I6: 이 파일에 있던 구 케이스("전부 오답으로 마쳐도 진행은 같은 결과로
-// 갱신된다")가 뒤집혀 이 케이스가 그 자리를 대체합니다. 셋을 한 흐름에서
-// 봅니다: (1) 판정이 `data-verdict="failed"`입니다 (2) 맵의 그 스텝이 여전히
-// `current`이고 다음이 `locked` 그대로입니다 — 진행이 안 늘었습니다 (3) 그
-// 노드를 다시 눌러 시트의 `시작`으로 듣기에 다시 들어갈 수 있습니다.
-// `incorrectPick`은 0/3이라 `minCorrectCount: 2`에서 확실히 미통과입니다.
-test("I6: 미통과면 완료가 안 걸리고 맵의 그 스텝이 여전히 current로 남아 다시 들어갈 수 있다", async () => {
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
-  startStep("ordering");
-
-  answerAllQuestions("ordering", incorrectPick);
-  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
-
-  // ⟨2026-09-28⟩ 미통과도 학습 결과 화면입니다 — 판정은 제목과 표식이 말합니다.
-  expect(screen.getByTestId("lesson-complete-screen-title")).toHaveTextContent("LESSON FAILED");
-  expect(screen.getByTestId("lesson-complete-screen-retry")).toBeInTheDocument();
-
-  fireEvent.tap(lessonCompleteExit(), {});
-
-  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
-  expect(screen.getByTestId("ui-lynx-learning-unit-ordering")).toHaveAttribute(
-    "data-status",
-    "active",
-  );
-  expect(screen.getByTestId("ui-lynx-learning-unit-appointment")).toHaveAttribute(
-    "data-status",
-    "default",
-  );
-
-  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), {});
-  expect(screen.getByTestId("step-sheet-panel")).toBeInTheDocument();
-  fireEvent.tap(screen.getByTestId("step-sheet-start"), {});
-
-  expect(screen.getByTestId("listening-screen-content")).toBeInTheDocument();
-  expect(screen.getByTestId("learning-shell-chapter")).toHaveTextContent("Lesson 1 / 3");
-});
-
-// ---------------------------------------------------------------------- 오디오 축
-//
-// **`ui`가 원리적으로 볼 수 없는 것만 여기에 씁니다.** `ListeningPrompt.ui.test.tsx`와
-// `ListeningScreen.ui.test.tsx`는 컴포넌트를 고립 렌더하고 `unmount()`를 **손으로**
-// 부릅니다 — 그것은 "cleanup이 stop을 부른다"의 판정이지 "**출구·완료·탭 전환이
-// 실제로 언마운트를 일으킨다**"의 판정이 아닙니다. 언마운트를 일으키는 주체는
-// `App`이고, 그 결선은 이 계층에서만 관찰됩니다.
-//
-// **`lib/audio.ts`를 `vi.mock`하지 않습니다.** 그 파일이 세대(generation)로 늦게
-// 온 완료를 버리고 모듈 부재를 흡수하는데, 모듈을 통째로 대역으로 바꾸면 그
-// 가드가 자동 계층에서 사라지고 아래의 「대역 없이도 돈다」가 진짜 경로가
-// 아니게 됩니다. 대역을 두는 자리는 **호스트 경계 하나**이고, 형태의 정본은
-// `src/lib/audio.unit.test.ts`의 `stubHost()`입니다.
-//
-// **기대값을 이 파일이 지어내지 않습니다** — `audioSource`의 정본은 계약이 고정한
-// `listeningQuestionsByStep`이므로 `questionsForStep`으로 읽습니다. 위쪽 스무
-// 케이스가 `answerIndex`를 읽는 것과 같은 규칙입니다.
-
-const STOP = "<stop>";
-
-type HostCall = { source: string; done: (result: unknown) => void };
-type AnnounceCall = { content: string };
-
-// 없던 전역(`NativeModules`)을 세웁니다. `play`와 `stop`을 **한 배열에** 적습니다
-// — 이 계층이 보는 것이 바로 둘의 **상대 순서**이기 때문입니다(stop 뒤 새 play).
-// `stop` 호출은 `source: "<stop>"`로 표시합니다. 실제 `audioSource`에는 `<`·`>`가
-// 없습니다.
-//
-// ⚠ **`vi.stubGlobal("NativeModules", …)`은 전역을 통째로 덮습니다.** 낭독 대역을
-// 따로 세우면 뒤에 부른 쪽이 앞의 것을 지웁니다 — 오디오가 죽거나(기존 케이스가
-// 실패) 발화가 안 잡힙니다(새 케이스가 공허하게 통과). 그래서 이 파일의
-// `vi.stubGlobal`은 **하나**이고 그 객체가 **두 모듈을 함께** 담습니다. 형태의
-// 정본은 `ListeningScreen.ui.test.tsx`의 같은 이름 헬퍼입니다.
-//
-// 반환은 호출 배열 둘입니다. `sourcesOf`·`playSources`·`stopCount`의 입력 타입은
-// 그대로 `HostCall[]`입니다 — 위쪽 오디오 단언이 한 줄도 흔들리지 않습니다.
-function stubHost(): { audio: HostCall[]; announce: AnnounceCall[] } {
-  const audio: HostCall[] = [];
-  const announce: AnnounceCall[] = [];
-  const audioModule = {
-    play: (source: string, done: (result: unknown) => void) => void audio.push({ source, done }),
-    stop: () => void audio.push({ source: STOP, done: () => {} }),
-  };
-  const accessibilityModule = {
-    accessibilityAnnounce: (args: { content: string }, callback: (result: unknown) => void) => {
-      announce.push({ content: args.content });
-      callback("announced");
-    },
-  };
-  vi.stubGlobal("NativeModules", {
-    AudioPlaybackModule: audioModule,
-    LynxAccessibilityModule: accessibilityModule,
-  });
-  return { audio, announce };
-}
-
-const sourcesOf = (calls: readonly HostCall[]): string[] => calls.map((call) => call.source);
-
-const playSources = (calls: readonly HostCall[]): string[] =>
-  calls.filter((call) => call.source !== STOP).map((call) => call.source);
-
-const stopCount = (calls: readonly HostCall[]): number =>
-  calls.filter((call) => call.source === STOP).length;
-
-// 값의 정본은 데이터입니다 — 리터럴("ordering-1")을 적으면 이 파일이 두 번째
-// 정본이 됩니다.
-const audioSourceAt = (stepId: JourneyStepId, index: number): string =>
-  questionsForStep(stepId)[index].audioSource;
-
-// 전역 대역을 **테스트마다 원상복구합니다.** 지우지 않으면 대역이 다른 테스트
-// 파일로 새고, **대역 없이 도는 위쪽 스무 케이스가 먼저 빨개집니다.**
-afterEach(() => {
-  vi.unstubAllGlobals();
-});
-
-// **결선 쪽** 절반입니다. `ui`는 `ListeningScreen`에 `stepId`를 손으로 넘겨
-// 렌더하지만, 여기서는 **맵의 노드 tap → 시트 → `시작`**이 그 값을 실어
-// 나릅니다. 중간 어디서 stepId가 상수로 굳으면 여기서만 갈립니다.
-test("맵 → 시트 → 시작이면 그 스텝의 첫 문항 audioSource로 play가 불린다", async () => {
-  const { audio: calls } = stubHost();
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
-
-  startStep("ordering");
-
-  expect(sourcesOf(calls)).toEqual([audioSourceAt("ordering", 0)]);
-  expect(stopCount(calls)).toBe(0);
-});
-
-// 같은 것의 짝입니다 — **서로 다른 두 스텝에서 값이 갈립니다.** 한 스텝의 source가
-// 박혀 있으면 위 단언은 통과하고 이것만 죽습니다. 두 값이 애초에 다르다는 것도
-// 앵커로 함께 읽습니다(같으면 아래 단언이 공허해집니다).
-test("서로 다른 두 스텝에서 시작하면 play의 source가 그 스텝 것으로 갈린다", async () => {
-  const { audio: calls } = stubHost();
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
-
-  startStep("ordering");
-  expect(sourcesOf(calls)).toEqual([audioSourceAt("ordering", 0)]);
-
-  exitLearning();
-  startStep("introduction");
-
-  expect(audioSourceAt("introduction", 0)).not.toBe(audioSourceAt("ordering", 0));
-  expect(sourcesOf(calls)).toEqual([
-    audioSourceAt("ordering", 0),
-    STOP,
-    audioSourceAt("introduction", 0),
-  ]);
-});
-
-// **App을 통과한 실제 흐름에서** 문항이 넘어갑니다. `ui`는 `rerender`로 prop을
-// 갈아 끼워 이 순서를 봤습니다. 여기서는 보기 tap → 넘김 층 tap이 세션 리듀서를
-// 지나 `question.audioSource`를 바꾸는 것까지가 관찰 대상입니다.
-test("넘김 층으로 문항을 넘기면 stop 뒤 새 source로 play가 불린다", async () => {
-  const { audio: calls } = stubHost();
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
-  startStep("ordering");
-
-  fireEvent.tap(
-    screen.getByTestId(`listening-choice-${questionsForStep("ordering")[0].answerIndex}`),
-    {},
-  );
-  fireEvent.tap(screen.getByTestId("learning-shell-advance"), {});
-
-  expect(screen.getByTestId("learning-shell-chapter")).toHaveTextContent("Lesson 2 / 3");
-  expect(sourcesOf(calls)).toEqual([
-    audioSourceAt("ordering", 0),
-    STOP,
-    audioSourceAt("ordering", 1),
-  ]);
-});
-
-// **`맵으로`(중도 이탈)가 화면을 언마운트합니다.** `onExit`이 화면을 스택에서
-// 걷지 않고 맵을 그 위에 얹기만 해도 `ui`는 전부 green입니다. 맵이 실제로 떠
-// 있는 것을 함께 읽어 "화면이 통째로 비었다"와 갈라 놓습니다.
-test("맵으로(중도 이탈)로 나가면 stop이 불리고 맵으로 돌아온다", async () => {
-  const { audio: calls } = stubHost();
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
-  startStep("ordering");
-  expect(stopCount(calls)).toBe(0);
-
-  exitLearning();
-
-  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
-  expect(screen.queryByTestId("listening-prompt-playback")).not.toBeInTheDocument();
-  expect(sourcesOf(calls)).toEqual([audioSourceAt("ordering", 0), STOP]);
-});
-
-// 완료 뒤 `맵으로 돌아가기`를 봅니다.
-//
-// **"`맵으로 돌아가기` tap → `stop`이 불린다"고 기대하지만, 그 tap 자체는 `stop`을
-// 부르지 않습니다.** 완료 시점에 `question === null`이 되어 `ListeningPrompt`가
-// 이미 언마운트됐고 cleanup이 그때 `stop`을 불렀기 때문입니다(완료가 나가기보다
-// **먼저** 옵니다). 그래서 이 테스트는 tap 시점에 호출 하나가 더 얹히는지를
-// 묻지 않고, **맵으로 돌아온 시점에 멎지 않은 재생이 하나도 남아 있지 않은지**를
-// 묻습니다 — 그것이 지키려던 사실(*화면을 떠나면 소리가 계속 나지 않는다*)입니다.
-// tap이 새 `play`를 만들어 내지 않는다는 것도 함께 못박습니다.
-// `결과 보기` 탭 뒤 평가 화면이 뜹니다 — 평가 화면은 오디오를 전혀 만지지
-// 않으므로 마운트돼도 재생 호출이 늘지 않습니다. 그 사실을 평가의 맵으로를
-// 누르기 **전에** 먼저 확인하고, 맵에 닿은 뒤에도 다시 확인합니다 — 경로가 늘
-// 뿐 "멎지 않은 재생이 남지 않는다"의 뜻은 그대로입니다.
-test("완료 후 맵으로 돌아가기로 나가면 멎지 않은 재생이 남지 않는다", async () => {
-  const { audio: calls } = stubHost();
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
-  startStep("ordering");
-
-  answerAllQuestions("ordering", mixedPick);
-
-  expect(screen.getByTestId("listening-screen-complete")).toHaveTextContent("All questions done");
-  const atComplete = sourcesOf(calls);
-  expect(atComplete).toEqual([
-    audioSourceAt("ordering", 0),
-    STOP,
-    audioSourceAt("ordering", 1),
-    STOP,
-    audioSourceAt("ordering", 2),
-    STOP,
-  ]);
-
-  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
-
-  expect(screen.getByTestId("lesson-complete-screen-title")).toBeInTheDocument();
-  expect(sourcesOf(calls)).toEqual(atComplete);
-
-  fireEvent.tap(lessonCompleteExit(), {});
-
-  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
-  expect(sourcesOf(calls)).toEqual(atComplete);
-  expect(playSources(calls)).toHaveLength(stopCount(calls));
-});
-
-// **셸 전환에서도 소리가 멈춥니다.** `ui`가 **원리적으로** 못 보는 경로입니다:
-// 탭은 `BottomNavigator`가 dispatch하고 화면을 걷는 것은 `App`이라, 컴포넌트를
-// 고립 렌더하는 층에는 이 경로 자체가 없습니다. 돌아왔을 때 세션이 버려져 문항
-// 1부터 다시 트는 것까지 이어서 봅니다 — `stop`만 보면 "떠날 때 멈춘다"와
-// "다시는 안 튼다"가 갈리지 않습니다.
-// 학습 화면에는 탭이 없으므로(ADR-0007 2026-09-27 개정) 나가는 길은 `×` 하나입니다.
-// 보는 것은 그대로입니다 — **화면을 떠나면 소리가 멈추고, 다시 들어가면 처음부터
-// 다시 튼다.** 떠나는 수단만 갈립니다.
-test("학습 화면을 나가면 stop이 불리고, 다시 들어가면 첫 문항으로 다시 튼다", async () => {
-  const { audio: calls } = stubHost();
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
-  startStep("ordering");
-  expect(stopCount(calls)).toBe(0);
-
-  exitLearning();
-
-  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
-  expect(screen.queryByTestId("listening-prompt-playback")).not.toBeInTheDocument();
-  expect(sourcesOf(calls)).toEqual([audioSourceAt("ordering", 0), STOP]);
-
-  startStep("ordering");
-
-  expect(screen.getByTestId("learning-shell-chapter")).toHaveTextContent("Lesson 1 / 3");
-  expect(sourcesOf(calls)).toEqual([
-    audioSourceAt("ordering", 0),
-    STOP,
-    audioSourceAt("ordering", 0),
-  ]);
-});
-
-// ------------------------------------------------------------------- 완료 전이 발화
-//
-// **오디오와 같은 대역을 지납니다** — `stubHost()`가 한 객체에 두 모듈을 담습니다.
-// 위 오디오 절의 단언들이 그대로 통과하는 것이 그 병합이 옳다는 증거입니다.
-//
-// **`ui`가 원리적으로 만들 수 없는 트리에서만 볼 수 있는 것을 봅니다.**
-// `ListeningScreen.ui.test.tsx`의 X-A·X-D는 화면 하나를 고립 렌더합니다. 여기서
-// 도는 트리는 셸이 바텀 내비게이터를 **항상 함께** 렌더하고, 여정 맵의 노드 tap
-// → 시트 → `시작`으로 진입하고, 실물 문항 표를 실제로 다 지나온 합성
-// 트리입니다. 그래서 `[accessibility-element]` 목록이 `ui`의 것과 **갈립니다**
-// — 셸의 탭이 함께 있고, 「그 순간 조작 단위가 하나」는 **학습 화면 안에서**
-// 참인 명제가 됩니다. 발화의 뒷절이 가리키는 것이 바로 그 하나입니다.
-//
-// 발화 문자열을 리터럴로만 적지 않습니다 — 앞절은 종료 문구 요소의 내용에서,
-// 뒷절은 그 순간 화면에 실재하는 유일한 조작 단위의 `accessibility-label`에서
-// 파생해 짓고(ADR-0016 D11-1), 계약이 값까지 고정한 문자열과도 대조합니다.
-test("셸을 지나 듣기 세션을 마치면 발화가 정확히 하나이고 그 낱말이 화면에 있는 것뿐이다", async () => {
-  const { announce } = stubHost();
-  const { container } = await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
-
-  startStep("ordering");
-
-  expect(announce).toHaveLength(0); // 앵커 — 세션 도중에는 조용합니다.
-
-  answerAllQuestions("ordering", mixedPick);
-
-  // 앵커 — 셸을 지나 종료 상태에 실제로 닿았습니다. 안 닿으면 아래가 전부 공허해집니다.
-  const complete = screen.getByTestId("listening-screen-complete");
-  expect(complete).toHaveTextContent("All questions done");
-
-  const operable = [...container.querySelectorAll("[accessibility-element]")].map((el) =>
-    el.getAttribute("data-testid"),
-  );
-  // 셸이 함께 섭니다 — `ui`가 만들 수 없는 트리라는 것의 관측 가능한 형태입니다. 그
-  // 형태가 뒤집혔습니다(ADR-0007 2026-09-27 개정): 학습은 탭 루트 위에 쌓인 자리라
-  // 바가 **없습니다.** 화면 하나만 렌더하는 `ui`는 「바를 없앤 트리」도 만들 수
-  // 없습니다 — 애초에 바를 세운 적이 없기 때문입니다.
-  expect(operable.filter((id) => id?.startsWith("ui-lynx-bottom-navigator-item-"))).toEqual([]);
-
-  // 2026-09-27: 「학습 화면 안의 조작 단위가 하나」가 아니게 됐습니다 — 학습 껍데기가
-  // 상단 바와 나가기를 함께 세웁니다. 유일성 대신 **무대에는 조작 단위가 없다**로
-  // 좁힙니다: 완료 상태에서 카드 안에 할 일이 없고, 다음 걸음은 아래 버튼 하나입니다.
-  // 2026-10-19: 완료 카드의 숫자 타일(시안 A)은 낭독을 한 덩이로 묶는 요소이지 조작 단위가 아닙니다 —
-  // 탭 · 버튼 성질이 없습니다. 그래서 이 단언에서는 빼고, 남은 것이 0인지만 봅니다.
-  const readOnlyTiles = [
-    "learning-activity-complete-questions",
-    "learning-activity-complete-activities",
-  ];
-  const stage = screen.getByTestId("learning-shell-stage");
-  const stageElements = [...stage.querySelectorAll('[accessibility-element="true"]')];
-  for (const tile of stageElements.filter((el) =>
-    readOnlyTiles.includes(el.getAttribute("data-testid") ?? ""),
-  )) {
-    expect(tile).not.toHaveAttribute("accessibility-traits");
-    expect(tile).not.toHaveAttribute("bindtap");
-  }
-  expect(
-    stageElements
-      .map((el) => el.getAttribute("data-testid"))
-      .filter((id) => !readOnlyTiles.includes(id ?? "")),
-  ).toEqual([]);
-
-  const actionLabel =
-    screen.getByTestId("learning-shell-action").getAttribute("accessibility-label") ?? "";
-
-  expect(announce).toHaveLength(1);
-  expect(announce[0]?.content).toBe(`${complete.textContent ?? ""}, ${actionLabel}`);
-  expect(announce[0]?.content).toBe("All questions done, See results");
-});
-
-// **회귀 단언**입니다. 위쪽 스무 케이스가 전부 대역 없이 도는 것이 이미 이
-// 사실을 지고 있지만, **이름으로 한 번 못박습니다** — 그것들은 오디오를 모르고
-// 죽어도 다른 것을 가리키기 때문입니다.
-//
-// `NativeModules` 전역이 **아예 없는** 환경입니다. `lib/audio.ts`의 `typeof`
-// 가드가 빠지면 맨 식별자 접근에서 ReferenceError가 나고 렌더 경로가 통째로
-// 죽습니다. 화면이 「재생 중」으로 보이지 않는 것(`듣기`에 머뭅니다)도 함께
-// 봅니다 — 모듈이 없는데 `멈춤`에 갇히면 고장이 정상인 척합니다.
-//
-// 완료 뒤 평가 화면이 뜹니다. 평가 화면은 마운트 때 `announce`를 부르고,
-// `lib/accessibility.ts`의 `typeof NativeModules === "undefined"` 가드가 그
-// 호출을 받아 던지지 않습니다 — 이 케이스가 그 가드가 실제로 일하는지를 보는
-// 자리가 됐습니다. 경로만 늘리고 판정은 그대로 "던지지 않는다"와 "맵에서
-// done"입니다.
-test("대역이 없어도 루프 한 판이 끝까지 돌고 재생 조작이 '듣기'에 머문다", async () => {
-  // 대역을 세우는 케이스들 **뒤에** 오는 자리입니다 — 그것들이 세운 대역이
-  // `afterEach`에서 실제로 걷혔는지를 여기서 한 줄로 못박습니다. 새면 위쪽 스무
-  // 케이스가 「모듈이 없는 환경」을 더 이상 돌지 않게 되고, 이 가드의 회귀
-  // 단언이 조용히 공허해집니다.
-  expect(typeof NativeModules).toBe("undefined");
-
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
-
-  startStep("ordering");
-
-  const playback = () => screen.getByTestId("listening-prompt-playback");
-  expect(playback()).toHaveAttribute("accessibility-label", "Play");
-
-  // 눌러도 던지지 않고 상태가 움직이지 않습니다 — 아무 일도 일어나지 않는 것이 정상입니다.
-  expect(() => fireEvent.tap(playback(), {})).not.toThrow();
-  expect(playback()).toHaveAttribute("accessibility-label", "Play");
-
-  expect(() => answerAllQuestions("ordering", mixedPick)).not.toThrow();
-
-  expect(screen.getByTestId("listening-screen-complete")).toHaveTextContent("All questions done");
-
-  expect(() => fireEvent.tap(screen.getByTestId("learning-shell-action"), {})).not.toThrow();
-  expect(screen.getByTestId("lesson-complete-screen-title")).toBeInTheDocument();
-
-  expect(() => fireEvent.tap(lessonCompleteExit(), {})).not.toThrow();
-
-  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
-  expect(screen.getByTestId("ui-lynx-learning-unit-ordering")).toHaveAttribute(
-    "data-status",
-    "clear",
   );
 });
 
@@ -1134,9 +216,7 @@ test("대역이 없어도 루프 한 판이 끝까지 돌고 재생 조작이 '�
 // "어딘가에 하나 있다"가 아니라 "그 화면의 것이 있다"를 확인하기 위해서입니다.
 // 첫 화면이 여정 맵이라(홈 탭 제거) 순회는 여정 맵 → 롤플레이 → 설정입니다.
 test("탭 셋을 순회하며 각 화면에 스크롤 컨테이너가 하나씩 있다", async () => {
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
+  await renderSignedInApp(<App progressSeed={u01OpenSeed} />);
 
   expect(screen.getByTestId("journey-map-screen-scroll")).toBeInTheDocument();
 
@@ -1150,14 +230,13 @@ test("탭 셋을 순회하며 각 화면에 스크롤 컨테이너가 하나씩 
 });
 
 // 탭 스택이 아니라 **스택에 쌓인 화면**에도 스크롤 컨테이너가 있는지 봅니다 —
-// 여정 맵 → 스텝 tap → 시트 `시작` → 듣기 화면. `startStep`은 위쪽 「학습 루프」
-// 절이 정의한 것을 그대로 재사용합니다(함수 선언은 호이스팅됩니다).
+// 여정 맵 → 스텝 tap → 시트 `시작` → 듣기 화면.
 test("탭이 아니라 스택에 쌓인 화면(듣기)에도 스크롤 컨테이너가 있다", async () => {
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
+  await renderSignedInApp(<App progressSeed={u01OpenSeed} />);
 
-  startStep("ordering");
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
+  fireEvent.tap(screen.getByTestId(S1), {});
+  fireEvent.tap(screen.getByTestId("step-sheet-start"), {});
 
   expect(screen.getByTestId("learning-shell-stage")).toBeInTheDocument();
   expect(screen.queryByTestId("journey-map-screen-scroll")).not.toBeInTheDocument();
@@ -1167,100 +246,12 @@ test("탭이 아니라 스택에 쌓인 화면(듣기)에도 스크롤 컨테이
 // 그대로 유지합니다 — 시트는 스크롤 밖이므로 시트가 열려도 맵의 스크롤
 // 컨테이너는 사라지지 않습니다.
 test("시트가 열려 있어도 여정 맵의 스크롤 컨테이너는 그대로다", async () => {
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
+  await renderSignedInApp(<App progressSeed={u01OpenSeed} />);
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   expect(screen.getByTestId("journey-map-screen-scroll")).toBeInTheDocument();
 
-  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), {});
+  fireEvent.tap(screen.getByTestId(S1), {});
 
   expect(screen.getByTestId("step-sheet-panel")).toBeInTheDocument();
   expect(screen.getByTestId("journey-map-screen-scroll")).toBeInTheDocument();
-});
-
-// ---------------------------------------------------------------- 활동 둘을 잇는 스텝
-//
-// ⟨2026-09-28⟩ **여기까지 오는 길이 처음 생겼습니다.** 유닛 하나가 활동 여럿을 잇는
-// 것은 2026-09-26에 설계로 정해졌고 `learningFormAt`·`activityIndex`가 그때 들어왔는데,
-// 배정표의 다섯 칸이 전부 활동 하나였던 탓에 **제품에서 한 번도 밟히지 않는 코드**였습니다.
-// `introduction`이 듣기 + 낱말 고르기를 잇게 되면서 그 길이 열렸고, 이 절이 그것을 봅니다.
-//
-// 아래 셋이 이 절이 지는 것입니다: 첫 활동을 마치면 **평가가 아니라 둘째 활동**이
-// 선다 · 둘째 활동이 제 문항을 연다 · 둘을 다 마쳐야 평가에 닿는다.
-
-// 낱말 고르기의 문항을 순서대로 전부 응답하고 매번 넘깁니다. 듣기의
-// `answerAllQuestions`와 같은 꼴이지만 보기의 testid가 갈립니다.
-function answerAllWordChoiceQuestions(
-  stepId: JourneyStepId,
-  pick: (answerIndex: number, questionIndex: number) => number,
-): void {
-  wordChoiceQuestionsForStep(stepId).forEach((question, questionIndex) => {
-    const choiceIndex = pick(question.answerIndex, questionIndex);
-
-    fireEvent.tap(screen.getByTestId(`word-choice-option-${choiceIndex}`), {});
-    fireEvent.tap(screen.getByTestId("learning-shell-advance"), {});
-  });
-}
-
-test("활동이 둘인 스텝은 첫 활동을 마치면 평가가 아니라 둘째 활동이 선다", async () => {
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
-
-  startStep("introduction");
-  expect(screen.getByTestId("listening-screen-content")).toBeInTheDocument();
-
-  answerAllQuestions("introduction", mixedPick);
-  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
-
-  expect(screen.getByTestId("word-choice-screen-content")).toBeInTheDocument();
-  expect(screen.queryByTestId("lesson-complete-screen-exit")).not.toBeInTheDocument();
-  expect(screen.queryByTestId("listening-screen-content")).not.toBeInTheDocument();
-});
-
-// 둘째 활동이 **자기** 문항을 엽니다 — 결선이 stepId를 넘기지 않으면 여기서 빈
-// 화면(문항 0개)이 서고, 그것이 완료 상태와 구별되지 않습니다.
-test("둘째 활동이 그 스텝의 낱말 고르기 문항을 연다 — 순번도 처음부터다", async () => {
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
-
-  startStep("introduction");
-  answerAllQuestions("introduction", mixedPick);
-  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
-
-  expect(screen.getByTestId("word-choice-screen-prompt")).toHaveTextContent(
-    wordChoiceQuestionsForStep("introduction")[0]!.prompt,
-  );
-  expect(screen.getByTestId("learning-shell-chapter")).toHaveTextContent("Lesson 1 / 3");
-});
-
-// 평가는 **활동을 다 마친 뒤** 한 번입니다. 첫 활동에서 이미 평가로 갔다면 위 테스트가
-// 잡고, 마지막 활동 뒤에 평가가 안 오면 이 테스트가 잡습니다.
-//
-// ⟨2026-09-28⟩ 이름 묻기가 듣기 → 낱말 고르기 → **말하기** 셋을 잇습니다. 이 계층에는 음성
-// 인식 모듈이 없으므로 말하기의 문항은 `말하기` → `건너뛰기`로 넘깁니다 — 건너뛴 문항은 결과에
-// 실리지 않고, 듣기 · 낱말 고르기의 결과만으로 판정합니다.
-test("활동 셋을 다 마치면 그때 학습 결과 화면에 닿는다", async () => {
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
-
-  startStep("introduction");
-  answerAllQuestions("introduction", mixedPick);
-  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
-  answerAllWordChoiceQuestions("introduction", mixedPick);
-  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
-
-  expect(screen.getByTestId("speaking-screen-content")).toBeInTheDocument();
-  expect(lessonCompleteExitOrNull()).toBeNull();
-  for (let index = 0; index < speakingQuestionsForStep("introduction").length; index += 1) {
-    fireEvent.tap(screen.getByTestId("learning-shell-action"), {}); // 말하기
-    fireEvent.tap(screen.getByTestId("learning-shell-action"), {}); // 건너뛰기
-  }
-  fireEvent.tap(screen.getByTestId("learning-shell-action"), {}); // 결과 보기
-
-  expect(lessonCompleteExit()).toBeInTheDocument();
-  expect(screen.queryByTestId("speaking-screen-content")).not.toBeInTheDocument();
 });

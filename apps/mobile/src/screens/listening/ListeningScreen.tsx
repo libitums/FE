@@ -18,11 +18,8 @@ import {
   isSessionComplete,
   listeningCompletionAnnouncement,
   listeningSessionReducer,
-  questionsForStep,
   sessionAnswerResults,
 } from "./listening";
-import type { AnswerResult } from "../../lib/answer-result";
-import type { JourneyStepId } from "../journey-map/journey-map";
 import type { SessionOptions } from "../../lib/session-options";
 import { handsOffAfter, lessonCounter } from "../learning/activity-finish";
 import type { ActivityFinish, LessonPosition } from "../learning/activity-finish";
@@ -38,46 +35,15 @@ import "./listening-screen.css";
 // **뼈대는 이 화면의 것이 아닙니다**(2026-09-27, Figma 65-14). 상단 바·세션 헤더·
 // 지시문·무대 카드·아래 버튼은 `LearningShell`이 집니다. 이 화면이 아는 것은 카드
 // **안**에 무엇이 서는가와, 아래 버튼이 지금 무엇을 해야 하는가뿐입니다.
-//
-// journey-map에서 가져오는 것은 **타입 하나뿐**입니다. `stepOrdinal`은 App이
-// `journeyStepOrdinal`로 계산해 내려 주고, 이 화면은 여정 맵의 값을 읽지 않습니다.
-export type ListeningScreenProps = {
-  stepId: JourneyStepId;
-  onExit: () => void;
-  onFinish: (id: JourneyStepId, results: readonly AnswerResult[], skippedCount: number) => void;
-  sessionOptions: SessionOptions;
-  /** 상단 바의 젬 칩 값입니다. 전역 머리와 같은 값을 그리도록 App이 내립니다. */
-  gemCount?: number;
-};
-
 export type ListeningActivityProps = {
   readonly questions: readonly ListeningQuestion[];
   readonly onExit: () => void;
   readonly onFinish: ActivityFinish;
   readonly sessionOptions: SessionOptions;
   readonly gemCount: number;
-  /** 카탈로그 레슨 안의 위치입니다. 튜토리얼처럼 활동 하나가 한 세션이면 주지 않습니다. */
+  /** 카탈로그 레슨 안의 위치입니다. 활동 하나가 한 세션이면 주지 않습니다. */
   readonly lesson?: LessonPosition;
 };
-
-/** 튜토리얼 스텝의 문항 표를 읽어 활동에 넘기는 얇은 어댑터입니다. */
-export function ListeningScreen({
-  stepId,
-  onExit,
-  onFinish,
-  sessionOptions,
-  gemCount = 0,
-}: ListeningScreenProps): ReactNode {
-  return (
-    <ListeningActivity
-      questions={questionsForStep(stepId)}
-      onExit={onExit}
-      onFinish={(results, skippedCount) => onFinish(stepId, results, skippedCount)}
-      sessionOptions={sessionOptions}
-      gemCount={gemCount}
-    />
-  );
-}
 
 export function ListeningActivity({
   questions,

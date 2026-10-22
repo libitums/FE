@@ -4,17 +4,12 @@ import { act, cleanup, render } from "@lynx-js/react/testing-library";
 
 import { saveAuthSession } from "../lib/auth-session";
 import type { ProgressLoadEvent } from "../lib/progress-load-event.contract";
-import { productJourneySeed } from "./journey-progress";
-import { learningProgressSnapshotFrom } from "./learning-progress";
+import { emptyJourneyProgress, learningProgressSnapshotFrom } from "./learning-progress";
 import { useJourneyProgress } from "./use-journey-progress";
 import { useProgressLoadEvents } from "./use-progress-load-events";
 
 export type Reply = { status: number; body: string };
-export const empty = learningProgressSnapshotFrom({
-  ...productJourneySeed,
-  completedEpisodeIntroIds: [],
-  catalogProgress: {},
-});
+export const empty = learningProgressSnapshotFrom(emptyJourneyProgress);
 export type Snapshot = typeof empty;
 export const snap = (override: Record<string, unknown> = {}): Snapshot =>
   ({ ...empty, ...override }) as Snapshot;
@@ -45,7 +40,7 @@ export function signIn(user: string) {
   });
 }
 function Harness() {
-  env.progress = useJourneyProgress(productJourneySeed, [], () => ["RP"]);
+  env.progress = useJourneyProgress({}, []);
   useProgressLoadEvents(env.progress.progressLoadPhase, (event) => env.events.push(event));
   return null;
 }
@@ -73,8 +68,16 @@ export async function boot() {
     await env.progress.syncFromServer();
   });
 }
+/** 끝낸 유닛 키가 `count`개인 u01 진행입니다 — 이 파일들이 바꾸는 「진행의 양」입니다. */
+export const keysFor = (count: number): Record<string, readonly string[]> => ({
+  u01: Array.from({ length: count }, (_, index) => (index === 0 ? "intro" : `S${index}`)),
+});
+/** 상태나 저장본에서 u01의 끝낸 키 수를 읽습니다. */
+export const doneCount = (
+  value: { readonly catalogProgress?: Record<string, readonly string[]> } | undefined,
+): number => value?.catalogProgress?.["u01"]?.length ?? 0;
 export async function complete(count: number) {
-  act(() => env.progress.setCompletedStepCount(count));
+  act(() => env.progress.setCatalogProgress(keysFor(count)));
   await flush();
 }
 export function deferred() {

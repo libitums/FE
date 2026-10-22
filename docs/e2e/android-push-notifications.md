@@ -1,5 +1,7 @@
 # Android 푸시 호스트 E2E
 
+> ⟨2026-10-21 — [ADR-0081](../adr/0081-tutorial-as-catalog-episode.md) D11⟩ 푸시의 특별 유닛 목적지(`messenger` · `phone-call` · `visual-novel`)는 그 화면이 지워져 앱이 **`journey-map`으로 읽는다**(서버 send-push 무변경). 그 목적지로 화면이 열리는 판정은 「맵이 선다」로 읽는다.
+
 [ADR-0042](../adr/0042-android-push-host.md)의 시스템 권한·알림 열기 경로를 전용 Android 15 API 35 에뮬레이터에서 Maestro로 검증한다. `google-services.json`과 실제 서버는 필요하지 않다. 모의 로그인 화면과 로컬 테스트 알림을 사용한다.
 
 ```sh

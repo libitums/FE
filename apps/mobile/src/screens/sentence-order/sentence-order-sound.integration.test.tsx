@@ -1,8 +1,8 @@
 import { afterEach, expect, test, vi } from "vitest";
 import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
-import { SentenceOrderScreen } from "./SentenceOrderScreen";
-import { sentenceOrderQuestionsForStep } from "./sentence-order";
+import { StepSentenceOrder } from "./StepSentenceOrder.test-support";
+import { stepQuestions } from "./sentence-order-steps.test-support";
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -11,10 +11,10 @@ test("문장 만들기는 칩 클릭, 채점 판정, 다음 버튼 소리를 순
   vi.stubGlobal("NativeModules", {
     SoundEffectsModule: { play: (id: string) => calls.push(id), stopRing: () => {} },
   });
-  const first = sentenceOrderQuestionsForStep("ordering")[0];
+  const first = stepQuestions.ordering[0];
   if (first === undefined) throw new Error("ordering 학습 문항이 없다");
 
-  render(<SentenceOrderScreen stepId="ordering" onExit={() => {}} onFinish={() => {}} />);
+  render(<StepSentenceOrder stepId="ordering" onExit={() => {}} onFinish={() => {}} />);
   for (const index of first.answerOrder) {
     fireEvent.tap(screen.getByTestId(`sentence-order-chip-${index}`), {});
   }

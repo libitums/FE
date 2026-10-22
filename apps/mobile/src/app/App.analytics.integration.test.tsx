@@ -28,7 +28,6 @@ vi.mock(
 // `sinks`를 App에 펼침)을 그대로 따라 합니다 — 그래서 진입점이 sink를 넘기는 결선 자체는
 // 이 파일이 잡지 못합니다(`pnpm build` · e2e A1의 몫).
 
-const completedIntros = ["tutorial-intro"] as const;
 const batchUrl = "https://us.i.posthog.com/batch/";
 
 function requireConfig(config: AnalyticsConfig | null): AnalyticsConfig {
@@ -121,7 +120,7 @@ function sessionApp(
   config: AnalyticsConfig | null = testConfig,
 ) {
   const session = createAnalyticsSession(config, transport);
-  return <App {...session.sinks} completedEpisodeIntroIds={completedIntros} />;
+  return <App {...session.sinks} />;
 }
 
 // 설정 탭 → 프로필 열기입니다. 이벤트 둘이 나가야 합니다.
@@ -249,7 +248,7 @@ test("[IA-EI] 서사 표지를 열고 건너뛰면 표지 이벤트 둘이 envir
   await renderApp(<App {...session.sinks} />);
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
-  fireEvent.tap(screen.getByTestId("ui-lynx-special-unit-tutorial-intro"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-special-unit-catalog-cover-u00-tutorial"), {});
   fireEvent.tap(
     within(screen.getByTestId("episode-intro-screen-skip")).getByTestId("ui-lynx-button"),
     {},
@@ -266,7 +265,7 @@ test("[IA-EI] 서사 표지를 열고 건너뛰면 표지 이벤트 둘이 envir
     "episode_intro_skipped",
   ]);
   expect(events[0]!.properties).toMatchObject({
-    episodeId: "tutorial",
+    episodeId: "u00-tutorial",
     environment: "development",
   });
 });
@@ -281,18 +280,11 @@ function accessTokenFor(userId: string): string {
 test("[IA-ID1] 로그인된 설치는 부팅 뒤 이벤트가 그 사용자의 distinct_id로 도착한다", async () => {
   const { transport, calls } = fakeTransport();
   const session = createAnalyticsSession(testConfig, transport);
-  await renderSignedInApp(
-    <App
-      {...session.sinks}
-      analyticsUser={session.user}
-      completedEpisodeIntroIds={completedIntros}
-    />,
-    {
-      refreshedAccessToken: accessTokenFor("user-1"),
-      // 진행 조회가 거부되면 progress_load_failed가 이 묶음에 끼어듭니다. 이 테스트는 신원만 봅니다.
-      loadProgress: async () => ({ status: 200, body: "null" }),
-    },
-  );
+  await renderSignedInApp(<App {...session.sinks} analyticsUser={session.user} />, {
+    refreshedAccessToken: accessTokenFor("user-1"),
+    // 진행 조회가 거부되면 progress_load_failed가 이 묶음에 끼어듭니다. 이 테스트는 신원만 봅니다.
+    loadProgress: async () => ({ status: 200, body: "null" }),
+  });
 
   openSettingsTab();
 
@@ -312,11 +304,7 @@ test("[IA-ID2] 같은 사용자는 앱을 다시 켜도 같은 distinct_id다", 
   const first = fakeTransport();
   const firstSession = createAnalyticsSession(testConfig, first.transport);
   const view = await renderSignedInApp(
-    <App
-      {...firstSession.sinks}
-      analyticsUser={firstSession.user}
-      completedEpisodeIntroIds={completedIntros}
-    />,
+    <App {...firstSession.sinks} analyticsUser={firstSession.user} />,
     { refreshedAccessToken: accessTokenFor("user-1") },
   );
   openSettingsTab();
@@ -325,14 +313,9 @@ test("[IA-ID2] 같은 사용자는 앱을 다시 켜도 같은 distinct_id다", 
 
   const second = fakeTransport();
   const secondSession = createAnalyticsSession(testConfig, second.transport);
-  await renderSignedInApp(
-    <App
-      {...secondSession.sinks}
-      analyticsUser={secondSession.user}
-      completedEpisodeIntroIds={completedIntros}
-    />,
-    { refreshedAccessToken: accessTokenFor("user-1") },
-  );
+  await renderSignedInApp(<App {...secondSession.sinks} analyticsUser={secondSession.user} />, {
+    refreshedAccessToken: accessTokenFor("user-1"),
+  });
   openSettingsTab();
   await vi.waitFor(() => expect(sentEvents(second.calls).length).toBeGreaterThanOrEqual(2));
 

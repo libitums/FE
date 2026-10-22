@@ -113,15 +113,15 @@ const remoteManifestText = JSON.stringify({
 });
 
 describe("loadEpisodeContent", () => {
-  test("EL1. 빈 저장소에서는 내장 셋이 모두 ready이고 이미지 경로가 공개 URL로 풀린다", async () => {
+  test("EL1. 빈 저장소에서는 내장 넷이 모두 ready이고 이미지 경로가 공개 URL로 풀린다", async () => {
     const { loadEpisodeContent } = await freshLoader();
 
     const content = loadEpisodeContent();
 
-    expect(content.catalog).toHaveLength(3);
+    expect(content.catalog).toHaveLength(4);
     expect(content.catalog.every((entry) => entry.status === "ready")).toBe(true);
     expect(content.catalog.map((entry) => entry.id).join(",")).toBe(
-      "u01-water,u02-checkin,u03-mina",
+      "u00-tutorial,u01-water,u02-checkin,u03-mina",
     );
     expect(content.imageUrlOf("images/u01-water/pre-1.jpg")).toBe(
       "https://test.supabase.co/storage/v1/object/public/content/images/u01-water/pre-1.jpg",
@@ -145,7 +145,7 @@ describe("loadEpisodeContent", () => {
     const first = loadEpisodeContent();
     const second = loadEpisodeContent();
 
-    expect(first.catalog).toHaveLength(3);
+    expect(first.catalog).toHaveLength(4);
     expect(second.catalog).toBe(first.catalog);
   });
 
@@ -154,20 +154,20 @@ describe("loadEpisodeContent", () => {
     store.set(CONTENT_MANIFEST_KEY, remoteManifestText);
 
     const before = loadEpisodeContent();
-    const pendingEntry = before.catalog[3];
+    const pendingEntry = before.catalog[4];
 
-    expect(before.catalog).toHaveLength(4);
+    expect(before.catalog).toHaveLength(5);
     expect(pendingEntry?.id).toBe("u04-x");
     expect(pendingEntry?.status).toBe("pending");
 
     store.set(contentEpisodeKey("u04-x"), episodeText);
     const after = loadEpisodeContent();
 
-    expect(after.catalog[3]?.status).toBe("ready");
+    expect(after.catalog[4]?.status).toBe("ready");
     expect(after.catalog).not.toBe(before.catalog);
   });
 
-  test("EL5. 저장소 읽기가 던져도 던지지 않고 내장 셋을 낸다", async () => {
+  test("EL5. 저장소 읽기가 던져도 던지지 않고 내장 넷을 낸다", async () => {
     installStorage({
       get: () => {
         throw new Error("storage down");
@@ -178,6 +178,7 @@ describe("loadEpisodeContent", () => {
     const content = loadEpisodeContent();
 
     expect(content.catalog.map((entry) => entry.id)).toEqual([
+      "u00-tutorial",
       "u01-water",
       "u02-checkin",
       "u03-mina",
@@ -229,11 +230,36 @@ describe("loadEpisodeContent", () => {
     store.set(CONTENT_MANIFEST_KEY, remoteManifestText);
     store.set(contentEpisodeKey("u04-x"), episodeText);
 
-    expect(loadEpisodeContent().catalog[3]?.status).toBe("pending");
+    expect(loadEpisodeContent().catalog[4]?.status).toBe("pending");
     store.set(
       "libitum.content.assets.u04-x",
       JSON.stringify({ sha256: sha256Hex(utf8Bytes(episodeText)), missing: [] }),
     );
-    expect(loadEpisodeContent().catalog[3]?.status).toBe("ready");
+    expect(loadEpisodeContent().catalog[4]?.status).toBe("ready");
+  });
+
+  test("BI4. 파일 모듈이 없어도 내장 그림 주소가 서고, 받기 포트는 내장 그림을 이미 가진 것으로 답한다", async () => {
+    const { loadEpisodeContent, hostAssetDeps } = await freshLoader();
+    const { bundledContentImageUrl } = await import("../lib/bundled-content-images");
+    const bundledPath = "images/u00-tutorial/pre-1.webp";
+    const bundledUrl = bundledContentImageUrl(bundledPath);
+
+    expect(bundledUrl).not.toBeNull();
+    expect(loadEpisodeContent().imageUrlOf(`content/${bundledPath}`)).toBe(bundledUrl);
+    expect(hostAssetDeps()).toBeUndefined();
+
+    const fileUrl = vi.fn((path: string) =>
+      path === "images/items/other.webp" ? "file:///f/other.webp" : "",
+    );
+    vi.stubGlobal("NativeModules", {
+      ...(NativeModules as Record<string, unknown>),
+      ContentFileModule: { download: vi.fn(), fileUrl },
+    });
+    const deps = (await freshLoader()).hostAssetDeps();
+
+    expect(deps?.has("images/items/hello.webp")).toBe(true);
+    expect(deps?.has(bundledPath)).toBe(true);
+    expect(deps?.has("images/items/other.webp")).toBe(true);
+    expect(deps?.has("images/items/missing.webp")).toBe(false);
   });
 });

@@ -1,8 +1,8 @@
+import { legacyPassedSeed, legacyPassedRecord } from "./test-helpers/progress-seed";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
-import type { AppJourneySeed } from "./journey-progress";
 import { catalogLessonPlanOf } from "./catalog-lesson-plan";
 import type { CatalogActivity } from "./catalog-lesson-plan";
 import { resetPushWiringForTests } from "./push-wiring";
@@ -19,7 +19,6 @@ import { fillPlaceholders } from "../lib/placeholder-fill";
 import { systemBackEventName } from "../lib/system-back";
 import { uiCopyEn } from "../lib/ui-copy-en";
 import { EPISODE_BANNER_HOLD_MS } from "../screens/catalog-cover/episode-banner";
-import { journeySteps } from "../screens/journey-map/journey-map";
 import { catalogNodeTestId } from "./test-helpers/map-unit-testid";
 
 // `integration` 계층(3d-2 · 2026-10-20 개정): 이름 · 나라가 「가입 -> ① 이름 -> ② 나라 -> 업로드」(에피소드 전 묻기는
@@ -54,17 +53,11 @@ type Server = {
 type NamedEvent = { readonly name: string };
 type Events = { episode: NamedEvent[]; settings: NamedEvent[]; entry: NamedEvent[] };
 
-const tutorialDoneSeed: AppJourneySeed = {
-  completedStepCount: journeySteps.length,
-  completedMessengerUnitIds: ["appointment-confirmation"],
-  completedPhoneCallUnitIds: ["appointment-confirmation-phone-call"],
-  visualNovelProgress: { status: "completed", beatIndex: 2 },
-  completedEpisodeFinalIds: ["tutorial-final-test"],
-};
+const tutorialDoneSeed = legacyPassedSeed;
 
 const tutorialDoneSnapshot = {
   version: 1,
-  completedStepCount: journeySteps.length,
+  completedStepCount: legacyPassedRecord.completedStepCount,
   completedEpisodeIntroIds: ["tutorial-intro"],
   completedMessengerUnitIds: ["appointment-confirmation"],
   completedPhoneCallUnitIds: ["appointment-confirmation-phone-call"],
@@ -240,8 +233,7 @@ async function boot(options: BootOptions = {}): Promise<Booted> {
   vi.useFakeTimers();
   render(
     <App
-      journeySeed={tutorialDoneSeed}
-      completedEpisodeIntroIds={["tutorial-intro"]}
+      progressSeed={tutorialDoneSeed}
       episodeIntroEventSink={(event) => events.episode.push(event)}
       settingsEventSink={(event) => events.settings.push(event)}
       entryEventSink={(event) => events.entry.push(event)}

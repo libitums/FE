@@ -1,5 +1,4 @@
-import { journeySeedBefore } from "./test-helpers/journey-seed";
-import { journeySteps } from "../screens/journey-map/journey-map";
+import { legacyPassedSeed } from "./test-helpers/progress-seed";
 import { afterEach, expect, test, vi } from "vitest";
 import { cleanup, fireEvent, screen, within } from "@lynx-js/react/testing-library";
 
@@ -10,13 +9,7 @@ import type {
   NotificationEvent,
   NotificationEventSink,
   NotificationItem,
-  NotificationTarget,
-  NotificationTargetKind,
 } from "../screens/notifications/notifications.contract";
-import type { MessengerEventSink } from "../screens/messenger/messenger.contract";
-import type { PhoneCallEventSink } from "../screens/phone-call/phone-call.contract";
-import type { VisualNovelEventSink } from "../screens/visual-novel/visual-novel.contract";
-import { answerMessengerReplies } from "../screens/messenger/messenger.test-support";
 import { renderSignedInApp } from "./test-helpers/signed-in-app";
 import { uiCopyEn } from "../lib/ui-copy-en";
 
@@ -25,10 +18,6 @@ vi.mock(
   "../screens/notifications/notification-items",
   () => import("./test-helpers/notification-items"),
 );
-
-// 서사 표지를 이미 끝낸 채로 부팅합니다 — 이 파일이 보는 것은 표지 뒤의 흐름입니다. 표지
-// 자체는 `App.episode-intro.integration.test.tsx`가 봅니다.
-const completedIntros = ["tutorial-intro"] as const;
 
 // App · navigation · 여정 맵 머리 알림 버튼 · 알림 화면 · 알림 항목 · 대상 분기(기존
 // 여정 콜백 재사용 · tabRootActions)의 실제 결선을 봅니다. 알림 입력만 테스트 픽스처입니다.
@@ -42,10 +31,8 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-async function openNotificationsScreen(unitId = "cafe-arrival-visual-novel") {
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore(unitId)} completedEpisodeIntroIds={completedIntros} />,
-  );
+async function openNotificationsScreen() {
+  await renderSignedInApp(<App progressSeed={legacyPassedSeed} />);
   fireEvent.tap(screen.getByTestId("top-bar-notifications"), {});
 }
 
@@ -53,43 +40,16 @@ function tapNotificationItem(item: NotificationItem) {
   fireEvent.tap(screen.getByTestId(`notification-list-item-${item.id}`), {});
 }
 
-// `NotificationItem`의 `target`은 판별 유니언이지만, `item.target.kind`로만 좁히면
-// 그 좁힘이 `item` 변수 자신(그래서 `return item`의 타입)에는 옮지 않습니다 —
-// `item.target`이라는 표현식에만 적용됩니다. 그래서 `.find`에 사용자 정의 타입
-// 가드를 줘 반환 항목 자체의 타입을 좁힙니다(형 변환(`as`)을 쓰지 않습니다).
-type NotificationItemWithTarget<K extends NotificationTargetKind> = NotificationItem & {
-  readonly target: Extract<NotificationTarget, { kind: K }>;
-};
-
-function notificationItemWithTargetKind<K extends NotificationTargetKind>(
-  kind: K,
-): NotificationItemWithTarget<K> {
-  const item = notificationItems().find(
-    (candidate): candidate is NotificationItemWithTarget<K> => candidate.target.kind === kind,
-  );
-  if (item === undefined) throw new Error(`no notification item for target kind: ${kind}`);
+/** 목록의 n번째 알림입니다(없으면 던집니다). */
+function notificationItemAt(index: number): NotificationItem {
+  const item = notificationItems()[index];
+  if (item === undefined) throw new Error(`no notification item at ${String(index)}`);
   return item;
 }
 
-function messengerNotificationItem() {
-  return notificationItemWithTargetKind("messenger");
-}
-
-function phoneCallNotificationItem() {
-  return notificationItemWithTargetKind("phone-call");
-}
-
-function visualNovelNotificationItem() {
-  return notificationItemWithTargetKind("visual-novel");
-}
-
-function roleplayListNotificationItem() {
-  return notificationItemWithTargetKind("roleplay-list");
-}
-
-function finishMessengerConversation() {
-  answerMessengerReplies();
-}
+const roleplayListNotificationItem = (): NotificationItem => notificationItemAt(3);
+const firstNotificationItem = (): NotificationItem => notificationItemAt(0);
+const secondNotificationItem = (): NotificationItem => notificationItemAt(1);
 
 // -------------------------------------------------------------------- IN1 · IN2
 
@@ -145,76 +105,6 @@ test("[IN3] 알림 목록이 실제 데이터의 순서·수·행선지 문구�
   });
 });
 
-// ------------------------------------------------------------------- IN4~IN7
-
-test("[IN4] 메신저 대상 항목을 tap하면 메신저 화면이 열리고 나가기(맵으로)가 여정 맵에 닿는다", async () => {
-  await openNotificationsScreen();
-  tapNotificationItem(messengerNotificationItem());
-
-  expect(screen.getByTestId("messenger-screen")).toBeInTheDocument();
-  expect(screen.getByTestId("messenger-screen-exit")).toHaveAttribute(
-    "accessibility-label",
-    "Back to map",
-  );
-
-  fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
-
-  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
-  expect(screen.queryByTestId("notifications-screen-title")).not.toBeInTheDocument();
-  // 탭은 여정 그대로입니다 — 맵 루트로 돌아왔으므로 바가 다시 섭니다.
-  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-journey")).toHaveAttribute(
-    "data-selected",
-    "true",
-  );
-});
-
-test("[IN5] 전화 대상 항목을 tap하면 전화 화면이 열리고 나가기(맵으로)가 여정 맵에 닿는다", async () => {
-  await openNotificationsScreen();
-  tapNotificationItem(phoneCallNotificationItem());
-
-  expect(screen.getByTestId("phone-call-screen")).toBeInTheDocument();
-  expect(screen.getByTestId("phone-call-exit-button")).toHaveAttribute(
-    "accessibility-label",
-    "Back to map",
-  );
-
-  fireEvent.tap(screen.getByTestId("phone-call-exit-button"), {});
-
-  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
-});
-
-test("[IN6] 비주얼 노벨 대상 항목을 tap하면 비주얼 노벨 화면이 열리고 나가기(맵으로)가 여정 맵에 닿는다", async () => {
-  await openNotificationsScreen();
-  tapNotificationItem(visualNovelNotificationItem());
-
-  expect(screen.getByTestId("visual-novel-screen")).toBeInTheDocument();
-  expect(screen.getByTestId("visual-novel-exit-button")).toHaveAttribute(
-    "accessibility-label",
-    "Back to map",
-  );
-
-  fireEvent.tap(screen.getByTestId("visual-novel-exit-button"), {});
-
-  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
-});
-
-test("[IN7] 알림에서 연 메신저를 끝까지 마치면 여정 모드로 완료가 맵에 기록된다(D-a)", async () => {
-  const item = messengerNotificationItem();
-  await openNotificationsScreen("appointment-confirmation");
-  tapNotificationItem(item);
-  finishMessengerConversation();
-  fireEvent.tap(screen.getByTestId("messenger-screen-exit"), {});
-
-  const mapItemTestId = `ui-lynx-special-unit-${item.target.unitId}`;
-  // 완료 표식은 유닛 어휘(`clear`)이고, 「완료됨」은 화면 글자가 아니라 접근성 이름에
-  // 실립니다 — `LearningUnit`이 체크 아이콘으로 그리기 때문입니다.
-  expect(screen.getByTestId(mapItemTestId)).toHaveAttribute("data-status", "clear");
-  expect(screen.getByTestId(mapItemTestId)).toHaveAttribute(
-    "accessibility-label",
-    "special, A Message from Minseo, completed",
-  );
-});
-
 // ------------------------------------------------------------------- IN8 · IN9
 
 test("[IN8] 롤플레이 대상 항목을 tap하면 롤플레이 탭 루트로 가고, 여정 탭으로 돌아오면 알림 화면이 남아 있다(D-c)", async () => {
@@ -243,11 +133,7 @@ test("[IN8] 롤플레이 대상 항목을 tap하면 롤플레이 탭 루트로 �
 test("[IN10] 알림 sink는 버튼 tap마다 1회이고, 탭을 다녀와도 재마운트로는 늘지 않는다(A3)", async () => {
   const notificationEventSink = vi.fn<NonNullable<NotificationEventSink>>();
   await renderSignedInApp(
-    <App
-      journeySeed={journeySeedBefore("cafe-arrival-visual-novel")}
-      completedEpisodeIntroIds={completedIntros}
-      notificationEventSink={notificationEventSink}
-    />,
+    <App progressSeed={legacyPassedSeed} notificationEventSink={notificationEventSink} />,
   );
   fireEvent.tap(screen.getByTestId("top-bar-notifications"), {});
 
@@ -269,51 +155,12 @@ test("[IN10] 알림 sink는 버튼 tap마다 1회이고, 탭을 다녀와도 재
   ]);
 });
 
-test("[IN11] 메신저 대상 tap의 공용 로그 순서는 알림 탭 이벤트 → 메신저 열림 이벤트다(D-b)", async () => {
-  const log: unknown[] = [];
-  const notificationEventSink: NonNullable<NotificationEventSink> = (event) => log.push(event);
-  const messengerEventSink: NonNullable<MessengerEventSink> = (event) => log.push(event);
-  const item = messengerNotificationItem();
-
-  await renderSignedInApp(
-    <App
-      journeySeed={journeySeedBefore("appointment-confirmation")}
-      completedEpisodeIntroIds={completedIntros}
-      notificationEventSink={notificationEventSink}
-      messengerEventSink={messengerEventSink}
-    />,
-  );
-  fireEvent.tap(screen.getByTestId("top-bar-notifications"), {});
-  tapNotificationItem(item);
-
-  expect(log).toEqual([
-    { name: "notifications_opened" },
-    { name: "notification_item_tapped", notificationId: item.id, target: "messenger" },
-    {
-      name: "messenger_unit_opened",
-      unitId: item.target.unitId,
-      entrySource: "journey",
-      entryStatus: "available",
-    },
-  ]);
-});
-
-test("[IN12] 롤플레이 대상 tap은 탭 이벤트 1건뿐이고 세 특별 유닛 sink는 안 불린다", async () => {
+test("[IN12] 롤플레이 대상 tap은 탭 이벤트 1건뿐이다", async () => {
   const notificationEventSink = vi.fn<NonNullable<NotificationEventSink>>();
-  const messengerEventSink = vi.fn<NonNullable<MessengerEventSink>>();
-  const phoneCallEventSink = vi.fn<NonNullable<PhoneCallEventSink>>();
-  const visualNovelEventSink = vi.fn<NonNullable<VisualNovelEventSink>>();
   const item = roleplayListNotificationItem();
 
   await renderSignedInApp(
-    <App
-      journeySeed={journeySeedBefore("cafe-arrival-visual-novel")}
-      completedEpisodeIntroIds={completedIntros}
-      notificationEventSink={notificationEventSink}
-      messengerEventSink={messengerEventSink}
-      phoneCallEventSink={phoneCallEventSink}
-      visualNovelEventSink={visualNovelEventSink}
-    />,
+    <App progressSeed={legacyPassedSeed} notificationEventSink={notificationEventSink} />,
   );
   fireEvent.tap(screen.getByTestId("top-bar-notifications"), {});
   tapNotificationItem(item);
@@ -324,43 +171,6 @@ test("[IN12] 롤플레이 대상 tap은 탭 이벤트 1건뿐이고 세 특별 �
   expect(tappedCalls).toEqual([
     { name: "notification_item_tapped", notificationId: item.id, target: "roleplay-list" },
   ]);
-  expect(messengerEventSink).not.toHaveBeenCalled();
-  expect(phoneCallEventSink).not.toHaveBeenCalled();
-  expect(visualNovelEventSink).not.toHaveBeenCalled();
-});
-
-test("[IN13] 비주얼 노벨 대상 tap의 공용 로그 순서는 알림 탭 이벤트 → 비주얼 노벨 열림(여정 변형)이다(D-b)", async () => {
-  const log: unknown[] = [];
-  const notificationEventSink: NonNullable<NotificationEventSink> = (event) => log.push(event);
-  const visualNovelEventSink: NonNullable<VisualNovelEventSink> = (event) => log.push(event);
-  const item = visualNovelNotificationItem();
-
-  await renderSignedInApp(
-    <App
-      journeySeed={journeySeedBefore("cafe-arrival-visual-novel")}
-      completedEpisodeIntroIds={completedIntros}
-      notificationEventSink={notificationEventSink}
-      visualNovelEventSink={visualNovelEventSink}
-    />,
-  );
-  fireEvent.tap(screen.getByTestId("top-bar-notifications"), {});
-  tapNotificationItem(item);
-
-  expect(log).toHaveLength(3);
-  expect(log[1]).toEqual({
-    name: "notification_item_tapped",
-    notificationId: item.id,
-    target: "visual-novel",
-  });
-  expect(log[2]).toMatchObject({
-    name: "visual_novel_unit_opened",
-    unitId: item.target.unitId,
-    entrySource: "journey",
-  });
-  // 여정 변형의 필드 집합과 같습니다 — entryStatus · entryBeatId까지.
-  expect(Object.keys(log[2] as object).sort()).toEqual(
-    ["name", "unitId", "entrySource", "entryStatus", "entryBeatId"].sort(),
-  );
 });
 
 // ------------------------------------------------------------------------ IN14
@@ -368,14 +178,7 @@ test("[IN13] 비주얼 노벨 대상 tap의 공용 로그 순서는 알림 탭 �
 test("[IN14] sink 없이도 버튼·항목 tap이 던지지 않는다(가드)", async () => {
   for (const item of notificationItems()) {
     cleanup();
-    await expect(
-      renderSignedInApp(
-        <App
-          journeySeed={journeySeedBefore("cafe-arrival-visual-novel")}
-          completedEpisodeIntroIds={completedIntros}
-        />,
-      ),
-    ).resolves.toBeDefined();
+    await expect(renderSignedInApp(<App progressSeed={legacyPassedSeed} />)).resolves.toBeDefined();
     expect(() => fireEvent.tap(screen.getByTestId("top-bar-notifications"), {})).not.toThrow();
 
     expect(() => {
@@ -400,20 +203,20 @@ function deleteNotificationItem(item: NotificationItem) {
 
 test("[IN14] 알림을 지우면 그 항목만 사라지고 알림 화면에 남는다", async () => {
   await openNotificationsScreen();
-  const item = messengerNotificationItem();
+  const item = firstNotificationItem();
 
   deleteNotificationItem(item);
 
   expect(screen.queryByTestId(`notification-list-item-${item.id}`)).not.toBeInTheDocument();
   expect(
-    screen.getByTestId(`notification-list-item-${phoneCallNotificationItem().id}`),
+    screen.getByTestId(`notification-list-item-${secondNotificationItem().id}`),
   ).toBeInTheDocument();
   expect(screen.getByTestId("notifications-screen-title")).toBeInTheDocument();
 });
 
 test("[IN15] 지운 알림은 화면을 나갔다 돌아와도 돌아오지 않는다", async () => {
   await openNotificationsScreen();
-  const item = messengerNotificationItem();
+  const item = firstNotificationItem();
   deleteNotificationItem(item);
 
   fireEvent.tap(
@@ -439,19 +242,15 @@ test("[IN16] 알림을 모두 지우면 빈 상태가 선다", async () => {
 test("[IN17] 삭제는 공용 로그에 삭제 이벤트 하나를 남기고 화면을 옮기지 않는다", async () => {
   const events: NotificationEvent[] = [];
   await renderSignedInApp(
-    <App
-      journeySeed={journeySeedBefore("cafe-arrival-visual-novel")}
-      completedEpisodeIntroIds={completedIntros}
-      notificationEventSink={(event) => events.push(event)}
-    />,
+    <App progressSeed={legacyPassedSeed} notificationEventSink={(event) => events.push(event)} />,
   );
   fireEvent.tap(screen.getByTestId("top-bar-notifications"), {});
-  const item = messengerNotificationItem();
+  const item = firstNotificationItem();
 
   deleteNotificationItem(item);
 
   expect(events).toEqual([
     { name: "notifications_opened" },
-    { name: "notification_item_deleted", notificationId: item.id, target: "messenger" },
+    { name: "notification_item_deleted", notificationId: item.id, target: "roleplay-list" },
   ]);
 });

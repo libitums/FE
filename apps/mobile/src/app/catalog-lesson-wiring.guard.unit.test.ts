@@ -48,7 +48,6 @@ function setup(progress: CatalogProgress, pending: readonly AnswerResult[] = [])
       learnerPort: noLearnerProfilePort,
       setCatalogProgress: (action: SetStateAction<CatalogProgress>) =>
         void progressWrites.push(action),
-      completedEpisodeFinalIds: [],
       dispatch: (action) => void dispatches.push(action),
       episodeIntroEventSink: (event) => void events.push(event),
       pendingResults,

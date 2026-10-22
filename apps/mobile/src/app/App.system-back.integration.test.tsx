@@ -1,22 +1,18 @@
-import { journeySeedBefore } from "./test-helpers/journey-seed";
-import { journeySteps } from "../screens/journey-map/journey-map";
+import { legacyPassedSeed, u01OpenSeed } from "./test-helpers/progress-seed";
+import { catalogNodeTestId } from "./test-helpers/map-unit-testid";
 import { afterEach, expect, test, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
-import type { AppJourneySeed } from "./App";
 import { renderSignedInApp } from "./test-helpers/signed-in-app";
 import { entrySplashDurationMs } from "../lib/entry-flow";
 import { systemBackEventName } from "../lib/system-back";
-import type { MessengerEventSink } from "../screens/messenger/messenger.contract";
 import type { SettingsEvent } from "../screens/settings/settings.contract";
 
 // 「호스트 `systemBackPressed` 전역 이벤트 → 스택 → `navReducer` → `SystemBackModule.respond`」를
 // App 전체 트리에서 봅니다(IB1~IB15, android-back 계약의 결선 훅 절). 대역은 호스트 경계뿐입니다 —
 // `NativeModules.SystemBackModule`({ ready, respond })과 저장소 · 네트워크.
 // 훅 모듈을 직접 부르지 않고 이벤트만 쏩니다.
-
-const completedIntros = ["tutorial-intro"] as const;
 
 type BackHost = {
   ready: ReturnType<typeof vi.fn<() => void>>;
@@ -106,20 +102,9 @@ function onboardingNext(): void {
   );
 }
 
-// 튜토리얼을 다 끝낸 진행입니다 — 롤플레이는 에피소드를 끝내야 열립니다.
-const finishedTutorial: AppJourneySeed = {
-  completedStepCount: journeySteps.length,
-  completedMessengerUnitIds: ["appointment-confirmation"],
-  completedPhoneCallUnitIds: ["appointment-confirmation-phone-call"],
-  visualNovelProgress: { status: "completed", beatIndex: 2 },
-  completedEpisodeFinalIds: ["tutorial-final-test"],
-};
-
 test("[IB1] 앱 구간에 들어서면 호스트에 준비 완료를 정확히 한 번 알린다", async () => {
   const host = stubBackHost();
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
+  await renderSignedInApp(<App progressSeed={legacyPassedSeed} />);
   await flush();
 
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
@@ -128,9 +113,7 @@ test("[IB1] 앱 구간에 들어서면 호스트에 준비 완료를 정확히 �
 
 test("[IB2] 여정 맵(루트)에서 누르면 떠남으로 응답하고 화면은 그대로다", async () => {
   const host = stubBackHost();
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
+  await renderSignedInApp(<App progressSeed={legacyPassedSeed} />);
 
   const token = pressBack();
 
@@ -140,9 +123,7 @@ test("[IB2] 여정 맵(루트)에서 누르면 떠남으로 응답하고 화면�
 
 test("[IB3] 롤플레이 탭 루트에서 누르면 여정 맵이 서고 탭 표시가 여정이며 처리됨으로 응답한다", async () => {
   const host = stubBackHost();
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
+  await renderSignedInApp(<App progressSeed={legacyPassedSeed} />);
   openTab("roleplay");
   expect(screen.getByTestId("roleplay-list-screen-title")).toBeInTheDocument();
 
@@ -159,11 +140,7 @@ test("[IB4] 설정 탭 루트에서 누르면 여정 맵이 서고 처리됨으�
   const host = stubBackHost();
   const events: SettingsEvent[] = [];
   await renderSignedInApp(
-    <App
-      journeySeed={journeySeedBefore("ordering")}
-      completedEpisodeIntroIds={completedIntros}
-      settingsEventSink={(event) => events.push(event)}
-    />,
+    <App progressSeed={legacyPassedSeed} settingsEventSink={(event) => events.push(event)} />,
   );
   openTab("settings");
   expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
@@ -180,22 +157,20 @@ test("[IB4] 설정 탭 루트에서 누르면 여정 맵이 서고 처리됨으�
 
 test("[IB5] 학습 화면에서 누르면 나가기 확인창만 서고, 다시 누르면 확인창만 닫히며 나가지 않는다", async () => {
   const host = stubBackHost();
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
-  tap("ui-lynx-learning-unit-ordering");
+  await renderSignedInApp(<App progressSeed={u01OpenSeed} />);
+  tap(catalogNodeTestId("u01-water", "S1"));
   tap("step-sheet-start");
-  expect(screen.getByTestId("learning-shell-exit")).toBeInTheDocument();
+  expect(screen.getByTestId("learning-run-header-exit")).toBeInTheDocument();
   expect(screen.queryByTestId("ui-lynx-dialog")).not.toBeInTheDocument();
 
   const first = pressBack();
   expect(screen.getByTestId("ui-lynx-dialog")).toBeInTheDocument();
-  expect(screen.getByTestId("learning-shell-exit")).toBeInTheDocument();
+  expect(screen.getByTestId("learning-run-header-exit")).toBeInTheDocument();
   expect(responses(host)).toEqual([[first, "handled"]]);
 
   const second = pressBack();
   expect(screen.queryByTestId("ui-lynx-dialog")).not.toBeInTheDocument();
-  expect(screen.getByTestId("learning-shell-exit")).toBeInTheDocument();
+  expect(screen.getByTestId("learning-run-header-exit")).toBeInTheDocument();
   expect(screen.queryByTestId("journey-map-screen")).not.toBeInTheDocument();
   expect(responses(host)).toEqual([
     [first, "handled"],
@@ -205,9 +180,7 @@ test("[IB5] 학습 화면에서 누르면 나가기 확인창만 서고, 다시 
 
 test("[IB6] 여정에서 알림 화면을 열고 누르면 맵으로 돌아오고, 한 번 더 누르면 떠남이다", async () => {
   const host = stubBackHost();
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
+  await renderSignedInApp(<App progressSeed={legacyPassedSeed} />);
   tap("top-bar-notifications");
   expect(screen.getByTestId("notifications-screen-title")).toBeInTheDocument();
 
@@ -225,10 +198,8 @@ test("[IB6] 여정에서 알림 화면을 열고 누르면 맵으로 돌아오�
 test("[IB7] 맵의 스텝 말풍선 · 첫 유닛 안내가 열려 있으면 그 층만 닫히고 맵은 그대로이며 처리됨으로 응답한다", async () => {
   // (a) 스텝 말풍선
   const bubbleHost = stubBackHost();
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
-  tap("ui-lynx-learning-unit-ordering");
+  await renderSignedInApp(<App progressSeed={u01OpenSeed} />);
+  tap(catalogNodeTestId("u01-water", "S1"));
   expect(screen.getByTestId("step-sheet-panel")).toBeInTheDocument();
 
   const bubbleToken = pressBack();
@@ -254,35 +225,9 @@ test("[IB7] 맵의 스텝 말풍선 · 첫 유닛 안내가 열려 있으면 그
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
 });
 
-test("[IB8] 여정 메신저(미완료)에서 누르면 미완료 이탈 이벤트 한 번과 함께 맵으로 돌아온다", async () => {
-  const host = stubBackHost();
-  const sink = vi.fn<NonNullable<MessengerEventSink>>();
-  await renderSignedInApp(
-    <App
-      journeySeed={journeySeedBefore("appointment-confirmation")}
-      completedEpisodeIntroIds={completedIntros}
-      messengerEventSink={sink}
-    />,
-  );
-  tap("ui-lynx-special-unit-appointment-confirmation");
-  expect(screen.getByTestId("messenger-screen")).toBeInTheDocument();
-
-  const token = pressBack();
-
-  expectOneResponse(host, token, "handled");
-  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
-  expect(screen.queryByTestId("messenger-screen")).not.toBeInTheDocument();
-  const incomplete = sink.mock.calls
-    .map(([event]) => event)
-    .filter((event) => event.name === "messenger_unit_exited_incomplete");
-  expect(incomplete).toHaveLength(1);
-});
-
 test("[IB9] 설정 → 프로필에서 누르면 설정 루트, 여정 맵, 떠남 순으로 응답한다", async () => {
   const host = stubBackHost();
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
+  await renderSignedInApp(<App progressSeed={legacyPassedSeed} />);
   openTab("settings");
   fireEvent.tap(settingsCell("profile"), {});
   expect(screen.getByTestId("profile-screen-title")).toBeInTheDocument();
@@ -305,9 +250,7 @@ test("[IB9] 설정 → 프로필에서 누르면 설정 루트, 여정 맵, 떠�
 
 test("[IB11] 설정의 로그아웃 확인이 열려 있으면 확인창만 닫히고 세션은 유지된다", async () => {
   const host = stubBackHost();
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
+  await renderSignedInApp(<App progressSeed={legacyPassedSeed} />);
   openTab("settings");
   fireEvent.tap(settingsCell("sign-out"), {});
   expect(screen.getByTestId("settings-screen-sign-out-dialog")).toBeInTheDocument();
@@ -322,9 +265,7 @@ test("[IB11] 설정의 로그아웃 확인이 열려 있으면 확인창만 닫�
 
 test("[IB12] 전역 머리의 연속 학습 모달이 열려 있으면 모달만 닫히고 맵은 그대로다", async () => {
   const host = stubBackHost();
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
+  await renderSignedInApp(<App progressSeed={legacyPassedSeed} />);
   tap("top-bar-streak");
   expect(screen.getByTestId("journey-stat-modal-streak")).toBeInTheDocument();
 
@@ -380,9 +321,7 @@ test("[IB14] 온보딩 둘째 스텝은 앞 스텝으로, 로그인은 온보딩
 
 test("[IB15] 인자 없는 이벤트와 수 인자는 응답하지 않고 화면도 그대로다", async () => {
   const host = stubBackHost();
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
+  await renderSignedInApp(<App progressSeed={legacyPassedSeed} />);
   openTab("settings");
   expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
 

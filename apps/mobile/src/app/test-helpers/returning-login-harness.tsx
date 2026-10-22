@@ -6,7 +6,8 @@ import { act, fireEvent, render, screen, within } from "@lynx-js/react/testing-l
 
 import { App } from "../App";
 import { learningProgressSnapshotFrom } from "../learning-progress";
-import { productJourneySeed } from "../journey-progress";
+import { emptyJourneyProgress } from "../learning-progress";
+import { emptyLegacyTutorialRecord } from "../legacy-tutorial-progress";
 import { entrySplashDurationMs } from "../../lib/entry-flow";
 import type { EntryEvent, EntryLoginMethod } from "../../lib/entry-flow";
 import { contentNotFoundResponse, isContentRequest } from "./content-requests";
@@ -39,14 +40,16 @@ export const waitFor =
     gate.promise;
 
 export const learnerProfileRecord = { name: "Mina", countryCode: "KR" };
-const baseState = { ...productJourneySeed, completedEpisodeIntroIds: [], catalogProgress: {} };
 export const startedProgress = learningProgressSnapshotFrom({
-  ...baseState,
-  completedStepCount: 1,
+  ...emptyJourneyProgress,
+  legacyTutorial: { ...emptyLegacyTutorialRecord, completedStepCount: 1 },
 });
 export const novelProgress = learningProgressSnapshotFrom({
-  ...baseState,
-  visualNovelProgress: { status: "active", beatIndex: 1 },
+  ...emptyJourneyProgress,
+  legacyTutorial: {
+    ...emptyLegacyTutorialRecord,
+    visualNovel: { status: "active", beatIndex: 1 },
+  },
 });
 
 export type ServerOptions = { progress: Responder; profile: Responder };

@@ -1,4 +1,7 @@
-import { journeySeedBefore } from "./test-helpers/journey-seed";
+import { u01OpenSeed } from "./test-helpers/progress-seed";
+import { lessonPlan } from "./test-helpers/episode-format-harness";
+import { solveLesson } from "./test-helpers/episode-format-solvers";
+import { catalogNodeTestId } from "./test-helpers/map-unit-testid";
 import { afterEach, expect, test, vi } from "vitest";
 import { act, cleanup, fireEvent, screen } from "@lynx-js/react/testing-library";
 
@@ -16,7 +19,7 @@ type HostProps = {
 };
 
 const iosInsets = { top: 59, bottom: 34, left: 0, right: 0 };
-const completedIntros = ["tutorial-intro"] as const;
+const s1 = catalogNodeTestId("u01-water", "S1");
 
 function setGlobalProps(value: HostProps | undefined): void {
   (lynx as unknown as { __globalProps: unknown }).__globalProps = value;
@@ -30,7 +33,7 @@ afterEach(() => {
   vi.unstubAllEnvs();
 });
 
-async function boot(host: HostProps, unitId = "ordering"): Promise<void> {
+async function boot(host: HostProps): Promise<void> {
   setGlobalProps(host);
   vi.stubGlobal("NativeModules", {
     SystemBackModule: {
@@ -38,18 +41,16 @@ async function boot(host: HostProps, unitId = "ordering"): Promise<void> {
       respond: vi.fn<(token: string, outcome: string) => void>(),
     },
   });
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore(unitId)} completedEpisodeIntroIds={completedIntros} />,
-  );
+  await renderSignedInApp(<App progressSeed={u01OpenSeed} />);
 }
 
 const tap = (id: string): void => void fireEvent.tap(screen.getByTestId(id), {});
 
 // 학습 화면에서 시스템 뒤로가기를 누르면 나가기 확인 Dialog가 섭니다(App.system-back IB5).
 function openExitDialog(): void {
-  tap("ui-lynx-learning-unit-ordering");
+  tap(s1);
   tap("step-sheet-start");
-  expect(screen.getByTestId("learning-shell-exit")).toBeInTheDocument();
+  expect(screen.getByTestId("learning-run-header-exit")).toBeInTheDocument();
   act(() => {
     lynx.getJSModule("GlobalEventEmitter").emit(systemBackEventName, ["1"]);
   });
@@ -100,15 +101,13 @@ test("[IM3] reducedMotion: true가 iOS inset을 건드리지 않는다", async (
   expect(screen.getByTestId("app-shell").style.paddingBottom).toBe("34px");
 });
 
-// 듣기 유닛을 보기 tap(정답) → 넘김 층 tap까지 몰고 간 뒤, 무대의 전환 속성과 완료 배지를 봅니다
-// (motion-tokens-stage3 IT2 · IT3). 같은 `MotionProvider` Context가 앱 훅 `useQuestionTransition`과
-// LessonCompleteScreen까지 한 줄로 이어지는지가 경계입니다.
-async function playListeningUnit(host: HostProps): Promise<void> {
-  await boot(host, "tutorial-listening");
-  tap("ui-lynx-learning-unit-tutorial-listening");
+// 첫 유닛(S1, 낱말 카드)을 끝까지 넘긴 뒤, 완료 배지를 봅니다(motion-tokens-stage3 IT3). 같은 `MotionProvider`
+// Context가 앱 훅과 LessonCompleteScreen까지 한 줄로 이어지는지가 경계입니다.
+async function playFirstUnit(host: HostProps): Promise<void> {
+  await boot(host);
+  tap(s1);
   tap("step-sheet-start");
-  tap("listening-choice-0");
-  tap("learning-shell-advance");
+  solveLesson(lessonPlan("u01-water", "S1"), true);
 }
 
 function rewardBadge(): Element {
@@ -117,24 +116,14 @@ function rewardBadge(): Element {
   return found;
 }
 
-test("[IT2] reducedMotion: true면 문항 전환 무대는 reduced이고 통과 배지는 fade다", async () => {
-  await playListeningUnit({ safeAreaInsets: iosInsets, reducedMotion: true });
-  const stage = screen.getByTestId("learning-shell-stage");
-  expect(stage.getAttribute("data-page")).toBe("primed");
-  expect(stage.getAttribute("data-motion")).toBe("reduced");
-
-  tap("learning-shell-action");
-  expect(screen.getByTestId("lesson-complete-screen-title")).toHaveTextContent("PERFECT LESSON!");
+test("[IT2] reducedMotion: true면 통과 배지는 fade다", async () => {
+  await playFirstUnit({ safeAreaInsets: iosInsets, reducedMotion: true });
+  expect(screen.getByTestId("lesson-complete-screen-title")).toBeInTheDocument();
   expect(rewardBadge().getAttribute("data-reward")).toBe("fade");
 });
 
-test("[IT3] reducedMotion이 없으면 무대에 data-motion이 없고 배지는 expressive이며 Back to map은 즉시 맵을 연다", async () => {
-  await playListeningUnit({ safeAreaInsets: iosInsets });
-  const stage = screen.getByTestId("learning-shell-stage");
-  expect(stage.getAttribute("data-page")).toBe("primed");
-  expect(stage.hasAttribute("data-motion")).toBe(false);
-
-  tap("learning-shell-action");
+test("[IT3] reducedMotion이 없으면 배지는 expressive이며 Back to map은 즉시 맵을 연다", async () => {
+  await playFirstUnit({ safeAreaInsets: iosInsets });
   expect(rewardBadge().getAttribute("data-reward")).toBe("expressive");
 
   const exit = screen.getByTestId("lesson-complete-screen-exit");
@@ -145,27 +134,6 @@ test("[IT3] reducedMotion이 없으면 무대에 data-motion이 없고 배지는
 // 실행 중 true → false 갱신 케이스는 쓰지 않습니다 — 해당 없음. 이 하네스는 호스트의 globalProps 갱신
 // (`updateGlobalProps`의 강제 전체 재렌더)를 흉내 낼 수 없습니다(`GlobalEventEmitter`가 없고, 억지로 이어도
 // 트리가 처음부터 다시 서서 Dialog가 사라집니다). e2e M-I2 · M-A2에서 실제 호스트로 봅니다.
-
-// motion-tokens-stage4 IM4 — 진행 바 채움이 같은 Context를 따라 reduced로 서는지 봅니다(dist ui-lynx
-// MotionProvider → 앱 헤더 한 줄).
-async function bootListeningUnit(host: HostProps): Promise<Element> {
-  await boot(host, "tutorial-listening");
-  tap("ui-lynx-learning-unit-tutorial-listening");
-  tap("step-sheet-start");
-  return screen.getByTestId("learning-shell-progress-fill");
-}
-
-test("[IM4] reducedMotion: true면 진행 바 채움이 reduced 클래스와 data-motion을 갖고, 없으면 둘 다 없다", async () => {
-  const reduced = await bootListeningUnit({ safeAreaInsets: iosInsets, reducedMotion: true });
-  expect(reduced.getAttribute("data-motion")).toBe("reduced");
-  expect(reduced).toHaveClass("learning-shell-progress-fill-motion-reduced");
-  cleanup();
-  vi.unstubAllGlobals();
-
-  const standard = await bootListeningUnit({ safeAreaInsets: iosInsets });
-  expect(standard.hasAttribute("data-motion")).toBe(false);
-  expect(standard).not.toHaveClass("learning-shell-progress-fill-motion-reduced");
-});
 
 test("[NBI2] reducedMotion이면 알림 버튼에 reduced 표지와 막이 서고, 없으면 셋 다 없다", async () => {
   await boot({ safeAreaInsets: iosInsets, reducedMotion: true });

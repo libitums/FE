@@ -28,11 +28,7 @@ import type { LearningItemGuideCopy } from "./learning-item-guide.contract";
 import type {
   AssessmentCopy,
   CommonCopy,
-  CultureCopy,
-  CultureQuizCopy,
-  EpisodeFinalCopy,
   EpisodeIntroCopy,
-  EpisodeNarrativeCopy,
   GemPurchaseCopy,
   JourneyMapCopy,
   LearningShellCopy,
@@ -40,7 +36,6 @@ import type {
   ListeningCopy,
   MessengerCopy,
   NotificationsCopy,
-  PhoneCallCopy,
   ProfileCopy,
   RoleplayCopy,
   SentenceOrderCopy,
@@ -49,7 +44,6 @@ import type {
   SpeakingCopy,
   VisualNovelCopy,
   WordChoiceCopy,
-  WritingCopy,
 } from "./ui-copy-sections.contract";
 
 /**
@@ -69,17 +63,11 @@ export type UiCopy = {
   readonly wordChoice: WordChoiceCopy;
   readonly sentenceOrder: SentenceOrderCopy;
   readonly speaking: SpeakingCopy;
-  readonly writing: WritingCopy;
   readonly learningItemGuide: LearningItemGuideCopy;
-  readonly culture: CultureCopy;
-  readonly cultureQuiz: CultureQuizCopy;
   readonly assessment: AssessmentCopy;
   readonly lessonComplete: LessonCompleteCopy;
   readonly episodeIntro: EpisodeIntroCopy;
-  readonly episodeNarrative: EpisodeNarrativeCopy;
-  readonly episodeFinal: EpisodeFinalCopy;
   readonly messenger: MessengerCopy;
-  readonly phoneCall: PhoneCallCopy;
   readonly visualNovel: VisualNovelCopy;
   readonly roleplay: RoleplayCopy;
   readonly notifications: NotificationsCopy;

@@ -1,5 +1,7 @@
 # Android 오디오 재생 검증
 
+> ⟨2026-10-21 — [ADR-0081](../adr/0081-tutorial-as-catalog-episode.md) D12 · D13⟩ **Maestro 흐름(`e2e/android-audio-playback.yaml` · `devtools/android-maestro/run-audio-playback.sh` · 루트 `test:e2e:android:audio`)은 지웠다** — 그 흐름이 열던 옛 튜토리얼 듣기 화면(`Listen to a Hello`)이 없다. 내장 음성은 **3개**(호스트 테스트 고정물 `greeting-1` · `ordering-2` · `tutorial-cabin-announcement`)만 남았고 제품이 쓰는 내장 음성은 0이다 — 아래 「21개」는 그때의 값이다. 계측(`AudioPlaybackModuleTest` — 목록은 그 셋) · 원격 재생 AP-R1 · AP-R2는 그대로 실행할 수 있다. 카탈로그 음성의 청음은 [에피소드 음성 e2e](episode-audio.md)가 진다.
+
 ## 범위
 
 `AudioPlaybackModule`은 기존 `apps/mobile/src/lib/audio.ts`의 `play(source, done)`,
@@ -31,8 +33,6 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 adb install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
 adb shell am instrument -w -e class com.libitum.host.AudioPlaybackModuleTest \
   libitum.duru.android.test/androidx.test.runner.AndroidJUnitRunner
-cd ../..
-E2E_UDID=<전용 에뮬레이터 ID> pnpm test:e2e:android:audio
 ```
 
 계측 테스트는 모든 자산의 `openFd` 성공, 재생 완료 한 번, 잘못된 ID의 완료,

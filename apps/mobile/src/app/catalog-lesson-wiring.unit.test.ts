@@ -98,7 +98,6 @@ function harness(
         updaters.push(action as (value: CatalogProgress) => CatalogProgress);
       log.push({ kind: "progress", value: resolveAction(action, progress) });
     },
-    completedEpisodeFinalIds: [],
     dispatch: (action) => void log.push({ kind: "dispatch", value: action }),
     episodeIntroEventSink: sink,
     pendingResults,
@@ -802,7 +801,7 @@ describe("catalogWiring — 표지 결선과 레슨 결선을 합친다", () => 
   test("LW14. 표지 콜백 여섯 · 학습 콜백 여섯 · 값 셋이 모두 있고 에피소드 전 가드 콜백은 없다", () => {
     const { args } = harness({ progress: { "u01-water": ["intro", "S1"] } });
 
-    const wiring: Record<string, unknown> = catalogWiring(args);
+    const wiring: Record<string, unknown> = catalogWiring({ ...args, legacyTutorialPassed: false });
 
     for (const name of [
       "onStartCatalogCover",

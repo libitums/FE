@@ -1,5 +1,7 @@
 # Android 효과음 · 대사 오디오 · 서사 배경 그림 (Play 배포 형태)
 
+> ⟨2026-10-21 — [ADR-0081](../adr/0081-tutorial-as-catalog-episode.md) D12⟩ 내장 음성은 **3개**(호스트 테스트 고정물 `greeting-1` · `ordering-2` · `tutorial-cabin-announcement`)만 남았다 — 옛 튜토리얼 문항 · 프롤로그 통화 15와 전화 3을 지웠고 제품이 쓰는 내장 음성은 0이다. 옛 튜토리얼 프롤로그 · 서사 배경 · 비주얼 노벨을 거치는 단계(E3 · E4 등)는 그 화면이 지워져 기록으로 남긴다. 「21개」 등 개수는 그때의 값이다.
+
 Android 릴리스에서 효과음이 나지 않고(`SoundEffectsModule` 부재), 대사 오디오(m4a 21개)가 패키지에 없고, 서사 화면의 배경 그림이 단색으로만 보이던
 결함이 고쳐졌는지를 **Play가 기기에 내려주는 것과 같은 형태**(AAB → bundletool 분할 설치)로 확인한다. 순수 판정(`SoundEffectAsset` · `SoundEffectsSession`) ·
 Gradle 결선과 산출물 검사(`devtools/android-bundle/*.test.mjs`) · 계측(`SoundEffectsModuleTest`) · 서사 배경의 마크업(`ui`)은 이미 진다 — 이 문서는

@@ -12,6 +12,14 @@
   align-self: stretch;
 }
 
+/* 구획 하나를 감싸는 상자입니다 — 첫 유닛 안내가 떠 있는 동안 대상이 아닌 구획을 낭독에서 가리는 자리이고,
+   안쪽 구획이 줄 폭을 받도록 같은 폭을 폅니다. */
+.catalog-map-section-cover {
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+}
+
 /* 본문이 없는 구획의 사유 캡션입니다 — `episode-pending-caption`과 같은 글꼴이고 아래 여백이 없습니다.
    맵 맨 아래 여백은 맵 상자의 아래 패딩(`mapContentInsets`)이 집니다. */
 .catalog-unavailable-caption {

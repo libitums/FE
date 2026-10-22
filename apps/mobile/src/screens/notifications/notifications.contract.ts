@@ -1,38 +1,13 @@
-// 알림 화면의 타입 전용 계약입니다 — 구현·JSX를 두지 않습니다. 세 특별 유닛
-// 계약에서 가져오는 것은 `import type`이고 그 타입의 소유자는 그 화면입니다
-// (`docs/conventions/code.md` 「import」가 허용하는 형태).
-
-import type { MessengerUnitId } from "../messenger/messenger.contract";
-import type { PhoneCallUnitId } from "../phone-call/phone-call.contract";
-import type { VisualNovelUnitId } from "../visual-novel/visual-novel.contract";
+// 알림 화면의 타입 전용 계약입니다 — 구현·JSX를 두지 않습니다.
 
 /** 임시 값이 진짜로 바뀌어도 형태가 한 글자도 안 바뀌게 합니다(「임시 입력값의 이음매」). */
 export type NotificationId = string;
-
-export type MessengerNotificationTarget = {
-  readonly kind: "messenger";
-  readonly unitId: MessengerUnitId;
-};
-
-export type PhoneCallNotificationTarget = {
-  readonly kind: "phone-call";
-  readonly unitId: PhoneCallUnitId;
-};
-
-export type VisualNovelNotificationTarget = {
-  readonly kind: "visual-novel";
-  readonly unitId: VisualNovelUnitId;
-};
 
 export type RoleplayListNotificationTarget = {
   readonly kind: "roleplay-list";
 };
 
-export type NotificationTarget =
-  | MessengerNotificationTarget
-  | PhoneCallNotificationTarget
-  | VisualNovelNotificationTarget
-  | RoleplayListNotificationTarget;
+export type NotificationTarget = RoleplayListNotificationTarget;
 
 export type NotificationTargetKind = NotificationTarget["kind"];
 
@@ -88,8 +63,8 @@ export type NotificationItemDeletedEvent = {
 };
 
 /**
- * 서버 푸시를 눌렀을 때 앱이 갈 곳입니다(ADR-0034). 알림 목록 항목의 목적지 넷에 **여정 맵**과 **알림 목록**
- * 둘을 더했습니다. URL이 아니라 이 이름만 받습니다 — 그래서 알림이 앱 안 임의의 자리로 들어올 수 없습니다.
+ * 서버 푸시를 눌렀을 때 앱이 갈 곳입니다(ADR-0034). 알림 목록 항목의 목적지(롤플레이 목록)에 **여정 맵**과 **알림 목록**
+ * 둘을 더했습니다. 서버가 아직 보내는 특별 유닛 목적지(메신저 · 전화 · 비주얼 노벨)는 여정 맵으로 읽습니다(`push-target.ts`). URL이 아니라 이 이름만 받습니다 — 그래서 알림이 앱 안 임의의 자리로 들어올 수 없습니다.
  */
 export type PushNotificationTarget =
   | NotificationTarget

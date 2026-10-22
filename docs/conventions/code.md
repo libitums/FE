@@ -601,6 +601,8 @@ expect(headingAxis(container)).toEqual(["listening-screen-title"]);
 원문에는 계약 절 번호가 함께 달려 있고 그 번호는 이 문서에서 풀리지 않는다. 그 번호들은
 [comments.md](comments.md) 조문 ④가 지우기로 한 것이라, 발췌는 정리가 끝나는 대로 갱신한다.
 
+> ⟨2026-10-21 — [ADR-0081](../adr/0081-tutorial-as-catalog-episode.md)⟩ **아래 사례 가운데 옛 튜토리얼의 것은 코드에서 사라졌다** — `journey-map-learning-form.ts`(`learningFormsByStep`) · `culture.ts` · `culture-quiz.ts`는 지워졌다. `ListeningQuestion.audioSource`는 남았다(지금 자리는 `listening-questions.ts` — 카탈로그 듣기 활동이 쓴다). 아래 「셋째 규칙」 문단의 「다섯 스텝 전부 빈 배열」인 문항 `Record`와 `vi.mock` 부분 대역 테스트도 튜토리얼 문항 표와 함께 없어졌다. 서술은 이음매 규칙이 어떻게 섰는지의 기록으로 남긴다 — 남은 사례는 듣기 문항의 `audioSource` · 알림 목록 · 프로필 항목 · 온보딩 문구 · 언어 라벨이다.
+
 - **`listening.ts`의 `ListeningQuestion.audioSource` — 한 필드가 「격리」 · 「옵셔널 금지」 ·
   「주석이 교체 지점을 적는다」 셋을 전부 진다.**
   주석이 그 값을 _"호스트가 해석하는 **불투명 문자열**입니다"_ 로 두어 **격리**하고, _"옵셔널이

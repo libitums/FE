@@ -2,6 +2,7 @@ import "background-only";
 
 // 번들에 내장한 에피소드입니다(사용자 결정: 초반 에피소드는 내장, 이후는 서버).
 import manifestJson from "../../content/manifest.json";
+import u00Tutorial from "../../content/episodes/u00-tutorial.json";
 import u01Water from "../../content/episodes/u01-water.json";
 import u02Checkin from "../../content/episodes/u02-checkin.json";
 import u03Mina from "../../content/episodes/u03-mina.json";
@@ -17,5 +18,10 @@ if (!decoded.ok) {
 
 export const bundledCatalogInput: CatalogInput["bundled"] = {
   manifest: decoded.manifest,
-  episodes: { "u01-water": u01Water, "u02-checkin": u02Checkin, "u03-mina": u03Mina },
+  episodes: {
+    "u00-tutorial": u00Tutorial,
+    "u01-water": u01Water,
+    "u02-checkin": u02Checkin,
+    "u03-mina": u03Mina,
+  },
 };

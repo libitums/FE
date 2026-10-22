@@ -6,7 +6,6 @@ import { AnswerVerdict } from "../../components/AnswerVerdict";
 import { LearningItemGuide } from "../../components/LearningItemGuide";
 import { useLearningItemGuide } from "../../components/use-learning-item-guide";
 import { announce, announceCompletion } from "../../lib/accessibility";
-import type { AnswerResult } from "../../lib/answer-result";
 import { LearningShell } from "../learning/LearningShell";
 import { LearningActivityComplete } from "../learning/LearningActivityComplete";
 import { SentenceOrderChip, SentenceOrderChipPlaceholder } from "./SentenceOrderChip";
@@ -20,12 +19,10 @@ import {
   isSentenceOrderSessionComplete,
   sentenceOrderAnnouncement,
   sentenceOrderCompletionAnnouncement,
-  sentenceOrderQuestionsForStep,
   sentenceOrderResultAt,
   sentenceOrderSessionReducer,
   sentenceOrderSessionResults,
 } from "./sentence-order";
-import type { JourneyStepId } from "../journey-map/journey-map";
 import { handsOffAfter, lessonCounter } from "../learning/activity-finish";
 import type { ActivityFinish, LessonPosition } from "../learning/activity-finish";
 import type { SentenceOrderQuestion } from "./sentence-order-questions";
@@ -39,43 +36,19 @@ import "./sentence-order-screen.css";
 //
 // 대화 카드의 왼쪽 말풍선이 상대의 말(`prompt`)이고, 학습자는 그 말에 답하는 문장을 창고의
 // 조각으로 만듭니다. 창고에는 오답 낱말이 섞여 있고, 정답 길이만큼 놓으면 확인할 수 있습니다.
-export type SentenceOrderScreenProps = {
-  stepId: JourneyStepId;
-  gemCount?: number;
-  onExit: () => void;
-  onFinish: (id: JourneyStepId, results: readonly AnswerResult[], skippedCount: number) => void;
-};
-
 export type SentenceOrderActivityProps = {
   readonly questions: readonly SentenceOrderQuestion[];
   readonly gemCount: number;
   readonly onExit: () => void;
   readonly onFinish: ActivityFinish;
-  /** 카탈로그 레슨 안의 위치입니다. 튜토리얼처럼 활동 하나가 한 세션이면 주지 않습니다. */
+  /** 카탈로그 레슨 안의 위치입니다. 활동 하나가 한 세션이면 주지 않습니다. */
   readonly lesson?: LessonPosition;
-  /** 대화 조립 아바타의 이름(에피소드 상대 · 학습자)입니다. 튜토리얼은 주지 않습니다. */
+  /** 대화 조립 아바타의 이름(에피소드 상대 · 학습자)입니다. */
   readonly speakerNames?: DialogueSpeakerNames;
 };
 
 /** 내 말풍선이 비어 있을 때의 표시입니다 — 디자인 표기 그대로입니다. */
 const emptyReplyMark = "----";
-
-/** 튜토리얼 스텝의 문항 표를 읽어 활동에 넘기는 얇은 어댑터입니다. */
-export function SentenceOrderScreen({
-  stepId,
-  gemCount = 0,
-  onExit,
-  onFinish,
-}: SentenceOrderScreenProps): ReactNode {
-  return (
-    <SentenceOrderActivity
-      questions={sentenceOrderQuestionsForStep(stepId)}
-      gemCount={gemCount}
-      onExit={onExit}
-      onFinish={(results, skippedCount) => onFinish(stepId, results, skippedCount)}
-    />
-  );
-}
 
 export function SentenceOrderActivity({
   questions,

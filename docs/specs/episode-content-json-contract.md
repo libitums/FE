@@ -13,6 +13,8 @@
 > ⟨2026-10-16 오후 갱신⟩ 같은 날 11:45 버킷 판으로 내장 셋을 한 번 더 바꿨다 — version `2026-10-16.1`. 바뀐 것: 제목이 짧아짐(`물 사기` · `체크인` · `미나 만나기`) · 최상위 `title_en`(앱은 버림) · 그림 경로가 `content/images/…` 꼴(앱이 선두 `content/`를 뗀다) · 모든 소리 자리에 빈 `audio_url` · u03 통과 뒤 컷 1 문장(`백반집` → `식당`). 음성 id는 같은 문장 자리에 다시 붙여 **13개**다 — u03 통과 뒤 컷 1(`u03-mina/post-1`)은 문장이 바뀌어 녹음과 맞는지 확인 전이라 비웠다.
 > 새 세 파일(문항 355 · 컷 25 · 대화 35줄 · 단어 42 · 패턴 5)의 관찰은 각 절의 ⟨2026-10-16⟩ 줄과 §7.2 끝의 「새 형식」 표가 진다. 옛 세 파일은 테스트 픽스처
 > `apps/mobile/content/test-fixtures/delivery-2-2026-10-14/`로 바이트 그대로 남았다. 앱이 새 형식을 받는 결정은 [ADR-0065](../adr/0065-episode-format-additions.md)이 진다.
+>
+> ⟨2026-10-21 — 튜토리얼⟩ **튜토리얼 `u00-tutorial`이 같은 형식의 에피소드로 들어왔다**(내장 · 매니페스트 `order` 0 · version `2026-10-21.3`) — 앱은 그것을 **Episode 0**으로 세운다(구획 번호 = `order`). u01 ~ u03과 구조가 다르다: 단원 `S1` ~ `S13` 각 문항 하나(`S12` `CULTURE_CARD` · `S13` `CULTURE_CHECK`) + `RP` 턴 셋, `completion.requires` 14키, 그림 14경로(`images/u00-tutorial/*` 12 + 공용 `images/items/{hello,thanks}.webp`), 음성 id 12. 이 문서의 `n/N` 관찰은 u00을 세지 않았다. 결정은 [ADR-0081](../adr/0081-tutorial-as-catalog-episode.md).
 
 ## 0. 용어 대응 — 파일의 이름과 앱의 이름
 
@@ -318,7 +320,7 @@ u01 · u02는 전부 해결, u03은 18문항이 같은 세 id(에피소드 2의 
 | `generated_at` | 필수 | string | 생성 시각. 앱은 비교에 쓰지 않는다 |
 | `min_client_level` | 선택 | int | 이보다 낮은 앱은 이 매니페스트에서 온 항목을 `client-too-old`로 잠근다. 앱은 지금 `CONTENT_CLIENT_LEVEL = 1` |
 | `episodes[].id` | 필수 | string | 에피소드 id(= 파일의 `unit_id`, §0 · Q1). 매니페스트 안에서 중복이면 전체 거부(`duplicate-episode-id`) |
-| `episodes[].order` | 필수 | int | 맵 순서. 오름차순, 같으면 `id` 사전순 |
+| `episodes[].order` | 필수 | int | 맵 순서. 오름차순, 같으면 `id` 사전순. ⟨2026-10-21⟩ **맵의 구획 번호(`Episode n.`)이기도 하다** — `0`은 튜토리얼(`u00-tutorial` = `Episode 0.`), 본편은 1부터. 건너뛰면 번호도 건너뛴다([ADR-0081](../adr/0081-tutorial-as-catalog-episode.md) D3) |
 | `episodes[].title` | 필수 | string | 본문을 받기 전에도 보이는 제목 |
 | `episodes[].schema` | 필수 | string | 에피소드 JSON의 `schema`. 앱이 모르면 `unsupported-schema`로 잠근다 |
 | `episodes[].version` | 필수 | string | `YYYY-MM-DD.n`. 숫자 인식 비교로 높은 쪽이 이긴다(같으면 내장) |
@@ -333,7 +335,7 @@ u01 · u02는 전부 해결, u03은 18문항이 같은 세 id(에피소드 2의 
 - `version` · `sha256` · `bytes`: 바뀐 에피소드만 다시 받는다. 받은 파일의 해시나 바이트 수가 다르면 버린다.
 - `schema`: 에피소드마다 둔다. 앱이 모르는 스키마의 에피소드는 **잠근 채 목록에 세운다**(숨기지 않는다 — Q18의 FE 제안대로 앱 쪽을 정했다. 서버 쪽 정책 확인은 Q18에 남는다).
 - **원격 경로**: 기준은 `${PUBLIC_SUPABASE_URL}/storage/v1/object/public/content/`(Supabase Storage 공개 버킷 `content`). 그 아래 `manifest.json` · `episodes/<id>.json` · `images/<id>/…`. 에피소드 `url`과 컷 `image_url`은 이 기준의 상대 경로다. 오디오 파일의 출처는 아직 정하지 않았다(ADR README 보류 표 「오디오 자산의 출처·형식」). ⟨2026-10-14⟩ 정했다 — 같은 기준 아래 `audio/<id>.m4a`(정적 파일 · **매니페스트에 등록하지 않는다** · 기기 캐시 없음, [ADR-0060](../adr/0060-episode-voice-remote-audio.md) D1). 음성 id가 바뀐 내장 에피소드 셋의 `version`은 `2026-10-14.1`이다. ⚠ 버킷은 아직 없다 — 생성 · 업로드는 사용자 확인 뒤(ADR README 보류 표). ⟨2026-10-16 — 새 형식⟩ 내장 셋이 새 형식으로 바뀌어 **`version`은 `2026-10-15.1`**이다(`generated_at` `2026-10-15T00:00:00Z`, `sha256` · `bytes`는 새 파일의 값 — u01 125,327 · u02 159,188 · u03 154,196 bytes). 버킷에는 **내장본과 같은 바이트**(음성 id 포함)를 올린다 — 원본(음성 id 없음)을 올리면 원격본이 이길 때 소리가 사라진다. 옛 빌드는 새 본문을 받아도 디코드에 실패해 내장 폴백으로 지금 콘텐츠를 연다 — 그래서 `min_client_level`을 넣지 않는다([ADR-0065](../adr/0065-episode-format-additions.md) D12).
-- **내장 매니페스트**: `apps/mobile/content/manifest.json` — 번들에 실은 세 에피소드(`content/episodes/*.json`)의 실제 `sha256` · `bytes`를 적은 같은 형식의 파일이다. 사본을 바꾸면 이 파일도 같이 바꾼다.
+- **내장 매니페스트**: `apps/mobile/content/manifest.json` — 번들에 실은 세 에피소드(`content/episodes/*.json`)의 실제 `sha256` · `bytes`를 적은 같은 형식의 파일이다. 사본을 바꾸면 이 파일도 같이 바꾼다. ⟨2026-10-21⟩ **내장 에피소드는 넷이다** — 첫 항목 `u00-tutorial`(order 0)은 버킷 `manifest.json`의 항목과 **같은 값**이다(같은 version이면 내장이 이겨 받지 않는다). u00이 쓰는 **그림 14장도 번들에 있다**(`apps/mobile/src/assets/content/images/…` = 버킷 상대 경로, [ADR-0081](../adr/0081-tutorial-as-catalog-episode.md) D2).
 - `day` · `time_of_day` · `place` · `counterpart`는 에피소드 JSON에 그대로 둔다.
 
 > 2026-10-12 3a 리뷰 반영: 카탈로그 비교는 `compareVersions`(숫자 조각 비교 — `localeCompare` 금지, PrimJS), 원격이 이긴 항목이 준비되지 않으면 같은 id의 내장본으로 폴백, `episode-catalog.ts`가 `compareVersions` · `checkEpisodeText` · `parseCachedManifest`를 공용 검증 자리로 export(결합과 갱신이 같은 검사를 쓴다). 상세는 [ADR-0056](../adr/0056-episode-content-delivery.md) D2 · D3.
@@ -453,6 +455,7 @@ u01 · u02는 전부 해결, u03은 18문항이 같은 세 id(에피소드 2의 
    - **엣지(CDN) 지연의 상한은 `cacheControl`이다** — 엣지는 주소 키를 보지 않는다(2026-10-21 실측 — 쿼리가 달라도 `cf-cache-status: HIT`). 그래서 올린 뒤 최대 60초(대시보드로 올렸으면 1시간)는 옛 목록이 보일 수 있고, 그 사이 낡은 본문이 오면 앱은 sha가 맞지 않아 받지 않았다가 다음 기회에 다시 받는다. 60초는 이 창을 줄이는 유일한 수단이다.
 6. **옛 파일은 지우지 않는 것이 기본이다 — 지우는 시점은 아직 정하지 않았다**(§10 고정 문면 그대로, 사용자 확인 2026-10-21). 옛 버전을 연 기기는 다음 시작에 바뀔 때까지 옛 이름의 파일을 쓴다(받아 두지 못한 기기는 버킷에서 읽는다).
 7. 올린 뒤 공개 주소로 `manifest.json` · 바뀐 에피소드 JSON을 받아 **200 · 매니페스트의 `sha256` · `bytes`와 같은지** 본다(엣지 사본이 남아 있으면 60초 뒤 다시).
+8. ⟨2026-10-21⟩ **앱에 내장된 그림은 같은 이름이면 내장이 이긴다** — 튜토리얼 u00의 그림 14장은 앱 번들에 있고, 앱은 받아 둔 파일 > 내장 > 원격 순으로 고르며 내장 그림은 받지 않는다([ADR-0081](../adr/0081-tutorial-as-catalog-episode.md) D2). 같은 이름으로 내용만 바꾸면 **앱을 새로 내기 전까지 반영되지 않는다** — 규칙 1(새 이름)이 여기서도 유일한 길이다. u00의 JSON · 매니페스트 항목을 바꾸면 내장본과 version이 갈려 원격이 이기고, 새 이름의 그림만 받는다.
 
 ### 사건 기록 ⟨2026-10-20 ~ 21⟩ — 같은 이름 재업로드 · 매니페스트 미갱신
 
@@ -461,6 +464,7 @@ u01 · u02는 전부 해결, u03은 18문항이 같은 세 id(에피소드 2의 
 - **어떻게 바로잡았나** — 사용자가 2026-10-21 `manifest.json`을 u01 ~ u04 **`2026-10-21.1`** · 버킷 파일의 실측 sha256 · bytes로 다시 만들어 올렸다(앱 디코더 통과 · 본문이 가리키는 그림이 모두 버킷에 있음을 확인한 판). 그 뒤 기기에서 게이지 → 다음 시작 교체를 확인했다([e2e](../e2e/episode-update-on-splash.md) EU-3 ~ EU-5).
 - **남은 것** — u01 ~ u03 새 본문에는 **음성 id가 없다**. 2026-10-21.1판이 내장(2026-10-16.1)을 이겨 그 셋은 원격본이 열린다 — 사용자 결정(2026-10-21)으로 그대로 내보냈다. 음성 id를 다시 붙인 판은 위 규칙으로 새 `version`을 달아 올린다.
 - **튜토리얼 `u00-tutorial`** — 2026-10-21 버킷에 JSON · 그림이 더해졌지만 **`manifest.json`에는 없다**(앱은 매니페스트에 없는 파일을 받지 않는다). 내장 튜토리얼을 교체하는 별도 앱 PR에서 다룬다(사용자 결정) — 그 전에 매니페스트에 넣지 않는다.
+  ⟨2026-10-21 — 다룸⟩ 같은 날 버킷 `manifest.json`에 u00 항목(order 0)이 들어갔고(사용자가 올림), 앱 PR이 그 판(`2026-10-21.3`)을 바이트 그대로 내장했다([ADR-0081](../adr/0081-tutorial-as-catalog-episode.md)). **옛 앱(이 PR 전 빌드)에서는 u00이 원격 전용 「Episode 1.」로 서고, 옛 튜토리얼을 통과했지만 u01을 아직 열지 않은 사용자의 u01이 u00 뒤로 잠긴다** — 사용자 결정(Q1)으로 항목을 그대로 두었다(수용된 위험).
 
 ## 부록 A. 에피소드별 수치
 

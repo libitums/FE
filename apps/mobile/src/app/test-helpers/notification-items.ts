@@ -5,17 +5,17 @@ const items: readonly NotificationItem[] = [
   {
     id: "notification-messenger",
     message: "Minseo sent you an appointment message",
-    target: { kind: "messenger", unitId: "appointment-confirmation" },
+    target: { kind: "roleplay-list" },
   },
   {
     id: "notification-phone-call",
     message: "Minseo is calling about your appointment",
-    target: { kind: "phone-call", unitId: "appointment-confirmation-phone-call" },
+    target: { kind: "roleplay-list" },
   },
   {
     id: "notification-visual-novel",
     message: "Minseo has arrived at the café",
-    target: { kind: "visual-novel", unitId: "cafe-arrival-visual-novel" },
+    target: { kind: "roleplay-list" },
   },
   {
     id: "notification-roleplay-list",

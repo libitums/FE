@@ -2,9 +2,8 @@ import { afterEach, expect, test, vi } from "vitest";
 import { fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import type { AnswerResult } from "../../lib/answer-result";
-import type { JourneyStepId } from "../journey-map/journey-map";
 import type { WordChoiceQuestion } from "./word-choice";
-import { WordChoiceScreen } from "./WordChoiceScreen";
+import { WordChoiceActivity } from "./WordChoiceScreen";
 import { UiCopyContext } from "../../lib/ui-copy";
 import { markedUiCopy } from "../../lib/ui-copy.test-support";
 import { expectCompleteScene, expectQuestionScene } from "../learning/complete-scene.test-support";
@@ -14,10 +13,8 @@ import { expectCompleteScene, expectQuestionScene } from "../learning/complete-s
 // 그것을 실제로 부르는지가 이 파일이 보는 것의 절반입니다. `toHaveClass`·
 // `toHaveStyle`·`toBeVisible`을 쓰지 않습니다(docs/conventions/code.md).
 //
-// **문항 값을 지어내지 않습니다** — `wordChoiceQuestionsByStep`은 다섯 스텝 전부
-// 빈 배열입니다. 이 파일은 그 데이터 파일을 고치지 않고, 자기 픽스처를 여기서
-// 만들어 `wordChoiceQuestionsForStep` **하나만** 부분 대역합니다. 세션 리듀서·
-// 판정·문구 합성 등 나머지 export는 전부 실제 구현 그대로입니다.
+// **문항 값을 지어내지 않습니다** — 제품 문항 표는 사라졌습니다. 이 파일은 자기 픽스처를 만들어 활동에 직접 넘깁니다. 세션 리듀서 ·
+// 판정 · 문구 합성은 전부 실제 구현 그대로입니다.
 
 const ORDERING_QUESTIONS: readonly WordChoiceQuestion[] = [
   {
@@ -49,18 +46,28 @@ const GREETING_QUESTIONS: readonly WordChoiceQuestion[] = [
   },
 ] as const;
 
-vi.mock("./word-choice", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("./word-choice")>();
-  return {
-    ...actual,
-    wordChoiceQuestionsForStep: (id: JourneyStepId) => {
-      if (id === "ordering") {
-        return ORDERING_QUESTIONS;
-      }
-      return id === "greeting" ? GREETING_QUESTIONS : [];
-    },
-  };
-});
+type StepId = "ordering" | "greeting" | "introduction";
+
+/** 옛 route 어댑터를 대신하는 테스트 안 어댑터입니다 — 스텝 대신 이 파일의 고정 문항을 활동에 넘깁니다. */
+function WordChoiceScreen({
+  stepId,
+  onExit,
+  onFinish,
+}: {
+  stepId: StepId;
+  onExit: () => void;
+  onFinish: (id: StepId, results: readonly AnswerResult[], skippedCount: number) => void;
+}) {
+  const questions =
+    stepId === "ordering" ? ORDERING_QUESTIONS : stepId === "greeting" ? GREETING_QUESTIONS : [];
+  return (
+    <WordChoiceActivity
+      questions={questions}
+      onExit={onExit}
+      onFinish={(results, skippedCount) => onFinish(stepId, results, skippedCount)}
+    />
+  );
+}
 
 const CHOICE_TESTIDS = [
   "word-choice-option-0",
@@ -72,7 +79,7 @@ const CHOICE_TESTIDS = [
 function renderOrdering(
   overrides: {
     onExit?: () => void;
-    onFinish?: (id: JourneyStepId, results?: readonly AnswerResult[]) => void;
+    onFinish?: (id: StepId, results?: readonly AnswerResult[]) => void;
   } = {},
 ) {
   return render(
@@ -391,7 +398,7 @@ test("마지막 문항에 응답만 해서는 완료가 아니다", () => {
 });
 
 test("결과 보기를 탭하면 onFinish가 stepId와 결과 배열로 정확히 한 번 불린다", () => {
-  const onFinish = vi.fn<(id: JourneyStepId, results?: readonly AnswerResult[]) => void>();
+  const onFinish = vi.fn<(id: StepId, results?: readonly AnswerResult[]) => void>();
   renderOrdering({ onFinish });
 
   completeAllThree();
@@ -403,7 +410,7 @@ test("결과 보기를 탭하면 onFinish가 stepId와 결과 배열로 정확�
 
 // 이 슬라이스에 재시도 규칙이 없습니다 — 오답으로 전부 응답해도 완료됩니다.
 test("전부 오답이어도 완료 상태로 넘어가고 onFinish가 결과 배열과 함께 불린다", () => {
-  const onFinish = vi.fn<(id: JourneyStepId, results?: readonly AnswerResult[]) => void>();
+  const onFinish = vi.fn<(id: StepId, results?: readonly AnswerResult[]) => void>();
   renderOrdering({ onFinish });
 
   for (const question of ORDERING_QUESTIONS) {
@@ -420,7 +427,7 @@ test("전부 오답이어도 완료 상태로 넘어가고 onFinish가 결과 �
 
 test("응답 전 나가기를 끝까지 밟으면 onExit이 한 번, onFinish는 불리지 않는다", () => {
   const onExit = vi.fn<() => void>();
-  const onFinish = vi.fn<(id: JourneyStepId) => void>();
+  const onFinish = vi.fn<(id: StepId) => void>();
   const { container } = renderOrdering({ onExit, onFinish });
 
   exitThroughConfirm(container);
@@ -442,7 +449,7 @@ test("`×`만 눌러서는 onExit이 불리지 않는다", () => {
 
 test("문항 하나를 응답한 뒤 나가도 onFinish가 불리지 않는다", () => {
   const onExit = vi.fn<() => void>();
-  const onFinish = vi.fn<(id: JourneyStepId) => void>();
+  const onFinish = vi.fn<(id: StepId) => void>();
   const { container } = renderOrdering({ onExit, onFinish });
 
   fireEvent.tap(screen.getByTestId(`word-choice-option-${ORDERING_QUESTIONS[0]!.answerIndex}`), {});

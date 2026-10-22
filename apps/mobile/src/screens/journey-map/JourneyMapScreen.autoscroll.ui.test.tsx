@@ -8,16 +8,13 @@ import { catalogUnitDomId } from "./catalog-map";
 import {
   catalogProps,
   mapScreen,
-  noProgress,
   scrollSelector,
   stubHost,
-  threeStepsDone,
   touchMap,
-  tutorialAllDone,
-  twoStepsDone,
   type HostStub,
   type Rect,
 } from "./JourneyMapScreen.test-support";
+import { u00Catalog, u00Screen } from "./JourneyMapScreen.tutorial-u00.test-support";
 
 // 부드러운 이동은 main thread가 프레임마다 옮기지만(`useMapGlide`), 이 파일은 「어디로 부드럽게 갔나」만 봅니다 —
 // 대역이 끝 위치로 부드러운 `scrollTo` 한 번을 남깁니다.
@@ -37,6 +34,9 @@ vi.mock("./use-map-glide", async () => {
 // `scrollIntoView`의 횟수와 인자만 봅니다. 호스트의 질의는 대역이고, 재는 값은 이 파일이 정합니다.
 // 목적지 식(`autoScrollOffset`)은 unit이 지므로 여기서는 손으로 맞춘 수 하나로만 이어 봅니다.
 //
+// 맵은 내장 카탈로그 모양(u01 ~ u03)입니다 — 첫 구획은 늘 열려 있고, 진행이 없으면 첫 열린 유닛이 맨 위 표지라 스크롤하지
+// 않습니다. 「레슨 둘 끝」은 표지 + S1 + S3을 끝낸 진행(다음 유닛 S4), 「레슨 셋 끝」은 S4까지(다음 유닛 S5)입니다.
+//
 // 손으로 맞춘 목적지: 머리 카드 아래 모서리 60 + 168 = 228, 정렬선 = 228 + 24 = 252,
 // 한계선 = 60 + 800 − 68 − 24 − 100 = 668 → 설 자리 252. 스크롤 자리 0에서 대상 위 모서리가 700이면
 // 목적지는 700 − 252 = 448입니다.
@@ -46,14 +46,30 @@ vi.mock("./use-map-glide", async () => {
 
 const unitRect = (top: number): Rect => ({ top, height: 100 });
 
+const domOf = (episodeId: string, unitKey: string): string =>
+  `#${catalogUnitDomId(episodeId, unitKey)}`;
+const targetTwo = domOf("u01-water", "S4");
+const targetThree = domOf("u01-water", "S5");
+
 const baseRects: Record<string, Rect> = {
-  "#journey-map-unit-ordering": unitRect(700),
-  "#journey-map-unit-appointment": unitRect(900),
+  [targetTwo]: unitRect(700),
+  [targetThree]: unitRect(900),
   [scrollSelector]: { top: 60, height: 800 },
   "#journey-map-screen-header": { top: 60, height: 168 },
-  // 말풍선이 재는 값입니다(AS13) — `JourneyMapScreen.anchor.ui.test.tsx`의 값과 같습니다.
-  "#journey-step-node-ordering": { top: 700, height: 124 },
+  // 말풍선이 재는 값(AS13)도 같은 셀입니다 — 말풍선 자리는 호출자가 넘기는 유닛 크기로 계산합니다.
   "#journey-map-screen": { top: 0, height: 900 },
+};
+
+const lessonsTwo = { "u01-water": ["intro", "S1", "S3"] };
+const lessonsThree = { "u01-water": ["intro", "S1", "S3", "S4"] };
+const atTwo = () => mapScreen({ catalog: catalogProps({ progress: lessonsTwo }) });
+const atThree = () => mapScreen({ catalog: catalogProps({ progress: lessonsThree }) });
+const tapTarget = (): void => {
+  act(() => {
+    fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-catalog-unit-u01-water-S4"), {
+      detail: { y: 750 },
+    });
+  });
 };
 
 const asRects = (): Record<string, Rect> => ({ ...baseRects });
@@ -94,20 +110,20 @@ function deferAll(host: HostStub): void {
 describe("JourneyMapScreen 자동 스크롤", () => {
   test("AS1. 진행이 없으면 스크롤하지 않고 대상 셀도 재지 않는다", () => {
     const host = stubHost({ rects: asRects() });
-    mount(mapScreen({ progress: noProgress }));
+    mount(mapScreen());
 
     expect(host.scrollTos()).toEqual([]);
     expect(host.scrollIntoViews()).toEqual([]);
-    expect(host.measured()).not.toContain("#journey-map-unit-tutorial-intro");
+    expect(host.measured()).not.toContain(domOf("u01-water", "intro"));
   });
 
-  test("AS2. 표지와 스텝 둘을 끝내고 열면 대상 셀 · 스크롤 · 머리 카드를 재고 목적지로 한 번 부드럽게 간다", () => {
+  test("AS2. 표지와 레슨 둘을 끝내고 열면 대상 셀 · 스크롤 · 머리 카드를 재고 목적지로 한 번 부드럽게 간다", () => {
     const host = stubHost({ rects: asRects() });
-    mount(mapScreen({ progress: twoStepsDone }));
+    mount(atTwo());
 
     expect(host.measured()).toEqual(
       expect.arrayContaining([
-        "#journey-map-unit-ordering",
+        targetTwo,
         "#journey-map-screen-scroll",
         "#journey-map-screen-header",
       ]),
@@ -118,10 +134,10 @@ describe("JourneyMapScreen 자동 스크롤", () => {
 
   test("AS3. 같은 props로 다시 그리거나 스크롤 이벤트가 여럿 와도 다시 옮기지 않는다", () => {
     const host = stubHost({ rects: asRects() });
-    const view = mount(mapScreen({ progress: twoStepsDone }));
+    const view = mount(atTwo());
     expect(host.scrollTos()).toHaveLength(1);
 
-    rerender(view, mapScreen({ progress: twoStepsDone }));
+    rerender(view, atTwo());
     host.scroll(120);
     host.scroll(448);
 
@@ -131,7 +147,7 @@ describe("JourneyMapScreen 자동 스크롤", () => {
   test("AS4. 답이 오기 전에 사용자가 먼저 스크롤하면 늦게 온 답으로는 옮기지 않는다", () => {
     const host = stubHost({ rects: asRects() });
     deferAll(host);
-    mount(mapScreen({ progress: twoStepsDone }));
+    mount(atTwo());
 
     host.scroll(80);
     host.flush();
@@ -143,7 +159,7 @@ describe("JourneyMapScreen 자동 스크롤", () => {
   test("AS5b. 답이 오기 전에 맵이 내려가면 늦게 온 답으로는 옮기지 않는다", () => {
     const host = stubHost({ rects: asRects() });
     deferAll(host);
-    const view = mount(mapScreen({ progress: twoStepsDone }));
+    const view = mount(atTwo());
 
     view.unmount();
     host.flush();
@@ -155,7 +171,7 @@ describe("JourneyMapScreen 자동 스크롤", () => {
   test("AS5. 답이 오기 전에 맵을 터치하면 늦게 온 답으로는 옮기지 않는다", () => {
     const host = stubHost({ rects: asRects() });
     deferAll(host);
-    mount(mapScreen({ progress: twoStepsDone }));
+    mount(atTwo());
 
     touchMap();
     host.flush();
@@ -166,19 +182,19 @@ describe("JourneyMapScreen 자동 스크롤", () => {
 
   test("AS6. 동작 줄이기에서는 같은 목적지로 즉시(smooth 거짓) 간다", () => {
     const host = stubHost({ rects: asRects() });
-    mount(reduced(mapScreen({ progress: twoStepsDone })));
+    mount(reduced(atTwo()));
 
     expect(host.scrollTos()).toEqual([scrollToCall(448, false)]);
   });
 
   test("AS7. 자리를 못 재면 대상 셀을 가운데로 옮기는 일을 호스트에 맡기고, 동작 줄이기에서는 behavior none이다", () => {
     const smoothHost = stubHost({ measurable: false });
-    mount(mapScreen({ progress: twoStepsDone }));
+    mount(atTwo());
 
     expect(smoothHost.scrollTos()).toEqual([]);
     expect(smoothHost.scrollIntoViews()).toEqual([
       {
-        selector: "#journey-map-unit-ordering",
+        selector: targetTwo,
         method: "scrollIntoView",
         params: { scrollIntoViewOptions: { block: "center", behavior: "smooth" } },
       },
@@ -188,11 +204,11 @@ describe("JourneyMapScreen 자동 스크롤", () => {
     vi.restoreAllMocks();
 
     const reducedHost = stubHost({ measurable: false });
-    mount(reduced(mapScreen({ progress: twoStepsDone })));
+    mount(reduced(atTwo()));
 
     expect(reducedHost.scrollIntoViews()).toEqual([
       {
-        selector: "#journey-map-unit-ordering",
+        selector: targetTwo,
         method: "scrollIntoView",
         params: { scrollIntoViewOptions: { block: "center", behavior: "none" } },
       },
@@ -201,20 +217,20 @@ describe("JourneyMapScreen 자동 스크롤", () => {
 
   test("AS8. 진행 없이 열었다가 진행이 늦게 닿으면 그 대상으로 한 번 옮긴다", () => {
     const host = stubHost({ rects: asRects() });
-    const view = mount(mapScreen({ progress: noProgress }));
+    const view = mount(mapScreen());
     expect(host.scrollTos()).toEqual([]);
 
-    rerender(view, mapScreen({ progress: twoStepsDone }));
+    rerender(view, atTwo());
 
     expect(host.scrollTos()).toEqual([scrollToCall(448, true)]);
   });
 
   test("AS9. 진행이 닿기 전에 사용자가 손댔으면 늦게 닿은 진행을 따라가지 않는다", () => {
     const host = stubHost({ rects: asRects() });
-    const view = mount(mapScreen({ progress: noProgress }));
+    const view = mount(mapScreen());
 
     touchMap();
-    rerender(view, mapScreen({ progress: twoStepsDone }));
+    rerender(view, atTwo());
 
     expect(host.scrollTos()).toEqual([]);
     expect(host.scrollIntoViews()).toEqual([]);
@@ -222,58 +238,26 @@ describe("JourneyMapScreen 자동 스크롤", () => {
 
   test("AS10. 맵을 떠났다가 진행이 늘어 새로 열면 새 대상으로 다시 한 번 옮긴다", () => {
     const host = stubHost({ rects: asRects() });
-    const first = mount(mapScreen({ progress: twoStepsDone }));
+    const first = mount(atTwo());
     expect(host.scrollTos()).toEqual([scrollToCall(448, true)]);
 
     act(() => {
       first.unmount();
     });
     const callsBefore = host.calls.length;
-    mount(mapScreen({ progress: threeStepsDone }));
+    mount(atThree());
 
     const second = host.calls.slice(callsBefore);
     expect(
       second.filter((call) => call.method === "boundingClientRect").map((c) => c.selector),
-    ).toContain("#journey-map-unit-appointment");
+    ).toContain(targetThree);
     // 900 − 252 = 648.
     expect(second.filter((call) => call.method === "scrollTo")).toEqual([scrollToCall(648, true)]);
   });
 
-  test("AS11. 튜토리얼을 다 끝낸 맵에 카탈로그가 늦게 오면 처음은 최종 테스트로, 다음은 첫 표지로 한 번씩 옮긴다", () => {
-    const coverDomId = catalogUnitDomId("u01-water", "intro");
-    const host = stubHost({
-      rects: {
-        ...asRects(),
-        "#journey-map-unit-tutorial-final-test": unitRect(5000),
-        [`#${coverDomId}`]: unitRect(6200),
-      },
-    });
-    const view = mount(mapScreen({ progress: tutorialAllDone }));
-
-    expect(
-      host.measured().filter((selector) => selector === "#journey-map-unit-tutorial-final-test"),
-    ).toHaveLength(1);
-    expect(host.scrollTos()).toEqual([scrollToCall(5000 - 252, true)]);
-
-    rerender(view, mapScreen({ progress: tutorialAllDone, catalog: catalogProps() }));
-
-    expect(host.measured().filter((selector) => selector === `#${coverDomId}`)).toHaveLength(1);
-    expect(
-      host.measured().filter((selector) => selector === "#journey-map-unit-tutorial-final-test"),
-    ).toHaveLength(1);
-    expect(host.scrollTos()).toEqual([
-      scrollToCall(5000 - 252, true),
-      scrollToCall(6200 - 252, true),
-    ]);
-  });
-
   test("AS12. 첫 유닛 가이드가 떠 있는 동안과 닫은 뒤에도 옮기지 않는다", () => {
     const host = stubHost({ rects: asRects() });
-    mount(
-      <FirstUnitGuideProvider enabled>
-        {mapScreen({ progress: noProgress })}
-      </FirstUnitGuideProvider>,
-    );
+    mount(<FirstUnitGuideProvider enabled>{u00Screen(u00Catalog())}</FirstUnitGuideProvider>);
     expect(screen.queryByTestId("first-unit-guide-map")).not.toBeNull();
     expect(host.scrollTos()).toEqual([]);
 
@@ -291,7 +275,7 @@ describe("JourneyMapScreen 자동 스크롤", () => {
     deferAll(host);
     mount(
       <FirstUnitGuideProvider enabled>
-        {mapScreen({ progress: twoStepsDone })}
+        {u00Screen(u00Catalog({ progress: { "u00-tutorial": ["intro", "S1", "S2"] } }))}
       </FirstUnitGuideProvider>,
     );
     expect(screen.queryByTestId("first-unit-guide-map")).not.toBeNull();
@@ -308,14 +292,12 @@ describe("JourneyMapScreen 자동 스크롤", () => {
     expect(host.scrollIntoViews()).toEqual([]);
   });
 
-  test("AS13. 재는 사이에 스텝을 눌러 말풍선이 열리면 스크롤 호출은 말풍선의 것 하나뿐이다", () => {
+  test("AS13. 재는 사이에 유닛을 눌러 말풍선이 열리면 스크롤 호출은 말풍선의 것 하나뿐이다", () => {
     const host = stubHost({ rects: asRects() });
     deferAll(host);
-    mount(mapScreen({ progress: twoStepsDone }));
+    mount(atTwo());
 
-    act(() => {
-      fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), { detail: { y: 750 } });
-    });
+    tapTarget();
     host.flush();
 
     expect(screen.queryByTestId("step-sheet-panel")).not.toBeNull();
@@ -326,7 +308,7 @@ describe("JourneyMapScreen 자동 스크롤", () => {
 
 // 도착 뒤 한 번 바로잡기(정정 2). 도착 전 · 후의 rect 표를 테스트가 갈아 끼웁니다: 목적지 X(448)로 간 뒤
 // 머리 카드가 30 커져(아래 모서리 258 → 정렬선 282) 대상이 정렬선 위 30(252)에 서 있는 상태입니다.
-const unitSelector = "#journey-map-unit-ordering";
+const unitSelector = targetTwo;
 const headerSelector = "#journey-map-screen-header";
 const arrival = 448;
 
@@ -339,7 +321,7 @@ function swapToArrived(host: HostStub, targetTop = 700 - arrival): void {
   host.rects[headerSelector] = { top: 60, height: 198 };
 }
 
-function mountArrived(element: ReactElement = mapScreen({ progress: twoStepsDone })) {
+function mountArrived(element: ReactElement = atTwo()) {
   const host = stubHost({ rects: asRects() });
   const view = mount(element);
   expect(host.scrollTos()).toEqual([scrollToCall(arrival, true)]);
@@ -451,7 +433,7 @@ describe("JourneyMapScreen 도착 뒤 보정", () => {
     expect(host.scrollTos()).toHaveLength(1);
   });
 
-  test("AC8. 다시 재는 답을 기다리는 사이에 스텝을 눌러 말풍선이 열리면 보정하지 않는다", () => {
+  test("AC8. 다시 재는 답을 기다리는 사이에 유닛을 눌러 말풍선이 열리면 보정하지 않는다", () => {
     const { host } = mountArrived();
     swapToArrived(host);
     host.defer = () => true;
@@ -459,9 +441,7 @@ describe("JourneyMapScreen 도착 뒤 보정", () => {
 
     host.scroll(arrival);
     expect(measureCount(host)).toBe(before + 1);
-    act(() => {
-      fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), { detail: { y: 750 } });
-    });
+    tapTarget();
     host.flush();
 
     expect(screen.queryByTestId("step-sheet-panel")).not.toBeNull();
@@ -484,7 +464,7 @@ describe("JourneyMapScreen 도착 뒤 보정", () => {
 
   test("AC10. 동작 줄이기에서는 보정도 smooth 거짓이다", () => {
     const host = stubHost({ rects: asRects() });
-    mount(reduced(mapScreen({ progress: twoStepsDone })));
+    mount(reduced(atTwo()));
     expect(host.scrollTos()).toEqual([scrollToCall(arrival, false)]);
     swapToArrived(host);
 
@@ -498,7 +478,7 @@ describe("JourneyMapScreen 도착 뒤 보정", () => {
 
   test("AC11. 처음 측정이 실패해 폴백으로 가면 어떤 스크롤에도 다시 재지 않는다", () => {
     const host = stubHost({ measurable: false });
-    mount(mapScreen({ progress: twoStepsDone }));
+    mount(atTwo());
     expect(host.scrollIntoViews()).toHaveLength(1);
     const before = host.measured().length;
 
@@ -511,14 +491,14 @@ describe("JourneyMapScreen 도착 뒤 보정", () => {
 
   test("AC12. 도착 전에 대상이 바뀌면 옛 목적지의 도착은 무시하고 새 목적지에서 새 대상을 잰다", () => {
     const host = stubHost({
-      rects: { ...asRects(), "#journey-map-unit-appointment": unitRect(900) },
+      rects: { ...asRects(), targetThree: unitRect(900) },
     });
-    const view = mount(mapScreen({ progress: twoStepsDone }));
-    rerender(view, mapScreen({ progress: threeStepsDone }));
+    const view = mount(atTwo());
+    rerender(view, atThree());
     expect(host.scrollTos()).toEqual([scrollToCall(arrival, true), scrollToCall(648, true)]);
     const before = host.measured().length;
     host.rects[unitSelector] = unitRect(700 - arrival);
-    host.rects["#journey-map-unit-appointment"] = unitRect(900 - 648);
+    host.rects[targetThree] = unitRect(900 - 648);
     host.rects[headerSelector] = { top: 60, height: 198 };
 
     host.scroll(arrival);
@@ -528,7 +508,7 @@ describe("JourneyMapScreen 도착 뒤 보정", () => {
 
     host.scroll(648);
 
-    expect(host.measured().slice(before)).toContain("#journey-map-unit-appointment");
+    expect(host.measured().slice(before)).toContain(targetThree);
     expect(host.measured().slice(before)).not.toContain(unitSelector);
     expect(host.scrollTos()).toEqual([
       scrollToCall(arrival, true),

@@ -373,6 +373,13 @@ sink는 던지지 않는다 — 매핑 · `capture`를 `try`로 감싸 삼킨다
   - 묻는 질문 → 읽는 법: 게이지 노출 실행 비율 = `outcome ∈ {complete, timed-out, failed}` ÷ (`unchecked`를 뺀 전체) — 분모는 「매니페스트가 로고 끝 전에 답한 실행」이다. 대기 시간 = 게이지 실행의 `waitMs` 분포(설계상 ≤ 약 3000). 3초 넘김 비율 = `timed-out` ÷ 게이지 실행. 교체된 에피소드 수 = `replacedCount`의 합 · 분포(`unchecked`는 오프라인 시작의 교체).
   - **한계** — 매니페스트가 로고 끝 뒤에 답한 실행(느린 망)은 교체가 없으면 세지 않는다 — 「느려서 게이지를 못 띄운 비율」은 잴 수 없다(ADR-0078 재검토 조건 1). Airbridge · Meta 앱 이벤트 매핑은 옮기지 않는다. PostHog 도착은 보지 않았다. GitHub wiki 이벤트 사전은 저장소 밖이라 따로 고친다(후속).
 
+- ⟨2026-10-21 — 튜토리얼 u00. 적용 기록이고 이 ADR의 결정을 바꾸지 않는다⟩ **sink가 일곱 → 넷, 이벤트 이름이 44 → 36개다**(모양 48 → 37 — 출처별 두 모양이던 열림 이벤트 셋이 함께 빠짐). 결정은 [ADR-0081](0081-tutorial-as-catalog-episode.md) D9 · D10.
+  - **지운 sink 셋** — `messengerEventSink` · `visualNovelEventSink` · `phoneCallEventSink`(그 화면이 지워짐). 남은 넷: `entryEventSink` · `notificationEventSink` · `settingsEventSink` · `episodeIntroEventSink`. 이 절 제목의 「일곱 번째 sink」와 위 「sink는 일곱」은 그때의 수다.
+  - **지운 이름 여덟** — `messenger_unit_opened` · `messenger_unit_completed` · `messenger_unit_exited_incomplete` · `visual_novel_unit_opened` · `visual_novel_unit_completed` · `visual_novel_unit_exited_incomplete` · `visual_novel_unit_replay_started` · `phone_call_unit_opened`.
+  - **튜토리얼의 `episodeId` 값이 `tutorial` → `u00-tutorial`** — 표지 넷(`episode_intro_*`) · 설문 둘(`episode_survey_*`)이 같은 이름으로 카탈로그 표지 결선에서 난다. 튜토리얼 단원도 이제 `episode_lesson_started` · `episode_lesson_finished { unitKey: S1 … S13 }` · `episode_final_passed`를 낸다(옛 튜토리얼에는 단원 · 최종 통과 이벤트가 없었다).
+  - **`episode_prologue_completed.prologueKind`는 `"cuts"` 하나**다 — 옛 통화 · 메신저 · 비주얼 노벨 · 혼합 서사가 지워졌다(`EpisodePrologueCompletedKind = "cuts"`).
+  - **연속성** — 교체 시점은 같은 사람의 `episodeId`가 `tutorial` → `u00-tutorial`로 바뀐 때다. 비교 지표는 「튜토리얼 표지 → Episode 1 표지(`u01-water`)」 전환율 하나다(ADR-0081 D9). 새 이벤트는 없다. PostHog 도착은 보지 않았다. GitHub wiki 이벤트 사전은 저장소 밖이라 따로 고친다(후속).
+
 ### D15. 나라 · 주 · 시간대만 IP로 추정하고, IP는 저장하지 않는다
 
 2026-09-30 사용자 결정. 접속하는 나라를 보고, 나중에 서버 리전을 고를 근거로 삼는다.

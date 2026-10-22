@@ -48,7 +48,12 @@ const sections: readonly CatalogMapSection[] = [
   unavailable("u06-x", 6, "Ep", "decode-failed"),
 ];
 
-const openGate: CatalogGate = { tutorialPassed: true, progress: {} };
+// 문 입력은 옛 튜토리얼 통과 기록(`legacyTutorialPassed`)과 카탈로그 진행입니다.
+const gateOf = (
+  legacyTutorialPassed: boolean,
+  progress: CatalogGate["progress"] = {},
+): CatalogGate => ({ legacyTutorialPassed, progress }) as unknown as CatalogGate;
+const openGate = gateOf(true);
 
 function mount(gate: CatalogGate = openGate) {
   const onStartCover = vi.fn<(episodeId: string) => void>();
@@ -124,7 +129,7 @@ describe("CatalogMapSections", () => {
   });
 
   test("UM-U1. 표지를 끝내면 첫 레슨이 열려 탭하면 에피소드 id와 키로 올리고 둘째 레슨은 여전히 닫혀 있다", () => {
-    const onStartCover = mount({ tutorialPassed: true, progress: { "u01-water": ["intro"] } });
+    const onStartCover = mount(gateOf(true, { "u01-water": ["intro"] }));
 
     expect(screen.getByTestId(nodeId("u01-water", "S1"))).toHaveAttribute(
       "data-status",
@@ -141,10 +146,7 @@ describe("CatalogMapSections", () => {
   });
 
   test("UM-U2. 첫 레슨을 끝내면 clear로 서고 다시 풀 수 있으며 다음 레슨이 열린다", () => {
-    const onStartCover = mount({
-      tutorialPassed: true,
-      progress: { "u01-water": ["intro", "S1"] },
-    });
+    const onStartCover = mount(gateOf(true, { "u01-water": ["intro", "S1"] }));
 
     expect(screen.getByTestId(nodeId("u01-water", "S1"))).toHaveAttribute("data-status", "clear");
     expect(screen.getByTestId(nodeId("u01-water", "S3"))).toHaveAttribute(
@@ -158,10 +160,7 @@ describe("CatalogMapSections", () => {
   });
 
   test("UM-U3. 레슨을 모두 끝내면 최종 테스트가 열리고 이름에 special 접두가 들고 story 접미는 없으며 탭하면 RP 키로 올린다", () => {
-    const onStartCover = mount({
-      tutorialPassed: true,
-      progress: { "u01-water": ["intro", ...lessonKeys] },
-    });
+    const onStartCover = mount(gateOf(true, { "u01-water": ["intro", ...lessonKeys] }));
 
     const finalNode = screen.getByTestId(nodeId("u01-water", "RP"));
     expect(finalNode).toHaveAttribute("data-status", "available");
@@ -192,7 +191,7 @@ describe("CatalogMapSections", () => {
   });
 
   test("UM3c. 표지를 끝낸 에피소드는 clear로 서고 다시 열 수 있다", () => {
-    const onStartCover = mount({ tutorialPassed: true, progress: { "u01-water": ["intro"] } });
+    const onStartCover = mount(gateOf(true, { "u01-water": ["intro"] }));
 
     expect(screen.getByTestId(coverId("u01-water"))).toHaveAttribute("data-status", "clear");
     fireEvent.tap(screen.getByTestId(coverId("u01-water")), {});
@@ -201,13 +200,14 @@ describe("CatalogMapSections", () => {
     expect(onStartCover).toHaveBeenCalledWith("u01-water");
   });
 
-  test("UM3d. 튜토리얼을 지나지 않았으면 첫 표지도 잠겨 있다", () => {
-    const onStartCover = mount({ tutorialPassed: false, progress: {} });
+  test("UM3d. 첫 구획의 표지는 옛 통과 기록이 없어도 열려 있고 탭하면 시작을 올린다", () => {
+    const onStartCover = mount(gateOf(false));
 
-    expect(screen.getByTestId(coverId("u01-water"))).toHaveAttribute("data-status", "default");
+    expect(screen.getByTestId(coverId("u01-water"))).toHaveAttribute("data-status", "available");
     fireEvent.tap(screen.getByTestId(coverId("u01-water")), {});
 
-    expect(onStartCover).toHaveBeenCalledTimes(0);
+    expect(onStartCover).toHaveBeenCalledTimes(1);
+    expect(onStartCover).toHaveBeenCalledWith("u01-water");
   });
 
   test("UM4a. 받는 중(pending)인 에피소드는 맨 끝 「준비 중」과 같은 그림이다 — 그 에피소드 번호의 카드 · 낭독 요소 하나", () => {

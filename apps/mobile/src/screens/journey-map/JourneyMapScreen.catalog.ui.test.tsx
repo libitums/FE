@@ -1,19 +1,11 @@
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
-import { FirstUnitGuideProvider } from "../../components/first-unit-guide";
-import type { EpisodeFinalUnitId } from "../episode-final/episode-final.contract";
-import type { EpisodeIntroUnitId } from "../episode-intro/episode-intro.contract";
-import type { MessengerUnitId } from "../messenger/messenger.contract";
-import type { PhoneCallUnitId } from "../phone-call/phone-call.contract";
-import type { VisualNovelUnitId } from "../visual-novel/visual-novel.contract";
 import { JourneyMapScreen } from "./JourneyMapScreen";
-import { journeySteps } from "./journey-map";
 import type { JourneyMapCatalogProps } from "./catalog-map.contract";
 
-// `ui` 계층: 맵 화면의 카탈로그 슬롯 — 튜토리얼 구획 뒤에 서고, 튜토리얼 통과로 열리며, 첫 유닛
-// 안내 동안 낭독에서 가려진다. 구획 안쪽 동작은
-// `CatalogMapSections.ui.test.tsx`가 봅니다.
+// `ui` 계층: 맵 화면의 카탈로그 슬롯 — 맵의 유일한 내용이고, 첫 구획은 늘 열려 있다. 구획 안쪽 동작은
+// `CatalogMapSections.ui.test.tsx`가, 첫 유닛 안내는 `JourneyMapScreen.tutorial-u00.ui.test.tsx`가 봅니다.
 
 const lessonKeys = ["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "CULT"];
 const titles = [
@@ -39,32 +31,14 @@ function catalogProps(
       cultureKeys: ["CULT"],
     })),
     progress,
+    legacyTutorialPassed: false,
     onStartCover,
     onStartUnit: vi.fn<(episodeId: string, unitKey: string) => void>(),
   };
 }
 
-function mapScreen(options: {
-  readonly catalog?: JourneyMapCatalogProps;
-  readonly completedEpisodeFinalIds?: readonly EpisodeFinalUnitId[];
-}) {
-  return (
-    <JourneyMapScreen
-      completedStepCount={2}
-      onStartStep={() => {}}
-      completedEpisodeIntroIds={["tutorial-intro"]}
-      onStartEpisodeIntroUnit={vi.fn<(id: EpisodeIntroUnitId) => void>()}
-      completedMessengerUnitIds={[]}
-      onStartMessengerUnit={vi.fn<(id: MessengerUnitId) => void>()}
-      completedPhoneCallUnitIds={[]}
-      onStartPhoneCallUnit={vi.fn<(id: PhoneCallUnitId) => void>()}
-      completedVisualNovelUnitIds={[]}
-      onStartVisualNovelUnit={vi.fn<(id: VisualNovelUnitId) => void>()}
-      completedEpisodeFinalIds={options.completedEpisodeFinalIds ?? []}
-      onStartEpisodeFinal={vi.fn<(id: EpisodeFinalUnitId) => void>()}
-      {...(options.catalog === undefined ? {} : { catalog: options.catalog })}
-    />
-  );
+function mapScreen(options: { readonly catalog: JourneyMapCatalogProps }) {
+  return <JourneyMapScreen catalog={options.catalog} />;
 }
 
 const mapChildren = () =>
@@ -75,43 +49,27 @@ afterEach(() => {
 });
 
 describe("JourneyMapScreen catalog slot", () => {
-  test("UJ1. catalog 없이는 카탈로그 상자가 없고 튜토리얼 스텝이 정의 순서대로 선다", () => {
-    render(mapScreen({}));
-
-    expect(screen.queryByTestId("journey-map-screen-catalog")).not.toBeInTheDocument();
-    const map = screen.getByTestId("journey-map-screen-map");
-    const stepOrder = journeySteps.map((step) =>
-      Array.from(map.querySelectorAll("*")).indexOf(
-        screen.getByTestId(`ui-lynx-learning-unit-${step.id}`),
-      ),
-    );
-    expect(stepOrder).toEqual([...stepOrder].sort((a, b) => a - b));
-    expect(stepOrder.every((position) => position >= 0)).toBe(true);
-  });
-
-  test("UJ2. catalog가 있으면 튜토리얼 구획 바로 뒤, 같은 맵 컨테이너 안에 서고 표지는 잠겨 있다", () => {
+  test("UJ2. 카탈로그는 맵 컨테이너의 유일한 내용이고 첫 구획의 표지는 열려 있다", () => {
     render(mapScreen({ catalog: catalogProps() }));
 
     const children = mapChildren();
     const catalog = screen.getByTestId("journey-map-screen-catalog");
-    const wrapper = children[children.length - 1] as Element;
+    expect(children).toHaveLength(1);
+    const wrapper = children[0] as Element;
     expect(wrapper === catalog || wrapper.contains(catalog)).toBe(true);
-    const previous = children[children.length - 2] as Element;
-    expect(previous.contains(screen.getByTestId("ui-lynx-learning-unit-greeting"))).toBe(true);
     expect(screen.getByTestId("ui-lynx-special-unit-catalog-cover-u01-water")).toHaveAttribute(
+      "data-status",
+      "available",
+    );
+    expect(screen.getByTestId("ui-lynx-special-unit-catalog-cover-u02-checkin")).toHaveAttribute(
       "data-status",
       "default",
     );
   });
 
-  test("UJ3. 튜토리얼 최종 테스트를 끝내면 첫 표지가 열리고 탭하면 에피소드 id를 올린다", () => {
+  test("UJ3. 첫 표지를 탭하면 에피소드 id를 올린다", () => {
     const onStartCover = vi.fn<(episodeId: string) => void>();
-    render(
-      mapScreen({
-        catalog: catalogProps(onStartCover),
-        completedEpisodeFinalIds: ["tutorial-final-test"],
-      }),
-    );
+    render(mapScreen({ catalog: catalogProps(onStartCover) }));
 
     const cover = screen.getByTestId("ui-lynx-special-unit-catalog-cover-u01-water");
     expect(cover).toHaveAttribute("data-status", "available");
@@ -134,7 +92,6 @@ describe("JourneyMapScreen catalog slot", () => {
       const { unmount } = render(
         mapScreen({
           catalog: catalogProps(vi.fn<(episodeId: string) => void>(), { "u01-water": done }),
-          completedEpisodeFinalIds: ["tutorial-final-test"],
         }),
       );
       expect(node()).toHaveAttribute("data-status", status);
@@ -151,7 +108,6 @@ describe("JourneyMapScreen catalog slot", () => {
       const { unmount } = render(
         mapScreen({
           catalog: catalogProps(vi.fn<(episodeId: string) => void>(), { "u01-water": done }),
-          completedEpisodeFinalIds: ["tutorial-final-test"],
         }),
       );
       const prefix = key === "RP" ? "ui-lynx-special-unit" : "ui-lynx-learning-unit";
@@ -174,18 +130,5 @@ describe("JourneyMapScreen catalog slot", () => {
     expect(culture).not.toBe(lesson);
     expect(culture).not.toBe(finalTest);
     expect(lesson).not.toBe(finalTest);
-  });
-
-  test("UJ4. 첫 유닛 안내가 떠 있는 동안 카탈로그를 감싼 상자는 낭독에서 가려진다", () => {
-    render(
-      <FirstUnitGuideProvider enabled>
-        {mapScreen({ catalog: catalogProps() })}
-      </FirstUnitGuideProvider>,
-    );
-
-    const catalog = screen.getByTestId("journey-map-screen-catalog");
-    const hidden = catalog.closest('[accessibility-elements-hidden="true"]');
-    expect(hidden).not.toBeNull();
-    expect(hidden === screen.getByTestId("journey-map-screen-map")).toBe(false);
   });
 });

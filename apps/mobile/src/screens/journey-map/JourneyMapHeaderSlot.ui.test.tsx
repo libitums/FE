@@ -2,11 +2,14 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
 import { JourneyMapHeaderSlot } from "./JourneyMapHeaderSlot";
-import type { JourneyMapHeaderSlotProps } from "./catalog-map.contract";
-import { journeyMapSections } from "./journey-map";
-import type { JourneyMapSection } from "./journey-map";
+import type {
+  CatalogMapSection,
+  JourneyMapHeaderSlotProps,
+  SheetTargetId,
+} from "./catalog-map.contract";
+import { catalogSheetKey } from "./catalog-sheet";
 import type { JourneyMapProgressLoad } from "./journey-map-load.contract";
-import type { JourneyStepId } from "./journey-map";
+import { realSections } from "./JourneyMapScreen.tutorial-u00.test-support";
 
 // `ui` 계층: 머리 슬롯이 load 상태를 줄 변형으로 옮기고, 띠가 말풍선이 열린 동안만 서는지 봅니다.
 
@@ -14,22 +17,16 @@ afterEach(() => {
   cleanup();
 });
 
-const progress = {
-  completedStepCount: 2,
-  completedEpisodeIntroIds: ["tutorial-intro"],
-  completedMessengerUnitIds: [],
-  completedPhoneCallUnitIds: [],
-  completedVisualNovelUnitIds: [],
-  completedEpisodeFinalIds: [],
-} as const;
+// 열린 유닛의 키입니다 — 내장 튜토리얼(u00) 구획의 레슨 n번입니다.
+const lesson = (n: number): SheetTargetId => catalogSheetKey("u00-tutorial", `S${n}`);
 
-// ⟨§20⟩ 띠는 스텝 말풍선이 열린 동안(openStepId !== null)만 선다. load 변형 테스트는 말풍선이 열린
-// 상태(openStepId="greeting")에서 본다. 확인 중(checking)은 말풍선이 못 열리므로 슬롯 단언은 띠 없음만 본다.
-function mount(load: JourneyMapProgressLoad, openStepId: JourneyStepId | null = "greeting") {
+// ⟨§20⟩ 띠는 말풍선이 열린 동안(openStepId !== null)만 선다. load 변형 테스트는 말풍선이 열린
+// 상태(S1)에서 본다. 확인 중(checking)은 말풍선이 못 열리므로 슬롯 단언은 띠 없음만 본다.
+function mount(load: JourneyMapProgressLoad, openStepId: SheetTargetId | null = lesson(1)) {
   render(
     <JourneyMapHeaderSlot
-      tutorialSections={journeyMapSections}
-      progress={progress}
+      catalogSections={realSections}
+      catalogProgress={{}}
       load={load}
       openStepId={openStepId}
     />,
@@ -71,7 +68,7 @@ describe("JourneyMapHeaderSlot load", () => {
     expect(count()).toBeInTheDocument();
   });
 
-  test("HS1. (§20) checking이면 열린 스텝이 없어 띠가 없다", () => {
+  test("HS1. (§20) checking이면 열린 유닛이 없어 띠가 없다", () => {
     mount({ status: "checking" }, null);
 
     expect(header()).not.toBeInTheDocument();
@@ -79,9 +76,9 @@ describe("JourneyMapHeaderSlot load", () => {
 
   test("HS2. 줄이 서고 사라져도 머리 카드는 같은 노드다(다시 마운트하지 않는다)", () => {
     const props = {
-      tutorialSections: journeyMapSections,
-      progress,
-      openStepId: "greeting",
+      catalogSections: realSections,
+      catalogProgress: {},
+      openStepId: lesson(1),
     } as const;
     const { rerender } = render(<JourneyMapHeaderSlot {...props} load={{ status: "retrying" }} />);
     const card = screen.getByTestId("ui-lynx-episode-header");
@@ -98,8 +95,8 @@ describe("JourneyMapHeaderSlot load", () => {
 });
 
 // ---------------------------------------------------------------- 띠 개편 (spec §19 + §20)
-// 설명 줄은 `Episode n, unit NN`입니다. 튜토리얼 구획의 항목 자리는 표지 00 · 첫 스텝 01 ...
-// §20: 띠는 말풍선이 열린 동안만 서고, 구획은 스크롤 index가 아니라 열린 스텝이 든 튜토리얼 구획이다.
+// 설명 줄은 `Episode n, unit NN`입니다. 구획의 항목 자리는 표지 00 · 첫 레슨 01 ...
+// §20: 띠는 말풍선이 열린 동안만 서고, 구획은 스크롤 index가 아니라 열린 유닛이 든 구획이다.
 
 const label = () => screen.getByTestId("ui-lynx-episode-header-label");
 const band = () => screen.getByTestId("ui-lynx-episode-header").parentElement as Element;
@@ -110,8 +107,8 @@ type SlotProps = JourneyMapHeaderSlotProps;
 function slot(overrides: Partial<SlotProps> = {}) {
   return (
     <JourneyMapHeaderSlot
-      tutorialSections={journeyMapSections}
-      progress={progress}
+      catalogSections={realSections}
+      catalogProgress={{}}
       load={{ status: "known" }}
       {...overrides}
     />
@@ -119,24 +116,24 @@ function slot(overrides: Partial<SlotProps> = {}) {
 }
 
 describe("JourneyMapHeaderSlot 띠는 말풍선이 열린 동안만", () => {
-  test("HB0. 열린 스텝이 없으면 띠가 없다", () => {
+  test("HB0. 열린 유닛이 없으면 띠가 없다", () => {
     render(slot());
 
     expect(header()).not.toBeInTheDocument();
   });
 
-  test("HB0. 열린 스텝이 null이면 띠도 설명 줄도 없다", () => {
+  test("HB0. 열린 유닛이 null이면 띠도 설명 줄도 없다", () => {
     render(slot({ openStepId: null }));
 
     expect(header()).not.toBeInTheDocument();
     expect(screen.queryByTestId("ui-lynx-episode-header-label")).not.toBeInTheDocument();
   });
 
-  test("HB0. 스텝이 열리면 띠가 서고 닫히면(null) DOM에서 사라진다", () => {
+  test("HB0. 유닛이 열리면 띠가 서고 닫히면(null) DOM에서 사라진다", () => {
     const view = render(slot());
     expect(header()).not.toBeInTheDocument();
 
-    view.rerender(slot({ openStepId: "greeting" }));
+    view.rerender(slot({ openStepId: lesson(1) }));
     expect(header()).toBeInTheDocument();
 
     view.rerender(slot({ openStepId: null }));
@@ -145,39 +142,42 @@ describe("JourneyMapHeaderSlot 띠는 말풍선이 열린 동안만", () => {
 });
 
 describe("JourneyMapHeaderSlot 설명 줄", () => {
-  test("HB3. 열린 스텝 번호다 (greeting = 01)", () => {
-    render(slot({ openStepId: "greeting" }));
+  test("HB3. 열린 유닛 번호다 (S1 = 01)", () => {
+    render(slot({ openStepId: lesson(1) }));
 
     expect(label()).toHaveTextContent("Episode 0, unit 01");
   });
 
-  test("HB3. 열린 스텝이 바뀌면 설명 줄이 따라 바뀐다 (rerender)", () => {
-    const view = render(slot({ openStepId: "greeting" }));
+  test("HB3. 열린 유닛이 바뀌면 설명 줄이 따라 바뀐다 (rerender)", () => {
+    const view = render(slot({ openStepId: lesson(1) }));
     expect(label()).toHaveTextContent("Episode 0, unit 01");
 
-    view.rerender(slot({ openStepId: "ordering" }));
+    view.rerender(slot({ openStepId: lesson(3) }));
 
     expect(label()).toHaveTextContent("Episode 0, unit 03");
   });
 
-  test("HB4. 준비 중 구획이 함께 있어도 열린 스텝의 구획 띠가 선다 (준비 중 카드가 아니다)", () => {
-    const pendingSection: JourneyMapSection = {
-      episode: { kind: "pending", id: "tutorial", label: "Episode 3.", title: "Coming later." },
-      items: [],
+  test("HB4. 준비 중 구획이 함께 있어도 열린 유닛의 구획 띠가 선다 (준비 중 카드가 아니다)", () => {
+    const pendingSection: CatalogMapSection = {
+      kind: "catalog-unavailable",
+      episodeId: "u09-later",
+      ordinal: 9,
+      title: "Coming later.",
+      reason: "pending",
     };
     render(
       slot({
-        tutorialSections: [...journeyMapSections, pendingSection],
-        openStepId: "introduction",
+        catalogSections: [...realSections, pendingSection],
+        openStepId: lesson(2),
       }),
     );
 
     expect(label()).toHaveTextContent("Episode 0, unit 02");
-    expect(screen.queryByText(/Episode 3/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Episode 9/)).not.toBeInTheDocument();
   });
 
   test("HB5. 접근성 이름이 설명 줄을 앞에 쉼표로 잇는다", () => {
-    render(slot({ openStepId: "greeting" }));
+    render(slot({ openStepId: lesson(1) }));
 
     expect(
       screen.getByTestId("ui-lynx-episode-header").getAttribute("accessibility-label"),
@@ -204,7 +204,7 @@ describe("JourneyMapHeaderSlot 줄 자리", () => {
   });
 
   test("HB7. 띠가 있으면 줄의 위 여백은 재기 전 110px이고, 잰 뒤에는 잰 높이를 따른다", () => {
-    render(slot({ load: failed, openStepId: "greeting" }));
+    render(slot({ load: failed, openStepId: lesson(1) }));
 
     expect(rowBox().getAttribute("style")).toContain("110px");
 
@@ -215,7 +215,7 @@ describe("JourneyMapHeaderSlot 줄 자리", () => {
   });
 
   test("HB7. 말풍선을 닫으면 줄의 위 여백이 다시 없어진다", () => {
-    const view = render(slot({ load: failed, openStepId: "greeting" }));
+    const view = render(slot({ load: failed, openStepId: lesson(1) }));
     expect(rowBox().getAttribute("style")).toContain("110px");
 
     view.rerender(slot({ load: failed, openStepId: null }));
@@ -225,7 +225,7 @@ describe("JourneyMapHeaderSlot 줄 자리", () => {
   });
 
   test("HB6. layoutchange를 받아도 던지지 않는다", () => {
-    render(slot({ openStepId: "greeting" }));
+    render(slot({ openStepId: lesson(1) }));
 
     expect(() => fireEvent.layoutchange(band(), { detail: { height: 132 } })).not.toThrow();
   });
