@@ -2,11 +2,25 @@
 
 import type { ReactNode } from "@lynx-js/react";
 
+import type { AnswerResult } from "../../lib/answer-result";
 import type { LearningActivityForm } from "../../lib/learning-form";
 import type { LearningRunProgress } from "./learning-shell.contract";
 
 /** 무대의 면 — `card`(ui-lynx Card가 그림) · `bare`(활동이 스스로 그림). */
 export type LearningShellStage = "card" | "bare";
+
+/** 아래 버튼 행이 흐름 안에 서는가(`in-flow`) 화면 아래에 떠 있는가(`floating`, 기본)입니다. */
+export type LearningShellActionPlacement = "floating" | "in-flow";
+
+/** 해설 판의 한 줄입니다 — 영어 · 한국어 줄은 언어 태그가 다릅니다. */
+export type LearningShellFeedbackLine = { readonly text: string; readonly lang: "en" | "ko" };
+
+/** 답한 뒤 아래에서 올라오는 해설 판의 내용입니다. */
+export type LearningShellFeedback = {
+  readonly tone: AnswerResult;
+  readonly title: string;
+  readonly lines: readonly LearningShellFeedbackLine[];
+};
 
 /** 껍데기가 받는 것입니다 — 각 줄의 뜻은 `LearningShell`의 머리 주석과 함께 읽습니다. */
 export type LearningShellProps = {
@@ -83,5 +97,12 @@ export type LearningShellProps = {
   /** 주면 세션 헤더 대신 가벼운 헤더(`×` · 칸 막대)가 섭니다 — 단어 카드 구간(ADR-0073). */
   runProgress?: LearningRunProgress;
   /** 기본 아래 버튼 대신 서는 ui-lynx `Button`입니다. 누름 소리 · 동작은 그 버튼의 몫입니다. */
-  actionButton?: ReactNode;
+  actionButton?: ReactNode /** 주면 지시문 자리에 판정 배지가 겹쳐 섭니다. */;
+  verdict?: AnswerResult;
+  /** 주면 아래 버튼 위에 해설 판이 섭니다. */
+  feedback?: LearningShellFeedback;
+  /** 아래 버튼 행의 자리입니다. 기본 `floating`. */
+  actionPlacement?: LearningShellActionPlacement;
+  /** 문항이 정한 밀도입니다. 기기 밀도와 무관하게 compact로 내릴 때만 줍니다. */
+  densityOverride?: "compact";
 };

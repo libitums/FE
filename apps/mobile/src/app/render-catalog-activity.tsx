@@ -4,6 +4,7 @@
 import type { ReactNode } from "@lynx-js/react";
 
 import type { AnswerResult } from "../lib/answer-result";
+import type { ConversationCast } from "../lib/conversation-cast";
 import type { LessonPosition } from "../screens/learning/activity-finish";
 import { CultureCardActivity } from "../screens/culture-card/CultureCardActivity";
 import { ListeningActivity } from "../screens/listening/ListeningScreen";
@@ -16,7 +17,7 @@ import { TypingActivity } from "../screens/typing/TypingActivity";
 import { VocabCardActivity } from "../screens/vocab-card/VocabCardActivity";
 import { WordChoiceActivity } from "../screens/word-choice/WordChoiceScreen";
 import { catalogLessonAudioOf } from "./catalog-lesson-audio";
-import type { CatalogActivity } from "./catalog-lesson-plan";
+import type { CatalogActivity, CatalogItemRef } from "./catalog-lesson-plan";
 import type { Screen } from "./nav-state";
 import type { ScreenWiring } from "./screen-wiring";
 
@@ -30,6 +31,8 @@ export function renderCatalogActivity(
   screen: LessonScreen,
   wiring: ScreenWiring,
   counterpartName: string,
+  _cast?: ConversationCast,
+  _itemRefs?: readonly CatalogItemRef[],
 ): ReactNode {
   const { episodeId, unitKey, activityIndex } = screen;
   const key = `${episodeId}:${unitKey}:${activityIndex}`;

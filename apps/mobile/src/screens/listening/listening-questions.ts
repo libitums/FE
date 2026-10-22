@@ -4,6 +4,9 @@ import type { ListenAudio } from "../../lib/question-audio";
 
 // ---------------------------------------------------------------- 도메인 타입
 
+/** 답하기 전 대본 자리에 보이는 것 — 로마자 참고 줄(`romanization`) 또는 아무것도(`nothing`, 기본)입니다. */
+export type ListeningBeforeAnswer = "romanization" | "nothing";
+
 export type ListeningQuestion = {
   readonly prompt: string;
   /**
@@ -22,6 +25,8 @@ export type ListeningQuestion = {
   readonly instruction?: string;
   /** 대본이 가려진 동안에도 로마자 줄을 참고로 보일지입니다 — 소리 구별을 묻지 않는 듣고 고르기만 켭니다. */
   readonly romanizationHint?: boolean;
+  /** 답하기 전 대본 자리의 갈래입니다. 없으면 `nothing`입니다. */
+  readonly beforeAnswer?: ListeningBeforeAnswer;
 } & (
   | {
       readonly choices: readonly [string, string];

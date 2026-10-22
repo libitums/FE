@@ -7,6 +7,8 @@ import { LearningItemGuide } from "../../components/LearningItemGuide";
 import { useListenAudio } from "../../components/use-listen-audio";
 import { useLearningItemGuide } from "../../components/use-learning-item-guide";
 import { announce, announceCompletion } from "../../lib/accessibility";
+import type { ConversationCast } from "../../lib/conversation-cast";
+import type { ItemAnswerReporter } from "../../lib/item-answer";
 import { answerEchoCueOf, listenCueOf, standaloneLessonAudio } from "../../lib/question-audio";
 import type { LessonAudio } from "../../lib/question-audio";
 import { initialSessionOptions } from "../../lib/session-options";
@@ -52,6 +54,10 @@ export type SentenceOrderActivityProps = {
   readonly lesson?: LessonPosition;
   /** 대화 조립 아바타의 이름(에피소드 상대 · 학습자)입니다. */
   readonly speakerNames?: DialogueSpeakerNames;
+  /** 대화 조립 출연진(이름 · 그림)입니다. `speakerNames`를 대신합니다. */
+  readonly cast?: ConversationCast;
+  /** 문항이 처음 판정되는 순간 한 번 부릅니다(측정). */
+  readonly onItemAnswered?: ItemAnswerReporter;
   /** 레슨의 소리 설정(속도 · 자동 재생 · 보고)입니다. 없으면 단독 활동의 기본값입니다. */
   readonly lessonAudio?: LessonAudio;
 };

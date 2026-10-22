@@ -188,6 +188,8 @@ export type Episode = {
   timeOfDay: string;
   place: string;
   counterpart: string;
+  /** `counterpart_avatar` — 상대 아바타 그림의 버킷 상대 경로입니다. 없거나 어긋나면 키가 없습니다. */
+  counterpartAvatar?: string;
   /** `pre_cuts` — 첫 자리 표지. `index` 오름차순. */
   prologue: EpisodeCut[];
   /** `seq` 오름차순. */
@@ -216,7 +218,9 @@ export type DecodeIssueCode =
   /** `completion.requires`가 비었거나 없는 단계 id를 가리킴. */
   | "completion-malformed"
   /** 경고 전용 — 성공 결과의 `warnings`에만 나옵니다. */
-  | "unresolved-ref";
+  | "unresolved-ref"
+  /** 경고 전용 — 자산 경로 규칙(상대 경로 · 이미지 확장자)에 어긋나 그 키를 버렸습니다. */
+  | "invalid-asset-path";
 
 /** `path`는 **와이어** 경로입니다(`steps[0].items[3].options`) — 콘텐츠 쪽에 그대로 돌려줄 수 있게. */
 export type DecodeIssue = { code: DecodeIssueCode; path: string; message: string };

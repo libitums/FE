@@ -23,6 +23,7 @@ import {
 } from "./listening";
 import { listenCueOf, standaloneLessonAudio } from "../../lib/question-audio";
 import type { LessonAudio } from "../../lib/question-audio";
+import type { ItemAnswerReporter } from "../../lib/item-answer";
 import type { SessionOptions } from "../../lib/session-options";
 import { handsOffAfter, lessonCounter } from "../learning/activity-finish";
 import type { ActivityFinish, LessonPosition } from "../learning/activity-finish";
@@ -48,6 +49,8 @@ export type ListeningActivityProps = {
   readonly lesson?: LessonPosition;
   /** 레슨의 소리 설정(속도 · 자동 재생 · 보고)입니다. 없으면 단독 활동의 기본값입니다. */
   readonly lessonAudio?: LessonAudio;
+  /** 문항이 처음 판정되는 순간 한 번 부릅니다(측정). */
+  readonly onItemAnswered?: ItemAnswerReporter;
 };
 
 export function ListeningActivity({

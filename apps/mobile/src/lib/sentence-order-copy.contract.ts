@@ -13,4 +13,9 @@ export type SentenceOrderCopy = {
   readonly dialogueTurn: (speaker: string, position: number, text: string) => string;
   /** 아직 비어 있는 칸의 낭독 — 화자 · 몇 번째 말 */
   readonly dialogueEmptyTurn: (speaker: string, position: number) => string;
+  /** 창고 대화 조각의 낭독 접두 — 누구의 말인가입니다. */
+  readonly dialogueLine: {
+    readonly me: (text: string) => string;
+    readonly counterpart: (text: string) => string;
+  };
 };

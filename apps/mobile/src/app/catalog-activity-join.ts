@@ -1,8 +1,21 @@
 // 같은 학습형이 이어지는 문항을 한 활동으로 잇거나 새 활동을 여는 순수 함수입니다.
 
-import type { CatalogActivity, CatalogMappedItem } from "./catalog-lesson-types";
+import type { CatalogActivity, CatalogItemRef, CatalogMappedItem } from "./catalog-lesson-types";
 
 export type PlayableItem = Exclude<CatalogMappedItem, { kind: "skipped" }>;
+
+/** 매핑된 문항과 그 콘텐츠 유형입니다 — 활동별 ref 묶음의 재료입니다. */
+export type CatalogPlannedItem = {
+  readonly mapped: CatalogMappedItem;
+  readonly itemType: CatalogItemRef["itemType"];
+};
+
+/** 활동별 문항 ref 묶음입니다(건너뜀 빠짐 · 같은 학습형 연속이 한 묶음). 껍데기만 있는 단계입니다. */
+export function catalogActivityItemRefsOf(
+  _planned: readonly CatalogPlannedItem[],
+): readonly (readonly CatalogItemRef[])[] {
+  return [];
+}
 
 /** 학습형이 같으면 앞 활동에 잇고, 아니면 `null`입니다. */
 export function appended(last: CatalogActivity, item: PlayableItem): CatalogActivity | null {

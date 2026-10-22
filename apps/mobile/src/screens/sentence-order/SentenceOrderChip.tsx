@@ -7,6 +7,7 @@ import {
   sentenceOrderChipClassName,
   sentenceOrderChipPlaceholderClassName,
 } from "./sentence-order";
+import type { AnswerResult } from "../../lib/answer-result";
 import { playSound } from "../../lib/sound-effects";
 import type { SurfaceTone } from "../../lib/surface-tone";
 
@@ -25,6 +26,8 @@ export type SentenceOrderChipProps = {
   disabled?: boolean;
   /** 놓이는 면입니다. 기본 `light`. */
   surface?: SurfaceTone;
+  /** 채점 뒤 줄 위 조각의 판정 색입니다. */
+  result?: AnswerResult | null;
   onTap: (index: number) => void;
 };
 

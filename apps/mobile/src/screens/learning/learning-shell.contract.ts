@@ -5,6 +5,7 @@ import { motionClassName, type Motion } from "@libitums/ui-lynx/motion";
 
 import type { UiCopy } from "../../lib/ui-copy.contract";
 import type { LearningActivityForm } from "../../lib/learning-form";
+import type { LearningShellFeedback } from "./learning-shell-props";
 
 /**
  * 세션 헤더에 서는 학습형 이름입니다. 영문인 것은 디자인(Figma 65-14)의 어휘이고,
@@ -252,4 +253,9 @@ export function learningShellSceneClasses(
     stage: ["learning-shell-stage-scene-complete", "learning-shell-stage-fill-scroll"],
     flow: [],
   };
+}
+
+/** 해설 판의 낭독 이름입니다(제목 + 줄들). 껍데기만 있는 단계입니다. */
+export function learningShellFeedbackLabel(feedback: LearningShellFeedback): string {
+  return feedback.title;
 }

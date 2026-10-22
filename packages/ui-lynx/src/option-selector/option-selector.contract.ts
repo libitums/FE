@@ -2,7 +2,9 @@ import { color } from "@libitums/design-tokens";
 
 import { motionClassName, type Motion } from "../motion/motion.contract";
 
-export type OptionSelectorVariant = "filled" | "outlined";
+export type OptionSelectorVariant = "filled" | "outlined" | "outlined-subtle";
+/** 확정 뒤 항목이 보이는 판정입니다(FE 확장). */
+export type OptionSelectorFeedbackResult = "correct" | "incorrect";
 export type OptionSelectorSize = "s" | "m" | "l";
 export type OptionSelectorSelection = "single" | "multiple";
 export type OptionSelectorCommit = "deferred" | "immediate";
@@ -23,6 +25,10 @@ export type OptionSelectorOption = {
    * 장식이 섞일 때 씁니다. 없으면 Label이 이름입니다. 선택 접미사는 이 이름 뒤에 붙습니다.
    */
   readonly accessibilityLabel?: string;
+  /** 판정 축(FE 확장) — outlined · outlined-subtle 공통입니다. 있으면 그 항목은 조작할 수 없습니다. */
+  readonly feedback?: OptionSelectorFeedbackResult;
+  /** Label 아래 한 줄 뜻(FE 확장)입니다. 접근성 이름에 Label 뒤로 붙습니다. */
+  readonly meaning?: string;
 };
 
 export type OptionSelectorProps = {
@@ -58,6 +64,10 @@ export type OptionSelectorItemContract = {
   readonly icon: string | null;
   /** Selected일 때만 Indicator를 그립니다. svg current-color는 CSS 변수를 읽지 못해 TS token 값을 넘깁니다. */
   readonly indicatorColor: string | null;
+  /** Label 아래 뜻 줄입니다. 없으면 키가 없습니다(계산은 아직 없습니다). */
+  readonly meaning?: string | null;
+  /** 판정입니다. 없으면 키가 없습니다(계산은 아직 없습니다). */
+  readonly feedback?: OptionSelectorFeedbackResult | null;
 };
 
 export type OptionSelectorContract = {
@@ -95,7 +105,14 @@ const contentLanguages = new Set<OptionSelectorContentLanguage>(["ui", "learning
 const indicatorColors = {
   filled: { selected: color.brand.primary, disabledSelected: color.gray[800] },
   outlined: { selected: color.fg.brand, disabledSelected: color.fg.disabled },
+  "outlined-subtle": { selected: color.fg.brand, disabledSelected: color.fg.disabled },
 } as const;
+
+/** 옵션 개수의 하한입니다 — 표시 전용(확정) 선택기는 1개도 받습니다. */
+export function minimumOptionCountOf(committed: boolean): 1 | 2 {
+  void committed;
+  return 2;
+}
 
 function requireOption<T extends string>(value: T, allowed: ReadonlySet<T>, name: string): T {
   if (!allowed.has(value)) {

@@ -2,8 +2,10 @@ import type { ReactNode } from "@lynx-js/react";
 
 import { ListenPlaybackRow } from "../../components/ListenPlaybackControls";
 import type { ListenAudioControl } from "../../components/use-listen-audio";
+import type { LearningDensity } from "../../lib/learning-density";
 import type { SessionOptions } from "../../lib/session-options";
 import { listeningPromptScale } from "./listening";
+import type { ListeningBeforeAnswer } from "./listening-questions";
 
 import "./listening-prompt.css";
 
@@ -36,6 +38,10 @@ export type ListeningPromptProps = {
   playback: ListenAudioControl;
   /** 대본이 가려진 동안에도 로마자 줄만 참고로 세울 때 true입니다(문항이 정합니다). */
   romanizationHint?: boolean;
+  /** 답하기 전 대본 자리에 무엇을 세우는가입니다. `romanizationHint`를 대신할 갈래 값입니다. */
+  beforeAnswer?: ListeningBeforeAnswer;
+  /** 문항의 밀도입니다(글자 단계와 카드 여백이 갈립니다). */
+  density?: LearningDensity;
 };
 
 export function ListeningPrompt({

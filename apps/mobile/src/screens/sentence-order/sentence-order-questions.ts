@@ -3,7 +3,17 @@ import type { QuestionAudio } from "../../lib/question-audio";
 export type DialogueSpeaker = "counterpart" | "me";
 
 /** 대화 조립 — 칸마다 화자입니다. 길이 = `answerOrder.length`(매핑이 보장). */
-export type SentenceOrderDialogueTurns = { readonly speakers: readonly DialogueSpeaker[] };
+export type SentenceOrderDialogueTurns = {
+  readonly speakers: readonly DialogueSpeaker[];
+  /** 창고 조각마다 화자입니다. 길이 = `chips.length`입니다. */
+  readonly chipSpeakers?: readonly DialogueSpeaker[];
+};
+
+/** 줄 배치의 읽기 줄(정답 로마자)과 그것이 보이는 시점입니다. */
+export type SentenceOrderReading = {
+  readonly romanization: string;
+  readonly shown: "always" | "after-check";
+};
 
 export type SentenceOrderQuestion = {
   /**
@@ -36,6 +46,10 @@ export type SentenceOrderQuestion = {
   readonly dialogue?: SentenceOrderDialogueTurns;
   /** 있으면 `support.instruction` · 문구표 기본보다 앞서는 지시문입니다(카탈로그 문항). */
   readonly instruction?: string;
+  /** 줄 배치의 읽기 줄입니다. 없으면 로마자를 보이지 않습니다. */
+  readonly reading?: SentenceOrderReading;
+  /** 창고 조각마다 영어 뜻 줄입니다. 있으면 길이 = `chips.length`입니다. */
+  readonly chipMeanings?: readonly string[];
   /** 문항 음성입니다 — 듣기 조립은 듣기 갈래, 문장 순서는 판정 뒤 재생 갈래. 없으면 키가 없습니다. */
   readonly audio?: QuestionAudio;
 };

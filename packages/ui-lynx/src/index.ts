@@ -190,6 +190,7 @@ export type {
 
 export { ChatBubble, chatBubbleDeliveryLabels, getChatBubbleContract } from "./chat-bubble";
 export type {
+  ChatBubbleAnnotation,
   ChatBubbleContentLanguage,
   ChatBubbleContract,
   ChatBubbleDelivery,
@@ -252,6 +253,7 @@ export {
   OptionSelector,
   getOptionSelectorContract,
   isSameOptionSelection,
+  minimumOptionCountOf,
   nextOptionSelection,
 } from "./option-selector";
 
@@ -271,6 +273,7 @@ export type {
   OptionSelectorCommit,
   OptionSelectorContentLanguage,
   OptionSelectorContract,
+  OptionSelectorFeedbackResult,
   OptionSelectorItemContract,
   OptionSelectorLayout,
   OptionSelectorOption,

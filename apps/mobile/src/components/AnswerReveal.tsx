@@ -11,6 +11,8 @@ export type AnswerRevealProps = {
   readonly text: string;
   /** 놓이는 면입니다. 기본 `light`. */
   readonly surface?: SurfaceTone;
+  /** 상자 위 머리 줄입니다. 없으면 그리지 않습니다. */
+  readonly label?: string;
 };
 
 // 판정 뒤 정답을 보여 주는 상자입니다. 타자 입력 활동과 최종 테스트가 같은 값을 쓰므로 한 곳에 둡니다

@@ -2,6 +2,8 @@
 // 이벤트는 `EpisodeIntroEventSink`로 나갑니다 — 수는 10진 문자열입니다(ADR-0029).
 
 import type { AssessmentVerdict } from "../screens/assessment/assessment";
+import type { ItemAnswerOutcome, ScoredItemType } from "./item-answer";
+import type { LearningDensity } from "./learning-density";
 import type { ListenPace } from "./listen-pace";
 import type { ListenItemResult, ListenItemType } from "./question-audio";
 
@@ -53,6 +55,20 @@ export type EpisodeListenItemAnsweredEvent = {
   readonly replayCount: string;
   /** 0.85일 때 누른 다시 듣기 수입니다(10진 문자열). */
   readonly slowReplayCount: string;
+};
+
+/**
+ * 채점 문항이 처음 판정되는 순간 문항당 한 번 나는 이벤트입니다(유형별 정답률 · 밀도별 비교).
+ * 아직 `CatalogLearningEvent` 합집합에 들어가지 않았습니다 — 이름 목록과 함께 들어갑니다.
+ */
+export type EpisodeItemAnsweredEvent = {
+  readonly name: "episode_item_answered";
+  readonly episodeId: string;
+  readonly unitKey: string;
+  readonly itemId: string;
+  readonly itemType: ScoredItemType;
+  readonly result: ItemAnswerOutcome;
+  readonly density: LearningDensity;
 };
 
 export type CatalogLearningEvent =

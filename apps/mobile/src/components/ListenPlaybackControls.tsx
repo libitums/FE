@@ -101,3 +101,23 @@ export function ListenPlaybackControls(props: ListenPlaybackControlsProps): Reac
     </view>
   );
 }
+
+export type ListenControlPartProps = {
+  readonly control: ListenAudioControl;
+  readonly testId: string;
+};
+
+function ReplayPart({ testId }: ListenControlPartProps): ReactNode {
+  return <view data-testid={testId} />;
+}
+
+function PlaybackPart({ testId }: ListenControlPartProps): ReactNode {
+  return <view data-testid={testId} />;
+}
+
+function SlowPart({ testId }: ListenControlPartProps): ReactNode {
+  return <view data-testid={testId} />;
+}
+
+/** 듣기 조작 부품입니다(다시 듣기 · 재생 · 천천히). 껍데기만 있는 단계입니다 — 아직 그리지 않습니다. */
+export const ListenControls = { Replay: ReplayPart, Playback: PlaybackPart, Slow: SlowPart };

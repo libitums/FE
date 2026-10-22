@@ -6,6 +6,7 @@
 
 import type { AnswerResult } from "../lib/answer-result";
 import type { CatalogUnitKey } from "../lib/catalog-progress";
+import type { ConversationCast } from "../lib/conversation-cast";
 import { CONTENT_AUDIO_DIR } from "../lib/content-audio";
 import type { CatalogEntry } from "../lib/episode-catalog";
 import type { LearnerProfile } from "../lib/placeholder-fill";
@@ -36,10 +37,12 @@ export type {
   CatalogGlossOf,
   CatalogImageUrlOf,
   CatalogItemPort,
+  CatalogItemRef,
   CatalogLessonItemPort,
   CatalogLessonPlan,
   CatalogMappedItem,
   CatalogSkipReason,
+  CultureCardItem,
   NonEmpty,
 } from "./catalog-lesson-types";
 export { catalogItemOf } from "./catalog-item-map";
@@ -79,6 +82,14 @@ export function catalogActivitiesOf(
     }
   }
   return activities;
+}
+
+/** 레슨의 출연진(상대 · 학습자)입니다. 껍데기만 있는 단계입니다. */
+export function catalogLessonCastOf(
+  _plan: CatalogLessonPlan,
+  _learnerName: string,
+): ConversationCast {
+  return { counterpart: {}, me: {} };
 }
 
 /** 그 키의 유닛이 없으면 `null`입니다. */

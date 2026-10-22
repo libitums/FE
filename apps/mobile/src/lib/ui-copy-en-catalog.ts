@@ -91,6 +91,7 @@ export const syllableBuildEn: SyllableBuildCopy = {
   wordEmpty: (slotCount) =>
     `Your word, empty, ${slotCount} ${slotCount === 1 ? "syllable" : "syllables"}`,
   word: (word) => `Your word: ${word}`,
+  usedTile: (text) => `${text}, used`,
 };
 
 export const readAloudEn: ReadAloudCopy = {
@@ -145,6 +146,7 @@ export const catalogFinalEn: CatalogFinalCopy = {
   replyEmpty: "Your reply, empty",
   replyHint: (translation) => `Say: ${translation}`,
   correctAnswer: (answer) => `Answer: ${answer}`,
+  answerLabel: "Answer",
 };
 
 export const audioUnavailableEn: AudioUnavailableCopy = {

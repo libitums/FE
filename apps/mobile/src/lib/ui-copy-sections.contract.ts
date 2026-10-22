@@ -111,7 +111,19 @@ export type ListeningCopy = {
   readonly stop: string;
 };
 
-export type WordChoiceCopy = { readonly instruction: string };
+/** 문화 확인(장면 · 질문 카드)의 지시문과 해설 판 제목입니다. */
+export type WordChoiceCultureCopy = {
+  readonly sceneInstruction: string;
+  readonly feedbackTitle: {
+    readonly scene: Readonly<Record<"correct" | "incorrect", string>>;
+    readonly question: Readonly<Record<"correct" | "incorrect", string>>;
+  };
+};
+
+export type WordChoiceCopy = {
+  readonly instruction: string;
+  readonly culture: WordChoiceCultureCopy;
+};
 
 export type { SentenceOrderCopy } from "./sentence-order-copy.contract";
 

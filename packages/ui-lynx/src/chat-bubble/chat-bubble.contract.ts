@@ -3,6 +3,12 @@ export type ChatBubbleSize = "s" | "m" | "l";
 export type ChatBubbleDelivery = "default" | "sending" | "sent" | "read" | "failed";
 export type ChatBubbleContentLanguage = "ui" | "learning";
 
+/** 말풍선 안 로마자 · 뜻 묶음입니다(FE 확장). `translation`과 함께 쓰지 않습니다. */
+export type ChatBubbleAnnotation = {
+  readonly romanization: string;
+  readonly meaning: string;
+};
+
 type ChatBubbleBaseProps = {
   readonly message: string;
   readonly speaker: string;
@@ -11,6 +17,8 @@ type ChatBubbleBaseProps = {
   readonly languageTag?: string;
   /** 본문 아래 한 줄 더 싣는 번역. 비어 있으면 그리지 않습니다. */
   readonly translation?: string;
+  /** 본문 아래 로마자 · 구분선 · 뜻을 싣는 묶음입니다(`translation`과 배타). */
+  readonly annotation?: ChatBubbleAnnotation;
   /** 기본값은 instant입니다. 새로 도착한 메시지에만 typewriter를 지정합니다. */
   readonly reveal?: "instant" | "typewriter";
   readonly intervalMs?: number;
