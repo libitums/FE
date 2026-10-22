@@ -86,6 +86,7 @@ final class ViewController: UIViewController {
     lynxView.loadTemplate(fromURL: Self.templateURL, initData: nil)
     observeContentSizeCategory()
     observeOpenedPushNotification()
+    observeOpenedDeeplink()
     observeReduceMotion()
     startContentSyncSignal()
   }
@@ -254,5 +255,19 @@ final class ViewController: UIViewController {
 
   @objc private func pushNotificationOpened() {
     lynxView?.sendGlobalEvent("pushNotificationOpened", withParams: [])
+  }
+
+  /// 켜진 앱에 Airbridge 딥링크가 오면 JS에 알린다. 링크는 싣지 않는다 — JS가 `takeOpenedDeeplink`로 꺼낸다(ADR-0080).
+  private func observeOpenedDeeplink() {
+    NotificationCenter.default.addObserver(
+      self,
+      selector: #selector(deeplinkOpened),
+      name: AirbridgeDeeplinks.openedNotification,
+      object: nil
+    )
+  }
+
+  @objc private func deeplinkOpened() {
+    lynxView?.sendGlobalEvent("airbridgeDeeplinkOpened", withParams: [])
   }
 }

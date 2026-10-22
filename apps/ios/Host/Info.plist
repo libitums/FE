@@ -13,6 +13,19 @@
 	<string>$(AIRBRIDGE_SDK_TOKEN)</string>
 	<!-- 추적 허용(ATT) 대화상자의 문구(ADR-0079 D4 — 사용자 결정 2026-10-22). 가입을 마친 뒤 여정 맵에 들어설 때
 	     아직 정하지 않았으면 한 번 묻는다. 앱 언어가 영어라 영어 한 줄이다. -->
+	<!-- Airbridge 딥링크의 앱 scheme(ADR-0080). `duru://journey` · `duru://roleplay` · `duru://settings`를 JS가 탭으로 옮긴다.
+	     로그인 콜백 `duru://auth-callback`은 웹 인증 세션이 받으므로 딥링크로 다루지 않는다. -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.libitum.host</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>duru</string>
+			</array>
+		</dict>
+	</array>
 	<key>NSUserTrackingUsageDescription</key>
 	<string>Allow tracking so we can measure which ads helped you find Duru. We never sell your data.</string>
 	<!-- dev 서버가 localhost 평문 HTTP다. 임의 HTTP를 여는 NSAllowsArbitraryLoads가
