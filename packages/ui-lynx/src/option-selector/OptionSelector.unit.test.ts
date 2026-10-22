@@ -9,6 +9,7 @@ import {
   type OptionSelectorProps,
   getOptionSelectorContract,
   isSameOptionSelection,
+  minimumOptionCountOf,
   nextOptionSelection,
 } from "./option-selector.contract";
 
@@ -379,5 +380,192 @@ describe("option-selector.css motion", () => {
         /\.ui-lynx-option-selector-motion-reduced\s+\.ui-lynx-option-selector-item-pressable:active/,
       ),
     ).toMatch(/transform:\s*none/);
+  });
+});
+
+function baseOptions(patch: Partial<OptionSelectorOption> = {}): readonly OptionSelectorOption[] {
+  return [
+    { id: "a", label: "카페", ...patch },
+    { id: "b", label: "학교" },
+    { id: "c", label: "병원" },
+  ];
+}
+
+function subtleProps(overrides: Partial<OptionSelectorProps> = {}): OptionSelectorProps {
+  return {
+    groupLabel: "알맞은 것을 고르세요",
+    options: baseOptions(),
+    selectedIds: [],
+    onChange: noop,
+    variant: "outlined-subtle",
+    ...overrides,
+  };
+}
+
+function firstItem(overrides: Partial<OptionSelectorProps>) {
+  return getOptionSelectorContract(subtleProps(overrides)).items[0]!;
+}
+
+describe("OptionSelector outlined-subtle (OS1)", () => {
+  test("루트 클래스에 outlined-subtle이 있고 variant 값이 그대로다", () => {
+    const contract = getOptionSelectorContract(subtleProps());
+
+    expect(contract.variant).toBe("outlined-subtle");
+    expect(contract.className.split(" ")).toContain("ui-lynx-option-selector-outlined-subtle");
+  });
+});
+
+describe("OptionSelector feedback 축 (OS2 ~ OS4)", () => {
+  test("OS2: correct는 조작할 수 없고 correct 클래스 · disabled · 정답 글자색 Indicator를 쓴다", () => {
+    const item = firstItem({ options: baseOptions({ feedback: "correct" }) });
+
+    expect(item.feedback).toBe("correct");
+    expect(item.interactive).toBe(false);
+    expect(item.traits).toBe("disabled");
+    expect(item.className.split(" ")).toContain("ui-lynx-option-selector-item-correct");
+    expect(item.className).not.toContain("ui-lynx-option-selector-item-pressable");
+    expect(item.indicatorColor).toBe(color.feedback["correct-text"]);
+  });
+
+  test("OS3: incorrect는 incorrect 클래스와 오답 글자색 Indicator를 쓴다", () => {
+    const item = firstItem({ options: baseOptions({ feedback: "incorrect" }) });
+
+    expect(item.feedback).toBe("incorrect");
+    expect(item.className.split(" ")).toContain("ui-lynx-option-selector-item-incorrect");
+    expect(item.indicatorColor).toBe(color.feedback["incorrect-text"]);
+  });
+
+  test("OS4: feedback와 selected, committed가 겹치면 클래스가 판정 우선이고 이름에 selected가 없다", () => {
+    const item = firstItem({
+      options: baseOptions({ feedback: "correct" }),
+      selectedIds: ["a"],
+      committed: true,
+    });
+
+    expect(item.className.split(" ")).toContain("ui-lynx-option-selector-item-correct");
+    expect(item.accessibilityLabel).not.toContain(", selected");
+  });
+
+  test("feedback가 없는 항목은 feedback이 null이다", () => {
+    const items = getOptionSelectorContract(subtleProps()).items;
+
+    expect(items.map((item) => item.feedback)).toEqual([null, null, null]);
+  });
+});
+
+describe("OptionSelector 접근성 이름 (OS5)", () => {
+  test("accessibilityLabel을 주면 그대로이고 접미사가 붙지 않는다", () => {
+    const item = firstItem({
+      options: baseOptions({ accessibilityLabel: "카페, Cafe, correct", meaning: "Cafe" }),
+      selectedIds: ["a"],
+    });
+
+    expect(item.accessibilityLabel).toBe("카페, Cafe, correct");
+  });
+
+  test("안 주면 라벨, 뜻, 판정 순이다", () => {
+    expect(
+      firstItem({ options: baseOptions({ meaning: "Cafe", feedback: "correct" }) })
+        .accessibilityLabel,
+    ).toBe("카페, Cafe, correct");
+    expect(firstItem({ options: baseOptions({ meaning: "Cafe" }) }).accessibilityLabel).toBe(
+      "카페, Cafe",
+    );
+    expect(firstItem({ selectedIds: ["a"] }).accessibilityLabel).toBe("카페, selected");
+  });
+});
+
+describe("OptionSelector meaning (OS6)", () => {
+  test("뜻은 trim한 값이고 없으면 null이다", () => {
+    expect(firstItem({ options: baseOptions({ meaning: "  Cafe  " }) }).meaning).toBe("Cafe");
+    expect(firstItem({}).meaning).toBeNull();
+  });
+
+  test("빈 뜻은 던진다", () => {
+    expect(() =>
+      getOptionSelectorContract(subtleProps({ options: baseOptions({ meaning: "   " }) })),
+    ).toThrow(/meaning/);
+    expect(() =>
+      getOptionSelectorContract(subtleProps({ options: baseOptions({ meaning: "" }) })),
+    ).toThrow(/meaning/);
+  });
+});
+
+describe("OptionSelector filled 제약 (OS7)", () => {
+  test("filled에서 feedback을 주면 던진다", () => {
+    expect(() =>
+      getOptionSelectorContract(
+        subtleProps({ variant: "filled", options: baseOptions({ feedback: "correct" }) }),
+      ),
+    ).toThrow(/filled|feedback|meaning/i);
+  });
+
+  test("filled에서 meaning을 주면 던진다", () => {
+    expect(() =>
+      getOptionSelectorContract(
+        subtleProps({ variant: "filled", options: baseOptions({ meaning: "Cafe" }) }),
+      ),
+    ).toThrow(/filled|feedback|meaning/i);
+  });
+
+  test("outlined는 feedback과 meaning을 받는다", () => {
+    expect(() =>
+      getOptionSelectorContract(
+        subtleProps({
+          variant: "outlined",
+          options: baseOptions({ feedback: "correct", meaning: "Cafe" }),
+        }),
+      ),
+    ).not.toThrow();
+  });
+});
+
+describe("OptionSelector 옵션 개수 (OS8)", () => {
+  test("minimumOptionCountOf는 committed면 1, 아니면 2다", () => {
+    expect(minimumOptionCountOf(true)).toBe(1);
+    expect(minimumOptionCountOf(false)).toBe(2);
+  });
+
+  test("committed에서는 옵션 하나도 던지지 않는다", () => {
+    const options: readonly OptionSelectorOption[] = [
+      { id: "a", label: "카페", feedback: "correct" },
+    ];
+
+    const contract = getOptionSelectorContract(
+      subtleProps({ options, selectedIds: ["a"], committed: true }),
+    );
+
+    expect(contract.items).toHaveLength(1);
+  });
+
+  test("committed가 아니면 옵션 하나는 지금 문구로 던진다", () => {
+    expect(() =>
+      getOptionSelectorContract(
+        subtleProps({ variant: "outlined", options: [{ id: "a", label: "카페" }] }),
+      ),
+    ).toThrow("OptionSelector requires at least 2 options");
+  });
+});
+
+describe("OptionSelector outlined-subtle 상태 클래스 (OS9)", () => {
+  test("Disabled와 Selected 조합이 outlined와 같은 이름 규칙이다", () => {
+    const subtle = getOptionSelectorContract(
+      subtleProps({ options: baseOptions({ disabled: true }), selectedIds: ["b"] }),
+    ).items;
+    const outlined = getOptionSelectorContract(
+      subtleProps({
+        variant: "outlined",
+        options: baseOptions({ disabled: true }),
+        selectedIds: ["b"],
+      }),
+    ).items;
+
+    expect(subtle.map((item) => item.className)).toEqual(outlined.map((item) => item.className));
+    expect(subtle[0]!.className.split(" ")).toContain("ui-lynx-option-selector-item-disabled");
+    expect(subtle[1]!.className.split(" ")).toContain("ui-lynx-option-selector-item-selected");
+  });
+
+  test("outlined-subtle Selected Indicator 색은 outlined와 같다", () => {
+    expect(firstItem({ selectedIds: ["a"] }).indicatorColor).toBe(color.fg.brand);
   });
 });

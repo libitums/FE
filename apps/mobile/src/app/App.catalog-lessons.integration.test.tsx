@@ -315,6 +315,12 @@ function typeAnswer(question: TypingQuestion): void {
   typeKeys(lettersOnly(question.answers.find(isTypeableAnswer) ?? question.answers[0]));
 }
 
+// Check는 줄 배치에서 ui-lynx 버튼(`sentence-order-check`)이고, 대화 배치에서는 셸 기본 버튼일 수 있습니다.
+function tapSentenceCheck(): void {
+  if (screen.queryByTestId("sentence-order-check") !== null) tapButtonIn("sentence-order-check");
+  else tapId("learning-shell-action");
+}
+
 /**
  * 활동 하나를 끝까지 풉니다. 레슨의 마지막 활동이면 완료 카드의 `See results`까지 누르고, 중간 활동이면
  * 마지막 문항 뒤 곧바로 다음 활동으로 넘어가므로 누르지 않습니다(E-1). `right`가 거짓이면 전부 틀립니다.
@@ -327,15 +333,15 @@ function solveActivity(activity: CatalogActivity, right: boolean, last = true): 
         const picture = screen.queryByTestId("word-choice-picture-image");
         if (picture !== null) fireEvent(picture, new window.Event("bindEvent:load"));
         tapId(
-          `word-choice-option-${right ? question.answerIndex : question.answerIndex === 0 ? 1 : 0}`,
+          `ui-lynx-option-selector-item-choice-${right ? question.answerIndex : question.answerIndex === 0 ? 1 : 0}`,
         );
-        tapId("learning-shell-advance");
+        tapId(question.culture === undefined ? "learning-shell-advance" : "learning-shell-action");
       }
       break;
     case "listening":
       for (const question of activity.questions) {
         tapId(
-          `listening-choice-${right ? question.answerIndex : question.answerIndex === 0 ? 1 : 0}`,
+          `ui-lynx-option-selector-item-choice-${right ? question.answerIndex : question.answerIndex === 0 ? 1 : 0}`,
         );
         tapId("learning-shell-advance");
       }
@@ -343,8 +349,10 @@ function solveActivity(activity: CatalogActivity, right: boolean, last = true): 
     case "sentence-order":
       for (const question of activity.questions) {
         const order = right ? question.answerOrder : [...question.answerOrder].reverse();
-        for (const chip of order) tapId(`sentence-order-chip-${chip}`);
-        tapId("learning-shell-action");
+        const chipId =
+          question.dialogue === undefined ? "sentence-order-chip" : "sentence-order-dialogue-chip";
+        for (const chip of order) tapId(`${chipId}-${chip}`);
+        tapSentenceCheck();
         tapId("learning-shell-action");
       }
       break;

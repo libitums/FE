@@ -59,6 +59,8 @@ export type ItemAudioBootOptions = {
   readonly files?: "all" | "none";
   /** 주면 말하기 모듈 대역을 세웁니다 — `heard(n)`이 n번째 시도의 인식 글자입니다. */
   readonly heard?: (attempt: number) => string | null;
+  /** 받아 둔 그림 파일의 버킷 상대 경로입니다(예: 상대 아바타). 없으면 그림 파일은 하나도 없습니다. */
+  readonly imageFiles?: readonly string[];
 };
 
 const refreshedBody = JSON.stringify({
@@ -112,7 +114,10 @@ export async function bootItemAudioApp(options: ItemAudioBootOptions): Promise<I
       download: vi.fn<() => void>(),
       remove: vi.fn<() => void>(),
       fileUrl: (path: string) =>
-        options.files !== "none" && path.startsWith("audio/") ? fileUrlOf(path) : null,
+        (options.files !== "none" && path.startsWith("audio/")) ||
+        (options.imageFiles ?? []).includes(path)
+          ? fileUrlOf(path)
+          : null,
     },
   };
   const heard = options.heard;

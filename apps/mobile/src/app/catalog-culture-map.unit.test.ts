@@ -1,7 +1,7 @@
 import { describe, expect, test, vi } from "vitest";
 
 import { cultureCardItemOf } from "./catalog-card-map";
-import { cultureCheckItemOf } from "./catalog-choice-map";
+import { cultureCheckItemOf } from "./catalog-culture-map";
 import type { CatalogFill, CatalogMappedItem } from "./catalog-lesson-types";
 import {
   cultureCard,
@@ -173,6 +173,7 @@ describe("문화 확인 매핑 (CKM)", () => {
       answerIndex: 1,
       instruction: "Pick the right one.",
       choiceTranslations: ["Bags are free.", "Bags usually cost extra.", "There are no bags."],
+      culture: { scene: null, explanation: { en: "Right", ko: "맞아요" } },
     });
   });
 

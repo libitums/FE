@@ -1,5 +1,5 @@
 import { afterEach, expect, test, vi } from "vitest";
-import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
+import { fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { StepSentenceOrder } from "./StepSentenceOrder.test-support";
 import { stepQuestions } from "./sentence-order-steps.test-support";
@@ -20,7 +20,11 @@ test("문장 만들기는 칩 클릭, 채점 판정, 다음 버튼 소리를 순
   }
   expect(calls).toEqual(first.answerOrder.map(() => "button"));
 
-  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
+  // Check는 ui-lynx 버튼이고, 판정음만 나며 클릭음은 나지 않는다.
+  fireEvent.tap(
+    within(screen.getByTestId("sentence-order-check")).getByTestId("ui-lynx-button"),
+    {},
+  );
   expect(calls).toEqual([...first.answerOrder.map(() => "button"), "correct_answer"]);
 
   fireEvent.tap(screen.getByTestId("learning-shell-action"), {});

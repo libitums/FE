@@ -180,6 +180,22 @@ export function resetApp(): void {
 export const tapId = (id: string): void => void fireEvent.tap(screen.getByTestId(id), {});
 export const tapButtonIn = (id: string): void =>
   void fireEvent.tap(within(screen.getByTestId(id)).getByTestId("ui-lynx-button"), {});
+// 듣기 조작은 바깥 상자가 testid만 지고 탭은 안쪽 둥근 버튼이 받습니다.
+export const tapRoundIn = (id: string): void =>
+  void fireEvent.tap(within(screen.getByTestId(id)).getByTestId("ui-lynx-round-button"), {});
+// 문항 보기는 OptionSelector 항목입니다(`choice-<번호>`).
+export const choiceId = (index: number): string => `ui-lynx-option-selector-item-choice-${index}`;
+export const choiceMeaningId = (index: number): string =>
+  `ui-lynx-option-selector-meaning-choice-${index}`;
+export const tapChoice = (index: number): void => tapId(choiceId(index));
+// Check는 줄 배치에서 ui-lynx 버튼(`sentence-order-check`)이고, 대화 배치에서는 셸 기본 버튼일 수 있습니다.
+// 문장 순서 창고 조각의 testid입니다 — 대화 배치는 화자가 있는 전용 조각입니다.
+export const sentenceChipId = (question: { readonly dialogue?: unknown }, chip: number): string =>
+  `${question.dialogue === undefined ? "sentence-order-chip" : "sentence-order-dialogue-chip"}-${chip}`;
+export function tapCheck(): void {
+  if (screen.queryByTestId("sentence-order-check") !== null) tapButtonIn("sentence-order-check");
+  else tapId("learning-shell-action");
+}
 export const node = (episodeId: string, key: string) =>
   screen.getByTestId(catalogNodeTestId(episodeId, key));
 // 열린 노드를 누르면 말풍선이 서고 `Start`가 유닛을 엽니다. 잠긴 노드는 말풍선이 없어 누름으로 끝납니다.

@@ -71,13 +71,14 @@ function answerChecks(activity: WordChoiceActivity, rightAt: (index: number) => 
     const translations = question.choiceTranslations;
     expect(translations).toBeDefined();
     (translations ?? []).forEach((text, choice) => {
-      expect(screen.getByTestId(`word-choice-option-${choice}-translation`)).toHaveTextContent(
-        text,
-      );
+      expect(
+        screen.getByTestId(`ui-lynx-option-selector-meaning-choice-${choice}`),
+      ).toHaveTextContent(text);
     });
     const picked = rightAt(index) ? question.answerIndex : question.answerIndex === 0 ? 1 : 0;
-    tapId(`word-choice-option-${picked}`);
-    tapId("learning-shell-advance");
+    tapId(`ui-lynx-option-selector-item-choice-${picked}`);
+    // 문화 확인은 해설 판의 Continue로 넘깁니다.
+    tapId("learning-shell-action");
   });
 }
 

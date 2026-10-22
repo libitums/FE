@@ -281,6 +281,11 @@ const exitResult = () => tapButtonIn("lesson-complete-screen-exit");
 const title = () => screen.getByTestId("lesson-complete-screen-title");
 const chapter = () => screen.getByTestId("learning-shell-chapter");
 const action = (): void => tapId("learning-shell-action");
+// Check는 줄 배치에서 ui-lynx 버튼(`sentence-order-check`)이고, 대화 배치에서는 셸 기본 버튼일 수 있습니다.
+const tapSentenceCheck = (): void => {
+  if (screen.queryByTestId("sentence-order-check") !== null) tapButtonIn("sentence-order-check");
+  else action();
+};
 const advance = (): void => tapId("learning-shell-advance");
 
 function pressBack(token: string): void {
@@ -370,9 +375,11 @@ function answerWordChoice(
     if (picture !== null) fireEvent(picture, new window.Event("bindEvent:load"));
     const right = rights[index] ?? true;
     tapId(
-      `word-choice-option-${right ? question.answerIndex : question.answerIndex === 0 ? 1 : 0}`,
+      `ui-lynx-option-selector-item-choice-${right ? question.answerIndex : question.answerIndex === 0 ? 1 : 0}`,
     );
-    advance();
+    // 문화 확인은 해설 판의 Continue로 넘기고, 나머지는 저절로 넘어갑니다.
+    if (question.culture === undefined) advance();
+    else action();
   });
 }
 
@@ -409,15 +416,17 @@ function solveActivity(activity: CatalogActivity, right: boolean, last: boolean)
     case "sentence-order":
       for (const question of activity.questions) {
         const order = right ? question.answerOrder : [...question.answerOrder].reverse();
-        for (const chip of order) tapId(`sentence-order-chip-${chip}`);
-        action();
+        const chipId =
+          question.dialogue === undefined ? "sentence-order-chip" : "sentence-order-dialogue-chip";
+        for (const chip of order) tapId(`${chipId}-${chip}`);
+        tapSentenceCheck();
         action();
       }
       break;
     case "listening":
       for (const question of activity.questions) {
         tapId(
-          `listening-choice-${right ? question.answerIndex : question.answerIndex === 0 ? 1 : 0}`,
+          `ui-lynx-option-selector-item-choice-${right ? question.answerIndex : question.answerIndex === 0 ? 1 : 0}`,
         );
         tapId("learning-shell-advance");
       }
@@ -595,7 +604,7 @@ async function openPictureLesson(): Promise<{
   tapNode(u01, "S1");
   flipCards(3);
   const first = wordChoiceAt(plan, 1).questions[0];
-  tapId(`word-choice-option-${first.answerIndex}`);
+  tapId(`ui-lynx-option-selector-item-choice-${first.answerIndex}`);
   advance();
   return { plan, ...booted };
 }
@@ -616,7 +625,7 @@ test("I4. (AC4) 캐시에서 온 그림 문항: 그림이 서고 error면 뜻 �
   );
 
   // 그림을 기다리는 동안에는 답을 받지 않는다.
-  tapId(`word-choice-option-${picture.answerIndex}`);
+  tapId(`ui-lynx-option-selector-item-choice-${picture.answerIndex}`);
   expect(screen.queryByTestId("answer-verdict")).not.toBeInTheDocument();
 
   fireEvent(screen.getByTestId("word-choice-picture-image"), new window.Event("bindEvent:error"));
@@ -624,7 +633,7 @@ test("I4. (AC4) 캐시에서 온 그림 문항: 그림이 서고 error면 뜻 �
   expect(screen.getByTestId("word-choice-picture-fallback")).toHaveTextContent(picture.prompt);
   expect(picture.prompt).toBe("water");
 
-  tapId(`word-choice-option-${picture.answerIndex}`);
+  tapId(`ui-lynx-option-selector-item-choice-${picture.answerIndex}`);
   expect(screen.getByTestId("answer-verdict")).toHaveAttribute("data-result", "correct");
   advance();
   // 같은 화면의 다음 문항(제시문)이다.
@@ -633,7 +642,7 @@ test("I4. (AC4) 캐시에서 온 그림 문항: 그림이 서고 error면 뜻 �
 
   const rest = wordChoiceAt(plan, 1).questions.slice(2);
   for (const question of rest) {
-    tapId(`word-choice-option-${question.answerIndex}`);
+    tapId(`ui-lynx-option-selector-item-choice-${question.answerIndex}`);
     advance();
   }
   action();
@@ -647,7 +656,7 @@ test("I4b. 그림이 load되면 그림 그대로 보기가 열리고, 시작 이
 
   fireEvent(screen.getByTestId("word-choice-picture-image"), new window.Event("bindEvent:load"));
   expect(screen.getByTestId("word-choice-picture")).toHaveAttribute("data-load-state", "loaded");
-  tapId(`word-choice-option-${picture.answerIndex}`);
+  tapId(`ui-lynx-option-selector-item-choice-${picture.answerIndex}`);
   expect(screen.getByTestId("answer-verdict")).toHaveAttribute("data-result", "correct");
   expect(screen.getByTestId("word-choice-picture-answer")).toBeInTheDocument();
 
@@ -669,7 +678,7 @@ test("I4c. 그림 이벤트가 영영 오지 않아도 6초 뒤 뜻 글자로 �
   vi.useFakeTimers();
   tapNode(u01, "S1");
   flipCards(3);
-  tapId(`word-choice-option-${wordChoiceAt(plan, 1).questions[0].answerIndex}`);
+  tapId(`ui-lynx-option-selector-item-choice-${wordChoiceAt(plan, 1).questions[0].answerIndex}`);
   advance();
   const picture = wordChoiceAt(plan, 1).questions[1];
 
@@ -679,7 +688,7 @@ test("I4c. 그림 이벤트가 영영 오지 않아도 6초 뒤 뜻 글자로 �
   });
   expect(screen.getByTestId("word-choice-picture")).toHaveAttribute("data-load-state", "failed");
   expect(screen.getByTestId("word-choice-picture-fallback")).toHaveTextContent("water");
-  tapId(`word-choice-option-${picture.answerIndex}`);
+  tapId(`ui-lynx-option-selector-item-choice-${picture.answerIndex}`);
   expect(screen.getByTestId("answer-verdict")).toHaveAttribute("data-result", "correct");
 });
 
@@ -724,7 +733,7 @@ test("I5. (AC4 실데이터) 그림 경로가 없는 실데이터에는 그림 �
   flipCards(3);
   for (const question of wordChoiceAt(plan, 1).questions) {
     expect(screen.queryByTestId("word-choice-picture")).not.toBeInTheDocument();
-    tapId(`word-choice-option-${question.answerIndex}`);
+    tapId(`ui-lynx-option-selector-item-choice-${question.answerIndex}`);
     advance();
   }
   action();

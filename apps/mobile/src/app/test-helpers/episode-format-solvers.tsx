@@ -8,7 +8,14 @@ import type { CatalogActivity, CatalogLessonPlan } from "../catalog-lesson-plan"
 import { catalogSpellingOf } from "../catalog-build-map";
 import { isTypeableAnswer, keystrokesFor } from "../../lib/hangul-keyboard";
 import type { TypingQuestion } from "../../screens/typing/typing.contract";
-import { contentIdOf, tapButtonIn, tapId } from "./episode-format-harness";
+import {
+  contentIdOf,
+  sentenceChipId,
+  tapButtonIn,
+  tapCheck,
+  tapChoice,
+  tapId,
+} from "./episode-format-harness";
 
 const lettersOnly = (text: string) => text.normalize("NFC").replace(/[^ㄱ-ㆎ가-힣]/g, "");
 export function typeKeys(text: string): void {
@@ -92,25 +99,22 @@ export function solveActivity(activity: CatalogActivity, right: boolean, last = 
         // 그림 문항은 그림이 서야 답을 받습니다 — 먼저 load를 쏩니다.
         const picture = screen.queryByTestId("word-choice-picture-image");
         if (picture !== null) fireEvent(picture, new window.Event("bindEvent:load"));
-        tapId(
-          `word-choice-option-${right ? question.answerIndex : question.answerIndex === 0 ? 1 : 0}`,
-        );
-        tapId("learning-shell-advance");
+        tapChoice(right ? question.answerIndex : question.answerIndex === 0 ? 1 : 0);
+        // 문화 확인은 해설 판의 Continue로 넘기고, 나머지는 저절로 넘어갑니다.
+        tapId(question.culture === undefined ? "learning-shell-advance" : "learning-shell-action");
       }
       break;
     case "listening":
       for (const question of activity.questions) {
-        tapId(
-          `listening-choice-${right ? question.answerIndex : question.answerIndex === 0 ? 1 : 0}`,
-        );
+        tapChoice(right ? question.answerIndex : question.answerIndex === 0 ? 1 : 0);
         tapId("learning-shell-advance");
       }
       break;
     case "sentence-order":
       for (const question of activity.questions) {
         const order = right ? question.answerOrder : [...question.answerOrder].reverse();
-        for (const chip of order) tapId(`sentence-order-chip-${chip}`);
-        tapId("learning-shell-action");
+        for (const chip of order) tapId(sentenceChipId(question, chip));
+        tapCheck();
         tapId("learning-shell-action");
       }
       break;
