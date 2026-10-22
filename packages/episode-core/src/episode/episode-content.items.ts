@@ -1,5 +1,3 @@
-import "background-only";
-
 import type { DeliveryItem } from "./episode-content.schema";
 import type { LearningItem, Text } from "./episode-content.model";
 import { toAddedItem } from "./episode-content.items-added";
@@ -86,6 +84,8 @@ export function toItem(item: DeliveryItem): LearningItem {
         context: toText(item.context),
         ...maybe("example", optText(item.example)),
         cardKind: item.card_kind,
+        ...maybe("audioUrl", nonEmpty(item.audio_url)),
+        ...maybe("exampleAudioUrl", nonEmpty(item.example_audio_url)),
       };
     case "CLOZE":
       return {

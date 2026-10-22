@@ -9,7 +9,7 @@ import {
   type DecodeResult,
   type Episode,
 } from "./episode-content";
-import { KNOWN_ITEM_TYPES } from "./episode-content.schema";
+import { KNOWN_ITEM_TYPES } from "./episode-content";
 import { bundledCatalogInput } from "./episode-bundled";
 import { legacyCatalogInput } from "./episode-legacy.test-support";
 import { minimalRoleplayTurnWire } from "./episode-content.test-support";
@@ -665,7 +665,7 @@ describe("decodeEpisode", () => {
   });
 
   // 가드: 스캐폴드가 이미 import와 첫 줄을 갖습니다.
-  test("U25′. zod를 import하는 src 파일은 콘텐츠 스키마 셋 · 매니페스트 스키마이고 런타임 모듈은 background-only로 시작한다", () => {
+  test("U25′. zod를 import하는 src 파일은 매니페스트 스키마뿐이고(콘텐츠 스키마는 패키지로) 런타임 모듈은 background-only로 시작한다", () => {
     const srcRoot = resolve(process.cwd(), "src");
     const walk = (dir: string): string[] =>
       readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
@@ -680,17 +680,8 @@ describe("decodeEpisode", () => {
       .filter((file) => /from\s+["']zod/.test(readFileSync(file, "utf8")))
       .map(toPosix)
       .sort();
-    expect(importers).toEqual([
-      "src/lib/episode-content.schema-items.ts",
-      "src/lib/episode-content.schema-parts.ts",
-      "src/lib/episode-content.schema.ts",
-      "src/lib/episode-manifest.schema.ts",
-    ]);
+    expect(importers).toEqual(["src/lib/episode-manifest.schema.ts"]);
     const runtimeModules = [
-      "episode-content.schema.ts",
-      "episode-content.schema-parts.ts",
-      "episode-content.schema-items.ts",
-      "episode-content.items-added.ts",
       "episode-content.ts",
       "episode-manifest.schema.ts",
       "episode-manifest.ts",

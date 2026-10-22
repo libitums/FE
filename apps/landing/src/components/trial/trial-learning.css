@@ -1,0 +1,286 @@
+/*
+ * 학습 셸(앱 learning-shell) — 새 단어 · 그림 고르기 · 대답 고르기 · 문화 카드가 같은 틀을 씁니다.
+ * 밝은 면, 위는 머리 띠 자리, 아래 버튼은 셸 아래에 고정되고 본문만 스크롤합니다.
+ */
+.trial-learning {
+  padding: calc(var(--trial-bar-space) + var(--libitum-spacing-16))
+    var(--libitum-layout-screen-padding-x) 0;
+  background: var(--libitum-color-background-primary);
+  color: var(--libitum-color-fg-neutral);
+  animation: trial-item-enter var(--libitum-motion-duration-page) var(--libitum-motion-easing-enter)
+    both;
+}
+
+@keyframes trial-item-enter {
+  from {
+    opacity: 0;
+    transform: translateX(var(--libitum-spacing-16));
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.trial-learning__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--libitum-layout-gap-block);
+  min-height: 0;
+  padding-bottom: var(--libitum-spacing-16);
+  overflow-y: auto;
+}
+
+.trial-learning__footer {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-12);
+  padding: var(--libitum-spacing-12) 0 var(--trial-bottom-space);
+  background: var(--libitum-color-background-primary);
+}
+
+.trial-learning__footer::before {
+  position: absolute;
+  inset: auto 0 100%;
+  height: var(--libitum-spacing-40);
+  background: linear-gradient(to top, var(--libitum-color-background-primary), transparent);
+  content: "";
+  pointer-events: none;
+}
+
+.trial-learning__instruction {
+  color: var(--libitum-color-fg-neutral-muted);
+  text-align: center;
+}
+
+.trial-card {
+  padding: var(--libitum-spacing-20);
+  border-radius: var(--libitum-radius-xl);
+  background: var(--libitum-color-white);
+  box-shadow: var(--libitum-elevation-shadow-s3);
+}
+
+/* 새 단어 카드 */
+.trial-vocab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-12);
+  padding-block: var(--libitum-spacing-32);
+  text-align: center;
+}
+
+/* 표식 알약 「New word」 — 자리를 늘 잡아 카드 높이가 흔들리지 않습니다. */
+.trial-vocab__badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--libitum-spacing-32);
+  padding: var(--libitum-spacing-4) var(--libitum-spacing-12);
+  border-radius: var(--libitum-radius-md);
+  background: var(--libitum-color-background-elevated);
+  color: var(--libitum-color-fg-brand);
+}
+
+.trial-vocab__word {
+  color: var(--libitum-color-fg-brand);
+}
+
+.trial-vocab__roman {
+  color: var(--libitum-color-fg-neutral-muted);
+}
+
+.trial-vocab__rule {
+  align-self: stretch;
+  margin: 0;
+  border: 0;
+  border-top: 1px solid var(--libitum-color-gray-300);
+}
+
+.trial-vocab__example {
+  display: flex;
+  align-items: center;
+  gap: var(--libitum-spacing-12);
+  padding: var(--libitum-spacing-12) var(--libitum-spacing-16);
+  border-radius: var(--libitum-radius-lg);
+  background: var(--libitum-color-gray-100);
+}
+
+.trial-vocab__example-text {
+  display: grid;
+  flex: 1;
+  gap: var(--libitum-spacing-2);
+}
+
+/* 고르기 — 제시 카드 + 보기 */
+.trial-picture,
+.trial-reply-prompt {
+  display: grid;
+  gap: var(--libitum-spacing-12);
+}
+
+.trial-picture__image {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--libitum-radius-md);
+  background: var(--libitum-color-gray-100);
+  object-fit: cover;
+}
+
+.trial-prompt {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--libitum-spacing-4);
+}
+
+.trial-reply-prompt {
+  text-align: center;
+}
+
+.trial-reply-prompt__line {
+  color: var(--libitum-color-fg-brand);
+}
+
+.trial-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--libitum-spacing-8);
+}
+
+.trial-reply-prompt + .trial-options {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.trial-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--libitum-spacing-2);
+  min-height: 60px;
+  padding: var(--libitum-spacing-8) var(--libitum-spacing-12);
+  border: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
+  border-radius: var(--libitum-radius-md);
+  background: var(--libitum-color-background-primary);
+  color: var(--libitum-color-fg-neutral);
+  text-align: center;
+  transition: transform var(--libitum-motion-duration-pressed) var(--libitum-motion-easing-easing);
+}
+
+.trial-option__roman,
+.trial-option__en {
+  color: var(--libitum-color-fg-neutral-muted);
+}
+
+/* 판정 전에는 보기의 로마자 · 뜻을 숨긴다 — 뜻이 정답을 알려 준다(앱도 보기는 한국어만).
+   판정되면 정답 보기에 `correct`가 붙고, 그때부터 모든 보기의 읽기 · 뜻이 보인다. */
+.trial-options:not(:has(.trial-option[data-result="correct"])) .trial-option__roman,
+.trial-options:not(:has(.trial-option[data-result="correct"])) .trial-option__en {
+  display: none;
+}
+
+.trial-option:active:not([aria-disabled="true"]) {
+  transform: scale(var(--libitum-motion-scale-pressed));
+}
+
+.trial-option[aria-disabled="true"] {
+  cursor: default;
+}
+
+.trial-option[data-result="correct"] {
+  border: var(--libitum-stroke-width-strong) solid var(--libitum-color-feedback-correct);
+}
+
+.trial-option[data-result="correct"] .trial-option__ko {
+  color: var(--libitum-color-feedback-correct-text);
+}
+
+.trial-option[data-result="incorrect"] {
+  border: var(--libitum-stroke-width-strong) solid var(--libitum-color-feedback-incorrect);
+}
+
+.trial-option[data-result="incorrect"] .trial-option__ko {
+  color: var(--libitum-color-feedback-incorrect-text);
+}
+
+@media (hover: hover) {
+  .trial-option:not([aria-disabled="true"]):hover {
+    background: var(--libitum-color-gray-100);
+  }
+}
+
+.trial .trial-option:focus-visible {
+  border-radius: var(--libitum-radius-md);
+}
+
+/* 판정 — 고른 보기의 data-result로 문구 하나만 보입니다. */
+.trial-choice-verdict {
+  display: grid;
+  gap: var(--libitum-spacing-8);
+  animation: trial-verdict-enter var(--libitum-motion-duration-d4)
+    var(--libitum-motion-easing-enter-expressive) both;
+}
+
+@keyframes trial-verdict-enter {
+  from {
+    opacity: 0;
+    transform: scale(var(--libitum-motion-scale-enter));
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.trial-choice-verdict [data-verdict-copy] {
+  display: none;
+}
+
+.trial-step:has(.trial-option[aria-pressed="true"][data-result="correct"])
+  .trial-choice-verdict
+  .trial-badge[data-verdict-copy="correct"],
+.trial-step:has(.trial-option[aria-pressed="true"][data-result="incorrect"])
+  .trial-choice-verdict
+  .trial-badge[data-verdict-copy="incorrect"] {
+  display: flex;
+}
+
+/* 정답 공개 줄은 블록 — flex면 「Answer: 」와 정답이 따로 항목이 되어 사이 공백이 사라진다. */
+.trial-step:has(.trial-option[aria-pressed="true"][data-result="incorrect"])
+  .trial-choice-verdict
+  .trial-reveal[data-verdict-copy="incorrect"] {
+  display: block;
+}
+
+.trial-badge {
+  align-items: center;
+  justify-self: start;
+  gap: var(--libitum-spacing-8);
+  padding: var(--libitum-spacing-8);
+  border-radius: var(--libitum-radius-md);
+  color: var(--libitum-color-white);
+}
+
+.trial-badge .trial-icon {
+  width: var(--libitum-icon-size-sm);
+  height: var(--libitum-icon-size-sm);
+}
+
+.trial-badge--correct {
+  background: var(--trial-verdict-correct-surface);
+}
+
+.trial-badge--incorrect {
+  background: var(--trial-verdict-incorrect-surface);
+}
+
+.trial-reveal {
+  padding: var(--libitum-spacing-12) var(--libitum-spacing-16);
+  border-radius: var(--libitum-radius-md);
+  background: var(--libitum-color-feedback-correct-surface);
+  color: var(--libitum-color-feedback-correct-text);
+}

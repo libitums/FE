@@ -1,7 +1,4 @@
-import "background-only";
-
 // delivery-2 와이어 스키마의 공통 조각입니다(텍스트 · 보기 · 자극 · 문항 공통 키).
-// 백그라운드 전용입니다 — 첫 줄의 `background-only`가 메인 스레드 import를 막습니다.
 import { z } from "zod/mini";
 
 export const optionalString = z.optional(z.string());

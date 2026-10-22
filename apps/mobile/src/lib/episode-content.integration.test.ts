@@ -5,7 +5,7 @@ import { beforeAll, describe, expect, test } from "vitest";
 
 import { decodeEpisode } from "./episode-content";
 import type { DecodeResult, Episode } from "./episode-content";
-import { KNOWN_ITEM_TYPES } from "./episode-content.schema";
+import { KNOWN_ITEM_TYPES } from "./episode-content";
 
 // `integration` 계층: 디스크의 실제 에피소드 JSON 바이트 → `JSON.parse` → `decodeEpisode`를
 // 이어서 봅니다 (ADR-0006 D4). 외부 IO 대체 없음 — 픽스처는 콘텐츠의 바이트 사본입니다.

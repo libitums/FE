@@ -1,0 +1,29 @@
+---
+// 판정 줄 + Continue — 처음엔 둘 다 숨김. 어느 문구가 보일지는 고른 보기의 data-result가 정합니다(css).
+// 기본 슬롯은 오답 뒤 정답 공개 글입니다.
+import type { TrialChoiceFooterProps } from "./trial-components.contract";
+import TrialIcon from "./TrialIcon.astro";
+
+type Props = TrialChoiceFooterProps;
+
+const { t } = Astro.props;
+---
+
+<div class="trial-learning__footer">
+  <div class="trial-choice-verdict" data-testid="trial-choice-verdict" hidden>
+    <p class="trial-badge trial-badge--correct trial-type-label-l" data-verdict-copy="correct">
+      <TrialIcon name="tick" />
+      <span>{t.choiceCorrect}</span>
+    </p>
+    <p class="trial-badge trial-badge--incorrect trial-type-label-l" data-verdict-copy="incorrect">
+      <TrialIcon name="cross" />
+      <span>{t.choiceWrong}</span>
+    </p>
+    <p class="trial-reveal trial-type-heading-s" data-verdict-copy="incorrect">
+      <slot />
+    </p>
+  </div>
+  <button class="trial-button" type="button" data-testid="trial-choice-next" hidden>
+    {t.continue}
+  </button>
+</div>

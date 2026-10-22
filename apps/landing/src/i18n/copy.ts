@@ -14,6 +14,7 @@ export const en = {
   heroA: "Korean,<br />lived as a story",
   heroB: "Step into a day in Korea<br />and live the language",
   heroCue: "Scroll",
+  trialCta: "Try the first scene",
   manifesto1:
     "Words, particles and phrases learned one by one are hard to understand and quick to fade",
   manifesto2: "Duru puts them back where they belong: inside a story",
@@ -58,6 +59,7 @@ export const en = {
   wordsTitle: "3 phrases<br />from the first story",
   downloadTitle: "Start your story",
   storeSoon: "Coming soon",
+  trialDownload: "Not ready to install? Try the first scene in your browser",
   footerTerms: "Terms of Use",
   footerPrivacy: "Privacy Policy",
   scene1Alt: "A plane window over the sea, a few minutes before landing in Korea",

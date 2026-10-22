@@ -1,0 +1,53 @@
+---
+import { formatCopy } from "../../trial/trial-copy-format";
+import type { TrialStartProps } from "./trial-components.contract";
+import TrialIcon from "./TrialIcon.astro";
+
+type Props = TrialStartProps;
+
+const { t, imageUrl, counterpartName, lineCount } = Astro.props;
+---
+
+<section
+  class="trial-step trial-scene"
+  data-testid="trial-step-start"
+  aria-labelledby="trial-heading-start"
+>
+  {
+    imageUrl !== null && (
+      <img
+        class="trial-scene__image"
+        src={imageUrl}
+        alt=""
+        fetchpriority="high"
+        data-testid="trial-start-image"
+      />
+    )
+  }
+  <div class="trial-scene__bottom">
+    <h2
+      class="trial-start__title trial-type-heading-l"
+      id="trial-heading-start"
+      data-step-heading
+      tabindex="-1"
+      data-testid="trial-start-title"
+    >
+      {t.startTitle}
+    </h2>
+    <ul class="trial-start__chips">
+      <li class="trial-chip trial-type-label-m">
+        {formatCopy(t.startWith, { name: counterpartName })}
+      </li>
+      <li class="trial-chip trial-type-label-m">
+        {formatCopy(t.startLines, { count: String(lineCount) })}
+      </li>
+    </ul>
+    <div class="trial-dialog trial-dialog--narration">
+      <p class="trial-dialog__line trial-type-dialogue-body">{t.startBody}</p>
+    </div>
+    <button class="trial-button" type="button" data-testid="trial-start-button">
+      <TrialIcon name="mic" />
+      <span>{t.start}</span>
+    </button>
+  </div>
+</section>

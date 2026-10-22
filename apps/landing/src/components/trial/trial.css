@@ -1,0 +1,276 @@
+/*
+ * 체험판(`/try/`) 무대 · 머리 띠 · 공용 버튼입니다. 색 · 간격 · 모션은 `--libitum-*` 토큰만 씁니다(앱 CSS와 1:1).
+ * 장면별 모양은 trial-scene · trial-talk · trial-learning · trial-culture, 글자 역할은 trial-type에 있습니다.
+ */
+
+/* 무대 밖 — 데스크톱에서는 따뜻한 회색 바탕 가운데에 휴대폰 폭 무대가 섭니다. */
+:root:has(.trial) body {
+  background: var(--libitum-color-gray-950);
+}
+
+.trial {
+  /* 역할 별칭 — 값을 새로 만들지 않고 기존 토큰을 가리킵니다. */
+  --trial-action-surface: var(--libitum-color-brand-primary);
+  --trial-action-label: var(--libitum-color-white);
+  --trial-action-surface-hover: var(--libitum-color-brand-strong);
+  --trial-verdict-correct-surface: var(--libitum-color-feedback-correct-text);
+  --trial-verdict-incorrect-surface: var(--libitum-color-feedback-incorrect-strong-surface);
+  --trial-scene-veil: var(--libitum-color-gray-950);
+  --trial-bar-space: calc(
+    var(--libitum-layout-screen-padding-top) + var(--libitum-spacing-48) +
+      max(env(safe-area-inset-top), 0px)
+  );
+  --trial-bottom-space: calc(
+    var(--libitum-layout-screen-padding-bottom) + max(env(safe-area-inset-bottom), 0px)
+  );
+
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--libitum-color-gray-950);
+  color: var(--libitum-color-white);
+  container-type: size;
+}
+
+@media (min-width: 481px) {
+  :root:has(.trial) body {
+    background: var(--libitum-color-background-secondary);
+  }
+
+  .trial {
+    width: min(100%, 430px);
+    height: min(calc(100dvh - var(--libitum-spacing-64)), 932px);
+    margin: var(--libitum-spacing-32) auto;
+    border-radius: var(--libitum-radius-xl);
+    box-shadow: var(--libitum-elevation-shadow-s3);
+  }
+}
+
+/* `hidden`이 아래 display 선언에 지지 않게 합니다. */
+.trial [hidden] {
+  display: none !important;
+}
+
+.trial-step {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 머리 띠 — 나가기 + 진행 막대. 장면 그림 위 · 밝은 셸 위 어디서나 같은 모양입니다. */
+.trial-bar {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: var(--libitum-elevation-z-sticky);
+  display: flex;
+  align-items: center;
+  gap: var(--libitum-layout-gap-inline);
+  padding: calc(var(--libitum-layout-screen-padding-top) + max(env(safe-area-inset-top), 0px))
+    var(--libitum-layout-screen-padding-x) 0;
+}
+
+.trial-progress {
+  position: relative;
+  flex: 1;
+  height: var(--libitum-spacing-8);
+  overflow: hidden;
+  border-radius: var(--libitum-radius-full);
+  background: var(--libitum-color-gray-300);
+}
+
+.trial[data-step="start"] .trial-progress,
+.trial[data-step="complete"] .trial-progress {
+  visibility: hidden;
+}
+
+.trial-progress__fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0;
+  border-radius: inherit;
+  background: var(--libitum-color-brand-primary);
+  transition: width var(--libitum-motion-duration-progress) var(--libitum-motion-easing-easing);
+}
+
+.trial-progress[aria-valuenow="1"] .trial-progress__fill {
+  width: calc(100% / 7);
+}
+
+.trial-progress[aria-valuenow="2"] .trial-progress__fill {
+  width: calc(100% * 2 / 7);
+}
+
+.trial-progress[aria-valuenow="3"] .trial-progress__fill {
+  width: calc(100% * 3 / 7);
+}
+
+.trial-progress[aria-valuenow="4"] .trial-progress__fill {
+  width: calc(100% * 4 / 7);
+}
+
+.trial-progress[aria-valuenow="5"] .trial-progress__fill {
+  width: calc(100% * 5 / 7);
+}
+
+.trial-progress[aria-valuenow="6"] .trial-progress__fill {
+  width: calc(100% * 6 / 7);
+}
+
+.trial-progress[aria-valuenow="7"] .trial-progress__fill {
+  width: 100%;
+}
+
+/* 주 버튼(앱 Button xl) — 주황 면 + 흰 라벨(앱과 같음), hover는 한 단 짙은 주황. */
+.trial-button {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: var(--libitum-spacing-8);
+  width: 100%;
+  min-height: calc(var(--libitum-spacing-48) + var(--libitum-spacing-8));
+  padding: var(--libitum-spacing-16) var(--libitum-spacing-24);
+  border: 0;
+  border-radius: var(--libitum-radius-lg);
+  background: var(--trial-action-surface);
+  color: var(--trial-action-label);
+  font-family: var(--libitum-typography-button-xl-font-family);
+  font-size: var(--libitum-typography-button-xl-font-size);
+  font-weight: var(--libitum-typography-button-xl-font-weight);
+  line-height: var(--libitum-typography-button-xl-line-height);
+  transition: transform var(--libitum-motion-duration-pressed) var(--libitum-motion-easing-easing);
+}
+
+.trial-button .trial-icon {
+  width: var(--libitum-icon-size-xs);
+  height: var(--libitum-icon-size-xs);
+}
+
+.trial-button:active:not([aria-disabled="true"]) {
+  transform: scale(var(--libitum-motion-scale-pressed));
+}
+
+.trial-button[aria-disabled="true"] {
+  background: var(--libitum-color-gray-50);
+  color: var(--libitum-color-fg-disabled);
+  cursor: default;
+}
+
+@media (hover: hover) {
+  .trial-button:not([aria-disabled="true"]):hover {
+    background: var(--trial-action-surface-hover);
+  }
+}
+
+/* 둥근 버튼(앱 RoundButton neutral) — xl은 면 48, m은 보이는 면 36 · 누르는 상자 48. */
+.trial-round {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--libitum-spacing-48);
+  height: var(--libitum-spacing-48);
+  padding: 0;
+  border: 0;
+  border-radius: var(--libitum-radius-full);
+  background: var(--libitum-color-gray-100);
+  color: var(--libitum-color-gray-900);
+}
+
+.trial-round--m {
+  background: transparent;
+}
+
+.trial-round--m::before {
+  position: absolute;
+  inset: var(--libitum-spacing-6);
+  border-radius: inherit;
+  background: var(--libitum-color-gray-100);
+  content: "";
+}
+
+.trial-round--m .trial-icon {
+  position: relative;
+  width: var(--libitum-icon-size-sm);
+  height: var(--libitum-icon-size-sm);
+}
+
+@media (hover: hover) {
+  .trial-round--xl:hover,
+  .trial-round--m:hover::before {
+    background: var(--libitum-color-gray-300);
+  }
+}
+
+/* 글 버튼 — 높이 44 이상, 짧은 한국어 문구도 폭 48 이상. */
+.trial-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--libitum-spacing-48);
+  min-height: calc(var(--libitum-spacing-40) + var(--libitum-spacing-4));
+  padding: var(--libitum-spacing-4) var(--libitum-spacing-12);
+  border: 0;
+  background: none;
+  color: var(--libitum-color-fg-brand);
+  text-align: center;
+}
+
+@media (hover: hover) {
+  .trial-link:hover {
+    text-decoration: underline;
+    text-decoration-thickness: var(--libitum-stroke-width-strong);
+    text-underline-offset: var(--libitum-spacing-4);
+  }
+}
+
+/* 포커스 링은 base.css의 두 색 링 그대로 — 모양(radius)만 요소의 것을 따릅니다. */
+.trial .trial-button:focus-visible {
+  border-radius: var(--libitum-radius-lg);
+}
+
+.trial .trial-round:focus-visible {
+  border-radius: var(--libitum-radius-full);
+}
+
+.trial [data-step-heading]:focus {
+  outline: none;
+}
+
+.trial-noscript {
+  position: absolute;
+  inset: auto 0 0;
+  z-index: var(--libitum-elevation-z-floating);
+  display: grid;
+  gap: var(--libitum-spacing-8);
+  padding: var(--libitum-spacing-20) var(--libitum-layout-screen-padding-x)
+    var(--trial-bottom-space);
+  background: var(--libitum-color-gray-900);
+  color: var(--libitum-color-gray-50);
+}
+
+.trial-noscript .trial-link {
+  justify-self: start;
+  color: var(--libitum-color-brand-secondary);
+}
+
+/* 움직임 줄이기 — 컨트롤러가 루트에 data-motion=reduced를 겁니다. 미디어 쿼리도 함께 봅니다. */
+.trial[data-motion="reduced"] *,
+.trial[data-motion="reduced"] *::before,
+.trial[data-motion="reduced"] *::after {
+  animation: none !important;
+  transition: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trial *,
+  .trial *::before,
+  .trial *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

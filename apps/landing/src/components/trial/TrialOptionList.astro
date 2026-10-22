@@ -1,0 +1,32 @@
+---
+import type { TrialOptionListProps } from "./trial-components.contract";
+
+type Props = TrialOptionListProps;
+
+const { options } = Astro.props;
+---
+
+<div class="trial-options">
+  {
+    options.map((option, index) => (
+      <button
+        class="trial-option"
+        type="button"
+        aria-pressed="false"
+        data-option-index={index}
+        data-result=""
+        data-testid="trial-option"
+      >
+        <span class="trial-option__ko trial-type-label-xl" lang="ko">
+          {option.ko}
+        </span>
+        <span class="trial-option__roman trial-type-body-s" lang="ko-Latn">
+          {option.roman ?? ""}
+        </span>
+        <span class="trial-option__en trial-type-body-s" lang="en">
+          {option.en ?? ""}
+        </span>
+      </button>
+    ))
+  }
+</div>

@@ -1,13 +1,10 @@
-import "background-only";
-
 // delivery-2 에피소드 JSON의 **와이어 스키마**입니다 — 받은 모양 그대로를 검사합니다.
 // 정본은 `docs/specs/episode-content-json-contract.md` §2 ~ §8(관찰값)이고, 앱이 쓰는
 // 모양으로의 변환은 `episode-content.ts`의 `decodeEpisode`가 맡습니다(와이어/도메인 분리).
 //
-// 백그라운드 전용입니다. zod는 메인 스레드 번들에 실리지 않습니다 — 첫 줄의
-// `background-only`가 메인 스레드 import를 빌드 오류로 막습니다(`posthog-client.ts` 선례).
-// `src/` 안에서 zod를 import하는 파일은 콘텐츠 스키마 셋(이 파일 · `schema-parts` · `schema-items`)과
-// 매니페스트 스키마뿐이어야 합니다(unit 테스트가 고정).
+// 패키지 `src` 안에서 zod를 import하는 파일은 이 스키마 셋(이 파일 · `schema-parts` · `schema-items`)뿐이어야
+// 합니다(unit 테스트가 고정). 앱은 `lib/episode-content.ts`(첫 줄 `background-only`)를 거쳐서만 읽어
+// zod가 메인 스레드 번들에 실리지 않습니다.
 import { z } from "zod/mini";
 import {
   correctFeedbackSchema,
@@ -93,6 +90,8 @@ const itemSchema = z.discriminatedUnion("type", [
     context: textSchema,
     example: z.optional(textSchema),
     card_kind: z.string(),
+    audio_url: optionalString,
+    example_audio_url: optionalString,
   }),
   z.object({
     ...itemCommon,

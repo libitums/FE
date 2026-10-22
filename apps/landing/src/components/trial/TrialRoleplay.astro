@@ -1,0 +1,35 @@
+---
+import type { TrialRoleplayProps } from "./trial-components.contract";
+import TrialTurn from "./TrialTurn.astro";
+
+type Props = TrialRoleplayProps;
+
+const { t, counterpartName, imageUrl, turns } = Astro.props;
+---
+
+<section
+  class="trial-step trial-scene trial-scene--talk"
+  data-testid="trial-step-roleplay"
+  aria-labelledby="trial-heading-roleplay"
+  hidden
+>
+  {
+    imageUrl !== null && (
+      <img class="trial-scene__image" src={imageUrl} alt="" data-testid="trial-roleplay-image" />
+    )
+  }
+  <h2 class="trial-sr-only" id="trial-heading-roleplay" data-step-heading tabindex="-1" lang="ko">
+    {counterpartName}
+  </h2>
+  {
+    turns.map((turn, index) => (
+      <TrialTurn
+        t={t}
+        turn={turn}
+        index={index}
+        total={turns.length}
+        counterpartName={counterpartName}
+      />
+    ))
+  }
+</section>

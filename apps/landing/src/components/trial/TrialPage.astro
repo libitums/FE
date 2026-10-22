@@ -1,0 +1,135 @@
+---
+import "./trial.css";
+import "./trial-type.css";
+import "./trial-scene.css";
+import "./trial-talk.css";
+import "./trial-learning.css";
+import "./trial-culture.css";
+import "./trial-complete.css";
+import "./trial-motion.css";
+import "./trial-site.css";
+
+import { trialEn } from "../../i18n/trial-copy";
+import { trialKo } from "../../i18n/trial-ko";
+import Base from "../../layouts/Base.astro";
+import { robotsNoindex } from "../../seo/head-meta";
+import { type Language, languages, pages, pathFor, storeLinks, trialPathFor } from "../../site";
+import Analytics from "../Analytics.astro";
+import type {
+  TrialCopy,
+  TrialPageData,
+  TrialPageProps,
+  TrialScriptCopy,
+  TrialStoreLink,
+} from "./trial-components.contract";
+import TrialBar from "./TrialBar.astro";
+import TrialComplete from "./TrialComplete.astro";
+import TrialCultureCard from "./TrialCultureCard.astro";
+import TrialCuts from "./TrialCuts.astro";
+import TrialImageMatch from "./TrialImageMatch.astro";
+import TrialReplySelect from "./TrialReplySelect.astro";
+import TrialRoleplay from "./TrialRoleplay.astro";
+import TrialStart from "./TrialStart.astro";
+import TrialVocabCard from "./TrialVocabCard.astro";
+
+type Props = TrialPageProps;
+
+const { language, model, measurementId } = Astro.props;
+const copies: Record<Language, TrialCopy> = { en: trialEn, ko: trialKo };
+const t = copies[language];
+const stores: readonly TrialStoreLink[] = [
+  { id: "ios", platform: "iPhone", name: "App Store", href: storeLinks.ios },
+  { id: "android", platform: "Android", name: "Google Play", href: storeLinks.android },
+];
+
+// 스크립트가 쓰는 문구만 모델과 함께 페이지 JSON에 싣습니다.
+const scriptCopyKeys = [
+  "correctAnswer",
+  "choiceCorrect",
+  "choiceWrong",
+  "lineProgress",
+  "speak",
+  "stop",
+  "listening",
+  "hint",
+  "great",
+  "notQuite",
+  "youSaid",
+  "heardNothing",
+  "noticeUnsupported",
+  "noticeDenied",
+  "noticeUnavailable",
+  "completeBodyMissed",
+  "cultureFlipToBack",
+  "cultureFlipToFront",
+] as const satisfies readonly (keyof TrialScriptCopy)[];
+const copy = Object.fromEntries(scriptCopyKeys.map((key) => [key, t[key]])) as TrialScriptCopy;
+const data: TrialPageData = { model, copy };
+const otherLanguages = languages.filter((code) => code !== language);
+// `</script>`로 끝나지 않게 `<`를 유니코드 이스케이프로 씁니다(JSON.parse는 같은 값을 돌려줍니다).
+const dataJson = JSON.stringify(data).replace(/</g, "\\u003c");
+---
+
+<Base language={language} title={t.metaTitle} description={t.metaDescription} robots={robotsNoindex}>
+  <Fragment slot="head">
+    <Analytics measurementId={measurementId} />
+  </Fragment>
+  <header class="trial-site">
+    <a class="brand" href={pathFor(language)}>
+      <img src="/logo-duru.webp" alt="Duru" width="80" height="30" />
+    </a>
+    <nav class="trial-site__actions" aria-label={pages[language].copy.languageLabel}>
+      {
+        otherLanguages.map((code) => (
+          <a class="trial-site__link trial-type-button-m" href={trialPathFor(code)} lang={code} hreflang={code}>
+            {pages[code].label}
+          </a>
+        ))
+      }
+      <a class="trial-site__link trial-type-button-m" href={pathFor(language)}>{t.backToSite}</a>
+    </nav>
+  </header>
+  <main id="main" class="trial" data-testid="trial" data-step="start" lang={language}>
+    <TrialBar language={language} t={t} />
+    <TrialStart
+      t={t}
+      imageUrl={model.startImageUrl}
+      counterpartName={model.counterpartName}
+      lineCount={model.roleplay.turns.length}
+    />
+    <TrialCuts t={t} step="prologue" cuts={model.prologue} />
+    <TrialVocabCard t={t} vocab={model.vocab} />
+    <TrialImageMatch t={t} item={model.imageMatch} />
+    <TrialReplySelect t={t} item={model.replySelect} />
+    <TrialCultureCard t={t} culture={model.culture} />
+    <TrialRoleplay
+      t={t}
+      counterpartName={model.counterpartName}
+      imageUrl={model.roleplay.imageUrl}
+      turns={model.roleplay.turns}
+    />
+    <TrialCuts t={t} step="epilogue" cuts={model.epilogue} />
+    <TrialComplete t={t} language={language} stores={stores} />
+    <div class="trial-sr-only" aria-live="polite" data-testid="trial-live"></div>
+    <script
+      type="application/json"
+      id="trial-model"
+      data-testid="trial-model"
+      is:inline
+      set:html={dataJson}
+    />
+    <div class="trial-noscript" role="status" data-trial-unavailable hidden>
+      <p class="trial-type-body-m">{t.noscript}</p>
+      <a class="trial-link trial-type-button-m" href={pathFor(language)}>{t.backHome}</a>
+    </div>
+    <noscript data-testid="trial-noscript">
+      <div class="trial-noscript">
+        <p class="trial-type-body-m">{t.noscript}</p>
+        <a class="trial-link trial-type-button-m" href={pathFor(language)}>{t.backHome}</a>
+      </div>
+    </noscript>
+  </main>
+  <script>
+    import "../../trial/trial-main";
+  </script>
+</Base>

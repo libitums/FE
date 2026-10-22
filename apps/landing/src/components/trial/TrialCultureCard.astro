@@ -1,0 +1,109 @@
+---
+// 문화 카드 — 앞(사진 · 제목) · 뒤(설명 · 팁) 두 면을 다 굽고 data-face로 하나만 보입니다.
+// 카드 전체를 덮는 뒤집기 버튼이 위에 놓입니다(앱처럼 카드 어디를 눌러도 뒤집힘).
+import type { TrialCultureCardProps } from "./trial-components.contract";
+import TrialIcon from "./TrialIcon.astro";
+
+type Props = TrialCultureCardProps;
+
+const { t, culture } = Astro.props;
+const { title, body, tip } = culture;
+---
+
+<section
+  class="trial-step trial-learning"
+  data-testid="trial-step-culture"
+  aria-labelledby="trial-heading-culture"
+  hidden
+>
+  <div class="trial-learning__body">
+    <h2 class="trial-sr-only" id="trial-heading-culture" data-step-heading tabindex="-1" lang="ko">
+      {title.ko}
+    </h2>
+    <div class="trial-deck">
+      <div class="trial-deck__peek" aria-hidden="true">
+        <span class="trial-deck__far"></span>
+        <span class="trial-deck__near"></span>
+      </div>
+      <div class="trial-deck__top">
+        <div class="trial-culture-card" data-face="front" data-testid="trial-culture-card">
+          <div class="trial-culture-card__front">
+            {
+              culture.imageUrl !== null && (
+                <img
+                  class="trial-culture-card__image"
+                  src={culture.imageUrl}
+                  alt=""
+                  data-testid="trial-culture-image"
+                />
+              )
+            }
+            <div class="trial-culture-card__front-text">
+              <p class="trial-type-heading-l" lang="ko" data-testid="trial-culture-title">
+                {title.ko}
+              </p>
+              {
+                title.en !== null && (
+                  <p class="trial-culture-card__title-en trial-type-body-m" lang="en">
+                    {title.en}
+                  </p>
+                )
+              }
+              <span class="trial-chip-flip trial-type-label-l" aria-hidden="true">
+                {t.cultureFlipToBack}
+              </span>
+            </div>
+          </div>
+          <div class="trial-culture-card__back">
+            <div class="trial-culture-card__back-head">
+              <div>
+                <p class="trial-type-heading-m" lang="ko">{title.ko}</p>
+                {
+                  title.roman !== null && (
+                    <p class="trial-muted trial-type-body-m" lang="ko-Latn">
+                      {title.roman}
+                    </p>
+                  )
+                }
+              </div>
+              <span class="trial-culture-card__unflip" aria-hidden="true">
+                <TrialIcon name="refresh" />
+              </span>
+            </div>
+            <div class="trial-culture-card__body" data-testid="trial-culture-body">
+              {
+                body.en !== null && (
+                  <p class="trial-culture-card__body-en trial-type-body-l" lang="en">
+                    {body.en}
+                  </p>
+                )
+              }
+              <div class="trial-note">
+                <p class="trial-type-body-m" lang="ko">{body.ko}</p>
+              </div>
+            </div>
+            <div class="trial-note trial-note--tip" data-testid="trial-culture-tip">
+              {
+                tip.en !== null && (
+                  <p class="trial-type-body-m" lang="en">
+                    {tip.en}
+                  </p>
+                )
+              }
+              <p class="trial-muted trial-type-body-m" lang="ko">{tip.ko}</p>
+            </div>
+          </div>
+        </div>
+        <button
+          class="trial-culture-flip"
+          type="button"
+          aria-label={t.cultureFlipToBack}
+          data-testid="trial-culture-flip"
+        ></button>
+      </div>
+    </div>
+  </div>
+  <div class="trial-learning__footer">
+    <button class="trial-button" type="button" data-testid="trial-culture-next">{t.gotIt}</button>
+  </div>
+</section>

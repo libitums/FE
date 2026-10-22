@@ -27,6 +27,9 @@ export const defaultLanguage: Language = languages[0];
 export const pathFor = (language: Language) =>
   language === defaultLanguage ? "/" : `/${language}/`;
 
+/** 그 언어의 웹 체험판 주소입니다(`/try/` · `/ko/try/`). */
+export const trialPathFor = (language: Language) => `${pathFor(language)}try/`;
+
 interface LanguagePage {
   /** 언어 메뉴에 적히는, 그 언어로 쓴 자기 이름입니다. */
   label: string;

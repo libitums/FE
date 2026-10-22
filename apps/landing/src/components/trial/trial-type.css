@@ -1,0 +1,165 @@
+/* 체험판 글자 역할 — 앱과 같은 타이포 토큰을 역할 이름 그대로 클래스로 잇습니다. 끝에 글 · 아이콘 보조 클래스. */
+
+.trial-type-display {
+  font-family: var(--libitum-typography-display-font-family);
+  font-size: var(--libitum-typography-display-font-size);
+  font-weight: var(--libitum-typography-display-font-weight);
+  line-height: var(--libitum-typography-display-line-height);
+  letter-spacing: var(--libitum-typography-display-letter-spacing);
+}
+
+.trial-type-heading-l {
+  font-family: var(--libitum-typography-heading-l-font-family);
+  font-size: var(--libitum-typography-heading-l-font-size);
+  font-weight: var(--libitum-typography-heading-l-font-weight);
+  line-height: var(--libitum-typography-heading-l-line-height);
+  letter-spacing: var(--libitum-typography-heading-l-letter-spacing);
+}
+
+.trial-type-heading-m {
+  font-family: var(--libitum-typography-heading-m-font-family);
+  font-size: var(--libitum-typography-heading-m-font-size);
+  font-weight: var(--libitum-typography-heading-m-font-weight);
+  line-height: var(--libitum-typography-heading-m-line-height);
+  letter-spacing: var(--libitum-typography-heading-m-letter-spacing);
+}
+
+.trial-type-heading-s {
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  line-height: var(--libitum-typography-heading-s-line-height);
+  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
+}
+
+.trial-type-body-l {
+  font-family: var(--libitum-typography-body-l-font-family);
+  font-size: var(--libitum-typography-body-l-font-size);
+  font-weight: var(--libitum-typography-body-l-font-weight);
+  line-height: var(--libitum-typography-body-l-line-height);
+  letter-spacing: var(--libitum-typography-body-l-letter-spacing);
+}
+
+.trial-type-body-m {
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: var(--libitum-typography-body-m-font-size);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  line-height: var(--libitum-typography-body-m-line-height);
+  letter-spacing: var(--libitum-typography-body-m-letter-spacing);
+}
+
+.trial-type-body-s {
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  font-weight: var(--libitum-typography-body-s-font-weight);
+  line-height: var(--libitum-typography-body-s-line-height);
+  letter-spacing: var(--libitum-typography-body-s-letter-spacing);
+}
+
+.trial-type-label-xl {
+  font-family: var(--libitum-typography-label-xl-font-family);
+  font-size: var(--libitum-typography-label-xl-font-size);
+  font-weight: var(--libitum-typography-label-xl-font-weight);
+  line-height: var(--libitum-typography-label-xl-line-height);
+  letter-spacing: var(--libitum-typography-label-xl-letter-spacing);
+}
+
+.trial-type-label-l {
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-size: var(--libitum-typography-label-l-font-size);
+  font-weight: var(--libitum-typography-label-l-font-weight);
+  line-height: var(--libitum-typography-label-l-line-height);
+  letter-spacing: var(--libitum-typography-label-l-letter-spacing);
+}
+
+.trial-type-label-m {
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: var(--libitum-typography-label-m-font-size);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  line-height: var(--libitum-typography-label-m-line-height);
+  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
+}
+
+.trial-type-label-s {
+  font-family: var(--libitum-typography-label-s-font-family);
+  font-size: var(--libitum-typography-label-s-font-size);
+  font-weight: var(--libitum-typography-label-s-font-weight);
+  line-height: var(--libitum-typography-label-s-line-height);
+  letter-spacing: var(--libitum-typography-label-s-letter-spacing);
+}
+
+.trial-type-button-xl {
+  font-family: var(--libitum-typography-button-xl-font-family);
+  font-size: var(--libitum-typography-button-xl-font-size);
+  font-weight: var(--libitum-typography-button-xl-font-weight);
+  line-height: var(--libitum-typography-button-xl-line-height);
+  letter-spacing: var(--libitum-typography-button-xl-letter-spacing);
+}
+
+.trial-type-button-m {
+  font-family: var(--libitum-typography-button-m-font-family);
+  font-size: var(--libitum-typography-button-m-font-size);
+  font-weight: var(--libitum-typography-button-m-font-weight);
+  line-height: var(--libitum-typography-button-m-line-height);
+  letter-spacing: var(--libitum-typography-button-m-letter-spacing);
+}
+
+.trial-type-dialogue-speaker {
+  font-family: var(--libitum-typography-dialogue-speaker-font-family);
+  font-size: var(--libitum-typography-dialogue-speaker-font-size);
+  font-weight: var(--libitum-typography-dialogue-speaker-font-weight);
+  line-height: var(--libitum-typography-dialogue-speaker-line-height);
+  letter-spacing: var(--libitum-typography-dialogue-speaker-letter-spacing);
+}
+
+.trial-type-dialogue-body {
+  font-family: var(--libitum-typography-dialogue-body-font-family);
+  font-size: var(--libitum-typography-dialogue-body-font-size);
+  font-weight: var(--libitum-typography-dialogue-body-font-weight);
+  line-height: var(--libitum-typography-dialogue-body-line-height);
+  letter-spacing: var(--libitum-typography-dialogue-body-letter-spacing);
+}
+
+.trial-type-accent-metric {
+  font-family: var(--libitum-typography-accent-metric-font-family);
+  font-size: var(--libitum-typography-accent-metric-font-size);
+  font-weight: var(--libitum-typography-accent-metric-font-weight);
+  line-height: var(--libitum-typography-accent-metric-line-height);
+  letter-spacing: var(--libitum-typography-accent-metric-letter-spacing);
+}
+
+.trial-type-accent-display {
+  font-family: var(--libitum-typography-accent-display-font-family);
+  font-size: var(--libitum-typography-accent-display-font-size);
+  font-weight: var(--libitum-typography-accent-display-font-weight);
+  line-height: var(--libitum-typography-accent-display-line-height);
+  letter-spacing: var(--libitum-typography-accent-display-letter-spacing);
+}
+
+.trial-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.trial-muted {
+  color: var(--libitum-color-fg-neutral-muted);
+}
+
+.trial-icon {
+  display: inline-flex;
+  flex: none;
+  width: var(--libitum-icon-size-md);
+  height: var(--libitum-icon-size-md);
+}
+
+.trial-icon svg {
+  width: 100%;
+  height: 100%;
+}

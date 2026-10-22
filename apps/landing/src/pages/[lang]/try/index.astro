@@ -1,0 +1,36 @@
+---
+import { contentBaseUrl } from "@libitums/episode-core/content-url";
+
+import TrialPage from "../../../components/trial/TrialPage.astro";
+import { resolveMeasurementId } from "../../../analytics/gtag";
+import { deployEnvironment } from "../../../seo/deploy-env";
+import { loadTrialModel } from "../../../trial/trial-content";
+import { trialImageUrlOf } from "../../../trial/trial-images";
+import { type Language, defaultLanguage, languages } from "../../../site";
+
+// 기본 언어는 src/pages/try/index.astro(`/try/`)가 그리고, 나머지 언어는 여기서 `/<코드>/try/`로 나옵니다.
+export function getStaticPaths() {
+  return languages
+    .filter((language) => language !== defaultLanguage)
+    .map((language) => ({ params: { lang: language }, props: { language } }));
+}
+
+interface Props {
+  language: Language;
+}
+
+const { language } = Astro.props;
+// 화면 모델은 빌드 때 사본에서 한 번 만듭니다. 음성 주소의 모양은 astro.config가 먼저 검사합니다.
+// 프리뷰 배포는 방문을 세지 않습니다.
+const { indexable } = deployEnvironment(process.env);
+const supabaseUrl = (import.meta.env.PUBLIC_SUPABASE_URL ?? "").trim();
+const model = loadTrialModel({
+  imageUrlOf: trialImageUrlOf,
+  contentBase: supabaseUrl === "" ? "" : contentBaseUrl(supabaseUrl),
+});
+const measurementId = indexable
+  ? resolveMeasurementId(import.meta.env.PUBLIC_GA_MEASUREMENT_ID)
+  : "";
+---
+
+<TrialPage language={language} model={model} measurementId={measurementId} />

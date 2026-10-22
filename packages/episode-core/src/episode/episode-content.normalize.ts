@@ -1,5 +1,3 @@
-import "background-only";
-
 import type {
   DeliveryCut,
   DeliveryDialogueLine,

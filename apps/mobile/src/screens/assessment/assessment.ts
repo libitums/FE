@@ -1,16 +1,17 @@
 // 평가 화면의 순수 로직과 통과 기준 상수를 소유합니다(ADR-0006 D4 — 순수 로직은
 // unit 계층 대상입니다). UI를 import하지 않습니다.
 
+import type { PassCriterion, PassVerdict } from "@libitums/episode-core/judge";
+
 import type { UiCopy } from "../../lib/ui-copy.contract";
 import type { AnswerResult } from "../../lib/answer-result";
 
 // ---------------------------------------------------------------- 도메인 타입
+// 판정 · 통과 기준의 정본은 `@libitums/episode-core/judge`입니다(랜딩 체험판과 공유).
 
-export type AssessmentVerdict = "passed" | "failed";
+export type AssessmentVerdict = PassVerdict;
 
-export type AssessmentPassCriterion = {
-  readonly minCorrectCount: number;
-};
+export type AssessmentPassCriterion = PassCriterion;
 
 // ---------------------------------------------------------------- 통과 기준 상수
 // 문항 셋 중 2 이상 맞히면 통과입니다. 이 상수는 값으로 고정된 데이터이지 동작이
@@ -20,15 +21,8 @@ export const assessmentPassCriterion: AssessmentPassCriterion = { minCorrectCoun
 // ---------------------------------------------------------------- 순수 함수 일곱
 // 전부 부수효과가 없습니다.
 
-// 맞은 개수는 이 함수 안에서만 삽니다 — export하지 않습니다. 던지지 않습니다 —
-// 빈 배열도 total이고 맞은 개수 0으로 판정됩니다.
-export function judgeAssessment(
-  results: readonly AnswerResult[],
-  criterion: AssessmentPassCriterion,
-): AssessmentVerdict {
-  const correctCount = results.filter((result) => result === "correct").length;
-  return correctCount >= criterion.minCorrectCount ? "passed" : "failed";
-}
+// 정답 수가 기준 이상이면 passed입니다. 던지지 않습니다 — 빈 배열도 맞은 개수 0으로 판정됩니다.
+export { judgeAssessment } from "@libitums/episode-core/judge";
 
 // `Step ${ordinal} · Assessment` 형태입니다 — 구분자는 가운뎃점 양옆 공백입니다.
 export function assessmentScreenTitle(ordinal: number, copy: UiCopy): string {

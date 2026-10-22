@@ -1,0 +1,85 @@
+---
+import type { TrialVocabCardProps } from "./trial-components.contract";
+import TrialIcon from "./TrialIcon.astro";
+
+type Props = TrialVocabCardProps;
+
+const { t, vocab } = Astro.props;
+const { word, example } = vocab;
+---
+
+<section
+  class="trial-step trial-learning"
+  data-testid="trial-step-vocab"
+  aria-labelledby="trial-heading-vocab"
+  hidden
+>
+  <div class="trial-learning__body">
+    <div class="trial-card trial-vocab">
+      <p class="trial-vocab__badge trial-type-label-m">{t.newWord}</p>
+      <h2
+        class="trial-vocab__word trial-type-display"
+        id="trial-heading-vocab"
+        data-step-heading
+        tabindex="-1"
+        lang="ko"
+        data-testid="trial-vocab-word"
+      >
+        {word.ko}
+      </h2>
+      <p class="trial-vocab__roman trial-type-body-l" lang="ko-Latn" data-testid="trial-vocab-roman">
+        {word.roman ?? ""}
+      </p>
+      <hr class="trial-vocab__rule" />
+      <p class="trial-vocab__meaning trial-type-heading-s" lang="en" data-testid="trial-vocab-meaning">
+        {word.en ?? ""}
+      </p>
+      {
+        vocab.audioUrl !== null && (
+          <button
+            class="trial-round trial-round--m"
+            type="button"
+            aria-label={t.listen}
+            data-testid="trial-vocab-listen"
+          >
+            <TrialIcon name="volume" />
+          </button>
+        )
+      }
+    </div>
+    {
+      example !== null && (
+        <div class="trial-vocab__example" data-testid="trial-vocab-example">
+          <div class="trial-vocab__example-text">
+            <p class="trial-type-heading-s" lang="ko">
+              {example.ko}
+            </p>
+            {example.roman !== null && (
+              <p class="trial-muted trial-type-body-m" lang="ko-Latn">
+                {example.roman}
+              </p>
+            )}
+            {example.en !== null && (
+              <p class="trial-muted trial-type-body-m" lang="en">
+                {example.en}
+              </p>
+            )}
+          </div>
+          {vocab.exampleAudioUrl !== null && (
+            <button
+              class="trial-round trial-round--m"
+              type="button"
+              aria-label={t.listenExample}
+              data-testid="trial-vocab-example-listen"
+            >
+              <TrialIcon name="volume" />
+            </button>
+          )}
+        </div>
+      )
+    }
+  </div>
+  <div class="trial-learning__footer">
+    <button class="trial-button" type="button" data-testid="trial-vocab-next">{t.gotIt}</button>
+  </div>
+</section>

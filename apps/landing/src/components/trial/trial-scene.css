@@ -1,0 +1,175 @@
+/*
+ * 장면 틀(시작 · 이야기 컷 · 대화) — 어두운 바탕 위 그림, 머리 그늘, 아래 묶음.
+ * 그림은 장면 전체를 덮고(z 0), 그늘(z 1) 위에 글 · 버튼(z 2)이 섭니다.
+ */
+.trial-scene {
+  justify-content: flex-end;
+  gap: var(--libitum-spacing-12);
+  padding: calc(var(--trial-bar-space) + var(--libitum-spacing-12))
+    var(--libitum-layout-screen-padding-x) var(--trial-bottom-space);
+  background: var(--libitum-color-gray-950);
+  color: var(--libitum-color-white);
+}
+
+.trial-scene::before {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 1;
+  height: calc(var(--libitum-spacing-64) * 4);
+  background: linear-gradient(to bottom, var(--trial-scene-veil), transparent);
+  content: "";
+  pointer-events: none;
+}
+
+/* 발 그늘(웹 추가) — 밝은 그림에서도 아래 글 · 링크가 AA를 넘게 받칩니다. */
+.trial-step[data-testid="trial-step-start"]::after,
+.trial-scene--talk::after {
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 1;
+  height: calc(var(--libitum-spacing-96) * 4);
+  background: linear-gradient(
+    to top,
+    var(--trial-scene-veil) 0,
+    var(--trial-scene-veil) calc(var(--libitum-spacing-96) * 2),
+    transparent calc(var(--libitum-spacing-96) * 4)
+  );
+  content: "";
+  pointer-events: none;
+}
+
+/* 타일 모드는 판이 높아 안내 줄이 반투명 구간까지 올라갑니다 — 불투명 구간을 판 + 안내 줄 높이까지 올립니다. */
+.trial-scene--talk:has(.trial-turn[data-mode="tiles"]:not([hidden]))::after {
+  height: calc(var(--libitum-spacing-96) * 6);
+  background: linear-gradient(
+    to top,
+    var(--trial-scene-veil) 0,
+    var(--trial-scene-veil) calc(var(--libitum-spacing-96) * 4),
+    transparent calc(var(--libitum-spacing-96) * 6)
+  );
+}
+
+.trial-scene__image {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  object-fit: cover;
+  animation: trial-scene-drift calc(var(--libitum-motion-duration-d9) * 6)
+    var(--libitum-motion-easing-easing) both;
+}
+
+@keyframes trial-scene-drift {
+  from {
+    transform: scale(1);
+  }
+
+  to {
+    transform: scale(1.035);
+  }
+}
+
+.trial-scene__bottom,
+.trial-cut .trial-dialog {
+  position: relative;
+  z-index: 2;
+}
+
+.trial-scene__bottom {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-12);
+}
+
+.trial-start__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--libitum-spacing-6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.trial-start__chips .trial-chip {
+  align-self: auto;
+}
+
+.trial-start__title {
+  color: var(--libitum-color-white);
+}
+
+/* 대사 상자(앱 visual-novel-dialog) — 불투명 짙은 면. 긴 글은 상자 안에서 스크롤합니다. */
+.trial-dialog {
+  max-height: 40cqh;
+  padding: var(--libitum-spacing-20) var(--libitum-spacing-24);
+  overflow-y: auto;
+  border: var(--libitum-stroke-width-thin) solid transparent;
+  border-radius: var(--libitum-radius-lg);
+  background: var(--libitum-color-gray-950);
+  box-shadow: var(--libitum-elevation-shadow-s3);
+  color: var(--libitum-color-gray-300);
+}
+
+.trial-dialog__speaker {
+  margin-bottom: var(--libitum-spacing-12);
+  color: var(--libitum-color-gray-50);
+}
+
+.trial-dialog__aside {
+  margin-bottom: var(--libitum-spacing-8);
+  color: var(--libitum-color-gray-600);
+  font-style: italic;
+}
+
+.trial-dialog__line {
+  min-height: var(--libitum-spacing-48);
+}
+
+.trial-dialog__translation {
+  display: grid;
+  gap: var(--libitum-spacing-4);
+  margin-top: var(--libitum-spacing-12);
+  padding-top: var(--libitum-spacing-12);
+  border-top: 1px solid
+    color-mix(
+      in srgb,
+      var(--libitum-color-gray-50) calc(var(--libitum-opacity-8) * 100%),
+      transparent
+    );
+  color: var(--libitum-color-gray-700);
+}
+
+.trial-dialog__roman {
+  color: var(--libitum-color-gray-600);
+}
+
+.trial-dialog--narration .trial-dialog__line {
+  color: var(--libitum-color-gray-600);
+}
+
+.trial-dialog--thought {
+  border-color: var(--libitum-color-brand-primary);
+}
+
+.trial-dialog--thought .trial-dialog__speaker {
+  color: var(--libitum-color-brand-primary);
+}
+
+.trial-dialog--thought .trial-dialog__line {
+  color: var(--libitum-color-brand-reward-disabled-surface);
+}
+
+/* 장면 위 정보 알약 */
+.trial-chip {
+  align-self: flex-start;
+  padding: var(--libitum-spacing-4) var(--libitum-spacing-8);
+  border-radius: var(--libitum-radius-full);
+  background: color-mix(
+    in srgb,
+    var(--libitum-color-gray-950) calc(var(--libitum-opacity-surface) * 100%),
+    transparent
+  );
+  color: var(--libitum-color-white);
+}

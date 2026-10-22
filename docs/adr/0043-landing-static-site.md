@@ -240,3 +240,27 @@ FAQ의 키보드 조작, 스크립트 없는 화면, 404, 폭별 넘침, 그림 
   섹션별 배치 · 연출 전환 · 머리 전환 · 겹침 · 잘림을 수치로 단언, 네 브라우저 구성)로 낡았다. 지금 사람 몫으로 남은 것은 색 · 글꼴 ·
   그림의 시각 품질, 실제 Safari, 스크린리더 낭독, 외부 검증기다. e2e 구성은 다섯(chromium · firefox · webkit · 모바일 · analytics)이고
   GA 이벤트 e2e가 측정 ID를 넣은 두 번째 빌드로 돈다. 자세한 범위는 `apps/landing/README.md` 「확인」.
+
+## 적용 기록
+
+결정을 바꾸지 않는다. 결정이 새 사례에 어떻게 걸렸는지만 적는다.
+
+**2026-10-22 — 웹 체험판 `/try/` · `/ko/try/`** ([ADR-0081](0081-web-trial-and-episode-core.md)).
+
+- **맥락의 「랜딩이 앱 코드를 import할 일이 없다」가 낡았다.** 랜딩이 앱의 순수 규칙을 쓴다 — 다만 앱이 아니라 공유 패키지
+  `@libitums/episode-core`를 import한다(ADR-0004 D4 그대로). 체험판의 화면은 여전히 Lynx 번들이 아니라 Astro 정적 마크업이다.
+- **D2 — 페이지 스크립트가 둘이 됐다.** 랜딩의 `src/scripts/main.ts`에 더해 체험판 페이지의 `src/trial/trial-main.ts`(순수 리듀서 +
+  바닐라 컨트롤러, 상한 40,000 bytes). 체험판은 스크립트가 없으면 시작 장면 + `noscript` 안내만 보인다 — 「없어도 본문은 다 보인다」는
+  랜딩 페이지에 대한 말로 남는다. 새 의존: `@libitums/episode-core`(workspace) · `@libitums/icons` 0.5.0(사용자 결정).
+- **D3 — 체험판도 언어마다 주소 하나**(`trialPathFor`). 체험판 문구는 `src/i18n/trial-copy.ts`(영어 원본) · `trial-ko.ts`. 다만
+  **색인하지 않는다**(ADR-0081 D10) — canonical · hreflang · JSON-LD 없음, sitemap은 `filter`로 `/try/`를 뺀다.
+- **D5 — 사본이 넓어졌다.** 그림 사본에 더해 u00 JSON · 콘텐츠 그림 10 · 효과음 5를 바이트 그대로 둔다. 대가의 「원본이 바뀌어도 아무것도
+  알려 주지 않는다」는 **이 사본들에는 해당하지 않는다** — `devtools/trial-assets`의 동기 검사가 `pnpm verify`에서 어긋남을 실패시킨다.
+  랜딩 소개 그림(`src/assets/img/`)은 지금처럼 검사가 없다(그쪽은 다시 변환한 WebP라 바이트 비교가 성립하지 않는다).
+- **D10 — 이벤트가 다섯에서 열하나로**: `trial_link_click` · `trial_start` · `trial_step` · `trial_roleplay_result` · `trial_complete` ·
+  `trial_store_click`. 동의 규칙 · 프로덕션만은 그대로다. 들은 문장 · 대사는 싣지 않는다.
+- **새 빌드 env `PUBLIC_SUPABASE_URL`**(음성 버킷 — 앱과 같은 이름 · 공개 값). `astro.config.ts`가 측정 ID와 같은 자리에서 검사한다 —
+  비프로덕션에서 비면 소리 없는 체험판, **`VERCEL_ENV=production`에서 비면 빌드 실패**, 모양이 틀리면 빌드 실패. Vercel 랜딩 프로젝트에
+  값을 넣는 것은 사용자 몫이다(D12 · [앱 README](../../apps/landing/README.md) 「배포」).
+- D9 — 테스트 계층 셋 · Playwright에 체험판 파일이 더해졌다(e2e 일곱 · 가짜 버킷 주소 `https://content.example.test`). 실기 소리 · 마이크 ·
+  보조 기술은 [웹 체험판 e2e](../e2e/web-trial.md)(수동)다.

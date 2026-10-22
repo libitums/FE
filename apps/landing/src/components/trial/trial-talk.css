@@ -1,0 +1,290 @@
+/*
+ * 롤플레이 대화(앱 RoleplayTalkScreen) · 타일 대체(앱 catalog-final) — 장면 틀 위에 한 턴씩.
+ * 말하기 · 타일 조작은 둘 다 마크업에 있고 data-mode가 하나를 가립니다.
+ */
+/*
+ * 턴은 무대 안의 세로 스크롤 열입니다 — 짧은 화면(200% 확대 · 가로 폰)에서는 사이 간격이 먼저 접히고,
+ * 그래도 넘치면 그림 · 그늘은 제자리에 둔 채 대사 · 조작만 굴려 닿게 합니다(잘리지 않음).
+ */
+.trial-turn {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--libitum-spacing-12);
+  min-height: 0;
+  /* 초점 링(바깥 3px)이 스크롤 가장자리에 잘리지 않을 만큼 안쪽 여백을 두고 같은 만큼 바깥으로 넓힙니다. */
+  margin: calc(var(--libitum-spacing-6) * -1);
+  padding: var(--libitum-spacing-6);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.trial-turn > * {
+  flex-shrink: 0;
+}
+
+.trial-turn > .trial-turn__spacer {
+  flex: 1 1 0;
+}
+
+.trial-turn__line {
+  position: relative;
+  flex: none;
+}
+
+.trial-turn__replay {
+  position: absolute;
+  top: var(--libitum-spacing-6);
+  right: var(--libitum-spacing-6);
+}
+
+.trial-turn[data-mode="speech"] .trial-tiles,
+.trial-turn[data-mode="tiles"] .trial-speak {
+  display: none;
+}
+
+.trial-turn__notice,
+.trial-turn__hint {
+  color: var(--libitum-color-white);
+  text-align: center;
+}
+
+/* 안내 줄은 타일 판이 높아 그늘의 반투명 구간까지 올라가므로, 타일 판과 같은 짙은 면을 깔아 그림과 떼어 놓습니다. */
+.trial-turn__notice {
+  padding: var(--libitum-spacing-8) var(--libitum-spacing-12);
+  border-radius: var(--libitum-radius-lg);
+  background: color-mix(
+    in srgb,
+    var(--libitum-color-gray-950) calc(var(--libitum-opacity-surface) * 100%),
+    transparent
+  );
+}
+
+/* 들은 뒤 — 판정 알약 + 「나」 대사 상자. 어느 문구가 보일지는 data-verdict가 정합니다. */
+.trial-turn__reply {
+  display: grid;
+  gap: var(--libitum-spacing-8);
+}
+
+.trial-turn__reply [data-verdict-copy],
+.trial-turn__reply .trial-dialog__answer {
+  display: none;
+}
+
+.trial-turn__reply[data-verdict="correct"] [data-verdict-copy="correct"],
+.trial-turn__reply[data-verdict="incorrect"] [data-verdict-copy="incorrect"] {
+  display: inline;
+}
+
+.trial-turn__reply[data-verdict="incorrect"] .trial-dialog__answer {
+  display: block;
+  margin-top: var(--libitum-spacing-8);
+  color: var(--libitum-color-gray-700);
+}
+
+.trial-pill {
+  justify-self: start;
+  padding: var(--libitum-spacing-2) var(--libitum-spacing-8);
+  border-radius: var(--libitum-radius-full);
+}
+
+.trial-turn__reply[data-verdict="correct"] .trial-pill {
+  background: var(--libitum-color-feedback-correct-surface);
+  color: var(--libitum-color-feedback-correct-text);
+}
+
+.trial-turn__reply[data-verdict="incorrect"] .trial-pill {
+  background: var(--libitum-color-feedback-incorrect-surface);
+  color: var(--libitum-color-feedback-incorrect-text);
+}
+
+/* 말하기 묶음 — 면 없이 발 그늘 위에 섭니다. */
+.trial-speak {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-8);
+  padding-top: var(--libitum-spacing-12);
+}
+
+.trial-turn[data-phase="judged"] .trial-mic,
+.trial-turn[data-phase="judged"] .trial-mic__label,
+.trial-turn[data-phase="judged"] .trial-speak__links {
+  display: none;
+}
+
+/* 말하기 오답 뒤에도 타일로 바로 갈 수 있게 Can't speak now만 남깁니다(리듀서가 허용하는 전이). */
+.trial-turn[data-phase="judged"]:has(.trial-turn__reply[data-verdict="incorrect"])
+  .trial-speak__links {
+  display: flex;
+  justify-content: center;
+}
+
+.trial-turn[data-phase="judged"] .trial-link--hint {
+  display: none;
+}
+
+.trial-mic {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  padding: 0;
+  border: var(--libitum-spacing-8) solid
+    color-mix(
+      in srgb,
+      var(--libitum-color-brand-primary) calc(var(--libitum-opacity-16) * 100%),
+      transparent
+    );
+  border-radius: var(--libitum-radius-full);
+  background: var(--libitum-color-brand-primary);
+  background-clip: padding-box;
+  color: var(--libitum-color-white);
+}
+
+.trial-mic .trial-icon {
+  width: var(--libitum-icon-size-lg);
+  height: var(--libitum-icon-size-lg);
+}
+
+.trial-turn[data-phase="listening"] .trial-mic {
+  border-color: color-mix(
+    in srgb,
+    var(--libitum-color-brand-primary) calc(var(--libitum-opacity-45) * 100%),
+    transparent
+  );
+  animation: trial-mic-pulse var(--libitum-motion-duration-d9) var(--libitum-motion-easing-easing)
+    infinite;
+}
+
+@keyframes trial-mic-pulse {
+  from {
+    box-shadow: 0 0 0 0 var(--libitum-color-brand-primary);
+  }
+
+  to {
+    box-shadow: 0 0 0 var(--libitum-spacing-8) transparent;
+  }
+}
+
+.trial .trial-mic:focus-visible {
+  border-radius: var(--libitum-radius-full);
+}
+
+.trial-mic__label {
+  color: var(--libitum-color-white);
+}
+
+.trial-speak__links {
+  display: flex;
+  align-self: stretch;
+  justify-content: space-between;
+  gap: var(--libitum-spacing-8);
+}
+
+.trial-speak .trial-link {
+  color: var(--libitum-color-white);
+}
+
+.trial-speak .trial-link--hint {
+  color: var(--libitum-color-brand-secondary);
+}
+
+/* 타일 판 — 말하기 묶음 자리를 대신하는 어두운 판. */
+.trial-tiles {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-12);
+  padding: var(--libitum-spacing-16);
+  border-radius: var(--libitum-radius-xl);
+  background: color-mix(
+    in srgb,
+    var(--libitum-color-gray-950) calc(var(--libitum-opacity-surface) * 100%),
+    transparent
+  );
+}
+
+.trial-tiles__answer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--libitum-spacing-8);
+  min-height: calc(var(--libitum-spacing-48) + var(--libitum-spacing-12));
+  padding: var(--libitum-spacing-6) var(--libitum-spacing-16);
+  border-block: 1px solid
+    color-mix(
+      in srgb,
+      var(--libitum-color-white) calc(var(--libitum-opacity-16) * 100%),
+      transparent
+    );
+  color: var(--libitum-color-gray-50);
+}
+
+.trial-tiles__answer:empty::before {
+  color: var(--libitum-color-gray-400);
+  content: attr(data-placeholder);
+}
+
+.trial-tiles__bank {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--libitum-spacing-8);
+}
+
+.trial-tile {
+  min-height: 46px;
+  padding: calc(var(--libitum-spacing-8) + var(--libitum-stroke-width-thin))
+    calc(var(--libitum-spacing-12) + var(--libitum-stroke-width-thin));
+  border: 1px solid var(--libitum-color-gray-700);
+  border-radius: var(--libitum-radius-md);
+  background: color-mix(
+    in srgb,
+    var(--libitum-color-white) calc(var(--libitum-opacity-16) * 100%),
+    transparent
+  );
+  color: var(--libitum-color-gray-50);
+  transition: transform var(--libitum-motion-duration-pressed) var(--libitum-motion-easing-easing);
+}
+
+.trial-tile:active:not([aria-disabled="true"]) {
+  transform: scale(var(--libitum-motion-scale-pressed));
+}
+
+.trial-tile[aria-pressed="true"] {
+  border-color: transparent;
+  background: var(--libitum-color-brand-primary);
+  color: var(--libitum-color-white);
+}
+
+.trial-tile[aria-disabled="true"] {
+  cursor: default;
+}
+
+@media (hover: hover) {
+  .trial-tile:not([aria-pressed="true"], [aria-disabled="true"]):hover {
+    background: color-mix(
+      in srgb,
+      var(--libitum-color-white) calc(var(--libitum-opacity-35) * 100%),
+      transparent
+    );
+  }
+}
+
+.trial .trial-tile:focus-visible {
+  border-radius: var(--libitum-radius-md);
+}
+
+/* 어두운 판 위의 비활성 버튼은 밝은 면 대신 판보다 한 단 밝은 면으로 둡니다. */
+.trial-tiles .trial-button[aria-disabled="true"] {
+  background: color-mix(
+    in srgb,
+    var(--libitum-color-white) calc(var(--libitum-opacity-16) * 100%),
+    transparent
+  );
+  color: var(--libitum-color-gray-500);
+}

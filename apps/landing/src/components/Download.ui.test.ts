@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Copy } from "../i18n/copy";
-import { languages, pages } from "../site";
+import { type Language, languages, pages } from "../site";
 import { texts, type Rendered } from "./render.support";
 
 interface Links {
@@ -9,7 +9,7 @@ interface Links {
 }
 
 // storeLinks는 컴포넌트 최상위에서 읽히므로, 상태마다 모듈을 새로 불러옵니다.
-async function renderWith(storeLinks: Links, t: Copy): Promise<Rendered> {
+async function renderWith(storeLinks: Links, t: Copy, language: Language): Promise<Rendered> {
   vi.resetModules();
   vi.doMock("../site", async (importOriginal) => ({
     ...(await importOriginal<typeof import("../site")>()),
@@ -17,13 +17,15 @@ async function renderWith(storeLinks: Links, t: Copy): Promise<Rendered> {
   }));
   const { default: Download } = await import("./Download.astro");
   const { render } = await import("./render.support");
-  return render(Download, { props: { t } });
+  return render(Download, { props: { language, t } });
 }
 
 afterEach(() => {
   vi.doUnmock("../site");
   vi.resetModules();
 });
+
+const TRIAL_PATH: Record<Language, string> = { en: "/try/", ko: "/ko/try/" };
 
 const none: Links = { ios: "", android: "" };
 const iosOnly: Links = { ios: "https://apps.apple.com/app/id1", android: "" };
@@ -38,7 +40,7 @@ describe.each(languages)("Download (%s)", (language) => {
   const states = (document: Document) => document.querySelectorAll('[data-testid="store-state"]');
 
   it("UI-DL1 뼈대", async () => {
-    const { document } = await renderWith(none, t);
+    const { document } = await renderWith(none, t, language);
     expect(
       document.querySelectorAll('section#download[aria-labelledby="download-title"]').length,
     ).toBe(1);
@@ -49,7 +51,7 @@ describe.each(languages)("Download (%s)", (language) => {
   });
 
   it("UI-DL2 주소가 없으면 준비 중 카드", async () => {
-    const { document } = await renderWith(none, t);
+    const { document } = await renderWith(none, t, language);
     const found = stores(document);
     expect(found.length).toBe(2);
     for (const card of found) expect(card.tagName).toBe("DIV");
@@ -63,7 +65,7 @@ describe.each(languages)("Download (%s)", (language) => {
   });
 
   it("UI-DL3 iOS만 주소가 있으면 첫 카드만 링크", async () => {
-    const { document } = await renderWith(iosOnly, t);
+    const { document } = await renderWith(iosOnly, t, language);
     const found = stores(document);
     expect(found.length).toBe(2);
     const first = found[0] as Element;
@@ -81,10 +83,25 @@ describe.each(languages)("Download (%s)", (language) => {
   });
 
   it("UI-DL4 둘 다 주소가 있으면 링크 둘", async () => {
-    const { document } = await renderWith(both, t);
+    const { document } = await renderWith(both, t, language);
     const links = [...document.querySelectorAll('a[data-testid="store"]')];
     expect(links.length).toBe(2);
     expect(links.map((a) => a.getAttribute("data-store"))).toEqual(["ios", "android"]);
     expect(texts(states(document))).toEqual([t.storeGet, t.storeGet]);
+  });
+
+  it("UT13 체험판 링크 — 그 언어 /try/ · data-trial-link=download · trialDownload", async () => {
+    for (const links of [none, both]) {
+      const { document } = await renderWith(links, t, language);
+      const found = document.querySelectorAll('[data-testid="download-trial-link"]');
+      expect(found.length).toBe(1);
+      const link = found[0] as Element;
+      expect(link.tagName).toBe("A");
+      expect(link.getAttribute("href")).toBe(TRIAL_PATH[language]);
+      expect(link.getAttribute("data-trial-link")).toBe("download");
+      expect(link.hasAttribute("data-store")).toBe(false);
+      expect(t.trialDownload).toBeTruthy();
+      expect(link.textContent?.trim()).toBe(t.trialDownload);
+    }
   });
 });

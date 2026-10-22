@@ -134,6 +134,17 @@ apps/mobile/src/
 > 진다([ADR-0031](0031-ui-language-catalog.md)). 순수 모듈이고 호스트 접점이 아니라는 판정은 그대로다.
 > `lib/`의 순수 모듈 사례는 문구표(`ui-copy*.ts`)와 UI 언어(`ui-language.ts` — 저장소를 부르지만 접점은
 > 여전히 `storage.ts` 하나)로 늘었다.
+>
+> ⟨2026-10-22 — 적용 기록⟩ **위 본문의 「나중에 `lib/`를 `packages/`로 올릴 때 그대로 떨어져 나온다」가 처음
+> 실현됐다** — 디코더 · 판정 · 콘텐츠 주소 · 섞기가 `packages/episode-core`(`@libitums/episode-core`)로 옮겨졌다
+> ([ADR-0081](0081-web-trial-and-episode-core.md) D1 ~ D3, 두 번째 소비자는 랜딩 웹 체험판). 몸은 **글자 그대로**
+> 옮겼고(디코더 첫 줄 `background-only` 표식까지 그대로 — 2026-10-22 리뷰 반영), `lib/`가 UI를 import하지 않던 규칙 덕에 끌려 나온 화면 코드는 없다.
+> 판정 몸 몇은 `screens/`(`roleplay-story` · `catalog-final` · `word-choice` · `assessment`)와 `app/`(`catalog-lesson-plan` ·
+> `catalog-shuffle` · `catalog-final-model`)에 있었다 — 화면 폴더의 순수 함수도 같은 방식으로 떨어졌다.
+> **옛 경로 파일은 지우지 않고 얇은 재수출 모듈로 남겼다**(디코더 내부 여섯만 지움) — 앱 소비자가 아는 모듈은 그대로 하나이고,
+> 병행 브랜치가 옛 경로를 import하는 새 파일을 더하고 있어 경로를 옮기면 그 병합이 타입 오류로 깨지며, 앱 쪽 디코더 진입
+> (`lib/episode-content.ts`)에 `background-only` 표식이 남는다. 그래서 위 표의 `lib/answer-result.ts`는 이제 **패키지 타입의 재수출**이다.
+> D2의 `pnpm-workspace.yaml`은 바뀌지 않았다(`packages/*`가 이미 덮는다).
 
 ### D6. 네이밍
 

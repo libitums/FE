@@ -4,6 +4,7 @@ import { defineConfig } from "astro/config";
 import { resolveMeasurementId } from "./src/analytics/gtag";
 import { deployEnvironment } from "./src/seo/deploy-env";
 import { resolveSiteUrl } from "./src/seo/site-url";
+import { resolveTrialContentBase } from "./src/trial/trial-env";
 import { defaultLanguage, fallbackSiteUrl, languages } from "./src/site";
 
 const locales = [...languages];
@@ -18,6 +19,10 @@ const site = resolveSiteUrl({
 // 측정 ID의 모양이 틀리면 페이지를 그리기 전에 여기서 빌드를 멈춥니다. 값은 컴포넌트가 import.meta.env로 읽습니다.
 resolveMeasurementId(process.env.PUBLIC_GA_MEASUREMENT_ID);
 
+// 체험판 음성 버킷 주소도 같은 자리에서 검사합니다 — 모양이 틀리면, 프로덕션 배포에 값이 없으면 빌드를 멈춥니다.
+// 값은 체험판 페이지가 import.meta.env로 읽습니다.
+resolveTrialContentBase(process.env.PUBLIC_SUPABASE_URL, process.env.VERCEL_ENV === "production");
+
 export default defineConfig({
   site: site || undefined,
   trailingSlash: "always",
@@ -31,6 +36,8 @@ export default defineConfig({
   integrations: site
     ? [
         sitemap({
+          // 웹 체험판(`/try/` · `/<코드>/try/`)은 검색 대상이 아닙니다(noindex).
+          filter: (page) => !/\/try\/$/.test(new URL(page).pathname),
           i18n: {
             defaultLocale: defaultLanguage,
             locales: Object.fromEntries(locales.map((locale) => [locale, locale])),

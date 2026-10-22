@@ -1,0 +1,144 @@
+/*
+ * 완료(앱 LessonCompleteScreen) + 설치 안내(랜딩 Download 축소판).
+ * 통과 · 미통과 문구는 둘 다 마크업에 있고 data-result가 하나를 가립니다.
+ */
+.trial-complete {
+  align-items: center;
+  gap: var(--libitum-spacing-24);
+  padding: calc(var(--trial-bar-space) + var(--libitum-spacing-24))
+    var(--libitum-layout-screen-padding-x) var(--trial-bottom-space);
+  overflow-y: auto;
+  background: var(--libitum-color-background-primary);
+  color: var(--libitum-color-fg-neutral);
+  text-align: center;
+}
+
+.trial-complete > * {
+  flex-shrink: 0;
+}
+
+.trial-complete [data-result-copy] {
+  display: none;
+}
+
+.trial-complete[data-result="passed"] [data-result-copy="passed"],
+.trial-complete[data-result="failed"] [data-result-copy="failed"] {
+  display: revert;
+}
+
+.trial-complete__badge {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: calc(var(--libitum-spacing-96) + var(--libitum-spacing-24) + var(--libitum-spacing-6));
+  height: calc(var(--libitum-spacing-96) + var(--libitum-spacing-24) + var(--libitum-spacing-6));
+  margin-top: var(--libitum-spacing-24);
+  border: calc(var(--libitum-stroke-width-strong) + var(--libitum-stroke-width-thin)) solid
+    var(--libitum-color-feedback-correct-surface);
+  border-radius: var(--libitum-radius-full);
+  background: var(--libitum-color-feedback-correct);
+  color: var(--libitum-color-white);
+  animation: trial-reward-enter var(--libitum-motion-duration-reward)
+    var(--libitum-motion-easing-enter-expressive) both;
+}
+
+.trial-complete[data-result="failed"] .trial-complete__badge {
+  border-color: var(--libitum-color-feedback-incorrect-surface);
+  background: var(--libitum-color-feedback-incorrect);
+}
+
+.trial-complete__badge .trial-icon {
+  width: var(--libitum-spacing-48);
+  height: var(--libitum-spacing-48);
+}
+
+.trial-complete[data-result] .trial-complete__badge [data-result-copy] {
+  display: none;
+}
+
+.trial-complete[data-result="passed"] .trial-complete__badge [data-result-copy="passed"],
+.trial-complete[data-result="failed"] .trial-complete__badge [data-result-copy="failed"] {
+  display: inline-flex;
+}
+
+@keyframes trial-reward-enter {
+  from {
+    opacity: 0;
+    transform: scale(var(--libitum-motion-scale-reward));
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.trial-complete__summary {
+  display: grid;
+  gap: var(--libitum-spacing-12);
+}
+
+.trial-complete__title {
+  color: var(--libitum-color-fg-neutral);
+}
+
+.trial-install {
+  display: grid;
+  gap: var(--libitum-spacing-12);
+  width: 100%;
+  margin-top: var(--libitum-spacing-16);
+  text-align: start;
+}
+
+.trial-store {
+  display: grid;
+  gap: var(--libitum-spacing-4);
+  justify-items: start;
+  padding: var(--libitum-spacing-20);
+  border-radius: var(--libitum-radius-xl);
+  background: var(--libitum-color-gray-900);
+  color: var(--libitum-color-white);
+  transition: background-color var(--libitum-motion-duration-color)
+    var(--libitum-motion-easing-easing);
+}
+
+.trial-store__platform {
+  color: var(--libitum-color-gray-600);
+}
+
+.trial-store__name {
+  font-family: var(--libitum-font-family-accent);
+  font-size: var(--libitum-typography-heading-m-font-size);
+  font-weight: var(--libitum-typography-heading-m-font-weight);
+  line-height: var(--libitum-typography-heading-m-line-height);
+}
+
+.trial-store__state {
+  margin-top: var(--libitum-spacing-12);
+  padding: var(--libitum-spacing-8) var(--libitum-spacing-16);
+  border: 1px solid var(--libitum-color-border-default);
+  border-radius: var(--libitum-radius-full);
+  color: var(--libitum-color-gray-500);
+}
+
+a.trial-store .trial-store__state {
+  border-color: transparent;
+  background: var(--libitum-color-brand-secondary);
+  color: var(--libitum-color-fg-neutral);
+}
+
+@media (hover: hover) {
+  a.trial-store:hover {
+    background: var(--libitum-color-gray-800);
+  }
+}
+
+.trial .trial-store:focus-visible {
+  border-radius: var(--libitum-radius-xl);
+  outline-offset: var(--libitum-spacing-4);
+}
+
+.trial-link--home {
+  justify-self: center;
+}

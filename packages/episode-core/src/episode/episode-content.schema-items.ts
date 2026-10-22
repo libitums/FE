@@ -1,6 +1,4 @@
-import "background-only";
-
-// 2026-10-15에 더한 문항 11종의 와이어 스키마입니다. 백그라운드 전용입니다.
+// 2026-10-15에 더한 문항 11종의 와이어 스키마입니다.
 import { z } from "zod/mini";
 import {
   correctFeedbackSchema,

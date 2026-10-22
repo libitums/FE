@@ -1,0 +1,161 @@
+# ADR-0081 — 랜딩 웹 체험판 `/try/`와 공유 패키지 `@libitums/episode-core`: 앱의 순수 규칙을 패키지로 떼어 랜딩이 같은 판정으로 u00을 돌린다
+
+- 상태: **채택 — 클라이언트(랜딩 · 공유 패키지 · 앱 재수출).** 서버 · 버킷 변경 0, 호스트 변경 0, 앱 동작 변경 0.
+  ⚠ **실기 확인 전이다** — unit · ui · integration · Playwright(chromium · firefox · webkit · Pixel 7 · analytics 둘)와 번들 · 스크립트 크기만 확인했다. iPhone Safari · Android Chrome의 소리 · 마이크 · 무음 스위치 · 보조 기술은 [웹 체험판 e2e](../e2e/web-trial.md) EU1 ~ EU8(미실행)이다.
+- 날짜: 2026-10-22.
+- **사용자 결정**(2026-10-22): 랜딩(Astro)에 **앱 설치 없이** 브라우저에서 튜토리얼 u00을 3 ~ 5분 체험하는 페이지 · 주소 `/try/` · 흐름은 「이야기 + 핵심 다섯」 · 순수 함수는 **공유 패키지로 분리** · 음성은 **버킷** · 기준은 `feat/tutorial-u00` 위.
+  같은 날 계약 v1.1의 답: **롤플레이 결과와 무관하게 엔딩 · 완료로 간다**(완료 화면이 결과에 따라 문구만 다름) · 주 버튼 · 놓인 타일 라벨은 **앱처럼 흰 글자** · 체험판은 **색인하지 않는다**(noindex · sitemap 제외) · 아이콘은 `@libitums/icons` 0.5.0을 랜딩 의존성으로.
+- 다루는 축: 순수 규칙(디코더 · 판정 · 콘텐츠 주소 · 섞기)의 첫 `packages/` 이관과 그 경계 · 앱이 패키지를 import하는 방식 · 랜딩의 두 번째 페이지(상호작용 방식 · 콘텐츠 · 그림 · 효과음 · 음성의 출처 · 말하기 · 실패 처리 · 측정 · 색인).
+  **다루지 않는 것**: 로그인 · 진행 저장 · 티켓 · 서버 호출, u00의 나머지 단원(S2 · S4 ~ S8 · S10 · S11 · S13), 앱 화면 · 흐름, 콘텐츠 · 음성 제작, Lynx for Web.
+- 이어받는 결정: [ADR-0004](0004-package-boundaries-and-dependency-direction.md) D2 · D3 · D6(적용 기록) · [ADR-0003](0003-workspace-and-directory-structure.md) D5(적용 기록) · [ADR-0043](0043-landing-static-site.md)(적용 기록) · [ADR-0076](0076-episode-roleplay.md) D3(적용 기록) · [ADR-0079](0079-tutorial-as-catalog-episode.md) D1(적용 기록) · [ADR-0060](0060-episode-voice-remote-audio.md) D2(적용 기록).
+
+근거 표시: **[코드]** 저장소 코드 · **[실측]** 빌드 · 테스트 · 버킷 GET · **[ADR]** 기존 결정 · **[사용자]** · **[추론]** 관찰 없이 이어 붙인 것.
+계약의 정본은 저장소 밖 작업 폴더의 spec(v1.2)이고 이 문서는 그중 **결정**만 옮긴다. 시그니처 · test-id는 코드(`*.contract.ts`)가 진다.
+
+**새 ADR인 이유**: 없던 축 둘(첫 앱 → 패키지 이관, 랜딩의 상호작용 페이지)을 처음 정하고, 기존 ADR 여섯의 사례가 한꺼번에 바뀐다 — 새 번호로 묶는다(ADR-0010 D10). 번호 0077 · 0080은 다른 브랜치가 쓰고 있어(브랜치 · 워크트리 전체 확인) 0081이다.
+
+## 맥락
+
+1. **앱의 디코더 · 판정은 Lynx에 기대지 않는 순수 TS다** [코드]. 디코더(`lib/episode-content*.ts`)는 `zod/mini`와 `background-only` 표식만 import하고, 판정(말하기 · 타일 답 · 선택 · 통과 기준) · 콘텐츠 주소 · 결정적 섞기도 순수 함수다. 그러나 `apps/mobile/src` 안에 있어 다른 앱이 쓸 수 없다(ADR-0004 D4 앱 → 앱 금지).
+2. **u00 원문이 체험에 필요한 것을 다 담고 있다** [실측]. 버킷 `episodes/u00-tutorial.json`(37,777 B · sha256 `c9636a3d…377a` = 앱 내장본) — `pre_cuts` 6 · `post_cuts` 4 · S1 `VOCAB_CARD` · S3 `IMG_MATCH` · S9 `REPLY_SELECT` · S12 `CULTURE_CARD` · RP 3턴. 음성 id 31곳.
+3. **버킷 음성은 브라우저에서 받을 수 있다** [실측 2026-10-22]. `audio/u00-tutorial/d-01.m4a` 200 · `audio/x-m4a` · **`access-control-allow-origin: *`** · `cache-control: public, max-age=31536000`.
+4. **RP 음성은 디코더 확장 없이 나온다** [실측]. `roleplay.lead[0].audio_url` = `dialogue` seq n−1, `player_audio_url` = seq n — 앱의 `catalogRoleplayLinesOf(lineId, dialogue)`가 세 턴 모두 같은 id를 낸다.
+5. **디코더가 `VOCAB_CARD`의 `audio_url` · `example_audio_url`을 버렸다** [코드]. 체험판의 단어 카드 음성에 필요하다.
+6. **병행 브랜치가 옛 경로를 import한다** [코드]. `feat/audio-slow-playback`(ADR-0080, 같은 기준 위 · 미병합)이 `lib/episode-content.model` · `lib/content-audio`를 import하는 새 파일을 더한다.
+7. **랜딩은 정적 HTML이고 스크립트가 하나였다** [ADR-0043 D2]. 상호작용 프레임워크 · 수화(hydration)가 없다.
+
+## 결정
+
+### D1. 공유 패키지 `packages/episode-core` = `@libitums/episode-core` — 소스 그대로 export, subpath 다섯
+
+- `"private": true` · `"type": "module"` · `"sideEffects": false`. `exports`는 `./episode` · `./judge` · `./content-url` · `./shuffle` · `./package.json`뿐이다(와일드카드 없음, ADR-0004 D3). 각 subpath는 `src/<이름>/index.ts` 하나를 가리킨다.
+- **빌드하지 않는다** — `exports`가 `.ts`를 직접 가리킨다. TS만 있고 CSS · JSX가 없어 산출물이 할 일이 없고, rspeedy(SWC) · Vite · vitest · tsc(`moduleResolution: bundler`)가 모두 그대로 읽는다. ui-lynx 같은 src 별칭 · 선행 빌드가 없다. 앱 빌드 성공으로 확인했다 [실측].
+- 이름 근거: 담는 것이 「에피소드 콘텐츠를 읽고(디코더 · 주소) 그 문항을 판정하는(판정 · 섞기) 순수 규칙」이다.
+- 의존: `zod` 4.6.5(앱과 같은 정확 판 — 동기 검사 TA4), 개발 `typescript` 6.0.3 · `vitest` 3.2.7 · `@types/node` 22.20.0. 앱 · 랜딩 `dependencies`에 `"@libitums/episode-core": "workspace:*"`(ADR-0004 D5).
+- **금지 import**(패키지 `src`): `@lynx-js/*` · `@libitums/ui-lynx*` · `node:*` · 앱 경로, 전역 `NativeModules` · `lynx` 참조. zod를 import하는 비테스트 파일은 와이어 스키마 셋뿐이다. 둘 다 패키지 테스트 EC4가 지킨다.
+- ⟨2026-10-22 리뷰 반영⟩ **`background-only` 표식은 디코더 파일(`episode/episode-content.ts`) 첫 줄에만 둔다** — 앱의 메인 스레드(Lynx `lepus` 조건)에서 zod 디코더가 끌려오면 빌드가 던지게 하는 방어 장치다. 표식은 웹 · node(기본 조건)에서 빈 모듈이라 랜딩 클라이언트 JS에 아무것도 싣지 않는다(빌드 산출에 zod · 표식 0 확인). 화면 경로가 쓰는 값(`EPISODE_SELF_SPEAKER` · `roleplayLinesOf`)은 zod 없는 다섯째 진입점 **`./lines`**로 낸다. 요구사항의 「Lynx import 금지」는 런타임 API(`@lynx-js/*` · `NativeModules`)를 뜻하고, 표식은 요구사항이 처음부터 순수 TS 범위로 본 빈 패키지라 위반으로 보지 않았다.
+- 루트 결선: `typecheck` · `test:unit` · `test:rest`에 이 패키지, `cycle:check` 범위에 `packages/episode-core/src`.
+
+### D2. 옮기는 범위 — 체험판이 쓰는 것과 그것이 끌고 오는 것까지만
+
+| subpath | 담는 것(원래 자리) |
+|---|---|
+| `./episode` | `decodeEpisode` · 도메인 타입 전부 · `KNOWN_ITEM_TYPES` · `formatPath` · `isRecord`(`lib/episode-content*.ts` 일곱), `roleplayLinesOf`(`catalogRoleplayLinesOf`), `EPISODE_SELF_SPEAKER`(`CATALOG_SELF_SPEAKER` 값) |
+| `./judge` | `AnswerResult` · `NonEmpty`, 말하기 판정(`speakingWords` · `matchedWordCount` · `judgeSpeaking` · `speakingChunks`), `judgeRoleplayReply`, 타자 답(`isTypedAnswerCorrect` · `isTypedAnswerAccepted` · `normalizeAnswerText`), 타일 답(`composeTileReply` · `canCheckTiles` · `judgeTileReply`), `judgeChoice`, 통과 기준(`catalogPassCriterion` · `judgeAssessment`) |
+| `./content-url` | `lib/content-audio.ts` 전부, `CONTENT_BUCKET_PATH` · `contentBaseUrl` · `resolveContentUrlSafe` |
+| `./shuffle` | `app/catalog-shuffle.ts`(결정적 섞기) |
+
+- 몸은 **글자 그대로** 옮겼다(⟨2026-10-22⟩ 처음엔 디코더 첫 줄 `background-only`를 지웠으나 리뷰 반영으로 되살렸다 — 위 D1). **앱에 남는 것**: 카드 뷰 · 문항 매핑 · 자리표시자 치환 · 리듀서 · `canListen`(말하기 상태 의존) · `isTypeableAnswer` · 요청 쪽(`sendGet`). 「나중에 쓸 것」은 옮기지 않는다(ADR-0004 D2).
+
+### D3. 앱은 옛 경로를 얇은 재수출 모듈로 남긴다 — import 문 변경 0, 패키지를 import하는 앱 파일은 17개로 고정
+
+- 옛 모듈 파일을 지우지 않고 패키지에서 다시 내보낸다(디코더 내부 여섯 파일만 지움). 앱의 다른 import 문은 바뀌지 않는다(테스트 import 셋만).
+- 근거: ① 저장소 관례 — 소비자가 아는 모듈은 여전히 하나 ② **병행 브랜치 안전**(맥락 6) — 경로를 옮기면 그 병합이 글자 충돌 없이 타입 오류로 깨진다 ③ `background-only`가 앱 쪽 디코더 진입(`lib/episode-content.ts`)에 남아 메인 스레드 import 방어가 그대로다 ④ 앱 diff가 17파일로 준다.
+- 규칙: 앱 `src`에서 `@libitums/episode-core`를 import하는 비테스트 파일은 **17개뿐**이다 — 새 소비처는 재수출 모듈을 거친다. 앱 테스트 EM1이 목록으로 고정한다.
+
+### D4. 디코더 확장은 `VOCAB_CARD`의 음성 두 키뿐이다
+
+- `audio_url` → `audioUrl?` · `example_audio_url` → `exampleAudioUrl?`(빈 값은 키 없음). 앱은 읽지 않는다. 와이어 정본은 [콘텐츠 계약](../specs/episode-content-json-contract.md) §7.2.
+- **RP의 `lead` · `reask` · `player_audio_url` · `modes` · `accepted_answers`는 디코드하지 않는다** — 체험판의 상대 · 내 음성은 `roleplayLinesOf`로 나오고(맥락 4), 「네?」 다시 묻기는 요구에 없으며, `modes` · `accepted_answers`는 `answers[].ko`와 같다. 소비자가 없는 필드를 모델에 올리지 않는다(ADR-0004 D2).
+
+### D5. 체험판은 정적 마크업 + 순수 리듀서 + 바닐라 컨트롤러다 — 새 런타임 의존 0
+
+- Astro가 장면 전부(시작 · 컷 묶음 둘 · 단어 카드 · 고르기 둘 · 문화 · 롤플레이 3턴 · 완료)를 **한 페이지에 굽고** 처음엔 시작만 보인다. 페이지 JSON(`script#trial-model`)을 읽은 컨트롤러가 행동 → `reduceTrial`(순수) → DOM 반영(`hidden` · 속성 · 글자 · 초점) → 파생(음성 단서 · 효과음 · 이벤트)으로 부작용을 낸다. **판정 · 전이는 리듀서만** 한다.
+- 순서: `start → prologue(pre_cuts 1 ~ 6) → vocab(S1) → image-match(S3) → reply-select(S9) → culture(S12) → roleplay(RP 3턴) → epilogue(post_cuts 1 ~ 2) → complete`. **롤플레이 결과와 무관하게 epilogue로 간다 — 사용자 결정** — 통과 기준(`catalogPassCriterion(3)` = 2)은 완료 문구와 측정에만 쓰인다. 고르기 문항은 통과에 들지 않는다(틀려도 정답을 보이고 넘어간다).
+- 페이지 스크립트(같은 출처 `_astro/*.js` 합)는 **≤ 40,000 bytes**이고 zod · 디코더 문자열이 없다(빌드 테스트 IB5). 2026-10-22 실측 34,804 B [실측].
+- 주소 `/try/` · `/ko/try/`(`trialPathFor`). Hero · Download에 체험판 링크(`data-trial-link`). 완료 화면의 스토어 링크는 랜딩 `storeLinks` 그대로 — 비면 「Coming soon」.
+
+### D6. 콘텐츠 · 그림 · 효과음은 랜딩의 바이트 같은 사본이고, 음성만 버킷에서 받는다
+
+| 무엇 | 방식 |
+|---|---|
+| u00 JSON | 앱 내장본의 사본 `apps/landing/src/trial/content/u00-tutorial.json`. **빌드 때** `decodeEpisode` → 화면 모델 → 페이지 JSON. 디코드 · 모델이 실패하면 빌드가 실패한다. 클라이언트에 zod · 디코더가 없다. 포매터에서 뺐다(바이트를 지킨다) |
+| 그림 10 | 앱 `src/assets/content/images/…`의 사본을 Astro 자산으로(해시 주소 · 같은 출처). 약 1.0 MB |
+| 효과음 5 | `apps/ios/Host/sfx/`의 사본 `public/trial/sfx/`(button · correct_answer · wrong_answer · pass_lesson · lesson_complete). 약 212 KB |
+| 음성 | 버킷 `<base>audio/<id>.m4a`. 주소는 빌드 때 `contentAudioSourceOf` · `resolveContentUrlSafe`로 모델에 박힌다 |
+
+- **동기 검사** `devtools/trial-assets/sync.unit.test.mjs`(TA1 ~ TA5, `pnpm test:trial-assets` — `pnpm verify`에 들어 있다): JSON · 그림 · 효과음이 원본과 바이트가 같고, 앱 매니페스트의 u00 version · sha256이 체험판 핀(`TRIAL_CONTENT`)과 같다. 루트 도구라 두 앱을 읽어도 패키지 의존이 아니다.
+- **빌드 env `PUBLIC_SUPABASE_URL`**(앱과 같은 이름 · 공개 값): `astro.config.ts`가 `resolveTrialContentBase`로 한 번 검사한다. 빈 값 + 비프로덕션 → 소리 없는 체험판, **빈 값 + 프로덕션(`VERCEL_ENV=production`) → 빌드 실패**, `https://<호스트>` 꼴이 아니면 → 빌드 실패.
+
+### D7. 소리는 Web Audio 컨텍스트 하나 — Start 탭에서 잠금을 푼다
+
+- Start 클릭 처리기 안에서 **동기로** 잠금 해제(컨텍스트 생성 · `resume()` · 1샘플 무음 · 있으면 `navigator.audioSession.type = "playback"`) 뒤 시작한다. **Start 전에는 음성 · 효과음 요청이 0이다**(e2e TE3).
+- 음성은 상태에서 파생된 단서다(앱 `AudioCue`와 같은 꼴) — 컷 · 단어 카드 · 고르기 자극 · 롤플레이 상대 줄(턴이 서면) · 내 줄(맞힌 뒤). 단계에 들어서면 다음 단계의 음성을 받아 둔다. 받기 8초 상한 · 해독 실패 · 404는 무음이고 진행에 닿지 않는다.
+- 컷 타자 효과는 해독한 음성의 길이(`voiceLengthMs`)에 맞춘다 — 앱은 음성 정보 파일의 길이를 쓴다(ADR-0074). 계약에 없던 선택 포트다.
+
+### D8. 말하기는 Web Speech — 앱과 같은 판정, 없거나 막히면 같은 턴을 타일로
+
+- `SpeechRecognition ?? webkitSpeechRecognition`, `lang "ko-KR"` · 대안 3 · 8초 뒤 `stop()`. 권한은 첫 Speak가 묻는다(시작 화면에서 묻지 않는다).
+- 판정은 패키지의 `judgeRoleplayReply`(대안 셋 중 맞는 첫 것 — 고르는 것은 리듀서) · 타일은 `judgeTileReply`. 앱과 같은 함수이고 **대안 수만 웹이 정한다**.
+- 생성자 없음 · `language-not-supported` → 처음부터 타일, 거부(`not-allowed` · `service-not-allowed`) → 그 턴부터 끝까지 타일, `audio-capture` · `network` 등 → 그 턴만 타일, `Can't speak now` → 그 턴 타일. 말하기 오답은 「Try again」 또는 `Can't speak now`만 있다 — 타일은 늘 판정되므로 막히지 않는다.
+
+### D9. 측정 — GA4 이벤트 여섯을 더한다(닫힌 합집합 다섯 → 열하나)
+
+| 이벤트 | 속성(전부 문자열) | 시점 |
+|---|---|---|
+| `trial_link_click` | `location`: hero · download | 랜딩의 체험판 링크 |
+| `trial_start` | `speech`: supported · unsupported | Start |
+| `trial_step` | `step` · `ordinal` "1" ~ "8" | 단계에 처음 들어설 때 |
+| `trial_roleplay_result` | `verdict` · `correct` · `by_speech` · `by_tiles`("0" ~ "3") · `speech`(supported · unsupported · denied) | 마지막 턴 `next` |
+| `trial_complete` | `verdict`: passed · failed | 완료에 들어설 때 |
+| `trial_store_click` | `store`: ios · android | 완료 화면 스토어 링크 |
+
+- 들은 문장 · 대사 · 고른 보기 글 · 이름을 싣지 않는다 — 타입이 막는다. 랜딩과 같은 규칙(프로덕션만 · 동의 지역 기본값)이다. 체험판 페이지는 랜딩 `initAnalytics`를 부르지 않는다.
+- 잴 것: 랜딩 → 체험 시작률(`trial_start` ÷ 랜딩 `page_view`) · 단계별 이탈(`trial_step` 유입 경로) · 완료율 · 완료 → 설치 클릭률(스토어 주소가 빈 동안은 잴 수 없다).
+
+### D10. 체험판은 색인하지 않는다 — 사용자 결정
+
+- `robots` = `noindex`(배포 환경과 무관), canonical · hreflang · JSON-LD 없음, sitemap에서 `/try/` 경로를 거른다. 검색 대상은 랜딩이고 체험판은 스크립트에 기대는 화면이다.
+
+### D11. 접근성
+
+- 단계마다 `<section aria-labelledby>` + 초점 받는 `h2`, 단계가 바뀌면 그 제목으로 초점. 컷이 바뀌면 초점은 Next에 두고 대사를 live region에 쓴다. 조작은 전부 `<button>`이고 보기 · 타일은 `aria-pressed`, 판정 뒤 보기는 `aria-disabled`(초점 유지).
+- **문화 카드 뒤집기 · 마이크는 `aria-pressed`를 쓰지 않고 이름만 동작으로 바꾼다**(접근성 감사 W3 — 계약 v1.2).
+- **롤플레이 조작 뒤 초점**(감사 C1 — 계약 v1.2): 힌트 → 힌트 글 · 판정 → Next 또는 Try again · Try again → Speak · 타일 전환 → 첫 타일 · 다음 턴 → 진행 표시.
+- 낮은 화면(200% 확대)에서 턴 안쪽이 세로로 스크롤된다(C2). 섞인 언어에 `lang`(live region 조각 · 정답 글, W2). 타일 모드 안내 줄의 대비를 그늘 · 면으로 올렸다(W4 — 고치기 전 en 3.79:1, 지금은 e2e `trial-contrast`가 4.5:1 이상을 단언).
+- 움직임 줄이기: 루트 `data-motion="reduced"` — 타자 효과 · 뒤집기 · 장면 전환 · 폭죽 없음. 타자 효과는 장식이고 글은 처음부터 DOM에 온전히 있다.
+- **주 버튼 · 놓인 타일의 흰 글자 / 주황(3.02:1)은 앱과 같은 승인 예외다 — 사용자 결정** — axe `color-contrast`에서 그 두 선택자만 뺀다(ADR-0025 「미달로 반영」 사례의 웹 적용).
+
+## 버린 대안
+
+1. **패키지 이름 `shared` · `core`** — 무엇의 경계인지 말하지 않아 아무거나 들어온다. `content`는 판정이, `learning-logic`은 디코더가 들지 않는다.
+2. **패키지를 빌드해 `dist`로 export** — 별칭 셋 · 빌드 순서 · `pack:check`를 사는데 발행하지 않는다(ADR-0004 D7).
+3. **앱 import를 전부 패키지 경로로 교체** — 약 100파일 diff에 병행 브랜치 병합이 타입 오류로 깨진다. 얻는 것은 경로 하나다.
+4. ~~패키지에 `background-only`를 두지 않기~~ — 처음엔 「Lynx 표식을 웹이 지게 된다」며 버렸으나, 표식이 웹에서 빈 모듈이고 없으면 앱 메인 스레드 방어가 사라져 **채택으로 뒤집었다**(2026-10-22 리뷰 W2, D1).
+5. **RP 필드(`lead` · `reask` · `player_audio_url`) 디코드** — 소비자가 없다(D4).
+6. **랜딩이 `apps/mobile` 파일을 직접 import** — ADR-0004 D4 앱 → 앱 금지.
+7. **런타임 JSON fetch** — 첫 화면 앞에 받기 · 실패 상태 · zod 번들이 든다. **빌드 때 버킷 fetch** — 빌드 · CI가 네트워크에 묶인다.
+8. **그림을 버킷 원격으로** — 그림마다 env가 필요하고 버킷 장애에 빈 장면이 선다.
+9. **음성 사본** — 저장소 어디에도 원본이 없어(ADR-0060) 사본이 조용히 어긋난다.
+10. **Preact · Lit · Svelte 섬** — 런타임 · 렌더러 등록 · JSX 규칙이 랜딩에 새로 든다. **Lynx for Web** — 범위 밖. **장면을 스크립트로 생성** — ui 테스트가 빈 껍데기만 본다.
+11. **`HTMLAudioElement` 하나 재사용** — iOS의 첫 재생 제스처 규칙이 요소마다 걸리고, 효과음과 겹치려면 요소가 늘어 같은 문제를 반복한다.
+12. **체험판 색인 + 고유 메타** — 사용자 결정(D10).
+13. **롤플레이 실패 갈래(다시 하기 화면)** — 사용자 결정(엔딩까지).
+
+## 대가
+
+1. **사본 셋(JSON · 그림 10 · 효과음 5)** — 원본이 바뀌면 동기 검사가 `pnpm verify`를 실패시킨다. 손으로 다시 복사하고 핀(`TRIAL_CONTENT`)을 고쳐야 한다 — u00 판이 오를 때마다 랜딩 변경이 따른다.
+2. **음성은 원격이다** — 버킷 장애 · 오프라인이면 무음으로 진행한다. Firefox는 AAC(m4a) 해독이 실패할 수 있다(무음 진행). 프로덕션 빌드는 `PUBLIC_SUPABASE_URL`이 없으면 실패한다 — Vercel 랜딩 프로젝트의 Production 환경에 값을 넣는 것은 사용자 몫이다.
+3. **iOS Safari를 확인하지 않았다** — 무음 스위치(`audioSession` 대응 [추론]) · 인식 뒤 음성 크기 · 경로 · Siri/받아쓰기가 꺼진 경우의 거부 판정은 실기에서만 보인다(EU1 ~ EU4). 무음 스위치에서 소리가 안 나면 음성만 `HTMLAudioElement`로 바꾼다(포트 `TrialAudio`는 그대로).
+4. **웹이 앱과 다르게 선다** — 단어 카드 음성(D4)은 웹만 낸다. 앱의 학습 문항 음성은 병행 브랜치 `feat/audio-slow-playback`(ADR-0080, 미병합)의 몫이다. 웹은 대안 셋으로 판정을 고르고(D8), 고르기 문항 자극 음성을 낸다. 힌트에 로마자를 더했다(앱은 영어 뜻만 — 체험판은 S10 · S11을 건너뛰어 3턴째 표현을 배운 적이 없다).
+5. **흰 글자 주황 3.02:1** — WCAG 1.4.3 미달을 앱과 같이 받아들인다(D11).
+6. **패키지 경계가 테스트로만 지켜진다** — 17개 목록(EM1) · 금지 import(EC4)를 고치려면 테스트를 함께 고친다.
+7. **접근성 감사 제안 다섯을 미뤘다** — 진행 막대 `aria-valuetext`(S2) · h1과 장면 제목(S4) · 마이크 권한 안내와 「Listening」 낭독(S6) · 새 탭 알림(S8) · 장면 글 대비 자동 검사(S9). 문구 키 · 계획 몫이다.
+8. **프로덕션 HTML에 `data-testid`가 남는다**(ADR-0043 대가와 같다).
+
+## 재검토 조건
+
+1. **`trial_start` ÷ 랜딩 방문이나 완료율이 낮으면** — `trial_step`의 마지막 단계 분포로 막는 장면을 보고 길이 · 순서를 다시 본다.
+2. **EU3에서 무음 스위치가 소리를 막으면** — D7의 Web Audio를 음성만 `HTMLAudioElement`로 바꾼다.
+3. **u00 판이 바뀌거나 체험판이 다른 에피소드를 쓰면** — 사본 방식(D6)과 빌드 때 버킷 fetch를 다시 견준다.
+4. **앱이나 체험판이 「네?」 다시 묻기 · `modes`를 쓰기 시작하면** — D4의 RP 필드 디코드를 연다.
+5. **패키지를 import하는 앱 파일이 늘어야 할 때 · 병행 브랜치가 다 병합되면** — 재수출 모듈(D3)을 걷고 직접 import로 바꿀지 본다.
+6. **세 번째 소비자가 오면** — subpath 다섯의 경계가 맞는지 다시 본다.
+7. **스토어 주소가 열리면** — 완료 → 설치 클릭률을 잰다(D9).
+
+## 후속
+
+- **실기 확인** — [웹 체험판 e2e](../e2e/web-trial.md) EU1 ~ EU8(미실행).
+- **Vercel** — 랜딩 프로젝트 Production에 `PUBLIC_SUPABASE_URL`(사용자 작업, [랜딩 README](../../apps/landing/README.md) 「배포」).
+- 접근성 감사 제안 S2 · S4 · S6 · S8 · S9.
+- 성능 보고서: [웹 체험판 — 번들만](../performance/reports/web-trial-iphone-17-pro-simulator-01.md)(앱 번들 +614 B, 상한 그대로).
