@@ -122,6 +122,15 @@ describe("문화 확인 장면 — 질문", () => {
     expect(id("learning-shell-form")).toHaveTextContent("Word choice");
   });
 
+  test("CC-H2. 문화 확인 활동의 완료 카드에서도 머리 이름표는 Culture quiz로 남는다(Word choice로 바뀌지 않는다)", () => {
+    mount([sceneQuestion]);
+    tapChoice(2);
+    fireEvent.tap(id("learning-shell-action"), {});
+
+    expect(id("word-choice-screen-complete")).toBeInTheDocument();
+    expect(id("learning-shell-form")).toHaveTextContent("Culture quiz");
+  });
+
   test("CC8. 장면 문항은 그림 · 상대 말풍선(로마자 · 뜻) · 상대 아바타 · 지시문 · 보기 뜻 줄로 선다", () => {
     mount([sceneQuestion]);
 
