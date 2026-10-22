@@ -9,7 +9,6 @@ import type { CatalogUnitKey } from "../lib/catalog-progress";
 import { CONTENT_AUDIO_DIR } from "../lib/content-audio";
 import type { CatalogEntry } from "../lib/episode-catalog";
 import type { LearnerProfile } from "../lib/placeholder-fill";
-import type { AssessmentPassCriterion } from "../screens/assessment/assessment";
 import type { LessonPosition } from "../screens/learning/activity-finish";
 import { appended, startedBy } from "./catalog-activity-join";
 import { catalogItemOf } from "./catalog-item-map";
@@ -163,11 +162,8 @@ export function catalogActivityPositionOf(
   };
 }
 
-/** 통과 = 채점 문항의 60% 올림(최소 1)을 맞힘입니다. 채점할 문항이 없으면 0 — 막지 않습니다. */
-export function catalogPassCriterion(questionCount: number): AssessmentPassCriterion {
-  if (questionCount <= 0) return { minCorrectCount: 0 };
-  return { minCorrectCount: Math.max(1, Math.floor((3 * questionCount + 4) / 5)) };
-}
+/** 통과 = 채점 문항의 60% 올림(최소 1)을 맞힘입니다 — 정본은 `@libitums/episode-core/judge`(랜딩 체험판과 공유). */
+export { catalogPassCriterion } from "@libitums/episode-core/judge";
 
 /**
  * 통과 기준의 분모 — 판정한 채점 문항 수(= 결과 수, 채점 문항 수 상한)입니다. 건너뛴 말하기 문항은

@@ -19,6 +19,8 @@
     "@astrojs/sitemap": "3.7.4",
     "@fontsource-variable/jost": "5.3.0",
     "@libitums/design-tokens": "0.5.0",
+    "@libitums/episode-core": "workspace:*",
+    "@libitums/icons": "0.5.0",
     "@vercel/analytics": "2.0.1",
     "@vercel/speed-insights": "2.0.0",
     "astro": "7.3.5",

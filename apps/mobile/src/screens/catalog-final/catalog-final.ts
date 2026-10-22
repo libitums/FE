@@ -1,7 +1,8 @@
 // 카탈로그 최종 테스트 화면의 순수 로직입니다. UI를 import하지 않습니다.
 
+import { canCheckTiles, composeTileReply, judgeTileReply } from "@libitums/episode-core/judge";
+
 import type { AnswerResult } from "../../lib/answer-result";
-import { isTypedAnswerAccepted } from "../../lib/hangul-keyboard";
 import type { AudioCue } from "../../lib/use-audio-cue";
 import type {
   CatalogFinalAction,
@@ -42,22 +43,22 @@ export function catalogFinalReducer(
   }
 }
 
+// 타일 판정 셋의 몸은 `@libitums/episode-core/judge`에 있고(랜딩 체험판과 같은 규칙), 여기서는 턴을 풀어 넘깁니다.
+
 /** 놓은 순서대로 타일 ko를 `" "`로 이은 대답입니다. */
 export function composedReply(turn: CatalogRoleplayTurn, placed: readonly number[]): string {
-  return placed.map((index) => turn.tiles[index]?.ko ?? "").join(" ");
+  return composeTileReply(turn.tiles, placed);
 }
 
 export function canCheckTurn(turn: CatalogRoleplayTurn, placed: readonly number[]): boolean {
-  return placed.length === turn.tiles.length;
+  return canCheckTiles(turn.tiles, placed);
 }
 
 export function judgeRoleplayTurn(
   turn: CatalogRoleplayTurn,
   placed: readonly number[],
 ): AnswerResult {
-  return isTypedAnswerAccepted(composedReply(turn, placed), turn.accepted)
-    ? "correct"
-    : "incorrect";
+  return judgeTileReply(turn.tiles, placed, turn.accepted);
 }
 
 /** 턴 상태에서 지금 나야 할 소리입니다. 소리가 없으면 `null`입니다. */

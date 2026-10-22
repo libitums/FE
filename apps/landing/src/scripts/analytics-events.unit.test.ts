@@ -2,7 +2,13 @@ import { describe, expect, it } from "vitest";
 import type { ClickedLink } from "./analytics.contract";
 import { clickEventOf, faqEventOf, sectionEventOf, sectionThresholdOf } from "./analytics-events";
 
-const plain: ClickedLink = { store: undefined, hash: "", inLanguageMenu: false, hreflang: "" };
+const plain: ClickedLink = {
+  store: undefined,
+  hash: "",
+  inLanguageMenu: false,
+  hreflang: "",
+  trialLink: undefined,
+};
 
 describe("clickEventOf", () => {
   it("U-CE1 링크가 없으면 null", () => {
@@ -80,6 +86,48 @@ describe("clickEventOf", () => {
     expect(first).not.toBeNull();
     expect(first).toEqual(second);
     expect(first).not.toBe(second);
+  });
+});
+
+describe("clickEventOf — 체험판 링크", () => {
+  it("AN1 trialLink가 hero이면 trial_link_click(hero)", () => {
+    expect(clickEventOf({ ...plain, trialLink: "hero" })).toEqual({
+      name: "trial_link_click",
+      params: { location: "hero" },
+    });
+  });
+
+  it("AN1 trialLink가 download이면 trial_link_click(download)", () => {
+    expect(clickEventOf({ ...plain, trialLink: "download" })).toEqual({
+      name: "trial_link_click",
+      params: { location: "download" },
+    });
+  });
+
+  it("AN1 모르는 trialLink는 다음 규칙으로 — 다른 조건이 없으면 null", () => {
+    expect(clickEventOf({ ...plain, trialLink: "other" })).toBeNull();
+    expect(clickEventOf({ ...plain, trialLink: "" })).toBeNull();
+    expect(clickEventOf({ ...plain, trialLink: "other", hash: "#download" })).toEqual({
+      name: "cta_click",
+      params: { location: "header" },
+    });
+  });
+
+  it("AN1 store가 함께면 download_click이 앞선다(1순위)", () => {
+    expect(clickEventOf({ ...plain, store: "ios", trialLink: "download" })).toEqual({
+      name: "download_click",
+      params: { store: "ios" },
+    });
+  });
+
+  it("AN1 #download · 언어 메뉴보다 trial_link_click이 앞선다(2순위)", () => {
+    expect(clickEventOf({ ...plain, hash: "#download", trialLink: "hero" })).toEqual({
+      name: "trial_link_click",
+      params: { location: "hero" },
+    });
+    expect(
+      clickEventOf({ ...plain, inLanguageMenu: true, hreflang: "ko", trialLink: "download" }),
+    ).toEqual({ name: "trial_link_click", params: { location: "download" } });
   });
 });
 

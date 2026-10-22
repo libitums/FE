@@ -21,6 +21,7 @@ export function initAnalytics() {
               hash: link.hash,
               inLanguageMenu: link.closest(".lang-menu") !== null,
               hreflang: link.hreflang,
+              trialLink: link.dataset.trialLink,
             }
           : null,
       ),

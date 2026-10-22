@@ -32,6 +32,12 @@ importers:
       '@libitums/design-tokens':
         specifier: 0.5.0
         version: 0.5.0
+      '@libitums/episode-core':
+        specifier: workspace:*
+        version: link:../../packages/episode-core
+      '@libitums/icons':
+        specifier: 0.5.0
+        version: 0.5.0
       '@vercel/analytics':
         specifier: 2.0.1
         version: 2.0.1(react@19.2.8)
@@ -78,6 +84,9 @@ importers:
       '@libitums/design-tokens':
         specifier: 0.5.0
         version: 0.5.0
+      '@libitums/episode-core':
+        specifier: workspace:*
+        version: link:../../packages/episode-core
       '@libitums/icons':
         specifier: 0.5.0
         version: 0.5.0
@@ -194,6 +203,25 @@ importers:
       embedded-postgres:
         specifier: 17.9.0-beta.16
         version: 17.9.0-beta.16
+      typescript:
+        specifier: 6.0.3
+        version: 6.0.3
+      vitest:
+        specifier: 3.2.7
+        version: 3.2.7(@types/node@22.20.0)(jsdom@27.4.0)(lightningcss@1.33.0)(terser@5.50.0)(yaml@2.9.1)
+
+  packages/episode-core:
+    dependencies:
+      background-only:
+        specifier: 0.0.1
+        version: 0.0.1
+      zod:
+        specifier: 4.6.5
+        version: 4.6.5
+    devDependencies:
+      '@types/node':
+        specifier: 22.20.0
+        version: 22.20.0
       typescript:
         specifier: 6.0.3
         version: 6.0.3

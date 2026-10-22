@@ -51,14 +51,14 @@ const faq = buildFaq({ copy: t, storeAvailability: storeAvailabilityOf(storeLink
   </Fragment>
   <Header language={language} t={t} />
   <main id="main">
-    <Hero t={t} />
+    <Hero language={language} t={t} />
     <Manifesto t={t} />
     <Features t={t} />
     <Journey t={t} />
     <Words t={t} />
     <Faq t={t} entries={faq} />
     <Closing t={t} />
-    <Download t={t} />
+    <Download language={language} t={t} />
   </main>
   <Footer language={language} t={t} />
   {

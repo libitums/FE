@@ -1,0 +1,58 @@
+---
+import type { TrialImageMatchProps } from "./trial-components.contract";
+import TrialAnswerCopy from "./TrialAnswerCopy.astro";
+import TrialChoiceFooter from "./TrialChoiceFooter.astro";
+import TrialIcon from "./TrialIcon.astro";
+import TrialOptionList from "./TrialOptionList.astro";
+
+type Props = TrialImageMatchProps;
+
+const { t, item } = Astro.props;
+const answer = item.options[item.answerIndex]?.ko ?? "";
+---
+
+<section
+  class="trial-step trial-learning"
+  data-testid="trial-step-image-match"
+  aria-labelledby="trial-heading-image-match"
+  hidden
+>
+  <div class="trial-learning__body">
+    <h2
+      class="trial-learning__instruction trial-type-heading-m"
+      id="trial-heading-image-match"
+      data-step-heading
+      tabindex="-1"
+      data-testid="trial-choice-instruction"
+    >
+      {item.instruction}
+    </h2>
+    <div class="trial-card trial-picture">
+      <img
+        class="trial-picture__image"
+        src={item.imageUrl}
+        alt={item.prompt}
+        data-testid="trial-image-match-image"
+      />
+      <div class="trial-prompt">
+        <p class="trial-type-heading-s" lang="en" data-testid="trial-image-match-prompt">
+          {item.prompt}
+        </p>
+        {
+          item.audioUrl !== null && (
+            <button
+              class="trial-round trial-round--m"
+              type="button"
+              aria-label={t.listen}
+              data-testid="trial-choice-listen"
+            >
+              <TrialIcon name="volume" />
+            </button>
+          )
+        }
+      </div>
+    </div>
+    <TrialOptionList options={item.options} />
+  </div>
+  <TrialChoiceFooter t={t}><TrialAnswerCopy template={t.correctAnswer} answer={answer} /></TrialChoiceFooter>
+</section>

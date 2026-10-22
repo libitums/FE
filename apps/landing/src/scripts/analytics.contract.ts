@@ -2,13 +2,51 @@
 // 구현은 `analytics-events.ts`가 지고, `analytics.ts`는 DOM에서 아래 입력을 읽어 함수를 부른 뒤 결과를 gtag에 넘깁니다.
 // 입력은 DOM 요소가 아니라 그 요소에서 읽은 값뿐이라, unit 테스트가 jsdom 없이 잴 수 있습니다.
 
-/** 랜딩이 보내는 이벤트 다섯의 이름입니다. README 「분석 (GA4)」의 목록과 같습니다. */
+import type { SpokenOutcome } from "@libitums/episode-core/judge";
+
+import type {
+  SpeechAvailability,
+  TrialFunnelStep,
+  TrialStepId,
+} from "../trial/trial-machine.contract";
+import type { PreregOutcome } from "../trial/trial-prereg.contract";
+
+/** 랜딩 · 체험판이 보내는 이벤트 열셋의 이름입니다. README 「분석 (GA4)」의 목록과 같습니다. */
 export type AnalyticsEventName =
   | "section_view"
   | "cta_click"
   | "download_click"
   | "language_switch"
-  | "faq_open";
+  | "faq_open"
+  | "trial_link_click"
+  | "trial_start"
+  | "trial_step"
+  | "trial_roleplay_result"
+  | "trial_complete"
+  | "trial_preregister"
+  | "trial_speech_attempt"
+  | "trial_exit";
+
+/** 체험판 링크가 놓인 자리(`data-trial-link`). */
+export type TrialLinkLocation = "hero" | "download";
+/** 롤플레이 턴 수 — 세 턴이라 "0" ~ "3" 문자열입니다(GA 속성은 문자열). */
+export type TrialTurnCount = "0" | "1" | "2" | "3";
+
+/** 체험판을 연 브라우저 — UA 순수 분류(카카오톡 · 인스타그램 · 페이스북 · 네이버 · 라인 · 안드로이드 웹뷰는 in-app). */
+export type TrialBrowser = "ios-safari" | "android-chrome" | "in-app" | "desktop" | "other";
+/** 말하기 시도 하나의 결과 — 판정 셋 + 인식 실패 넷(언어 미지원 오류는 unavailable로 센다). */
+export type SpeechAttemptOutcome =
+  | SpokenOutcome
+  | "no-speech"
+  | "denied"
+  | "unavailable"
+  | "aborted";
+/** Speak 탭부터 결과까지 — 2초 간격, 8초(듣기 상한) 이상은 하나로. */
+export type LatencyBucket = "0-2s" | "2-4s" | "4-6s" | "6-8s" | "8s+";
+/** 롤플레이 몇째 턴인가 — 세 턴. */
+export type TrialTurnOrdinal = "1" | "2" | "3";
+/** 체험판 페이지가 보내는 모든 이벤트에, 보낼 때 접점이 붙이는 공통 속성입니다. */
+export type TrialCommonParams = { readonly browser: TrialBrowser };
 
 /** gtag에 그대로 넘기는 `{ name, params }`입니다. 이름마다 속성 키가 닫혀 있습니다. */
 export type AnalyticsEvent =
@@ -16,7 +54,31 @@ export type AnalyticsEvent =
   | { name: "cta_click"; params: { location: "header" } }
   | { name: "download_click"; params: { store: string } }
   | { name: "language_switch"; params: { to: string } }
-  | { name: "faq_open"; params: { question: string } };
+  | { name: "faq_open"; params: { question: string } }
+  | { name: "trial_link_click"; params: { location: TrialLinkLocation } }
+  | { name: "trial_start"; params: { speech: "supported" | "unsupported" } }
+  | { name: "trial_step"; params: { step: TrialFunnelStep; ordinal: string } }
+  | {
+      name: "trial_roleplay_result";
+      params: {
+        verdict: "passed" | "failed";
+        correct: TrialTurnCount;
+        by_speech: TrialTurnCount;
+        by_tiles: TrialTurnCount;
+        speech: SpeechAvailability;
+      };
+    }
+  | { name: "trial_complete"; params: { verdict: "passed" | "failed" } }
+  | { name: "trial_preregister"; params: { status: PreregOutcome } }
+  | {
+      name: "trial_speech_attempt";
+      params: {
+        turn: TrialTurnOrdinal;
+        outcome: SpeechAttemptOutcome;
+        latency_bucket: LatencyBucket;
+      };
+    }
+  | { name: "trial_exit"; params: { step: TrialStepId } };
 
 /**
  * 눌린 `<a>`에서 읽은 값입니다. 누른 자리에서 가장 가까운 `<a>`가 없으면 함수에 `null`을 넘깁니다.
@@ -24,12 +86,14 @@ export type AnalyticsEvent =
  * - `hash`: `link.hash` — `"#download"`처럼 `#`을 포함하고, 없으면 `""`.
  * - `inLanguageMenu`: 언어 메뉴(`.lang-menu`) 안의 링크인가 — `link.closest(".lang-menu") !== null`.
  * - `hreflang`: `link.hreflang`. 없으면 `""`.
+ * - `trialLink`: `data-trial-link` 속성(`link.dataset.trialLink`). 없으면 `undefined`.
  */
 export interface ClickedLink {
   store: string | undefined;
   hash: string;
   inLanguageMenu: boolean;
   hreflang: string;
+  trialLink: string | undefined;
 }
 
 /** FAQ `<details>`의 `toggle`에서 읽은 값입니다. `faqId`는 `data-faq-id`(없으면 `undefined`). */
@@ -45,11 +109,12 @@ export interface SectionVisibility {
 }
 
 /**
- * 눌린 링크 → 이벤트 또는 `null`. 우선순위는 지금 동작 그대로입니다:
+ * 눌린 링크 → 이벤트 또는 `null`. 우선순위:
  * 1. `store`가 비어 있지 않으면 `download_click { store }`
- * 2. 아니면 `hash === "#download"`이면 `cta_click { location: "header" }`
- * 3. 아니면 `inLanguageMenu`이면 `language_switch { to: hreflang }` (`hreflang`이 `""`여도 보냅니다)
- * 4. 그 밖(링크가 없거나 어느 조건도 아님)은 `null`
+ * 2. 아니면 `trialLink`가 `hero` · `download`이면 `trial_link_click { location: trialLink }`
+ * 3. 아니면 `hash === "#download"`이면 `cta_click { location: "header" }`
+ * 4. 아니면 `inLanguageMenu`이면 `language_switch { to: hreflang }` (`hreflang`이 `""`여도 보냅니다)
+ * 5. 그 밖(링크가 없거나 어느 조건도 아님)은 `null`
  */
 export type ClickEventOf = (link: ClickedLink | null) => AnalyticsEvent | null;
 

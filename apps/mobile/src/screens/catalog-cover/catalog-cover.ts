@@ -1,5 +1,7 @@
 // 카탈로그 표지 컷의 순수 표시 모델입니다 — 컷 → 표시 모델, 번역 · 토글 · 다음 · 낭독.
 
+import { EPISODE_SELF_SPEAKER } from "@libitums/episode-core/lines";
+
 import { audioSyncLengthMs } from "../../lib/audio-manifest";
 import { contentAudioSourceOf } from "../../lib/content-audio";
 import type { EpisodeCut, Text } from "../../lib/episode-content.model";
@@ -15,8 +17,8 @@ import type {
   CatalogCutView,
 } from "./catalog-cover.contract";
 
-// 콘텐츠의 자기 화자 값 비교용입니다(앱은 이 화자를 `Me`로 그립니다).
-export const CATALOG_SELF_SPEAKER = "플레이어";
+// 콘텐츠의 자기 화자 값 비교용입니다(앱은 이 화자를 `Me`로 그립니다). 값의 정본은 패키지입니다.
+export const CATALOG_SELF_SPEAKER = EPISODE_SELF_SPEAKER;
 
 function filled(
   value: string | undefined,

@@ -1,0 +1,235 @@
+/*
+ * 문화 카드(앱 culture-card-activity · -face, 주황 층 수정 포함).
+ * 카드 뒤 두 장은 엿보기 띠 안에만 그려, 뒤집는 동안 좁아진 면 옆으로 주황 면이 드러나지 않게 합니다.
+ */
+.trial-deck {
+  position: relative;
+}
+
+.trial-deck__peek {
+  position: relative;
+  height: calc(var(--libitum-spacing-20) + var(--libitum-spacing-4));
+  overflow: hidden;
+}
+
+.trial-deck__far,
+.trial-deck__near {
+  position: absolute;
+  height: calc(var(--libitum-radius-xl) * 2);
+  border-radius: var(--libitum-radius-xl);
+}
+
+.trial-deck__far {
+  inset: 0 var(--libitum-spacing-24) auto;
+  background: color-mix(
+    in srgb,
+    var(--libitum-color-brand-secondary) calc(var(--libitum-opacity-16) * 100%),
+    transparent
+  );
+}
+
+.trial-deck__near {
+  inset: var(--libitum-spacing-8) var(--libitum-spacing-12) auto;
+  background: color-mix(
+    in srgb,
+    var(--libitum-color-brand-secondary) calc(var(--libitum-opacity-35) * 100%),
+    transparent
+  );
+}
+
+.trial-deck:has([data-face="back"]) .trial-deck__peek {
+  animation: trial-peek-hide-a var(--libitum-motion-duration-d6);
+}
+
+.trial-deck:has([data-face="front"]) .trial-deck__peek {
+  animation: trial-peek-hide-b var(--libitum-motion-duration-d6);
+}
+
+@keyframes trial-peek-hide-a {
+  from,
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes trial-peek-hide-b {
+  from,
+  to {
+    opacity: 0;
+  }
+}
+
+/* 맨 앞 카드는 따로 쌓여 뒤 장과 깊이를 비교하지 않습니다. */
+.trial-deck__top {
+  position: relative;
+  z-index: var(--libitum-elevation-z-default);
+  isolation: isolate;
+}
+
+.trial-culture-card {
+  min-height: calc(var(--libitum-spacing-96) * 4);
+  overflow: hidden;
+  border-radius: var(--libitum-radius-xl);
+  background: var(--libitum-color-white);
+  box-shadow: var(--libitum-elevation-shadow-s2);
+}
+
+.trial-culture-card[data-face="front"] .trial-culture-card__back,
+.trial-culture-card[data-face="back"] .trial-culture-card__front {
+  display: none;
+}
+
+.trial-culture-card__front,
+.trial-culture-card__back {
+  min-height: calc(var(--libitum-spacing-96) * 4);
+}
+
+.trial-culture-card[data-face="front"] .trial-culture-card__front {
+  animation: trial-flip-front var(--libitum-motion-duration-d6) var(--libitum-motion-easing-enter)
+    both;
+}
+
+.trial-culture-card[data-face="back"] .trial-culture-card__back {
+  animation: trial-flip-back var(--libitum-motion-duration-d6) var(--libitum-motion-easing-enter)
+    both;
+}
+
+/* 2D 가로 배율 — rotateY는 iOS에서 반쪽이 뒤 장 아래로 들어갑니다(앱과 같은 선택). */
+@keyframes trial-flip-front {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes trial-flip-back {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.trial-culture-card__front {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  background: var(--libitum-color-brand-strong);
+  color: var(--libitum-color-white);
+}
+
+.trial-culture-card__image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 그늘(웹 강화) — 글 묶음 전체가 단색 위에 섭니다. */
+.trial-culture-card__front::after {
+  position: absolute;
+  inset: auto 0 0;
+  height: calc(var(--libitum-spacing-96) * 3);
+  background: linear-gradient(
+    to bottom,
+    transparent 0,
+    var(--trial-scene-veil) var(--libitum-spacing-96)
+  );
+  content: "";
+}
+
+.trial-culture-card__front-text {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  justify-items: start;
+  gap: var(--libitum-spacing-4);
+  padding: var(--libitum-spacing-20);
+}
+
+.trial-culture-card__title-en {
+  color: var(--libitum-color-gray-300);
+}
+
+.trial-chip-flip {
+  margin-top: var(--libitum-spacing-12);
+  padding: var(--libitum-spacing-8) var(--libitum-spacing-16);
+  border-radius: var(--libitum-radius-full);
+  background: var(--libitum-color-white);
+  color: var(--libitum-color-fg-neutral);
+}
+
+.trial-culture-card__back {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-12);
+  padding: var(--libitum-spacing-20);
+}
+
+.trial-culture-card__back-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--libitum-spacing-12);
+}
+
+.trial-culture-card__unflip {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: calc(var(--libitum-spacing-40) + var(--libitum-spacing-4));
+  height: calc(var(--libitum-spacing-40) + var(--libitum-spacing-4));
+  border: 1px solid var(--libitum-color-gray-300);
+  border-radius: var(--libitum-radius-full);
+}
+
+.trial-culture-card__unflip .trial-icon {
+  width: var(--libitum-icon-size-sm);
+  height: var(--libitum-icon-size-sm);
+}
+
+.trial-culture-card__body {
+  display: grid;
+  gap: var(--libitum-spacing-12);
+}
+
+.trial-culture-card__body-en {
+  color: var(--libitum-color-gray-900);
+}
+
+.trial-note {
+  display: grid;
+  gap: var(--libitum-spacing-4);
+  padding: var(--libitum-spacing-12) var(--libitum-spacing-16);
+  border-radius: var(--libitum-radius-lg);
+  background: var(--libitum-color-gray-100);
+}
+
+.trial-note--tip {
+  background: var(--libitum-color-feedback-correct-surface);
+}
+
+/* 카드 전체가 하나의 뒤집기 버튼입니다. */
+.trial-culture-flip {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  padding: 0;
+  border: 0;
+  border-radius: var(--libitum-radius-xl);
+  background: transparent;
+}
+
+.trial .trial-culture-flip:focus-visible {
+  border-radius: var(--libitum-radius-xl);
+  outline-offset: var(--libitum-spacing-4);
+}

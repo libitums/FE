@@ -168,3 +168,19 @@ CI가 **다른 코드**를 실행하면서 둘 다 성공한다. 이런 실패�
   앱이 **쓰기 시작하는** 때다. 함수 앱은 `apps/mobile/src/lib/`를 한 줄도 쓰지 않는다(런타임도 Deno다). 함수가
   앱의 로직을 쓰고 싶어지면 그때 이 조건으로 돌아온다.
 - D5 · D7 — 내부 참조 없음, 이름은 `@libitums/supabase-functions`(private) 그대로 규칙 안이다.
+
+**2026-10-22 — 앱의 순수 규칙이 첫 `packages/` 이관으로 `@libitums/episode-core`가 됐다** ([ADR-0083](0083-web-trial-and-episode-core.md) D1 ~ D3).
+랜딩 웹 체험판(`apps/landing`의 `/try/`)이 앱과 같은 디코더 · 판정 · 콘텐츠 주소 · 섞기로 u00을 돌린다.
+
+- **D2 판정 — 두 번째 소비자가 실제로 왔다.** 랜딩이 디코더(빌드 때) · 판정 · 주소 · 섞기를 쓴다. 옮긴 범위는 체험판이 쓰는 것과 그것이
+  끌고 오는 것까지만이다 — 카드 뷰 · 문항 매핑 · 자리표시자 치환 · 리듀서는 앱에 남았다(「나중에 쓸 것」은 옮기지 않는다).
+- **재검토 조건 「두 번째 앱 생성 → `packages/` 첫 패키지」가 이것으로 발동했다.** 2026-09-30 기록이 말한 「둘째 앱이 `lib/`를 **쓰기
+  시작하는** 때」다 — 첫 패키지(`ui-lynx`)는 ADR-0015 D3의 예외로 먼저 섰지만, `lib/`에 쌓인 공유 코드가 떨어져 나간 것은 이번이 처음이다.
+  대가의 「한 번의 이관 비용」은 앱 쪽 17파일(재수출 · 위임)과 디코더 내부 여섯 파일 삭제였다.
+- **D3 — `exports`는 subpath 다섯(`./episode` · `./lines` · `./judge` · `./content-url` · `./shuffle`) + `./package.json`, 와일드카드 없음.** 진입점은 **소스(`.ts`) 그대로**이고 `dist`가 없다 — 소비자 셋(rspeedy ·
+  Vite · vitest · tsc `moduleResolution: bundler`)이 모두 직접 읽는다. 패키지 테스트 EC5가 키 목록을 고정한다.
+- **D4 — 앱 → 패키지, 랜딩 → 패키지만.** 패키지 `src`는 앱 경로 · Lynx · ui-lynx · `node:*`를 import하지 않는다(EC4). 랜딩은 `apps/mobile`을
+  import하지 않고 u00 JSON · 그림 · 효과음은 **사본**을 둔다 — 두 앱을 함께 읽는 동기 검사는 루트 `devtools/trial-assets`(패키지 의존이 아니다).
+- **D5 · D7** — 앱 · 랜딩 `dependencies`에 `"@libitums/episode-core": "workspace:*"`, 이름은 디렉터리명, `private: true`.
+- **D6 — `cycle:check` 범위에 `packages/episode-core/src`를 더했다**(`ui-lynx` · `storybook-lynx`와 함께).
+- 앱 안에서 패키지를 import하는 파일은 **17개로 고정**했다(앱 테스트 EM1) — 경계를 넓힐 때 목록을 함께 고친다.

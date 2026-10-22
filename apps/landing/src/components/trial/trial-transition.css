@@ -1,0 +1,126 @@
+/*
+ * 꿈 전환 — 스크립트가 루트에 data-transition(dream · wake)을 붙였다 뗍니다(움직임 줄이기면 붙이지 않음).
+ * DOM은 이미 새 장면이고, 새 장면이 구름빛(dream) · 감은 눈(wake)에서 또렷해지는 한 번의 모션입니다.
+ * 베일은 장식이라 탭을 막지 않고(pointer-events none) 글 · 버튼 · 머리 띠는 움직이지 않습니다.
+ */
+/* 구름빛은 그림 위 · 대사 상자 아래(z 1), 눈꺼풀은 장면 전체 위(z 3) — 머리 띠(z sticky)는 늘 위. */
+.trial-veil {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.trial[data-transition="wake"] .trial-veil {
+  z-index: 3;
+}
+
+/* dream — 흰 구름빛이 걷히며 그림이 흐림 → 또렷. */
+.trial[data-transition="dream"] .trial-veil {
+  background: radial-gradient(
+    ellipse at 50% 40%,
+    var(--libitum-color-white) 0,
+    color-mix(in srgb, var(--libitum-color-white) 85%, transparent) 45%,
+    color-mix(in srgb, var(--libitum-color-white) 40%, transparent) 75%,
+    transparent 100%
+  );
+  animation: trial-veil-clear var(--libitum-motion-duration-d8) var(--libitum-motion-easing-easing)
+    both;
+}
+
+.trial[data-transition="dream"] .trial-step:not([hidden]) .trial-scene__image {
+  animation:
+    trial-dream-focus var(--libitum-motion-duration-d8) var(--libitum-motion-easing-easing) both,
+    trial-scene-drift calc(var(--libitum-motion-duration-d9) * 6)
+      var(--libitum-motion-easing-easing) both;
+}
+
+@keyframes trial-veil-clear {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes trial-dream-focus {
+  from {
+    filter: blur(var(--libitum-spacing-12)) brightness(1.25);
+    transform: scale(1.06);
+  }
+
+  to {
+    filter: none;
+    transform: scale(1);
+  }
+}
+
+/* wake — 위아래 눈꺼풀이 열리고 초점이 맞습니다. */
+.trial[data-transition="wake"] .trial-veil {
+  opacity: 1;
+  background: transparent;
+}
+
+.trial[data-transition="wake"] .trial-veil::before,
+.trial[data-transition="wake"] .trial-veil::after {
+  position: absolute;
+  right: 0;
+  left: 0;
+  height: 50%;
+  background: var(--libitum-color-black);
+  content: "";
+  animation: trial-eyelid-open var(--libitum-motion-duration-d9)
+    var(--libitum-motion-easing-enter-expressive) both;
+}
+
+.trial[data-transition="wake"] .trial-veil::before {
+  top: 0;
+  transform-origin: top;
+}
+
+.trial[data-transition="wake"] .trial-veil::after {
+  bottom: 0;
+  transform-origin: bottom;
+}
+
+.trial[data-transition="wake"] .trial-step:not([hidden]) .trial-scene__image {
+  animation:
+    trial-wake-focus var(--libitum-motion-duration-d9) var(--libitum-motion-easing-enter-expressive)
+      both,
+    trial-scene-drift calc(var(--libitum-motion-duration-d9) * 6)
+      var(--libitum-motion-easing-easing) both;
+}
+
+@keyframes trial-eyelid-open {
+  from {
+    transform: scaleY(1);
+  }
+
+  to {
+    transform: scaleY(0);
+  }
+}
+
+@keyframes trial-wake-focus {
+  from {
+    filter: blur(var(--libitum-spacing-8));
+  }
+
+  to {
+    filter: none;
+  }
+}
+
+/* 움직임 줄이기 안전망 — 스크립트가 붙이지 않지만, 붙어도 보이지 않게. */
+.trial[data-motion="reduced"] .trial-veil {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trial .trial-veil {
+    display: none;
+  }
+}

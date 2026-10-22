@@ -1,0 +1,15 @@
+---
+// 「Answer: {answer}」처럼 UI 언어 문구 틀에 한국어 값을 끼웁니다 — 값만 lang="ko" 조각으로 그려 제 발음으로 읽힙니다.
+interface Props {
+  template: string;
+  answer: string;
+}
+
+const { template, answer } = Astro.props;
+const mark = "{answer}";
+const at = template.indexOf(mark);
+const before = at < 0 ? template : template.slice(0, at);
+const after = at < 0 ? "" : template.slice(at + mark.length);
+---
+
+{before}{at >= 0 && <span lang="ko">{answer}</span>}{after}

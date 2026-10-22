@@ -6,7 +6,7 @@ import { describe, expect, test } from "vitest";
 import { bundledCatalogInput } from "./episode-bundled";
 import { decodeEpisode } from "./episode-content";
 import type { Episode } from "./episode-content";
-import { KNOWN_ITEM_TYPES } from "./episode-content.schema";
+import { KNOWN_ITEM_TYPES } from "./episode-content";
 import { legacyCatalogInput } from "./episode-legacy.test-support";
 import { utf8Bytes } from "./sha256";
 

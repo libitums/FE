@@ -5,6 +5,11 @@
 // 마지막 키 하나를 빼고 다시 조합하면 되므로, 조합 중 음절을 자모 하나씩 되돌리는
 // 휴대폰 키보드의 동작이 따로 규칙 없이 나옵니다.
 
+import { normalizeAnswerText } from "@libitums/episode-core/judge";
+
+// 채점(NFC · 기호 · 공백 제거 뒤 비교)은 `@libitums/episode-core/judge`가 정본입니다.
+export { isTypedAnswerAccepted, isTypedAnswerCorrect } from "@libitums/episode-core/judge";
+
 const initials = [..."ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ"];
 const medials = [..."ㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢㅣ"];
 const finals = ["", ..."ㄱㄲㄳㄴㄵㄶㄷㄹㄺㄻㄼㄽㄾㄿㅀㅁㅂㅄㅅㅆㅇㅈㅊㅋㅌㅍㅎ"];
@@ -193,23 +198,6 @@ export function keystrokesFor(text: string): readonly string[] {
   return strokes;
 }
 
-// 채점은 한글 · 영문 · 숫자만 봅니다 — 띄어쓰기와 문장 부호는 학습자가 이 자판으로 고르기
-// 어렵고, 이 테스트가 보려는 것은 문장을 이루는 말입니다.
-// NFC로 먼저 모읍니다 — 정답 데이터가 NFD(첫가끝 자모, U+1100대)로 들어오면 아래 거름이 한글을
-// 전부 떼어 빈 문자열이 됩니다. 자판 입력은 늘 완성형이지만 정답 문자열은 밖에서 옵니다.
-// Lynx JS 엔진에 `normalize`가 없을 수 있어, 없으면 원문 그대로 둡니다(채점이 던지지 않게).
-const toNfc = (text: string) =>
-  typeof text.normalize === "function" ? text.normalize("NFC") : text;
-
-const normalize = (text: string) =>
-  toNfc(text).replace(/[^0-9A-Za-z\u3131-\u318e\uac00-\ud7a3]/g, "");
-
-/** 입력한 문장이 정답과 같은 말인지 봅니다. */
-export function isTypedAnswerCorrect(typed: string, answer: string): boolean {
-  const normalized = normalize(typed);
-  return normalized.length > 0 && normalized === normalize(answer);
-}
-
 /**
  * 정답을 초성으로 가립니다(`좋아요!` → `ㅈㅇㅇ!`). 글자 수와 첫소리가 보여 학습자가 무엇을
  * 칠지 짐작할 수 있지만 답을 그대로 베끼지는 못합니다. 한글 음절이 아닌 글자는 그대로 둡니다.
@@ -224,12 +212,7 @@ export function maskedAnswer(text: string): string {
     .join("");
 }
 
-/** 정답 목록 중 하나라도 입력과 같은 말이면 참입니다. */
-export function isTypedAnswerAccepted(typed: string, answers: readonly string[]): boolean {
-  return answers.some((answer) => isTypedAnswerCorrect(typed, answer));
-}
-
 /** 이 자판만으로 칠 수 있는 정답인지 봅니다(정규화 뒤 남은 글자가 전부 한글). */
 export function isTypeableAnswer(answer: string): boolean {
-  return /^[\u3131-\u318e\uac00-\ud7a3]+$/.test(normalize(answer));
+  return /^[\u3131-\u318e\uac00-\ud7a3]+$/.test(normalizeAnswerText(answer));
 }

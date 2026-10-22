@@ -1,7 +1,7 @@
 import "background-only";
 
 // 매니페스트 디코더 — 와이어(`manifest-1`)를 앱 모양으로 바꿉니다. 예외를 던지지 않습니다.
-import { formatPath, isRecord } from "./episode-content.normalize";
+import { formatPath, isRecord } from "@libitums/episode-core/episode";
 import { episodeManifestSchema } from "./episode-manifest.schema";
 
 export type ManifestEntry = {

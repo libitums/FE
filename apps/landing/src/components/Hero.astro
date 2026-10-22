@@ -1,12 +1,14 @@
 ---
 import type { Copy } from "../i18n/copy";
 import { img } from "../assets/images";
+import { type Language, trialPathFor } from "../site";
 
 interface Props {
+  language: Language;
   t: Copy;
 }
 
-const { t } = Astro.props;
+const { language, t } = Astro.props;
 ---
 
 <section class="hero" id="top" aria-labelledby="hero-title">
@@ -29,6 +31,14 @@ const { t } = Astro.props;
     <div class="hero__copy container">
       <h1 class="hero__line hero__line--a" id="hero-title" set:html={t.heroA} />
       <p class="hero__line hero__line--b" set:html={t.heroB} />
+      <a
+        class="button hero__trial"
+        href={trialPathFor(language)}
+        data-trial-link="hero"
+        data-testid="hero-trial-link"
+      >
+        {t.trialCta}
+      </a>
     </div>
     <a class="hero__cue" href="#manifesto">{t.heroCue}</a>
   </div>

@@ -1,0 +1,44 @@
+---
+// 완료 — 통과(passed) · 미통과(failed) 문구를 둘 다 굽고 data-result로 하나만 보입니다.
+// 미통과 본문의 맞힌 수는 스크립트가 채웁니다. 스토어 링크 대신 이메일 사전 등록 폼이 섭니다.
+import { pathFor } from "../../site";
+import type { TrialCompleteProps } from "./trial-components.contract";
+import TrialIcon from "./TrialIcon.astro";
+import TrialPrereg from "./TrialPrereg.astro";
+
+type Props = TrialCompleteProps;
+
+const { t, language, prereg } = Astro.props;
+---
+
+<section
+  class="trial-step trial-complete"
+  data-testid="trial-step-complete"
+  data-result="passed"
+  aria-labelledby="trial-heading-complete"
+  hidden
+>
+  <div class="trial-complete__badge" aria-hidden="true">
+    <span data-result-copy="passed"><TrialIcon name="tick" /></span>
+    <span data-result-copy="failed"><TrialIcon name="refresh" /></span>
+  </div>
+  <div class="trial-complete__summary">
+    <h2
+      class="trial-complete__title trial-type-accent-display"
+      id="trial-heading-complete"
+      data-step-heading
+      tabindex="-1"
+    >
+      <span data-result-copy="passed">{t.completeTitle}</span>
+      <span data-result-copy="failed">{t.completeTitleMissed}</span>
+    </h2>
+    <p class="trial-muted trial-type-body-m" data-result-copy="passed">{t.completeBody}</p>
+    <p class="trial-muted trial-type-body-m" data-result-copy="failed" data-complete-missed></p>
+  </div>
+  <div class="trial-install">
+    <TrialPrereg t={t} available={prereg} />
+    <a class="trial-link trial-link--home trial-type-button-m" href={pathFor(language)} data-testid="trial-complete-home">
+      {t.backHome}
+    </a>
+  </div>
+</section>

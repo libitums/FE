@@ -1,0 +1,19 @@
+---
+// 앱과 같은 그림(@libitums/icons)을 글자 색으로 그립니다. 장식이라 보조기술에는 숨깁니다.
+import arrowLeft from "@libitums/icons/lynx/arrow-left-03";
+import cross from "@libitums/icons/lynx/cross";
+import mic from "@libitums/icons/lynx/mic";
+import refresh from "@libitums/icons/lynx/refresh";
+import tick from "@libitums/icons/lynx/tick";
+import volume from "@libitums/icons/lynx/volume";
+
+const icons = { "arrow-left": arrowLeft, cross, mic, refresh, tick, volume } as const;
+
+interface Props {
+  name: keyof typeof icons;
+}
+
+const { name } = Astro.props;
+---
+
+<span class="trial-icon" aria-hidden="true" set:html={icons[name]} />
