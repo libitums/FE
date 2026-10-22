@@ -3,7 +3,7 @@
 결정은 [ADR-0079](../adr/0079-tutorial-as-catalog-episode.md)가 진다. 자동 테스트(unit · ui · integration)는 내장 본문 · 그림 표와 우선순위 · 문 규칙 · 옛 기록 스냅숏 · 첫 유닛 안내 · 티켓 비용 · Airbridge 매핑을 지키지만,
 **실제 기기 네트워크 차단에서 번들 `/static` 그림이 서는지(iOS 리소스 · Android 재작성) · 실행 사이 저장소 시드(옛 사용자) · VoiceOver 안내 낭독 · 큰 글꼴 배치**는 기기에서만 판정한다.
 
-⚠ **실제 앱 흐름으로는 아직 돌리지 못했다** — 시뮬레이터 앱은 소셜 로그인만 되어 진입할 수 없다. 2026-10-22에 개발 전용 플레이그라운드 회차(1차, 아래 「결과」)로 화면 판정을 먼저 했고, 로그인 · 저장소 시드 · 네트워크 차단 · Android가 필요한 판정은 남았다.
+⚠ **실제 앱 흐름으로는 아직 돌리지 못했다** — 시뮬레이터 앱은 소셜 로그인만 되어 진입할 수 없다. 2026-10-22에 개발 전용 플레이그라운드 회차(1차, 아래 「결과」)로 화면 판정을 먼저 했고, 사용자가 이 PR의 기기 확인을 그 부분 회차로 받아들였다(2026-10-22, [ADR-0079](../adr/0079-tutorial-as-catalog-episode.md) 머리). 제품 번들 오프라인 `/static` 그림(iOS 리소스 · Android 재작성) · 실제 로그인 · 저장소 시드 옛 사용자 · 서버 동기화 · 음성 12개 받기와 그림 받기 0 · 티켓 수 · Android(EU-8) · VoiceOver 실제 낭독은 후속 회차에 남았다.
 
 ## 준비
 
@@ -37,7 +37,7 @@
 
 ## Android Maestro 흐름 셋
 
-완료 낭독([android-completion-announcement](android-completion-announcement.md)) · 앱 리뷰([android-app-review](android-app-review.md)) · 말하기 권한([android-speech-recognition](android-speech-recognition.md))은 옛 튜토리얼 좌표를 쓴다 — u00 경로(완료 낭독 = u00 레슨 · 앱 리뷰 = u00 완료 설문 · 말하기 권한 = u00 `S5`)로 고치는 일은 e2e 단계에 남았다(사용자 결정 Q5). 고치기 전까지 그 흐름은 깨진 상태다.
+완료 낭독([android-completion-announcement](android-completion-announcement.md)) · 앱 리뷰([android-app-review](android-app-review.md)) · 말하기 권한([android-speech-recognition](android-speech-recognition.md))은 옛 튜토리얼 좌표를 쓴다 — u00 경로(완료 낭독 = u00 레슨 · 앱 리뷰 = u00 완료 설문 · 말하기 권한 = u00 `S5`)로 고친다(사용자 결정 Q5). 고치는 일은 2026-10-22 사용자 결정으로 **이 PR이 아니라 후속 작업**이 맡는다. 고치기 전까지 그 흐름은 깨진 상태다.
 
 ## 결과
 
@@ -58,7 +58,7 @@
 | EU-5 | **부분 통과** | 롤플레이 탭: u00 구획 없음, Episode 1 ~ 3 구획 · 메신저 · 전화 · 비주얼 노벨 항목 없음. u01 미완료라 모두 잠김 — 미리보기 → 컷 → 대화는 열어 보지 못했다 |
 | EU-6 | 미실행 | 받기 루프 · 버킷 · 앱 컨테이너가 필요하다 — 임시 화면은 받기를 돌리지 않는다 |
 | EU-7 | **통과** | 접근성 크기 최대(`content_size accessibility-extra-extra-extra-large`)에서 맵 한 열, u00 노드 15의 틀이 서로 겹치지 않음(접근성 트리 좌표로 셈) |
-| EU-8 | 미실행 | Android 에뮬레이터 회차는 하지 않았다 |
+| EU-8 | 미실행 | Android 에뮬레이터 회차는 하지 않았다 — 사용자 결정(2026-10-22)으로 후속 회차 |
 
 관찰(이 PR 밖, 후속): 단어 선택의 제시문에 빈칸이 없으면(S9 · S10 · S13) 한국어 · 로마자 줄의 접근성 라벨이 빈 값으로 잡힌다(`WordChoicePresentation`이 `accessibility-label={undefined}`를 넘김 — 이 브랜치에서 바뀌지 않은 파일). VoiceOver가 그 줄을 읽는지는 기기에서 확인해야 한다.
 

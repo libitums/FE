@@ -1,10 +1,10 @@
 # ADR-0079 — 튜토리얼은 카탈로그 에피소드 `u00-tutorial`이다: 앱에 내장하고 `Episode 0`으로 세우며, 옛 튜토리얼과 메신저 · 전화 · 비주얼 노벨을 같은 변경에서 지운다
 
 - 상태: **채택 — 클라이언트 · 호스트 자산.** 서버(RPC · 표 · send-push) · 버킷 형식 변경 0. 호스트 코드 변경 0(내장 음성 파일 18 지움 · androidTest 목록 고침).
-  ⚠ **기기 확인 전이다** — unit · ui · integration 테스트와 번들 크기만 확인했다. 새 설치 오프라인 · u00 통과 → Episode 1 · 옛 사용자 시드 · 롤플레이 회귀는 [튜토리얼 u00 e2e](../e2e/tutorial-u00.md) EU-0 ~ EU-8(미실행)이다.
+  ⚠ **기기 확인은 부분 회차다** — unit · ui · integration 테스트와 번들 크기에 더해, 2026-10-22 iOS 시뮬레이터 플레이그라운드 1차 회차([튜토리얼 u00 e2e](../e2e/tutorial-u00.md) 「결과 1차」 — EU-3 · EU-7 통과, EU-1 · EU-2 · EU-4 · EU-5 부분, EU-0 · EU-6 · EU-8 미실행)를 돌렸다. **사용자 결정(2026-10-22, D-A)**: 이 PR의 기기 확인은 이 부분 회차로 받아들인다. 제품 번들 오프라인 `/static` 그림(iOS · Android 재작성) · 실제 로그인 · 저장소 시드 옛 사용자 · 서버 동기화 · 음성 12개 받기와 그림 받기 0 · 티켓 수 · Android(EU-8) · VoiceOver 실제 낭독은 후속이다.
 - 날짜: 2026-10-21.
 - **사용자 결정**(2026-10-21): 튜토리얼은 콘텐츠 팀이 납품한 `u00-tutorial`이다 · **다른 에피소드와 같은 모양** · 그림은 **앱에 내장**(인터넷 없이 처음 설치해도 그림까지) · 옛 튜토리얼 진행은 옮기지 않는다 — **모두 처음부터** · **옛 튜토리얼을 통과한 기존 사용자는 Episode 1이 계속 열려 있다** · 전환과 삭제를 **한 PR에서**.
-  같은 날 질문 다섯(계약 Q1 ~ Q5)의 답: Q1 버킷 `manifest.json`의 u00 항목은 **그대로 둔다** · Q2 메신저 · 전화 · 비주얼 노벨 화면 · 데이터 · 롤플레이 route도 **같은 PR에서 지운다** · Q3 **u00은 티켓을 쓰지 않는다**(Episode 1부터) · Q4 Airbridge `achieveLevel`은 **`episode_final_passed`**(`level` = 에피소드 id)로 · Q5 Android Maestro 흐름 셋은 이 PR에서 u00 경로로 고친다.
+  같은 날 질문 다섯(계약 Q1 ~ Q5)의 답: Q1 버킷 `manifest.json`의 u00 항목은 **그대로 둔다** · Q2 메신저 · 전화 · 비주얼 노벨 화면 · 데이터 · 롤플레이 route도 **같은 PR에서 지운다** · Q3 **u00은 티켓을 쓰지 않는다**(Episode 1부터) · Q4 Airbridge `achieveLevel`은 **`episode_final_passed`**(`level` = 에피소드 id)로 · Q5 Android Maestro 흐름 셋은 u00 경로로 고친다 — **2026-10-22 사용자 결정(D-B)으로 후속 작업으로 넘겼다**(이 PR에서는 고치지 않는다 — 옛 튜토리얼 좌표라 그때까지 깨진 상태).
 - 다루는 축: 튜토리얼이 무엇인가(출처 · 맵의 자리 · 번호) · 내장 콘텐츠 그림의 출처와 우선순위 · 옛 튜토리얼 진행의 처리(스냅숏 호환 · Episode 1의 문) · 첫 유닛 안내의 대상 · 튜토리얼과 티켓 · 측정의 연속성 · 특별 유닛 셋(메신저 · 전화 · 비주얼 노벨)의 철거.
   **다루지 않는 것**: 학습 문항 음성의 연결(후속 — 아래 D12), u01 이후 콘텐츠, 서버 RPC 스키마, 맵 새 디자인, 옛 앱(이미 출시된 빌드)의 동작.
 - 이어받는 결정: [ADR-0024](0024-journey-units-and-special-unit-placement.md) D15를 **대체**한다(두 종류의 구획 → 카탈로그 하나 · 첫 구획의 문) — 0024 정정 기록 2026-10-21. 적용 기록을 단 곳: [0017](0017-host-native-capabilities-and-audio.md) · [0029](0029-product-analytics-posthog.md) D14 · [0034](0034-server-push-notifications.md) · [0035](0035-learning-progress-and-streak-on-server.md) D2 · [0036](0036-user-feedback-survey-and-app-review.md) D3 · [0045](0045-android-host-audio-assets.md) · [0050](0050-android-status-bar-icons.md) · [0054](0054-learning-item-guides.md) · [0056](0056-episode-content-delivery.md) D10 · [0057](0057-meta-app-events.md) D6 · [0058](0058-catalog-learning-session.md) · [0062](0062-progress-cache-first.md) · [0063](0063-airbridge-events.md) D7 · [0068](0068-special-unit-map-marker.md) · [0071](0071-episode-background-download.md) D5 · [0075](0075-learning-tickets.md) · [0076](0076-episode-roleplay.md) · [0078](0078-episode-update-on-splash.md).
@@ -153,6 +153,8 @@
 7. **S2 · S7 빈 레슨**(D12) — 후속 PR 전까지 u00의 듣기 두 단계가 비어 지나간다.
 8. **문화 노드 둘이 같은 이름 `Culture`로 연달아 선다** — 위치로만 구별된다.
 9. **구획 번호가 콘텐츠의 `order`를 따른다** — 콘텐츠가 order를 건너뛰면 번호도 건너뛴다.
+10. **그리지 않는 그림 하나를 싣는다** — 내장 WebP 14장 가운데 `u00-tutorial/rp-end.webp`(130,588 B)는 콘텐츠 `closing_image_url`이 가리키지만 그 필드를 그리는 화면이 없다. 받기 생략(D2 `has`)의 몫만 한다. 화면이 쓰게 할지 내장에서 뺄지는 후속 판단이다(아래 「후속」).
+11. **Android Maestro 흐름 셋이 깨진 채 병합된다**(D-B) — 완료 낭독 · 앱 리뷰 · 말하기 권한 흐름이 옛 튜토리얼 좌표를 쓴다. 후속 작업에서 u00 경로로 고칠 때까지 그 흐름은 돌지 않는다.
 
 ## 재검토 조건
 
@@ -165,7 +167,9 @@
 ## 후속
 
 - **학습 문항 음성 연결** — `feat/audio-slow-playback`(ADR-0080 예정). S2 · S7 빈 레슨이 풀린다.
-- **기기 확인** — [튜토리얼 u00 e2e](../e2e/tutorial-u00.md) EU-0 ~ EU-8, Android Maestro 흐름 셋(완료 낭독 · 앱 리뷰 · 말하기 권한)의 좌표를 u00 경로로(Q5).
-- **성능 보고서** — 첫 실행 · 맵 첫 그리기 · u00 표지 컷 그림(내장 `/static`).
+- **기기 확인 남은 것**(D-A) — [튜토리얼 u00 e2e](../e2e/tutorial-u00.md) 1차에서 남은 판정: 제품 번들 오프라인 `/static` 그림(iOS 리소스 · Android `asset:///` 재작성) · 실제 로그인 · 저장소 시드 옛 사용자(EU-0 · EU-4) · 서버 동기화 · 음성 12개 받기와 그림 받기 0(EU-6) · 티켓 수(EU-2) · Android(EU-8) · VoiceOver 실제 낭독(EU-3).
+- **Android Maestro 흐름 셋**(D-B) — 완료 낭독 · 앱 리뷰 · 말하기 권한의 좌표를 u00 경로로(Q5를 후속으로 넘김).
+- **`rp-end.webp`** — 화면이 `closing_image_url`을 그리게 할지, 내장에서 뺄지(130.6 kB) 정한다(대가 10).
+- **성능 보고서** — 1차는 부분 측정([tutorial-u00-iphone-13-mini-simulator-01](../performance/reports/tutorial-u00-iphone-13-mini-simulator-01.md) — 번들 · 정적 그림 크기). 남은 것: 제품 번들의 첫 실행 · 맵 첫 그리기 · u00 표지 컷 그림(내장 `/static`) 렌더 · 메모리.
 - **호스트 테스트 고정물 음성 셋** — 바꾸려면 두 호스트 테스트를 기기 빌드로 다시 돌려야 한다.
 - GitHub wiki 이벤트 사전(이름 44 → 36 · `episodeId` 값 · `prologueKind`)은 저장소 밖이라 따로 고친다.

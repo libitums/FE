@@ -38,14 +38,16 @@ import org.junit.Test;
  * <ul>
  *   <li>{@code noSession=true} - no session is seeded (onboarding).
  *   <li>{@code audioProgress} / {@code speechProgress} / {@code writingProgress} /
- *       {@code reviewProgress} = {@code true} - seed device-side progress so the listening, speaking
- *       or writing unit (or the review state) opens from the map.
- *   <li>{@code visualNovelProgress=true} - seed progress that makes the {@code visual-novel} map item
- *       the available one (intro, the first four steps, the messenger and the phone call done).
- *   <li>{@code finalProgress=true} - seed progress that makes the final test the available one
- *       (everything before it done, the final test not).
- *   <li>{@code completeProgress=true} - seed progress with the whole tutorial episode done (the
- *       roleplay tab opens). The episode survey bottom sheet may open over the map as a side effect.
+ *       {@code visualNovelProgress} / {@code finalProgress} = {@code true} - seed a v1 snapshot that
+ *       carries only the old built-in tutorial's fields (steps, intro, messenger, phone call, visual
+ *       novel). The map no longer has those items: it shows only catalog sections, the tutorial is
+ *       the catalog episode {@code u00-tutorial} (Episode 0, see ADR-0079), and the app keeps these
+ *       fields as a frozen legacy record. So with any of these seeds u00 starts from its beginning
+ *       and Episode 1 stays locked, the same map as a user without progress.
+ *   <li>{@code reviewProgress} / {@code completeProgress} = {@code true} - the same kind of seed, plus
+ *       the old final pass ({@code tutorial-final-test} in {@code completedEpisodeFinalIds}). That is
+ *       the legacy pass: Episode 1 stays open while u00 itself starts from its beginning. The episode
+ *       survey is asked only after u00, so it does not open for these seeds.
  *   <li>{@code loadProgress=true} - answer the server progress load ({@code load_learning_progress})
  *       with 200. The body is the seeded snapshot when one of the seed options above is set, and
  *       JSON {@code null} (a user who never saved anything) otherwise. That is what raises
@@ -79,22 +81,24 @@ public final class SignedInScreenFixtureTest {
   private static final String WRITING_PROGRESS = SPEECH_PROGRESS.replace(
       "\"completedStepCount\":6", "\"completedStepCount\":7");
   private static final String LOAD_PROGRESS_PATH = "/rest/v1/rpc/load_learning_progress";
-  // Intro, steps 1-4, messenger and phone call done; the visual novel (map order: next) is available.
+  // Old tutorial record: intro, steps 1-4, messenger and phone call done, visual novel active. The
+  // current map has no visual-novel item; this is only a frozen legacy record (u00 from the start).
   private static final String VISUAL_NOVEL_PROGRESS = "{\"version\":1,\"completedStepCount\":4,"
       + "\"completedEpisodeIntroIds\":[\"tutorial-intro\"],"
       + "\"completedMessengerUnitIds\":[\"appointment-confirmation\"],"
       + "\"completedPhoneCallUnitIds\":[\"appointment-confirmation-phone-call\"],"
       + "\"visualNovel\":{\"status\":\"active\",\"beatIndex\":0},"
       + "\"completedEpisodeFinalIds\":[]}";
-  // Everything done, final test included (the roleplay tab opens). The progress sync then sees the
-  // tutorial episode complete, so the episode survey sheet (a bottom sheet) may open over the map.
+  // Old tutorial record with everything done, final test included: the legacy pass, so Episode 1
+  // stays open. u00 is not complete, so no episode survey sheet.
   private static final String COMPLETE_PROGRESS = "{\"version\":1,\"completedStepCount\":8,"
       + "\"completedEpisodeIntroIds\":[\"tutorial-intro\"],"
       + "\"completedMessengerUnitIds\":[\"appointment-confirmation\"],"
       + "\"completedPhoneCallUnitIds\":[\"appointment-confirmation-phone-call\"],"
       + "\"visualNovel\":{\"status\":\"completed\",\"beatIndex\":2},"
       + "\"completedEpisodeFinalIds\":[\"tutorial-final-test\"]}";
-  // All eight steps and the visual novel done; the final test (map order: last) is available.
+  // Old tutorial record with all eight steps and the visual novel done, final test not. The current
+  // map has no old final-test item; without the final pass this changes nothing on the map.
   private static final String FINAL_PROGRESS = "{\"version\":1,\"completedStepCount\":8,"
       + "\"completedEpisodeIntroIds\":[\"tutorial-intro\"],"
       + "\"completedMessengerUnitIds\":[\"appointment-confirmation\"],"
