@@ -155,7 +155,7 @@ test("I-S3. Android 호스트: 호출 각 1회 · SDK 직접 참조는 Airbridge
   }
 });
 
-test("I-S4. iOS: 추적 문구 · SKAdNetworkItems · Facebook 접두 키 0건", () => {
+test("I-S4. iOS: 추적 문구는 Info.plist에 정확히 1건(ADR-0079) · SKAdNetworkItems · Facebook 접두 키 0건", () => {
   const info = plist();
   const project = read(join(iosDir, "Host.xcodeproj/project.pbxproj"));
   assert.ok(info.length > 0, "Info.plist를 읽을 수 있다");
@@ -164,7 +164,13 @@ test("I-S4. iOS: 추적 문구 · SKAdNetworkItems · Facebook 접두 키 0건",
     ["Info.plist", info],
     ["project.pbxproj", project],
   ]) {
-    assert.equal(count(text, /NSUserTrackingUsageDescription/g), 0, `${name}: 추적 문구`);
+    // ADR-0079: 추적 허용 문구는 Info.plist에만 한 번 — 빌드 설정(INFOPLIST_KEY_)으로 두 번 들어가지 않는다.
+    const expected = name === "Info.plist" ? 1 : 0;
+    assert.equal(
+      count(text, /<key>NSUserTrackingUsageDescription<\/key>|INFOPLIST_KEY_NSUserTracking/g),
+      expected,
+      `${name}: 추적 문구`,
+    );
     assert.equal(count(text, /SKAdNetworkItems/g), 0, `${name}: SKAdNetworkItems`);
     assert.equal(count(text, /<key>Facebook|INFOPLIST_KEY_Facebook/g), 0, `${name}: Facebook 키`);
   }
@@ -218,17 +224,22 @@ test("I-S6. 로컬 값 파일은 무시되고 추적되지 않으며 옛 Meta �
   }
 });
 
-test("I-S7. Podfile · lock: restricted 정확 버전 한 줄 · 일반판 없음 · Facebook pod 없음", () => {
+test("I-S7. Podfile · lock: 일반판 정확 버전 한 줄(ADR-0079) · restricted 없음 · Facebook pod 없음", () => {
   const podfile = read(join(iosDir, "Podfile"))
     .split("\n")
     .filter((line) => !line.trim().startsWith("#"))
     .join("\n");
   const lock = read(join(iosDir, "Podfile.lock"));
   assert.ok(podfile.length > 0 && lock.length > 0, "Podfile · Podfile.lock을 읽을 수 있다");
-  assert.equal(count(podfile, /^\s*pod\s+'airbridge-ios-sdk-restricted',\s*'4\.11\.1'\s*$/gm), 1);
-  assert.equal(count(podfile, /'airbridge-ios-sdk'/g), 0, "일반판 pod 없음");
+  assert.equal(count(podfile, /^\s*pod\s+'airbridge-ios-sdk',\s*'4\.12\.0'\s*$/gm), 1);
+  assert.equal(
+    count(podfile, /airbridge-ios-sdk-restricted/g),
+    0,
+    "restricted pod 없음(함께 설치하지 않는다)",
+  );
   assert.equal(count(podfile, /FBSDK/g), 0);
-  assert.ok(lock.includes("airbridge-ios-sdk-restricted (4.11.1)"), "lock에 restricted 4.11.1");
+  assert.ok(lock.includes("airbridge-ios-sdk (4.12.0)"), "lock에 일반판 4.12.0");
+  assert.ok(!lock.includes("airbridge-ios-sdk-restricted"), "lock에 restricted 없음");
   for (const name of ["FBSDKCoreKit", "FBAEMKit", "FBSDKCoreKit_Basics"]) {
     assert.ok(!lock.includes(name), `lock에 ${name}`);
   }

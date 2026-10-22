@@ -73,6 +73,11 @@ export type AirbridgeSemanticAttributes = { readonly [key: string]: string };
  */
 export interface AirbridgeEventsModule {
   trackEvent(category: string, semanticAttributes: AirbridgeSemanticAttributes): void;
+  /**
+   * ⟨ADR-0079⟩ 추적 허용(ATT)을 아직 정하지 않았으면 시스템 대화상자를 띄웁니다. **iOS에만 있습니다** —
+   * Android 모듈에는 이 메서드가 없습니다. 응답 · 콜백이 없습니다(`lib/tracking-authorization.ts`).
+   */
+  requestTrackingAuthorization?(): void;
 }
 
 // ------------------------------------------------------------------ JS 결선
