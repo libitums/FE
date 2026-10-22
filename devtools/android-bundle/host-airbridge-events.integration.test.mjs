@@ -86,7 +86,7 @@ test("I-S2. Gradle: Airbridge 정확 버전 한 줄 · Meta 의존 없음 · bui
   assert.ok(build.length > 0, "app/build.gradle을 읽을 수 있다");
   const sdkLines = build.split("\n").filter((line) => line.includes("io.airbridge"));
   assert.equal(sdkLines.length, 1, "io.airbridge 의존은 한 줄");
-  assert.match(sdkLines[0], /^\s*implementation\s+['"]io\.airbridge:sdk-android:4\.11\.3['"]\s*$/);
+  assert.match(sdkLines[0], /^\s*implementation\s+['"]io\.airbridge:sdk-android:4\.12\.0['"]\s*$/);
   assert.equal(count(build, /com\.facebook\.android/g), 0);
   for (const key of ["AIRBRIDGE_APP_NAME", "AIRBRIDGE_SDK_TOKEN"]) {
     assert.match(build, new RegExp(`buildConfigField\\s+['"]String['"]\\s*,\\s*['"]${key}['"]`));
