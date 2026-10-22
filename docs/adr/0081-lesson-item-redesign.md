@@ -3,7 +3,8 @@
 - 상태: **채택 — 클라이언트 쪽.** 호스트 · 서버 변경 0. 콘텐츠 형식은 **선택 키 하나**(`counterpart_avatar`)가 더해졌고 지금 데이터(내장 u00 ~ u03)에는 그 키가 없다 — 그림 · JSON 업로드는 사용자 몫이다.
   ui-lynx 표면이 넓어졌다 — `OptionSelector`(variant `outlined-subtle` · 판정 축 `feedback` · 뜻 줄 `meaning` · 확정이면 1개 허용), `ChatBubble`(`annotation`).
   **e2e는 iPhone 13 mini 시뮬레이터 한 회차(부분)** — EU2 · EU4 · EU8과 EU1 일부를 봤고, 거기서 나온 iOS 결함 셋(흐름 안 `Check` 넘침 · 빈칸 밑줄 색 · 그림 위 모서리)을 고친 뒤 같은 시뮬레이터에서 다시 봤다(D18 · 재검토 조건 6 · D8 ~ D11).
-  Android · regular 기기 · 스크린리더 · 아바타 그림 · 큰 글꼴 · 세 구간 시간(EU1-A · EU3 · EU5 ~ EU7 · EU9)은 미실행이다 — [학습 문항 리디자인 e2e](../e2e/lesson-redesign.md) 「결과」.
+  ⟨2026-10-22, 최종 HEAD⟩ 캔버스 대조(EU1 — 불일치 둘 기록) · regular 기기(EU3 — iPhone 15 시뮬레이터 통과) · 큰 글꼴(EU9 — 13 mini 통과)을 더 봤다.
+  Android · 스크린리더 · 아바타 그림 · 세 구간 시간(EU1-A · EU5 ~ EU7 · EU8 Android)은 미실행이다 — [학습 문항 리디자인 e2e](../e2e/lesson-redesign.md) 「결과」.
   성능 보고서는 [부분 측정 01](../performance/reports/lesson-redesign-iphone-13-mini-simulator-01.md)(번들 증가량 · 13 mini 화면별 높이)이고 렌더 · 프레임 · 메모리 · 세 구간 시간은 미측정이다(「미확인 · 후속」 1).
   접근성 감사(코드 · CSS · 토큰 대비, 기기 청취 없음)의 지적을 반영했다(D15 · D18 · D19).
 - 날짜: 2026-10-22.
@@ -202,8 +203,10 @@
 5. **밀도 문턱 756은 기기 목록 가정이다** — iOS 기준으로 잡았고 Android dp는 다양하다(낮으면 compact — 안전 쪽).
 6. **outlined-subtle 기본 테두리 `gray-300`/흰 1.15** — 비글자 3:1 미달이다. outlined `gray-400`(1.35)의 design-system 승인 예외와 같은 부류로 둔다 — 항목은 라벨(17:1)과 누름 영역 전체로 식별된다. 새 variant이므로 design-system에 수치를 보고한다.
 7. **`meaning` · `annotation`은 design-system 확장 규칙 3과 어긋나는 FE 확장이다** — 기록하고 보고한다(D5 · 버린 대안 5).
-8. **번들** — ui-lynx `dist` 실측 547,900 bytes(기준 49dc553e 528,482 대비 +19,418), 상한 530,000 → 549,000(OptionSelector · ChatBubble 확장, 사용자 사전 승인 규칙). 앱 `main.lynx.bundle`은 `.env.local` 없는 같은 설정으로 기준 2,103,053 → 2,153,057 bytes(+50,004)이고 상한 2,385,000 안이라 올리지 않았다. 새 의존성 · 미디어 없음. 몫 나눔은 [성능 보고서 01](../performance/reports/lesson-redesign-iphone-13-mini-simulator-01.md) 「번들」.
+8. **번들** — 최종 HEAD(e354c3b0)를 `.env.local` 없는 같은 설정(`pnpm build && pnpm size:check`)으로 잰 앱 `main.lynx.bundle`은 기준 49dc553e 2,103,053 → **2,157,080 bytes(+54,027)** 이고 상한 2,385,000 안이라 올리지 않았다. ui-lynx `dist`는 528,482 → **548,402 bytes(+19,920)**, 상한 530,000 → 549,000(OptionSelector · ChatBubble 확장 — 사용자 사전 승인 규칙, 여유 598). 729e574b 때 실측(앱 +50,004 · ui-lynx +19,418) 뒤 접근성 반영 · 기기 결함 수정이 앱 +4,023 · ui-lynx +502를 더했다. 새 의존성 · 미디어 없음.
+   **spec 예측(+14 ~ 22 kB)보다 크다** — 729e574b의 +50 kB는 예측 상단의 약 2.3배, 최종 +54 kB는 약 2.5배다. 몫은 로직 · ui-lynx 단계 +21.5 kB와 화면 · 결선 단계 +28.1 kB로 둘 다 예측을 넘었고, 어느 화면이 얼마인지는 재지 않았다(커밋 단위 몫). 나눔은 [성능 보고서 01](../performance/reports/lesson-redesign-iphone-13-mini-simulator-01.md) 「번들」.
 9. **기존 ui · integration 단언이 대량으로 바뀌었다** — 보기 testid가 `ui-lynx-option-selector-item-choice-<i>`로 바뀌고 판정 칸 · 옛 보기 파일 셋이 지워졌다.
+10. **RoundButton brand 아이콘(`S7` 재생 단추 포함)이 회색 면(`gray-100`) 위 `brand-primary`로 2.84다 — WCAG 1.4.11 비텍스트 3:1 미달(사용자 수용, 2026-10-22).** 접근성 감사는 `fg-brand`(짙은 주황)를 권했으나 사용자가 시안 색을 유지했다(D19). 단추는 이름(`Play` 등)과 원형 면 전체로 식별된다. 고치려면 ui-lynx `RoundButton` FE override(2026-09-21)를 함께 바꿔야 해 별도 과제로 둔다.
 
 ## 재검토 조건
 
@@ -217,7 +220,7 @@
 ## 미확인 · 후속
 
 1. **성능 — 세 구간 시간** — [성능 보고서 01](../performance/reports/lesson-redesign-iphone-13-mini-simulator-01.md)은 번들 증가량 · 13 mini 화면별 높이만 쟀다. 남은 것: 실제 13 mini 기기 Release 빌드 baseline(49dc553e) / candidate 각 3회 — 레슨 시작 → 첫 문항 첫 그리기(u00 S2 · S7 · S13, 회귀 ≤ 10 %) · 보기 탭 → 판정 배지(≤ 100 ms) · S13 보기 탭 → 해설 판(≤ 150 ms), 렌더 · 프레임 · 메모리(e2e EU7).
-2. **남은 기기 확인** — [학습 문항 리디자인 e2e](../e2e/lesson-redesign.md) 「결과」의 미실행 항목: Android(EU1-A · EU8) · regular 기기(EU3) · VoiceOver · TalkBack 청취(EU5 — 해설 판 → `Continue` 도달, 판정 뒤 지시문 미낭독, `Check` → `Next` 초점 유지 포함) · 아바타 그림(EU6) · 큰 글꼴(EU9 — 해설 판 글 스크롤) · 캔버스와 나란히 둔 대조(EU1).
+2. **남은 기기 확인** — [학습 문항 리디자인 e2e](../e2e/lesson-redesign.md) 「결과」의 미실행 항목: Android(EU1-A · EU8) · VoiceOver · TalkBack 청취(EU5 — 해설 판 → `Continue` 도달, 판정 뒤 지시문 미낭독, `Check` → `Next` 초점 유지 포함) · 아바타 그림(EU6). ⟨2026-10-22⟩ 캔버스 대조(EU1) · regular 기기(EU3, iPhone 15 시뮬레이터) · 큰 글꼴(EU9, 해설 판 글 스크롤과 `Continue` 화면 안)은 최종 HEAD에서 실행했다 — EU3 · EU9 통과, EU1은 불일치 둘(neutral 듣기 아이콘 회색 · `S13` 머리 학습형 이름)을 기록만 했다.
 3. **아바타 그림 업로드와 JSON 갱신** — 사용자(256×256 WebP 준비 중). 순서는 [콘텐츠 계약](../specs/episode-content-json-contract.md) §13 규칙 4.
 4. **design-system 보고** — `outlined-subtle` 상태 대비(기본 테두리 1.15) · `meaning` · Feedback 축 · ChatBubble `annotation`.
 5. GitHub wiki 이벤트 사전(`episode_item_answered`)은 저장소 밖이라 따로 고친다.
