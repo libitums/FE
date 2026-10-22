@@ -21,10 +21,12 @@
   letter-spacing: var(--libitum-typography-body-m-letter-spacing);
 }
 
-/* 빈칸을 채운 정답 조각 — brand 밑줄입니다. 비텍스트 대비 3 이상입니다. */
+/* 빈칸을 채운 정답 조각 — `fg-brand` 색 + 기본 밑줄입니다. iOS Lynx는 `text-decoration-color` · 두께를 읽지
+   않아 밑줄이 글자색을 따라가므로(기기 확인, ADR-0081 재검토 조건 6) 글자색 자체를 brand로 칠합니다.
+   `fg-brand`는 흰 바탕 5.46:1이라 본문 글자 대비(4.5)를 넘고, 밑줄은 shorthand 한 줄로만 둡니다. */
 .text-role-romanization-answer {
+  color: var(--libitum-color-fg-brand);
   text-decoration: underline;
-  text-decoration-color: var(--libitum-color-brand-primary);
 }
 
 /* 구분선 — 위 16 · 아래 12(compact 12 · 8). 학습 껍데기의 밀도 클래스가 compact를 정합니다. */

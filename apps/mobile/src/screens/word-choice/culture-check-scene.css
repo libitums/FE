@@ -10,6 +10,9 @@
   aspect-ratio: 5 / 2;
   overflow: hidden;
   background-color: var(--libitum-color-gray-100);
+  /* 위 모서리를 틀에 직접 줍니다 — iOS Lynx는 바깥 `Card.Media`의 둥근 모서리로 안쪽을 자르지 않습니다. */
+  border-top-left-radius: var(--libitum-radius-xl);
+  border-top-right-radius: var(--libitum-radius-xl);
 }
 
 .culture-check-scene-picture {

@@ -16,6 +16,9 @@
   width: 100%;
   overflow: hidden;
   background-color: var(--libitum-color-gray-100);
+  /* 위 모서리는 틀에도 직접 줍니다 — iOS Lynx는 바깥 `Card.Media`의 둥근 모서리로 안쪽 그림을 자르지 않아
+     그림 위 모서리가 직각으로 남습니다(기기 확인). 네 모서리 모두 카드(`xl`)와 같습니다. */
+  border-radius: var(--libitum-radius-xl);
 }
 
 .word-choice-picture-frame-1-1 {
@@ -43,6 +46,8 @@
 .word-choice-picture-image {
   width: 100%;
   height: 100%;
+  /* 틀 모서리와 같은 값 — 틀의 둥근 모서리가 그림을 못 자르는 iOS를 위해 그림에도 직접 줍니다. */
+  border-radius: var(--libitum-radius-xl);
 }
 
 /* 그림이 못 서면 같은 틀 · 같은 높이에 뜻 글자가 섭니다. 틀 가운데에서 줄바꿈합니다. */
@@ -96,6 +101,8 @@
   padding-left: var(--libitum-spacing-12);
   padding-right: var(--libitum-spacing-12);
   border-top: var(--libitum-stroke-width-thin) solid var(--libitum-color-gray-300);
+  border-bottom-left-radius: var(--libitum-radius-xl);
+  border-bottom-right-radius: var(--libitum-radius-xl);
   background-color: var(--libitum-color-white);
 }
 
