@@ -224,7 +224,8 @@
   );
 }
 
-/* 합친 흐름: 부모(`learning-shell-flow`)가 스크롤 높이까지 늘어나 남는 세로를 줍니다. */
+/* 합친 흐름: 부모(`learning-shell-flow`)가 스크롤 높이까지 늘어나 남는 세로를 줍니다. 나뉜 배치라도 버튼 행이 흐름
+   안(`in-flow`)이면 이것을 씁니다 — 행이 제 높이를 스스로 차지하므로 버튼 몫을 따로 비우지 않습니다. */
 .learning-shell-stage-fill-flow {
   flex-grow: 1;
 }

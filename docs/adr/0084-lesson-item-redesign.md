@@ -153,6 +153,8 @@
   13 mini 시뮬레이터에서 줄 배치 `Check`의 아래 끝이 안전 영역 경계 778을 27.6 ~ 27.9 pt 넘었다 [실측 — [성능 보고서 01](../performance/reports/lesson-redesign-iphone-13-mini-simulator-01.md)]. 하한을 준 뒤 같은 화면(S7 · S11 · u01 문장 조립)의 `Check`가 셸 버튼 자리 698 ~ 754에 선다 [실측 — 시뮬레이터 재확인]. 큰 글자에서는 내용이 하한을 넘어 자란다(ADR-0020 결정 5).
 - **보조 버튼과 짝인 아래 버튼 행은 넘치면 위아래로 쌓인다**(사용자 결정 D-F2, 2026-10-23). 말하기 화면(`S8` 따라 읽기 · `S5` 낱말 말하기)은 `secondaryAction`(`Skip` · `Next` · `See results` · `Try again`)을 주 버튼 앞에 둔다. 보조 버튼은 내용 폭을 지키고(`flex-shrink: 0`) 주 버튼은 기준 폭 0으로 남는 폭을 채워, 큰 글자에서 `See results`가 281 pt로 넓어지면 `Speak`가 48 pt로 줄어 글자가 잘렸다 [실측 — 13 mini, `accessibility-extra-extra-extra-large`].
   셸이 `secondaryAction`이 있는 행에만 `learning-shell-actions-paired`를 붙이고, 그 행은 `flex-wrap: wrap` · 주 버튼 기준 폭 `auto` · `justify-content: center`다. 한 줄에 들면(보통 크기) 모양이 그대로이고(13 mini `S8` · `S5` 버튼 행 696 ~ 754, 이전 회차와 픽셀 같음), 넘치면 보조 버튼이 내용 폭으로 가운데에 서고 주 버튼이 그 아래 전체 폭으로 선다(`S8` 큰 글자: `See results` 536.7 ~ 638.4 · `Speak` 654.3 ~ 754, 343 pt). 보조 버튼이 없는 다른 화면의 행은 바뀌지 않는다.
+- **흐름 안 버튼 행의 완료 카드는 버튼 몫을 두 번 비우지 않는다**(2026-10-23, 실기기 지적). 문장 만들기는 완료 카드에서도 행이 흐름 안이다. 나뉜 배치의 완료 무대(`-fill-rest`)는 떠 있는 버튼 몫을 아래 여백으로 비우는데, 흐름 안 행이 제 높이를 한 번 더 차지해 u00 `S7` · `S11` 완료 카드의 `See results`가 749 ~ 805(경계 778 밖)로 밀렸다 [실측 — 13 mini 시뮬레이터, 앱 결선 경로].
+  셸이 행 자리를 `learningShellSceneClasses`에 넘겨, 행이 흐름 안이면 나뉜 배치에서도 무대가 남는 세로만 받는다(`-fill-flow`) — `See results` 698 ~ 754, 완료 카드 위치가 떠 있는 행의 화면과 같다.
 
 ### D19. 접근성
 
