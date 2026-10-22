@@ -1,9 +1,9 @@
 # ADR-0080 — Airbridge 딥링크 · 지연 딥링크: `duru://<탭>`을 앱 구간에 들어선 뒤 그 탭으로 연다
 
 - 상태: **채택 — iOS · Android 호스트 · 클라이언트.** 서버 변경 0.
-  ⚠ **기기 확인 전이다** — scheme 링크 · universal link · App Link · 지연 딥링크가 실제로 앱을 열고 탭을 옮기는지는
-  [e2e 시나리오 E](../e2e/airbridge-events.md#e--딥링크--지연-딥링크-adr-0080)에서 본다. App Link 검증은 Airbridge 대시보드에
-  SHA256 지문이 들어간 뒤에야 된다.
+  ⚠ **기기 확인은 일부다** — iOS 실기에서 scheme 링크 셋(탭 둘 · 모르는 목적지)을 봤고(2026-10-22), universal link · App Link ·
+  지연 딥링크 · Android 탭 이동은 남았다([e2e 시나리오 E](../e2e/airbridge-events.md#e--딥링크--지연-딥링크-adr-0080)). App Link
+  검증은 Airbridge 대시보드에 SHA256 지문이 들어간 뒤에야 된다.
 - 날짜: 2026-10-22.
 - **사용자 결정**(2026-10-22): 목적지는 **앱 열기 + 주요 탭 셋**(여정 · 롤플레이 · 설정) · 지연 딥링크는 **가입 뒤 맵에서** 연다 ·
   scheme은 **`duru://`**.
