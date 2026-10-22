@@ -27,6 +27,11 @@
 }
 
 /* 그림을 감싸는 무대 카드입니다 — 그림이 카드의 큰 모서리(xl) 안쪽까지 차도록 미디어 모서리를 카드와 맞춥니다. */
+.word-choice-stage-card {
+  align-self: stretch;
+  width: 100%;
+}
+
 .word-choice-stage-card .ui-lynx-card-media {
   border-start-start-radius: var(--libitum-radius-xl);
   border-start-end-radius: var(--libitum-radius-xl);
