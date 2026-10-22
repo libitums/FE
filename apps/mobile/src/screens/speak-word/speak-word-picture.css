@@ -9,14 +9,22 @@
   align-self: stretch;
 }
 
-/* 틀 — 가로:세로 4:3입니다(비율은 토큰이 아닌 설계 상수). 면 `gray-100`은 로딩 중의 빈 틀입니다. */
+/* 틀 — 가로:세로 5:4(regular) 또는 4:3(compact)입니다(비율은 토큰이 아닌 설계 상수). 면 `gray-100`은 로딩 중의 빈
+   틀입니다. */
 .speak-word-picture-frame {
   position: relative;
   width: 100%;
-  aspect-ratio: 4 / 3;
   overflow: hidden;
   border-radius: var(--libitum-radius-md);
   background-color: var(--libitum-color-gray-100);
+}
+
+.speak-word-picture-frame-5-4 {
+  aspect-ratio: 5 / 4;
+}
+
+.speak-word-picture-frame-4-3 {
+  aspect-ratio: 4 / 3;
 }
 
 /* 그림 — 틀을 채웁니다(가운데 기준으로 넘치는 쪽을 자릅니다). 장식 테두리가 없습니다. */

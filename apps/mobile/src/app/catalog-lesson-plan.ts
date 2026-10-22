@@ -215,10 +215,12 @@ export function catalogFillOf(content: EpisodeContent, profile: LearnerProfile):
 
 // 같은 ready 항목 · 프로필 참조 · 키면 같은 계획 참조입니다(자동 넘김 걸음이 문항 참조에 걸려 있어 렌더마다 새로
 // 만들면 안 됩니다). 문항 음성은 받은 파일 유무로 풀려(v4) 같은 콘텐츠 참조에서도 달라지므로, 계획을 만들 때 물어본
-// 음성 경로와 답을 적어 두고 다시 찾을 때 같은 답일 때만 메모를 씁니다. 판정 시점은 레슨 계획을 만드는 때입니다.
+// 음성 경로와 답을 적어 두고 다시 찾을 때 같은 답일 때만 메모를 씁니다. 상대 아바타 그림도 받은 파일 > 내장 > 원격 순으로
+// 풀려 같은 이유로 적어 둡니다. 판정 시점은 레슨 계획을 만드는 때입니다.
+type MemoProbe = readonly ["audio" | "image", string, string | null];
 type MemoPlan = {
   readonly plan: CatalogLessonPlan | null;
-  readonly probes: readonly (readonly [string, string | null])[];
+  readonly probes: readonly MemoProbe[];
 };
 const memo = new WeakMap<object, WeakMap<object, Map<string, MemoPlan>>>();
 
@@ -247,14 +249,17 @@ export function catalogLessonPlanFor(
   const cached = plans.get(planKey);
   if (
     cached !== undefined &&
-    cached.probes.every(([path, url]) => content.audioUrlOf(path) === url)
+    cached.probes.every(
+      ([kind, path, url]) =>
+        (kind === "audio" ? content.audioUrlOf(path) : content.imageUrlOf(path)) === url,
+    )
   ) {
     return cached.plan;
   }
-  const probes: [string, string | null][] = [];
+  const probes: MemoProbe[] = [];
   const probedAudioUrlOf = (path: string): string | null => {
     const url = content.audioUrlOf(path);
-    probes.push([path, url]);
+    probes.push(["audio", path, url]);
     return url;
   };
   const plan = catalogLessonPlanOf(
@@ -264,6 +269,8 @@ export function catalogLessonPlanFor(
     content.imageUrlOf,
     probedAudioUrlOf,
   );
+  const avatar = entry.episode.counterpartAvatar;
+  if (avatar !== undefined) probes.push(["image", avatar, content.imageUrlOf(avatar)]);
   plans.set(planKey, { plan, probes });
   return plan;
 }

@@ -5,6 +5,7 @@ import type { ReactNode } from "@lynx-js/react";
 
 import type { AnswerResult } from "../lib/answer-result";
 import type { ConversationCast } from "../lib/conversation-cast";
+import type { ItemAnswerReport } from "../lib/item-answer";
 import type { LessonPosition } from "../screens/learning/activity-finish";
 import { CultureCardActivity } from "../screens/culture-card/CultureCardActivity";
 import { ListeningActivity } from "../screens/listening/ListeningScreen";
@@ -24,21 +25,25 @@ import type { ScreenWiring } from "./screen-wiring";
 type LessonScreen = Extract<Screen, { name: "catalog-lesson" }>;
 
 // 활동 하나를 그 학습형의 화면으로 그립니다. 망라 `switch`가 새 학습형을 컴파일 타임에 강제합니다.
-// `counterpartName`은 대화 조립 아바타만 씁니다 — 학습자 이름과 함께 문장 순서 활동에 넘깁니다.
+// `cast`(상대 · 학습자의 이름 · 그림)는 대화 조립 아바타와 문화 확인 장면이 씁니다. `itemRefs`는 이 활동의 문항 순서대로
+// 콘텐츠 문항 참조라, 채점 문항이 처음 판정될 때 올라온 보고를 문항 이벤트로 잇습니다.
 export function renderCatalogActivity(
   activity: CatalogActivity,
   lesson: LessonPosition,
   screen: LessonScreen,
   wiring: ScreenWiring,
-  counterpartName: string,
-  _cast?: ConversationCast,
-  _itemRefs?: readonly CatalogItemRef[],
+  cast: ConversationCast,
+  itemRefs: readonly CatalogItemRef[],
 ): ReactNode {
   const { episodeId, unitKey, activityIndex } = screen;
   const key = `${episodeId}:${unitKey}:${activityIndex}`;
   const onFinish = (results: readonly AnswerResult[], skippedCount: number) =>
     wiring.onFinishCatalogActivity(episodeId, unitKey, activityIndex, results, skippedCount);
   const onExit = wiring.onExitCatalogSession;
+  const onItemAnswered = (report: ItemAnswerReport): void => {
+    const ref = itemRefs[report.questionIndex];
+    if (ref !== undefined) wiring.onCatalogItemAnswered(episodeId, unitKey, ref, report);
+  };
   // 소리 있는 활동이 함께 받는 값입니다 — 속도는 레슨 동안 이어지므로 활동이 바뀌어도 같은 상태를 읽습니다.
   const lessonAudio = catalogLessonAudioOf(wiring, episodeId, unitKey);
   switch (activity.form) {
@@ -53,6 +58,7 @@ export function renderCatalogActivity(
           gemCount={wiring.gemCount}
           lesson={lesson}
           lessonAudio={lessonAudio}
+          onItemAnswered={onItemAnswered}
         />
       );
     case "sentence-order":
@@ -65,7 +71,8 @@ export function renderCatalogActivity(
           onFinish={onFinish}
           lesson={lesson}
           lessonAudio={lessonAudio}
-          speakerNames={{ counterpart: counterpartName, me: wiring.learnerFill.name }}
+          cast={cast}
+          onItemAnswered={onItemAnswered}
         />
       );
     case "word-choice":
@@ -77,6 +84,8 @@ export function renderCatalogActivity(
           onFinish={onFinish}
           lesson={lesson}
           lessonAudio={lessonAudio}
+          cast={cast}
+          onItemAnswered={onItemAnswered}
         />
       );
     case "typing":
@@ -135,6 +144,7 @@ export function renderCatalogActivity(
           onFinish={onFinish}
           lesson={lesson}
           lessonAudio={lessonAudio}
+          onItemAnswered={onItemAnswered}
         />
       );
     case "read-aloud":
@@ -159,6 +169,7 @@ export function renderCatalogActivity(
           onFinish={onFinish}
           lesson={lesson}
           lessonAudio={lessonAudio}
+          onItemAnswered={onItemAnswered}
         />
       );
     default: {

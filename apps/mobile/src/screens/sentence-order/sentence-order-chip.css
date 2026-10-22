@@ -89,3 +89,41 @@
 
 /* 누를 수 없는 조각(칸이 다 참 · 채점 뒤)은 모양을 바꾸지 않습니다 — 디자인에 그 상태가
    없고, 불투명도 토큰도 없습니다. 탭과 낭독 특성(`disabled`)만 갈립니다. */
+
+/* 줄 배치(듣고 조립 · 문장 순서)의 줄 위에 놓인 조각은 창고 조각과 같은 흰 면 · 연한 테두리입니다 — 주황 면은 최종 테스트가
+   그대로 씁니다. */
+.sentence-order-lines .sentence-order-chip-placed {
+  background-color: var(--libitum-color-white);
+  border-color: var(--libitum-color-gray-300);
+}
+
+.sentence-order-lines .sentence-order-chip-placed .sentence-order-chip-label {
+  color: var(--libitum-color-fg-neutral);
+}
+
+/* 채점 뒤 줄 위 조각의 판정 색입니다. 테두리가 2px로 굵어지는 만큼 안 여백을 줄여 조각 크기가 변하지 않게 합니다.
+   색이 유일한 채널이 아닙니다 — 테두리 굵기와 셸 지시문 자리의 판정 배지가 함께 말합니다(WCAG 1.4.1). */
+.sentence-order-lines .sentence-order-chip-correct,
+.sentence-order-lines .sentence-order-chip-incorrect {
+  border-width: var(--libitum-stroke-width-strong);
+  padding: var(--libitum-spacing-12)
+    calc(var(--libitum-spacing-16) - var(--libitum-stroke-width-thin));
+}
+
+.sentence-order-lines .sentence-order-chip-correct {
+  background-color: var(--libitum-color-feedback-correct-surface);
+  border-color: var(--libitum-color-feedback-correct);
+}
+
+.sentence-order-lines .sentence-order-chip-correct .sentence-order-chip-label {
+  color: var(--libitum-color-feedback-correct-text);
+}
+
+.sentence-order-lines .sentence-order-chip-incorrect {
+  background-color: var(--libitum-color-feedback-incorrect-surface);
+  border-color: var(--libitum-color-feedback-incorrect);
+}
+
+.sentence-order-lines .sentence-order-chip-incorrect .sentence-order-chip-label {
+  color: var(--libitum-color-feedback-incorrect-text);
+}

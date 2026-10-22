@@ -59,6 +59,8 @@ export type SpeakWordActivityProps = {
 /** 그림 틀 — 상태대로 빈 틀 · 그림 · 뜻 글자를 그립니다(상태 없음). 이름표는 없습니다(정답은 `AnswerReveal`). */
 export type SpeakWordPictureProps = {
   readonly url: string;
+  /** 틀 비율입니다 — regular 5:4, compact 4:3. 없으면 4:3. */
+  readonly ratio?: "5-4" | "4-3";
   readonly meaning: string;
   readonly state: PictureLoadState;
   readonly onLoad: () => void;

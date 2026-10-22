@@ -1,5 +1,6 @@
 // 음절 조립 활동의 계약입니다. 타입만 둡니다.
 
+import type { AnswerResult } from "../../lib/answer-result";
 import type { AnswerEchoAudio, LessonAudio } from "../../lib/question-audio";
 import type { ItemAnswerReporter } from "../../lib/item-answer";
 import type { NonEmpty } from "../../lib/non-empty";
@@ -79,6 +80,10 @@ export type SyllableBuildWordProps = {
   readonly slotCount: number;
   readonly placedTileIndexes: readonly number[];
   readonly interaction: SyllableTileInteraction;
+  /** 칸 상태(`filled` · `current` · `empty`)를 고르는 국면입니다. 없으면 `building`입니다. */
+  readonly phase?: SyllableBuildPhase;
+  /** 채점 뒤 칸 판정 색입니다. 채점 전이면 `null`(없어도 됩니다). */
+  readonly result?: AnswerResult | null;
   readonly accessibility: SyllableBuildWordAccessibility;
   readonly onReturn: (tileIndex: number) => void;
 };

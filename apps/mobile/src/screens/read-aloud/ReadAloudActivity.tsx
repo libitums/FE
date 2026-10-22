@@ -33,7 +33,7 @@ import "./read-aloud-activity.css";
 
 // 글을 보고 소리 내어 읽는 활동입니다(카탈로그 SHADOW). 채점하지 않습니다 — 인식 뒤에는 앞에서부터 맞은 낱말만 칠하며 맞은 수를 한 줄로 알립니다. 완료 카드가
 // 없습니다: 마지막 문항의 넘김 버튼이 빈 결과와 건너뜀 수를 한 번 올립니다.
-// DOM 순서 = 낭독 순서입니다: 문장 → 로마자 → 영어 → 마이크 → 안내 줄 → 버튼.
+// DOM 순서 = 낭독 순서입니다: 문장 → 로마자 → (구분선) 영어 → 간이 듣기 줄 → 마이크 → 안내 줄 → 버튼.
 export function ReadAloudActivity({
   questions,
   gemCount,
@@ -192,13 +192,26 @@ export function ReadAloudActivity({
         )
       }
       workspace={
-        <view className="read-aloud-activity-hint-slot">
-          {hint === null ? null : (
-            <text className="read-aloud-activity-hint" data-testid="read-aloud-hint">
-              {hint}
-            </text>
+        <>
+          {/* 파형은 카드 밖입니다 — 녹음 아이콘과 아래 주 버튼이 같은 시작 · 중지 동작을 제공합니다. */}
+          {question === undefined ? null : (
+            <view className="read-aloud-activity-waves-slot">
+              <SpeechWaves
+                testId="read-aloud-waves"
+                state={speechWavesStateOf(phase)}
+                label={primary === "stop" ? copy.speaking.stopSpeaking : copy.speaking.speak}
+                onTap={handleWaves}
+              />
+            </view>
           )}
-        </view>
+          <view className="read-aloud-activity-hint-slot">
+            {hint === null ? null : (
+              <text className="read-aloud-activity-hint" data-testid="read-aloud-hint">
+                {hint}
+              </text>
+            )}
+          </view>
+        </>
       }
       card={
         <view
@@ -214,13 +227,6 @@ export function ReadAloudActivity({
               {question.audio === undefined ? null : (
                 <ItemListenControls control={listenControl} testId="read-aloud-listen" />
               )}
-              {/* 녹음 아이콘과 아래 주 버튼이 같은 시작 · 중지 동작을 제공합니다. */}
-              <SpeechWaves
-                testId="read-aloud-waves"
-                state={speechWavesStateOf(phase)}
-                label={primary === "stop" ? copy.speaking.stopSpeaking : copy.speaking.speak}
-                onTap={handleWaves}
-              />
             </>
           )}
         </view>

@@ -1,0 +1,101 @@
+/* 글 역할 — 한글 주인공 줄 · 로마자 · 구분선 · 뜻입니다. 토큰은 CSS 커스텀 프로퍼티로만 소비합니다
+   (ADR-0014 D1). 구별은 색이 아니라 모양(기울기 · 굵기 · 구분선)이 하고, muted / neutral 색차는 보조입니다. */
+
+/* 로마자(읽는 법) — 기울임 · medium · muted. 앱 본문은 시스템 서체라 기울임은 합성이 아니라 진짜 기울임입니다.
+   한글이 `display` · `heading-l`이면 body-l, 그 아래 단계면 `-s`(body-m)입니다. */
+.text-role-romanization {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-style: italic;
+  font-family: var(--libitum-typography-body-l-font-family);
+  font-weight: var(--libitum-font-weight-medium);
+  font-size: var(--libitum-typography-body-l-font-size);
+  line-height: var(--libitum-typography-body-l-line-height);
+  letter-spacing: var(--libitum-typography-body-l-letter-spacing);
+  text-align: center;
+}
+
+.text-role-romanization-s {
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: var(--libitum-typography-body-m-font-size);
+  line-height: var(--libitum-typography-body-m-line-height);
+  letter-spacing: var(--libitum-typography-body-m-letter-spacing);
+}
+
+/* 빈칸을 채운 정답 조각 — brand 밑줄입니다. 비텍스트 대비 3 이상입니다. */
+.text-role-romanization-answer {
+  text-decoration-line: underline;
+  text-decoration-color: var(--libitum-color-brand-primary);
+}
+
+/* 구분선 — 위 16 · 아래 12(compact 12 · 8). 학습 껍데기의 밀도 클래스가 compact를 정합니다. */
+.text-role-divider {
+  align-self: stretch;
+  height: var(--libitum-stroke-width-thin);
+  background: var(--libitum-color-gray-300);
+  margin-top: var(--libitum-spacing-16);
+  margin-bottom: var(--libitum-spacing-12);
+}
+
+.learning-shell-density-compact .text-role-divider {
+  margin-top: var(--libitum-spacing-12);
+  margin-bottom: var(--libitum-spacing-8);
+}
+
+/* 뜻 — 똑바로 · semibold · neutral. 긴 글 · compact는 body-m 크기입니다. */
+.text-role-meaning {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-body-l-font-family);
+  font-weight: var(--libitum-font-weight-semi-bold);
+  font-size: var(--libitum-typography-body-l-font-size);
+  line-height: var(--libitum-typography-body-l-line-height);
+  letter-spacing: var(--libitum-typography-body-l-letter-spacing);
+  text-align: center;
+}
+
+.text-role-meaning-s {
+  font-size: var(--libitum-typography-body-m-font-size);
+  line-height: var(--libitum-typography-body-m-line-height);
+  letter-spacing: var(--libitum-typography-body-m-letter-spacing);
+}
+
+/* 한글 주인공 줄 — 글자 수와 밀도로 고른 단계(`koreanTextStepOf`)입니다. */
+.korean-text-display {
+  font-family: var(--libitum-typography-display-font-family);
+  font-weight: var(--libitum-typography-display-font-weight);
+  font-size: var(--libitum-typography-display-font-size);
+  line-height: var(--libitum-typography-display-line-height);
+  letter-spacing: var(--libitum-typography-display-letter-spacing);
+}
+
+.korean-text-heading-l {
+  font-family: var(--libitum-typography-heading-l-font-family);
+  font-weight: var(--libitum-typography-heading-l-font-weight);
+  font-size: var(--libitum-typography-heading-l-font-size);
+  line-height: var(--libitum-typography-heading-l-line-height);
+  letter-spacing: var(--libitum-typography-heading-l-letter-spacing);
+}
+
+.korean-text-heading-m {
+  font-family: var(--libitum-typography-heading-m-font-family);
+  font-weight: var(--libitum-typography-heading-m-font-weight);
+  font-size: var(--libitum-typography-heading-m-font-size);
+  line-height: var(--libitum-typography-heading-m-line-height);
+  letter-spacing: var(--libitum-typography-heading-m-letter-spacing);
+}
+
+.korean-text-heading-s {
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  line-height: var(--libitum-typography-heading-s-line-height);
+  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
+}
+
+/* 색 — heading-m 이상은 큰 글자 기준(3:1)으로 brand-primary, 가장 작은 단계는 fg-brand입니다. */
+.korean-text-tone-brand-primary {
+  color: var(--libitum-color-brand-primary);
+}
+
+.korean-text-tone-fg-brand {
+  color: var(--libitum-color-fg-brand);
+}

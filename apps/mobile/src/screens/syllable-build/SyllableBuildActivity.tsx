@@ -2,13 +2,13 @@ import { useEffect, useReducer } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import { AnswerReveal } from "../../components/AnswerReveal";
-import { AnswerVerdict } from "../../components/AnswerVerdict";
 import { announce, announceCompletion } from "../../lib/accessibility";
 import { answerEchoCueOf, standaloneLessonAudio } from "../../lib/question-audio";
 import { initialSessionOptions } from "../../lib/session-options";
 import { useAudioCue } from "../../lib/use-audio-cue";
 import { useUiCopy } from "../../lib/ui-copy";
 import { handsOffAfter, lessonCounter } from "../learning/activity-finish";
+import { useLearningDensity } from "../learning/use-learning-density";
 import { LearningActivityComplete } from "../learning/LearningActivityComplete";
 import { LearningShell } from "../learning/LearningShell";
 import { SyllableBuildWord } from "./SyllableBuildWord";
@@ -17,6 +17,7 @@ import {
   canCheckSyllableBuild,
   canPlaceSyllableTile,
   initialSyllableBuildSessionState,
+  judgeSyllableBuild,
   isSyllableBuildSessionComplete,
   syllableBuildCompletionAnnouncement,
   syllableBuildResultAt,
@@ -43,8 +44,10 @@ export function SyllableBuildActivity({
   onFinish,
   lesson,
   lessonAudio,
+  onItemAnswered,
 }: SyllableBuildActivityProps): ReactNode {
   const copy = useUiCopy();
+  const density = useLearningDensity();
   const [state, dispatch] = useReducer(
     syllableBuildSessionReducer,
     initialSyllableBuildSessionState,
@@ -109,15 +112,22 @@ export function SyllableBuildActivity({
                 : dispatch({ type: "nextQuestion" }),
           }
         : canCheckSyllableBuild(question, state)
-          ? { label: copy.common.check, run: () => dispatch({ type: "check" }), sound: "none" }
+          ? {
+              label: copy.common.check,
+              run: () => {
+                onItemAnswered?.({
+                  questionIndex: state.questionIndex,
+                  outcome: judgeSyllableBuild(question, state.placedTileIndexes),
+                  density,
+                });
+                dispatch({ type: "check" });
+              },
+              sound: "none",
+            }
           : undefined;
 
   const bankInteraction =
     question != null && canPlaceSyllableTile(question, state) ? "tappable" : "locked";
-  const answerClass =
-    result === null
-      ? "syllable-build-screen-answer"
-      : `syllable-build-screen-answer syllable-build-screen-answer-${result}`;
 
   return (
     <LearningShell
@@ -131,6 +141,7 @@ export function SyllableBuildActivity({
       actionLabel={action?.label}
       onAction={action?.run}
       actionSound={action?.sound ?? "button"}
+      verdict={result ?? undefined}
       workspace={
         question == null ? undefined : (
           // 창고 — 타일이 빠져나가도 그 자리에 회색 칸이 남아 배치가 흔들리지 않습니다.
@@ -160,13 +171,6 @@ export function SyllableBuildActivity({
       }
       card={
         <view className="syllable-build-screen-content" data-testid="syllable-build-content">
-          {/* 판정 배지 자리입니다 — 문항 장면에서는 비어 있어도 높이를 지켜 배지가 뜨고 질 때 카드가 흔들리지 않습니다. */}
-          {complete ? null : (
-            <view className="syllable-build-screen-verdict-slot">
-              {result === null ? null : <AnswerVerdict result={result} />}
-            </view>
-          )}
-
           {question == null ? (
             <LearningActivityComplete
               questionCount={questions.length}
@@ -184,27 +188,27 @@ export function SyllableBuildActivity({
                 {question.meaning}
               </text>
 
-              {/* 답 칸 상자입니다. 테두리가 판정을 따라 색이 바뀌고, 낭독 이름은 안의 칸 줄이 집니다. */}
-              <view className={answerClass} data-phase={state.phase}>
-                <SyllableBuildWord
-                  tiles={question.tiles}
-                  slotCount={question.slotCount}
-                  placedTileIndexes={state.placedTileIndexes}
-                  interaction={state.phase === "checked" ? "locked" : "tappable"}
-                  accessibility={syllableBuildWordAccessibilityOf(
-                    question,
-                    state,
-                    copy.syllableBuild,
-                  )}
-                  onReturn={(tileIndex) =>
-                    dispatch({
-                      type: "toggleTile",
-                      tileIndex,
-                      slotCount: question.slotCount,
-                    })
-                  }
-                />
-              </view>
+              {/* 답 칸 줄입니다. 칸이 판정을 따라 색이 바뀌고, 낭독 이름은 칸 줄이 집니다. */}
+              <SyllableBuildWord
+                tiles={question.tiles}
+                slotCount={question.slotCount}
+                placedTileIndexes={state.placedTileIndexes}
+                interaction={state.phase === "checked" ? "locked" : "tappable"}
+                phase={state.phase}
+                result={result}
+                accessibility={syllableBuildWordAccessibilityOf(
+                  question,
+                  state,
+                  copy.syllableBuild,
+                )}
+                onReturn={(tileIndex) =>
+                  dispatch({
+                    type: "toggleTile",
+                    tileIndex,
+                    slotCount: question.slotCount,
+                  })
+                }
+              />
 
               {/* 맞아도 보입니다 — 타자 입력과 같은 규칙입니다. */}
               {state.phase === "checked" ? (

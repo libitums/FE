@@ -37,6 +37,7 @@ export function SentenceOrderChip({
   placedOrdinal,
   disabled = false,
   surface = "light",
+  result = null,
   onTap,
 }: SentenceOrderChipProps): ReactNode {
   const copy = useUiCopy();
@@ -47,16 +48,22 @@ export function SentenceOrderChip({
     onTap(index);
   };
   const variant = placedOrdinal === null ? "bank" : "placed";
+  const judged = placedOrdinal === null ? null : result;
   // standard에서는 data-motion 속성을 아예 넘기지 않습니다. undefined로 넘기면 테스트 렌더러가 "null" 문자열로 남깁니다.
   const motionProps = motion === "reduced" ? { "data-motion": "reduced" } : {};
 
   return (
     <view
-      className={sentenceOrderChipClassName(variant, motion, surface)}
+      className={
+        judged === null
+          ? sentenceOrderChipClassName(variant, motion, surface)
+          : `${sentenceOrderChipClassName(variant, motion, surface)} sentence-order-chip-${judged}`
+      }
       data-testid={`sentence-order-chip-${index}`}
       {...motionProps}
       data-surface={surface}
       data-placed={placedOrdinal ?? "none"}
+      {...(judged === null ? {} : { "data-result": judged })}
       accessibility-element={true}
       accessibility-label={chipAccessibilityLabel(text, placedOrdinal, copy)}
       accessibility-traits={disabled ? "disabled" : "button"}

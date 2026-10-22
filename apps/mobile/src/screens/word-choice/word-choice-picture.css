@@ -9,15 +9,29 @@
   align-self: stretch;
 }
 
-/* 틀 — 가로:세로 4:3입니다(비율은 토큰이 아닌 설계 상수). 정사각이면 카드가 커져 아래 보기가 한 화면에
-   안 들어가고, 16:9면 사물 한 컷이 작아집니다. 면 `gray-100`은 로딩 중의 빈 틀입니다. */
+/* 틀 — 가장자리까지 닿는 그림입니다(무대 카드의 `Card.Media`가 바깥 모서리로 자릅니다). 비율은 보기 행 수가 정합니다:
+   한 행(보기 2개)은 정사각, 두 행(3 ~ 4개)은 4:3입니다(비율은 토큰이 아닌 설계 상수). 면 `gray-100`은 로딩 중의 빈 틀입니다. */
 .word-choice-picture-frame {
   position: relative;
   width: 100%;
-  aspect-ratio: 4 / 3;
   overflow: hidden;
-  border-radius: var(--libitum-radius-md);
   background-color: var(--libitum-color-gray-100);
+}
+
+.word-choice-picture-frame-1-1 {
+  aspect-ratio: 1 / 1;
+}
+
+.word-choice-picture-frame-4-3 {
+  aspect-ratio: 4 / 3;
+}
+
+/* 그림을 감싸는 무대 카드입니다 — 그림이 카드의 큰 모서리(xl) 안쪽까지 차도록 미디어 모서리를 카드와 맞춥니다. */
+.word-choice-stage-card .ui-lynx-card-media {
+  border-start-start-radius: var(--libitum-radius-xl);
+  border-start-end-radius: var(--libitum-radius-xl);
+  border-end-start-radius: var(--libitum-radius-xl);
+  border-end-end-radius: var(--libitum-radius-xl);
 }
 
 /* 그림 — 틀을 채웁니다(가운데 기준으로 넘치는 쪽을 자릅니다). 장식 테두리가 없습니다. */
@@ -77,8 +91,6 @@
   padding-left: var(--libitum-spacing-12);
   padding-right: var(--libitum-spacing-12);
   border-top: var(--libitum-stroke-width-thin) solid var(--libitum-color-gray-300);
-  border-bottom-left-radius: var(--libitum-radius-md);
-  border-bottom-right-radius: var(--libitum-radius-md);
   background-color: var(--libitum-color-white);
 }
 

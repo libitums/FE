@@ -22,14 +22,15 @@
   letter-spacing: var(--libitum-typography-heading-m-letter-spacing);
 }
 
-/* 창고의 타일 — 면 `background-primary` · 테두리 `border-default`(비텍스트 3:1을 넘습니다). 빠진 자리와
-   굵기가 같도록 테두리를 늘 두릅니다. */
+/* 창고의 타일 — 흰 면 · 연한 테두리(gray-300)입니다. 56 × 56, 글자 heading-m. 쓴 자리와 굵기가 같도록 테두리를 늘 두릅니다. */
 .syllable-tile-bank {
-  padding-left: var(--libitum-spacing-12);
-  padding-right: var(--libitum-spacing-12);
-  border: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
+  min-width: calc(var(--libitum-spacing-48) + var(--libitum-spacing-8));
+  min-height: calc(var(--libitum-spacing-48) + var(--libitum-spacing-8));
+  padding-left: var(--libitum-spacing-8);
+  padding-right: var(--libitum-spacing-8);
+  border: var(--libitum-stroke-width-thin) solid var(--libitum-color-gray-300);
   border-radius: var(--libitum-radius-md);
-  background-color: var(--libitum-color-background-primary);
+  background-color: var(--libitum-color-white);
   transition: transform var(--libitum-motion-duration-pressed) var(--libitum-motion-easing-easing);
 }
 
@@ -51,29 +52,32 @@
   transform: none;
 }
 
-/* 칸에 놓인 타일 — 면도 테두리도 없는 글자입니다. 칸의 폭은 `min-width`가 하한을 지킵니다. */
+/* 칸에 놓인 타일 — 면도 테두리도 없는 글자입니다(칸이 면을 집니다). 채운 칸 글자는 heading-s · fg-neutral입니다. */
 .syllable-tile-placed {
   min-width: var(--libitum-spacing-24);
 }
 
 .syllable-tile-placed .syllable-tile-label {
-  color: var(--libitum-color-gray-900);
-  font-family: var(--libitum-typography-heading-l-font-family);
-  font-weight: var(--libitum-typography-heading-l-font-weight);
-  font-size: var(--libitum-typography-heading-l-font-size);
-  line-height: var(--libitum-typography-heading-l-line-height);
-  letter-spacing: var(--libitum-typography-heading-l-letter-spacing);
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  line-height: var(--libitum-typography-heading-s-line-height);
+  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
 }
 
-/* 빠져나간 자리 — 회색 빈칸입니다. 테두리는 투명으로 굵기를 지켜 크기가 흔들리지 않습니다. */
+/* 쓴 자리 — 글자를 남긴 채 비활성 색으로 자리를 지킵니다(gray-50 면 · border-disabled 테두리 · fg-disabled 글자).
+   비활성은 대비 규칙의 승인된 예외입니다. */
 .syllable-tile-placeholder {
-  padding-left: var(--libitum-spacing-12);
-  padding-right: var(--libitum-spacing-12);
-  border: var(--libitum-stroke-width-thin) solid transparent;
+  min-width: calc(var(--libitum-spacing-48) + var(--libitum-spacing-8));
+  min-height: calc(var(--libitum-spacing-48) + var(--libitum-spacing-8));
+  padding-left: var(--libitum-spacing-8);
+  padding-right: var(--libitum-spacing-8);
+  border: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-disabled);
   border-radius: var(--libitum-radius-md);
-  background-color: var(--libitum-color-gray-100);
+  background-color: var(--libitum-color-gray-50);
 }
 
-.syllable-tile-label-hidden {
-  opacity: 0;
+.syllable-tile-placeholder .syllable-tile-label {
+  color: var(--libitum-color-fg-disabled);
 }

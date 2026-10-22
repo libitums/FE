@@ -1,0 +1,5 @@
+/* 문항 보기 부품의 스타일입니다. 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1).
+   그림을 받는 동안 보기를 흐리게 둡니다 — 탭은 부품이 삼키고 낭독 상태(button)는 그대로입니다. */
+.question-options-waiting {
+  opacity: var(--libitum-opacity-disabled);
+}

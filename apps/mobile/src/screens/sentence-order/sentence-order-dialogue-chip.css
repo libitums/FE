@@ -1,0 +1,61 @@
+/* 창고 대화 조각의 스타일입니다. 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1).
+   조각은 두 줄(한글 · 뜻)이고 높이 하한 48, 안 여백 위아래 4 · 좌우 12, 모서리 md입니다. 내 조각은 주황 면(brand-primary) ·
+   흰 글자, 상대 조각은 흰 면 · 연한 테두리입니다. 뜻 줄은 내 조각에서 흰색, 상대 조각에서 muted입니다. */
+.sentence-order-dialogue-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--libitum-spacing-48);
+  padding-top: var(--libitum-spacing-4);
+  padding-bottom: var(--libitum-spacing-4);
+  padding-left: var(--libitum-spacing-12);
+  padding-right: var(--libitum-spacing-12);
+  border: var(--libitum-stroke-width-thin) solid transparent;
+  border-radius: var(--libitum-radius-md);
+  flex-shrink: 0;
+}
+
+.sentence-order-dialogue-chip-me {
+  background-color: var(--libitum-color-brand-primary);
+  border-color: var(--libitum-color-brand-primary);
+}
+
+.sentence-order-dialogue-chip-counterpart {
+  background-color: var(--libitum-color-white);
+  border-color: var(--libitum-color-gray-300);
+}
+
+.sentence-order-dialogue-chip-text {
+  text-align: center;
+  font-family: var(--libitum-typography-button-m-font-family);
+  font-weight: var(--libitum-typography-button-m-font-weight);
+  font-size: var(--libitum-typography-button-m-font-size);
+  line-height: var(--libitum-typography-button-m-line-height);
+  letter-spacing: var(--libitum-typography-button-m-letter-spacing);
+}
+
+.sentence-order-dialogue-chip-me .sentence-order-dialogue-chip-text {
+  color: var(--libitum-color-white);
+}
+
+.sentence-order-dialogue-chip-counterpart .sentence-order-dialogue-chip-text {
+  color: var(--libitum-color-fg-neutral);
+}
+
+.sentence-order-dialogue-chip-meaning {
+  text-align: center;
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-weight: var(--libitum-typography-body-s-font-weight);
+  font-size: var(--libitum-typography-body-s-font-size);
+  line-height: var(--libitum-typography-body-s-line-height);
+  letter-spacing: var(--libitum-typography-body-s-letter-spacing);
+}
+
+.sentence-order-dialogue-chip-me .sentence-order-dialogue-chip-meaning {
+  color: var(--libitum-color-white);
+}
+
+.sentence-order-dialogue-chip-counterpart .sentence-order-dialogue-chip-meaning {
+  color: var(--libitum-color-fg-neutral-muted);
+}

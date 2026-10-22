@@ -1,0 +1,95 @@
+/* 줄 배치(듣고 조립 · 문장 순서)의 위 줄과 답 줄 둘입니다. 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1).
+   카드 없이 화면 면 위에 섭니다 — 위 줄, 답 줄 둘, 그 아래 조각 창고, 흐름 안 Check 순입니다. */
+
+.sentence-order-lines-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-16);
+}
+
+/* 위 줄 — 가운데 정렬 세로 묶음입니다. 단어 순서는 영어 문장 + (Check 뒤) 로마자입니다. */
+.sentence-order-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-4);
+}
+
+/* 듣고 조립의 위 줄 — 재생(xl)이 왼쪽, 오른쪽에 로마자와 [다시 듣기 · 천천히]입니다. */
+.sentence-order-header-listen {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-12);
+}
+
+.sentence-order-header-side {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--libitum-spacing-4);
+}
+
+.sentence-order-header-side .text-role-romanization {
+  text-align: left;
+}
+
+.sentence-order-header-controls {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-8);
+}
+
+/* 영어 문장 — heading-s 크기에 semibold · neutral입니다. */
+.sentence-order-prompt {
+  text-align: center;
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-weight: var(--libitum-font-weight-semi-bold);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  line-height: var(--libitum-typography-heading-s-line-height);
+  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
+}
+
+/* 답 줄 둘 — 줄 높이 64, 아래 선 2px입니다. 선은 상자에 절대 배치로 깔리고(둘 고정) 조각은 그 위를 접혀 흐릅니다.
+   조각 한 줄 높이(48) + 줄 간격(16) = 줄 높이(64)라 조각이 줄 선에 맞춰 섭니다. 세 줄째가 필요하면 상자가 늘고
+   선은 둘 그대로입니다. */
+.sentence-order-lines {
+  position: relative;
+  min-height: calc(var(--libitum-spacing-64) * 2);
+}
+
+.sentence-order-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: var(--libitum-spacing-64);
+  border-bottom: var(--libitum-stroke-width-strong) solid var(--libitum-color-gray-300);
+}
+
+.sentence-order-line-0 {
+  top: 0;
+}
+
+.sentence-order-line-1 {
+  top: var(--libitum-spacing-64);
+}
+
+.sentence-order-lines-chips {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  align-items: center;
+  column-gap: var(--libitum-spacing-8);
+  row-gap: var(--libitum-spacing-16);
+  padding-top: var(--libitum-spacing-8);
+}
+
+/* 흐름 안 Check를 감싸는 상자입니다 — 셸 버튼 자리가 남는 폭을 모두 줍니다. */
+.sentence-order-check {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}

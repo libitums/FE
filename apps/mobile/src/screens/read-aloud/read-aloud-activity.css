@@ -3,14 +3,12 @@
    카드 안의 배치 — 문장 묶음 · 영어 줄 · 안내 줄입니다. 모든 글줄은 가운데 정렬이고 줄바꿈을
    막지 않습니다(WCAG 1.4.4) — 말줄임도 없습니다. */
 
-/* 카드 안 — 문장 묶음 · 영어 · 파형이 가운데 줄로 섭니다. 높이 하한 244는 말하기 카드와 같습니다
-   (문항마다 카드가 흔들리지 않게). 하한이지 고정이 아닙니다. */
+/* 카드 안 — 문장 묶음 · 구분선 · 영어 뜻 · 간이 듣기 줄이 가운데 줄로 섭니다. 높이는 내용 높이입니다. 로마자 · 구분선 · 뜻의
+   모양은 글 역할 부품(`components/text-roles.css`)이 집니다. */
 .read-aloud-activity-content {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--libitum-spacing-16);
-  min-height: 244px;
 }
 
 /* 한국어 문장 + 로마자는 한 묶음으로 붙어 섭니다. */
@@ -22,7 +20,8 @@
   gap: var(--libitum-spacing-4);
 }
 
-/* 따라 읽을 문장 — `heading-l`(28) 글꼴입니다. 최대 17자 문장이 좁은 폭에서도 두 줄에 듭니다. */
+/* 따라 읽을 문장 — `heading-l`(28) 글꼴입니다. 최대 17자 문장이 좁은 폭에서도 두 줄에 듭니다. 색은 neutral입니다(주황은
+   맞게 말한 조각에만 섭니다). */
 .read-aloud-activity-sentence {
   text-align: center;
   font-family: var(--libitum-typography-heading-l-font-family);
@@ -47,24 +46,12 @@
   color: var(--libitum-color-fg-brand);
 }
 
-.read-aloud-activity-romanization {
-  text-align: center;
-  color: var(--libitum-color-fg-neutral-muted);
-  font-family: var(--libitum-typography-body-l-font-family);
-  font-size: var(--libitum-typography-body-l-font-size);
-  font-weight: var(--libitum-typography-body-l-font-weight);
-  line-height: var(--libitum-typography-body-l-line-height);
-  letter-spacing: var(--libitum-typography-body-l-letter-spacing);
-}
-
-.read-aloud-activity-translation {
-  text-align: center;
-  color: var(--libitum-color-fg-neutral);
-  font-family: var(--libitum-typography-label-l-font-family);
-  font-size: var(--libitum-typography-label-l-font-size);
-  font-weight: var(--libitum-typography-label-l-font-weight);
-  line-height: var(--libitum-typography-label-l-line-height);
-  letter-spacing: var(--libitum-typography-label-l-letter-spacing);
+/* 파형 칸 — 카드 밖 작업 영역의 가운데입니다. 칸 하한 56은 아이콘 높이와 같습니다. */
+.read-aloud-activity-waves-slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(var(--libitum-spacing-48) + var(--libitum-spacing-8));
 }
 
 /* 고정 버튼 행의 보조 동작: 준비에서는 Next, 인식 뒤와 받아쓰기 오류에서는 Try again. */
@@ -79,7 +66,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding-top: var(--libitum-spacing-48);
+  padding-top: var(--libitum-spacing-16);
 }
 
 .read-aloud-activity-hint {
