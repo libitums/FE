@@ -24,9 +24,10 @@ export function deployEnvironment(env: Record<string, string | undefined>): Depl
 }
 
 /**
- * Vercel Speed Insights를 실을 빌드인가. 수집 스크립트(`/_vercel/speed-insights/script.js`)는 Vercel 배포에만 있어,
- * 로컬 · CI 빌드에서 실으면 404가 납니다. 프리뷰 방문도 세지 않습니다.
+ * Vercel 수집(Web Analytics · Speed Insights)을 실을 빌드인가. 수집 스크립트(`/_vercel/insights/script.js` ·
+ * `/_vercel/speed-insights/script.js`)는 Vercel 배포에만 있어, 로컬 · CI 빌드에서 실으면 404가 납니다. 프리뷰
+ * 방문도 세지 않습니다.
  */
-export function measuresSpeed(env: Record<string, string | undefined>): boolean {
+export function loadsVercelInsights(env: Record<string, string | undefined>): boolean {
   return env.VERCEL_ENV === "production";
 }

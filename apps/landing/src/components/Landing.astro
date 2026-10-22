@@ -1,9 +1,10 @@
 ---
+import VercelAnalytics from "@vercel/analytics/astro";
 import SpeedInsights from "@vercel/speed-insights/astro";
 import { resolveMeasurementId } from "../analytics/gtag";
 import { img } from "../assets/images";
 import Base from "../layouts/Base.astro";
-import { deployEnvironment, measuresSpeed } from "../seo/deploy-env";
+import { deployEnvironment, loadsVercelInsights } from "../seo/deploy-env";
 import { robotsIndexable, robotsNoindex } from "../seo/head-meta";
 import { buildFaq, storeAvailabilityOf } from "../seo/faq";
 import { type Language, pages, storeLinks } from "../site";
@@ -29,8 +30,9 @@ const page = pages[language];
 const t = page.copy;
 // 프리뷰 배포는 검색에 싣지 않고 방문도 세지 않습니다.
 const { indexable } = deployEnvironment(process.env);
-// 실제 방문자의 페이지 속도(Core Web Vitals)는 Vercel 프로덕션 배포에서만 잽니다.
-const speedInsights = measuresSpeed(process.env);
+// 쿠키 없는 방문 수(Web Analytics)와 실제 방문자의 페이지 속도(Speed Insights)는 Vercel 프로덕션 배포에서만 잽니다.
+// GA4는 동의 전 저장을 막고 광고 차단기에 걸려 적게 세므로, 방문 수의 기준은 이쪽입니다.
+const vercelInsights = loadsVercelInsights(process.env);
 const faq = buildFaq({ copy: t, storeAvailability: storeAvailabilityOf(storeLinks) });
 ---
 
@@ -59,7 +61,14 @@ const faq = buildFaq({ copy: t, storeAvailability: storeAvailabilityOf(storeLink
     <Download t={t} />
   </main>
   <Footer language={language} t={t} />
-  {speedInsights && <SpeedInsights />}
+  {
+    vercelInsights && (
+      <>
+        <VercelAnalytics />
+        <SpeedInsights />
+      </>
+    )
+  }
   <script>
     import "../scripts/main";
   </script>
