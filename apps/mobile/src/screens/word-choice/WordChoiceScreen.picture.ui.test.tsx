@@ -1,10 +1,11 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { act, cleanup, fireEvent, render, screen } from "@lynx-js/react/testing-library";
+import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { MotionProvider } from "@libitums/ui-lynx/motion";
 import type { AnswerResult } from "../../lib/answer-result";
 import { WordChoiceActivity } from "./WordChoiceScreen";
 import type { WordChoiceQuestion } from "./word-choice-questions";
+import { expectChoiceResult } from "../../components/question-options.test-support";
 
 // `ui` 계층: 단어 선택 활동 안의 그림 갈래 — 그림 문항은 제시문 대신 그림 틀을 세우고, 그림을 기다리는 동안
 // 보기를 잠그며, 그림이 못 서면(error · 6초 무응답) 뜻 글자로 바꿔 막히지 않게 합니다. 문항은 매핑 모듈이
@@ -76,8 +77,12 @@ function mount(
 const id = (testId: string) => screen.getByTestId(testId);
 const maybe = (testId: string) => screen.queryByTestId(testId);
 const tap = (testId: string): void => void fireEvent.tap(id(testId), {});
-const option = (index: number) => id(`word-choice-option-${index}`);
+const option = (index: number) => id(`ui-lynx-option-selector-item-choice-${index}`);
 const options = () => id("word-choice-screen-options");
+const layoutOf = (): string | null =>
+  within(options()).getByTestId("ui-lynx-option-selector").getAttribute("data-layout");
+// 그림을 기다리는 동안 보기는 흐린 래퍼 안에서 탭을 흡수합니다.
+const waiting = () => maybe("question-options-waiting");
 const pictureRoot = () => id("word-choice-picture");
 const fireOnImage = (name: "load" | "error"): void =>
   void fireEvent(id("word-choice-picture-image"), new window.Event(`bindEvent:${name}`));
@@ -91,13 +96,13 @@ const unavailableSpeech = "Picture unavailable. Meaning: water";
 /** 그림 문항을 load → 정답 → 넘김으로 풉니다. */
 function solvePicture(question: WordChoiceQuestion): void {
   fireOnImage("load");
-  tap(`word-choice-option-${question.answerIndex}`);
+  tap(`ui-lynx-option-selector-item-choice-${question.answerIndex}`);
   tap("learning-shell-advance");
 }
 
 /** 그림 없는 문항을 정답 → 넘김으로 풉니다. */
 function solvePlain(question: WordChoiceQuestion): void {
-  tap(`word-choice-option-${question.answerIndex}`);
+  tap(`ui-lynx-option-selector-item-choice-${question.answerIndex}`);
   tap("learning-shell-advance");
 }
 
@@ -115,18 +120,18 @@ describe.each([
     for (const index of [0, 1, 2, 3]) {
       expect(option(index)).toHaveAttribute("accessibility-traits", "button");
     }
-    expect(options()).toHaveAttribute("data-layout", "grid");
-    expect(options()).toHaveAttribute("data-interaction", "locked");
+    expect(layoutOf()).toBe("grid");
+    expect(waiting()).toBeInTheDocument();
   });
 
   test("UWA2. 로딩 중의 보기 탭은 흡수되어 판정도 넘김 조작도 생기지 않는다", () => {
     mount(three, { motion });
 
-    tap(`word-choice-option-${pictureQuestion.answerIndex}`);
+    tap(`ui-lynx-option-selector-item-choice-${pictureQuestion.answerIndex}`);
 
     expect(maybe("answer-verdict")).not.toBeInTheDocument();
     for (const index of [0, 1, 2, 3]) {
-      expect(option(index)).toHaveAttribute("data-result", "none");
+      expectChoiceResult(option(index), "none");
     }
     expect(maybe("learning-shell-advance")).not.toBeInTheDocument();
   });
@@ -136,13 +141,13 @@ describe.each([
 
     fireOnImage("load");
     expect(pictureRoot()).toHaveAttribute("data-load-state", "loaded");
-    expect(options()).toHaveAttribute("data-interaction", "enabled");
+    expect(waiting()).not.toBeInTheDocument();
     expect(maybe("word-choice-picture-answer")).not.toBeInTheDocument();
 
-    tap(`word-choice-option-${pictureQuestion.answerIndex}`);
+    tap(`ui-lynx-option-selector-item-choice-${pictureQuestion.answerIndex}`);
 
     expect(id("answer-verdict")).toHaveAttribute("data-result", "correct");
-    expect(option(pictureQuestion.answerIndex)).toHaveAttribute("data-result", "correct");
+    expectChoiceResult(option(pictureQuestion.answerIndex), "correct");
     expect(id("word-choice-picture-answer")).toHaveAttribute(
       "accessibility-label",
       "Answer: 물, mul, water",
@@ -157,10 +162,10 @@ describe.each([
 
     expect(pictureRoot()).toHaveAttribute("data-load-state", "failed");
     expect(id("word-choice-picture-fallback")).toHaveTextContent("water");
-    expect(options()).toHaveAttribute("data-interaction", "enabled");
+    expect(waiting()).not.toBeInTheDocument();
     expect(spoken.filter((text) => text === unavailableSpeech)).toHaveLength(1);
 
-    tap("word-choice-option-0");
+    tap("ui-lynx-option-selector-item-choice-0");
 
     expect(id("answer-verdict")).toHaveAttribute("data-result", "incorrect");
     expect(id("word-choice-picture-answer")).toHaveAttribute(
@@ -175,13 +180,13 @@ test("UWA5. 이벤트가 없으면 5999ms까지는 로딩 · 잠김이고 6000ms
 
   elapse(5999);
   expect(pictureRoot()).toHaveAttribute("data-load-state", "loading");
-  expect(options()).toHaveAttribute("data-interaction", "locked");
+  expect(waiting()).toBeInTheDocument();
 
   elapse(1);
 
   expect(pictureRoot()).toHaveAttribute("data-load-state", "failed");
   expect(id("word-choice-picture-fallback")).toHaveTextContent("water");
-  expect(options()).toHaveAttribute("data-interaction", "enabled");
+  expect(waiting()).not.toBeInTheDocument();
 });
 
 test("UWA6a. load로 선 그림은 6000ms가 지나도 로드됨으로 남는다", () => {
@@ -213,10 +218,10 @@ test("UWA7. 그림 문항을 풀고 넘기면 그림 없는 문항은 제시문�
 
   expect(maybe("word-choice-picture")).not.toBeInTheDocument();
   expect(id("word-choice-screen-prompt")).toHaveTextContent("___로 할게요.");
-  expect(["row", "stacked"]).toContain(options().getAttribute("data-layout"));
-  expect(options()).toHaveAttribute("data-interaction", "enabled");
+  expect(layoutOf()).toBe("stack");
+  expect(waiting()).not.toBeInTheDocument();
 
-  tap(`word-choice-option-${plainQuestion.answerIndex}`);
+  tap(`ui-lynx-option-selector-item-choice-${plainQuestion.answerIndex}`);
 
   expect(id("answer-verdict")).toHaveAttribute("data-result", "correct");
 });
@@ -236,7 +241,7 @@ test("UWA8. 다시 그림 문항에 들어서면 로딩부터 새로 시작한�
   expect(id("word-choice-picture-image").getAttribute("src")).not.toBe(firstSrc);
   expect(maybe("word-choice-picture-fallback")).not.toBeInTheDocument();
   expect(maybe("word-choice-picture-answer")).not.toBeInTheDocument();
-  expect(options()).toHaveAttribute("data-interaction", "locked");
+  expect(waiting()).toBeInTheDocument();
 });
 
 test("UWA9. 앞 문항 몫의 시간 초과는 새 그림 문항을 실패로 만들지 않는다", () => {
@@ -249,7 +254,7 @@ test("UWA9. 앞 문항 몫의 시간 초과는 새 그림 문항을 실패로 �
 
   expect(pictureRoot()).toHaveAttribute("data-load-state", "loading");
   expect(maybe("word-choice-picture-fallback")).not.toBeInTheDocument();
-  expect(options()).toHaveAttribute("data-interaction", "locked");
+  expect(waiting()).toBeInTheDocument();
   expect(spoken).not.toContain("Picture unavailable. Meaning: bag");
 });
 
@@ -274,7 +279,7 @@ test("UWA11. 고른 뒤 탭 없이 2500ms가 지나면 다음 문항으로 넘�
   mount(three);
 
   fireOnImage("load");
-  tap(`word-choice-option-${pictureQuestion.answerIndex}`);
+  tap(`ui-lynx-option-selector-item-choice-${pictureQuestion.answerIndex}`);
   elapse(2499);
   expect(maybe("word-choice-picture")).toBeInTheDocument();
 
@@ -288,13 +293,62 @@ test("UWA13. 그림 없는 문항만 있으면 그림 틀 없이 처음부터 �
   const { spoken } = mount([plainQuestion]);
 
   expect(maybe("word-choice-picture")).not.toBeInTheDocument();
-  expect(options()).toHaveAttribute("data-interaction", "enabled");
+  expect(waiting()).not.toBeInTheDocument();
 
   elapse(6000);
 
   expect(spoken).toHaveLength(0);
-  expect(options()).toHaveAttribute("data-interaction", "enabled");
+  expect(waiting()).not.toBeInTheDocument();
   for (const index of [0, 1, 2]) {
-    expect(option(index)).toHaveAttribute("data-result", "none");
+    expectChoiceResult(option(index), "none");
   }
+});
+
+// WC3 — 그림 문항은 셸 무대를 bare로 두고 활동이 Card 안에 Card.Media로 그림을 가장자리까지 채웁니다.
+// 틀 비율은 보기 행 수로 정합니다(2개 한 행 1:1, 3 ~ 4개 두 행 4:3).
+const twoChoicePicture: WordChoiceQuestion = {
+  ...pictureQuestion,
+  choices: ["물", "불"],
+  answerIndex: 0,
+};
+
+const frameClassOf = (): string =>
+  within(pictureRoot()).getByTestId("word-choice-picture-frame").getAttribute("class") ?? "";
+
+test("WC3. 그림은 bare 무대의 Card.Media 안에 서고 셸 Card 안쪽 여백으로 감싸지 않는다", () => {
+  mount([pictureQuestion]);
+
+  const stage = id("learning-shell-stage");
+  expect(within(stage).getAllByTestId("ui-lynx-card")).toHaveLength(1);
+  const media = within(stage).getByTestId("ui-lynx-card-media");
+  expect(media).toContainElement(pictureRoot());
+  expect(pictureRoot().closest('[data-testid="ui-lynx-card-content"]')).toBeNull();
+});
+
+test("WC3. 보기 두 개는 틀 1:1, 네 개는 틀 4:3이고 둘 다 grid 보기다", () => {
+  mount([twoChoicePicture]);
+  expect(frameClassOf()).toContain("1-1");
+  expect(frameClassOf()).not.toContain("4-3");
+  expect(layoutOf()).toBe("grid");
+  cleanup();
+
+  mount([pictureQuestion]);
+  expect(frameClassOf()).toContain("4-3");
+  expect(frameClassOf()).not.toContain("1-1");
+  expect(layoutOf()).toBe("grid");
+});
+
+test("WC3. 답한 뒤에는 그림 위 이름표가 서고 판정은 카드 안이 아니라 셸 지시문 자리에 선다", () => {
+  mount([pictureQuestion]);
+
+  fireOnImage("load");
+  tap(`ui-lynx-option-selector-item-choice-${pictureQuestion.answerIndex}`);
+
+  expect(id("word-choice-picture-answer")).toBeInTheDocument();
+  expect(within(id("learning-shell-verdict")).getByTestId("answer-verdict")).toHaveAttribute(
+    "data-result",
+    "correct",
+  );
+  expect(within(id("learning-shell-stage")).queryByTestId("answer-verdict")).toBeNull();
+  expect(document.querySelector(".word-choice-screen-verdict-slot")).toBeNull();
 });

@@ -2,8 +2,10 @@ import type { ReactNode } from "@lynx-js/react";
 
 import { useListenAudio } from "../../components/use-listen-audio";
 import { listenCueOf, standaloneLessonAudio } from "../../lib/question-audio";
+import type { LearningDensity } from "../../lib/learning-density";
 import type { SessionOptions } from "../../lib/session-options";
 import { ListeningPrompt } from "./ListeningPrompt";
+import type { ListeningBeforeAnswer } from "./listening-questions";
 
 // 재생의 주인은 화면(`useListenAudio`)이고 `ListeningPrompt`는 표시만 합니다. 화면 없이
 // 제시 컴포넌트를 시험하는 테스트는 이 하네스로 둘을 묶어 그립니다 — 화면이 하는 일(훅을 부르고
@@ -15,7 +17,10 @@ export type PlaybackPromptProps = {
   sessionOptions: SessionOptions;
   /** 판정이 난 뒤 대본을 보일지입니다. 안 주면 false입니다. */
   revealed?: boolean;
-  readonly romanizationHint?: boolean;
+  /** 답하기 전 대본 자리의 갈래입니다. 안 주면 `nothing`입니다. */
+  readonly beforeAnswer?: ListeningBeforeAnswer;
+  /** 문항 밀도입니다. 안 주면 `regular`입니다. */
+  readonly density?: LearningDensity;
 };
 
 export function PlaybackPrompt({
@@ -24,7 +29,8 @@ export function PlaybackPrompt({
   audioSource,
   sessionOptions,
   revealed,
-  romanizationHint,
+  beforeAnswer,
+  density,
 }: PlaybackPromptProps): ReactNode {
   const cue =
     audioSource === undefined
@@ -42,7 +48,8 @@ export function PlaybackPrompt({
       sessionOptions={sessionOptions}
       playback={playback}
       revealed={revealed ?? false}
-      romanizationHint={romanizationHint ?? false}
+      beforeAnswer={beforeAnswer ?? "nothing"}
+      density={density ?? "regular"}
     />
   );
 }

@@ -1,7 +1,8 @@
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
+import { fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import type { AnswerResult } from "../../lib/answer-result";
+import type { ItemAnswerReport } from "../../lib/item-answer";
 import type { LessonPosition } from "../learning/activity-finish";
 import { SyllableBuildActivity } from "./SyllableBuildActivity";
 import type { SyllableBuildQuestion } from "./syllable-build.contract";
@@ -339,4 +340,111 @@ test("[ACS-SB] 완료 때 무대가 완료 장면이고 내용 상자의 유일�
   tapAction("Next");
 
   expectCompleteScene("syllable-build-content", "syllable-build-complete");
+});
+
+describe("SyllableBuildActivity 칸 상태 · 쓴 타일 · 판정 자리", () => {
+  test("SB2. 칸 상태는 filled · current · empty이고 지금 칸이 다음에 채울 칸을 따라간다", () => {
+    mount([card]);
+
+    expect(slot(0)).toHaveAttribute("data-state", "current");
+    expect(slot(1)).toHaveAttribute("data-state", "empty");
+    expect(slot(0)).toHaveClass("syllable-build-slot-current");
+    expect(slot(1)).toHaveClass("syllable-build-slot-empty");
+
+    tapTile(2);
+    expect(slot(0)).toHaveAttribute("data-state", "filled");
+    expect(slot(0)).toHaveClass("syllable-build-slot-filled");
+    expect(slot(1)).toHaveAttribute("data-state", "current");
+
+    tapTile(1);
+    expect(slot(0)).toHaveAttribute("data-state", "filled");
+    expect(slot(1)).toHaveAttribute("data-state", "filled");
+  });
+
+  test("SB2. 채점 뒤에는 지금 칸이 없고 칸이 정답 · 오답 판정 클래스를 진다", () => {
+    const first = render(
+      <SyllableBuildActivity
+        questions={[card]}
+        gemCount={0}
+        onExit={() => {}}
+        onFinish={() => {}}
+      />,
+    );
+    tapTile(2);
+    tapTile(1);
+    tapAction("Check");
+
+    for (const position of [0, 1]) {
+      expect(slot(position)).not.toHaveAttribute("data-state", "current");
+      expect(slot(position)).toHaveClass("syllable-build-slot-correct");
+    }
+    first.unmount();
+
+    render(
+      <SyllableBuildActivity
+        questions={[card]}
+        gemCount={0}
+        onExit={() => {}}
+        onFinish={() => {}}
+      />,
+    );
+    tapTile(1);
+    tapTile(2);
+    tapAction("Check");
+
+    for (const position of [0, 1]) {
+      expect(slot(position)).toHaveClass("syllable-build-slot-incorrect");
+    }
+  });
+
+  test("SB2. 쓴 타일은 자리와 글자를 남기고 `글자, used` 이름과 disabled traits를 진다", () => {
+    mount([card]);
+
+    tapTile(2);
+
+    const used = id("syllable-build-bank-slot-2");
+    expect(used).toHaveTextContent("카");
+    expect(used).toHaveAttribute("accessibility-label", "카, used");
+    expect(used).toHaveAttribute("accessibility-traits", "disabled");
+    expect(used).not.toHaveAttribute("accessibility-elements-hidden", "true");
+  });
+
+  test("SB2. 판정 배지는 카드 안이 아니라 셸 지시문 자리에 선다", () => {
+    mount([card]);
+    tapTile(2);
+    tapTile(1);
+    tapAction("Check");
+
+    expect(within(id("learning-shell-verdict")).getByTestId("answer-verdict")).toHaveAttribute(
+      "data-result",
+      "correct",
+    );
+    expect(within(id("learning-shell-stage")).queryByTestId("answer-verdict")).toBeNull();
+    expect(document.querySelector(".syllable-build-screen-verdict-slot")).toBeNull();
+  });
+
+  test("EV5. Check에서 문항당 한 번 outcome · density와 함께 보고한다", () => {
+    const onItemAnswered = vi.fn<(report: ItemAnswerReport) => void>();
+    render(
+      <SyllableBuildActivity
+        questions={[card, week]}
+        gemCount={0}
+        onExit={() => {}}
+        onFinish={() => {}}
+        onItemAnswered={onItemAnswered}
+      />,
+    );
+    tapTile(2);
+    tapTile(1);
+    expect(onItemAnswered).not.toHaveBeenCalled();
+
+    tapAction("Check");
+
+    expect(onItemAnswered).toHaveBeenCalledTimes(1);
+    expect(onItemAnswered).toHaveBeenCalledWith({
+      questionIndex: 0,
+      outcome: "correct",
+      density: "regular",
+    });
+  });
 });

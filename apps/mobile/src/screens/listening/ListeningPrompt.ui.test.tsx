@@ -5,6 +5,7 @@ import pause from "@libitums/icons/lynx/pause";
 import { color } from "@libitums/design-tokens";
 
 import { PlaybackPrompt } from "./ListeningPrompt.test-support";
+import { listenButtonIn } from "../../components/listen-round-buttons.test-support";
 // 크기 단계는 문장 길이에서 나옵니다 — 리터럴로 적지 않고 같은 함수에서 뽑습니다.
 import { listeningPromptScale } from "./listening";
 // sessionOptions가 필수 prop입니다. 이 파일의 fixture는 언제나 대본 표시를 켠 값을 줍니다 —
@@ -36,7 +37,7 @@ const OTHER_SOURCE = "ordering-2";
 
 // 아이콘 색의 정본은 design이 고른 토큰 상수입니다.
 // **두 상태가 같은 값**이라 색은 상태 채널이 아닙니다 (상호 대비 1.00).
-const ICON_COLOR = color.fg.neutral;
+const ICON_COLOR = color.fg["neutral-subtle"];
 
 // ------------------------------------------------------------ 대역
 //
@@ -104,9 +105,20 @@ function renderPrompt(overrides: { text?: string; audioSource?: string } = {}) {
   );
 }
 
-const control = () => screen.getByTestId("listening-prompt-playback");
-const icon = () => screen.getByTestId("listening-prompt-playback-icon");
-const replay = () => screen.getByTestId("listening-prompt-replay");
+// 이름 · 탭 · 아이콘은 바깥 상자 안쪽의 RoundButton이 집니다(바깥은 testid만).
+const control = () => listenButtonIn("listening-prompt-playback");
+const icon = () => {
+  const found = control().querySelector<HTMLElement>('[data-testid="ui-lynx-round-button-icon"]');
+  if (found === null) throw new Error("재생 단추에 아이콘이 없음");
+  return found;
+};
+const replay = () => listenButtonIn("listening-prompt-replay");
+
+// RoundButton이 아이콘의 currentColor를 자기 전경색으로 바꿔 싣습니다 — 모양의 정본은 패키지 모듈입니다.
+function expectIconIs(glyph: string): void {
+  const color = icon().getAttribute("current-color") ?? "";
+  expect(icon()).toHaveAttribute("content", glyph.replace(/currentColor/g, color));
+}
 
 // ---------------------------------------------------------------- 대본 (단언 1~3)
 //
@@ -215,7 +227,7 @@ test("자동 재생이 시작되면 이름이 'Pause'이고 아이콘 content가
   renderPrompt();
 
   expect(control()).toHaveAttribute("accessibility-label", "Pause");
-  expect(icon()).toHaveAttribute("content", pause);
+  expectIconIs(pause);
 });
 
 // 단언 6 — 완료 신호가 오면 대기로 되돌아옵니다.
@@ -231,7 +243,7 @@ test("붙잡은 done을 부르면 이름이 'Play'로 돌아오고 아이콘 con
   });
 
   expect(control()).toHaveAttribute("accessibility-label", "Play");
-  expect(icon()).toHaveAttribute("content", play);
+  expectIconIs(play);
   expect(play).not.toBe(pause);
 });
 
@@ -248,7 +260,7 @@ test("아이콘 current-color가 두 상태에서 같은 토큰 상수다 — �
     doneOf(calls, 0)("done");
   });
 
-  expect(icon()).toHaveAttribute("content", play);
+  expectIconIs(play);
   expect(icon()).toHaveAttribute("current-color", ICON_COLOR);
 });
 
@@ -259,31 +271,16 @@ test("아이콘 current-color가 두 상태에서 같은 토큰 상수다 — �
 test("두 상태에서 class 속성이 한 글자도 갈리지 않는다 — 상태 클래스가 없다", () => {
   const calls = stubHost();
   const { container } = renderPrompt();
-  const classesWhilePlaying = [...container.querySelectorAll("[class]")].map((el) =>
-    el.getAttribute("class"),
-  );
-
-  // 계약의 클래스 목록 그대로입니다 — 순서는 DOM 순서입니다.
-  expect(classesWhilePlaying).toEqual([
-    "listening-prompt",
-    `listening-prompt-script listening-prompt-scale-${listeningPromptScale(TEXT)}`,
-    "listening-prompt-text",
-    "listening-prompt-romanization",
-    "listening-prompt-controls",
-    "listening-prompt-replay",
-    "listening-prompt-replay-icon",
-    "listening-prompt-playback",
-    "listening-prompt-playback-icon",
-    "listening-prompt-controls-spacer",
-  ]);
+  const classesOf = (): (string | null)[] =>
+    [...container.querySelectorAll("[class]")].map((el) => el.getAttribute("class"));
+  const classesWhilePlaying = classesOf();
 
   act(() => {
     doneOf(calls, 0)("done");
   });
 
-  expect([...container.querySelectorAll("[class]")].map((el) => el.getAttribute("class"))).toEqual(
-    classesWhilePlaying,
-  );
+  expect(classesOf()).toEqual(classesWhilePlaying);
+  expect(classesWhilePlaying.some((value) => (value ?? "").includes("playing"))).toBe(false);
 });
 
 // ---------------------------------------------------------------- 상호작용 (단언 7·8)
@@ -301,7 +298,7 @@ test("'Pause' 상태에서 탭하면 네이티브 pause가 한 번이고 stop도
   expect(stopCount(calls)).toBe(0);
   expect(sourcesOf(calls)).toEqual([SOURCE, PAUSE]);
   expect(control()).toHaveAttribute("accessibility-label", "Resume");
-  expect(icon()).toHaveAttribute("content", play);
+  expectIconIs(play);
 });
 
 // 멈춰 둔 것을 다시 누르면 **그 자리부터** 잇습니다 — 처음부터가 아닙니다. 그
@@ -316,7 +313,7 @@ test("'Resume' 상태에서 탭하면 네이티브 resume이 불리고 play는 �
   expect(sourcesOf(calls)).toEqual([SOURCE, PAUSE, RESUME]);
   expect(playSources(calls)).toEqual([SOURCE]);
   expect(control()).toHaveAttribute("accessibility-label", "Pause");
-  expect(icon()).toHaveAttribute("content", pause);
+  expectIconIs(pause);
 });
 
 // 다시듣기는 언제나 **처음부터**입니다 — 재생 중이든 멈춰 뒀든 `play`를 다시
@@ -357,7 +354,7 @@ test("'Play' 상태에서 탭하면 네이티브 play가 같은 audioSource로 �
 
   expect(sourcesOf(calls)).toEqual([SOURCE, SOURCE]);
   expect(control()).toHaveAttribute("accessibility-label", "Pause");
-  expect(icon()).toHaveAttribute("content", pause);
+  expectIconIs(pause);
 });
 
 // ---------------------------------------------------------------- 접근성 (단언 11~13·16)
@@ -392,7 +389,7 @@ test("트리의 <svg>가 다시듣기 · 재생 아이콘 둘이다", () => {
   expect(screen.getByTestId("listening-prompt-text")).toHaveTextContent(TEXT);
 
   const icons = [...container.querySelectorAll("svg")].map((el) => el.getAttribute("data-testid"));
-  expect(icons).toEqual(["listening-prompt-replay-icon", "listening-prompt-playback-icon"]);
+  expect(icons).toEqual(["ui-lynx-round-button-icon", "ui-lynx-round-button-icon"]);
   expect(icon()).not.toHaveAttribute("accessibility-elements-hidden");
 });
 
@@ -406,7 +403,7 @@ test("트리의 조작 단위가 다시듣기 · 재생 둘이다", () => {
   // 앵커 — 위와 같은 이유입니다.
   expect(screen.getByTestId("listening-prompt-text")).toHaveTextContent(TEXT);
 
-  const expected = ["listening-prompt-replay", "listening-prompt-playback"];
+  const expected = ["ui-lynx-round-button", "ui-lynx-round-button"];
   expect(
     [...container.querySelectorAll("[accessibility-element]")].map((el) =>
       el.getAttribute("data-testid"),
@@ -442,21 +439,62 @@ test("두 상태 어디에도 accessibility-value가 없고 disabled도 없다",
 // 계약입니다. 보조기술 사용자가 대본이 낭독되기 **전에** 다시 들을 수단을
 // 만납니다. 이 단언이 없으면 design이 `order`로 뒤집어도 자동 계층이 전부
 // green입니다.
-test("DOM 순서가 대본 → 로마자 → 다시듣기 → 재생이다 — 낭독 순서 계약", () => {
+test("DOM 순서가 다시듣기 → 재생 → 구분선 → 한글 → 로마자다 — 낭독 순서 계약", () => {
   stubHost();
   const { container } = renderPrompt();
 
-  const order = [...container.querySelectorAll("[data-testid]")].map((el) =>
-    el.getAttribute("data-testid"),
-  );
+  const order = [...container.querySelectorAll("[data-testid]")]
+    .map((el) => el.getAttribute("data-testid") ?? "")
+    .filter((id) => id.startsWith("listening-prompt-"));
   expect(order).toEqual([
+    "listening-prompt-replay",
+    "listening-prompt-playback",
+    "listening-prompt-divider",
     "listening-prompt-text",
     "listening-prompt-romanization",
-    "listening-prompt-replay",
-    "listening-prompt-replay-icon",
-    "listening-prompt-playback",
-    "listening-prompt-playback-icon",
   ]);
+});
+
+// LP3 — 답하기 전 로마자 참고 줄은 재생 줄 → 구분선 → 로마자 순이고, 한글은 문서에 없다.
+test("LP3. beforeAnswer가 romanization이면 답 전에 재생 줄 → 구분선 → 로마자가 서고 한글은 없다", () => {
+  stubHost();
+  const { container } = render(
+    <PlaybackPrompt
+      text={TEXT}
+      romanization={ROMANIZATION}
+      audioSource={SOURCE}
+      sessionOptions={{ "auto-play-audio": false, "show-transcript": false }}
+      beforeAnswer="romanization"
+    />,
+  );
+
+  const order = [...container.querySelectorAll("[data-testid]")]
+    .map((el) => el.getAttribute("data-testid") ?? "")
+    .filter((id) => id.startsWith("listening-prompt-"));
+  expect(order).toEqual([
+    "listening-prompt-replay",
+    "listening-prompt-playback",
+    "listening-prompt-divider",
+    "listening-prompt-romanization",
+  ]);
+  expect(screen.queryByTestId("listening-prompt-text")).not.toBeInTheDocument();
+});
+
+test("LP3. beforeAnswer가 nothing이면 답 전에 구분선도 로마자도 없다", () => {
+  stubHost();
+  render(
+    <PlaybackPrompt
+      text={TEXT}
+      romanization={ROMANIZATION}
+      audioSource={SOURCE}
+      sessionOptions={{ "auto-play-audio": false, "show-transcript": false }}
+      beforeAnswer="nothing"
+    />,
+  );
+
+  expect(screen.queryByTestId("listening-prompt-divider")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("listening-prompt-romanization")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("listening-prompt-text")).not.toBeInTheDocument();
 });
 
 // ---------------------------------------------------------------- 모듈 부재 (단언 14·15)
@@ -470,7 +508,7 @@ test("대역 없이 렌더해도 던지지 않고 'Play'에 머문다 — 모듈
   expect(() => renderPrompt()).not.toThrow();
 
   expect(control()).toHaveAttribute("accessibility-label", "Play");
-  expect(icon()).toHaveAttribute("content", play);
+  expectIconIs(play);
   expect(screen.getByTestId("listening-prompt-text")).toHaveTextContent(TEXT);
 });
 
@@ -485,7 +523,7 @@ test("대역 없이 탭해도 던지지 않고 'Play' 그대로다", () => {
   expect(() => fireEvent.tap(playback, {})).not.toThrow();
 
   expect(control()).toHaveAttribute("accessibility-label", "Play");
-  expect(icon()).toHaveAttribute("content", play);
+  expectIconIs(play);
 });
 
 // 모듈이 없어도 조작 단위와 아이콘은 **언제나 렌더됩니다.** 숨기면 「없는
@@ -497,7 +535,7 @@ test("대역 없이도 컨트롤 둘과 아이콘 둘이 렌더된다 — 숨기
   expect(control()).toHaveAttribute("accessibility-element", "true");
   expect(
     [...container.querySelectorAll("svg")].map((el) => el.getAttribute("data-testid")),
-  ).toEqual(["listening-prompt-replay-icon", "listening-prompt-playback-icon"]);
+  ).toEqual(["ui-lynx-round-button-icon", "ui-lynx-round-button-icon"]);
   expect(container.querySelectorAll("[disabled]")).toHaveLength(0);
 });
 

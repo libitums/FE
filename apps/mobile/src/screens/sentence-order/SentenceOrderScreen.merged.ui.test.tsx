@@ -5,6 +5,7 @@ import { backHandlers } from "../../lib/back-handler";
 import { guideRoots, stubGuideStorage } from "../../lib/learning-item-guide.storage.test-support";
 import { learningShellScrollId } from "../learning/learning-shell-scroll";
 import { StepSentenceOrder } from "./StepSentenceOrder.test-support";
+import { checkState, tapAction } from "./sentence-order-check.test-support";
 
 // `ui` 계층: 문장 만들기에서 학습 문항 안내가 떠 있는 채로 껍데기가 합쳐져도(learning-shell-large-font)
 // 안내 · 루트 가림 · 조각 이동이 그대로인지 봅니다(SO1). 합칠 때 무대와 작업 영역이 한 번 다시
@@ -58,10 +59,10 @@ test("[SO1] 안내가 떠 있는 채로 합쳐져도 안내 · 가림이 그대�
   const chip = within(bank).getByTestId("sentence-order-chip-0");
   fireEvent.tap(chip, {});
 
-  const sentence = within(screen.getByTestId("learning-shell-stage")).getByTestId(
-    "sentence-order-screen-sentence",
+  const lines = within(screen.getByTestId("learning-shell-stage")).getByTestId(
+    "sentence-order-lines",
   );
-  expect(within(sentence).getByTestId("sentence-order-chip-0")).toHaveAttribute("data-placed", "1");
+  expect(within(lines).getByTestId("sentence-order-chip-0")).toHaveAttribute("data-placed", "1");
 });
 
 // SO2 — 답하면 맨 위로 (r03). `greeting`은 문항이 하나(조각 하나)라 `Next`는 다음 문항이 아니라
@@ -92,16 +93,13 @@ test("[SO2] 합친 흐름에서 칸을 채우는 동안은 보내지 않고, Che
   );
 
   try {
-    expect(screen.queryByTestId("learning-shell-action")).toBeNull();
+    expect(checkState()).toBe("disabled");
     fireEvent.tap(screen.getByTestId("sentence-order-chip-0"), {});
-    // 칸이 다 차 `Check`가 섰습니다 — 버튼이 서는 것만으로는 보내지 않습니다.
-    expect(screen.getByTestId("learning-shell-action")).toHaveAttribute(
-      "accessibility-label",
-      "Check",
-    );
+    // `Check`가 켜졌습니다 — 켜지는 것만으로는 보내지 않습니다.
+    expect(checkState()).toBe("enabled");
     expect(scrollTos).toHaveLength(0);
 
-    fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
+    tapAction("Check");
 
     expect(scrollTos).toEqual([`#${learningShellScrollId}`]);
     const verdict = within(screen.getByTestId("learning-shell-stage")).getByTestId(
@@ -109,7 +107,7 @@ test("[SO2] 합친 흐름에서 칸을 채우는 동안은 보내지 않고, Che
     );
     expect(verdict).toBeInTheDocument();
 
-    fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
+    tapAction("Next");
 
     expect(screen.getByTestId("sentence-order-screen-complete")).toBeInTheDocument();
     expect(scrollTos).toHaveLength(3);

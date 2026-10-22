@@ -2,6 +2,7 @@ import { afterEach, expect, test, vi } from "vitest";
 import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
 import type { AnswerResult } from "../../lib/answer-result";
+import { tapAction } from "./sentence-order-check.test-support";
 import { SentenceOrderActivity } from "./SentenceOrderScreen";
 import type { SentenceOrderQuestion } from "./sentence-order-questions";
 
@@ -17,17 +18,13 @@ const wordOrder: SentenceOrderQuestion = {
   instruction: "Build the sentence.",
 };
 
-// 지원 줄이 있는 TURN_ORDER 꼴입니다. 문항의 `instruction`이 `support.instruction`보다 앞섭니다.
+// 읽기 줄(Check 뒤에만 보이는 로마자)이 있는 낱말 순서 꼴입니다.
 const turnOrder: SentenceOrderQuestion = {
-  prompt: "이름이 어떻게 되세요?",
-  support: {
-    romanization: "ireumi eotteoke doeseyo?",
-    translation: "May I have your name?",
-    instruction: "Tap the pieces below.",
-  },
+  prompt: "My name is Minsu.",
   chips: ["민수예요.", "저는"],
   answerOrder: [1, 0],
   instruction: "Put the reply in order.",
+  reading: { romanization: "jeoneun minsuyeyo.", shown: "after-check" },
 };
 
 afterEach(() => {
@@ -46,12 +43,6 @@ function mount(
       onFinish={onFinish}
     />,
   );
-}
-
-function tapAction(label: string): void {
-  const action = screen.getByTestId("learning-shell-action");
-  expect(action).toHaveAttribute("accessibility-label", label);
-  fireEvent.tap(action, {});
 }
 
 const chip = (index: number) => screen.getByTestId(`sentence-order-chip-${index}`);
@@ -81,18 +72,20 @@ test("US1. 낱말 순서 문항은 창고에 칩을 문항 순서로 보이고 �
   expect(screen.getByTestId("answer-verdict")).toHaveAttribute("data-result", "correct");
 });
 
-test("US2. 지원 줄이 있는 문항은 로마자와 뜻을 그리고 문항의 지시문이 지원 지시문보다 앞선다", () => {
+test("US2. 읽기 줄이 있는 문항은 Check 전에 로마자가 없고 Check 뒤에 서며 문항의 지시문이 보인다", () => {
   mount([turnOrder]);
 
-  expect(screen.getByTestId("sentence-order-screen-romanization")).toHaveTextContent(
-    "ireumi eotteoke doeseyo?",
-  );
-  expect(screen.getByTestId("sentence-order-screen-translation")).toHaveTextContent(
-    "May I have your name?",
-  );
   expect(screen.getByTestId("learning-shell-instruction")).toHaveTextContent(
     "Put the reply in order.",
   );
+  expect(screen.queryByTestId("sentence-order-reading")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("sentence-order-screen-romanization")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("sentence-order-screen-translation")).not.toBeInTheDocument();
+
+  placeInAnswerOrder(turnOrder);
+  tapAction("Check");
+
+  expect(screen.getByTestId("sentence-order-reading")).toHaveTextContent("jeoneun minsuyeyo.");
 });
 
 test("US3. 두 문항을 정답 · 오답으로 풀고 결과를 보면 판정 배열과 건너뜀 0이 한 번 올라간다", () => {

@@ -1,5 +1,5 @@
 import { afterEach, expect, test, vi } from "vitest";
-import { act, cleanup, fireEvent, render, screen } from "@lynx-js/react/testing-library";
+import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import type { AnswerResult } from "../../lib/answer-result";
 import {
@@ -73,10 +73,10 @@ function tapSecondary(control: string, label: string): void {
 
 const chunk = (index: number) => id(`read-aloud-chunk-${index}`);
 
-test("URA1. 첫 화면은 표식 · 부호가 붙은 조각 · 로마자 · 영어 · 대기 마이크 · Speak · 보조 Next를 보이고 배지는 없다", () => {
+test("URA1. 첫 화면은 부호가 붙은 조각 · 로마자 · 영어 · 대기 마이크 · Speak · 보조 Next를 보이고 배지는 없다", () => {
   mount([fine, card]);
 
-  expect(id("read-aloud-badge")).toHaveTextContent("Practice");
+  expect(maybe("read-aloud-badge")).not.toBeInTheDocument();
   expect(chunk(0)).toHaveTextContent("아니요,");
   expect(chunk(1)).toHaveTextContent("괜찮아요.");
   expect(chunk(0)).toHaveAttribute("data-matched", "false");
@@ -293,7 +293,6 @@ test("URA11. 문구는 모두 문구표에서 온다", () => {
     </UiCopyContext.Provider>,
   );
 
-  expect(id("read-aloud-badge")).toHaveTextContent("⟦readAloud.badge⟧");
   expect(id("learning-shell-instruction")).toHaveTextContent("⟦speaking.instruction⟧");
   expect(id("read-aloud-romanization")).toHaveAttribute(
     "accessibility-label",
@@ -305,4 +304,38 @@ test("URA11. 문구는 모두 문구표에서 온다", () => {
 
   expect(hintText()).toBe("⟦readAloud.matched⟧(1, 2)");
   expect(id("read-aloud-secondary")).toHaveTextContent("⟦speaking.tryAgain⟧");
+});
+
+// RA1 — 카드는 한글 → 로마자 → 구분선 → 뜻 순서이고 칩(배지)이 없으며 파형은 카드 밖 작업 영역에 선다.
+const follows = (first: HTMLElement, second: HTMLElement): boolean =>
+  (first.compareDocumentPosition(second) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0;
+
+test("RA1. 카드는 한글 → 로마자 → 구분선 → 뜻 순서이고 글 역할 클래스를 진다", () => {
+  mount([fine]);
+
+  const sentence = id("read-aloud-sentence");
+  const roman = id("read-aloud-romanization");
+  const divider = id("read-aloud-divider");
+  const meaning = id("read-aloud-translation");
+  expect(follows(sentence, roman)).toBe(true);
+  expect(follows(roman, divider)).toBe(true);
+  expect(follows(divider, meaning)).toBe(true);
+  expect(roman).toHaveClass("text-role-romanization");
+  expect(divider).toHaveClass("text-role-divider");
+  expect(meaning).toHaveClass("text-role-meaning");
+  expect(maybe("read-aloud-badge")).not.toBeInTheDocument();
+});
+
+test("RA1. 뜻이 없는 문항은 구분선도 없다", () => {
+  mount([card]);
+
+  expect(maybe("read-aloud-divider")).not.toBeInTheDocument();
+  expect(maybe("read-aloud-translation")).not.toBeInTheDocument();
+});
+
+test("RA1. 파형은 무대 밖 작업 영역에 서고 칩 표식이 없다", () => {
+  mount([fine]);
+
+  expect(within(id("learning-shell-stage")).queryByTestId("read-aloud-waves")).toBeNull();
+  expect(id("read-aloud-waves")).toBeInTheDocument();
 });

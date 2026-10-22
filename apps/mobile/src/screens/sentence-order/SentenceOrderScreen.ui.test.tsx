@@ -7,6 +7,7 @@ import type { SentenceOrderQuestion } from "./sentence-order";
 import { UiCopyContext } from "../../lib/ui-copy";
 import { markedUiCopy } from "../../lib/ui-copy.test-support";
 import { expectCompleteScene, expectQuestionScene } from "../learning/complete-scene.test-support";
+import { actionLabel, checkState, tapAction } from "./sentence-order-check.test-support";
 
 // `ui` 계층: 컴포넌트 렌더와 상호작용 (ADR-0006 D4). 뼈대(상단 바 · 세션 헤더 · 지시문 ·
 // 무대 카드 · 아래 버튼 · 스크롤)는 `LearningShell`이 집니다 — 그 모양은
@@ -71,16 +72,8 @@ function renderOrdering(
   );
 }
 
-// 아래 버튼은 껍데기가 그립니다. 라벨이 국면을 말합니다 — `Check` · `Next` · `See results`.
-function actionLabel(): string | null {
-  return screen.queryByTestId("learning-shell-action")?.getAttribute("accessibility-label") ?? null;
-}
-
-function tapAction(label: string): void {
-  const action = screen.getByTestId("learning-shell-action");
-  expect(action).toHaveAttribute("accessibility-label", label);
-  fireEvent.tap(action, {});
-}
+const bankOf = () => screen.getByTestId("sentence-order-screen-bank");
+const linesOf = () => screen.getByTestId("sentence-order-lines");
 
 const chip = (index: number) => screen.getByTestId(`sentence-order-chip-${index}`);
 
@@ -147,52 +140,64 @@ const nonGradingCalls = (calls: readonly AnnounceCall[]): AnnounceCall[] =>
 
 // ---------------------------------------------------------------- 대화 카드
 
-test("[SO1] 상대 말풍선이 제시문이고, 내 말풍선은 빈 표시(----)이며 낭독하지 않는다", () => {
+test("[SO1] 제시문은 위 줄에 서고 답 줄 둘이 비어 있으며 내 말풍선은 없다", () => {
   renderOrdering();
 
   expect(screen.getByTestId("sentence-order-screen-prompt")).toHaveTextContent("뭐 했어?");
-  const reply = screen.getByTestId("sentence-order-screen-reply");
-  expect(reply).toHaveTextContent("----");
-  expect(reply).toHaveAttribute("accessibility-elements-hidden", "true");
+  expect(screen.getByTestId("sentence-order-line-0")).toBeInTheDocument();
+  expect(screen.getByTestId("sentence-order-line-1")).toBeInTheDocument();
+  expect(screen.queryByTestId("sentence-order-screen-reply")).toBeNull();
+  expect(screen.queryByTestId("sentence-order-screen-sentence")).toBeNull();
 });
 
-test("[SO2] 채점하면 내 말풍선에 놓은 순서대로 만든 문장이 서고 낭독된다", () => {
+test("[SO2] 채점하면 놓은 조각이 줄 위에서 자리별 판정(data-result)을 진다", () => {
   renderOrdering();
 
-  placeAllCorrectly(ORDERING_QUESTIONS[0]);
+  fireEvent.tap(chip(1), {});
+  fireEvent.tap(chip(2), {});
+  fireEvent.tap(chip(0), {});
+  expect(chip(1)).not.toHaveAttribute("data-result");
   tapAction("Check");
 
-  const reply = screen.getByTestId("sentence-order-screen-reply");
-  expect(reply).toHaveTextContent("나는 밥을 먹었다");
-  expect(reply).toHaveAttribute("accessibility-elements-hidden", "false");
+  // 정답 순서는 [나는, 밥을, 먹었다] — 첫 자리만 맞습니다.
+  expect(within(linesOf()).getByTestId("sentence-order-chip-1")).toHaveAttribute(
+    "data-result",
+    "correct",
+  );
+  expect(within(linesOf()).getByTestId("sentence-order-chip-2")).toHaveAttribute(
+    "data-result",
+    "incorrect",
+  );
+  expect(within(linesOf()).getByTestId("sentence-order-chip-0")).toHaveAttribute(
+    "data-result",
+    "incorrect",
+  );
 });
 
 // ---------------------------------------------------------------- 조각 이동
 
-test("[SO3] 처음에는 조각이 전부 창고에 있고 답 칸 줄은 비어 있다", () => {
+test("[SO3] 처음에는 조각이 전부 창고에 있고 답 줄은 비어 있다", () => {
   renderOrdering();
 
-  const bank = screen.getByTestId("sentence-order-screen-bank");
-  const sentence = screen.getByTestId("sentence-order-screen-sentence");
   for (const index of [0, 1, 2]) {
-    expect(within(bank).getByTestId(`sentence-order-chip-${index}`)).toHaveAttribute(
+    expect(within(bankOf()).getByTestId(`sentence-order-chip-${index}`)).toHaveAttribute(
       "data-placed",
       "none",
     );
   }
-  expect(sentence.children).toHaveLength(0);
+  expect(within(linesOf()).queryAllByTestId(/^sentence-order-chip-\d+$/)).toHaveLength(0);
 });
 
-test("[SO4] 조각을 누르면 답 칸 줄로 옮겨 가고, 창고의 그 자리에는 회색 빈칸이 남는다", () => {
+test("[SO4] 조각을 누르면 답 줄로 옮겨 가고, 창고의 그 자리에는 폭을 지키는 빈칸이 남는다", () => {
   renderOrdering();
 
   fireEvent.tap(chip(1), {});
 
-  const sentence = screen.getByTestId("sentence-order-screen-sentence");
-  expect(within(sentence).getByTestId("sentence-order-chip-1")).toHaveAttribute("data-placed", "1");
-  const slot = within(screen.getByTestId("sentence-order-screen-bank")).getByTestId(
-    "sentence-order-bank-slot-1",
+  expect(within(linesOf()).getByTestId("sentence-order-chip-1")).toHaveAttribute(
+    "data-placed",
+    "1",
   );
+  const slot = within(bankOf()).getByTestId("sentence-order-bank-slot-1");
   expect(slot).toHaveAttribute("accessibility-elements-hidden", "true");
 });
 
@@ -218,18 +223,20 @@ test("[SO6] 놓인 조각의 낭독 이름이 자리 번호를 싣는다", () =>
 
 // ---------------------------------------------------------------- 오답 낱말
 
-test("[SO7] 오답 낱말이 섞이면 정답 길이만큼 놓았을 때 확인이 선다 — 창고를 다 비울 필요가 없다", () => {
+test("[SO7] 오답 낱말이 섞여도 Check는 조각 하나부터 켜지고 다 놓아도 저절로 채점되지 않는다", () => {
   renderOrdering();
   placeAllCorrectly(ORDERING_QUESTIONS[0]);
   tapAction("Check");
   tapAction("Next");
 
+  expect(checkState()).toBe("disabled");
   fireEvent.tap(chip(0), {});
+  expect(checkState()).toBe("enabled");
   fireEvent.tap(chip(2), {});
-  expect(actionLabel()).toBeNull();
-
   fireEvent.tap(chip(1), {});
-  expect(actionLabel()).toBe("Check");
+  // 정답 길이만큼 놓았지만 판정은 없고 Check가 그대로 선다.
+  expect(screen.queryByTestId("answer-verdict")).toBeNull();
+  expect(checkState()).toBe("enabled");
   // 오답 낱말은 창고에 남아 있습니다.
   expect(chip(3)).toHaveAttribute("data-placed", "none");
 });
@@ -254,12 +261,15 @@ test("[SO8] 칸이 다 차면 창고의 조각은 누를 수 없다 — 놓인 �
 
 // ---------------------------------------------------------------- 채점 · 다음 · 완료
 
-test("[SO9] 덜 놓았으면 아래 버튼이 없다", () => {
+test("[SO9] 덜 놓았으면 Check는 늘 서 있되 꺼져 있다 — 조각 하나를 놓으면 켜진다", () => {
   renderOrdering();
 
-  expect(actionLabel()).toBeNull();
+  expect(checkState()).toBe("disabled");
+  expect(screen.queryByTestId("learning-shell-action")).toBeNull();
   fireEvent.tap(chip(1), {});
-  expect(actionLabel()).toBeNull();
+  expect(checkState()).toBe("enabled");
+  fireEvent.tap(chip(1), {});
+  expect(checkState()).toBe("disabled");
 });
 
 test("[SO10] 정답 순서로 확인하면 판정 배지가 정답이고 버튼이 다음으로 바뀐다", () => {
@@ -303,7 +313,7 @@ test("[SO13] 다음을 누르면 둘째 문항으로 넘어가고 배치 · 판�
   tapAction("Next");
 
   expect(screen.getByTestId("sentence-order-screen-prompt")).toHaveTextContent("어디 가?");
-  expect(screen.getByTestId("sentence-order-screen-sentence").children).toHaveLength(0);
+  expect(within(linesOf()).queryAllByTestId(/^sentence-order-chip-\d+$/)).toHaveLength(0);
   expect(screen.queryByTestId("answer-verdict")).toBeNull();
 });
 
@@ -538,12 +548,14 @@ test("[LA3-M] 문구표를 주입하고 조각을 놓으면 조각 이름 · 확
 
   placeAllCorrectly(question);
   expect(chip(1)).toHaveAttribute("accessibility-label", "⟦sentenceOrder.placedChip⟧(나는, 1)");
-  expect(screen.getByTestId("learning-shell-action")).toHaveAttribute(
-    "accessibility-label",
-    "⟦common.check⟧",
-  );
+  expect(
+    within(screen.getByTestId("sentence-order-check")).getByTestId("ui-lynx-button"),
+  ).toHaveAttribute("accessibility-label", "⟦common.check⟧");
 
-  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
+  fireEvent.tap(
+    within(screen.getByTestId("sentence-order-check")).getByTestId("ui-lynx-button"),
+    {},
+  );
   expect(screen.getByTestId("learning-shell-action")).toHaveAttribute(
     "accessibility-label",
     "⟦common.next⟧",
@@ -555,7 +567,10 @@ test("[LA3-M] 문구표를 주입하고 채점하면 낭독이 resultAnnouncemen
   renderOrderingMarked();
 
   placeAllCorrectly(ORDERING_QUESTIONS[0]);
-  fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
+  fireEvent.tap(
+    within(screen.getByTestId("sentence-order-check")).getByTestId("ui-lynx-button"),
+    {},
+  );
 
   expect(calls.map((call) => call.content)).toEqual(["⟦common.resultAnnouncement⟧(correct)"]);
 });
@@ -566,7 +581,10 @@ test("[LA3-M] 문구표를 주입하고 문항을 마치면 완료 문구 · 마
 
   for (const question of ORDERING_QUESTIONS) {
     placeAllCorrectly(question);
-    fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
+    fireEvent.tap(
+      within(screen.getByTestId("sentence-order-check")).getByTestId("ui-lynx-button"),
+      {},
+    );
     fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
   }
 

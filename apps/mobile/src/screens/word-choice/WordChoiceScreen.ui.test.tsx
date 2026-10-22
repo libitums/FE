@@ -7,6 +7,7 @@ import { WordChoiceActivity } from "./WordChoiceScreen";
 import { UiCopyContext } from "../../lib/ui-copy";
 import { markedUiCopy } from "../../lib/ui-copy.test-support";
 import { expectCompleteScene, expectQuestionScene } from "../learning/complete-scene.test-support";
+import { expectChoiceResult } from "../../components/question-options.test-support";
 
 // `ui` 계층: 실제 컴포넌트를 렌더하고 상태·상호작용을 봅니다(ADR-0006 D4). 순수
 // 함수(word-choice.ts의 세션 리듀서·판정·문구 합성)는 mock하지 않습니다 — 화면이
@@ -70,10 +71,10 @@ function WordChoiceScreen({
 }
 
 const CHOICE_TESTIDS = [
-  "word-choice-option-0",
-  "word-choice-option-1",
-  "word-choice-option-2",
-  "word-choice-option-3",
+  "ui-lynx-option-selector-item-choice-0",
+  "ui-lynx-option-selector-item-choice-1",
+  "ui-lynx-option-selector-item-choice-2",
+  "ui-lynx-option-selector-item-choice-3",
 ] as const;
 
 function renderOrdering(
@@ -98,7 +99,10 @@ function answerCorrectlyAndAdvance(questionIndex: number): void {
   if (question === undefined) {
     throw new Error(`fixture missing at index ${questionIndex}`);
   }
-  fireEvent.tap(screen.getByTestId(`word-choice-option-${question.answerIndex}`), {});
+  fireEvent.tap(
+    screen.getByTestId(`ui-lynx-option-selector-item-choice-${question.answerIndex}`),
+    {},
+  );
   fireEvent.tap(screen.getByTestId("learning-shell-advance"), {});
 }
 
@@ -221,7 +225,7 @@ test("응답 전 네 보기가 전부 data-result='none'이다", () => {
   renderOrdering();
 
   for (const testid of CHOICE_TESTIDS) {
-    expect(screen.getByTestId(testid)).toHaveAttribute("data-result", "none");
+    expectChoiceResult(screen.getByTestId(testid), "none");
   }
 });
 
@@ -242,13 +246,10 @@ test("정답 보기를 탭하면 그 보기만 data-result='correct'이고 나�
   renderOrdering();
 
   const answerIndex = ORDERING_QUESTIONS[0]!.answerIndex;
-  fireEvent.tap(screen.getByTestId(`word-choice-option-${answerIndex}`), {});
+  fireEvent.tap(screen.getByTestId(`ui-lynx-option-selector-item-choice-${answerIndex}`), {});
 
   CHOICE_TESTIDS.forEach((testid, index) => {
-    expect(screen.getByTestId(testid)).toHaveAttribute(
-      "data-result",
-      index === answerIndex ? "correct" : "none",
-    );
+    expectChoiceResult(screen.getByTestId(testid), index === answerIndex ? "correct" : "none");
   });
 });
 
@@ -256,7 +257,7 @@ test("정답 보기를 탭하면 그 보기의 accessibility-label에 ', 정답'
   renderOrdering();
 
   const answerIndex = ORDERING_QUESTIONS[0]!.answerIndex;
-  const testid = `word-choice-option-${answerIndex}`;
+  const testid = `ui-lynx-option-selector-item-choice-${answerIndex}`;
   const before = screen.getByTestId(testid).getAttribute("accessibility-label");
 
   fireEvent.tap(screen.getByTestId(testid), {});
@@ -267,7 +268,10 @@ test("정답 보기를 탭하면 그 보기의 accessibility-label에 ', 정답'
 test("정답 보기를 탭하면 '다음'이 나타난다", () => {
   renderOrdering();
 
-  fireEvent.tap(screen.getByTestId(`word-choice-option-${ORDERING_QUESTIONS[0]!.answerIndex}`), {});
+  fireEvent.tap(
+    screen.getByTestId(`ui-lynx-option-selector-item-choice-${ORDERING_QUESTIONS[0]!.answerIndex}`),
+    {},
+  );
 
   expect(screen.getByTestId("learning-shell-advance")).toBeInTheDocument();
 });
@@ -279,14 +283,14 @@ test("오답 보기를 탭하면 그 보기만 incorrect이고 정답 보기는 
   const answerIndex = ORDERING_QUESTIONS[0]!.answerIndex;
   const wrongIndex = (answerIndex + 1) % 4;
 
-  fireEvent.tap(screen.getByTestId(`word-choice-option-${wrongIndex}`), {});
+  fireEvent.tap(screen.getByTestId(`ui-lynx-option-selector-item-choice-${wrongIndex}`), {});
 
-  expect(screen.getByTestId(`word-choice-option-${wrongIndex}`)).toHaveAttribute(
-    "data-result",
+  expectChoiceResult(
+    screen.getByTestId(`ui-lynx-option-selector-item-choice-${wrongIndex}`),
     "incorrect",
   );
-  expect(screen.getByTestId(`word-choice-option-${answerIndex}`)).toHaveAttribute(
-    "data-result",
+  expectChoiceResult(
+    screen.getByTestId(`ui-lynx-option-selector-item-choice-${answerIndex}`),
     "none",
   );
 });
@@ -297,10 +301,10 @@ test("오답을 골라도 정답 보기의 라벨에 접미사가 붙지 않는�
   const answerIndex = ORDERING_QUESTIONS[0]!.answerIndex;
   const wrongIndex = (answerIndex + 1) % 4;
 
-  fireEvent.tap(screen.getByTestId(`word-choice-option-${wrongIndex}`), {});
+  fireEvent.tap(screen.getByTestId(`ui-lynx-option-selector-item-choice-${wrongIndex}`), {});
 
   const answerLabel = screen
-    .getByTestId(`word-choice-option-${answerIndex}`)
+    .getByTestId(`ui-lynx-option-selector-item-choice-${answerIndex}`)
     .getAttribute("accessibility-label");
   expect(answerLabel).not.toContain(", correct");
 });
@@ -312,15 +316,15 @@ test("응답 뒤 다른 보기를 탭해도 첫 응답이 그대로다", () => {
   const answerIndex = ORDERING_QUESTIONS[0]!.answerIndex;
   const otherIndex = (answerIndex + 1) % 4;
 
-  fireEvent.tap(screen.getByTestId(`word-choice-option-${answerIndex}`), {});
-  fireEvent.tap(screen.getByTestId(`word-choice-option-${otherIndex}`), {});
+  fireEvent.tap(screen.getByTestId(`ui-lynx-option-selector-item-choice-${answerIndex}`), {});
+  fireEvent.tap(screen.getByTestId(`ui-lynx-option-selector-item-choice-${otherIndex}`), {});
 
-  expect(screen.getByTestId(`word-choice-option-${answerIndex}`)).toHaveAttribute(
-    "data-result",
+  expectChoiceResult(
+    screen.getByTestId(`ui-lynx-option-selector-item-choice-${answerIndex}`),
     "correct",
   );
-  expect(screen.getByTestId(`word-choice-option-${otherIndex}`)).toHaveAttribute(
-    "data-result",
+  expectChoiceResult(
+    screen.getByTestId(`ui-lynx-option-selector-item-choice-${otherIndex}`),
     "none",
   );
 });
@@ -330,9 +334,9 @@ test("0번 보기를 골라도 응답으로 기록된다 — 0은 falsy다", () 
   renderOrdering();
 
   answerCorrectlyAndAdvance(0);
-  fireEvent.tap(screen.getByTestId("word-choice-option-0"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-option-selector-item-choice-0"), {});
 
-  expect(screen.getByTestId("word-choice-option-0")).toHaveAttribute("data-result", "correct");
+  expectChoiceResult(screen.getByTestId("ui-lynx-option-selector-item-choice-0"), "correct");
   expect(screen.getByTestId("learning-shell-advance")).toBeInTheDocument();
 });
 
@@ -341,7 +345,10 @@ test("0번 보기를 골라도 응답으로 기록된다 — 0은 falsy다", () 
 test("'다음'을 탭하면 진행·문항이 갈리고 판정이 초기화되며 '다음'이 다시 사라진다", () => {
   renderOrdering();
 
-  fireEvent.tap(screen.getByTestId(`word-choice-option-${ORDERING_QUESTIONS[0]!.answerIndex}`), {});
+  fireEvent.tap(
+    screen.getByTestId(`ui-lynx-option-selector-item-choice-${ORDERING_QUESTIONS[0]!.answerIndex}`),
+    {},
+  );
   fireEvent.tap(screen.getByTestId("learning-shell-advance"), {});
 
   expect(screen.getByTestId("learning-shell-chapter")).toHaveTextContent("Lesson 2 / 3");
@@ -349,7 +356,7 @@ test("'다음'을 탭하면 진행·문항이 갈리고 판정이 초기화되�
     ORDERING_QUESTIONS[1]!.prompt,
   );
   for (const testid of CHOICE_TESTIDS) {
-    expect(screen.getByTestId(testid)).toHaveAttribute("data-result", "none");
+    expectChoiceResult(screen.getByTestId(testid), "none");
   }
   expect(screen.queryByTestId("learning-shell-advance")).not.toBeInTheDocument();
 });
@@ -390,7 +397,10 @@ test("마지막 문항에 응답만 해서는 완료가 아니다", () => {
 
   answerCorrectlyAndAdvance(0);
   answerCorrectlyAndAdvance(1);
-  fireEvent.tap(screen.getByTestId(`word-choice-option-${ORDERING_QUESTIONS[2]!.answerIndex}`), {});
+  fireEvent.tap(
+    screen.getByTestId(`ui-lynx-option-selector-item-choice-${ORDERING_QUESTIONS[2]!.answerIndex}`),
+    {},
+  );
 
   expect(screen.getByTestId("learning-shell-chapter")).toHaveTextContent("Lesson 3 / 3");
   expect(screen.queryByTestId("learning-shell-action")).not.toBeInTheDocument();
@@ -414,7 +424,10 @@ test("전부 오답이어도 완료 상태로 넘어가고 onFinish가 결과 �
   renderOrdering({ onFinish });
 
   for (const question of ORDERING_QUESTIONS) {
-    fireEvent.tap(screen.getByTestId(`word-choice-option-${(question.answerIndex + 1) % 4}`), {});
+    fireEvent.tap(
+      screen.getByTestId(`ui-lynx-option-selector-item-choice-${(question.answerIndex + 1) % 4}`),
+      {},
+    );
     fireEvent.tap(screen.getByTestId("learning-shell-advance"), {});
   }
   fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
@@ -452,7 +465,10 @@ test("문항 하나를 응답한 뒤 나가도 onFinish가 불리지 않는다",
   const onFinish = vi.fn<(id: StepId) => void>();
   const { container } = renderOrdering({ onExit, onFinish });
 
-  fireEvent.tap(screen.getByTestId(`word-choice-option-${ORDERING_QUESTIONS[0]!.answerIndex}`), {});
+  fireEvent.tap(
+    screen.getByTestId(`ui-lynx-option-selector-item-choice-${ORDERING_QUESTIONS[0]!.answerIndex}`),
+    {},
+  );
   exitThroughConfirm(container);
 
   expect(onExit).toHaveBeenCalledTimes(1);
@@ -477,7 +493,10 @@ test("나가기에 element·label='Leave lesson'·traits='button'이 붙는다",
 test("넘김 층에 element·label='Continue'·traits='button'이 붙는다", () => {
   renderOrdering();
 
-  fireEvent.tap(screen.getByTestId(`word-choice-option-${ORDERING_QUESTIONS[0]!.answerIndex}`), {});
+  fireEvent.tap(
+    screen.getByTestId(`ui-lynx-option-selector-item-choice-${ORDERING_QUESTIONS[0]!.answerIndex}`),
+    {},
+  );
 
   const advance = screen.getByTestId("learning-shell-advance");
   expect(advance).toHaveAttribute("accessibility-element", "true");
@@ -505,7 +524,10 @@ test("화면 어느 요소에도 accessibility-value가 없다", () => {
 
   expect(container.querySelectorAll("[accessibility-value]")).toHaveLength(0);
 
-  fireEvent.tap(screen.getByTestId(`word-choice-option-${ORDERING_QUESTIONS[0]!.answerIndex}`), {});
+  fireEvent.tap(
+    screen.getByTestId(`ui-lynx-option-selector-item-choice-${ORDERING_QUESTIONS[0]!.answerIndex}`),
+    {},
+  );
 
   expect(container.querySelectorAll("[accessibility-value]")).toHaveLength(0);
 });
@@ -537,30 +559,29 @@ test("응답 전 조작 단위가 나가기 + 보기 넷이다", () => {
   // 학습 중에는 상단 바(알림 버튼)가 서지 않으므로 나가기가 첫 조작 단위입니다.
   expect(tappables).toEqual([
     "learning-shell-exit",
-    "word-choice-option-0",
-    "word-choice-option-1",
-    "word-choice-option-2",
-    "word-choice-option-3",
+    "ui-lynx-option-selector-item-choice-0",
+    "ui-lynx-option-selector-item-choice-1",
+    "ui-lynx-option-selector-item-choice-2",
+    "ui-lynx-option-selector-item-choice-3",
   ]);
 });
 
-test("응답 뒤 조작 단위가 나가기 + 보기 넷 + 넘김 층이다", () => {
+test("응답 뒤 조작 단위가 나가기 + 넘김 층이다 — 보기 넷은 disabled로 바뀐다", () => {
   const { container } = renderOrdering();
 
-  fireEvent.tap(screen.getByTestId(`word-choice-option-${ORDERING_QUESTIONS[0]!.answerIndex}`), {});
+  fireEvent.tap(
+    screen.getByTestId(`ui-lynx-option-selector-item-choice-${ORDERING_QUESTIONS[0]!.answerIndex}`),
+    {},
+  );
 
   const tappables = [...container.querySelectorAll('[accessibility-traits="button"]')].map((el) =>
     el.getAttribute("data-testid"),
   );
 
-  expect(tappables).toEqual([
-    "learning-shell-exit",
-    "word-choice-option-0",
-    "word-choice-option-1",
-    "word-choice-option-2",
-    "word-choice-option-3",
-    "learning-shell-advance",
-  ]);
+  expect(tappables).toEqual(["learning-shell-exit", "learning-shell-advance"]);
+  for (const testid of CHOICE_TESTIDS) {
+    expect(screen.getByTestId(testid)).toHaveAttribute("accessibility-traits", "disabled");
+  }
 });
 
 test("완료 상태의 조작 단위가 나가기와 결과 보기다", () => {
@@ -598,7 +619,10 @@ test("[A2] 보기 넷만 스크롤 컨테이너 안에 있다", () => {
 
 test("[A3] 나가기·넘김 층이 스크롤 컨테이너 밖에 있다", () => {
   renderOrdering();
-  fireEvent.tap(screen.getByTestId(`word-choice-option-${ORDERING_QUESTIONS[0]!.answerIndex}`), {});
+  fireEvent.tap(
+    screen.getByTestId(`ui-lynx-option-selector-item-choice-${ORDERING_QUESTIONS[0]!.answerIndex}`),
+    {},
+  );
 
   const scroll = screen.getByTestId("learning-shell-scroll");
   expect(within(scroll).queryByTestId("learning-shell-exit")).not.toBeInTheDocument();
@@ -726,7 +750,10 @@ test("[X-B] 첫 렌더·응답·중간 다음까지 announce가 0건이다", () 
 
   expect(calls).toHaveLength(0);
 
-  fireEvent.tap(screen.getByTestId(`word-choice-option-${ORDERING_QUESTIONS[0]!.answerIndex}`), {});
+  fireEvent.tap(
+    screen.getByTestId(`ui-lynx-option-selector-item-choice-${ORDERING_QUESTIONS[0]!.answerIndex}`),
+    {},
+  );
 
   expect(calls).toHaveLength(0);
 
@@ -808,7 +835,7 @@ test("[LA2-E] 지시문이 영어이고 보기는 학습 콘텐츠(한국어) �
   expect(screen.getByTestId("learning-shell-instruction")).toHaveTextContent(
     "Choose the word that fits.",
   );
-  expect(screen.getByTestId("word-choice-option-0")).toHaveTextContent("사과");
+  expect(screen.getByTestId("ui-lynx-option-selector-item-choice-0")).toHaveTextContent("사과");
 });
 
 test("[LA2-E] 응답 뒤 정답 보기의 이름이 ', correct'로 끝난다", () => {
@@ -816,12 +843,14 @@ test("[LA2-E] 응답 뒤 정답 보기의 이름이 ', correct'로 끝난다", (
   const question = ORDERING_QUESTIONS[0] as WordChoiceQuestion;
   const answer = question.choices[question.answerIndex];
 
-  fireEvent.tap(screen.getByTestId(`word-choice-option-${question.answerIndex}`), {});
-
-  expect(screen.getByTestId(`word-choice-option-${question.answerIndex}`)).toHaveAttribute(
-    "accessibility-label",
-    `${answer}, correct`,
+  fireEvent.tap(
+    screen.getByTestId(`ui-lynx-option-selector-item-choice-${question.answerIndex}`),
+    {},
   );
+
+  expect(
+    screen.getByTestId(`ui-lynx-option-selector-item-choice-${question.answerIndex}`),
+  ).toHaveAttribute("accessibility-label", `${answer}, correct`);
 });
 
 function renderOrderingMarked(): ReturnType<typeof render> {
@@ -849,13 +878,13 @@ test("[LA2-M] 문구표를 주입하고 응답하면 판정 배지 · 보기 접
   const question = ORDERING_QUESTIONS[0] as WordChoiceQuestion;
   const answerIndex = question.answerIndex;
 
-  fireEvent.tap(screen.getByTestId(`word-choice-option-${answerIndex}`), {});
+  fireEvent.tap(screen.getByTestId(`ui-lynx-option-selector-item-choice-${answerIndex}`), {});
 
   expect(screen.getByTestId("answer-verdict")).toHaveAttribute(
     "accessibility-label",
     "⟦common.answerResult.correct⟧",
   );
-  expect(screen.getByTestId(`word-choice-option-${answerIndex}`)).toHaveAttribute(
+  expect(screen.getByTestId(`ui-lynx-option-selector-item-choice-${answerIndex}`)).toHaveAttribute(
     "accessibility-label",
     `${question.choices[answerIndex]}, ⟦common.answerResultSuffix.correct⟧`,
   );

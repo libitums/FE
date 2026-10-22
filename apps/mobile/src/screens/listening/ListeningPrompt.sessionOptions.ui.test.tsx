@@ -5,6 +5,7 @@ import play from "@libitums/icons/lynx/play";
 import { PlaybackPrompt } from "./ListeningPrompt.test-support";
 import { initialSessionOptions } from "../../lib/session-options";
 import type { SessionOptions } from "../../lib/session-options";
+import { listenButtonIn } from "../../components/listen-round-buttons.test-support";
 
 // `ui` 계층: 렌더 결과와 상호작용만 봅니다(ADR-0006 D4). `toHaveClass`·`toHaveStyle`·
 // `toBeVisible`을 쓰지 않습니다(`docs/conventions/code.md`).
@@ -53,7 +54,7 @@ function renderPrompt(sessionOptions: SessionOptions) {
   );
 }
 
-const control = () => screen.getByTestId("listening-prompt-playback");
+const control = () => listenButtonIn("listening-prompt-playback");
 const icon = () => screen.getByTestId("listening-prompt-playback-icon");
 
 const autoPlayOff: SessionOptions = { "auto-play-audio": false, "show-transcript": true };

@@ -5,6 +5,7 @@ import { lessonAudioStub, listenAudioOf, withAudio } from "../../lib/question-au
 import type { SessionOptions } from "../../lib/session-options";
 import { ListeningActivity } from "./ListeningScreen";
 import type { ListeningQuestion } from "./listening-questions";
+import { listenButtonIn } from "../../components/listen-round-buttons.test-support";
 
 // `ui` 계층(V3-2 / BA2): 듣기 화면 판정 순간, 대본 표시가 꺼져 있으면 정오 + 대본(한국어 · 로마자)이
 // 낭독 공지(LynxAccessibilityModule.accessibilityAnnounce)로 한 번 나간다. 켜져 있으면 공지는 지금 그대로(없음).
@@ -60,7 +61,7 @@ function mount(sessionOptions: SessionOptions, questions = [question]) {
   );
 }
 const tapChoice = (index: number): void =>
-  void fireEvent.tap(screen.getByTestId(`listening-choice-${index}`), {});
+  void fireEvent.tap(screen.getByTestId(`ui-lynx-option-selector-item-choice-${index}`), {});
 
 beforeEach(() => {
   announceFn.mockReset();
@@ -126,7 +127,7 @@ test("AN5. 대본 표시가 켜져 있으면 판정 때 대본 공지를 더하�
 test("AN6. 3열 줄의 재생 단추는 재생 중에도 Stop 이름이 되지 않는다(가드)", () => {
   mount(transcriptOff, [question, second]);
 
-  const label = screen.getByTestId("listening-prompt-playback").getAttribute("accessibility-label");
+  const label = listenButtonIn("listening-prompt-playback").getAttribute("accessibility-label");
   expect(label).not.toBe("Stop");
   expect(screen.queryByTestId("listening-listen")).not.toBeInTheDocument();
 });

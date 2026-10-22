@@ -11,7 +11,9 @@ import {
   withAudio,
 } from "../../lib/question-audio.test-support";
 import type { LessonAudio } from "../../lib/question-audio";
+import { listenButtonIn } from "../../components/listen-round-buttons.test-support";
 import { SentenceOrderActivity } from "./SentenceOrderScreen";
+import { tapCheck } from "./sentence-order-check.test-support";
 import type { SentenceOrderQuestion } from "./sentence-order-questions";
 
 // `ui` 계층: 문장 순서 활동의 문항 음성 — LISTEN_BUILD(듣기 갈래)는 상대 말풍선 자리의 3열과 자동 재생,
@@ -66,11 +68,7 @@ const chip = (index: number) => screen.getByTestId(`sentence-order-chip-${index}
 const place = (question: SentenceOrderQuestion, order = question.answerOrder): void => {
   for (const index of order) fireEvent.tap(chip(index), {});
 };
-const check = (): void => {
-  const action = screen.getByTestId("learning-shell-action");
-  expect(action).toHaveAttribute("accessibility-label", "Check");
-  fireEvent.tap(action, {});
-};
+const check = tapCheck;
 
 beforeEach(() => {
   playAudio.mockReset();
@@ -83,20 +81,20 @@ afterEach(() => {
 });
 
 describe("LISTEN_BUILD — 듣기 갈래", () => {
-  test("SO1. 상대 말풍선 자리에 3열이 서고 말풍선 글은 그리지 않으며 자동 재생이 한 번 난다", () => {
+  test("SO1. 위 줄에 재생 · 다시 듣기 · Slow가 이 순서로 서고 말풍선 글은 그리지 않으며 자동 재생이 한 번 난다", () => {
     const { lesson } = lessonAudioStub();
 
     const { container } = mount([listenBuild], lesson);
 
     expect(
       testIdOrder(container, [
-        "sentence-order-listen-replay",
         "sentence-order-listen-playback",
+        "sentence-order-listen-replay",
         "sentence-order-listen-slow",
       ]),
     ).toEqual([
-      "sentence-order-listen-replay",
       "sentence-order-listen-playback",
+      "sentence-order-listen-replay",
       "sentence-order-listen-slow",
     ]);
     expect(screen.queryByTestId("sentence-order-screen-prompt")).not.toBeInTheDocument();
@@ -151,13 +149,17 @@ describe("LISTEN_BUILD — 듣기 갈래", () => {
     );
   });
 
-  test("AX1. 읽는 순서는 다시 듣기, 재생, Slow이고 이름이 붙는다", () => {
+  test("AX1. 다시 듣기 · 재생의 이름은 안쪽 RoundButton이 지고 Slow는 토글이 진다", () => {
     const { lesson } = lessonAudioStub();
     mount([listenBuild], lesson);
 
-    expect(screen.getByTestId("sentence-order-listen-replay")).toHaveAttribute(
+    expect(listenButtonIn("sentence-order-listen-replay")).toHaveAttribute(
       "accessibility-label",
       "Play from the start",
+    );
+    expect(listenButtonIn("sentence-order-listen-playback")).toHaveAttribute(
+      "accessibility-label",
+      "Play",
     );
     expect(screen.getByTestId("sentence-order-listen-slow")).toHaveAttribute(
       "accessibility-label",

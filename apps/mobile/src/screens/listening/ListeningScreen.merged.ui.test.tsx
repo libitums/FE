@@ -5,6 +5,7 @@ import { StepListening as ListeningScreen } from "./StepListening.test-support";
 import { learningShellScrollId } from "../learning/learning-shell-scroll";
 import { initialSessionOptions } from "../../lib/session-options";
 import type { SessionOptions } from "../../lib/session-options";
+import { listenButtonIn } from "../../components/listen-round-buttons.test-support";
 
 // `ui` 계층: 듣기 화면을 통해 본 **합친 배치**(learning-shell-large-font)입니다. 껍데기 자신의
 // 구조 계약은 `LearningShell.merged.ui.test.tsx`가 집니다 — 여기서는 합쳐진 흐름 안에서 문항이
@@ -66,12 +67,15 @@ function reportHeight(height: number): void {
   });
 }
 
-const control = () => screen.getByTestId("listening-prompt-playback");
+const control = () => listenButtonIn("listening-prompt-playback");
 const flow = () => screen.queryByTestId("learning-shell-flow");
 const classesOf = (el: Element): string[] => (el.getAttribute("class") ?? "").split(/\s+/);
 
 function answerAndAdvance(questionIndex: number): void {
-  fireEvent.tap(screen.getByTestId(`listening-choice-${ANSWER_INDEXES[questionIndex]}`), {});
+  fireEvent.tap(
+    screen.getByTestId(`ui-lynx-option-selector-item-choice-${ANSWER_INDEXES[questionIndex]}`),
+    {},
+  );
   fireEvent.tap(screen.getByTestId("learning-shell-advance"), {});
 }
 
@@ -89,7 +93,7 @@ test("[LS2] 합친 흐름에서 보기가 흐름 안에 서고, 고르면 판정
     within(mergedFlow as HTMLElement).getByTestId("listening-screen-choices"),
   ).toBeInTheDocument();
 
-  fireEvent.tap(screen.getByTestId(`listening-choice-${ANSWER_INDEXES[0]}`), {});
+  fireEvent.tap(screen.getByTestId(`ui-lynx-option-selector-item-choice-${ANSWER_INDEXES[0]}`), {});
   expect(screen.getByTestId("answer-verdict")).toHaveAttribute("data-result", "correct");
   fireEvent.tap(screen.getByTestId("learning-shell-advance"), {});
 
@@ -208,12 +212,13 @@ test("[LS6] 합친 흐름에서 보기를 누르면 맨 위로 한 번 가고 �
   );
 
   try {
-    fireEvent.tap(screen.getByTestId("listening-choice-0"), {});
+    fireEvent.tap(screen.getByTestId("ui-lynx-option-selector-item-choice-0"), {});
 
     expect(scrollTos).toEqual([`#${learningShellScrollId}`]);
-    const slot = document.querySelector(".listening-screen-verdict-slot");
-    expect(slot).not.toBeNull();
-    expect(within(slot as HTMLElement).getByTestId("answer-verdict")).toBeInTheDocument();
+    expect(
+      within(screen.getByTestId("learning-shell-verdict")).getByTestId("answer-verdict"),
+    ).toBeInTheDocument();
+    expect(document.querySelector(".listening-screen-verdict-slot")).toBeNull();
 
     // 넘김이 끝나 완료가 서는 렌더에서 완료 · 답함이 함께 바뀌어도 한 번입니다.
     fireEvent.tap(screen.getByTestId("learning-shell-advance"), {});

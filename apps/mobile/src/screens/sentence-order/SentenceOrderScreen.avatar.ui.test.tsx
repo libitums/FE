@@ -2,7 +2,7 @@ import { afterEach, expect, test } from "vitest";
 import { cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { SentenceOrderActivity } from "./SentenceOrderScreen";
-import type { DialogueSpeakerNames } from "./sentence-order-avatar";
+import type { ConversationCast } from "../../lib/conversation-cast";
 import type { SentenceOrderQuestion } from "./sentence-order-questions";
 
 // `ui` 계층: 대화 조립(대화 순서 문항)의 줄마다 36px 원형 아바타가 말풍선 옆 아래에 붙습니다 — 상대 줄은
@@ -14,7 +14,10 @@ const turns: SentenceOrderQuestion = {
   chips: ["며칠 묵으시죠?", "일주일 묵어요.", "여권 여기 있어요.", "네, 여권 좀 보여주세요."],
   answerOrder: [3, 2, 0, 1],
   instruction: "Put the conversation in order.",
-  dialogue: { speakers: ["counterpart", "me", "counterpart", "me"] },
+  dialogue: {
+    speakers: ["counterpart", "me", "counterpart", "me"],
+    chipSpeakers: ["counterpart", "me", "me", "counterpart"],
+  },
 };
 
 const plain: SentenceOrderQuestion = {
@@ -26,14 +29,16 @@ const plain: SentenceOrderQuestion = {
 
 afterEach(cleanup);
 
-function mount(questions: readonly SentenceOrderQuestion[], speakerNames?: DialogueSpeakerNames) {
+const CAST: ConversationCast = { counterpart: { name: "편의점 점원" }, me: { name: "Sehyun" } };
+
+function mount(questions: readonly SentenceOrderQuestion[], cast?: ConversationCast) {
   return render(
     <SentenceOrderActivity
       questions={questions}
       gemCount={0}
       onExit={() => {}}
       onFinish={() => {}}
-      speakerNames={speakerNames}
+      {...(cast === undefined ? {} : { cast })}
     />,
   );
 }
@@ -50,7 +55,7 @@ const childOrderOf = (position: number) =>
   );
 
 test("UA1. 빈 칸 줄마다 아바타가 서고 상대 줄은 말풍선 왼쪽 · 내 줄은 말풍선 오른쪽이다", () => {
-  mount([turns], { counterpart: "편의점 점원", me: "Sehyun" });
+  mount([turns], CAST);
 
   expect([0, 1, 2, 3].map((position) => row(position).getAttribute("data-speaker"))).toEqual([
     "counterpart",
@@ -72,10 +77,10 @@ test("UA1. 빈 칸 줄마다 아바타가 서고 상대 줄은 말풍선 왼쪽 
 });
 
 test("UA2. 놓은 말풍선 줄에도 아바타가 같은 쪽에 남는다", () => {
-  mount([turns], { counterpart: "편의점 점원", me: "Sehyun" });
+  mount([turns], CAST);
 
-  fireEvent.tap(screen.getByTestId("sentence-order-chip-3"), {});
-  fireEvent.tap(screen.getByTestId("sentence-order-chip-2"), {});
+  fireEvent.tap(screen.getByTestId("sentence-order-dialogue-chip-3"), {});
+  fireEvent.tap(screen.getByTestId("sentence-order-dialogue-chip-2"), {});
 
   expect(screen.getByTestId("sentence-order-dialogue-slot-0")).toHaveAttribute(
     "data-filled",
@@ -86,7 +91,7 @@ test("UA2. 놓은 말풍선 줄에도 아바타가 같은 쪽에 남는다", () 
 });
 
 test("UA3. 상대 아바타는 에피소드 상대 이름의 첫 글자, 내 아바타는 학습자 이름의 머리글자다", () => {
-  mount([turns], { counterpart: "편의점 점원", me: "Sehyun Kim" });
+  mount([turns], { counterpart: { name: "편의점 점원" }, me: { name: "Sehyun Kim" } });
 
   expect(within(avatarBox(0)).getByTestId("ui-lynx-avatar-initials")).toHaveTextContent("편");
   expect(within(avatarBox(1)).getByTestId("ui-lynx-avatar-initials")).toHaveTextContent("SK");
@@ -101,7 +106,7 @@ test("UA4. 이름이 없으면 상대는 중립 자리표시 그림, 나는 문�
 });
 
 test("UA5. 아바타는 장식이라 낭독 트리에서 빠지고 칸 낭독은 그대로다", () => {
-  mount([turns], { counterpart: "편의점 점원", me: "Sehyun" });
+  mount([turns], CAST);
 
   for (const position of [0, 1, 2, 3]) {
     expect(avatarBox(position)).toHaveAttribute("accessibility-elements-hidden", "true");
@@ -120,9 +125,34 @@ test("UA5. 아바타는 장식이라 낭독 트리에서 빠지고 칸 낭독은
 });
 
 test("UA6. 대화 순서가 아닌 문항에는 아바타가 없다", () => {
-  mount([plain], { counterpart: "편의점 점원", me: "Sehyun" });
+  mount([plain], CAST);
 
   expect(screen.getByTestId("sentence-order-screen-prompt")).toBeInTheDocument();
   expect(screen.queryByTestId("ui-lynx-avatar")).not.toBeInTheDocument();
   expect(screen.queryByTestId("sentence-order-dialogue-avatar-0")).not.toBeInTheDocument();
+});
+
+test("SO12. cast.counterpart.imageUrl은 상대 아바타의 imageSource가 되고 내 아바타는 이니셜이다", () => {
+  mount([turns], {
+    counterpart: { name: "편의점 점원", imageUrl: "file:///episodes/u00/avatar.webp" },
+    me: { name: "Sehyun" },
+  });
+
+  expect(within(avatarBox(0)).getByTestId("ui-lynx-avatar-image")).toHaveAttribute(
+    "src",
+    "file:///episodes/u00/avatar.webp",
+  );
+  expect(within(avatarBox(2)).getByTestId("ui-lynx-avatar-image")).toHaveAttribute(
+    "src",
+    "file:///episodes/u00/avatar.webp",
+  );
+  expect(within(avatarBox(1)).queryByTestId("ui-lynx-avatar-image")).not.toBeInTheDocument();
+  expect(within(avatarBox(1)).getByTestId("ui-lynx-avatar-initials")).toHaveTextContent("S");
+});
+
+test("SO12. imageUrl이 없으면 상대 아바타는 이름 첫 글자 이니셜이고 그림 요소가 없다", () => {
+  mount([turns], CAST);
+
+  expect(within(avatarBox(0)).queryByTestId("ui-lynx-avatar-image")).not.toBeInTheDocument();
+  expect(within(avatarBox(0)).getByTestId("ui-lynx-avatar-initials")).toHaveTextContent("편");
 });

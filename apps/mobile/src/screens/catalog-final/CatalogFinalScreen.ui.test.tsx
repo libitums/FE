@@ -212,9 +212,28 @@ describe("CatalogFinalScreen", () => {
     expect(
       within(screen.getByTestId("catalog-final-screen-verdict")).getByTestId("answer-verdict"),
     ).toHaveAttribute("data-result", "incorrect");
-    expect(screen.getByTestId("catalog-final-screen-answer")).toHaveTextContent(
-      "Answer: 카드로 할게요.",
-    );
+    const answer = screen.getByTestId("catalog-final-screen-answer");
+    expect(answer).toHaveTextContent("카드로 할게요.");
+    expect(answer.textContent).not.toContain("Answer:");
+    expect(screen.getByTestId("answer-reveal-label")).toHaveTextContent("Answer");
+  });
+
+  test("RV2. 오답 뒤 정답 상자는 머리 줄 Answer + 정답 문장이고 어두운 면 표지가 없다", () => {
+    mount();
+    place(correctOrder);
+    fireEvent.tap(actionButton(), {});
+    fireEvent.tap(actionButton(), {});
+    place(wrongOrder);
+
+    expect(screen.queryByTestId("catalog-final-screen-answer")).not.toBeInTheDocument();
+    fireEvent.tap(actionButton(), {});
+
+    const answer = screen.getByTestId("catalog-final-screen-answer");
+    expect(answer).toHaveTextContent("카드로 할게요.");
+    expect(answer).not.toHaveAttribute("data-surface");
+    expect(screen.getByTestId("answer-reveal-label")).toHaveTextContent("Answer");
+    expect(document.querySelector('[accessibility-label="Answer, 카드로 할게요."]')).not.toBeNull();
+    expect(document.body.innerHTML).not.toContain("surface-dark");
   });
 
   test("UF5. 마지막 턴 뒤 See results를 두 번 눌러도 결과는 한 번 올라간다", () => {

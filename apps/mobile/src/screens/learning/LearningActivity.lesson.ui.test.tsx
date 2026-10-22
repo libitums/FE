@@ -8,6 +8,7 @@ import { initialSessionOptions } from "../../lib/session-options";
 import { keystrokesFor } from "../messenger/hangul-keyboard";
 import { ListeningActivity } from "../listening/ListeningScreen";
 import { SentenceOrderActivity } from "../sentence-order/SentenceOrderScreen";
+import { tapCheck } from "../sentence-order/sentence-order-check.test-support";
 import { TypingActivity } from "../typing/TypingActivity";
 import { WordChoiceActivity } from "../word-choice/WordChoiceScreen";
 import type { LessonPosition } from "./activity-finish";
@@ -90,11 +91,11 @@ const cases: readonly Case[] = [
       />
     ),
     solveFirst: () => {
-      tap("listening-choice-0");
+      tap("ui-lynx-option-selector-item-choice-0");
       tap("learning-shell-advance");
     },
     solveLast: () => {
-      tap("listening-choice-0");
+      tap("ui-lynx-option-selector-item-choice-0");
       tap("learning-shell-advance");
     },
     seeResultsLabel: "See results",
@@ -111,11 +112,11 @@ const cases: readonly Case[] = [
       />
     ),
     solveFirst: () => {
-      tap("word-choice-option-1");
+      tap("ui-lynx-option-selector-item-choice-1");
       tap("learning-shell-advance");
     },
     solveLast: () => {
-      tap("word-choice-option-1");
+      tap("ui-lynx-option-selector-item-choice-1");
       tap("learning-shell-advance");
     },
     seeResultsLabel: "See results",
@@ -135,13 +136,13 @@ const cases: readonly Case[] = [
     solveFirst: () => {
       tap("sentence-order-chip-1");
       tap("sentence-order-chip-0");
-      tap("learning-shell-action");
+      tapCheck();
       tap("learning-shell-action");
     },
     solveLast: () => {
       tap("sentence-order-chip-1");
       tap("sentence-order-chip-0");
-      tap("learning-shell-action");
+      tapCheck();
       tap("learning-shell-action");
     },
     seeResultsLabel: "See results",
