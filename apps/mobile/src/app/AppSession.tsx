@@ -84,7 +84,10 @@ export function AppSession({
   const progress = useJourneyProgress(progressSeed, catalogSections);
   useProgressLoadEvents(progress.progressLoadPhase, episodeIntroEventSink);
   const learner = useLearnerProfile();
-  const tickets = useLearningTickets(progress.tickets, progress.setTickets, episodeIntroEventSink);
+  // 머리 칩이 서 있으면 쓴 티켓이 줄어드는 것을 보인 뒤 레슨을 엽니다(시안 E4).
+  const tickets = useLearningTickets(progress.tickets, progress.setTickets, episodeIntroEventSink, {
+    chipShown: showsTabNavigator(nav),
+  });
   const { catalogProgress, setCatalogProgress } = progress;
   // 남아 있는 알림입니다. 지운 알림은 세션 동안만 빠집니다 — **영속하지 않습니다**
   // (ADR-0007 D1). 앱을 다시 켜면 `notificationList`로 돌아갑니다.

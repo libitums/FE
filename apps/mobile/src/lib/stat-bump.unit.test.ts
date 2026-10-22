@@ -1,6 +1,12 @@
 import { describe, expect, test } from "vitest";
 
-import { clearStatBump, noStatBumps, recordStatBump, statBumpStart } from "./stat-bump";
+import {
+  clearStatBump,
+  noStatBumps,
+  recordStatBump,
+  statBumpStart,
+  ticketDropStart,
+} from "./stat-bump";
 
 // `unit` 계층: 지표 칩 오름 표식의 순수 함수(ADR-0064).
 
@@ -37,5 +43,21 @@ describe("statBumpStart", () => {
     expect(statBumpStart(4, 4)).toBeNull();
     expect(statBumpStart(5, 4)).toBeNull();
     expect(statBumpStart(null, 4)).toBeNull();
+  });
+});
+
+describe("ticketDropStart", () => {
+  test("TD1. 표식이 지금 값보다 크면 그 값에서 줄어든다", () => {
+    expect(ticketDropStart(3, 2)).toBe(3);
+    expect(ticketDropStart(1, 0)).toBe(1);
+  });
+
+  test("TD2. 같거나 작으면 굴릴 것이 없다 — 쓴 뒤 다시 찼다", () => {
+    expect(ticketDropStart(2, 2)).toBeNull();
+    expect(ticketDropStart(1, 2)).toBeNull();
+  });
+
+  test("TD3. 표식이 없으면 없다", () => {
+    expect(ticketDropStart(null, 2)).toBeNull();
   });
 });

@@ -7,7 +7,7 @@ import trophy from "@libitums/icons/lynx/trophy";
 import { color, motion as motionTokens } from "@libitums/design-tokens";
 import { motionDurationMs, useMotion } from "@libitums/ui-lynx/motion";
 
-import { statBumpStart } from "../lib/stat-bump";
+import { statBumpStart, ticketDropStart } from "../lib/stat-bump";
 
 import { statChipClassName } from "./stat-chip-class";
 import { ticketIcon } from "./ticket-icon";
@@ -26,6 +26,9 @@ import "./stat-chip-motion.css";
 // 여섯이 퍼지고, 테두리가 칩 색으로 물들며 빛 한 줄기가 지나가고, 숫자가 아래에서 밀려 올라옵니다. 움직임
 // 줄이기에서는 숫자만 페이드로 바뀝니다. 오르기 전 값(`bumpFrom`)은 칩이 기억하지 않고 받습니다
 // (`lib/stat-bump.ts`). 재생 전에는 그 값을 보이고, 이름(`accessibilityLabel`)은 처음부터 새 값입니다.
+//
+// **학습 티켓은 반대로 쓴 순간 한 번 줄어듭니다**(시안 E4 — `dropFrom`). 칩이 살짝 커졌다 돌아오고, 테두리가 칩
+// 색으로 물들고, 숫자가 같은 굴림으로 바뀌며, 칩 아래로 「−1」이 떨어지며 사라집니다. 줄이기에서는 숫자 페이드만.
 
 export type { StatChipHeight, StatChipSurface } from "./stat-chip-class";
 
@@ -56,6 +59,12 @@ export const statChipBumpDurationMs = {
   reduced: motionDurationMs(motionTokens.duration.d2),
 } as const;
 
+/** 줄어듦 재생(시안 E4)의 길이입니다 — 테두리 · −1이 걷히면 끝입니다. 줄이기에서는 숫자 페이드(`d2`)입니다. */
+export const statChipDropDurationMs = {
+  standard: motionDurationMs(motionTokens.duration.d8),
+  reduced: motionDurationMs(motionTokens.duration.d2),
+} as const;
+
 export type StatChipProps = {
   readonly tone: StatChipTone;
   readonly value: number;
@@ -74,6 +83,13 @@ export type StatChipProps = {
   readonly bumpDelayMs?: number;
   /** 재생을 마쳤거나 굴릴 것이 없어 표식을 지워도 될 때 부릅니다. */
   readonly onBumped?: () => void;
+  /**
+   * 줄기 전 값입니다(학습 티켓 — 시안 E4). 지금 값보다 크면 그 값에서 지금 값으로 한 번 줄어듭니다. 사용자가 방금
+   * 누른 결과라 `bumpHeld`와 상관없이 바로 재생합니다.
+   */
+  readonly dropFrom?: number | null;
+  /** 줄어듦 재생을 마쳤거나 굴릴 것이 없을 때 부릅니다. */
+  readonly onDropped?: () => void;
 };
 
 export function StatChip({
@@ -88,6 +104,8 @@ export function StatChip({
   bumpHeld = false,
   bumpDelayMs = 0,
   onBumped,
+  dropFrom = null,
+  onDropped,
 }: StatChipProps): ReactNode {
   const motion = useMotion();
   const start = statBumpStart(bumpFrom, value);
@@ -115,17 +133,46 @@ export function StatChip({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bumpFrom, start, value, bumpHeld, bumpDelayMs, motion]);
 
+  // 줄어듦은 오름과 따로 돕니다 — 표식이 들어온 순간 바로 재생하고, 끝나면 지금 값을 보입니다(부모가 표식을
+  // 거두기 전에도 옛 값으로 돌아가지 않게 `done`을 둡니다).
+  const drop = ticketDropStart(dropFrom, value);
+  const [dropPhase, setDropPhase] = useState<"waiting" | "playing" | "done">("waiting");
+
+  useEffect(() => {
+    // 표식이 거둬지면 처음으로 되돌립니다 — `done`이 남으면 다음 표식의 첫 그림이 새 값이 되어 한 번 깜빡입니다.
+    if (drop === null) setDropPhase("waiting");
+    if (dropFrom !== null && drop === null) {
+      onDropped?.();
+      return;
+    }
+    if (drop === null) return;
+    setDropPhase("playing");
+    const end = setTimeout(() => {
+      setDropPhase("done");
+      onDropped?.();
+    }, statChipDropDurationMs[motion]);
+    return () => clearTimeout(end);
+    // `onDropped`는 부모가 매번 새로 만들어 넘기므로 뺍니다(오름과 같은 이유).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dropFrom, drop, value, motion]);
+
   const handleTap = () => {
     "background only";
     onTap?.();
   };
 
   const bursting = playing && start !== null && motion === "standard";
+  const dropping = drop !== null && dropPhase === "playing";
+  const droppingFull = dropping && motion === "standard";
   const valueClass = `stat-chip-value stat-chip-value-${tone}`;
 
   return (
     <view
-      className={statChipClassName(surface, height)}
+      className={
+        droppingFull
+          ? `${statChipClassName(surface, height)} stat-chip-drop`
+          : statChipClassName(surface, height)
+      }
       data-testid={testId}
       accessibility-element={true}
       accessibility-label={accessibilityLabel}
@@ -137,7 +184,9 @@ export function StatChip({
           <view className={`stat-chip-sheen-band stat-chip-sheen-band-${tone}`} />
         </view>
       ) : null}
-      {bursting ? <view className={`stat-chip-glow stat-chip-glow-${tone}`} /> : null}
+      {bursting || droppingFull ? (
+        <view className={`stat-chip-glow stat-chip-glow-${tone}`} />
+      ) : null}
       <view className={bursting ? "stat-chip-icon-box stat-chip-pop" : "stat-chip-icon-box"}>
         <svg
           className="stat-chip-icon"
@@ -159,7 +208,20 @@ export function StatChip({
             ))
           : null}
       </view>
-      {start === null ? (
+      {drop !== null && dropPhase !== "done" ? (
+        !dropping ? (
+          <text className={valueClass}>{String(drop)}</text>
+        ) : motion === "reduced" ? (
+          <text className={`${valueClass} stat-chip-value-fade`}>{String(value)}</text>
+        ) : (
+          <view className="stat-chip-digits" data-testid={`${testId}-drop`}>
+            <view className="stat-chip-roll">
+              <text className={valueClass}>{String(drop)}</text>
+              <text className={valueClass}>{String(value)}</text>
+            </view>
+          </view>
+        )
+      ) : start === null ? (
         <text className={valueClass}>{String(value)}</text>
       ) : !playing ? (
         <text className={valueClass}>{String(start)}</text>
@@ -173,6 +235,15 @@ export function StatChip({
           </view>
         </view>
       )}
+      {droppingFull ? (
+        <text
+          className="stat-chip-minus"
+          data-testid={`${testId}-minus`}
+          accessibility-element={false}
+        >
+          {`−${String(drop - value)}`}
+        </text>
+      ) : null}
     </view>
   );
 }
