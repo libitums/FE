@@ -3,7 +3,7 @@
 ## 실행 조건
 
 - 상태: 부분 측정 — 번들 크기와 재생 길이 비(호스트 `done`까지의 시간)만 재었습니다. 렌더링 · 메모리 캡처(`performance:capture`), 레슨 시작 → 첫 문항 첫 그리기 · 문항 첫 그리기 → 재생 호출 · `Slow` 탭 → `playAtRate` 호출의 지연(e2e EU6)은 재지 않았습니다.
-- 기능 PR: 학습 문항 음성 · 「천천히」 0.85(ADR-0080, 이 보고서와 같은 PR)
+- 기능 PR: 학습 문항 음성 · 「천천히」 0.85(ADR-0081, 이 보고서와 같은 PR)
 - 대상 commit: `feat/audio-slow-playback`의 `49dc553e`. 비교 기준은 이 브랜치가 갈라진 `3658bfd8`입니다.
 - 기기: iPhone 13 mini 시뮬레이터 — 재생 길이는 이 commit 트리에서 빌드한 Debug 호스트(`playAtRate` 있음)로 재었습니다.
 - OS: iOS 26.5
