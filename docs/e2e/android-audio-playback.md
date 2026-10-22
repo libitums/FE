@@ -2,7 +2,7 @@
 
 > ⟨2026-10-21 — [ADR-0081](../adr/0081-tutorial-as-catalog-episode.md) D12 · D13⟩ **Maestro 흐름(`e2e/android-audio-playback.yaml` · `devtools/android-maestro/run-audio-playback.sh` · 루트 `test:e2e:android:audio`)은 지웠다** — 그 흐름이 열던 옛 튜토리얼 듣기 화면(`Listen to a Hello`)이 없다. 내장 음성은 **3개**(호스트 테스트 고정물 `greeting-1` · `ordering-2` · `tutorial-cabin-announcement`)만 남았고 제품이 쓰는 내장 음성은 0이다 — 아래 「21개」는 그때의 값이다. 계측(`AudioPlaybackModuleTest` — 목록은 그 셋) · 원격 재생 AP-R1 · AP-R2는 그대로 실행할 수 있다. 카탈로그 음성의 청음은 [에피소드 음성 e2e](episode-audio.md)가 진다.
 
-> ⟨2026-10-22 — [ADR-0081](../adr/0081-item-audio-and-slow-playback.md)⟩ **메서드가 다섯이다** — `playAtRate(source, rate, done)`가 더해졌다(학습 듣기 문항의 「천천히」 0.85). 아래 「범위」의 넷과 같은 해석 · 대체 · `done` 한 번이고, `start()` 직후 `setPlaybackParams(speed, pitch 1)`로 음높이를 지킨다(1.0이면 부르지 않는다).
+> ⟨2026-10-22 — [ADR-0082](../adr/0082-item-audio-and-slow-playback.md)⟩ **메서드가 다섯이다** — `playAtRate(source, rate, done)`가 더해졌다(학습 듣기 문항의 「천천히」 0.85). 아래 「범위」의 넷과 같은 해석 · 대체 · `done` 한 번이고, `start()` 직후 `setPlaybackParams(speed, pitch 1)`로 음높이를 지킨다(1.0이면 부르지 않는다).
 > 계측 AP-S1 ~ AP-S6 · JVM `AudioPlaybackRateTest`가 더해졌고, 아래 「원격 재생」의 AP-R1 「10초 안에」는 **40초**로 고쳤다(아래 「결과」 2026-10-21). 학습 문항의 에뮬레이터 청음은 [학습 문항 음성 e2e](item-audio.md) EU2다.
 
 ## 범위

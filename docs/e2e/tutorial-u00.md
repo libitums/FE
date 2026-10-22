@@ -11,9 +11,9 @@
 - 판정: 화면 녹화 프레임 · 스크린숏 · Accessibility Inspector · 앱 컨테이너의 저장소(`defaults export`) · 콘텐츠 폴더.
 - iOS `StorageModule`은 `UserDefaults.standard`에 키 앞 `libitum.`을 **하나 더** 붙여 쓴다 — 진행 캐시는 `libitum.libitum.progress.cached.<사용자>`다.
 - 앱 컨테이너: `xcrun simctl get_app_container booted com.libitum.host data`(아래 `<data>`).
-- ⚠ **u00의 `S2`(듣기 고르기) · `S7`(듣고 조립)은 빈 레슨이다** — 학습 문항 음성이 아직 연결되지 않아 그 단계의 문항 하나가 `audio-missing`으로 건너뛰어진다(ADR-0080 D12, 후속 `feat/audio-slow-playback`). 아래 판정은 그 둘을 「열리고 끝남으로 바뀐다」까지만 본다.
-  ⟨2026-10-22 — [ADR-0081](../adr/0081-item-audio-and-slow-playback.md)⟩ **해소됐다** — 소리가 있으면 `S2`는 듣기 화면, `S7`은 문장 순서 화면으로 선다([학습 문항 음성 e2e](item-audio.md) EU8). EU-1(새 설치 · 오프라인)에서는 음성을 아직 받지 못해(받은 파일만 소리 — v4) **`S2`는 대본이 보이는 소리 없는 듣기 화면(재생 조작 없음)으로 서고, `S7`은 건너뛰어져 빈 레슨**이다(ADR-0081 「대가」 4 — 기기 미확인). EU-1의 「소리는 없다」 판정에 이 모양을 함께 적는다.
-- u00은 티켓을 쓰지 않는다(ADR-0080 D8) — EU-2는 티켓 대기 없이 끝까지 간다.
+- ⚠ **u00의 `S2`(듣기 고르기) · `S7`(듣고 조립)은 빈 레슨이다** — 학습 문항 음성이 아직 연결되지 않아 그 단계의 문항 하나가 `audio-missing`으로 건너뛰어진다(ADR-0081 D12, 후속 `feat/audio-slow-playback`). 아래 판정은 그 둘을 「열리고 끝남으로 바뀐다」까지만 본다.
+  ⟨2026-10-22 — [ADR-0082](../adr/0082-item-audio-and-slow-playback.md)⟩ **해소됐다** — 소리가 있으면 `S2`는 듣기 화면, `S7`은 문장 순서 화면으로 선다([학습 문항 음성 e2e](item-audio.md) EU8). EU-1(새 설치 · 오프라인)에서는 음성을 아직 받지 못해(받은 파일만 소리 — v4) **`S2`는 대본이 보이는 소리 없는 듣기 화면(재생 조작 없음)으로 서고, `S7`은 건너뛰어져 빈 레슨**이다(ADR-0082 「대가」 4 — 기기 미확인). EU-1의 「소리는 없다」 판정에 이 모양을 함께 적는다.
+- u00은 티켓을 쓰지 않는다(ADR-0081 D8) — EU-2는 티켓 대기 없이 끝까지 간다.
 
 ## 흐름
 

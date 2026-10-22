@@ -1,4 +1,4 @@
-# ADR-0081 — 학습 문항의 음성을 잇고, 듣기 문항에 「천천히」(0.85배 · 음높이 유지)를 둔다: 재생 모듈의 다섯째 메서드 `playAtRate`
+# ADR-0082 — 학습 문항의 음성을 잇고, 듣기 문항에 「천천히」(0.85배 · 음높이 유지)를 둔다: 재생 모듈의 다섯째 메서드 `playAtRate`
 
 - 상태: **채택 — 클라이언트 · 두 호스트.** 서버 · 버킷 형식 · 에피소드 스키마 · 음성 id 변경 0. `-slow` 음성 파일을 요청하지도 기다리지도 않는다.
   ⚠ **기기 확인은 부분 회차로 수용했다**(사용자 결정 2026-10-22) — unit · ui · integration · 호스트 테스트(iOS HostTests `AudioPlaybackModuleTests` 11/11 · Android JVM 통과 · 계측 `AudioPlaybackModuleTest` 22/22, 2026-10-21)와 번들 크기에 더해,
@@ -22,7 +22,7 @@
   - [ADR-0066](0066-episode-format-screens.md) D8의 **`LISTEN_BUILD` = 화면 없이 `audio-missing`** — 소리가 있으면 문장 순서 화면으로 선다(D9). 소리 없으면 지금처럼 건너뛴다.
 - 이어받는 결정: [ADR-0060](0060-episode-voice-remote-audio.md) D2 · D3 · D7(주소 규약 · 네이티브는 스킴만 · 실패는 무음) — 재검토 조건 1 발동, [ADR-0067](0067-episode-format-speaking.md)(`SHADOW` = `read-aloud`) — 재검토 조건 1 발동,
   [ADR-0065](0065-episode-format-additions.md) D8 · 재검토 조건 1, [ADR-0074](0074-voice-synced-typing.md)(컷 타자기 — 1.0 고정이라 그대로), [ADR-0016](0016-assistive-technology-semantics.md) D5 · D10 · D11 · D13, [ADR-0029](0029-product-analytics-posthog.md) D14,
-  [ADR-0080](0080-tutorial-as-catalog-episode.md) D12(u00 `S2` · `S7` 빈 레슨 — 해소). 각 ADR에 적용 기록을 달았다.
+  [ADR-0081](0081-tutorial-as-catalog-episode.md) D12(u00 `S2` · `S7` 빈 레슨 — 해소). 각 ADR에 적용 기록을 달았다.
 
 근거 표시: **[코드]** 저장소 코드(`apps/mobile/src/` 기준) · **[데이터]** 버킷 에피소드 7개 실측 · **[Pod]** Lynx iOS Pod 소스 · **[실측]** 테스트 · 빌드 · **[사용자]** · **[추론]** 관찰 없이 이어 붙인 것.
 계약의 정본은 저장소 밖 작업 폴더의 spec(v1 · 사용자 확인 결과 · v2 · D10 보정 · v3)이고 이 문서는 그중 **결정**만 옮긴다. 시그니처는 코드가 진다.
@@ -37,7 +37,7 @@
    `WORD_ORDER` 21/21 · `SYLLABLE_BUILD` 18/18 · `SPEAK_WORD` 13/13 · `IMG_MATCH` 8/8. 모든 `audio_url`이 음성 정보 파일에 있다. `LISTEN_BUILD` 35개는 모두 정답을 공백으로 나눈 조각이 타일과 1:1로 맞는다.
 3. **옛 호스트에 인자를 하나 더 보내면 소리가 나지 않는다** [Pod]. `Pods/Lynx/core/runtime/js/bindings/modules/ios/lynx_module_darwin.mm:441-462` — 인자 수가 셀렉터보다 **많으면** `E_NATIVE_MODULES_COMMON_WRONG_PARAM_NUM`을 올리고 **메서드를 부르지 않는다**.
    `play(source, done, rate)`를 옛 iOS 호스트에 보내면 무음 + Lynx 오류다. Android Lynx 소스는 확인하지 못했다[추론: 같은 인자 수 검사]. 릴리스는 JS 번들과 호스트가 함께 나가지만, 「옛 호스트 + 새 JS」는 Explorer · 개발 빌드에서 생긴다.
-4. **u00 `S2`(`LISTEN_SELECT`) · `S7`(`LISTEN_BUILD`)이 빈 레슨이었다** [코드 — ADR-0080 D12]. 문항이 하나뿐인 단계라 건너뛰면 아무것도 남지 않았다.
+4. **u00 `S2`(`LISTEN_SELECT`) · `S7`(`LISTEN_BUILD`)이 빈 레슨이었다** [코드 — ADR-0081 D12]. 문항이 하나뿐인 단계라 건너뛰면 아무것도 남지 않았다.
 5. **듣기 대본이 처음부터 보였다** [코드 · 사용자]. 설정 `show-transcript`의 초기값이 켜짐이었다 — 문항 음성이 판정용 기계 음성뿐이던 때의 값이다. 기기 확인에서 u00 `S2` 카드에 대본이 정답째 보였다(2026-10-21).
 6. **같은 음성이 두 문항 연속이면 둘째가 자동 재생되지 않았다** [코드]. 옛 듣기 훅(`screens/listening/use-listening-playback.ts`)의 자동 재생 키가 음성 주소였다. 데이터에 실재한다(u00 `S2-01` · `S8-01`이 같은 `d-04`).
 
@@ -182,7 +182,7 @@
 1. **번들 +25,194 bytes**(튜토리얼 u00 `3658bfd8` 2,077,859 → `49dc553e` 2,103,053, +1.21 %, `.env.local` 없는 같은 설정 로컬 실측 — [성능 보고서](../performance/reports/item-audio-iphone-13-mini-simulator-01.md)) — 계약 예측 +7 ~ 11 kB보다 크다. 문항 음성 매핑 · 듣기 훅 · 토글과 간이 줄 · 일곱 화면 결선이 화면마다 조건 자식 · 핸들러를 한 겹씩 더한 몫이다. 상한 2,385,000은 그대로다(`devtools/bundle-size/budget.json` note). 새 의존성 · 미디어 없음.
 2. **레슨 문항 자동 재생이 크게 는다** — 듣기 여섯은 문항이 설 때, 비듣기 여섯은 판정 순간. 다른 앱 소리가 그때마다 줄어든다(iOS 덕킹 · Android 일시 포커스).
 3. **판정 뒤 한 번 재생에는 멈춤이 없다**(D12) — 3초를 넘는 정답 음성은 엄격 해석으로 1.4.2 미충족이다.
-4. **받아 둔 음성 파일이 없으면 듣기 문항이 소리 없이 선다**(v4 — 오프라인 · 아직 못 받음 · 404 모두) [코드 — `audioUrlOf`는 받은 `file://`만 낸다] — `LISTEN_SELECT` · `MIN_PAIR_AB`는 대본이 보이는 소리 없는 제시로 서서 읽고 고른다(재생 조작 없음, `episode_listen_item_answered` 없음). `LISTEN_BUILD`는 건너뛰어 그 자리가 빈다. 판정은 레슨 시작 시점이라 레슨 도중 파일이 받아져도 그 레슨은 바뀌지 않는다. u00 첫 오프라인 설치는 음성을 받지 못한 상태라(ADR-0080 D12) `S2`는 대본이 보이는 소리 없는 듣기로, `S7`은 건너뛰어져 빈 레슨으로 선다 [실측 — 시뮬레이터, 받은 파일을 치워 흉내 낸 e2e EU8b].
+4. **받아 둔 음성 파일이 없으면 듣기 문항이 소리 없이 선다**(v4 — 오프라인 · 아직 못 받음 · 404 모두) [코드 — `audioUrlOf`는 받은 `file://`만 낸다] — `LISTEN_SELECT` · `MIN_PAIR_AB`는 대본이 보이는 소리 없는 제시로 서서 읽고 고른다(재생 조작 없음, `episode_listen_item_answered` 없음). `LISTEN_BUILD`는 건너뛰어 그 자리가 빈다. 판정은 레슨 시작 시점이라 레슨 도중 파일이 받아져도 그 레슨은 바뀌지 않는다. u00 첫 오프라인 설치는 음성을 받지 못한 상태라(ADR-0081 D12) `S2`는 대본이 보이는 소리 없는 듣기로, `S7`은 건너뛰어져 빈 레슨으로 선다 [실측 — 시뮬레이터, 받은 파일을 치워 흉내 낸 e2e EU8b].
 5. **판정 낭독 · 효과음 · 정답 음성이 같은 순간에 겹칠 수 있다**(D5 · D12) — 체감은 기기에서 보지 않았다.
 6. **옛 호스트에서는 「천천히」가 보이지 않는다**(D1) — 옛 호스트는 개발 빌드에만 있다(맥락 3).
 7. **`sessionOptions`는 상수라 자동 재생 「꺼짐」은 앱에서 닿지 않는다** — unit · ui로만 판정한다.
