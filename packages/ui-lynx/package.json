@@ -231,7 +231,7 @@
     "@types/node": "22.20.0",
     "@types/react": "19.2.18",
     "typescript": "6.0.3",
-    "vitest": "3.2.7"
+    "vitest": "4.1.12"
   },
   "peerDependencies": {
     "@lynx-js/react": ">=0.123.0 <0.126.0"

@@ -167,7 +167,7 @@ ADR-0005 D3의 결정이고, 그건 그대로다.
 | `@lynx-js/types` | `4.1.0` | `<view>` · `<text>` 등 내장 요소 타입 | `@lynx-js/react`의 **optional** peer |
 | `@types/react` | `19.2.18` | ReactLynx가 React 타입 위에 선다 | `@lynx-js/react`의 **필수** peer: `^18 \|\| ^19.0.0` |
 | `typescript` | `6.0.3` | `pnpm typecheck` (ADR-0006 D1) | 아래 주 |
-| `vitest` | `3.2.7` | 러너 (ADR-0006 D4) | 아래 주 |
+| `vitest` | ~~`3.2.7`~~ `4.1.12` ⟨2026-10-23, 정정 기록⟩ | 러너 (ADR-0006 D4) | 아래 주 |
 | `jsdom` | `27.4.0` | vitest의 jsdom 환경이 요구한다 | 아래 주 |
 | `@lynx-js/testing-environment` | `0.3.3` | 타입 (ADR-0006 D4) | 아래 주 |
 
@@ -192,6 +192,7 @@ ADR-0005 D3의 결정이고, 그건 그대로다.
 > 기록이 잡아낸 것과 정확히 같은 모양의 실수다. jsdom 27.4.0의 요구는
 > `^20.19.0 || ^22.12.0 || >=24.0.0`이라 우리 범위 전체를 덮는다.
 
+> ⟨2026-10-23 — 아래 근거는 정정 기록에서 해소됐다. 4.1.12로 올렸다.⟩
 > **`vitest`가 4가 아닌 이유.** 4.1.11이 나와 있고 `vitest/node`의
 > `VitestPackageInstaller`도 `vitest/environments`도 그대로 있다. 그러나 공식 Lynx
 > vitest 템플릿이 검증한 조합은 `vitest ^3.2.7` + `jsdom ^27.4.0`이고,
@@ -337,6 +338,18 @@ ADR-0010 D10의 표는 네 줄 모두 **"무엇이 바뀌었나"** 를 묻는다
   첫 줄이 그 시점이다.
 
 ## 정정 기록
+
+**2026-10-23 — D5의 `vitest`를 3.2.7에서 4.1.12로 올렸다.** 결정(정확 버전)은 그대로다.
+
+보안 경보(vitest · @vitest/mocker `< 4.1.12`)의 패치판이 4 라인에만 있다. 위 주의 걱정 —
+`@lynx-js/react/testing-library`가 vitest 내부 API(`builtinEnvironments.jsdom.setup()` ·
+`transformMode`)에 붙어 있다 — 을 실제 실행으로 확인했다. 패키지 일곱(`vitest` 여섯 ·
+루트 `@vitest/coverage-v8`)을 함께 올리고 `pnpm verify`를 돌려 **테스트 파일 · 테스트
+수가 3.2.7 때와 모든 패키지에서 같다**(mobile 498 파일 · 6,527, ui-lynx 58 · 845 등)를
+확인했다. 설정 파일은 바꾸지 않았고 `--coverage`도 그대로 돈다.
+
+남는 것 — `storybook-builder-rsbuild` 3.3.4가 `@vitest/mocker` 3.2.4를 따로 물고 있어
+그 경보 하나는 Storybook 빌더가 올라갈 때까지 남는다(개발 의존 · Storybook 빌드에만 쓰임).
 
 **2026-08-26 — D2의 설정 위치가 틀렸다.** 결정(모든 의존을 정확 버전으로)은 그대로다.
 
