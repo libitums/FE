@@ -6,7 +6,7 @@ import {
   catalogPassCriterion,
   judgeAssessment,
   judgeChoice,
-  judgeRoleplayReply,
+  judgeSpokenLenient,
   judgeTileReply,
 } from "@libitums/episode-core/judge";
 
@@ -33,6 +33,7 @@ function turnOf(index: number, speech: SpeechAvailability): TrialTurnState {
     verdict: null,
     hintShown: false,
     notice: speech === "supported" ? null : speech,
+    spoken: null,
   };
 }
 
@@ -43,7 +44,6 @@ export const initialTrialState: InitialTrialState = () => ({
   step: "prologue",
   cutIndex: 0,
   begun: false,
-  clearPhase: "banner",
   choice: freshChoice,
   cultureFace: "front",
   speech: "unsupported",
@@ -65,14 +65,7 @@ function reduceCuts(state: TrialState, model: TrialModel): TrialState {
   const prologue = state.step === "prologue";
   const cuts = prologue ? model.prologue : model.epilogue;
   if (state.cutIndex + 1 < cuts.length) return { ...state, cutIndex: state.cutIndex + 1 };
-  return prologue ? enter(state, "vocab") : enter(state, "clear", { clearPhase: "banner" });
-}
-
-/** Episode clear — 배너 다음 예고, 예고 다음 완료. */
-function reduceClear(state: TrialState): TrialState {
-  return state.clearPhase === "banner"
-    ? { ...state, clearPhase: "teaser" }
-    : enter(state, "complete");
+  return prologue ? enter(state, "vocab") : enter(state, "clear");
 }
 
 /** 첫 탭 — 말하기 지원을 정하고 지금 단계에 닿은 것으로 칩니다. 두 번째부터는 같은 참조. */
@@ -127,23 +120,16 @@ function reduceSpeech(state: TrialState, action: TrialAction, model: TrialModel)
       return turn.phase === "ready" ? withTurn(state, { ...turn, phase: "listening" }) : state;
     case "heard": {
       if (turn.phase !== "listening") return state;
-      const right = action.alternatives.find(
-        (alternative) => judgeRoleplayReply(item.accepted, alternative, []) === "correct",
-      );
-      return right === undefined
-        ? withTurn(state, {
-            ...turn,
-            phase: "judged",
-            heard: action.alternatives[0] ?? "",
-            verdict: "incorrect",
-          })
-        : withTurn(state, { ...turn, phase: "judged", heard: right, verdict: "correct" });
+      // 발음 기준 판정 — 앱 규칙으로 맞으면 strict, 소리가 가까우면 lenient. 둘 다 화면에서는 Great입니다.
+      const spoken = judgeSpokenLenient(item.accepted, action.alternatives);
+      const verdict = spoken.outcome === "incorrect" ? "incorrect" : "correct";
+      return withTurn(state, { ...turn, phase: "judged", heard: spoken.heard, verdict, spoken });
     }
     case "speech-failed":
       return reduceSpeechFailure(state, action.reason);
     case "retry":
       return turn.phase === "judged" && turn.verdict === "incorrect"
-        ? withTurn(state, { ...turn, phase: "ready", heard: "", verdict: null })
+        ? withTurn(state, { ...turn, phase: "ready", heard: "", verdict: null, spoken: null })
         : state;
     case "cant-speak": {
       const canSwitch =
@@ -157,6 +143,7 @@ function reduceSpeech(state: TrialState, action: TrialAction, model: TrialModel)
         placed: [],
         verdict: null,
         notice: null,
+        spoken: null,
       });
     }
     default:
@@ -234,7 +221,8 @@ export const reduceTrial: ReduceTrial = (state, action, model) => {
     case "roleplay":
       return reduceRoleplay(state, action, model);
     case "clear":
-      return action.type === "next" ? reduceClear(state) : state;
+      // Episode clear 배너(유지 시간 · 탭) 다음은 곧바로 완료(사전 등록)입니다.
+      return action.type === "next" ? enter(state, "complete") : state;
     case "complete":
       return state;
   }

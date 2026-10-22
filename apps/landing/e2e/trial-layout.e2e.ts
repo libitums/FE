@@ -82,17 +82,8 @@ test.describe("TE7 390 · 1440 폭", () => {
       await measure("epilogue");
       await passCuts(page, "epilogue", model.epilogue.length);
       await expectStep(page, "clear");
-      await expect(page.getByTestId("trial-step-clear")).toHaveAttribute("data-phase", "teaser");
-      await measure("clear teaser");
-      // 예고 글 · Next는 컷 장면처럼 아래에 모인다(그림이 위를 채움).
-      const next = await box(page.getByTestId("trial-clear-next").filter({ visible: true }));
-      const stage = await box(root(page));
-      if (stage.bottom - next.bottom > 120) {
-        problems.push(
-          `clear teaser: Next가 무대 아래에서 ${Math.round(stage.bottom - next.bottom)}px 떠 있다`,
-        );
-      }
-      await tap(page, "trial-clear-next");
+      await measure("clear banner");
+      await expectStep(page, "complete");
       await measure("complete");
       expect(problems).toEqual([]);
     });

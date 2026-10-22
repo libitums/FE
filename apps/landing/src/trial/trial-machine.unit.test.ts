@@ -27,7 +27,6 @@ describe("첫 탭 · 컷", () => {
       step: "prologue",
       cutIndex: 0,
       begun: false,
-      clearPhase: "banner",
       reached: [],
       choice: { selected: null, verdict: null },
       cultureFace: "front",
@@ -69,17 +68,16 @@ describe("첫 탭 · 컷", () => {
     expect(vocab.reached).toEqual(["prologue", "vocab"]);
   });
 
-  it("TR-C1 epilogue 4컷 → 마지막 next → clear banner → teaser → complete, complete의 next는 같은 참조", () => {
+  it("TR-C1 epilogue 4컷 → 마지막 next → clear(배너) → 다음 next에 곧바로 complete(예고 없음), complete의 next는 같은 참조", () => {
     const model = u00TrialModel();
     const epilogue = stateAt("epilogue", model);
     expect(epilogue).toMatchObject({ step: "epilogue", cutIndex: 0 });
     const fourth = run(epilogue, [next, next, next], model);
     expect(fourth).toMatchObject({ step: "epilogue", cutIndex: 3 });
     const banner = reduce(fourth, next, model);
-    expect(banner).toMatchObject({ step: "clear", clearPhase: "banner" });
-    const teaser = reduce(banner, next, model);
-    expect(teaser).toMatchObject({ step: "clear", clearPhase: "teaser" });
-    const complete = reduce(teaser, next, model);
+    expect(banner).toMatchObject({ step: "clear" });
+    expect(Object.keys(banner)).not.toContain("clearPhase");
+    const complete = reduce(banner, next, model);
     expect(complete.step).toBe("complete");
     expect(complete.reached.slice(-3)).toEqual(["epilogue", "clear", "complete"]);
     expect(reduce(complete, next, model)).toBe(complete);
@@ -151,6 +149,7 @@ describe("문화 카드 → 롤플레이", () => {
       verdict: null,
       hintShown: false,
       notice: null,
+      spoken: null,
     });
     expect(stateAt("roleplay", model, "unsupported").roleplay.turn).toMatchObject({
       index: 0,
@@ -269,6 +268,60 @@ describe("롤플레이 — 말하기", () => {
   });
 });
 
+describe("롤플레이 — 발음 기준 판정(r3)", () => {
+  it("TR-L1 발음 기준으로만 맞는 대안 → correct(Great) · heard = 그 대안 · spoken lenient", () => {
+    const model = u00TrialModel();
+    const judged = run(
+      stateAt("roleplay", model),
+      [speak, heard("안녕 가세요", "안녕하세요 네 처음 이에요")],
+      model,
+    );
+    expect(judged.roleplay.turn).toMatchObject({
+      phase: "judged",
+      verdict: "correct",
+      heard: "안녕하세요 네 처음 이에요",
+      spoken: {
+        outcome: "lenient",
+        similarity: 1,
+        heard: "안녕하세요 네 처음 이에요",
+        expected: "안녕하세요! 네, 처음이에요!",
+      },
+    });
+    const second = reduce(judged, next, model);
+    expect(second.roleplay.turn).toMatchObject({ index: 1, phase: "ready", spoken: null });
+    expect(second.roleplay.records).toEqual([{ result: "correct", mode: "speech" }]);
+  });
+
+  it("TR-L1 앱 규칙으로 맞으면 spoken strict, 오답이면 incorrect · heard 첫 대안 · 가장 가까운 일치도", () => {
+    const model = u00TrialModel();
+    const rp = stateAt("roleplay", model);
+    expect(run(rp, [speak, heard("안녕하세요 네 처음이에요")], model).roleplay.turn.spoken).toEqual(
+      {
+        outcome: "strict",
+        similarity: 1,
+        heard: "안녕하세요 네 처음이에요",
+        expected: "안녕하세요! 네, 처음이에요!",
+      },
+    );
+    const wrong = run(rp, [speak, heard("안녕하세요", "처음이에요")], model);
+    expect(wrong.roleplay.turn).toMatchObject({
+      verdict: "incorrect",
+      heard: "안녕하세요",
+      spoken: { outcome: "incorrect", similarity: 0.684, heard: "안녕하세요" },
+    });
+  });
+
+  it("TR-L1 retry · cant-speak · 실패는 spoken null", () => {
+    const model = u00TrialModel();
+    const rp = stateAt("roleplay", model);
+    const wrong = run(rp, [speak, heard("감사합니다")], model);
+    expect(wrong.roleplay.turn.spoken?.outcome).toBe("incorrect");
+    expect(reduce(wrong, { type: "retry" }, model).roleplay.turn.spoken).toBeNull();
+    expect(reduce(wrong, { type: "cant-speak" }, model).roleplay.turn.spoken).toBeNull();
+    expect(run(rp, [speak, failed("no-speech")], model).roleplay.turn.spoken).toBeNull();
+  });
+});
+
 describe("롤플레이 — 타일", () => {
   const toggle = (tileIndex: number): TrialAction => ({ type: "toggle-tile", tileIndex });
 
@@ -330,11 +383,8 @@ describe("롤플레이 끝 → 엔딩", () => {
     expect(done).toMatchObject({ step: "epilogue", cutIndex: 0 });
     expect(done.roleplay.verdict).toBe("failed");
     expect(reduce(done, { type: "retry" }, model)).toBe(done);
-    expect(run(done, [next, next, next, next], model)).toMatchObject({
-      step: "clear",
-      clearPhase: "banner",
-    });
-    expect(run(done, [next, next, next, next, next, next], model).step).toBe("complete");
+    expect(run(done, [next, next, next, next], model)).toMatchObject({ step: "clear" });
+    expect(run(done, [next, next, next, next, next], model).step).toBe("complete");
   });
 
   it("TR10 말하기 세 턴을 모두 맞히면 passed", () => {

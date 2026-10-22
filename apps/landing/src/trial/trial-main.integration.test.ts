@@ -97,6 +97,8 @@ async function boot(
     /** 사전 등록 요청에 답할 가짜 fetch(오디오 fetch보다 먼저 본다). */
     preregFetch?: (url: string, init: RequestInit) => Promise<Response>;
     edit?: (doc: Document) => void;
+    /** navigator.userAgent를 바꾼다(브라우저 분류). */
+    userAgent?: string;
   } = {},
 ): Promise<Boot> {
   const dom = new JSDOM(await trialPageHtml("en"), {
@@ -104,6 +106,12 @@ async function boot(
   });
   const window = dom.window as unknown as Window;
   options.edit?.(window.document);
+  if (options.userAgent !== undefined) {
+    Object.defineProperty(window.navigator, "userAgent", {
+      value: options.userAgent,
+      configurable: true,
+    });
+  }
   installClock(window);
   const scope = window as unknown as Record<string, unknown>;
   scope.matchMedia = (query: string) => ({
@@ -191,9 +199,10 @@ describe("TI14 trial-main 결선 — 실제 어댑터", () => {
     expect(gtagEvents(gtag)).toEqual([]);
     await tap(h, "trial-cuts-next");
     expect(stepOf(h)).toBe("prologue");
+    // 보낼 때 접점이 browser를 붙인다(jsdom UA → desktop).
     expect(gtagEvents(gtag).slice(0, 2)).toEqual([
-      { name: "trial_start", params: { speech: "unsupported" } },
-      { name: "trial_step", params: { step: "prologue", ordinal: "1" } },
+      { name: "trial_start", params: { speech: "unsupported", browser: "desktop" } },
+      { name: "trial_step", params: { step: "prologue", ordinal: "1", browser: "desktop" } },
     ]);
   });
 
@@ -202,7 +211,7 @@ describe("TI14 trial-main 결선 — 실제 어댑터", () => {
     await playToRoleplay(h);
     expect(gtagEvents(gtag)[0]).toEqual({
       name: "trial_start",
-      params: { speech: "supported" },
+      params: { speech: "supported", browser: "desktop" },
     });
     expect(shown(h, "trial-turn").getAttribute("data-mode")).toBe("speech");
     await tap(h, "trial-turn-speak");
@@ -564,5 +573,125 @@ describe("TI-F trial-main — 모바일 전체화면", () => {
     await tap(mobile.h, "trial-cuts-next");
     expect(stepOf(mobile.h)).toBe("prologue");
     expect(errors).toEqual([]);
+  });
+});
+
+const PIXEL =
+  "Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Mobile Safari/537.36";
+const KAKAO =
+  "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 KAKAOTALK 10.9.0";
+
+describe("TI-M1 trial-main — browser 공통 속성 · 인식 글자 수집", () => {
+  it("모든 gtag 이벤트에 UA로 가른 browser(안드로이드 Chrome · 카카오톡 인앱)", async () => {
+    for (const [userAgent, browser] of [
+      [PIXEL, "android-chrome"],
+      [KAKAO, "in-app"],
+    ] as const) {
+      const { h, gtag } = await boot({ reduce: true, recognition: true, userAgent });
+      await playToRoleplay(h);
+      const events = gtagEvents(gtag);
+      expect(events.length).toBeGreaterThan(5);
+      for (const event of events) {
+        expect((event.params as Record<string, string>)["browser"], String(event.name)).toBe(
+          browser,
+        );
+      }
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it("말하기 판정 뒤 수집 요청 한 번 — 본문 열 아홉 · keepalive · session_id(uuid, 같은 페이지 같은 값), 시도 이벤트에 browser", async () => {
+    const posts: { url: string; init: RequestInit }[] = [];
+    const { h, gtag } = await boot({
+      reduce: true,
+      recognition: true,
+      userAgent: PIXEL,
+      preregFetch: (url, init) => {
+        posts.push({ url, init });
+        return Promise.resolve(new Response(null, { status: 201 }));
+      },
+    });
+    await playToRoleplay(h);
+    await tap(h, "trial-turn-speak");
+    latestRecognition()?.hear("안녕 가세요", "안녕하세요 네 처음 이에요");
+    await settle();
+    expect(shown(h, "trial-turn-reply").getAttribute("data-verdict")).toBe("correct");
+    await tap(h, "trial-turn-next");
+    await tap(h, "trial-turn-speak");
+    latestRecognition()?.hear("죄송합니다");
+    await settle();
+    const samples = posts.filter(({ url }) => url.endsWith("/rest/v1/trial_speech_samples"));
+    expect(samples).toHaveLength(2);
+    const [first, second] = samples.map(
+      ({ init }) => JSON.parse(String(init.body)) as Record<string, unknown>,
+    );
+    expect(Object.keys(first ?? {}).sort()).toEqual(
+      [
+        "alternatives",
+        "browser",
+        "episode_version",
+        "expected",
+        "locale",
+        "outcome",
+        "session_id",
+        "similarity",
+        "turn_index",
+      ].sort(),
+    );
+    expect(first).toMatchObject({
+      turn_index: 0,
+      expected: "안녕하세요! 네, 처음이에요!",
+      alternatives: ["안녕 가세요", "안녕하세요 네 처음 이에요"],
+      outcome: "lenient",
+      similarity: 1,
+      browser: "android-chrome",
+      locale: "en",
+    });
+    expect(String(first?.["session_id"])).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
+    );
+    expect(second?.["session_id"]).toBe(first?.["session_id"]);
+    expect(second).toMatchObject({ turn_index: 1, outcome: "incorrect" });
+    expect(samples[0]?.init).toMatchObject({
+      method: "POST",
+      keepalive: true,
+      credentials: "omit",
+    });
+    expect((samples[0]?.init.headers as Record<string, string>)["apikey"]).toBeTruthy();
+    const attemptsSent = gtagEvents(gtag).filter((event) => event.name === "trial_speech_attempt");
+    expect(attemptsSent.map((event) => event.params)).toEqual([
+      {
+        turn: "1",
+        outcome: "lenient",
+        latency_bucket: expect.any(String),
+        browser: "android-chrome",
+      },
+      {
+        turn: "2",
+        outcome: "incorrect",
+        latency_bucket: expect.any(String),
+        browser: "android-chrome",
+      },
+    ]);
+  });
+
+  it("수집 요청이 거부돼도 판정 · 진행은 그대로, 다시 보내지 않는다", async () => {
+    let calls = 0;
+    const { h } = await boot({
+      reduce: true,
+      recognition: true,
+      preregFetch: () => {
+        calls += 1;
+        return Promise.reject(new TypeError("offline"));
+      },
+    });
+    await playToRoleplay(h);
+    await tap(h, "trial-turn-speak");
+    latestRecognition()?.hear(SPEECH_CORRECT[0] ?? "");
+    await settle();
+    expect(calls).toBe(1);
+    await tap(h, "trial-turn-next");
+    expect(shown(h, "trial-turn").getAttribute("data-turn-index")).toBe("1");
+    expect(calls).toBe(1);
   });
 });

@@ -62,7 +62,7 @@ export function shapeOf(element: Element): string {
   return `<${element.tagName.toLowerCase()} ${attributes}>${children}</>`;
 }
 
-/** 스크립트가 쓰는 26키(계약 `TrialScriptCopy`). */
+/** 스크립트가 쓰는 23키(계약 `TrialScriptCopy`). */
 export const SCRIPT_COPY_KEYS = [
   "correctAnswer",
   "choiceCorrect",
@@ -82,9 +82,6 @@ export const SCRIPT_COPY_KEYS = [
   "completeBodyMissed",
   "cultureFlipToBack",
   "cultureFlipToFront",
-  "teaserLabel",
-  "teaserTitle",
-  "teaserBody",
   "preregSubmit",
   "preregSending",
   "preregRetry",
@@ -150,6 +147,7 @@ export const TRIAL_PAGE_TEST_IDS = [
   "trial-turn-answer",
   "trial-turn-notice",
   "trial-turn-speak",
+  "trial-turn-saved",
   "trial-turn-hint-button",
   "trial-turn-hint",
   "trial-turn-cant-speak",
@@ -162,10 +160,6 @@ export const TRIAL_PAGE_TEST_IDS = [
   "trial-step-clear",
   "trial-clear-title",
   "trial-clear-banner",
-  "trial-clear-teaser",
-  "trial-clear-image",
-  "trial-clear-teaser-title",
-  "trial-clear-next",
   "trial-step-complete",
   "trial-prereg",
   "trial-prereg-email",

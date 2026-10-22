@@ -8,7 +8,9 @@ import TrialIcon from "./TrialIcon.astro";
 
 type Props = TrialTurnProps;
 
-const { t, turn, index, total, counterpartName } = Astro.props;
+const { t, turn, index, total, counterpartName, collects } = Astro.props;
+// 수집이 켜진 빌드면 마이크 아래 안내 한 줄 — 마이크 버튼이 설명으로 가리킵니다.
+const savedId = collects ? `trial-turn-saved-${index}` : undefined;
 const hint =
   turn.replyTranslation !== null && turn.replyRoman !== null
     ? formatCopy(t.hint, { translation: turn.replyTranslation, roman: turn.replyRoman })
@@ -76,6 +78,7 @@ const hint =
       class="trial-mic"
       type="button"
       aria-label={t.speak}
+      aria-describedby={savedId}
       data-testid="trial-turn-speak"
     >
       <TrialIcon name="mic" />
@@ -97,6 +100,13 @@ const hint =
     <button class="trial-button" type="button" data-testid="trial-turn-retry" hidden>
       {t.tryAgain}
     </button>
+    {
+      collects && (
+        <p class="trial-turn__saved trial-type-body-s" id={savedId} data-testid="trial-turn-saved">
+          {t.speechSaved}
+        </p>
+      )
+    }
   </div>
   <div class="trial-tiles">
     <p

@@ -164,7 +164,7 @@ Firebase 프로젝트에 Android 앱을 등록하고 FCM HTTP v1 API 권한이 �
 지원하지 않는 버전이나 깨진 스냅숏은 오류를 반환하며 기존 값을 보존한다. 새로운 스냅숏 버전 배포 전에는 서버 검증·합치기부터 확장한다.
 병합 결과가 기존 16 KiB 상한을 넘으면 요청 전체가 실패한다. 진행을 감소시키는 리셋 동작은 이 RPC의 계약이 아니다.
 
-## 웹 체험판 사전 등록 표 (ADR-0081 r2)
+## 웹 체험판 사전 등록 표 (ADR-0083 r2)
 
 `20261022120000_pre_registrations.sql` — 랜딩 체험판(`/try/`) 완료 화면의 이메일 사전 등록이 쌓이는 표 `public.pre_registrations`
 (`email` · `locale` en/ko · `source` web-trial · `created_at`). 함수가 아니라 표 하나와 정책이다.
@@ -180,3 +180,24 @@ Firebase 프로젝트에 Android 앱을 등록하고 FCM HTTP v1 API 권한이 �
 - **적용**: 원격 프로젝트에는 아직 적용하지 않았다. 검토한 뒤 `supabase db push --dry-run` → `supabase db push`(또는 SQL 편집기). 랜딩 배포
   (Vercel `PUBLIC_SUPABASE_ANON_KEY`)보다 **먼저** 적용한다 — 표가 없으면 폼이 404를 받아 「등록하지 못했어요」를 보인다.
 - 남은 위험: 요청 빈도 제한 · 봇 막기가 없다(공개 키로 insert만 열려 있다). 문제가 되면 Edge Function + captcha 또는 DB 쪽 빈도 제한을 더한다.
+
+## 웹 체험판 인식 글자 수집 표 (ADR-0083 r3)
+
+`20261022130000_trial_speech_samples.sql` — 랜딩 체험판 롤플레이의 말하기 판정마다 인식기가 낸 **글자만** 쌓이는 표 `public.trial_speech_samples`
+(녹음 없음). 발음 기준 채점(ADR-0083 D17)의 기준을 실기 자료로 다시 맞추려는 것이다.
+
+- 열: `session_id`(체험을 열 때 브라우저 메모리에서 만든 무작위 UUID — 사람과 이어지지 않는다) · `episode_version` · `turn_index` · `expected`(가장 가까운
+  정답) · `alternatives`(인식 후보 1 ~ 3개) · `outcome`(strict · lenient · incorrect) · `similarity`(0 ~ 1) · `browser`(UA 분류 다섯 중 하나) · `locale` ·
+  `created_at`. **사용자 식별 정보 · IP · User-Agent 원문 열은 없다.**
+- **랜딩은 공개 키(anon)로 PostgREST `POST /rest/v1/trial_speech_samples`만 한다**(`Prefer: return=minimal`, `apikey` 머리만, `keepalive`). 표 권한은
+  위 아홉 열의 insert뿐 — 읽기 · 고치기 · 지우기 · `id` · `created_at` 지정은 42501, authenticated는 표에 닿지 않는다. 운영자는 service role로 읽는다.
+- check 제약: 후보 1 ~ 3개 · 각 1 ~ 200자 · null 없음(`trial_speech_alternatives_ok`), `expected` 1 ~ 200자, `episode_version` 1 ~ 40자, `turn_index` 0 ~ 9,
+  `outcome` · `browser` · `locale` 닫힌 값, `similarity` 0 ~ 1 — 넘으면 23514(outcome은 RLS가 먼저 막아 42501일 수 있다).
+- **보관 90일**: `purge_trial_speech_samples()`가 90일 넘은 행을 지우고 지운 수를 돌려준다(anon · authenticated 실행 불가). 매일 부르는 예약은
+  마이그레이션이 아니라 `supabase/cron/trial-speech-samples-retention.sql`이다 — pg_cron을 켜고 SQL 편집기에서 **한 번** 실행한다(매일 03:30 UTC).
+  실행하지 않으면 지워지지 않는다.
+- 통합 테스트 `supabase/migrations/trial-speech-samples.integration.test.ts`(SS1 ~ SS8, embedded-postgres)가 권한 · 제약 · 보관 삭제를 고정한다.
+- **적용**: 원격 프로젝트에는 아직 적용하지 않았다. 순서 ① 마이그레이션(`supabase db push --dry-run` → `supabase db push` 또는 SQL 편집기)
+  ② `create extension if not exists pg_cron;` 뒤 예약 SQL 1회 ③ 랜딩 배포. ①이 없으면 수집 요청이 404로 조용히 버려진다(체험은 그대로).
+- 개인정보처리방침에 붙일 문구 초안: [`docs/specs/web-trial-speech-samples-privacy.md`](../../docs/specs/web-trial-speech-samples-privacy.md)(사용자가 Notion에 반영).
+- 남은 위험: 사전 등록 표와 같이 빈도 제한 · 봇 막기가 없다. 사용자가 말로 개인정보를 말하면 글자로 남는다(90일 뒤 삭제).

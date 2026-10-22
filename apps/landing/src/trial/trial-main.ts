@@ -1,17 +1,26 @@
 // 체험판 페이지 스크립트 진입입니다. 실제 접점(소리 · 말하기 · 분석)으로 컨트롤러를 띄웁니다.
 // 분석은 페이지가 실은 gtag(랜딩과 같은 동의 규칙 — Analytics)에 넘기기만 하고, gtag가 없으면 아무 일도 하지 않습니다.
 
+import type { TrialPageData } from "../components/trial/trial-components.contract";
 import type { AnalyticsEvent } from "../scripts/analytics.contract";
 import { createTrialAudio } from "./trial-audio";
+import { trialBrowserOf } from "./trial-browser";
 import { initTrial, readTrialModel } from "./trial-controller";
 import { createTrialFullscreen } from "./trial-fullscreen";
+import { trialGtagParamsOf } from "./trial-events";
 import { createTrialPrereg } from "./trial-prereg-client";
+import { createTrialSamples } from "./trial-samples-client";
+import type { TrialSamplesPort } from "./trial-samples.contract";
 import { createTrialSpeech } from "./trial-speech";
 
 type Gtag = (command: "event", name: string, params: Record<string, string>) => void;
 
+/** UA 글은 여기서 분류만 하고 어디에도 싣지 않습니다. */
+const browser = trialBrowserOf(window.navigator?.userAgent ?? "");
+
+// 체험판의 모든 이벤트에 browser를 붙여 보냅니다.
 const send = (event: AnalyticsEvent) =>
-  (window as { gtag?: Gtag }).gtag?.("event", event.name, event.params);
+  (window as { gtag?: Gtag }).gtag?.("event", event.name, trialGtagParamsOf(event, { browser }));
 
 function prefersReducedMotion(): boolean {
   try {
@@ -19,6 +28,19 @@ function prefersReducedMotion(): boolean {
   } catch {
     return false;
   }
+}
+
+/** 수집 접점 — 설정 · fetch · randomUUID가 다 있을 때만. session_id는 이 페이지의 메모리에만 둡니다. */
+function samplesPort(data: TrialPageData): TrialSamplesPort | null {
+  if (!data.samples || typeof window.fetch !== "function") return null;
+  const sessionId = window.crypto?.randomUUID?.();
+  if (!sessionId) return null;
+  return createTrialSamples(window.fetch.bind(window), data.samples, {
+    sessionId,
+    episodeVersion: `${data.model.episodeId}@${data.model.version}`,
+    browser,
+    locale: data.locale ?? "en",
+  });
 }
 
 function boot(): void {
@@ -53,6 +75,7 @@ function boot(): void {
         ? createTrialPrereg(window.fetch.bind(window), data.prereg)
         : null,
     locale: data.locale ?? "en",
+    samples: samplesPort(data),
   });
 }
 

@@ -1,18 +1,19 @@
-# ADR-0081 — 랜딩 웹 체험판 `/try/`와 공유 패키지 `@libitums/episode-core`: 앱의 순수 규칙을 패키지로 떼어 랜딩이 같은 판정으로 u00을 돌린다
+# ADR-0083 — 랜딩 웹 체험판 `/try/`와 공유 패키지 `@libitums/episode-core`: 앱의 순수 규칙을 패키지로 떼어 랜딩이 같은 판정으로 u00을 돌린다
 
 - 상태: **채택 — 클라이언트(랜딩 · 공유 패키지 · 앱 재수출).** 서버 · 버킷 변경 0, 호스트 변경 0, 앱 동작 변경 0.
   ⚠ **실기 확인 전이다** — unit · ui · integration · Playwright(chromium · firefox · webkit · Pixel 7 · analytics 둘)와 번들 · 스크립트 크기만 확인했다. iPhone Safari · Android Chrome의 소리 · 마이크 · 무음 스위치 · 보조 기술은 [웹 체험판 e2e](../e2e/web-trial.md) EU1 ~ EU8(미실행)이다.
 - 날짜: 2026-10-22. **r2 갱신 같은 날**(D12 ~ D16 — 표지 제거 · 첫 탭 잠금 해제 · 꿈 전환 · Episode clear · 이메일 사전 등록 · 모바일 전체화면, 사용자 요청).
+  **r3 갱신 같은 날**(D17 ~ D19 — 발음 기준 너그러운 말하기 채점 · 말하기 측정 · 인식 글자 수집, D14 정정 — 배너 「What happens next?」 뒤 곧바로 사전 등록, 사용자 요청).
 - **사용자 결정**(2026-10-22): 랜딩(Astro)에 **앱 설치 없이** 브라우저에서 튜토리얼 u00을 3 ~ 5분 체험하는 페이지 · 주소 `/try/` · 흐름은 「이야기 + 핵심 다섯」 · 순수 함수는 **공유 패키지로 분리** · 음성은 **버킷** · 기준은 `feat/tutorial-u00` 위.
   같은 날 계약 v1.1의 답: **롤플레이 결과와 무관하게 엔딩 · 완료로 간다**(완료 화면이 결과에 따라 문구만 다름) · 주 버튼 · 놓인 타일 라벨은 **앱처럼 흰 글자** · 체험판은 **색인하지 않는다**(noindex · sitemap 제외) · 아이콘은 `@libitums/icons` 0.5.0을 랜딩 의존성으로.
 - 다루는 축: 순수 규칙(디코더 · 판정 · 콘텐츠 주소 · 섞기)의 첫 `packages/` 이관과 그 경계 · 앱이 패키지를 import하는 방식 · 랜딩의 두 번째 페이지(상호작용 방식 · 콘텐츠 · 그림 · 효과음 · 음성의 출처 · 말하기 · 실패 처리 · 측정 · 색인).
   **다루지 않는 것**: 로그인 · 진행 저장 · 티켓 · 서버 호출, u00의 나머지 단원(S2 · S4 ~ S8 · S10 · S11 · S13), 앱 화면 · 흐름, 콘텐츠 · 음성 제작, Lynx for Web.
-- 이어받는 결정: [ADR-0004](0004-package-boundaries-and-dependency-direction.md) D2 · D3 · D6(적용 기록) · [ADR-0003](0003-workspace-and-directory-structure.md) D5(적용 기록) · [ADR-0043](0043-landing-static-site.md)(적용 기록) · [ADR-0076](0076-episode-roleplay.md) D3(적용 기록) · [ADR-0079](0079-tutorial-as-catalog-episode.md) D1(적용 기록) · [ADR-0060](0060-episode-voice-remote-audio.md) D2(적용 기록).
+- 이어받는 결정: [ADR-0004](0004-package-boundaries-and-dependency-direction.md) D2 · D3 · D6(적용 기록) · [ADR-0003](0003-workspace-and-directory-structure.md) D5(적용 기록) · [ADR-0043](0043-landing-static-site.md)(적용 기록) · [ADR-0076](0076-episode-roleplay.md) D3(적용 기록) · [ADR-0081](0081-tutorial-as-catalog-episode.md) D1(적용 기록) · [ADR-0060](0060-episode-voice-remote-audio.md) D2(적용 기록).
 
 근거 표시: **[코드]** 저장소 코드 · **[실측]** 빌드 · 테스트 · 버킷 GET · **[ADR]** 기존 결정 · **[사용자]** · **[추론]** 관찰 없이 이어 붙인 것.
 계약의 정본은 저장소 밖 작업 폴더의 spec(v1.2)이고 이 문서는 그중 **결정**만 옮긴다. 시그니처 · test-id는 코드(`*.contract.ts`)가 진다.
 
-**새 ADR인 이유**: 없던 축 둘(첫 앱 → 패키지 이관, 랜딩의 상호작용 페이지)을 처음 정하고, 기존 ADR 여섯의 사례가 한꺼번에 바뀐다 — 새 번호로 묶는다(ADR-0010 D10). 번호 0077 · 0080은 다른 브랜치가 쓰고 있어(브랜치 · 워크트리 전체 확인) 0081이다.
+**새 ADR인 이유**: 없던 축 둘(첫 앱 → 패키지 이관, 랜딩의 상호작용 페이지)을 처음 정하고, 기존 ADR 여섯의 사례가 한꺼번에 바뀐다 — 새 번호로 묶는다(ADR-0010 D10). 번호 0077은 다른 브랜치가 쓰고 있고, 0079 ~ 0082는 main에 먼저 들어와(0081 튜토리얼 · 0082 학습 문항 음성) 0083이다(처음 0081로 썼다가 옮김).
 
 ## 맥락
 
@@ -21,7 +22,7 @@
 3. **버킷 음성은 브라우저에서 받을 수 있다** [실측 2026-10-22]. `audio/u00-tutorial/d-01.m4a` 200 · `audio/x-m4a` · **`access-control-allow-origin: *`** · `cache-control: public, max-age=31536000`.
 4. **RP 음성은 디코더 확장 없이 나온다** [실측]. `roleplay.lead[0].audio_url` = `dialogue` seq n−1, `player_audio_url` = seq n — 앱의 `catalogRoleplayLinesOf(lineId, dialogue)`가 세 턴 모두 같은 id를 낸다.
 5. **디코더가 `VOCAB_CARD`의 `audio_url` · `example_audio_url`을 버렸다** [코드]. 체험판의 단어 카드 음성에 필요하다.
-6. **병행 브랜치가 옛 경로를 import한다** [코드]. `feat/audio-slow-playback`(ADR-0080, 같은 기준 위 · 미병합)이 `lib/episode-content.model` · `lib/content-audio`를 import하는 새 파일을 더한다.
+6. **병행 브랜치가 옛 경로를 import한다** [코드]. `feat/audio-slow-playback`(ADR-0082, #297로 먼저 병합)이 `lib/episode-content.model` · `lib/content-audio`를 import하는 새 파일을 더한다.
 7. **랜딩은 정적 HTML이고 스크립트가 하나였다** [ADR-0043 D2]. 상호작용 프레임워크 · 수화(hydration)가 없다.
 
 ## 결정
@@ -87,6 +88,7 @@
 
 - `SpeechRecognition ?? webkitSpeechRecognition`, `lang "ko-KR"` · 대안 3 · 8초 뒤 `stop()`. 권한은 첫 Speak가 묻는다(시작 화면에서 묻지 않는다).
 - 판정은 패키지의 `judgeRoleplayReply`(대안 셋 중 맞는 첫 것 — 고르는 것은 리듀서) · 타일은 `judgeTileReply`. 앱과 같은 함수이고 **대안 수만 웹이 정한다**.
+  **(r3)** 말하기는 그 위에 발음 기준을 더한 `judgeSpokenLenient`로 바꿨다(D17) — 앱 규칙으로 맞으면 strict, 소리가 가까우면 lenient. 타일 판정과 앱 판정은 그대로다.
 - 생성자 없음 · `language-not-supported` → 처음부터 타일, 거부(`not-allowed` · `service-not-allowed`) → 그 턴부터 끝까지 타일, `audio-capture` · `network` 등 → 그 턴만 타일, `Can't speak now` → 그 턴 타일. 말하기 오답은 「Try again」 또는 `Can't speak now`만 있다 — 타일은 늘 판정되므로 막히지 않는다.
 
 ### D9. 측정 — GA4 이벤트 여섯을 더한다(닫힌 합집합 다섯 → 열하나)
@@ -99,7 +101,10 @@
 | `trial_roleplay_result` | `verdict` · `correct` · `by_speech` · `by_tiles`("0" ~ "3") · `speech`(supported · unsupported · denied) | 마지막 턴 `next` |
 | `trial_complete` | `verdict`: passed · failed | 완료에 들어설 때 |
 | ~~`trial_store_click`~~ → `trial_preregister` | `status`: submitted · duplicate · failed(r2, D15) | 사전 등록 응답 뒤 |
+| `trial_speech_attempt` (r3) | `turn` "1" ~ "3" · `outcome` strict · lenient · incorrect · no-speech · denied · unavailable · aborted · `latency_bucket` "0-2s" · "2-4s" · "4-6s" · "6-8s" · "8s+" | 말하기 시도 하나가 끝날 때(D18) |
+| `trial_exit` (r3) | `step`: 나가기를 누른 단계 | 나가기 링크 |
 
+- (r3) 체험판 페이지의 **모든 이벤트에 `browser`**(ios-safari · android-chrome · in-app · desktop · other — UA 순수 분류, D18)를 보낼 때 붙인다. 합집합 열하나 → 열셋.
 - 들은 문장 · 대사 · 고른 보기 글 · 이름을 싣지 않는다 — 타입이 막는다. 랜딩과 같은 규칙(프로덕션만 · 동의 지역 기본값)이다. 체험판 페이지는 랜딩 `initAnalytics`를 부르지 않는다.
 - 잴 것: 랜딩 → 체험 시작률(`trial_start` ÷ 랜딩 `page_view`) · 단계별 이탈(`trial_step` 유입 경로) · 완료율 · ~~완료 → 설치 클릭률~~ r2 완료 → 사전 등록률(`trial_preregister{submitted|duplicate}` ÷ `trial_complete`).
 
@@ -123,7 +128,7 @@
 
 ### D13. (r2) 꿈 전환 — 컷 사이는 구름빛, 꿈에서 승무원으로는 깨어남
 
-- 순수 `trialTransitionOf(prev, next, model)` → `"dream"`(prologue · epilogue 컷 사이, roleplay → epilogue, 배너 → 예고) · `"wake"`(**prologue 마지막 자리로 들어가는 전환** — u00 컷 5 「누군가: 다음에 또…」 → 컷 6 승무원) · null(학습 단계 사이는 r1 페이드). 컨트롤러가 루트 `data-transition`을 `motion.duration.d8`(600ms) · `d9`(1000ms) 동안 붙이고, 장식 베일(`aria-hidden` · `pointer-events:none`)과 그림 흐림이 모양을 진다. 움직임 줄이기면 붙이지 않는다.
+- 순수 `trialTransitionOf(prev, next, model)` → `"dream"`(prologue · epilogue 컷 사이, roleplay → epilogue, 배너 → 예고 — r3: 배너 → 완료) · `"wake"`(**prologue 마지막 자리로 들어가는 전환** — u00 컷 5 「누군가: 다음에 또…」 → 컷 6 승무원) · null(학습 단계 사이는 r1 페이드). 컨트롤러가 루트 `data-transition`을 `motion.duration.d8`(600ms) · `d9`(1000ms) 동안 붙이고, 장식 베일(`aria-hidden` · `pointer-events:none`)과 그림 흐림이 모양을 진다. 움직임 줄이기면 붙이지 않는다.
 - DOM은 즉시 바뀌고 새 장면이 구름빛(최고점)에서 또렷해지는 **한 번의 모션**이다 — 초점 · 낭독이 타이머에 묶이지 않는다.
 - **버림**: 꿈 컷을 음성 id 글자(`pre-5-dream`)로 판정(콘텐츠 명명에 기대 조용히 틀린다 — 순번 규칙을 unit이 u00 핀으로 잰다), 흐려짐 → DOM 교체 → 또렷의 두 번 모션(초점 · 테스트가 타이머에 묶인다).
 
@@ -131,6 +136,7 @@
 
 - 엔딩(post_cuts **1 ~ 4** — r1은 앞 둘) 뒤 `clear` 단계: 배너(검정 면 · 주황 「Episode clear!」 · 보상 모션, 앱 `EpisodeBannerScreen`과 같은 글 — ko 페이지도 영어) → **1600ms 뒤 또는 탭**에 예고(엔딩 마지막 컷 그림 위 「다음은 어떤 일이 벌어질까?」 · Next) → 완료. `lesson_complete` 효과음은 엔딩 → 배너로 옮겼다. 실패(failed)도 같은 길이다(r1 결정 유지).
 - 예고 글은 컷과 같은 불투명 대사 상자 안이다 — 발 그늘만으로는 그림 위 제목이 2.88:1이었다(e2e 화소 표본).
+- **(r3 정정 — 사용자 요청 「episode clear를 다음은 어떤일이 벌어질까 이런 형태의 영문구로 바꾸고 그 다음에 있는 해당 내용은 제거하고 바로 사전예약으로」)**: 배너 글을 **「What happens next?」**(en · ko 같은 영어 한 문구)로 바꾸고 **예고 장면을 없앴다**. 배너가 1600ms 뒤(또는 탭) **곧바로 완료(사전 등록)** 로 가고, 그 전환은 꿈 전환(`dream`)이다. 초점은 완료 화면 제목(이메일 칸이 아니다 — 모바일 자판이 저절로 올라와 폼을 가리지 않게, 다른 단계와 같은 단계 제목 규칙). 상태 `clearPhase` · 예고 문구 셋 · test-id 넷을 지웠고, `trial_step` 순번은 그대로다(clear 8 · complete 9 — 예고는 단계가 아니었다).
 
 ### D15. (r2) 완료 화면은 이메일 사전 등록 — Supabase 표 하나, PostgREST insert만
 
@@ -143,6 +149,28 @@
 ### D16. (r2) 모바일은 첫 탭에 전체화면
 
 - `(pointer: coarse) and (hover: none)`이면 첫 탭에 `document.documentElement.requestFullscreen({ navigationUI: "hide" })`(없으면 webkit 접두) 한 번. 거부 · 던짐은 삼키고, 함수가 없으면(iPhone Safari) 아무 일도 없다. 완료에 들어설 때 · 나가기 · 홈 링크에서 푼다. 데스크톱은 부르지 않는다(폰 틀 그대로).
+
+### D17. (r3) 말하기는 발음 기준으로 너그럽게 — 공유 패키지의 새 함수, 앱 채점은 그대로
+
+- 사용자 결정(2026-10-22): 「Web Speech를 유지하고, 채점을 너그럽게」 · 「진짜 너그럽게 띄어쓰기 부호 뿐만아니라 발음」.
+- 패키지 `@libitums/episode-core/judge`에 **`judgeSpokenLenient(accepted, alternatives)`**(+ `spokenUnitsOf` · `spokenSimilarity` · 기준 상수)를 더했다. 앱의 `judgeSpeaking` · `judgeRoleplayReply`는 바꾸지 않았고 앱은 새 함수를 import하지 않는다(앱 test:all 6,016 통과) [실측].
+- ① 앱 규칙(`judgeRoleplayReply`)으로 맞는 대안이 있으면 **strict**. ② 아니면 발음형 자모 열의 편집 거리로 잰다 — NFC · 부호 · 띄어쓰기 · 군말(어 · 음 · 아 · 그 · 으 · 흠 · 엄) 떼기, 연음 · 받침 7대표음 · 비음화 · 유음화 · ㅎ 탈락/축약 · 된소리 = 예사소리 · 모음 동일시(ㅐ/ㅔ · ㅒ/ㅖ · ㅚ/ㅙ/ㅞ · ㅢ/ㅣ). 정답을 부호로 **마디**로 나눠 마디마다 들은 문장 안의 가장 비슷한 연속 구간과 맞추고(앞뒤 덧붙은 말 · 마디 순서 바뀜 허용), **문장 일치도 ≥ 0.75 그리고 모든 마디 ≥ 0.5**면 **lenient**. ③ 아니면 incorrect. 순수 TS · 새 의존 0.
+- 기준은 u00 세 턴 정답으로 만든 사례 표(통과 21 · 오답 20 — 「처음이예요」 · 「처으미에요」 · 「감사함니다 진짜요」 · 「지금 부터요」는 통과, 정답 절반 · 다른 턴 · 다른 문장 · 빈 글은 오답)가 정한다 [실측 — unit]. 마디 하한이 없으면 「감사합니다」만 말해도 0.778로 넘는다.
+- 화면에서는 strict · lenient 모두 `Great`다.
+
+### D18. (r3) 말하기 측정 — 시도마다 한 번, 브라우저 분류를 모든 이벤트에
+
+- `trial_speech_attempt{turn, outcome, latency_bucket}` — 듣는 중인 턴이 판정 · 실패 · 중단으로 바뀐 전이 하나에 한 번(늦게 온 결과는 0). 시간은 Speak부터 결과까지. `trial_exit{step}` — 나가기 링크.
+- `browser`는 UA 글의 순수 분류이고 원문은 어디에도 싣지 않는다. 인앱(카카오톡 · 인스타그램 · 페이스북 · 네이버 · 라인 · 안드로이드 웹뷰)을 먼저 본다 — 인앱도 Safari · Chrome 글을 품는다. 순수 이벤트 함수는 그대로 두고 **보내는 접점(gtag 호출)이 붙인다**.
+- `trial_roleplay_result`는 바꾸지 않았다 — lenient 수는 시도 이벤트에서 센다.
+
+### D19. (r3) 인식 글자 수집 — 판정 뒤 Supabase 표에 한 줄, 녹음 없음 · 90일
+
+- 사용자 결정: 「발음 수집도 되나」 → 「1번 진행」(인식된 **글자만**, 녹음은 하지 않는다).
+- 말하기 판정(strict · lenient · incorrect)마다 `POST <PUBLIC_SUPABASE_URL>/rest/v1/trial_speech_samples` 한 번 — 사전 등록과 같은 공개 키 경로(`apikey` 머리만 · `Prefer: return=minimal`), **`keepalive: true`**(떠나는 중에도 끝나게), 기다리지 않음 · 실패는 조용히 버림 · 재시도 없음.
+- 본문 열 아홉: `session_id`(체험을 열 때 `crypto.randomUUID()` — 메모리에만) · `episode_version`(`u00-tutorial@<사본 판>`) · `turn_index` · `expected`(가장 가까운 정답) · `alternatives`(최대 3 · 각 200자) · `outcome` · `similarity` · `browser` · `locale`. 사용자 식별 정보 · IP · UA 원문 열은 없다.
+- 표(마이그레이션 `20261022130000`): RLS — anon은 아홉 열의 insert만, 읽기 · 고치기 · 지우기 · id · created_at 지정 불가, authenticated 불가. 길이 · 개수 · 값 범위는 check 제약(embedded-postgres SS1 ~ SS8). 보관 90일 — 삭제 함수 `purge_trial_speech_samples()`(anon · authenticated 실행 불가) + 예약 SQL `supabase/cron/trial-speech-samples-retention.sql`(pg_cron, 마이그레이션 아님 — 기존 `reengagement.sql`과 같은 방식).
+- 마이크 아래 안내 한 줄 「What you say is saved as text to improve scoring.」 · 「말한 문장은 글자로 저장되어 채점을 개선하는 데 쓰여요.」(수집이 켜진 빌드만, 마이크 `aria-describedby`). 개인정보처리방침(Notion) 갱신은 사용자 몫이다 — 초안 [web-trial-speech-samples-privacy](../specs/web-trial-speech-samples-privacy.md).
 
 ## 버린 대안
 
@@ -159,21 +187,30 @@
 11. **`HTMLAudioElement` 하나 재사용** — iOS의 첫 재생 제스처 규칙이 요소마다 걸리고, 효과음과 겹치려면 요소가 늘어 같은 문제를 반복한다.
 12. **체험판 색인 + 고유 메타** — 사용자 결정(D10).
 13. **롤플레이 실패 갈래(다시 하기 화면)** — 사용자 결정(엔딩까지).
+14. (r3) **앱 판정을 너그럽게 고치기** — 앱 채점이 바뀐다(사용자 요청은 체험판만). 새 함수만 더했다.
+15. (r3) **정답 전체를 한 줄로 이어 편집 거리** — 마디 순서가 바뀌면(「감사함니다 진짜요」) 0.67로 떨어진다. **기준값 하나만** — 긴 마디 하나만 말해도 넘는다(마디 하한을 둔 까닭).
+16. (r3) **발음 사전 · 음소 라이브러리** — 새 의존. 유니코드 산술과 규칙 일곱으로 사례 표를 넘는다.
+17. (r3) **`navigator.sendBeacon`** — `apikey` 머리를 실을 수 없다. **수집을 Edge Function으로** — 사전 등록(D15)과 같은 이유로 RLS insert만.
+18. (r3) **pg_cron 예약을 마이그레이션에** — 확장 설치 · 예약은 프로젝트 설정이라 마이그레이션 밖 SQL로 두고, 마이그레이션은 삭제 함수만 만든다(embedded-postgres로 잴 수 있다).
 
 ## 대가
 
 1. **사본 셋(JSON · 그림 10 · 효과음 5)** — 원본이 바뀌면 동기 검사가 `pnpm verify`를 실패시킨다. 손으로 다시 복사하고 핀(`TRIAL_CONTENT`)을 고쳐야 한다 — u00 판이 오를 때마다 랜딩 변경이 따른다.
 2. **음성은 원격이다** — 버킷 장애 · 오프라인이면 무음으로 진행한다. Firefox는 AAC(m4a) 해독이 실패할 수 있다(무음 진행). 프로덕션 빌드는 `PUBLIC_SUPABASE_URL`이 없으면 실패한다 — Vercel 랜딩 프로젝트의 Production 환경에 값을 넣는 것은 사용자 몫이다.
 3. **iOS Safari를 확인하지 않았다** — 무음 스위치(`audioSession` 대응 [추론]) · 인식 뒤 음성 크기 · 경로 · Siri/받아쓰기가 꺼진 경우의 거부 판정은 실기에서만 보인다(EU1 ~ EU4). 무음 스위치에서 소리가 안 나면 음성만 `HTMLAudioElement`로 바꾼다(포트 `TrialAudio`는 그대로).
-4. **웹이 앱과 다르게 선다** — 단어 카드 음성(D4)은 웹만 낸다. 앱의 학습 문항 음성은 병행 브랜치 `feat/audio-slow-playback`(ADR-0080, 미병합)의 몫이다. 웹은 대안 셋으로 판정을 고르고(D8), 고르기 문항 자극 음성을 낸다. 힌트에 로마자를 더했다(앱은 영어 뜻만 — 체험판은 S10 · S11을 건너뛰어 3턴째 표현을 배운 적이 없다).
+4. **웹이 앱과 다르게 선다** — 단어 카드 음성(D4)은 웹만 낸다. 앱의 학습 문항 음성은 [ADR-0082](0082-item-audio-and-slow-playback.md)(#297)의 몫이다. 웹은 대안 셋으로 판정을 고르고(D8), 고르기 문항 자극 음성을 낸다. 힌트에 로마자를 더했다(앱은 영어 뜻만 — 체험판은 S10 · S11을 건너뛰어 3턴째 표현을 배운 적이 없다).
 5. **흰 글자 주황 3.02:1** — WCAG 1.4.3 미달을 앱과 같이 받아들인다(D11).
 6. **패키지 경계가 테스트로만 지켜진다** — 17개 목록(EM1) · 금지 import(EC4)를 고치려면 테스트를 함께 고친다.
 7. **접근성 감사 제안 다섯을 미뤘다** — 진행 막대 `aria-valuetext`(S2) · h1과 장면 제목(S4) · 마이크 권한 안내와 「Listening」 낭독(S6) · 새 탭 알림(S8) · 장면 글 대비 자동 검사(S9). 문구 키 · 계획 몫이다.
 8. **프로덕션 HTML에 `data-testid`가 남는다**(ADR-0043 대가와 같다).
 9. (r2) **사전 등록에 남용 방지가 없다** — 공개 키로 insert가 열려 있어 요청 빈도 제한 · 봇 막기가 없다. 메일 발송 · 동의 철회 경로도 없다(개인정보처리방침 갱신은 사용자 몫).
-10. (r2) **iPhone Safari는 전체화면이 되지 않는다**(플랫폼 한계 — 지금처럼 주소창이 남는다). 배너 1.6초 자동 넘김은 앱과 같게 두었다 — 낭독기 사용자는 제목 낭독 중에 예고로 넘어갈 수 있다(접근성 점검 r2 W1).
-11. (r2) **스크립트 여유가 187 B다**(39,813 / 40,000) — 다음 기능은 상한을 실측으로 올리거나 덜어 내야 한다.
+10. (r2) **iPhone Safari는 전체화면이 되지 않는다**(플랫폼 한계 — 지금처럼 주소창이 남는다). 배너 1.6초 자동 넘김은 앱과 같게 두었다 — 낭독기 사용자는 제목 낭독 중에 예고로(r3: 곧바로 완료로) 넘어갈 수 있다(접근성 점검 r2 W1).
+11. (r2) **스크립트 여유가 187 B다**(39,813 / 40,000) — 다음 기능은 상한을 실측으로 올리거나 덜어 내야 한다. **(r3) 실측으로 올렸다 — 45,888 B, 상한 45,900**(발음 판정 · 시도 측정 · 수집 · 브라우저 분류, 사전 승인된 기능 증가 — IB5).
 12. (r2) 새 env 둘째(`PUBLIC_SUPABASE_ANON_KEY`) — Production에 없으면 배포가 멈춘다. 표(마이그레이션)를 먼저 원격에 적용해야 폼이 성공한다.
+13. (r3) **발음 기준은 뜻을 보지 않는다** — 「안녕하세요 네 처음이 아니에요」(뜻이 반대인 삽입)도 0.895로 통과한다. 받아쓰기 차이를 너그럽게 보는 대가로 받아들인다(사례 표에 한계로 적었다).
+14. (r3) **기준 0.75 · 0.5는 u00 사례 표로만 정했다** — 실기 인식 결과로 다시 맞춰야 한다(수집이 그 자료다, EU12).
+15. (r3) **수집 표도 남용 방지가 없다**(대가 9와 같음). 사용자가 말로 개인정보(이름 등)를 말하면 글자로 남는다 — 90일 뒤 지우고 service role만 읽는다. 예약 SQL을 실행하지 않으면 지워지지 않는다.
+16. (r3) **`crypto.randomUUID`가 없는 옛 브라우저**(iOS < 15.4)는 안내 줄이 보이지만 보내지 않는다. 일부 엔진은 `keepalive` + CORS 사전 요청을 거부할 수 있다(조용히 버림 — 그만큼 덜 모인다).
 
 ## 재검토 조건
 
@@ -185,11 +222,14 @@
 6. **세 번째 소비자가 오면** — subpath 다섯의 경계가 맞는지 다시 본다.
 7. **스토어 주소가 열리면** — 완료 화면을 사전 등록에서 설치 안내로 되돌릴지(또는 둘 다) 본다(D15).
 8. (r2) **사전 등록에 스팸 · 대량 insert가 보이면** — Edge Function + captcha 또는 DB 빈도 제한으로 옮긴다(D15).
+9. (r3) **수집된 lenient · incorrect 분포가 기대와 다르면**(정답인데 incorrect가 많거나, 다른 말이 lenient로 들어오면) — 기준 · 규칙을 사례 표에 실기 사례를 더해 다시 맞춘다(D17).
+10. (r3) **수집 표에 이상 insert가 보이면** — 사전 등록과 함께 Edge Function · 빈도 제한으로 옮긴다(D19).
 
 ## 후속
 
 - **실기 확인** — [웹 체험판 e2e](../e2e/web-trial.md) EU1 ~ EU8(미실행).
 - **Vercel** — 랜딩 프로젝트 Production에 `PUBLIC_SUPABASE_URL` · (r2) `PUBLIC_SUPABASE_ANON_KEY`(사용자 작업, [랜딩 README](../../apps/landing/README.md) 「배포」).
 - (r2) **마이그레이션 원격 적용** — `apps/supabase-functions/supabase/migrations/20261022120000_pre_registrations.sql`(사용자 확인 뒤, 랜딩 배포보다 먼저).
+- (r3) **마이그레이션 원격 적용** — `apps/supabase-functions/supabase/migrations/20261022130000_trial_speech_samples.sql` → `supabase/cron/trial-speech-samples-retention.sql` 1회 실행(pg_cron, 사용자 확인 뒤). **개인정보처리방침(Notion)** 에 초안 [web-trial-speech-samples-privacy](../specs/web-trial-speech-samples-privacy.md)를 붙인다(사용자). 실기 발음 사례 수집 — [웹 체험판 e2e](../e2e/web-trial.md) EU12.
 - 접근성 감사 제안 S2 · S4 · S6 · S8 · S9.
-- 성능 보고서: [웹 체험판 — 번들만](../performance/reports/web-trial-iphone-17-pro-simulator-01.md)(앱 번들 +614 B, 상한 그대로).
+- 성능 보고서: [웹 체험판 — 번들만](../performance/reports/web-trial-iphone-17-pro-simulator-01.md)(앱 번들 +614 B, 상한 그대로) · (r3) [02 — 체험판 스크립트 상한](../performance/reports/web-trial-iphone-17-pro-simulator-02.md).

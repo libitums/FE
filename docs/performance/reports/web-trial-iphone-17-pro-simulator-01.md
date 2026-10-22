@@ -3,7 +3,7 @@
 ## 실행 조건
 
 - 상태: 미측정 — 번들만. 렌더링 · 메모리 캡처를 돌리지 않았다. 앱 쪽 변경은 순수 규칙을 `@libitums/episode-core`로 옮기고 옛 경로를 재수출 모듈로 남긴 것뿐이고(동작 변경 0), 화면 · 요소 · 모션은 바뀌지 않았다.
-- 기능 PR: 랜딩 웹 체험판(`try/`) · 공유 패키지 `@libitums/episode-core` — 사용자 결정 2026-10-22([ADR-0081](../../adr/0081-web-trial-and-episode-core.md)).
+- 기능 PR: 랜딩 웹 체험판(`try/`) · 공유 패키지 `@libitums/episode-core` — 사용자 결정 2026-10-22([ADR-0083](../../adr/0083-web-trial-and-episode-core.md)).
 - 대상 commit: `525678c6`(`feat/web-trial` — 기준 `feat/tutorial-u00` `3658bfd8` 위)
 - 기기: 측정 기기 없음(번들 크기만) — 화면 확인은 체험판 쪽만 [웹 체험판 e2e](../../e2e/web-trial.md)에서 한다
 - OS: 해당 없음(번들 산출물)

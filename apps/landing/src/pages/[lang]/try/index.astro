@@ -6,6 +6,7 @@ import { resolveMeasurementId } from "../../../analytics/gtag";
 import { deployEnvironment } from "../../../seo/deploy-env";
 import { loadTrialModel } from "../../../trial/trial-content";
 import { trialImageUrlOf } from "../../../trial/trial-images";
+import { resolveSamplesConfig } from "../../../trial/trial-samples";
 import { resolvePreregConfig } from "../../../trial/trial-prereg";
 import { type Language, defaultLanguage, languages } from "../../../site";
 
@@ -35,9 +36,14 @@ const prereg = resolvePreregConfig(
   import.meta.env.PUBLIC_SUPABASE_ANON_KEY,
   false,
 );
+// 인식 글자 수집 보낼 곳 — 같은 URL · 공개 키, 없으면 수집 · 안내 줄이 없습니다.
+const samples = resolveSamplesConfig(
+  import.meta.env.PUBLIC_SUPABASE_URL,
+  import.meta.env.PUBLIC_SUPABASE_ANON_KEY,
+);
 const measurementId = indexable
   ? resolveMeasurementId(import.meta.env.PUBLIC_GA_MEASUREMENT_ID)
   : "";
 ---
 
-<TrialPage language={language} model={model} measurementId={measurementId} prereg={prereg} />
+<TrialPage language={language} model={model} measurementId={measurementId} prereg={prereg} samples={samples} />

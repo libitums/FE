@@ -129,7 +129,7 @@ describe("빌드 T-A — PUBLIC_SUPABASE_URL · PUBLIC_SUPABASE_ANON_KEY · SITE
       expect(document.documentElement.getAttribute("lang")).toBe(language);
       const data = pageData(document);
       expect(data.model.episodeId).toBe("u00-tutorial");
-      expect(Object.keys(data.copy)).toHaveLength(26);
+      expect(Object.keys(data.copy)).toHaveLength(23);
       expect(data.locale).toBe(language);
       // IB-R1 사전 등록 보낼 곳 = <PUBLIC_SUPABASE_URL>/rest/v1/pre_registrations · 공개 키
       expect(data.prereg).toEqual({
@@ -139,6 +139,12 @@ describe("빌드 T-A — PUBLIC_SUPABASE_URL · PUBLIC_SUPABASE_ANON_KEY · SITE
       expect(
         document.querySelector('[data-testid="trial-prereg"]')?.getAttribute("data-state"),
       ).toBe("idle");
+      // IB-S1 수집 보낼 곳 = <PUBLIC_SUPABASE_URL>/rest/v1/trial_speech_samples · 같은 공개 키, 안내 줄 턴마다
+      expect(data.samples).toEqual({
+        endpoint: `${SUPABASE}/rest/v1/trial_speech_samples`,
+        apiKey: ANON_KEY,
+      });
+      expect(document.querySelectorAll('[data-testid="trial-turn-saved"]')).toHaveLength(3);
       const robots = document.querySelector('meta[name="robots"]')?.getAttribute("content") ?? "";
       expect(robots).toContain("noindex");
     }
@@ -159,10 +165,11 @@ describe("빌드 T-A — PUBLIC_SUPABASE_URL · PUBLIC_SUPABASE_ANON_KEY · SITE
     }
   });
 
-  it("IB5 스크립트 예산 ≤ 40,000 bytes · zod · 디코더 흔적 없음", () => {
+  // r3: 발음 기준 판정 · 시도 측정 · 수집으로 39,813 → 45,888 B(실측) — 상한을 실측(100 B 올림)으로 올렸다.
+  it("IB5 스크립트 예산 ≤ 45,900 bytes · zod · 디코더 흔적 없음", () => {
     const { bytes, text } = scriptBytes(build, read(build, "try/index.html"));
     expect(bytes).toBeGreaterThan(0);
-    expect(bytes).toBeLessThanOrEqual(40_000);
+    expect(bytes).toBeLessThanOrEqual(45_900);
     expect(text).not.toContain("_zod");
     expect(text).not.toContain("schema-mismatch");
   });
@@ -234,6 +241,9 @@ describe("빌드 T-B — 프리뷰 · 음성 env 없음", () => {
     expect(document.querySelector('[data-testid="trial-prereg"]')?.getAttribute("data-state")).toBe(
       "unavailable",
     );
+    // IB-S1 수집도 없고 안내 줄도 없다
+    expect(pageData(document).samples).toBeNull();
+    expect(document.querySelectorAll('[data-testid="trial-turn-saved"]')).toHaveLength(0);
   });
 });
 

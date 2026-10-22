@@ -4,7 +4,7 @@ import TrialTurn from "./TrialTurn.astro";
 
 type Props = TrialRoleplayProps;
 
-const { t, counterpartName, imageUrl, turns } = Astro.props;
+const { t, counterpartName, imageUrl, turns, collects } = Astro.props;
 ---
 
 <section
@@ -29,6 +29,7 @@ const { t, counterpartName, imageUrl, turns } = Astro.props;
         index={index}
         total={turns.length}
         counterpartName={counterpartName}
+        collects={collects}
       />
     ))
   }

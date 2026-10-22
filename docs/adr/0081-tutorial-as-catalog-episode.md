@@ -187,8 +187,8 @@
 
 ## 적용 기록 ⟨2026-10-22 — u00 내장본의 둘째 소비자: 랜딩 웹 체험판의 사본⟩
 
-- **D1의 내장본(`apps/mobile/content/episodes/u00-tutorial.json`, `2026-10-21.3`)을 랜딩이 바이트 그대로 복사했다** — `apps/landing/src/trial/content/u00-tutorial.json`([ADR-0081](0081-web-trial-and-episode-core.md) D6). 랜딩은 앱을 import하지 않으므로 경로가 아니라 사본이다.
+- **D1의 내장본(`apps/mobile/content/episodes/u00-tutorial.json`, `2026-10-21.3`)을 랜딩이 바이트 그대로 복사했다** — `apps/landing/src/trial/content/u00-tutorial.json`([ADR-0083](0083-web-trial-and-episode-core.md) D6). 랜딩은 앱을 import하지 않으므로 경로가 아니라 사본이다.
 - **동기 검사** `devtools/trial-assets/sync.unit.test.mjs`(`pnpm verify` 안) — TA1 사본 = 내장본, TA5 앱 매니페스트의 u00 version · sha256이 체험판 핀(`TRIAL_CONTENT`)과 같다. **u00 판을 올리면(D1의 「버킷 새 버전」 → 내장본 교체) 같은 변경에서 랜딩 사본 · 핀도 바꿔야 verify가 지난다.**
 - **D2의 내장 그림 14장 중 10장**(`u00-tutorial/{pre-1..6,post-1,post-2,cult-u00-jalhasineyo}.webp` · `items/hello.webp`)도 랜딩 사본이다(TA2). 이름이 내용의 주소라는 규칙(대가 2)이 사본에도 그대로 걸린다.
-- **D12의 음성 id**는 랜딩이 버킷에서 직접 받는다 — 내장하지 않는다는 결정과 같다. 체험판은 단어 카드 음성(`s1-01-word` · `d-02`)도 낸다(디코더 확장, ADR-0081 D4) — 앱은 여전히 읽지 않는다.
+- **D12의 음성 id**는 랜딩이 버킷에서 직접 받는다 — 내장하지 않는다는 결정과 같다. 체험판은 단어 카드 음성(`s1-01-word` · `d-02`)도 낸다(디코더 확장, ADR-0083 D4) — 앱은 여전히 읽지 않는다.
 

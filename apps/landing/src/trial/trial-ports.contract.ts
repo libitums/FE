@@ -4,6 +4,7 @@ import type { SpeechFailure, TrialSfx } from "./trial-machine.contract";
 import type { TrialModel } from "./trial-model.contract";
 import type { TrialPageData, TrialScriptCopy } from "../components/trial/trial-components.contract";
 import type { PreregLocale, TrialPreregPort } from "./trial-prereg.contract";
+import type { TrialSamplesPort } from "./trial-samples.contract";
 
 export type VoiceOutcome = "ended" | "failed" | "stopped";
 
@@ -74,6 +75,10 @@ export type TrialControllerDeps = {
   /** 사전 등록 접점 — null · 없음이면 폼은 unavailable. */
   readonly prereg?: TrialPreregPort | null;
   readonly locale?: PreregLocale;
+  /** 인식 글자 수집 접점 — null · 없음이면 보내지 않는다. */
+  readonly samples?: TrialSamplesPort | null;
+  /** 시도 시간을 잴 시계(ms) — 없으면 performance.now. */
+  readonly now?: () => number;
 };
 export type TrialController = { readonly dispose: () => void };
 /** 페이지 스크립트의 유일한 진입 — DOM 결선 · 상태 · 부작용. */

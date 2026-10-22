@@ -10,6 +10,16 @@ export {
   type SpeakingChunk,
 } from "./speaking-judge";
 export { judgeRoleplayReply } from "./roleplay-reply";
+export { spokenUnitsOf } from "./hangul-pronunciation";
+export {
+  judgeSpokenLenient,
+  SPOKEN_LENIENT_THRESHOLD,
+  SPOKEN_SEGMENT_FLOOR,
+  spokenSimilarity,
+  type SpokenJudgement,
+  type SpokenOutcome,
+  type SpokenSimilarity,
+} from "./spoken-lenient";
 export { isTypedAnswerAccepted, isTypedAnswerCorrect, normalizeAnswerText } from "./typed-answer";
 export { canCheckTiles, composeTileReply, judgeTileReply, type ReplyTile } from "./tile-reply";
 export { judgeChoice } from "./choice";

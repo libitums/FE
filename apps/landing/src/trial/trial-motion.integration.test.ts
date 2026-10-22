@@ -121,7 +121,7 @@ describe("MO1 컷 대사 타자 효과", () => {
   });
 });
 
-/** 롤플레이를 지정한 결과로 마치고 Episode clear 예고까지(완료 직전). */
+/** 롤플레이를 지정한 결과로 마치고 Episode clear 배너까지(완료 직전, 유지 시간 전). */
 async function toLastEpilogueCut(harness: Harness, pass: boolean): Promise<void> {
   await playToRoleplay(harness);
   if (pass) {
@@ -138,8 +138,9 @@ async function toLastEpilogueCut(harness: Harness, pass: boolean): Promise<void>
   }
   expect(stepOf(harness)).toBe("epilogue");
   for (let cut = 0; cut < 3; cut += 1) await tap(harness, "trial-cuts-next");
-  // 엔딩 마지막 컷 → Episode clear(유지 시간이 지나 예고) — 다음 탭이 완료다.
-  await tap(harness, "trial-cuts-next");
+  // 엔딩 마지막 컷 → Episode clear 배너(시계를 돌리지 않아 유지 시간 전) — 배너 탭이 완료다.
+  shown(harness, "trial-cuts-next").click();
+  await flush();
   expect(stepOf(harness)).toBe("clear");
 }
 
@@ -150,7 +151,7 @@ describe("MO2 완료 폭죽", () => {
     h = await mountTrial({ reducedMotion: false });
     await toLastEpilogueCut(h, true);
     expect(confettiOf(h)).toHaveLength(0);
-    shown(h, "trial-clear-next").click();
+    shown(h, "trial-clear-banner").click();
     await vi.advanceTimersByTimeAsync(100);
     expect(stepOf(h)).toBe("complete");
     const layers = [...confettiOf(h)];
@@ -164,7 +165,7 @@ describe("MO2 완료 폭죽", () => {
   it("움직임 허용 · failed → 폭죽 없음", async () => {
     h = await mountTrial({ reducedMotion: false });
     await toLastEpilogueCut(h, false);
-    shown(h, "trial-clear-next").click();
+    shown(h, "trial-clear-banner").click();
     await vi.advanceTimersByTimeAsync(100);
     expect(shown(h, "trial-step-complete").getAttribute("data-result")).toBe("failed");
     expect(confettiOf(h)).toHaveLength(0);
@@ -173,7 +174,7 @@ describe("MO2 완료 폭죽", () => {
   it("움직임 줄이기 · passed → 폭죽 DOM 없음", async () => {
     h = await mountTrial({ reducedMotion: true });
     await toLastEpilogueCut(h, true);
-    shown(h, "trial-clear-next").click();
+    shown(h, "trial-clear-banner").click();
     await vi.advanceTimersByTimeAsync(100);
     expect(shown(h, "trial-step-complete").getAttribute("data-result")).toBe("passed");
     expect(confettiOf(h)).toHaveLength(0);
@@ -280,7 +281,7 @@ describe("MO-T 꿈 전환 data-transition", () => {
     expect(transitionOf(h)).toBeNull();
   });
 
-  it("MO-T2 roleplay → epilogue · 엔딩 컷 사이 · 배너 → 예고는 dream", async () => {
+  it("MO-T2 roleplay → epilogue · 엔딩 컷 사이 · 배너 → 완료는 dream", async () => {
     h = await mountTrial({ reducedMotion: false });
     const harness = h;
     await playToRoleplay(h);
@@ -304,6 +305,7 @@ describe("MO-T 꿈 전환 data-transition", () => {
       "dream",
       DREAM_MS,
     );
+    expect(stepOf(h)).toBe("complete");
   });
 
   it("MO-T3 전환 중에도 초점은 Next 그대로 · 베일은 aria-hidden 장식", async () => {
@@ -333,8 +335,8 @@ describe("MO-T 꿈 전환 data-transition", () => {
       await speakTurn(h, heard(SPEECH_CORRECT[index] ?? ""));
       await tap(h, "trial-turn-next");
     }
+    // 마지막 컷 뒤 배너 유지 시간이 지나 완료로 — 줄이기면 전환 표식은 한 번도 없다.
     for (let cut = 0; cut < 4; cut += 1) await tap(h, "trial-cuts-next");
-    await tap(h, "trial-clear-next");
     await flush();
     observer.disconnect();
     expect(stepOf(h)).toBe("complete");

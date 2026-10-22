@@ -54,7 +54,6 @@ export interface TrialCopy {
   notQuite: string;
   noticeDenied: string;
   noticeUnsupported: string;
-  teaserTitle: string;
   preregDone: string;
   preregFailed: string;
   preregRetry: string;
@@ -162,14 +161,9 @@ export async function playToRoleplay(page: Page, model: TrialModel, cutsDone = 0
   await expectStep(page, "roleplay");
 }
 
-/** Episode clear — 배너를 눌러 예고로, 예고 Next로 완료로. */
+/** Episode clear 배너 — 유지 시간(1.6초) 뒤 스스로 완료로 넘어간다(예고 장면 없음). */
 export async function passClear(page: Page) {
-  await expectStep(page, "clear");
-  const banner = shown(page, "trial-clear-banner");
-  // 유지 시간(1.6초)이 먼저 지나 예고로 넘어갔을 수도 있다 — 배너가 보일 때만 누른다.
-  if ((await banner.count()) > 0) await banner.click().catch(() => undefined);
-  await expect(page.getByTestId("trial-step-clear")).toHaveAttribute("data-phase", "teaser");
-  await tap(page, "trial-clear-next");
+  await expect(root(page)).toHaveAttribute("data-step", /^(clear|complete)$/);
   await expectStep(page, "complete");
 }
 

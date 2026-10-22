@@ -1,6 +1,7 @@
 import { beforeAll, describe, expect, it } from "vitest";
 
 import { trialEn } from "../../i18n/trial-copy";
+import { trialKo } from "../../i18n/trial-ko";
 import { formatCopy } from "../../trial/trial-copy-format";
 import type { TrialModel } from "../../trial/trial-model.contract";
 import { u00TrialModel } from "../../trial/trial.test-support";
@@ -30,6 +31,7 @@ describe("UT9 TrialRoleplay", () => {
         counterpartName: model.counterpartName,
         imageUrl: model.roleplay.imageUrl,
         turns: model.roleplay.turns,
+        collects: false,
       },
     }));
   });
@@ -137,10 +139,60 @@ describe("UT9 TrialRoleplay", () => {
         counterpartName: silent.counterpartName,
         imageUrl: silent.roleplay.imageUrl,
         turns: silent.roleplay.turns,
+        collects: false,
       },
     });
     expect(allByTestId(quiet, "trial-turn")).toHaveLength(3);
     expect(allByTestId(quiet, "trial-turn-line")).toHaveLength(3);
     expect(allByTestId(quiet, "trial-turn-replay")).toHaveLength(0);
+  });
+});
+
+describe("UT-S1 수집 안내 줄", () => {
+  const renderWith = async (collects: boolean, copy = t) => {
+    const model = u00TrialModel();
+    const { document } = await render(TrialRoleplay, {
+      props: {
+        t: copy,
+        counterpartName: model.counterpartName,
+        imageUrl: model.roleplay.imageUrl,
+        turns: model.roleplay.turns,
+        collects,
+      },
+    });
+    return document;
+  };
+
+  it.each([
+    ["en", trialEn],
+    ["ko", trialKo],
+  ] as const)(
+    "collects면 턴마다 마이크 아래 안내 한 줄 = speechSaved, 마이크가 그 줄을 가리킨다 (%s)",
+    async (_language, copy) => {
+      const document = await renderWith(true, copy);
+      const turns = allByTestId(document, "trial-turn");
+      expect(turns).toHaveLength(3);
+      turns.forEach((turn, index) => {
+        const saved = oneByTestId(turn, "trial-turn-saved");
+        expect(saved.tagName).toBe("P");
+        expect(textOf(saved)).toBe(copy.speechSaved);
+        expect(saved.id).toBe(`trial-turn-saved-${index}`);
+        expect(saved.closest(".trial-speak")).not.toBeNull();
+        expect(saved.hasAttribute("aria-live")).toBe(false);
+        const mic = oneByTestId(turn, "trial-turn-speak");
+        expect(mic.getAttribute("aria-describedby")).toBe(saved.id);
+        // 마이크 다음에 온다(읽는 차례 · 보이는 차례)
+        // DOCUMENT_POSITION_FOLLOWING = 4(Node 전역은 렌더 환경에 없다)
+        expect(mic.compareDocumentPosition(saved) & 4).toBe(4);
+      });
+    },
+  );
+
+  it("collects가 아니면 줄도 describedby도 없다", async () => {
+    const document = await renderWith(false);
+    expect(allByTestId(document, "trial-turn-saved")).toHaveLength(0);
+    for (const mic of allByTestId(document, "trial-turn-speak")) {
+      expect(mic.hasAttribute("aria-describedby")).toBe(false);
+    }
   });
 });

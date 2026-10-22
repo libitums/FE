@@ -3,6 +3,7 @@ import type { NonEmpty } from "@libitums/episode-core/judge";
 
 import type { Language } from "../../site";
 import type { PreregLocale, TrialPreregConfig } from "../../trial/trial-prereg.contract";
+import type { TrialSamplesConfig } from "../../trial/trial-samples.contract";
 import type {
   TrialCulture,
   TrialCut,
@@ -71,9 +72,6 @@ export type TrialCopy = {
   completeBodyMissed: Template;
   /** Episode clear 배너 — 앱 배너와 같은 글(두 언어 모두 영어). */
   clearTitle: string;
-  teaserLabel: string;
-  teaserTitle: string;
-  teaserBody: string;
   preregTitle: string;
   preregBody: string;
   preregEmailLabel: string;
@@ -86,6 +84,8 @@ export type TrialCopy = {
   /** 「출시 소식만 보낸다」 한 줄. */
   preregPrivacy: string;
   preregUnavailable: string;
+  /** 마이크 아래 한 줄 — 말한 문장이 글자로 저장된다는 안내(수집이 켜진 빌드만). */
+  speechSaved: string;
   backHome: string;
   /** 데스크톱 머리 띠의 사이트로 돌아가기 링크. */
   backToSite: string;
@@ -112,9 +112,6 @@ export type TrialScriptCopy = Pick<
   | "completeBodyMissed"
   | "cultureFlipToBack"
   | "cultureFlipToFront"
-  | "teaserLabel"
-  | "teaserTitle"
-  | "teaserBody"
   | "preregSubmit"
   | "preregSending"
   | "preregRetry"
@@ -127,6 +124,8 @@ export type TrialPageData = {
   /** 사전 등록 보낼 곳 — 비프로덕션에 key가 없으면 null(폼은 unavailable). */
   readonly prereg: TrialPreregConfig | null;
   readonly locale: PreregLocale;
+  /** 인식 글자 수집 보낼 곳 — URL · 공개 키가 없는 빌드면 null(보내지 않고 안내 줄도 없음). */
+  readonly samples: TrialSamplesConfig | null;
 };
 /** 순수 — `{name}`을 값으로. 모르는 이름은 그대로 둔다. */
 export type FormatCopy = (template: Template, values: Readonly<Record<string, string>>) => string;
@@ -136,6 +135,7 @@ export interface TrialPageProps {
   model: TrialModel;
   measurementId: string;
   prereg: TrialPreregConfig | null;
+  samples: TrialSamplesConfig | null;
 }
 export interface TrialBarProps {
   language: Language;
@@ -176,6 +176,8 @@ export interface TrialRoleplayProps {
   counterpartName: string;
   imageUrl: string | null;
   turns: NonEmpty<TrialTurn>;
+  /** 수집이 켜졌는가 — 켜졌으면 턴마다 마이크 아래 안내 줄. */
+  collects: boolean;
 }
 export interface TrialTurnProps {
   t: TrialCopy;
@@ -183,6 +185,7 @@ export interface TrialTurnProps {
   index: number;
   total: number;
   counterpartName: string;
+  collects: boolean;
 }
 export interface TrialCompleteProps {
   t: TrialCopy;
@@ -190,10 +193,9 @@ export interface TrialCompleteProps {
   /** 사전 등록 설정이 있는가 — 값은 페이지 JSON이 싣는다. */
   prereg: boolean;
 }
-/** Episode clear — 배너 + 예고. 그림은 epilogue 마지막 컷 그림. */
+/** Episode clear 배너 — 영어 한 줄(유지 시간 · 탭) 뒤 곧바로 완료. */
 export interface TrialClearProps {
   t: TrialCopy;
-  imageUrl: string | null;
 }
 /** 완료 화면의 사전 등록 폼 — 설정이 없으면 unavailable 글만. */
 export interface TrialPreregProps {
@@ -258,6 +260,7 @@ export type TrialTestId =
   | "trial-turn-answer"
   | "trial-turn-notice"
   | "trial-turn-speak"
+  | "trial-turn-saved"
   | "trial-turn-hint-button"
   | "trial-turn-hint"
   | "trial-turn-cant-speak"
@@ -270,10 +273,6 @@ export type TrialTestId =
   | "trial-step-clear"
   | "trial-clear-title"
   | "trial-clear-banner"
-  | "trial-clear-teaser"
-  | "trial-clear-image"
-  | "trial-clear-teaser-title"
-  | "trial-clear-next"
   | "trial-step-complete"
   | "trial-prereg"
   | "trial-prereg-email"

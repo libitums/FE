@@ -65,7 +65,7 @@ Duru를 처음 듣는 사람이 한 화면을 끝까지 내리는 동안 **"이�
 - **검색 대상이 아니다** — `noindex`, sitemap 제외, canonical · hreflang · JSON-LD 없음. 위 「검색 · 답변 엔진」의 기준(두 페이지 · `/` · `/ko/`)은 그대로다.
 - 측정(GA4): `trial_link_click`(랜딩의 체험판 링크, `location`) · `trial_start` · `trial_step` · `trial_roleplay_result` · `trial_complete` · `trial_store_click`.
   알고 싶은 것은 랜딩 → 체험 시작률 · 단계별 이탈 · 완료율 · 완료 → 설치 클릭률이다(스토어 주소가 빈 동안 마지막은 잴 수 없다).
-- 결정과 버린 대안은 [ADR-0081](../adr/0081-web-trial-and-episode-core.md), 구조 · 빌드 env · 확인은 [앱 README](../../apps/landing/README.md) 「웹 체험판」,
+- 결정과 버린 대안은 [ADR-0083](../adr/0083-web-trial-and-episode-core.md), 구조 · 빌드 env · 확인은 [앱 README](../../apps/landing/README.md) 「웹 체험판」,
   실기 확인 절차는 [웹 체험판 e2e](../e2e/web-trial.md)(미실행)에 있다.
 
 **화면에 보이지 않는 것** — 페이지마다 구조화 데이터(JSON-LD) 하나, 사이트 루트에 `robots.txt` · `llms.txt`(답변 엔진용 요약) ·

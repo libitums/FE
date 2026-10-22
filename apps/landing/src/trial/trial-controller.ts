@@ -4,7 +4,7 @@
 import type { TrialPageData } from "../components/trial/trial-components.contract";
 import { currentCutOf, applyTrialState } from "./trial-dom";
 import { currentTurnOf } from "./trial-dom-turn";
-import { trialEventsOf } from "./trial-events";
+import { trialEventsOf, trialExitEventOf, trialSpeechAttemptOf } from "./trial-events";
 import { initialTrialState, reduceTrial } from "./trial-machine";
 import { TRIAL_CLEAR_HOLD_MS } from "./trial-machine.contract";
 import type { TrialAction, TrialState } from "./trial-machine.contract";
@@ -12,6 +12,7 @@ import { createTrialMotion } from "./trial-motion";
 import type { InitTrial, ReadTrialModel, SpeechOutcome } from "./trial-ports.contract";
 import { stepVoiceUrls } from "./trial-prefetch";
 import { bindTrialPrereg } from "./trial-prereg-form";
+import { trialSampleOf } from "./trial-samples";
 import { trialTransitionOf } from "./trial-transition";
 import { trialSfxOf, trialVoiceCueOf } from "./trial-view";
 
@@ -20,12 +21,15 @@ type ButtonHandler = (button: HTMLElement) => void;
 /** 체험판을 붙입니다. 처음 상태를 그리고, 루트 하나의 클릭 위임으로 모든 버튼을 받습니다. */
 export const initTrial: InitTrial = (deps) => {
   const { root, model, copy, audio, speech, send, reducedMotion, fullscreen } = deps;
+  const now = deps.now ?? (() => performance.now());
   const motion = createTrialMotion(root, reducedMotion);
   const view = root.ownerDocument.defaultView as Window;
   let state: TrialState = initialTrialState();
   let voiceKey: string | null = null;
   /** 듣기 차례 번호 — 멈춘 뒤 늦게 온 결과는 번호가 달라 버립니다. */
   let listenTurn = 0;
+  /** 지금 듣기를 시작한 시각(ms) — 시도 시간 구간. */
+  let listenStartedAt = 0;
   let disposed = false;
   /** Episode clear 배너의 유지 시간 — 배너일 때만 걸려 있습니다. */
   let clearTimer: number | null = null;
@@ -50,7 +54,7 @@ export const initTrial: InitTrial = (deps) => {
 
   /** 배너에 들어서면 유지 시간 뒤 예고로 — 그때도 배너일 때만 넘깁니다(탭이 먼저면 타이머를 지움). */
   function syncClearTimer(prev: TrialState, next: TrialState): void {
-    const banner = (value: TrialState) => value.step === "clear" && value.clearPhase === "banner";
+    const banner = (value: TrialState) => value.step === "clear";
     if (!banner(next)) {
       stopClearTimer();
       return;
@@ -95,6 +99,21 @@ export const initTrial: InitTrial = (deps) => {
     for (const event of trialEventsOf(prev, next, action)) send(event);
   }
 
+  /** 듣기의 끝(판정 · 실패 · 중단)을 보내고, 그 전이로 시도 이벤트 하나 · 수집 하나를 냅니다. */
+  function settleListening(action: TrialAction): void {
+    const before = state;
+    dispatch(action);
+    const attempt = trialSpeechAttemptOf(before, state, action, now() - listenStartedAt);
+    if (attempt !== null) send(attempt);
+    const sample = trialSampleOf(before, state, action);
+    if (sample === null) return;
+    try {
+      deps.samples?.send(sample);
+    } catch {
+      // 수집은 진행을 막지 않습니다.
+    }
+  }
+
   function setJudging(on: boolean): void {
     const turn = currentTurnOf(root, state);
     if (turn === null) return;
@@ -107,6 +126,7 @@ export const initTrial: InitTrial = (deps) => {
     if (state.step !== "roleplay" || state.roleplay.turn.phase !== "listening") return;
     listenTurn += 1;
     const mine = listenTurn;
+    listenStartedAt = now();
     let outcome: SpeechOutcome;
     try {
       outcome = await speech.listen();
@@ -115,7 +135,7 @@ export const initTrial: InitTrial = (deps) => {
     }
     if (mine !== listenTurn || disposed) return;
     setJudging(false);
-    dispatch(
+    settleListening(
       outcome.kind === "heard"
         ? { type: "heard", alternatives: outcome.alternatives }
         : { type: "speech-failed", reason: outcome.reason },
@@ -130,7 +150,7 @@ export const initTrial: InitTrial = (deps) => {
     listenTurn += 1;
     speech.abort();
     setJudging(false);
-    dispatch({ type: "speech-failed", reason: "aborted" });
+    settleListening({ type: "speech-failed", reason: "aborted" });
   }
 
   /** 첫 버튼 탭 — 그 처리기 앞에서 동기로 소리 잠금 해제 · 전체화면 · 시작 · 받아 두기. */
@@ -179,12 +199,12 @@ export const initTrial: InitTrial = (deps) => {
     "trial-turn-check": () => dispatch({ type: "check" }),
     "trial-turn-next": () => dispatch({ type: "next" }),
     "trial-clear-banner": () => dispatch({ type: "next" }),
-    "trial-clear-next": () => dispatch({ type: "next" }),
   };
 
   function onClick(event: Event): void {
     const target = event.target as Element | null;
-    // 나가기 · 완료 홈 링크 — 이동은 그대로 두고 전체화면만 풉니다.
+    // 나가기 · 완료 홈 링크 — 이동은 그대로 두고 전체화면만 풉니다. 나가기는 그 단계를 셉니다.
+    if (target?.closest('[data-testid="trial-exit"]')) send(trialExitEventOf(state));
     if (target?.closest('[data-testid="trial-exit"], [data-testid="trial-complete-home"]')) {
       fullscreen?.exit();
       return;

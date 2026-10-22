@@ -137,7 +137,7 @@ apps/mobile/src/
 >
 > ⟨2026-10-22 — 적용 기록⟩ **위 본문의 「나중에 `lib/`를 `packages/`로 올릴 때 그대로 떨어져 나온다」가 처음
 > 실현됐다** — 디코더 · 판정 · 콘텐츠 주소 · 섞기가 `packages/episode-core`(`@libitums/episode-core`)로 옮겨졌다
-> ([ADR-0081](0081-web-trial-and-episode-core.md) D1 ~ D3, 두 번째 소비자는 랜딩 웹 체험판). 몸은 **글자 그대로**
+> ([ADR-0083](0083-web-trial-and-episode-core.md) D1 ~ D3, 두 번째 소비자는 랜딩 웹 체험판). 몸은 **글자 그대로**
 > 옮겼고(디코더 첫 줄 `background-only` 표식까지 그대로 — 2026-10-22 리뷰 반영), `lib/`가 UI를 import하지 않던 규칙 덕에 끌려 나온 화면 코드는 없다.
 > 판정 몸 몇은 `screens/`(`roleplay-story` · `catalog-final` · `word-choice` · `assessment`)와 `app/`(`catalog-lesson-plan` ·
 > `catalog-shuffle` · `catalog-final-model`)에 있었다 — 화면 폴더의 순수 함수도 같은 방식으로 떨어졌다.

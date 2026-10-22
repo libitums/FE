@@ -8,7 +8,7 @@ Duru 랜딩 페이지다. [Astro](https://astro.build)로 만든 정적 사이�
 검색엔진이 스크립트를 돌리지 않아도 그 언어의 본문 · 제목 · 설명을 읽는다.
 
 ⟨2026-10-22⟩ 두 번째 페이지 **웹 체험판** `/try/` · `/ko/try/`가 있다 — 앱 설치 없이 튜토리얼 u00의 첫 장면을 브라우저에서 해 본다
-([ADR-0081](../../docs/adr/0081-web-trial-and-episode-core.md)). 색인하지 않는다. 아래 「웹 체험판」.
+([ADR-0083](../../docs/adr/0083-web-trial-and-episode-core.md)). 색인하지 않는다. 아래 「웹 체험판」.
 
 ## 명령
 
@@ -65,7 +65,7 @@ e2e 315건 통과 · 27 skip이다.
 | `src/scripts/analytics-events.ts` · `analytics.contract.ts` | 화면의 행동을 이벤트로 옮기는 **순수 함수 셋**(`clickEventOf` · `faqEventOf` · `sectionEventOf`)과 그 타입. DOM이 아니라 거기서 읽은 값만 받고 아무것도 import하지 않는다 — `src/seo/`와 같은 모양 |
 | `src/scripts/analytics.ts` | 접착 — DOM에서 값을 읽어 위 함수에 넘기고 결과를 gtag에 전달한다. 섹션의 「한 번만」(`unobserve`)도 여기다 |
 | `src/scripts/main.ts` | 스크롤 연출과 탭. 없어도 본문은 다 보인다 |
-| `src/trial/` | **웹 체험판의 로직**(아래 「웹 체험판」). 순수 모듈(`trial-model*` · `trial-machine` · `trial-view` · `trial-transition`(꿈 전환 판정) · `trial-events` · `trial-copy-format` · `trial-env` · `trial-prereg`(사전 등록 정규화 · 형식 · 요청 · 상태 · env) · `trial-speech`의 분류 함수 · `trial-fullscreen`의 판정)과 브라우저 접점(`trial-audio` · `trial-prefetch` · `trial-speech`의 인식기 · `trial-prereg-client`(PostgREST) · `trial-prereg-form` · `trial-fullscreen` · `trial-controller` · `trial-dom*` · `trial-motion` · 진입 `trial-main`). 계약은 `*.contract.ts` 다섯 |
+| `src/trial/` | **웹 체험판의 로직**(아래 「웹 체험판」). 순수 모듈(`trial-model*` · `trial-machine` · `trial-view` · `trial-transition`(꿈 전환 판정) · `trial-events` · `trial-copy-format` · `trial-env` · `trial-prereg`(사전 등록 정규화 · 형식 · 요청 · 상태 · env) · ⟨r3⟩ `trial-browser`(UA 분류) · `trial-samples`(수집 행 · 요청 · env) · `trial-speech`의 분류 함수 · `trial-fullscreen`의 판정)과 브라우저 접점(`trial-audio` · `trial-prefetch` · `trial-speech`의 인식기 · `trial-prereg-client`(PostgREST) · ⟨r3⟩ `trial-samples-client`(수집, keepalive · 던지지 않음) · `trial-prereg-form` · `trial-fullscreen` · `trial-controller` · `trial-dom*` · `trial-motion` · 진입 `trial-main`). 계약은 `*.contract.ts` 여섯 |
 | ↳ `src/trial/content/u00-tutorial.json` | 앱 내장 u00의 **바이트 같은 사본**. 포매터 대상에서 뺐다(한 바이트도 바뀌면 동기 검사가 실패한다). 판 · 길이 · sha256 핀은 `trial-content.ts`의 `TRIAL_CONTENT` |
 | `src/components/trial/` | 체험판 장면 컴포넌트(`TrialPage` · `TrialCuts` · `TrialVocabCard` · `TrialImageMatch` · `TrialReplySelect` · `TrialCultureCard` · `TrialRoleplay` · `TrialTurn` · `TrialClear` · `TrialComplete` · `TrialPrereg` 등)와 CSS 열둘(r2: `trial-transition` · `trial-clear` · `trial-prereg`). props · 문구 · test-id 타입은 `trial-components.contract.ts` |
 | `src/i18n/trial-copy.ts` · `trial-ko.ts` | 체험판 문구(`TrialCopy` — 영어 원본 · 한국어 전부). 학습 내용(한국어 대사 · 영어 번역)은 콘텐츠에서 온다 |
@@ -128,13 +128,16 @@ Footer 링크의 `rel`을 지우면 UI-FO2가 `expected '' to contain 'noopener'
 - **동의 배너는 없다.** EU 27개국 · EEA · 영국 · 스위스에서는 Consent Mode 기본값으로 분석 쿠키를 꺼서 쿠키 없는 신호만 나간다
   (그 지역의 방문은 GA4에 거의 보이지 않는다). 그 밖의 지역은 평소대로 수집한다. 광고용 저장은 어디서나 꺼져 있다.
   지역 목록은 `src/analytics/gtag.ts`의 `consentDeniedRegions`다.
-- **보내는 이벤트는 열하나다**(이름의 닫힌 목록은 `src/scripts/analytics.contract.ts`의 `AnalyticsEventName`).
+- **보내는 이벤트는 열셋이다**(이름의 닫힌 목록은 `src/scripts/analytics.contract.ts`의 `AnalyticsEventName`).
   - 랜딩(`src/scripts/analytics.ts`): `section_view`(섹션이 처음 보일 때, `section`) · `cta_click`(머리의 받기 버튼) ·
     `download_click`(스토어 링크, `store`) · `language_switch`(`to`) · `faq_open`(`question`) · ⟨2026-10-22⟩ `trial_link_click`(Hero · 받기 카드 아래의
     체험판 링크, `location`: `hero` · `download`). 404에는 스크립트가 없어 수집하지 않는다.
   - 체험판(`src/trial/trial-events.ts` — 전이마다 순수 함수가 정한다): `trial_start`(`speech`: supported · unsupported) · `trial_step`(그 단계에
     처음 닿을 때, `step` · `ordinal` "1" ~ "9" — prologue는 첫 탭, clear 8 · complete 9) · `trial_roleplay_result`(마지막 턴 뒤, `verdict` · `correct` · `by_speech` · `by_tiles` "0" ~ "3" ·
     `speech`: supported · unsupported · denied) · `trial_complete`(`verdict`) · ⟨r2⟩ `trial_preregister`(완료 화면 사전 등록 응답 뒤, `status`: submitted · duplicate · failed).
+    ⟨r3⟩ `trial_speech_attempt`(말하기 시도마다 한 번, `turn` "1" ~ "3" · `outcome` strict · lenient · incorrect · no-speech · denied · unavailable · aborted ·
+    `latency_bucket` "0-2s" … "8s+") · `trial_exit`(나가기 링크, `step`). **체험판의 모든 이벤트에 `browser`**(ios-safari · android-chrome · in-app · desktop ·
+    other — `src/trial/trial-browser.ts`의 UA 순수 분류, 원문은 싣지 않는다)를 `trial-main`의 gtag 접점이 붙인다.
     `trial_start`는 Start가 아니라 **첫 탭**에 나간다. ~~`trial_store_click`~~은 지웠다(완료 화면에 스토어 링크가 없다).
     속성은 전부 문자열이고 **들은 문장 · 대사 · 고른 보기 글 · 이름 · 이메일을 싣지 않는다**(타입이 막는다). 체험판 페이지는 랜딩 `initAnalytics`를
     부르지 않고, 같은 측정 ID · 같은 동의 규칙(`Analytics.astro`)으로 `gtag("event", …)`만 보낸다.
@@ -230,18 +233,18 @@ Footer 링크의 `rel`을 지우면 UI-FO2가 `expected '' to contain 'noopener'
 ## 웹 체험판 (`/try/` · `/ko/try/`)
 
 앱을 설치하지 않고 튜토리얼 u00의 첫 장면을 브라우저에서 3~5분 해 보는 페이지다. 결정과 버린 대안은
-[ADR-0081](../../docs/adr/0081-web-trial-and-episode-core.md)에 있고, 여기는 고칠 때 알아야 할 것만 적는다.
+[ADR-0083](../../docs/adr/0083-web-trial-and-episode-core.md)에 있고, 여기는 고칠 때 알아야 할 것만 적는다.
 
 - **흐름**(r2): 열자마자 컷 1(표지 없음 — **첫 탭**이 소리 잠금 해제 · 시작 이벤트 · 모바일 전체화면) → 컷 1~6 → 새 단어 카드(S1) → 그림 고르기(S3) →
-  대답 고르기(S9) → 문화 카드(S12) → 롤플레이 3턴(RP) → 엔딩 컷 1~4 → **Episode clear**(검정 배너 1.6초 또는 탭 → 「다음은 어떤 일이 벌어질까?」 예고) →
-  완료 · 이메일 사전 등록. 롤플레이 결과와 무관하게 끝까지 가고, 완료 화면의 문구만 결과(3턴 중 2 이상)에 따라 다르다.
-- **꿈 전환**: 컷 사이 · 롤플레이 → 엔딩 · 배너 → 예고에 구름빛(`data-transition="dream"`, 600ms), 꿈 → 승무원(prologue 마지막 컷으로)에
+  대답 고르기(S9) → 문화 카드(S12) → 롤플레이 3턴(RP) → 엔딩 컷 1~4 → **Episode clear**(검정 배너 「What happens next?」 1.6초 또는 탭 — r3부터 예고 장면 없이) →
+  곧바로 완료 · 이메일 사전 등록(초점은 완료 제목). 롤플레이 결과와 무관하게 끝까지 가고, 완료 화면의 문구만 결과(3턴 중 2 이상)에 따라 다르다.
+- **꿈 전환**: 컷 사이 · 롤플레이 → 엔딩 · 배너 → 완료에 구름빛(`data-transition="dream"`, 600ms), 꿈 → 승무원(prologue 마지막 컷으로)에
   눈 뜨기(`wake`, 1000ms). 판정은 순수 `trialTransitionOf`, 모양은 `trial-transition.css`. 움직임 줄이기면 없다.
 - **어떻게 도나**: 장면 전부를 Astro가 한 페이지에 굽고(처음엔 컷 1만 보인다) `src/trial/trial-main.ts`가 페이지 안의 JSON
   (`script#trial-model`)을 읽어 컨트롤러를 띄운다. 행동 → 순수 리듀서(`reduceTrial`) → DOM 반영 → 파생(음성 · 효과음 · 이벤트).
   **판정 · 전이는 리듀서만 한다** — DOM 코드에 계산을 넣지 않는다. 판정 함수는 앱과 같은 `@libitums/episode-core/judge`다.
 - **콘텐츠는 빌드 때 읽는다** — `src/trial/content/u00-tutorial.json`(사본)을 `@libitums/episode-core/episode`의 디코더로 읽어 화면 모델을
-  페이지에 굽는다. 디코드 · 모델이 실패하면 **빌드가 실패한다**. 클라이언트 스크립트에는 zod · 디코더가 없다(상한 40,000 bytes — 2026-10-22 34,804).
+  페이지에 굽는다. 디코드 · 모델이 실패하면 **빌드가 실패한다**. 클라이언트 스크립트에는 zod · 디코더가 없다(상한 45,900 bytes — 2026-10-22 r1 34,804 · r2 39,813 · r3 45,888).
 - **사본을 고칠 때** — u00 JSON · 그림 12 · 효과음 5는 앱 원본의 바이트 그대로다. 앱 쪽이 바뀌면 같은 파일을 복사하고, JSON이면
   `TRIAL_CONTENT`(version · bytes · sha256)도 앱 매니페스트의 u00 항목과 같게 고친다. 어긋나면 `pnpm test:trial-assets`(따라서 `pnpm verify`)가 실패한다.
   그림을 다시 인코딩하지 않는다(위 「그림」의 `cwebp` 절차는 랜딩 소개 그림만이다).
@@ -255,6 +258,14 @@ Footer 링크의 `rel`을 지우면 UI-FO2가 `expected '' to contain 'noopener'
   모양이 `https://<호스트>`가 아니면(경로 · 쿼리가 붙으면) 빌드가 실패한다.
 - **말하기** — 브라우저 음성 인식(`SpeechRecognition` · `webkitSpeechRecognition`, `ko-KR`). 보안 컨텍스트(`https` 또는 `localhost`)에서만
   마이크가 열린다. 인식기가 없거나(Firefox) · 권한 거부 · 실패 · `Can't speak now`면 같은 턴을 낱말 타일로 푼다.
+  ⟨r3⟩ **판정은 발음 기준으로 너그럽다** — `@libitums/episode-core/judge`의 `judgeSpokenLenient`: 앱 규칙(`judgeRoleplayReply`)으로 맞으면 strict,
+  아니면 발음형 자모 편집 거리(띄어쓰기 · 부호 · 군말 · 연음 · 받침 · 비음화 · 유음화 · ㅎ · 된소리 · 비슷한 모음을 같게 봄)가 문장 0.75 이상 · 마디마다 0.5 이상이면 lenient.
+  둘 다 `Great`. 앱은 이 함수를 쓰지 않는다. 기준을 바꾸면 패키지의 사례 표(`spoken-lenient.unit.test.ts`)를 함께 고친다.
+- **인식 글자 수집**(r3) — 말하기 판정마다 `POST <PUBLIC_SUPABASE_URL>/rest/v1/trial_speech_samples`(사전 등록과 같은 공개 키 · `keepalive`) 한 번,
+  본문은 `session_id`(열 때 만든 무작위 UUID, 메모리에만) · `episode_version` · `turn_index` · `expected` · `alternatives`(최대 3 · 200자) · `outcome` ·
+  `similarity` · `browser` · `locale`. 녹음은 없다. 실패는 조용히 버리고 다시 보내지 않는다. 같은 빌드에서 마이크 아래 안내 한 줄
+  「What you say is saved as text to improve scoring.」이 선다(URL · 공개 키가 없는 빌드면 수집 · 안내 줄 둘 다 없다). 표 · 보관 90일은
+  [`apps/supabase-functions`](../supabase-functions/README.md) 「웹 체험판 인식 글자 수집 표」.
 - **문구** — `src/i18n/trial-copy.ts`(영어 원본, `TrialCopy`) · `trial-ko.ts`(한국어, 전부 채워야 타입 검사를 지난다). `{name}` 자리표시자는 `formatCopy`가 채운다.
 - **랜딩 링크** — Hero와 받기 카드 아래에 `trialPathFor(language)`(`src/site.ts`) 링크.
 - **사전 등록**(r2) — 완료 화면 폼이 `POST <PUBLIC_SUPABASE_URL>/rest/v1/pre_registrations`(머리 `apikey` · `Prefer: return=minimal`, 몸 `{email, locale, source}`)로

@@ -13,14 +13,14 @@
 | [`apps/android`](apps/android) | 같은 번들을 로드하는 Android 최소 호스트 | Java · Gradle · Lynx SDK 4.0.1 |
 | [`apps/storybook-lynx`](apps/storybook-lynx) | 실제 Lynx Web bundle을 `<lynx-view>`로 보여주는 컴포넌트 카탈로그 | Storybook · Rspeedy |
 | [`apps/supabase-functions`](apps/supabase-functions) | 서버 함수(Supabase Edge Function). 지금은 계정 삭제 `delete-account` 하나 — 배포 · 시크릿은 [그 README](apps/supabase-functions/README.md) | TypeScript · Deno · Supabase CLI |
-| [`apps/landing`](apps/landing) | 서비스 소개 랜딩 페이지. 영어 `/` · 한국어 `/ko/`를 정적 HTML로 굽는다 ([ADR-0043](docs/adr/0043-landing-static-site.md)). 앱 설치 없이 튜토리얼 첫 장면을 해 보는 웹 체험판 `/try/` · `/ko/try/`도 여기다 ([ADR-0081](docs/adr/0081-web-trial-and-episode-core.md)) | Astro · pnpm |
+| [`apps/landing`](apps/landing) | 서비스 소개 랜딩 페이지. 영어 `/` · 한국어 `/ko/`를 정적 HTML로 굽는다 ([ADR-0043](docs/adr/0043-landing-static-site.md)). 앱 설치 없이 튜토리얼 첫 장면을 해 보는 웹 체험판 `/try/` · `/ko/try/`도 여기다 ([ADR-0083](docs/adr/0083-web-trial-and-episode-core.md)) | Astro · pnpm |
 
 공개 재사용 컴포넌트는 [`packages/ui-lynx`](packages/ui-lynx)에 있다. 현재 Button, Back Header,
 Status Indicator, Progress Header를 명시적 package export로 제공한다.
 
 앱과 랜딩 체험판이 함께 쓰는 순수 규칙(에피소드 콘텐츠 디코더 · 판정 · 콘텐츠 주소 · 결정적 섞기)은
 [`packages/episode-core`](packages/episode-core)(`@libitums/episode-core`)에 있다. 소스 그대로 export하는 subpath 다섯이고
-Lynx에 기대지 않는다 ([ADR-0081](docs/adr/0081-web-trial-and-episode-core.md)).
+Lynx에 기대지 않는다 ([ADR-0083](docs/adr/0083-web-trial-and-episode-core.md)).
 
 **번들을 만드는 쪽과 로드하는 쪽이 다르다** (ADR-0002 D3). 화면을 고치면 `apps/mobile`을
 빌드해 호스트로 옮겨야 실기기에 반영된다. iOS는 `pnpm bundle:host`, Android는

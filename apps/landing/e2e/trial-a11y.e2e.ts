@@ -162,11 +162,8 @@ test.describe("TE4 키보드만으로", () => {
     await pressHere(shown(page, "trial-turn-next"), "턴 3 Check 뒤");
     await expectHeadingFocused(page, "epilogue");
     for (let cut = 0; cut < model.epilogue.length; cut += 1) await press("trial-cuts-next");
-    // Episode clear — 배너 제목에 초점, 유지 시간 뒤 예고 제목으로, 예고 Next → 완료 제목.
+    // Episode clear — 배너 제목에 초점, 유지 시간 뒤 곧바로 완료 제목(이메일 칸이 아님).
     await expectHeadingFocused(page, "clear");
-    await expect(page.getByTestId("trial-step-clear")).toHaveAttribute("data-phase", "teaser");
-    await expectFocusedOn(page, shown(page, "trial-clear-teaser-title"), "배너 → 예고 뒤");
-    await press("trial-clear-next");
     await expectHeadingFocused(page, "complete");
     await expect(page.getByTestId("trial-step-complete")).toHaveAttribute("data-result", "passed");
     // 사전 등록 — Tab으로 입력에, 형식 오류는 입력으로 돌아오고, Enter로 보내면 상태 글에 초점.
@@ -270,10 +267,7 @@ test.describe("TE5 axe — 단계마다 위반 0", () => {
       await check("epilogue");
       await passCuts(page, "epilogue", model.epilogue.length);
       await expectStep(page, "clear");
-      await check("clear (banner · 예고 중 그때 보이는 것)");
-      await expect(page.getByTestId("trial-step-clear")).toHaveAttribute("data-phase", "teaser");
-      await check("clear teaser");
-      await tap(page, "trial-clear-next");
+      await check("clear banner");
       await expectStep(page, "complete");
       await check("complete");
       await shown(page, "trial-prereg-email").fill("not-an-email");

@@ -153,7 +153,7 @@ ADR-0005 D3의 결정이고, 그건 그대로다.
 > | `background-only` | `0.0.1` | 분석 어댑터의 스레드 경계 표시. 전이 의존으로만 있으면 vitest가 해석하지 못한다([ADR-0029](0029-product-analytics-posthog.md) D3 · D5) | 앱 코드(`posthog-client.ts`)가 import한다 — ReactLynx 플러그인이 스레드별 별칭을 걸어 메인 스레드 import를 빌드 오류로 막는다 |
 > | `zod` | `4.6.5` | 에피소드 JSON의 **경계 검증** — delivery-2 와이어 스키마(`src/lib/episode-content.schema.ts`, [계약 문서](../specs/episode-content-json-contract.md) §12). `src/`에서 zod를 import하는 파일은 이 하나뿐이다 ⟨2026-10-12⟩ | background 번들, `zod/mini` 서브패스. **현재 산출물 변화 0**(디코더를 참조하는 소비자가 아직 없다) · 임시 import 실측 **+25,679 bytes**(디코더 포함, `main.lynx.bundle` 1,426,482 → 1,452,161). 소비자가 붙는 PR에서 상한(`budget.json` 1,420,000) 인상이 필요하다 |
 >
-> ⟨2026-10-22, 적용 기록⟩ **콘텐츠 와이어 스키마가 공유 패키지 `@libitums/episode-core`로 옮겨졌다**([ADR-0081](0081-web-trial-and-episode-core.md)) —
+> ⟨2026-10-22, 적용 기록⟩ **콘텐츠 와이어 스키마가 공유 패키지 `@libitums/episode-core`로 옮겨졌다**([ADR-0083](0083-web-trial-and-episode-core.md)) —
 > 그래서 `zod` `4.6.5`는 그 패키지의 `dependencies`에도 있다(같은 정확 버전 — 루트 `pnpm test:trial-assets`의 TA4가 어긋남을 잡는다).
 > 앱 `apps/mobile`의 `zod`는 매니페스트 스키마(`src/lib/episode-manifest.schema.ts`)가 쓰므로 남는다. 위 행의 파일 경로와 「이 하나뿐」은 그때의 상태다.
 

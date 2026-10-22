@@ -10,6 +10,7 @@ import type {
   VoiceOutcome,
 } from "./trial-ports.contract";
 import type { PreregLocale, PreregOutcome, TrialPreregPort } from "./trial-prereg.contract";
+import type { TrialSample, TrialSamplesPort } from "./trial-samples.contract";
 
 export type AudioCall =
   | { kind: "unlock"; step: string | null }
@@ -150,3 +151,17 @@ export const heard = (...alternatives: string[]): SpeechOutcome => ({
   alternatives,
 });
 export const failed = (reason: SpeechFailure): SpeechOutcome => ({ kind: "failed", reason });
+
+export type FakeSamples = TrialSamplesPort & { readonly sent: TrialSample[] };
+
+/** 수집 접점 — 받은 시도를 남깁니다. `throwing`이면 받은 뒤 던집니다(던져도 진행해야 한다). */
+export function fakeSamples(throwing = false): FakeSamples {
+  const sent: TrialSample[] = [];
+  return {
+    sent,
+    send: (sample) => {
+      sent.push(sample);
+      if (throwing) throw new Error("samples down");
+    },
+  };
+}

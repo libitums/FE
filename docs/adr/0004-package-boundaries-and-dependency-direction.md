@@ -169,7 +169,7 @@ CI가 **다른 코드**를 실행하면서 둘 다 성공한다. 이런 실패�
   앱의 로직을 쓰고 싶어지면 그때 이 조건으로 돌아온다.
 - D5 · D7 — 내부 참조 없음, 이름은 `@libitums/supabase-functions`(private) 그대로 규칙 안이다.
 
-**2026-10-22 — 앱의 순수 규칙이 첫 `packages/` 이관으로 `@libitums/episode-core`가 됐다** ([ADR-0081](0081-web-trial-and-episode-core.md) D1 ~ D3).
+**2026-10-22 — 앱의 순수 규칙이 첫 `packages/` 이관으로 `@libitums/episode-core`가 됐다** ([ADR-0083](0083-web-trial-and-episode-core.md) D1 ~ D3).
 랜딩 웹 체험판(`apps/landing`의 `/try/`)이 앱과 같은 디코더 · 판정 · 콘텐츠 주소 · 섞기로 u00을 돌린다.
 
 - **D2 판정 — 두 번째 소비자가 실제로 왔다.** 랜딩이 디코더(빌드 때) · 판정 · 주소 · 섞기를 쓴다. 옮긴 범위는 체험판이 쓰는 것과 그것이

@@ -2,7 +2,7 @@
 
 에피소드 콘텐츠를 **읽고**(delivery-2 디코더 · 콘텐츠 주소) 그 문항을 **판정하는**(말하기 · 타일 · 보기 · 통과 기준 · 결정적 섞기)
 순수 규칙의 패키지다. 앱(`apps/mobile`)과 랜딩 웹 체험판(`apps/landing`의 `/try/`)이 같은 함수를 쓴다.
-결정은 [ADR-0081](../../docs/adr/0081-web-trial-and-episode-core.md), 경계 규칙은 [ADR-0004](../../docs/adr/0004-package-boundaries-and-dependency-direction.md)다.
+결정은 [ADR-0083](../../docs/adr/0083-web-trial-and-episode-core.md), 경계 규칙은 [ADR-0004](../../docs/adr/0004-package-boundaries-and-dependency-direction.md)다.
 
 `private: true` — 발행하지 않는다. **빌드하지 않는다** — `exports`가 `src`의 `.ts`를 그대로 가리키고, 소비자의 번들러
 (rspeedy · Vite)와 vitest · tsc(`moduleResolution: bundler`)가 직접 읽는다. `dist` · 별칭 · 선행 빌드가 없다.

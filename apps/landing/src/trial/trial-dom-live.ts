@@ -130,11 +130,6 @@ export function announcementOf(
       return choiceAnnouncement(model, copy, prev, next);
     case "roleplay":
       return turnAnnouncement(model, copy, prev, next);
-    case "clear":
-      // 배너 글은 제목 초점이 읽고, 예고로 넘어갈 때 예고 글을 읽습니다.
-      return prev.step === "clear" && prev.clearPhase === "banner" && next.clearPhase === "teaser"
-        ? joined([page(copy.teaserLabel), page(copy.teaserTitle), page(copy.teaserBody)])
-        : null;
     default:
       return null;
   }

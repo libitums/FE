@@ -71,17 +71,6 @@ function applyCulture(root: HTMLElement, copy: TrialScriptCopy, state: TrialStat
   setAttr(flip, "aria-label", back ? copy.cultureFlipToFront : copy.cultureFlipToBack);
 }
 
-/** Episode clear — 배너 · 예고 중 하나만 보입니다. */
-function applyClear(root: HTMLElement, state: TrialState): void {
-  if (state.step !== "clear") return;
-  const section = stepSectionOf(root, "clear");
-  if (section === null) return;
-  const teaser = state.clearPhase === "teaser";
-  setAttr(section, "data-phase", state.clearPhase);
-  setHidden(byTestId(section, "trial-clear-banner")?.parentElement ?? null, teaser);
-  setHidden(byTestId(section, "trial-clear-teaser"), !teaser);
-}
-
 function applyComplete(root: HTMLElement, copy: TrialScriptCopy, state: TrialState): void {
   if (state.step !== "complete") return;
   const section = stepSectionOf(root, "complete");
@@ -98,15 +87,13 @@ function applyComplete(root: HTMLElement, copy: TrialScriptCopy, state: TrialSta
   }
 }
 
-/** 단계가 바뀌면 그 제목, 컷이 바뀌면 Next, 배너 → 예고면 예고 제목, 롤플레이 안에서는 상태별 다음 조작에 초점을 둡니다. */
+/** 단계가 바뀌면 그 제목(배너 → 완료면 완료 제목), 컷이 바뀌면 Next, 롤플레이 안에서는 상태별 다음 조작에 초점을 둡니다. */
 function moveFocus(root: HTMLElement, prev: TrialState | null, next: TrialState): void {
   if (prev === null) return;
   const section = stepSectionOf(root, next.step);
   if (section === null) return;
   if (prev.step !== next.step) {
     section.querySelector<HTMLElement>("[data-step-heading]")?.focus();
-  } else if (next.step === "clear" && prev.clearPhase !== next.clearPhase) {
-    byTestId(section, "trial-clear-teaser-title")?.focus();
   } else if (prev.cutIndex !== next.cutIndex) {
     byTestId(section, "trial-cuts-next")?.focus();
   } else {
@@ -126,7 +113,6 @@ export function applyTrialState(input: TrialDomInput): void {
   applyChoice(root, model, next);
   applyCulture(root, copy, next);
   if (next.step === "roleplay") applyTurn(root, model, copy, next);
-  applyClear(root, next);
   applyComplete(root, copy, next);
   moveFocus(root, prev, next);
   const announcement = prev === null ? null : announcementOf(root, model, copy, prev, next);

@@ -124,7 +124,7 @@ test.describe("TE1 타일 경로(말하기 없음) — 클릭으로 완료까지
       await tap(page, "trial-turn-next");
     }
 
-    // TE-C1 엔딩 4컷 → Episode clear(배너 → 예고) → 완료.
+    // TE-C1 엔딩 4컷 → Episode clear 배너 「What happens next?」 → 곧바로 완료(사전 등록).
     expect(model.epilogue).toHaveLength(4);
     for (const cut of model.epilogue) {
       await expectStep(page, "epilogue");
@@ -136,13 +136,9 @@ test.describe("TE1 타일 경로(말하기 없음) — 클릭으로 완료까지
     }
 
     await expectStep(page, "clear");
-    await expect(shown(page, "trial-clear-title")).toHaveText("Episode clear!");
-    // 배너는 유지 시간(1.6초) 뒤 스스로 예고로 넘어간다.
-    await expect(page.getByTestId("trial-step-clear")).toHaveAttribute("data-phase", "teaser");
-    await expect(shown(page, "trial-clear-teaser-title")).toHaveText(copy.teaserTitle);
-    await imageLoaded(shown(page, "trial-clear-image"));
-    await tap(page, "trial-clear-next");
-
+    await expect(shown(page, "trial-clear-title")).toHaveText("What happens next?");
+    await expect(page.getByTestId("trial-clear-teaser")).toHaveCount(0);
+    // 배너는 유지 시간(1.6초) 뒤 스스로 완료로 넘어간다 — 그 사이 Next 같은 조작은 없다.
     await expectStep(page, "complete");
     await expect(page.getByTestId("trial-step-complete")).toHaveAttribute("data-result", "passed");
     await expect(page.getByTestId("trial-progress")).toHaveAttribute("aria-valuenow", "7");

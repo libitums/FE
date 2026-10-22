@@ -36,7 +36,7 @@ import TrialVocabCard from "./TrialVocabCard.astro";
 
 type Props = TrialPageProps;
 
-const { language, model, measurementId, prereg } = Astro.props;
+const { language, model, measurementId, prereg, samples } = Astro.props;
 const copies: Record<Language, TrialCopy> = { en: trialEn, ko: trialKo };
 const t = copies[language];
 
@@ -60,9 +60,6 @@ const scriptCopyKeys = [
   "completeBodyMissed",
   "cultureFlipToBack",
   "cultureFlipToFront",
-  "teaserLabel",
-  "teaserTitle",
-  "teaserBody",
   "preregSubmit",
   "preregSending",
   "preregRetry",
@@ -70,7 +67,7 @@ const scriptCopyKeys = [
   "preregFailed",
 ] as const satisfies readonly (keyof TrialScriptCopy)[];
 const copy = Object.fromEntries(scriptCopyKeys.map((key) => [key, t[key]])) as TrialScriptCopy;
-const data: TrialPageData = { model, copy, prereg, locale: language };
+const data: TrialPageData = { model, copy, prereg, locale: language, samples };
 const otherLanguages = languages.filter((code) => code !== language);
 // `</script>`로 끝나지 않게 `<`를 유니코드 이스케이프로 씁니다(JSON.parse는 같은 값을 돌려줍니다).
 const dataJson = JSON.stringify(data).replace(/</g, "\\u003c");
@@ -108,9 +105,10 @@ const dataJson = JSON.stringify(data).replace(/</g, "\\u003c");
       counterpartName={model.counterpartName}
       imageUrl={model.roleplay.imageUrl}
       turns={model.roleplay.turns}
+      collects={samples !== null}
     />
     <TrialCuts t={t} step="epilogue" cuts={model.epilogue} />
-    <TrialClear t={t} imageUrl={model.epilogue[model.epilogue.length - 1]?.imageUrl ?? null} />
+    <TrialClear t={t} />
     <TrialComplete t={t} language={language} prereg={prereg !== null} />
     <div class="trial-sr-only" aria-live="polite" data-testid="trial-live"></div>
     <script

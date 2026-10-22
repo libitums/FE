@@ -27,6 +27,10 @@ const PREREG = {
   endpoint: "https://proj.example.test/rest/v1/pre_registrations",
   apiKey: "sb_publishable_test_key_0000000000",
 };
+const SAMPLES = {
+  endpoint: "https://proj.example.test/rest/v1/trial_speech_samples",
+  apiKey: "sb_publishable_test_key_0000000000",
+};
 
 describe("TrialPage", () => {
   let model: TrialModel;
@@ -38,7 +42,13 @@ describe("TrialPage", () => {
     // en은 사전 등록 설정이 있는 빌드, ko는 없는 빌드(비프로덕션 key 없음)로 굽는다.
     for (const language of ["en", "ko"] as const) {
       const { document } = await render(TrialPage, {
-        props: { language, model, measurementId: "", prereg: language === "en" ? PREREG : null },
+        props: {
+          language,
+          model,
+          measurementId: "",
+          prereg: language === "en" ? PREREG : null,
+          samples: language === "en" ? SAMPLES : null,
+        },
       });
       pages[language] = document;
     }
@@ -93,7 +103,7 @@ describe("TrialPage", () => {
       expect(allByTestId(oneByTestId(root, "trial-step-epilogue"), "trial-cut")).toHaveLength(4);
     });
 
-    it("trial-model JSON = { model, copy, prereg, locale } — copy는 스크립트 문구 26키", () => {
+    it("trial-model JSON = { model, copy, prereg, locale, samples } — copy는 스크립트 문구 23키", () => {
       const script = oneByTestId(page("en"), "trial-model");
       expect(script.tagName).toBe("SCRIPT");
       expect(script.id).toBe("trial-model");
@@ -103,9 +113,11 @@ describe("TrialPage", () => {
         copy: object;
         prereg: unknown;
         locale: unknown;
+        samples: unknown;
       };
-      expect(Object.keys(data).sort()).toEqual(["copy", "locale", "model", "prereg"]);
+      expect(Object.keys(data).sort()).toEqual(["copy", "locale", "model", "prereg", "samples"]);
       expect(data.prereg).toEqual(PREREG);
+      expect(data.samples).toEqual(SAMPLES);
       expect(data.locale).toBe("en");
       expect(data.model).toEqual(JSON.parse(JSON.stringify(model)));
       expect(Object.keys(data.copy).sort()).toEqual([...SCRIPT_COPY_KEYS].sort());
@@ -151,7 +163,8 @@ describe("TrialPage", () => {
         trialKo.progressLabel,
       );
       expect(textOf(oneByTestId(document, "trial-vocab-next"))).toBe(trialKo.gotIt);
-      expect(textOf(oneByTestId(document, "trial-clear-teaser-title"))).toBe(trialKo.teaserTitle);
+      expect(textOf(oneByTestId(document, "trial-clear-title"))).toBe("What happens next?");
+      expect(document.querySelectorAll('[data-testid="trial-clear-teaser"]')).toHaveLength(0);
       expect(textOf(allByTestId(document, "trial-turn-progress")[0])).toBe(
         formatCopy(trialKo.lineProgress, { ordinal: "1", total: String(turns) }),
       );
@@ -166,6 +179,17 @@ describe("TrialPage", () => {
       expect(data.copy).toEqual(Object.fromEntries(SCRIPT_COPY_KEYS.map((k) => [k, trialKo[k]])));
       expect(data.prereg).toBeNull();
       expect(data.locale).toBe("ko");
+    });
+
+    it("UT-S2 수집 설정이 있는 빌드(en)는 턴마다 안내 줄, 없는 빌드(ko)는 줄 없음 · samples null", () => {
+      const saved = allByTestId(page("en"), "trial-turn-saved");
+      expect(saved).toHaveLength(model.roleplay.turns.length);
+      expect(saved.map(textOf)).toEqual(saved.map(() => trialEn.speechSaved));
+      expect(allByTestId(page("ko"), "trial-turn-saved")).toHaveLength(0);
+      const data = JSON.parse(oneByTestId(page("ko"), "trial-model").textContent ?? "") as {
+        samples: unknown;
+      };
+      expect(data.samples).toBeNull();
     });
 
     it("영어 번역 줄은 lang=en, 한국어 학습 글은 lang=ko", () => {

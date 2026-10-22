@@ -59,7 +59,7 @@ describe("체험판 마크업 접근성(a11y r01)", () => {
     model = u00TrialModel();
     for (const language of ["en", "ko"] as const) {
       const { document } = await render(TrialPage, {
-        props: { language, model, measurementId: "", prereg: null },
+        props: { language, model, measurementId: "", prereg: null, samples: null },
       });
       pages[language] = document;
     }

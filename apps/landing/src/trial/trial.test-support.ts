@@ -94,7 +94,7 @@ export function actionsTo(step: TrialStepId, speech: "supported" | "unsupported"
     roleplay,
     epilogue,
     clear,
-    complete: [...clear, next, next],
+    complete: [...clear, next],
   };
   return byStep[step];
 }

@@ -75,7 +75,7 @@ async function speechPath(harness: Harness): Promise<string[]> {
   mark();
   await toClear(harness);
   mark();
-  await tap(harness, "trial-clear-next");
+  await settle();
   mark();
   return steps;
 }
@@ -141,9 +141,10 @@ describe("TI1 말하기 경로 — 처음부터 완료까지", () => {
       await tap(h, "trial-cuts-next");
       expect(cutIndexOf(h)).toBe(expected);
     }
-    await tap(h, "trial-cuts-next");
+    shown(h, "trial-cuts-next").click();
+    await flush();
     expectStep(h, "clear", "7");
-    await tap(h, "trial-clear-next");
+    await tap(h, "trial-clear-banner");
     expectStep(h, "complete", "7");
     expect(shown(h, "trial-step-complete").getAttribute("data-result")).toBe("passed");
     expect(h.errors).toEqual([]);
@@ -217,6 +218,10 @@ describe("TI3 전송 — 말하기 경로의 GA 이벤트 차례", () => {
       step("reply-select", "4"),
       step("culture", "5"),
       step("roleplay", "6"),
+      ...(["1", "2", "3"] as const).map((turn) => ({
+        name: "trial_speech_attempt",
+        params: { turn, outcome: "strict", latency_bucket: "0-2s" },
+      })),
       {
         name: "trial_roleplay_result",
         params: {
@@ -557,34 +562,28 @@ describe("TI-C1 엔딩 4컷 → Episode clear(배너 → 예고) → 완료", ()
     expect(cutIndexOf(harness)).toBe("4");
   }
 
-  const phaseOf = (harness: Harness) =>
-    shown(harness, "trial-step-clear").getAttribute("data-phase");
-
   it.each([true, false])(
-    "엔딩 마지막 Next → 배너(lesson_complete · 초점 제목) → 1600ms 뒤 예고(초점 · 낭독) → Next → 완료 (통과 %s)",
+    "엔딩 마지막 Next → 배너 「What happens next?」(lesson_complete · 초점 제목) → 1600ms 뒤 곧바로 완료(초점 완료 제목) (통과 %s)",
     async (pass) => {
       h = await mountTrial();
       await toLastEpilogueCut(h, pass);
       shown(h, "trial-cuts-next").click();
       await flush();
       expectStep(h, "clear", "7");
-      expect(phaseOf(h)).toBe("banner");
       shown(h, "trial-clear-banner");
-      noneShown(h, "trial-clear-teaser");
       expect(sfxOf(h.audio).at(-1)).toBe("lesson_complete");
       expect(h.doc.activeElement).toBe(shown(h, "trial-clear-title"));
-      expect(textOf(shown(h, "trial-clear-title"))).toBe("Episode clear!");
+      expect(textOf(shown(h, "trial-clear-title"))).toBe("What happens next?");
+      expect(h.root.querySelectorAll('[data-testid="trial-clear-teaser"]')).toHaveLength(0);
       await vi.advanceTimersByTimeAsync(TRIAL_CLEAR_HOLD_MS - 1);
-      expect(phaseOf(h)).toBe("banner");
-      await vi.advanceTimersByTimeAsync(1);
-      expect(phaseOf(h)).toBe("teaser");
-      shown(h, "trial-clear-teaser");
-      noneShown(h, "trial-clear-banner");
-      expect(h.doc.activeElement).toBe(shown(h, "trial-clear-teaser-title"));
-      expect(liveText(h)).toContain(h.data.copy.teaserTitle);
+      expect(stepOf(h)).toBe("clear");
       expect(h.fullscreen.calls).toEqual(["request"]);
-      await tap(h, "trial-clear-next");
+      await vi.advanceTimersByTimeAsync(1);
       expectStep(h, "complete", "7");
+      // 이메일 칸이 아니라 완료 제목 — 모바일 자판이 저절로 올라오지 않게(spec-r3 §10).
+      const heading = shown(h, "trial-step-complete").querySelector("[data-step-heading]");
+      expect(h.doc.activeElement).toBe(heading);
+      expect(h.doc.activeElement).not.toBe(shown(h, "trial-prereg-email"));
       expect(shown(h, "trial-step-complete").getAttribute("data-result")).toBe(
         pass ? "passed" : "failed",
       );
@@ -593,11 +592,12 @@ describe("TI-C1 엔딩 4컷 → Episode clear(배너 → 예고) → 완료", ()
         name: "trial_complete",
         params: { verdict: pass ? "passed" : "failed" },
       });
+      expect(sfxOf(h.audio).at(-1)).toBe("lesson_complete");
       expect(h.errors).toEqual([]);
     },
   );
 
-  it("배너를 누르면 바로 예고 — 남은 유지 시간이 완료로 넘기지 않는다", async () => {
+  it("배너를 누르면 바로 완료 — 남은 유지 시간은 지워지고 이벤트 · 완료는 한 번", async () => {
     h = await mountTrial();
     await toLastEpilogueCut(h, true);
     shown(h, "trial-cuts-next").click();
@@ -605,10 +605,10 @@ describe("TI-C1 엔딩 4컷 → Episode clear(배너 → 예고) → 완료", ()
     await vi.advanceTimersByTimeAsync(500);
     shown(h, "trial-clear-banner").click();
     await flush();
-    expect(phaseOf(h)).toBe("teaser");
+    expect(stepOf(h)).toBe("complete");
     await vi.advanceTimersByTimeAsync(TRIAL_CLEAR_HOLD_MS * 2);
-    expect(stepOf(h)).toBe("clear");
-    expect(phaseOf(h)).toBe("teaser");
+    expect(stepOf(h)).toBe("complete");
+    expect(h.sent.filter((event) => event.name === "trial_complete")).toHaveLength(1);
   });
 
   it("엔딩 4컷 글이 차례로 — 3 · 4는 「누구였을까?」 · 「여행은 이제 시작이다」 독백(음성 없음)", async () => {

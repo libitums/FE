@@ -1,5 +1,5 @@
 // 체험판 흐름의 상태 · 행동 · 파생 — 전부 순수입니다.
-import type { AnswerResult, PassVerdict } from "@libitums/episode-core/judge";
+import type { AnswerResult, PassVerdict, SpokenJudgement } from "@libitums/episode-core/judge";
 import type { TrialModel } from "./trial-model.contract";
 
 export type TrialStepId =
@@ -15,9 +15,6 @@ export type TrialStepId =
 
 /** 이탈 측정에 쓰는 단계 — 표지가 없어 모든 단계다(prologue는 첫 탭 `begin`에서 닿는다). */
 export type TrialFunnelStep = TrialStepId;
-
-/** Episode clear 장면의 두 자리 — 배너(유지 시간 · 탭) 뒤 예고. */
-export type TrialClearPhase = "banner" | "teaser";
 
 /** 브라우저 말하기 — 생성자 유무로 시작, 거부되면 denied(그 뒤 턴은 타일). */
 export type SpeechAvailability = "supported" | "unsupported" | "denied";
@@ -38,6 +35,8 @@ export type TrialTurnState = {
   readonly verdict: AnswerResult | null;
   readonly hintShown: boolean;
   readonly notice: TurnNotice;
+  /** 말하기 judged(들은 것이 있을 때)의 발음 기준 판정 — 그 밖에는 null. 측정 · 수집이 읽는다. */
+  readonly spoken: SpokenJudgement | null;
 };
 
 export type TurnRecord = { readonly result: AnswerResult; readonly mode: TurnMode };
@@ -60,7 +59,6 @@ export type TrialState = {
   readonly cutIndex: number;
   /** 첫 탭(begin) 전이면 false — 소리 · 이벤트가 그때 시작한다. */
   readonly begun: boolean;
-  readonly clearPhase: TrialClearPhase;
   readonly choice: TrialChoiceState;
   readonly cultureFace: "front" | "back";
   readonly speech: SpeechAvailability;

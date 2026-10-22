@@ -65,6 +65,11 @@ const step = (name: string, ordinal: string): GaEvent => ({
   name: "trial_step",
   params: { step: name, ordinal },
 });
+/** 보낼 때 접점이 붙이는 공통 속성 — 데스크톱 Chrome은 desktop, Pixel 7 Chrome은 android-chrome. */
+const browserOfProject = () =>
+  test.info().project.name.endsWith("mobile") ? "android-chrome" : "desktop";
+const withBrowser = (list: readonly GaEvent[]): GaEvent[] =>
+  list.map((event) => ({ ...event, params: { ...event.params, browser: browserOfProject() } }));
 const hangul = /[ᄀ-ᇿ㄰-㆏가-힯]/;
 
 test.describe("체험판 — 측정 ID가 있는 빌드", () => {
@@ -106,6 +111,10 @@ test.describe("체험판 — 측정 ID가 있는 빌드", () => {
       step("reply-select", "4"),
       step("culture", "5"),
       step("roleplay", "6"),
+      ...(["1", "2", "3"] as const).map((turn): GaEvent => ({
+        name: "trial_speech_attempt",
+        params: { turn, outcome: "strict", latency_bucket: "0-2s" },
+      })),
       {
         name: "trial_roleplay_result",
         params: {
@@ -121,7 +130,7 @@ test.describe("체험판 — 측정 ID가 있는 빌드", () => {
       step("complete", "9"),
       { name: "trial_complete", params: { verdict: "passed" } },
     ];
-    await expect.poll(() => trialEvents(page)).toEqual(expected);
+    await expect.poll(() => trialEvents(page)).toEqual(withBrowser(expected));
     const all = await events(page);
     expect(all.map((event) => event.name).filter((name) => !name.startsWith("trial_"))).toEqual([]);
     for (const event of all) expect(JSON.stringify(event.params)).not.toMatch(hangul);
@@ -139,29 +148,31 @@ test.describe("체험판 — 측정 ID가 있는 빌드", () => {
     await passEnding(page, model);
     await expect
       .poll(() => trialEvents(page))
-      .toEqual([
-        { name: "trial_start", params: { speech: "unsupported" } },
-        step("prologue", "1"),
-        step("vocab", "2"),
-        step("image-match", "3"),
-        step("reply-select", "4"),
-        step("culture", "5"),
-        step("roleplay", "6"),
-        {
-          name: "trial_roleplay_result",
-          params: {
-            verdict: "passed",
-            correct: "3",
-            by_speech: "0",
-            by_tiles: "3",
-            speech: "unsupported",
+      .toEqual(
+        withBrowser([
+          { name: "trial_start", params: { speech: "unsupported" } },
+          step("prologue", "1"),
+          step("vocab", "2"),
+          step("image-match", "3"),
+          step("reply-select", "4"),
+          step("culture", "5"),
+          step("roleplay", "6"),
+          {
+            name: "trial_roleplay_result",
+            params: {
+              verdict: "passed",
+              correct: "3",
+              by_speech: "0",
+              by_tiles: "3",
+              speech: "unsupported",
+            },
           },
-        },
-        step("epilogue", "7"),
-        step("clear", "8"),
-        step("complete", "9"),
-        { name: "trial_complete", params: { verdict: "passed" } },
-      ]);
+          step("epilogue", "7"),
+          step("clear", "8"),
+          step("complete", "9"),
+          { name: "trial_complete", params: { verdict: "passed" } },
+        ]),
+      );
     for (const event of await events(page))
       expect(JSON.stringify(event.params)).not.toMatch(hangul);
   });
@@ -196,11 +207,58 @@ test.describe("체험판 — 측정 ID가 있는 빌드", () => {
     await expect(page.getByTestId("trial-prereg")).toHaveAttribute("data-state", "done");
     await expect
       .poll(async () => (await events(page)).filter((event) => event.name === "trial_preregister"))
-      .toEqual([{ name: "trial_preregister", params: { status: "submitted" } }]);
+      .toEqual(withBrowser([{ name: "trial_preregister", params: { status: "submitted" } }]));
     const all = JSON.stringify(await events(page));
     expect(all).not.toContain("@");
     expect(all).not.toContain("ga.check");
     expect(all).not.toContain("trial_store_click");
+  });
+});
+
+test.describe("GT4 나가기 · 시도 — 측정 ID가 있는 빌드", () => {
+  let seen: Watch;
+
+  test.beforeEach(async ({ page }) => {
+    seen = await watch(page);
+  });
+
+  test.afterEach(() => {
+    expect(seen.errors).toEqual([]);
+  });
+
+  test("발음 기준으로만 맞은 시도는 outcome lenient · 나가기는 trial_exit{step} 하나(한글 · 들은 글 없음)", async ({
+    page,
+  }) => {
+    await withFakeSpeech(page);
+    await openTrial(page);
+    const { model } = await pageData(page);
+    await playToRoleplay(page, model);
+    await say(page, { heard: ["안녕하세요 네 처음 이에요"] });
+    await tap(page, "trial-turn-speak");
+    await expect(shown(page, "trial-turn-reply")).toHaveAttribute("data-verdict", "correct");
+    await page.evaluate(() => {
+      document.addEventListener("click", (event) => {
+        if ((event.target as Element).closest('[data-testid="trial-exit"]')) event.preventDefault();
+      });
+    });
+    await page.getByTestId("trial-exit").click();
+    await expect
+      .poll(async () =>
+        (await events(page)).filter((event) =>
+          ["trial_speech_attempt", "trial_exit"].includes(event.name),
+        ),
+      )
+      .toEqual(
+        withBrowser([
+          {
+            name: "trial_speech_attempt",
+            params: { turn: "1", outcome: "lenient", latency_bucket: "0-2s" },
+          },
+          { name: "trial_exit", params: { step: "roleplay" } },
+        ]),
+      );
+    const all = JSON.stringify(await events(page));
+    expect(all).not.toMatch(hangul);
   });
 });
 

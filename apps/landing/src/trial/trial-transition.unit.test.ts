@@ -50,11 +50,14 @@ describe("trialTransitionOf", () => {
     expect(transitionOf(lastJudged, next)).toBe("dream");
   });
 
-  it("TT4 clear banner → teaser는 dream", () => {
-    expect(transitionOf(stateAt("clear", model()), next)).toBe("dream");
+  it("TT4 clear(배너) → complete(사전 등록)는 dream", () => {
+    const m = model();
+    const banner = stateAt("clear", m);
+    expect(reduceTrial(banner, next, m).step).toBe("complete");
+    expect(transitionOf(banner, next)).toBe("dream");
   });
 
-  it("TT5 학습 단계 사이 · prologue → vocab · epilogue → clear · clear → complete는 null", () => {
+  it("TT5 학습 단계 사이 · prologue → vocab · epilogue → clear · complete 안은 null", () => {
     const m = model();
     const lastPrologue = run(stateAt("prologue", m), [next, next, next, next, next], m);
     expect(transitionOf(lastPrologue, next)).toBeNull();
@@ -63,7 +66,7 @@ describe("trialTransitionOf", () => {
     expect(transitionOf(judged, next)).toBeNull();
     expect(transitionOf(stateAt("culture", m), next)).toBeNull();
     expect(transitionOf(run(stateAt("epilogue", m), [next, next, next], m), next)).toBeNull();
-    expect(transitionOf(run(stateAt("clear", m), [next], m), next)).toBeNull();
+    expect(transitionOf(stateAt("complete", m), next)).toBeNull();
   });
 
   it("TT6 begin · 같은 참조 · 같은 단계 안 다른 전이는 null", () => {

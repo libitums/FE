@@ -15,14 +15,17 @@ import {
   type FakeAudio,
   type FakeFullscreen,
   type FakePrereg,
+  type FakeSamples,
   type FakeSpeech,
   fakeAudio,
   fakeFullscreen,
   fakePrereg,
+  fakeSamples,
   fakeSpeech,
 } from "./trial-fakes.test-support";
 import type { SpeechOutcome, TrialController, VoiceOutcome } from "./trial-ports.contract";
 import type { TrialPreregConfig } from "./trial-prereg.contract";
+import type { TrialSamplesConfig } from "./trial-samples.contract";
 import { u00TrialModel } from "./trial.test-support";
 
 const pageHtml = new Map<Language, string>();
@@ -30,6 +33,12 @@ const pageHtml = new Map<Language, string>();
 /** 테스트 빌드의 사전 등록 설정(en 페이지만 — ko는 key 없는 빌드처럼 null). 주소는 어디에도 닿지 않는다. */
 export const TEST_PREREG: TrialPreregConfig = {
   endpoint: "https://proj.example.test/rest/v1/pre_registrations",
+  apiKey: "sb_publishable_test_key_0000000000",
+};
+
+/** 테스트 빌드의 수집 설정(en 페이지만). 주소는 어디에도 닿지 않는다. */
+export const TEST_SAMPLES: TrialSamplesConfig = {
+  endpoint: "https://proj.example.test/rest/v1/trial_speech_samples",
   apiKey: "sb_publishable_test_key_0000000000",
 };
 
@@ -43,6 +52,7 @@ export async function trialPageHtml(language: Language): Promise<string> {
       model: u00TrialModel(),
       measurementId: "",
       prereg: language === "en" ? TEST_PREREG : null,
+      samples: language === "en" ? TEST_SAMPLES : null,
     },
   });
   pageHtml.set(language, html);
@@ -94,6 +104,8 @@ export type MountOptions = {
   readonly reducedMotion?: boolean;
   /** 사전 등록 접점 — 기본은 가짜 접점, false면 없음(null). */
   readonly prereg?: boolean;
+  /** 수집 접점 — 기본은 가짜 접점, false면 없음(null), "throwing"이면 던지는 접점. */
+  readonly samples?: boolean | "throwing";
 };
 
 export type Harness = {
@@ -107,6 +119,7 @@ export type Harness = {
   readonly errors: unknown[];
   readonly fullscreen: FakeFullscreen;
   readonly prereg: FakePrereg;
+  readonly samples: FakeSamples;
   readonly controller: TrialController;
 };
 
@@ -128,6 +141,7 @@ export async function mountTrial(options: MountOptions = {}): Promise<Harness> {
   const sent: AnalyticsEvent[] = [];
   const fullscreen = fakeFullscreen();
   const prereg = fakePrereg();
+  const samples = fakeSamples(options.samples === "throwing");
   const controller = initTrial({
     root,
     model: data.model,
@@ -139,8 +153,24 @@ export async function mountTrial(options: MountOptions = {}): Promise<Harness> {
     fullscreen,
     prereg: options.prereg === false ? null : prereg,
     locale: data.locale,
+    samples: options.samples === false ? null : samples,
+    // 가짜 시계의 Date.now — 시도 시간을 시계를 돌려 잰다.
+    now: () => Date.now(),
   });
-  return { window, doc, root, data, audio, speech, sent, errors, fullscreen, prereg, controller };
+  return {
+    window,
+    doc,
+    root,
+    data,
+    audio,
+    speech,
+    sent,
+    errors,
+    fullscreen,
+    prereg,
+    samples,
+    controller,
+  };
 }
 
 export function unmount(harness: Harness | undefined): void {
@@ -212,13 +242,15 @@ export async function tileTurn(h: Harness, placed: readonly number[]): Promise<v
   await tap(h, "trial-turn-check");
 }
 
-/** 엔딩 컷 넷을 넘겨 Episode clear로(시계를 돌리므로 배너는 유지 시간이 지나 예고에 서 있다). */
+/** 엔딩 컷 넷을 넘겨 Episode clear 배너에 선다(마지막 컷은 시계를 돌리지 않아 배너 유지 시간 전이다). */
 export async function toClear(h: Harness): Promise<void> {
-  for (let cut = 0; cut < 4; cut += 1) await tap(h, "trial-cuts-next");
+  for (let cut = 0; cut < 3; cut += 1) await tap(h, "trial-cuts-next");
+  shown(h, "trial-cuts-next").click();
+  await flush();
 }
 
-/** 엔딩 컷 넷 → Episode clear(배너 → 예고) → 예고 Next → 완료. */
+/** 엔딩 컷 넷 → Episode clear 배너 → 유지 시간 뒤 곧바로 완료(움직임이 끝날 때까지). */
 export async function finishEpilogue(h: Harness): Promise<void> {
   await toClear(h);
-  await tap(h, "trial-clear-next");
+  await settle();
 }

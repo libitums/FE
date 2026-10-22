@@ -229,7 +229,7 @@ u01 음성 6개는 모두 3초 미만이다(1.09 ~ 2.30 s). u02 · u03의 `d-01`
 
 ### 2026-10-22 — 웹 체험판: 브라우저가 같은 주소 규약으로 버킷 음성을 받는다
 
-결정을 바꾸지 않는다. 체험판의 결정은 [ADR-0081](0081-web-trial-and-episode-core.md)이 진다. 이 문서에 닿는 자리만 적는다.
+결정을 바꾸지 않는다. 체험판의 결정은 [ADR-0083](0083-web-trial-and-episode-core.md)이 진다. 이 문서에 닿는 자리만 적는다.
 
 - **D2의 id 검사 · 주소 결합이 패키지로 옮겨졌다** — `lib/content-audio.ts` 전부와 `contentBaseUrl` · `resolveContentUrlSafe`가 `@libitums/episode-core/content-url`에 있고 앱의 옛 경로는 재수출이다(동작 변경 0).
 - **랜딩 체험판이 같은 함수로 같은 주소를 만든다** — `<base>audio/<id>.m4a`, 기준 주소는 빌드 env `PUBLIC_SUPABASE_URL`(앱과 같은 이름). 주소는 빌드 때 페이지 모델에 박힌다.

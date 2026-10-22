@@ -152,19 +152,17 @@ describe("trialEventsOf", () => {
       { name: "trial_step", params: { step: "clear", ordinal: "8" } },
     ]);
     const banner = stateAt("clear", model);
-    expect(eventsOf(banner, next, model)).toEqual([]);
-    const teaser = run(banner, [next], model);
-    expect(eventsOf(teaser, next, model)).toEqual([
+    expect(eventsOf(banner, next, model)).toEqual([
       { name: "trial_step", params: { step: "complete", ordinal: "9" } },
       { name: "trial_complete", params: { verdict: "passed" } },
     ]);
-    const failedTeaser = run(
+    const failedBanner = run(
       stateAt("roleplay", model, "unsupported"),
-      [...failingTiles(), next, next, next, next, next],
+      [...failingTiles(), next, next, next, next],
       model,
     );
-    expect(failedTeaser).toMatchObject({ step: "clear", clearPhase: "teaser" });
-    expect(eventsOf(failedTeaser, next, model)).toEqual([
+    expect(failedBanner).toMatchObject({ step: "clear" });
+    expect(eventsOf(failedBanner, next, model)).toEqual([
       { name: "trial_step", params: { step: "complete", ordinal: "9" } },
       { name: "trial_complete", params: { verdict: "failed" } },
     ]);

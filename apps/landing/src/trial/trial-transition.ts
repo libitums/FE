@@ -12,13 +12,6 @@ export const trialTransitionOf: TrialTransitionOf = (prev, next, model) => {
     return wake ? "wake" : "dream";
   }
   if (prev.step === "roleplay" && next.step === "epilogue") return "dream";
-  if (
-    prev.step === "clear" &&
-    next.step === "clear" &&
-    prev.clearPhase === "banner" &&
-    next.clearPhase === "teaser"
-  ) {
-    return "dream";
-  }
+  if (prev.step === "clear" && next.step === "complete") return "dream";
   return null;
 };

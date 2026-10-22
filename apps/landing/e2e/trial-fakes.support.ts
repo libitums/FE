@@ -38,19 +38,27 @@ export async function routeSound(page: Page, mode: "ok" | "missing" = "ok"): Pro
   const log: SoundLog = { voice: [], sfx: [] };
   const body = silentWav();
   await page.route(`${supabaseUrl}/**`, (route) =>
-    mode === "ok"
+    // PostgREST(사전 등록 · 인식 글자 수집)는 소리가 아니다 — CORS 사전 요청 · 201로 조용히 받는다.
+    // 요청을 세어 보는 테스트는 그 뒤에 routePrereg · routeSamples를 따로 건다(나중에 건 route가 먼저).
+    new URL(route.request().url()).pathname.startsWith("/rest/v1/")
       ? route.fulfill({
-          status: 200,
-          contentType: "audio/mp4",
-          headers: { "access-control-allow-origin": "*" },
-          body,
+          status: route.request().method() === "OPTIONS" ? 204 : 201,
+          headers: CORS,
+          body: "",
         })
-      : route.fulfill({
-          status: 404,
-          contentType: "text/plain",
-          headers: { "access-control-allow-origin": "*" },
-          body: "not found",
-        }),
+      : mode === "ok"
+        ? route.fulfill({
+            status: 200,
+            contentType: "audio/mp4",
+            headers: { "access-control-allow-origin": "*" },
+            body,
+          })
+        : route.fulfill({
+            status: 404,
+            contentType: "text/plain",
+            headers: { "access-control-allow-origin": "*" },
+            body: "not found",
+          }),
   );
   page.on("request", (request) => {
     const url = new URL(request.url());
@@ -195,6 +203,36 @@ export async function routePrereg(
       headers: { ...CORS, "content-type": "application/json" },
       body: status === 409 ? '{"code":"23505","message":"duplicate key value"}' : "",
     });
+  });
+  return log;
+}
+
+export interface SamplesRequest {
+  headers: Record<string, string>;
+  body: Record<string, unknown>;
+}
+
+/**
+ * 인식 글자 수집(PostgREST `POST /rest/v1/trial_speech_samples`)을 가로채 `status`로 답합니다(`"abort"`는 끊김).
+ * 실제 주소 · 실제 DB에 닿지 않습니다. 보낸 요청(POST만)을 기록합니다.
+ */
+export async function routeSamples(
+  page: Page,
+  status: number | "abort" = 201,
+): Promise<SamplesRequest[]> {
+  const log: SamplesRequest[] = [];
+  await page.route(`${supabaseUrl}/rest/v1/trial_speech_samples`, async (route) => {
+    const request = route.request();
+    if (request.method() === "OPTIONS") {
+      await route.fulfill({ status: 204, headers: CORS, body: "" });
+      return;
+    }
+    log.push({
+      headers: request.headers(),
+      body: JSON.parse(request.postData() ?? "null") as Record<string, unknown>,
+    });
+    if (status === "abort") await route.abort("failed");
+    else await route.fulfill({ status, headers: CORS, body: "" });
   });
   return log;
 }

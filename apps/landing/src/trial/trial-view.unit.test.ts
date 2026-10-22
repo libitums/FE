@@ -199,7 +199,7 @@ describe("trialSfxOf", () => {
     expect(sfxOf(failLast, next)).toBeNull();
   });
 
-  it("TV-R2 epilogue → clear는 lesson_complete, epilogue 안 · banner → teaser · clear → complete는 null", () => {
+  it("TV-R2 epilogue → clear는 lesson_complete, epilogue 안 · clear → complete는 null", () => {
     const m = model();
     const epilogue = stateAt("epilogue", m);
     expect(sfxOf(epilogue, next)).toBeNull();
@@ -207,8 +207,8 @@ describe("trialSfxOf", () => {
     expect(lastCut).toMatchObject({ step: "epilogue", cutIndex: 3 });
     expect(sfxOf(lastCut, next)).toBe("lesson_complete");
     const banner = stateAt("clear", m);
+    expect(reduceTrial(banner, next, m).step).toBe("complete");
     expect(sfxOf(banner, next)).toBeNull();
-    expect(sfxOf(reduceTrial(banner, next, m), next)).toBeNull();
   });
 });
 

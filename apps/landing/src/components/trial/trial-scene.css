@@ -22,7 +22,6 @@
 }
 
 /* 발 그늘(웹 추가) — 밝은 그림에서도 아래 글 · 링크가 AA를 넘게 받칩니다. */
-.trial-clear__teaser::after,
 .trial-scene--talk::after {
   position: absolute;
   inset: auto 0 0;

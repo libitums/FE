@@ -97,7 +97,7 @@
 
 ## 적용 기록 ⟨2026-10-22 — 웹 체험판 · 공유 패키지⟩
 
-결정은 [ADR-0081](0081-web-trial-and-episode-core.md) D2 · D8.
+결정은 [ADR-0083](0083-web-trial-and-episode-core.md) D2 · D8.
 
 - **D3의 판정 정본이 패키지로 옮겨졌다** — `judgeRoleplayReply`는 이제 `@libitums/episode-core/judge`에 있고, `screens/roleplay-story/roleplay-story.ts`는 그것을 재수출한다(몸은 글자 그대로, 동작 변경 0). 타일 답(`composeTileReply` · `canCheckTiles` · `judgeTileReply`)과 통과 기준(`catalogPassCriterion` · `judgeAssessment`)도 같은 subpath이고, 최종 테스트 · 평가의 옛 함수는 시그니처 그대로 위임한다.
 - **웹은 같은 판정을 쓴다** — 랜딩 체험판의 u00 롤플레이 3턴이 Web Speech(`ko-KR`)의 **대안 셋** 가운데 `judgeRoleplayReply`가 맞다고 하는 첫 것을 고른다(앱은 인식 결과 하나). 인식이 없거나 · 거부 · 실패 · `Can't speak now`이면 **같은 턴을 타일로** 판정한다 — 앱 롤플레이의 「판정 없이 넘김」과 다르다. 체험판의 통과 기준은 앱 최종 테스트와 같은 `catalogPassCriterion(3)` = 2이고, 결과와 무관하게 엔딩으로 간다(사용자 결정 2026-10-22).
