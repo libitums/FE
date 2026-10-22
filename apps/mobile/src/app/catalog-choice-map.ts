@@ -2,8 +2,12 @@
 
 import type { LearningItem, Option, Text } from "../lib/episode-content.model";
 import type { QuestionAudio } from "../lib/question-audio";
+import { clozeRomanizationOf, type TextSpan } from "../lib/romanization-segments";
 import type { ListeningQuestion } from "../screens/listening/listening-questions";
-import type { WordChoiceQuestion } from "../screens/word-choice/word-choice-questions";
+import type {
+  WordChoiceCulture,
+  WordChoiceQuestion,
+} from "../screens/word-choice/word-choice-questions";
 import type {
   CatalogItemPort,
   CatalogLessonItemPort,
@@ -55,7 +59,7 @@ export function listeningItemOf(
     audio,
     ...optionalField("instruction", instructionOf(port, item.prompt)),
     // 최소 대립쌍은 로마자가 곧 정답(소리 차이)이라 답하기 전에 보이지 않습니다.
-    ...(item.type === "LISTEN_SELECT" ? { romanizationHint: true } : {}),
+    ...(item.type === "LISTEN_SELECT" ? { beforeAnswer: "romanization" as const } : {}),
   };
   let question: ListeningQuestion;
   if (isPair(choices)) {
@@ -78,9 +82,15 @@ type WordChoiceParts = {
   readonly choiceTranslations?: readonly string[] | undefined;
   /** 소리가 있으면 싣습니다(없으면 키 자체를 싣지 않습니다). */
   readonly audio?: QuestionAudio | null | undefined;
+  /** 로마자 줄 안 정답 자리입니다(빈칸 채우기). */
+  readonly romanizationEmphasis?: TextSpan | undefined;
+  /** 있으면 `prompt.en` 대신 서는 지시문입니다. */
+  readonly instruction?: string | undefined;
+  /** 문화 확인이면 장면 · 해설입니다. */
+  readonly culture?: WordChoiceCulture | undefined;
 };
 
-function wordChoiceItem(
+export function wordChoiceItem(
   item: LearningItem,
   port: CatalogItemPort,
   promptText: Text,
@@ -97,8 +107,12 @@ function wordChoiceItem(
     answerIndex,
     ...optionalField("romanization", parts.romanization),
     ...optionalField("translation", parts.translation),
-    ...optionalField("instruction", instructionOf(port, promptText)),
+    ...optionalField("instruction", parts.instruction ?? instructionOf(port, promptText)),
     ...audioField(parts.audio ?? null),
+    ...(parts.romanizationEmphasis === undefined
+      ? {}
+      : { romanizationEmphasis: parts.romanizationEmphasis }),
+    ...(parts.culture === undefined ? {} : { culture: parts.culture }),
     ...(parts.choiceTranslations !== undefined && parts.choiceTranslations.length === choices.length
       ? { choiceTranslations: parts.choiceTranslations }
       : {}),
@@ -144,9 +158,15 @@ export function clozeItemOf(item: ItemOf<"CLOZE">, port: CatalogItemPort): Catal
   const answer = item.answers[0] === undefined ? "" : koOf(port, item.answers[0].ko);
   const order = shuffledOrder(`${port.episodeId}/${item.id}`, tiles.length);
   const choices = order.map((index) => tiles[index] ?? "");
+  const contextRoman = latinOf(port, item.context.roman);
+  const filled =
+    contextRoman === undefined
+      ? undefined
+      : clozeRomanizationOf(contextRoman, latinOf(port, item.answers[0]?.roman));
   return wordChoiceItem(item, port, item.prompt, {
     prompt: koOf(port, item.context.ko),
-    romanization: latinOf(port, item.context.roman),
+    romanization: filled?.text,
+    romanizationEmphasis: filled?.emphasis,
     translation: englishOf(port, item.context.en),
     choices,
     answerIndex: answer === "" ? -1 : choices.indexOf(answer),
@@ -228,30 +248,4 @@ export function pictureChoiceItemOf(
     picture: { url, answerRomanization: latinOf(port, correct?.roman) ?? null },
   };
   return { kind: "word-choice", itemId: item.id, question };
-}
-
-/** 보기 번역입니다 — 모든 보기에 영어가 있을 때만 싣습니다. */
-function choiceTranslationsOf(
-  port: CatalogItemPort,
-  options: readonly Option[],
-): readonly string[] | undefined {
-  const translations = options.map((option) => englishOf(port, option.en));
-  return translations.every((value) => value !== undefined)
-    ? translations.map((value) => value ?? "")
-    : undefined;
-}
-
-/** 문화 확인(CULTURE_CHECK)입니다 — 질문 · 보기(콘텐츠 순서) · 보기 번역(전부 있을 때만). */
-export function cultureCheckItemOf(
-  item: ItemOf<"CULTURE_CHECK">,
-  port: CatalogItemPort,
-): CatalogMappedItem {
-  return wordChoiceItem(item, port, item.prompt, {
-    prompt: koOf(port, item.context.ko),
-    romanization: latinOf(port, item.context.roman),
-    translation: englishOf(port, item.context.en),
-    choices: item.options.map((option) => koOf(port, option.ko)),
-    answerIndex: correctIndex(item.options),
-    choiceTranslations: choiceTranslationsOf(port, item.options),
-  });
 }

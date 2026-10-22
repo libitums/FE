@@ -122,7 +122,7 @@ export type CatalogLessonPlan = {
   /** 에피소드 상위 상대 이름(앞뒤 공백 걷음)입니다 — 대화 조립 아바타의 머리글자가 됩니다. */
   readonly counterpartName: string;
   /** 상대 아바타 그림 주소입니다. 에피소드에 아바타가 없으면 `null`입니다. */
-  readonly counterpartAvatarUrl?: string | null;
+  readonly counterpartAvatarUrl: string | null;
   /** 활동마다 문항 ref 묶음입니다(`activities`와 같은 길이 · 같은 묶음). 측정이 문항을 찾는 데 씁니다. */
-  readonly itemRefs?: readonly (readonly CatalogItemRef[])[];
+  readonly itemRefs: readonly (readonly CatalogItemRef[])[];
 };

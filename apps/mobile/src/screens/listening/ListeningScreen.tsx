@@ -218,7 +218,7 @@ export function ListeningActivity({
               sessionOptions={sessionOptions}
               revealed={question !== null && hasAnswered(state)}
               playback={playback}
-              romanizationHint={question.romanizationHint === true}
+              romanizationHint={question.beforeAnswer === "romanization"}
             />
           )}
 

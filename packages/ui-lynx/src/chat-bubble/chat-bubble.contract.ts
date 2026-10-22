@@ -57,7 +57,20 @@ export type ChatBubbleContract = {
   readonly languageTag?: string;
   readonly size: ChatBubbleSize;
   readonly translation?: string;
+  readonly annotation?: ChatBubbleAnnotation;
 };
+
+function annotationOf(props: ChatBubbleProps): ChatBubbleAnnotation | undefined {
+  if (props.annotation === undefined) return undefined;
+  if (props.translation?.trim()) {
+    throw new Error("annotation and translation must not be used together");
+  }
+  const romanization = props.annotation.romanization?.trim();
+  const meaning = props.annotation.meaning?.trim();
+  if (!romanization) throw new Error("annotation romanization must not be empty");
+  if (!meaning) throw new Error("annotation meaning must not be empty");
+  return { romanization, meaning };
+}
 
 function requireVisibleText(value: string, name: "message" | "speaker"): string {
   if (typeof value !== "string" || value.trim().length === 0) {
@@ -80,11 +93,15 @@ export function getChatBubbleContract(props: ChatBubbleProps): ChatBubbleContrac
   const delivery = props.direction === "incoming" ? "default" : (props.delivery ?? "default");
   const deliveryLabel = chatBubbleDeliveryLabels[delivery];
   const translation = props.translation?.trim() || undefined;
+  const annotation = annotationOf(props);
+  const spokenTail = annotation
+    ? `, ${annotation.romanization}, ${annotation.meaning}`
+    : translation
+      ? `, ${translation}`
+      : "";
 
   return {
-    accessibilityLabel: translation
-      ? `${speaker}: ${message}, ${translation}`
-      : `${speaker}: ${message}`,
+    accessibilityLabel: `${speaker}: ${message}${spokenTail}`,
     className: [
       "ui-lynx-chat-bubble",
       `ui-lynx-chat-bubble-${props.direction}`,
@@ -98,5 +115,6 @@ export function getChatBubbleContract(props: ChatBubbleProps): ChatBubbleContrac
     ...(languageTag ? { languageTag } : {}),
     size,
     ...(translation ? { translation } : {}),
+    ...(annotation ? { annotation } : {}),
   };
 }

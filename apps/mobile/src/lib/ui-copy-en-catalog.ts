@@ -95,7 +95,6 @@ export const syllableBuildEn: SyllableBuildCopy = {
 };
 
 export const readAloudEn: ReadAloudCopy = {
-  badge: "Practice",
   matched: (matched, total) => {
     if (matched === total) {
       return total === 1 ? "You said the word." : `You said all ${total} words.`;

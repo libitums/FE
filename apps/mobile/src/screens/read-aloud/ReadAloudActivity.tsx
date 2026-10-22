@@ -31,10 +31,9 @@ import { ReadAloudSentence } from "./ReadAloudSentence";
 
 import "./read-aloud-activity.css";
 
-// 글을 보고 소리 내어 읽는 활동입니다(카탈로그 SHADOW). 채점하지 않습니다 — 판정 배지 자리에 중립 표식
-// `Practice`가 서고, 인식 뒤에는 앞에서부터 맞은 낱말만 칠하며 맞은 수를 한 줄로 알립니다. 완료 카드가
+// 글을 보고 소리 내어 읽는 활동입니다(카탈로그 SHADOW). 채점하지 않습니다 — 인식 뒤에는 앞에서부터 맞은 낱말만 칠하며 맞은 수를 한 줄로 알립니다. 완료 카드가
 // 없습니다: 마지막 문항의 넘김 버튼이 빈 결과와 건너뜀 수를 한 번 올립니다.
-// DOM 순서 = 낭독 순서입니다: 표식 → 문장 → 로마자 → 영어 → 마이크 → 안내 줄 → 버튼.
+// DOM 순서 = 낭독 순서입니다: 문장 → 로마자 → 영어 → 마이크 → 안내 줄 → 버튼.
 export function ReadAloudActivity({
   questions,
   gemCount,
@@ -209,17 +208,6 @@ export function ReadAloudActivity({
           data-phase={phase.kind}
           data-reason={phase.kind === "unavailable" ? phase.reason : undefined}
         >
-          {/* 판정 배지 자리에 서는 중립 표식입니다 — 채점하지 않는 연습임을 처음부터 끝까지 말합니다. */}
-          <view className="read-aloud-activity-badge-slot">
-            {question === undefined ? null : (
-              <view className="read-aloud-activity-badge">
-                <text className="read-aloud-activity-badge-text" data-testid="read-aloud-badge">
-                  {copy.readAloud.badge}
-                </text>
-              </view>
-            )}
-          </view>
-
           {question === undefined ? null : (
             <>
               <ReadAloudSentence question={question} matchedCount={matched} copy={copy} />

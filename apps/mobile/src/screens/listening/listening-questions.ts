@@ -23,8 +23,6 @@ export type ListeningQuestion = {
   // 끕니다). 옵셔널이 아닙니다: `audio?`면 "아직 없는 문항"이 타입에 생깁니다.
   readonly audio: ListenAudio | null;
   readonly instruction?: string;
-  /** 대본이 가려진 동안에도 로마자 줄을 참고로 보일지입니다 — 소리 구별을 묻지 않는 듣고 고르기만 켭니다. */
-  readonly romanizationHint?: boolean;
   /** 답하기 전 대본 자리의 갈래입니다. 없으면 `nothing`입니다. */
   readonly beforeAnswer?: ListeningBeforeAnswer;
 } & (

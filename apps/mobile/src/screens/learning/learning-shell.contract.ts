@@ -255,7 +255,8 @@ export function learningShellSceneClasses(
   };
 }
 
-/** 해설 판의 낭독 이름입니다(제목 + 줄들). 껍데기만 있는 단계입니다. */
+/** 해설 판의 낭독 이름입니다(제목 + 줄들, 빈 줄은 건너뜁니다). */
 export function learningShellFeedbackLabel(feedback: LearningShellFeedback): string {
-  return feedback.title;
+  const lines = feedback.lines.map((line) => line.text.trim()).filter((text) => text !== "");
+  return [feedback.title, ...lines].join(", ");
 }

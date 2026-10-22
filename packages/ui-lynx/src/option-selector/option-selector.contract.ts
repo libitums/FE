@@ -1,6 +1,10 @@
-import { color } from "@libitums/design-tokens";
-
 import { motionClassName, type Motion } from "../motion/motion.contract";
+import {
+  indicatorColorOf,
+  requireText,
+  validateOptions,
+  validateSelectedIds,
+} from "./option-selector.validation";
 
 export type OptionSelectorVariant = "filled" | "outlined" | "outlined-subtle";
 /** 확정 뒤 항목이 보이는 판정입니다(FE 확장). */
@@ -64,10 +68,10 @@ export type OptionSelectorItemContract = {
   readonly icon: string | null;
   /** Selected일 때만 Indicator를 그립니다. svg current-color는 CSS 변수를 읽지 못해 TS token 값을 넘깁니다. */
   readonly indicatorColor: string | null;
-  /** Label 아래 뜻 줄입니다. 없으면 키가 없습니다(계산은 아직 없습니다). */
-  readonly meaning?: string | null;
-  /** 판정입니다. 없으면 키가 없습니다(계산은 아직 없습니다). */
-  readonly feedback?: OptionSelectorFeedbackResult | null;
+  /** Label 아래 뜻 줄입니다. 없으면 null입니다. */
+  readonly meaning: string | null;
+  /** 확정 뒤 판정입니다. 없으면 null입니다. */
+  readonly feedback: OptionSelectorFeedbackResult | null;
 };
 
 export type OptionSelectorContract = {
@@ -94,24 +98,16 @@ export type OptionSelectorSelectionInput = {
   readonly id: string;
 };
 
-const variants = new Set<OptionSelectorVariant>(["filled", "outlined"]);
+const variants = new Set<OptionSelectorVariant>(["filled", "outlined", "outlined-subtle"]);
 const sizes = new Set<OptionSelectorSize>(["s", "m", "l"]);
 const selections = new Set<OptionSelectorSelection>(["single", "multiple"]);
 const commits = new Set<OptionSelectorCommit>(["deferred", "immediate"]);
 const layouts = new Set<OptionSelectorLayout>(["stack", "grid"]);
 const contentLanguages = new Set<OptionSelectorContentLanguage>(["ui", "learning"]);
 
-// Selected·Disabled + Selected의 Label·Indicator 색입니다. 나머지 상태는 Indicator를 그리지 않습니다.
-const indicatorColors = {
-  filled: { selected: color.brand.primary, disabledSelected: color.gray[800] },
-  outlined: { selected: color.fg.brand, disabledSelected: color.fg.disabled },
-  "outlined-subtle": { selected: color.fg.brand, disabledSelected: color.fg.disabled },
-} as const;
-
 /** 옵션 개수의 하한입니다 — 표시 전용(확정) 선택기는 1개도 받습니다. */
 export function minimumOptionCountOf(committed: boolean): 1 | 2 {
-  void committed;
-  return 2;
+  return committed ? 1 : 2;
 }
 
 function requireOption<T extends string>(value: T, allowed: ReadonlySet<T>, name: string): T {
@@ -119,48 +115,6 @@ function requireOption<T extends string>(value: T, allowed: ReadonlySet<T>, name
     throw new Error(`OptionSelector ${name} must be one of ${[...allowed].join(", ")}`);
   }
   return value;
-}
-
-function requireText(value: unknown, name: string): string {
-  const text = typeof value === "string" ? value.trim() : "";
-  if (!text) throw new Error(`OptionSelector ${name} must not be empty`);
-  return text;
-}
-
-function validateOptions(options: readonly OptionSelectorOption[]): void {
-  if (!Array.isArray(options) || options.length < 2) {
-    throw new Error("OptionSelector requires at least 2 options");
-  }
-  const ids = new Set<string>();
-  for (const option of options) {
-    if (typeof option.id !== "string" || !option.id.trim()) {
-      throw new Error("OptionSelector option id must not be empty");
-    }
-    requireText(option.label, "option label");
-    if (ids.has(option.id)) throw new Error("OptionSelector option ids must be unique");
-    ids.add(option.id);
-  }
-}
-
-function validateSelectedIds(
-  options: readonly OptionSelectorOption[],
-  selection: OptionSelectorSelection,
-  selectedIds: readonly string[],
-): void {
-  if (!Array.isArray(selectedIds)) {
-    throw new Error("OptionSelector selectedIds must be an array");
-  }
-  if (selection === "single" && selectedIds.length > 1) {
-    throw new Error("OptionSelector single selection allows at most one selected id");
-  }
-  const known = new Set(options.map((option) => option.id));
-  const seen = new Set<string>();
-  for (const id of selectedIds) {
-    if (!known.has(id))
-      throw new Error("OptionSelector selectedIds must reference existing options");
-    if (seen.has(id)) throw new Error("OptionSelector selectedIds must be unique");
-    seen.add(id);
-  }
 }
 
 /**
@@ -180,6 +134,77 @@ export function nextOptionSelection(input: OptionSelectorSelectionInput): readon
 
 export function isSameOptionSelection(a: readonly string[], b: readonly string[]): boolean {
   return a.length === b.length && a.every((id, index) => id === b[index]);
+}
+
+function accessibilityLabelOf(
+  option: OptionSelectorOption,
+  label: string,
+  meaning: string | null,
+  selected: boolean,
+): string {
+  const explicit = option.accessibilityLabel?.trim();
+  const composed = meaning !== null || option.feedback !== undefined;
+  // 판정이나 뜻을 앱이 이름에 담아 준 항목은 그 이름을 그대로 읽습니다.
+  if (explicit && composed) return explicit;
+  const spoken = explicit || label;
+  if (explicit) return selected ? `${spoken}, selected` : spoken;
+  const tail = option.feedback ?? (selected ? "selected" : null);
+  return [spoken, meaning, tail].filter((part): part is string => part !== null).join(", ");
+}
+
+function itemClassNameOf(
+  feedback: OptionSelectorFeedbackResult | null,
+  state: { readonly selected: boolean; readonly disabled: boolean },
+): string {
+  // 판정이 우선이라 판정 항목은 판정 클래스 하나만 더합니다(Feedback → Disabled → Selected).
+  if (feedback !== null)
+    return `ui-lynx-option-selector-item ui-lynx-option-selector-item-${feedback}`;
+  const { selected, disabled } = state;
+  return [
+    "ui-lynx-option-selector-item",
+    selected ? "ui-lynx-option-selector-item-selected" : undefined,
+    disabled ? "ui-lynx-option-selector-item-disabled" : undefined,
+    // Selected는 Pressed 배경을 쓰지 않으므로 pressable은 Enabled·Unselected에만 붙입니다.
+    !disabled && !selected ? "ui-lynx-option-selector-item-pressable" : undefined,
+  ]
+    .filter((value): value is string => value !== undefined)
+    .join(" ");
+}
+
+function optionItemOf(
+  option: OptionSelectorOption,
+  context: {
+    readonly variant: OptionSelectorVariant;
+    readonly committed: boolean;
+    readonly selected: boolean;
+  },
+): OptionSelectorItemContract {
+  const { variant, committed, selected } = context;
+  const feedback = option.feedback ?? null;
+  const meaning = option.meaning === undefined ? null : option.meaning.trim();
+  const disabled = committed || option.disabled === true || feedback !== null;
+  const label = option.label.trim();
+  const item: OptionSelectorItemContract = {
+    id: option.id,
+    label,
+    icon: option.icon ?? null,
+    selected,
+    disabled,
+    interactive: !disabled,
+    className: itemClassNameOf(feedback, { selected, disabled }),
+    // 선택 여부는 이름 뒤 접미사로 냅니다(ADR-0016 D3). 비선택은 이름만 둡니다.
+    accessibilityLabel: accessibilityLabelOf(option, label, meaning, selected),
+    // traits는 한 값입니다. 확정·비활성 항목은 다시 조작할 수 없어 disabled로 둡니다(ADR-0016 D2·D10).
+    traits: disabled ? "disabled" : "button",
+    indicatorColor: indicatorColorOf({ variant, selected, disabled, feedback }),
+    meaning,
+    feedback,
+  };
+  // 값이 없는 두 칸은 세지 않는 속성으로 둡니다 — 확장을 쓰지 않는 쪽의 항목 모양이 그대로 남습니다.
+  for (const key of ["meaning", "feedback"] as const) {
+    if (item[key] === null) Object.defineProperty(item, key, { value: null, enumerable: false });
+  }
+  return item;
 }
 
 export function getOptionSelectorContract(
@@ -205,44 +230,14 @@ export function getOptionSelectorContract(
   if (selection === "multiple" && commit === "immediate") {
     throw new Error("OptionSelector multiple selection requires deferred commit");
   }
-  validateOptions(props.options);
+  const committed = props.committed === true;
+  validateOptions(props.options, variant, minimumOptionCountOf(committed));
   validateSelectedIds(props.options, selection, props.selectedIds);
 
-  const committed = props.committed === true;
   const selectedSet = new Set(props.selectedIds);
-  const items = props.options.map((option): OptionSelectorItemContract => {
-    const selected = selectedSet.has(option.id);
-    const disabled = committed || option.disabled === true;
-    const label = option.label.trim();
-    const spokenLabel = option.accessibilityLabel?.trim() || label;
-    // Selected는 Pressed 배경을 쓰지 않으므로 pressable은 Enabled·Unselected에만 붙입니다.
-    const pressable = !disabled && !selected;
-    return {
-      id: option.id,
-      label,
-      icon: option.icon ?? null,
-      selected,
-      disabled,
-      interactive: !disabled,
-      className: [
-        "ui-lynx-option-selector-item",
-        selected ? "ui-lynx-option-selector-item-selected" : undefined,
-        disabled ? "ui-lynx-option-selector-item-disabled" : undefined,
-        pressable ? "ui-lynx-option-selector-item-pressable" : undefined,
-      ]
-        .filter((value): value is string => value !== undefined)
-        .join(" "),
-      // 선택 여부는 이름 뒤 접미사로 냅니다(ADR-0016 D3). 비선택은 이름만 둡니다.
-      accessibilityLabel: selected ? `${spokenLabel}, selected` : spokenLabel,
-      // traits는 한 값입니다. 확정·비활성 항목은 다시 조작할 수 없어 disabled로 둡니다(ADR-0016 D2·D10).
-      traits: disabled ? "disabled" : "button",
-      indicatorColor: selected
-        ? disabled
-          ? indicatorColors[variant].disabledSelected
-          : indicatorColors[variant].selected
-        : null,
-    };
-  });
+  const items = props.options.map((option) =>
+    optionItemOf(option, { variant, committed, selected: selectedSet.has(option.id) }),
+  );
 
   const columns = layout === "grid" ? 2 : 1;
   const rows: OptionSelectorItemContract[][] = [];

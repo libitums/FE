@@ -10,11 +10,21 @@ export type CatalogPlannedItem = {
   readonly itemType: CatalogItemRef["itemType"];
 };
 
-/** 활동별 문항 ref 묶음입니다(건너뜀 빠짐 · 같은 학습형 연속이 한 묶음). 껍데기만 있는 단계입니다. */
+/** 활동별 문항 ref 묶음입니다(건너뜀 빠짐 · 같은 학습형 연속이 한 묶음). `catalogActivitiesOf`와 같은 규칙입니다. */
 export function catalogActivityItemRefsOf(
-  _planned: readonly CatalogPlannedItem[],
+  planned: readonly CatalogPlannedItem[],
 ): readonly (readonly CatalogItemRef[])[] {
-  return [];
+  const groups: CatalogItemRef[][] = [];
+  let lastForm: CatalogActivity["form"] | null = null;
+  for (const { mapped, itemType } of planned) {
+    if (mapped.kind === "skipped") continue;
+    const group = groups[groups.length - 1];
+    const ref: CatalogItemRef = { itemId: mapped.itemId, itemType };
+    if (group !== undefined && lastForm === mapped.kind) group.push(ref);
+    else groups.push([ref]);
+    lastForm = mapped.kind;
+  }
+  return groups;
 }
 
 /** 학습형이 같으면 앞 활동에 잇고, 아니면 `null`입니다. */

@@ -23,6 +23,7 @@ import {
   toWord,
 } from "./episode-content.normalize";
 import { byKey, resolvePairs, resolveTurnOrder, toItem } from "./episode-content.items";
+import { counterpartAvatarPathOf } from "./episode-avatar";
 
 export type * from "./episode-content.model";
 
@@ -172,6 +173,15 @@ function completionOf(completion: DeliveryCompletion | undefined): EpisodeComple
 function collectWarnings(wire: DeliveryEpisodeV2): DecodeIssue[] {
   const known = new Set([...wire.words.map((w) => w.id), ...wire.patterns.map((p) => p.id)]);
   const warnings: DecodeIssue[] = [];
+  if (counterpartAvatarPathOf(wire.counterpart_avatar).kind === "invalid") {
+    warnings.push(
+      issue(
+        "invalid-asset-path",
+        "counterpart_avatar",
+        "counterpart_avatar must be a bucket-relative image path",
+      ),
+    );
+  }
   wire.steps.forEach((step, i) => {
     step.items.forEach((item, j) => {
       // 와이어의 `ref`만 읽습니다 — 문항 전체를 변환(toItem)할 이유가 없습니다. 빈 문자열은 디코더 규칙대로
@@ -194,6 +204,7 @@ function collectWarnings(wire: DeliveryEpisodeV2): DecodeIssue[] {
 function toEpisode(wire: DeliveryEpisodeV2, rpIndex: number): Episode {
   const rp = wire.steps[rpIndex];
   const learning = wire.steps.filter((_, i) => i !== rpIndex).sort(byKey((step) => step.order));
+  const avatar = counterpartAvatarPathOf(wire.counterpart_avatar);
   return {
     id: wire.unit_id,
     schema: wire.schema,
@@ -203,6 +214,7 @@ function toEpisode(wire: DeliveryEpisodeV2, rpIndex: number): Episode {
     timeOfDay: wire.time_of_day,
     place: wire.place,
     counterpart: wire.counterpart,
+    ...maybe("counterpartAvatar", avatar.kind === "path" ? avatar.path : undefined),
     prologue: [...wire.pre_cuts].sort(byKey((cut) => cut.index)).map(toCut),
     dialogue: [...wire.dialogue].sort(byKey((line) => line.seq)).map(toDialogueLine),
     units: learning.map((step) => ({

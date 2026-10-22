@@ -14,7 +14,7 @@ import { normalizeStoryMotion } from "../story-motion";
 import type { OptionSelectorStoryArgs } from "../story-types";
 import "./story-canvas.css";
 
-const variants = new Set<OptionSelectorVariant>(["filled", "outlined"]);
+const variants = new Set<OptionSelectorVariant>(["filled", "outlined", "outlined-subtle"]);
 const sizes = new Set<OptionSelectorSize>(["s", "m", "l"]);
 const selections = new Set<OptionSelectorSelection>(["single", "multiple"]);
 const commits = new Set<OptionSelectorCommit>(["deferred", "immediate"]);
@@ -26,6 +26,13 @@ const shortOptions: readonly OptionSelectorOption[] = [
   { id: "juice", label: "Juice" },
   { id: "water", label: "Water" },
 ];
+
+const meanings: Readonly<Record<string, string>> = {
+  coffee: "A drink made from roasted beans",
+  tea: "A drink made from leaves",
+  juice: "A drink made from fruit",
+  water: "A clear drink",
+};
 
 const longOptions: readonly OptionSelectorOption[] = [
   { id: "coffee", label: "Could I get a large iced coffee with oat milk, please?" },
@@ -52,18 +59,26 @@ function App() {
     : "stack";
   const learning = args.contentLanguage === "learning";
   const baseOptions = args.longLabels === true ? longOptions : shortOptions;
-  const options = baseOptions.map((option, index) =>
-    args.disabledLast === true && index === baseOptions.length - 1
-      ? { ...option, disabled: true }
-      : option,
-  );
-  const [selectedIds, setSelectedIds] = useState<readonly string[]>([]);
-  const [committed, setCommitted] = useState(args.committed === true);
+  const judged = args.judged === true && variant !== "filled";
+  const options = baseOptions.map((option, index): OptionSelectorOption => {
+    const withMeaning =
+      args.withMeaning === true && variant !== "filled" && meanings[option.id] !== undefined
+        ? { ...option, meaning: meanings[option.id] }
+        : option;
+    // 확정 뒤 모습: 첫 보기는 정답, 둘째 보기는 고른 오답입니다.
+    if (judged && index === 0) return { ...withMeaning, feedback: "correct" };
+    if (judged && index === 1) return { ...withMeaning, feedback: "incorrect" };
+    return args.disabledLast === true && index === baseOptions.length - 1
+      ? { ...withMeaning, disabled: true }
+      : withMeaning;
+  });
+  const [selectedIds, setSelectedIds] = useState<readonly string[]>(judged ? ["tea"] : []);
+  const [committed, setCommitted] = useState(args.committed === true || judged);
 
   useEffect(() => {
-    setSelectedIds([]);
-    setCommitted(args.committed === true);
-  }, [selection, commit, args.longLabels, args.committed]);
+    setSelectedIds(judged ? ["tea"] : []);
+    setCommitted(args.committed === true || judged);
+  }, [selection, commit, args.longLabels, args.committed, judged]);
 
   function emit(name: "onChange" | "onCommit", payload: unknown) {
     "background only";

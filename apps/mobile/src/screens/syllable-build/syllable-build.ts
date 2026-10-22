@@ -152,9 +152,10 @@ export function syllableBuildCompletionAnnouncement(nextActionLabel: string, cop
 export type SyllableSlotState = "filled" | "current" | "empty";
 
 export function syllableSlotStateOf(
-  _position: number,
-  _placedCount: number,
-  _phase: SyllableBuildPhase,
+  position: number,
+  placedCount: number,
+  phase: SyllableBuildPhase,
 ): SyllableSlotState {
-  return "empty";
+  if (position < placedCount) return "filled";
+  return phase === "building" && position === placedCount ? "current" : "empty";
 }

@@ -99,3 +99,32 @@
 .ui-lynx-chat-bubble-outgoing .ui-lynx-chat-bubble-translation {
   color: var(--libitum-color-gray-200);
 }
+
+/* FE 추가: 본문 아래 로마자 · 구분선 · 뜻 묶음. 로마자는 기울임, 뜻은 똑바로 굵게 두어 모양으로 가릅니다. */
+.ui-lynx-chat-bubble-annotation-romanization {
+  white-space: normal;
+  font-style: italic;
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: var(--libitum-typography-body-m-font-size);
+  font-weight: var(--libitum-font-weight-medium);
+  line-height: var(--libitum-typography-body-m-line-height);
+  letter-spacing: var(--libitum-typography-body-m-letter-spacing);
+  color: var(--libitum-color-fg-neutral-muted);
+}
+
+.ui-lynx-chat-bubble-annotation-divider {
+  align-self: stretch;
+  height: var(--libitum-stroke-width-thin);
+  margin: var(--libitum-spacing-6) var(--libitum-spacing-0);
+  background-color: var(--libitum-color-gray-300);
+}
+
+.ui-lynx-chat-bubble-annotation-meaning {
+  white-space: normal;
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  font-weight: var(--libitum-font-weight-semi-bold);
+  line-height: var(--libitum-typography-body-s-line-height);
+  letter-spacing: var(--libitum-typography-body-s-letter-spacing);
+  color: var(--libitum-color-fg-neutral);
+}

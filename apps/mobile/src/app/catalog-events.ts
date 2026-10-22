@@ -9,7 +9,7 @@ import type {
   EpisodeListenItemAnsweredEvent,
 } from "../lib/catalog-learning-event.contract";
 import type { CatalogUnitKey } from "../lib/catalog-progress";
-import type { ItemAnswerReport } from "../lib/item-answer";
+import { scoredItemTypeOf, type ItemAnswerReport } from "../lib/item-answer";
 import type { ListenItemReport } from "../lib/question-audio";
 import type { AnswerResult } from "../lib/answer-result";
 import type { AssessmentVerdict } from "../screens/assessment/assessment";
@@ -92,12 +92,22 @@ export function listenItemAnsweredEventOf(
   };
 }
 
-/** 채점 문항의 첫 판정 이벤트입니다. 채점 유형이 아니면 `null`입니다. 껍데기만 있는 단계입니다. */
+/** 채점 문항의 첫 판정 이벤트입니다. 채점 유형이 아니면 `null`입니다. */
 export function itemAnsweredEventOf(
-  _episodeId: string,
-  _unitKey: CatalogUnitKey,
-  _ref: CatalogItemRef,
-  _report: ItemAnswerReport,
+  episodeId: string,
+  unitKey: CatalogUnitKey,
+  ref: CatalogItemRef,
+  report: ItemAnswerReport,
 ): EpisodeItemAnsweredEvent | null {
-  return null;
+  const itemType = scoredItemTypeOf(ref.itemType);
+  if (itemType === null) return null;
+  return {
+    name: "episode_item_answered",
+    episodeId,
+    unitKey,
+    itemId: ref.itemId,
+    itemType,
+    result: report.outcome,
+    density: report.density,
+  };
 }

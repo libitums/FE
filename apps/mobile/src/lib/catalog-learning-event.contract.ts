@@ -57,10 +57,7 @@ export type EpisodeListenItemAnsweredEvent = {
   readonly slowReplayCount: string;
 };
 
-/**
- * 채점 문항이 처음 판정되는 순간 문항당 한 번 나는 이벤트입니다(유형별 정답률 · 밀도별 비교).
- * 아직 `CatalogLearningEvent` 합집합에 들어가지 않았습니다 — 이름 목록과 함께 들어갑니다.
- */
+/** 채점 문항이 처음 판정되는 순간 문항당 한 번 나는 이벤트입니다(유형별 정답률 · 밀도별 비교). */
 export type EpisodeItemAnsweredEvent = {
   readonly name: "episode_item_answered";
   readonly episodeId: string;
@@ -75,4 +72,5 @@ export type CatalogLearningEvent =
   | EpisodeLessonStartedEvent
   | EpisodeLessonFinishedEvent
   | EpisodeFinalPassedEvent
-  | EpisodeListenItemAnsweredEvent;
+  | EpisodeListenItemAnsweredEvent
+  | EpisodeItemAnsweredEvent;

@@ -12,7 +12,8 @@ import type { CatalogEntry } from "../lib/episode-catalog";
 import type { LearnerProfile } from "../lib/placeholder-fill";
 import type { AssessmentPassCriterion } from "../screens/assessment/assessment";
 import type { LessonPosition } from "../screens/learning/activity-finish";
-import { appended, startedBy } from "./catalog-activity-join";
+import { appended, catalogActivityItemRefsOf, startedBy } from "./catalog-activity-join";
+import { catalogCultureCardFor } from "./catalog-culture-map";
 import { catalogItemOf } from "./catalog-item-map";
 import type {
   CatalogActivity,
@@ -84,12 +85,20 @@ export function catalogActivitiesOf(
   return activities;
 }
 
-/** 레슨의 출연진(상대 · 학습자)입니다. 껍데기만 있는 단계입니다. */
+/** 레슨의 출연진(상대 · 학습자)입니다. 이름 · 그림 주소가 없으면 그 키를 싣지 않습니다. */
 export function catalogLessonCastOf(
-  _plan: CatalogLessonPlan,
-  _learnerName: string,
+  plan: CatalogLessonPlan,
+  learnerName: string,
 ): ConversationCast {
-  return { counterpart: {}, me: {} };
+  const counterpartName = plan.counterpartName.trim();
+  const meName = learnerName.trim();
+  return {
+    counterpart: {
+      ...(counterpartName === "" ? {} : { name: counterpartName }),
+      ...(plan.counterpartAvatarUrl ? { imageUrl: plan.counterpartAvatarUrl } : {}),
+    },
+    me: meName === "" ? {} : { name: meName },
+  };
 }
 
 /** 그 키의 유닛이 없으면 `null`입니다. */
@@ -108,9 +117,16 @@ export function catalogLessonPlanOf(
     glossOf: catalogGlossOf(entry.episode.words, fill),
     imageUrlOf,
     audioUrlOf,
+    // 문화 확인의 짝 카드는 단계를 넘어 찾아야 해서(앞 단계 카드) 계획이 그 에피소드 단계로 닫아 줍니다.
+    cultureCardOf: (itemId) => catalogCultureCardFor(entry.episode.units, unitKey, itemId),
   };
-  const mapped = unit.items.map((item) => catalogItemOf(item, port));
+  const planned = unit.items.map((item) => ({
+    mapped: catalogItemOf(item, port),
+    itemType: item.type,
+  }));
+  const mapped = planned.map((entryItem) => entryItem.mapped);
   const activities = catalogActivitiesOf(mapped);
+  const avatar = entry.episode.counterpartAvatar;
   const countOf = (activity: CatalogActivity): number => activity.questions.length;
   return {
     episodeId: entry.id,
@@ -122,6 +138,8 @@ export function catalogLessonPlanOf(
     shownItemCount: activities.reduce((sum, activity) => sum + countOf(activity), 0),
     skippedItemCount: mapped.filter((item) => item.kind === "skipped").length,
     counterpartName: entry.episode.counterpart.trim(),
+    counterpartAvatarUrl: avatar === undefined ? null : imageUrlOf(avatar),
+    itemRefs: catalogActivityItemRefsOf(planned),
   };
 }
 
