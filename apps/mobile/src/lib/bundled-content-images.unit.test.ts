@@ -4,7 +4,7 @@ import { bundledContentImageUrl, bundledContentImages } from "./bundled-content-
 
 // `unit` 계층: 앱에 실은 콘텐츠 그림 표(버킷 상대 경로 → 번들 주소)의 입출력만 봅니다.
 
-// 내장 u00 본문이 가리키는 그림 14장입니다 — 데이터와 표가 같이 움직이는지 보는 기준입니다.
+// 내장 u00 본문이 가리키는 그림 15장(상대 아바타 포함)입니다 — 데이터와 표가 같이 움직이는지 보는 기준입니다.
 const U00_IMAGE_PATHS = [
   "images/u00-tutorial/pre-1.webp",
   "images/u00-tutorial/pre-2.webp",
@@ -18,17 +18,18 @@ const U00_IMAGE_PATHS = [
   "images/u00-tutorial/post-4.webp",
   "images/u00-tutorial/cult-u00-jalhasineyo.webp",
   "images/u00-tutorial/rp-end.webp",
+  "images/u00-tutorial/avatar.webp",
   "images/items/hello.webp",
   "images/items/thanks.webp",
 ];
 
 describe("bundledContentImages", () => {
-  test("BI1. 표의 키는 u00 그림 14장과 같고 값은 비어 있지 않고 서로 다르다", () => {
+  test("BI1. 표의 키는 u00 그림 15장과 같고 값은 비어 있지 않고 서로 다르다", () => {
     expect(new Set(Object.keys(bundledContentImages))).toEqual(new Set(U00_IMAGE_PATHS));
     const values = Object.values(bundledContentImages);
-    expect(values).toHaveLength(14);
+    expect(values).toHaveLength(15);
     for (const value of values) expect(value).not.toBe("");
-    expect(new Set(values).size).toBe(14);
+    expect(new Set(values).size).toBe(15);
   });
 
   test("BI2. 표에 있는 경로는 표의 값을, 선두 content/ · 모르는 경로 · 빈 문자열은 null을 낸다", () => {

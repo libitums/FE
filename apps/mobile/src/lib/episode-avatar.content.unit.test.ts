@@ -9,9 +9,11 @@ import { bundledCatalogInput } from "./episode-bundled";
 
 const u00 = bundledCatalogInput.episodes["u00-tutorial"] as Record<string, unknown>;
 const u01 = bundledCatalogInput.episodes["u01-water"] as Record<string, unknown>;
+// 내장 u00은 아바타 키를 싣습니다(2026-10-23.1) — 키를 뺀 사본이 「아바타 없음」의 기준입니다.
+const { counterpart_avatar: _u00Avatar, ...u00NoAvatar } = u00;
 
 function withAvatar(value: unknown): Record<string, unknown> {
-  return { ...u00, counterpart_avatar: value };
+  return { ...u00NoAvatar, counterpart_avatar: value };
 }
 
 describe("디코더의 counterpart_avatar", () => {
@@ -44,8 +46,13 @@ describe("디코더의 counterpart_avatar", () => {
     expect(result.warnings.filter((warning) => warning.code === "invalid-asset-path")).toEqual([]);
   });
 
-  test("AV6. 가드 — 키가 없는 내장 u00 · u01은 counterpartAvatar가 없다", () => {
-    for (const wire of [u00, u01]) {
+  test("AV6. 가드 — 내장 u00은 버킷판 아바타 경로를 싣고, 키가 없는 u01 · 키를 뺀 u00은 counterpartAvatar가 없다", () => {
+    const bundled = decodeEpisode(u00);
+    expect(bundled.ok).toBe(true);
+    if (bundled.ok) {
+      expect(bundled.episode.counterpartAvatar).toBe("content/images/u00-tutorial/avatar.webp");
+    }
+    for (const wire of [u00NoAvatar, u01]) {
       const result = decodeEpisode(wire);
       expect(result.ok).toBe(true);
       if (!result.ok) continue;
@@ -56,7 +63,7 @@ describe("디코더의 counterpart_avatar", () => {
 
 describe("자산 목록의 counterpart_avatar", () => {
   test("AV7. 아바타 경로가 content/를 뗀 모양으로 한 번 들어가고 다른 목록은 그대로다", () => {
-    const base = episodeAssetPaths(u00);
+    const base = episodeAssetPaths(u00NoAvatar);
     const withPath = episodeAssetPaths(withAvatar("content/images/avatars/u00.webp"));
 
     expect(withPath.filter((path) => path === "images/avatars/u00.webp")).toHaveLength(1);
@@ -64,7 +71,7 @@ describe("자산 목록의 counterpart_avatar", () => {
   });
 
   test("AV7. 어긋난 값이나 없음은 목록에 들어가지 않는다", () => {
-    const base = episodeAssetPaths(u00);
+    const base = episodeAssetPaths(u00NoAvatar);
 
     expect(episodeAssetPaths(withAvatar("images/a.gif"))).toEqual(base);
     expect(episodeAssetPaths(withAvatar("/abs.webp"))).toEqual(base);

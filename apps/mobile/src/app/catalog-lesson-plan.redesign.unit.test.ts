@@ -147,7 +147,14 @@ describe("계획의 counterpartAvatarUrl (PL3)", () => {
   });
 
   test("아바타가 없는 에피소드는 null이다", () => {
-    const plain = readyIn(bundledCatalog, "u00-tutorial");
+    const { counterpart_avatar: _dropped, ...noAvatarWire } = u00Wire;
+    const plain = readyIn(
+      catalogOf({
+        ...bundledCatalogInput,
+        episodes: { ...bundledCatalogInput.episodes, "u00-tutorial": noAvatarWire },
+      }),
+      "u00-tutorial",
+    );
 
     expect(planOf(plain, "S11").counterpartAvatarUrl).toBeNull();
   });

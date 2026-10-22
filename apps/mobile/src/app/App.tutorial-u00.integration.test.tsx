@@ -269,7 +269,7 @@ describe("TU7 새 버전 교체", () => {
         entry["id"] === U00
           ? {
               ...entry,
-              version: "2026-10-22.1",
+              version: "2026-10-24.1",
               sha256: sha256Hex(utf8Bytes(text)),
               bytes: utf8Bytes(text).length,
             }

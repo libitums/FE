@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { fireEvent, screen, within } from "@lynx-js/react/testing-library";
 
+import { bundledContentImageUrl } from "../lib/bundled-content-images";
 import { bundledCatalogInput } from "../lib/episode-bundled";
 import { buildEpisodeCatalog } from "../lib/episode-catalog";
 import { isTypedAnswerCorrect } from "../lib/hangul-keyboard";
@@ -27,23 +28,7 @@ import { solveActivity, solveLesson } from "./test-helpers/episode-format-solver
 // 장면과 해설 판, 상대 아바타 그림, 로마자 참고 줄, 문항 판정 측정 이벤트. 대역은 경계뿐입니다
 // (`NativeModules` · `fetch` · env · 창 크기). 계획 · 화면 · 결선은 실물입니다.
 //
-// 내장 u00에는 상대 아바타 키가 없어, 이 파일은 u00 본문에 그 키만 더한 사본을 내장본 자리에 둡니다
-// (데이터 파일은 바꾸지 않습니다).
-
-vi.mock("../lib/episode-bundled", async (importOriginal) => {
-  const original = await importOriginal<typeof import("../lib/episode-bundled")>();
-  const u00 = original.bundledCatalogInput.episodes["u00-tutorial"] as Record<string, unknown>;
-  return {
-    ...original,
-    bundledCatalogInput: {
-      ...original.bundledCatalogInput,
-      episodes: {
-        ...original.bundledCatalogInput.episodes,
-        "u00-tutorial": { ...u00, counterpart_avatar: "images/avatars/u00.webp" },
-      },
-    },
-  };
-});
+// 상대 아바타는 내장 u00(2026-10-23.1)의 실제 키와 앱에 실은 그림을 그대로 씁니다.
 
 afterEach(() => {
   (lynx as unknown as { __globalProps: unknown }).__globalProps = undefined;
@@ -56,7 +41,7 @@ const keysThrough = (last: number): string[] => [
   ...Array.from({ length: last }, (_, index) => `S${index + 1}`),
 ];
 const full = ["intro", "S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "CULT", "RP"];
-const AVATAR_PATH = "images/avatars/u00.webp";
+const AVATAR_PATH = "images/u00-tutorial/avatar.webp";
 const AVATAR_FILE = `file:///c/${AVATAR_PATH}`;
 
 const present = (id: string): boolean => screen.queryByTestId(id) !== null;
@@ -283,13 +268,15 @@ describe("상대 아바타 그림", () => {
     expect(within(box).getByTestId("ui-lynx-avatar-image").getAttribute("src")).toBe(AVATAR_FILE);
   });
 
-  test("IT6. 받은 파일이 없으면 원격 주소로 그리고, 그림이 실패하면 상대 이름의 머리글자로 선다", async () => {
+  test("IT6. 받은 파일이 없으면(오프라인 첫 실행) 앱에 실은 그림으로 그리고, 그림이 실패하면 상대 이름의 머리글자로 선다", async () => {
     await bootAvatar([]);
     tapNode(u00, "S11");
 
     const box = screen.getByTestId("sentence-order-dialogue-avatar-0");
     const image = within(box).getByTestId("ui-lynx-avatar-image");
-    expect(image.getAttribute("src") ?? "").toMatch(/^https:\/\/.*images\/avatars\/u00\.webp$/);
+    const bundled = bundledContentImageUrl(AVATAR_PATH);
+    expect(bundled).not.toBeNull();
+    expect(image.getAttribute("src")).toBe(bundled);
     fireEvent(image, new window.Event("bindEvent:error"));
 
     expect(within(box).getByTestId("ui-lynx-avatar-initials")).toBeInTheDocument();

@@ -7,6 +7,7 @@
   "time_of_day": "낮",
   "place": "인천행 비행기 안",
   "counterpart": "승무원",
+  "counterpart_avatar": "content/images/u00-tutorial/avatar.webp",
   "pre_cuts": [
     {
       "index": 1,
@@ -175,7 +176,7 @@
       },
       "image_brief": "창밖으로 바다와 섬, 해안 도시가 가까워진다.",
       "image_url": "content/images/u00-tutorial/post-1.webp",
-      "audio_url": "u00-tutorial/post-1"
+      "audio_url": "u00-tutorial/post-1-v3"
     },
     {
       "index": 2,
