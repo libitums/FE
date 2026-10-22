@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { deployEnvironment } from "./deploy-env";
+import { deployEnvironment, measuresSpeed } from "./deploy-env";
 
 describe("deployEnvironment", () => {
   it("U-DE1 Vercel 밖에서는 SITE_URL을 그대로 넘기고 색인을 허용한다", () => {
@@ -39,5 +39,14 @@ describe("deployEnvironment", () => {
         }),
       ).toEqual({ siteUrlEnv: undefined, indexable: false });
     }
+  });
+});
+
+describe("measuresSpeed", () => {
+  it("U-DE5 Vercel 프로덕션 빌드에서만 속도를 잰다", () => {
+    expect(measuresSpeed({ VERCEL_ENV: "production" })).toBe(true);
+    expect(measuresSpeed({})).toBe(false);
+    expect(measuresSpeed({ VERCEL_ENV: "preview" })).toBe(false);
+    expect(measuresSpeed({ VERCEL_ENV: "development" })).toBe(false);
   });
 });
