@@ -11,26 +11,26 @@ import {
 } from "./notifications";
 import { uiCopyEn } from "../../lib/ui-copy-en";
 
-// 픽스처는 `NotificationItem`(type import)으로 이 파일 안에서 넷(대상 종류마다 하나)을
+// 픽스처는 `NotificationItem`(type import)으로 이 파일 안에서 넷(항목 넷)을
 // 직접 짓습니다. `notification-items.ts`를 import하지 않습니다 — 계산 규칙이 데이터
 // 값에 기대지 않게 합니다.
 
 const messengerItem: NotificationItem = {
   id: "notification-messenger",
   message: "지민이 약속 확인 메시지를 보냈어요",
-  target: { kind: "messenger", unitId: "appointment-confirmation" },
+  target: { kind: "roleplay-list" },
 };
 
 const phoneCallItem: NotificationItem = {
   id: "notification-phone-call",
   message: "지민에게서 약속 확인 전화가 왔어요",
-  target: { kind: "phone-call", unitId: "appointment-confirmation-phone-call" },
+  target: { kind: "roleplay-list" },
 };
 
 const visualNovelItem: NotificationItem = {
   id: "notification-visual-novel",
   message: "지민이 카페에 도착했어요",
-  target: { kind: "visual-novel", unitId: "cafe-arrival-visual-novel" },
+  target: { kind: "roleplay-list" },
 };
 
 const roleplayListItem: NotificationItem = {
@@ -47,17 +47,14 @@ const allItems: readonly NotificationItem[] = [
 ];
 
 describe("notificationDestinationLabel", () => {
-  it("NL1. 대상 종류 넷 각각에 고정된 행선지 낱말을 돌려준다", () => {
-    expect(notificationDestinationLabel("messenger", uiCopyEn)).toBe("Open messenger");
-    expect(notificationDestinationLabel("phone-call", uiCopyEn)).toBe("Open call");
-    expect(notificationDestinationLabel("visual-novel", uiCopyEn)).toBe("Open visual novel");
+  it("NL1. 대상 종류에 고정된 행선지 낱말을 돌려준다", () => {
     expect(notificationDestinationLabel("roleplay-list", uiCopyEn)).toBe("See roleplay list");
   });
 
-  it("NL2. 넷이 서로 다르다", () => {
+  it("NL2. 항목마다 같은 종류면 같은 낱말이다", () => {
     const labels = allItems.map((item) => notificationDestinationLabel(item.target.kind, uiCopyEn));
 
-    expect(new Set(labels).size).toBe(4);
+    expect(new Set(labels).size).toBe(1);
   });
 });
 
@@ -70,14 +67,14 @@ describe("notificationItemAccessibilityLabel", () => {
     }
   });
 
-  it("NL3b. (RL20) 영어 메시지 항목의 이름이 `Minseo sent you an appointment message, Open messenger`다", () => {
+  it("NL3b. (RL20) 영어 메시지 항목의 이름이 `Minseo sent you an appointment message, See roleplay list`다", () => {
     const item: NotificationItem = {
       ...messengerItem,
       message: "Minseo sent you an appointment message",
     };
 
     expect(notificationItemAccessibilityLabel(item, uiCopyEn)).toBe(
-      "Minseo sent you an appointment message, Open messenger",
+      "Minseo sent you an appointment message, See roleplay list",
     );
   });
 
@@ -132,7 +129,7 @@ describe("notificationDeletedEvent", () => {
     expect(notificationDeletedEvent(phoneCallItem)).toEqual({
       name: "notification_item_deleted",
       notificationId: "notification-phone-call",
-      target: "phone-call",
+      target: "roleplay-list",
     });
   });
 });

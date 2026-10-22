@@ -1,8 +1,6 @@
 import { describe, expect, it } from "vitest";
 
 import type { PhoneNumber } from "../lib/auth-session.contract";
-import type { LearningForm } from "../lib/learning-form";
-import type { JourneyStepId } from "../screens/journey-map/journey-map";
 import type { RoleplayItem } from "../screens/roleplay-list/roleplay-list.contract";
 import {
   activeStack,
@@ -12,7 +10,6 @@ import {
   handwritingProbeNav,
   initialNav,
   isEntrySection,
-  learningScreenFor,
   navReducer,
   roleplayScreenFor,
   speechProbeNav,
@@ -94,49 +91,6 @@ describe("initialNav", () => {
 });
 
 describe("navReducer", () => {
-  describe("visual novel screen contract", () => {
-    const visualNovelScreen = {
-      name: "visual-novel",
-      unitId: "cafe-arrival-visual-novel",
-    } as const;
-
-    it("push하면 visual novel이 current screen이 되고 backToRoot은 journey map으로 돌아간다", () => {
-      const n = nav({ tab: "journey" });
-      const next = navReducer(n, { type: "push", screen: visualNovelScreen });
-
-      expect(currentScreen(next)).toEqual(visualNovelScreen);
-      expect(currentScreen(navReducer(next, { type: "backToRoot" }))).toEqual({
-        name: "journey-map",
-      });
-    });
-  });
-
-  describe("messenger screen contract", () => {
-    const messengerScreen = { name: "messenger", unitId: "appointment-confirmation" } as const;
-
-    it("push하면 messenger가 current screen이 되고 backToRoot은 journey-map root로 돌아간다", () => {
-      const n = nav({
-        tab: "journey",
-        stacks: { ...baseStacks, journey: [{ name: "journey-map" }] },
-      });
-      const next = navReducer(n, { type: "push", screen: messengerScreen });
-      expect(currentScreen(next)).toEqual(messengerScreen);
-      expect(currentScreen(navReducer(next, { type: "backToRoot" }))).toEqual({
-        name: "journey-map",
-      });
-    });
-
-    it("backToRoot은 messenger만 제거하고 다른 탭 스택은 보존한다", () => {
-      const n = nav({
-        tab: "journey",
-        stacks: { ...baseStacks, journey: [{ name: "journey-map" }, messengerScreen] },
-      });
-      const root = navReducer(n, { type: "backToRoot" });
-      expect(root.stacks.journey).toEqual([{ name: "journey-map" }]);
-      expect(root.stacks.roleplay).toBe(baseStacks.roleplay);
-      expect(root.stacks.settings).toBe(baseStacks.settings);
-    });
-  });
   it("1. push / entry 비었을 때 → 현재 탭 스택에 쌓이고 다른 탭 스택은 그대로다", () => {
     const n = nav({ tab: "journey", stacks: baseStacks });
 
@@ -301,8 +255,8 @@ describe("navReducer — backToRoot", () => {
         ...baseStacks,
         journey: [
           { name: "journey-map" },
-          { name: "listening", stepId: "ordering", activityIndex: 0 },
-          { name: "word-choice", stepId: "ordering", activityIndex: 0 },
+          { name: "catalog-lesson", episodeId: "u01-water", unitKey: "S1", activityIndex: 0 },
+          { name: "catalog-lesson", episodeId: "u01-water", unitKey: "S1", activityIndex: 1 },
         ],
       },
     });
@@ -386,20 +340,26 @@ describe("navReducer — backToRoot", () => {
 // push합니다 — 실제 결선(App)이 여정 탭에서만 이 push를 내기 때문입니다
 // (`initialNav.tab`이 이미 journey라도 switchTab은 동일 참조를 돌려줄 뿐이라
 // 안전합니다).
-describe("navReducer — listening 화면", () => {
-  const listeningScreen = { name: "listening", stepId: "ordering", activityIndex: 0 } as const;
+describe("navReducer — 카탈로그 레슨 화면", () => {
+  const lessonScreen = {
+    name: "catalog-lesson",
+    episodeId: "u01-water",
+    unitKey: "S1",
+    activityIndex: 0,
+  } as const;
 
   function journeyNav(): Nav {
     return navReducer(initialNav, { type: "switchTab", tab: "journey" });
   }
 
   it("push → 여정 탭 스택이 깊이 2가 되고 최상단이 listening 화면이다", () => {
-    const next = navReducer(journeyNav(), { type: "push", screen: listeningScreen });
+    const next = navReducer(journeyNav(), { type: "push", screen: lessonScreen });
 
     expect(next.stacks.journey).toHaveLength(2);
     expect(next.stacks.journey[1]).toEqual({
-      name: "listening",
-      stepId: "ordering",
+      name: "catalog-lesson",
+      episodeId: "u01-water",
+      unitKey: "S1",
       activityIndex: 0,
     });
     expect(next.stacks.roleplay).toEqual(baseStacks.roleplay);
@@ -408,18 +368,18 @@ describe("navReducer — listening 화면", () => {
   });
 
   it("push 뒤 currentScreen이 그 화면을 그대로 돌려준다 — stepId가 스택을 타고 나온다", () => {
-    const next = navReducer(journeyNav(), { type: "push", screen: listeningScreen });
+    const next = navReducer(journeyNav(), { type: "push", screen: lessonScreen });
 
     const current = currentScreen(next);
 
-    expect(current).toBe(listeningScreen);
-    expect(current.name).toBe("listening");
-    // union을 좁혀 파라미터를 읽습니다. 화면 이름만 남고 stepId가 사라지면 여기서 갈립니다.
-    expect(current.name === "listening" ? current.stepId : null).toBe("ordering");
+    expect(current).toBe(lessonScreen);
+    expect(current.name).toBe("catalog-lesson");
+    // union을 좁혀 파라미터를 읽습니다. 화면 이름만 남고 unitKey가 사라지면 여기서 갈립니다.
+    expect(current.name === "catalog-lesson" ? current.unitKey : null).toBe("S1");
   });
 
   it("push 뒤 back → 여정 탭 스택이 깊이 1로 돌아오고 최상단이 여정 맵이다", () => {
-    const pushed = navReducer(journeyNav(), { type: "push", screen: listeningScreen });
+    const pushed = navReducer(journeyNav(), { type: "push", screen: lessonScreen });
 
     const next = navReducer(pushed, { type: "back" });
 
@@ -428,7 +388,7 @@ describe("navReducer — listening 화면", () => {
   });
 
   it("push 뒤 탭을 왕복해도 여정 스택에 학습 화면이 남는다", () => {
-    const pushed = navReducer(journeyNav(), { type: "push", screen: listeningScreen });
+    const pushed = navReducer(journeyNav(), { type: "push", screen: lessonScreen });
 
     const away = navReducer(pushed, { type: "switchTab", tab: "settings" });
     const back = navReducer(away, { type: "switchTab", tab: "journey" });
@@ -438,8 +398,9 @@ describe("navReducer — listening 화면", () => {
     expect(back.tab).toBe("journey");
     expect(back.stacks.journey).toHaveLength(2);
     expect(currentScreen(back)).toEqual({
-      name: "listening",
-      stepId: "ordering",
+      name: "catalog-lesson",
+      episodeId: "u01-water",
+      unitKey: "S1",
       activityIndex: 0,
     });
   });
@@ -461,23 +422,30 @@ describe("navReducer — listening 화면", () => {
 // 가능한 동작**(평가 화면이 실제로 뜹니다 · `backToRoot` 하나로 맵에 닿습니다 ·
 // 미통과면 진행이 갱신되지 않습니다)의 판정자는 `App.integration.test.tsx`의
 // **I1 · I3 · I6**입니다.
-describe("navReducer — assessment 화면", () => {
-  const listeningScreen = { name: "listening", stepId: "ordering", activityIndex: 0 } as const;
+describe("navReducer — 카탈로그 결과 화면", () => {
+  const lessonScreen = {
+    name: "catalog-lesson",
+    episodeId: "u01-water",
+    unitKey: "S1",
+    activityIndex: 0,
+  } as const;
   const assessmentScreen = {
-    name: "assessment",
-    stepId: "ordering",
+    name: "catalog-unit-complete",
+    episodeId: "u01-water",
+    unitKey: "S1",
     results: ["correct", "incorrect", "correct"],
     skippedCount: 0,
+    questionCount: 3,
   } as const;
 
   // 실제 결선이 만드는 상태를 그대로 재현합니다 — 여정 탭에서 학습 화면을 push한
   // 뒤, 평가로의 전환은 `replace`입니다(`push`가 아닙니다).
   function journeyNavAtListening(): Nav {
     const journey = navReducer(initialNav, { type: "switchTab", tab: "journey" });
-    return navReducer(journey, { type: "push", screen: listeningScreen });
+    return navReducer(journey, { type: "push", screen: lessonScreen });
   }
 
-  it("replace → 여정 탭 스택 깊이가 그대로이고 최상단이 assessment 화면이다", () => {
+  it("replace → 여정 탭 스택 깊이가 그대로이고 최상단이 결과 화면이다", () => {
     const next = navReducer(journeyNavAtListening(), {
       type: "replace",
       screen: assessmentScreen,
@@ -488,7 +456,7 @@ describe("navReducer — assessment 화면", () => {
     expect(next.stacks.roleplay).toEqual(baseStacks.roleplay);
   });
 
-  it("replace 뒤 currentScreen이 assessment 화면을 그대로 돌려준다 — stepId·results가 스택을 타고 나온다", () => {
+  it("replace 뒤 currentScreen이 결과 화면을 그대로 돌려준다 — unitKey·results가 스택을 타고 나온다", () => {
     const next = navReducer(journeyNavAtListening(), {
       type: "replace",
       screen: assessmentScreen,
@@ -497,9 +465,9 @@ describe("navReducer — assessment 화면", () => {
     const current = currentScreen(next);
 
     expect(current).toBe(assessmentScreen);
-    expect(current.name).toBe("assessment");
-    expect(current.name === "assessment" ? current.stepId : null).toBe("ordering");
-    expect(current.name === "assessment" ? current.results : null).toEqual([
+    expect(current.name).toBe("catalog-unit-complete");
+    expect(current.name === "catalog-unit-complete" ? current.unitKey : null).toBe("S1");
+    expect(current.name === "catalog-unit-complete" ? current.results : null).toEqual([
       "correct",
       "incorrect",
       "correct",
@@ -535,198 +503,37 @@ describe("navReducer — assessment 화면", () => {
   });
 });
 
-// -------------------------------------------------------------- 학습형 → 화면
-// 어휘 배열에 "culture"를 더했습니다. 아래의 기존 케이스 아홉이 새 describe 없이
-// 그대로 culture를 덮습니다. `learningScreenFor`에 "culture" case가 없다면
-// 런타임에 `undefined`를 돌려주므로, `.name`을 읽는 케이스와
-// `not.toBeUndefined()` 케이스가 여기서 실물로 실패했을 것입니다.
-
-// 이 함수의 입력 전부입니다.
-const allLearningForms: readonly LearningForm[] = [
-  "listening",
-  "sentence-order",
-  "word-choice",
-  "culture",
-  "speaking",
-  "writing",
-];
-
-// 여정 맵의 스텝 다섯입니다. stepId가 인자 그대로인지를 다섯 전부에서 봅니다.
-const allStepIds: readonly JourneyStepId[] = [
-  "greeting",
-  "introduction",
-  "ordering",
-  "appointment",
-  "directions",
-];
-
-describe("learningScreenFor", () => {
-  it("학습형 셋 각각에서 name이 학습형 문자열과 같다", () => {
-    for (const form of allLearningForms) {
-      expect(learningScreenFor(form, "ordering", 0).name).toBe(form);
-    }
-  });
-
-  it("학습형 셋 각각에서 stepId가 인자 그대로다", () => {
-    for (const form of allLearningForms) {
-      for (const id of allStepIds) {
-        const screen = learningScreenFor(form, id, 0);
-
-        expect("stepId" in screen ? screen.stepId : null).toBe(id);
-      }
-    }
-  });
-
-  it("세 결과의 name이 서로 다르다", () => {
-    const names = allLearningForms.map((form) => learningScreenFor(form, "ordering", 0).name);
-
-    expect(new Set(names).size).toBe(allLearningForms.length);
-  });
-
-  // 멤버 넷의 모양은 문자 그대로 같습니다 — 필드는 `stepId`와 `activityIndex`뿐이고
-  // `stepOrdinal`도 `form`도 union에 넣지 않습니다. toEqual이 그 「필드가 셋뿐」을
-  // 집니다.
-  it("학습형 넷 각각이 { name, stepId, activityIndex } 꼴이고 필드가 그 셋뿐이다", () => {
-    for (const form of allLearningForms) {
-      expect(learningScreenFor(form, "greeting", 0)).toEqual({
-        name: form,
-        stepId: "greeting",
-        activityIndex: 0,
-      });
-    }
-  });
-
-  // 인덱스는 그대로 실립니다 — 화면이 자기 좌표를 지고, 다음 활동을 고를 때 여기서
-  // 읽습니다.
-  it("activityIndex가 인자 그대로 실린다", () => {
-    for (const form of allLearningForms) {
-      expect(learningScreenFor(form, "greeting", 2)).toMatchObject({ activityIndex: 2 });
-    }
-  });
-
-  it("탭 루트 화면 셋 중 어느 것도 돌려주지 않는다", () => {
-    const tabRoots = ["journey-map", "roleplay-list", "settings"];
-
-    for (const form of allLearningForms) {
-      expect(tabRoots).not.toContain(learningScreenFor(form, "directions", 0).name);
-    }
-  });
-
-  it("부수효과 없음 — 같은 인자를 두 번 불러도 같은 값이다", () => {
-    for (const form of allLearningForms) {
-      expect(learningScreenFor(form, "appointment", 0)).toEqual(
-        learningScreenFor(form, "appointment", 0),
-      );
-    }
-  });
-});
-
-describe("learningScreenFor의 총성", () => {
-  // ⚠ `switch`의 exhaustiveness는 tsc가 집니다(TS2366 실측). **unit이 그것을 다시
-  // 단언하지 않습니다** — 단언할 수 없는 것을 단언하는 척하지 않습니다. 여기서 보는
-  // 것은 런타임 총성뿐입니다: 셋 중 어느 값에도 undefined를 내지 않고 던지지 않습니다.
-
-  it("학습형 셋 중 어느 값에도 undefined를 돌려주지 않는다", () => {
-    for (const form of allLearningForms) {
-      expect(learningScreenFor(form, "directions", 0)).not.toBeUndefined();
-    }
-  });
-
-  it("학습형 셋 × 스텝 다섯 어느 칸에도 undefined를 돌려주지 않는다", () => {
-    for (const form of allLearningForms) {
-      for (const id of allStepIds) {
-        expect(learningScreenFor(form, id, 0)).not.toBeUndefined();
-      }
-    }
-  });
-
-  it("학습형 셋 어느 것에도 던지지 않는다", () => {
-    for (const form of allLearningForms) {
-      expect(() => learningScreenFor(form, "greeting", 0)).not.toThrow();
-    }
-  });
-
-  it("돌려준 화면은 push로 스택에 그대로 올라간다", () => {
-    for (const form of allLearningForms) {
-      const screen = learningScreenFor(form, "ordering", 0);
-      const next = navReducer(nav({ tab: "journey" }), { type: "push", screen });
-
-      expect(currentScreen(next)).toEqual(screen);
-    }
-  });
-});
-
 // ---------------------------------------------------------- 롤플레이 route 사상
 
 describe("roleplayScreenFor", () => {
-  const messengerRoleplayItem: RoleplayItem = {
-    form: "messenger",
-    unitId: "appointment-confirmation",
-    title: "A Message from Minseo",
+  const storyItem: RoleplayItem = {
+    form: "story",
+    unitId: "story-u01-water",
+    episodeId: "u01-water",
+    title: "Water",
+    lineCount: 6,
+    imageUrl: null,
   };
-  const phoneCallRoleplayItem: RoleplayItem = {
-    form: "phone-call",
-    unitId: "appointment-confirmation-phone-call",
-    title: "A Call from Minseo",
-  };
-  const visualNovelRoleplayItem: RoleplayItem = {
-    form: "visual-novel",
-    unitId: "cafe-arrival-visual-novel",
-    title: "Our Imagined Café",
-  };
-  const allRoleplayItems: readonly RoleplayItem[] = [
-    messengerRoleplayItem,
-    phoneCallRoleplayItem,
-    visualNovelRoleplayItem,
-  ];
 
-  it("N1. 세 형태 각각이 대응하는 롤플레이 route + 인자의 unitId를 낸다. 필드는 둘뿐이다", () => {
-    expect(roleplayScreenFor(messengerRoleplayItem)).toEqual({
-      name: "roleplay-messenger",
-      unitId: "appointment-confirmation",
+  it("N1. 이야기 롤플레이 항목이 roleplay-story route + 에피소드 id를 낸다. 필드는 둘뿐이다", () => {
+    expect(roleplayScreenFor(storyItem)).toEqual({
+      name: "roleplay-story",
+      episodeId: "u01-water",
     });
-    expect(roleplayScreenFor(phoneCallRoleplayItem)).toEqual({
-      name: "roleplay-phone-call",
-      unitId: "appointment-confirmation-phone-call",
-    });
-    expect(roleplayScreenFor(visualNovelRoleplayItem)).toEqual({
-      name: "roleplay-visual-novel",
-      unitId: "cafe-arrival-visual-novel",
-    });
-    for (const item of allRoleplayItems) {
-      expect(Object.keys(roleplayScreenFor(item)).sort()).toEqual(["name", "unitId"]);
-    }
+    expect(Object.keys(roleplayScreenFor(storyItem)).sort()).toEqual(["episodeId", "name"]);
   });
 
-  it("N2. 어느 결과도 여정 route나 탭 루트 셋이 아니다", () => {
-    const forbiddenNames = [
-      "messenger",
-      "phone-call",
-      "visual-novel",
-      "journey-map",
-      "roleplay-list",
-      "settings",
-    ];
+  it("N2. 결과는 탭 루트 셋이 아니다", () => {
+    const forbiddenNames = ["journey-map", "roleplay-list", "settings"];
 
-    for (const item of allRoleplayItems) {
-      expect(forbiddenNames).not.toContain(roleplayScreenFor(item).name);
-    }
+    expect(forbiddenNames).not.toContain(roleplayScreenFor(storyItem).name);
   });
 
-  // 기대 화면은 roleplayScreenFor를 다시 불러 만들지 않습니다 — 자기참조 오라클을
-  // 피합니다. phone-call 항목을 골라, 스텁이 언제나 돌려주는 roleplay-messenger와
-  // 어긋나야 이 케이스가 화면 사상 자체의 정확성도 함께 겁니다.
   it("N3. roleplay 탭에서 push(roleplayScreenFor(item)) → 롤플레이 스택에만 쌓이고 다른 두 스택은 동일 참조다", () => {
     const n = nav({ tab: "roleplay", stacks: baseStacks });
-    const expectedScreen = {
-      name: "roleplay-phone-call",
-      unitId: "appointment-confirmation-phone-call",
-    } as const;
+    const expectedScreen = { name: "roleplay-story", episodeId: "u01-water" } as const;
 
-    const next = navReducer(n, {
-      type: "push",
-      screen: roleplayScreenFor(phoneCallRoleplayItem),
-    });
+    const next = navReducer(n, { type: "push", screen: roleplayScreenFor(storyItem) });
 
     expect(next.stacks.roleplay).toEqual([{ name: "roleplay-list" }, expectedScreen]);
     expect(currentScreen(next)).toEqual(expectedScreen);
@@ -736,7 +543,7 @@ describe("roleplayScreenFor", () => {
 
   it("N4. 이어서 backToRoot → 롤플레이 스택이 루트 하나로 돌아오고 여정 스택은 여전히 동일 참조다", () => {
     const n = nav({ tab: "roleplay", stacks: baseStacks });
-    const screen = roleplayScreenFor(messengerRoleplayItem);
+    const screen = roleplayScreenFor(storyItem);
     const pushed = navReducer(n, { type: "push", screen });
 
     const next = navReducer(pushed, { type: "backToRoot" });
@@ -758,13 +565,13 @@ describe("알림 route", () => {
     expect(next.stacks.settings).toBe(initialNav.stacks.settings);
   });
 
-  // 알림에서 연 특별 유닛에서 backToRoot하면 여정 맵으로 돌아갑니다. 알림으로
+  // 알림 위에 쌓인 화면에서 backToRoot하면 여정 맵으로 돌아갑니다. 알림으로
   // 되돌아가지 않습니다 — 알림은 여정 스택 중간 화면일 뿐입니다.
-  it("NV2. 알림에서 연 메신저를 backToRoot하면 여정 맵으로 돌아가고 알림으로 되돌아가지 않는다", () => {
+  it("NV2. 알림 위에 쌓인 화면을 backToRoot하면 여정 맵으로 돌아가고 알림으로 되돌아가지 않는다", () => {
     const opened = navReducer(initialNav, { type: "push", screen: { name: "notifications" } });
     const unit = navReducer(opened, {
       type: "push",
-      screen: { name: "messenger", unitId: "appointment-confirmation" },
+      screen: { name: "catalog-cover", episodeId: "u01-water" },
     });
 
     const next = navReducer(unit, { type: "backToRoot" });
@@ -803,10 +610,7 @@ describe("tabRootActions", () => {
     const stacks: Nav["stacks"] = {
       ...baseStacks,
       journey: [{ name: "journey-map" }, { name: "notifications" }],
-      roleplay: [
-        { name: "roleplay-list" },
-        { name: "roleplay-messenger", unitId: "appointment-confirmation" },
-      ],
+      roleplay: [{ name: "roleplay-list" }, { name: "roleplay-story", episodeId: "u01-water" }],
     };
     const n = nav({ tab: "journey", stacks });
 

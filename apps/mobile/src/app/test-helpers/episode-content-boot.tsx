@@ -2,6 +2,7 @@ import { act, render } from "@lynx-js/react/testing-library";
 import { vi } from "vitest";
 
 import { App } from "../App";
+import { contentPathOf } from "./content-requests";
 import { signedInBootSession } from "./signed-in-app";
 import { authSessionStorageKey, serializeAuthSession } from "../../lib/auth-session";
 import { minimalRoleplayTurnWire } from "../../lib/episode-content.test-support";
@@ -9,6 +10,7 @@ import { entrySplashDurationMs } from "../../lib/entry-flow";
 import { learningItemGuideSeenStorageKey } from "../../lib/learning-item-guide";
 import { allLearningItemGuidesSeenValue } from "../../lib/learning-item-guide.test-support";
 import { sha256Hex, utf8Bytes } from "../../lib/sha256";
+import type { EpisodeIntroEvent } from "../../screens/episode-intro/episode-intro.contract";
 
 // 에피소드 콘텐츠 받기 integration 테스트가 함께 쓰는 부팅 · 대역입니다. 대역은 경계뿐입니다 — 가짜 전송
 // (`fetch`) · `NativeModules`(`StorageModule`, 선택 `ContentFileModule`) · Supabase 설정(`vi.stubEnv`).
@@ -70,17 +72,23 @@ export function minimalEpisodeText(unitId: string, extra: Record<string, unknown
 }
 
 export function manifestOf(
-  episodes: readonly { id: string; order: number; text: string }[],
+  episodes: readonly {
+    id: string;
+    order: number;
+    text: string;
+    title?: string;
+    version?: string;
+  }[],
 ): string {
   return JSON.stringify({
     schema: "manifest-1",
     generated_at: "2026-10-13T00:00:00Z",
-    episodes: episodes.map(({ id, order, text }) => ({
+    episodes: episodes.map(({ id, order, text, title, version }) => ({
       id,
       order,
-      title: `제목 ${id}`,
+      title: title ?? `제목 ${id}`,
       schema: "delivery-2",
-      version: "2026-10-13.1",
+      version: version ?? "2026-10-13.1",
       sha256: sha256Hex(utf8Bytes(text)),
       bytes: utf8Bytes(text).length,
       url: `episodes/${id}.json`,
@@ -103,6 +111,14 @@ export type BootOptions = {
   readonly contentFiles?: object;
   /** 콘텐츠 버킷 상대 경로 → 응답 상태(본문 없음). `content`보다 먼저 적용됩니다. */
   readonly status?: Readonly<Record<string, number>>;
+  /** 부팅 전에 저장소에 미리 둘 키-값(기기에 남은 지난 실행의 상태). */
+  readonly preStore?: Readonly<Record<string, string>>;
+  /** `"hold"`면 스플래시를 앞당기지 않고 가짜 타이머를 켠 채 돌려줍니다. 기본 `"pass"`. */
+  readonly splash?: "pass" | "hold";
+  /** true면 콘텐츠 버킷 요청이 모두 연결 실패(reject)입니다. */
+  readonly offline?: boolean;
+  /** 에피소드 소개 이벤트 sink — `App`의 `episodeIntroEventSink`로 넘깁니다. */
+  readonly onEvent?: (event: EpisodeIntroEvent) => void;
 };
 
 export type Booted = { readonly urls: string[]; readonly store: Map<string, string> };
@@ -112,6 +128,7 @@ export async function bootContentApp(options: BootOptions): Promise<Booted> {
   const store = new Map<string, string>();
   store.set(authSessionStorageKey, serializeAuthSession(signedInBootSession));
   store.set(learningItemGuideSeenStorageKey, allLearningItemGuidesSeenValue);
+  for (const [key, value] of Object.entries(options.preStore ?? {})) store.set(key, value);
   vi.stubGlobal("NativeModules", {
     StorageModule: {
       get: (key: string) => store.get(key) ?? null,
@@ -133,7 +150,8 @@ export async function bootContentApp(options: BootOptions): Promise<Booted> {
       return Promise.resolve({ status: 200, text: async () => "null" });
     }
     if (url.startsWith(contentBase)) {
-      const relative = url.slice(contentBase.length);
+      if (options.offline === true) return Promise.reject(new Error("offline"));
+      const relative = contentPathOf(url) ?? "";
       const forced = options.status?.[relative];
       if (forced !== undefined) return Promise.resolve({ status: forced, text: async () => "" });
       const body = options.content[relative];
@@ -147,7 +165,15 @@ export async function bootContentApp(options: BootOptions): Promise<Booted> {
   });
 
   vi.useFakeTimers();
-  render(<App completedEpisodeIntroIds={["tutorial-intro"]} />);
+  render(
+    <App {...(options.onEvent === undefined ? {} : { episodeIntroEventSink: options.onEvent })} />,
+  );
+  if (options.splash === "hold") {
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(0);
+    });
+    return { urls, store };
+  }
   act(() => {
     vi.advanceTimersByTime(entrySplashDurationMs);
   });

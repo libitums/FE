@@ -2,46 +2,23 @@
 // 초기값(`initialNav`·`entryInitialNav`·`signedOutNav`)입니다. 전이 로직은 `nav-reducer.ts`가
 // 집니다.
 
-// `app/` -> `screens/` 방향의 **type-only** import입니다. `import type`은
-// emit되지 않으므로 런타임 결합이 0이고, 어떤 화면도 `navigation.ts`를 import하지
-// 않으므로 순환이 생기지 않습니다(import/no-cycle이 그것을 지킵니다).
-// 스텝 id는 여정 맵의 도메인 어휘이므로 선언은 소유자(journey-map.ts)에 둡니다.
-import type { JourneyStepId } from "../screens/journey-map/journey-map";
+// `app/` -> `screens/` 방향의 **type-only** import입니다. `import type`은 emit되지 않으므로 런타임 결합이 0이고,
+// 어떤 화면도 `navigation.ts`를 import하지 않으므로 순환이 생기지 않습니다(import/no-cycle이 그것을 지킵니다).
 // 판정 어휘는 `lib/answer-result.ts`에서 옵니다 — 화면 폴더가 아니라 `lib/`에서
 // 가져옵니다.
 import type { AnswerResult } from "../lib/answer-result";
 import type { CatalogUnitKey } from "../lib/catalog-progress";
-import type { SpecialUnitEntrySource } from "../lib/special-unit-entry-source";
 // 전화번호 로그인(Supabase OTP)의 공용 어휘입니다 — 코드 검증 화면이 보여 줄 번호를
 // 나릅니다.
 import type { PhoneNumber } from "../lib/auth-session.contract";
-import type { EpisodeFinalUnitId } from "../screens/episode-final/episode-final.contract";
-import type { EpisodeIntroUnitId } from "../screens/episode-intro/episode-intro.contract";
-import type { MessengerUnitId } from "../screens/messenger/messenger.contract";
-import type { PhoneCallUnitId } from "../screens/phone-call/phone-call.contract";
 import type { RoleplayEpisodeId } from "../screens/roleplay-list/roleplay-list.contract";
-import type { VisualNovelUnitId } from "../screens/visual-novel/visual-novel.contract";
 
 // 탭 목록과 1:1입니다. 순서가 곧 바텀 네비게이션의 좌→우 순서입니다
 // (bottom-navigator.contract.ts).
 export type Tab = "journey" | "roleplay" | "settings";
 
-// **route 목록과 1:1입니다 — 화면 컴포넌트와는 더 이상 1:1이 아닙니다.**
-// `roleplay-messenger`·`roleplay-phone-call`·`roleplay-visual-novel` 셋은
-// `MessengerScreen`·`PhoneCallScreen`·`VisualNovelScreen` 각각을 route
-// 둘(여정·롤플레이)로 엽니다. route가 늘면 이 union에 멤버를 더하고, `App.tsx`
-// switch의 exhaustiveness 검사가 빠진 화면을 컴파일 타임에 잡습니다.
-//
-// 이름은 최종 화면 이름으로 고정합니다.
-//
-// **스텝을 지는 멤버(`listening`·`sentence-order`·`word-choice`·`culture`·
-// `culture-quiz`·`assessment`)는 필드가 `stepId` 하나뿐입니다** — 진행도 문항
-// 인덱스도 넣지 않습니다(ADR-0007 D3). 진행은 App의 것이고 문항 인덱스는 화면
-// 로컬이라, 넣으면 `back` 한 번에 사라질 값이 라우팅 상태에 남습니다.
-// `stepOrdinal`도 넣지 않습니다 — `stepId`에서 파생 가능한 값을 따로 두면 둘이
-// 어긋납니다. `assessment`만 예외로 `results`를 더 가집니다 — 듣기 세션이 이미
-// 사라진 뒤라 어디에서도 파생되지 않고, 정확히 이 화면 인스턴스의 것이라 `back`과
-// 함께 죽는 것이 맞습니다.
+// **route 목록과 1:1입니다.** route가 늘면 이 union에 멤버를 더하고, `render-screen.tsx` switch의 exhaustiveness 검사가
+// 빠진 화면을 컴파일 타임에 잡습니다. 이름은 최종 화면 이름으로 고정합니다.
 export type Screen =
   | { name: "journey-map" }
   | { name: "roleplay-list" }
@@ -54,20 +31,6 @@ export type Screen =
   | { name: "learner-profile" }
   // 필드가 없습니다 — 목록은 App이 넘기고 알림 화면에는 진행이 없습니다.
   | { name: "notifications" }
-  // 에피소드의 서사 표지입니다. 필드는 **표지 유닛 id 하나**입니다 — 표지가 스스로 맵에
-  // 서는 유닛이 되면서(ADR-0024 D2) 「넘긴 뒤 열 유닛」이라는 개념이 없어졌습니다.
-  // 에피소드는 이 id에서 파생합니다(`episodeOfIntroUnit`) — 파생 가능한 값을 따로
-  // 실으면 둘이 어긋납니다.
-  | { name: "episode-intro"; unitId: EpisodeIntroUnitId }
-  // 표지의 `Next` 뒤에 서는 에피소드의 서사 전개입니다. 에피소드마다 형식이 하나(통화 ·
-  // 메신저 · 비주얼 노벨)이고, 어느 형식인지는 에피소드의 서사가 정합니다 — route는
-  // 모릅니다. 표지를 갈아타고(`replace`) 서므로 표지와 같은 필드를 이어 받습니다.
-  | { name: "episode-prologue"; unitId: EpisodeIntroUnitId }
-  // 표지를 마친 뒤의 학습 완료 화면입니다. 학습 유닛의 완료 화면을 그대로 쓰되 판정할
-  // 결과가 없어 늘 만점(PERFECT)입니다. `Skip`과 `Next`가 **둘 다** 여기로 오고,
-  // 화면은 그 둘을 구별하지 않습니다(spec §2.5).
-  | { name: "episode-prologue-complete"; unitId: EpisodeIntroUnitId }
-  | { name: "episode-final"; unitId: EpisodeFinalUnitId }
   // 카탈로그 에피소드의 표지 컷입니다. 에피소드는 카탈로그 id입니다.
   | { name: "catalog-cover"; episodeId: string }
   // 카탈로그 레슨의 활동 하나입니다. 유닛 하나가 같은 학습형이 이어지는 구간 여럿을 잇습니다.
@@ -86,49 +49,6 @@ export type Screen =
     }
   // 최종 테스트 통과 뒤 컷입니다.
   | { name: "catalog-epilogue"; episodeId: string }
-  | { name: "episode-final-complete"; unitId: EpisodeFinalUnitId; results: readonly AnswerResult[] }
-  // 학습 화면 넷은 `activityIndex`를 함께 집니다. 유닛 하나가 활동 여럿을 잇기
-  // 때문입니다(`learningFormsByStep`) — 몇 번째 활동인지는 「지금 어느 화면인가」의
-  // 일부라 스택이 지고, 다음 활동을 고를 때 여기서 읽습니다. App 상태로 빼면 스택과
-  // 인덱스가 어긋나는 상태를 표현할 수 있게 됩니다.
-  | { name: "listening"; stepId: JourneyStepId; activityIndex: number }
-  | { name: "sentence-order"; stepId: JourneyStepId; activityIndex: number }
-  | { name: "word-choice"; stepId: JourneyStepId; activityIndex: number }
-  | { name: "culture"; stepId: JourneyStepId; activityIndex: number }
-  | { name: "speaking"; stepId: JourneyStepId; activityIndex: number }
-  | { name: "writing"; stepId: JourneyStepId; activityIndex: number }
-  | { name: "culture-quiz"; stepId: JourneyStepId }
-  // `skippedCount`는 `results`와 같은 근거로 이 화면 인스턴스의 것입니다 — 건너뛴
-  // 말하기 문항 수는 판정에는 세고 만점에는 안 세는데(D8), 그 갈림을 지으려면 만점
-  // 판정이 실수 수와 별개로 이 값을 봐야 합니다.
-  | {
-      name: "assessment";
-      stepId: JourneyStepId;
-      results: readonly AnswerResult[];
-      skippedCount: number;
-    }
-  | { name: "messenger"; unitId: MessengerUnitId }
-  // 메신저 유닛(서사 기반 최종 테스트)을 마친 뒤의 학습 완료입니다. 여정 · 롤플레이 어느
-  // 쪽에서 열었든 같은 화면이고, 나가면 그 스택의 루트로 갑니다. `results`는 답장마다 첫
-  // 시도의 정오입니다(`assessment`의 `results`와 같은 판단 — 세션이 이미 낸 값을 싣습니다).
-  | {
-      name: "messenger-complete";
-      unitId: MessengerUnitId;
-      results: readonly AnswerResult[];
-      exitTo?: SpecialUnitEntrySource;
-    }
-  | {
-      name: "special-unit-complete";
-      unitId: PhoneCallUnitId | VisualNovelUnitId;
-      exitTo?: SpecialUnitEntrySource;
-    }
-  | { name: "phone-call"; unitId: PhoneCallUnitId }
-  | { name: "visual-novel"; unitId: VisualNovelUnitId }
-  // 롤플레이 탭에서 여는 특별 유닛 route 셋입니다. 여정 쪽 route(`messenger` ·
-  // `phone-call` · `visual-novel`)와 컴포넌트를 공유하지만 화면 자리가 다릅니다.
-  | { name: "roleplay-messenger"; unitId: MessengerUnitId }
-  | { name: "roleplay-phone-call"; unitId: PhoneCallUnitId }
-  | { name: "roleplay-visual-novel"; unitId: VisualNovelUnitId }
   // 에피소드 하나의 롤플레이를 세로로 펼친 화면입니다. 필드는 에피소드 id 하나뿐입니다
   // — 항목과 잠김은 App이 진행에서 파생해 내립니다(넣으면 진행이 바뀌어도 스택에 옛
   // 값이 남습니다).
@@ -161,13 +81,6 @@ export type Screen =
   // 말하기 탐침 route입니다. 손글씨 탐침과 같은 성질입니다 — 필드가 없고,
   // **어느 코드도 이 화면을 push하지 않습니다.**
   | { name: "speech-probe" };
-
-// 롤플레이 route 셋만 좁힌 타입입니다. `renderRoleplayUnitScreen`의 매개변수
-// 타입이 연습 경계를 집니다.
-export type RoleplayUnitScreen = Extract<
-  Screen,
-  { name: "roleplay-messenger" | "roleplay-phone-call" | "roleplay-visual-novel" }
->;
 
 // `docs/screens.md`와 ADR-0007 D3이 적은 모양 그대로입니다. 필드를 더하지 않습니다.
 export type Nav = {

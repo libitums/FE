@@ -23,6 +23,7 @@ final class AudioPlaybackController {
   private final AudioAttributes audioAttributes;
   private final AudioFocusRequest focusRequest;
   private long currentGeneration;
+  private float currentRate = AudioPlaybackRate.NORMAL;
   private MediaPlayer player;
   private boolean prepared;
   private boolean paused;
@@ -46,12 +47,17 @@ final class AudioPlaybackController {
   }
 
   void play(String source, Callback done) {
+    play(source, AudioPlaybackRate.NORMAL, done);
+  }
+
+  void play(String source, float rate, Callback done) {
     onMain(() -> {
       releasePlayer();
       long generation = session.replace(() -> {
         if (done != null) done.invoke((Object) null);
       });
       currentGeneration = generation;
+      currentRate = rate;
       if (!foreground) {
         session.finish(generation);
         return;
@@ -178,6 +184,18 @@ final class AudioPlaybackController {
       active.start();
     } catch (RuntimeException error) {
       finish(generation, active);
+      return;
+    }
+    applyRate(active);
+  }
+
+  /** Runs right after start() so first start, resume and focus return all keep the requested speed. */
+  private void applyRate(MediaPlayer active) {
+    if (!AudioPlaybackRate.changesSpeed(currentRate)) return;
+    try {
+      active.setPlaybackParams(active.getPlaybackParams().setSpeed(currentRate).setPitch(1f));
+    } catch (RuntimeException error) {
+      Log.w(TAG, "Cannot set playback speed", error);
     }
   }
 
@@ -215,6 +233,8 @@ final class AudioPlaybackController {
     prepared = false;
     paused = false;
     resumeAfterFocusGain = false;
+    // 기억된 속도는 재생과 함께 끝납니다. 다음 재생은 play가 자기 속도를 다시 기억합니다.
+    currentRate = AudioPlaybackRate.NORMAL;
     if (previous != null) {
       previous.setOnPreparedListener(null);
       previous.setOnCompletionListener(null);

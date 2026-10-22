@@ -1,30 +1,26 @@
-// 여정 맵의 카탈로그 구획 계약입니다. 타입만 둡니다 — 튜토리얼 구획(`JourneyMapSection`)과
-// 섞이지 않는 별도 종류입니다.
+// 여정 맵의 카탈로그 구획 계약입니다. 타입만 둡니다 — 튜토리얼(u00)도 카탈로그 에피소드의 하나입니다.
 
 import type { LockReason } from "../../lib/episode-catalog";
 import type { CatalogProgress, CatalogUnitKey } from "../../lib/catalog-progress";
-import type {
-  JourneyMapItemStatus,
-  JourneyMapNodeStatus,
-  JourneyMapSection,
-  JourneyStepId,
-} from "./journey-map-types";
-import type { JourneyMapNodeAccess, JourneyMapProgressLoad } from "./journey-map-load.contract";
-import type { JourneyProgress } from "./journey-map-progress";
+import type { ReactNode } from "@lynx-js/react";
 import type { SheetEntranceMotion } from "./journey-map-sheet-entrance.contract";
 
-/** 열린 카탈로그 유닛 말풍선의 키입니다(`catalogSheetKey`). 튜토리얼 스텝 id와 겹치지 않게 접두를 둡니다. */
+import type { JourneyMapItemStatus, JourneyMapNodeStatus } from "./journey-map-types";
+import type { SpecialUnitMapLayer } from "./journey-special-unit.contract";
+import type { JourneyMapNodeAccess, JourneyMapProgressLoad } from "./journey-map-load.contract";
+
+/** 열린 카탈로그 유닛 말풍선의 키입니다(`catalogSheetKey`). */
 export type CatalogSheetKey = `catalog:${string}`;
 
-/** 말풍선을 연 유닛입니다 — 튜토리얼 스텝이거나 카탈로그 유닛입니다. 상태 이름(`openStepId`)은 스텝 그대로입니다. */
-export type SheetTargetId = JourneyStepId | CatalogSheetKey;
+/** 말풍선을 연 유닛입니다. 상태 이름(`openStepId`)은 스텝 그대로입니다. */
+export type SheetTargetId = CatalogSheetKey;
 
 export type CatalogUnavailableReason = "pending" | LockReason;
 
 export type CatalogReadySection = {
   readonly kind: "catalog-ready";
   readonly episodeId: string;
-  /** 카탈로그 안 1-based 자리 — 「Episode n.」 */
+  /** 매니페스트 `order` — 「Episode n.」 */
   readonly ordinal: number;
   /** 매니페스트(이긴 쪽) 제목 */
   readonly title: string;
@@ -51,7 +47,8 @@ export type CatalogUnavailableSection = {
 export type CatalogMapSection = CatalogReadySection | CatalogUnavailableSection;
 
 export type CatalogGate = {
-  readonly tutorialPassed: boolean;
+  /** 옛 튜토리얼 최종 테스트를 통과한 기록이 있는가 — 사용자 기록의 사실(파생 입력)입니다. */
+  readonly legacyTutorialPassed: boolean;
   readonly progress: CatalogProgress;
 };
 
@@ -67,10 +64,12 @@ export type CatalogUnitNode = {
   readonly status: JourneyMapItemStatus;
 };
 
-/** 맵 화면의 카탈로그 슬롯입니다. 없으면(undefined) 카탈로그 구획이 없는 맵 — 튜토리얼만. */
+/** 맵 화면의 카탈로그 슬롯입니다. */
 export type JourneyMapCatalogProps = {
   readonly sections: readonly CatalogMapSection[];
   readonly progress: CatalogProgress;
+  /** 옛 튜토리얼 최종 테스트를 통과한 기록이 있는가 — 튜토리얼 다음 구획의 문 입력입니다. */
+  readonly legacyTutorialPassed: boolean;
   readonly onStartCover: (episodeId: string) => void;
   /** 말풍선의 `Start`를 눌렀을 때입니다. 노드를 누르면 맵이 먼저 말풍선을 엽니다. */
   readonly onStartUnit: (episodeId: string, unitKey: CatalogUnitKey) => void;
@@ -84,11 +83,19 @@ export type JourneyMapCatalogProps = {
 /** 열린 노드를 눌렀을 때 — 탭의 세로 좌표는 유닛을 재기 전까지 말풍선이 설 어림 자리입니다. */
 export type CatalogUnitSelect = (episodeId: string, unitKey: CatalogUnitKey, tapY: number) => void;
 
+/** 첫 유닛 안내의 맵 쪽 손잡이입니다. */
+export type CatalogMapGuide = { readonly visible: boolean; readonly dismiss: () => void };
+
+/** 안내가 어느 구획의 표지를 가리키는 동안 그 구획이 받는 손잡이입니다. */
+export type CatalogCoverGuide = { readonly dismiss: () => void };
+
 export type CatalogMapSectionsProps = {
   readonly sections: readonly CatalogMapSection[];
   readonly gate: CatalogGate;
   /** 없으면 열려 있습니다. */
   readonly access?: JourneyMapNodeAccess;
+  /** 없으면 안내가 없는 맵입니다. */
+  readonly guide?: CatalogMapGuide;
   readonly onStartCover: (episodeId: string) => void;
   readonly onSelectUnit: CatalogUnitSelect;
 };
@@ -98,11 +105,15 @@ export type CatalogEpisodeSectionProps = {
   readonly coverStatus: JourneyMapNodeStatus;
   readonly access: JourneyMapNodeAccess;
   readonly progress: CatalogProgress;
+  /** 첫 유닛 안내가 이 구획의 표지를 가리키는 동안의 손잡이, 아니면 null. */
+  readonly guide: CatalogCoverGuide | null;
   readonly onStartCover: (episodeId: string) => void;
   readonly onSelectUnit: CatalogUnitSelect;
 };
 
-export type CatalogUnavailableSectionProps = { readonly section: CatalogUnavailableSection };
+export type CatalogUnavailableSectionProps = {
+  readonly section: CatalogUnavailableSection;
+};
 
 export type CatalogCoverMapItemProps = {
   readonly episodeId: string;
@@ -110,6 +121,15 @@ export type CatalogCoverMapItemProps = {
   readonly ordinal: number;
   readonly status: JourneyMapNodeStatus;
   readonly onSelect: (episodeId: string) => void;
+  readonly layer?: SpecialUnitMapLayer; // 기본 "map"
+  /** 안내 말풍선 자리입니다. */
+  readonly children?: ReactNode;
+};
+
+export type FirstUnitMapTooltipProps = {
+  /** 고를 수 있을 때만 onSelect가 불립니다. */
+  readonly status: JourneyMapNodeStatus;
+  readonly onSelect: () => void;
 };
 
 export type CatalogUnitNodeProps = {
@@ -120,9 +140,6 @@ export type CatalogUnitNodeProps = {
 };
 
 export type JourneyMapHeaderSlotProps = {
-  /** 화면이 배럴에서 읽은 값을 넘깁니다(테스트 mock이 닿게). */
-  readonly tutorialSections: readonly JourneyMapSection[];
-  readonly progress: JourneyProgress;
   readonly load: JourneyMapProgressLoad;
   /** 띠 자리 · 띠의 위 모서리(`mapTopLayout`). 없으면 CSS 기본값(64)과 같다. */
   readonly bandTop?: number;
@@ -165,4 +182,5 @@ export type CatalogMapTestId =
   | `catalog-pending-${string}`
   | "catalog-header-unavailable"
   // CatalogMapSections 루트(가림 속성 자리)
-  | "journey-map-screen-catalog";
+  | "journey-map-screen-catalog"
+  | "first-unit-map-tooltip";

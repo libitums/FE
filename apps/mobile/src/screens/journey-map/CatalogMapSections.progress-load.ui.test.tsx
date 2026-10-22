@@ -19,7 +19,10 @@ const section: CatalogReadySection = {
   completionKeys: ["RP"],
   cultureKeys: [],
 };
-const gate: CatalogGate = { tutorialPassed: true, progress: { "u01-water": ["intro", "S1"] } };
+const gate = {
+  legacyTutorialPassed: true,
+  progress: { "u01-water": ["intro", "S1"] },
+} as unknown as CatalogGate;
 
 const coverId = "ui-lynx-special-unit-catalog-cover-u01-water";
 // 최종(`RP`)은 `SpecialUnit`, 레슨은 `LearningUnit`이 그립니다.

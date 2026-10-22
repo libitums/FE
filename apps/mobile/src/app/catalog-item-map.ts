@@ -8,7 +8,8 @@ import type {
   DialogueSpeaker,
   SentenceOrderQuestion,
 } from "../screens/sentence-order/sentence-order-questions";
-import { syllableBuildItemOf } from "./catalog-build-map";
+import { listenBuildItemOf, syllableBuildItemOf } from "./catalog-build-map";
+import { audioField, catalogAnswerEchoOf } from "./catalog-item-audio";
 import { cultureCardItemOf, vocabCardItemOf } from "./catalog-card-map";
 import {
   clozeChoiceItemOf,
@@ -41,7 +42,10 @@ const sentenceOrder = (itemId: string, question: SentenceOrderQuestion): Catalog
 });
 
 /** 타일을 이어 맞추는 문장 순서입니다. 타일은 정답 순서로 실려 오므로 섞어 보입니다. */
-function wordOrderItemOf(item: ItemOf<"WORD_ORDER">, port: CatalogItemPort): CatalogMappedItem {
+function wordOrderItemOf(
+  item: ItemOf<"WORD_ORDER">,
+  port: CatalogLessonItemPort,
+): CatalogMappedItem {
   const tiles = item.tiles.map((tile) => koOf(port, tile.ko));
   const answers = item.answers.map((answer) => koOf(port, answer.ko));
   if (
@@ -57,6 +61,7 @@ function wordOrderItemOf(item: ItemOf<"WORD_ORDER">, port: CatalogItemPort): Cat
     prompt: english ?? koOf(port, item.prompt.ko),
     chips: order.map((index) => tiles[index] ?? ""),
     answerOrder: tiles.map((_, tile) => order.indexOf(tile)),
+    ...audioField(catalogAnswerEchoOf(item, port)),
     ...optionalField("instruction", instructionOf(port, item.prompt)),
   });
 }
@@ -129,8 +134,7 @@ export function catalogItemOf(item: LearningItem, port: CatalogLessonItemPort): 
     case "SYLLABLE_BUILD":
       return syllableBuildItemOf(item, port);
     case "LISTEN_BUILD":
-      // 소리가 먼저 있어야 화면을 만듭니다.
-      return skippedItem(item, "audio-missing");
+      return listenBuildItemOf(item, port);
     case "SHADOW":
       return readAloudItemOf(item, port);
     case "SPEAK_WORD":

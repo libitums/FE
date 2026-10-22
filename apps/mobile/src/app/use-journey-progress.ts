@@ -1,6 +1,6 @@
 // 여정 진행과 연속 학습 상태입니다. 미전송 기록·계정별 복구·재시도는 journey-progress-sync가 담당합니다.
 
-import type { CatalogCompletionKeysOf, CatalogProgress } from "../lib/catalog-progress";
+import type { CatalogProgress } from "../lib/catalog-progress";
 import { fullTicketLedger } from "../lib/learning-tickets";
 import type { TicketLedger } from "../lib/learning-tickets";
 import { useEffect, useRef, useState } from "@lynx-js/react";
@@ -8,20 +8,18 @@ import { useEffect, useRef, useState } from "@lynx-js/react";
 import { localDayFrom } from "../lib/progress-api";
 import { clearStatBump, noStatBumps, recordStatBump } from "../lib/stat-bump";
 import type { StatBumpKind, StatBumps } from "../lib/stat-bump";
-import type { EpisodeFinalUnitId } from "../screens/episode-final/episode-final.contract";
-import type { EpisodeIntroUnitId } from "../screens/episode-intro/episode-intro.contract";
-import { journeyMapSections } from "../screens/journey-map/journey-map-units";
-import type { MessengerUnitId } from "../screens/messenger/messenger.contract";
-import type { PhoneCallUnitId } from "../screens/phone-call/phone-call.contract";
-import type { VisualNovelProgress } from "../screens/visual-novel/visual-novel.contract";
-import type { AppJourneySeed } from "./journey-progress";
+import { catalogCompletionKeysOf } from "../screens/journey-map/catalog-map";
+import type { CatalogMapSection } from "../screens/journey-map/catalog-map.contract";
+import type { AppProgressSeed } from "./app-props";
 import { loadEpisodeSurveyDone } from "../lib/feedback-api";
 import {
   completedActivityCount,
-  completedEpisodesFrom,
+  completedSurveyEpisodesFrom,
   trophyCountFrom,
 } from "./learning-progress";
 import type { CompletedEpisode, JourneyProgressState } from "./learning-progress";
+import { emptyLegacyTutorialRecord, legacyTutorialPassed } from "./legacy-tutorial-progress";
+import type { LegacyTutorialRecord } from "./legacy-tutorial-progress";
 import { createLearningDaySync } from "./learning-day-sync";
 import { createJourneyProgressSync } from "./journey-progress-sync";
 import { progressUserId } from "./pending-learning-progress";
@@ -29,28 +27,18 @@ import { journeyMapProgressLoadOf } from "./progress-load";
 import { useProgressLoad } from "./use-progress-load";
 
 export function useJourneyProgress(
-  journeySeed: AppJourneySeed,
-  initialCompletedEpisodeIntroIds: readonly EpisodeIntroUnitId[],
-  completionKeysOf: CatalogCompletionKeysOf,
+  seed: AppProgressSeed,
+  catalogSections: readonly CatalogMapSection[],
 ) {
-  const [completedStepCount, setCompletedStepCount] = useState(journeySeed.completedStepCount);
-  const [completedMessengerUnitIds, setCompletedMessengerUnitIds] = useState<
-    readonly MessengerUnitId[]
-  >(journeySeed.completedMessengerUnitIds);
-  const [completedPhoneCallUnitIds, setCompletedPhoneCallUnitIds] = useState<
-    readonly PhoneCallUnitId[]
-  >(journeySeed.completedPhoneCallUnitIds);
-  const [visualNovelProgress, setVisualNovelProgress] = useState<VisualNovelProgress>(
-    journeySeed.visualNovelProgress,
+  const completionKeysOf = catalogCompletionKeysOf(catalogSections);
+  // 옛 튜토리얼 기록은 읽어 둔 값입니다 — 화면도 결선도 바꾸지 않고 불러오기 · 합치기(`apply`)만 바꿉니다.
+  const [legacyTutorial, setLegacyTutorial] = useState<LegacyTutorialRecord>(
+    seed.legacyTutorial ?? emptyLegacyTutorialRecord,
   );
-  const [completedEpisodeFinalIds, setCompletedEpisodeFinalIds] = useState<
-    readonly EpisodeFinalUnitId[]
-  >(journeySeed.completedEpisodeFinalIds);
-  const [completedEpisodeIntroIds, setCompletedEpisodeIntroIds] = useState<
-    readonly EpisodeIntroUnitId[]
-  >(initialCompletedEpisodeIntroIds);
   // 카탈로그 에피소드 진행 — 표지 컷을 끝내면 결선이 setter로 적습니다.
-  const [catalogProgress, setCatalogProgress] = useState<CatalogProgress>({});
+  const [catalogProgress, setCatalogProgress] = useState<CatalogProgress>(
+    seed.catalogProgress ?? {},
+  );
   // 학습 티켓 원장 — 진행과 같은 저장 · 병합 경로를 탑니다(`lib/learning-tickets.ts`).
   const [tickets, setTickets] = useState<TicketLedger>(fullTicketLedger);
   const [streakDays, setStreakDays] = useState(0);
@@ -71,16 +59,7 @@ export function useJourneyProgress(
   // (연속 모달이 먼저입니다).
   const [recordingDay, setRecordingDay] = useState(false);
 
-  const state: JourneyProgressState = {
-    completedStepCount,
-    completedMessengerUnitIds,
-    completedPhoneCallUnitIds,
-    visualNovelProgress,
-    completedEpisodeFinalIds,
-    completedEpisodeIntroIds,
-    catalogProgress,
-    tickets,
-  };
+  const state: JourneyProgressState = { legacyTutorial, catalogProgress, tickets };
   const latest = useRef(state);
   latest.current = state;
   const initial = useRef(state);
@@ -97,22 +76,20 @@ export function useJourneyProgress(
   );
   const activityCount = useRef(completedActivityCount(state));
   const completedEpisodeIds = useRef(
-    completedEpisodesFrom(journeyMapSections, state).map((e) => e.id),
+    completedSurveyEpisodesFrom(catalogSections, catalogProgress).map((e) => e.id),
   );
   // 트로피 수의 직전 값입니다. 활동 기준과 같이 `apply`(불러오기)가 먼저 맞춰 두므로 불러온 값은 오름이 아닙니다.
-  const trophyBaseline = useRef(trophyCountFrom(journeyMapSections, state, completionKeysOf));
+  const trophyBaseline = useRef(trophyCountFrom(state, completionKeysOf));
 
   const apply = (next: JourneyProgressState): void => {
     latest.current = next;
     activityCount.current = completedActivityCount(next);
-    completedEpisodeIds.current = completedEpisodesFrom(journeyMapSections, next).map((e) => e.id);
-    trophyBaseline.current = trophyCountFrom(journeyMapSections, next, completionKeysOf);
-    setCompletedStepCount(next.completedStepCount);
-    setCompletedMessengerUnitIds(next.completedMessengerUnitIds);
-    setCompletedPhoneCallUnitIds(next.completedPhoneCallUnitIds);
-    setVisualNovelProgress(next.visualNovelProgress);
-    setCompletedEpisodeFinalIds(next.completedEpisodeFinalIds);
-    setCompletedEpisodeIntroIds(next.completedEpisodeIntroIds);
+    completedEpisodeIds.current = completedSurveyEpisodesFrom(
+      catalogSections,
+      next.catalogProgress,
+    ).map((e) => e.id);
+    trophyBaseline.current = trophyCountFrom(next, completionKeysOf);
+    setLegacyTutorial(next.legacyTutorial);
     setCatalogProgress(next.catalogProgress);
     setTickets(next.tickets ?? fullTicketLedger);
   };
@@ -158,10 +135,10 @@ export function useJourneyProgress(
     const count = completedActivityCount(state);
     const grew = count > activityCount.current;
     activityCount.current = count;
-    const episodes = completedEpisodesFrom(journeyMapSections, state);
+    const episodes = completedSurveyEpisodesFrom(catalogSections, catalogProgress);
     const newlyCompleted = episodes.filter((e) => !completedEpisodeIds.current.includes(e.id));
     completedEpisodeIds.current = episodes.map((e) => e.id);
-    const trophies = trophyCountFrom(journeyMapSections, state, completionKeysOf);
+    const trophies = trophyCountFrom(state, completionKeysOf);
     const trophyBefore = trophyBaseline.current;
     trophyBaseline.current = trophies;
     if (grew) setStatBumps((bumps) => recordStatBump(bumps, "trophy", trophyBefore, trophies));
@@ -181,20 +158,11 @@ export function useJourneyProgress(
 
     renderedSync?.capture(state);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    completedStepCount,
-    completedMessengerUnitIds,
-    completedPhoneCallUnitIds,
-    visualNovelProgress,
-    completedEpisodeFinalIds,
-    completedEpisodeIntroIds,
-    catalogProgress,
-    tickets,
-  ]);
+  }, [catalogProgress, tickets]);
 
   const onStatBumped = (kind: StatBumpKind): void =>
     setStatBumps((bumps) => clearStatBump(bumps, kind));
-  const trophyCount = trophyCountFrom(journeyMapSections, state, completionKeysOf);
+  const trophyCount = trophyCountFrom(state, completionKeysOf);
   // 전역 머리의 트로피 칩입니다. 노드가 「확인 중」인 동안(응답을 기다리는 동안)은 0을 보이지 않도록 `null`입니다.
   const headerTrophyCount: number | null =
     progressLoad.phase === "checking" || progressLoad.phase === "loading" ? null : trophyCount;
@@ -215,12 +183,7 @@ export function useJourneyProgress(
         void sync.current?.flush();
       }),
     },
-    setCompletedStepCount,
-    setCompletedMessengerUnitIds,
-    setCompletedPhoneCallUnitIds,
-    setVisualNovelProgress,
-    setCompletedEpisodeFinalIds,
-    setCompletedEpisodeIntroIds,
+    legacyTutorialPassed: legacyTutorialPassed(legacyTutorial),
     setCatalogProgress,
     setTickets,
     streakDays,

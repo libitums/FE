@@ -11,8 +11,67 @@
   background: var(--libitum-color-brand-primary);
 }
 
+/* 로고 상자입니다. 폭은 지금 로고의 70 %이고 높이는 로고가 aspect-ratio로 정합니다. 게이지는 이 상자
+   아래 겹침 자리(top: 100%)라 나타나도 로고가 움직이지 않습니다. */
+.splash-screen-mark {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 70%;
+}
+
 /* 원본 캔버스 1142×523입니다. 폭만 정하고 비율은 aspect-ratio와 aspectFit이 지킵니다. */
 .splash-screen-logo {
-  width: 70%;
+  width: 100%;
   aspect-ratio: 1142 / 523;
+}
+
+.splash-update {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: var(--libitum-spacing-24);
+}
+
+.splash-update-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* 트랙 = color.white x opacity.35(시안 32 %에 가장 가까운 불투명도 토큰). 160px은 시안 B의 고정 폭이라
+   토큰이 없습니다. */
+.splash-update-track {
+  width: 160px;
+  height: var(--libitum-spacing-4);
+  border-radius: var(--libitum-radius-full);
+  background-color: rgba(255, 255, 255, 0.35);
+  overflow: hidden;
+}
+
+.splash-update-fill {
+  height: 100%;
+  min-width: var(--libitum-spacing-4);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-white);
+  transition: width var(--libitum-motion-duration-progress) var(--libitum-motion-easing-enter);
+}
+
+/* 15px 굵게 — 사용자 결정(2026-10-21)으로 시안 19px보다 작게 둡니다. 브랜드 주황 위 흰 글자는 3.0:1이라
+   WCAG 1.4.3 AA(일반 글 4.5:1)에 미달합니다 — 사용자가 감수한 예외이고, 같은 뜻이 게이지 라벨과 첫 등장 알림으로
+   스크린리더에 전해집니다(ADR-0078). 15px 타이포 토큰이 없어 크기만 리터럴이고, 글꼴 · 굵기 · 자간 · 줄 높이는 label-l입니다. */
+.splash-update-label {
+  margin-top: var(--libitum-spacing-12);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-weight: var(--libitum-typography-label-l-font-weight);
+  letter-spacing: var(--libitum-typography-label-l-letter-spacing);
+  font-size: 15px;
+  line-height: var(--libitum-typography-label-l-line-height);
+  color: var(--libitum-color-white);
+  text-align: center;
+}
+
+.splash-update-motion-reduced .splash-update-fill {
+  transition: none;
 }

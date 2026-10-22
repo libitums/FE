@@ -25,7 +25,16 @@
   `AirbridgeEventsModule`로 바뀌었다(개수는 그대로, [호스트 모듈 표](README.md#호스트-모듈-표)).
   [ADR-0052](0052-android-release-shrinking.md) D5 — 산출물 가드 A1(`.so` 개수) · A3(dex 한도) · A4(호스트 모듈 수)의 숫자가
   바뀌었다(D14, 그 문서의 「적용 기록」).
+- **부분 대체됨(2026-10-22)**: **D6**(iOS restricted 변형 · ATT 없음 · IDFA 미수집)과 D13의 iOS SDK 매니페스트 서술은
+  [ADR-0079](0079-ios-tracking-authorization.md)가 대신한다 — iOS는 일반판 `airbridge-ios-sdk` 4.12.0, 가입 뒤 여정 맵 첫 진입에
+  추적 허용을 묻는다(사용자 결정). 「재검토 조건」의 「ATT 팝업을 열기로 한 때」가 발동했다. 나머지 결정은 그대로다.
 - 받은 적용 기록(결정을 바꾸지 않는다):
+  2026-10-22 [ADR-0080](0080-airbridge-deeplink.md) — 「다루지 않는 것」의 딥링크 · 지연 딥링크 · Associated Domains를 열었다(재검토 조건
+  「딥링크를 쓰기로 한 때」 발동). D5의 지연 딥링크 조회는 이제 쓰는 요청이고, Android Meta 지연 앱 링크 끄기는 그대로다.
+  2026-10-22 D1 — Android `io.airbridge:sdk-android` 4.11.3 → **4.12.0**(정확 버전, 대시보드 안내 버전에 맞춤). 에뮬레이터 `bundled` ·
+  실제 값에서 `initializeSDK` · 모듈 생성 확인. release dex 4,740,008 → 4,758,464 bytes(+18,456), 64비트 `.so` 33 그대로.
+  ⚠ 산출물 가드 A3(dex < 4,300,000)는 **main에서 이미** 넘어 있었다(4.11.3에서 4,740,008) — `pnpm verify` 밖의 검사라 드러나지
+  않았다. A4(호스트 모듈 12)도 main에서 13이다(`ContentFileModule`). 한도는 고치지 않았다 — 사용자 판단.
   2026-10-18 [ADR-0069](0069-returning-learner-login.md) D6 — 가입 완료가 기록 있는 계정의 재로그인 · 재설치에서 더 나지 않는다(「사용자 확인 필요」 5에 주).
 
 **왜 새 번호인가** — 0057은 이미 main에 들어가 그 위에 코드 · 문서 · 스토어 고지 절차가 지어졌다. 그 결정 여럿(아티팩트 ·
@@ -135,7 +144,7 @@ App Name 규칙이 토큰보다 좁은 이유: 대시보드 고유 ID라 공백 
   못했다(Android의 `setTrackMetaDeferredAppLinkEnabled(false)`는 Meta 지연 앱 링크만 끈다). 사용자가 보는 팝업은 없었다 — iOS
   붙여넣기 허용 팝업도 뜨지 않았다(e2e A · B).
 
-### D6. iOS는 restricted 변형 — 「IDFA 미수집」을 SDK 선택으로 지킨다
+### D6. iOS는 restricted 변형 — 「IDFA 미수집」을 SDK 선택으로 지킨다 ⟨2026-10-22 대체됨 → [ADR-0079](0079-ios-tracking-authorization.md)⟩
 
 - 근거: 사용자 결정 「ATT 팝업 없음 · IDFA 미수집」을 **코드 설정이 아니라 바이너리가** 보장한다(맥락 1 — AdSupport · ATT 링크
   없음, IDFA 문자열 0). 덧붙여 ① SDK 매니페스트가 `NSPrivacyTracking = false` · 추적 도메인 0이라 0057의 「앱은 추적 안 함 ·
@@ -402,3 +411,20 @@ PR에서 wiki를 고친다」 규약이고 PR 작성자가 손으로 한다. 이
 - **Fresco를 올리거나 걷어 낼 때** → D14. dex 한도를 다시 잰다.
 - **App Store 또는 Play 심사가 이 변경을 이유로 거절한 때** → D10 · D13.
 - **`size:check`가 실패한 때** → 실측으로 상한을 올리고 「사용자 확인 필요」 16을 닫는다.
+
+## 적용 기록 ⟨2026-10-21 — 튜토리얼 u00⟩
+
+적용 기록이고 이 ADR의 구조(모듈 · 값 주입 · 「초기화하지 않음」 판정 · PostHog와 독립)를 바꾸지 않는다. 결정은 [ADR-0081](0081-tutorial-as-catalog-episode.md) D9 — **사용자 결정**(2026-10-21, Q4).
+
+- **D7 매핑이 바뀌었다** — `messenger_unit_completed` · `visual_novel_unit_completed`(출처 journey) 두 줄과 「위 둘 · 출처 roleplay」 줄을 지우고 한 줄을 더했다:
+
+  | 기존 제품 이벤트 | 조건 | Airbridge 카테고리 | 시맨틱 속성 |
+  |---|---|---|---|
+  | `entry_completed` | — | `airbridge.user.signup` | 없음(그대로) |
+  | `episode_final_passed` | — | `airbridge.achieveLevel` | `level` = `episodeId` · `label` = `"episode_final"` |
+  | 그 밖의 이름 전부 | — | 보내지 않는다 | — |
+
+  근거: 메신저 · 비주얼 노벨 화면이 지워져 옛 두 줄은 한 건도 나지 않는다. 「레슨(단계) 완료」를 에피소드 단위로 읽는다 — 레슨마다 보내면 튜토리얼 하나에 14건이다. 신규 사용자의 첫 건이 튜토리얼(`u00-tutorial`) 완료다.
+- **D9 전달 sink는 `entryEventSink` · `episodeIntroEventSink` 둘**이다(`withAirbridgeEvents`) — `messengerEventSink` · `visualNovelEventSink`가 지워졌고, 카탈로그 학습 이벤트(`episode_final_passed`)는 `episodeIntroEventSink`로 나간다.
+- 와이어 값 넷(`airbridge.user.signup` · `airbridge.achieveLevel` · `level` · `label`)은 그대로다 — 호스트 · SDK 변경 0.
+- **매체 쪽 전환 설정이 옛 `messenger` · `visual_novel` 라벨을 쓰고 있으면 대시보드 갱신이 필요하다** — 사용자 몫([Airbridge 이벤트](../airbridge-events.md)).

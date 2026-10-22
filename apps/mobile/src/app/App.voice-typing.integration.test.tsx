@@ -2,9 +2,12 @@ import { afterEach, expect, test, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
-import type { AppJourneySeed } from "./journey-progress";
 import { resetPushWiringForTests } from "./push-wiring";
-import { contentNotFoundResponse, isContentRequest } from "./test-helpers/content-requests";
+import {
+  contentNotFoundResponse,
+  contentPathOf,
+  isContentRequest,
+} from "./test-helpers/content-requests";
 import { authSessionStorageKey, serializeAuthSession } from "../lib/auth-session";
 import { audioSyncLengthMs } from "../lib/audio-manifest";
 import { manifestTextOf, ABSENT_BODY } from "../lib/audio-manifest.test-support";
@@ -17,15 +20,18 @@ import { allLearningItemGuidesSeenValue } from "../lib/learning-item-guide.test-
 import { EPISODE_BANNER_HOLD_MS } from "../screens/catalog-cover/episode-banner";
 import { voiceRevealIntervalMs } from "../screens/catalog-cover/voice-reveal";
 import type { EpisodeIntroEvent } from "../screens/episode-intro/episode-intro.contract";
-import { journeySteps } from "../screens/journey-map/journey-map";
 import {
   bootContentApp,
-  contentBase,
   manifestOf,
   minimalEpisodeText,
   settle,
 } from "./test-helpers/episode-content-boot";
 import { episodeAssetPaths } from "../lib/episode-assets";
+import {
+  legacyPassedRecord,
+  legacyPassedSeed,
+  tutorialDoneProgress,
+} from "./test-helpers/progress-seed";
 
 // `integration` 계층: 실행기 한 차례(에피소드 받기 -> 음성 정보 파일 받기)가 전송 대역 -> 기기 저장소 -> 로더 ->
 // 컷 모델 -> 화면 -> 타자기까지 닿는지 한 트리에서 봅니다. 대역은 경계뿐입니다 - `NativeModules`
@@ -35,7 +41,6 @@ const supabaseUrl = "https://test.supabase.co";
 const u01 = "u01-water";
 const audioUrl = (id: string): string =>
   `${supabaseUrl}/storage/v1/object/public/content/audio/${id}.m4a`;
-const AUDIO_MANIFEST_URL_TAIL = "/content/audio/manifest.json";
 
 const PRE_3 = { duration_ms: 2299, speech_end_ms: 1763 };
 const MANIFEST_TEXT = manifestTextOf({ "u01-water/pre-3": PRE_3 });
@@ -49,16 +54,10 @@ const refreshedBody = JSON.stringify({
   user: { id: "u" },
 });
 
-const tutorialDoneSeed: AppJourneySeed = {
-  completedStepCount: journeySteps.length,
-  completedMessengerUnitIds: ["appointment-confirmation"],
-  completedPhoneCallUnitIds: ["appointment-confirmation-phone-call"],
-  visualNovelProgress: { status: "completed", beatIndex: 2 },
-  completedEpisodeFinalIds: ["tutorial-final-test"],
-};
+const tutorialDoneSeed = legacyPassedSeed;
 const tutorialDoneSnapshot = {
   version: 1,
-  completedStepCount: journeySteps.length,
+  completedStepCount: legacyPassedRecord.completedStepCount,
   completedEpisodeIntroIds: ["tutorial-intro"],
   completedMessengerUnitIds: ["appointment-confirmation"],
   completedPhoneCallUnitIds: ["appointment-confirmation-phone-call"],
@@ -123,14 +122,15 @@ async function boot(options: BootOptions = {}): Promise<Booted> {
   vi.stubEnv("PUBLIC_SUPABASE_URL", supabaseUrl);
   vi.stubEnv("PUBLIC_SUPABASE_ANON_KEY", "test-anon-key");
 
-  const snapshot = { ...tutorialDoneSnapshot, catalogProgress: {} };
+  // 튜토리얼(u00)을 끝낸 진행을 함께 둡니다 — u01 표지가 열리려면 앞 에피소드를 끝냈어야 합니다.
+  const snapshot = { ...tutorialDoneSnapshot, catalogProgress: tutorialDoneProgress() };
   vi.stubGlobal("fetch", (target: string) => {
     if (target.includes("grant_type=refresh_token")) {
       return Promise.resolve({ status: 200, text: async () => refreshedBody });
     }
     if (isContentRequest(target)) {
       if (options.offline === true) return Promise.reject(new Error("offline"));
-      if (target.endsWith(AUDIO_MANIFEST_URL_TAIL)) {
+      if (contentPathOf(target) === "audio/manifest.json") {
         const reply = options.audioManifest;
         if (reply === "reject") return Promise.reject(new Error("offline"));
         if (reply !== undefined) {
@@ -152,11 +152,7 @@ async function boot(options: BootOptions = {}): Promise<Booted> {
   const events: EpisodeIntroEvent[] = [];
   vi.useFakeTimers();
   render(
-    <App
-      journeySeed={tutorialDoneSeed}
-      completedEpisodeIntroIds={["tutorial-intro"]}
-      episodeIntroEventSink={(event) => events.push(event)}
-    />,
+    <App progressSeed={tutorialDoneSeed} episodeIntroEventSink={(event) => events.push(event)} />,
   );
   act(() => {
     vi.advanceTimersByTime(entrySplashDurationMs);
@@ -370,8 +366,9 @@ const remoteContent = {
   "episodes/u04-x.json": episode,
   "audio/manifest.json": MANIFEST_TEXT,
 };
+const paths = (urls: readonly string[]) => urls.map((url) => contentPathOf(url));
 const audioRequests = (urls: readonly string[]) =>
-  urls.filter((url) => url === `${contentBase}audio/manifest.json`);
+  urls.filter((url) => contentPathOf(url) === "audio/manifest.json");
 const bundledPaths = bundledCatalogInput.manifest.episodes.flatMap((entry) =>
   episodeAssetPaths(bundledCatalogInput.episodes[entry.id]),
 );
@@ -408,7 +405,7 @@ test("VTI4. 정보 파일은 그 차례의 에피소드 받기(본문 · 자산)
   await settle();
 
   // 자산 받기가 끝나지 않았으므로 정보 파일은 아직 요청되지 않는다.
-  expect(urls).toContain(`${contentBase}episodes/u04-x.json`);
+  expect(paths(urls)).toContain("episodes/u04-x.json");
   expect(audioRequests(urls)).toHaveLength(0);
 
   await act(async () => {
@@ -416,8 +413,8 @@ test("VTI4. 정보 파일은 그 차례의 에피소드 받기(본문 · 자산)
   });
   await settle();
   expect(audioRequests(urls)).toHaveLength(1);
-  expect(urls.indexOf(`${contentBase}audio/manifest.json`)).toBeGreaterThan(
-    urls.indexOf(`${contentBase}episodes/u04-x.json`),
+  expect(paths(urls).indexOf("audio/manifest.json")).toBeGreaterThan(
+    paths(urls).indexOf("episodes/u04-x.json"),
   );
   expect(store.get(CONTENT_AUDIO_MANIFEST_KEY)).toBe(MANIFEST_TEXT);
 

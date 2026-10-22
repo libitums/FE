@@ -2,13 +2,7 @@ import { vi } from "vitest";
 import { act, fireEvent, screen } from "@lynx-js/react/testing-library";
 
 import type { CatalogProgress } from "../../lib/catalog-progress";
-import type { EpisodeFinalUnitId } from "../episode-final/episode-final.contract";
-import type { EpisodeIntroUnitId } from "../episode-intro/episode-intro.contract";
-import type { MessengerUnitId } from "../messenger/messenger.contract";
-import type { PhoneCallUnitId } from "../phone-call/phone-call.contract";
-import type { VisualNovelUnitId } from "../visual-novel/visual-novel.contract";
 import { JourneyMapScreen } from "./JourneyMapScreen";
-import { journeySteps } from "./journey-map";
 import type { CatalogMapSection, JourneyMapCatalogProps } from "./catalog-map.contract";
 
 // ui 계층 공용 대역입니다 — 호스트의 질의(`createSelectorQuery`)는 jsdom에 없으므로 여기서 세웁니다.
@@ -123,44 +117,6 @@ export function touchMap(): void {
   });
 }
 
-export type TutorialProgressProps = {
-  readonly completedStepCount: number;
-  readonly completedEpisodeIntroIds: readonly EpisodeIntroUnitId[];
-  readonly completedMessengerUnitIds: readonly MessengerUnitId[];
-  readonly completedPhoneCallUnitIds: readonly PhoneCallUnitId[];
-  readonly completedVisualNovelUnitIds: readonly VisualNovelUnitId[];
-  readonly completedEpisodeFinalIds: readonly EpisodeFinalUnitId[];
-};
-
-export const noProgress: TutorialProgressProps = {
-  completedStepCount: 0,
-  completedEpisodeIntroIds: [],
-  completedMessengerUnitIds: [],
-  completedPhoneCallUnitIds: [],
-  completedVisualNovelUnitIds: [],
-  completedEpisodeFinalIds: [],
-};
-
-/** 표지 + 스텝 둘 완료 — 다음 유닛은 `ordering`입니다. */
-export const twoStepsDone: TutorialProgressProps = {
-  ...noProgress,
-  completedStepCount: 2,
-  completedEpisodeIntroIds: ["tutorial-intro"],
-};
-
-/** 표지 + 스텝 셋 완료 — 다음 유닛은 `appointment`입니다. */
-export const threeStepsDone: TutorialProgressProps = { ...twoStepsDone, completedStepCount: 3 };
-
-/** 튜토리얼 전부 완료 — 마지막 완료는 `tutorial-final-test`입니다. */
-export const tutorialAllDone: TutorialProgressProps = {
-  completedStepCount: journeySteps.length,
-  completedEpisodeIntroIds: ["tutorial-intro"],
-  completedMessengerUnitIds: ["appointment-confirmation"],
-  completedPhoneCallUnitIds: ["appointment-confirmation-phone-call"],
-  completedVisualNovelUnitIds: ["cafe-arrival-visual-novel"],
-  completedEpisodeFinalIds: ["tutorial-final-test"],
-};
-
 export const catalogLessonKeys = ["S1", "S3", "S4", "S5", "S6", "S7", "S8", "S9"];
 
 // 제목은 한 낱말로 둡니다 — 머리 카드가 긴 제목을 줄로 나누므로 텍스트 노드가 하나여야 `getByText`가 집습니다.
@@ -184,37 +140,23 @@ function ready(episodeId: string, ordinal: number, title: string): CatalogMapSec
 }
 
 export function catalogProps(
-  options: { sections?: readonly CatalogMapSection[]; progress?: CatalogProgress } = {},
+  options: {
+    sections?: readonly CatalogMapSection[];
+    progress?: CatalogProgress;
+    legacyTutorialPassed?: boolean;
+  } = {},
 ): JourneyMapCatalogProps {
   return {
     sections: options.sections ?? catalogReadySections,
     progress: options.progress ?? {},
+    legacyTutorialPassed: options.legacyTutorialPassed ?? false,
     onStartCover: vi.fn<(episodeId: string) => void>(),
     onStartUnit: vi.fn<(episodeId: string, unitKey: string) => void>(),
   };
 }
 
-export function mapScreen(
-  options: { progress?: TutorialProgressProps; catalog?: JourneyMapCatalogProps } = {},
-) {
-  const progress = options.progress ?? noProgress;
-  return (
-    <JourneyMapScreen
-      completedStepCount={progress.completedStepCount}
-      onStartStep={() => {}}
-      completedEpisodeIntroIds={progress.completedEpisodeIntroIds}
-      onStartEpisodeIntroUnit={() => {}}
-      completedMessengerUnitIds={progress.completedMessengerUnitIds}
-      onStartMessengerUnit={() => {}}
-      completedPhoneCallUnitIds={progress.completedPhoneCallUnitIds}
-      onStartPhoneCallUnit={() => {}}
-      completedVisualNovelUnitIds={progress.completedVisualNovelUnitIds}
-      onStartVisualNovelUnit={() => {}}
-      completedEpisodeFinalIds={progress.completedEpisodeFinalIds}
-      onStartEpisodeFinal={() => {}}
-      {...(options.catalog === undefined ? {} : { catalog: options.catalog })}
-    />
-  );
+export function mapScreen(options: { catalog?: JourneyMapCatalogProps } = {}) {
+  return <JourneyMapScreen catalog={options.catalog ?? catalogProps()} />;
 }
 
 // 말풍선이 재는 선택자 둘 · 자동 스크롤이 재는 선택자 셋의 공통 값입니다.

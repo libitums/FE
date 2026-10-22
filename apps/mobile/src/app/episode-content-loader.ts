@@ -2,8 +2,10 @@ import "background-only";
 
 // 내장 + 기기 캐시에서 카탈로그를 읽고 이미지 URL · 치환 포트를 닫아 만듭니다(백그라운드 전용).
 
+import { isAudioAvailable } from "../lib/audio";
 import { parseAudioManifest } from "../lib/audio-manifest";
 import type { AudioTimingTable } from "../lib/audio-manifest";
+import { bundledContentImageUrl } from "../lib/bundled-content-images";
 import {
   contentFileUrl,
   contentFilesAvailable,
@@ -32,9 +34,18 @@ export function remoteContentUrlOf(relativePath: string): string | null {
   return config === null ? null : resolveContentUrlSafe(contentBaseUrl(config.url), relativePath);
 }
 
-// 받아 둔 파일이 있으면 그것을 씁니다 — 오프라인에서도 그림 · 소리가 나옵니다(ADR-0071). 음성도 이 포트를 씁니다.
+// 받아 둔 파일이 먼저, 앱에 실은 그림이 그다음입니다 — 오프라인에서도 그림 · 소리가 나옵니다(ADR-0071). 음성도 이 포트를
+// 쓰지만 내장 표에 음성 키는 없습니다.
 function imageUrlOf(relativePath: string): string | null {
-  return localOrRemoteUrl(relativePath, remoteContentUrlOf);
+  return localOrRemoteUrl(relativePath, remoteContentUrlOf, bundledContentImageUrl);
+}
+
+// 학습 문항 음성은 기기에 받아 둔 파일의 file:// 주소만 돌려줍니다(v4) — 원격 주소로 내려가지 않습니다. 재생 모듈이
+// 없거나 받은 파일이 없으면 null이라 문항이 소리 없음과 같은 길로 갑니다. 부를 때마다 판정해 스레드 · 메모와 무관합니다.
+function audioUrlOf(relativePath: string): string | null {
+  if (!isAudioAvailable()) return null;
+  const relative = resolveContentUrlSafe("", relativePath);
+  return relative === null ? null : contentFileUrl(relative);
 }
 
 function cachedManifestText(): string | null {
@@ -115,14 +126,24 @@ export function loadEpisodeContent(): EpisodeContent {
   }
   const audioTable = audioTableOf(cachedAudioManifestText());
   const audioTimingOf = (audioId: string) => audioTable?.get(audioId) ?? null;
-  return { catalog, imageUrlOf, fillText: fillPlaceholders, audioTimingOf };
+  return {
+    catalog,
+    imageUrlOf,
+    audioUrlOf,
+    itemAudioEnabled: isAudioAvailable(),
+    fillText: fillPlaceholders,
+    audioTimingOf,
+  };
 }
 
-/** 호스트 파일 모듈이 있을 때만 자산을 받습니다. 없으면 지금처럼 본문만 받습니다(ADR-0071 D4). */
+/**
+ * 호스트 파일 모듈이 있을 때만 자산을 받습니다. 없으면 지금처럼 본문만 받습니다(ADR-0071 D4). 앱에 실은 그림은
+ * 이미 가진 것으로 답해 받지 않습니다.
+ */
 export function hostAssetDeps(): AssetDeps | undefined {
   if (!contentFilesAvailable()) return undefined;
   return {
-    has: (path) => contentFileUrl(path) !== null,
+    has: (path) => bundledContentImageUrl(path) !== null || contentFileUrl(path) !== null,
     download: downloadContentFile,
     remoteUrlOf: remoteContentUrlOf,
   };

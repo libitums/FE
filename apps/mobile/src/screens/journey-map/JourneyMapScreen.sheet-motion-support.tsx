@@ -1,23 +1,23 @@
 import { expect, vi } from "vitest";
 import { act, fireEvent, screen } from "@lynx-js/react/testing-library";
 
-import { nodeSelector, unitSelector } from "./JourneyMapScreen.autoscroll-support";
+import { unitSelector } from "./JourneyMapScreen.autoscroll-support";
 import type { HostStub } from "./JourneyMapScreen.test-support";
 import { sheetEntranceClasses } from "./journey-map-sheet-motion";
 
 // 말풍선 등장 모션 화면 ui 테스트 둘이 함께 쓰는 도우미입니다. 대역 호스트 표는 자동 스크롤 ui의 표를 그대로 씁니다 —
-// 노드 `R(700, 100)`이면 목적지 290, `R(5410, 100)`이면 5000입니다.
+// 누르는 유닛은 카탈로그 첫 구획(u01)의 레슨 S4이고, 셀 `R(700, 100)`이면 목적지 290, `R(5410, 100)`이면 5000입니다.
 
-/** 튜토리얼 `ordering` 노드(와 그 유닛 상자)를 `top`에 둡니다. */
-export function placeOrdering(host: HostStub, top: number): void {
-  const rect = { top, height: 100 };
-  host.rects[unitSelector] = rect;
-  host.rects[nodeSelector] = rect;
+const targetTestId = "ui-lynx-learning-unit-catalog-unit-u01-water-S4";
+
+/** 누를 유닛(u01 S4)의 셀을 `top`에 둡니다 — 자동 스크롤과 말풍선이 같은 셀을 잽니다. */
+export function placeTarget(host: HostStub, top: number): void {
+  host.rects[unitSelector] = { top, height: 100 };
 }
 
-export function tapOrdering(): void {
+export function tapTarget(): void {
   act(() => {
-    fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), { detail: { y: 300 } });
+    fireEvent.tap(screen.getByTestId(targetTestId), { detail: { y: 300 } });
   });
 }
 
@@ -30,8 +30,7 @@ export function advance(ms: number): void {
 export const sheetPop = (): HTMLElement => screen.getByTestId("step-sheet-pop");
 export const bandWrapper = (): HTMLElement | null =>
   screen.getByTestId("ui-lynx-episode-header").parentElement;
-export const nodePop = (): HTMLElement | null =>
-  screen.getByTestId("ui-lynx-learning-unit-ordering").parentElement;
+export const nodePop = (): HTMLElement | null => screen.getByTestId(targetTestId).parentElement;
 export const burstCount = (): number =>
   document.querySelectorAll(".journey-step-node-burst").length;
 

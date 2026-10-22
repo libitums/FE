@@ -160,7 +160,7 @@ test("ES3. (AC3 · 4) S3: 계획의 활동을 차례로 풀면 음절 조립 활
   const { rpcs, events } = await boot({ [u01]: ["intro", "S1", "S2"] });
   const plan = lessonPlan(u01, "S3");
   expect(plan.activities.map((activity) => activity.form)).toContain("syllable-build");
-  expect(plan.shownItemCount).toBe(11);
+  expect(plan.shownItemCount).toBe(13);
 
   tapNode(u01, "S3");
   const seen = solveLesson(plan, true);
@@ -171,7 +171,7 @@ test("ES3. (AC3 · 4) S3: 계획의 활동을 차례로 풀면 음절 조립 활
   await flush();
   expect(status(u01, "S3")).toBe("clear");
   await vi.waitFor(() => expect(savedUnits(rpcs, u01)).toContain("S3"));
-  expect(learningEvents(events)[0]).toMatchObject({ unitKey: "S3", shownItemCount: "11" });
+  expect(learningEvents(events)[0]).toMatchObject({ unitKey: "S3", shownItemCount: "13" });
   expect(learningEvents(events)[1]).toMatchObject({ verdict: "passed" });
 });
 
@@ -264,13 +264,13 @@ test("ES5. (AC5) 맵: 세 에피소드 모두 CULT 노드가 Culture 라벨이�
 });
 
 test.each([
-  ["S1", 13, 2],
-  ["S2", 8, 6],
-  ["S4", 8, 7],
-  ["S5", 9, 3],
+  ["S1", 15, 0],
+  ["S2", 13, 1],
+  ["S4", 13, 2],
+  ["S5", 11, 1],
   ["S6", 8, 0],
   ["S7", 5, 0],
-  ["S8", 9, 4],
+  ["S8", 12, 1],
 ])(
   "ES6. (AC6) %s는 시작하면 표시 %i · 건너뜀 %i로 알린다 - 문화 단계 변경이 다른 단계를 바꾸지 않는다",
   async (key, shown, skipped) => {

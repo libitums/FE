@@ -3,15 +3,12 @@ import { act, cleanup, render, screen } from "@lynx-js/react/testing-library";
 
 import { catalogSectionDomId } from "./catalog-map";
 import type { CatalogMapSection } from "./catalog-map.contract";
-import { journeyMapSections } from "./journey-map";
-import { tutorialItemId } from "./journey-map-rows";
 import {
   catalogLessonKeys,
   catalogProps,
   catalogReadySections,
   mapScreen,
   stubHost,
-  tutorialAllDone,
   type Rect,
 } from "./JourneyMapScreen.test-support";
 
@@ -26,16 +23,10 @@ afterEach(() => {
 
 const mapBox = (): Element => screen.getByTestId("journey-map-screen-map");
 
-const tutorialItems = journeyMapSections.flatMap((section) => section.items);
-
-// 맵의 유닛 목록 순서입니다 — 튜토리얼 항목 → 카탈로그(구획 안은 표지 → 레슨들 → 최종) → 준비 중
-// 구획. 표지 · 문화 · 최종은 `SpecialUnit`, 스텝 · 레슨은 `LearningUnit` testid입니다.
+// 맵의 유닛 목록 순서입니다 — 카탈로그(구획 안은 표지 → 레슨들 → 최종) → 준비 중
+// 구획. 표지 · 문화 · 최종은 `SpecialUnit`, 레슨은 `LearningUnit` testid입니다.
 function expectedUnitTestIds(catalogSections: readonly CatalogMapSection[]): string[] {
   return [
-    ...tutorialItems.map(
-      (item) =>
-        `ui-lynx-${item.kind === "standard" ? "learning" : "special"}-unit-${tutorialItemId(item)}`,
-    ),
     ...catalogSections.flatMap((section) =>
       section.kind === "catalog-ready"
         ? [
@@ -82,22 +73,21 @@ describe("JourneyMapScreen 줄 결선", () => {
     }
   });
 
-  test("UG-A2. 맵 상자의 직계 자식은 튜토리얼 구획 → 카탈로그 슬롯 그대로이고 줄이 구획 밖으로 새지 않는다", () => {
+  test("UG-A2. 맵 상자의 직계 자식은 카탈로그 슬롯 하나이고 줄이 구획 밖으로 새지 않는다", () => {
     render(mapScreen({ catalog: catalogProps() }));
 
     const children = Array.from(mapBox().children);
-    expect(children).toHaveLength(2);
-    expect(children[0]?.getAttribute("id")).toBe("journey-map-screen-episode-tutorial");
+    expect(children).toHaveLength(1);
     expect(
-      children[1] === screen.getByTestId("journey-map-screen-catalog") ||
-        children[1]?.contains(screen.getByTestId("journey-map-screen-catalog")),
+      children[0] === screen.getByTestId("journey-map-screen-catalog") ||
+        children[0]?.contains(screen.getByTestId("journey-map-screen-catalog")),
     ).toBe(true);
     for (const child of children) {
       expect(child.getAttribute("data-testid")).not.toBe("journey-map-row");
     }
   });
 
-  // 머리 카드는 스크롤 자리로 구획을 고릅니다 — 세 갈래(튜토리얼 · 카탈로그 본문 · 카탈로그 본문 없음)를
+  // 머리 카드는 스크롤 자리로 구획을 고릅니다 — 세 갈래(스크롤 전 · 카탈로그 본문 · 카탈로그 본문 없음)를
   // 보려고 구획 자리를 재는 답과 스크롤 이벤트를 줍니다.
   const sections: readonly CatalogMapSection[] = [
     {
@@ -119,7 +109,6 @@ describe("JourneyMapScreen 줄 결선", () => {
     },
   ];
   const sectionRects = (): Record<string, Rect> => ({
-    "#journey-map-screen-episode-tutorial": { top: 100, height: 800 },
     [`#${catalogSectionDomId("u01-water")}`]: { top: 1100, height: 800 },
     [`#${catalogSectionDomId("u02-x")}`]: { top: 2100, height: 100 },
   });
@@ -132,7 +121,7 @@ describe("JourneyMapScreen 줄 결선", () => {
   // 머리 띠는 스텝 말풍선이 열린 동안만 섭니다. 자동 스크롤 · 말풍선이 재는 `#journey-map-screen-header`는
   // 띠 자리의 측정 손잡이가 늘 지고, 말풍선이 없으면 높이가 0입니다.
   test.each([
-    ["튜토리얼", null],
+    ["스크롤 전", null],
     ["카탈로그 본문", 1500],
     ["카탈로그 본문 없음", 2500],
   ] as const)(
@@ -140,7 +129,7 @@ describe("JourneyMapScreen 줄 결선", () => {
     (_label, scrollTop) => {
       const host = stubHost({ rects: sectionRects() });
       act(() => {
-        render(mapScreen({ progress: tutorialAllDone, catalog: catalogProps({ sections }) }));
+        render(mapScreen({ catalog: catalogProps({ sections }) }));
       });
       if (scrollTop !== null) {
         host.scroll(scrollTop);

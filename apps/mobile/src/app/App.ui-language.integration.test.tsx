@@ -1,11 +1,13 @@
-import { journeySeedBefore } from "./test-helpers/journey-seed";
+import { legacyPassedRecord, legacyPassedSeed, u01OpenSeed } from "./test-helpers/progress-seed";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
-import { readFinalStory } from "./test-helpers/final-story";
 import { App } from "./App";
 import { passLearnerSignup } from "./test-helpers/learner-signup";
-import type { AppJourneySeed } from "./App";
+import { lessonPlan } from "./test-helpers/episode-format-harness";
+import { solveActivity, solveLesson } from "./test-helpers/episode-format-solvers";
+import { catalogNodeTestId } from "./test-helpers/map-unit-testid";
+import type { AppProgressSeed } from "./app-props";
 import { hangulIn, hangulOutside } from "./test-helpers/hangul";
 import type { ContentTestId } from "./test-helpers/hangul";
 import { renderSignedInApp, signedInBootSession } from "./test-helpers/signed-in-app";
@@ -13,11 +15,7 @@ import type { StorageModuleDouble } from "./test-helpers/signed-in-app";
 import { authSessionStorageKey, serializeAuthSession } from "../lib/auth-session";
 import { entrySplashDurationMs } from "../lib/entry-flow";
 import type { EntryEvent } from "../lib/entry-flow";
-import type { LearningForm } from "../lib/learning-form";
 import { uiLanguageStorageKey } from "../lib/ui-language";
-import { journeySteps } from "../screens/journey-map/journey-map";
-import type { JourneyStepId } from "../screens/journey-map/journey-map";
-import { questionsForStep } from "../screens/listening/listening";
 
 // UI 언어 문구표의 App 수준 협력을 봅니다(ADR-0006 D4). 이 파일이 재는 것은 두 갈래입니다.
 //
@@ -30,32 +28,7 @@ import { questionsForStep } from "../screens/listening/listening";
 // IL9(이벤트 불변)는 새 케이스가 아니라 기존 `App.analytics` · 화면별 이벤트 단언이 **값 그대로**
 // 초록인 것이 증인입니다 — 이 파일은 그 값을 다시 적지 않습니다.
 
-// 서사 표지를 이미 끝낸 채로 부팅합니다 — 이 파일이 보는 것은 표지 뒤의 흐름입니다(표지는 IL7이 따로 엽니다).
-const completedIntros = ["tutorial-intro"] as const;
-
-const formStub = vi.hoisted(() => ({ current: null as LearningForm | null }));
-
-// 배정표만 부분 대역합니다(`App.learning-form.integration.test.tsx`와 같은 형태) — 학습 화면 여섯을
-// 같은 스텝에서 골라 열기 위해서입니다. 나머지 export는 그대로 통과해 맵 · 진행이 실물로 돕니다.
-vi.mock("../screens/journey-map/journey-map", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../screens/journey-map/journey-map")>();
-  // 튜토리얼 배정과 독립적으로 범용 학습형을 여는 회귀 픽스처입니다.
-  const fixture = await import("./test-helpers/learning-route-fixture");
-  return {
-    ...actual,
-    learningFormsForStep: (id: JourneyStepId) =>
-      formStub.current === null ? fixture.learningFormsForStep(id) : ([formStub.current] as const),
-    learningFormAt: (id: JourneyStepId, index: number) =>
-      formStub.current === null
-        ? fixture.learningFormAt(id, index)
-        : index === 0
-          ? formStub.current
-          : undefined,
-  };
-});
-
 afterEach(() => {
-  formStub.current = null;
   vi.useRealTimers();
   vi.unstubAllGlobals();
   vi.unstubAllEnvs();
@@ -177,7 +150,7 @@ async function walkEntryFlow(
   const events: EntryEvent[] = [];
   render(
     <App
-      journeySeed={journeySeedBefore("ordering")}
+      progressSeed={legacyPassedSeed}
       phoneSignIn="visible"
       entryEventSink={(event) => events.push(event)}
     />,
@@ -221,12 +194,9 @@ function expectEnglishJourneyTabs(): void {
 test("[IL1] ⭐ 저장된 언어가 vi인 재방문자는 부팅 중에 그 키를 읽고, 여정 맵에 영어 탭으로 선다", async () => {
   const storage = sessionStorageWith({ [uiLanguageStorageKey]: "vi" });
 
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-    {
-      storageModule: storage.module,
-    },
-  );
+  await renderSignedInApp(<App progressSeed={legacyPassedSeed} />, {
+    storageModule: storage.module,
+  });
 
   // 부팅이 언어 키를 실제로 읽었다 — 읽지 않았다면 아래 영어는 「기본값이 영어라서」 우연히 참이다.
   expect(languageKeyCalls(storage).gets).toBeGreaterThanOrEqual(1);
@@ -239,15 +209,9 @@ describe.each([["ko"], [""]])("[IL2] 저장된 언어가 이상한 값(%j)", (st
   test("부팅이 성공하고 영어이며, 그 키를 지우거나 덮지 않는다", async () => {
     const storage = sessionStorageWith({ [uiLanguageStorageKey]: stored });
 
-    await renderSignedInApp(
-      <App
-        journeySeed={journeySeedBefore("ordering")}
-        completedEpisodeIntroIds={completedIntros}
-      />,
-      {
-        storageModule: storage.module,
-      },
-    );
+    await renderSignedInApp(<App progressSeed={legacyPassedSeed} />, {
+      storageModule: storage.module,
+    });
 
     expect(languageKeyCalls(storage).gets).toBeGreaterThanOrEqual(1);
     expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
@@ -296,12 +260,9 @@ test("[IL4] ⭐ 고른 언어는 App을 내렸다 다시 그려도 부팅에서 
   const getsBeforeReboot = storage.gets.length;
 
   // 재실행 — 진입 흐름 없이 세션 갱신으로 여정 맵에 선다.
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-    {
-      storageModule: storage.module,
-    },
-  );
+  await renderSignedInApp(<App progressSeed={legacyPassedSeed} />, {
+    storageModule: storage.module,
+  });
 
   const bootReads = storage.gets
     .slice(getsBeforeReboot)
@@ -346,9 +307,7 @@ function expectNoHangul(container: Element): void {
 }
 
 test("[IL6] ⭐ 영어 부팅의 탭 화면과 계정 화면에는 한글이 한 글자도 없다", async () => {
-  await renderSignedInApp(
-    <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />,
-  );
+  await renderSignedInApp(<App progressSeed={u01OpenSeed} />);
   const body = screen.getByTestId("journey-map-screen").ownerDocument.body;
   const root = (): Element => body;
 
@@ -358,7 +317,7 @@ test("[IL6] ⭐ 영어 부팅의 탭 화면과 계정 화면에는 한글이 한
   expectNoHangul(root());
 
   // 스텝 말풍선 — 스텝 제목 · 설명은 영어 콘텐츠입니다.
-  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), {});
+  fireEvent.tap(screen.getByTestId(catalogNodeTestId("u01-water", "S1")), {});
   expect(screen.getByTestId("step-sheet-panel")).toBeInTheDocument();
   expectNoHangul(root());
   fireEvent.tap(screen.getByTestId("step-sheet-close"), {});
@@ -407,174 +366,71 @@ type ScreenCase = {
   readonly content: readonly ContentTestId[];
 };
 
-function startStep(stepId: JourneyStepId): void {
-  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
-  fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-${stepId}`), {});
-  fireEvent.tap(screen.getByTestId("step-sheet-start"), {});
-}
-
-async function bootJourney(seed?: AppJourneySeed, introDone = true): Promise<void> {
-  await renderSignedInApp(
-    <App
-      journeySeed={journeySeedBefore("ordering")}
-      {...(introDone ? { completedEpisodeIntroIds: completedIntros } : {})}
-      {...(seed === undefined ? {} : { journeySeed: seed })}
-    />,
-  );
-  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
-}
-
-async function openLearningForm(form: LearningForm): Promise<void> {
-  formStub.current = form;
-  await bootJourney();
-  startStep("ordering");
-}
-
-const readyForFinal: AppJourneySeed = {
-  completedStepCount: journeySteps.length,
-  completedMessengerUnitIds: ["appointment-confirmation"],
-  completedPhoneCallUnitIds: ["appointment-confirmation-phone-call"],
-  visualNovelProgress: { status: "completed", beatIndex: 2 },
-  completedEpisodeFinalIds: [],
+const U01 = "u01-water";
+const throughS5 = ["intro", "S1", "S2", "S3", "S4", "S5"];
+const wideSeed: AppProgressSeed = {
+  legacyTutorial: legacyPassedRecord,
+  catalogProgress: { [U01]: throughS5 },
 };
+
+/** u01의 유닛을 열어 첫 활동에 서게 합니다(앞 유닛은 끝낸 진행). */
+async function openLesson(key: string, solveFirst = false): Promise<void> {
+  await renderSignedInApp(<App progressSeed={wideSeed} />);
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
+  fireEvent.tap(screen.getByTestId(catalogNodeTestId(U01, key)), {});
+  fireEvent.tap(screen.getByTestId("step-sheet-start"), {});
+  if (!solveFirst) return;
+  const [first] = lessonPlan(U01, key).activities;
+  if (first === undefined) throw new Error(`${key} has no activity`);
+  solveActivity(first, true, false);
+}
+
+async function openCover(): Promise<void> {
+  await renderSignedInApp(<App />);
+  fireEvent.tap(screen.getByTestId("ui-lynx-special-unit-catalog-cover-u00-tutorial"), {});
+}
 
 const screenCases: readonly ScreenCase[] = [
   {
-    name: "듣기",
-    open: async () => {
-      await bootJourney();
-      startStep("ordering");
-    },
-    screenTestId: "listening-screen-content",
-    content: [/^listening-prompt/, /^listening-choice-/],
-  },
-  {
     name: "낱말 고르기",
-    open: () => openLearningForm("word-choice"),
+    open: () => openLesson("S6"),
     screenTestId: "word-choice-screen-content",
     content: [/^word-choice-/],
   },
   {
     name: "문장 순서",
-    open: () => openLearningForm("sentence-order"),
+    open: () => openLesson("S2", true),
     screenTestId: "sentence-order-screen-content",
     // 표현을 짚는 조작 안내도 문항의 학습 콘텐츠입니다.
     content: [/^sentence-order-/, /^learning-shell-instruction$/],
   },
   {
-    name: "말하기",
-    open: () => openLearningForm("speaking"),
-    screenTestId: "speaking-screen-content",
-    content: [/^speaking-/],
-  },
-  {
-    name: "쓰기",
-    open: () => openLearningForm("writing"),
-    screenTestId: "writing-screen-content",
-    content: [/^writing-/],
-  },
-  {
-    name: "문화",
-    open: () => openLearningForm("culture"),
-    screenTestId: "culture-screen-title",
-    content: [/^culture-screen-(body|paragraph|note)/],
-  },
-  {
-    name: "문화 퀴즈",
-    open: async () => {
-      await openLearningForm("culture");
-      fireEvent.tap(screen.getByTestId("culture-screen-quiz"), {});
-    },
-    screenTestId: "culture-quiz-screen-title",
-    content: [/^culture-quiz-screen-(prompt|choice)/],
-  },
-  {
-    name: "평가(미통과)",
-    open: async () => {
-      // 문항 0개의 학습 화면은 결과 보기 하나로 평가로 넘어가고, 평가는 학습 완료 화면 하나로 선다.
-      await openLearningForm("word-choice");
-      fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
-    },
-    screenTestId: "lesson-complete-screen-title",
-    content: [],
-  },
-  {
     name: "학습 완료(통과)",
     open: async () => {
-      await bootJourney();
-      startStep("ordering");
-      questionsForStep("ordering").forEach((question) => {
-        fireEvent.tap(screen.getByTestId(`listening-choice-${question.answerIndex}`), {});
-        fireEvent.tap(screen.getByTestId("learning-shell-advance"), {});
-      });
-      fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
+      await renderSignedInApp(<App progressSeed={u01OpenSeed} />);
+      fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
+      fireEvent.tap(screen.getByTestId(catalogNodeTestId(U01, "S1")), {});
+      fireEvent.tap(screen.getByTestId("step-sheet-start"), {});
+      solveLesson(lessonPlan(U01, "S1"), true);
     },
     screenTestId: "lesson-complete-screen-title",
     content: [],
   },
   {
     name: "에피소드 표지",
-    open: async () => {
-      await bootJourney(undefined, false);
-      fireEvent.tap(screen.getByTestId("ui-lynx-special-unit-tutorial-intro"), {});
-    },
+    open: openCover,
     screenTestId: "episode-intro-screen-title",
-    content: [],
+    // 에피소드 이름은 학습 콘텐츠입니다.
+    content: [/^episode-intro-screen-(heading|title)$/],
   },
   {
     name: "에피소드 서사",
     open: async () => {
-      await bootJourney(undefined, false);
-      fireEvent.tap(screen.getByTestId("ui-lynx-special-unit-tutorial-intro"), {});
+      await openCover();
       tapButtonIn("episode-intro-screen-next");
     },
-    screenTestId: "episode-narrative-screen-title",
-    content: [/^episode-narrative-/],
-  },
-  {
-    name: "메신저",
-    open: async () => {
-      await bootJourney(journeySeedBefore("appointment-confirmation"));
-      fireEvent.tap(screen.getByTestId("ui-lynx-special-unit-appointment-confirmation"), {});
-    },
-    screenTestId: "messenger-screen-title",
-    content: [
-      /^messenger-message-/,
-      /^messenger-key-/,
-      /^messenger-choice-/,
-      "messenger-composer-text",
-    ],
-  },
-  {
-    name: "전화",
-    open: async () => {
-      await bootJourney(journeySeedBefore("appointment-confirmation-phone-call"));
-      fireEvent.tap(
-        screen.getByTestId("ui-lynx-special-unit-appointment-confirmation-phone-call"),
-        {},
-      );
-    },
-    screenTestId: "phone-call-screen",
-    content: [/^phone-call-transcript-/],
-  },
-  {
-    name: "비주얼 노벨",
-    open: async () => {
-      await bootJourney(journeySeedBefore("cafe-arrival-visual-novel"));
-      fireEvent.tap(screen.getByTestId("ui-lynx-special-unit-cafe-arrival-visual-novel"), {});
-    },
-    screenTestId: "visual-novel-screen",
-    content: [/^visual-novel-scene-/, /^visual-novel-dialogue-content-/],
-  },
-  {
-    name: "최종 테스트",
-    open: async () => {
-      await bootJourney(readyForFinal);
-      fireEvent.tap(screen.getByTestId("ui-lynx-special-unit-tutorial-final-test"), {});
-      readFinalStory("introduction");
-    },
-    screenTestId: "episode-final-screen-title",
-    content: [/^episode-final-screen-(line|option|prompt|question)/],
+    screenTestId: "catalog-cover-screen",
+    content: [/^episode-narrative-/, /^catalog-cover-screen-/, /^ui-lynx-visual-novel-/],
   },
 ];
 
@@ -585,40 +441,5 @@ describe.each(screenCases)("[IL7] $name 화면", ({ open, screenTestId, content 
     const anchor = screen.getByTestId(screenTestId);
     // 앵커 하나가 아니라 화면 전체(머리 · 탭 · 모달 포함)를 봅니다.
     expect(hangulOutside(anchor.ownerDocument.body, content)).toEqual([]);
-  });
-});
-
-// ------------------------------------------------------------ IL8 · 나가기 목적지 라벨
-
-const specialUnits = [
-  { name: "메신저", unitId: "appointment-confirmation", exitTestId: "messenger-screen-exit" },
-  {
-    name: "전화",
-    unitId: "appointment-confirmation-phone-call",
-    exitTestId: "phone-call-exit-button",
-  },
-  {
-    name: "비주얼 노벨",
-    unitId: "cafe-arrival-visual-novel",
-    exitTestId: "visual-novel-exit-button",
-  },
-] as const;
-
-const finishedTutorial: AppJourneySeed = {
-  completedStepCount: journeySteps.length,
-  completedMessengerUnitIds: ["appointment-confirmation"],
-  completedPhoneCallUnitIds: ["appointment-confirmation-phone-call"],
-  visualNovelProgress: { status: "completed", beatIndex: 2 },
-  completedEpisodeFinalIds: ["tutorial-final-test"],
-};
-
-describe.each(specialUnits)("[IL8] $name의 나가기", ({ unitId, exitTestId }) => {
-  test("여정에서 연 화면은 Back to map이고 누르면 여정 맵으로 돌아간다", async () => {
-    await bootJourney(journeySeedBefore(unitId));
-    fireEvent.tap(screen.getByTestId(`ui-lynx-special-unit-${unitId}`), {});
-
-    expect(screen.getByTestId(exitTestId)).toHaveAttribute("accessibility-label", "Back to map");
-    fireEvent.tap(screen.getByTestId(exitTestId), {});
-    expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   });
 });

@@ -13,6 +13,8 @@
 > ⟨2026-10-16 오후 갱신⟩ 같은 날 11:45 버킷 판으로 내장 셋을 한 번 더 바꿨다 — version `2026-10-16.1`. 바뀐 것: 제목이 짧아짐(`물 사기` · `체크인` · `미나 만나기`) · 최상위 `title_en`(앱은 버림) · 그림 경로가 `content/images/…` 꼴(앱이 선두 `content/`를 뗀다) · 모든 소리 자리에 빈 `audio_url` · u03 통과 뒤 컷 1 문장(`백반집` → `식당`). 음성 id는 같은 문장 자리에 다시 붙여 **13개**다 — u03 통과 뒤 컷 1(`u03-mina/post-1`)은 문장이 바뀌어 녹음과 맞는지 확인 전이라 비웠다.
 > 새 세 파일(문항 355 · 컷 25 · 대화 35줄 · 단어 42 · 패턴 5)의 관찰은 각 절의 ⟨2026-10-16⟩ 줄과 §7.2 끝의 「새 형식」 표가 진다. 옛 세 파일은 테스트 픽스처
 > `apps/mobile/content/test-fixtures/delivery-2-2026-10-14/`로 바이트 그대로 남았다. 앱이 새 형식을 받는 결정은 [ADR-0065](../adr/0065-episode-format-additions.md)이 진다.
+>
+> ⟨2026-10-21 — 튜토리얼⟩ **튜토리얼 `u00-tutorial`이 같은 형식의 에피소드로 들어왔다**(내장 · 매니페스트 `order` 0 · version `2026-10-21.3`) — 앱은 그것을 **Episode 0**으로 세운다(구획 번호 = `order`). u01 ~ u03과 구조가 다르다: 단원 `S1` ~ `S13` 각 문항 하나(`S12` `CULTURE_CARD` · `S13` `CULTURE_CHECK`) + `RP` 턴 셋, `completion.requires` 14키, 그림 14경로(`images/u00-tutorial/*` 12 + 공용 `images/items/{hello,thanks}.webp`), 음성 id 12. 이 문서의 `n/N` 관찰은 u00을 세지 않았다. 결정은 [ADR-0081](../adr/0081-tutorial-as-catalog-episode.md).
 
 ## 0. 용어 대응 — 파일의 이름과 앱의 이름
 
@@ -182,13 +184,13 @@ FE 제안: 단일 `Text = { ko, roman, en? }`로 통일한다. `en`은 어디서
 | type | n | mode | event | 필수(전부 있음) | 선택(일부만) | 앱 처리 |
 |---|---|---|---|---|---|---|
 | `CLOZE_CHOICE` | 4 | choice | R | `prompt` · `context`(`ko`에 `___`) · `options` · `answers` · `feedback.correct` | `answers[].en` | 단어 선택 — 보기는 `options` 파일 순서 그대로 |
-| `REPLY_SELECT` | 16 | choice | R | `prompt` · `stimulus`(`audio: Text` · `audio_url` · `image_url`) · `options` · `feedback.correct` | — | 단어 선택 — 제시문 = `stimulus.audio`(상대 말). 소리 없이 글로 보인다 |
-| `MIN_PAIR_AB` | 6 | choice | **D** | `prompt` · `stimulus`(`audio` …) · `options`(2개) · `feedback.correct` | `stimulus.audio.en`(1/6) | 듣기 모양이지만 문항 음성이 없어 건너뜀(`audio-missing`) |
+| `REPLY_SELECT` | 16 | choice | R | `prompt` · `stimulus`(`audio: Text` · `audio_url` · `image_url`) · `options` · `feedback.correct` | — | 단어 선택 — 제시문 = `stimulus.audio`(상대 말). 소리 없이 글로 보인다 ⟨2026-10-22⟩ 글은 그대로이고, `audio_url`이 있으면 그 다음 간이 줄(다시 듣기 · `Slow`)이 서고 문항이 설 때 한 번 재생한다 |
+| `MIN_PAIR_AB` | 6 | choice | **D** | `prompt` · `stimulus`(`audio` …) · `options`(2개) · `feedback.correct` | `stimulus.audio.en`(1/6) | 듣기 모양이지만 문항 음성이 없어 건너뜀(`audio-missing`) ⟨2026-10-22⟩ `audio_url`의 음성을 기기에 받아 두었으면 **듣기**(재생 줄 · `Slow`)로 선다. 소리가 없으면(빈 값 · 자리표시자 · 받은 파일 없음) 건너뛰지 않고 대본 + 보기의 소리 없는 듣기로 선다 |
 | `PARTICLE_FILL` | 6 | choice | R | `prompt` · `stimulus`(`text` …) · `options`(2개) · `feedback.correct` | — | 단어 선택 — 제시문 = `stimulus.text`(빈칸 문장) |
 | `PARTICLE_SWAP` | 9 | choice | R | `prompt` · `stimulus`(`text` …) · `options`(3개) · `feedback.correct` | — | 단어 선택 — 제시문 = `stimulus.text`(틀린 구) |
 | `CULTURE_CHECK` | 9 | choice | R | `prompt` · `context` · `options` · `feedback.correct` | — (`ref` 없음) | ~~건너뜀(`screen-pending`)~~ ⟨PR ②⟩ **단어 선택** — 제시문 `context`(+ `roman` · `en` 줄), 보기 `options[].ko` 파일 순서, **보기마다 번역 줄 `options[].en`**(전부 있을 때만) |
 | `CULTURE_CARD` | 9 | card | E | `context` · `stimulus`(`text` …) · `feedback.correct` | — (`prompt` · `ref` 없음) | ~~건너뜀(`screen-pending`)~~ ⟨PR ②⟩ **문화 카드** — 제목 `context.ko` · `roman` · `en`, 본문 `stimulus.text.en`(크게) · `.ko`(작게). ⟨2026-10-19 — G2⟩ 앞면 그림 `stimulus.image_url` |
-| `LISTEN_BUILD` | 13 | tiles | R | `prompt` · `stimulus`(`audio` …) · `tiles`(오답 조각 포함) · `answers` | `tiles[].en` | 건너뜀(~~`screen-pending`~~ ⟨PR ②⟩ **`audio-missing`** — 문항 음성이 오면 그때 화면을 만든다. 소리가 와도 저절로 서지 않는다) |
+| `LISTEN_BUILD` | 13 | tiles | R | `prompt` · `stimulus`(`audio` …) · `tiles`(오답 조각 포함) · `answers` | `tiles[].en` | 건너뜀(~~`screen-pending`~~ ⟨PR ②⟩ **`audio-missing`** — 문항 음성이 오면 그때 화면을 만든다. 소리가 와도 저절로 서지 않는다) ⟨2026-10-22⟩ `audio_url`의 음성을 기기에 받아 두었으면 **문장 순서**(기존 화면 — 상대 말풍선 자리에 재생 줄, 대본 없음)로 선다. 정답 `answers[0].ko`를 공백으로 나눈 조각마다 같은 글자 타일이 있어야 한다(없으면 `malformed`). 소리가 없으면 건너뜀 |
 | `SYLLABLE_BUILD` | 7 | tiles | R | `prompt` · `stimulus`(`en` · `audio_url` · `image_url`) · `tiles`(음절, 오답 포함) · `answers` | `tiles[].en` · `answers[].en` | ~~건너뜀(`screen-pending`)~~ ⟨PR ②⟩ **음절 조립** — 뜻 `stimulus.en`, 타일 `tiles[].ko`(섞음), 정답 `answers[].ko`(공백 제거) |
 | `SHADOW` | 9 | speech | E | `prompt` · `stimulus`(`text` · `audio` …) · `answers` | — | ~~건너뜀(`screen-pending` — 말하기)~~ ⟨PR ③⟩ **읽기**(채점 없음) — 문장 · 로마자 · 영어를 한 묶음에서(`answers[0]`, 한국어가 비면 `stimulus.text`) |
 | `SPEAK_WORD` | 6 | speech | R | `prompt` · `stimulus`(`image_brief` · `image_url` · `audio_url`) · `answers` | — | ~~건너뜀(`screen-pending` — 말하기)~~ ⟨PR ③⟩ **낱말 말하기**(채점) — 그림 `stimulus.image_url`(필수) · 뜻 `answers[0].en` · 정답 `answers[].ko` · 로마자 `answers[0].roman` |
@@ -290,6 +292,7 @@ u01 · u02는 전부 해결, u03은 18문항이 같은 세 id(에피소드 2의 
 
 앱의 현재 자산 경로(참고): 이미지는 번들 import → `/static/…`(Android는 호스트가 재작성, ADR-0051). 오디오는 확장자 없는 **불투명 id**를 호스트 `AudioPlaybackModule`이 번들에서 찾는다(ADR-0017 D3). 원격 fallback은 아직 없다(ADR README 보류 표 「오디오 자산의 출처·형식」). → 합의 Q6 · Q21.
 ⟨2026-10-14 — 위 문장의 오디오 부분은 그때의 상태다⟩ **에피소드 음성은 버킷에서 재생한다.** 앱(JS 한 자리 `lib/content-audio.ts`)이 id를 규약으로 검사해 `audio/<id>.m4a` → 버킷 절대 URL로 바꾸고, 재생 모듈은 `https` 절대 URL을 받아 스트리밍한다. 튜토리얼의 번들 id는 지금처럼 번들에서 난다. 지금 재생하는 자리는 카탈로그 컷 · 최종 테스트뿐이고 **학습 문항의 `stimulus.audio_url`은 읽지 않는다**(ADR README 보류 표 「학습 문항 오디오의 연결」). 결정은 [ADR-0060](../adr/0060-episode-voice-remote-audio.md).
+⟨2026-10-22 — [ADR-0082](../adr/0082-item-audio-and-slow-playback.md)⟩ **학습 문항의 `stimulus.audio_url`도 읽는다** — 위 문장의 「학습 문항의 `stimulus.audio_url`은 읽지 않는다」는 그때의 상태다. 소리가 붙는 유형은 열두 가지다 — 듣기 여섯(`LISTEN_SELECT` · `MIN_PAIR_AB` · `REPLY_SELECT` · `LISTEN_BUILD` · `DICTATION` · `SHADOW`)은 문항이 설 때 한 번 · 다시 듣기 · 「천천히」(0.85), 그 밖 여섯(`TRANSLATE_TO_KO` · `TRANSLATE_TO_EN` · `WORD_ORDER` · `SYLLABLE_BUILD` · `SPEAK_WORD` · `IMG_MATCH`)은 판정 순간 1.0으로 한 번. 같은 규약(`audio/<id>.m4a`, 자리표시자가 든 원문이면 소리 없음)이고 `-slow` 같은 별도 파일은 쓰지 않는다. `CULTURE_CARD` · `PARTICLE_*`의 `audio_url`은 읽지 않는다(지금 데이터도 전부 빈 값).
 
 ## 10. 매니페스트 — 계약 (`manifest-1`, 2026-10-12)
 
@@ -318,7 +321,7 @@ u01 · u02는 전부 해결, u03은 18문항이 같은 세 id(에피소드 2의 
 | `generated_at` | 필수 | string | 생성 시각. 앱은 비교에 쓰지 않는다 |
 | `min_client_level` | 선택 | int | 이보다 낮은 앱은 이 매니페스트에서 온 항목을 `client-too-old`로 잠근다. 앱은 지금 `CONTENT_CLIENT_LEVEL = 1` |
 | `episodes[].id` | 필수 | string | 에피소드 id(= 파일의 `unit_id`, §0 · Q1). 매니페스트 안에서 중복이면 전체 거부(`duplicate-episode-id`) |
-| `episodes[].order` | 필수 | int | 맵 순서. 오름차순, 같으면 `id` 사전순 |
+| `episodes[].order` | 필수 | int | 맵 순서. 오름차순, 같으면 `id` 사전순. ⟨2026-10-21⟩ **맵의 구획 번호(`Episode n.`)이기도 하다** — `0`은 튜토리얼(`u00-tutorial` = `Episode 0.`), 본편은 1부터. 건너뛰면 번호도 건너뛴다([ADR-0081](../adr/0081-tutorial-as-catalog-episode.md) D3) |
 | `episodes[].title` | 필수 | string | 본문을 받기 전에도 보이는 제목 |
 | `episodes[].schema` | 필수 | string | 에피소드 JSON의 `schema`. 앱이 모르면 `unsupported-schema`로 잠근다 |
 | `episodes[].version` | 필수 | string | `YYYY-MM-DD.n`. 숫자 인식 비교로 높은 쪽이 이긴다(같으면 내장) |
@@ -333,10 +336,12 @@ u01 · u02는 전부 해결, u03은 18문항이 같은 세 id(에피소드 2의 
 - `version` · `sha256` · `bytes`: 바뀐 에피소드만 다시 받는다. 받은 파일의 해시나 바이트 수가 다르면 버린다.
 - `schema`: 에피소드마다 둔다. 앱이 모르는 스키마의 에피소드는 **잠근 채 목록에 세운다**(숨기지 않는다 — Q18의 FE 제안대로 앱 쪽을 정했다. 서버 쪽 정책 확인은 Q18에 남는다).
 - **원격 경로**: 기준은 `${PUBLIC_SUPABASE_URL}/storage/v1/object/public/content/`(Supabase Storage 공개 버킷 `content`). 그 아래 `manifest.json` · `episodes/<id>.json` · `images/<id>/…`. 에피소드 `url`과 컷 `image_url`은 이 기준의 상대 경로다. 오디오 파일의 출처는 아직 정하지 않았다(ADR README 보류 표 「오디오 자산의 출처·형식」). ⟨2026-10-14⟩ 정했다 — 같은 기준 아래 `audio/<id>.m4a`(정적 파일 · **매니페스트에 등록하지 않는다** · 기기 캐시 없음, [ADR-0060](../adr/0060-episode-voice-remote-audio.md) D1). 음성 id가 바뀐 내장 에피소드 셋의 `version`은 `2026-10-14.1`이다. ⚠ 버킷은 아직 없다 — 생성 · 업로드는 사용자 확인 뒤(ADR README 보류 표). ⟨2026-10-16 — 새 형식⟩ 내장 셋이 새 형식으로 바뀌어 **`version`은 `2026-10-15.1`**이다(`generated_at` `2026-10-15T00:00:00Z`, `sha256` · `bytes`는 새 파일의 값 — u01 125,327 · u02 159,188 · u03 154,196 bytes). 버킷에는 **내장본과 같은 바이트**(음성 id 포함)를 올린다 — 원본(음성 id 없음)을 올리면 원격본이 이길 때 소리가 사라진다. 옛 빌드는 새 본문을 받아도 디코드에 실패해 내장 폴백으로 지금 콘텐츠를 연다 — 그래서 `min_client_level`을 넣지 않는다([ADR-0065](../adr/0065-episode-format-additions.md) D12).
-- **내장 매니페스트**: `apps/mobile/content/manifest.json` — 번들에 실은 세 에피소드(`content/episodes/*.json`)의 실제 `sha256` · `bytes`를 적은 같은 형식의 파일이다. 사본을 바꾸면 이 파일도 같이 바꾼다.
+- **내장 매니페스트**: `apps/mobile/content/manifest.json` — 번들에 실은 세 에피소드(`content/episodes/*.json`)의 실제 `sha256` · `bytes`를 적은 같은 형식의 파일이다. 사본을 바꾸면 이 파일도 같이 바꾼다. ⟨2026-10-21⟩ **내장 에피소드는 넷이다** — 첫 항목 `u00-tutorial`(order 0)은 버킷 `manifest.json`의 항목과 **같은 값**이다(같은 version이면 내장이 이겨 받지 않는다). u00이 쓰는 **그림 14장도 번들에 있다**(`apps/mobile/src/assets/content/images/…` = 버킷 상대 경로, [ADR-0081](../adr/0081-tutorial-as-catalog-episode.md) D2).
 - `day` · `time_of_day` · `place` · `counterpart`는 에피소드 JSON에 그대로 둔다.
 
 > 2026-10-12 3a 리뷰 반영: 카탈로그 비교는 `compareVersions`(숫자 조각 비교 — `localeCompare` 금지, PrimJS), 원격이 이긴 항목이 준비되지 않으면 같은 id의 내장본으로 폴백, `episode-catalog.ts`가 `compareVersions` · `checkEpisodeText` · `parseCachedManifest`를 공용 검증 자리로 export(결합과 갱신이 같은 검사를 쓴다). 상세는 [ADR-0056](../adr/0056-episode-content-delivery.md) D2 · D3.
+
+⟨2026-10-20⟩ **앱이 바뀐 에피소드를 언제 바꾸는가** — 이미 열리는 에피소드(내장본이 있거나 원격본을 다 받아 둔 것)의 더 높은 `version`이 오면, 앱은 본문 · 그림 · 음성을 **따로 받아 두었다가 다 받은 뒤 다음 앱 시작에** 바꾼다. 스플래시에서 로고가 끝난 뒤 최대 3초 기다려 그 안에 다 받으면 그 실행부터 새 버전이다. 같은 실행 안에서는 바뀌지 않는다(레슨 도중에도). 아직 열리지 않는 새 에피소드는 다 받는 대로 맵에 선다. 결정은 [ADR-0078](../adr/0078-episode-update-on-splash.md), 납품 쪽이 지킬 것은 §13.
 
 ## 11. 합의 항목
 
@@ -364,7 +369,7 @@ u01 · u02는 전부 해결, u03은 18문항이 같은 세 id(에피소드 2의 
 | **Q18** | 앱이 모르는 `type` · `schema`를 만났을 때의 규칙이 없다 | 매니페스트 `min_app_version`으로 1차 차단. 그래도 모르는 문항 타입이 오면 **그 에피소드를 잠근 채 표시**(숨기지 않음 — 이미 `pending` 구획이 그 모양이다). 어느 쪽이든 서버 쪽 정책 확인 | |
 | **Q19** | 컷 `kind`가 담긴 배열과 같은 값 | 중복이지만 무해. 유지 | |
 | **Q20** | `tiles` · `options` 순서가 **표시 순서인지 섞어야 하는지** 알 수 없다 | 앱이 섞는다. 단, `WORD_ORDER` · `TURN_ORDER`의 tiles는 이미 정답 순서가 아닌 것으로 보인다 — 확인 | **FE 처리(2026-10-13, 3c)**: 앱이 섞는다 — `tiles`(낱말 순서 · 대화 순서 · 빈칸 채우기 · 최종 테스트)를 에피소드 id + 문항 id를 씨앗으로 **결정적으로**(다시 풀어도 같은 순서, 정답 순서 그대로 나오면 한 칸 돌림). `options`의 순서는 파일 그대로 보인다. 파일의 순서가 표시 순서라는 가정은 하지 않는다. 콘텐츠 쪽 확인은 대기 |
-| **Q21** | 오디오가 하나도 없다(§9) | 에피소드 1 ~ 3 출시 범위에 **오디오가 들어가는지** 먼저 답을 달라. 들어가면 Q6의 id 규약 + 파일 형식(m4a) + 매니페스트 등록. 안 들어가면 `LISTEN_SELECT` · `DICTATION`은 `stimulus.audio` 텍스트만으로 성립하지 않으므로 그 문항들의 처리(숨김 / TTS / 텍스트 노출)를 정해야 한다. **들어가든 안 들어가든** `stimulus.audio`(LISTEN_SELECT · DICTATION)와 `dialogue[].text`의 `ko · roman · en`은 오디오의 **텍스트 대체(전사)** 로 계속 필수다 — 오디오가 추가돼도 빼지 않는다(WCAG 1.2.1). 앱은 재생 불가 · 무음 · 스크린리더 환경에서 이 텍스트를 노출할 수 있어야 하며, DICTATION처럼 텍스트 노출이 문항을 무너뜨리는 타입은 **노출 시점(답 제출 뒤)** 을 제품이 정한다 | **답(2026-10-12)**: 오디오 **들어간다** — 파일은 부록 C 목록대로 제작. 파일이 오기 전까지 앱은 텍스트를 보여 주고 재생 버튼을 비활성 ⟨2026-10-13 — 3c 앱 처리, 위 답의 뒷부분을 좁힌다⟩ 파일이 오기 전까지: **오디오 없는 `LISTEN_SELECT`는 레슨에서 건너뛴다**(사용자 결정 — 대본을 보이면 보기와 같은 문장이라 베끼기가 된다. 세 에피소드의 듣기 문항은 지금 전부 서지 않는다). **`DICTATION`은 로마자 + 영어 뜻을 보이고 재생 버튼을 비활성**으로 두며 한글은 답을 낸 뒤 공개한다. 3c 앱은 오디오 id가 와도 아직 재생하지 않는다 — 연결은 별도 작업([ADR-0058](../adr/0058-catalog-learning-session.md) D3) ⟨2026-10-14 — 연결됨, 일부⟩ **카탈로그 컷과 최종 테스트가 소리를 낸다** — 컷은 서면 자동, 최종 테스트는 상대 줄 자동 + 정답 뒤 내 줄, 다시 듣기 조작 없음(사용자 결정, [ADR-0060](../adr/0060-episode-voice-remote-audio.md)). **학습 문항(`LISTEN_SELECT` · `DICTATION`)은 아직이다** — 위 3c 처리(듣기 건너뜀 · 받아쓰기 재생 비활성)가 그대로 산다. 텍스트 대체 원칙은 그대로다 — 소리는 화면 대사의 보조 채널이다 |
+| **Q21** | 오디오가 하나도 없다(§9) | 에피소드 1 ~ 3 출시 범위에 **오디오가 들어가는지** 먼저 답을 달라. 들어가면 Q6의 id 규약 + 파일 형식(m4a) + 매니페스트 등록. 안 들어가면 `LISTEN_SELECT` · `DICTATION`은 `stimulus.audio` 텍스트만으로 성립하지 않으므로 그 문항들의 처리(숨김 / TTS / 텍스트 노출)를 정해야 한다. **들어가든 안 들어가든** `stimulus.audio`(LISTEN_SELECT · DICTATION)와 `dialogue[].text`의 `ko · roman · en`은 오디오의 **텍스트 대체(전사)** 로 계속 필수다 — 오디오가 추가돼도 빼지 않는다(WCAG 1.2.1). 앱은 재생 불가 · 무음 · 스크린리더 환경에서 이 텍스트를 노출할 수 있어야 하며, DICTATION처럼 텍스트 노출이 문항을 무너뜨리는 타입은 **노출 시점(답 제출 뒤)** 을 제품이 정한다 | **답(2026-10-12)**: 오디오 **들어간다** — 파일은 부록 C 목록대로 제작. 파일이 오기 전까지 앱은 텍스트를 보여 주고 재생 버튼을 비활성 ⟨2026-10-13 — 3c 앱 처리, 위 답의 뒷부분을 좁힌다⟩ 파일이 오기 전까지: **오디오 없는 `LISTEN_SELECT`는 레슨에서 건너뛴다**(사용자 결정 — 대본을 보이면 보기와 같은 문장이라 베끼기가 된다. 세 에피소드의 듣기 문항은 지금 전부 서지 않는다). **`DICTATION`은 로마자 + 영어 뜻을 보이고 재생 버튼을 비활성**으로 두며 한글은 답을 낸 뒤 공개한다. 3c 앱은 오디오 id가 와도 아직 재생하지 않는다 — 연결은 별도 작업([ADR-0058](../adr/0058-catalog-learning-session.md) D3) ⟨2026-10-14 — 연결됨, 일부⟩ **카탈로그 컷과 최종 테스트가 소리를 낸다** — 컷은 서면 자동, 최종 테스트는 상대 줄 자동 + 정답 뒤 내 줄, 다시 듣기 조작 없음(사용자 결정, [ADR-0060](../adr/0060-episode-voice-remote-audio.md)). **학습 문항(`LISTEN_SELECT` · `DICTATION`)은 아직이다** — 위 3c 처리(듣기 건너뜀 · 받아쓰기 재생 비활성)가 그대로 산다. 텍스트 대체 원칙은 그대로다 — 소리는 화면 대사의 보조 채널이다 ⟨2026-10-22 — 연결됨, [ADR-0082](../adr/0082-item-audio-and-slow-playback.md) v4 정정⟩ **학습 문항도 소리를 낸다** — 기기에 받아 둔 음성 파일이 있는 문항만 소리 문항으로 선다(사용자 결정 「받은 음성만 소리 문항으로」). 받은 파일이 없는 `LISTEN_SELECT` · `MIN_PAIR_AB`는 **더는 건너뛰지 않고** 대본 + 보기의 소리 없는 제시로 서고, `LISTEN_BUILD`는 건너뛰며, `DICTATION`의 재생 비활성은 소리 없는 받아쓰기에만 남는다. 위 「듣기 건너뜀 · 받아쓰기 재생 비활성이 그대로 산다」는 그때의 상태다 |
 | **Q22** | `post_cuts`의 등장 조건이 파일에 없다 | 「RP 통과 시 한 번」으로 앱이 쥔다. 재진입 시 다시 볼 수 있는지(표지는 D12로 건너뛰어도 완료다)와 **RP 불통과 시 재시도 규칙**은 콘텐츠가 아니라 제품 결정이므로 여기서는 묻기만 한다 | **앱 처리(2026-10-13, 3c — 제품 결정)**: `post_cuts`는 최종 테스트를 **통과한** 결과 화면의 나가기 뒤에 선다. 완료는 판정 순간에 적으므로 컷을 중간에 나가도 다음 에피소드가 열린다. 최종 테스트는 다시 풀 수 있고 다시 통과하면 컷도 다시 선다. 불통과는 결과 화면의 `Try again`으로 첫 턴부터 — 횟수 제한 없음. 통과 기준은 턴의 60 % 이상(올림) |
 | **Q23** | 컷 · IMG_MATCH 이미지의 **대체 텍스트** 출처가 없다. `image_brief`가 유일한 텍스트인데 컷은 한국어 장면 묘사, IMG_MATCH는 `"<영어 키워드> - 한 컷으로 알아볼 수 있게"`로 생성 지시문이 섞여 있다 | 이미지가 있는 자리(컷 · `stimulus.image_url`)에 `image_alt: { ko, en }`을 **별도 키**로 추가한다. `image_brief`는 생성용으로 남기고 앱은 alt로 쓰지 않는다. IMG_MATCH의 `image_alt`는 **정답 한국어 단어를 담지 않는다**(영어 묘사만, 예: `"a glass of water"`). 컷의 `image_alt`는 장면 묘사이되 대사 · 지문(`line` · `aside` · `narration`)과 중복하지 않는다(그 텍스트는 이미 화면에 읽힌다). 추가가 어렵다면 **IMG_MATCH에 한해** `image_brief`의 `" - "` 앞 영어 키워드를 alt로 쓰는 것을 허용하고 그 형식을 불변식으로 고정한다 | **FE 처리(2026-10-13, 3d-1 — IMG_MATCH만)**: 콘텐츠 답은 아직 없다. 앱은 그림 문항의 대체 텍스트로 **정답 보기의 `en`**을 쓴다(없으면 `words[]`의 `gloss_en`) — 낭독 `Picture: water`, 그림을 못 보일 때 그 자리에 서는 글자도 같은 값이다. **`image_brief`는 쓰지 않는다**(생성 지시문이 섞여 있다). 한글 · 로마자는 넣지 않는다(정답을 흘린다). `image_alt`가 오면 출처만 바꾼다. 컷 그림은 3b-2 그대로 alt를 비운다 |
 | **Q25** | **`TURN_ORDER`에 턴별 화자 표기가 없다.** `tiles` · 정답 순서 어디에도 그 턴이 상대 말인지 학습자 말인지 적혀 있지 않다 | 앱은 정답 순서의 **짝수 칸(0, 2, …) = 상대 · 홀수 칸 = 학습자**로 번갈아 가정해 대화 조립(좌 회색 · 우 주황 말풍선)을 그린다(2026-10-13 사용자 결정). 가정이 틀리지 않게 `tiles[]`에 `role: "counterpart" \| "player"`(`dialogue[].role`과 같은 어휘)를 싣거나, 최소한 문항에 첫 화자(`first_speaker`)를 달라. Q13처럼 대화가 엄격히 교대하지 않는 문항이 있으면 가정이 어긋난다 | **답(2026-10-15, 새 형식으로)**: `tiles[]`에 **`speaker: "counterpart" \| "player"`**가 실려 왔다(29/29 — 제안한 `role`이 아니라 `speaker`라는 이름). 29문항 중 15문항이 player부터 시작해 짝 · 홀 가정이 실제로 어긋나 있었다. **FE 처리(2026-10-16)**: 앱은 칸의 화자를 그 값으로 그린다. 화자가 문항의 타일 **전부**에 있어야 하고, 하나도 없으면 옛 짝 · 홀 규칙, **일부에만 있으면 그 문항을 건너뛴다**(뒤바뀐 대화를 그리지 않는다). 같은 화자가 연이어 서는 순서도 그대로 그린다([ADR-0065](../adr/0065-episode-format-additions.md) D9) |
@@ -433,10 +438,34 @@ u01 · u02는 전부 해결, u03은 18문항이 같은 세 id(에피소드 2의 
 | 파일 | 지금 앱 | 필요한 일 |
 |---|---|---|
 | `pre_cuts` | `EpisodePrologue`는 `call \| messenger \| visual-novel` 세그먼트 | ~~컷 세그먼트 종류를 하나 더 두거나, 기존 `EpisodeNarrativeBeat`에 얹는다~~ **결정(2026-10-12, 3b-2)**: 튜토리얼 서사에 얹지 않고 **새 화면** `catalog-cover`(`screens/catalog-cover/`)가 그린다 — 대사 · 내레이션 · 독백(`thought` 패널, 괄호) · 지문(패널 안 ko + en), 화자 `플레이어`는 `Me`. [ADR-0024](../adr/0024-journey-units-and-special-unit-placement.md) D15 · `docs/screens.md` 「카탈로그 표지(컷)」 |
-| `S1` ~ `S9` | 유닛 → `JourneyStep`(닫힌 8개 id) → 학습형별 문항표 | ~~유닛 id를 열고(`<episode>/<step.id>`), 유닛 안 문항 목록은 `items`를 그대로 순서대로 낸다. 학습형 7개 테이블은 `type` 판별 하나로 합친다~~ **결정(2026-10-13, 3c)**: 튜토리얼의 스텝 · 문항표는 그대로 두고, 카탈로그 유닛은 **수업 계획**(`app/catalog-lesson-plan.ts`)이 `items`를 순서대로 학습형 문항으로 바꿔 기존 학습 화면에 데이터로 넘긴다. `type` → 학습형 표 · 건너뛰는 종류(`VOCAB_CARD` · `IMG_MATCH` · `PAIR_MATCH`, 오디오 없는 `LISTEN_SELECT`)는 [ADR-0058](../adr/0058-catalog-learning-session.md) D2 · `docs/screens.md` 「카탈로그 레슨」 ⟨2026-10-13 — 3d-1⟩ **`VOCAB_CARD` · `PAIR_MATCH`는 화면을 얻었다**(단어 카드 · 짝 맞추기). `IMG_MATCH`는 단어 선택의 그림 문항으로 서되 **그림 주소가 비어 있어 지금은 전부 건너뛴다.** 그래서 `S1` · `S4`는 단어 카드로 시작하고(u01 `S1` = 카드 셋 + 빈칸 채우기 셋, 그림 문항 둘 건너뜀), u03 `S9`에 짝 맞추기 두 문항이 선다. 앱이 읽는 필드는 §7.2 아래 표, 결정은 ADR-0058 「적용 기록」 |
+| `S1` ~ `S9` | 유닛 → `JourneyStep`(닫힌 8개 id) → 학습형별 문항표 | ~~유닛 id를 열고(`<episode>/<step.id>`), 유닛 안 문항 목록은 `items`를 그대로 순서대로 낸다. 학습형 7개 테이블은 `type` 판별 하나로 합친다~~ **결정(2026-10-13, 3c)**: 튜토리얼의 스텝 · 문항표는 그대로 두고, 카탈로그 유닛은 **수업 계획**(`app/catalog-lesson-plan.ts`)이 `items`를 순서대로 학습형 문항으로 바꿔 기존 학습 화면에 데이터로 넘긴다. `type` → 학습형 표 · 건너뛰는 종류(`VOCAB_CARD` · `IMG_MATCH` · `PAIR_MATCH`, 오디오 없는 `LISTEN_SELECT` ⟨2026-10-22 — [ADR-0082](../adr/0082-item-audio-and-slow-playback.md) v4 정정: 오디오 없는 `LISTEN_SELECT` · `MIN_PAIR_AB`는 더는 건너뛰지 않고 대본 + 보기의 소리 없는 제시로 선다. 건너뛰는 소리 문항은 받은 파일 없는 `LISTEN_BUILD`뿐이다⟩)는 [ADR-0058](../adr/0058-catalog-learning-session.md) D2 · `docs/screens.md` 「카탈로그 레슨」 ⟨2026-10-13 — 3d-1⟩ **`VOCAB_CARD` · `PAIR_MATCH`는 화면을 얻었다**(단어 카드 · 짝 맞추기). `IMG_MATCH`는 단어 선택의 그림 문항으로 서되 **그림 주소가 비어 있어 지금은 전부 건너뛴다.** 그래서 `S1` · `S4`는 단어 카드로 시작하고(u01 `S1` = 카드 셋 + 빈칸 채우기 셋, 그림 문항 둘 건너뜀), u03 `S9`에 짝 맞추기 두 문항이 선다. 앱이 읽는 필드는 §7.2 아래 표, 결정은 ADR-0058 「적용 기록」 |
 | `RP` | `EpisodeFinalTest`는 `format: visual-novel \| call` + `speaking \| word-choice \| writing` | ~~RP 수정본을 보고 결정. 지금 모양은 `ROLEPLAY_TURN` 하나뿐이다~~ **결정(2026-10-13, 3c — 사용자: 지금 모양으로)**: 튜토리얼 최종 테스트에 얹지 않고 **새 화면** `catalog-final`이 턴마다 상대 대사 + 타일 순서 맞추기로 그린다. 화자는 에피소드 `counterpart`. ADR-0058 D9 · `docs/screens.md` 「카탈로그 최종 테스트」. RP 수정본이 오면 다시 본다 |
 | `post_cuts` | **자리 없음** — D10은 「마지막 자리 = 최종 테스트」 | ~~최종 테스트 결과 화면 뒤에 컷 열람을 붙이거나, 튜플에 네 번째 자리(통과 뒤 화면)를 더한다. 어느 쪽이든 ADR-0024 D10의 확장이라 결정 기록이 필요하다~~ **결정(2026-10-13, 3c)**: **결과 화면 뒤에 붙인다** — 맵에 노드를 더하지 않는다. 표지 컷 화면을 다시 쓴다(route `catalog-epilogue`). ADR-0058 D10 · [ADR-0024](../adr/0024-journey-units-and-special-unit-placement.md) 정정 기록 2026-10-13 |
 | 매니페스트의 미수신 에피소드 | `kind: "pending"` 에피소드(D13 · D14) | 그 자리에 그대로 들어간다. 받으면 `filled`로 바뀐다 |
+
+## 13. 납품 — 고칠 때의 규칙 ⟨2026-10-20⟩
+
+앱은 바뀐 에피소드를 **본문 · 그림 · 음성을 다 받은 뒤 다음 앱 시작에** 새 버전으로 바꾼다(스플래시에서 로고가 끝난 뒤 최대 3초 기다려 그 안에 다 받으면 그 실행부터). 그때까지 기기는 옛 버전과 **옛 파일**을 쓴다([ADR-0078](../adr/0078-episode-update-on-splash.md)). 그래서 이미 올라간 에피소드를 고칠 때는 아래를 지킨다. 처음 올리는 에피소드도 3 · 4 · 6은 같다.
+
+1. **그림 · 음성을 고치면 새 이름으로 올린다** — 새 경로(`images/<id>/pre-1-v2.webp` 등) · 새 음성 id(`u04-directions/d-01b` 등). **같은 이름으로 덮어쓰지 않는다**: 앱은 이미 받은 이름의 파일을 다시 받지 않고, 옛 버전을 연 기기는 덮어쓴 파일을 그 자리에서 쓴다(파일의 해시는 어디에도 없어 앱이 바뀐 것을 알 수 없다 — [ADR-0071](../adr/0071-episode-background-download.md) 「대가」 2).
+2. **그림은 WebP 품질 75로, 해상도는 원본 그대로** 내보낸다(2026-10-21 사용자 공유 — 줄이지 않는다).
+3. **에피소드 JSON을 다시 만든다** — 바뀐 경로 · 음성 id를 넣는다. 그리고 `manifest.json`의 그 항목을 고친다: `sha256` · `bytes`를 **올릴 그 파일**의 값(UTF-8 바이트의 SHA-256 소문자 hex · 바이트 수)으로, `version`을 **더 높게**(`YYYY-MM-DD.n`, §10). JSON만 다시 올리고 매니페스트를 그대로 두면 앱은 sha가 맞지 않아 그 본문을 받지 않는다(`integrity-mismatch` — 아래 사건 기록). 음성 id가 바뀌면 `audio/manifest.json`도 다시 만든다(부록 E).
+4. **올리는 순서**: 새 그림 · 음성 파일 → `audio/manifest.json` → 에피소드 JSON → (약 1분 뒤) **`manifest.json` 마지막**. 매니페스트가 먼저 바뀌면 기기가 아직 없는 본문 · 파일을 받으려다 실패하고 다음 기회로 미룬다(옛 버전은 깨지지 않지만 늦어진다). 1분을 두는 것은 에피소드 JSON의 엣지 사본이 바뀔 틈이다(5).
+5. **`cacheControl`** — 그림 · 음성은 **1년**(`31536000` — 고치면 새 이름이라 같은 주소의 내용이 바뀌지 않는다), 에피소드 JSON · `manifest.json` · `audio/manifest.json` 셋은 **60초**. **Supabase 대시보드에서 올리면 `cacheControl`이 1시간(`3600`)으로 붙는다** — 지금 버킷의 응답도 `max-age=3600`이다. JSON 셋은 Storage API · CLI로 `cacheControl`을 정해 올린다.
+   - **기기는 주소 키로 기기 캐시를 비켜 간다** — 앱이 `manifest.json` · `audio/manifest.json` 주소에 분 단위 키(`?m=`), 에피소드 JSON 주소에 sha 키(`?v=`)를 붙여 기기에 남은 옛 응답을 쓰지 않는다(ADR-0078 D11).
+   - **엣지(CDN) 지연의 상한은 `cacheControl`이다** — 엣지는 주소 키를 보지 않는다(2026-10-21 실측 — 쿼리가 달라도 `cf-cache-status: HIT`). 그래서 올린 뒤 최대 60초(대시보드로 올렸으면 1시간)는 옛 목록이 보일 수 있고, 그 사이 낡은 본문이 오면 앱은 sha가 맞지 않아 받지 않았다가 다음 기회에 다시 받는다. 60초는 이 창을 줄이는 유일한 수단이다.
+6. **옛 파일은 지우지 않는 것이 기본이다 — 지우는 시점은 아직 정하지 않았다**(§10 고정 문면 그대로, 사용자 확인 2026-10-21). 옛 버전을 연 기기는 다음 시작에 바뀔 때까지 옛 이름의 파일을 쓴다(받아 두지 못한 기기는 버킷에서 읽는다).
+7. 올린 뒤 공개 주소로 `manifest.json` · 바뀐 에피소드 JSON을 받아 **200 · 매니페스트의 `sha256` · `bytes`와 같은지** 본다(엣지 사본이 남아 있으면 60초 뒤 다시).
+8. ⟨2026-10-21⟩ **앱에 내장된 그림은 같은 이름이면 내장이 이긴다** — 튜토리얼 u00의 그림 14장은 앱 번들에 있고, 앱은 받아 둔 파일 > 내장 > 원격 순으로 고르며 내장 그림은 받지 않는다([ADR-0081](../adr/0081-tutorial-as-catalog-episode.md) D2). 같은 이름으로 내용만 바꾸면 **앱을 새로 내기 전까지 반영되지 않는다** — 규칙 1(새 이름)이 여기서도 유일한 길이다. u00의 JSON · 매니페스트 항목을 바꾸면 내장본과 version이 갈려 원격이 이기고, 새 이름의 그림만 받는다.
+
+### 사건 기록 ⟨2026-10-20 ~ 21⟩ — 같은 이름 재업로드 · 매니페스트 미갱신
+
+- **무엇이 있었나** — 2026-10-20 버킷의 `episodes/u01` ~ `u04` JSON과 그림이 **같은 이름으로 다시 올라갔고 `manifest.json`은 고쳐지지 않았다**(2026-10-19판 그대로). 예: `episodes/u04-directions.json`은 150,222 B · sha `c4780d55…`인데 매니페스트 항목은 141,519 B · `29e72d1e…`였다(규칙 1 · 3 위반).
+- **기기에서 무엇이 보였나** — 앱은 u04 새 본문을 `integrity-mismatch`로 받지 않았다. 이미 u04를 열던 기기는 옛 버전을 그대로 썼고(ADR-0078 D3), **새 설치는 u04가 원격 전용이라 잠긴 채 열리지 않았다**. 덮어쓴 그림은 감지할 수 없어, 옛 본문을 연 기기가 새 그림을 받았는지 · 옛 그림을 쓰는지는 기기마다 다르다.
+- **어떻게 바로잡았나** — 사용자가 2026-10-21 `manifest.json`을 u01 ~ u04 **`2026-10-21.1`** · 버킷 파일의 실측 sha256 · bytes로 다시 만들어 올렸다(앱 디코더 통과 · 본문이 가리키는 그림이 모두 버킷에 있음을 확인한 판). 그 뒤 기기에서 게이지 → 다음 시작 교체를 확인했다([e2e](../e2e/episode-update-on-splash.md) EU-3 ~ EU-5).
+- **남은 것** — u01 ~ u03 새 본문에는 **음성 id가 없다**. 2026-10-21.1판이 내장(2026-10-16.1)을 이겨 그 셋은 원격본이 열린다 — 사용자 결정(2026-10-21)으로 그대로 내보냈다. 음성 id를 다시 붙인 판은 위 규칙으로 새 `version`을 달아 올린다.
+- **튜토리얼 `u00-tutorial`** — 2026-10-21 버킷에 JSON · 그림이 더해졌지만 **`manifest.json`에는 없다**(앱은 매니페스트에 없는 파일을 받지 않는다). 내장 튜토리얼을 교체하는 별도 앱 PR에서 다룬다(사용자 결정) — 그 전에 매니페스트에 넣지 않는다.
+  ⟨2026-10-21 — 다룸⟩ 같은 날 버킷 `manifest.json`에 u00 항목(order 0)이 들어갔고(사용자가 올림), 앱 PR이 그 판(`2026-10-21.3`)을 바이트 그대로 내장했다([ADR-0081](../adr/0081-tutorial-as-catalog-episode.md)). **옛 앱(이 PR 전 빌드)에서는 u00이 원격 전용 「Episode 1.」로 서고, 옛 튜토리얼을 통과했지만 u01을 아직 열지 않은 사용자의 u01이 u00 뒤로 잠긴다** — 사용자 결정(Q1)으로 항목을 그대로 두었다(수용된 위험).
 
 ## 부록 A. 에피소드별 수치
 
@@ -679,12 +708,12 @@ id 규약(Q6 제안): `<episode_id>/<kind>-<n>` — 확장자 없는 불투명 i
 | 일 | 정보 파일 |
 |---|---|
 | 음성을 새로 올림 | 그 id 항목을 더해 다시 만든다 |
-| 같은 id의 음성을 다시 녹음 · 교체 | 그 id를 **다시 잰다** — 파일만 바꾸면 글과 소리가 어긋나고 앱은 그것을 알 수 없다 |
+| 같은 id의 음성을 다시 녹음 · 교체 | 그 id를 **다시 잰다** — 파일만 바꾸면 글과 소리가 어긋나고 앱은 그것을 알 수 없다. ⟨2026-10-20⟩ 이미 올라간 에피소드의 음성이면 같은 id로 덮어쓰지 말고 **새 id**로 올린다(§13 규칙 1) — 그때는 아래 「`audio_url`만 바뀜」 줄과 같다 |
 | 음성을 내림 | 그 id 항목을 뺀다 |
 | `audio_url`만 바뀜(같은 파일을 다른 id로) | 새 id로 항목을 옮긴다 |
 | 대사(`ko`)만 바뀜 | 다시 만들 필요 없다 — 앱이 글자 수를 센다 |
 
-- **순서**: 올릴 때는 음성 → 정보 파일, 내릴 때는 정보 파일 → 음성. 매번 **전체를 다시 만들어** 덮어쓰고 `generated_at`도 새로 쓴다.
+- **순서**: 올릴 때는 음성 → 정보 파일, 내릴 때는 정보 파일 → 음성. 에피소드를 고칠 때 이 파일이 끼는 자리(파일 → 이 파일 → 에피소드 JSON → `manifest.json` 마지막)와 `cacheControl`은 §13. 매번 **전체를 다시 만들어** 덮어쓰고 `generated_at`도 새로 쓴다.
 - 앱은 실행 시작 · 연결 복귀 · 포그라운드 복귀마다 이 파일을 다시 받고 원문이 같으면 아무것도 하지 않는다. **깨진 파일**(JSON 오류 · `schema` 다름)을 올리면 기기는 전에 받아 둔 정보를 계속 쓰고, 파일을 **지우면** 기기도 기본 속도로 돌아간다.
 - 올리기 전 검사: JSON 문법 · `schema` · 항목 수 = 버킷 `audio/` 아래 m4a 수 · 모든 키가 어느 에피소드 JSON의 `audio_url`과 같음 · 모든 값이 1 이상의 정수이고 `speech_end_ms ≤ duration_ms` · 단위가 ms · 올린 뒤 공개 주소로 받아 200과 같은 내용.
 

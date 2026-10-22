@@ -142,3 +142,12 @@ Play Console 비공개 테스트에 올린 AAB를 실기에서 열자 효과음 
   원격 음성은 `AudioRemoteSource`가 `https` 절대 URL로 판정해 `MediaPlayer.setDataSource(url)`로 가는 **별도 갈래**라 산출물 자산 검사의 대상이 아니고,
   튜토리얼의 번들 자산(`apps/ios/Host/audio`)은 여전히 같은 결선 · 같은 검사로 실린다. 원격이 아닌 `source`는 지금처럼 `AudioAssetPath`로 간다.
   원격 재생의 계측(닿지 않는 https의 `done` 한 번 · 준비 중 `stop`)은 [Android 오디오 재생 검증](../e2e/android-audio-playback.md)에 절차가 있고 아직 실행하지 않았다.
+
+## 적용 기록 ⟨2026-10-21 — 튜토리얼 u00⟩
+
+결정은 [ADR-0081](0081-tutorial-as-catalog-episode.md) D12 · D13. D1 ~ D4는 그대로다.
+
+- **결선되는 대사 음성이 21 → 3개다** — 옛 튜토리얼 · 전화 음성 18을 원본(`apps/ios/Host/audio`)에서 지웠다. 남은 셋은 호스트 테스트 고정물(`greeting-1` · `ordering-2` · `tutorial-cabin-announcement`)이고 제품이 쓰는 내장 음성은 0이다. 이 문서의 「21개」는 그때의 값이다.
+- `build.gradle`(폴더째 복사 · `hasFiles` 가드)은 바뀌지 않았다 — `.m4a`가 남아 D2의 「원본에 하나 이상」 검사를 통과한다. androidTest `AudioPlaybackModuleTest`의 목록은 그 셋이다.
+- **Maestro 흐름 `e2e/android-audio-playback.yaml` · `devtools/android-maestro/run-audio-playback.sh`는 지웠다**(맥락이 말한 「호출 수만 세는」 흐름) — 그 흐름이 열던 옛 튜토리얼 듣기 화면이 없다. 계측 · 원격 재생 AP-R1 · AP-R2 절차는 [Android 오디오 재생 검증](../e2e/android-audio-playback.md)에 남았다.
+- D4(서사 배경 그림 애니메이션의 자리)의 소비자였던 옛 튜토리얼 프롤로그 · 최종 스토리 · 비주얼 노벨이 지워졌다. `NarrativeBackground`는 남았다.

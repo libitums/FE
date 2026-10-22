@@ -367,6 +367,24 @@ sink는 던지지 않는다 — 매핑 · `capture`를 `try`로 감싸 삼킨다
   - 불변식(분석 쪽 점검용): `correctCount ≤ questionCount − skippedCount`는 레슨에 읽기 건너뜀이 없을 때만 참이다(읽기 건너뜀은 채점 밖이라 빼면 안 된다) — 늘 참인 것은 `correctCount ≤ questionCount`다.
   - **한계** — 막힘과 사용자 `Skip`을 가르지 않는다(`S5`만 깨끗하다). 권한 거부 · 인식기 없음 · 일반 실패도 가르지 않는다. PostHog 도착은 보지 않았다.
     **GitHub wiki 이벤트 사전은 저장소 밖이라 이 변경에 들어 있지 않다** — 위 표의 `skippedCount` 행 · 읽는 법 · 연속성을 옮겨야 한다(후속 — wiki 갱신 필요).
+- ⟨2026-10-20 — 에피소드 갱신 스플래시 게이지. 적용 기록이고 결정을 바꾸지 않는다⟩ **이벤트 하나가 더해져 이름이 43 → 44개다**(모양 47 → 48). 결정은 [ADR-0078](0078-episode-update-on-splash.md) D8.
+  sink는 새로 만들지 않았다 — App 루트 훅(`useEpisodeContentRefresh`)이 `episodeIntroEventSink`로 낸다(`episode_content_refreshed`와 같은 자리). 타입 정본은 `lib/episode-update-event.contract.ts`이고 `EpisodeIntroEvent` union에 든다.
+  - **`episode_update_splash_closed`** — 스플래시가 나가는 순간, **실행당 최대 1회**. 매니페스트가 로고 끝 전에 답하지 않았으면 **교체가 있었을 때만** `unchecked`로 내고 아니면 내지 않는다. 속성(10진 문자열 · 문자열) `outcome`(`unchecked` · `nothing` · `complete` · `timed-out` · `failed`) · `waitMs`(로고 끝 → 나감, 로고 끝이 없었으면 `"0"`) · `splashMs`(받기 시작 → 나감) · `episodeCount`(스플래시가 기다린 새 · 바뀐 에피소드 수) · `replacedCount`(이번 시작에 활성으로 올린 수 — 시작 직후 + 나갈 때). 에피소드 id는 싣지 않는다.
+  - 묻는 질문 → 읽는 법: 게이지 노출 실행 비율 = `outcome ∈ {complete, timed-out, failed}` ÷ (`unchecked`를 뺀 전체) — 분모는 「매니페스트가 로고 끝 전에 답한 실행」이다. 대기 시간 = 게이지 실행의 `waitMs` 분포(설계상 ≤ 약 3000). 3초 넘김 비율 = `timed-out` ÷ 게이지 실행. 교체된 에피소드 수 = `replacedCount`의 합 · 분포(`unchecked`는 오프라인 시작의 교체).
+  - **한계** — 매니페스트가 로고 끝 뒤에 답한 실행(느린 망)은 교체가 없으면 세지 않는다 — 「느려서 게이지를 못 띄운 비율」은 잴 수 없다(ADR-0078 재검토 조건 1). Airbridge · Meta 앱 이벤트 매핑은 옮기지 않는다. PostHog 도착은 보지 않았다. GitHub wiki 이벤트 사전은 저장소 밖이라 따로 고친다(후속).
+
+- ⟨2026-10-21 — 튜토리얼 u00. 적용 기록이고 이 ADR의 결정을 바꾸지 않는다⟩ **sink가 일곱 → 넷, 이벤트 이름이 44 → 36개다**(모양 48 → 37 — 출처별 두 모양이던 열림 이벤트 셋이 함께 빠짐). 결정은 [ADR-0081](0081-tutorial-as-catalog-episode.md) D9 · D10.
+  - **지운 sink 셋** — `messengerEventSink` · `visualNovelEventSink` · `phoneCallEventSink`(그 화면이 지워짐). 남은 넷: `entryEventSink` · `notificationEventSink` · `settingsEventSink` · `episodeIntroEventSink`. 이 절 제목의 「일곱 번째 sink」와 위 「sink는 일곱」은 그때의 수다.
+  - **지운 이름 여덟** — `messenger_unit_opened` · `messenger_unit_completed` · `messenger_unit_exited_incomplete` · `visual_novel_unit_opened` · `visual_novel_unit_completed` · `visual_novel_unit_exited_incomplete` · `visual_novel_unit_replay_started` · `phone_call_unit_opened`.
+  - **튜토리얼의 `episodeId` 값이 `tutorial` → `u00-tutorial`** — 표지 넷(`episode_intro_*`) · 설문 둘(`episode_survey_*`)이 같은 이름으로 카탈로그 표지 결선에서 난다. 튜토리얼 단원도 이제 `episode_lesson_started` · `episode_lesson_finished { unitKey: S1 … S13 }` · `episode_final_passed`를 낸다(옛 튜토리얼에는 단원 · 최종 통과 이벤트가 없었다).
+  - **`episode_prologue_completed.prologueKind`는 `"cuts"` 하나**다 — 옛 통화 · 메신저 · 비주얼 노벨 · 혼합 서사가 지워졌다(`EpisodePrologueCompletedKind = "cuts"`).
+  - **연속성** — 교체 시점은 같은 사람의 `episodeId`가 `tutorial` → `u00-tutorial`로 바뀐 때다. 비교 지표는 「튜토리얼 표지 → Episode 1 표지(`u01-water`)」 전환율 하나다(ADR-0081 D9). 새 이벤트는 없다. PostHog 도착은 보지 않았다. GitHub wiki 이벤트 사전은 저장소 밖이라 따로 고친다(후속).
+
+- ⟨2026-10-22 — 학습 문항 음성 · 「천천히」. 적용 기록이고 이 ADR의 결정을 바꾸지 않는다⟩ **이벤트 하나가 더해져 이름이 36 → 37개다.** 결정은 [ADR-0082](0082-item-audio-and-slow-playback.md) 「측정」.
+  - **`episode_listen_item_answered`** — sink는 기존 `episodeIntroEventSink`(넷 그대로). 듣기 여섯 유형(`LISTEN_SELECT` · `MIN_PAIR_AB` · `REPLY_SELECT` · `LISTEN_BUILD` · `DICTATION` · `SHADOW`) 문항마다 판정이 처음 서는 순간 한 번. 소리 없는 문항은 내지 않는다.
+  - **속성** — `episodeId` · `unitKey` · `itemId` · `itemType` · `result`(`correct` · `incorrect` · `practiced` · `skipped`) · `pace`(`normal` · `slow`, 판정 순간) · `slowTurnedOn`(boolean) · `replayCount` · `slowReplayCount`(사용자가 누른 다시 듣기 수, 10진 문자열 — 이 절의 다른 수 속성과 같다).
+  - **읽는 법** — 「천천히」 켬 비율 = `slowTurnedOn` 참 ÷ 이벤트 수, 다시 듣기 = 두 수의 합, 정답률 변화 = 같은 에피소드 · 유형 안에서 `result`를 `pace`(또는 `slowTurnedOn`)로 갈라 비교.
+  - **한계** — 분모는 판정까지 간 문항이다(판정 전에 나간 문항은 빠진다). 자동 재생 · 켤 때의 다시 재생은 세지 않는다. Airbridge · Meta 매핑은 없다. PostHog 도착은 보지 않았다. GitHub wiki 이벤트 사전은 저장소 밖이라 따로 고친다(후속).
 
 ### D15. 나라 · 주 · 시간대만 IP로 추정하고, IP는 저장하지 않는다
 

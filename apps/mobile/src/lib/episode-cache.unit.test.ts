@@ -2,7 +2,17 @@ import { describe, expect, test } from "vitest";
 
 import { bundledCatalogInput } from "./episode-bundled";
 import { isAssetsComplete, markAssetsComplete } from "./episode-asset-sync";
-import { CONTENT_MANIFEST_KEY, contentEpisodeKey, readCachedSource } from "./episode-cache";
+import {
+  CONTENT_MANIFEST_KEY,
+  CONTENT_RECEIVED_MANIFEST_KEY,
+  contentEpisodeKey,
+  readCachedSource,
+  safeAvailable,
+  safeGet,
+  tryRemove,
+  trySet,
+  type ContentStore,
+} from "./episode-cache";
 import { buildEpisodeCatalog, parseCachedManifest } from "./episode-catalog";
 import { fakeStore, manifestText, remote } from "./episode-refresh.test-support";
 
@@ -46,5 +56,32 @@ describe("readCachedSource — 자산 게이트", () => {
     expect(statusOf(readCachedSource(store, ["u04-x"], keep))).toBe("pending");
     markAssetsComplete(store, "u04-x", X.entry.sha256 as string, []);
     expect(statusOf(readCachedSource(store, ["u04-x"], keep))).toBe("ready");
+  });
+});
+
+describe("저장 키 · 안전 도우미", () => {
+  test("EC1. 활성 매니페스트 키는 그대로이고 받은 매니페스트 키가 따로 있다", () => {
+    expect(CONTENT_MANIFEST_KEY).toBe("libitum.content.manifest");
+    expect(CONTENT_RECEIVED_MANIFEST_KEY).toBe("libitum.content.manifest.received");
+  });
+
+  test("EC2. 저장소가 던지면 null · false · false · false이고, 정상이면 값 · true다", () => {
+    const boom = (): never => {
+      throw new Error("host down");
+    };
+    const throwing: ContentStore = { available: boom, get: boom, set: boom, remove: boom };
+    expect(safeGet(throwing, "k")).toBeNull();
+    expect(trySet(throwing, "k", "v")).toBe(false);
+    expect(tryRemove(throwing, "k")).toBe(false);
+    expect(safeAvailable(throwing)).toBe(false);
+
+    const { store, data } = fakeStore({ k: "v" });
+    expect(safeGet(store, "k")).toBe("v");
+    expect(safeGet(store, "none")).toBeNull();
+    expect(trySet(store, "k2", "v2")).toBe(true);
+    expect(data.get("k2")).toBe("v2");
+    expect(tryRemove(store, "k")).toBe(true);
+    expect(data.has("k")).toBe(false);
+    expect(safeAvailable(store)).toBe(true);
   });
 });

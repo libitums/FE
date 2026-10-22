@@ -1,6 +1,7 @@
 // 보기를 고르는 문항(듣기 · 단어 선택)으로의 매핑입니다(순수).
 
 import type { LearningItem, Option, Text } from "../lib/episode-content.model";
+import type { QuestionAudio } from "../lib/question-audio";
 import type { ListeningQuestion } from "../screens/listening/listening-questions";
 import type { WordChoiceQuestion } from "../screens/word-choice/word-choice-questions";
 import type {
@@ -16,6 +17,7 @@ import {
   optionalField,
   skippedItem,
 } from "./catalog-item-text";
+import { audioField, catalogAnswerEchoOf, catalogListenAudioOf } from "./catalog-item-audio";
 import { shuffledOrder } from "./catalog-shuffle";
 
 type ItemOf<T extends LearningItem["type"]> = Extract<LearningItem, { type: T }>;
@@ -29,23 +31,15 @@ const isQuad = (values: readonly string[]): values is readonly [string, string, 
 const slotOfFour = (index: number): 0 | 1 | 2 | 3 =>
   index === 0 ? 0 : index === 1 ? 1 : index === 2 ? 2 : 3;
 
-/**
- * 그 문항의 재생 출처입니다. 학습 문항의 음성은 아직 연결하지 않아(콘텐츠의 `audio_url`을 쓰지 않습니다 —
- * 컷 · 최종 테스트만 버킷 음성을 씁니다, ADR-0060) 늘 `null`입니다. 학습 문항 오디오 작업이 이 자리를 채웁니다.
- */
-function audioSourceOf(_item: ItemOf<"LISTEN_SELECT" | "MIN_PAIR_AB">): string | null {
-  return null;
-}
-
 export function listeningItemOf(
   item: ItemOf<"LISTEN_SELECT" | "MIN_PAIR_AB">,
-  port: CatalogItemPort,
+  port: CatalogLessonItemPort,
 ): CatalogMappedItem {
   const options = item.options;
   if (options === undefined || options.length === 0) return skippedItem(item, "no-options");
-  const audio = item.stimulus.audio;
-  const prompt = audio === undefined ? "" : koOf(port, audio.ko);
-  const romanization = latinOf(port, audio?.roman);
+  const line = item.stimulus.audio;
+  const prompt = line === undefined ? "" : koOf(port, line.ko);
+  const romanization = latinOf(port, line?.roman);
   const choices = options.map((option) => koOf(port, option.ko));
   const answer = options.findIndex((option) => option.correct);
   if (prompt === "" || romanization === undefined || answer < 0 || choices.includes("")) {
@@ -53,13 +47,12 @@ export function listeningItemOf(
   }
   // 보기가 둘 · 넷이 아니면 소리 사유보다 먼저 모양이 틀린 문항입니다.
   if (!isPair(choices) && !isQuad(choices)) return skippedItem(item, "malformed");
-  // 모양이 맞아도 소리가 없는 듣기는 3c에서 보이지 않습니다(E-2) — 오디오가 연결되면 자동으로 섭니다.
-  const audioSource = audioSourceOf(item);
-  if (audioSource === null) return skippedItem(item, "audio-missing");
+  // 소리가 없어도(받은 파일 없음 · 모듈 없음) 건너뛰지 않습니다 — audio가 null이면 대본이 보이는 제시로 섭니다(v4).
+  const audio = catalogListenAudioOf(item, port);
   const common = {
     prompt,
     romanization,
-    audioSource,
+    audio,
     ...optionalField("instruction", instructionOf(port, item.prompt)),
   };
   let question: ListeningQuestion;
@@ -81,6 +74,8 @@ type WordChoiceParts = {
   readonly translation?: string | undefined;
   /** 보기마다 번역 줄입니다 — 있으면 길이 = `choices.length`입니다. */
   readonly choiceTranslations?: readonly string[] | undefined;
+  /** 소리가 있으면 싣습니다(없으면 키 자체를 싣지 않습니다). */
+  readonly audio?: QuestionAudio | null | undefined;
 };
 
 function wordChoiceItem(
@@ -101,6 +96,7 @@ function wordChoiceItem(
     ...optionalField("romanization", parts.romanization),
     ...optionalField("translation", parts.translation),
     ...optionalField("instruction", instructionOf(port, promptText)),
+    ...audioField(parts.audio ?? null),
     ...(parts.choiceTranslations !== undefined && parts.choiceTranslations.length === choices.length
       ? { choiceTranslations: parts.choiceTranslations }
       : {}),
@@ -128,7 +124,7 @@ export function roleLineItemOf(
 /** 한국어 낱말의 영어 뜻 고르기입니다 — 영어 보기가 `ko` 자리에 옵니다. */
 export function translateToEnItemOf(
   item: ItemOf<"TRANSLATE_TO_EN">,
-  port: CatalogItemPort,
+  port: CatalogLessonItemPort,
 ): CatalogMappedItem {
   const text = item.stimulus.text;
   return wordChoiceItem(item, port, item.prompt, {
@@ -136,6 +132,7 @@ export function translateToEnItemOf(
     romanization: latinOf(port, text?.roman),
     choices: item.options.map((option) => latinOf(port, option.ko) ?? ""),
     answerIndex: correctIndex(item.options),
+    audio: catalogAnswerEchoOf(item, port),
   });
 }
 
@@ -171,7 +168,7 @@ export function clozeChoiceItemOf(
 /** 상대 말에 답하는 보기 고르기입니다(REPLY_SELECT) — 상대 말을 글로 보입니다. */
 export function replySelectItemOf(
   item: ItemOf<"REPLY_SELECT">,
-  port: CatalogItemPort,
+  port: CatalogLessonItemPort,
 ): CatalogMappedItem {
   const line = item.stimulus.audio;
   if (line === undefined) return skippedItem(item, "malformed");
@@ -181,6 +178,7 @@ export function replySelectItemOf(
     translation: englishOf(port, line.en),
     choices: item.options.map((option) => koOf(port, option.ko)),
     answerIndex: correctIndex(item.options),
+    audio: catalogListenAudioOf(item, port),
   });
 }
 
@@ -224,6 +222,7 @@ export function pictureChoiceItemOf(
     choices,
     answerIndex,
     ...optionalField("instruction", instructionOf(port, item.prompt)),
+    ...audioField(catalogAnswerEchoOf(item, port)),
     picture: { url, answerRomanization: latinOf(port, correct?.roman) ?? null },
   };
   return { kind: "word-choice", itemId: item.id, question };

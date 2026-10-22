@@ -2,8 +2,9 @@
 // 감쌉니다. 접점은 모듈마다 파일 하나입니다(ADR-0017 D3) — 화면이 `NativeModules`를
 // 직접 만지지 않습니다.
 //
-// **메서드는 넷입니다** (`play` · `stop` · `pause` · `resume`; ADR-0017 D3, 2026-09-27
-// 개정). 시크 · 배속 · 볼륨 · 페이드 · 동시 재생 · **재생 상태 조회** · **재생 진행
+// **메서드는 다섯입니다** (`play` · `playAtRate` · `stop` · `pause` · `resume`; ADR-0017 D3,
+// ADR-0082 개정). 배속은 0.85 하나이고(`lib/listen-pace.ts`) 새 메서드 `playAtRate`로만 갑니다 —
+// `play`의 모양은 그대로입니다. 시크 · 다른 배속 · 볼륨 · 페이드 · 동시 재생 · **재생 상태 조회** · **재생 진행
 // 조회** · 배경 재생 · 잠금화면 컨트롤 · 오디오 세션 카테고리 조작 · 녹음 · 재생목록 ·
 // 프리로드 · 캐시는 **하나도 넓히지 않습니다**. 넓혀야 할 것 같으면 구현하지 말고
 // 보고합니다.
@@ -22,13 +23,21 @@
 // 유효기간**입니다 — 어느 재생이 「지금 것」인지만 가리고, 재생 중인지 아닌지를
 // 답하지 않습니다. 조회 API가 아니므로 위 제외 목록을 넓히지 않습니다.
 
+import { NORMAL_PLAYBACK_RATE } from "./listen-pace";
+import type { PlaybackRate } from "./listen-pace";
+
 /** 호스트가 `AudioPlaybackModule`이라는 이름으로 등록합니다. */
 interface AudioPlaybackModule {
   play(source: string, done: (result: unknown) => void): void;
+  /** 속도를 받는 재생입니다. 옛 호스트에는 없습니다. */
+  playAtRate?(source: string, rate: number, done: (result: unknown) => void): void;
   stop(): void;
   pause(): void;
   resume(): void;
 }
+
+/** 호스트가 속도 재생(`playAtRate`)을 가졌는가입니다. */
+export type SlowPlaybackSupport = "supported" | "unsupported";
 
 /**
  * 재생 **요청 한 번의 결과**입니다. 재생 상태 조회가 아닙니다.
@@ -104,6 +113,11 @@ export function isAudioAvailable(): boolean {
   return nativeModule() !== undefined;
 }
 
+/** 모듈이 있고 `playAtRate`가 함수일 때만 `"supported"`입니다. */
+export function slowPlaybackSupport(): SlowPlaybackSupport {
+  return typeof nativeModule()?.playAtRate === "function" ? "supported" : "unsupported";
+}
+
 /**
  * `source`를 **처음부터** 재생하도록 호스트에 넘깁니다. 던지지 않습니다.
  *
@@ -111,7 +125,11 @@ export function isAudioAvailable(): boolean {
  * 부르지 않습니다. 늦게 온 완료 신호는 버리고(세대), 전달한 완료는 **한 번만**
  * 올라갑니다.
  */
-export function playAudio(source: string, onFinished: () => void): AudioPlayOutcome {
+export function playAudio(
+  source: string,
+  onFinished: () => void,
+  rate?: PlaybackRate,
+): AudioPlayOutcome {
   const host = nativeModule();
   if (host === undefined) {
     return "unavailable";
@@ -123,7 +141,7 @@ export function playAudio(source: string, onFinished: () => void): AudioPlayOutc
   // **`stop`을 먼저 부르지 않습니다.** 새 `play`가 이전 것을 대체합니다(ADR-0017 D3)
   // — 여기서 멈추면 대체 규약을 우회하는 셈이라, 네이티브 `stop`이 두 번 불리게
   // 됩니다. 이전 재생의 콜백은 위의 세대 갱신 하나로 이미 무효가 됩니다.
-  host.play(source, () => {
+  const done = () => {
     if (generation !== currentGeneration) {
       // 늦게 온 이전 재생의 완료 신호입니다. 여러 번 와도 여기서 전부 버려집니다.
       return;
@@ -132,7 +150,17 @@ export function playAudio(source: string, onFinished: () => void): AudioPlayOutc
     // 올라갑니다.
     currentGeneration += 1;
     onFinished();
-  });
+  };
+  // 배속이 없거나 1이면 늘 `play`(인자 둘)입니다. 옛 호스트에 `playAtRate`가 없으면 1.0으로 들려 줍니다.
+  if (
+    rate !== undefined &&
+    rate !== NORMAL_PLAYBACK_RATE &&
+    typeof host.playAtRate === "function"
+  ) {
+    host.playAtRate(source, rate, done);
+  } else {
+    host.play(source, done);
+  }
 
   return "started";
 }

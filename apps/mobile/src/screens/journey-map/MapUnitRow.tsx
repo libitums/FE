@@ -9,6 +9,8 @@ export type MapUnitCellProps = {
   readonly domId: string;
   /** testid의 꼬리입니다 — `journey-map-cell-<testKey>`. */
   readonly testKey: string;
+  /** 참이면 이 칸을 낭독에서 가립니다(첫 유닛 안내가 다른 칸을 가리키는 동안). 없으면 속성을 달지 않습니다. */
+  readonly hidden?: boolean;
   readonly children: ReactNode;
 };
 
@@ -30,9 +32,14 @@ export function MapUnitRow({ kind, children }: MapUnitRowProps): ReactNode {
 
 // 셀 상자입니다 — 유닛의 DOM id(자동 스크롤이 잽니다)와 testid를 집니다. 접근성 속성은 없습니다:
 // 탭 · 낭독 단위는 안쪽 `LearningUnit`입니다.
-export function MapUnitCell({ domId, testKey, children }: MapUnitCellProps): ReactNode {
+export function MapUnitCell({ domId, testKey, hidden, children }: MapUnitCellProps): ReactNode {
   return (
-    <view id={domId} className="journey-map-cell" data-testid={`journey-map-cell-${testKey}`}>
+    <view
+      id={domId}
+      className="journey-map-cell"
+      data-testid={`journey-map-cell-${testKey}`}
+      {...(hidden === undefined ? {} : { "accessibility-elements-hidden": hidden })}
+    >
       {children}
     </view>
   );

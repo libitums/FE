@@ -8,6 +8,7 @@ import {
   minimalEpisodeText,
   settle,
 } from "./test-helpers/episode-content-boot";
+import { contentPathOf } from "./test-helpers/content-requests";
 import { contentAssetsKey } from "../lib/episode-asset-sync";
 import { bundledCatalogInput } from "../lib/episode-bundled";
 import { episodeAssetPaths } from "../lib/episode-assets";
@@ -36,7 +37,7 @@ const content = {
   "episodes/u04-x.json": episode,
 };
 const manifestCount = (urls: readonly string[]) =>
-  urls.filter((url) => url === `${contentBase}manifest.json`).length;
+  urls.filter((url) => contentPathOf(url) === "manifest.json").length;
 
 // 내장 에피소드의 자산은 이미 받아 둔 것으로 둡니다 — 원격 에피소드 하나의 흐름을 봅니다.
 const bundledPaths = bundledCatalogInput.manifest.episodes.flatMap((entry) =>

@@ -6,7 +6,7 @@ import {
   readCachedProgress,
   writeCachedProgress,
 } from "./cached-learning-progress";
-import { productJourneySeed } from "./journey-progress";
+import { emptyLegacyTutorialRecord } from "./legacy-tutorial-progress";
 import { learningProgressSnapshotFrom } from "./learning-progress";
 import type { JourneyProgressState } from "./learning-progress";
 
@@ -42,9 +42,11 @@ const boom = (): never => {
 const pendingKey = (u: string) => `libitum.progress.pending.${u}`;
 
 const state: JourneyProgressState = {
-  ...productJourneySeed,
-  completedStepCount: 2,
-  completedEpisodeIntroIds: ["tutorial-intro"],
+  legacyTutorial: {
+    ...emptyLegacyTutorialRecord,
+    completedStepCount: 2,
+    completedEpisodeIntroIds: ["tutorial-intro"],
+  },
   catalogProgress: { u01: ["intro", "S1"] },
 };
 
@@ -115,8 +117,8 @@ describe("CP 저장본", () => {
       }),
     );
     const read = readCachedProgress("u-1");
-    expect(read?.completedEpisodeIntroIds).toEqual(["tutorial-intro"]);
-    expect(read?.completedMessengerUnitIds).toEqual([]);
+    expect(read?.legacyTutorial.completedEpisodeIntroIds).toEqual(["tutorial-intro"]);
+    expect(read?.legacyTutorial.completedMessengerUnitIds).toEqual([]);
   });
 
   test("CP6. get이 던지면 읽기는 null", () => {

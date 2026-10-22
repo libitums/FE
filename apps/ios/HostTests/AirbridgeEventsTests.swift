@@ -54,9 +54,43 @@ final class AirbridgeEventsTests: XCTestCase {
   // N-I2: 모듈 이름과 메서드 표.
   func testNI2ModuleNameAndMethodLookup() {
     XCTAssertEqual(AirbridgeEventsModule.name, "AirbridgeEventsModule")
-    XCTAssertEqual(Set(AirbridgeEventsModule.methodLookup.keys), ["trackEvent"])
+    XCTAssertEqual(
+      Set(AirbridgeEventsModule.methodLookup.keys),
+      ["trackEvent", "requestTrackingAuthorization", "takeOpenedDeeplink"])
+    XCTAssertEqual(AirbridgeEventsModule.methodLookup["takeOpenedDeeplink"], "takeOpenedDeeplink:")
     XCTAssertEqual(
       AirbridgeEventsModule.methodLookup["trackEvent"], "trackEvent:semanticAttributes:")
+    XCTAssertEqual(
+      AirbridgeEventsModule.methodLookup["requestTrackingAuthorization"],
+      "requestTrackingAuthorization")
+  }
+
+  // N-I10(ADR-0080): 우리 scheme만 딥링크로 받고, 로그인 콜백 · 다른 scheme은 받지 않는다.
+  func testNI10OwnDeeplinkIsDuruSchemeExceptAuthCallback() {
+    XCTAssertTrue(AirbridgeDeeplinks.isOwnDeeplink(URL(string: "duru://roleplay")!))
+    XCTAssertTrue(AirbridgeDeeplinks.isOwnDeeplink(URL(string: "DURU://settings?x=1")!))
+    XCTAssertFalse(AirbridgeDeeplinks.isOwnDeeplink(URL(string: "duru://auth-callback?code=1")!))
+    XCTAssertFalse(AirbridgeDeeplinks.isOwnDeeplink(URL(string: "https://duru.airbridge.io/a")!))
+  }
+
+  // N-I11(ADR-0080): 앱 scheme과 universal link 도메인 둘이 번들 · 서명 설정에 있다.
+  func testNI11UrlSchemeIsRegistered() {
+    let types = Bundle.main.object(forInfoDictionaryKey: "CFBundleURLTypes") as? [[String: Any]] ?? []
+    let schemes = types.flatMap { $0["CFBundleURLSchemes"] as? [String] ?? [] }
+    XCTAssertEqual(schemes, ["duru"])
+  }
+
+  // N-I8(ADR-0079): 설치 이벤트가 추적 허용 결정을 SDK 기본 30초보다 오래 기다린다.
+  func testNI8TrackingAuthorizationTimeoutOutlastsTheDefault() {
+    XCTAssertEqual(AirbridgeEvents.trackingAuthorizationTimeoutSeconds, 600)
+  }
+
+  // N-I9(ADR-0079): 추적 허용 문구가 번들에 있다(없으면 요청 순간 앱이 죽는다).
+  func testNI9TrackingUsageDescriptionIsInTheBundle() {
+    let text = Bundle.main.object(forInfoDictionaryKey: "NSUserTrackingUsageDescription") as? String
+    XCTAssertEqual(
+      text,
+      "Allow tracking so we can measure which ads helped you find Duru. We never sell your data.")
   }
 
   // N-I3: 문자열 값만 남긴다.
@@ -104,11 +138,10 @@ final class AirbridgeEventsTests: XCTestCase {
     XCTAssertFalse(AirbridgeEvents.isStarted)
   }
 
-  // N-I6: 추적 허용 문구 · SKAdNetworkItems 없음, 앱 이름 키 있음, Facebook 접두 키 없음.
-  func testNI6InfoDictionaryDeclaresNoTrackingPromptAndNoFacebookKeys() {
+  // N-I6: SKAdNetworkItems 없음, 앱 이름 키 있음, Facebook 접두 키 없음. ⟨ADR-0079⟩ 추적 허용 문구는 이제 있다(N-I9).
+  func testNI6InfoDictionaryDeclaresNoSkanItemsAndNoFacebookKeys() {
     let info = Bundle.main.infoDictionary ?? [:]
 
-    XCTAssertNil(info["NSUserTrackingUsageDescription"])
     XCTAssertNil(info["SKAdNetworkItems"])
     XCTAssertNotNil(info["AirbridgeAppName"])
     XCTAssertTrue(info.keys.filter { $0.hasPrefix("Facebook") }.isEmpty)

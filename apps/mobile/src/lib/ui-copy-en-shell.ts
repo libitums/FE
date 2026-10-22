@@ -7,6 +7,7 @@ import type {
   ShellCopy,
 } from "./ui-copy-sections.contract";
 import type { ProgressLoadCopy } from "../screens/journey-map/journey-map-load.contract";
+import type { SplashCopy } from "../screens/splash/splash.contract";
 import type { SpecialUnitMapCopy } from "../screens/journey-map/journey-special-unit.contract";
 import { n } from "./ui-copy-en-plural";
 
@@ -49,14 +50,11 @@ export const shellEn: ShellCopy = {
 };
 
 export const journeyMapEn: JourneyMapCopy = {
-  stepStatus: { done: "completed", current: "current step", locked: "locked" },
   start: "Start",
   activityCount: (completed, total) =>
     `${completed}/${total} ${total === 1 ? "activity" : "activities"}`,
   activityProgressLabel: (completed, total) =>
     `${completed} of ${n(total, "activity", "activities")} done`,
-  episodePendingLabel: "COMING SOON",
-  episodePending: (label, title) => `${label} ${title}, coming soon`,
   // 설명 줄: 끝의 마침표를 떼고, 번호는 두 자리로 채웁니다.
   episodeUnitLabel: (episodeLabel, unit) =>
     `${String(episodeLabel).replace(/\.$/, "")}, unit ${String(unit).padStart(2, "0")}`,
@@ -97,4 +95,9 @@ export const progressLoadEn: ProgressLoadCopy = {
   loadingAnnouncement: "Loading your progress",
   failed: "Couldn't load your progress.",
   retry: "Try again",
+};
+
+export const splashEn: SplashCopy = {
+  updating: "Updating episodes",
+  updatingLabel: (percent) => `Updating episodes, ${percent}%`,
 };

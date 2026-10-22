@@ -24,15 +24,12 @@ import {
 } from "./ui-copy-en-account";
 import {
   assessmentEn,
-  cultureEn,
-  cultureQuizEn,
   learningItemGuideEn,
   lessonCompleteEn,
   listeningEn,
   sentenceOrderEn,
   speakingEn,
   wordChoiceEn,
-  writingEn,
 } from "./ui-copy-en-learning";
 import { learnerProfileEn } from "./ui-copy-en-profile";
 import { ticketsEn } from "./ui-copy-en-tickets";
@@ -44,16 +41,9 @@ import {
   progressLoadEn,
   shellEn,
   specialUnitMapEn,
+  splashEn,
 } from "./ui-copy-en-shell";
-import {
-  episodeFinalEn,
-  episodeIntroEn,
-  episodeNarrativeEn,
-  messengerEn,
-  phoneCallEn,
-  roleplayEn,
-  visualNovelEn,
-} from "./ui-copy-en-story";
+import { episodeIntroEn, messengerEn, roleplayEn, visualNovelEn } from "./ui-copy-en-story";
 
 export const uiCopyEn: UiCopy = {
   common: commonEn,
@@ -64,17 +54,11 @@ export const uiCopyEn: UiCopy = {
   wordChoice: wordChoiceEn,
   sentenceOrder: sentenceOrderEn,
   speaking: speakingEn,
-  writing: writingEn,
   learningItemGuide: learningItemGuideEn,
-  culture: cultureEn,
-  cultureQuiz: cultureQuizEn,
   assessment: assessmentEn,
   lessonComplete: lessonCompleteEn,
   episodeIntro: episodeIntroEn,
-  episodeNarrative: episodeNarrativeEn,
-  episodeFinal: episodeFinalEn,
   messenger: messengerEn,
-  phoneCall: phoneCallEn,
   visualNovel: visualNovelEn,
   roleplay: roleplayEn,
   notifications: notificationsEn,
@@ -96,6 +80,7 @@ export const uiCopyEn: UiCopy = {
   audioUnavailable: audioUnavailableEn,
   learnerProfile: learnerProfileEn,
   progressLoad: progressLoadEn,
+  splash: splashEn,
   specialUnitMap: specialUnitMapEn,
   tickets: ticketsEn,
   roleplayStory: roleplayStoryEn,

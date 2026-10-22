@@ -22,9 +22,9 @@ target 'Host' do
 
   pod 'XElement', LYNX_VERSION
 
-  # Airbridge 앱 이벤트 측정용 SDK 하나만 둔다(ADR-0063). restricted 변형은 IDFA · ATT를 링크하지 않는다.
-  # 정확 버전이다(ADR-0012 D4). 일반판 airbridge-ios-sdk와 함께 설치하지 않는다.
-  pod 'airbridge-ios-sdk-restricted', '4.11.1'
+  # Airbridge 앱 이벤트 측정용 SDK 하나만 둔다(ADR-0063 · ADR-0079). 일반판 — 사용자가 추적을 허용하면 IDFA를 싣는다.
+  # 정확 버전이다(ADR-0012 D4). restricted 변형과 함께 설치하지 않는다.
+  pod 'airbridge-ios-sdk', '4.12.0'
 
   target 'HostTests' do
     inherit! :search_paths

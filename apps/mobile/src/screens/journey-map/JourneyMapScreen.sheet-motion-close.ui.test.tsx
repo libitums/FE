@@ -1,25 +1,25 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { act, cleanup, fireEvent, screen } from "@lynx-js/react/testing-library";
 
-import { asRects, mount, reduced, scrollToCall } from "./JourneyMapScreen.autoscroll-support";
+import {
+  asRects,
+  atTwo,
+  mount,
+  reduced,
+  scrollToCall,
+} from "./JourneyMapScreen.autoscroll-support";
 import {
   advance,
   burstCount,
   expectEntrance,
   expectNothingEntering,
   nodePop,
-  placeOrdering,
+  placeTarget,
   sheetPop,
-  tapOrdering,
+  tapTarget,
   bandWrapper,
 } from "./JourneyMapScreen.sheet-motion-support";
-import {
-  catalogProps,
-  mapScreen,
-  stubHost,
-  tutorialAllDone,
-  twoStepsDone,
-} from "./JourneyMapScreen.test-support";
+import { catalogProps, mapScreen, stubHost } from "./JourneyMapScreen.test-support";
 import { catalogUnitDomId } from "./catalog-map";
 import { sheetEntranceClasses } from "./journey-map-sheet-motion";
 
@@ -41,13 +41,23 @@ const closeSheet = (): void => {
 };
 const percent = (): string | null => screen.getByTestId("step-sheet-progress-percent").textContent;
 
+// 누르는 유닛(u01 S4)을 끝낸 진행입니다 — 말풍선 진행 줄이 서도록 문항 수를 주고, 끝낸 유닛이라 최종값은 100%입니다.
+// 자동 스크롤의 다음 대상은 S5라 말풍선의 스크롤이 마지막 호출로 남습니다.
+const atS4Done = () =>
+  mapScreen({
+    catalog: {
+      ...catalogProps({ progress: { "u01-water": ["intro", "S1", "S3", "S4"] } }),
+      unitItemCountOf: () => 5,
+    },
+  });
+
 describe("JourneyMapScreen 줄이기", () => {
   test("SQ7. 줄이기: 탭 직후 페이드 표식만 서고 대기 · 튕김 · 반짝임 · 빛이 없으며 값은 최종이고 스크롤은 즉시다", () => {
     const host = stubHost({ rects: asRects() });
-    placeOrdering(host, 700);
-    mount(reduced(mapScreen({ progress: tutorialAllDone })));
+    placeTarget(host, 700);
+    mount(reduced(atS4Done()));
 
-    tapOrdering();
+    tapTarget();
 
     const fade = sheetEntranceClasses("fade");
     expect(sheetPop().getAttribute("class")).toBe(fade.bubble);
@@ -66,14 +76,15 @@ describe("JourneyMapScreen 줄이기", () => {
 });
 
 const rendererCleanupTimers = 1;
+const rendererCleanupMs = 10_001;
 
 describe("JourneyMapScreen 닫기와 다시 열기", () => {
   test("SQ8. 대기 중 가림막을 누르면 말풍선 · 띠 · 튕김이 즉시 걷히고, 타이머가 남지 않으며 뒤의 도착에도 서지 않는다", () => {
     const host = stubHost({ rects: asRects() });
-    placeOrdering(host, 700);
-    mount(mapScreen({ progress: twoStepsDone }));
+    placeTarget(host, 700);
+    mount(atTwo());
     const idle = vi.getTimerCount();
-    tapOrdering();
+    tapTarget();
     expectEntrance("awaiting");
 
     closeSheet();
@@ -86,12 +97,12 @@ describe("JourneyMapScreen 닫기와 다시 열기", () => {
     expectNothingEntering();
   });
 
-  test("SQ9. 등장 중(카운트업 도중) 닫으면 즉시 걷히고, 같은 스텝을 다시 누르면 대기부터 새로 시작한다", () => {
+  test("SQ9. 등장 중(카운트업 도중) 닫으면 즉시 걷히고, 같은 유닛을 다시 누르면 대기부터 새로 시작한다", () => {
     const host = stubHost({ rects: asRects() });
-    placeOrdering(host, 700);
-    mount(mapScreen({ progress: tutorialAllDone }));
+    placeTarget(host, 700);
+    mount(atS4Done());
     const idle = vi.getTimerCount();
-    tapOrdering();
+    tapTarget();
     host.scroll(290);
     expectEntrance("expressive");
     advance(400);
@@ -100,10 +111,12 @@ describe("JourneyMapScreen 닫기와 다시 열기", () => {
     closeSheet();
 
     expectNothingEntering();
-    // 걷힌 노드 몫으로 렌더러가 남기는 10초 정리 타이머 하나(`@lynx-js/react` commit)만 더 있을 수 있습니다.
-    expect(vi.getTimerCount()).toBeLessThanOrEqual(idle + rendererCleanupTimers);
+    // 말풍선과 띠가 함께 걷혀 렌더러의 10초 정리 타이머(`@lynx-js/react` commit)가 둘까지 남을 수 있습니다 — 그 시간을
+    // 넘기면 앱이 건 타이머(카운트업 · 대기)는 하나도 남지 않아야 합니다.
+    advance(rendererCleanupMs);
+    expect(vi.getTimerCount()).toBe(idle);
 
-    tapOrdering();
+    tapTarget();
     expectEntrance("awaiting");
     expect(sheetPop()).not.toBe(firstPop);
     expect(percent()).toBe("100%");
@@ -119,7 +132,7 @@ describe("JourneyMapScreen 카탈로그", () => {
   test("SQ10. 레슨: 누르면 그 카탈로그 노드가 튕기고, 도착하면 반짝임이 퍼지며 말풍선이 등장으로 넘어간다", () => {
     const host = stubHost({ rects: asRects() });
     host.rects[lessonSelector] = { top: 700, height: 100 };
-    mount(mapScreen({ progress: tutorialAllDone, catalog: catalogProps({ progress: coverDone }) }));
+    mount(mapScreen({ catalog: catalogProps({ progress: coverDone }) }));
 
     act(() => {
       fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-catalog-unit-u01-water-S1"), {
@@ -141,9 +154,7 @@ describe("JourneyMapScreen 카탈로그", () => {
   test("SQ10. 최종(스페셜): 누르면 최종 배지를 감싼 튕김 래퍼에 등장 클래스가 붙는다", () => {
     const host = stubHost({ rects: asRects() });
     host.rects[finalSelector] = { top: 700, height: 100 };
-    mount(
-      mapScreen({ progress: tutorialAllDone, catalog: catalogProps({ progress: allLessons }) }),
-    );
+    mount(mapScreen({ catalog: catalogProps({ progress: allLessons }) }));
 
     act(() => {
       fireEvent.tap(screen.getByTestId("ui-lynx-special-unit-catalog-unit-u01-water-RP"), {

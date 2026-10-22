@@ -2,9 +2,7 @@ import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { cleanup, fireEvent, screen } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
-import { type AppJourneySeed } from "./journey-progress";
 import { learningProgressSnapshotFrom } from "./learning-progress";
-import { journeySeedBefore } from "./test-helpers/journey-seed";
 import {
   flushAsync,
   frameRects,
@@ -14,15 +12,30 @@ import {
   setGlobalProps,
   tapTab,
 } from "./test-helpers/journey-map-host";
+import { legacyPassedRecord } from "./test-helpers/progress-seed";
 import { renderSignedInApp } from "./test-helpers/signed-in-app";
 import { catalogUnitDomId } from "../screens/journey-map/catalog-map";
 import { stubHost, type HostStub } from "../screens/journey-map/JourneyMapScreen.test-support";
 
+// 부드러운 이동(본 이동 · 보정)은 main thread가 프레임마다 옮기지만(`useMapGlide`), 이 파일은 「어디로 부드럽게 갔나」만
+// 봅니다 — 대역이 끝 위치로 부드러운 `scrollTo` 한 번을 남깁니다.
+vi.mock("../screens/journey-map/use-map-glide", async () => {
+  const scroll = await import("../screens/journey-map/journey-map-scroll");
+  const react = await import("@lynx-js/react");
+  return {
+    useMapGlide: () => ({
+      scrollRef: react.useMainThreadRef(null),
+      glide: (_from: number, to: number) => scroll.scrollMapTo(to, "smooth"),
+      stop: () => {},
+    }),
+  };
+});
+
 // `integration` 계층: 말풍선과 띠가 실제로 서는 카탈로그 레슨이 대상일 때의 도착 뒤 동작 — 보정(대상이 도착하는
 // 사이 밀렸을 때)과 도착 뒤 탭(맵이 움직이지 않음). 대역은 호스트 질의와 네트워크 둘뿐입니다.
 
-const completedIntros = ["tutorial-intro"] as const;
 const unitTop = 700;
+const u01 = "u01-water";
 
 let host: HostStub;
 
@@ -53,35 +66,23 @@ const learner = {
   refreshedAccessToken: `e30.${btoa(JSON.stringify({ sub: "returning-learner" }))}.sig`,
 };
 
-// 도착 뒤 한 번 바로잡기(정정 2): 도착하는 사이 대상이 목적지 자리(410)보다 30 위(380)로 밀려 있다. 씨앗은 대상이
-// 카탈로그 u01의 S2가 되는 것이다. 보정은 늘 즉시 옮긴다.
+// 도착 뒤 한 번 바로잡기(정정 2): 도착하는 사이 대상이 목적지 자리(410)보다 30 위(380)로 밀려 있다. 씨앗은 옛
+// 튜토리얼을 통과하고 u01의 표지 · S1을 끝낸 진행이라 대상이 u01의 S2다. 보정은 본 이동이 끝난 뒤 짧게 이어
+// 옮긴다(사용자 결정 2026-10-22, ADR-0022).
 const correctedTo = (offset: number) => ({
   selector: scrollSelector,
   method: "scrollTo",
-  params: { offset, smooth: false },
+  params: { offset, smooth: true },
 });
-
-const tutorialDoneSeed: AppJourneySeed = {
-  completedStepCount: journeySeedBefore("tutorial-final-test").completedStepCount,
-  completedMessengerUnitIds: ["appointment-confirmation"],
-  completedPhoneCallUnitIds: ["appointment-confirmation-phone-call"],
-  visualNovelProgress: { status: "completed", beatIndex: 2 },
-  completedEpisodeFinalIds: ["tutorial-final-test"],
-};
 
 async function bootCatalogLesson(domId: string): Promise<void> {
   host.rects[`#${domId}`] = { top: unitTop, height: 100 };
-  const body = JSON.stringify(
-    learningProgressSnapshotFrom({
-      ...tutorialDoneSeed,
-      completedEpisodeIntroIds: ["tutorial-intro"],
-      catalogProgress: { "u01-water": ["intro", "S1"] },
-    }),
-  );
-  await renderSignedInApp(
-    <App journeySeed={tutorialDoneSeed} completedEpisodeIntroIds={completedIntros} />,
-    { ...learner, loadProgress: async () => ({ status: 200, body }) },
-  );
+  const seed = { legacyTutorial: legacyPassedRecord, catalogProgress: { [u01]: ["intro", "S1"] } };
+  const body = JSON.stringify(learningProgressSnapshotFrom(seed));
+  await renderSignedInApp(<App progressSeed={seed} />, {
+    ...learner,
+    loadProgress: async () => ({ status: 200, body }),
+  });
   await flushAsync();
 }
 
@@ -91,12 +92,8 @@ function arrive(domId: string): void {
   host.scroll(offsetFor(unitTop));
 }
 
-function departAgain(domId: string): void {
-  host.rects[`#${domId}`] = { top: unitTop, height: 100 };
-}
-
-test("I11. 앱 세션에서 도착하는 사이 대상이 30 위로 밀리면 되돌린 목적지로 한 번 더 간다", async () => {
-  const s2 = catalogUnitDomId("u01-water", "S2");
+test("I11. 앱 세션에서 도착하는 사이 대상이 30 위로 밀리면 되돌린 목적지로 한 번 더 짧게 이어 간다", async () => {
+  const s2 = catalogUnitDomId(u01, "S2");
   await bootCatalogLesson(s2);
   expect(scrollsOnMap().at(-1)).toEqual(smoothTo(unitTop));
   const moves = scrollsOnMap().length;
@@ -108,31 +105,29 @@ test("I11. 앱 세션에서 도착하는 사이 대상이 30 위로 밀리면 �
   expect(scrollsOnMap().at(-1)).toEqual(correctedTo(offsetFor(unitTop) - 30));
 });
 
-test("I12. 도착 뒤 탭을 바꿨다 돌아오면 새 마운트에서 다시 이동 한 번 · 보정 한 번이다", async () => {
-  const s2 = catalogUnitDomId("u01-water", "S2");
+test("I12. 도착 뒤 탭을 바꿨다 돌아오면 마지막 스크롤 자리에서 곧바로 열리고 움직이지 않는다", async () => {
+  const s2 = catalogUnitDomId(u01, "S2");
   await bootCatalogLesson(s2);
   arrive(s2);
   const first = scrollsOnMap().length;
   expect(scrollsOnMap().at(-1)).toEqual(correctedTo(offsetFor(unitTop) - 30));
+  host.scroll(offsetFor(unitTop) - 30);
 
   tapTab("roleplay");
   expect(screen.queryByTestId("journey-map-screen")).not.toBeInTheDocument();
-  departAgain(s2);
+  host.rects[`#${s2}`] = { top: unitTop, height: 100 };
   tapTab("journey");
   await flushAsync();
 
-  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
-  expect(scrollsOnMap()).toHaveLength(first + 1);
-  expect(scrollsOnMap().at(-1)).toEqual(smoothTo(unitTop));
-
-  arrive(s2);
-
-  expect(scrollsOnMap()).toHaveLength(first + 2);
-  expect(scrollsOnMap().at(-1)).toEqual(correctedTo(offsetFor(unitTop) - 30));
+  expect(screen.getByTestId("journey-map-screen-scroll")).toHaveAttribute(
+    "initial-scroll-offset",
+    String(offsetFor(unitTop) - 30),
+  );
+  expect(scrollsOnMap()).toHaveLength(first);
 });
 
 test("I13. (AC2) 카탈로그 레슨 도착 뒤 탭해도 맵이 움직이지 않는다", async () => {
-  const s2 = catalogUnitDomId("u01-water", "S2");
+  const s2 = catalogUnitDomId(u01, "S2");
   await bootCatalogLesson(s2);
   expect(scrollsOnMap().at(-1)).toEqual(smoothTo(unitTop));
 
@@ -142,7 +137,7 @@ test("I13. (AC2) 카탈로그 레슨 도착 뒤 탭해도 맵이 움직이지 �
   host.scroll(offsetFor(unitTop));
   expect(scrollsOnMap()).toHaveLength(beforeArrival);
 
-  fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-catalog-unit-u01-water-S2`), {});
+  fireEvent.tap(screen.getByTestId(`ui-lynx-learning-unit-catalog-unit-${u01}-S2`), {});
   await flushAsync();
 
   expect(screen.getByTestId("step-sheet-panel")).toBeInTheDocument();

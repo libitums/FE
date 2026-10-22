@@ -4,8 +4,13 @@ import type { ReactNode } from "@lynx-js/react";
 import { AnswerReveal } from "../../components/AnswerReveal";
 import { AnswerVerdict } from "../../components/AnswerVerdict";
 import { AudioUnavailableControl } from "../../components/AudioUnavailableControl";
+import { ItemListenControls } from "../../components/ItemListenControls";
+import { useListenAudio } from "../../components/use-listen-audio";
 import { announceCompletion } from "../../lib/accessibility";
 import { keyboardDockBodyStyle, keyboardDockEdgesOf } from "../../lib/keyboard-dock";
+import { answerEchoCueOf, listenCueOf, standaloneLessonAudio } from "../../lib/question-audio";
+import { initialSessionOptions } from "../../lib/session-options";
+import { useAudioCue } from "../../lib/use-audio-cue";
 import { useUiCopy } from "../../lib/ui-copy";
 import { handsOffAfter, lessonCounter } from "../learning/activity-finish";
 import { LearningActivityComplete } from "../learning/LearningActivityComplete";
@@ -14,6 +19,7 @@ import { MessengerKeyboard } from "../messenger/MessengerKeyboard";
 import {
   canCheckTyping,
   initialTypingSessionState,
+  judgeTyping,
   isTypingSessionComplete,
   typedTextOf,
   typingCompletionAnnouncement,
@@ -40,6 +46,7 @@ export function TypingActivity({
   onExit,
   onFinish,
   lesson,
+  lessonAudio,
   insets,
 }: TypingActivityProps): ReactNode {
   const copy = useUiCopy();
@@ -53,6 +60,15 @@ export function TypingActivity({
     lesson,
     question == null ? Math.max(0, questions.length - 1) : state.questionIndex,
     questions.length,
+  );
+
+  // 문항 음성입니다. 받아쓰기는 듣기 갈래 — 간이 줄 · 자동 재생 · 보고, 한국어로 쓰기는 정답 뒤 재생 갈래 —
+  // 확인한 순간 1.0으로 한 번(정오 무관, 조작 없음)입니다.
+  const audioLesson = lessonAudio ?? standaloneLessonAudio(initialSessionOptions);
+  const audioKey = String(state.questionIndex);
+  const listen = useListenAudio(listenCueOf(audioKey, question?.audio), audioLesson);
+  useAudioCue(
+    answerEchoCueOf(audioKey, question?.audio, state.phase === "checked", audioLesson.autoPlay),
   );
 
   // 종료 상태가 처음 존재하게 되는 순간 한 번입니다(듣기와 같은 규칙 — 취소할 자원이 아닙니다).
@@ -82,7 +98,14 @@ export function TypingActivity({
                 : dispatch({ type: "nextQuestion" }),
           }
         : canCheckTyping(state)
-          ? { label: copy.common.check, run: () => dispatch({ type: "check" }), sound: "none" }
+          ? {
+              label: copy.common.check,
+              run: () => {
+                dispatch({ type: "check" });
+                if (question !== undefined) listen.answered(judgeTyping(question, typed));
+              },
+              sound: "none",
+            }
           : undefined;
 
   const answerPhaseClass =
@@ -131,10 +154,18 @@ export function TypingActivity({
                 />
               ) : (
                 <>
-                  {/* 단서입니다. 받아쓰기는 소리가 아직 없어 로마자와 뜻이 단서이고, 한글 정답은 확인
+                  {/* 단서입니다. 받아쓰기는 로마자와 뜻이 단서이고, 한글 정답은 확인
                   뒤에만 공개됩니다(보이면 베껴 쓰기가 됩니다). */}
-                  <view className="typing-activity-cue-block">
-                    {question.kind === "dictation" ? (
+                  <view
+                    className={
+                      question.audio?.kind === "listen"
+                        ? "typing-activity-cue-block typing-activity-cue-block-listen"
+                        : "typing-activity-cue-block"
+                    }
+                  >
+                    {question.audio?.kind === "listen" ? (
+                      <ItemListenControls control={listen} testId="typing-activity-listen" />
+                    ) : question.kind === "dictation" ? (
                       <AudioUnavailableControl testId="typing-activity-audio" />
                     ) : null}
                     <view className="typing-activity-cue-text">

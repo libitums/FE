@@ -27,7 +27,7 @@ const question = (id: string, answers: TypingQuestion["answers"]): TypingQuestio
   cueSupport: "Here's my passport.",
   hint: null,
   answers,
-  audioSource: null,
+  audio: null,
 });
 
 const passport = question("S6-01", ["여권 여기 있어요.", "여권 여기 있어요"]);

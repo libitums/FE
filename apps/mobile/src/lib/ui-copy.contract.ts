@@ -14,6 +14,7 @@ import type { CatalogFinalCopy } from "../screens/catalog-final/catalog-final.co
 import type { CatalogMapCopy } from "../screens/journey-map/catalog-map.contract";
 import type { ProgressLoadCopy } from "../screens/journey-map/journey-map-load.contract";
 import type { SpecialUnitMapCopy } from "../screens/journey-map/journey-special-unit.contract";
+import type { SplashCopy } from "../screens/splash/splash.contract";
 import type { CultureCardCopy } from "../screens/culture-card/culture-card.contract";
 import type { PairMatchCopy } from "../screens/pair-match/pair-match.contract";
 import type { ReadAloudCopy } from "../screens/read-aloud/read-aloud.contract";
@@ -27,11 +28,7 @@ import type { LearningItemGuideCopy } from "./learning-item-guide.contract";
 import type {
   AssessmentCopy,
   CommonCopy,
-  CultureCopy,
-  CultureQuizCopy,
-  EpisodeFinalCopy,
   EpisodeIntroCopy,
-  EpisodeNarrativeCopy,
   GemPurchaseCopy,
   JourneyMapCopy,
   LearningShellCopy,
@@ -39,7 +36,6 @@ import type {
   ListeningCopy,
   MessengerCopy,
   NotificationsCopy,
-  PhoneCallCopy,
   ProfileCopy,
   RoleplayCopy,
   SentenceOrderCopy,
@@ -48,7 +44,6 @@ import type {
   SpeakingCopy,
   VisualNovelCopy,
   WordChoiceCopy,
-  WritingCopy,
 } from "./ui-copy-sections.contract";
 
 /**
@@ -68,17 +63,11 @@ export type UiCopy = {
   readonly wordChoice: WordChoiceCopy;
   readonly sentenceOrder: SentenceOrderCopy;
   readonly speaking: SpeakingCopy;
-  readonly writing: WritingCopy;
   readonly learningItemGuide: LearningItemGuideCopy;
-  readonly culture: CultureCopy;
-  readonly cultureQuiz: CultureQuizCopy;
   readonly assessment: AssessmentCopy;
   readonly lessonComplete: LessonCompleteCopy;
   readonly episodeIntro: EpisodeIntroCopy;
-  readonly episodeNarrative: EpisodeNarrativeCopy;
-  readonly episodeFinal: EpisodeFinalCopy;
   readonly messenger: MessengerCopy;
-  readonly phoneCall: PhoneCallCopy;
   readonly visualNovel: VisualNovelCopy;
   readonly roleplay: RoleplayCopy;
   readonly notifications: NotificationsCopy;
@@ -100,6 +89,7 @@ export type UiCopy = {
   readonly audioUnavailable: AudioUnavailableCopy;
   readonly learnerProfile: LearnerProfileCopy;
   readonly progressLoad: ProgressLoadCopy;
+  readonly splash: SplashCopy;
   readonly specialUnitMap: SpecialUnitMapCopy;
   readonly tickets: TicketsCopy;
   readonly roleplayStory: RoleplayStoryCopy;

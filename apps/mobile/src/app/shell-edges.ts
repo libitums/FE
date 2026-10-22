@@ -21,7 +21,6 @@ export function shellEdgeModeFor(
   catalogActivityForm: CatalogActivityForm | null,
 ): ShellEdgeMode {
   if (isFullBleedScreen(screen)) return "full-bleed";
-  if (screen.name === "messenger" || screen.name === "roleplay-messenger") return "keyboard-dock";
   if (screen.name === "catalog-lesson" && catalogActivityForm === "typing") return "keyboard-dock";
   return "padded";
 }

@@ -90,7 +90,7 @@ test("SPK1. (AC4 접점 없음) S5: 인식 접점이 없으면 첫 Speak가 불�
   const { rpcs, events } = await boot({ [u01]: beforeS5 });
   const plan = lessonPlan(u01, "S5");
   expect(readAloudOf(plan).questions).toHaveLength(3);
-  expect(plan.questionCount).toBe(6);
+  expect(plan.questionCount).toBe(8);
 
   tapNode(u01, "S5");
   solveBefore(plan, "read-aloud");
@@ -135,9 +135,9 @@ test("SPK1. (AC4 접점 없음) S5: 인식 접점이 없으면 첫 Speak가 불�
       episodeId: u01,
       unitKey: "S5",
       unitRole: "lesson",
-      questionCount: "6",
-      shownItemCount: "9",
-      skippedItemCount: "3",
+      questionCount: "8",
+      shownItemCount: "11",
+      skippedItemCount: "1",
     },
     {
       name: "episode_lesson_finished",
@@ -145,8 +145,8 @@ test("SPK1. (AC4 접점 없음) S5: 인식 접점이 없으면 첫 Speak가 불�
       unitKey: "S5",
       unitRole: "lesson",
       verdict: "passed",
-      correctCount: "6",
-      questionCount: "6",
+      correctCount: "8",
+      questionCount: "8",
       skippedCount: "3",
     },
   ]);
@@ -196,8 +196,8 @@ test("SPK2. (AC2 인식) S5: 들은 글자가 문장과 같으면 조각이 모�
     unitKey: "S5",
     unitRole: "lesson",
     verdict: "passed",
-    correctCount: "6",
-    questionCount: "6",
+    correctCount: "8",
+    questionCount: "8",
     skippedCount: "0",
   });
 });
@@ -312,9 +312,9 @@ test("SPK5. (AC4 거부) S6: 권한을 거부하면 낱말 Speak가 불가가 �
   });
 });
 
-test("SPK6. (AC4 분모) u02 S6: 낱말을 건너뛰고 나머지 11 중 7만 맞혀도 통과한다 - 통과 분모는 건너뛴 문항을 뺀 판정 수다", async () => {
+test("SPK6. (AC4 분모) u02 S6: 낱말을 건너뛰고 나머지 12 중 8만 맞혀도 통과한다 - 통과 분모는 건너뛴 문항을 뺀 판정 수다", async () => {
   const plan = lessonPlan(u02, "S6");
-  expect(plan.questionCount).toBe(12);
+  expect(plan.questionCount).toBe(13);
   const { rpcs, events } = await boot({
     [u01]: [...throughS8, "CULT", "RP"],
     [u02]: ["intro", "S1", "S2", "S3", "S4", "S5"],
@@ -327,11 +327,11 @@ test("SPK6. (AC4 분모) u02 S6: 낱말을 건너뛰고 나머지 11 중 7만 �
       skipSpeakWord();
       return;
     }
-    solveActivity(activity, graded < 7, index === plan.activities.length - 1);
+    solveActivity(activity, graded < 8, index === plan.activities.length - 1);
     graded += activity.questions.length;
   });
 
-  expect(graded).toBe(11);
+  expect(graded).toBe(12);
   expect(title()).toHaveTextContent("LESSON COMPLETE!");
   expect(screen.queryByTestId("lesson-complete-screen-retry")).not.toBeInTheDocument();
   exitResult();
@@ -340,17 +340,17 @@ test("SPK6. (AC4 분모) u02 S6: 낱말을 건너뛰고 나머지 11 중 7만 �
   await vi.waitFor(() => expect(savedUnits(rpcs, u02)).toContain("S6"));
   expect(learningEvents(events)[1]).toMatchObject({
     verdict: "passed",
-    correctCount: "7",
-    questionCount: "12",
+    correctCount: "8",
+    questionCount: "13",
     skippedCount: "1",
   });
 });
 
 test.each([
-  ["S1", 13, 2, 6],
-  ["S2", 8, 6, 8],
-  ["S3", 11, 2, 7],
-  ["S4", 8, 7, 8],
+  ["S1", 15, 0, 8],
+  ["S2", 13, 1, 13],
+  ["S3", 13, 0, 9],
+  ["S4", 13, 2, 13],
   ["S7", 5, 0, 5],
   ["CULT", 6, 0, 3],
 ])(

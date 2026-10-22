@@ -30,7 +30,14 @@ const section: RoleplaySection = {
   title: "Tutorial.",
   unlocked: true,
   items: [
-    { form: "messenger", unitId: "appointment-confirmation", title: "A Message from Minseo" },
+    {
+      form: "story",
+      unitId: "story-u01-water",
+      episodeId: "u01-water",
+      title: "A Message from Minseo",
+      lineCount: 3,
+      imageUrl: null,
+    },
   ],
   premiumItems: [],
 };

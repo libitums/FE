@@ -2,7 +2,7 @@ import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { cleanup } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
-import { journeySeedBefore } from "./test-helpers/journey-seed";
+import { u01OpenSeed } from "./test-helpers/progress-seed";
 import {
   frameRects,
   insets,
@@ -11,7 +11,22 @@ import {
   setGlobalProps,
 } from "./test-helpers/journey-map-host";
 import { renderSignedInApp } from "./test-helpers/signed-in-app";
+import { catalogUnitDomId } from "../screens/journey-map/catalog-map";
 import { stubHost, type HostStub } from "../screens/journey-map/JourneyMapScreen.test-support";
+
+// 부드러운 이동은 main thread가 프레임마다 옮기지만(`useMapGlide`), 이 파일은 「어디로 부드럽게 갔나」만 봅니다 —
+// 대역이 끝 위치로 부드러운 `scrollTo` 한 번을 남깁니다.
+vi.mock("../screens/journey-map/use-map-glide", async () => {
+  const scroll = await import("../screens/journey-map/journey-map-scroll");
+  const react = await import("@lynx-js/react");
+  return {
+    useMapGlide: () => ({
+      scrollRef: react.useMainThreadRef(null),
+      glide: (_from: number, to: number) => scroll.scrollMapTo(to, "smooth"),
+      stop: () => {},
+    }),
+  };
+});
 
 // `integration` 계층: 호스트가 보낸 글자 배율 · 화면 폭(globalProps)이 App을 거쳐 맵의 줄 구조에 닿는지.
 // 열 수 판정 · 줄 나누기 자체는 unit · ui가 진다 — 여기서는 공급 경로만 봅니다.
@@ -21,7 +36,7 @@ let host: HostStub;
 beforeEach(() => {
   host = stubHost();
   Object.assign(host.rects, frameRects, {
-    "#journey-map-unit-ordering": { top: 700, height: 100 },
+    [`#${catalogUnitDomId("u01-water", "S1")}`]: { top: 700, height: 100 },
   });
 });
 
@@ -41,17 +56,12 @@ const kindsIn = (selector: string): string[] =>
     ),
   );
 
-const tutorialKinds = () => kindsIn("#journey-map-screen-episode-tutorial");
+const tutorialKinds = () => kindsIn('[data-testid="catalog-section-u00-tutorial"]');
 const catalogKinds = () => kindsIn('[data-testid^="catalog-section-"]');
 
 async function boot(globalProps: Record<string, unknown>): Promise<void> {
   setGlobalProps({ safeAreaInsets: insets, ...globalProps });
-  await renderSignedInApp(
-    <App
-      journeySeed={journeySeedBefore("ordering")}
-      completedEpisodeIntroIds={["tutorial-intro"]}
-    />,
-  );
+  await renderSignedInApp(<App progressSeed={u01OpenSeed} />);
 }
 
 const allSolo = (kinds: readonly string[]) => kinds.every((kind) => kind === "solo");

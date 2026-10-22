@@ -1,5 +1,7 @@
 # Android 앱 평점 요청 검증
 
+> ⟨2026-10-21 — [ADR-0081](../adr/0081-tutorial-as-catalog-episode.md)⟩ 이 흐름(Maestro `e2e/android-app-review.yaml`)이 쓰는 옛 튜토리얼 완료 · 설문 길은 지워졌다 — 설문 대상은 이제 u00(`u00-tutorial`)이다. 좌표는 사용자 결정 D-B(2026-10-22)로 후속 작업에서 u00 경로로 고치고, 고치기 전까지 흐름은 깨진 상태다 — [튜토리얼 u00 e2e](tutorial-u00.md) 「Android Maestro 흐름 셋」.
+
 ## 범위
 
 에피소드 완료 뒤 설문에서 4점 이상을 고르면 설치당 한 번 `AppReviewModule.requestReview()`를

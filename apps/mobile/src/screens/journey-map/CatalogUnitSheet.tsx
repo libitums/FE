@@ -1,6 +1,6 @@
 import type { ReactNode } from "@lynx-js/react";
 
-import { isCatalogUnitDone } from "../../lib/catalog-progress";
+import { catalogUnitTicketCost } from "../../lib/catalog-ticket-cost";
 import { useUiCopy } from "../../lib/ui-copy";
 import { StepSheet } from "./StepSheet";
 import { catalogUnitNodeTitle, catalogUnitNodesOf } from "./catalog-map";
@@ -20,7 +20,7 @@ export type CatalogUnitSheetProps = {
 };
 
 /**
- * 카탈로그 유닛을 누르면 붙는 말풍선입니다 — 튜토리얼 스텝과 같은 `StepSheet`에 이름(`Lesson n` ·
+ * 카탈로그 유닛을 누르면 붙는 말풍선입니다 — `StepSheet`에 이름(`Lesson n` ·
  * `Culture` · `Final test`) · 에피소드 제목 · 문항 진행을 싣고, `Start`가 세션을 엽니다. 구획이나 유닛을
  * 찾지 못하면(콘텐츠가 바뀐 사이) 그리지 않습니다.
  */
@@ -53,7 +53,7 @@ export function CatalogUnitSheet({
       unitLabel={catalogUnitNodeTitle(node, copy)}
       completedActivityCount={figures.completedActivityCount}
       totalActivityCount={figures.totalActivityCount}
-      ticketCost={isCatalogUnitDone(catalog.progress, target.episodeId, target.unitKey) ? 0 : 1}
+      ticketCost={catalogUnitTicketCost(catalog.progress, target.episodeId, target.unitKey)}
       onStart={() => catalog.onStartUnit(target.episodeId, target.unitKey)}
       onClose={onClose}
       {...(entrance === undefined ? {} : { entrance })}

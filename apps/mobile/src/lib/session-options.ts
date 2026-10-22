@@ -16,12 +16,13 @@ export const sessionOptionKeys: readonly SessionOptionKey[] = [
   "show-transcript",
 ];
 
-// 둘 다 켜짐이 초기값입니다 — 오늘 동작(자동 재생 함 · 대본 보임)이 기본이어야
-// 수용 기준이 동시에 참이 되고, 오늘 번들의 문항 오디오가 기계 음성이라 대본을
-// 끄면 문항을 풀 수 없습니다(대가를 알고 받아들인 값 — 바꾸지 않습니다).
+// 자동 재생은 켜짐, 대본은 꺼짐이 초기값입니다 — 문항마다 진짜 음성이 붙어서 소리만으로
+// 풀 수 있고, 대본이 처음부터 보이면 정답이 드러납니다(사용자 결정 2026-10-21 「답한 뒤에만
+// 보임」). 판정이 난 뒤에는 화면이 대본을 열어 보여 줍니다. 설정의 「대본 표시」를 켜면
+// 처음부터 보입니다.
 export const initialSessionOptions: SessionOptions = {
   "auto-play-audio": true,
-  "show-transcript": true,
+  "show-transcript": false,
 };
 
 export function sessionOptionLabel(key: SessionOptionKey, copy: UiCopy): string {

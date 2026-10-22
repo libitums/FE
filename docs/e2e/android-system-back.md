@@ -1,5 +1,7 @@
 # Android 시스템 뒤로가기
 
+> ⟨2026-10-21 — [ADR-0081](../adr/0081-tutorial-as-catalog-episode.md)⟩ 옛 튜토리얼(고정 목록 · 스텝 · 프롤로그 · 최종 스토리 · 손글씨)과 메신저 · 전화 · 비주얼 노벨 화면이 지워졌다. 이 문서에서 그 화면을 단계로 쓰는 절은 **더 실행할 수 없다 — 기록으로 남긴다.** 튜토리얼은 이제 카탈로그 에피소드 `u00-tutorial`(맵 첫 구획 `Episode 0.`)이고 절차는 [튜토리얼 u00 e2e](tutorial-u00.md)다.
+
 Android 시스템 뒤로가기(◁ 또는 가장자리 스와이프)가 앱 안의 「보이는 닫기」와 같은 길을 타는지, 앱을 떠나는 자리에서
 `moveTaskToBack`/`finish`가 결정대로 갈리는지를 에뮬레이터의 실제 Activity에서 확인한다. 결정은
 [ADR-0043](../adr/0043-android-system-back.md)이 진다. 순수 판정(`SystemBackGate` · `defaultBackDecision` · 핸들러 스택)과 화면별 닫기는

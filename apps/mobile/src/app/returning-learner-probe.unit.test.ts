@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 import { loadLearnerProfile } from "../lib/learner-profile-api";
 import { loadLearningProgress } from "../lib/progress-api";
-import { productJourneySeed } from "./journey-progress";
+import { emptyLegacyTutorialRecord } from "./legacy-tutorial-progress";
 import { learningProgressSnapshotFrom } from "./learning-progress";
 import { returningLearnerWaitMs } from "./returning-learner";
 import type {
@@ -23,9 +23,7 @@ const progressAbsent: LearningProgressLoadResult = { ok: true, raw: null };
 const progressPresent: LearningProgressLoadResult = {
   ok: true,
   raw: learningProgressSnapshotFrom({
-    ...productJourneySeed,
-    completedStepCount: 1,
-    completedEpisodeIntroIds: [],
+    legacyTutorial: { ...emptyLegacyTutorialRecord, completedStepCount: 1 },
     catalogProgress: {},
   }),
 };

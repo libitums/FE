@@ -140,17 +140,22 @@ const summarize = (catalog: CatalogEntry[]) =>
   }));
 
 describe("buildEpisodeCatalog", () => {
-  test("C1. 내장만 있으면 세 에피소드가 order 순으로 ready/bundled", () => {
+  test("C1. 내장만 있으면 네 에피소드가 order 순으로 ready/bundled", () => {
     const catalog = buildEpisodeCatalog(input(EMPTY_CACHE));
-    expect(catalog).toHaveLength(3);
-    expect(catalog.map((e) => e.id)).toEqual(["u01-water", "u02-checkin", "u03-mina"]);
-    expect(catalog.map((e) => e.order)).toEqual([1, 2, 3]);
+    expect(catalog).toHaveLength(4);
+    expect(catalog.map((e) => e.id)).toEqual([
+      "u00-tutorial",
+      "u01-water",
+      "u02-checkin",
+      "u03-mina",
+    ]);
+    expect(catalog.map((e) => e.order)).toEqual([0, 1, 2, 3]);
     expect(catalog.every((e) => e.status === "ready" && e.source === "bundled")).toBe(true);
   });
 
   test("C2. 원격 매니페스트에만 있고 본문이 없는 항목은 pending", () => {
     const catalog = buildEpisodeCatalog(input(cacheOf([remote("u04-x", 4)], false)));
-    expect(catalog).toHaveLength(4);
+    expect(catalog).toHaveLength(5);
     expect(find(catalog, "u04-x")).toMatchObject({ status: "pending", order: 4 });
   });
 
@@ -173,7 +178,7 @@ describe("buildEpisodeCatalog", () => {
       status: "locked",
       reason: "integrity-mismatch",
     });
-    expect(catalog.filter((e) => e.status === "ready")).toHaveLength(3);
+    expect(catalog.filter((e) => e.status === "ready")).toHaveLength(4);
   });
 
   test.each([
@@ -198,7 +203,7 @@ describe("buildEpisodeCatalog", () => {
     const remotes = [remote("u04-x", 4), remote("u01-water", 1, { version: "2026-10-11.9" })];
     const catalog = buildEpisodeCatalog(input(cacheOf(remotes, true, { min_client_level: 2 })));
     expect(find(catalog, "u04-x")).toMatchObject({ status: "locked", reason: "client-too-old" });
-    for (const id of ["u01-water", "u02-checkin", "u03-mina"]) {
+    for (const id of ["u00-tutorial", "u01-water", "u02-checkin", "u03-mina"]) {
       expect(find(catalog, id)).toMatchObject({ status: "ready", source: "bundled" });
     }
   });
@@ -231,7 +236,12 @@ describe("buildEpisodeCatalog", () => {
     (_n, make) => {
       const catalog = buildEpisodeCatalog(input(make()));
       expect(find(catalog, "u01-water")).toMatchObject({ status: "ready", source: "bundled" });
-      expect(catalog.map((e) => e.id)).toEqual(["u01-water", "u02-checkin", "u03-mina"]);
+      expect(catalog.map((e) => e.id)).toEqual([
+        "u00-tutorial",
+        "u01-water",
+        "u02-checkin",
+        "u03-mina",
+      ]);
     },
   );
 
@@ -278,17 +288,22 @@ describe("buildEpisodeCatalog", () => {
   test.each([
     ["손상 JSON", "{not json"],
     ["모양이 틀림", JSON.stringify({ schema: "manifest-1" })],
-  ])("C10. 원격 매니페스트 원문이 %s이면 무시하고 내장 셋만 낸다", (_name, manifest) => {
+  ])("C10. 원격 매니페스트 원문이 %s이면 무시하고 내장 넷만 낸다", (_name, manifest) => {
     const catalog = buildEpisodeCatalog(input({ manifest, episodes: {} }));
     expect(summarize(catalog)).toEqual(summarize(buildEpisodeCatalog(input(EMPTY_CACHE))));
-    expect(catalog.map((e) => e.id)).toEqual(["u01-water", "u02-checkin", "u03-mina"]);
+    expect(catalog.map((e) => e.id)).toEqual([
+      "u00-tutorial",
+      "u01-water",
+      "u02-checkin",
+      "u03-mina",
+    ]);
   });
 
   test("C11. order가 같으면 id 사전순", () => {
     const catalog = buildEpisodeCatalog(
       input(cacheOf([remote("u04-b", 4), remote("u04-a", 4)], false)),
     );
-    expect(catalog.map((e) => e.id).slice(3)).toEqual(["u04-a", "u04-b"]);
+    expect(catalog.map((e) => e.id).slice(4)).toEqual(["u04-a", "u04-b"]);
   });
 
   // 가드: 무예외 · 결정성은 스캐폴드도 만족합니다.

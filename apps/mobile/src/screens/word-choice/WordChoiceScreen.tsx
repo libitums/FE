@@ -6,6 +6,7 @@ import { announceCompletion } from "../../lib/accessibility";
 import { LearningShell } from "../learning/LearningShell";
 import { LearningActivityComplete } from "../learning/LearningActivityComplete";
 import { AnswerVerdict } from "../../components/AnswerVerdict";
+import { useListenAudio } from "../../components/use-listen-audio";
 import { WordChoiceOption } from "./WordChoiceOption";
 import { WordChoicePresentation } from "./WordChoicePresentation";
 import { useWordChoicePicture } from "./use-word-choice-picture";
@@ -17,19 +18,21 @@ import {
   initialWordChoiceSessionState,
   isWordChoiceSessionComplete,
   wordChoiceCompletionAnnouncement,
-  wordChoiceQuestionsForStep,
   wordChoiceSessionReducer,
   wordChoiceSessionResults,
 } from "./word-choice";
 import type { AnswerResult } from "../../lib/answer-result";
-import type { JourneyStepId } from "../journey-map/journey-map";
+import { answerEchoCueOf, listenCueOf, standaloneLessonAudio } from "../../lib/question-audio";
+import type { LessonAudio } from "../../lib/question-audio";
+import { initialSessionOptions } from "../../lib/session-options";
+import { useAudioCue } from "../../lib/use-audio-cue";
 import { handsOffAfter, lessonCounter } from "../learning/activity-finish";
 import type { ActivityFinish, LessonPosition } from "../learning/activity-finish";
 import type { WordChoiceQuestion } from "./word-choice-questions";
 
 import "./word-choice-screen.css";
 
-// `ListeningScreen`의 형태를 그대로 잇되 **제시 채널에서 오디오가 빠집니다**
+// `ListeningActivity`의 형태를 그대로 잇되 **제시 채널에서 오디오가 빠집니다**
 // — `ListeningPrompt` · `lib/audio.ts` · 재생 상태를 이 화면이 가져오지
 // 않습니다. 제시문은 `<text>` 하나입니다 — 카드 표면을 두지 않습니다.
 //
@@ -44,18 +47,14 @@ import "./word-choice-screen.css";
 // 그것으로 갈렸습니다: 보기의 ✓/✗ 표식이 걷히고 판정은 무대 카드의 배지가 내며,
 // 보기는 줄을 채우는 행이 아니라 낱말만 한 칩이 가로로 섭니다. 배지는 듣기와 같은
 // 조각(`components/AnswerVerdict`)입니다 — 두 화면이 같은 말을 같은 모양으로 합니다.
-export type WordChoiceScreenProps = {
-  stepId: JourneyStepId;
-  onExit: () => void;
-  onFinish: (id: JourneyStepId, results: readonly AnswerResult[], skippedCount: number) => void;
-};
-
 export type WordChoiceActivityProps = {
   readonly questions: readonly WordChoiceQuestion[];
   readonly onExit: () => void;
   readonly onFinish: ActivityFinish;
-  /** 카탈로그 레슨 안의 위치입니다. 튜토리얼처럼 활동 하나가 한 세션이면 주지 않습니다. */
+  /** 카탈로그 레슨 안의 위치입니다. 활동 하나가 한 세션이면 주지 않습니다. */
   readonly lesson?: LessonPosition;
+  /** 레슨의 소리 설정(속도 · 자동 재생 · 보고)입니다. 없으면 단독 활동의 기본값입니다. */
+  readonly lessonAudio?: LessonAudio;
 };
 
 /**
@@ -87,22 +86,12 @@ function optionsClassName(question: WordChoiceQuestion, answerable: boolean): st
   return `word-choice-screen-options${layoutClass}${answerable ? "" : " word-choice-screen-options-disabled"}`;
 }
 
-/** 튜토리얼 스텝의 문항 표를 읽어 활동에 넘기는 얇은 어댑터입니다. */
-export function WordChoiceScreen({ stepId, onExit, onFinish }: WordChoiceScreenProps): ReactNode {
-  return (
-    <WordChoiceActivity
-      questions={wordChoiceQuestionsForStep(stepId)}
-      onExit={onExit}
-      onFinish={(results, skippedCount) => onFinish(stepId, results, skippedCount)}
-    />
-  );
-}
-
 export function WordChoiceActivity({
   questions,
   onExit,
   onFinish,
   lesson,
+  lessonAudio,
 }: WordChoiceActivityProps): ReactNode {
   const copy = useUiCopy();
   const [state, dispatch] = useReducer(wordChoiceSessionReducer, initialWordChoiceSessionState);
@@ -112,6 +101,13 @@ export function WordChoiceActivity({
   // 않습니다.
   const complete = isWordChoiceSessionComplete(state, questions.length);
   const question = complete ? null : questions[state.questionIndex];
+
+  // 문항 음성입니다. 단어 선택(REPLY_SELECT)은 듣기 갈래 — 간이 줄 · 자동 재생 · 보고, 그림 고르기 · 뜻 고르기는
+  // 정답 뒤 재생 갈래 — 고른 순간 1.0으로 한 번(정오 무관, 조작 없음)입니다.
+  const audioLesson = lessonAudio ?? standaloneLessonAudio(initialSessionOptions);
+  const audioKey = String(state.questionIndex);
+  const listen = useListenAudio(listenCueOf(audioKey, question?.audio), audioLesson);
+  useAudioCue(answerEchoCueOf(audioKey, question?.audio, hasAnswered(state), audioLesson.autoPlay));
 
   // 그림 문항이면 그림이 설 때까지(최대 6초) 보기를 잠급니다. 그림 문항이 아니면 상태도 타이머도 없이
   // 처음부터 열려 있습니다.
@@ -218,7 +214,9 @@ export function WordChoiceActivity({
                 // 그림을 기다리는 동안의 탭은 흡수합니다 — 근거 없이 찍지 않게 합니다. 보기는 계속
                 // `button`입니다(ADR-0016 D10: `disabled`는 영구히 조작 불가한 것에만 줍니다).
                 onSelect={(index) => {
-                  if (answerable) dispatch({ type: "selectChoice", choiceIndex: index });
+                  if (!answerable) return;
+                  dispatch({ type: "selectChoice", choiceIndex: index });
+                  listen.answered(index === question.answerIndex ? "correct" : "incorrect");
                 }}
               />
             ))}
@@ -248,6 +246,7 @@ export function WordChoiceActivity({
               questionIndex={state.questionIndex}
               answered={hasAnswered(state)}
               pictureState={picture.state}
+              listen={question.audio?.kind === "listen" ? listen : undefined}
               onLoad={picture.onLoad}
               onError={picture.onError}
             />

@@ -1,48 +1,11 @@
-// 에피소드 서사 표지의 타입 전용 계약입니다 — 구현 · JSX를 두지 않습니다.
+// 에피소드 표지의 타입 전용 계약입니다 — 구현 · JSX를 두지 않습니다. 표지 컷은 카탈로그 표지 화면(`catalog-cover`)이 잇습니다.
 
+import type { EpisodeUpdateSplashClosedEvent } from "../../lib/episode-update-event.contract";
 import type { CatalogLearningEvent } from "../../lib/catalog-learning-event.contract";
 import type { ProgressLoadEvent } from "../../lib/progress-load-event.contract";
 import type { SafeAreaInsets } from "../../lib/safe-area";
-import type { EpisodeNarrative } from "../episode-narrative/episode-narrative";
-import type { JourneyMapNodeStatus } from "../journey-map/journey-map";
 import type { TicketEvent } from "../tickets/tickets.contract";
 import type { RoleplayStoryEvent } from "../roleplay-story/roleplay-story.contract";
-
-export type EpisodeIntroUnitId = "tutorial-intro";
-/**
- * 표지 유닛의 이름입니다. 리터럴인 것은 다른 특별 유닛 넷의 선례를 따른 것입니다
- * (`EpisodeFinalTitle` · 메신저의 `"A Message from Minseo"`) — 컨텐츠가 아니라 **그 유닛이
- * 무엇인가를 말하는 기능 라벨**이라 값을 비워 둘 수 없습니다.
- *
- * 「에피소드 **서사**」가 아니라 「에피소드 **표지**」인 것은 낭독 때문입니다.
- * `LearningUnit`이 이름을 `제목 + 상태 접미사 + "이야기 연결"`로 짓기 때문에, 「서사」면
- * 「에피소드 서사, 현재 항목, 이야기 연결」로 *서사*와 *이야기*가 한 호흡에 두 번
- * 들립니다. 표지는 커버이고 서사는 본문이라(`episode-prologue`) 뜻도 이쪽이 맞습니다.
- */
-export type EpisodeIntroTitle = "Episode intro";
-
-/** 여정 유닛 목록에 들어가는 모양입니다(`journey-map-units.ts`). */
-export type EpisodeIntroJourneyUnitContract = {
-  readonly kind: "special";
-  readonly id: EpisodeIntroUnitId;
-  readonly title: EpisodeIntroTitle;
-  readonly screen: "episode-intro";
-};
-
-/** 맵 항목입니다. 잠김은 항목이 지지 않고 파생이 냅니다(`journey-map-progress.ts`). */
-export type EpisodeIntroJourneyMapItemContract = {
-  readonly kind: "episode-intro";
-  readonly id: EpisodeIntroUnitId;
-  readonly title: EpisodeIntroTitle;
-};
-
-export type EpisodeIntroMapItemProps = {
-  readonly id: EpisodeIntroUnitId;
-  readonly title: EpisodeIntroTitle;
-  /** 표지는 구획의 첫 항목이라 `locked`가 오지 않습니다 — 그래도 타입은 공용을 씁니다. */
-  readonly status: JourneyMapNodeStatus;
-  readonly onSelect: (id: EpisodeIntroUnitId) => void;
-};
 
 /**
  * 표지 · 서사의 제품 사용 이벤트입니다. 필드는 문자열 · 불리언뿐입니다.
@@ -77,7 +40,8 @@ export type EpisodeIntroExitedEvent = {
   readonly episodeId: string;
   readonly stage: EpisodeIntroExitStage;
 };
-export type EpisodePrologueCompletedKind = EpisodePrologue["kind"] | "cuts";
+/** 표지 컷을 끝까지 본 것입니다. 옛 통화 · 메신저 · 비주얼 노벨 서사는 사라졌습니다. */
+export type EpisodePrologueCompletedKind = "cuts";
 export type EpisodePrologueCompletedEvent = {
   readonly name: "episode_prologue_completed";
   readonly episodeId: string;
@@ -113,6 +77,7 @@ export type EpisodeIntroEvent =
   | EpisodeIntroExitedEvent
   | EpisodePrologueCompletedEvent
   | EpisodeContentRefreshedEvent
+  | EpisodeUpdateSplashClosedEvent
   | EpisodeSurveyAnsweredEvent
   | EpisodeSurveySkippedEvent
   | CatalogLearningEvent
@@ -158,117 +123,4 @@ export type EpisodeIntroTestId =
   | "episode-intro-screen-title"
   | "episode-intro-screen-skip"
   | "episode-intro-screen-next"
-  | "episode-intro-screen-confirm"
-  | "prologue-call-screen"
-  | "prologue-call-screen-back"
-  | "prologue-call-screen-title"
-  | "prologue-call-screen-caller"
-  | "prologue-call-screen-clock"
-  | "prologue-call-screen-line"
-  | "prologue-call-screen-line-text"
-  | "prologue-call-screen-line-translation"
-  | "prologue-call-screen-mute"
-  | "prologue-call-screen-volume"
-  | "prologue-call-screen-volume-panel"
-  | "prologue-call-screen-volume-down"
-  | "prologue-call-screen-volume-up"
-  | "prologue-call-screen-end"
-  | "prologue-call-screen-complete"
-  | "prologue-chat-screen"
-  | "prologue-chat-screen-back"
-  | "prologue-chat-screen-title"
-  | "prologue-chat-screen-list"
-  | `prologue-chat-screen-message-${string}`
-  | "prologue-chat-screen-composer"
-  | "prologue-chat-screen-draft"
-  | "prologue-chat-screen-send"
-  | "prologue-chat-screen-complete";
-
-/** 서사 통화의 대사 한 줄입니다. 위가 한국어, 아래가 번역입니다. */
-export type PrologueCallLine = {
-  /** 음원이 있으면 재생 완료 후 다음 대사로 넘어갑니다. */
-  readonly audioSource?: string;
-  readonly text: string;
-  readonly translation: string;
-};
-
-/**
- * 표지의 `Next` 뒤에 이어지는 서사 통화입니다. **학습이 아닙니다** — 고를 답도 판정도
- * 없고, 대사가 저절로 흐른 뒤 끝납니다.
- */
-export type PrologueCall = {
-  readonly callerName: string;
-  /** 비어 있지 않습니다. */
-  readonly lines: readonly PrologueCallLine[];
-};
-
-/** 서사 메신저의 메시지 한 통입니다. 위가 한국어, 아래가 번역입니다. */
-export type PrologueChatMessage = {
-  readonly id: string;
-  /** `other`는 상대가 보내 저절로 오고, `self`는 입력창에 채워져 사용자가 보냅니다. */
-  readonly sender: "other" | "self";
-  readonly text: string;
-  readonly translation: string;
-};
-
-/**
- * 표지의 `Next` 뒤에 이어지는 서사 메신저입니다. **학습이 아닙니다** — 고를 답이 없고,
- * 내 차례가 되면 보낼 말이 입력창에 채워져 보내기만 누릅니다.
- */
-export type PrologueChat = {
-  readonly partnerName: string;
-  /** 비어 있지 않습니다. */
-  readonly messages: readonly PrologueChatMessage[];
-};
-
-/**
- * 서사 한 구간입니다. 통화의 인물 그림을 생략하면 기존 인물을, null이면 익명 아바타를 씁니다.
- */
-export type EpisodePrologueSegment =
-  | { readonly kind: "call"; readonly call: PrologueCall; readonly callerPortrait?: string | null }
-  | { readonly kind: "messenger"; readonly chat: PrologueChat }
-  | { readonly kind: "visual-novel"; readonly narrative: EpisodeNarrative };
-
-/** 구간 전부를 마친 뒤에만 학습 완료를 엽니다. 단일 형식의 기존 에피소드도 유지합니다. */
-export type EpisodePrologue =
-  | EpisodePrologueSegment
-  | {
-      readonly kind: "sequence";
-      readonly segments: readonly [EpisodePrologueSegment, ...EpisodePrologueSegment[]];
-    };
-
-export type PrologueChatScreenProps = {
-  /** 없으면 MotionProvider의 값을 따릅니다. */
-  readonly reducedMotion?: boolean;
-  readonly guided?: boolean;
-  readonly insets: SafeAreaInsets;
-  /** 머리 줄입니다 — `Episode 0.` */
-  readonly episodeLabel: string;
-  readonly chat: PrologueChat;
-  /** 끝난 대화의 하단 버튼을 눌렀습니다. 대화가 끝나는 것만으로는 불리지 않습니다. */
-  readonly onComplete: () => void;
-  /** 서사를 본 것으로 적지 않고 맵으로 돌아갑니다. */
-  readonly onBack: () => void;
-};
-
-/** 소리 크기 단계입니다. 0은 쓰지 않습니다 — 소리를 없애는 것은 음소거의 몫입니다. */
-export type PrologueCallVolume = 1 | 2 | 3 | 4 | 5;
-
-export type PrologueCallScreenProps = {
-  /** 없으면 MotionProvider의 값을 따릅니다. */
-  readonly reducedMotion?: boolean;
-  readonly guided?: boolean;
-  readonly insets: SafeAreaInsets;
-  /** 머리 줄입니다 — `Episode 0.` */
-  readonly episodeLabel: string;
-  readonly call: PrologueCall;
-  /** 통화 상대의 얼굴 그림입니다. */
-  readonly callerPortrait: string | null;
-  /**
-   * 끝난 통화의 하단 버튼을 눌렀습니다. 통화가 끝나는 것(마지막 대사가 흐름 · 종료
-   * 버튼)만으로는 불리지 않습니다 — 끝나면 하단에 버튼이 서고, 그 버튼이 다음으로 갑니다.
-   */
-  readonly onComplete: () => void;
-  /** 서사를 본 것으로 적지 않고 맵으로 돌아갑니다. */
-  readonly onBack: () => void;
-};
+  | "episode-intro-screen-confirm";

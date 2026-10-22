@@ -1,7 +1,7 @@
 import { describe, expect, test, vi } from "vitest";
 
 import type { ProgressLoadEvent } from "../lib/progress-load-event.contract";
-import { productJourneySeed } from "./journey-progress";
+import { emptyLegacyTutorialRecord } from "./legacy-tutorial-progress";
 import type { JourneyProgressState } from "./learning-progress";
 import type { ProgressLoadAction, ProgressLoadPhase } from "./progress-load.contract";
 import {
@@ -137,19 +137,24 @@ describe("PL2~PL8 걸음", () => {
 });
 
 const empty: JourneyProgressState = {
-  ...productJourneySeed,
-  completedEpisodeIntroIds: [],
+  legacyTutorial: emptyLegacyTutorialRecord,
   catalogProgress: {},
 };
 const cached: JourneyProgressState = {
   ...empty,
-  completedStepCount: 2,
-  completedEpisodeIntroIds: ["tutorial-intro"],
+  legacyTutorial: {
+    ...emptyLegacyTutorialRecord,
+    completedStepCount: 2,
+    completedEpisodeIntroIds: ["tutorial-intro"],
+  },
 };
 const pending: JourneyProgressState = {
   ...empty,
-  completedStepCount: 3,
-  completedMessengerUnitIds: ["appointment-confirmation"],
+  legacyTutorial: {
+    ...emptyLegacyTutorialRecord,
+    completedStepCount: 3,
+    completedMessengerUnitIds: ["appointment-confirmation"],
+  },
 };
 
 describe("PL9 localProgressFrom", () => {
@@ -170,9 +175,12 @@ describe("PL9 localProgressFrom", () => {
     const merged = localProgressFrom(cached, pending);
     expect(merged).toEqual({
       ...empty,
-      completedStepCount: 3,
-      completedEpisodeIntroIds: ["tutorial-intro"],
-      completedMessengerUnitIds: ["appointment-confirmation"],
+      legacyTutorial: {
+        ...emptyLegacyTutorialRecord,
+        completedStepCount: 3,
+        completedEpisodeIntroIds: ["tutorial-intro"],
+        completedMessengerUnitIds: ["appointment-confirmation"],
+      },
     });
     expect([cached, pending]).toEqual(before);
   });

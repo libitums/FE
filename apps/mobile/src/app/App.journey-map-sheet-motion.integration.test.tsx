@@ -2,9 +2,7 @@ import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { act, cleanup, fireEvent, screen } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
-import { type AppJourneySeed } from "./journey-progress";
 import { learningProgressSnapshotFrom } from "./learning-progress";
-import { journeySeedBefore } from "./test-helpers/journey-seed";
 import {
   flushAsync,
   frameRects,
@@ -13,15 +11,28 @@ import {
   scrollSelector,
   setGlobalProps,
 } from "./test-helpers/journey-map-host";
+import { legacyPassedRecord } from "./test-helpers/progress-seed";
 import { renderSignedInApp } from "./test-helpers/signed-in-app";
 import { catalogUnitDomId } from "../screens/journey-map/catalog-map";
 import { sheetEntranceClasses } from "../screens/journey-map/journey-map-sheet-motion";
 import { stubHost, type HostStub } from "../screens/journey-map/JourneyMapScreen.test-support";
 
+// 부드러운 이동은 대역이 끝 위치로 부드러운 `scrollTo` 한 번을 남깁니다(`useMapGlide`의 main thread 프레임은 기기 몫).
+vi.mock("../screens/journey-map/use-map-glide", async () => {
+  const scroll = await import("../screens/journey-map/journey-map-scroll");
+  const react = await import("@lynx-js/react");
+  return {
+    useMapGlide: () => ({
+      scrollRef: react.useMainThreadRef(null),
+      glide: (_from: number, to: number) => scroll.scrollMapTo(to, "smooth"),
+      stop: () => {},
+    }),
+  };
+});
+
 // `integration` 계층: 호스트 globalProps의 reducedMotion이 App의 MotionProvider를 거쳐 말풍선 · 띠 · 노드 세 소비자에
 // 한 값으로 닿는지 봅니다. 대역은 호스트 질의와 네트워크 둘뿐이고, 클래스 묶음의 값 자체는 unit이 집니다.
 
-const completedIntros = ["tutorial-intro"] as const;
 const unitTop = 700;
 const s2 = catalogUnitDomId("u01-water", "S2");
 const s2TestId = "ui-lynx-learning-unit-catalog-unit-u01-water-S2";
@@ -47,28 +58,20 @@ const learner = {
   refreshedAccessToken: `e30.${btoa(JSON.stringify({ sub: "returning-learner" }))}.sig`,
 };
 
-const tutorialDoneSeed: AppJourneySeed = {
-  completedStepCount: journeySeedBefore("tutorial-final-test").completedStepCount,
-  completedMessengerUnitIds: ["appointment-confirmation"],
-  completedPhoneCallUnitIds: ["appointment-confirmation-phone-call"],
-  visualNovelProgress: { status: "completed", beatIndex: 2 },
-  completedEpisodeFinalIds: ["tutorial-final-test"],
+// 옛 튜토리얼을 통과하고 u01의 표지 · S1을 끝낸 진행입니다 — 누를 유닛은 u01의 S2입니다.
+const seed = {
+  legacyTutorial: legacyPassedRecord,
+  catalogProgress: { "u01-water": ["intro", "S1"] },
 };
 
 async function bootCatalogLesson(reducedMotion: boolean): Promise<void> {
   setGlobalProps({ safeAreaInsets: insets, reducedMotion });
   host.rects[`#${s2}`] = { top: unitTop, height: 100 };
-  const body = JSON.stringify(
-    learningProgressSnapshotFrom({
-      ...tutorialDoneSeed,
-      completedEpisodeIntroIds: ["tutorial-intro"],
-      catalogProgress: { "u01-water": ["intro", "S1"] },
-    }),
-  );
-  await renderSignedInApp(
-    <App journeySeed={tutorialDoneSeed} completedEpisodeIntroIds={completedIntros} />,
-    { ...learner, loadProgress: async () => ({ status: 200, body }) },
-  );
+  const body = JSON.stringify(learningProgressSnapshotFrom(seed));
+  await renderSignedInApp(<App progressSeed={seed} />, {
+    ...learner,
+    loadProgress: async () => ({ status: 200, body }),
+  });
   await flushAsync();
 }
 

@@ -1,9 +1,6 @@
-// 스텝 시트의 열림 상태 전이를 소유합니다 — `StepSheetState`·`StepSheetAction`·`initialStepSheetState`·`canOpenStep`·`stepSheetReducer`.
+// 스텝 시트의 열림 상태 전이를 소유합니다 — `StepSheetState`·`StepSheetAction`·`initialStepSheetState`·`stepSheetReducer`.
 
 import type { UiCopy } from "../../lib/ui-copy.contract";
-import { learningFormsForStep } from "./journey-map-learning-form";
-import { journeyStepOrdinal, stepStatusAt } from "./journey-map-progress";
-import type { JourneyStepId, JourneyStepNodeStatus } from "./journey-map-units";
 import type { SheetTargetId } from "./catalog-map.contract";
 
 export type StepSheetState = {
@@ -50,21 +47,6 @@ export const initialStepSheetState: StepSheetState = {
   anchorScrollTop: 0,
   anchorLimit: null,
 };
-
-// "이 상태가 시트를 여는가"의 정본입니다 — export하지 않는 모듈 내부 상수입니다.
-// 부등호 비교가 아니라 표를 쓰는 이유는 상태가 하나 늘면 tsc가 그 상태의 답을 쓰라고
-// 강제하기 때문입니다.
-const stepOpensSheet: Record<JourneyStepNodeStatus, boolean> = {
-  done: true,
-  current: true,
-  locked: false,
-  checking: false,
-};
-
-// 판정만 합니다 — 차단은 `JourneyStepNode`의 `bindtap` 핸들러가 집니다.
-export function canOpenStep(status: JourneyStepNodeStatus): boolean {
-  return stepOpensSheet[status];
-}
 
 // 변화 없으면 같은 참조를 돌려줍니다 — `navReducer`의 `switchTab`·`enterApp`과 같은
 // 규약입니다.
@@ -262,28 +244,6 @@ export function stepSheetPlacementBelowHeader(
 export function stepSheetTop(state: StepSheetState, scrollTop: number): number {
   const top = state.anchorY + sheetGap + (state.anchorScrollTop - scrollTop);
   return state.anchorLimit === null ? top : Math.min(top, state.anchorLimit);
-}
-
-/**
- * 스텝 말풍선에 넘기는 수치 셋입니다. 진행은 「끝낸 활동 수 / 그 스텝이 잡은 활동 수」인데, 오늘 활동은 스텝
- * 단위로만 저장되므로 끝난 스텝이면 전부이고 아니면 0입니다 — 중간에서 그만둔 자리는 아직 어디에도 남지
- * 않습니다.
- */
-export function stepSheetFiguresFor(
-  stepId: JourneyStepId,
-  completedStepCount: number,
-): {
-  readonly lessonOrdinal: number;
-  readonly completedActivityCount: number;
-  readonly totalActivityCount: number;
-} {
-  const ordinal = journeyStepOrdinal(stepId);
-  const total = learningFormsForStep(stepId).length;
-  return {
-    lessonOrdinal: ordinal,
-    completedActivityCount: stepStatusAt(ordinal - 1, completedStepCount) === "done" ? total : 0,
-    totalActivityCount: total,
-  };
 }
 
 /** 꼬리가 가운데에서 벗어날 수 있는 끝입니다. 값은 디자인이 정합니다. */

@@ -277,6 +277,7 @@ describe("catalogFinalPlanFor — 프로필 참조가 메모 키다", () => {
   const contentOf = (catalog: readonly CatalogEntry[]): EpisodeContent => ({
     catalog,
     imageUrlOf,
+    audioUrlOf: () => null,
     fillText: fillPlaceholders,
     audioTimingOf: () => null,
   });
@@ -329,6 +330,7 @@ describe("catalogFinalPlanFor — 메모", () => {
   const contentOf = (catalog: readonly CatalogEntry[]): EpisodeContent => ({
     catalog,
     imageUrlOf,
+    audioUrlOf: () => null,
     fillText: fillPlaceholders,
     audioTimingOf: () => null,
   });
@@ -356,13 +358,25 @@ describe("catalogFinalPlanFor — 메모", () => {
     expect(catalogFinalPlanFor(content, sections, "u04-x", noLearnerProfile)).toBeNull();
   });
 
-  test("FM6. 에피소드 번호는 구획 자리에서 온다", () => {
+  test("FM6. 에피소드 번호는 구획 번호(매니페스트 order)에서 온다", () => {
     const content = contentOf(realCatalog);
     const sections = catalogMapSectionsOf(realCatalog);
 
     expect(catalogFinalPlanFor(content, sections, "u02-checkin", noLearnerProfile)?.ordinal).toBe(
       2,
     );
+    // 자리가 아니라 order라서, 건너뛴 order도 그 값이다.
+    const skipped = realCatalog.map((entry) =>
+      entry.id === "u02-checkin" ? { ...entry, order: 7 } : entry,
+    );
+    expect(
+      catalogFinalPlanFor(
+        contentOf(skipped),
+        catalogMapSectionsOf(skipped),
+        "u02-checkin",
+        noLearnerProfile,
+      )?.ordinal,
+    ).toBe(7);
   });
 });
 

@@ -13,34 +13,14 @@ import type {
 } from "./learning-item-guide.contract";
 import { getItem, isStorageAvailable, setItem } from "./storage";
 
-export const learningItemGuideKinds: readonly LearningItemGuideKind[] = [
-  "sentence-order",
-  "messenger",
-  "phone-call",
-  "visual-novel",
-  "speaking",
-  "writing",
-];
+export const learningItemGuideKinds: readonly LearningItemGuideKind[] = ["sentence-order"];
 
 export const learningItemGuideSeenStorageKey: LearningItemGuideSeenStorageKey =
   "libitum.learning-item-guides.seen";
 
 export const learningItemGuideKindFor: LearningItemGuideKindFor = (subject) => {
   if (subject === null) return null;
-  switch (subject.form) {
-    case "sentence-order":
-      return subject.chips.length === 1 ? "sentence-order" : null;
-    case "messenger":
-      return subject.choices?.length === 1 ? "messenger" : null;
-    case "phone-call":
-      return "phone-call";
-    case "visual-novel":
-      return "visual-novel";
-    case "speaking":
-      return subject.optionalPractice === true ? "speaking" : null;
-    case "writing":
-      return subject.optionalPractice === true ? "writing" : null;
-  }
+  return subject.chips.length === 1 ? "sentence-order" : null;
 };
 
 function isKnownKind(value: unknown): value is LearningItemGuideKind {

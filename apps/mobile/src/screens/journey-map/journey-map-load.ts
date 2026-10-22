@@ -1,9 +1,4 @@
-import { stepStatusAt } from "./journey-map-progress";
-import type {
-  JourneyMapItemStatus,
-  JourneyMapNodeStatus,
-  JourneyStepNodeStatus,
-} from "./journey-map-types";
+import type { JourneyMapItemStatus, JourneyMapNodeStatus } from "./journey-map-types";
 import type {
   JourneyMapNodeAccess,
   JourneyMapProgressLoad,
@@ -15,7 +10,7 @@ import type {
 export const knownProgressLoad: JourneyMapProgressLoad = { status: "known" };
 
 // 응답을 기다리는 동안(`checking` · `loading`)만 노드를 막습니다. 실패 · 재시도 중에는 열어 둡니다 —
-// 그때 진행은 씨앗(또는 미전송분)이라 열리는 것은 튜토리얼 표지 하나뿐이고, 나중에 합쳐도 줄지 않습니다.
+// 그때 진행은 씨앗(또는 미전송분)이라 열리는 것은 첫 구획의 표지 하나뿐이고, 나중에 합쳐도 줄지 않습니다.
 const accessByStatus: Readonly<Record<JourneyMapProgressLoad["status"], JourneyMapNodeAccess>> = {
   known: "open",
   checking: "checking",
@@ -33,16 +28,6 @@ export function mapNodeStatusUnder(
   status: JourneyMapItemStatus,
 ): JourneyMapNodeStatus {
   return access === "checking" ? "checking" : status;
-}
-
-export function stepNodeStatusUnder(
-  access: JourneyMapNodeAccess,
-  itemStatus: JourneyMapItemStatus,
-  stepIndex: number,
-  completedStepCount: number,
-): JourneyStepNodeStatus {
-  if (access === "checking") return "checking";
-  return itemStatus === "locked" ? "locked" : stepStatusAt(stepIndex, completedStepCount);
 }
 
 // 표로 둡니다 — 상태가 하나 늘면 tsc가 그 상태의 답을 쓰라고 강제합니다. 부정형 비교는 새 상태를

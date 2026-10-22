@@ -20,7 +20,11 @@ import java.util.concurrent.Executors;
 public final class ContentFileModule extends LynxModule {
   static final String ROOT_NAME = "content-files";
   private static final int TIMEOUT_MS = 60_000;
-  private static final ExecutorService WORKER = Executors.newSingleThreadExecutor();
+  // 받기는 JS가 한 에피소드의 자산을 최대 4개 동시에 부릅니다(apps/mobile의 CONTENT_DOWNLOAD_CONCURRENCY와 같은 값).
+  // 서로 다른 경로만 동시에 오고(같은 경로는 JS가 한 번만 부름), 임시 파일 이름이 UUID라 겹쳐도 안전합니다.
+  private static final int DOWNLOAD_THREADS = 4;
+  private static final ExecutorService DOWNLOADS = Executors.newFixedThreadPool(DOWNLOAD_THREADS);
+  private static final ExecutorService WORKER = Executors.newSingleThreadExecutor(); // remove 전용
   private final ContentFileStore store;
 
   public ContentFileModule(Context context) {
@@ -30,7 +34,7 @@ public final class ContentFileModule extends LynxModule {
   }
 
   @LynxMethod public void download(String url, String path, Callback callback) {
-    WORKER.execute(() -> {
+    DOWNLOADS.execute(() -> {
       ContentFileStore.Result result;
       try {
         result = store.download(url, path);

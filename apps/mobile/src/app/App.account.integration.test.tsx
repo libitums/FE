@@ -27,7 +27,6 @@ vi.mock(
 // `AppleSignInModule` · `WebAuthenticationModule.randomBytes` · 분석 transport(IA5b만).
 // 부팅은 공용 `renderSignedInApp`(갱신 → 앱 구간)이고, 부팅 뒤에 `fetch`를 이 파일의 표로 바꿉니다.
 
-const completedIntros = ["tutorial-intro"] as const;
 const supabaseUrl = "https://test.supabase.co";
 const sessionKey = authSessionStorageKey;
 
@@ -147,7 +146,6 @@ async function bootApp(options: BootOptions = {}): Promise<Harness> {
   const events: EntryEvent[] = [];
   const settingsEvents: SettingsEvent[] = [];
   const props: Parameters<typeof App>[0] = {
-    completedEpisodeIntroIds: completedIntros,
     entryEventSink: (event) => {
       events.push(event);
       order.push(`event:${event.name === "entry_screen_viewed" ? event.screen : event.name}`);
@@ -407,14 +405,10 @@ test("[IA5b] 삭제하면 저장된 분석 대기열이 지워지고 옛 사용�
     remove: (key) => void store.delete(key),
   };
   const accessToken = jwt("user-1", ["google"]);
-  await renderSignedInApp(
-    <App
-      {...session.sinks}
-      analyticsUser={session.user}
-      completedEpisodeIntroIds={completedIntros}
-    />,
-    { refreshedAccessToken: accessToken, storageModule },
-  );
+  await renderSignedInApp(<App {...session.sinks} analyticsUser={session.user} />, {
+    refreshedAccessToken: accessToken,
+    storageModule,
+  });
   const calls: FetchCall[] = [];
   installNet({
     calls,

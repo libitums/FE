@@ -1,4 +1,4 @@
-import type { JourneyStepId } from "../journey-map/journey-map";
+import type { QuestionAudio } from "../../lib/question-audio";
 
 export type DialogueSpeaker = "counterpart" | "me";
 
@@ -36,74 +36,6 @@ export type SentenceOrderQuestion = {
   readonly dialogue?: SentenceOrderDialogueTurns;
   /** 있으면 `support.instruction` · 문구표 기본보다 앞서는 지시문입니다(카탈로그 문항). */
   readonly instruction?: string;
+  /** 문항 음성입니다 — 듣기 조립은 듣기 갈래, 문장 순서는 판정 뒤 재생 갈래. 없으면 키가 없습니다. */
+  readonly audio?: QuestionAudio;
 };
-
-// 첫 인사는 한글을 모르는 사용자도 뜻과 발음 표기를 보며 한 번 답하는 안내 활동입니다.
-// 오답·조합·작별 구분은 요구하지 않고 안녕하세요 한 표현만 사용합니다.
-// 튜토리얼은 한 유닛에 한 표현이며, 뒤로 갈수록 조합 순서의 직접 안내를 줄입니다.
-export const sentenceOrderQuestionsByStep: Record<JourneyStepId, readonly SentenceOrderQuestion[]> =
-  {
-    "tutorial-listening": [],
-    "tutorial-speaking": [],
-    "tutorial-writing": [],
-    greeting: [
-      {
-        prompt: "안녕하세요",
-        support: {
-          translation: "Hello",
-          romanization: "annyeonghaseyo",
-          instruction: "Tap the greeting below to say hello back.",
-        },
-        chips: ["안녕하세요"],
-        answerOrder: [0],
-      },
-    ],
-    introduction: [
-      {
-        prompt: "이름이 뭐예요?",
-        support: {
-          translation: "What's your name?",
-          romanization: "ireumi mwoyeyo?",
-          instruction: "Tap the whole phrase below to ask someone's name.",
-        },
-        chips: ["이름이 뭐예요?"],
-        answerOrder: [0],
-      },
-    ],
-    ordering: [
-      {
-        prompt: "물 좀 주세요",
-        support: {
-          translation: "Water, please.",
-          romanization: "mul jom juseyo",
-          instruction: "Tap 물, then 좀, then 주세요 to say ‘Water, please.’",
-        },
-        chips: ["주세요", "물", "좀"],
-        answerOrder: [1, 2, 0],
-      },
-    ],
-    appointment: [
-      {
-        prompt: "내일 만나요",
-        support: {
-          translation: "See you tomorrow.",
-          romanization: "naeil mannayo",
-          instruction: "Build “See you tomorrow” using the phrase above.",
-        },
-        chips: ["만나요", "내일"],
-        answerOrder: [1, 0],
-      },
-    ],
-    directions: [
-      {
-        prompt: "역이 어디예요?",
-        support: {
-          translation: "Where is the station?",
-          romanization: "yeogi eodiyeyo?",
-          instruction: "Ask “Where is the station?” using the two pieces.",
-        },
-        chips: ["어디예요?", "역이"],
-        answerOrder: [1, 0],
-      },
-    ],
-  };

@@ -1,0 +1,33 @@
+/* 문항 곁 간이 줄의 스타일입니다(ADR-0015 D2). 양쪽 슬롯이 같은 폭(`1fr`)을 나눠 가져 보통 글자 크기에서는
+   「천천히」가 켜져 넓어져도 다시 듣기 단추가 움직이지 않습니다. 접근성 큰 글자에서 토글이 칸보다 넓어지면 그 칸이
+   넓어지고 단추가 밀립니다(ADR-0082 「대가」). 다시 듣기는 안쪽(오른쪽), 토글은 안쪽(왼쪽)으로 붙고 줄 전체는
+   가운데에 섭니다. */
+.item-listen-controls {
+  width: 100%;
+  /* 가운데 정렬 세로 상자 안에서도 부모 폭을 다 받습니다 — 줄어든 부모 안의 `width: 100%`는 양쪽 슬롯을 0 폭으로
+     두어 「천천히」 글자가 잘립니다. */
+  align-self: stretch;
+  flex-shrink: 0;
+  /* 두 칸 격자입니다 — 같은 폭(`1fr`)을 나누되 내용 폭보다 좁아지지 않습니다(`minmax(max-content, …)`). 큰 글자에서
+     「천천히」가 칸보다 넓어지면 그 칸이 넓어지고 맞은편 칸이 내줍니다 — 줄 밖으로 넘치거나 낱말 중간에서 줄이 바뀌지
+     않습니다. Lynx flex는 내용 기반 최소 폭을 만들지 않아 격자로 둡니다. */
+  display: grid;
+  grid-template-columns: minmax(max-content, 1fr) minmax(max-content, 1fr);
+  align-items: center;
+  column-gap: var(--libitum-spacing-12);
+}
+
+.item-listen-controls-start,
+.item-listen-controls-end {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.item-listen-controls-start {
+  justify-content: flex-end;
+}
+
+.item-listen-controls-end {
+  justify-content: flex-start;
+}

@@ -133,7 +133,7 @@ describe("stepSheetPlacement", () => {
 
 describe("stepSheetTop", () => {
   const open: StepSheetState = {
-    openStepId: "ordering",
+    openStepId: "catalog:u01-water:S1",
     anchorY: 800,
     anchorScrollTop: 120,
     anchorLimit: null,
@@ -154,7 +154,7 @@ describe("stepSheetTop", () => {
   it("스크롤이 끝나 유닛이 제자리에 서면 말풍선이 끝 안에 들어온다", () => {
     const placement = stepSheetPlacement({ ...tallScreen, unitTop: 700, scrollTop: 120 });
     const state: StepSheetState = {
-      openStepId: "ordering",
+      openStepId: "catalog:u01-water:S1",
       anchorY: placement.anchorY,
       anchorScrollTop: 120,
       anchorLimit: placement.anchorLimit,
@@ -168,7 +168,7 @@ describe("stepSheetTop", () => {
 describe("stepSheetReducer — anchorStep", () => {
   it("열린 스텝의 자리를 잰 값으로 바로잡는다", () => {
     const state: StepSheetState = {
-      openStepId: "ordering",
+      openStepId: "catalog:u01-water:S1",
       anchorY: 512,
       anchorScrollTop: 0,
       anchorLimit: null,
@@ -176,14 +176,14 @@ describe("stepSheetReducer — anchorStep", () => {
 
     const next = stepSheetReducer(state, {
       type: "anchorStep",
-      stepId: "ordering",
+      stepId: "catalog:u01-water:S1",
       anchorY: 540,
       scrollTop: 10,
       anchorLimit: 566,
     });
 
     expect(next).toEqual({
-      openStepId: "ordering",
+      openStepId: "catalog:u01-water:S1",
       anchorY: 540,
       anchorScrollTop: 10,
       anchorLimit: 566,
@@ -193,7 +193,7 @@ describe("stepSheetReducer — anchorStep", () => {
   it("재는 사이에 닫혔으면 다시 열지 않는다", () => {
     const next = stepSheetReducer(initialStepSheetState, {
       type: "anchorStep",
-      stepId: "ordering",
+      stepId: "catalog:u01-water:S1",
       anchorY: 540,
       scrollTop: 10,
       anchorLimit: 566,
@@ -204,7 +204,7 @@ describe("stepSheetReducer — anchorStep", () => {
 
   it("재는 사이에 다른 스텝으로 바뀌었으면 그 스텝의 자리를 건드리지 않는다", () => {
     const state: StepSheetState = {
-      openStepId: "greeting",
+      openStepId: "catalog:u01-water:S2",
       anchorY: 300,
       anchorScrollTop: 0,
       anchorLimit: null,
@@ -212,7 +212,7 @@ describe("stepSheetReducer — anchorStep", () => {
 
     const next = stepSheetReducer(state, {
       type: "anchorStep",
-      stepId: "ordering",
+      stepId: "catalog:u01-water:S1",
       anchorY: 540,
       scrollTop: 10,
       anchorLimit: 566,
@@ -379,5 +379,108 @@ describe("stepSheetPlacementBelowHeader", () => {
 
   it("SB11. gap 인자를 쓴다 — gap 0이면 표식이 카드 아래(228)에 붙는다", () => {
     expect(belowHeader(short, leftColumn, card(228), 0).targetScrollTop).toBe(700 - 228);
+  });
+});
+
+describe("stepSheetReducer — openStep · closeSheet", () => {
+  it("openStep — 닫혀 있던 시트가 그 스텝으로 열린다", () => {
+    const next = stepSheetReducer(initialStepSheetState, {
+      type: "openStep",
+      stepId: "catalog:u01-water:S1",
+      anchorY: 0,
+      scrollTop: 0,
+    });
+
+    expect(next).toEqual({
+      openStepId: "catalog:u01-water:S1",
+      anchorY: 0,
+      anchorScrollTop: 0,
+      anchorLimit: null,
+    });
+  });
+
+  it("openStep — 다른 스텝이 열려 있으면 그 스텝으로 바뀐다", () => {
+    const state: StepSheetState = {
+      openStepId: "catalog:u01-water:S1",
+      anchorY: 0,
+      anchorScrollTop: 0,
+      anchorLimit: null,
+    };
+
+    const next = stepSheetReducer(state, {
+      type: "openStep",
+      stepId: "catalog:u01-water:S2",
+      anchorY: 0,
+      scrollTop: 0,
+    });
+
+    expect(next).toEqual({
+      openStepId: "catalog:u01-water:S2",
+      anchorY: 0,
+      anchorScrollTop: 0,
+      anchorLimit: null,
+    });
+  });
+
+  it("openStep — 이미 그 스텝이 열려 있으면 같은 참조를 돌려준다", () => {
+    const state: StepSheetState = {
+      openStepId: "catalog:u01-water:S1",
+      anchorY: 0,
+      anchorScrollTop: 0,
+      anchorLimit: null,
+    };
+
+    const next = stepSheetReducer(state, {
+      type: "openStep",
+      stepId: "catalog:u01-water:S1",
+      anchorY: 0,
+      scrollTop: 0,
+    });
+
+    expect(next).toBe(state);
+  });
+
+  it("closeSheet — 열려 있던 시트를 닫는다", () => {
+    const state: StepSheetState = {
+      openStepId: "catalog:u01-water:S1",
+      anchorY: 0,
+      anchorScrollTop: 0,
+      anchorLimit: null,
+    };
+
+    const next = stepSheetReducer(state, { type: "closeSheet" });
+
+    expect(next).toEqual({ openStepId: null, anchorY: 0, anchorScrollTop: 0, anchorLimit: null });
+  });
+
+  it("closeSheet — 이미 닫혀 있으면 같은 참조를 돌려준다", () => {
+    const next = stepSheetReducer(initialStepSheetState, { type: "closeSheet" });
+
+    expect(next).toBe(initialStepSheetState);
+  });
+
+  it("부수효과 없음 — 호출 뒤 입력 state 객체가 변형되지 않는다", () => {
+    const state: StepSheetState = {
+      openStepId: "catalog:u01-water:S1",
+      anchorY: 0,
+      anchorScrollTop: 0,
+      anchorLimit: null,
+    };
+    const snapshot: StepSheetState = {
+      openStepId: "catalog:u01-water:S1",
+      anchorY: 0,
+      anchorScrollTop: 0,
+      anchorLimit: null,
+    };
+
+    stepSheetReducer(state, {
+      type: "openStep",
+      stepId: "catalog:u01-water:S2",
+      anchorY: 0,
+      scrollTop: 0,
+    });
+    stepSheetReducer(state, { type: "closeSheet" });
+
+    expect(state).toEqual(snapshot);
   });
 });

@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 
-import { productJourneySeed } from "./journey-progress";
+import { emptyLegacyTutorialRecord } from "./legacy-tutorial-progress";
+import type { LegacyTutorialRecord } from "./legacy-tutorial-progress";
 import { learningProgressSnapshotFrom } from "./learning-progress";
 import type { JourneyProgressState } from "./learning-progress";
 import {
@@ -21,10 +22,14 @@ import type {
 // unit 계층: 판정 순수 함수의 입출력만 봅니다.
 
 const emptyProgress: JourneyProgressState = {
-  ...productJourneySeed,
-  completedEpisodeIntroIds: [],
+  legacyTutorial: emptyLegacyTutorialRecord,
   catalogProgress: {},
 };
+
+/** 옛 튜토리얼 기록의 한 필드만 채운 진행입니다. */
+const legacyWith = (patch: Partial<LegacyTutorialRecord>): Partial<JourneyProgressState> => ({
+  legacyTutorial: { ...emptyLegacyTutorialRecord, ...patch },
+});
 
 const signalKinds: readonly LearnerRecordSignal[] = ["pending", "present", "absent", "unknown"];
 
@@ -34,15 +39,15 @@ describe("hasLearningRecord", () => {
   });
 
   test.each([
-    ["스텝", { completedStepCount: 1 }],
-    ["표지", { completedEpisodeIntroIds: ["tutorial-intro"] }],
-    ["메신저", { completedMessengerUnitIds: ["appointment-confirmation"] }],
-    ["전화", { completedPhoneCallUnitIds: ["appointment-confirmation-phone-call"] }],
-    ["최종", { completedEpisodeFinalIds: ["tutorial-final-test"] }],
-    ["VN 완료", { visualNovelProgress: { status: "completed", beatIndex: 2 } }],
+    ["스텝", legacyWith({ completedStepCount: 1 })],
+    ["표지", legacyWith({ completedEpisodeIntroIds: ["tutorial-intro"] })],
+    ["메신저", legacyWith({ completedMessengerUnitIds: ["appointment-confirmation"] })],
+    ["전화", legacyWith({ completedPhoneCallUnitIds: ["appointment-confirmation-phone-call"] })],
+    ["최종", legacyWith({ completedEpisodeFinalIds: ["tutorial-final-test"] })],
+    ["VN 완료", legacyWith({ visualNovel: { status: "completed", beatIndex: 2 } })],
     ["카탈로그", { catalogProgress: { "u01-water": ["S1"] } }],
-    ["VN 진행 중", { visualNovelProgress: { status: "active", beatIndex: 1 } }],
-  ] as const)("RJ1. %s 하나만 채워도 참이다", (_label, patch) => {
+    ["VN 진행 중", legacyWith({ visualNovel: { status: "active", beatIndex: 1 } })],
+  ])("RJ1. %s 하나만 채워도 참이다", (_label, patch) => {
     expect(hasLearningRecord({ ...emptyProgress, ...patch })).toBe(true);
   });
 
@@ -74,14 +79,17 @@ describe("progressSignalOf", () => {
   });
 
   test("RJ2. 스텝이 있는 스냅숏은 present이다", () => {
-    const raw = learningProgressSnapshotFrom({ ...emptyProgress, completedStepCount: 1 });
+    const raw = learningProgressSnapshotFrom({
+      ...emptyProgress,
+      ...legacyWith({ completedStepCount: 1 }),
+    });
     expect(progressSignalOf({ ok: true, raw })).toBe("present");
   });
 
   test("RJ2. VN 진행 중 스냅숏은 present이다", () => {
     const raw = learningProgressSnapshotFrom({
       ...emptyProgress,
-      visualNovelProgress: { status: "active", beatIndex: 1 },
+      ...legacyWith({ visualNovel: { status: "active", beatIndex: 1 } }),
     });
     expect(progressSignalOf({ ok: true, raw })).toBe("present");
   });

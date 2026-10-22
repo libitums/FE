@@ -5,7 +5,7 @@ import type { LearningItemGuideKind } from "./learning-item-guide.contract";
 import { uiCopyEn } from "./ui-copy-en";
 import { uiCopyFor } from "./ui-copy";
 
-// `unit` 계층: 안내 문구 여섯 쌍의 값(CP7만 리터럴)과 길이 · 금지 표현 제약.
+// `unit` 계층: 안내 문구의 값(CP7만 리터럴)과 길이 · 금지 표현 제약.
 
 const copy = uiCopyEn.learningItemGuide;
 
@@ -15,33 +15,10 @@ const confirmedCopy: Record<LearningItemGuideKind, { title: string; description:
     description:
       "Usually you put several pieces in order. Here there's only one, so tap it, then tap Check.",
   },
-  messenger: {
-    title: "Just one reply this time",
-    description:
-      "Usually you choose a reply or type your own. Here there's only one, so tap it and send.",
-  },
-  "phone-call": {
-    title: "Reply with a tap",
-    description:
-      "Tap Accept and listen. You don't need to speak, so just tap your reply when it's your turn.",
-  },
-  "visual-novel": {
-    title: "Your lines are ready",
-    description:
-      "Tap Next to read each line. Your replies are already written, so there's nothing to choose.",
-  },
-  speaking: {
-    title: "Try it, or skip it",
-    description: "Tap Speak and read the sentence out loud, or tap Skip if you're not ready.",
-  },
-  writing: {
-    title: "Trace the letter",
-    description: "Follow the pale letter with your finger, then tap Check.",
-  },
 };
 
 describe("학습 문항 안내 문구", () => {
-  test("CP1: 여섯 종류 모두 제목 · 설명이 공백만이 아니다", () => {
+  test("CP1: 모든 종류 제목 · 설명이 공백만이 아니다", () => {
     for (const kind of learningItemGuideKinds) {
       expect(copy[kind].title.trim(), `${kind} title`).not.toBe("");
       expect(copy[kind].description.trim(), `${kind} description`).not.toBe("");
@@ -57,30 +34,11 @@ describe("학습 문항 안내 문구", () => {
     }
   });
 
-  // ⟨2026-10-19⟩ 쓰기에는 `Skip`이 없다(사용자 결정) — 안내가 없는 버튼을 가리키지 않는다.
-  test("CP2b: 쓰기 안내는 Skip을 말하지 않는다", () => {
-    expect(`${copy.writing.title} ${copy.writing.description}`).not.toMatch(/skip/i);
-  });
-
   test("CP3: 한글과 인물 이름(Minseo)이 없다", () => {
     for (const kind of learningItemGuideKinds) {
       const text = `${copy[kind].title} ${copy[kind].description}`;
       expect(text, kind).not.toMatch(/[가-힣]/);
       expect(text, kind).not.toMatch(/Minseo/);
-    }
-  });
-
-  test("CP4: 전화 · 비주얼 노벨은 「this time」 · 「for now」를 약속하지 않는다", () => {
-    for (const kind of ["phone-call", "visual-novel"] as const) {
-      const text = `${copy[kind].title} ${copy[kind].description}`;
-      expect(text, kind).not.toMatch(/\bthis time\b|\bfor now\b/i);
-    }
-  });
-
-  test("CP5: 말하기 · 쓰기는 「only practice」 · 「usually」를 말하지 않는다", () => {
-    for (const kind of ["speaking", "writing"] as const) {
-      const text = `${copy[kind].title} ${copy[kind].description}`;
-      expect(text, kind).not.toMatch(/only practice|usually/i);
     }
   });
 
@@ -90,7 +48,7 @@ describe("학습 문항 안내 문구", () => {
     }
   });
 
-  test("CP7: 여섯 쌍이 확정 문구와 문자열로 같다", () => {
+  test("CP7: 문구 쌍이 확정 문구와 문자열로 같다", () => {
     for (const kind of learningItemGuideKinds) {
       expect(copy[kind], kind).toEqual(confirmedCopy[kind]);
     }

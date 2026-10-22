@@ -157,13 +157,14 @@ describe("노드 단계", () => {
     expect(mapUnitBurstRayAngles(0)).toEqual([]);
   });
 
-  test("SMU4. 튜토리얼 스텝 id와 카탈로그 키가 섞이지 않는다", () => {
-    // 가드: 같은 종류끼리는 맞는다.
-    expect(mapUnitStageMotionOf({ targetId: "greeting", entrance: "expressive" }, "greeting")).toBe(
+  test("SMU4. 다른 에피소드의 같은 유닛 키가 섞이지 않는다 (u00 튜토리얼 S1과 u01 S1)", () => {
+    const tutorial: SheetTargetId = "catalog:u00-tutorial:S1";
+    // 가드: 같은 키끼리는 맞는다.
+    expect(mapUnitStageMotionOf({ targetId: tutorial, entrance: "expressive" }, tutorial)).toBe(
       "pop-burst",
     );
-    expect(mapUnitStageMotionOf({ targetId: A, entrance: "expressive" }, "greeting")).toBe("none");
-    expect(mapUnitStageMotionOf({ targetId: "greeting", entrance: "expressive" }, A)).toBe("none");
+    expect(mapUnitStageMotionOf({ targetId: A, entrance: "expressive" }, tutorial)).toBe("none");
+    expect(mapUnitStageMotionOf({ targetId: tutorial, entrance: "expressive" }, A)).toBe("none");
   });
 
   test("SMU5. Provider 밖 기본값은 아무 노드도 가리키지 않는다", () => {

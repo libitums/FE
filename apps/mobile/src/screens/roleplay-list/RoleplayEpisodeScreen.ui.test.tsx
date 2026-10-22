@@ -10,15 +10,21 @@ import { markedUiCopy } from "../../lib/ui-copy.test-support";
 // 줍니다. `toHaveClass`·`toHaveStyle`을 쓰지 않습니다.
 
 const messengerItem: RoleplayItem = {
-  form: "messenger",
-  unitId: "appointment-confirmation",
+  form: "story",
+  unitId: "story-u01-water",
+  episodeId: "u01-water",
   title: "A Message from Minseo",
+  lineCount: 3,
+  imageUrl: null,
 };
 
 const phoneCallItem: RoleplayItem = {
-  form: "phone-call",
-  unitId: "appointment-confirmation-phone-call",
+  form: "story",
+  unitId: "story-u02-checkin",
+  episodeId: "u02-checkin",
   title: "A Call from Minseo",
+  lineCount: 3,
+  imageUrl: null,
 };
 
 const section: RoleplaySection = {
@@ -84,8 +90,8 @@ test("[E5] 세로 스크롤의 직계 자식이 목록 상자 하나이고, 카�
 
   const list = screen.getByTestId("roleplay-episode-screen-list");
   expect(Array.from(list.children).map((el) => el.getAttribute("data-testid"))).toEqual([
-    "roleplay-list-item-appointment-confirmation",
-    "roleplay-list-item-appointment-confirmation-phone-call",
+    "roleplay-list-item-story-u01-water",
+    "roleplay-list-item-story-u02-checkin",
   ]);
 });
 
@@ -93,7 +99,7 @@ test("[E6] 카드 tap → onSelectItem이 정확히 1회, 인자는 그 항목",
   const onSelectItem = vi.fn<(item: RoleplayItem) => void>();
   render(<RoleplayEpisodeScreen section={section} onSelectItem={onSelectItem} onExit={vi.fn()} />);
 
-  fireEvent.tap(screen.getByTestId("roleplay-list-item-appointment-confirmation-phone-call"), {});
+  fireEvent.tap(screen.getByTestId("roleplay-list-item-story-u02-checkin"), {});
 
   expect(onSelectItem).toHaveBeenCalledTimes(1);
   expect(onSelectItem).toHaveBeenCalledWith(phoneCallItem);
@@ -109,7 +115,7 @@ test("[E7] 잠긴 구획이 오면 카드가 잠겨 서고 눌러도 열리지 �
     />,
   );
 
-  const card = screen.getByTestId("roleplay-list-item-appointment-confirmation");
+  const card = screen.getByTestId("roleplay-list-item-story-u01-water");
   expect(card).toHaveAttribute("data-locked", "true");
   fireEvent.tap(card, {});
 

@@ -3,7 +3,7 @@ import { act, cleanup, render } from "@lynx-js/react/testing-library";
 import { saveAuthSession, clearAuthSession } from "../lib/auth-session";
 import { localDayFrom } from "../lib/progress-api";
 import { useJourneyProgress } from "./use-journey-progress";
-import { productJourneySeed } from "./journey-progress";
+import { keysFor } from "./use-journey-progress.cache.test-support";
 import { createLearningDaySync } from "./learning-day-sync";
 
 const store = new Map<string, string>();
@@ -19,7 +19,7 @@ function signIn(user: string) {
   });
 }
 function Harness() {
-  progress = useJourneyProgress(productJourneySeed, [], () => ["RP"]);
+  progress = useJourneyProgress({}, []);
   return null;
 }
 async function boot() {
@@ -29,7 +29,7 @@ async function boot() {
   });
 }
 async function complete(count: number) {
-  act(() => progress.setCompletedStepCount(count));
+  act(() => progress.setCatalogProgress(keysFor(count)));
   await act(async () => {
     await vi.advanceTimersByTimeAsync(0);
   });

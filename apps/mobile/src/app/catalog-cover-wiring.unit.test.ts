@@ -7,7 +7,6 @@ import { buildEpisodeCatalog } from "../lib/episode-catalog";
 import type { CatalogEntry } from "../lib/episode-catalog";
 import { noLearnerProfilePort } from "../lib/learner-profile";
 import { fillPlaceholders } from "../lib/placeholder-fill";
-import type { EpisodeFinalUnitId } from "../screens/episode-final/episode-final.contract";
 import type {
   EpisodeIntroEvent,
   EpisodeIntroEventSink,
@@ -35,12 +34,11 @@ function contentOf(catalog: readonly CatalogEntry[]): EpisodeContent {
   return {
     catalog,
     imageUrlOf: (path) => `https://cdn/${path}`,
+    audioUrlOf: () => null,
     fillText: fillPlaceholders,
     audioTimingOf: () => null,
   };
 }
-
-const tutorialDone: readonly EpisodeFinalUnitId[] = ["tutorial-final-test"];
 
 type SetProgress = (value: SetStateAction<CatalogProgress>) => void;
 
@@ -54,7 +52,7 @@ type Harness = {
 function harness(
   options: {
     catalog?: readonly CatalogEntry[];
-    finals?: readonly EpisodeFinalUnitId[];
+    legacyPassed?: boolean;
     progress?: CatalogProgress;
     sinkNull?: boolean;
   } = {},
@@ -64,19 +62,21 @@ function harness(
   const setCatalogProgress = vi.fn<SetProgress>();
   const sink = vi.fn<(event: EpisodeIntroEvent) => void>();
   const episodeIntroEventSink: EpisodeIntroEventSink = options.sinkNull === true ? null : sink;
-  const wiring = catalogCoverWiring({
+  // 문의 입력은 옛 튜토리얼 통과 기록(`legacyTutorialPassed`)입니다.
+  const args = {
     episodeContent: contentOf(catalog),
     catalogSections: catalogMapSectionsOf(catalog),
     catalogProgress: options.progress ?? {},
     setCatalogProgress,
-    completedEpisodeFinalIds: options.finals ?? [],
+    legacyTutorialPassed: options.legacyPassed ?? false,
     dispatch,
     episodeIntroEventSink,
     learnerFill: noLearnerProfile,
     learnerRecord: null,
     learnerSync: "none",
     learnerPort: noLearnerProfilePort,
-  });
+  };
+  const wiring = catalogCoverWiring(args as unknown as Parameters<typeof catalogCoverWiring>[0]);
   return { wiring, dispatch, setCatalogProgress, sink };
 }
 
@@ -86,7 +86,7 @@ function firstOrder(...mocks: { mock: { invocationCallOrder: number[] } }[]): nu
 
 describe("onStartCatalogCover", () => {
   test("CW1. 열린 표지는 viewed 이벤트 뒤에 컷 화면을 쌓는다", () => {
-    const { wiring, dispatch, sink } = harness({ finals: tutorialDone });
+    const { wiring, dispatch, sink } = harness({ legacyPassed: true });
 
     wiring.onStartCatalogCover("u01-water");
 
@@ -101,7 +101,7 @@ describe("onStartCatalogCover", () => {
   });
 
   test("CW2. 튜토리얼 전이면 아무 일도 없다", () => {
-    const { wiring, dispatch, sink, setCatalogProgress } = harness({ finals: [] });
+    const { wiring, dispatch, sink, setCatalogProgress } = harness({ legacyPassed: false });
 
     wiring.onStartCatalogCover("u01-water");
 
@@ -111,7 +111,7 @@ describe("onStartCatalogCover", () => {
   });
 
   test("CW2. 앞 에피소드를 못 끝낸 둘째 표지와 없는 id도 아무 일이 없다", () => {
-    const { wiring, dispatch, sink } = harness({ finals: tutorialDone });
+    const { wiring, dispatch, sink } = harness({ legacyPassed: true });
 
     wiring.onStartCatalogCover("u02-checkin");
     wiring.onStartCatalogCover("nope");
@@ -122,7 +122,7 @@ describe("onStartCatalogCover", () => {
 
   test("CW2. 앞 에피소드의 완료 키를 모두 끝내면 둘째 표지가 열린다", () => {
     const { wiring, dispatch } = harness({
-      finals: tutorialDone,
+      legacyPassed: true,
       progress: {
         "u01-water": ["intro", "S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "CULT", "RP"],
       },
@@ -136,11 +136,11 @@ describe("onStartCatalogCover", () => {
   });
 
   test("CW6. 프롤로그 컷이 없는 에피소드는 화면을 쌓지 않고 바로 완료로 기록한다", () => {
-    const base = realCatalog[0] as ReadyEntry;
+    const base = realCatalog.find((entry) => entry.id === "u01-water") as ReadyEntry;
     const empty: ReadyEntry = { ...base, episode: { ...base.episode, prologue: [] } };
     const { wiring, dispatch, sink, setCatalogProgress } = harness({
       catalog: [empty],
-      finals: tutorialDone,
+      legacyPassed: true,
     });
 
     wiring.onStartCatalogCover("u01-water");
@@ -154,9 +154,47 @@ describe("onStartCatalogCover", () => {
   });
 });
 
+describe("튜토리얼(u00) 표지 이벤트", () => {
+  test("EV1. u00 표지 시작 · 컷 끝 · 건너뛰기 이벤트의 episodeId는 u00-tutorial이다 — 옛 통과 없이 열린다", () => {
+    const started = harness();
+    started.wiring.onStartCatalogCover("u00-tutorial");
+    expect(started.sink.mock.calls.map(([event]) => event)).toEqual([
+      { name: "episode_intro_viewed", episodeId: "u00-tutorial" },
+    ]);
+    expect(started.dispatch.mock.calls.map(([action]) => action)).toEqual([
+      { type: "push", screen: { name: "catalog-cover", episodeId: "u00-tutorial" } },
+    ]);
+
+    const finished = harness();
+    finished.wiring.onFinishCatalogCoverCuts("u00-tutorial");
+    expect(finished.sink.mock.calls.map(([event]) => event)).toEqual([
+      { name: "episode_prologue_completed", episodeId: "u00-tutorial", prologueKind: "cuts" },
+    ]);
+    const updater = finished.setCatalogProgress.mock.calls[0]?.[0] as (
+      p: CatalogProgress,
+    ) => CatalogProgress;
+    expect(updater({})).toEqual({ "u00-tutorial": ["intro"] });
+
+    const skipped = harness();
+    skipped.wiring.onSkipCatalogCover("u00-tutorial");
+    expect(skipped.sink.mock.calls.map(([event]) => event)).toEqual([
+      { name: "episode_intro_skipped", episodeId: "u00-tutorial" },
+    ]);
+  });
+
+  test("EV1. 게이트 입력 legacyTutorialPassed — 옛 통과면 u00 없이 u01 표지가 열리고 u02는 닫혀 있다", () => {
+    const passed = harness({ legacyPassed: true });
+    passed.wiring.onStartCatalogCover("u01-water");
+    passed.wiring.onStartCatalogCover("u02-checkin");
+    expect(passed.dispatch.mock.calls.map(([action]) => action)).toEqual([
+      { type: "push", screen: { name: "catalog-cover", episodeId: "u01-water" } },
+    ]);
+  });
+});
+
 describe("onFinishCatalogCoverCuts · onCloseCatalogCover", () => {
   test("CW3. 마지막 컷은 이벤트 → 진행 기록만 하고 이동하지 않으며, 배너가 닫히면 뒤로만 간다", () => {
-    const { wiring, dispatch, sink, setCatalogProgress } = harness({ finals: tutorialDone });
+    const { wiring, dispatch, sink, setCatalogProgress } = harness({ legacyPassed: true });
 
     wiring.onFinishCatalogCoverCuts("u01-water");
 
@@ -186,7 +224,7 @@ describe("onFinishCatalogCoverCuts · onCloseCatalogCover", () => {
 
 describe("onExitCatalogCover", () => {
   test("CW4. 나가기는 exited 이벤트 뒤에 뒤로만 가고 진행은 기록하지 않는다", () => {
-    const { wiring, dispatch, sink, setCatalogProgress } = harness({ finals: tutorialDone });
+    const { wiring, dispatch, sink, setCatalogProgress } = harness({ legacyPassed: true });
 
     wiring.onExitCatalogCover("u01-water", "prologue");
 
@@ -200,7 +238,7 @@ describe("onExitCatalogCover", () => {
   });
 
   test("CW10. 표지에서 나가면 stage intro로 내고 기록은 없다", () => {
-    const { wiring, dispatch, sink, setCatalogProgress } = harness({ finals: tutorialDone });
+    const { wiring, dispatch, sink, setCatalogProgress } = harness({ legacyPassed: true });
 
     wiring.onExitCatalogCover("u01-water", "intro");
 
@@ -214,7 +252,7 @@ describe("onExitCatalogCover", () => {
 
 describe("onSkipCatalogCover", () => {
   test("CW8. 이벤트 → 진행 기록 → 뒤로 순서이고 prologue_completed는 내지 않는다", () => {
-    const { wiring, dispatch, sink, setCatalogProgress } = harness({ finals: tutorialDone });
+    const { wiring, dispatch, sink, setCatalogProgress } = harness({ legacyPassed: true });
 
     wiring.onSkipCatalogCover("u01-water");
 
@@ -238,7 +276,7 @@ describe("onSkipCatalogCover", () => {
 describe("이미 끝낸 표지의 건너뛰기", () => {
   test("CW12. 표지를 이미 끝냈으면 skipped 이벤트도 진행 기록도 없이 뒤로만 간다", () => {
     const { wiring, dispatch, sink, setCatalogProgress } = harness({
-      finals: tutorialDone,
+      legacyPassed: true,
       progress: { "u01-water": ["intro", "S1"] },
     });
 
@@ -251,7 +289,7 @@ describe("이미 끝낸 표지의 건너뛰기", () => {
 
   test("CW13. 다른 에피소드만 끝냈으면 이 에피소드의 건너뛰기는 그대로 센다", () => {
     const { wiring, sink } = harness({
-      finals: tutorialDone,
+      legacyPassed: true,
       progress: { "u02-checkin": ["intro"] },
     });
 
@@ -265,7 +303,7 @@ describe("이미 끝낸 표지의 건너뛰기", () => {
 
 describe("onContinueCatalogCover", () => {
   test("CW9. 표지의 Next는 continued 이벤트만 낸다", () => {
-    const { wiring, dispatch, sink, setCatalogProgress } = harness({ finals: tutorialDone });
+    const { wiring, dispatch, sink, setCatalogProgress } = harness({ legacyPassed: true });
 
     wiring.onContinueCatalogCover("u01-water");
 
@@ -279,7 +317,7 @@ describe("onContinueCatalogCover", () => {
 
 describe("없앤 길", () => {
   test("CW11. onCompleteCatalogCover는 결선에 없다", () => {
-    const { wiring } = harness({ finals: tutorialDone });
+    const { wiring } = harness({ legacyPassed: true });
 
     expect("onCompleteCatalogCover" in wiring).toBe(false);
   });
@@ -347,7 +385,7 @@ describe("catalogEpilogueModelOf", () => {
   });
 
   test("CW-E1. 통과 뒤 컷이 없는 픽스처와 준비 안 된 항목과 없는 id는 null이다", () => {
-    const base = realCatalog[0] as ReadyEntry;
+    const base = realCatalog.find((entry) => entry.id === "u01-water") as ReadyEntry;
     const empty: ReadyEntry = { ...base, episode: { ...base.episode, epilogue: [] } };
     const withPending: readonly CatalogEntry[] = [
       ...realCatalog,
@@ -371,7 +409,7 @@ describe("catalogEpilogueModelOf", () => {
 
 describe("sink가 null일 때", () => {
   test("CW7. 어느 콜백도 던지지 않는다", () => {
-    const { wiring, dispatch } = harness({ finals: tutorialDone, sinkNull: true });
+    const { wiring, dispatch } = harness({ legacyPassed: true, sinkNull: true });
 
     expect(() => wiring.onStartCatalogCover("u01-water")).not.toThrow();
     expect(dispatch).toHaveBeenCalledWith({
