@@ -1,6 +1,6 @@
 # Android 앱 평점 요청 검증
 
-> ⟨2026-10-21 — [ADR-0079](../adr/0079-tutorial-as-catalog-episode.md)⟩ 이 흐름(Maestro `e2e/android-app-review.yaml`)이 쓰는 옛 튜토리얼 완료 · 설문 길은 지워졌다 — 설문 대상은 이제 u00(`u00-tutorial`)이다. 좌표를 u00 경로로 고치는 일은 e2e 단계에 남았고(Q5), 고치기 전까지 흐름은 깨진 상태다 — [튜토리얼 u00 e2e](tutorial-u00.md) 「Android Maestro 흐름 셋」.
+> ⟨2026-10-21 — [ADR-0080](../adr/0080-tutorial-as-catalog-episode.md)⟩ 이 흐름(Maestro `e2e/android-app-review.yaml`)이 쓰는 옛 튜토리얼 완료 · 설문 길은 지워졌다 — 설문 대상은 이제 u00(`u00-tutorial`)이다. 좌표를 u00 경로로 고치는 일은 e2e 단계에 남았고(Q5), 고치기 전까지 흐름은 깨진 상태다 — [튜토리얼 u00 e2e](tutorial-u00.md) 「Android Maestro 흐름 셋」.
 
 ## 범위
 

@@ -71,8 +71,8 @@
 
 ## 적용 기록 ⟨2026-10-21 — 튜토리얼 u00⟩
 
-결정은 [ADR-0079](0079-tutorial-as-catalog-episode.md) D7.
+결정은 [ADR-0080](0080-tutorial-as-catalog-episode.md) D7.
 
 - **D3 — 설문 대상은 튜토리얼 하나 그대로이고, 그 튜토리얼이 `u00-tutorial`이다**(`SURVEY_EPISODE_IDS`, 제목 `Tutorial`). u00의 완료 키를 모두 끝낸 순간 대기된다. 카탈로그 다른 에피소드로 넓히지 않았다.
-- 이벤트 `episode_survey_answered` · `_skipped`의 `episodeId`가 `tutorial` → `u00-tutorial`이다. 옛 설문 기억(`libitum.episode-survey.done`의 `tutorial`)은 id가 달라 이어지지 않는다 — 옛 튜토리얼 설문에 답한 사람도 u00을 끝내면 한 번 더 묻는다(ADR-0079 대가 4).
+- 이벤트 `episode_survey_answered` · `_skipped`의 `episodeId`가 `tutorial` → `u00-tutorial`이다. 옛 설문 기억(`libitum.episode-survey.done`의 `tutorial`)은 id가 달라 이어지지 않는다 — 옛 튜토리얼 설문에 답한 사람도 u00을 끝내면 한 번 더 묻는다(ADR-0080 대가 4).
 - D4(평점 요청 — 설문 5점 뒤)는 그대로다.

@@ -41,7 +41,7 @@ import org.junit.Test;
  *       {@code visualNovelProgress} / {@code finalProgress} = {@code true} - seed a v1 snapshot that
  *       carries only the old built-in tutorial's fields (steps, intro, messenger, phone call, visual
  *       novel). The map no longer has those items: it shows only catalog sections, the tutorial is
- *       the catalog episode {@code u00-tutorial} (Episode 0, see ADR-0079), and the app keeps these
+ *       the catalog episode {@code u00-tutorial} (Episode 0, see ADR-0080), and the app keeps these
  *       fields as a frozen legacy record. So with any of these seeds u00 starts from its beginning
  *       and Episode 1 stays locked, the same map as a user without progress.
  *   <li>{@code reviewProgress} / {@code completeProgress} = {@code true} - the same kind of seed, plus

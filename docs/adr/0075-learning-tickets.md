@@ -94,7 +94,7 @@
 
 ## 적용 기록 ⟨2026-10-21 — 튜토리얼 u00⟩
 
-결정은 [ADR-0079](0079-tutorial-as-catalog-episode.md) D8 — **사용자 결정**(2026-10-21, Q3).
+결정은 [ADR-0080](0080-tutorial-as-catalog-episode.md) D8 — **사용자 결정**(2026-10-21, Q3).
 
 - **D1 「새 레슨이 한 장을 쓴다」의 예외 — 튜토리얼 에피소드(`u00-tutorial`)는 쓰지 않는다.** `lib/catalog-ticket-cost.ts` `catalogUnitTicketCost(progress, episodeId, unitKey): 0 | 1`이 튜토리얼이거나 이미 끝낸 유닛이면 0을 낸다. 문지기(`app/ticket-wiring.ts` — `TicketStart` 첫 인자는 「티켓 없이 연다」로 읽는다)와 맵 말풍선(`CatalogUnitSheet` — 티켓 태그)이 같은 함수를 쓴다. u00의 최종 테스트도 무료다. 티켓은 Episode 1부터 쓴다.
 - 근거: u00은 레슨 · 문화 · 최종 14유닛이다(옛 튜토리얼은 스텝 8만 썼다). 규칙을 그대로 두면 새 사용자가 세 번째 레슨 뒤 막히고, 튜토리얼 → Episode 1 전환 지표가 티켓 효과와 섞인다.

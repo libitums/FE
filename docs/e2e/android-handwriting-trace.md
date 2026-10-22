@@ -1,6 +1,6 @@
 # Android 손글씨 안내·판정 검증
 
-> ⟨2026-10-21 — [ADR-0079](../adr/0079-tutorial-as-catalog-episode.md) D13⟩ **제품의 손글씨 따라쓰기(`WritingScreen` · 최종 테스트 쓰기 패널 · `WritingCanvas` 등)와 Maestro 흐름(`e2e/android-handwriting-trace.yaml` · `devtools/android-maestro/run-handwriting-trace.sh` · 루트 `test:e2e:android:handwriting`)을 지웠다.** 호스트 모듈 `HandwritingTraceModule`은 남았고 개발 탐침([손글씨 탐침](handwriting-probe.md))이 쓴다 — 아래 계측(`HandwritingTraceModuleTest`)은 그대로 실행할 수 있다. `Trace One Letter`를 여는 Maestro 단계는 기록이다.
+> ⟨2026-10-21 — [ADR-0080](../adr/0080-tutorial-as-catalog-episode.md) D13⟩ **제품의 손글씨 따라쓰기(`WritingScreen` · 최종 테스트 쓰기 패널 · `WritingCanvas` 등)와 Maestro 흐름(`e2e/android-handwriting-trace.yaml` · `devtools/android-maestro/run-handwriting-trace.sh` · 루트 `test:e2e:android:handwriting`)을 지웠다.** 호스트 모듈 `HandwritingTraceModule`은 남았고 개발 탐침([손글씨 탐침](handwriting-probe.md))이 쓴다 — 아래 계측(`HandwritingTraceModuleTest`)은 그대로 실행할 수 있다. `Trace One Letter`를 여는 Maestro 단계는 기록이다.
 
 ## 범위
 

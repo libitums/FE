@@ -375,8 +375,8 @@ SwiftShader에서도 앱 안의 값은 그대로였다 — 「앱이 늦게 바�
 
 ## 적용 기록 ⟨2026-10-21 — 튜토리얼 u00⟩
 
-결정은 [ADR-0079](0079-tutorial-as-catalog-episode.md) D13. D1 ~ D8의 결정 문장은 그대로다.
+결정은 [ADR-0080](0080-tutorial-as-catalog-episode.md) D13. D1 ~ D8의 결정 문장은 그대로다.
 
 - **등록부에서 뺐다** — `fullBleedRoutes`의 `episode-intro` · `episode-prologue` · `episode-final` · `visual-novel` · `roleplay-visual-novel`, `componentFiles`의 `EpisodeNarrativeScreen` · `EpisodeFinalScreen` · `VisualNovelScreen`, `fixedLayers` carriers의 `FirstUnitGuide`(표지 화면 안의 이야기 · 메신저 · 통화 안내). 그 화면 · 컴포넌트가 지워졌다(`devtools/android-bundle/host-status-bar-icons.mjs`).
-- 첫 유닛 안내의 맵 가림막(`first-unit-guide-map`)은 그대로 서고, 이제 u00 표지를 들어 올린다(ADR-0079 D6).
+- 첫 유닛 안내의 맵 가림막(`first-unit-guide-map`)은 그대로 서고, 이제 u00 표지를 들어 올린다(ADR-0080 D6).
 - 위 적용 기록 2026-10-09의 「메신저 · 전화 · 비주얼 노벨 위의 안내」 표면은 사라졌다.

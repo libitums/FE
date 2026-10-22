@@ -3,7 +3,7 @@
 ## 실행 조건
 
 - 상태: 부분 측정 — 번들 · 정적 이미지 크기를 이 브랜치와 `origin/main`에서 같은 설정으로 재고, 첫 실행 맵 표시를 플레이그라운드 회차에서 관찰했습니다. 렌더링 · 메모리 캡처(`performance:capture`)는 돌리지 않았습니다.
-- 기능 PR: 튜토리얼을 카탈로그 에피소드 u00으로([ADR-0079](../../adr/0079-tutorial-as-catalog-episode.md), 이 보고서와 같은 PR)
+- 기능 PR: 튜토리얼을 카탈로그 에피소드 u00으로([ADR-0080](../../adr/0080-tutorial-as-catalog-episode.md), 이 보고서와 같은 PR)
 - 대상 commit: `feat/tutorial-u00`의 `3658bfd8`(번들 · 이미지 · 화면 관찰 모두). 비교 기준은 `origin/main` `83d0fa30`(#290, 이 브랜치가 갈라진 commit과 같음)입니다.
 - 기기: iPhone 13 mini 시뮬레이터(375×812 pt, 안전 영역 위 50 · 아래 34)
 - OS: iOS 26.5

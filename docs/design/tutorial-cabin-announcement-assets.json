@@ -1,5 +1,5 @@
 {
-  "status": "ADR-0079 (2026-10-21): 이 자산을 쓰던 옛 튜토리얼 프롤로그는 지워졌다. 파일은 호스트 테스트 고정물로만 남는다 — 제품이 쓰는 곳 0.",
+  "status": "ADR-0080 (2026-10-21): 이 자산을 쓰던 옛 튜토리얼 프롤로그는 지워졌다. 파일은 호스트 테스트 고정물로만 남는다 — 제품이 쓰는 곳 0.",
   "selected_by_user": "B — cabin speaker",
   "asset": "apps/ios/Host/audio/tutorial-cabin-announcement.m4a",
   "asset_sha256": "9b439e1942b24a3c677bad383a1e60aeb039b58a458c513d064ecea86a85291d",

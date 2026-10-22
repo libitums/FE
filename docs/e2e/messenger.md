@@ -1,6 +1,6 @@
 # LIB-254 약속 확인 메신저 — iOS 수동 e2e
 
-> ⟨2026-10-21⟩ **대체됨 — [ADR-0079](../adr/0079-tutorial-as-catalog-episode.md).** 약속 확인 메신저 화면 · 데이터 · 롤플레이 route가 지워졌다(D10). 자판(`MessengerKeyboard`)만 카탈로그 타자 입력이 쓰려고 남았다 — [자판 바닥 붙이기 e2e](keyboard-dock.md). 이 문서는 기록이고 실행할 수 없다.
+> ⟨2026-10-21⟩ **대체됨 — [ADR-0080](../adr/0080-tutorial-as-catalog-episode.md).** 약속 확인 메신저 화면 · 데이터 · 롤플레이 route가 지워졌다(D10). 자판(`MessengerKeyboard`)만 카탈로그 타자 입력이 쓰려고 남았다 — [자판 바닥 붙이기 e2e](keyboard-dock.md). 이 문서는 기록이고 실행할 수 없다.
 
 ## 2026-09-30 이후 재진입 기준
 

@@ -145,7 +145,7 @@ Play Console 비공개 테스트에 올린 AAB를 실기에서 열자 효과음 
 
 ## 적용 기록 ⟨2026-10-21 — 튜토리얼 u00⟩
 
-결정은 [ADR-0079](0079-tutorial-as-catalog-episode.md) D12 · D13. D1 ~ D4는 그대로다.
+결정은 [ADR-0080](0080-tutorial-as-catalog-episode.md) D12 · D13. D1 ~ D4는 그대로다.
 
 - **결선되는 대사 음성이 21 → 3개다** — 옛 튜토리얼 · 전화 음성 18을 원본(`apps/ios/Host/audio`)에서 지웠다. 남은 셋은 호스트 테스트 고정물(`greeting-1` · `ordering-2` · `tutorial-cabin-announcement`)이고 제품이 쓰는 내장 음성은 0이다. 이 문서의 「21개」는 그때의 값이다.
 - `build.gradle`(폴더째 복사 · `hasFiles` 가드)은 바뀌지 않았다 — `.m4a`가 남아 D2의 「원본에 하나 이상」 검사를 통과한다. androidTest `AudioPlaybackModuleTest`의 목록은 그 셋이다.

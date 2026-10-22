@@ -1,6 +1,6 @@
 # Android 출시 설정 (Play Console 앱에 맞춤 · 16 KB 페이지)
 
-> ⟨2026-10-21 — [ADR-0079](../adr/0079-tutorial-as-catalog-episode.md)⟩ 옛 튜토리얼(고정 목록 · 스텝 · 프롤로그 · 최종 스토리 · 손글씨)과 메신저 · 전화 · 비주얼 노벨 화면이 지워졌다. 이 문서에서 그 화면을 단계로 쓰는 절은 **더 실행할 수 없다 — 기록으로 남긴다.** 튜토리얼은 이제 카탈로그 에피소드 `u00-tutorial`(맵 첫 구획 `Episode 0.`)이고 절차는 [튜토리얼 u00 e2e](tutorial-u00.md)다.
+> ⟨2026-10-21 — [ADR-0080](../adr/0080-tutorial-as-catalog-episode.md)⟩ 옛 튜토리얼(고정 목록 · 스텝 · 프롤로그 · 최종 스토리 · 손글씨)과 메신저 · 전화 · 비주얼 노벨 화면이 지워졌다. 이 문서에서 그 화면을 단계로 쓰는 절은 **더 실행할 수 없다 — 기록으로 남긴다.** 튜토리얼은 이제 카탈로그 에피소드 `u00-tutorial`(맵 첫 구획 `Episode 0.`)이고 절차는 [튜토리얼 u00 e2e](tutorial-u00.md)다.
 
 Android 출시 설정이 Play Console에 등록된 앱에 맞게 바뀌었는지를 **Play가 기기에 내려주는 것과 같은 형태**(AAB → bundletool 분할 설치)로 확인한다.
 바뀐 것: 패키지 `com.libitum.host` → `libitum.duru.android`(Java `namespace`는 `com.libitum.host` 그대로) · `compileSdk`/`targetSdk` 36 · `versionCode` 2 ·

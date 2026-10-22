@@ -415,7 +415,7 @@ ADR-0016은 `대체됨`이 아니다. D9의 결정(겹침 뒤쪽을 `accessibili
 
 ## 적용 기록 ⟨2026-10-21 — 튜토리얼 u00⟩
 
-결정은 [ADR-0079](0079-tutorial-as-catalog-episode.md) D10 · D13.
+결정은 [ADR-0080](0080-tutorial-as-catalog-episode.md) D10 · D13.
 
 - **안내 종류가 여섯 → 하나**(`sentence-order`)다 — 메신저 · 전화 · 비주얼 노벨 · 말하기 · 쓰기 화면이 지워져 그 종류 · 판정 갈래 · 문구(`ui-copy-en-learning.ts`)를 함께 지웠다(`LearningItemGuideKind = "sentence-order"`). 남은 하나는 카탈로그 레슨의 문장 만들기(`SentenceOrderActivity`)가 띄운다.
 - 맥락 2 · U6의 「튜토리얼의 문항」은 옛 튜토리얼의 것이다 — 튜토리얼 u00은 다른 에피소드와 같은 카탈로그 문항이다. 「새 사용자는 튜토리얼에서 안내를 열 번」도 그때의 수다.

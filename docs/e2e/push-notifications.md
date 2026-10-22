@@ -1,6 +1,6 @@
 # 서버 푸시 알림 — iOS 수동 e2e
 
-> ⟨2026-10-21 — [ADR-0079](../adr/0079-tutorial-as-catalog-episode.md) D11⟩ 푸시의 특별 유닛 목적지(`messenger` · `phone-call` · `visual-novel`)는 그 화면이 지워져 앱이 **`journey-map`으로 읽는다**(서버 send-push 무변경). 그 목적지로 화면이 열리는 판정은 「맵이 선다」로 읽는다.
+> ⟨2026-10-21 — [ADR-0080](../adr/0080-tutorial-as-catalog-episode.md) D11⟩ 푸시의 특별 유닛 목적지(`messenger` · `phone-call` · `visual-novel`)는 그 화면이 지워져 앱이 **`journey-map`으로 읽는다**(서버 send-push 무변경). 그 목적지로 화면이 열리는 판정은 「맵이 선다」로 읽는다.
 
 결정과 근거는 [ADR-0034](../adr/0034-server-push-notifications.md)다. 자동 계층(unit · ui · integration)이 지는 것은
 권한 · 토큰 응답의 해석, 목적지 검증, 등록 · 해제 요청, 누른 알림의 화면 전환이고(`App.push.integration.test.tsx` IP1~IP6),
