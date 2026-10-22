@@ -24,7 +24,11 @@ export function SentenceOrderListenHeader({
       className="sentence-order-header sentence-order-header-listen"
       data-testid="sentence-order-header"
     >
-      <ListenControls.Playback control={control} testId="sentence-order-listen-playback" />
+      <ListenControls.Playback
+        control={control}
+        testId="sentence-order-listen-playback"
+        variant="brand"
+      />
       <view className="sentence-order-header-side">
         {romanization === null ? null : (
           <TextRoles.Romanization

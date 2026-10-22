@@ -31,6 +31,11 @@ export type ListenControlPartProps = {
   readonly testId: string;
 };
 
+export type ListenPlaybackPartProps = ListenControlPartProps & {
+  /** 재생 단추의 색 갈래입니다. 기본은 neutral이고, 듣고 조립(S7) 머리만 brand를 씁니다. */
+  readonly variant?: "neutral" | "brand";
+};
+
 // 바깥 상자는 testid만 갖고 이름 · 탭은 안쪽 `RoundButton`이 집니다(스크린 리더가 읽는 요소와 같음).
 function ReplayPart({ control, testId }: ListenControlPartProps): ReactNode {
   const copy = useUiCopy();
@@ -47,7 +52,7 @@ function ReplayPart({ control, testId }: ListenControlPartProps): ReactNode {
   );
 }
 
-function PlaybackPart({ control, testId }: ListenControlPartProps): ReactNode {
+function PlaybackPart({ control, testId, variant = "neutral" }: ListenPlaybackPartProps): ReactNode {
   const copy = useUiCopy();
   const action = playbackActionFor(control.playback);
   return (
@@ -55,7 +60,7 @@ function PlaybackPart({ control, testId }: ListenControlPartProps): ReactNode {
       <RoundButton
         accessibilityLabel={copy.listening.playback[action]}
         icon={playbackIconByAction[action]}
-        variant="neutral"
+        variant={variant}
         size="xl"
         bindtap={control.toggle}
       />
