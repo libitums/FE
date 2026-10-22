@@ -5,10 +5,12 @@
   **e2e는 iPhone 13 mini 시뮬레이터 한 회차(부분)** — EU2 · EU4 · EU8과 EU1 일부를 봤고, 거기서 나온 iOS 결함 셋(흐름 안 `Check` 넘침 · 빈칸 밑줄 색 · 그림 위 모서리)을 고친 뒤 같은 시뮬레이터에서 다시 봤다(D18 · 재검토 조건 6 · D8 ~ D11).
   ⟨2026-10-22, 최종 HEAD⟩ 캔버스 대조(EU1 — 불일치 둘 기록) · regular 기기(EU3 — iPhone 15 시뮬레이터 통과) · 큰 글꼴(EU9 — 13 mini 통과)을 더 봤다.
   Android · 스크린리더 · 아바타 그림 · 세 구간 시간(EU1-A · EU5 ~ EU7 · EU8 Android)은 미실행이며 사용자 결정(2026-10-22)으로 후속에 둔다 — [학습 문항 리디자인 e2e](../e2e/lesson-redesign.md) 「결과」.
+  ⟨2026-10-23⟩ 사용자 결정 D-F1로 EU3 iPhone 16 Pro Max · 답한 뒤 상태(보통 크기), EU9 큰 글자 `S11` · u01 ~ u03 문화 확인 질문 카드, `S5` · `S8` 답한 뒤 상태(음성 인식 필요)도 후속이다. 큰 글자 `S8` 아래 버튼 행의 `Speak` 잘림은 이 변경에서 고쳤다(D-F2 · D18).
   성능 보고서는 [부분 측정 01](../performance/reports/lesson-redesign-iphone-13-mini-simulator-01.md)(번들 증가량 · 13 mini 화면별 높이)이고 렌더 · 프레임 · 메모리 · 세 구간 시간은 미측정이다(「미확인 · 후속」 1).
   접근성 감사(코드 · CSS · 토큰 대비, 기기 청취 없음)의 지적을 반영했다(D15 · D18 · D19).
 - 날짜: 2026-10-22.
-- **사용자 결정**(2026-10-22, 마무리): ① 문화 확인(`CULTURE_CHECK`, S13 등) 문항의 세션 머리 학습형 이름표는 `Word choice`가 아니라 **`Culture quiz`**(다른 낱말 고르기는 `Word choice` 그대로, 문구는 영어 문구표 키). ② 듣기 `RoundButton` neutral 아이콘의 회색(`fg-neutral-subtle`)은 디자인 시스템대로 유지 — 캔버스와의 차이는 의도적이다. ③ EU5(VoiceOver · TalkBack 청취) · EU7(실기 Release 세 구간 시간) · Android 회차(EU1-A · EU8)는 후속으로 미루고 병합한다.
+- **사용자 결정**(2026-10-22, 마무리): ① 문화 확인(`CULTURE_CHECK`, S13 등) 문항의 세션 머리 학습형 이름표는 `Word choice`가 아니라 **`Culture quiz`**(다른 낱말 고르기는 `Word choice` 그대로, 문구는 영어 문구표 키). ② 듣기 `RoundButton` neutral 아이콘의 회색(`fg-neutral-subtle`)은 디자인 시스템대로 유지 — 캔버스와의 차이는 의도적이다. ③ EU5(VoiceOver · TalkBack 청취) · EU7(실기 Release 세 구간 시간) · Android 회차(EU1-A · EU8)는 후속으로 미루고 병합한다. ⟨2026-10-23, D-F1⟩ 후속 목록에 EU3 iPhone 16 Pro Max · 답한 뒤 상태(보통 크기) · EU9 큰 글자 `S11` · u01 ~ u03 문화 확인 질문 카드 · `S5` · `S8` 답한 뒤 상태(음성 인식 필요) · EU6 아바타 그림(버킷 업로드 뒤)을 더한다.
+- **사용자 결정**(2026-10-23, 리뷰 반영): **D-F1** 위 ③의 후속 목록 — EU1-A · EU3(16 Pro Max · 답한 뒤) · EU5 · EU6 · EU7 · EU8 Android · EU9(`S11` · u01 ~ u03 문화 확인 질문 카드) · `S5` · `S8` 답한 뒤. **D-F2** 큰 글자 `S8` 아래 버튼 행의 `Speak` 잘림(`See results` 281 pt · `Speak` 48 pt — [ADR-0020](0020-dynamic-type-font-scale.md) 결정 5 위반)은 **이 변경에서 고친다**(D18). **D-F3** 앱 번들 +54 kB(spec 예측 상단의 약 2.5배)는 화면별 분해 없이 수용한다 — 상한 2,387,000 안(「대가」 8).
 - **사용자 결정**(2026-10-22): 시안은 Design 캔버스 셋째 ~ 다섯째 줄 수정안(S12 제외) · ui-lynx `OptionSelector`에 새 variant `outlined-subtle` · 아래 그림자 버튼 금지 ·
   S13 답한 뒤 **고른 보기만 남긴다**(고르지 않은 보기 · 장면 그림은 접힘) · TURN_ORDER 내 칸 · 내 조각은 **`brand-primary`**(시안 색 — 흰 글씨 대비 3.02, 「대가」 1) · 조각 안 뜻 줄은 흰색 ·
   **긴 콘텐츠 몇 문항은 13 mini에서 한 번 스크롤을 허용**(「대가」 2) · 아바타는 에피소드마다 그 에피소드 인물(통일하지 않음 — 콘텐츠 몫) · S13 장면 5:2 · S5 정답 로마자도 글 역할 규칙 ·
@@ -149,6 +151,8 @@
   `actionButton`은 요소 또는 함수를 받는다 — 함수면 셸의 아래 버튼 동작(누름 소리 · 합친 흐름 맨 위로 · `onAction`)을 받아 그 버튼에 건다.
 - **아래 버튼 행의 하한 높이는 56이다**(버튼 높이와 같은 값 — 떠 있을 때도 흐름 안에 설 때도). iOS Lynx가 ui-lynx `Button`이 든 행의 높이를 배치에서 0으로 세어, 떠 있는 행은 `bottom`이 높이 0 기준이 되고 흐름 안의 행은 위 `flex: 1` 스크롤이 행 몫까지 차지했다 —
   13 mini 시뮬레이터에서 줄 배치 `Check`의 아래 끝이 안전 영역 경계 778을 27.6 ~ 27.9 pt 넘었다 [실측 — [성능 보고서 01](../performance/reports/lesson-redesign-iphone-13-mini-simulator-01.md)]. 하한을 준 뒤 같은 화면(S7 · S11 · u01 문장 조립)의 `Check`가 셸 버튼 자리 698 ~ 754에 선다 [실측 — 시뮬레이터 재확인]. 큰 글자에서는 내용이 하한을 넘어 자란다(ADR-0020 결정 5).
+- **보조 버튼과 짝인 아래 버튼 행은 넘치면 위아래로 쌓인다**(사용자 결정 D-F2, 2026-10-23). 말하기 화면(`S8` 따라 읽기 · `S5` 낱말 말하기)은 `secondaryAction`(`Skip` · `Next` · `See results` · `Try again`)을 주 버튼 앞에 둔다. 보조 버튼은 내용 폭을 지키고(`flex-shrink: 0`) 주 버튼은 기준 폭 0으로 남는 폭을 채워, 큰 글자에서 `See results`가 281 pt로 넓어지면 `Speak`가 48 pt로 줄어 글자가 잘렸다 [실측 — 13 mini, `accessibility-extra-extra-extra-large`].
+  셸이 `secondaryAction`이 있는 행에만 `learning-shell-actions-paired`를 붙이고, 그 행은 `flex-wrap: wrap` · 주 버튼 기준 폭 `auto` · `justify-content: center`다. 한 줄에 들면(보통 크기) 모양이 그대로이고(13 mini `S8` · `S5` 버튼 행 696 ~ 754, 이전 회차와 픽셀 같음), 넘치면 보조 버튼이 내용 폭으로 가운데에 서고 주 버튼이 그 아래 전체 폭으로 선다(`S8` 큰 글자: `See results` 536.7 ~ 638.4 · `Speak` 654.3 ~ 754, 343 pt). 보조 버튼이 없는 다른 화면의 행은 바뀌지 않는다.
 
 ### D19. 접근성
 
@@ -160,6 +164,8 @@
 - **판정 뒤 가린 지시문 `<text>`는 `accessibility-element={false}`** — 가림 속성(`accessibility-elements-hidden`)은 자손에만 들어 잎 `<text>`에는 무동작이다(ADR-0016 D5). 가리지 않을 때는 속성을 넘기지 않는다.
 - 낭독 제외: 아바타 · 장식 장면 그림. 구분선은 자식 없는 view라 처음부터 정지점이 아니다 — 가림 속성을 붙이지 않는다. 그림 문항(S3)의 그림 이름 `Picture: <뜻>`은 그대로.
 - **RoundButton brand 아이콘은 `brand-primary`를 유지한다(사용자 결정, 2026-10-22) — S7 재생 단추 포함.** 면(`gray-100`) 위 `brand-primary`는 2.84로 비텍스트 3:1(WCAG 1.4.11)에 못 미치지만 수용하며, 별도 과제로 둔다. ui-lynx `RoundButton`의 FE override(2026-09-21)는 그대로다.
+- **빈칸 없는 질문 카드 제시문은 보이는 글자가 이름이다**(접근성 리뷰 반영, 2026-10-22 · 86759d8a). 빈칸이 있는 제시문만 빈칸을 말로 푼 문장을 낭독 이름으로 두고 없으면 이름 속성을 비워 두었는데, 시뮬레이터 접근성 트리에서 `S9` · `S10` · `S13`의 제시문 · 로마자 줄 이름이 빈 값으로 잡혔다(호스트가 빈 이름을 붙임). 빈칸이 없으면 **보이는 글자를 그대로 이름으로** 주고, 로마자 줄은 `Pronunciation: <로마자>` 접두 이름을 늘 진다(UBL2).
+  13 mini 접근성 트리(2026-10-23): `S9` 제시문 「오, 한국어 잘하시네요!」 · 로마자 `Pronunciation: o, hangugeo jalhasineyo!`, `S10` 제시문 「안녕하세요! 한국은 처음이세요?」 · 로마자 `Pronunciation: annyeonghaseyo! hangugeun cheoeumiseyo?` — 빈 이름 없음.
 - 판정 낭독은 지금 규칙(화면마다 한 번) — 배지 자리만 옮겼다. 정답 노출 방지: `MIN_PAIR_AB` · `WORD_ORDER`는 답 전 로마자 없음, 그림 문항 낭독에 한글 없음.
 
 ### 측정
@@ -206,6 +212,7 @@
 7. **`meaning` · `annotation`은 design-system 확장 규칙 3과 어긋나는 FE 확장이다** — 기록하고 보고한다(D5 · 버린 대안 5).
 8. **번들** — 최종 HEAD(e354c3b0)를 `.env.local` 없는 같은 설정(`pnpm build && pnpm size:check`)으로 잰 앱 `main.lynx.bundle`은 기준 49dc553e 2,103,053 → **2,157,080 bytes(+54,027)** 이고 상한 2,385,000 안이라 올리지 않았다. ui-lynx `dist`는 528,482 → **548,402 bytes(+19,920)**, 상한 530,000 → 549,000(OptionSelector · ChatBubble 확장 — 사용자 사전 승인 규칙, 여유 598). 729e574b 때 실측(앱 +50,004 · ui-lynx +19,418) 뒤 접근성 반영 · 기기 결함 수정이 앱 +4,023 · ui-lynx +502를 더했다. 새 의존성 · 미디어 없음. ⟨2026-10-22 — main e1349c2c 위로 옮긴 뒤⟩ 같은 설정 실측은 앱 **2,189,617 bytes**(main 상한 2,387,000 안 — 올리지 않음), ui-lynx **552,011 bytes**(main 실측 532,091 + 이 변경 19,920) — 상한 534,000 → **554,000**(kB 올림 + 1 kB, 사용자 사전 승인).
    **spec 예측(+14 ~ 22 kB)보다 크다** — 729e574b의 +50 kB는 예측 상단의 약 2.3배, 최종 +54 kB는 약 2.5배다. 몫은 로직 · ui-lynx 단계 +21.5 kB와 화면 · 결선 단계 +28.1 kB로 둘 다 예측을 넘었고, 어느 화면이 얼마인지는 재지 않았다(커밋 단위 몫). 나눔은 [성능 보고서 01](../performance/reports/lesson-redesign-iphone-13-mini-simulator-01.md) 「번들」.
+   **사용자 결정 D-F3(2026-10-23)으로 이 증가를 화면별 분해 없이 수용한다** — 앱 상한 2,387,000 안이고 상한을 올리지 않는다. 큰 글자 버튼 행 고침(D-F2)은 CSS 규칙 둘 · 클래스 하나라 증가량을 바꾸지 않는 크기다.
 9. **기존 ui · integration 단언이 대량으로 바뀌었다** — 보기 testid가 `ui-lynx-option-selector-item-choice-<i>`로 바뀌고 판정 칸 · 옛 보기 파일 셋이 지워졌다.
 10. **RoundButton brand 아이콘(`S7` 재생 단추 포함)이 회색 면(`gray-100`) 위 `brand-primary`로 2.84다 — WCAG 1.4.11 비텍스트 3:1 미달(사용자 수용, 2026-10-22).** 접근성 감사는 `fg-brand`(짙은 주황)를 권했으나 사용자가 시안 색을 유지했다(D19). 단추는 이름(`Play` 등)과 원형 면 전체로 식별된다. 고치려면 ui-lynx `RoundButton` FE override(2026-09-21)를 함께 바꿔야 해 별도 과제로 둔다.
 
@@ -221,7 +228,8 @@
 ## 미확인 · 후속
 
 1. **성능 — 세 구간 시간(EU7, 사용자 결정으로 후속, 2026-10-22)** — [성능 보고서 01](../performance/reports/lesson-redesign-iphone-13-mini-simulator-01.md)은 번들 증가량 · 13 mini 화면별 높이만 쟀다. 남은 것: 실제 13 mini 기기 Release 빌드 baseline(49dc553e) / candidate 각 3회 — 레슨 시작 → 첫 문항 첫 그리기(u00 S2 · S7 · S13, 회귀 ≤ 10 %) · 보기 탭 → 판정 배지(≤ 100 ms) · S13 보기 탭 → 해설 판(≤ 150 ms), 렌더 · 프레임 · 메모리(e2e EU7).
-2. **남은 기기 확인(사용자 결정으로 후속, 2026-10-22)** — [학습 문항 리디자인 e2e](../e2e/lesson-redesign.md) 「결과」의 미실행 항목: Android(EU1-A · EU8) · VoiceOver · TalkBack 청취(EU5 — 해설 판 → `Continue` 도달, 판정 뒤 지시문 미낭독, `Check` → `Next` 초점 유지 포함) · 아바타 그림(EU6). ⟨2026-10-22⟩ 캔버스 대조(EU1) · regular 기기(EU3, iPhone 15 시뮬레이터) · 큰 글꼴(EU9, 해설 판 글 스크롤과 `Continue` 화면 안)은 최종 HEAD에서 실행했다 — EU3 · EU9 통과, EU1의 불일치 둘 중 `S13` 머리 학습형 이름은 `Culture quiz`로 고쳤고(사용자 결정 3), neutral 듣기 아이콘 회색은 디자인 시스템대로 둔다(사용자 결정 2).
-3. **아바타 그림 업로드와 JSON 갱신** — 사용자(256×256 WebP 준비 중). 순서는 [콘텐츠 계약](../specs/episode-content-json-contract.md) §13 규칙 4.
-4. **design-system 보고** — `outlined-subtle` 상태 대비(기본 테두리 1.15) · `meaning` · Feedback 축 · ChatBubble `annotation`.
-5. GitHub wiki 이벤트 사전(`episode_item_answered`)은 저장소 밖이라 따로 고친다.
+2. **남은 기기 확인(사용자 결정으로 후속, 2026-10-22)** — [학습 문항 리디자인 e2e](../e2e/lesson-redesign.md) 「결과」의 미실행 항목: Android(EU1-A · EU8) · VoiceOver · TalkBack 청취(EU5 — 해설 판 → `Continue` 도달, 판정 뒤 지시문 미낭독, `Check` → `Next` 초점 유지 포함) · 아바타 그림(EU6 — 버킷 업로드 뒤). ⟨2026-10-23, 사용자 결정 D-F1⟩ EU3 iPhone 16 Pro Max · 답한 뒤 상태(보통 크기), EU9 큰 글자 `S11` · u01 ~ u03 문화 확인 질문 카드, `S5` · `S8` 답한 뒤 상태(음성 인식 필요)도 후속이다. ⟨2026-10-22⟩ 캔버스 대조(EU1) · regular 기기(EU3, iPhone 15 시뮬레이터) · 큰 글꼴(EU9, 해설 판 글 스크롤과 `Continue` 화면 안)은 최종 HEAD에서 실행했다 — EU3 · EU9 통과, EU1의 불일치 둘 중 `S13` 머리 학습형 이름은 `Culture quiz`로 고쳤고(사용자 결정 3), neutral 듣기 아이콘 회색은 디자인 시스템대로 둔다(사용자 결정 2).
+3. **큰 글자 `S8` 아래 버튼 행 `Speak` 잘림 — 고침**(사용자 결정 D-F2, 2026-10-23). 리베이스 재확인 회차의 관찰이었고, 보조 버튼과 짝인 행이 넘치면 위아래로 쌓이게 했다(D18). 13 mini 큰 글자 `S8`에서 `Speak`가 전체 폭 343 pt로 서고, `S5`는 한 줄에 들어 잘림이 없다. 보통 크기 버튼 행은 이전과 같다.
+4. **아바타 그림 업로드와 JSON 갱신** — 사용자(256×256 WebP 준비 중). 순서는 [콘텐츠 계약](../specs/episode-content-json-contract.md) §13 규칙 4.
+5. **design-system 보고** — `outlined-subtle` 상태 대비(기본 테두리 1.15) · `meaning` · Feedback 축 · ChatBubble `annotation`.
+6. GitHub wiki 이벤트 사전(`episode_item_answered`)은 저장소 밖이라 따로 고친다.
