@@ -157,7 +157,7 @@
 - **`Check` → `Next` · `See results`에서 초점이 남는다** — 같은 자리의 같은 ui-lynx `Button` 요소라 이름만 바뀌어 스크린리더가 새 이름을 다시 읽는다(D12 · D18).
 - **판정 뒤 가린 지시문 `<text>`는 `accessibility-element={false}`** — 가림 속성(`accessibility-elements-hidden`)은 자손에만 들어 잎 `<text>`에는 무동작이다(ADR-0016 D5). 가리지 않을 때는 속성을 넘기지 않는다.
 - 낭독 제외: 아바타 · 장식 장면 그림. 구분선은 자식 없는 view라 처음부터 정지점이 아니다 — 가림 속성을 붙이지 않는다. 그림 문항(S3)의 그림 이름 `Picture: <뜻>`은 그대로.
-- **S7 재생 단추 아이콘은 `fg-brand`다** — 면(`gray-100`) 위 `brand-primary`는 2.84로 비텍스트 3:1에 못 미쳤다. ui-lynx `RoundButton`의 FE override(2026-09-21 — brand 아이콘 = `brand-primary`)를 걷어 정본 `fg.brand`(5.14)로 되돌렸으므로 **brand `RoundButton`을 쓰는 다른 화면의 아이콘도 함께 `fg-brand`가 된다.**
+- **RoundButton brand 아이콘은 `brand-primary`를 유지한다(사용자 결정, 2026-10-22) — S7 재생 단추 포함.** 면(`gray-100`) 위 `brand-primary`는 2.84로 비텍스트 3:1(WCAG 1.4.11)에 못 미치지만 수용하며, 별도 과제로 둔다. ui-lynx `RoundButton`의 FE override(2026-09-21)는 그대로다.
 - 판정 낭독은 지금 규칙(화면마다 한 번) — 배지 자리만 옮겼다. 정답 노출 방지: `MIN_PAIR_AB` · `WORD_ORDER`는 답 전 로마자 없음, 그림 문항 낭독에 한글 없음.
 
 ### 측정
