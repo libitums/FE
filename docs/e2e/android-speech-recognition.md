@@ -1,6 +1,6 @@
 # Android 음성 인식 호스트 검증
 
-> ⟨2026-10-21 — [ADR-0081](../adr/0081-tutorial-as-catalog-episode.md)⟩ 이 흐름(Maestro `e2e/android-speech-recognition.yaml`)이 쓰는 옛 튜토리얼 말하기 스텝(`speaking` route)은 지워졌다. 좌표를 u00 `S5` 경로로 고치는 일은 e2e 단계에 남았고(Q5), 고치기 전까지 흐름은 깨진 상태다 — [튜토리얼 u00 e2e](tutorial-u00.md) 「Android Maestro 흐름 셋」.
+> ⟨2026-10-21 — [ADR-0081](../adr/0081-tutorial-as-catalog-episode.md)⟩ 이 흐름(Maestro `e2e/android-speech-recognition.yaml`)이 쓰는 옛 튜토리얼 말하기 스텝(`speaking` route)은 지워졌다. 좌표는 사용자 결정 D-B(2026-10-22)로 후속 작업에서 u00 `S5` 경로로 고치고, 고치기 전까지 흐름은 깨진 상태다 — [튜토리얼 u00 e2e](tutorial-u00.md) 「Android Maestro 흐름 셋」.
 
 ## 범위와 계약
 
