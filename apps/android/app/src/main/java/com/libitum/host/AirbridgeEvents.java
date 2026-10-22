@@ -1,6 +1,7 @@
 package com.libitum.host;
 
 import android.app.Application;
+import android.content.Intent;
 import co.ab180.airbridge.Airbridge;
 import co.ab180.airbridge.AirbridgeOption;
 import co.ab180.airbridge.AirbridgeOptionBuilder;
@@ -20,13 +21,14 @@ final class AirbridgeEvents {
   static boolean start(Application app, AirbridgeEventsConfig config) {
     if (config == null) return false;
     try {
-      // 딥링크는 범위 밖이다(ADR-0063). Android SDK에는 클립보드 옵션이 없다.
+      // Meta 지연 앱 링크는 쓰지 않는다(ADR-0063 D5). Airbridge 딥링크 · 지연 딥링크는 ADR-0080.
       AirbridgeOption option =
           new AirbridgeOptionBuilder(config.appName(), config.sdkToken())
               .setTrackMetaDeferredAppLinkEnabled(false)
               .build();
       Airbridge.initializeSDK(app, option);
       started = true;
+      handleDeferredDeeplink();
       return true;
     } catch (RuntimeException | LinkageError ignored) {
       // 네이티브 라이브러리 · 클래스 로딩 실패(LinkageError)도 앱 시작을 막지 않는다.
@@ -55,5 +57,70 @@ final class AirbridgeEvents {
     } catch (RuntimeException | LinkageError ignored) {
       // 측정 실패가 화면을 막지 않는다.
     }
+  }
+
+  // ------------------------------------------------------------------ 딥링크(ADR-0080)
+  // 호스트는 링크를 해석하지 않고 한 개만 들고 있다가, JS가 앱 구간에서 takeOpenedDeeplink로 꺼낸다(알림 목적지와 같은 모양).
+
+  /** 로그인 콜백(duru://auth-callback)은 웹 인증이 받는다 — 딥링크로 들고 있지 않는다. */
+  static final String AUTH_CALLBACK_PREFIX = "duru://auth-callback";
+
+  private static final Object deeplinkLock = new Object();
+  private static String pendingDeeplink;
+  private static volatile Runnable deeplinkListener;
+  private static Intent lastHandledIntent;
+
+  /** 우리 scheme(duru)이고 로그인 콜백이 아닐 때만 받는다. 순수. */
+  static boolean isOwnDeeplink(String url) {
+    if (url == null) return false;
+    String lower = url.toLowerCase(java.util.Locale.ROOT);
+    return lower.startsWith("duru://") && !lower.startsWith(AUTH_CALLBACK_PREFIX);
+  }
+
+  /** 링크가 들어오면 부를 것(MainActivity가 JS에 전역 이벤트를 보낸다). */
+  static void setDeeplinkListener(Runnable listener) {
+    deeplinkListener = listener;
+  }
+
+  /** MainActivity.onResume — Airbridge 문서의 자리. 같은 Intent를 두 번 처리하지 않는다. */
+  static void handleDeeplink(Intent intent) {
+    if (!started() || intent == null || intent.getData() == null) return;
+    synchronized (deeplinkLock) {
+      if (intent == lastHandledIntent) return;
+      lastHandledIntent = intent;
+    }
+    try {
+      boolean isAirbridge =
+          Airbridge.handleDeeplink(intent, uri -> storeDeeplink(uri == null ? null : uri.toString()));
+      if (!isAirbridge) storeDeeplink(intent.getDataString());
+    } catch (RuntimeException | LinkageError ignored) {
+      // 딥링크 실패가 화면을 막지 않는다.
+    }
+  }
+
+  /** 받아 둔 링크를 한 번 꺼낸다. 없으면 null. */
+  static String takeDeeplink() {
+    synchronized (deeplinkLock) {
+      String url = pendingDeeplink;
+      pendingDeeplink = null;
+      return url;
+    }
+  }
+
+  private static void handleDeferredDeeplink() {
+    try {
+      Airbridge.handleDeferredDeeplink(uri -> storeDeeplink(uri == null ? null : uri.toString()));
+    } catch (RuntimeException | LinkageError ignored) {
+      // 지연 딥링크 실패가 앱 시작을 막지 않는다.
+    }
+  }
+
+  private static void storeDeeplink(String url) {
+    if (!isOwnDeeplink(url)) return;
+    synchronized (deeplinkLock) {
+      pendingDeeplink = url;
+    }
+    Runnable listener = deeplinkListener;
+    if (listener != null) listener.run();
   }
 }

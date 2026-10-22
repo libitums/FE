@@ -55,12 +55,29 @@ final class AirbridgeEventsTests: XCTestCase {
   func testNI2ModuleNameAndMethodLookup() {
     XCTAssertEqual(AirbridgeEventsModule.name, "AirbridgeEventsModule")
     XCTAssertEqual(
-      Set(AirbridgeEventsModule.methodLookup.keys), ["trackEvent", "requestTrackingAuthorization"])
+      Set(AirbridgeEventsModule.methodLookup.keys),
+      ["trackEvent", "requestTrackingAuthorization", "takeOpenedDeeplink"])
+    XCTAssertEqual(AirbridgeEventsModule.methodLookup["takeOpenedDeeplink"], "takeOpenedDeeplink:")
     XCTAssertEqual(
       AirbridgeEventsModule.methodLookup["trackEvent"], "trackEvent:semanticAttributes:")
     XCTAssertEqual(
       AirbridgeEventsModule.methodLookup["requestTrackingAuthorization"],
       "requestTrackingAuthorization")
+  }
+
+  // N-I10(ADR-0080): 우리 scheme만 딥링크로 받고, 로그인 콜백 · 다른 scheme은 받지 않는다.
+  func testNI10OwnDeeplinkIsDuruSchemeExceptAuthCallback() {
+    XCTAssertTrue(AirbridgeDeeplinks.isOwnDeeplink(URL(string: "duru://roleplay")!))
+    XCTAssertTrue(AirbridgeDeeplinks.isOwnDeeplink(URL(string: "DURU://settings?x=1")!))
+    XCTAssertFalse(AirbridgeDeeplinks.isOwnDeeplink(URL(string: "duru://auth-callback?code=1")!))
+    XCTAssertFalse(AirbridgeDeeplinks.isOwnDeeplink(URL(string: "https://duru.airbridge.io/a")!))
+  }
+
+  // N-I11(ADR-0080): 앱 scheme과 universal link 도메인 둘이 번들 · 서명 설정에 있다.
+  func testNI11UrlSchemeIsRegistered() {
+    let types = Bundle.main.object(forInfoDictionaryKey: "CFBundleURLTypes") as? [[String: Any]] ?? []
+    let schemes = types.flatMap { $0["CFBundleURLSchemes"] as? [String] ?? [] }
+    XCTAssertEqual(schemes, ["duru"])
   }
 
   // N-I8(ADR-0079): 설치 이벤트가 추적 허용 결정을 SDK 기본 30초보다 오래 기다린다.

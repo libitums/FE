@@ -27,7 +27,7 @@ import type { PhoneSignInVisibility } from "../screens/login/login.contract";
 import { AppHeader } from "./AppHeader";
 import { AppNavigator } from "./AppNavigator";
 import { ErrorBoundary } from "./ErrorBoundary";
-import { currentScreen, navReducer, showsTabNavigator } from "./nav-reducer";
+import { currentScreen, navReducer, showsTabNavigator, tabRootActions } from "./nav-reducer";
 import { shellBottomLayout } from "./shell-bottom-layout";
 import { notificationList } from "./app-content";
 import type {
@@ -48,6 +48,7 @@ import { shellInsetsOf } from "./shell-edges";
 import { renderScreen } from "./render-screen";
 import { screenWiring } from "./screen-wiring";
 import { useTrackingAuthorizationPrompt } from "./use-tracking-authorization-prompt";
+import { useOpenedDeeplink } from "./use-opened-deeplink";
 import { useOpenedPush } from "./use-opened-push";
 import { usePushTokenRefresh } from "./use-push-token-refresh";
 import { useSystemBack } from "./use-system-back";
@@ -212,6 +213,10 @@ export function AppSession({
   // Android 3버튼)만 비우고 탭 바 묶음이 그 밑을 덧댑니다. iOS · 제스처는 0입니다.
   // 누른 서버 푸시는 앱 구간에 들어선 뒤에 엽니다(ADR-0034).
   useOpenedPush(nav.entry.length === 0, wiring.onOpenPushTarget);
+  // Airbridge 딥링크 · 지연 딥링크도 앱 구간에 들어선 뒤에 그 탭을 엽니다(ADR-0080).
+  useOpenedDeeplink(nav.entry.length === 0, (tab) => {
+    for (const action of tabRootActions(tab)) dispatch(action);
+  });
   usePushTokenRefresh();
   // Android 시스템 뒤로가기는 화면의 닫기와 같은 경로를 탑니다(ADR-0043).
   useSystemBack(nav, dispatch);

@@ -29,6 +29,8 @@
   [ADR-0079](0079-ios-tracking-authorization.md)가 대신한다 — iOS는 일반판 `airbridge-ios-sdk` 4.12.0, 가입 뒤 여정 맵 첫 진입에
   추적 허용을 묻는다(사용자 결정). 「재검토 조건」의 「ATT 팝업을 열기로 한 때」가 발동했다. 나머지 결정은 그대로다.
 - 받은 적용 기록(결정을 바꾸지 않는다):
+  2026-10-22 [ADR-0080](0080-airbridge-deeplink.md) — 「다루지 않는 것」의 딥링크 · 지연 딥링크 · Associated Domains를 열었다(재검토 조건
+  「딥링크를 쓰기로 한 때」 발동). D5의 지연 딥링크 조회는 이제 쓰는 요청이고, Android Meta 지연 앱 링크 끄기는 그대로다.
   2026-10-22 D1 — Android `io.airbridge:sdk-android` 4.11.3 → **4.12.0**(정확 버전, 대시보드 안내 버전에 맞춤). 에뮬레이터 `bundled` ·
   실제 값에서 `initializeSDK` · 모듈 생성 확인. release dex 4,740,008 → 4,758,464 bytes(+18,456), 64비트 `.so` 33 그대로.
   ⚠ 산출물 가드 A3(dex < 4,300,000)는 **main에서 이미** 넘어 있었다(4.11.3에서 4,740,008) — `pnpm verify` 밖의 검사라 드러나지

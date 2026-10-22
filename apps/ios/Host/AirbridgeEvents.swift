@@ -49,6 +49,7 @@ enum AirbridgeEvents {
       .setAutoDetermineTrackingAuthorizationTimeout(second: trackingAuthorizationTimeoutSeconds)
       .build()
     Airbridge.initializeSDK(option: option)
+    AirbridgeDeeplinks.handleDeferred()
   }
 
   /// 추적 허용(ATT)을 **아직 정하지 않았을 때만** 시스템 대화상자를 띄운다(ADR-0079 D2). 이미 정했으면 아무것도
@@ -70,5 +71,73 @@ enum AirbridgeEvents {
     } else {
       Airbridge.trackEvent(category: category, semanticAttributes: semanticAttributes)
     }
+  }
+}
+
+/// Airbridge 딥링크를 받아 두는 자리입니다(ADR-0080). 호스트는 링크를 **해석하지 않고** 한 개만 들고 있다가, JS가
+/// 앱 구간(진입 흐름이 끝난 뒤)에서 `takeOpenedDeeplink`로 꺼냅니다 — 알림 목적지(ADR-0034)와 같은 모양입니다.
+/// SDK가 시작되지 않은 빌드에서는 아무것도 하지 않습니다(모듈도 없어 꺼낼 쪽이 없습니다).
+enum AirbridgeDeeplinks {
+  static let openedNotification = Notification.Name("AirbridgeDeeplinks.opened")
+  /// 로그인 콜백(`duru://auth-callback`)은 웹 인증 세션이 받습니다 — 딥링크로 들고 있지 않습니다.
+  static let authCallbackHost = "auth-callback"
+
+  private static let lock = NSLock()
+  private static var pending: String?
+
+  /// 앱이 꺼져 있다가 링크로 켜질 때(scheme · universal link).
+  static func handle(connectionOptions: UIScene.ConnectionOptions) {
+    guard AirbridgeEvents.isStarted else { return }
+    Airbridge.trackDeeplink(connectionOptions: connectionOptions)
+    let isAirbridge = Airbridge.handleDeeplink(connectionOptions: connectionOptions) { store($0) }
+    if !isAirbridge { connectionOptions.urlContexts.forEach { storeIfOwn($0.url) } }
+  }
+
+  /// 켜져 있는 앱이 scheme 링크로 열릴 때.
+  static func handle(openURLContexts: Set<UIOpenURLContext>) {
+    guard AirbridgeEvents.isStarted else { return }
+    Airbridge.trackDeeplink(openURLContexts: openURLContexts)
+    let isAirbridge = Airbridge.handleDeeplink(openURLContexts: openURLContexts) { store($0) }
+    if !isAirbridge { openURLContexts.forEach { storeIfOwn($0.url) } }
+  }
+
+  /// 켜져 있는 앱이 universal link로 열릴 때.
+  static func handle(userActivity: NSUserActivity) {
+    guard AirbridgeEvents.isStarted else { return }
+    Airbridge.trackDeeplink(userActivity: userActivity)
+    _ = Airbridge.handleDeeplink(userActivity: userActivity) { store($0) }
+  }
+
+  /// 설치 전에 누른 링크(지연 딥링크) — 첫 실행에 한 번 SDK가 답합니다. 앱 구간에 들어선 뒤에 열립니다.
+  static func handleDeferred() {
+    _ = Airbridge.handleDeferredDeeplink { url in
+      if let url { store(url) }
+    }
+  }
+
+  /// 한 번 꺼내면 비웁니다. 없으면 `nil`.
+  static func take() -> String? {
+    lock.lock()
+    defer { lock.unlock() }
+    let url = pending
+    pending = nil
+    return url
+  }
+
+  /// 우리 scheme(`duru`)이고 로그인 콜백이 아닐 때만 받는다. 순수 판정.
+  static func isOwnDeeplink(_ url: URL) -> Bool {
+    url.scheme?.lowercased() == "duru" && url.host?.lowercased() != authCallbackHost
+  }
+
+  private static func storeIfOwn(_ url: URL) {
+    if isOwnDeeplink(url) { store(url) }
+  }
+
+  private static func store(_ url: URL) {
+    guard isOwnDeeplink(url) else { return }
+    lock.lock()
+    pending = url.absoluteString
+    lock.unlock()
+    DispatchQueue.main.async { NotificationCenter.default.post(name: openedNotification, object: nil) }
   }
 }
