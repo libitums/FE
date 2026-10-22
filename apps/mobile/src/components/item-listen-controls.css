@@ -3,6 +3,9 @@
    가운데에 섭니다. */
 .item-listen-controls {
   width: 100%;
+  /* 가운데 정렬 세로 상자 안에서도 부모 폭을 다 받습니다 — 줄어든 부모 안의 `width: 100%`는 양쪽 슬롯을 0 폭으로
+     두어 「천천히」 글자가 잘립니다. */
+  align-self: stretch;
   flex-shrink: 0;
   display: flex;
   flex-direction: row;

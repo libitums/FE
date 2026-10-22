@@ -9,6 +9,9 @@
 .listening-prompt-controls {
   /* 줄 전체 폭이 있어야 양쪽 슬롯이 폭을 나눕니다. */
   width: 100%;
+  /* 가운데 정렬 세로 상자 안에서도 부모 폭을 다 받습니다 — 줄어든 부모 안의 `width: 100%`는 양쪽 슬롯을 0 폭으로
+     두어 「천천히」 글자가 잘립니다. */
+  align-self: stretch;
   display: flex;
   flex-direction: row;
   align-items: center;

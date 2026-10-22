@@ -34,6 +34,8 @@
    좁아져 줄바꿈이 늘기 때문입니다. */
 .typing-activity-cue-block-listen {
   flex-direction: column;
+  /* 간이 줄이 폭을 나눠 가지려면 칸이 부모 폭을 다 받아야 합니다. */
+  align-self: stretch;
 }
 
 .typing-activity-cue-text {
