@@ -24,6 +24,14 @@ export type TextRolesMeaningProps = {
 // 모양 채널은 색이 아니라 기울기 · 굵기 · 구분선입니다(WCAG 1.4.1). 로마자는 기울임 · medium · muted,
 // 뜻은 구분선 아래 똑바로 · semibold · neutral입니다. 값은 `text-roles.css`가 집니다.
 
+// Lynx에서 안쪽 `<text>`는 바깥의 글꼴을 물려받지 않아(기기 확인) 조각마다 같은 글 역할 클래스를 다시 줍니다. 정답 조각만 밑줄
+// 클래스가 더 붙습니다.
+function pieceClassName(size: TextRoleSize, emphasis: "none" | "answer"): string {
+  const base =
+    size === "s" ? "text-role-romanization text-role-romanization-s" : "text-role-romanization";
+  return emphasis === "answer" ? `${base} text-role-romanization-answer` : base;
+}
+
 function Romanization({
   segments,
   size,
@@ -43,10 +51,7 @@ function Romanization({
       {...named}
     >
       {segments.map((segment, index) => (
-        <text
-          key={index}
-          className={segment.emphasis === "answer" ? "text-role-romanization-answer" : undefined}
-        >
+        <text key={index} className={pieceClassName(size, segment.emphasis)}>
           {segment.text}
         </text>
       ))}
