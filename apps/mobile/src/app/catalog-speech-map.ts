@@ -11,6 +11,7 @@ import {
   optionalField,
   skippedItem,
 } from "./catalog-item-text";
+import { audioField, catalogAnswerEchoOf, catalogListenAudioOf } from "./catalog-item-audio";
 import type {
   CatalogItemPort,
   CatalogLessonItemPort,
@@ -32,11 +33,18 @@ function readAloudBundleOf(port: CatalogItemPort, text: Text | undefined) {
 }
 
 /** SHADOW — 출처 묶음 `answers[0]` → `stimulus.text`(한국어가 빈 쪽은 건너뜀). 둘 다 비면 malformed. */
-export function readAloudItemOf(item: ItemOf<"SHADOW">, port: CatalogItemPort): CatalogMappedItem {
+export function readAloudItemOf(
+  item: ItemOf<"SHADOW">,
+  port: CatalogLessonItemPort,
+): CatalogMappedItem {
   const question =
     readAloudBundleOf(port, item.answers[0]) ?? readAloudBundleOf(port, item.stimulus.text);
   if (question === null) return skippedItem(item, "malformed");
-  return { kind: "read-aloud", itemId: item.id, question };
+  return {
+    kind: "read-aloud",
+    itemId: item.id,
+    question: { ...question, ...audioField(catalogListenAudioOf(item, port)) },
+  };
 }
 
 /** SPEAK_WORD — malformed(정답 0) → image-missing(주소 없음 · 못 풂) → no-gloss(뜻 없음) 순서. */
@@ -63,6 +71,7 @@ export function speakWordItemOf(
       answers: [first, ...rest],
       romanization: latinOf(port, head?.roman) ?? null,
       ...optionalField("instruction", instructionOf(port, item.prompt)),
+      ...audioField(catalogAnswerEchoOf(item, port)),
     },
   };
 }

@@ -2,6 +2,9 @@
 
 > ⟨2026-10-21 — [ADR-0081](../adr/0081-tutorial-as-catalog-episode.md) D12 · D13⟩ **Maestro 흐름(`e2e/android-audio-playback.yaml` · `devtools/android-maestro/run-audio-playback.sh` · 루트 `test:e2e:android:audio`)은 지웠다** — 그 흐름이 열던 옛 튜토리얼 듣기 화면(`Listen to a Hello`)이 없다. 내장 음성은 **3개**(호스트 테스트 고정물 `greeting-1` · `ordering-2` · `tutorial-cabin-announcement`)만 남았고 제품이 쓰는 내장 음성은 0이다 — 아래 「21개」는 그때의 값이다. 계측(`AudioPlaybackModuleTest` — 목록은 그 셋) · 원격 재생 AP-R1 · AP-R2는 그대로 실행할 수 있다. 카탈로그 음성의 청음은 [에피소드 음성 e2e](episode-audio.md)가 진다.
 
+> ⟨2026-10-22 — [ADR-0082](../adr/0082-item-audio-and-slow-playback.md)⟩ **메서드가 다섯이다** — `playAtRate(source, rate, done)`가 더해졌다(학습 듣기 문항의 「천천히」 0.85). 아래 「범위」의 넷과 같은 해석 · 대체 · `done` 한 번이고, `start()` 직후 `setPlaybackParams(speed, pitch 1)`로 음높이를 지킨다(1.0이면 부르지 않는다).
+> 계측 AP-S1 ~ AP-S6 · JVM `AudioPlaybackRateTest`가 더해졌고, 아래 「원격 재생」의 AP-R1 「10초 안에」는 **40초**로 고쳤다(아래 「결과」 2026-10-21). 학습 문항의 에뮬레이터 청음은 [학습 문항 음성 e2e](item-audio.md) EU2다.
+
 ## 범위
 
 `AudioPlaybackModule`은 기존 `apps/mobile/src/lib/audio.ts`의 `play(source, done)`,
@@ -49,6 +52,11 @@ Android 모듈로 호출됐는지 로그로 확인한다. 테스트는 앱 데�
 **AP-R1** 닿지 않는 https(`https://127.0.0.1:9/a.m4a`)의 `done`이 10초 안에 정확히 1회 · **AP-R2** 같은 주소로 `play` 직후 `stop`이면 `done` 0회이고
 다음 번들 `play`의 `done`은 정상 1회. 에뮬레이터에서 카탈로그 컷 · 최종 테스트를 듣는 절차는 [에피소드 음성 e2e](episode-audio.md)의 S1 ~ S4 · S9다.
 
+속도 재생(2026-10-21 추가): JVM unit `AudioPlaybackRateTest`(정규화 — NaN · 무한 · 0.5 미만 · 2.0 초과는 1)와 같은 계측 클래스의 여섯 묶음 —
+**AP-S1** 0.85가 1.0보다 길고(≥ 1.1배) `done` 한 번 · **AP-S2** 0.85 중 `stop`이면 `done` 0회, 1.0 재생이 0.85를 대체하면 옛 `done` 버림 · **AP-S3** 일시정지한 0.85는 `resume` 전까지 저절로 재생되지 않고 재개 뒤 끝남 ·
+**AP-S4** 일시적 포커스 손실 동안 멈췄다가 복귀 뒤 0.85로 이어 끝남 · **AP-S5** 받아 둔 파일(`file://`)의 0.85 · 닿지 않는 https의 0.85가 `done` 한 번 · **AP-S6** 플레이어를 놓으면 기억한 속도가 1로 돌아가고 1.0 재생의 대체는 1.0으로 난다.
+속도 설정이 실패하면 logcat `AudioPlayback`에 `W` `Cannot set playback speed`가 남고 1.0으로 계속한다.
+
 ## 결과
 
 - 2026-10-02, Android 15 API 35 ARM 에뮬레이터, 390×844·160 dpi: 계측 10건과
@@ -59,5 +67,8 @@ Android 모듈로 호출됐는지 로그로 확인한다. 테스트는 앱 데�
   Lynx 접근성 트리에는 나타나지 않았다. 그래서 맵과 컨트롤 탭은 고정 화면 크기의
   좌표를 쓰고, 화면은 기준 이미지로 비교한다. 이 현상은 별도 접근성 조사 대상이다.
 - 2026-10-14 원격 재생: JVM unit(`AudioRemoteSourceTest`)은 통과했다. **계측 AP-R1 · AP-R2와 에뮬레이터 청음은 실행하지 않았다.**
+- 2026-10-21, `feat/audio-slow-playback`(rebase 전 `962f6767`), API 35 에뮬레이터(`emulator-5556`), 러너 `libitum.duru.android.test`: JVM unit 통과 · 계측 `AudioPlaybackModuleTest` **22건 통과**(AP-R1 · AP-R2 · AP-S1 ~ AP-S6 포함 — 원격 둘이 처음 실제로 돌았다).
+  같은 클래스의 앞 회차(`48ef6a1f`)에서 셋이 낡은 기대로 실패했다 — 자산 열기 실패의 로그 문구(ap2)와 닿지 않는 https의 대기(AP-R1 · AP-S5 — **MediaPlayer가 거부된 연결을 약 3초 간격으로 약 30초 다시 시도한 뒤** `done`이 온다). 기대를 고쳤다(대기 10 → 40초). 앱 쪽 흐름은 소리 결과를 읽지 않아 그 30초 동안 화면은 멈추지 않는다([ADR-0060](../adr/0060-episode-voice-remote-audio.md) D7).
+  **에뮬레이터 청음(0.85의 음높이 · 일시정지 재개)은 하지 않았다** — [학습 문항 음성 e2e](item-audio.md) EU2.
 - 실제 스피커에서 들리는 음질·음량과 오디오 포커스의 다른 앱 간 상호작용은
   자동 테스트로 판정하지 않았다. 실기에서 한 번 재생·중단을 들어 확인해야 한다.

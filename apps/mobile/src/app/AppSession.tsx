@@ -7,6 +7,8 @@ import { loadUiLanguage } from "../lib/ui-language";
 import type { EntryLanguage } from "../lib/entry-language";
 import { safeAreaInsetsFrom, tappableBottomInsetFrom } from "../lib/safe-area";
 import { UiCopyContext, uiCopyFor } from "../lib/ui-copy";
+import { initialListenPace } from "../lib/listen-pace";
+import type { ListenPace } from "../lib/listen-pace";
 import { initialSessionOptions } from "../lib/session-options";
 import type { NotificationItem } from "../screens/notifications/notifications.contract";
 import { productPhoneSignIn } from "../screens/login/login";
@@ -93,6 +95,8 @@ export function AppSession({
   // 둘이 함께 만들어지고 함께 버려져야 수가 새지 않습니다.
   const [pendingResults, setPendingResults] = useState<readonly AnswerResult[]>([]);
   const [pendingSkippedCount, setPendingSkippedCount] = useState(0);
+  // 「천천히」는 레슨 하나 동안만 이어집니다 — 시작 · 나가기 · 끝에서 되돌립니다(저장하지 않음).
+  const [listenPace, setListenPace] = useState<ListenPace>(initialListenPace);
   const finishGuard = useCatalogFinishGuard();
   // 가진 젬 수입니다. 결제 서비스가 아직 없어 바뀌는 길이 없고, `Pay`는 「결제 준비 중」
   // 안내만 띄웁니다. 결제가 붙으면 setter가 여기 생깁니다.
@@ -140,6 +144,8 @@ export function AppSession({
     setCatalogProgress,
     ...learner,
     finishGuard,
+    listenPace,
+    setListenPace,
   });
   const wiring = withLearningTickets(screens, tickets, progress, catalogSections);
 

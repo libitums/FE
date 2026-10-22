@@ -1,3 +1,5 @@
+import type { QuestionAudio } from "../../lib/question-audio";
+
 export type DialogueSpeaker = "counterpart" | "me";
 
 /** 대화 조립 — 칸마다 화자입니다. 길이 = `answerOrder.length`(매핑이 보장). */
@@ -34,4 +36,6 @@ export type SentenceOrderQuestion = {
   readonly dialogue?: SentenceOrderDialogueTurns;
   /** 있으면 `support.instruction` · 문구표 기본보다 앞서는 지시문입니다(카탈로그 문항). */
   readonly instruction?: string;
+  /** 문항 음성입니다 — 듣기 조립은 듣기 갈래, 문장 순서는 판정 뒤 재생 갈래. 없으면 키가 없습니다. */
+  readonly audio?: QuestionAudio;
 };

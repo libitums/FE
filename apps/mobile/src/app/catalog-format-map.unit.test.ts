@@ -13,6 +13,7 @@ const port: CatalogLessonItemPort = {
   episodeId: "u01-water",
   glossOf: () => null,
   imageUrlOf: (path) => `https://cdn/${path}`,
+  audioUrlOf: () => null,
 };
 
 const t = (ko: string, roman = `r-${ko}`, en?: string): Text =>
@@ -173,8 +174,11 @@ describe("새 단어 선택 유형의 매핑", () => {
     expect(catalogItemOf(particleFill({}), port)).toEqual(skippedWith("malformed"));
   });
 
-  test("MAP5. MIN_PAIR_AB는 모양이 맞아도 소리가 없어 audio-missing, 보기 3이면 malformed다", () => {
-    expect(catalogItemOf(minPair(2), port)).toEqual(skippedWith("audio-missing"));
+  test("MAP5. MIN_PAIR_AB는 모양이 맞으면 소리가 없어도 audio null 듣기 문항, 보기 3이면 malformed다", () => {
+    expect(catalogItemOf(minPair(2), port)).toMatchObject({
+      kind: "listening",
+      question: { audio: null },
+    });
     expect(catalogItemOf(minPair(3), port)).toEqual(skippedWith("malformed"));
   });
 });
@@ -335,7 +339,7 @@ describe("유형별 결과 표와 결정성", () => {
     [replySelect(), "word-choice"],
     [particleFill(), "word-choice"],
     [particleSwap(), "word-choice"],
-    [minPair(2), "audio-missing"],
+    [minPair(2), "listening"],
     [nonSpeech("CULTURE_CHECK", { context: t("문맥"), options: opts3, feedback }), "word-choice"],
     [nonSpeech("CULTURE_CARD", { context: t("문맥"), stimulus: stim, feedback }), "culture-card"],
     [
@@ -442,7 +446,7 @@ describe("기존 13종의 결과 표 (MAP1)", () => {
     ],
     [
       raw("LISTEN_SELECT", { stimulus: { audio: t("듣기", "deutgi") }, options: opts4 }),
-      "audio-missing",
+      "listening",
     ],
     [
       raw("TURN_ORDER", {

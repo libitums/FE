@@ -40,6 +40,12 @@
   border-bottom-left-radius: 0;
 }
 
+/* 듣기 조립의 상대 말풍선 자리 — 말풍선이 아니라 듣기 3열이 카드 폭을 채웁니다. */
+.sentence-order-screen-listen {
+  align-self: stretch;
+  flex-shrink: 0;
+}
+
 .sentence-order-screen-reply {
   align-self: flex-end;
   background-color: var(--libitum-color-brand-primary);

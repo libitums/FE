@@ -415,7 +415,13 @@ function solveActivity(activity: CatalogActivity, right: boolean, last: boolean)
       }
       break;
     case "listening":
-      throw new Error("listening is not part of these scenarios");
+      for (const question of activity.questions) {
+        tapId(
+          `listening-choice-${right ? question.answerIndex : question.answerIndex === 0 ? 1 : 0}`,
+        );
+        tapId("learning-shell-advance");
+      }
+      break;
   }
   if (last) action();
 }
@@ -534,8 +540,8 @@ test("I2. (AC2 기준) 카드를 다 넘겨도 통과에 세지 않는다: 셋 �
 test("I3. (AC3) u03 S9: 짝 맞추기가 단어 선택 · 받아쓰기 사이에 서고, 틀린 짝만 정답이 공개되며, 하나 틀려도 통과한다", async () => {
   const { rpcs, events } = await boot({ progress: throughU03S8() });
   const plan = lessonPlan(u03, "S9");
-  expect(spanOf(plan)).toEqual(["W1", "P1", "W2", "T1", "P1", "W2", "T1", "W1"]);
-  expect([plan.shownItemCount, plan.questionCount]).toEqual([10, 10]);
+  expect(spanOf(plan)).toEqual(["W1", "L1", "P1", "W2", "T1", "P1", "W2", "T1", "W1"]);
+  expect([plan.shownItemCount, plan.questionCount]).toEqual([11, 11]);
   expect(status(u03, "S9")).toBe("available");
 
   tapNode(u03, "S9");
@@ -572,8 +578,8 @@ test("I3. (AC3) u03 S9: 짝 맞추기가 단어 선택 · 받아쓰기 사이에
     name: "episode_lesson_finished",
     unitKey: "S9",
     verdict: "passed",
-    correctCount: "9",
-    questionCount: "10",
+    correctCount: "10",
+    questionCount: "11",
     skippedCount: "0",
   });
 });
@@ -738,7 +744,10 @@ test("I6. 카드 화면의 나가기와 짝 화면의 시스템 뒤로는 기록
 
   const plan = lessonPlan(u03, "S9");
   tapNode(u03, "S9");
-  solveActivity(plan.activities[0] as CatalogActivity, true, false);
+  const pairAt = plan.activities.findIndex((activity) => activity.form === "pair-match");
+  plan.activities
+    .slice(0, pairAt)
+    .forEach((activity) => solveActivity(activity as CatalogActivity, true, false));
   expect(screen.getByTestId("pair-match-content")).toBeInTheDocument();
   pressBack("1");
   await flush();
@@ -754,11 +763,11 @@ test("I6. 카드 화면의 나가기와 짝 화면의 시스템 뒤로는 기록
   ]);
 });
 
-test("I7. (3c 회귀) S3 전부 정답: 3c와 같은 흐름이고 시작 이벤트에 표시 문항 수 6이 실린다", async () => {
+test("I7. (3c 회귀) S3 전부 정답: 3c와 같은 흐름이고 시작 이벤트에 표시 문항 수 10이 실린다", async () => {
   const { rpcs, events } = await boot({ progress: upTo("S1") });
   const plan = lessonPlan(u01, "S3");
-  expect(plan.shownItemCount).toBe(6);
-  expect(plan.questionCount).toBe(6);
+  expect(plan.shownItemCount).toBe(10);
+  expect(plan.questionCount).toBe(10);
 
   tapNode(u01, "S3");
   expect(solveLesson(plan, true)).toEqual(
@@ -774,8 +783,8 @@ test("I7. (3c 회귀) S3 전부 정답: 3c와 같은 흐름이고 시작 이벤�
       episodeId: u01,
       unitKey: "S3",
       unitRole: "lesson",
-      questionCount: "6",
-      shownItemCount: "6",
+      questionCount: "10",
+      shownItemCount: "10",
       skippedItemCount: String(plan.skippedItemCount),
     },
     {
@@ -784,8 +793,8 @@ test("I7. (3c 회귀) S3 전부 정답: 3c와 같은 흐름이고 시작 이벤�
       unitKey: "S3",
       unitRole: "lesson",
       verdict: "passed",
-      correctCount: "6",
-      questionCount: "6",
+      correctCount: "10",
+      questionCount: "10",
       skippedCount: "0",
     },
   ]);

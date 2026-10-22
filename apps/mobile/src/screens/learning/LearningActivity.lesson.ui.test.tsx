@@ -48,7 +48,7 @@ const listeningQuestion = (prompt: string) =>
   ({
     prompt,
     romanization: prompt,
-    audioSource: null,
+    audio: null,
     choices: ["a", "b"],
     answerIndex: 0,
   }) as const;
@@ -68,7 +68,7 @@ const typingQuestion = (id: string) =>
     cueSupport: null,
     hint: null,
     answers: ["일주일"],
-    audioSource: null,
+    audio: null,
   }) as const;
 
 function typeWeek(): void {

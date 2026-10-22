@@ -2,8 +2,14 @@
 
 import { isTypeableAnswer } from "../lib/hangul-keyboard";
 import type { LearningItem } from "../lib/episode-content.model";
+import type { QuestionAudio } from "../lib/question-audio";
 import type { TypingCueKind } from "../screens/typing/typing.contract";
-import type { CatalogItemPort, CatalogMappedItem } from "./catalog-lesson-types";
+import { catalogAnswerEchoOf, catalogListenAudioOf } from "./catalog-item-audio";
+import type {
+  CatalogItemPort,
+  CatalogLessonItemPort,
+  CatalogMappedItem,
+} from "./catalog-lesson-types";
 import { englishOf, instructionOf, koOf, latinOf, skippedItem } from "./catalog-item-text";
 
 type TypingSource = Extract<LearningItem, { type: "DICTATION" | "TRANSLATE_TO_KO" | "SENT_BUILD" }>;
@@ -13,6 +19,7 @@ type TypingParts = {
   readonly cue: string;
   readonly cueSupport: string | null;
   readonly hint: string | null;
+  readonly audio: QuestionAudio | null;
 };
 
 function typingItem(
@@ -35,7 +42,7 @@ function typingItem(
       cueSupport: parts.cueSupport,
       hint: parts.hint,
       answers: [first, ...rest],
-      audioSource: null,
+      audio: parts.audio,
     },
   };
 }
@@ -53,7 +60,7 @@ function firstEnglish(item: TypingSource, port: CatalogItemPort): string | undef
   return undefined;
 }
 
-export function typingItemOf(item: TypingSource, port: CatalogItemPort): CatalogMappedItem {
+export function typingItemOf(item: TypingSource, port: CatalogLessonItemPort): CatalogMappedItem {
   switch (item.type) {
     case "DICTATION": {
       const cue = latinOf(port, item.stimulus.audio?.roman);
@@ -63,12 +70,19 @@ export function typingItemOf(item: TypingSource, port: CatalogItemPort): Catalog
         cue,
         cueSupport: englishOf(port, item.stimulus.audio?.en) ?? null,
         hint: null,
+        audio: catalogListenAudioOf(item, port),
       });
     }
     case "TRANSLATE_TO_KO": {
       const cue = firstEnglish(item, port);
       if (cue === undefined) return skippedItem(item, "no-source");
-      return typingItem(item, port, { kind: "translation", cue, cueSupport: null, hint: null });
+      return typingItem(item, port, {
+        kind: "translation",
+        cue,
+        cueSupport: null,
+        hint: null,
+        audio: catalogAnswerEchoOf(item, port),
+      });
     }
     case "SENT_BUILD": {
       const cue = firstEnglish(item, port);
@@ -79,6 +93,7 @@ export function typingItemOf(item: TypingSource, port: CatalogItemPort): Catalog
         cue,
         cueSupport: null,
         hint: hint === "" ? null : hint,
+        audio: null,
       });
     }
   }

@@ -380,6 +380,12 @@ sink는 던지지 않는다 — 매핑 · `capture`를 `try`로 감싸 삼킨다
   - **`episode_prologue_completed.prologueKind`는 `"cuts"` 하나**다 — 옛 통화 · 메신저 · 비주얼 노벨 · 혼합 서사가 지워졌다(`EpisodePrologueCompletedKind = "cuts"`).
   - **연속성** — 교체 시점은 같은 사람의 `episodeId`가 `tutorial` → `u00-tutorial`로 바뀐 때다. 비교 지표는 「튜토리얼 표지 → Episode 1 표지(`u01-water`)」 전환율 하나다(ADR-0081 D9). 새 이벤트는 없다. PostHog 도착은 보지 않았다. GitHub wiki 이벤트 사전은 저장소 밖이라 따로 고친다(후속).
 
+- ⟨2026-10-22 — 학습 문항 음성 · 「천천히」. 적용 기록이고 이 ADR의 결정을 바꾸지 않는다⟩ **이벤트 하나가 더해져 이름이 36 → 37개다.** 결정은 [ADR-0082](0082-item-audio-and-slow-playback.md) 「측정」.
+  - **`episode_listen_item_answered`** — sink는 기존 `episodeIntroEventSink`(넷 그대로). 듣기 여섯 유형(`LISTEN_SELECT` · `MIN_PAIR_AB` · `REPLY_SELECT` · `LISTEN_BUILD` · `DICTATION` · `SHADOW`) 문항마다 판정이 처음 서는 순간 한 번. 소리 없는 문항은 내지 않는다.
+  - **속성** — `episodeId` · `unitKey` · `itemId` · `itemType` · `result`(`correct` · `incorrect` · `practiced` · `skipped`) · `pace`(`normal` · `slow`, 판정 순간) · `slowTurnedOn`(boolean) · `replayCount` · `slowReplayCount`(사용자가 누른 다시 듣기 수, 10진 문자열 — 이 절의 다른 수 속성과 같다).
+  - **읽는 법** — 「천천히」 켬 비율 = `slowTurnedOn` 참 ÷ 이벤트 수, 다시 듣기 = 두 수의 합, 정답률 변화 = 같은 에피소드 · 유형 안에서 `result`를 `pace`(또는 `slowTurnedOn`)로 갈라 비교.
+  - **한계** — 분모는 판정까지 간 문항이다(판정 전에 나간 문항은 빠진다). 자동 재생 · 켤 때의 다시 재생은 세지 않는다. Airbridge · Meta 매핑은 없다. PostHog 도착은 보지 않았다. GitHub wiki 이벤트 사전은 저장소 밖이라 따로 고친다(후속).
+
 ### D15. 나라 · 주 · 시간대만 IP로 추정하고, IP는 저장하지 않는다
 
 2026-09-30 사용자 결정. 접속하는 나라를 보고, 나중에 서버 리전을 고를 근거로 삼는다.

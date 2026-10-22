@@ -6,6 +6,7 @@ import { announceCompletion } from "../../lib/accessibility";
 import { LearningShell } from "../learning/LearningShell";
 import { LearningActivityComplete } from "../learning/LearningActivityComplete";
 import { AnswerVerdict } from "../../components/AnswerVerdict";
+import { useListenAudio } from "../../components/use-listen-audio";
 import { WordChoiceOption } from "./WordChoiceOption";
 import { WordChoicePresentation } from "./WordChoicePresentation";
 import { useWordChoicePicture } from "./use-word-choice-picture";
@@ -21,6 +22,10 @@ import {
   wordChoiceSessionResults,
 } from "./word-choice";
 import type { AnswerResult } from "../../lib/answer-result";
+import { answerEchoCueOf, listenCueOf, standaloneLessonAudio } from "../../lib/question-audio";
+import type { LessonAudio } from "../../lib/question-audio";
+import { initialSessionOptions } from "../../lib/session-options";
+import { useAudioCue } from "../../lib/use-audio-cue";
 import { handsOffAfter, lessonCounter } from "../learning/activity-finish";
 import type { ActivityFinish, LessonPosition } from "../learning/activity-finish";
 import type { WordChoiceQuestion } from "./word-choice-questions";
@@ -48,6 +53,8 @@ export type WordChoiceActivityProps = {
   readonly onFinish: ActivityFinish;
   /** 카탈로그 레슨 안의 위치입니다. 활동 하나가 한 세션이면 주지 않습니다. */
   readonly lesson?: LessonPosition;
+  /** 레슨의 소리 설정(속도 · 자동 재생 · 보고)입니다. 없으면 단독 활동의 기본값입니다. */
+  readonly lessonAudio?: LessonAudio;
 };
 
 /**
@@ -84,6 +91,7 @@ export function WordChoiceActivity({
   onExit,
   onFinish,
   lesson,
+  lessonAudio,
 }: WordChoiceActivityProps): ReactNode {
   const copy = useUiCopy();
   const [state, dispatch] = useReducer(wordChoiceSessionReducer, initialWordChoiceSessionState);
@@ -93,6 +101,13 @@ export function WordChoiceActivity({
   // 않습니다.
   const complete = isWordChoiceSessionComplete(state, questions.length);
   const question = complete ? null : questions[state.questionIndex];
+
+  // 문항 음성입니다. 단어 선택(REPLY_SELECT)은 듣기 갈래 — 간이 줄 · 자동 재생 · 보고, 그림 고르기 · 뜻 고르기는
+  // 정답 뒤 재생 갈래 — 고른 순간 1.0으로 한 번(정오 무관, 조작 없음)입니다.
+  const audioLesson = lessonAudio ?? standaloneLessonAudio(initialSessionOptions);
+  const audioKey = String(state.questionIndex);
+  const listen = useListenAudio(listenCueOf(audioKey, question?.audio), audioLesson);
+  useAudioCue(answerEchoCueOf(audioKey, question?.audio, hasAnswered(state), audioLesson.autoPlay));
 
   // 그림 문항이면 그림이 설 때까지(최대 6초) 보기를 잠급니다. 그림 문항이 아니면 상태도 타이머도 없이
   // 처음부터 열려 있습니다.
@@ -199,7 +214,9 @@ export function WordChoiceActivity({
                 // 그림을 기다리는 동안의 탭은 흡수합니다 — 근거 없이 찍지 않게 합니다. 보기는 계속
                 // `button`입니다(ADR-0016 D10: `disabled`는 영구히 조작 불가한 것에만 줍니다).
                 onSelect={(index) => {
-                  if (answerable) dispatch({ type: "selectChoice", choiceIndex: index });
+                  if (!answerable) return;
+                  dispatch({ type: "selectChoice", choiceIndex: index });
+                  listen.answered(index === question.answerIndex ? "correct" : "incorrect");
                 }}
               />
             ))}
@@ -229,6 +246,7 @@ export function WordChoiceActivity({
               questionIndex={state.questionIndex}
               answered={hasAnswered(state)}
               pictureState={picture.state}
+              listen={question.audio?.kind === "listen" ? listen : undefined}
               onLoad={picture.onLoad}
               onError={picture.onError}
             />

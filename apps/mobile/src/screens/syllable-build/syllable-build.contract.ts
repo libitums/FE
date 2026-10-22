@@ -1,5 +1,6 @@
 // 음절 조립 활동의 계약입니다. 타입만 둡니다.
 
+import type { AnswerEchoAudio, LessonAudio } from "../../lib/question-audio";
 import type { NonEmpty } from "../../lib/non-empty";
 import type { ActivityFinish, LessonPosition } from "../learning/activity-finish";
 
@@ -14,6 +15,8 @@ export type SyllableBuildQuestion = {
   readonly answers: NonEmpty<string>;
   /** 있으면 `copy.syllableBuild.instruction` 대신 서는 지시문입니다(콘텐츠 `prompt.en`). */
   readonly instruction?: string;
+  /** 판정 뒤 한 번 들려 주는 정답 음성입니다. 없으면 키가 없습니다. */
+  readonly audio?: AnswerEchoAudio;
 };
 
 export type SyllableBuildPhase = "building" | "checked";
@@ -48,6 +51,8 @@ export type SyllableBuildActivityProps = {
   readonly onFinish: ActivityFinish;
   /** 카탈로그 레슨 안의 위치입니다. 주지 않으면 이 활동이 한 세션입니다. */
   readonly lesson?: LessonPosition;
+  /** 레슨의 소리 설정(자동 재생)입니다. 없으면 단독 활동의 기본값입니다. */
+  readonly lessonAudio?: LessonAudio;
 };
 
 /** 음절 타일 하나 — 창고에서는 타일, 칸에서는 놓인 글자입니다. testid `syllable-build-tile-<index>`, `data-placed`. */

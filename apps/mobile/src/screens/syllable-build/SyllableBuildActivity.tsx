@@ -4,6 +4,9 @@ import type { ReactNode } from "@lynx-js/react";
 import { AnswerReveal } from "../../components/AnswerReveal";
 import { AnswerVerdict } from "../../components/AnswerVerdict";
 import { announce, announceCompletion } from "../../lib/accessibility";
+import { answerEchoCueOf, standaloneLessonAudio } from "../../lib/question-audio";
+import { initialSessionOptions } from "../../lib/session-options";
+import { useAudioCue } from "../../lib/use-audio-cue";
 import { useUiCopy } from "../../lib/ui-copy";
 import { handsOffAfter, lessonCounter } from "../learning/activity-finish";
 import { LearningActivityComplete } from "../learning/LearningActivityComplete";
@@ -39,6 +42,7 @@ export function SyllableBuildActivity({
   onExit,
   onFinish,
   lesson,
+  lessonAudio,
 }: SyllableBuildActivityProps): ReactNode {
   const copy = useUiCopy();
   const [state, dispatch] = useReducer(
@@ -53,6 +57,17 @@ export function SyllableBuildActivity({
     lesson,
     question == null ? Math.max(0, questions.length - 1) : state.questionIndex,
     questions.length,
+  );
+
+  // 판정이 난 순간 정답 음성을 1.0으로 한 번 들려 줍니다(정오 무관, 조작 없음). 문항이 넘어가면 멈춥니다.
+  const autoPlay = (lessonAudio ?? standaloneLessonAudio(initialSessionOptions)).autoPlay;
+  useAudioCue(
+    answerEchoCueOf(
+      String(state.questionIndex),
+      question?.audio,
+      state.phase === "checked",
+      autoPlay,
+    ),
   );
 
   // 채점 전이마다 한 번 판정을 낭독합니다.

@@ -4,7 +4,9 @@
 
 import type { LearningItem } from "../lib/episode-content.model";
 import type { NonEmpty } from "../lib/non-empty";
+import type { SentenceOrderQuestion } from "../screens/sentence-order/sentence-order-questions";
 import type { SyllableBuildQuestion } from "../screens/syllable-build/syllable-build.contract";
+import { audioField, catalogAnswerEchoOf, catalogListenAudioOf } from "./catalog-item-audio";
 import { englishOf, instructionOf, koOf, optionalField, skippedItem } from "./catalog-item-text";
 import type { CatalogLessonItemPort, CatalogMappedItem } from "./catalog-lesson-types";
 import { shuffledOrder } from "./catalog-shuffle";
@@ -36,6 +38,42 @@ export function catalogSpellingOf(
   return walk(0) ? path : null;
 }
 
+/**
+ * 듣기 조립(LISTEN_BUILD)입니다 — 소리가 없으면 건너뜁니다. 정답을 공백으로 나눈 조각마다 아직 안 쓴 첫 같은
+ * 글자 타일을 짝지으니 정답에 안 쓰인 타일이 오답 조각입니다.
+ */
+export function listenBuildItemOf(
+  item: Extract<LearningItem, { type: "LISTEN_BUILD" }>,
+  port: CatalogLessonItemPort,
+): CatalogMappedItem {
+  const audio = catalogListenAudioOf(item, port);
+  if (audio === null) return skippedItem(item, "audio-missing");
+  const tiles = item.tiles.map((tile) => koOf(port, tile.ko));
+  const answer = item.answers[0] === undefined ? "" : koOf(port, item.answers[0].ko);
+  const pieces = answer.split(/\s+/).filter((piece) => piece !== "");
+  if (tiles.length === 0 || tiles.includes("") || pieces.length === 0) {
+    return skippedItem(item, "malformed");
+  }
+  const used = tiles.map(() => false);
+  const picked: number[] = [];
+  for (const piece of pieces) {
+    const index = tiles.findIndex((tile, position) => !used[position] && tile === piece);
+    if (index < 0) return skippedItem(item, "malformed");
+    used[index] = true;
+    picked.push(index);
+  }
+  const order = shuffledOrder(`${port.episodeId}/${item.id}`, tiles.length);
+  const english = englishOf(port, item.stimulus.audio?.en) ?? englishOf(port, item.answers[0]?.en);
+  const question: SentenceOrderQuestion = {
+    prompt: english ?? koOf(port, item.prompt.ko),
+    chips: order.map((index) => tiles[index] ?? ""),
+    answerOrder: picked.map((tile) => order.indexOf(tile)),
+    audio,
+    ...optionalField("instruction", instructionOf(port, item.prompt)),
+  };
+  return { kind: "sentence-order", itemId: item.id, question };
+}
+
 const withoutSpaces = (text: string): string => text.replace(/\s+/g, "");
 const isNonEmpty = (values: readonly string[]): values is NonEmpty<string> => values.length > 0;
 
@@ -65,6 +103,7 @@ export function syllableBuildItemOf(
     slotCount: spelling.length,
     answers,
     ...optionalField("instruction", instructionOf(port, item.prompt)),
+    ...audioField(catalogAnswerEchoOf(item, port)),
   };
   return { kind: "syllable-build", itemId: item.id, question };
 }

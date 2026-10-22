@@ -106,6 +106,9 @@ export type ListeningCopy = {
   readonly instruction: string;
   readonly playback: Readonly<Record<"pause" | "resume" | "play", string>>;
   readonly playFromStart: string;
+  readonly slow: string;
+  readonly playAgain: string;
+  readonly stop: string;
 };
 
 export type WordChoiceCopy = { readonly instruction: string };

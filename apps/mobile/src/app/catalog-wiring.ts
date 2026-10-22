@@ -5,16 +5,24 @@ import { catalogCoverWiring } from "./catalog-cover-wiring";
 import type { CatalogCoverWiring, CatalogCoverWiringArgs } from "./catalog-cover-wiring";
 import { catalogLessonWiring } from "./catalog-lesson-wiring";
 import type { CatalogLessonWiring, CatalogLessonWiringArgs } from "./catalog-lesson-wiring";
+import { catalogListenWiring } from "./catalog-listen-wiring";
+import type { CatalogListenWiring, CatalogListenWiringArgs } from "./catalog-listen-wiring";
 import { roleplayStoryWiring } from "./roleplay-story-wiring";
 import type { RoleplayStoryWiring } from "./roleplay-story-wiring";
 
-export type CatalogWiring = CatalogCoverWiring & CatalogLessonWiring & RoleplayStoryWiring;
-export type CatalogWiringArgs = CatalogCoverWiringArgs & CatalogLessonWiringArgs;
+export type CatalogWiring = CatalogCoverWiring &
+  CatalogLessonWiring &
+  RoleplayStoryWiring &
+  CatalogListenWiring;
+export type CatalogWiringArgs = CatalogCoverWiringArgs &
+  CatalogLessonWiringArgs &
+  CatalogListenWiringArgs;
 
 export function catalogWiring(args: CatalogWiringArgs): CatalogWiring {
   return {
     ...catalogCoverWiring(args),
     ...catalogLessonWiring(args),
     ...roleplayStoryWiring(args),
+    ...catalogListenWiring(args),
   };
 }

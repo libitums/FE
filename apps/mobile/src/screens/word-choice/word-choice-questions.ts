@@ -1,6 +1,8 @@
 // 낱말 고르기의 문항 타입을 소유합니다(ADR-0006 D4 — 순수 로직은 unit 계층 대상입니다). UI를 import하지
 // 않습니다. 듣기(`listening-questions.ts`)와 같은 자리에 같은 꼴로 섭니다.
 
+import type { QuestionAudio } from "../../lib/question-audio";
+
 // ---------------------------------------------------------------- 도메인 타입
 
 export type WordChoicePicture = {
@@ -28,4 +30,6 @@ export type WordChoiceQuestion = {
   readonly picture?: WordChoicePicture;
   /** 보기마다 아래 작은 번역 줄입니다. 있으면 길이 = `choices.length`(매핑이 보장)이고 보기는 세로로 쌓입니다. */
   readonly choiceTranslations?: readonly string[];
+  /** 문항 음성입니다 — 단어 선택(REPLY_SELECT)은 듣기 갈래, 그림 고르기 · 뜻 고르기는 판정 뒤 재생 갈래. 없으면 키가 없습니다. */
+  readonly audio?: QuestionAudio;
 };

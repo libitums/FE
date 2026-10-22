@@ -28,6 +28,7 @@ const content: EpisodeContent = {
     cache: { manifest: null, episodes: {} },
   }),
   imageUrlOf: (path) => `https://cdn/${path}`,
+  audioUrlOf: () => null,
   fillText: fillPlaceholders,
   audioTimingOf: () => null,
 };

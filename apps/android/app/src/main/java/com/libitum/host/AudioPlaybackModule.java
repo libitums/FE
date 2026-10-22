@@ -18,6 +18,10 @@ public final class AudioPlaybackModule extends LynxModule {
     playback.play(source, done);
   }
 
+  @LynxMethod public void playAtRate(String source, double rate, Callback done) {
+    playback.play(source, AudioPlaybackRate.normalized(rate), done);
+  }
+
   @LynxMethod public void stop() {
     playback.stop();
   }

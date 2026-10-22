@@ -1,5 +1,7 @@
 import type { ReactNode } from "@lynx-js/react";
 
+import { ItemListenControls } from "../../components/ItemListenControls";
+import type { ListenAudioControl } from "../../components/use-listen-audio";
 import { useUiCopy } from "../../lib/ui-copy";
 
 import { WordChoicePicture } from "./WordChoicePicture";
@@ -16,6 +18,8 @@ export type WordChoicePresentationProps = {
   /** 이 문항에 답했는지입니다 — 그림 문항의 정답 이름표가 이것을 따릅니다. */
   readonly answered: boolean;
   readonly pictureState: WordChoicePictureState;
+  /** 듣기 갈래 문항 음성의 조작입니다 — 있으면 제시문 · 지원 줄 다음에 간이 줄이 섭니다. */
+  readonly listen?: ListenAudioControl | undefined;
   readonly onLoad: () => void;
   readonly onError: () => void;
 };
@@ -27,6 +31,7 @@ export function WordChoicePresentation({
   questionIndex,
   answered,
   pictureState,
+  listen,
   onLoad,
   onError,
 }: WordChoicePresentationProps): ReactNode {
@@ -80,6 +85,9 @@ export function WordChoicePresentation({
         <text className="word-choice-screen-support" data-testid="word-choice-screen-translation">
           {question.translation}
         </text>
+      )}
+      {listen === undefined ? null : (
+        <ItemListenControls control={listen} testId="word-choice-listen" />
       )}
     </>
   );

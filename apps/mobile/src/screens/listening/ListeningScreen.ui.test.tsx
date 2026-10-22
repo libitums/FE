@@ -4,12 +4,15 @@ import { act, fireEvent, render, screen, within } from "@lynx-js/react/testing-l
 import type { AnswerResult } from "../../lib/answer-result";
 import { StepListening as ListeningScreen } from "./StepListening.test-support";
 import type { ListeningStepId } from "./listening-steps.test-support";
-// sessionOptions가 필수 prop이 됐습니다. 이 파일의 fixture는 언제나 초기값(둘
-// 다 켜짐)을 줍니다 — 단언은 한 글자도 바꾸지 않습니다.
-import { initialSessionOptions } from "../../lib/session-options";
+// sessionOptions가 필수 prop입니다. 이 파일의 fixture는 언제나 대본 표시를 켠 값을 줍니다 —
+// 초기값은 대본 꺼짐으로 바뀌었고(v2), 단언은 대본이 보이는 화면을 봅니다.
+import type { SessionOptions } from "../../lib/session-options";
 import { UiCopyContext } from "../../lib/ui-copy";
 import { markedUiCopy } from "../../lib/ui-copy.test-support";
 import { expectCompleteScene, expectQuestionScene } from "../learning/complete-scene.test-support";
+
+// 대본 표시를 켠 fixture입니다 — 기본값이 꺼짐(v2)이 되어도 이 파일의 단언은 대본이 보이는 화면을 봅니다.
+const transcriptOn: SessionOptions = { "auto-play-audio": true, "show-transcript": true };
 
 // 무대(가운데 카드) 안만 세는 헬퍼입니다. 뼈대는 `LearningShell`의 것이고 그 계약은
 // 껍데기 자신의 테스트가 답니다 — 여기서 화면 전체를 세면 상단 바의 칩 · 알림 버튼과
@@ -69,7 +72,7 @@ function renderOrdering(
       stepId="ordering"
       onExit={overrides.onExit ?? (() => {})}
       onFinish={overrides.onFinish ?? (() => {})}
-      sessionOptions={initialSessionOptions}
+      sessionOptions={transcriptOn}
     />,
   );
 }
@@ -223,7 +226,7 @@ test("다른 스텝으로 렌더하면 문항이 갈린다", () => {
       stepId="ordering"
       onExit={() => {}}
       onFinish={() => {}}
-      sessionOptions={initialSessionOptions}
+      sessionOptions={transcriptOn}
     />,
   );
   const orderingPrompt = screen.getByTestId("listening-prompt-text").textContent;
@@ -234,7 +237,7 @@ test("다른 스텝으로 렌더하면 문항이 갈린다", () => {
       stepId="introduction"
       onExit={() => {}}
       onFinish={() => {}}
-      sessionOptions={initialSessionOptions}
+      sessionOptions={transcriptOn}
     />,
   );
 
@@ -416,7 +419,7 @@ test("0번 보기를 골라도 응답으로 기록된다 — 0은 falsy다", () 
       stepId="introduction"
       onExit={() => {}}
       onFinish={() => {}}
-      sessionOptions={initialSessionOptions}
+      sessionOptions={transcriptOn}
     />,
   );
 
@@ -525,7 +528,7 @@ test("완료 전이에서 custom announceCompletion이 원문으로 한 번, bui
       stepId="ordering"
       onExit={() => {}}
       onFinish={() => {}}
-      sessionOptions={initialSessionOptions}
+      sessionOptions={transcriptOn}
     />,
   );
   expect(completion).toHaveLength(1);
@@ -604,7 +607,7 @@ test("껍데기의 나가기가 이 화면의 onExit에 닿는다", () => {
       stepId="ordering"
       onExit={onExit}
       onFinish={() => {}}
-      sessionOptions={initialSessionOptions}
+      sessionOptions={transcriptOn}
     />,
   );
 
@@ -801,7 +804,7 @@ test("다른 스텝으로 렌더하면 play의 source가 그 스텝의 첫 문�
       stepId="introduction"
       onExit={() => {}}
       onFinish={() => {}}
-      sessionOptions={initialSessionOptions}
+      sessionOptions={transcriptOn}
     />,
   );
 
@@ -897,7 +900,7 @@ test("[X-C] 완료 상태에서 같은 props로 다시 렌더해도 announce가 
       stepId="ordering"
       onExit={onExit}
       onFinish={onFinish}
-      sessionOptions={initialSessionOptions}
+      sessionOptions={transcriptOn}
     />,
   );
 
@@ -910,7 +913,7 @@ test("[X-C] 완료 상태에서 같은 props로 다시 렌더해도 announce가 
       stepId="ordering"
       onExit={onExit}
       onFinish={onFinish}
-      sessionOptions={initialSessionOptions}
+      sessionOptions={transcriptOn}
     />,
   );
   view.rerender(
@@ -918,7 +921,7 @@ test("[X-C] 완료 상태에서 같은 props로 다시 렌더해도 announce가 
       stepId="ordering"
       onExit={onExit}
       onFinish={onFinish}
-      sessionOptions={initialSessionOptions}
+      sessionOptions={transcriptOn}
     />,
   );
 
@@ -1096,7 +1099,7 @@ test("관계없는 리렌더가 끼어도 기다림이 처음으로 되돌아가
       stepId="ordering"
       onExit={() => {}}
       onFinish={() => {}}
-      sessionOptions={initialSessionOptions}
+      sessionOptions={transcriptOn}
     />,
   );
   expect(screen.getByTestId("learning-shell-chapter")).toHaveTextContent("Lesson 1 / 3");
@@ -1144,7 +1147,7 @@ function renderOrderingMarked(): ReturnType<typeof render> {
         stepId="ordering"
         onExit={() => {}}
         onFinish={() => {}}
-        sessionOptions={initialSessionOptions}
+        sessionOptions={transcriptOn}
       />
     </UiCopyContext.Provider>,
   );

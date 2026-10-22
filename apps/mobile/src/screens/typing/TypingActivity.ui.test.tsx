@@ -21,7 +21,7 @@ const dictation: TypingQuestion = {
   cueSupport: "Here's my passport.",
   hint: null,
   answers: ["여권 여기 있어요.", "여권 여기 있어요"],
-  audioSource: null,
+  audio: null,
 };
 
 const translation: TypingQuestion = {
@@ -32,7 +32,7 @@ const translation: TypingQuestion = {
   cueSupport: null,
   hint: null,
   answers: ["일주일 묵어요."],
-  audioSource: null,
+  audio: null,
 };
 
 const pattern: TypingQuestion = {
@@ -43,7 +43,7 @@ const pattern: TypingQuestion = {
   cueSupport: null,
   hint: "{명사} 어디예요?",
   answers: ["화장실 어디예요?", "화장실 어디예요"],
-  audioSource: null,
+  audio: null,
 };
 
 const questions: readonly TypingQuestion[] = [dictation, translation, pattern];

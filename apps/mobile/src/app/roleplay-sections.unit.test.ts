@@ -19,6 +19,7 @@ const catalog = buildEpisodeCatalog({
 const episodeContent: EpisodeContent = {
   catalog,
   imageUrlOf: (path) => `https://cdn/${path}`,
+  audioUrlOf: () => null,
   fillText: fillPlaceholders,
   audioTimingOf: () => null,
 };
