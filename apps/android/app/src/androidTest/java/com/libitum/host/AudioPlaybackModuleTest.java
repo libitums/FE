@@ -257,6 +257,7 @@ public final class AudioPlaybackModuleTest {
     module.resume();
     awaitPlayerPlaying();
     assertEquals("speed lost after resume", 0.85f, playerSpeed(), 0.01f);
+    assertEquals("slow speech must keep its pitch", 1f, playerPitch(), 0.0001f);
     assertTrue("resumed slow source did not finish", complete.await(30, TimeUnit.SECONDS));
     Thread.sleep(300);
     assertEquals(1, calls.get());
@@ -278,6 +279,7 @@ public final class AudioPlaybackModuleTest {
     playback.onAudioFocusChange(AudioManager.AUDIOFOCUS_GAIN);
     awaitPlayerPlaying();
     assertEquals("speed lost after focus returned", 0.85f, playerSpeed(), 0.01f);
+    assertEquals("pitch changed after focus returned", 1f, playerPitch(), 0.0001f);
     assertTrue("slow speech did not resume after focus returned", complete.await(30, TimeUnit.SECONDS));
     Thread.sleep(300);
     assertEquals(1, calls.get());
@@ -298,6 +300,7 @@ public final class AudioPlaybackModuleTest {
     module.play("tutorial-cabin-announcement", args -> {});
     awaitPlaybackStarted();
     assertEquals(1f, playerSpeed(), 0.01f);
+    assertEquals(1f, playerPitch(), 0.0001f);
   }
 
   /** AP-S5 */
@@ -339,14 +342,23 @@ public final class AudioPlaybackModuleTest {
 
   /** The speed the live MediaPlayer is actually set to, read on the main thread. */
   private float playerSpeed() {
-    float[] result = new float[1];
+    return playerParams().getSpeed();
+  }
+
+  /** The pitch the live MediaPlayer is actually set to — slow speech must not drop it. */
+  private float playerPitch() {
+    return playerParams().getPitch();
+  }
+
+  private android.media.PlaybackParams playerParams() {
+    android.media.PlaybackParams[] result = new android.media.PlaybackParams[1];
     InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
       try {
         java.lang.reflect.Field playerField = AudioPlaybackController.class.getDeclaredField("player");
         playerField.setAccessible(true);
         android.media.MediaPlayer active = (android.media.MediaPlayer) playerField.get(playback);
         if (active == null) throw new AssertionError("no player");
-        result[0] = active.getPlaybackParams().getSpeed();
+        result[0] = active.getPlaybackParams();
       } catch (ReflectiveOperationException error) {
         throw new AssertionError(error);
       }

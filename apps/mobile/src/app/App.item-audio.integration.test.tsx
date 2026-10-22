@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { screen } from "@lynx-js/react/testing-library";
+import { fireEvent, screen } from "@lynx-js/react/testing-library";
 
 import type { CatalogActivity, CatalogLessonPlan } from "./catalog-lesson-plan";
 import { withItemAudioIds } from "./test-helpers/item-audio-content";
@@ -55,6 +55,12 @@ const dataState = (id: string): string | null => screen.getByTestId(id).getAttri
 const leaveLesson = (): void => {
   tapId("learning-shell-exit");
   tapButtonIn("ui-lynx-dialog-action-leave");
+};
+/** 표지 컷 하나를 넘깁니다 — 타자기가 쓰는 중이면 먼저 대사를 완성합니다. */
+const advanceCut = (): void => {
+  const dialog = screen.queryByTestId("ui-lynx-visual-novel-dialog");
+  if (dialog?.getAttribute("data-status") === "revealing") tapButtonIn("catalog-cover-screen-next");
+  tapButtonIn("catalog-cover-screen-next");
 };
 const answered = (booted: ItemAudioBooted) =>
   booted.events.filter((event) => (event.name as string) === "episode_listen_item_answered");
@@ -350,6 +356,27 @@ describe("회귀 · 측정", () => {
     tapNode(u01, "RP");
 
     expect(screen.getByTestId("catalog-final-screen")).toBeInTheDocument();
+    const added = host.play.mock.calls.slice(before);
+    expect(added.length).toBeGreaterThan(0);
+    for (const call of added) expect(call).toHaveLength(2);
+    expect(host.playAtRate.mock.calls.length).toBe(slowCalls);
+  });
+
+  test("IT8. 「천천히」를 켠 레슨을 끝내고 표지로 가도 표지 컷 재생은 play 인자 둘이고 playAtRate는 늘지 않는다", async () => {
+    const { host } = await bootItemAudioApp({ progress: throughCult });
+    tapNode(u01, "S2");
+    tapId("listening-prompt-slow");
+    expect(dataState("listening-prompt-slow")).toBe("on");
+    solveLesson(lessonPlanWith(u01, "S2"), true);
+    exitResult();
+    const slowCalls = host.playAtRate.mock.calls.length;
+    const before = host.play.mock.calls.length;
+
+    fireEvent.tap(screen.getByTestId(`ui-lynx-special-unit-catalog-cover-${u01}`), {});
+    tapButtonIn("episode-intro-screen-next");
+    expect(screen.getByTestId("catalog-cover-screen")).toBeInTheDocument();
+    for (let cut = 0; cut < 3; cut += 1) advanceCut();
+
     const added = host.play.mock.calls.slice(before);
     expect(added.length).toBeGreaterThan(0);
     for (const call of added) expect(call).toHaveLength(2);
