@@ -1,20 +1,12 @@
 // airbridge-events 단위 테스트가 함께 쓰는 입력 표입니다. 계약: ADR-0063.
 import type { AnalyticsEvent, AnalyticsEventName, AnalyticsEventSinks } from "./analytics.contract";
 
-/** 계약의 이름 44개 전부입니다 — 손으로 적고 타입에 묶습니다. */
+/** 계약의 이름 36개 전부입니다 — 손으로 적고 타입에 묶습니다. */
 export const allEventNames = [
   "entry_screen_viewed",
   "entry_login_method_selected",
   "entry_completed",
   "entry_returning_learner_entered",
-  "messenger_unit_opened",
-  "messenger_unit_completed",
-  "messenger_unit_exited_incomplete",
-  "visual_novel_unit_opened",
-  "visual_novel_unit_completed",
-  "visual_novel_unit_exited_incomplete",
-  "visual_novel_unit_replay_started",
-  "phone_call_unit_opened",
   "notifications_opened",
   "notification_item_tapped",
   "notification_item_deleted",
@@ -49,45 +41,13 @@ export const allEventNames = [
   "roleplay_story_completed",
 ] as const satisfies readonly AnalyticsEventName[];
 
-/** 위 셋을 뺀 41개 이름마다 최소 이벤트 하나입니다. */
+/** 매핑되는 둘(`entry_completed` · `episode_final_passed`)을 뺀 34개 이름마다 최소 이벤트 하나입니다. */
 export const unmappedEvents = [
   { name: "entry_screen_viewed", screen: "onboarding" },
   { name: "entry_login_method_selected", method: "phone" },
   { name: "entry_returning_learner_entered", method: "google" },
-  {
-    name: "messenger_unit_opened",
-    unitId: "appointment-confirmation",
-    entrySource: "journey",
-    entryStatus: "available",
-  },
-  {
-    name: "messenger_unit_exited_incomplete",
-    unitId: "appointment-confirmation",
-    entrySource: "roleplay",
-  },
-  {
-    name: "visual_novel_unit_opened",
-    unitId: "cafe-arrival-visual-novel",
-    entrySource: "roleplay",
-  },
-  {
-    name: "visual_novel_unit_exited_incomplete",
-    unitId: "cafe-arrival-visual-novel",
-    beatId: "enter",
-    entrySource: "roleplay",
-  },
-  {
-    name: "visual_novel_unit_replay_started",
-    unitId: "cafe-arrival-visual-novel",
-    entrySource: "journey",
-  },
-  {
-    name: "phone_call_unit_opened",
-    unitId: "appointment-confirmation-phone-call",
-    entrySource: "roleplay",
-  },
   { name: "notifications_opened" },
-  { name: "notification_item_tapped", notificationId: "n-1", target: "messenger" },
+  { name: "notification_item_tapped", notificationId: "n-1", target: "roleplay-list" },
   { name: "notification_item_deleted", notificationId: "n-2", target: "roleplay-list" },
   { name: "push_notification_opened", target: "journey-map" },
   { name: "settings_opened" },
@@ -101,7 +61,7 @@ export const unmappedEvents = [
   { name: "episode_intro_skipped", episodeId: "tutorial" },
   { name: "episode_intro_continued", episodeId: "tutorial", hasPrologue: true },
   { name: "episode_intro_exited", episodeId: "tutorial", stage: "prologue" },
-  { name: "episode_prologue_completed", episodeId: "tutorial", prologueKind: "call" },
+  { name: "episode_prologue_completed", episodeId: "tutorial", prologueKind: "cuts" },
   {
     name: "episode_content_refreshed",
     manifest: "updated",
@@ -141,7 +101,6 @@ export const unmappedEvents = [
     questionCount: "3",
     skippedCount: "0",
   },
-  { name: "episode_final_passed", episodeId: "u01", correctCount: "2", turnCount: "2" },
   { name: "learner_profile_saved", entry: "signup", change: "created" },
   { name: "learner_profile_opened" },
   { name: "progress_load_delayed" },
@@ -164,36 +123,40 @@ export const unmappedEvents = [
 
 export const entryCompleted = { name: "entry_completed" } as const satisfies AnalyticsEvent;
 
-export const messengerJourneyDone = {
-  name: "messenger_unit_completed",
-  unitId: "appointment-confirmation",
-  entrySource: "journey",
+export const episodeFinalPassed = {
+  name: "episode_final_passed",
+  episodeId: "u00-tutorial",
+  correctCount: "2",
+  turnCount: "2",
 } as const satisfies AnalyticsEvent;
 
-export const visualNovelJourneyDone = {
-  name: "visual_novel_unit_completed",
-  unitId: "cafe-arrival-visual-novel",
-  entrySource: "journey",
+export const episodeFinalPassedU01 = {
+  name: "episode_final_passed",
+  episodeId: "u01-water",
+  correctCount: "2",
+  turnCount: "2",
 } as const satisfies AnalyticsEvent;
 
-export const messengerRoleplayDone = {
-  name: "messenger_unit_completed",
-  unitId: "appointment-confirmation",
-  entrySource: "roleplay",
-} as const satisfies AnalyticsEvent;
+/** 지운 여덟 이름의 옛 이벤트입니다 — 어떤 출처로 들어와도 매핑은 null이어야 합니다. 계약 타입에는 이제 없어 단언으로 좁힙니다. */
+export const retiredSpecialUnitEvents = [
+  { name: "messenger_unit_completed", unitId: "appointment-confirmation", entrySource: "journey" },
+  { name: "messenger_unit_completed", unitId: "appointment-confirmation", entrySource: "roleplay" },
+  {
+    name: "visual_novel_unit_completed",
+    unitId: "cafe-arrival-visual-novel",
+    entrySource: "journey",
+  },
+  {
+    name: "visual_novel_unit_completed",
+    unitId: "cafe-arrival-visual-novel",
+    entrySource: "roleplay",
+  },
+] as unknown as readonly AnalyticsEvent[];
 
-export const visualNovelRoleplayDone = {
-  name: "visual_novel_unit_completed",
-  unitId: "cafe-arrival-visual-novel",
-  entrySource: "roleplay",
-} as const satisfies AnalyticsEvent;
-
-export const nullSinks: AnalyticsEventSinks = {
+/** 분석 sink 넷이 모두 비어 있는 묶음입니다. */
+export const nullSinks = {
   entryEventSink: null,
-  messengerEventSink: null,
-  visualNovelEventSink: null,
-  phoneCallEventSink: null,
   notificationEventSink: null,
   settingsEventSink: null,
   episodeIntroEventSink: null,
-};
+} as unknown as AnalyticsEventSinks;

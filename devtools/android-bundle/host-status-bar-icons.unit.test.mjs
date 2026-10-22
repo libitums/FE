@@ -102,9 +102,6 @@ export function JourneyMapScreen() {
 
 const CARRIER_PATHS = {
   intro: "screens/episode-intro/EpisodeIntroScreen.tsx",
-  narrative: "screens/episode-narrative/EpisodeNarrativeScreen.tsx",
-  final: "screens/episode-final/EpisodeFinalScreen.tsx",
-  visualNovel: "screens/visual-novel/VisualNovelScreen.tsx",
   entry: "screens/journey-entry/JourneyEntryScreen.tsx",
   catalogCover: "screens/catalog-cover/CatalogCoverScreen.tsx",
   catalogFinal: "screens/catalog-final/CatalogFinalScreen.tsx",
@@ -112,7 +109,6 @@ const CARRIER_PATHS = {
   roleplayPreview: "screens/roleplay-story/RoleplayPreviewScreen.tsx",
   roleplayTalk: "screens/roleplay-story/RoleplayTalkScreen.tsx",
   statModal: "screens/journey-map/JourneyStatModal.tsx",
-  guide: "components/FirstUnitGuide.tsx",
   map: "screens/journey-map/JourneyMapScreen.tsx",
 };
 
@@ -120,11 +116,6 @@ const CHAT_PATH = "screens/prologue/PrologueChatScreen.tsx";
 
 const appSession = (
   routes = [
-    "episode-intro",
-    "episode-prologue",
-    "episode-final",
-    "visual-novel",
-    "roleplay-visual-novel",
     "journey-entry",
     "catalog-cover",
     "catalog-final",
@@ -221,9 +212,6 @@ function healthyBase(overrides = {}) {
     syncSource: syncSource(),
     componentSources: {
       [CARRIER_PATHS.intro]: carrierComponent("EpisodeIntroScreen", "episode-intro-screen"),
-      [CARRIER_PATHS.narrative]: carrierComponent("EpisodeNarrativeScreen", "episode-narrative"),
-      [CARRIER_PATHS.final]: carrierComponent("EpisodeFinalScreen", "episode-final-screen"),
-      [CARRIER_PATHS.visualNovel]: carrierComponent("VisualNovelScreen", "visual-novel-screen"),
       [CARRIER_PATHS.entry]: carrierComponent("JourneyEntryScreen", "journey-entry-screen"),
       [CARRIER_PATHS.catalogCover]: carrierComponent("CatalogCoverScreen", "catalog-cover-screen"),
       [CARRIER_PATHS.catalogFinal]: carrierComponent("CatalogFinalScreen", "catalog-final-screen"),
@@ -237,7 +225,6 @@ function healthyBase(overrides = {}) {
         "episode-banner-screen",
       ),
       [CARRIER_PATHS.statModal]: statModalComponent(),
-      [CARRIER_PATHS.guide]: carrierComponent("FirstUnitGuide", "first-unit-guide"),
       [CARRIER_PATHS.map]: journeyMapScreen(),
       [CHAT_PATH]: plainComponent("PrologueChatScreen", "prologue-chat-screen"),
       "screens/splash/SplashScreen.tsx": plainComponent("SplashScreen", "splash-screen"),
@@ -302,11 +289,11 @@ test("SM3: a component attribute that is not the host dataset key is a marker-ke
 test("SM4: a registered component that lost its marker is a carrier issue naming the file", () => {
   assertRule(
     withComponent(
-      CARRIER_PATHS.final,
-      plainComponent("EpisodeFinalScreen", "episode-final-screen"),
+      CARRIER_PATHS.catalogFinal,
+      plainComponent("CatalogFinalScreen", "catalog-final-screen"),
     ),
     "carrier",
-    CARRIER_PATHS.final,
+    CARRIER_PATHS.catalogFinal,
   );
 });
 
@@ -346,15 +333,7 @@ test("SM6: a literal or conditional marker value is a stray-marker issue", () =>
 test("SM7: a new full-bleed route without a registry entry is a full-bleed-registry issue", () => {
   assertRule(
     healthy({
-      appSessionSource: appSession([
-        "episode-intro",
-        "episode-prologue",
-        "episode-final",
-        "visual-novel",
-        "roleplay-visual-novel",
-        "journey-entry",
-        "brand-new-route",
-      ]),
+      appSessionSource: appSession(["journey-entry", "brand-new-route"]),
     }),
     "full-bleed-registry",
     "brand-new-route",
@@ -455,27 +434,16 @@ test("SM10: the layoutEdgeToEdge defaults must stay and never turn the navigatio
   );
 });
 
-test("SM11: statusBarSurfaceRegistry matches the contract (ten routes, five CSS layers)", () => {
+test("SM11: statusBarSurfaceRegistry matches the contract (five routes, five CSS layers)", () => {
   const { fullBleedRoutes, fixedLayers } = statusBarSurfaceRegistry;
   assert.deepEqual(Object.keys(fullBleedRoutes).sort(), [
     "catalog-cover",
     "catalog-epilogue",
     "catalog-final",
-    "episode-final",
-    "episode-intro",
-    "episode-prologue",
     "journey-entry",
     "roleplay-story",
-    "roleplay-visual-novel",
-    "visual-novel",
   ]);
   const routeText = (route) => JSON.stringify(fullBleedRoutes[route]);
-  assert.match(routeText("episode-intro"), /EpisodeIntroScreen/);
-  assert.match(routeText("episode-prologue"), /EpisodeNarrativeScreen/);
-  assert.match(routeText("episode-final"), /EpisodeNarrativeScreen/);
-  assert.match(routeText("episode-final"), /EpisodeFinalScreen/);
-  assert.match(routeText("visual-novel"), /VisualNovelScreen/);
-  assert.match(routeText("roleplay-visual-novel"), /VisualNovelScreen/);
   assert.match(routeText("journey-entry"), /JourneyEntryScreen/);
   assert.match(routeText("catalog-cover"), /CatalogCoverScreen/);
   assert.match(routeText("catalog-cover"), /EpisodeIntroScreen/);
@@ -490,6 +458,22 @@ test("SM11: statusBarSurfaceRegistry matches the contract (ten routes, five CSS 
   assert.match(routeText("roleplay-story"), /RoleplayPreviewScreen/);
   assert.match(routeText("roleplay-story"), /CatalogCoverScreen/);
   assert.match(routeText("roleplay-story"), /RoleplayTalkScreen/);
+
+  // DP1 — 지운 route · 컴포넌트는 등록부에 없다.
+  for (const route of [
+    "episode-prologue",
+    "episode-final",
+    "visual-novel",
+    "roleplay-visual-novel",
+  ]) {
+    assert.ok(!(route in fullBleedRoutes), `${route} route must be gone`);
+  }
+  for (const component of ["EpisodeNarrativeScreen", "EpisodeFinalScreen", "VisualNovelScreen"]) {
+    assert.ok(
+      !(component in statusBarSurfaceRegistry.componentFiles),
+      `${component} must be gone from componentFiles`,
+    );
+  }
 
   assert.deepEqual(Object.keys(fixedLayers).sort(), [
     "components/first-unit-guide.css",
@@ -508,7 +492,6 @@ test("SM11: statusBarSurfaceRegistry matches the contract (ten routes, five CSS 
   const guide = layerText("components/first-unit-guide.css");
   assert.match(guide, /light-icons/);
   assert.doesNotMatch(guide, /dark-icons/);
-  assert.match(guide, /FirstUnitGuide\.tsx/);
   assert.match(guide, /JourneyMapScreen\.tsx/);
   assert.match(guide, /first-unit-map-scrim/);
 });
@@ -645,7 +628,7 @@ function withLearningGuide({ tsx, css } = {}) {
   });
 }
 
-test("SG1: the registry has its own fixed layer for learning-item-guide.css; first-unit-guide.css keeps its two carriers", () => {
+test("SG1: the registry has its own fixed layer for learning-item-guide.css; first-unit-guide.css keeps its one carrier (the map scrim)", () => {
   const { fixedLayers } = statusBarSurfaceRegistry;
   const own = fixedLayers[LEARNING_GUIDE_CSS];
   assert.ok(own !== undefined, `fixedLayers must have a ${LEARNING_GUIDE_CSS} key`);
@@ -656,7 +639,6 @@ test("SG1: the registry has its own fixed layer for learning-item-guide.css; fir
   );
   const first = fixedLayers["components/first-unit-guide.css"];
   assert.deepEqual(first.carriers.map((carrier) => carrier.file).sort(), [
-    "components/FirstUnitGuide.tsx",
     "screens/journey-map/JourneyMapScreen.tsx",
   ]);
   assert.ok(

@@ -28,17 +28,13 @@ const content: EpisodeContent = {
     cache: { manifest: null, episodes: {} },
   }),
   imageUrlOf: (path) => `https://cdn/${path}`,
+  audioUrlOf: () => null,
   fillText: fillPlaceholders,
   audioTimingOf: () => null,
 };
 const source = { episodeContent: content, learnerFill: noLearnerProfile };
 
 const fullBleedRoutes: readonly Screen[] = [
-  asScreen({ name: "episode-intro", unitId: "tutorial-intro" }),
-  asScreen({ name: "episode-prologue", unitId: "tutorial-intro" }),
-  asScreen({ name: "episode-final", unitId: "tutorial-final-test" }),
-  asScreen({ name: "visual-novel", unitId: "cafe-arrival-visual-novel" }),
-  asScreen({ name: "roleplay-visual-novel", unitId: "cafe-arrival-visual-novel" }),
   asScreen({ name: "journey-entry" }),
   asScreen({ name: "catalog-cover", episodeId: "u01-water" }),
   asScreen({ name: "catalog-final", episodeId: "u01-water" }),
@@ -59,14 +55,7 @@ const paddedRoutes: readonly Screen[] = [
   asScreen({ name: "journey-map" }),
   asScreen({ name: "settings" }),
   asScreen({ name: "notifications" }),
-  asScreen({ name: "phone-call", unitId: "cafe-order-phone-call" }),
-  asScreen({ name: "roleplay-phone-call", unitId: "cafe-order-phone-call" }),
   asScreen({ name: "catalog-unit-complete", episodeId: "u01-water", unitKey: "S3" }),
-  asScreen({ name: "episode-prologue-complete", unitId: "tutorial-intro" }),
-];
-const messengerRoutes: readonly Screen[] = [
-  asScreen({ name: "messenger", unitId: "appointment-confirmation" }),
-  asScreen({ name: "roleplay-messenger", unitId: "appointment-confirmation" }),
 ];
 
 const ios: SafeAreaInsets = { top: 59, bottom: 34, left: 0, right: 0 };
@@ -79,14 +68,6 @@ describe("shellEdgeModeFor", () => {
     (_name, screen) => {
       expect(shellEdgeModeFor(screen, null)).toBe("full-bleed");
       expect(shellEdgeModeFor(screen, "typing")).toBe("full-bleed");
-    },
-  );
-
-  test.each(messengerRoutes.map((screen) => [screen.name, screen] as const))(
-    "SE1. %s 는 학습형과 무관하게 keyboard-dock이다",
-    (_name, screen) => {
-      expect(shellEdgeModeFor(screen, null)).toBe("keyboard-dock");
-      expect(shellEdgeModeFor(screen, "word-choice")).toBe("keyboard-dock");
     },
   );
 
@@ -150,7 +131,6 @@ describe("shellInsetsOf", () => {
   test("SE4. 모드 판정과 인셋 계산을 합성한다", () => {
     expect(shellInsetsOf(lesson("S4", 2), ios, source)).toEqual(topOnly(59));
     expect(shellInsetsOf(lesson("S4", 1), ios, source)).toEqual(ios);
-    expect(shellInsetsOf(messengerRoutes[0] as Screen, ios, source)).toEqual(topOnly(59));
     expect(shellInsetsOf(fullBleedRoutes[0] as Screen, ios, source)).toEqual(zeroSafeAreaInsets);
     expect(shellInsetsOf(asScreen({ name: "settings" }), ios, source)).toEqual(ios);
   });

@@ -18,19 +18,19 @@ import { markedUiCopy } from "../../lib/ui-copy.test-support";
 const messengerItem: NotificationItem = {
   id: "notification-messenger",
   message: "Minseo sent you an appointment message",
-  target: { kind: "messenger", unitId: "appointment-confirmation" },
+  target: { kind: "roleplay-list" },
 };
 
 const phoneCallItem: NotificationItem = {
   id: "notification-phone-call",
   message: "Minseo is calling about your appointment",
-  target: { kind: "phone-call", unitId: "appointment-confirmation-phone-call" },
+  target: { kind: "roleplay-list" },
 };
 
 const visualNovelItem: NotificationItem = {
   id: "notification-visual-novel",
   message: "Minseo has arrived at the café",
-  target: { kind: "visual-novel", unitId: "cafe-arrival-visual-novel" },
+  target: { kind: "roleplay-list" },
 };
 
 const roleplayListItem: NotificationItem = {
@@ -167,7 +167,7 @@ describe("NotificationListItem UI", () => {
       id: "notification-long-message",
       message:
         "이것은 아주 긴 알림 메시지입니다. 목적지 낱말과 함께 접근성 이름이 얼마나 길어지든 계산 규칙은 데이터 값에 기대지 않아야 합니다.",
-      target: { kind: "messenger", unitId: "appointment-confirmation" },
+      target: { kind: "roleplay-list" },
     };
 
     const arbitraryIdItem: NotificationItem = {

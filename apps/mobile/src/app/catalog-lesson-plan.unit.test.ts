@@ -43,6 +43,7 @@ const port = {
   episodeId: "u01-water",
   glossOf: () => null,
   imageUrlOf: () => null,
+  audioUrlOf: () => null,
 } as const;
 
 const noImageUrl = (): null => null;
@@ -67,6 +68,7 @@ function contentOf(catalog: readonly CatalogEntry[]): EpisodeContent {
   return {
     catalog,
     imageUrlOf: (path) => `https://cdn/${path}`,
+    audioUrlOf: () => null,
     fillText: fillPlaceholders,
     audioTimingOf: () => null,
   };
@@ -251,32 +253,32 @@ describe("catalogItemOf — 빈칸 채우기는 단어 선택이다", () => {
 });
 
 describe("catalogItemOf — 듣기", () => {
-  test("LP4. 실데이터 LISTEN_SELECT는 오디오가 없어 audio-missing으로 건너뛴다", () => {
+  test("LP4. 실데이터 LISTEN_SELECT는 오디오가 없어도 건너뛰지 않고 audio가 null인 듣기 문항으로 선다", () => {
     const item = realItem("u02-checkin", "S3-01");
     if (item.type !== "LISTEN_SELECT") throw new Error("모양 불일치");
 
-    expect(catalogItemOf(item, port)).toEqual({
-      kind: "skipped",
-      itemId: "S3-01",
-      type: "LISTEN_SELECT",
-      reason: "audio-missing",
-    });
+    const mapped = catalogItemOf(item, port);
+
+    expect(mapped).toMatchObject({ kind: "listening", itemId: "S3-01" });
+    if (mapped.kind !== "listening") return;
+    expect(mapped.question.audio).toBeNull();
   });
 
-  test("LP4. 실데이터의 어느 듣기 문항도 계획에 듣기 구간으로 서지 않는다", () => {
+  test("LP4. 실데이터의 모양이 맞는 듣기 문항은 오디오가 없어도 모두 audio null 듣기 문항으로 선다", () => {
     let listenItems = 0;
     for (const entry of realCatalog) {
       if (entry.status !== "ready") continue;
       for (const unit of entry.episode.units) {
         const plan = catalogLessonPlanOf(entry, unit.id, fill, noImageUrl);
-        expect(plan?.activities.some((activity) => activity.form === "listening")).toBe(false);
-        for (const item of unit.items) {
-          if (item.type !== "LISTEN_SELECT" || item.options === undefined) continue;
+        const mapped = unit.items
+          .filter((item) => item.type === "LISTEN_SELECT" && item.options !== undefined)
+          .map((item) => catalogItemOf(item, { ...port, episodeId: entry.id }));
+        for (const result of mapped) {
           listenItems += 1;
-          expect(catalogItemOf(item, { ...port, episodeId: entry.id })).toMatchObject(
-            skippedWith("audio-missing"),
-          );
+          expect(result.kind).toBe("listening");
         }
+        const hasListening = plan?.activities.some((activity) => activity.form === "listening");
+        expect(hasListening === true).toBe(mapped.length > 0);
       }
     }
     expect(listenItems).toBeGreaterThan(0);
@@ -302,10 +304,14 @@ describe("catalogItemOf — 듣기", () => {
     );
   });
 
-  test("LP5. 모양이 맞아도(보기가 둘) 오디오가 없으면 audio-missing으로 건너뛴다", () => {
+  test("LP5. 모양이 맞으면(보기가 둘) 오디오가 없어도 건너뛰지 않고 audio null 듣기 문항이다", () => {
     const two = [opt("o1", "가", false), opt("o2", "나", true)];
 
-    expect(catalogItemOf(listenSelect("L", two), port)).toMatchObject(skippedWith("audio-missing"));
+    expect(catalogItemOf(listenSelect("L", two), port)).toMatchObject({
+      kind: "listening",
+      itemId: "L",
+      question: { audio: null },
+    });
   });
 
   test("LP5. 모양이 틀린 듣기는 오디오 사유보다 먼저 no-options · malformed로 건너뛴다", () => {
@@ -458,7 +464,7 @@ describe("catalogItemOf — 타자 입력", () => {
         cueSupport: "Here's my passport.",
         hint: null,
         answers: ["여권 여기 있어요.", "여권 여기 있어요"],
-        audioSource: null,
+        audio: null,
       },
     });
   });
@@ -529,7 +535,7 @@ describe("catalogActivitiesOf", () => {
     question: {
       prompt: `l${n}`,
       romanization: `l${n}`,
-      audioSource: null,
+      audio: null,
       choices: ["a", "b"],
       answerIndex: 0,
     },
@@ -613,33 +619,33 @@ function runsOf(activities: readonly CatalogActivity[]): string {
 
 // 유닛 × 에피소드 24칸 — [에피소드, 키, 표시 문항 수, 채점 문항 수, 건너뛴 문항 수, 구간(학습형 글자 + 문항 수)].
 // 단어 카드(C)는 표시에는 세고 채점에는 세지 않는다. 빈칸 채우기(CLOZE)는 단어 선택(W)으로 선다. 소리 없는
-// 듣기는 audio-missing으로, 그림 없는 그림 고르기는 image-missing으로 건너뛰어 구간이 없고, 그 자리 양옆의
-// 같은 학습형은 한 구간으로 이어진다(E-2).
+// 듣기(L)는 소리가 없어도 audio null 듣기 문항으로 서고, 그림 없는 그림 고르기는 image-missing으로
+// 건너뛰어 구간이 없으며 그 자리 양옆의 같은 학습형은 한 구간으로 이어진다(E-2).
 const planTable = [
   ["u01-water", "S1", 6, 3, 2, "C3W3"],
-  ["u01-water", "S3", 6, 6, 4, "W3O3"],
+  ["u01-water", "S3", 10, 10, 0, "W3L1O2L3O1"],
   ["u01-water", "S4", 9, 4, 1, "C5W2T1W1"],
-  ["u01-water", "S5", 6, 6, 5, "W1O1W2O2"],
+  ["u01-water", "S5", 10, 10, 1, "W1L1O1L1W1L1W1O1L1O1"],
   ["u01-water", "S6", 12, 12, 0, "T12"],
   ["u01-water", "S7", 6, 6, 0, "T2W2T2"],
   ["u01-water", "S8", 6, 6, 0, "W2T1W3"],
-  ["u01-water", "S9", 9, 9, 3, "W2T1W2T2W1T1"],
+  ["u01-water", "S9", 12, 12, 0, "L1W2L1T1W2T2W1T1L1"],
   ["u02-checkin", "S1", 14, 8, 2, "C6W4O1W3"],
-  ["u02-checkin", "S3", 10, 10, 5, "O2W2O2W3O1"],
+  ["u02-checkin", "S3", 15, 15, 0, "L1O2W2O1L1O1W1L2W2O1L1"],
   ["u02-checkin", "S4", 10, 5, 3, "C5W4T1"],
-  ["u02-checkin", "S5", 10, 10, 7, "W1O1W2O1W1O2W1O1"],
+  ["u02-checkin", "S5", 16, 16, 1, "L2W1L1O1L1W1L2W1O1W1O2W1O1"],
   ["u02-checkin", "S6", 19, 19, 0, "T19"],
   ["u02-checkin", "S7", 12, 12, 0, "W1T1W1T1O1W2T2W1T2"],
   ["u02-checkin", "S8", 7, 7, 0, "W3T2W2"],
-  ["u02-checkin", "S9", 15, 15, 4, "W1T2W4T3W2T1W2"],
+  ["u02-checkin", "S9", 18, 18, 1, "W1L1T2W4L1T2L1T1W2T1W2"],
   ["u03-mina", "S1", 9, 5, 1, "C4W4O1"],
-  ["u03-mina", "S3", 5, 5, 3, "O2W1O1W1"],
+  ["u03-mina", "S3", 8, 8, 0, "L1O2W1L1O1W1L1"],
   ["u03-mina", "S4", 6, 1, 3, "C5T1"],
-  ["u03-mina", "S5", 8, 8, 5, "W2O1W1O2W1O1"],
+  ["u03-mina", "S5", 12, 12, 1, "W1L2W1L1O1W1O2L1W1O1"],
   ["u03-mina", "S6", 14, 14, 0, "T14"],
-  ["u03-mina", "S7", 6, 6, 3, "T1W3T2"],
+  ["u03-mina", "S7", 7, 7, 2, "T1W1L1W2T2"],
   ["u03-mina", "S8", 5, 5, 1, "W5"],
-  ["u03-mina", "S9", 10, 10, 3, "W1P1W2T1P1W2T1W1"],
+  ["u03-mina", "S9", 11, 11, 2, "W1L1P1W2T1P1W2T1W1"],
 ] as const;
 
 describe("catalogLessonPlanOf — 실데이터", () => {
@@ -678,10 +684,10 @@ describe("catalogLessonPlanOf — 실데이터", () => {
     expect(planTable.map(([episodeId, key]) => `${episodeId}/${key}`)).toEqual(planned);
   });
 
-  test("LP15. u01 S3의 구간 문항 수는 3,3이다 — 듣기가 빠져 양옆의 문장 순서가 한 구간이 된다", () => {
+  test("LP15. u01 S3의 구간 문항 수는 3,1,2,3,1이다 — 소리 없는 듣기도 듣기 구간으로 서서 문장 순서를 가른다", () => {
     const plan = catalogLessonPlanOf(readyOf("u01-water"), "S3", fill, noImageUrl);
 
-    expect(plan?.activities.map((activity) => activity.questions.length)).toEqual([3, 3]);
+    expect(plan?.activities.map((activity) => activity.questions.length)).toEqual([3, 1, 2, 3, 1]);
   });
 
   test("LP-0. 실데이터에는 보일 문항이 0개인 유닛이 없다 — u01 S1은 카드 셋 뒤 단어 선택 셋이 선다", () => {
@@ -735,15 +741,14 @@ describe("catalogActivityPositionOf", () => {
 
   test("LP-E1. 활동의 오프셋은 앞 활동들의 문항 수 합이고 전체는 계획 문항 수다(카드가 없는 유닛)", () => {
     expect(positions("u01-water", "S3")).toEqual([
-      { offset: 0, total: 6, last: false, activityCount: 2 },
-      { offset: 3, total: 6, last: true, activityCount: 2 },
-    ]);
-    expect(positions("u02-checkin", "S3")).toEqual([
       { offset: 0, total: 10, last: false, activityCount: 5 },
-      { offset: 2, total: 10, last: false, activityCount: 5 },
+      { offset: 3, total: 10, last: false, activityCount: 5 },
       { offset: 4, total: 10, last: false, activityCount: 5 },
       { offset: 6, total: 10, last: false, activityCount: 5 },
       { offset: 9, total: 10, last: true, activityCount: 5 },
+    ]);
+    expect(positions("u03-mina", "S3").map((position) => position?.offset)).toEqual([
+      0, 1, 3, 4, 5, 6, 7,
     ]);
   });
 
@@ -822,7 +827,7 @@ describe("catalogActivityPositionOf", () => {
   test("LP-E1. 없는 활동 순번은 위치가 없다", () => {
     const plan = catalogLessonPlanOf(readyOf("u01-water"), "S3", fill, noImageUrl);
 
-    expect(plan === null ? 1 : catalogActivityPositionOf(plan, 2)).toBeNull();
+    expect(plan === null ? 1 : catalogActivityPositionOf(plan, 5)).toBeNull();
     expect(plan === null ? 1 : catalogActivityPositionOf(plan, -1)).toBeNull();
   });
 });

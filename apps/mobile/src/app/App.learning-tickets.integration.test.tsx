@@ -3,7 +3,7 @@ import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/
 
 import { statChipDropDurationMs } from "../components/StatChip";
 import { App } from "./App";
-import { productJourneySeed } from "./journey-progress";
+import { legacyPassedRecord } from "./test-helpers/progress-seed";
 import { learningProgressSnapshotFrom } from "./learning-progress";
 import { resetPushWiringForTests } from "./push-wiring";
 import { setTicketDropWaitForTests } from "./use-learning-tickets";
@@ -14,7 +14,7 @@ import { allLearningItemGuidesSeenValue } from "../lib/learning-item-guide.test-
 import { ticketRefillMs } from "../lib/learning-tickets";
 import type { EpisodeIntroEvent } from "../screens/episode-intro/episode-intro.contract";
 import { contentNotFoundResponse, isContentRequest } from "./test-helpers/content-requests";
-import { mapUnitTestId } from "./test-helpers/map-unit-testid";
+import { catalogNodeTestId } from "./test-helpers/map-unit-testid";
 
 // 학습 티켓을 App 한 트리에서 봅니다 — 머리 칩 · 말풍선 태그 · 새 레슨의 문지기 · 티켓 없음 대화상자 · 「Get more
 // tickets」 · 진행 저장(서버 · 기기 미전송). 대역은 경계뿐입니다 — `StorageModule` · `fetch` · 이벤트 sink.
@@ -32,13 +32,13 @@ const accessToken = `${base64Url({ alg: "none" })}.${base64Url({
   app_metadata: { provider: "google", providers: ["google"] },
 })}.sig`;
 
-/** 표지 완료 + 스텝 `count`개 완료. */
-const progressOf = (count: number) =>
+const u01 = "u01-water";
+
+/** 옛 튜토리얼을 마친 진행에 u01 표지와 완료한 유닛 키를 더합니다. */
+const progressOf = (done: readonly string[]) =>
   learningProgressSnapshotFrom({
-    ...productJourneySeed,
-    completedStepCount: count,
-    completedEpisodeIntroIds: ["tutorial-intro"],
-    catalogProgress: {},
+    legacyTutorial: legacyPassedRecord,
+    catalogProgress: { [u01]: ["intro", ...done] },
   });
 
 const env = {
@@ -132,12 +132,12 @@ const finishTicketDrop = () =>
 
 /** 스텝을 시작하고(말풍선 Start) 레슨이 열렸으면 나가기 확인으로 맵에 돌아옵니다. */
 function startStep(id: string): boolean {
-  tap(mapUnitTestId(id));
+  tap(catalogNodeTestId(u01, id));
   tap("step-sheet-start");
   finishTicketDrop();
   const opened = screen.queryByTestId("learning-shell") !== null;
   if (opened) {
-    tap("learning-shell-exit");
+    tap("learning-run-header-exit");
     fireEvent.tap(
       within(screen.getByTestId("ui-lynx-dialog-action-leave")).getByTestId("ui-lynx-button"),
       {},
@@ -147,14 +147,14 @@ function startStep(id: string): boolean {
 }
 
 test("[IT1] 새 레슨은 티켓 1장 — 칩 3 → 2, 말풍선에 태그, 서버 저장에 원장이 실린다", async () => {
-  await boot(async () => ok(progressOf(0)));
+  await boot(async () => ok(progressOf([])));
   expect(chip()).toHaveTextContent("3");
-  tap(mapUnitTestId("greeting"));
+  tap(catalogNodeTestId(u01, "S1"));
   expect(screen.getByTestId("step-sheet-ticket-cost")).toBeInTheDocument();
   tap("step-sheet-start");
   finishTicketDrop();
   expect(screen.getByTestId("learning-shell")).toBeInTheDocument();
-  tap("learning-shell-exit");
+  tap("learning-run-header-exit");
   fireEvent.tap(
     within(screen.getByTestId("ui-lynx-dialog-action-leave")).getByTestId("ui-lynx-button"),
     {},
@@ -166,12 +166,12 @@ test("[IT1] 새 레슨은 티켓 1장 — 칩 3 → 2, 말풍선에 태그, 서�
 });
 
 test("[IT2] 끝낸 레슨 다시 하기는 무료 — 태그 없음, 칩 그대로", async () => {
-  await boot(async () => ok(progressOf(2)));
-  tap(mapUnitTestId("greeting"));
+  await boot(async () => ok(progressOf(["S1"])));
+  tap(catalogNodeTestId(u01, "S1"));
   expect(screen.queryByTestId("step-sheet-ticket-cost")).not.toBeInTheDocument();
   fireEvent.tap(screen.getByTestId("step-sheet-start"), {});
   expect(screen.getByTestId("learning-shell")).toBeInTheDocument();
-  tap("learning-shell-exit");
+  tap("learning-run-header-exit");
   fireEvent.tap(
     within(screen.getByTestId("ui-lynx-dialog-action-leave")).getByTestId("ui-lynx-button"),
     {},
@@ -181,11 +181,11 @@ test("[IT2] 끝낸 레슨 다시 하기는 무료 — 태그 없음, 칩 그대�
 });
 
 test("[IT3] 0장에서 새 레슨은 열리지 않고 대화상자 · tickets_ran_out 한 번, Back to map이 닫는다", async () => {
-  await boot(async () => ok(progressOf(0)));
-  for (let i = 0; i < 3; i += 1) expect(startStep("greeting")).toBe(true);
+  await boot(async () => ok(progressOf([])));
+  for (let i = 0; i < 3; i += 1) expect(startStep("S1")).toBe(true);
   await flush();
   expect(chip()).toHaveTextContent("0");
-  expect(startStep("greeting")).toBe(false);
+  expect(startStep("S1")).toBe(false);
   expect(screen.getByTestId("out-of-tickets")).toBeInTheDocument();
   expect(screen.getByTestId("out-of-tickets-clock")).toHaveTextContent("1:00");
   expect(env.events.filter((e) => e.name === "tickets_ran_out")).toHaveLength(1);
@@ -195,9 +195,9 @@ test("[IT3] 0장에서 새 레슨은 열리지 않고 대화상자 · tickets_ra
 });
 
 test("[IT4] 대화상자에서 Get more → 오늘 1장, Start lesson이 막혔던 레슨을 연다", async () => {
-  await boot(async () => ok(progressOf(0)));
-  for (let i = 0; i < 3; i += 1) startStep("greeting");
-  startStep("greeting");
+  await boot(async () => ok(progressOf([])));
+  for (let i = 0; i < 3; i += 1) startStep("S1");
+  startStep("S1");
   tap("out-of-tickets-more");
   expect(env.events.filter((e) => e.name === "ticket_more_tapped")).toEqual([
     { name: "ticket_more_tapped", surface: "out_of_tickets", granted: true },
@@ -210,7 +210,7 @@ test("[IT4] 대화상자에서 Get more → 오늘 1장, Start lesson이 막혔�
 });
 
 test("[IT5] 칩 → 모달: 가득이면 Get more가 채우지 않고 안내만, 시간이 지나면 칸이 다시 찬다", async () => {
-  await boot(async () => ok(progressOf(0)));
+  await boot(async () => ok(progressOf([])));
   tap("top-bar-tickets");
   expect(screen.getByTestId("ticket-modal-value")).toHaveTextContent("3");
   tap("ticket-modal-more");
@@ -224,7 +224,7 @@ test("[IT5] 칩 → 모달: 가득이면 Get more가 채우지 않고 안내만,
     within(screen.getByTestId("ticket-modal-back")).getByTestId("ui-lynx-round-button"),
     {},
   );
-  startStep("greeting");
+  startStep("S1");
   await flush();
   tap("top-bar-tickets");
   expect(screen.getByTestId("ticket-modal-value")).toHaveTextContent("2");
@@ -238,10 +238,10 @@ test("[IT5] 칩 → 모달: 가득이면 Get more가 채우지 않고 안내만,
 
 test("[IT6] 오프라인(서버 실패)에서도 기기 저장본으로 쓰고, 원장은 기기 미전송 저장본에 남는다", async () => {
   await boot(async () => down, {
-    [`libitum.progress.cached.${user}`]: JSON.stringify(progressOf(0)),
+    [`libitum.progress.cached.${user}`]: JSON.stringify(progressOf([])),
   });
   expect(chip()).toHaveTextContent("3");
-  expect(startStep("greeting")).toBe(true);
+  expect(startStep("S1")).toBe(true);
   await flush();
   expect(chip()).toHaveTextContent("2");
   expect(env.saves).toHaveLength(0);

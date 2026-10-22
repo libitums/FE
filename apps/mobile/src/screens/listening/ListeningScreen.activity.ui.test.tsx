@@ -2,6 +2,7 @@ import { afterEach, expect, test, vi } from "vitest";
 import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
 import type { AnswerResult } from "../../lib/answer-result";
+import { listenAudioOf } from "../../lib/question-audio.test-support";
 import { initialSessionOptions } from "../../lib/session-options";
 import type { SessionOptions } from "../../lib/session-options";
 import { ListeningActivity } from "./ListeningScreen";
@@ -15,7 +16,7 @@ const silentQuestions: readonly [ListeningQuestion, ListeningQuestion] = [
   {
     prompt: "일주일 묵어요.",
     romanization: "iljuil mugeoyo.",
-    audioSource: null,
+    audio: null,
     choices: ["I'm leaving today.", "I'm lost.", "I'd like a map.", "I'm staying a week."],
     answerIndex: 3,
     instruction: "What did you hear?",
@@ -23,7 +24,7 @@ const silentQuestions: readonly [ListeningQuestion, ListeningQuestion] = [
   {
     prompt: "여권 여기 있어요.",
     romanization: "yeogwon yeogi isseoyo.",
-    audioSource: null,
+    audio: null,
     choices: ["Here's my passport.", "Where is the exit?", "It's cold.", "Thank you."],
     answerIndex: 0,
     instruction: "What did you hear?",
@@ -33,7 +34,7 @@ const silentQuestions: readonly [ListeningQuestion, ListeningQuestion] = [
 const audioQuestion: ListeningQuestion = {
   prompt: "안녕하세요",
   romanization: "annyeonghaseyo",
-  audioSource: "tutorial-listening-fixture",
+  audio: listenAudioOf("LISTEN_SELECT", "tutorial-listening-fixture", "tutorial-listening-fixture"),
   choices: ["Hello", "Thank you"],
   answerIndex: 0,
 };

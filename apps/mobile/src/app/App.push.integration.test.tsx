@@ -1,4 +1,4 @@
-import { journeySeedBefore } from "./test-helpers/journey-seed";
+import { legacyPassedSeed } from "./test-helpers/progress-seed";
 import { afterEach, expect, test, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
@@ -15,7 +15,6 @@ import { contentNotFoundResponse, isContentRequest } from "./test-helpers/conten
 // 「호스트 푸시 모듈 대역 → 결선 → 화면 전환 · 기기 등록 요청」을 한 트리에서 봅니다(IP1~IP6, ADR-0034).
 // 대역은 경계뿐입니다 — `PushNotificationModule` · `fetch`(Supabase RPC).
 
-const completedIntros = ["tutorial-intro"] as const;
 const token = "d4".repeat(32);
 
 type PushHost = {
@@ -87,39 +86,36 @@ afterEach(() => {
 
 test("[IP1] 이미 허용한 설치는 부팅 때 묻지 않고 토큰을 받는다 — 미요청이면 받지 않는다", async () => {
   const allowed = stubPushHost({ permission: "authorized" });
-  await renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />);
+  await renderSignedInApp(<App />);
   await flush();
   expect(allowed.register).toHaveBeenCalledTimes(1);
   cleanup();
   vi.unstubAllGlobals();
 
   const undecided = stubPushHost({ permission: "not-determined" });
-  await renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />);
+  await renderSignedInApp(<App />);
   await flush();
   expect(undecided.register).not.toHaveBeenCalled();
 });
 
-test("[IP2] 알림을 눌러 켜진 앱은 여정에 들어선 뒤 그 유닛을 열고 이벤트를 한 번 낸다", async () => {
+test("[IP2] 옛 특별 유닛 목적지로 켜진 앱은 여정 맵에 들어서고 이벤트를 한 번 낸다", async () => {
   stubPushHost({ opened: { kind: "messenger", unitId: "appointment-confirmation" } });
   const events: NotificationEvent[] = [];
   await renderSignedInApp(
-    <App
-      journeySeed={journeySeedBefore("appointment-confirmation")}
-      completedEpisodeIntroIds={completedIntros}
-      notificationEventSink={(event) => events.push(event)}
-    />,
+    <App progressSeed={legacyPassedSeed} notificationEventSink={(event) => events.push(event)} />,
   );
   await flush();
 
-  expect(screen.getByTestId("messenger-screen")).toBeInTheDocument();
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
+  expect(screen.queryByTestId("messenger-screen")).not.toBeInTheDocument();
   expect(events.filter((event) => event.name === "push_notification_opened")).toEqual([
-    { name: "push_notification_opened", target: "messenger" },
+    { name: "push_notification_opened", target: "journey-map" },
   ]);
 });
 
 test("[IP3] 켜진 채 누르면 호스트 이벤트로 알림 목록이 열린다 — 다른 탭에 있어도", async () => {
   const host = stubPushHost();
-  await renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />);
+  await renderSignedInApp(<App />);
   await flush();
   openSettings();
   expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
@@ -136,12 +132,7 @@ test("[IP3] 켜진 채 누르면 호스트 이벤트로 알림 목록이 열린�
 test("[IP4] 모르는 목적지는 열지 않고 이벤트도 내지 않는다", async () => {
   stubPushHost({ opened: { kind: "url", url: "https://example.com" } });
   const events: NotificationEvent[] = [];
-  await renderSignedInApp(
-    <App
-      completedEpisodeIntroIds={completedIntros}
-      notificationEventSink={(event) => events.push(event)}
-    />,
-  );
+  await renderSignedInApp(<App notificationEventSink={(event) => events.push(event)} />);
   await flush();
 
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
@@ -151,9 +142,7 @@ test("[IP4] 모르는 목적지는 열지 않고 이벤트도 내지 않는다",
 test("[IP5] 설정의 Notifications — 이미 물었으면 iOS 설정을 열고 설정 화면에 남는다", async () => {
   const host = stubPushHost({ permission: "denied" });
   const events: SettingsEvent[] = [];
-  await renderSignedInApp(
-    <App completedEpisodeIntroIds={completedIntros} settingsEventSink={(e) => events.push(e)} />,
-  );
+  await renderSignedInApp(<App settingsEventSink={(e) => events.push(e)} />);
   openSettings();
   fireEvent.tap(cell("notifications"), {});
   await flush();
@@ -166,7 +155,7 @@ test("[IP5] 설정의 Notifications — 이미 물었으면 iOS 설정을 열고
 
 test("[IP6] 설정에서 허용해 등록한 기기는 로그아웃 때 해제된다", async () => {
   const host = stubPushHost({ permission: "not-determined" });
-  await renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />);
+  await renderSignedInApp(<App />);
   const calls = recordFetch();
 
   openSettings();
@@ -188,16 +177,12 @@ test("[IP6] 설정에서 허용해 등록한 기기는 로그아웃 때 해제�
   expect(unregister?.body).toBe(JSON.stringify({ p_token: token }));
 });
 
-test("선행 학습을 완료하지 않으면 푸시로 켜져도 잠긴 메신저 대신 맵에 남는다", async () => {
+test("선행 학습을 완료하지 않아도 옛 메신저 목적지의 푸시는 맵에 남는다", async () => {
   stubPushHost({ opened: { kind: "messenger", unitId: "appointment-confirmation" } });
-  await renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />);
+  await renderSignedInApp(<App />);
   await flush();
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(screen.queryByTestId("messenger-screen")).not.toBeInTheDocument();
-  expect(screen.getByTestId("ui-lynx-special-unit-appointment-confirmation")).toHaveAttribute(
-    "data-status",
-    "default",
-  );
 });
 
 // ---- 토큰 갱신: 호스트 `pushTokenRefreshed` 전역 이벤트 → 훅 → `syncPushDevice({ ask: false })` (IT1~IT4) ----
@@ -220,7 +205,7 @@ const sentTokens = (calls: { url: string; body: string }[], url: string): string
 
 test("[IT1] 앱을 쓰는 중 호스트가 토큰이 바뀌었다고 알리면 새 토큰이 한 번 더 등록된다", async () => {
   const host = stubPushHost({ permission: "authorized" });
-  await renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />);
+  await renderSignedInApp(<App />);
   await flush();
   const calls = recordFetch();
   const registersBefore = host.register.mock.calls.length;
@@ -239,7 +224,7 @@ test("[IT2] 로그인하지 않은 상태에서 알려도 호스트도 서버도
   vi.stubEnv("PUBLIC_SUPABASE_ANON_KEY", "test-anon-key");
   const calls = recordFetch();
   vi.useFakeTimers();
-  render(<App completedEpisodeIntroIds={completedIntros} />);
+  render(<App />);
   act(() => {
     vi.advanceTimersByTime(entrySplashDurationMs);
   });
@@ -261,7 +246,7 @@ test.each(["not-determined", "denied"])(
   "[IT3] 로그인했어도 권한이 %s이면 알려도 묻지도 등록하지도 않는다",
   async (permission) => {
     const host = stubPushHost({ permission });
-    await renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />);
+    await renderSignedInApp(<App />);
     await flush();
     const calls = recordFetch();
 
@@ -275,7 +260,7 @@ test.each(["not-determined", "denied"])(
 
 test("[IT4] 실행 중 토큰이 바뀐 기기는 로그아웃 때 옛 토큰과 새 토큰이 모두 해제된다", async () => {
   const host = stubPushHost({ permission: "authorized" });
-  await renderSignedInApp(<App completedEpisodeIntroIds={completedIntros} />);
+  await renderSignedInApp(<App />);
   await flush();
   // 공용 부팅 헬퍼는 기기 등록 요청을 거부하므로 첫 토큰도 이벤트로 등록합니다(T1 → T2, 둘 다 성공).
   const calls = recordFetch();

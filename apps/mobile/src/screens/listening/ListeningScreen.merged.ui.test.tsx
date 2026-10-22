@@ -1,7 +1,7 @@
 import { afterEach, expect, test, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
-import { ListeningScreen } from "./ListeningScreen";
+import { StepListening as ListeningScreen } from "./StepListening.test-support";
 import { learningShellScrollId } from "../learning/learning-shell-scroll";
 import { initialSessionOptions } from "../../lib/session-options";
 import type { SessionOptions } from "../../lib/session-options";

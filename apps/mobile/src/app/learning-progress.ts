@@ -1,13 +1,14 @@
-// 학습 진행 ↔ 서버 스냅숏(ADR-0035)과 진행에서 파생하는 두 수(활동 수 · 트로피)입니다. 순수 함수만 있습니다.
+// 학습 진행 ↔ 서버 스냅숏(ADR-0035)과 진행에서 파생하는 수(활동 수 · 트로피 · 설문 대상)입니다. 순수 함수만 있습니다.
 //
-// 스냅숏을 읽을 때 **이 앱에 있는 유닛 ID만** 남깁니다 — 표가 유닛 타입의 모든 값을 키로 가져야 컴파일되므로,
-// 유닛이 늘면 여기서 섭니다(`push-target.ts`와 같은 방식).
+// 스냅숏은 v1 그대로입니다 — 서버 저장 함수가 옛 튜토리얼 필드 여섯을 필수로 검증하고 다른 기기의 옛 앱도 읽으므로,
+// 옛 필드는 얼린 기록(`legacyTutorial`)으로 읽어 두고 합치고 **그대로 다시 씁니다**(`legacy-tutorial-progress.ts`).
 
 import type { StatBumpKind, StatBumps } from "../lib/stat-bump";
 import {
   catalogProgressFrom,
-  mergeCatalogProgress,
   completedCatalogEpisodeCount,
+  isCatalogEpisodeComplete,
+  mergeCatalogProgress,
 } from "../lib/catalog-progress";
 import type { CatalogCompletionKeysOf, CatalogProgress } from "../lib/catalog-progress";
 import type { LearningProgressSnapshotV1 } from "../lib/learning-progress.contract";
@@ -19,69 +20,46 @@ import {
   ticketLedgerFrom,
 } from "../lib/learning-tickets";
 import type { TicketLedger } from "../lib/learning-tickets";
-import type { EpisodeFinalUnitId } from "../screens/episode-final/episode-final.contract";
-import type { EpisodeIntroUnitId } from "../screens/episode-intro/episode-intro.contract";
-import { isMapItemComplete } from "../screens/journey-map/journey-map-progress";
-import type { JourneyMapSection } from "../screens/journey-map/journey-map-types";
-import type { MessengerUnitId } from "../screens/messenger/messenger.contract";
-import type { PhoneCallUnitId } from "../screens/phone-call/phone-call.contract";
+import { TUTORIAL_EPISODE_ID } from "../lib/tutorial-episode";
+import type { CatalogMapSection } from "../screens/journey-map/catalog-map.contract";
+import { catalogSectionTitle } from "../screens/journey-map/catalog-sheet";
 import type { JourneyMapProgressLoad } from "../screens/journey-map/journey-map-load.contract";
-import type { VisualNovelProgress } from "../screens/visual-novel/visual-novel.contract";
-import { completedVisualNovelUnitIdsFrom } from "./journey-progress";
-import type { AppJourneySeed } from "./journey-progress";
+import {
+  emptyLegacyTutorialRecord,
+  legacyTutorialActivityCount,
+  legacyTutorialPassed,
+  legacyTutorialRecordCovers,
+  legacyTutorialRecordFrom,
+  mergeLegacyTutorialRecords,
+} from "./legacy-tutorial-progress";
+import type { LegacyTutorialRecord } from "./legacy-tutorial-progress";
 
-/** 저장하는 진행 전부입니다 — 부팅 씨앗에 끝낸 표지 유닛을 더한 것입니다. */
-export type JourneyProgressState = AppJourneySeed & {
-  readonly completedEpisodeIntroIds: readonly EpisodeIntroUnitId[];
+/** 저장하는 진행 전부입니다 — 얼린 옛 튜토리얼 기록 · 카탈로그 에피소드 진행 · 학습 티켓 원장입니다. */
+export type JourneyProgressState = {
+  readonly legacyTutorial: LegacyTutorialRecord;
   /** 카탈로그 에피소드 진행(`lib/catalog-progress.ts`). 없으면 `{}`. */
   readonly catalogProgress: CatalogProgress;
   /** 학습 티켓 원장(`lib/learning-tickets.ts`). 없으면 가득입니다. */
   readonly tickets?: TicketLedger;
 };
 
-const introUnits: Record<EpisodeIntroUnitId, true> = { "tutorial-intro": true };
-const messengerUnits: Record<MessengerUnitId, true> = { "appointment-confirmation": true };
-const phoneCallUnits: Record<PhoneCallUnitId, true> = {
-  "appointment-confirmation-phone-call": true,
+export const emptyJourneyProgress: JourneyProgressState = {
+  legacyTutorial: emptyLegacyTutorialRecord,
+  catalogProgress: {},
 };
-const finalUnits: Record<EpisodeFinalUnitId, true> = { "tutorial-final-test": true };
-
-function knownIds<Id extends string>(table: Record<Id, true>, value: unknown): Id[] | null {
-  if (!Array.isArray(value)) return null;
-  const ids: Id[] = [];
-  for (const item of value) {
-    if (
-      typeof item === "string" &&
-      Object.prototype.hasOwnProperty.call(table, item) &&
-      !ids.includes(item as Id)
-    ) {
-      ids.push(item as Id);
-    }
-  }
-  return ids;
-}
-
-function visualNovelFrom(value: unknown): VisualNovelProgress | null {
-  if (typeof value !== "object" || value === null) return null;
-  const { status, beatIndex } = value as Record<string, unknown>;
-  if (status === "completed") return { status: "completed", beatIndex: 2 };
-  if (status === "active" && (beatIndex === 0 || beatIndex === 1)) {
-    return { status: "active", beatIndex };
-  }
-  return null;
-}
 
 export function learningProgressSnapshotFrom(
   state: JourneyProgressState,
 ): LearningProgressSnapshotV1 {
+  const legacy = state.legacyTutorial;
   return {
     version: 1,
-    completedStepCount: state.completedStepCount,
-    completedEpisodeIntroIds: state.completedEpisodeIntroIds,
-    completedMessengerUnitIds: state.completedMessengerUnitIds,
-    completedPhoneCallUnitIds: state.completedPhoneCallUnitIds,
-    visualNovel: state.visualNovelProgress,
-    completedEpisodeFinalIds: state.completedEpisodeFinalIds,
+    completedStepCount: legacy.completedStepCount,
+    completedEpisodeIntroIds: legacy.completedEpisodeIntroIds,
+    completedMessengerUnitIds: legacy.completedMessengerUnitIds,
+    completedPhoneCallUnitIds: legacy.completedPhoneCallUnitIds,
+    visualNovel: legacy.visualNovel,
+    completedEpisodeFinalIds: legacy.completedEpisodeFinalIds,
     // 비면 싣지 않습니다 — 옛 서버 · 옛 앱이 보는 스냅숏과 바이트가 같게.
     ...(Object.keys(state.catalogProgress).length > 0
       ? { catalogProgress: state.catalogProgress }
@@ -97,49 +75,14 @@ export function journeyProgressFrom(raw: unknown): JourneyProgressState | null {
   if (typeof raw !== "object" || raw === null || Array.isArray(raw)) return null;
   const record = raw as Record<string, unknown>;
   if (record["version"] !== 1) return null;
-  const steps = record["completedStepCount"];
-  if (typeof steps !== "number" || !Number.isInteger(steps) || steps < 0) return null;
-  const intro = knownIds(introUnits, record["completedEpisodeIntroIds"]);
-  const messenger = knownIds(messengerUnits, record["completedMessengerUnitIds"]);
-  const phoneCall = knownIds(phoneCallUnits, record["completedPhoneCallUnitIds"]);
-  const finals = knownIds(finalUnits, record["completedEpisodeFinalIds"]);
-  const visualNovel = visualNovelFrom(record["visualNovel"]);
-  if (
-    intro === null ||
-    messenger === null ||
-    phoneCall === null ||
-    finals === null ||
-    visualNovel === null
-  ) {
-    return null;
-  }
+  const legacy = legacyTutorialRecordFrom(record);
+  if (legacy === null) return null;
   return {
-    completedStepCount: steps,
-    completedEpisodeIntroIds: intro,
-    completedMessengerUnitIds: messenger,
-    completedPhoneCallUnitIds: phoneCall,
-    visualNovelProgress: visualNovel,
-    completedEpisodeFinalIds: finals,
+    legacyTutorial: legacy,
     // 모양이 틀린 값은 그 부분만 버립니다 — 스냅숏 전체를 버리지 않습니다.
     catalogProgress: catalogProgressFrom(record["catalogProgress"]),
     ...(record["tickets"] === undefined ? {} : { tickets: ticketLedgerFrom(record["tickets"]) }),
   };
-}
-
-/**
- * 끝낸 활동의 수입니다. 이 수가 늘면 「오늘 활동을 끝냈다」입니다(연속 학습의 하루). 비주얼 노벨의 장면 이동은
- * 활동이 아니라 끝냈을 때만 셉니다.
- */
-export function completedActivityCount(state: JourneyProgressState): number {
-  return (
-    state.completedStepCount +
-    state.completedEpisodeIntroIds.length +
-    state.completedMessengerUnitIds.length +
-    state.completedPhoneCallUnitIds.length +
-    (state.visualNovelProgress.status === "completed" ? 1 : 0) +
-    state.completedEpisodeFinalIds.length +
-    catalogActivityCount(state.catalogProgress)
-  );
 }
 
 /** 카탈로그 에피소드에서 끝낸 유닛 키의 수입니다(에피소드별 키 수의 합). */
@@ -147,68 +90,64 @@ export function catalogActivityCount(progress: CatalogProgress): number {
   return Object.values(progress).reduce((sum, keys) => sum + keys.length, 0);
 }
 
-/** 항목을 모두 끝낸 에피소드입니다. 아직 유닛이 없는 에피소드는 들지 않습니다. */
-export type CompletedEpisode = { readonly id: string; readonly title: string };
-
-export function completedEpisodesFrom(
-  sections: readonly JourneyMapSection[],
-  state: JourneyProgressState,
-): readonly CompletedEpisode[] {
-  const progress = {
-    completedStepCount: state.completedStepCount,
-    completedEpisodeIntroIds: state.completedEpisodeIntroIds,
-    completedMessengerUnitIds: state.completedMessengerUnitIds,
-    completedPhoneCallUnitIds: state.completedPhoneCallUnitIds,
-    completedVisualNovelUnitIds: completedVisualNovelUnitIdsFrom(state.visualNovelProgress),
-    completedEpisodeFinalIds: state.completedEpisodeFinalIds,
-  };
-  return sections
-    .filter(
-      (section) =>
-        section.items.length > 0 &&
-        section.items.every((item) => isMapItemComplete(item, progress)),
-    )
-    .map((section) => ({ id: section.episode.id, title: section.episode.title }));
-}
-
-/** 트로피 = 항목을 모두 끝낸 에피소드 수 + 완료 키를 모두 끝낸 카탈로그 에피소드 수입니다. */
-export function trophyCountFrom(
-  sections: readonly JourneyMapSection[],
-  state: JourneyProgressState,
-  completionKeysOf: CatalogCompletionKeysOf,
-): number {
+/**
+ * 끝낸 활동의 수입니다. 이 수가 늘면 「오늘 활동을 끝냈다」입니다(연속 학습의 하루). 옛 튜토리얼 몫은 고정이라
+ * 늘어나는 것은 카탈로그 진행뿐입니다.
+ */
+export function completedActivityCount(state: JourneyProgressState): number {
   return (
-    completedEpisodesFrom(sections, state).length +
-    completedCatalogEpisodeCount(state.catalogProgress, completionKeysOf)
+    legacyTutorialActivityCount(state.legacyTutorial) + catalogActivityCount(state.catalogProgress)
   );
 }
 
-/**
- * 두 진행을 합칩니다 — 완료 목록은 합집합, 스텝 수는 큰 쪽, 비주얼 노벨은 더 나아간 쪽. 기기와 서버 중 어느 쪽이
- * 앞서도(오프라인에서 진행했거나 다른 기기에서 진행했거나) 잃지 않습니다.
- */
-function union<T>(x: readonly T[], y: readonly T[]): readonly T[] {
-  return [...x, ...y.filter((item) => !x.includes(item))];
+/** 항목을 모두 끝낸 에피소드입니다. 아직 유닛이 없는 에피소드는 들지 않습니다. */
+export type CompletedEpisode = { readonly id: string; readonly title: string };
+
+/** 설문을 묻는 에피소드입니다 — 튜토리얼에서만 묻습니다(ADR-0036 D3). */
+export const SURVEY_EPISODE_IDS: readonly string[] = [TUTORIAL_EPISODE_ID];
+
+/** 설문 대상 에피소드 가운데 완료 키를 모두 끝낸 준비된 구획입니다. */
+export function completedSurveyEpisodesFrom(
+  sections: readonly CatalogMapSection[],
+  progress: CatalogProgress,
+): readonly CompletedEpisode[] {
+  return sections.flatMap((section): readonly CompletedEpisode[] => {
+    if (section.kind !== "catalog-ready" || !SURVEY_EPISODE_IDS.includes(section.episodeId)) {
+      return [];
+    }
+    return isCatalogEpisodeComplete(progress, section.episodeId, section.completionKeys)
+      ? [{ id: section.episodeId, title: catalogSectionTitle(section) }]
+      : [];
+  });
 }
 
+/**
+ * 트로피 = 끝낸 카탈로그 에피소드 수 + (옛 통과 기록이 있고 튜토리얼 에피소드를 아직 안 끝냈으면 1)입니다 — 옛 튜토리얼
+ * 트로피가 사라지지도 두 번 세어지지도 않습니다.
+ */
+export function trophyCountFrom(
+  state: JourneyProgressState,
+  completionKeysOf: CatalogCompletionKeysOf,
+): number {
+  const tutorialDone = isCatalogEpisodeComplete(
+    state.catalogProgress,
+    TUTORIAL_EPISODE_ID,
+    completionKeysOf(TUTORIAL_EPISODE_ID),
+  );
+  const legacyOnly = legacyTutorialPassed(state.legacyTutorial) && !tutorialDone ? 1 : 0;
+  return completedCatalogEpisodeCount(state.catalogProgress, completionKeysOf) + legacyOnly;
+}
+
+/**
+ * 두 진행을 합칩니다 — 옛 기록은 합집합 · 최댓값 · 더 나아간 장면, 카탈로그는 키별 합집합입니다. 기기와 서버 중 어느
+ * 쪽이 앞서도(오프라인에서 진행했거나 다른 기기에서 진행했거나) 잃지 않습니다.
+ */
 export function mergeJourneyProgress(
   a: JourneyProgressState,
   b: JourneyProgressState,
 ): JourneyProgressState {
-  const aheadVisualNovel =
-    a.visualNovelProgress.status === "completed"
-      ? a.visualNovelProgress
-      : b.visualNovelProgress.status === "completed" ||
-          b.visualNovelProgress.beatIndex > a.visualNovelProgress.beatIndex
-        ? b.visualNovelProgress
-        : a.visualNovelProgress;
   return {
-    completedStepCount: Math.max(a.completedStepCount, b.completedStepCount),
-    completedEpisodeIntroIds: union(a.completedEpisodeIntroIds, b.completedEpisodeIntroIds),
-    completedMessengerUnitIds: union(a.completedMessengerUnitIds, b.completedMessengerUnitIds),
-    completedPhoneCallUnitIds: union(a.completedPhoneCallUnitIds, b.completedPhoneCallUnitIds),
-    visualNovelProgress: aheadVisualNovel,
-    completedEpisodeFinalIds: union(a.completedEpisodeFinalIds, b.completedEpisodeFinalIds),
+    legacyTutorial: mergeLegacyTutorialRecords(a.legacyTutorial, b.legacyTutorial),
     catalogProgress: mergeCatalogProgress(a.catalogProgress, b.catalogProgress),
     // 남은 장수가 적은 쪽을 따릅니다(필드마다 큰 값). 둘 다 없으면 싣지 않습니다.
     ...(a.tickets === undefined && b.tickets === undefined
@@ -257,12 +196,7 @@ export function journeyProgressCovers(
   local: JourneyProgressState,
 ): boolean {
   return (
-    server.completedStepCount >= local.completedStepCount &&
-    includesAll(server.completedEpisodeIntroIds, local.completedEpisodeIntroIds) &&
-    includesAll(server.completedMessengerUnitIds, local.completedMessengerUnitIds) &&
-    includesAll(server.completedPhoneCallUnitIds, local.completedPhoneCallUnitIds) &&
-    includesAll(server.completedEpisodeFinalIds, local.completedEpisodeFinalIds) &&
-    server.visualNovelProgress.beatIndex >= local.visualNovelProgress.beatIndex &&
+    legacyTutorialRecordCovers(server.legacyTutorial, local.legacyTutorial) &&
     catalogCovers(server.catalogProgress, local.catalogProgress) &&
     ticketLedgerCovers(server.tickets ?? fullTicketLedger, local.tickets ?? fullTicketLedger)
   );

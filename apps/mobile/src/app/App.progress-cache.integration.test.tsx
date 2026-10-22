@@ -2,8 +2,7 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
-import { productJourneySeed } from "./journey-progress";
-import { learningProgressSnapshotFrom } from "./learning-progress";
+import { emptyJourneyProgress, learningProgressSnapshotFrom } from "./learning-progress";
 import { resetPushWiringForTests } from "./push-wiring";
 import { authSessionStorageKey, serializeAuthSession } from "../lib/auth-session";
 import { entrySplashDurationMs } from "../lib/entry-flow";
@@ -11,7 +10,6 @@ import { learningItemGuideSeenStorageKey } from "../lib/learning-item-guide";
 import { allLearningItemGuidesSeenValue } from "../lib/learning-item-guide.test-support";
 import type { ProgressLoadEvent } from "../lib/progress-load-event.contract";
 import { uiCopyEn } from "../lib/ui-copy-en";
-import { journeySteps } from "../screens/journey-map/journey-map";
 import { renderSignedInApp } from "./test-helpers/signed-in-app";
 import { contentNotFoundResponse, isContentRequest } from "./test-helpers/content-requests";
 import { mapUnitTestId } from "./test-helpers/map-unit-testid";
@@ -35,18 +33,14 @@ const accessToken = `${base64Url({ alg: "none" })}.${base64Url({
   app_metadata: { provider: "google", providers: ["google"] },
 })}.sig`;
 
-const emptyState = {
-  ...productJourneySeed,
-  completedEpisodeIntroIds: [],
-  catalogProgress: {},
-};
-const empty = learningProgressSnapshotFrom(emptyState);
+const empty = learningProgressSnapshotFrom(emptyJourneyProgress);
+const U00 = "u00-tutorial";
+const COVER = `catalog-cover-${U00}`;
 const snap = (override: Record<string, unknown> = {}) => ({ ...empty, ...override });
 const cachedKey = (u: string) => `libitum.progress.cached.${u}`;
 const pendingKey = (u: string) => `libitum.progress.pending.${u}`;
-/** 표지 완료 + 스텝 `count`개 완료. */
-const progressOf = (count: number, extra: Record<string, unknown> = {}) =>
-  snap({ completedStepCount: count, completedEpisodeIntroIds: ["tutorial-intro"], ...extra });
+/** u00에서 끝낸 유닛 키(표지는 `intro`)로 만든 진행입니다. */
+const progressOf = (done: readonly string[]) => snap({ catalogProgress: { [U00]: done } });
 
 function deferred() {
   let resolve!: (reply: Reply) => void;
@@ -215,7 +209,7 @@ const checkingNodes = () =>
     .filter((node) => node.getAttribute("data-status") === "checking");
 const announcedCount = (content: string) =>
   env.announced.filter((entry) => entry === content).length;
-const stepId = (index: number) => journeySteps[index]!.id;
+const lesson = (key: string) => `catalog-unit-${U00}-${key}`;
 const cachedOf = (u: string) => {
   const raw = env.store.get(cachedKey(u));
   return raw === undefined ? undefined : (JSON.parse(raw) as Record<string, unknown>);
@@ -241,24 +235,24 @@ describe("저장본 먼저", () => {
   test("I1. 저장본을 응답 전에 그리고, 서버 응답 뒤에도 앞의 진행이 사라지지 않는다", async () => {
     const server = deferred();
     await boot({
-      seed: { [cachedKey(user)]: JSON.stringify(progressOf(2)) },
+      seed: { [cachedKey(user)]: JSON.stringify(progressOf(["intro", "S1", "S2"])) },
       load: () => server.promise,
     });
 
-    expect(status("tutorial-intro")).toBe("clear");
-    expect(status(stepId(0))).toBe("clear");
-    expect(status(stepId(1))).toBe("clear");
-    expect(status(stepId(2))).toBe("active");
+    expect(status(COVER)).toBe("clear");
+    expect(status(lesson("S1"))).toBe("clear");
+    expect(status(lesson("S2"))).toBe("clear");
+    expect(status(lesson("S3"))).toBe("available");
     expect(row()).toBeNull();
     await advance(5_000);
     expect(row()).toBeNull();
     expect(checkingNodes()).toHaveLength(0);
 
-    await respond(server, ok(progressOf(3)));
-    expect(status(stepId(2))).toBe("clear");
-    expect(status(stepId(0))).toBe("clear");
-    expect(status(stepId(1))).toBe("clear");
-    expect(status("tutorial-intro")).toBe("clear");
+    await respond(server, ok(progressOf(["intro", "S1", "S2", "S3"])));
+    expect(status(lesson("S3"))).toBe("clear");
+    expect(status(lesson("S1"))).toBe("clear");
+    expect(status(lesson("S2"))).toBe("clear");
+    expect(status(COVER)).toBe("clear");
     expect(row()).toBeNull();
   });
 
@@ -271,7 +265,7 @@ describe("저장본 먼저", () => {
 
     expect(row()).toBeNull();
     expect(checkingNodes()).toHaveLength(0);
-    fireEvent.tap(unit("tutorial-intro"), {});
+    fireEvent.tap(unit(COVER), {});
     expect(screen.getByTestId("episode-intro-screen")).toBeInTheDocument();
   });
 
@@ -296,9 +290,9 @@ describe("저장본 없음 - 확인 중 · 로딩 줄", () => {
     const server = deferred();
     await boot({ load: () => server.promise });
 
-    expect(status("tutorial-intro")).toBe("checking");
-    expect(status(stepId(0))).toBe("checking");
-    fireEvent.tap(unit("tutorial-intro"), {});
+    expect(status(COVER)).toBe("checking");
+    expect(status(lesson("S1"))).toBe("checking");
+    fireEvent.tap(unit(COVER), {});
     expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
     expect(screen.queryByTestId("episode-intro-screen")).toBeNull();
 
@@ -308,11 +302,11 @@ describe("저장본 없음 - 확인 중 · 로딩 줄", () => {
     expect(rowStatus()).toBe("loading");
     expect(announcedCount(copy.loadingAnnouncement)).toBe(1);
     expect(env.events.filter((event) => event.name === "progress_load_delayed")).toHaveLength(1);
-    expect(status("tutorial-intro")).toBe("checking");
+    expect(status(COVER)).toBe("checking");
 
     await respond(server, ok(null));
     expect(row()).toBeNull();
-    expect(status("tutorial-intro")).toBe("available");
+    expect(status(COVER)).toBe("available");
   });
 
   test("I5. 500ms에 응답이 오면 줄이 한 번도 서지 않고 낭독 · 측정이 없다", async () => {
@@ -321,7 +315,7 @@ describe("저장본 없음 - 확인 중 · 로딩 줄", () => {
 
     await advance(499);
     expect(row()).toBeNull();
-    expect(status("tutorial-intro")).toBe("checking");
+    expect(status(COVER)).toBe("checking");
     expect(screen.queryByTestId("top-bar-trophy")).toBeNull();
     await respond(server, ok(null));
     await advance(1);
@@ -350,17 +344,17 @@ describe("저장본 없음 - 확인 중 · 로딩 줄", () => {
     expect(env.events).toHaveLength(1);
   });
 
-  test("I6'. 조회가 실패하면 튜토리얼 표지가 열려 탭하면 표지 화면이 열린다 - 나머지는 잠김", async () => {
+  test("I6'. 조회가 실패하면 u00 표지가 열려 탭하면 표지 화면이 열린다 - 나머지는 잠김", async () => {
     await boot({ load: async () => down });
 
     expect(rowStatus()).toBe("failed");
     expect(checkingNodes()).toHaveLength(0);
-    expect(status("tutorial-intro")).toBe("available");
-    expect(status(stepId(0))).not.toBe("checking");
-    expect(status(stepId(0))).not.toBe("clear");
-    expect(status(stepId(0))).not.toBe("active");
+    expect(status(COVER)).toBe("available");
+    expect(status(lesson("S1"))).not.toBe("checking");
+    expect(status(lesson("S1"))).not.toBe("clear");
+    expect(status(lesson("S1"))).not.toBe("available");
 
-    fireEvent.tap(unit("tutorial-intro"), {});
+    fireEvent.tap(unit(COVER), {});
     expect(screen.getByTestId("episode-intro-screen")).toBeInTheDocument();
   });
 
@@ -378,11 +372,11 @@ describe("저장본 없음 - 확인 중 · 로딩 줄", () => {
     expect(announcedCount(copy.failed)).toBe(1);
     expect(announcedCount(copy.loadingAnnouncement)).toBe(1);
 
-    await respond(retry, ok(progressOf(2)));
+    await respond(retry, ok(progressOf(["intro", "S1", "S2"])));
     expect(row()).toBeNull();
-    expect(status("tutorial-intro")).toBe("clear");
-    expect(status(stepId(1))).toBe("clear");
-    expect(status(stepId(2))).toBe("active");
+    expect(status(COVER)).toBe("clear");
+    expect(status(lesson("S2"))).toBe("clear");
+    expect(status(lesson("S3"))).toBe("available");
     expect(env.events.at(-1)).toEqual({ name: "progress_load_recovered", trigger: "manual" });
   });
 
@@ -396,15 +390,15 @@ describe("저장본 없음 - 확인 중 · 로딩 줄", () => {
 
     expect(rowStatus()).toBe("loading");
     expect(checkingNodes()).toHaveLength(0);
-    expect(status("tutorial-intro")).toBe("available");
+    expect(status(COVER)).toBe("available");
     await advance(2_000);
     expect(rowStatus()).toBe("loading");
-    expect(status("tutorial-intro")).toBe("available");
+    expect(status(COVER)).toBe("available");
 
-    await respond(retry, ok(progressOf(1)));
+    await respond(retry, ok(progressOf(["intro", "S1"])));
     expect(row()).toBeNull();
-    expect(status("tutorial-intro")).toBe("clear");
-    expect(status(stepId(0))).toBe("clear");
+    expect(status(COVER)).toBe("clear");
+    expect(status(lesson("S1"))).toBe("clear");
   });
 
   test("I7b. 다시 시도가 또 실패하면 실패 줄로 돌아와 한 번 더 읽고 retry 실패를 알린다", async () => {
@@ -424,14 +418,14 @@ describe("저장본 없음 - 확인 중 · 로딩 줄", () => {
 
   test("I7c. 자동 재시도(5초 이내)가 성공하면 줄이 사라지고 recovered auto를 알린다", async () => {
     await boot({ load: async () => down });
-    env.load = async () => ok(progressOf(1));
+    env.load = async () => ok(progressOf(["intro", "S1"]));
     expect(rowStatus()).toBe("failed");
 
     await advance(1_000);
     await flush();
 
     expect(row()).toBeNull();
-    expect(status("tutorial-intro")).toBe("clear");
+    expect(status(COVER)).toBe("clear");
     expect(env.events.at(-1)).toEqual({ name: "progress_load_recovered", trigger: "auto" });
   });
 
@@ -482,8 +476,8 @@ describe("저장본의 수명", () => {
     await boot({
       fake: false,
       seed: {
-        [cachedKey(user)]: JSON.stringify(progressOf(1)),
-        [cachedKey("other")]: JSON.stringify(progressOf(2)),
+        [cachedKey(user)]: JSON.stringify(progressOf(["intro"])),
+        [cachedKey("other")]: JSON.stringify(progressOf(["intro", "S1"])),
       },
     });
     expect(env.store.has(cachedKey(user))).toBe(true);
@@ -498,7 +492,7 @@ describe("저장본의 수명", () => {
   });
 
   test("I9. 로그아웃은 저장본을 남기고 로그인 화면으로 간다", async () => {
-    await boot({ fake: false, seed: { [cachedKey(user)]: JSON.stringify(progressOf(1)) } });
+    await boot({ fake: false, seed: { [cachedKey(user)]: JSON.stringify(progressOf(["intro"])) } });
 
     openSettings();
     fireEvent.tap(cell("sign-out"), {});
@@ -512,12 +506,11 @@ describe("저장본의 수명", () => {
     await boot({ fake: false, load: async () => ok(null) });
     expect(env.store.has(cachedKey(user))).toBe(true);
 
-    fireEvent.tap(unit("tutorial-intro"), {});
+    fireEvent.tap(unit(COVER), {});
     tapButtonIn("episode-intro-screen-skip");
     tapButtonIn("ui-lynx-dialog-action-skip");
-    tapButtonIn("lesson-complete-screen-exit");
     await vi.waitFor(() =>
-      expect(cachedOf(user)?.["completedEpisodeIntroIds"]).toEqual(["tutorial-intro"]),
+      expect(cachedOf(user)?.["catalogProgress"]).toEqual({ [U00]: ["intro"] }),
     );
     expect(env.store.has(pendingKey(user))).toBe(false);
 
@@ -527,7 +520,7 @@ describe("저장본의 수명", () => {
     const server = deferred();
     await boot({ fake: false, store, load: () => server.promise });
 
-    expect(status("tutorial-intro")).toBe("clear");
+    expect(status(COVER)).toBe("clear");
     expect(checkingNodes()).toHaveLength(0);
     expect(row()).toBeNull();
   });
@@ -538,17 +531,14 @@ describe("저장본의 수명", () => {
 describe("기존 동작 그대로", () => {
   test("I13. 진행을 조회하지 않는 부팅(JWT 아닌 토큰)은 씨앗 그대로이고 확인 중도 줄도 없다", async () => {
     await renderSignedInApp(
-      <App
-        journeySeed={{ ...productJourneySeed, completedStepCount: 2 }}
-        completedEpisodeIntroIds={["tutorial-intro"]}
-      />,
+      <App progressSeed={{ catalogProgress: { [U00]: ["intro", "S1", "S2"] } }} />,
       { keepFakeTimers: true },
     );
     await advance(5_000);
 
-    expect(status("tutorial-intro")).toBe("clear");
-    expect(status(stepId(1))).toBe("clear");
-    expect(status(stepId(2))).toBe("active");
+    expect(status(COVER)).toBe("clear");
+    expect(status(lesson("S2"))).toBe("clear");
+    expect(status(lesson("S3"))).toBe("available");
     expect(checkingNodes()).toHaveLength(0);
     expect(row()).toBeNull();
   });

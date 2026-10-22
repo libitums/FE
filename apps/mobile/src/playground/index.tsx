@@ -33,20 +33,6 @@ function Playground() {
   // 이라, 여기서 옮기면 빈 화면이 뜹니다. 선택 상태만 바꿔 바의 선택 시각을 봅니다.
   const [tab, setTab] = useState<Tab>("journey");
   const screenTab = playgroundTabs[screen];
-  // 튜토리얼은 각 화면이 safe area를 처리하므로 셸 여백을 중복 적용하지 않습니다.
-  const ownsSafeArea =
-    screen === "tutorial-announcement" ||
-    screen === "tutorial-prologue" ||
-    screen === "tutorial-prologue-chat" ||
-    screen === "tutorial-prologue-call" ||
-    screen === "tutorial-specials" ||
-    screen === "tutorial-cafe" ||
-    screen === "tutorial-call" ||
-    screen === "tutorial-final-story";
-  const isTutorialLesson = screen.startsWith("tutorial-") && !ownsSafeArea;
-
-  if (screen === "tutorial-journey") return playgroundScreens[screen](go);
-
   return (
     // 앱 셸은 호스트가 넘긴 safe area 값으로 아래 여백을 잡습니다(App.tsx). Lynx
     // Explorer는 그 값을 넘기지 않아(lib/safe-area.ts) 여기서는 0이 되고, 그러면 바가
@@ -56,8 +42,8 @@ function Playground() {
     <view
       className="app"
       style={{
-        paddingTop: isTutorialLesson ? "62px" : "0px",
-        paddingBottom: screenTab === undefined && !ownsSafeArea ? "34px" : "0px",
+        paddingTop: "0px",
+        paddingBottom: screenTab === undefined ? "34px" : "0px",
       }}
     >
       <view className="app-content" key={screen}>

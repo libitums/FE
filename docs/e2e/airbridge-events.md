@@ -1,5 +1,7 @@
 # Airbridge 앱 이벤트 SDK — 값이 없으면 조용하고, 있으면 시작하는가
 
+> ⟨2026-10-21 — [ADR-0081](../adr/0081-tutorial-as-catalog-episode.md)⟩ 옛 튜토리얼(고정 목록 · 스텝 · 프롤로그 · 최종 스토리 · 손글씨)과 메신저 · 전화 · 비주얼 노벨 화면이 지워졌다. 이 문서에서 그 화면을 단계로 쓰는 절은 **더 실행할 수 없다 — 기록으로 남긴다.** 튜토리얼은 이제 카탈로그 에피소드 `u00-tutorial`(맵 첫 구획 `Episode 0.`)이고 절차는 [튜토리얼 u00 e2e](tutorial-u00.md)다.
+
 호스트 앱의 광고 측정 SDK를 Meta에서 Airbridge로 바꾼 변경(작업 `airbridge-sdk`)을 **기기에서 본다.** 이 문서가 지는 것은 자동 계층이 대신할 수 없는 셋이다.
 
 1. **값이 없는 빌드에서 Airbridge가 아무 요청도 내지 않는가** — `*.airbridge.io` · `abr.ge`로 나가는 요청이 0건이고, 새 시스템 팝업(iOS 추적 허용 · 붙여넣기 허용 포함)이 뜨지 않는다.
@@ -15,6 +17,8 @@
 | A 값 없는 빌드의 무동작 | **통과(한계 있음)** — 2026-10-13 · `77cad033` · iOS 시뮬레이터 · Android 에뮬레이터. 로그인 화면 · 재시작까지, 로그인 이후 미수행([A 결과 기록](#a-결과-기록)) |
 | B 가짜 값 빌드 | **통과(한계 있음)** — 같은 날 · 같은 커밋 · 같은 기기. SDK 시작 · 연결 · 무크래시까지, 이벤트 전달(B-6)은 로그인이 필요해 미수행([B 결과 기록](#b-결과-기록)) |
 | C 실제 값으로 Airbridge 대시보드 확인 | **미실행 — 이번 범위 밖, 사용자 몫** |
+| D 추적 허용(ATT) 대화상자 ⟨2026-10-22, ADR-0079⟩ | **일부 통과** — 2026-10-22 · iPhone 13 mini · Release · 실제 값. D-2(맵 진입에 한 번 뜸) 통과, D-1 · D-3 · D-4 · D-5 미실행([D](#d--추적-허용att-대화상자-adr-0079)) |
+| E 딥링크 · 지연 딥링크 ⟨2026-10-22, ADR-0080⟩ | **일부 통과** — iOS 실기 E-1 ~ E-3 통과(사용자 관찰), Android는 호스트 수신까지, E-4 ~ E-6 미실행([E](#e--딥링크--지연-딥링크-adr-0080)) |
 
 **미실행 · 관찰 불가는 통과가 아니다.** 2026-10-13 실행에서 이 문서의 명령 다섯 곳이 그대로는 맞지 않아 고쳤다 — [절차 정정 기록](#절차-정정-기록).
 
@@ -308,12 +312,48 @@ git status --short apps/ios/Config apps/android/app   # 아무것도 안 나와�
 3. 대시보드의 **Real-time Logs**를 열어 둔다(이벤트는 수 분 늦게 올 수 있다).
 4. 새 설치에서 진입 흐름을 「여정 시작하기」까지 가고(가입 완료), 여정의 메신저 유닛을 끝낸다. **로그인 필요.**
 5. 기대: Real-time Logs에 **Install** · **Open** 이벤트와 `airbridge.user.signup`(가입 완료), `airbridge.achieveLevel`(유닛 완료)이 찍히고, 후자에 `level` · `label` 속성이 계약대로 실린다.
-6. 함께 볼 것: iOS에서 설치 이벤트가 실행 직후 곧바로 나가는지(ATT 대기 없음), 개인정보가 속성에 실리지 않았는지.
+6. 함께 볼 것: 개인정보가 속성에 실리지 않았는지. ~~iOS에서 설치 이벤트가 실행 직후 곧바로 나가는지(ATT 대기 없음)~~ ⟨2026-10-22⟩ iOS 설치 이벤트는 이제 ATT 결정까지(최대 600초) 기다린다 — 아래 D.
 7. 끝나면 로컬 값 파일을 지운다(B3).
 
 | 날짜 | 커밋 | 기기 | 판정 | 근거 |
 |---|---|---|---|---|
 | | | | **미실행** | |
+
+## D — 추적 허용(ATT) 대화상자 (ADR-0079)
+
+iOS 실기(iPhone 13 mini) · **Release** · 실제 값이 든 빌드. 추적 허용 상태를 처음으로 되돌리려면 앱을 지우고 다시 설치한다
+(설정 › 개인정보 보호 › 추적에서 앱을 끄는 것은 「거부」이고 `notDetermined`로 돌아가지 않는다). 설정 › 개인정보 보호 › 추적의
+「앱이 추적을 요청하도록 허용」이 켜져 있어야 한다 — 꺼져 있으면 시스템이 묻지 않고 거부로 답한다.
+
+| # | 하는 것 | 기대 |
+|---|---|---|
+| D-1 | 새 설치 → 온보딩 · 로그인 · 이름 · 나라 · 언어 선택까지 간다 | 추적 허용 대화상자가 **뜨지 않는다** |
+| D-2 | 「여정 시작하기」 → 여정 맵 | 맵이 선 직후 시스템 대화상자가 **한 번** 뜨고, 문구가 「Allow tracking so we can measure which ads helped you find Duru. We never sell your data.」이다 |
+| D-3 | 「허용」(또는 「요청하지 않음」)을 누르고 롤플레이 탭 → 여정 탭 | 다시 뜨지 않는다. 앱을 껐다 켜도 뜨지 않는다 |
+| D-4 | Airbridge Real-time Logs | **Install** · **Open**이 결정 뒤에 들어온다(허용이면 IDFA가 실린다). 결정 전 600초 안에는 Install이 늦을 수 있다 |
+| D-5 | 기록 있는 계정으로 새 설치 → 로그인 | 바로 맵에 들어설 때 한 번 뜬다(D2) |
+
+| 날짜 | 커밋 | 기기 | 판정 | 근거 |
+|---|---|---|---|---|
+| 2026-10-22 | `0cf652e3` | iPhone 13 mini(iOS 27.0.1) — Release, 실제 값, 덮어 설치(로그인된 세션 그대로) | **D-2 통과** · D-1 · D-3 · D-4 · D-5 미실행 | 기기 콘솔(`devicectl … --console`): 실행 +0초 `AirbridgeEventsModule registered`(SDK 시작), 맵이 선 +3.6초에 `invokeMethod: AirbridgeEventsModule.requestTrackingAuthorization` 1회. **대화상자가 화면에 뜬 것은 사용자가 기기에서 봤다**(문구 대조는 하지 않음). 새 설치가 아니라 진입 흐름(D-1)은 지나지 않았다. Real-time Logs(D-4)는 보지 않았다 |
+
+## E — 딥링크 · 지연 딥링크 (ADR-0080)
+
+실제 값이 든 빌드. 로그인된 세션으로 시작한다(E-4만 새 설치).
+
+| # | 하는 것 | 기대 |
+|---|---|---|
+| E-1 | 앱을 끈 채 `duru://roleplay` 열기 — iOS `xcrun devicectl device process launch --payload-url duru://roleplay …` 또는 Safari 주소창, Android `adb shell am start -a android.intent.action.VIEW -d duru://roleplay` | 앱이 켜지고 맵을 지나 롤플레이 탭이 선다 |
+| E-2 | 앱이 켜진 채(여정 탭) `duru://settings` | 설정 탭으로 옮긴다 |
+| E-3 | `duru://shop` · `duru://` | 앱만 열리고 화면은 그대로다 |
+| E-4 | 앱을 지우고 대시보드 트래킹 링크(딥링크 `duru://roleplay`)를 누른 뒤 설치 · 실행 | 온보딩 · 가입 중에는 그대로, 「여정 시작하기」 뒤 롤플레이 탭이 선다 |
+| E-5 | 대시보드 트래킹 링크를 앱이 설치된 기기에서 누른다 | 브라우저를 거치지 않고(universal link · App Link) 앱이 그 탭으로 열린다. Real-time Logs에 딥링크 열림이 찍힌다 |
+| E-6 | 로그인(Google · Apple 웹 인증)을 한 번 끝까지 | 로그인 콜백(`duru://auth-callback`)이 그대로 동작하고 딥링크로 화면이 옮겨지지 않는다 |
+
+| 날짜 | 커밋 | 기기 | 판정 | 근거 |
+|---|---|---|---|---|
+| 2026-10-22 | `b6124067` | iPhone 13 mini(iOS 27.0.1) — Release, 실제 값, 로그인된 세션 | **E-1 · E-2 · E-3 통과** | Safari 주소창에서 `duru://roleplay` · `duru://settings` · `duru://shop`을 열어 사용자가 기기에서 봤다(「잘되네」). 서명된 `.app`의 entitlements에 `applinks:duru.airbridge.io` · `applinks:duru.abr.ge`가 실렸다(`codesign -d --entitlements`). 콘솔에 맵 진입 직후 `takeOpenedDeeplink` 호출 |
+| 2026-10-22 | `b6124067` | Android 에뮬레이터(Pixel 8) — `bundled`, 실제 값, **로그인 전** | **호스트 수신만** | `am start -d duru://roleplay` → logcat `sendGlobalEvent airbridgeDeeplinkOpened`. 로그인 전이라 온보딩에 머물렀고(링크는 들고 있음 — D3대로), 탭 이동은 보지 않았다 |
 
 ## 이 절차로 확인되지 않는 것
 
@@ -321,4 +361,4 @@ git status --short apps/ios/Config apps/android/app   # 아무것도 안 나와�
 - 요청 본문에 무엇이 실렸는지(TLS · SDK 내부 형식).
 - Android에서 Airbridge 요청 0건의 누적 증명(netstats · 패킷 캡처를 쓰지 못한다 — 로그 · 계측 · 순간 소켓의 조합이다).
 - 실기, API 37 밖의 Android, 앱 심사 단계의 개인정보 선언(`docs/ios-privacy.md`가 진다).
-- iOS ATT를 추가하는 후속 작업(이번 범위 밖 — 팝업 문구 · 사전 안내 화면은 그때 디자인이 정한다).
+- ~~iOS ATT를 추가하는 후속 작업~~ ⟨2026-10-22⟩ ADR-0079가 열었다 — 시나리오 D. 사전 안내 화면은 여전히 없다.

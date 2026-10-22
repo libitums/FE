@@ -12,9 +12,9 @@ import type {
   CatalogUnitKey,
 } from "../../lib/catalog-progress";
 import type { CatalogEntry } from "../../lib/episode-catalog";
+import { TUTORIAL_EPISODE_ID } from "../../lib/tutorial-episode";
 import type { LearningUnit } from "../../lib/episode-content.model";
 import type { UiCopy } from "../../lib/ui-copy.contract";
-import type { EpisodeFinalUnitId } from "../episode-final/episode-final.contract";
 import type { JourneyMapItemStatus } from "./journey-map-types";
 import type {
   CatalogCaptionKind,
@@ -28,8 +28,6 @@ import type {
 
 /** 기본값 동일성용 모듈 상수입니다 — 새 `[]` 리터럴 대신 이것을 씁니다. */
 export const noCatalogMapSections: readonly CatalogMapSection[] = [];
-
-export const TUTORIAL_GATE_UNIT: EpisodeFinalUnitId = "tutorial-final-test";
 
 const CULTURE_ITEM_TYPES: ReadonlySet<string> = new Set(["CULTURE_CARD", "CULTURE_CHECK"]);
 
@@ -49,8 +47,8 @@ export function catalogCultureKeysOf(units: readonly LearningUnit[]): readonly C
 export function catalogMapSectionsOf(
   catalog: readonly CatalogEntry[],
 ): readonly CatalogMapSection[] {
-  return catalog.map((entry, index): CatalogMapSection => {
-    const base = { episodeId: entry.id, ordinal: index + 1, title: entry.title };
+  return catalog.map((entry): CatalogMapSection => {
+    const base = { episodeId: entry.id, ordinal: entry.order, title: entry.title };
     if (entry.status === "ready") {
       return {
         kind: "catalog-ready",
@@ -105,12 +103,6 @@ export function catalogUnitDomId(episodeId: string, unitKey: CatalogUnitKey): st
   return `journey-map-unit-catalog-${token.length}-${token}-${catalogSelectorToken(unitKey)}`;
 }
 
-export function tutorialPassedFrom(
-  completedEpisodeFinalIds: readonly EpisodeFinalUnitId[],
-): boolean {
-  return completedEpisodeFinalIds.includes(TUTORIAL_GATE_UNIT);
-}
-
 export function catalogCoverStatus(
   sections: readonly CatalogMapSection[],
   index: number,
@@ -120,15 +112,17 @@ export function catalogCoverStatus(
   if (section === undefined || section.kind === "catalog-unavailable") return "locked";
   // 끝낸 표지는 앞이 아직이어도 숨기지 않습니다(다른 기기 진행 · 순서 변경).
   if (isCatalogUnitDone(gate.progress, section.episodeId, CATALOG_INTRO_KEY)) return "completed";
+  // 첫 구획은 늘 열립니다.
   const previous = sections[index - 1];
+  if (previous === undefined) return "available";
+  const previousDone = isCatalogEpisodeComplete(
+    gate.progress,
+    previous.episodeId,
+    previous.kind === "catalog-ready" ? previous.completionKeys : DEFAULT_CATALOG_COMPLETION,
+  );
+  // 앞 구획이 튜토리얼이면 옛 튜토리얼 통과 기록으로도 열립니다.
   const open =
-    previous === undefined
-      ? gate.tutorialPassed
-      : isCatalogEpisodeComplete(
-          gate.progress,
-          previous.episodeId,
-          previous.kind === "catalog-ready" ? previous.completionKeys : DEFAULT_CATALOG_COMPLETION,
-        );
+    previousDone || (previous.episodeId === TUTORIAL_EPISODE_ID && gate.legacyTutorialPassed);
   return open ? "available" : "locked";
 }
 

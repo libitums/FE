@@ -14,21 +14,30 @@ import { markedUiCopy } from "../../lib/ui-copy.test-support";
 // `toHaveStyle`을 쓰지 않습니다. 텍스트 질의(`getByText`)를 쓰지 않습니다.
 
 const messengerItem: RoleplayItem = {
-  form: "messenger",
-  unitId: "appointment-confirmation",
+  form: "story",
+  unitId: "story-u01-water",
+  episodeId: "u01-water",
   title: "A Message from Minseo",
+  lineCount: 3,
+  imageUrl: null,
 };
 
 const phoneCallItem: RoleplayItem = {
-  form: "phone-call",
-  unitId: "appointment-confirmation-phone-call",
+  form: "story",
+  unitId: "story-u02-checkin",
+  episodeId: "u02-checkin",
   title: "A Call from Minseo",
+  lineCount: 3,
+  imageUrl: null,
 };
 
 const visualNovelItem: RoleplayItem = {
-  form: "visual-novel",
-  unitId: "cafe-arrival-visual-novel",
+  form: "story",
+  unitId: "story-u03-mina",
+  episodeId: "u03-mina",
   title: "Our Imagined Café",
+  lineCount: 3,
+  imageUrl: null,
 };
 
 const fixtures: readonly RoleplayItem[] = [messengerItem, phoneCallItem, visualNovelItem];
@@ -75,9 +84,7 @@ describe("RoleplayCard — 열린 카드", () => {
       <RoleplayCard item={messengerItem} locked={false} layout="row" onSelect={vi.fn()} />,
     );
 
-    expect(
-      screen.queryByTestId("roleplay-list-item-lock-appointment-confirmation"),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByTestId("roleplay-list-item-lock-story-u01-water")).not.toBeInTheDocument();
     expect(container.querySelectorAll("[data-status]")).toHaveLength(0);
   });
 
@@ -85,8 +92,11 @@ describe("RoleplayCard — 열린 카드", () => {
     const onSelect = vi.fn<(selected: RoleplayItem) => void>();
     render(<RoleplayCard item={messengerItem} locked={false} layout="list" onSelect={onSelect} />);
 
-    const card = screen.getByTestId("roleplay-list-item-appointment-confirmation");
-    expect(card).toHaveAttribute("accessibility-label", "A Message from Minseo, Messenger");
+    const card = screen.getByTestId("roleplay-list-item-story-u01-water");
+    expect(card).toHaveAttribute(
+      "accessibility-label",
+      "A Message from Minseo, Roleplay · 3 lines",
+    );
     fireEvent.tap(card, {});
 
     expect(onSelect).toHaveBeenCalledWith(messengerItem);
@@ -97,16 +107,19 @@ describe("RoleplayCard — 잠긴 카드", () => {
   it("[C6] 버튼이 아니고 이름 뒤에 잠김이 붙는다", () => {
     render(<RoleplayCard item={messengerItem} locked={true} layout="row" onSelect={vi.fn()} />);
 
-    const card = screen.getByTestId("roleplay-list-item-appointment-confirmation");
+    const card = screen.getByTestId("roleplay-list-item-story-u01-water");
     expect(card).toHaveAttribute("accessibility-traits", "none");
-    expect(card).toHaveAttribute("accessibility-label", "A Message from Minseo, Messenger, locked");
+    expect(card).toHaveAttribute(
+      "accessibility-label",
+      "A Message from Minseo, Roleplay · 3 lines, locked",
+    );
     expect(card).toHaveAttribute("data-locked", "true");
   });
 
   it("[C7] 자물쇠가 서고 접근성 트리에서는 가려진다 — 잠김은 이름이 이미 말한다", () => {
     render(<RoleplayCard item={messengerItem} locked={true} layout="row" onSelect={vi.fn()} />);
 
-    expect(screen.getByTestId("roleplay-list-item-lock-appointment-confirmation")).toHaveAttribute(
+    expect(screen.getByTestId("roleplay-list-item-lock-story-u01-water")).toHaveAttribute(
       "accessibility-elements-hidden",
       "true",
     );
@@ -116,7 +129,7 @@ describe("RoleplayCard — 잠긴 카드", () => {
     const onSelect = vi.fn<(selected: RoleplayItem) => void>();
     render(<RoleplayCard item={messengerItem} locked={true} layout="row" onSelect={onSelect} />);
 
-    fireEvent.tap(screen.getByTestId("roleplay-list-item-appointment-confirmation"), {});
+    fireEvent.tap(screen.getByTestId("roleplay-list-item-story-u01-water"), {});
 
     expect(onSelect).not.toHaveBeenCalled();
   });

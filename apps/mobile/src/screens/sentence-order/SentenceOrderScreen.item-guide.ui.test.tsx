@@ -3,11 +3,10 @@ import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/
 
 import { backHandlers } from "../../lib/back-handler";
 import { guideRoots, stubGuideStorage } from "../../lib/learning-item-guide.storage.test-support";
-import type { JourneyStepId } from "../journey-map/journey-map";
-import { SentenceOrderScreen } from "./SentenceOrderScreen";
+import { StepSentenceOrder } from "./StepSentenceOrder.test-support";
+import type { SentenceOrderStepId } from "./sentence-order-steps.test-support";
 
-// `ui` 계층: 문장 만들기 화면의 학습 문항 안내. 문항은 제품 표의 실물이다(대상 판정이 제품 데이터와
-// 맞는지는 unit의 TG가 본다) — greeting은 조각 하나, ordering · appointment · directions는 둘 이상.
+// `ui` 계층: 문장 만들기 화면의 학습 문항 안내. 문항은 이 폴더의 테스트 지원 표다(제품 표는 사라졌다) — greeting은 조각 하나, ordering · appointment · directions는 둘 이상.
 
 afterEach(() => {
   cleanup();
@@ -17,9 +16,9 @@ afterEach(() => {
   }
 });
 
-function renderScreen(stepId: JourneyStepId = "greeting") {
+function renderScreen(stepId: SentenceOrderStepId = "greeting") {
   const props = { onExit: vi.fn<() => void>(), onFinish: vi.fn() };
-  render(<SentenceOrderScreen stepId={stepId} {...props} />);
+  render(<StepSentenceOrder stepId={stepId} {...props} />);
   return props;
 }
 

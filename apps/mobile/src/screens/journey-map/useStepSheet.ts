@@ -9,7 +9,6 @@ import {
   scrollId,
   scrollMapTo,
   scrollNodeIntoView,
-  stepNodeId,
 } from "./journey-map-scroll";
 import { catalogUnitDomId } from "./catalog-map";
 import { catalogSheetTargetOf } from "./catalog-sheet";
@@ -22,17 +21,14 @@ import {
   stepSheetReducer,
   stepSheetTop,
   stepUnitSize,
-  type JourneyStepId,
   type StepSheetState,
-} from "./journey-map";
+} from "./journey-map-sheet";
 import type { SheetTargetId } from "./catalog-map.contract";
 
-/** 말풍선이 붙을 유닛의 상자 id입니다 — 튜토리얼은 스텝 노드, 카탈로그는 유닛 셀입니다. */
+/** 말풍선이 붙을 유닛의 상자 id입니다 — 카탈로그 유닛 셀입니다. 열림 키가 카탈로그 키가 아니면 못 찾는 id입니다. */
 function sheetNodeDomId(id: SheetTargetId): string {
   const catalog = catalogSheetTargetOf(id);
-  return catalog === null
-    ? stepNodeId(id as JourneyStepId)
-    : catalogUnitDomId(catalog.episodeId, catalog.unitKey);
+  return catalog === null ? id : catalogUnitDomId(catalog.episodeId, catalog.unitKey);
 }
 
 export type StepSheetControls = {

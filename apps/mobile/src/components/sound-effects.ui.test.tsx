@@ -4,7 +4,6 @@ import { render } from "@lynx-js/react/testing-library";
 import { AnswerVerdict } from "./AnswerVerdict";
 import { LearningActivityComplete } from "../screens/learning/LearningActivityComplete";
 import { LessonCompleteScreen } from "../screens/lesson-complete/LessonCompleteScreen";
-import { CultureQuizOption } from "../screens/culture-quiz/CultureQuizOption";
 import { lessonRewardPlaceholder } from "../screens/lesson-complete/lesson-complete";
 
 afterEach(() => vi.unstubAllGlobals());
@@ -25,19 +24,6 @@ test("판정 배지는 표시된 결과음만 한 번 요청하고 같은 결과
   view.rerender(<AnswerVerdict result="incorrect" />);
   expect(play).toHaveBeenLastCalledWith("wrong_answer");
   expect(play).toHaveBeenCalledTimes(2);
-});
-
-test("문화 퀴즈는 응답 전에는 조용하고 판정이 나타날 때만 효과음을 요청한다", () => {
-  const play = stubSound();
-  const view = render(
-    <CultureQuizOption index={0} text="Answer" result={null} onSelect={() => {}} />,
-  );
-  expect(play).not.toHaveBeenCalled();
-
-  view.rerender(
-    <CultureQuizOption index={0} text="Answer" result="incorrect" onSelect={() => {}} />,
-  );
-  expect(play).toHaveBeenCalledExactlyOnceWith("wrong_answer");
 });
 
 test("활동 완료 안내는 결과 화면의 큰 축하음과 다른 소리를 한 번 요청한다", () => {

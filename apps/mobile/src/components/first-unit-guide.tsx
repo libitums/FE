@@ -1,7 +1,7 @@
 import { createContext, useContext, useMemo, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
-export type FirstUnitGuideStep = "map" | "story" | "messenger" | "call";
+export type FirstUnitGuideStep = "map";
 
 const FirstUnitGuideContext = createContext<{
   enabled: boolean;

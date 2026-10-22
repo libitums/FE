@@ -3,28 +3,18 @@
 
 import type { ReactNode } from "@lynx-js/react";
 
-import type { AnswerResult } from "../lib/answer-result";
 import type { LessonPosition } from "../screens/learning/activity-finish";
 import { CatalogFinalScreen } from "../screens/catalog-final/CatalogFinalScreen";
 import type {
   CatalogRoleplayTurn,
   CatalogRoleplayTurns,
 } from "../screens/catalog-final/catalog-final.contract";
-import { CultureCardActivity } from "../screens/culture-card/CultureCardActivity";
 import { judgeAssessment } from "../screens/assessment/assessment";
 import { LessonCompleteScreen } from "../screens/lesson-complete/LessonCompleteScreen";
 import { lessonRewardPlaceholder } from "../screens/lesson-complete/lesson-complete";
-import { ListeningActivity } from "../screens/listening/ListeningScreen";
-import { PairMatchActivity } from "../screens/pair-match/PairMatchActivity";
-import { ReadAloudActivity } from "../screens/read-aloud/ReadAloudActivity";
-import { SentenceOrderActivity } from "../screens/sentence-order/SentenceOrderScreen";
-import { SpeakWordActivity } from "../screens/speak-word/SpeakWordActivity";
-import { SyllableBuildActivity } from "../screens/syllable-build/SyllableBuildActivity";
-import { TypingActivity } from "../screens/typing/TypingActivity";
-import { VocabCardActivity } from "../screens/vocab-card/VocabCardActivity";
-import { WordChoiceActivity } from "../screens/word-choice/WordChoiceScreen";
 import { catalogLessonOrdinalOf } from "../screens/journey-map/catalog-map";
 import { CatalogEpilogueFlow } from "./CatalogCutsFlow";
+import { renderCatalogActivity } from "./render-catalog-activity";
 import { catalogEpilogueModelOf } from "./catalog-cover-wiring";
 import { catalogFinalPlanFor } from "./catalog-final-model";
 import {
@@ -32,7 +22,6 @@ import {
   catalogLessonPlanFor,
   catalogPassCriterion,
 } from "./catalog-lesson-plan";
-import type { CatalogActivity } from "./catalog-lesson-plan";
 import type { Screen } from "./nav-state";
 import type { ScreenWiring } from "./screen-wiring";
 
@@ -40,145 +29,10 @@ type CatalogFlowScreen = Extract<
   Screen,
   { name: "catalog-lesson" | "catalog-final" | "catalog-unit-complete" | "catalog-epilogue" }
 >;
-type LessonScreen = Extract<CatalogFlowScreen, { name: "catalog-lesson" }>;
 
 function nonEmptyTurns(turns: readonly CatalogRoleplayTurn[]): CatalogRoleplayTurns | null {
   const [first, ...rest] = turns;
   return first === undefined ? null : [first, ...rest];
-}
-
-// 활동 하나를 그 학습형의 화면으로 그립니다. 망라 `switch`가 새 학습형을 컴파일 타임에 강제합니다.
-// `counterpartName`은 대화 조립 아바타만 씁니다 — 학습자 이름과 함께 문장 순서 활동에 넘깁니다.
-function renderActivity(
-  activity: CatalogActivity,
-  lesson: LessonPosition,
-  screen: LessonScreen,
-  wiring: ScreenWiring,
-  counterpartName: string,
-): ReactNode {
-  const { episodeId, unitKey, activityIndex } = screen;
-  const key = `${episodeId}:${unitKey}:${activityIndex}`;
-  const onFinish = (results: readonly AnswerResult[], skippedCount: number) =>
-    wiring.onFinishCatalogActivity(episodeId, unitKey, activityIndex, results, skippedCount);
-  const onExit = wiring.onExitCatalogSession;
-  switch (activity.form) {
-    case "listening":
-      return (
-        <ListeningActivity
-          key={key}
-          questions={activity.questions}
-          onExit={onExit}
-          onFinish={onFinish}
-          sessionOptions={wiring.sessionOptions}
-          gemCount={wiring.gemCount}
-          lesson={lesson}
-        />
-      );
-    case "sentence-order":
-      return (
-        <SentenceOrderActivity
-          key={key}
-          questions={activity.questions}
-          gemCount={wiring.gemCount}
-          onExit={onExit}
-          onFinish={onFinish}
-          lesson={lesson}
-          speakerNames={{ counterpart: counterpartName, me: wiring.learnerFill.name }}
-        />
-      );
-    case "word-choice":
-      return (
-        <WordChoiceActivity
-          key={key}
-          questions={activity.questions}
-          onExit={onExit}
-          onFinish={onFinish}
-          lesson={lesson}
-        />
-      );
-    case "typing":
-      return (
-        <TypingActivity
-          key={key}
-          questions={activity.questions}
-          gemCount={wiring.gemCount}
-          onExit={onExit}
-          onFinish={onFinish}
-          lesson={lesson}
-          insets={wiring.safeAreaInsets}
-        />
-      );
-    case "vocab-card":
-      return (
-        <VocabCardActivity
-          key={key}
-          questions={activity.questions}
-          gemCount={wiring.gemCount}
-          onExit={onExit}
-          onFinish={onFinish}
-          lesson={lesson}
-        />
-      );
-    case "pair-match":
-      return (
-        <PairMatchActivity
-          key={key}
-          questions={activity.questions}
-          gemCount={wiring.gemCount}
-          onExit={onExit}
-          onFinish={onFinish}
-          lesson={lesson}
-        />
-      );
-    case "culture-card":
-      return (
-        <CultureCardActivity
-          key={key}
-          questions={activity.questions}
-          gemCount={wiring.gemCount}
-          onExit={onExit}
-          onFinish={onFinish}
-          lesson={lesson}
-        />
-      );
-    case "syllable-build":
-      return (
-        <SyllableBuildActivity
-          key={key}
-          questions={activity.questions}
-          gemCount={wiring.gemCount}
-          onExit={onExit}
-          onFinish={onFinish}
-          lesson={lesson}
-        />
-      );
-    case "read-aloud":
-      return (
-        <ReadAloudActivity
-          key={key}
-          questions={activity.questions}
-          gemCount={wiring.gemCount}
-          onExit={onExit}
-          onFinish={onFinish}
-          lesson={lesson}
-        />
-      );
-    case "speak-word":
-      return (
-        <SpeakWordActivity
-          key={key}
-          questions={activity.questions}
-          gemCount={wiring.gemCount}
-          onExit={onExit}
-          onFinish={onFinish}
-          lesson={lesson}
-        />
-      );
-    default: {
-      const exhaustive: never = activity;
-      return exhaustive;
-    }
-  }
 }
 
 // 시작 가드와 세션 고정이 아래 모델이 없는 경우를 막으므로 여기 닿으면 결함입니다 — 에러 경계가 받습니다.
@@ -205,7 +59,7 @@ export function renderCatalogFlow(screen: CatalogFlowScreen, wiring: ScreenWirin
         screen.unitKey,
       );
       const placed = ordinal === undefined ? lesson : { ...lesson, ordinal };
-      return renderActivity(activity, placed, screen, wiring, plan.counterpartName);
+      return renderCatalogActivity(activity, placed, screen, wiring, plan.counterpartName);
     }
     case "catalog-final": {
       const { episodeId } = screen;

@@ -5,6 +5,7 @@ import type { loadLearnerProfile } from "../lib/learner-profile-api";
 import type { loadLearningProgress } from "../lib/progress-api";
 import { completedActivityCount, journeyProgressFrom } from "./learning-progress";
 import type { JourneyProgressState } from "./learning-progress";
+import { hasLegacyTutorialActivity } from "./legacy-tutorial-progress";
 
 /** 기존 함수의 반환형 그대로입니다 — 모양을 다시 적지 않습니다. */
 export type LearningProgressLoadResult = Awaited<ReturnType<typeof loadLearningProgress>>;
@@ -30,9 +31,9 @@ export const pendingLearnerRecordSignals: LearnerRecordSignals = {
   profile: "pending",
 };
 
-// VN 진행 중(`active` · `beatIndex: 1`)은 활동 수에 들지 않지만 기록으로 봅니다.
+// 옛 비주얼 노벨 진행 중(`active` · `beatIndex: 1`)은 활동 수에 들지 않지만 기록으로 봅니다.
 export function hasLearningRecord(state: JourneyProgressState): boolean {
-  return completedActivityCount(state) > 0 || state.visualNovelProgress.beatIndex > 0;
+  return completedActivityCount(state) > 0 || hasLegacyTutorialActivity(state.legacyTutorial);
 }
 
 export function progressSignalOf(loaded: LearningProgressLoadResult): SettledLearnerRecordSignal {

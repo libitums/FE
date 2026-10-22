@@ -21,13 +21,7 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidJUnit4.class)
 public final class AudioPlaybackModuleTest {
   private static final String[] SOURCES = {
-      "appointment-1", "appointment-2", "appointment-3",
-      "directions-1", "directions-2", "directions-3",
-      "greeting-1", "greeting-2", "greeting-3",
-      "introduction-1", "introduction-2", "introduction-3",
-      "ordering-1", "ordering-2", "ordering-3",
-      "phone-call-confirm-01", "phone-call-confirm-02", "phone-call-confirm-03",
-      "tutorial-cabin-announcement", "tutorial-minseo-call-01", "tutorial-minseo-call-02"
+      "greeting-1", "ordering-2", "tutorial-cabin-announcement"
   };
 
   private Context context;
@@ -73,7 +67,7 @@ public final class AudioPlaybackModuleTest {
     }
     logcat.waitFor();
     assertTrue("no open-failure warning in logcat: " + log,
-        log.toString().contains("Cannot open audio asset audio/missing-audio-probe.m4a"));
+        log.toString().contains("Cannot open audio source"));
   }
 
   @Test public void bundledAudioCompletesOnce() throws InterruptedException {
@@ -134,7 +128,8 @@ public final class AudioPlaybackModuleTest {
       calls.incrementAndGet();
       complete.countDown();
     });
-    assertTrue("unreachable remote did not settle", complete.await(10, TimeUnit.SECONDS));
+    // MediaPlayer retries a refused connection every ~3 s and gives up after ~30 s on the emulator.
+    assertTrue("unreachable remote did not settle", complete.await(40, TimeUnit.SECONDS));
     Thread.sleep(500);
     assertEquals(1, calls.get());
   }
@@ -193,6 +188,206 @@ public final class AudioPlaybackModuleTest {
     awaitPlaybackStarted();
     playback.onAudioFocusChange(AudioManager.AUDIOFOCUS_LOSS);
     assertTrue("permanent loss did not settle playback", complete.await(3, TimeUnit.SECONDS));
+  }
+
+  /** Plays a bundled source until completion and returns the elapsed milliseconds. */
+  private long elapsedMillis(String source, double rate) throws InterruptedException {
+    CountDownLatch complete = new CountDownLatch(1);
+    AtomicInteger calls = new AtomicInteger();
+    long start = System.nanoTime();
+    com.lynx.react.bridge.Callback done = args -> {
+      calls.incrementAndGet();
+      complete.countDown();
+    };
+    if (rate == 1.0) module.play(source, done);
+    else module.playAtRate(source, rate, done);
+    assertTrue(source + " at " + rate + " did not finish", complete.await(30, TimeUnit.SECONDS));
+    long elapsed = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start);
+    Thread.sleep(300);
+    assertEquals("completion must arrive exactly once", 1, calls.get());
+    return elapsed;
+  }
+
+  /** AP-S1 */
+  @Test public void apS1_slowPlaybackCompletesOnceAndTakesLonger() throws InterruptedException {
+    long normal = elapsedMillis("greeting-1", 1.0);
+    long slow = elapsedMillis("greeting-1", 0.85);
+    assertTrue("normal=" + normal + "ms slow=" + slow + "ms", slow >= normal * 1.1);
+  }
+
+  /** AP-S2 */
+  @Test public void apS2_stopDuringSlowPlaybackDiscardsCompletion() throws InterruptedException {
+    CountDownLatch complete = new CountDownLatch(1);
+    module.playAtRate("tutorial-cabin-announcement", 0.85, args -> complete.countDown());
+    awaitPlaybackStarted();
+    module.stop();
+    assertFalse("stopped slow source completed", complete.await(6, TimeUnit.SECONDS));
+  }
+
+  /** AP-S2 */
+  @Test public void apS2_normalPlaybackReplacingSlowDiscardsTheOldCompletion()
+      throws InterruptedException {
+    CountDownLatch newComplete = new CountDownLatch(1);
+    AtomicInteger oldCalls = new AtomicInteger();
+    AtomicInteger newCalls = new AtomicInteger();
+    module.playAtRate("tutorial-cabin-announcement", 0.85, args -> oldCalls.incrementAndGet());
+    awaitPlaybackStarted();
+    module.play("greeting-1", args -> {
+      newCalls.incrementAndGet();
+      newComplete.countDown();
+    });
+    assertTrue("replacement did not finish", newComplete.await(10, TimeUnit.SECONDS));
+    Thread.sleep(300);
+    assertEquals("replaced slow source completed", 0, oldCalls.get());
+    assertEquals(1, newCalls.get());
+  }
+
+  /** AP-S3 */
+  @Test public void apS3_pausedSlowPlaybackStaysPausedUntilResume() throws InterruptedException {
+    CountDownLatch complete = new CountDownLatch(1);
+    AtomicInteger calls = new AtomicInteger();
+    module.playAtRate("tutorial-cabin-announcement", 0.85, args -> {
+      calls.incrementAndGet();
+      complete.countDown();
+    });
+    awaitPlaybackStarted();
+    module.pause();
+    assertFalse("paused slow source completed", complete.await(600, TimeUnit.MILLISECONDS));
+    assertFalse("player started on its own while paused", isPlayerPlaying(false));
+    module.resume();
+    awaitPlayerPlaying();
+    assertEquals("speed lost after resume", 0.85f, playerSpeed(), 0.01f);
+    assertEquals("slow speech must keep its pitch", 1f, playerPitch(), 0.0001f);
+    assertTrue("resumed slow source did not finish", complete.await(30, TimeUnit.SECONDS));
+    Thread.sleep(300);
+    assertEquals(1, calls.get());
+  }
+
+  /** AP-S4 */
+  @Test public void apS4_transientFocusLossPausesSlowPlaybackUntilFocusReturns()
+      throws InterruptedException {
+    CountDownLatch complete = new CountDownLatch(1);
+    AtomicInteger calls = new AtomicInteger();
+    module.playAtRate("tutorial-cabin-announcement", 0.85, args -> {
+      calls.incrementAndGet();
+      complete.countDown();
+    });
+    awaitPlaybackStarted();
+    playback.onAudioFocusChange(AudioManager.AUDIOFOCUS_LOSS_TRANSIENT);
+    assertFalse("player still playing after transient loss", isPlayerPlaying(true));
+    assertFalse("slow speech completed during focus loss", complete.await(6, TimeUnit.SECONDS));
+    playback.onAudioFocusChange(AudioManager.AUDIOFOCUS_GAIN);
+    awaitPlayerPlaying();
+    assertEquals("speed lost after focus returned", 0.85f, playerSpeed(), 0.01f);
+    assertEquals("pitch changed after focus returned", 1f, playerPitch(), 0.0001f);
+    assertTrue("slow speech did not resume after focus returned", complete.await(30, TimeUnit.SECONDS));
+    Thread.sleep(300);
+    assertEquals(1, calls.get());
+  }
+
+  /** AP-S6: releasing the player puts the remembered speed back to normal. */
+  @Test public void apS6_releasingThePlayerResetsTheRememberedSpeed() {
+    module.playAtRate("tutorial-cabin-announcement", 0.85, args -> {});
+    assertEquals(0.85f, rememberedRate(), 0.0001f);
+    module.stop();
+    assertEquals("stop must reset the speed", 1f, rememberedRate(), 0.0001f);
+  }
+
+  /** AP-S6 */
+  @Test public void apS6_replacementByNormalPlaybackPlaysAtNormalSpeed() throws InterruptedException {
+    module.playAtRate("tutorial-cabin-announcement", 0.85, args -> {});
+    awaitPlaybackStarted();
+    module.play("tutorial-cabin-announcement", args -> {});
+    awaitPlaybackStarted();
+    assertEquals(1f, playerSpeed(), 0.01f);
+    assertEquals(1f, playerPitch(), 0.0001f);
+  }
+
+  /** AP-S5 */
+  @Test public void apS5_contentFileAtSlowRateCompletesOnceAndTakesLonger() throws Exception {
+    java.io.File root = new java.io.File(context.getFilesDir(), ContentFileModule.ROOT_NAME);
+    java.io.File copy = new java.io.File(root, "audio/ap-s5-greeting.m4a");
+    java.io.File dir = copy.getParentFile();
+    assertTrue("cannot create " + dir, dir.isDirectory() || dir.mkdirs());
+    try (AssetFileDescriptor asset = context.getAssets().openFd(AudioAssetPath.forSource("greeting-1"));
+        java.io.InputStream in = asset.createInputStream();
+        java.io.OutputStream out = new java.io.FileOutputStream(copy)) {
+      byte[] buffer = new byte[8192];
+      int read;
+      while ((read = in.read(buffer)) > 0) out.write(buffer, 0, read);
+    }
+    try {
+      String source = "file://" + copy.getCanonicalPath();
+      long normal = elapsedMillis(source, 1.0);
+      long slow = elapsedMillis(source, 0.85);
+      assertTrue("normal=" + normal + "ms slow=" + slow + "ms", slow >= normal * 1.1);
+    } finally {
+      copy.delete();
+    }
+  }
+
+  /** AP-S5 */
+  @Test public void apS5_unreachableHttpsAtSlowRateFinishesExactlyOnce() throws InterruptedException {
+    CountDownLatch complete = new CountDownLatch(1);
+    AtomicInteger calls = new AtomicInteger();
+    module.playAtRate("https://127.0.0.1:9/a.m4a", 0.85, args -> {
+      calls.incrementAndGet();
+      complete.countDown();
+    });
+    // MediaPlayer retries a refused connection every ~3 s and gives up after ~30 s on the emulator.
+    assertTrue("unreachable remote did not settle", complete.await(40, TimeUnit.SECONDS));
+    Thread.sleep(500);
+    assertEquals(1, calls.get());
+  }
+
+  /** The speed the live MediaPlayer is actually set to, read on the main thread. */
+  private float playerSpeed() {
+    return playerParams().getSpeed();
+  }
+
+  /** The pitch the live MediaPlayer is actually set to — slow speech must not drop it. */
+  private float playerPitch() {
+    return playerParams().getPitch();
+  }
+
+  private android.media.PlaybackParams playerParams() {
+    android.media.PlaybackParams[] result = new android.media.PlaybackParams[1];
+    InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
+      try {
+        java.lang.reflect.Field playerField = AudioPlaybackController.class.getDeclaredField("player");
+        playerField.setAccessible(true);
+        android.media.MediaPlayer active = (android.media.MediaPlayer) playerField.get(playback);
+        if (active == null) throw new AssertionError("no player");
+        result[0] = active.getPlaybackParams();
+      } catch (ReflectiveOperationException error) {
+        throw new AssertionError(error);
+      }
+    });
+    return result[0];
+  }
+
+  /** The controller's remembered requested speed (what the next start would apply). */
+  private float rememberedRate() {
+    float[] result = new float[1];
+    InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
+      try {
+        java.lang.reflect.Field rateField = AudioPlaybackController.class.getDeclaredField("currentRate");
+        rateField.setAccessible(true);
+        result[0] = rateField.getFloat(playback);
+      } catch (ReflectiveOperationException error) {
+        throw new AssertionError(error);
+      }
+    });
+    return result[0];
+  }
+
+  private void awaitPlayerPlaying() throws InterruptedException {
+    long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
+    while (System.nanoTime() < deadline) {
+      if (isPlayerPlaying(false)) return;
+      Thread.sleep(20);
+    }
+    throw new AssertionError("player did not resume playing within 5s");
   }
 
   /** Reads controller state on the main thread, which also drains earlier posted focus changes. */

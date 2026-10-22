@@ -3,12 +3,7 @@ import { act, fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
 import { CATALOG_INTRO_KEY } from "../../lib/catalog-progress";
 import { catalogUnitDomId } from "./catalog-map";
-import {
-  catalogLessonKeys,
-  catalogProps,
-  mapScreen,
-  tutorialAllDone,
-} from "./JourneyMapScreen.test-support";
+import { catalogLessonKeys, catalogProps, mapScreen } from "./JourneyMapScreen.test-support";
 
 // `ui` 계층: 최종 테스트의 말풍선이 **스페셜 표식(124)의 아래 모서리** 밑에 서는지 봅니다. 레슨 원(100)으로
 // 재면 꼬리가 표식에 파고들어 유닛과 너무 가깝습니다. 재는 값은 이 파일이 정하고(대역), 모르는 선택자는
@@ -56,7 +51,7 @@ const progress = { "u01-water": [CATALOG_INTRO_KEY, ...catalogLessonKeys] };
 
 test("FS3. 최종 테스트의 말풍선은 스페셜 표식(124) 아래 모서리에서 간격 8만큼 띄워 선다", () => {
   stubRects(table("RP"));
-  render(mapScreen({ progress: tutorialAllDone, catalog: catalogProps({ progress }) }));
+  render(mapScreen({ catalog: catalogProps({ progress }) }));
 
   act(() => {
     fireEvent.tap(screen.getByTestId("ui-lynx-special-unit-catalog-unit-u01-water-RP"), {
@@ -72,7 +67,6 @@ test("FS4. 레슨 유닛의 말풍선은 그대로 레슨 원(100) 아래 모서
   stubRects(table("S1"));
   render(
     mapScreen({
-      progress: tutorialAllDone,
       catalog: catalogProps({ progress: { "u01-water": [CATALOG_INTRO_KEY] } }),
     }),
   );

@@ -10,14 +10,6 @@ const asScreen = (screen: object): Screen => screen as unknown as Screen;
 
 describe("isFullBleedScreen", () => {
   test.each<[string, Screen]>([
-    ["episode-intro", { name: "episode-intro", unitId: "tutorial-intro" }],
-    ["episode-prologue", { name: "episode-prologue", unitId: "tutorial-intro" }],
-    ["episode-final", { name: "episode-final", unitId: "tutorial-final-test" }],
-    ["visual-novel", { name: "visual-novel", unitId: "cafe-arrival-visual-novel" }],
-    [
-      "roleplay-visual-novel",
-      { name: "roleplay-visual-novel", unitId: "cafe-arrival-visual-novel" },
-    ],
     ["journey-entry", { name: "journey-entry" }],
     ["catalog-cover", { name: "catalog-cover", episodeId: "u01-water" }],
   ])("FB1. %s는 전체 화면이다", (_name, screen) => {
@@ -54,8 +46,7 @@ describe("isFullBleedScreen", () => {
   test.each<[string, Screen]>([
     ["journey-map", { name: "journey-map" }],
     ["settings", { name: "settings" }],
-    ["messenger", { name: "messenger", unitId: "appointment-confirmation" }],
-    ["episode-prologue-complete", { name: "episode-prologue-complete", unitId: "tutorial-intro" }],
+    ["roleplay-list", { name: "roleplay-list" }],
   ])("FB1. %s는 전체 화면이 아니다", (_name, screen) => {
     expect(isFullBleedScreen(screen)).toBe(false);
   });
@@ -80,9 +71,12 @@ describe("shellInsetsFor", () => {
   });
 
   test("SI3. 가장자리까지 그림을 까는 화면은 넷 다 0이다", () => {
-    expect(
-      shellInsetsFor({ name: "episode-intro", unitId: "tutorial-intro" } as Screen, insets),
-    ).toEqual({ top: 0, bottom: 0, left: 0, right: 0 });
+    expect(shellInsetsFor({ name: "catalog-cover", episodeId: "u01-water" }, insets)).toEqual({
+      top: 0,
+      bottom: 0,
+      left: 0,
+      right: 0,
+    });
   });
 });
 

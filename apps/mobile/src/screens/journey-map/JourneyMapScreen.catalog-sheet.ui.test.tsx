@@ -2,14 +2,9 @@ import { afterEach, expect, test, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
 import type { CatalogMapSection } from "./catalog-map.contract";
-import {
-  catalogProps,
-  catalogReadySections,
-  mapScreen,
-  tutorialAllDone,
-} from "./JourneyMapScreen.test-support";
+import { catalogProps, catalogReadySections, mapScreen } from "./JourneyMapScreen.test-support";
 
-// `ui` 계층: 카탈로그 유닛의 말풍선 — 열린 노드를 누르면 튜토리얼 스텝과 같은 말풍선이 서고 그동안 에피소드 띠가
+// `ui` 계층: 카탈로그 유닛의 말풍선 — 열린 노드를 누르면 말풍선이 서고 그동안 에피소드 띠가
 // 섭니다. 세션은 말풍선의 `Start`가 엽니다. 잠긴 노드는 말풍선이 없습니다.
 
 afterEach(() => {
@@ -31,7 +26,7 @@ const band = () => screen.queryByTestId("ui-lynx-episode-header");
 
 test("CS1. 열린 레슨을 누르면 말풍선과 띠가 서고, 세션은 아직 열리지 않는다", () => {
   const catalog = catalogProps({ progress: coverDone });
-  render(mapScreen({ progress: tutorialAllDone, catalog }));
+  render(mapScreen({ catalog }));
 
   tapUnit("S1");
 
@@ -45,7 +40,7 @@ test("CS1. 열린 레슨을 누르면 말풍선과 띠가 서고, 세션은 아�
 
 test("CS2. Start가 그 에피소드 · 유닛으로 세션을 연다", () => {
   const catalog = catalogProps({ progress: coverDone });
-  render(mapScreen({ progress: tutorialAllDone, catalog }));
+  render(mapScreen({ catalog }));
 
   tapUnit("S1");
   act(() => {
@@ -57,7 +52,7 @@ test("CS2. Start가 그 에피소드 · 유닛으로 세션을 연다", () => {
 });
 
 test("CS3. 말풍선을 닫으면 띠도 사라지고, 잠긴 노드는 말풍선을 열지 않는다", () => {
-  render(mapScreen({ progress: tutorialAllDone, catalog: catalogProps({ progress: coverDone }) }));
+  render(mapScreen({ catalog: catalogProps({ progress: coverDone }) }));
 
   tapUnit("S1");
   act(() => {
@@ -76,7 +71,7 @@ test("CS4. 진행 줄은 문항 수 기준 — 끝낸 유닛은 전부, 셀 수 
     ...catalogProps({ progress: { "u01-water": ["intro", "S1"] } }),
     unitItemCountOf: vi.fn((_episodeId: string, _unitKey: string) => 16),
   };
-  render(mapScreen({ progress: tutorialAllDone, catalog: counted }));
+  render(mapScreen({ catalog: counted }));
 
   tapUnit("S1");
   expect(screen.getByTestId("step-sheet-progress-count")).toHaveTextContent("16/16");
@@ -85,7 +80,7 @@ test("CS4. 진행 줄은 문항 수 기준 — 끝낸 유닛은 전부, 셀 수 
   expect(screen.getByTestId("step-sheet-progress-count")).toHaveTextContent("0/16");
   cleanup();
 
-  render(mapScreen({ progress: tutorialAllDone, catalog: catalogProps({ progress: coverDone }) }));
+  render(mapScreen({ catalog: catalogProps({ progress: coverDone }) }));
   tapUnit("S1");
   expect(screen.queryByTestId("step-sheet-progress")).not.toBeInTheDocument();
   expect(screen.getByTestId("step-sheet-start")).toBeInTheDocument();
@@ -100,7 +95,6 @@ test("CS5. 영어 제목이 있으면 그것을 쓰고, 최종 노드는 Final t
   const allLessons = { "u01-water": ["intro", "S1", "S3", "S4", "S5", "S6", "S7", "S8", "S9"] };
   render(
     mapScreen({
-      progress: tutorialAllDone,
       catalog: catalogProps({ sections, progress: allLessons }),
     }),
   );

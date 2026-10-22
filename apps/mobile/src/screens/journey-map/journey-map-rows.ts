@@ -1,8 +1,7 @@
-// 맵의 유닛을 줄로 나누는 순수 모듈입니다 — 튜토리얼과 카탈로그가 같은 함수를 씁니다.
+// 맵의 유닛을 줄로 나누는 순수 모듈입니다.
 // 상태(잠김 · 열림 · 끝)는 입력이 아닙니다.
 
 import type { CatalogUnitNode, CatalogUnitNodeRole } from "./catalog-map.contract";
-import type { JourneyMapItem } from "./journey-map-types";
 
 /** 유닛이 줄에서 차지하는 방식입니다 — 둘이 나란히 서는 것과 늘 혼자 서는 것. */
 export type MapUnitPlacement = "paired" | "solo";
@@ -45,15 +44,6 @@ export function mapRowItems<T>(row: MapRow<T>): readonly T[] {
   return row.kind === "pair" ? [row.left, row.right] : [row.item];
 }
 
-export const tutorialItemPlacement: Readonly<Record<JourneyMapItem["kind"], MapUnitPlacement>> = {
-  standard: "paired",
-  "episode-intro": "solo",
-  messenger: "solo",
-  "phone-call": "solo",
-  "visual-novel": "solo",
-  "episode-final": "solo",
-};
-
 export const catalogNodePlacement: Readonly<Record<CatalogUnitNodeRole, MapUnitPlacement>> = {
   lesson: "paired",
   culture: "solo",
@@ -62,13 +52,6 @@ export const catalogNodePlacement: Readonly<Record<CatalogUnitNodeRole, MapUnitP
 
 /** 맵의 열 수입니다 — 1이면 모든 유닛이 한 칸 줄(`solo`)로 섭니다. */
 export type MapColumns = 1 | 2;
-
-export function tutorialRowsOf(
-  items: readonly JourneyMapItem[],
-  columns: MapColumns,
-): readonly MapRow<JourneyMapItem>[] {
-  return mapRowsOf(items, (item) => (columns === 1 ? "solo" : tutorialItemPlacement[item.kind]));
-}
 
 export function catalogRowsOf(
   nodes: readonly CatalogUnitNode[],
@@ -93,9 +76,4 @@ export function mapColumnsFor(input: MapColumnsInput): MapColumns {
   if (fontScale !== null && fontScale > mapSingleColumnFontScale) return 1;
   if (viewportWidth !== null && viewportWidth < mapSingleColumnWidth) return 1;
   return 2;
-}
-
-/** 튜토리얼 맵 항목의 id입니다 — 스텝이면 `step.id`, 특별 유닛이면 `id`. */
-export function tutorialItemId(item: JourneyMapItem): string {
-  return item.kind === "standard" ? item.step.id : item.id;
 }

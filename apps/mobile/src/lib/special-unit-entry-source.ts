@@ -1,16 +1,10 @@
-import type { UiCopy } from "./ui-copy.contract";
-
 // 특별 유닛 진입 출처 어휘의 정본입니다.
 //
-// `lib/`인 근거는 이 어휘를 세 화면 계약(이벤트 union)과 세 화면 컴포넌트(기본
-// 라벨)와 `App`이 쓴다는 것입니다 — 화면 셋 이상이고, 타입 이름이 가리키는 화면이
-// 없습니다(`docs/conventions/code.md` 「import」의 승격 조건).
+// `lib/`인 근거는 이 어휘를 화면 계약(`LessonCompleteScreen`의 `exitTo`)과 문구표 계약
+// (`common.exitTo`의 키)이 함께 쓴다는 것입니다 — 어느 한 화면의 것이 아니고, 타입
+// 이름이 가리키는 화면이 없습니다(`docs/conventions/code.md` 「import」의 승격 조건).
 //
-// **로직을 흘려 넣지 않습니다.** 이 모듈은 어휘와 라벨 사상 하나입니다
-// (`answerResultLabel`과 같은 저울). 연습 모드의 시작 입력은 각 화면 폴더에 둡니다.
+// **타입 하나짜리 모듈입니다.** 라벨은 화면이 `copy.common.exitTo[source]`로 직접
+// 읽으므로 값 export가 없고, 이 모듈에는 `*.unit.test.ts`가 붙지 않습니다.
 
 export type SpecialUnitEntrySource = "journey" | "roleplay";
-
-export function specialUnitExitLabel(source: SpecialUnitEntrySource, copy: UiCopy): string {
-  return copy.common.exitTo[source];
-}

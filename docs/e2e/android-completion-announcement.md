@@ -1,5 +1,7 @@
 # Android 완료 안내 검증
 
+> ⟨2026-10-21 — [ADR-0081](../adr/0081-tutorial-as-catalog-episode.md)⟩ 이 흐름(Maestro `e2e/android-completion-announcement.yaml`)이 쓰는 옛 튜토리얼 듣기 스텝은 지워졌다. 좌표는 사용자 결정 D-B(2026-10-22)로 후속 작업에서 u00 경로로 고치고, 고치기 전까지 흐름은 깨진 상태다 — [튜토리얼 u00 e2e](tutorial-u00.md) 「Android Maestro 흐름 셋」.
+
 ## 범위
 
 기존 `apps/mobile/src/lib/accessibility.ts`의 `announceCompletion(content)` 경로를

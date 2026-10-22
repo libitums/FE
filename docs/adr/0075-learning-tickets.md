@@ -92,16 +92,23 @@
 2. `tickets_ran_out` 비율이 레슨 시작의 큰 몫이면 장수 · 시간을 다시 본다.
 3. 시계 조작이 측정되면 서버 시각 검증을 더한다.
 
-## 적용 기록
+## 적용 기록 ⟨2026-10-21 — 튜토리얼 u00⟩
 
-### 2026-10-21 — 시안 E4 「쓰는 순간」 (`feat/ticket-chip-spend-motion`)
+결정은 [ADR-0081](0081-tutorial-as-catalog-episode.md) D8 — **사용자 결정**(2026-10-21, Q3).
+
+- **D1 「새 레슨이 한 장을 쓴다」의 예외 — 튜토리얼 에피소드(`u00-tutorial`)는 쓰지 않는다.** `lib/catalog-ticket-cost.ts` `catalogUnitTicketCost(progress, episodeId, unitKey): 0 | 1`이 튜토리얼이거나 이미 끝낸 유닛이면 0을 낸다. 문지기(`app/ticket-wiring.ts` — `TicketStart` 첫 인자는 「티켓 없이 연다」로 읽는다)와 맵 말풍선(`CatalogUnitSheet` — 티켓 태그)이 같은 함수를 쓴다. u00의 최종 테스트도 무료다. 티켓은 Episode 1부터 쓴다.
+- 근거: u00은 레슨 · 문화 · 최종 14유닛이다(옛 튜토리얼은 스텝 8만 썼다). 규칙을 그대로 두면 새 사용자가 세 번째 레슨 뒤 막히고, 튜토리얼 → Episode 1 전환 지표가 티켓 효과와 섞인다.
+- 맥락 3의 「튜토리얼 `onStartStep`」은 지워졌다 — 레슨 시작 문지기는 카탈로그 `onStartCatalogUnit` 하나다.
+- `tickets_ran_out`은 u00에서 나지 않는다 — u01부터의 막힘을 본다. 원장 · 충전 · 화면 · 이벤트는 그대로다.
+
+## 적용 기록 ⟨2026-10-21 — 시안 E4 「쓰는 순간」 (`feat/ticket-chip-spend-motion`)⟩
 
 사용자 지시(2026-10-21): 「애니메이션 진행하고 학습 열릴 수 있도록」.
 
 - **언제**: 머리 칩이 서 있는 화면(탭 루트 — 여정 맵)에서 새 레슨에 한 장을 쓰면(말풍선 `Start` · 티켓 없음 대화상자의 `Start lesson`) 바로 열지 않고, 칩이 줄어드는 것을 보인 뒤 연다. 머리 칩이 없는 화면(결과 화면 `Try again`)은 지금처럼 바로 연다. 다시 하기 · 0장은 바뀌지 않는다.
+- **새 레슨**: u00 튜토리얼 레슨 제외(티켓 0장 — ADR-0081). 쓰지 않으니 칩이 줄지 않고 바로 연다.
 - **무엇이**: 칩이 1 → 1.14 → 1(d6), 테두리가 티켓 색(brand-primary)으로 물들었다 걷히고(d8), 숫자가 오름과 같은 굴림으로 옛 값 → 새 값, 칩 아래 「−1」이 나타났다 20만큼 떨어지며 사라진다(d8). 「−1」은 흰 알약 위 brand-strong 글자다 — 떨어지는 자리에 맵의 주황 에피소드 띠가 붙어 있어, 시안의 맨 글자로는 띠 위에서 구분되지 않았다(Android 확인: 띠 대비 1.12:1 → 알약 글자 5.46:1). 움직임 줄이기에서는 숫자 페이드(d2)만. 칩 이름은 처음부터 새 장수다.
 - **기다림**: 칩이 재생을 마치면(`onDropped`) 연다. 칩이 알리지 못해도 안전망(d8 + d4 = 800ms)이 연다. 기다리는 동안의 새 시작은 무시한다 — 한 장을 두 번 쓰거나 두 번 열지 않는다.
 - **코드**: `ticket-gate.ts`(`onSpent`), `use-learning-tickets.ts`(`chipShown` · 기다림 · 안전망), `StatChip`(`dropFrom` · `onDropped`), `stat-chip-motion.css`(lint:motion allowlist 사유 갱신), 칩 · 상단 줄 · 머리 `overflow: visible`(「−1」이 칩 밖에 선다). 줄어드는 동안만 머리를 말풍선 층(`app-header-raised`, z-sheet)으로 올린다 — 같은 sticky 층의 띠 뒤로 「−1」이 들어갔다.
 - **테스트 seam**: 기다림이 주제가 아닌 통합 테스트는 Start 직후 학습을 찾으므로 `vitest.setup.ts`가 `setTicketDropWaitForTests(false)`로 끄고, `App.learning-tickets.integration.test.tsx`만 켜서 본다.
 - 충전(+1) 움직임은 시안이 없어 넣지 않았다.
-

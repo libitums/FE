@@ -2,14 +2,11 @@
 
 import type {
   AssessmentCopy,
-  CultureCopy,
-  CultureQuizCopy,
   LessonCompleteCopy,
   ListeningCopy,
   SentenceOrderCopy,
   SpeakingCopy,
   WordChoiceCopy,
-  WritingCopy,
 } from "./ui-copy-sections.contract";
 import type { LearningItemGuideCopy } from "./learning-item-guide.contract";
 import { n } from "./ui-copy-en-plural";
@@ -18,6 +15,9 @@ export const listeningEn: ListeningCopy = {
   instruction: "Choose what the sentence means.",
   playback: { pause: "Pause", resume: "Resume", play: "Play" },
   playFromStart: "Play from the start",
+  slow: "Slow",
+  playAgain: "Play again",
+  stop: "Stop",
 };
 
 export const wordChoiceEn: WordChoiceCopy = { instruction: "Choose the word that fits." };
@@ -39,26 +39,6 @@ export const speakingEn: SpeakingCopy = {
     "Siri or Dictation is off. Turn on Settings > General > Keyboard > Enable Dictation, then try again.",
   tapToContinue: "Tap the screen to continue",
   recognitionUnavailable: "Speech recognition isn't available right now. Tap Skip to continue.",
-};
-
-export const writingEn: WritingCopy = {
-  instruction: "Trace the letters in the blank.",
-  erase: "Erase",
-  rewrite: "Write again",
-  recognitionUnavailable: "Handwriting can't be checked right now. Moving on.",
-  guideGlyph: (glyph) => `Guide letter ${glyph}`,
-  slotsAllWritten: (total, written) =>
-    `${n(total, "letter", "letters")} to write, all written, ${written}`,
-  slotsCurrent: (total, position, current, written) =>
-    `Letter ${position} of ${total}, ${current}${written === "" ? "" : `, written ${written}`}`,
-};
-
-export const cultureEn: CultureCopy = { activity: "Culture", takeQuiz: "Take the quiz" };
-
-export const cultureQuizEn: CultureQuizCopy = {
-  activity: "Culture quiz",
-  instruction: "Choose the right answer.",
-  progress: (ordinal, total) => `Question ${ordinal} / ${total}`,
 };
 
 export const assessmentEn: AssessmentCopy = {
@@ -83,28 +63,5 @@ export const learningItemGuideEn: LearningItemGuideCopy = {
     title: "Just one piece this time",
     description:
       "Usually you put several pieces in order. Here there's only one, so tap it, then tap Check.",
-  },
-  messenger: {
-    title: "Just one reply this time",
-    description:
-      "Usually you choose a reply or type your own. Here there's only one, so tap it and send.",
-  },
-  "phone-call": {
-    title: "Reply with a tap",
-    description:
-      "Tap Accept and listen. You don't need to speak, so just tap your reply when it's your turn.",
-  },
-  "visual-novel": {
-    title: "Your lines are ready",
-    description:
-      "Tap Next to read each line. Your replies are already written, so there's nothing to choose.",
-  },
-  speaking: {
-    title: "Try it, or skip it",
-    description: "Tap Speak and read the sentence out loud, or tap Skip if you're not ready.",
-  },
-  writing: {
-    title: "Trace the letter",
-    description: "Follow the pale letter with your finger, then tap Check.",
   },
 };

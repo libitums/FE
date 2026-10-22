@@ -2,7 +2,7 @@ import { afterEach, expect, test, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
-import { productJourneySeed } from "./journey-progress";
+import { legacyPassedRecord } from "./test-helpers/progress-seed";
 import { learningProgressSnapshotFrom } from "./learning-progress";
 import { resetPushWiringForTests } from "./push-wiring";
 import { authSessionStorageKey, serializeAuthSession } from "../lib/auth-session";
@@ -28,10 +28,7 @@ const accessToken = `${base64Url({ alg: "none" })}.${base64Url({
 
 const progressOf = (catalogProgress: Record<string, readonly string[]>) =>
   learningProgressSnapshotFrom({
-    ...productJourneySeed,
-    completedStepCount: 8,
-    completedEpisodeIntroIds: ["tutorial-intro"],
-    completedEpisodeFinalIds: ["tutorial-final-test"],
+    legacyTutorial: legacyPassedRecord,
     catalogProgress,
   });
 

@@ -1,15 +1,14 @@
-import { journeySeedBefore } from "./test-helpers/journey-seed";
+import { legacyPassedRecord, legacyPassedSeed } from "./test-helpers/progress-seed";
+import { lessonPlan } from "./test-helpers/episode-format-harness";
+import { solveActivity } from "./test-helpers/episode-format-solvers";
+import { catalogNodeTestId } from "./test-helpers/map-unit-testid";
 import { afterEach, expect, test, vi } from "vitest";
-import { act, cleanup, fireEvent, screen } from "@lynx-js/react/testing-library";
+import { act, cleanup, fireEvent, screen, within } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
 import { renderSignedInApp } from "./test-helpers/signed-in-app";
 import { systemBackEventName } from "../lib/system-back";
-import * as messengerData from "../screens/messenger/messenger";
-import { keyboardConversation } from "../screens/messenger/messenger-keyboard-fixture.test-support";
-import { answerMessengerReplies } from "../screens/messenger/messenger.test-support";
-import type { AppJourneySeed } from "./journey-progress";
-import { journeySteps } from "../screens/journey-map/journey-map";
+import type { AppProgressSeed } from "./app-props";
 
 // 호스트가 넘기는 globalProps(`safeAreaInsets` · `tappableBottomInset`)가 App 전체 트리에서
 // 셸의 아래 여백(`app-shell`)과 탭 바 바닥 면(`app-navigator-floor`)으로 이어지는지 봅니다
@@ -35,8 +34,6 @@ const ios: HostInsets = {
   safeAreaInsets: { top: 59, bottom: 34, left: 0, right: 0 },
 };
 
-const completedIntros = ["tutorial-intro"] as const;
-
 function setHostInsets(value: HostInsets | undefined): void {
   (lynx as unknown as { __globalProps: unknown }).__globalProps = value;
 }
@@ -47,7 +44,6 @@ afterEach(() => {
   vi.useRealTimers();
   vi.unstubAllGlobals();
   vi.unstubAllEnvs();
-  vi.restoreAllMocks();
 });
 
 async function boot(host: HostInsets, withIntroDone = true): Promise<void> {
@@ -58,13 +54,7 @@ async function boot(host: HostInsets, withIntroDone = true): Promise<void> {
       respond: vi.fn<(token: string, outcome: string) => void>(),
     },
   });
-  await renderSignedInApp(
-    withIntroDone ? (
-      <App journeySeed={journeySeedBefore("ordering")} completedEpisodeIntroIds={completedIntros} />
-    ) : (
-      <App journeySeed={journeySeedBefore("ordering")} />
-    ),
-  );
+  await renderSignedInApp(<App progressSeed={withIntroDone ? legacyPassedSeed : undefined} />);
 }
 
 const tap = (id: string): void => void fireEvent.tap(screen.getByTestId(id), {});
@@ -146,7 +136,7 @@ test("[II6] 3버튼 · 서사 표지(전체 화면 그림 화면): 여백 0px, �
   await boot(threeButton, false);
 
   openTab("journey");
-  tap("ui-lynx-special-unit-tutorial-intro");
+  tap("ui-lynx-special-unit-catalog-cover-u00-tutorial");
 
   expect(screen.getByTestId("episode-intro-screen-next")).toBeInTheDocument();
   expect(hasNavigator()).toBe(false);
@@ -155,18 +145,13 @@ test("[II6] 3버튼 · 서사 표지(전체 화면 그림 화면): 여백 0px, �
 
 // ---------------------------------------------------------------- 자판 도킹 (II7 ~ II10)
 
-const messengerUnitId = "appointment-confirmation";
-const finishedTutorial: AppJourneySeed = {
-  completedStepCount: journeySteps.length,
-  completedMessengerUnitIds: [messengerUnitId],
-  completedPhoneCallUnitIds: ["appointment-confirmation-phone-call"],
-  visualNovelProgress: { status: "completed", beatIndex: 2 },
-  completedEpisodeFinalIds: ["tutorial-final-test"],
+// u01의 S6는 낱말 고르기 다음에 타자 활동이 섭니다(앞 유닛은 끝낸 진행).
+const typingSeed: AppProgressSeed = {
+  legacyTutorial: legacyPassedRecord,
+  catalogProgress: { "u01-water": ["intro", "S1", "S2", "S3", "S4", "S5"] },
 };
 
-// 첫 답장이 자판인 대화로 고정합니다 — 실데이터의 첫 답장은 보기입니다.
-async function bootMessenger(host: HostInsets, seed: AppJourneySeed): Promise<void> {
-  vi.spyOn(messengerData, "messengerConversationFor").mockReturnValue(keyboardConversation);
+async function bootTyping(host: HostInsets): Promise<void> {
   setHostInsets(host);
   vi.stubGlobal("NativeModules", {
     SystemBackModule: {
@@ -174,23 +159,21 @@ async function bootMessenger(host: HostInsets, seed: AppJourneySeed): Promise<vo
       respond: vi.fn<(token: string, outcome: string) => void>(),
     },
   });
-  await renderSignedInApp(<App journeySeed={seed} completedEpisodeIntroIds={completedIntros} />);
-}
-
-const bootJourneyMessenger = async (host: HostInsets): Promise<void> => {
-  await bootMessenger(host, journeySeedBefore(messengerUnitId));
+  await renderSignedInApp(<App progressSeed={typingSeed} />);
   openTab("journey");
-  tap(`ui-lynx-special-unit-${messengerUnitId}`);
-  expect(screen.getByTestId("messenger-screen")).toBeInTheDocument();
-};
+  tap(catalogNodeTestId("u01-water", "S6"));
+  tap("step-sheet-start");
+  const [first] = lessonPlan("u01-water", "S6").activities;
+  if (first === undefined) throw new Error("S6 has no activity");
+  solveActivity(first, true, false);
+  expect(screen.getByTestId("messenger-keyboard-rows")).toBeInTheDocument();
+}
 
 const shellStyle = () => screen.getByTestId("app-shell").style;
 const rowsMargin = (): string => screen.getByTestId("messenger-keyboard-rows").style.marginBottom;
-const surfaceMargin = (): string =>
-  screen.getByTestId("messenger-screen-surface").style.marginBottom;
 
-test("[II7] 3버튼 · 여정 메신저: 셸은 아래 · 좌우 0에 위 24, 자판 묶음이 48px를 진다", async () => {
-  await bootJourneyMessenger(threeButton);
+test("[II7] 3버튼 · 타자 활동: 셸은 아래 · 좌우 0에 위 24, 자판 묶음이 48px를 진다", async () => {
+  await bootTyping(threeButton);
 
   expect(hasNavigator()).toBe(false);
   expect(shellStyle().paddingTop).toBe("24px");
@@ -198,27 +181,24 @@ test("[II7] 3버튼 · 여정 메신저: 셸은 아래 · 좌우 0에 위 24, �
   expect(shellStyle().paddingLeft).toBe("0px");
   expect(shellStyle().paddingRight).toBe("0px");
   expect(rowsMargin()).toBe("48px");
-  expect(surfaceMargin()).toBe("0px");
 });
 
-test("[II8] iOS · 메신저: 자판이 있는 동안 묶음 34px, 대화가 끝나면 표면이 34px를 이어받고 셸은 0px 그대로다", async () => {
-  await bootJourneyMessenger(ios);
+test("[II8] iOS · 타자 활동: 자판이 있는 동안 묶음이 34px를 지고 셸은 0px 그대로다", async () => {
+  await bootTyping(ios);
 
   expect(shellPaddingBottom()).toBe("0px");
   expect(rowsMargin()).toBe("34px");
-
-  answerMessengerReplies();
-
-  expect(screen.queryByTestId("messenger-keyboard")).not.toBeInTheDocument();
-  expect(surfaceMargin()).toBe("34px");
-  expect(shellPaddingBottom()).toBe("0px");
 });
 
-test("[II10] 3버튼 · 메신저에서 시스템 뒤로 가면 맵에서 셸 48px와 바닥 면 48px가 돌아온다", async () => {
-  await bootJourneyMessenger(threeButton);
+test("[II10] 3버튼 · 타자 활동에서 나가기를 마치면 맵에서 셸 48px와 바닥 면 48px가 돌아온다", async () => {
+  await bootTyping(threeButton);
   expect(shellPaddingBottom()).toBe("0px");
 
   pressBack();
+  fireEvent.tap(
+    within(screen.getByTestId("ui-lynx-dialog-action-leave")).getByTestId("ui-lynx-button"),
+    {},
+  );
 
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(shellPaddingBottom()).toBe("48px");

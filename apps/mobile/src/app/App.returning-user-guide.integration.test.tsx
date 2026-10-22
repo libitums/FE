@@ -1,18 +1,13 @@
 import { afterEach, expect, test, vi } from "vitest";
-import { act, cleanup, fireEvent, screen, within } from "@lynx-js/react/testing-library";
+import { act, cleanup, screen } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
-import { productJourneySeed } from "./journey-progress";
-import { learningProgressSnapshotFrom } from "./learning-progress";
+import { emptyJourneyProgress, learningProgressSnapshotFrom } from "./learning-progress";
 import { renderSignedInApp, signedInBootSession } from "./test-helpers/signed-in-app";
 import { authSessionStorageKey, serializeAuthSession } from "../lib/auth-session";
 
 const token = `e30.${btoa(JSON.stringify({ sub: "returning-learner" }))}.sig`;
-const empty = learningProgressSnapshotFrom({
-  ...productJourneySeed,
-  completedEpisodeIntroIds: [],
-  catalogProgress: {},
-});
+const empty = learningProgressSnapshotFrom(emptyJourneyProgress);
 type Reply = { status: number; body: string };
 
 function deferred() {
@@ -56,16 +51,6 @@ test("재방문 기록 조회가 늦어도 맵과 다시 연 스토리에 신규
     await vi.advanceTimersByTimeAsync(0);
   });
   expectNoGuide();
-  expect(screen.getByTestId("ui-lynx-special-unit-tutorial-intro")).toHaveAttribute(
-    "data-status",
-    "clear",
-  );
-  fireEvent.tap(screen.getByTestId("ui-lynx-special-unit-tutorial-intro"), {});
-  fireEvent.tap(
-    within(screen.getByTestId("episode-intro-screen-next")).getByTestId("ui-lynx-button"),
-    {},
-  );
-  expect(screen.queryByTestId("first-unit-guide-story")).not.toBeInTheDocument();
 });
 
 test("조회가 끝나 실제로 기록이 없는 사용자에게만 첫 가이드를 표시한다", async () => {

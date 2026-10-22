@@ -72,16 +72,19 @@ export function contentFileUrl(path: string): string | null {
   }
 }
 
+const noBundledUrl = (): null => null;
+
 /**
- * 받아 둔 파일이 있으면 그 `file://` 주소, 없으면 원격 주소입니다. 경로는 화면이 쓰는 그대로 받습니다(선두
- * `content/` 허용) — 받을 때와 같은 규칙(`resolveContentUrlSafe`)으로 버킷 상대 경로를 내고, 규칙 밖이면 파일을
- * 찾지 않고 원격 규칙에 맡깁니다.
+ * 받아 둔 파일의 `file://` 주소 → 앱에 실은 그림 주소 → 원격 주소 순입니다. 경로는 화면이 쓰는 그대로 받습니다
+ * (선두 `content/` 허용) — 받을 때와 같은 규칙(`resolveContentUrlSafe`)으로 버킷 상대 경로를 내고, 규칙 밖이면
+ * 파일도 내장도 찾지 않고 원격 규칙에 맡깁니다. 셋째 인자를 주지 않으면 내장은 없는 것입니다.
  */
 export function localOrRemoteUrl(
   path: string,
   remoteUrlOf: (path: string) => string | null,
+  bundledUrlOf: (relative: string) => string | null = noBundledUrl,
 ): string | null {
   const relative = resolveContentUrlSafe("", path);
   if (relative === null) return remoteUrlOf(path);
-  return contentFileUrl(relative) ?? remoteUrlOf(path);
+  return contentFileUrl(relative) ?? bundledUrlOf(relative) ?? remoteUrlOf(path);
 }

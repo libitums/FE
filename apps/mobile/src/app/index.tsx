@@ -56,9 +56,6 @@ const sinks = __BACKGROUND__ ? productEventSinks(analytics.sinks) : analytics.si
 root.render(
   <GlobalPropsProvider>
     <App
-      messengerEventSink={sinks.messengerEventSink}
-      visualNovelEventSink={sinks.visualNovelEventSink}
-      phoneCallEventSink={sinks.phoneCallEventSink}
       notificationEventSink={sinks.notificationEventSink}
       settingsEventSink={sinks.settingsEventSink}
       entryEventSink={sinks.entryEventSink}

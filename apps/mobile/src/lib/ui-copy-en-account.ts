@@ -14,9 +14,6 @@ export const notificationsEn: NotificationsCopy = {
   emptyBody: "We'll let you know here when there's something new.",
   deleteLabel: (message) => `${message}, delete`,
   destination: {
-    messenger: "Open messenger",
-    "phone-call": "Open call",
-    "visual-novel": "Open visual novel",
     "roleplay-list": "See roleplay list",
   },
 };

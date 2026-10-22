@@ -2,14 +2,15 @@ import { useUiCopy } from "../../lib/ui-copy";
 import { useEffect, useMemo, useReducer } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
-import { announceCompletion } from "../../lib/accessibility";
+import { announce, announceCompletion } from "../../lib/accessibility";
 import { LearningShell } from "../learning/LearningShell";
 import { LearningActivityComplete } from "../learning/LearningActivityComplete";
+import { listeningRevealAnnouncement } from "./listening-copy";
 import { ListeningPrompt } from "./ListeningPrompt";
 import { ListeningSilentPrompt } from "./ListeningSilentPrompt";
 import { ListeningChoice } from "./ListeningChoice";
-import { useListeningPlayback } from "./use-listening-playback";
 import { AnswerVerdict } from "../../components/AnswerVerdict";
+import { useListenAudio } from "../../components/use-listen-audio";
 import {
   answeredResultOf,
   choiceResultAt,
@@ -18,11 +19,10 @@ import {
   isSessionComplete,
   listeningCompletionAnnouncement,
   listeningSessionReducer,
-  questionsForStep,
   sessionAnswerResults,
 } from "./listening";
-import type { AnswerResult } from "../../lib/answer-result";
-import type { JourneyStepId } from "../journey-map/journey-map";
+import { listenCueOf, standaloneLessonAudio } from "../../lib/question-audio";
+import type { LessonAudio } from "../../lib/question-audio";
 import type { SessionOptions } from "../../lib/session-options";
 import { handsOffAfter, lessonCounter } from "../learning/activity-finish";
 import type { ActivityFinish, LessonPosition } from "../learning/activity-finish";
@@ -38,46 +38,17 @@ import "./listening-screen.css";
 // **뼈대는 이 화면의 것이 아닙니다**(2026-09-27, Figma 65-14). 상단 바·세션 헤더·
 // 지시문·무대 카드·아래 버튼은 `LearningShell`이 집니다. 이 화면이 아는 것은 카드
 // **안**에 무엇이 서는가와, 아래 버튼이 지금 무엇을 해야 하는가뿐입니다.
-//
-// journey-map에서 가져오는 것은 **타입 하나뿐**입니다. `stepOrdinal`은 App이
-// `journeyStepOrdinal`로 계산해 내려 주고, 이 화면은 여정 맵의 값을 읽지 않습니다.
-export type ListeningScreenProps = {
-  stepId: JourneyStepId;
-  onExit: () => void;
-  onFinish: (id: JourneyStepId, results: readonly AnswerResult[], skippedCount: number) => void;
-  sessionOptions: SessionOptions;
-  /** 상단 바의 젬 칩 값입니다. 전역 머리와 같은 값을 그리도록 App이 내립니다. */
-  gemCount?: number;
-};
-
 export type ListeningActivityProps = {
   readonly questions: readonly ListeningQuestion[];
   readonly onExit: () => void;
   readonly onFinish: ActivityFinish;
   readonly sessionOptions: SessionOptions;
   readonly gemCount: number;
-  /** 카탈로그 레슨 안의 위치입니다. 튜토리얼처럼 활동 하나가 한 세션이면 주지 않습니다. */
+  /** 카탈로그 레슨 안의 위치입니다. 활동 하나가 한 세션이면 주지 않습니다. */
   readonly lesson?: LessonPosition;
+  /** 레슨의 소리 설정(속도 · 자동 재생 · 보고)입니다. 없으면 단독 활동의 기본값입니다. */
+  readonly lessonAudio?: LessonAudio;
 };
-
-/** 튜토리얼 스텝의 문항 표를 읽어 활동에 넘기는 얇은 어댑터입니다. */
-export function ListeningScreen({
-  stepId,
-  onExit,
-  onFinish,
-  sessionOptions,
-  gemCount = 0,
-}: ListeningScreenProps): ReactNode {
-  return (
-    <ListeningActivity
-      questions={questionsForStep(stepId)}
-      onExit={onExit}
-      onFinish={(results, skippedCount) => onFinish(stepId, results, skippedCount)}
-      sessionOptions={sessionOptions}
-      gemCount={gemCount}
-    />
-  );
-}
 
 export function ListeningActivity({
   questions,
@@ -86,6 +57,7 @@ export function ListeningActivity({
   sessionOptions,
   gemCount,
   lesson,
+  lessonAudio,
 }: ListeningActivityProps): ReactNode {
   const copy = useUiCopy();
   const [state, dispatch] = useReducer(listeningSessionReducer, initialListeningSessionState);
@@ -96,7 +68,11 @@ export function ListeningActivity({
   const question = complete ? null : questions[state.questionIndex];
 
   // 재생의 주인은 이 화면입니다 — 껍데기가 무대를 다시 세워도 소리가 끊기지 않습니다.
-  const playback = useListeningPlayback(question?.audioSource ?? undefined, sessionOptions);
+  // 문항 순번이 재생의 키입니다 — 같은 음성이 두 문항 연속이어도 둘째가 자동 재생됩니다.
+  const playback = useListenAudio(
+    listenCueOf(String(state.questionIndex), question?.audio),
+    lessonAudio ?? standaloneLessonAudio(sessionOptions),
+  );
 
   // 종료 상태가 **처음 존재하게 되는 순간**, 정확히 한 번입니다(ADR-0016 D11-2).
   // dep이 `complete` 하나입니다 — 리듀서가 `questionIndex`를 늘리기만 하므로 이
@@ -186,7 +162,26 @@ export function ListeningActivity({
                 // 판정을 지는 보기는 고른 하나뿐입니다 — 고르지 않은 정답 보기는
                 // null입니다.
                 result={choiceResultAt(state, question, choiceIndex)}
-                onSelect={(index) => dispatch({ type: "selectChoice", choiceIndex: index })}
+                onSelect={(index) => {
+                  const result = index === question.answerIndex ? "correct" : "incorrect";
+                  // 대본이 숨겨져 있다가 판정으로 처음 나타나는 순간, 문항당 한 번 낭독합니다.
+                  if (
+                    !hasAnswered(state) &&
+                    question.audio !== null &&
+                    !sessionOptions["show-transcript"]
+                  ) {
+                    announce(
+                      listeningRevealAnnouncement(
+                        result,
+                        question.prompt,
+                        question.romanization,
+                        copy,
+                      ),
+                    );
+                  }
+                  dispatch({ type: "selectChoice", choiceIndex: index });
+                  playback.answered(result);
+                }}
               />
             ))}
           </view>
@@ -210,7 +205,7 @@ export function ListeningActivity({
           )}
 
           {/* 제시 채널입니다. 오디오가 생기면 **이 컴포넌트만** 통째로 갈립니다. */}
-          {question === null ? null : question.audioSource === null ? (
+          {question === null ? null : question.audio === null ? (
             // 소리가 없는 문항입니다 — 대본이 유일한 단서라 `show-transcript`와 무관하게 섭니다.
             <ListeningSilentPrompt text={question.prompt} romanization={question.romanization} />
           ) : (
@@ -218,6 +213,7 @@ export function ListeningActivity({
               text={question.prompt}
               romanization={question.romanization}
               sessionOptions={sessionOptions}
+              revealed={question !== null && hasAnswered(state)}
               playback={playback}
             />
           )}

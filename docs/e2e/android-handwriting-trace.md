@@ -1,5 +1,7 @@
 # Android 손글씨 안내·판정 검증
 
+> ⟨2026-10-21 — [ADR-0081](../adr/0081-tutorial-as-catalog-episode.md) D13⟩ **제품의 손글씨 따라쓰기(`WritingScreen` · 최종 테스트 쓰기 패널 · `WritingCanvas` 등)와 Maestro 흐름(`e2e/android-handwriting-trace.yaml` · `devtools/android-maestro/run-handwriting-trace.sh` · 루트 `test:e2e:android:handwriting`)을 지웠다.** 호스트 모듈 `HandwritingTraceModule`은 남았고 개발 탐침([손글씨 탐침](handwriting-probe.md))이 쓴다 — 아래 계측(`HandwritingTraceModuleTest`)은 그대로 실행할 수 있다. `Trace One Letter`를 여는 Maestro 단계는 기록이다.
+
 ## 범위
 
 기존 Lynx `HandwritingTraceModule.guide`·`compare` 접점을 Android 호스트에 연결한다.
@@ -26,8 +28,6 @@ adb -s <전용 에뮬레이터 ID> install -r app/build/outputs/apk/androidTest/
 adb -s <전용 에뮬레이터 ID> shell am instrument -w \
   -e class com.libitum.host.HandwritingTraceModuleTest \
   libitum.duru.android.test/androidx.test.runner.AndroidJUnitRunner
-cd ../..
-E2E_UDID=<전용 에뮬레이터 ID> pnpm test:e2e:android:handwriting
 ```
 
 계측 테스트는 한국어 음절의 PNG가 실제로 생성되는지, PNG의 불투명 픽셀 수와

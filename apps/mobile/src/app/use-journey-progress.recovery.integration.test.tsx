@@ -3,15 +3,11 @@ import { act, cleanup, render } from "@lynx-js/react/testing-library";
 
 import { saveAuthSession, clearAuthSession } from "../lib/auth-session";
 import { useJourneyProgress } from "./use-journey-progress";
-import { productJourneySeed } from "./journey-progress";
-import { learningProgressSnapshotFrom } from "./learning-progress";
+import { emptyJourneyProgress, learningProgressSnapshotFrom } from "./learning-progress";
+import { doneCount, keysFor } from "./use-journey-progress.cache.test-support";
 
 type Reply = { status: number; body: string };
-const empty = learningProgressSnapshotFrom({
-  ...productJourneySeed,
-  completedEpisodeIntroIds: [],
-  catalogProgress: {},
-});
+const empty = learningProgressSnapshotFrom(emptyJourneyProgress);
 const pendingKey = (user: string) => `libitum.progress.pending.${user}`;
 const store = new Map<string, string>();
 const saves: { owner: string; snapshot: typeof empty }[] = [];
@@ -28,7 +24,7 @@ function signIn(user: string) {
   });
 }
 function Harness() {
-  progress = useJourneyProgress(productJourneySeed, [], () => ["RP"]);
+  progress = useJourneyProgress({}, []);
   return null;
 }
 const flush = async () => {
@@ -43,7 +39,7 @@ async function boot() {
   });
 }
 async function complete(count: number) {
-  act(() => progress.setCompletedStepCount(count));
+  act(() => progress.setCatalogProgress(keysFor(count)));
   await flush();
 }
 function deferred() {
@@ -101,16 +97,16 @@ test("저장 실패 후 재시작해도 진행을 복구하고 성공한 뒤에�
   save = async () => ({ status: 503, body: "" });
   await boot();
   await complete(1);
-  expect(JSON.parse(store.get(pendingKey("a"))!).completedStepCount).toBe(1);
+  expect(doneCount(JSON.parse(store.get(pendingKey("a"))!))).toBe(1);
   cleanup();
   const response = deferred();
   save = () => response.promise;
   await bootWithoutWaiting();
-  expect(progress.completedStepCount).toBe(1);
+  expect(doneCount(progress)).toBe(1);
   expect(store.has(pendingKey("a"))).toBe(true);
   response.resolve({ status: 204, body: "" });
   await flush();
-  expect(saves.map((call) => call.snapshot.completedStepCount)).toEqual([1, 1]);
+  expect(saves.map((call) => doneCount(call.snapshot))).toEqual([1, 1]);
   expect(store.has(pendingKey("a"))).toBe(false);
 });
 
@@ -131,7 +127,7 @@ test("초기 불러오기 실패 중 학습한 뒤 빈 서버 응답으로 복�
   await act(async () => {
     await vi.advanceTimersByTimeAsync(60_000);
   });
-  expect(saves.map((call) => call.snapshot.completedStepCount)).toEqual([2]);
+  expect(saves.map((call) => doneCount(call.snapshot))).toEqual([2]);
   expect(store.has(pendingKey("a"))).toBe(false);
 });
 
@@ -143,10 +139,10 @@ test("저장 응답 대기 중 새 진행을 보관하며 이전 성공 응답�
   await complete(1);
   await complete(2);
   expect(saves).toHaveLength(1);
-  expect(JSON.parse(store.get(pendingKey("a"))!).completedStepCount).toBe(2);
+  expect(doneCount(JSON.parse(store.get(pendingKey("a"))!))).toBe(2);
   first.resolve({ status: 204, body: "" });
   await flush();
-  expect(saves.map((call) => call.snapshot.completedStepCount)).toEqual([1, 2]);
+  expect(saves.map((call) => doneCount(call.snapshot))).toEqual([1, 2]);
   expect(store.has(pendingKey("a"))).toBe(true);
   second.resolve({ status: 204, body: "" });
   await flush();
@@ -195,17 +191,17 @@ test("같은 앱에서 다른 계정으로 로그인해도 이전 진행을 섞�
   await act(async () => {
     await progress.syncFromServer();
   });
-  expect(progress.completedStepCount).toBe(0);
+  expect(doneCount(progress)).toBe(0);
   expect(saves).toHaveLength(1);
   await complete(1);
-  expect(saves[1]!.snapshot.completedStepCount).toBe(1);
+  expect(doneCount(saves[1]!.snapshot)).toBe(1);
   expect(saves[1]!.owner).not.toBe(saves[0]!.owner);
   expect(store.has(pendingKey("a"))).toBe(true);
   signIn("a");
   await act(async () => {
     await progress.syncFromServer();
   });
-  expect(progress.completedStepCount).toBe(3);
+  expect(doneCount(progress)).toBe(3);
   expect(store.has(pendingKey("a"))).toBe(false);
 });
 
@@ -218,19 +214,22 @@ test("계정 전환 뒤 이전 서버 응답을 적용하거나 새 계정으로
   await act(async () => {
     await progress.syncFromServer();
   });
-  response.resolve({ status: 200, body: JSON.stringify({ ...empty, completedStepCount: 8 }) });
+  response.resolve({
+    status: 200,
+    body: JSON.stringify({ ...empty, catalogProgress: keysFor(8) }),
+  });
   await flush();
-  expect(progress.completedStepCount).toBe(0);
+  expect(doneCount(progress)).toBe(0);
   expect(saves).toHaveLength(0);
 });
 
 test.each(["{bad-json", "", JSON.stringify({ version: 2 })])(
   "유효하지 않은 서버 응답(%s)을 빈 진행으로 취급하지 않는다",
   async (body) => {
-    store.set(pendingKey("a"), JSON.stringify({ ...empty, completedStepCount: 1 }));
+    store.set(pendingKey("a"), JSON.stringify({ ...empty, catalogProgress: keysFor(1) }));
     load = async () => ({ status: 200, body });
     await boot();
-    expect(progress.completedStepCount).toBe(1);
+    expect(doneCount(progress)).toBe(1);
     expect(saves).toHaveLength(0);
     expect(store.has(pendingKey("a"))).toBe(true);
   },
@@ -239,7 +238,7 @@ test.each(["{bad-json", "", JSON.stringify({ version: 2 })])(
 test.each(["{bad-json", "", JSON.stringify({ version: 2 })])(
   "유효하지 않은 서버 응답(%s)을 자동으로 반복 조회하지 않고 명시적 동기화로 복구한다",
   async (body) => {
-    store.set(pendingKey("a"), JSON.stringify({ ...empty, completedStepCount: 1 }));
+    store.set(pendingKey("a"), JSON.stringify({ ...empty, catalogProgress: keysFor(1) }));
     load = async () => ({ status: 200, body });
     await boot();
     expect(loads).toBe(1);
@@ -254,7 +253,7 @@ test.each(["{bad-json", "", JSON.stringify({ version: 2 })])(
       await progress.syncFromServer();
     });
     expect(loads).toBe(2);
-    expect(saves.map((call) => call.snapshot.completedStepCount)).toEqual([1]);
+    expect(saves.map((call) => doneCount(call.snapshot))).toEqual([1]);
     expect(store.has(pendingKey("a"))).toBe(false);
   },
 );
@@ -266,8 +265,8 @@ test("재시작 시 서버 진행과 미전송 진행을 합쳐 저장한다", a
   );
   load = async () => ({ status: 200, body: JSON.stringify({ ...empty, completedStepCount: 3 }) });
   await boot();
-  expect(progress.completedEpisodeIntroIds).toEqual(["tutorial-intro"]);
-  expect(progress.completedStepCount).toBe(3);
+  expect(progress.legacyTutorial.completedEpisodeIntroIds).toEqual(["tutorial-intro"]);
+  expect(progress.legacyTutorial.completedStepCount).toBe(3);
   expect(saves[0]!.snapshot).toMatchObject({
     completedStepCount: 3,
     completedEpisodeIntroIds: ["tutorial-intro"],
@@ -295,14 +294,14 @@ test("학습 중 불러오기 응답이 늦어도 그동안 진행한 내용과 
   load = () => response.promise;
   await bootWithoutWaiting();
   await complete(2);
-  expect(JSON.parse(store.get(pendingKey("a"))!).completedStepCount).toBe(2);
+  expect(doneCount(JSON.parse(store.get(pendingKey("a"))!))).toBe(2);
   response.resolve({
     status: 200,
     body: JSON.stringify({ ...empty, completedEpisodeIntroIds: ["tutorial-intro"] }),
   });
   await flush();
   expect(saves[0]!.snapshot).toMatchObject({
-    completedStepCount: 2,
+    catalogProgress: keysFor(2),
     completedEpisodeIntroIds: ["tutorial-intro"],
   });
 });
@@ -311,7 +310,10 @@ test("응답만 유실돼 서버에 이미 반영된 진행은 재조회 확인 
   await boot();
   save = async () => ({ status: 503, body: "" });
   await complete(2);
-  load = async () => ({ status: 200, body: JSON.stringify({ ...empty, completedStepCount: 2 }) });
+  load = async () => ({
+    status: 200,
+    body: JSON.stringify({ ...empty, catalogProgress: keysFor(2) }),
+  });
   await act(async () => {
     await vi.advanceTimersByTimeAsync(60_000);
   });

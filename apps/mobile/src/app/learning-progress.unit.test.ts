@@ -1,196 +1,162 @@
 import { describe, expect, test } from "vitest";
 
-import { journeyMapSections } from "../screens/journey-map/journey-map-units";
-import { productJourneySeed } from "./journey-progress";
+import { emptyLegacyTutorialRecord } from "./legacy-tutorial-progress";
+import type { ContractProgressState } from "./test-helpers/progress-state-api";
 import {
-  catalogActivityCount,
-  completedActivityCount,
-  journeyProgressFrom,
-  learningProgressSnapshotFrom,
-  mergeJourneyProgress,
-  trophyCountFrom,
-} from "./learning-progress";
-import type { JourneyProgressState } from "./learning-progress";
+  emptyContractState as empty,
+  progressApi,
+  serverAcceptsSnapshot,
+} from "./test-helpers/progress-state-api";
+import { legacyPassedRecord } from "./test-helpers/progress-seed";
 
-const defaultCompletion = () => ["RP"];
+// `unit` 계층: 진행 상태(옛 튜토리얼 기록 + 카탈로그 진행 + 티켓) ↔ 스냅숏 v1. 와이어 호환이 계약이다.
 
-const empty: JourneyProgressState = {
-  ...productJourneySeed,
-  completedEpisodeIntroIds: [],
-  catalogProgress: {},
-};
-const full: JourneyProgressState = {
-  completedStepCount: 1000,
-  completedEpisodeIntroIds: ["tutorial-intro"],
-  completedMessengerUnitIds: ["appointment-confirmation"],
-  completedPhoneCallUnitIds: ["appointment-confirmation-phone-call"],
-  visualNovelProgress: { status: "completed", beatIndex: 2 },
-  completedEpisodeFinalIds: ["tutorial-final-test"],
-  catalogProgress: {},
-};
+const { journeyProgressFrom, learningProgressSnapshotFrom, mergeJourneyProgress } = progressApi;
 
-describe("LP1 스냅숏 왕복", () => {
-  test("스냅숏을 다시 읽으면 같은 진행이다", () => {
-    for (const state of [empty, full]) {
-      const raw = JSON.parse(JSON.stringify(learningProgressSnapshotFrom(state))) as unknown;
-      expect(journeyProgressFrom(raw)).toEqual(state);
+const passed: ContractProgressState = { legacyTutorial: legacyPassedRecord, catalogProgress: {} };
+
+// 옛 코드가 같은 진행으로 쓰던 문자열입니다 — 키 순서 · 생략 규칙까지 바이트가 계약입니다.
+const PASSED_WIRE =
+  '{"version":1,"completedStepCount":8,"completedEpisodeIntroIds":["tutorial-intro"],"completedMessengerUnitIds":["appointment-confirmation"],"completedPhoneCallUnitIds":["appointment-confirmation-phone-call"],"visualNovel":{"status":"completed","beatIndex":2},"completedEpisodeFinalIds":["tutorial-final-test"]}';
+const EMPTY_WIRE =
+  '{"version":1,"completedStepCount":0,"completedEpisodeIntroIds":[],"completedMessengerUnitIds":[],"completedPhoneCallUnitIds":[],"visualNovel":{"status":"active","beatIndex":0},"completedEpisodeFinalIds":[]}';
+
+const wireOf = (state: ContractProgressState): string =>
+  JSON.stringify(learningProgressSnapshotFrom(state));
+
+describe("스냅숏 쓰기", () => {
+  test("LP1. 옛 통과 기록 + 빈 카탈로그의 스냅숏은 옛 코드가 쓰던 문자열과 바이트가 같다", () => {
+    expect(wireOf(passed)).toBe(PASSED_WIRE);
+  });
+
+  test("LP2. 빈 진행은 옛 필드 여섯을 0 · [] · {active,0}으로 싣는다", () => {
+    expect(wireOf(empty)).toBe(EMPTY_WIRE);
+  });
+
+  test("LP3. 카탈로그 진행 · 덜 찬 티켓이 있으면 그 둘이 끝에 그 순서로 실린다", () => {
+    const tickets = { refillAtMs: 5_000, grantedMs: 0, grantDay: "" };
+    const state = { ...passed, catalogProgress: { "u00-tutorial": ["intro", "S1"] }, tickets };
+    expect(wireOf(state)).toBe(
+      `${PASSED_WIRE.slice(0, -1)},"catalogProgress":{"u00-tutorial":["intro","S1"]},"tickets":{"refillAtMs":5000,"grantedMs":0,"grantDay":""}}`,
+    );
+  });
+
+  test("LP10. 새 앱이 쓰는 모든 스냅숏은 서버 RPC의 검증 조건을 통과한다", () => {
+    const tickets = { refillAtMs: 5_000, grantedMs: 0, grantDay: "" };
+    for (const state of [
+      empty,
+      passed,
+      { ...passed, catalogProgress: { "u00-tutorial": ["intro"] }, tickets },
+      { ...empty, catalogProgress: { "u00-tutorial": ["intro"] } },
+    ]) {
+      expect(serverAcceptsSnapshot(learningProgressSnapshotFrom(state))).toBe(true);
+    }
+  });
+});
+
+describe("스냅숏 읽기", () => {
+  test("LP4. 옛 앱이 쓴 스냅숏(옛 필드 + catalogProgress + tickets)은 상태 → 스냅숏 왕복이 같은 값이다", () => {
+    const tickets = { refillAtMs: 9_000, grantedMs: 100, grantDay: "2026-10-21" };
+    const raw = {
+      ...JSON.parse(PASSED_WIRE),
+      catalogProgress: { "u01-water": ["intro", "S1"] },
+      tickets,
+    } as unknown;
+    const state = journeyProgressFrom(raw);
+    expect(state).toEqual({
+      legacyTutorial: legacyPassedRecord,
+      catalogProgress: { "u01-water": ["intro", "S1"] },
+      tickets,
+    });
+    expect(JSON.parse(JSON.stringify(learningProgressSnapshotFrom(state as never)))).toEqual(raw);
+    for (const each of [empty, passed]) {
+      expect(journeyProgressFrom(JSON.parse(wireOf(each)))).toEqual(each);
     }
   });
 
-  test("모르는 유닛 · 중복은 버리고, 버전 · 모양이 틀리면 null", () => {
-    const snapshot = learningProgressSnapshotFrom(full);
+  test("LP5. 버전 2 · 배열 · null · 옛 필드 모양 오류는 null이다", () => {
+    const base = JSON.parse(PASSED_WIRE) as Record<string, unknown>;
+    expect(journeyProgressFrom({ ...base, version: 2 })).toBeNull();
+    expect(journeyProgressFrom([])).toBeNull();
+    expect(journeyProgressFrom(null)).toBeNull();
+    expect(journeyProgressFrom({ ...base, completedStepCount: -1 })).toBeNull();
+    expect(journeyProgressFrom({ ...base, completedStepCount: 1.5 })).toBeNull();
+    expect(journeyProgressFrom({ ...base, completedEpisodeFinalIds: "x" })).toBeNull();
+    expect(
+      journeyProgressFrom({ ...base, visualNovel: { status: "active", beatIndex: 5 } }),
+    ).toBeNull();
+    const { completedStepCount: _omitted, ...withoutLegacyField } = base;
+    expect(journeyProgressFrom(withoutLegacyField)).toBeNull();
+  });
+
+  test("LP6. catalogProgress 모양만 틀리면 그 부분만 {}이고 옛 기록은 남는다", () => {
+    const base = JSON.parse(PASSED_WIRE) as Record<string, unknown>;
+    for (const bad of ["x", 1, [], [["a"]], { a: "x" }]) {
+      const state = journeyProgressFrom({ ...base, catalogProgress: bad });
+      expect(state?.catalogProgress).toEqual({});
+      expect(state?.legacyTutorial).toEqual(legacyPassedRecord);
+    }
     expect(
       journeyProgressFrom({
-        ...snapshot,
-        completedMessengerUnitIds: ["appointment-confirmation", "gone", "appointment-confirmation"],
-      })?.completedMessengerUnitIds,
-    ).toEqual(["appointment-confirmation"]);
-    expect(journeyProgressFrom({ ...snapshot, version: 2 })).toBeNull();
-    expect(journeyProgressFrom({ ...snapshot, completedStepCount: -1 })).toBeNull();
-    expect(journeyProgressFrom({ ...snapshot, completedStepCount: 1.5 })).toBeNull();
-    expect(
-      journeyProgressFrom({ ...snapshot, visualNovel: { status: "active", beatIndex: 5 } }),
-    ).toBeNull();
-    expect(journeyProgressFrom({ ...snapshot, completedEpisodeFinalIds: "x" })).toBeNull();
-    expect(journeyProgressFrom(null)).toBeNull();
-    expect(journeyProgressFrom([])).toBeNull();
+        ...base,
+        catalogProgress: { a: ["intro", "intro", "", 3, "S1"], "": ["x"], b: "x", c: [] },
+      })?.catalogProgress,
+    ).toEqual({ a: ["intro", "S1"] });
   });
 });
 
-describe("LP2 mergeJourneyProgress", () => {
-  test("목록은 합집합, 스텝은 큰 쪽, 비주얼 노벨은 더 나아간 쪽 — 방향과 무관하다", () => {
-    const a: JourneyProgressState = {
-      ...empty,
+describe("합치기 · 덮음 · 활동 수", () => {
+  test("LP7. 합치기는 옛 기록(합집합 · 최댓값 · 더 나아간 장면)과 카탈로그 키별 합집합을 따르고 방향과 무관하다", () => {
+    const a: ContractProgressState = {
+      legacyTutorial: {
+        ...emptyLegacyTutorialRecord,
+        completedStepCount: 5,
+        visualNovel: { status: "active", beatIndex: 1 },
+      },
+      catalogProgress: { x: ["intro"], y: ["S1"] },
+    };
+    const b: ContractProgressState = {
+      legacyTutorial: {
+        ...emptyLegacyTutorialRecord,
+        completedStepCount: 3,
+        completedMessengerUnitIds: ["appointment-confirmation"],
+      },
+      catalogProgress: { x: ["S1"], z: ["intro"] },
+    };
+    const merged = mergeJourneyProgress(a, b);
+    expect(merged.legacyTutorial).toEqual({
+      ...emptyLegacyTutorialRecord,
       completedStepCount: 5,
-      completedEpisodeIntroIds: ["tutorial-intro"],
-      visualNovelProgress: { status: "active", beatIndex: 1 },
-    };
-    const b: JourneyProgressState = {
-      ...empty,
-      completedStepCount: 3,
       completedMessengerUnitIds: ["appointment-confirmation"],
-      visualNovelProgress: { status: "active", beatIndex: 0 },
-    };
-    const expected: JourneyProgressState = {
-      ...empty,
-      completedStepCount: 5,
-      completedEpisodeIntroIds: ["tutorial-intro"],
-      completedMessengerUnitIds: ["appointment-confirmation"],
-      visualNovelProgress: { status: "active", beatIndex: 1 },
-    };
-    expect(mergeJourneyProgress(a, b)).toEqual(expected);
-    expect(mergeJourneyProgress(b, a)).toEqual(expected);
-    expect(mergeJourneyProgress(empty, full).visualNovelProgress.status).toBe("completed");
-    expect(mergeJourneyProgress(full, full)).toEqual(full);
-  });
-});
-
-describe("LP3 파생 수", () => {
-  test("활동 수는 스텝 · 표지 · 특별 유닛 · 끝낸 비주얼 노벨 · 최종 테스트의 합이다", () => {
-    expect(completedActivityCount(full)).toBe(1000 + 1 + 1 + 1 + 1 + 1);
-    expect(
-      completedActivityCount({ ...empty, visualNovelProgress: { status: "active", beatIndex: 1 } }),
-    ).toBe(empty.completedStepCount);
+      visualNovel: { status: "active", beatIndex: 1 },
+    });
+    expect(merged.catalogProgress).toEqual({ x: ["intro", "S1"], y: ["S1"], z: ["intro"] });
+    expect(mergeJourneyProgress(b, a).legacyTutorial).toEqual(merged.legacyTutorial);
+    expect(mergeJourneyProgress(empty, passed).legacyTutorial.visualNovel.status).toBe("completed");
+    expect(mergeJourneyProgress(passed, passed)).toEqual(passed);
   });
 
-  test("트로피는 모든 항목을 끝낸 에피소드 수다", () => {
-    expect(trophyCountFrom(journeyMapSections, empty, defaultCompletion)).toBe(0);
-    const trophies = trophyCountFrom(journeyMapSections, full, defaultCompletion);
-    expect(trophies).toBeGreaterThanOrEqual(1);
-    expect(trophies).toBeLessThanOrEqual(journeyMapSections.length);
+  test("LP8. 덮음은 옛 기록 · 카탈로그 · 티켓 셋 다 덮어야 참이다", () => {
+    const { journeyProgressCovers } = progressApi;
+    const withCatalog = { ...passed, catalogProgress: { "u00-tutorial": ["intro"] } };
+    expect(journeyProgressCovers(passed, passed)).toBe(true);
+    expect(journeyProgressCovers(withCatalog, passed)).toBe(true);
+    expect(journeyProgressCovers(passed, withCatalog)).toBe(false);
+    expect(journeyProgressCovers(empty, passed)).toBe(false);
+    expect(journeyProgressCovers(passed, empty)).toBe(true);
+    const used = { refillAtMs: 5_000, grantedMs: 0, grantDay: "" };
+    expect(journeyProgressCovers(passed, { ...passed, tickets: used })).toBe(false);
+    expect(journeyProgressCovers({ ...passed, tickets: used }, passed)).toBe(true);
   });
 
-  test("트로피는 최종 테스트를 통과한 카탈로그 에피소드마다 하나씩 는다", () => {
-    const base = trophyCountFrom(journeyMapSections, full, defaultCompletion);
-    const lessonsOnly = { ...full, catalogProgress: { "u01-water": ["intro", "S1", "S9"] } };
-    const onePassed = { ...full, catalogProgress: { "u01-water": ["intro", "RP"] } };
-    const twoPassed = {
-      ...full,
-      catalogProgress: { "u01-water": ["RP"], "u02-checkin": ["RP"], "u03-mina": ["intro"] },
-    };
-
-    expect(trophyCountFrom(journeyMapSections, lessonsOnly, defaultCompletion)).toBe(base);
-    expect(trophyCountFrom(journeyMapSections, onePassed, defaultCompletion)).toBe(base + 1);
-    expect(trophyCountFrom(journeyMapSections, twoPassed, defaultCompletion)).toBe(base + 2);
-  });
-});
-
-describe("LPF 트로피의 카탈로그 몫", () => {
-  test("LPF1. 완료 키 해석기가 정한 키를 모두 끝낸 에피소드만 센다", () => {
-    const progress = { "u01-water": ["RP"], "u02-checkin": ["S1", "RP"] };
-    const state = { ...full, catalogProgress: progress };
-    const base = trophyCountFrom(journeyMapSections, full, defaultCompletion);
-    const strictForA = (episodeId: string) => (episodeId === "u01-water" ? ["S1", "RP"] : ["RP"]);
-
-    expect(trophyCountFrom(journeyMapSections, state, strictForA)).toBe(base + 1);
-    expect(trophyCountFrom(journeyMapSections, state, defaultCompletion)).toBe(base + 2);
-    expect(trophyCountFrom(journeyMapSections, state, () => ["S1", "CULT", "RP"])).toBe(base);
-  });
-});
-
-describe("LP-C 카탈로그 활동 수", () => {
-  test("LP-C1. 활동 수는 에피소드별 끝낸 유닛 키 수의 합이고 활동 합계에 더해진다", () => {
-    const progress = { a: ["intro", "S1"], b: ["intro"] };
-
+  test("LP9. 활동 수는 옛 활동 수에 카탈로그 키 수를 더한 값이다", () => {
+    const { completedActivityCount, catalogActivityCount } = progressApi;
+    expect(completedActivityCount(passed)).toBe(13);
+    expect(completedActivityCount(empty)).toBe(0);
     expect(catalogActivityCount({})).toBe(0);
-    expect(catalogActivityCount(progress)).toBe(3);
-    expect(completedActivityCount({ ...full, catalogProgress: progress })).toBe(
-      completedActivityCount(full) + 3,
-    );
-    expect(completedActivityCount({ ...full, catalogProgress: {} })).toBe(
-      completedActivityCount(full),
-    );
-  });
-});
-
-describe("L 카탈로그 진행", () => {
-  const wire = JSON.parse(JSON.stringify(learningProgressSnapshotFrom(empty))) as Record<
-    string,
-    unknown
-  >;
-
-  test("L1 필드 없는 v1 스냅숏은 catalogProgress가 빈 객체다", () => {
-    expect("catalogProgress" in wire).toBe(false);
-    expect(journeyProgressFrom(wire)?.catalogProgress).toEqual({});
-  });
-
-  test("L2 필드 있는 v1 스냅숏은 정규화된 값을 싣는다", () => {
-    const state = journeyProgressFrom({
-      ...wire,
-      catalogProgress: { a: ["intro", "intro", "", 3, "S1"], "": ["x"], b: "x", c: [] },
-    });
-    expect(state?.catalogProgress).toEqual({ a: ["intro", "S1"] });
-  });
-
-  test("L3 스냅숏은 카탈로그 진행이 비면 키를 생략하고, 있으면 그대로 싣는다", () => {
-    expect("catalogProgress" in learningProgressSnapshotFrom(empty)).toBe(false);
-    const filled = { ...empty, catalogProgress: { a: ["intro", "S1"] } };
-    const snapshot = learningProgressSnapshotFrom(filled);
-    expect(snapshot.catalogProgress).toEqual({ a: ["intro", "S1"] });
-    expect(journeyProgressFrom(JSON.parse(JSON.stringify(snapshot)))).toEqual(filled);
-  });
-
-  test("L4 mergeJourneyProgress는 카탈로그 진행을 합집합으로 합친다", () => {
-    const a = { ...empty, catalogProgress: { x: ["intro"], y: ["S1"] } };
-    const b = { ...empty, catalogProgress: { x: ["S1"], z: ["intro"] } };
-    expect(mergeJourneyProgress(a, b).catalogProgress).toEqual({
-      x: ["intro", "S1"],
-      y: ["S1"],
-      z: ["intro"],
-    });
-    expect(mergeJourneyProgress(b, a).catalogProgress).toEqual({
-      x: ["S1", "intro"],
-      y: ["S1"],
-      z: ["intro"],
-    });
-  });
-
-  test("L5 카탈로그 필드 값이 잘못돼도 스냅숏 전체는 null이 아니고 다른 필드를 유지한다", () => {
-    for (const bad of ["x", 1, [], [["a"]], { a: "x" }]) {
-      const state = journeyProgressFrom({ ...wire, completedStepCount: 7, catalogProgress: bad });
-      expect(state).not.toBeNull();
-      expect(state?.completedStepCount).toBe(7);
-      expect(state?.catalogProgress).toEqual({});
-    }
+    expect(catalogActivityCount({ a: ["intro", "S1"], b: ["intro"] })).toBe(3);
+    expect(
+      completedActivityCount({ ...passed, catalogProgress: { a: ["intro", "S1"], b: ["intro"] } }),
+    ).toBe(16);
   });
 });

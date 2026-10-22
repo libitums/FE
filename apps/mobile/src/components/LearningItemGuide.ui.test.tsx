@@ -70,13 +70,13 @@ test.each(learningItemGuideKinds)(
 );
 
 test("[LG2] 표지(data-statusbar=light-icons)는 안내 루트 하나뿐이고 스크림에는 없다", () => {
-  render(<LearningItemGuide kind="messenger" onDismiss={() => {}} />);
+  render(<LearningItemGuide kind="sentence-order" onDismiss={() => {}} />);
 
   const markers = Array.from(
     document.querySelectorAll(`[data-statusbar="${lightStatusBarIcons}"]`),
   );
   expect(markers).toHaveLength(1);
-  expect(markers[0]).toBe(screen.getByTestId("learning-item-guide-messenger"));
+  expect(markers[0]).toBe(screen.getByTestId("learning-item-guide-sentence-order"));
   expect(screen.getByTestId("ui-lynx-overlay")).not.toHaveAttribute("data-statusbar");
 });
 
@@ -96,12 +96,12 @@ test("[LG3] 문구표를 덮어쓴 Provider 아래에서는 덮어쓴 값이 선
     ...uiCopyEn,
     learningItemGuide: {
       ...uiCopyEn.learningItemGuide,
-      writing: { title: "⟦제목⟧", description: "⟦설명⟧" },
+      "sentence-order": { title: "⟦제목⟧", description: "⟦설명⟧" },
     },
   };
   render(
     <UiCopyContext.Provider value={overridden}>
-      <LearningItemGuide kind="writing" onDismiss={() => {}} />
+      <LearningItemGuide kind="sentence-order" onDismiss={() => {}} />
     </UiCopyContext.Provider>,
   );
 
@@ -110,12 +110,12 @@ test("[LG3] 문구표를 덮어쓴 Provider 아래에서는 덮어쓴 값이 선
 });
 
 test("[LG4] 내용 상자는 button 낭독 요소 하나이고 exclusive-focus가 문서에서 이 상자 하나에만 있다", () => {
-  render(<LearningItemGuide kind="speaking" onDismiss={() => {}} />);
+  render(<LearningItemGuide kind="sentence-order" onDismiss={() => {}} />);
 
   // ui는 속성이 붙었는가까지만 봅니다. 뒤 화면 격리 · 복원은 이 테스트로 판정되지 않고
   // 기기의 e2e E10이 판정합니다(ui green을 접근성 통과로 읽지 않습니다).
-  const copy = uiCopyEn.learningItemGuide.speaking;
-  const content = contentBox("speaking");
+  const copy = uiCopyEn.learningItemGuide["sentence-order"];
+  const content = contentBox("sentence-order");
   expect(content).toHaveAttribute("accessibility-element", "true");
   expect(content).toHaveAttribute("accessibility-traits", "button");
   expect(content).toHaveAttribute(
@@ -130,19 +130,21 @@ test("[LG4] 내용 상자는 button 낭독 요소 하나이고 exclusive-focus�
 
 test("[LG5] 루트를 탭하면 onDismiss 1회, 내용 상자를 탭해도 1회(루트로 올라온다)", () => {
   const onDismiss = vi.fn<() => void>();
-  render(<LearningItemGuide kind="phone-call" onDismiss={onDismiss} />);
+  render(<LearningItemGuide kind="sentence-order" onDismiss={onDismiss} />);
 
-  fireEvent.tap(screen.getByTestId("learning-item-guide-phone-call"), { eventType: "catchEvent" });
+  fireEvent.tap(screen.getByTestId("learning-item-guide-sentence-order"), {
+    eventType: "catchEvent",
+  });
   expect(onDismiss).toHaveBeenCalledTimes(1);
 
-  const content = contentBox("phone-call");
+  const content = contentBox("sentence-order");
   fireEvent.tap(content, { eventType: "catchEvent" });
   expect(onDismiss).toHaveBeenCalledTimes(2);
 });
 
 test("[LG6] 떠 있는 동안 시스템 뒤로가기가 닫기를 부르고, 언마운트 뒤에는 처리할 것이 없다", () => {
   const onDismiss = vi.fn<() => void>();
-  const view = render(<LearningItemGuide kind="visual-novel" onDismiss={onDismiss} />);
+  const view = render(<LearningItemGuide kind="sentence-order" onDismiss={onDismiss} />);
 
   let handled = false;
   act(() => {
@@ -191,9 +193,9 @@ test("[LG9] LearningItemGuide.tsx 원문에 색 값(0.8 · 0.9 · rgba( · backg
 });
 
 test("[LG10] 안쪽 글자 셋은 낭독 요소가 아니고, 안내 안의 낭독 요소는 내용 상자 하나다", () => {
-  render(<LearningItemGuide kind="writing" onDismiss={() => {}} />);
+  render(<LearningItemGuide kind="sentence-order" onDismiss={() => {}} />);
 
-  const root = screen.getByTestId("learning-item-guide-writing");
+  const root = screen.getByTestId("learning-item-guide-sentence-order");
   const instruction = root.querySelector('[class~="first-unit-guide-instruction"]');
   expect(instruction, "first-unit-guide-instruction").not.toBeNull();
   for (const text of [
@@ -205,14 +207,14 @@ test("[LG10] 안쪽 글자 셋은 낭독 요소가 아니고, 안내 안의 낭�
   }
   const readable = Array.from(root.querySelectorAll('[accessibility-element="true"]'));
   expect(readable).toHaveLength(1);
-  expect(readable[0]).toBe(contentBox("writing"));
+  expect(readable[0]).toBe(contentBox("sentence-order"));
 });
 
 test("[LG11] 전역 값의 안전 영역 inset 네 변이 루트의 인라인 padding이다", () => {
   setGlobalProps({ safeAreaInsets: { top: 59, bottom: 34, left: 0, right: 0 } });
-  render(<LearningItemGuide kind="messenger" onDismiss={() => {}} />);
+  render(<LearningItemGuide kind="sentence-order" onDismiss={() => {}} />);
 
-  expect(paddingOf(screen.getByTestId("learning-item-guide-messenger"))).toEqual({
+  expect(paddingOf(screen.getByTestId("learning-item-guide-sentence-order"))).toEqual({
     top: "59px",
     right: "0px",
     bottom: "34px",
@@ -222,9 +224,9 @@ test("[LG11] 전역 값의 안전 영역 inset 네 변이 루트의 인라인 pa
 
 test("[LG11] 서로 다른 네 값이 제 변에 들어간다(변 바꿈 · 한 변만 주기를 잡는다)", () => {
   setGlobalProps({ safeAreaInsets: { top: 11, bottom: 22, left: 33, right: 44 } });
-  render(<LearningItemGuide kind="speaking" onDismiss={() => {}} />);
+  render(<LearningItemGuide kind="sentence-order" onDismiss={() => {}} />);
 
-  expect(paddingOf(screen.getByTestId("learning-item-guide-speaking"))).toEqual({
+  expect(paddingOf(screen.getByTestId("learning-item-guide-sentence-order"))).toEqual({
     top: "11px",
     right: "44px",
     bottom: "22px",
@@ -234,9 +236,9 @@ test("[LG11] 서로 다른 네 값이 제 변에 들어간다(변 바꿈 · 한 
 
 test("[LG11] 전역 값이 없으면 padding 넷 다 0px", () => {
   setGlobalProps(undefined);
-  render(<LearningItemGuide kind="visual-novel" onDismiss={() => {}} />);
+  render(<LearningItemGuide kind="sentence-order" onDismiss={() => {}} />);
 
-  expect(paddingOf(screen.getByTestId("learning-item-guide-visual-novel"))).toEqual({
+  expect(paddingOf(screen.getByTestId("learning-item-guide-sentence-order"))).toEqual({
     top: "0px",
     right: "0px",
     bottom: "0px",

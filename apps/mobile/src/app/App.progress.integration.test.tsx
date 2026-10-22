@@ -77,16 +77,15 @@ async function flush(): Promise<void> {
   });
 }
 
-const introUnit = () => screen.getByTestId("ui-lynx-special-unit-tutorial-intro");
+const introUnit = () => screen.getByTestId("ui-lynx-special-unit-catalog-cover-u00-tutorial");
 const tapButtonIn = (testId: string) =>
   fireEvent.tap(within(screen.getByTestId(testId)).getByTestId("ui-lynx-button"), {});
 
-/** 표지를 건너뛰고 결과 화면의 Check로 맵에 돌아옵니다 — 표지 완료 = 활동 하나. */
+/** u00 표지를 건너뛰어 맵에 돌아옵니다 — 표지 완료 = 활동 하나. */
 function finishIntro(): void {
   fireEvent.tap(introUnit(), {});
   tapButtonIn("episode-intro-screen-skip");
   tapButtonIn("ui-lynx-dialog-action-skip");
-  tapButtonIn("lesson-complete-screen-exit");
 }
 
 afterEach(() => {
@@ -100,12 +99,13 @@ afterEach(() => {
 test("[IPG1] 부팅 뒤 서버 진행을 불러와 맵에 그리고, 연속 칩이 서버의 일수다", async () => {
   const snapshot = {
     version: 1,
-    completedStepCount: 2,
-    completedEpisodeIntroIds: ["tutorial-intro"],
+    completedStepCount: 0,
+    completedEpisodeIntroIds: [],
     completedMessengerUnitIds: [],
     completedPhoneCallUnitIds: [],
     visualNovel: { status: "active", beatIndex: 0 },
     completedEpisodeFinalIds: [],
+    catalogProgress: { "u00-tutorial": ["intro"] },
   };
   const rpcs = await boot({
     load: { status: 200, body: JSON.stringify(snapshot) },
@@ -146,9 +146,9 @@ test("[IPG2] 활동을 끝내면 오늘을 적고 진행을 저장하며, 연속
     p_today: localDayFrom(new Date()),
   });
   const save = rpcs.find((rpc) => rpc.name === "save_learning_progress");
-  expect((save?.body["p_progress"] as Record<string, unknown>)["completedEpisodeIntroIds"]).toEqual(
-    ["tutorial-intro"],
-  );
+  expect((save?.body["p_progress"] as Record<string, unknown>)["catalogProgress"]).toEqual({
+    "u00-tutorial": ["intro"],
+  });
   expect(screen.getByTestId("top-bar-streak")).toHaveAttribute(
     "accessibility-label",
     "1-day streak",

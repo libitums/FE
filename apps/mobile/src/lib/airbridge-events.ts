@@ -11,17 +11,10 @@ function mapEvent(event: AnalyticsEvent): AirbridgeEvent | null {
   switch (event.name) {
     case "entry_completed":
       return { category: "airbridge.user.signup", semanticAttributes: {} };
-    case "messenger_unit_completed":
-      if (event.entrySource !== "journey") return null;
+    case "episode_final_passed":
       return {
         category: "airbridge.achieveLevel",
-        semanticAttributes: { level: event.unitId, label: "messenger" },
-      };
-    case "visual_novel_unit_completed":
-      if (event.entrySource !== "journey") return null;
-      return {
-        category: "airbridge.achieveLevel",
-        semanticAttributes: { level: event.unitId, label: "visual_novel" },
+        semanticAttributes: { level: event.episodeId, label: "episode_final" },
       };
     default:
       return null;
@@ -55,8 +48,7 @@ export const withAirbridgeEvents: WithAirbridgeEvents = (sinks, tracker) => {
   const composed: AnalyticsEventSinks = {
     ...sinks,
     entryEventSink: forwardTo(sinks.entryEventSink, tracker),
-    messengerEventSink: forwardTo(sinks.messengerEventSink, tracker),
-    visualNovelEventSink: forwardTo(sinks.visualNovelEventSink, tracker),
+    episodeIntroEventSink: forwardTo(sinks.episodeIntroEventSink, tracker),
   };
   return composed;
 };

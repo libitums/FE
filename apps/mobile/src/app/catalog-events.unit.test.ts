@@ -1,7 +1,14 @@
 import { describe, expect, test } from "vitest";
 
+import { airbridgeEventFrom } from "../lib/airbridge-events";
 import { analyticsCaptureFrom } from "../lib/analytics-events";
-import { finalPassedEventOf, lessonFinishedEventOf, lessonStartedEventOf } from "./catalog-events";
+import type { ListenItemReport } from "../lib/question-audio";
+import {
+  finalPassedEventOf,
+  lessonFinishedEventOf,
+  lessonStartedEventOf,
+  listenItemAnsweredEventOf,
+} from "./catalog-events";
 import type { CatalogLessonPlan } from "./catalog-lesson-types";
 
 // `unit` 계층: 카탈로그 학습 측정 이벤트 만들기의 입출력만 봅니다.
@@ -221,5 +228,67 @@ describe("capture 매핑", () => {
       event: "episode_final_passed",
       properties: { episodeId: "u01-water", correctCount: "1", turnCount: "3" },
     });
+  });
+});
+
+describe("듣기 문항 이벤트", () => {
+  const report: ListenItemReport = {
+    ref: { itemId: "S2-01", itemType: "LISTEN_SELECT" },
+    result: "correct",
+    pace: "slow",
+    slowTurnedOn: true,
+    replayCount: 2,
+    slowReplayCount: 0,
+  };
+
+  test("EV1. 듣기 문항 이벤트는 키 집합이 정확하고 수는 10진 문자열이다", () => {
+    const event = listenItemAnsweredEventOf("u01-water", "S2", report);
+
+    expect(event).toEqual({
+      name: "episode_listen_item_answered",
+      episodeId: "u01-water",
+      unitKey: "S2",
+      itemId: "S2-01",
+      itemType: "LISTEN_SELECT",
+      result: "correct",
+      pace: "slow",
+      slowTurnedOn: true,
+      replayCount: "2",
+      slowReplayCount: "0",
+    });
+    expect(Object.keys(event).sort()).toEqual([
+      "episodeId",
+      "itemId",
+      "itemType",
+      "name",
+      "pace",
+      "replayCount",
+      "result",
+      "slowReplayCount",
+      "slowTurnedOn",
+      "unitKey",
+    ]);
+  });
+
+  test("EV1. 셈이 두 자리여도 10진 문자열이다", () => {
+    const event = listenItemAnsweredEventOf("u01-water", "S2", {
+      ...report,
+      replayCount: 12,
+      slowReplayCount: 30,
+    });
+
+    expect(event.replayCount).toBe("12");
+    expect(event.slowReplayCount).toBe("30");
+  });
+
+  test("EV2. capture는 name을 event로 두고 나머지를 properties로 그대로 보내며 Airbridge는 보내지 않는다", () => {
+    const event = listenItemAnsweredEventOf("u01-water", "S2", report);
+    const { name, ...rest } = event;
+    // 새 이벤트가 이벤트 유니온에 들어가기 전에도 컴파일되도록 입력 타입을 맞춥니다.
+    const asAnalytics = event as unknown as Parameters<typeof analyticsCaptureFrom>[0];
+    const asAirbridge = event as unknown as Parameters<typeof airbridgeEventFrom>[0];
+
+    expect(analyticsCaptureFrom(asAnalytics)).toEqual({ event: name, properties: rest });
+    expect(airbridgeEventFrom(asAirbridge)).toBeNull();
   });
 });

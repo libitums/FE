@@ -4,7 +4,7 @@ import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/
 import { backHandlers } from "../../lib/back-handler";
 import { guideRoots, stubGuideStorage } from "../../lib/learning-item-guide.storage.test-support";
 import { learningShellScrollId } from "../learning/learning-shell-scroll";
-import { SentenceOrderScreen } from "./SentenceOrderScreen";
+import { StepSentenceOrder } from "./StepSentenceOrder.test-support";
 
 // `ui` 계층: 문장 만들기에서 학습 문항 안내가 떠 있는 채로 껍데기가 합쳐져도(learning-shell-large-font)
 // 안내 · 루트 가림 · 조각 이동이 그대로인지 봅니다(SO1). 합칠 때 무대와 작업 영역이 한 번 다시
@@ -27,7 +27,7 @@ function reportHeight(height: number): void {
 
 test("[SO1] 안내가 떠 있는 채로 합쳐져도 안내 · 가림이 그대로이고, 닫은 뒤 흐름 안의 조각이 무대의 답 줄에 놓인다", () => {
   stubGuideStorage();
-  render(<SentenceOrderScreen stepId="greeting" onExit={() => {}} onFinish={() => {}} />);
+  render(<StepSentenceOrder stepId="greeting" onExit={() => {}} onFinish={() => {}} />);
   expect(guideRoots()).toHaveLength(1);
 
   reportHeight(0);
@@ -69,7 +69,7 @@ test("[SO1] 안내가 떠 있는 채로 합쳐져도 안내 · 가림이 그대�
 // 같고, 누적은 Check 1 + 2 = 3입니다.
 test("[SO2] 합친 흐름에서 칸을 채우는 동안은 보내지 않고, Check 뒤 한 번 · Next 뒤 누적 세 번이다", () => {
   stubGuideStorage({ seen: ["sentence-order"] });
-  render(<SentenceOrderScreen stepId="greeting" onExit={() => {}} onFinish={() => {}} />);
+  render(<StepSentenceOrder stepId="greeting" onExit={() => {}} onFinish={() => {}} />);
   expect(guideRoots()).toHaveLength(0);
   const ref = lynx.createSelectorQuery().select(`#${learningShellScrollId}`);
   act(() => {

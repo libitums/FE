@@ -166,10 +166,7 @@ export async function bootContentApp(options: BootOptions): Promise<Booted> {
 
   vi.useFakeTimers();
   render(
-    <App
-      completedEpisodeIntroIds={["tutorial-intro"]}
-      {...(options.onEvent === undefined ? {} : { episodeIntroEventSink: options.onEvent })}
-    />,
+    <App {...(options.onEvent === undefined ? {} : { episodeIntroEventSink: options.onEvent })} />,
   );
   if (options.splash === "hold") {
     await act(async () => {

@@ -1,19 +1,11 @@
 // 맵이 처음 보여 줄 「다음에 풀 유닛」을 고르는 순수 모듈입니다.
 
-import type { CatalogProgress } from "../../lib/catalog-progress";
-import type { CatalogGate, CatalogMapSection } from "./catalog-map.contract";
-import type { JourneyProgress } from "./journey-map-progress";
-import type { JourneyMapItemStatus, JourneyMapSection } from "./journey-map-types";
 import { CATALOG_INTRO_KEY } from "../../lib/catalog-progress";
-import {
-  catalogCoverStatus,
-  catalogUnitDomId,
-  catalogUnitNodesOf,
-  TUTORIAL_GATE_UNIT,
-} from "./catalog-map";
-import { mapItemStatus } from "./journey-map-progress";
-import { tutorialItemId } from "./journey-map-rows";
-import { mapUnitDomId } from "./journey-map-scroll";
+import { TUTORIAL_EPISODE_ID } from "../../lib/tutorial-episode";
+import type { CatalogGate, CatalogMapSection } from "./catalog-map.contract";
+import { catalogCoverStatus, catalogUnitDomId, catalogUnitNodesOf } from "./catalog-map";
+import { catalogTutorialBypassed } from "./catalog-gate";
+import type { JourneyMapItemStatus } from "./journey-map-types";
 
 export type MapUnitEntry = {
   readonly domId: string;
@@ -24,32 +16,30 @@ export type MapScrollTarget =
   /** 대상이 맵의 첫 유닛이거나 대상이 없습니다 — 스크롤하지 않습니다. */
   { readonly kind: "top" } | { readonly kind: "unit"; readonly domId: string };
 
-export function tutorialUnitEntries(
-  sections: readonly JourneyMapSection[],
-  progress: JourneyProgress,
-): readonly MapUnitEntry[] {
-  return sections.flatMap((section) =>
-    section.items.map((item): MapUnitEntry => ({
-      domId: mapUnitDomId(tutorialItemId(item)),
-      status: mapItemStatus(item, section.items, progress),
-    })),
-  );
+// 옛 통과로 우회된 튜토리얼은 열려 있어도 「다음에 풀 유닛」이 아닙니다 — 열린 것만 잠긴 것으로 냅니다.
+function withoutAvailable(status: JourneyMapItemStatus): JourneyMapItemStatus {
+  return status === "available" ? "locked" : status;
 }
 
+/** 구획 순서대로 편 유닛 목록입니다. 우회된 튜토리얼 구획의 available은 locked로 냅니다. */
 export function catalogUnitEntries(
   sections: readonly CatalogMapSection[],
   gate: CatalogGate,
 ): readonly MapUnitEntry[] {
+  const bypassed = catalogTutorialBypassed(sections, gate);
   return sections.flatMap((section, index): readonly MapUnitEntry[] => {
     if (section.kind === "catalog-unavailable") return [];
+    const skip = bypassed && section.episodeId === TUTORIAL_EPISODE_ID;
+    const statusOf = (status: JourneyMapItemStatus): JourneyMapItemStatus =>
+      skip ? withoutAvailable(status) : status;
     return [
       {
         domId: catalogUnitDomId(section.episodeId, CATALOG_INTRO_KEY),
-        status: catalogCoverStatus(sections, index, gate),
+        status: statusOf(catalogCoverStatus(sections, index, gate)),
       },
       ...catalogUnitNodesOf(section, gate.progress).map((node): MapUnitEntry => ({
         domId: catalogUnitDomId(section.episodeId, node.key),
-        status: node.status,
+        status: statusOf(node.status),
       })),
     ];
   });
@@ -69,20 +59,11 @@ export function nextMapScrollTarget(entries: readonly MapUnitEntry[]): MapScroll
 }
 
 export type MapScrollTargetInput = {
-  readonly tutorialSections: readonly JourneyMapSection[];
-  readonly progress: JourneyProgress;
   readonly catalogSections: readonly CatalogMapSection[];
-  readonly catalogProgress: CatalogProgress;
+  readonly gate: CatalogGate;
 };
 
-/** 화면이 부르는 한 줄입니다 — 두 목록을 잇고 판정합니다. 튜토리얼 통과는 `progress`에서 파생합니다. */
+/** 화면이 부르는 한 줄입니다 — 유닛을 펴고 판정합니다. */
 export function mapScrollTargetOf(input: MapScrollTargetInput): MapScrollTarget {
-  const gate: CatalogGate = {
-    tutorialPassed: input.progress.completedEpisodeFinalIds.includes(TUTORIAL_GATE_UNIT),
-    progress: input.catalogProgress,
-  };
-  return nextMapScrollTarget([
-    ...tutorialUnitEntries(input.tutorialSections, input.progress),
-    ...catalogUnitEntries(input.catalogSections, gate),
-  ]);
+  return nextMapScrollTarget(catalogUnitEntries(input.catalogSections, input.gate));
 }

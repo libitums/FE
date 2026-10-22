@@ -8,8 +8,8 @@ import Foundation
 /// 스택 안에 대체 경로가 0개이며(`<audio>`도 `<video>`도 등록돼 있지 않고 웹 오디오도
 /// 없다), `docs/e2e/listening.md`가 눈과 귀로 판정한다.
 ///
-/// **메서드는 넷이다** — `play` · `stop` · `pause` · `resume` (ADR-0017 D3, 2026-09-27
-/// 개정). 여기 없는 것은 하지 않는 것이다: 시크 · 배속 · 볼륨 · 페이드 · 동시 재생 ·
+/// **메서드는 다섯이다** — `play` · `playAtRate` · `stop` · `pause` · `resume` (ADR-0017 D3).
+/// 여기 없는 것은 하지 않는 것이다: 시크 · 0.5 ~ 2.0 밖 배속 · 볼륨 · 페이드 · 동시 재생 ·
 /// **재생 상태 조회** · **재생 진행 조회** · 배경 재생 · 잠금화면 컨트롤 ·
 /// **오디오 세션 카테고리 조작** · 녹음 · 재생목록 · 프리로드 · 캐시.
 /// **넓혀야 할 것 같으면 구현하지 말고 보고한다.**
@@ -43,6 +43,7 @@ final class AudioPlaybackModule: NSObject, LynxModule {
   @objc static var methodLookup: [String: String] {
     [
       "play": NSStringFromSelector(#selector(play(_:done:))),
+      "playAtRate": NSStringFromSelector(#selector(playAtRate(_:rate:done:))),
       "stop": NSStringFromSelector(#selector(stop)),
       "pause": NSStringFromSelector(#selector(pause)),
       "resume": NSStringFromSelector(#selector(resume)),
@@ -98,6 +99,37 @@ final class AudioPlaybackModule: NSObject, LynxModule {
   /// `done`의 인자는 쓰지 않는다. D3의 `done`은 *끝났다*와 *실패했다*를 구분하지
   /// 않는다 — 구분을 열면 그것이 재생 상태 조회 API의 시작이다. `NSNull()`로 부른다.
   @objc func play(_ source: String, done: @escaping LynxCallbackBlock) {
+    start(source, rate: 1, done: done)
+  }
+
+  /// `play`와 같되 `rate`배 속도로 재생한다. 해석 · 대체 · `done` 한 번 규칙은 `play`와 한 몸이다.
+  ///
+  /// `rate`가 없거나 비정상이거나 0.5 ~ 2.0 밖이면 1로 본다(`playbackRate`). 1이면 속도 설정을 아예
+  /// 건드리지 않아 `play`와 같다. 값을 정하는 쪽은 JS다.
+  @objc func playAtRate(_ source: String, rate: NSNumber?, done: @escaping LynxCallbackBlock) {
+    start(source, rate: Self.playbackRate(rate), done: done)
+  }
+
+  /// 요청 배율을 재생에 쓸 값으로 고른다. 비정상 · 범위 밖은 1.
+  static func playbackRate(_ requested: NSNumber?) -> Float {
+    guard let requested else { return 1 }
+    let value = requested.doubleValue
+    guard value.isFinite, value >= minimumRate, value <= maximumRate else { return 1 }
+    return Float(value)
+  }
+
+  private static let minimumRate = 0.5
+  private static let maximumRate = 2.0
+
+  /// 1이 아닐 때만 음높이 보존 알고리즘과 기본 속도를 정한다. `defaultRate`라서 일시정지 뒤 `play()`로
+  /// 재개해도 같은 속도가 유지된다.
+  static func applyRate(_ rate: Float, item: AVPlayerItem, player: AVPlayer) {
+    guard rate != 1 else { return }
+    item.audioTimePitchAlgorithm = .timeDomain
+    player.defaultRate = rate
+  }
+
+  private func start(_ source: String, rate: Float, done: @escaping LynxCallbackBlock) {
     let pending = PendingDone(done)
 
     DispatchQueue.main.async {
@@ -115,6 +147,7 @@ final class AudioPlaybackModule: NSObject, LynxModule {
 
       let item = AVPlayerItem(url: url)
       let player = AVPlayer(playerItem: item)
+      Self.applyRate(rate, item: item, player: player)
       self.player = player
       self.pending = pending
 

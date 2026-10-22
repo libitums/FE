@@ -31,7 +31,7 @@ export type LearningShellProps = {
   /**
    * 가운데 카드 안입니다. 활동이 여기서 전개되고 판정도 여기서 납니다. 껍데기는 배치가 바뀔
    * 때 이 내용을 한 번 다시 세울 수 있습니다(다시 mount) — 이 안에 mount 효과로 부작용을
-   * 두지 마세요. 듣기 재생은 그래서 화면의 `useListeningPlayback`이 소유합니다.
+   * 두지 마세요. 듣기 재생은 그래서 화면의 `useListenAudio`이 소유합니다.
    */
   card: ReactNode;
   /**

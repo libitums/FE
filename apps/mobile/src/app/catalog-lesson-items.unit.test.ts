@@ -49,7 +49,13 @@ function portOf(
   words: readonly Word[],
   imageUrlOf: (path: string) => string | null = cdn,
 ): CatalogLessonItemPort {
-  return { fill, episodeId, glossOf: catalogGlossOf(words, fill), imageUrlOf };
+  return {
+    fill,
+    episodeId,
+    glossOf: catalogGlossOf(words, fill),
+    imageUrlOf,
+    audioUrlOf: () => null,
+  };
 }
 
 const realPort = (episodeId: string, imageUrlOf?: (path: string) => string | null) =>
@@ -577,6 +583,7 @@ function germanPortOf(words: readonly Word[] = []): CatalogLessonItemPort {
     episodeId: "ep",
     glossOf: catalogGlossOf(words, germanFill),
     imageUrlOf: cdn,
+    audioUrlOf: () => null,
   };
 }
 

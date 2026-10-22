@@ -38,9 +38,9 @@ describe("resolveAirbridgeEventTracker", () => {
     expect(tracker).toBeTypeOf("function");
     const event = {
       category: "airbridge.achieveLevel",
-      semanticAttributes: { level: "appointment-confirmation", label: "messenger" },
+      semanticAttributes: { level: "u00-tutorial", label: "episode_final" },
     } as const;
-    tracker?.(event);
+    tracker?.(event as never);
     expect(trackEvent).toHaveBeenCalledTimes(1);
     expect(trackEvent).toHaveBeenCalledWith(event.category, event.semanticAttributes);
   });

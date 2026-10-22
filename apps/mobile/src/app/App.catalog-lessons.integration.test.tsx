@@ -1,3 +1,4 @@
+import { legacyPassedSeed, legacyPassedRecord } from "./test-helpers/progress-seed";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
@@ -5,7 +6,6 @@ import { afterEach, expect, test, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
-import type { AppJourneySeed } from "./journey-progress";
 import { catalogFinalPlanOf } from "./catalog-final-model";
 import type { CatalogRoleplayTurn } from "./catalog-final-model";
 import { catalogLessonPlanOf } from "./catalog-lesson-plan";
@@ -30,7 +30,6 @@ import { systemBackEventName } from "../lib/system-back";
 import type { TypingQuestion } from "../screens/typing/typing.contract";
 import type { EpisodeIntroEvent } from "../screens/episode-intro/episode-intro.contract";
 import { EPISODE_BANNER_HOLD_MS } from "../screens/catalog-cover/episode-banner";
-import { journeySteps } from "../screens/journey-map/journey-map";
 import { catalogNodeTestId } from "./test-helpers/map-unit-testid";
 
 // 옛 형식 내장본(2026-10-14)의 흐름을 걷는 테스트입니다 — 내장본 자리를 옛 픽스처로 바꿉니다.
@@ -57,17 +56,11 @@ const refreshedBody = JSON.stringify({
   user: { id: "u" },
 });
 
-const tutorialDoneSeed: AppJourneySeed = {
-  completedStepCount: journeySteps.length,
-  completedMessengerUnitIds: ["appointment-confirmation"],
-  completedPhoneCallUnitIds: ["appointment-confirmation-phone-call"],
-  visualNovelProgress: { status: "completed", beatIndex: 2 },
-  completedEpisodeFinalIds: ["tutorial-final-test"],
-};
+const tutorialDoneSeed = legacyPassedSeed;
 
 const tutorialDoneSnapshot = {
   version: 1,
-  completedStepCount: journeySteps.length,
+  completedStepCount: legacyPassedRecord.completedStepCount,
   completedEpisodeIntroIds: ["tutorial-intro"],
   completedMessengerUnitIds: ["appointment-confirmation"],
   completedPhoneCallUnitIds: ["appointment-confirmation-phone-call"],
@@ -188,11 +181,7 @@ async function boot(options: BootOptions = {}): Promise<Booted> {
   const events: EpisodeIntroEvent[] = [];
   vi.useFakeTimers();
   render(
-    <App
-      journeySeed={tutorialDoneSeed}
-      completedEpisodeIntroIds={["tutorial-intro"]}
-      episodeIntroEventSink={(event) => events.push(event)}
-    />,
+    <App progressSeed={tutorialDoneSeed} episodeIntroEventSink={(event) => events.push(event)} />,
   );
   act(() => {
     vi.advanceTimersByTime(entrySplashDurationMs);
@@ -536,20 +525,22 @@ test("L2b. (D5 고정) 실데이터의 어느 레슨 · 최종 테스트도 보�
   }
 });
 
-test("L3. (AC2 · 4) S3: 소리 없는 듣기는 계획에서 빠져 활동 둘이 서고 전부 맞히면 기록된다", async () => {
+test("L3. (AC2 · 4) S3: 소리 없는 듣기도 소리 없는 제시로 서서 활동 다섯이 서고 전부 맞히면 기록된다", async () => {
   const { rpcs, events, play } = await boot({ progress: upTo("S1") });
   const plan = lessonPlan(u01, "S3");
   expect(plan.activities.map((activity) => activity.form)).toEqual([
     "word-choice",
+    "listening",
+    "sentence-order",
+    "listening",
     "sentence-order",
   ]);
-  expect(plan.skippedItemCount).toBeGreaterThan(0);
+  expect(plan.skippedItemCount).toBe(0);
 
   tapNode(u01, "S3");
   expect(solveLesson(plan, true)).toEqual(
     plan.activities.map((activity) => contentIdOf[activity.form]),
   );
-  expect(screen.queryByTestId("listening-screen-content")).not.toBeInTheDocument();
   expect(play).toHaveBeenCalledTimes(0);
   expect(title()).toHaveTextContent("PERFECT LESSON!");
   exitResult();

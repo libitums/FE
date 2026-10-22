@@ -1,5 +1,7 @@
 # Android TalkBack 검증
 
+> ⟨2026-10-21 — [ADR-0081](../adr/0081-tutorial-as-catalog-episode.md)⟩ 옛 튜토리얼(고정 목록 · 스텝 · 프롤로그 · 최종 스토리 · 손글씨)과 메신저 · 전화 · 비주얼 노벨 화면이 지워졌다. 이 문서에서 그 화면을 단계로 쓰는 절은 **더 실행할 수 없다 — 기록으로 남긴다.** 튜토리얼은 이제 카탈로그 에피소드 `u00-tutorial`(맵 첫 구획 `Episode 0.`)이고 절차는 [튜토리얼 u00 e2e](tutorial-u00.md)다.
+
 ## 환경과 재현
 
 **아래 「환경과 재현」 첫 문단과 「관찰 결과」는 Android 15 API 35 에뮬레이터에서의 기록이다**(패키지가 `com.libitum.host`이던 때). 그 뒤 API 37 · targetSdk 36 ·

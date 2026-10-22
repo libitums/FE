@@ -1,10 +1,9 @@
-import { journeySeedBefore } from "./test-helpers/journey-seed";
-import { journeySteps } from "../screens/journey-map/journey-map";
+import { u01OpenSeed } from "./test-helpers/progress-seed";
 import { afterEach, expect, test, vi } from "vitest";
 import { fireEvent, screen } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
-import type { AppJourneySeed } from "./App";
+import { catalogNodeTestId } from "./test-helpers/map-unit-testid";
 import { renderSignedInApp } from "./test-helpers/signed-in-app";
 import notification03 from "@libitums/icons/lynx/notification-03";
 import { color } from "@libitums/design-tokens";
@@ -18,7 +17,7 @@ afterEach(() => {
 });
 
 test("[AH-I1] 탭 루트 셋 모두에 머리와 바텀 네비게이션이 함께 선다", async () => {
-  await renderSignedInApp(<App journeySeed={journeySeedBefore("ordering")} />);
+  await renderSignedInApp(<App progressSeed={u01OpenSeed} />);
 
   for (const tab of ["journey", "roleplay", "settings"] as const) {
     fireEvent.tap(screen.getByTestId(`ui-lynx-bottom-navigator-item-${tab}`), {});
@@ -30,7 +29,7 @@ test("[AH-I1] 탭 루트 셋 모두에 머리와 바텀 네비게이션이 함�
 });
 
 test("[AH-I2] 탭 루트 위에 화면이 쌓이면 머리가 내려간다", async () => {
-  await renderSignedInApp(<App journeySeed={journeySeedBefore("ordering")} />);
+  await renderSignedInApp(<App progressSeed={u01OpenSeed} />);
 
   fireEvent.tap(screen.getByTestId("top-bar-notifications"), {});
 
@@ -38,28 +37,17 @@ test("[AH-I2] 탭 루트 위에 화면이 쌓이면 머리가 내려간다", asy
 });
 
 // 튜토리얼을 다 끝낸 진행입니다 — 롤플레이의 플러스 안내는 에피소드가 열려야 뜹니다.
-const finishedTutorial: AppJourneySeed = {
-  completedStepCount: journeySteps.length,
-  completedMessengerUnitIds: ["appointment-confirmation"],
-  completedPhoneCallUnitIds: ["appointment-confirmation-phone-call"],
-  visualNovelProgress: { status: "completed", beatIndex: 2 },
-  completedEpisodeFinalIds: ["tutorial-final-test"],
-};
+const finishedTutorial = u01OpenSeed;
 
 function header() {
   return screen.getByTestId("app-header");
 }
 
 test("[AH-I4] 여정의 스텝 말풍선이 열린 동안 머리가 낭독에서 가려지고, 닫으면 풀린다", async () => {
-  await renderSignedInApp(
-    <App
-      journeySeed={journeySeedBefore("ordering")}
-      completedEpisodeIntroIds={["tutorial-intro"]}
-    />,
-  );
+  await renderSignedInApp(<App progressSeed={u01OpenSeed} />);
   expect(header()).toHaveAttribute("accessibility-elements-hidden", "false");
 
-  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), {});
+  fireEvent.tap(screen.getByTestId(catalogNodeTestId("u01-water", "S1")), {});
   expect(header()).toHaveAttribute("accessibility-elements-hidden", "true");
 
   fireEvent.tap(screen.getByTestId("step-sheet-close"), {});
@@ -67,22 +55,15 @@ test("[AH-I4] 여정의 스텝 말풍선이 열린 동안 머리가 낭독에서
 });
 
 test("[AH-I5] 롤플레이에서 Plus 예고를 숨겨도 머리는 그대로 보인다", async () => {
-  await renderSignedInApp(
-    <App journeySeed={finishedTutorial} completedEpisodeIntroIds={["tutorial-intro"]} />,
-  );
+  await renderSignedInApp(<App progressSeed={finishedTutorial} />);
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
   expect(screen.queryByTestId("roleplay-list-section-premium-tutorial")).not.toBeInTheDocument();
   expect(header()).toHaveAttribute("accessibility-elements-hidden", "false");
 });
 
 test("[AH-I6] 말풍선이 열린 채 탭을 옮겨도 머리의 가림이 남지 않는다", async () => {
-  await renderSignedInApp(
-    <App
-      journeySeed={journeySeedBefore("ordering")}
-      completedEpisodeIntroIds={["tutorial-intro"]}
-    />,
-  );
-  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), {});
+  await renderSignedInApp(<App progressSeed={u01OpenSeed} />);
+  fireEvent.tap(screen.getByTestId(catalogNodeTestId("u01-water", "S1")), {});
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
 
@@ -90,16 +71,10 @@ test("[AH-I6] 말풍선이 열린 채 탭을 옮겨도 머리의 가림이 남�
 });
 
 test("[AH-I7] 젬 잔액이 있어도 탭과 학습 화면의 상단 젬 칩은 숨긴다", async () => {
-  await renderSignedInApp(
-    <App
-      journeySeed={journeySeedBefore("ordering")}
-      completedEpisodeIntroIds={["tutorial-intro"]}
-      initialGemCount={1240}
-    />,
-  );
+  await renderSignedInApp(<App progressSeed={u01OpenSeed} initialGemCount={1240} />);
   expect(screen.queryByTestId("top-bar-gem")).not.toBeInTheDocument();
 
-  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), {});
+  fireEvent.tap(screen.getByTestId(catalogNodeTestId("u01-water", "S1")), {});
   fireEvent.tap(screen.getByTestId("step-sheet-start"), {});
 
   expect(screen.getByTestId("learning-shell")).toBeInTheDocument();
@@ -118,21 +93,16 @@ function expectTopBarShape(): void {
 }
 
 test("[NBI1] 탭 루트 셋은 같은 알림 아이콘 · 칩 높이를 그리고, 학습 화면에는 상단 줄이 없다", async () => {
-  await renderSignedInApp(
-    <App
-      journeySeed={journeySeedBefore("ordering")}
-      completedEpisodeIntroIds={["tutorial-intro"]}
-    />,
-  );
+  await renderSignedInApp(<App progressSeed={u01OpenSeed} />);
   for (const tab of ["journey", "roleplay", "settings"] as const) {
     fireEvent.tap(screen.getByTestId(`ui-lynx-bottom-navigator-item-${tab}`), {});
     expectTopBarShape();
   }
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
-  fireEvent.tap(screen.getByTestId("ui-lynx-learning-unit-ordering"), {});
+  fireEvent.tap(screen.getByTestId(catalogNodeTestId("u01-water", "S1")), {});
   fireEvent.tap(screen.getByTestId("step-sheet-start"), {});
-  expect(screen.getByTestId("learning-shell-exit")).toBeInTheDocument();
+  expect(screen.getByTestId("learning-run-header-exit")).toBeInTheDocument();
 
   // 학습 중에는 연속 학습 · 트로피 칩과 알림 버튼이 서지 않는다 — 결과 화면에서 다시 선다.
   expect(screen.queryByTestId("top-bar-streak")).toBeNull();

@@ -2,7 +2,6 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import { fireEvent, screen } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
-import { journeySeedBefore } from "./test-helpers/journey-seed";
 import {
   boot,
   cover,
@@ -23,83 +22,35 @@ afterEach(() => {
   vi.unstubAllEnvs();
 });
 
-const tutorialSpecialIds = [
-  "tutorial-intro",
-  "appointment-confirmation",
-  "appointment-confirmation-phone-call",
-  "cafe-arrival-visual-novel",
-  "tutorial-final-test",
-] as const;
-
+const U00 = "u00-tutorial";
 const special = (id: string) => screen.getByTestId(`ui-lynx-special-unit-${id}`);
-const labelOf = (id: string) => screen.getByTestId(`journey-special-unit-label-${id}`);
-const seed = journeySeedBefore("appointment-confirmation");
-const narrativeScreenIds = ["messenger-screen", "phone-call-screen", "visual-novel-screen"];
 
 describe("SPI1. 새 설치 부팅", () => {
-  test("표지만 available이고 나머지 튜토리얼 스페셜 넷은 default이며 잠긴 메신저를 눌러도 맵에 남는다", async () => {
+  test("u00 표지만 available이고 u00 최종은 default(disabled)이며 잠긴 최종을 눌러도 맵에 남는다", async () => {
     await renderSignedInApp(<App />);
 
-    expect(special("tutorial-intro")).toHaveAttribute("data-status", "available");
-    for (const id of tutorialSpecialIds.slice(1)) {
-      expect(special(id)).toHaveAttribute("data-status", "default");
-      expect(special(id)).toHaveAttribute("accessibility-traits", "disabled");
-    }
+    expect(special(`catalog-cover-${U00}`)).toHaveAttribute("data-status", "available");
+    const finalNode = special(`catalog-unit-${U00}-RP`);
+    expect(finalNode).toHaveAttribute("data-status", "default");
+    expect(finalNode).toHaveAttribute("accessibility-traits", "disabled");
 
-    fireEvent.tap(special("appointment-confirmation"), {});
+    fireEvent.tap(finalNode, {});
 
     expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
-    expect(screen.queryByTestId("messenger-screen")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("catalog-final-screen")).not.toBeInTheDocument();
   });
 
-  test("스텝 노드는 스페셜이 아닌 LearningUnit으로 남는다", async () => {
+  test("u00의 레슨 노드는 스페셜이 아닌 LearningUnit이다", async () => {
     await renderSignedInApp(<App />);
 
-    expect(screen.getByTestId("ui-lynx-learning-unit-greeting")).toBeInTheDocument();
-    expect(screen.queryByTestId("ui-lynx-special-unit-greeting")).not.toBeInTheDocument();
+    expect(screen.getByTestId(`ui-lynx-learning-unit-catalog-unit-${U00}-S1`)).toBeInTheDocument();
+    expect(
+      screen.queryByTestId(`ui-lynx-special-unit-catalog-unit-${U00}-S1`),
+    ).not.toBeInTheDocument();
   });
 });
 
-describe("SPI2. 표지를 끝낸 진행", () => {
-  test("메신저가 available(brand)이고 전화 · 비주얼 노벨은 차례를 기다리며 표지는 clear(correct)이다", async () => {
-    await renderSignedInApp(
-      <App journeySeed={seed} completedEpisodeIntroIds={["tutorial-intro"]} />,
-    );
-
-    expect(special("appointment-confirmation")).toHaveAttribute("data-status", "available");
-    expect(labelOf("appointment-confirmation")).toHaveClass("journey-special-unit-label-brand");
-    for (const id of ["appointment-confirmation-phone-call", "cafe-arrival-visual-novel"]) {
-      expect(special(id)).toHaveAttribute("data-status", "default");
-      expect(labelOf(id)).toHaveClass("journey-special-unit-label-muted");
-    }
-    expect(special("tutorial-intro")).toHaveAttribute("data-status", "clear");
-    expect(labelOf("tutorial-intro")).toHaveClass("journey-special-unit-label-correct");
-    expect(special("tutorial-final-test")).toHaveAttribute("data-status", "default");
-  });
-
-  test("열린 메신저를 누르면 메신저 화면이 선다", async () => {
-    await renderSignedInApp(
-      <App journeySeed={seed} completedEpisodeIntroIds={["tutorial-intro"]} />,
-    );
-
-    fireEvent.tap(special("appointment-confirmation"), {});
-
-    expect(screen.getByTestId("messenger-screen")).toBeInTheDocument();
-  });
-
-  test("잠긴 튜토리얼 최종을 눌러도 어느 서사 화면도 서지 않는다", async () => {
-    await renderSignedInApp(
-      <App journeySeed={seed} completedEpisodeIntroIds={["tutorial-intro"]} />,
-    );
-
-    fireEvent.tap(special("tutorial-final-test"), {});
-
-    expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
-    for (const id of narrativeScreenIds) expect(screen.queryByTestId(id)).not.toBeInTheDocument();
-  });
-});
-
-describe("SPI3. 튜토리얼 최종을 통과한 진행의 카탈로그", () => {
+describe("SPI3. u00을 끝낸 진행의 카탈로그", () => {
   afterEach(resetApp);
 
   test("표지는 available이고 문화 · 최종은 default이며 레슨 · 문화는 LearningUnit이다", async () => {
@@ -132,20 +83,15 @@ describe("SPI3. 튜토리얼 최종을 통과한 진행의 카탈로그", () => 
 });
 
 describe("SPI4. 실데이터 낭독 이름", () => {
-  test("튜토리얼 스페셜의 이름은 special, 로 시작하고 상태 접미사가 붙되 story는 없다", async () => {
+  test("u00 표지 · 최종의 이름은 special, 로 시작하고 상태 접미사가 붙되 story는 없다", async () => {
     await renderSignedInApp(<App />);
 
-    expect(special("appointment-confirmation")).toHaveAttribute(
-      "accessibility-label",
-      "special, A Message from Minseo, locked",
+    expect(special(`catalog-cover-${U00}`).getAttribute("accessibility-label")).toMatch(
+      /^special, Episode 0\. /,
     );
-    expect(special("tutorial-intro")).toHaveAttribute(
+    expect(special(`catalog-unit-${U00}-RP`)).toHaveAttribute(
       "accessibility-label",
-      "special, Episode intro",
-    );
-    expect(special("tutorial-final-test")).toHaveAttribute(
-      "accessibility-label",
-      "special, Final test, locked",
+      "special, Episode 0. Final test, locked",
     );
   });
 

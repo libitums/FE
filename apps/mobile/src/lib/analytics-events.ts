@@ -1,4 +1,4 @@
-// 이벤트 → capture 매핑 · sink 일곱 — 순수 · SDK import 0. 계약: spec §3.
+// 이벤트 → capture 매핑 · sink 넷 — 순수 · SDK import 0. 계약: spec §3.
 import type {
   AnalyticsCaptureFrom,
   AnalyticsEvent,
@@ -14,9 +14,6 @@ export const analyticsCaptureFrom: AnalyticsCaptureFrom = (event) => {
 
 export const noAnalyticsEventSinks: AnalyticsEventSinks = {
   entryEventSink: null,
-  messengerEventSink: null,
-  visualNovelEventSink: null,
-  phoneCallEventSink: null,
   notificationEventSink: null,
   settingsEventSink: null,
   episodeIntroEventSink: null,
@@ -42,9 +39,6 @@ export const analyticsEventSinksFrom: AnalyticsEventSinksFrom = (client) => {
   };
   return {
     entryEventSink: sink,
-    messengerEventSink: sink,
-    visualNovelEventSink: sink,
-    phoneCallEventSink: sink,
     notificationEventSink: sink,
     settingsEventSink: sink,
     episodeIntroEventSink: sink,

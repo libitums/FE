@@ -4,7 +4,7 @@
 import { spendTicket, ticketStatusAt } from "../lib/learning-tickets";
 import type { TicketLedger } from "../lib/learning-tickets";
 
-/** `isReplay`가 참이면 티켓 없이 엽니다. */
+/** 첫 인자(`isReplay`)가 참이면 티켓 없이 엽니다 — 다시 하기 · 무료 유닛(튜토리얼)을 뜻합니다. */
 export type TicketStart = (isReplay: boolean, open: () => void) => void;
 
 export type TicketGateDeps = {
