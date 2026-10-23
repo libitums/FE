@@ -30,6 +30,9 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
           catalog={{
             sections: wiring.catalogSections,
             progress: wiring.catalogProgress,
+            ...(wiring.catalogTicketUnits === undefined
+              ? {}
+              : { ticketUnits: wiring.catalogTicketUnits }),
             legacyTutorialPassed: wiring.legacyTutorialPassed,
             onStartCover: wiring.onStartCatalogCover,
             onStartUnit: wiring.onStartCatalogUnit,

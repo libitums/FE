@@ -9,6 +9,9 @@ import type { ListenItemResult, ListenItemType } from "./question-audio";
 
 export type CatalogUnitRole = "lesson" | "final";
 
+/** 맵이 아닌 곳에서 연 시작입니다 — 결과 화면의 「다음 학습」(`result`). 맵에서 열면 싣지 않습니다. */
+export type CatalogStartSource = "result";
+
 export type EpisodeLessonStartedEvent = {
   readonly name: "episode_lesson_started";
   readonly episodeId: string;
@@ -19,6 +22,8 @@ export type EpisodeLessonStartedEvent = {
   /** 표시 문항 수입니다(채점 문항 + 단어 카드). */
   readonly shownItemCount: string;
   readonly skippedItemCount: string;
+  /** 결과 화면의 「다음 학습」으로 열었으면 `result`입니다. 맵에서 열면 키가 없습니다. */
+  readonly startSource?: CatalogStartSource;
 };
 
 export type EpisodeLessonFinishedEvent = {

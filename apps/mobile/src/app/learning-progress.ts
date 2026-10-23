@@ -34,13 +34,18 @@ import {
 } from "./legacy-tutorial-progress";
 import type { LegacyTutorialRecord } from "./legacy-tutorial-progress";
 
-/** 저장하는 진행 전부입니다 — 얼린 옛 튜토리얼 기록 · 카탈로그 에피소드 진행 · 학습 티켓 원장입니다. */
+/** 저장하는 진행 전부입니다 — 얼린 옛 튜토리얼 기록 · 카탈로그 에피소드 진행 · 학습 티켓 원장 · 티켓으로 연 유닛입니다. */
 export type JourneyProgressState = {
   readonly legacyTutorial: LegacyTutorialRecord;
   /** 카탈로그 에피소드 진행(`lib/catalog-progress.ts`). 없으면 `{}`. */
   readonly catalogProgress: CatalogProgress;
   /** 학습 티켓 원장(`lib/learning-tickets.ts`). 없으면 가득입니다. */
   readonly tickets?: TicketLedger;
+  /**
+   * 티켓을 쓰고 연 유닛입니다(카탈로그 진행과 같은 모양). 여기 있으면 다시 열 때 티켓을 쓰지 않고 맵에서 진한 색으로
+   * 섭니다. 없으면 `{}`입니다. 끝낸 수 · 연속 · 트로피에는 들지 않습니다.
+   */
+  readonly ticketUnits?: CatalogProgress;
 };
 
 export const emptyJourneyProgress: JourneyProgressState = {
@@ -67,6 +72,9 @@ export function learningProgressSnapshotFrom(
     ...(state.tickets === undefined || isFullTicketLedger(state.tickets)
       ? {}
       : { tickets: state.tickets }),
+    ...(state.ticketUnits === undefined || Object.keys(state.ticketUnits).length === 0
+      ? {}
+      : { ticketUnits: state.ticketUnits }),
   };
 }
 
@@ -82,6 +90,9 @@ export function journeyProgressFrom(raw: unknown): JourneyProgressState | null {
     // 모양이 틀린 값은 그 부분만 버립니다 — 스냅숏 전체를 버리지 않습니다.
     catalogProgress: catalogProgressFrom(record["catalogProgress"]),
     ...(record["tickets"] === undefined ? {} : { tickets: ticketLedgerFrom(record["tickets"]) }),
+    ...(record["ticketUnits"] === undefined
+      ? {}
+      : { ticketUnits: catalogProgressFrom(record["ticketUnits"]) }),
   };
 }
 
@@ -155,6 +166,10 @@ export function mergeJourneyProgress(
       : {
           tickets: mergeTicketLedgers(a.tickets ?? fullTicketLedger, b.tickets ?? fullTicketLedger),
         }),
+    // 티켓으로 연 유닛은 키별 합집합입니다 — 한 기기에서 쓴 티켓을 다른 기기가 또 쓰게 하지 않습니다.
+    ...(a.ticketUnits === undefined && b.ticketUnits === undefined
+      ? {}
+      : { ticketUnits: mergeCatalogProgress(a.ticketUnits ?? {}, b.ticketUnits ?? {}) }),
   };
 }
 
@@ -164,6 +179,8 @@ export type JourneyStats = {
   readonly trophyCount: number;
   /** 남은 학습 티켓 수입니다 — 레슨 결과 화면의 한 줄(시안 E5). 티켓 결선(`ticket-wiring.ts`)이 채웁니다. */
   readonly ticketsLeft?: number;
+  /** 티켓을 쓰고 연 유닛입니다 — 맵이 진한 색으로 세우고 말풍선이 「무료」로 셉니다. 티켓 결선이 채웁니다. */
+  readonly catalogTicketUnits?: CatalogProgress;
 };
 
 /** 화면 결선이 받는 진행 쪽 값입니다 — 칩 둘, 로그인 뒤 서버 진행을 불러오는 함수, 맵이 받는 불러오기 상태. */
@@ -198,6 +215,7 @@ export function journeyProgressCovers(
   return (
     legacyTutorialRecordCovers(server.legacyTutorial, local.legacyTutorial) &&
     catalogCovers(server.catalogProgress, local.catalogProgress) &&
-    ticketLedgerCovers(server.tickets ?? fullTicketLedger, local.tickets ?? fullTicketLedger)
+    ticketLedgerCovers(server.tickets ?? fullTicketLedger, local.tickets ?? fullTicketLedger) &&
+    catalogCovers(server.ticketUnits ?? {}, local.ticketUnits ?? {})
   );
 }

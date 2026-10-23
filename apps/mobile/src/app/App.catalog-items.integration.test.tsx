@@ -1,5 +1,6 @@
 import { legacyPassedSeed, legacyPassedRecord } from "./test-helpers/progress-seed";
 import { solveReview } from "./test-helpers/catalog-review-solver";
+import { tapResultExit } from "./test-helpers/lesson-result";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
@@ -279,7 +280,7 @@ const tapNode = (episodeId: string, key: string): void => {
   if (start !== null) fireEvent.tap(start, {});
 };
 const status = (episodeId: string, key: string) => node(episodeId, key).getAttribute("data-status");
-const exitResult = () => tapButtonIn("lesson-complete-screen-exit");
+const exitResult = () => tapResultExit();
 const title = () => screen.getByTestId("lesson-complete-screen-title");
 const chapter = () => screen.getByTestId("learning-shell-chapter");
 const action = (): void => tapId("learning-shell-action");

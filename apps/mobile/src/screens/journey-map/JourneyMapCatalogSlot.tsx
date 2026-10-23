@@ -33,6 +33,7 @@ export function JourneyMapCatalogSlot({
         gate={{
           legacyTutorialPassed: catalog.legacyTutorialPassed,
           progress: catalog.progress,
+          ...(catalog.ticketUnits === undefined ? {} : { ticketUnits: catalog.ticketUnits }),
         }}
         access={access}
         guide={guide}

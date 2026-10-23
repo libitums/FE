@@ -11,7 +11,8 @@ import { authSessionStorageKey, serializeAuthSession } from "../lib/auth-session
 import { entrySplashDurationMs } from "../lib/entry-flow";
 import { learningItemGuideSeenStorageKey } from "../lib/learning-item-guide";
 import { allLearningItemGuidesSeenValue } from "../lib/learning-item-guide.test-support";
-import { ticketRefillMs } from "../lib/learning-tickets";
+import { fullTicketLedger, spendTicket, ticketRefillMs } from "../lib/learning-tickets";
+import type { TicketLedger } from "../lib/learning-tickets";
 import { TUTORIAL_EPISODE_ID } from "../lib/tutorial-episode";
 import type { EpisodeIntroEvent } from "../screens/episode-intro/episode-intro.contract";
 import { contentNotFoundResponse, isContentRequest } from "./test-helpers/content-requests";
@@ -42,6 +43,20 @@ const progressOf = (done: readonly string[]) =>
     legacyTutorial: legacyPassedRecord,
     catalogProgress: { [u01]: ["intro", ...done] },
   });
+
+/** 지금 세 장을 모두 쓴 원장을 실은 진행입니다 — 티켓으로 연 유닛은 다시 열어도 쓰지 않으므로 0장은 원장으로 만듭니다. */
+const drainedProgressOf = (done: readonly string[]) => {
+  const now = Date.now();
+  const tickets = [0, 1, 2].reduce<TicketLedger>(
+    (ledger) => spendTicket(ledger, now) ?? ledger,
+    fullTicketLedger,
+  );
+  return learningProgressSnapshotFrom({
+    legacyTutorial: legacyPassedRecord,
+    catalogProgress: { [u01]: ["intro", ...done] },
+    tickets,
+  });
+};
 
 const env = {
   store: new Map<string, string>(),
@@ -183,9 +198,7 @@ test("[IT2] 끝낸 레슨 다시 하기는 무료 — 태그 없음, 칩 그대�
 });
 
 test("[IT3] 0장에서 새 레슨은 열리지 않고 대화상자 · tickets_ran_out 한 번, Back to map이 닫는다", async () => {
-  await boot(async () => ok(progressOf([])));
-  for (let i = 0; i < 3; i += 1) expect(startStep("S1")).toBe(true);
-  await flush();
+  await boot(async () => ok(drainedProgressOf([])));
   expect(chip()).toHaveTextContent("0");
   expect(startStep("S1")).toBe(false);
   expect(screen.getByTestId("out-of-tickets")).toBeInTheDocument();
@@ -197,8 +210,7 @@ test("[IT3] 0장에서 새 레슨은 열리지 않고 대화상자 · tickets_ra
 });
 
 test("[IT4] 대화상자에서 Get more → 오늘 1장, Start lesson이 막혔던 레슨을 연다", async () => {
-  await boot(async () => ok(progressOf([])));
-  for (let i = 0; i < 3; i += 1) startStep("S1");
+  await boot(async () => ok(drainedProgressOf([])));
   startStep("S1");
   tap("out-of-tickets-more");
   expect(env.events.filter((e) => e.name === "ticket_more_tapped")).toEqual([
@@ -311,4 +323,20 @@ test("[IT10] u00 튜토리얼 레슨 Start는 티켓을 쓰지 않아 칩이 줄
   tap("step-sheet-start");
   expect(screen.queryByTestId("top-bar-tickets-drop")).not.toBeInTheDocument();
   expect(screen.getByTestId("learning-shell")).toBeInTheDocument();
+});
+
+test("[IT11] 티켓으로 연 레슨을 나갔다 다시 열면 또 쓰지 않는다 — 칩 2 그대로, 진한 색 노드, 저장에 실린다", async () => {
+  await boot(async () => ok(progressOf([])));
+  expect(startStep("S1")).toBe(true);
+  await flush();
+  expect(chip()).toHaveTextContent("2");
+  expect(screen.getByTestId(catalogNodeTestId(u01, "S1"))).toHaveAttribute("data-status", "active");
+
+  tap(catalogNodeTestId(u01, "S1"));
+  expect(screen.queryByTestId("step-sheet-ticket-cost")).not.toBeInTheDocument();
+  expect(startStep("S1")).toBe(true);
+  await flush();
+  expect(chip()).toHaveTextContent("2");
+  const saved = env.saves.at(-1)?.["p_progress"] as { ticketUnits?: unknown } | undefined;
+  expect(saved?.ticketUnits).toEqual({ [u01]: ["S1"] });
 });

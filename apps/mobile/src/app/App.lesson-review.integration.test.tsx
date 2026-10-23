@@ -139,7 +139,8 @@ test("LR2. 다시 풀기 도중 나가면 기록 없이 맵으로 가고 끝 이
   tapButtonIn("ui-lynx-dialog-action-leave");
   await flush();
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
-  expect(status(u01, "S1")).toBe("available");
+  // 끝내지 않았지만 티켓을 쓰고 연 유닛이라 진한 색(`active`)으로 섭니다(ADR-0075 적용 기록 2026-10-23).
+  expect(status(u01, "S1")).toBe("active");
   expect(savedUnits(rpcs, u01)).not.toContain("S1");
   expect(learningEvents(events).map((event) => event.name)).toEqual(["episode_lesson_started"]);
 });

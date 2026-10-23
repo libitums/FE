@@ -35,7 +35,15 @@ export function SpecialUnit(props: SpecialUnitProps) {
       focusable={contract.interactive}
       bindtap={contract.interactive ? handleTap : undefined}
     >
-      <view className="ui-lynx-special-unit-halo" data-testid={`${contract.testId}-halo`}>
+      {/* 시각 층은 터치를 받지 않고 움직이지 않는 바깥 상자가 탭을 받습니다. 눌림에 Face가 `translate(5px, 6px)`로
+          내려가는데, 손가락 아래 요소(아이콘)가 누르는 사이 속성 변화로 옮겨지면 Android Lynx가 탭을 취소합니다
+          (`tap failed … [props]` — 갤럭시에서 최종 테스트가 되다 안 되다 했습니다). 눌림은 바깥 상자의 `:active`라
+          그대로입니다. */}
+      <view
+        className="ui-lynx-special-unit-halo"
+        data-testid={`${contract.testId}-halo`}
+        user-interaction-enabled={false}
+      >
         <view className="ui-lynx-special-unit-body" data-testid={`${contract.testId}-body`}>
           <view className="ui-lynx-special-unit-shade" data-testid={`${contract.testId}-shade`} />
           <view className="ui-lynx-special-unit-face" data-testid={`${contract.testId}-face`}>

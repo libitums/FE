@@ -77,8 +77,9 @@
    폭은 화면 가로 여백 안쪽 전체입니다(`left` · `right`) — 띠가 가로를 덮으므로 띠 자리의
    탭은 띠가 먹습니다. 보이는 면이라 맞습니다.
 
-   위치는 칩 줄 아래입니다(칩 줄 = 위 여백 12 + 40 + 아래 여백 12 — 칩은 44라 띠와의 간격이 4 좁습니다). `z-index`는 띠가 유닛
-   위에 서기 위한 것입니다. */
+   위치는 칩 줄 아래입니다(칩 줄 = 위 여백 12 + 40 + 아래 여백 12 — 칩은 44라 띠와의 간격이 4 좁습니다). `z-index`는 띠가 유닛과
+   말풍선(`z-sheet`) · 가림막 위에 서기 위한 것입니다 — 스크롤로 말풍선이 띠 자리까지 올라와도 띠 밑으로 들어갑니다. 띠는 말풍선이
+   열린 동안만 서므로 이 화면에 같이 뜨는 대화상자가 없습니다. */
 .journey-map-screen-episode-header {
   display: flex;
   flex-direction: column;
@@ -86,7 +87,7 @@
   top: calc(var(--libitum-spacing-12) + var(--libitum-spacing-40) + var(--libitum-spacing-12));
   left: var(--libitum-layout-screen-padding-x);
   right: var(--libitum-layout-screen-padding-x);
-  z-index: var(--libitum-elevation-z-sticky);
+  z-index: var(--libitum-elevation-z-dialog);
 }
 
 /* 띠 자리의 측정 손잡이입니다 — 자동 스크롤과 말풍선이 이 상자의 아래 모서리에 맞춥니다. 띠가 없으면

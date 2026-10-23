@@ -59,6 +59,8 @@ export function useStepSheet(): StepSheetControls {
   // 그리는 값을 치르지 않기 위해서입니다.
   const latestScrollTop = useRef(0);
   const [openScrollTop, setOpenScrollTop] = useState(0);
+  // 열린 뒤 가장 깊이 내려간 스크롤입니다 — 말풍선 상한의 기준입니다(`stepSheetTop`). 열거나 다시 잴 때 지금 자리로 되돌립니다.
+  const peakScrollTop = useRef(0);
   // 두 열에서는 유닛이 화면 가운데에 서지 않으므로 꼬리가 가운데에서 벗어납니다. 값은 잰 뒤에야 알고,
   // 상태 객체 · 배치 계산은 건드리지 않으려고 지역 상태로 둡니다.
   const [caretOffset, setCaretOffset] = useState(0);
@@ -76,6 +78,8 @@ export function useStepSheet(): StepSheetControls {
     // oxlint-disable-next-line react/immutability
     latestScrollTop.current = event.detail.scrollTop;
     if (sheetState.openStepId !== null) {
+      // oxlint-disable-next-line react/immutability
+      peakScrollTop.current = Math.max(peakScrollTop.current, event.detail.scrollTop);
       setOpenScrollTop(event.detail.scrollTop);
       entrance.scroll(event.detail.scrollTop);
     }
@@ -95,6 +99,8 @@ export function useStepSheet(): StepSheetControls {
       anchorY: tapY + unitSize / 2,
       scrollTop: tapScrollTop,
     });
+    // oxlint-disable-next-line react/immutability
+    peakScrollTop.current = tapScrollTop;
     setOpenScrollTop(tapScrollTop);
     setCaretOffset(0);
     // 그다음 유닛을 실제로 재서 자리를 바로잡고, 유닛을 스크롤 가운데로 옮깁니다 —
@@ -133,6 +139,8 @@ export function useStepSheet(): StepSheetControls {
           scrollTop,
           anchorLimit: placement.anchorLimit,
         });
+        // oxlint-disable-next-line react/immutability
+        peakScrollTop.current = scrollTop;
         setOpenScrollTop(scrollTop);
         setCaretOffset(stepSheetCaretOffset(unit.centerX, screen.centerX, stepSheetCaretLimit));
         entrance.measured(id, placement.targetScrollTop, scrollTop);
@@ -152,7 +160,7 @@ export function useStepSheet(): StepSheetControls {
 
   return {
     sheetState,
-    sheetTop: stepSheetTop(sheetState, openScrollTop),
+    sheetTop: stepSheetTop(sheetState, openScrollTop, peakScrollTop.current),
     sheetCaretOffset: caretOffset,
     handleScroll,
     handleSelectStep,

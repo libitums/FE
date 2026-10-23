@@ -1,6 +1,7 @@
 // 여정 진행과 연속 학습 상태입니다. 미전송 기록·계정별 복구·재시도는 journey-progress-sync가 담당합니다.
 
-import type { CatalogProgress } from "../lib/catalog-progress";
+import { markCatalogUnitDone } from "../lib/catalog-progress";
+import type { CatalogProgress, CatalogUnitKey } from "../lib/catalog-progress";
 import { fullTicketLedger } from "../lib/learning-tickets";
 import type { TicketLedger } from "../lib/learning-tickets";
 import { useEffect, useRef, useState } from "@lynx-js/react";
@@ -41,6 +42,8 @@ export function useJourneyProgress(
   );
   // 학습 티켓 원장 — 진행과 같은 저장 · 병합 경로를 탑니다(`lib/learning-tickets.ts`).
   const [tickets, setTickets] = useState<TicketLedger>(fullTicketLedger);
+  // 티켓을 쓰고 연 유닛 — 다시 열 때 티켓을 또 쓰지 않습니다. 원장과 같은 저장 · 병합 경로를 탑니다.
+  const [ticketUnits, setTicketUnits] = useState<CatalogProgress>({});
   const [streakDays, setStreakDays] = useState(0);
   // 빈 초기값은 신규 사용자라는 뜻이 아닙니다. 유효한 서버 기록을 합친 뒤에만 안내를 판단합니다.
   // 기기 저장본을 적용한 것만으로는 참이 아닙니다.
@@ -59,7 +62,7 @@ export function useJourneyProgress(
   // (연속 모달이 먼저입니다).
   const [recordingDay, setRecordingDay] = useState(false);
 
-  const state: JourneyProgressState = { legacyTutorial, catalogProgress, tickets };
+  const state: JourneyProgressState = { legacyTutorial, catalogProgress, tickets, ticketUnits };
   const latest = useRef(state);
   latest.current = state;
   const initial = useRef(state);
@@ -92,6 +95,7 @@ export function useJourneyProgress(
     setLegacyTutorial(next.legacyTutorial);
     setCatalogProgress(next.catalogProgress);
     setTickets(next.tickets ?? fullTicketLedger);
+    setTicketUnits(next.ticketUnits ?? {});
   };
 
   /** 로그인 뒤 호출합니다. 로컬 미전송 진행을 즉시 복구한 다음 서버와 합칩니다. */
@@ -158,7 +162,7 @@ export function useJourneyProgress(
 
     renderedSync?.capture(state);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [catalogProgress, tickets]);
+  }, [catalogProgress, tickets, ticketUnits]);
 
   const onStatBumped = (kind: StatBumpKind): void =>
     setStatBumps((bumps) => clearStatBump(bumps, kind));
@@ -186,6 +190,9 @@ export function useJourneyProgress(
     legacyTutorialPassed: legacyTutorialPassed(legacyTutorial),
     setCatalogProgress,
     setTickets,
+    ticketUnits,
+    markTicketUnit: (episodeId: string, unitKey: CatalogUnitKey) =>
+      setTicketUnits((units) => markCatalogUnitDone(units, episodeId, unitKey)),
     streakDays,
     streakCelebration,
     onStreakCelebrated: () => setStreakCelebration(false),

@@ -325,3 +325,45 @@ test.each([
   });
   expect(await load(writerA)).toEqual({ ...first, tickets: ticketsA });
 });
+
+const unitsA = { "u01-water": ["S2", "S1"] };
+const unitsB = { "u01-water": ["S3", "S1"], "u02-checkin": ["S1"] };
+
+test("TU1 티켓으로 연 유닛은 키별 합집합으로 합쳐지고 원소는 정렬된다 — 순서를 바꿔도 같다", async () => {
+  const expected = { "u01-water": ["S1", "S2", "S3"], "u02-checkin": ["S1"] };
+  await save(writerA, { ...empty, ticketUnits: unitsA });
+  await save(writerB, { ...empty, ticketUnits: unitsB });
+  expect(await load(writerA)).toEqual({ ...empty, ticketUnits: expected });
+  await db.admin.query("truncate public.learning_progress");
+  await save(writerA, { ...empty, ticketUnits: unitsB });
+  await save(writerB, { ...empty, ticketUnits: unitsA });
+  expect(await load(writerA)).toEqual({ ...empty, ticketUnits: expected });
+});
+
+test("TU2 티켓으로 연 유닛이 없는 저장(옛 앱)은 저장된 값을 지우지 않고, 양쪽 모두 없으면 키가 없다", async () => {
+  await save(writerA, { ...empty, ticketUnits: unitsA });
+  await save(writerB, first);
+  expect(await load(writerA)).toEqual({ ...first, ticketUnits: { "u01-water": ["S1", "S2"] } });
+  await db.admin.query("truncate public.learning_progress");
+  await save(writerA, first);
+  await save(writerB, second);
+  expect(await load(writerA)).not.toHaveProperty("ticketUnits");
+});
+
+test.each([
+  ["객체가 아님", "x"],
+  ["빈 키", { "": ["S1"] }],
+  ["배열이 아님", { a: "S1" }],
+  ["빈 유닛", { a: [""] }],
+  ["문자열이 아닌 유닛", { a: [1] }],
+] as const)(
+  "TU3 잘못된 티켓 유닛(%s)은 22023으로 거절하고 기존 진행을 보존한다",
+  async (_name, bad) => {
+    await save(writerA, { ...first, ticketUnits: unitsA });
+    await expect(save(writerB, { ...empty, ticketUnits: bad })).rejects.toMatchObject({
+      code: "22023",
+      message: "invalid ticket units",
+    });
+    expect(await load(writerA)).toEqual({ ...first, ticketUnits: { "u01-water": ["S1", "S2"] } });
+  },
+);

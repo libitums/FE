@@ -1,4 +1,4 @@
-// 진행 상태(`legacyTutorial` + `catalogProgress` + `tickets`) 계약으로 `learning-progress` 모듈을 부르는 테스트 지원입니다.
+// 진행 상태(`legacyTutorial` + `catalogProgress` + `tickets` + `ticketUnits`) 계약으로 `learning-progress` 모듈을 부르는 테스트 지원입니다.
 // 제품 코드가 import하지 않습니다.
 //
 // 모듈 전체를 가져와 계약 모양으로 좁혀 부릅니다 — 계약 모양이 아직 없는 구현에서는 단언이 실패하고(호출 오류 · 값 불일치),
@@ -16,6 +16,7 @@ export type ContractProgressState = {
   readonly legacyTutorial: LegacyTutorialRecord;
   readonly catalogProgress: CatalogProgress;
   readonly tickets?: TicketLedger;
+  readonly ticketUnits?: CatalogProgress;
 };
 
 export type CompletedEpisodeLike = { readonly id: string; readonly title: string };
@@ -96,9 +97,9 @@ function ticketsOk(value: unknown): boolean {
 }
 
 /**
- * 서버 RPC(`merge_learning_progress_v1`, supabase/migrations/20261020120000…sql)가 요구하는 조건을 TS로 적은 검사입니다.
+ * 서버 RPC(`merge_learning_progress_v1`, supabase/migrations/20261023120000…sql)가 요구하는 조건을 TS로 적은 검사입니다.
  * 버전 · 16384 바이트 상한 · 스텝 수(0 이상 안전 정수) · 목록 넷(비지 않은 문자열) · 비주얼 노벨(status와 beatIndex 짝) ·
- * 선택 필드 catalogProgress · tickets를 같은 규칙으로 봅니다.
+ * 선택 필드 catalogProgress · tickets · ticketUnits(catalogProgress와 같은 모양)를 같은 규칙으로 봅니다.
  */
 export function serverAcceptsSnapshot(snapshot: unknown): boolean {
   if (!isPlainObject(snapshot)) return false;
@@ -113,6 +114,7 @@ export function serverAcceptsSnapshot(snapshot: unknown): boolean {
     LIST_FIELDS.every((field) => isIdList(snapshot[field])) &&
     visualNovelOk(snapshot["visualNovel"]) &&
     (!("catalogProgress" in snapshot) || catalogProgressOk(snapshot["catalogProgress"])) &&
-    (!("tickets" in snapshot) || ticketsOk(snapshot["tickets"]))
+    (!("tickets" in snapshot) || ticketsOk(snapshot["tickets"])) &&
+    (!("ticketUnits" in snapshot) || catalogProgressOk(snapshot["ticketUnits"]))
   );
 }

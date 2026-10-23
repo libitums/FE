@@ -31,6 +31,7 @@ import {
   rewardMotionFor,
 } from "./lesson-complete-reward";
 import { LessonCompleteBadge } from "./LessonCompleteBadge";
+import { LessonCompleteNextActions, type LessonCompleteNext } from "./LessonCompleteNextActions";
 import { noStatBumps } from "../../lib/stat-bump";
 import type { StatBumpKind, StatBumps } from "../../lib/stat-bump";
 
@@ -80,6 +81,8 @@ export type LessonCompleteScreenProps = {
   readonly onStatBumped?: (kind: StatBumpKind) => void;
   /** 남은 학습 티켓 수입니다(시안 E5). 넘기지 않으면 줄이 서지 않습니다 — 레슨이 아닌 결과 화면입니다. */
   readonly ticketsLeft?: number;
+  /** 통과 뒤 이어 갈 다음 유닛(시안 D) — 있으면 지도 버튼 + 「다음 학습」 한 줄, 없으면 맵 버튼 하나. */
+  readonly next?: LessonCompleteNext;
 };
 
 export function LessonCompleteScreen({
@@ -95,6 +98,7 @@ export function LessonCompleteScreen({
   statBumps = noStatBumps,
   onStatBumped,
   ticketsLeft,
+  next,
 }: LessonCompleteScreenProps): ReactNode {
   const copy = useUiCopy();
   // `reward` prop(재화)과 이름이 겹치지 않도록 배지 모션은 `rewardMotion`으로 둡니다.
@@ -265,25 +269,32 @@ export function LessonCompleteScreen({
           <Button label="Try again" variant="brand" size="xl" width="fill" bindtap={onRetry} />
         </view>
       ) : null}
-      <view
-        className={
-          verdict === "failed"
-            ? "lesson-complete-screen-action lesson-complete-screen-action-secondary"
-            : "lesson-complete-screen-action"
-        }
-        data-testid="lesson-complete-screen-exit"
-      >
-        {/* 미통과에서는 `outline`입니다 — 그 화면의 주 동작은 위의 `Try again`이고, 둘 다
-            꽉 찬 면이면 어느 것이 주된 길인지가 색으로만 갈립니다. 통과에서는 이것이
-            유일한 버튼이라 `neutral` 그대로입니다. */}
-        <Button
-          label={copy.common.exitTo[exitTo]}
-          variant={verdict === "failed" ? "outline" : "neutral"}
-          size="xl"
-          width="fill"
-          bindtap={onExit}
+      {verdict !== "failed" && next !== undefined ? (
+        <LessonCompleteNextActions
+          next={next}
+          exitLabel={copy.common.exitTo[exitTo]}
+          onExit={onExit}
         />
-      </view>
+      ) : (
+        <view
+          className={
+            verdict === "failed"
+              ? "lesson-complete-screen-action lesson-complete-screen-action-secondary"
+              : "lesson-complete-screen-action"
+          }
+          data-testid="lesson-complete-screen-exit"
+        >
+          {/* 미통과에서는 `outline`입니다 — 주 동작은 위의 `Try again`이고, 둘 다 꽉 찬 면이면 주된 길이
+              색으로만 갈립니다. 다음 학습이 없는 통과에서는 이것이 유일한 버튼이라 `neutral`입니다. */}
+          <Button
+            label={copy.common.exitTo[exitTo]}
+            variant={verdict === "failed" ? "outline" : "neutral"}
+            size="xl"
+            width="fill"
+            bindtap={onExit}
+          />
+        </view>
+      )}
     </view>
   );
 }

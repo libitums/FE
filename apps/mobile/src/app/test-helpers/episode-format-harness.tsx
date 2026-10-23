@@ -5,6 +5,7 @@
 // `vi.stubEnv`. 카탈로그 · 계획 · 화면은 실물입니다. 쓰는 파일의 `afterEach`가 `resetApp`을 부릅니다.
 
 import { vi } from "vitest";
+import { tapResultExit } from "./lesson-result";
 import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { App } from "../App";
@@ -209,7 +210,7 @@ export const status = (episodeId: string, key: string) =>
   node(episodeId, key).getAttribute("data-status");
 export const cover = (episodeId: string) =>
   screen.getByTestId(`ui-lynx-special-unit-catalog-cover-${episodeId}`);
-export const exitResult = () => tapButtonIn("lesson-complete-screen-exit");
+export const exitResult = () => tapResultExit();
 export const title = () => screen.getByTestId("lesson-complete-screen-title");
 // 칩의 이름(`2 trophies`)에서 읽습니다 — 오름 재생(ADR-0064) 동안 칩은 옛 값과 새 값을 함께 보이지만 이름은 처음부터 새 값입니다.
 export const trophyCount = (): number =>

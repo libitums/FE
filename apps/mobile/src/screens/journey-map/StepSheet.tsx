@@ -47,6 +47,11 @@ export type StepSheetProps = {
   ticketCost?: 0 | 1;
   onStart: () => void;
   onClose: () => void;
+  /**
+   * 가림막을 누른 자리(화면 좌표)를 받습니다 — 맵이 그 자리에 다른 유닛이 있으면 말풍선을 옮기고 없으면 닫습니다. 없으면
+   * 가림막 탭은 `onClose`입니다. 시스템 뒤로가기는 늘 `onClose`입니다.
+   */
+  onDismissAt?: (x: number, y: number) => void;
   /** 등장 모션입니다. 없으면 `none`(모션 없음). */
   entrance?: SheetEntranceMotion;
 };
@@ -62,6 +67,7 @@ export function StepSheet({
   ticketCost = 0,
   onStart,
   onClose,
+  onDismissAt,
   entrance = "none",
 }: StepSheetProps): ReactNode {
   const copy = useUiCopy();
@@ -87,6 +93,19 @@ export function StepSheet({
     const fromStart = startTapped.current;
     startTapped.current = false;
     if (awaiting.current && !fromStart) onClose();
+  };
+
+  const handleScrimTap = (event: {
+    readonly detail?: { readonly x?: number; readonly y?: number };
+  }) => {
+    "background only";
+    const x = event.detail?.x;
+    const y = event.detail?.y;
+    if (onDismissAt === undefined || typeof x !== "number" || typeof y !== "number") {
+      onClose();
+      return;
+    }
+    onDismissAt(x, y);
   };
 
   const handleStart = (): void => {
@@ -146,7 +165,7 @@ export function StepSheet({
         accessibility-element={true}
         accessibility-label={copy.common.close}
         accessibility-traits="button"
-        bindtap={onClose}
+        bindtap={handleScrimTap}
       />
       {/* 말풍선의 자리입니다. 가로는 CSS가 잡습니다 — 말풍선 폭이 고정(250)이라
           좌우를 펴고 가운데 정렬로 세웁니다. 세로는 누른 유닛마다 다른 값이라 CSS가

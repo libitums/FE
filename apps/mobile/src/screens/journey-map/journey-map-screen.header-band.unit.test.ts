@@ -23,7 +23,7 @@ describe("띠 배치 CSS", () => {
     expect(band).toMatch(/left:\s*var\(--libitum-layout-screen-padding-x\)/);
     expect(band).toMatch(/right:\s*var\(--libitum-layout-screen-padding-x\)/);
     expect(band).not.toMatch(/(^|[\s;])width:\s*151px/);
-    expect(band).toMatch(/z-index:\s*var\(--libitum-elevation-z-sticky\)/);
+    expect(band).toMatch(/z-index:\s*var\(--libitum-elevation-z-dialog\)/);
   });
 
   test("HP2. 띠 위치는 칩 줄 아래다 (spacing-12 + spacing-40 + spacing-12)", () => {
