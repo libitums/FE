@@ -532,6 +532,20 @@
     var(--libitum-motion-easing-enter);
 }
 
+/* 판의 겉 상자 — 하단 안전 영역만큼 음수 여백(인라인, px)으로 셸 아래 여백 안까지 내려갑니다. */
+.learning-shell-feedback-bleed {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+/* 판 안 마지막 바닥 상자 — 안전 영역 높이(인라인)를 판정 면으로 채웁니다. 판의 줄 간격만큼 위로 붙어 내용 자리를
+   바꾸지 않습니다. */
+.learning-shell-feedback-floor {
+  flex-shrink: 0;
+  margin-top: calc(-1 * var(--libitum-spacing-4));
+}
+
 /* 글 부분만 판 안에서 스크롤합니다 — 상한은 셸 높이의 절반이라 큰 글꼴에서도 아래 버튼이 화면 안에 남습니다. 보통
    글꼴에서는 내용이 상한보다 작아 모양이 바뀌지 않습니다. */
 .learning-shell-feedback-scroll {

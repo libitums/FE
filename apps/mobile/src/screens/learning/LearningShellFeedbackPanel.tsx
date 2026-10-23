@@ -1,3 +1,4 @@
+import { useGlobalProps } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import cross from "@libitums/icons/lynx/cross";
@@ -5,6 +6,7 @@ import tick from "@libitums/icons/lynx/tick";
 import { color } from "@libitums/design-tokens";
 import { useMotion } from "@libitums/ui-lynx/motion";
 
+import { safeAreaInsetsFrom } from "../../lib/safe-area";
 import { learningShellFeedbackLabel } from "./learning-shell.contract";
 import type { LearningShellFeedback } from "./learning-shell-props";
 
@@ -18,6 +20,9 @@ export type LearningShellFeedbackPanelProps = {
 // 낭독 이름(제목 + 줄들)은 글만 감싸는 안쪽 view가 지고, 아래 버튼 행은 그 형제라 따로 닿습니다(ADR-0016 D5 — 조작
 // 단위를 접근성 요소 안에 넣지 않습니다). 글 부분만 높이 상한 안에서 스크롤해 큰 글꼴에서도 버튼이 화면 안에 남습니다.
 // 판정 색 채널은 면 색 · 아이콘 모양 · 제목 글이 함께 집니다(WCAG 1.4.1).
+// 판 면은 하단 안전 영역(홈 표시줄 자리)까지 칠합니다 — 셸은 그 높이만큼 아래를 비우므로(학습 화면은 셸이 안전 영역을
+// 그대로 비움), 겉 상자가 그만큼 음수 여백으로 내려가고 판 안 마지막 바닥 상자가 같은 높이를 판정 면으로 채웁니다. 내용과
+// 아래 버튼은 지금 자리(안전 영역 위)에 남습니다.
 export function LearningShellFeedbackPanel({
   feedback,
   children,
@@ -30,43 +35,57 @@ export function LearningShellFeedbackPanel({
   ]
     .filter((token): token is string => token !== undefined)
     .join(" ");
+  const safeBottom = safeAreaInsetsFrom(useGlobalProps()).bottom;
   return (
-    <view className={className} data-testid="learning-shell-feedback" data-tone={feedback.tone}>
-      <scroll-view
-        className="learning-shell-feedback-scroll"
-        scroll-orientation="vertical"
-        scroll-bar-enable={false}
-      >
-        <view
-          className="learning-shell-feedback-body"
-          data-testid="learning-shell-feedback-body"
-          accessibility-element={true}
-          accessibility-label={learningShellFeedbackLabel(feedback)}
+    <view
+      className="learning-shell-feedback-bleed"
+      data-testid="learning-shell-feedback-bleed"
+      style={{ marginBottom: `${-safeBottom}px` }}
+    >
+      <view className={className} data-testid="learning-shell-feedback" data-tone={feedback.tone}>
+        <scroll-view
+          className="learning-shell-feedback-scroll"
+          scroll-orientation="vertical"
+          scroll-bar-enable={false}
         >
-          <view className="learning-shell-feedback-head">
-            <view
-              className={`learning-shell-feedback-icon learning-shell-feedback-icon-${feedback.tone}`}
-            >
-              <svg
-                className="learning-shell-feedback-icon-mark"
-                content={feedback.tone === "correct" ? tick : cross}
-                current-color={color.white}
-              />
+          <view
+            className="learning-shell-feedback-body"
+            data-testid="learning-shell-feedback-body"
+            accessibility-element={true}
+            accessibility-label={learningShellFeedbackLabel(feedback)}
+          >
+            <view className="learning-shell-feedback-head">
+              <view
+                className={`learning-shell-feedback-icon learning-shell-feedback-icon-${feedback.tone}`}
+              >
+                <svg
+                  className="learning-shell-feedback-icon-mark"
+                  content={feedback.tone === "correct" ? tick : cross}
+                  current-color={color.white}
+                />
+              </view>
+              <text className="learning-shell-feedback-title">{feedback.title}</text>
             </view>
-            <text className="learning-shell-feedback-title">{feedback.title}</text>
+            {feedback.lines.map((line, index) => (
+              <text
+                key={`${line.lang}-${index}`}
+                className={`learning-shell-feedback-line learning-shell-feedback-line-${line.lang}`}
+                data-lang={line.lang}
+              >
+                {line.text}
+              </text>
+            ))}
           </view>
-          {feedback.lines.map((line, index) => (
-            <text
-              key={`${line.lang}-${index}`}
-              className={`learning-shell-feedback-line learning-shell-feedback-line-${line.lang}`}
-              data-lang={line.lang}
-            >
-              {line.text}
-            </text>
-          ))}
-        </view>
-      </scroll-view>
-      {children}
+        </scroll-view>
+        {children}
+        {safeBottom > 0 ? (
+          <view
+            className="learning-shell-feedback-floor"
+            data-testid="learning-shell-feedback-floor"
+            style={{ height: `${safeBottom}px` }}
+          />
+        ) : null}
+      </view>
     </view>
   );
 }
