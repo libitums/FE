@@ -150,7 +150,8 @@ test("ES2. (AC2 실패) CULT: 문화 확인을 하나만 맞히면 실패 → Tr
   tapButtonIn("ui-lynx-dialog-action-leave");
   await flush();
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
-  expect(status(u01, "CULT")).toBe("available");
+  // 끝나지 않았지만 티켓을 쓰고 연 유닛이라 진한 색(`active`)으로 선다(ADR-0075 적용 기록 2026-10-23).
+  expect(status(u01, "CULT")).toBe("active");
   expect(status(u01, "RP")).toBe("default");
   expect(savedUnits(rpcs, u01)).not.toContain("CULT");
   const finished = learningEvents(events).filter((e) => e.name === "episode_lesson_finished");

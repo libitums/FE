@@ -6,7 +6,6 @@ import { fullTicketLedger, spendTicket, ticketStatusAt } from "../lib/learning-t
 import type { TicketLedger } from "../lib/learning-tickets";
 import { TUTORIAL_EPISODE_ID } from "../lib/tutorial-episode";
 import { catalogMapSectionsOf } from "../screens/journey-map/catalog-map";
-import type { JourneyProgressState } from "./learning-progress";
 import type { ScreenWiring } from "./screen-wiring";
 import { createTicketStart } from "./ticket-gate";
 import { withLearningTickets } from "./ticket-wiring";
@@ -25,8 +24,11 @@ const emptyLedger = [0, 0, 0].reduce<TicketLedger>(
   fullTicketLedger,
 );
 
-function setup(catalogProgress: Record<string, readonly string[]>) {
-  let ledger = emptyLedger;
+function setup(
+  catalogProgress: Record<string, readonly string[]>,
+  options: { ledger?: TicketLedger; ticketUnits?: Record<string, readonly string[]> } = {},
+) {
+  let ledger = options.ledger ?? emptyLedger;
   const onOutOfTickets = vi.fn();
   const startWithTicket = createTicketStart({
     ledger: () => ledger,
@@ -42,12 +44,15 @@ function setup(catalogProgress: Record<string, readonly string[]>) {
     startWithTicket,
     status: ticketStatusAt(ledger, T0),
   } as Pick<LearningTickets, "startWithTicket" | "status">;
+  const markTicketUnit = vi.fn();
   const progress = {
     ...emptyContractState,
     catalogProgress,
-  } as unknown as JourneyProgressState;
+    ...(options.ticketUnits === undefined ? {} : { ticketUnits: options.ticketUnits }),
+    markTicketUnit,
+  } as unknown as Parameters<typeof withLearningTickets>[2];
   const wired = withLearningTickets(base, tickets, progress, sections);
-  return { wired, onStartCatalogUnit, onOutOfTickets, ledger: () => ledger };
+  return { wired, onStartCatalogUnit, onOutOfTickets, markTicketUnit, ledger: () => ledger };
 }
 
 describe("withLearningTickets — 카탈로그 시작", () => {
@@ -73,5 +78,44 @@ describe("withLearningTickets — 카탈로그 시작", () => {
     expect(s.onStartCatalogUnit).not.toHaveBeenCalled();
     expect(s.onOutOfTickets).not.toHaveBeenCalled();
     expect(s.ledger()).toEqual(emptyLedger);
+  });
+});
+
+describe("withLearningTickets — 티켓으로 연 유닛", () => {
+  const opened = { ...tutorialDoneProgress(), "u01-water": ["intro"] };
+
+  test("TK7. 한 장을 쓰고 u01 S1을 열면 그 유닛을 티켓으로 연 유닛으로 적고 연다", () => {
+    const s = setup(opened, { ledger: fullTicketLedger });
+    s.wired.onStartCatalogUnit("u01-water", "S1");
+    expect(s.markTicketUnit).toHaveBeenCalledWith("u01-water", "S1");
+    expect(s.onStartCatalogUnit).toHaveBeenCalledWith("u01-water", "S1");
+    expect(ticketStatusAt(s.ledger(), T0).available).toBe(2);
+  });
+
+  test("TK7. 이미 티켓으로 연 유닛은 0장이어도 티켓 없이 열리고 다시 적지 않는다", () => {
+    const s = setup(opened, { ticketUnits: { "u01-water": ["S1"] } });
+    s.wired.onStartCatalogUnit("u01-water", "S1");
+    expect(s.onStartCatalogUnit).toHaveBeenCalledWith("u01-water", "S1");
+    expect(s.onOutOfTickets).not.toHaveBeenCalled();
+    expect(s.markTicketUnit).not.toHaveBeenCalled();
+    expect(s.ledger()).toEqual(emptyLedger);
+  });
+
+  test("TK7. 막혀 열리지 않은 유닛은 적지 않는다", () => {
+    const s = setup(opened);
+    s.wired.onStartCatalogUnit("u01-water", "S1");
+    expect(s.markTicketUnit).not.toHaveBeenCalled();
+  });
+
+  test("TK7. 튜토리얼 유닛은 티켓을 쓰지 않으므로 적지 않는다", () => {
+    const s = setup(tutorialCoverDoneProgress(), { ledger: fullTicketLedger });
+    s.wired.onStartCatalogUnit(TUTORIAL_EPISODE_ID, "S1");
+    expect(s.markTicketUnit).not.toHaveBeenCalled();
+    expect(s.ledger()).toEqual(fullTicketLedger);
+  });
+
+  test("TK7. 결선은 티켓으로 연 유닛을 맵에 내린다", () => {
+    const s = setup(opened, { ticketUnits: { "u01-water": ["S1"] } });
+    expect(s.wired.catalogTicketUnits).toEqual({ "u01-water": ["S1"] });
   });
 });

@@ -50,6 +50,8 @@ export type CatalogGate = {
   /** 옛 튜토리얼 최종 테스트를 통과한 기록이 있는가 — 사용자 기록의 사실(파생 입력)입니다. */
   readonly legacyTutorialPassed: boolean;
   readonly progress: CatalogProgress;
+  /** 티켓을 쓰고 연 유닛입니다. 없으면 `{}`. 잠김을 풀지는 않고 열린 유닛의 색만 바꿉니다. */
+  readonly ticketUnits?: CatalogProgress;
 };
 
 export type CatalogCaptionKind = "pending" | "update" | "unavailable";
@@ -62,12 +64,16 @@ export type CatalogUnitNode = {
   readonly role: CatalogUnitNodeRole;
   readonly ordinal: number;
   readonly status: JourneyMapItemStatus;
+  /** 열림(`available`)이고 티켓을 쓰고 연 유닛이면 참입니다 — 맵이 진한 색(`brand.primary` · 흰 아이콘)으로 세웁니다. */
+  readonly ticketed?: boolean;
 };
 
 /** 맵 화면의 카탈로그 슬롯입니다. */
 export type JourneyMapCatalogProps = {
   readonly sections: readonly CatalogMapSection[];
   readonly progress: CatalogProgress;
+  /** 티켓을 쓰고 연 유닛입니다(맵 노드 색 · 말풍선의 티켓 표시). 없으면 `{}`. */
+  readonly ticketUnits?: CatalogProgress;
   /** 옛 튜토리얼 최종 테스트를 통과한 기록이 있는가 — 튜토리얼 다음 구획의 문 입력입니다. */
   readonly legacyTutorialPassed: boolean;
   readonly onStartCover: (episodeId: string) => void;
@@ -105,6 +111,8 @@ export type CatalogEpisodeSectionProps = {
   readonly coverStatus: JourneyMapNodeStatus;
   readonly access: JourneyMapNodeAccess;
   readonly progress: CatalogProgress;
+  /** 티켓을 쓰고 연 유닛입니다. 없으면 `{}`. */
+  readonly ticketUnits?: CatalogProgress;
   /** 첫 유닛 안내가 이 구획의 표지를 가리키는 동안의 손잡이, 아니면 null. */
   readonly guide: CatalogCoverGuide | null;
   readonly onStartCover: (episodeId: string) => void;

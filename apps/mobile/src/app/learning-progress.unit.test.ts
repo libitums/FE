@@ -160,3 +160,40 @@ describe("합치기 · 덮음 · 활동 수", () => {
     ).toBe(16);
   });
 });
+
+describe("티켓으로 연 유닛", () => {
+  const ticketUnits = { "u01-water": ["S1"] };
+
+  test("LP10. 비면 싣지 않아 바이트가 그대로이고, 있으면 tickets 뒤에 실려 서버 검사를 통과한다", () => {
+    expect(wireOf({ ...passed, ticketUnits: {} })).toBe(PASSED_WIRE);
+    const snapshot = learningProgressSnapshotFrom({ ...passed, ticketUnits });
+    expect(JSON.stringify(snapshot)).toBe(
+      `${PASSED_WIRE.slice(0, -1)},"ticketUnits":{"u01-water":["S1"]}}`,
+    );
+    expect(serverAcceptsSnapshot(snapshot)).toBe(true);
+  });
+
+  test("LP10. 스냅숏 → 상태 왕복이 같은 값이고, 모양이 틀리면 그 필드만 비운다", () => {
+    const snapshot = learningProgressSnapshotFrom({ ...passed, ticketUnits });
+    expect(journeyProgressFrom(snapshot)?.ticketUnits).toEqual(ticketUnits);
+    expect(journeyProgressFrom({ ...snapshot, ticketUnits: "x" })?.ticketUnits).toEqual({});
+    expect(journeyProgressFrom(JSON.parse(PASSED_WIRE))?.ticketUnits).toBeUndefined();
+  });
+
+  test("LP10. 합치면 키별 합집합이고, 서버에 없는 유닛이 있으면 덮지 않았다고 본다", () => {
+    const { journeyProgressCovers } = progressApi;
+    const merged = mergeJourneyProgress(
+      { ...passed, ticketUnits },
+      { ...passed, ticketUnits: { "u01-water": ["S2"], "u02-checkin": ["S1"] } },
+    );
+    expect(merged.ticketUnits).toEqual({ "u01-water": ["S1", "S2"], "u02-checkin": ["S1"] });
+    expect(mergeJourneyProgress(passed, passed).ticketUnits).toBeUndefined();
+    expect(journeyProgressCovers(passed, { ...passed, ticketUnits })).toBe(false);
+    expect(journeyProgressCovers({ ...passed, ticketUnits }, passed)).toBe(true);
+  });
+
+  test("LP10. 티켓으로 연 유닛은 활동 수에 들지 않는다", () => {
+    const { completedActivityCount } = progressApi;
+    expect(completedActivityCount({ ...passed, ticketUnits })).toBe(completedActivityCount(passed));
+  });
+});
