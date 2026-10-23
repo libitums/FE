@@ -112,3 +112,14 @@
 - **코드**: `ticket-gate.ts`(`onSpent`), `use-learning-tickets.ts`(`chipShown` · 기다림 · 안전망), `StatChip`(`dropFrom` · `onDropped`), `stat-chip-motion.css`(lint:motion allowlist 사유 갱신), 칩 · 상단 줄 · 머리 `overflow: visible`(「−1」이 칩 밖에 선다). 줄어드는 동안만 머리를 말풍선 층(`app-header-raised`, z-sheet)으로 올린다 — 같은 sticky 층의 띠 뒤로 「−1」이 들어갔다.
 - **테스트 seam**: 기다림이 주제가 아닌 통합 테스트는 Start 직후 학습을 찾으므로 `vitest.setup.ts`가 `setTicketDropWaitForTests(false)`로 끄고, `App.learning-tickets.integration.test.tsx`만 켜서 본다.
 - 충전(+1) 움직임은 시안이 없어 넣지 않았다.
+
+## 적용 기록 ⟨2026-10-23 — 티켓으로 연 유닛 (`fix/journey-ticket-final-test`)⟩
+
+사용자 지시(2026-10-23): 「티켓으로 유닛 열면 취소해도 다시 티켓 소모 안되게」 · 「티켓으로 연 유닛은 연한 주황 배경에서 brand.primary 배경에 흰 아이콘 유닛으로」.
+
+- **D1 「새 레슨」의 범위를 좁힌다 — 한 번 티켓을 쓰고 연 유닛은 끝내지 않았어도 다시 열 때 쓰지 않는다.** 전에는 레슨을 중간에 나가면(나가기 확인) 다시 열 때 또 한 장을 썼다.
+- **기록**: 진행 스냅숏의 선택 필드 `ticketUnits`(`{ 에피소드 id: 유닛 키[] }`, `catalogProgress`와 같은 모양). 비면 싣지 않는다. 기기 미전송 · 저장본 · 서버 병합을 그대로 탄다. 병합은 키별 합집합 — 한 기기에서 쓴 티켓을 다른 기기가 또 쓰지 않는다. 끝낸 수 · 연속 · 트로피에는 들지 않는다.
+- **언제 적나**: 문지기(`ticket-wiring.ts`)가 한 장을 쓴 뒤 여는 `open`에서 적는다. 무료(u00 · 끝낸 유닛 · 이미 적힌 유닛)는 적지 않는다. 0장으로 막힌 시작은 적지 않고, 대화상자에서 한 장이 생겨 열 때 적는다.
+- **값**: `catalogUnitTicketCost(progress, episodeId, unitKey, ticketUnits)` — 적힌 유닛이면 0. 말풍선 태그 · 문지기가 같은 함수를 쓴다.
+- **맵**: 열림(`available`)이고 적힌 레슨 · 문화 노드는 `LearningUnit`의 `active`(`brand.primary` 면 · 흰 아이콘, 낭독 접미사 `current`)로 선다. 끝낸 유닛은 끝낸 색, 잠긴 유닛은 기록이 있어도 잠김 그대로다. 최종 테스트(스페셜 항목)는 바꾸지 않았다.
+- **서버**: 마이그레이션 `20261023120000_learning_progress_ticket_units.sql`이 `merge_learning_progress_v1`에 검증(`catalogProgress`와 같은 규칙, 어기면 `22023 invalid ticket units`)과 키별 합집합을 더한다. 마이그레이션 전 서버는 이 키를 `||`로 들어온 값 그대로 남긴다(검증 · 합집합 없음) — 새 앱이 먼저 나가도 저장이 막히지 않는다.

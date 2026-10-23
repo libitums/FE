@@ -25,6 +25,7 @@ export function CatalogEpisodeSection({
   coverStatus,
   access,
   progress,
+  ticketUnits = {},
   guide,
   onStartCover,
   onSelectUnit,
@@ -71,7 +72,7 @@ export function CatalogEpisodeSection({
             </CatalogCoverMapItem>
           </MapUnitCell>
         </MapUnitRow>,
-        ...catalogRowsOf(catalogUnitNodesOf(section, progress), columns).map((row) => {
+        ...catalogRowsOf(catalogUnitNodesOf(section, progress, ticketUnits), columns).map((row) => {
           const rowNodes = mapRowItems(row);
           return (
             <MapUnitRow key={rowNodes.map((node) => node.key).join("+")} kind={row.kind}>

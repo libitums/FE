@@ -44,6 +44,7 @@ export function CatalogMapSections({
                 coverStatus={mapNodeStatusUnder(access, catalogCoverStatus(sections, index, gate))}
                 access={access}
                 progress={gate.progress}
+                ticketUnits={gate.ticketUnits ?? {}}
                 guide={
                   guiding && !covered && guide !== undefined ? { dismiss: guide.dismiss } : null
                 }
