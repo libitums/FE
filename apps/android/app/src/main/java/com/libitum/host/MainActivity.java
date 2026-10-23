@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Color;
+import android.media.AudioManager;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.Uri;
@@ -61,6 +62,8 @@ public final class MainActivity extends Activity {
 
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
+    // 재생 중이 아닐 때도 볼륨 키가 벨소리가 아니라 미디어 볼륨을 움직이게 한다. 앱 소리는 전부 USAGE_MEDIA다.
+    setVolumeControlStream(AudioManager.STREAM_MUSIC);
     layoutEdgeToEdge();
     statusBarIcons = new StatusBarIconSync(getWindow());
     boolean bundled = !BuildConfig.DEBUG;
