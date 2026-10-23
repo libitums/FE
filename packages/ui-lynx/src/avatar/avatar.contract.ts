@@ -108,10 +108,16 @@ export function getAvatarContract(
         name ??
         (content === "placeholder" ? "No profile photo" : "Profile photo"));
 
+  // 내용 수식은 `-content-` 접두를 붙입니다 — 자식 요소의 클래스(`ui-lynx-avatar-image` 등)와 같은 이름이면 뿌리가 자식
+  // 규칙(absolute · 100%)을 받아 흐름에서 빠지고, 줄 안에서 폭이 0이 되어 원이 옆 요소 아래로 떨어집니다.
   return {
     accessibilityElement: accessibility === "label",
     ...(accessibilityLabel ? { accessibilityLabel } : {}),
-    className: ["ui-lynx-avatar", `ui-lynx-avatar-${size}`, `ui-lynx-avatar-${content}`].join(" "),
+    className: [
+      "ui-lynx-avatar",
+      `ui-lynx-avatar-${size}`,
+      `ui-lynx-avatar-content-${content}`,
+    ].join(" "),
     content,
     ...(imageSource ? { imageSource } : {}),
     ...(initials ? { initials } : {}),

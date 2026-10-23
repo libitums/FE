@@ -156,3 +156,21 @@ test("SO12. imageUrl이 없으면 상대 아바타는 이름 첫 글자 이니�
   expect(within(avatarBox(0)).queryByTestId("ui-lynx-avatar-image")).not.toBeInTheDocument();
   expect(within(avatarBox(0)).getByTestId("ui-lynx-avatar-initials")).toHaveTextContent("편");
 });
+
+test("SO12. 상대 그림이 읽힌 뒤에도 아바타 뿌리는 칸 옆 32 원(sm)이고 그림 자식의 배치 클래스를 받지 않는다", () => {
+  mount([turns], {
+    counterpart: { name: "편의점 점원", imageUrl: "file:///episodes/u00/avatar.webp" },
+    me: { name: "Sehyun" },
+  });
+  const image = lynx.createSelectorQuery().select('[data-testid="ui-lynx-avatar-image"]');
+  fireEvent(image as unknown as Element, new Event("bindEvent:load"));
+
+  const avatar = within(avatarBox(0)).getByTestId("ui-lynx-avatar");
+  expect(avatar).toHaveAttribute("data-content", "image");
+  expect(avatar).toHaveClass("ui-lynx-avatar-sm", "ui-lynx-avatar-content-image");
+  expect(avatar).not.toHaveClass("ui-lynx-avatar-image");
+  expect(within(avatarBox(0)).getByTestId("ui-lynx-avatar-image")).toHaveAttribute(
+    "mode",
+    "aspectFill",
+  );
+});
