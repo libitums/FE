@@ -24,6 +24,13 @@ const unitStatusByStatus = {
   checking: "checking",
 } as const;
 
+// 티켓을 쓰고 연 열린 유닛은 진한 색(`active` — `brand.primary` 면 · 흰 아이콘)으로 섭니다. 그 밖은 위 표를 따릅니다.
+function lessonUnitStatusOf(node: CatalogUnitNodeProps["node"]) {
+  return node.ticketed === true && node.status === "available"
+    ? "active"
+    : unitStatusByStatus[node.status];
+}
+
 // 문화는 레슨처럼 배우는 단위라 원형으로 남고 아이콘으로만 갈립니다(사용자 결정 2026-10-17).
 const lessonIconByRole: Readonly<Record<Exclude<CatalogUnitNodeRole, "final">, string>> = {
   lesson: play,
@@ -83,7 +90,7 @@ function CatalogLessonNode({
           id={`catalog-unit-${episodeId}-${node.key}`}
           accessibilityLabel={catalogUnitNodeAccessibilityLabel(episodeOrdinal, node, copy)}
           icon={icon}
-          status={unitStatusByStatus[node.status]}
+          status={lessonUnitStatusOf(node)}
           narrative="none"
           bindtap={handleSelect}
         />

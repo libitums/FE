@@ -53,7 +53,12 @@ export function CatalogUnitSheet({
       unitLabel={catalogUnitNodeTitle(node, copy)}
       completedActivityCount={figures.completedActivityCount}
       totalActivityCount={figures.totalActivityCount}
-      ticketCost={catalogUnitTicketCost(catalog.progress, target.episodeId, target.unitKey)}
+      ticketCost={catalogUnitTicketCost(
+        catalog.progress,
+        target.episodeId,
+        target.unitKey,
+        catalog.ticketUnits,
+      )}
       onStart={() => catalog.onStartUnit(target.episodeId, target.unitKey)}
       onClose={onClose}
       {...(entrance === undefined ? {} : { entrance })}

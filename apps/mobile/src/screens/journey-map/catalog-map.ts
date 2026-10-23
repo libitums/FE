@@ -186,19 +186,27 @@ export function catalogUnitRoleOf(
 export function catalogUnitNodesOf(
   section: CatalogReadySection,
   progress: CatalogProgress,
+  ticketUnits: CatalogProgress = {},
 ): readonly CatalogUnitNode[] {
+  const nodeOf = (key: CatalogUnitKey): Pick<CatalogUnitNode, "status" | "ticketed"> => {
+    const status = catalogUnitStatus(section, key, progress);
+    // 끝낸 유닛은 끝낸 색이 이깁니다. 잠긴 유닛은 티켓 기록이 있어도(다른 기기 등) 잠김 그대로입니다. 참일 때만 싣습니다.
+    return status === "available" && isCatalogUnitDone(ticketUnits, section.episodeId, key)
+      ? { status, ticketed: true }
+      : { status };
+  };
   return [
     ...section.lessonKeys.map((key, index): CatalogUnitNode => ({
       key,
       role: section.cultureKeys.includes(key) ? "culture" : "lesson",
       ordinal: index + 1,
-      status: catalogUnitStatus(section, key, progress),
+      ...nodeOf(key),
     })),
     {
       key: section.finalKey,
       role: "final",
       ordinal: section.lessonKeys.length + 1,
-      status: catalogUnitStatus(section, section.finalKey, progress),
+      ...nodeOf(section.finalKey),
     },
   ];
 }
