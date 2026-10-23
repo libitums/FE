@@ -32,7 +32,7 @@
 - `"private": true` · `"type": "module"` · `"sideEffects": false`. `exports`는 `./episode` · `./judge` · `./content-url` · `./shuffle` · `./package.json`뿐이다(와일드카드 없음, ADR-0004 D3). 각 subpath는 `src/<이름>/index.ts` 하나를 가리킨다.
 - **빌드하지 않는다** — `exports`가 `.ts`를 직접 가리킨다. TS만 있고 CSS · JSX가 없어 산출물이 할 일이 없고, rspeedy(SWC) · Vite · vitest · tsc(`moduleResolution: bundler`)가 모두 그대로 읽는다. ui-lynx 같은 src 별칭 · 선행 빌드가 없다. 앱 빌드 성공으로 확인했다 [실측].
 - 이름 근거: 담는 것이 「에피소드 콘텐츠를 읽고(디코더 · 주소) 그 문항을 판정하는(판정 · 섞기) 순수 규칙」이다.
-- 의존: `zod` 4.6.5(앱과 같은 정확 판 — 동기 검사 TA4), 개발 `typescript` 6.0.3 · `vitest` 3.2.7 · `@types/node` 22.20.0. 앱 · 랜딩 `dependencies`에 `"@libitums/episode-core": "workspace:*"`(ADR-0004 D5).
+- 의존: `zod` 4.6.5(앱과 같은 정확 판 — 동기 검사 TA4), 개발 `typescript` 6.0.3 · `vitest` 3.2.7(2026-10-23 4.1.12 — ADR-0013 정정 기록) · `@types/node` 22.20.0. 앱 · 랜딩 `dependencies`에 `"@libitums/episode-core": "workspace:*"`(ADR-0004 D5).
 - **금지 import**(패키지 `src`): `@lynx-js/*` · `@libitums/ui-lynx*` · `node:*` · 앱 경로, 전역 `NativeModules` · `lynx` 참조. zod를 import하는 비테스트 파일은 와이어 스키마 셋뿐이다. 둘 다 패키지 테스트 EC4가 지킨다.
 - ⟨2026-10-22 리뷰 반영⟩ **`background-only` 표식은 디코더 파일(`episode/episode-content.ts`) 첫 줄에만 둔다** — 앱의 메인 스레드(Lynx `lepus` 조건)에서 zod 디코더가 끌려오면 빌드가 던지게 하는 방어 장치다. 표식은 웹 · node(기본 조건)에서 빈 모듈이라 랜딩 클라이언트 JS에 아무것도 싣지 않는다(빌드 산출에 zod · 표식 0 확인). 화면 경로가 쓰는 값(`EPISODE_SELF_SPEAKER` · `roleplayLinesOf`)은 zod 없는 다섯째 진입점 **`./lines`**로 낸다. 요구사항의 「Lynx import 금지」는 런타임 API(`@lynx-js/*` · `NativeModules`)를 뜻하고, 표식은 요구사항이 처음부터 순수 TS 범위로 본 빈 패키지라 위반으로 보지 않았다.
 - 루트 결선: `typecheck` · `test:unit` · `test:rest`에 이 패키지, `cycle:check` 범위에 `packages/episode-core/src`.
