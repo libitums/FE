@@ -43,8 +43,10 @@ const audioUrl = (id: string): string =>
   `${supabaseUrl}/storage/v1/object/public/content/audio/${id}.m4a`;
 
 const PRE_3 = { duration_ms: 2299, speech_end_ms: 1763 };
-const MANIFEST_TEXT = manifestTextOf({ "u01-water/pre-3": PRE_3 });
-const OTHER_TEXT = manifestTextOf({ "u01-water/pre-3": { duration_ms: 1000, speech_end_ms: 900 } });
+const MANIFEST_TEXT = manifestTextOf({ "u01-water/pre-3-v2": PRE_3 });
+const OTHER_TEXT = manifestTextOf({
+  "u01-water/pre-3-v2": { duration_ms: 1000, speech_end_ms: 900 },
+});
 
 const refreshedBody = JSON.stringify({
   access_token: `e30.${btoa(JSON.stringify({ sub: "u" })).replace(/=+$/, "")}.sig`,
@@ -73,7 +75,9 @@ const realCatalog = buildEpisodeCatalog({
 const preThreeKo = ((): string => {
   const entry = realCatalog.find((candidate) => candidate.id === u01);
   if (entry === undefined || entry.status !== "ready") throw new Error("u01 not ready");
-  const cut = entry.episode.prologue.find((candidate) => candidate.audioUrl === "u01-water/pre-3");
+  const cut = entry.episode.prologue.find(
+    (candidate) => candidate.audioUrl === "u01-water/pre-3-v2",
+  );
   if (cut === undefined) throw new Error("pre-3 cut");
   return cut.kind === "narration" ? cut.narration.ko : cut.line.ko;
 })();
@@ -272,7 +276,7 @@ test("VTI1. 서버가 정보 파일을 주면 저장되고, 컷 3은 251ms 간�
 
   openCoverWithFakeTimers();
   reachCutThree();
-  expect(play.mock.calls.map((call) => call[0])).toEqual([audioUrl("u01-water/pre-3")]);
+  expect(play.mock.calls.map((call) => call[0])).toEqual([audioUrl("u01-water/pre-3-v2")]);
   expectCutThreeInterval(expected);
 });
 
@@ -298,10 +302,11 @@ test("VTI3. 정보 파일이 없으면(400) 저장본이 지워지고 컷 3은 3
   expectCutThreeInterval(35);
   const { indexes, playsAt } = await readCoverToMap(play, 4);
   expect(indexes).toEqual(["2", "3", "4", "5"]);
-  expect(playsAt).toEqual([1, 1, 1, 2]);
+  expect(playsAt).toEqual([1, 2, 2, 3]);
   expect(play.mock.calls.map((call) => call[0])).toEqual([
-    audioUrl("u01-water/pre-3"),
-    audioUrl("u01-water/d-01"),
+    audioUrl("u01-water/pre-3-v2"),
+    audioUrl("u01-water/pre-4"),
+    audioUrl("u01-water/pre-6-v2"),
   ]);
   expect(names(events)).toEqual(startEventNames);
 });
@@ -319,7 +324,7 @@ test("VTI3. 형식이 틀린 파일(200)이면 저장본이 그대로이고 컷 
   reachCutThree();
   expectCutThreeInterval(251);
   const { playsAt } = await readCoverToMap(play, 4);
-  expect(playsAt).toEqual([1, 1, 1, 2]);
+  expect(playsAt).toEqual([1, 2, 2, 3]);
   expect(names(events)).toEqual(startEventNames);
 });
 
@@ -331,10 +336,11 @@ test("VTI3c. 정보 파일 받기가 실패해도(500) 표지는 끝까지 읽�
   openCoverWithFakeTimers();
   const { indexes, playsAt } = await readCoverToMap(play, 6);
   expect(indexes).toEqual(["0", "1", "2", "3", "4", "5"]);
-  expect(playsAt).toEqual([0, 0, 1, 1, 1, 2]);
+  expect(playsAt).toEqual([0, 0, 1, 2, 2, 3]);
   expect(play.mock.calls.map((call) => call[0])).toEqual([
-    audioUrl("u01-water/pre-3"),
-    audioUrl("u01-water/d-01"),
+    audioUrl("u01-water/pre-3-v2"),
+    audioUrl("u01-water/pre-4"),
+    audioUrl("u01-water/pre-6-v2"),
   ]);
   expect(names(events)).toEqual(startEventNames);
 });

@@ -203,7 +203,7 @@ describe("재생 모듈이 없을 때", () => {
       shownItemCount: String(plan.shownItemCount),
       skippedItemCount: String(plan.skippedItemCount),
     });
-    expect(plan.skippedItemCount).toBe(1);
+    expect(plan.skippedItemCount).toBe(2);
     expect(present("listening-screen-content")).toBe(true);
     expect(present("listening-prompt-playback")).toBe(false);
     solveActivity(plan.activities[0] as CatalogActivity, true, false);

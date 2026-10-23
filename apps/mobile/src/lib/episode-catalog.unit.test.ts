@@ -257,9 +257,9 @@ describe("buildEpisodeCatalog", () => {
   });
 
   test.each([
-    ["더 높음", "2026-10-16.2", "cache"],
-    ["같음", "2026-10-16.1", "bundled"],
-    ["더 낮음", "2026-10-13.9", "bundled"],
+    ["더 높음", "2026-10-23.2", "cache"],
+    ["같음", "2026-10-23.1", "bundled"],
+    ["더 낮음", "2026-10-16.1", "bundled"],
   ])("C8. u01 원격 version이 내장보다 %s이면 source %s", (_name, version, source) => {
     const catalog = buildEpisodeCatalog(input(cacheOf([remote("u01-water", 1, { version })])));
     expect(find(catalog, "u01-water")).toMatchObject({ status: "ready", source });

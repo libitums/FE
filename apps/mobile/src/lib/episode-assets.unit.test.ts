@@ -41,13 +41,14 @@ describe("episodeAssetPaths", () => {
     expect(episodeAssetPaths(wire)).toEqual([]);
   });
 
-  test("EA3. 내장 u01-water — 이미지 11개와 음성이 모두 나오고 겹치지 않는다", () => {
+  test("EA3. 내장 u01-water — 이미지 16개(아바타 포함)와 음성이 모두 나오고 겹치지 않는다", () => {
     const paths = episodeAssetPaths(bundledCatalogInput.episodes["u01-water"]);
     const images = paths.filter((path) => path.startsWith("images/"));
     const audio = paths.filter((path) => path.startsWith("audio/"));
 
-    expect(images).toHaveLength(11);
-    expect(images).toContain("images/items/bag.jpg");
+    expect(images).toHaveLength(16);
+    expect(images).toContain("images/items/bag.webp");
+    expect(images).toContain("images/u01-water/avatar.webp");
     expect(audio.length).toBeGreaterThan(0);
     expect(audio.every((path) => /^audio\/[a-z0-9/-]+\.m4a$/.test(path))).toBe(true);
     expect(new Set(paths).size).toBe(paths.length);

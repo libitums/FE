@@ -312,9 +312,9 @@ test("SPK5. (AC4 거부) S6: 권한을 거부하면 낱말 Speak가 불가가 �
   });
 });
 
-test("SPK6. (AC4 분모) u02 S6: 낱말을 건너뛰고 나머지 12 중 8만 맞혀도 통과한다 - 통과 분모는 건너뛴 문항을 뺀 판정 수다", async () => {
+test("SPK6. (AC4 분모) u02 S6: 낱말을 건너뛰고 나머지 11 중 8만 맞혀도 통과한다 - 통과 분모는 건너뛴 문항을 뺀 판정 수다", async () => {
   const plan = lessonPlan(u02, "S6");
-  expect(plan.questionCount).toBe(13);
+  expect(plan.questionCount).toBe(12);
   const { rpcs, events } = await boot({
     [u01]: [...throughS8, "CULT", "RP"],
     [u02]: ["intro", "S1", "S2", "S3", "S4", "S5"],
@@ -331,7 +331,7 @@ test("SPK6. (AC4 분모) u02 S6: 낱말을 건너뛰고 나머지 12 중 8만 �
     graded += activity.questions.length;
   });
 
-  expect(graded).toBe(12);
+  expect(graded).toBe(11);
   expect(title()).toHaveTextContent("LESSON COMPLETE!");
   expect(screen.queryByTestId("lesson-complete-screen-retry")).not.toBeInTheDocument();
   exitResult();
@@ -341,17 +341,17 @@ test("SPK6. (AC4 분모) u02 S6: 낱말을 건너뛰고 나머지 12 중 8만 �
   expect(learningEvents(events)[1]).toMatchObject({
     verdict: "passed",
     correctCount: "8",
-    questionCount: "13",
+    questionCount: "12",
     skippedCount: "1",
   });
 });
 
+// 말하기 문항이 없는 단계만 가드합니다 — `2026-10-23.1`판 u01 S7은 SHADOW가 들어 표에서 뺐습니다.
 test.each([
   ["S1", 15, 0, 8],
-  ["S2", 13, 1, 13],
+  ["S2", 12, 2, 12],
   ["S3", 13, 0, 9],
-  ["S4", 13, 2, 13],
-  ["S7", 5, 0, 5],
+  ["S4", 11, 4, 11],
   ["CULT", 6, 0, 3],
 ])(
   "SPK7. (가드) %s의 계획은 표시 %i · 건너뜀 %i · 채점 %i - 말하기 문항 추가가 다른 단계를 바꾸지 않는다",

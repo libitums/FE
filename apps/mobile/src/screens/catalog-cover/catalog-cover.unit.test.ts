@@ -158,7 +158,7 @@ describe("catalogCutViewsOf", () => {
     );
     expect(first.voice).toBe("thought");
     // 콘텐츠 경로가 버킷 이름을 붙인 꼴이다 — 이 포트는 받은 경로를 그대로 붙이고, 앱의 해석기가 앞 조각을 뗀다.
-    expect(first.imageUrl).toBe("https://cdn/content/images/u01-water/pre-1.jpg");
+    expect(first.imageUrl).toBe("https://cdn/content/images/u01-water/pre-1.webp");
     const clerk = views[2];
     if (clerk?.kind !== "line") throw new Error("line expected");
     expect(clerk.speaker).toEqual({ kind: "named", name: "점원" });
@@ -511,7 +511,7 @@ describe("컷 음성", () => {
     expect(view !== undefined && "audioSource" in view).toBe(false);
   });
 
-  test("CCA4. 실데이터 u01 표지 컷: 3번 · 6번만 소리 주소가 있다", () => {
+  test("CCA4. 실데이터 u01 표지 컷: 3번 · 4번 · 6번만 소리 주소가 있다", () => {
     const views = catalogCutViewsOf(u01.episode.prologue, portFor({}));
     expect(views).toHaveLength(6);
     const sources = Object.fromEntries(
@@ -520,8 +520,9 @@ describe("컷 음성", () => {
       ),
     );
     expect(sources).toEqual({
-      3: "https://cdn/audio/u01-water/pre-3.m4a",
-      6: "https://cdn/audio/u01-water/d-01.m4a",
+      3: "https://cdn/audio/u01-water/pre-3-v2.m4a",
+      4: "https://cdn/audio/u01-water/pre-4.m4a",
+      6: "https://cdn/audio/u01-water/pre-6-v2.m4a",
     });
   });
 

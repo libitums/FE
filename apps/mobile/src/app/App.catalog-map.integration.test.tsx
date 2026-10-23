@@ -539,7 +539,7 @@ test("I6. (AC5) 이미지는 공개 버킷 주소로 서고 load 전에도 글�
 
   expect(screen.getByTestId("narrative-background-image")).toHaveAttribute(
     "src",
-    `${supabaseUrl}/storage/v1/object/public/content/images/u01-water/pre-1.jpg`,
+    `${supabaseUrl}/storage/v1/object/public/content/images/u01-water/pre-1.webp`,
   );
   expect(screen.getByTestId("ui-lynx-visual-novel-dialog-line")).toBeInTheDocument();
   expect(screen.getByTestId("catalog-cover-screen-next")).toBeInTheDocument();

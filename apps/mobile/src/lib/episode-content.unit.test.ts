@@ -802,36 +802,47 @@ describe("내장 에피소드 음성 id 배치", () => {
       list.flatMap((entry, at) => (entry.audioUrl === undefined ? [] : [[at, entry.audioUrl]])),
     );
 
+  const lines = (id: string, at: readonly number[], seqs: readonly number[]) =>
+    Object.fromEntries(
+      at.map((index, n) => [index, `${id}/d-${String(seqs[n]).padStart(2, "0")}`]),
+    );
+
   test("DA3. u01: 컷 · 대화 줄의 음성 id가 표대로 놓이고 나머지는 키가 없다", () => {
     const episode = decoded("u01-water");
-    expect(placed(episode.prologue)).toEqual({ 2: "u01-water/pre-3", 5: "u01-water/d-01" });
-    expect(placed(episode.epilogue)).toEqual({});
-    expect(placed(episode.dialogue)).toEqual({
-      0: "u01-water/d-01",
-      1: "u01-water/d-02",
-      2: "u01-water/d-03",
-      3: "u01-water/d-04",
-      4: "u01-water/d-05",
+    expect(placed(episode.prologue)).toEqual({
+      2: "u01-water/pre-3-v2",
+      3: "u01-water/pre-4",
+      5: "u01-water/pre-6-v2",
     });
-    expect(episode.dialogue.map((line) => line.seq)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+    expect(placed(episode.epilogue)).toEqual({ 2: "u01-water/post-3" });
+    const seqs = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+    expect(placed(episode.dialogue)).toEqual(lines("u01-water", [0, 1, 2, 3, 4, 5, 6, 7, 8], seqs));
+    expect(episode.dialogue.map((line) => line.seq)).toEqual(seqs);
   });
 
   test("DA3. u02: 컷 · 대화 줄의 음성 id가 표대로 놓이고 나머지는 키가 없다", () => {
     const episode = decoded("u02-checkin");
     expect(placed(episode.prologue)).toEqual({
-      0: "u02-checkin/pre-1",
+      0: "u02-checkin/pre-1-far",
+      1: "u02-checkin/pre-2",
       2: "u02-checkin/pre-3",
       4: "u02-checkin/d-01",
     });
     expect(placed(episode.epilogue)).toEqual({ 0: "u02-checkin/post-1" });
-    expect(placed(episode.dialogue)).toEqual({ 0: "u02-checkin/d-01" });
+    const at = [0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+    expect(placed(episode.dialogue)).toEqual(
+      lines("u02-checkin", at, [1, ...at.slice(1).map((i) => i + 1)]),
+    );
   });
 
   test("DA3. u03: 컷 · 대화 줄의 음성 id가 표대로 놓이고 나머지는 키가 없다", () => {
     const episode = decoded("u03-mina");
     expect(placed(episode.prologue)).toEqual({ 1: "u03-mina/pre-2", 3: "u03-mina/d-01" });
-    expect(placed(episode.epilogue)).toEqual({ 2: "u03-mina/post-3" });
-    expect(placed(episode.dialogue)).toEqual({ 0: "u03-mina/d-01" });
+    expect(placed(episode.epilogue)).toEqual({ 0: "u03-mina/post-1", 2: "u03-mina/post-3-v2" });
+    expect(placed(episode.dialogue)).toEqual({
+      ...lines("u03-mina", [0, 2, 3, 5, 8, 9, 10, 11, 12], [1, 3, 4, 6, 9, 10, 11, 12, 13]),
+      4: "u03-mina/d-05-v2",
+    });
   });
 });
 
