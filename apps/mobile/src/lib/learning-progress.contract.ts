@@ -21,6 +21,8 @@ export type LearningProgressSnapshotV1 = {
     readonly grantedMs: number;
     readonly grantDay: string;
   };
+  /** 카탈로그 에피소드 id → 티켓을 쓰고 연 유닛 키(⟨2026-10-23⟩ 선택 필드 — 비면 싣지 않음). */
+  readonly ticketUnits?: Readonly<Record<string, readonly string[]>>;
 };
 
 /** 기기 시간대의 날짜 `YYYY-MM-DD`입니다. 연속 학습은 이 날짜로 셉니다. */
