@@ -13,3 +13,18 @@ onlyBuiltDependencies:
   - "@embedded-postgres/linux-ppc64"
   - "@embedded-postgres/linux-x64"
   - "@embedded-postgres/windows-x64"
+# 보안 경보의 간접 의존성을 패치판으로 올립니다. 상위 패키지의 범위가 막아 Dependabot이
+# 올리지 못하는 것들입니다(`security_update_not_possible`). 같은 메이저 안에서만 올리고,
+# 상위 패키지가 패치판을 받아들이면 그 줄을 지웁니다.
+overrides:
+  "markdown-it@>=14.0.0 <14.3.3": "14.3.3"
+  "markdown-it@>=15.0.0 <15.0.3": "15.0.3"
+  "launch-editor@<2.14.2": "2.14.2"
+  "shell-quote@<1.11.0": "1.11.0"
+  "tinypool@>=2.0.0 <2.1.2": "2.1.2"
+  "dompurify@<3.4.16": "3.4.16"
+  "source-map-js@<1.2.2": "1.2.2"
+  "postcss-selector-parser@>=7.0.0 <7.1.6": "7.1.6"
+  "fast-uri@>=3.0.0 <3.1.8": "3.1.8"
+  "brace-expansion@>=5.0.0 <5.0.12": "5.0.12"
+  "engine.io@>=6.6.0 <6.6.10": "6.6.10"
