@@ -156,14 +156,15 @@ describe("줄 배치와 Check", () => {
       [u03]: keysThrough(6),
     });
     const plan = lessonPlan(u03, "S7");
-    const last = plan.activities.at(-1);
-    if (last?.form !== "sentence-order") throw new Error("S7의 끝은 문장 순서");
-    const question = last.questions[0];
+    const at = plan.activities.findIndex((activity) => activity.form === "sentence-order");
+    const order = plan.activities[at];
+    if (order?.form !== "sentence-order") throw new Error("S7에 문장 순서가 없다");
+    const question = order.questions[0];
     if (question === undefined || question.reading === undefined) throw new Error("읽기 줄 없음");
     expect(question.reading.shown).toBe("after-check");
 
     tapNode(u03, "S7");
-    plan.activities.slice(0, -1).forEach((activity) => solveActivity(activity, true, false));
+    plan.activities.slice(0, at).forEach((activity) => solveActivity(activity, true, false));
 
     for (const chip of [...question.answerOrder].reverse()) {
       tapId(sentenceChipId(question, chip));
@@ -187,13 +188,14 @@ describe("줄 배치와 Check", () => {
       [u03]: keysThrough(6),
     });
     const plan = lessonPlan(u03, "S7");
-    const last = plan.activities.at(-1);
-    if (last?.form !== "sentence-order") throw new Error("S7의 끝은 문장 순서");
-    const question = last.questions[0];
+    const at = plan.activities.findIndex((activity) => activity.form === "sentence-order");
+    const order = plan.activities[at];
+    if (order?.form !== "sentence-order") throw new Error("S7에 문장 순서가 없다");
+    const question = order.questions[0];
     if (question === undefined || question.reading === undefined) throw new Error("읽기 줄 없음");
 
     tapNode(u03, "S7");
-    plan.activities.slice(0, -1).forEach((activity) => solveActivity(activity, true, false));
+    plan.activities.slice(0, at).forEach((activity) => solveActivity(activity, true, false));
     for (const chip of question.answerOrder) tapId(sentenceChipId(question, chip));
     expect(present("sentence-order-reading")).toBe(false);
     tapCheck();

@@ -280,14 +280,14 @@ describe("말하기 단계의 끝 (LWS)", () => {
       return plan.activities.length - 1;
     };
 
-    test("LWS2. 채점 13 중 낱말 둘을 건너뛰고 나머지 11에서 7을 맞히면 분모 11로 통과한다", () => {
+    test("LWS2. 채점 12 중 낱말 둘을 건너뛰고 나머지 10에서 6을 맞히면 분모 10으로 통과한다", () => {
       const { wiring, log, updaters } = wiringOf(throughS5U02);
 
       wiring.onFinishCatalogActivity(
         "u02-checkin",
         "S6",
         lastActivityIndex(),
-        [...manyOf(7, correct), ...manyOf(4, incorrect)],
+        [...manyOf(6, correct), ...manyOf(4, incorrect)],
         2,
       );
 
@@ -298,8 +298,8 @@ describe("말하기 단계의 끝 (LWS)", () => {
           unitKey: "S6",
           unitRole: "lesson",
           verdict: "passed",
-          correctCount: "7",
-          questionCount: "13",
+          correctCount: "6",
+          questionCount: "12",
           skippedCount: "2",
         },
       ]);
@@ -309,30 +309,30 @@ describe("말하기 단계의 끝 (LWS)", () => {
           screen: expect.objectContaining({
             name: "catalog-unit-complete",
             skippedCount: 2,
-            questionCount: 11,
+            questionCount: 10,
           }),
         }),
       ]);
       expect(updaters).toHaveLength(1);
     });
 
-    test("LWS2. 같은 정답 7에 낱말을 오답으로 판정하면 분모 13 · 기준 8로 실패하고 기록하지 않는다", () => {
+    test("LWS2. 같은 정답 6에 낱말을 오답으로 판정하면 분모 12 · 기준 8로 실패하고 기록하지 않는다", () => {
       const { wiring, log, updaters } = wiringOf(throughS5U02);
 
       wiring.onFinishCatalogActivity(
         "u02-checkin",
         "S6",
         lastActivityIndex(),
-        [...manyOf(7, correct), ...manyOf(6, incorrect)],
+        [...manyOf(6, correct), ...manyOf(6, incorrect)],
         0,
       );
 
       expect(eventsOf(log)).toEqual([
-        expect.objectContaining({ verdict: "failed", questionCount: "13", skippedCount: "0" }),
+        expect.objectContaining({ verdict: "failed", questionCount: "12", skippedCount: "0" }),
       ]);
       expect(dispatchesOf(log)).toEqual([
         expect.objectContaining({
-          screen: expect.objectContaining({ skippedCount: 0, questionCount: 13 }),
+          screen: expect.objectContaining({ skippedCount: 0, questionCount: 12 }),
         }),
       ]);
       expect(updaters).toHaveLength(0);

@@ -104,7 +104,7 @@ describe("catalogFinalPlanOf — 실데이터", () => {
     expect(first?.tiles.map((tile) => tile.ko)).toHaveLength(2);
     expect(first?.tiles.map((tile) => tile.ko)).not.toEqual(["아니요,", "괜찮아요."]);
     expect(plan.turns.map((turn) => turn.imageUrl)).toEqual(
-      Array(3).fill("https://cdn/content/images/u01-water/pre-6.jpg"),
+      Array(3).fill("https://cdn/content/images/u01-water/pre-6.webp"),
     );
   });
 
@@ -440,7 +440,7 @@ describe("대화 줄 찾기 · 턴 소리", () => {
     expect("replyAudioSource" in audio).toBe(false);
   });
 
-  test("FMA5. 실데이터 u01 계획: 턴 1 · 2는 두 소리, 턴 3은 상대 소리만이다", () => {
+  test("FMA5. 실데이터 u01 계획: 턴 1 · 2 · 3 모두 두 소리다", () => {
     const turns = catalogFinalPlanOf(readyOf("u01-water"), 1, fill, imageUrlOf).turns;
     expect(turns.map((turn) => turn.counterpartAudioSource)).toEqual([
       "https://cdn/audio/u01-water/d-01.m4a",
@@ -450,20 +450,20 @@ describe("대화 줄 찾기 · 턴 소리", () => {
     expect(turns.map((turn) => turn.replyAudioSource)).toEqual([
       "https://cdn/audio/u01-water/d-02.m4a",
       "https://cdn/audio/u01-water/d-04.m4a",
-      undefined,
+      "https://cdn/audio/u01-water/d-06.m4a",
     ]);
-    expect(turns[2] !== undefined && "replyAudioSource" in turns[2]).toBe(false);
   });
 
   test.each([
-    ["u02-checkin", 2],
-    ["u03-mina", 3],
-  ])("FMA5. 실데이터 %s 계획: 첫 턴만 상대 소리가 있고 내 소리는 없다", (episodeId, ordinal) => {
-    const turns = catalogFinalPlanOf(readyOf(episodeId), ordinal, fill, imageUrlOf).turns;
-    expect(turns[0]?.counterpartAudioSource).toBe(`https://cdn/audio/${episodeId}/d-01.m4a`);
-    for (const [at, turn] of turns.entries()) {
-      expect("replyAudioSource" in turn).toBe(false);
-      expect("counterpartAudioSource" in turn).toBe(at === 0);
-    }
-  });
+    ["u02-checkin", 2, [true, true, true, true, true], [false, true, true, true, true]],
+    ["u03-mina", 3, [true, true, true, false, true], [false, true, true, false, true]],
+  ])(
+    "FMA5. 실데이터 %s 계획: 첫 턴은 상대 소리만(내 줄은 자리표시자)이고, id 없는 줄은 키가 없다",
+    (episodeId, ordinal, counterpart, reply) => {
+      const turns = catalogFinalPlanOf(readyOf(episodeId), ordinal, fill, imageUrlOf).turns;
+      expect(turns[0]?.counterpartAudioSource).toBe(`https://cdn/audio/${episodeId}/d-01.m4a`);
+      expect(turns.map((turn) => "counterpartAudioSource" in turn)).toEqual(counterpart);
+      expect(turns.map((turn) => "replyAudioSource" in turn)).toEqual(reply);
+    },
+  );
 });

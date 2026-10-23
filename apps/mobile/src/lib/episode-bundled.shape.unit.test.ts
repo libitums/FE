@@ -10,7 +10,7 @@ import { KNOWN_ITEM_TYPES } from "./episode-content";
 import { legacyCatalogInput } from "./episode-legacy.test-support";
 import { utf8Bytes } from "./sha256";
 
-// `unit` 계층: 새 내장본(2026-10-15.1)과 옛 내장본 픽스처(2026-10-14)의 모양 표입니다. 디스크 원문의 바이트 수와
+// `unit` 계층: 새 내장본(2026-10-23.1)과 옛 내장본 픽스처(2026-10-14)의 모양 표입니다. 디스크 원문의 바이트 수와
 // 디코드 결과의 개수만 보고, 화면 흐름은 보지 않습니다.
 
 type EpisodeId = "u01-water" | "u02-checkin" | "u03-mina";
@@ -28,17 +28,17 @@ type Shape = {
 };
 
 const BUNDLED_SHAPES: readonly Shape[] = [
-  { id: "u01-water", bytes: 126_449, prologue: 6, epilogue: 3, dialogue: 9, words: 13, items: 104 },
+  { id: "u01-water", bytes: 164_907, prologue: 6, epilogue: 3, dialogue: 9, words: 13, items: 110 },
   {
     id: "u02-checkin",
-    bytes: 160_563,
+    bytes: 208_616,
     prologue: 5,
     epilogue: 4,
     dialogue: 13,
     words: 14,
-    items: 133,
+    items: 140,
   },
-  { id: "u03-mina", bytes: 155_429, prologue: 4, epilogue: 3, dialogue: 13, words: 15, items: 118 },
+  { id: "u03-mina", bytes: 212_039, prologue: 4, epilogue: 3, dialogue: 13, words: 17, items: 132 },
 ];
 
 const LEGACY_SHAPES: readonly Shape[] = [

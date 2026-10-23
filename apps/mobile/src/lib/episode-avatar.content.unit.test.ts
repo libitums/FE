@@ -9,8 +9,9 @@ import { bundledCatalogInput } from "./episode-bundled";
 
 const u00 = bundledCatalogInput.episodes["u00-tutorial"] as Record<string, unknown>;
 const u01 = bundledCatalogInput.episodes["u01-water"] as Record<string, unknown>;
-// 내장 u00은 아바타 키를 싣습니다(2026-10-23.1) — 키를 뺀 사본이 「아바타 없음」의 기준입니다.
+// 내장 u00 · u01은 아바타 키를 싣습니다(2026-10-23.1) — 키를 뺀 사본이 「아바타 없음」의 기준입니다.
 const { counterpart_avatar: _u00Avatar, ...u00NoAvatar } = u00;
+const { counterpart_avatar: _u01Avatar, ...u01NoAvatar } = u01;
 
 function withAvatar(value: unknown): Record<string, unknown> {
   return { ...u00NoAvatar, counterpart_avatar: value };
@@ -46,13 +47,17 @@ describe("디코더의 counterpart_avatar", () => {
     expect(result.warnings.filter((warning) => warning.code === "invalid-asset-path")).toEqual([]);
   });
 
-  test("AV6. 가드 — 내장 u00은 버킷판 아바타 경로를 싣고, 키가 없는 u01 · 키를 뺀 u00은 counterpartAvatar가 없다", () => {
-    const bundled = decodeEpisode(u00);
-    expect(bundled.ok).toBe(true);
-    if (bundled.ok) {
-      expect(bundled.episode.counterpartAvatar).toBe("content/images/u00-tutorial/avatar.webp");
+  test("AV6. 가드 — 내장 u00 · u01은 버킷판 아바타 경로를 싣고, 키를 뺀 u00 · u01은 counterpartAvatar가 없다", () => {
+    for (const [wire, path] of [
+      [u00, "content/images/u00-tutorial/avatar.webp"],
+      [u01, "content/images/u01-water/avatar.webp"],
+    ] as const) {
+      const bundled = decodeEpisode(wire);
+      expect(bundled.ok).toBe(true);
+      if (!bundled.ok) continue;
+      expect(bundled.episode.counterpartAvatar).toBe(path);
     }
-    for (const wire of [u00NoAvatar, u01]) {
+    for (const wire of [u00NoAvatar, u01NoAvatar]) {
       const result = decodeEpisode(wire);
       expect(result.ok).toBe(true);
       if (!result.ok) continue;

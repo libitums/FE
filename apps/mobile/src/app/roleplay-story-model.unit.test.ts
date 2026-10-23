@@ -57,7 +57,7 @@ test("[RM1] 준비된 에피소드마다 구획 하나 · 항목 하나(상대 �
   expect(result[0]?.items[0]?.title).toBe("Buying Water");
   // 카드 바탕은 그 에피소드 표지의 첫 그림입니다.
   expect(result[0]?.items[0]).toMatchObject({
-    imageUrl: "https://cdn/content/images/u01-water/pre-1.jpg",
+    imageUrl: "https://cdn/content/images/u01-water/pre-1.webp",
   });
   expect(result.map((section) => section.items[0])).toMatchObject([
     { lineCount: 3 },
@@ -81,7 +81,7 @@ test("[RM3] 모델 — 표지 마지막 컷(첫 턴 대사)은 빠지고 나머�
   expect(model?.turns).toHaveLength(3);
   expect(model?.cuts).toHaveLength(5);
   expect(model?.cuts?.at(-1)?.text.ko).not.toBe("봉투 드릴까요?");
-  expect(model?.imageUrl).toContain("u01-water/pre-6.jpg");
+  expect(model?.imageUrl).toContain("u01-water/pre-6.webp");
   expect(model?.counterpartName).toBe("편의점 점원");
 });
 

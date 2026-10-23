@@ -35,9 +35,9 @@ describe("sha256", () => {
   });
 
   test.each([
-    ["u01-water", "8318e0dab44c4ff94fb904eaa92175b9df70a0cd4f7feb1d84e4402a7b487ff1", 126449],
-    ["u02-checkin", "b249328f2279c03d803a45b36e693aa39070e2195aee496e9bcbd373ff360cba", 160563],
-    ["u03-mina", "0694fd2d2c4bc48b156e61c16ab8ae0c4b09c95030df749c6db54a3ad17421a3", 155429],
+    ["u01-water", "c489e8457b25c3e3cecdb66a562810443920d685cdf8c8df74d7bce642944a80", 164907],
+    ["u02-checkin", "0c497b49242c4f962e3c89174781d64080d903467189dea855e9e2f18350f3c9", 208616],
+    ["u03-mina", "505cc8ad6e4c8eb6a83c9287c462d1f66b3dc549c50e704394252b4c9aecadcb", 212039],
   ])("H5. 픽스처 %s 원문의 해시와 바이트 수가 부록 값과 같다", (id, sha256, bytes) => {
     const text = readFileSync(resolve(process.cwd(), `content/episodes/${id}.json`), "utf8");
     expect(utf8Bytes(text).length).toBe(bytes);
