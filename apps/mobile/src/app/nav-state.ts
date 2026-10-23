@@ -8,6 +8,7 @@
 // 가져옵니다.
 import type { AnswerResult } from "../lib/answer-result";
 import type { CatalogUnitKey } from "../lib/catalog-progress";
+import type { CatalogReview } from "./catalog-review";
 // 전화번호 로그인(Supabase OTP)의 공용 어휘입니다 — 코드 검증 화면이 보여 줄 번호를
 // 나릅니다.
 import type { PhoneNumber } from "../lib/auth-session.contract";
@@ -33,8 +34,15 @@ export type Screen =
   | { name: "notifications" }
   // 카탈로그 에피소드의 표지 컷입니다. 에피소드는 카탈로그 id입니다.
   | { name: "catalog-cover"; episodeId: string }
-  // 카탈로그 레슨의 활동 하나입니다. 유닛 하나가 같은 학습형이 이어지는 구간 여럿을 잇습니다.
-  | { name: "catalog-lesson"; episodeId: string; unitKey: CatalogUnitKey; activityIndex: number }
+  // 카탈로그 레슨의 활동 하나입니다. 유닛 하나가 같은 학습형이 이어지는 구간 여럿을 잇습니다. `review`가 있으면
+  // 틀린 문제 다시 풀기 국면이고, `activityIndex`는 줄 머리 문항의 활동입니다(학습형 · 자판 도킹이 그것을 읽습니다).
+  | {
+      name: "catalog-lesson";
+      episodeId: string;
+      unitKey: CatalogUnitKey;
+      activityIndex: number;
+      review?: CatalogReview;
+    }
   // 카탈로그 최종 테스트(RP)입니다.
   | { name: "catalog-final"; episodeId: string }
   // 레슨 · 최종 테스트 공용 결과 화면입니다. 역할은 결선이 `finalKey`와 견줘 파생합니다.

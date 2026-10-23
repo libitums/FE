@@ -19,6 +19,7 @@ import { catalogLessonWiring } from "./catalog-lesson-wiring";
 import { newCatalogFinishGuard } from "./catalog-finish-guard";
 import { catalogWiring } from "./catalog-wiring";
 import type { CatalogLessonWiringArgs } from "./catalog-lesson-wiring";
+import type { CatalogReview, CatalogReviewItem } from "./catalog-review";
 import type { EpisodeContent } from "./episode-content";
 import type { NavAction } from "./nav-state";
 
@@ -53,6 +54,7 @@ const allLessonsDone: CatalogProgress = {
 type Entry =
   | { readonly kind: "pending"; readonly value: readonly AnswerResult[] }
   | { readonly kind: "skipped"; readonly value: number }
+  | { readonly kind: "mistakes"; readonly value: readonly CatalogReviewItem[] }
   | { readonly kind: "progress"; readonly value: CatalogProgress }
   | { readonly kind: "dispatch"; readonly value: NavAction }
   | { readonly kind: "event"; readonly value: EpisodeIntroEvent };
@@ -75,6 +77,7 @@ function harness(
     progress?: CatalogProgress;
     pendingResults?: readonly AnswerResult[];
     pendingSkippedCount?: number;
+    pendingMistakes?: readonly CatalogReviewItem[];
     sinkNull?: boolean;
   } = {},
 ): Harness {
@@ -82,6 +85,7 @@ function harness(
   const progress = options.progress ?? {};
   const pendingResults = options.pendingResults ?? [];
   const pendingSkippedCount = options.pendingSkippedCount ?? 0;
+  const pendingMistakes = options.pendingMistakes ?? [];
   const log: Entry[] = [];
   const updaters: ((value: CatalogProgress) => CatalogProgress)[] = [];
   const sink: EpisodeIntroEventSink =
@@ -107,6 +111,9 @@ function harness(
     pendingSkippedCount,
     setPendingSkippedCount: (action) =>
       void log.push({ kind: "skipped", value: resolveAction(action, pendingSkippedCount) }),
+    pendingMistakes,
+    setPendingMistakes: (action) =>
+      void log.push({ kind: "mistakes", value: resolveAction(action, pendingMistakes) }),
     finishGuard: newCatalogFinishGuard(),
     setListenPace: () => {},
   };
@@ -140,6 +147,39 @@ function sessionClearedAt(log: readonly Entry[]): number {
   const results = log.findIndex((entry) => entry.kind === "pending" && entry.value.length === 0);
   const skipped = log.findIndex((entry) => entry.kind === "skipped" && entry.value === 0);
   return results >= 0 && skipped >= 0 ? Math.max(results, skipped) : -1;
+}
+
+/** 마지막으로 쌓인 다시 풀기 화면의 줄 상태입니다. 다시 풀기가 아니면 `null`. */
+function lastReviewOf(log: readonly Entry[]): CatalogReview | null {
+  const last = dispatches(log).pop();
+  return last?.type === "replace" && last.screen.name === "catalog-lesson"
+    ? (last.screen.review ?? null)
+    : null;
+}
+
+/**
+ * 마지막 활동을 끝냅니다. 틀린 문항이 있으면 판정 없이 다시 풀기로 가므로(2026-10-23), 다시 풀기를 전부 맞혀 끝낸
+ * 결선(첫 시도 결과를 든 다음 렌더)을 돌려줍니다 — 판정 · 기록 · 결과 화면은 그쪽 기록에 남습니다.
+ */
+function finishLastThroughReview(
+  progress: CatalogProgress,
+  unitKey: string,
+  activityIndex: number,
+  results: readonly AnswerResult[],
+): Harness {
+  const first = harness({ progress });
+  first.wiring.onFinishCatalogActivity("u01-water", unitKey, activityIndex, results, 0);
+  let review = lastReviewOf(first.log);
+  if (review === null) return first;
+  expect(events(first.log)).toEqual([]);
+  const next = harness({ progress, pendingResults: results });
+  while (review !== null) {
+    // 마지막 걸음(판정)의 기록만 남깁니다 — 중간 다시 풀기 화면은 이 테스트의 관심이 아닙니다.
+    next.log.length = 0;
+    next.wiring.onFinishCatalogReview("u01-water", unitKey, review, [correct]);
+    review = lastReviewOf(next.log);
+  }
+  return next;
 }
 
 /** 학습이 비어 보이는 유닛(S1)을 가진 u01 — 보일 수 있는 문항이 없는 유닛을 흉내 냅니다. */
@@ -384,8 +424,12 @@ describe("카드가 든 레슨의 결선", () => {
   });
 
   test("LW-C4. 마지막 활동의 판정은 채점 문항 3개 기준(2개 정답이면 통과)이다", () => {
-    const passing = harness({ progress: { "u01-water": ["intro"] } });
-    passing.wiring.onFinishCatalogActivity("u01-water", "S1", 1, [correct, correct, incorrect], 0);
+    // 틀린 문항을 다시 풀어 맞혀도 판정은 첫 시도(셋 중 둘)입니다.
+    const passing = finishLastThroughReview({ "u01-water": ["intro"] }, "S1", 1, [
+      correct,
+      correct,
+      incorrect,
+    ]);
 
     expect(events(passing.log)).toEqual([
       expect.objectContaining({
@@ -407,14 +451,11 @@ describe("카드가 든 레슨의 결선", () => {
       }),
     ]);
 
-    const failing = harness({ progress: { "u01-water": ["intro"] } });
-    failing.wiring.onFinishCatalogActivity(
-      "u01-water",
-      "S1",
-      1,
-      [correct, incorrect, incorrect],
-      0,
-    );
+    const failing = finishLastThroughReview({ "u01-water": ["intro"] }, "S1", 1, [
+      correct,
+      incorrect,
+      incorrect,
+    ]);
 
     expect(events(failing.log)).toEqual([
       expect.objectContaining({ verdict: "failed", correctCount: "1", questionCount: "3" }),

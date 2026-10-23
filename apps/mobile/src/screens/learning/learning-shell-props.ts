@@ -105,6 +105,11 @@ export type LearningShellProps = {
   actionButton?: ReactNode | ((press: () => void) => ReactNode);
   /** 주면 지시문 자리에 판정 배지가 겹쳐 섭니다. 지시문 글은 흐름에 남아 높이가 변하지 않습니다. */
   verdict?: AnswerResult;
+  /**
+   * 배지를 세우지 않고 카드 안에서 판정을 그리는 활동(자판 · 짝 잇기)의 판정입니다. 껍데기는 그리지 않고, 틀린 문제
+   * 다시 풀기에서 맞혔는가(「Fixed it!」 판)를 가르는 데만 씁니다.
+   */
+  result?: AnswerResult;
   /** 주면 아래 버튼 위에 해설 판이 섭니다. */
   feedback?: LearningShellFeedback;
   /** 아래 버튼 행의 자리입니다. 기본 `floating`. */

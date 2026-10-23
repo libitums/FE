@@ -1,4 +1,5 @@
 import { legacyPassedSeed, legacyPassedRecord } from "./test-helpers/progress-seed";
+import { solveReview } from "./test-helpers/catalog-review-solver";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
@@ -514,6 +515,11 @@ test("I2. (AC2 기준) 카드를 다 넘겨도 통과에 세지 않는다: 셋 �
   flipCards(3);
   answerWordChoice(wordChoiceAt(plan, 1), [true, false, false]);
   action();
+  // 틀린 둘을 다시 풀어 맞혀야 결과가 섭니다(2026-10-23) — 판정은 첫 시도(셋 중 하나)입니다.
+  solveReview(plan, [
+    { activityIndex: 1, questionIndex: 1 },
+    { activityIndex: 1, questionIndex: 2 },
+  ]);
   expect(screen.getByTestId("lesson-complete-screen-retry")).toBeInTheDocument();
   expect(title()).not.toHaveTextContent("PERFECT LESSON!");
   await flush();
@@ -524,6 +530,7 @@ test("I2. (AC2 기준) 카드를 다 넘겨도 통과에 세지 않는다: 셋 �
   flipCards(3);
   answerWordChoice(wordChoiceAt(plan, 1), [true, true, false]);
   action();
+  solveReview(plan, [{ activityIndex: 1, questionIndex: 2 }]);
   expect(screen.queryByTestId("lesson-complete-screen-retry")).not.toBeInTheDocument();
   exitResult();
   await vi.waitFor(() => expect(savedUnits(rpcs, u01)).toContain("S1"));
@@ -580,6 +587,13 @@ test("I3. (AC3) u03 S9: 짝 맞추기가 단어 선택 · 받아쓰기 사이에
   });
 
   expect(seen).toEqual(plan.activities.map((activity) => contentIdOf[activity.form]));
+  // 틀린 첫 짝 화면을 다시 풀어 맞혀야 결과가 섭니다(2026-10-23) — 판정은 첫 시도(11 중 10)입니다.
+  solveReview(plan, [
+    {
+      activityIndex: plan.activities.findIndex((activity) => activity.form === "pair-match"),
+      questionIndex: 0,
+    },
+  ]);
   expect(title()).toHaveTextContent("LESSON COMPLETE!");
   expect(screen.queryByTestId("lesson-complete-screen-retry")).not.toBeInTheDocument();
   exitResult();

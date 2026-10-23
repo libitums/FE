@@ -22,6 +22,7 @@ import {
   u02,
   u03,
 } from "./test-helpers/episode-format-harness";
+import { solveReview } from "./test-helpers/catalog-review-solver";
 import {
   rightTiles,
   solveActivity,
@@ -139,6 +140,15 @@ test("ES2. (AC2 실패) CULT: 문화 확인을 하나만 맞히면 실패 → Tr
   passCards(cards.questions.length);
   answerChecks(checks, (index) => index === 0);
   tapId("learning-shell-action");
+  // 틀린 확인은 다시 풀기로 맞혀야 결과가 섭니다(2026-10-23) — 판정은 첫 시도(하나만 맞힘)입니다.
+  const checksIndex = plan.activities.indexOf(checks);
+  solveReview(
+    plan,
+    checks.questions.slice(1).map((_, offset) => ({
+      activityIndex: checksIndex,
+      questionIndex: offset + 1,
+    })),
+  );
 
   expect(screen.getByTestId("lesson-complete-screen-retry")).toBeInTheDocument();
   expect(title()).not.toHaveTextContent("PERFECT LESSON!");

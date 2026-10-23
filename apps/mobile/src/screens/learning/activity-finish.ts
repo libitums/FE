@@ -3,9 +3,14 @@ import type { AnswerResult } from "../../lib/answer-result";
 /**
  * 학습 활동이 끝났을 때 결과를 올리는 콜백입니다. 어느 스텝·유닛의 활동인지는 활동이
  * 모르고, 부르는 쪽(튜토리얼 어댑터 · 카탈로그 결선)이 압니다. 건너뛴 수는 건너뛰기가
- * 없는 활동에서 늘 0입니다.
+ * 없는 활동에서 늘 0입니다. 건너뛴 문항의 자리(`skippedIndexes`, 0부터)는 건너뛰기가 있는 활동만 줍니다 — 결과가
+ * 답한 문항만 담아, 카탈로그 결선이 어느 결과가 어느 문항의 것인지(틀린 문제 다시 풀기) 맞추는 데 씁니다.
  */
-export type ActivityFinish = (results: readonly AnswerResult[], skippedCount: number) => void;
+export type ActivityFinish = (
+  results: readonly AnswerResult[],
+  skippedCount: number,
+  skippedIndexes?: readonly number[],
+) => void;
 
 /**
  * 한 레슨(카탈로그 유닛)이 여러 학습형 활동으로 이어질 때 이 활동이 레슨 안의 어디인가입니다.

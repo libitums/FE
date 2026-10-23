@@ -3,10 +3,9 @@
 
 import type { ReactNode } from "@lynx-js/react";
 
-import type { AnswerResult } from "../lib/answer-result";
 import type { ConversationCast } from "../lib/conversation-cast";
 import type { ItemAnswerReport } from "../lib/item-answer";
-import type { LessonPosition } from "../screens/learning/activity-finish";
+import type { ActivityFinish, LessonPosition } from "../screens/learning/activity-finish";
 import { CultureCardActivity } from "../screens/culture-card/CultureCardActivity";
 import { ListeningActivity } from "../screens/listening/ListeningScreen";
 import { PairMatchActivity } from "../screens/pair-match/PairMatchActivity";
@@ -26,7 +25,8 @@ type LessonScreen = Extract<Screen, { name: "catalog-lesson" }>;
 
 // 활동 하나를 그 학습형의 화면으로 그립니다. 망라 `switch`가 새 학습형을 컴파일 타임에 강제합니다.
 // `cast`(상대 · 학습자의 이름 · 그림)는 대화 조립 아바타와 문화 확인 장면이 씁니다. `itemRefs`는 이 활동의 문항 순서대로
-// 콘텐츠 문항 참조라, 채점 문항이 처음 판정될 때 올라온 보고를 문항 이벤트로 잇습니다.
+// 콘텐츠 문항 참조라, 채점 문항이 처음 판정될 때 올라온 보고를 문항 이벤트로 잇습니다. 다시 풀기 화면(`screen.review`)은
+// 결과를 줄 넘기기로 올리고, 문항 이벤트를 내지 않도록 빈 `itemRefs`를 받습니다.
 export function renderCatalogActivity(
   activity: CatalogActivity,
   lesson: LessonPosition,
@@ -35,10 +35,23 @@ export function renderCatalogActivity(
   cast: ConversationCast,
   itemRefs: readonly CatalogItemRef[],
 ): ReactNode {
-  const { episodeId, unitKey, activityIndex } = screen;
-  const key = `${episodeId}:${unitKey}:${activityIndex}`;
-  const onFinish = (results: readonly AnswerResult[], skippedCount: number) =>
-    wiring.onFinishCatalogActivity(episodeId, unitKey, activityIndex, results, skippedCount);
+  const { episodeId, unitKey, activityIndex, review } = screen;
+  // 다시 풀기 화면은 줄을 넘길 때마다 새로 섭니다 — 같은 문항이 또 서도(또 틀림) 처음 상태로 열리게 열쇠에 순번을 넣습니다.
+  const key =
+    review === undefined
+      ? `${episodeId}:${unitKey}:${activityIndex}`
+      : `${episodeId}:${unitKey}:review:${review.attempt}`;
+  const onFinish: ActivityFinish = (results, skippedCount, skippedIndexes) =>
+    review === undefined
+      ? wiring.onFinishCatalogActivity(
+          episodeId,
+          unitKey,
+          activityIndex,
+          results,
+          skippedCount,
+          skippedIndexes,
+        )
+      : wiring.onFinishCatalogReview(episodeId, unitKey, review, results);
   const onExit = wiring.onExitCatalogSession;
   const onItemAnswered = (report: ItemAnswerReport): void => {
     const ref = itemRefs[report.questionIndex];

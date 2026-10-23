@@ -2,7 +2,9 @@ import { useEffect, useRef, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import { useMotion } from "@libitums/ui-lynx/motion";
+import { Button } from "@libitums/ui-lynx/button";
 import { Dialog } from "@libitums/ui-lynx/dialog";
+import { LessonReviewBadge } from "./LessonReviewBadge";
 import { LearningShellActions } from "./LearningShellActions";
 import { LearningShellBody } from "./LearningShellBody";
 import { useLearningShellFlow } from "./use-learning-shell-flow";
@@ -15,6 +17,7 @@ import {
   learningWorkspaceMode,
 } from "./learning-shell.contract";
 import { LearningShellHeader } from "./LearningShellHeader";
+import { learningReviewFixedFeedback, useLearningReview } from "./learning-review";
 import type { LearningShellProps } from "./learning-shell-props";
 import { scrollLearningShellToTop, useLearningShellScrollReset } from "./learning-shell-scroll";
 import { useUiCopy } from "../../lib/ui-copy";
@@ -47,16 +50,17 @@ export function LearningShell({
   workspaceScrolls = true,
   scrollCard = false,
   stage = "card",
-  secondaryAction,
+  secondaryAction: secondaryActionProp,
   actionLabel,
-  onAction,
+  onAction: onActionProp,
   actionSound = "button",
-  advance,
+  advance: advanceProp,
   obscured,
   runProgress,
-  actionButton,
-  verdict,
-  feedback,
+  actionButton: actionButtonProp,
+  verdict: verdictProp,
+  result,
+  feedback: feedbackProp,
   actionPlacement = "floating",
   densityOverride,
   formLabel,
@@ -64,8 +68,41 @@ export function LearningShell({
   const copy = useUiCopy();
   const deviceDensity = useLearningDensity();
   const density = densityOverride ?? deviceDensity;
-  const actionsShown =
-    actionButton !== undefined || (actionLabel !== undefined && onAction !== undefined);
+  // 틀린 문제 다시 풀기(2026-10-23)에서 맞히면 판정 배지 · 해설 판 · 저절로 넘김 대신 「Fixed it!」 판이 서고, 판 안의
+  // ui-lynx `Button`(Continue)이 활동의 다음 걸음(넘김 걸음이 있으면 그것, 없으면 아래 버튼 동작)을 밟습니다. 틀린 답은
+  // 지금 모습 그대로입니다. 다시 풀기가 아니면(context 없음) 아무것도 바뀌지 않습니다.
+  const review = useLearningReview();
+  const fixedFeedback = learningReviewFixedFeedback(
+    review,
+    { complete, verdict: verdictProp, result, feedback: feedbackProp },
+    copy,
+  );
+  const fixed = fixedFeedback !== null;
+  const verdict = fixed ? undefined : verdictProp;
+  const feedback = fixedFeedback ?? feedbackProp;
+  const advance = fixed ? undefined : advanceProp;
+  const action = fixed
+    ? advanceProp === undefined
+      ? onActionProp
+      : () => runAdvance(advanceProp)
+    : onActionProp;
+  const actionButton = fixed
+    ? (press: () => void) => (
+        <view className="learning-shell-fixed-continue" data-testid="learning-shell-fixed-continue">
+          <Button
+            label={copy.common.continue}
+            variant="brand"
+            size="xl"
+            width="fill"
+            bindtap={press}
+          />
+        </view>
+      )
+    : actionButtonProp;
+  const secondaryAction = fixed ? undefined : secondaryActionProp;
+  const actionsShown = fixed
+    ? action !== undefined
+    : actionButton !== undefined || (actionLabel !== undefined && action !== undefined);
   const workspaceMode = learningWorkspaceMode({ scrolls: workspaceScrolls, actionsShown });
   const { flow, reportViewportHeight } = useLearningShellFlow(workspaceMode);
   const arrangement = learningShellArrangement({ scrollCard, flow });
@@ -109,7 +146,7 @@ export function LearningShell({
     if (actionSound === "button") playSound("button");
     // 문장 만들기의 `Check`는 프롭을 바꾸지 않아 효과가 못 봅니다 — 답한 순간이라 여기서 보냅니다.
     if (arrangement === "merged") scrollLearningShellToTop();
-    onAction?.();
+    action?.();
   };
 
   // 스스로 넘어가는 걸음입니다. 타이머가 저절로 밟거나 사용자가 층을 눌러 앞당기거나
@@ -179,6 +216,7 @@ export function LearningShell({
         runProgress={runProgress}
         onExit={handleExit}
         formLabel={formLabel}
+        review={review}
       />
       {/* 카드 스크롤 모드는 버튼 행의 실제 높이를 먼저 확보합니다. */}
       <LearningShellBody
@@ -207,10 +245,12 @@ export function LearningShell({
           bindtap={handleAdvance}
         />
       )}
+      {/* 다시 풀기 첫 화면에서 한 번 떴다가 사라지는 시작 배지입니다 — 터치를 받지 않습니다. */}
+      {review?.introCount == null ? null : <LessonReviewBadge count={review.introCount} />}
       {actionsShown ? (
         <LearningShellActions
           button={typeof actionButton === "function" ? actionButton(handleAction) : actionButton}
-          label={actionLabel ?? ""}
+          label={fixed ? copy.common.continue : (actionLabel ?? "")}
           onAction={handleAction}
           secondaryAction={secondaryAction}
           inFlow={actionsInFlow}

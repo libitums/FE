@@ -46,6 +46,8 @@ function harness(progress: CatalogProgress, pendingResults: readonly AnswerResul
     setPendingResults: () => {},
     pendingSkippedCount: 0,
     setPendingSkippedCount: () => {},
+    pendingMistakes: [],
+    setPendingMistakes: () => {},
     finishGuard: newCatalogFinishGuard(),
     setListenPace,
   };

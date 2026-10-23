@@ -202,7 +202,7 @@ test("USW4. 권한 거부는 안내 한 번과 Skip만 서고 다음 문항도 �
   tapAction("See results");
 
   expect(onFinish).toHaveBeenCalledTimes(1);
-  expect(onFinish).toHaveBeenCalledWith([], 2);
+  expect(onFinish).toHaveBeenCalledWith([], 2, [0, 1]);
 });
 
 test("USW5a. 그림이 실패하면 뜻 글자와 안내 글자가 서고 뜻 줄은 없으며 한 번 알리고 말할 수 있다", () => {
@@ -250,7 +250,7 @@ test("USW6. 준비 국면의 Skip은 결과에 싣지 않고 건너뜀 수에 �
   tapAction("See results");
 
   expect(onFinish).toHaveBeenCalledTimes(1);
-  expect(onFinish).toHaveBeenCalledWith(["correct"], 1);
+  expect(onFinish).toHaveBeenCalledWith(["correct"], 1, [1]);
 });
 
 test("USW7a. 레슨 중간 활동은 판정 뒤 넘김이 완료 카드 없이 결과를 한 번 올린다", () => {
@@ -263,7 +263,7 @@ test("USW7a. 레슨 중간 활동은 판정 뒤 넘김이 완료 카드 없이 �
 
   expect(maybe("speak-word-complete")).not.toBeInTheDocument();
   expect(onFinish).toHaveBeenCalledTimes(1);
-  expect(onFinish).toHaveBeenCalledWith(["incorrect"], 0);
+  expect(onFinish).toHaveBeenCalledWith(["incorrect"], 0, []);
 });
 
 test("USW7b. 레슨 중간 활동에서 불가 Skip이 마지막 문항이면 그 탭이 곧바로 결과를 올린다", () => {
@@ -275,7 +275,7 @@ test("USW7b. 레슨 중간 활동에서 불가 Skip이 마지막 문항이면 �
   tapAction("Skip");
 
   expect(onFinish).toHaveBeenCalledTimes(1);
-  expect(onFinish).toHaveBeenCalledWith([], 1);
+  expect(onFinish).toHaveBeenCalledWith([], 1, [0]);
 });
 
 test("USW7c. 카운터가 레슨 오프셋을 더한다", () => {

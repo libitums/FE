@@ -41,6 +41,7 @@ import { withLearningTickets } from "./ticket-wiring";
 import { useLearningTickets } from "./use-learning-tickets";
 import type { AppProgressSeed, AppProps } from "./app-props";
 import type { AppSessionControl } from "./leave-app.contract";
+import type { CatalogReviewItem } from "./catalog-review";
 
 import "./app.css";
 
@@ -98,6 +99,8 @@ export function AppSession({
   // 둘이 함께 만들어지고 함께 버려져야 수가 새지 않습니다.
   const [pendingResults, setPendingResults] = useState<readonly AnswerResult[]>([]);
   const [pendingSkippedCount, setPendingSkippedCount] = useState(0);
+  // 첫 시도에 틀린 채점 문항입니다 — 마지막 활동 뒤 다시 풀기 줄이 됩니다(catalog-lesson-finish.ts). 위 둘과 함께 버립니다.
+  const [pendingMistakes, setPendingMistakes] = useState<readonly CatalogReviewItem[]>([]);
   // 「천천히」는 레슨 하나 동안만 이어집니다 — 시작 · 나가기 · 끝에서 되돌립니다(저장하지 않음).
   const [listenPace, setListenPace] = useState<ListenPace>(initialListenPace);
   const finishGuard = useCatalogFinishGuard();
@@ -138,6 +141,8 @@ export function AppSession({
     pendingResults,
     setPendingResults,
     pendingSkippedCount,
+    pendingMistakes,
+    setPendingMistakes,
     setPendingSkippedCount,
     roleplaySections,
     entryLanguage,

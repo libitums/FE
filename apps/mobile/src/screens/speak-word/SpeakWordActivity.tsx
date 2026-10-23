@@ -34,6 +34,7 @@ import {
   speakWordSessionReducer,
   speakWordSessionResults,
   speakWordSkippedCount,
+  speakWordSkippedIndexes,
 } from "./speak-word";
 import type { SpeakWordActivityProps } from "./speak-word.contract";
 import { SpeakWordPicture } from "./SpeakWordPicture";
@@ -104,7 +105,11 @@ export function SpeakWordActivity({
   const finish = (heard: readonly (string | null)[]): void => {
     if (finished.current) return;
     finished.current = true;
-    onFinish(speakWordSessionResults(questions, heard), speakWordSkippedCount(heard));
+    onFinish(
+      speakWordSessionResults(questions, heard),
+      speakWordSkippedCount(heard),
+      speakWordSkippedIndexes(heard),
+    );
   };
   const handsOff = handsOffAfter(lesson, state.questionIndex, questions.length);
 

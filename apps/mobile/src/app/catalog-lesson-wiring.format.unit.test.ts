@@ -14,6 +14,7 @@ import { newCatalogFinishGuard } from "./catalog-finish-guard";
 import { catalogLessonPlanOf } from "./catalog-lesson-plan";
 import { catalogLessonWiring } from "./catalog-lesson-wiring";
 import type { CatalogLessonWiringArgs } from "./catalog-lesson-wiring";
+import type { CatalogReview } from "./catalog-review";
 import type { NavAction } from "./nav-state";
 
 // `unit` 계층: 새 내장본에서 문화 단계(CULT)의 결선(시작 → 카드 활동 → 확인 활동 → 판정 · 기록 · 결과 화면)만 봅니다.
@@ -65,6 +66,8 @@ function wiringOf(progress: CatalogProgress, pendingResults: readonly AnswerResu
     setPendingResults: () => undefined,
     pendingSkippedCount: 0,
     setPendingSkippedCount: () => undefined,
+    pendingMistakes: [],
+    setPendingMistakes: () => undefined,
     finishGuard: newCatalogFinishGuard(),
     setListenPace: () => {},
   };
@@ -84,6 +87,35 @@ const dispatchesOf = (log: readonly Entry[]) =>
 
 const correct: AnswerResult = "correct";
 const incorrect: AnswerResult = "incorrect";
+
+/** 마지막으로 쌓인 다시 풀기 화면의 줄 상태입니다. 다시 풀기가 아니면 `null`. */
+function lastReviewOf(log: readonly Entry[]): CatalogReview | null {
+  const last = dispatchesOf(log).pop();
+  return last?.type === "replace" && last.screen.name === "catalog-lesson"
+    ? (last.screen.review ?? null)
+    : null;
+}
+
+/**
+ * CULT 마지막 활동(확인 셋)을 끝냅니다. 틀린 확인이 있으면 판정 없이 다시 풀기로 가므로(2026-10-23), 다시 풀기를 전부
+ * 맞혀 끝낸 결선(첫 시도 결과를 든 다음 렌더)을 돌려줍니다 — 판정 · 기록 · 결과 화면은 그쪽 기록에 남습니다.
+ */
+function finishCultChecks(results: readonly AnswerResult[]) {
+  const first = wiringOf(throughS8);
+  first.wiring.onFinishCatalogActivity("u01-water", "CULT", 1, results, 0);
+  let review = lastReviewOf(first.log);
+  if (review === null) return first;
+  expect(eventsOf(first.log)).toEqual([]);
+  expect(first.updaters).toHaveLength(0);
+  const next = wiringOf(throughS8, results);
+  while (review !== null) {
+    // 마지막 걸음(판정)의 기록만 남깁니다 — 중간 다시 풀기 화면은 이 테스트의 관심이 아닙니다.
+    next.log.length = 0;
+    next.wiring.onFinishCatalogReview("u01-water", "CULT", review, [correct]);
+    review = lastReviewOf(next.log);
+  }
+  return next;
+}
 
 describe("CULT 단계 시작 (LWF)", () => {
   test("LWF1′. 시작 이벤트 하나(문항 3 · 표시 6 · 건너뜀 0)만 나가고 끝 이벤트는 없다", () => {
@@ -147,9 +179,8 @@ describe("CULT 단계 시작 (LWF)", () => {
   });
 
   test("LWF2. 확인 셋 중 둘을 맞히면 통과 이벤트 · CULT 기록 · 결과 화면(결과 셋 · 문항 3)이다", () => {
-    const { wiring, log, updaters } = wiringOf(throughS8);
-
-    wiring.onFinishCatalogActivity("u01-water", "CULT", 1, [correct, correct, incorrect], 0);
+    // 틀린 확인 하나를 다시 풀어 맞혀도 판정은 첫 시도(셋 중 둘)입니다.
+    const { log, updaters } = finishCultChecks([correct, correct, incorrect]);
 
     expect(eventsOf(log)).toEqual([
       {
@@ -196,9 +227,7 @@ describe("CULT 단계 시작 (LWF)", () => {
   });
 
   test("LWF3. 확인 셋 중 하나만 맞히면 실패 이벤트이고 CULT를 기록하지 않는다", () => {
-    const { wiring, log, updaters } = wiringOf(throughS8);
-
-    wiring.onFinishCatalogActivity("u01-water", "CULT", 1, [correct, incorrect, incorrect], 0);
+    const { log, updaters } = finishCultChecks([correct, incorrect, incorrect]);
 
     expect(eventsOf(log)).toEqual([
       {

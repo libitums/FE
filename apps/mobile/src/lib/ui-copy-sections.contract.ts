@@ -102,6 +102,21 @@ export type LearningShellCopy = {
   };
   readonly headerNoQuestions: (formLabel: string) => string;
   readonly headerQuestionOf: (formLabel: string, ordinal: number, count: number) => string;
+  /** 틀린 문제 다시 풀기(2026-10-23)의 시작 배지 · 세션 헤더 · 고침 판입니다. */
+  readonly review: LearningReviewCopy;
+};
+
+export type LearningReviewCopy = {
+  /** 다시 풀기 시작 배지입니다 — `Let’s fix 2 mistakes`. 낭독도 같은 글입니다. */
+  readonly intro: (count: number) => string;
+  /** 세션 헤더의 순번입니다 — `Review 1 / 3`. */
+  readonly progress: (ordinal: number, total: number) => string;
+  /** 세션 헤더 막대의 낭독 이름입니다. */
+  readonly headerOf: (formLabel: string, ordinal: number, total: number) => string;
+  /** 학습형 이름표 뒤에 붙는 꼬리입니다 — `Word choice · try again`. */
+  readonly formSuffix: string;
+  /** 다시 푼 문항을 맞혔을 때 아래 판의 제목입니다. */
+  readonly fixed: string;
 };
 
 export type ListeningCopy = {

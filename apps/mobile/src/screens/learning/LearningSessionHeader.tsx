@@ -7,6 +7,8 @@ import { color } from "@libitums/design-tokens";
 import { useMotion } from "@libitums/ui-lynx/motion";
 
 import { learningProgressFillClassName, learningSessionHeader } from "./learning-shell.contract";
+import { learningReviewHeader } from "./learning-review";
+import type { LearningReview } from "./learning-review";
 import type { LearningActivityForm } from "../../lib/learning-form";
 import { useUiCopy } from "../../lib/ui-copy";
 
@@ -28,6 +30,11 @@ export type LearningSessionHeaderProps = {
   readonly onExit: () => void;
   /** 학습형 이름표를 갈음합니다(문화 확인 문항). */
   readonly formLabel?: string;
+  /**
+   * 틀린 문제 다시 풀기 동안입니다(2026-10-23). 주면 순번이 `Review i / k`(브랜드 강조색)로, 이름표에 `· try again`이
+   * 붙고, 막대가 고친 몫이 됩니다. 상자 면(연한 주황)은 감싸는 층(`LearningShellHeader`)이 칠합니다.
+   */
+  readonly review?: LearningReview | null;
 };
 
 export function LearningSessionHeader({
@@ -36,10 +43,14 @@ export function LearningSessionHeader({
   questionCount,
   onExit,
   formLabel,
+  review = null,
 }: LearningSessionHeaderProps): ReactNode {
   const copy = useUiCopy();
   const motion = useMotion();
-  const header = learningSessionHeader(form, questionIndex, questionCount, copy, formLabel);
+  const header =
+    review === null
+      ? learningSessionHeader(form, questionIndex, questionCount, copy, formLabel)
+      : learningReviewHeader(form, review, copy, formLabel);
 
   const handleExit = () => {
     "background only";
@@ -68,7 +79,14 @@ export function LearningSessionHeader({
             {/* 문항이 0개면 셀 것이 없어 순번을 세우지 않습니다 — 빈 `<text>`를 두면
                 보조기술에 빈 정지점이 남습니다. */}
             {header.progressLabel === undefined ? null : (
-              <text className="learning-shell-progress-label" data-testid="learning-shell-chapter">
+              <text
+                className={
+                  review === null
+                    ? "learning-shell-progress-label"
+                    : "learning-shell-progress-label learning-shell-progress-label-review"
+                }
+                data-testid="learning-shell-chapter"
+              >
                 {header.progressLabel}
               </text>
             )}

@@ -15,6 +15,7 @@ import { lessonRewardPlaceholder } from "../screens/lesson-complete/lesson-compl
 import { catalogLessonOrdinalOf } from "../screens/journey-map/catalog-map";
 import { CatalogEpilogueFlow } from "./CatalogCutsFlow";
 import { renderCatalogActivity } from "./render-catalog-activity";
+import { renderCatalogReview } from "./render-catalog-review";
 import { catalogEpilogueModelOf } from "./catalog-cover-wiring";
 import { catalogFinalPlanFor } from "./catalog-final-model";
 import {
@@ -53,6 +54,11 @@ export function renderCatalogFlow(screen: CatalogFlowScreen, wiring: ScreenWirin
           `Catalog lesson has no activity: ${screen.episodeId}/${screen.unitKey}/${screen.activityIndex}`,
         );
       }
+      const cast = catalogLessonCastOf(plan, wiring.learnerFill.name ?? "");
+      // 틀린 문제 다시 풀기 국면이면 줄 머리 문항 하나를 원래 학습형 화면으로 세웁니다.
+      if (screen.review !== undefined) {
+        return renderCatalogReview(plan, { ...screen, review: screen.review }, wiring, cast);
+      }
       // 완료 카드의 `Lesson n` 칩은 맵 노드와 같은 순번입니다 — 계획은 구획을 모르므로 여기서 붙입니다.
       const ordinal = catalogLessonOrdinalOf(
         wiring.catalogSections,
@@ -66,7 +72,7 @@ export function renderCatalogFlow(screen: CatalogFlowScreen, wiring: ScreenWirin
         placed,
         screen,
         wiring,
-        catalogLessonCastOf(plan, wiring.learnerFill.name ?? ""),
+        cast,
         plan.itemRefs[screen.activityIndex] ?? [],
       );
     }

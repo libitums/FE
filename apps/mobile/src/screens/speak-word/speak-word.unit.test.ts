@@ -22,6 +22,7 @@ import {
   speakWordSessionReducer,
   speakWordSessionResults,
   speakWordSkippedCount,
+  speakWordSkippedIndexes,
 } from "./speak-word";
 import type { SpeakWordQuestion, SpeakWordSessionState } from "./speak-word.contract";
 
@@ -226,6 +227,12 @@ describe("결과 · 건너뜀 수", () => {
     expect(speakWordSkippedCount(["카드", null, "카트"])).toBe(1);
     expect(speakWordSkippedCount([null, null])).toBe(2);
     expect(speakWordSkippedCount([])).toBe(0);
+  });
+
+  it("SW6. 건너뛴 자리는 null의 순번이다 — 결선이 결과를 문항에 맞출 때 쓴다", () => {
+    expect(speakWordSkippedIndexes(["카드", null, "카트"])).toEqual([1]);
+    expect(speakWordSkippedIndexes([null, "카드", null])).toEqual([0, 2]);
+    expect(speakWordSkippedIndexes([])).toEqual([]);
   });
 
   it("SW6. 목록이 질문보다 짧으면 짧은 쪽까지만 센다", () => {
