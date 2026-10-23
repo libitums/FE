@@ -1,4 +1,5 @@
 import { afterEach, expect, test, vi } from "vitest";
+import { tapResultExit } from "./test-helpers/lesson-result";
 import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
@@ -365,7 +366,7 @@ test("EA3b. 전부 맞힌 최종 테스트: 재생 열은 여섯이고 결과 �
   expect(present("lesson-complete-screen-title")).toBe(true);
 
   vi.useFakeTimers();
-  tapButtonIn("lesson-complete-screen-exit");
+  tapResultExit();
   expect(present("catalog-cover-screen")).toBe(true);
   for (let i = 0; i < 3; i += 1) advanceCut();
   await act(async () => {

@@ -37,6 +37,20 @@ describe("이벤트 만들기", () => {
     });
   });
 
+  test("EV1. 결과 화면의 「다음 학습」으로 열면 startSource result가 실리고, 맵에서 열면 키가 없다", () => {
+    const start = {
+      episodeId: "u01-water",
+      unitKey: "S3",
+      questionCount: 10,
+      shownItemCount: 10,
+      skippedItemCount: 0,
+    };
+    expect(lessonStartedEventOf(start, "lesson", "result")).toMatchObject({
+      startSource: "result",
+    });
+    expect(lessonStartedEventOf(start, "lesson")).not.toHaveProperty("startSource");
+  });
+
   test("EV1. 시작 이벤트는 최종 테스트 역할도 낸다", () => {
     expect(
       lessonStartedEventOf(

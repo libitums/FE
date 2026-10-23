@@ -1,4 +1,5 @@
 import { u01OpenSeed } from "./test-helpers/progress-seed";
+import { tapResultExit } from "./test-helpers/lesson-result";
 import { lessonPlan } from "./test-helpers/episode-format-harness";
 import { solveLesson } from "./test-helpers/episode-format-solvers";
 import { catalogNodeTestId } from "./test-helpers/map-unit-testid";
@@ -126,8 +127,7 @@ test("[IT3] reducedMotion이 없으면 배지는 expressive이며 Back to map은
   await playFirstUnit({ safeAreaInsets: iosInsets });
   expect(rewardBadge().getAttribute("data-reward")).toBe("expressive");
 
-  const exit = screen.getByTestId("lesson-complete-screen-exit");
-  fireEvent.tap(exit.querySelector('[data-testid="ui-lynx-button"]')!, {});
+  tapResultExit();
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
 });
 

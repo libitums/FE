@@ -154,6 +154,9 @@ export type LessonCompleteCopy = {
   readonly mistakes: (count: number) => string;
   /** 0이면 빈 문자열 — 없는 수를 읽지 않습니다. 앞 쉼표를 포함합니다. */
   readonly skippedSuffix: (count: number) => string;
+  /** 통과 결과 화면의 「다음 학습」 버튼 — 다음이 레슨 · 문화일 때와 최종 테스트일 때. */
+  readonly nextLesson: string;
+  readonly nextFinal: string;
 };
 
 export type EpisodeIntroCopy = {

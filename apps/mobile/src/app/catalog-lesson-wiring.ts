@@ -23,9 +23,15 @@ import {
 } from "./catalog-lesson-plan";
 import type { CatalogFinishGuard } from "./catalog-finish-guard";
 import type { NavAction } from "./nav-state";
+import type { CatalogStartSource } from "../lib/catalog-learning-event.contract";
 
 export type CatalogLessonWiring = {
-  readonly onStartCatalogUnit: (episodeId: string, unitKey: CatalogUnitKey) => void;
+  /** `source`는 맵이 아닌 곳에서 열 때만 줍니다 — 결과 화면의 「다음 학습」(`result`). 시작 이벤트에 실립니다. */
+  readonly onStartCatalogUnit: (
+    episodeId: string,
+    unitKey: CatalogUnitKey,
+    source?: CatalogStartSource,
+  ) => void;
   /** 맵 말풍선의 진행 줄 전체 수 — 레슨은 표시 문항 수, 최종 테스트는 턴 수입니다. 짓지 못하면 0. */
   readonly catalogUnitItemCountOf: (episodeId: string, unitKey: CatalogUnitKey) => number;
   readonly onExitCatalogSession: () => void;
@@ -122,12 +128,16 @@ export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLesso
     });
   };
 
-  const startLesson = (episodeId: string, unitKey: CatalogUnitKey): void => {
+  const startLesson = (
+    episodeId: string,
+    unitKey: CatalogUnitKey,
+    source?: CatalogStartSource,
+  ): void => {
     const plan = catalogLessonPlanFor(episodeContent, episodeId, unitKey, learnerFill);
     if (plan === null) return;
     releaseFinish();
     clearSession();
-    sink?.(lessonStartedEventOf(plan, "lesson"));
+    sink?.(lessonStartedEventOf(plan, "lesson", source));
     if (plan.activities.length === 0) {
       // 보일 문항이 하나도 없는 유닛은 화면 없이 막지 않고 결과 화면으로 바로 보냅니다. 채점 문항이 0개여도
       // 카드가 있으면 카드를 한 장씩 보여야 하므로 기준은 채점 수가 아니라 표시 수(활동 유무)입니다.
@@ -142,7 +152,11 @@ export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLesso
     });
   };
 
-  const startFinal = (episodeId: string, unitKey: CatalogUnitKey): void => {
+  const startFinal = (
+    episodeId: string,
+    unitKey: CatalogUnitKey,
+    source?: CatalogStartSource,
+  ): void => {
     const plan = catalogFinalPlanFor(episodeContent, catalogSections, episodeId, learnerFill);
     if (plan === null) return;
     releaseFinish();
@@ -158,6 +172,7 @@ export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLesso
           skippedItemCount: plan.skippedItemCount,
         },
         "final",
+        source,
       ),
     );
     if (turnCount === 0) {
@@ -189,14 +204,14 @@ export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLesso
         catalogLessonPlanFor(episodeContent, episodeId, unitKey, learnerFill)?.shownItemCount ?? 0
       );
     },
-    onStartCatalogUnit: (episodeId, unitKey) => {
+    onStartCatalogUnit: (episodeId, unitKey, source) => {
       if (!canStartCatalogUnit(catalogSections, episodeId, unitKey, catalogProgress)) return;
       const section = sectionOf(episodeId);
       if (section === null) return;
       if (catalogUnitRoleOf(section, unitKey) === "final") {
-        startFinal(episodeId, unitKey);
+        startFinal(episodeId, unitKey, source);
       } else {
-        startLesson(episodeId, unitKey);
+        startLesson(episodeId, unitKey, source);
       }
     },
     onExitCatalogSession: () => {

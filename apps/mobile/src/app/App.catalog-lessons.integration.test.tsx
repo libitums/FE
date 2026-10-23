@@ -1,4 +1,5 @@
 import { legacyPassedSeed, legacyPassedRecord } from "./test-helpers/progress-seed";
+import { tapResultExit } from "./test-helpers/lesson-result";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
@@ -259,7 +260,7 @@ function passBanner(): void {
   }
   vi.useRealTimers();
 }
-const exitResult = () => tapButtonIn("lesson-complete-screen-exit");
+const exitResult = () => tapResultExit();
 
 function readAllCuts(count: number): void {
   for (let i = 0; i < count; i += 1) {
@@ -498,6 +499,21 @@ test("L2. (AC1 · 5) 카드 뒤 빈칸 고르기가 이어지는 S1: 카드 → 
       skippedCount: "0",
     },
   ]);
+});
+
+test("L2n. S1을 통과한 결과 화면의 「Next lesson」이 다음 레슨 S3을 바로 열고, 시작 이벤트에 출처 result가 실린다", async () => {
+  const { events } = await boot({ progress: upTo() });
+  tapNode(u01, "S1");
+  solveLesson(lessonPlan(u01, "S1"), true);
+  expect(screen.getByTestId("lesson-complete-screen-next")).toHaveTextContent("Next lesson");
+
+  fireEvent.tap(screen.getByTestId("lesson-complete-screen-next"), {});
+  await flush();
+
+  expect(screen.queryAllByTestId("lesson-complete-screen").length).toBe(0);
+  const started = learningEvents(events).filter((e) => e.name === "episode_lesson_started");
+  expect(started[started.length - 1]).toMatchObject({ unitKey: "S3", startSource: "result" });
+  expect(started[0]).not.toHaveProperty("startSource");
 });
 
 test("L2a. 노드를 누르면 말풍선이 서고(세션은 아직), 진행 줄 전체가 레슨의 표시 문항 수이며 Start가 레슨을 연다", async () => {

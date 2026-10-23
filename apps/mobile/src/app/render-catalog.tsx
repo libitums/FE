@@ -17,6 +17,7 @@ import { CatalogEpilogueFlow } from "./CatalogCutsFlow";
 import { renderCatalogActivity } from "./render-catalog-activity";
 import { catalogEpilogueModelOf } from "./catalog-cover-wiring";
 import { catalogFinalPlanFor } from "./catalog-final-model";
+import { catalogResultNextOf } from "./catalog-next-unit";
 import {
   catalogActivityPositionOf,
   catalogLessonCastOf,
@@ -112,6 +113,7 @@ export function renderCatalogFlow(screen: CatalogFlowScreen, wiring: ScreenWirin
           ticketsLeft={wiring.ticketsLeft}
           onExit={() => wiring.onExitCatalogUnitComplete(episodeId, unitKey, verdict)}
           onRetry={() => wiring.onStartCatalogUnit(episodeId, unitKey)}
+          {...catalogResultNextOf(wiring, episodeId, unitKey)}
         />
       );
     }

@@ -68,6 +68,8 @@ export const lessonCompleteEn: LessonCompleteCopy = {
   mistakes: (count) => (count === 0 ? "no mistakes" : n(count, "mistake", "mistakes")),
   skippedSuffix: (count) =>
     count === 0 ? "" : `, ${n(count, "skipped question", "skipped questions")}`,
+  nextLesson: "Next lesson",
+  nextFinal: "Final test",
 };
 
 // 학습 문항 안내 문구입니다. 닫는 법 줄은 `episodeIntro.guide.continue`를 씁니다.
