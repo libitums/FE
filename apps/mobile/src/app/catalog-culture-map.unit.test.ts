@@ -180,7 +180,7 @@ describe("문화 확인 매핑 (CKM)", () => {
   test("CKM2. 보기 하나의 en이 없거나 공백이면 choiceTranslations 키가 없고 나머지는 같다", () => {
     const full = questionOf(cultureCheckItemOf(cultureCheck(), port)) ?? {};
     const { choiceTranslations: _dropped, ...rest } = full;
-    expect(Object.hasOwn(full, "choiceTranslations")).toBe(true);
+    expect("choiceTranslations" in full).toBe(true);
     for (const en of [undefined, "   "]) {
       const item = cultureCheck({
         options: [
@@ -192,7 +192,7 @@ describe("문화 확인 매핑 (CKM)", () => {
 
       const question = questionOf(cultureCheckItemOf(item, port)) ?? {};
 
-      expect(Object.hasOwn(question, "choiceTranslations")).toBe(false);
+      expect("choiceTranslations" in question).toBe(false);
       expect(question).toEqual(rest);
     }
   });

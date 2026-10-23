@@ -192,7 +192,7 @@ export function WordChoiceActivity({
       form="word-choice"
       // 문화 확인 문항은 같은 낱말 고르기 형이어도 이름표가 `Culture quiz`입니다. 완료 카드에서는 마지막 문항을 따릅니다.
       formLabel={
-        (question ?? questions.at(-1))?.culture === undefined
+        (question ?? questions[questions.length - 1])?.culture === undefined
           ? undefined
           : copy.learningShell.cultureQuizLabel
       }

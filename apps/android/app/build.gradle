@@ -65,8 +65,8 @@ android {
     applicationId 'libitum.duru.android'
     minSdk 26
     targetSdk 36
-    // Play에 올릴 커밋에서 손으로 1 올린다 (spec §4). Play에는 2가 이미 올라가 있다.
-    versionCode 3
+    // Play에 올릴 커밋에서 손으로 1 올린다 (spec §4). Play에는 3이 이미 올라가 있다.
+    versionCode 4
     versionName '0.1.0'
     testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     // debug keeps these empty: dev-server and HMR errors must not reach the collector.
