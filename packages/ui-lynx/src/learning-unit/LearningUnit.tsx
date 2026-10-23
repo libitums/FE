@@ -51,7 +51,9 @@ export function LearningUnit(props: LearningUnitProps) {
       focusable={contract.interactive}
       bindtap={contract.interactive ? handleTap : undefined}
     >
-      <view className="ui-lynx-learning-unit-visual">
+      {/* 시각 층은 터치를 받지 않습니다 — 눌림의 축소가 손가락 아래 요소를 옮기면 Android Lynx가 탭을 취소합니다
+          (`SpecialUnit`과 같은 이유). 탭은 움직이지 않는 바깥 상자가 받습니다. */}
+      <view className="ui-lynx-learning-unit-visual" user-interaction-enabled={false}>
         <view className="ui-lynx-learning-unit-ring">
           <svg
             className="ui-lynx-learning-unit-ring-outline"

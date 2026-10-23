@@ -20,6 +20,14 @@ describe("LearningUnit", () => {
     expect(onTap).not.toHaveBeenCalled();
   });
 
+  test("탭은 움직이지 않는 루트가 받고, 눌림에 줄어드는 시각 층은 터치를 받지 않는다", () => {
+    render(<LearningUnit accessibilityLabel="발음 연습" icon={headset} status="available" />);
+    const unit = screen.getByTestId("ui-lynx-learning-unit");
+    expect(unit).not.toHaveAttribute("user-interaction-enabled");
+    const visual = unit.querySelector(".ui-lynx-learning-unit-visual");
+    expect(visual?.getAttribute("user-interaction-enabled")).toBe("false");
+  });
+
   test("Active는 학습 아이콘을 표시하고 현재 항목 상태와 탭을 전달한다", () => {
     const onTap = vi.fn<() => void>();
     render(
