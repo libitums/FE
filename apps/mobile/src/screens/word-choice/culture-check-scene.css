@@ -1,0 +1,84 @@
+/* 문화 확인 장면의 스타일입니다. 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). 면 · 그림자는 무대 카드(ui-lynx
+   `Card` stage)가, 말풍선 모양은 `ChatBubble`이, 아바타는 `Avatar`가 집니다 — 여기는 배치뿐입니다. */
+
+/* 장면 그림 — 가장자리까지 닿는 5:2 띠입니다. 13 mini에서 보기까지 한 화면에 서는 높이 예산에서 나온 값이라 비율을
+   크기 단계마다 바꾸지 않습니다. 문화 카드 그림은 세로로 길고(9:16) 얼굴 · 말풍선이 위쪽에 있어, 가운데 기준 자르기
+   (aspectFill)로는 몸통만 남습니다. 그래서 띠는 잘라 내는 틀로만 두고, 안의 그림을 틀 폭 기준 9:16으로 크게 그려
+   위쪽에서 조금(그림 높이의 약 5%) 내린 자리가 틀 위에 오게 합니다. 그림 크기를 몰라도 틀이 비지 않습니다. */
+.culture-check-scene-image {
+  width: 100%;
+  aspect-ratio: 5 / 2;
+  overflow: hidden;
+  background-color: var(--libitum-color-gray-100);
+  /* 위 모서리를 틀에 직접 줍니다 — iOS Lynx는 바깥 `Card.Media`의 둥근 모서리로 안쪽을 자르지 않습니다. */
+  border-top-left-radius: var(--libitum-radius-xl);
+  border-top-right-radius: var(--libitum-radius-xl);
+}
+
+.culture-check-scene-picture {
+  width: 100%;
+  aspect-ratio: 9 / 16;
+  margin-top: -10%;
+}
+
+/* 말풍선 줄들 — 상대 줄 아래에 내 줄이 붙습니다. */
+.culture-check-scene-lines {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-12);
+}
+
+.culture-check-scene-row {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  gap: var(--libitum-spacing-8);
+}
+
+.culture-check-scene-row-me {
+  justify-content: flex-end;
+}
+
+/* 말풍선은 줄의 남는 폭을 받고, 내 말풍선은 오른쪽으로 붙습니다. */
+.culture-check-scene-bubble {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+}
+
+.culture-check-scene-bubble-me {
+  justify-content: flex-end;
+}
+
+/* 내 대답이 붙는 움직임 — 작게 커지며 나타납니다. */
+.culture-check-scene-reply {
+  animation: culture-check-scene-reply-enter var(--libitum-motion-duration-d4)
+    var(--libitum-motion-easing-enter-expressive);
+}
+
+@keyframes culture-check-scene-reply-enter {
+  from {
+    opacity: 0;
+    transform: scale(var(--libitum-motion-scale-enter));
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* 움직임 줄이기: 크기 변화 없이 투명도만 바뀝니다. */
+.culture-check-scene-reply-motion-reduced {
+  animation: culture-check-scene-reply-fade var(--libitum-motion-duration-d2)
+    var(--libitum-motion-easing-linear);
+}
+
+@keyframes culture-check-scene-reply-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

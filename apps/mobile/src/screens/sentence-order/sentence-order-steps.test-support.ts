@@ -16,11 +16,6 @@ export const stepQuestions: Readonly<
   greeting: [
     {
       prompt: "안녕하세요",
-      support: {
-        translation: "Hello",
-        romanization: "annyeonghaseyo",
-        instruction: "Tap the greeting below to say hello back.",
-      },
       chips: ["안녕하세요"],
       answerOrder: [0],
     },
@@ -28,11 +23,6 @@ export const stepQuestions: Readonly<
   introduction: [
     {
       prompt: "이름이 뭐예요?",
-      support: {
-        translation: "What's your name?",
-        romanization: "ireumi mwoyeyo?",
-        instruction: "Tap the whole phrase below to ask someone's name.",
-      },
       chips: ["이름이 뭐예요?"],
       answerOrder: [0],
     },
@@ -40,11 +30,6 @@ export const stepQuestions: Readonly<
   ordering: [
     {
       prompt: "물 좀 주세요",
-      support: {
-        translation: "Water, please.",
-        romanization: "mul jom juseyo",
-        instruction: "Tap 물, then 좀, then 주세요 to say ‘Water, please.’",
-      },
       chips: ["주세요", "물", "좀"],
       answerOrder: [1, 2, 0],
     },
@@ -52,11 +37,6 @@ export const stepQuestions: Readonly<
   appointment: [
     {
       prompt: "내일 만나요",
-      support: {
-        translation: "See you tomorrow.",
-        romanization: "naeil mannayo",
-        instruction: "Build “See you tomorrow” using the phrase above.",
-      },
       chips: ["만나요", "내일"],
       answerOrder: [1, 0],
     },
@@ -64,11 +44,6 @@ export const stepQuestions: Readonly<
   directions: [
     {
       prompt: "역이 어디예요?",
-      support: {
-        translation: "Where is the station?",
-        romanization: "yeogi eodiyeyo?",
-        instruction: "Ask “Where is the station?” using the two pieces.",
-      },
       chips: ["어디예요?", "역이"],
       answerOrder: [1, 0],
     },

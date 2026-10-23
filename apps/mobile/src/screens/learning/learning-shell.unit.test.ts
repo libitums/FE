@@ -73,6 +73,12 @@ describe("learningSessionHeader", () => {
     expect(learningTimingFlag("speak-word")).toBe("libitum:navigation:learning-speak-word");
   });
 
+  it("LS-I3. 이름표를 갈음하면 머리 이름과 접근성 이름이 그것을 따른다(문화 확인)", () => {
+    const header = learningSessionHeader("word-choice", 0, 2, uiCopyEn, "Culture quiz");
+    expect(header.formLabel).toBe("Culture quiz");
+    expect(header.accessibilityLabel).toBe("Culture quiz, question 1 of 2");
+  });
+
   it("학습형마다 이름이 갈린다", () => {
     expect(learningSessionHeader("sentence-order", 0, 1, uiCopyEn).formLabel).toBe("Word order");
     expect(learningSessionHeader("culture", 0, 1, uiCopyEn).formLabel).toBe("Culture");
@@ -356,5 +362,21 @@ describe("껍데기 장면 (LSN)", () => {
       expect(stage[1]?.startsWith("learning-shell-stage-fill-")).toBe(true);
       expect(new Set(stage).size).toBe(stage.length);
     }
+  });
+
+  it("LSN6. 나뉜 배치라도 버튼 행이 흐름 안이면 완료 무대는 떠 있는 버튼 몫을 비우지 않는다", () => {
+    // 흐름 안 행은 제 높이를 스스로 차지합니다 — 무대가 떠 있는 버튼 몫(아래 여백)까지 비우면 두 번 비워
+    // 행이 안전 영역 밖으로 밀립니다(u00 S7 · S11 완료 카드의 See results, iPhone 13 mini 749~805).
+    expect(learningShellSceneClasses("split", "complete", "in-flow")).toEqual({
+      stage: ["learning-shell-stage-scene-complete", "learning-shell-stage-fill-flow"],
+      flow: [],
+    });
+    expect(learningShellSceneClasses("split", "complete", "floating").stage).toContain(
+      "learning-shell-stage-fill-rest",
+    );
+    expect(learningShellSceneClasses("split", "question", "in-flow")).toEqual({
+      stage: [],
+      flow: [],
+    });
   });
 });

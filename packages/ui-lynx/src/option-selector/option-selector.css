@@ -225,21 +225,33 @@
   background-color: var(--libitum-color-white);
 }
 
-.ui-lynx-option-selector-outlined .ui-lynx-option-selector-surface {
+/* Outlined-subtle · Default — 기본 테두리만 gray-300으로 옅습니다. 눌림 · 선택 · 비활성은 outlined와 같습니다. */
+.ui-lynx-option-selector-outlined-subtle .ui-lynx-option-selector-item {
+  border-color: var(--libitum-color-gray-300);
+  background-color: var(--libitum-color-white);
+}
+
+.ui-lynx-option-selector-outlined .ui-lynx-option-selector-surface,
+.ui-lynx-option-selector-outlined-subtle .ui-lynx-option-selector-surface {
   border-color: var(--libitum-color-white);
   background-color: var(--libitum-color-white);
 }
 
-.ui-lynx-option-selector-outlined .ui-lynx-option-selector-label {
+.ui-lynx-option-selector-outlined .ui-lynx-option-selector-label,
+.ui-lynx-option-selector-outlined-subtle .ui-lynx-option-selector-label {
   color: var(--libitum-color-fg-neutral);
 }
 
 /* Outlined · Pressed */
+.ui-lynx-option-selector-outlined-subtle .ui-lynx-option-selector-item-pressable:active,
 .ui-lynx-option-selector-outlined .ui-lynx-option-selector-item-pressable:active {
   background-color: var(--libitum-color-gray-100);
 }
 
 .ui-lynx-option-selector-outlined
+  .ui-lynx-option-selector-item-pressable:active
+  .ui-lynx-option-selector-surface,
+.ui-lynx-option-selector-outlined-subtle
   .ui-lynx-option-selector-item-pressable:active
   .ui-lynx-option-selector-surface {
   border-color: var(--libitum-color-gray-100);
@@ -247,12 +259,16 @@
 }
 
 /* Outlined · Selected */
-.ui-lynx-option-selector-outlined .ui-lynx-option-selector-item-selected {
+.ui-lynx-option-selector-outlined .ui-lynx-option-selector-item-selected,
+.ui-lynx-option-selector-outlined-subtle .ui-lynx-option-selector-item-selected {
   border-color: var(--libitum-color-brand-strong);
   background-color: var(--libitum-color-background-elevated);
 }
 
 .ui-lynx-option-selector-outlined
+  .ui-lynx-option-selector-item-selected
+  .ui-lynx-option-selector-surface,
+.ui-lynx-option-selector-outlined-subtle
   .ui-lynx-option-selector-item-selected
   .ui-lynx-option-selector-surface {
   border-color: var(--libitum-color-brand-strong);
@@ -261,17 +277,24 @@
 
 .ui-lynx-option-selector-outlined
   .ui-lynx-option-selector-item-selected
+  .ui-lynx-option-selector-label,
+.ui-lynx-option-selector-outlined-subtle
+  .ui-lynx-option-selector-item-selected
   .ui-lynx-option-selector-label {
   color: var(--libitum-color-fg-brand);
 }
 
 /* Outlined · Disabled */
-.ui-lynx-option-selector-outlined .ui-lynx-option-selector-item-disabled {
+.ui-lynx-option-selector-outlined .ui-lynx-option-selector-item-disabled,
+.ui-lynx-option-selector-outlined-subtle .ui-lynx-option-selector-item-disabled {
   border-color: var(--libitum-color-border-disabled);
   background-color: var(--libitum-color-gray-50);
 }
 
 .ui-lynx-option-selector-outlined
+  .ui-lynx-option-selector-item-disabled
+  .ui-lynx-option-selector-surface,
+.ui-lynx-option-selector-outlined-subtle
   .ui-lynx-option-selector-item-disabled
   .ui-lynx-option-selector-surface {
   border-color: var(--libitum-color-gray-50);
@@ -280,12 +303,18 @@
 
 .ui-lynx-option-selector-outlined
   .ui-lynx-option-selector-item-disabled
+  .ui-lynx-option-selector-label,
+.ui-lynx-option-selector-outlined-subtle
+  .ui-lynx-option-selector-item-disabled
   .ui-lynx-option-selector-label {
   color: var(--libitum-color-fg-disabled);
 }
 
 /* Outlined · Disabled + Selected — 2px 테두리 */
 .ui-lynx-option-selector-outlined
+  .ui-lynx-option-selector-item-disabled.ui-lynx-option-selector-item-selected
+  .ui-lynx-option-selector-surface,
+.ui-lynx-option-selector-outlined-subtle
   .ui-lynx-option-selector-item-disabled.ui-lynx-option-selector-item-selected
   .ui-lynx-option-selector-surface {
   border-color: var(--libitum-color-border-disabled);
@@ -378,4 +407,90 @@
 .ui-lynx-option-selector-m .ui-lynx-option-selector-item-disabled:focus,
 .ui-lynx-option-selector-l .ui-lynx-option-selector-item-disabled:focus {
   box-shadow: none;
+}
+
+/* 뜻 줄(FE 확장) — 라벨 아래 한 줄입니다. 두 줄 보기는 세로 안 여백을 한 단 줄여 키를 맞춥니다. */
+.ui-lynx-option-selector-text {
+  flex: 1 1 0;
+  min-width: var(--libitum-spacing-0);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  row-gap: var(--libitum-spacing-2);
+}
+
+.ui-lynx-option-selector-content .ui-lynx-option-selector-text {
+  flex: 0 1 auto;
+}
+
+.ui-lynx-option-selector-text .ui-lynx-option-selector-label {
+  flex: 0 0 auto;
+  width: 100%;
+}
+
+.ui-lynx-option-selector-m .ui-lynx-option-selector-text {
+  margin-top: calc(-1 * var(--libitum-spacing-8));
+  margin-bottom: calc(-1 * var(--libitum-spacing-8));
+}
+
+.ui-lynx-option-selector-s .ui-lynx-option-selector-text {
+  margin-top: calc(-1 * var(--libitum-spacing-6));
+  margin-bottom: calc(-1 * var(--libitum-spacing-6));
+}
+
+.ui-lynx-option-selector-l .ui-lynx-option-selector-text {
+  margin-top: calc(-1 * var(--libitum-spacing-8));
+  margin-bottom: calc(-1 * var(--libitum-spacing-8));
+}
+
+.ui-lynx-option-selector-meaning {
+  width: 100%;
+  text-align: center;
+  white-space: normal;
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  font-weight: var(--libitum-typography-body-s-font-weight);
+  line-height: var(--libitum-typography-body-s-line-height);
+  letter-spacing: var(--libitum-typography-body-s-letter-spacing);
+  color: var(--libitum-color-fg-neutral-muted);
+}
+
+.ui-lynx-option-selector-item-selected .ui-lynx-option-selector-meaning {
+  color: var(--libitum-color-fg-brand);
+}
+
+.ui-lynx-option-selector-item-disabled .ui-lynx-option-selector-meaning {
+  color: var(--libitum-color-fg-disabled);
+}
+
+/* Feedback(FE 확장) — 우선순위가 가장 높습니다. 판정 항목은 선택 · 비활성 클래스를 함께 갖지 않습니다.
+   테두리 2px = item 바깥 1px + surface 안쪽 1px. */
+.ui-lynx-option-selector-item-correct {
+  border-color: var(--libitum-color-feedback-correct);
+  background-color: var(--libitum-color-feedback-correct-surface);
+}
+
+.ui-lynx-option-selector-item-correct .ui-lynx-option-selector-surface {
+  border-color: var(--libitum-color-feedback-correct);
+  background-color: var(--libitum-color-feedback-correct-surface);
+}
+
+.ui-lynx-option-selector-item-correct .ui-lynx-option-selector-label,
+.ui-lynx-option-selector-item-correct .ui-lynx-option-selector-meaning {
+  color: var(--libitum-color-feedback-correct-text);
+}
+
+.ui-lynx-option-selector-item-incorrect {
+  border-color: var(--libitum-color-feedback-incorrect);
+  background-color: var(--libitum-color-feedback-incorrect-surface);
+}
+
+.ui-lynx-option-selector-item-incorrect .ui-lynx-option-selector-surface {
+  border-color: var(--libitum-color-feedback-incorrect);
+  background-color: var(--libitum-color-feedback-incorrect-surface);
+}
+
+.ui-lynx-option-selector-item-incorrect .ui-lynx-option-selector-label,
+.ui-lynx-option-selector-item-incorrect .ui-lynx-option-selector-meaning {
+  color: var(--libitum-color-feedback-incorrect-text);
 }

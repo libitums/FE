@@ -167,3 +167,17 @@ test("[LSC5] 나뉜 배치에서 완료가 오면 전환 클래스가 장면 클
   expect(byId(STAGE).getAttribute("data-page")).toBe("primed");
   expect(byId(STAGE).getAttribute("data-scene")).toBe("complete");
 });
+
+test("[LSC6] 나뉜 배치 · 흐름 안 버튼 행의 완료 장면: 무대는 남는 세로만 받고 버튼 몫을 따로 비우지 않는다", () => {
+  vi.useFakeTimers();
+  renderShell({ ...completeProps, actionPlacement: "in-flow" });
+  settle();
+
+  expect(screen.queryByTestId("learning-shell-scroll")).toBeNull();
+  expect(classOf(STAGE)).toBe(
+    "learning-shell-stage learning-shell-stage-scene-complete learning-shell-stage-fill-flow",
+  );
+  expect(classOf("learning-shell-actions")).toBe(
+    "learning-shell-actions learning-shell-actions-in-flow",
+  );
+});

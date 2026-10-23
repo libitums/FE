@@ -6,9 +6,11 @@ import { rgbaOfHex, surfaceToneClassName } from "./surface-tone";
 
 describe("surfaceToneClassName", () => {
   it("[ST1] light는 base 그대로, dark는 끝에 `<block>-surface-dark`를 공백 하나로 더한다", () => {
-    expect(surfaceToneClassName("answer-reveal", "answer-reveal", "light")).toBe("answer-reveal");
-    expect(surfaceToneClassName("answer-reveal", "answer-reveal", "dark")).toBe(
-      "answer-reveal answer-reveal-surface-dark",
+    expect(surfaceToneClassName("sentence-order-chip", "sentence-order-chip", "light")).toBe(
+      "sentence-order-chip",
+    );
+    expect(surfaceToneClassName("sentence-order-chip", "sentence-order-chip", "dark")).toBe(
+      "sentence-order-chip sentence-order-chip-surface-dark",
     );
     expect(surfaceToneClassName("a a-b", "a", "dark")).toBe("a a-b a-surface-dark");
   });

@@ -78,6 +78,7 @@ describe("따라 읽기 — 문항 음성", () => {
     const ids = [
       "read-aloud-sentence",
       "read-aloud-romanization",
+      "read-aloud-divider",
       "read-aloud-translation",
       "read-aloud-listen",
       "read-aloud-waves",

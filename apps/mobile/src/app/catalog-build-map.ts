@@ -7,7 +7,14 @@ import type { NonEmpty } from "../lib/non-empty";
 import type { SentenceOrderQuestion } from "../screens/sentence-order/sentence-order-questions";
 import type { SyllableBuildQuestion } from "../screens/syllable-build/syllable-build.contract";
 import { audioField, catalogAnswerEchoOf, catalogListenAudioOf } from "./catalog-item-audio";
-import { englishOf, instructionOf, koOf, optionalField, skippedItem } from "./catalog-item-text";
+import {
+  englishOf,
+  instructionOf,
+  koOf,
+  latinOf,
+  optionalField,
+  skippedItem,
+} from "./catalog-item-text";
 import type { CatalogLessonItemPort, CatalogMappedItem } from "./catalog-lesson-types";
 import { shuffledOrder } from "./catalog-shuffle";
 
@@ -64,11 +71,14 @@ export function listenBuildItemOf(
   }
   const order = shuffledOrder(`${port.episodeId}/${item.id}`, tiles.length);
   const english = englishOf(port, item.stimulus.audio?.en) ?? englishOf(port, item.answers[0]?.en);
+  const romanization =
+    latinOf(port, item.answers[0]?.roman) ?? latinOf(port, item.stimulus.audio?.roman);
   const question: SentenceOrderQuestion = {
     prompt: english ?? koOf(port, item.prompt.ko),
     chips: order.map((index) => tiles[index] ?? ""),
     answerOrder: picked.map((tile) => order.indexOf(tile)),
     audio,
+    ...(romanization === undefined ? {} : { reading: { romanization, shown: "always" as const } }),
     ...optionalField("instruction", instructionOf(port, item.prompt)),
   };
   return { kind: "sentence-order", itemId: item.id, question };

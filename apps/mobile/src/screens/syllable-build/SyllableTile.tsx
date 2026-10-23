@@ -54,17 +54,19 @@ export function SyllableTile({
   );
 }
 
-// 창고에서 타일이 빠져나간 자리입니다. 같은 크기의 회색 칸이 남아 창고의 배치가 흔들리지 않습니다.
-// 낭독하지 않습니다 — 조작 단위도 정보도 아닙니다.
+// 창고에서 타일이 빠져나간 자리입니다. 같은 크기의 칸이 글자를 남긴 채 비활성 색으로 서서 「이 글자는 이미 썼다」를 보이고
+// 창고의 배치가 흔들리지 않습니다. 이름은 `글자, used`이고 비활성으로 읽힙니다.
 export function SyllableTilePlaceholder({ index, text }: SyllableTilePlaceholderProps): ReactNode {
+  const copy = useUiCopy();
   return (
     <view
       className="syllable-tile syllable-tile-placeholder"
       data-testid={`syllable-build-bank-slot-${index}`}
-      accessibility-elements-hidden={true}
+      accessibility-element={true}
+      accessibility-label={copy.syllableBuild.usedTile(text)}
+      accessibility-traits="disabled"
     >
-      {/* 자리 폭을 타일 글자로 잡되 보이지 않게 둡니다 — 빈칸이 원래 타일과 같은 폭입니다. */}
-      <text className="syllable-tile-label syllable-tile-label-hidden">{text}</text>
+      <text className="syllable-tile-label">{text}</text>
     </view>
   );
 }

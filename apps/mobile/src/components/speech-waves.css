@@ -1,9 +1,10 @@
-/* 마이크(파형) 아이콘 — 100 × 100은 디자인 실측값입니다. */
+/* 마이크(파형) 아이콘 — 72 × 56입니다. 세로 칸 하한을 56으로 낮춰 카드와 아래 버튼 사이가 좁은 작은 기기에서도 한 화면에
+   서게 합니다(예전 100 × 100은 디자인 실측값이었습니다). */
 .speech-waves {
   flex-shrink: 0;
 }
 
 .speech-waves-icon {
-  width: 100px;
-  height: 100px;
+  width: calc(var(--libitum-spacing-64) + var(--libitum-spacing-8));
+  height: calc(var(--libitum-spacing-48) + var(--libitum-spacing-8));
 }

@@ -15,7 +15,7 @@ const meta = {
       width: "390px",
     }),
   argTypes: {
-    variant: { control: "inline-radio", options: ["outlined", "filled"] },
+    variant: { control: "inline-radio", options: ["outlined", "outlined-subtle", "filled"] },
     size: { control: "inline-radio", options: ["s", "m", "l"] },
     selection: { control: "inline-radio", options: ["single", "multiple"] },
     commit: { control: "inline-radio", options: ["deferred", "immediate"] },
@@ -24,6 +24,8 @@ const meta = {
     longLabels: { control: "boolean" },
     disabledLast: { control: "boolean" },
     committed: { control: "boolean" },
+    withMeaning: { control: "boolean" },
+    judged: { control: "boolean" },
     motion: { control: "inline-radio", options: ["standard", "reduced"] },
     onChange: { control: false },
     onCommit: { control: false },
@@ -38,6 +40,8 @@ const meta = {
     longLabels: false,
     disabledLast: false,
     committed: false,
+    withMeaning: false,
+    judged: false,
     motion: "standard",
     onChange: fn(),
     onCommit: fn(),
@@ -49,6 +53,11 @@ type Story = StoryObj<OptionSelectorStoryArgs>;
 
 export const Default: Story = {};
 export const Filled: Story = { args: { variant: "filled" } };
+export const OutlinedSubtle: Story = { args: { variant: "outlined-subtle" } };
+export const WithMeaning: Story = { args: { variant: "outlined-subtle", withMeaning: true } };
+export const Judged: Story = {
+  args: { variant: "outlined-subtle", withMeaning: true, judged: true, commit: "immediate" },
+};
 export const Multiple: Story = { args: { selection: "multiple" } };
 export const Immediate: Story = { args: { commit: "immediate", size: "l", longLabels: true } };
 export const Grid: Story = { args: { layout: "grid", size: "s" } };

@@ -14,6 +14,7 @@ import "./word-choice-picture.css";
 // 접근성 요소가 겹칩니다). 겹쳐 보이게 놓는 것은 CSS입니다.
 export function WordChoicePicture({
   url,
+  ratio = "4-3",
   meaning,
   state,
   answer,
@@ -24,7 +25,7 @@ export function WordChoicePicture({
   return (
     <view className="word-choice-picture" data-testid="word-choice-picture" data-loadState={state}>
       <view
-        className="word-choice-picture-frame"
+        className={`word-choice-picture-frame word-choice-picture-frame-${ratio}`}
         data-testid="word-choice-picture-frame"
         accessibility-element={true}
         accessibility-traits="image"

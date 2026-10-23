@@ -26,3 +26,31 @@ beforeEach(() => {
 afterEach(() => {
   forgetMapScroll();
 });
+
+// 시험 환경은 렌더 · 이벤트마다 스레드를 바꾸면서 전역 `SystemInfo`를 스레드 쪽 객체로 덮어씁니다. 그러면 시험이 창
+// 크기를 바꿔 둔 값(작은 기기 흉내)이 렌더에 닿기 전에 사라집니다. 스레드 쪽 `SystemInfo`를 「지금 전역 값(없으면
+// 처음 객체)」을 돌려주는 접근자로 바꿔, 덮어쓰기가 시험이 둔 값을 그대로 다시 쓰게 합니다.
+type ThreadScope = { SystemInfo?: unknown };
+const testingEnv = (
+  globalThis as unknown as {
+    lynxTestingEnv?: {
+      backgroundThread: { globalThis: ThreadScope };
+      mainThread: { globalThis: ThreadScope };
+    };
+  }
+).lynxTestingEnv;
+for (const thread of testingEnv === undefined
+  ? []
+  : [testingEnv.backgroundThread, testingEnv.mainThread]) {
+  const scope = thread.globalThis;
+  if (!("SystemInfo" in scope)) continue;
+  let base = scope.SystemInfo;
+  Object.defineProperty(scope, "SystemInfo", {
+    configurable: true,
+    enumerable: true,
+    get: () => (globalThis as ThreadScope).SystemInfo ?? base,
+    set: (value: unknown) => {
+      base = value;
+    },
+  });
+}

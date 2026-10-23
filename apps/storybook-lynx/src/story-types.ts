@@ -133,6 +133,10 @@ export type OptionSelectorStoryArgs = {
   longLabels: boolean;
   disabledLast: boolean;
   committed: boolean;
+  /** 보기마다 아래 뜻 줄을 그립니다(FE 확장). */
+  withMeaning: boolean;
+  /** 확정 뒤 모습입니다 — 고른 보기와 정답 보기에 판정을 싣습니다(FE 확장). */
+  judged: boolean;
   motion: Motion;
   onChange: (selectedIds: readonly string[]) => void;
   onCommit: (id: string) => void;
@@ -182,6 +186,8 @@ export type ChatBubbleStoryArgs = {
   contentLanguage: ChatBubbleContentLanguage;
   languageTag: string;
   reveal: "instant" | "typewriter";
+  /** 본문 아래 로마자 · 구분선 · 뜻 묶음을 그립니다(FE 확장). */
+  annotated: boolean;
   motion: Motion;
 };
 

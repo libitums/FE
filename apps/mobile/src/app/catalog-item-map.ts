@@ -11,10 +11,10 @@ import type {
 import { listenBuildItemOf, syllableBuildItemOf } from "./catalog-build-map";
 import { audioField, catalogAnswerEchoOf } from "./catalog-item-audio";
 import { cultureCardItemOf, vocabCardItemOf } from "./catalog-card-map";
+import { cultureCheckItemOf } from "./catalog-culture-map";
 import {
   clozeChoiceItemOf,
   clozeItemOf,
-  cultureCheckItemOf,
   listeningItemOf,
   particleItemOf,
   pictureChoiceItemOf,
@@ -22,7 +22,14 @@ import {
   roleLineItemOf,
   translateToEnItemOf,
 } from "./catalog-choice-map";
-import { englishOf, instructionOf, koOf, optionalField, skippedItem } from "./catalog-item-text";
+import {
+  englishOf,
+  instructionOf,
+  koOf,
+  latinOf,
+  optionalField,
+  skippedItem,
+} from "./catalog-item-text";
 import type {
   CatalogItemPort,
   CatalogLessonItemPort,
@@ -57,10 +64,15 @@ function wordOrderItemOf(
   }
   const order = shuffledOrder(`${port.episodeId}/${item.id}`, tiles.length);
   const english = englishOf(port, item.stimulus?.en) ?? englishOf(port, item.answers[0]?.en);
+  const romanization = latinOf(port, item.answers[0]?.roman);
   return sentenceOrder(item.id, {
     prompt: english ?? koOf(port, item.prompt.ko),
     chips: order.map((index) => tiles[index] ?? ""),
     answerOrder: tiles.map((_, tile) => order.indexOf(tile)),
+    // 정답 로마자는 Check 뒤에야 보입니다(답을 미리 알려 주지 않습니다).
+    ...(romanization === undefined
+      ? {}
+      : { reading: { romanization, shown: "after-check" as const } }),
     ...audioField(catalogAnswerEchoOf(item, port)),
     ...optionalField("instruction", instructionOf(port, item.prompt)),
   });
@@ -106,11 +118,20 @@ function turnOrderItemOf(item: ItemOf<"TURN_ORDER">, port: CatalogItemPort): Cat
   const speakers = catalogTurnSpeakersOf(item.tiles, item.answer);
   if (speakers === null) return skippedItem(item, "malformed");
   const order = shuffledOrder(`${port.episodeId}/${item.id}`, tiles.length);
+  // 창고 조각의 화자는 그 타일이 정답에서 서는 자리의 칸 화자입니다.
+  const chipSpeakers = order.map(
+    (tile): DialogueSpeaker => speakers[item.answer.indexOf(tile)] ?? "counterpart",
+  );
+  const meanings = item.tiles.map((tile) => englishOf(port, tile.en));
+  const chipMeanings = meanings.every((meaning) => meaning !== undefined)
+    ? order.map((tile) => meanings[tile] ?? "")
+    : undefined;
   return sentenceOrder(item.id, {
     prompt,
     chips: order.map((index) => tiles[index] ?? ""),
     answerOrder: item.answer.map((tile) => order.indexOf(tile)),
-    dialogue: { speakers },
+    dialogue: { speakers, chipSpeakers },
+    ...(chipMeanings === undefined ? {} : { chipMeanings }),
     ...optionalField("instruction", instructionOf(port, item.prompt)),
   });
 }

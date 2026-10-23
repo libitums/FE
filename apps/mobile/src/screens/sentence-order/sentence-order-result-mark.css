@@ -1,0 +1,6 @@
+/* 판정 모양 아이콘 — 라벨 옆에 icon-size-xs로 서고 줄어들지 않습니다. */
+.sentence-order-result-mark {
+  width: var(--libitum-icon-size-xs);
+  height: var(--libitum-icon-size-xs);
+  flex-shrink: 0;
+}

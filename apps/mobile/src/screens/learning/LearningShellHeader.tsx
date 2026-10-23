@@ -17,6 +17,7 @@ export type LearningShellHeaderProps = {
   readonly questionCount: number;
   readonly runProgress: LearningRunProgress | undefined;
   readonly onExit: () => void;
+  readonly formLabel?: string | undefined;
 };
 
 export function LearningShellHeader({
@@ -25,6 +26,7 @@ export function LearningShellHeader({
   questionCount,
   runProgress,
   onExit,
+  formLabel,
 }: LearningShellHeaderProps): ReactNode {
   // 가벼운 헤더는 스스로 층(`z-index`)을 가집니다 — 회색 상자를 감싸는 층이 필요 없습니다.
   if (runProgress !== undefined) {
@@ -42,6 +44,7 @@ export function LearningShellHeader({
         questionIndex={questionIndex}
         questionCount={questionCount}
         onExit={onExit}
+        {...(formLabel === undefined ? {} : { formLabel })}
       />
     </view>
   );

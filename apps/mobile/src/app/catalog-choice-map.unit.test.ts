@@ -48,5 +48,37 @@ describe("listeningItemOf — u00 S2", () => {
     expect(mapped).toMatchObject({ kind: "listening", itemId: item.id });
     if (mapped.kind !== "listening") return;
     expect(mapped.question.audio).toBeNull();
+    // MP1: 듣고 고르기는 답하기 전 로마자 참고 줄을 켭니다.
+    expect(mapped.question.beforeAnswer).toBe("romanization");
+    expect(mapped.question).not.toHaveProperty("romanizationHint");
+  });
+
+  test("MP2. 최소 대립쌍(MIN_PAIR_AB)은 답 전 대본 갈래를 정하지 않는다 — 로마자가 곧 정답이다", () => {
+    const entry = u00();
+    const port: CatalogLessonItemPort = {
+      fill,
+      episodeId: TUTORIAL_EPISODE_ID,
+      glossOf: catalogGlossOf(entry.episode.words, fill),
+      imageUrlOf: (path) => `https://cdn/${path}`,
+      audioUrlOf: () => null,
+    };
+    const listen = entry.episode.units
+      .find((unit) => unit.id === "S2")
+      ?.items.find(
+        (candidate): candidate is Extract<LearningItem, { type: "LISTEN_SELECT" }> =>
+          candidate.type === "LISTEN_SELECT",
+      );
+    expect(listen).toBeDefined();
+    if (listen === undefined) return;
+    const pair = { ...listen, type: "MIN_PAIR_AB" } as unknown as Extract<
+      LearningItem,
+      { type: "MIN_PAIR_AB" }
+    >;
+
+    const mapped = listeningItemOf(pair, port);
+    expect(mapped.kind).toBe("listening");
+    if (mapped.kind !== "listening") return;
+    expect(mapped.question).not.toHaveProperty("beforeAnswer");
+    expect(mapped.question).not.toHaveProperty("romanizationHint");
   });
 });

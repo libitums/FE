@@ -6,7 +6,12 @@ import { normalizeChatBubbleStoryArgs } from "../chat-bubble-story";
 import "./story-canvas.css";
 
 function App() {
-  const args = normalizeChatBubbleStoryArgs(useInitData());
+  const initData = useInitData();
+  const args = normalizeChatBubbleStoryArgs(initData);
+  const annotated = (initData as { annotated?: unknown } | null)?.annotated === true;
+  const annotation = annotated
+    ? { romanization: "hangugeo jalhasineyo!", meaning: "Your Korean is so good!" }
+    : undefined;
 
   return (
     <view className="story-canvas">
@@ -23,6 +28,7 @@ function App() {
               reveal={args.reveal}
               size={args.size}
               speaker={args.speaker}
+              annotation={annotation}
             />
           ) : (
             <ChatBubble
@@ -34,6 +40,7 @@ function App() {
               reveal={args.reveal}
               size={args.size}
               speaker={args.speaker}
+              annotation={annotation}
             />
           )}
         </MotionProvider>

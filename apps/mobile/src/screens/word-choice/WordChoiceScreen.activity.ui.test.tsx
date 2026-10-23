@@ -1,5 +1,5 @@
 import { expect, test, vi } from "vitest";
-import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
+import { fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import type { AnswerResult } from "../../lib/answer-result";
 import { uiCopyEn } from "../../lib/ui-copy-en";
@@ -43,10 +43,10 @@ function mount(
 test("UW1. 보기가 셋인 문항은 보기 셋 · 로마자 줄 · 뜻 줄 · 문항의 지시문을 그린다", () => {
   mount([roleLine]);
 
-  expect(screen.getByTestId("word-choice-option-0")).toBeInTheDocument();
-  expect(screen.getByTestId("word-choice-option-1")).toBeInTheDocument();
-  expect(screen.getByTestId("word-choice-option-2")).toBeInTheDocument();
-  expect(screen.queryByTestId("word-choice-option-3")).not.toBeInTheDocument();
+  expect(screen.getByTestId("ui-lynx-option-selector-item-choice-0")).toBeInTheDocument();
+  expect(screen.getByTestId("ui-lynx-option-selector-item-choice-1")).toBeInTheDocument();
+  expect(screen.getByTestId("ui-lynx-option-selector-item-choice-2")).toBeInTheDocument();
+  expect(screen.queryByTestId("ui-lynx-option-selector-item-choice-3")).not.toBeInTheDocument();
   expect(screen.getByTestId("word-choice-screen-prompt")).toHaveTextContent(
     "이름이 어떻게 되세요?",
   );
@@ -65,7 +65,7 @@ test("UW2. 뜻을 고르는 문항은 뜻 줄이 없고(정답을 드러내지 �
   expect(screen.getByTestId("word-choice-screen-romanization")).toHaveTextContent("iljuil");
   expect(screen.queryByTestId("word-choice-screen-translation")).not.toBeInTheDocument();
   for (const index of [0, 1, 2, 3]) {
-    expect(screen.getByTestId(`word-choice-option-${index}`)).toBeInTheDocument();
+    expect(screen.getByTestId(`ui-lynx-option-selector-item-choice-${index}`)).toBeInTheDocument();
   }
 });
 
@@ -73,7 +73,10 @@ test("UW3. 정답 보기를 탭하고 넘긴 뒤 결과를 보면 판정 배열�
   const onFinish = vi.fn<(results: readonly AnswerResult[], skippedCount: number) => void>();
   mount([roleLine], onFinish);
 
-  fireEvent.tap(screen.getByTestId(`word-choice-option-${roleLine.answerIndex}`), {});
+  fireEvent.tap(
+    screen.getByTestId(`ui-lynx-option-selector-item-choice-${roleLine.answerIndex}`),
+    {},
+  );
   fireEvent.tap(screen.getByTestId("learning-shell-advance"), {});
   expect(onFinish).toHaveBeenCalledTimes(0);
   fireEvent.tap(screen.getByTestId("learning-shell-action"), {});
@@ -109,14 +112,15 @@ const clozeWordChoices: WordChoiceQuestion = {
 };
 
 // 기기 확인(2026-10-12): 다섯 글자 보기 셋이 한 줄에 서면 칩이 바닥까지 줄어 글자가 테두리에 닿거나 잘렸다.
-test("UW5. 보기 중 하나라도 다섯 글자 이상이면 세로로 쌓고, 짧은 낱말만이면 한 줄에 둔다", () => {
+test("UW5. 보기는 길이와 상관없이 세로로 쌓는다 — 다섯 글자 이상이어도 짧은 낱말만이어도 같다", () => {
   const { unmount } = mount([clozeSentenceChoices]);
-  expect(screen.getByTestId("word-choice-screen-options")).toHaveAttribute(
-    "data-layout",
-    "stacked",
-  );
+  expect(
+    within(screen.getByTestId("word-choice-screen-options")).getByTestId("ui-lynx-option-selector"),
+  ).toHaveAttribute("data-layout", "stack");
   unmount();
 
   mount([clozeWordChoices]);
-  expect(screen.getByTestId("word-choice-screen-options")).toHaveAttribute("data-layout", "row");
+  expect(
+    within(screen.getByTestId("word-choice-screen-options")).getByTestId("ui-lynx-option-selector"),
+  ).toHaveAttribute("data-layout", "stack");
 });

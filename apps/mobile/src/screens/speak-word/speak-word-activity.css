@@ -1,35 +1,29 @@
 /* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1) — 색·간격·타이포의 생값을 적지 않습니다.
    뼈대(상단 바 · 세션 헤더 · 지시문 · 무대 카드 · 아래 버튼)는 `LearningShell`이 집니다. 여기 남는 것은
-   카드 안의 배치 — 판정 자리 · 그림 틀 · 뜻 줄 · 정답 상자 · 파형과 안내 줄입니다. 모든 글줄은 가운데 정렬이고
+   카드 안의 배치 — 그림 틀 · 정답 로마자 · 정답 상자 — 와 작업 영역의 파형과 안내 줄입니다. 모든 글줄은 가운데 정렬이고
    줄바꿈을 막지 않습니다(WCAG 1.4.4) — 말줄임도 없습니다. */
 
-/* 카드 안 — 위에서 아래로, 가로 가운데입니다. 높이 하한 244는 말하기 카드와 같습니다. 하한이지 고정이
-   아닙니다. */
+/* 카드 안 — 위에서 아래로, 가로 가운데입니다(그림 → 정답 로마자 또는 정답 상자). 높이는 내용 높이입니다. */
 .speak-word-activity-content {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--libitum-spacing-16);
-  min-height: 244px;
 }
 
-.speak-word-activity-verdict-slot {
-  min-height: var(--libitum-spacing-32);
+/* S5의 정답 로마자는 한글이 없는 카드의 주인공이라 글 역할(기울임 · medium · muted) 그대로 heading-m 크기입니다. */
+.speak-word-activity-content .text-role-romanization {
+  font-size: var(--libitum-typography-heading-m-font-size);
+  line-height: var(--libitum-typography-heading-m-line-height);
+  letter-spacing: var(--libitum-typography-heading-m-letter-spacing);
+}
+
+/* 파형 칸 — 카드 밖 작업 영역의 가운데에 서고, 칸 하한 56은 아이콘 높이와 같습니다. */
+.speak-word-activity-waves-slot {
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-}
-
-/* 영어 뜻 줄 — 그림 틀 바로 아래, 타자 입력 단서와 같은 값(`heading-s` + `gray-900`)입니다. */
-.speak-word-activity-meaning {
-  text-align: center;
-  color: var(--libitum-color-gray-900);
-  font-family: var(--libitum-typography-heading-s-font-family);
-  font-weight: var(--libitum-typography-heading-s-font-weight);
-  font-size: var(--libitum-typography-heading-s-font-size);
-  line-height: var(--libitum-typography-heading-s-line-height);
-  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
+  min-height: calc(var(--libitum-spacing-48) + var(--libitum-spacing-8));
 }
 
 /* 고정 버튼 행의 보조 동작: 준비에서는 Skip, 받아쓰기 오류에서는 Try again. */
@@ -44,7 +38,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding-top: var(--libitum-spacing-48);
+  padding-top: var(--libitum-spacing-16);
 }
 
 .speak-word-activity-hint {

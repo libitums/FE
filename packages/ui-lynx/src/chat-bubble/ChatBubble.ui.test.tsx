@@ -195,3 +195,31 @@ describe("ChatBubble motion 컨텍스트", () => {
     expect(screen.getByTestId("ui-lynx-chat-bubble")).toHaveAttribute("data-status", "revealing");
   });
 });
+
+test("CB4: annotation은 로마자 · 구분선 · 뜻을 말풍선 안에 그리고 이름에 싣는다", () => {
+  render(
+    <ChatBubble
+      direction="incoming"
+      speaker="Partner"
+      message="한국어 잘하시네요!"
+      annotation={{ romanization: "hangugeo jalhasineyo!", meaning: "Your Korean is so good!" }}
+    />,
+  );
+
+  const bubble = screen.getByTestId("ui-lynx-chat-bubble");
+  const romanization = screen.getByTestId("ui-lynx-chat-bubble-annotation-romanization");
+  const meaning = screen.getByTestId("ui-lynx-chat-bubble-annotation-meaning");
+  expect(romanization).toHaveTextContent("hangugeo jalhasineyo!");
+  expect(meaning).toHaveTextContent("Your Korean is so good!");
+  expect(bubble).toContainElement(romanization);
+  expect(bubble).toContainElement(meaning);
+  // 로마자와 뜻 사이에 구분선 요소가 한 칸 선다.
+  expect(romanization.nextElementSibling).not.toBeNull();
+  expect(romanization.nextElementSibling).not.toBe(meaning);
+  expect(romanization.nextElementSibling?.nextElementSibling).toBe(meaning);
+  expect(bubble).toHaveAttribute(
+    "accessibility-label",
+    "Partner: 한국어 잘하시네요!, hangugeo jalhasineyo!, Your Korean is so good!",
+  );
+  expect(screen.queryByTestId("ui-lynx-chat-bubble-translation")).toBeNull();
+});

@@ -7,6 +7,7 @@ import type { AnswerResult } from "../../lib/answer-result";
 import type { UiCopy } from "../../lib/ui-copy.contract";
 import type {
   SyllableBuildCopy,
+  SyllableBuildPhase,
   SyllableBuildQuestion,
   SyllableBuildSessionAction,
   SyllableBuildSessionState,
@@ -145,4 +146,16 @@ export function syllableBuildWordAccessibilityOf(
 
 export function syllableBuildCompletionAnnouncement(nextActionLabel: string, copy: UiCopy): string {
   return `${copy.common.allQuestionsDone}, ${nextActionLabel}`;
+}
+
+/** 답 칸의 상태: 놓임(`filled`) · 다음에 채울 칸(`current`) · 빈 칸(`empty`). */
+export type SyllableSlotState = "filled" | "current" | "empty";
+
+export function syllableSlotStateOf(
+  position: number,
+  placedCount: number,
+  phase: SyllableBuildPhase,
+): SyllableSlotState {
+  if (position < placedCount) return "filled";
+  return phase === "building" && position === placedCount ? "current" : "empty";
 }

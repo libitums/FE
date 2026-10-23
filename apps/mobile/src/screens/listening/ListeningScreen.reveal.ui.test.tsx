@@ -40,7 +40,7 @@ function renderScreen(
 const text = () => screen.queryByTestId("listening-prompt-text");
 const romanization = () => screen.queryByTestId("listening-prompt-romanization");
 const tapChoice = (index: number) =>
-  fireEvent.tap(screen.getByTestId(`listening-choice-${index}`), {});
+  fireEvent.tap(screen.getByTestId(`ui-lynx-option-selector-item-choice-${index}`), {});
 const wrongIndexOf = (answerIndex: number) => (answerIndex === 0 ? 1 : 0);
 
 test("[RS1] 초기 옵션 — 판정 전에는 대본(한국어 · 로마자)이 없다", () => {

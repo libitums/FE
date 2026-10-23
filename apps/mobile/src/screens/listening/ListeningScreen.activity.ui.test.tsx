@@ -111,10 +111,13 @@ test("UL3. 정답 · 오답으로 풀고 결과를 보면 판정 배열과 건�
   expect(screen.getByTestId("learning-shell-instruction")).toHaveTextContent("What did you hear?");
 
   const [first, second] = silentQuestions;
-  fireEvent.tap(screen.getByTestId(`listening-choice-${first.answerIndex}`), {});
+  fireEvent.tap(screen.getByTestId(`ui-lynx-option-selector-item-choice-${first.answerIndex}`), {});
   fireEvent.tap(screen.getByTestId("learning-shell-advance"), {});
   // 둘째 문항에서 정답이 아닌 보기를 고릅니다.
-  fireEvent.tap(screen.getByTestId(`listening-choice-${second.answerIndex === 0 ? 1 : 0}`), {});
+  fireEvent.tap(
+    screen.getByTestId(`ui-lynx-option-selector-item-choice-${second.answerIndex === 0 ? 1 : 0}`),
+    {},
+  );
   fireEvent.tap(screen.getByTestId("learning-shell-advance"), {});
 
   expect(onFinish).toHaveBeenCalledTimes(0);

@@ -5,6 +5,7 @@ import { LearningShell } from "./LearningShell";
 import { SentenceOrderChip } from "../sentence-order/SentenceOrderChip";
 import { PlaybackPrompt } from "../listening/ListeningPrompt.test-support";
 import { initialSessionOptions } from "../../lib/session-options";
+import { listenButtonIn } from "../../components/listen-round-buttons.test-support";
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -93,8 +94,8 @@ test("듣기 재생과 다시 듣기 버튼은 공통 클릭음을 낸다", () =
     />,
   );
 
-  fireEvent.tap(screen.getByTestId("listening-prompt-playback"), {});
-  fireEvent.tap(screen.getByTestId("listening-prompt-replay"), {});
+  fireEvent.tap(listenButtonIn("listening-prompt-playback"), {});
+  fireEvent.tap(listenButtonIn("listening-prompt-replay"), {});
 
   expect(play).toHaveBeenCalledTimes(2);
   expect(play).toHaveBeenNthCalledWith(1, "button");

@@ -168,7 +168,7 @@ describe("TI2 소리 — 음성 단서 · 잠금 해제 · 효과음 차례", ()
         "d-04",
         "d-05",
         "d-06",
-        "post-1",
+        "post-1-v3",
         "post-2",
       ].map((id) => u00AudioUrl(id)),
     );

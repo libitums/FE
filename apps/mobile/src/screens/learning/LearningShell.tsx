@@ -6,6 +6,7 @@ import { Dialog } from "@libitums/ui-lynx/dialog";
 import { LearningShellActions } from "./LearningShellActions";
 import { LearningShellBody } from "./LearningShellBody";
 import { useLearningShellFlow } from "./use-learning-shell-flow";
+import { useLearningDensity } from "./use-learning-density";
 import { useQuestionTransition } from "./use-question-transition";
 import {
   learningShellArrangement,
@@ -54,18 +55,27 @@ export function LearningShell({
   obscured,
   runProgress,
   actionButton,
+  verdict,
+  feedback,
+  actionPlacement = "floating",
+  densityOverride,
+  formLabel,
 }: LearningShellProps): ReactNode {
   const copy = useUiCopy();
+  const deviceDensity = useLearningDensity();
+  const density = densityOverride ?? deviceDensity;
   const actionsShown =
     actionButton !== undefined || (actionLabel !== undefined && onAction !== undefined);
   const workspaceMode = learningWorkspaceMode({ scrolls: workspaceScrolls, actionsShown });
   const { flow, reportViewportHeight } = useLearningShellFlow(workspaceMode);
   const arrangement = learningShellArrangement({ scrollCard, flow });
+  const actionsInFlow = arrangement !== "split" || actionPlacement === "in-flow";
   useLearningShellScrollReset({
     arrangement,
     questionIndex,
     complete,
-    answered: advance !== undefined,
+    // 넘김 걸음이 생기거나 판정 · 해설 판이 서는 순간이 「답한 순간」입니다.
+    answered: advance !== undefined || verdict !== undefined || feedback !== undefined,
   });
   // 나가기는 **두 걸음**입니다 ⟨2026-09-28⟩. `×`는 묻기만 하고, 실제로 떠나는 것은
   // 모달의 `그만두기`입니다.
@@ -155,8 +165,9 @@ export function LearningShell({
 
   return (
     <view
-      className="learning-shell"
+      className={`learning-shell learning-shell-density-${density}`}
       data-testid="learning-shell"
+      data-density={density}
       accessibility-elements-hidden={obscured}
       // 이 화면이 서는 한 바퀴를 SDK가 재게 하는 표식입니다 — 값과 근거는 계약이 집니다.
       __lynx_timing_flag={learningTimingFlag(form)}
@@ -167,11 +178,13 @@ export function LearningShell({
         questionCount={questionCount}
         runProgress={runProgress}
         onExit={handleExit}
+        formLabel={formLabel}
       />
       {/* 카드 스크롤 모드는 버튼 행의 실제 높이를 먼저 확보합니다. */}
       <LearningShellBody
         arrangement={arrangement}
         instruction={complete ? undefined : instruction}
+        verdict={complete ? undefined : verdict}
         card={card}
         stage={stage}
         workspace={workspace}
@@ -179,6 +192,7 @@ export function LearningShell({
         onViewportHeight={reportViewportHeight}
         transition={{ phase, motion }}
         scene={learningShellScene(complete)}
+        actions={actionsShown && actionsInFlow ? "in-flow" : "floating"}
       />
       {/* 스스로 넘어가는 동안 화면 전체가 이 이름의 조작 단위입니다 — 보이는 버튼은
           없지만 기다리는 것 말고 할 수 있는 일이 있어야 합니다(WCAG 2.2.1). 세션 헤더는
@@ -195,11 +209,12 @@ export function LearningShell({
       )}
       {actionsShown ? (
         <LearningShellActions
-          button={actionButton}
+          button={typeof actionButton === "function" ? actionButton(handleAction) : actionButton}
           label={actionLabel ?? ""}
           onAction={handleAction}
           secondaryAction={secondaryAction}
-          inFlow={arrangement !== "split"}
+          inFlow={actionsInFlow}
+          feedback={complete ? undefined : feedback}
         />
       ) : null}
       {/* 나가기 확인입니다. **무엇을 잃는지 본문에 적습니다** — 「그만두시겠어요?」만

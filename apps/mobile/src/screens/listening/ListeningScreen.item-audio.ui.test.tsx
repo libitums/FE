@@ -122,7 +122,7 @@ describe("ListeningActivity — 문항 음성", () => {
     const { lesson, onListenItemAnswered } = lessonAudioStub();
     mount([soundful("S2-01")], lesson);
 
-    fireEvent.tap(screen.getByTestId("listening-choice-0"), {});
+    fireEvent.tap(screen.getByTestId("ui-lynx-option-selector-item-choice-0"), {});
 
     expect(onListenItemAnswered).toHaveBeenCalledTimes(1);
     expect(onListenItemAnswered).toHaveBeenCalledWith(
@@ -139,7 +139,7 @@ describe("ListeningActivity — 문항 음성", () => {
     const { lesson, onListenItemAnswered } = lessonAudioStub();
     mount([soundful("S2-01")], lesson);
 
-    fireEvent.tap(screen.getByTestId("listening-choice-1"), {});
+    fireEvent.tap(screen.getByTestId("ui-lynx-option-selector-item-choice-1"), {});
 
     expect(onListenItemAnswered).toHaveBeenCalledWith(
       expect.objectContaining({ result: "incorrect" }),
@@ -150,7 +150,7 @@ describe("ListeningActivity — 문항 음성", () => {
     const { lesson, onListenItemAnswered } = lessonAudioStub();
     mount([silent], lesson);
 
-    fireEvent.tap(screen.getByTestId("listening-choice-0"), {});
+    fireEvent.tap(screen.getByTestId("ui-lynx-option-selector-item-choice-0"), {});
 
     expect(onListenItemAnswered).not.toHaveBeenCalled();
   });
@@ -160,7 +160,7 @@ describe("ListeningActivity — 문항 음성", () => {
     mount([soundful("S2-01"), soundful("S8-01")], lesson);
     expect(playAudio).toHaveBeenCalledTimes(1);
 
-    fireEvent.tap(screen.getByTestId("listening-choice-0"), {});
+    fireEvent.tap(screen.getByTestId("ui-lynx-option-selector-item-choice-0"), {});
     fireEvent.tap(screen.getByTestId("learning-shell-advance"), {});
 
     expect(playAudio).toHaveBeenCalledTimes(2);

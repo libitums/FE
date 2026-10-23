@@ -232,6 +232,8 @@ export const deliveryEpisodeSchema = z.object({
   time_of_day: z.string(),
   place: z.string(),
   counterpart: z.string(),
+  // 선택 그림 경로입니다. 규칙에 어긋나도 에피소드 전체가 실패하지 않도록 값 검사는 디코더가 합니다.
+  counterpart_avatar: z.nullish(z.string()),
   pre_cuts: z.array(cutSchema),
   dialogue: z.array(dialogueLineSchema),
   post_cuts: z.array(cutSchema),

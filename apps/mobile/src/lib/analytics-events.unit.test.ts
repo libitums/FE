@@ -196,11 +196,12 @@ describe("AN1 분석 계약의 크기", () => {
     "phone_call_unit_opened",
   ];
 
-  test("AN1. 이벤트 이름은 37개이고 지운 여덟이 없다", () => {
+  test("AN1. 이벤트 이름은 38개이고 지운 여덟이 없다", () => {
     const source = readFileSync(resolve(process.cwd(), "src/lib/analytics-event-names.ts"), "utf8");
     const names = [...source.matchAll(/^\s+\| "([a-z_]+)"/gm)].map((match) => match[1]);
-    expect(names).toHaveLength(37);
+    expect(names).toHaveLength(38);
     expect(names).toContain("episode_listen_item_answered");
+    expect(names).toContain("episode_item_answered");
     for (const name of removedNames) expect(names).not.toContain(name);
   });
 

@@ -3,14 +3,17 @@
 import type {
   CatalogUnitRole,
   EpisodeFinalPassedEvent,
+  EpisodeItemAnsweredEvent,
   EpisodeLessonFinishedEvent,
   EpisodeLessonStartedEvent,
   EpisodeListenItemAnsweredEvent,
 } from "../lib/catalog-learning-event.contract";
 import type { CatalogUnitKey } from "../lib/catalog-progress";
+import { scoredItemTypeOf, type ItemAnswerReport } from "../lib/item-answer";
 import type { ListenItemReport } from "../lib/question-audio";
 import type { AnswerResult } from "../lib/answer-result";
 import type { AssessmentVerdict } from "../screens/assessment/assessment";
+import type { CatalogItemRef } from "./catalog-lesson-types";
 
 const correctCountOf = (results: readonly AnswerResult[]): string =>
   String(results.filter((result) => result === "correct").length);
@@ -86,5 +89,25 @@ export function listenItemAnsweredEventOf(
     slowTurnedOn: report.slowTurnedOn,
     replayCount: String(report.replayCount),
     slowReplayCount: String(report.slowReplayCount),
+  };
+}
+
+/** 채점 문항의 첫 판정 이벤트입니다. 채점 유형이 아니면 `null`입니다. */
+export function itemAnsweredEventOf(
+  episodeId: string,
+  unitKey: CatalogUnitKey,
+  ref: CatalogItemRef,
+  report: ItemAnswerReport,
+): EpisodeItemAnsweredEvent | null {
+  const itemType = scoredItemTypeOf(ref.itemType);
+  if (itemType === null) return null;
+  return {
+    name: "episode_item_answered",
+    episodeId,
+    unitKey,
+    itemId: ref.itemId,
+    itemType,
+    result: report.outcome,
+    density: report.density,
   };
 }

@@ -88,6 +88,8 @@ export type JourneyMapCopy = {
 /** 학습 껍데기(머리 · 나가기 대화상자)입니다. 형식 라벨은 기존 영어(`formLabels`)를 받습니다. */
 export type LearningShellCopy = {
   readonly exitLesson: string;
+  /** 문화 확인 문항일 때 세션 헤더의 학습형 이름표입니다(다른 낱말 고르기는 `Word choice`). */
+  readonly cultureQuizLabel: string;
   readonly completionDescription: string;
   readonly completedQuestions: (count: number) => string;
   readonly completedActivities: (count: number) => string;
@@ -111,7 +113,19 @@ export type ListeningCopy = {
   readonly stop: string;
 };
 
-export type WordChoiceCopy = { readonly instruction: string };
+/** 문화 확인(장면 · 질문 카드)의 지시문과 해설 판 제목입니다. */
+export type WordChoiceCultureCopy = {
+  readonly sceneInstruction: string;
+  readonly feedbackTitle: {
+    readonly scene: Readonly<Record<"correct" | "incorrect", string>>;
+    readonly question: Readonly<Record<"correct" | "incorrect", string>>;
+  };
+};
+
+export type WordChoiceCopy = {
+  readonly instruction: string;
+  readonly culture: WordChoiceCultureCopy;
+};
 
 export type { SentenceOrderCopy } from "./sentence-order-copy.contract";
 

@@ -23,12 +23,12 @@ describe("bundledCatalogInput", () => {
     expect(Object.keys(episodes).sort()).toEqual([...IDS].sort());
   });
 
-  test("BD5. 내장 매니페스트 version이 u00 2026-10-21.3, u01~u03 2026-10-16.1이다", () => {
+  test("BD5. 내장 매니페스트 version이 u00 2026-10-23.1, u01~u03 2026-10-16.1이다", () => {
     const versions = Object.fromEntries(
       bundledCatalogInput.manifest.episodes.map((e) => [e.id, e.version]),
     );
     expect(versions).toEqual({
-      "u00-tutorial": "2026-10-21.3",
+      "u00-tutorial": "2026-10-23.1",
       "u01-water": "2026-10-16.1",
       "u02-checkin": "2026-10-16.1",
       "u03-mina": "2026-10-16.1",

@@ -424,7 +424,7 @@ describe("catalogItemOf — 문장 순서", () => {
       item.answer.map((index) => item.tiles[index]?.ko),
     );
     expect(question.chips).not.toEqual(item.tiles.map((tile) => tile.ko));
-    expect(question.dialogue).toEqual({
+    expect(question.dialogue).toMatchObject({
       speakers: item.answer.map((_, at) => (at % 2 === 0 ? "counterpart" : "me")),
     });
     expect(question.support).toBeUndefined();
@@ -802,6 +802,8 @@ describe("catalogActivityPositionOf", () => {
       shownItemCount: 7,
       skippedItemCount: 0,
       counterpartName: "",
+      counterpartAvatarUrl: null,
+      itemRefs: [[], [], []],
     };
 
     expect(plan.activities.map((_, index) => catalogActivityPositionOf(plan, index))).toEqual([

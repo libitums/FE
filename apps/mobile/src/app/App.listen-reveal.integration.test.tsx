@@ -18,7 +18,7 @@ const ROMAN = "jinjjayo? gamsahamnida!";
 const text = () => screen.queryByTestId("listening-prompt-text");
 const romanization = () => screen.queryByTestId("listening-prompt-romanization");
 
-test("LR1. u00 S2 듣기 문항은 처음에 대본이 없고 재생 조작과 보기만 있다", async () => {
+test("LR1. u00 S2 듣기 문항은 처음에 한글 대본이 없고 로마자 참고 줄 · 재생 조작 · 보기가 있다", async () => {
   await bootItemAudioApp({ progress: afterS1 });
 
   tapNode(u00, "S2");
@@ -26,15 +26,15 @@ test("LR1. u00 S2 듣기 문항은 처음에 대본이 없고 재생 조작과 �
   expect(screen.getByTestId("listening-screen-content")).toBeInTheDocument();
   expect(screen.getByTestId("listening-prompt-playback")).toBeInTheDocument();
   expect(text()).not.toBeInTheDocument();
-  expect(romanization()).not.toBeInTheDocument();
-  expect(screen.getByTestId("listening-choice-0")).toBeInTheDocument();
+  expect(romanization()).toHaveTextContent(ROMAN);
+  expect(screen.getByTestId("ui-lynx-option-selector-item-choice-0")).toBeInTheDocument();
 });
 
 test("LR2. 정답을 고르면 한국어와 로마자 대본이 보인다", async () => {
   await bootItemAudioApp({ progress: afterS1 });
   tapNode(u00, "S2");
 
-  tapId("listening-choice-1");
+  tapId("ui-lynx-option-selector-item-choice-1");
 
   expect(screen.getByTestId("answer-verdict")).toHaveAttribute("data-result", "correct");
   expect(text()).toHaveTextContent(SENTENCE);
@@ -45,7 +45,7 @@ test("LR3. 오답을 골라도 대본이 보인다", async () => {
   await bootItemAudioApp({ progress: afterS1 });
   tapNode(u00, "S2");
 
-  tapId("listening-choice-0");
+  tapId("ui-lynx-option-selector-item-choice-0");
 
   expect(screen.getByTestId("answer-verdict")).toHaveAttribute("data-result", "incorrect");
   expect(text()).toHaveTextContent(SENTENCE);

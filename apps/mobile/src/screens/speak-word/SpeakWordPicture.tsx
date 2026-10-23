@@ -11,6 +11,7 @@ import "./speak-word-picture.css";
 // 이름은 영어 뜻뿐입니다. 정답 이름표는 틀에 겹치지 않고 카드 흐름의 `AnswerReveal`이 맡습니다.
 export function SpeakWordPicture({
   url,
+  ratio = "4-3",
   meaning,
   state,
   onLoad,
@@ -20,7 +21,7 @@ export function SpeakWordPicture({
   return (
     <view className="speak-word-picture" data-testid="speak-word-picture" data-loadstate={state}>
       <view
-        className="speak-word-picture-frame"
+        className={`speak-word-picture-frame speak-word-picture-frame-${ratio}`}
         data-testid="speak-word-picture-frame"
         accessibility-element={true}
         accessibility-traits="image"

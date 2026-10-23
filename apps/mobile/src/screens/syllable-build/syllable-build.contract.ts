@@ -1,6 +1,8 @@
 // 음절 조립 활동의 계약입니다. 타입만 둡니다.
 
+import type { AnswerResult } from "../../lib/answer-result";
 import type { AnswerEchoAudio, LessonAudio } from "../../lib/question-audio";
+import type { ItemAnswerReporter } from "../../lib/item-answer";
 import type { NonEmpty } from "../../lib/non-empty";
 import type { ActivityFinish, LessonPosition } from "../learning/activity-finish";
 
@@ -53,6 +55,8 @@ export type SyllableBuildActivityProps = {
   readonly lesson?: LessonPosition;
   /** 레슨의 소리 설정(자동 재생)입니다. 없으면 단독 활동의 기본값입니다. */
   readonly lessonAudio?: LessonAudio;
+  /** 문항이 처음 판정되는 순간 한 번 부릅니다(측정). */
+  readonly onItemAnswered?: ItemAnswerReporter;
 };
 
 /** 음절 타일 하나 — 창고에서는 타일, 칸에서는 놓인 글자입니다. testid `syllable-build-tile-<index>`, `data-placed`. */
@@ -76,6 +80,10 @@ export type SyllableBuildWordProps = {
   readonly slotCount: number;
   readonly placedTileIndexes: readonly number[];
   readonly interaction: SyllableTileInteraction;
+  /** 칸 상태(`filled` · `current` · `empty`)를 고르는 국면입니다. 없으면 `building`입니다. */
+  readonly phase?: SyllableBuildPhase;
+  /** 채점 뒤 칸 판정 색입니다. 채점 전이면 `null`(없어도 됩니다). */
+  readonly result?: AnswerResult | null;
   readonly accessibility: SyllableBuildWordAccessibility;
   readonly onReturn: (tileIndex: number) => void;
 };
@@ -86,6 +94,8 @@ export type SyllableBuildCopy = {
   readonly placedTile: (text: string, position: number, slotCount: number) => string;
   readonly wordEmpty: (slotCount: number) => string;
   readonly word: (word: string) => string;
+  /** 이미 쓴 창고 타일의 낭독 이름입니다. */
+  readonly usedTile: (text: string) => string;
 };
 
 // 판정 뒤 정답 상자(`AnswerReveal`)는 타자 입력과 같은 문구(`copy.typing.answerReveal`)로 첫 정답

@@ -1,5 +1,6 @@
 import { useUiCopy } from "../../lib/ui-copy";
 import type { ReactNode } from "@lynx-js/react";
+import { color } from "@libitums/design-tokens";
 import { useMotion } from "@libitums/ui-lynx/motion";
 
 import {
@@ -7,6 +8,8 @@ import {
   sentenceOrderChipClassName,
   sentenceOrderChipPlaceholderClassName,
 } from "./sentence-order";
+import { SentenceOrderResultMark } from "./SentenceOrderResultMark";
+import type { AnswerResult } from "../../lib/answer-result";
 import { playSound } from "../../lib/sound-effects";
 import type { SurfaceTone } from "../../lib/surface-tone";
 
@@ -25,6 +28,8 @@ export type SentenceOrderChipProps = {
   disabled?: boolean;
   /** 놓이는 면입니다. 기본 `light`. */
   surface?: SurfaceTone;
+  /** 채점 뒤 줄 위 조각의 판정 색입니다. */
+  result?: AnswerResult | null;
   onTap: (index: number) => void;
 };
 
@@ -34,6 +39,7 @@ export function SentenceOrderChip({
   placedOrdinal,
   disabled = false,
   surface = "light",
+  result = null,
   onTap,
 }: SentenceOrderChipProps): ReactNode {
   const copy = useUiCopy();
@@ -44,23 +50,36 @@ export function SentenceOrderChip({
     onTap(index);
   };
   const variant = placedOrdinal === null ? "bank" : "placed";
+  const judged = placedOrdinal === null ? null : result;
   // standard에서는 data-motion 속성을 아예 넘기지 않습니다. undefined로 넘기면 테스트 렌더러가 "null" 문자열로 남깁니다.
   const motionProps = motion === "reduced" ? { "data-motion": "reduced" } : {};
 
   return (
     <view
-      className={sentenceOrderChipClassName(variant, motion, surface)}
+      className={
+        judged === null
+          ? sentenceOrderChipClassName(variant, motion, surface)
+          : `${sentenceOrderChipClassName(variant, motion, surface)} sentence-order-chip-${judged}`
+      }
       data-testid={`sentence-order-chip-${index}`}
       {...motionProps}
       data-surface={surface}
       data-placed={placedOrdinal ?? "none"}
+      {...(judged === null ? {} : { "data-result": judged })}
       accessibility-element={true}
-      accessibility-label={chipAccessibilityLabel(text, placedOrdinal, copy)}
+      accessibility-label={chipAccessibilityLabel(text, placedOrdinal, copy, judged)}
       accessibility-traits={disabled ? "disabled" : "button"}
       bindtap={disabled ? undefined : handleTap}
     >
       {/* 보이는 이름을 지는 요소는 가리지 않습니다(ADR-0016 D5) — 접근성 속성이 없습니다. */}
       <text className="sentence-order-chip-label">{text}</text>
+      {judged === null ? null : (
+        <SentenceOrderResultMark
+          result={judged}
+          tint={color.feedback[judged === "correct" ? "correct-text" : "incorrect-text"]}
+          testId={`sentence-order-chip-${index}-mark`}
+        />
+      )}
     </view>
   );
 }

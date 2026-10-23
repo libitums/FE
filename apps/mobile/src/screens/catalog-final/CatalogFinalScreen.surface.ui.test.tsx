@@ -85,7 +85,7 @@ describe("CatalogFinalScreen 어두운 면", () => {
     );
   });
 
-  test("FDU2. 창고 칩 · 놓인 칩 · 빈칸 · 판정 · 정답 표시가 모두 dark 면을 받는다", () => {
+  test("FDU2. 창고 칩 · 놓인 칩 · 빈칸 · 판정이 dark 면을 받고 정답 상자는 어두운 변형이 없다", () => {
     mount();
 
     expect(chip(0)).toHaveAttribute("data-surface", "dark");
@@ -121,9 +121,7 @@ describe("CatalogFinalScreen 어두운 면", () => {
     );
     expect(incorrect).toHaveAttribute("data-result", "incorrect");
     expect(incorrect).toHaveAttribute("data-surface", "dark");
-    expect(screen.getByTestId("catalog-final-screen-answer")).toHaveAttribute(
-      "data-surface",
-      "dark",
-    );
+    // 정답 상자는 어두운 변형 없이 불투명 면으로 선다.
+    expect(screen.getByTestId("catalog-final-screen-answer")).not.toHaveAttribute("data-surface");
   });
 });

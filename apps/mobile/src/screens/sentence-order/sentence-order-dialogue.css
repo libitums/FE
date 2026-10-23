@@ -1,15 +1,14 @@
 /* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). 대화 조립(대화 순서 문항)의 카드 안입니다.
-   말풍선 모양은 문장 순서의 상대 · 내 말풍선(`sentence-order-screen.css`)과 같은 값입니다 — 꼬리 쪽
-   한 모서리만 각지고(상대는 왼쪽 아래, 나는 오른쪽 아래) 폭은 내용을 따릅니다. 줄마다 36px 아바타가
-   말풍선 옆에 붙어, 말풍선은 줄 폭의 76%를 넘지 않습니다(아바타 없던 때 80%). */
+   칸은 꼬리 쪽 한 모서리만 각지고(상대는 왼쪽 아래, 나는 오른쪽 아래) 폭은 내용을 따릅니다. 줄마다 아바타가 칸 옆에
+   붙어, 칸은 줄 폭의 76%를 넘지 않습니다. 내 칸은 주황 면(brand-primary) · 흰 글자, 상대 칸은 흰 면 · 연한 테두리입니다. */
 .sentence-order-dialogue {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: var(--libitum-spacing-12);
+  gap: var(--libitum-spacing-8);
 }
 
-/* 한 줄 = 아바타 + 말풍선입니다. 아바타는 말풍선 아래 끝에 맞춥니다(꼬리 쪽 모서리 옆). */
+/* 한 줄 = 아바타 + 칸입니다. 아바타는 칸 아래 끝에 맞춥니다(꼬리 쪽 모서리 옆). */
 .sentence-order-dialogue-row {
   display: flex;
   flex-direction: row;
@@ -25,62 +24,93 @@
   justify-content: flex-end;
 }
 
+/* 칸 — 높이 하한 48, 폭 하한 76, 안 여백 위아래 8 · 좌우 12입니다. 테두리는 늘 있어(투명) 판정 뒤 2px로 굵어져도
+   크기가 변하지 않게 안쪽에서 맞춥니다. */
 .sentence-order-dialogue-bubble {
   max-width: 76%;
-  padding: var(--libitum-spacing-24);
+  min-width: calc(var(--libitum-spacing-64) + var(--libitum-spacing-12));
+  min-height: var(--libitum-spacing-48);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  padding-top: var(--libitum-spacing-8);
+  padding-bottom: var(--libitum-spacing-8);
+  padding-left: var(--libitum-spacing-12);
+  padding-right: var(--libitum-spacing-12);
   border: var(--libitum-stroke-width-thin) solid transparent;
   border-radius: var(--libitum-radius-md);
   flex-shrink: 0;
 }
 
 .sentence-order-dialogue-bubble-counterpart {
-  background-color: var(--libitum-color-gray-100);
+  background-color: var(--libitum-color-white);
+  border-color: var(--libitum-color-gray-300);
   border-bottom-left-radius: 0;
 }
 
 .sentence-order-dialogue-bubble-me {
   background-color: var(--libitum-color-brand-primary);
+  border-color: var(--libitum-color-brand-primary);
   border-bottom-right-radius: 0;
 }
 
-/* 아직 놓지 않은 칸 — 면을 걷고 연한 테두리만 남겨 자리표시로 읽히게 합니다. */
+/* 아직 놓지 않은 칸 — 상대는 흰 면 그대로, 나는 주황 면 그대로 두고 칸 안의 `----`가 자리표시로 읽히게 합니다. */
 .sentence-order-dialogue-bubble-empty {
-  background-color: transparent;
   border-color: var(--libitum-color-gray-300);
 }
 
+.sentence-order-dialogue-bubble-me.sentence-order-dialogue-bubble-empty {
+  border-color: var(--libitum-color-brand-primary);
+}
+
+/* 채점 뒤 칸 테두리가 판정을 냅니다 — 2px 판정 색이고 면은 그대로입니다. 테두리가 1px → 2px로 굵어지는 만큼 안 여백을
+   줄여 칸 크기가 변하지 않게 합니다. 색만이 채널이 아닙니다 — 글 옆 tick / cross 아이콘 모양과 이름의 접미사가 함께 말합니다. */
+.sentence-order-dialogue-bubble-correct,
+.sentence-order-dialogue-bubble-incorrect {
+  gap: var(--libitum-spacing-8);
+  border-width: var(--libitum-stroke-width-strong);
+  padding-top: calc(var(--libitum-spacing-8) - var(--libitum-stroke-width-thin));
+  padding-bottom: calc(var(--libitum-spacing-8) - var(--libitum-stroke-width-thin));
+  padding-left: calc(var(--libitum-spacing-12) - var(--libitum-stroke-width-thin));
+  padding-right: calc(var(--libitum-spacing-12) - var(--libitum-stroke-width-thin));
+}
+
+.sentence-order-dialogue-bubble-correct {
+  border-color: var(--libitum-color-feedback-correct);
+}
+
+.sentence-order-dialogue-bubble-incorrect {
+  border-color: var(--libitum-color-feedback-incorrect);
+}
+
 .sentence-order-dialogue-text {
-  font-family: var(--libitum-typography-label-l-font-family);
-  font-weight: var(--libitum-typography-label-l-font-weight);
-  font-size: var(--libitum-typography-label-l-font-size);
-  line-height: var(--libitum-typography-label-l-line-height);
-  letter-spacing: var(--libitum-typography-label-l-letter-spacing);
+  text-align: center;
+  font-family: var(--libitum-typography-button-m-font-family);
+  font-weight: var(--libitum-typography-button-m-font-weight);
+  font-size: var(--libitum-typography-button-m-font-size);
+  line-height: var(--libitum-typography-button-m-line-height);
+  letter-spacing: var(--libitum-typography-button-m-letter-spacing);
 }
 
 .sentence-order-dialogue-text-counterpart {
-  color: var(--libitum-color-gray-900);
+  color: var(--libitum-color-fg-neutral);
 }
 
 .sentence-order-dialogue-text-me {
   color: var(--libitum-color-white);
-  text-align: center;
 }
 
-/* 빈 칸의 표시는 어느 화자 쪽이든 같은 회색 글자입니다. */
-.sentence-order-dialogue-bubble-empty .sentence-order-dialogue-text {
-  color: var(--libitum-color-gray-700);
+/* 빈 칸의 표시(`----`)는 상대 칸에서 muted, 내 칸에서 흰색입니다. */
+.sentence-order-dialogue-bubble-counterpart.sentence-order-dialogue-bubble-empty
+  .sentence-order-dialogue-text {
+  color: var(--libitum-color-fg-neutral-muted);
 }
 
-/* 아바타 — ui-lynx `Avatar`의 크기 표(24 · 32 · 48)에 36px이 없어, `sm`(머리글자 label-m)을 쓰고
-   지름만 32 + 4로 넓힙니다. 색은 화자를 따릅니다: 상대는 짙은 중립 면에 흰 글자, 나는 브랜드 띄운 면에
+/* 아바타 — ui-lynx `Avatar` sm(32)입니다. 색은 화자를 따릅니다: 상대는 짙은 중립 면에 흰 글자, 나는 브랜드 띄운 면에
    브랜드 짙은 글자입니다. 선택자를 래퍼 · 아바타 두 겹으로 걸어 ui-lynx 기본값보다 앞섭니다. */
 .sentence-order-dialogue-avatar {
   flex-shrink: 0;
-}
-
-.sentence-order-dialogue-avatar .ui-lynx-avatar {
-  width: calc(var(--libitum-spacing-32) + var(--libitum-spacing-4));
-  height: calc(var(--libitum-spacing-32) + var(--libitum-spacing-4));
 }
 
 .sentence-order-dialogue-avatar-counterpart .ui-lynx-avatar {
