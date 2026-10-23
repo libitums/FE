@@ -26,14 +26,15 @@ export function withLearningTickets<W extends ScreenWiring>(
     ...wiring,
     ticketsLeft: tickets.status.available,
     catalogTicketUnits: ticketUnits,
-    onStartCatalogUnit: (episodeId, unitKey) => {
+    onStartCatalogUnit: (episodeId, unitKey, source) => {
       "background only";
       if (!canStartCatalogUnit(catalogSections, episodeId, unitKey, catalogProgress)) return;
       const free = catalogUnitTicketCost(catalogProgress, episodeId, unitKey, ticketUnits) === 0;
       // `open`은 한 장을 쓴 뒤에만 불립니다(무료면 바로). 그때 연 유닛을 적습니다.
       startWithTicket(free, () => {
         if (!free) progress.markTicketUnit(episodeId, unitKey);
-        wiring.onStartCatalogUnit(episodeId, unitKey);
+        if (source === undefined) wiring.onStartCatalogUnit(episodeId, unitKey);
+        else wiring.onStartCatalogUnit(episodeId, unitKey, source);
       });
     },
   };

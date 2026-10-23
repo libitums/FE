@@ -1,6 +1,7 @@
 // 카탈로그 학습 측정 이벤트를 만듭니다(순수). 수는 10진 문자열입니다.
 
 import type {
+  CatalogStartSource,
   CatalogUnitRole,
   EpisodeFinalPassedEvent,
   EpisodeItemAnsweredEvent,
@@ -27,6 +28,7 @@ export function lessonStartedEventOf(
     readonly skippedItemCount: number;
   },
   role: CatalogUnitRole,
+  source?: CatalogStartSource,
 ): EpisodeLessonStartedEvent {
   return {
     name: "episode_lesson_started",
@@ -36,6 +38,7 @@ export function lessonStartedEventOf(
     questionCount: String(start.questionCount),
     shownItemCount: String(start.shownItemCount),
     skippedItemCount: String(start.skippedItemCount),
+    ...(source === undefined ? {} : { startSource: source }),
   };
 }
 

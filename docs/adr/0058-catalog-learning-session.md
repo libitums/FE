@@ -736,3 +736,14 @@ route · 진행 저장 형식 · 이벤트 이름은 그대로라 새 ADR을 만
 - **최종 테스트 정답 상자(⟨2026-10-20⟩ 기록의 「정답 표시」 행)** — 어두운 면 변형(`feedback-correct` × 0.16 · 글자 gray-50)을 걷고 **불투명 `feedback-correct-surface` + `-text`**(6.73, 어두운 판 위 16.9)에 머리 줄 `Answer`를 단다(`AnswerReveal`의 `label`). 표의 다른 행(창고 타일 · 빠져나간 자리 · 판정 배지)과 대사 패널 · 답안 판은 그대로다.
 - **D3 · ⟨2026-10-22 — 학습 문항 음성⟩ 기록의 듣기 모양** — 듣기 3열 줄은 부품 셋(`ListenControls`)으로 다시 지었고 순서 · 이름은 같다. 소리 있는 `LISTEN_BUILD`는 카드 없는 줄 배치다(ADR-0084 D12).
 - ⚠ 기기에서 보지 않았다([학습 문항 리디자인 e2e](../e2e/lesson-redesign.md) EU1 · EU6, 미실행).
+
+## 적용 기록 ⟨2026-10-23 — 결과 화면 「다음 학습」 (`feat/result-next-lesson`)⟩
+
+사용자 결정(2026-10-23): 결과 화면 시안 D(지도 버튼 + 주황 「다음 학습」)와 예외 상황 보드 그대로.
+
+- **언제**: 카탈로그 레슨 · 문화 유닛을 **통과**한 결과 화면에서, 같은 에피소드 사슬에 다음 유닛이 있을 때. 미통과(`Try again` · `Back to map`) · 최종 테스트 결과(에필로그로) · 롤플레이 결과는 그대로다.
+- **무엇이**: 왼쪽 56×56 지도 버튼(`Back to map`과 같은 동작 · 이름), 남은 폭의 주황 버튼 — 다음이 레슨 · 문화면 「Next lesson」, 최종이면 별 + 「Final test」. 다음 유닛에 티켓이 들면 티켓 1 태그(맵 말풍선과 같은 `catalogUnitTicketCost`). 맵으로 가는 수단은 여전히 하나다(ADR-0022 D1) — 「다음 학습」은 `Try again`처럼 나아가는 수단이다.
+- **누르면**: 기존 시작 결선(`onStartCatalogUnit`)을 그대로 탄다 — 티켓 문지기 · 티켓으로 연 유닛 기록 · 0장 대화상자. 결과 화면에는 머리 칩이 없어 줄어듦 없이 바로 연다.
+- **눌림**: 색으로만 보인다 — 위치를 옮기는 눌림은 Android Lynx가 탭을 취소한다(유닛 표식 수정 #307과 같은 이유).
+- **측정**: `episode_lesson_started`에 선택 속성 `startSource: "result"` — 결과 화면에서 열었을 때만 실린다. 맵에서 열면 키가 없어 기존 이벤트와 바이트가 같다.
+- **코드**: `app/catalog-next-unit.ts`(다음 유닛 · 결과 화면 `next`), `LessonCompleteNextActions`, `render-catalog.tsx`, 문구 `lessonComplete.nextLesson` · `nextFinal`. 통합 테스트의 결과 화면 나가기는 `test-helpers/lesson-result.ts` 하나로 모았다(두 모양 모두).
