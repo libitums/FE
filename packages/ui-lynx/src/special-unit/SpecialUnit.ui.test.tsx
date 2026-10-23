@@ -117,7 +117,7 @@ describe("SpecialUnit", () => {
     expect(onTap.mock.calls[0]?.[0].detail?.y).toBe(180);
   });
 
-  test("SUU5. 탭은 움직이지 않는 루트가 받는다 — 눌림에 옮겨지는 시각 층(halo 아래)은 터치를 받지 않는다", () => {
+  test("SUU12. 탭은 움직이지 않는 루트가 받는다 — 눌림에 옮겨지는 시각 층(halo 아래)은 터치를 받지 않는다", () => {
     render(unit("available"));
 
     expect(screen.getByTestId(root)).not.toHaveAttribute("user-interaction-enabled");
