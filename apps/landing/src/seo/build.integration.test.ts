@@ -1,6 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { JSDOM } from "jsdom";
@@ -11,6 +10,10 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 const appDir = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const astroBin = join(appDir, "node_modules", "astro", "bin", "astro.mjs");
+// 산출 폴더는 작업 폴더 안에 둡니다 — Astro가 정적 그림을 `rename`으로 옮기는데, OS 임시 폴더가 다른 장치(tmpfs)인
+// CI 러너에서는 `EXDEV: cross-device link not permitted`로 빌드가 실패했습니다(trial 빌드 검사와 같은 자리).
+const buildRoot = join(appDir, "node_modules", ".seo-build");
+mkdirSync(buildRoot, { recursive: true });
 const origin = "https://example.test";
 const crawlers = [
   "GPTBot",
@@ -32,7 +35,7 @@ function runBuild(
   measurementId?: string,
   extra: Record<string, string> = {},
 ): BuildResult {
-  const dir = mkdtempSync(join(tmpdir(), "landing-seo-build-"));
+  const dir = mkdtempSync(join(buildRoot, "landing-seo-build-"));
   const env: NodeJS.ProcessEnv = { ...process.env, NODE_ENV: "production", CI: "1" };
   for (const key of Object.keys(env)) if (key.startsWith("VITEST")) delete env[key];
   delete env.SITE_URL;
