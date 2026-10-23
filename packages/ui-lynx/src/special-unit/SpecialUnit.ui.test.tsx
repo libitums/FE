@@ -117,6 +117,15 @@ describe("SpecialUnit", () => {
     expect(onTap.mock.calls[0]?.[0].detail?.y).toBe(180);
   });
 
+  test("SUU12. 탭은 움직이지 않는 루트가 받는다 — 눌림에 옮겨지는 시각 층(halo 아래)은 터치를 받지 않는다", () => {
+    render(unit("available"));
+
+    expect(screen.getByTestId(root)).not.toHaveAttribute("user-interaction-enabled");
+    expect(screen.getByTestId(`${root}-halo`).getAttribute("user-interaction-enabled")).toBe(
+      "false",
+    );
+  });
+
   test("SUU4. 루트 → halo → body → [shade, face] → icon 순으로 선다", () => {
     render(unit("available"));
 
