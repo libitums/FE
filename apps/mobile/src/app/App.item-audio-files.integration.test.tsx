@@ -38,9 +38,9 @@ describe("받은 파일이 없는 부팅", () => {
     expect(present("listening-prompt-slow")).toBe(false);
     expect(host.play).not.toHaveBeenCalled();
     expect(host.playAtRate).not.toHaveBeenCalled();
-    expect(screen.getByTestId("listening-choice-0")).toBeInTheDocument();
+    expect(screen.getByTestId("ui-lynx-option-selector-item-choice-0")).toBeInTheDocument();
 
-    tapId("listening-choice-1");
+    tapId("ui-lynx-option-selector-item-choice-1");
 
     expect(screen.getByTestId("answer-verdict")).toHaveAttribute("data-result", "correct");
     expect(host.play).not.toHaveBeenCalled();
@@ -50,7 +50,7 @@ describe("받은 파일이 없는 부팅", () => {
     const booted = await bootItemAudioApp({ progress: afterS1, files: "none" });
     tapNode(u00, "S2");
 
-    tapId("listening-choice-1");
+    tapId("ui-lynx-option-selector-item-choice-1");
 
     expect(answered(booted)).toEqual([]);
   });
@@ -85,7 +85,7 @@ describe("받은 파일이 있는 부팅", () => {
     const booted = await bootItemAudioApp({ progress: afterS1, files: "all" });
     tapNode(u00, "S2");
 
-    tapId("listening-choice-1");
+    tapId("ui-lynx-option-selector-item-choice-1");
 
     expect(answered(booted)).toHaveLength(1);
   });

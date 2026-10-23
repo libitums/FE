@@ -13,7 +13,7 @@ import { TUTORIAL_EPISODE_ID } from "./tutorial-episode";
 
 // `unit` 계층: 내장 u00 튜토리얼 데이터 모듈의 값만 봅니다(디스크 원문 · 디코드 · 카탈로그 · 자산 경로).
 
-/** 내장 u00 본문이 가리키는 그림 14장(버킷 상대 경로)입니다. */
+/** 내장 u00 본문이 가리키는 그림 15장(버킷 상대 경로 — 상대 아바타 포함)입니다. */
 const U00_IMAGE_PATHS: readonly string[] = [
   "images/u00-tutorial/pre-1.webp",
   "images/u00-tutorial/pre-2.webp",
@@ -27,6 +27,7 @@ const U00_IMAGE_PATHS: readonly string[] = [
   "images/u00-tutorial/post-4.webp",
   "images/u00-tutorial/cult-u00-jalhasineyo.webp",
   "images/u00-tutorial/rp-end.webp",
+  "images/u00-tutorial/avatar.webp",
   "images/items/hello.webp",
   "images/items/thanks.webp",
 ];
@@ -39,7 +40,7 @@ const U00_AUDIO_PATHS: readonly string[] = [
   "audio/u00-tutorial/d-04.m4a",
   "audio/u00-tutorial/d-05.m4a",
   "audio/u00-tutorial/d-06.m4a",
-  "audio/u00-tutorial/post-1.m4a",
+  "audio/u00-tutorial/post-1-v3.m4a",
   "audio/u00-tutorial/post-2.m4a",
   "audio/u00-tutorial/pre-5-dream.m4a",
   "audio/u00-tutorial/rp-01-reask.m4a",
@@ -61,8 +62,8 @@ describe("내장 u00-tutorial", () => {
     ]);
     const first = manifest.episodes[0];
     expect(first?.order).toBe(0);
-    expect(first?.version).toBe("2026-10-21.3");
-    expect(first?.bytes).toBe(37777);
+    expect(first?.version).toBe("2026-10-23.1");
+    expect(first?.bytes).toBe(37847);
     const text = readFileSync(
       resolve(process.cwd(), `content/episodes/${TUTORIAL_EPISODE_ID}.json`),
       "utf8",
@@ -107,7 +108,7 @@ describe("내장 u00-tutorial", () => {
     ]);
   });
 
-  test("BD4. u00 본문의 자산 경로는 그림 14장과 음성 12개다", () => {
+  test("BD4. u00 본문의 자산 경로는 그림 15장과 음성 12개다", () => {
     const paths = episodeAssetPaths(u00Wire());
     expect(new Set(paths.filter((path) => path.startsWith("images/")))).toEqual(
       new Set(U00_IMAGE_PATHS),
@@ -115,6 +116,6 @@ describe("내장 u00-tutorial", () => {
     expect(new Set(paths.filter((path) => path.startsWith("audio/")))).toEqual(
       new Set(U00_AUDIO_PATHS),
     );
-    expect(paths).toHaveLength(26);
+    expect(paths).toHaveLength(27);
   });
 });

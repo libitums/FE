@@ -189,7 +189,7 @@ describe("대화 조립의 화자", () => {
     const mapped = catalogItemOf(turnOrder(tiles, [0, 1, 2, 3]), port);
 
     expect(mapped.kind).toBe("sentence-order");
-    expect(questionOf(mapped)?.["dialogue"]).toEqual({
+    expect(questionOf(mapped)?.["dialogue"]).toMatchObject({
       speakers: ["me", "counterpart", "me", "counterpart"],
     });
   });
@@ -200,7 +200,7 @@ describe("대화 조립의 화자", () => {
       port,
     );
 
-    expect(questionOf(mapped)?.["dialogue"]).toEqual({
+    expect(questionOf(mapped)?.["dialogue"]).toMatchObject({
       speakers: ["counterpart", "me", "counterpart", "me"],
     });
   });

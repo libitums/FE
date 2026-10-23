@@ -8,7 +8,7 @@ import { catalogGlossOf } from "./catalog-card-map";
 import { catalogItemOf, catalogLessonPlanOf } from "./catalog-lesson-plan";
 import type { CatalogFill } from "./catalog-lesson-plan";
 
-// `unit` 계층: 새 내장본(2026-10-16.1)의 모든 단계를 수업 계획으로 바꾼 결과의 수만 봅니다(순수 함수).
+// `unit` 계층: 새 내장본(2026-10-23.1)의 모든 단계를 수업 계획으로 바꾼 결과의 수만 봅니다(순수 함수).
 
 type ReadyEntry = Extract<CatalogEntry, { status: "ready" }>;
 type EpisodeId = "u01-water" | "u02-checkin" | "u03-mina";
@@ -34,12 +34,12 @@ const STEP_KEYS = ["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "CULT"] as co
 const EXPECTED: Record<EpisodeId, readonly (readonly [number, number])[]> = {
   "u01-water": [
     [15, 15],
-    [13, 14],
+    [12, 14],
     [13, 13],
-    [13, 15],
+    [11, 15],
     [11, 12],
     [8, 8],
-    [5, 5],
+    [11, 11],
     [12, 13],
     [6, 6],
   ],
@@ -47,24 +47,31 @@ const EXPECTED: Record<EpisodeId, readonly (readonly [number, number])[]> = {
     [19, 19],
     [15, 17],
     [19, 19],
-    [17, 20],
+    [16, 20],
     [11, 12],
+    [12, 12],
     [13, 13],
-    [7, 7],
-    [14, 15],
+    [16, 17],
     [6, 6],
   ],
   "u03-mina": [
-    [14, 14],
-    [11, 12],
     [16, 16],
-    [15, 18],
+    [13, 14],
+    [18, 19],
+    [16, 20],
+    [11, 11],
+    [11, 12],
     [12, 12],
-    [12, 12],
-    [7, 7],
-    [15, 16],
+    [16, 17],
     [6, 6],
   ],
+};
+
+/** 그림 칸이 빈(`image_url: ""`) 말하기 문항 — 말하기라서가 아니라 그림이 없어 건너뛴다(u03 2026-10-23.1 S6-04). */
+const IMAGELESS_SPEAKING: Record<EpisodeId, readonly string[]> = {
+  "u01-water": [],
+  "u02-checkin": [],
+  "u03-mina": ["S6-04"],
 };
 
 function planOf(episodeId: string, unitKey: string) {
@@ -144,7 +151,7 @@ describe("새 내장본의 단계별 수업 계획 (MAP11)", () => {
   });
 
   test.each(EPISODE_IDS)(
-    "MAP11″. %s의 S5는 마지막 활동이 읽기 3문항이고 S6 · S8의 낱말 활동은 문항이 하나다",
+    "MAP11″. %s의 S5는 마지막 활동이 읽기 3문항이고 S6 · S8의 낱말 활동은 문항이 하나다(그림 없는 낱말은 빠진다)",
     (episodeId) => {
       const s5 = planOf(episodeId, "S5").activities;
       const last = s5[s5.length - 1];
@@ -155,7 +162,10 @@ describe("새 내장본의 단계별 수업 계획 (MAP11)", () => {
         const speakWords = planOf(episodeId, key).activities.filter(
           (activity) => activity.form === "speak-word",
         );
-        expect(speakWords.map((activity) => activity.questions.length)).toEqual([1]);
+        const imageless = key === "S6" && IMAGELESS_SPEAKING[episodeId].includes("S6-04");
+        expect(speakWords.map((activity) => activity.questions.length)).toEqual(
+          imageless ? [] : [1],
+        );
       }
     },
   );
@@ -182,7 +192,7 @@ describe("새 내장본의 단계별 수업 계획 (MAP11)", () => {
   });
 
   test.each(EPISODE_IDS)(
-    "MAP11″. %s의 말하기 문항(SHADOW · SPEAK_WORD)은 건너뛰지 않는다",
+    "MAP11″. %s의 말하기 문항(SHADOW · SPEAK_WORD)은 그림이 빈 낱말 말고는 건너뛰지 않는다",
     (episodeId) => {
       const entry = readyOf(episodeId);
       const port = {
@@ -201,7 +211,7 @@ describe("새 내장본의 단계별 수업 계획 (MAP11)", () => {
         ),
       );
 
-      expect(skipped).toEqual([]);
+      expect(skipped).toEqual(IMAGELESS_SPEAKING[episodeId]);
     },
   );
 });

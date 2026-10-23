@@ -91,10 +91,10 @@ export const syllableBuildEn: SyllableBuildCopy = {
   wordEmpty: (slotCount) =>
     `Your word, empty, ${slotCount} ${slotCount === 1 ? "syllable" : "syllables"}`,
   word: (word) => `Your word: ${word}`,
+  usedTile: (text) => `${text}, used`,
 };
 
 export const readAloudEn: ReadAloudCopy = {
-  badge: "Practice",
   matched: (matched, total) => {
     if (matched === total) {
       return total === 1 ? "You said the word." : `You said all ${total} words.`;
@@ -145,6 +145,7 @@ export const catalogFinalEn: CatalogFinalCopy = {
   replyEmpty: "Your reply, empty",
   replyHint: (translation) => `Say: ${translation}`,
   correctAnswer: (answer) => `Answer: ${answer}`,
+  answerLabel: "Answer",
 };
 
 export const audioUnavailableEn: AudioUnavailableCopy = {

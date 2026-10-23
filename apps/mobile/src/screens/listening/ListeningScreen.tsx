@@ -8,23 +8,27 @@ import { LearningActivityComplete } from "../learning/LearningActivityComplete";
 import { listeningRevealAnnouncement } from "./listening-copy";
 import { ListeningPrompt } from "./ListeningPrompt";
 import { ListeningSilentPrompt } from "./ListeningSilentPrompt";
-import { ListeningChoice } from "./ListeningChoice";
-import { AnswerVerdict } from "../../components/AnswerVerdict";
+import { QuestionOptions } from "../../components/QuestionOptions";
+import type { QuestionOptionsState } from "../../components/QuestionOptions";
 import { useListenAudio } from "../../components/use-listen-audio";
 import {
   answeredResultOf,
+  choiceAccessibilityLabel,
   choiceResultAt,
   hasAnswered,
   initialListeningSessionState,
   isSessionComplete,
   listeningCompletionAnnouncement,
+  listeningQuestionDensityOf,
   listeningSessionReducer,
   sessionAnswerResults,
 } from "./listening";
 import { listenCueOf, standaloneLessonAudio } from "../../lib/question-audio";
 import type { LessonAudio } from "../../lib/question-audio";
+import type { ItemAnswerReporter } from "../../lib/item-answer";
 import type { SessionOptions } from "../../lib/session-options";
 import { handsOffAfter, lessonCounter } from "../learning/activity-finish";
+import { useLearningDensity } from "../learning/use-learning-density";
 import type { ActivityFinish, LessonPosition } from "../learning/activity-finish";
 import type { ListeningQuestion } from "./listening-questions";
 
@@ -48,6 +52,8 @@ export type ListeningActivityProps = {
   readonly lesson?: LessonPosition;
   /** 레슨의 소리 설정(속도 · 자동 재생 · 보고)입니다. 없으면 단독 활동의 기본값입니다. */
   readonly lessonAudio?: LessonAudio;
+  /** 문항이 처음 판정되는 순간 한 번 부릅니다(측정). */
+  readonly onItemAnswered?: ItemAnswerReporter;
 };
 
 export function ListeningActivity({
@@ -58,14 +64,20 @@ export function ListeningActivity({
   gemCount,
   lesson,
   lessonAudio,
+  onItemAnswered,
 }: ListeningActivityProps): ReactNode {
   const copy = useUiCopy();
+  const deviceDensity = useLearningDensity();
   const [state, dispatch] = useReducer(listeningSessionReducer, initialListeningSessionState);
 
   // 완료는 파생입니다. 완료 시점에는 `questionIndex`가 문항 수와 같아 조회할 문항이
   // 없습니다 — 그래서 여기서 한 번만 갈라 아래에서 다시 묻지 않습니다.
   const complete = isSessionComplete(state, questions.length);
   const question = complete ? null : questions[state.questionIndex];
+  // 긴 제시문은 기기와 무관하게 compact입니다 — 셸에도 같은 값을 내립니다.
+  const density =
+    question === null ? deviceDensity : listeningQuestionDensityOf(deviceDensity, question);
+  const answered = question !== null && hasAnswered(state);
 
   // 재생의 주인은 이 화면입니다 — 껍데기가 무대를 다시 세워도 소리가 끊기지 않습니다.
   // 문항 순번이 재생의 키입니다 — 같은 음성이 두 문항 연속이어도 둘째가 자동 재생됩니다.
@@ -130,6 +142,15 @@ export function ListeningActivity({
       delayMs: 2500,
     };
   }, [question, state.selectedChoiceIndex, copy]);
+  const optionsState: QuestionOptionsState =
+    question !== null && state.selectedChoiceIndex !== null
+      ? {
+          kind: "judged",
+          index: state.selectedChoiceIndex,
+          result: answeredResultOf(state, question),
+          rest: "disabled",
+        }
+      : { kind: "open" };
   const counter = lessonCounter(
     lesson,
     question === null ? Math.max(0, questions.length - 1) : state.questionIndex,
@@ -148,78 +169,69 @@ export function ListeningActivity({
       actionLabel={action?.label}
       onAction={action?.run}
       advance={advance}
+      verdict={question !== null && answered ? answeredResultOf(state, question) : undefined}
+      densityOverride={density === "compact" ? "compact" : undefined}
       gemCount={gemCount}
       /* 보기는 무대 카드 **밖**입니다(Figma 53-14231) — 카드는 「무엇을 들었나」를
          말하고, 고르는 일은 그 아래 작업 영역에서 합니다. */
       workspace={
         question === null ? undefined : (
-          <view className="listening-screen-choices" data-testid="listening-screen-choices">
-            {question.choices.map((choiceText, choiceIndex) => (
-              <ListeningChoice
-                key={choiceIndex}
-                index={choiceIndex}
-                text={choiceText}
-                // 판정을 지는 보기는 고른 하나뿐입니다 — 고르지 않은 정답 보기는
-                // null입니다.
-                result={choiceResultAt(state, question, choiceIndex)}
-                onSelect={(index) => {
-                  const result = index === question.answerIndex ? "correct" : "incorrect";
-                  // 대본이 숨겨져 있다가 판정으로 처음 나타나는 순간, 문항당 한 번 낭독합니다.
-                  if (
-                    !hasAnswered(state) &&
-                    question.audio !== null &&
-                    !sessionOptions["show-transcript"]
-                  ) {
-                    announce(
-                      listeningRevealAnnouncement(
-                        result,
-                        question.prompt,
-                        question.romanization,
-                        copy,
-                      ),
-                    );
-                  }
-                  dispatch({ type: "selectChoice", choiceIndex: index });
-                  playback.answered(result);
-                }}
-              />
-            ))}
-          </view>
+          <QuestionOptions
+            testId="listening-screen-choices"
+            groupLabel={question.instruction ?? copy.listening.instruction}
+            options={question.choices.map((text) => ({ text }))}
+            accessibilityLabels={question.choices.map((text, choiceIndex) =>
+              // 판정을 지는 보기는 고른 하나뿐입니다 — 고르지 않은 정답 보기는 null입니다.
+              choiceAccessibilityLabel(text, choiceResultAt(state, question, choiceIndex), copy),
+            )}
+            layout="stack"
+            density={density}
+            state={optionsState}
+            onSelect={(index) => {
+              const result = index === question.answerIndex ? "correct" : "incorrect";
+              // 대본이 숨겨져 있다가 판정으로 처음 나타나는 순간, 문항당 한 번 낭독합니다.
+              if (
+                !hasAnswered(state) &&
+                question.audio !== null &&
+                !sessionOptions["show-transcript"]
+              ) {
+                announce(
+                  listeningRevealAnnouncement(result, question.prompt, question.romanization, copy),
+                );
+              }
+              if (!hasAnswered(state)) {
+                onItemAnswered?.({ questionIndex: state.questionIndex, outcome: result, density });
+              }
+              dispatch({ type: "selectChoice", choiceIndex: index });
+              playback.answered(result);
+            }}
+          />
         )
       }
       card={
         <view className="listening-screen-content" data-testid="listening-screen-content">
-          {/* 판정 배지 자리입니다. **문항 장면에서는 비어 있어도 자리를 지킵니다** — 배지가 뜨고 질 때
-              카드 높이가 흔들리면 그 아래 보기가 함께 밀리고, 밀린 만큼이 화면 밖으로
-              나갑니다. 디자인도 카드 위쪽을 이렇게 씁니다(Figma 53-14231: 배지가 y14,
-              제시문이 y89 — 배지가 없어도 그 자리는 비어 있습니다).
-
-              **문항이 서 있던 그 카드 안**에서 성공 · 실패가 뒤집힙니다 — 보기의 표식이
-              걷힌 뒤로 보이는 판정 채널이 이것 하나입니다. */}
-          {complete ? null : (
-            <view className="listening-screen-verdict-slot">
-              {question === null || !hasAnswered(state) ? null : (
-                <AnswerVerdict result={answeredResultOf(state, question)} />
-              )}
-            </view>
-          )}
-
-          {/* 제시 채널입니다. 오디오가 생기면 **이 컴포넌트만** 통째로 갈립니다. */}
+          {/* 제시 채널입니다. 오디오가 생기면 **이 컴포넌트만** 통째로 갈립니다. 판정 배지는 이 카드 안이 아니라
+              셸의 지시문 자리에 섭니다(`verdict`). */}
           {question === null ? null : question.audio === null ? (
             // 소리가 없는 문항입니다 — 대본이 유일한 단서라 `show-transcript`와 무관하게 섭니다.
-            <ListeningSilentPrompt text={question.prompt} romanization={question.romanization} />
+            <ListeningSilentPrompt
+              text={question.prompt}
+              romanization={question.romanization}
+              density={density}
+            />
           ) : (
             <ListeningPrompt
               text={question.prompt}
               romanization={question.romanization}
               sessionOptions={sessionOptions}
-              revealed={question !== null && hasAnswered(state)}
+              revealed={answered}
               playback={playback}
+              beforeAnswer={question.beforeAnswer ?? "nothing"}
+              density={density}
             />
           )}
 
-          {/* 완료문입니다. 판정이 카드 안에서 뒤집힌다는 것이 이 자리에서 성립합니다 —
-              문항이 서 있던 그 상자에 결과가 대신 섭니다. */}
+          {/* 완료문입니다. 문항이 서 있던 그 상자에 결과가 대신 섭니다. */}
           {question === null ? (
             <LearningActivityComplete
               questionCount={questions.length}

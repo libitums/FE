@@ -9,7 +9,9 @@ import { sendGet } from "./supabase-transport";
 export {
   CONTENT_BUCKET_PATH,
   contentBaseUrl,
+  counterpartAvatarPathOf,
   resolveContentUrlSafe,
+  type CounterpartAvatarDecode,
 } from "@libitums/episode-core/content-url";
 
 export type FetchTextResult =

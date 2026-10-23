@@ -62,6 +62,27 @@ export function ChatBubble(props: ChatBubbleProps) {
           {contract.translation}
         </text>
       ) : null}
+      {contract.annotation ? (
+        <>
+          <text
+            className="ui-lynx-chat-bubble-annotation-romanization"
+            data-testid="ui-lynx-chat-bubble-annotation-romanization"
+            accessibility-element={false}
+            style={{ visibility: typing.isComplete ? "visible" : "hidden" }}
+          >
+            {contract.annotation.romanization}
+          </text>
+          <view className="ui-lynx-chat-bubble-annotation-divider" />
+          <text
+            className="ui-lynx-chat-bubble-annotation-meaning"
+            data-testid="ui-lynx-chat-bubble-annotation-meaning"
+            accessibility-element={false}
+            style={{ visibility: typing.isComplete ? "visible" : "hidden" }}
+          >
+            {contract.annotation.meaning}
+          </text>
+        </>
+      ) : null}
     </view>
   );
 }

@@ -1,5 +1,7 @@
 import type { ReactNode } from "@lynx-js/react";
 
+import { TextRoles } from "../../components/TextRoles";
+import { romanizationSegmentsOf } from "../../lib/romanization-segments";
 import { speakingChunks } from "../../lib/speaking-judge";
 import type { UiCopy } from "../../lib/ui-copy.contract";
 import type { ReadAloudQuestion } from "./read-aloud.contract";
@@ -13,7 +15,7 @@ export type ReadAloudSentenceProps = {
   readonly copy: UiCopy;
 };
 
-// 따라 읽을 문장 묶음(한국어 문장 + 로마자)과 영어 줄입니다. 문장은 공백으로만 자른 조각(부호가 붙은 채)으로
+// 따라 읽을 문장 묶음(한국어 문장 + 로마자)과 그 아래 구분선 · 영어 뜻 줄입니다(글 역할 부품). 문장은 공백으로만 자른 조각(부호가 붙은 채)으로
 // 그리고, 앞에서부터 맞은 조각만 칠합니다 — 안 맞은 조각은 물러나지 않으니 색만으로 가르지 않습니다.
 // 문장 요소의 낭독 이름은 문장 전체입니다(칠은 보이는 채널). 없는 로마자 · 영어 줄은 그리지 않습니다.
 export function ReadAloudSentence({
@@ -48,19 +50,19 @@ export function ReadAloudSentence({
           ))}
         </text>
         {question.romanization === null ? null : (
-          <text
-            className="read-aloud-activity-romanization"
-            data-testid="read-aloud-romanization"
-            accessibility-label={copy.readAloud.pronunciation(question.romanization)}
-          >
-            {question.romanization}
-          </text>
+          <TextRoles.Romanization
+            segments={romanizationSegmentsOf(question.romanization, undefined)}
+            size="m"
+            testId="read-aloud-romanization"
+            accessibilityLabel={copy.readAloud.pronunciation(question.romanization)}
+          />
         )}
       </view>
       {question.translation === null ? null : (
-        <text className="read-aloud-activity-translation" data-testid="read-aloud-translation">
-          {question.translation}
-        </text>
+        <>
+          <TextRoles.Divider testId="read-aloud-divider" />
+          <TextRoles.Meaning text={question.translation} size="m" testId="read-aloud-translation" />
+        </>
       )}
     </>
   );

@@ -7,9 +7,9 @@
       "order": 0,
       "title": "튜토리얼",
       "schema": "delivery-2",
-      "version": "2026-10-21.3",
-      "sha256": "c9636a3d1b43ffff21df2a75c8b6a9d300ca853e6f20e0ffbde2aa67ca85377a",
-      "bytes": 37777,
+      "version": "2026-10-23.1",
+      "sha256": "42134653f72075a0d728635899e66be0c460ebb75bfb5ffa794e53ae6719eb2a",
+      "bytes": 37847,
       "url": "episodes/u00-tutorial.json"
     },
     {
@@ -17,9 +17,9 @@
       "order": 1,
       "title": "물 사기",
       "schema": "delivery-2",
-      "version": "2026-10-16.1",
-      "sha256": "8318e0dab44c4ff94fb904eaa92175b9df70a0cd4f7feb1d84e4402a7b487ff1",
-      "bytes": 126449,
+      "version": "2026-10-23.1",
+      "sha256": "c489e8457b25c3e3cecdb66a562810443920d685cdf8c8df74d7bce642944a80",
+      "bytes": 164907,
       "url": "episodes/u01-water.json"
     },
     {
@@ -27,9 +27,9 @@
       "order": 2,
       "title": "체크인",
       "schema": "delivery-2",
-      "version": "2026-10-16.1",
-      "sha256": "b249328f2279c03d803a45b36e693aa39070e2195aee496e9bcbd373ff360cba",
-      "bytes": 160563,
+      "version": "2026-10-23.1",
+      "sha256": "0c497b49242c4f962e3c89174781d64080d903467189dea855e9e2f18350f3c9",
+      "bytes": 208616,
       "url": "episodes/u02-checkin.json"
     },
     {
@@ -37,9 +37,9 @@
       "order": 3,
       "title": "미나 만나기",
       "schema": "delivery-2",
-      "version": "2026-10-16.1",
-      "sha256": "0694fd2d2c4bc48b156e61c16ab8ae0c4b09c95030df749c6db54a3ad17421a3",
-      "bytes": 155429,
+      "version": "2026-10-23.1",
+      "sha256": "505cc8ad6e4c8eb6a83c9287c462d1f66b3dc549c50e704394252b4c9aecadcb",
+      "bytes": 212039,
       "url": "episodes/u03-mina.json"
     }
   ]

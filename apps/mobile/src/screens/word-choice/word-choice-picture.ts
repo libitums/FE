@@ -24,8 +24,13 @@ export type WordChoicePictureCopy = {
   readonly answerSubline: (romanization: string | null, meaning: string) => string;
 };
 
+/** 그림 틀의 가로:세로 비율입니다 — 보기 한 행(2개)은 정사각, 두 행(3 ~ 4개)은 4:3입니다. */
+export type WordChoicePictureRatio = "1-1" | "4-3";
+
 export type WordChoicePictureProps = {
   readonly url: string;
+  /** 틀 비율입니다. 없으면 4:3. */
+  readonly ratio?: WordChoicePictureRatio;
   readonly meaning: string;
   readonly state: WordChoicePictureState;
   /** 답한 뒤에만 섭니다(이름표). 답하기 전에는 `null`. */
@@ -75,4 +80,9 @@ export function wordChoicePictureAnswerOf(
   if (question.picture === undefined) return null;
   const word = question.choices[question.answerIndex];
   return word === undefined ? null : { word, romanization: question.picture.answerRomanization };
+}
+
+/** 보기 수에서 그림 틀 비율을 정합니다 — 보기가 한 행이면 정사각, 두 행이면 4:3. */
+export function wordChoicePictureRatioOf(choiceCount: number): WordChoicePictureRatio {
+  return choiceCount <= 2 ? "1-1" : "4-3";
 }

@@ -26,6 +26,8 @@ export type LearningSessionHeaderProps = {
   readonly questionIndex: number;
   readonly questionCount: number;
   readonly onExit: () => void;
+  /** 학습형 이름표를 갈음합니다(문화 확인 문항). */
+  readonly formLabel?: string;
 };
 
 export function LearningSessionHeader({
@@ -33,10 +35,11 @@ export function LearningSessionHeader({
   questionIndex,
   questionCount,
   onExit,
+  formLabel,
 }: LearningSessionHeaderProps): ReactNode {
   const copy = useUiCopy();
   const motion = useMotion();
-  const header = learningSessionHeader(form, questionIndex, questionCount, copy);
+  const header = learningSessionHeader(form, questionIndex, questionCount, copy, formLabel);
 
   const handleExit = () => {
     "background only";

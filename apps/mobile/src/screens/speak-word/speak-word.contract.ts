@@ -1,5 +1,6 @@
 // 그림 보고 낱말 말하기 활동(카탈로그 SPEAK_WORD)의 계약입니다. 타입만 둡니다.
 
+import type { ItemAnswerReporter } from "../../lib/item-answer";
 import type { NonEmpty } from "../../lib/non-empty";
 import type { AnswerEchoAudio, LessonAudio } from "../../lib/question-audio";
 import type { PictureLoadState } from "../../lib/picture-load";
@@ -51,11 +52,15 @@ export type SpeakWordActivityProps = {
   readonly lesson?: LessonPosition;
   /** 레슨의 소리 설정(자동 재생)입니다. 없으면 단독 활동의 기본값입니다. */
   readonly lessonAudio?: LessonAudio;
+  /** 문항이 처음 판정되는 순간 한 번 부릅니다(측정). */
+  readonly onItemAnswered?: ItemAnswerReporter;
 };
 
 /** 그림 틀 — 상태대로 빈 틀 · 그림 · 뜻 글자를 그립니다(상태 없음). 이름표는 없습니다(정답은 `AnswerReveal`). */
 export type SpeakWordPictureProps = {
   readonly url: string;
+  /** 틀 비율입니다 — regular 5:4, compact 4:3. 없으면 4:3. */
+  readonly ratio?: "5-4" | "4-3";
   readonly meaning: string;
   readonly state: PictureLoadState;
   readonly onLoad: () => void;

@@ -5,6 +5,7 @@ import { backHandlers } from "../../lib/back-handler";
 import { guideRoots, stubGuideStorage } from "../../lib/learning-item-guide.storage.test-support";
 import { StepSentenceOrder } from "./StepSentenceOrder.test-support";
 import type { SentenceOrderStepId } from "./sentence-order-steps.test-support";
+import { checkState, tapAction } from "./sentence-order-check.test-support";
 
 // `ui` 계층: 문장 만들기 화면의 학습 문항 안내. 문항은 이 폴더의 테스트 지원 표다(제품 표는 사라졌다) — greeting은 조각 하나, ordering · appointment · directions는 둘 이상.
 
@@ -88,26 +89,26 @@ test("[SC5·SO] 저장소가 없으면 안내가 없다", () => {
   expect(screen.getByTestId("sentence-order-chip-0")).toBeInTheDocument();
 });
 
-test("[SO6] 떠 있는 동안 조각을 탭해도 답 칸이 비고 아래 버튼이 없으며, 닫은 뒤에는 끝까지 풀 수 있다", () => {
+test("[SO6] 떠 있는 동안 조각을 탭해도 답 줄이 비고 Check가 꺼진 채이며, 닫은 뒤에는 끝까지 풀 수 있다", () => {
   stubGuideStorage();
   const props = renderScreen();
 
   fireEvent.tap(screen.getByTestId("sentence-order-chip-0"), {});
 
-  expect(screen.getByTestId("sentence-order-screen-sentence").children).toHaveLength(0);
-  expect(screen.queryByTestId("learning-shell-action")).not.toBeInTheDocument();
+  expect(
+    within(screen.getByTestId("sentence-order-lines")).queryAllByTestId(
+      /^sentence-order-chip-\d+$/,
+    ),
+  ).toHaveLength(0);
+  expect(checkState()).toBe("disabled");
 
   tapGuide();
   fireEvent.tap(screen.getByTestId("sentence-order-chip-0"), {});
   expect(
-    within(screen.getByTestId("sentence-order-screen-sentence")).getByTestId(
-      "sentence-order-chip-0",
-    ),
+    within(screen.getByTestId("sentence-order-lines")).getByTestId("sentence-order-chip-0"),
   ).toBeInTheDocument();
   for (const label of ["Check", "Next", "See results"]) {
-    const action = screen.getByTestId("learning-shell-action");
-    expect(action).toHaveAttribute("accessibility-label", label);
-    fireEvent.tap(action, {});
+    tapAction(label);
   }
   expect(props.onFinish).toHaveBeenCalledTimes(1);
 });

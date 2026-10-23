@@ -20,7 +20,16 @@ export const listeningEn: ListeningCopy = {
   stop: "Stop",
 };
 
-export const wordChoiceEn: WordChoiceCopy = { instruction: "Choose the word that fits." };
+export const wordChoiceEn: WordChoiceCopy = {
+  instruction: "Choose the word that fits.",
+  culture: {
+    sceneInstruction: "What do you say?",
+    feedbackTitle: {
+      scene: { correct: "Nice reply!", incorrect: "Not quite" },
+      question: { correct: "That's right!", incorrect: "Not quite" },
+    },
+  },
+};
 
 export const sentenceOrderEn: SentenceOrderCopy = {
   instruction: "Complete the conversation.",
@@ -28,6 +37,10 @@ export const sentenceOrderEn: SentenceOrderCopy = {
   dialogueSpeaker: { counterpart: "Partner", me: "You" },
   dialogueTurn: (speaker, position, text) => `${speaker}, turn ${position}: ${text}`,
   dialogueEmptyTurn: (speaker, position) => `${speaker}, turn ${position}, empty`,
+  dialogueLine: {
+    me: (text) => `Your line: ${text}`,
+    counterpart: (text) => `Partner's line: ${text}`,
+  },
 };
 
 export const speakingEn: SpeakingCopy = {

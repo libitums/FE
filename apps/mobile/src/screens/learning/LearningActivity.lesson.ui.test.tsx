@@ -8,6 +8,11 @@ import { initialSessionOptions } from "../../lib/session-options";
 import { keystrokesFor } from "../messenger/hangul-keyboard";
 import { ListeningActivity } from "../listening/ListeningScreen";
 import { SentenceOrderActivity } from "../sentence-order/SentenceOrderScreen";
+import {
+  bottomActionOrNull,
+  tapBottom,
+  tapCheck,
+} from "../sentence-order/sentence-order-check.test-support";
 import { TypingActivity } from "../typing/TypingActivity";
 import { WordChoiceActivity } from "../word-choice/WordChoiceScreen";
 import type { LessonPosition } from "./activity-finish";
@@ -28,6 +33,9 @@ afterEach(() => {
 });
 
 const tap = (id: string): void => void fireEvent.tap(screen.getByTestId(id), {});
+// 문장 순서의 아래 버튼은 같은 ui-lynx Button이고, 다른 활동은 셸 기본 버튼입니다.
+const bottomButton = (): HTMLElement =>
+  bottomActionOrNull() ?? screen.getByTestId("learning-shell-action");
 const chapter = () => screen.getByTestId("learning-shell-chapter");
 const progress = () => screen.getByTestId("learning-shell-progress");
 
@@ -90,11 +98,11 @@ const cases: readonly Case[] = [
       />
     ),
     solveFirst: () => {
-      tap("listening-choice-0");
+      tap("ui-lynx-option-selector-item-choice-0");
       tap("learning-shell-advance");
     },
     solveLast: () => {
-      tap("listening-choice-0");
+      tap("ui-lynx-option-selector-item-choice-0");
       tap("learning-shell-advance");
     },
     seeResultsLabel: "See results",
@@ -111,11 +119,11 @@ const cases: readonly Case[] = [
       />
     ),
     solveFirst: () => {
-      tap("word-choice-option-1");
+      tap("ui-lynx-option-selector-item-choice-1");
       tap("learning-shell-advance");
     },
     solveLast: () => {
-      tap("word-choice-option-1");
+      tap("ui-lynx-option-selector-item-choice-1");
       tap("learning-shell-advance");
     },
     seeResultsLabel: "See results",
@@ -135,14 +143,14 @@ const cases: readonly Case[] = [
     solveFirst: () => {
       tap("sentence-order-chip-1");
       tap("sentence-order-chip-0");
-      tap("learning-shell-action");
-      tap("learning-shell-action");
+      tapCheck();
+      tapBottom();
     },
     solveLast: () => {
       tap("sentence-order-chip-1");
       tap("sentence-order-chip-0");
-      tap("learning-shell-action");
-      tap("learning-shell-action");
+      tapCheck();
+      tapBottom();
     },
     seeResultsLabel: "See results",
   },
@@ -217,12 +225,9 @@ describe.each(cases)("$name — 레슨 안의 위치", (item) => {
     expect(screen.getByTestId("learning-activity-complete-activities")).toHaveTextContent("4");
     // 완료 카드 위에서도 카운터는 레슨의 마지막 문항을 가리킵니다.
     expect(chapter()).toHaveTextContent("Lesson 12 / 12");
-    expect(screen.getByTestId("learning-shell-action")).toHaveAttribute(
-      "accessibility-label",
-      item.seeResultsLabel,
-    );
+    expect(bottomButton()).toHaveAttribute("accessibility-label", item.seeResultsLabel);
 
-    tap("learning-shell-action");
+    fireEvent.tap(bottomButton(), {});
 
     expect(onFinish).toHaveBeenCalledTimes(1);
     expect(onFinish).toHaveBeenCalledWith(["correct", "correct"], 0);

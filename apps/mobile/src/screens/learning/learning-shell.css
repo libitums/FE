@@ -166,6 +166,34 @@
   letter-spacing: var(--libitum-typography-heading-m-letter-spacing);
 }
 
+/* 지시문 줄 상자입니다. 하한이 판정 배지 높이(36)라 한 줄 지시문에서도 배지가 서면 밀림이 0이고, 두 줄 지시문은
+   줄 상자가 이미 더 커서 배지가 겹쳐도 높이가 그대로입니다. 배지는 이 상자 위에 겹쳐 섭니다. */
+.learning-shell-prompt {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex-shrink: 0;
+  min-height: calc(var(--libitum-spacing-32) + var(--libitum-spacing-4));
+}
+
+/* 판정이 서면 지시문 글은 흐름에 남아 높이를 지키되 보이지 않습니다. */
+.learning-shell-instruction-covered {
+  opacity: 0;
+}
+
+.learning-shell-verdict {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
 /* 무대를 감싸는 상자입니다. 면 · 모서리 · 안 여백은 ui-lynx `Card`의 `stage` 변형이
    집니다. **남는 세로를 받지 않습니다** — 받으면 카드가 자기 자리보다 커지고, 넘친
    만큼이 아래 보기 **위로 겹쳐 나옵니다**(기기에서 봤습니다). 넘치는 것은 스크롤이
@@ -196,7 +224,8 @@
   );
 }
 
-/* 합친 흐름: 부모(`learning-shell-flow`)가 스크롤 높이까지 늘어나 남는 세로를 줍니다. */
+/* 합친 흐름: 부모(`learning-shell-flow`)가 스크롤 높이까지 늘어나 남는 세로를 줍니다. 나뉜 배치라도 버튼 행이 흐름
+   안(`in-flow`)이면 이것을 씁니다 — 행이 제 높이를 스스로 차지하므로 버튼 몫을 따로 비우지 않습니다. */
 .learning-shell-stage-fill-flow {
   flex-grow: 1;
 }
@@ -326,6 +355,13 @@
   flex-direction: row;
   align-items: stretch;
   gap: var(--libitum-spacing-16);
+  /* **하한 높이(56)를 적습니다 — 떠 있을 때도 흐름 안에 설 때도 같습니다.** iOS Lynx는 활동이 세운 버튼
+     (ui-lynx `Button`)이 든 이 행의 높이를 배치에서 0으로 셉니다. 그러면 떠 있는 행의 `bottom`은 높이 0 기준이라
+     행이 안전 영역 아래 끝을 약 28pt 넘어 홈 표시줄과 겹치고, 흐름 안의 행은 위의 `flex: 1` 스크롤이 행 몫까지
+     차지해 같은 자리로 밀려납니다(iPhone 13 mini 시뮬레이터, 화면 아래 끝 778에서 806). 하한을 주면 행이
+     제 몫을 가져 둘 다 아래 여백을 지킵니다. 56은 버튼 높이(여백 16 + 줄높이 24 + 여백 16)라 평소 높이와 같고,
+     큰 글자에서는 내용이 하한을 넘어 커집니다. */
+  min-height: calc(var(--libitum-spacing-48) + var(--libitum-spacing-8));
 }
 
 /* 스크롤 카드 아래에서 실제 버튼 높이를 확보해 작은 화면과 큰 글자에서도 겹치지 않습니다. */
@@ -335,6 +371,19 @@
   right: auto;
   bottom: auto;
   flex-shrink: 0;
+}
+
+/* 보조 버튼과 짝인 행(말하기 화면) — 두 버튼이 한 줄에 들지 않으면(큰 글자) 줄을 바꿔 위아래로 쌓습니다. 주 버튼의
+   기준 폭을 내용 폭(`auto`)으로 두어야 넘침이 셈에 들어갑니다(`0`이면 늘 한 줄에 든다고 셉니다). 보통 크기에서는 한 줄에
+   들고 주 버튼이 남는 폭을 다 채워 모양이 그대로입니다. 쌓이면 보조 버튼은 내용 폭으로 가운데에 섭니다. */
+.learning-shell-actions-paired {
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.learning-shell-actions-paired .learning-shell-action,
+.learning-shell-actions-paired .learning-shell-action-slot {
+  flex: 1 1 auto;
 }
 
 .learning-shell-action {
@@ -461,4 +510,151 @@
 .learning-shell-scroll-motion-reduced.learning-shell-scroll-page-entering {
   transform: none;
   transition: opacity var(--libitum-motion-duration-d2) var(--libitum-motion-easing-linear);
+}
+
+/* 답한 뒤 아래에서 올라오는 해설 판입니다. 화면 가장자리까지 닿고(좌우 · 아래 여백을 음수로 풀어 안 여백으로 돌려줌)
+   셸 아래 여백 안까지 내려옵니다. 음수 여백은 longhand로만 적습니다. 면 · 글자색은 판정 색입니다. */
+.learning-shell-feedback {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: var(--libitum-spacing-4);
+  margin-left: calc(-1 * var(--libitum-layout-screen-padding-x));
+  margin-right: calc(-1 * var(--libitum-layout-screen-padding-x));
+  margin-bottom: calc(-1 * var(--libitum-layout-screen-padding-bottom));
+  padding-top: var(--libitum-spacing-16);
+  padding-left: var(--libitum-spacing-16);
+  padding-right: var(--libitum-spacing-16);
+  padding-bottom: var(--libitum-layout-screen-padding-bottom);
+  border-top-left-radius: var(--libitum-radius-xl);
+  border-top-right-radius: var(--libitum-radius-xl);
+  animation: learning-shell-feedback-enter var(--libitum-motion-duration-sheet)
+    var(--libitum-motion-easing-enter);
+}
+
+/* 판의 겉 상자 — 하단 안전 영역만큼 음수 여백(인라인, px)으로 셸 아래 여백 안까지 내려갑니다. */
+.learning-shell-feedback-bleed {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+/* 판 안 마지막 바닥 상자 — 안전 영역 높이(인라인)를 판정 면으로 채웁니다. 판의 줄 간격만큼 위로 붙어 내용 자리를
+   바꾸지 않습니다. */
+.learning-shell-feedback-floor {
+  flex-shrink: 0;
+  margin-top: calc(-1 * var(--libitum-spacing-4));
+}
+
+/* 글 부분만 판 안에서 스크롤합니다 — 상한은 셸 높이의 절반이라 큰 글꼴에서도 아래 버튼이 화면 안에 남습니다. 보통
+   글꼴에서는 내용이 상한보다 작아 모양이 바뀌지 않습니다. */
+.learning-shell-feedback-scroll {
+  max-height: 50vh;
+  width: 100%;
+}
+
+.learning-shell-feedback-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-4);
+}
+
+.learning-shell-feedback-correct {
+  background: var(--libitum-color-feedback-correct-surface);
+}
+
+.learning-shell-feedback-incorrect {
+  background: var(--libitum-color-feedback-incorrect-surface);
+}
+
+.learning-shell-feedback-head {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-8);
+}
+
+.learning-shell-feedback-icon {
+  width: calc(var(--libitum-spacing-24) + var(--libitum-spacing-4));
+  height: calc(var(--libitum-spacing-24) + var(--libitum-spacing-4));
+  border-radius: var(--libitum-radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.learning-shell-feedback-icon-correct {
+  background: var(--libitum-color-feedback-correct);
+}
+
+.learning-shell-feedback-icon-incorrect {
+  background: var(--libitum-color-feedback-incorrect);
+}
+
+.learning-shell-feedback-icon-mark {
+  width: var(--libitum-icon-size-xs);
+  height: var(--libitum-icon-size-xs);
+  flex-shrink: 0;
+}
+
+.learning-shell-feedback-title {
+  font-family: var(--libitum-typography-heading-m-font-family);
+  font-weight: var(--libitum-typography-heading-m-font-weight);
+  font-size: var(--libitum-typography-heading-m-font-size);
+  line-height: var(--libitum-typography-heading-m-line-height);
+  letter-spacing: var(--libitum-typography-heading-m-letter-spacing);
+}
+
+.learning-shell-feedback-line {
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  font-size: var(--libitum-typography-body-m-font-size);
+  line-height: var(--libitum-typography-body-m-line-height);
+  letter-spacing: var(--libitum-typography-body-m-letter-spacing);
+}
+
+.learning-shell-feedback-line-en {
+  font-weight: var(--libitum-font-weight-semi-bold);
+}
+
+.learning-shell-feedback-correct .learning-shell-feedback-title,
+.learning-shell-feedback-correct .learning-shell-feedback-line {
+  color: var(--libitum-color-feedback-correct-text);
+}
+
+.learning-shell-feedback-incorrect .learning-shell-feedback-title,
+.learning-shell-feedback-incorrect .learning-shell-feedback-line {
+  color: var(--libitum-color-feedback-incorrect-text);
+}
+
+/* 판 안의 아래 버튼 행은 판과 줄 사이에 한 칸 떨어집니다. */
+.learning-shell-feedback .learning-shell-actions {
+  margin-top: var(--libitum-spacing-8);
+}
+
+@keyframes learning-shell-feedback-enter {
+  from {
+    opacity: 0;
+    transform: translateY(var(--libitum-spacing-16));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 움직임 줄이기: 이동 없이 투명도만 짧게 바뀝니다. */
+.learning-shell-feedback-motion-reduced {
+  animation: learning-shell-feedback-fade var(--libitum-motion-duration-d2)
+    var(--libitum-motion-easing-linear);
+}
+
+@keyframes learning-shell-feedback-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }

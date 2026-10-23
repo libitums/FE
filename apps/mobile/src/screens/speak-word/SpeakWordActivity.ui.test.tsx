@@ -1,5 +1,5 @@
 import { afterEach, expect, test, vi } from "vitest";
-import { act, cleanup, fireEvent, render, screen } from "@lynx-js/react/testing-library";
+import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import type { AnswerResult } from "../../lib/answer-result";
 import {
@@ -13,6 +13,7 @@ import { UiCopyContext } from "../../lib/ui-copy";
 import { markedUiCopy } from "../../lib/ui-copy.test-support";
 import type { LessonPosition } from "../learning/activity-finish";
 import { SpeakWordActivity } from "./SpeakWordActivity";
+import type { ItemAnswerReport } from "../../lib/item-answer";
 import type { SpeakWordQuestion } from "./speak-word.contract";
 import { expectCompleteScene, expectQuestionScene } from "../learning/complete-scene.test-support";
 
@@ -84,14 +85,14 @@ function host(options: SpeechHostOptions = {}) {
   return stubSpeechHost(options);
 }
 
-test("USW1. 첫 화면은 빈 틀 · 뜻 줄 · 보조 Skip만 서고 Speak가 없으며, 그림이 서면 Speak와 대기 마이크가 선다", () => {
+test("USW1. 첫 화면은 빈 틀 · 로마자 줄 · 보조 Skip만 서고 Speak가 없으며, 그림이 서면 Speak와 대기 마이크가 선다", () => {
   host();
   mount([cardQuestion, passport]);
 
   expect(id("speak-word-picture")).toHaveAttribute("data-loadState", "loading");
   expect(id("speak-word-picture-frame")).toHaveAttribute("accessibility-label", "Picture, loading");
-  expect(id("speak-word-meaning")).toHaveTextContent("card");
-  expect(id("speak-word-meaning")).toHaveAttribute("accessibility-element", "false");
+  expect(id("speak-word-romanization")).toHaveTextContent("kadeu");
+  expect(maybe("speak-word-meaning")).not.toBeInTheDocument();
   expect(maybe("learning-shell-action")).not.toBeInTheDocument();
   expect(id("speak-word-secondary")).toHaveAttribute("data-control", "skip");
   expect(id("speak-word-secondary")).toHaveTextContent("Skip");
@@ -127,6 +128,7 @@ test("USW2. 정답이면 듣는 중에는 낭독이 없고, 판정 뒤 정답 �
   act(() => speech.pending[0]?.({ status: "recognized", text: "카드", isFinal: true }));
 
   expect(id("answer-verdict")).toHaveAttribute("data-result", "correct");
+  expect(within(id("learning-shell-verdict")).getByTestId("answer-verdict")).toBeInTheDocument();
   expect(speech.announced.builtin).toEqual(["Result, correct"]);
   expect(id("speak-word-reveal")).toHaveTextContent("Answer: 카드 · kadeu");
   expect(hintText()).toBe("Tap the screen to continue");
@@ -355,4 +357,94 @@ test("[ACS-SW] 완료 때 무대가 완료 장면이고 내용 상자의 유일�
   tapSecondary("skip", "Skip");
 
   expectCompleteScene("speak-word-content", "speak-word-complete");
+});
+
+// SW1 — 카드는 그림 + 정답 로마자(글 역할)이고 영어 뜻 줄은 없다. 파형은 카드 밖 작업 영역에 서고, 판정은 셸이 말한다.
+test("SW1. 카드는 그림과 글 역할 로마자이고 뜻 줄은 없으며 파형은 무대 밖에 선다", () => {
+  host();
+  mount([cardQuestion]);
+  loadPicture();
+
+  const stage = id("learning-shell-stage");
+  expect(within(stage).getByTestId("speak-word-picture")).toBeInTheDocument();
+  expect(within(stage).getByTestId("speak-word-romanization")).toHaveClass(
+    "text-role-romanization",
+  );
+  expect(within(stage).queryByTestId("speak-word-meaning")).not.toBeInTheDocument();
+  expect(within(stage).queryByTestId("speak-word-waves")).not.toBeInTheDocument();
+  expect(id("speak-word-waves")).toBeInTheDocument();
+});
+
+test("SW1. 로마자가 없는 문항은 로마자 줄이 없다", () => {
+  host();
+  mount([passport]);
+
+  expect(maybe("speak-word-romanization")).not.toBeInTheDocument();
+  expect(maybe("speak-word-meaning")).not.toBeInTheDocument();
+});
+
+test("SW1. 판정 뒤 로마자 줄 자리에 정답 상자가 서고 판정 배지는 카드 안이 아니라 셸에 선다", () => {
+  host({ result: () => recognized("카트") });
+  mount([cardQuestion]);
+  loadPicture();
+
+  tapAction("Speak");
+
+  expect(maybe("speak-word-romanization")).not.toBeInTheDocument();
+  const stage = id("learning-shell-stage");
+  expect(within(stage).getByTestId("speak-word-reveal")).toHaveTextContent("Answer: 카드 · kadeu");
+  expect(within(stage).queryByTestId("answer-verdict")).not.toBeInTheDocument();
+  expect(within(id("learning-shell-verdict")).getByTestId("answer-verdict")).toHaveAttribute(
+    "data-result",
+    "incorrect",
+  );
+  expect(document.querySelector(".speak-word-activity-verdict-slot")).toBeNull();
+});
+
+test("EV5. 판정은 문항당 한 번 보고되고 outcome · density가 실린다", () => {
+  host({ result: () => recognized("카드") });
+  const onItemAnswered = vi.fn<(report: ItemAnswerReport) => void>();
+  render(
+    <SpeakWordActivity
+      questions={[cardQuestion, passport]}
+      gemCount={0}
+      onExit={() => {}}
+      onFinish={() => {}}
+      onItemAnswered={onItemAnswered}
+    />,
+  );
+  loadPicture();
+
+  tapAction("Speak");
+
+  expect(onItemAnswered).toHaveBeenCalledTimes(1);
+  expect(onItemAnswered).toHaveBeenCalledWith({
+    questionIndex: 0,
+    outcome: "correct",
+    density: "regular",
+  });
+});
+
+test("EV5. Skip은 skipped로 보고된다", () => {
+  host();
+  const onItemAnswered = vi.fn<(report: ItemAnswerReport) => void>();
+  render(
+    <SpeakWordActivity
+      questions={[cardQuestion, passport]}
+      gemCount={0}
+      onExit={() => {}}
+      onFinish={() => {}}
+      onItemAnswered={onItemAnswered}
+    />,
+  );
+  loadPicture();
+
+  tapSecondary("skip", "Skip");
+
+  expect(onItemAnswered).toHaveBeenCalledTimes(1);
+  expect(onItemAnswered).toHaveBeenCalledWith({
+    questionIndex: 0,
+    outcome: "skipped",
+    density: "regular",
+  });
 });

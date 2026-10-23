@@ -17,16 +17,14 @@ onlyBuiltDependencies:
 # 올리지 못하는 것들입니다(`security_update_not_possible`). 같은 메이저 안에서만 올리고,
 # 상위 패키지가 패치판을 받아들이면 그 줄을 지웁니다.
 overrides:
-  "vite@>=7.0.0 <7.3.7": "7.3.7"
-  "vite@>=8.3.0 <8.3.3": "8.3.3"
   "markdown-it@>=14.0.0 <14.3.3": "14.3.3"
   "markdown-it@>=15.0.0 <15.0.3": "15.0.3"
   "launch-editor@<2.14.2": "2.14.2"
   "shell-quote@<1.11.0": "1.11.0"
+  "tinypool@>=2.0.0 <2.1.2": "2.1.2"
   "dompurify@<3.4.16": "3.4.16"
   "source-map-js@<1.2.2": "1.2.2"
   "postcss-selector-parser@>=7.0.0 <7.1.6": "7.1.6"
-  "tinypool@>=2.0.0 <2.1.2": "2.1.2"
   "fast-uri@>=3.0.0 <3.1.8": "3.1.8"
   "brace-expansion@>=5.0.0 <5.0.12": "5.0.12"
   "engine.io@>=6.6.0 <6.6.10": "6.6.10"

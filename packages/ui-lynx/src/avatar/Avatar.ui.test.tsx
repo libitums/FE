@@ -17,7 +17,7 @@ describe("Avatar UI", () => {
     render(<Avatar name="Kim Ray" size="sm" />);
 
     const avatar = screen.getByTestId("ui-lynx-avatar");
-    expect(avatar).toHaveClass("ui-lynx-avatar-sm", "ui-lynx-avatar-initials");
+    expect(avatar).toHaveClass("ui-lynx-avatar-sm", "ui-lynx-avatar-content-initials");
     expect(avatar).toHaveAttribute("data-content", "initials");
     expect(avatar).toHaveAttribute("accessibility-element", "true");
     expect(avatar).toHaveAttribute("accessibility-label", "Kim Ray");
@@ -67,6 +67,42 @@ describe("Avatar UI", () => {
     expect(avatar).toHaveAttribute("accessibility-element", "false");
     expect(avatar).toHaveAttribute("accessibility-elements-hidden", "true");
     expect(avatar).not.toHaveAttribute("accessibility-label");
+  });
+
+  // 뿌리의 내용 수식 클래스가 자식 클래스(`ui-lynx-avatar-image` 등)와 같은 이름이면 그림이 읽힌 뒤 뿌리가 자식 규칙
+  // (absolute · 100%)을 받아 흐름에서 빠집니다 — 줄 안에서 폭이 0이 되고 원이 칸 아래로 떨어집니다(13 mini 실기).
+  test("뿌리 클래스는 어떤 내용 상태에서도 자식 요소의 클래스와 겹치지 않는다", () => {
+    const childClasses = [
+      "ui-lynx-avatar-image",
+      "ui-lynx-avatar-initials",
+      "ui-lynx-avatar-placeholder",
+    ];
+    const rootClassesOf = () => Array.from(screen.getByTestId("ui-lynx-avatar").classList);
+
+    render(<Avatar imageSource="https://example.com/avatar.png" name="김말랑" size="sm" />);
+    expect(rootClassesOf()).toContain("ui-lynx-avatar-content-initials");
+    dispatchImageEvent("load");
+    expect(rootClassesOf()).toContain("ui-lynx-avatar-content-image");
+    expect(rootClassesOf().filter((name) => childClasses.includes(name))).toEqual([]);
+    dispatchImageEvent("error");
+    expect(rootClassesOf()).toContain("ui-lynx-avatar-content-initials");
+    expect(rootClassesOf().filter((name) => childClasses.includes(name))).toEqual([]);
+  });
+
+  test("그림은 지름이 정해진 원 안에서 aspectFill로 꽉 차고 원 밖은 잘린다", () => {
+    const styles = readFileSync(resolve(process.cwd(), "src/avatar/avatar.css"), "utf8");
+    expect(styles).toMatch(
+      /\.ui-lynx-avatar\s*\{[^}]*flex-shrink:\s*0[^}]*overflow:\s*hidden[^}]*border-radius:\s*var\(--libitum-radius-full\)/s,
+    );
+    expect(styles).toMatch(
+      /\.ui-lynx-avatar-image\s*\{[^}]*position:\s*absolute[^}]*width:\s*100%[^}]*height:\s*100%/s,
+    );
+    render(<Avatar imageSource="https://example.com/avatar.png" name="김말랑" size="sm" />);
+    dispatchImageEvent("load");
+    const avatar = screen.getByTestId("ui-lynx-avatar");
+    expect(avatar).toHaveClass("ui-lynx-avatar", "ui-lynx-avatar-sm");
+    expect(screen.getByTestId("ui-lynx-avatar-image")).toHaveAttribute("mode", "aspectFill");
+    expect(screen.getByTestId("ui-lynx-avatar-image")).toHaveClass("ui-lynx-avatar-image");
   });
 
   test("Size별 지름·타이포·icon과 원형 surface token을 고정한다", () => {

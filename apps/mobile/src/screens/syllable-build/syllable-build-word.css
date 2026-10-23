@@ -1,30 +1,52 @@
 /* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1) — 색·간격·타이포의 생값을 적지 않습니다.
-   칸 줄입니다. 문장 조립의 답 칸 줄과 달리 칸 사이에 간격이 없어 놓인 음절이 한 낱말로 붙어 읽힙니다
-   (「띄어쓰기 없이」를 모양으로 말합니다). 긴 낱말은 큰 글자에서 줄이 접히고 잘리지 않습니다. */
+   칸 줄입니다. 칸 사이 간격 8로 칸이 따로 보이고, 칸이 많으면(6칸 이상) 줄이 접힙니다. 긴 낱말은 큰 글자에서도 줄이
+   접히고 잘리지 않습니다. */
 .syllable-build-word {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
+  gap: var(--libitum-spacing-8);
 }
 
-/* 칸 — 음절 하나의 자리입니다. 비어 있어도 같은 폭을 지키고, 빈 칸은 가는 밑줄로 자리를 보입니다.
-   채워지면 밑줄이 투명이 되어 높이가 흔들리지 않습니다. */
+/* 칸 — 48 × 56, 모서리 md입니다(숫자 입력 칸 s의 치수). 자판을 띄우면 안 되는 칸이라 컴포넌트를 쓰지 않고 같은 값을
+   따라 씁니다. 테두리는 늘 두르되 투명이라 지금 칸 · 판정 칸이 되어도 크기가 변하지 않습니다. */
 .syllable-build-slot {
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  min-width: var(--libitum-spacing-24);
-  min-height: var(--libitum-spacing-48);
-  border-bottom: var(--libitum-stroke-width-thin) solid transparent;
+  min-width: var(--libitum-spacing-48);
+  min-height: calc(var(--libitum-spacing-48) + var(--libitum-spacing-8));
+  border: var(--libitum-stroke-width-thin) solid transparent;
+  border-radius: var(--libitum-radius-md);
+  background-color: var(--libitum-color-gray-100);
+  flex-shrink: 0;
 }
 
-/* 빈 칸끼리는 좌우로 띄워 밑줄이 칸마다 따로 보입니다 — 간격이 없으면 밑줄이 한 줄로 이어져 칸 수가
-   보이지 않습니다(기기 확인 2026-10-16). 채워진 칸은 띄우지 않아 놓인 음절은 그대로 붙어 읽힙니다. */
-.syllable-build-slot-empty {
-  margin-left: var(--libitum-spacing-4);
-  margin-right: var(--libitum-spacing-4);
-  border-bottom-color: var(--libitum-color-border-default);
+/* 지금 칸 — 다음에 채울 칸입니다. 흰 면에 brand-strong 테두리 1px이고, 옮길 때 전환 없이 즉시 바뀝니다. */
+.syllable-build-slot-current {
+  background-color: var(--libitum-color-white);
+  border-color: var(--libitum-color-brand-strong);
+}
+
+/* 채점 뒤 칸의 판정 색입니다 — 면과 테두리가 함께 바뀌고 글자는 아래 규칙이 정답 · 오답 글자색을 냅니다.
+   색만이 채널이 아닙니다 — 셸 지시문 자리의 판정 배지와 정답 상자가 함께 말합니다(WCAG 1.4.1). */
+.syllable-build-slot-correct {
+  background-color: var(--libitum-color-feedback-correct-surface);
+  border-color: var(--libitum-color-feedback-correct);
+}
+
+.syllable-build-slot-incorrect {
+  background-color: var(--libitum-color-feedback-incorrect-surface);
+  border-color: var(--libitum-color-feedback-incorrect);
+}
+
+.syllable-build-slot-correct .syllable-tile-label {
+  color: var(--libitum-color-feedback-correct-text);
+}
+
+.syllable-build-slot-incorrect .syllable-tile-label {
+  color: var(--libitum-color-feedback-incorrect-text);
 }

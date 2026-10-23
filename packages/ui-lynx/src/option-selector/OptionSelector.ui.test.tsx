@@ -1,4 +1,5 @@
 import { color } from "@libitums/design-tokens";
+import cross from "@libitums/icons/lynx/cross";
 import tick from "@libitums/icons/lynx/tick";
 import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
 import { describe, expect, test, vi } from "vitest";
@@ -306,5 +307,108 @@ describe("OptionSelector motion 컨텍스트", () => {
       "motion",
     );
     expect(standard.container.querySelector("[data-motion]")).toBeNull();
+  });
+});
+
+describe("OptionSelector outlined-subtle · 판정 · 뜻 줄", () => {
+  const judged: readonly OptionSelectorOption[] = [
+    { id: "a", label: "안녕하세요", feedback: "correct", meaning: "Hello" },
+    { id: "b", label: "감사합니다", feedback: "incorrect", meaning: "Thank you" },
+    { id: "c", label: "미안합니다", disabled: true },
+  ];
+
+  test("OSU1: outlined-subtle은 루트 data-variant와 항목 클래스를 낸다", () => {
+    render(
+      <OptionSelector
+        groupLabel="질문"
+        options={options}
+        variant="outlined-subtle"
+        selectedIds={["b"]}
+        onChange={() => undefined}
+      />,
+    );
+
+    const root = screen.getByTestId("ui-lynx-option-selector");
+    expect(root).toHaveAttribute("data-variant", "outlined-subtle");
+    expect(root).toHaveClass("ui-lynx-option-selector-outlined-subtle");
+    expect(screen.getByTestId("ui-lynx-option-selector-item-b")).toHaveClass(
+      "ui-lynx-option-selector-item-selected",
+    );
+    expect(screen.getByTestId("ui-lynx-option-selector-item-c")).toHaveClass(
+      "ui-lynx-option-selector-item-disabled",
+    );
+  });
+
+  test("OSU2: 판정이 있는 항목은 tick · cross를 그리고 조작할 수 없다", () => {
+    const onCommit = vi.fn<(id: string) => void>();
+    render(
+      <OptionSelector
+        groupLabel="질문"
+        options={judged}
+        variant="outlined-subtle"
+        commit="immediate"
+        committed
+        selectedIds={["b"]}
+        onChange={() => undefined}
+        onCommit={onCommit}
+      />,
+    );
+
+    const a = screen.getByTestId("ui-lynx-option-selector-item-a");
+    const b = screen.getByTestId("ui-lynx-option-selector-item-b");
+    expect(a).toHaveAttribute("accessibility-traits", "disabled");
+    expect(b).toHaveAttribute("accessibility-traits", "disabled");
+    expect(a).toHaveClass("ui-lynx-option-selector-item-correct");
+    expect(b).toHaveClass("ui-lynx-option-selector-item-incorrect");
+    expect(screen.getByTestId("ui-lynx-option-selector-indicator-a")).toHaveAttribute(
+      "content",
+      tick.replace(/currentColor/g, color.feedback["correct-text"]),
+    );
+    expect(screen.getByTestId("ui-lynx-option-selector-indicator-b")).toHaveAttribute(
+      "content",
+      cross.replace(/currentColor/g, color.feedback["incorrect-text"]),
+    );
+    fireEvent.tap(a, {});
+    fireEvent.tap(b, {});
+    expect(onCommit).not.toHaveBeenCalled();
+  });
+
+  test("OSU3: meaning은 라벨 다음 줄에 그려지고 접근성 속성이 없다", () => {
+    render(
+      <OptionSelector
+        groupLabel="질문"
+        options={judged}
+        variant="outlined-subtle"
+        selectedIds={[]}
+        onChange={() => undefined}
+      />,
+    );
+
+    const label = screen.getByTestId("ui-lynx-option-selector-label-a");
+    const meaning = screen.getByTestId("ui-lynx-option-selector-meaning-a");
+    expect(meaning).toHaveTextContent("Hello");
+    expect(label.parentElement).toBe(meaning.parentElement);
+    expect(label.compareDocumentPosition(meaning) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(meaning).not.toHaveAttribute("accessibility-label");
+    expect(meaning).not.toHaveAttribute("accessibility-element", "true");
+    expect(screen.queryByTestId("ui-lynx-option-selector-meaning-c")).toBeNull();
+  });
+
+  test("OSU4: committed이면 옵션이 하나여도 던지지 않고 그린다", () => {
+    render(
+      <OptionSelector
+        groupLabel="질문"
+        options={[{ id: "a", label: "안녕하세요", feedback: "correct" }]}
+        variant="outlined-subtle"
+        commit="immediate"
+        committed
+        selectedIds={["a"]}
+        onChange={() => undefined}
+      />,
+    );
+
+    expect(screen.getByTestId("ui-lynx-option-selector-item-a")).toHaveClass(
+      "ui-lynx-option-selector-item-correct",
+    );
   });
 });

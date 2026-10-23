@@ -1,102 +1,16 @@
-/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). 문장 만들기의 카드 안 · 작업
-   영역입니다(Figma 65-14). 뼈대(상단 바 · 세션 헤더 · 지시문 · 무대 카드 · 아래 버튼)는
-   `LearningShell`이 집니다. */
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). 문장 만들기의 무대 안 · 작업 영역입니다(Figma 65-14).
+   뼈대(상단 바 · 세션 헤더 · 지시문 · 무대 · 아래 버튼)는 `LearningShell`이 집니다. 줄 배치의 위 줄 · 답 줄은
+   `sentence-order-lines.css`, 대화 칸은 `sentence-order-dialogue.css`, 대화 조각은 `sentence-order-dialogue-chip.css`가
+   집니다. 판정 배지는 카드 안 칸이 아니라 셸의 지시문 자리에 섭니다. */
 
-/* 카드 안 — 판정 자리 · 상대 말풍선 · 내 말풍선 · 답 칸 줄이 위에서 아래로 섭니다.
-
-   높이 하한은 듣기 무대와 같은 244입니다 — 문항마다 카드가 늘었다 줄었다 하면 그 아래
-   창고가 흔들립니다. 하한이지 고정이 아닙니다(ADR-0020 D5). */
+/* 무대 안 — 줄 배치는 카드 없이, 대화 배치는 카드 안에서 위에서 아래로 섭니다. 높이는 내용 높이입니다. */
 .sentence-order-screen-content {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: var(--libitum-spacing-12);
-  min-height: 244px;
 }
 
-/* 판정 배지 자리 — 비어 있어도 높이를 지킵니다(듣기와 같은 값 · 같은 근거). */
-.sentence-order-screen-verdict-slot {
-  min-height: var(--libitum-spacing-32);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-/* 말풍선 둘 — 꼬리 쪽 한 모서리만 각집니다(상대는 왼쪽 아래, 나는 오른쪽 아래). 폭은
-   내용을 따르고 카드 폭의 80%를 넘지 않습니다. 안쪽 여백은 디자인의 말풍선 높이 71에서
-   글자 줄 20을 뺀 위아래 25 · 좌우 24에 가까운 토큰(24 · 24)입니다. */
-.sentence-order-screen-partner,
-.sentence-order-screen-reply {
-  max-width: 80%;
-  padding: var(--libitum-spacing-24);
-  border-radius: var(--libitum-radius-md);
-  flex-shrink: 0;
-}
-
-.sentence-order-screen-partner {
-  align-self: flex-start;
-  background-color: var(--libitum-color-gray-100);
-  border-bottom-left-radius: 0;
-}
-
-/* 듣기 조립의 상대 말풍선 자리 — 말풍선이 아니라 듣기 3열이 카드 폭을 채웁니다. */
-.sentence-order-screen-listen {
-  align-self: stretch;
-  flex-shrink: 0;
-}
-
-.sentence-order-screen-reply {
-  align-self: flex-end;
-  background-color: var(--libitum-color-brand-primary);
-  border-bottom-right-radius: 0;
-}
-
-.sentence-order-screen-partner-text,
-.sentence-order-screen-reply-text {
-  font-family: var(--libitum-typography-label-l-font-family);
-  font-weight: var(--libitum-typography-label-l-font-weight);
-  font-size: var(--libitum-typography-label-l-font-size);
-  line-height: var(--libitum-typography-label-l-line-height);
-  letter-spacing: var(--libitum-typography-label-l-letter-spacing);
-}
-
-.sentence-order-screen-support {
-  margin-top: var(--libitum-spacing-8);
-  color: var(--libitum-color-gray-700);
-  font-family: var(--libitum-typography-label-l-font-family);
-  font-size: var(--libitum-typography-label-l-font-size);
-  line-height: var(--libitum-typography-label-l-line-height);
-}
-
-.sentence-order-screen-partner-text {
-  color: var(--libitum-color-gray-900);
-}
-
-.sentence-order-screen-reply-text {
-  color: var(--libitum-color-white);
-  text-align: center;
-}
-
-/* 답 칸 줄 — 놓인 조각이 가운데에서 줄바꿈하며 섭니다. 위아래 가는 선(gray-100)이 줄의
-   자리를 보입니다. 조각이 없어도 한 줄 높이(조각 46)를 지켜 선이 붙지 않습니다. */
-.sentence-order-screen-sentence {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-  gap: var(--libitum-spacing-8);
-  min-height: calc(var(--libitum-spacing-48) + var(--libitum-spacing-12));
-  padding: var(--libitum-spacing-6) var(--libitum-spacing-16);
-  margin-top: var(--libitum-spacing-12);
-  border-top: var(--libitum-stroke-width-thin) solid var(--libitum-color-gray-100);
-  border-bottom: var(--libitum-stroke-width-thin) solid var(--libitum-color-gray-100);
-  flex-shrink: 0;
-}
-
-/* 창고 — 가운데에서 줄바꿈하며 섭니다. 조각 사이 간격 8은 디자인(가로 7~9 · 세로 12)에
-   가까운 토큰입니다. */
+/* 창고 — 가운데에서 줄바꿈하며 섭니다. 조각 사이 간격 8은 디자인(가로 7~9 · 세로 12)에 가까운 토큰입니다. */
 .sentence-order-screen-bank {
   display: flex;
   flex-direction: row;

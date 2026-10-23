@@ -71,7 +71,7 @@ const loadPicture = (): void =>
     new window.Event("bindEvent:load"),
   );
 const choose = (index: number): void =>
-  void fireEvent.tap(screen.getByTestId(`word-choice-option-${index}`), {});
+  void fireEvent.tap(screen.getByTestId(`ui-lynx-option-selector-item-choice-${index}`), {});
 
 beforeEach(() => {
   playAudio.mockReset();
@@ -84,7 +84,7 @@ afterEach(() => {
 });
 
 describe("REPLY_SELECT — 듣기 갈래", () => {
-  test("WC1. 제시문 · 로마자 · 뜻이 그대로 보이고 그 뒤 보기 앞에 간이 줄이 서며 자동 재생이 한 번 난다", () => {
+  test("WC1. 제시문 · 로마자 · 구분선 · 뜻이 보이고 그 뒤 보기 앞에 간이 줄이 서며 자동 재생이 한 번 난다", () => {
     const { lesson } = lessonAudioStub();
 
     const { container } = mount([replyWithSound()], lesson);
@@ -93,6 +93,7 @@ describe("REPLY_SELECT — 듣기 갈래", () => {
       testIdOrder(container, [
         "word-choice-screen-prompt",
         "word-choice-screen-romanization",
+        "word-choice-screen-divider",
         "word-choice-screen-translation",
         "word-choice-listen",
         "word-choice-screen-options",
@@ -100,6 +101,7 @@ describe("REPLY_SELECT — 듣기 갈래", () => {
     ).toEqual([
       "word-choice-screen-prompt",
       "word-choice-screen-romanization",
+      "word-choice-screen-divider",
       "word-choice-screen-translation",
       "word-choice-listen",
       "word-choice-screen-options",

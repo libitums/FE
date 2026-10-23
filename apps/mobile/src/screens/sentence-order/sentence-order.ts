@@ -108,16 +108,16 @@ export function composedSentence(
 }
 
 // 조각의 낭독 이름입니다 — placedOrdinal이 null이면 이름만, 아니면 문구표의
-// `sentenceOrder.placedChip`입니다.
+// `sentenceOrder.placedChip`입니다. 채점 뒤 판정이 있으면 뒤에 `common.answerResultSuffix`를 붙여 정오가 색에만
+// 실리지 않게 합니다.
 export function chipAccessibilityLabel(
   text: string,
   placedOrdinal: number | null,
   copy: UiCopy,
+  result: AnswerResult | null = null,
 ): string {
-  if (placedOrdinal === null) {
-    return text;
-  }
-  return copy.sentenceOrder.placedChip(text, placedOrdinal);
+  const base = placedOrdinal === null ? text : copy.sentenceOrder.placedChip(text, placedOrdinal);
+  return result === null ? base : `${base}, ${copy.common.answerResultSuffix[result]}`;
 }
 
 // 지금 보여 줄 판정입니다 — checked일 때만 judgeSentenceOrder를 부르고, 그

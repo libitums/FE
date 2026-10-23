@@ -56,3 +56,12 @@ Pretendard를 넣으면 앱 전체 본문의 줄바꿈 · 너비가 바뀌어 �
 - Pretendard를 넣을 때 → D3. 같은 방식(폴더 · `UIAppFonts`)으로 더한다.
 - Android 호스트가 생길 때 → `res/font/`에 같은 파일.
 - 약관 · 오픈소스 고지 화면이 생길 때 → OFL 고지를 싣는다.
+
+## 적용 기록
+
+### ⟨2026-10-22⟩ 학습 문항 리디자인 — 로마자 기울임이 시스템 서체에 기댄다
+
+결정은 [ADR-0084](0084-lesson-item-redesign.md) D3. 이 문서의 결정은 바뀌지 않는다.
+
+- 학습 문항의 로마자 줄이 **기울임(`font-style: italic`) · medium · muted**로 한글 · 뜻과 구별된다. 본문이 시스템 서체(SF Pro · Roboto)라 진짜 기울임이다 — D3(Pretendard를 넣지 않음)이 이 규칙의 전제다.
+- **재검토 조건 「Pretendard를 넣을 때」에 하나가 더해진다** — 그때 로마자 기울임은 합성이 되고 iOS가 똑바로 그릴 수 있다. 로마자만 `font-family-accent`(Jost) · medium · muted로 옮긴다(ADR-0084 재검토 조건 1, ADR README 보류 표 「로마자 기울임의 대안」). 로마자는 라틴 글자뿐이라 Jost가 모두 그린다.

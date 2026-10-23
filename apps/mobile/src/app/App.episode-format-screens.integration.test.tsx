@@ -71,13 +71,14 @@ function answerChecks(activity: WordChoiceActivity, rightAt: (index: number) => 
     const translations = question.choiceTranslations;
     expect(translations).toBeDefined();
     (translations ?? []).forEach((text, choice) => {
-      expect(screen.getByTestId(`word-choice-option-${choice}-translation`)).toHaveTextContent(
-        text,
-      );
+      expect(
+        screen.getByTestId(`ui-lynx-option-selector-meaning-choice-${choice}`),
+      ).toHaveTextContent(text);
     });
     const picked = rightAt(index) ? question.answerIndex : question.answerIndex === 0 ? 1 : 0;
-    tapId(`word-choice-option-${picked}`);
-    tapId("learning-shell-advance");
+    tapId(`ui-lynx-option-selector-item-choice-${picked}`);
+    // 문화 확인은 해설 판의 Continue로 넘깁니다.
+    tapId("learning-shell-action");
   });
 }
 
@@ -265,11 +266,11 @@ test("ES5. (AC5) 맵: 세 에피소드 모두 CULT 노드가 Culture 라벨이�
 
 test.each([
   ["S1", 15, 0],
-  ["S2", 13, 1],
-  ["S4", 13, 2],
+  ["S2", 12, 2],
+  ["S4", 11, 4],
   ["S5", 11, 1],
   ["S6", 8, 0],
-  ["S7", 5, 0],
+  ["S7", 11, 0],
   ["S8", 12, 1],
 ])(
   "ES6. (AC6) %s는 시작하면 표시 %i · 건너뜀 %i로 알린다 - 문화 단계 변경이 다른 단계를 바꾸지 않는다",

@@ -386,6 +386,12 @@ sink는 던지지 않는다 — 매핑 · `capture`를 `try`로 감싸 삼킨다
   - **읽는 법** — 「천천히」 켬 비율 = `slowTurnedOn` 참 ÷ 이벤트 수, 다시 듣기 = 두 수의 합, 정답률 변화 = 같은 에피소드 · 유형 안에서 `result`를 `pace`(또는 `slowTurnedOn`)로 갈라 비교.
   - **한계** — 분모는 판정까지 간 문항이다(판정 전에 나간 문항은 빠진다). 자동 재생 · 켤 때의 다시 재생은 세지 않는다. Airbridge · Meta 매핑은 없다. PostHog 도착은 보지 않았다. GitHub wiki 이벤트 사전은 저장소 밖이라 따로 고친다(후속).
 
+- ⟨2026-10-22 — 학습 문항 리디자인. 적용 기록이고 이 ADR의 결정을 바꾸지 않는다⟩ **이벤트 하나가 더해져 이름이 37 → 38개다.** 결정은 [ADR-0084](0084-lesson-item-redesign.md) 「측정」.
+  - **`episode_item_answered`** — sink는 기존 `episodeIntroEventSink`(넷 그대로), 타입 정본은 `lib/catalog-learning-event.contract.ts`. 채점 문항이 **처음 판정되는 순간 문항당 한 번** — 듣기 · 단어 선택(그림 · 문화 확인 포함) 고름 · 문장 순서 · 음절 조립 `Check` · 낱말 말하기 판정(`Skip`이면 `skipped`). 따라 읽기 · 단어 카드 · 문화 카드 · 짝 맞추기 · 타자 입력은 내지 않는다. 듣기 여섯 유형은 `episode_listen_item_answered`와 둘 다 낸다.
+  - **속성**(문자열) — `episodeId` · `unitKey` · `itemId` · `itemType`(채점 유형 16 가운데 하나) · `result`(`correct` · `incorrect` · `skipped`) · `density`(`regular` · `compact` — 그 문항의 밀도). PII 없음.
+  - **읽는 법** — 유형별 정답률 = `itemType`별 correct ÷ (correct + incorrect), 줄 배치 Check 뒤 오답률 = `itemType ∈ {LISTEN_BUILD, WORD_ORDER}`의 incorrect 비율, 대화 조립 정답률 = `TURN_ORDER`. 모두 `density`로 갈라 작은 화면 효과를 본다. 레슨 이탈은 기존 `episode_lesson_started` 대비 `episode_lesson_finished`로 읽는다.
+  - **한계** — 새 이벤트라 리디자인 전 기준선이 없다(전후 비교는 이탈 · 레슨 정답률로). 판정 전에 나간 문항은 빠진다. Airbridge · Meta 매핑은 없다. PostHog 도착은 보지 않았다. GitHub wiki 이벤트 사전은 저장소 밖이라 따로 고친다(후속).
+
 ### D15. 나라 · 주 · 시간대만 IP로 추정하고, IP는 저장하지 않는다
 
 2026-09-30 사용자 결정. 접속하는 나라를 보고, 나중에 서버 리전을 고를 근거로 삼는다.

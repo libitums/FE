@@ -4,10 +4,11 @@ import type { ReactNode } from "@lynx-js/react";
 import { Button } from "@libitums/ui-lynx/button";
 
 import { AnswerReveal } from "../../components/AnswerReveal";
-import { AnswerVerdict } from "../../components/AnswerVerdict";
 import { SpeechWaves } from "../../components/SpeechWaves";
+import { TextRoles } from "../../components/TextRoles";
 import { useSpeechAttempt } from "../../components/use-speech-attempt";
 import { announce, announceCompletion } from "../../lib/accessibility";
+import { romanizationSegmentsOf } from "../../lib/romanization-segments";
 import { stopAudio } from "../../lib/audio";
 import { answerEchoCueOf, standaloneLessonAudio } from "../../lib/question-audio";
 import { initialSessionOptions } from "../../lib/session-options";
@@ -19,6 +20,7 @@ import { useUiCopy } from "../../lib/ui-copy";
 import { handsOffAfter, lessonCounter } from "../learning/activity-finish";
 import { LearningActivityComplete } from "../learning/LearningActivityComplete";
 import { LearningShell } from "../learning/LearningShell";
+import { useLearningDensity } from "../learning/use-learning-density";
 import {
   initialSpeakWordSessionState,
   isSpeakWordSessionComplete,
@@ -26,7 +28,6 @@ import {
   speakWordControlsOf,
   speakWordHintOf,
   speakWordInstructionOf,
-  speakWordMeaningShown,
   speakWordResultAt,
   speakWordResultAnnouncement,
   speakWordRevealText,
@@ -50,8 +51,10 @@ export function SpeakWordActivity({
   onFinish,
   lesson,
   lessonAudio,
+  onItemAnswered,
 }: SpeakWordActivityProps): ReactNode {
   const copy = useUiCopy();
+  const density = useLearningDensity();
   const [state, dispatch] = useReducer(speakWordSessionReducer, initialSpeakWordSessionState);
   const finished = useRef(false);
   const attempt = useSpeechAttempt((outcome) => dispatch({ type: "outcome", outcome }));
@@ -83,6 +86,7 @@ export function SpeakWordActivity({
   // 마이크가 켜진 동안의 화면 낭독은 인식기에 그대로 들어갑니다.
   useEffect(() => {
     if (result !== null && question != null) {
+      onItemAnswered?.({ questionIndex: state.questionIndex, outcome: result, density });
       announce(speakWordResultAnnouncement(question, result, copy));
     } else if (phase.kind === "unavailable") {
       const content = dictationOff ? copy.speaking.dictationDisabled : hint;
@@ -117,6 +121,7 @@ export function SpeakWordActivity({
         attempt.stop();
         return;
       case "skip":
+        onItemAnswered?.({ questionIndex: state.questionIndex, outcome: "skipped", density });
         // 레슨 중간 활동의 마지막 문항이면 완료 카드 없이 곧바로 결과를 올립니다.
         if (handsOff) finish([...state.heard, null]);
         else dispatch({ type: "skip" });
@@ -208,12 +213,23 @@ export function SpeakWordActivity({
       actionLabel={action?.label}
       onAction={action?.run}
       advance={advance}
+      verdict={result ?? undefined}
       scrollCard
       // 셸은 주 버튼이 있어야 버튼 행을 그립니다 — 그림 로딩 중에는 주 버튼이 없어 보조 `Skip`이 작업 영역에 섭니다.
       secondaryAction={action === undefined ? undefined : secondaryNode}
       workspace={
         question == null ? undefined : (
           <>
+            {/* 파형은 카드 밖입니다 — 카드와 아래 버튼 사이 남는 자리에 서고 칸 하한이 56입니다. 녹음 아이콘과 아래 주
+                버튼이 같은 시작 · 중지 동작을 제공하며, 그림이 서기 전에는 꺼집니다. */}
+            <view className="speak-word-activity-waves-slot">
+              <SpeechWaves
+                testId="speak-word-waves"
+                state={picture.state === "loading" ? "off" : speechWavesStateOf(phase)}
+                label={primary === "stop" ? copy.speaking.stopSpeaking : copy.speaking.speak}
+                onTap={handleWaves}
+              />
+            </view>
             <view className="speak-word-activity-hint-slot">
               {hint === null ? null : (
                 <text className="speak-word-activity-hint" data-testid="speak-word-hint">
@@ -233,13 +249,6 @@ export function SpeakWordActivity({
           data-phase={phase.kind}
           data-reason={phase.kind === "unavailable" ? phase.reason : undefined}
         >
-          {/* 판정 배지 자리 — 문항 장면에서는 비어 있어도 자리를 지켜 카드 높이가 흔들리지 않습니다. */}
-          {complete ? null : (
-            <view className="speak-word-activity-verdict-slot">
-              {result === null ? null : <AnswerVerdict result={result} />}
-            </view>
-          )}
-
           {question == null ? (
             <LearningActivityComplete
               questionCount={questions.length}
@@ -250,36 +259,26 @@ export function SpeakWordActivity({
             <>
               <SpeakWordPicture
                 url={question.pictureUrl}
+                ratio={density === "compact" ? "4-3" : "5-4"}
                 meaning={question.meaning}
                 state={picture.state}
                 onLoad={picture.onLoad}
                 onError={picture.onError}
               />
-              {/* 뜻 줄은 낭독에서 뺍니다 — 그림 틀 이름이 같은 뜻을 이미 읽습니다. 그림이 실패하면 틀 안
-                  대체 글자가 같은 뜻을 크게 보이므로 그리지 않습니다. */}
-              {speakWordMeaningShown(picture.state) ? (
-                <text
-                  className="speak-word-activity-meaning"
-                  data-testid="speak-word-meaning"
-                  accessibility-element={false}
-                >
-                  {question.meaning}
-                </text>
-              ) : null}
-              {/* 맞아도 보입니다 — 발음을 한 번 더 확인합니다. */}
-              {result === null ? null : (
+              {/* 정답 로마자 줄입니다 — 영어 뜻은 그림의 낭독 이름 · 실패 대체 글자에 남아 줄이 없습니다. 판정이 나면 이
+                  줄 자리에 정답 상자가 섭니다(맞아도 보입니다 — 발음을 한 번 더 확인합니다). */}
+              {result !== null ? (
                 <AnswerReveal
                   testId="speak-word-reveal"
                   text={speakWordRevealText(question, copy)}
                 />
+              ) : question.romanization === null ? null : (
+                <TextRoles.Romanization
+                  segments={romanizationSegmentsOf(question.romanization, undefined)}
+                  size="m"
+                  testId="speak-word-romanization"
+                />
               )}
-              {/* 녹음 아이콘과 아래 주 버튼이 같은 시작 · 중지 동작을 제공합니다. 그림이 서기 전에는 꺼집니다. */}
-              <SpeechWaves
-                testId="speak-word-waves"
-                state={picture.state === "loading" ? "off" : speechWavesStateOf(phase)}
-                label={primary === "stop" ? copy.speaking.stopSpeaking : copy.speaking.speak}
-                onTap={handleWaves}
-              />
             </>
           )}
         </view>

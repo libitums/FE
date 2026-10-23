@@ -52,8 +52,6 @@ export type ReadAloudActivityProps = {
 };
 
 export type ReadAloudCopy = {
-  /** 판정 배지 자리의 중립 표식 — 채점하지 않는 연습임을 말합니다. */
-  readonly badge: string;
   /** 인식 뒤 안내 줄 · 낭독 — 앞에서부터 맞은 낱말 수 / 문장 낱말 수. */
   readonly matched: (matched: number, total: number) => string;
   /** 로마자 줄의 낭독 이름입니다. */
@@ -62,7 +60,6 @@ export type ReadAloudCopy = {
 
 export type ReadAloudTestId =
   | "read-aloud-content"
-  | "read-aloud-badge"
   | "read-aloud-sentence"
   | `read-aloud-chunk-${number}`
   | "read-aloud-romanization"

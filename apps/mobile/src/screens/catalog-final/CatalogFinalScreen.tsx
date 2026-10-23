@@ -246,8 +246,8 @@ export function CatalogFinalScreen({
               {result === "incorrect" ? (
                 <AnswerReveal
                   testId="catalog-final-screen-answer"
-                  text={copy.catalogFinal.correctAnswer(turn.accepted[0])}
-                  surface="dark"
+                  label={copy.catalogFinal.answerLabel}
+                  text={turn.accepted[0]}
                 />
               ) : null}
 

@@ -19,6 +19,7 @@ import { catalogEpilogueModelOf } from "./catalog-cover-wiring";
 import { catalogFinalPlanFor } from "./catalog-final-model";
 import {
   catalogActivityPositionOf,
+  catalogLessonCastOf,
   catalogLessonPlanFor,
   catalogPassCriterion,
 } from "./catalog-lesson-plan";
@@ -59,7 +60,15 @@ export function renderCatalogFlow(screen: CatalogFlowScreen, wiring: ScreenWirin
         screen.unitKey,
       );
       const placed = ordinal === undefined ? lesson : { ...lesson, ordinal };
-      return renderCatalogActivity(activity, placed, screen, wiring, plan.counterpartName);
+      // 활동이 쓰는 출연진(이름 · 그림)과 문항별 보고용 참조를 계획에서 꺼내 넘깁니다.
+      return renderCatalogActivity(
+        activity,
+        placed,
+        screen,
+        wiring,
+        catalogLessonCastOf(plan, wiring.learnerFill.name ?? ""),
+        plan.itemRefs[screen.activityIndex] ?? [],
+      );
     }
     case "catalog-final": {
       const { episodeId } = screen;

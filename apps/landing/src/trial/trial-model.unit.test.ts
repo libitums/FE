@@ -84,7 +84,7 @@ describe("trialModelOf — u00", () => {
       index: 1,
       voice: "narration",
       speaker: null,
-      audioUrl: u00AudioUrl("post-1"),
+      audioUrl: u00AudioUrl("post-1-v3"),
     });
     expect(e1?.imageUrl).toBe(u00Image("post-1"));
     expect(e2).toMatchObject({

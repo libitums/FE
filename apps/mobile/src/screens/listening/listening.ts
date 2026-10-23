@@ -8,3 +8,4 @@ export * from "./listening-session";
 export * from "./listening-copy";
 export * from "./listening-playback";
 export * from "./listening-prompt-scale";
+export * from "./listening-script";

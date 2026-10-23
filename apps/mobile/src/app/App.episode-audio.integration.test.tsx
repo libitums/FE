@@ -254,7 +254,7 @@ function checkTurn(turn: CatalogRoleplayTurn, right: boolean): void {
 }
 const nextStep = () => tapButtonIn("catalog-final-screen-action");
 
-const coverSounds = [url("u01-water/pre-3"), url("u01-water/d-01")];
+const coverSounds = [url("u01-water/pre-3-v2"), url("u01-water/pre-4"), url("u01-water/pre-6-v2")];
 const startEventNames: string[] = [
   "episode_intro_viewed",
   "episode_intro_continued",
@@ -262,15 +262,15 @@ const startEventNames: string[] = [
 ];
 const startEvents = (events: readonly EpisodeIntroEvent[]) => events.map((event) => event.name);
 
-test("EA1. u01 표지: 컷 3에서 pre-3, 컷 6에서 d-01이 실제 버킷 주소로 재생되고 다른 컷에서는 재생이 없으며 진행은 같다", async () => {
+test("EA1. u01 표지: 컷 3에서 pre-3-v2, 컷 4에서 pre-4, 컷 6에서 pre-6-v2가 실제 버킷 주소로 재생되고 다른 컷에서는 재생이 없으며 진행은 같다", async () => {
   const { play, stop, rpcs, events } = await boot({ progress: {} });
 
   openCovers(u01);
   const { indexes, playsAt } = await readCoverToMap(play);
 
   expect(indexes).toEqual(["0", "1", "2", "3", "4", "5"]);
-  // 컷 i가 서 있는 동안 쌓인 재생 수: 컷 1 · 2는 0, 컷 3은 1, 컷 4 · 5는 그대로, 컷 6에서 2.
-  expect(playsAt).toEqual([0, 0, 1, 1, 1, 2]);
+  // 컷 i가 서 있는 동안 쌓인 재생 수: 컷 1 · 2는 0, 컷 3은 1, 컷 4에서 2, 컷 5는 그대로, 컷 6에서 3.
+  expect(playsAt).toEqual([0, 0, 1, 2, 2, 3]);
   expect(firstArgs(play)).toEqual(coverSounds);
   expect(stopCalls(stop)).toBeGreaterThanOrEqual(1);
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
@@ -314,7 +314,7 @@ test("EA2. 소리 중인 컷 3에서 머리 나가기 · 시스템 뒤로는 정
   expect(cover(u01)).toHaveAttribute("data-status", "available");
 });
 
-test("EA3. u01 최종 테스트: 상대 줄은 턴마다 자동, 내 줄은 정답 뒤에만, 오답과 소리 없는 줄은 추가 재생이 없다", async () => {
+test("EA3. u01 최종 테스트: 상대 줄은 턴마다 자동, 내 줄은 정답 뒤에만, 오답은 추가 재생이 없다", async () => {
   const { play } = await boot({ progress: throughCult });
   const turns = finalTurns(u01);
   expect(turns).toHaveLength(3);
@@ -341,14 +341,15 @@ test("EA3. u01 최종 테스트: 상대 줄은 턴마다 자동, 내 줄은 정�
 
   checkTurn(turns[2] as CatalogRoleplayTurn, true);
   expect(screen.getByTestId("catalog-final-screen-verdict")).toBeInTheDocument();
-  expect(play).toHaveBeenCalledTimes(4);
+  expect(firstArgs(play).at(-1)).toBe(url("u01-water/d-06"));
+  expect(play).toHaveBeenCalledTimes(5);
   nextStep();
   await flush();
   expect(present("lesson-complete-screen-title")).toBe(true);
-  expect(play).toHaveBeenCalledTimes(4);
+  expect(play).toHaveBeenCalledTimes(5);
 });
 
-test("EA3b. 전부 맞힌 최종 테스트: 재생 열은 다섯이고 결과 · 통과 뒤 컷 · 맵까지 추가 재생이 없다", async () => {
+test("EA3b. 전부 맞힌 최종 테스트: 재생 열은 여섯이고 결과 뒤로는 통과 뒤 컷 3의 post-3만 더해지고 맵까지 그 밖의 재생이 없다", async () => {
   const { play, rpcs } = await boot({ progress: throughCult });
   const turns = finalTurns(u01);
 
@@ -359,7 +360,7 @@ test("EA3b. 전부 맞힌 최종 테스트: 재생 열은 다섯이고 결과 ·
     nextStep();
   }
   expect(firstArgs(play)).toEqual(
-    ["d-01", "d-02", "d-03", "d-04", "d-05"].map((name) => url(`u01-water/${name}`)),
+    ["d-01", "d-02", "d-03", "d-04", "d-05", "d-06"].map((name) => url(`u01-water/${name}`)),
   );
   expect(present("lesson-complete-screen-title")).toBe(true);
 
@@ -377,7 +378,8 @@ test("EA3b. 전부 맞힌 최종 테스트: 재생 열은 다섯이고 결과 ·
   await flush();
 
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
-  expect(firstArgs(play)).toHaveLength(5);
+  expect(firstArgs(play)).toHaveLength(7);
+  expect(firstArgs(play).at(-1)).toBe(url("u01-water/post-3"));
   await vi.waitFor(() => expect(savedUnits(rpcs, u01)).toContain("RP"));
 });
 
@@ -428,7 +430,7 @@ test("EA4b. 실패하는 소리에도 최종 테스트는 같은 화면 열과 �
 
 const everRecorded = (rpcs: readonly Rpc[]): boolean => savedUnits(rpcs, u01).includes("RP");
 
-test("EA5. (개정 A) u02 표지: 컷 1 · 3 · 5가 u02 버킷 주소로 재생되고 소리 id가 없는 컷은 조용하다", async () => {
+test("EA5. (개정 A) u02 표지: 컷 1 · 2 · 3 · 5가 u02 버킷 주소로 재생되고 소리 id가 없는 컷은 조용하다", async () => {
   const { play } = await boot({
     progress: { [u01]: ["intro", "S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8", "CULT", "RP"] },
   });
@@ -436,16 +438,21 @@ test("EA5. (개정 A) u02 표지: 컷 1 · 3 · 5가 u02 버킷 주소로 재생
   fireEvent.tap(cover(u02), {});
   tapButtonIn("episode-intro-screen-next");
   expect(cutIndex()).toBe("0");
-  expect(firstArgs(play)).toEqual([url("u02-checkin/pre-1")]);
+  expect(firstArgs(play)).toEqual([url("u02-checkin/pre-1-far")]);
   advanceCut();
   advanceCut();
   expect(cutIndex()).toBe("2");
-  expect(firstArgs(play)).toEqual([url("u02-checkin/pre-1"), url("u02-checkin/pre-3")]);
+  expect(firstArgs(play)).toEqual([
+    url("u02-checkin/pre-1-far"),
+    url("u02-checkin/pre-2"),
+    url("u02-checkin/pre-3"),
+  ]);
   advanceCut();
   advanceCut();
   expect(cutIndex()).toBe("4");
   expect(firstArgs(play)).toEqual([
-    url("u02-checkin/pre-1"),
+    url("u02-checkin/pre-1-far"),
+    url("u02-checkin/pre-2"),
     url("u02-checkin/pre-3"),
     url("u02-checkin/d-01"),
   ]);

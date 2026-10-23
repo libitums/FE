@@ -16,7 +16,7 @@
 | `@libitums/episode-core/episode` | `decodeEpisode` · 도메인 타입 전부(`Episode` · `LearningItem` · `DecodeResult` …) · `KNOWN_ITEM_TYPES` · `formatPath` · `isRecord` · `roleplayLinesOf`(최종 테스트 턴의 상대 · 내 줄 찾기) · `EPISODE_SELF_SPEAKER` |
 | `@libitums/episode-core/lines` | `roleplayLinesOf` · `RoleplayLines` · `EPISODE_SELF_SPEAKER` — zod · `background-only`를 끌고 오지 않는 입구(앱 화면 경로 · 메인 스레드용). `./episode`도 같은 값을 내보낸다 |
 | `@libitums/episode-core/judge` | `AnswerResult` · `NonEmpty` · 말하기(`judgeSpeaking` · `speakingWords` · `matchedWordCount` · `speakingChunks`) · `judgeRoleplayReply` · 타자 답(`isTypedAnswerCorrect` · `isTypedAnswerAccepted` · `normalizeAnswerText`) · 타일 답(`composeTileReply` · `canCheckTiles` · `judgeTileReply`) · `judgeChoice` · 통과 기준(`catalogPassCriterion` · `judgeAssessment`) |
-| `@libitums/episode-core/content-url` | 버킷 주소(`CONTENT_BUCKET_PATH` · `contentBaseUrl` · `resolveContentUrlSafe`) · 음성 id → 경로(`contentAudioPathOf` · `contentAudioSourceOf` · `hasContentPlaceholder`) |
+| `@libitums/episode-core/content-url` | 버킷 주소(`CONTENT_BUCKET_PATH` · `contentBaseUrl` · `resolveContentUrlSafe`) · 음성 id → 경로(`contentAudioPathOf` · `contentAudioSourceOf` · `hasContentPlaceholder`) · 상대 아바타 경로(`counterpartAvatarPathOf` — 디코더와 앱의 자산 받기 목록이 함께 쓴다) |
 | `@libitums/episode-core/shuffle` | `shuffledOrder` — 씨앗 문자열로 정하는 섞기(같은 씨앗 = 같은 순서) |
 
 와이어 형식(파일의 키 · 값)의 정본은 [콘텐츠 계약](../../docs/specs/episode-content-json-contract.md)이다.

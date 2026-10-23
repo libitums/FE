@@ -10,16 +10,16 @@ import { TEST_CONTENT_BASE, TRIAL_COPY_PATH } from "./trial.test-support";
 // `unit` 계층: 사본의 고정값(판 · 길이 · sha256)과 빌드 때 모델을 만드는 진입.
 
 describe("TRIAL_CONTENT", () => {
-  it("TC1 사본의 바이트 길이 · sha256이 핀과 같고 판은 2026-10-21.3", () => {
+  it("TC1 사본의 바이트 길이 · sha256이 핀과 같고 판은 2026-10-23.1", () => {
     expect(existsSync(TRIAL_COPY_PATH), "사본이 없다").toBe(true);
     const bytes = readFileSync(TRIAL_COPY_PATH);
     expect(TRIAL_CONTENT.episodeId).toBe("u00-tutorial");
-    expect(TRIAL_CONTENT.version).toBe("2026-10-21.3");
+    expect(TRIAL_CONTENT.version).toBe("2026-10-23.1");
     expect(bytes.byteLength).toBe(TRIAL_CONTENT.bytes);
     expect(createHash("sha256").update(bytes).digest("hex")).toBe(TRIAL_CONTENT.sha256);
-    expect(TRIAL_CONTENT.bytes).toBe(37777);
+    expect(TRIAL_CONTENT.bytes).toBe(37847);
     expect(TRIAL_CONTENT.sha256).toBe(
-      "c9636a3d1b43ffff21df2a75c8b6a9d300ca853e6f20e0ffbde2aa67ca85377a",
+      "42134653f72075a0d728635899e66be0c460ebb75bfb5ffa794e53ae6719eb2a",
     );
   });
 });

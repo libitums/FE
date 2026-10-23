@@ -142,6 +142,8 @@ describe("시작 이벤트의 표시 문항 수", () => {
       shownItemCount: 6,
       skippedItemCount: 2,
       counterpartName: "편의점 점원",
+      counterpartAvatarUrl: null,
+      itemRefs: [],
     };
 
     expect(lessonStartedEventOf(plan, "lesson")).toEqual({

@@ -62,6 +62,8 @@ export type CatalogFinalCopy = {
   readonly replyEmpty: string;
   readonly replyHint: (translation: string) => string;
   readonly correctAnswer: (answer: string) => string;
+  /** 정답 상자 위 머리 줄입니다. */
+  readonly answerLabel: string;
 };
 
 export type CatalogFinalTestId =

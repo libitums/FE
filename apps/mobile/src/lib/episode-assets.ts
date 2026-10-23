@@ -8,13 +8,18 @@ import "background-only";
 // 마무리 그림 · 예시 음성 …) 이 함수를 고치지 않기 위해서입니다 — 대가는 이 접미사를 다른 뜻으로 쓰는 키가
 // 생기면 그것도 받는다는 것이고, 그런 키는 지금 없습니다.
 import { contentAudioPathOf } from "./content-audio";
-import { resolveContentUrlSafe } from "./episode-remote";
+import { counterpartAvatarPathOf, resolveContentUrlSafe } from "./episode-remote";
 
 const IMAGE_KEY = /image_url$/;
 const AUDIO_KEY = /audio_url$/;
+const AVATAR_KEY = "counterpart_avatar";
 
 function assetPathOf(key: string, value: unknown): string | null {
   if (typeof value !== "string" || value === "") return null;
+  if (key === AVATAR_KEY) {
+    const avatar = counterpartAvatarPathOf(value);
+    return avatar.kind === "path" ? resolveContentUrlSafe("", avatar.path) : null;
+  }
   if (IMAGE_KEY.test(key)) return resolveContentUrlSafe("", value);
   if (AUDIO_KEY.test(key)) return contentAudioPathOf(value);
   return null;

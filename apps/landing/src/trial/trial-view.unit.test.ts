@@ -50,7 +50,7 @@ describe("trialVoiceCueOf", () => {
     const epilogue = stateAt("epilogue", model);
     expect(trialVoiceCueOf(epilogue, model)).toEqual({
       key: "epilogue:0",
-      url: u00AudioUrl("post-1"),
+      url: u00AudioUrl("post-1-v3"),
     });
     expect(trialVoiceCueOf(reduceTrial(epilogue, next, model), model)).toEqual({
       key: "epilogue:1",

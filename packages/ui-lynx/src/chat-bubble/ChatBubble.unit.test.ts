@@ -150,3 +150,72 @@ describe("chat-bubble.css", () => {
     );
   });
 });
+
+const annotationBase = {
+  direction: "incoming",
+  message: "한국어 잘하시네요!",
+  speaker: "민서",
+} as const;
+
+describe("ChatBubble annotation", () => {
+  test("CB1: 접근성 이름은 화자: 메시지, 로마자, 뜻이다", () => {
+    const contract = getChatBubbleContract({
+      ...annotationBase,
+      annotation: { romanization: "hangugeo jalhasineyo!", meaning: "Your Korean is so good!" },
+    });
+
+    expect(contract.accessibilityLabel).toBe(
+      "민서: 한국어 잘하시네요!, hangugeo jalhasineyo!, Your Korean is so good!",
+    );
+  });
+
+  test("CB1b: spokenRomanization을 주면 낭독에서 로마자 자리에 그 말을 읽고 화면 로마자는 그대로다", () => {
+    const contract = getChatBubbleContract({
+      ...annotationBase,
+      annotation: {
+        romanization: "hangugeo jalhasineyo!",
+        meaning: "Your Korean is so good!",
+        spokenRomanization: "Pronunciation: hangugeo jalhasineyo!",
+      },
+    });
+
+    expect(contract.accessibilityLabel).toBe(
+      "민서: 한국어 잘하시네요!, Pronunciation: hangugeo jalhasineyo!, Your Korean is so good!",
+    );
+    expect(contract.annotation).toEqual({
+      romanization: "hangugeo jalhasineyo!",
+      meaning: "Your Korean is so good!",
+    });
+  });
+
+  test("CB2: translation과 함께 오면 던진다", () => {
+    expect(() =>
+      getChatBubbleContract({
+        ...annotationBase,
+        translation: "Your Korean is so good!",
+        annotation: { romanization: "hangugeo", meaning: "Good" },
+      }),
+    ).toThrow(/annotation|translation|romanization|meaning/i);
+  });
+
+  test("CB3: 빈 로마자나 빈 뜻(trim)은 던진다", () => {
+    expect(() =>
+      getChatBubbleContract({
+        ...annotationBase,
+        annotation: { romanization: "  ", meaning: "Good" },
+      }),
+    ).toThrow(/annotation|translation|romanization|meaning/i);
+    expect(() =>
+      getChatBubbleContract({
+        ...annotationBase,
+        annotation: { romanization: "hangugeo", meaning: "" },
+      }),
+    ).toThrow(/annotation|translation|romanization|meaning/i);
+  });
+
+  test("annotation이 없으면 이름은 지금과 같다", () => {
+    expect(getChatBubbleContract(annotationBase).accessibilityLabel).toBe(
+      "민서: 한국어 잘하시네요!",
+    );
+  });
+});

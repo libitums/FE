@@ -92,11 +92,22 @@ export type CatalogImageUrlOf = (relativePath: string) => string | null;
 /** 문항 음성 주소입니다. 모듈이 없거나 경로를 풀 수 없으면 `null`. */
 export type CatalogAudioUrlOf = (relativePath: string) => string | null;
 
+/** 콘텐츠의 문화 카드 문항입니다 — 문화 확인 장면이 그림 · 대사를 빌려 옵니다. */
+export type CultureCardItem = Extract<LearningItem, { type: "CULTURE_CARD" }>;
+
 /** 레슨 문항 매핑의 포트입니다. `CatalogItemPort`(최종 테스트 모델과 공유)는 그대로입니다. */
 export type CatalogLessonItemPort = CatalogItemPort & {
   readonly glossOf: CatalogGlossOf;
   readonly imageUrlOf: CatalogImageUrlOf;
   readonly audioUrlOf: CatalogAudioUrlOf;
+  /** 이 문화 확인에 짝지어진 문화 카드입니다. 없으면(포트가 모르면) 장면 없이 선다. */
+  readonly cultureCardOf?: (itemId: string) => CultureCardItem | null;
+};
+
+/** 활동 안 문항 하나가 어느 콘텐츠 문항인지 가리킵니다(측정에 씁니다). */
+export type CatalogItemRef = {
+  readonly itemId: string;
+  readonly itemType: LearningItem["type"];
 };
 
 export type CatalogLessonPlan = {
@@ -110,4 +121,8 @@ export type CatalogLessonPlan = {
   readonly skippedItemCount: number;
   /** 에피소드 상위 상대 이름(앞뒤 공백 걷음)입니다 — 대화 조립 아바타의 머리글자가 됩니다. */
   readonly counterpartName: string;
+  /** 상대 아바타 그림 주소입니다. 에피소드에 아바타가 없으면 `null`입니다. */
+  readonly counterpartAvatarUrl: string | null;
+  /** 활동마다 문항 ref 묶음입니다(`activities`와 같은 길이 · 같은 묶음). 측정이 문항을 찾는 데 씁니다. */
+  readonly itemRefs: readonly (readonly CatalogItemRef[])[];
 };

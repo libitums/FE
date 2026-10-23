@@ -1,4 +1,5 @@
 import type {} from "@lynx-js/react";
+import cross from "@libitums/icons/lynx/cross";
 import tick from "@libitums/icons/lynx/tick";
 
 import { useMotion } from "../motion/MotionProvider";
@@ -16,6 +17,44 @@ type OptionSelectorItemProps = {
   readonly languageTag?: string;
   readonly onSelect: (id: string) => void;
 };
+
+function OptionSelectorText({
+  contract,
+  languageTag,
+}: {
+  readonly contract: OptionSelectorItemContract;
+  readonly languageTag?: string;
+}) {
+  if (contract.meaning === null) {
+    return (
+      <text
+        className="ui-lynx-option-selector-label"
+        data-testid={`ui-lynx-option-selector-label-${contract.id}`}
+        data-lang={languageTag}
+      >
+        {contract.label}
+      </text>
+    );
+  }
+  // FE 확장: 뜻은 장식에 가까운 보조 줄이라 접근성 이름(항목 이름)에만 실립니다.
+  return (
+    <view className="ui-lynx-option-selector-text">
+      <text
+        className="ui-lynx-option-selector-label"
+        data-testid={`ui-lynx-option-selector-label-${contract.id}`}
+        data-lang={languageTag}
+      >
+        {contract.label}
+      </text>
+      <text
+        className="ui-lynx-option-selector-meaning"
+        data-testid={`ui-lynx-option-selector-meaning-${contract.id}`}
+      >
+        {contract.meaning}
+      </text>
+    </view>
+  );
+}
 
 function OptionSelectorItem({ contract, languageTag, onSelect }: OptionSelectorItemProps) {
   function handleTap() {
@@ -41,13 +80,7 @@ function OptionSelectorItem({ contract, languageTag, onSelect }: OptionSelectorI
         {/* Indicator 자리를 양쪽에 대칭으로 확보해 Selected가 되어도 Label이 움직이지 않습니다. */}
         <view className="ui-lynx-option-selector-indicator-slot ui-lynx-option-selector-indicator-slot-leading" />
         {contract.icon === null ? (
-          <text
-            className="ui-lynx-option-selector-label"
-            data-testid={`ui-lynx-option-selector-label-${contract.id}`}
-            data-lang={languageTag}
-          >
-            {contract.label}
-          </text>
+          <OptionSelectorText contract={contract} languageTag={languageTag} />
         ) : (
           // FE 확장: 장식 그림 + Label을 한 묶음으로 가운데 둡니다.
           <view className="ui-lynx-option-selector-content">
@@ -56,13 +89,7 @@ function OptionSelectorItem({ contract, languageTag, onSelect }: OptionSelectorI
               data-testid={`ui-lynx-option-selector-icon-${contract.id}`}
               content={contract.icon}
             />
-            <text
-              className="ui-lynx-option-selector-label"
-              data-testid={`ui-lynx-option-selector-label-${contract.id}`}
-              data-lang={languageTag}
-            >
-              {contract.label}
-            </text>
+            <OptionSelectorText contract={contract} languageTag={languageTag} />
           </view>
         )}
         <view className="ui-lynx-option-selector-indicator-slot">
@@ -70,7 +97,10 @@ function OptionSelectorItem({ contract, languageTag, onSelect }: OptionSelectorI
             <svg
               className="ui-lynx-option-selector-indicator"
               data-testid={`ui-lynx-option-selector-indicator-${contract.id}`}
-              content={tick.replace(/currentColor/g, contract.indicatorColor)}
+              content={(contract.feedback === "incorrect" ? cross : tick).replace(
+                /currentColor/g,
+                contract.indicatorColor,
+              )}
               current-color={contract.indicatorColor}
             />
           )}

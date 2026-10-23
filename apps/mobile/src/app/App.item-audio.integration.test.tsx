@@ -14,9 +14,12 @@ import {
   contentIdOf,
   exitResult,
   resetApp,
+  sentenceChipId,
   tapButtonIn,
+  tapCheck,
   tapId,
   tapNode,
+  tapRoundIn,
 } from "./test-helpers/episode-format-harness";
 import { solveActivity, solveLesson } from "./test-helpers/episode-format-solvers";
 
@@ -99,7 +102,7 @@ describe("재생 경로 — 속도", () => {
     const { host } = await bootItemAudioApp({ progress: afterS1 });
     tapNode(u01, "S2");
 
-    tapId("listening-prompt-replay");
+    tapRoundIn("listening-prompt-replay");
 
     expect(host.play).toHaveBeenCalledTimes(2);
     expect(host.play.mock.calls[1]?.[0]).toBe(itemAudioUrl(u01, "S2-01"));
@@ -150,7 +153,7 @@ describe("재생 경로 — 속도", () => {
     solveActivity(plan.activities[2] as CatalogActivity, true, false);
     const words = plan.activities[3];
     if (words?.form !== "word-choice") throw new Error("S2 넷째 활동은 단어 선택");
-    tapId(`word-choice-option-${words.questions[0].answerIndex}`);
+    tapId(`ui-lynx-option-selector-item-choice-${words.questions[0].answerIndex}`);
     tapId("learning-shell-advance");
 
     expect(host.playAtRate).toHaveBeenLastCalledWith(
@@ -200,7 +203,7 @@ describe("재생 모듈이 없을 때", () => {
       shownItemCount: String(plan.shownItemCount),
       skippedItemCount: String(plan.skippedItemCount),
     });
-    expect(plan.skippedItemCount).toBe(1);
+    expect(plan.skippedItemCount).toBe(2);
     expect(present("listening-screen-content")).toBe(true);
     expect(present("listening-prompt-playback")).toBe(false);
     solveActivity(plan.activities[0] as CatalogActivity, true, false);
@@ -208,7 +211,7 @@ describe("재생 모듈이 없을 때", () => {
     solveActivity(plan.activities[2] as CatalogActivity, true, false);
     const words = plan.activities[3];
     if (words?.form !== "word-choice") throw new Error("S2 넷째 활동은 단어 선택");
-    tapId(`word-choice-option-${words.questions[0].answerIndex}`);
+    tapId(`ui-lynx-option-selector-item-choice-${words.questions[0].answerIndex}`);
     tapId("learning-shell-advance");
     expect(screen.getByTestId("word-choice-screen-prompt")).toBeInTheDocument();
     expect(present("word-choice-listen")).toBe(false);
@@ -237,7 +240,7 @@ describe("옛 호스트", () => {
     tapNode(u01, "S2");
 
     expect(present("listening-prompt-slow")).toBe(false);
-    tapId("listening-prompt-replay");
+    tapRoundIn("listening-prompt-replay");
     expect(host.play).toHaveBeenCalledTimes(2);
 
     solveActivity(plan.activities[0] as CatalogActivity, true, false);
@@ -245,7 +248,7 @@ describe("옛 호스트", () => {
     solveActivity(plan.activities[2] as CatalogActivity, true, false);
     const words = plan.activities[3];
     if (words?.form !== "word-choice") throw new Error("S2 넷째 활동은 단어 선택");
-    tapId(`word-choice-option-${words.questions[0].answerIndex}`);
+    tapId(`ui-lynx-option-selector-item-choice-${words.questions[0].answerIndex}`);
     tapId("learning-shell-advance");
 
     expect(present("word-choice-listen-again")).toBe(true);
@@ -269,7 +272,7 @@ describe("정답 뒤 재생 · 문장 순서 듣기 · 따라 읽기", () => {
 
     for (const chip of question.answerOrder) tapId(`sentence-order-chip-${chip}`);
     expect(host.play.mock.calls.length).toBe(before);
-    tapId("learning-shell-action");
+    tapCheck();
 
     expect(host.play.mock.calls.length).toBe(before + 1);
     expect(host.play.mock.calls.at(-1)?.[0]).toBe(source);
@@ -291,15 +294,15 @@ describe("정답 뒤 재생 · 문장 순서 듣기 · 따라 읽기", () => {
     const first = build.questions[0];
     const listenBuild = build.questions[1];
     if (listenBuild === undefined) throw new Error("LISTEN_BUILD 문항이 없다");
-    for (const chip of first.answerOrder) tapId(`sentence-order-chip-${chip}`);
-    tapId("learning-shell-action");
+    for (const chip of first.answerOrder) tapId(sentenceChipId(first, chip));
+    tapCheck();
     tapId("learning-shell-action");
 
     expect(present("sentence-order-listen-replay")).toBe(true);
     expect(present("sentence-order-screen-prompt")).toBe(false);
     expect(host.play.mock.calls.at(-1)?.[0]).toBe(itemAudioUrl(u01, "S2-08"));
     for (const chip of listenBuild.answerOrder) tapId(`sentence-order-chip-${chip}`);
-    tapId("learning-shell-action");
+    tapCheck();
 
     expect(screen.getByTestId("answer-verdict")).toHaveAttribute("data-result", "correct");
   });
@@ -390,11 +393,11 @@ describe("회귀 · 측정", () => {
     expect(first?.form).toBe("listening");
     if (first?.form !== "listening") return;
     tapNode(u01, "S2");
-    tapId("listening-prompt-replay");
+    tapRoundIn("listening-prompt-replay");
     tapId("listening-prompt-slow");
     expect(answered(booted)).toEqual([]);
 
-    tapId(`listening-choice-${first.questions[0].answerIndex}`);
+    tapId(`ui-lynx-option-selector-item-choice-${first.questions[0].answerIndex}`);
 
     expect(answered(booted)).toEqual([
       {

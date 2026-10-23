@@ -11,9 +11,9 @@ import { buildTrialModel } from "./trial-model-build";
 /** 사본의 판 · 길이 · sha256 — 앱 매니페스트의 u00 항목과 같아야 합니다. */
 export const TRIAL_CONTENT: TrialContentPin = {
   episodeId: "u00-tutorial",
-  version: "2026-10-21.3",
-  bytes: 37777,
-  sha256: "c9636a3d1b43ffff21df2a75c8b6a9d300ca853e6f20e0ffbde2aa67ca85377a",
+  version: "2026-10-23.1",
+  bytes: 37847,
+  sha256: "42134653f72075a0d728635899e66be0c460ebb75bfb5ffa794e53ae6719eb2a",
 };
 
 const describe = (errors: readonly { code: string; path: string }[]) =>

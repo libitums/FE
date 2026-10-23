@@ -11,6 +11,7 @@ import imgu00TutorialPost3 from "../assets/content/images/u00-tutorial/post-3.we
 import imgu00TutorialPost4 from "../assets/content/images/u00-tutorial/post-4.webp";
 import imgu00TutorialCultU00Jalhasineyo from "../assets/content/images/u00-tutorial/cult-u00-jalhasineyo.webp";
 import imgu00TutorialRpEnd from "../assets/content/images/u00-tutorial/rp-end.webp";
+import imgu00TutorialAvatar from "../assets/content/images/u00-tutorial/avatar.webp";
 import imgitemsHello from "../assets/content/images/items/hello.webp";
 import imgitemsThanks from "../assets/content/images/items/thanks.webp";
 
@@ -27,6 +28,7 @@ export const bundledContentImages: Readonly<Record<string, string>> = {
   "images/u00-tutorial/post-4.webp": imgu00TutorialPost4,
   "images/u00-tutorial/cult-u00-jalhasineyo.webp": imgu00TutorialCultU00Jalhasineyo,
   "images/u00-tutorial/rp-end.webp": imgu00TutorialRpEnd,
+  "images/u00-tutorial/avatar.webp": imgu00TutorialAvatar,
   "images/items/hello.webp": imgitemsHello,
   "images/items/thanks.webp": imgitemsThanks,
 };

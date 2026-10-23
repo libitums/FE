@@ -141,6 +141,11 @@ describe("@libitums/episode-core importer", () => {
         episodeRemote.resolveContentUrlSafe,
         contentUrl.resolveContentUrlSafe,
       ],
+      [
+        "counterpartAvatarPathOf",
+        episodeRemote.counterpartAvatarPathOf,
+        contentUrl.counterpartAvatarPathOf,
+      ],
       ["shuffledOrder", catalogShuffle.shuffledOrder, shuffle.shuffledOrder],
     ];
     const different = pairs.filter(([, app, core]) => app !== core).map(([name]) => name);

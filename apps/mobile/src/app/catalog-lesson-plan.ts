@@ -6,11 +6,13 @@
 
 import type { AnswerResult } from "../lib/answer-result";
 import type { CatalogUnitKey } from "../lib/catalog-progress";
+import type { ConversationCast } from "../lib/conversation-cast";
 import { CONTENT_AUDIO_DIR } from "../lib/content-audio";
 import type { CatalogEntry } from "../lib/episode-catalog";
 import type { LearnerProfile } from "../lib/placeholder-fill";
 import type { LessonPosition } from "../screens/learning/activity-finish";
-import { appended, startedBy } from "./catalog-activity-join";
+import { appended, catalogActivityItemRefsOf, startedBy } from "./catalog-activity-join";
+import { catalogCultureCardFor } from "./catalog-culture-map";
 import { catalogItemOf } from "./catalog-item-map";
 import type {
   CatalogActivity,
@@ -35,10 +37,12 @@ export type {
   CatalogGlossOf,
   CatalogImageUrlOf,
   CatalogItemPort,
+  CatalogItemRef,
   CatalogLessonItemPort,
   CatalogLessonPlan,
   CatalogMappedItem,
   CatalogSkipReason,
+  CultureCardItem,
   NonEmpty,
 } from "./catalog-lesson-types";
 export { catalogItemOf } from "./catalog-item-map";
@@ -80,6 +84,22 @@ export function catalogActivitiesOf(
   return activities;
 }
 
+/** 레슨의 출연진(상대 · 학습자)입니다. 이름 · 그림 주소가 없으면 그 키를 싣지 않습니다. */
+export function catalogLessonCastOf(
+  plan: CatalogLessonPlan,
+  learnerName: string,
+): ConversationCast {
+  const counterpartName = plan.counterpartName.trim();
+  const meName = learnerName.trim();
+  return {
+    counterpart: {
+      ...(counterpartName === "" ? {} : { name: counterpartName }),
+      ...(plan.counterpartAvatarUrl ? { imageUrl: plan.counterpartAvatarUrl } : {}),
+    },
+    me: meName === "" ? {} : { name: meName },
+  };
+}
+
 /** 그 키의 유닛이 없으면 `null`입니다. */
 export function catalogLessonPlanOf(
   entry: Extract<CatalogEntry, { status: "ready" }>,
@@ -96,9 +116,16 @@ export function catalogLessonPlanOf(
     glossOf: catalogGlossOf(entry.episode.words, fill),
     imageUrlOf,
     audioUrlOf,
+    // 문화 확인의 짝 카드는 단계를 넘어 찾아야 해서(앞 단계 카드) 계획이 그 에피소드 단계로 닫아 줍니다.
+    cultureCardOf: (itemId) => catalogCultureCardFor(entry.episode.units, unitKey, itemId),
   };
-  const mapped = unit.items.map((item) => catalogItemOf(item, port));
+  const planned = unit.items.map((item) => ({
+    mapped: catalogItemOf(item, port),
+    itemType: item.type,
+  }));
+  const mapped = planned.map((entryItem) => entryItem.mapped);
   const activities = catalogActivitiesOf(mapped);
+  const avatar = entry.episode.counterpartAvatar;
   const countOf = (activity: CatalogActivity): number => activity.questions.length;
   return {
     episodeId: entry.id,
@@ -110,6 +137,8 @@ export function catalogLessonPlanOf(
     shownItemCount: activities.reduce((sum, activity) => sum + countOf(activity), 0),
     skippedItemCount: mapped.filter((item) => item.kind === "skipped").length,
     counterpartName: entry.episode.counterpart.trim(),
+    counterpartAvatarUrl: avatar === undefined ? null : imageUrlOf(avatar),
+    itemRefs: catalogActivityItemRefsOf(planned),
   };
 }
 
@@ -182,10 +211,12 @@ export function catalogFillOf(content: EpisodeContent, profile: LearnerProfile):
 
 // 같은 ready 항목 · 프로필 참조 · 키면 같은 계획 참조입니다(자동 넘김 걸음이 문항 참조에 걸려 있어 렌더마다 새로
 // 만들면 안 됩니다). 문항 음성은 받은 파일 유무로 풀려(v4) 같은 콘텐츠 참조에서도 달라지므로, 계획을 만들 때 물어본
-// 음성 경로와 답을 적어 두고 다시 찾을 때 같은 답일 때만 메모를 씁니다. 판정 시점은 레슨 계획을 만드는 때입니다.
+// 음성 경로와 답을 적어 두고 다시 찾을 때 같은 답일 때만 메모를 씁니다. 상대 아바타 그림도 받은 파일 > 내장 > 원격 순으로
+// 풀려 같은 이유로 적어 둡니다. 판정 시점은 레슨 계획을 만드는 때입니다.
+type MemoProbe = readonly ["audio" | "image", string, string | null];
 type MemoPlan = {
   readonly plan: CatalogLessonPlan | null;
-  readonly probes: readonly (readonly [string, string | null])[];
+  readonly probes: readonly MemoProbe[];
 };
 const memo = new WeakMap<object, WeakMap<object, Map<string, MemoPlan>>>();
 
@@ -214,14 +245,17 @@ export function catalogLessonPlanFor(
   const cached = plans.get(planKey);
   if (
     cached !== undefined &&
-    cached.probes.every(([path, url]) => content.audioUrlOf(path) === url)
+    cached.probes.every(
+      ([kind, path, url]) =>
+        (kind === "audio" ? content.audioUrlOf(path) : content.imageUrlOf(path)) === url,
+    )
   ) {
     return cached.plan;
   }
-  const probes: [string, string | null][] = [];
+  const probes: MemoProbe[] = [];
   const probedAudioUrlOf = (path: string): string | null => {
     const url = content.audioUrlOf(path);
-    probes.push([path, url]);
+    probes.push(["audio", path, url]);
     return url;
   };
   const plan = catalogLessonPlanOf(
@@ -231,6 +265,8 @@ export function catalogLessonPlanFor(
     content.imageUrlOf,
     probedAudioUrlOf,
   );
+  const avatar = entry.episode.counterpartAvatar;
+  if (avatar !== undefined) probes.push(["image", avatar, content.imageUrlOf(avatar)]);
   plans.set(planKey, { plan, probes });
   return plan;
 }

@@ -2,6 +2,8 @@ import type { ReactNode } from "@lynx-js/react";
 
 import { Card } from "@libitums/ui-lynx/card";
 
+import type { AnswerResult } from "../../lib/answer-result";
+import { LearningShellPrompt } from "./LearningShellPrompt";
 import { LearningShellWorkspace } from "./LearningShellWorkspace";
 import {
   learningShellSceneClasses,
@@ -9,7 +11,7 @@ import {
   type LearningShellScene,
   type LearningWorkspaceMode,
 } from "./learning-shell.contract";
-import type { LearningShellStage } from "./learning-shell-props";
+import type { LearningShellActionPlacement, LearningShellStage } from "./learning-shell-props";
 import {
   questionTransitionAttributes,
   questionTransitionClassName,
@@ -20,6 +22,8 @@ export type LearningShellBodyProps = {
   readonly arrangement: LearningShellArrangement;
   /** 완료 화면이면 `undefined`입니다 — 지시문을 그리지 않습니다. */
   readonly instruction: string | undefined;
+  /** 주면 지시문 자리에 판정 배지가 겹쳐 섭니다(`LearningShellPrompt`). */
+  readonly verdict?: AnswerResult;
   /** 가운데 카드 안입니다. 무대 상자(`learning-shell-stage`)는 이 컴포넌트가 만듭니다. */
   readonly card: ReactNode;
   /** 무대의 면 — `bare`면 `Card`로 감싸지 않습니다(`LearningShellProps.stage`). */
@@ -31,6 +35,8 @@ export type LearningShellBodyProps = {
   readonly transition: QuestionTransition;
   /** 지금 장면입니다. 완료면 무대가 남는 세로의 가운데에 섭니다(`learningShellSceneClasses`). */
   readonly scene: LearningShellScene;
+  /** 아래 버튼 행이 흐름 안인가 떠 있는가입니다 — 완료 무대가 버튼 몫을 비울지 가릅니다. */
+  readonly actions: LearningShellActionPlacement;
 };
 
 /**
@@ -44,6 +50,7 @@ export type LearningShellBodyProps = {
 export function LearningShellBody({
   arrangement,
   instruction,
+  verdict,
   card,
   stage: stageSurface,
   workspace,
@@ -51,12 +58,13 @@ export function LearningShellBody({
   onViewportHeight,
   transition,
   scene,
+  actions,
 }: LearningShellBodyProps): ReactNode {
   // 전환 속성은 스프레드로 둡니다(idle이면 속성 자체가 없다). `<scroll-view>`에서는 스프레드가
   // `scroll-bar-enable={false}`보다 앞에 와야 lint:scroll-bars를 지납니다(ADR-0055 D1).
   const attributes = questionTransitionAttributes(transition);
   const stageCarriesTransition = arrangement === "split";
-  const sceneClasses = learningShellSceneClasses(arrangement, scene);
+  const sceneClasses = learningShellSceneClasses(arrangement, scene, actions);
   const stage = (
     <view
       className={
@@ -85,9 +93,7 @@ export function LearningShellBody({
 
   const instructionNode =
     instruction === undefined ? null : (
-      <text className="learning-shell-instruction" data-testid="learning-shell-instruction">
-        {instruction}
-      </text>
+      <LearningShellPrompt instruction={instruction} verdict={verdict} />
     );
 
   if (arrangement === "card-scroll") {

@@ -33,7 +33,7 @@ function readyOf(episodeId: string): ReadyEntry {
   return entry;
 }
 
-/** 내장 u01에는 문항 음성 주소가 없어, 문항 음성이 든 판을 같은 구조로 만듭니다(계획 메모를 피해 새 객체). */
+/** 문항 음성 주소를 모든 stimulus에 같은 규칙으로 덮은 판을 같은 구조로 만듭니다(계획 메모를 피해 새 객체). */
 function withItemAudio(entry: ReadyEntry): ReadyEntry {
   const units = entry.episode.units.map((unit) => ({
     ...unit,
@@ -58,7 +58,7 @@ describe("catalogLessonPlanOf — 음성 포트", () => {
     const plan = catalogLessonPlanOf(entry, "S2", fill, imageUrlOf);
 
     expect(plan).toEqual(catalogLessonPlanOf(entry, "S2", fill, imageUrlOf, noCatalogAudioUrl));
-    expect(plan).toMatchObject({ questionCount: 13, shownItemCount: 13, skippedItemCount: 1 });
+    expect(plan).toMatchObject({ questionCount: 12, shownItemCount: 12, skippedItemCount: 2 });
     expect(formsOf(plan)).toEqual([
       "listening1",
       "sentence-order1",
@@ -68,7 +68,7 @@ describe("catalogLessonPlanOf — 음성 포트", () => {
       "listening1",
       "word-choice1",
       "sentence-order1",
-      "listening2",
+      "listening1",
     ]);
   });
 
@@ -91,18 +91,19 @@ describe("catalogLessonPlanOf — 음성 포트", () => {
       "listening1",
       "word-choice1",
       "sentence-order1",
-      "listening2",
+      "listening1",
+      "sentence-order1",
     ]);
   });
 
-  test("PL2. 같은 판을 소리 없는 포트로 짜면 LISTEN_BUILD 하나만 빠지고 듣기 다섯은 audio null로 선다", () => {
+  test("PL2. 같은 판을 소리 없는 포트로 짜면 LISTEN_BUILD 둘만 빠지고 듣기 넷은 audio null로 선다", () => {
     const entry = withItemAudio(readyOf("u01-water"));
 
     const plan = catalogLessonPlanOf(entry, "S2", fill, imageUrlOf);
 
-    expect(plan).toMatchObject({ questionCount: 13, skippedItemCount: 1 });
+    expect(plan).toMatchObject({ questionCount: 12, skippedItemCount: 2 });
     const listening = (plan?.activities ?? []).filter((activity) => activity.form === "listening");
-    expect(listening.flatMap((activity) => activity.questions)).toHaveLength(5);
+    expect(listening.flatMap((activity) => activity.questions)).toHaveLength(4);
     for (const activity of listening) {
       for (const question of activity.questions) {
         expect((question as unknown as { audio: unknown }).audio).toBeNull();
