@@ -138,7 +138,7 @@ describe("catalogMapSectionsOf — cultureKeys (CN2)", () => {
     ]);
 
     expect(sections[0]).toBeDefined();
-    expect("cultureKeys" in (sections[0] ?? {})).toBe(false);
+    expect(Object.prototype.hasOwnProperty.call(sections[0] ?? {}, "cultureKeys")).toBe(false);
   });
 });
 
