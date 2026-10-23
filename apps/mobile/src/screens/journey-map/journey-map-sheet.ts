@@ -240,10 +240,19 @@ export function stepSheetPlacementBelowHeader(
  * 가둔 자리에서는 꼬리가 유닛에서 떨어집니다. 스크롤이 끝에 닿아 유닛을 더 올릴 수 없는
  * 마지막 유닛들에서만 생기는 일이고, 그때는 가리키는 곳이 조금 틀린 것이 읽을 수 없는
  * 것보다 낫습니다.
+ *
+ * 상한은 열린 뒤 가장 깊이 내려간 스크롤(`peakScrollTop`)에서의 자리입니다 — 사용자가 맵을 다시 끌어
+ * 내리면(스크롤이 줄면) 상한도 그만큼 내려가 말풍선이 유닛을 따라옵니다. 화면 좌표로 고정하면 한쪽
+ * 방향으로만 따라왔습니다. 없으면 지금 스크롤입니다.
  */
-export function stepSheetTop(state: StepSheetState, scrollTop: number): number {
+export function stepSheetTop(
+  state: StepSheetState,
+  scrollTop: number,
+  peakScrollTop: number = scrollTop,
+): number {
   const top = state.anchorY + sheetGap + (state.anchorScrollTop - scrollTop);
-  return state.anchorLimit === null ? top : Math.min(top, state.anchorLimit);
+  if (state.anchorLimit === null) return top;
+  return Math.min(top, state.anchorLimit + Math.max(0, peakScrollTop - scrollTop));
 }
 
 /** 꼬리가 가운데에서 벗어날 수 있는 끝입니다. 값은 디자인이 정합니다. */

@@ -12,7 +12,8 @@ import { MapUnitEntranceProvider } from "./MapUnitStage";
 import { CatalogUnitSheet } from "./CatalogUnitSheet";
 import { catalogSheetKey, catalogSheetTargetOf, catalogSheetUnitSize } from "./catalog-sheet";
 import { mapGuideTargetOf } from "./catalog-gate";
-import { screenId, scrollId } from "./journey-map-scroll";
+import { measureRectsWithOptional, screenId, scrollId } from "./journey-map-scroll";
+import { sheetSwitchCandidates, sheetSwitchTargetAt } from "./journey-map-sheet-switch";
 import { mapTopLayout } from "./journey-map-insets";
 import { mapScrollTargetOf } from "./journey-map-next-unit";
 import { useAutoScrollToNext } from "./useAutoScrollToNext";
@@ -105,6 +106,32 @@ export function JourneyMapScreen({
     );
 
   const access = nodeAccessOf(progressLoad);
+  // 말풍선이 열린 동안 가림막을 누르면 그 자리의 다른 열린 유닛으로 말풍선 · 띠를 옮기고 그 유닛으로 스크롤합니다.
+  // 가림막이 맵을 덮어 유닛의 탭이 오지 않으므로, 열린 유닛 칸의 자리를 재서 누른 자리와 견줍니다. 없으면 닫습니다.
+  const handleSheetDismissAt = (x: number, y: number) => {
+    "background only";
+    const candidates = sheetSwitchCandidates(
+      catalog.sections,
+      catalog.progress,
+      access,
+      sheetState.openStepId,
+    );
+    measureRectsWithOptional(
+      [],
+      candidates.map((candidate) => candidate.domId),
+      (_rects, measured) => {
+        "background only";
+        const target = sheetSwitchTargetAt(candidates, measured, x, y);
+        handleCloseSheet();
+        if (target === null) return;
+        handleSelectStep(
+          target.id,
+          y,
+          catalogSheetUnitSize(catalog.sections, target.episodeId, target.unitKey),
+        );
+      },
+    );
+  };
   // 본문이 부르는 동작은 렌더마다 최신으로 갈아 끼우는 ref로 넘깁니다 — 함수가 새로 만들어져도 본문은 다시 그리지 않습니다.
   const bodyHandlers = useRef<JourneyMapBodyHandlers>(null as unknown as JourneyMapBodyHandlers);
   bodyHandlers.current = {
@@ -193,6 +220,7 @@ export function JourneyMapScreen({
           top={sheetTop}
           caretOffset={sheetCaretOffset}
           onClose={handleCloseSheet}
+          onDismissAt={handleSheetDismissAt}
           entrance={sheetEntrance}
         />
       )}

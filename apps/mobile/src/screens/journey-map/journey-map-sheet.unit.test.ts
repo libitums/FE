@@ -151,6 +151,14 @@ describe("stepSheetTop", () => {
     expect(stepSheetTop({ ...open, anchorLimit: 566 }, 120)).toBe(566);
   });
 
+  it("상한에 걸린 뒤 맵을 다시 끌어 내리면 상한도 그만큼 내려가 유닛을 따라오고, 끝으로 돌아가면 다시 갇힌다", () => {
+    const limited = { ...open, anchorLimit: 566 };
+    // 120에서 상한(566)에 걸렸고, 그 뒤 20으로 100 끌어 내렸습니다 — 말풍선도 100 내려갑니다.
+    expect(stepSheetTop(limited, 120, 120)).toBe(566);
+    expect(stepSheetTop(limited, 20, 120)).toBe(666);
+    expect(stepSheetTop(limited, 120, 120)).toBe(stepSheetTop(limited, 120));
+  });
+
   it("스크롤이 끝나 유닛이 제자리에 서면 말풍선이 끝 안에 들어온다", () => {
     const placement = stepSheetPlacement({ ...tallScreen, unitTop: 700, scrollTop: 120 });
     const state: StepSheetState = {
