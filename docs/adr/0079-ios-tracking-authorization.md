@@ -74,6 +74,12 @@ IDFA를 싣는다 [추정 — SDK 문서].
 ([iOS 프라이버시](../ios-privacy.md#airbridge-sdk와-추적-선언))은 그대로다. 사용자가 허용하지 않으면 시스템이 그 도메인
 연결을 막는다.
 
+> ⟨2026-10-24⟩ **앱 매니페스트에도 추적 도메인 18개를 적는다.** 빌드 8 업로드가 ITMS-91064(「NSPrivacyTrackingDomains가
+> 비어 있지 않은 경우 NSPrivacyTracking은 true여야 합니다」, 경로 `PrivacyInfo.xcprivacy` — 앱 매니페스트)로 거부됐다. 앱 매니페스트는
+> `NSPrivacyTracking = true`에 도메인 키가 없었다. TN3181은 tracking true일 때 도메인 배열을 채우라고 한다. 그래서 SDK 매니페스트의
+> 18개를 그대로 옮겼다 — 위 「앱이 SDK의 선언을 대신 적지 않는다」는 이 키에 한해 더는 따르지 않는다. SDK를 올리며 도메인이 바뀌면
+> 두 곳을 함께 맞춘다.
+
 ## 대가
 
 1. **App Store 개인정보 응답의 「추적」이 「예」가 된다** — 기기 ID(IDFA)를 광고 목적으로 매체 데이터와 잇는다. 공개
