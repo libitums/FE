@@ -12,7 +12,7 @@ export const siteName = "Duru";
 /** 스토어 주소입니다. 비어 있으면 그 카드는 링크가 아니라 "Coming soon"으로 섭니다. */
 export const storeLinks = {
   ios: "",
-  android: "",
+  android: "https://play.google.com/store/apps/details?id=libitum.duru.android",
 };
 
 /**
