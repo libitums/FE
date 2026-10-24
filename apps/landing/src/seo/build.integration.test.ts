@@ -4,6 +4,8 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { JSDOM } from "jsdom";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { pages as sitePages, storeLinks } from "../site";
+import { storeAvailabilityOf } from "./faq";
 
 // 실제 `astro build`를 임시 폴더로 돌려 env → 설정 → Astro.site → 산출물 경계를 봅니다.
 // describe마다 자기 빌드를 한 번만 돌리고(직렬), 작업 트리의 dist/는 건드리지 않습니다.
@@ -315,14 +317,16 @@ describe("빌드 A — SITE_URL 있음", () => {
     }
   });
 
-  it("I-A14 스토어 주소가 비었으면 where 답이 출시 전을 말한다", () => {
-    const marker = { en: "not released yet", ko: "출시 전" } as const;
+  it("I-A14 where 답은 site.ts의 스토어 주소 유무를 따른다", () => {
+    // 스토어 주소가 하나라도 있으면 faqWhereAAvailable, 모두 비면 faqWhereASoon이 그 언어의 copy 그대로 실려야 합니다.
+    const key =
+      storeAvailabilityOf(storeLinks) === "available" ? "faqWhereAAvailable" : "faqWhereASoon";
     for (const { file, language } of pages) {
       const answer = page(build, file).querySelector(
         '[data-faq-id="where"] [data-testid="faq-answer"]',
       );
       expect(answer, `${file} where 답`).not.toBeNull();
-      expect(answer?.textContent).toContain(marker[language]);
+      expect(answer?.textContent?.trim()).toBe(sitePages[language].copy[key]);
     }
   });
 
