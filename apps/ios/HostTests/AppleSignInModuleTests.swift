@@ -59,6 +59,27 @@ final class AppleSignInModuleTests: XCTestCase {
     XCTAssertNil(failed["authorizationCode"])
   }
 
+  // AH1d — Apple이 이름을 주면 `fullName`이 실리고, 빈 이름 · 없는 이름 · 실패에는 키가 없다.
+  func testAH1dPayloadCarriesFullNameOnlyWhenPresent() {
+    var name = PersonNameComponents()
+    name.givenName = "Sehyun"
+    name.familyName = "Kim"
+    let named = AppleSignInPayload.make(
+      identityToken: Data("eyJ.a.b".utf8), authorizationCode: nil, fullName: name, error: nil)
+    let fullName = named["fullName"] as? String
+    XCTAssertTrue(fullName?.contains("Sehyun") == true && fullName?.contains("Kim") == true)
+    XCTAssertEqual(Set(named.keys), ["status", "identityToken", "fullName"])
+
+    let empty = AppleSignInPayload.make(
+      identityToken: Data("eyJ.a.b".utf8), authorizationCode: nil,
+      fullName: PersonNameComponents(), error: nil)
+    XCTAssertNil(empty["fullName"])
+
+    let failed = AppleSignInPayload.make(
+      identityToken: nil, authorizationCode: nil, fullName: name, error: nil)
+    XCTAssertNil(failed["fullName"])
+  }
+
   // 토큰 없음 · 빈 Data · UTF-8이 아닌 바이트는 failed다.
   func testAH2PayloadWithoutUsableTokenIsFailed() {
     XCTAssertEqual(

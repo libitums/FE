@@ -60,6 +60,7 @@ test("AN4. appleSignInResultFrom — 다섯 상태는 그대로, 모르는 모�
     status: "completed",
     identityToken: "jwt",
     authorizationCode: null,
+    fullName: null,
   });
   for (const status of ["cancelled", "failed", "already-active", "invalid-arguments"]) {
     expect(appleSignInResultFrom({ status })).toEqual({ status });
@@ -68,7 +69,22 @@ test("AN4. appleSignInResultFrom — 다섯 상태는 그대로, 모르는 모�
   // 모르는 키는 버린다(authorizationCode는 아는 키다 — AS1).
   expect(
     appleSignInResultFrom({ status: "completed", identityToken: "jwt", extra: 1 }),
-  ).toStrictEqual({ status: "completed", identityToken: "jwt", authorizationCode: null });
+  ).toStrictEqual({
+    status: "completed",
+    identityToken: "jwt",
+    authorizationCode: null,
+    fullName: null,
+  });
+
+  // AS2. 이름은 다듬어 싣고, 비었거나 문자열이 아니면 null이다(ADR-0028 2026-10-26 보충).
+  expect(
+    appleSignInResultFrom({ status: "completed", identityToken: "jwt", fullName: " 김세현 " }),
+  ).toMatchObject({ fullName: "김세현" });
+  for (const fullName of ["", "   ", 7, null]) {
+    expect(
+      appleSignInResultFrom({ status: "completed", identityToken: "jwt", fullName }),
+    ).toMatchObject({ fullName: null });
+  }
 
   const malformedInputs: unknown[] = [
     { status: "completed" },
@@ -119,6 +135,7 @@ test("AN6. startAppleSignIn — { nonce } 정확히 한 키로 host.start 1회, 
     status: "completed",
     identityToken: "jwt",
     authorizationCode: null,
+    fullName: null,
   });
 });
 
@@ -139,7 +156,12 @@ test("AS1. appleSignInResultFrom — completed의 authorizationCode: 비지 않�
       identityToken: "a.b.c",
       authorizationCode: "code",
     }),
-  ).toStrictEqual({ status: "completed", identityToken: "a.b.c", authorizationCode: "code" });
+  ).toStrictEqual({
+    status: "completed",
+    identityToken: "a.b.c",
+    authorizationCode: "code",
+    fullName: null,
+  });
 
   for (const authorizationCode of [undefined, "", 42, null, {}, ["c"], true]) {
     const payload =
@@ -150,6 +172,7 @@ test("AS1. appleSignInResultFrom — completed의 authorizationCode: 비지 않�
       status: "completed",
       identityToken: "a.b.c",
       authorizationCode: null,
+      fullName: null,
     });
   }
 });
@@ -175,5 +198,6 @@ test("AS1. startAppleSignIn — 호스트가 준 코드가 onResult까지 그대
     status: "completed",
     identityToken: "jwt",
     authorizationCode: "code-9",
+    fullName: null,
   });
 });
