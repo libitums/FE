@@ -61,11 +61,13 @@
         <data android:scheme="http" android:host="duru.abr.ge" />
         <data android:scheme="https" android:host="duru.abr.ge" />
       </intent-filter>
-      <!-- 커스텀 도메인(ADR-0080 D4 보충): 필터를 따로 둬서 이 도메인의 검증이 위 Airbridge 도메인 검증을 막지 않게 한다. -->
+      <!-- 커스텀 도메인(ADR-0080 D4 보충). Android 11 이하는 앱의 autoVerify 도메인 전부가 검증돼야 App Link가 켜지므로,
+           이 도메인의 assetlinks.json이 떠 있어야 위 Airbridge 도메인도 계속 검증된다. -->
       <intent-filter android:autoVerify="true">
         <action android:name="android.intent.action.VIEW" />
         <category android:name="android.intent.category.DEFAULT" />
         <category android:name="android.intent.category.BROWSABLE" />
+        <data android:scheme="http" android:host="go.k-duru.com" />
         <data android:scheme="https" android:host="go.k-duru.com" />
       </intent-filter>
     </activity>

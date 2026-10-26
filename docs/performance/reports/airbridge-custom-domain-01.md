@@ -17,7 +17,7 @@
 ## 이 변경이 무엇을 건드렸나
 
 - `apps/ios/Host/Host.entitlements`에 `applinks:go.k-duru.com`을 더했습니다.
-- `apps/android/app/src/main/AndroidManifest.xml`에 `https://go.k-duru.com`만 받는 `autoVerify` intent filter를 더했습니다.
+- `apps/android/app/src/main/AndroidManifest.xml`에 `http` · `https://go.k-duru.com`을 받는 `autoVerify` intent filter를 더했습니다.
 - 번들(`main.lynx.bundle`) · 네이티브 코드는 바뀌지 않았습니다(`SceneDelegate.swift`는 주석 한 줄).
 
 ## 분석 결과
