@@ -45,7 +45,7 @@
         <category android:name="android.intent.category.BROWSABLE" />
         <data android:scheme="duru" android:host="auth-callback" />
       </intent-filter>
-      <!-- Airbridge 딥링크(ADR-0080): 앱 scheme과 Airbridge App Link 도메인 둘. 로그인 콜백은 위 필터 그대로다. -->
+      <!-- Airbridge 딥링크(ADR-0080): 앱 scheme과 Airbridge App Link 도메인 둘 · 커스텀 도메인. 로그인 콜백은 위 필터 그대로다. -->
       <intent-filter>
         <action android:name="android.intent.action.VIEW" />
         <category android:name="android.intent.category.DEFAULT" />
@@ -60,6 +60,13 @@
         <data android:scheme="https" android:host="duru.airbridge.io" />
         <data android:scheme="http" android:host="duru.abr.ge" />
         <data android:scheme="https" android:host="duru.abr.ge" />
+      </intent-filter>
+      <!-- 커스텀 도메인(ADR-0080 D4 보충): 필터를 따로 둬서 이 도메인의 검증이 위 Airbridge 도메인 검증을 막지 않게 한다. -->
+      <intent-filter android:autoVerify="true">
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:scheme="https" android:host="go.k-duru.com" />
       </intent-filter>
     </activity>
   </application>

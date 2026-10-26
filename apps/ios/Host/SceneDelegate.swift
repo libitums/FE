@@ -26,7 +26,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         AirbridgeDeeplinks.handle(openURLContexts: URLContexts)
     }
 
-    // 켜져 있는 앱이 universal link(`duru.airbridge.io` · `duru.abr.ge`)로 열릴 때(ADR-0080).
+    // 켜져 있는 앱이 universal link(`duru.airbridge.io` · `duru.abr.ge` · `go.k-duru.com`)로 열릴 때(ADR-0080).
     func scene(_ scene: UIScene, continue userActivity: NSUserActivity) {
         AirbridgeDeeplinks.handle(userActivity: userActivity)
     }
