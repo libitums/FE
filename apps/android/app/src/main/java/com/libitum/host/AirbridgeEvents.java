@@ -8,6 +8,8 @@ import co.ab180.airbridge.Airbridge;
 import co.ab180.airbridge.AirbridgeOption;
 import co.ab180.airbridge.AirbridgeOptionBuilder;
 import com.lynx.tasm.LynxViewBuilder;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -28,6 +30,12 @@ final class AirbridgeEvents {
     return context.getApplicationContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
   }
 
+  /**
+   * ADR-0080 D4 보충: 대시보드 Tracking Link › Custom Domain에 등록한 도메인. SDK에도 같은 FQDN을 넣어야 이 도메인의
+   * 링크를 Airbridge 링크로 알아본다(Airbridge Android SDK 문서 「Set up custom domain」).
+   */
+  static final List<String> TRACKING_LINK_CUSTOM_DOMAINS = Collections.singletonList("go.k-duru.com");
+
   static boolean start(Application app, AirbridgeEventsConfig config) {
     if (config == null) return false;
     try {
@@ -37,6 +45,7 @@ final class AirbridgeEvents {
           new AirbridgeOptionBuilder(config.appName(), config.sdkToken())
               .setTrackMetaDeferredAppLinkEnabled(false)
               .setAutoStartTrackingEnabled(!prefs(app).getBoolean(TRACKING_STOPPED_KEY, false))
+              .setTrackingLinkCustomDomains(TRACKING_LINK_CUSTOM_DOMAINS)
               .build();
       Airbridge.initializeSDK(app, option);
       started = true;
