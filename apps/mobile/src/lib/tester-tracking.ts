@@ -50,7 +50,7 @@ export function withoutTesterIdentify(
       if (isTester()) return;
       user.identify(userId);
     },
-    reset: user.reset,
+    reset: (scope) => user.reset(scope),
   };
 }
 
