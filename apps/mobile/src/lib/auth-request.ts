@@ -118,6 +118,25 @@ export function supabaseLogoutRequest(
 }
 
 /**
+ * Apple이 첫 로그인 때 준 이름을 계정의 `user_metadata`에 적습니다(`PUT /auth/v1/user`). Google이 싣는 키와 같은
+ * `full_name` · `name` 둘에 같은 값을 둡니다. 헤더는 로그아웃과 같은 셋입니다.
+ */
+export function supabaseUpdateDisplayNameRequest(
+  config: SupabaseConfig,
+  accessToken: string,
+  fullName: string,
+): { url: string; init: HttpRequestInit } {
+  return {
+    url: `${config.url}/auth/v1/user`,
+    init: {
+      method: "PUT",
+      headers: bearerHeaders(config, accessToken),
+      body: JSON.stringify({ data: { full_name: fullName, name: fullName } }),
+    },
+  };
+}
+
+/**
  * `url = config.url + "/functions/v1/delete-account"`, 헤더는 로그아웃과 같은 셋, 본문은
  * `{ apple_authorization_code }`의 JSON입니다.
  */

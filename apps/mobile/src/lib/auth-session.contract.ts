@@ -158,7 +158,8 @@ export type AuthOperation =
  * `status` · `text()`입니다. `URL` · `Headers` 생성자 · `AbortController`를 쓰지 않습니다.
  */
 export type HttpRequestInit = {
-  readonly method: "POST";
+  /** `PUT`은 표시 이름 저장(`/auth/v1/user`) 하나만 씁니다. */
+  readonly method: "POST" | "PUT";
   readonly headers: Readonly<Record<string, string>>;
   readonly body: string;
 };
