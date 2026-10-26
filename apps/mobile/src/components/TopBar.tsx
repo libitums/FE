@@ -30,6 +30,8 @@ export type TopBarProps = {
   /** 남은 학습 티켓 수입니다. 넘기지 않거나 `null`이면 칩을 그리지 않습니다. */
   readonly ticketCount?: number | null;
   readonly onOpenTickets?: () => void;
+  /** 시험 계정입니다(ADR-0085) — 티켓 칩이 숫자 대신 「∞」이고 누를 수 없습니다. */
+  readonly ticketsUnlimited?: boolean;
   /** 활동으로 오르기 전 값입니다(ADR-0064). 칩이 그 값에서 지금 값으로 한 번 굴립니다. */
   readonly bumps?: StatBumps;
   /** 참인 동안 오름 재생을 미룹니다 — 모달이 덮고 있거나 곧 열릴 때입니다. */
@@ -48,6 +50,7 @@ export function TopBar({
   onOpenTrophy,
   ticketCount = null,
   onOpenTickets,
+  ticketsUnlimited = false,
   bumps = noStatBumps,
   bumpHeld = false,
   onBumped,
@@ -141,11 +144,14 @@ export function TopBar({
           <StatChip
             tone="ticket"
             value={ticketCount}
-            accessibilityLabel={copy.tickets.ticketsLeft(ticketCount)}
+            {...(ticketsUnlimited ? { valueText: copy.tickets.unlimitedValue } : {})}
+            accessibilityLabel={
+              ticketsUnlimited ? copy.tickets.unlimited : copy.tickets.ticketsLeft(ticketCount)
+            }
             testId="top-bar-tickets"
             surface="white"
             height="touch-target"
-            onTap={onOpenTickets === undefined ? undefined : handleOpenTickets}
+            onTap={ticketsUnlimited || onOpenTickets === undefined ? undefined : handleOpenTickets}
             dropFrom={ticketDropFrom}
             onDropped={onTicketDropped}
           />

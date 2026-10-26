@@ -4,6 +4,7 @@
 // (`catalogUnitTicketCost`). 티켓을 쓰고 여는 유닛은 기록해 둡니다 — 레슨을 중간에 나가도 다시 열 때 또 쓰지 않습니다.
 
 import { catalogUnitTicketCost } from "../lib/catalog-ticket-cost";
+import { isTesterAccessActive } from "../lib/tester-access";
 import type { CatalogProgress, CatalogUnitKey } from "../lib/catalog-progress";
 import { canStartCatalogUnit } from "../screens/journey-map/catalog-map";
 import type { CatalogMapSection } from "../screens/journey-map/catalog-map.contract";
@@ -24,7 +25,8 @@ export function withLearningTickets<W extends ScreenWiring>(
   const ticketUnits: CatalogProgress = progress.ticketUnits ?? {};
   return {
     ...wiring,
-    ticketsLeft: tickets.status.available,
+    // 시험 계정은 결과 화면의 남은 장수 줄을 세우지 않습니다(ADR-0085).
+    ...(isTesterAccessActive() ? {} : { ticketsLeft: tickets.status.available }),
     catalogTicketUnits: ticketUnits,
     onStartCatalogUnit: (episodeId, unitKey, source) => {
       "background only";

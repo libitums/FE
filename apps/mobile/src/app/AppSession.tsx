@@ -39,6 +39,7 @@ import { firstUnitGuideEnabled } from "./first-unit-guide-enabled";
 import { OutOfTicketsDialog } from "../screens/tickets/OutOfTicketsDialog";
 import { withLearningTickets } from "./ticket-wiring";
 import { useLearningTickets } from "./use-learning-tickets";
+import { useTesterAccess } from "./use-tester-access";
 import type { AppProgressSeed, AppProps } from "./app-props";
 import type { AppSessionControl } from "./leave-app.contract";
 
@@ -81,6 +82,8 @@ export function AppSession({
     [episodeContent.catalog],
   );
   // **진행의 진실의 출처입니다** — `Nav`에 적지 않고(ADR-0007 D3) 서버에 저장합니다(ADR-0035). 트로피의 완료 규칙은 구획에서 받습니다.
+  // 시험 계정 표시를 먼저 맞춥니다 — 아래 진행 · 티켓 · 맵 판정이 같은 렌더에서 읽습니다(ADR-0085).
+  const testerAccess = useTesterAccess();
   const progress = useJourneyProgress(progressSeed, catalogSections);
   useProgressLoadEvents(progress.progressLoadPhase, episodeIntroEventSink);
   const learner = useLearnerProfile();
@@ -208,6 +211,7 @@ export function AppSession({
                   onStreakCelebrated={progress.onStreakCelebrated}
                   statBump={progress.wiring}
                   tickets={tickets.header}
+                  ticketsUnlimited={testerAccess}
                   episodeSurvey={progress.episodeSurvey}
                   {...episodeSurveyWiring({
                     episodeIntroEventSink,
