@@ -1,0 +1,46 @@
+{
+  "schema": "manifest-1",
+  "generated_at": "2026-10-21T00:00:00Z",
+  "episodes": [
+    {
+      "id": "u00-tutorial",
+      "order": 0,
+      "title": "튜토리얼",
+      "schema": "delivery-2",
+      "version": "2026-10-23.1",
+      "sha256": "42134653f72075a0d728635899e66be0c460ebb75bfb5ffa794e53ae6719eb2a",
+      "bytes": 37847,
+      "url": "episodes/u00-tutorial.json"
+    },
+    {
+      "id": "u01-water",
+      "order": 1,
+      "title": "물 사기",
+      "schema": "delivery-2",
+      "version": "2026-10-23.1",
+      "sha256": "c489e8457b25c3e3cecdb66a562810443920d685cdf8c8df74d7bce642944a80",
+      "bytes": 164907,
+      "url": "episodes/u01-water.json"
+    },
+    {
+      "id": "u02-checkin",
+      "order": 2,
+      "title": "체크인",
+      "schema": "delivery-2",
+      "version": "2026-10-23.1",
+      "sha256": "0c497b49242c4f962e3c89174781d64080d903467189dea855e9e2f18350f3c9",
+      "bytes": 208616,
+      "url": "episodes/u02-checkin.json"
+    },
+    {
+      "id": "u03-mina",
+      "order": 3,
+      "title": "미나 만나기",
+      "schema": "delivery-2",
+      "version": "2026-10-23.1",
+      "sha256": "505cc8ad6e4c8eb6a83c9287c462d1f66b3dc549c50e704394252b4c9aecadcb",
+      "bytes": 212039,
+      "url": "episodes/u03-mina.json"
+    }
+  ]
+}

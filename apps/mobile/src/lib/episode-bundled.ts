@@ -6,6 +6,11 @@ import u00Tutorial from "../../content/episodes/u00-tutorial.json";
 import u01Water from "../../content/episodes/u01-water.json";
 import u02Checkin from "../../content/episodes/u02-checkin.json";
 import u03Mina from "../../content/episodes/u03-mina.json";
+import u04Directions from "../../content/episodes/u04-directions.json";
+import u05Baekban from "../../content/episodes/u05-baekban.json";
+import u06Cafe from "../../content/episodes/u06-cafe.json";
+import u07Jaemin from "../../content/episodes/u07-jaemin.json";
+import u08Umbrella from "../../content/episodes/u08-umbrella.json";
 import type { CatalogInput } from "./episode-catalog";
 import { decodeManifest } from "./episode-manifest";
 
@@ -23,5 +28,10 @@ export const bundledCatalogInput: CatalogInput["bundled"] = {
     "u01-water": u01Water,
     "u02-checkin": u02Checkin,
     "u03-mina": u03Mina,
+    "u04-directions": u04Directions,
+    "u05-baekban": u05Baekban,
+    "u06-cafe": u06Cafe,
+    "u07-jaemin": u07Jaemin,
+    "u08-umbrella": u08Umbrella,
   },
 };

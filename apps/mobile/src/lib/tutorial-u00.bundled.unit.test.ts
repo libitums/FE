@@ -65,7 +65,10 @@ describe("내장 u00-tutorial", () => {
     expect(first?.version).toBe("2026-10-23.1");
     expect(first?.bytes).toBe(37847);
     const text = readFileSync(
-      resolve(process.cwd(), `content/episodes/${TUTORIAL_EPISODE_ID}.json`),
+      resolve(
+        process.cwd(),
+        `content/test-fixtures/bundled-2026-10-23/episodes/${TUTORIAL_EPISODE_ID}.json`,
+      ),
       "utf8",
     );
     expect(first?.bytes).toBe(utf8Bytes(text).length);

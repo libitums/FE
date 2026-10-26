@@ -1,0 +1,6929 @@
+{
+  "schema": "delivery-2",
+  "unit_id": "u05-baekban",
+  "title": "혼자 밥 먹기",
+  "title_en": "Eating Alone",
+  "day": 1,
+  "time_of_day": "저녁",
+  "place": "익선동 골목 백반집",
+  "counterpart": "백반집 이모",
+  "counterpart_avatar": "content/images/u05-baekban/avatar.webp",
+  "pre_cuts": [
+    {
+      "index": 1,
+      "kind": "pre",
+      "cut_kind": "monologue",
+      "speaker": "플레이어",
+      "line": {
+        "ko": "배가 고프다. 혼자 들어가도 되겠지?",
+        "roman": "baega gopeuda. honja deureogado doegetji?",
+        "en": "Starving. Is it okay to go in alone?"
+      },
+      "image_brief": "유리문 너머로 김이 오르는 식당 안. 테이블 두 곳에 손님이 있다.",
+      "image_url": "content/images/u05-baekban/pre-1.webp",
+      "audio_url": ""
+    },
+    {
+      "index": 2,
+      "kind": "pre",
+      "cut_kind": "narration",
+      "narration": {
+        "ko": "유리문을 밀고 들어서자, 테이블 다섯 개 중 두 곳에서 손님들이 밥을 먹고 있다.",
+        "roman": "yurimuneul milgo deureoseoja, teibeul daseot gae jung du goseseo sonnimdeuri babeul meokgo itda.",
+        "en": "Through the glass door: two of the five tables have people eating."
+      },
+      "image_brief": "테이블 다섯 개짜리 작은 식당. 두 테이블에서 손님이 밥을 먹고 있다.",
+      "image_url": "content/images/u05-baekban/pre-2.webp",
+      "audio_url": "u05-baekban/pre-2-r2"
+    },
+    {
+      "index": 3,
+      "kind": "pre",
+      "cut_kind": "speech",
+      "speaker": "식당 주인",
+      "line": {
+        "ko": "제육 나왔어요. 맛있게 드세요.",
+        "roman": "jeyuk nawasseoyo. masitge deuseyo.",
+        "en": "Here's your jeyuk. Enjoy."
+      },
+      "aside": {
+        "ko": "김이 오르는 쟁반을 옆 테이블에 내려놓으며",
+        "roman": "gimi oreuneun jaengbaneul yeop teibeure naeryeonoeumyeo",
+        "en": "Setting a steaming tray down at the next table."
+      },
+      "image_brief": "주인이 김이 오르는 쟁반을 옆 테이블에 내려놓는다.",
+      "image_url": "content/images/u05-baekban/pre-3.webp",
+      "audio_url": "u05-baekban/pre-3-r2"
+    },
+    {
+      "index": 4,
+      "kind": "pre",
+      "cut_kind": "narration",
+      "narration": {
+        "ko": "벽에 붙은 메뉴판을 올려다본다. 사진 없이 손글씨만 빼곡하다.",
+        "roman": "byeoge buteun menyupaneul ollyeodabonda. sajin eopsi songeulssiman ppaegokada.",
+        "en": "Looks up at the menu on the wall. No photos, just dense handwriting."
+      },
+      "image_brief": "벽에 붙은 손글씨 메뉴판. 사진이 없다.",
+      "image_url": "content/images/u05-baekban/pre-4.webp",
+      "audio_url": ""
+    },
+    {
+      "index": 5,
+      "kind": "pre",
+      "cut_kind": "speech",
+      "speaker": "식당 주인",
+      "line": {
+        "ko": "몇 분이세요?",
+        "roman": "myeot buniseyo?",
+        "en": "How many?"
+      },
+      "aside": {
+        "ko": "빈 쟁반을 옆구리에 끼고 돌아보며",
+        "roman": "bin jaengbaneul yeopgurie kkigo dorabomyeo",
+        "en": "Tucking the empty tray under one arm and turning around."
+      },
+      "image_brief": "빈 쟁반을 든 주인이 문 쪽을 돌아본다.",
+      "image_url": "content/images/u05-baekban/pre-5.webp",
+      "audio_url": "u05-baekban/d-01-r2"
+    }
+  ],
+  "dialogue": [
+    {
+      "seq": 1,
+      "line_id": "D1",
+      "kind": "main",
+      "role": "counterpart",
+      "text": {
+        "ko": "몇 분이세요?",
+        "roman": "myeot buniseyo?",
+        "en": "How many?"
+      },
+      "audio_url": "u05-baekban/d-01-r2"
+    },
+    {
+      "seq": 2,
+      "line_id": "D2",
+      "kind": "main",
+      "role": "player",
+      "text": {
+        "ko": "혼자예요.",
+        "roman": "honjayeyo.",
+        "en": "Just me."
+      },
+      "audio_url": "u05-baekban/d-02-r2"
+    },
+    {
+      "seq": 3,
+      "line_id": "D3",
+      "kind": "main",
+      "role": "counterpart",
+      "text": {
+        "ko": "저기 앉으세요.",
+        "roman": "jeogi anjeuseyo.",
+        "en": "Have a seat over there."
+      },
+      "audio_url": "u05-baekban/d-03-r2"
+    },
+    {
+      "seq": 4,
+      "line_id": "D4",
+      "kind": "main",
+      "role": "player",
+      "text": {
+        "ko": "여기 뭐가 맛있어요?",
+        "roman": "yeogi mwoga masisseoyo?",
+        "en": "What's good here?"
+      },
+      "audio_url": "u05-baekban/d-04-r2"
+    },
+    {
+      "seq": 5,
+      "line_id": "D5",
+      "kind": "main",
+      "role": "counterpart",
+      "text": {
+        "ko": "김치찌개가 맛있어요.",
+        "roman": "gimchijjigaega masisseoyo.",
+        "en": "The kimchi stew is good."
+      },
+      "audio_url": "u05-baekban/d-05-r2"
+    },
+    {
+      "seq": 6,
+      "line_id": "D6",
+      "kind": "main",
+      "role": "player",
+      "text": {
+        "ko": "많이 매워요?",
+        "roman": "mani maewoyo?",
+        "en": "Is it very spicy?"
+      },
+      "audio_url": "u05-baekban/d-06-r2"
+    },
+    {
+      "seq": 7,
+      "line_id": "D7",
+      "kind": "main",
+      "role": "counterpart",
+      "text": {
+        "ko": "조금 매워요. 괜찮아요?",
+        "roman": "jogeum maewoyo. gwaenchanayo?",
+        "en": "A little. Is that okay?"
+      },
+      "audio_url": "u05-baekban/d-07-r2"
+    },
+    {
+      "seq": 8,
+      "line_id": "D8",
+      "kind": "main",
+      "role": "player",
+      "text": {
+        "ko": "네, 괜찮아요. 김치찌개 하나 주세요.",
+        "roman": "ne, gwaenchanayo. gimchijjigae hana juseyo.",
+        "en": "Yes, that's fine. One kimchi stew, please."
+      },
+      "audio_url": "u05-baekban/d-08-r2"
+    },
+    {
+      "seq": 9,
+      "line_id": "D9",
+      "kind": "main",
+      "role": "counterpart",
+      "text": {
+        "ko": "네, 김치찌개 하나요.",
+        "roman": "ne, gimchijjigae hanayo.",
+        "en": "Sure, one kimchi stew."
+      },
+      "audio_url": "u05-baekban/d-09-r2"
+    },
+    {
+      "seq": 10,
+      "line_id": "D8b",
+      "kind": "branch",
+      "role": "player",
+      "text": {
+        "ko": "아니요, 된장찌개 하나 주세요.",
+        "roman": "aniyo, doenjangjjigae hana juseyo.",
+        "en": "No, one doenjang stew, please."
+      },
+      "audio_url": "u05-baekban/d-10-r2",
+      "branch_at": 8,
+      "branch_part": "line",
+      "situation": {
+        "ko": "매운 음식은 잘 못 먹는다. 안 매운 걸 시키고 싶다.",
+        "roman": "maeun eumsigeun jal mot meongneunda. an maeun geol sikigo sipda.",
+        "en": "You can't handle spicy food and want something mild."
+      }
+    },
+    {
+      "seq": 11,
+      "line_id": "D8r",
+      "kind": "branch",
+      "role": "counterpart",
+      "text": {
+        "ko": "네, 된장찌개 하나요.",
+        "roman": "ne, doenjangjjigae hanayo.",
+        "en": "Sure, one doenjang stew."
+      },
+      "audio_url": "u05-baekban/d-11-r2",
+      "branch_at": 8,
+      "branch_part": "reply"
+    }
+  ],
+  "post_cuts": [
+    {
+      "index": 1,
+      "kind": "post",
+      "cut_kind": "speech",
+      "speaker": "식당 주인",
+      "line": {
+        "ko": "물은 저기 정수기에서 드시면 돼요.",
+        "roman": "mureun jeogi jeongsugieseo deusimyeon dwaeyo.",
+        "en": "Water's at the dispenser over there, help yourself."
+      },
+      "aside": {
+        "ko": "반찬 그릇을 하나씩 내려놓으며",
+        "roman": "banchan geureuseul hanassik naeryeonoeumyeo",
+        "en": "Setting down the side dishes one by one."
+      },
+      "image_brief": "주인이 반찬 그릇을 하나씩 내려놓는다.",
+      "image_url": "content/images/u05-baekban/post-1.webp",
+      "audio_url": "u05-baekban/post-1-r2"
+    },
+    {
+      "index": 2,
+      "kind": "post",
+      "cut_kind": "narration",
+      "narration": {
+        "ko": "곧 김치찌개가 나온다. 푹 익은 김치와 돼지고기로 국물이 깊고, 매운맛은 천천히 올라온다.",
+        "roman": "got gimchijjigaega naonda. puk igeun gimchiwa dwaejigogiro gungmuri gipgo, maeunmaseun cheoncheonhi ollaonda.",
+        "en": "The kimchi stew arrives. Well-aged kimchi and pork make a deep broth, and the heat comes on slowly."
+      },
+      "image_brief": "김치찌개가 뚝배기에서 보글보글 끓는다. 옆에 밥 한 공기.",
+      "image_url": "content/images/u05-baekban/post-2.webp",
+      "audio_url": ""
+    },
+    {
+      "index": 3,
+      "kind": "post",
+      "cut_kind": "monologue",
+      "speaker": "플레이어",
+      "line": {
+        "ko": "아까 문 잠그던 그 카페, 내일 아침에 가 볼까?",
+        "roman": "akka mun jamgeudeon geu kape, naeil achime ga bolkka?",
+        "en": "That cafe he was locking up... maybe try it tomorrow morning?"
+      },
+      "image_brief": "창밖 어두운 골목. 불 꺼진 카페 쪽.",
+      "image_url": "content/images/u05-baekban/post-3.webp",
+      "audio_url": ""
+    }
+  ],
+  "steps": [
+    {
+      "id": "S1",
+      "order": 1,
+      "items": [
+        {
+          "id": "S1-01",
+          "type": "VOCAB_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "ref": "voca:04d80623",
+          "context": {
+            "ko": "혼자",
+            "roman": "honja",
+            "en": "alone"
+          },
+          "example": {
+            "ko": "혼자예요.",
+            "roman": "honjayeyo.",
+            "en": "Just me."
+          },
+          "card_kind": "단어",
+          "audio_url": "u05-baekban/s1-01-word-r2",
+          "example_audio_url": "u05-baekban/d-02-r2"
+        },
+        {
+          "id": "S1-02",
+          "type": "VOCAB_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "ref": "voca:ec59536e",
+          "context": {
+            "ko": "여기",
+            "roman": "yeogi",
+            "en": "here"
+          },
+          "example": {
+            "ko": "여기 뭐가 맛있어요?",
+            "roman": "yeogi mwoga masisseoyo?",
+            "en": "What's good here?"
+          },
+          "card_kind": "단어",
+          "audio_url": "u05-baekban/s1-02-word-r2",
+          "example_audio_url": "u05-baekban/d-04-r2"
+        },
+        {
+          "id": "S1-03",
+          "type": "VOCAB_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "ref": "voca:f7839c66",
+          "context": {
+            "ko": "뭐",
+            "roman": "mwo",
+            "en": "what"
+          },
+          "example": {
+            "ko": "여기 뭐가 맛있어요?",
+            "roman": "yeogi mwoga masisseoyo?",
+            "en": "What's good here?"
+          },
+          "card_kind": "단어",
+          "audio_url": "u05-baekban/s1-03-word-r2",
+          "example_audio_url": "u05-baekban/d-04-r2"
+        },
+        {
+          "id": "S1-04",
+          "type": "VOCAB_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "ref": "voca:a6280d3c",
+          "context": {
+            "ko": "맛있다",
+            "roman": "masitda",
+            "en": "delicious"
+          },
+          "example": {
+            "ko": "여기 뭐가 맛있어요?",
+            "roman": "yeogi mwoga masisseoyo?",
+            "en": "What's good here?"
+          },
+          "card_kind": "단어",
+          "audio_url": "u05-baekban/s1-04-word-r2",
+          "example_audio_url": "u05-baekban/d-04-r2"
+        },
+        {
+          "id": "S1-05",
+          "type": "VOCAB_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "ref": "voca:72257617",
+          "context": {
+            "ko": "많이",
+            "roman": "mani",
+            "en": "a lot"
+          },
+          "example": {
+            "ko": "많이 매워요?",
+            "roman": "mani maewoyo?",
+            "en": "Is it very spicy?"
+          },
+          "card_kind": "단어",
+          "audio_url": "u05-baekban/s1-05-word-r2",
+          "example_audio_url": "u05-baekban/d-06-r2"
+        },
+        {
+          "id": "S1-06",
+          "type": "VOCAB_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "ref": "voca:17180c5f",
+          "context": {
+            "ko": "맵다",
+            "roman": "maepda",
+            "en": "spicy"
+          },
+          "card_kind": "단어",
+          "audio_url": "u05-baekban/s1-06-word-r2"
+        },
+        {
+          "id": "S1-07",
+          "type": "VOCAB_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "ref": "voca:5f507d8e",
+          "context": {
+            "ko": "김치찌개",
+            "roman": "gimchijjigae",
+            "en": "kimchi stew"
+          },
+          "example": {
+            "ko": "김치찌개 하나 주세요.",
+            "roman": "gimchijjigae hana juseyo."
+          },
+          "card_kind": "단어",
+          "audio_url": "u05-baekban/s1-07-word-r2",
+          "example_audio_url": "u05-baekban/s1-07-ex-r2"
+        },
+        {
+          "id": "S1-08",
+          "type": "VOCAB_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "ref": "gram:92e8afd2",
+          "context": {
+            "ko": "주세요",
+            "roman": "juseyo",
+            "en": "please give me"
+          },
+          "example": {
+            "ko": "네, 괜찮아요. 김치찌개 하나 주세요.",
+            "roman": "ne, gwaenchanayo. gimchijjigae hana juseyo.",
+            "en": "Yes, that's fine. One kimchi stew, please."
+          },
+          "card_kind": "단어",
+          "audio_url": "u05-baekban/s1-08-word-r2",
+          "example_audio_url": "u05-baekban/d-08-r2"
+        },
+        {
+          "id": "S1-09",
+          "type": "VOCAB_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "ref": "voca:97270e4b",
+          "context": {
+            "ko": "네",
+            "roman": "ne",
+            "en": "yes"
+          },
+          "example": {
+            "ko": "네, 괜찮아요. 김치찌개 하나 주세요.",
+            "roman": "ne, gwaenchanayo. gimchijjigae hana juseyo.",
+            "en": "Yes, that's fine. One kimchi stew, please."
+          },
+          "card_kind": "단어",
+          "audio_url": "u05-baekban/s1-09-word-r2",
+          "example_audio_url": "u05-baekban/d-08-r2"
+        },
+        {
+          "id": "S1-10",
+          "type": "CLOZE",
+          "mode": "tiles",
+          "event": "E",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "patt:e952ebc9",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "네, 괜찮아요. ___ 하나 주세요.",
+            "roman": "ne, gwaenchanayo. ___ hana juseyo.",
+            "en": "Yes, that's fine. One kimchi stew, please."
+          },
+          "tiles": [
+            {
+              "ko": "김치찌개",
+              "roman": "gimchijjigae",
+              "en": "kimchi stew"
+            },
+            {
+              "ko": "분",
+              "roman": "bun",
+              "en": "person (polite counter)"
+            },
+            {
+              "ko": "저기",
+              "roman": "jeogi",
+              "en": "there, over there"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "김치찌개",
+              "roman": "gimchijjigae",
+              "en": "kimchi stew"
+            }
+          ]
+        },
+        {
+          "id": "S1-11",
+          "type": "CLOZE",
+          "mode": "tiles",
+          "event": "E",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "patt:3efccada",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "네, 괜찮아요. 김치찌개 ___ 주세요.",
+            "roman": "ne, gwaenchanayo. gimchijjigae ___ juseyo.",
+            "en": "Yes, that's fine. One kimchi stew, please."
+          },
+          "tiles": [
+            {
+              "ko": "하나",
+              "roman": "hana",
+              "en": "one"
+            },
+            {
+              "ko": "네",
+              "roman": "ne",
+              "en": "yes"
+            },
+            {
+              "ko": "맵다",
+              "roman": "maepda",
+              "en": "spicy"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "하나",
+              "roman": "hana",
+              "en": "one"
+            }
+          ]
+        },
+        {
+          "id": "S1-12",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:72257617",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "많이 매워요?",
+              "roman": "mani maewoyo?",
+              "en": "Is it very spicy?"
+            },
+            "audio_url": "u05-baekban/d-06-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "네, 괜찮아요. 김치찌개 하나 주세요.",
+              "roman": "ne, gwaenchanayo. gimchijjigae hana juseyo.",
+              "en": "Yes, that's fine. One kimchi stew, please.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "조금 매워요. 괜찮아요?",
+              "roman": "jogeum maewoyo. gwaenchanayo?",
+              "en": "A little. Is that okay?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "많이 매워요?",
+              "roman": "mani maewoyo?",
+              "en": "Is it very spicy?",
+              "correct": true
+            },
+            {
+              "id": "o4",
+              "ko": "저기 앉으세요.",
+              "roman": "jeogi anjeuseyo.",
+              "en": "Have a seat over there.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ]
+        },
+        {
+          "id": "S1-13",
+          "type": "CLOZE",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:ec59536e",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "___ 뭐가 맛있어요?",
+            "roman": "___ mwoga masisseoyo?",
+            "en": "What's good here?"
+          },
+          "tiles": [
+            {
+              "ko": "여기",
+              "roman": "yeogi",
+              "en": "here"
+            },
+            {
+              "ko": "된장찌개",
+              "roman": "doenjangjjigae",
+              "en": "doenjang stew"
+            },
+            {
+              "ko": "하나",
+              "roman": "hana",
+              "en": "one"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "여기",
+              "roman": "yeogi",
+              "en": "here"
+            }
+          ]
+        },
+        {
+          "id": "S1-14",
+          "type": "WORD_ORDER",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "patt:e952ebc9",
+          "prompt": {
+            "ko": "문장을 만드세요.",
+            "en": "Build the sentence."
+          },
+          "stimulus": {
+            "audio_url": "u05-baekban/d-08-r2",
+            "image_url": "",
+            "en": "Yes, that's fine. One kimchi stew, please."
+          },
+          "tiles": [
+            {
+              "ko": "네,",
+              "roman": "ne,"
+            },
+            {
+              "ko": "괜찮아요.",
+              "roman": "gwaenchanayo."
+            },
+            {
+              "ko": "김치찌개",
+              "roman": "gimchijjigae",
+              "en": "kimchi stew"
+            },
+            {
+              "ko": "하나",
+              "roman": "hana",
+              "en": "one"
+            },
+            {
+              "ko": "주세요.",
+              "roman": "juseyo."
+            }
+          ],
+          "answers": [
+            {
+              "ko": "네, 괜찮아요. 김치찌개 하나 주세요.",
+              "roman": "ne, gwaenchanayo. gimchijjigae hana juseyo.",
+              "en": "Yes, that's fine. One kimchi stew, please."
+            }
+          ]
+        },
+        {
+          "id": "S1-15",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "patt:e952ebc9",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "네, 괜찮아요. 김치찌개 하나 주세요.",
+              "roman": "ne, gwaenchanayo. gimchijjigae hana juseyo.",
+              "en": "Yes, that's fine. One kimchi stew, please."
+            },
+            "audio_url": "u05-baekban/d-08-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "몇 분이세요?",
+              "roman": "myeot buniseyo?",
+              "en": "How many people?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "네, 괜찮아요. 김치찌개 하나 주세요.",
+              "roman": "ne, gwaenchanayo. gimchijjigae hana juseyo.",
+              "en": "Yes, that's fine. One kimchi stew, please.",
+              "correct": true
+            },
+            {
+              "id": "o3",
+              "ko": "네, 김치찌개 하나요.",
+              "roman": "ne, gimchijjigae hanayo.",
+              "en": "Sure, one kimchi stew.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "조금 매워요. 괜찮아요?",
+              "roman": "jogeum maewoyo. gwaenchanayo?",
+              "en": "A little. Is that okay?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ]
+        },
+        {
+          "id": "S1-16",
+          "type": "CLOZE",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:72257617",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "___ 매워요?",
+            "roman": "___ maewoyo?",
+            "en": "Is it very spicy?"
+          },
+          "tiles": [
+            {
+              "ko": "많이",
+              "roman": "mani",
+              "en": "a lot"
+            },
+            {
+              "ko": "네",
+              "roman": "ne",
+              "en": "yes"
+            },
+            {
+              "ko": "주세요",
+              "roman": "juseyo",
+              "en": "please give me"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "많이",
+              "roman": "mani",
+              "en": "a lot"
+            }
+          ]
+        },
+        {
+          "id": "S1-17",
+          "type": "CLOZE_CHOICE",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "읽기",
+          "skill_level": 2,
+          "ref": "voca:f7839c66",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "여기 ___ 맛있어요?",
+            "roman": "yeogi ___ masisseoyo?",
+            "en": "What's good here?"
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "분이",
+              "roman": "buni",
+              "en": "~ person(s), ~ minute(s)",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "하나가",
+              "roman": "hanaga",
+              "en": "1",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "뭐가",
+              "roman": "mwoga",
+              "en": "what",
+              "correct": true
+            }
+          ],
+          "answers": [
+            {
+              "ko": "뭐가",
+              "roman": "mwoga"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "「여기 뭐가 맛있어요?」",
+              "en": "What's good here?"
+            }
+          }
+        },
+        {
+          "id": "S1-18",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:5f507d8e",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "김치찌개가 맛있어요.",
+              "roman": "gimchijjigaega masisseoyo.",
+              "en": "The kimchi stew is good."
+            },
+            "audio_url": "u05-baekban/d-05-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "몇 분이세요?",
+              "roman": "myeot buniseyo?",
+              "en": "How many people?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "여기 뭐가 맛있어요?",
+              "roman": "yeogi mwoga masisseoyo?",
+              "en": "What's good here?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "많이 매워요?",
+              "roman": "mani maewoyo?",
+              "en": "Is it very spicy?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "김치찌개가 맛있어요.",
+              "roman": "gimchijjigaega masisseoyo.",
+              "en": "The kimchi jjigae is good.",
+              "correct": true
+            }
+          ]
+        },
+        {
+          "id": "S1-19",
+          "type": "CLOZE_CHOICE",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "읽기",
+          "skill_level": 2,
+          "ref": "voca:5f507d8e",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "___ 맛있어요.",
+            "roman": "___ masisseoyo.",
+            "en": "The kimchi stew is good."
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "김치찌개가",
+              "roman": "gimchijjigaega",
+              "en": "Kimchi stew",
+              "correct": true
+            },
+            {
+              "id": "o2",
+              "ko": "분이",
+              "roman": "buni",
+              "en": "~ person(s), ~ minute(s)",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "혼자가",
+              "roman": "honjaga",
+              "en": "alone",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "김치찌개가",
+              "roman": "gimchijjigaega"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "「김치찌개가 맛있어요.」",
+              "en": "The kimchi stew is good."
+            }
+          }
+        },
+        {
+          "id": "S1-20",
+          "type": "CLOZE",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "gram:92e8afd2",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "네, 괜찮아요. 김치찌개 하나 ___",
+            "roman": "ne, gwaenchanayo. gimchijjigae hana ___",
+            "en": "Yes, that's fine. One kimchi stew, please."
+          },
+          "tiles": [
+            {
+              "ko": "주세요.",
+              "roman": "juseyo."
+            },
+            {
+              "ko": "매워요?",
+              "roman": "maewoyo?"
+            },
+            {
+              "ko": "맛있어요?",
+              "roman": "masisseoyo?"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "주세요.",
+              "roman": "juseyo."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "S2",
+      "order": 2,
+      "items": [
+        {
+          "id": "S2-01",
+          "type": "ROLE_LINE",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "읽기",
+          "skill_level": 2,
+          "ref": "voca:ec59536e",
+          "prompt": {
+            "ko": "뭐라고 말할까요?",
+            "en": "What do you say?"
+          },
+          "context": {
+            "ko": "저기 앉으세요.",
+            "roman": "jeogi anjeuseyo.",
+            "en": "Have a seat over there."
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "여기 뭐가 맛있어요?",
+              "roman": "yeogi mwoga masisseoyo?",
+              "en": "What's good here?",
+              "correct": true
+            },
+            {
+              "id": "o2",
+              "ko": "몇 분이세요?",
+              "roman": "myeot buniseyo?",
+              "en": "How many people?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "혼자예요.",
+              "roman": "honjayeyo.",
+              "en": "Just me.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "이 자리에서는 「여기 뭐가 맛있어요?」라고 해요.",
+              "en": "Here you say \"What's good here?\"."
+            }
+          }
+        },
+        {
+          "id": "S2-02",
+          "type": "TURN_ORDER",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:04d80623",
+          "prompt": {
+            "ko": "대화 순서대로 놓으세요.",
+            "en": "Put the conversation in order."
+          },
+          "context": {
+            "ko": "대화 순서대로 놓으세요.",
+            "roman": "daehwa sunseodaero noeuseyo."
+          },
+          "tiles": [
+            {
+              "ko": "몇 분이세요?",
+              "roman": "myeot buniseyo?",
+              "en": "How many?",
+              "speaker": "counterpart"
+            },
+            {
+              "ko": "혼자예요.",
+              "roman": "honjayeyo.",
+              "en": "Just me.",
+              "speaker": "player"
+            },
+            {
+              "ko": "저기 앉으세요.",
+              "roman": "jeogi anjeuseyo.",
+              "en": "Have a seat over there.",
+              "speaker": "counterpart"
+            },
+            {
+              "ko": "여기 뭐가 맛있어요?",
+              "roman": "yeogi mwoga masisseoyo?",
+              "en": "What's good here?",
+              "speaker": "player"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "몇 분이세요? | 혼자예요. | 저기 앉으세요. | 여기 뭐가 맛있어요?",
+              "roman": "myeot buniseyo? | honjayeyo. | jeogi anjeuseyo. | yeogi mwoga masisseoyo?"
+            }
+          ]
+        },
+        {
+          "id": "S2-03",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:ec59536e",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "여기 뭐가 맛있어요?",
+              "roman": "yeogi mwoga masisseoyo?",
+              "en": "What's good here?"
+            },
+            "audio_url": "u05-baekban/d-04-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "김치찌개가 맛있어요.",
+              "roman": "gimchijjigaega masisseoyo.",
+              "en": "The kimchi jjigae is good.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "여기 뭐가 맛있어요?",
+              "roman": "yeogi mwoga masisseoyo?",
+              "en": "What's good here?",
+              "correct": true
+            },
+            {
+              "id": "o3",
+              "ko": "조금 매워요. 괜찮아요?",
+              "roman": "jogeum maewoyo. gwaenchanayo?",
+              "en": "A little. Is that okay?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "많이 매워요?",
+              "roman": "mani maewoyo?",
+              "en": "Is it very spicy?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ]
+        },
+        {
+          "id": "S2-04",
+          "type": "REPLY_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 2,
+          "ref": "voca:5f507d8e",
+          "prompt": {
+            "ko": "뭐라고 대답할까요?",
+            "en": "How do you reply?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "조금 매워요. 괜찮아요?",
+              "roman": "jogeum maewoyo. gwaenchanayo?",
+              "en": "A little. Is that okay?"
+            },
+            "audio_url": "u05-baekban/d-07-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "여기 뭐가 맛있어요?",
+              "roman": "yeogi mwoga masisseoyo?",
+              "en": "What's good here?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "네, 괜찮아요. 김치찌개 하나 주세요.",
+              "roman": "ne, gwaenchanayo. gimchijjigae hana juseyo.",
+              "en": "Yes, that's fine. One kimchi stew, please.",
+              "correct": true
+            },
+            {
+              "id": "o3",
+              "ko": "많이 매워요?",
+              "roman": "mani maewoyo?",
+              "en": "Is it very spicy?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "이 자리에서는 「네, 괜찮아요. 김치찌개 하나 주세요.」라고 해요.",
+              "en": "Here you say \"Yes, that's fine. One kimchi stew, please.\"."
+            }
+          }
+        },
+        {
+          "id": "S2-05",
+          "type": "TURN_ORDER",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:ec59536e",
+          "prompt": {
+            "ko": "대화 순서대로 놓으세요.",
+            "en": "Put the conversation in order."
+          },
+          "context": {
+            "ko": "대화 순서대로 놓으세요.",
+            "roman": "daehwa sunseodaero noeuseyo."
+          },
+          "tiles": [
+            {
+              "ko": "김치찌개가 맛있어요.",
+              "roman": "gimchijjigaega masisseoyo.",
+              "en": "The kimchi stew is good.",
+              "speaker": "counterpart"
+            },
+            {
+              "ko": "많이 매워요?",
+              "roman": "mani maewoyo?",
+              "en": "Is it very spicy?",
+              "speaker": "player"
+            },
+            {
+              "ko": "조금 매워요. 괜찮아요?",
+              "roman": "jogeum maewoyo. gwaenchanayo?",
+              "en": "A little. Is that okay?",
+              "speaker": "counterpart"
+            },
+            {
+              "ko": "아니요, 된장찌개 하나 주세요.",
+              "roman": "aniyo, doenjangjjigae hana juseyo.",
+              "en": "No, one doenjang stew, please.",
+              "speaker": "player"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "김치찌개가 맛있어요. | 많이 매워요? | 조금 매워요. 괜찮아요? | 아니요, 된장찌개 하나 주세요.",
+              "roman": "gimchijjigaega masisseoyo. | mani maewoyo? | jogeum maewoyo. gwaenchanayo? | aniyo, doenjangjjigae hana juseyo."
+            }
+          ]
+        },
+        {
+          "id": "S2-06",
+          "type": "LISTEN_BUILD",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "듣기",
+          "skill_level": 3,
+          "ref": "voca:a6280d3c",
+          "prompt": {
+            "ko": "듣고 문장을 만드세요.",
+            "en": "Listen and build the sentence."
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "김치찌개가 맛있어요.",
+              "roman": "gimchijjigaega masisseoyo.",
+              "en": "The kimchi stew is good."
+            },
+            "audio_url": "u05-baekban/d-05-r2",
+            "image_url": ""
+          },
+          "tiles": [
+            {
+              "ko": "김치찌개가",
+              "roman": "gimchijjigaega"
+            },
+            {
+              "ko": "맛있어요.",
+              "roman": "masisseoyo."
+            },
+            {
+              "ko": "매워요?",
+              "roman": "maewoyo?"
+            },
+            {
+              "ko": "괜찮아요?",
+              "roman": "gwaenchanayo?"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "김치찌개가 맛있어요.",
+              "roman": "gimchijjigaega masisseoyo.",
+              "en": "The kimchi stew is good."
+            }
+          ]
+        },
+        {
+          "id": "S2-07",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:72257617",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "많이 매워요?",
+              "roman": "mani maewoyo?",
+              "en": "Is it very spicy?"
+            },
+            "audio_url": "u05-baekban/d-06-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "김치찌개가 맛있어요.",
+              "roman": "gimchijjigaega masisseoyo.",
+              "en": "The kimchi jjigae is good.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "몇 분이세요?",
+              "roman": "myeot buniseyo?",
+              "en": "How many people?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "조금 매워요. 괜찮아요?",
+              "roman": "jogeum maewoyo. gwaenchanayo?",
+              "en": "A little. Is that okay?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "많이 매워요?",
+              "roman": "mani maewoyo?",
+              "en": "Is it very spicy?",
+              "correct": true
+            }
+          ]
+        },
+        {
+          "id": "S2-08",
+          "type": "ROLE_LINE",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "읽기",
+          "skill_level": 2,
+          "ref": "voca:04d80623",
+          "prompt": {
+            "ko": "뭐라고 말할까요?",
+            "en": "What do you say?"
+          },
+          "context": {
+            "ko": "몇 분이세요?",
+            "roman": "myeot buniseyo?",
+            "en": "How many?"
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "여기 뭐가 맛있어요?",
+              "roman": "yeogi mwoga masisseoyo?",
+              "en": "What's good here?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "혼자예요.",
+              "roman": "honjayeyo.",
+              "en": "Just me.",
+              "correct": true
+            },
+            {
+              "id": "o3",
+              "ko": "네, 괜찮아요. 김치찌개 하나 주세요.",
+              "roman": "ne, gwaenchanayo. gimchijjigae hana juseyo.",
+              "en": "Yes, that's fine. One kimchi stew, please.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "이 자리에서는 「혼자예요.」라고 해요.",
+              "en": "Here you say \"Just me.\"."
+            }
+          }
+        },
+        {
+          "id": "S2-09",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:04d80623",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "혼자예요.",
+              "roman": "honjayeyo.",
+              "en": "Just me."
+            },
+            "audio_url": "u05-baekban/d-02-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "저기 앉으세요.",
+              "roman": "jeogi anjeuseyo.",
+              "en": "Have a seat over there.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "네, 된장찌개 하나요.",
+              "roman": "ne, doenjangjjigae hanayo.",
+              "en": "Sure, one doenjang stew.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "혼자예요.",
+              "roman": "honjayeyo.",
+              "en": "Just me.",
+              "correct": true
+            },
+            {
+              "id": "o4",
+              "ko": "조금 매워요. 괜찮아요?",
+              "roman": "jogeum maewoyo. gwaenchanayo?",
+              "en": "A little. Is that okay?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ]
+        },
+        {
+          "id": "S2-10",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:5f507d8e",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "김치찌개가 맛있어요.",
+              "roman": "gimchijjigaega masisseoyo.",
+              "en": "The kimchi stew is good."
+            },
+            "audio_url": "u05-baekban/d-05-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "김치찌개가 맛있어요.",
+              "roman": "gimchijjigaega masisseoyo.",
+              "en": "The kimchi jjigae is good.",
+              "correct": true
+            },
+            {
+              "id": "o2",
+              "ko": "아니요, 된장찌개 하나 주세요.",
+              "roman": "aniyo, doenjangjjigae hana juseyo.",
+              "en": "No, one doenjang stew, please.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "여기 뭐가 맛있어요?",
+              "roman": "yeogi mwoga masisseoyo?",
+              "en": "What's good here?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "많이 매워요?",
+              "roman": "mani maewoyo?",
+              "en": "Is it very spicy?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ]
+        },
+        {
+          "id": "S2-11",
+          "type": "TURN_ORDER",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:04d80623",
+          "prompt": {
+            "ko": "대화 순서대로 놓으세요.",
+            "en": "Put the conversation in order."
+          },
+          "context": {
+            "ko": "대화 순서대로 놓으세요.",
+            "roman": "daehwa sunseodaero noeuseyo."
+          },
+          "tiles": [
+            {
+              "ko": "많이 매워요?",
+              "roman": "mani maewoyo?",
+              "en": "Is it very spicy?",
+              "speaker": "player"
+            },
+            {
+              "ko": "조금 매워요. 괜찮아요?",
+              "roman": "jogeum maewoyo. gwaenchanayo?",
+              "en": "A little. Is that okay?",
+              "speaker": "counterpart"
+            },
+            {
+              "ko": "네, 괜찮아요. 김치찌개 하나 주세요.",
+              "roman": "ne, gwaenchanayo. gimchijjigae hana juseyo.",
+              "en": "Yes, that's fine. One kimchi stew, please.",
+              "speaker": "player"
+            },
+            {
+              "ko": "네, 김치찌개 하나요.",
+              "roman": "ne, gimchijjigae hanayo.",
+              "en": "Sure, one kimchi stew.",
+              "speaker": "counterpart"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "많이 매워요? | 조금 매워요. 괜찮아요? | 네, 괜찮아요. 김치찌개 하나 주세요. | 네, 김치찌개 하나요.",
+              "roman": "mani maewoyo? | jogeum maewoyo. gwaenchanayo? | ne, gwaenchanayo. gimchijjigae hana juseyo. | ne, gimchijjigae hanayo."
+            }
+          ]
+        },
+        {
+          "id": "S2-12",
+          "type": "TURN_ORDER",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:ec59536e",
+          "prompt": {
+            "ko": "대화 순서대로 놓으세요.",
+            "en": "Put the conversation in order."
+          },
+          "context": {
+            "ko": "대화 순서대로 놓으세요.",
+            "roman": "daehwa sunseodaero noeuseyo."
+          },
+          "tiles": [
+            {
+              "ko": "저기 앉으세요.",
+              "roman": "jeogi anjeuseyo.",
+              "en": "Have a seat over there.",
+              "speaker": "counterpart"
+            },
+            {
+              "ko": "여기 뭐가 맛있어요?",
+              "roman": "yeogi mwoga masisseoyo?",
+              "en": "What's good here?",
+              "speaker": "player"
+            },
+            {
+              "ko": "김치찌개가 맛있어요.",
+              "roman": "gimchijjigaega masisseoyo.",
+              "en": "The kimchi stew is good.",
+              "speaker": "counterpart"
+            },
+            {
+              "ko": "많이 매워요?",
+              "roman": "mani maewoyo?",
+              "en": "Is it very spicy?",
+              "speaker": "player"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "저기 앉으세요. | 여기 뭐가 맛있어요? | 김치찌개가 맛있어요. | 많이 매워요?",
+              "roman": "jeogi anjeuseyo. | yeogi mwoga masisseoyo? | gimchijjigaega masisseoyo. | mani maewoyo?"
+            }
+          ]
+        },
+        {
+          "id": "S2-13",
+          "type": "REPLY_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 2,
+          "ref": "voca:72257617",
+          "prompt": {
+            "ko": "뭐라고 대답할까요?",
+            "en": "How do you reply?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "김치찌개가 맛있어요.",
+              "roman": "gimchijjigaega masisseoyo.",
+              "en": "The kimchi stew is good."
+            },
+            "audio_url": "u05-baekban/d-05-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "혼자예요.",
+              "roman": "honjayeyo.",
+              "en": "Just me.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "여기 뭐가 맛있어요?",
+              "roman": "yeogi mwoga masisseoyo?",
+              "en": "What's good here?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "많이 매워요?",
+              "roman": "mani maewoyo?",
+              "en": "Is it very spicy?",
+              "correct": true
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "이 자리에서는 「많이 매워요?」라고 해요.",
+              "en": "Here you say \"Is it very spicy?\"."
+            }
+          }
+        },
+        {
+          "id": "S2-14",
+          "type": "TURN_ORDER",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:72257617",
+          "prompt": {
+            "ko": "대화 순서대로 놓으세요.",
+            "en": "Put the conversation in order."
+          },
+          "context": {
+            "ko": "대화 순서대로 놓으세요.",
+            "roman": "daehwa sunseodaero noeuseyo."
+          },
+          "tiles": [
+            {
+              "ko": "김치찌개가 맛있어요.",
+              "roman": "gimchijjigaega masisseoyo.",
+              "en": "The kimchi stew is good.",
+              "speaker": "counterpart"
+            },
+            {
+              "ko": "많이 매워요?",
+              "roman": "mani maewoyo?",
+              "en": "Is it very spicy?",
+              "speaker": "player"
+            },
+            {
+              "ko": "조금 매워요. 괜찮아요?",
+              "roman": "jogeum maewoyo. gwaenchanayo?",
+              "en": "A little. Is that okay?",
+              "speaker": "counterpart"
+            },
+            {
+              "ko": "네, 괜찮아요. 김치찌개 하나 주세요.",
+              "roman": "ne, gwaenchanayo. gimchijjigae hana juseyo.",
+              "en": "Yes, that's fine. One kimchi stew, please.",
+              "speaker": "player"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "김치찌개가 맛있어요. | 많이 매워요? | 조금 매워요. 괜찮아요? | 네, 괜찮아요. 김치찌개 하나 주세요.",
+              "roman": "gimchijjigaega masisseoyo. | mani maewoyo? | jogeum maewoyo. gwaenchanayo? | ne, gwaenchanayo. gimchijjigae hana juseyo."
+            }
+          ]
+        },
+        {
+          "id": "S2-15",
+          "type": "TURN_ORDER",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:5f507d8e",
+          "prompt": {
+            "ko": "대화 순서대로 놓으세요.",
+            "en": "Put the conversation in order."
+          },
+          "context": {
+            "ko": "대화 순서대로 놓으세요.",
+            "roman": "daehwa sunseodaero noeuseyo."
+          },
+          "tiles": [
+            {
+              "ko": "여기 뭐가 맛있어요?",
+              "roman": "yeogi mwoga masisseoyo?",
+              "en": "What's good here?",
+              "speaker": "player"
+            },
+            {
+              "ko": "김치찌개가 맛있어요.",
+              "roman": "gimchijjigaega masisseoyo.",
+              "en": "The kimchi stew is good.",
+              "speaker": "counterpart"
+            },
+            {
+              "ko": "많이 매워요?",
+              "roman": "mani maewoyo?",
+              "en": "Is it very spicy?",
+              "speaker": "player"
+            },
+            {
+              "ko": "조금 매워요. 괜찮아요?",
+              "roman": "jogeum maewoyo. gwaenchanayo?",
+              "en": "A little. Is that okay?",
+              "speaker": "counterpart"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "여기 뭐가 맛있어요? | 김치찌개가 맛있어요. | 많이 매워요? | 조금 매워요. 괜찮아요?",
+              "roman": "yeogi mwoga masisseoyo? | gimchijjigaega masisseoyo. | mani maewoyo? | jogeum maewoyo. gwaenchanayo?"
+            }
+          ]
+        },
+        {
+          "id": "S2-16",
+          "type": "LISTEN_BUILD",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "듣기",
+          "skill_level": 3,
+          "ref": "voca:5f507d8e",
+          "prompt": {
+            "ko": "듣고 문장을 만드세요.",
+            "en": "Listen and build the sentence."
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "네, 괜찮아요. 김치찌개 하나 주세요.",
+              "roman": "ne, gwaenchanayo. gimchijjigae hana juseyo.",
+              "en": "Yes, that's fine. One kimchi stew, please."
+            },
+            "audio_url": "u05-baekban/d-08-r2",
+            "image_url": ""
+          },
+          "tiles": [
+            {
+              "ko": "네,",
+              "roman": "ne,"
+            },
+            {
+              "ko": "괜찮아요.",
+              "roman": "gwaenchanayo."
+            },
+            {
+              "ko": "김치찌개",
+              "roman": "gimchijjigae",
+              "en": "kimchi stew"
+            },
+            {
+              "ko": "하나",
+              "roman": "hana",
+              "en": "one"
+            },
+            {
+              "ko": "주세요.",
+              "roman": "juseyo."
+            },
+            {
+              "ko": "분이세요?",
+              "roman": "buniseyo?"
+            },
+            {
+              "ko": "맛있어요.",
+              "roman": "masisseoyo."
+            }
+          ],
+          "answers": [
+            {
+              "ko": "네, 괜찮아요. 김치찌개 하나 주세요.",
+              "roman": "ne, gwaenchanayo. gimchijjigae hana juseyo.",
+              "en": "Yes, that's fine. One kimchi stew, please."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "S3",
+      "order": 3,
+      "items": [
+        {
+          "id": "S3-01",
+          "type": "VOCAB_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "ref": "voca:8d532a47",
+          "context": {
+            "ko": "괜찮다",
+            "roman": "gwaenchanda",
+            "en": "be okay"
+          },
+          "example": {
+            "ko": "네, 괜찮아요. 김치찌개 하나 주세요.",
+            "roman": "ne, gwaenchanayo. gimchijjigae hana juseyo.",
+            "en": "Yes, that's fine. One kimchi stew, please."
+          },
+          "card_kind": "단어",
+          "audio_url": "u05-baekban/s3-01-word-r2",
+          "example_audio_url": "u05-baekban/d-08-r2"
+        },
+        {
+          "id": "S3-02",
+          "type": "VOCAB_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "ref": "voca:39e78518",
+          "context": {
+            "ko": "하나",
+            "roman": "hana",
+            "en": "one"
+          },
+          "example": {
+            "ko": "네, 괜찮아요. 김치찌개 하나 주세요.",
+            "roman": "ne, gwaenchanayo. gimchijjigae hana juseyo.",
+            "en": "Yes, that's fine. One kimchi stew, please."
+          },
+          "card_kind": "단어",
+          "audio_url": "u05-baekban/s3-02-word-r2",
+          "example_audio_url": "u05-baekban/d-08-r2"
+        },
+        {
+          "id": "S3-03",
+          "type": "VOCAB_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "ref": "voca:6a6ebc70",
+          "context": {
+            "ko": "몇",
+            "roman": "myeot",
+            "en": "how many"
+          },
+          "example": {
+            "ko": "몇 분이세요?",
+            "roman": "myeot buniseyo?",
+            "en": "How many?"
+          },
+          "card_kind": "단어",
+          "audio_url": "u05-baekban/s3-03-word-r2",
+          "example_audio_url": "u05-baekban/d-01-r2"
+        },
+        {
+          "id": "S3-04",
+          "type": "VOCAB_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "ref": "voca:dbdcc9f6",
+          "context": {
+            "ko": "분",
+            "roman": "bun",
+            "en": "person (polite counter)"
+          },
+          "example": {
+            "ko": "몇 분이세요?",
+            "roman": "myeot buniseyo?",
+            "en": "How many?"
+          },
+          "card_kind": "단어",
+          "audio_url": "u05-baekban/s3-04-word-r2",
+          "example_audio_url": "u05-baekban/d-01-r2"
+        },
+        {
+          "id": "S3-05",
+          "type": "VOCAB_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "ref": "voca:b3e70145",
+          "context": {
+            "ko": "저기",
+            "roman": "jeogi",
+            "en": "there, over there"
+          },
+          "example": {
+            "ko": "저기 앉으세요.",
+            "roman": "jeogi anjeuseyo.",
+            "en": "Have a seat over there."
+          },
+          "card_kind": "단어",
+          "audio_url": "u05-baekban/s3-05-word-r2",
+          "example_audio_url": "u05-baekban/d-03-r2"
+        },
+        {
+          "id": "S3-06",
+          "type": "VOCAB_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "ref": "voca:b0414a80",
+          "context": {
+            "ko": "앉다",
+            "roman": "anda",
+            "en": "sit"
+          },
+          "example": {
+            "ko": "저기 앉으세요.",
+            "roman": "jeogi anjeuseyo.",
+            "en": "Have a seat over there."
+          },
+          "card_kind": "단어",
+          "audio_url": "u05-baekban/s3-06-word-r2",
+          "example_audio_url": "u05-baekban/d-03-r2"
+        },
+        {
+          "id": "S3-07",
+          "type": "VOCAB_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "ref": "voca:cbdc90c2",
+          "context": {
+            "ko": "조금",
+            "roman": "jogeum",
+            "en": "a little"
+          },
+          "example": {
+            "ko": "조금 매워요. 괜찮아요?",
+            "roman": "jogeum maewoyo. gwaenchanayo?",
+            "en": "A little. Is that okay?"
+          },
+          "card_kind": "단어",
+          "audio_url": "u05-baekban/s3-07-word-r2",
+          "example_audio_url": "u05-baekban/d-07-r2"
+        },
+        {
+          "id": "S3-08",
+          "type": "VOCAB_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "ref": "voca:3cf18f4f",
+          "context": {
+            "ko": "된장찌개",
+            "roman": "doenjangjjigae",
+            "en": "doenjang stew"
+          },
+          "example": {
+            "ko": "아니요, 된장찌개 하나 주세요.",
+            "roman": "aniyo, doenjangjjigae hana juseyo.",
+            "en": "No, one doenjang stew, please."
+          },
+          "card_kind": "단어",
+          "audio_url": "u05-baekban/s3-08-word-r2",
+          "example_audio_url": "u05-baekban/d-10-r2"
+        },
+        {
+          "id": "S3-09",
+          "type": "CLOZE",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:39e78518",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "네, 괜찮아요. 김치찌개 ___ 주세요.",
+            "roman": "ne, gwaenchanayo. gimchijjigae ___ juseyo.",
+            "en": "Yes, that's fine. One kimchi stew, please."
+          },
+          "tiles": [
+            {
+              "ko": "하나",
+              "roman": "hana",
+              "en": "one"
+            },
+            {
+              "ko": "네",
+              "roman": "ne",
+              "en": "yes"
+            },
+            {
+              "ko": "주세요",
+              "roman": "juseyo",
+              "en": "please give me"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "하나",
+              "roman": "hana",
+              "en": "one"
+            }
+          ]
+        },
+        {
+          "id": "S3-10",
+          "type": "CLOZE",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:cbdc90c2",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "___ 매워요. 괜찮아요?",
+            "roman": "___ maewoyo. gwaenchanayo?",
+            "en": "A little. Is that okay?"
+          },
+          "tiles": [
+            {
+              "ko": "조금",
+              "roman": "jogeum",
+              "en": "a little"
+            },
+            {
+              "ko": "네",
+              "roman": "ne",
+              "en": "yes"
+            },
+            {
+              "ko": "맵다",
+              "roman": "maepda",
+              "en": "spicy"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "조금",
+              "roman": "jogeum",
+              "en": "a little"
+            }
+          ]
+        },
+        {
+          "id": "S3-11",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:b3e70145",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "저기 앉으세요.",
+              "roman": "jeogi anjeuseyo.",
+              "en": "Have a seat over there."
+            },
+            "audio_url": "u05-baekban/d-03-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "혼자예요.",
+              "roman": "honjayeyo.",
+              "en": "Just me.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "아니요, 된장찌개 하나 주세요.",
+              "roman": "aniyo, doenjangjjigae hana juseyo.",
+              "en": "No, one doenjang stew, please.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "저기 앉으세요.",
+              "roman": "jeogi anjeuseyo.",
+              "en": "Have a seat over there.",
+              "correct": true
+            },
+            {
+              "id": "o4",
+              "ko": "네, 김치찌개 하나요.",
+              "roman": "ne, gimchijjigae hanayo.",
+              "en": "Sure, one kimchi stew.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ]
+        },
+        {
+          "id": "S3-12",
+          "type": "CLOZE",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:3cf18f4f",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "아니요, ___ 하나 주세요.",
+            "roman": "aniyo, ___ hana juseyo.",
+            "en": "No, one doenjang stew, please."
+          },
+          "tiles": [
+            {
+              "ko": "된장찌개",
+              "roman": "doenjangjjigae",
+              "en": "doenjang stew"
+            },
+            {
+              "ko": "하나",
+              "roman": "hana",
+              "en": "one"
+            },
+            {
+              "ko": "조금",
+              "roman": "jogeum",
+              "en": "a little"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "된장찌개",
+              "roman": "doenjangjjigae",
+              "en": "doenjang stew"
+            }
+          ]
+        },
+        {
+          "id": "S3-13",
+          "type": "CLOZE",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:5f507d8e",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "네, 괜찮아요. ___ 하나 주세요.",
+            "roman": "ne, gwaenchanayo. ___ hana juseyo.",
+            "en": "Yes, that's fine. One kimchi stew, please."
+          },
+          "tiles": [
+            {
+              "ko": "김치찌개",
+              "roman": "gimchijjigae",
+              "en": "kimchi stew"
+            },
+            {
+              "ko": "저기",
+              "roman": "jeogi",
+              "en": "there, over there"
+            },
+            {
+              "ko": "네",
+              "roman": "ne",
+              "en": "yes"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "김치찌개",
+              "roman": "gimchijjigae",
+              "en": "kimchi stew"
+            }
+          ]
+        },
+        {
+          "id": "S3-14",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:39e78518",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "네, 괜찮아요. 김치찌개 하나 주세요.",
+              "roman": "ne, gwaenchanayo. gimchijjigae hana juseyo.",
+              "en": "Yes, that's fine. One kimchi stew, please."
+            },
+            "audio_url": "u05-baekban/d-08-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "네, 괜찮아요. 김치찌개 하나 주세요.",
+              "roman": "ne, gwaenchanayo. gimchijjigae hana juseyo.",
+              "en": "Yes, that's fine. One kimchi stew, please.",
+              "correct": true
+            },
+            {
+              "id": "o2",
+              "ko": "혼자예요.",
+              "roman": "honjayeyo.",
+              "en": "Just me.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "네, 김치찌개 하나요.",
+              "roman": "ne, gimchijjigae hanayo.",
+              "en": "Sure, one kimchi stew.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "저기 앉으세요.",
+              "roman": "jeogi anjeuseyo.",
+              "en": "Have a seat over there.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ]
+        },
+        {
+          "id": "S3-15",
+          "type": "CLOZE",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:dbdcc9f6",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "몇 ___",
+            "roman": "myeot ___",
+            "en": "How many?"
+          },
+          "tiles": [
+            {
+              "ko": "분이세요?",
+              "roman": "buniseyo?"
+            },
+            {
+              "ko": "매워요?",
+              "roman": "maewoyo?"
+            },
+            {
+              "ko": "주세요.",
+              "roman": "juseyo."
+            }
+          ],
+          "answers": [
+            {
+              "ko": "분이세요?",
+              "roman": "buniseyo?"
+            }
+          ]
+        },
+        {
+          "id": "S3-16",
+          "type": "CLOZE",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "gram:92e8afd2",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "아니요, 된장찌개 하나 ___",
+            "roman": "aniyo, doenjangjjigae hana ___",
+            "en": "No, one doenjang stew, please."
+          },
+          "tiles": [
+            {
+              "ko": "주세요.",
+              "roman": "juseyo."
+            },
+            {
+              "ko": "맛있어요?",
+              "roman": "masisseoyo?"
+            },
+            {
+              "ko": "혼자예요.",
+              "roman": "honjayeyo.",
+              "en": "Just me."
+            }
+          ],
+          "answers": [
+            {
+              "ko": "주세요.",
+              "roman": "juseyo."
+            }
+          ]
+        },
+        {
+          "id": "S3-17",
+          "type": "SYLLABLE_BUILD",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "쓰기",
+          "skill_level": 1,
+          "ref": "voca:ec59536e",
+          "prompt": {
+            "ko": "음절을 골라 낱말을 만드세요.",
+            "en": "Tap the syllables to spell the word."
+          },
+          "stimulus": {
+            "audio_url": "u05-baekban/s1-02-word-r2",
+            "image_url": "",
+            "en": "here"
+          },
+          "tiles": [
+            {
+              "ko": "여",
+              "roman": "yeo"
+            },
+            {
+              "ko": "기",
+              "roman": "gi"
+            },
+            {
+              "ko": "찮",
+              "roman": "chan"
+            },
+            {
+              "ko": "분",
+              "roman": "bun",
+              "en": "person (polite counter)"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "여기",
+              "roman": "yeogi",
+              "en": "here"
+            }
+          ]
+        },
+        {
+          "id": "S3-18",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:72257617",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "많이 매워요?",
+              "roman": "mani maewoyo?",
+              "en": "Is it very spicy?"
+            },
+            "audio_url": "u05-baekban/d-06-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "조금 매워요. 괜찮아요?",
+              "roman": "jogeum maewoyo. gwaenchanayo?",
+              "en": "A little. Is that okay?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "네, 김치찌개 하나요.",
+              "roman": "ne, gimchijjigae hanayo.",
+              "en": "Sure, one kimchi stew.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "많이 매워요?",
+              "roman": "mani maewoyo?",
+              "en": "Is it very spicy?",
+              "correct": true
+            },
+            {
+              "id": "o4",
+              "ko": "김치찌개가 맛있어요.",
+              "roman": "gimchijjigaega masisseoyo.",
+              "en": "The kimchi jjigae is good.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ]
+        },
+        {
+          "id": "S3-19",
+          "type": "CLOZE",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:97270e4b",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "___, 괜찮아요. 김치찌개 하나 주세요.",
+            "roman": "___, gwaenchanayo. gimchijjigae hana juseyo.",
+            "en": "Yes, that's fine. One kimchi stew, please."
+          },
+          "tiles": [
+            {
+              "ko": "네",
+              "roman": "ne",
+              "en": "yes"
+            },
+            {
+              "ko": "저기",
+              "roman": "jeogi",
+              "en": "there, over there"
+            },
+            {
+              "ko": "많이",
+              "roman": "mani",
+              "en": "a lot"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "네",
+              "roman": "ne",
+              "en": "yes"
+            }
+          ]
+        },
+        {
+          "id": "S3-20",
+          "type": "SYLLABLE_BUILD",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "쓰기",
+          "skill_level": 1,
+          "ref": "gram:92e8afd2",
+          "prompt": {
+            "ko": "음절을 골라 낱말을 만드세요.",
+            "en": "Tap the syllables to spell the word."
+          },
+          "stimulus": {
+            "audio_url": "u05-baekban/s1-08-word-r2",
+            "image_url": "",
+            "en": "please give me"
+          },
+          "tiles": [
+            {
+              "ko": "주",
+              "roman": "ju"
+            },
+            {
+              "ko": "세",
+              "roman": "se"
+            },
+            {
+              "ko": "요",
+              "roman": "yo"
+            },
+            {
+              "ko": "김",
+              "roman": "gim"
+            },
+            {
+              "ko": "많",
+              "roman": "man"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "주세요",
+              "roman": "juseyo",
+              "en": "please give me"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "S4",
+      "order": 4,
+      "items": [
+        {
+          "id": "S4-01",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:72257617",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "많이 매워요?",
+              "roman": "mani maewoyo?",
+              "en": "Is it very spicy?"
+            },
+            "audio_url": "u05-baekban/d-06-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "조금 매워요. 괜찮아요?",
+              "roman": "jogeum maewoyo. gwaenchanayo?",
+              "en": "A little. Is that okay?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "네, 된장찌개 하나요.",
+              "roman": "ne, doenjangjjigae hanayo.",
+              "en": "Sure, one doenjang stew.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "많이 매워요?",
+              "roman": "mani maewoyo?",
+              "en": "Is it very spicy?",
+              "correct": true
+            },
+            {
+              "id": "o4",
+              "ko": "몇 분이세요?",
+              "roman": "myeot buniseyo?",
+              "en": "How many people?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ]
+        },
+        {
+          "id": "S4-02",
+          "type": "TURN_ORDER",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:5f507d8e",
+          "prompt": {
+            "ko": "대화 순서대로 놓으세요.",
+            "en": "Put the conversation in order."
+          },
+          "context": {
+            "ko": "대화 순서대로 놓으세요.",
+            "roman": "daehwa sunseodaero noeuseyo."
+          },
+          "tiles": [
+            {
+              "ko": "혼자예요.",
+              "roman": "honjayeyo.",
+              "en": "Just me.",
+              "speaker": "player"
+            },
+            {
+              "ko": "저기 앉으세요.",
+              "roman": "jeogi anjeuseyo.",
+              "en": "Have a seat over there.",
+              "speaker": "counterpart"
+            },
+            {
+              "ko": "여기 뭐가 맛있어요?",
+              "roman": "yeogi mwoga masisseoyo?",
+              "en": "What's good here?",
+              "speaker": "player"
+            },
+            {
+              "ko": "김치찌개가 맛있어요.",
+              "roman": "gimchijjigaega masisseoyo.",
+              "en": "The kimchi stew is good.",
+              "speaker": "counterpart"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "혼자예요. | 저기 앉으세요. | 여기 뭐가 맛있어요? | 김치찌개가 맛있어요.",
+              "roman": "honjayeyo. | jeogi anjeuseyo. | yeogi mwoga masisseoyo? | gimchijjigaega masisseoyo."
+            }
+          ]
+        },
+        {
+          "id": "S4-03",
+          "type": "ROLE_LINE",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "읽기",
+          "skill_level": 2,
+          "ref": "patt:e952ebc9",
+          "prompt": {
+            "ko": "뭐라고 말할까요?",
+            "en": "What do you say?"
+          },
+          "context": {
+            "ko": "조금 매워요. 괜찮아요?",
+            "roman": "jogeum maewoyo. gwaenchanayo?",
+            "en": "A little. Is that okay?"
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "혼자예요.",
+              "roman": "honjayeyo.",
+              "en": "Just me.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "여기 뭐가 맛있어요?",
+              "roman": "yeogi mwoga masisseoyo?",
+              "en": "What's good here?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "네, 괜찮아요. 김치찌개 하나 주세요.",
+              "roman": "ne, gwaenchanayo. gimchijjigae hana juseyo.",
+              "en": "Yes, that's fine. One kimchi stew, please.",
+              "correct": true
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "이 자리에서는 「네, 괜찮아요. 김치찌개 하나 주세요.」라고 해요.",
+              "en": "Here you say \"Yes, that's fine. One kimchi stew, please.\"."
+            }
+          }
+        },
+        {
+          "id": "S4-04",
+          "type": "LISTEN_BUILD",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "듣기",
+          "skill_level": 3,
+          "ref": "gram:92e8afd2",
+          "prompt": {
+            "ko": "듣고 문장을 만드세요.",
+            "en": "Listen and build the sentence."
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "아니요, 된장찌개 하나 주세요.",
+              "roman": "aniyo, doenjangjjigae hana juseyo.",
+              "en": "No, one doenjang stew, please."
+            },
+            "audio_url": "u05-baekban/d-10-r2",
+            "image_url": ""
+          },
+          "tiles": [
+            {
+              "ko": "아니요,",
+              "roman": "aniyo,"
+            },
+            {
+              "ko": "된장찌개",
+              "roman": "doenjangjjigae",
+              "en": "doenjang stew"
+            },
+            {
+              "ko": "하나",
+              "roman": "hana",
+              "en": "one"
+            },
+            {
+              "ko": "주세요.",
+              "roman": "juseyo."
+            },
+            {
+              "ko": "매워요.",
+              "roman": "maewoyo."
+            },
+            {
+              "ko": "앉으세요.",
+              "roman": "anjeuseyo.",
+              "en": "Please sit."
+            }
+          ],
+          "answers": [
+            {
+              "ko": "아니요, 된장찌개 하나 주세요.",
+              "roman": "aniyo, doenjangjjigae hana juseyo.",
+              "en": "No, one doenjang stew, please."
+            }
+          ]
+        },
+        {
+          "id": "S4-05",
+          "type": "TURN_ORDER",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:72257617",
+          "prompt": {
+            "ko": "대화 순서대로 놓으세요.",
+            "en": "Put the conversation in order."
+          },
+          "context": {
+            "ko": "대화 순서대로 놓으세요.",
+            "roman": "daehwa sunseodaero noeuseyo."
+          },
+          "tiles": [
+            {
+              "ko": "많이 매워요?",
+              "roman": "mani maewoyo?",
+              "en": "Is it very spicy?",
+              "speaker": "player"
+            },
+            {
+              "ko": "조금 매워요. 괜찮아요?",
+              "roman": "jogeum maewoyo. gwaenchanayo?",
+              "en": "A little. Is that okay?",
+              "speaker": "counterpart"
+            },
+            {
+              "ko": "아니요, 된장찌개 하나 주세요.",
+              "roman": "aniyo, doenjangjjigae hana juseyo.",
+              "en": "No, one doenjang stew, please.",
+              "speaker": "player"
+            },
+            {
+              "ko": "네, 된장찌개 하나요.",
+              "roman": "ne, doenjangjjigae hanayo.",
+              "en": "Sure, one doenjang stew.",
+              "speaker": "counterpart"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "많이 매워요? | 조금 매워요. 괜찮아요? | 아니요, 된장찌개 하나 주세요. | 네, 된장찌개 하나요.",
+              "roman": "mani maewoyo? | jogeum maewoyo. gwaenchanayo? | aniyo, doenjangjjigae hana juseyo. | ne, doenjangjjigae hanayo."
+            }
+          ]
+        },
+        {
+          "id": "S4-06",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:04d80623",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "혼자예요.",
+              "roman": "honjayeyo.",
+              "en": "Just me."
+            },
+            "audio_url": "u05-baekban/d-02-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "혼자예요.",
+              "roman": "honjayeyo.",
+              "en": "Just me.",
+              "correct": true
+            },
+            {
+              "id": "o2",
+              "ko": "많이 매워요?",
+              "roman": "mani maewoyo?",
+              "en": "Is it very spicy?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "저기 앉으세요.",
+              "roman": "jeogi anjeuseyo.",
+              "en": "Have a seat over there.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "김치찌개가 맛있어요.",
+              "roman": "gimchijjigaega masisseoyo.",
+              "en": "The kimchi jjigae is good.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ]
+        },
+        {
+          "id": "S4-07",
+          "type": "REPLY_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 2,
+          "ref": "voca:72257617",
+          "prompt": {
+            "ko": "뭐라고 대답할까요?",
+            "en": "How do you reply?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "김치찌개가 맛있어요.",
+              "roman": "gimchijjigaega masisseoyo.",
+              "en": "The kimchi stew is good."
+            },
+            "audio_url": "u05-baekban/d-05-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "혼자예요.",
+              "roman": "honjayeyo.",
+              "en": "Just me.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "여기 뭐가 맛있어요?",
+              "roman": "yeogi mwoga masisseoyo?",
+              "en": "What's good here?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "많이 매워요?",
+              "roman": "mani maewoyo?",
+              "en": "Is it very spicy?",
+              "correct": true
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "이 자리에서는 「많이 매워요?」라고 해요.",
+              "en": "Here you say \"Is it very spicy?\"."
+            }
+          }
+        },
+        {
+          "id": "S4-08",
+          "type": "ROLE_LINE",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "읽기",
+          "skill_level": 2,
+          "ref": "voca:ec59536e",
+          "prompt": {
+            "ko": "뭐라고 말할까요?",
+            "en": "What do you say?"
+          },
+          "context": {
+            "ko": "저기 앉으세요.",
+            "roman": "jeogi anjeuseyo.",
+            "en": "Have a seat over there."
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "몇 분이세요?",
+              "roman": "myeot buniseyo?",
+              "en": "How many people?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "혼자예요.",
+              "roman": "honjayeyo.",
+              "en": "Just me.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "여기 뭐가 맛있어요?",
+              "roman": "yeogi mwoga masisseoyo?",
+              "en": "What's good here?",
+              "correct": true
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "이 자리에서는 「여기 뭐가 맛있어요?」라고 해요.",
+              "en": "Here you say \"What's good here?\"."
+            }
+          }
+        },
+        {
+          "id": "S4-09",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:6a6ebc70",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "몇 분이세요?",
+              "roman": "myeot buniseyo?",
+              "en": "How many?"
+            },
+            "audio_url": "u05-baekban/d-01-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "많이 매워요?",
+              "roman": "mani maewoyo?",
+              "en": "Is it very spicy?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "몇 분이세요?",
+              "roman": "myeot buniseyo?",
+              "en": "How many people?",
+              "correct": true
+            },
+            {
+              "id": "o3",
+              "ko": "혼자예요.",
+              "roman": "honjayeyo.",
+              "en": "Just me.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "네, 김치찌개 하나요.",
+              "roman": "ne, gimchijjigae hanayo.",
+              "en": "Sure, one kimchi stew.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ]
+        },
+        {
+          "id": "S4-10",
+          "type": "ROLE_LINE",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "읽기",
+          "skill_level": 2,
+          "ref": "voca:3cf18f4f",
+          "prompt": {
+            "ko": "뭐라고 말할까요?",
+            "en": "What do you say?"
+          },
+          "context": {
+            "ko": "매운 음식은 잘 못 먹는다. 안 매운 걸 시키고 싶다.",
+            "roman": "maeun eumsigeun jal mot meongneunda. an maeun geol sikigo sipda.",
+            "en": "You can't handle spicy food and want something mild."
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "네, 괜찮아요. 김치찌개 하나 주세요.",
+              "roman": "ne, gwaenchanayo. gimchijjigae hana juseyo.",
+              "en": "Yes, that's fine. One kimchi stew, please.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "혼자예요.",
+              "roman": "honjayeyo.",
+              "en": "Just me.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "아니요, 된장찌개 하나 주세요.",
+              "roman": "aniyo, doenjangjjigae hana juseyo.",
+              "en": "No, one doenjang stew, please.",
+              "correct": true
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "이 자리에서는 「아니요, 된장찌개 하나 주세요.」라고 해요.",
+              "en": "Here you say \"No, one doenjang stew, please.\"."
+            },
+            "wrong": {
+              "ko": "이번에는 매운 음식은 잘 못 먹는다. 안 매운 걸 시키고 싶어서 「네, 괜찮아요. 김치찌개 하나 주세요.」는 안 맞아요.",
+              "en": "This time you can't handle spicy food and want something mild, so \"Yes, that's fine. One kimchi stew, please.\" does not fit."
+            },
+            "wrong_option": "o1"
+          }
+        },
+        {
+          "id": "S4-11",
+          "type": "LISTEN_BUILD",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "듣기",
+          "skill_level": 3,
+          "ref": "voca:5f507d8e",
+          "prompt": {
+            "ko": "듣고 문장을 만드세요.",
+            "en": "Listen and build the sentence."
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "네, 괜찮아요. 김치찌개 하나 주세요.",
+              "roman": "ne, gwaenchanayo. gimchijjigae hana juseyo.",
+              "en": "Yes, that's fine. One kimchi stew, please."
+            },
+            "audio_url": "u05-baekban/d-08-r2",
+            "image_url": ""
+          },
+          "tiles": [
+            {
+              "ko": "네,",
+              "roman": "ne,"
+            },
+            {
+              "ko": "괜찮아요.",
+              "roman": "gwaenchanayo."
+            },
+            {
+              "ko": "김치찌개",
+              "roman": "gimchijjigae",
+              "en": "kimchi stew"
+            },
+            {
+              "ko": "하나",
+              "roman": "hana",
+              "en": "one"
+            },
+            {
+              "ko": "주세요.",
+              "roman": "juseyo."
+            },
+            {
+              "ko": "매워요.",
+              "roman": "maewoyo."
+            },
+            {
+              "ko": "매워요?",
+              "roman": "maewoyo?"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "네, 괜찮아요. 김치찌개 하나 주세요.",
+              "roman": "ne, gwaenchanayo. gimchijjigae hana juseyo.",
+              "en": "Yes, that's fine. One kimchi stew, please."
+            }
+          ]
+        },
+        {
+          "id": "S4-12",
+          "type": "REPLY_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 2,
+          "ref": "voca:6a6ebc70",
+          "prompt": {
+            "ko": "뭐라고 대답할까요?",
+            "en": "How do you reply?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "몇 분이세요?",
+              "roman": "myeot buniseyo?",
+              "en": "How many?"
+            },
+            "audio_url": "u05-baekban/d-01-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "혼자예요.",
+              "roman": "honjayeyo.",
+              "en": "Just me.",
+              "correct": true
+            },
+            {
+              "id": "o2",
+              "ko": "네, 괜찮아요. 김치찌개 하나 주세요.",
+              "roman": "ne, gwaenchanayo. gimchijjigae hana juseyo.",
+              "en": "Yes, that's fine. One kimchi stew, please.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "많이 매워요?",
+              "roman": "mani maewoyo?",
+              "en": "Is it very spicy?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "이 자리에서는 「혼자예요.」라고 해요.",
+              "en": "Here you say \"Just me.\"."
+            }
+          }
+        },
+        {
+          "id": "S4-13",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "expr:a04464f0",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "조금 매워요. 괜찮아요?",
+              "roman": "jogeum maewoyo. gwaenchanayo?",
+              "en": "A little. Is that okay?"
+            },
+            "audio_url": "u05-baekban/d-07-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "많이 매워요?",
+              "roman": "mani maewoyo?",
+              "en": "Is it very spicy?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "네, 된장찌개 하나요.",
+              "roman": "ne, doenjangjjigae hanayo.",
+              "en": "Sure, one doenjang stew.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "네, 김치찌개 하나요.",
+              "roman": "ne, gimchijjigae hanayo.",
+              "en": "Sure, one kimchi stew.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "조금 매워요. 괜찮아요?",
+              "roman": "jogeum maewoyo. gwaenchanayo?",
+              "en": "A little. Is that okay?",
+              "correct": true
+            }
+          ]
+        },
+        {
+          "id": "S4-14",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "gram:92e8afd2",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "네, 괜찮아요. 김치찌개 하나 주세요.",
+              "roman": "ne, gwaenchanayo. gimchijjigae hana juseyo.",
+              "en": "Yes, that's fine. One kimchi stew, please."
+            },
+            "audio_url": "u05-baekban/d-08-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "네, 김치찌개 하나요.",
+              "roman": "ne, gimchijjigae hanayo.",
+              "en": "Sure, one kimchi stew.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "네, 괜찮아요. 김치찌개 하나 주세요.",
+              "roman": "ne, gwaenchanayo. gimchijjigae hana juseyo.",
+              "en": "Yes, that's fine. One kimchi stew, please.",
+              "correct": true
+            },
+            {
+              "id": "o3",
+              "ko": "조금 매워요. 괜찮아요?",
+              "roman": "jogeum maewoyo. gwaenchanayo?",
+              "en": "A little. Is that okay?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "아니요, 된장찌개 하나 주세요.",
+              "roman": "aniyo, doenjangjjigae hana juseyo.",
+              "en": "No, one doenjang stew, please.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ]
+        },
+        {
+          "id": "S4-15",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:5f507d8e",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "김치찌개가 맛있어요.",
+              "roman": "gimchijjigaega masisseoyo.",
+              "en": "The kimchi stew is good."
+            },
+            "audio_url": "u05-baekban/d-05-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "김치찌개가 맛있어요.",
+              "roman": "gimchijjigaega masisseoyo.",
+              "en": "The kimchi jjigae is good.",
+              "correct": true
+            },
+            {
+              "id": "o2",
+              "ko": "네, 된장찌개 하나요.",
+              "roman": "ne, doenjangjjigae hanayo.",
+              "en": "Sure, one doenjang stew.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "여기 뭐가 맛있어요?",
+              "roman": "yeogi mwoga masisseoyo?",
+              "en": "What's good here?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "몇 분이세요?",
+              "roman": "myeot buniseyo?",
+              "en": "How many people?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ]
+        },
+        {
+          "id": "S4-16",
+          "type": "LISTEN_BUILD",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "듣기",
+          "skill_level": 3,
+          "ref": "voca:39e78518",
+          "prompt": {
+            "ko": "듣고 문장을 만드세요.",
+            "en": "Listen and build the sentence."
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "네, 김치찌개 하나요.",
+              "roman": "ne, gimchijjigae hanayo.",
+              "en": "Sure, one kimchi stew."
+            },
+            "audio_url": "u05-baekban/d-09-r2",
+            "image_url": ""
+          },
+          "tiles": [
+            {
+              "ko": "네,",
+              "roman": "ne,"
+            },
+            {
+              "ko": "김치찌개",
+              "roman": "gimchijjigae",
+              "en": "kimchi stew"
+            },
+            {
+              "ko": "하나요.",
+              "roman": "hanayo."
+            },
+            {
+              "ko": "앉으세요.",
+              "roman": "anjeuseyo.",
+              "en": "Please sit."
+            },
+            {
+              "ko": "주세요.",
+              "roman": "juseyo."
+            }
+          ],
+          "answers": [
+            {
+              "ko": "네, 김치찌개 하나요.",
+              "roman": "ne, gimchijjigae hanayo.",
+              "en": "Sure, one kimchi stew."
+            }
+          ]
+        },
+        {
+          "id": "S4-17",
+          "type": "LISTEN_BUILD",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "듣기",
+          "skill_level": 3,
+          "ref": "voca:b3e70145",
+          "prompt": {
+            "ko": "듣고 문장을 만드세요.",
+            "en": "Listen and build the sentence."
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "저기 앉으세요.",
+              "roman": "jeogi anjeuseyo.",
+              "en": "Have a seat over there."
+            },
+            "audio_url": "u05-baekban/d-03-r2",
+            "image_url": ""
+          },
+          "tiles": [
+            {
+              "ko": "저기",
+              "roman": "jeogi",
+              "en": "there, over there"
+            },
+            {
+              "ko": "앉으세요.",
+              "roman": "anjeuseyo.",
+              "en": "Please sit."
+            },
+            {
+              "ko": "매워요.",
+              "roman": "maewoyo."
+            },
+            {
+              "ko": "맛있어요.",
+              "roman": "masisseoyo."
+            }
+          ],
+          "answers": [
+            {
+              "ko": "저기 앉으세요.",
+              "roman": "jeogi anjeuseyo.",
+              "en": "Have a seat over there."
+            }
+          ]
+        },
+        {
+          "id": "S4-18",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "E",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:3cf18f4f",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "context": {
+            "ko": "네, 된장찌개 하나요.",
+            "roman": "ne, doenjangjjigae hanayo.",
+            "en": "Sure, one doenjang stew."
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "네, 된장찌개 하나요.",
+              "roman": "ne, doenjangjjigae hanayo.",
+              "en": "Sure, one doenjang stew."
+            },
+            "audio_url": "u05-baekban/d-11-r2",
+            "image_url": ""
+          }
+        },
+        {
+          "id": "S4-19",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:5f507d8e",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "네, 김치찌개 하나요.",
+              "roman": "ne, gimchijjigae hanayo.",
+              "en": "Sure, one kimchi stew."
+            },
+            "audio_url": "u05-baekban/d-09-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "네, 김치찌개 하나요.",
+              "roman": "ne, gimchijjigae hanayo.",
+              "en": "Sure, one kimchi stew.",
+              "correct": true
+            },
+            {
+              "id": "o2",
+              "ko": "네, 된장찌개 하나요.",
+              "roman": "ne, doenjangjjigae hanayo.",
+              "en": "Sure, one doenjang stew.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "김치찌개가 맛있어요.",
+              "roman": "gimchijjigaega masisseoyo.",
+              "en": "The kimchi jjigae is good.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "저기 앉으세요.",
+              "roman": "jeogi anjeuseyo.",
+              "en": "Have a seat over there.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "S5",
+      "order": 5,
+      "items": [
+        {
+          "id": "S5-01",
+          "type": "PARTICLE_FILL",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "읽기",
+          "skill_level": 2,
+          "ref": "voca:a6280d3c",
+          "prompt": {
+            "ko": "알맞은 조사를 고르세요.",
+            "en": "Which particle fits?"
+          },
+          "stimulus": {
+            "text": {
+              "ko": "혼자___.",
+              "roman": "honja___.",
+              "en": "Just me."
+            },
+            "audio_url": "",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "이에요",
+              "roman": "ieyo",
+              "en": "is (after a consonant)",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "예요",
+              "roman": "yeyo",
+              "en": "is (after a vowel)",
+              "correct": true
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "앞말에 받침이 있는지 보고 조사를 골라요.",
+              "en": "The particle depends on whether the word before it ends in a consonant."
+            }
+          }
+        },
+        {
+          "id": "S5-02",
+          "type": "PARTICLE_FILL",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "읽기",
+          "skill_level": 2,
+          "ref": "voca:f7839c66",
+          "prompt": {
+            "ko": "알맞은 조사를 고르세요.",
+            "en": "Which particle fits?"
+          },
+          "stimulus": {
+            "text": {
+              "ko": "여기 뭐___ 맛있어요?",
+              "roman": "yeogi mwo___ masisseoyo?",
+              "en": "What's good here?"
+            },
+            "audio_url": "",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "이",
+              "roman": "i",
+              "en": "subject marker (after a consonant)",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "가",
+              "roman": "ga",
+              "en": "subject marker (after a vowel)",
+              "correct": true
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "앞말에 받침이 있는지 보고 조사를 골라요.",
+              "en": "The particle depends on whether the word before it ends in a consonant."
+            }
+          }
+        },
+        {
+          "id": "S5-03",
+          "type": "PARTICLE_SWAP",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "읽기",
+          "skill_level": 2,
+          "ref": "voca:f7839c66",
+          "prompt": {
+            "ko": "조사를 고치세요.",
+            "en": "Fix the particle."
+          },
+          "stimulus": {
+            "text": {
+              "ko": "뭐[이]",
+              "roman": "mwoi",
+              "en": "what"
+            },
+            "audio_url": "",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "으로",
+              "roman": "euro",
+              "en": "by, with, to (after a consonant)",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "가",
+              "roman": "ga",
+              "en": "subject marker (after a vowel)",
+              "correct": true
+            },
+            {
+              "id": "o3",
+              "ko": "을",
+              "roman": "eul",
+              "en": "object marker (after a consonant)",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "조사가 뜻을 바꿔요. 이 자리에 맞는 조사를 써야 해요.",
+              "en": "The particle changes the meaning. This slot needs a different one."
+            }
+          }
+        },
+        {
+          "id": "S5-04",
+          "type": "PARTICLE_SWAP",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "읽기",
+          "skill_level": 2,
+          "ref": "voca:5f507d8e",
+          "prompt": {
+            "ko": "조사를 고치세요.",
+            "en": "Fix the particle."
+          },
+          "stimulus": {
+            "text": {
+              "ko": "김치찌개[은]",
+              "roman": "gimchijjigaeeun",
+              "en": "kimchi stew"
+            },
+            "audio_url": "",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "이",
+              "roman": "i",
+              "en": "subject marker (after a consonant)",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "으로",
+              "roman": "euro",
+              "en": "by, with, to (after a consonant)",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "는",
+              "roman": "neun",
+              "en": "topic marker (after a vowel)",
+              "correct": true
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "조사가 뜻을 바꿔요. 이 자리에 맞는 조사를 써야 해요.",
+              "en": "The particle changes the meaning. This slot needs a different one."
+            }
+          }
+        },
+        {
+          "id": "S5-05",
+          "type": "PARTICLE_SWAP",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "읽기",
+          "skill_level": 2,
+          "ref": "voca:5f507d8e",
+          "prompt": {
+            "ko": "조사를 고치세요.",
+            "en": "Fix the particle."
+          },
+          "stimulus": {
+            "text": {
+              "ko": "김치찌개[이]",
+              "roman": "gimchijjigaei",
+              "en": "kimchi stew"
+            },
+            "audio_url": "",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "으로",
+              "roman": "euro",
+              "en": "by, with, to (after a consonant)",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "은",
+              "roman": "eun",
+              "en": "topic marker (after a consonant)",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "가",
+              "roman": "ga",
+              "en": "subject marker (after a vowel)",
+              "correct": true
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "조사가 뜻을 바꿔요. 이 자리에 맞는 조사를 써야 해요.",
+              "en": "The particle changes the meaning. This slot needs a different one."
+            }
+          }
+        },
+        {
+          "id": "S5-06",
+          "type": "MIN_PAIR_AB",
+          "mode": "choice",
+          "event": "D",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 2,
+          "ref": "voca:3cf18f4f",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "Which one did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "빵",
+              "roman": "ppang"
+            },
+            "audio_url": "u05-baekban/s5-06-stim-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "빵",
+              "roman": "ppang",
+              "en": "bread",
+              "correct": true
+            },
+            {
+              "id": "o2",
+              "ko": "방",
+              "roman": "bang",
+              "en": "room",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "한 소리만 다른 말이에요. 천천히 다시 들어 보세요.",
+              "en": "These two words differ by one sound. Listen again slowly."
+            }
+          }
+        },
+        {
+          "id": "S5-07",
+          "type": "MIN_PAIR_AB",
+          "mode": "choice",
+          "event": "D",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 2,
+          "ref": "voca:cbdc90c2",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "Which one did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "풀",
+              "roman": "pul"
+            },
+            "audio_url": "u05-baekban/s5-07-stim-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "풀",
+              "roman": "pul",
+              "en": "grass",
+              "correct": true
+            },
+            {
+              "id": "o2",
+              "ko": "불",
+              "roman": "bul",
+              "en": "fire, electrical light",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "한 소리만 다른 말이에요. 천천히 다시 들어 보세요.",
+              "en": "These two words differ by one sound. Listen again slowly."
+            }
+          }
+        },
+        {
+          "id": "S5-08",
+          "type": "DICTATION",
+          "mode": "typing",
+          "event": "R",
+          "level": 4,
+          "skill": "쓰기",
+          "skill_level": 2,
+          "ref": "voca:3cf18f4f",
+          "prompt": {
+            "ko": "들은 대로 쓰세요.",
+            "en": "Type what you hear."
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "된장찌개",
+              "roman": "doenjangjjigae",
+              "en": "doenjang stew"
+            },
+            "audio_url": "u05-baekban/s3-08-word-r2",
+            "image_url": ""
+          },
+          "answers": [
+            {
+              "ko": "된장찌개",
+              "roman": "doenjangjjigae",
+              "en": "doenjang stew"
+            }
+          ]
+        },
+        {
+          "id": "S5-09",
+          "type": "DICTATION",
+          "mode": "typing",
+          "event": "R",
+          "level": 4,
+          "skill": "쓰기",
+          "skill_level": 2,
+          "ref": "voca:6a6ebc70",
+          "prompt": {
+            "ko": "들은 대로 쓰세요.",
+            "en": "Type what you hear."
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "몇",
+              "roman": "myeot",
+              "en": "how many"
+            },
+            "audio_url": "u05-baekban/s3-03-word-r2",
+            "image_url": ""
+          },
+          "answers": [
+            {
+              "ko": "몇",
+              "roman": "myeot",
+              "en": "how many"
+            }
+          ]
+        },
+        {
+          "id": "S5-10",
+          "type": "SHADOW",
+          "mode": "speech",
+          "event": "E",
+          "level": 3,
+          "skill": "말하기",
+          "skill_level": 1,
+          "ref": "patt:e952ebc9",
+          "prompt": {
+            "ko": "듣고 따라 말하세요.",
+            "en": "Listen and repeat."
+          },
+          "stimulus": {
+            "text": {
+              "ko": "네, 괜찮아요. 김치찌개 하나 주세요.",
+              "roman": "ne, gwaenchanayo. gimchijjigae hana juseyo.",
+              "en": "Yes, that's fine. One kimchi stew, please."
+            },
+            "audio": {
+              "ko": "네, 괜찮아요. 김치찌개 하나 주세요.",
+              "roman": "ne, gwaenchanayo. gimchijjigae hana juseyo.",
+              "en": "Yes, that's fine. One kimchi stew, please."
+            },
+            "audio_url": "u05-baekban/d-08-r2",
+            "image_url": ""
+          },
+          "answers": [
+            {
+              "ko": "네, 괜찮아요. 김치찌개 하나 주세요.",
+              "roman": "ne, gwaenchanayo. gimchijjigae hana juseyo.",
+              "en": "Yes, that's fine. One kimchi stew, please."
+            }
+          ]
+        },
+        {
+          "id": "S5-11",
+          "type": "SHADOW",
+          "mode": "speech",
+          "event": "E",
+          "level": 3,
+          "skill": "말하기",
+          "skill_level": 1,
+          "ref": "patt:3efccada",
+          "prompt": {
+            "ko": "듣고 따라 말하세요.",
+            "en": "Listen and repeat."
+          },
+          "stimulus": {
+            "text": {
+              "ko": "혼자예요.",
+              "roman": "honjayeyo.",
+              "en": "Just me."
+            },
+            "audio": {
+              "ko": "혼자예요.",
+              "roman": "honjayeyo.",
+              "en": "Just me."
+            },
+            "audio_url": "u05-baekban/d-02-r2",
+            "image_url": ""
+          },
+          "answers": [
+            {
+              "ko": "혼자예요.",
+              "roman": "honjayeyo.",
+              "en": "Just me."
+            }
+          ]
+        },
+        {
+          "id": "S5-12",
+          "type": "SHADOW",
+          "mode": "speech",
+          "event": "E",
+          "level": 3,
+          "skill": "말하기",
+          "skill_level": 1,
+          "ref": "voca:04d80623",
+          "prompt": {
+            "ko": "듣고 따라 말하세요.",
+            "en": "Listen and repeat."
+          },
+          "stimulus": {
+            "text": {
+              "ko": "여기 뭐가 맛있어요?",
+              "roman": "yeogi mwoga masisseoyo?",
+              "en": "What's good here?"
+            },
+            "audio": {
+              "ko": "여기 뭐가 맛있어요?",
+              "roman": "yeogi mwoga masisseoyo?",
+              "en": "What's good here?"
+            },
+            "audio_url": "u05-baekban/d-04-r2",
+            "image_url": ""
+          },
+          "answers": [
+            {
+              "ko": "여기 뭐가 맛있어요?",
+              "roman": "yeogi mwoga masisseoyo?",
+              "en": "What's good here?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "S6",
+      "order": 6,
+      "items": [
+        {
+          "id": "S6-01",
+          "type": "CLOZE",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:3cf18f4f",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "네, ___ 하나요.",
+            "roman": "ne, ___ hanayo.",
+            "en": "Sure, one doenjang stew."
+          },
+          "tiles": [
+            {
+              "ko": "된장찌개",
+              "roman": "doenjangjjigae",
+              "en": "doenjang stew"
+            },
+            {
+              "ko": "분",
+              "roman": "bun",
+              "en": "person (polite counter)"
+            },
+            {
+              "ko": "조금",
+              "roman": "jogeum",
+              "en": "a little"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "된장찌개",
+              "roman": "doenjangjjigae",
+              "en": "doenjang stew"
+            }
+          ]
+        },
+        {
+          "id": "S6-02",
+          "type": "TRANSLATE_TO_KO",
+          "mode": "typing",
+          "event": "R",
+          "level": 4,
+          "skill": "쓰기",
+          "skill_level": 3,
+          "ref": "voca:dbdcc9f6",
+          "prompt": {
+            "ko": "한국어로 쓰세요.",
+            "en": "Say this in Korean."
+          },
+          "stimulus": {
+            "audio_url": "u05-baekban/s3-04-word-r2",
+            "image_url": "",
+            "en": "person (polite counter)"
+          },
+          "answers": [
+            {
+              "ko": "분",
+              "roman": "bun",
+              "en": "person (polite counter)"
+            }
+          ]
+        },
+        {
+          "id": "S6-03",
+          "type": "CLOZE",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:b3e70145",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "___ 앉으세요.",
+            "roman": "___ anjeuseyo.",
+            "en": "Have a seat over there."
+          },
+          "tiles": [
+            {
+              "ko": "저기",
+              "roman": "jeogi",
+              "en": "there, over there"
+            },
+            {
+              "ko": "네",
+              "roman": "ne",
+              "en": "yes"
+            },
+            {
+              "ko": "괜찮다",
+              "roman": "gwaenchanda",
+              "en": "be okay"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "저기",
+              "roman": "jeogi",
+              "en": "there, over there"
+            }
+          ]
+        },
+        {
+          "id": "S6-04",
+          "type": "CLOZE",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:39e78518",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "네, 김치찌개 ___",
+            "roman": "ne, gimchijjigae ___",
+            "en": "Sure, one kimchi stew."
+          },
+          "tiles": [
+            {
+              "ko": "하나요.",
+              "roman": "hanayo."
+            },
+            {
+              "ko": "맛있어요?",
+              "roman": "masisseoyo?"
+            },
+            {
+              "ko": "매워요?",
+              "roman": "maewoyo?"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "하나요.",
+              "roman": "hanayo."
+            }
+          ]
+        },
+        {
+          "id": "S6-05",
+          "type": "SPEAK_WORD",
+          "mode": "speech",
+          "event": "R",
+          "level": 4,
+          "skill": "말하기",
+          "skill_level": 2,
+          "ref": "voca:39e78518",
+          "prompt": {
+            "ko": "그림을 보고 말하세요.",
+            "en": "Say the word for the picture."
+          },
+          "stimulus": {
+            "audio_url": "u05-baekban/s3-02-word-r2",
+            "image_brief": "one - 한 컷으로 알아볼 수 있게",
+            "image_url": "content/images/items/one.webp"
+          },
+          "answers": [
+            {
+              "ko": "하나",
+              "roman": "hana",
+              "en": "one"
+            }
+          ]
+        },
+        {
+          "id": "S6-06",
+          "type": "WORD_ORDER",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:3cf18f4f",
+          "prompt": {
+            "ko": "문장을 만드세요.",
+            "en": "Build the sentence."
+          },
+          "stimulus": {
+            "audio_url": "u05-baekban/d-10-r2",
+            "image_url": "",
+            "en": "No, one doenjang stew, please."
+          },
+          "tiles": [
+            {
+              "ko": "아니요,",
+              "roman": "aniyo,"
+            },
+            {
+              "ko": "된장찌개",
+              "roman": "doenjangjjigae",
+              "en": "doenjang stew"
+            },
+            {
+              "ko": "하나",
+              "roman": "hana",
+              "en": "one"
+            },
+            {
+              "ko": "주세요.",
+              "roman": "juseyo."
+            }
+          ],
+          "answers": [
+            {
+              "ko": "아니요, 된장찌개 하나 주세요.",
+              "roman": "aniyo, doenjangjjigae hana juseyo.",
+              "en": "No, one doenjang stew, please."
+            }
+          ]
+        },
+        {
+          "id": "S6-07",
+          "type": "TRANSLATE_TO_KO",
+          "mode": "typing",
+          "event": "R",
+          "level": 4,
+          "skill": "쓰기",
+          "skill_level": 3,
+          "ref": "voca:6a6ebc70",
+          "prompt": {
+            "ko": "한국어로 쓰세요.",
+            "en": "Say this in Korean."
+          },
+          "stimulus": {
+            "audio_url": "u05-baekban/s3-03-word-r2",
+            "image_url": "",
+            "en": "how many"
+          },
+          "answers": [
+            {
+              "ko": "몇",
+              "roman": "myeot",
+              "en": "how many"
+            }
+          ]
+        },
+        {
+          "id": "S6-08",
+          "type": "CLOZE",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "expr:a04464f0",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "네, ___ 김치찌개 하나 주세요.",
+            "roman": "ne, ___ gimchijjigae hana juseyo.",
+            "en": "Yes, that's fine. One kimchi stew, please."
+          },
+          "tiles": [
+            {
+              "ko": "괜찮아요.",
+              "roman": "gwaenchanayo."
+            },
+            {
+              "ko": "혼자예요.",
+              "roman": "honjayeyo.",
+              "en": "Just me."
+            },
+            {
+              "ko": "주세요.",
+              "roman": "juseyo."
+            }
+          ],
+          "answers": [
+            {
+              "ko": "괜찮아요.",
+              "roman": "gwaenchanayo."
+            }
+          ]
+        },
+        {
+          "id": "S6-09",
+          "type": "PAIR_MATCH",
+          "mode": "match",
+          "event": "R",
+          "level": 1,
+          "skill": "읽기",
+          "skill_level": 1,
+          "ref": "expr:a04464f0",
+          "prompt": {
+            "ko": "뜻이 맞는 것끼리 이으세요.",
+            "en": "Match the pairs."
+          },
+          "tiles": [
+            {
+              "ko": "괜찮아요.",
+              "roman": "gwaenchanayo."
+            },
+            {
+              "ko": "혼자",
+              "roman": "honja",
+              "en": "alone"
+            },
+            {
+              "ko": "여기",
+              "roman": "yeogi",
+              "en": "here"
+            },
+            {
+              "ko": "뭐",
+              "roman": "mwo",
+              "en": "what"
+            }
+          ],
+          "tiles_gloss_en": "No thanks. / I'm fine. / alone / here / what",
+          "answers": [
+            {
+              "ko": "괜찮아요.=No thanks. / I'm fine. | 혼자=alone | 여기=here | 뭐=what",
+              "roman": "gwaenchanayo.=No thanks. / I'm fine. | honja=alone | yeogi=here | mwo=what"
+            }
+          ]
+        },
+        {
+          "id": "S6-10",
+          "type": "TRANSLATE_TO_KO",
+          "mode": "typing",
+          "event": "R",
+          "level": 4,
+          "skill": "쓰기",
+          "skill_level": 3,
+          "ref": "voca:cbdc90c2",
+          "prompt": {
+            "ko": "한국어로 쓰세요.",
+            "en": "Say this in Korean."
+          },
+          "stimulus": {
+            "audio_url": "u05-baekban/s3-07-word-r2",
+            "image_url": "",
+            "en": "a little"
+          },
+          "answers": [
+            {
+              "ko": "조금",
+              "roman": "jogeum",
+              "en": "a little"
+            }
+          ]
+        },
+        {
+          "id": "S6-11",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:dbdcc9f6",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "몇 분이세요?",
+              "roman": "myeot buniseyo?",
+              "en": "How many?"
+            },
+            "audio_url": "u05-baekban/d-01-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "혼자예요.",
+              "roman": "honjayeyo.",
+              "en": "Just me.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "네, 김치찌개 하나요.",
+              "roman": "ne, gimchijjigae hanayo.",
+              "en": "Sure, one kimchi stew.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "많이 매워요?",
+              "roman": "mani maewoyo?",
+              "en": "Is it very spicy?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "몇 분이세요?",
+              "roman": "myeot buniseyo?",
+              "en": "How many people?",
+              "correct": true
+            }
+          ]
+        },
+        {
+          "id": "S6-12",
+          "type": "TRANSLATE_TO_KO",
+          "mode": "typing",
+          "event": "R",
+          "level": 4,
+          "skill": "쓰기",
+          "skill_level": 3,
+          "ref": "voca:39e78518",
+          "prompt": {
+            "ko": "한국어로 쓰세요.",
+            "en": "Say this in Korean."
+          },
+          "stimulus": {
+            "audio_url": "u05-baekban/s3-02-word-r2",
+            "image_url": "",
+            "en": "one"
+          },
+          "answers": [
+            {
+              "ko": "하나",
+              "roman": "hana",
+              "en": "one"
+            }
+          ]
+        },
+        {
+          "id": "S6-13",
+          "type": "CLOZE",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:97270e4b",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "___, 김치찌개 하나요.",
+            "roman": "___, gimchijjigae hanayo.",
+            "en": "Sure, one kimchi stew."
+          },
+          "tiles": [
+            {
+              "ko": "네",
+              "roman": "ne",
+              "en": "yes"
+            },
+            {
+              "ko": "조금",
+              "roman": "jogeum",
+              "en": "a little"
+            },
+            {
+              "ko": "혼자",
+              "roman": "honja",
+              "en": "alone"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "네",
+              "roman": "ne",
+              "en": "yes"
+            }
+          ]
+        },
+        {
+          "id": "S6-14",
+          "type": "CLOZE",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:39e78518",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "아니요, 된장찌개 ___ 주세요.",
+            "roman": "aniyo, doenjangjjigae ___ juseyo.",
+            "en": "No, one doenjang stew, please."
+          },
+          "tiles": [
+            {
+              "ko": "하나",
+              "roman": "hana",
+              "en": "one"
+            },
+            {
+              "ko": "네",
+              "roman": "ne",
+              "en": "yes"
+            },
+            {
+              "ko": "앉으세요.",
+              "roman": "anjeuseyo.",
+              "en": "Please sit."
+            }
+          ],
+          "answers": [
+            {
+              "ko": "하나",
+              "roman": "hana",
+              "en": "one"
+            }
+          ]
+        },
+        {
+          "id": "S6-15",
+          "type": "TRANSLATE_TO_KO",
+          "mode": "typing",
+          "event": "R",
+          "level": 4,
+          "skill": "쓰기",
+          "skill_level": 3,
+          "ref": "voca:72257617",
+          "prompt": {
+            "ko": "한국어로 쓰세요.",
+            "en": "Say this in Korean."
+          },
+          "stimulus": {
+            "audio_url": "u05-baekban/s1-05-word-r2",
+            "image_url": "",
+            "en": "a lot"
+          },
+          "answers": [
+            {
+              "ko": "많이",
+              "roman": "mani",
+              "en": "a lot"
+            }
+          ]
+        },
+        {
+          "id": "S6-16",
+          "type": "CLOZE",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:6a6ebc70",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "___ 분이세요?",
+            "roman": "___ buniseyo?",
+            "en": "How many?"
+          },
+          "tiles": [
+            {
+              "ko": "몇",
+              "roman": "myeot",
+              "en": "how many"
+            },
+            {
+              "ko": "네",
+              "roman": "ne",
+              "en": "yes"
+            },
+            {
+              "ko": "맛있다",
+              "roman": "masitda",
+              "en": "delicious"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "몇",
+              "roman": "myeot",
+              "en": "how many"
+            }
+          ]
+        },
+        {
+          "id": "S6-17",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:f7839c66",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "여기 뭐가 맛있어요?",
+              "roman": "yeogi mwoga masisseoyo?",
+              "en": "What's good here?"
+            },
+            "audio_url": "u05-baekban/d-04-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "조금 매워요. 괜찮아요?",
+              "roman": "jogeum maewoyo. gwaenchanayo?",
+              "en": "A little. Is that okay?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "저기 앉으세요.",
+              "roman": "jeogi anjeuseyo.",
+              "en": "Have a seat over there.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "김치찌개가 맛있어요.",
+              "roman": "gimchijjigaega masisseoyo.",
+              "en": "The kimchi jjigae is good.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "여기 뭐가 맛있어요?",
+              "roman": "yeogi mwoga masisseoyo?",
+              "en": "What's good here?",
+              "correct": true
+            }
+          ]
+        },
+        {
+          "id": "S6-18",
+          "type": "TRANSLATE_TO_KO",
+          "mode": "typing",
+          "event": "R",
+          "level": 4,
+          "skill": "쓰기",
+          "skill_level": 3,
+          "ref": "voca:5f507d8e",
+          "prompt": {
+            "ko": "한국어로 쓰세요.",
+            "en": "Say this in Korean."
+          },
+          "stimulus": {
+            "audio_url": "u05-baekban/s1-07-word-r2",
+            "image_url": "",
+            "en": "kimchi stew"
+          },
+          "answers": [
+            {
+              "ko": "김치찌개",
+              "roman": "gimchijjigae",
+              "en": "kimchi stew"
+            }
+          ]
+        },
+        {
+          "id": "S6-19",
+          "type": "TRANSLATE_TO_KO",
+          "mode": "typing",
+          "event": "R",
+          "level": 4,
+          "skill": "쓰기",
+          "skill_level": 3,
+          "ref": "voca:3cf18f4f",
+          "prompt": {
+            "ko": "한국어로 쓰세요.",
+            "en": "Say this in Korean."
+          },
+          "stimulus": {
+            "audio_url": "u05-baekban/s3-08-word-r2",
+            "image_url": "",
+            "en": "doenjang stew"
+          },
+          "answers": [
+            {
+              "ko": "된장찌개",
+              "roman": "doenjangjjigae",
+              "en": "doenjang stew"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "S7",
+      "order": 7,
+      "items": [
+        {
+          "id": "S7-01",
+          "type": "ROLE_LINE",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "읽기",
+          "skill_level": 2,
+          "ref": "voca:72257617",
+          "prompt": {
+            "ko": "뭐라고 말할까요?",
+            "en": "What do you say?"
+          },
+          "context": {
+            "ko": "김치찌개가 맛있어요.",
+            "roman": "gimchijjigaega masisseoyo.",
+            "en": "The kimchi stew is good."
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "많이 매워요?",
+              "roman": "mani maewoyo?",
+              "en": "Is it very spicy?",
+              "correct": true
+            },
+            {
+              "id": "o2",
+              "ko": "혼자예요.",
+              "roman": "honjayeyo.",
+              "en": "Just me.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "여기 뭐가 맛있어요?",
+              "roman": "yeogi mwoga masisseoyo?",
+              "en": "What's good here?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "이 자리에서는 「많이 매워요?」라고 해요.",
+              "en": "Here you say \"Is it very spicy?\"."
+            }
+          }
+        },
+        {
+          "id": "S7-02",
+          "type": "SHADOW",
+          "mode": "speech",
+          "event": "E",
+          "level": 3,
+          "skill": "말하기",
+          "skill_level": 1,
+          "ref": "voca:04d80623",
+          "prompt": {
+            "ko": "듣고 따라 말하세요.",
+            "en": "Listen and repeat."
+          },
+          "stimulus": {
+            "text": {
+              "ko": "혼자예요.",
+              "roman": "honjayeyo.",
+              "en": "Just me."
+            },
+            "audio": {
+              "ko": "혼자예요.",
+              "roman": "honjayeyo.",
+              "en": "Just me."
+            },
+            "audio_url": "u05-baekban/d-02-r2",
+            "image_url": ""
+          },
+          "answers": [
+            {
+              "ko": "혼자예요.",
+              "roman": "honjayeyo.",
+              "en": "Just me."
+            }
+          ]
+        },
+        {
+          "id": "S7-03",
+          "type": "WORD_ORDER",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:cbdc90c2",
+          "prompt": {
+            "ko": "문장을 만드세요.",
+            "en": "Build the sentence."
+          },
+          "stimulus": {
+            "audio_url": "u05-baekban/d-07-r2",
+            "image_url": "",
+            "en": "A little. Is that okay?"
+          },
+          "tiles": [
+            {
+              "ko": "조금",
+              "roman": "jogeum",
+              "en": "a little"
+            },
+            {
+              "ko": "매워요.",
+              "roman": "maewoyo."
+            },
+            {
+              "ko": "괜찮아요?",
+              "roman": "gwaenchanayo?"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "조금 매워요. 괜찮아요?",
+              "roman": "jogeum maewoyo. gwaenchanayo?",
+              "en": "A little. Is that okay?"
+            }
+          ]
+        },
+        {
+          "id": "S7-04",
+          "type": "SHADOW",
+          "mode": "speech",
+          "event": "E",
+          "level": 3,
+          "skill": "말하기",
+          "skill_level": 1,
+          "ref": "voca:ec59536e",
+          "prompt": {
+            "ko": "듣고 따라 말하세요.",
+            "en": "Listen and repeat."
+          },
+          "stimulus": {
+            "text": {
+              "ko": "여기 뭐가 맛있어요?",
+              "roman": "yeogi mwoga masisseoyo?",
+              "en": "What's good here?"
+            },
+            "audio": {
+              "ko": "여기 뭐가 맛있어요?",
+              "roman": "yeogi mwoga masisseoyo?",
+              "en": "What's good here?"
+            },
+            "audio_url": "u05-baekban/d-04-r2",
+            "image_url": ""
+          },
+          "answers": [
+            {
+              "ko": "여기 뭐가 맛있어요?",
+              "roman": "yeogi mwoga masisseoyo?",
+              "en": "What's good here?"
+            }
+          ]
+        },
+        {
+          "id": "S7-05",
+          "type": "SHADOW",
+          "mode": "speech",
+          "event": "E",
+          "level": 3,
+          "skill": "말하기",
+          "skill_level": 1,
+          "ref": "patt:e952ebc9",
+          "prompt": {
+            "ko": "듣고 따라 말하세요.",
+            "en": "Listen and repeat."
+          },
+          "stimulus": {
+            "text": {
+              "ko": "네, 괜찮아요. 김치찌개 하나 주세요.",
+              "roman": "ne, gwaenchanayo. gimchijjigae hana juseyo.",
+              "en": "Yes, that's fine. One kimchi stew, please."
+            },
+            "audio": {
+              "ko": "네, 괜찮아요. 김치찌개 하나 주세요.",
+              "roman": "ne, gwaenchanayo. gimchijjigae hana juseyo.",
+              "en": "Yes, that's fine. One kimchi stew, please."
+            },
+            "audio_url": "u05-baekban/d-08-r2",
+            "image_url": ""
+          },
+          "answers": [
+            {
+              "ko": "네, 괜찮아요. 김치찌개 하나 주세요.",
+              "roman": "ne, gwaenchanayo. gimchijjigae hana juseyo.",
+              "en": "Yes, that's fine. One kimchi stew, please."
+            }
+          ]
+        },
+        {
+          "id": "S7-06",
+          "type": "REPLY_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 2,
+          "ref": "voca:04d80623",
+          "prompt": {
+            "ko": "뭐라고 대답할까요?",
+            "en": "How do you reply?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "몇 분이세요?",
+              "roman": "myeot buniseyo?",
+              "en": "How many?"
+            },
+            "audio_url": "u05-baekban/d-01-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "혼자예요.",
+              "roman": "honjayeyo.",
+              "en": "Just me.",
+              "correct": true
+            },
+            {
+              "id": "o2",
+              "ko": "여기 뭐가 맛있어요?",
+              "roman": "yeogi mwoga masisseoyo?",
+              "en": "What's good here?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "아니요, 된장찌개 하나 주세요.",
+              "roman": "aniyo, doenjangjjigae hana juseyo.",
+              "en": "No, one doenjang stew, please.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "이 자리에서는 「혼자예요.」라고 해요.",
+              "en": "Here you say \"Just me.\"."
+            }
+          }
+        },
+        {
+          "id": "S7-07",
+          "type": "WORD_ORDER",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:ec59536e",
+          "prompt": {
+            "ko": "문장을 만드세요.",
+            "en": "Build the sentence."
+          },
+          "stimulus": {
+            "audio_url": "u05-baekban/d-04-r2",
+            "image_url": "",
+            "en": "What's good here?"
+          },
+          "tiles": [
+            {
+              "ko": "여기",
+              "roman": "yeogi",
+              "en": "here"
+            },
+            {
+              "ko": "뭐가",
+              "roman": "mwoga"
+            },
+            {
+              "ko": "맛있어요?",
+              "roman": "masisseoyo?"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "여기 뭐가 맛있어요?",
+              "roman": "yeogi mwoga masisseoyo?",
+              "en": "What's good here?"
+            }
+          ]
+        },
+        {
+          "id": "S7-08",
+          "type": "SHADOW",
+          "mode": "speech",
+          "event": "E",
+          "level": 3,
+          "skill": "말하기",
+          "skill_level": 1,
+          "ref": "voca:04d80623",
+          "prompt": {
+            "ko": "듣고 따라 말하세요.",
+            "en": "Listen and repeat."
+          },
+          "stimulus": {
+            "text": {
+              "ko": "많이 매워요?",
+              "roman": "mani maewoyo?",
+              "en": "Is it very spicy?"
+            },
+            "audio": {
+              "ko": "많이 매워요?",
+              "roman": "mani maewoyo?",
+              "en": "Is it very spicy?"
+            },
+            "audio_url": "u05-baekban/d-06-r2",
+            "image_url": ""
+          },
+          "answers": [
+            {
+              "ko": "많이 매워요?",
+              "roman": "mani maewoyo?",
+              "en": "Is it very spicy?"
+            }
+          ]
+        },
+        {
+          "id": "S7-09",
+          "type": "SHADOW",
+          "mode": "speech",
+          "event": "E",
+          "level": 3,
+          "skill": "말하기",
+          "skill_level": 1,
+          "ref": "voca:72257617",
+          "prompt": {
+            "ko": "듣고 따라 말하세요.",
+            "en": "Listen and repeat."
+          },
+          "stimulus": {
+            "text": {
+              "ko": "아니요, 된장찌개 하나 주세요.",
+              "roman": "aniyo, doenjangjjigae hana juseyo.",
+              "en": "No, one doenjang stew, please."
+            },
+            "audio": {
+              "ko": "아니요, 된장찌개 하나 주세요.",
+              "roman": "aniyo, doenjangjjigae hana juseyo.",
+              "en": "No, one doenjang stew, please."
+            },
+            "audio_url": "u05-baekban/d-10-r2",
+            "image_url": ""
+          },
+          "answers": [
+            {
+              "ko": "아니요, 된장찌개 하나 주세요.",
+              "roman": "aniyo, doenjangjjigae hana juseyo.",
+              "en": "No, one doenjang stew, please."
+            }
+          ]
+        },
+        {
+          "id": "S7-10",
+          "type": "ROLE_LINE",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "읽기",
+          "skill_level": 2,
+          "ref": "gram:92e8afd2",
+          "prompt": {
+            "ko": "뭐라고 말할까요?",
+            "en": "What do you say?"
+          },
+          "context": {
+            "ko": "조금 매워요. 괜찮아요?",
+            "roman": "jogeum maewoyo. gwaenchanayo?",
+            "en": "A little. Is that okay?"
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "많이 매워요?",
+              "roman": "mani maewoyo?",
+              "en": "Is it very spicy?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "여기 뭐가 맛있어요?",
+              "roman": "yeogi mwoga masisseoyo?",
+              "en": "What's good here?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "네, 괜찮아요. 김치찌개 하나 주세요.",
+              "roman": "ne, gwaenchanayo. gimchijjigae hana juseyo.",
+              "en": "Yes, that's fine. One kimchi stew, please.",
+              "correct": true
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "이 자리에서는 「네, 괜찮아요. 김치찌개 하나 주세요.」라고 해요.",
+              "en": "Here you say \"Yes, that's fine. One kimchi stew, please.\"."
+            }
+          }
+        },
+        {
+          "id": "S7-11",
+          "type": "REPLY_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 2,
+          "ref": "voca:ec59536e",
+          "prompt": {
+            "ko": "뭐라고 대답할까요?",
+            "en": "How do you reply?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "저기 앉으세요.",
+              "roman": "jeogi anjeuseyo.",
+              "en": "Have a seat over there."
+            },
+            "audio_url": "u05-baekban/d-03-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "여기 뭐가 맛있어요?",
+              "roman": "yeogi mwoga masisseoyo?",
+              "en": "What's good here?",
+              "correct": true
+            },
+            {
+              "id": "o2",
+              "ko": "혼자예요.",
+              "roman": "honjayeyo.",
+              "en": "Just me.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "몇 분이세요?",
+              "roman": "myeot buniseyo?",
+              "en": "How many people?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "이 자리에서는 「여기 뭐가 맛있어요?」라고 해요.",
+              "en": "Here you say \"What's good here?\"."
+            }
+          }
+        },
+        {
+          "id": "S7-12",
+          "type": "ROLE_LINE",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "읽기",
+          "skill_level": 2,
+          "ref": "voca:3cf18f4f",
+          "prompt": {
+            "ko": "뭐라고 말할까요?",
+            "en": "What do you say?"
+          },
+          "context": {
+            "ko": "매운 음식은 잘 못 먹는다. 안 매운 걸 시키고 싶다.",
+            "roman": "maeun eumsigeun jal mot meongneunda. an maeun geol sikigo sipda.",
+            "en": "You can't handle spicy food and want something mild."
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "혼자예요.",
+              "roman": "honjayeyo.",
+              "en": "Just me.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "아니요, 된장찌개 하나 주세요.",
+              "roman": "aniyo, doenjangjjigae hana juseyo.",
+              "en": "No, one doenjang stew, please.",
+              "correct": true
+            },
+            {
+              "id": "o3",
+              "ko": "네, 괜찮아요. 김치찌개 하나 주세요.",
+              "roman": "ne, gwaenchanayo. gimchijjigae hana juseyo.",
+              "en": "Yes, that's fine. One kimchi stew, please.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "이 자리에서는 「아니요, 된장찌개 하나 주세요.」라고 해요.",
+              "en": "Here you say \"No, one doenjang stew, please.\"."
+            },
+            "wrong": {
+              "ko": "이번에는 매운 음식은 잘 못 먹는다. 안 매운 걸 시키고 싶어서 「네, 괜찮아요. 김치찌개 하나 주세요.」는 안 맞아요.",
+              "en": "This time you can't handle spicy food and want something mild, so \"Yes, that's fine. One kimchi stew, please.\" does not fit."
+            },
+            "wrong_option": "o3"
+          }
+        }
+      ]
+    },
+    {
+      "id": "S8",
+      "order": 8,
+      "items": [
+        {
+          "id": "S8-01",
+          "type": "DICTATION",
+          "mode": "typing",
+          "event": "R",
+          "level": 4,
+          "skill": "쓰기",
+          "skill_level": 2,
+          "ref": "expr:a04464f0",
+          "prompt": {
+            "ko": "들은 대로 쓰세요.",
+            "en": "Type what you hear."
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "괜찮아요",
+              "roman": "gwaenchanayo"
+            },
+            "audio_url": "u05-baekban/s8-01-stim-r2",
+            "image_url": ""
+          },
+          "answers": [
+            {
+              "ko": "괜찮아요",
+              "roman": "gwaenchanayo"
+            }
+          ]
+        },
+        {
+          "id": "S8-02",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:39e78518",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "네, 괜찮아요. 김치찌개 하나 주세요.",
+              "roman": "ne, gwaenchanayo. gimchijjigae hana juseyo.",
+              "en": "Yes, that's fine. One kimchi stew, please."
+            },
+            "audio_url": "u05-baekban/d-08-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "네, 괜찮아요. 김치찌개 하나 주세요.",
+              "roman": "ne, gwaenchanayo. gimchijjigae hana juseyo.",
+              "en": "Yes, that's fine. One kimchi stew, please.",
+              "correct": true
+            },
+            {
+              "id": "o2",
+              "ko": "아니요, 된장찌개 하나 주세요.",
+              "roman": "aniyo, doenjangjjigae hana juseyo.",
+              "en": "No, one doenjang stew, please.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "여기 뭐가 맛있어요?",
+              "roman": "yeogi mwoga masisseoyo?",
+              "en": "What's good here?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "네, 김치찌개 하나요.",
+              "roman": "ne, gimchijjigae hanayo.",
+              "en": "Sure, one kimchi stew.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ]
+        },
+        {
+          "id": "S8-03",
+          "type": "TRANSLATE_TO_EN",
+          "mode": "choice",
+          "event": "R",
+          "level": 1,
+          "skill": "읽기",
+          "skill_level": 1,
+          "ref": "expr:a04464f0",
+          "prompt": {
+            "ko": "무슨 뜻인가요?",
+            "en": "What does this mean?"
+          },
+          "stimulus": {
+            "text": {
+              "ko": "네, 괜찮아요.",
+              "roman": "ne, gwaenchanayo."
+            },
+            "audio_url": "u05-baekban/s8-03-stim-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "Please sit.",
+              "roman": "Please sit.",
+              "en": "Please sit.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "How many?",
+              "roman": "How many?",
+              "en": "How many?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "The kimchi stew is good.",
+              "roman": "The kimchi stew is good.",
+              "en": "The kimchi stew is good.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "Yes, that's fine.",
+              "roman": "Yes, that's fine.",
+              "en": "Yes, that's fine.",
+              "correct": true
+            }
+          ]
+        },
+        {
+          "id": "S8-04",
+          "type": "CLOZE",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:97270e4b",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "___, 된장찌개 하나요.",
+            "roman": "___, doenjangjjigae hanayo.",
+            "en": "Sure, one doenjang stew."
+          },
+          "tiles": [
+            {
+              "ko": "네",
+              "roman": "ne",
+              "en": "yes"
+            },
+            {
+              "ko": "뭐",
+              "roman": "mwo",
+              "en": "what"
+            },
+            {
+              "ko": "김치찌개",
+              "roman": "gimchijjigae",
+              "en": "kimchi stew"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "네",
+              "roman": "ne",
+              "en": "yes"
+            }
+          ]
+        },
+        {
+          "id": "S8-05",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:5f507d8e",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "김치찌개가 맛있어요.",
+              "roman": "gimchijjigaega masisseoyo.",
+              "en": "The kimchi stew is good."
+            },
+            "audio_url": "u05-baekban/d-05-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "저기 앉으세요.",
+              "roman": "jeogi anjeuseyo.",
+              "en": "Have a seat over there.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "여기 뭐가 맛있어요?",
+              "roman": "yeogi mwoga masisseoyo?",
+              "en": "What's good here?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "몇 분이세요?",
+              "roman": "myeot buniseyo?",
+              "en": "How many people?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "김치찌개가 맛있어요.",
+              "roman": "gimchijjigaega masisseoyo.",
+              "en": "The kimchi jjigae is good.",
+              "correct": true
+            }
+          ]
+        },
+        {
+          "id": "S8-06",
+          "type": "LISTEN_BUILD",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "듣기",
+          "skill_level": 3,
+          "ref": "gram:92e8afd2",
+          "prompt": {
+            "ko": "듣고 문장을 만드세요.",
+            "en": "Listen and build the sentence."
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "아니요, 된장찌개 하나 주세요.",
+              "roman": "aniyo, doenjangjjigae hana juseyo.",
+              "en": "No, one doenjang stew, please."
+            },
+            "audio_url": "u05-baekban/d-10-r2",
+            "image_url": ""
+          },
+          "tiles": [
+            {
+              "ko": "아니요,",
+              "roman": "aniyo,"
+            },
+            {
+              "ko": "된장찌개",
+              "roman": "doenjangjjigae",
+              "en": "doenjang stew"
+            },
+            {
+              "ko": "하나",
+              "roman": "hana",
+              "en": "one"
+            },
+            {
+              "ko": "주세요.",
+              "roman": "juseyo."
+            },
+            {
+              "ko": "맛있어요.",
+              "roman": "masisseoyo."
+            },
+            {
+              "ko": "혼자예요.",
+              "roman": "honjayeyo.",
+              "en": "Just me."
+            }
+          ],
+          "answers": [
+            {
+              "ko": "아니요, 된장찌개 하나 주세요.",
+              "roman": "aniyo, doenjangjjigae hana juseyo.",
+              "en": "No, one doenjang stew, please."
+            }
+          ]
+        },
+        {
+          "id": "S8-07",
+          "type": "TRANSLATE_TO_EN",
+          "mode": "choice",
+          "event": "R",
+          "level": 1,
+          "skill": "읽기",
+          "skill_level": 1,
+          "ref": "voca:a6280d3c",
+          "prompt": {
+            "ko": "무슨 뜻인가요?",
+            "en": "What does this mean?"
+          },
+          "stimulus": {
+            "text": {
+              "ko": "맛있다",
+              "roman": "masitda"
+            },
+            "audio_url": "u05-baekban/s1-04-word-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "delicious",
+              "roman": "delicious",
+              "en": "delicious",
+              "correct": true
+            },
+            {
+              "id": "o2",
+              "ko": "here",
+              "roman": "here",
+              "en": "here",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "alone",
+              "roman": "alone",
+              "en": "alone",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "spicy",
+              "roman": "spicy",
+              "en": "spicy",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ]
+        },
+        {
+          "id": "S8-08",
+          "type": "TRANSLATE_TO_EN",
+          "mode": "choice",
+          "event": "R",
+          "level": 1,
+          "skill": "읽기",
+          "skill_level": 1,
+          "ref": "voca:97270e4b",
+          "prompt": {
+            "ko": "무슨 뜻인가요?",
+            "en": "What does this mean?"
+          },
+          "stimulus": {
+            "text": {
+              "ko": "네",
+              "roman": "ne"
+            },
+            "audio_url": "u05-baekban/s1-09-word-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "one",
+              "roman": "one",
+              "en": "one",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "delicious",
+              "roman": "delicious",
+              "en": "delicious",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "here",
+              "roman": "here",
+              "en": "here",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "yes",
+              "roman": "yes",
+              "en": "yes",
+              "correct": true
+            }
+          ]
+        },
+        {
+          "id": "S8-09",
+          "type": "TRANSLATE_TO_KO",
+          "mode": "typing",
+          "event": "R",
+          "level": 4,
+          "skill": "쓰기",
+          "skill_level": 3,
+          "ref": "gram:92e8afd2",
+          "prompt": {
+            "ko": "한국어로 쓰세요.",
+            "en": "Say this in Korean."
+          },
+          "stimulus": {
+            "audio_url": "u05-baekban/s1-08-word-r2",
+            "image_url": "",
+            "en": "please give me"
+          },
+          "answers": [
+            {
+              "ko": "주세요",
+              "roman": "juseyo",
+              "en": "please give me"
+            }
+          ]
+        },
+        {
+          "id": "S8-10",
+          "type": "DICTATION",
+          "mode": "typing",
+          "event": "R",
+          "level": 4,
+          "skill": "쓰기",
+          "skill_level": 2,
+          "ref": "voca:72257617",
+          "prompt": {
+            "ko": "들은 대로 쓰세요.",
+            "en": "Type what you hear."
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "많이",
+              "roman": "mani",
+              "en": "a lot"
+            },
+            "audio_url": "u05-baekban/s1-05-word-r2",
+            "image_url": ""
+          },
+          "answers": [
+            {
+              "ko": "많이",
+              "roman": "mani",
+              "en": "a lot"
+            }
+          ]
+        },
+        {
+          "id": "S8-11",
+          "type": "CLOZE",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:39e78518",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "네, 된장찌개 ___",
+            "roman": "ne, doenjangjjigae ___",
+            "en": "Sure, one doenjang stew."
+          },
+          "tiles": [
+            {
+              "ko": "하나요.",
+              "roman": "hanayo."
+            },
+            {
+              "ko": "주세요.",
+              "roman": "juseyo."
+            },
+            {
+              "ko": "혼자예요.",
+              "roman": "honjayeyo.",
+              "en": "Just me."
+            }
+          ],
+          "answers": [
+            {
+              "ko": "하나요.",
+              "roman": "hanayo."
+            }
+          ]
+        },
+        {
+          "id": "S8-12",
+          "type": "TRANSLATE_TO_KO",
+          "mode": "typing",
+          "event": "R",
+          "level": 4,
+          "skill": "쓰기",
+          "skill_level": 3,
+          "ref": "voca:b3e70145",
+          "prompt": {
+            "ko": "한국어로 쓰세요.",
+            "en": "Say this in Korean."
+          },
+          "stimulus": {
+            "audio_url": "u05-baekban/s3-05-word-r2",
+            "image_url": "",
+            "en": "there, over there"
+          },
+          "answers": [
+            {
+              "ko": "저기",
+              "roman": "jeogi",
+              "en": "there, over there"
+            }
+          ]
+        },
+        {
+          "id": "S8-13",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:04d80623",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "혼자예요.",
+              "roman": "honjayeyo.",
+              "en": "Just me."
+            },
+            "audio_url": "u05-baekban/d-02-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "혼자예요.",
+              "roman": "honjayeyo.",
+              "en": "Just me.",
+              "correct": true
+            },
+            {
+              "id": "o2",
+              "ko": "네, 김치찌개 하나요.",
+              "roman": "ne, gimchijjigae hanayo.",
+              "en": "Sure, one kimchi stew.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "저기 앉으세요.",
+              "roman": "jeogi anjeuseyo.",
+              "en": "Have a seat over there.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "아니요, 된장찌개 하나 주세요.",
+              "roman": "aniyo, doenjangjjigae hana juseyo.",
+              "en": "No, one doenjang stew, please.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ]
+        },
+        {
+          "id": "S8-14",
+          "type": "TRANSLATE_TO_EN",
+          "mode": "choice",
+          "event": "R",
+          "level": 1,
+          "skill": "읽기",
+          "skill_level": 1,
+          "ref": "voca:17180c5f",
+          "prompt": {
+            "ko": "무슨 뜻인가요?",
+            "en": "What does this mean?"
+          },
+          "stimulus": {
+            "text": {
+              "ko": "맵다",
+              "roman": "maepda"
+            },
+            "audio_url": "u05-baekban/s1-06-word-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "a lot",
+              "roman": "a lot",
+              "en": "a lot",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "a little",
+              "roman": "a little",
+              "en": "a little",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "spicy",
+              "roman": "spicy",
+              "en": "spicy",
+              "correct": true
+            },
+            {
+              "id": "o4",
+              "ko": "delicious",
+              "roman": "delicious",
+              "en": "delicious",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ]
+        },
+        {
+          "id": "S8-15",
+          "type": "TRANSLATE_TO_KO",
+          "mode": "typing",
+          "event": "R",
+          "level": 4,
+          "skill": "쓰기",
+          "skill_level": 3,
+          "ref": "voca:f7839c66",
+          "prompt": {
+            "ko": "한국어로 쓰세요.",
+            "en": "Say this in Korean."
+          },
+          "stimulus": {
+            "audio_url": "u05-baekban/s1-03-word-r2",
+            "image_url": "",
+            "en": "what"
+          },
+          "answers": [
+            {
+              "ko": "뭐",
+              "roman": "mwo",
+              "en": "what"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "CULT",
+      "order": 9,
+      "items": [
+        {
+          "id": "CULT-01",
+          "type": "CULTURE_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "context": {
+            "ko": "혼밥",
+            "roman": "honbap",
+            "en": "Eating solo"
+          },
+          "stimulus": {
+            "text": {
+              "ko": "혼자 밥 먹는 것을 줄여서 「혼밥」이라고 해요. 요즘 한국에서는 혼자 식당에 가는 사람이 많아서 이상한 일이 아니에요. 혼자 앉기 좋은 창가 자리나 1인석을 둔 식당도 있어요.",
+              "roman": "honja bap meongneun geoseul juryeoseo 「honbap」irago haeyo. yojeum hangugeseoneun honja sikdange ganeun sarami manaseo isanghan iri anieyo. honja angi joeun changga jarina 1inseogeul dun sikdangdo isseoyo.",
+              "en": "Eating alone is called \"honbap,\" short for \"eating rice alone.\" Plenty of people in Korea eat out alone these days, so it's nothing unusual. Some restaurants even have window counters or single seats that suit solo diners."
+            },
+            "audio_url": "",
+            "image_url": "content/images/u05-baekban/cult-u05-honbap.webp"
+          },
+          "feedback": {
+            "correct": {
+              "ko": "「몇 분이세요?」라고 물으면 「혼자예요」라고 하면 돼요.",
+              "en": "When they ask \"How many?\", just say \"Just me.\""
+            }
+          }
+        },
+        {
+          "id": "CULT-02",
+          "type": "CULTURE_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "context": {
+            "ko": "반찬",
+            "roman": "banchan",
+            "en": "Side dishes"
+          },
+          "stimulus": {
+            "text": {
+              "ko": "한국 식당에서는 찌개 같은 음식을 시키면 작은 그릇에 담긴 반찬이 같이 나와요. 반찬은 값에 들어 있어서 따로 돈을 내지 않아요. 다 먹으면 더 달라고 해도 돼요.",
+              "roman": "hanguk sikdangeseoneun jjigae gateun eumsigeul sikimyeon jageun geureuse damgin banchani gati nawayo. banchaneun gapse deureo isseoseo ttaro doneul naeji anayo. da meogeumyeon deo dallago haedo dwaeyo.",
+              "en": "At Korean restaurants, when you order something like a stew, small dishes called banchan come with it. They're included in the price, so you don't pay extra. If you finish one, it's fine to ask for more."
+            },
+            "audio_url": "",
+            "image_url": "content/images/u05-baekban/cult-u05-banchan.webp"
+          },
+          "feedback": {
+            "correct": {
+              "ko": "빈 반찬 그릇을 가리키며 「더 주세요」라고 하면 돼요.",
+              "en": "Point to the empty dish and say, \"More, please.\""
+            }
+          }
+        },
+        {
+          "id": "CULT-03",
+          "type": "CULTURE_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "context": {
+            "ko": "물은 셀프",
+            "roman": "mureun selpeu",
+            "en": "Water is self-serve"
+          },
+          "stimulus": {
+            "text": {
+              "ko": "동네 식당에서는 물을 손님이 직접 가져오는 곳이 많아요. 벽에 「물은 셀프」라고 쓰여 있기도 해요. 정수기에서 컵에 물을 따라 마시면 돼요.",
+              "roman": "dongne sikdangeseoneun mureul sonnimi jikjeop gajyeooneun gosi manayo. byeoge 「mureun selpeu」rago sseuyeo itgido haeyo. jeongsugieseo keobe mureul ttara masimyeon dwaeyo.",
+              "en": "At many neighborhood restaurants, customers get their own water. You might see a sign on the wall saying \"Water is self-serve.\" Just fill a cup at the water dispenser."
+            },
+            "audio_url": "",
+            "image_url": "content/images/u05-baekban/cult-u05-water.webp"
+          },
+          "feedback": {
+            "correct": {
+              "ko": "정수기가 안 보이면 「물은 어디 있어요?」라고 물어봐도 돼요.",
+              "en": "If you can't find the dispenser, ask, \"Where's the water?\""
+            }
+          }
+        },
+        {
+          "id": "CULT-04",
+          "type": "CULTURE_CHECK",
+          "mode": "choice",
+          "event": "R",
+          "level": 1,
+          "skill": "읽기",
+          "skill_level": 1,
+          "prompt": {
+            "ko": "맞는 것을 고르세요.",
+            "en": "Pick the right one."
+          },
+          "context": {
+            "ko": "「혼밥」은 무슨 뜻일까요?",
+            "roman": "「honbap」eun museun tteusilkkayo?",
+            "en": "What does \"honbap\" mean?"
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "혼자 밥 먹기",
+              "roman": "honja bap meokgi",
+              "en": "Eating alone",
+              "correct": true
+            },
+            {
+              "id": "o2",
+              "ko": "집에서 밥 하기",
+              "roman": "jibeseo bap hagi",
+              "en": "Cooking rice at home",
+              "correct": false,
+              "why_wrong": "카드에 적힌 사실과 다르다"
+            },
+            {
+              "id": "o3",
+              "ko": "밥을 많이 먹기",
+              "roman": "babeul mani meokgi",
+              "en": "Eating a lot of rice",
+              "correct": false,
+              "why_wrong": "카드에 적힌 사실과 다르다"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "「혼밥」은 「혼자 밥 먹기」를 줄인 말이에요. 요즘 한국에서는 흔한 일이에요.",
+              "en": "\"Honbap\" is short for eating alone. It's a common thing in Korea these days."
+            }
+          }
+        },
+        {
+          "id": "CULT-05",
+          "type": "CULTURE_CHECK",
+          "mode": "choice",
+          "event": "R",
+          "level": 1,
+          "skill": "읽기",
+          "skill_level": 1,
+          "prompt": {
+            "ko": "맞는 것을 고르세요.",
+            "en": "Pick the right one."
+          },
+          "context": {
+            "ko": "한국 식당에서 반찬은 어떻게 나올까요?",
+            "roman": "hanguk sikdangeseo banchaneun eotteoke naolkkayo?",
+            "en": "How do side dishes work at a Korean restaurant?"
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "값에 들어 있고 더 받을 수 있어요",
+              "roman": "gapse deureo itgo deo badeul su isseoyo",
+              "en": "They're included, and you can get more",
+              "correct": true
+            },
+            {
+              "id": "o2",
+              "ko": "하나마다 따로 돈을 내요",
+              "roman": "hanamada ttaro doneul naeyo",
+              "en": "You pay for each one separately",
+              "correct": false,
+              "why_wrong": "카드에 적힌 사실과 다르다"
+            },
+            {
+              "id": "o3",
+              "ko": "한 번만 받을 수 있어요",
+              "roman": "han beonman badeul su isseoyo",
+              "en": "You can only get them once",
+              "correct": false,
+              "why_wrong": "카드에 적힌 사실과 다르다"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "반찬은 음식 값에 들어 있어요. 다 먹으면 더 달라고 해도 돼요.",
+              "en": "Side dishes come with the meal at no extra cost, and you can ask for refills."
+            }
+          }
+        },
+        {
+          "id": "CULT-06",
+          "type": "CULTURE_CHECK",
+          "mode": "choice",
+          "event": "R",
+          "level": 1,
+          "skill": "읽기",
+          "skill_level": 1,
+          "prompt": {
+            "ko": "맞는 것을 고르세요.",
+            "en": "Pick the right one."
+          },
+          "context": {
+            "ko": "「물은 셀프」는 무슨 뜻일까요?",
+            "roman": "「mureun selpeu」neun museun tteusilkkayo?",
+            "en": "What does \"Water is self-serve\" mean?"
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "손님이 직접 가져와요",
+              "roman": "sonnimi jikjeop gajyeowayo",
+              "en": "You get it yourself",
+              "correct": true
+            },
+            {
+              "id": "o2",
+              "ko": "물은 주지 않아요",
+              "roman": "mureun juji anayo",
+              "en": "They don't serve water",
+              "correct": false,
+              "why_wrong": "카드에 적힌 사실과 다르다"
+            },
+            {
+              "id": "o3",
+              "ko": "물은 돈을 내요",
+              "roman": "mureun doneul naeyo",
+              "en": "You pay for water",
+              "correct": false,
+              "why_wrong": "카드에 적힌 사실과 다르다"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "많은 동네 식당에서 물은 손님이 정수기에서 직접 가져와요.",
+              "en": "At many neighborhood restaurants, you fill your own water from the dispenser."
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "RP",
+      "order": 10,
+      "items": [
+        {
+          "id": "RP-01",
+          "type": "ROLEPLAY_TURN",
+          "mode": "either",
+          "event": "R",
+          "level": 5,
+          "skill": "말하기",
+          "skill_level": 3,
+          "prompt": {
+            "ko": "뭐라고 말할까요?",
+            "en": "What do you say?"
+          },
+          "context": {
+            "ko": "몇 분이세요?",
+            "roman": "myeot buniseyo?",
+            "en": "How many?"
+          },
+          "stimulus": {
+            "text": {
+              "ko": "혼자예요.",
+              "roman": "honjayeyo.",
+              "en": "Just me."
+            },
+            "audio_url": "u05-baekban/d-02-r2",
+            "image_url": "content/images/u05-baekban/pre-5.webp"
+          },
+          "tiles": [
+            {
+              "ko": "혼자예요.",
+              "roman": "honjayeyo.",
+              "en": "Just me."
+            }
+          ],
+          "answers": [
+            {
+              "ko": "혼자예요.",
+              "roman": "honjayeyo.",
+              "en": "Just me."
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "상대가 「몇 분이세요?」라고 하면 「혼자예요.」라고 답해요."
+            }
+          },
+          "roleplay": {
+            "line_id": "D2",
+            "counterpart_line": "몇 분이세요?",
+            "player_line": "혼자예요.",
+            "tiles": [
+              "혼자예요."
+            ],
+            "tiles_gloss": [
+              {
+                "tile": "혼자예요.",
+                "en": "alone"
+              }
+            ],
+            "accepted_answers": [
+              {
+                "text": "혼자예요."
+              }
+            ],
+            "modes": [
+              "speech",
+              "tiles"
+            ],
+            "lead": [
+              {
+                "speaker": "식당 주인",
+                "line": {
+                  "ko": "몇 분이세요?",
+                  "roman": "myeot buniseyo?",
+                  "en": "How many?"
+                },
+                "audio_url": "u05-baekban/d-01-r2"
+              }
+            ],
+            "reask": {
+              "speaker": "식당 주인",
+              "line": {
+                "ko": "네?",
+                "roman": "ne?",
+                "en": "Sorry?"
+              },
+              "audio_url": "u05-baekban/rp-01-reask-r2"
+            },
+            "player_audio_url": "u05-baekban/d-02-r2"
+          }
+        },
+        {
+          "id": "RP-02",
+          "type": "ROLEPLAY_TURN",
+          "mode": "either",
+          "event": "R",
+          "level": 5,
+          "skill": "말하기",
+          "skill_level": 3,
+          "prompt": {
+            "ko": "뭐라고 말할까요?",
+            "en": "What do you say?"
+          },
+          "context": {
+            "ko": "저기 앉으세요.",
+            "roman": "jeogi anjeuseyo.",
+            "en": "Have a seat over there."
+          },
+          "stimulus": {
+            "text": {
+              "ko": "여기 뭐가 맛있어요?",
+              "roman": "yeogi mwoga masisseoyo?",
+              "en": "What's good here?"
+            },
+            "audio_url": "u05-baekban/d-04-r2",
+            "image_url": "content/images/u05-baekban/pre-5.webp"
+          },
+          "tiles": [
+            {
+              "ko": "여기",
+              "roman": "yeogi",
+              "en": "here"
+            },
+            {
+              "ko": "뭐가",
+              "roman": "mwoga"
+            },
+            {
+              "ko": "맛있어요?",
+              "roman": "masisseoyo?"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "여기 뭐가 맛있어요?",
+              "roman": "yeogi mwoga masisseoyo?",
+              "en": "What's good here?"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "상대가 「저기 앉으세요.」라고 하면 「여기 뭐가 맛있어요?」라고 답해요."
+            }
+          },
+          "roleplay": {
+            "line_id": "D4",
+            "counterpart_line": "저기 앉으세요.",
+            "player_line": "여기 뭐가 맛있어요?",
+            "tiles": [
+              "여기",
+              "뭐가",
+              "맛있어요?"
+            ],
+            "tiles_gloss": [
+              {
+                "tile": "여기",
+                "en": "here"
+              },
+              {
+                "tile": "뭐가",
+                "en": "what"
+              },
+              {
+                "tile": "맛있어요?"
+              }
+            ],
+            "accepted_answers": [
+              {
+                "text": "여기 뭐가 맛있어요?"
+              }
+            ],
+            "modes": [
+              "speech",
+              "tiles"
+            ],
+            "lead": [
+              {
+                "speaker": "식당 주인",
+                "line": {
+                  "ko": "저기 앉으세요.",
+                  "roman": "jeogi anjeuseyo.",
+                  "en": "Have a seat over there."
+                },
+                "audio_url": "u05-baekban/d-03-r2"
+              }
+            ],
+            "reask": {
+              "speaker": "식당 주인",
+              "line": {
+                "ko": "네?",
+                "roman": "ne?",
+                "en": "Sorry?"
+              },
+              "audio_url": "u05-baekban/rp-01-reask-r2"
+            },
+            "player_audio_url": "u05-baekban/d-04-r2"
+          }
+        },
+        {
+          "id": "RP-03",
+          "type": "ROLEPLAY_TURN",
+          "mode": "either",
+          "event": "R",
+          "level": 5,
+          "skill": "말하기",
+          "skill_level": 3,
+          "prompt": {
+            "ko": "뭐라고 말할까요?",
+            "en": "What do you say?"
+          },
+          "context": {
+            "ko": "김치찌개가 맛있어요.",
+            "roman": "gimchijjigaega masisseoyo.",
+            "en": "The kimchi stew is good."
+          },
+          "stimulus": {
+            "text": {
+              "ko": "많이 매워요?",
+              "roman": "mani maewoyo?",
+              "en": "Is it very spicy?"
+            },
+            "audio_url": "u05-baekban/d-06-r2",
+            "image_url": "content/images/u05-baekban/pre-5.webp"
+          },
+          "tiles": [
+            {
+              "ko": "많이",
+              "roman": "mani",
+              "en": "a lot"
+            },
+            {
+              "ko": "매워요?",
+              "roman": "maewoyo?"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "많이 매워요?",
+              "roman": "mani maewoyo?",
+              "en": "Is it very spicy?"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "상대가 「김치찌개가 맛있어요.」라고 하면 「많이 매워요?」라고 답해요."
+            }
+          },
+          "roleplay": {
+            "line_id": "D6",
+            "counterpart_line": "김치찌개가 맛있어요.",
+            "player_line": "많이 매워요?",
+            "tiles": [
+              "많이",
+              "매워요?"
+            ],
+            "tiles_gloss": [
+              {
+                "tile": "많이",
+                "en": "a lot"
+              },
+              {
+                "tile": "매워요?"
+              }
+            ],
+            "accepted_answers": [
+              {
+                "text": "많이 매워요?"
+              }
+            ],
+            "modes": [
+              "speech",
+              "tiles"
+            ],
+            "lead": [
+              {
+                "speaker": "식당 주인",
+                "line": {
+                  "ko": "김치찌개가 맛있어요.",
+                  "roman": "gimchijjigaega masisseoyo.",
+                  "en": "The kimchi stew is good."
+                },
+                "audio_url": "u05-baekban/d-05-r2"
+              }
+            ],
+            "reask": {
+              "speaker": "식당 주인",
+              "line": {
+                "ko": "네?",
+                "roman": "ne?",
+                "en": "Sorry?"
+              },
+              "audio_url": "u05-baekban/rp-01-reask-r2"
+            },
+            "player_audio_url": "u05-baekban/d-06-r2"
+          }
+        },
+        {
+          "id": "RP-04",
+          "type": "ROLEPLAY_TURN",
+          "mode": "either",
+          "event": "R",
+          "level": 5,
+          "skill": "말하기",
+          "skill_level": 3,
+          "prompt": {
+            "ko": "뭐라고 말할까요?",
+            "en": "What do you say?"
+          },
+          "context": {
+            "ko": "조금 매워요. 괜찮아요?",
+            "roman": "jogeum maewoyo. gwaenchanayo?",
+            "en": "A little. Is that okay?"
+          },
+          "stimulus": {
+            "text": {
+              "ko": "네, 괜찮아요. 김치찌개 하나 주세요.",
+              "roman": "ne, gwaenchanayo. gimchijjigae hana juseyo.",
+              "en": "Yes, that's fine. One kimchi stew, please."
+            },
+            "audio_url": "u05-baekban/d-08-r2",
+            "image_url": "content/images/u05-baekban/pre-5.webp"
+          },
+          "tiles": [
+            {
+              "ko": "네,",
+              "roman": "ne,"
+            },
+            {
+              "ko": "괜찮아요.",
+              "roman": "gwaenchanayo."
+            },
+            {
+              "ko": "김치찌개",
+              "roman": "gimchijjigae",
+              "en": "kimchi stew"
+            },
+            {
+              "ko": "하나",
+              "roman": "hana",
+              "en": "one"
+            },
+            {
+              "ko": "주세요.",
+              "roman": "juseyo."
+            }
+          ],
+          "answers": [
+            {
+              "ko": "네, 괜찮아요. 김치찌개 하나 주세요.",
+              "roman": "ne, gwaenchanayo. gimchijjigae hana juseyo.",
+              "en": "Yes, that's fine. One kimchi stew, please."
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "상대가 「조금 매워요. 괜찮아요?」라고 하면 「네, 괜찮아요. 김치찌개 하나 주세요.」라고 답해요."
+            }
+          },
+          "roleplay": {
+            "line_id": "D8",
+            "counterpart_line": "조금 매워요. 괜찮아요?",
+            "player_line": "네, 괜찮아요. 김치찌개 하나 주세요.",
+            "tiles": [
+              "네,",
+              "괜찮아요.",
+              "김치찌개",
+              "하나",
+              "주세요."
+            ],
+            "tiles_gloss": [
+              {
+                "tile": "네,",
+                "en": "yes"
+              },
+              {
+                "tile": "괜찮아요.",
+                "en": "No thanks. / I'm fine."
+              },
+              {
+                "tile": "김치찌개",
+                "en": "kimchi stew"
+              },
+              {
+                "tile": "하나",
+                "en": "one"
+              },
+              {
+                "tile": "주세요.",
+                "en": "please give me"
+              }
+            ],
+            "accepted_answers": [
+              {
+                "text": "네, 괜찮아요. 김치찌개 하나 주세요."
+              }
+            ],
+            "modes": [
+              "speech",
+              "tiles"
+            ],
+            "lead": [
+              {
+                "speaker": "식당 주인",
+                "line": {
+                  "ko": "조금 매워요. 괜찮아요?",
+                  "roman": "jogeum maewoyo. gwaenchanayo?",
+                  "en": "A little. Is that okay?"
+                },
+                "audio_url": "u05-baekban/d-07-r2"
+              }
+            ],
+            "reask": {
+              "speaker": "식당 주인",
+              "line": {
+                "ko": "네?",
+                "roman": "ne?",
+                "en": "Sorry?"
+              },
+              "audio_url": "u05-baekban/rp-01-reask-r2"
+            },
+            "player_audio_url": "u05-baekban/d-08-r2"
+          }
+        }
+      ],
+      "scene": {
+        "background_image_url": "content/images/u05-baekban/pre-5.webp",
+        "counterpart": "식당 주인",
+        "closing": [
+          {
+            "speaker": "식당 주인",
+            "line": {
+              "ko": "네, 김치찌개 하나요.",
+              "roman": "ne, gimchijjigae hanayo.",
+              "en": "Sure, one kimchi stew."
+            },
+            "audio_url": ""
+          }
+        ],
+        "closing_image_url": "content/images/u05-baekban/rp-end.webp",
+        "retry": {
+          "hint_after_misses": 1,
+          "reveal_after_misses": 2
+        }
+      }
+    }
+  ],
+  "completion": {
+    "requires": [
+      "S1",
+      "S2",
+      "S3",
+      "S4",
+      "S5",
+      "S6",
+      "S7",
+      "S8",
+      "CULT",
+      "RP"
+    ]
+  },
+  "words": [
+    {
+      "id": "voca:04d80623",
+      "ko": "혼자",
+      "roman": "honja",
+      "gloss_en": "alone",
+      "grade": "1급",
+      "role": "target"
+    },
+    {
+      "id": "voca:ec59536e",
+      "ko": "여기",
+      "roman": "yeogi",
+      "gloss_en": "here",
+      "grade": "1급",
+      "role": "target",
+      "review": true
+    },
+    {
+      "id": "voca:f7839c66",
+      "ko": "뭐",
+      "roman": "mwo",
+      "gloss_en": "what",
+      "grade": "1급",
+      "role": "target",
+      "review": true
+    },
+    {
+      "id": "voca:a6280d3c",
+      "ko": "맛있다",
+      "roman": "masitda",
+      "gloss_en": "delicious",
+      "grade": "1급",
+      "role": "target"
+    },
+    {
+      "id": "voca:72257617",
+      "ko": "많이",
+      "roman": "mani",
+      "gloss_en": "a lot",
+      "grade": "1급",
+      "role": "target"
+    },
+    {
+      "id": "voca:17180c5f",
+      "ko": "맵다",
+      "roman": "maepda",
+      "gloss_en": "spicy",
+      "grade": "1급",
+      "role": "target"
+    },
+    {
+      "id": "voca:5f507d8e",
+      "ko": "김치찌개",
+      "roman": "gimchijjigae",
+      "gloss_en": "kimchi stew",
+      "grade": "1급",
+      "role": "target"
+    },
+    {
+      "id": "gram:92e8afd2",
+      "ko": "주세요",
+      "roman": "juseyo",
+      "gloss_en": "please give me",
+      "role": "target"
+    },
+    {
+      "id": "voca:97270e4b",
+      "ko": "네",
+      "roman": "ne",
+      "gloss_en": "yes",
+      "grade": "1급",
+      "role": "target",
+      "review": true
+    },
+    {
+      "id": "voca:8d532a47",
+      "ko": "괜찮다",
+      "roman": "gwaenchanda",
+      "gloss_en": "be okay",
+      "grade": "1급",
+      "role": "target",
+      "review": true
+    },
+    {
+      "id": "voca:39e78518",
+      "ko": "하나",
+      "roman": "hana",
+      "gloss_en": "one",
+      "grade": "1급",
+      "role": "target"
+    },
+    {
+      "id": "voca:6a6ebc70",
+      "ko": "몇",
+      "roman": "myeot",
+      "gloss_en": "how many",
+      "grade": "1급",
+      "role": "target",
+      "use": "counterpart"
+    },
+    {
+      "id": "voca:dbdcc9f6",
+      "ko": "분",
+      "roman": "bun",
+      "gloss_en": "person (polite counter)",
+      "grade": "1급",
+      "role": "target",
+      "use": "counterpart"
+    },
+    {
+      "id": "voca:b3e70145",
+      "ko": "저기",
+      "roman": "jeogi",
+      "gloss_en": "there, over there",
+      "grade": "1급",
+      "role": "target",
+      "use": "counterpart",
+      "review": true
+    },
+    {
+      "id": "voca:b0414a80",
+      "ko": "앉다",
+      "roman": "anda",
+      "gloss_en": "sit",
+      "grade": "1급",
+      "role": "target",
+      "use": "counterpart"
+    },
+    {
+      "id": "voca:cbdc90c2",
+      "ko": "조금",
+      "roman": "jogeum",
+      "gloss_en": "a little",
+      "grade": "1급",
+      "role": "target",
+      "use": "counterpart"
+    },
+    {
+      "id": "voca:3cf18f4f",
+      "ko": "된장찌개",
+      "roman": "doenjangjjigae",
+      "gloss_en": "doenjang stew",
+      "grade": "1급",
+      "role": "target"
+    },
+    {
+      "id": "expr:a9745193",
+      "ko": "앉으세요.",
+      "roman": "anjeuseyo.",
+      "gloss_en": "Please sit.",
+      "role": "exposure"
+    }
+  ],
+  "patterns": [
+    {
+      "id": "patt:e952ebc9",
+      "ko": "{음식} 하나 주세요.",
+      "roman": "{음식} hana juseyo.",
+      "gloss_en": "Please give me one {음식}."
+    },
+    {
+      "id": "patt:3efccada",
+      "ko": "{명사} 주세요",
+      "roman": "{명사} juseyo",
+      "gloss_en": "Please give me {N}."
+    }
+  ]
+}

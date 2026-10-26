@@ -20,7 +20,7 @@
         "en": "Korea, a country I've only seen on screens. What will this week bring?"
       },
       "image_brief": "비행기 창 너머로 구름이 흘러간다.",
-      "image_url": "content/images/u00-tutorial/pre-1.webp",
+      "image_url": "content/images/u00-tutorial/pre-1-v2.webp",
       "audio_url": ""
     },
     {
@@ -34,7 +34,7 @@
         "en": "All the Korean I know is a few words from dramas. Daebak, saranghaeyo, hwaiting…"
       },
       "image_brief": "좌석 화면에 한국 드라마가 흐릿하게 흐른다.",
-      "image_url": "content/images/u00-tutorial/pre-2.webp",
+      "image_url": "content/images/u00-tutorial/pre-2-v2.webp",
       "audio_url": ""
     },
     {
@@ -42,16 +42,29 @@
       "kind": "pre",
       "cut_kind": "narration",
       "narration": {
-        "ko": "눈을 감는다. 비 오는 골목에서 누군가 우산을 내민다.",
-        "roman": "nuneul gamneunda. bi oneun golmogeseo nugunga usaneul naeminda.",
-        "en": "Eyes close. In a rainy alley, someone holds out an umbrella."
+        "ko": "눈을 감는다. 밤의 편의점, 매운 라면에 삼각김밥.",
+        "roman": "nuneul gamneunda. bamui pyeonuijeom, maeun ramyeone samgakgimbap.",
+        "en": "Eyes close. A convenience store at night, spicy ramen and a triangle kimbap."
       },
-      "image_brief": "비 오는 골목. 우산을 내민 손만 보인다.",
-      "image_url": "content/images/u00-tutorial/pre-3.webp",
+      "image_brief": "꿈처럼 번지는 밤의 편의점. 창가 벽에 붙은 테이블에 매운 볶음면 큰컵과 삼각김밥.",
+      "image_url": "content/images/u00-tutorial/pre-3-v2.webp",
       "audio_url": ""
     },
     {
       "index": 4,
+      "kind": "pre",
+      "cut_kind": "narration",
+      "narration": {
+        "ko": "비 오는 골목에서 누군가 우산을 내민다.",
+        "roman": "bi oneun golmogeseo nugunga usaneul naeminda.",
+        "en": "In a rainy alley, someone holds out an umbrella."
+      },
+      "image_brief": "비 오는 골목. 누군가 검은 우산을 내민다. 얼굴은 흐릿하다.",
+      "image_url": "content/images/u00-tutorial/pre-4-v2.webp",
+      "audio_url": ""
+    },
+    {
+      "index": 5,
       "kind": "pre",
       "cut_kind": "narration",
       "narration": {
@@ -60,30 +73,24 @@
         "en": "Lights tremble on the river at night. The city's lights stretch long across the bridges."
       },
       "image_brief": "꿈처럼 번지는 한강의 밤. 불 켜진 다리와 도시 야경.",
-      "image_url": "content/images/u00-tutorial/pre-4.webp",
+      "image_url": "content/images/u00-tutorial/pre-5-v2.webp",
       "audio_url": ""
     },
     {
-      "index": 5,
+      "index": 6,
       "kind": "pre",
-      "cut_kind": "speech",
-      "speaker": "누군가",
-      "line": {
-        "ko": "다음에 또…",
-        "roman": "daeume tto…",
-        "en": "Next time…"
+      "cut_kind": "narration",
+      "narration": {
+        "ko": "밤 골목을 누군가와 나란히 걷는다. 「다음에 또…」",
+        "roman": "bam golmogeul nugungawa naranhi geonneunda. 「daeume tto…」",
+        "en": "Walking side by side with someone down a night alley. \"Next time…\""
       },
-      "aside": {
-        "ko": "걸음을 멈추고 웃으며",
-        "roman": "georeumeul meomchugo useumyeo",
-        "en": "Stopping and smiling."
-      },
-      "image_brief": "저녁 골목에서 누군가 걸음을 멈추고 이쪽을 보며 웃는다. 가장자리는 꿈처럼 번진다.",
-      "image_url": "content/images/u00-tutorial/pre-5.webp",
-      "audio_url": "u00-tutorial/pre-5-dream"
+      "image_brief": "밤의 서울 주택가 골목. 구불구불한 오르막길에 나란히 걷는 두 사람의 그림자만 길게 드리운다. 왼쪽의 키 큰 그림자는 남자다. 가장자리는 꿈처럼 번진다.",
+      "image_url": "content/images/u00-tutorial/pre-6-v2.webp",
+      "audio_url": "u00-tutorial/pre-5-dream-r2"
     },
     {
-      "index": 6,
+      "index": 7,
       "kind": "pre",
       "cut_kind": "speech",
       "speaker": "승무원",
@@ -98,70 +105,82 @@
         "en": "Leaning in to meet your eyes."
       },
       "image_brief": "기체가 살짝 흔들린다. 눈을 뜨자 통로의 승무원이 빈 옆자리 너머로 몸을 숙여 손을 내밀며 이쪽을 본다.",
-      "image_url": "content/images/u00-tutorial/pre-6.webp",
-      "audio_url": "u00-tutorial/d-01"
+      "image_url": "content/images/u00-tutorial/pre-7-v2.webp",
+      "audio_url": "u00-tutorial/d-01-r2"
     }
   ],
   "dialogue": [
     {
       "seq": 1,
+      "line_id": "D1",
+      "kind": "main",
       "role": "counterpart",
       "text": {
         "ko": "안녕하세요! 한국은 처음이세요?",
         "roman": "annyeonghaseyo! hangugeun cheoeumiseyo?",
         "en": "Hello! Is this your first time in Korea?"
       },
-      "audio_url": "u00-tutorial/d-01"
+      "audio_url": "u00-tutorial/d-01-r2"
     },
     {
       "seq": 2,
+      "line_id": "D2",
+      "kind": "main",
       "role": "player",
       "text": {
         "ko": "안녕하세요! 네, 처음이에요!",
         "roman": "annyeonghaseyo! ne, cheoeumieyo!",
         "en": "Hello! Yes, it's my first time!"
       },
-      "audio_url": "u00-tutorial/d-02"
+      "audio_url": "u00-tutorial/d-02-r2"
     },
     {
       "seq": 3,
+      "line_id": "D3",
+      "kind": "main",
       "role": "counterpart",
       "text": {
         "ko": "오, 한국어 잘하시네요!",
         "roman": "o, hangugeo jalhasineyo!",
         "en": "Oh, your Korean is so good!"
       },
-      "audio_url": "u00-tutorial/d-03"
+      "audio_url": "u00-tutorial/d-03-r2"
     },
     {
       "seq": 4,
+      "line_id": "D4",
+      "kind": "main",
       "role": "player",
       "text": {
-        "ko": "진짜요? 감사합니다!",
-        "roman": "jinjjayo? gamsahamnida!",
-        "en": "Really? Thank you!"
+        "ko": "감사합니다!",
+        "roman": "gamsahamnida!",
+        "en": "Thank you!"
       },
-      "audio_url": "u00-tutorial/d-04"
+      "audio_url": ""
     },
     {
       "seq": 5,
+      "line_id": "D5",
+      "kind": "main",
       "role": "counterpart",
       "text": {
         "ko": "언제부터 공부하셨어요?",
         "roman": "eonjebuteo gongbuhasyeosseoyo?",
         "en": "How long have you been studying?"
       },
-      "audio_url": "u00-tutorial/d-05"
+      "audio_url": "u00-tutorial/d-05-r2"
     },
     {
       "seq": 6,
+      "line_id": "D6",
+      "kind": "main",
       "role": "player",
       "text": {
         "ko": "지금부터요!",
         "roman": "jigeumbuteoyo!",
         "en": "Starting now!"
       },
-      "audio_url": "u00-tutorial/d-06"
+      "audio_url": "u00-tutorial/d-06-r2"
     }
   ],
   "post_cuts": [
@@ -176,7 +195,7 @@
       },
       "image_brief": "창밖으로 바다와 섬, 해안 도시가 가까워진다.",
       "image_url": "content/images/u00-tutorial/post-1.webp",
-      "audio_url": "u00-tutorial/post-1-v3"
+      "audio_url": "u00-tutorial/post-1-r2"
     },
     {
       "index": 2,
@@ -195,7 +214,7 @@
       },
       "image_brief": "열린 비행기 문 앞에서 승무원이 고개 숙여 인사한다.",
       "image_url": "content/images/u00-tutorial/post-2.webp",
-      "audio_url": "u00-tutorial/post-2"
+      "audio_url": "u00-tutorial/post-2-r2"
     },
     {
       "index": 3,
@@ -246,84 +265,16 @@
             "en": "Hello"
           },
           "example": {
-            "ko": "안녕하세요! 네, 처음이에요!",
-            "roman": "annyeonghaseyo! ne, cheoeumieyo!",
-            "en": "Hello! Yes, it's my first time!"
+            "ko": "안녕하세요! 반가워요.",
+            "roman": "annyeonghaseyo! bangawoyo.",
+            "en": "Hello! Nice to meet you."
           },
           "card_kind": "단어",
-          "audio_url": "u00-tutorial/s1-01-word",
-          "example_audio_url": "u00-tutorial/d-02"
-        }
-      ]
-    },
-    {
-      "id": "S2",
-      "order": 2,
-      "items": [
+          "audio_url": "u00-tutorial/s1-01-word-r2",
+          "example_audio_url": ""
+        },
         {
-          "id": "S2-01",
-          "type": "LISTEN_SELECT",
-          "mode": "choice",
-          "event": "R",
-          "level": 2,
-          "skill": "듣기",
-          "skill_level": 1,
-          "ref": "voca:90ed435d",
-          "prompt": {
-            "ko": "무엇을 들었나요?",
-            "en": "What did you hear?"
-          },
-          "stimulus": {
-            "audio": {
-              "ko": "진짜요? 감사합니다!",
-              "roman": "jinjjayo? gamsahamnida!",
-              "en": "Really? Thank you!"
-            },
-            "audio_url": "u00-tutorial/d-04",
-            "image_url": ""
-          },
-          "options": [
-            {
-              "id": "o1",
-              "ko": "언제부터 공부하셨어요?",
-              "roman": "eonjebuteo gongbuhasyeosseoyo?",
-              "en": "How long have you been studying?",
-              "correct": false,
-              "why_wrong": "이 자리에 맞는 말이 아니다"
-            },
-            {
-              "id": "o2",
-              "ko": "진짜요? 감사합니다!",
-              "roman": "jinjjayo? gamsahamnida!",
-              "en": "Really? Thank you!",
-              "correct": true
-            },
-            {
-              "id": "o3",
-              "ko": "오, 한국어 잘하시네요!",
-              "roman": "o, hangugeo jalhasineyo!",
-              "en": "Oh, your Korean is so good!",
-              "correct": false,
-              "why_wrong": "이 자리에 맞는 말이 아니다"
-            },
-            {
-              "id": "o4",
-              "ko": "안녕하세요! 네, 처음이에요!",
-              "roman": "annyeonghaseyo! ne, cheoeumieyo!",
-              "en": "Hello! Yes, it's my first time!",
-              "correct": false,
-              "why_wrong": "이 자리에 맞는 말이 아니다"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "S3",
-      "order": 3,
-      "items": [
-        {
-          "id": "S3-01",
+          "id": "S1-02",
           "type": "IMG_MATCH",
           "mode": "choice",
           "event": "R",
@@ -336,7 +287,7 @@
             "en": "Which word matches the picture?"
           },
           "stimulus": {
-            "audio_url": "u00-tutorial/s1-01-word",
+            "audio_url": "u00-tutorial/s1-01-word-r2",
             "image_brief": "Hello - 한 컷으로 알아볼 수 있게",
             "image_url": "content/images/items/hello.webp"
           },
@@ -357,15 +308,88 @@
               "why_wrong": "이 자리에 맞는 말이 아니다"
             }
           ]
-        }
-      ]
-    },
-    {
-      "id": "S4",
-      "order": 4,
-      "items": [
+        },
         {
-          "id": "S4-01",
+          "id": "S1-03",
+          "type": "VOCAB_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "ref": "voca:90ed435d",
+          "context": {
+            "ko": "감사합니다",
+            "roman": "gamsahamnida",
+            "en": "thank you"
+          },
+          "example": {
+            "ko": "네, 감사합니다!",
+            "roman": "ne, gamsahamnida!",
+            "en": "Yes, thank you!"
+          },
+          "card_kind": "단어",
+          "audio_url": "u00-tutorial/s1-03-word-r2",
+          "example_audio_url": ""
+        },
+        {
+          "id": "S1-04",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:90ed435d",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "감사합니다!",
+              "roman": "gamsahamnida!",
+              "en": "Thank you!"
+            },
+            "audio_url": "",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "안녕하세요! 네, 처음이에요!",
+              "roman": "annyeonghaseyo! ne, cheoeumieyo!",
+              "en": "Hello! Yes, it's my first time!",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "안녕하세요! 한국은 처음이세요?",
+              "roman": "annyeonghaseyo! hangugeun cheoeumiseyo?",
+              "en": "Hello! Is this your first time in Korea?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "오, 한국어 잘하시네요!",
+              "roman": "o, hangugeo jalhasineyo!",
+              "en": "Oh, your Korean is so good!",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "감사합니다!",
+              "roman": "gamsahamnida!",
+              "en": "Thank you!",
+              "correct": true
+            }
+          ]
+        },
+        {
+          "id": "S1-05",
           "type": "SYLLABLE_BUILD",
           "mode": "tiles",
           "event": "R",
@@ -378,7 +402,7 @@
             "en": "Tap the syllables to spell the word."
           },
           "stimulus": {
-            "audio_url": "u00-tutorial/s4-01-answer",
+            "audio_url": "u00-tutorial/s1-03-word-r2",
             "image_url": "",
             "en": "thank you"
           },
@@ -408,8 +432,8 @@
               "roman": "yo"
             },
             {
-              "ko": "진",
-              "roman": "jin"
+              "ko": "세",
+              "roman": "se"
             }
           ],
           "answers": [
@@ -423,43 +447,46 @@
       ]
     },
     {
-      "id": "S5",
-      "order": 5,
+      "id": "S2",
+      "order": 2,
       "items": [
         {
-          "id": "S5-01",
-          "type": "SPEAK_WORD",
-          "mode": "speech",
+          "id": "S2-01",
+          "type": "DICTATION",
+          "mode": "typing",
           "event": "R",
           "level": 4,
-          "skill": "말하기",
+          "skill": "쓰기",
           "skill_level": 2,
           "ref": "voca:90ed435d",
           "prompt": {
-            "ko": "그림을 보고 말하세요.",
-            "en": "Say the word for the picture."
+            "ko": "들은 대로 쓰세요.",
+            "en": "Type what you hear."
           },
           "stimulus": {
-            "audio_url": "u00-tutorial/s4-01-answer",
-            "image_brief": "한 사람이 작은 선물 상자를 건네고, 받는 사람이 두 손으로 받으며 기뻐한다",
-            "image_url": "content/images/items/thanks.webp"
+            "audio": {
+              "ko": "감사합니다!",
+              "roman": "gamsahamnida!",
+              "en": "Thank you!"
+            },
+            "audio_url": "",
+            "image_url": ""
           },
           "answers": [
+            {
+              "ko": "감사합니다!",
+              "roman": "gamsahamnida!",
+              "en": "Thank you!"
+            },
             {
               "ko": "감사합니다",
               "roman": "gamsahamnida",
               "en": "thank you"
             }
           ]
-        }
-      ]
-    },
-    {
-      "id": "S6",
-      "order": 6,
-      "items": [
+        },
         {
-          "id": "S6-01",
+          "id": "S2-02",
           "type": "CLOZE",
           "mode": "tiles",
           "event": "R",
@@ -487,7 +514,8 @@
             },
             {
               "ko": "감사합니다!",
-              "roman": "gamsahamnida!"
+              "roman": "gamsahamnida!",
+              "en": "Thank you!"
             }
           ],
           "answers": [
@@ -496,15 +524,9 @@
               "roman": "annyeonghaseyo!"
             }
           ]
-        }
-      ]
-    },
-    {
-      "id": "S7",
-      "order": 7,
-      "items": [
+        },
         {
-          "id": "S7-01",
+          "id": "S2-03",
           "type": "LISTEN_BUILD",
           "mode": "tiles",
           "event": "R",
@@ -522,7 +544,7 @@
               "roman": "annyeonghaseyo! hangugeun cheoeumiseyo?",
               "en": "Hello! Is this your first time in Korea?"
             },
-            "audio_url": "u00-tutorial/d-01",
+            "audio_url": "u00-tutorial/d-01-r2",
             "image_url": ""
           },
           "tiles": [
@@ -539,12 +561,13 @@
               "roman": "cheoeumiseyo?"
             },
             {
-              "ko": "잘하시네요!",
-              "roman": "jalhasineyo!"
+              "ko": "감사합니다!",
+              "roman": "gamsahamnida!",
+              "en": "Thank you!"
             },
             {
-              "ko": "감사합니다!",
-              "roman": "gamsahamnida!"
+              "ko": "처음이에요!",
+              "roman": "cheoeumieyo!"
             }
           ],
           "answers": [
@@ -558,112 +581,11 @@
       ]
     },
     {
-      "id": "S8",
-      "order": 8,
+      "id": "S3",
+      "order": 3,
       "items": [
         {
-          "id": "S8-01",
-          "type": "SHADOW",
-          "mode": "speech",
-          "event": "E",
-          "level": 3,
-          "skill": "말하기",
-          "skill_level": 1,
-          "ref": "voca:90ed435d",
-          "prompt": {
-            "ko": "듣고 따라 말하세요.",
-            "en": "Listen and repeat."
-          },
-          "stimulus": {
-            "text": {
-              "ko": "진짜요? 감사합니다!",
-              "roman": "jinjjayo? gamsahamnida!",
-              "en": "Really? Thank you!"
-            },
-            "audio": {
-              "ko": "진짜요? 감사합니다!",
-              "roman": "jinjjayo? gamsahamnida!",
-              "en": "Really? Thank you!"
-            },
-            "audio_url": "u00-tutorial/d-04",
-            "image_url": ""
-          },
-          "answers": [
-            {
-              "ko": "진짜요? 감사합니다!",
-              "roman": "jinjjayo? gamsahamnida!",
-              "en": "Really? Thank you!"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "S9",
-      "order": 9,
-      "items": [
-        {
-          "id": "S9-01",
-          "type": "REPLY_SELECT",
-          "mode": "choice",
-          "event": "R",
-          "level": 2,
-          "skill": "듣기",
-          "skill_level": 2,
-          "ref": "voca:90ed435d",
-          "prompt": {
-            "ko": "뭐라고 대답할까요?",
-            "en": "How do you reply?"
-          },
-          "stimulus": {
-            "audio": {
-              "ko": "오, 한국어 잘하시네요!",
-              "roman": "o, hangugeo jalhasineyo!",
-              "en": "Oh, your Korean is so good!"
-            },
-            "audio_url": "u00-tutorial/d-03",
-            "image_url": ""
-          },
-          "options": [
-            {
-              "id": "o1",
-              "ko": "안녕하세요! 한국은 처음이세요?",
-              "roman": "annyeonghaseyo! hangugeun cheoeumiseyo?",
-              "en": "Hello! Is this your first time in Korea?",
-              "correct": false,
-              "why_wrong": "이 자리에 맞는 말이 아니다"
-            },
-            {
-              "id": "o2",
-              "ko": "안녕하세요! 네, 처음이에요!",
-              "roman": "annyeonghaseyo! ne, cheoeumieyo!",
-              "en": "Hello! Yes, it's my first time!",
-              "correct": false,
-              "why_wrong": "이 자리에 맞는 말이 아니다"
-            },
-            {
-              "id": "o3",
-              "ko": "진짜요? 감사합니다!",
-              "roman": "jinjjayo? gamsahamnida!",
-              "en": "Really? Thank you!",
-              "correct": true
-            }
-          ],
-          "feedback": {
-            "correct": {
-              "ko": "이 자리에서는 「진짜요? 감사합니다!」라고 해요.",
-              "en": "Here you say \"Really? Thank you!\"."
-            }
-          }
-        }
-      ]
-    },
-    {
-      "id": "S10",
-      "order": 10,
-      "items": [
-        {
-          "id": "S10-01",
+          "id": "S3-01",
           "type": "ROLE_LINE",
           "mode": "choice",
           "event": "R",
@@ -683,17 +605,17 @@
           "options": [
             {
               "id": "o1",
-              "ko": "진짜요? 감사합니다!",
-              "roman": "jinjjayo? gamsahamnida!",
-              "en": "Really? Thank you!",
+              "ko": "안녕히 가세요!",
+              "roman": "annyeonghi gaseyo!",
+              "en": "Goodbye. (to someone leaving)",
               "correct": false,
               "why_wrong": "이 자리에 맞는 말이 아니다"
             },
             {
               "id": "o2",
-              "ko": "지금부터요!",
-              "roman": "jigeumbuteoyo!",
-              "en": "Starting now!",
+              "ko": "감사합니다!",
+              "roman": "gamsahamnida!",
+              "en": "Thank you!",
               "correct": false,
               "why_wrong": "이 자리에 맞는 말이 아니다"
             },
@@ -711,15 +633,9 @@
               "en": "Here you say \"Hello! Yes, it's my first time!\"."
             }
           }
-        }
-      ]
-    },
-    {
-      "id": "S11",
-      "order": 11,
-      "items": [
+        },
         {
-          "id": "S11-01",
+          "id": "S3-02",
           "type": "TURN_ORDER",
           "mode": "tiles",
           "event": "R",
@@ -737,45 +653,39 @@
           },
           "tiles": [
             {
+              "ko": "안녕하세요! 한국은 처음이세요?",
+              "roman": "annyeonghaseyo! hangugeun cheoeumiseyo?",
+              "en": "Hello! Is this your first time in Korea?",
+              "speaker": "counterpart"
+            },
+            {
+              "ko": "안녕하세요! 네, 처음이에요!",
+              "roman": "annyeonghaseyo! ne, cheoeumieyo!",
+              "en": "Hello! Yes, it's my first time!",
+              "speaker": "player"
+            },
+            {
               "ko": "오, 한국어 잘하시네요!",
               "roman": "o, hangugeo jalhasineyo!",
               "en": "Oh, your Korean is so good!",
               "speaker": "counterpart"
             },
             {
-              "ko": "진짜요? 감사합니다!",
-              "roman": "jinjjayo? gamsahamnida!",
-              "en": "Really? Thank you!",
-              "speaker": "player"
-            },
-            {
-              "ko": "언제부터 공부하셨어요?",
-              "roman": "eonjebuteo gongbuhasyeosseoyo?",
-              "en": "How long have you been studying?",
-              "speaker": "counterpart"
-            },
-            {
-              "ko": "지금부터요!",
-              "roman": "jigeumbuteoyo!",
-              "en": "Starting now!",
+              "ko": "감사합니다!",
+              "roman": "gamsahamnida!",
+              "en": "Thank you!",
               "speaker": "player"
             }
           ],
           "answers": [
             {
-              "ko": "오, 한국어 잘하시네요! | 진짜요? 감사합니다! | 언제부터 공부하셨어요? | 지금부터요!",
-              "roman": "o, hangugeo jalhasineyo! | jinjjayo? gamsahamnida! | eonjebuteo gongbuhasyeosseoyo? | jigeumbuteoyo!"
+              "ko": "안녕하세요! 한국은 처음이세요? | 안녕하세요! 네, 처음이에요! | 오, 한국어 잘하시네요! | 감사합니다!",
+              "roman": "annyeonghaseyo! hangugeun cheoeumiseyo? | annyeonghaseyo! ne, cheoeumieyo! | o, hangugeo jalhasineyo! | gamsahamnida!"
             }
           ]
-        }
-      ]
-    },
-    {
-      "id": "S12",
-      "order": 12,
-      "items": [
+        },
         {
-          "id": "S12-01",
+          "id": "S3-03",
           "type": "CULTURE_CARD",
           "mode": "card",
           "event": "E",
@@ -802,15 +712,9 @@
               "en": "Just say \"Thank you!\" And \"annyeonghaseyo\" works any time of day."
             }
           }
-        }
-      ]
-    },
-    {
-      "id": "S13",
-      "order": 13,
-      "items": [
+        },
         {
-          "id": "S13-01",
+          "id": "S3-04",
           "type": "CULTURE_CHECK",
           "mode": "choice",
           "event": "R",
@@ -862,7 +766,7 @@
     },
     {
       "id": "RP",
-      "order": 14,
+      "order": 4,
       "items": [
         {
           "id": "RP-01",
@@ -887,8 +791,8 @@
               "roman": "annyeonghaseyo! ne, cheoeumieyo!",
               "en": "Hello! Yes, it's my first time!"
             },
-            "audio_url": "u00-tutorial/d-02",
-            "image_url": "content/images/u00-tutorial/pre-6.webp"
+            "audio_url": "u00-tutorial/d-02-r2",
+            "image_url": "content/images/u00-tutorial/pre-7-v2.webp"
           },
           "tiles": [
             {
@@ -954,7 +858,7 @@
                   "roman": "annyeonghaseyo! hangugeun cheoeumiseyo?",
                   "en": "Hello! Is this your first time in Korea?"
                 },
-                "audio_url": "u00-tutorial/d-01"
+                "audio_url": "u00-tutorial/d-01-r2"
               }
             ],
             "reask": {
@@ -964,9 +868,9 @@
                 "roman": "ne?",
                 "en": "Sorry?"
               },
-              "audio_url": "u00-tutorial/rp-01-reask"
+              "audio_url": "u00-tutorial/rp-01-reask-r2"
             },
-            "player_audio_url": "u00-tutorial/d-02"
+            "player_audio_url": "u00-tutorial/d-02-r2"
           }
         },
         {
@@ -988,49 +892,40 @@
           },
           "stimulus": {
             "text": {
-              "ko": "진짜요? 감사합니다!",
-              "roman": "jinjjayo? gamsahamnida!",
-              "en": "Really? Thank you!"
+              "ko": "감사합니다!",
+              "roman": "gamsahamnida!",
+              "en": "Thank you!"
             },
-            "audio_url": "u00-tutorial/d-04",
-            "image_url": "content/images/u00-tutorial/pre-6.webp"
+            "audio_url": "",
+            "image_url": "content/images/u00-tutorial/pre-7-v2.webp"
           },
           "tiles": [
             {
-              "ko": "진짜요?",
-              "roman": "jinjjayo?",
-              "en": "Really?"
-            },
-            {
               "ko": "감사합니다!",
-              "roman": "gamsahamnida!"
+              "roman": "gamsahamnida!",
+              "en": "Thank you!"
             }
           ],
           "answers": [
             {
-              "ko": "진짜요? 감사합니다!",
-              "roman": "jinjjayo? gamsahamnida!",
-              "en": "Really? Thank you!"
+              "ko": "감사합니다!",
+              "roman": "gamsahamnida!",
+              "en": "Thank you!"
             }
           ],
           "feedback": {
             "correct": {
-              "ko": "상대가 「오, 한국어 잘하시네요!」라고 하면 「진짜요? 감사합니다!」라고 답해요."
+              "ko": "상대가 「오, 한국어 잘하시네요!」라고 하면 「감사합니다!」라고 답해요."
             }
           },
           "roleplay": {
             "line_id": "D4",
             "counterpart_line": "오, 한국어 잘하시네요!",
-            "player_line": "진짜요? 감사합니다!",
+            "player_line": "감사합니다!",
             "tiles": [
-              "진짜요?",
               "감사합니다!"
             ],
             "tiles_gloss": [
-              {
-                "tile": "진짜요?",
-                "en": "Really?"
-              },
               {
                 "tile": "감사합니다!",
                 "en": "thank you"
@@ -1038,7 +933,7 @@
             ],
             "accepted_answers": [
               {
-                "text": "진짜요? 감사합니다!"
+                "text": "감사합니다!"
               }
             ],
             "modes": [
@@ -1053,7 +948,7 @@
                   "roman": "o, hangugeo jalhasineyo!",
                   "en": "Oh, your Korean is so good!"
                 },
-                "audio_url": "u00-tutorial/d-03"
+                "audio_url": "u00-tutorial/d-03-r2"
               }
             ],
             "reask": {
@@ -1063,103 +958,14 @@
                 "roman": "ne?",
                 "en": "Sorry?"
               },
-              "audio_url": "u00-tutorial/rp-01-reask"
+              "audio_url": "u00-tutorial/rp-01-reask-r2"
             },
-            "player_audio_url": "u00-tutorial/d-04"
-          }
-        },
-        {
-          "id": "RP-03",
-          "type": "ROLEPLAY_TURN",
-          "mode": "tiles",
-          "event": "R",
-          "level": 5,
-          "skill": "말하기",
-          "skill_level": 3,
-          "prompt": {
-            "ko": "뭐라고 말할까요?",
-            "en": "What do you say?"
-          },
-          "context": {
-            "ko": "언제부터 공부하셨어요?",
-            "roman": "eonjebuteo gongbuhasyeosseoyo?",
-            "en": "How long have you been studying?"
-          },
-          "stimulus": {
-            "text": {
-              "ko": "지금부터요!",
-              "roman": "jigeumbuteoyo!",
-              "en": "Starting now!"
-            },
-            "audio_url": "u00-tutorial/d-06",
-            "image_url": "content/images/u00-tutorial/pre-6.webp"
-          },
-          "tiles": [
-            {
-              "ko": "지금부터요!",
-              "roman": "jigeumbuteoyo!",
-              "en": "Starting now!"
-            }
-          ],
-          "answers": [
-            {
-              "ko": "지금부터요!",
-              "roman": "jigeumbuteoyo!",
-              "en": "Starting now!"
-            }
-          ],
-          "feedback": {
-            "correct": {
-              "ko": "상대가 「언제부터 공부하셨어요?」라고 하면 「지금부터요!」라고 답해요."
-            }
-          },
-          "roleplay": {
-            "line_id": "D6",
-            "counterpart_line": "언제부터 공부하셨어요?",
-            "player_line": "지금부터요!",
-            "tiles": [
-              "지금부터요!"
-            ],
-            "tiles_gloss": [
-              {
-                "tile": "지금부터요!"
-              }
-            ],
-            "accepted_answers": [
-              {
-                "text": "지금부터요!"
-              }
-            ],
-            "modes": [
-              "speech",
-              "tiles"
-            ],
-            "lead": [
-              {
-                "speaker": "승무원",
-                "line": {
-                  "ko": "언제부터 공부하셨어요?",
-                  "roman": "eonjebuteo gongbuhasyeosseoyo?",
-                  "en": "How long have you been studying?"
-                },
-                "audio_url": "u00-tutorial/d-05"
-              }
-            ],
-            "reask": {
-              "speaker": "승무원",
-              "line": {
-                "ko": "네?",
-                "roman": "ne?",
-                "en": "Sorry?"
-              },
-              "audio_url": "u00-tutorial/rp-01-reask"
-            },
-            "player_audio_url": "u00-tutorial/d-06"
+            "player_audio_url": ""
           }
         }
       ],
       "scene": {
-        "background_image_url": "content/images/u00-tutorial/pre-6.webp",
+        "background_image_url": "content/images/u00-tutorial/pre-7-v2.webp",
         "counterpart": "승무원",
         "closing": [],
         "closing_image_url": "content/images/u00-tutorial/rp-end.webp",
@@ -1175,16 +981,6 @@
       "S1",
       "S2",
       "S3",
-      "S4",
-      "S5",
-      "S6",
-      "S7",
-      "S8",
-      "S9",
-      "S10",
-      "S11",
-      "S12",
-      "S13",
       "RP"
     ]
   },
@@ -1194,14 +990,18 @@
       "ko": "안녕하세요",
       "roman": "annyeonghaseyo",
       "gloss_en": "Hello",
-      "role": "target"
+      "role": "target",
+      "example_ko": "안녕하세요! 반가워요.",
+      "example_roman": "annyeonghaseyo! bangawoyo."
     },
     {
       "id": "voca:90ed435d",
       "ko": "감사합니다",
       "roman": "gamsahamnida",
       "gloss_en": "thank you",
-      "role": "target"
+      "role": "target",
+      "example_ko": "네, 감사합니다!",
+      "example_roman": "ne, gamsahamnida!"
     },
     {
       "id": "voca:b9792d77",
@@ -1224,13 +1024,6 @@
       "ko": "공부하셨어요?",
       "roman": "gongbuhasyeosseoyo?",
       "gloss_en": "Did you study?",
-      "role": "exposure"
-    },
-    {
-      "id": "expr:e7c7e991",
-      "ko": "진짜요?",
-      "roman": "jinjjayo?",
-      "gloss_en": "Really?",
       "role": "exposure"
     }
   ],

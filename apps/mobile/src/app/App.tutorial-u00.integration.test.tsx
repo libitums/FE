@@ -106,7 +106,10 @@ describe("TU1 새 설치 · 오프라인", () => {
   });
 
   test("TU1c. 온라인에서 매니페스트가 내장과 같으면 u00 그림은 받지 않고 완료 표시만 쓴다", async () => {
-    const manifest = readFileSync(resolve(process.cwd(), "content/manifest.json"), "utf8");
+    const manifest = readFileSync(
+      resolve(process.cwd(), "content/test-fixtures/bundled-2026-10-23/manifest.json"),
+      "utf8",
+    );
     const download = vi.fn((_url: string, _path: string, callback: (p: unknown) => void) =>
       callback({ status: "saved", bytes: "1" }),
     );
@@ -123,7 +126,10 @@ describe("TU1 새 설치 · 오프라인", () => {
 
 describe("TU1d 음성 받기(v3)", () => {
   test("TU1d. 내장과 같은 매니페스트로 온라인 시작하면 u00 그림 받기는 0이고 음성은 audio/u00-tutorial 12개를 받는다", async () => {
-    const manifest = readFileSync(resolve(process.cwd(), "content/manifest.json"), "utf8");
+    const manifest = readFileSync(
+      resolve(process.cwd(), "content/test-fixtures/bundled-2026-10-23/manifest.json"),
+      "utf8",
+    );
     const download = vi.fn<(url: string, path: string, callback: (p: unknown) => void) => void>(
       (_url, _path, callback) => callback({ status: "saved", bytes: "1" }),
     );
@@ -261,7 +267,10 @@ describe("TU7 새 버전 교체", () => {
     wire.pre_cuts[0]!.image_url = `content/${preCutPath(1).replace("pre-1", "pre-1-v2")}`;
     const text = JSON.stringify(wire);
     const bundled = JSON.parse(
-      readFileSync(resolve(process.cwd(), "content/manifest.json"), "utf8"),
+      readFileSync(
+        resolve(process.cwd(), "content/test-fixtures/bundled-2026-10-23/manifest.json"),
+        "utf8",
+      ),
     ) as { episodes: Record<string, unknown>[] } & Record<string, unknown>;
     const manifest = JSON.stringify({
       ...bundled,

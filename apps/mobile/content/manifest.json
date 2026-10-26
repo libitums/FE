@@ -1,15 +1,15 @@
 {
   "schema": "manifest-1",
-  "generated_at": "2026-10-21T00:00:00Z",
+  "generated_at": "2026-10-26T05:30:39Z",
   "episodes": [
     {
       "id": "u00-tutorial",
       "order": 0,
       "title": "튜토리얼",
       "schema": "delivery-2",
-      "version": "2026-10-23.1",
-      "sha256": "42134653f72075a0d728635899e66be0c460ebb75bfb5ffa794e53ae6719eb2a",
-      "bytes": 37847,
+      "version": "2026-10-26.3",
+      "sha256": "29aec43832a4dccf7f9b57b1140f985e9a9fb0aa28a3b633dafbd10589c16bca",
+      "bytes": 32893,
       "url": "episodes/u00-tutorial.json"
     },
     {
@@ -17,9 +17,9 @@
       "order": 1,
       "title": "물 사기",
       "schema": "delivery-2",
-      "version": "2026-10-23.1",
-      "sha256": "c489e8457b25c3e3cecdb66a562810443920d685cdf8c8df74d7bce642944a80",
-      "bytes": 164907,
+      "version": "2026-10-26.1",
+      "sha256": "5df809f283d7f385df0e48f996f288c2f680edc3a035073e6b275f2e3e9cae22",
+      "bytes": 165228,
       "url": "episodes/u01-water.json"
     },
     {
@@ -27,9 +27,9 @@
       "order": 2,
       "title": "체크인",
       "schema": "delivery-2",
-      "version": "2026-10-23.1",
-      "sha256": "0c497b49242c4f962e3c89174781d64080d903467189dea855e9e2f18350f3c9",
-      "bytes": 208616,
+      "version": "2026-10-26.1",
+      "sha256": "168212c966353dae70a8bb942f31a68904c7daac712b40b05f34a9bd272946ee",
+      "bytes": 209021,
       "url": "episodes/u02-checkin.json"
     },
     {
@@ -37,10 +37,60 @@
       "order": 3,
       "title": "미나 만나기",
       "schema": "delivery-2",
-      "version": "2026-10-23.1",
-      "sha256": "505cc8ad6e4c8eb6a83c9287c462d1f66b3dc549c50e704394252b4c9aecadcb",
-      "bytes": 212039,
+      "version": "2026-10-26.1",
+      "sha256": "8e254f086ca636f4f229f299189b3c7fabb0c8a86e23ca3493a728b427576a73",
+      "bytes": 212354,
       "url": "episodes/u03-mina.json"
+    },
+    {
+      "id": "u04-directions",
+      "order": 4,
+      "title": "식당 찾기",
+      "schema": "delivery-2",
+      "version": "2026-10-26.1",
+      "sha256": "66fe1af8a64199efdf45c1f77d6735251876a4948c1ac225b44da3162b2950f2",
+      "bytes": 190562,
+      "url": "episodes/u04-directions.json"
+    },
+    {
+      "id": "u05-baekban",
+      "order": 5,
+      "title": "혼자 밥 먹기",
+      "schema": "delivery-2",
+      "version": "2026-10-26.1",
+      "sha256": "ce2ae2c117e9e51e41ddd891ec6d529fd2267dfe36bce920976cb3d13bfaae33",
+      "bytes": 207481,
+      "url": "episodes/u05-baekban.json"
+    },
+    {
+      "id": "u06-cafe",
+      "order": 6,
+      "title": "커피 주문",
+      "schema": "delivery-2",
+      "version": "2026-10-26.1",
+      "sha256": "17b739aaec468bf1f2719cbc28fb9508000fd5c2a07827117a4d3c876f019b6b",
+      "bytes": 223854,
+      "url": "episodes/u06-cafe.json"
+    },
+    {
+      "id": "u07-jaemin",
+      "order": 7,
+      "title": "자리 착각",
+      "schema": "delivery-2",
+      "version": "2026-10-26.1",
+      "sha256": "7f1b5c093773ca98150c5d9b3ea9b19c045a89d4b4baa5aa6a31a5917703b779",
+      "bytes": 199995,
+      "url": "episodes/u07-jaemin.json"
+    },
+    {
+      "id": "u08-umbrella",
+      "order": 8,
+      "title": "갑자기 온 비",
+      "schema": "delivery-2",
+      "version": "2026-10-26.1",
+      "sha256": "d5ad403e73c8069fb039cbf67ed1c22ba10c3a8b41dd3b80a28716c0e46b0480",
+      "bytes": 216175,
+      "url": "episodes/u08-umbrella.json"
     }
   ]
 }
