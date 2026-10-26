@@ -12,6 +12,7 @@ import type {
   CatalogUnitKey,
 } from "../../lib/catalog-progress";
 import type { CatalogEntry } from "../../lib/episode-catalog";
+import { isTesterAccessActive } from "../../lib/tester-access";
 import { TUTORIAL_EPISODE_ID } from "../../lib/tutorial-episode";
 import type { LearningUnit } from "../../lib/episode-content.model";
 import type { UiCopy } from "../../lib/ui-copy.contract";
@@ -112,9 +113,9 @@ export function catalogCoverStatus(
   if (section === undefined || section.kind === "catalog-unavailable") return "locked";
   // 끝낸 표지는 앞이 아직이어도 숨기지 않습니다(다른 기기 진행 · 순서 변경).
   if (isCatalogUnitDone(gate.progress, section.episodeId, CATALOG_INTRO_KEY)) return "completed";
-  // 첫 구획은 늘 열립니다.
+  // 첫 구획은 늘 열립니다. 시험 계정은 모든 구획이 열립니다(ADR-0085).
   const previous = sections[index - 1];
-  if (previous === undefined) return "available";
+  if (previous === undefined || isTesterAccessActive()) return "available";
   const previousDone = isCatalogEpisodeComplete(
     gate.progress,
     previous.episodeId,
@@ -160,7 +161,7 @@ const chainOf = (section: CatalogReadySection): readonly CatalogUnitKey[] => [
 
 /**
  * 사슬에서 그 키의 상태를 파생합니다 — 끝낸 키는 앞이 아직이어도 `completed`, 바로 앞을 끝냈으면
- * `available`, 그 밖(모르는 키 포함)은 `locked`.
+ * `available`, 그 밖(모르는 키 포함)은 `locked`. 시험 계정은 사슬에 있는 키가 모두 `available`입니다(ADR-0085).
  */
 export function catalogUnitStatus(
   section: CatalogReadySection,
@@ -170,6 +171,7 @@ export function catalogUnitStatus(
   if (isCatalogUnitDone(progress, section.episodeId, unitKey)) return "completed";
   const chain = chainOf(section);
   const index = chain.indexOf(unitKey);
+  if (index >= 0 && isTesterAccessActive()) return "available";
   const previous = index > 0 ? chain[index - 1] : undefined;
   if (previous === undefined) return "locked";
   return isCatalogUnitDone(progress, section.episodeId, previous) ? "available" : "locked";
