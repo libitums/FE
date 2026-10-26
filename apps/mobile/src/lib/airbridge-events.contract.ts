@@ -77,6 +77,11 @@ export interface AirbridgeEventsModule {
    * 짝이 되는 전역 이벤트는 `airbridgeDeeplinkOpened`(인자 없음)입니다(`lib/deeplink-host.ts`).
    */
   takeOpenedDeeplink?(callback: (payload: unknown) => void): void;
+  /**
+   * ⟨ADR-0085 D4⟩ SDK 추적을 켜거나 멈춥니다(`Airbridge.startTracking` · `stopTracking`). 호스트가 값을 기억해 다음
+   * 실행도 그 상태로 시작합니다. 두 플랫폼에 있습니다 — 옛 호스트에는 없습니다(`lib/tester-tracking.ts`).
+   */
+  setTrackingEnabled?(enabled: boolean): void;
 }
 
 // ------------------------------------------------------------------ JS 결선

@@ -56,13 +56,23 @@ final class AirbridgeEventsTests: XCTestCase {
     XCTAssertEqual(AirbridgeEventsModule.name, "AirbridgeEventsModule")
     XCTAssertEqual(
       Set(AirbridgeEventsModule.methodLookup.keys),
-      ["trackEvent", "requestTrackingAuthorization", "takeOpenedDeeplink"])
+      ["trackEvent", "requestTrackingAuthorization", "takeOpenedDeeplink", "setTrackingEnabled"])
     XCTAssertEqual(AirbridgeEventsModule.methodLookup["takeOpenedDeeplink"], "takeOpenedDeeplink:")
+    XCTAssertEqual(AirbridgeEventsModule.methodLookup["setTrackingEnabled"], "setTrackingEnabled:")
     XCTAssertEqual(
       AirbridgeEventsModule.methodLookup["trackEvent"], "trackEvent:semanticAttributes:")
     XCTAssertEqual(
       AirbridgeEventsModule.methodLookup["requestTrackingAuthorization"],
       "requestTrackingAuthorization")
+  }
+
+  // N-I12(ADR-0085 D4): 시작되지 않은 빌드에서는 추적 전환이 아무것도 기억하지 않는다(SDK도 부르지 않는다).
+  func testNI12TrackingToggleIsNoOpWhenNotStarted() throws {
+    try XCTSkipIf(AirbridgeEvents.isStarted, "값이 있는 빌드에서는 실제 SDK를 멈추므로 부르지 않는다")
+    let defaults = UserDefaults(suiteName: "AirbridgeEventsTests.NI12")!
+    defaults.removePersistentDomain(forName: "AirbridgeEventsTests.NI12")
+    AirbridgeEvents.setTrackingEnabled(false, defaults: defaults)
+    XCTAssertNil(defaults.object(forKey: AirbridgeEvents.trackingStoppedKey))
   }
 
   // N-I10(ADR-0080): 우리 scheme만 딥링크로 받고, 로그인 콜백 · 다른 scheme은 받지 않는다.

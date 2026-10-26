@@ -42,6 +42,8 @@ import "@libitums/ui-lynx/visual-novel-dialog/styles.css";
 import { noAnalyticsSession } from "../lib/analytics-events";
 import { productEventSinks } from "../lib/airbridge-events-module";
 import { productAnalyticsSession } from "../lib/posthog-client";
+import { isTesterAccessActive } from "../lib/tester-access";
+import { withoutTesterEvents, withoutTesterIdentify } from "../lib/tester-tracking";
 import { App } from "./App";
 
 // 메인 스레드에서는 SDK 모듈이 번들에서 빠집니다(ADR-0029). 두 스레드의 첫 렌더가
@@ -49,7 +51,12 @@ import { App } from "./App";
 const analytics = __BACKGROUND__ ? productAnalyticsSession() : noAnalyticsSession;
 // Airbridge tracker는 background 전용 모듈에서만 풉니다. PostHog 키가 없어도 Airbridge는 동작합니다
 // (docs/adr/0063-airbridge-events.md D8 · D9).
-const sinks = __BACKGROUND__ ? productEventSinks(analytics.sinks) : analytics.sinks;
+// 시험 계정은 PostHog · Airbridge 둘 다 보내지 않습니다 — 가장 바깥에서 거릅니다(ADR-0085 D4).
+const sinks = withoutTesterEvents(
+  __BACKGROUND__ ? productEventSinks(analytics.sinks) : analytics.sinks,
+  isTesterAccessActive,
+);
+const analyticsUser = withoutTesterIdentify(analytics.user, isTesterAccessActive);
 
 // `GlobalPropsProvider`가 있어야 호스트가 뒤늦게 넘기는 safe area 값에
 // `useGlobalProps`가 다시 그립니다(lib/safe-area.ts).
@@ -60,7 +67,7 @@ root.render(
       settingsEventSink={sinks.settingsEventSink}
       entryEventSink={sinks.entryEventSink}
       episodeIntroEventSink={sinks.episodeIntroEventSink}
-      analyticsUser={analytics.user}
+      analyticsUser={analyticsUser}
     />
   </GlobalPropsProvider>,
 );

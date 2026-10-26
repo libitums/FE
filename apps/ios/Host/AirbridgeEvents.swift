@@ -41,12 +41,16 @@ enum AirbridgeEvents {
   /// 여정 맵이라, SDK 기본 30초로는 온보딩 · 가입 중에 끝나 IDFA 없이 설치가 나갑니다.
   static let trackingAuthorizationTimeoutSeconds: Double = 600
 
-  /// 두 번 불러도 한 번만 시작한다. 설치 · 실행은 SDK가 자동으로 잰다.
-  static func start(_ config: AirbridgeEventsConfig) {
+  /// ⟨ADR-0085 D4⟩ 시험 계정이라 추적을 멈췄는지 기억하는 키입니다. 다음 실행도 멈춘 채로 시작합니다.
+  static let trackingStoppedKey = "airbridge.trackingStopped"
+
+  /// 두 번 불러도 한 번만 시작한다. 설치 · 실행은 SDK가 자동으로 잰다 — 멈춰 둔 기기에서는 재지 않는다.
+  static func start(_ config: AirbridgeEventsConfig, defaults: UserDefaults = .standard) {
     guard !isStarted else { return }
     isStarted = true
     let option = AirbridgeOptionBuilder(name: config.appName, token: config.sdkToken)
       .setAutoDetermineTrackingAuthorizationTimeout(second: trackingAuthorizationTimeoutSeconds)
+      .setAutoStartTrackingEnabled(!defaults.bool(forKey: trackingStoppedKey))
       .build()
     Airbridge.initializeSDK(option: option)
     AirbridgeDeeplinks.handleDeferred()
@@ -60,6 +64,17 @@ enum AirbridgeEvents {
     DispatchQueue.main.async {
       guard Airbridge.trackingAuthorizationStatus() == .notDetermined else { return }
       Airbridge.requestTrackingAuthorization { _ in }
+    }
+  }
+
+  /// ⟨ADR-0085 D4⟩ 추적을 켜거나 멈추고 그 값을 기억한다. 시작되지 않은 빌드에서는 아무것도 하지 않는다.
+  static func setTrackingEnabled(_ enabled: Bool, defaults: UserDefaults = .standard) {
+    guard isStarted else { return }
+    defaults.set(!enabled, forKey: trackingStoppedKey)
+    if enabled {
+      Airbridge.startTracking()
+    } else {
+      Airbridge.stopTracking()
     }
   }
 

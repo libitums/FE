@@ -15,6 +15,7 @@ final class AirbridgeEventsModule: NSObject, LynxModule {
       "trackEvent": NSStringFromSelector(#selector(trackEvent(_:semanticAttributes:))),
       "requestTrackingAuthorization": NSStringFromSelector(#selector(requestTrackingAuthorization)),
       "takeOpenedDeeplink": NSStringFromSelector(#selector(takeOpenedDeeplink(_:))),
+      "setTrackingEnabled": NSStringFromSelector(#selector(setTrackingEnabled(_:))),
     ]
   }
 
@@ -35,6 +36,11 @@ final class AirbridgeEventsModule: NSObject, LynxModule {
   /// ⟨ADR-0080⟩ 받아 둔 딥링크를 **한 번** 꺼낸다. 없으면 `url: null`. 해석은 JS가 한다.
   @objc func takeOpenedDeeplink(_ callback: @escaping LynxCallbackBlock) {
     callback(["url": (AirbridgeDeeplinks.take() as Any?) ?? NSNull()])
+  }
+
+  /// ⟨ADR-0085 D4⟩ 시험 계정 표시가 바뀌면 JS가 부른다. 응답이 없다.
+  @objc func setTrackingEnabled(_ enabled: Bool) {
+    AirbridgeEvents.setTrackingEnabled(enabled)
   }
 
   /// 문자열 값만 남긴다. 순수.

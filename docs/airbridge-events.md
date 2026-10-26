@@ -113,6 +113,9 @@ grep -c 'AIRBRIDGE_APP_NAME = "";' apps/android/app/build/generated/source/build
   기존 회원의 바로 맵 진입을 세는 새 제품 이벤트 `entry_returning_learner_entered`는 **Airbridge로 보내지 않는다**(PostHog에만 간다).
 - **「레슨 완료」는 사용자당 최대 2회다.** 여정의 메신저 유닛 하나와 비주얼 노벨 유닛 하나뿐이고, 표준 학습 유닛 · 전화
   유닛 · 카탈로그 레슨은 보낼 이벤트가 없다. 롤플레이(연습)에서 끝낸 것은 보내지 않는다.
+- ⟨2026-10-26 — [ADR-0085](adr/0085-tester-access.md) D4⟩ **시험 계정(`app_metadata.duru_tester`)은 표시가 실린 뒤로 아무것도 보내지 않는다** —
+  앱 이벤트를 버리고 SDK 추적을 멈춘다(`stopTracking`, 기기에 기억해 다음 실행의 Install · Open도 재지 않음). 로그아웃하면 다시 잰다.
+  표시를 켜기 전의 Install · 가입 완료는 이미 나가 있으므로 필요하면 대시보드에서 그 기기를 거른다.
 - 사용자 ID · 이메일 · 전화번호 · 로그인 수단은 싣지 않는다. Airbridge의 `setUserID` 등 사용자 식별 기능을 쓰지 않는다.
 - ~~iOS는 IDFA 코드가 없는 SDK 변형(restricted)이고 추적 허용 팝업을 띄우지 않는다.~~ ⟨2026-10-22 — [ADR-0079](adr/0079-ios-tracking-authorization.md)⟩
   iOS는 일반판 SDK이고, **가입을 마친 뒤 여정 맵에 처음 들어설 때** 아직 정하지 않았으면 추적 허용을 한 번 묻는다. 허용하면
