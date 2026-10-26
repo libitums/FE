@@ -161,7 +161,8 @@ grep -c 'AIRBRIDGE_APP_NAME = "";' apps/android/app/build/generated/source/build
 - 앱은 Airbridge 도메인 `duru.airbridge.io` · `duru.abr.ge`를 universal link · App Link로 받는다. App Name이 `duru`라서 이 이름이다 —
   App Name이 바뀌면 `Host.entitlements` · `AndroidManifest.xml`도 바꾼다.
 - 커스텀 도메인 `go.k-duru.com`도 받는다(ADR-0080 D4 보충). 대시보드 Tracking Link › Custom Domain에서 기본 도메인(별)으로 두면
-  새 커스텀 채널 링크가 이 주소로 만들어진다. DNS는 가비아에서 CNAME 하나다.
+  새 커스텀 채널 링크가 이 주소로 만들어진다. DNS는 가비아에서 CNAME 하나다. 앱도 SDK 시작 때 같은 도메인을
+  `setTrackingLinkCustomDomains`로 넣는다 — 대시보드에서 도메인을 바꾸면 두 호스트의 상수도 함께 바꾼다.
 - 지연 딥링크(설치 전에 누른 링크)는 가입을 마치고 「여정 시작하기」 뒤에 열린다.
 - 확인 절차: [e2e 시나리오 E](e2e/airbridge-events.md#e--딥링크--지연-딥링크-adr-0080).
 

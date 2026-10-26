@@ -95,6 +95,11 @@ final class AirbridgeEventsTests: XCTestCase {
     XCTAssertEqual(AirbridgeEvents.trackingAuthorizationTimeoutSeconds, 600)
   }
 
+  // N-I13(ADR-0080 D4 보충): 대시보드에 등록한 커스텀 도메인을 SDK에도 같은 FQDN으로 넣는다.
+  func testNI13TrackingLinkCustomDomainIsTheDashboardDomain() {
+    XCTAssertEqual(AirbridgeEvents.trackingLinkCustomDomains, ["go.k-duru.com"])
+  }
+
   // N-I9(ADR-0079): 추적 허용 문구가 번들에 있다(없으면 요청 순간 앱이 죽는다).
   func testNI9TrackingUsageDescriptionIsInTheBundle() {
     let text = Bundle.main.object(forInfoDictionaryKey: "NSUserTrackingUsageDescription") as? String

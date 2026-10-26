@@ -41,6 +41,10 @@ enum AirbridgeEvents {
   /// 여정 맵이라, SDK 기본 30초로는 온보딩 · 가입 중에 끝나 IDFA 없이 설치가 나갑니다.
   static let trackingAuthorizationTimeoutSeconds: Double = 600
 
+  /// ⟨ADR-0080 D4 보충⟩ 대시보드 Tracking Link › Custom Domain에 등록한 도메인이다. SDK에도 같은 FQDN을 넣어야
+  /// 이 도메인의 링크를 Airbridge 링크로 알아본다(Airbridge iOS SDK 문서 「Set up custom domain」).
+  static let trackingLinkCustomDomains = ["go.k-duru.com"]
+
   /// ⟨ADR-0085 D4⟩ 시험 계정이라 추적을 멈췄는지 기억하는 키입니다. 다음 실행도 멈춘 채로 시작합니다.
   static let trackingStoppedKey = "airbridge.trackingStopped"
 
@@ -51,6 +55,7 @@ enum AirbridgeEvents {
     let option = AirbridgeOptionBuilder(name: config.appName, token: config.sdkToken)
       .setAutoDetermineTrackingAuthorizationTimeout(second: trackingAuthorizationTimeoutSeconds)
       .setAutoStartTrackingEnabled(!defaults.bool(forKey: trackingStoppedKey))
+      .setTrackingLinkCustomDomains(trackingLinkCustomDomains)
       .build()
     Airbridge.initializeSDK(option: option)
     AirbridgeDeeplinks.handleDeferred()
