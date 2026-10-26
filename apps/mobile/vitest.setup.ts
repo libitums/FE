@@ -12,9 +12,18 @@ import "@testing-library/jest-dom/vitest";
 
 // 여정 맵의 마지막 스크롤 자리는 앱이 떠 있는 동안 모듈에 남습니다 — 테스트마다 「이 실행에서 처음 여는 맵」으로
 // 시작하게 지웁니다.
-import { afterEach, beforeEach } from "vitest";
+import { afterEach, beforeEach, vi } from "vitest";
 import { setTicketDropWaitForTests } from "./src/app/use-learning-tickets";
 import { forgetMapScroll } from "./src/screens/journey-map/journey-map-scroll-memory";
+
+// 내장 콘텐츠는 버킷 최신본으로 자주 바뀝니다. 문장 · 단계 · 소리 id를 짚는 테스트가 그때마다 깨지지 않게, 내장
+// 카탈로그와 그 그림 표를 2026-10-23 고정본으로 바꿉니다. 실제 내장본을 보는 테스트는 `vi.unmock`으로 되돌립니다
+// (`episode-bundled.live.unit.test.ts` · `bundled-content-images.unit.test.ts`).
+vi.mock("./src/lib/episode-bundled", () => import("./src/lib/episode-bundled.test-support"));
+vi.mock(
+  "./src/lib/bundled-content-images",
+  () => import("./src/lib/bundled-content-images.test-support"),
+);
 
 // 새 레슨에 티켓을 쓰면 앱은 머리 칩이 줄어드는 것(시안 E4)을 보인 뒤 학습을 엽니다. 그 기다림이 주제가 아닌
 // 테스트는 Start 직후 학습을 찾으므로 기본으로 끕니다 — 기다림은 `App.learning-tickets.integration.test.tsx`가

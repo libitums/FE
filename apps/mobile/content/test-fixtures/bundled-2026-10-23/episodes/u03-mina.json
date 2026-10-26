@@ -1,0 +1,6605 @@
+{
+  "schema": "delivery-2",
+  "unit_id": "u03-mina",
+  "title": "미나 만나기",
+  "title_en": "Meeting Mina",
+  "day": 1,
+  "time_of_day": "낮",
+  "place": "익선 게스트하우스 여성 도미토리",
+  "counterpart": "미나",
+  "counterpart_avatar": "content/images/u03-mina/avatar.webp",
+  "pre_cuts": [
+    {
+      "index": 1,
+      "kind": "pre",
+      "cut_kind": "narration",
+      "narration": {
+        "ko": "방에 들어서니 아무도 없다. 캐리어를 어디에 둬야 할지 두리번거린다.",
+        "roman": "bange deureoseoni amudo eopda. kaerieoreul eodie dwoya halji duribeongeorinda.",
+        "en": "No one's inside. Looks around, wondering where to put the suitcase."
+      },
+      "image_brief": "이층 침대 네 개가 놓인 빈 방. 창가 오른쪽 침대에 배낭이 놓여 있다. 플레이어 앞에 캐리어가 세워져 있다.",
+      "image_url": "content/images/u03-mina/pre-1.webp",
+      "audio_url": ""
+    },
+    {
+      "index": 2,
+      "kind": "pre",
+      "cut_kind": "speech",
+      "speaker": "낯선 사람",
+      "line": {
+        "ko": "아, 캐리어는 침대 밑에 넣으면 돼요. 저도 거기 넣었어요.",
+        "roman": "a, kaerieoneun chimdae mite neoeumyeon dwaeyo. jeodo geogi neoeosseoyo.",
+        "en": "Oh, the suitcase goes under the bed. That's where I put mine."
+      },
+      "aside": {
+        "ko": "씻고 들어와 수건으로 젖은 머리를 털며 침대 밑을 가리키고",
+        "roman": "ssitgo deureowa sugeoneuro jeojeun meorireul teolmyeo chimdae miteul garikigo",
+        "en": "Back from the shower, towel-drying wet hair and pointing under the bed."
+      },
+      "image_brief": "씻고 온 낯선 사람이 흰 나시 차림으로 창가 오른쪽 침대 옆에 서서 수건으로 젖은 머리를 털며 침대 밑을 가리킨다.",
+      "image_url": "content/images/u03-mina/pre-2.webp",
+      "audio_url": "u03-mina/pre-2"
+    },
+    {
+      "index": 3,
+      "kind": "pre",
+      "cut_kind": "narration",
+      "narration": {
+        "ko": "캐리어를 눕혀 침대 밑에 밀어 넣는다. 딱 맞게 들어간다.",
+        "roman": "kaerieoreul nupyeo chimdae mite mireo neonneunda. ttak matge deureoganda.",
+        "en": "Lays the suitcase flat and slides it under the bed. A perfect fit."
+      },
+      "image_brief": "아래 침대 밑 빈칸에 눕혀 넣은 캐리어.",
+      "image_url": "content/images/u03-mina/pre-3.webp",
+      "audio_url": ""
+    },
+    {
+      "index": 4,
+      "kind": "pre",
+      "cut_kind": "speech",
+      "speaker": "낯선 사람",
+      "line": {
+        "ko": "안녕하세요. 이름이 뭐예요?",
+        "roman": "annyeonghaseyo. ireumi mwoyeyo?",
+        "en": "Hi. What's your name?"
+      },
+      "aside": {
+        "ko": "수건을 어깨에 걸치며 이쪽을 돌아보고",
+        "roman": "sugeoneul eokkaee geolchimyeo ijjogeul dorabogo",
+        "en": "Draping the towel over one shoulder and turning this way."
+      },
+      "image_brief": "같은 구도. 낯선 사람이 수건을 어깨에 걸치고 플레이어를 보며 손을 살짝 든다.",
+      "image_url": "content/images/u03-mina/pre-4.webp",
+      "audio_url": "u03-mina/d-01"
+    }
+  ],
+  "dialogue": [
+    {
+      "seq": 1,
+      "line_id": "D1",
+      "kind": "main",
+      "role": "counterpart",
+      "text": {
+        "ko": "안녕하세요. 이름이 뭐예요?",
+        "roman": "annyeonghaseyo. ireumi mwoyeyo?",
+        "en": "Hello. What's your name?"
+      },
+      "audio_url": "u03-mina/d-01"
+    },
+    {
+      "seq": 2,
+      "line_id": "D2",
+      "kind": "main",
+      "role": "player",
+      "text": {
+        "ko": "안녕하세요, 저는 {이름}이에요.",
+        "roman": "annyeonghaseyo, jeoneun {이름}ieyo.",
+        "en": "Hello, I'm {이름}."
+      },
+      "audio_url": ""
+    },
+    {
+      "seq": 3,
+      "line_id": "D3",
+      "kind": "main",
+      "role": "counterpart",
+      "text": {
+        "ko": "저는 미나예요. 창가 쪽 침대 써요.",
+        "roman": "jeoneun minayeyo. changga jjok chimdae sseoyo.",
+        "en": "I'm Mina. I use the bed by the window."
+      },
+      "audio_url": "u03-mina/d-03"
+    },
+    {
+      "seq": 4,
+      "line_id": "D4",
+      "kind": "main",
+      "role": "player",
+      "text": {
+        "ko": "미나 씨, 만나서 반가워요.",
+        "roman": "mina ssi, mannaseo bangawoyo.",
+        "en": "Mina, nice to meet you."
+      },
+      "textbook": {
+        "ko": "미나 씨, 만나서 반갑습니다.",
+        "roman": "mina ssi, mannaseo bangapseumnida.",
+        "en": "Mina, nice to meet you."
+      },
+      "audio_url": "u03-mina/d-04"
+    },
+    {
+      "seq": 5,
+      "line_id": "D5",
+      "kind": "main",
+      "role": "counterpart",
+      "text": {
+        "ko": "네, 저도 반가워요.",
+        "roman": "ne, jeodo bangawoyo.",
+        "en": "Yes, nice to meet you too."
+      },
+      "audio_url": "u03-mina/d-05-v2"
+    },
+    {
+      "seq": 6,
+      "line_id": "D6",
+      "kind": "main",
+      "role": "player",
+      "text": {
+        "ko": "미나 씨는 어느 나라에서 왔어요?",
+        "roman": "mina ssineun eoneu naraeseo wasseoyo?",
+        "en": "Mina, what country are you from?"
+      },
+      "audio_url": "u03-mina/d-06"
+    },
+    {
+      "seq": 7,
+      "line_id": "D7",
+      "kind": "main",
+      "role": "counterpart",
+      "text": {
+        "ko": "저는 스위스에서 한국어 배우러 왔어요. {이름}은/는요?",
+        "roman": "jeoneun seuwiseueseo hangugeo baeureo wasseoyo. {이름}eun/neunyo?",
+        "en": "I came from Switzerland to learn Korean. How about you, {이름}?"
+      },
+      "audio_url": ""
+    },
+    {
+      "seq": 8,
+      "line_id": "D8",
+      "kind": "main",
+      "role": "player",
+      "text": {
+        "ko": "저는 {나라}에서 왔어요. 여기서 며칠 묵어요?",
+        "roman": "jeoneun {나라}eseo wasseoyo. yeogiseo myeochil mugeoyo?",
+        "en": "I'm from {나라}. How many days are you staying here?"
+      },
+      "audio_url": ""
+    },
+    {
+      "seq": 9,
+      "line_id": "D9",
+      "kind": "main",
+      "role": "counterpart",
+      "text": {
+        "ko": "저는 이틀 먼저 왔는데 2주 있을 거예요.",
+        "roman": "jeoneun iteul meonjeo wanneunde 2ju isseul geoyeyo.",
+        "en": "I came two days earlier, and I'll stay two weeks."
+      },
+      "audio_url": "u03-mina/d-09"
+    },
+    {
+      "seq": 10,
+      "line_id": "D10",
+      "kind": "main",
+      "role": "player",
+      "text": {
+        "ko": "저는 일주일 묵어요.",
+        "roman": "jeoneun iljuil mugeoyo.",
+        "en": "I'm staying a week."
+      },
+      "audio_url": "u03-mina/d-10"
+    },
+    {
+      "seq": 11,
+      "line_id": "D11",
+      "kind": "main",
+      "role": "counterpart",
+      "text": {
+        "ko": "우리 친하게 지내요.",
+        "roman": "uri chinhage jinaeyo.",
+        "en": "Let's be good friends."
+      },
+      "audio_url": "u03-mina/d-11"
+    },
+    {
+      "seq": 12,
+      "line_id": "D4b",
+      "kind": "branch",
+      "role": "player",
+      "text": {
+        "ko": "미나 씨, 반가워요. 저는 학생이에요.",
+        "roman": "mina ssi, bangawoyo. jeoneun haksaengieyo.",
+        "en": "Mina, nice to meet you. I'm a student."
+      },
+      "audio_url": "u03-mina/d-12",
+      "branch_at": 4,
+      "branch_part": "line",
+      "situation": {
+        "ko": "미나에게 나도 학생이라고 말하고 싶다.",
+        "roman": "minaege nado haksaengirago malhago sipda.",
+        "en": "You want to tell Mina you are a student too."
+      }
+    },
+    {
+      "seq": 13,
+      "line_id": "D4r",
+      "kind": "branch",
+      "role": "counterpart",
+      "text": {
+        "ko": "아, 저도 학생이에요.",
+        "roman": "a, jeodo haksaengieyo.",
+        "en": "Oh, I'm a student too."
+      },
+      "audio_url": "u03-mina/d-13",
+      "branch_at": 4,
+      "branch_part": "reply"
+    }
+  ],
+  "post_cuts": [
+    {
+      "index": 1,
+      "kind": "post",
+      "cut_kind": "speech",
+      "speaker": "미나",
+      "line": {
+        "ko": "여기 식당 가 봐요. 걸어서 오 분이에요.",
+        "roman": "yeogi sikdang ga bwayo. georeoseo o bunieyo.",
+        "en": "Try this restaurant. It's five minutes on foot."
+      },
+      "aside": {
+        "ko": "배낭에서 메모지를 꺼내 뭔가를 적으며",
+        "roman": "baenangeseo memojireul kkeonae mwongareul jeogeumyeo",
+        "en": "Pulling a memo pad from the backpack and jotting something down."
+      },
+      "image_brief": "같은 구도. 미나가 메모지에 뭔가를 적는다.",
+      "image_url": "content/images/u03-mina/post-1.webp",
+      "audio_url": "u03-mina/post-1"
+    },
+    {
+      "index": 2,
+      "kind": "post",
+      "cut_kind": "narration",
+      "narration": {
+        "ko": "메모지에는 '유진식당'이라는 이름과 골목 약도가 그려져 있다.",
+        "roman": "memojieneun 'yujinsikdang'iraneun ireumgwa golmok yakdoga geuryeojyeo itda.",
+        "en": "The name \"Yujin Sikdang\" and a little sketch map of the alleys."
+      },
+      "image_brief": "메모지에 '유진식당' 글씨와 손으로 그린 약도. 게스트하우스 · 편의점 · 화살표 · 5분이 적혀 있다.",
+      "image_url": "content/images/u03-mina/post-2.webp",
+      "audio_url": ""
+    },
+    {
+      "index": 3,
+      "kind": "post",
+      "cut_kind": "speech",
+      "speaker": "미나",
+      "line": {
+        "ko": "저는 약속이 있어서요. 맛있었는지 내일 얘기해 줘요!",
+        "roman": "jeoneun yaksogi isseoseoyo. masisseonneunji naeil yaegihae jwoyo!",
+        "en": "I've got plans. Tell me tomorrow if it was good!"
+      },
+      "aside": {
+        "ko": "겉옷을 챙겨 문을 나서다 돌아보며",
+        "roman": "geotoseul chaenggyeo muneul naseoda dorabomyeo",
+        "en": "Grabbing a jacket and turning back at the door."
+      },
+      "image_brief": "미나가 나시 위에 겉옷을 걸치며 방문 쪽에서 돌아본다.",
+      "image_url": "content/images/u03-mina/post-3.webp",
+      "audio_url": "u03-mina/post-3-v2"
+    }
+  ],
+  "steps": [
+    {
+      "id": "S1",
+      "order": 1,
+      "items": [
+        {
+          "id": "S1-01",
+          "type": "VOCAB_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "ref": "voca:eebef120",
+          "context": {
+            "ko": "사람",
+            "roman": "saram",
+            "en": "person, man"
+          },
+          "example": {
+            "ko": "어느 나라 사람이에요?",
+            "roman": "eoneu nara saramieyo?",
+            "en": "Where are you from?"
+          },
+          "card_kind": "단어",
+          "audio_url": "u03-mina/s1-01-word",
+          "example_audio_url": "u03-mina/s1-01-ex"
+        },
+        {
+          "id": "S1-02",
+          "type": "VOCAB_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "ref": "voca:e3c30bfa",
+          "context": {
+            "ko": "이름",
+            "roman": "ireum",
+            "en": "name"
+          },
+          "example": {
+            "ko": "안녕하세요, 저는 은지예요.",
+            "roman": "annyeonghaseyo, jeoneun eunjiyeyo.",
+            "en": "Hello, I'm Eunji."
+          },
+          "card_kind": "단어",
+          "audio_url": "u03-mina/s1-02-word-v2",
+          "example_audio_url": "u03-mina/d-02"
+        },
+        {
+          "id": "S1-03",
+          "type": "VOCAB_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "ref": "voca:c191d7c5",
+          "context": {
+            "ko": "반갑다",
+            "roman": "bangapda",
+            "en": "nice to meet you"
+          },
+          "example": {
+            "ko": "미나 씨, 만나서 반갑습니다.",
+            "roman": "mina ssi, mannaseo bangapseumnida.",
+            "en": "Mina, nice to meet you."
+          },
+          "card_kind": "단어",
+          "audio_url": "u03-mina/s1-03-word-v2",
+          "example_audio_url": "u03-mina/s1-03-ex"
+        },
+        {
+          "id": "S1-04",
+          "type": "VOCAB_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "ref": "voca:332ac987",
+          "context": {
+            "ko": "어느",
+            "roman": "eoneu",
+            "en": "which, how"
+          },
+          "example": {
+            "ko": "미나 씨는 어느 나라에서 왔어요?",
+            "roman": "mina ssineun eoneu naraeseo wasseoyo?",
+            "en": "Mina, what country are you from?"
+          },
+          "card_kind": "단어",
+          "audio_url": "u03-mina/s1-04-word-v2",
+          "example_audio_url": "u03-mina/d-06"
+        },
+        {
+          "id": "S1-05",
+          "type": "VOCAB_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "ref": "voca:be986751",
+          "context": {
+            "ko": "나라",
+            "roman": "nara",
+            "en": "country"
+          },
+          "example": {
+            "ko": "미나 씨는 어느 나라에서 왔어요?",
+            "roman": "mina ssineun eoneu naraeseo wasseoyo?",
+            "en": "Mina, what country are you from?"
+          },
+          "card_kind": "단어",
+          "audio_url": "u03-mina/s1-05-word-v2",
+          "example_audio_url": "u03-mina/d-06"
+        },
+        {
+          "id": "S1-06",
+          "type": "VOCAB_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "ref": "voca:7659fafa",
+          "context": {
+            "ko": "중국",
+            "roman": "jungguk",
+            "en": "China"
+          },
+          "example": {
+            "ko": "중국에서 왔어요.",
+            "roman": "junggugeseo wasseoyo.",
+            "en": "I'm from China."
+          },
+          "card_kind": "단어",
+          "audio_url": "u03-mina/s1-06-word-v2",
+          "example_audio_url": "u03-mina/s1-06-ex"
+        },
+        {
+          "id": "S1-07",
+          "type": "VOCAB_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "ref": "voca:9710a021",
+          "context": {
+            "ko": "며칠",
+            "roman": "myeochil",
+            "en": "how many days"
+          },
+          "example": {
+            "ko": "저는 호주에서 왔어요. 여기서 며칠 묵어요?",
+            "roman": "jeoneun hojueseo wasseoyo. yeogiseo myeochil mugeoyo?",
+            "en": "I'm from Australia. How many days are you staying here?"
+          },
+          "card_kind": "단어",
+          "audio_url": "u03-mina/s1-07-word-v2",
+          "example_audio_url": "u03-mina/d-08"
+        },
+        {
+          "id": "S1-08",
+          "type": "CLOZE",
+          "mode": "tiles",
+          "event": "E",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "patt:50dbccc0",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "미나 씨, 반가워요. 저는 ___이에요.",
+            "roman": "mina ssi, bangawoyo. jeoneun ___ieyo.",
+            "en": "Mina, nice to meet you. I'm a student."
+          },
+          "tiles": [
+            {
+              "ko": "학생",
+              "roman": "haksaeng",
+              "en": "student"
+            },
+            {
+              "ko": "먼저",
+              "roman": "meonjeo",
+              "en": "first, first of all, before"
+            },
+            {
+              "ko": "나라",
+              "roman": "nara",
+              "en": "country"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "학생",
+              "roman": "haksaeng",
+              "en": "student"
+            }
+          ]
+        },
+        {
+          "id": "S1-09",
+          "type": "CLOZE_CHOICE",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "읽기",
+          "skill_level": 2,
+          "ref": "voca:9710a021",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "저는 호주에서 왔어요. 여기서 ___ 묵어요?",
+            "roman": "jeoneun hojueseo wasseoyo. yeogiseo ___ mugeoyo?",
+            "en": "I'm from Australia. How many days are you staying here?"
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "침대",
+              "roman": "chimdae",
+              "en": "bed",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "며칠",
+              "roman": "myeochil",
+              "en": "how many days",
+              "correct": true
+            },
+            {
+              "id": "o3",
+              "ko": "먼저",
+              "roman": "meonjeo",
+              "en": "first, first of all, before",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "며칠",
+              "roman": "myeochil",
+              "en": "how many days"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "「저는 호주에서 왔어요. 여기서 며칠 묵어요?」",
+              "en": "I'm from Australia. How many days are you staying here?"
+            }
+          }
+        },
+        {
+          "id": "S1-10",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:332ac987",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "미나 씨는 어느 나라에서 왔어요?",
+              "roman": "mina ssineun eoneu naraeseo wasseoyo?",
+              "en": "Mina, what country are you from?"
+            },
+            "audio_url": "u03-mina/d-06",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "저는 호주에서 왔어요. 여기서 며칠 묵어요?",
+              "roman": "jeoneun hojueseo wasseoyo. yeogiseo myeochil mugeoyo?",
+              "en": "I'm from Australia. How many days are you staying here?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "네, 저도 반가워요.",
+              "roman": "ne, jeodo bangawoyo.",
+              "en": "Nice to meet you too.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "미나 씨는 어느 나라에서 왔어요?",
+              "roman": "mina ssineun eoneu naraeseo wasseoyo?",
+              "en": "Where are you from, Mina?",
+              "correct": true
+            },
+            {
+              "id": "o4",
+              "ko": "아, 저도 학생이에요.",
+              "roman": "a, jeodo haksaengieyo.",
+              "en": "Oh, I'm a student too.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ]
+        },
+        {
+          "id": "S1-11",
+          "type": "CLOZE",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:e3c30bfa",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "안녕하세요. ___ 뭐예요?",
+            "roman": "annyeonghaseyo. ___ mwoyeyo?",
+            "en": "Hello. What's your name?"
+          },
+          "tiles": [
+            {
+              "ko": "이름이",
+              "roman": "ireumi"
+            },
+            {
+              "ko": "우리가",
+              "roman": "uriga"
+            },
+            {
+              "ko": "나라가",
+              "roman": "naraga"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "이름이",
+              "roman": "ireumi"
+            }
+          ]
+        },
+        {
+          "id": "S1-12",
+          "type": "WORD_ORDER",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "patt:50dbccc0",
+          "prompt": {
+            "ko": "문장을 만드세요.",
+            "en": "Build the sentence."
+          },
+          "stimulus": {
+            "audio_url": "u03-mina/d-02",
+            "image_url": "",
+            "en": "Hello, I'm {이름}."
+          },
+          "tiles": [
+            {
+              "ko": "안녕하세요,",
+              "roman": "annyeonghaseyo,"
+            },
+            {
+              "ko": "저는",
+              "roman": "jeoneun"
+            },
+            {
+              "ko": "은지예요.",
+              "roman": "eunjiyeyo."
+            }
+          ],
+          "answers": [
+            {
+              "ko": "안녕하세요, 저는 은지예요.",
+              "roman": "annyeonghaseyo, jeoneun eunjiyeyo.",
+              "en": "Hello, I'm Eunji."
+            }
+          ]
+        },
+        {
+          "id": "S1-13",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:e3c30bfa",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "안녕하세요. 이름이 뭐예요?",
+              "roman": "annyeonghaseyo. ireumi mwoyeyo?",
+              "en": "Hello. What's your name?"
+            },
+            "audio_url": "u03-mina/d-01",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "저는 이틀 먼저 왔는데 2주 있을 거예요.",
+              "roman": "jeoneun iteul meonjeo wanneunde 2ju isseul geoyeyo.",
+              "en": "I came two days earlier, and I'll stay two weeks.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "네, 저도 반가워요.",
+              "roman": "ne, jeodo bangawoyo.",
+              "en": "Nice to meet you too.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "안녕하세요, 저는 은지예요.",
+              "roman": "annyeonghaseyo, jeoneun eunjiyeyo.",
+              "en": "Hello, I'm Eunji.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "안녕하세요. 이름이 뭐예요?",
+              "roman": "annyeonghaseyo. ireumi mwoyeyo?",
+              "en": "Hello. What's your name?",
+              "correct": true
+            }
+          ]
+        },
+        {
+          "id": "S1-14",
+          "type": "CLOZE_CHOICE",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "읽기",
+          "skill_level": 2,
+          "ref": "voca:332ac987",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "미나 씨는 ___ 나라에서 왔어요?",
+            "roman": "mina ssineun ___ naraeseo wasseoyo?",
+            "en": "Mina, what country are you from?"
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "어느",
+              "roman": "eoneu",
+              "en": "which, how",
+              "correct": true
+            },
+            {
+              "id": "o2",
+              "ko": "창가",
+              "roman": "changga",
+              "en": "window",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "사람",
+              "roman": "saram",
+              "en": "person, man",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "어느",
+              "roman": "eoneu",
+              "en": "which, how"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "「미나 씨는 어느 나라에서 왔어요?」",
+              "en": "Mina, what country are you from?"
+            }
+          }
+        },
+        {
+          "id": "S1-15",
+          "type": "IMG_MATCH",
+          "mode": "choice",
+          "event": "R",
+          "level": 1,
+          "skill": "읽기",
+          "skill_level": 1,
+          "ref": "voca:be986751",
+          "prompt": {
+            "ko": "사진에 맞는 말을 고르세요.",
+            "en": "Which word matches the picture?"
+          },
+          "stimulus": {
+            "audio_url": "u03-mina/s1-05-word-v2",
+            "image_brief": "country - 한 컷으로 알아볼 수 있게",
+            "image_url": "content/images/items/country.webp"
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "나라",
+              "roman": "nara",
+              "en": "country",
+              "correct": true
+            },
+            {
+              "id": "o2",
+              "ko": "먼저",
+              "roman": "meonjeo",
+              "en": "first, first of all, before",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "학생",
+              "roman": "haksaeng",
+              "en": "student",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "일주일",
+              "roman": "iljuil",
+              "en": "one week",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ]
+        },
+        {
+          "id": "S1-16",
+          "type": "IMG_MATCH",
+          "mode": "choice",
+          "event": "R",
+          "level": 1,
+          "skill": "읽기",
+          "skill_level": 1,
+          "ref": "voca:eebef120",
+          "prompt": {
+            "ko": "사진에 맞는 말을 고르세요.",
+            "en": "Which word matches the picture?"
+          },
+          "stimulus": {
+            "audio_url": "u03-mina/s1-01-word",
+            "image_brief": "person, man - 한 컷으로 알아볼 수 있게",
+            "image_url": "content/images/items/person.webp"
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "어느",
+              "roman": "eoneu",
+              "en": "which, how",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "이름",
+              "roman": "ireum",
+              "en": "name",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "사람",
+              "roman": "saram",
+              "en": "person, man",
+              "correct": true
+            },
+            {
+              "id": "o4",
+              "ko": "창가",
+              "roman": "changga",
+              "en": "window",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "S2",
+      "order": 2,
+      "items": [
+        {
+          "id": "S2-01",
+          "type": "ROLE_LINE",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "읽기",
+          "skill_level": 2,
+          "ref": "voca:9710a021",
+          "prompt": {
+            "ko": "뭐라고 말할까요?",
+            "en": "What do you say?"
+          },
+          "context": {
+            "ko": "저는 스위스에서 한국어 배우러 왔어요. 은지는요?",
+            "roman": "jeoneun seuwiseueseo hangugeo baeureo wasseoyo. eunjineunyo?",
+            "en": "I came from Switzerland to learn Korean. How about you, Eunji?"
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "미나 씨, 반가워요. 저는 학생이에요.",
+              "roman": "mina ssi, bangawoyo. jeoneun haksaengieyo.",
+              "en": "Mina, nice to meet you. I'm a student.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "저는 호주에서 왔어요. 여기서 며칠 묵어요?",
+              "roman": "jeoneun hojueseo wasseoyo. yeogiseo myeochil mugeoyo?",
+              "en": "I'm from Australia. How many days are you staying here?",
+              "correct": true
+            },
+            {
+              "id": "o3",
+              "ko": "미나 씨, 만나서 반가워요.",
+              "roman": "mina ssi, mannaseo bangawoyo.",
+              "en": "Nice to meet you, Mina.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "이 자리에서는 「저는 호주에서 왔어요. 여기서 며칠 묵어요?」라고 해요.",
+              "en": "Here you say \"I'm from Australia. How many days are you staying here?\"."
+            }
+          }
+        },
+        {
+          "id": "S2-02",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:e3c30bfa",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "안녕하세요. 이름이 뭐예요?",
+              "roman": "annyeonghaseyo. ireumi mwoyeyo?",
+              "en": "Hello. What's your name?"
+            },
+            "audio_url": "u03-mina/d-01",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "아, 저도 학생이에요.",
+              "roman": "a, jeodo haksaengieyo.",
+              "en": "Oh, I'm a student too.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "미나 씨, 만나서 반갑습니다.",
+              "roman": "mina ssi, mannaseo bangapseumnida.",
+              "en": "Mina, nice to meet you.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "안녕하세요, 저는 은지예요.",
+              "roman": "annyeonghaseyo, jeoneun eunjiyeyo.",
+              "en": "Hello, I'm Eunji.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "안녕하세요. 이름이 뭐예요?",
+              "roman": "annyeonghaseyo. ireumi mwoyeyo?",
+              "en": "Hello. What's your name?",
+              "correct": true
+            }
+          ]
+        },
+        {
+          "id": "S2-03",
+          "type": "REPLY_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 2,
+          "ref": "voca:332ac987",
+          "prompt": {
+            "ko": "뭐라고 대답할까요?",
+            "en": "How do you reply?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "네, 저도 반가워요.",
+              "roman": "ne, jeodo bangawoyo.",
+              "en": "Yes, nice to meet you too."
+            },
+            "audio_url": "u03-mina/d-05-v2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "미나 씨, 만나서 반가워요.",
+              "roman": "mina ssi, mannaseo bangawoyo.",
+              "en": "Nice to meet you, Mina.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "미나 씨는 어느 나라에서 왔어요?",
+              "roman": "mina ssineun eoneu naraeseo wasseoyo?",
+              "en": "Where are you from, Mina?",
+              "correct": true
+            },
+            {
+              "id": "o3",
+              "ko": "안녕하세요, 저는 은지예요.",
+              "roman": "annyeonghaseyo, jeoneun eunjiyeyo.",
+              "en": "Hello, I'm Eunji.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "이 자리에서는 「미나 씨는 어느 나라에서 왔어요?」라고 해요.",
+              "en": "Here you say \"Mina, what country are you from?\"."
+            }
+          }
+        },
+        {
+          "id": "S2-04",
+          "type": "ROLE_LINE",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "읽기",
+          "skill_level": 2,
+          "ref": "patt:50dbccc0",
+          "prompt": {
+            "ko": "뭐라고 말할까요?",
+            "en": "What do you say?"
+          },
+          "context": {
+            "ko": "안녕하세요. 이름이 뭐예요?",
+            "roman": "annyeonghaseyo. ireumi mwoyeyo?",
+            "en": "Hello. What's your name?"
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "미나 씨는 어느 나라에서 왔어요?",
+              "roman": "mina ssineun eoneu naraeseo wasseoyo?",
+              "en": "Where are you from, Mina?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "미나 씨, 반가워요. 저는 학생이에요.",
+              "roman": "mina ssi, bangawoyo. jeoneun haksaengieyo.",
+              "en": "Mina, nice to meet you. I'm a student.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "안녕하세요, 저는 은지예요.",
+              "roman": "annyeonghaseyo, jeoneun eunjiyeyo.",
+              "en": "Hello, I'm Eunji.",
+              "correct": true
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "이 자리에서는 「안녕하세요, 저는 은지예요.」라고 해요.",
+              "en": "Here you say \"Hello, I'm Eunji.\"."
+            }
+          }
+        },
+        {
+          "id": "S2-05",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:332ac987",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "미나 씨는 어느 나라에서 왔어요?",
+              "roman": "mina ssineun eoneu naraeseo wasseoyo?",
+              "en": "Mina, what country are you from?"
+            },
+            "audio_url": "u03-mina/d-06",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "네, 저도 반가워요.",
+              "roman": "ne, jeodo bangawoyo.",
+              "en": "Nice to meet you too.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "미나 씨는 어느 나라에서 왔어요?",
+              "roman": "mina ssineun eoneu naraeseo wasseoyo?",
+              "en": "Where are you from, Mina?",
+              "correct": true
+            },
+            {
+              "id": "o3",
+              "ko": "미나 씨, 반가워요. 저는 학생이에요.",
+              "roman": "mina ssi, bangawoyo. jeoneun haksaengieyo.",
+              "en": "Mina, nice to meet you. I'm a student.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "저는 호주에서 왔어요. 여기서 며칠 묵어요?",
+              "roman": "jeoneun hojueseo wasseoyo. yeogiseo myeochil mugeoyo?",
+              "en": "I'm from Australia. How many days are you staying here?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ]
+        },
+        {
+          "id": "S2-06",
+          "type": "LISTEN_BUILD",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "듣기",
+          "skill_level": 3,
+          "ref": "voca:e3c30bfa",
+          "prompt": {
+            "ko": "듣고 문장을 만드세요.",
+            "en": "Listen and build the sentence."
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "안녕하세요, 저는 은지예요.",
+              "roman": "annyeonghaseyo, jeoneun eunjiyeyo.",
+              "en": "Hello, I'm Eunji."
+            },
+            "audio_url": "u03-mina/d-02",
+            "image_url": ""
+          },
+          "tiles": [
+            {
+              "ko": "안녕하세요,",
+              "roman": "annyeonghaseyo,"
+            },
+            {
+              "ko": "저는",
+              "roman": "jeoneun"
+            },
+            {
+              "ko": "은지예요.",
+              "roman": "eunjiyeyo."
+            },
+            {
+              "ko": "왔어요.",
+              "roman": "wasseoyo."
+            },
+            {
+              "ko": "뭐예요?",
+              "roman": "mwoyeyo?"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "안녕하세요, 저는 은지예요.",
+              "roman": "annyeonghaseyo, jeoneun eunjiyeyo.",
+              "en": "Hello, I'm Eunji."
+            }
+          ]
+        },
+        {
+          "id": "S2-07",
+          "type": "TURN_ORDER",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:be986751",
+          "prompt": {
+            "ko": "대화 순서대로 놓으세요.",
+            "en": "Put the conversation in order."
+          },
+          "context": {
+            "ko": "대화 순서대로 놓으세요.",
+            "roman": "daehwa sunseodaero noeuseyo."
+          },
+          "tiles": [
+            {
+              "ko": "안녕하세요, 저는 은지예요.",
+              "roman": "annyeonghaseyo, jeoneun eunjiyeyo.",
+              "en": "Hello, I'm Eunji.",
+              "speaker": "player"
+            },
+            {
+              "ko": "저는 미나예요. 창가 쪽 침대 써요.",
+              "roman": "jeoneun minayeyo. changga jjok chimdae sseoyo.",
+              "en": "I'm Mina. I use the bed by the window.",
+              "speaker": "counterpart"
+            },
+            {
+              "ko": "미나 씨, 만나서 반가워요.",
+              "roman": "mina ssi, mannaseo bangawoyo.",
+              "en": "Mina, nice to meet you.",
+              "speaker": "player"
+            },
+            {
+              "ko": "네, 저도 반가워요.",
+              "roman": "ne, jeodo bangawoyo.",
+              "en": "Yes, nice to meet you too.",
+              "speaker": "counterpart"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "안녕하세요, 저는 은지예요. | 저는 미나예요. 창가 쪽 침대 써요. | 미나 씨, 만나서 반가워요. | 네, 저도 반가워요.",
+              "roman": "annyeonghaseyo, jeoneun eunjiyeyo. | jeoneun minayeyo. changga jjok chimdae sseoyo. | mina ssi, mannaseo bangawoyo. | ne, jeodo bangawoyo."
+            }
+          ]
+        },
+        {
+          "id": "S2-08",
+          "type": "TURN_ORDER",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:e3c30bfa",
+          "prompt": {
+            "ko": "대화 순서대로 놓으세요.",
+            "en": "Put the conversation in order."
+          },
+          "context": {
+            "ko": "대화 순서대로 놓으세요.",
+            "roman": "daehwa sunseodaero noeuseyo."
+          },
+          "tiles": [
+            {
+              "ko": "안녕하세요. 이름이 뭐예요?",
+              "roman": "annyeonghaseyo. ireumi mwoyeyo?",
+              "en": "Hello. What's your name?",
+              "speaker": "counterpart"
+            },
+            {
+              "ko": "안녕하세요, 저는 은지예요.",
+              "roman": "annyeonghaseyo, jeoneun eunjiyeyo.",
+              "en": "Hello, I'm Eunji.",
+              "speaker": "player"
+            },
+            {
+              "ko": "저는 미나예요. 창가 쪽 침대 써요.",
+              "roman": "jeoneun minayeyo. changga jjok chimdae sseoyo.",
+              "en": "I'm Mina. I use the bed by the window.",
+              "speaker": "counterpart"
+            },
+            {
+              "ko": "미나 씨, 만나서 반가워요.",
+              "roman": "mina ssi, mannaseo bangawoyo.",
+              "en": "Mina, nice to meet you.",
+              "speaker": "player"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "안녕하세요. 이름이 뭐예요? | 안녕하세요, 저는 은지예요. | 저는 미나예요. 창가 쪽 침대 써요. | 미나 씨, 만나서 반가워요.",
+              "roman": "annyeonghaseyo. ireumi mwoyeyo? | annyeonghaseyo, jeoneun eunjiyeyo. | jeoneun minayeyo. changga jjok chimdae sseoyo. | mina ssi, mannaseo bangawoyo."
+            }
+          ]
+        },
+        {
+          "id": "S2-09",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:9710a021",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "저는 호주에서 왔어요. 여기서 며칠 묵어요?",
+              "roman": "jeoneun hojueseo wasseoyo. yeogiseo myeochil mugeoyo?",
+              "en": "I'm from Australia. How many days are you staying here?"
+            },
+            "audio_url": "u03-mina/d-08",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "저는 호주에서 왔어요. 여기서 며칠 묵어요?",
+              "roman": "jeoneun hojueseo wasseoyo. yeogiseo myeochil mugeoyo?",
+              "en": "I'm from Australia. How many days are you staying here?",
+              "correct": true
+            },
+            {
+              "id": "o2",
+              "ko": "미나 씨는 어느 나라에서 왔어요?",
+              "roman": "mina ssineun eoneu naraeseo wasseoyo?",
+              "en": "Where are you from, Mina?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "아, 저도 학생이에요.",
+              "roman": "a, jeodo haksaengieyo.",
+              "en": "Oh, I'm a student too.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "저는 이틀 먼저 왔는데 2주 있을 거예요.",
+              "roman": "jeoneun iteul meonjeo wanneunde 2ju isseul geoyeyo.",
+              "en": "I came two days earlier, and I'll stay two weeks.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ]
+        },
+        {
+          "id": "S2-10",
+          "type": "TURN_ORDER",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:e3c30bfa",
+          "prompt": {
+            "ko": "대화 순서대로 놓으세요.",
+            "en": "Put the conversation in order."
+          },
+          "context": {
+            "ko": "대화 순서대로 놓으세요.",
+            "roman": "daehwa sunseodaero noeuseyo."
+          },
+          "tiles": [
+            {
+              "ko": "저는 미나예요. 창가 쪽 침대 써요.",
+              "roman": "jeoneun minayeyo. changga jjok chimdae sseoyo.",
+              "en": "I'm Mina. I use the bed by the window.",
+              "speaker": "counterpart"
+            },
+            {
+              "ko": "미나 씨, 만나서 반가워요.",
+              "roman": "mina ssi, mannaseo bangawoyo.",
+              "en": "Mina, nice to meet you.",
+              "speaker": "player"
+            },
+            {
+              "ko": "네, 저도 반가워요.",
+              "roman": "ne, jeodo bangawoyo.",
+              "en": "Yes, nice to meet you too.",
+              "speaker": "counterpart"
+            },
+            {
+              "ko": "미나 씨는 어느 나라에서 왔어요?",
+              "roman": "mina ssineun eoneu naraeseo wasseoyo?",
+              "en": "Mina, what country are you from?",
+              "speaker": "player"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "저는 미나예요. 창가 쪽 침대 써요. | 미나 씨, 만나서 반가워요. | 네, 저도 반가워요. | 미나 씨는 어느 나라에서 왔어요?",
+              "roman": "jeoneun minayeyo. changga jjok chimdae sseoyo. | mina ssi, mannaseo bangawoyo. | ne, jeodo bangawoyo. | mina ssineun eoneu naraeseo wasseoyo?"
+            }
+          ]
+        },
+        {
+          "id": "S2-11",
+          "type": "TURN_ORDER",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:e3c30bfa",
+          "prompt": {
+            "ko": "대화 순서대로 놓으세요.",
+            "en": "Put the conversation in order."
+          },
+          "context": {
+            "ko": "대화 순서대로 놓으세요.",
+            "roman": "daehwa sunseodaero noeuseyo."
+          },
+          "tiles": [
+            {
+              "ko": "안녕하세요. 이름이 뭐예요?",
+              "roman": "annyeonghaseyo. ireumi mwoyeyo?",
+              "en": "Hello. What's your name?",
+              "speaker": "counterpart"
+            },
+            {
+              "ko": "안녕하세요, 저는 은지예요.",
+              "roman": "annyeonghaseyo, jeoneun eunjiyeyo.",
+              "en": "Hello, I'm Eunji.",
+              "speaker": "player"
+            },
+            {
+              "ko": "저는 미나예요. 창가 쪽 침대 써요.",
+              "roman": "jeoneun minayeyo. changga jjok chimdae sseoyo.",
+              "en": "I'm Mina. I use the bed by the window.",
+              "speaker": "counterpart"
+            },
+            {
+              "ko": "미나 씨, 반가워요. 저는 학생이에요.",
+              "roman": "mina ssi, bangawoyo. jeoneun haksaengieyo.",
+              "en": "Mina, nice to meet you. I'm a student.",
+              "speaker": "player"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "안녕하세요. 이름이 뭐예요? | 안녕하세요, 저는 은지예요. | 저는 미나예요. 창가 쪽 침대 써요. | 미나 씨, 반가워요. 저는 학생이에요.",
+              "roman": "annyeonghaseyo. ireumi mwoyeyo? | annyeonghaseyo, jeoneun eunjiyeyo. | jeoneun minayeyo. changga jjok chimdae sseoyo. | mina ssi, bangawoyo. jeoneun haksaengieyo."
+            }
+          ]
+        },
+        {
+          "id": "S2-12",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "patt:50dbccc0",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "안녕하세요, 저는 은지예요.",
+              "roman": "annyeonghaseyo, jeoneun eunjiyeyo.",
+              "en": "Hello, I'm Eunji."
+            },
+            "audio_url": "u03-mina/d-02",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "안녕하세요. 이름이 뭐예요?",
+              "roman": "annyeonghaseyo. ireumi mwoyeyo?",
+              "en": "Hello. What's your name?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "미나 씨, 만나서 반갑습니다.",
+              "roman": "mina ssi, mannaseo bangapseumnida.",
+              "en": "Mina, nice to meet you.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "미나 씨는 어느 나라에서 왔어요?",
+              "roman": "mina ssineun eoneu naraeseo wasseoyo?",
+              "en": "Where are you from, Mina?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "안녕하세요, 저는 은지예요.",
+              "roman": "annyeonghaseyo, jeoneun eunjiyeyo.",
+              "en": "Hello, I'm Eunji.",
+              "correct": true
+            }
+          ]
+        },
+        {
+          "id": "S2-13",
+          "type": "TURN_ORDER",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:332ac987",
+          "prompt": {
+            "ko": "대화 순서대로 놓으세요.",
+            "en": "Put the conversation in order."
+          },
+          "context": {
+            "ko": "대화 순서대로 놓으세요.",
+            "roman": "daehwa sunseodaero noeuseyo."
+          },
+          "tiles": [
+            {
+              "ko": "안녕하세요, 저는 은지예요.",
+              "roman": "annyeonghaseyo, jeoneun eunjiyeyo.",
+              "en": "Hello, I'm Eunji.",
+              "speaker": "player"
+            },
+            {
+              "ko": "저는 미나예요. 창가 쪽 침대 써요.",
+              "roman": "jeoneun minayeyo. changga jjok chimdae sseoyo.",
+              "en": "I'm Mina. I use the bed by the window.",
+              "speaker": "counterpart"
+            },
+            {
+              "ko": "미나 씨, 반가워요. 저는 학생이에요.",
+              "roman": "mina ssi, bangawoyo. jeoneun haksaengieyo.",
+              "en": "Mina, nice to meet you. I'm a student.",
+              "speaker": "player"
+            },
+            {
+              "ko": "아, 저도 학생이에요.",
+              "roman": "a, jeodo haksaengieyo.",
+              "en": "Oh, I'm a student too.",
+              "speaker": "counterpart"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "안녕하세요, 저는 은지예요. | 저는 미나예요. 창가 쪽 침대 써요. | 미나 씨, 반가워요. 저는 학생이에요. | 아, 저도 학생이에요.",
+              "roman": "annyeonghaseyo, jeoneun eunjiyeyo. | jeoneun minayeyo. changga jjok chimdae sseoyo. | mina ssi, bangawoyo. jeoneun haksaengieyo. | a, jeodo haksaengieyo."
+            }
+          ]
+        },
+        {
+          "id": "S2-14",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "네, 저도 반가워요.",
+              "roman": "ne, jeodo bangawoyo.",
+              "en": "Yes, nice to meet you too."
+            },
+            "audio_url": "u03-mina/d-05-v2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "네, 저도 반가워요.",
+              "roman": "ne, jeodo bangawoyo.",
+              "en": "Nice to meet you too.",
+              "correct": true
+            },
+            {
+              "id": "o2",
+              "ko": "저는 이틀 먼저 왔는데 2주 있을 거예요.",
+              "roman": "jeoneun iteul meonjeo wanneunde 2ju isseul geoyeyo.",
+              "en": "I came two days earlier, and I'll stay two weeks.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "저는 미나예요. 창가 쪽 침대 써요.",
+              "roman": "jeoneun minayeyo. changga jjok chimdae sseoyo.",
+              "en": "I'm Mina. I use the bed by the window.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "아, 저도 학생이에요.",
+              "roman": "a, jeodo haksaengieyo.",
+              "en": "Oh, I'm a student too.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "S3",
+      "order": 3,
+      "items": [
+        {
+          "id": "S3-01",
+          "type": "VOCAB_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "ref": "voca:ff8c6497",
+          "context": {
+            "ko": "오다",
+            "roman": "oda",
+            "en": "come"
+          },
+          "example": {
+            "ko": "미나 씨는 어느 나라에서 왔어요?",
+            "roman": "mina ssineun eoneu naraeseo wasseoyo?",
+            "en": "Mina, what country are you from?"
+          },
+          "card_kind": "단어",
+          "audio_url": "u03-mina/s3-01-word",
+          "example_audio_url": "u03-mina/d-06"
+        },
+        {
+          "id": "S3-02",
+          "type": "VOCAB_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "ref": "voca:ce71f0a6",
+          "context": {
+            "ko": "일본",
+            "roman": "ilbon",
+            "en": "Japan"
+          },
+          "example": {
+            "ko": "일본에서 왔어요.",
+            "roman": "ilboneseo wasseoyo.",
+            "en": "I'm from Japan."
+          },
+          "card_kind": "단어",
+          "audio_url": "u03-mina/s3-02-word",
+          "example_audio_url": "u03-mina/s3-02-ex"
+        },
+        {
+          "id": "S3-03",
+          "type": "VOCAB_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "ref": "voca:ec5d9a98",
+          "context": {
+            "ko": "일주일",
+            "roman": "iljuil",
+            "en": "one week"
+          },
+          "example": {
+            "ko": "저는 일주일 묵어요.",
+            "roman": "jeoneun iljuil mugeoyo.",
+            "en": "I'm staying a week."
+          },
+          "card_kind": "단어",
+          "audio_url": "u03-mina/s3-03-word",
+          "example_audio_url": "u03-mina/d-10"
+        },
+        {
+          "id": "S3-04",
+          "type": "VOCAB_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "ref": "voca:51e5fab7",
+          "context": {
+            "ko": "침대",
+            "roman": "chimdae",
+            "en": "bed"
+          },
+          "example": {
+            "ko": "저는 미나예요. 창가 쪽 침대 써요.",
+            "roman": "jeoneun minayeyo. changga jjok chimdae sseoyo.",
+            "en": "I'm Mina. I use the bed by the window."
+          },
+          "card_kind": "단어",
+          "audio_url": "u03-mina/s3-04-word",
+          "example_audio_url": "u03-mina/d-03"
+        },
+        {
+          "id": "S3-05",
+          "type": "VOCAB_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "ref": "voca:cf2936b1",
+          "context": {
+            "ko": "한국어",
+            "roman": "hangugeo",
+            "en": "Korean language"
+          },
+          "example": {
+            "ko": "저는 스위스에서 한국어 배우러 왔어요. 은지는요?",
+            "roman": "jeoneun seuwiseueseo hangugeo baeureo wasseoyo. eunjineunyo?",
+            "en": "I came from Switzerland to learn Korean. How about you, Eunji?"
+          },
+          "card_kind": "단어",
+          "audio_url": "u03-mina/s3-05-word",
+          "example_audio_url": "u03-mina/d-07"
+        },
+        {
+          "id": "S3-06",
+          "type": "VOCAB_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "ref": "voca:bc8b9fe8",
+          "context": {
+            "ko": "이틀",
+            "roman": "iteul",
+            "en": "two days"
+          },
+          "example": {
+            "ko": "저는 이틀 먼저 왔는데 2주 있을 거예요.",
+            "roman": "jeoneun iteul meonjeo wanneunde 2ju isseul geoyeyo.",
+            "en": "I came two days earlier, and I'll stay two weeks."
+          },
+          "card_kind": "단어",
+          "audio_url": "u03-mina/s3-06-word",
+          "example_audio_url": "u03-mina/d-09"
+        },
+        {
+          "id": "S3-07",
+          "type": "VOCAB_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "ref": "voca:3c177f67",
+          "context": {
+            "ko": "학생",
+            "roman": "haksaeng",
+            "en": "student"
+          },
+          "example": {
+            "ko": "미나 씨, 반가워요. 저는 학생이에요.",
+            "roman": "mina ssi, bangawoyo. jeoneun haksaengieyo.",
+            "en": "Mina, nice to meet you. I'm a student."
+          },
+          "card_kind": "단어",
+          "audio_url": "u03-mina/s3-07-word",
+          "example_audio_url": "u03-mina/d-12"
+        },
+        {
+          "id": "S3-08",
+          "type": "CLOZE",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:ec5d9a98",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "저는 ___ 묵어요.",
+            "roman": "jeoneun ___ mugeoyo.",
+            "en": "I'm staying a week."
+          },
+          "tiles": [
+            {
+              "ko": "일주일",
+              "roman": "iljuil",
+              "en": "one week"
+            },
+            {
+              "ko": "우리",
+              "roman": "uri",
+              "en": "we, us"
+            },
+            {
+              "ko": "먼저",
+              "roman": "meonjeo",
+              "en": "first, first of all, before"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "일주일",
+              "roman": "iljuil",
+              "en": "one week"
+            }
+          ]
+        },
+        {
+          "id": "S3-09",
+          "type": "CLOZE",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:3c177f67",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "미나 씨, 반가워요. 저는 ___",
+            "roman": "mina ssi, bangawoyo. jeoneun ___",
+            "en": "Mina, nice to meet you. I'm a student."
+          },
+          "tiles": [
+            {
+              "ko": "학생이에요.",
+              "roman": "haksaengieyo."
+            },
+            {
+              "ko": "반갑습니다.",
+              "roman": "bangapseumnida."
+            },
+            {
+              "ko": "왔어요?",
+              "roman": "wasseoyo?"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "학생이에요.",
+              "roman": "haksaengieyo."
+            }
+          ]
+        },
+        {
+          "id": "S3-10",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:ec5d9a98",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "저는 일주일 묵어요.",
+              "roman": "jeoneun iljuil mugeoyo.",
+              "en": "I'm staying a week."
+            },
+            "audio_url": "u03-mina/d-10",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "저는 이틀 먼저 왔는데 2주 있을 거예요.",
+              "roman": "jeoneun iteul meonjeo wanneunde 2ju isseul geoyeyo.",
+              "en": "I came two days earlier, and I'll stay two weeks.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "저는 호주에서 왔어요. 여기서 며칠 묵어요?",
+              "roman": "jeoneun hojueseo wasseoyo. yeogiseo myeochil mugeoyo?",
+              "en": "I'm from Australia. How many days are you staying here?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "미나 씨는 어느 나라에서 왔어요?",
+              "roman": "mina ssineun eoneu naraeseo wasseoyo?",
+              "en": "Where are you from, Mina?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "저는 일주일 묵어요.",
+              "roman": "jeoneun iljuil mugeoyo.",
+              "en": "I'm staying for a week.",
+              "correct": true
+            }
+          ]
+        },
+        {
+          "id": "S3-11",
+          "type": "CLOZE",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:bc8b9fe8",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "저는 ___ 먼저 왔는데 2주 있을 거예요.",
+            "roman": "jeoneun ___ meonjeo wanneunde 2ju isseul geoyeyo.",
+            "en": "I came two days earlier, and I'll stay two weeks."
+          },
+          "tiles": [
+            {
+              "ko": "이틀",
+              "roman": "iteul",
+              "en": "two days"
+            },
+            {
+              "ko": "이름",
+              "roman": "ireum",
+              "en": "name"
+            },
+            {
+              "ko": "며칠",
+              "roman": "myeochil",
+              "en": "how many days"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "이틀",
+              "roman": "iteul",
+              "en": "two days"
+            }
+          ]
+        },
+        {
+          "id": "S3-12",
+          "type": "IMG_MATCH",
+          "mode": "choice",
+          "event": "R",
+          "level": 1,
+          "skill": "읽기",
+          "skill_level": 1,
+          "ref": "voca:51e5fab7",
+          "prompt": {
+            "ko": "사진에 맞는 말을 고르세요.",
+            "en": "Which word matches the picture?"
+          },
+          "stimulus": {
+            "audio_url": "u03-mina/s3-04-word",
+            "image_brief": "bed - 한 컷으로 알아볼 수 있게",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "사람",
+              "roman": "saram",
+              "en": "person, man",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "침대",
+              "roman": "chimdae",
+              "en": "bed",
+              "correct": true
+            },
+            {
+              "id": "o3",
+              "ko": "나라",
+              "roman": "nara",
+              "en": "country",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "이틀",
+              "roman": "iteul",
+              "en": "two days",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ]
+        },
+        {
+          "id": "S3-13",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:cf2936b1",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "저는 스위스에서 한국어 배우러 왔어요. 은지는요?",
+              "roman": "jeoneun seuwiseueseo hangugeo baeureo wasseoyo. eunjineunyo?",
+              "en": "I came from Switzerland to learn Korean. How about you, Eunji?"
+            },
+            "audio_url": "u03-mina/d-07",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "저는 스위스에서 한국어 배우러 왔어요. 은지는요?",
+              "roman": "jeoneun seuwiseueseo hangugeo baeureo wasseoyo. eunjineunyo?",
+              "en": "I came from Switzerland to learn Korean. How about you, Eunji?",
+              "correct": true
+            },
+            {
+              "id": "o2",
+              "ko": "미나 씨는 어느 나라에서 왔어요?",
+              "roman": "mina ssineun eoneu naraeseo wasseoyo?",
+              "en": "Where are you from, Mina?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "저는 일주일 묵어요.",
+              "roman": "jeoneun iljuil mugeoyo.",
+              "en": "I'm staying for a week.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "저는 호주에서 왔어요. 여기서 며칠 묵어요?",
+              "roman": "jeoneun hojueseo wasseoyo. yeogiseo myeochil mugeoyo?",
+              "en": "I'm from Australia. How many days are you staying here?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ]
+        },
+        {
+          "id": "S3-14",
+          "type": "CLOZE",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:be986751",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "미나 씨는 어느 ___ 왔어요?",
+            "roman": "mina ssineun eoneu ___ wasseoyo?",
+            "en": "Mina, what country are you from?"
+          },
+          "tiles": [
+            {
+              "ko": "나라에서",
+              "roman": "naraeseo"
+            },
+            {
+              "ko": "우리에서",
+              "roman": "urieseo"
+            },
+            {
+              "ko": "침대에서",
+              "roman": "chimdaeeseo"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "나라에서",
+              "roman": "naraeseo"
+            }
+          ]
+        },
+        {
+          "id": "S3-15",
+          "type": "SYLLABLE_BUILD",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "쓰기",
+          "skill_level": 1,
+          "ref": "voca:e3c30bfa",
+          "prompt": {
+            "ko": "음절을 골라 낱말을 만드세요.",
+            "en": "Tap the syllables to spell the word."
+          },
+          "stimulus": {
+            "audio_url": "u03-mina/s1-02-word-v2",
+            "image_url": "",
+            "en": "name"
+          },
+          "tiles": [
+            {
+              "ko": "이",
+              "roman": "i"
+            },
+            {
+              "ko": "름",
+              "roman": "reum"
+            },
+            {
+              "ko": "본",
+              "roman": "bon"
+            },
+            {
+              "ko": "가",
+              "roman": "ga"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "이름",
+              "roman": "ireum",
+              "en": "name"
+            }
+          ]
+        },
+        {
+          "id": "S3-16",
+          "type": "CLOZE",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "patt:50dbccc0",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "미나 씨, 반가워요. 저는 ___이에요.",
+            "roman": "mina ssi, bangawoyo. jeoneun ___ieyo.",
+            "en": "Mina, nice to meet you. I'm a student."
+          },
+          "tiles": [
+            {
+              "ko": "학생",
+              "roman": "haksaeng",
+              "en": "student"
+            },
+            {
+              "ko": "일본",
+              "roman": "ilbon",
+              "en": "Japan"
+            },
+            {
+              "ko": "창가",
+              "roman": "changga",
+              "en": "window"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "학생",
+              "roman": "haksaeng",
+              "en": "student"
+            }
+          ]
+        },
+        {
+          "id": "S3-17",
+          "type": "SYLLABLE_BUILD",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "쓰기",
+          "skill_level": 1,
+          "ref": "voca:332ac987",
+          "prompt": {
+            "ko": "음절을 골라 낱말을 만드세요.",
+            "en": "Tap the syllables to spell the word."
+          },
+          "stimulus": {
+            "audio_url": "u03-mina/s1-04-word-v2",
+            "image_url": "",
+            "en": "which, how"
+          },
+          "tiles": [
+            {
+              "ko": "어",
+              "roman": "eo"
+            },
+            {
+              "ko": "느",
+              "roman": "neu"
+            },
+            {
+              "ko": "생",
+              "roman": "saeng"
+            },
+            {
+              "ko": "저",
+              "roman": "jeo"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "어느",
+              "roman": "eoneu",
+              "en": "which, how"
+            }
+          ]
+        },
+        {
+          "id": "S3-18",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:be986751",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "미나 씨는 어느 나라에서 왔어요?",
+              "roman": "mina ssineun eoneu naraeseo wasseoyo?",
+              "en": "Mina, what country are you from?"
+            },
+            "audio_url": "u03-mina/d-06",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "저는 호주에서 왔어요. 여기서 며칠 묵어요?",
+              "roman": "jeoneun hojueseo wasseoyo. yeogiseo myeochil mugeoyo?",
+              "en": "I'm from Australia. How many days are you staying here?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "미나 씨, 만나서 반갑습니다.",
+              "roman": "mina ssi, mannaseo bangapseumnida.",
+              "en": "Mina, nice to meet you.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "미나 씨는 어느 나라에서 왔어요?",
+              "roman": "mina ssineun eoneu naraeseo wasseoyo?",
+              "en": "Where are you from, Mina?",
+              "correct": true
+            },
+            {
+              "id": "o4",
+              "ko": "저는 스위스에서 한국어 배우러 왔어요. 은지는요?",
+              "roman": "jeoneun seuwiseueseo hangugeo baeureo wasseoyo. eunjineunyo?",
+              "en": "I came from Switzerland to learn Korean. How about you, Eunji?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ]
+        },
+        {
+          "id": "S3-19",
+          "type": "SYLLABLE_BUILD",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "쓰기",
+          "skill_level": 1,
+          "ref": "voca:9710a021",
+          "prompt": {
+            "ko": "음절을 골라 낱말을 만드세요.",
+            "en": "Tap the syllables to spell the word."
+          },
+          "stimulus": {
+            "audio_url": "u03-mina/s1-07-word-v2",
+            "image_url": "",
+            "en": "how many days"
+          },
+          "tiles": [
+            {
+              "ko": "며",
+              "roman": "myeo"
+            },
+            {
+              "ko": "칠",
+              "roman": "chil"
+            },
+            {
+              "ko": "중",
+              "roman": "jung"
+            },
+            {
+              "ko": "어",
+              "roman": "eo"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "며칠",
+              "roman": "myeochil",
+              "en": "how many days"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "S4",
+      "order": 4,
+      "items": [
+        {
+          "id": "S4-01",
+          "type": "TURN_ORDER",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:ec5d9a98",
+          "prompt": {
+            "ko": "대화 순서대로 놓으세요.",
+            "en": "Put the conversation in order."
+          },
+          "context": {
+            "ko": "대화 순서대로 놓으세요.",
+            "roman": "daehwa sunseodaero noeuseyo."
+          },
+          "tiles": [
+            {
+              "ko": "저는 스위스에서 한국어 배우러 왔어요. 은지는요?",
+              "roman": "jeoneun seuwiseueseo hangugeo baeureo wasseoyo. eunjineunyo?",
+              "en": "I came from Switzerland to learn Korean. How about you, Eunji?",
+              "speaker": "counterpart"
+            },
+            {
+              "ko": "저는 호주에서 왔어요. 여기서 며칠 묵어요?",
+              "roman": "jeoneun hojueseo wasseoyo. yeogiseo myeochil mugeoyo?",
+              "en": "I'm from Australia. How many days are you staying here?",
+              "speaker": "player"
+            },
+            {
+              "ko": "저는 이틀 먼저 왔는데 2주 있을 거예요.",
+              "roman": "jeoneun iteul meonjeo wanneunde 2ju isseul geoyeyo.",
+              "en": "I came two days earlier, and I'll stay two weeks.",
+              "speaker": "counterpart"
+            },
+            {
+              "ko": "저는 일주일 묵어요.",
+              "roman": "jeoneun iljuil mugeoyo.",
+              "en": "I'm staying a week.",
+              "speaker": "player"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "저는 스위스에서 한국어 배우러 왔어요. 은지는요? | 저는 호주에서 왔어요. 여기서 며칠 묵어요? | 저는 이틀 먼저 왔는데 2주 있을 거예요. | 저는 일주일 묵어요.",
+              "roman": "jeoneun seuwiseueseo hangugeo baeureo wasseoyo. eunjineunyo? | jeoneun hojueseo wasseoyo. yeogiseo myeochil mugeoyo? | jeoneun iteul meonjeo wanneunde 2ju isseul geoyeyo. | jeoneun iljuil mugeoyo."
+            }
+          ]
+        },
+        {
+          "id": "S4-02",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "E",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:3c177f67",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "context": {
+            "ko": "아, 저도 학생이에요.",
+            "roman": "a, jeodo haksaengieyo.",
+            "en": "Oh, I'm a student too."
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "아, 저도 학생이에요.",
+              "roman": "a, jeodo haksaengieyo.",
+              "en": "Oh, I'm a student too."
+            },
+            "audio_url": "u03-mina/d-13",
+            "image_url": ""
+          }
+        },
+        {
+          "id": "S4-03",
+          "type": "ROLE_LINE",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "읽기",
+          "skill_level": 2,
+          "ref": "voca:ec5d9a98",
+          "prompt": {
+            "ko": "뭐라고 말할까요?",
+            "en": "What do you say?"
+          },
+          "context": {
+            "ko": "저는 이틀 먼저 왔는데 2주 있을 거예요.",
+            "roman": "jeoneun iteul meonjeo wanneunde 2ju isseul geoyeyo.",
+            "en": "I came two days earlier, and I'll stay two weeks."
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "저는 호주에서 왔어요. 여기서 며칠 묵어요?",
+              "roman": "jeoneun hojueseo wasseoyo. yeogiseo myeochil mugeoyo?",
+              "en": "I'm from Australia. How many days are you staying here?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "저는 일주일 묵어요.",
+              "roman": "jeoneun iljuil mugeoyo.",
+              "en": "I'm staying for a week.",
+              "correct": true
+            },
+            {
+              "id": "o3",
+              "ko": "미나 씨, 만나서 반가워요.",
+              "roman": "mina ssi, mannaseo bangawoyo.",
+              "en": "Nice to meet you, Mina.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "이 자리에서는 「저는 일주일 묵어요.」라고 해요.",
+              "en": "Here you say \"I'm staying a week.\"."
+            }
+          }
+        },
+        {
+          "id": "S4-04",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:ec5d9a98",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "저는 일주일 묵어요.",
+              "roman": "jeoneun iljuil mugeoyo.",
+              "en": "I'm staying a week."
+            },
+            "audio_url": "u03-mina/d-10",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "미나 씨는 어느 나라에서 왔어요?",
+              "roman": "mina ssineun eoneu naraeseo wasseoyo?",
+              "en": "Where are you from, Mina?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "저는 일주일 묵어요.",
+              "roman": "jeoneun iljuil mugeoyo.",
+              "en": "I'm staying for a week.",
+              "correct": true
+            },
+            {
+              "id": "o3",
+              "ko": "저는 호주에서 왔어요. 여기서 며칠 묵어요?",
+              "roman": "jeoneun hojueseo wasseoyo. yeogiseo myeochil mugeoyo?",
+              "en": "I'm from Australia. How many days are you staying here?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "저는 미나예요. 창가 쪽 침대 써요.",
+              "roman": "jeoneun minayeyo. changga jjok chimdae sseoyo.",
+              "en": "I'm Mina. I use the bed by the window.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ]
+        },
+        {
+          "id": "S4-05",
+          "type": "REPLY_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 2,
+          "ref": "voca:51e5fab7",
+          "prompt": {
+            "ko": "뭐라고 대답할까요?",
+            "en": "How do you reply?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "저는 미나예요. 창가 쪽 침대 써요.",
+              "roman": "jeoneun minayeyo. changga jjok chimdae sseoyo.",
+              "en": "I'm Mina. I use the bed by the window."
+            },
+            "audio_url": "u03-mina/d-03",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "미나 씨, 만나서 반가워요.",
+              "roman": "mina ssi, mannaseo bangawoyo.",
+              "en": "Nice to meet you, Mina.",
+              "correct": true
+            },
+            {
+              "id": "o2",
+              "ko": "안녕하세요, 저는 은지예요.",
+              "roman": "annyeonghaseyo, jeoneun eunjiyeyo.",
+              "en": "Hello, I'm Eunji.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "봉투 드릴까요?",
+              "roman": "bongtu deurilkkayo?",
+              "en": "Do you need a bag?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "이 자리에서는 「미나 씨, 만나서 반가워요.」라고 해요.",
+              "en": "Here you say \"Mina, nice to meet you.\"."
+            }
+          }
+        },
+        {
+          "id": "S4-06",
+          "type": "ROLE_LINE",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "읽기",
+          "skill_level": 2,
+          "ref": "voca:3c177f67",
+          "prompt": {
+            "ko": "뭐라고 말할까요?",
+            "en": "What do you say?"
+          },
+          "context": {
+            "ko": "미나에게 나도 학생이라고 말하고 싶다.",
+            "roman": "minaege nado haksaengirago malhago sipda.",
+            "en": "You want to tell Mina you are a student too."
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "미나 씨는 어느 나라에서 왔어요?",
+              "roman": "mina ssineun eoneu naraeseo wasseoyo?",
+              "en": "Where are you from, Mina?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "미나 씨, 만나서 반가워요.",
+              "roman": "mina ssi, mannaseo bangawoyo.",
+              "en": "Nice to meet you, Mina.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "미나 씨, 반가워요. 저는 학생이에요.",
+              "roman": "mina ssi, bangawoyo. jeoneun haksaengieyo.",
+              "en": "Mina, nice to meet you. I'm a student.",
+              "correct": true
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "이 자리에서는 「미나 씨, 반가워요. 저는 학생이에요.」라고 해요.",
+              "en": "Here you say \"Mina, nice to meet you. I'm a student.\"."
+            },
+            "wrong": {
+              "ko": "이번에는 미나에게 나도 학생이라고 말하고 싶어서 「미나 씨, 만나서 반가워요.」는 안 맞아요.",
+              "en": "This time you want to tell Mina you are a student too, so \"Mina, nice to meet you.\" does not fit."
+            },
+            "wrong_option": "o2"
+          }
+        },
+        {
+          "id": "S4-07",
+          "type": "REPLY_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 2,
+          "ref": "voca:cf2936b1",
+          "prompt": {
+            "ko": "뭐라고 대답할까요?",
+            "en": "How do you reply?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "저는 스위스에서 한국어 배우러 왔어요. 은지는요?",
+              "roman": "jeoneun seuwiseueseo hangugeo baeureo wasseoyo. eunjineunyo?",
+              "en": "I came from Switzerland to learn Korean. How about you, Eunji?"
+            },
+            "audio_url": "u03-mina/d-07",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "저는 일주일 묵어요.",
+              "roman": "jeoneun iljuil mugeoyo.",
+              "en": "I'm staying for a week.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "미나 씨는 어느 나라에서 왔어요?",
+              "roman": "mina ssineun eoneu naraeseo wasseoyo?",
+              "en": "Where are you from, Mina?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "저는 호주에서 왔어요. 여기서 며칠 묵어요?",
+              "roman": "jeoneun hojueseo wasseoyo. yeogiseo myeochil mugeoyo?",
+              "en": "I'm from Australia. How many days are you staying here?",
+              "correct": true
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "이 자리에서는 「저는 호주에서 왔어요. 여기서 며칠 묵어요?」라고 해요.",
+              "en": "Here you say \"I'm from Australia. How many days are you staying here?\"."
+            }
+          }
+        },
+        {
+          "id": "S4-08",
+          "type": "TURN_ORDER",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:ec5d9a98",
+          "prompt": {
+            "ko": "대화 순서대로 놓으세요.",
+            "en": "Put the conversation in order."
+          },
+          "context": {
+            "ko": "대화 순서대로 놓으세요.",
+            "roman": "daehwa sunseodaero noeuseyo."
+          },
+          "tiles": [
+            {
+              "ko": "저는 호주에서 왔어요. 여기서 며칠 묵어요?",
+              "roman": "jeoneun hojueseo wasseoyo. yeogiseo myeochil mugeoyo?",
+              "en": "I'm from Australia. How many days are you staying here?",
+              "speaker": "player"
+            },
+            {
+              "ko": "저는 이틀 먼저 왔는데 2주 있을 거예요.",
+              "roman": "jeoneun iteul meonjeo wanneunde 2ju isseul geoyeyo.",
+              "en": "I came two days earlier, and I'll stay two weeks.",
+              "speaker": "counterpart"
+            },
+            {
+              "ko": "저는 일주일 묵어요.",
+              "roman": "jeoneun iljuil mugeoyo.",
+              "en": "I'm staying a week.",
+              "speaker": "player"
+            },
+            {
+              "ko": "우리 친하게 지내요.",
+              "roman": "uri chinhage jinaeyo.",
+              "en": "Let's be good friends.",
+              "speaker": "counterpart"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "저는 호주에서 왔어요. 여기서 며칠 묵어요? | 저는 이틀 먼저 왔는데 2주 있을 거예요. | 저는 일주일 묵어요. | 우리 친하게 지내요.",
+              "roman": "jeoneun hojueseo wasseoyo. yeogiseo myeochil mugeoyo? | jeoneun iteul meonjeo wanneunde 2ju isseul geoyeyo. | jeoneun iljuil mugeoyo. | uri chinhage jinaeyo."
+            }
+          ]
+        },
+        {
+          "id": "S4-09",
+          "type": "TURN_ORDER",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "patt:50dbccc0",
+          "prompt": {
+            "ko": "대화 순서대로 놓으세요.",
+            "en": "Put the conversation in order."
+          },
+          "context": {
+            "ko": "대화 순서대로 놓으세요.",
+            "roman": "daehwa sunseodaero noeuseyo."
+          },
+          "tiles": [
+            {
+              "ko": "미나 씨, 만나서 반가워요.",
+              "roman": "mina ssi, mannaseo bangawoyo.",
+              "en": "Mina, nice to meet you.",
+              "speaker": "player"
+            },
+            {
+              "ko": "네, 저도 반가워요.",
+              "roman": "ne, jeodo bangawoyo.",
+              "en": "Yes, nice to meet you too.",
+              "speaker": "counterpart"
+            },
+            {
+              "ko": "미나 씨는 어느 나라에서 왔어요?",
+              "roman": "mina ssineun eoneu naraeseo wasseoyo?",
+              "en": "Mina, what country are you from?",
+              "speaker": "player"
+            },
+            {
+              "ko": "저는 스위스에서 한국어 배우러 왔어요. 은지는요?",
+              "roman": "jeoneun seuwiseueseo hangugeo baeureo wasseoyo. eunjineunyo?",
+              "en": "I came from Switzerland to learn Korean. How about you, Eunji?",
+              "speaker": "counterpart"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "미나 씨, 만나서 반가워요. | 네, 저도 반가워요. | 미나 씨는 어느 나라에서 왔어요? | 저는 스위스에서 한국어 배우러 왔어요. 은지는요?",
+              "roman": "mina ssi, mannaseo bangawoyo. | ne, jeodo bangawoyo. | mina ssineun eoneu naraeseo wasseoyo? | jeoneun seuwiseueseo hangugeo baeureo wasseoyo. eunjineunyo?"
+            }
+          ]
+        },
+        {
+          "id": "S4-10",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:51e5fab7",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "저는 미나예요. 창가 쪽 침대 써요.",
+              "roman": "jeoneun minayeyo. changga jjok chimdae sseoyo.",
+              "en": "I'm Mina. I use the bed by the window."
+            },
+            "audio_url": "u03-mina/d-03",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "저는 호주에서 왔어요. 여기서 며칠 묵어요?",
+              "roman": "jeoneun hojueseo wasseoyo. yeogiseo myeochil mugeoyo?",
+              "en": "I'm from Australia. How many days are you staying here?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "저는 미나예요. 창가 쪽 침대 써요.",
+              "roman": "jeoneun minayeyo. changga jjok chimdae sseoyo.",
+              "en": "I'm Mina. I use the bed by the window.",
+              "correct": true
+            },
+            {
+              "id": "o3",
+              "ko": "우리 친하게 지내요.",
+              "roman": "uri chinhage jinaeyo.",
+              "en": "Let's be good friends.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "안녕하세요, 저는 은지예요.",
+              "roman": "annyeonghaseyo, jeoneun eunjiyeyo.",
+              "en": "Hello, I'm Eunji.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ]
+        },
+        {
+          "id": "S4-11",
+          "type": "ROLE_LINE",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "읽기",
+          "skill_level": 2,
+          "ref": "voca:740ea24b",
+          "prompt": {
+            "ko": "뭐라고 말할까요?",
+            "en": "What do you say?"
+          },
+          "context": {
+            "ko": "안녕하세요. 이름이 뭐예요?",
+            "roman": "annyeonghaseyo. ireumi mwoyeyo?",
+            "en": "Hello. What's your name?"
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "안녕하세요, 저는 은지예요.",
+              "roman": "annyeonghaseyo, jeoneun eunjiyeyo.",
+              "en": "Hello, I'm Eunji.",
+              "correct": true
+            },
+            {
+              "id": "o2",
+              "ko": "저는 일주일 묵어요.",
+              "roman": "jeoneun iljuil mugeoyo.",
+              "en": "I'm staying for a week.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "저는 호주에서 왔어요. 여기서 며칠 묵어요?",
+              "roman": "jeoneun hojueseo wasseoyo. yeogiseo myeochil mugeoyo?",
+              "en": "I'm from Australia. How many days are you staying here?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "이 자리에서는 「안녕하세요, 저는 은지예요.」라고 해요.",
+              "en": "Here you say \"Hello, I'm Eunji.\"."
+            }
+          }
+        },
+        {
+          "id": "S4-12",
+          "type": "LISTEN_BUILD",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "듣기",
+          "skill_level": 3,
+          "ref": "voca:bc8b9fe8",
+          "prompt": {
+            "ko": "듣고 문장을 만드세요.",
+            "en": "Listen and build the sentence."
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "저는 이틀 먼저 왔는데 2주 있을 거예요.",
+              "roman": "jeoneun iteul meonjeo wanneunde 2ju isseul geoyeyo.",
+              "en": "I came two days earlier, and I'll stay two weeks."
+            },
+            "audio_url": "u03-mina/d-09",
+            "image_url": ""
+          },
+          "tiles": [
+            {
+              "ko": "저는",
+              "roman": "jeoneun"
+            },
+            {
+              "ko": "이틀",
+              "roman": "iteul",
+              "en": "two days"
+            },
+            {
+              "ko": "먼저",
+              "roman": "meonjeo",
+              "en": "first, first of all, before"
+            },
+            {
+              "ko": "왔는데",
+              "roman": "wanneunde"
+            },
+            {
+              "ko": "2주",
+              "roman": "2ju"
+            },
+            {
+              "ko": "있을",
+              "roman": "isseul"
+            },
+            {
+              "ko": "거예요.",
+              "roman": "geoyeyo."
+            },
+            {
+              "ko": "안녕하세요.",
+              "roman": "annyeonghaseyo."
+            },
+            {
+              "ko": "뭐예요?",
+              "roman": "mwoyeyo?"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "저는 이틀 먼저 왔는데 2주 있을 거예요.",
+              "roman": "jeoneun iteul meonjeo wanneunde 2ju isseul geoyeyo.",
+              "en": "I came two days earlier, and I'll stay two weeks."
+            }
+          ]
+        },
+        {
+          "id": "S4-13",
+          "type": "TURN_ORDER",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:ec5d9a98",
+          "prompt": {
+            "ko": "대화 순서대로 놓으세요.",
+            "en": "Put the conversation in order."
+          },
+          "context": {
+            "ko": "대화 순서대로 놓으세요.",
+            "roman": "daehwa sunseodaero noeuseyo."
+          },
+          "tiles": [
+            {
+              "ko": "네, 저도 반가워요.",
+              "roman": "ne, jeodo bangawoyo.",
+              "en": "Yes, nice to meet you too.",
+              "speaker": "counterpart"
+            },
+            {
+              "ko": "미나 씨는 어느 나라에서 왔어요?",
+              "roman": "mina ssineun eoneu naraeseo wasseoyo?",
+              "en": "Mina, what country are you from?",
+              "speaker": "player"
+            },
+            {
+              "ko": "저는 스위스에서 한국어 배우러 왔어요. 은지는요?",
+              "roman": "jeoneun seuwiseueseo hangugeo baeureo wasseoyo. eunjineunyo?",
+              "en": "I came from Switzerland to learn Korean. How about you, Eunji?",
+              "speaker": "counterpart"
+            },
+            {
+              "ko": "저는 호주에서 왔어요. 여기서 며칠 묵어요?",
+              "roman": "jeoneun hojueseo wasseoyo. yeogiseo myeochil mugeoyo?",
+              "en": "I'm from Australia. How many days are you staying here?",
+              "speaker": "player"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "네, 저도 반가워요. | 미나 씨는 어느 나라에서 왔어요? | 저는 스위스에서 한국어 배우러 왔어요. 은지는요? | 저는 호주에서 왔어요. 여기서 며칠 묵어요?",
+              "roman": "ne, jeodo bangawoyo. | mina ssineun eoneu naraeseo wasseoyo? | jeoneun seuwiseueseo hangugeo baeureo wasseoyo. eunjineunyo? | jeoneun hojueseo wasseoyo. yeogiseo myeochil mugeoyo?"
+            }
+          ]
+        },
+        {
+          "id": "S4-14",
+          "type": "TURN_ORDER",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:ec5d9a98",
+          "prompt": {
+            "ko": "대화 순서대로 놓으세요.",
+            "en": "Put the conversation in order."
+          },
+          "context": {
+            "ko": "대화 순서대로 놓으세요.",
+            "roman": "daehwa sunseodaero noeuseyo."
+          },
+          "tiles": [
+            {
+              "ko": "미나 씨는 어느 나라에서 왔어요?",
+              "roman": "mina ssineun eoneu naraeseo wasseoyo?",
+              "en": "Mina, what country are you from?",
+              "speaker": "player"
+            },
+            {
+              "ko": "저는 스위스에서 한국어 배우러 왔어요. 은지는요?",
+              "roman": "jeoneun seuwiseueseo hangugeo baeureo wasseoyo. eunjineunyo?",
+              "en": "I came from Switzerland to learn Korean. How about you, Eunji?",
+              "speaker": "counterpart"
+            },
+            {
+              "ko": "저는 호주에서 왔어요. 여기서 며칠 묵어요?",
+              "roman": "jeoneun hojueseo wasseoyo. yeogiseo myeochil mugeoyo?",
+              "en": "I'm from Australia. How many days are you staying here?",
+              "speaker": "player"
+            },
+            {
+              "ko": "저는 이틀 먼저 왔는데 2주 있을 거예요.",
+              "roman": "jeoneun iteul meonjeo wanneunde 2ju isseul geoyeyo.",
+              "en": "I came two days earlier, and I'll stay two weeks.",
+              "speaker": "counterpart"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "미나 씨는 어느 나라에서 왔어요? | 저는 스위스에서 한국어 배우러 왔어요. 은지는요? | 저는 호주에서 왔어요. 여기서 며칠 묵어요? | 저는 이틀 먼저 왔는데 2주 있을 거예요.",
+              "roman": "mina ssineun eoneu naraeseo wasseoyo? | jeoneun seuwiseueseo hangugeo baeureo wasseoyo. eunjineunyo? | jeoneun hojueseo wasseoyo. yeogiseo myeochil mugeoyo? | jeoneun iteul meonjeo wanneunde 2ju isseul geoyeyo."
+            }
+          ]
+        },
+        {
+          "id": "S4-15",
+          "type": "LISTEN_BUILD",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "듣기",
+          "skill_level": 3,
+          "ref": "voca:740ea24b",
+          "prompt": {
+            "ko": "듣고 문장을 만드세요.",
+            "en": "Listen and build the sentence."
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "안녕하세요, 저는 은지예요.",
+              "roman": "annyeonghaseyo, jeoneun eunjiyeyo.",
+              "en": "Hello, I'm Eunji."
+            },
+            "audio_url": "u03-mina/d-02",
+            "image_url": ""
+          },
+          "tiles": [
+            {
+              "ko": "안녕하세요,",
+              "roman": "annyeonghaseyo,"
+            },
+            {
+              "ko": "저는",
+              "roman": "jeoneun"
+            },
+            {
+              "ko": "은지예요.",
+              "roman": "eunjiyeyo."
+            },
+            {
+              "ko": "학생이에요.",
+              "roman": "haksaengieyo."
+            },
+            {
+              "ko": "안녕하세요.",
+              "roman": "annyeonghaseyo."
+            }
+          ],
+          "answers": [
+            {
+              "ko": "안녕하세요, 저는 은지예요.",
+              "roman": "annyeonghaseyo, jeoneun eunjiyeyo.",
+              "en": "Hello, I'm Eunji."
+            }
+          ]
+        },
+        {
+          "id": "S4-16",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:740ea24b",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "안녕하세요. 이름이 뭐예요?",
+              "roman": "annyeonghaseyo. ireumi mwoyeyo?",
+              "en": "Hello. What's your name?"
+            },
+            "audio_url": "u03-mina/d-01",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "안녕하세요. 이름이 뭐예요?",
+              "roman": "annyeonghaseyo. ireumi mwoyeyo?",
+              "en": "Hello. What's your name?",
+              "correct": true
+            },
+            {
+              "id": "o2",
+              "ko": "안녕하세요, 저는 은지예요.",
+              "roman": "annyeonghaseyo, jeoneun eunjiyeyo.",
+              "en": "Hello, I'm Eunji.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "미나 씨, 만나서 반갑습니다.",
+              "roman": "mina ssi, mannaseo bangapseumnida.",
+              "en": "Mina, nice to meet you.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "네, 저도 반가워요.",
+              "roman": "ne, jeodo bangawoyo.",
+              "en": "Nice to meet you too.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ]
+        },
+        {
+          "id": "S4-17",
+          "type": "REPLY_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 2,
+          "ref": "voca:332ac987",
+          "prompt": {
+            "ko": "뭐라고 대답할까요?",
+            "en": "How do you reply?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "네, 저도 반가워요.",
+              "roman": "ne, jeodo bangawoyo.",
+              "en": "Yes, nice to meet you too."
+            },
+            "audio_url": "u03-mina/d-05-v2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "안녕하세요, 저는 은지예요.",
+              "roman": "annyeonghaseyo, jeoneun eunjiyeyo.",
+              "en": "Hello, I'm Eunji.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "미나 씨는 어느 나라에서 왔어요?",
+              "roman": "mina ssineun eoneu naraeseo wasseoyo?",
+              "en": "Where are you from, Mina?",
+              "correct": true
+            },
+            {
+              "id": "o3",
+              "ko": "미나 씨, 만나서 반가워요.",
+              "roman": "mina ssi, mannaseo bangawoyo.",
+              "en": "Nice to meet you, Mina.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "이 자리에서는 「미나 씨는 어느 나라에서 왔어요?」라고 해요.",
+              "en": "Here you say \"Mina, what country are you from?\"."
+            }
+          }
+        },
+        {
+          "id": "S4-18",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:cf2936b1",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "저는 스위스에서 한국어 배우러 왔어요. 은지는요?",
+              "roman": "jeoneun seuwiseueseo hangugeo baeureo wasseoyo. eunjineunyo?",
+              "en": "I came from Switzerland to learn Korean. How about you, Eunji?"
+            },
+            "audio_url": "u03-mina/d-07",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "저는 일주일 묵어요.",
+              "roman": "jeoneun iljuil mugeoyo.",
+              "en": "I'm staying for a week.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "아, 저도 학생이에요.",
+              "roman": "a, jeodo haksaengieyo.",
+              "en": "Oh, I'm a student too.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "저는 호주에서 왔어요. 여기서 며칠 묵어요?",
+              "roman": "jeoneun hojueseo wasseoyo. yeogiseo myeochil mugeoyo?",
+              "en": "I'm from Australia. How many days are you staying here?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "저는 스위스에서 한국어 배우러 왔어요. 은지는요?",
+              "roman": "jeoneun seuwiseueseo hangugeo baeureo wasseoyo. eunjineunyo?",
+              "en": "I came from Switzerland to learn Korean. How about you, Eunji?",
+              "correct": true
+            }
+          ]
+        },
+        {
+          "id": "S4-19",
+          "type": "LISTEN_BUILD",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "듣기",
+          "skill_level": 3,
+          "ref": "voca:3c177f67",
+          "prompt": {
+            "ko": "듣고 문장을 만드세요.",
+            "en": "Listen and build the sentence."
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "미나 씨, 반가워요. 저는 학생이에요.",
+              "roman": "mina ssi, bangawoyo. jeoneun haksaengieyo.",
+              "en": "Mina, nice to meet you. I'm a student."
+            },
+            "audio_url": "u03-mina/d-12",
+            "image_url": ""
+          },
+          "tiles": [
+            {
+              "ko": "미나",
+              "roman": "mina"
+            },
+            {
+              "ko": "씨,",
+              "roman": "ssi,"
+            },
+            {
+              "ko": "반가워요.",
+              "roman": "bangawoyo."
+            },
+            {
+              "ko": "저는",
+              "roman": "jeoneun"
+            },
+            {
+              "ko": "학생이에요.",
+              "roman": "haksaengieyo."
+            },
+            {
+              "ko": "은지예요.",
+              "roman": "eunjiyeyo."
+            },
+            {
+              "ko": "미나예요.",
+              "roman": "minayeyo."
+            }
+          ],
+          "answers": [
+            {
+              "ko": "미나 씨, 반가워요. 저는 학생이에요.",
+              "roman": "mina ssi, bangawoyo. jeoneun haksaengieyo.",
+              "en": "Mina, nice to meet you. I'm a student."
+            }
+          ]
+        },
+        {
+          "id": "S4-20",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:8f10c64e",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "우리 친하게 지내요.",
+              "roman": "uri chinhage jinaeyo.",
+              "en": "Let's be good friends."
+            },
+            "audio_url": "u03-mina/d-11",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "아, 저도 학생이에요.",
+              "roman": "a, jeodo haksaengieyo.",
+              "en": "Oh, I'm a student too.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "저는 미나예요. 창가 쪽 침대 써요.",
+              "roman": "jeoneun minayeyo. changga jjok chimdae sseoyo.",
+              "en": "I'm Mina. I use the bed by the window.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "네, 저도 반가워요.",
+              "roman": "ne, jeodo bangawoyo.",
+              "en": "Nice to meet you too.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "우리 친하게 지내요.",
+              "roman": "uri chinhage jinaeyo.",
+              "en": "Let's be good friends.",
+              "correct": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "S5",
+      "order": 5,
+      "items": [
+        {
+          "id": "S5-01",
+          "type": "PARTICLE_FILL",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "읽기",
+          "skill_level": 2,
+          "ref": "voca:740ea24b",
+          "prompt": {
+            "ko": "알맞은 조사를 고르세요.",
+            "en": "Which particle fits?"
+          },
+          "stimulus": {
+            "text": {
+              "ko": "미나 씨___ 어느 나라에서 왔어요?",
+              "roman": "mina ssi___ eoneu naraeseo wasseoyo?",
+              "en": "Mina, what country are you from?"
+            },
+            "audio_url": "",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "는",
+              "roman": "neun",
+              "en": "topic marker (after a vowel)",
+              "correct": true
+            },
+            {
+              "id": "o2",
+              "ko": "은",
+              "roman": "eun",
+              "en": "topic marker (after a consonant)",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "앞말에 받침이 있는지 보고 조사를 골라요.",
+              "en": "The particle depends on whether the word before it ends in a consonant."
+            }
+          }
+        },
+        {
+          "id": "S5-02",
+          "type": "PARTICLE_FILL",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "읽기",
+          "skill_level": 2,
+          "ref": "voca:bc8b9fe8",
+          "prompt": {
+            "ko": "알맞은 조사를 고르세요.",
+            "en": "Which particle fits?"
+          },
+          "stimulus": {
+            "text": {
+              "ko": "저___ 일주일 묵어요.",
+              "roman": "jeo___ iljuil mugeoyo.",
+              "en": "I'm staying a week."
+            },
+            "audio_url": "",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "은",
+              "roman": "eun",
+              "en": "topic marker (after a consonant)",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "는",
+              "roman": "neun",
+              "en": "topic marker (after a vowel)",
+              "correct": true
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "앞말에 받침이 있는지 보고 조사를 골라요.",
+              "en": "The particle depends on whether the word before it ends in a consonant."
+            }
+          }
+        },
+        {
+          "id": "S5-03",
+          "type": "PARTICLE_SWAP",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "읽기",
+          "skill_level": 2,
+          "ref": "voca:e3c30bfa",
+          "prompt": {
+            "ko": "조사를 고치세요.",
+            "en": "Fix the particle."
+          },
+          "stimulus": {
+            "text": {
+              "ko": "이름[로]",
+              "roman": "ireumro",
+              "en": "name"
+            },
+            "audio_url": "",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "으로",
+              "roman": "euro",
+              "en": "by, with, to (after a consonant)",
+              "correct": true
+            },
+            {
+              "id": "o2",
+              "ko": "는",
+              "roman": "neun",
+              "en": "topic marker (after a vowel)",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "를",
+              "roman": "reul",
+              "en": "object marker (after a vowel)",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "조사가 뜻을 바꿔요. 이 자리에 맞는 조사를 써야 해요.",
+              "en": "The particle changes the meaning. This slot needs a different one."
+            }
+          }
+        },
+        {
+          "id": "S5-04",
+          "type": "PARTICLE_SWAP",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "읽기",
+          "skill_level": 2,
+          "ref": "voca:e3c30bfa",
+          "prompt": {
+            "ko": "조사를 고치세요.",
+            "en": "Fix the particle."
+          },
+          "stimulus": {
+            "text": {
+              "ko": "이름[가]",
+              "roman": "ireumga",
+              "en": "name"
+            },
+            "audio_url": "",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "는",
+              "roman": "neun",
+              "en": "topic marker (after a vowel)",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "이",
+              "roman": "i",
+              "en": "subject marker (after a consonant)",
+              "correct": true
+            },
+            {
+              "id": "o3",
+              "ko": "를",
+              "roman": "reul",
+              "en": "object marker (after a vowel)",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "조사가 뜻을 바꿔요. 이 자리에 맞는 조사를 써야 해요.",
+              "en": "The particle changes the meaning. This slot needs a different one."
+            }
+          }
+        },
+        {
+          "id": "S5-05",
+          "type": "MIN_PAIR_AB",
+          "mode": "choice",
+          "event": "D",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 2,
+          "ref": "voca:3c177f67",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "Which one did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "방",
+              "roman": "bang"
+            },
+            "audio_url": "u03-mina/s5-05-stim",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "빵",
+              "roman": "ppang",
+              "en": "bread",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "방",
+              "roman": "bang",
+              "en": "room",
+              "correct": true
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "한 소리만 다른 말이에요. 천천히 다시 들어 보세요.",
+              "en": "These two words differ by one sound. Listen again slowly."
+            }
+          }
+        },
+        {
+          "id": "S5-06",
+          "type": "MIN_PAIR_AB",
+          "mode": "choice",
+          "event": "D",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 2,
+          "ref": "voca:bc8b9fe8",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "Which one did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "불",
+              "roman": "bul"
+            },
+            "audio_url": "u03-mina/s5-06-stim",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "불",
+              "roman": "bul",
+              "en": "fire, electrical light",
+              "correct": true
+            },
+            {
+              "id": "o2",
+              "ko": "풀",
+              "roman": "pul",
+              "en": "grass",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "한 소리만 다른 말이에요. 천천히 다시 들어 보세요.",
+              "en": "These two words differ by one sound. Listen again slowly."
+            }
+          }
+        },
+        {
+          "id": "S5-07",
+          "type": "DICTATION",
+          "mode": "typing",
+          "event": "R",
+          "level": 4,
+          "skill": "쓰기",
+          "skill_level": 2,
+          "ref": "voca:51e5fab7",
+          "prompt": {
+            "ko": "들은 대로 쓰세요.",
+            "en": "Type what you hear."
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "침대",
+              "roman": "chimdae",
+              "en": "bed"
+            },
+            "audio_url": "u03-mina/s3-04-word",
+            "image_url": ""
+          },
+          "answers": [
+            {
+              "ko": "침대",
+              "roman": "chimdae",
+              "en": "bed"
+            }
+          ]
+        },
+        {
+          "id": "S5-08",
+          "type": "DICTATION",
+          "mode": "typing",
+          "event": "R",
+          "level": 4,
+          "skill": "쓰기",
+          "skill_level": 2,
+          "ref": "voca:9710a021",
+          "prompt": {
+            "ko": "들은 대로 쓰세요.",
+            "en": "Type what you hear."
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "며칠",
+              "roman": "myeochil",
+              "en": "how many days"
+            },
+            "audio_url": "u03-mina/s1-07-word-v2",
+            "image_url": ""
+          },
+          "answers": [
+            {
+              "ko": "며칠",
+              "roman": "myeochil",
+              "en": "how many days"
+            }
+          ]
+        },
+        {
+          "id": "S5-09",
+          "type": "SHADOW",
+          "mode": "speech",
+          "event": "E",
+          "level": 3,
+          "skill": "말하기",
+          "skill_level": 1,
+          "ref": "patt:50dbccc0",
+          "prompt": {
+            "ko": "듣고 따라 말하세요.",
+            "en": "Listen and repeat."
+          },
+          "stimulus": {
+            "text": {
+              "ko": "안녕하세요, 저는 은지예요.",
+              "roman": "annyeonghaseyo, jeoneun eunjiyeyo.",
+              "en": "Hello, I'm {이름}."
+            },
+            "audio": {
+              "ko": "안녕하세요, 저는 은지예요.",
+              "roman": "annyeonghaseyo, jeoneun eunjiyeyo.",
+              "en": "Hello, I'm Eunji."
+            },
+            "audio_url": "u03-mina/d-02",
+            "image_url": ""
+          },
+          "answers": [
+            {
+              "ko": "안녕하세요, 저는 은지예요.",
+              "roman": "annyeonghaseyo, jeoneun eunjiyeyo.",
+              "en": "Hello, I'm Eunji."
+            }
+          ]
+        },
+        {
+          "id": "S5-10",
+          "type": "SHADOW",
+          "mode": "speech",
+          "event": "E",
+          "level": 3,
+          "skill": "말하기",
+          "skill_level": 1,
+          "ref": "voca:eebef120",
+          "prompt": {
+            "ko": "듣고 따라 말하세요.",
+            "en": "Listen and repeat."
+          },
+          "stimulus": {
+            "text": {
+              "ko": "미나 씨, 만나서 반갑습니다.",
+              "roman": "mina ssi, mannaseo bangapseumnida.",
+              "en": "Mina, nice to meet you."
+            },
+            "audio": {
+              "ko": "미나 씨, 만나서 반갑습니다.",
+              "roman": "mina ssi, mannaseo bangapseumnida.",
+              "en": "Mina, nice to meet you."
+            },
+            "audio_url": "u03-mina/s1-03-ex",
+            "image_url": ""
+          },
+          "answers": [
+            {
+              "ko": "미나 씨, 만나서 반갑습니다.",
+              "roman": "mina ssi, mannaseo bangapseumnida.",
+              "en": "Mina, nice to meet you."
+            }
+          ]
+        },
+        {
+          "id": "S5-11",
+          "type": "SHADOW",
+          "mode": "speech",
+          "event": "E",
+          "level": 3,
+          "skill": "말하기",
+          "skill_level": 1,
+          "ref": "voca:e3c30bfa",
+          "prompt": {
+            "ko": "듣고 따라 말하세요.",
+            "en": "Listen and repeat."
+          },
+          "stimulus": {
+            "text": {
+              "ko": "미나 씨는 어느 나라에서 왔어요?",
+              "roman": "mina ssineun eoneu naraeseo wasseoyo?",
+              "en": "Mina, what country are you from?"
+            },
+            "audio": {
+              "ko": "미나 씨는 어느 나라에서 왔어요?",
+              "roman": "mina ssineun eoneu naraeseo wasseoyo?",
+              "en": "Mina, what country are you from?"
+            },
+            "audio_url": "u03-mina/d-06",
+            "image_url": ""
+          },
+          "answers": [
+            {
+              "ko": "미나 씨는 어느 나라에서 왔어요?",
+              "roman": "mina ssineun eoneu naraeseo wasseoyo?",
+              "en": "Mina, what country are you from?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "S6",
+      "order": 6,
+      "items": [
+        {
+          "id": "S6-01",
+          "type": "CLOZE",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:3c177f67",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "아, 저도 ___",
+            "roman": "a, jeodo ___",
+            "en": "Oh, I'm a student too."
+          },
+          "tiles": [
+            {
+              "ko": "학생이에요.",
+              "roman": "haksaengieyo."
+            },
+            {
+              "ko": "왔어요?",
+              "roman": "wasseoyo?"
+            },
+            {
+              "ko": "반갑습니다.",
+              "roman": "bangapseumnida."
+            }
+          ],
+          "answers": [
+            {
+              "ko": "학생이에요.",
+              "roman": "haksaengieyo."
+            }
+          ]
+        },
+        {
+          "id": "S6-02",
+          "type": "CLOZE",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:740ea24b",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "___ 이름이 뭐예요?",
+            "roman": "___ ireumi mwoyeyo?",
+            "en": "Hello. What's your name?"
+          },
+          "tiles": [
+            {
+              "ko": "안녕하세요.",
+              "roman": "annyeonghaseyo."
+            },
+            {
+              "ko": "묵어요?",
+              "roman": "mugeoyo?"
+            },
+            {
+              "ko": "학생이에요.",
+              "roman": "haksaengieyo."
+            }
+          ],
+          "answers": [
+            {
+              "ko": "안녕하세요.",
+              "roman": "annyeonghaseyo."
+            }
+          ]
+        },
+        {
+          "id": "S6-03",
+          "type": "TRANSLATE_TO_KO",
+          "mode": "typing",
+          "event": "R",
+          "level": 4,
+          "skill": "쓰기",
+          "skill_level": 3,
+          "ref": "voca:cf2936b1",
+          "prompt": {
+            "ko": "한국어로 쓰세요.",
+            "en": "Say this in Korean."
+          },
+          "stimulus": {
+            "audio_url": "u03-mina/s3-05-word",
+            "image_url": "",
+            "en": "Korean language"
+          },
+          "answers": [
+            {
+              "ko": "한국어",
+              "roman": "hangugeo",
+              "en": "Korean language"
+            }
+          ]
+        },
+        {
+          "id": "S6-04",
+          "type": "SPEAK_WORD",
+          "mode": "speech",
+          "event": "R",
+          "level": 4,
+          "skill": "말하기",
+          "skill_level": 2,
+          "ref": "voca:51e5fab7",
+          "prompt": {
+            "ko": "그림을 보고 말하세요.",
+            "en": "Say the word for the picture."
+          },
+          "stimulus": {
+            "audio_url": "u03-mina/s3-04-word",
+            "image_brief": "bed - 한 컷으로 알아볼 수 있게",
+            "image_url": ""
+          },
+          "answers": [
+            {
+              "ko": "침대",
+              "roman": "chimdae",
+              "en": "bed"
+            }
+          ]
+        },
+        {
+          "id": "S6-05",
+          "type": "TRANSLATE_TO_KO",
+          "mode": "typing",
+          "event": "R",
+          "level": 4,
+          "skill": "쓰기",
+          "skill_level": 3,
+          "ref": "voca:740ea24b",
+          "prompt": {
+            "ko": "한국어로 쓰세요.",
+            "en": "Say this in Korean."
+          },
+          "stimulus": {
+            "audio_url": "u03-mina/s6-05-answer",
+            "image_url": "",
+            "en": "Hello"
+          },
+          "answers": [
+            {
+              "ko": "안녕하세요",
+              "roman": "annyeonghaseyo"
+            }
+          ]
+        },
+        {
+          "id": "S6-06",
+          "type": "TRANSLATE_TO_KO",
+          "mode": "typing",
+          "event": "R",
+          "level": 4,
+          "skill": "쓰기",
+          "skill_level": 3,
+          "ref": "voca:ff8c6497",
+          "prompt": {
+            "ko": "한국어로 쓰세요.",
+            "en": "Say this in Korean."
+          },
+          "stimulus": {
+            "audio_url": "u03-mina/s3-01-word",
+            "image_url": "",
+            "en": "come"
+          },
+          "answers": [
+            {
+              "ko": "오다",
+              "roman": "oda",
+              "en": "come"
+            }
+          ]
+        },
+        {
+          "id": "S6-07",
+          "type": "CLOZE",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:51e5fab7",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "저는 미나예요. 창가 쪽 ___ 써요.",
+            "roman": "jeoneun minayeyo. changga jjok ___ sseoyo.",
+            "en": "I'm Mina. I use the bed by the window."
+          },
+          "tiles": [
+            {
+              "ko": "침대",
+              "roman": "chimdae",
+              "en": "bed"
+            },
+            {
+              "ko": "한국어",
+              "roman": "hangugeo",
+              "en": "Korean language"
+            },
+            {
+              "ko": "일주일",
+              "roman": "iljuil",
+              "en": "one week"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "침대",
+              "roman": "chimdae",
+              "en": "bed"
+            }
+          ]
+        },
+        {
+          "id": "S6-08",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:9710a021",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "저는 호주에서 왔어요. 여기서 며칠 묵어요?",
+              "roman": "jeoneun hojueseo wasseoyo. yeogiseo myeochil mugeoyo?",
+              "en": "I'm from Australia. How many days are you staying here?"
+            },
+            "audio_url": "u03-mina/d-08",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "미나 씨는 어느 나라에서 왔어요?",
+              "roman": "mina ssineun eoneu naraeseo wasseoyo?",
+              "en": "Where are you from, Mina?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "저는 호주에서 왔어요. 여기서 며칠 묵어요?",
+              "roman": "jeoneun hojueseo wasseoyo. yeogiseo myeochil mugeoyo?",
+              "en": "I'm from Australia. How many days are you staying here?",
+              "correct": true
+            },
+            {
+              "id": "o3",
+              "ko": "네, 저도 반가워요.",
+              "roman": "ne, jeodo bangawoyo.",
+              "en": "Nice to meet you too.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "미나 씨, 만나서 반갑습니다.",
+              "roman": "mina ssi, mannaseo bangapseumnida.",
+              "en": "Mina, nice to meet you.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ]
+        },
+        {
+          "id": "S6-09",
+          "type": "WORD_ORDER",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:ff8c6497",
+          "prompt": {
+            "ko": "문장을 만드세요.",
+            "en": "Build the sentence."
+          },
+          "stimulus": {
+            "audio_url": "u03-mina/d-06",
+            "image_url": "",
+            "en": "Mina, what country are you from?"
+          },
+          "tiles": [
+            {
+              "ko": "미나",
+              "roman": "mina"
+            },
+            {
+              "ko": "씨는",
+              "roman": "ssineun"
+            },
+            {
+              "ko": "어느",
+              "roman": "eoneu",
+              "en": "which, how"
+            },
+            {
+              "ko": "나라에서",
+              "roman": "naraeseo"
+            },
+            {
+              "ko": "왔어요?",
+              "roman": "wasseoyo?"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "미나 씨는 어느 나라에서 왔어요?",
+              "roman": "mina ssineun eoneu naraeseo wasseoyo?",
+              "en": "Mina, what country are you from?"
+            }
+          ]
+        },
+        {
+          "id": "S6-10",
+          "type": "TRANSLATE_TO_KO",
+          "mode": "typing",
+          "event": "R",
+          "level": 4,
+          "skill": "쓰기",
+          "skill_level": 3,
+          "ref": "voca:ec5d9a98",
+          "prompt": {
+            "ko": "한국어로 쓰세요.",
+            "en": "Say this in Korean."
+          },
+          "stimulus": {
+            "audio_url": "u03-mina/s3-03-word",
+            "image_url": "",
+            "en": "one week"
+          },
+          "answers": [
+            {
+              "ko": "일주일",
+              "roman": "iljuil",
+              "en": "one week"
+            }
+          ]
+        },
+        {
+          "id": "S6-11",
+          "type": "CLOZE",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:cf2936b1",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "저는 스위스에서 ___ 배우러 왔어요. 은지는요?",
+            "roman": "jeoneun seuwiseueseo ___ baeureo wasseoyo. eunjineunyo?",
+            "en": "I came from Switzerland to learn Korean. How about you, Eunji?"
+          },
+          "tiles": [
+            {
+              "ko": "한국어",
+              "roman": "hangugeo",
+              "en": "Korean language"
+            },
+            {
+              "ko": "이름",
+              "roman": "ireum",
+              "en": "name"
+            },
+            {
+              "ko": "침대",
+              "roman": "chimdae",
+              "en": "bed"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "한국어",
+              "roman": "hangugeo",
+              "en": "Korean language"
+            }
+          ]
+        },
+        {
+          "id": "S6-12",
+          "type": "TRANSLATE_TO_KO",
+          "mode": "typing",
+          "event": "R",
+          "level": 4,
+          "skill": "쓰기",
+          "skill_level": 3,
+          "ref": "voca:3c177f67",
+          "prompt": {
+            "ko": "한국어로 쓰세요.",
+            "en": "Say this in Korean."
+          },
+          "stimulus": {
+            "audio_url": "u03-mina/s3-07-word",
+            "image_url": "",
+            "en": "student"
+          },
+          "answers": [
+            {
+              "ko": "학생",
+              "roman": "haksaeng",
+              "en": "student"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "S7",
+      "order": 7,
+      "items": [
+        {
+          "id": "S7-01",
+          "type": "SHADOW",
+          "mode": "speech",
+          "event": "E",
+          "level": 3,
+          "skill": "말하기",
+          "skill_level": 1,
+          "ref": "patt:50dbccc0",
+          "prompt": {
+            "ko": "듣고 따라 말하세요.",
+            "en": "Listen and repeat."
+          },
+          "stimulus": {
+            "text": {
+              "ko": "안녕하세요, 저는 은지예요.",
+              "roman": "annyeonghaseyo, jeoneun eunjiyeyo.",
+              "en": "Hello, I'm {이름}."
+            },
+            "audio": {
+              "ko": "안녕하세요, 저는 은지예요.",
+              "roman": "annyeonghaseyo, jeoneun eunjiyeyo.",
+              "en": "Hello, I'm Eunji."
+            },
+            "audio_url": "u03-mina/d-02",
+            "image_url": ""
+          },
+          "answers": [
+            {
+              "ko": "안녕하세요, 저는 은지예요.",
+              "roman": "annyeonghaseyo, jeoneun eunjiyeyo.",
+              "en": "Hello, I'm Eunji."
+            }
+          ]
+        },
+        {
+          "id": "S7-02",
+          "type": "ROLE_LINE",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "읽기",
+          "skill_level": 2,
+          "ref": "voca:332ac987",
+          "prompt": {
+            "ko": "뭐라고 말할까요?",
+            "en": "What do you say?"
+          },
+          "context": {
+            "ko": "네, 저도 반가워요.",
+            "roman": "ne, jeodo bangawoyo.",
+            "en": "Yes, nice to meet you too."
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "미나 씨는 어느 나라에서 왔어요?",
+              "roman": "mina ssineun eoneu naraeseo wasseoyo?",
+              "en": "Where are you from, Mina?",
+              "correct": true
+            },
+            {
+              "id": "o2",
+              "ko": "미나 씨, 만나서 반가워요.",
+              "roman": "mina ssi, mannaseo bangawoyo.",
+              "en": "Nice to meet you, Mina.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "안녕하세요, 저는 은지예요.",
+              "roman": "annyeonghaseyo, jeoneun eunjiyeyo.",
+              "en": "Hello, I'm Eunji.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "이 자리에서는 「미나 씨는 어느 나라에서 왔어요?」라고 해요.",
+              "en": "Here you say \"Mina, what country are you from?\"."
+            }
+          }
+        },
+        {
+          "id": "S7-03",
+          "type": "SHADOW",
+          "mode": "speech",
+          "event": "E",
+          "level": 3,
+          "skill": "말하기",
+          "skill_level": 1,
+          "ref": "voca:ec5d9a98",
+          "prompt": {
+            "ko": "듣고 따라 말하세요.",
+            "en": "Listen and repeat."
+          },
+          "stimulus": {
+            "text": {
+              "ko": "저는 일주일 묵어요.",
+              "roman": "jeoneun iljuil mugeoyo.",
+              "en": "I'm staying a week."
+            },
+            "audio": {
+              "ko": "저는 일주일 묵어요.",
+              "roman": "jeoneun iljuil mugeoyo.",
+              "en": "I'm staying a week."
+            },
+            "audio_url": "u03-mina/d-10",
+            "image_url": ""
+          },
+          "answers": [
+            {
+              "ko": "저는 일주일 묵어요.",
+              "roman": "jeoneun iljuil mugeoyo.",
+              "en": "I'm staying a week."
+            }
+          ]
+        },
+        {
+          "id": "S7-04",
+          "type": "SHADOW",
+          "mode": "speech",
+          "event": "E",
+          "level": 3,
+          "skill": "말하기",
+          "skill_level": 1,
+          "ref": "voca:9710a021",
+          "prompt": {
+            "ko": "듣고 따라 말하세요.",
+            "en": "Listen and repeat."
+          },
+          "stimulus": {
+            "text": {
+              "ko": "저는 호주에서 왔어요. 여기서 며칠 묵어요?",
+              "roman": "jeoneun hojueseo wasseoyo. yeogiseo myeochil mugeoyo?",
+              "en": "I'm from {나라}. How many days are you staying here?"
+            },
+            "audio": {
+              "ko": "저는 호주에서 왔어요. 여기서 며칠 묵어요?",
+              "roman": "jeoneun hojueseo wasseoyo. yeogiseo myeochil mugeoyo?",
+              "en": "I'm from Australia. How many days are you staying here?"
+            },
+            "audio_url": "u03-mina/d-08",
+            "image_url": ""
+          },
+          "answers": [
+            {
+              "ko": "저는 호주에서 왔어요. 여기서 며칠 묵어요?",
+              "roman": "jeoneun hojueseo wasseoyo. yeogiseo myeochil mugeoyo?",
+              "en": "I'm from Australia. How many days are you staying here?"
+            }
+          ]
+        },
+        {
+          "id": "S7-05",
+          "type": "SHADOW",
+          "mode": "speech",
+          "event": "E",
+          "level": 3,
+          "skill": "말하기",
+          "skill_level": 1,
+          "ref": "patt:50dbccc0",
+          "prompt": {
+            "ko": "듣고 따라 말하세요.",
+            "en": "Listen and repeat."
+          },
+          "stimulus": {
+            "text": {
+              "ko": "미나 씨, 만나서 반갑습니다.",
+              "roman": "mina ssi, mannaseo bangapseumnida.",
+              "en": "Mina, nice to meet you."
+            },
+            "audio": {
+              "ko": "미나 씨, 만나서 반갑습니다.",
+              "roman": "mina ssi, mannaseo bangapseumnida.",
+              "en": "Mina, nice to meet you."
+            },
+            "audio_url": "u03-mina/s1-03-ex",
+            "image_url": ""
+          },
+          "answers": [
+            {
+              "ko": "미나 씨, 만나서 반갑습니다.",
+              "roman": "mina ssi, mannaseo bangapseumnida.",
+              "en": "Mina, nice to meet you."
+            }
+          ]
+        },
+        {
+          "id": "S7-06",
+          "type": "SHADOW",
+          "mode": "speech",
+          "event": "E",
+          "level": 3,
+          "skill": "말하기",
+          "skill_level": 1,
+          "ref": "voca:c191d7c5",
+          "prompt": {
+            "ko": "듣고 따라 말하세요.",
+            "en": "Listen and repeat."
+          },
+          "stimulus": {
+            "text": {
+              "ko": "미나 씨는 어느 나라에서 왔어요?",
+              "roman": "mina ssineun eoneu naraeseo wasseoyo?",
+              "en": "Mina, what country are you from?"
+            },
+            "audio": {
+              "ko": "미나 씨는 어느 나라에서 왔어요?",
+              "roman": "mina ssineun eoneu naraeseo wasseoyo?",
+              "en": "Mina, what country are you from?"
+            },
+            "audio_url": "u03-mina/d-06",
+            "image_url": ""
+          },
+          "answers": [
+            {
+              "ko": "미나 씨는 어느 나라에서 왔어요?",
+              "roman": "mina ssineun eoneu naraeseo wasseoyo?",
+              "en": "Mina, what country are you from?"
+            }
+          ]
+        },
+        {
+          "id": "S7-07",
+          "type": "WORD_ORDER",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:ec5d9a98",
+          "prompt": {
+            "ko": "문장을 만드세요.",
+            "en": "Build the sentence."
+          },
+          "stimulus": {
+            "audio_url": "u03-mina/d-10",
+            "image_url": "",
+            "en": "I'm staying a week."
+          },
+          "tiles": [
+            {
+              "ko": "저는",
+              "roman": "jeoneun"
+            },
+            {
+              "ko": "일주일",
+              "roman": "iljuil",
+              "en": "one week"
+            },
+            {
+              "ko": "묵어요.",
+              "roman": "mugeoyo."
+            }
+          ],
+          "answers": [
+            {
+              "ko": "저는 일주일 묵어요.",
+              "roman": "jeoneun iljuil mugeoyo.",
+              "en": "I'm staying a week."
+            }
+          ]
+        },
+        {
+          "id": "S7-08",
+          "type": "SHADOW",
+          "mode": "speech",
+          "event": "E",
+          "level": 3,
+          "skill": "말하기",
+          "skill_level": 1,
+          "ref": "voca:332ac987",
+          "prompt": {
+            "ko": "듣고 따라 말하세요.",
+            "en": "Listen and repeat."
+          },
+          "stimulus": {
+            "text": {
+              "ko": "미나 씨, 반가워요. 저는 학생이에요.",
+              "roman": "mina ssi, bangawoyo. jeoneun haksaengieyo.",
+              "en": "Mina, nice to meet you. I'm a student."
+            },
+            "audio": {
+              "ko": "미나 씨, 반가워요. 저는 학생이에요.",
+              "roman": "mina ssi, bangawoyo. jeoneun haksaengieyo.",
+              "en": "Mina, nice to meet you. I'm a student."
+            },
+            "audio_url": "u03-mina/d-12",
+            "image_url": ""
+          },
+          "answers": [
+            {
+              "ko": "미나 씨, 반가워요. 저는 학생이에요.",
+              "roman": "mina ssi, bangawoyo. jeoneun haksaengieyo.",
+              "en": "Mina, nice to meet you. I'm a student."
+            }
+          ]
+        },
+        {
+          "id": "S7-09",
+          "type": "REPLY_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 2,
+          "ref": "voca:9710a021",
+          "prompt": {
+            "ko": "뭐라고 대답할까요?",
+            "en": "How do you reply?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "저는 스위스에서 한국어 배우러 왔어요. 은지는요?",
+              "roman": "jeoneun seuwiseueseo hangugeo baeureo wasseoyo. eunjineunyo?",
+              "en": "I came from Switzerland to learn Korean. How about you, Eunji?"
+            },
+            "audio_url": "u03-mina/d-07",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "안녕하세요, 저는 은지예요.",
+              "roman": "annyeonghaseyo, jeoneun eunjiyeyo.",
+              "en": "Hello, I'm Eunji.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "저는 호주에서 왔어요. 여기서 며칠 묵어요?",
+              "roman": "jeoneun hojueseo wasseoyo. yeogiseo myeochil mugeoyo?",
+              "en": "I'm from Australia. How many days are you staying here?",
+              "correct": true
+            },
+            {
+              "id": "o3",
+              "ko": "미나 씨는 어느 나라에서 왔어요?",
+              "roman": "mina ssineun eoneu naraeseo wasseoyo?",
+              "en": "Where are you from, Mina?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "이 자리에서는 「저는 호주에서 왔어요. 여기서 며칠 묵어요?」라고 해요.",
+              "en": "Here you say \"I'm from Australia. How many days are you staying here?\"."
+            }
+          }
+        },
+        {
+          "id": "S7-10",
+          "type": "ROLE_LINE",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "읽기",
+          "skill_level": 2,
+          "ref": "patt:50dbccc0",
+          "prompt": {
+            "ko": "뭐라고 말할까요?",
+            "en": "What do you say?"
+          },
+          "context": {
+            "ko": "안녕하세요. 이름이 뭐예요?",
+            "roman": "annyeonghaseyo. ireumi mwoyeyo?",
+            "en": "Hello. What's your name?"
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "안녕하세요, 저는 은지예요.",
+              "roman": "annyeonghaseyo, jeoneun eunjiyeyo.",
+              "en": "Hello, I'm Eunji.",
+              "correct": true
+            },
+            {
+              "id": "o2",
+              "ko": "저는 일주일 묵어요.",
+              "roman": "jeoneun iljuil mugeoyo.",
+              "en": "I'm staying for a week.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "미나 씨는 어느 나라에서 왔어요?",
+              "roman": "mina ssineun eoneu naraeseo wasseoyo?",
+              "en": "Where are you from, Mina?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "이 자리에서는 「안녕하세요, 저는 은지예요.」라고 해요.",
+              "en": "Here you say \"Hello, I'm Eunji.\"."
+            }
+          }
+        },
+        {
+          "id": "S7-11",
+          "type": "REPLY_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 2,
+          "ref": "voca:ec5d9a98",
+          "prompt": {
+            "ko": "뭐라고 대답할까요?",
+            "en": "How do you reply?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "저는 이틀 먼저 왔는데 2주 있을 거예요.",
+              "roman": "jeoneun iteul meonjeo wanneunde 2ju isseul geoyeyo.",
+              "en": "I came two days earlier, and I'll stay two weeks."
+            },
+            "audio_url": "u03-mina/d-09",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "안녕하세요, 저는 은지예요.",
+              "roman": "annyeonghaseyo, jeoneun eunjiyeyo.",
+              "en": "Hello, I'm Eunji.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "저는 일주일 묵어요.",
+              "roman": "jeoneun iljuil mugeoyo.",
+              "en": "I'm staying for a week.",
+              "correct": true
+            },
+            {
+              "id": "o3",
+              "ko": "저는 호주에서 왔어요. 여기서 며칠 묵어요?",
+              "roman": "jeoneun hojueseo wasseoyo. yeogiseo myeochil mugeoyo?",
+              "en": "I'm from Australia. How many days are you staying here?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "이 자리에서는 「저는 일주일 묵어요.」라고 해요.",
+              "en": "Here you say \"I'm staying a week.\"."
+            }
+          }
+        },
+        {
+          "id": "S7-12",
+          "type": "ROLE_LINE",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "읽기",
+          "skill_level": 2,
+          "ref": "voca:3c177f67",
+          "prompt": {
+            "ko": "뭐라고 말할까요?",
+            "en": "What do you say?"
+          },
+          "context": {
+            "ko": "미나에게 나도 학생이라고 말하고 싶다.",
+            "roman": "minaege nado haksaengirago malhago sipda.",
+            "en": "You want to tell Mina you are a student too."
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "미나 씨, 만나서 반가워요.",
+              "roman": "mina ssi, mannaseo bangawoyo.",
+              "en": "Nice to meet you, Mina.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "미나 씨, 반가워요. 저는 학생이에요.",
+              "roman": "mina ssi, bangawoyo. jeoneun haksaengieyo.",
+              "en": "Mina, nice to meet you. I'm a student.",
+              "correct": true
+            },
+            {
+              "id": "o3",
+              "ko": "미나 씨는 어느 나라에서 왔어요?",
+              "roman": "mina ssineun eoneu naraeseo wasseoyo?",
+              "en": "Where are you from, Mina?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "이 자리에서는 「미나 씨, 반가워요. 저는 학생이에요.」라고 해요.",
+              "en": "Here you say \"Mina, nice to meet you. I'm a student.\"."
+            },
+            "wrong": {
+              "ko": "이번에는 미나에게 나도 학생이라고 말하고 싶어서 「미나 씨, 만나서 반가워요.」는 안 맞아요.",
+              "en": "This time you want to tell Mina you are a student too, so \"Mina, nice to meet you.\" does not fit."
+            },
+            "wrong_option": "o1"
+          }
+        }
+      ]
+    },
+    {
+      "id": "S8",
+      "order": 8,
+      "items": [
+        {
+          "id": "S8-01",
+          "type": "CLOZE",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:740ea24b",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "___, 저는 은지예요.",
+            "roman": "___, jeoneun eunjiyeyo.",
+            "en": "Hello, I'm Eunji."
+          },
+          "tiles": [
+            {
+              "ko": "안녕하세요",
+              "roman": "annyeonghaseyo"
+            },
+            {
+              "ko": "오다",
+              "roman": "oda",
+              "en": "come"
+            },
+            {
+              "ko": "며칠",
+              "roman": "myeochil",
+              "en": "how many days"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "안녕하세요",
+              "roman": "annyeonghaseyo"
+            }
+          ]
+        },
+        {
+          "id": "S8-02",
+          "type": "DICTATION",
+          "mode": "typing",
+          "event": "R",
+          "level": 4,
+          "skill": "쓰기",
+          "skill_level": 2,
+          "ref": "voca:740ea24b",
+          "prompt": {
+            "ko": "들은 대로 쓰세요.",
+            "en": "Type what you hear."
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "안녕하세요",
+              "roman": "annyeonghaseyo"
+            },
+            "audio_url": "u03-mina/s6-05-answer",
+            "image_url": ""
+          },
+          "answers": [
+            {
+              "ko": "안녕하세요",
+              "roman": "annyeonghaseyo"
+            }
+          ]
+        },
+        {
+          "id": "S8-03",
+          "type": "SPEAK_WORD",
+          "mode": "speech",
+          "event": "R",
+          "level": 4,
+          "skill": "말하기",
+          "skill_level": 2,
+          "ref": "voca:be986751",
+          "prompt": {
+            "ko": "그림을 보고 말하세요.",
+            "en": "Say the word for the picture."
+          },
+          "stimulus": {
+            "audio_url": "u03-mina/s1-05-word-v2",
+            "image_brief": "country - 한 컷으로 알아볼 수 있게",
+            "image_url": "content/images/items/country.webp"
+          },
+          "answers": [
+            {
+              "ko": "나라",
+              "roman": "nara",
+              "en": "country"
+            }
+          ]
+        },
+        {
+          "id": "S8-04",
+          "type": "DICTATION",
+          "mode": "typing",
+          "event": "R",
+          "level": 4,
+          "skill": "쓰기",
+          "skill_level": 2,
+          "ref": "voca:332ac987",
+          "prompt": {
+            "ko": "들은 대로 쓰세요.",
+            "en": "Type what you hear."
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "어느",
+              "roman": "eoneu",
+              "en": "which, how"
+            },
+            "audio_url": "u03-mina/s1-04-word-v2",
+            "image_url": ""
+          },
+          "answers": [
+            {
+              "ko": "어느",
+              "roman": "eoneu",
+              "en": "which, how"
+            }
+          ]
+        },
+        {
+          "id": "S8-05",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:9710a021",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "저는 호주에서 왔어요. 여기서 며칠 묵어요?",
+              "roman": "jeoneun hojueseo wasseoyo. yeogiseo myeochil mugeoyo?",
+              "en": "I'm from Australia. How many days are you staying here?"
+            },
+            "audio_url": "u03-mina/d-08",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "저는 호주에서 왔어요. 여기서 며칠 묵어요?",
+              "roman": "jeoneun hojueseo wasseoyo. yeogiseo myeochil mugeoyo?",
+              "en": "I'm from Australia. How many days are you staying here?",
+              "correct": true
+            },
+            {
+              "id": "o2",
+              "ko": "저는 이틀 먼저 왔는데 2주 있을 거예요.",
+              "roman": "jeoneun iteul meonjeo wanneunde 2ju isseul geoyeyo.",
+              "en": "I came two days earlier, and I'll stay two weeks.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "미나 씨는 어느 나라에서 왔어요?",
+              "roman": "mina ssineun eoneu naraeseo wasseoyo?",
+              "en": "Where are you from, Mina?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "아, 저도 학생이에요.",
+              "roman": "a, jeodo haksaengieyo.",
+              "en": "Oh, I'm a student too.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ]
+        },
+        {
+          "id": "S8-06",
+          "type": "TRANSLATE_TO_EN",
+          "mode": "choice",
+          "event": "R",
+          "level": 1,
+          "skill": "읽기",
+          "skill_level": 1,
+          "ref": "voca:332ac987",
+          "prompt": {
+            "ko": "무슨 뜻인가요?",
+            "en": "What does this mean?"
+          },
+          "stimulus": {
+            "text": {
+              "ko": "어느",
+              "roman": "eoneu"
+            },
+            "audio_url": "u03-mina/s1-04-word-v2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "how many days",
+              "roman": "how many days",
+              "en": "how many days",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "bed",
+              "roman": "bed",
+              "en": "bed",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "which, how",
+              "roman": "which, how",
+              "en": "which, how",
+              "correct": true
+            },
+            {
+              "id": "o4",
+              "ko": "student",
+              "roman": "student",
+              "en": "student",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ]
+        },
+        {
+          "id": "S8-07",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:bc8b9fe8",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "저는 이틀 먼저 왔는데 2주 있을 거예요.",
+              "roman": "jeoneun iteul meonjeo wanneunde 2ju isseul geoyeyo.",
+              "en": "I came two days earlier, and I'll stay two weeks."
+            },
+            "audio_url": "u03-mina/d-09",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "미나 씨는 어느 나라에서 왔어요?",
+              "roman": "mina ssineun eoneu naraeseo wasseoyo?",
+              "en": "Where are you from, Mina?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "저는 이틀 먼저 왔는데 2주 있을 거예요.",
+              "roman": "jeoneun iteul meonjeo wanneunde 2ju isseul geoyeyo.",
+              "en": "I came two days earlier, and I'll stay two weeks.",
+              "correct": true
+            },
+            {
+              "id": "o3",
+              "ko": "우리 친하게 지내요.",
+              "roman": "uri chinhage jinaeyo.",
+              "en": "Let's be good friends.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "안녕하세요, 저는 은지예요.",
+              "roman": "annyeonghaseyo, jeoneun eunjiyeyo.",
+              "en": "Hello, I'm Eunji.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ]
+        },
+        {
+          "id": "S8-08",
+          "type": "TRANSLATE_TO_KO",
+          "mode": "typing",
+          "event": "R",
+          "level": 4,
+          "skill": "쓰기",
+          "skill_level": 3,
+          "ref": "voca:eebef120",
+          "prompt": {
+            "ko": "한국어로 쓰세요.",
+            "en": "Say this in Korean."
+          },
+          "stimulus": {
+            "audio_url": "u03-mina/s1-01-word",
+            "image_url": "",
+            "en": "person, man"
+          },
+          "answers": [
+            {
+              "ko": "사람",
+              "roman": "saram",
+              "en": "person, man"
+            }
+          ]
+        },
+        {
+          "id": "S8-09",
+          "type": "TRANSLATE_TO_EN",
+          "mode": "choice",
+          "event": "R",
+          "level": 1,
+          "skill": "읽기",
+          "skill_level": 1,
+          "ref": "voca:3c177f67",
+          "prompt": {
+            "ko": "무슨 뜻인가요?",
+            "en": "What does this mean?"
+          },
+          "stimulus": {
+            "text": {
+              "ko": "학생",
+              "roman": "haksaeng"
+            },
+            "audio_url": "u03-mina/s3-07-word",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "two days",
+              "roman": "two days",
+              "en": "two days",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "window",
+              "roman": "window",
+              "en": "window",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "Korean language",
+              "roman": "Korean language",
+              "en": "Korean language",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "student",
+              "roman": "student",
+              "en": "student",
+              "correct": true
+            }
+          ]
+        },
+        {
+          "id": "S8-10",
+          "type": "LISTEN_BUILD",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "듣기",
+          "skill_level": 3,
+          "ref": "voca:51e5fab7",
+          "prompt": {
+            "ko": "듣고 문장을 만드세요.",
+            "en": "Listen and build the sentence."
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "저는 미나예요. 창가 쪽 침대 써요.",
+              "roman": "jeoneun minayeyo. changga jjok chimdae sseoyo.",
+              "en": "I'm Mina. I use the bed by the window."
+            },
+            "audio_url": "u03-mina/d-03",
+            "image_url": ""
+          },
+          "tiles": [
+            {
+              "ko": "저는",
+              "roman": "jeoneun"
+            },
+            {
+              "ko": "미나예요.",
+              "roman": "minayeyo."
+            },
+            {
+              "ko": "창가",
+              "roman": "changga",
+              "en": "window"
+            },
+            {
+              "ko": "쪽",
+              "roman": "jjok"
+            },
+            {
+              "ko": "침대",
+              "roman": "chimdae",
+              "en": "bed"
+            },
+            {
+              "ko": "써요.",
+              "roman": "sseoyo."
+            },
+            {
+              "ko": "은지예요.",
+              "roman": "eunjiyeyo."
+            },
+            {
+              "ko": "지내요.",
+              "roman": "jinaeyo."
+            }
+          ],
+          "answers": [
+            {
+              "ko": "저는 미나예요. 창가 쪽 침대 써요.",
+              "roman": "jeoneun minayeyo. changga jjok chimdae sseoyo.",
+              "en": "I'm Mina. I use the bed by the window."
+            }
+          ]
+        },
+        {
+          "id": "S8-11",
+          "type": "TRANSLATE_TO_KO",
+          "mode": "typing",
+          "event": "R",
+          "level": 4,
+          "skill": "쓰기",
+          "skill_level": 3,
+          "ref": "voca:51e5fab7",
+          "prompt": {
+            "ko": "한국어로 쓰세요.",
+            "en": "Say this in Korean."
+          },
+          "stimulus": {
+            "audio_url": "u03-mina/s3-04-word",
+            "image_url": "",
+            "en": "bed"
+          },
+          "answers": [
+            {
+              "ko": "침대",
+              "roman": "chimdae",
+              "en": "bed"
+            }
+          ]
+        },
+        {
+          "id": "S8-12",
+          "type": "TRANSLATE_TO_EN",
+          "mode": "choice",
+          "event": "R",
+          "level": 1,
+          "skill": "읽기",
+          "skill_level": 1,
+          "ref": "voca:51e5fab7",
+          "prompt": {
+            "ko": "무슨 뜻인가요?",
+            "en": "What does this mean?"
+          },
+          "stimulus": {
+            "text": {
+              "ko": "침대",
+              "roman": "chimdae"
+            },
+            "audio_url": "u03-mina/s3-04-word",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "bed",
+              "roman": "bed",
+              "en": "bed",
+              "correct": true
+            },
+            {
+              "id": "o2",
+              "ko": "person, man",
+              "roman": "person, man",
+              "en": "person, man",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "name",
+              "roman": "name",
+              "en": "name",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "one week",
+              "roman": "one week",
+              "en": "one week",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ]
+        },
+        {
+          "id": "S8-13",
+          "type": "TRANSLATE_TO_EN",
+          "mode": "choice",
+          "event": "R",
+          "level": 1,
+          "skill": "읽기",
+          "skill_level": 1,
+          "ref": "voca:9710a021",
+          "prompt": {
+            "ko": "무슨 뜻인가요?",
+            "en": "What does this mean?"
+          },
+          "stimulus": {
+            "text": {
+              "ko": "며칠",
+              "roman": "myeochil"
+            },
+            "audio_url": "u03-mina/s1-07-word-v2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "one week",
+              "roman": "one week",
+              "en": "one week",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "window",
+              "roman": "window",
+              "en": "window",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "we, us",
+              "roman": "we, us",
+              "en": "we, us",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "how many days",
+              "roman": "how many days",
+              "en": "how many days",
+              "correct": true
+            }
+          ]
+        },
+        {
+          "id": "S8-14",
+          "type": "DICTATION",
+          "mode": "typing",
+          "event": "R",
+          "level": 4,
+          "skill": "쓰기",
+          "skill_level": 2,
+          "ref": "voca:cf2936b1",
+          "prompt": {
+            "ko": "들은 대로 쓰세요.",
+            "en": "Type what you hear."
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "한국어",
+              "roman": "hangugeo",
+              "en": "Korean language"
+            },
+            "audio_url": "u03-mina/s3-05-word",
+            "image_url": ""
+          },
+          "answers": [
+            {
+              "ko": "한국어",
+              "roman": "hangugeo",
+              "en": "Korean language"
+            }
+          ]
+        },
+        {
+          "id": "S8-15",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:e3c30bfa",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "안녕하세요. 이름이 뭐예요?",
+              "roman": "annyeonghaseyo. ireumi mwoyeyo?",
+              "en": "Hello. What's your name?"
+            },
+            "audio_url": "u03-mina/d-01",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "안녕하세요. 이름이 뭐예요?",
+              "roman": "annyeonghaseyo. ireumi mwoyeyo?",
+              "en": "Hello. What's your name?",
+              "correct": true
+            },
+            {
+              "id": "o2",
+              "ko": "안녕하세요, 저는 은지예요.",
+              "roman": "annyeonghaseyo, jeoneun eunjiyeyo.",
+              "en": "Hello, I'm Eunji.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "저는 이틀 먼저 왔는데 2주 있을 거예요.",
+              "roman": "jeoneun iteul meonjeo wanneunde 2ju isseul geoyeyo.",
+              "en": "I came two days earlier, and I'll stay two weeks.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "아, 저도 학생이에요.",
+              "roman": "a, jeodo haksaengieyo.",
+              "en": "Oh, I'm a student too.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ]
+        },
+        {
+          "id": "S8-16",
+          "type": "TRANSLATE_TO_KO",
+          "mode": "typing",
+          "event": "R",
+          "level": 4,
+          "skill": "쓰기",
+          "skill_level": 3,
+          "ref": "voca:be986751",
+          "prompt": {
+            "ko": "한국어로 쓰세요.",
+            "en": "Say this in Korean."
+          },
+          "stimulus": {
+            "audio_url": "u03-mina/s1-05-word-v2",
+            "image_url": "",
+            "en": "country"
+          },
+          "answers": [
+            {
+              "ko": "나라",
+              "roman": "nara",
+              "en": "country"
+            }
+          ]
+        },
+        {
+          "id": "S8-17",
+          "type": "TRANSLATE_TO_KO",
+          "mode": "typing",
+          "event": "R",
+          "level": 4,
+          "skill": "쓰기",
+          "skill_level": 3,
+          "ref": "voca:c191d7c5",
+          "prompt": {
+            "ko": "한국어로 쓰세요.",
+            "en": "Say this in Korean."
+          },
+          "stimulus": {
+            "audio_url": "u03-mina/s1-03-word-v2",
+            "image_url": "",
+            "en": "nice to meet you"
+          },
+          "answers": [
+            {
+              "ko": "반갑다",
+              "roman": "bangapda",
+              "en": "nice to meet you"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "CULT",
+      "order": 9,
+      "items": [
+        {
+          "id": "CULT-01",
+          "type": "CULTURE_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "context": {
+            "ko": "이름 뒤에 「씨」",
+            "roman": "ireum dwie 「ssi」",
+            "en": "Adding \"ssi\" after a name"
+          },
+          "stimulus": {
+            "text": {
+              "ko": "처음 만난 사람의 이름을 부를 때는 이름 뒤에 「씨」를 붙여요. 「미나 씨」처럼요. 친해지면 「씨」를 빼고 부르기도 해요.",
+              "roman": "cheoeum mannan saramui ireumeul bureul ttaeneun ireum dwie 「ssi」reul butyeoyo. 「mina ssi」cheoreomyo. chinhaejimyeon 「ssi」reul ppaego bureugido haeyo.",
+              "en": "When you call someone you've just met by name, you add \"ssi\" after it, like \"Mina-ssi.\" Once you get close, people sometimes drop it."
+            },
+            "audio_url": "",
+            "image_url": "content/images/u03-mina/cult-u03-ssi.webp"
+          },
+          "feedback": {
+            "correct": {
+              "ko": "처음에는 이름 뒤에 「씨」를 붙여 부르면 돼요.",
+              "en": "At first, just add \"ssi\" after their name."
+            }
+          }
+        },
+        {
+          "id": "CULT-02",
+          "type": "CULTURE_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "context": {
+            "ko": "처음 만나도 묻는 것들",
+            "roman": "cheoeum mannado munneun geotdeul",
+            "en": "Questions you get on first meeting"
+          },
+          "stimulus": {
+            "text": {
+              "ko": "한국에서는 처음 만난 사람에게도 어디서 왔는지, 학생인지, 나이가 몇인지 자주 물어봐요. 서로 어떤 말투로 이야기할지 정하려고 묻는 경우가 많아요. 실례가 되는 질문은 아니에요.",
+              "roman": "hangugeseoneun cheoeum mannan saramegedo eodiseo wanneunji, haksaenginji, naiga myeochinji jaju mureobwayo. seoro eotteon malturo iyagihalji jeongharyeogo munneun gyeonguga manayo. sillyega doeneun jilmuneun anieyo.",
+              "en": "In Korea, people often ask where you're from, whether you're a student, or even your age, right after meeting. It's often to figure out how formally to talk to each other, and isn't meant to be rude."
+            },
+            "audio_url": "",
+            "image_url": "content/images/u03-mina/cult-u03-questions.webp"
+          },
+          "feedback": {
+            "correct": {
+              "ko": "대답하기 싫으면 웃으면서 다른 이야기로 넘어가도 돼요.",
+              "en": "If you'd rather not answer, smiling and changing the topic is fine."
+            }
+          }
+        },
+        {
+          "id": "CULT-03",
+          "type": "CULTURE_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "context": {
+            "ko": "성이 먼저 오는 한국 이름",
+            "roman": "seongi meonjeo oneun hanguk ireum",
+            "en": "Family name first"
+          },
+          "stimulus": {
+            "text": {
+              "ko": "한국 이름은 성이 먼저 오고 이름이 뒤에 와요. 「박지수」라면 「박」이 성이고 「지수」가 이름이에요. 쓸 때는 성과 이름을 붙여 써요.",
+              "roman": "hanguk ireumeun seongi meonjeo ogo ireumi dwie wayo. 「bakjisu」ramyeon 「bak」i seongigo 「jisu」ga ireumieyo. sseul ttaeneun seonggwa ireumeul butyeo sseoyo.",
+              "en": "In Korean names, the family name comes first and the given name follows. In \"Park Jisu,\" Park is the family name and Jisu is the given name. They're written together without a space."
+            },
+            "audio_url": "",
+            "image_url": "content/images/u03-mina/cult-u03-names.webp"
+          },
+          "feedback": {
+            "correct": {
+              "ko": "이름을 들으면 첫 글자가 보통 성이라고 생각하면 돼요.",
+              "en": "When you hear a Korean name, the first syllable is usually the family name."
+            }
+          }
+        },
+        {
+          "id": "CULT-04",
+          "type": "CULTURE_CHECK",
+          "mode": "choice",
+          "event": "R",
+          "level": 1,
+          "skill": "읽기",
+          "skill_level": 1,
+          "prompt": {
+            "ko": "맞는 것을 고르세요.",
+            "en": "Pick the right one."
+          },
+          "context": {
+            "ko": "도미토리에서 처음 만난 미나를 부를 때 어떻게 부를까요?",
+            "roman": "domitorieseo cheoeum mannan minareul bureul ttae eotteoke bureulkkayo?",
+            "en": "How do you call Mina, whom you just met in the dorm?"
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "미나야",
+              "roman": "minaya",
+              "en": "Mina-ya (casual)",
+              "correct": false,
+              "why_wrong": "카드에 적힌 사실과 다르다"
+            },
+            {
+              "id": "o2",
+              "ko": "미나 사장님",
+              "roman": "mina sajangnim",
+              "en": "Mina, the owner",
+              "correct": false,
+              "why_wrong": "카드에 적힌 사실과 다르다"
+            },
+            {
+              "id": "o3",
+              "ko": "미나 씨",
+              "roman": "mina ssi",
+              "en": "Mina-ssi",
+              "correct": true
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "처음 만난 사람은 이름 뒤에 「씨」를 붙여 불러요.",
+              "en": "Add \"ssi\" after the name of someone you've just met."
+            }
+          }
+        },
+        {
+          "id": "CULT-05",
+          "type": "CULTURE_CHECK",
+          "mode": "choice",
+          "event": "R",
+          "level": 1,
+          "skill": "읽기",
+          "skill_level": 1,
+          "prompt": {
+            "ko": "맞는 것을 고르세요.",
+            "en": "Pick the right one."
+          },
+          "context": {
+            "ko": "처음 만난 사람이 어디서 왔는지 묻는 건 어떤 뜻일까요?",
+            "roman": "cheoeum mannan sarami eodiseo wanneunji munneun geon eotteon tteusilkkayo?",
+            "en": "What does it usually mean when someone you've just met asks where you're from?"
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "친해지려고 흔히 묻는 질문이에요.",
+              "roman": "chinhaejiryeogo heunhi munneun jilmunieyo.",
+              "en": "It's a common way to get to know you.",
+              "correct": true
+            },
+            {
+              "id": "o2",
+              "ko": "나가 달라는 뜻이에요.",
+              "roman": "naga dallaneun tteusieyo.",
+              "en": "They want you to leave.",
+              "correct": false,
+              "why_wrong": "카드에 적힌 사실과 다르다"
+            },
+            {
+              "id": "o3",
+              "ko": "여권을 보여 달라는 뜻이에요.",
+              "roman": "yeogwoneul boyeo dallaneun tteusieyo.",
+              "en": "They want to see your passport.",
+              "correct": false,
+              "why_wrong": "카드에 적힌 사실과 다르다"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "한국에서는 처음 만나도 이런 질문을 자주 해요. 실례가 아니에요.",
+              "en": "These questions are common on first meeting and aren't rude."
+            }
+          }
+        },
+        {
+          "id": "CULT-06",
+          "type": "CULTURE_CHECK",
+          "mode": "choice",
+          "event": "R",
+          "level": 1,
+          "skill": "읽기",
+          "skill_level": 1,
+          "prompt": {
+            "ko": "맞는 것을 고르세요.",
+            "en": "Pick the right one."
+          },
+          "context": {
+            "ko": "「박지수」에서 성은 무엇일까요?",
+            "roman": "「bakjisu」eseo seongeun mueosilkkayo?",
+            "en": "In \"Park Jisu,\" which part is the family name?"
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "지수",
+              "roman": "jisu",
+              "en": "Jisu",
+              "correct": false,
+              "why_wrong": "카드에 적힌 사실과 다르다"
+            },
+            {
+              "id": "o2",
+              "ko": "박",
+              "roman": "bak",
+              "en": "Park",
+              "correct": true
+            },
+            {
+              "id": "o3",
+              "ko": "수",
+              "roman": "su",
+              "en": "Su",
+              "correct": false,
+              "why_wrong": "카드에 적힌 사실과 다르다"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "한국 이름은 성이 먼저 와요. 「박」이 성이에요.",
+              "en": "The family name comes first, so it's Park."
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "RP",
+      "order": 10,
+      "items": [
+        {
+          "id": "RP-01",
+          "type": "ROLEPLAY_TURN",
+          "mode": "either",
+          "event": "R",
+          "level": 5,
+          "skill": "말하기",
+          "skill_level": 3,
+          "prompt": {
+            "ko": "뭐라고 말할까요?",
+            "en": "What do you say?"
+          },
+          "context": {
+            "ko": "안녕하세요. 이름이 뭐예요?",
+            "roman": "annyeonghaseyo. ireumi mwoyeyo?",
+            "en": "Hello. What's your name?"
+          },
+          "stimulus": {
+            "text": {
+              "ko": "안녕하세요, 저는 {이름}이에요.",
+              "roman": "annyeonghaseyo, jeoneun {이름}ieyo.",
+              "en": "Hello, I'm {이름}."
+            },
+            "audio_url": "",
+            "image_url": "content/images/u03-mina/pre-4.webp"
+          },
+          "tiles": [
+            {
+              "ko": "안녕하세요,",
+              "roman": "annyeonghaseyo,"
+            },
+            {
+              "ko": "저는",
+              "roman": "jeoneun"
+            },
+            {
+              "ko": "{이름}이에요.",
+              "roman": "{이름}ieyo."
+            }
+          ],
+          "answers": [
+            {
+              "ko": "안녕하세요, 저는 {이름}이에요.",
+              "roman": "annyeonghaseyo, jeoneun {이름}ieyo.",
+              "en": "Hello, I'm {이름}."
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "상대가 「안녕하세요. 이름이 뭐예요?」라고 하면 「안녕하세요, 저는 {이름}이에요.」라고 답해요."
+            }
+          },
+          "roleplay": {
+            "line_id": "D2",
+            "counterpart_line": "안녕하세요. 이름이 뭐예요?",
+            "player_line": "안녕하세요, 저는 {이름}이에요.",
+            "tiles": [
+              "안녕하세요,",
+              "저는",
+              "{이름}이에요."
+            ],
+            "tiles_gloss": [
+              {
+                "tile": "안녕하세요,",
+                "en": "Hello"
+              },
+              {
+                "tile": "저는"
+              },
+              {
+                "tile": "{이름}이에요.",
+                "en": "name"
+              }
+            ],
+            "accepted_answers": [
+              {
+                "text": "안녕하세요, 저는 {이름}이에요."
+              }
+            ],
+            "modes": [
+              "speech",
+              "tiles"
+            ],
+            "lead": [
+              {
+                "speaker": "낯선 사람",
+                "line": {
+                  "ko": "안녕하세요. 이름이 뭐예요?",
+                  "roman": "annyeonghaseyo. ireumi mwoyeyo?",
+                  "en": "Hello. What's your name?"
+                },
+                "audio_url": "u03-mina/d-01"
+              }
+            ],
+            "reask": {
+              "speaker": "낯선 사람",
+              "line": {
+                "ko": "네?",
+                "roman": "ne?",
+                "en": "Sorry?"
+              },
+              "audio_url": "u03-mina/rp-01-reask"
+            },
+            "player_audio_url": ""
+          }
+        },
+        {
+          "id": "RP-02",
+          "type": "ROLEPLAY_TURN",
+          "mode": "either",
+          "event": "R",
+          "level": 5,
+          "skill": "말하기",
+          "skill_level": 3,
+          "prompt": {
+            "ko": "뭐라고 말할까요?",
+            "en": "What do you say?"
+          },
+          "context": {
+            "ko": "저는 미나예요. 창가 쪽 침대 써요.",
+            "roman": "jeoneun minayeyo. changga jjok chimdae sseoyo.",
+            "en": "I'm Mina. I use the bed by the window."
+          },
+          "stimulus": {
+            "text": {
+              "ko": "미나 씨, 만나서 반가워요.",
+              "roman": "mina ssi, mannaseo bangawoyo.",
+              "en": "Mina, nice to meet you."
+            },
+            "audio_url": "u03-mina/d-04",
+            "image_url": "content/images/u03-mina/pre-4.webp"
+          },
+          "tiles": [
+            {
+              "ko": "미나",
+              "roman": "mina"
+            },
+            {
+              "ko": "씨,",
+              "roman": "ssi,"
+            },
+            {
+              "ko": "만나서",
+              "roman": "mannaseo"
+            },
+            {
+              "ko": "반가워요.",
+              "roman": "bangawoyo."
+            }
+          ],
+          "answers": [
+            {
+              "ko": "미나 씨, 만나서 반가워요.",
+              "roman": "mina ssi, mannaseo bangawoyo.",
+              "en": "Mina, nice to meet you."
+            },
+            {
+              "ko": "미나 씨, 만나서 반갑습니다.",
+              "roman": "mina ssi, mannaseo bangapseumnida.",
+              "en": "Mina, nice to meet you."
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "상대가 「저는 미나예요. 창가 쪽 침대 써요.」라고 하면 「미나 씨, 만나서 반가워요.」라고 답해요."
+            }
+          },
+          "roleplay": {
+            "line_id": "D4",
+            "counterpart_line": "저는 미나예요. 창가 쪽 침대 써요.",
+            "player_line": "미나 씨, 만나서 반가워요.",
+            "tiles": [
+              "미나",
+              "씨,",
+              "만나서",
+              "반가워요."
+            ],
+            "tiles_gloss": [
+              {
+                "tile": "미나"
+              },
+              {
+                "tile": "씨,"
+              },
+              {
+                "tile": "만나서"
+              },
+              {
+                "tile": "반가워요."
+              }
+            ],
+            "accepted_answers": [
+              {
+                "text": "미나 씨, 만나서 반가워요.",
+                "textbook_form": "미나 씨, 만나서 반갑습니다."
+              }
+            ],
+            "modes": [
+              "speech",
+              "tiles"
+            ],
+            "lead": [
+              {
+                "speaker": "미나",
+                "line": {
+                  "ko": "저는 미나예요. 창가 쪽 침대 써요.",
+                  "roman": "jeoneun minayeyo. changga jjok chimdae sseoyo.",
+                  "en": "I'm Mina. I use the bed by the window."
+                },
+                "audio_url": "u03-mina/d-03"
+              }
+            ],
+            "reask": {
+              "speaker": "미나",
+              "line": {
+                "ko": "네?",
+                "roman": "ne?",
+                "en": "Sorry?"
+              },
+              "audio_url": "u03-mina/rp-01-reask"
+            },
+            "player_audio_url": "u03-mina/d-04"
+          }
+        },
+        {
+          "id": "RP-03",
+          "type": "ROLEPLAY_TURN",
+          "mode": "either",
+          "event": "R",
+          "level": 5,
+          "skill": "말하기",
+          "skill_level": 3,
+          "prompt": {
+            "ko": "뭐라고 말할까요?",
+            "en": "What do you say?"
+          },
+          "context": {
+            "ko": "네, 저도 반가워요.",
+            "roman": "ne, jeodo bangawoyo.",
+            "en": "Yes, nice to meet you too."
+          },
+          "stimulus": {
+            "text": {
+              "ko": "미나 씨는 어느 나라에서 왔어요?",
+              "roman": "mina ssineun eoneu naraeseo wasseoyo?",
+              "en": "Mina, what country are you from?"
+            },
+            "audio_url": "u03-mina/d-06",
+            "image_url": "content/images/u03-mina/pre-4.webp"
+          },
+          "tiles": [
+            {
+              "ko": "미나",
+              "roman": "mina"
+            },
+            {
+              "ko": "씨는",
+              "roman": "ssineun"
+            },
+            {
+              "ko": "어느",
+              "roman": "eoneu",
+              "en": "which, how"
+            },
+            {
+              "ko": "나라에서",
+              "roman": "naraeseo"
+            },
+            {
+              "ko": "왔어요?",
+              "roman": "wasseoyo?"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "미나 씨는 어느 나라에서 왔어요?",
+              "roman": "mina ssineun eoneu naraeseo wasseoyo?",
+              "en": "Mina, what country are you from?"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "상대가 「네, 저도 반가워요.」라고 하면 「미나 씨는 어느 나라에서 왔어요?」라고 답해요."
+            }
+          },
+          "roleplay": {
+            "line_id": "D6",
+            "counterpart_line": "네, 저도 반가워요.",
+            "player_line": "미나 씨는 어느 나라에서 왔어요?",
+            "tiles": [
+              "미나",
+              "씨는",
+              "어느",
+              "나라에서",
+              "왔어요?"
+            ],
+            "tiles_gloss": [
+              {
+                "tile": "미나"
+              },
+              {
+                "tile": "씨는"
+              },
+              {
+                "tile": "어느",
+                "en": "which, how"
+              },
+              {
+                "tile": "나라에서",
+                "en": "country"
+              },
+              {
+                "tile": "왔어요?"
+              }
+            ],
+            "accepted_answers": [
+              {
+                "text": "미나 씨는 어느 나라에서 왔어요?"
+              }
+            ],
+            "modes": [
+              "speech",
+              "tiles"
+            ],
+            "lead": [
+              {
+                "speaker": "미나",
+                "line": {
+                  "ko": "네, 저도 반가워요.",
+                  "roman": "ne, jeodo bangawoyo.",
+                  "en": "Yes, nice to meet you too."
+                },
+                "audio_url": "u03-mina/d-05-v2"
+              }
+            ],
+            "reask": {
+              "speaker": "미나",
+              "line": {
+                "ko": "네?",
+                "roman": "ne?",
+                "en": "Sorry?"
+              },
+              "audio_url": "u03-mina/rp-01-reask"
+            },
+            "player_audio_url": "u03-mina/d-06"
+          }
+        },
+        {
+          "id": "RP-04",
+          "type": "ROLEPLAY_TURN",
+          "mode": "either",
+          "event": "R",
+          "level": 5,
+          "skill": "말하기",
+          "skill_level": 3,
+          "prompt": {
+            "ko": "뭐라고 말할까요?",
+            "en": "What do you say?"
+          },
+          "context": {
+            "ko": "저는 스위스에서 한국어 배우러 왔어요. {이름}은/는요?",
+            "roman": "jeoneun seuwiseueseo hangugeo baeureo wasseoyo. {이름}eun/neunyo?",
+            "en": "I came from Switzerland to learn Korean. How about you, {이름}?"
+          },
+          "stimulus": {
+            "text": {
+              "ko": "저는 {나라}에서 왔어요. 여기서 며칠 묵어요?",
+              "roman": "jeoneun {나라}eseo wasseoyo. yeogiseo myeochil mugeoyo?",
+              "en": "I'm from {나라}. How many days are you staying here?"
+            },
+            "audio_url": "",
+            "image_url": "content/images/u03-mina/pre-4.webp"
+          },
+          "tiles": [
+            {
+              "ko": "저는",
+              "roman": "jeoneun"
+            },
+            {
+              "ko": "{나라}에서",
+              "roman": "{나라}eseo"
+            },
+            {
+              "ko": "왔어요.",
+              "roman": "wasseoyo."
+            },
+            {
+              "ko": "여기서",
+              "roman": "yeogiseo"
+            },
+            {
+              "ko": "며칠",
+              "roman": "myeochil",
+              "en": "how many days"
+            },
+            {
+              "ko": "묵어요?",
+              "roman": "mugeoyo?"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "저는 {나라}에서 왔어요. 여기서 며칠 묵어요?",
+              "roman": "jeoneun {나라}eseo wasseoyo. yeogiseo myeochil mugeoyo?",
+              "en": "I'm from {나라}. How many days are you staying here?"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "상대가 「저는 스위스에서 한국어 배우러 왔어요. {이름}은/는요?」라고 하면 「저는 {나라}에서 왔어요. 여기서 며칠 묵어요?」라고 답해요."
+            }
+          },
+          "roleplay": {
+            "line_id": "D8",
+            "counterpart_line": "저는 스위스에서 한국어 배우러 왔어요. {이름}은/는요?",
+            "player_line": "저는 {나라}에서 왔어요. 여기서 며칠 묵어요?",
+            "tiles": [
+              "저는",
+              "{나라}에서",
+              "왔어요.",
+              "여기서",
+              "며칠",
+              "묵어요?"
+            ],
+            "tiles_gloss": [
+              {
+                "tile": "저는"
+              },
+              {
+                "tile": "{나라}에서"
+              },
+              {
+                "tile": "왔어요."
+              },
+              {
+                "tile": "여기서"
+              },
+              {
+                "tile": "며칠",
+                "en": "how many days"
+              },
+              {
+                "tile": "묵어요?"
+              }
+            ],
+            "accepted_answers": [
+              {
+                "text": "저는 {나라}에서 왔어요. 여기서 며칠 묵어요?"
+              }
+            ],
+            "modes": [
+              "speech",
+              "tiles"
+            ],
+            "lead": [
+              {
+                "speaker": "미나",
+                "line": {
+                  "ko": "저는 스위스에서 한국어 배우러 왔어요. {이름}은/는요?",
+                  "roman": "jeoneun seuwiseueseo hangugeo baeureo wasseoyo. {이름}eun/neunyo?",
+                  "en": "I came from Switzerland to learn Korean. How about you, {이름}?"
+                },
+                "audio_url": ""
+              }
+            ],
+            "reask": {
+              "speaker": "미나",
+              "line": {
+                "ko": "네?",
+                "roman": "ne?",
+                "en": "Sorry?"
+              },
+              "audio_url": "u03-mina/rp-01-reask"
+            },
+            "player_audio_url": ""
+          }
+        },
+        {
+          "id": "RP-05",
+          "type": "ROLEPLAY_TURN",
+          "mode": "either",
+          "event": "R",
+          "level": 5,
+          "skill": "말하기",
+          "skill_level": 3,
+          "prompt": {
+            "ko": "뭐라고 말할까요?",
+            "en": "What do you say?"
+          },
+          "context": {
+            "ko": "저는 이틀 먼저 왔는데 2주 있을 거예요.",
+            "roman": "jeoneun iteul meonjeo wanneunde 2ju isseul geoyeyo.",
+            "en": "I came two days earlier, and I'll stay two weeks."
+          },
+          "stimulus": {
+            "text": {
+              "ko": "저는 일주일 묵어요.",
+              "roman": "jeoneun iljuil mugeoyo.",
+              "en": "I'm staying a week."
+            },
+            "audio_url": "u03-mina/d-10",
+            "image_url": "content/images/u03-mina/pre-4.webp"
+          },
+          "tiles": [
+            {
+              "ko": "저는",
+              "roman": "jeoneun"
+            },
+            {
+              "ko": "일주일",
+              "roman": "iljuil",
+              "en": "one week"
+            },
+            {
+              "ko": "묵어요.",
+              "roman": "mugeoyo."
+            }
+          ],
+          "answers": [
+            {
+              "ko": "저는 일주일 묵어요.",
+              "roman": "jeoneun iljuil mugeoyo.",
+              "en": "I'm staying a week."
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "상대가 「저는 이틀 먼저 왔는데 2주 있을 거예요.」라고 하면 「저는 일주일 묵어요.」라고 답해요."
+            }
+          },
+          "roleplay": {
+            "line_id": "D10",
+            "counterpart_line": "저는 이틀 먼저 왔는데 2주 있을 거예요.",
+            "player_line": "저는 일주일 묵어요.",
+            "tiles": [
+              "저는",
+              "일주일",
+              "묵어요."
+            ],
+            "tiles_gloss": [
+              {
+                "tile": "저는"
+              },
+              {
+                "tile": "일주일",
+                "en": "one week"
+              },
+              {
+                "tile": "묵어요."
+              }
+            ],
+            "accepted_answers": [
+              {
+                "text": "저는 일주일 묵어요."
+              }
+            ],
+            "modes": [
+              "speech",
+              "tiles"
+            ],
+            "lead": [
+              {
+                "speaker": "미나",
+                "line": {
+                  "ko": "저는 이틀 먼저 왔는데 2주 있을 거예요.",
+                  "roman": "jeoneun iteul meonjeo wanneunde 2ju isseul geoyeyo.",
+                  "en": "I came two days earlier, and I'll stay two weeks."
+                },
+                "audio_url": "u03-mina/d-09"
+              }
+            ],
+            "reask": {
+              "speaker": "미나",
+              "line": {
+                "ko": "네?",
+                "roman": "ne?",
+                "en": "Sorry?"
+              },
+              "audio_url": "u03-mina/rp-01-reask"
+            },
+            "player_audio_url": "u03-mina/d-10"
+          }
+        }
+      ],
+      "scene": {
+        "background_image_url": "content/images/u03-mina/pre-4.webp",
+        "counterpart": "낯선 사람",
+        "closing": [
+          {
+            "speaker": "미나",
+            "line": {
+              "ko": "우리 친하게 지내요.",
+              "roman": "uri chinhage jinaeyo.",
+              "en": "Let's be good friends."
+            },
+            "audio_url": ""
+          }
+        ],
+        "closing_image_url": "content/images/u03-mina/rp-end.webp",
+        "retry": {
+          "hint_after_misses": 1,
+          "reveal_after_misses": 2
+        }
+      }
+    }
+  ],
+  "completion": {
+    "requires": [
+      "S1",
+      "S2",
+      "S3",
+      "S4",
+      "S5",
+      "S6",
+      "S7",
+      "S8",
+      "CULT",
+      "RP"
+    ]
+  },
+  "words": [
+    {
+      "id": "voca:e3c30bfa",
+      "ko": "이름",
+      "roman": "ireum",
+      "gloss_en": "name",
+      "grade": "1급",
+      "role": "target",
+      "review": true
+    },
+    {
+      "id": "voca:c191d7c5",
+      "ko": "반갑다",
+      "roman": "bangapda",
+      "gloss_en": "nice to meet you",
+      "grade": "1급",
+      "role": "target"
+    },
+    {
+      "id": "voca:332ac987",
+      "ko": "어느",
+      "roman": "eoneu",
+      "gloss_en": "which, how",
+      "grade": "1급",
+      "role": "target"
+    },
+    {
+      "id": "voca:be986751",
+      "ko": "나라",
+      "roman": "nara",
+      "gloss_en": "country",
+      "grade": "1급",
+      "role": "target"
+    },
+    {
+      "id": "voca:9710a021",
+      "ko": "며칠",
+      "roman": "myeochil",
+      "gloss_en": "how many days",
+      "grade": "1급",
+      "role": "target",
+      "review": true
+    },
+    {
+      "id": "voca:ff8c6497",
+      "ko": "오다",
+      "roman": "oda",
+      "gloss_en": "come",
+      "grade": "1급",
+      "role": "target"
+    },
+    {
+      "id": "voca:ec5d9a98",
+      "ko": "일주일",
+      "roman": "iljuil",
+      "gloss_en": "one week",
+      "grade": "1급",
+      "role": "target",
+      "review": true
+    },
+    {
+      "id": "voca:51e5fab7",
+      "ko": "침대",
+      "roman": "chimdae",
+      "gloss_en": "bed",
+      "grade": "1급",
+      "role": "target",
+      "use": "counterpart"
+    },
+    {
+      "id": "voca:cf2936b1",
+      "ko": "한국어",
+      "roman": "hangugeo",
+      "gloss_en": "Korean language",
+      "grade": "3급",
+      "role": "target",
+      "use": "counterpart",
+      "review": true
+    },
+    {
+      "id": "voca:bc8b9fe8",
+      "ko": "이틀",
+      "roman": "iteul",
+      "gloss_en": "two days",
+      "grade": "2급",
+      "role": "target",
+      "use": "counterpart"
+    },
+    {
+      "id": "voca:3c177f67",
+      "ko": "학생",
+      "roman": "haksaeng",
+      "gloss_en": "student",
+      "grade": "1급",
+      "role": "target"
+    },
+    {
+      "id": "voca:eebef120",
+      "ko": "사람",
+      "roman": "saram",
+      "gloss_en": "person, man",
+      "grade": "1급",
+      "role": "prereq",
+      "example_ko": "어느 나라 사람이에요?",
+      "example_roman": "eoneu nara saramieyo?"
+    },
+    {
+      "id": "voca:9df1d2fe",
+      "ko": "창가",
+      "roman": "changga",
+      "gloss_en": "window",
+      "grade": "3급",
+      "role": "exposure"
+    },
+    {
+      "id": "voca:2ed52067",
+      "ko": "먼저",
+      "roman": "meonjeo",
+      "gloss_en": "first, first of all, before",
+      "grade": "1급",
+      "role": "exposure"
+    },
+    {
+      "id": "voca:8f10c64e",
+      "ko": "우리",
+      "roman": "uri",
+      "gloss_en": "we, us",
+      "grade": "1급",
+      "role": "exposure"
+    },
+    {
+      "id": "voca:7659fafa",
+      "ko": "중국",
+      "roman": "jungguk",
+      "gloss_en": "China",
+      "grade": "1급",
+      "role": "contrast",
+      "example_ko": "중국에서 왔어요.",
+      "example_roman": "junggugeseo wasseoyo."
+    },
+    {
+      "id": "voca:ce71f0a6",
+      "ko": "일본",
+      "roman": "ilbon",
+      "gloss_en": "Japan",
+      "grade": "1급",
+      "role": "contrast",
+      "example_ko": "일본에서 왔어요.",
+      "example_roman": "ilboneseo wasseoyo."
+    }
+  ],
+  "patterns": [
+    {
+      "id": "patt:50dbccc0",
+      "ko": "저는 {명사}이에요.",
+      "roman": "jeoneun {명사}ieyo.",
+      "gloss_en": "I am {noun}. (noun ends in a consonant)"
+    }
+  ]
+}

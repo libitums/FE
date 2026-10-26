@@ -1,0 +1,6680 @@
+{
+  "schema": "delivery-2",
+  "unit_id": "u07-jaemin",
+  "title": "자리 착각",
+  "title_en": "Wrong Seat",
+  "day": 2,
+  "time_of_day": "낮",
+  "place": "카페 끌림(익선동)",
+  "counterpart": "서재민",
+  "counterpart_avatar": "content/images/u07-jaemin/avatar.webp",
+  "pre_cuts": [
+    {
+      "index": 1,
+      "kind": "pre",
+      "cut_kind": "monologue",
+      "speaker": "플레이어",
+      "line": {
+        "ko": "햇빛이 좋다. 오늘은 어디 갈지 여기서 정해 볼까?",
+        "roman": "haetbichi jota. oneureun eodi galji yeogiseo jeonghae bolkka?",
+        "en": "Nice sunlight. Maybe figure out where to go today from here?"
+      },
+      "image_brief": "햇빛이 길게 드는 창가 테이블. 얼음 든 유리잔이 놓여 있다.",
+      "image_url": "content/images/u07-jaemin/pre-1.webp",
+      "audio_url": ""
+    },
+    {
+      "index": 2,
+      "kind": "pre",
+      "cut_kind": "narration",
+      "narration": {
+        "ko": "의자를 당겨 앉고 나서야 맞은편 의자 뒤에 놓인 검은 가방이 눈에 들어온다.",
+        "roman": "uijareul danggyeo ango naseoya majeunpyeon uija dwie noin geomeun gabangi nune deureoonda.",
+        "en": "Only after sitting down does the black bag behind the opposite chair catch the eye."
+      },
+      "image_brief": "앉은 자리에서 본 맞은편 의자. 그 뒤 벽 앞에 검은 노트북 가방과 장우산.",
+      "image_url": "content/images/u07-jaemin/pre-2.webp",
+      "audio_url": ""
+    },
+    {
+      "index": 3,
+      "kind": "pre",
+      "cut_kind": "speech",
+      "speaker": "창가 손님",
+      "line": {
+        "ko": "네, 그 건은 금방 다시 연락드릴게요.",
+        "roman": "ne, geu geoneun geumbang dasi yeollakdeurilgeyo.",
+        "en": "Yes, I'll get back to you on that shortly."
+      },
+      "aside": {
+        "ko": "휴대폰을 귀에 댄 채 창가 쪽으로 걸어오며",
+        "roman": "hyudaeponeul gwie daen chae changga jjogeuro georeoomyeo",
+        "en": "Walking toward the window, phone to his ear."
+      },
+      "image_brief": "셔츠 차림의 남자가 휴대폰을 귀에 댄 채 창가 쪽으로 걸어온다.",
+      "image_url": "content/images/u07-jaemin/pre-3.webp",
+      "audio_url": "u07-jaemin/pre-3-r2"
+    },
+    {
+      "index": 4,
+      "kind": "pre",
+      "cut_kind": "speech",
+      "speaker": "창가 손님",
+      "line": {
+        "ko": "아, 거기 제 자리예요.",
+        "roman": "a, geogi je jariyeyo.",
+        "en": "Oh, that's my seat."
+      },
+      "aside": {
+        "ko": "전화를 끊고 의자 뒤 가방을 눈짓으로 가리키며",
+        "roman": "jeonhwareul kkeungo uija dwi gabangeul nunjiseuro garikimyeo",
+        "en": "Hanging up and nodding toward the bag behind the chair."
+      },
+      "image_brief": "남자가 맞은편 의자 옆에 멈춰 서서 의자 뒤 가방을 눈짓으로 가리킨다.",
+      "image_url": "content/images/u07-jaemin/pre-4.webp",
+      "audio_url": "u07-jaemin/d-01-r2"
+    }
+  ],
+  "dialogue": [
+    {
+      "seq": 1,
+      "line_id": "D1",
+      "kind": "main",
+      "role": "counterpart",
+      "text": {
+        "ko": "아, 거기 제 자리예요.",
+        "roman": "a, geogi je jariyeyo.",
+        "en": "Oh, that's my seat."
+      },
+      "audio_url": "u07-jaemin/d-01-r2"
+    },
+    {
+      "seq": 2,
+      "line_id": "D2",
+      "kind": "main",
+      "role": "player",
+      "text": {
+        "ko": "여기 자리 있어요?",
+        "roman": "yeogi jari isseoyo?",
+        "en": "Is this seat taken?"
+      },
+      "audio_url": "u07-jaemin/d-02-r2"
+    },
+    {
+      "seq": 3,
+      "line_id": "D3",
+      "kind": "main",
+      "role": "counterpart",
+      "text": {
+        "ko": "네, 제 가방이에요.",
+        "roman": "ne, je gabangieyo.",
+        "en": "Yes, that's my bag."
+      },
+      "audio_url": "u07-jaemin/d-03-r2"
+    },
+    {
+      "seq": 4,
+      "line_id": "D4",
+      "kind": "main",
+      "role": "player",
+      "text": {
+        "ko": "죄송해요. 몰랐어요.",
+        "roman": "joesonghaeyo. mollasseoyo.",
+        "en": "I'm sorry. I didn't know."
+      },
+      "audio_url": "u07-jaemin/d-04-r2"
+    },
+    {
+      "seq": 5,
+      "line_id": "D5",
+      "kind": "main",
+      "role": "counterpart",
+      "text": {
+        "ko": "괜찮아요.",
+        "roman": "gwaenchanayo.",
+        "en": "It's okay."
+      },
+      "audio_url": "u07-jaemin/d-05-r2"
+    },
+    {
+      "seq": 6,
+      "line_id": "D6",
+      "kind": "main",
+      "role": "player",
+      "text": {
+        "ko": "저쪽에 앉을게요.",
+        "roman": "jeojjoge anjeulgeyo.",
+        "en": "I'll sit over there."
+      },
+      "audio_url": "u07-jaemin/d-06-r2"
+    },
+    {
+      "seq": 7,
+      "line_id": "D7",
+      "kind": "main",
+      "role": "counterpart",
+      "text": {
+        "ko": "감사합니다. 여행 오셨어요?",
+        "roman": "gamsahamnida. yeohaeng osyeosseoyo?",
+        "en": "Thank you. Are you here on a trip?"
+      },
+      "audio_url": "u07-jaemin/d-07-r2"
+    },
+    {
+      "seq": 8,
+      "line_id": "D8",
+      "kind": "main",
+      "role": "player",
+      "text": {
+        "ko": "네, 어제 왔어요.",
+        "roman": "ne, eoje wasseoyo.",
+        "en": "Yes, I got here yesterday."
+      },
+      "audio_url": "u07-jaemin/d-08-r2"
+    },
+    {
+      "seq": 9,
+      "line_id": "D9",
+      "kind": "main",
+      "role": "counterpart",
+      "text": {
+        "ko": "좋은 여행 되세요.",
+        "roman": "joeun yeohaeng doeseyo.",
+        "en": "Have a good trip."
+      },
+      "audio_url": "u07-jaemin/d-09-r2"
+    },
+    {
+      "seq": 10,
+      "line_id": "D6b",
+      "kind": "branch",
+      "role": "player",
+      "text": {
+        "ko": "여기 앉아도 돼요?",
+        "roman": "yeogi anjado dwaeyo?",
+        "en": "Can I sit here?"
+      },
+      "audio_url": "u07-jaemin/d-10-r2",
+      "branch_at": 6,
+      "branch_part": "line",
+      "situation": {
+        "ko": "창가 바로 옆 테이블이 비어 있다. 그 자리에 앉아도 되는지 묻고 싶다.",
+        "roman": "changga baro yeop teibeuri bieo itda. geu jarie anjado doeneunji mutgo sipda.",
+        "en": "The table right next to the window is free. You want to ask if you can sit there."
+      }
+    },
+    {
+      "seq": 11,
+      "line_id": "D6r",
+      "kind": "branch",
+      "role": "counterpart",
+      "text": {
+        "ko": "네, 앉으세요.",
+        "roman": "ne, anjeuseyo.",
+        "en": "Sure, go ahead."
+      },
+      "audio_url": "u07-jaemin/d-11-r2",
+      "branch_at": 6,
+      "branch_part": "reply"
+    },
+    {
+      "seq": 12,
+      "line_id": "D8b",
+      "kind": "branch",
+      "role": "player",
+      "text": {
+        "ko": "네, 일주일 있어요.",
+        "roman": "ne, iljuil isseoyo.",
+        "en": "Yes, I'm here for a week."
+      },
+      "audio_url": "u07-jaemin/d-12-r2",
+      "branch_at": 8,
+      "branch_part": "line",
+      "situation": {
+        "ko": "언제 왔는지보다 얼마나 있는지 말하고 싶다.",
+        "roman": "eonje wanneunjiboda eolmana inneunji malhago sipda.",
+        "en": "You'd rather say how long you're staying than when you arrived."
+      }
+    },
+    {
+      "seq": 13,
+      "line_id": "D8r",
+      "kind": "branch",
+      "role": "counterpart",
+      "text": {
+        "ko": "좋은 여행 되세요.",
+        "roman": "joeun yeohaeng doeseyo.",
+        "en": "Have a good trip."
+      },
+      "audio_url": "u07-jaemin/d-09-r2",
+      "branch_at": 8,
+      "branch_part": "reply"
+    }
+  ],
+  "post_cuts": [
+    {
+      "index": 1,
+      "kind": "post",
+      "cut_kind": "narration",
+      "narration": {
+        "ko": "유리잔을 들고 카운터 옆 작은 자리로 옮긴다. 창가의 남자는 가방에서 노트북을 꺼내 편다.",
+        "roman": "yurijaneul deulgo kaunteo yeop jageun jariro omginda. changgaui namjaneun gabangeseo noteubugeul kkeonae pyeonda.",
+        "en": "Glass in hand, moving to a small seat by the counter. The man at the window takes out his laptop and opens it."
+      },
+      "image_brief": "카운터 옆 작은 테이블에 유리잔이 놓여 있다. 건너편 창가에서 남자가 노트북을 편다.",
+      "image_url": "content/images/u07-jaemin/post-1.webp",
+      "audio_url": "u07-jaemin/post-1-r2"
+    },
+    {
+      "index": 2,
+      "kind": "post",
+      "cut_kind": "monologue",
+      "speaker": "플레이어",
+      "line": {
+        "ko": "말투는 딱딱했는데, 끝인사는 다정했다. 무슨 일 하는 사람이지?",
+        "roman": "maltuneun ttakttakaenneunde, kkeutinsaneun dajeonghaetda. museun il haneun saramiji?",
+        "en": "His tone was stiff, but the goodbye was kind. What does he do, I wonder?"
+      },
+      "image_brief": "노트북 화면 불빛에 비친 남자의 옆얼굴.",
+      "image_url": "content/images/u07-jaemin/post-2.webp",
+      "audio_url": ""
+    },
+    {
+      "index": 3,
+      "kind": "post",
+      "cut_kind": "narration",
+      "narration": {
+        "ko": "창가 벽에 검은 장우산이 기대 세워져 있다. 창밖은 구름 한 점 없다.",
+        "roman": "changga byeoge geomeun jangusani gidae sewojyeo itda. changbakkeun gureum han jeom eopda.",
+        "en": "A long black umbrella leans against the wall by the window. Outside, not a cloud in the sky."
+      },
+      "image_brief": "창가 벽 구석에 기대 세운 검은 장우산. 창밖은 햇빛이 쨍하다.",
+      "image_url": "content/images/u07-jaemin/post-3.webp",
+      "audio_url": ""
+    },
+    {
+      "index": 4,
+      "kind": "post",
+      "cut_kind": "monologue",
+      "speaker": "플레이어",
+      "line": {
+        "ko": "이렇게 맑은데 우산? 오늘 비 오나?",
+        "roman": "ireoke malgeunde usan? oneul bi ona?",
+        "en": "This clear and an umbrella? Is it going to rain today?"
+      },
+      "image_brief": "같은 자리. 창밖 맑은 하늘과 장우산.",
+      "image_url": "content/images/u07-jaemin/post-4.webp",
+      "audio_url": ""
+    }
+  ],
+  "steps": [
+    {
+      "id": "S1",
+      "order": 1,
+      "items": [
+        {
+          "id": "S1-01",
+          "type": "VOCAB_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "ref": "voca:3e2a1ac0",
+          "context": {
+            "ko": "자리",
+            "roman": "jari",
+            "en": "seat"
+          },
+          "example": {
+            "ko": "여기 자리 있어요?",
+            "roman": "yeogi jari isseoyo?",
+            "en": "Is this seat taken?"
+          },
+          "card_kind": "단어",
+          "audio_url": "u07-jaemin/s1-01-word-r2",
+          "example_audio_url": "u07-jaemin/d-02-r2"
+        },
+        {
+          "id": "S1-02",
+          "type": "VOCAB_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "ref": "voca:ec59536e",
+          "context": {
+            "ko": "여기",
+            "roman": "yeogi",
+            "en": "here"
+          },
+          "example": {
+            "ko": "여기 자리 있어요?",
+            "roman": "yeogi jari isseoyo?",
+            "en": "Is this seat taken?"
+          },
+          "card_kind": "단어",
+          "audio_url": "u07-jaemin/s1-02-word-r2",
+          "example_audio_url": "u07-jaemin/d-02-r2"
+        },
+        {
+          "id": "S1-03",
+          "type": "VOCAB_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "ref": "voca:49caf517",
+          "context": {
+            "ko": "죄송하다",
+            "roman": "joesonghada",
+            "en": "sorry"
+          },
+          "example": {
+            "ko": "죄송해요. 몰랐어요.",
+            "roman": "joesonghaeyo. mollasseoyo.",
+            "en": "I'm sorry. I didn't know."
+          },
+          "card_kind": "단어",
+          "audio_url": "u07-jaemin/s1-03-word-r2",
+          "example_audio_url": "u07-jaemin/d-04-r2"
+        },
+        {
+          "id": "S1-04",
+          "type": "VOCAB_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "ref": "voca:9720d8a1",
+          "context": {
+            "ko": "모르다",
+            "roman": "moreuda",
+            "en": "do not know"
+          },
+          "card_kind": "단어",
+          "audio_url": "u07-jaemin/s1-04-word-r2"
+        },
+        {
+          "id": "S1-05",
+          "type": "VOCAB_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "ref": "voca:856e8566",
+          "context": {
+            "ko": "저쪽",
+            "roman": "jeojjok",
+            "en": "over there"
+          },
+          "example": {
+            "ko": "저쪽에 앉을게요.",
+            "roman": "jeojjoge anjeulgeyo.",
+            "en": "I'll sit over there."
+          },
+          "card_kind": "단어",
+          "audio_url": "u07-jaemin/s1-05-word-r2",
+          "example_audio_url": "u07-jaemin/d-06-r2"
+        },
+        {
+          "id": "S1-06",
+          "type": "VOCAB_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "ref": "voca:adb17138",
+          "context": {
+            "ko": "이쪽",
+            "roman": "ijjok",
+            "en": "this way, over here"
+          },
+          "example": {
+            "ko": "이쪽에 앉을게요.",
+            "roman": "ijjoge anjeulgeyo."
+          },
+          "card_kind": "단어",
+          "audio_url": "u07-jaemin/s1-06-word-r2",
+          "example_audio_url": "u07-jaemin/s1-06-ex-r2"
+        },
+        {
+          "id": "S1-07",
+          "type": "VOCAB_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "ref": "voca:b0414a80",
+          "context": {
+            "ko": "앉다",
+            "roman": "anda",
+            "en": "sit"
+          },
+          "example": {
+            "ko": "저쪽에 앉을게요.",
+            "roman": "jeojjoge anjeulgeyo.",
+            "en": "I'll sit over there."
+          },
+          "card_kind": "단어",
+          "audio_url": "u07-jaemin/s1-07-word-r2",
+          "example_audio_url": "u07-jaemin/d-06-r2"
+        },
+        {
+          "id": "S1-08",
+          "type": "VOCAB_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "ref": "voca:d5fbbbce",
+          "context": {
+            "ko": "어제",
+            "roman": "eoje",
+            "en": "yesterday"
+          },
+          "example": {
+            "ko": "네, 어제 왔어요.",
+            "roman": "ne, eoje wasseoyo.",
+            "en": "Yes, I got here yesterday."
+          },
+          "card_kind": "단어",
+          "audio_url": "u07-jaemin/s1-08-word-r2",
+          "example_audio_url": "u07-jaemin/d-08-r2"
+        },
+        {
+          "id": "S1-09",
+          "type": "VOCAB_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "ref": "voca:97270e4b",
+          "context": {
+            "ko": "네",
+            "roman": "ne",
+            "en": "yes"
+          },
+          "example": {
+            "ko": "네, 어제 왔어요.",
+            "roman": "ne, eoje wasseoyo.",
+            "en": "Yes, I got here yesterday."
+          },
+          "card_kind": "단어",
+          "audio_url": "u07-jaemin/s1-09-word-r2",
+          "example_audio_url": "u07-jaemin/d-08-r2"
+        },
+        {
+          "id": "S1-10",
+          "type": "VOCAB_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "ref": "voca:ff8c6497",
+          "context": {
+            "ko": "오다",
+            "roman": "oda",
+            "en": "come"
+          },
+          "example": {
+            "ko": "네, 어제 왔어요.",
+            "roman": "ne, eoje wasseoyo.",
+            "en": "Yes, I got here yesterday."
+          },
+          "card_kind": "단어",
+          "audio_url": "u07-jaemin/s1-10-word-r2",
+          "example_audio_url": "u07-jaemin/d-08-r2"
+        },
+        {
+          "id": "S1-11",
+          "type": "VOCAB_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "ref": "voca:03c8759c",
+          "context": {
+            "ko": "거기",
+            "roman": "geogi",
+            "en": "there"
+          },
+          "example": {
+            "ko": "아, 거기 제 자리예요.",
+            "roman": "a, geogi je jariyeyo.",
+            "en": "Oh, that's my seat."
+          },
+          "card_kind": "단어",
+          "audio_url": "u07-jaemin/s1-11-word-r2",
+          "example_audio_url": "u07-jaemin/d-01-r2"
+        },
+        {
+          "id": "S1-12",
+          "type": "CLOZE_CHOICE",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "읽기",
+          "skill_level": 2,
+          "ref": "voca:856e8566",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "___ 앉을게요.",
+            "roman": "___ anjeulgeyo.",
+            "en": "I'll sit over there."
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "어제에",
+              "roman": "eojee",
+              "en": "yesterday",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "이쪽에",
+              "roman": "ijjoge",
+              "en": "this way, here, this person",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "저쪽에",
+              "roman": "jeojjoge",
+              "en": "there, over there",
+              "correct": true
+            }
+          ],
+          "answers": [
+            {
+              "ko": "저쪽에",
+              "roman": "jeojjoge"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "「저쪽에 앉을게요.」",
+              "en": "I'll sit over there."
+            }
+          }
+        },
+        {
+          "id": "S1-13",
+          "type": "CLOZE_CHOICE",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "읽기",
+          "skill_level": 2,
+          "ref": "voca:d5fbbbce",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "네, ___ 왔어요.",
+            "roman": "ne, ___ wasseoyo.",
+            "en": "Yes, I got here yesterday."
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "어제",
+              "roman": "eoje",
+              "en": "yesterday",
+              "correct": true
+            },
+            {
+              "id": "o2",
+              "ko": "이쪽",
+              "roman": "ijjok",
+              "en": "this way, over here",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "일주일",
+              "roman": "iljuil",
+              "en": "one week",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "어제",
+              "roman": "eoje",
+              "en": "yesterday"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "「네, 어제 왔어요.」",
+              "en": "Yes, I got here yesterday."
+            }
+          }
+        },
+        {
+          "id": "S1-14",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:03c8759c",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "아, 거기 제 자리예요.",
+              "roman": "a, geogi je jariyeyo.",
+              "en": "Oh, that's my seat."
+            },
+            "audio_url": "u07-jaemin/d-01-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "괜찮아요.",
+              "roman": "gwaenchanayo.",
+              "en": "No thanks. / I'm fine.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "여기 앉아도 돼요?",
+              "roman": "yeogi anjado dwaeyo?",
+              "en": "Can I sit here?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "아, 거기 제 자리예요.",
+              "roman": "a, geogi je jariyeyo.",
+              "en": "Oh, that's my seat.",
+              "correct": true
+            },
+            {
+              "id": "o4",
+              "ko": "저쪽에 앉을게요.",
+              "roman": "jeojjoge anjeulgeyo.",
+              "en": "I'll sit over there.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ]
+        },
+        {
+          "id": "S1-15",
+          "type": "CLOZE_CHOICE",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "읽기",
+          "skill_level": 2,
+          "ref": "voca:97270e4b",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "___, 제 가방이에요.",
+            "roman": "___, je gabangieyo.",
+            "en": "Yes, that's my bag."
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "네",
+              "roman": "ne",
+              "en": "yes",
+              "correct": true
+            },
+            {
+              "id": "o2",
+              "ko": "여행",
+              "roman": "yeohaeng",
+              "en": "travel",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "자리",
+              "roman": "jari",
+              "en": "seat",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "네",
+              "roman": "ne",
+              "en": "yes"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "「네, 제 가방이에요.」",
+              "en": "Yes, that's my bag."
+            }
+          }
+        },
+        {
+          "id": "S1-16",
+          "type": "CLOZE_CHOICE",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "읽기",
+          "skill_level": 2,
+          "ref": "voca:03c8759c",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "아, ___ 제 자리예요.",
+            "roman": "a, ___ je jariyeyo.",
+            "en": "Oh, that's my seat."
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "제",
+              "roman": "je",
+              "en": "my (polite)",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "이쪽",
+              "roman": "ijjok",
+              "en": "this way, over here",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "거기",
+              "roman": "geogi",
+              "en": "there",
+              "correct": true
+            }
+          ],
+          "answers": [
+            {
+              "ko": "거기",
+              "roman": "geogi",
+              "en": "there"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "「아, 거기 제 자리예요.」",
+              "en": "Oh, that's my seat."
+            }
+          }
+        },
+        {
+          "id": "S1-17",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:97270e4b",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "네, 제 가방이에요.",
+              "roman": "ne, je gabangieyo.",
+              "en": "Yes, that's my bag."
+            },
+            "audio_url": "u07-jaemin/d-03-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "네, 앉으세요.",
+              "roman": "ne, anjeuseyo.",
+              "en": "Sure, go ahead.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "네, 제 가방이에요.",
+              "roman": "ne, je gabangieyo.",
+              "en": "Yes, that's my bag.",
+              "correct": true
+            },
+            {
+              "id": "o3",
+              "ko": "감사합니다. 여행 오셨어요?",
+              "roman": "gamsahamnida. yeohaeng osyeosseoyo?",
+              "en": "Thank you. Are you here on a trip?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "여기 앉아도 돼요?",
+              "roman": "yeogi anjado dwaeyo?",
+              "en": "Can I sit here?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ]
+        },
+        {
+          "id": "S1-18",
+          "type": "CLOZE_CHOICE",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "읽기",
+          "skill_level": 2,
+          "ref": "voca:ec59536e",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "___ 자리 있어요?",
+            "roman": "___ jari isseoyo?",
+            "en": "Is this seat taken?"
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "거기",
+              "roman": "geogi",
+              "en": "there",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "여기",
+              "roman": "yeogi",
+              "en": "here",
+              "correct": true
+            },
+            {
+              "id": "o3",
+              "ko": "일주일",
+              "roman": "iljuil",
+              "en": "one week",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "여기",
+              "roman": "yeogi",
+              "en": "here"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "「여기 자리 있어요?」",
+              "en": "Is this seat taken?"
+            }
+          }
+        },
+        {
+          "id": "S1-19",
+          "type": "IMG_MATCH",
+          "mode": "choice",
+          "event": "R",
+          "level": 1,
+          "skill": "읽기",
+          "skill_level": 1,
+          "ref": "voca:3e2a1ac0",
+          "prompt": {
+            "ko": "사진에 맞는 말을 고르세요.",
+            "en": "Which word matches the picture?"
+          },
+          "stimulus": {
+            "audio_url": "u07-jaemin/s1-01-word-r2",
+            "image_brief": "seat, location - 한 컷으로 알아볼 수 있게",
+            "image_url": "content/images/items/seat.webp"
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "여행",
+              "roman": "yeohaeng",
+              "en": "travel",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "저쪽",
+              "roman": "jeojjok",
+              "en": "over there",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "자리",
+              "roman": "jari",
+              "en": "seat",
+              "correct": true
+            },
+            {
+              "id": "o4",
+              "ko": "거기",
+              "roman": "geogi",
+              "en": "there",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ]
+        },
+        {
+          "id": "S1-20",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:856e8566",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "저쪽에 앉을게요.",
+              "roman": "jeojjoge anjeulgeyo.",
+              "en": "I'll sit over there."
+            },
+            "audio_url": "u07-jaemin/d-06-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "저쪽에 앉을게요.",
+              "roman": "jeojjoge anjeulgeyo.",
+              "en": "I'll sit over there.",
+              "correct": true
+            },
+            {
+              "id": "o2",
+              "ko": "괜찮아요.",
+              "roman": "gwaenchanayo.",
+              "en": "No thanks. / I'm fine.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "네, 앉으세요.",
+              "roman": "ne, anjeuseyo.",
+              "en": "Sure, go ahead.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "네, 제 가방이에요.",
+              "roman": "ne, je gabangieyo.",
+              "en": "Yes, that's my bag.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "S2",
+      "order": 2,
+      "items": [
+        {
+          "id": "S2-01",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:3e2a1ac0",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "아, 거기 제 자리예요.",
+              "roman": "a, geogi je jariyeyo.",
+              "en": "Oh, that's my seat."
+            },
+            "audio_url": "u07-jaemin/d-01-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "아, 거기 제 자리예요.",
+              "roman": "a, geogi je jariyeyo.",
+              "en": "Oh, that's my seat.",
+              "correct": true
+            },
+            {
+              "id": "o2",
+              "ko": "괜찮아요.",
+              "roman": "gwaenchanayo.",
+              "en": "No thanks. / I'm fine.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "네, 제 가방이에요.",
+              "roman": "ne, je gabangieyo.",
+              "en": "Yes, that's my bag.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "좋은 여행 되세요.",
+              "roman": "joeun yeohaeng doeseyo.",
+              "en": "Have a good trip.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ]
+        },
+        {
+          "id": "S2-02",
+          "type": "TURN_ORDER",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:49caf517",
+          "prompt": {
+            "ko": "대화 순서대로 놓으세요.",
+            "en": "Put the conversation in order."
+          },
+          "context": {
+            "ko": "대화 순서대로 놓으세요.",
+            "roman": "daehwa sunseodaero noeuseyo."
+          },
+          "tiles": [
+            {
+              "ko": "여기 자리 있어요?",
+              "roman": "yeogi jari isseoyo?",
+              "en": "Is this seat taken?",
+              "speaker": "player"
+            },
+            {
+              "ko": "네, 제 가방이에요.",
+              "roman": "ne, je gabangieyo.",
+              "en": "Yes, that's my bag.",
+              "speaker": "counterpart"
+            },
+            {
+              "ko": "죄송해요. 몰랐어요.",
+              "roman": "joesonghaeyo. mollasseoyo.",
+              "en": "I'm sorry. I didn't know.",
+              "speaker": "player"
+            },
+            {
+              "ko": "괜찮아요.",
+              "roman": "gwaenchanayo.",
+              "en": "It's okay.",
+              "speaker": "counterpart"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "여기 자리 있어요? | 네, 제 가방이에요. | 죄송해요. 몰랐어요. | 괜찮아요.",
+              "roman": "yeogi jari isseoyo? | ne, je gabangieyo. | joesonghaeyo. mollasseoyo. | gwaenchanayo."
+            }
+          ]
+        },
+        {
+          "id": "S2-03",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:856e8566",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "저쪽에 앉을게요.",
+              "roman": "jeojjoge anjeulgeyo.",
+              "en": "I'll sit over there."
+            },
+            "audio_url": "u07-jaemin/d-06-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "네, 앉으세요.",
+              "roman": "ne, anjeuseyo.",
+              "en": "Sure, go ahead.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "죄송해요. 몰랐어요.",
+              "roman": "joesonghaeyo. mollasseoyo.",
+              "en": "I'm sorry. I didn't know.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "괜찮아요.",
+              "roman": "gwaenchanayo.",
+              "en": "No thanks. / I'm fine.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "저쪽에 앉을게요.",
+              "roman": "jeojjoge anjeulgeyo.",
+              "en": "I'll sit over there.",
+              "correct": true
+            }
+          ]
+        },
+        {
+          "id": "S2-04",
+          "type": "ROLE_LINE",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "읽기",
+          "skill_level": 2,
+          "ref": "voca:3e2a1ac0",
+          "prompt": {
+            "ko": "뭐라고 말할까요?",
+            "en": "What do you say?"
+          },
+          "context": {
+            "ko": "아, 거기 제 자리예요.",
+            "roman": "a, geogi je jariyeyo.",
+            "en": "Oh, that's my seat."
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "봉투 드릴까요?",
+              "roman": "bongtu deurilkkayo?",
+              "en": "Do you need a bag?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "영수증 드릴까요?",
+              "roman": "yeongsujeung deurilkkayo?",
+              "en": "Would you like the receipt?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "여기 자리 있어요?",
+              "roman": "yeogi jari isseoyo?",
+              "en": "Is this seat taken?",
+              "correct": true
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "이 자리에서는 「여기 자리 있어요?」라고 해요.",
+              "en": "Here you say \"Is this seat taken?\"."
+            }
+          }
+        },
+        {
+          "id": "S2-05",
+          "type": "REPLY_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 2,
+          "ref": "voca:856e8566",
+          "prompt": {
+            "ko": "뭐라고 대답할까요?",
+            "en": "How do you reply?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "괜찮아요.",
+              "roman": "gwaenchanayo.",
+              "en": "It's okay."
+            },
+            "audio_url": "u07-jaemin/d-05-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "죄송해요. 몰랐어요.",
+              "roman": "joesonghaeyo. mollasseoyo.",
+              "en": "I'm sorry. I didn't know.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "저쪽에 앉을게요.",
+              "roman": "jeojjoge anjeulgeyo.",
+              "en": "I'll sit over there.",
+              "correct": true
+            },
+            {
+              "id": "o3",
+              "ko": "여기 자리 있어요?",
+              "roman": "yeogi jari isseoyo?",
+              "en": "Is this seat taken?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "이 자리에서는 「저쪽에 앉을게요.」라고 해요.",
+              "en": "Here you say \"I'll sit over there.\"."
+            }
+          }
+        },
+        {
+          "id": "S2-06",
+          "type": "LISTEN_BUILD",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "듣기",
+          "skill_level": 3,
+          "ref": "voca:49caf517",
+          "prompt": {
+            "ko": "듣고 문장을 만드세요.",
+            "en": "Listen and build the sentence."
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "죄송해요. 몰랐어요.",
+              "roman": "joesonghaeyo. mollasseoyo.",
+              "en": "I'm sorry. I didn't know."
+            },
+            "audio_url": "u07-jaemin/d-04-r2",
+            "image_url": ""
+          },
+          "tiles": [
+            {
+              "ko": "죄송해요.",
+              "roman": "joesonghaeyo."
+            },
+            {
+              "ko": "몰랐어요.",
+              "roman": "mollasseoyo."
+            },
+            {
+              "ko": "감사합니다.",
+              "roman": "gamsahamnida."
+            },
+            {
+              "ko": "왔어요.",
+              "roman": "wasseoyo."
+            }
+          ],
+          "answers": [
+            {
+              "ko": "죄송해요. 몰랐어요.",
+              "roman": "joesonghaeyo. mollasseoyo.",
+              "en": "I'm sorry. I didn't know."
+            }
+          ]
+        },
+        {
+          "id": "S2-07",
+          "type": "TURN_ORDER",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:3e2a1ac0",
+          "prompt": {
+            "ko": "대화 순서대로 놓으세요.",
+            "en": "Put the conversation in order."
+          },
+          "context": {
+            "ko": "대화 순서대로 놓으세요.",
+            "roman": "daehwa sunseodaero noeuseyo."
+          },
+          "tiles": [
+            {
+              "ko": "괜찮아요.",
+              "roman": "gwaenchanayo.",
+              "en": "It's okay.",
+              "speaker": "counterpart"
+            },
+            {
+              "ko": "저쪽에 앉을게요.",
+              "roman": "jeojjoge anjeulgeyo.",
+              "en": "I'll sit over there.",
+              "speaker": "player"
+            },
+            {
+              "ko": "감사합니다. 여행 오셨어요?",
+              "roman": "gamsahamnida. yeohaeng osyeosseoyo?",
+              "en": "Thank you. Are you here on a trip?",
+              "speaker": "counterpart"
+            },
+            {
+              "ko": "네, 어제 왔어요.",
+              "roman": "ne, eoje wasseoyo.",
+              "en": "Yes, I got here yesterday.",
+              "speaker": "player"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "괜찮아요. | 저쪽에 앉을게요. | 감사합니다. 여행 오셨어요? | 네, 어제 왔어요.",
+              "roman": "gwaenchanayo. | jeojjoge anjeulgeyo. | gamsahamnida. yeohaeng osyeosseoyo? | ne, eoje wasseoyo."
+            }
+          ]
+        },
+        {
+          "id": "S2-08",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:d5fbbbce",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "네, 어제 왔어요.",
+              "roman": "ne, eoje wasseoyo.",
+              "en": "Yes, I got here yesterday."
+            },
+            "audio_url": "u07-jaemin/d-08-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "네, 일주일 있어요.",
+              "roman": "ne, iljuil isseoyo.",
+              "en": "Yes, I'm here for a week.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "좋은 여행 되세요.",
+              "roman": "joeun yeohaeng doeseyo.",
+              "en": "Have a good trip.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "네, 제 가방이에요.",
+              "roman": "ne, je gabangieyo.",
+              "en": "Yes, that's my bag.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "네, 어제 왔어요.",
+              "roman": "ne, eoje wasseoyo.",
+              "en": "Yes, I got here yesterday.",
+              "correct": true
+            }
+          ]
+        },
+        {
+          "id": "S2-09",
+          "type": "ROLE_LINE",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "읽기",
+          "skill_level": 2,
+          "ref": "voca:d5fbbbce",
+          "prompt": {
+            "ko": "뭐라고 말할까요?",
+            "en": "What do you say?"
+          },
+          "context": {
+            "ko": "감사합니다. 여행 오셨어요?",
+            "roman": "gamsahamnida. yeohaeng osyeosseoyo?",
+            "en": "Thank you. Are you here on a trip?"
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "여기 자리 있어요?",
+              "roman": "yeogi jari isseoyo?",
+              "en": "Is this seat taken?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "네, 어제 왔어요.",
+              "roman": "ne, eoje wasseoyo.",
+              "en": "Yes, I got here yesterday.",
+              "correct": true
+            },
+            {
+              "id": "o3",
+              "ko": "죄송해요. 몰랐어요.",
+              "roman": "joesonghaeyo. mollasseoyo.",
+              "en": "I'm sorry. I didn't know.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "이 자리에서는 「네, 어제 왔어요.」라고 해요.",
+              "en": "Here you say \"Yes, I got here yesterday.\"."
+            }
+          }
+        },
+        {
+          "id": "S2-10",
+          "type": "TURN_ORDER",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:03c8759c",
+          "prompt": {
+            "ko": "대화 순서대로 놓으세요.",
+            "en": "Put the conversation in order."
+          },
+          "context": {
+            "ko": "대화 순서대로 놓으세요.",
+            "roman": "daehwa sunseodaero noeuseyo."
+          },
+          "tiles": [
+            {
+              "ko": "저쪽에 앉을게요.",
+              "roman": "jeojjoge anjeulgeyo.",
+              "en": "I'll sit over there.",
+              "speaker": "player"
+            },
+            {
+              "ko": "감사합니다. 여행 오셨어요?",
+              "roman": "gamsahamnida. yeohaeng osyeosseoyo?",
+              "en": "Thank you. Are you here on a trip?",
+              "speaker": "counterpart"
+            },
+            {
+              "ko": "네, 어제 왔어요.",
+              "roman": "ne, eoje wasseoyo.",
+              "en": "Yes, I got here yesterday.",
+              "speaker": "player"
+            },
+            {
+              "ko": "좋은 여행 되세요.",
+              "roman": "joeun yeohaeng doeseyo.",
+              "en": "Have a good trip.",
+              "speaker": "counterpart"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "저쪽에 앉을게요. | 감사합니다. 여행 오셨어요? | 네, 어제 왔어요. | 좋은 여행 되세요.",
+              "roman": "jeojjoge anjeulgeyo. | gamsahamnida. yeohaeng osyeosseoyo? | ne, eoje wasseoyo. | joeun yeohaeng doeseyo."
+            }
+          ]
+        },
+        {
+          "id": "S2-11",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:97270e4b",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "네, 제 가방이에요.",
+              "roman": "ne, je gabangieyo.",
+              "en": "Yes, that's my bag."
+            },
+            "audio_url": "u07-jaemin/d-03-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "네, 제 가방이에요.",
+              "roman": "ne, je gabangieyo.",
+              "en": "Yes, that's my bag.",
+              "correct": true
+            },
+            {
+              "id": "o2",
+              "ko": "네, 앉으세요.",
+              "roman": "ne, anjeuseyo.",
+              "en": "Sure, go ahead.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "여기 앉아도 돼요?",
+              "roman": "yeogi anjado dwaeyo?",
+              "en": "Can I sit here?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "감사합니다. 여행 오셨어요?",
+              "roman": "gamsahamnida. yeohaeng osyeosseoyo?",
+              "en": "Thank you. Are you here on a trip?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ]
+        },
+        {
+          "id": "S2-12",
+          "type": "TURN_ORDER",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:97270e4b",
+          "prompt": {
+            "ko": "대화 순서대로 놓으세요.",
+            "en": "Put the conversation in order."
+          },
+          "context": {
+            "ko": "대화 순서대로 놓으세요.",
+            "roman": "daehwa sunseodaero noeuseyo."
+          },
+          "tiles": [
+            {
+              "ko": "네, 제 가방이에요.",
+              "roman": "ne, je gabangieyo.",
+              "en": "Yes, that's my bag.",
+              "speaker": "counterpart"
+            },
+            {
+              "ko": "죄송해요. 몰랐어요.",
+              "roman": "joesonghaeyo. mollasseoyo.",
+              "en": "I'm sorry. I didn't know.",
+              "speaker": "player"
+            },
+            {
+              "ko": "괜찮아요.",
+              "roman": "gwaenchanayo.",
+              "en": "It's okay.",
+              "speaker": "counterpart"
+            },
+            {
+              "ko": "저쪽에 앉을게요.",
+              "roman": "jeojjoge anjeulgeyo.",
+              "en": "I'll sit over there.",
+              "speaker": "player"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "네, 제 가방이에요. | 죄송해요. 몰랐어요. | 괜찮아요. | 저쪽에 앉을게요.",
+              "roman": "ne, je gabangieyo. | joesonghaeyo. mollasseoyo. | gwaenchanayo. | jeojjoge anjeulgeyo."
+            }
+          ]
+        },
+        {
+          "id": "S2-13",
+          "type": "LISTEN_BUILD",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "듣기",
+          "skill_level": 3,
+          "ref": "voca:3e2a1ac0",
+          "prompt": {
+            "ko": "듣고 문장을 만드세요.",
+            "en": "Listen and build the sentence."
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "여기 자리 있어요?",
+              "roman": "yeogi jari isseoyo?",
+              "en": "Is this seat taken?"
+            },
+            "audio_url": "u07-jaemin/d-02-r2",
+            "image_url": ""
+          },
+          "tiles": [
+            {
+              "ko": "여기",
+              "roman": "yeogi",
+              "en": "here"
+            },
+            {
+              "ko": "자리",
+              "roman": "jari",
+              "en": "seat"
+            },
+            {
+              "ko": "있어요?",
+              "roman": "isseoyo?"
+            },
+            {
+              "ko": "감사합니다.",
+              "roman": "gamsahamnida."
+            },
+            {
+              "ko": "왔어요.",
+              "roman": "wasseoyo."
+            }
+          ],
+          "answers": [
+            {
+              "ko": "여기 자리 있어요?",
+              "roman": "yeogi jari isseoyo?",
+              "en": "Is this seat taken?"
+            }
+          ]
+        },
+        {
+          "id": "S2-14",
+          "type": "TURN_ORDER",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:3e2a1ac0",
+          "prompt": {
+            "ko": "대화 순서대로 놓으세요.",
+            "en": "Put the conversation in order."
+          },
+          "context": {
+            "ko": "대화 순서대로 놓으세요.",
+            "roman": "daehwa sunseodaero noeuseyo."
+          },
+          "tiles": [
+            {
+              "ko": "죄송해요. 몰랐어요.",
+              "roman": "joesonghaeyo. mollasseoyo.",
+              "en": "I'm sorry. I didn't know.",
+              "speaker": "player"
+            },
+            {
+              "ko": "괜찮아요.",
+              "roman": "gwaenchanayo.",
+              "en": "It's okay.",
+              "speaker": "counterpart"
+            },
+            {
+              "ko": "저쪽에 앉을게요.",
+              "roman": "jeojjoge anjeulgeyo.",
+              "en": "I'll sit over there.",
+              "speaker": "player"
+            },
+            {
+              "ko": "감사합니다. 여행 오셨어요?",
+              "roman": "gamsahamnida. yeohaeng osyeosseoyo?",
+              "en": "Thank you. Are you here on a trip?",
+              "speaker": "counterpart"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "죄송해요. 몰랐어요. | 괜찮아요. | 저쪽에 앉을게요. | 감사합니다. 여행 오셨어요?",
+              "roman": "joesonghaeyo. mollasseoyo. | gwaenchanayo. | jeojjoge anjeulgeyo. | gamsahamnida. yeohaeng osyeosseoyo?"
+            }
+          ]
+        },
+        {
+          "id": "S2-15",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:8d532a47",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "괜찮아요.",
+              "roman": "gwaenchanayo.",
+              "en": "It's okay."
+            },
+            "audio_url": "u07-jaemin/d-05-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "아, 거기 제 자리예요.",
+              "roman": "a, geogi je jariyeyo.",
+              "en": "Oh, that's my seat.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "네, 앉으세요.",
+              "roman": "ne, anjeuseyo.",
+              "en": "Sure, go ahead.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "좋은 여행 되세요.",
+              "roman": "joeun yeohaeng doeseyo.",
+              "en": "Have a good trip.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "괜찮아요.",
+              "roman": "gwaenchanayo.",
+              "en": "No thanks. / I'm fine.",
+              "correct": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "S3",
+      "order": 3,
+      "items": [
+        {
+          "id": "S3-01",
+          "type": "VOCAB_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "ref": "voca:a4b7987b",
+          "context": {
+            "ko": "제",
+            "roman": "je",
+            "en": "my (polite)"
+          },
+          "example": {
+            "ko": "아, 거기 제 자리예요.",
+            "roman": "a, geogi je jariyeyo.",
+            "en": "Oh, that's my seat."
+          },
+          "card_kind": "단어",
+          "audio_url": "u07-jaemin/s3-01-word-r2",
+          "example_audio_url": "u07-jaemin/d-01-r2"
+        },
+        {
+          "id": "S3-02",
+          "type": "VOCAB_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "ref": "voca:1ff65347",
+          "context": {
+            "ko": "가방",
+            "roman": "gabang",
+            "en": "bag"
+          },
+          "example": {
+            "ko": "네, 제 가방이에요.",
+            "roman": "ne, je gabangieyo.",
+            "en": "Yes, that's my bag."
+          },
+          "card_kind": "단어",
+          "audio_url": "u07-jaemin/s3-02-word-r2",
+          "example_audio_url": "u07-jaemin/d-03-r2"
+        },
+        {
+          "id": "S3-03",
+          "type": "VOCAB_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "ref": "voca:8d532a47",
+          "context": {
+            "ko": "괜찮다",
+            "roman": "gwaenchanda",
+            "en": "be okay"
+          },
+          "example": {
+            "ko": "괜찮아요.",
+            "roman": "gwaenchanayo.",
+            "en": "It's okay."
+          },
+          "card_kind": "단어",
+          "audio_url": "u07-jaemin/s3-03-word-r2",
+          "example_audio_url": "u07-jaemin/d-05-r2"
+        },
+        {
+          "id": "S3-04",
+          "type": "VOCAB_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "ref": "voca:90ed435d",
+          "context": {
+            "ko": "감사합니다",
+            "roman": "gamsahamnida",
+            "en": "thank you"
+          },
+          "example": {
+            "ko": "감사합니다. 여행 오셨어요?",
+            "roman": "gamsahamnida. yeohaeng osyeosseoyo?",
+            "en": "Thank you. Are you here on a trip?"
+          },
+          "card_kind": "단어",
+          "audio_url": "u07-jaemin/s3-04-word-r2",
+          "example_audio_url": "u07-jaemin/d-07-r2"
+        },
+        {
+          "id": "S3-05",
+          "type": "VOCAB_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "ref": "voca:1a89ae1f",
+          "context": {
+            "ko": "여행",
+            "roman": "yeohaeng",
+            "en": "travel"
+          },
+          "example": {
+            "ko": "감사합니다. 여행 오셨어요?",
+            "roman": "gamsahamnida. yeohaeng osyeosseoyo?",
+            "en": "Thank you. Are you here on a trip?"
+          },
+          "card_kind": "단어",
+          "audio_url": "u07-jaemin/s3-05-word-r2",
+          "example_audio_url": "u07-jaemin/d-07-r2"
+        },
+        {
+          "id": "S3-06",
+          "type": "VOCAB_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "ref": "voca:5edf2b01",
+          "context": {
+            "ko": "좋다",
+            "roman": "jota",
+            "en": "good"
+          },
+          "card_kind": "단어",
+          "audio_url": "u07-jaemin/s3-06-word-r2"
+        },
+        {
+          "id": "S3-07",
+          "type": "VOCAB_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "ref": "voca:fb6595ad",
+          "context": {
+            "ko": "되다",
+            "roman": "doeda",
+            "en": "become"
+          },
+          "example": {
+            "ko": "좋은 여행 되세요.",
+            "roman": "joeun yeohaeng doeseyo.",
+            "en": "Have a good trip."
+          },
+          "card_kind": "단어",
+          "audio_url": "u07-jaemin/s3-07-word-r2",
+          "example_audio_url": "u07-jaemin/d-09-r2"
+        },
+        {
+          "id": "S3-08",
+          "type": "VOCAB_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "ref": "gram:06ef5caf",
+          "context": {
+            "ko": "-아/어/여도 돼요?",
+            "roman": "-a/eo/yeodo dwaeyo?",
+            "en": "May I VERB? (asking for permission)"
+          },
+          "example": {
+            "ko": "여기 앉아도 돼요?",
+            "roman": "yeogi anjado dwaeyo?",
+            "en": "Can I sit here?"
+          },
+          "card_kind": "단어",
+          "audio_url": "",
+          "example_audio_url": "u07-jaemin/d-10-r2"
+        },
+        {
+          "id": "S3-09",
+          "type": "VOCAB_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "ref": "voca:ec5d9a98",
+          "context": {
+            "ko": "일주일",
+            "roman": "iljuil",
+            "en": "one week"
+          },
+          "example": {
+            "ko": "네, 일주일 있어요.",
+            "roman": "ne, iljuil isseoyo.",
+            "en": "Yes, I'm here for a week."
+          },
+          "card_kind": "단어",
+          "audio_url": "u07-jaemin/s3-09-word-r2",
+          "example_audio_url": "u07-jaemin/d-12-r2"
+        },
+        {
+          "id": "S3-10",
+          "type": "CLOZE",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:90ed435d",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "___ 여행 오셨어요?",
+            "roman": "___ yeohaeng osyeosseoyo?",
+            "en": "Thank you. Are you here on a trip?"
+          },
+          "tiles": [
+            {
+              "ko": "감사합니다.",
+              "roman": "gamsahamnida."
+            },
+            {
+              "ko": "몰랐어요.",
+              "roman": "mollasseoyo."
+            },
+            {
+              "ko": "앉을게요.",
+              "roman": "anjeulgeyo."
+            }
+          ],
+          "answers": [
+            {
+              "ko": "감사합니다.",
+              "roman": "gamsahamnida."
+            }
+          ]
+        },
+        {
+          "id": "S3-11",
+          "type": "CLOZE",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:ec5d9a98",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "네, ___ 있어요.",
+            "roman": "ne, ___ isseoyo.",
+            "en": "Yes, I'm here for a week."
+          },
+          "tiles": [
+            {
+              "ko": "일주일",
+              "roman": "iljuil",
+              "en": "one week"
+            },
+            {
+              "ko": "이쪽",
+              "roman": "ijjok",
+              "en": "this way, over here"
+            },
+            {
+              "ko": "제",
+              "roman": "je",
+              "en": "my (polite)"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "일주일",
+              "roman": "iljuil",
+              "en": "one week"
+            }
+          ]
+        },
+        {
+          "id": "S3-12",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "gram:06ef5caf",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "여기 앉아도 돼요?",
+              "roman": "yeogi anjado dwaeyo?",
+              "en": "Can I sit here?"
+            },
+            "audio_url": "u07-jaemin/d-10-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "여기 앉아도 돼요?",
+              "roman": "yeogi anjado dwaeyo?",
+              "en": "Can I sit here?",
+              "correct": true
+            },
+            {
+              "id": "o2",
+              "ko": "여기 자리 있어요?",
+              "roman": "yeogi jari isseoyo?",
+              "en": "Is this seat taken?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "저쪽에 앉을게요.",
+              "roman": "jeojjoge anjeulgeyo.",
+              "en": "I'll sit over there.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "괜찮아요.",
+              "roman": "gwaenchanayo.",
+              "en": "No thanks. / I'm fine.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ]
+        },
+        {
+          "id": "S3-13",
+          "type": "CLOZE",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:1ff65347",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "네, 제 ___",
+            "roman": "ne, je ___",
+            "en": "Yes, that's my bag."
+          },
+          "tiles": [
+            {
+              "ko": "가방이에요.",
+              "roman": "gabangieyo."
+            },
+            {
+              "ko": "있어요.",
+              "roman": "isseoyo."
+            },
+            {
+              "ko": "돼요?",
+              "roman": "dwaeyo?"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "가방이에요.",
+              "roman": "gabangieyo."
+            }
+          ]
+        },
+        {
+          "id": "S3-14",
+          "type": "IMG_MATCH",
+          "mode": "choice",
+          "event": "R",
+          "level": 1,
+          "skill": "읽기",
+          "skill_level": 1,
+          "ref": "voca:1a89ae1f",
+          "prompt": {
+            "ko": "사진에 맞는 말을 고르세요.",
+            "en": "Which word matches the picture?"
+          },
+          "stimulus": {
+            "audio_url": "u07-jaemin/s3-05-word-r2",
+            "image_brief": "travel - 한 컷으로 알아볼 수 있게",
+            "image_url": "content/images/items/travel.webp"
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "거기",
+              "roman": "geogi",
+              "en": "there",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "가방",
+              "roman": "gabang",
+              "en": "bag",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "여행",
+              "roman": "yeohaeng",
+              "en": "travel",
+              "correct": true
+            },
+            {
+              "id": "o4",
+              "ko": "저쪽",
+              "roman": "jeojjok",
+              "en": "over there",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ]
+        },
+        {
+          "id": "S3-15",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:ec5d9a98",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "네, 일주일 있어요.",
+              "roman": "ne, iljuil isseoyo.",
+              "en": "Yes, I'm here for a week."
+            },
+            "audio_url": "u07-jaemin/d-12-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "죄송해요. 몰랐어요.",
+              "roman": "joesonghaeyo. mollasseoyo.",
+              "en": "I'm sorry. I didn't know.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "네, 일주일 있어요.",
+              "roman": "ne, iljuil isseoyo.",
+              "en": "Yes, I'm here for a week.",
+              "correct": true
+            },
+            {
+              "id": "o3",
+              "ko": "네, 제 가방이에요.",
+              "roman": "ne, je gabangieyo.",
+              "en": "Yes, that's my bag.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "네, 어제 왔어요.",
+              "roman": "ne, eoje wasseoyo.",
+              "en": "Yes, I got here yesterday.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ]
+        },
+        {
+          "id": "S3-16",
+          "type": "CLOZE",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:a4b7987b",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "아, 거기 ___ 자리예요.",
+            "roman": "a, geogi ___ jariyeyo.",
+            "en": "Oh, that's my seat."
+          },
+          "tiles": [
+            {
+              "ko": "제",
+              "roman": "je",
+              "en": "my (polite)"
+            },
+            {
+              "ko": "어제",
+              "roman": "eoje",
+              "en": "yesterday"
+            },
+            {
+              "ko": "가방",
+              "roman": "gabang",
+              "en": "bag"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "제",
+              "roman": "je",
+              "en": "my (polite)"
+            }
+          ]
+        },
+        {
+          "id": "S3-17",
+          "type": "CLOZE",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:97270e4b",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "___, 어제 왔어요.",
+            "roman": "___, eoje wasseoyo.",
+            "en": "Yes, I got here yesterday."
+          },
+          "tiles": [
+            {
+              "ko": "네",
+              "roman": "ne",
+              "en": "yes"
+            },
+            {
+              "ko": "저쪽",
+              "roman": "jeojjok",
+              "en": "over there"
+            },
+            {
+              "ko": "이쪽",
+              "roman": "ijjok",
+              "en": "this way, over here"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "네",
+              "roman": "ne",
+              "en": "yes"
+            }
+          ]
+        },
+        {
+          "id": "S3-18",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:856e8566",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "저쪽에 앉을게요.",
+              "roman": "jeojjoge anjeulgeyo.",
+              "en": "I'll sit over there."
+            },
+            "audio_url": "u07-jaemin/d-06-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "좋은 여행 되세요.",
+              "roman": "joeun yeohaeng doeseyo.",
+              "en": "Have a good trip.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "괜찮아요.",
+              "roman": "gwaenchanayo.",
+              "en": "No thanks. / I'm fine.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "저쪽에 앉을게요.",
+              "roman": "jeojjoge anjeulgeyo.",
+              "en": "I'll sit over there.",
+              "correct": true
+            },
+            {
+              "id": "o4",
+              "ko": "네, 어제 왔어요.",
+              "roman": "ne, eoje wasseoyo.",
+              "en": "Yes, I got here yesterday.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ]
+        },
+        {
+          "id": "S3-19",
+          "type": "SYLLABLE_BUILD",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "쓰기",
+          "skill_level": 1,
+          "ref": "voca:b0414a80",
+          "prompt": {
+            "ko": "음절을 골라 낱말을 만드세요.",
+            "en": "Tap the syllables to spell the word."
+          },
+          "stimulus": {
+            "audio_url": "u07-jaemin/s1-07-word-r2",
+            "image_url": "",
+            "en": "sit"
+          },
+          "tiles": [
+            {
+              "ko": "앉",
+              "roman": "an"
+            },
+            {
+              "ko": "다",
+              "roman": "da"
+            },
+            {
+              "ko": "여",
+              "roman": "yeo"
+            },
+            {
+              "ko": "좋",
+              "roman": "jot"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "앉다",
+              "roman": "anda",
+              "en": "sit"
+            }
+          ]
+        },
+        {
+          "id": "S3-20",
+          "type": "SYLLABLE_BUILD",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "쓰기",
+          "skill_level": 1,
+          "ref": "voca:03c8759c",
+          "prompt": {
+            "ko": "음절을 골라 낱말을 만드세요.",
+            "en": "Tap the syllables to spell the word."
+          },
+          "stimulus": {
+            "audio_url": "u07-jaemin/s1-11-word-r2",
+            "image_url": "",
+            "en": "there"
+          },
+          "tiles": [
+            {
+              "ko": "거",
+              "roman": "geo"
+            },
+            {
+              "ko": "기",
+              "roman": "gi"
+            },
+            {
+              "ko": "네",
+              "roman": "ne",
+              "en": "yes"
+            },
+            {
+              "ko": "합",
+              "roman": "hap"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "거기",
+              "roman": "geogi",
+              "en": "there"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "S4",
+      "order": 4,
+      "items": [
+        {
+          "id": "S4-01",
+          "type": "ROLE_LINE",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "읽기",
+          "skill_level": 2,
+          "ref": "voca:d5fbbbce",
+          "prompt": {
+            "ko": "뭐라고 말할까요?",
+            "en": "What do you say?"
+          },
+          "context": {
+            "ko": "감사합니다. 여행 오셨어요?",
+            "roman": "gamsahamnida. yeohaeng osyeosseoyo?",
+            "en": "Thank you. Are you here on a trip?"
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "여기 자리 있어요?",
+              "roman": "yeogi jari isseoyo?",
+              "en": "Is this seat taken?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "네, 어제 왔어요.",
+              "roman": "ne, eoje wasseoyo.",
+              "en": "Yes, I got here yesterday.",
+              "correct": true
+            },
+            {
+              "id": "o3",
+              "ko": "저쪽에 앉을게요.",
+              "roman": "jeojjoge anjeulgeyo.",
+              "en": "I'll sit over there.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "이 자리에서는 「네, 어제 왔어요.」라고 해요.",
+              "en": "Here you say \"Yes, I got here yesterday.\"."
+            }
+          }
+        },
+        {
+          "id": "S4-02",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "E",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:ec5d9a98",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "context": {
+            "ko": "좋은 여행 되세요.",
+            "roman": "joeun yeohaeng doeseyo.",
+            "en": "Have a good trip."
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "좋은 여행 되세요.",
+              "roman": "joeun yeohaeng doeseyo.",
+              "en": "Have a good trip."
+            },
+            "audio_url": "u07-jaemin/d-09-r2",
+            "image_url": ""
+          }
+        },
+        {
+          "id": "S4-03",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:d5fbbbce",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "네, 어제 왔어요.",
+              "roman": "ne, eoje wasseoyo.",
+              "en": "Yes, I got here yesterday."
+            },
+            "audio_url": "u07-jaemin/d-08-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "감사합니다. 여행 오셨어요?",
+              "roman": "gamsahamnida. yeohaeng osyeosseoyo?",
+              "en": "Thank you. Are you here on a trip?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "여기 앉아도 돼요?",
+              "roman": "yeogi anjado dwaeyo?",
+              "en": "Can I sit here?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "네, 일주일 있어요.",
+              "roman": "ne, iljuil isseoyo.",
+              "en": "Yes, I'm here for a week.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "네, 어제 왔어요.",
+              "roman": "ne, eoje wasseoyo.",
+              "en": "Yes, I got here yesterday.",
+              "correct": true
+            }
+          ]
+        },
+        {
+          "id": "S4-04",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "E",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "gram:06ef5caf",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "context": {
+            "ko": "네, 앉으세요.",
+            "roman": "ne, anjeuseyo.",
+            "en": "Sure, go ahead."
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "네, 앉으세요.",
+              "roman": "ne, anjeuseyo.",
+              "en": "Sure, go ahead."
+            },
+            "audio_url": "u07-jaemin/d-11-r2",
+            "image_url": ""
+          }
+        },
+        {
+          "id": "S4-05",
+          "type": "TURN_ORDER",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:d5fbbbce",
+          "prompt": {
+            "ko": "대화 순서대로 놓으세요.",
+            "en": "Put the conversation in order."
+          },
+          "context": {
+            "ko": "대화 순서대로 놓으세요.",
+            "roman": "daehwa sunseodaero noeuseyo."
+          },
+          "tiles": [
+            {
+              "ko": "죄송해요. 몰랐어요.",
+              "roman": "joesonghaeyo. mollasseoyo.",
+              "en": "I'm sorry. I didn't know.",
+              "speaker": "player"
+            },
+            {
+              "ko": "괜찮아요.",
+              "roman": "gwaenchanayo.",
+              "en": "It's okay.",
+              "speaker": "counterpart"
+            },
+            {
+              "ko": "여기 앉아도 돼요?",
+              "roman": "yeogi anjado dwaeyo?",
+              "en": "Can I sit here?",
+              "speaker": "player"
+            },
+            {
+              "ko": "네, 앉으세요.",
+              "roman": "ne, anjeuseyo.",
+              "en": "Sure, go ahead.",
+              "speaker": "counterpart"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "죄송해요. 몰랐어요. | 괜찮아요. | 여기 앉아도 돼요? | 네, 앉으세요.",
+              "roman": "joesonghaeyo. mollasseoyo. | gwaenchanayo. | yeogi anjado dwaeyo? | ne, anjeuseyo."
+            }
+          ]
+        },
+        {
+          "id": "S4-06",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:97270e4b",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "네, 제 가방이에요.",
+              "roman": "ne, je gabangieyo.",
+              "en": "Yes, that's my bag."
+            },
+            "audio_url": "u07-jaemin/d-03-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "네, 앉으세요.",
+              "roman": "ne, anjeuseyo.",
+              "en": "Sure, go ahead.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "여기 앉아도 돼요?",
+              "roman": "yeogi anjado dwaeyo?",
+              "en": "Can I sit here?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "네, 일주일 있어요.",
+              "roman": "ne, iljuil isseoyo.",
+              "en": "Yes, I'm here for a week.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "네, 제 가방이에요.",
+              "roman": "ne, je gabangieyo.",
+              "en": "Yes, that's my bag.",
+              "correct": true
+            }
+          ]
+        },
+        {
+          "id": "S4-07",
+          "type": "LISTEN_BUILD",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "듣기",
+          "skill_level": 3,
+          "ref": "voca:97270e4b",
+          "prompt": {
+            "ko": "듣고 문장을 만드세요.",
+            "en": "Listen and build the sentence."
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "네, 일주일 있어요.",
+              "roman": "ne, iljuil isseoyo.",
+              "en": "Yes, I'm here for a week."
+            },
+            "audio_url": "u07-jaemin/d-12-r2",
+            "image_url": ""
+          },
+          "tiles": [
+            {
+              "ko": "네,",
+              "roman": "ne,"
+            },
+            {
+              "ko": "일주일",
+              "roman": "iljuil",
+              "en": "one week"
+            },
+            {
+              "ko": "있어요.",
+              "roman": "isseoyo."
+            },
+            {
+              "ko": "괜찮아요.",
+              "roman": "gwaenchanayo.",
+              "en": "It's okay."
+            },
+            {
+              "ko": "오셨어요?",
+              "roman": "osyeosseoyo?"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "네, 일주일 있어요.",
+              "roman": "ne, iljuil isseoyo.",
+              "en": "Yes, I'm here for a week."
+            }
+          ]
+        },
+        {
+          "id": "S4-08",
+          "type": "TURN_ORDER",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:d5fbbbce",
+          "prompt": {
+            "ko": "대화 순서대로 놓으세요.",
+            "en": "Put the conversation in order."
+          },
+          "context": {
+            "ko": "대화 순서대로 놓으세요.",
+            "roman": "daehwa sunseodaero noeuseyo."
+          },
+          "tiles": [
+            {
+              "ko": "저쪽에 앉을게요.",
+              "roman": "jeojjoge anjeulgeyo.",
+              "en": "I'll sit over there.",
+              "speaker": "player"
+            },
+            {
+              "ko": "감사합니다. 여행 오셨어요?",
+              "roman": "gamsahamnida. yeohaeng osyeosseoyo?",
+              "en": "Thank you. Are you here on a trip?",
+              "speaker": "counterpart"
+            },
+            {
+              "ko": "네, 일주일 있어요.",
+              "roman": "ne, iljuil isseoyo.",
+              "en": "Yes, I'm here for a week.",
+              "speaker": "player"
+            },
+            {
+              "ko": "좋은 여행 되세요.",
+              "roman": "joeun yeohaeng doeseyo.",
+              "en": "Have a good trip.",
+              "speaker": "counterpart"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "저쪽에 앉을게요. | 감사합니다. 여행 오셨어요? | 네, 일주일 있어요. | 좋은 여행 되세요.",
+              "roman": "jeojjoge anjeulgeyo. | gamsahamnida. yeohaeng osyeosseoyo? | ne, iljuil isseoyo. | joeun yeohaeng doeseyo."
+            }
+          ]
+        },
+        {
+          "id": "S4-09",
+          "type": "REPLY_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 2,
+          "ref": "voca:03c8759c",
+          "prompt": {
+            "ko": "뭐라고 대답할까요?",
+            "en": "How do you reply?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "아, 거기 제 자리예요.",
+              "roman": "a, geogi je jariyeyo.",
+              "en": "Oh, that's my seat."
+            },
+            "audio_url": "u07-jaemin/d-01-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "영수증 드릴까요?",
+              "roman": "yeongsujeung deurilkkayo?",
+              "en": "Would you like the receipt?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "봉투 드릴까요?",
+              "roman": "bongtu deurilkkayo?",
+              "en": "Do you need a bag?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "여기 자리 있어요?",
+              "roman": "yeogi jari isseoyo?",
+              "en": "Is this seat taken?",
+              "correct": true
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "이 자리에서는 「여기 자리 있어요?」라고 해요.",
+              "en": "Here you say \"Is this seat taken?\"."
+            }
+          }
+        },
+        {
+          "id": "S4-10",
+          "type": "TURN_ORDER",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:d5fbbbce",
+          "prompt": {
+            "ko": "대화 순서대로 놓으세요.",
+            "en": "Put the conversation in order."
+          },
+          "context": {
+            "ko": "대화 순서대로 놓으세요.",
+            "roman": "daehwa sunseodaero noeuseyo."
+          },
+          "tiles": [
+            {
+              "ko": "아, 거기 제 자리예요.",
+              "roman": "a, geogi je jariyeyo.",
+              "en": "Oh, that's my seat.",
+              "speaker": "counterpart"
+            },
+            {
+              "ko": "여기 자리 있어요?",
+              "roman": "yeogi jari isseoyo?",
+              "en": "Is this seat taken?",
+              "speaker": "player"
+            },
+            {
+              "ko": "네, 제 가방이에요.",
+              "roman": "ne, je gabangieyo.",
+              "en": "Yes, that's my bag.",
+              "speaker": "counterpart"
+            },
+            {
+              "ko": "죄송해요. 몰랐어요.",
+              "roman": "joesonghaeyo. mollasseoyo.",
+              "en": "I'm sorry. I didn't know.",
+              "speaker": "player"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "아, 거기 제 자리예요. | 여기 자리 있어요? | 네, 제 가방이에요. | 죄송해요. 몰랐어요.",
+              "roman": "a, geogi je jariyeyo. | yeogi jari isseoyo? | ne, je gabangieyo. | joesonghaeyo. mollasseoyo."
+            }
+          ]
+        },
+        {
+          "id": "S4-11",
+          "type": "ROLE_LINE",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "읽기",
+          "skill_level": 2,
+          "ref": "gram:06ef5caf",
+          "prompt": {
+            "ko": "뭐라고 말할까요?",
+            "en": "What do you say?"
+          },
+          "context": {
+            "ko": "창가 바로 옆 테이블이 비어 있다. 그 자리에 앉아도 되는지 묻고 싶다.",
+            "roman": "changga baro yeop teibeuri bieo itda. geu jarie anjado doeneunji mutgo sipda.",
+            "en": "The table right next to the window is free. You want to ask if you can sit there."
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "네, 일주일 있어요.",
+              "roman": "ne, iljuil isseoyo.",
+              "en": "Yes, I'm here for a week.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "여기 앉아도 돼요?",
+              "roman": "yeogi anjado dwaeyo?",
+              "en": "Can I sit here?",
+              "correct": true
+            },
+            {
+              "id": "o3",
+              "ko": "저쪽에 앉을게요.",
+              "roman": "jeojjoge anjeulgeyo.",
+              "en": "I'll sit over there.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "이 자리에서는 「여기 앉아도 돼요?」라고 해요.",
+              "en": "Here you say \"Can I sit here?\"."
+            },
+            "wrong": {
+              "ko": "이번에는 창가 바로 옆 테이블이 비어 있다. 그 자리에 앉아도 되는지 묻고 싶어서 「저쪽에 앉을게요.」는 안 맞아요.",
+              "en": "This time The table right next to the window is free. You want to ask if you can sit there, so \"I'll sit over there.\" does not fit."
+            },
+            "wrong_option": "o3"
+          }
+        },
+        {
+          "id": "S4-12",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:03c8759c",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "아, 거기 제 자리예요.",
+              "roman": "a, geogi je jariyeyo.",
+              "en": "Oh, that's my seat."
+            },
+            "audio_url": "u07-jaemin/d-01-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "아, 거기 제 자리예요.",
+              "roman": "a, geogi je jariyeyo.",
+              "en": "Oh, that's my seat.",
+              "correct": true
+            },
+            {
+              "id": "o2",
+              "ko": "여기 자리 있어요?",
+              "roman": "yeogi jari isseoyo?",
+              "en": "Is this seat taken?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "괜찮아요.",
+              "roman": "gwaenchanayo.",
+              "en": "No thanks. / I'm fine.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "여기 앉아도 돼요?",
+              "roman": "yeogi anjado dwaeyo?",
+              "en": "Can I sit here?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ]
+        },
+        {
+          "id": "S4-13",
+          "type": "TURN_ORDER",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:d5fbbbce",
+          "prompt": {
+            "ko": "대화 순서대로 놓으세요.",
+            "en": "Put the conversation in order."
+          },
+          "context": {
+            "ko": "대화 순서대로 놓으세요.",
+            "roman": "daehwa sunseodaero noeuseyo."
+          },
+          "tiles": [
+            {
+              "ko": "괜찮아요.",
+              "roman": "gwaenchanayo.",
+              "en": "It's okay.",
+              "speaker": "counterpart"
+            },
+            {
+              "ko": "저쪽에 앉을게요.",
+              "roman": "jeojjoge anjeulgeyo.",
+              "en": "I'll sit over there.",
+              "speaker": "player"
+            },
+            {
+              "ko": "감사합니다. 여행 오셨어요?",
+              "roman": "gamsahamnida. yeohaeng osyeosseoyo?",
+              "en": "Thank you. Are you here on a trip?",
+              "speaker": "counterpart"
+            },
+            {
+              "ko": "네, 일주일 있어요.",
+              "roman": "ne, iljuil isseoyo.",
+              "en": "Yes, I'm here for a week.",
+              "speaker": "player"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "괜찮아요. | 저쪽에 앉을게요. | 감사합니다. 여행 오셨어요? | 네, 일주일 있어요.",
+              "roman": "gwaenchanayo. | jeojjoge anjeulgeyo. | gamsahamnida. yeohaeng osyeosseoyo? | ne, iljuil isseoyo."
+            }
+          ]
+        },
+        {
+          "id": "S4-14",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "gram:06ef5caf",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "여기 앉아도 돼요?",
+              "roman": "yeogi anjado dwaeyo?",
+              "en": "Can I sit here?"
+            },
+            "audio_url": "u07-jaemin/d-10-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "여기 자리 있어요?",
+              "roman": "yeogi jari isseoyo?",
+              "en": "Is this seat taken?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "네, 어제 왔어요.",
+              "roman": "ne, eoje wasseoyo.",
+              "en": "Yes, I got here yesterday.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "저쪽에 앉을게요.",
+              "roman": "jeojjoge anjeulgeyo.",
+              "en": "I'll sit over there.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "여기 앉아도 돼요?",
+              "roman": "yeogi anjado dwaeyo?",
+              "en": "Can I sit here?",
+              "correct": true
+            }
+          ]
+        },
+        {
+          "id": "S4-15",
+          "type": "TURN_ORDER",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:d5fbbbce",
+          "prompt": {
+            "ko": "대화 순서대로 놓으세요.",
+            "en": "Put the conversation in order."
+          },
+          "context": {
+            "ko": "대화 순서대로 놓으세요.",
+            "roman": "daehwa sunseodaero noeuseyo."
+          },
+          "tiles": [
+            {
+              "ko": "네, 제 가방이에요.",
+              "roman": "ne, je gabangieyo.",
+              "en": "Yes, that's my bag.",
+              "speaker": "counterpart"
+            },
+            {
+              "ko": "죄송해요. 몰랐어요.",
+              "roman": "joesonghaeyo. mollasseoyo.",
+              "en": "I'm sorry. I didn't know.",
+              "speaker": "player"
+            },
+            {
+              "ko": "괜찮아요.",
+              "roman": "gwaenchanayo.",
+              "en": "It's okay.",
+              "speaker": "counterpart"
+            },
+            {
+              "ko": "여기 앉아도 돼요?",
+              "roman": "yeogi anjado dwaeyo?",
+              "en": "Can I sit here?",
+              "speaker": "player"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "네, 제 가방이에요. | 죄송해요. 몰랐어요. | 괜찮아요. | 여기 앉아도 돼요?",
+              "roman": "ne, je gabangieyo. | joesonghaeyo. mollasseoyo. | gwaenchanayo. | yeogi anjado dwaeyo?"
+            }
+          ]
+        },
+        {
+          "id": "S4-16",
+          "type": "REPLY_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 2,
+          "ref": "expr:a04464f0",
+          "prompt": {
+            "ko": "뭐라고 대답할까요?",
+            "en": "How do you reply?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "괜찮아요.",
+              "roman": "gwaenchanayo.",
+              "en": "It's okay."
+            },
+            "audio_url": "u07-jaemin/d-05-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "저쪽에 앉을게요.",
+              "roman": "jeojjoge anjeulgeyo.",
+              "en": "I'll sit over there.",
+              "correct": true
+            },
+            {
+              "id": "o2",
+              "ko": "죄송해요. 몰랐어요.",
+              "roman": "joesonghaeyo. mollasseoyo.",
+              "en": "I'm sorry. I didn't know.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "여기 자리 있어요?",
+              "roman": "yeogi jari isseoyo?",
+              "en": "Is this seat taken?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "이 자리에서는 「저쪽에 앉을게요.」라고 해요.",
+              "en": "Here you say \"I'll sit over there.\"."
+            }
+          }
+        },
+        {
+          "id": "S4-17",
+          "type": "LISTEN_BUILD",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "듣기",
+          "skill_level": 3,
+          "ref": "voca:90ed435d",
+          "prompt": {
+            "ko": "듣고 문장을 만드세요.",
+            "en": "Listen and build the sentence."
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "감사합니다. 여행 오셨어요?",
+              "roman": "gamsahamnida. yeohaeng osyeosseoyo?",
+              "en": "Thank you. Are you here on a trip?"
+            },
+            "audio_url": "u07-jaemin/d-07-r2",
+            "image_url": ""
+          },
+          "tiles": [
+            {
+              "ko": "감사합니다.",
+              "roman": "gamsahamnida."
+            },
+            {
+              "ko": "여행",
+              "roman": "yeohaeng",
+              "en": "travel"
+            },
+            {
+              "ko": "오셨어요?",
+              "roman": "osyeosseoyo?"
+            },
+            {
+              "ko": "왔어요.",
+              "roman": "wasseoyo."
+            },
+            {
+              "ko": "앉을게요.",
+              "roman": "anjeulgeyo."
+            }
+          ],
+          "answers": [
+            {
+              "ko": "감사합니다. 여행 오셨어요?",
+              "roman": "gamsahamnida. yeohaeng osyeosseoyo?",
+              "en": "Thank you. Are you here on a trip?"
+            }
+          ]
+        },
+        {
+          "id": "S4-18",
+          "type": "ROLE_LINE",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "읽기",
+          "skill_level": 2,
+          "ref": "voca:ec5d9a98",
+          "prompt": {
+            "ko": "뭐라고 말할까요?",
+            "en": "What do you say?"
+          },
+          "context": {
+            "ko": "언제 왔는지보다 얼마나 있는지 말하고 싶다.",
+            "roman": "eonje wanneunjiboda eolmana inneunji malhago sipda.",
+            "en": "You'd rather say how long you're staying than when you arrived."
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "네, 일주일 있어요.",
+              "roman": "ne, iljuil isseoyo.",
+              "en": "Yes, I'm here for a week.",
+              "correct": true
+            },
+            {
+              "id": "o2",
+              "ko": "죄송해요. 몰랐어요.",
+              "roman": "joesonghaeyo. mollasseoyo.",
+              "en": "I'm sorry. I didn't know.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "네, 어제 왔어요.",
+              "roman": "ne, eoje wasseoyo.",
+              "en": "Yes, I got here yesterday.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "이 자리에서는 「네, 일주일 있어요.」라고 해요.",
+              "en": "Here you say \"Yes, I'm here for a week.\"."
+            },
+            "wrong": {
+              "ko": "이번에는 언제 왔는지보다 얼마나 있는지 말하고 싶어서 「네, 어제 왔어요.」는 안 맞아요.",
+              "en": "This time You'd rather say how long you're staying than when you arrived, so \"Yes, I got here yesterday.\" does not fit."
+            },
+            "wrong_option": "o3"
+          }
+        },
+        {
+          "id": "S4-19",
+          "type": "REPLY_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 2,
+          "ref": "voca:1ff65347",
+          "prompt": {
+            "ko": "뭐라고 대답할까요?",
+            "en": "How do you reply?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "네, 제 가방이에요.",
+              "roman": "ne, je gabangieyo.",
+              "en": "Yes, that's my bag."
+            },
+            "audio_url": "u07-jaemin/d-03-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "죄송해요. 몰랐어요.",
+              "roman": "joesonghaeyo. mollasseoyo.",
+              "en": "I'm sorry. I didn't know.",
+              "correct": true
+            },
+            {
+              "id": "o2",
+              "ko": "여기 자리 있어요?",
+              "roman": "yeogi jari isseoyo?",
+              "en": "Is this seat taken?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "봉투 드릴까요?",
+              "roman": "bongtu deurilkkayo?",
+              "en": "Do you need a bag?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "이 자리에서는 「죄송해요. 몰랐어요.」라고 해요.",
+              "en": "Here you say \"I'm sorry. I didn't know.\"."
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "S5",
+      "order": 5,
+      "items": [
+        {
+          "id": "S5-01",
+          "type": "PARTICLE_FILL",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "읽기",
+          "skill_level": 2,
+          "ref": "expr:a04464f0",
+          "prompt": {
+            "ko": "알맞은 조사를 고르세요.",
+            "en": "Which particle fits?"
+          },
+          "stimulus": {
+            "text": {
+              "ko": "아, 거기 제 자리___.",
+              "roman": "a, geogi je jari___.",
+              "en": "Oh, that's my seat."
+            },
+            "audio_url": "",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "예요",
+              "roman": "yeyo",
+              "en": "is (after a vowel)",
+              "correct": true
+            },
+            {
+              "id": "o2",
+              "ko": "이에요",
+              "roman": "ieyo",
+              "en": "is (after a consonant)",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "앞말에 받침이 있는지 보고 조사를 골라요.",
+              "en": "The particle depends on whether the word before it ends in a consonant."
+            }
+          }
+        },
+        {
+          "id": "S5-02",
+          "type": "PARTICLE_FILL",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "읽기",
+          "skill_level": 2,
+          "ref": "patt:f35fb813",
+          "prompt": {
+            "ko": "알맞은 조사를 고르세요.",
+            "en": "Which particle fits?"
+          },
+          "stimulus": {
+            "text": {
+              "ko": "네, 제 가방___.",
+              "roman": "ne, je gabang___.",
+              "en": "Yes, that's my bag."
+            },
+            "audio_url": "",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "예요",
+              "roman": "yeyo",
+              "en": "is (after a vowel)",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "이에요",
+              "roman": "ieyo",
+              "en": "is (after a consonant)",
+              "correct": true
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "앞말에 받침이 있는지 보고 조사를 골라요.",
+              "en": "The particle depends on whether the word before it ends in a consonant."
+            }
+          }
+        },
+        {
+          "id": "S5-03",
+          "type": "PARTICLE_SWAP",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "읽기",
+          "skill_level": 2,
+          "ref": "voca:3e2a1ac0",
+          "prompt": {
+            "ko": "조사를 고치세요.",
+            "en": "Fix the particle."
+          },
+          "stimulus": {
+            "text": {
+              "ko": "자리[으로]",
+              "roman": "jarieuro",
+              "en": "seat"
+            },
+            "audio_url": "",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "로",
+              "roman": "ro",
+              "en": "by, with, to (after a vowel or ㄹ)",
+              "correct": true
+            },
+            {
+              "id": "o2",
+              "ko": "을",
+              "roman": "eul",
+              "en": "object marker (after a consonant)",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "은",
+              "roman": "eun",
+              "en": "topic marker (after a consonant)",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "조사가 뜻을 바꿔요. 이 자리에 맞는 조사를 써야 해요.",
+              "en": "The particle changes the meaning. This slot needs a different one."
+            }
+          }
+        },
+        {
+          "id": "S5-04",
+          "type": "MIN_PAIR_AB",
+          "mode": "choice",
+          "event": "D",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 2,
+          "ref": "voca:ec5d9a98",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "Which one did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "방",
+              "roman": "bang"
+            },
+            "audio_url": "u07-jaemin/s5-04-stim-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "빵",
+              "roman": "ppang",
+              "en": "bread",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "방",
+              "roman": "bang",
+              "en": "room",
+              "correct": true
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "한 소리만 다른 말이에요. 천천히 다시 들어 보세요.",
+              "en": "These two words differ by one sound. Listen again slowly."
+            }
+          }
+        },
+        {
+          "id": "S5-05",
+          "type": "MIN_PAIR_AB",
+          "mode": "choice",
+          "event": "D",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 2,
+          "ref": "gram:06ef5caf",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "Which one did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "풀",
+              "roman": "pul"
+            },
+            "audio_url": "u07-jaemin/s5-05-stim-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "불",
+              "roman": "bul",
+              "en": "fire, electrical light",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "풀",
+              "roman": "pul",
+              "en": "grass",
+              "correct": true
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "한 소리만 다른 말이에요. 천천히 다시 들어 보세요.",
+              "en": "These two words differ by one sound. Listen again slowly."
+            }
+          }
+        },
+        {
+          "id": "S5-06",
+          "type": "DICTATION",
+          "mode": "typing",
+          "event": "R",
+          "level": 4,
+          "skill": "쓰기",
+          "skill_level": 2,
+          "ref": "voca:5edf2b01",
+          "prompt": {
+            "ko": "들은 대로 쓰세요.",
+            "en": "Type what you hear."
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "좋다",
+              "roman": "jota",
+              "en": "good"
+            },
+            "audio_url": "u07-jaemin/s3-06-word-r2",
+            "image_url": ""
+          },
+          "answers": [
+            {
+              "ko": "좋다",
+              "roman": "jota",
+              "en": "good"
+            }
+          ]
+        },
+        {
+          "id": "S5-07",
+          "type": "DICTATION",
+          "mode": "typing",
+          "event": "R",
+          "level": 4,
+          "skill": "쓰기",
+          "skill_level": 2,
+          "ref": "voca:ec59536e",
+          "prompt": {
+            "ko": "들은 대로 쓰세요.",
+            "en": "Type what you hear."
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "여기",
+              "roman": "yeogi",
+              "en": "here"
+            },
+            "audio_url": "u07-jaemin/s1-02-word-r2",
+            "image_url": ""
+          },
+          "answers": [
+            {
+              "ko": "여기",
+              "roman": "yeogi",
+              "en": "here"
+            }
+          ]
+        },
+        {
+          "id": "S5-08",
+          "type": "SHADOW",
+          "mode": "speech",
+          "event": "E",
+          "level": 3,
+          "skill": "말하기",
+          "skill_level": 1,
+          "ref": "voca:3e2a1ac0",
+          "prompt": {
+            "ko": "듣고 따라 말하세요.",
+            "en": "Listen and repeat."
+          },
+          "stimulus": {
+            "text": {
+              "ko": "여기 자리 있어요?",
+              "roman": "yeogi jari isseoyo?",
+              "en": "Is this seat taken?"
+            },
+            "audio": {
+              "ko": "여기 자리 있어요?",
+              "roman": "yeogi jari isseoyo?",
+              "en": "Is this seat taken?"
+            },
+            "audio_url": "u07-jaemin/d-02-r2",
+            "image_url": ""
+          },
+          "answers": [
+            {
+              "ko": "여기 자리 있어요?",
+              "roman": "yeogi jari isseoyo?",
+              "en": "Is this seat taken?"
+            }
+          ]
+        },
+        {
+          "id": "S5-09",
+          "type": "SHADOW",
+          "mode": "speech",
+          "event": "E",
+          "level": 3,
+          "skill": "말하기",
+          "skill_level": 1,
+          "ref": "voca:ec59536e",
+          "prompt": {
+            "ko": "듣고 따라 말하세요.",
+            "en": "Listen and repeat."
+          },
+          "stimulus": {
+            "text": {
+              "ko": "죄송해요. 몰랐어요.",
+              "roman": "joesonghaeyo. mollasseoyo.",
+              "en": "I'm sorry. I didn't know."
+            },
+            "audio": {
+              "ko": "죄송해요. 몰랐어요.",
+              "roman": "joesonghaeyo. mollasseoyo.",
+              "en": "I'm sorry. I didn't know."
+            },
+            "audio_url": "u07-jaemin/d-04-r2",
+            "image_url": ""
+          },
+          "answers": [
+            {
+              "ko": "죄송해요. 몰랐어요.",
+              "roman": "joesonghaeyo. mollasseoyo.",
+              "en": "I'm sorry. I didn't know."
+            }
+          ]
+        },
+        {
+          "id": "S5-10",
+          "type": "SHADOW",
+          "mode": "speech",
+          "event": "E",
+          "level": 3,
+          "skill": "말하기",
+          "skill_level": 1,
+          "ref": "voca:49caf517",
+          "prompt": {
+            "ko": "듣고 따라 말하세요.",
+            "en": "Listen and repeat."
+          },
+          "stimulus": {
+            "text": {
+              "ko": "저쪽에 앉을게요.",
+              "roman": "jeojjoge anjeulgeyo.",
+              "en": "I'll sit over there."
+            },
+            "audio": {
+              "ko": "저쪽에 앉을게요.",
+              "roman": "jeojjoge anjeulgeyo.",
+              "en": "I'll sit over there."
+            },
+            "audio_url": "u07-jaemin/d-06-r2",
+            "image_url": ""
+          },
+          "answers": [
+            {
+              "ko": "저쪽에 앉을게요.",
+              "roman": "jeojjoge anjeulgeyo.",
+              "en": "I'll sit over there."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "S6",
+      "order": 6,
+      "items": [
+        {
+          "id": "S6-01",
+          "type": "CLOZE",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "patt:f35fb813",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "여기 ___ 있어요?",
+            "roman": "yeogi ___ isseoyo?",
+            "en": "Is this seat taken?"
+          },
+          "tiles": [
+            {
+              "ko": "자리",
+              "roman": "jari",
+              "en": "seat"
+            },
+            {
+              "ko": "여행",
+              "roman": "yeohaeng",
+              "en": "travel"
+            },
+            {
+              "ko": "어제",
+              "roman": "eoje",
+              "en": "yesterday"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "자리",
+              "roman": "jari",
+              "en": "seat"
+            }
+          ]
+        },
+        {
+          "id": "S6-02",
+          "type": "CLOZE",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:1a89ae1f",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "감사합니다. ___ 오셨어요?",
+            "roman": "gamsahamnida. ___ osyeosseoyo?",
+            "en": "Thank you. Are you here on a trip?"
+          },
+          "tiles": [
+            {
+              "ko": "여행",
+              "roman": "yeohaeng",
+              "en": "travel"
+            },
+            {
+              "ko": "자리",
+              "roman": "jari",
+              "en": "seat"
+            },
+            {
+              "ko": "거기",
+              "roman": "geogi",
+              "en": "there"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "여행",
+              "roman": "yeohaeng",
+              "en": "travel"
+            }
+          ]
+        },
+        {
+          "id": "S6-03",
+          "type": "TRANSLATE_TO_KO",
+          "mode": "typing",
+          "event": "R",
+          "level": 4,
+          "skill": "쓰기",
+          "skill_level": 3,
+          "ref": "expr:a04464f0",
+          "prompt": {
+            "ko": "한국어로 쓰세요.",
+            "en": "Say this in Korean."
+          },
+          "stimulus": {
+            "audio_url": "u07-jaemin/s6-03-answer-r2",
+            "image_url": "",
+            "en": "It's okay."
+          },
+          "answers": [
+            {
+              "ko": "괜찮아요.",
+              "roman": "gwaenchanayo.",
+              "en": "It's okay."
+            },
+            {
+              "ko": "괜찮아요",
+              "roman": "gwaenchanayo"
+            }
+          ]
+        },
+        {
+          "id": "S6-04",
+          "type": "CLOZE",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:3e2a1ac0",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "아, 거기 제 ___",
+            "roman": "a, geogi je ___",
+            "en": "Oh, that's my seat."
+          },
+          "tiles": [
+            {
+              "ko": "자리예요.",
+              "roman": "jariyeyo."
+            },
+            {
+              "ko": "앉을게요.",
+              "roman": "anjeulgeyo."
+            },
+            {
+              "ko": "왔어요.",
+              "roman": "wasseoyo."
+            }
+          ],
+          "answers": [
+            {
+              "ko": "자리예요.",
+              "roman": "jariyeyo."
+            }
+          ]
+        },
+        {
+          "id": "S6-05",
+          "type": "TRANSLATE_TO_KO",
+          "mode": "typing",
+          "event": "R",
+          "level": 4,
+          "skill": "쓰기",
+          "skill_level": 3,
+          "ref": "voca:a4b7987b",
+          "prompt": {
+            "ko": "한국어로 쓰세요.",
+            "en": "Say this in Korean."
+          },
+          "stimulus": {
+            "audio_url": "u07-jaemin/s3-01-word-r2",
+            "image_url": "",
+            "en": "my (polite)"
+          },
+          "answers": [
+            {
+              "ko": "제",
+              "roman": "je",
+              "en": "my (polite)"
+            }
+          ]
+        },
+        {
+          "id": "S6-06",
+          "type": "TRANSLATE_TO_KO",
+          "mode": "typing",
+          "event": "R",
+          "level": 4,
+          "skill": "쓰기",
+          "skill_level": 3,
+          "ref": "voca:ff8c6497",
+          "prompt": {
+            "ko": "한국어로 쓰세요.",
+            "en": "Say this in Korean."
+          },
+          "stimulus": {
+            "audio_url": "u07-jaemin/s1-10-word-r2",
+            "image_url": "",
+            "en": "come"
+          },
+          "answers": [
+            {
+              "ko": "오다",
+              "roman": "oda",
+              "en": "come"
+            }
+          ]
+        },
+        {
+          "id": "S6-07",
+          "type": "CLOZE",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:ec59536e",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "___ 앉아도 돼요?",
+            "roman": "___ anjado dwaeyo?",
+            "en": "Can I sit here?"
+          },
+          "tiles": [
+            {
+              "ko": "여기",
+              "roman": "yeogi",
+              "en": "here"
+            },
+            {
+              "ko": "어제",
+              "roman": "eoje",
+              "en": "yesterday"
+            },
+            {
+              "ko": "여행",
+              "roman": "yeohaeng",
+              "en": "travel"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "여기",
+              "roman": "yeogi",
+              "en": "here"
+            }
+          ]
+        },
+        {
+          "id": "S6-08",
+          "type": "WORD_ORDER",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "patt:f35fb813",
+          "prompt": {
+            "ko": "문장을 만드세요.",
+            "en": "Build the sentence."
+          },
+          "stimulus": {
+            "audio_url": "u07-jaemin/d-02-r2",
+            "image_url": "",
+            "en": "Is this seat taken?"
+          },
+          "tiles": [
+            {
+              "ko": "여기",
+              "roman": "yeogi",
+              "en": "here"
+            },
+            {
+              "ko": "자리",
+              "roman": "jari",
+              "en": "seat"
+            },
+            {
+              "ko": "있어요?",
+              "roman": "isseoyo?"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "여기 자리 있어요?",
+              "roman": "yeogi jari isseoyo?",
+              "en": "Is this seat taken?"
+            }
+          ]
+        },
+        {
+          "id": "S6-09",
+          "type": "TRANSLATE_TO_KO",
+          "mode": "typing",
+          "event": "R",
+          "level": 4,
+          "skill": "쓰기",
+          "skill_level": 3,
+          "ref": "voca:fb6595ad",
+          "prompt": {
+            "ko": "한국어로 쓰세요.",
+            "en": "Say this in Korean."
+          },
+          "stimulus": {
+            "audio_url": "u07-jaemin/s3-07-word-r2",
+            "image_url": "",
+            "en": "become"
+          },
+          "answers": [
+            {
+              "ko": "되다",
+              "roman": "doeda",
+              "en": "become"
+            }
+          ]
+        },
+        {
+          "id": "S6-10",
+          "type": "SPEAK_WORD",
+          "mode": "speech",
+          "event": "R",
+          "level": 4,
+          "skill": "말하기",
+          "skill_level": 2,
+          "ref": "voca:1a89ae1f",
+          "prompt": {
+            "ko": "그림을 보고 말하세요.",
+            "en": "Say the word for the picture."
+          },
+          "stimulus": {
+            "audio_url": "u07-jaemin/s3-05-word-r2",
+            "image_brief": "travel - 한 컷으로 알아볼 수 있게",
+            "image_url": "content/images/items/travel.webp"
+          },
+          "answers": [
+            {
+              "ko": "여행",
+              "roman": "yeohaeng",
+              "en": "travel"
+            }
+          ]
+        },
+        {
+          "id": "S6-11",
+          "type": "CLOZE",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:97270e4b",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "___, 앉으세요.",
+            "roman": "___, anjeuseyo.",
+            "en": "Sure, go ahead."
+          },
+          "tiles": [
+            {
+              "ko": "네",
+              "roman": "ne",
+              "en": "yes"
+            },
+            {
+              "ko": "여기",
+              "roman": "yeogi",
+              "en": "here"
+            },
+            {
+              "ko": "이쪽",
+              "roman": "ijjok",
+              "en": "this way, over here"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "네",
+              "roman": "ne",
+              "en": "yes"
+            }
+          ]
+        },
+        {
+          "id": "S6-12",
+          "type": "TRANSLATE_TO_KO",
+          "mode": "typing",
+          "event": "R",
+          "level": 4,
+          "skill": "쓰기",
+          "skill_level": 3,
+          "ref": "voca:90ed435d",
+          "prompt": {
+            "ko": "한국어로 쓰세요.",
+            "en": "Say this in Korean."
+          },
+          "stimulus": {
+            "audio_url": "u07-jaemin/s3-04-word-r2",
+            "image_url": "",
+            "en": "thank you"
+          },
+          "answers": [
+            {
+              "ko": "감사합니다",
+              "roman": "gamsahamnida",
+              "en": "thank you"
+            }
+          ]
+        },
+        {
+          "id": "S6-13",
+          "type": "CLOZE",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:a4b7987b",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "네, ___ 가방이에요.",
+            "roman": "ne, ___ gabangieyo.",
+            "en": "Yes, that's my bag."
+          },
+          "tiles": [
+            {
+              "ko": "제",
+              "roman": "je",
+              "en": "my (polite)"
+            },
+            {
+              "ko": "어제",
+              "roman": "eoje",
+              "en": "yesterday"
+            },
+            {
+              "ko": "거기",
+              "roman": "geogi",
+              "en": "there"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "제",
+              "roman": "je",
+              "en": "my (polite)"
+            }
+          ]
+        },
+        {
+          "id": "S6-14",
+          "type": "TRANSLATE_TO_KO",
+          "mode": "typing",
+          "event": "R",
+          "level": 4,
+          "skill": "쓰기",
+          "skill_level": 3,
+          "ref": "voca:1a89ae1f",
+          "prompt": {
+            "ko": "한국어로 쓰세요.",
+            "en": "Say this in Korean."
+          },
+          "stimulus": {
+            "audio_url": "u07-jaemin/s3-05-word-r2",
+            "image_url": "",
+            "en": "travel"
+          },
+          "answers": [
+            {
+              "ko": "여행",
+              "roman": "yeohaeng",
+              "en": "travel"
+            }
+          ]
+        },
+        {
+          "id": "S6-15",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:ec5d9a98",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "네, 일주일 있어요.",
+              "roman": "ne, iljuil isseoyo.",
+              "en": "Yes, I'm here for a week."
+            },
+            "audio_url": "u07-jaemin/d-12-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "네, 어제 왔어요.",
+              "roman": "ne, eoje wasseoyo.",
+              "en": "Yes, I got here yesterday.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "저쪽에 앉을게요.",
+              "roman": "jeojjoge anjeulgeyo.",
+              "en": "I'll sit over there.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "여기 앉아도 돼요?",
+              "roman": "yeogi anjado dwaeyo?",
+              "en": "Can I sit here?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "네, 일주일 있어요.",
+              "roman": "ne, iljuil isseoyo.",
+              "en": "Yes, I'm here for a week.",
+              "correct": true
+            }
+          ]
+        },
+        {
+          "id": "S6-16",
+          "type": "WORD_ORDER",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:fb6595ad",
+          "prompt": {
+            "ko": "문장을 만드세요.",
+            "en": "Build the sentence."
+          },
+          "stimulus": {
+            "audio_url": "u07-jaemin/d-09-r2",
+            "image_url": "",
+            "en": "Have a good trip."
+          },
+          "tiles": [
+            {
+              "ko": "좋은",
+              "roman": "joeun"
+            },
+            {
+              "ko": "여행",
+              "roman": "yeohaeng",
+              "en": "travel"
+            },
+            {
+              "ko": "되세요.",
+              "roman": "doeseyo."
+            }
+          ],
+          "answers": [
+            {
+              "ko": "좋은 여행 되세요.",
+              "roman": "joeun yeohaeng doeseyo.",
+              "en": "Have a good trip."
+            }
+          ]
+        },
+        {
+          "id": "S6-17",
+          "type": "WORD_ORDER",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "gram:06ef5caf",
+          "prompt": {
+            "ko": "문장을 만드세요.",
+            "en": "Build the sentence."
+          },
+          "stimulus": {
+            "audio_url": "u07-jaemin/d-10-r2",
+            "image_url": "",
+            "en": "Can I sit here?"
+          },
+          "tiles": [
+            {
+              "ko": "여기",
+              "roman": "yeogi",
+              "en": "here"
+            },
+            {
+              "ko": "앉아도",
+              "roman": "anjado"
+            },
+            {
+              "ko": "돼요?",
+              "roman": "dwaeyo?"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "여기 앉아도 돼요?",
+              "roman": "yeogi anjado dwaeyo?",
+              "en": "Can I sit here?"
+            }
+          ]
+        },
+        {
+          "id": "S6-18",
+          "type": "TRANSLATE_TO_KO",
+          "mode": "typing",
+          "event": "R",
+          "level": 4,
+          "skill": "쓰기",
+          "skill_level": 3,
+          "ref": "voca:ec5d9a98",
+          "prompt": {
+            "ko": "한국어로 쓰세요.",
+            "en": "Say this in Korean."
+          },
+          "stimulus": {
+            "audio_url": "u07-jaemin/s3-09-word-r2",
+            "image_url": "",
+            "en": "one week"
+          },
+          "answers": [
+            {
+              "ko": "일주일",
+              "roman": "iljuil",
+              "en": "one week"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "S7",
+      "order": 7,
+      "items": [
+        {
+          "id": "S7-01",
+          "type": "ROLE_LINE",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "읽기",
+          "skill_level": 2,
+          "ref": "voca:856e8566",
+          "prompt": {
+            "ko": "뭐라고 말할까요?",
+            "en": "What do you say?"
+          },
+          "context": {
+            "ko": "괜찮아요.",
+            "roman": "gwaenchanayo.",
+            "en": "It's okay."
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "죄송해요. 몰랐어요.",
+              "roman": "joesonghaeyo. mollasseoyo.",
+              "en": "I'm sorry. I didn't know.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "저쪽에 앉을게요.",
+              "roman": "jeojjoge anjeulgeyo.",
+              "en": "I'll sit over there.",
+              "correct": true
+            },
+            {
+              "id": "o3",
+              "ko": "여기 자리 있어요?",
+              "roman": "yeogi jari isseoyo?",
+              "en": "Is this seat taken?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "이 자리에서는 「저쪽에 앉을게요.」라고 해요.",
+              "en": "Here you say \"I'll sit over there.\"."
+            }
+          }
+        },
+        {
+          "id": "S7-02",
+          "type": "REPLY_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 2,
+          "ref": "voca:d5fbbbce",
+          "prompt": {
+            "ko": "뭐라고 대답할까요?",
+            "en": "How do you reply?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "감사합니다. 여행 오셨어요?",
+              "roman": "gamsahamnida. yeohaeng osyeosseoyo?",
+              "en": "Thank you. Are you here on a trip?"
+            },
+            "audio_url": "u07-jaemin/d-07-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "죄송해요. 몰랐어요.",
+              "roman": "joesonghaeyo. mollasseoyo.",
+              "en": "I'm sorry. I didn't know.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "여기 앉아도 돼요?",
+              "roman": "yeogi anjado dwaeyo?",
+              "en": "Can I sit here?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "네, 어제 왔어요.",
+              "roman": "ne, eoje wasseoyo.",
+              "en": "Yes, I got here yesterday.",
+              "correct": true
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "이 자리에서는 「네, 어제 왔어요.」라고 해요.",
+              "en": "Here you say \"Yes, I got here yesterday.\"."
+            }
+          }
+        },
+        {
+          "id": "S7-03",
+          "type": "ROLE_LINE",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "읽기",
+          "skill_level": 2,
+          "ref": "gram:06ef5caf",
+          "prompt": {
+            "ko": "뭐라고 말할까요?",
+            "en": "What do you say?"
+          },
+          "context": {
+            "ko": "창가 바로 옆 테이블이 비어 있다. 그 자리에 앉아도 되는지 묻고 싶다.",
+            "roman": "changga baro yeop teibeuri bieo itda. geu jarie anjado doeneunji mutgo sipda.",
+            "en": "The table right next to the window is free. You want to ask if you can sit there."
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "여기 앉아도 돼요?",
+              "roman": "yeogi anjado dwaeyo?",
+              "en": "Can I sit here?",
+              "correct": true
+            },
+            {
+              "id": "o2",
+              "ko": "네, 어제 왔어요.",
+              "roman": "ne, eoje wasseoyo.",
+              "en": "Yes, I got here yesterday.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "저쪽에 앉을게요.",
+              "roman": "jeojjoge anjeulgeyo.",
+              "en": "I'll sit over there.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "이 자리에서는 「여기 앉아도 돼요?」라고 해요.",
+              "en": "Here you say \"Can I sit here?\"."
+            },
+            "wrong": {
+              "ko": "이번에는 창가 바로 옆 테이블이 비어 있다. 그 자리에 앉아도 되는지 묻고 싶어서 「저쪽에 앉을게요.」는 안 맞아요.",
+              "en": "This time The table right next to the window is free. You want to ask if you can sit there, so \"I'll sit over there.\" does not fit."
+            },
+            "wrong_option": "o3"
+          }
+        },
+        {
+          "id": "S7-04",
+          "type": "REPLY_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 2,
+          "ref": "voca:3e2a1ac0",
+          "prompt": {
+            "ko": "뭐라고 대답할까요?",
+            "en": "How do you reply?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "아, 거기 제 자리예요.",
+              "roman": "a, geogi je jariyeyo.",
+              "en": "Oh, that's my seat."
+            },
+            "audio_url": "u07-jaemin/d-01-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "영수증 드릴까요?",
+              "roman": "yeongsujeung deurilkkayo?",
+              "en": "Would you like the receipt?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "여기 자리 있어요?",
+              "roman": "yeogi jari isseoyo?",
+              "en": "Is this seat taken?",
+              "correct": true
+            },
+            {
+              "id": "o3",
+              "ko": "봉투 드릴까요?",
+              "roman": "bongtu deurilkkayo?",
+              "en": "Do you need a bag?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "이 자리에서는 「여기 자리 있어요?」라고 해요.",
+              "en": "Here you say \"Is this seat taken?\"."
+            }
+          }
+        },
+        {
+          "id": "S7-05",
+          "type": "SHADOW",
+          "mode": "speech",
+          "event": "E",
+          "level": 3,
+          "skill": "말하기",
+          "skill_level": 1,
+          "ref": "voca:856e8566",
+          "prompt": {
+            "ko": "듣고 따라 말하세요.",
+            "en": "Listen and repeat."
+          },
+          "stimulus": {
+            "text": {
+              "ko": "저쪽에 앉을게요.",
+              "roman": "jeojjoge anjeulgeyo.",
+              "en": "I'll sit over there."
+            },
+            "audio": {
+              "ko": "저쪽에 앉을게요.",
+              "roman": "jeojjoge anjeulgeyo.",
+              "en": "I'll sit over there."
+            },
+            "audio_url": "u07-jaemin/d-06-r2",
+            "image_url": ""
+          },
+          "answers": [
+            {
+              "ko": "저쪽에 앉을게요.",
+              "roman": "jeojjoge anjeulgeyo.",
+              "en": "I'll sit over there."
+            }
+          ]
+        },
+        {
+          "id": "S7-06",
+          "type": "SHADOW",
+          "mode": "speech",
+          "event": "E",
+          "level": 3,
+          "skill": "말하기",
+          "skill_level": 1,
+          "ref": "voca:3e2a1ac0",
+          "prompt": {
+            "ko": "듣고 따라 말하세요.",
+            "en": "Listen and repeat."
+          },
+          "stimulus": {
+            "text": {
+              "ko": "네, 어제 왔어요.",
+              "roman": "ne, eoje wasseoyo.",
+              "en": "Yes, I got here yesterday."
+            },
+            "audio": {
+              "ko": "네, 어제 왔어요.",
+              "roman": "ne, eoje wasseoyo.",
+              "en": "Yes, I got here yesterday."
+            },
+            "audio_url": "u07-jaemin/d-08-r2",
+            "image_url": ""
+          },
+          "answers": [
+            {
+              "ko": "네, 어제 왔어요.",
+              "roman": "ne, eoje wasseoyo.",
+              "en": "Yes, I got here yesterday."
+            }
+          ]
+        },
+        {
+          "id": "S7-07",
+          "type": "SHADOW",
+          "mode": "speech",
+          "event": "E",
+          "level": 3,
+          "skill": "말하기",
+          "skill_level": 1,
+          "ref": "voca:49caf517",
+          "prompt": {
+            "ko": "듣고 따라 말하세요.",
+            "en": "Listen and repeat."
+          },
+          "stimulus": {
+            "text": {
+              "ko": "죄송해요. 몰랐어요.",
+              "roman": "joesonghaeyo. mollasseoyo.",
+              "en": "I'm sorry. I didn't know."
+            },
+            "audio": {
+              "ko": "죄송해요. 몰랐어요.",
+              "roman": "joesonghaeyo. mollasseoyo.",
+              "en": "I'm sorry. I didn't know."
+            },
+            "audio_url": "u07-jaemin/d-04-r2",
+            "image_url": ""
+          },
+          "answers": [
+            {
+              "ko": "죄송해요. 몰랐어요.",
+              "roman": "joesonghaeyo. mollasseoyo.",
+              "en": "I'm sorry. I didn't know."
+            }
+          ]
+        },
+        {
+          "id": "S7-08",
+          "type": "SHADOW",
+          "mode": "speech",
+          "event": "E",
+          "level": 3,
+          "skill": "말하기",
+          "skill_level": 1,
+          "ref": "voca:3e2a1ac0",
+          "prompt": {
+            "ko": "듣고 따라 말하세요.",
+            "en": "Listen and repeat."
+          },
+          "stimulus": {
+            "text": {
+              "ko": "여기 자리 있어요?",
+              "roman": "yeogi jari isseoyo?",
+              "en": "Is this seat taken?"
+            },
+            "audio": {
+              "ko": "여기 자리 있어요?",
+              "roman": "yeogi jari isseoyo?",
+              "en": "Is this seat taken?"
+            },
+            "audio_url": "u07-jaemin/d-02-r2",
+            "image_url": ""
+          },
+          "answers": [
+            {
+              "ko": "여기 자리 있어요?",
+              "roman": "yeogi jari isseoyo?",
+              "en": "Is this seat taken?"
+            }
+          ]
+        },
+        {
+          "id": "S7-09",
+          "type": "SHADOW",
+          "mode": "speech",
+          "event": "E",
+          "level": 3,
+          "skill": "말하기",
+          "skill_level": 1,
+          "ref": "voca:d5fbbbce",
+          "prompt": {
+            "ko": "듣고 따라 말하세요.",
+            "en": "Listen and repeat."
+          },
+          "stimulus": {
+            "text": {
+              "ko": "여기 앉아도 돼요?",
+              "roman": "yeogi anjado dwaeyo?",
+              "en": "Can I sit here?"
+            },
+            "audio": {
+              "ko": "여기 앉아도 돼요?",
+              "roman": "yeogi anjado dwaeyo?",
+              "en": "Can I sit here?"
+            },
+            "audio_url": "u07-jaemin/d-10-r2",
+            "image_url": ""
+          },
+          "answers": [
+            {
+              "ko": "여기 앉아도 돼요?",
+              "roman": "yeogi anjado dwaeyo?",
+              "en": "Can I sit here?"
+            }
+          ]
+        },
+        {
+          "id": "S7-10",
+          "type": "SHADOW",
+          "mode": "speech",
+          "event": "E",
+          "level": 3,
+          "skill": "말하기",
+          "skill_level": 1,
+          "ref": "voca:856e8566",
+          "prompt": {
+            "ko": "듣고 따라 말하세요.",
+            "en": "Listen and repeat."
+          },
+          "stimulus": {
+            "text": {
+              "ko": "네, 일주일 있어요.",
+              "roman": "ne, iljuil isseoyo.",
+              "en": "Yes, I'm here for a week."
+            },
+            "audio": {
+              "ko": "네, 일주일 있어요.",
+              "roman": "ne, iljuil isseoyo.",
+              "en": "Yes, I'm here for a week."
+            },
+            "audio_url": "u07-jaemin/d-12-r2",
+            "image_url": ""
+          },
+          "answers": [
+            {
+              "ko": "네, 일주일 있어요.",
+              "roman": "ne, iljuil isseoyo.",
+              "en": "Yes, I'm here for a week."
+            }
+          ]
+        },
+        {
+          "id": "S7-11",
+          "type": "SHADOW",
+          "mode": "speech",
+          "event": "E",
+          "level": 3,
+          "skill": "말하기",
+          "skill_level": 1,
+          "ref": "voca:1ff65347",
+          "prompt": {
+            "ko": "듣고 따라 말하세요.",
+            "en": "Listen and repeat."
+          },
+          "stimulus": {
+            "text": {
+              "ko": "네, 제 가방이에요.",
+              "roman": "ne, je gabangieyo.",
+              "en": "Yes, that's my bag."
+            },
+            "audio": {
+              "ko": "네, 제 가방이에요.",
+              "roman": "ne, je gabangieyo.",
+              "en": "Yes, that's my bag."
+            },
+            "audio_url": "u07-jaemin/d-03-r2",
+            "image_url": ""
+          },
+          "answers": [
+            {
+              "ko": "네, 제 가방이에요.",
+              "roman": "ne, je gabangieyo.",
+              "en": "Yes, that's my bag."
+            }
+          ]
+        },
+        {
+          "id": "S7-12",
+          "type": "ROLE_LINE",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "읽기",
+          "skill_level": 2,
+          "ref": "voca:ec5d9a98",
+          "prompt": {
+            "ko": "뭐라고 말할까요?",
+            "en": "What do you say?"
+          },
+          "context": {
+            "ko": "언제 왔는지보다 얼마나 있는지 말하고 싶다.",
+            "roman": "eonje wanneunjiboda eolmana inneunji malhago sipda.",
+            "en": "You'd rather say how long you're staying than when you arrived."
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "저쪽에 앉을게요.",
+              "roman": "jeojjoge anjeulgeyo.",
+              "en": "I'll sit over there.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "네, 일주일 있어요.",
+              "roman": "ne, iljuil isseoyo.",
+              "en": "Yes, I'm here for a week.",
+              "correct": true
+            },
+            {
+              "id": "o3",
+              "ko": "네, 어제 왔어요.",
+              "roman": "ne, eoje wasseoyo.",
+              "en": "Yes, I got here yesterday.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "이 자리에서는 「네, 일주일 있어요.」라고 해요.",
+              "en": "Here you say \"Yes, I'm here for a week.\"."
+            },
+            "wrong": {
+              "ko": "이번에는 언제 왔는지보다 얼마나 있는지 말하고 싶어서 「네, 어제 왔어요.」는 안 맞아요.",
+              "en": "This time You'd rather say how long you're staying than when you arrived, so \"Yes, I got here yesterday.\" does not fit."
+            },
+            "wrong_option": "o3"
+          }
+        }
+      ]
+    },
+    {
+      "id": "S8",
+      "order": 8,
+      "items": [
+        {
+          "id": "S8-01",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:3e2a1ac0",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "아, 거기 제 자리예요.",
+              "roman": "a, geogi je jariyeyo.",
+              "en": "Oh, that's my seat."
+            },
+            "audio_url": "u07-jaemin/d-01-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "괜찮아요.",
+              "roman": "gwaenchanayo.",
+              "en": "No thanks. / I'm fine.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "감사합니다. 여행 오셨어요?",
+              "roman": "gamsahamnida. yeohaeng osyeosseoyo?",
+              "en": "Thank you. Are you here on a trip?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "여기 자리 있어요?",
+              "roman": "yeogi jari isseoyo?",
+              "en": "Is this seat taken?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "아, 거기 제 자리예요.",
+              "roman": "a, geogi je jariyeyo.",
+              "en": "Oh, that's my seat.",
+              "correct": true
+            }
+          ]
+        },
+        {
+          "id": "S8-02",
+          "type": "TRANSLATE_TO_EN",
+          "mode": "choice",
+          "event": "R",
+          "level": 1,
+          "skill": "읽기",
+          "skill_level": 1,
+          "ref": "expr:a04464f0",
+          "prompt": {
+            "ko": "무슨 뜻인가요?",
+            "en": "What does this mean?"
+          },
+          "stimulus": {
+            "text": {
+              "ko": "괜찮아요.",
+              "roman": "gwaenchanayo."
+            },
+            "audio_url": "u07-jaemin/s6-03-answer-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "Sure, go ahead.",
+              "roman": "Sure, go ahead.",
+              "en": "Sure, go ahead.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "I'll sit over there.",
+              "roman": "I'll sit over there.",
+              "en": "I'll sit over there.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "It's okay.",
+              "roman": "It's okay.",
+              "en": "It's okay.",
+              "correct": true
+            },
+            {
+              "id": "o4",
+              "ko": "Can I sit here?",
+              "roman": "Can I sit here?",
+              "en": "Can I sit here?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ]
+        },
+        {
+          "id": "S8-03",
+          "type": "WORD_ORDER",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:d5fbbbce",
+          "prompt": {
+            "ko": "문장을 만드세요.",
+            "en": "Build the sentence."
+          },
+          "stimulus": {
+            "audio_url": "u07-jaemin/d-08-r2",
+            "image_url": "",
+            "en": "Yes, I got here yesterday."
+          },
+          "tiles": [
+            {
+              "ko": "네,",
+              "roman": "ne,"
+            },
+            {
+              "ko": "어제",
+              "roman": "eoje",
+              "en": "yesterday"
+            },
+            {
+              "ko": "왔어요.",
+              "roman": "wasseoyo."
+            }
+          ],
+          "answers": [
+            {
+              "ko": "네, 어제 왔어요.",
+              "roman": "ne, eoje wasseoyo.",
+              "en": "Yes, I got here yesterday."
+            }
+          ]
+        },
+        {
+          "id": "S8-04",
+          "type": "DICTATION",
+          "mode": "typing",
+          "event": "R",
+          "level": 4,
+          "skill": "쓰기",
+          "skill_level": 2,
+          "ref": "voca:856e8566",
+          "prompt": {
+            "ko": "들은 대로 쓰세요.",
+            "en": "Type what you hear."
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "저쪽에",
+              "roman": "jeojjoge"
+            },
+            "audio_url": "u07-jaemin/s8-04-stim-r2",
+            "image_url": ""
+          },
+          "answers": [
+            {
+              "ko": "저쪽에",
+              "roman": "jeojjoge"
+            }
+          ]
+        },
+        {
+          "id": "S8-05",
+          "type": "TRANSLATE_TO_EN",
+          "mode": "choice",
+          "event": "R",
+          "level": 1,
+          "skill": "읽기",
+          "skill_level": 1,
+          "ref": "voca:ff8c6497",
+          "prompt": {
+            "ko": "무슨 뜻인가요?",
+            "en": "What does this mean?"
+          },
+          "stimulus": {
+            "text": {
+              "ko": "오다",
+              "roman": "oda"
+            },
+            "audio_url": "u07-jaemin/s1-10-word-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "yes",
+              "roman": "yes",
+              "en": "yes",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "travel",
+              "roman": "travel",
+              "en": "travel",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "seat",
+              "roman": "seat",
+              "en": "seat",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "come",
+              "roman": "come",
+              "en": "come",
+              "correct": true
+            }
+          ]
+        },
+        {
+          "id": "S8-06",
+          "type": "CLOZE",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:97270e4b",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "___, 일주일 있어요.",
+            "roman": "___, iljuil isseoyo.",
+            "en": "Yes, I'm here for a week."
+          },
+          "tiles": [
+            {
+              "ko": "네",
+              "roman": "ne",
+              "en": "yes"
+            },
+            {
+              "ko": "이쪽",
+              "roman": "ijjok",
+              "en": "this way, over here"
+            },
+            {
+              "ko": "어제",
+              "roman": "eoje",
+              "en": "yesterday"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "네",
+              "roman": "ne",
+              "en": "yes"
+            }
+          ]
+        },
+        {
+          "id": "S8-07",
+          "type": "TRANSLATE_TO_KO",
+          "mode": "typing",
+          "event": "R",
+          "level": 4,
+          "skill": "쓰기",
+          "skill_level": 3,
+          "ref": "voca:5edf2b01",
+          "prompt": {
+            "ko": "한국어로 쓰세요.",
+            "en": "Say this in Korean."
+          },
+          "stimulus": {
+            "audio_url": "u07-jaemin/s3-06-word-r2",
+            "image_url": "",
+            "en": "good"
+          },
+          "answers": [
+            {
+              "ko": "좋다",
+              "roman": "jota",
+              "en": "good"
+            }
+          ]
+        },
+        {
+          "id": "S8-08",
+          "type": "TRANSLATE_TO_EN",
+          "mode": "choice",
+          "event": "R",
+          "level": 1,
+          "skill": "읽기",
+          "skill_level": 1,
+          "ref": "patt:f35fb813",
+          "prompt": {
+            "ko": "무슨 뜻인가요?",
+            "en": "What does this mean?"
+          },
+          "stimulus": {
+            "text": {
+              "ko": "{명사} 있어요?",
+              "roman": "{명사} isseoyo?"
+            },
+            "audio_url": "",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "Is there ~? / Do you have ~?",
+              "roman": "Is there ~? / Do you have ~?",
+              "en": "Is there ~? / Do you have ~?",
+              "correct": true
+            },
+            {
+              "id": "o2",
+              "ko": "Yes, that's my bag.",
+              "roman": "Yes, that's my bag.",
+              "en": "Yes, that's my bag.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "It's okay.",
+              "roman": "It's okay.",
+              "en": "It's okay.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "No thanks. / I'm fine.",
+              "roman": "No thanks. / I'm fine.",
+              "en": "No thanks. / I'm fine.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ]
+        },
+        {
+          "id": "S8-09",
+          "type": "CLOZE",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:1a89ae1f",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "좋은 ___ 되세요.",
+            "roman": "joeun ___ doeseyo.",
+            "en": "Have a good trip."
+          },
+          "tiles": [
+            {
+              "ko": "여행",
+              "roman": "yeohaeng",
+              "en": "travel"
+            },
+            {
+              "ko": "거기",
+              "roman": "geogi",
+              "en": "there"
+            },
+            {
+              "ko": "일주일",
+              "roman": "iljuil",
+              "en": "one week"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "여행",
+              "roman": "yeohaeng",
+              "en": "travel"
+            }
+          ]
+        },
+        {
+          "id": "S8-10",
+          "type": "TRANSLATE_TO_KO",
+          "mode": "typing",
+          "event": "R",
+          "level": 4,
+          "skill": "쓰기",
+          "skill_level": 3,
+          "ref": "voca:49caf517",
+          "prompt": {
+            "ko": "한국어로 쓰세요.",
+            "en": "Say this in Korean."
+          },
+          "stimulus": {
+            "audio_url": "u07-jaemin/s1-03-word-r2",
+            "image_url": "",
+            "en": "sorry"
+          },
+          "answers": [
+            {
+              "ko": "죄송하다",
+              "roman": "joesonghada",
+              "en": "sorry"
+            }
+          ]
+        },
+        {
+          "id": "S8-11",
+          "type": "DICTATION",
+          "mode": "typing",
+          "event": "R",
+          "level": 4,
+          "skill": "쓰기",
+          "skill_level": 2,
+          "ref": "voca:03c8759c",
+          "prompt": {
+            "ko": "들은 대로 쓰세요.",
+            "en": "Type what you hear."
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "거기",
+              "roman": "geogi",
+              "en": "there"
+            },
+            "audio_url": "u07-jaemin/s1-11-word-r2",
+            "image_url": ""
+          },
+          "answers": [
+            {
+              "ko": "거기",
+              "roman": "geogi",
+              "en": "there"
+            }
+          ]
+        },
+        {
+          "id": "S8-12",
+          "type": "LISTEN_BUILD",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "듣기",
+          "skill_level": 3,
+          "ref": "gram:06ef5caf",
+          "prompt": {
+            "ko": "듣고 문장을 만드세요.",
+            "en": "Listen and build the sentence."
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "여기 앉아도 돼요?",
+              "roman": "yeogi anjado dwaeyo?",
+              "en": "Can I sit here?"
+            },
+            "audio_url": "u07-jaemin/d-10-r2",
+            "image_url": ""
+          },
+          "tiles": [
+            {
+              "ko": "여기",
+              "roman": "yeogi",
+              "en": "here"
+            },
+            {
+              "ko": "앉아도",
+              "roman": "anjado"
+            },
+            {
+              "ko": "돼요?",
+              "roman": "dwaeyo?"
+            },
+            {
+              "ko": "감사합니다.",
+              "roman": "gamsahamnida."
+            },
+            {
+              "ko": "죄송해요.",
+              "roman": "joesonghaeyo."
+            }
+          ],
+          "answers": [
+            {
+              "ko": "여기 앉아도 돼요?",
+              "roman": "yeogi anjado dwaeyo?",
+              "en": "Can I sit here?"
+            }
+          ]
+        },
+        {
+          "id": "S8-13",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:d5fbbbce",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "네, 어제 왔어요.",
+              "roman": "ne, eoje wasseoyo.",
+              "en": "Yes, I got here yesterday."
+            },
+            "audio_url": "u07-jaemin/d-08-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "죄송해요. 몰랐어요.",
+              "roman": "joesonghaeyo. mollasseoyo.",
+              "en": "I'm sorry. I didn't know.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "네, 일주일 있어요.",
+              "roman": "ne, iljuil isseoyo.",
+              "en": "Yes, I'm here for a week.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "네, 어제 왔어요.",
+              "roman": "ne, eoje wasseoyo.",
+              "en": "Yes, I got here yesterday.",
+              "correct": true
+            },
+            {
+              "id": "o4",
+              "ko": "좋은 여행 되세요.",
+              "roman": "joeun yeohaeng doeseyo.",
+              "en": "Have a good trip.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ]
+        },
+        {
+          "id": "S8-14",
+          "type": "SPEAK_WORD",
+          "mode": "speech",
+          "event": "R",
+          "level": 4,
+          "skill": "말하기",
+          "skill_level": 2,
+          "ref": "voca:ec5d9a98",
+          "prompt": {
+            "ko": "그림을 보고 말하세요.",
+            "en": "Say the word for the picture."
+          },
+          "stimulus": {
+            "audio_url": "u07-jaemin/s3-09-word-r2",
+            "image_brief": "one week - 한 컷으로 알아볼 수 있게",
+            "image_url": "content/images/items/week.webp"
+          },
+          "answers": [
+            {
+              "ko": "일주일",
+              "roman": "iljuil",
+              "en": "one week"
+            }
+          ]
+        },
+        {
+          "id": "S8-15",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:1ff65347",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "네, 제 가방이에요.",
+              "roman": "ne, je gabangieyo.",
+              "en": "Yes, that's my bag."
+            },
+            "audio_url": "u07-jaemin/d-03-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "좋은 여행 되세요.",
+              "roman": "joeun yeohaeng doeseyo.",
+              "en": "Have a good trip.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "죄송해요. 몰랐어요.",
+              "roman": "joesonghaeyo. mollasseoyo.",
+              "en": "I'm sorry. I didn't know.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "네, 앉으세요.",
+              "roman": "ne, anjeuseyo.",
+              "en": "Sure, go ahead.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "네, 제 가방이에요.",
+              "roman": "ne, je gabangieyo.",
+              "en": "Yes, that's my bag.",
+              "correct": true
+            }
+          ]
+        },
+        {
+          "id": "S8-16",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:90ed435d",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "감사합니다. 여행 오셨어요?",
+              "roman": "gamsahamnida. yeohaeng osyeosseoyo?",
+              "en": "Thank you. Are you here on a trip?"
+            },
+            "audio_url": "u07-jaemin/d-07-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "감사합니다. 여행 오셨어요?",
+              "roman": "gamsahamnida. yeohaeng osyeosseoyo?",
+              "en": "Thank you. Are you here on a trip?",
+              "correct": true
+            },
+            {
+              "id": "o2",
+              "ko": "여기 자리 있어요?",
+              "roman": "yeogi jari isseoyo?",
+              "en": "Is this seat taken?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "죄송해요. 몰랐어요.",
+              "roman": "joesonghaeyo. mollasseoyo.",
+              "en": "I'm sorry. I didn't know.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "네, 일주일 있어요.",
+              "roman": "ne, iljuil isseoyo.",
+              "en": "Yes, I'm here for a week.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ]
+        },
+        {
+          "id": "S8-17",
+          "type": "LISTEN_BUILD",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "듣기",
+          "skill_level": 3,
+          "ref": "voca:ec5d9a98",
+          "prompt": {
+            "ko": "듣고 문장을 만드세요.",
+            "en": "Listen and build the sentence."
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "네, 일주일 있어요.",
+              "roman": "ne, iljuil isseoyo.",
+              "en": "Yes, I'm here for a week."
+            },
+            "audio_url": "u07-jaemin/d-12-r2",
+            "image_url": ""
+          },
+          "tiles": [
+            {
+              "ko": "네,",
+              "roman": "ne,"
+            },
+            {
+              "ko": "일주일",
+              "roman": "iljuil",
+              "en": "one week"
+            },
+            {
+              "ko": "있어요.",
+              "roman": "isseoyo."
+            },
+            {
+              "ko": "있어요?",
+              "roman": "isseoyo?"
+            },
+            {
+              "ko": "앉을게요.",
+              "roman": "anjeulgeyo."
+            }
+          ],
+          "answers": [
+            {
+              "ko": "네, 일주일 있어요.",
+              "roman": "ne, iljuil isseoyo.",
+              "en": "Yes, I'm here for a week."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "CULT",
+      "order": 9,
+      "items": [
+        {
+          "id": "CULT-01",
+          "type": "CULTURE_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "context": {
+            "ko": "K-양심",
+            "roman": "K-yangsim",
+            "en": "\"K-conscience\""
+          },
+          "stimulus": {
+            "text": {
+              "ko": "한국 카페에서는 노트북이나 휴대폰, 가방을 테이블에 두고 주문하러 가거나 잠깐 나가는 사람이 많아요. 그래도 남의 물건을 가져가는 일이 드물어서 「K-양심」이라는 말이 생겼어요.",
+              "roman": "hanguk kapeeseoneun noteubugina hyudaepon, gabangeul teibeure dugo jumunhareo gageona jamkkan naganeun sarami manayo. geuraedo namui mulgeoneul gajyeoganeun iri deumureoseo 「K-yangsim」iraneun mari saenggyeosseoyo.",
+              "en": "In Korean cafes, lots of people leave a laptop, phone or bag on the table while they go order or step out for a moment. Things rarely go missing, which gave rise to the phrase \"K-conscience.\""
+            },
+            "audio_url": "",
+            "image_url": "content/images/u07-jaemin/cult-u07-yangsim.webp"
+          },
+          "feedback": {
+            "correct": {
+              "ko": "빈자리처럼 보여도 물건이 있으면 누가 맡아 둔 자리예요. 「여기 자리 있어요?」라고 물어보세요. 단, 자전거는 예외예요. 자물쇠 없이 두면 없어지는 일이 잦아요.",
+              "en": "If a seat looks empty but has someone's things on it, it's taken. Ask, \"Is this seat taken?\" Bikes are the exception, though. Leave one unlocked and it often disappears."
+            }
+          }
+        },
+        {
+          "id": "CULT-02",
+          "type": "CULTURE_CARD",
+          "mode": "card",
+          "event": "E",
+          "level": 0,
+          "skill": "노출",
+          "skill_level": 0,
+          "context": {
+            "ko": "카공족",
+            "roman": "kagongjok",
+            "en": "\"Kagong-jok\" (cafe studiers)"
+          },
+          "stimulus": {
+            "text": {
+              "ko": "카페에서 공부하거나 노트북으로 일하는 사람을 「카공족」이라고 불러요. 음료 한 잔으로 오래 앉아 있거나 콘센트 자리를 오래 쓰면 가게가 손해라는 말도 있어서, 오래 머무는 손님에게 안내문을 붙이는 카페도 있어요. 반대로 카공족을 반기는 카페도 있어요.",
+              "roman": "kapeeseo gongbuhageona noteubugeuro ilhaneun sarameul 「kagongjok」irago bulleoyo. eumryo han janeuro orae anja itgeona konsenteu jarireul orae sseumyeon gagega sonhaeraneun maldo isseoseo, orae meomuneun sonnimege annaemuneul butineun kapedo isseoyo. bandaero kagongjogeul bangineun kapedo isseoyo.",
+              "en": "People who study or work on laptops in cafes are called \"kagong-jok.\" Some say sitting for hours on one drink or hogging an outlet hurts the shop, so some cafes post notices for long-staying customers. Others welcome them."
+            },
+            "audio_url": "",
+            "image_url": "content/images/u07-jaemin/cult-u07-kagong.webp"
+          },
+          "feedback": {
+            "correct": {
+              "ko": "오래 있을 거면 음료를 하나 더 시키거나 붐빌 때 자리를 비켜 주면 센스 있는 손님이에요. 사장님도 좋아할 거예요.",
+              "en": "Staying a while? Ordering another drink or freeing up your seat when it gets busy makes you a considerate customer. The owner will appreciate it."
+            }
+          }
+        },
+        {
+          "id": "CULT-03",
+          "type": "CULTURE_CHECK",
+          "mode": "choice",
+          "event": "R",
+          "level": 1,
+          "skill": "읽기",
+          "skill_level": 1,
+          "prompt": {
+            "ko": "맞는 것을 고르세요.",
+            "en": "Pick the right one."
+          },
+          "context": {
+            "ko": "사람은 없고 테이블에 노트북만 있어요. 무슨 뜻일까요?",
+            "roman": "sarameun eopgo teibeure noteubungman isseoyo. museun tteusilkkayo?",
+            "en": "Nobody's there, just a laptop on the table. What does it mean?"
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "누가 맡아 둔 자리",
+              "roman": "nuga mata dun jari",
+              "en": "Someone is saving the seat",
+              "correct": true
+            },
+            {
+              "id": "o2",
+              "ko": "카페가 빌려주는 노트북",
+              "roman": "kapega billyeojuneun noteubuk",
+              "en": "A laptop the cafe lends out",
+              "correct": false,
+              "why_wrong": "카드에 적힌 사실과 다르다"
+            },
+            {
+              "id": "o3",
+              "ko": "아무나 앉아도 되는 자리",
+              "roman": "amuna anjado doeneun jari",
+              "en": "Anyone can sit there",
+              "correct": false,
+              "why_wrong": "카드에 적힌 사실과 다르다"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "한국 카페에서는 물건을 두고 자리를 맡아 두는 사람이 많아요.",
+              "en": "In Korean cafes, people often save a seat by leaving their things on it."
+            }
+          }
+        },
+        {
+          "id": "CULT-04",
+          "type": "CULTURE_CHECK",
+          "mode": "choice",
+          "event": "R",
+          "level": 1,
+          "skill": "읽기",
+          "skill_level": 1,
+          "prompt": {
+            "ko": "맞는 것을 고르세요.",
+            "en": "Pick the right one."
+          },
+          "context": {
+            "ko": "「카공족」은 누구일까요?",
+            "roman": "「kagongjok」eun nuguilkkayo?",
+            "en": "Who are \"kagong-jok\"?"
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "카페를 여러 곳 다니는 사람",
+              "roman": "kapereul yeoreo got danineun saram",
+              "en": "People who go cafe-hopping",
+              "correct": false,
+              "why_wrong": "카드에 적힌 사실과 다르다"
+            },
+            {
+              "id": "o2",
+              "ko": "카페에서 일하는 직원",
+              "roman": "kapeeseo ilhaneun jigwon",
+              "en": "People who work at the cafe",
+              "correct": false,
+              "why_wrong": "카드에 적힌 사실과 다르다"
+            },
+            {
+              "id": "o3",
+              "ko": "카페에서 공부하거나 일하는 사람",
+              "roman": "kapeeseo gongbuhageona ilhaneun saram",
+              "en": "People who study or work in cafes",
+              "correct": true
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "「카공」은 카페에서 공부한다는 말을 줄인 거예요.",
+              "en": "\"Kagong\" is short for studying at a cafe."
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "RP",
+      "order": 10,
+      "items": [
+        {
+          "id": "RP-01",
+          "type": "ROLEPLAY_TURN",
+          "mode": "either",
+          "event": "R",
+          "level": 5,
+          "skill": "말하기",
+          "skill_level": 3,
+          "prompt": {
+            "ko": "뭐라고 말할까요?",
+            "en": "What do you say?"
+          },
+          "context": {
+            "ko": "아, 거기 제 자리예요.",
+            "roman": "a, geogi je jariyeyo.",
+            "en": "Oh, that's my seat."
+          },
+          "stimulus": {
+            "text": {
+              "ko": "여기 자리 있어요?",
+              "roman": "yeogi jari isseoyo?",
+              "en": "Is this seat taken?"
+            },
+            "audio_url": "u07-jaemin/d-02-r2",
+            "image_url": "content/images/u07-jaemin/pre-4.webp"
+          },
+          "tiles": [
+            {
+              "ko": "여기",
+              "roman": "yeogi",
+              "en": "here"
+            },
+            {
+              "ko": "자리",
+              "roman": "jari",
+              "en": "seat"
+            },
+            {
+              "ko": "있어요?",
+              "roman": "isseoyo?"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "여기 자리 있어요?",
+              "roman": "yeogi jari isseoyo?",
+              "en": "Is this seat taken?"
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "상대가 「아, 거기 제 자리예요.」라고 하면 「여기 자리 있어요?」라고 답해요."
+            }
+          },
+          "roleplay": {
+            "line_id": "D2",
+            "counterpart_line": "아, 거기 제 자리예요.",
+            "player_line": "여기 자리 있어요?",
+            "tiles": [
+              "여기",
+              "자리",
+              "있어요?"
+            ],
+            "tiles_gloss": [
+              {
+                "tile": "여기",
+                "en": "here"
+              },
+              {
+                "tile": "자리",
+                "en": "seat"
+              },
+              {
+                "tile": "있어요?"
+              }
+            ],
+            "accepted_answers": [
+              {
+                "text": "여기 자리 있어요?"
+              }
+            ],
+            "modes": [
+              "speech",
+              "tiles"
+            ],
+            "lead": [
+              {
+                "speaker": "창가 손님",
+                "line": {
+                  "ko": "아, 거기 제 자리예요.",
+                  "roman": "a, geogi je jariyeyo.",
+                  "en": "Oh, that's my seat."
+                },
+                "audio_url": "u07-jaemin/d-01-r2"
+              }
+            ],
+            "reask": {
+              "speaker": "창가 손님",
+              "line": {
+                "ko": "네?",
+                "roman": "ne?",
+                "en": "Sorry?"
+              },
+              "audio_url": "u07-jaemin/rp-01-reask-r2"
+            },
+            "player_audio_url": "u07-jaemin/d-02-r2"
+          }
+        },
+        {
+          "id": "RP-02",
+          "type": "ROLEPLAY_TURN",
+          "mode": "either",
+          "event": "R",
+          "level": 5,
+          "skill": "말하기",
+          "skill_level": 3,
+          "prompt": {
+            "ko": "뭐라고 말할까요?",
+            "en": "What do you say?"
+          },
+          "context": {
+            "ko": "네, 제 가방이에요.",
+            "roman": "ne, je gabangieyo.",
+            "en": "Yes, that's my bag."
+          },
+          "stimulus": {
+            "text": {
+              "ko": "죄송해요. 몰랐어요.",
+              "roman": "joesonghaeyo. mollasseoyo.",
+              "en": "I'm sorry. I didn't know."
+            },
+            "audio_url": "u07-jaemin/d-04-r2",
+            "image_url": "content/images/u07-jaemin/pre-4.webp"
+          },
+          "tiles": [
+            {
+              "ko": "죄송해요.",
+              "roman": "joesonghaeyo."
+            },
+            {
+              "ko": "몰랐어요.",
+              "roman": "mollasseoyo."
+            }
+          ],
+          "answers": [
+            {
+              "ko": "죄송해요. 몰랐어요.",
+              "roman": "joesonghaeyo. mollasseoyo.",
+              "en": "I'm sorry. I didn't know."
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "상대가 「네, 제 가방이에요.」라고 하면 「죄송해요. 몰랐어요.」라고 답해요."
+            }
+          },
+          "roleplay": {
+            "line_id": "D4",
+            "counterpart_line": "네, 제 가방이에요.",
+            "player_line": "죄송해요. 몰랐어요.",
+            "tiles": [
+              "죄송해요.",
+              "몰랐어요."
+            ],
+            "tiles_gloss": [
+              {
+                "tile": "죄송해요."
+              },
+              {
+                "tile": "몰랐어요."
+              }
+            ],
+            "accepted_answers": [
+              {
+                "text": "죄송해요. 몰랐어요."
+              }
+            ],
+            "modes": [
+              "speech",
+              "tiles"
+            ],
+            "lead": [
+              {
+                "speaker": "창가 손님",
+                "line": {
+                  "ko": "네, 제 가방이에요.",
+                  "roman": "ne, je gabangieyo.",
+                  "en": "Yes, that's my bag."
+                },
+                "audio_url": "u07-jaemin/d-03-r2"
+              }
+            ],
+            "reask": {
+              "speaker": "창가 손님",
+              "line": {
+                "ko": "네?",
+                "roman": "ne?",
+                "en": "Sorry?"
+              },
+              "audio_url": "u07-jaemin/rp-01-reask-r2"
+            },
+            "player_audio_url": "u07-jaemin/d-04-r2"
+          }
+        },
+        {
+          "id": "RP-03",
+          "type": "ROLEPLAY_TURN",
+          "mode": "either",
+          "event": "R",
+          "level": 5,
+          "skill": "말하기",
+          "skill_level": 3,
+          "prompt": {
+            "ko": "뭐라고 말할까요?",
+            "en": "What do you say?"
+          },
+          "context": {
+            "ko": "괜찮아요.",
+            "roman": "gwaenchanayo.",
+            "en": "It's okay."
+          },
+          "stimulus": {
+            "text": {
+              "ko": "저쪽에 앉을게요.",
+              "roman": "jeojjoge anjeulgeyo.",
+              "en": "I'll sit over there."
+            },
+            "audio_url": "u07-jaemin/d-06-r2",
+            "image_url": "content/images/u07-jaemin/pre-4.webp"
+          },
+          "tiles": [
+            {
+              "ko": "저쪽에",
+              "roman": "jeojjoge"
+            },
+            {
+              "ko": "앉을게요.",
+              "roman": "anjeulgeyo."
+            }
+          ],
+          "answers": [
+            {
+              "ko": "저쪽에 앉을게요.",
+              "roman": "jeojjoge anjeulgeyo.",
+              "en": "I'll sit over there."
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "상대가 「괜찮아요.」라고 하면 「저쪽에 앉을게요.」라고 답해요."
+            }
+          },
+          "roleplay": {
+            "line_id": "D6",
+            "counterpart_line": "괜찮아요.",
+            "player_line": "저쪽에 앉을게요.",
+            "tiles": [
+              "저쪽에",
+              "앉을게요."
+            ],
+            "tiles_gloss": [
+              {
+                "tile": "저쪽에",
+                "en": "over there"
+              },
+              {
+                "tile": "앉을게요."
+              }
+            ],
+            "accepted_answers": [
+              {
+                "text": "저쪽에 앉을게요."
+              }
+            ],
+            "modes": [
+              "speech",
+              "tiles"
+            ],
+            "lead": [
+              {
+                "speaker": "창가 손님",
+                "line": {
+                  "ko": "괜찮아요.",
+                  "roman": "gwaenchanayo.",
+                  "en": "It's okay."
+                },
+                "audio_url": "u07-jaemin/d-05-r2"
+              }
+            ],
+            "reask": {
+              "speaker": "창가 손님",
+              "line": {
+                "ko": "네?",
+                "roman": "ne?",
+                "en": "Sorry?"
+              },
+              "audio_url": "u07-jaemin/rp-01-reask-r2"
+            },
+            "player_audio_url": "u07-jaemin/d-06-r2"
+          }
+        },
+        {
+          "id": "RP-04",
+          "type": "ROLEPLAY_TURN",
+          "mode": "either",
+          "event": "R",
+          "level": 5,
+          "skill": "말하기",
+          "skill_level": 3,
+          "prompt": {
+            "ko": "뭐라고 말할까요?",
+            "en": "What do you say?"
+          },
+          "context": {
+            "ko": "감사합니다. 여행 오셨어요?",
+            "roman": "gamsahamnida. yeohaeng osyeosseoyo?",
+            "en": "Thank you. Are you here on a trip?"
+          },
+          "stimulus": {
+            "text": {
+              "ko": "네, 어제 왔어요.",
+              "roman": "ne, eoje wasseoyo.",
+              "en": "Yes, I got here yesterday."
+            },
+            "audio_url": "u07-jaemin/d-08-r2",
+            "image_url": "content/images/u07-jaemin/pre-4.webp"
+          },
+          "tiles": [
+            {
+              "ko": "네,",
+              "roman": "ne,"
+            },
+            {
+              "ko": "어제",
+              "roman": "eoje",
+              "en": "yesterday"
+            },
+            {
+              "ko": "왔어요.",
+              "roman": "wasseoyo."
+            }
+          ],
+          "answers": [
+            {
+              "ko": "네, 어제 왔어요.",
+              "roman": "ne, eoje wasseoyo.",
+              "en": "Yes, I got here yesterday."
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "ko": "상대가 「감사합니다. 여행 오셨어요?」라고 하면 「네, 어제 왔어요.」라고 답해요."
+            }
+          },
+          "roleplay": {
+            "line_id": "D8",
+            "counterpart_line": "감사합니다. 여행 오셨어요?",
+            "player_line": "네, 어제 왔어요.",
+            "tiles": [
+              "네,",
+              "어제",
+              "왔어요."
+            ],
+            "tiles_gloss": [
+              {
+                "tile": "네,",
+                "en": "yes"
+              },
+              {
+                "tile": "어제",
+                "en": "yesterday"
+              },
+              {
+                "tile": "왔어요."
+              }
+            ],
+            "accepted_answers": [
+              {
+                "text": "네, 어제 왔어요."
+              }
+            ],
+            "modes": [
+              "speech",
+              "tiles"
+            ],
+            "lead": [
+              {
+                "speaker": "창가 손님",
+                "line": {
+                  "ko": "감사합니다. 여행 오셨어요?",
+                  "roman": "gamsahamnida. yeohaeng osyeosseoyo?",
+                  "en": "Thank you. Are you here on a trip?"
+                },
+                "audio_url": "u07-jaemin/d-07-r2"
+              }
+            ],
+            "reask": {
+              "speaker": "창가 손님",
+              "line": {
+                "ko": "네?",
+                "roman": "ne?",
+                "en": "Sorry?"
+              },
+              "audio_url": "u07-jaemin/rp-01-reask-r2"
+            },
+            "player_audio_url": "u07-jaemin/d-08-r2"
+          }
+        }
+      ],
+      "scene": {
+        "background_image_url": "content/images/u07-jaemin/pre-4.webp",
+        "counterpart": "창가 손님",
+        "closing": [
+          {
+            "speaker": "창가 손님",
+            "line": {
+              "ko": "좋은 여행 되세요.",
+              "roman": "joeun yeohaeng doeseyo.",
+              "en": "Have a good trip."
+            },
+            "audio_url": ""
+          }
+        ],
+        "closing_image_url": "content/images/u07-jaemin/rp-end.webp",
+        "retry": {
+          "hint_after_misses": 1,
+          "reveal_after_misses": 2
+        }
+      }
+    }
+  ],
+  "completion": {
+    "requires": [
+      "S1",
+      "S2",
+      "S3",
+      "S4",
+      "S5",
+      "S6",
+      "S7",
+      "S8",
+      "CULT",
+      "RP"
+    ]
+  },
+  "words": [
+    {
+      "id": "voca:3e2a1ac0",
+      "ko": "자리",
+      "roman": "jari",
+      "gloss_en": "seat",
+      "grade": "2급",
+      "role": "target"
+    },
+    {
+      "id": "voca:ec59536e",
+      "ko": "여기",
+      "roman": "yeogi",
+      "gloss_en": "here",
+      "grade": "1급",
+      "role": "target",
+      "review": true
+    },
+    {
+      "id": "voca:49caf517",
+      "ko": "죄송하다",
+      "roman": "joesonghada",
+      "gloss_en": "sorry",
+      "grade": "1급",
+      "role": "target"
+    },
+    {
+      "id": "voca:9720d8a1",
+      "ko": "모르다",
+      "roman": "moreuda",
+      "gloss_en": "do not know",
+      "grade": "1급",
+      "role": "target",
+      "review": true
+    },
+    {
+      "id": "voca:856e8566",
+      "ko": "저쪽",
+      "roman": "jeojjok",
+      "gloss_en": "over there",
+      "grade": "1급",
+      "role": "target"
+    },
+    {
+      "id": "voca:b0414a80",
+      "ko": "앉다",
+      "roman": "anda",
+      "gloss_en": "sit",
+      "grade": "1급",
+      "role": "target",
+      "review": true
+    },
+    {
+      "id": "voca:d5fbbbce",
+      "ko": "어제",
+      "roman": "eoje",
+      "gloss_en": "yesterday",
+      "grade": "1급",
+      "role": "target",
+      "review": true
+    },
+    {
+      "id": "voca:97270e4b",
+      "ko": "네",
+      "roman": "ne",
+      "gloss_en": "yes",
+      "grade": "1급",
+      "role": "target",
+      "review": true
+    },
+    {
+      "id": "voca:ff8c6497",
+      "ko": "오다",
+      "roman": "oda",
+      "gloss_en": "come",
+      "grade": "1급",
+      "role": "target",
+      "review": true
+    },
+    {
+      "id": "voca:03c8759c",
+      "ko": "거기",
+      "roman": "geogi",
+      "gloss_en": "there",
+      "grade": "1급",
+      "role": "target",
+      "use": "counterpart"
+    },
+    {
+      "id": "voca:a4b7987b",
+      "ko": "제",
+      "roman": "je",
+      "gloss_en": "my (polite)",
+      "grade": "1급",
+      "role": "target",
+      "use": "counterpart"
+    },
+    {
+      "id": "voca:1ff65347",
+      "ko": "가방",
+      "roman": "gabang",
+      "gloss_en": "bag",
+      "grade": "1급",
+      "role": "target",
+      "use": "counterpart"
+    },
+    {
+      "id": "voca:8d532a47",
+      "ko": "괜찮다",
+      "roman": "gwaenchanda",
+      "gloss_en": "be okay",
+      "grade": "1급",
+      "role": "target",
+      "use": "counterpart",
+      "review": true
+    },
+    {
+      "id": "voca:90ed435d",
+      "ko": "감사합니다",
+      "roman": "gamsahamnida",
+      "gloss_en": "thank you",
+      "role": "target",
+      "use": "counterpart",
+      "review": true
+    },
+    {
+      "id": "voca:1a89ae1f",
+      "ko": "여행",
+      "roman": "yeohaeng",
+      "gloss_en": "travel",
+      "grade": "1급",
+      "role": "target",
+      "use": "counterpart"
+    },
+    {
+      "id": "voca:5edf2b01",
+      "ko": "좋다",
+      "roman": "jota",
+      "gloss_en": "good",
+      "grade": "1급",
+      "role": "target",
+      "use": "counterpart"
+    },
+    {
+      "id": "voca:fb6595ad",
+      "ko": "되다",
+      "roman": "doeda",
+      "gloss_en": "become",
+      "grade": "1급",
+      "role": "target",
+      "use": "counterpart"
+    },
+    {
+      "id": "gram:06ef5caf",
+      "ko": "-아/어/여도 돼요?",
+      "roman": "-a/eo/yeodo dwaeyo?",
+      "gloss_en": "May I VERB? (asking for permission)",
+      "role": "target"
+    },
+    {
+      "id": "voca:ec5d9a98",
+      "ko": "일주일",
+      "roman": "iljuil",
+      "gloss_en": "one week",
+      "grade": "1급",
+      "role": "target",
+      "review": true
+    },
+    {
+      "id": "voca:adb17138",
+      "ko": "이쪽",
+      "roman": "ijjok",
+      "gloss_en": "this way, over here",
+      "grade": "1급",
+      "role": "contrast",
+      "example_ko": "이쪽에 앉을게요.",
+      "example_roman": "ijjoge anjeulgeyo."
+    }
+  ],
+  "patterns": []
+}

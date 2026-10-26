@@ -39,7 +39,7 @@
       },
       "image_brief": "씻고 온 낯선 사람이 흰 나시 차림으로 창가 오른쪽 침대 옆에 서서 수건으로 젖은 머리를 털며 침대 밑을 가리킨다.",
       "image_url": "content/images/u03-mina/pre-2.webp",
-      "audio_url": "u03-mina/pre-2"
+      "audio_url": "u03-mina/pre-2-r2"
     },
     {
       "index": 3,
@@ -71,7 +71,7 @@
       },
       "image_brief": "같은 구도. 낯선 사람이 수건을 어깨에 걸치고 플레이어를 보며 손을 살짝 든다.",
       "image_url": "content/images/u03-mina/pre-4.webp",
-      "audio_url": "u03-mina/d-01"
+      "audio_url": "u03-mina/d-01-r2"
     }
   ],
   "dialogue": [
@@ -85,7 +85,7 @@
         "roman": "annyeonghaseyo. ireumi mwoyeyo?",
         "en": "Hello. What's your name?"
       },
-      "audio_url": "u03-mina/d-01"
+      "audio_url": "u03-mina/d-01-r2"
     },
     {
       "seq": 2,
@@ -109,7 +109,7 @@
         "roman": "jeoneun minayeyo. changga jjok chimdae sseoyo.",
         "en": "I'm Mina. I use the bed by the window."
       },
-      "audio_url": "u03-mina/d-03"
+      "audio_url": "u03-mina/d-03-r2"
     },
     {
       "seq": 4,
@@ -126,7 +126,7 @@
         "roman": "mina ssi, mannaseo bangapseumnida.",
         "en": "Mina, nice to meet you."
       },
-      "audio_url": "u03-mina/d-04"
+      "audio_url": "u03-mina/d-04-r2"
     },
     {
       "seq": 5,
@@ -138,7 +138,7 @@
         "roman": "ne, jeodo bangawoyo.",
         "en": "Yes, nice to meet you too."
       },
-      "audio_url": "u03-mina/d-05-v2"
+      "audio_url": "u03-mina/d-05-r2"
     },
     {
       "seq": 6,
@@ -150,7 +150,7 @@
         "roman": "mina ssineun eoneu naraeseo wasseoyo?",
         "en": "Mina, what country are you from?"
       },
-      "audio_url": "u03-mina/d-06"
+      "audio_url": "u03-mina/d-06-r2"
     },
     {
       "seq": 7,
@@ -186,7 +186,7 @@
         "roman": "jeoneun iteul meonjeo wanneunde 2ju isseul geoyeyo.",
         "en": "I came two days earlier, and I'll stay two weeks."
       },
-      "audio_url": "u03-mina/d-09"
+      "audio_url": "u03-mina/d-09-r2"
     },
     {
       "seq": 10,
@@ -198,7 +198,7 @@
         "roman": "jeoneun iljuil mugeoyo.",
         "en": "I'm staying a week."
       },
-      "audio_url": "u03-mina/d-10"
+      "audio_url": "u03-mina/d-10-r2"
     },
     {
       "seq": 11,
@@ -210,7 +210,7 @@
         "roman": "uri chinhage jinaeyo.",
         "en": "Let's be good friends."
       },
-      "audio_url": "u03-mina/d-11"
+      "audio_url": "u03-mina/d-11-r2"
     },
     {
       "seq": 12,
@@ -222,7 +222,7 @@
         "roman": "mina ssi, bangawoyo. jeoneun haksaengieyo.",
         "en": "Mina, nice to meet you. I'm a student."
       },
-      "audio_url": "u03-mina/d-12",
+      "audio_url": "u03-mina/d-12-r2",
       "branch_at": 4,
       "branch_part": "line",
       "situation": {
@@ -241,7 +241,7 @@
         "roman": "a, jeodo haksaengieyo.",
         "en": "Oh, I'm a student too."
       },
-      "audio_url": "u03-mina/d-13",
+      "audio_url": "u03-mina/d-13-r2",
       "branch_at": 4,
       "branch_part": "reply"
     }
@@ -264,7 +264,7 @@
       },
       "image_brief": "같은 구도. 미나가 메모지에 뭔가를 적는다.",
       "image_url": "content/images/u03-mina/post-1.webp",
-      "audio_url": "u03-mina/post-1"
+      "audio_url": "u03-mina/post-1-r2"
     },
     {
       "index": 2,
@@ -296,7 +296,7 @@
       },
       "image_brief": "미나가 나시 위에 겉옷을 걸치며 방문 쪽에서 돌아본다.",
       "image_url": "content/images/u03-mina/post-3.webp",
-      "audio_url": "u03-mina/post-3-v2"
+      "audio_url": "u03-mina/post-3-r2"
     }
   ],
   "steps": [
@@ -324,8 +324,8 @@
             "en": "Where are you from?"
           },
           "card_kind": "단어",
-          "audio_url": "u03-mina/s1-01-word",
-          "example_audio_url": "u03-mina/s1-01-ex"
+          "audio_url": "u03-mina/s1-01-word-r2",
+          "example_audio_url": "u03-mina/s1-01-ex-r2"
         },
         {
           "id": "S1-02",
@@ -347,8 +347,8 @@
             "en": "Hello, I'm Eunji."
           },
           "card_kind": "단어",
-          "audio_url": "u03-mina/s1-02-word-v2",
-          "example_audio_url": "u03-mina/d-02"
+          "audio_url": "u03-mina/s1-02-word-r2",
+          "example_audio_url": "u03-mina/d-02-r2"
         },
         {
           "id": "S1-03",
@@ -370,8 +370,8 @@
             "en": "Mina, nice to meet you."
           },
           "card_kind": "단어",
-          "audio_url": "u03-mina/s1-03-word-v2",
-          "example_audio_url": "u03-mina/s1-03-ex"
+          "audio_url": "u03-mina/s1-03-word-r2",
+          "example_audio_url": "u03-mina/s1-03-ex-r2"
         },
         {
           "id": "S1-04",
@@ -393,8 +393,8 @@
             "en": "Mina, what country are you from?"
           },
           "card_kind": "단어",
-          "audio_url": "u03-mina/s1-04-word-v2",
-          "example_audio_url": "u03-mina/d-06"
+          "audio_url": "u03-mina/s1-04-word-r2",
+          "example_audio_url": "u03-mina/d-06-r2"
         },
         {
           "id": "S1-05",
@@ -416,8 +416,8 @@
             "en": "Mina, what country are you from?"
           },
           "card_kind": "단어",
-          "audio_url": "u03-mina/s1-05-word-v2",
-          "example_audio_url": "u03-mina/d-06"
+          "audio_url": "u03-mina/s1-05-word-r2",
+          "example_audio_url": "u03-mina/d-06-r2"
         },
         {
           "id": "S1-06",
@@ -439,8 +439,8 @@
             "en": "I'm from China."
           },
           "card_kind": "단어",
-          "audio_url": "u03-mina/s1-06-word-v2",
-          "example_audio_url": "u03-mina/s1-06-ex"
+          "audio_url": "u03-mina/s1-06-word-r2",
+          "example_audio_url": "u03-mina/s1-06-ex-r2"
         },
         {
           "id": "S1-07",
@@ -462,8 +462,8 @@
             "en": "I'm from Australia. How many days are you staying here?"
           },
           "card_kind": "단어",
-          "audio_url": "u03-mina/s1-07-word-v2",
-          "example_audio_url": "u03-mina/d-08"
+          "audio_url": "u03-mina/s1-07-word-r2",
+          "example_audio_url": "u03-mina/d-08-r2"
         },
         {
           "id": "S1-08",
@@ -584,7 +584,7 @@
               "roman": "mina ssineun eoneu naraeseo wasseoyo?",
               "en": "Mina, what country are you from?"
             },
-            "audio_url": "u03-mina/d-06",
+            "audio_url": "u03-mina/d-06-r2",
             "image_url": ""
           },
           "options": [
@@ -674,7 +674,7 @@
             "en": "Build the sentence."
           },
           "stimulus": {
-            "audio_url": "u03-mina/d-02",
+            "audio_url": "u03-mina/d-02-r2",
             "image_url": "",
             "en": "Hello, I'm {이름}."
           },
@@ -719,7 +719,7 @@
               "roman": "annyeonghaseyo. ireumi mwoyeyo?",
               "en": "Hello. What's your name?"
             },
-            "audio_url": "u03-mina/d-01",
+            "audio_url": "u03-mina/d-01-r2",
             "image_url": ""
           },
           "options": [
@@ -827,7 +827,7 @@
             "en": "Which word matches the picture?"
           },
           "stimulus": {
-            "audio_url": "u03-mina/s1-05-word-v2",
+            "audio_url": "u03-mina/s1-05-word-r2",
             "image_brief": "country - 한 컷으로 알아볼 수 있게",
             "image_url": "content/images/items/country.webp"
           },
@@ -879,7 +879,7 @@
             "en": "Which word matches the picture?"
           },
           "stimulus": {
-            "audio_url": "u03-mina/s1-01-word",
+            "audio_url": "u03-mina/s1-01-word-r2",
             "image_brief": "person, man - 한 컷으로 알아볼 수 있게",
             "image_url": "content/images/items/person.webp"
           },
@@ -992,7 +992,7 @@
               "roman": "annyeonghaseyo. ireumi mwoyeyo?",
               "en": "Hello. What's your name?"
             },
-            "audio_url": "u03-mina/d-01",
+            "audio_url": "u03-mina/d-01-r2",
             "image_url": ""
           },
           "options": [
@@ -1048,7 +1048,7 @@
               "roman": "ne, jeodo bangawoyo.",
               "en": "Yes, nice to meet you too."
             },
-            "audio_url": "u03-mina/d-05-v2",
+            "audio_url": "u03-mina/d-05-r2",
             "image_url": ""
           },
           "options": [
@@ -1152,7 +1152,7 @@
               "roman": "mina ssineun eoneu naraeseo wasseoyo?",
               "en": "Mina, what country are you from?"
             },
-            "audio_url": "u03-mina/d-06",
+            "audio_url": "u03-mina/d-06-r2",
             "image_url": ""
           },
           "options": [
@@ -1208,7 +1208,7 @@
               "roman": "annyeonghaseyo, jeoneun eunjiyeyo.",
               "en": "Hello, I'm Eunji."
             },
-            "audio_url": "u03-mina/d-02",
+            "audio_url": "u03-mina/d-02-r2",
             "image_url": ""
           },
           "tiles": [
@@ -1360,7 +1360,7 @@
               "roman": "jeoneun hojueseo wasseoyo. yeogiseo myeochil mugeoyo?",
               "en": "I'm from Australia. How many days are you staying here?"
             },
-            "audio_url": "u03-mina/d-08",
+            "audio_url": "u03-mina/d-08-r2",
             "image_url": ""
           },
           "options": [
@@ -1516,7 +1516,7 @@
               "roman": "annyeonghaseyo, jeoneun eunjiyeyo.",
               "en": "Hello, I'm Eunji."
             },
-            "audio_url": "u03-mina/d-02",
+            "audio_url": "u03-mina/d-02-r2",
             "image_url": ""
           },
           "options": [
@@ -1621,7 +1621,7 @@
               "roman": "ne, jeodo bangawoyo.",
               "en": "Yes, nice to meet you too."
             },
-            "audio_url": "u03-mina/d-05-v2",
+            "audio_url": "u03-mina/d-05-r2",
             "image_url": ""
           },
           "options": [
@@ -1684,8 +1684,8 @@
             "en": "Mina, what country are you from?"
           },
           "card_kind": "단어",
-          "audio_url": "u03-mina/s3-01-word",
-          "example_audio_url": "u03-mina/d-06"
+          "audio_url": "u03-mina/s3-01-word-r2",
+          "example_audio_url": "u03-mina/d-06-r2"
         },
         {
           "id": "S3-02",
@@ -1707,8 +1707,8 @@
             "en": "I'm from Japan."
           },
           "card_kind": "단어",
-          "audio_url": "u03-mina/s3-02-word",
-          "example_audio_url": "u03-mina/s3-02-ex"
+          "audio_url": "u03-mina/s3-02-word-r2",
+          "example_audio_url": "u03-mina/s3-02-ex-r2"
         },
         {
           "id": "S3-03",
@@ -1730,8 +1730,8 @@
             "en": "I'm staying a week."
           },
           "card_kind": "단어",
-          "audio_url": "u03-mina/s3-03-word",
-          "example_audio_url": "u03-mina/d-10"
+          "audio_url": "u03-mina/s3-03-word-r2",
+          "example_audio_url": "u03-mina/d-10-r2"
         },
         {
           "id": "S3-04",
@@ -1753,8 +1753,8 @@
             "en": "I'm Mina. I use the bed by the window."
           },
           "card_kind": "단어",
-          "audio_url": "u03-mina/s3-04-word",
-          "example_audio_url": "u03-mina/d-03"
+          "audio_url": "u03-mina/s3-04-word-r2",
+          "example_audio_url": "u03-mina/d-03-r2"
         },
         {
           "id": "S3-05",
@@ -1776,8 +1776,8 @@
             "en": "I came from Switzerland to learn Korean. How about you, Eunji?"
           },
           "card_kind": "단어",
-          "audio_url": "u03-mina/s3-05-word",
-          "example_audio_url": "u03-mina/d-07"
+          "audio_url": "u03-mina/s3-05-word-r2",
+          "example_audio_url": "u03-mina/d-07-r2"
         },
         {
           "id": "S3-06",
@@ -1799,8 +1799,8 @@
             "en": "I came two days earlier, and I'll stay two weeks."
           },
           "card_kind": "단어",
-          "audio_url": "u03-mina/s3-06-word",
-          "example_audio_url": "u03-mina/d-09"
+          "audio_url": "u03-mina/s3-06-word-r2",
+          "example_audio_url": "u03-mina/d-09-r2"
         },
         {
           "id": "S3-07",
@@ -1822,8 +1822,8 @@
             "en": "Mina, nice to meet you. I'm a student."
           },
           "card_kind": "단어",
-          "audio_url": "u03-mina/s3-07-word",
-          "example_audio_url": "u03-mina/d-12"
+          "audio_url": "u03-mina/s3-07-word-r2",
+          "example_audio_url": "u03-mina/d-12-r2"
         },
         {
           "id": "S3-08",
@@ -1926,7 +1926,7 @@
               "roman": "jeoneun iljuil mugeoyo.",
               "en": "I'm staying a week."
             },
-            "audio_url": "u03-mina/d-10",
+            "audio_url": "u03-mina/d-10-r2",
             "image_url": ""
           },
           "options": [
@@ -2020,7 +2020,7 @@
             "en": "Which word matches the picture?"
           },
           "stimulus": {
-            "audio_url": "u03-mina/s3-04-word",
+            "audio_url": "u03-mina/s3-04-word-r2",
             "image_brief": "bed - 한 컷으로 알아볼 수 있게",
             "image_url": ""
           },
@@ -2077,7 +2077,7 @@
               "roman": "jeoneun seuwiseueseo hangugeo baeureo wasseoyo. eunjineunyo?",
               "en": "I came from Switzerland to learn Korean. How about you, Eunji?"
             },
-            "audio_url": "u03-mina/d-07",
+            "audio_url": "u03-mina/d-07-r2",
             "image_url": ""
           },
           "options": [
@@ -2167,7 +2167,7 @@
             "en": "Tap the syllables to spell the word."
           },
           "stimulus": {
-            "audio_url": "u03-mina/s1-02-word-v2",
+            "audio_url": "u03-mina/s1-02-word-r2",
             "image_url": "",
             "en": "name"
           },
@@ -2254,7 +2254,7 @@
             "en": "Tap the syllables to spell the word."
           },
           "stimulus": {
-            "audio_url": "u03-mina/s1-04-word-v2",
+            "audio_url": "u03-mina/s1-04-word-r2",
             "image_url": "",
             "en": "which, how"
           },
@@ -2303,7 +2303,7 @@
               "roman": "mina ssineun eoneu naraeseo wasseoyo?",
               "en": "Mina, what country are you from?"
             },
-            "audio_url": "u03-mina/d-06",
+            "audio_url": "u03-mina/d-06-r2",
             "image_url": ""
           },
           "options": [
@@ -2354,7 +2354,7 @@
             "en": "Tap the syllables to spell the word."
           },
           "stimulus": {
-            "audio_url": "u03-mina/s1-07-word-v2",
+            "audio_url": "u03-mina/s1-07-word-r2",
             "image_url": "",
             "en": "how many days"
           },
@@ -2464,7 +2464,7 @@
               "roman": "a, jeodo haksaengieyo.",
               "en": "Oh, I'm a student too."
             },
-            "audio_url": "u03-mina/d-13",
+            "audio_url": "u03-mina/d-13-r2",
             "image_url": ""
           }
         },
@@ -2537,7 +2537,7 @@
               "roman": "jeoneun iljuil mugeoyo.",
               "en": "I'm staying a week."
             },
-            "audio_url": "u03-mina/d-10",
+            "audio_url": "u03-mina/d-10-r2",
             "image_url": ""
           },
           "options": [
@@ -2593,7 +2593,7 @@
               "roman": "jeoneun minayeyo. changga jjok chimdae sseoyo.",
               "en": "I'm Mina. I use the bed by the window."
             },
-            "audio_url": "u03-mina/d-03",
+            "audio_url": "u03-mina/d-03-r2",
             "image_url": ""
           },
           "options": [
@@ -2702,7 +2702,7 @@
               "roman": "jeoneun seuwiseueseo hangugeo baeureo wasseoyo. eunjineunyo?",
               "en": "I came from Switzerland to learn Korean. How about you, Eunji?"
             },
-            "audio_url": "u03-mina/d-07",
+            "audio_url": "u03-mina/d-07-r2",
             "image_url": ""
           },
           "options": [
@@ -2856,7 +2856,7 @@
               "roman": "jeoneun minayeyo. changga jjok chimdae sseoyo.",
               "en": "I'm Mina. I use the bed by the window."
             },
-            "audio_url": "u03-mina/d-03",
+            "audio_url": "u03-mina/d-03-r2",
             "image_url": ""
           },
           "options": [
@@ -2962,7 +2962,7 @@
               "roman": "jeoneun iteul meonjeo wanneunde 2ju isseul geoyeyo.",
               "en": "I came two days earlier, and I'll stay two weeks."
             },
-            "audio_url": "u03-mina/d-09",
+            "audio_url": "u03-mina/d-09-r2",
             "image_url": ""
           },
           "tiles": [
@@ -3132,7 +3132,7 @@
               "roman": "annyeonghaseyo, jeoneun eunjiyeyo.",
               "en": "Hello, I'm Eunji."
             },
-            "audio_url": "u03-mina/d-02",
+            "audio_url": "u03-mina/d-02-r2",
             "image_url": ""
           },
           "tiles": [
@@ -3184,7 +3184,7 @@
               "roman": "annyeonghaseyo. ireumi mwoyeyo?",
               "en": "Hello. What's your name?"
             },
-            "audio_url": "u03-mina/d-01",
+            "audio_url": "u03-mina/d-01-r2",
             "image_url": ""
           },
           "options": [
@@ -3240,7 +3240,7 @@
               "roman": "ne, jeodo bangawoyo.",
               "en": "Yes, nice to meet you too."
             },
-            "audio_url": "u03-mina/d-05-v2",
+            "audio_url": "u03-mina/d-05-r2",
             "image_url": ""
           },
           "options": [
@@ -3294,7 +3294,7 @@
               "roman": "jeoneun seuwiseueseo hangugeo baeureo wasseoyo. eunjineunyo?",
               "en": "I came from Switzerland to learn Korean. How about you, Eunji?"
             },
-            "audio_url": "u03-mina/d-07",
+            "audio_url": "u03-mina/d-07-r2",
             "image_url": ""
           },
           "options": [
@@ -3350,7 +3350,7 @@
               "roman": "mina ssi, bangawoyo. jeoneun haksaengieyo.",
               "en": "Mina, nice to meet you. I'm a student."
             },
-            "audio_url": "u03-mina/d-12",
+            "audio_url": "u03-mina/d-12-r2",
             "image_url": ""
           },
           "tiles": [
@@ -3410,7 +3410,7 @@
               "roman": "uri chinhage jinaeyo.",
               "en": "Let's be good friends."
             },
-            "audio_url": "u03-mina/d-11",
+            "audio_url": "u03-mina/d-11-r2",
             "image_url": ""
           },
           "options": [
@@ -3671,7 +3671,7 @@
               "ko": "방",
               "roman": "bang"
             },
-            "audio_url": "u03-mina/s5-05-stim",
+            "audio_url": "u03-mina/s5-05-stim-r2",
             "image_url": ""
           },
           "options": [
@@ -3716,7 +3716,7 @@
               "ko": "불",
               "roman": "bul"
             },
-            "audio_url": "u03-mina/s5-06-stim",
+            "audio_url": "u03-mina/s5-06-stim-r2",
             "image_url": ""
           },
           "options": [
@@ -3762,7 +3762,7 @@
               "roman": "chimdae",
               "en": "bed"
             },
-            "audio_url": "u03-mina/s3-04-word",
+            "audio_url": "u03-mina/s3-04-word-r2",
             "image_url": ""
           },
           "answers": [
@@ -3792,7 +3792,7 @@
               "roman": "myeochil",
               "en": "how many days"
             },
-            "audio_url": "u03-mina/s1-07-word-v2",
+            "audio_url": "u03-mina/s1-07-word-r2",
             "image_url": ""
           },
           "answers": [
@@ -3827,7 +3827,7 @@
               "roman": "annyeonghaseyo, jeoneun eunjiyeyo.",
               "en": "Hello, I'm Eunji."
             },
-            "audio_url": "u03-mina/d-02",
+            "audio_url": "u03-mina/d-02-r2",
             "image_url": ""
           },
           "answers": [
@@ -3862,7 +3862,7 @@
               "roman": "mina ssi, mannaseo bangapseumnida.",
               "en": "Mina, nice to meet you."
             },
-            "audio_url": "u03-mina/s1-03-ex",
+            "audio_url": "u03-mina/s1-03-ex-r2",
             "image_url": ""
           },
           "answers": [
@@ -3897,7 +3897,7 @@
               "roman": "mina ssineun eoneu naraeseo wasseoyo?",
               "en": "Mina, what country are you from?"
             },
-            "audio_url": "u03-mina/d-06",
+            "audio_url": "u03-mina/d-06-r2",
             "image_url": ""
           },
           "answers": [
@@ -4006,7 +4006,7 @@
             "en": "Say this in Korean."
           },
           "stimulus": {
-            "audio_url": "u03-mina/s3-05-word",
+            "audio_url": "u03-mina/s3-05-word-r2",
             "image_url": "",
             "en": "Korean language"
           },
@@ -4032,7 +4032,7 @@
             "en": "Say the word for the picture."
           },
           "stimulus": {
-            "audio_url": "u03-mina/s3-04-word",
+            "audio_url": "u03-mina/s3-04-word-r2",
             "image_brief": "bed - 한 컷으로 알아볼 수 있게",
             "image_url": ""
           },
@@ -4058,7 +4058,7 @@
             "en": "Say this in Korean."
           },
           "stimulus": {
-            "audio_url": "u03-mina/s6-05-answer",
+            "audio_url": "u03-mina/s6-05-answer-r2",
             "image_url": "",
             "en": "Hello"
           },
@@ -4083,7 +4083,7 @@
             "en": "Say this in Korean."
           },
           "stimulus": {
-            "audio_url": "u03-mina/s3-01-word",
+            "audio_url": "u03-mina/s3-01-word-r2",
             "image_url": "",
             "en": "come"
           },
@@ -4157,7 +4157,7 @@
               "roman": "jeoneun hojueseo wasseoyo. yeogiseo myeochil mugeoyo?",
               "en": "I'm from Australia. How many days are you staying here?"
             },
-            "audio_url": "u03-mina/d-08",
+            "audio_url": "u03-mina/d-08-r2",
             "image_url": ""
           },
           "options": [
@@ -4208,7 +4208,7 @@
             "en": "Build the sentence."
           },
           "stimulus": {
-            "audio_url": "u03-mina/d-06",
+            "audio_url": "u03-mina/d-06-r2",
             "image_url": "",
             "en": "Mina, what country are you from?"
           },
@@ -4257,7 +4257,7 @@
             "en": "Say this in Korean."
           },
           "stimulus": {
-            "audio_url": "u03-mina/s3-03-word",
+            "audio_url": "u03-mina/s3-03-word-r2",
             "image_url": "",
             "en": "one week"
           },
@@ -4326,7 +4326,7 @@
             "en": "Say this in Korean."
           },
           "stimulus": {
-            "audio_url": "u03-mina/s3-07-word",
+            "audio_url": "u03-mina/s3-07-word-r2",
             "image_url": "",
             "en": "student"
           },
@@ -4368,7 +4368,7 @@
               "roman": "annyeonghaseyo, jeoneun eunjiyeyo.",
               "en": "Hello, I'm Eunji."
             },
-            "audio_url": "u03-mina/d-02",
+            "audio_url": "u03-mina/d-02-r2",
             "image_url": ""
           },
           "answers": [
@@ -4453,7 +4453,7 @@
               "roman": "jeoneun iljuil mugeoyo.",
               "en": "I'm staying a week."
             },
-            "audio_url": "u03-mina/d-10",
+            "audio_url": "u03-mina/d-10-r2",
             "image_url": ""
           },
           "answers": [
@@ -4488,7 +4488,7 @@
               "roman": "jeoneun hojueseo wasseoyo. yeogiseo myeochil mugeoyo?",
               "en": "I'm from Australia. How many days are you staying here?"
             },
-            "audio_url": "u03-mina/d-08",
+            "audio_url": "u03-mina/d-08-r2",
             "image_url": ""
           },
           "answers": [
@@ -4523,7 +4523,7 @@
               "roman": "mina ssi, mannaseo bangapseumnida.",
               "en": "Mina, nice to meet you."
             },
-            "audio_url": "u03-mina/s1-03-ex",
+            "audio_url": "u03-mina/s1-03-ex-r2",
             "image_url": ""
           },
           "answers": [
@@ -4558,7 +4558,7 @@
               "roman": "mina ssineun eoneu naraeseo wasseoyo?",
               "en": "Mina, what country are you from?"
             },
-            "audio_url": "u03-mina/d-06",
+            "audio_url": "u03-mina/d-06-r2",
             "image_url": ""
           },
           "answers": [
@@ -4583,7 +4583,7 @@
             "en": "Build the sentence."
           },
           "stimulus": {
-            "audio_url": "u03-mina/d-10",
+            "audio_url": "u03-mina/d-10-r2",
             "image_url": "",
             "en": "I'm staying a week."
           },
@@ -4634,7 +4634,7 @@
               "roman": "mina ssi, bangawoyo. jeoneun haksaengieyo.",
               "en": "Mina, nice to meet you. I'm a student."
             },
-            "audio_url": "u03-mina/d-12",
+            "audio_url": "u03-mina/d-12-r2",
             "image_url": ""
           },
           "answers": [
@@ -4664,7 +4664,7 @@
               "roman": "jeoneun seuwiseueseo hangugeo baeureo wasseoyo. eunjineunyo?",
               "en": "I came from Switzerland to learn Korean. How about you, Eunji?"
             },
-            "audio_url": "u03-mina/d-07",
+            "audio_url": "u03-mina/d-07-r2",
             "image_url": ""
           },
           "options": [
@@ -4768,7 +4768,7 @@
               "roman": "jeoneun iteul meonjeo wanneunde 2ju isseul geoyeyo.",
               "en": "I came two days earlier, and I'll stay two weeks."
             },
-            "audio_url": "u03-mina/d-09",
+            "audio_url": "u03-mina/d-09-r2",
             "image_url": ""
           },
           "options": [
@@ -4923,7 +4923,7 @@
               "ko": "안녕하세요",
               "roman": "annyeonghaseyo"
             },
-            "audio_url": "u03-mina/s6-05-answer",
+            "audio_url": "u03-mina/s6-05-answer-r2",
             "image_url": ""
           },
           "answers": [
@@ -4947,7 +4947,7 @@
             "en": "Say the word for the picture."
           },
           "stimulus": {
-            "audio_url": "u03-mina/s1-05-word-v2",
+            "audio_url": "u03-mina/s1-05-word-r2",
             "image_brief": "country - 한 컷으로 알아볼 수 있게",
             "image_url": "content/images/items/country.webp"
           },
@@ -4978,7 +4978,7 @@
               "roman": "eoneu",
               "en": "which, how"
             },
-            "audio_url": "u03-mina/s1-04-word-v2",
+            "audio_url": "u03-mina/s1-04-word-r2",
             "image_url": ""
           },
           "answers": [
@@ -5008,7 +5008,7 @@
               "roman": "jeoneun hojueseo wasseoyo. yeogiseo myeochil mugeoyo?",
               "en": "I'm from Australia. How many days are you staying here?"
             },
-            "audio_url": "u03-mina/d-08",
+            "audio_url": "u03-mina/d-08-r2",
             "image_url": ""
           },
           "options": [
@@ -5063,7 +5063,7 @@
               "ko": "어느",
               "roman": "eoneu"
             },
-            "audio_url": "u03-mina/s1-04-word-v2",
+            "audio_url": "u03-mina/s1-04-word-r2",
             "image_url": ""
           },
           "options": [
@@ -5119,7 +5119,7 @@
               "roman": "jeoneun iteul meonjeo wanneunde 2ju isseul geoyeyo.",
               "en": "I came two days earlier, and I'll stay two weeks."
             },
-            "audio_url": "u03-mina/d-09",
+            "audio_url": "u03-mina/d-09-r2",
             "image_url": ""
           },
           "options": [
@@ -5170,7 +5170,7 @@
             "en": "Say this in Korean."
           },
           "stimulus": {
-            "audio_url": "u03-mina/s1-01-word",
+            "audio_url": "u03-mina/s1-01-word-r2",
             "image_url": "",
             "en": "person, man"
           },
@@ -5200,7 +5200,7 @@
               "ko": "학생",
               "roman": "haksaeng"
             },
-            "audio_url": "u03-mina/s3-07-word",
+            "audio_url": "u03-mina/s3-07-word-r2",
             "image_url": ""
           },
           "options": [
@@ -5256,7 +5256,7 @@
               "roman": "jeoneun minayeyo. changga jjok chimdae sseoyo.",
               "en": "I'm Mina. I use the bed by the window."
             },
-            "audio_url": "u03-mina/d-03",
+            "audio_url": "u03-mina/d-03-r2",
             "image_url": ""
           },
           "tiles": [
@@ -5317,7 +5317,7 @@
             "en": "Say this in Korean."
           },
           "stimulus": {
-            "audio_url": "u03-mina/s3-04-word",
+            "audio_url": "u03-mina/s3-04-word-r2",
             "image_url": "",
             "en": "bed"
           },
@@ -5347,7 +5347,7 @@
               "ko": "침대",
               "roman": "chimdae"
             },
-            "audio_url": "u03-mina/s3-04-word",
+            "audio_url": "u03-mina/s3-04-word-r2",
             "image_url": ""
           },
           "options": [
@@ -5402,7 +5402,7 @@
               "ko": "며칠",
               "roman": "myeochil"
             },
-            "audio_url": "u03-mina/s1-07-word-v2",
+            "audio_url": "u03-mina/s1-07-word-r2",
             "image_url": ""
           },
           "options": [
@@ -5458,7 +5458,7 @@
               "roman": "hangugeo",
               "en": "Korean language"
             },
-            "audio_url": "u03-mina/s3-05-word",
+            "audio_url": "u03-mina/s3-05-word-r2",
             "image_url": ""
           },
           "answers": [
@@ -5488,7 +5488,7 @@
               "roman": "annyeonghaseyo. ireumi mwoyeyo?",
               "en": "Hello. What's your name?"
             },
-            "audio_url": "u03-mina/d-01",
+            "audio_url": "u03-mina/d-01-r2",
             "image_url": ""
           },
           "options": [
@@ -5539,7 +5539,7 @@
             "en": "Say this in Korean."
           },
           "stimulus": {
-            "audio_url": "u03-mina/s1-05-word-v2",
+            "audio_url": "u03-mina/s1-05-word-r2",
             "image_url": "",
             "en": "country"
           },
@@ -5565,7 +5565,7 @@
             "en": "Say this in Korean."
           },
           "stimulus": {
-            "audio_url": "u03-mina/s1-03-word-v2",
+            "audio_url": "u03-mina/s1-03-word-r2",
             "image_url": "",
             "en": "nice to meet you"
           },
@@ -5914,7 +5914,7 @@
                   "roman": "annyeonghaseyo. ireumi mwoyeyo?",
                   "en": "Hello. What's your name?"
                 },
-                "audio_url": "u03-mina/d-01"
+                "audio_url": "u03-mina/d-01-r2"
               }
             ],
             "reask": {
@@ -5924,7 +5924,7 @@
                 "roman": "ne?",
                 "en": "Sorry?"
               },
-              "audio_url": "u03-mina/rp-01-reask"
+              "audio_url": "u03-mina/rp-01-reask-r2"
             },
             "player_audio_url": ""
           }
@@ -5952,7 +5952,7 @@
               "roman": "mina ssi, mannaseo bangawoyo.",
               "en": "Mina, nice to meet you."
             },
-            "audio_url": "u03-mina/d-04",
+            "audio_url": "u03-mina/d-04-r2",
             "image_url": "content/images/u03-mina/pre-4.webp"
           },
           "tiles": [
@@ -6032,7 +6032,7 @@
                   "roman": "jeoneun minayeyo. changga jjok chimdae sseoyo.",
                   "en": "I'm Mina. I use the bed by the window."
                 },
-                "audio_url": "u03-mina/d-03"
+                "audio_url": "u03-mina/d-03-r2"
               }
             ],
             "reask": {
@@ -6042,9 +6042,9 @@
                 "roman": "ne?",
                 "en": "Sorry?"
               },
-              "audio_url": "u03-mina/rp-01-reask"
+              "audio_url": "u03-mina/rp-01-reask-r2"
             },
-            "player_audio_url": "u03-mina/d-04"
+            "player_audio_url": "u03-mina/d-04-r2"
           }
         },
         {
@@ -6070,7 +6070,7 @@
               "roman": "mina ssineun eoneu naraeseo wasseoyo?",
               "en": "Mina, what country are you from?"
             },
-            "audio_url": "u03-mina/d-06",
+            "audio_url": "u03-mina/d-06-r2",
             "image_url": "content/images/u03-mina/pre-4.webp"
           },
           "tiles": [
@@ -6155,7 +6155,7 @@
                   "roman": "ne, jeodo bangawoyo.",
                   "en": "Yes, nice to meet you too."
                 },
-                "audio_url": "u03-mina/d-05-v2"
+                "audio_url": "u03-mina/d-05-r2"
               }
             ],
             "reask": {
@@ -6165,9 +6165,9 @@
                 "roman": "ne?",
                 "en": "Sorry?"
               },
-              "audio_url": "u03-mina/rp-01-reask"
+              "audio_url": "u03-mina/rp-01-reask-r2"
             },
-            "player_audio_url": "u03-mina/d-06"
+            "player_audio_url": "u03-mina/d-06-r2"
           }
         },
         {
@@ -6295,7 +6295,7 @@
                 "roman": "ne?",
                 "en": "Sorry?"
               },
-              "audio_url": "u03-mina/rp-01-reask"
+              "audio_url": "u03-mina/rp-01-reask-r2"
             },
             "player_audio_url": ""
           }
@@ -6323,7 +6323,7 @@
               "roman": "jeoneun iljuil mugeoyo.",
               "en": "I'm staying a week."
             },
-            "audio_url": "u03-mina/d-10",
+            "audio_url": "u03-mina/d-10-r2",
             "image_url": "content/images/u03-mina/pre-4.webp"
           },
           "tiles": [
@@ -6391,7 +6391,7 @@
                   "roman": "jeoneun iteul meonjeo wanneunde 2ju isseul geoyeyo.",
                   "en": "I came two days earlier, and I'll stay two weeks."
                 },
-                "audio_url": "u03-mina/d-09"
+                "audio_url": "u03-mina/d-09-r2"
               }
             ],
             "reask": {
@@ -6401,9 +6401,9 @@
                 "roman": "ne?",
                 "en": "Sorry?"
               },
-              "audio_url": "u03-mina/rp-01-reask"
+              "audio_url": "u03-mina/rp-01-reask-r2"
             },
-            "player_audio_url": "u03-mina/d-10"
+            "player_audio_url": "u03-mina/d-10-r2"
           }
         }
       ],
