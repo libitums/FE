@@ -6,6 +6,7 @@
 	<array>
 		<string>applinks:duru.airbridge.io</string>
 		<string>applinks:duru.abr.ge</string>
+		<string>applinks:go.k-duru.com</string>
 	</array>
 	<key>aps-environment</key>
 	<string>development</string>

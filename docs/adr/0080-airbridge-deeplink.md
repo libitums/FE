@@ -57,6 +57,14 @@
 | 웹 링크 | `Host.entitlements` `applinks:duru.airbridge.io` · `applinks:duru.abr.ge` | `autoVerify` 필터 `https://duru.airbridge.io` · `https://duru.abr.ge` |
 | 대시보드에 넣을 것 | App ID `7SJJT6G6JK.com.libitum.host` | 패키지 `libitum.duru.android` + SHA256 지문(Play 앱 서명 키 · 업로드 키 · 디버그 키) |
 
+> ⟨2026-10-26⟩ **커스텀 도메인 `go.k-duru.com`을 더한다.** 트래킹 링크 주소를 우리 도메인으로 바꾸려고 Airbridge 대시보드에
+> 커스텀 도메인을 등록했다(가비아 CNAME → `duru-qw5r.custom-domain.airbridge.io`). iOS는 `applinks:go.k-duru.com`, Android는
+> `http` · `https://go.k-duru.com`을 받는 `autoVerify` 필터를 하나 더 둔다. 필터를 나눠도 Android 11 이하는 앱의 `autoVerify`
+> 도메인 **전부**가 검증돼야 App Link를 켜므로, 이 도메인의 `assetlinks.json`이 떠 있는 것이 기존 두 도메인의 검증 조건이 된다
+> (2026-10-26 세 도메인 모두 같은 지문으로 200 확인). 기존 두 도메인은 그대로다(이미 나간 링크 · 연동 채널 링크는 `abr.ge`). 커스텀 도메인은
+> 커스텀 채널 링크에만 쓰이고 최대 2개다. 이 도메인을 받지 않는 옛 빌드에서는 링크가 브라우저를 거쳐 열린다 [추정]. 위
+> 「다루지 않는 것」의 커스텀 도메인은 이 보충으로 연다.
+
 ## 대가
 
 1. Associated Domains가 서명 프로필에 들어가야 한다 — 자동 서명이 프로필을 다시 만든다. 손 프로필이면 기능을 켜야 한다.
