@@ -4,6 +4,10 @@ import type { Dispatch, SetStateAction } from "@lynx-js/react";
 
 import type { AnalyticsUser } from "../lib/analytics-user.contract";
 import { refreshAuthSession, requestPhoneOtp, verifyPhoneOtp } from "../lib/api-client";
+import { appUpdateDecision, loadStoredAppPolicy } from "../lib/app-policy";
+import { openAppStore } from "../lib/app-update";
+import type { AppUpdateStoreOutcome } from "../lib/app-update.contract";
+import type { AppVersion } from "../lib/app-version";
 import {
   clearAuthSession,
   entryAuthStateFrom,
@@ -15,6 +19,7 @@ import { authDisplayNameFrom, authUserIdFrom } from "../lib/auth-user-id";
 import { legalDocumentOpenedEvent, openLegalDocument } from "../lib/legal-document";
 import type { LegalDocument } from "../lib/legal-document.contract";
 import {
+  appUpdateRequiredEvent,
   entryCompletedEvent,
   entryLoginMethodSelectedEvent,
   entryReturningLearnerEnteredEvent,
@@ -42,6 +47,8 @@ import { entryScreenAfterLogin } from "./screen-routing";
 
 export type EntryWiringArgs = {
   readonly entryEventSink: EntryEventSink;
+  /** 호스트가 보낸 앱 버전 — 스플래시가 나가는 순간의 강제 업데이트 판정(ADR-0086). 모르면 막지 않습니다. */
+  readonly appVersion: AppVersion | null;
   readonly analyticsUser: AnalyticsUser | null;
   readonly dispatch: Dispatch<NavAction>;
   readonly entryLanguage: EntryLanguage;
@@ -64,6 +71,7 @@ export type LearnerSignupWiring = {
 
 export function entryWiring({
   entryEventSink,
+  appVersion,
   analyticsUser,
   dispatch,
   entryLanguage,
@@ -125,6 +133,15 @@ export function entryWiring({
     // 「onboarding」 열람을 올리고 `replace`합니다 — 스플래시는 스택에
     // 남지 않습니다.
     onSplashTimeout: () => {
+      // 강제 업데이트가 먼저입니다(ADR-0086) — 기기에 저장된 마지막 정책(이 실행에서 받았으면 그것)으로 판정하고,
+      // 막히면 세션 갱신 · 앱 진입을 하지 않습니다. 버전을 모르면(Explorer · 테스트) 막지 않습니다.
+      const policy = loadStoredAppPolicy();
+      if (appUpdateDecision(appVersion, policy) === "required" && appVersion !== null) {
+        const minBuild = policy?.minBuild[appVersion.platform] ?? appVersion.build;
+        entryEventSink?.(appUpdateRequiredEvent(appVersion, minBuild));
+        dispatch({ type: "replace", screen: { name: "update-required" } });
+        return;
+      }
       const authState = entryAuthStateFrom(loadAuthSession());
       switch (authState.kind) {
         case "none": {
@@ -239,6 +256,8 @@ export function entryWiring({
       entryEventSink?.(legalDocumentOpenedEvent(document, "login"));
       openLegalDocument(document);
     },
+    // 강제 업데이트 화면의 `Update`입니다(ADR-0086). 호스트가 스토어 페이지를 열고 결과를 돌려줍니다.
+    onOpenAppStore: (): Promise<AppUpdateStoreOutcome> => openAppStore(),
     onLoginBack: () => {
       dispatch({ type: "back" });
     },

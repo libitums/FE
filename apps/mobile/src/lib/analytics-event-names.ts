@@ -10,6 +10,7 @@ export type AnalyticsEventName =
   | "entry_login_method_selected"
   | "entry_completed"
   | "entry_returning_learner_entered"
+  | "app_update_required_shown"
   | "notifications_opened"
   | "notification_item_tapped"
   | "notification_item_deleted"

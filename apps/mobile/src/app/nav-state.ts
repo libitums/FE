@@ -73,6 +73,9 @@ export type Screen =
   | { name: "learner-country"; learnerName: string }
   | { name: "language-select" }
   | { name: "journey-entry" }
+  // 강제 업데이트 화면입니다(ADR-0086). 스플래시가 나가는 순간 정책의 최소 빌드보다 낮으면 스플래시 자리를
+  // 이것으로 `replace`합니다. 필드도 나가는 수단도 없습니다 — 스토어에서 업데이트한 뒤 다시 켜는 것이 유일한 길입니다.
+  | { name: "update-required" }
   // 손글씨 탐침 route입니다. 필드가 없습니다 — 탐침 화면은 스텝도 유닛도 받지
   // 않습니다. **어느 코드도 이 화면을 push하지 않습니다** — 멤버가 여기 서는
   // 이유는 `App.tsx`의 `never` 망라가 case를 강제해서 개발자가

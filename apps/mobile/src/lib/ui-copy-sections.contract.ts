@@ -234,6 +234,18 @@ export type SettingsCopy = {
   readonly deleteFailure: Readonly<Record<"network" | "other", string>>;
   /** 떠난 뒤 새 세션이 한 번 낭독하는 결과 — 키는 `AccountExit` */
   readonly exitAnnouncement: Readonly<Record<"signed-out" | "deleted", string>>;
+  /** 목록 끝 한 줄 — `Version 1.0 (11)`(ADR-0086). */
+  readonly version: (name: string, build: number) => string;
+};
+
+/** 강제 업데이트 화면(진입 `update-required`)의 문구입니다(ADR-0086). */
+export type AppUpdateCopy = {
+  readonly title: string;
+  readonly description: string;
+  /** 버튼 — 스토어의 이 앱 페이지를 연다. */
+  readonly update: string;
+  /** 스토어를 못 열었을 때 버튼 위 문구. */
+  readonly failure: string;
 };
 
 export type ProfileCopy = {

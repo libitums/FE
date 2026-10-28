@@ -69,6 +69,7 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
         <SettingsScreen
           onSelectNavTarget={wiring.onSelectNavTarget}
           learnerProfileSummary={learnerSettingsSummary(wiring)}
+          appVersion={wiring.appVersion}
           onSignOut={wiring.onSignOut}
           onDeleteAccount={wiring.onDeleteAccount}
           onLayerChange={wiring.onScreenLayerChange}
@@ -101,6 +102,7 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
     case "learner-country":
     case "language-select":
     case "journey-entry":
+    case "update-required":
       return renderEntryScreen(screen, wiring);
     case "catalog-cover":
       return renderCatalogCover(screen, wiring);

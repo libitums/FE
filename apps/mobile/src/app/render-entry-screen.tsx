@@ -16,11 +16,12 @@ import { LearnerNameScreen } from "../screens/learner-profile/LearnerNameScreen"
 import { LoginScreen } from "../screens/login/LoginScreen";
 import { OnboardingScreen } from "../screens/onboarding/OnboardingScreen";
 import { SplashScreen } from "../screens/splash/SplashScreen";
+import { UpdateRequiredScreen } from "../screens/update-required/UpdateRequiredScreen";
 import { VerificationCodeScreen } from "../screens/verification-code/VerificationCodeScreen";
 import type { Screen } from "./nav-state";
 import type { ScreenWiring } from "./screen-wiring";
 
-/** 진입 흐름의 route 여덟입니다. `renderScreen`의 `switch`가 이 여덟을 한 자리로 보냅니다. */
+/** 진입 흐름의 route 아홉입니다. `renderScreen`의 `switch`가 이 아홉을 한 자리로 보냅니다. */
 export type EntryScreen = Extract<
   Screen,
   {
@@ -32,7 +33,8 @@ export type EntryScreen = Extract<
       | "learner-name"
       | "learner-country"
       | "language-select"
-      | "journey-entry";
+      | "journey-entry"
+      | "update-required";
   }
 >;
 
@@ -42,6 +44,8 @@ export function renderEntryScreen(screen: EntryScreen, wiring: ScreenWiring) {
   switch (screen.name) {
     case "splash":
       return <SplashScreen onTimeout={wiring.onSplashTimeout} />;
+    case "update-required":
+      return <UpdateRequiredScreen onUpdate={wiring.onOpenAppStore} />;
     case "onboarding":
       return <OnboardingScreen onComplete={wiring.onOnboardingComplete} />;
     case "login":
