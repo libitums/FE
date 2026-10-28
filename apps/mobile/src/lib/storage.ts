@@ -15,11 +15,12 @@
 // 부팅 직후 내려받기 전에도 문장이 채워져야 하고 서버 표가 없는 상태에서도 동작해야 합니다)과 로그인 전 손님 칸
 // (`libitum.learner-profile.guest`, 로그인 뒤 첫 동기화가 사용자별 칸으로 옮기며 지웁니다). 사용자별 칸은
 // 로그아웃에 남고 계정 삭제 성공에 지웁니다. 이름과 나라는 개인정보라 분석 · 로그로 내보내지 않습니다.
-// 기기 범위로 남는 예외는 넷입니다. 서버로 가지 않고 로그아웃·계정 삭제에서도 지우지 않습니다.
+// 기기 범위로 남는 예외는 다섯입니다. 서버로 가지 않고 로그아웃·계정 삭제에서도 지우지 않습니다.
 // - `libitum.ui.language` — UI 언어(ADR-0031 D4, 지우지 않는 근거는 ADR-0032)
 // - `libitum.episode-survey.done` — 설문을 답했거나 건너뛴 에피소드 목록(ADR-0036)
 // - `libitum.app-review.requested` — 스토어 평점 창을 요청한 기록, 설치당 한 번(ADR-0036 D4)
 // - `libitum.learning-item-guides.seen` — 학습 문항 안내를 본 기록(ADR-0054 D3)
+// - `libitum.catalog-update-notice` — 끝낸 에피소드 업데이트 안내를 닫은 상태 서명 · 「다시 보지 않기」(ADR-0089)
 
 /** 호스트가 `StorageModule`이라는 이름으로 등록합니다. */
 interface StorageModule {

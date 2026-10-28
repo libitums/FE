@@ -38,6 +38,8 @@ export type MapUnitStageProps = {
   readonly targetId: SheetTargetId | null;
   /** 표식(LearningUnit · SpecialUnit). */
   readonly children: ReactNode;
+  /** 표식 어깨에 겹치는 태그(NEW 등) — 무대가 기준 상자라 표식 오른쪽 위에 섭니다. 튕김에는 들지 않습니다. */
+  readonly badge?: ReactNode;
 };
 
 const burstAngles = mapUnitBurstRayAngles(mapUnitBurstRayCount);
@@ -82,7 +84,7 @@ function MapUnitBurst(): ReactNode {
  * 퍼집니다. 측정 대상(노드 · 칸)에는 transform을 걸지 않고 튕김은 이 안쪽 래퍼가 집니다. 단계는 순수 파생이라
  * 닫히면 이 렌더에서 사라집니다. 자식은 키를 단 한 배열이라 반짝임이 들고 나도 튕김 래퍼는 같은 노드로 남습니다.
  */
-export function MapUnitStage({ targetId, children }: MapUnitStageProps): ReactNode {
+export function MapUnitStage({ targetId, children, badge }: MapUnitStageProps): ReactNode {
   const stageMotion = mapUnitStageMotionOf(useMapUnitEntrance(), targetId);
   const layers: ReactNode[] = [];
   if (stageMotion === "pop-burst") {
@@ -93,5 +95,11 @@ export function MapUnitStage({ targetId, children }: MapUnitStageProps): ReactNo
       {children}
     </view>,
   );
+  if (badge !== undefined && badge !== null)
+    layers.push(
+      <view key="badge" className="journey-step-node-badge">
+        {badge}
+      </view>,
+    );
   return <view className="journey-step-node-stage">{layers}</view>;
 }

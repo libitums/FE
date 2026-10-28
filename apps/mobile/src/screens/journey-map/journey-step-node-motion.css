@@ -14,6 +14,16 @@
   overflow: visible;
 }
 
+/* 표식 어깨의 태그 자리(NEW 등) — 무대의 오른쪽 위 모서리입니다. Lynx의 절대 배치는 바로 위 부모가 기준이고
+   `overflow` 기본값이 `hidden`이라, 태그를 직접 두지 않고 이 상자가 자리를 잡고 넘침을 엽니다. 표식 뒤(DOM 뒤)라 위에
+   그려집니다 — ⟨2026-10-28 iOS 시뮬레이터⟩ 여기에 `z-index`를 주면 상자가 그려지지 않아 두지 않습니다. */
+.journey-step-node-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  overflow: visible;
+}
+
 /* 튕김 — 눌림(안쪽 표식의 `:active`)과 다른 요소라 서로 덮어쓰지 않고 곱해집니다. */
 .journey-step-node-pop {
   overflow: visible;

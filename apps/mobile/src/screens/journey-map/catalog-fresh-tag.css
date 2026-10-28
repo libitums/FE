@@ -1,0 +1,19 @@
+/* 끝낸 에피소드에 업데이트로 생긴 유닛의 NEW 태그(시안 G) — 자리는 표식 무대의 태그 상자(`journey-step-node-badge`,
+   오른쪽 위 모서리)가 잡습니다. 원형 노드는 그 모서리가 원 밖이라 어깨에 붙어 보입니다. */
+.catalog-fresh-tag {
+  /* 줄을 바꾸지 않습니다 — 자리 상자의 폭이 좁으면 「NEW」가 글자마다 꺾입니다. */
+  white-space: nowrap;
+  flex-shrink: 0;
+  padding: var(--libitum-spacing-2) var(--libitum-spacing-8);
+  border-radius: var(--libitum-radius-full);
+  border-width: 2px;
+  border-style: solid;
+  border-color: var(--libitum-color-white);
+  background-color: var(--libitum-color-brand-primary);
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-label-s-font-family);
+  font-size: var(--libitum-typography-label-s-font-size);
+  font-weight: var(--libitum-typography-label-s-font-weight);
+  line-height: var(--libitum-typography-label-s-line-height);
+  letter-spacing: var(--libitum-typography-label-s-letter-spacing);
+}

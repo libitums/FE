@@ -31,6 +31,8 @@ export type SpecialUnitMapItemProps = {
   readonly layer?: SpecialUnitMapLayer; // 기본 "map"
   /** 표식 · 라벨 뒤에 붙는 겹(안내 말풍선). */
   readonly children?: ReactNode;
+  /** 표식 어깨의 태그(`MapUnitStage` `badge`). */
+  readonly badge?: ReactNode;
   /** 이 항목이 여는 말풍선의 키(카탈로그 최종만). 없으면 튕김 · 반짝임이 서지 않습니다. */
   readonly sheetTargetId?: SheetTargetId;
 };

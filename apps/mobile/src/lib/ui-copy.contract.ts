@@ -12,6 +12,7 @@ import type { RoleplayStoryCopy } from "../screens/roleplay-story/roleplay-story
 import type { CatalogCoverCopy } from "../screens/catalog-cover/catalog-cover.contract";
 import type { CatalogFinalCopy } from "../screens/catalog-final/catalog-final.contract";
 import type { CatalogMapCopy } from "../screens/journey-map/catalog-map.contract";
+import type { CatalogUpdateNoticeCopy } from "../screens/catalog-update/catalog-update-notice.contract";
 import type { ProgressLoadCopy } from "../screens/journey-map/journey-map-load.contract";
 import type { SpecialUnitMapCopy } from "../screens/journey-map/journey-special-unit.contract";
 import type { SplashCopy } from "../screens/splash/splash.contract";
@@ -76,6 +77,7 @@ export type UiCopy = {
   readonly feedback: FeedbackCopy;
   readonly gemPurchase: GemPurchaseCopy;
   readonly catalogMap: CatalogMapCopy;
+  readonly catalogUpdateNotice: CatalogUpdateNoticeCopy;
   readonly catalogCover: CatalogCoverCopy;
   readonly typing: TypingCopy;
   readonly vocabCard: VocabCardCopy;

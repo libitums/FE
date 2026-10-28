@@ -15,6 +15,7 @@ import { MapUnitStage } from "./MapUnitStage";
 import { SpecialUnitMapItem } from "./SpecialUnitMapItem";
 
 import "./journey-step-node.css";
+import "./catalog-fresh-tag.css";
 
 // 표지의 상태 어휘를 `LearningUnit`의 어휘로 옮깁니다 — 레슨 · 문화 노드만 씁니다.
 const unitStatusByStatus = {
@@ -37,6 +38,20 @@ const lessonIconByRole: Readonly<Record<Exclude<CatalogUnitNodeRole, "final">, s
   culture: lantern,
 };
 
+// 끝낸 에피소드에 업데이트로 생긴 유닛의 태그입니다 — 장식이라 낭독은 노드 이름의 꼬리(`freshNodeLabel`)가 맡습니다.
+function CatalogFreshTag({ id }: { readonly id: string }) {
+  const copy = useUiCopy();
+  return (
+    <text
+      className="catalog-fresh-tag"
+      data-testid={`catalog-fresh-tag-${id}`}
+      accessibility-element={false}
+    >
+      {copy.catalogMap.freshTag}
+    </text>
+  );
+}
+
 // 카탈로그 노드입니다. 상태(잠김 · 열림 · 끝)는 사슬에서 파생되어 내려오고, 열린 노드만 고름을
 // 올립니다(맵이 말풍선을 엽니다 — 바로 시작하지 않습니다). 레슨(`play`) · 문화(`lantern-05`)는 원형
 // `LearningUnit`이고, 최종만 스페셜 항목입니다.
@@ -48,20 +63,28 @@ export function CatalogUnitNode(props: CatalogUnitNodeProps): ReactNode {
   );
 }
 
-function CatalogSpecialNode({ episodeId, episodeOrdinal, node, onSelect }: CatalogUnitNodeProps) {
+function CatalogSpecialNode({
+  episodeId,
+  episodeOrdinal,
+  node,
+  onSelect,
+  fresh = false,
+}: CatalogUnitNodeProps) {
   const copy = useUiCopy();
+  const label = catalogUnitNodeAccessibilityLabel(episodeOrdinal, node, copy);
 
   return (
     <SpecialUnitMapItem
       unitId={`catalog-unit-${episodeId}-${node.key}`}
       title={catalogUnitNodeTitle(node, copy)}
-      accessibilityName={catalogUnitNodeAccessibilityLabel(episodeOrdinal, node, copy)}
+      accessibilityName={fresh ? copy.catalogMap.freshNodeLabel(label) : label}
       status={node.status}
       sheetTargetId={catalogSheetKey(episodeId, node.key)}
       onSelect={(tapY) => {
         "background only";
         onSelect(episodeId, node.key, tapY);
       }}
+      {...(fresh ? { badge: <CatalogFreshTag id={`${episodeId}-${node.key}`} /> } : {})}
     />
   );
 }
@@ -73,8 +96,10 @@ function CatalogLessonNode({
   node,
   onSelect,
   icon,
+  fresh = false,
 }: CatalogUnitNodeProps & { readonly icon: string }) {
   const copy = useUiCopy();
+  const label = catalogUnitNodeAccessibilityLabel(episodeOrdinal, node, copy);
   const handleSelect = (event: LearningUnitTapEvent) => {
     "background only";
     if (canSelectMapNode(node.status)) {
@@ -85,10 +110,13 @@ function CatalogLessonNode({
 
   return (
     <view className="journey-step-node">
-      <MapUnitStage targetId={catalogSheetKey(episodeId, node.key)}>
+      <MapUnitStage
+        targetId={catalogSheetKey(episodeId, node.key)}
+        {...(fresh ? { badge: <CatalogFreshTag id={`${episodeId}-${node.key}`} /> } : {})}
+      >
         <LearningUnit
           id={`catalog-unit-${episodeId}-${node.key}`}
-          accessibilityLabel={catalogUnitNodeAccessibilityLabel(episodeOrdinal, node, copy)}
+          accessibilityLabel={fresh ? copy.catalogMap.freshNodeLabel(label) : label}
           icon={icon}
           status={lessonUnitStatusOf(node)}
           narrative="none"

@@ -64,6 +64,11 @@ export const statusBarSurfaceRegistry = {
       classification: "default-scrim",
       carriers: [],
     },
+    // 끝낸 에피소드 업데이트 안내(ADR-0089) — 티켓 없음 대화상자와 같은 ui-lynx 기본 스크림이라 표지가 없다.
+    "screens/catalog-update/catalog-update-notice.css": {
+      classification: "default-scrim",
+      carriers: [],
+    },
     "screens/gem-purchase/gem-purchase-screen.css": {
       classification: "unreachable",
       carriers: [],
