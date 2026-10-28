@@ -11,6 +11,8 @@ import u05Baekban from "../../content/episodes/u05-baekban.json";
 import u06Cafe from "../../content/episodes/u06-cafe.json";
 import u07Jaemin from "../../content/episodes/u07-jaemin.json";
 import u08Umbrella from "../../content/episodes/u08-umbrella.json";
+import u09Subway from "../../content/episodes/u09-subway.json";
+import u10Laundry from "../../content/episodes/u10-laundry.json";
 import type { CatalogInput } from "./episode-catalog";
 import { decodeManifest } from "./episode-manifest";
 
@@ -33,5 +35,7 @@ export const bundledCatalogInput: CatalogInput["bundled"] = {
     "u06-cafe": u06Cafe,
     "u07-jaemin": u07Jaemin,
     "u08-umbrella": u08Umbrella,
+    "u09-subway": u09Subway,
+    "u10-laundry": u10Laundry,
   },
 };

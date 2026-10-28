@@ -9,7 +9,7 @@ import { buildEpisodeCatalog, checkEpisodeText } from "./episode-catalog";
 import { episodeAssetPaths } from "./episode-assets";
 import { TUTORIAL_EPISODE_ID } from "./tutorial-episode";
 
-// `unit` 계층: 실제 내장본(2026-10-26 버킷 최신본 u00 ~ u08)을 봅니다. 다른 테스트는 `vitest.setup.ts`가 고정본으로
+// `unit` 계층: 실제 내장본(2026-10-28 버킷 level-2 판 u00 ~ u10 — INT 포함 · 소리 교정)을 봅니다. 다른 테스트는 `vitest.setup.ts`가 고정본으로
 // 바꾸므로, 여기서 그 대역을 되돌립니다. 내장본을 갈아 끼울 때 이 파일의 기대(편 수)만 맞춥니다.
 vi.unmock("./episode-bundled");
 vi.unmock("./bundled-content-images");
@@ -24,13 +24,15 @@ const BUNDLED_IDS = [
   "u06-cafe",
   "u07-jaemin",
   "u08-umbrella",
+  "u09-subway",
+  "u10-laundry",
 ];
 
 const textOf = (url: string): string =>
   readFileSync(resolve(process.cwd(), "content", url), "utf8");
 
 describe("실제 내장본", () => {
-  test("BL1. 매니페스트는 u00 ~ u08 아홉 편이 order 0 ~ 8 순서이고 본문 키가 같다", () => {
+  test("BL1. 매니페스트는 u00 ~ u10 열한 편이 order 0 ~ 10 순서이고 본문 키가 같다", () => {
     const entries = bundledCatalogInput.manifest.episodes;
     expect(entries.map((entry) => entry.id)).toEqual(BUNDLED_IDS);
     expect(entries.map((entry) => entry.order)).toEqual(BUNDLED_IDS.map((_, index) => index));
@@ -44,7 +46,7 @@ describe("실제 내장본", () => {
     }
   });
 
-  test("BL3. 내장만으로 아홉 편이 모두 ready다", () => {
+  test("BL3. 내장만으로 열한 편이 모두 ready다", () => {
     const catalog = buildEpisodeCatalog({
       bundled: bundledCatalogInput,
       cache: { manifest: null, episodes: {} },

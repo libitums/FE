@@ -20,7 +20,7 @@
         "en": "Could use a coffee. That cafe from yesterday was around here, right?"
       },
       "image_brief": "아침 골목. 햇빛이 한옥 처마에 걸려 있다.",
-      "image_url": "content/images/u06-cafe/pre-1.webp",
+      "image_url": "content/images/u06-cafe/pre-1-v2.webp",
       "audio_url": ""
     },
     {
@@ -33,7 +33,7 @@
         "en": "Around the corner, the cafe that was locked last night has its lights on."
       },
       "image_brief": "골목 모퉁이의 카페 끌림에 불이 켜져 있다.",
-      "image_url": "content/images/u06-cafe/pre-2.webp",
+      "image_url": "content/images/u06-cafe/pre-2-v2.webp",
       "audio_url": ""
     },
     {
@@ -52,7 +52,7 @@
         "en": "Handing a cup to the customer ahead."
       },
       "image_brief": "카운터 안에서 직원이 앞 손님에게 컵을 건넨다.",
-      "image_url": "content/images/u06-cafe/pre-3.webp",
+      "image_url": "content/images/u06-cafe/pre-3-v2.webp",
       "audio_url": "u06-cafe/pre-3-r2"
     },
     {
@@ -65,7 +65,7 @@
         "en": "The name tag on the apron says \"Doyun.\" It's the one who gave directions yesterday."
       },
       "image_brief": "앞치마 명찰에 '도윤'이라고 적혀 있다.",
-      "image_url": "content/images/u06-cafe/pre-4.webp",
+      "image_url": "content/images/u06-cafe/pre-4-v2.webp",
       "audio_url": ""
     },
     {
@@ -84,7 +84,7 @@
         "en": "Looking up, eyes meeting, breaking into a big smile."
       },
       "image_brief": "도윤이 고개를 들다 눈이 마주친다.",
-      "image_url": "content/images/u06-cafe/pre-5.webp",
+      "image_url": "content/images/u06-cafe/pre-5-v2.webp",
       "audio_url": "u06-cafe/d-01-r2"
     }
   ],
@@ -305,7 +305,7 @@
         "en": "Setting a glass full of ice on the counter."
       },
       "image_brief": "도윤이 얼음 가득한 유리잔을 카운터에 올려놓는다.",
-      "image_url": "content/images/u06-cafe/post-1.webp",
+      "image_url": "content/images/u06-cafe/post-1-v2.webp",
       "audio_url": "u06-cafe/post-1-r2"
     },
     {
@@ -324,7 +324,7 @@
         "en": "Leaning on the counter."
       },
       "image_brief": "도윤이 카운터에 팔을 짚고 몸을 조금 내민다.",
-      "image_url": "content/images/u06-cafe/post-2.webp",
+      "image_url": "content/images/u06-cafe/post-2-v2.webp",
       "audio_url": "u06-cafe/post-2-r2"
     },
     {
@@ -3501,62 +3501,6 @@
           "level": 2,
           "skill": "듣기",
           "skill_level": 1,
-          "ref": "voca:fe376448",
-          "prompt": {
-            "ko": "무엇을 들었나요?",
-            "en": "What did you hear?"
-          },
-          "stimulus": {
-            "audio": {
-              "ko": "네. 영수증 드릴까요?",
-              "roman": "ne. yeongsujeung deurilkkayo?",
-              "en": "Okay. Would you like a receipt?"
-            },
-            "audio_url": "u06-cafe/d-09-r2",
-            "image_url": ""
-          },
-          "options": [
-            {
-              "id": "o1",
-              "ko": "반가워요. 뭐 드릴까요?",
-              "roman": "bangawoyo. mwo deurilkkayo?",
-              "en": "Good to see you. What can I get you?",
-              "correct": false,
-              "why_wrong": "이 자리에 맞는 말이 아니다"
-            },
-            {
-              "id": "o2",
-              "ko": "아이스 아메리카노요. 드시고 가세요?",
-              "roman": "aiseu amerikanoyo. deusigo gaseyo?",
-              "en": "One iced americano. Is that for here or to go?",
-              "correct": false,
-              "why_wrong": "이 자리에 맞는 말이 아니다"
-            },
-            {
-              "id": "o3",
-              "ko": "어, 어제 그분 맞죠?",
-              "roman": "eo, eoje geubun matjyo?",
-              "en": "Oh, you're the one from yesterday, right?",
-              "correct": false,
-              "why_wrong": "이 자리에 맞는 말이 아니다"
-            },
-            {
-              "id": "o4",
-              "ko": "네. 영수증 드릴까요?",
-              "roman": "ne. yeongsujeung deurilkkayo?",
-              "en": "Okay. Would you like a receipt?",
-              "correct": true
-            }
-          ]
-        },
-        {
-          "id": "S4-21",
-          "type": "LISTEN_SELECT",
-          "mode": "choice",
-          "event": "R",
-          "level": 2,
-          "skill": "듣기",
-          "skill_level": 1,
           "ref": "voca:6ca8c783",
           "prompt": {
             "ko": "무엇을 들었나요?",
@@ -3608,8 +3552,160 @@
       ]
     },
     {
+      "id": "INT",
+      "kind": "interlude",
+      "items": [],
+      "interlude": {
+        "form": "message",
+        "anchor": "earlier",
+        "caption": {
+          "ko": "오늘 아침, 201호",
+          "roman": "oneul achim, 201ho",
+          "en": "This morning, Room 201"
+        },
+        "cuts": [
+          {
+            "index": 1,
+            "cut_kind": "message",
+            "speaker": "미나",
+            "line": {
+              "ko": "Mami, alles guet!",
+              "roman": "Mami, alles guet!",
+              "en": "(Swiss German) Mom, all good!"
+            },
+            "background_url": "content/images/u03-mina/pre-1.webp"
+          },
+          {
+            "index": 2,
+            "cut_kind": "message",
+            "speaker": "미나",
+            "line": {
+              "ko": "앗!",
+              "roman": "at!",
+              "en": "Oops!"
+            },
+            "background_url": "content/images/u03-mina/pre-1.webp"
+          },
+          {
+            "index": 3,
+            "cut_kind": "message",
+            "speaker": "미나",
+            "line": {
+              "ko": "죄송해요. 엄마한테...",
+              "roman": "joesonghaeyo. eommahante...",
+              "en": "Sorry. That was for my mom..."
+            },
+            "background_url": "content/images/u03-mina/pre-1.webp"
+          },
+          {
+            "index": 4,
+            "cut_kind": "message_reply",
+            "speaker": "플레이어",
+            "options": [
+              {
+                "ko": "괜찮아요.",
+                "roman": "gwaenchanayo.",
+                "en": "It's okay."
+              },
+              {
+                "ko": "안녕하세요, 반가워요.",
+                "roman": "annyeonghaseyo, bangawoyo.",
+                "en": "Hello, nice to meet you."
+              }
+            ],
+            "background_url": "content/images/u03-mina/pre-1.webp"
+          },
+          {
+            "index": 5,
+            "cut_kind": "message",
+            "speaker": "미나",
+            "line": {
+              "ko": "휴...",
+              "roman": "hyu...",
+              "en": "Phew..."
+            },
+            "after_option": 1,
+            "background_url": "content/images/u03-mina/pre-1.webp"
+          },
+          {
+            "index": 5,
+            "cut_kind": "message",
+            "speaker": "미나",
+            "line": {
+              "ko": "엄마한테 말할게요. ㅎㅎ",
+              "roman": "eommahante malhalgeyo. ㅎㅎ",
+              "en": "I'll tell my mom, haha."
+            },
+            "after_option": 2,
+            "background_url": "content/images/u03-mina/pre-1.webp"
+          },
+          {
+            "index": 6,
+            "cut_kind": "message",
+            "speaker": "미나",
+            "line": {
+              "ko": "어제 김치찌개 어땠어요?",
+              "roman": "eoje gimchijjigae eottaesseoyo?",
+              "en": "How was the kimchi stew last night?"
+            },
+            "background_url": "content/images/u03-mina/pre-1.webp"
+          },
+          {
+            "index": 7,
+            "cut_kind": "message_reply",
+            "speaker": "플레이어",
+            "options": [
+              {
+                "ko": "맛있어요!",
+                "roman": "masisseoyo!",
+                "en": "It's good!"
+              },
+              {
+                "ko": "조금 매워요.",
+                "roman": "jogeum maewoyo.",
+                "en": "It's a little spicy."
+              }
+            ],
+            "background_url": "content/images/u03-mina/pre-1.webp"
+          },
+          {
+            "index": 8,
+            "cut_kind": "message",
+            "speaker": "미나",
+            "line": {
+              "ko": "와, 진짜요? 저는 많이 매웠어요...",
+              "roman": "wa, jinjjayo? jeoneun mani maewosseoyo...",
+              "en": "Wow, really? It was really spicy for me..."
+            },
+            "after_option": 1,
+            "background_url": "content/images/u03-mina/pre-1.webp"
+          },
+          {
+            "index": 8,
+            "cut_kind": "message",
+            "speaker": "미나",
+            "line": {
+              "ko": "조금이요?! 저는 물 세 병 마셨어요...",
+              "roman": "jogeumiyo?! jeoneun mul se byeong masyeosseoyo...",
+              "en": "A little?! I drank three bottles of water..."
+            },
+            "after_option": 2,
+            "background_url": "content/images/u03-mina/pre-1.webp"
+          }
+        ],
+        "background_url": "content/images/u03-mina/pre-1.webp",
+        "profiles": [
+          {
+            "speaker": "미나",
+            "image_url": "content/images/profiles/mina-casual.webp"
+          }
+        ]
+      },
+      "order": 5
+    },
+    {
       "id": "S5",
-      "order": 5,
+      "order": 6,
       "items": [
         {
           "id": "S5-01",
@@ -4146,7 +4242,7 @@
     },
     {
       "id": "S6",
-      "order": 6,
+      "order": 7,
       "items": [
         {
           "id": "S6-01",
@@ -4788,7 +4884,7 @@
     },
     {
       "id": "S7",
-      "order": 7,
+      "order": 8,
       "items": [
         {
           "id": "S7-01",
@@ -5464,7 +5560,7 @@
     },
     {
       "id": "S8",
-      "order": 8,
+      "order": 9,
       "items": [
         {
           "id": "S8-01",
@@ -5609,62 +5705,157 @@
         },
         {
           "id": "S8-04",
-          "type": "DICTATION",
-          "mode": "typing",
+          "type": "LISTEN_BUILD",
+          "mode": "tiles",
           "event": "R",
-          "level": 4,
-          "skill": "쓰기",
-          "skill_level": 2,
-          "ref": "voca:f7839c66",
+          "level": 3,
+          "skill": "듣기",
+          "skill_level": 3,
+          "ref": "expr:0e57ea3d",
           "prompt": {
-            "ko": "들은 대로 쓰세요.",
-            "en": "Type what you hear."
+            "ko": "듣고 문장을 만드세요.",
+            "en": "Listen and build the sentence."
           },
           "stimulus": {
             "audio": {
-              "ko": "뭐",
-              "roman": "mwo",
-              "en": "what"
+              "ko": "네. 영수증 드릴까요?",
+              "roman": "ne. yeongsujeung deurilkkayo?",
+              "en": "Okay. Would you like a receipt?"
             },
-            "audio_url": "u06-cafe/s3-05-word-r2",
+            "audio_url": "u06-cafe/d-09-r2",
             "image_url": ""
           },
+          "tiles": [
+            {
+              "ko": "네.",
+              "roman": "ne."
+            },
+            {
+              "ko": "영수증",
+              "roman": "yeongsujeung",
+              "en": "receipt"
+            },
+            {
+              "ko": "드릴까요?",
+              "roman": "deurilkkayo?",
+              "en": "Would you like ~? (offering)"
+            },
+            {
+              "ko": "맞아요.",
+              "roman": "majayo."
+            },
+            {
+              "ko": "주세요.",
+              "roman": "juseyo."
+            }
+          ],
           "answers": [
             {
-              "ko": "뭐",
-              "roman": "mwo",
-              "en": "what"
+              "ko": "네. 영수증 드릴까요?",
+              "roman": "ne. yeongsujeung deurilkkayo?",
+              "en": "Okay. Would you like a receipt?"
             }
           ]
         },
         {
           "id": "S8-05",
-          "type": "SPEAK_WORD",
-          "mode": "speech",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
           "event": "R",
-          "level": 4,
-          "skill": "말하기",
-          "skill_level": 2,
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
           "ref": "voca:fe376448",
           "prompt": {
-            "ko": "그림을 보고 말하세요.",
-            "en": "Say the word for the picture."
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
           },
           "stimulus": {
-            "audio_url": "u06-cafe/s3-08-word-r2",
-            "image_brief": "receipt - 한 컷으로 알아볼 수 있게",
-            "image_url": "content/images/items/receipt.webp"
+            "audio": {
+              "ko": "네. 영수증 드릴까요?",
+              "roman": "ne. yeongsujeung deurilkkayo?",
+              "en": "Okay. Would you like a receipt?"
+            },
+            "audio_url": "u06-cafe/d-09-r2",
+            "image_url": ""
           },
-          "answers": [
+          "options": [
             {
-              "ko": "영수증",
-              "roman": "yeongsujeung",
-              "en": "receipt"
+              "id": "o1",
+              "ko": "반가워요. 뭐 드릴까요?",
+              "roman": "bangawoyo. mwo deurilkkayo?",
+              "en": "Good to see you. What can I get you?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "나오면 불러 드릴게요.",
+              "roman": "naomyeon bulleo deurilgeyo.",
+              "en": "I'll call you when it's ready.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "네. 영수증 드릴까요?",
+              "roman": "ne. yeongsujeung deurilkkayo?",
+              "en": "Okay. Would you like a receipt?",
+              "correct": true
+            },
+            {
+              "id": "o4",
+              "ko": "어, 어제 그분 맞죠?",
+              "roman": "eo, eoje geubun matjyo?",
+              "en": "Oh, you're the one from yesterday, right?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
             }
           ]
         },
         {
           "id": "S8-06",
+          "type": "CLOZE",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "읽기",
+          "skill_level": 3,
+          "ref": "voca:e1c255d4",
+          "prompt": {
+            "ko": "빈칸을 채우세요.",
+            "en": "Fill in the blank."
+          },
+          "context": {
+            "ko": "___, 괜찮아요.",
+            "roman": "___, gwaenchanayo.",
+            "en": "No, I'm fine."
+          },
+          "tiles": [
+            {
+              "ko": "아니요",
+              "roman": "aniyo",
+              "en": "no"
+            },
+            {
+              "ko": "드릴까요",
+              "roman": "deurilkkayo"
+            },
+            {
+              "ko": "괜찮아요",
+              "roman": "gwaenchanayo"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "아니요",
+              "roman": "aniyo",
+              "en": "no"
+            }
+          ]
+        },
+        {
+          "id": "S8-07",
           "type": "LISTEN_SELECT",
           "mode": "choice",
           "event": "R",
@@ -5716,47 +5907,6 @@
               "roman": "aiseu amerikano han jan juseyo.",
               "en": "One iced americano, please.",
               "correct": true
-            }
-          ]
-        },
-        {
-          "id": "S8-07",
-          "type": "CLOZE",
-          "mode": "tiles",
-          "event": "R",
-          "level": 3,
-          "skill": "읽기",
-          "skill_level": 3,
-          "ref": "voca:e1c255d4",
-          "prompt": {
-            "ko": "빈칸을 채우세요.",
-            "en": "Fill in the blank."
-          },
-          "context": {
-            "ko": "___, 괜찮아요.",
-            "roman": "___, gwaenchanayo.",
-            "en": "No, I'm fine."
-          },
-          "tiles": [
-            {
-              "ko": "아니요",
-              "roman": "aniyo",
-              "en": "no"
-            },
-            {
-              "ko": "드릴까요",
-              "roman": "deurilkkayo"
-            },
-            {
-              "ko": "괜찮아요",
-              "roman": "gwaenchanayo"
-            }
-          ],
-          "answers": [
-            {
-              "ko": "아니요",
-              "roman": "aniyo",
-              "en": "no"
             }
           ]
         },
@@ -5817,29 +5967,64 @@
         },
         {
           "id": "S8-09",
-          "type": "DICTATION",
-          "mode": "typing",
+          "type": "LISTEN_BUILD",
+          "mode": "tiles",
           "event": "R",
-          "level": 4,
-          "skill": "쓰기",
-          "skill_level": 2,
-          "ref": "voca:2b9a12e5",
+          "level": 3,
+          "skill": "듣기",
+          "skill_level": 3,
+          "ref": "gram:92e8afd2",
           "prompt": {
-            "ko": "들은 대로 쓰세요.",
-            "en": "Type what you hear."
+            "ko": "듣고 문장을 만드세요.",
+            "en": "Listen and build the sentence."
           },
           "stimulus": {
             "audio": {
-              "ko": "맞아요",
-              "roman": "majayo"
+              "ko": "따뜻한 아메리카노 한 잔 주세요.",
+              "roman": "ttatteuthan amerikano han jan juseyo.",
+              "en": "One hot americano, please."
             },
-            "audio_url": "u06-cafe/s8-08-stim-r2",
+            "audio_url": "u06-cafe/d-12-r2",
             "image_url": ""
           },
+          "tiles": [
+            {
+              "ko": "따뜻한",
+              "roman": "ttatteuthan"
+            },
+            {
+              "ko": "아메리카노",
+              "roman": "amerikano",
+              "en": "Americano"
+            },
+            {
+              "ko": "한",
+              "roman": "han",
+              "en": "one (before a counter)"
+            },
+            {
+              "ko": "잔",
+              "roman": "jan",
+              "en": "cup (counter)"
+            },
+            {
+              "ko": "주세요.",
+              "roman": "juseyo."
+            },
+            {
+              "ko": "반가워요.",
+              "roman": "bangawoyo."
+            },
+            {
+              "ko": "얼마예요?",
+              "roman": "eolmayeyo?"
+            }
+          ],
           "answers": [
             {
-              "ko": "맞아요",
-              "roman": "majayo"
+              "ko": "따뜻한 아메리카노 한 잔 주세요.",
+              "roman": "ttatteuthan amerikano han jan juseyo.",
+              "en": "One hot americano, please."
             }
           ]
         },
@@ -5900,31 +6085,58 @@
         },
         {
           "id": "S8-11",
-          "type": "DICTATION",
-          "mode": "typing",
+          "type": "LISTEN_BUILD",
+          "mode": "tiles",
           "event": "R",
-          "level": 4,
-          "skill": "쓰기",
-          "skill_level": 2,
+          "level": 3,
+          "skill": "듣기",
+          "skill_level": 3,
           "ref": "voca:86f2d0be",
           "prompt": {
-            "ko": "들은 대로 쓰세요.",
-            "en": "Type what you hear."
+            "ko": "듣고 문장을 만드세요.",
+            "en": "Listen and build the sentence."
           },
           "stimulus": {
             "audio": {
-              "ko": "아이스",
-              "roman": "aiseu",
-              "en": "iced"
+              "ko": "아이스 아메리카노요. 드시고 가세요?",
+              "roman": "aiseu amerikanoyo. deusigo gaseyo?",
+              "en": "Iced americano. For here?"
             },
-            "audio_url": "u06-cafe/s1-05-word-r2",
+            "audio_url": "u06-cafe/d-05-r2",
             "image_url": ""
           },
-          "answers": [
+          "tiles": [
             {
               "ko": "아이스",
               "roman": "aiseu",
               "en": "iced"
+            },
+            {
+              "ko": "아메리카노요.",
+              "roman": "amerikanoyo."
+            },
+            {
+              "ko": "드시고",
+              "roman": "deusigo"
+            },
+            {
+              "ko": "가세요?",
+              "roman": "gaseyo?"
+            },
+            {
+              "ko": "맞죠?",
+              "roman": "matjyo?"
+            },
+            {
+              "ko": "포장이요.",
+              "roman": "pojangiyo."
+            }
+          ],
+          "answers": [
+            {
+              "ko": "아이스 아메리카노요. 드시고 가세요?",
+              "roman": "aiseu amerikanoyo. deusigo gaseyo?",
+              "en": "Iced americano. For here?"
             }
           ]
         },
@@ -5969,29 +6181,49 @@
         },
         {
           "id": "S8-13",
-          "type": "DICTATION",
-          "mode": "typing",
+          "type": "LISTEN_BUILD",
+          "mode": "tiles",
           "event": "R",
-          "level": 4,
-          "skill": "쓰기",
-          "skill_level": 2,
-          "ref": "voca:67746a6b",
+          "level": 3,
+          "skill": "듣기",
+          "skill_level": 3,
+          "ref": "voca:be2eb7e3",
           "prompt": {
-            "ko": "들은 대로 쓰세요.",
-            "en": "Type what you hear."
+            "ko": "듣고 문장을 만드세요.",
+            "en": "Listen and build the sentence."
           },
           "stimulus": {
             "audio": {
-              "ko": "가세요",
-              "roman": "gaseyo"
+              "ko": "카드로 할게요.",
+              "roman": "kadeuro halgeyo.",
+              "en": "I'll pay by card."
             },
-            "audio_url": "u06-cafe/s8-13-stim-r2",
+            "audio_url": "u06-cafe/d-08-r2",
             "image_url": ""
           },
+          "tiles": [
+            {
+              "ko": "카드로",
+              "roman": "kadeuro"
+            },
+            {
+              "ko": "할게요.",
+              "roman": "halgeyo."
+            },
+            {
+              "ko": "안녕하세요.",
+              "roman": "annyeonghaseyo."
+            },
+            {
+              "ko": "가세요?",
+              "roman": "gaseyo?"
+            }
+          ],
           "answers": [
             {
-              "ko": "가세요",
-              "roman": "gaseyo"
+              "ko": "카드로 할게요.",
+              "roman": "kadeuro halgeyo.",
+              "en": "I'll pay by card."
             }
           ]
         },
@@ -6113,69 +6345,99 @@
           "level": 3,
           "skill": "듣기",
           "skill_level": 3,
-          "ref": "voca:be2eb7e3",
+          "ref": "patt:fbe5e354",
           "prompt": {
             "ko": "듣고 문장을 만드세요.",
             "en": "Listen and build the sentence."
           },
           "stimulus": {
             "audio": {
-              "ko": "카드로 할게요.",
-              "roman": "kadeuro halgeyo.",
-              "en": "I'll pay by card."
+              "ko": "네, 먹고 갈게요. 얼마예요?",
+              "roman": "ne, meokgo galgeyo. eolmayeyo?",
+              "en": "Yes, for here. How much is it?"
             },
-            "audio_url": "u06-cafe/d-08-r2",
+            "audio_url": "u06-cafe/d-06-r2",
             "image_url": ""
           },
           "tiles": [
             {
-              "ko": "카드로",
-              "roman": "kadeuro"
+              "ko": "네,",
+              "roman": "ne,"
             },
             {
-              "ko": "할게요.",
-              "roman": "halgeyo."
+              "ko": "먹고",
+              "roman": "meokgo"
             },
             {
-              "ko": "드릴게요.",
-              "roman": "deurilgeyo."
+              "ko": "갈게요.",
+              "roman": "galgeyo."
             },
             {
-              "ko": "맞죠?",
-              "roman": "matjyo?"
+              "ko": "얼마예요?",
+              "roman": "eolmayeyo?"
+            },
+            {
+              "ko": "포장이요.",
+              "roman": "pojangiyo."
+            },
+            {
+              "ko": "원이에요.",
+              "roman": "wonieyo."
             }
           ],
           "answers": [
             {
-              "ko": "카드로 할게요.",
-              "roman": "kadeuro halgeyo.",
-              "en": "I'll pay by card."
+              "ko": "네, 먹고 갈게요. 얼마예요?",
+              "roman": "ne, meokgo galgeyo. eolmayeyo?",
+              "en": "Yes, for here. How much is it?"
             }
           ]
         },
         {
           "id": "S8-17",
-          "type": "TRANSLATE_TO_KO",
-          "mode": "typing",
+          "type": "SYLLABLE_BUILD",
+          "mode": "tiles",
           "event": "R",
-          "level": 4,
+          "level": 3,
           "skill": "쓰기",
-          "skill_level": 3,
-          "ref": "voca:8d532a47",
+          "skill_level": 1,
+          "ref": "voca:e1c255d4",
           "prompt": {
-            "ko": "한국어로 쓰세요.",
-            "en": "Say this in Korean."
+            "ko": "음절을 골라 낱말을 만드세요.",
+            "en": "Tap the syllables to spell the word."
           },
           "stimulus": {
-            "audio_url": "u06-cafe/s3-02-word-r2",
+            "audio_url": "u06-cafe/s3-01-word-r2",
             "image_url": "",
-            "en": "be okay"
+            "en": "no"
           },
+          "tiles": [
+            {
+              "ko": "아",
+              "roman": "a"
+            },
+            {
+              "ko": "니",
+              "roman": "ni"
+            },
+            {
+              "ko": "요",
+              "roman": "yo"
+            },
+            {
+              "ko": "갑",
+              "roman": "gap"
+            },
+            {
+              "ko": "반",
+              "roman": "ban"
+            }
+          ],
           "answers": [
             {
-              "ko": "괜찮다",
-              "roman": "gwaenchanda",
-              "en": "be okay"
+              "ko": "아니요",
+              "roman": "aniyo",
+              "en": "no"
             }
           ]
         },
@@ -6220,26 +6482,46 @@
         },
         {
           "id": "S8-19",
-          "type": "TRANSLATE_TO_KO",
-          "mode": "typing",
+          "type": "SYLLABLE_BUILD",
+          "mode": "tiles",
           "event": "R",
-          "level": 4,
+          "level": 3,
           "skill": "쓰기",
-          "skill_level": 3,
-          "ref": "voca:2b9a12e5",
+          "skill_level": 1,
+          "ref": "voca:6f174de7",
           "prompt": {
-            "ko": "한국어로 쓰세요.",
-            "en": "Say this in Korean."
+            "ko": "음절을 골라 낱말을 만드세요.",
+            "en": "Tap the syllables to spell the word."
           },
           "stimulus": {
-            "audio_url": "u06-cafe/s8-08-stim-r2",
+            "audio_url": "u06-cafe/s3-12-word-r2",
             "image_url": "",
-            "en": "That's right."
+            "en": "to go (takeout)"
           },
+          "tiles": [
+            {
+              "ko": "포",
+              "roman": "po"
+            },
+            {
+              "ko": "장",
+              "roman": "jang"
+            },
+            {
+              "ko": "제",
+              "roman": "je"
+            },
+            {
+              "ko": "네",
+              "roman": "ne",
+              "en": "yes"
+            }
+          ],
           "answers": [
             {
-              "ko": "맞아요",
-              "roman": "majayo"
+              "ko": "포장",
+              "roman": "pojang",
+              "en": "to go (takeout)"
             }
           ]
         }
@@ -6247,7 +6529,7 @@
     },
     {
       "id": "CULT",
-      "order": 9,
+      "order": 10,
       "items": [
         {
           "id": "CULT-01",
@@ -6303,7 +6585,7 @@
           "feedback": {
             "correct": {
               "ko": "가져갈 거면 「포장이요」, 마시고 갈 거면 「먹고 갈게요」라고 하면 돼요.",
-              "en": "Say \"To go\" if you're taking it out, or \"For here\" if you're staying."
+              "en": "Say \"Pojang-iyo\" (To go) if you're taking it out, or \"Meokgo galgeyo\" (For here) if you're staying."
             }
           }
         },
@@ -6487,7 +6769,7 @@
     },
     {
       "id": "RP",
-      "order": 10,
+      "order": 11,
       "items": [
         {
           "id": "RP-01",
@@ -6513,7 +6795,7 @@
               "en": "Yes, that's me. Hello."
             },
             "audio_url": "u06-cafe/d-02-r2",
-            "image_url": "content/images/u06-cafe/pre-5.webp"
+            "image_url": "content/images/u06-cafe/pre-5-v2.webp"
           },
           "tiles": [
             {
@@ -6620,7 +6902,7 @@
               "en": "One iced americano, please."
             },
             "audio_url": "u06-cafe/d-04-r2",
-            "image_url": "content/images/u06-cafe/pre-5.webp"
+            "image_url": "content/images/u06-cafe/pre-5-v2.webp"
           },
           "tiles": [
             {
@@ -6749,7 +7031,7 @@
               "en": "Yes, for here. How much is it?"
             },
             "audio_url": "u06-cafe/d-06-r2",
-            "image_url": "content/images/u06-cafe/pre-5.webp"
+            "image_url": "content/images/u06-cafe/pre-5-v2.webp"
           },
           "tiles": [
             {
@@ -6862,7 +7144,7 @@
               "en": "I'll pay by card."
             },
             "audio_url": "u06-cafe/d-08-r2",
-            "image_url": "content/images/u06-cafe/pre-5.webp"
+            "image_url": "content/images/u06-cafe/pre-5-v2.webp"
           },
           "tiles": [
             {
@@ -6959,7 +7241,7 @@
               "en": "No, I'm fine."
             },
             "audio_url": "u06-cafe/d-10-r2",
-            "image_url": "content/images/u06-cafe/pre-5.webp"
+            "image_url": "content/images/u06-cafe/pre-5-v2.webp"
           },
           "tiles": [
             {
@@ -7035,7 +7317,7 @@
         }
       ],
       "scene": {
-        "background_image_url": "content/images/u06-cafe/pre-5.webp",
+        "background_image_url": "content/images/u06-cafe/pre-5-v2.webp",
         "counterpart": "한도윤",
         "closing": [
           {
@@ -7045,7 +7327,7 @@
               "roman": "naomyeon bulleo deurilgeyo.",
               "en": "I'll call you when it's ready."
             },
-            "audio_url": ""
+            "audio_url": "u06-cafe/d-11-r2"
           }
         ],
         "closing_image_url": "content/images/u06-cafe/rp-end.webp",
@@ -7062,6 +7344,7 @@
       "S2",
       "S3",
       "S4",
+      "INT",
       "S5",
       "S6",
       "S7",

@@ -23,9 +23,10 @@ import {
 } from "./test-helpers/episode-format-harness";
 import { solveActivity, solveLesson } from "./test-helpers/episode-format-solvers";
 
-// 내장 u01에는 문항 음성 주소가 없어, 같은 구조에 문항마다 음성 id를 싣은 사본으로 갈아 끼웁니다.
-vi.mock("../lib/episode-bundled", async (importOriginal) => {
-  const original = await importOriginal<typeof import("../lib/episode-bundled")>();
+// 내장 u01에는 문항 음성 주소가 없어, 같은 구조에 문항마다 음성 id를 싣은 사본으로 갈아 끼웁니다. 바탕은 다른 흐름
+// 테스트와 같은 고정본입니다(`vitest.setup.ts`) — 실제 내장본을 쓰면 내장본을 갈 때마다 단계 · 문항이 흔들립니다.
+vi.mock("../lib/episode-bundled", async () => {
+  const original = await import("../lib/episode-bundled.test-support");
   const { bundledCatalogInput } = original;
   const episodeId = "u01-water";
   return {

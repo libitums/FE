@@ -52,7 +52,7 @@
         "en": "Locking the cafe door across the way, phone to his ear."
       },
       "image_brief": "맞은편 카페에서 앞치마 차림의 청년이 문을 잠그며 통화한다.",
-      "image_url": "content/images/u04-directions/pre-3.webp",
+      "image_url": "content/images/u04-directions/pre-3-v2.webp",
       "audio_url": "u04-directions/pre-3-offmic-r2"
     },
     {
@@ -65,7 +65,7 @@
         "en": "Stuffing his apron into his bag, he slows at the sight of someone circling the flower pot."
       },
       "image_brief": "청년이 앞치마를 가방에 넣다가 화분 쪽을 본다.",
-      "image_url": "content/images/u04-directions/pre-4.webp",
+      "image_url": "content/images/u04-directions/pre-4-v2.webp",
       "audio_url": ""
     },
     {
@@ -84,7 +84,7 @@
         "en": "Glancing down at the memo."
       },
       "image_brief": "청년이 다가와 메모지를 힐끗 본다.",
-      "image_url": "content/images/u04-directions/pre-5.webp",
+      "image_url": "content/images/u04-directions/pre-5-v2.webp",
       "audio_url": "u04-directions/d-01-r2"
     }
   ],
@@ -275,7 +275,7 @@
         "en": "After a thank-you nod, he waves once and disappears down the other alley."
       },
       "image_brief": "청년이 손을 한 번 흔들고 반대쪽 골목으로 걸어간다.",
-      "image_url": "content/images/u04-directions/post-1.webp",
+      "image_url": "content/images/u04-directions/post-1-v2.webp",
       "audio_url": ""
     },
     {
@@ -302,7 +302,7 @@
         "en": "Something smells good. This must be it, right?"
       },
       "image_brief": "유리문 너머로 김이 오르는 식당 안.",
-      "image_url": "content/images/u04-directions/post-2.webp",
+      "image_url": "content/images/u04-directions/post-3.webp",
       "audio_url": ""
     }
   ],
@@ -3472,8 +3472,201 @@
       ]
     },
     {
+      "id": "INT",
+      "kind": "interlude",
+      "items": [],
+      "interlude": {
+        "form": "message",
+        "anchor": "before",
+        "caption": {
+          "ko": "조금 전",
+          "roman": "jogeum jeon",
+          "en": "A little earlier"
+        },
+        "cuts": [
+          {
+            "index": 1,
+            "cut_kind": "message",
+            "speaker": "미나",
+            "line": {
+              "ko": "식당 찾았어요?",
+              "roman": "sikdang chajasseoyo?",
+              "en": "Did you find the restaurant?"
+            },
+            "background_url": "content/images/u04-directions/pre-2.webp"
+          },
+          {
+            "index": 2,
+            "cut_kind": "message_reply",
+            "speaker": "플레이어",
+            "options": [
+              {
+                "ko": "아니요, 길을 모르겠어요.",
+                "roman": "aniyo, gireul moreugesseoyo.",
+                "en": "No, I don't know the way."
+              },
+              {
+                "ko": "유진식당이 어디예요?",
+                "roman": "yujinsikdangi eodiyeyo?",
+                "en": "Where's Yujin Sikdang?"
+              }
+            ],
+            "background_url": "content/images/u04-directions/pre-2.webp"
+          },
+          {
+            "index": 3,
+            "cut_kind": "message",
+            "speaker": "미나",
+            "line": {
+              "ko": "아이고! 괜찮아요, 가까워요!",
+              "roman": "aigo! gwaenchanayo, gakkawoyo!",
+              "en": "Oh no! It's okay, it's close!"
+            },
+            "after_option": 1,
+            "background_url": "content/images/u04-directions/pre-2.webp"
+          },
+          {
+            "index": 3,
+            "cut_kind": "message",
+            "speaker": "미나",
+            "line": {
+              "ko": "유진식당이요? 김치찌개가 정말 맛있어요!",
+              "roman": "yujinsikdangiyo? gimchijjigaega jeongmal masisseoyo!",
+              "en": "Yujin Sikdang? The kimchi stew is SO good!"
+            },
+            "after_option": 2,
+            "background_url": "content/images/u04-directions/pre-2.webp"
+          },
+          {
+            "index": 4,
+            "cut_kind": "message",
+            "speaker": "미나",
+            "line": {
+              "ko": "잠깐만요!",
+              "roman": "jamkkanmanyo!",
+              "en": "Hold on!"
+            },
+            "background_url": "content/images/u04-directions/pre-2.webp"
+          },
+          {
+            "index": 5,
+            "cut_kind": "message",
+            "speaker": "미나",
+            "line": {
+              "ko": "여기예요!",
+              "roman": "yeogiyeyo!",
+              "en": "It's here!"
+            },
+            "image_url": "content/images/u04-directions/int-photo.webp",
+            "background_url": "content/images/u04-directions/pre-2.webp"
+          },
+          {
+            "index": 6,
+            "cut_kind": "message_reply",
+            "speaker": "플레이어",
+            "options": [
+              {
+                "ko": "네, 감사합니다.",
+                "roman": "ne, gamsahamnida.",
+                "en": "Okay, thank you."
+              },
+              {
+                "ko": "여기가 어디예요?",
+                "roman": "yeogiga eodiyeyo?",
+                "en": "Where is \"here\"?"
+              }
+            ],
+            "background_url": "content/images/u04-directions/pre-2.webp"
+          },
+          {
+            "index": 7,
+            "cut_kind": "message",
+            "speaker": "미나",
+            "line": {
+              "ko": "네! 맛있게 먹어요!",
+              "roman": "ne! masitge meogeoyo!",
+              "en": "Yes! Enjoy your meal!"
+            },
+            "after_option": 1,
+            "background_url": "content/images/u04-directions/pre-2.webp"
+          },
+          {
+            "index": 7,
+            "cut_kind": "message",
+            "speaker": "미나",
+            "line": {
+              "ko": "유진식당이요!",
+              "roman": "yujinsikdangiyo!",
+              "en": "Yujin Sikdang!"
+            },
+            "after_option": 2,
+            "background_url": "content/images/u04-directions/pre-2.webp"
+          },
+          {
+            "index": 8,
+            "cut_kind": "message",
+            "speaker": "미나",
+            "line": {
+              "ko": "아! 큰 화분 보여요?",
+              "roman": "a! keun hwabun boyeoyo?",
+              "en": "Oh! Do you see a big flower pot?"
+            },
+            "background_url": "content/images/u04-directions/pre-2.webp"
+          },
+          {
+            "index": 9,
+            "cut_kind": "message",
+            "speaker": "미나",
+            "line": {
+              "ko": "화분에서 가까워요!",
+              "roman": "hwabuneseo gakkawoyo!",
+              "en": "It's close to the flower pot!"
+            },
+            "background_url": "content/images/u04-directions/pre-2.webp"
+          },
+          {
+            "index": 10,
+            "cut_kind": "message_reply",
+            "speaker": "플레이어",
+            "options": [
+              {
+                "ko": "네... 감사합니다.",
+                "roman": "ne... gamsahamnida.",
+                "en": "Yes... thank you."
+              },
+              {
+                "ko": "네... 길을 모르겠어요.",
+                "roman": "ne... gireul moreugesseoyo.",
+                "en": "Yes... I don't know the way."
+              }
+            ],
+            "background_url": "content/images/u04-directions/pre-2.webp"
+          },
+          {
+            "index": 11,
+            "cut_kind": "message",
+            "speaker": "미나",
+            "line": {
+              "ko": "저도 처음에 길을 몰랐어요. ㅎㅎ",
+              "roman": "jeodo cheoeume gireul mollasseoyo. ㅎㅎ",
+              "en": "I didn't know the way at first either, haha."
+            },
+            "background_url": "content/images/u04-directions/pre-2.webp"
+          }
+        ],
+        "background_url": "content/images/u04-directions/pre-2.webp",
+        "profiles": [
+          {
+            "speaker": "미나",
+            "image_url": "content/images/profiles/mina-casual.webp"
+          }
+        ]
+      },
+      "order": 5
+    },
+    {
       "id": "S5",
-      "order": 5,
+      "order": 6,
       "items": [
         {
           "id": "S5-01",
@@ -3986,7 +4179,7 @@
     },
     {
       "id": "S6",
-      "order": 6,
+      "order": 7,
       "items": [
         {
           "id": "S6-01",
@@ -4453,7 +4646,7 @@
     },
     {
       "id": "S7",
-      "order": 7,
+      "order": 8,
       "items": [
         {
           "id": "S7-01",
@@ -4973,26 +5166,44 @@
     },
     {
       "id": "S8",
-      "order": 8,
+      "order": 9,
       "items": [
         {
           "id": "S8-01",
-          "type": "TRANSLATE_TO_KO",
-          "mode": "typing",
+          "type": "SYLLABLE_BUILD",
+          "mode": "tiles",
           "event": "R",
-          "level": 4,
+          "level": 3,
           "skill": "쓰기",
-          "skill_level": 3,
+          "skill_level": 1,
           "ref": "voca:64da1315",
           "prompt": {
-            "ko": "한국어로 쓰세요.",
-            "en": "Say this in Korean."
+            "ko": "음절을 골라 낱말을 만드세요.",
+            "en": "Tap the syllables to spell the word."
           },
           "stimulus": {
             "audio_url": "u04-directions/s1-03-word-r2",
             "image_url": "",
             "en": "far"
           },
+          "tiles": [
+            {
+              "ko": "멀",
+              "roman": "meol"
+            },
+            {
+              "ko": "다",
+              "roman": "da"
+            },
+            {
+              "ko": "기",
+              "roman": "gi"
+            },
+            {
+              "ko": "왼",
+              "roman": "oen"
+            }
+          ],
           "answers": [
             {
               "ko": "멀다",
@@ -5003,27 +5214,57 @@
         },
         {
           "id": "S8-02",
-          "type": "SPEAK_WORD",
-          "mode": "speech",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
           "event": "R",
-          "level": 4,
-          "skill": "말하기",
-          "skill_level": 2,
-          "ref": "voca:f497d148",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:fbdf81c0",
           "prompt": {
-            "ko": "그림을 보고 말하세요.",
-            "en": "Say the word for the picture."
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
           },
           "stimulus": {
-            "audio_url": "u04-directions/s1-01-word-r2",
-            "image_brief": "restaurant - 한 컷으로 알아볼 수 있게",
-            "image_url": "content/images/items/restaurant.webp"
+            "audio": {
+              "ko": "네, 안녕히 가세요.",
+              "roman": "ne, annyeonghi gaseyo.",
+              "en": "Sure, take care."
+            },
+            "audio_url": "u04-directions/d-09-r2",
+            "image_url": ""
           },
-          "answers": [
+          "options": [
             {
-              "ko": "식당",
-              "roman": "sikdang",
-              "en": "restaurant"
+              "id": "o1",
+              "ko": "아니요, 가까워요.",
+              "roman": "aniyo, gakkawoyo.",
+              "en": "No, it's close.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "네, 안녕히 가세요.",
+              "roman": "ne, annyeonghi gaseyo.",
+              "en": "Sure, take care.",
+              "correct": true
+            },
+            {
+              "id": "o3",
+              "ko": "저기에서 오른쪽으로 가세요.",
+              "roman": "jeogieseo oreunjjogeuro gaseyo.",
+              "en": "Go right over there.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "아니요, 오른쪽이요.",
+              "roman": "aniyo, oreunjjogiyo.",
+              "en": "No, right.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
             }
           ]
         },
@@ -5085,22 +5326,40 @@
         },
         {
           "id": "S8-04",
-          "type": "TRANSLATE_TO_KO",
-          "mode": "typing",
+          "type": "SYLLABLE_BUILD",
+          "mode": "tiles",
           "event": "R",
-          "level": 4,
+          "level": 3,
           "skill": "쓰기",
-          "skill_level": 3,
+          "skill_level": 1,
           "ref": "voca:67746a6b",
           "prompt": {
-            "ko": "한국어로 쓰세요.",
-            "en": "Say this in Korean."
+            "ko": "음절을 골라 낱말을 만드세요.",
+            "en": "Tap the syllables to spell the word."
           },
           "stimulus": {
             "audio_url": "u04-directions/s3-05-word-r2",
             "image_url": "",
             "en": "go"
           },
+          "tiles": [
+            {
+              "ko": "가",
+              "roman": "ga"
+            },
+            {
+              "ko": "다",
+              "roman": "da"
+            },
+            {
+              "ko": "히",
+              "roman": "hi"
+            },
+            {
+              "ko": "합",
+              "roman": "hap"
+            }
+          ],
           "answers": [
             {
               "ko": "가다",
@@ -5166,74 +5425,64 @@
         },
         {
           "id": "S8-06",
-          "type": "DICTATION",
-          "mode": "typing",
+          "type": "LISTEN_BUILD",
+          "mode": "tiles",
           "event": "R",
-          "level": 4,
-          "skill": "쓰기",
-          "skill_level": 2,
+          "level": 3,
+          "skill": "듣기",
+          "skill_level": 3,
           "ref": "voca:1aaf13a1",
           "prompt": {
-            "ko": "들은 대로 쓰세요.",
-            "en": "Type what you hear."
+            "ko": "듣고 문장을 만드세요.",
+            "en": "Listen and build the sentence."
           },
           "stimulus": {
             "audio": {
-              "ko": "길을",
-              "roman": "gireul"
+              "ko": "길을 모르겠어요.",
+              "roman": "gireul moreugesseoyo.",
+              "en": "I don't know the way."
             },
-            "audio_url": "u04-directions/s8-06-stim-r2",
+            "audio_url": "u04-directions/d-06-r2",
             "image_url": ""
           },
-          "answers": [
+          "tiles": [
             {
               "ko": "길을",
               "roman": "gireul"
+            },
+            {
+              "ko": "모르겠어요.",
+              "roman": "moreugesseoyo."
+            },
+            {
+              "ko": "찾으세요?",
+              "roman": "chajeuseyo?"
+            },
+            {
+              "ko": "가까워요.",
+              "roman": "gakkawoyo."
+            }
+          ],
+          "answers": [
+            {
+              "ko": "길을 모르겠어요.",
+              "roman": "gireul moreugesseoyo.",
+              "en": "I don't know the way."
             }
           ]
         },
         {
           "id": "S8-07",
-          "type": "DICTATION",
-          "mode": "typing",
+          "type": "LISTEN_BUILD",
+          "mode": "tiles",
           "event": "R",
-          "level": 4,
-          "skill": "쓰기",
-          "skill_level": 2,
-          "ref": "voca:0a629e74",
-          "prompt": {
-            "ko": "들은 대로 쓰세요.",
-            "en": "Type what you hear."
-          },
-          "stimulus": {
-            "audio": {
-              "ko": "가깝다",
-              "roman": "gakkapda",
-              "en": "close"
-            },
-            "audio_url": "u04-directions/s3-02-word-r2",
-            "image_url": ""
-          },
-          "answers": [
-            {
-              "ko": "가깝다",
-              "roman": "gakkapda",
-              "en": "close"
-            }
-          ]
-        },
-        {
-          "id": "S8-08",
-          "type": "LISTEN_SELECT",
-          "mode": "choice",
-          "event": "R",
-          "level": 2,
+          "level": 3,
           "skill": "듣기",
-          "skill_level": 1,
+          "skill_level": 3,
           "ref": "voca:b3e70145",
           "prompt": {
-            "ko": "무엇을 들었나요?",
-            "en": "What did you hear?"
+            "ko": "듣고 문장을 만드세요.",
+            "en": "Listen and build the sentence."
           },
           "stimulus": {
             "audio": {
@@ -5244,37 +5493,88 @@
             "audio_url": "u04-directions/d-07-r2",
             "image_url": ""
           },
+          "tiles": [
+            {
+              "ko": "저기에서",
+              "roman": "jeogieseo"
+            },
+            {
+              "ko": "오른쪽으로",
+              "roman": "oreunjjogeuro"
+            },
+            {
+              "ko": "가세요.",
+              "roman": "gaseyo."
+            },
+            {
+              "ko": "찾으세요?",
+              "roman": "chajeuseyo?"
+            },
+            {
+              "ko": "어디예요?",
+              "roman": "eodiyeyo?"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "저기에서 오른쪽으로 가세요.",
+              "roman": "jeogieseo oreunjjogeuro gaseyo.",
+              "en": "Go right over there."
+            }
+          ]
+        },
+        {
+          "id": "S8-08",
+          "type": "TRANSLATE_TO_EN",
+          "mode": "choice",
+          "event": "R",
+          "level": 1,
+          "skill": "읽기",
+          "skill_level": 1,
+          "ref": "voca:1aaf13a1",
+          "prompt": {
+            "ko": "무슨 뜻인가요?",
+            "en": "What does this mean?"
+          },
+          "stimulus": {
+            "text": {
+              "ko": "길",
+              "roman": "gil"
+            },
+            "audio_url": "u04-directions/s1-04-word-r2",
+            "image_url": ""
+          },
           "options": [
             {
               "id": "o1",
-              "ko": "네, 안녕히 가세요.",
-              "roman": "ne, annyeonghi gaseyo.",
-              "en": "Sure, take care.",
-              "correct": false,
-              "why_wrong": "이 자리에 맞는 말이 아니다"
+              "ko": "way, road",
+              "roman": "way, road",
+              "en": "way, road",
+              "correct": true
             },
             {
               "id": "o2",
-              "ko": "유진식당 멀어요?",
-              "roman": "yujinsikdang meoreoyo?",
-              "en": "Is Yujin Restaurant far?",
+              "ko": "restaurant",
+              "roman": "restaurant",
+              "en": "restaurant",
               "correct": false,
               "why_wrong": "이 자리에 맞는 말이 아니다"
             },
             {
               "id": "o3",
-              "ko": "어디 찾으세요?",
-              "roman": "eodi chajeuseyo?",
-              "en": "Where are you trying to go?",
+              "ko": "right",
+              "roman": "right",
+              "en": "right",
               "correct": false,
               "why_wrong": "이 자리에 맞는 말이 아니다"
             },
             {
               "id": "o4",
-              "ko": "저기에서 오른쪽으로 가세요.",
-              "roman": "jeogieseo oreunjjogeuro gaseyo.",
-              "en": "Go right over there.",
-              "correct": true
+              "ko": "look for",
+              "roman": "look for",
+              "en": "look for",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
             }
           ]
         },
@@ -5328,56 +5628,57 @@
         },
         {
           "id": "S8-10",
-          "type": "TRANSLATE_TO_EN",
+          "type": "LISTEN_SELECT",
           "mode": "choice",
           "event": "R",
-          "level": 1,
-          "skill": "읽기",
+          "level": 2,
+          "skill": "듣기",
           "skill_level": 1,
-          "ref": "voca:1aaf13a1",
+          "ref": "voca:b3e70145",
           "prompt": {
-            "ko": "무슨 뜻인가요?",
-            "en": "What does this mean?"
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
           },
           "stimulus": {
-            "text": {
-              "ko": "길",
-              "roman": "gil"
+            "audio": {
+              "ko": "저기에서 오른쪽으로 가세요.",
+              "roman": "jeogieseo oreunjjogeuro gaseyo.",
+              "en": "Go right over there."
             },
-            "audio_url": "u04-directions/s1-04-word-r2",
+            "audio_url": "u04-directions/d-07-r2",
             "image_url": ""
           },
           "options": [
             {
               "id": "o1",
-              "ko": "way, road",
-              "roman": "way, road",
-              "en": "way, road",
-              "correct": true
+              "ko": "네, 안녕히 가세요.",
+              "roman": "ne, annyeonghi gaseyo.",
+              "en": "Sure, take care.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
             },
             {
               "id": "o2",
-              "ko": "restaurant",
-              "roman": "restaurant",
-              "en": "restaurant",
+              "ko": "유진식당 멀어요?",
+              "roman": "yujinsikdang meoreoyo?",
+              "en": "Is Yujin Restaurant far?",
               "correct": false,
               "why_wrong": "이 자리에 맞는 말이 아니다"
             },
             {
               "id": "o3",
-              "ko": "right",
-              "roman": "right",
-              "en": "right",
+              "ko": "어디 찾으세요?",
+              "roman": "eodi chajeuseyo?",
+              "en": "Where are you trying to go?",
               "correct": false,
               "why_wrong": "이 자리에 맞는 말이 아니다"
             },
             {
               "id": "o4",
-              "ko": "look for",
-              "roman": "look for",
-              "en": "look for",
-              "correct": false,
-              "why_wrong": "이 자리에 맞는 말이 아니다"
+              "ko": "저기에서 오른쪽으로 가세요.",
+              "roman": "jeogieseo oreunjjogeuro gaseyo.",
+              "en": "Go right over there.",
+              "correct": true
             }
           ]
         },
@@ -5438,90 +5739,55 @@
         },
         {
           "id": "S8-12",
-          "type": "DICTATION",
-          "mode": "typing",
+          "type": "LISTEN_BUILD",
+          "mode": "tiles",
           "event": "R",
-          "level": 4,
-          "skill": "쓰기",
-          "skill_level": 2,
-          "ref": "voca:9720d8a1",
+          "level": 3,
+          "skill": "듣기",
+          "skill_level": 3,
+          "ref": "voca:d32d91ad",
           "prompt": {
-            "ko": "들은 대로 쓰세요.",
-            "en": "Type what you hear."
+            "ko": "듣고 문장을 만드세요.",
+            "en": "Listen and build the sentence."
           },
           "stimulus": {
             "audio": {
-              "ko": "모르겠어요",
-              "roman": "moreugesseoyo"
+              "ko": "어디 찾으세요?",
+              "roman": "eodi chajeuseyo?",
+              "en": "What are you looking for?"
             },
-            "audio_url": "u04-directions/s8-12-stim-r2",
+            "audio_url": "u04-directions/d-01-r2",
             "image_url": ""
           },
+          "tiles": [
+            {
+              "ko": "어디",
+              "roman": "eodi",
+              "en": "where"
+            },
+            {
+              "ko": "찾으세요?",
+              "roman": "chajeuseyo?"
+            },
+            {
+              "ko": "오른쪽이요.",
+              "roman": "oreunjjogiyo."
+            },
+            {
+              "ko": "유진식당이네요.",
+              "roman": "yujinsikdangineyo."
+            }
+          ],
           "answers": [
             {
-              "ko": "모르겠어요",
-              "roman": "moreugesseoyo"
+              "ko": "어디 찾으세요?",
+              "roman": "eodi chajeuseyo?",
+              "en": "What are you looking for?"
             }
           ]
         },
         {
           "id": "S8-13",
-          "type": "LISTEN_SELECT",
-          "mode": "choice",
-          "event": "R",
-          "level": 2,
-          "skill": "듣기",
-          "skill_level": 1,
-          "ref": "expr:ee4a4712",
-          "prompt": {
-            "ko": "무엇을 들었나요?",
-            "en": "What did you hear?"
-          },
-          "stimulus": {
-            "audio": {
-              "ko": "네, 안녕히 가세요.",
-              "roman": "ne, annyeonghi gaseyo.",
-              "en": "Sure, take care."
-            },
-            "audio_url": "u04-directions/d-09-r2",
-            "image_url": ""
-          },
-          "options": [
-            {
-              "id": "o1",
-              "ko": "아니요, 가까워요.",
-              "roman": "aniyo, gakkawoyo.",
-              "en": "No, it's close.",
-              "correct": false,
-              "why_wrong": "이 자리에 맞는 말이 아니다"
-            },
-            {
-              "id": "o2",
-              "ko": "저기에서 오른쪽으로 가세요.",
-              "roman": "jeogieseo oreunjjogeuro gaseyo.",
-              "en": "Go right over there.",
-              "correct": false,
-              "why_wrong": "이 자리에 맞는 말이 아니다"
-            },
-            {
-              "id": "o3",
-              "ko": "길을 모르겠어요.",
-              "roman": "gireul moreugesseoyo.",
-              "en": "I don't know the way.",
-              "correct": false,
-              "why_wrong": "이 자리에 맞는 말이 아니다"
-            },
-            {
-              "id": "o4",
-              "ko": "네, 안녕히 가세요.",
-              "roman": "ne, annyeonghi gaseyo.",
-              "en": "Sure, take care.",
-              "correct": true
-            }
-          ]
-        },
-        {
-          "id": "S8-14",
           "type": "LISTEN_SELECT",
           "mode": "choice",
           "event": "R",
@@ -5545,10 +5811,11 @@
           "options": [
             {
               "id": "o1",
-              "ko": "왼쪽이요?",
-              "roman": "oenjjogiyo?",
-              "en": "Left?",
-              "correct": true
+              "ko": "유진식당 멀어요?",
+              "roman": "yujinsikdang meoreoyo?",
+              "en": "Is Yujin Restaurant far?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
             },
             {
               "id": "o2",
@@ -5560,40 +5827,69 @@
             },
             {
               "id": "o3",
-              "ko": "저기에서 오른쪽으로 가세요.",
-              "roman": "jeogieseo oreunjjogeuro gaseyo.",
-              "en": "Go right over there.",
+              "ko": "아, 유진식당이네요.",
+              "roman": "a, yujinsikdangineyo.",
+              "en": "Oh, it's Yujin Restaurant.",
               "correct": false,
               "why_wrong": "이 자리에 맞는 말이 아니다"
             },
             {
               "id": "o4",
-              "ko": "네, 감사합니다.",
-              "roman": "ne, gamsahamnida.",
-              "en": "Okay, thank you.",
-              "correct": false,
-              "why_wrong": "이 자리에 맞는 말이 아니다"
+              "ko": "왼쪽이요?",
+              "roman": "oenjjogiyo?",
+              "en": "Left?",
+              "correct": true
             }
           ]
         },
         {
-          "id": "S8-15",
-          "type": "TRANSLATE_TO_KO",
-          "mode": "typing",
+          "id": "S8-14",
+          "type": "SYLLABLE_BUILD",
+          "mode": "tiles",
           "event": "R",
-          "level": 4,
+          "level": 3,
           "skill": "쓰기",
-          "skill_level": 3,
+          "skill_level": 1,
           "ref": "voca:90ed435d",
           "prompt": {
-            "ko": "한국어로 쓰세요.",
-            "en": "Say this in Korean."
+            "ko": "음절을 골라 낱말을 만드세요.",
+            "en": "Tap the syllables to spell the word."
           },
           "stimulus": {
             "audio_url": "u04-directions/s1-07-word-r2",
             "image_url": "",
             "en": "thank you"
           },
+          "tiles": [
+            {
+              "ko": "감",
+              "roman": "gam"
+            },
+            {
+              "ko": "사",
+              "roman": "sa"
+            },
+            {
+              "ko": "합",
+              "roman": "hap"
+            },
+            {
+              "ko": "니",
+              "roman": "ni"
+            },
+            {
+              "ko": "다",
+              "roman": "da"
+            },
+            {
+              "ko": "요",
+              "roman": "yo"
+            },
+            {
+              "ko": "히",
+              "roman": "hi"
+            }
+          ],
           "answers": [
             {
               "ko": "감사합니다",
@@ -5601,12 +5897,68 @@
               "en": "thank you"
             }
           ]
+        },
+        {
+          "id": "S8-15",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
+          "event": "R",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:1aaf13a1",
+          "prompt": {
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "길을 모르겠어요.",
+              "roman": "gireul moreugesseoyo.",
+              "en": "I don't know the way."
+            },
+            "audio_url": "u04-directions/d-06-r2",
+            "image_url": ""
+          },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "네, 안녕히 가세요.",
+              "roman": "ne, annyeonghi gaseyo.",
+              "en": "Sure, take care.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "길을 모르겠어요.",
+              "roman": "gireul moreugesseoyo.",
+              "en": "I don't know the way.",
+              "correct": true
+            },
+            {
+              "id": "o3",
+              "ko": "유진식당이 어디예요?",
+              "roman": "yujinsikdangi eodiyeyo?",
+              "en": "Where is Yujin Restaurant?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "저기예요.",
+              "roman": "jeogiyeyo.",
+              "en": "It's over there.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ]
         }
       ]
     },
     {
       "id": "CULT",
-      "order": 9,
+      "order": 10,
       "items": [
         {
           "id": "CULT-01",
@@ -5768,7 +6120,7 @@
     },
     {
       "id": "RP",
-      "order": 10,
+      "order": 11,
       "items": [
         {
           "id": "RP-01",
@@ -5794,7 +6146,7 @@
               "en": "I'm looking for a restaurant."
             },
             "audio_url": "u04-directions/d-02-r2",
-            "image_url": "content/images/u04-directions/pre-5.webp"
+            "image_url": "content/images/u04-directions/pre-5-v2.webp"
           },
           "tiles": [
             {
@@ -5891,7 +6243,7 @@
               "en": "Is Yujin Restaurant far?"
             },
             "audio_url": "u04-directions/d-04-r2",
-            "image_url": "content/images/u04-directions/pre-5.webp"
+            "image_url": "content/images/u04-directions/pre-5-v2.webp"
           },
           "tiles": [
             {
@@ -5987,7 +6339,7 @@
               "en": "I don't know the way."
             },
             "audio_url": "u04-directions/d-06-r2",
-            "image_url": "content/images/u04-directions/pre-5.webp"
+            "image_url": "content/images/u04-directions/pre-5-v2.webp"
           },
           "tiles": [
             {
@@ -6084,7 +6436,7 @@
               "en": "Okay, thank you."
             },
             "audio_url": "u04-directions/d-08-r2",
-            "image_url": "content/images/u04-directions/pre-5.webp"
+            "image_url": "content/images/u04-directions/pre-5-v2.webp"
           },
           "tiles": [
             {
@@ -6160,7 +6512,7 @@
         }
       ],
       "scene": {
-        "background_image_url": "content/images/u04-directions/pre-5.webp",
+        "background_image_url": "content/images/u04-directions/pre-5-v2.webp",
         "counterpart": "카페 직원",
         "closing": [
           {
@@ -6170,10 +6522,10 @@
               "roman": "ne, annyeonghi gaseyo.",
               "en": "Sure, take care."
             },
-            "audio_url": ""
+            "audio_url": "u04-directions/d-09-r2"
           }
         ],
-        "closing_image_url": "content/images/u04-directions/rp-end.webp",
+        "closing_image_url": "content/images/u04-directions/rp-end-v2.webp",
         "retry": {
           "hint_after_misses": 1,
           "reveal_after_misses": 2
@@ -6187,6 +6539,7 @@
       "S2",
       "S3",
       "S4",
+      "INT",
       "S5",
       "S6",
       "S7",

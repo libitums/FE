@@ -3635,8 +3635,109 @@
       ]
     },
     {
+      "id": "INT",
+      "kind": "interlude",
+      "items": [],
+      "interlude": {
+        "form": "cuts",
+        "anchor": "parallel",
+        "caption": {
+          "ko": "그 시각, 연습실",
+          "roman": "geu sigak, yeonseupsil",
+          "en": "Meanwhile, at the practice room"
+        },
+        "cuts": [
+          {
+            "index": 1,
+            "cut_kind": "narration",
+            "image_brief": "지하 연습실. 문 옆 벽 옷걸이(화면 위쪽)에 가방이 걸려 있고 초록 앞치마 끈이 삐져나와 있다. 카페 직원이 땀에 젖은 채 거울 앞에 선다.",
+            "image_url": "content/images/u05-baekban/int-1.webp",
+            "narration": {
+              "ko": "벽에 걸어 둔 가방에서 앞치마 끈이 삐져나와 있다. 음악이 끝나 간다.",
+              "roman": "byeoge georeo dun gabangeseo apchima kkeuni ppijyeonawa itda. eumagi kkeunna ganda.",
+              "en": "An apron strap pokes out of the bag hanging on the wall. The music is almost over."
+            }
+          },
+          {
+            "index": 2,
+            "cut_kind": "speech",
+            "image_brief": "카페 직원이 숨을 몰아쉬며 거울을 보고 손가락 하트를 내민다.",
+            "image_url": "content/images/u05-baekban/int-2.webp",
+            "aside": {
+              "ko": "숨을 몰아쉬면서도 거울 속 카메라에 손가락 하트를 내밀며",
+              "roman": "sumeul moraswimyeonseodo geoul sok kamerae songarak hateureul naemilmyeo",
+              "en": "Still catching his breath, holding out a finger heart to the mirror."
+            },
+            "speaker": "트레이너",
+            "line": {
+              "ko": "엔딩 표정. 더 멋있게.",
+              "roman": "ending pyojeong. deo meositge.",
+              "en": "Ending face. Cooler."
+            }
+          },
+          {
+            "index": 3,
+            "cut_kind": "speech",
+            "image_brief": "같은 자리. 턱을 당기고 눈에 힘을 잔뜩 준다.",
+            "image_url": "content/images/u05-baekban/int-3.webp",
+            "aside": {
+              "ko": "턱을 당기고 눈에 힘을 잔뜩 주며",
+              "roman": "teogeul danggigo nune himeul jantteuk jumyeo",
+              "en": "Tucking his chin, putting everything into his eyes."
+            },
+            "speaker": "트레이너",
+            "line": {
+              "ko": "더.",
+              "roman": "deo.",
+              "en": "More."
+            }
+          },
+          {
+            "index": 4,
+            "cut_kind": "speech",
+            "image_brief": "같은 자리. 포즈는 그대로인데 눈썹이 축 처진다.",
+            "image_url": "content/images/u05-baekban/int-4.webp",
+            "narration": {
+              "ko": "조용한 연습실에 꼬르륵 소리가 울린다.",
+              "roman": "joyonghan yeonseupsire kkoreureuk soriga ullinda.",
+              "en": "A stomach growl echoes in the quiet room."
+            },
+            "aside": {
+              "ko": "포즈를 그대로 든 채 눈썹만 축 처지며",
+              "roman": "pojeureul geudaero deun chae nunsseomman chuk cheojimyeo",
+              "en": "Holding the pose, only his eyebrows sagging."
+            },
+            "speaker": "카페 직원",
+            "line": {
+              "ko": "...김치찌개 먹고 싶다.",
+              "roman": "...gimchijjigae meokgo sipda.",
+              "en": "...I want kimchi stew."
+            }
+          },
+          {
+            "index": 5,
+            "cut_kind": "speech",
+            "image_brief": "같은 자리. 손가락 하트를 내리고 두 손으로 얼굴을 가린다. 귀가 빨갛다.",
+            "image_url": "content/images/u05-baekban/int-5.webp",
+            "aside": {
+              "ko": "화면 밖에서 트레이너가 웃음을 참으며",
+              "roman": "hwamyeon bakkeseo teureineoga useumeul chameumyeo",
+              "en": "Off-screen, the trainer holding back a laugh."
+            },
+            "speaker": "트레이너",
+            "line": {
+              "ko": "지금 그 얼굴 좋다. 그건 진짜네.",
+              "roman": "jigeum geu eolgul jota. geugeon jinjjane.",
+              "en": "That face, right now. That one's real."
+            }
+          }
+        ]
+      },
+      "order": 5
+    },
+    {
       "id": "S5",
-      "order": 5,
+      "order": 6,
       "items": [
         {
           "id": "S5-01",
@@ -4151,7 +4252,7 @@
     },
     {
       "id": "S6",
-      "order": 6,
+      "order": 7,
       "items": [
         {
           "id": "S6-01",
@@ -4859,7 +4960,7 @@
     },
     {
       "id": "S7",
-      "order": 7,
+      "order": 8,
       "items": [
         {
           "id": "S7-01",
@@ -5385,33 +5486,59 @@
     },
     {
       "id": "S8",
-      "order": 8,
+      "order": 9,
       "items": [
         {
           "id": "S8-01",
-          "type": "DICTATION",
-          "mode": "typing",
+          "type": "LISTEN_BUILD",
+          "mode": "tiles",
           "event": "R",
-          "level": 4,
-          "skill": "쓰기",
-          "skill_level": 2,
+          "level": 3,
+          "skill": "듣기",
+          "skill_level": 3,
           "ref": "expr:a04464f0",
           "prompt": {
-            "ko": "들은 대로 쓰세요.",
-            "en": "Type what you hear."
+            "ko": "듣고 문장을 만드세요.",
+            "en": "Listen and build the sentence."
           },
           "stimulus": {
             "audio": {
-              "ko": "괜찮아요",
-              "roman": "gwaenchanayo"
+              "ko": "조금 매워요. 괜찮아요?",
+              "roman": "jogeum maewoyo. gwaenchanayo?",
+              "en": "A little. Is that okay?"
             },
-            "audio_url": "u05-baekban/s8-01-stim-r2",
+            "audio_url": "u05-baekban/d-07-r2",
             "image_url": ""
           },
+          "tiles": [
+            {
+              "ko": "조금",
+              "roman": "jogeum",
+              "en": "a little"
+            },
+            {
+              "ko": "매워요.",
+              "roman": "maewoyo."
+            },
+            {
+              "ko": "괜찮아요?",
+              "roman": "gwaenchanayo?"
+            },
+            {
+              "ko": "혼자예요.",
+              "roman": "honjayeyo.",
+              "en": "Just me."
+            },
+            {
+              "ko": "괜찮아요.",
+              "roman": "gwaenchanayo."
+            }
+          ],
           "answers": [
             {
-              "ko": "괜찮아요",
-              "roman": "gwaenchanayo"
+              "ko": "조금 매워요. 괜찮아요?",
+              "roman": "jogeum maewoyo. gwaenchanayo?",
+              "en": "A little. Is that okay?"
             }
           ]
         },
@@ -5796,22 +5923,44 @@
         },
         {
           "id": "S8-09",
-          "type": "TRANSLATE_TO_KO",
-          "mode": "typing",
+          "type": "SYLLABLE_BUILD",
+          "mode": "tiles",
           "event": "R",
-          "level": 4,
+          "level": 3,
           "skill": "쓰기",
-          "skill_level": 3,
+          "skill_level": 1,
           "ref": "gram:92e8afd2",
           "prompt": {
-            "ko": "한국어로 쓰세요.",
-            "en": "Say this in Korean."
+            "ko": "음절을 골라 낱말을 만드세요.",
+            "en": "Tap the syllables to spell the word."
           },
           "stimulus": {
             "audio_url": "u05-baekban/s1-08-word-r2",
             "image_url": "",
             "en": "please give me"
           },
+          "tiles": [
+            {
+              "ko": "주",
+              "roman": "ju"
+            },
+            {
+              "ko": "세",
+              "roman": "se"
+            },
+            {
+              "ko": "요",
+              "roman": "yo"
+            },
+            {
+              "ko": "괜",
+              "roman": "gwaen"
+            },
+            {
+              "ko": "저",
+              "roman": "jeo"
+            }
+          ],
           "answers": [
             {
               "ko": "주세요",
@@ -5822,31 +5971,50 @@
         },
         {
           "id": "S8-10",
-          "type": "DICTATION",
-          "mode": "typing",
+          "type": "LISTEN_BUILD",
+          "mode": "tiles",
           "event": "R",
-          "level": 4,
-          "skill": "쓰기",
-          "skill_level": 2,
+          "level": 3,
+          "skill": "듣기",
+          "skill_level": 3,
           "ref": "voca:72257617",
           "prompt": {
-            "ko": "들은 대로 쓰세요.",
-            "en": "Type what you hear."
+            "ko": "듣고 문장을 만드세요.",
+            "en": "Listen and build the sentence."
           },
           "stimulus": {
             "audio": {
-              "ko": "많이",
-              "roman": "mani",
-              "en": "a lot"
+              "ko": "많이 매워요?",
+              "roman": "mani maewoyo?",
+              "en": "Is it very spicy?"
             },
-            "audio_url": "u05-baekban/s1-05-word-r2",
+            "audio_url": "u05-baekban/d-06-r2",
             "image_url": ""
           },
-          "answers": [
+          "tiles": [
             {
               "ko": "많이",
               "roman": "mani",
               "en": "a lot"
+            },
+            {
+              "ko": "매워요?",
+              "roman": "maewoyo?"
+            },
+            {
+              "ko": "주세요.",
+              "roman": "juseyo."
+            },
+            {
+              "ko": "매워요.",
+              "roman": "maewoyo."
+            }
+          ],
+          "answers": [
+            {
+              "ko": "많이 매워요?",
+              "roman": "mani maewoyo?",
+              "en": "Is it very spicy?"
             }
           ]
         },
@@ -5892,22 +6060,41 @@
         },
         {
           "id": "S8-12",
-          "type": "TRANSLATE_TO_KO",
-          "mode": "typing",
+          "type": "SYLLABLE_BUILD",
+          "mode": "tiles",
           "event": "R",
-          "level": 4,
+          "level": 3,
           "skill": "쓰기",
-          "skill_level": 3,
+          "skill_level": 1,
           "ref": "voca:b3e70145",
           "prompt": {
-            "ko": "한국어로 쓰세요.",
-            "en": "Say this in Korean."
+            "ko": "음절을 골라 낱말을 만드세요.",
+            "en": "Tap the syllables to spell the word."
           },
           "stimulus": {
             "audio_url": "u05-baekban/s3-05-word-r2",
             "image_url": "",
             "en": "there, over there"
           },
+          "tiles": [
+            {
+              "ko": "저",
+              "roman": "jeo"
+            },
+            {
+              "ko": "기",
+              "roman": "gi"
+            },
+            {
+              "ko": "하",
+              "roman": "ha"
+            },
+            {
+              "ko": "분",
+              "roman": "bun",
+              "en": "person (polite counter)"
+            }
+          ],
           "answers": [
             {
               "ko": "저기",
@@ -6029,27 +6216,105 @@
         },
         {
           "id": "S8-15",
-          "type": "TRANSLATE_TO_KO",
-          "mode": "typing",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
           "event": "R",
-          "level": 4,
-          "skill": "쓰기",
-          "skill_level": 3,
-          "ref": "voca:f7839c66",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:6a6ebc70",
           "prompt": {
-            "ko": "한국어로 쓰세요.",
-            "en": "Say this in Korean."
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
           },
           "stimulus": {
-            "audio_url": "u05-baekban/s1-03-word-r2",
-            "image_url": "",
-            "en": "what"
+            "audio": {
+              "ko": "몇 분이세요?",
+              "roman": "myeot buniseyo?",
+              "en": "How many?"
+            },
+            "audio_url": "u05-baekban/d-01-r2",
+            "image_url": ""
           },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "많이 매워요?",
+              "roman": "mani maewoyo?",
+              "en": "Is it very spicy?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "아니요, 된장찌개 하나 주세요.",
+              "roman": "aniyo, doenjangjjigae hana juseyo.",
+              "en": "No, one doenjang stew, please.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "조금 매워요. 괜찮아요?",
+              "roman": "jogeum maewoyo. gwaenchanayo?",
+              "en": "A little. Is that okay?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "몇 분이세요?",
+              "roman": "myeot buniseyo?",
+              "en": "How many people?",
+              "correct": true
+            }
+          ]
+        },
+        {
+          "id": "S8-16",
+          "type": "SYLLABLE_BUILD",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "쓰기",
+          "skill_level": 1,
+          "ref": "voca:a6280d3c",
+          "prompt": {
+            "ko": "음절을 골라 낱말을 만드세요.",
+            "en": "Tap the syllables to spell the word."
+          },
+          "stimulus": {
+            "audio_url": "u05-baekban/s1-04-word-r2",
+            "image_url": "",
+            "en": "delicious"
+          },
+          "tiles": [
+            {
+              "ko": "맛",
+              "roman": "mat"
+            },
+            {
+              "ko": "있",
+              "roman": "it"
+            },
+            {
+              "ko": "다",
+              "roman": "da"
+            },
+            {
+              "ko": "주",
+              "roman": "ju"
+            },
+            {
+              "ko": "앉",
+              "roman": "an"
+            }
+          ],
           "answers": [
             {
-              "ko": "뭐",
-              "roman": "mwo",
-              "en": "what"
+              "ko": "맛있다",
+              "roman": "masitda",
+              "en": "delicious"
             }
           ]
         }
@@ -6057,7 +6322,7 @@
     },
     {
       "id": "CULT",
-      "order": 9,
+      "order": 10,
       "items": [
         {
           "id": "CULT-01",
@@ -6297,7 +6562,7 @@
     },
     {
       "id": "RP",
-      "order": 10,
+      "order": 11,
       "items": [
         {
           "id": "RP-01",
@@ -6733,7 +6998,7 @@
               "roman": "ne, gimchijjigae hanayo.",
               "en": "Sure, one kimchi stew."
             },
-            "audio_url": ""
+            "audio_url": "u05-baekban/d-09-r2"
           }
         ],
         "closing_image_url": "content/images/u05-baekban/rp-end.webp",
@@ -6750,6 +7015,7 @@
       "S2",
       "S3",
       "S4",
+      "INT",
       "S5",
       "S6",
       "S7",

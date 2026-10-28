@@ -3351,8 +3351,108 @@
       ]
     },
     {
+      "id": "INT",
+      "kind": "interlude",
+      "items": [],
+      "interlude": {
+        "form": "message",
+        "anchor": "before",
+        "caption": {
+          "ko": "조금 전, 카페 처마 밑",
+          "roman": "jogeum jeon, kape cheoma mit",
+          "en": "A little earlier, under the cafe awning"
+        },
+        "cuts": [
+          {
+            "index": 1,
+            "cut_kind": "message",
+            "speaker": "미나",
+            "line": {
+              "ko": "비 와요!!",
+              "roman": "bi wayo!!",
+              "en": "It's raining!!"
+            },
+            "background_url": "content/images/u08-umbrella/pre-2.webp"
+          },
+          {
+            "index": 2,
+            "cut_kind": "message",
+            "speaker": "미나",
+            "line": {
+              "ko": "저 우산 없어요.",
+              "roman": "jeo usan eopseoyo.",
+              "en": "I don't have an umbrella."
+            },
+            "image_url": "content/images/u08-umbrella/int-photo.webp",
+            "background_url": "content/images/u08-umbrella/pre-2.webp"
+          },
+          {
+            "index": 3,
+            "cut_kind": "message_reply",
+            "speaker": "플레이어",
+            "options": [
+              {
+                "ko": "저도 우산 없어요.",
+                "roman": "jeodo usan eopseoyo.",
+                "en": "I don't have one either."
+              },
+              {
+                "ko": "비 많이 와요.",
+                "roman": "bi mani wayo.",
+                "en": "It's really pouring."
+              }
+            ],
+            "background_url": "content/images/u08-umbrella/pre-2.webp"
+          },
+          {
+            "index": 4,
+            "cut_kind": "message",
+            "speaker": "미나",
+            "line": {
+              "ko": "우리 둘 다요? ㅎㅎ",
+              "roman": "uri dul dayo? ㅎㅎ",
+              "en": "Both of us? Haha."
+            },
+            "after_option": 1,
+            "background_url": "content/images/u08-umbrella/pre-2.webp"
+          },
+          {
+            "index": 4,
+            "cut_kind": "message",
+            "speaker": "미나",
+            "line": {
+              "ko": "알아요! 저 벌써 다 젖었어요!",
+              "roman": "arayo! jeo beolsseo da jeojeosseoyo!",
+              "en": "I know! I'm already soaked!"
+            },
+            "after_option": 2,
+            "background_url": "content/images/u08-umbrella/pre-2.webp"
+          },
+          {
+            "index": 5,
+            "cut_kind": "message",
+            "speaker": "미나",
+            "line": {
+              "ko": "저는 그냥 뛰어요!",
+              "roman": "jeoneun geunyang ttwieoyo!",
+              "en": "I'm just going to run for it!"
+            },
+            "background_url": "content/images/u08-umbrella/pre-2.webp"
+          }
+        ],
+        "background_url": "content/images/u08-umbrella/pre-2.webp",
+        "profiles": [
+          {
+            "speaker": "미나",
+            "image_url": "content/images/profiles/mina-casual.webp"
+          }
+        ]
+      },
+      "order": 5
+    },
+    {
       "id": "S5",
-      "order": 5,
+      "order": 6,
       "items": [
         {
           "id": "S5-01",
@@ -3811,7 +3911,7 @@
     },
     {
       "id": "S6",
-      "order": 6,
+      "order": 7,
       "items": [
         {
           "id": "S6-01",
@@ -4502,7 +4602,7 @@
     },
     {
       "id": "S7",
-      "order": 7,
+      "order": 8,
       "items": [
         {
           "id": "S7-01",
@@ -5096,31 +5196,53 @@
     },
     {
       "id": "S8",
-      "order": 8,
+      "order": 9,
       "items": [
         {
           "id": "S8-01",
-          "type": "TRANSLATE_TO_KO",
-          "mode": "typing",
+          "type": "SYLLABLE_BUILD",
+          "mode": "tiles",
           "event": "R",
-          "level": 4,
+          "level": 3,
           "skill": "쓰기",
-          "skill_level": 3,
-          "ref": "voca:2ae10c08",
+          "skill_level": 1,
+          "ref": "voca:0a629e74",
           "prompt": {
-            "ko": "한국어로 쓰세요.",
-            "en": "Say this in Korean."
+            "ko": "음절을 골라 낱말을 만드세요.",
+            "en": "Tap the syllables to spell the word."
           },
           "stimulus": {
-            "audio_url": "u08-umbrella/s3-04-word-r2",
+            "audio_url": "u08-umbrella/s3-05-word-r2",
             "image_url": "",
-            "en": "home"
+            "en": "close"
           },
+          "tiles": [
+            {
+              "ko": "가",
+              "roman": "ga"
+            },
+            {
+              "ko": "깝",
+              "roman": "kkap"
+            },
+            {
+              "ko": "다",
+              "roman": "da"
+            },
+            {
+              "ko": "통",
+              "roman": "tong"
+            },
+            {
+              "ko": "녕",
+              "roman": "nyeong"
+            }
+          ],
           "answers": [
             {
-              "ko": "집",
-              "roman": "jip",
-              "en": "home"
+              "ko": "가깝다",
+              "roman": "gakkapda",
+              "en": "close"
             }
           ]
         },
@@ -5348,29 +5470,58 @@
         },
         {
           "id": "S8-06",
-          "type": "DICTATION",
-          "mode": "typing",
+          "type": "LISTEN_BUILD",
+          "mode": "tiles",
           "event": "R",
-          "level": 4,
-          "skill": "쓰기",
-          "skill_level": 2,
+          "level": 3,
+          "skill": "듣기",
+          "skill_level": 3,
           "ref": "expr:a04464f0",
           "prompt": {
-            "ko": "들은 대로 쓰세요.",
-            "en": "Type what you hear."
+            "ko": "듣고 문장을 만드세요.",
+            "en": "Listen and build the sentence."
           },
           "stimulus": {
             "audio": {
-              "ko": "괜찮아요",
-              "roman": "gwaenchanayo"
+              "ko": "네, 없어요. 그런데 괜찮아요.",
+              "roman": "ne, eopseoyo. geureonde gwaenchanayo.",
+              "en": "No, I don't. But I'm fine."
             },
-            "audio_url": "u08-umbrella/s8-06-stim-r2",
+            "audio_url": "u08-umbrella/d-02-r2",
             "image_url": ""
           },
+          "tiles": [
+            {
+              "ko": "네,",
+              "roman": "ne,"
+            },
+            {
+              "ko": "없어요.",
+              "roman": "eopseoyo."
+            },
+            {
+              "ko": "그런데",
+              "roman": "geureonde",
+              "en": "but"
+            },
+            {
+              "ko": "괜찮아요.",
+              "roman": "gwaenchanayo."
+            },
+            {
+              "ko": "가까워요.",
+              "roman": "gakkawoyo."
+            },
+            {
+              "ko": "감사합니다.",
+              "roman": "gamsahamnida."
+            }
+          ],
           "answers": [
             {
-              "ko": "괜찮아요",
-              "roman": "gwaenchanayo"
+              "ko": "네, 없어요. 그런데 괜찮아요.",
+              "roman": "ne, eopseoyo. geureonde gwaenchanayo.",
+              "en": "No, I don't. But I'm fine."
             }
           ]
         },
@@ -5458,31 +5609,54 @@
         },
         {
           "id": "S8-09",
-          "type": "DICTATION",
-          "mode": "typing",
+          "type": "LISTEN_BUILD",
+          "mode": "tiles",
           "event": "R",
-          "level": 4,
-          "skill": "쓰기",
-          "skill_level": 2,
+          "level": 3,
+          "skill": "듣기",
+          "skill_level": 3,
           "ref": "voca:8cda96a9",
           "prompt": {
-            "ko": "들은 대로 쓰세요.",
-            "en": "Type what you hear."
+            "ko": "듣고 문장을 만드세요.",
+            "en": "Listen and build the sentence."
           },
           "stimulus": {
             "audio": {
-              "ko": "내일",
-              "roman": "naeil",
-              "en": "tomorrow"
+              "ko": "감사합니다. 내일 드릴게요.",
+              "roman": "gamsahamnida. naeil deurilgeyo.",
+              "en": "Thank you. I'll bring it back tomorrow."
             },
-            "audio_url": "u08-umbrella/s1-05-word-r2",
+            "audio_url": "u08-umbrella/d-04-r2",
             "image_url": ""
           },
-          "answers": [
+          "tiles": [
+            {
+              "ko": "감사합니다.",
+              "roman": "gamsahamnida."
+            },
             {
               "ko": "내일",
               "roman": "naeil",
               "en": "tomorrow"
+            },
+            {
+              "ko": "드릴게요.",
+              "roman": "deurilgeyo."
+            },
+            {
+              "ko": "쓰세요.",
+              "roman": "sseuseyo."
+            },
+            {
+              "ko": "없으시죠?",
+              "roman": "eopseusijyo?"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "감사합니다. 내일 드릴게요.",
+              "roman": "gamsahamnida. naeil deurilgeyo.",
+              "en": "Thank you. I'll bring it back tomorrow."
             }
           ]
         },
@@ -5549,18 +5723,18 @@
           "level": 3,
           "skill": "듣기",
           "skill_level": 3,
-          "ref": "voca:81c30d86",
+          "ref": "voca:97270e4b",
           "prompt": {
             "ko": "듣고 문장을 만드세요.",
             "en": "Listen and build the sentence."
           },
           "stimulus": {
             "audio": {
-              "ko": "네, 없어요. 그런데 괜찮아요.",
-              "roman": "ne, eopseoyo. geureonde gwaenchanayo.",
-              "en": "No, I don't. But I'm fine."
+              "ko": "네, 보통 저녁에 와요.",
+              "roman": "ne, botong jeonyeoge wayo.",
+              "en": "Yes, I'm usually here in the evening."
             },
-            "audio_url": "u08-umbrella/d-02-r2",
+            "audio_url": "u08-umbrella/d-07-r2",
             "image_url": ""
           },
           "tiles": [
@@ -5569,53 +5743,75 @@
               "roman": "ne,"
             },
             {
-              "ko": "없어요.",
-              "roman": "eopseoyo."
+              "ko": "보통",
+              "roman": "botong",
+              "en": "usually"
             },
             {
-              "ko": "그런데",
-              "roman": "geureonde",
-              "en": "but"
+              "ko": "저녁에",
+              "roman": "jeonyeoge"
+            },
+            {
+              "ko": "와요.",
+              "roman": "wayo."
             },
             {
               "ko": "괜찮아요.",
               "roman": "gwaenchanayo."
             },
             {
-              "ko": "가세요.",
-              "roman": "gaseyo."
-            },
-            {
-              "ko": "감사합니다.",
-              "roman": "gamsahamnida."
+              "ko": "없으시죠?",
+              "roman": "eopseusijyo?"
             }
           ],
           "answers": [
             {
-              "ko": "네, 없어요. 그런데 괜찮아요.",
-              "roman": "ne, eopseoyo. geureonde gwaenchanayo.",
-              "en": "No, I don't. But I'm fine."
+              "ko": "네, 보통 저녁에 와요.",
+              "roman": "ne, botong jeonyeoge wayo.",
+              "en": "Yes, I'm usually here in the evening."
             }
           ]
         },
         {
           "id": "S8-12",
-          "type": "TRANSLATE_TO_KO",
-          "mode": "typing",
+          "type": "SYLLABLE_BUILD",
+          "mode": "tiles",
           "event": "R",
-          "level": 4,
+          "level": 3,
           "skill": "쓰기",
-          "skill_level": 3,
+          "skill_level": 1,
           "ref": "voca:8d532a47",
           "prompt": {
-            "ko": "한국어로 쓰세요.",
-            "en": "Say this in Korean."
+            "ko": "음절을 골라 낱말을 만드세요.",
+            "en": "Tap the syllables to spell the word."
           },
           "stimulus": {
             "audio_url": "u08-umbrella/s1-03-word-r2",
             "image_url": "",
             "en": "be okay"
           },
+          "tiles": [
+            {
+              "ko": "괜",
+              "roman": "gwaen"
+            },
+            {
+              "ko": "찮",
+              "roman": "chan"
+            },
+            {
+              "ko": "다",
+              "roman": "da"
+            },
+            {
+              "ko": "럼",
+              "roman": "reom"
+            },
+            {
+              "ko": "점",
+              "roman": "jeom"
+            }
+          ],
           "answers": [
             {
               "ko": "괜찮다",
@@ -5780,27 +5976,46 @@
         },
         {
           "id": "S8-16",
-          "type": "TRANSLATE_TO_KO",
-          "mode": "typing",
+          "type": "SYLLABLE_BUILD",
+          "mode": "tiles",
           "event": "R",
-          "level": 4,
+          "level": 3,
           "skill": "쓰기",
-          "skill_level": 3,
-          "ref": "voca:96a51dd1",
+          "skill_level": 1,
+          "ref": "voca:ff8c6497",
           "prompt": {
-            "ko": "한국어로 쓰세요.",
-            "en": "Say this in Korean."
+            "ko": "음절을 골라 낱말을 만드세요.",
+            "en": "Tap the syllables to spell the word."
           },
           "stimulus": {
-            "audio_url": "u08-umbrella/s1-10-word-r2",
+            "audio_url": "u08-umbrella/s1-09-word-r2",
             "image_url": "",
-            "en": "then"
+            "en": "come"
           },
+          "tiles": [
+            {
+              "ko": "오",
+              "roman": "o"
+            },
+            {
+              "ko": "다",
+              "roman": "da"
+            },
+            {
+              "ko": "저",
+              "roman": "jeo",
+              "en": "I (polite)"
+            },
+            {
+              "ko": "많",
+              "roman": "man"
+            }
+          ],
           "answers": [
             {
-              "ko": "그럼",
-              "roman": "geureom",
-              "en": "then"
+              "ko": "오다",
+              "roman": "oda",
+              "en": "come"
             }
           ]
         },
@@ -5892,27 +6107,57 @@
         },
         {
           "id": "S8-19",
-          "type": "SPEAK_WORD",
-          "mode": "speech",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
           "event": "R",
-          "level": 4,
-          "skill": "말하기",
-          "skill_level": 2,
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
           "ref": "voca:a67cc693",
           "prompt": {
-            "ko": "그림을 보고 말하세요.",
-            "en": "Say the word for the picture."
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
           },
           "stimulus": {
-            "audio_url": "u08-umbrella/s3-11-word-r2",
-            "image_brief": "lunch - 한 컷으로 알아볼 수 있게",
-            "image_url": "content/images/items/lunch.webp"
+            "audio": {
+              "ko": "아니요, 저녁에 와요.",
+              "roman": "aniyo, jeonyeoge wayo.",
+              "en": "No, I come in the evening."
+            },
+            "audio_url": "u08-umbrella/d-13-r2",
+            "image_url": ""
           },
-          "answers": [
+          "options": [
             {
-              "ko": "점심",
-              "roman": "jeomsim",
-              "en": "lunch"
+              "id": "o1",
+              "ko": "네, 보통 저녁에 와요.",
+              "roman": "ne, botong jeonyeoge wayo.",
+              "en": "Yes, I'm usually here in the evening.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "아니요, 저녁에 와요.",
+              "roman": "aniyo, jeonyeoge wayo.",
+              "en": "No, I come in the evening.",
+              "correct": true
+            },
+            {
+              "id": "o3",
+              "ko": "천천히 주세요.",
+              "roman": "cheoncheonhi juseyo.",
+              "en": "No rush.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "감사합니다. 내일 드릴게요.",
+              "roman": "gamsahamnida. naeil deurilgeyo.",
+              "en": "Thank you. I'll bring it back tomorrow.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
             }
           ]
         }
@@ -5920,7 +6165,7 @@
     },
     {
       "id": "CULT",
-      "order": 9,
+      "order": 10,
       "items": [
         {
           "id": "CULT-01",
@@ -6160,7 +6405,7 @@
     },
     {
       "id": "RP",
-      "order": 10,
+      "order": 11,
       "items": [
         {
           "id": "RP-01",
@@ -6621,7 +6866,7 @@
               "roman": "ne, annyeonghi gaseyo.",
               "en": "Okay, goodbye."
             },
-            "audio_url": ""
+            "audio_url": "u08-umbrella/d-09-r2"
           }
         ],
         "closing_image_url": "content/images/u08-umbrella/rp-end.webp",
@@ -6638,6 +6883,7 @@
       "S2",
       "S3",
       "S4",
+      "INT",
       "S5",
       "S6",
       "S7",
