@@ -92,3 +92,12 @@ test("LCN-S. 나가면 이야기(통과 뒤 컷)로 이어지면 나가는 버�
   const paired = screen.getByTestId("lesson-complete-screen-exit");
   expect(paired).toHaveAttribute("accessibility-label", "Continue story");
 });
+
+test("LCN-F. 미통과면 continuesStory가 와도 「Back to map」이다(방어)", () => {
+  render(
+    <LessonCompleteScreen
+      {...fixture({ continuesStory: true, verdict: "failed", results: ["incorrect", "incorrect"] })}
+    />,
+  );
+  expect(screen.getByTestId("lesson-complete-screen-exit")).toHaveTextContent("Back to map");
+});
