@@ -18,7 +18,7 @@ const appDir = join(androidDir, "app");
 const vendorDir = join(androidDir, "vendor-maven");
 
 // Play Console에 이미 올라간 versionCode.
-const PLAY_UPLOADED_VERSION_CODE = 6;
+const PLAY_UPLOADED_VERSION_CODE = 7;
 
 /** 주석 줄은 결선이 아니다 — 지운 뒤 본문만 본다 (선례 gradle-wiring.test.mjs). */
 const stripComments = (text) =>
