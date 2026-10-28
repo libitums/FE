@@ -246,7 +246,7 @@ test("NA4: AAB asks for uncompressed 16 KB-aligned native libraries; universal a
   }
 });
 
-test("NA5: universal APK badging is libitum.duru.android versionCode 2, compile/targetSdk 36, MainActivity kept; test APK is <id>.test", (t) => {
+test("NA5: universal APK badging is libitum.duru.android versionCode 7 · versionName 1.0.0, compile/targetSdk 36, MainActivity kept; test APK is <id>.test", (t) => {
   if (!bundletoolJar()) {
     t.skip("BUNDLETOOL_JAR not set");
     return;
