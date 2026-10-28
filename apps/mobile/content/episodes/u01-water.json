@@ -2890,8 +2890,115 @@
       ]
     },
     {
+      "id": "INT",
+      "kind": "interlude",
+      "items": [],
+      "interlude": {
+        "form": "cuts",
+        "anchor": "parallel",
+        "caption": {
+          "ko": "그 시각, 익선 게스트하우스",
+          "roman": "geu sigak, ikseon geseuteuhauseu",
+          "en": "Meanwhile, at Ikseon Guesthouse"
+        },
+        "cuts": [
+          {
+            "index": 1,
+            "cut_kind": "speech",
+            "image_brief": "게스트하우스 거실. 배낭이 바닥에 반쯤 풀려 있다. 낯선 사람이 현관 쪽을 보고 서서 한 손을 든다.",
+            "image_url": "content/images/u01-water/int-1.webp",
+            "narration": {
+              "ko": "새 손님이 오는 날. 거실에서 누군가 한국어 인사를 혼자 연습하고 있다.",
+              "roman": "sae sonnimi oneun nal. geosireseo nugunga hangugeo insareul honja yeonseupago itda.",
+              "en": "A new guest arrives today. In the living room, someone is practicing a Korean greeting alone."
+            },
+            "aside": {
+              "ko": "현관을 향해 한 손을 가볍게 들며",
+              "roman": "hyeongwaneul hyanghae han soneul gabyeopge deulmyeo",
+              "en": "Raising a hand toward the front door, casually."
+            },
+            "speaker": "낯선 사람",
+            "line": {
+              "ko": "어, 새로 오셨나 봐요?",
+              "roman": "eo, saero osyeonna bwayo?",
+              "en": "Oh, you must be new here?"
+            }
+          },
+          {
+            "index": 2,
+            "cut_kind": "speech",
+            "image_brief": "같은 자리. 고개를 갸웃한다.",
+            "image_url": "content/images/u01-water/int-2.webp",
+            "aside": {
+              "ko": "고개를 갸웃하고 목소리를 낮추며",
+              "roman": "gogaereul gyauthago moksorireul natchumyeo",
+              "en": "Tilting her head, voice lower."
+            },
+            "speaker": "낯선 사람",
+            "line": {
+              "ko": "어... 새로 오셨나 봐요?",
+              "roman": "eo... saero osyeonna bwayo?",
+              "en": "Oh... you must be new here?"
+            }
+          },
+          {
+            "index": 3,
+            "cut_kind": "speech",
+            "image_brief": "같은 자리. 두 팔을 활짝 벌린다.",
+            "image_url": "content/images/u01-water/int-3.webp",
+            "aside": {
+              "ko": "두 팔을 활짝 벌리며",
+              "roman": "du pareul hwaljjak beollimyeo",
+              "en": "Flinging both arms wide."
+            },
+            "speaker": "낯선 사람",
+            "line": {
+              "ko": "어! 새로 오셨나 봐요?!",
+              "roman": "eo! saero osyeonna bwayo?!",
+              "en": "Oh! You must be new here?!"
+            }
+          },
+          {
+            "index": 4,
+            "cut_kind": "speech",
+            "image_brief": "마당 쪽 열린 문. 빗자루를 든 사장님이 거실을 들여다본다.",
+            "image_url": "content/images/u01-water/int-4.webp",
+            "aside": {
+              "ko": "마당을 쓸다 말고 문 너머로 고개를 내밀며",
+              "roman": "madangeul sseulda malgo mun neomeoro gogaereul naemilmyeo",
+              "en": "Pausing her sweeping, leaning in from the courtyard."
+            },
+            "speaker": "사장님",
+            "line": {
+              "ko": "손님 아직 안 왔어요.",
+              "roman": "sonnim ajik an wasseoyo.",
+              "en": "The guest isn't here yet."
+            }
+          },
+          {
+            "index": 5,
+            "cut_kind": "speech",
+            "image_brief": "팔을 내리고 배낭 쪽으로 돌아앉는다. 귀가 빨갛다.",
+            "image_url": "content/images/u01-water/int-5.webp",
+            "aside": {
+              "ko": "팔을 슬그머니 내리고 배낭 앞에 쪼그려 앉으며",
+              "roman": "pareul seulgeumeoni naerigo baenang ape jjogeuryeo anjeumyeo",
+              "en": "Quietly lowering her arms, crouching back down by the backpack."
+            },
+            "speaker": "낯선 사람",
+            "line": {
+              "ko": "알아요...",
+              "roman": "arayo...",
+              "en": "I know..."
+            }
+          }
+        ]
+      },
+      "order": 5
+    },
+    {
       "id": "S5",
-      "order": 5,
+      "order": 6,
       "items": [
         {
           "id": "S5-01",
@@ -3425,7 +3532,7 @@
     },
     {
       "id": "S6",
-      "order": 6,
+      "order": 7,
       "items": [
         {
           "id": "S6-01",
@@ -3552,7 +3659,7 @@
             "en": "Say this in Korean."
           },
           "stimulus": {
-            "audio_url": "u01-water/s6-04-answer-r2",
+            "audio_url": "u01-water/s3-01-word-r2",
             "image_url": "",
             "en": "Would you like ~? (offering)"
           },
@@ -3706,7 +3813,7 @@
     },
     {
       "id": "S7",
-      "order": 7,
+      "order": 8,
       "items": [
         {
           "id": "S7-01",
@@ -4172,80 +4279,148 @@
     },
     {
       "id": "S8",
-      "order": 8,
+      "order": 9,
       "items": [
         {
           "id": "S8-01",
-          "type": "SPEAK_WORD",
-          "mode": "speech",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
           "event": "R",
-          "level": 4,
-          "skill": "말하기",
-          "skill_level": 2,
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
           "ref": "voca:e70ba1ce",
           "prompt": {
-            "ko": "그림을 보고 말하세요.",
-            "en": "Say the word for the picture."
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
           },
           "stimulus": {
-            "audio_url": "u01-water/s1-01-word-r2",
-            "image_brief": "water - 한 컷으로 알아볼 수 있게",
-            "image_url": "content/images/items/water.webp"
+            "audio": {
+              "ko": "따뜻한 물 주세요.",
+              "roman": "ttatteuthan mul juseyo.",
+              "en": "Warm water, please."
+            },
+            "audio_url": "u01-water/d-08-r2",
+            "image_url": ""
           },
-          "answers": [
+          "options": [
             {
-              "ko": "물",
-              "roman": "mul",
-              "en": "water"
+              "id": "o1",
+              "ko": "감사합니다. 안녕히 가세요.",
+              "roman": "gamsahamnida. annyeonghi gaseyo.",
+              "en": "Thank you. Have a nice day.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o2",
+              "ko": "따뜻한 물 주세요.",
+              "roman": "ttatteuthan mul juseyo.",
+              "en": "Warm water, please.",
+              "correct": true
+            },
+            {
+              "id": "o3",
+              "ko": "카드로 할게요.",
+              "roman": "kadeuro halgeyo.",
+              "en": "I'll pay by card.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "삼천 원입니다.",
+              "roman": "samcheon wonimnida.",
+              "en": "That's three thousand won.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
             }
           ]
         },
         {
           "id": "S8-02",
-          "type": "DICTATION",
-          "mode": "typing",
+          "type": "LISTEN_BUILD",
+          "mode": "tiles",
           "event": "R",
-          "level": 4,
-          "skill": "쓰기",
-          "skill_level": 2,
+          "level": 3,
+          "skill": "듣기",
+          "skill_level": 3,
           "ref": "voca:be2eb7e3",
           "prompt": {
-            "ko": "들은 대로 쓰세요.",
-            "en": "Type what you hear."
+            "ko": "듣고 문장을 만드세요.",
+            "en": "Listen and build the sentence."
           },
           "stimulus": {
             "audio": {
-              "ko": "카드로",
-              "roman": "kadeuro"
+              "ko": "카드로 할게요.",
+              "roman": "kadeuro halgeyo.",
+              "en": "I'll pay by card."
             },
-            "audio_url": "u01-water/s8-02-stim-r2",
+            "audio_url": "u01-water/d-04-r2",
             "image_url": ""
           },
-          "answers": [
+          "tiles": [
             {
               "ko": "카드로",
               "roman": "kadeuro"
+            },
+            {
+              "ko": "할게요.",
+              "roman": "halgeyo."
+            },
+            {
+              "ko": "원입니다.",
+              "roman": "wonimnida."
+            },
+            {
+              "ko": "감사합니다.",
+              "roman": "gamsahamnida."
+            }
+          ],
+          "answers": [
+            {
+              "ko": "카드로 할게요.",
+              "roman": "kadeuro halgeyo.",
+              "en": "I'll pay by card."
             }
           ]
         },
         {
           "id": "S8-03",
-          "type": "TRANSLATE_TO_KO",
-          "mode": "typing",
+          "type": "SYLLABLE_BUILD",
+          "mode": "tiles",
           "event": "R",
-          "level": 4,
+          "level": 3,
           "skill": "쓰기",
-          "skill_level": 3,
+          "skill_level": 1,
           "ref": "voca:c5cd4239",
           "prompt": {
-            "ko": "한국어로 쓰세요.",
-            "en": "Say this in Korean."
+            "ko": "음절을 골라 낱말을 만드세요.",
+            "en": "Tap the syllables to spell the word."
           },
           "stimulus": {
             "audio_url": "u01-water/s1-03-word-r2",
             "image_url": "",
             "en": "plastic bag"
           },
+          "tiles": [
+            {
+              "ko": "봉",
+              "roman": "bong"
+            },
+            {
+              "ko": "투",
+              "roman": "tu"
+            },
+            {
+              "ko": "현",
+              "roman": "hyeon"
+            },
+            {
+              "ko": "카",
+              "roman": "ka"
+            }
+          ],
           "answers": [
             {
               "ko": "봉투",
@@ -4256,6 +4431,58 @@
         },
         {
           "id": "S8-04",
+          "type": "SYLLABLE_BUILD",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "쓰기",
+          "skill_level": 1,
+          "ref": "voca:5d8be8cf",
+          "prompt": {
+            "ko": "음절을 골라 낱말을 만드세요.",
+            "en": "Tap the syllables to spell the word."
+          },
+          "stimulus": {
+            "audio_url": "u01-water/s3-04-word-r2",
+            "image_url": "",
+            "en": "warm"
+          },
+          "tiles": [
+            {
+              "ko": "따",
+              "roman": "tta"
+            },
+            {
+              "ko": "뜻",
+              "roman": "tteut"
+            },
+            {
+              "ko": "하",
+              "roman": "ha"
+            },
+            {
+              "ko": "다",
+              "roman": "da"
+            },
+            {
+              "ko": "드",
+              "roman": "deu"
+            },
+            {
+              "ko": "증",
+              "roman": "jeung"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "따뜻하다",
+              "roman": "ttatteuthada",
+              "en": "warm"
+            }
+          ]
+        },
+        {
+          "id": "S8-05",
           "type": "LISTEN_SELECT",
           "mode": "choice",
           "event": "R",
@@ -4307,32 +4534,6 @@
               "roman": "aniyo, gwaenchanayo.",
               "en": "No, I'm fine.",
               "correct": true
-            }
-          ]
-        },
-        {
-          "id": "S8-05",
-          "type": "TRANSLATE_TO_KO",
-          "mode": "typing",
-          "event": "R",
-          "level": 4,
-          "skill": "쓰기",
-          "skill_level": 3,
-          "ref": "voca:289ede0e",
-          "prompt": {
-            "ko": "한국어로 쓰세요.",
-            "en": "Say this in Korean."
-          },
-          "stimulus": {
-            "audio_url": "u01-water/s3-02-word-r2",
-            "image_url": "",
-            "en": "won (Korean money)"
-          },
-          "answers": [
-            {
-              "ko": "원",
-              "roman": "won",
-              "en": "won (Korean money)"
             }
           ]
         },
@@ -4393,31 +4594,51 @@
         },
         {
           "id": "S8-07",
-          "type": "DICTATION",
-          "mode": "typing",
+          "type": "LISTEN_BUILD",
+          "mode": "tiles",
           "event": "R",
-          "level": 4,
-          "skill": "쓰기",
-          "skill_level": 2,
+          "level": 3,
+          "skill": "듣기",
+          "skill_level": 3,
           "ref": "voca:fe376448",
           "prompt": {
-            "ko": "들은 대로 쓰세요.",
-            "en": "Type what you hear."
+            "ko": "듣고 문장을 만드세요.",
+            "en": "Listen and build the sentence."
           },
           "stimulus": {
             "audio": {
-              "ko": "영수증",
-              "roman": "yeongsujeung",
-              "en": "receipt"
+              "ko": "영수증 드릴까요?",
+              "roman": "yeongsujeung deurilkkayo?",
+              "en": "Would you like a receipt?"
             },
-            "audio_url": "u01-water/s1-06-word-r2",
+            "audio_url": "u01-water/d-05-r2",
             "image_url": ""
           },
-          "answers": [
+          "tiles": [
             {
               "ko": "영수증",
               "roman": "yeongsujeung",
               "en": "receipt"
+            },
+            {
+              "ko": "드릴까요?",
+              "roman": "deurilkkayo?",
+              "en": "Would you like ~? (offering)"
+            },
+            {
+              "ko": "가세요.",
+              "roman": "gaseyo."
+            },
+            {
+              "ko": "감사합니다.",
+              "roman": "gamsahamnida."
+            }
+          ],
+          "answers": [
+            {
+              "ko": "영수증 드릴까요?",
+              "roman": "yeongsujeung deurilkkayo?",
+              "en": "Would you like a receipt?"
             }
           ]
         },
@@ -4540,48 +4761,48 @@
           "level": 3,
           "skill": "듣기",
           "skill_level": 3,
-          "ref": "voca:e70ba1ce",
+          "ref": "expr:a04464f0",
           "prompt": {
             "ko": "듣고 문장을 만드세요.",
             "en": "Listen and build the sentence."
           },
           "stimulus": {
             "audio": {
-              "ko": "따뜻한 물 주세요.",
-              "roman": "ttatteuthan mul juseyo.",
-              "en": "Warm water, please."
+              "ko": "아니요, 영수증은 괜찮아요.",
+              "roman": "aniyo, yeongsujeungeun gwaenchanayo.",
+              "en": "No, I don't need the receipt."
             },
-            "audio_url": "u01-water/d-08-r2",
+            "audio_url": "u01-water/d-06-r2",
             "image_url": ""
           },
           "tiles": [
             {
-              "ko": "따뜻한",
-              "roman": "ttatteuthan"
+              "ko": "아니요,",
+              "roman": "aniyo,"
             },
             {
-              "ko": "물",
-              "roman": "mul",
-              "en": "water"
+              "ko": "영수증은",
+              "roman": "yeongsujeungeun"
             },
             {
-              "ko": "주세요.",
-              "roman": "juseyo."
+              "ko": "괜찮아요.",
+              "roman": "gwaenchanayo.",
+              "en": "No thanks. / I'm fine."
             },
             {
-              "ko": "있어요.",
-              "roman": "isseoyo."
+              "ko": "감사합니다.",
+              "roman": "gamsahamnida."
             },
             {
-              "ko": "할게요.",
-              "roman": "halgeyo."
+              "ko": "가세요.",
+              "roman": "gaseyo."
             }
           ],
           "answers": [
             {
-              "ko": "따뜻한 물 주세요.",
-              "roman": "ttatteuthan mul juseyo.",
-              "en": "Warm water, please."
+              "ko": "아니요, 영수증은 괜찮아요.",
+              "roman": "aniyo, yeongsujeungeun gwaenchanayo.",
+              "en": "No, I don't need the receipt."
             }
           ]
         },
@@ -4755,7 +4976,7 @@
     },
     {
       "id": "CULT",
-      "order": 9,
+      "order": 10,
       "items": [
         {
           "id": "CULT-01",
@@ -4995,7 +5216,7 @@
     },
     {
       "id": "RP",
-      "order": 10,
+      "order": 11,
       "items": [
         {
           "id": "RP-01",
@@ -5311,7 +5532,7 @@
               "roman": "gamsahamnida. annyeonghi gaseyo.",
               "en": "Thank you. Goodbye."
             },
-            "audio_url": ""
+            "audio_url": "u01-water/d-07-r2"
           }
         ],
         "closing_image_url": "content/images/u01-water/rp-end.webp",
@@ -5328,6 +5549,7 @@
       "S2",
       "S3",
       "S4",
+      "INT",
       "S5",
       "S6",
       "S7",

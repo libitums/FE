@@ -1,6 +1,6 @@
 {
   "schema": "manifest-1",
-  "generated_at": "2026-10-26T05:30:39Z",
+  "generated_at": "2026-10-28T10:04:22Z",
   "episodes": [
     {
       "id": "u00-tutorial",
@@ -17,9 +17,9 @@
       "order": 1,
       "title": "물 사기",
       "schema": "delivery-2",
-      "version": "2026-10-26.1",
-      "sha256": "5df809f283d7f385df0e48f996f288c2f680edc3a035073e6b275f2e3e9cae22",
-      "bytes": 165228,
+      "version": "2026-10-28.2",
+      "sha256": "c571a256f76808ffce5694ea9c4c431b95f0cbbb0887acc195572a758112537a",
+      "bytes": 173003,
       "url": "episodes/u01-water.json"
     },
     {
@@ -27,9 +27,9 @@
       "order": 2,
       "title": "체크인",
       "schema": "delivery-2",
-      "version": "2026-10-26.1",
-      "sha256": "168212c966353dae70a8bb942f31a68904c7daac712b40b05f34a9bd272946ee",
-      "bytes": 209021,
+      "version": "2026-10-28.2",
+      "sha256": "592497ceee73c0fe0b6f6f1fa9ac13b92b897b6bbd8d9250852458d4751369a9",
+      "bytes": 218361,
       "url": "episodes/u02-checkin.json"
     },
     {
@@ -37,9 +37,9 @@
       "order": 3,
       "title": "미나 만나기",
       "schema": "delivery-2",
-      "version": "2026-10-26.1",
-      "sha256": "8e254f086ca636f4f229f299189b3c7fabb0c8a86e23ca3493a728b427576a73",
-      "bytes": 212354,
+      "version": "2026-10-28.2",
+      "sha256": "de6294dfa953d632852cae27b803c38ce2919f661682aafb23a7291165041a84",
+      "bytes": 221016,
       "url": "episodes/u03-mina.json"
     },
     {
@@ -47,9 +47,9 @@
       "order": 4,
       "title": "식당 찾기",
       "schema": "delivery-2",
-      "version": "2026-10-26.1",
-      "sha256": "66fe1af8a64199efdf45c1f77d6735251876a4948c1ac225b44da3162b2950f2",
-      "bytes": 190562,
+      "version": "2026-10-28.2",
+      "sha256": "e4cb4ac6d02c3c04954c578d282b20a710d9158eb62236f780b897833a7e87e0",
+      "bytes": 201365,
       "url": "episodes/u04-directions.json"
     },
     {
@@ -57,9 +57,9 @@
       "order": 5,
       "title": "혼자 밥 먹기",
       "schema": "delivery-2",
-      "version": "2026-10-26.1",
-      "sha256": "ce2ae2c117e9e51e41ddd891ec6d529fd2267dfe36bce920976cb3d13bfaae33",
-      "bytes": 207481,
+      "version": "2026-10-28.2",
+      "sha256": "c2e5062a87aebb8c9e952d2500fee7400631e6650c19bbe0f5e894038526d2e0",
+      "bytes": 216417,
       "url": "episodes/u05-baekban.json"
     },
     {
@@ -67,9 +67,9 @@
       "order": 6,
       "title": "커피 주문",
       "schema": "delivery-2",
-      "version": "2026-10-26.1",
-      "sha256": "17b739aaec468bf1f2719cbc28fb9508000fd5c2a07827117a4d3c876f019b6b",
-      "bytes": 223854,
+      "version": "2026-10-28.2",
+      "sha256": "f26c93335f0dac899bec3efcc6feb26b5b1c44ba4732dfc472f7e3c6f78c56df",
+      "bytes": 232425,
       "url": "episodes/u06-cafe.json"
     },
     {
@@ -77,9 +77,9 @@
       "order": 7,
       "title": "자리 착각",
       "schema": "delivery-2",
-      "version": "2026-10-26.1",
-      "sha256": "7f1b5c093773ca98150c5d9b3ea9b19c045a89d4b4baa5aa6a31a5917703b779",
-      "bytes": 199995,
+      "version": "2026-10-28.2",
+      "sha256": "11fc8fffff161928acf3c7aed987dcaa52955d93d76ac13859e0b07fe83de327",
+      "bytes": 207765,
       "url": "episodes/u07-jaemin.json"
     },
     {
@@ -87,10 +87,30 @@
       "order": 8,
       "title": "갑자기 온 비",
       "schema": "delivery-2",
-      "version": "2026-10-26.1",
-      "sha256": "d5ad403e73c8069fb039cbf67ed1c22ba10c3a8b41dd3b80a28716c0e46b0480",
-      "bytes": 216175,
+      "version": "2026-10-28.2",
+      "sha256": "17191cef2820381b95f47c7ec2a0d45e470f1416ff486adc3bcafc794fa3553f",
+      "bytes": 223526,
       "url": "episodes/u08-umbrella.json"
+    },
+    {
+      "id": "u09-subway",
+      "order": 9,
+      "title": "지하철 타기",
+      "schema": "delivery-2",
+      "version": "2026-10-28.2",
+      "sha256": "134e4c38f8e27d554dc6a6deb0dd818ef3d0505182148e12ae66abf1b7dd683b",
+      "bytes": 221195,
+      "url": "episodes/u09-subway.json"
+    },
+    {
+      "id": "u10-laundry",
+      "order": 10,
+      "title": "빨래하기",
+      "schema": "delivery-2",
+      "version": "2026-10-28.1",
+      "sha256": "7f7e41d119159108f4cd858b055100d1500eb710a9dec9bf155a17c95f0c2750",
+      "bytes": 213955,
+      "url": "episodes/u10-laundry.json"
     }
   ]
 }
