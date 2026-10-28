@@ -37,10 +37,6 @@ export const entryLoginMethods: readonly EntryLoginMethod[] = [
 // 화면·테스트가 이 상수를 리터럴로 복제하지 않고 import합니다.
 export const entrySplashDurationMs = 4000;
 
-// 받을 갱신이 있어 게이지가 기다리는 중일 때, 로고 애니메이션이 끝난(또는 안전 타이머가
-// 그 순간을 대신한) 뒤로 더 기다리는 최대 시간입니다. 모션 토큰이 아닙니다.
-export const splashUpdateWaitMs = 3000;
-
 // `default` 없는 switch입니다 — 수단이 늘면 TS2366으로 섭니다.
 export function requiresVerificationCode(method: EntryLoginMethod): boolean {
   switch (method) {

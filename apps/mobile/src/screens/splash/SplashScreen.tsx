@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import { announce } from "../../lib/accessibility";
-import { entrySplashDurationMs, splashUpdateWaitMs } from "../../lib/entry-flow";
+import { entrySplashDurationMs } from "../../lib/entry-flow";
 import { useUiCopy } from "../../lib/ui-copy";
 import logoHandwriting from "./assets/logo-handwriting.webp";
 import { SplashUpdateGauge } from "./SplashUpdateGauge";
@@ -13,8 +13,9 @@ import "./splash-screen.css";
 
 /**
  * 로고 손글씨 애니메이션(약 2.4초, 애니메이션 WebP)을 한 번 재생하고, 끝나면 포트에
- * 알립니다. 받을 갱신이 있어 게이지가 기다리는 중이면 최대 `splashUpdateWaitMs` 더
- * 머물고, 그 밖에는 로고가 끝나는 즉시 `close` 뒤 정확히 1회 `onTimeout`을 부릅니다.
+ * 알립니다. 매니페스트 응답 전(checking)이거나 받을 갱신을 받는 중(gauge · wait)이면 **시간 제한 없이**
+ * 머물고(ADR-0078 D6 정정 — 사용자 결정 2026-10-28), 그 밖에는 로고가 끝나는 즉시 `close` 뒤 정확히 1회
+ * `onTimeout`을 부릅니다. 요청마다의 시간 제한은 전송 계층(파일 받기 60초 등)이 집니다.
  * 로고보다 일찍 나가지 않습니다. 끝났다는 신호가 오지 않는 경로(로드 실패 · 이벤트
  * 미수신 · 테스트 환경)는 `entrySplashDurationMs` 안전 타이머가 그 순간을 대신합니다.
  */
@@ -25,7 +26,6 @@ export function SplashScreen({ onTimeout }: SplashScreenProps): ReactNode {
   const logoEndedRef = useRef(false);
   const exitedRef = useRef(false);
   const safetyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const waitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // App의 결선(`wiring`)은 렌더마다 새로 지어져 `onTimeout`도 매번 새 함수입니다.
   // 스플래시 도중에도 App이 다시 그려지므로(safe area globalProps 도착 등) 콜백을
   // 의존성에 두면 안전 타이머가 그때마다 처음부터 다시 셉니다. 최신 콜백과 포트는
@@ -37,9 +37,7 @@ export function SplashScreen({ onTimeout }: SplashScreenProps): ReactNode {
 
   const clearTimers = useCallback(() => {
     if (safetyTimerRef.current !== null) clearTimeout(safetyTimerRef.current);
-    if (waitTimerRef.current !== null) clearTimeout(waitTimerRef.current);
     safetyTimerRef.current = null;
-    waitTimerRef.current = null;
   }, []);
 
   const exit = useCallback(() => {
@@ -54,11 +52,8 @@ export function SplashScreen({ onTimeout }: SplashScreenProps): ReactNode {
     if (logoEndedRef.current) return;
     logoEndedRef.current = true;
     portRef.current.logoFinished();
-    if (splashMayLeave(portRef.current.view)) {
-      exit();
-      return;
-    }
-    waitTimerRef.current = setTimeout(exit, splashUpdateWaitMs);
+    // 기다리는 중이면 아래 effect가 뷰가 풀리는(다 받음 · 실패 · 응답 없음) 순간 나갑니다.
+    if (splashMayLeave(portRef.current.view)) exit();
   }, [exit]);
 
   useEffect(() => {

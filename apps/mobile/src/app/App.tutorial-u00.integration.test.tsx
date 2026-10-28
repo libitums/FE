@@ -288,7 +288,7 @@ describe("TU7 새 버전 교체", () => {
     return { text, manifest };
   }
 
-  test("TU7. 첫 실행은 새 경로 하나만 받고 같은 실행의 표지는 옛 내장 그림이며, 다음 시작에 컷 1만 받은 파일로 바뀐다", async () => {
+  test("TU7. 첫 실행은 새 경로 하나만 받고, 스플래시가 받기를 기다렸다 바꿔 끼워 같은 실행의 표지 컷 1부터 받은 파일이다", async () => {
     const { text, manifest } = newU00Text();
     const serve = { manifest, episodes: { [U00]: text } };
     const files = new Map<string, string>();
@@ -300,15 +300,9 @@ describe("TU7 새 버전 교체", () => {
     const newPath = "images/u00-tutorial/pre-1-v2.webp";
     const u00Paths = () => download.mock.calls.map((call) => call[1]).filter(isU00ImagePath);
 
-    const first = await bootTutorialApp({ serve, contentFiles });
+    await bootTutorialApp({ serve, contentFiles });
     await vi.waitFor(() => expect(u00Paths()).toEqual([newPath]));
     useBannerClock();
-    tapCover();
-    tapIntroNext();
-    expect(imageSrcs()).toContain(bundledContentImageUrl(preCutPath(1)));
-    resetApp();
-
-    await bootTutorialApp({ serve, contentFiles, store: first.store });
     tapCover();
     tapIntroNext();
     expect(imageSrcs()).toContain(`file:///content/${newPath}`);

@@ -15,7 +15,7 @@ import {
   CONTENT_RECEIVED_MANIFEST_KEY,
   contentEpisodeKey,
 } from "../lib/episode-cache";
-import { entrySplashDurationMs, splashUpdateWaitMs } from "../lib/entry-flow";
+import { entrySplashDurationMs } from "../lib/entry-flow";
 import { contentStagedAssetsKey, contentStagedEpisodeKey } from "../lib/episode-staging";
 import { sha256Hex, utf8Bytes } from "../lib/sha256";
 import type { EpisodeIntroEvent } from "../screens/episode-intro/episode-intro.contract";
@@ -193,7 +193,10 @@ test("[EUI1] 바뀐 에피소드를 로고 안에 다 받으면 게이지가 100
   });
 });
 
-test("[EUI2] 3초 안에 못 받으면 옛 버전으로 열리고 같은 실행에서는 끝까지 옛 버전이며 다음 시작에 새 버전이다", async () => {
+// 시간 제한 없이 기다리는지 보는 긴 시간입니다(10분).
+const LONG_MS = 10 * 60 * 1000;
+
+test("[EUI2] 받는 동안은 시간이 아무리 지나도 스플래시가 기다리고, 다 받으면 나가면서 새 버전이 맵에 바로 선다", async () => {
   const files = fileModule();
   const sink = collector();
   const { store } = await bootContentApp({
@@ -207,34 +210,23 @@ test("[EUI2] 3초 안에 못 받으면 옛 버전으로 열리고 같은 실행�
   expect(gauge()).not.toBeNull();
 
   await endLogo();
-  await advance(splashUpdateWaitMs - 1);
+  await advance(LONG_MS);
   expect(splashUp()).toBe(true);
-  await advance(1);
-
-  expect(splashUp()).toBe(false);
-  expect(section()).toBeInTheDocument();
-  expect(screen.queryByTestId(`catalog-pending-${idOfEpisode}`)).toBeNull();
-  expect(lessonS2()).toBeNull();
 
   await act(async () => {
     files.releaseAll();
   });
   await flush();
-  await advance(entrySplashDurationMs);
 
-  expect(lessonS2()).toBeNull();
-  expect(store.get(contentEpisodeKey(idOfEpisode))).toBe(v1Text);
-  expect(store.has(contentStagedEpisodeKey(idOfEpisode))).toBe(true);
-  expect(store.has(contentStagedAssetsKey(idOfEpisode))).toBe(true);
+  expect(splashUp()).toBe(false);
+  expect(lessonS2()).toBeInTheDocument();
+  expect(store.get(contentEpisodeKey(idOfEpisode))).toBe(v2Text);
+  expect(store.has(contentStagedEpisodeKey(idOfEpisode))).toBe(false);
   expect(sink.closed()).toHaveLength(1);
-  expect(sink.closed()[0]).toMatchObject({
-    outcome: "timed-out",
-    waitMs: String(splashUpdateWaitMs),
-    replacedCount: "0",
-  });
+  expect(sink.closed()[0]).toMatchObject({ outcome: "complete", replacedCount: "1" });
 });
 
-test("[EUI3] 준비된 새 버전은 다음 시작에 오프라인이어도 올라가 게이지 없이 열린다", async () => {
+test("[EUI3] 받는 도중 앱이 꺼져도 준비된 새 버전은 다음 시작에 오프라인이어도 올라가 게이지 없이 열린다", async () => {
   const files = fileModule();
   const first = await bootContentApp({
     content: bucketV2,
@@ -244,7 +236,8 @@ test("[EUI3] 준비된 새 버전은 다음 시작에 오프라인이어도 올�
   });
   await flush();
   await endLogo();
-  await advance(splashUpdateWaitMs);
+  // 스플래시가 기다리는 중에 앱이 꺼집니다 — 받기는 뒤에서 끝나 스테이징에 남습니다.
+  cleanup();
   await act(async () => {
     files.releaseAll();
   });
@@ -252,7 +245,6 @@ test("[EUI3] 준비된 새 버전은 다음 시작에 오프라인이어도 올�
   expect(first.store.has(contentStagedAssetsKey(idOfEpisode))).toBe(true);
   expect(first.store.has(CONTENT_RECEIVED_MANIFEST_KEY)).toBe(true);
 
-  cleanup();
   vi.useRealTimers();
   const sink = collector();
   const second = await bootContentApp({
@@ -275,7 +267,7 @@ test("[EUI3] 준비된 새 버전은 다음 시작에 오프라인이어도 올�
   expect(sink.closed()[0]).toMatchObject({ outcome: "unchecked", replacedCount: "1" });
 });
 
-test("[EUI4] 새 에피소드는 게이지가 시간을 넘겨도 받는 대로 같은 실행에서 맵에 열린다", async () => {
+test("[EUI4] 새 에피소드도 스플래시가 다 받을 때까지 기다려 첫 맵에 바로 선다", async () => {
   const files = fileModule();
   const fresh = {
     id: "u05-x",
@@ -297,16 +289,56 @@ test("[EUI4] 새 에피소드는 게이지가 시간을 넘겨도 받는 대로 
   expect(gauge()).not.toBeNull();
 
   await endLogo();
-  await advance(splashUpdateWaitMs);
-  expect(splashUp()).toBe(false);
-  expect(screen.queryByTestId("catalog-section-u05-x")).toBeNull();
+  await advance(LONG_MS);
+  expect(splashUp()).toBe(true);
 
   await act(async () => {
     files.releaseAll();
   });
   await flush();
 
+  expect(splashUp()).toBe(false);
   expect(screen.getByTestId("catalog-section-u05-x")).toBeInTheDocument();
+});
+
+test("[EUI9] 스플래시에서 못 받은 새 버전도 앱 사용 중 받아지면 여정맵 루트에서 바로 바뀐다", async () => {
+  // 첫 받기 차례는 연결이 끊겨 실패하고(스플래시는 옛 버전으로 넘어감), 신호 뒤 둘째 차례는 성공합니다.
+  let failing = true;
+  const saved = new Set<string>([...bundledPaths, ...episodeAssetPaths(JSON.parse(v1Text))]);
+  const contentFiles = {
+    download: (_url: string, path: string, callback: (p: unknown) => void) => {
+      if (failing) {
+        callback({ status: "network" });
+        return;
+      }
+      saved.add(path);
+      callback({ status: "saved", bytes: "10" });
+    },
+    fileUrl: (path: string) => (saved.has(path) ? `file:///files/${path}` : ""),
+    remove: vi.fn<(path: string) => void>(),
+  };
+  const { store } = await bootContentApp({
+    content: bucketV2,
+    contentFiles,
+    preStore: seedV1,
+    splash: "hold",
+  });
+  await flush();
+  await endLogo();
+  await flush();
+
+  expect(splashUp()).toBe(false);
+  expect(section()).toBeInTheDocument();
+  expect(lessonS2()).toBeNull();
+
+  failing = false;
+  await act(async () => {
+    lynx.getJSModule("GlobalEventEmitter").emit("contentSyncOpportunity", []);
+  });
+  await flush();
+
+  expect(lessonS2()).toBeInTheDocument();
+  expect(store.get(contentEpisodeKey(idOfEpisode))).toBe(v2Text);
 });
 
 test("[EUI5a] 받을 것이 없으면 게이지 없이 로고 끝에 바로 맵이 서고 nothing이 나간다", async () => {

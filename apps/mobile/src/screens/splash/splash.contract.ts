@@ -8,6 +8,8 @@ export type SplashScreenProps = { readonly onTimeout: () => void };
 /** 스플래시가 받는 갱신 뷰입니다. plain = 게이지 없음(로고가 끝나면 나감). */
 export type SplashUpdateView =
   | { readonly kind: "plain" }
+  // 매니페스트 응답 전 — 게이지 없이 로고만 보이고 스플래시는 나가지 않습니다(ADR-0078 D6 정정).
+  | { readonly kind: "checking" }
   | { readonly kind: "gauge"; readonly percent: number; readonly hold: "wait" | "release" };
 
 /** App 루트가 내리는 포트입니다. 함수 둘은 백그라운드가 닫아 만듭니다. */

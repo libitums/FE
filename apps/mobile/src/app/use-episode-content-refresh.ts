@@ -34,10 +34,19 @@ export const contentSyncEventName = "contentSyncOpportunity";
 export type EpisodeContentRefresh = {
   readonly content: EpisodeContent;
   readonly splash: SplashUpdatePort;
+  /**
+   * 스플래시가 나간 뒤 갖춰진 바뀐 에피소드가 있으면 0보다 큽니다. 셸이 여정맵 루트(열린 에피소드 화면 없음)에서
+   * `applyStaged`를 불러 바로 바꿔 끼웁니다 — 다음 실행까지 미루지 않습니다(ADR-0078 D4 정정).
+   */
+  readonly stagedReady: number;
+  readonly applyStaged: () => void;
 };
 
 export function useEpisodeContentRefresh(sink: EpisodeIntroEventSink): EpisodeContentRefresh {
   const [content, setContent] = useState<EpisodeContent>(noEpisodeContent);
+  const [stagedReady, setStagedReady] = useState(0);
+  // 스플래시가 나갔는가 — 그 전에 갖춰진 스테이징은 스플래시의 `close()`가 바꿔 끼웁니다.
+  const splashClosed = useRef(false);
   // 받기는 비동기로 늦게 끝납니다 — 그사이 sink가 바뀌면 최신 것으로 보내도록 ref로 읽습니다.
   const sinkRef = useRef(sink);
   useEffect(() => {
@@ -52,6 +61,7 @@ export function useEpisodeContentRefresh(sink: EpisodeIntroEventSink): EpisodeCo
     logoFinished: () => {},
     close: () => {
       closedEarly.current = true;
+      splashClosed.current = true;
     },
   }));
 
@@ -71,6 +81,7 @@ export function useEpisodeContentRefresh(sink: EpisodeIntroEventSink): EpisodeCo
     const controller = createSplashUpdateController({
       now: Date.now,
       startPromoted,
+      waitForCheck: hostAssetDeps() !== undefined,
       closedBeforeStart: closedEarly.current ? "yes" : "no",
       onView: (view) => setSplash((previous) => ({ ...previous, view })),
       promote: () => promoteStagedEpisodes(hostContentStore).promoted,
@@ -78,9 +89,12 @@ export function useEpisodeContentRefresh(sink: EpisodeIntroEventSink): EpisodeCo
       send: (event) => sinkRef.current?.(event),
     });
     setSplash({
-      view: { kind: "plain" },
+      view: hostAssetDeps() === undefined ? { kind: "plain" } : { kind: "checking" },
       logoFinished: controller.logoFinished,
-      close: controller.close,
+      close: () => {
+        splashClosed.current = true;
+        controller.close();
+      },
     });
     let firstRound = true;
     // oxlint-disable-next-line react/immutability
@@ -96,6 +110,9 @@ export function useEpisodeContentRefresh(sink: EpisodeIntroEventSink): EpisodeCo
         bundled: bundledCatalogInput,
         assets: hostAssetDeps(),
         onEpisodeReady: reload,
+        onEpisodeStaged: () => {
+          if (splashClosed.current) setStagedReady((count) => count + 1);
+        },
         observer: watching ? controller.observer : undefined,
       });
       if (watching) controller.finished();
@@ -116,5 +133,12 @@ export function useEpisodeContentRefresh(sink: EpisodeIntroEventSink): EpisodeCo
     "background only";
     void runner.current?.request();
   });
-  return { content, splash };
+  // 여정맵 루트에서만 불립니다 — 열린 에피소드 화면이 없으니 병합 없이 다시 읽어 새 판을 바로 보입니다.
+  const applyStaged = () => {
+    "background only";
+    setStagedReady(0);
+    if (promoteStagedEpisodes(hostContentStore).promoted.length > 0)
+      setContent(loadEpisodeContent());
+  };
+  return { content, splash, stagedReady, applyStaged };
 }
