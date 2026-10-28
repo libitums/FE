@@ -2331,7 +2331,7 @@
             "en": "Tap the syllables to spell the word."
           },
           "stimulus": {
-            "audio_url": "",
+            "audio_url": "u10-laundry/s1-04-word-r2",
             "image_url": "",
             "en": "card"
           },
@@ -2375,7 +2375,7 @@
             "en": "Tap the syllables to spell the word."
           },
           "stimulus": {
-            "audio_url": "",
+            "audio_url": "u10-laundry/s1-06-word-r2",
             "image_url": "",
             "en": "thank you"
           },
@@ -4286,7 +4286,7 @@
             "en": "Say this in Korean."
           },
           "stimulus": {
-            "audio_url": "",
+            "audio_url": "u10-laundry/s3-02-word-r2",
             "image_url": "",
             "en": "won (Korean money)"
           },
@@ -4398,7 +4398,7 @@
             "en": "Say this in Korean."
           },
           "stimulus": {
-            "audio_url": "",
+            "audio_url": "u10-laundry/s3-08-word-r2",
             "image_url": "",
             "en": "how many"
           },
@@ -4506,7 +4506,7 @@
             "en": "Say this in Korean."
           },
           "stimulus": {
-            "audio_url": "",
+            "audio_url": "u10-laundry/s3-04-word-r2",
             "image_url": "",
             "en": "there, over there"
           },
@@ -4678,7 +4678,7 @@
             "en": "Say this in Korean."
           },
           "stimulus": {
-            "audio_url": "",
+            "audio_url": "u10-laundry/s3-03-word-r2",
             "image_url": "",
             "en": "no"
           },
@@ -4704,7 +4704,7 @@
             "en": "Say this in Korean."
           },
           "stimulus": {
-            "audio_url": "",
+            "audio_url": "u10-laundry/s1-06-word-r2",
             "image_url": "",
             "en": "thank you"
           },
@@ -4730,7 +4730,7 @@
             "en": "Say this in Korean."
           },
           "stimulus": {
-            "audio_url": "",
+            "audio_url": "u10-laundry/s1-01-word-r2",
             "image_url": "",
             "en": "yes"
           },
@@ -5487,7 +5487,7 @@
               "ko": "네",
               "roman": "ne"
             },
-            "audio_url": "",
+            "audio_url": "u10-laundry/s1-01-word-r2",
             "image_url": ""
           },
           "options": [
@@ -5836,7 +5836,7 @@
               "ko": "카드",
               "roman": "kadeu"
             },
-            "audio_url": "",
+            "audio_url": "u10-laundry/s1-04-word-r2",
             "image_url": ""
           },
           "options": [
@@ -6090,7 +6090,7 @@
             "en": "Tap the syllables to spell the word."
           },
           "stimulus": {
-            "audio_url": "",
+            "audio_url": "u10-laundry/s3-03-word-r2",
             "image_url": "",
             "en": "no"
           },
@@ -6142,7 +6142,7 @@
               "ko": "여기",
               "roman": "yeogi"
             },
-            "audio_url": "",
+            "audio_url": "u10-laundry/s1-09-word-r2",
             "image_url": ""
           },
           "options": [

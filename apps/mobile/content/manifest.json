@@ -1,6 +1,6 @@
 {
   "schema": "manifest-1",
-  "generated_at": "2026-10-28T10:04:22Z",
+  "generated_at": "2026-10-28T11:24:52Z",
   "episodes": [
     {
       "id": "u00-tutorial",
@@ -57,9 +57,9 @@
       "order": 5,
       "title": "혼자 밥 먹기",
       "schema": "delivery-2",
-      "version": "2026-10-28.2",
-      "sha256": "c2e5062a87aebb8c9e952d2500fee7400631e6650c19bbe0f5e894038526d2e0",
-      "bytes": 216417,
+      "version": "2026-10-28.3",
+      "sha256": "1c1063f3e3fa27a526abec6e462667e6f5a8c7899a8102c6442a34d6502e62bf",
+      "bytes": 216442,
       "url": "episodes/u05-baekban.json"
     },
     {
@@ -97,9 +97,9 @@
       "order": 9,
       "title": "지하철 타기",
       "schema": "delivery-2",
-      "version": "2026-10-28.2",
-      "sha256": "134e4c38f8e27d554dc6a6deb0dd818ef3d0505182148e12ae66abf1b7dd683b",
-      "bytes": 221195,
+      "version": "2026-10-28.3",
+      "sha256": "6cd8a85dbbd4ba865431c8b595305dcc922391bfa774ab97449ed0f54206ba6b",
+      "bytes": 221219,
       "url": "episodes/u09-subway.json"
     },
     {
@@ -107,9 +107,9 @@
       "order": 10,
       "title": "빨래하기",
       "schema": "delivery-2",
-      "version": "2026-10-28.1",
-      "sha256": "7f7e41d119159108f4cd858b055100d1500eb710a9dec9bf155a17c95f0c2750",
-      "bytes": 213955,
+      "version": "2026-10-28.3",
+      "sha256": "84556ec36e387bfaf96fb7a03dfe43fb8fe17d68204731d9d935556432ce2487",
+      "bytes": 214256,
       "url": "episodes/u10-laundry.json"
     }
   ]
