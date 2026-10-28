@@ -259,7 +259,7 @@ test("NA5: universal APK badging is libitum.duru.android versionCode 2, compile/
       universalApk(findArtifact("bundle/release", ".aab"), dir),
     );
     assert.ok(
-      /^package: name='libitum\.duru\.android' versionCode='2' versionName='0\.1\.0'/m.test(
+      /^package: name='libitum\.duru\.android' versionCode='7' versionName='1\.0\.0'/m.test(
         badging,
       ),
       `package line was: ${badging.match(/^package:.*$/m)?.[0]}`,
