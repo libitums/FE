@@ -1,54 +1,73 @@
 import { expect, test } from "vitest";
 
 import {
+  catalogUpdateNoticeNeedsSync,
   catalogUpdateNoticeRecordFrom,
   emptyCatalogUpdateNoticeRecord,
   shouldShowCatalogUpdateNotice,
-  withCatalogUpdateNoticeClosed,
+  withCatalogUpdateNoticeVersions,
 } from "./catalog-update-notice";
 
-// `unit` 계층: 업데이트 안내의 기록 — 읽기(망가진 값은 빈 기록) · 띄울지 · 닫은 뒤 기록.
+// `unit` 계층: 업데이트 안내의 기록 — 마지막으로 본 에피소드 버전과 끄기. 버전이 바뀐(업데이트된) 에피소드에 새 유닛이
+// 있을 때만 뜨므로, 유닛을 끝내거나 에피소드를 클리어해도 다시 뜨지 않습니다.
 
-test("UN1. 저장값을 읽는다 — 없거나 망가졌으면 빈 기록, 모르는 원소 · 중복은 버린다", () => {
+test("UN1. 저장값을 읽는다 — 없거나 망가졌거나 옛 모양(seen)이면 버전 기록 없음(null), 문자열 아닌 버전은 버린다", () => {
   expect(catalogUpdateNoticeRecordFrom(null)).toEqual(emptyCatalogUpdateNoticeRecord);
   expect(catalogUpdateNoticeRecordFrom("{")).toEqual(emptyCatalogUpdateNoticeRecord);
-  expect(catalogUpdateNoticeRecordFrom("[1]")).toEqual(emptyCatalogUpdateNoticeRecord);
-  expect(
-    catalogUpdateNoticeRecordFrom(
-      JSON.stringify({ seen: ["u03:INT", 3, "u03:INT", ""], muted: true }),
-    ),
-  ).toEqual({ seen: ["u03:INT"], muted: true });
-  expect(catalogUpdateNoticeRecordFrom(JSON.stringify({ muted: "yes" }))).toEqual(
-    emptyCatalogUpdateNoticeRecord,
+  expect(catalogUpdateNoticeRecordFrom(JSON.stringify({ seen: ["u03:INT"], muted: true }))).toEqual(
+    {
+      versions: null,
+      muted: true,
+    },
   );
+  expect(
+    catalogUpdateNoticeRecordFrom(JSON.stringify({ versions: { u03: "2026-10-28.1", u04: 3 } })),
+  ).toEqual({ versions: { u03: "2026-10-28.1" }, muted: false });
 });
 
-test("UN2. 본 적 없는 서명이 하나라도 있으면 띄운다 — 끄기 · 저장소 없음 · 서명 없음이면 안 띄운다", () => {
-  const record = { seen: ["u03:INT"], muted: false };
-  const show = (
-    signatures: readonly string[],
-    extra: Partial<typeof record> = {},
-    storageAvailable = true,
-  ) =>
-    shouldShowCatalogUpdateNotice({
-      record: { ...record, ...extra },
-      signatures,
-      storageAvailable,
-    });
-  expect(show(["u03:INT"])).toBe(false);
-  expect(show(["u03:INT", "u05:S9"])).toBe(true);
-  expect(show([])).toBe(false);
-  expect(show(["u05:S9"], { muted: true })).toBe(false);
-  expect(show(["u05:S9"], {}, false)).toBe(false);
-});
+const versions = { u03: "2026-10-28.1", u05: "2026-10-28.1" };
+const show = (
+  record: Parameters<typeof shouldShowCatalogUpdateNotice>[0]["record"],
+  freshIds: readonly string[],
+  storageAvailable = true,
+) => shouldShowCatalogUpdateNotice({ record, versions, freshIds, storageAvailable });
 
-test("UN3. 닫으면 지금 서명을 본 것으로 더하고, 체크했으면 끈다 — 끈 기록은 되돌리지 않는다", () => {
-  const closed = withCatalogUpdateNoticeClosed(
-    { seen: ["u03:INT"], muted: false },
-    ["u03:INT", "u05:S9"],
+test("UN2. 새 유닛이 있는 에피소드의 버전이 기록과 다를 때만 뜬다 — 기록이 없으면(첫 실행 · 앱 업데이트) 새 유닛만으로 뜬다", () => {
+  expect(show({ versions: null, muted: false }, ["u03"])).toBe(true);
+  expect(show({ versions: null, muted: false }, [])).toBe(false);
+  expect(show({ versions, muted: false }, ["u03"])).toBe(false);
+  expect(show({ versions: { ...versions, u03: "2026-10-26.1" }, muted: false }, ["u03"])).toBe(
+    true,
+  );
+  expect(show({ versions: { ...versions, u05: "2026-10-26.1" }, muted: false }, ["u03"])).toBe(
     false,
   );
-  expect(closed).toEqual({ seen: ["u03:INT", "u05:S9"], muted: false });
-  expect(withCatalogUpdateNoticeClosed(closed, [], true).muted).toBe(true);
-  expect(withCatalogUpdateNoticeClosed({ seen: [], muted: true }, ["a:b"], false).muted).toBe(true);
+  expect(show({ versions: null, muted: true }, ["u03"])).toBe(false);
+  expect(show({ versions: null, muted: false }, ["u03"], false)).toBe(false);
+});
+
+test("UN3. 닫거나 맞추면 지금 버전을 통째로 적고, 끈 기록은 되돌리지 않는다", () => {
+  expect(
+    withCatalogUpdateNoticeVersions({ versions: null, muted: false }, versions, false),
+  ).toEqual({
+    versions,
+    muted: false,
+  });
+  expect(
+    withCatalogUpdateNoticeVersions({ versions: null, muted: false }, versions, true).muted,
+  ).toBe(true);
+  expect(
+    withCatalogUpdateNoticeVersions({ versions: null, muted: true }, versions, false).muted,
+  ).toBe(true);
+});
+
+test("UN4. 지금 버전과 기록이 다르거나 기록이 없으면 맞출 필요가 있다", () => {
+  expect(catalogUpdateNoticeNeedsSync({ versions: null, muted: false }, versions)).toBe(true);
+  expect(catalogUpdateNoticeNeedsSync({ versions, muted: false }, { ...versions })).toBe(false);
+  expect(catalogUpdateNoticeNeedsSync({ versions, muted: false }, { u03: "2026-10-28.1" })).toBe(
+    true,
+  );
+  expect(catalogUpdateNoticeNeedsSync({ versions, muted: false }, { ...versions, u06: "1" })).toBe(
+    true,
+  );
 });

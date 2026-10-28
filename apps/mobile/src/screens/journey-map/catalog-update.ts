@@ -18,16 +18,12 @@ export function catalogFreshUnitKeysOf(
   return section.lessonKeys.filter((key) => !isCatalogUnitDone(progress, episodeId, key));
 }
 
-/**
- * 바뀐 상태의 서명 — 바뀐 에피소드마다 「에피소드:유닛,유닛」. 안내는 본 적 없는 서명이 있을 때 뜨므로, 같은 상태로는
- * 다시 뜨지 않고 새 유닛이 더 생기면 다시 뜹니다.
- */
-export function catalogUpdateSignaturesOf(
+/** 새 유닛이 있는 에피소드 id(구획 순서) — 안내는 이 가운데 버전이 바뀐 것이 있을 때 뜹니다. */
+export function catalogFreshEpisodeIdsOf(
   sections: readonly CatalogMapSection[],
   progress: CatalogProgress,
 ): readonly string[] {
-  return sections.flatMap((section) => {
-    const keys = catalogFreshUnitKeysOf(section, progress);
-    return keys.length === 0 ? [] : [`${section.episodeId}:${keys.join(",")}`];
-  });
+  return sections
+    .filter((section) => catalogFreshUnitKeysOf(section, progress).length > 0)
+    .map((section) => section.episodeId);
 }
