@@ -64,6 +64,8 @@ export function AppSession({
   exit,
   onLeaveApp,
   episodeContent,
+  stagedContentReady = 0,
+  applyStagedContent,
 }: AppProps & AppSessionControl & AppSessionContent) {
   // 이 리듀서를 부르는 유일한 자리입니다. `dispatch`는 셸에 콜백으로 내려갑니다 — 셸은 `NavAction`도 `dispatch`도
   // 받지 않습니다(ADR-0007 D3). 초기값이 `entryInitialNav`입니다 — 부팅이 진입 스택 `[{ name: "splash" }]`로
@@ -177,6 +179,11 @@ export function AppSession({
   const screenNow = currentScreen(nav);
   useTrackingAuthorizationPrompt(nav.entry.length === 0 && screenNow.name === "journey-map");
   const showsNavigator = showsTabNavigator(nav);
+  // 앱 사용 중 받아진 바뀐 판은 여정맵 루트(열린 에피소드 화면 · 겹침 없음)에서 바로 바꿔 끼웁니다(ADR-0078 D4 정정).
+  const atMapRoot = nav.entry.length === 0 && screenNow.name === "journey-map" && !screenLayerOpen;
+  useEffect(() => {
+    if (atMapRoot && stagedContentReady > 0) applyStagedContent?.();
+  }, [atMapRoot, stagedContentReady, applyStagedContent]);
   // 끝낸 에피소드가 업데이트됐으면 지도 루트에서 다른 겹침이 없을 때 한 번 알립니다(시안 G-A).
   const updateNotice = useCatalogUpdateNotice({
     catalog: episodeContent.catalog,

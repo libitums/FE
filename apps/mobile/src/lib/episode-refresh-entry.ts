@@ -144,5 +144,6 @@ export async function runPlannedEpisode(
   if (outcome === "completed" && !staged && (kind === "new" || kind === "changed")) {
     deps.onEpisodeReady?.(entry.id);
   }
+  if (outcome === "completed" && staged) deps.onEpisodeStaged?.(entry.id);
   return "continue";
 }

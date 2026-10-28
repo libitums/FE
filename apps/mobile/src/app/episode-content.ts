@@ -38,7 +38,13 @@ export const noEpisodeContent: EpisodeContent = {
   audioTimingOf: () => null,
 };
 
-export type AppSessionContent = { readonly episodeContent: EpisodeContent };
+export type AppSessionContent = {
+  readonly episodeContent: EpisodeContent;
+  /** 스플래시 뒤 갖춰진 바뀐 에피소드가 있으면 0보다 큽니다(`useEpisodeContentRefresh`). 없으면 0. */
+  readonly stagedContentReady?: number;
+  /** 갖춰진 바뀐 에피소드를 지금 바꿔 끼웁니다 — 셸이 여정맵 루트에서만 부릅니다. */
+  readonly applyStagedContent?: () => void;
+};
 
 function byOrderThenId(a: CatalogEntry, b: CatalogEntry): number {
   if (a.order !== b.order) return a.order - b.order;

@@ -68,6 +68,8 @@ export type RefreshDeps = {
   assets?: AssetDeps;
   /** 원격 에피소드 하나가 본문 + 자산까지 갖춰진 순간 그 id로 한 번 부릅니다. */
   onEpisodeReady?: (id: string) => void;
+  /** 바뀐 에피소드의 스테이징이 본문 + 자산까지 갖춰진 순간 그 id로 한 번 부릅니다 — 교체할 수 있는 때입니다. */
+  onEpisodeStaged?: (id: string) => void;
   /** 실행 시작의 첫 차례에 스플래시가 붙이는 관찰자입니다. */
   observer?: RefreshObserver;
   /** 차례로 시도할 매니페스트 경로입니다. 없으면 이 앱의 수준(`CONTENT_CLIENT_LEVEL`)으로 정합니다(ADR-0087). */
