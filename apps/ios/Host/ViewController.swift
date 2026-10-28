@@ -9,7 +9,10 @@ final class ViewController: UIViewController {
 
   override func viewDidLoad() {
     super.viewDidLoad()
-    view.backgroundColor = .white
+    // Lynx가 첫 프레임을 그리기 전까지 비치는 색이다. 런치 스토리보드(주황)와 JS 스플래시(주황) 사이에
+    // 흰 프레임이 끼지 않게 같은 브랜드 주황 `#F46B18`(`--libitum-color-brand-primary`)으로 둔다 —
+    // Android의 창 배경(ADR-0049 D1 · D6)과 같은 값이다. 번들을 읽지 못하면 글자 없는 주황 한 면이 남는다.
+    view.backgroundColor = UIColor(red: 0xF4 / 255, green: 0x6B / 255, blue: 0x18 / 255, alpha: 1)
 
     // 코어에 주는 배율입니다. JS에도 **이 값**을 보냅니다 — 실행 중 글자 크기가 바뀌어도 화면은 이
     // 배율로 그려지므로(아래 `observeContentSizeCategory`), 새 값을 보내면 글자는 옛 크기인데 배치만
@@ -168,7 +171,7 @@ final class ViewController: UIViewController {
   /// `viewDidLoad` 시점의 `view.frame`은 최종 크기가 아니라서 레이아웃이 어긋난다.
   ///
   /// **LynxView는 전체 화면이다.** 예전에는 safe area 안에만 두었는데, 그러면 상태바와
-  /// 홈 인디케이터 뒤는 호스트 배경(흰색)이 칠해져 화면이 가장자리 색을 정할 수 없었다
+  /// 홈 인디케이터 뒤는 호스트 배경(그때는 흰색)이 칠해져 화면이 가장자리 색을 정할 수 없었다
   /// (브랜드색 스플래시가 위아래 흰 띠를 달고 떴다). 이제 가려지는 크기를 globalProps
   /// `safeAreaInsets`로 넘기고, 앱 셸이 그만큼 안쪽 여백을 잡는다(mobile `lib/safe-area.ts`).
   /// Lynx에는 `env(safe-area-inset-*)`가 없어 이 경로가 유일하다.
