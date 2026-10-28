@@ -197,11 +197,15 @@ Footer 링크의 `rel`을 지우면 UI-FO2가 `expected '' to contain 'noopener'
   | `scene-street` · `scene-cafe` · `scene-cafe-evening` | `story/tutorial/imagined-street` · `imagined-cafe` · `final-cafe` |
   | `scene-arrival` | `story/tutorial/final-arrival` |
   | `minseo` | `characters/minseo-profile` |
-  | `public/icon-64` · `icon-180` | `assets/store/app-icon-512.png` |
+  | `public/favicon-96x96.png` · `apple-touch-icon.png` | `assets/store/app-icon-512.png` — `sharp`로 96 · 180px 정사각형으로 줄인다 |
 
   `public/logo-duru.webp`(헤더 · 푸터 로고)는 스플래시의 손글씨 로고
   (`apps/mobile/src/screens/splash/assets/logo-handwriting.webp`, 애니메이션)의 **마지막 프레임**을 브랜드 주황
   `#F46B18`으로 채운 것이다. 앱 아이콘은 파비콘에만 쓴다.
+
+  파비콘 `<link>`는 `src/seo/icon-links.ts`가 만들고 `Base.astro`가 모든 페이지에 싣는다. 배포 주소(`Astro.site`)가 있으면
+  절대 주소다 — Google은 페이지의 `rel="icon"` 링크를 따라가 48px 배수의 정사각형 아이콘을 받는다. 벡터 원본이 없어
+  `favicon.svg`는 아직 없다.
 
   `public/og-en.jpg` · `og-ko.jpg`는 히어로를 1200×630으로 찍은 것이다. 히어로 문구나 그림을 바꾸면 다시 찍는다.
 
