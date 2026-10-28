@@ -1,17 +1,30 @@
-// 끝낸 에피소드 업데이트 안내의 판정 · 기록입니다. 닫을 때 바뀌어 있던 상태의 서명과 「다시 보지 않기」를 기기
-// 저장소에 JSON으로 둡니다 — 서버로 가지 않고 로그아웃 · 계정 삭제에서도 지우지 않습니다(`storage.ts`).
+// 끝낸 에피소드 업데이트 안내의 판정 · 기록입니다. 마지막으로 본 에피소드 버전과 「다시 보지 않기」를 기기 저장소에 JSON으로
+// 둡니다 — 서버로 가지 않고 로그아웃 · 계정 삭제에서도 지우지 않습니다(`storage.ts`). 버전이 바뀐(업데이트된) 에피소드에
+// 새 유닛이 있을 때만 뜨므로, 유닛을 끝내거나 에피소드를 클리어해 진행이 바뀌어도 다시 뜨지 않습니다(ADR-0089 D3).
 
 import type { CatalogUpdateNoticeRecord } from "./catalog-update-notice.contract";
 import { getItem, isStorageAvailable, setItem } from "./storage";
 
 export const catalogUpdateNoticeStorageKey = "libitum.catalog-update-notice";
 
-export const emptyCatalogUpdateNoticeRecord: CatalogUpdateNoticeRecord = { seen: [], muted: false };
+export const emptyCatalogUpdateNoticeRecord: CatalogUpdateNoticeRecord = {
+  versions: null,
+  muted: false,
+};
 
-// 서명이 끝없이 쌓이지 않게 최근 것만 남깁니다 — 에피소드 수보다 넉넉합니다.
-const SEEN_LIMIT = 200;
+// 객체 기본 속성 이름 — 키로 쓰면 대입이 프로토타입을 바꿉니다.
+const UNSAFE_KEY = "__proto__";
 
-/** 저장값 → 기록. 없거나 망가졌으면 빈 기록이고, 문자열이 아닌 원소 · 빈 값 · 중복은 버립니다. 던지지 않습니다. */
+function versionsFrom(value: unknown): Readonly<Record<string, string>> | null {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return null;
+  const versions: Record<string, string> = {};
+  for (const [id, version] of Object.entries(value as Record<string, unknown>)) {
+    if (id !== "" && id !== UNSAFE_KEY && typeof version === "string") versions[id] = version;
+  }
+  return versions;
+}
+
+/** 저장값 → 기록. 없거나 망가졌으면 빈 기록, 옛 모양(`seen`)은 버전 기록 없음으로 읽습니다. 던지지 않습니다. */
 export function catalogUpdateNoticeRecordFrom(raw: string | null): CatalogUpdateNoticeRecord {
   if (raw === null || raw === "") return emptyCatalogUpdateNoticeRecord;
   let parsed: unknown;
@@ -23,37 +36,45 @@ export function catalogUpdateNoticeRecordFrom(raw: string | null): CatalogUpdate
   if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
     return emptyCatalogUpdateNoticeRecord;
   }
-  const { seen, muted } = parsed as { seen?: unknown; muted?: unknown };
-  const signatures: string[] = [];
-  for (const value of Array.isArray(seen) ? (seen as unknown[]) : []) {
-    if (typeof value === "string" && value !== "" && !signatures.includes(value))
-      signatures.push(value);
-  }
-  return { seen: signatures, muted: muted === true };
+  const { versions, muted } = parsed as { versions?: unknown; muted?: unknown };
+  return { versions: versionsFrom(versions), muted: muted === true };
 }
 
-/** 본 적 없는 서명이 하나라도 있으면 띄웁니다. 껐거나 저장소가 없으면(매번 뜨게 되므로) 띄우지 않습니다. */
+/**
+ * 새 유닛이 있는 에피소드(`freshIds`) 가운데 기록의 버전과 지금 버전이 다른 것이 있으면 띄웁니다. 기록이 없으면 새 유닛만으로
+ * 띄웁니다 — 새로 깐 사람은 끝낸 에피소드가 없어 뜨지 않고, 이 기능 전 앱에서 올라온 사람에게는 한 번 뜹니다. 껐거나 저장소가
+ * 없으면(매번 뜨게 되므로) 띄우지 않습니다.
+ */
 export function shouldShowCatalogUpdateNotice(input: {
   readonly record: CatalogUpdateNoticeRecord;
-  readonly signatures: readonly string[];
+  readonly versions: Readonly<Record<string, string>>;
+  readonly freshIds: readonly string[];
   readonly storageAvailable: boolean;
 }): boolean {
-  const { record, signatures, storageAvailable } = input;
-  return (
-    storageAvailable &&
-    !record.muted &&
-    signatures.some((signature) => !record.seen.includes(signature))
-  );
+  const { record, versions, freshIds, storageAvailable } = input;
+  if (!storageAvailable || record.muted) return false;
+  const seen = record.versions;
+  return freshIds.some((id) => seen === null || seen[id] !== versions[id]);
 }
 
-/** 닫은 뒤 기록 — 지금 서명을 본 것으로 더하고, 체크했으면 끕니다. 끈 기록은 되돌리지 않습니다. */
-export function withCatalogUpdateNoticeClosed(
+/** 지금 버전과 기록이 다르거나 기록이 없으면 참 — 띄울 것 없이 지도에 닿았을 때 조용히 맞춥니다. */
+export function catalogUpdateNoticeNeedsSync(
   record: CatalogUpdateNoticeRecord,
-  signatures: readonly string[],
+  versions: Readonly<Record<string, string>>,
+): boolean {
+  const seen = record.versions;
+  if (seen === null) return true;
+  const ids = Object.keys(versions);
+  return ids.length !== Object.keys(seen).length || ids.some((id) => seen[id] !== versions[id]);
+}
+
+/** 지금 버전을 통째로 적습니다. 체크했으면 끄고, 끈 기록은 되돌리지 않습니다. */
+export function withCatalogUpdateNoticeVersions(
+  record: CatalogUpdateNoticeRecord,
+  versions: Readonly<Record<string, string>>,
   muted: boolean,
 ): CatalogUpdateNoticeRecord {
-  const added = signatures.filter((signature) => !record.seen.includes(signature));
-  return { seen: [...record.seen, ...added].slice(-SEEN_LIMIT), muted: record.muted || muted };
+  return { versions: { ...versions }, muted: record.muted || muted };
 }
 
 export function isCatalogUpdateNoticeStorageAvailable(): boolean {

@@ -30,6 +30,7 @@ const events: readonly AnalyticsEvent[] = [
   { name: "entry_login_method_selected", method: "phone" },
   { name: "entry_completed" },
   { name: "entry_returning_learner_entered", method: "google" },
+  { name: "app_update_required_shown", platform: "android", build: "6", minBuild: "7" },
   { name: "notifications_opened" },
   { name: "notification_item_tapped", notificationId: "n-1", target: "roleplay-list" },
   { name: "notification_item_deleted", notificationId: "n-2", target: "roleplay-list" },
@@ -85,9 +86,9 @@ describe("episode_content_refreshed", () => {
 });
 
 describe("analyticsCaptureFrom", () => {
-  test("AE1: 표가 이름 22개 · 모양 23개를 다 덮는다", () => {
-    expect(events).toHaveLength(23);
-    expect(new Set(events.map((e) => e.name)).size).toBe(22);
+  test("AE1: 표가 이름 23개 · 모양 24개를 다 덮는다", () => {
+    expect(events).toHaveLength(24);
+    expect(new Set(events.map((e) => e.name)).size).toBe(23);
   });
 
   test.each(events.map((e, i) => [`${i + 1}. ${e.name}`, e] as const))(
@@ -196,12 +197,14 @@ describe("AN1 분석 계약의 크기", () => {
     "phone_call_unit_opened",
   ];
 
-  test("AN1. 이벤트 이름은 43개(막간 이야기 다섯 포함)이고 지운 여덟이 없다", () => {
+  // ⟨ADR-0086⟩ `app_update_required_shown`, ⟨ADR-0088 D6⟩ 막간 이야기 다섯이 더해져 44이다.
+  test("AN1. 이벤트 이름은 44개이고 지운 여덟이 없다", () => {
     const source = readFileSync(resolve(process.cwd(), "src/lib/analytics-event-names.ts"), "utf8");
     const names = [...source.matchAll(/^\s+\| "([a-z_]+)"/gm)].map((match) => match[1]);
-    expect(names).toHaveLength(43);
+    expect(names).toHaveLength(44);
     expect(names).toContain("episode_story_skipped");
     expect(names).toContain("episode_listen_item_answered");
+    expect(names).toContain("app_update_required_shown");
     expect(names).toContain("episode_item_answered");
     for (const name of removedNames) expect(names).not.toContain(name);
   });

@@ -17,6 +17,7 @@ import {
   wordChoicePictureEn,
 } from "./ui-copy-en-catalog";
 import {
+  appUpdateEn,
   feedbackEn,
   gemPurchaseEn,
   notificationsEn,
@@ -94,6 +95,7 @@ export const uiCopyEn: UiCopy = {
   specialUnitMap: specialUnitMapEn,
   tickets: ticketsEn,
   roleplayStory: roleplayStoryEn,
+  appUpdate: appUpdateEn,
   storyMessenger: storyMessengerEn,
   storyIntro: storyIntroEn,
   storyCall: storyCallEn,

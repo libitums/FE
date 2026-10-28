@@ -699,6 +699,9 @@ test("L6. (AC6) 최종 테스트: 턴을 타일로 맞히면 결과 → 통과 �
   );
   solveFinal(plan.turns, true);
   expect(title()).toHaveTextContent("PERFECT LESSON!");
+  // 나가면 맵이 아니라 통과 뒤 컷으로 이어지므로 버튼은 「Continue story」입니다.
+  expect(screen.getByTestId("lesson-complete-screen-exit")).toHaveTextContent("Continue story");
+  expect(screen.getByTestId("lesson-complete-screen-exit")).not.toHaveTextContent("Back to map");
   useBannerClock();
   exitResult();
 

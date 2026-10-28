@@ -14,6 +14,7 @@ import { markedUiCopy } from "../../lib/ui-copy.test-support";
 // 기존 케이스는 `defaultSettingsScreenProps`(초기값 · no-op 콜백)만 채웁니다.
 const accountNoopProps = {
   learnerProfileSummary: "Not set",
+  appVersion: null,
   onSignOut: () => undefined,
   onDeleteAccount: () => new Promise<AccountDeletionResult>(() => undefined),
   onLayerChange: () => undefined,
@@ -304,6 +305,7 @@ function renderAccount(options: { marked?: boolean } = {}) {
     <SettingsScreen
       onSelectNavTarget={() => undefined}
       learnerProfileSummary="Not set"
+      appVersion={null}
       onSignOut={onSignOut}
       onDeleteAccount={onDeleteAccount}
       onLayerChange={onLayerChange}

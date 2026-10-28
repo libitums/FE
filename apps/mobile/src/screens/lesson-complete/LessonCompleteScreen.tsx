@@ -64,6 +64,8 @@ export type LessonCompleteScreenProps = {
   readonly trophyCount: number;
   readonly reward: LessonReward;
   readonly exitTo?: SpecialUnitEntrySource;
+  /** 나가면 맵이 아니라 에필로그(최종 통과 뒤 컷)로 이어지는가 — 참이면 나가는 버튼이 「Continue story」입니다. */
+  readonly continuesStory?: boolean;
   readonly onExit: () => void;
   /**
    * 미통과에서만 씁니다 — 같은 유닛을 첫 문항부터 다시 엽니다.
@@ -93,6 +95,7 @@ export function LessonCompleteScreen({
   trophyCount,
   reward,
   exitTo = "journey",
+  continuesStory = false,
   onExit,
   onRetry,
   statBumps = noStatBumps,
@@ -101,6 +104,8 @@ export function LessonCompleteScreen({
   next,
 }: LessonCompleteScreenProps): ReactNode {
   const copy = useUiCopy();
+  const toStory = continuesStory && verdict !== "failed"; // 미통과면 이야기로 이어지지 않습니다(방어).
+  const exitLabel = toStory ? copy.lessonComplete.continueStory : copy.common.exitTo[exitTo];
   // `reward` prop(재화)과 이름이 겹치지 않도록 배지 모션은 `rewardMotion`으로 둡니다.
   const rewardMotion = rewardMotionFor(verdict, useMotion());
   const chipBumpDelayMs = lessonCompleteChipBumpDelayMs(rewardMotion);
@@ -257,8 +262,7 @@ export function LessonCompleteScreen({
 
       <view className="lesson-complete-screen-spacer" />
 
-      {/* [고정] 액션. **나가는 수단은 어느 경우에도 하나**입니다 — 맵으로 가는 길입니다.
-
+      {/* [고정] 액션. **나가는 수단은 어느 경우에도 하나**입니다 — 맵(또는 이어지는 이야기)으로 가는 길입니다.
           미통과에서만 그 위에 `Try again`이 한 줄 더 섭니다. 그것은 나가는 수단이 아니라
           **나아가는 수단**입니다 — 뒤로 가는 것이 아니라 같은 유닛을 첫 문항부터 새로
           엽니다. 문화 학습의 `퀴즈 풀기`와 같은 갈래입니다(ADR-0022 D2 표의 아홉째 주).
@@ -270,11 +274,7 @@ export function LessonCompleteScreen({
         </view>
       ) : null}
       {verdict !== "failed" && next !== undefined ? (
-        <LessonCompleteNextActions
-          next={next}
-          exitLabel={copy.common.exitTo[exitTo]}
-          onExit={onExit}
-        />
+        <LessonCompleteNextActions next={next} exitLabel={exitLabel} onExit={onExit} />
       ) : (
         <view
           className={
@@ -287,7 +287,7 @@ export function LessonCompleteScreen({
           {/* 미통과에서는 `outline`입니다 — 주 동작은 위의 `Try again`이고, 둘 다 꽉 찬 면이면 주된 길이
               색으로만 갈립니다. 다음 학습이 없는 통과에서는 이것이 유일한 버튼이라 `neutral`입니다. */}
           <Button
-            label={copy.common.exitTo[exitTo]}
+            label={exitLabel}
             variant={verdict === "failed" ? "outline" : "neutral"}
             size="xl"
             width="fill"

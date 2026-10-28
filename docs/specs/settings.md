@@ -44,6 +44,11 @@
 > 이벤트는 `legal_document_opened { document, source: "settings" }`가 `terms_opened`의 자리에 선다. 아래 본문의
 > 약관 절(§3의 약관 · §2 route `terms` · 이벤트 표의 `terms_opened` · 제목 축 HT2)은 **당시 값**이다.
 
+> **개정 (2026-10-27, 앱 버전 줄).** 결정과 근거는 [ADR-0086](../adr/0086-app-version-and-forced-update.md)이 진다. `SettingsScreenProps`에
+> **필수 prop `appVersion: AppVersion | null`**이 더해졌다 — 호스트 globalProps `appVersion`을 App이 읽어 내린다. 목록 상자의 **마지막
+> 자식**으로 `settings-screen-version`(`Version 1.0 (11)`, `copy.settings.version(name, build)`)이 서고, `null`이면 줄이 없다. 조작 단위가
+> 아니다(탭 없음 · button 아님). §0의 1 「이동 항목 → 토글」 순서는 그대로이고 그 뒤에 계정 동작 둘 → 버전 줄이 온다.
+
 ## 0. 고정 범위와 불변식
 
 1. 설정 탭 루트에 **이동 항목 둘**(사용자 프로필 · 개인정보 보호 및 약관) 다음 **세션 토글 둘**

@@ -56,6 +56,8 @@ final class ViewController: UIViewController {
       config.register(PushNotificationModule.self)
       // 열한째 — iOS 기본 평점 창 요청(ADR-0036). 언제 청할지는 JS가 정한다.
       config.register(AppReviewModule.self)
+      // App Store의 이 앱 페이지를 연다(ADR-0086). 목적지는 고정 한 곳이고, 언제 열지는 JS(강제 업데이트 화면)가 정한다.
+      config.register(AppUpdateModule.self)
       // 에피소드 그림 · 소리를 앱 전용 폴더에 받아 둔다. 언제 받을지는 JS가 정한다.
       config.register(ContentFileModule.self)
       // Airbridge 이벤트 전달(ADR-0063). **설정이 있어 SDK가 시작된 빌드에서만** 등록한다 —
@@ -83,6 +85,9 @@ final class ViewController: UIViewController {
     view.addSubview(lynxView)
     self.lynxView = lynxView
 
+    // 앱 버전은 실행 중 바뀌지 않으니 로드 앞에 한 번만 건다(ADR-0086). `updateGlobalProps`는 키 단위로
+    // 병합되므로 뒤에 오는 safe-area · 배율 · 동작 줄이기와 섞이지 않는다.
+    lynxView.updateGlobalProps(with: AppVersion.current())
     lynxView.loadTemplate(fromURL: Self.templateURL, initData: nil)
     observeContentSizeCategory()
     observeOpenedPushNotification()

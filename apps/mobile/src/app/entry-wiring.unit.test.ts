@@ -19,6 +19,7 @@ function harness(learnerRecord: LearnerProfileRecord | null) {
         `event:${event.name}${"screen" in event ? `:${event.screen}` : ""}${"entry" in event ? `:${event.entry}:${event.change}` : ""}`,
       ),
     analyticsUser: null,
+    appVersion: null,
     dispatch: (action) => {
       actions.push(action);
       log.push(`dispatch:${action.type}`);

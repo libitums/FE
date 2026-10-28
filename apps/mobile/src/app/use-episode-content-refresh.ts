@@ -1,5 +1,6 @@
 import { useEffect, useLynxGlobalEventListener, useRef, useState } from "@lynx-js/react";
 
+import { refreshAppPolicy } from "../lib/app-policy-refresh";
 import { changesAudioTiming, refreshAudioManifest } from "../lib/audio-manifest-refresh";
 import { hostContentStore } from "../lib/episode-cache";
 import { promoteStagedEpisodes } from "../lib/episode-staging";
@@ -86,6 +87,9 @@ export function useEpisodeContentRefresh(sink: EpisodeIntroEventSink): EpisodeCo
     runner.current = createSyncRunner(async () => {
       const watching = firstRound;
       firstRound = false;
+      // 앱 정책(최소 빌드)은 에피소드보다 먼저, 작게 한 번 받습니다 — 스플래시가 나가기 전에 저장소에 있어야
+      // 그 실행에서 판정합니다(ADR-0086). 결과는 스플래시가 나가는 순간 저장소에서 읽습니다.
+      await refreshAppPolicy({ fetchText: fetchContentText, store: hostContentStore });
       const summary = await refreshEpisodeCatalog({
         fetchText: fetchContentText,
         store: hostContentStore,

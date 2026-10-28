@@ -157,6 +157,8 @@ export type LessonCompleteCopy = {
   /** 통과 결과 화면의 「다음 학습」 버튼 — 다음이 레슨 · 문화일 때와 최종 테스트일 때. */
   readonly nextLesson: string;
   readonly nextFinal: string;
+  /** 최종 테스트를 통과해 에필로그로 이어질 때의 나가는 버튼 — 맵이 아니라 이야기로 갑니다. */
+  readonly continueStory: string;
 };
 
 export type EpisodeIntroCopy = {
@@ -234,6 +236,18 @@ export type SettingsCopy = {
   readonly deleteFailure: Readonly<Record<"network" | "other", string>>;
   /** 떠난 뒤 새 세션이 한 번 낭독하는 결과 — 키는 `AccountExit` */
   readonly exitAnnouncement: Readonly<Record<"signed-out" | "deleted", string>>;
+  /** 목록 끝 한 줄 — `Version 1.0 (11)`(ADR-0086). */
+  readonly version: (name: string, build: number) => string;
+};
+
+/** 강제 업데이트 화면(진입 `update-required`)의 문구입니다(ADR-0086). */
+export type AppUpdateCopy = {
+  readonly title: string;
+  readonly description: string;
+  /** 버튼 — 스토어의 이 앱 페이지를 연다. */
+  readonly update: string;
+  /** 스토어를 못 열었을 때 버튼 위 문구. */
+  readonly failure: string;
 };
 
 export type ProfileCopy = {

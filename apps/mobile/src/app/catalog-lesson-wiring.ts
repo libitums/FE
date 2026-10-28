@@ -12,8 +12,8 @@ import type { AssessmentVerdict } from "../screens/assessment/assessment";
 import type { EpisodeIntroEventSink } from "../screens/episode-intro/episode-intro.contract";
 import { canStartCatalogUnit, catalogUnitRoleOf } from "../screens/journey-map/catalog-map";
 import type { CatalogReadySection } from "../screens/journey-map/catalog-map.contract";
-import { catalogEpilogueModelOf } from "./catalog-cover-wiring";
 import type { CatalogWiringValues } from "./catalog-cover-wiring";
+import { catalogUnitCompleteLeadsToEpilogue } from "./catalog-epilogue-route";
 import { finalPassedEventOf, lessonFinishedEventOf, lessonStartedEventOf } from "./catalog-events";
 import { catalogFinalPlanFor } from "./catalog-final-model";
 import {
@@ -274,13 +274,14 @@ export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLesso
     },
     onExitCatalogUnitComplete: (episodeId, unitKey, verdict) => {
       releaseFinish();
-      const section = sectionOf(episodeId);
-      const toEpilogue =
-        section !== null &&
-        catalogUnitRoleOf(section, unitKey) === "final" &&
-        assessmentCompletesStep(verdict) &&
-        catalogEpilogueModelOf(episodeContent, catalogSections, episodeId, learnerFill) !== null;
-      if (toEpilogue) {
+      if (
+        catalogUnitCompleteLeadsToEpilogue(
+          { episodeContent, catalogSections, learnerFill },
+          episodeId,
+          unitKey,
+          verdict,
+        )
+      ) {
         dispatch({ type: "replace", screen: { name: "catalog-epilogue", episodeId } });
         return;
       }
