@@ -127,23 +127,12 @@ describe("storyChatViewOf", () => {
   };
 
   test("SM6. 그림을 해석하고 글을 채우며, 해석 못 한 그림은 null이다", () => {
-    const view = storyChatViewOf(
-      chat,
-      { ordinal: 4, caption: { ko: "조금 전", en: "A little earlier" } },
-      port,
-    );
-    expect(view?.ordinal).toBe(4);
+    const view = storyChatViewOf(chat, port);
     expect(view?.counterpart).toBe("미나");
-    expect(view?.backgroundUrl).toBeNull();
     expect(view?.counterpartAvatarUrl).toBe("res://content/images/profiles/mina-casual.webp");
     expect(
-      storyChatViewOf(
-        { ...chat, counterpartImageUrl: undefined },
-        { ordinal: 4, caption: null },
-        port,
-      ).counterpartAvatarUrl,
+      storyChatViewOf({ ...chat, counterpartImageUrl: undefined }, port).counterpartAvatarUrl,
     ).toBeNull();
-    expect(view?.caption).toEqual({ ko: "조금 전", en: "A little earlier" });
     expect(view?.turns[0]).toEqual({
       kind: "message",
       self: false,

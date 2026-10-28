@@ -1,7 +1,6 @@
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
-import { lightStatusBarIcons } from "../../lib/status-bar-icons";
 import { StoryMessengerScreen } from "./StoryMessengerScreen";
 import { storyMessengerTestIds as ids, type StoryChatView } from "./story-messenger.contract";
 
@@ -12,11 +11,8 @@ const insets = { top: 0, bottom: 0, left: 0, right: 0 };
 const t = (ko: string) => ({ ko, en: `e-${ko}` });
 
 const chat: StoryChatView = {
-  ordinal: 4,
   counterpart: "미나",
   counterpartAvatarUrl: "https://cdn/images/profiles/mina-casual.webp",
-  backgroundUrl: "https://cdn/images/u04/pre-2.webp",
-  caption: { ko: "조금 전", en: "A little earlier" },
   turns: [
     {
       kind: "message",
@@ -74,32 +70,15 @@ const drain = () => {
 const incoming = () => screen.queryAllByTestId(ids.incoming).map((el) => el.textContent ?? "");
 const outgoing = () => screen.queryAllByTestId(ids.outgoing).map((el) => el.textContent ?? "");
 const tapOption = (index: number) => fireEvent.tap(screen.getByTestId(ids.option(index)), {});
-const enterChat = () => fireEvent.tap(screen.getByTestId(ids.intro), {});
 
-test("SMU1. 시간 표시 화면이 먼저 서고(밝은 아이콘 표지), 탭하면 머리에 상대 이름이 선다", () => {
+test("SMU1. 열자마자 메신저 머리에 상대 이름이 서고, 밝은 면이라 상태바 표지가 없다", () => {
   mount();
-  const intro = screen.getByTestId(ids.intro);
-  expect(intro.getAttribute("data-statusbar")).toBe(lightStatusBarIcons);
-  expect(screen.getByTestId(ids.introCaption).textContent).toContain("조금 전");
-  expect(intro.textContent).toContain("STORY · EPISODE 4");
-  expect(screen.queryByTestId(ids.header)).toBeNull();
-  enterChat();
-  expect(screen.queryByTestId(ids.intro)).toBeNull();
   expect(screen.getByTestId(ids.title).textContent).toBe("미나");
-  expect(screen.getByTestId(ids.header).getAttribute("data-statusbar")).toBeNull();
-});
-
-test("SMU2. 시간 표시 화면은 탭하지 않아도 2.6초 뒤 메신저로 넘어간다", () => {
-  mount();
-  wait(2599);
-  expect(screen.queryByTestId(ids.header)).toBeNull();
-  wait(1);
-  expect(screen.getByTestId(ids.header)).toBeTruthy();
+  expect(screen.getByTestId(ids.screen).getAttribute("data-statusbar")).toBeNull();
 });
 
 test("SMU3. 읽는 틈 → 입력 중 → 메시지, 그리고 읽을 시간 뒤 답장 시트가 선다", () => {
   mount();
-  enterChat();
   expect(incoming()).toEqual([]);
   expect(screen.queryByTestId(ids.typing)).toBeNull();
   wait(1200); // 읽는 틈(첫 메시지 앞)
@@ -119,7 +98,6 @@ test("SMU3. 읽는 틈 → 입력 중 → 메시지, 그리고 읽을 시간 뒤
 
 test("SMU4. 보기를 고르면 내 말풍선과 그 답의 분기 줄만 이어지고, 끝 버튼은 onComplete를 한 번 부른다", () => {
   const { onComplete } = mount();
-  enterChat();
   drain();
   tapOption(1);
   expect(screen.queryByTestId(ids.option(0))).toBeNull();
@@ -136,7 +114,6 @@ test("SMU4. 보기를 고르면 내 말풍선과 그 답의 분기 줄만 이어
 
 test("SMU5. 입력창은 늘 같은 모습이고, 답장 시트는 고를 때까지 닫히지 않는다 · 머리 뒤로 가기는 onExit", () => {
   const { onExit } = mount();
-  enterChat();
   expect(screen.getByTestId(ids.composerField).textContent).toBe("Message");
   drain();
   expect(screen.getByTestId(ids.option(0))).toBeTruthy();
@@ -146,10 +123,4 @@ test("SMU5. 입력창은 늘 같은 모습이고, 답장 시트는 고를 때까
   expect(screen.getByTestId(ids.composerField).textContent).toBe("Message");
   fireEvent.tap(within(screen.getByTestId(ids.back)).getByTestId("ui-lynx-round-button"), {});
   expect(onExit).toHaveBeenCalledTimes(1);
-});
-
-test("SMU6. 자막이 없으면 시간 표시 화면 없이 바로 메신저다", () => {
-  mount({ ...chat, caption: null });
-  expect(screen.queryByTestId(ids.intro)).toBeNull();
-  expect(screen.getByTestId(ids.title).textContent).toBe("미나");
 });

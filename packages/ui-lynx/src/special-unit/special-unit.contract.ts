@@ -17,6 +17,8 @@ export type SpecialUnitProps = {
   /** ReactLynx 호스트가 키보드 focus-visible 상태를 전달합니다. Available · Active · Clear에서만 효력이 있습니다. */
   readonly focused?: boolean;
   readonly bindtap?: (event: SpecialUnitTapEvent) => void;
+  /** 면 가운데 아이콘(SVG 문자열, `currentColor`)입니다. 없으면 오각 별 — 색은 상태가 정합니다. */
+  readonly icon?: string;
 };
 
 export type SpecialUnitContract = {

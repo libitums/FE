@@ -181,6 +181,24 @@ export type EpisodeChat = {
   turns: [EpisodeChatTurn, ...EpisodeChatTurn[]];
 };
 
+/** 전화 막간의 한 줄 — 상대(`caller`) · 나(`self`) · 배경 소리(`background`, `label`은 「안내 방송」 같은 이름)입니다. */
+export type EpisodeCallLine = {
+  kind: "caller" | "self" | "background";
+  label: string;
+  line: Text;
+  /** 그 줄의 소리 id(`audio/manifest.json` 키) — 녹음이 없으면 없습니다. */
+  audioUrl?: string;
+};
+
+/** 전화(`form: "call"`) 막간입니다 — 상대는 `with`, 끝 지문은 `call_end` 컷입니다. */
+export type EpisodeCall = {
+  counterpart: string;
+  counterpartImageUrl?: string;
+  backgroundUrl?: string;
+  lines: [EpisodeCallLine, ...EpisodeCallLine[]];
+  end?: Text;
+};
+
 /**
  * 막간(와이어 `kind: "interlude"`) 이야기입니다 — 비주얼 노벨 · 메신저 · 전화 형식이 모두 컷으로 정규화됩니다
  * (컷의 메신저 답장은 첫 보기의 흐름). 문자 형식은 분기를 지닌 `chat`도 함께 냅니다. `caption`은 「그 시각, …」
@@ -191,6 +209,7 @@ export type EpisodeStory = {
   caption?: Text;
   cuts: [EpisodeCut, ...EpisodeCut[]];
   chat?: EpisodeChat;
+  call?: EpisodeCall;
 };
 
 /** `story`가 있으면 문항 없는 이야기 유닛입니다(`items`는 비어 있습니다). */

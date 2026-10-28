@@ -362,6 +362,15 @@ sink는 던지지 않는다 — 매핑 · `capture`를 `try`로 감싸 삼킨다
   - Meta 앱 이벤트 매핑은 둘을 옮기지 않는다. PostHog 도착은 보지 않았다.
   - **읽는 법** — `S5`(말하기는 읽기만 있는 단계)의 `skippedCount > 0` ⇔ 그 기기에서 인식을 쓸 수 없었다(권한 거부 · 인식기 없음 · 인식 실패 — 읽기의 사용자 넘김은 `Next`라 세지 않는다) → **인식 불가 비율의 깨끗한 신호**.
     `S6` · `S8`의 `skippedCount`는 사용자 `Skip`이 섞인 상한이다. 그 두 단계의 판정 분모 = `questionCount − skippedCount`(한 단계에 말하기 유형이 하나뿐이라 성립 — 섞이면 ADR-0067 재검토 조건 2), 정답률 = `correctCount ÷ (questionCount − skippedCount)`.
+- ⟨2026-10-28 — 막간 이야기(Story) 유닛. 적용 기록이고 결정을 바꾸지 않는다⟩ **이벤트 다섯이 더해진다**. 결정은 [ADR-0088](0088-interlude-story-unit.md) D6.
+  에피소드 첫 스페셜 유닛(`episode_intro_*`)과 같은 다섯 때를 따로 이름 지어 잰다 — 인트로 대시보드에 섞이지 않게. sink는 `episodeIntroEventSink`, 결선은 `catalog-story-wiring.ts`, 타입 정본은 `screens/story-intro/story-intro.contract.ts`(`StoryEvent`)이고 `EpisodeIntroEvent` union에 든다.
+  공통 속성 `episodeId` · `unitKey` · `form`(`cuts` · `look` · `message` · `call`). 대사 · 고른 답은 싣지 않는다.
+  - **`episode_story_viewed`** — 맵의 Story 노드를 눌러 시작 화면을 쌓기 직전(말풍선 없음).
+  - **`episode_story_continued`** — 시작 화면의 `Start`.
+  - **`episode_story_skipped`** — 시작 화면 `Skip` 확인. **처음 보는 사람만** 센다(이미 끝낸 Story를 다시 열어 건너뛰면 세지 않음).
+  - **`episode_story_exited`** — 나가기 · 시스템 뒤로. 속성 `stage`(`intro` | `story`).
+  - **`episode_story_completed`** — 끝 배너(「To be continued…」)가 닫혀 진행에 적힘.
+  - Meta 앱 이벤트 매핑은 다섯을 옮기지 않는다. PostHog 도착은 보지 않았다.
   - **연속성** — 이 변경 전 모든 카탈로그 활동은 건너뜀 0을 냈으므로 **`skippedCount`가 없는 옛 이벤트는 `"0"`으로 읽는다.** `questionCount`의 뜻은 바뀌지 않았다.
     단, 같은 레슨의 `verdict`는 이 변경부터 판정 분모로 낸 것이다 — 낱말 말하기를 건너뛴 레슨은 옛 규칙이었다면 실패였을 수 있다.
   - 불변식(분석 쪽 점검용): `correctCount ≤ questionCount − skippedCount`는 레슨에 읽기 건너뜀이 없을 때만 참이다(읽기 건너뜀은 채점 밖이라 빼면 안 된다) — 늘 참인 것은 `correctCount ≤ questionCount`다.

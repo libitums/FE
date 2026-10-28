@@ -12,9 +12,6 @@ import type {
   StoryChatView,
 } from "./story-messenger.contract";
 
-/** 시간 표시 화면이 혼자 머무는 시간입니다. */
-export const STORY_INTRO_MS = 2600;
-
 // 다음에 보일 줄 — 고른 답과 다른 분기 줄은 건너뜁니다.
 function nextIndex(turns: readonly StoryChatTurn[], from: number, pick: number): number {
   let i = from;
@@ -113,19 +110,12 @@ function turnOf(turn: EpisodeChatTurn, port: StoryChatPort): StoryChatTurn {
 }
 
 /** 도메인 대화 → 표시 모델. 그림 주소는 해석하고 글은 채웁니다. */
-export function storyChatViewOf(
-  chat: EpisodeChat,
-  meta: { readonly ordinal: number; readonly caption: Text | null },
-  port: StoryChatPort,
-): StoryChatView {
+export function storyChatViewOf(chat: EpisodeChat, port: StoryChatPort): StoryChatView {
   const [first, ...rest] = chat.turns.map((turn) => turnOf(turn, port));
   return {
-    ordinal: meta.ordinal,
     counterpart: chat.counterpart,
     counterpartAvatarUrl:
       chat.counterpartImageUrl === undefined ? null : port.imageUrlOf(chat.counterpartImageUrl),
-    backgroundUrl: chat.backgroundUrl === undefined ? null : port.imageUrlOf(chat.backgroundUrl),
-    caption: meta.caption === null ? null : textOf(meta.caption, port),
     turns: [first as StoryChatTurn, ...rest],
   };
 }

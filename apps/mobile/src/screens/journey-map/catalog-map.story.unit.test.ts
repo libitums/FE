@@ -16,7 +16,7 @@ import {
   catalogUnitNodesOf,
   catalogUnitStatus,
 } from "./catalog-map";
-import { catalogIsStoryUnit, catalogStoryKeysOf } from "./catalog-map-story";
+import { catalogIsStoryUnit, catalogStoryIconsOf, catalogStoryKeysOf } from "./catalog-map-story";
 import type { CatalogReadySection } from "./catalog-map.contract";
 
 // `unit` 계층: 막간 이야기 유닛(ADR-0088)의 맵 파생 — 스페셜 노드 · 레슨 번호 · 사슬 · 완료 · 티켓 · 컷 모델.
@@ -113,7 +113,7 @@ describe("이야기 유닛의 맵 파생", () => {
     expect(catalogUnitTicketCost({}, EP, "S5", {}, false)).toBe(1);
   });
 
-  test("ST6. 컷 모델 — 자막이 첫 지문 컷이고 그림은 첫 컷 그림, 이야기가 아니면 null", () => {
+  test("ST6. 이야기 모델 — 자막 · 첫 컷 그림은 시작 화면에, 컷은 본편만이고 형식을 싣는다. 이야기가 아니면 null", () => {
     const content = {
       ...noEpisodeContent,
       catalog,
@@ -121,15 +121,45 @@ describe("이야기 유닛의 맵 파생", () => {
     };
     const model = catalogStoryModelOf(content, sections, EP, "INT", {});
     expect(model?.ordinal).toBe(section.ordinal);
+    expect(model?.form).toBe("cuts");
+    expect(model?.intro).toEqual({
+      ordinal: section.ordinal,
+      caption: { ko: "그 시각, 게스트하우스", en: "Meanwhile, at the guesthouse" },
+      backgroundUrl: "https://x/images/u01-water/int-1.webp",
+    });
     expect(model?.cuts.map((cut) => [cut.kind, cut.text.ko, cut.imageUrl])).toEqual([
-      ["narration", "그 시각, 게스트하우스", "https://x/images/u01-water/int-1.webp"],
       ["narration", "새 손님이 오는 날.", "https://x/images/u01-water/int-1.webp"],
       ["line", "새로 오셨나 봐요?", "https://x/images/u01-water/int-2.webp"],
     ]);
+    expect(model?.chat).toBeNull();
+    expect(model?.call).toBeNull();
     expect(catalogStoryModelOf(content, sections, EP, "S5", {})).toBeNull();
   });
 
   test("ST7. 앱은 콘텐츠 수준 2다 — 수준 2 매니페스트부터 읽는다(ADR-0087)", () => {
     expect(CONTENT_CLIENT_LEVEL).toBe(2);
+  });
+});
+
+describe("catalogStoryIconsOf", () => {
+  const unitWith = (id: string, form: string | null): LearningUnit =>
+    ({
+      id,
+      order: 1,
+      items: [],
+      ...(form === null ? {} : { story: { ...story, form } }),
+    }) as LearningUnit;
+
+  test("ST8. 문자는 말풍선, 전화는 전화, 컷 · 사진 보기 · 모르는 형식은 필름이고 이야기 아닌 유닛은 없다", () => {
+    expect(
+      catalogStoryIconsOf([
+        unitWith("A", "message"),
+        unitWith("B", "call"),
+        unitWith("C", "cuts"),
+        unitWith("D", "look"),
+        unitWith("E", "hologram"),
+        unitWith("S1", null),
+      ]),
+    ).toEqual({ A: "chat", B: "phone", C: "film", D: "film", E: "film" });
   });
 });

@@ -44,14 +44,18 @@ vi.mock("../lib/episode-bundled", async () => {
   };
 });
 
-// `integration` 계층: 맵의 스페셜 「Story」 노드 → 말풍선 Start → 컷 화면(자막 먼저) → 마지막 컷 → 진행에 INT 기록 ·
-// 티켓 기록 없음 → 맵으로 돌아와 S5가 열림. 대역은 경계뿐입니다(`NativeModules` 저장소 · `fetch`).
+// `integration` 계층: 맵의 스페셜 「Story」 노드 → (말풍선 없이) 시작 화면 → Start · Skip · 뒤로 → 컷 → 배너 → 진행 ·
+// 분석 이벤트(ADR-0088 D6) → 맵으로 돌아와 S5가 열림. 대역은 경계뿐입니다(`NativeModules` 저장소 · `fetch`).
 
 type Rpc = { readonly name: string; readonly body: Record<string, unknown> };
 const EP = "u01-water";
 const throughS4 = { [EP]: ["intro", "S1", "S2", "S3", "S4"] };
 
+type StoryEventRecord = { readonly name: string } & Record<string, unknown>;
+const events: StoryEventRecord[] = [];
+
 async function boot(): Promise<Rpc[]> {
+  events.length = 0;
   const store = new Map<string, string>();
   store.set(
     authSessionStorageKey,
@@ -94,7 +98,12 @@ async function boot(): Promise<Rpc[]> {
     return Promise.resolve({ status: reply.status, text: async () => reply.body });
   });
   vi.useFakeTimers();
-  render(<App progressSeed={legacyPassedSeed} />);
+  render(
+    <App
+      progressSeed={legacyPassedSeed}
+      episodeIntroEventSink={(event) => void events.push(event as StoryEventRecord)}
+    />,
+  );
   act(() => {
     vi.advanceTimersByTime(entrySplashDurationMs);
   });
@@ -117,17 +126,16 @@ afterEach(() => {
 });
 
 const storyNode = () => screen.getByTestId(`ui-lynx-special-unit-catalog-unit-${EP}-INT`);
-const tapNext = () =>
-  void fireEvent.tap(
-    within(screen.getByTestId("catalog-cover-screen-next")).getByTestId("ui-lynx-button"),
-    {},
-  );
 const saved = (rpcs: readonly Rpc[]) =>
   rpcs
     .filter((rpc) => rpc.name === "save_learning_progress")
     .map((rpc) => rpc.body["p_progress"] as Record<string, Record<string, string[]> | undefined>);
 
-test("[SI1] Story 노드 → 컷(자막 먼저) → 끝 → 「To be continued…」 배너 → INT 기록 · 티켓 기록 없음 → 맵에서 S5가 열린다", async () => {
+const story = (name: string) => events.filter((event) => event.name === name);
+const tapStoryButton = (id: string) =>
+  fireEvent.tap(within(screen.getByTestId(id)).getByTestId("ui-lynx-button"), {});
+
+test("[SI1] Story 노드 → 말풍선 없이 시작 화면 → Start → 컷 → 배너 → INT 기록 · 이벤트 viewed · continued · completed", async () => {
   const rpcs = await boot();
 
   expect(storyNode().getAttribute("data-status")).toBe("available");
@@ -136,16 +144,22 @@ test("[SI1] Story 노드 → 컷(자막 먼저) → 끝 → 「To be continued�
   );
 
   fireEvent.tap(storyNode(), {});
-  fireEvent.tap(screen.getByTestId("step-sheet-start"), {});
+  expect(screen.queryByTestId("step-sheet-start")).toBeNull();
+  expect(screen.getByTestId("story-intro-caption").textContent).toBe("그 시각, 게스트하우스");
+  expect(story("episode_story_viewed")).toEqual([
+    { name: "episode_story_viewed", episodeId: EP, unitKey: "INT", form: "cuts" },
+  ]);
 
+  tapStoryButton("story-intro-start");
+  expect(story("episode_story_continued")).toHaveLength(1);
   expect(screen.getByTestId("catalog-cover-screen")).toBeInTheDocument();
-  expect(screen.getByText("그 시각, 게스트하우스")).toBeInTheDocument();
 
-  // 자막 · 지문 · 대사 세 컷 — 타자기가 진행 중이면 첫 탭이 글을 다 보이게 합니다.
-  for (let i = 0; i < 3; i += 1) {
+  // 지문 · 대사 두 컷 — 타자기가 진행 중이면 첫 탭이 글을 다 보이게 합니다.
+  for (let i = 0; i < 2; i += 1) {
     const dialog = screen.queryByTestId("ui-lynx-visual-novel-dialog");
-    if (dialog?.getAttribute("data-status") === "revealing") tapNext();
-    tapNext();
+    if (dialog?.getAttribute("data-status") === "revealing")
+      tapStoryButton("catalog-cover-screen-next");
+    tapStoryButton("catalog-cover-screen-next");
   }
   expect(screen.getByTestId("episode-banner-screen").textContent).toContain("To be continued");
   fireEvent.tap(screen.getByTestId("episode-banner-screen"), {});
@@ -157,8 +171,56 @@ test("[SI1] Story 노드 → 컷(자막 먼저) → 끝 → 「To be continued�
   expect(screen.getByTestId(catalogNodeTestId(EP, "S5")).getAttribute("data-status")).toBe(
     "available",
   );
+  expect(story("episode_story_completed")).toEqual([
+    { name: "episode_story_completed", episodeId: EP, unitKey: "INT", form: "cuts" },
+  ]);
   await vi.waitFor(() =>
     expect(saved(rpcs).some((p) => p["catalogProgress"]?.[EP]?.includes("INT"))).toBe(true),
   );
   expect(saved(rpcs).some((p) => p["ticketUnits"]?.[EP]?.includes("INT"))).toBe(false);
+});
+
+test("[SSK1] 시작 화면 Skip → 확인 → 배너 없이 맵 · INT 기록 · skipped 이벤트 · S5 열림", async () => {
+  const rpcs = await boot();
+
+  fireEvent.tap(storyNode(), {});
+  tapStoryButton("story-intro-skip");
+  fireEvent.tap(
+    within(screen.getByTestId("story-intro-confirm"))
+      .getAllByText("Skip")
+      .slice(-1)[0] as HTMLElement,
+    {},
+  );
+  await act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  });
+
+  expect(screen.queryByTestId("story-intro-screen")).toBeNull();
+  expect(screen.queryByTestId("episode-banner-screen")).toBeNull();
+  expect(screen.getByTestId(catalogNodeTestId(EP, "S5")).getAttribute("data-status")).toBe(
+    "available",
+  );
+  expect(story("episode_story_skipped")).toEqual([
+    { name: "episode_story_skipped", episodeId: EP, unitKey: "INT", form: "cuts" },
+  ]);
+  expect(story("episode_story_completed")).toHaveLength(0);
+  await vi.waitFor(() =>
+    expect(saved(rpcs).some((p) => p["catalogProgress"]?.[EP]?.includes("INT"))).toBe(true),
+  );
+});
+
+test("[SEX1] 시작 화면에서 뒤로 → 기록 없이 맵 · exited(stage intro)", async () => {
+  await boot();
+
+  fireEvent.tap(storyNode(), {});
+  fireEvent.tap(
+    within(screen.getByTestId("story-intro-back")).getByTestId("ui-lynx-round-button"),
+    {},
+  );
+
+  expect(screen.queryByTestId("story-intro-screen")).toBeNull();
+  expect(story("episode_story_exited")).toEqual([
+    { name: "episode_story_exited", episodeId: EP, unitKey: "INT", form: "cuts", stage: "intro" },
+  ]);
+  expect(storyNode().getAttribute("data-status")).toBe("available");
 });

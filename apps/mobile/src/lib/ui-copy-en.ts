@@ -47,6 +47,8 @@ import {
   episodeIntroEn,
   messengerEn,
   roleplayEn,
+  storyCallEn,
+  storyIntroEn,
   storyMessengerEn,
   visualNovelEn,
 } from "./ui-copy-en-story";
@@ -91,4 +93,6 @@ export const uiCopyEn: UiCopy = {
   tickets: ticketsEn,
   roleplayStory: roleplayStoryEn,
   storyMessenger: storyMessengerEn,
+  storyIntro: storyIntroEn,
+  storyCall: storyCallEn,
 };

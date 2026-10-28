@@ -1,9 +1,10 @@
-// `catalog-story` route를 막간 이야기 화면으로 옮깁니다(ADR-0088). 문자 막간은 메신저, 그 밖은 컷 화면이고, 끝나면
-// 「To be continued…」 배너 뒤 진행에 적고 맵으로 돌아갑니다.
+// `catalog-story` route를 막간 이야기 화면으로 옮깁니다(ADR-0088). 시작 화면(Skip · Start) 뒤 본편은 문자면 메신저,
+// 전화면 통화 화면, 그 밖은 컷 화면이고, 끝나면 「To be continued…」 배너 뒤 진행에 적고 맵으로 돌아갑니다.
 
 import type { ReactNode } from "@lynx-js/react";
 
 import { CatalogCoverScreen } from "../screens/catalog-cover/CatalogCoverScreen";
+import { StoryCallScreen } from "../screens/story-call/StoryCallScreen";
 import { StoryMessengerScreen } from "../screens/story-messenger/StoryMessengerScreen";
 import { CatalogStoryFlow } from "./CatalogStoryFlow";
 import { catalogStoryModelOf } from "./catalog-story";
@@ -26,32 +27,45 @@ export function renderCatalogStory(
   if (model === null) {
     throw new Error(`Catalog story has no playable cuts: ${episodeId}/${unitKey}`);
   }
-  const key = `${episodeId}:${unitKey}:${model.version}`;
-  const chat = model.chat;
+  const insets = wiring.safeAreaInsets;
+  const exitStory = () => wiring.onExitCatalogStory(episodeId, unitKey, "story");
+  const { chat, call } = model;
   return (
     <CatalogStoryFlow
-      key={key}
-      insets={wiring.safeAreaInsets}
+      key={`${episodeId}:${unitKey}:${model.version}`}
+      insets={insets}
+      intro={model.intro}
+      onStart={() => wiring.onContinueCatalogStory(episodeId, unitKey)}
+      onSkip={() => wiring.onSkipCatalogStory(episodeId, unitKey)}
+      onExitIntro={() => wiring.onExitCatalogStory(episodeId, unitKey, "intro")}
       onClose={() => wiring.onFinishCatalogStory(episodeId, unitKey)}
-      renderStory={(finish) =>
-        chat !== null ? (
-          <StoryMessengerScreen
-            insets={wiring.safeAreaInsets}
-            chat={chat}
-            onComplete={finish}
-            onExit={wiring.onExitCatalogStory}
-          />
-        ) : (
+      renderStory={(finish) => {
+        if (chat !== null) {
+          return (
+            <StoryMessengerScreen
+              insets={insets}
+              chat={chat}
+              onComplete={finish}
+              onExit={exitStory}
+            />
+          );
+        }
+        if (call !== null) {
+          return (
+            <StoryCallScreen insets={insets} call={call} onComplete={finish} onExit={exitStory} />
+          );
+        }
+        return (
           <CatalogCoverScreen
             stage="interlude"
-            insets={wiring.safeAreaInsets}
+            insets={insets}
             ordinal={model.ordinal}
             cuts={model.cuts}
             onComplete={finish}
-            onExit={wiring.onExitCatalogStory}
+            onExit={exitStory}
           />
-        )
-      }
+        );
+      }}
     />
   );
 }

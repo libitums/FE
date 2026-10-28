@@ -1,6 +1,9 @@
 import type { ReactNode } from "@lynx-js/react";
 
+import film from "@libitums/icons/lynx/film";
 import lantern from "@libitums/icons/lynx/lantern-05";
+import message from "@libitums/icons/lynx/message";
+import phone from "@libitums/icons/lynx/phone";
 import play from "@libitums/icons/lynx/play";
 import { LearningUnit } from "@libitums/ui-lynx/learning-unit";
 import type { LearningUnitTapEvent } from "@libitums/ui-lynx/learning-unit";
@@ -8,7 +11,11 @@ import type { LearningUnitTapEvent } from "@libitums/ui-lynx/learning-unit";
 import { useUiCopy } from "../../lib/ui-copy";
 import { catalogSheetKey } from "./catalog-sheet";
 import { catalogUnitNodeAccessibilityLabel, catalogUnitNodeTitle } from "./catalog-map";
-import type { CatalogUnitNodeProps, CatalogUnitNodeRole } from "./catalog-map.contract";
+import type {
+  CatalogStoryIcon,
+  CatalogUnitNodeProps,
+  CatalogUnitNodeRole,
+} from "./catalog-map.contract";
 
 import { canSelectMapNode } from "./journey-map-load";
 import { MapUnitStage } from "./MapUnitStage";
@@ -38,6 +45,9 @@ const lessonIconByRole: Readonly<Record<Exclude<CatalogUnitNodeRole, "final" | "
     culture: lantern,
   };
 
+// 이야기 노드의 아이콘 — 형식으로 갈립니다(ADR-0088 D6). 최종 테스트는 기본 오각 별입니다.
+const storyIconSvg: Readonly<Record<CatalogStoryIcon, string>> = { film, chat: message, phone };
+
 // 카탈로그 노드입니다. 상태(잠김 · 열림 · 끝)는 사슬에서 파생되어 내려오고, 열린 노드만 고름을
 // 올립니다(맵이 말풍선을 엽니다 — 바로 시작하지 않습니다). 레슨(`play`) · 문화(`lantern-05`)는 원형
 // `LearningUnit`이고, 최종 · 막간 이야기(ADR-0088)는 스페셜 항목입니다.
@@ -60,6 +70,7 @@ function CatalogSpecialNode({ episodeId, episodeOrdinal, node, onSelect }: Catal
       accessibilityName={catalogUnitNodeAccessibilityLabel(episodeOrdinal, node, copy)}
       status={node.status}
       sheetTargetId={catalogSheetKey(episodeId, node.key)}
+      {...(node.storyIcon === undefined ? {} : { icon: storyIconSvg[node.storyIcon] })}
       onSelect={(tapY) => {
         "background only";
         onSelect(episodeId, node.key, tapY);

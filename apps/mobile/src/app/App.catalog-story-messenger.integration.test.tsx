@@ -138,15 +138,14 @@ const drain = () => {
   }
 };
 
-test("[SMI1] 문자 Story → 시간 표시 → 메신저 → 답장 2 → 분기 줄 → Finish story → 배너 → INT 기록 · S5 열림", async () => {
+test("[SMI1] 문자 Story → 시작 화면 Start → 메신저 → 답장 2 → 분기 줄 → Finish story → 배너 → INT 기록 · S5 열림", async () => {
   const rpcs = await boot();
 
-  fireEvent.tap(storyNode(), {});
   vi.useFakeTimers();
-  fireEvent.tap(screen.getByTestId("step-sheet-start"), {});
+  fireEvent.tap(storyNode(), {});
 
-  expect(screen.getByTestId("story-messenger-intro").textContent).toContain("조금 전");
-  fireEvent.tap(screen.getByTestId("story-messenger-intro"), {});
+  expect(screen.getByTestId("story-intro-caption").textContent).toBe("조금 전");
+  fireEvent.tap(within(screen.getByTestId("story-intro-start")).getByTestId("ui-lynx-button"), {});
   expect(screen.getByTestId("story-messenger-title").textContent).toBe("미나");
 
   drain();
