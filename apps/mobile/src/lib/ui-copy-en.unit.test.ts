@@ -123,6 +123,7 @@ test("UC-L1. 카탈로그 학습 문구가 문구표 값과 같고 준비 중 �
   expect(c.catalogCover.finishEpilogue).toBe("Finish episode");
   expect(c.catalogCover.episodeStart).toBe("Episode start!");
   expect(c.catalogCover.episodeClear).toBe("Episode clear!");
+  expect(c.catalogCover.episodeContinue).toBe("To be continued…");
   expect(c.catalogCover.skipDescription).toBe(
     "You can watch it again anytime from the episode intro.",
   );

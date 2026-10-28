@@ -202,6 +202,9 @@ const stepSchema = z.object({
   id: z.string(),
   order: z.int(),
   items: z.array(itemSchema),
+  // 막간 스텝(`kind: "interlude"`)의 이야기입니다. 모양은 따로 검사해 틀리면 그 스텝만 버립니다(ADR-0088).
+  kind: optionalString,
+  interlude: z.optional(z.unknown()),
 });
 
 const wordSchema = z.object({

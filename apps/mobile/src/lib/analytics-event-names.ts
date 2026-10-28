@@ -44,4 +44,9 @@ export type AnalyticsEventName =
   | "tickets_ran_out"
   | "ticket_more_tapped"
   | "roleplay_story_opened"
+  | "episode_story_viewed"
+  | "episode_story_continued"
+  | "episode_story_skipped"
+  | "episode_story_exited"
+  | "episode_story_completed"
   | "roleplay_story_completed";

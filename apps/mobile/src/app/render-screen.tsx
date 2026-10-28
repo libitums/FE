@@ -14,6 +14,7 @@ import { SpeechProbeScreen } from "../screens/speech-probe/SpeechProbeScreen";
 import type { Screen } from "./nav-state";
 import { renderCatalogFlow } from "./render-catalog";
 import { renderCatalogCover } from "./render-catalog-cover";
+import { renderCatalogStory } from "./render-catalog-story";
 import { renderEntryScreen } from "./render-entry-screen";
 import { learnerSettingsSummary, renderLearnerProfileSettings } from "./render-learner-profile";
 import { renderRoleplayStory } from "./render-roleplay-story";
@@ -106,6 +107,8 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
       return renderEntryScreen(screen, wiring);
     case "catalog-cover":
       return renderCatalogCover(screen, wiring);
+    case "catalog-story":
+      return renderCatalogStory(screen, wiring);
     case "catalog-lesson":
     case "catalog-final":
     case "catalog-unit-complete":

@@ -6,6 +6,7 @@ import {
   catalogCoverEn,
   catalogFinalEn,
   catalogMapEn,
+  catalogUpdateNoticeEn,
   cultureCardEn,
   pairMatchEn,
   readAloudEn,
@@ -44,7 +45,15 @@ import {
   specialUnitMapEn,
   splashEn,
 } from "./ui-copy-en-shell";
-import { episodeIntroEn, messengerEn, roleplayEn, visualNovelEn } from "./ui-copy-en-story";
+import {
+  episodeIntroEn,
+  messengerEn,
+  roleplayEn,
+  storyCallEn,
+  storyIntroEn,
+  storyMessengerEn,
+  visualNovelEn,
+} from "./ui-copy-en-story";
 
 export const uiCopyEn: UiCopy = {
   common: commonEn,
@@ -68,6 +77,7 @@ export const uiCopyEn: UiCopy = {
   feedback: feedbackEn,
   gemPurchase: gemPurchaseEn,
   catalogMap: catalogMapEn,
+  catalogUpdateNotice: catalogUpdateNoticeEn,
   catalogCover: catalogCoverEn,
   typing: typingEn,
   vocabCard: vocabCardEn,
@@ -86,4 +96,7 @@ export const uiCopyEn: UiCopy = {
   tickets: ticketsEn,
   roleplayStory: roleplayStoryEn,
   appUpdate: appUpdateEn,
+  storyMessenger: storyMessengerEn,
+  storyIntro: storyIntroEn,
+  storyCall: storyCallEn,
 };

@@ -7,8 +7,11 @@ import { decodeManifest } from "./episode-manifest";
 import type { EpisodeManifest, ManifestEntry } from "./episode-manifest";
 import { sha256Hex, utf8Bytes } from "./sha256";
 
-/** 이 앱이 이해하는 콘텐츠 수준. 매니페스트 `min_client_level`이 이보다 크면 원격 항목을 잠급니다. */
-export const CONTENT_CLIENT_LEVEL = 1;
+/**
+ * 이 앱이 이해하는 콘텐츠 수준. 매니페스트 `min_client_level`이 이보다 크면 원격 항목을 잠급니다. 2는 막간 이야기
+ * 유닛을 그리는 수준이고, `manifests/level-2.json`부터 읽습니다(ADR-0087 · ADR-0088).
+ */
+export const CONTENT_CLIENT_LEVEL = 2;
 export const SUPPORTED_EPISODE_SCHEMAS: readonly string[] = ["delivery-2"];
 
 export type LockReason =

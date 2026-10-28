@@ -197,11 +197,12 @@ describe("AN1 분석 계약의 크기", () => {
     "phone_call_unit_opened",
   ];
 
-  // ⟨ADR-0086⟩ `app_update_required_shown`이 더해져 39다.
-  test("AN1. 이벤트 이름은 39개이고 지운 여덟이 없다", () => {
+  // ⟨ADR-0086⟩ `app_update_required_shown`, ⟨ADR-0088 D6⟩ 막간 이야기 다섯이 더해져 44이다.
+  test("AN1. 이벤트 이름은 44개이고 지운 여덟이 없다", () => {
     const source = readFileSync(resolve(process.cwd(), "src/lib/analytics-event-names.ts"), "utf8");
     const names = [...source.matchAll(/^\s+\| "([a-z_]+)"/gm)].map((match) => match[1]);
-    expect(names).toHaveLength(39);
+    expect(names).toHaveLength(44);
+    expect(names).toContain("episode_story_skipped");
     expect(names).toContain("episode_listen_item_answered");
     expect(names).toContain("app_update_required_shown");
     expect(names).toContain("episode_item_answered");

@@ -1,3 +1,4 @@
+import { KNOWN_ITEM_TYPES } from "./episode-content.schema";
 import type {
   DeliveryCut,
   DeliveryDialogueLine,
@@ -178,4 +179,29 @@ export function toWord(wire: DeliveryWord): Word {
     ...maybe("grade", wire.grade),
     ...maybe("example", example),
   };
+}
+
+/** `steps[*].items[*].type`이 닫힌 목록 밖인 자리 — 구조 검사보다 먼저 봅니다. */
+export function findUnknownItemTypes(input: Record<string, unknown>): DecodeIssue[] {
+  const known: readonly string[] = KNOWN_ITEM_TYPES;
+  const issues: DecodeIssue[] = [];
+  const steps = input["steps"];
+  if (!Array.isArray(steps)) {
+    return issues;
+  }
+  steps.forEach((step: unknown, i) => {
+    const items = isRecord(step) ? step["items"] : undefined;
+    if (!Array.isArray(items)) {
+      return;
+    }
+    items.forEach((item: unknown, j) => {
+      const type = isRecord(item) ? item["type"] : undefined;
+      if (typeof type === "string" && !known.includes(type)) {
+        issues.push(
+          issue("unknown-item-type", `steps[${i}].items[${j}].type`, `unknown item type: ${type}`),
+        );
+      }
+    });
+  });
+  return issues;
 }

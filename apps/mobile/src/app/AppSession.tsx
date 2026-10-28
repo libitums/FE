@@ -38,6 +38,8 @@ import { useCatalogFinishGuard } from "./catalog-finish-guard";
 import { episodeSurveyWiring } from "./episode-survey-wiring";
 import { firstUnitGuideEnabled } from "./first-unit-guide-enabled";
 import { OutOfTicketsDialog } from "../screens/tickets/OutOfTicketsDialog";
+import { CatalogUpdateNoticeDialog } from "../screens/catalog-update/CatalogUpdateNoticeDialog";
+import { useCatalogUpdateNotice } from "./use-catalog-update-notice";
 import { withLearningTickets } from "./ticket-wiring";
 import { useLearningTickets } from "./use-learning-tickets";
 import { useTesterAccess } from "./use-tester-access";
@@ -175,6 +177,19 @@ export function AppSession({
   const screenNow = currentScreen(nav);
   useTrackingAuthorizationPrompt(nav.entry.length === 0 && screenNow.name === "journey-map");
   const showsNavigator = showsTabNavigator(nav);
+  // 끝낸 에피소드가 업데이트됐으면 지도 루트에서 다른 겹침이 없을 때 한 번 알립니다(시안 G-A).
+  const updateNotice = useCatalogUpdateNotice({
+    sections: catalogSections,
+    progress: catalogProgress,
+    ready:
+      progress.hasLoadedProgress &&
+      nav.entry.length === 0 &&
+      screenNow.name === "journey-map" &&
+      !screenLayerOpen &&
+      tickets.outOfTickets === null &&
+      progress.episodeSurvey === null &&
+      !progress.streakCelebration,
+  });
   // 셸 여백: 그림 화면 0 · 여정 맵 위 0 · 자판 화면 위만 — 비운 쪽은 화면이 잡습니다(`shell-edges`).
   const shellInsets = shellInsetsOf(screenNow, insets, wiring);
   const bottomLayout = shellBottomLayout({
@@ -245,6 +260,9 @@ export function AppSession({
             {tickets.outOfTickets === null ? null : (
               <OutOfTicketsDialog {...tickets.outOfTickets} />
             )}
+            {updateNotice.open ? (
+              <CatalogUpdateNoticeDialog onClose={updateNotice.onClose} />
+            ) : null}
           </view>
         </ErrorBoundary>
       </FirstUnitGuideProvider>

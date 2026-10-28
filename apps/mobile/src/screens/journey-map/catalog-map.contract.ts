@@ -34,6 +34,13 @@ export type CatalogReadySection = {
   readonly completionKeys: readonly CatalogUnitKey[];
   /** 문화 유닛의 키 — `lessonKeys`의 부분집합(유닛 순서)입니다. 없으면 빈 배열. */
   readonly cultureKeys: readonly CatalogUnitKey[];
+  /**
+   * 막간 이야기 유닛의 키 — `lessonKeys`의 부분집합(유닛 순서)입니다(ADR-0088). 스페셜 노드로 서고, 레슨 번호 ·
+   * 완료 키 · 티켓에서 빠집니다. 없으면 이야기 유닛이 없습니다.
+   */
+  readonly storyKeys?: readonly CatalogUnitKey[];
+  /** 이야기 유닛의 노드 아이콘 — 컷 · 사진 보기는 필름, 문자는 말풍선, 전화는 전화(ADR-0088 D6). */
+  readonly storyIcons?: Readonly<Record<CatalogUnitKey, CatalogStoryIcon>>;
 };
 
 export type CatalogUnavailableSection = {
@@ -56,9 +63,12 @@ export type CatalogGate = {
 
 export type CatalogCaptionKind = "pending" | "update" | "unavailable";
 
-export type CatalogUnitNodeRole = "lesson" | "culture" | "final";
+export type CatalogUnitNodeRole = "lesson" | "culture" | "story" | "final";
 
 /** 레슨 · 문화 · 최종 노드 — 상태가 사슬(표지 → 레슨들 → 최종)에서 파생됩니다. */
+/** 이야기 노드의 아이콘 종류입니다. */
+export type CatalogStoryIcon = "film" | "chat" | "phone";
+
 export type CatalogUnitNode = {
   readonly key: CatalogUnitKey;
   readonly role: CatalogUnitNodeRole;
@@ -66,6 +76,8 @@ export type CatalogUnitNode = {
   readonly status: JourneyMapItemStatus;
   /** 열림(`available`)이고 티켓을 쓰고 연 유닛이면 참입니다 — 맵이 진한 색(`brand.primary` · 흰 아이콘)으로 세웁니다. */
   readonly ticketed?: boolean;
+  /** 이야기 노드의 아이콘 — 이야기가 아니면 없습니다. */
+  readonly storyIcon?: CatalogStoryIcon;
 };
 
 /** 맵 화면의 카탈로그 슬롯입니다. */
@@ -170,6 +182,8 @@ export type CatalogMapCopy = {
   readonly lessonTitle: (ordinal: number) => string;
   readonly finalTitle: string;
   readonly cultureTitle: string;
+  /** 막간 이야기 노드의 제목(스페셜 라벨의 둘째 줄)입니다. */
+  readonly storyTitle: string;
   /** 표지 · 레슨 · 최종 노드의 낭독 이름 — `Episode n. <제목>`. */
   readonly nodeLabel: (episodeLabel: string, title: string) => string;
   readonly caption: Readonly<Record<CatalogCaptionKind, string>>;
