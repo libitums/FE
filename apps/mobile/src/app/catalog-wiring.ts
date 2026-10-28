@@ -8,12 +8,15 @@ import type { CatalogItemReportWiring } from "./catalog-item-report-wiring";
 import { catalogLessonWiring } from "./catalog-lesson-wiring";
 import type { CatalogLessonWiring, CatalogLessonWiringArgs } from "./catalog-lesson-wiring";
 import { catalogListenWiring } from "./catalog-listen-wiring";
+import { withCatalogStory } from "./catalog-story-wiring";
+import type { CatalogStoryWiring } from "./catalog-story-wiring";
 import type { CatalogListenWiring, CatalogListenWiringArgs } from "./catalog-listen-wiring";
 import { roleplayStoryWiring } from "./roleplay-story-wiring";
 import type { RoleplayStoryWiring } from "./roleplay-story-wiring";
 
 export type CatalogWiring = CatalogCoverWiring &
   CatalogLessonWiring &
+  CatalogStoryWiring &
   RoleplayStoryWiring &
   CatalogListenWiring &
   CatalogItemReportWiring;
@@ -24,7 +27,8 @@ export type CatalogWiringArgs = CatalogCoverWiringArgs &
 export function catalogWiring(args: CatalogWiringArgs): CatalogWiring {
   return {
     ...catalogCoverWiring(args),
-    ...catalogLessonWiring(args),
+    // 막간 이야기 유닛은 레슨 시작 앞에서 갈라집니다(ADR-0088).
+    ...withCatalogStory(catalogLessonWiring(args), args),
     ...roleplayStoryWiring(args),
     ...catalogListenWiring(args),
     ...catalogItemReportWiring(args),

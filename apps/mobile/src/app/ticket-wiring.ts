@@ -7,6 +7,7 @@ import { catalogUnitTicketCost } from "../lib/catalog-ticket-cost";
 import { isTesterAccessActive } from "../lib/tester-access";
 import type { CatalogProgress, CatalogUnitKey } from "../lib/catalog-progress";
 import { canStartCatalogUnit } from "../screens/journey-map/catalog-map";
+import { catalogIsStoryUnit } from "../screens/journey-map/catalog-map-story";
 import type { CatalogMapSection } from "../screens/journey-map/catalog-map.contract";
 import type { ScreenWiring } from "./screen-wiring";
 import type { JourneyProgressState } from "./learning-progress";
@@ -31,7 +32,9 @@ export function withLearningTickets<W extends ScreenWiring>(
     onStartCatalogUnit: (episodeId, unitKey, source) => {
       "background only";
       if (!canStartCatalogUnit(catalogSections, episodeId, unitKey, catalogProgress)) return;
-      const free = catalogUnitTicketCost(catalogProgress, episodeId, unitKey, ticketUnits) === 0;
+      const isStory = catalogIsStoryUnit(catalogSections, episodeId, unitKey);
+      const free =
+        catalogUnitTicketCost(catalogProgress, episodeId, unitKey, ticketUnits, isStory) === 0;
       // `open`은 한 장을 쓴 뒤에만 불립니다(무료면 바로). 그때 연 유닛을 적습니다.
       startWithTicket(free, () => {
         if (!free) progress.markTicketUnit(episodeId, unitKey);

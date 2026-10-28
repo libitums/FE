@@ -33,6 +33,8 @@ export const statusBarSurfaceRegistry = {
   fullBleedRoutes: {
     "journey-entry": ["JourneyEntryScreen"],
     "catalog-cover": ["EpisodeIntroScreen", "CatalogCoverScreen", "EpisodeBannerScreen"],
+    // 막간 이야기 — 표지와 같은 컷 화면, 문자 막간은 메신저 앞 시간 표시 화면, 끝의 「To be continued…」 배너가 짙습니다(ADR-0088).
+    "catalog-story": ["CatalogCoverScreen", "StoryMessengerScreen", "EpisodeBannerScreen"],
     "catalog-final": ["CatalogFinalScreen"],
     "catalog-epilogue": ["CatalogCoverScreen", "EpisodeBannerScreen"],
     // 에피소드 롤플레이 — 미리보기 → 표지 컷(같은 컷 화면) → 말하기 대화. 셋 다 짙은 장면 위입니다.
@@ -47,6 +49,7 @@ export const statusBarSurfaceRegistry = {
     CatalogFinalScreen: "screens/catalog-final/CatalogFinalScreen.tsx",
     RoleplayPreviewScreen: "screens/roleplay-story/RoleplayPreviewScreen.tsx",
     RoleplayTalkScreen: "screens/roleplay-story/RoleplayTalkScreen.tsx",
+    StoryMessengerScreen: "screens/story-messenger/StoryTimeIntro.tsx",
   },
   /** `position: fixed` CSS → 분류와 표지를 다는 요소. `className`이 있으면 그 요소의 여는 태그에만 단다. */
   fixedLayers: {

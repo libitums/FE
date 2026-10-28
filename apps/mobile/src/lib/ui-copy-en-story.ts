@@ -6,6 +6,7 @@ import type {
   RoleplayCopy,
   VisualNovelCopy,
 } from "./ui-copy-sections.contract";
+import type { StoryMessengerCopy } from "../screens/story-messenger/story-messenger.contract";
 
 export const episodeIntroEn: EpisodeIntroCopy = {
   guide: {
@@ -49,4 +50,16 @@ export const roleplayEn: RoleplayCopy = {
   lockedSection: (name) => `${name}, locked, finish this episode in your journey to unlock it`,
   premiumLock: { episode: "locked", payment: "Plus only" },
   premiumNotice: (itemTitle) => `“${itemTitle}” is a Plus roleplay. Plus isn't available yet.`,
+};
+
+export const storyMessengerEn: StoryMessengerCopy = {
+  introOverline: (ordinal) => `STORY · EPISODE ${ordinal}`,
+  tapToContinue: "Tap to continue",
+  back: "Back to map",
+  typing: (speaker) => `${speaker} is typing`,
+  replyTitle: "How will you reply?",
+  closeReply: "Close",
+  send: "Send",
+  composerPlaceholder: "Message",
+  finish: "Finish story",
 };

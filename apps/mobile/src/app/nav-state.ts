@@ -35,6 +35,8 @@ export type Screen =
   | { name: "catalog-cover"; episodeId: string }
   // 카탈로그 레슨의 활동 하나입니다. 유닛 하나가 같은 학습형이 이어지는 구간 여럿을 잇습니다.
   | { name: "catalog-lesson"; episodeId: string; unitKey: CatalogUnitKey; activityIndex: number }
+  // 카탈로그 막간 이야기 유닛(INT)의 컷입니다(ADR-0088).
+  | { name: "catalog-story"; episodeId: string; unitKey: CatalogUnitKey }
   // 카탈로그 최종 테스트(RP)입니다.
   | { name: "catalog-final"; episodeId: string }
   // 레슨 · 최종 테스트 공용 결과 화면입니다. 역할은 결선이 `finalKey`와 견줘 파생합니다.

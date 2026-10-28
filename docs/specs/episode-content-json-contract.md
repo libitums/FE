@@ -133,6 +133,14 @@ FE 제안: 단일 `Text = { ko, roman, en? }`로 통일한다. `en`은 어디서
   지금 `CULT`는 문화 카드 3 → 문화 확인 3의 실단계이고(위 「곧장 끝나는 유닛」은 PR ① 빌드의 상태다), 통과는 문화 확인 셋 중 둘이다. 문화 단계가 레슨 사이로 오면 그 뒤 레슨 번호가 하나 건너뛴다.
   결정은 [ADR-0066](../adr/0066-episode-format-screens.md) D7 · D9.
 
+- ⟨2026-10-26 — 막간⟩ **막간(INT) 스텝 — 콘텐츠 쪽이 알아야 할 것.** `kind: "interlude"`인 스텝은 문항(`items: []`) 대신 `interlude`를 싣는다:
+  `{ form, anchor?, caption?{ko,roman,en?}, background_url?, cuts[{ index, cut_kind, speaker?, with?, line?, narration?, aside?, options?[], after_option?, background_voice?, voice_label?, image_url?, background_url?, image_brief? }] }`.
+  앱은 형식이 무엇이든 표지와 같은 컷 화면으로 그린다 — 첫 컷은 `caption`, 메신저 답장(`message_reply`)은 **첫 보기**를 고른 흐름(`after_option`이 1이 아닌 컷은 안 보인다), `look` · `call_end`는 지문.
+  `interlude`가 틀리면 **그 스텝만** 버리고(에피소드는 열린다) `completion.requires`에서도 뺀다. 맵에서는 최종 테스트와 같은 스페셜 노드 「Story」이고 레슨 번호에서 빠지며, 티켓을 쓰지 않는다.
+  ⟨2026-10-28⟩ **`form: "message"`는 메신저 화면으로 그린다** — `message` 컷은 `speaker`(없으면 `with`)가 보낸 말풍선, `image_url`은 사진 메시지, `message_reply`는 답장 보기(**보기 전부**, 바텀 시트), `after_option: n`인 컷은 바로 앞 답장에서 n번(1부터)을 고른 때만 나온다. 분기 줄 없는 답장은 고른 답만 보이고 다음 공통 줄로 간다. 상대는 `플레이어`가 아닌 첫 화자, 시간 표시 화면 배경은 `interlude.background_url`. 상대 화자가 없으면 컷 화면으로 그린다.
+  ⟨2026-10-28⟩ **인물 그림 `interlude.profiles`(선택)** — `[{ "speaker": "미나", "image_url": "content/images/profiles/mina-casual.webp" }]`. 메신저는 상대 화자와 `speaker`가 같은 항목의 `image_url`을 말풍선 아바타로 그린다. 없거나 그림을 못 불러오면 이름 첫 글자 아바타다. 모양이 틀린 항목은 그 항목만 무시한다(막간은 그대로 연다).
+  **이 형식은 수준 2 앱만 그린다** — `manifests/level-2.json`에만 싣는다(§10, [ADR-0087](../adr/0087-content-level-manifests.md) · [ADR-0088](../adr/0088-interlude-story-unit.md)).
+
 ## 7. 문항 (`steps[].items[]`)
 
 ### 7.1 공통 필드
@@ -338,6 +346,8 @@ u01 · u02는 전부 해결, u03은 18문항이 같은 세 id(에피소드 2의 
 | `schema` | 필수 | `"manifest-1"` | 다르면 매니페스트 전체를 버린다(`schema-mismatch`) |
 | `generated_at` | 필수 | string | 생성 시각. 앱은 비교에 쓰지 않는다 |
 | `min_client_level` | 선택 | int | 이보다 낮은 앱은 이 매니페스트에서 온 항목을 `client-too-old`로 잠근다. 앱은 지금 `CONTENT_CLIENT_LEVEL = 1` |
+
+> ⟨2026-10-26⟩ 수준별 매니페스트: 수준 n ≥ 2인 앱은 `manifests/level-n.json` → … → `manifests/level-2.json` → `manifest.json` 차례로 읽는다(서버에 없을 때만 다음). 수준 2 판의 본문은 `manifest.json`이 가리키는 경로와 다른 곳에 둔다([ADR-0087](../adr/0087-content-level-manifests.md)).
 | `episodes[].id` | 필수 | string | 에피소드 id(= 파일의 `unit_id`, §0 · Q1). 매니페스트 안에서 중복이면 전체 거부(`duplicate-episode-id`) |
 | `episodes[].order` | 필수 | int | 맵 순서. 오름차순, 같으면 `id` 사전순. ⟨2026-10-21⟩ **맵의 구획 번호(`Episode n.`)이기도 하다** — `0`은 튜토리얼(`u00-tutorial` = `Episode 0.`), 본편은 1부터. 건너뛰면 번호도 건너뛴다([ADR-0081](../adr/0081-tutorial-as-catalog-episode.md) D3) |
 | `episodes[].title` | 필수 | string | 본문을 받기 전에도 보이는 제목 |

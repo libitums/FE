@@ -108,6 +108,7 @@ const CARRIER_PATHS = {
   episodeBanner: "screens/catalog-cover/EpisodeBannerScreen.tsx",
   roleplayPreview: "screens/roleplay-story/RoleplayPreviewScreen.tsx",
   roleplayTalk: "screens/roleplay-story/RoleplayTalkScreen.tsx",
+  storyIntro: "screens/story-messenger/StoryTimeIntro.tsx",
   statModal: "screens/journey-map/JourneyStatModal.tsx",
   map: "screens/journey-map/JourneyMapScreen.tsx",
 };
@@ -118,6 +119,7 @@ const appSession = (
   routes = [
     "journey-entry",
     "catalog-cover",
+    "catalog-story",
     "catalog-final",
     "catalog-epilogue",
     "roleplay-story",
@@ -220,6 +222,7 @@ function healthyBase(overrides = {}) {
         "roleplay-story-screen",
       ),
       [CARRIER_PATHS.roleplayTalk]: carrierComponent("RoleplayTalkScreen", "roleplay-story-screen"),
+      [CARRIER_PATHS.storyIntro]: carrierComponent("StoryTimeIntro", "story-time-intro"),
       [CARRIER_PATHS.episodeBanner]: carrierComponent(
         "EpisodeBannerScreen",
         "episode-banner-screen",
@@ -434,12 +437,13 @@ test("SM10: the layoutEdgeToEdge defaults must stay and never turn the navigatio
   );
 });
 
-test("SM11: statusBarSurfaceRegistry matches the contract (five routes, five CSS layers)", () => {
+test("SM11: statusBarSurfaceRegistry matches the contract (six routes, five CSS layers)", () => {
   const { fullBleedRoutes, fixedLayers } = statusBarSurfaceRegistry;
   assert.deepEqual(Object.keys(fullBleedRoutes).sort(), [
     "catalog-cover",
     "catalog-epilogue",
     "catalog-final",
+    "catalog-story",
     "journey-entry",
     "roleplay-story",
   ]);
@@ -454,6 +458,9 @@ test("SM11: statusBarSurfaceRegistry matches the contract (five routes, five CSS
     "screens/catalog-cover/EpisodeBannerScreen.tsx",
   );
   assert.match(routeText("catalog-final"), /CatalogFinalScreen/);
+  assert.match(routeText("catalog-story"), /CatalogCoverScreen/);
+  assert.match(routeText("catalog-story"), /StoryMessengerScreen/);
+  assert.match(routeText("catalog-story"), /EpisodeBannerScreen/);
   assert.match(routeText("catalog-epilogue"), /CatalogCoverScreen/);
   assert.match(routeText("roleplay-story"), /RoleplayPreviewScreen/);
   assert.match(routeText("roleplay-story"), /CatalogCoverScreen/);

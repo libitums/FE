@@ -15,6 +15,10 @@ import {
   type Remote,
   type Reply,
 } from "./episode-refresh.test-support";
+import { BASE_MANIFEST_PATH } from "./content-manifest-path";
+
+// 이 파일은 수준 1 경로(`manifest.json`) 하나로 고정합니다 — 수준별 고르기는 `episode-refresh.level.unit.test.ts`가 봅니다.
+const LEVEL_1_PATHS = [BASE_MANIFEST_PATH];
 
 // `unit` 계층: 갱신이 에피소드를 **하나씩**(본문 → 그 에피소드의 자산) 받고, 다 받은 에피소드만 준비됐다고
 // 알리는지 봅니다. 전송 · 저장소 · 파일은 대역입니다.
@@ -73,6 +77,7 @@ describe("refreshEpisodeCatalog — 자산", () => {
       fetchText,
       store,
       bundled: bundledCatalogInput,
+      manifestPaths: LEVEL_1_PATHS,
       assets,
       onEpisodeReady: (id) => ready.push(id),
     });
@@ -105,6 +110,7 @@ describe("refreshEpisodeCatalog — 자산", () => {
       fetchText,
       store,
       bundled: bundledCatalogInput,
+      manifestPaths: LEVEL_1_PATHS,
       assets,
       onEpisodeReady: (id) => ready.push(id),
     });
@@ -122,6 +128,7 @@ describe("refreshEpisodeCatalog — 자산", () => {
       fetchText: first.fetchText,
       store,
       bundled: bundledCatalogInput,
+      manifestPaths: LEVEL_1_PATHS,
       assets: first.assets,
     });
 
@@ -131,6 +138,7 @@ describe("refreshEpisodeCatalog — 자산", () => {
       fetchText: second.fetchText,
       store,
       bundled: bundledCatalogInput,
+      manifestPaths: LEVEL_1_PATHS,
       assets: second.assets,
       onEpisodeReady: (id) => ready.push(id),
     });
@@ -152,6 +160,7 @@ describe("refreshEpisodeCatalog — 자산", () => {
       fetchText,
       store,
       bundled: bundledCatalogInput,
+      manifestPaths: LEVEL_1_PATHS,
       assets,
       onEpisodeReady: (id) => ready.push(id),
     });
@@ -171,6 +180,7 @@ describe("refreshEpisodeCatalog — 자산", () => {
       fetchText,
       store,
       bundled: bundledCatalogInput,
+      manifestPaths: LEVEL_1_PATHS,
       assets,
       onEpisodeReady: (id) => ready.push(id),
     });
@@ -183,7 +193,12 @@ describe("refreshEpisodeCatalog — 자산", () => {
     const { log, fetchText } = recorder();
     const { store, data } = fakeStore();
 
-    const summary = await refreshEpisodeCatalog({ fetchText, store, bundled: bundledCatalogInput });
+    const summary = await refreshEpisodeCatalog({
+      fetchText,
+      store,
+      bundled: bundledCatalogInput,
+      manifestPaths: LEVEL_1_PATHS,
+    });
 
     expect(log.filter((line) => line.startsWith("asset"))).toEqual([]);
     expect(summary.fetched).toEqual(["u04-a", "u05-b"]);
