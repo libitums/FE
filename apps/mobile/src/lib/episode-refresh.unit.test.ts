@@ -7,7 +7,7 @@ import {
   readCachedSource,
   type ContentStore,
 } from "./episode-cache";
-import { buildEpisodeCatalog } from "./episode-catalog";
+import { buildEpisodeCatalog, CONTENT_CLIENT_LEVEL } from "./episode-catalog";
 import { refreshEpisodeCatalog, type RefreshSummary } from "./episode-refresh";
 import {
   fakeFetch,
@@ -21,11 +21,20 @@ import {
 } from "./episode-refresh.test-support";
 import type { FetchText } from "./episode-remote";
 import { sha256Hex, utf8Bytes } from "./sha256";
+import { BASE_MANIFEST_PATH } from "./content-manifest-path";
+
+// 이 파일은 수준 1 경로(`manifest.json`) 하나로 고정합니다 — 수준별 고르기는 `episode-refresh.level.unit.test.ts`가 봅니다.
+const LEVEL_1_PATHS = [BASE_MANIFEST_PATH];
 
 // `unit` 계층: 가짜 전송 · 가짜 저장소를 주입해 `refreshEpisodeCatalog`의 입출력과 호출 기록을 봅니다.
 
 const run = (fetchText: FetchText, store: ContentStore): Promise<RefreshSummary> =>
-  refreshEpisodeCatalog({ fetchText, store, bundled: bundledCatalogInput });
+  refreshEpisodeCatalog({
+    fetchText,
+    store,
+    bundled: bundledCatalogInput,
+    manifestPaths: LEVEL_1_PATHS,
+  });
 
 const X = remote("u04-x", 4);
 const replyFor = (remotes: Remote[], extra: Wire = {}): Record<string, Reply> => ({
@@ -174,7 +183,9 @@ describe("refreshEpisodeCatalog", () => {
   });
 
   test("F10. min_client_level이 높으면 에피소드를 받지 않고 원격 항목을 client-too-old로 잠근다", async () => {
-    const { fetchText, calls } = fakeFetch(replyFor([X], { min_client_level: 2 }));
+    const { fetchText, calls } = fakeFetch(
+      replyFor([X], { min_client_level: CONTENT_CLIENT_LEVEL + 1 }),
+    );
     const { store } = fakeStore();
     const summary = await run(fetchText, store);
     expect(calls).toEqual(["manifest.json"]);

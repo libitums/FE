@@ -40,6 +40,10 @@ import {
   stagedKeys,
   versioned,
 } from "./episode-update.test-support";
+import { BASE_MANIFEST_PATH } from "./content-manifest-path";
+
+// 이 파일은 수준 1 경로(`manifest.json`) 하나로 고정합니다 — 수준별 고르기는 `episode-refresh.level.unit.test.ts`가 봅니다.
+const LEVEL_1_PATHS = [BASE_MANIFEST_PATH];
 
 // `unit` 계층: 지금 열리는 에피소드의 새 버전은 활성 셋을 건드리지 않고 스테이징에 받고, 새 에피소드는 지금처럼
 // 활성에 받는지 봅니다. 전송 · 저장소 · 파일은 대역이고 저장소 상태는 값으로 봅니다.
@@ -58,6 +62,7 @@ function setup(remotes = [V2], answers: Record<string, DownloadResult> = {}) {
       fetchText: rec.fetchText,
       store,
       bundled: bundledCatalogInput,
+      manifestPaths: LEVEL_1_PATHS,
       assets: rec.assets,
       onEpisodeReady: (id) => ready.push(id),
       observer: watch.observer,
@@ -137,7 +142,7 @@ describe("refreshEpisodeCatalog — 바뀐 에피소드는 스테이징", () => 
     };
     const first = recorder([V2, next], answers, saved);
     const { store, data } = fakeStore(activeSeed(V1));
-    const deps = { store, bundled: bundledCatalogInput };
+    const deps = { store, bundled: bundledCatalogInput, manifestPaths: LEVEL_1_PATHS };
 
     await refreshEpisodeCatalog({
       ...deps,
@@ -169,6 +174,7 @@ describe("refreshEpisodeCatalog — 바뀐 에피소드는 스테이징", () => 
       fetchText: rec.fetchText,
       store,
       bundled: bundledCatalogInput,
+      manifestPaths: LEVEL_1_PATHS,
       assets: rec.assets,
     });
 
@@ -203,6 +209,7 @@ describe("refreshEpisodeCatalog — 바뀐 에피소드는 스테이징", () => 
       fetchText: reverted.fetchText,
       store: storeOver(data),
       bundled: bundledCatalogInput,
+      manifestPaths: LEVEL_1_PATHS,
       assets: reverted.assets,
     });
 
@@ -226,6 +233,7 @@ describe("refreshEpisodeCatalog — 바뀐 에피소드는 스테이징", () => 
       fetchText: vanished.fetchText,
       store: storeOver(data),
       bundled: bundledCatalogInput,
+      manifestPaths: LEVEL_1_PATHS,
       assets: vanished.assets,
     });
 
@@ -258,6 +266,7 @@ describe("refreshEpisodeCatalog — 바뀐 에피소드는 스테이징", () => 
       fetchText: rec.fetchText,
       store,
       bundled: bundledCatalogInput,
+      manifestPaths: LEVEL_1_PATHS,
       assets: rec.assets,
     });
 
@@ -272,6 +281,7 @@ describe("refreshEpisodeCatalog — 바뀐 에피소드는 스테이징", () => 
         fetchText: fakeFetch({ "manifest.json": reply }).fetchText,
         store: empty,
         bundled: bundledCatalogInput,
+        manifestPaths: LEVEL_1_PATHS,
         observer: watch.observer,
       });
       expect(watch.events).toEqual([]);
@@ -286,6 +296,7 @@ describe("refreshEpisodeCatalog — 바뀐 에피소드는 스테이징", () => 
       fetchText: fetched.fetchText,
       store,
       bundled: bundledCatalogInput,
+      manifestPaths: LEVEL_1_PATHS,
     });
 
     expect(data.get(contentEpisodeKey(ID))).toBe(V2.text);
@@ -303,6 +314,7 @@ describe("refreshEpisodeCatalog — 바뀐 에피소드는 스테이징", () => 
       fetchText: fetched.fetchText,
       store,
       bundled: bundledCatalogInput,
+      manifestPaths: LEVEL_1_PATHS,
       observer: watch.observer,
     });
 
@@ -366,6 +378,7 @@ describe("refreshEpisodeCatalog — 동시 받기는 에피소드 안에서만",
       },
       store,
       bundled: bundledCatalogInput,
+      manifestPaths: LEVEL_1_PATHS,
       assets: held.assets,
       observer: watch.observer,
     });
@@ -415,6 +428,7 @@ describe("refreshEpisodeCatalog — 동시 받기는 에피소드 안에서만",
       },
       store,
       bundled: bundledCatalogInput,
+      manifestPaths: LEVEL_1_PATHS,
       assets: held.assets,
       onEpisodeReady: (id) => ready.push(id),
     });

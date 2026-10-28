@@ -43,7 +43,13 @@ import {
   specialUnitMapEn,
   splashEn,
 } from "./ui-copy-en-shell";
-import { episodeIntroEn, messengerEn, roleplayEn, visualNovelEn } from "./ui-copy-en-story";
+import {
+  episodeIntroEn,
+  messengerEn,
+  roleplayEn,
+  storyMessengerEn,
+  visualNovelEn,
+} from "./ui-copy-en-story";
 
 export const uiCopyEn: UiCopy = {
   common: commonEn,
@@ -84,4 +90,5 @@ export const uiCopyEn: UiCopy = {
   specialUnitMap: specialUnitMapEn,
   tickets: ticketsEn,
   roleplayStory: roleplayStoryEn,
+  storyMessenger: storyMessengerEn,
 };

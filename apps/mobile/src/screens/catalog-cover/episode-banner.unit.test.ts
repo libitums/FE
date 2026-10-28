@@ -13,11 +13,16 @@ import {
 // `unit` 계층: 배너의 유지 시간 · 문구 고르기 · 모션 변형 · 닫힘 가드만 봅니다.
 
 describe("episodeBannerTextOf", () => {
-  test("EB1. 종류에 따라 시작 문구와 클리어 문구를 고른다", () => {
-    const copy = { episodeStart: "시작-대역", episodeClear: "클리어-대역" };
+  test("EB1. 종류에 따라 시작 · 클리어 · 계속(막간 뒤) 문구를 고른다", () => {
+    const copy = {
+      episodeStart: "시작-대역",
+      episodeClear: "클리어-대역",
+      episodeContinue: "계속-대역",
+    };
 
     expect(episodeBannerTextOf("start", copy)).toBe("시작-대역");
     expect(episodeBannerTextOf("clear", copy)).toBe("클리어-대역");
+    expect(episodeBannerTextOf("continue", copy)).toBe("계속-대역");
   });
 });
 

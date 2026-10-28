@@ -86,8 +86,8 @@ export function catalogSheetFigures(
 }
 
 /**
- * 말풍선이 붙을 표식의 높이입니다. 최종은 스페셜 표식(124)이라 레슨 원(100)으로 재면 말풍선 꼬리가 표식에
- * 파고듭니다. 모르는 에피소드 · 유닛은 레슨 원입니다.
+ * 말풍선이 붙을 표식의 높이입니다. 최종 · 막간 이야기는 스페셜 표식(124)이라 레슨 원(100)으로 재면 말풍선 꼬리가
+ * 표식에 파고듭니다. 모르는 에피소드 · 유닛은 레슨 원입니다.
  */
 export function catalogSheetUnitSize(
   sections: readonly CatalogMapSection[],
@@ -95,7 +95,8 @@ export function catalogSheetUnitSize(
   unitKey: CatalogUnitKey,
 ): number {
   const section = sections.find((candidate) => candidate.episodeId === episodeId);
-  return section?.kind === "catalog-ready" && section.finalKey === unitKey
+  return section?.kind === "catalog-ready" &&
+    (section.finalKey === unitKey || (section.storyKeys ?? []).includes(unitKey))
     ? specialUnitSize
     : stepUnitSize;
 }
