@@ -16,6 +16,7 @@ import { catalogLessonOrdinalOf } from "../screens/journey-map/catalog-map";
 import { CatalogEpilogueFlow } from "./CatalogCutsFlow";
 import { renderCatalogActivity } from "./render-catalog-activity";
 import { catalogEpilogueModelOf } from "./catalog-cover-wiring";
+import { catalogUnitCompleteLeadsToEpilogue } from "./catalog-epilogue-route";
 import { catalogFinalPlanFor } from "./catalog-final-model";
 import { catalogResultNextOf } from "./catalog-next-unit";
 import {
@@ -111,6 +112,7 @@ export function renderCatalogFlow(screen: CatalogFlowScreen, wiring: ScreenWirin
           onStatBumped={wiring.onStatBumped}
           reward={lessonRewardPlaceholder}
           ticketsLeft={wiring.ticketsLeft}
+          continuesStory={catalogUnitCompleteLeadsToEpilogue(wiring, episodeId, unitKey, verdict)}
           onExit={() => wiring.onExitCatalogUnitComplete(episodeId, unitKey, verdict)}
           onRetry={() => wiring.onStartCatalogUnit(episodeId, unitKey)}
           {...catalogResultNextOf(wiring, episodeId, unitKey)}

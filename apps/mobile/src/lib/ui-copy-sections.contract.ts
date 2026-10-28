@@ -157,6 +157,8 @@ export type LessonCompleteCopy = {
   /** 통과 결과 화면의 「다음 학습」 버튼 — 다음이 레슨 · 문화일 때와 최종 테스트일 때. */
   readonly nextLesson: string;
   readonly nextFinal: string;
+  /** 최종 테스트를 통과해 에필로그로 이어질 때의 나가는 버튼 — 맵이 아니라 이야기로 갑니다. */
+  readonly continueStory: string;
 };
 
 export type EpisodeIntroCopy = {
