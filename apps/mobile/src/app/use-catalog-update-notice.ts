@@ -1,7 +1,7 @@
 // 끝낸 에피소드 업데이트 안내의 결선입니다 — 진행 · 구획에서 서명을 파생하고, 기기 기록과 비교해 띄울지 정하며, 닫을 때
 // 기록을 남깁니다. 언제 띄워도 되는지(`ready`)는 셸이 정합니다(지도 루트 · 다른 겹침 없음 · 진행 조회 끝).
 
-import { useState } from "@lynx-js/react";
+import { useMemo, useState } from "@lynx-js/react";
 
 import type { CatalogProgress } from "../lib/catalog-progress";
 import {
@@ -25,7 +25,12 @@ export function useCatalogUpdateNotice(input: {
   readonly ready: boolean;
 }): CatalogUpdateNotice {
   const [record, setRecord] = useState(loadCatalogUpdateNotice);
-  const signatures = catalogUpdateSignaturesOf(input.sections, input.progress);
+  // 구획(카탈로그가 바뀔 때만 새로 만듦) · 진행(상태)이 같으면 서명도 같습니다 — 셸 렌더마다 다시 세지 않습니다.
+  const { sections, progress } = input;
+  const signatures = useMemo(
+    () => catalogUpdateSignaturesOf(sections, progress),
+    [sections, progress],
+  );
   const open =
     input.ready &&
     shouldShowCatalogUpdateNotice({
