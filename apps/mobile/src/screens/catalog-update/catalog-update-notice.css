@@ -1,0 +1,100 @@
+/* 끝낸 에피소드 업데이트 안내(시안 G-A) — 티켓 대화상자와 같은 틀입니다. 딤은 이 `fixed` 안의 `absolute`입니다. */
+.update-notice {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: var(--libitum-elevation-z-dialog);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--libitum-spacing-24);
+}
+
+.update-notice .ui-lynx-overlay {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 0;
+}
+
+.update-notice-container {
+  position: relative;
+  z-index: 1;
+  align-self: stretch;
+  padding: var(--libitum-spacing-24) var(--libitum-spacing-20) var(--libitum-spacing-16);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-8);
+  background-color: var(--libitum-color-white);
+  border-radius: var(--libitum-radius-xl);
+}
+
+.update-notice-title {
+  font-family: var(--libitum-typography-heading-m-font-family);
+  font-size: var(--libitum-typography-heading-m-font-size);
+  font-weight: var(--libitum-typography-heading-m-font-weight);
+  line-height: var(--libitum-typography-heading-m-line-height);
+  color: var(--libitum-color-fg-neutral);
+  text-align: center;
+}
+
+.update-notice-body {
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: var(--libitum-typography-body-m-font-size);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  line-height: var(--libitum-typography-body-m-line-height);
+  color: var(--libitum-color-fg-neutral-muted);
+  text-align: center;
+}
+
+.update-notice-confirm {
+  align-self: stretch;
+  display: flex;
+  margin-top: var(--libitum-spacing-12);
+}
+
+/* 체크 행 — 누르는 자리를 넓히려고 위아래 여백을 행이 갖습니다. */
+.update-notice-mute {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-8);
+  padding: var(--libitum-spacing-8) var(--libitum-spacing-12);
+}
+
+.update-notice-box {
+  width: var(--libitum-icon-size-md);
+  height: var(--libitum-icon-size-md);
+  border-radius: var(--libitum-radius-sm);
+  border-width: 2px;
+  border-style: solid;
+  border-color: var(--libitum-color-border-strong);
+  background-color: var(--libitum-color-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.update-notice-box-on {
+  border-color: var(--libitum-color-brand-primary);
+  background-color: var(--libitum-color-brand-primary);
+}
+
+.update-notice-check {
+  width: var(--libitum-icon-size-sm);
+  height: var(--libitum-icon-size-sm);
+}
+
+.update-notice-mute-label {
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: var(--libitum-typography-body-m-font-size);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  line-height: var(--libitum-typography-body-m-line-height);
+  color: var(--libitum-color-fg-neutral-muted);
+}
