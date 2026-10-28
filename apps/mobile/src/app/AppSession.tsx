@@ -183,9 +183,7 @@ export function AppSession({
   const atMapRoot = nav.entry.length === 0 && screenNow.name === "journey-map" && !screenLayerOpen;
   useEffect(() => {
     if (atMapRoot && stagedContentReady > 0) applyStagedContent?.();
-    // 부르는 때는 루트 도착 · 새 준비 신호뿐입니다(함수는 렌더마다 새로 섭니다).
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [atMapRoot, stagedContentReady]);
+  }, [atMapRoot, stagedContentReady, applyStagedContent]);
   // 끝낸 에피소드가 업데이트됐으면 지도 루트에서 다른 겹침이 없을 때 한 번 알립니다(시안 G-A).
   const updateNotice = useCatalogUpdateNotice({
     catalog: episodeContent.catalog,

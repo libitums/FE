@@ -1,4 +1,10 @@
-import { useEffect, useLynxGlobalEventListener, useRef, useState } from "@lynx-js/react";
+import {
+  useCallback,
+  useEffect,
+  useLynxGlobalEventListener,
+  useRef,
+  useState,
+} from "@lynx-js/react";
 
 import { refreshAppPolicy } from "../lib/app-policy-refresh";
 import { changesAudioTiming, refreshAudioManifest } from "../lib/audio-manifest-refresh";
@@ -134,11 +140,11 @@ export function useEpisodeContentRefresh(sink: EpisodeIntroEventSink): EpisodeCo
     void runner.current?.request();
   });
   // 여정맵 루트에서만 불립니다 — 열린 에피소드 화면이 없으니 병합 없이 다시 읽어 새 판을 바로 보입니다.
-  const applyStaged = () => {
+  const applyStaged = useCallback(() => {
     "background only";
     setStagedReady(0);
     if (promoteStagedEpisodes(hostContentStore).promoted.length > 0)
       setContent(loadEpisodeContent());
-  };
+  }, []);
   return { content, splash, stagedReady, applyStaged };
 }
