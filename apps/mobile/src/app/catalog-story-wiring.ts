@@ -38,7 +38,7 @@ export type CatalogStoryWiringArgs = CatalogWiringValues & {
 };
 
 // 나가는 길은 모두 지도(탭 루트)입니다 — 이야기는 결과 화면의 「Next lesson」 위에 쌓일 수 있어, 한 칸만 돌아가면 같은
-// INT를 가리키는 결과 화면이 다시 서고 그 버튼이 같은 이야기를 또 엽니다(무한 반복, 2026-10-28 사용자 보고).
+// INT를 가리키는 결과 화면이 다시 서고 그 버튼이 같은 이야기를 또 엽니다(무한 반복).
 export function withCatalogStory(
   lesson: CatalogLessonWiring,
   args: CatalogStoryWiringArgs,

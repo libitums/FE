@@ -30,11 +30,14 @@ test("SW1. 이야기를 끝내면(배너가 닫힘) 지도로 간다 — 결과 
   expect(dispatch).not.toHaveBeenCalledWith({ type: "back" });
 });
 
-test("SW2. 건너뛰기 · 나가기도 지도로 간다", () => {
-  const skip = wiring();
-  skip.story.onSkipCatalogStory("u01", "INT");
-  expect(skip.dispatch).toHaveBeenCalledWith({ type: "backToRoot" });
-  const exit = wiring();
-  exit.story.onExitCatalogStory("u01", "INT", "story");
-  expect(exit.dispatch).toHaveBeenCalledWith({ type: "backToRoot" });
+test("SW2. 건너뛰면 지도로 간다", () => {
+  const { story, dispatch } = wiring();
+  story.onSkipCatalogStory("u01", "INT");
+  expect(dispatch).toHaveBeenCalledWith({ type: "backToRoot" });
+});
+
+test("SW3. 나가면 지도로 간다", () => {
+  const { story, dispatch } = wiring();
+  story.onExitCatalogStory("u01", "INT", "story");
+  expect(dispatch).toHaveBeenCalledWith({ type: "backToRoot" });
 });
