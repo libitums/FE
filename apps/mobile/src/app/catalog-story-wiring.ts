@@ -19,11 +19,11 @@ type StoryHandler = (episodeId: string, unitKey: CatalogUnitKey) => void;
 export type CatalogStoryWiring = {
   /** 시작 화면의 Start. */
   readonly onContinueCatalogStory: StoryHandler;
-  /** 시작 화면에서 Skip 확정 — 진행 기록 → `back`(배너 없음). */
+  /** 시작 화면에서 Skip 확정 — 진행 기록 → 지도(`backToRoot`, 배너 없음). */
   readonly onSkipCatalogStory: StoryHandler;
-  /** 배너가 닫힘 — 진행 기록 → `back`. */
+  /** 배너가 닫힘 — 진행 기록 → 지도(`backToRoot`). */
   readonly onFinishCatalogStory: StoryHandler;
-  /** 머리 나가기 · 시스템 뒤로 — 기록 없이 `back`. */
+  /** 머리 나가기 · 시스템 뒤로 — 기록 없이 지도(`backToRoot`). */
   readonly onExitCatalogStory: (
     episodeId: string,
     unitKey: CatalogUnitKey,
@@ -37,6 +37,8 @@ export type CatalogStoryWiringArgs = CatalogWiringValues & {
   readonly episodeIntroEventSink: EpisodeIntroEventSink;
 };
 
+// 나가는 길은 모두 지도(탭 루트)입니다 — 이야기는 결과 화면의 「Next lesson」 위에 쌓일 수 있어, 한 칸만 돌아가면 같은
+// INT를 가리키는 결과 화면이 다시 서고 그 버튼이 같은 이야기를 또 엽니다(무한 반복, 2026-10-28 사용자 보고).
 export function withCatalogStory(
   lesson: CatalogLessonWiring,
   args: CatalogStoryWiringArgs,
@@ -85,16 +87,16 @@ export function withCatalogStory(
         sink?.({ name: "episode_story_skipped", ...base(episodeId, unitKey) });
         markDone(episodeId, unitKey);
       }
-      dispatch({ type: "back" });
+      dispatch({ type: "backToRoot" });
     },
     onFinishCatalogStory: (episodeId, unitKey) => {
       sink?.({ name: "episode_story_completed", ...base(episodeId, unitKey) });
       markDone(episodeId, unitKey);
-      dispatch({ type: "back" });
+      dispatch({ type: "backToRoot" });
     },
     onExitCatalogStory: (episodeId, unitKey, stage) => {
       sink?.({ name: "episode_story_exited", ...base(episodeId, unitKey), stage });
-      dispatch({ type: "back" });
+      dispatch({ type: "backToRoot" });
     },
   };
 }
