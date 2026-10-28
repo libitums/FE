@@ -25,15 +25,9 @@ export type StoryChatReply = {
 export type StoryChatTurn = StoryChatMessage | StoryChatReply;
 
 export type StoryChatView = {
-  /** 에피소드 순번 — 시간 표시 화면의 「STORY · EPISODE n」. */
-  readonly ordinal: number;
   readonly counterpart: string;
   /** 상대 아바타 그림 — 콘텐츠 `profiles`에 없거나 해석하지 못하면 `null`(이니셜). */
   readonly counterpartAvatarUrl: string | null;
-  /** 시간 표시 화면 배경 — 해석하지 못하면 `null`(짙은 바탕만). */
-  readonly backgroundUrl: string | null;
-  /** 「조금 전」 같은 장면 자막 — 없으면 시간 표시 화면 없이 바로 메신저입니다. */
-  readonly caption: StoryChatText | null;
   readonly turns: readonly [StoryChatTurn, ...StoryChatTurn[]];
 };
 
@@ -63,9 +57,6 @@ export type StoryMessengerScreenProps = {
 };
 
 export type StoryMessengerCopy = {
-  /** 시간 표시 화면 윗줄 — 「STORY · EPISODE 4」. */
-  readonly introOverline: (ordinal: number) => string;
-  readonly tapToContinue: string;
   readonly back: string;
   readonly typing: (speaker: string) => string;
   readonly replyTitle: string;
@@ -80,8 +71,6 @@ export type StoryMessengerCopy = {
 
 export const storyMessengerTestIds = {
   screen: "story-messenger-screen",
-  intro: "story-messenger-intro",
-  introCaption: "story-messenger-intro-caption",
   header: "story-messenger-header",
   title: "story-messenger-title",
   back: "story-messenger-back",

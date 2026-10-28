@@ -12,7 +12,7 @@ import type {
   CatalogUnitKey,
 } from "../../lib/catalog-progress";
 import type { CatalogEntry } from "../../lib/episode-catalog";
-import { catalogStoryKeysOf } from "./catalog-map-story";
+import { catalogStoryKeysOf, catalogStoryFieldsOf } from "./catalog-map-story";
 import { isTesterAccessActive } from "../../lib/tester-access";
 import { TUTORIAL_EPISODE_ID } from "../../lib/tutorial-episode";
 import type { LearningUnit } from "../../lib/episode-content.model";
@@ -63,7 +63,7 @@ export function catalogMapSectionsOf(
         finalKey: entry.episode.finalTest.id,
         completionKeys: requires.filter((key) => !storyKeys.includes(key)),
         cultureKeys: catalogCultureKeysOf(entry.episode.units),
-        ...(storyKeys.length === 0 ? {} : { storyKeys }),
+        ...catalogStoryFieldsOf(entry.episode.units),
         ...(entry.episode.titleEn === undefined ? {} : { titleEn: entry.episode.titleEn }),
       };
     }
@@ -214,6 +214,7 @@ export function catalogUnitNodesOf(
           : "lesson",
       ordinal: lessonOrdinalIn(section, key) ?? 0,
       ...nodeOf(key),
+      ...(storyKeys.includes(key) ? { storyIcon: section.storyIcons?.[key] ?? "film" } : {}),
     })),
     {
       key: section.finalKey,

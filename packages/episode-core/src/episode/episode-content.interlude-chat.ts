@@ -24,8 +24,8 @@ function turnOf(cut: DeliveryInterludeCut): EpisodeChatTurn | null {
   };
 }
 
-// 인물 그림 표에서 그 화자의 그림 — 모양이 틀린 항목은 건너뜁니다.
-function profileImageOf(profiles: unknown, speaker: string): string | undefined {
+/** 인물 그림 표(`interlude.profiles`)에서 그 화자의 그림 — 모양이 틀린 항목은 건너뜁니다. */
+export function profileImageOf(profiles: unknown, speaker: string): string | undefined {
   if (!Array.isArray(profiles)) return undefined;
   for (const entry of profiles) {
     if (!isRecord(entry) || entry["speaker"] !== speaker) continue;

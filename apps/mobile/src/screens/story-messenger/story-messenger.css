@@ -1,4 +1,4 @@
-/* 문자 막간 메신저(ADR-0088 보충) — 시간 표시 화면 · 머리 · 대화 · 답장 보기. 토큰은 CSS 커스텀 프로퍼티로만
+/* 문자 막간 메신저(ADR-0088 D5) — 머리 · 대화 · 답장 보기 · 입력창. 토큰은 CSS 커스텀 프로퍼티로만
    소비합니다(ADR-0014 D1). 말풍선 · 시트 · 버튼 · 아바타는 ui-lynx가 그립니다. */
 
 .story-messenger-screen {
@@ -7,90 +7,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background-color: var(--libitum-color-gray-950);
-}
-
-.story-messenger-light {
   background-color: var(--libitum-color-background-primary);
-}
-
-/* 시간 표시 화면 — 그림 위 짙은 덮개(스크림과 같은 45%)에 글을 가운데 세웁니다. */
-.story-time-intro {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  background-color: var(--libitum-color-gray-950);
-}
-
-.story-time-intro-image,
-.story-time-intro-shade {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-}
-
-.story-time-intro-shade {
-  background-color: rgba(26, 28, 32, var(--libitum-opacity-scrim));
-}
-
-.story-time-intro-center {
-  position: absolute;
-  top: 0;
-  right: var(--libitum-layout-screen-padding-x);
-  bottom: 0;
-  left: var(--libitum-layout-screen-padding-x);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--libitum-spacing-8);
-}
-
-.story-time-intro-overline {
-  color: var(--libitum-color-brand-secondary);
-  font-family: var(--libitum-typography-label-m-font-family);
-  font-size: var(--libitum-typography-label-m-font-size);
-  font-weight: var(--libitum-typography-label-m-font-weight);
-  line-height: var(--libitum-typography-label-m-line-height);
-  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
-}
-
-.story-time-intro-title {
-  color: var(--libitum-color-white);
-  text-align: center;
-  font-family: var(--libitum-typography-heading-l-font-family);
-  font-size: var(--libitum-typography-heading-l-font-size);
-  font-weight: var(--libitum-typography-heading-l-font-weight);
-  line-height: var(--libitum-typography-heading-l-line-height);
-  letter-spacing: var(--libitum-typography-heading-l-letter-spacing);
-}
-
-.story-time-intro-subtitle,
-.story-time-intro-hint {
-  color: var(--libitum-color-gray-200);
-  text-align: center;
-}
-
-.story-time-intro-subtitle {
-  font-family: var(--libitum-typography-body-m-font-family);
-  font-size: var(--libitum-typography-body-m-font-size);
-  font-weight: var(--libitum-typography-body-m-font-weight);
-  line-height: var(--libitum-typography-body-m-line-height);
-}
-
-.story-time-intro-hint {
-  position: absolute;
-  right: 0;
-  bottom: var(--libitum-spacing-48);
-  left: 0;
-  font-family: var(--libitum-typography-body-s-font-family);
-  font-size: var(--libitum-typography-body-s-font-size);
-  font-weight: var(--libitum-typography-body-s-font-weight);
-  line-height: var(--libitum-typography-body-s-line-height);
 }
 
 /* 머리 — 흰 바, 가운데 상대 이름, 아래 가는 선. */

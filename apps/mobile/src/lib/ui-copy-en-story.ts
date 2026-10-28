@@ -6,6 +6,8 @@ import type {
   RoleplayCopy,
   VisualNovelCopy,
 } from "./ui-copy-sections.contract";
+import type { StoryCallCopy } from "../screens/story-call/story-call.contract";
+import type { StoryIntroCopy } from "../screens/story-intro/story-intro.contract";
 import type { StoryMessengerCopy } from "../screens/story-messenger/story-messenger.contract";
 
 export const episodeIntroEn: EpisodeIntroCopy = {
@@ -53,13 +55,37 @@ export const roleplayEn: RoleplayCopy = {
 };
 
 export const storyMessengerEn: StoryMessengerCopy = {
-  introOverline: (ordinal) => `STORY · EPISODE ${ordinal}`,
-  tapToContinue: "Tap to continue",
   back: "Back to map",
   typing: (speaker) => `${speaker} is typing`,
   replyTitle: "How will you reply?",
   closeReply: "Close",
   send: "Send",
   composerPlaceholder: "Message",
+  finish: "Finish story",
+};
+
+export const storyIntroEn: StoryIntroCopy = {
+  overline: (ordinal) => `STORY · EPISODE ${ordinal}`,
+  back: "Back to map",
+  skip: "Skip",
+  start: "Start",
+  skipDialog: {
+    title: "Skip the story?",
+    description: "You can watch it again anytime from the map.",
+    skip: "Skip",
+    keepWatching: "Keep watching",
+  },
+};
+
+export const storyCallEn: StoryCallCopy = {
+  incoming: "Incoming call",
+  answer: "Answer",
+  connecting: "Connecting…",
+  callEnded: (clock) => `Call ended · ${clock}`,
+  me: "Me",
+  mute: "Mute",
+  speaker: "Speaker",
+  end: "End",
+  back: "Back to map",
   finish: "Finish story",
 };

@@ -139,6 +139,7 @@ FE 제안: 단일 `Text = { ko, roman, en? }`로 통일한다. `en`은 어디서
   `interlude`가 틀리면 **그 스텝만** 버리고(에피소드는 열린다) `completion.requires`에서도 뺀다. 맵에서는 최종 테스트와 같은 스페셜 노드 「Story」이고 레슨 번호에서 빠지며, 티켓을 쓰지 않는다.
   ⟨2026-10-28⟩ **`form: "message"`는 메신저 화면으로 그린다** — `message` 컷은 `speaker`(없으면 `with`)가 보낸 말풍선, `image_url`은 사진 메시지, `message_reply`는 답장 보기(**보기 전부**, 바텀 시트), `after_option: n`인 컷은 바로 앞 답장에서 n번(1부터)을 고른 때만 나온다. 분기 줄 없는 답장은 고른 답만 보이고 다음 공통 줄로 간다. 상대는 `플레이어`가 아닌 첫 화자, 시간 표시 화면 배경은 `interlude.background_url`. 상대 화자가 없으면 컷 화면으로 그린다.
   ⟨2026-10-28⟩ **인물 그림 `interlude.profiles`(선택)** — `[{ "speaker": "미나", "image_url": "content/images/profiles/mina-casual.webp" }]`. 메신저는 상대 화자와 `speaker`가 같은 항목의 `image_url`을 말풍선 아바타로 그린다. 없거나 그림을 못 불러오면 이름 첫 글자 아바타다. 모양이 틀린 항목은 그 항목만 무시한다(막간은 그대로 연다).
+  ⟨2026-10-28⟩ **`form: "call"`은 통화 화면으로 그린다** — 상대는 첫 `with`(없으면 `플레이어`가 아닌 첫 `speaker`), `call` 컷은 대사(`speaker: "플레이어"`면 나), `background_voice: true`면 배경 소리(`voice_label`이 이름), `call_end`의 `narration`은 끊긴 뒤 지문. 아바타는 `profiles`에서 `with` 이름으로 찾는다. 줄마다 `audio_url`(소리 id)을 둘 수 있다 — 있으면 그 소리를 틀고 말이 끝난 뒤(`speech_end_ms`, 없으면 `duration_ms`) 0.9초 틈을 두고 다음 줄로 넘어간다(최소 2.4초). 비어 있으면 한국어 · 번역 글 길이로 2.8 ~ 7초 머문다.
   **이 형식은 수준 2 앱만 그린다** — `manifests/level-2.json`에만 싣는다(§10, [ADR-0087](../adr/0087-content-level-manifests.md) · [ADR-0088](../adr/0088-interlude-story-unit.md)).
 
 ## 7. 문항 (`steps[].items[]`)

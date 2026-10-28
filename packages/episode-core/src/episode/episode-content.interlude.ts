@@ -8,6 +8,7 @@ import {
 } from "./episode-content.schema-parts";
 import type { DecodeIssue, EpisodeCut, EpisodeStory, Text } from "./episode-content.model";
 import { issue, maybe, nonEmpty, toText } from "./episode-content.normalize";
+import { toCall } from "./episode-content.interlude-call";
 import { toChat } from "./episode-content.interlude-chat";
 import { EPISODE_SELF_SPEAKER } from "./speaker";
 
@@ -107,6 +108,7 @@ export function toStory(wire: DeliveryInterlude): EpisodeStory | null {
     ...maybe("caption", wire.caption === undefined ? undefined : toText(wire.caption)),
     cuts: [first, ...rest],
     ...maybe("chat", toChat(wire)),
+    ...maybe("call", toCall(wire)),
   };
 }
 

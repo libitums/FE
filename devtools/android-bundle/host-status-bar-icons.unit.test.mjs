@@ -108,7 +108,8 @@ const CARRIER_PATHS = {
   episodeBanner: "screens/catalog-cover/EpisodeBannerScreen.tsx",
   roleplayPreview: "screens/roleplay-story/RoleplayPreviewScreen.tsx",
   roleplayTalk: "screens/roleplay-story/RoleplayTalkScreen.tsx",
-  storyIntro: "screens/story-messenger/StoryTimeIntro.tsx",
+  storyIntro: "screens/story-intro/StoryIntroScreen.tsx",
+  storyCall: "screens/story-call/StoryCallScreen.tsx",
   statModal: "screens/journey-map/JourneyStatModal.tsx",
   map: "screens/journey-map/JourneyMapScreen.tsx",
 };
@@ -222,7 +223,8 @@ function healthyBase(overrides = {}) {
         "roleplay-story-screen",
       ),
       [CARRIER_PATHS.roleplayTalk]: carrierComponent("RoleplayTalkScreen", "roleplay-story-screen"),
-      [CARRIER_PATHS.storyIntro]: carrierComponent("StoryTimeIntro", "story-time-intro"),
+      [CARRIER_PATHS.storyIntro]: carrierComponent("StoryIntroScreen", "story-intro"),
+      [CARRIER_PATHS.storyCall]: carrierComponent("StoryCallScreen", "story-call"),
       [CARRIER_PATHS.episodeBanner]: carrierComponent(
         "EpisodeBannerScreen",
         "episode-banner-screen",
@@ -459,7 +461,8 @@ test("SM11: statusBarSurfaceRegistry matches the contract (six routes, five CSS 
   );
   assert.match(routeText("catalog-final"), /CatalogFinalScreen/);
   assert.match(routeText("catalog-story"), /CatalogCoverScreen/);
-  assert.match(routeText("catalog-story"), /StoryMessengerScreen/);
+  assert.match(routeText("catalog-story"), /StoryIntroScreen/);
+  assert.match(routeText("catalog-story"), /StoryCallScreen/);
   assert.match(routeText("catalog-story"), /EpisodeBannerScreen/);
   assert.match(routeText("catalog-epilogue"), /CatalogCoverScreen/);
   assert.match(routeText("roleplay-story"), /RoleplayPreviewScreen/);

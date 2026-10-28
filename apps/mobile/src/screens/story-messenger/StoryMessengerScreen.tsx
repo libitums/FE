@@ -1,4 +1,4 @@
-import { useCallback, useMainThreadRef, useRef, useState } from "@lynx-js/react";
+import { useMainThreadRef, useRef } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 import type { MainThread } from "@lynx-js/types";
 
@@ -13,7 +13,6 @@ import { RoundButton } from "@libitums/ui-lynx/round-button";
 import { useUiCopy } from "../../lib/ui-copy";
 import { useScreenBack } from "../../lib/use-back-handler";
 import { StoryComposer } from "./StoryComposer";
-import { StoryTimeIntro } from "./StoryTimeIntro";
 import {
   storyMessengerTestIds as ids,
   type StoryChatLogItem,
@@ -73,7 +72,7 @@ function MessageRow({ item, counterpart, avatarUrl, selfName }: MessageRowProps)
   );
 }
 
-// 문자 막간의 메신저 화면입니다(ADR-0088 보충). 자막이 있으면 시간 표시 화면이 먼저 서고, 그다음 상대 메시지가
+// 문자 막간의 메신저 화면입니다(ADR-0088 D5). 시작 화면(StoryIntroScreen) 뒤에 서고, 상대 메시지가
 // 시간에 따라 쌓이며 답장 차례에 바텀 시트가 섭니다. 마지막 뒤 「Finish story」가 완료를 한 번 올립니다.
 export function StoryMessengerScreen({
   insets,
@@ -83,11 +82,9 @@ export function StoryMessengerScreen({
 }: StoryMessengerScreenProps): ReactNode {
   const uiCopy = useUiCopy();
   const copy = uiCopy.storyMessenger;
-  const [intro, setIntro] = useState(chat.caption !== null);
-  const state = useStoryChat(chat.turns, !intro);
+  const state = useStoryChat(chat.turns, true);
   const completed = useRef(false);
   const reducedMotion = resolveReducedMotion(undefined, useMotion());
-  const enterChat = useCallback(() => setIntro(false), []);
   const logRef = useMainThreadRef<MainThread.Element>(null);
 
   // 말풍선이 늘 때마다 대화 끝으로 내립니다 — 내용 높이가 바뀐 그 프레임에 화면 쪽 스레드에서 옮깁니다.
@@ -102,22 +99,9 @@ export function StoryMessengerScreen({
   };
   useScreenBack(handleExit);
 
-  if (intro && chat.caption !== null) {
-    return (
-      <view className="story-messenger-screen" data-testid={ids.screen}>
-        <StoryTimeIntro
-          ordinal={chat.ordinal}
-          caption={chat.caption}
-          backgroundUrl={chat.backgroundUrl}
-          onContinue={enterChat}
-        />
-      </view>
-    );
-  }
-
   return (
     <view
-      className={`story-messenger-screen story-messenger-light${reducedMotion ? " story-messenger-motion-reduced" : ""}`}
+      className={`story-messenger-screen${reducedMotion ? " story-messenger-motion-reduced" : ""}`}
       data-testid={ids.screen}
     >
       <view
