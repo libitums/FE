@@ -1,0 +1,217 @@
+/* 문자 막간 메신저(ADR-0088 D5) — 머리 · 대화 · 답장 보기 · 입력창. 토큰은 CSS 커스텀 프로퍼티로만
+   소비합니다(ADR-0014 D1). 말풍선 · 시트 · 버튼 · 아바타는 ui-lynx가 그립니다. */
+
+.story-messenger-screen {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: var(--libitum-color-background-primary);
+}
+
+/* 머리 — 흰 바, 가운데 상대 이름, 아래 가는 선. */
+.story-messenger-header {
+  flex-shrink: 0;
+  background-color: var(--libitum-color-background-primary);
+  border-bottom-width: var(--libitum-stroke-width-thin);
+  border-bottom-style: solid;
+  border-bottom-color: var(--libitum-color-gray-300);
+}
+
+.story-messenger-header-row {
+  min-height: var(--libitum-spacing-64);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: var(--libitum-spacing-8) var(--libitum-spacing-16);
+}
+
+.story-messenger-header-side {
+  width: var(--libitum-spacing-48);
+  flex-shrink: 0;
+}
+
+.story-messenger-title {
+  flex: 1;
+  text-align: center;
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  line-height: var(--libitum-typography-heading-s-line-height);
+}
+
+.story-messenger-log {
+  flex: 1;
+}
+
+.story-messenger-log-inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-12);
+  padding: var(--libitum-spacing-16) var(--libitum-layout-screen-padding-x);
+}
+
+/* 상대 줄 — 말풍선마다 왼쪽 위에 아바타. */
+.story-messenger-row {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: var(--libitum-spacing-8);
+}
+
+.story-messenger-row-outgoing {
+  justify-content: flex-end;
+}
+
+.story-messenger-stack {
+  flex-shrink: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-6);
+}
+
+/* 사진 메시지 — ChatBubble에 그림 갈래가 없어 말풍선 위 카드로 둡니다(시안 벗어남). 콘텐츠 사진이 세로 9:16
+   (864×1536)이라 같은 비율로 그려 얼굴 · 소품이 잘리지 않게 합니다(가로 칸이면 가운데 띠만 남습니다). */
+.story-messenger-photo {
+  width: 180px;
+  height: 320px;
+  border-radius: var(--libitum-radius-md);
+}
+
+.story-messenger-typing {
+  display: flex;
+  flex-direction: row;
+  gap: var(--libitum-spacing-4);
+  padding: var(--libitum-spacing-16);
+  border-radius: var(--libitum-radius-md);
+  border-end-start-radius: var(--libitum-spacing-0);
+  background-color: var(--libitum-color-gray-100);
+}
+
+.story-messenger-dot {
+  width: var(--libitum-spacing-6);
+  height: var(--libitum-spacing-6);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-gray-700);
+  animation: story-messenger-dot var(--libitum-motion-duration-d9)
+    var(--libitum-motion-easing-easing) infinite;
+}
+
+.story-messenger-dot-2 {
+  animation-delay: var(--libitum-motion-duration-d3);
+}
+
+.story-messenger-dot-3 {
+  animation-delay: var(--libitum-motion-duration-d6);
+}
+
+/* 움직임 줄이기 — 점은 멈춘 채 입력 중만 알립니다. */
+.story-messenger-motion-reduced .story-messenger-dot {
+  animation: none;
+}
+
+@keyframes story-messenger-dot {
+  0%,
+  60%,
+  100% {
+    opacity: 0.45;
+    transform: translateY(0);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+}
+
+.story-messenger-footer {
+  flex-shrink: 0;
+  padding: var(--libitum-spacing-12) var(--libitum-layout-screen-padding-x) 0;
+}
+
+/* 답장 보기 — brand.primary 면에 흰 글(Button brand와 같은 값), 아래 번역 한 줄. */
+.story-messenger-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-12);
+  padding-top: var(--libitum-spacing-8);
+}
+
+/* 시트 제목 아래 상대의 마지막 말 인용입니다. */
+.story-messenger-quote {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: var(--libitum-typography-body-m-font-size);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  line-height: var(--libitum-typography-body-m-line-height);
+}
+
+.story-messenger-option {
+  min-height: var(--libitum-spacing-48);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-2);
+  padding: var(--libitum-spacing-16) var(--libitum-spacing-24);
+  border-radius: var(--libitum-radius-lg);
+  background-color: var(--libitum-color-brand-primary);
+}
+
+.story-messenger-option:active {
+  background-color: var(--libitum-color-brand-primary-pressed);
+}
+
+.story-messenger-option-ko {
+  color: var(--libitum-color-white);
+  text-align: center;
+  font-family: var(--libitum-typography-button-xl-font-family);
+  font-size: var(--libitum-typography-button-xl-font-size);
+  font-weight: var(--libitum-typography-button-xl-font-weight);
+  line-height: var(--libitum-typography-button-xl-line-height);
+}
+
+.story-messenger-option-en {
+  color: var(--libitum-color-gray-200);
+  text-align: center;
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  font-weight: var(--libitum-typography-body-s-font-weight);
+  line-height: var(--libitum-typography-body-s-line-height);
+}
+
+/* 입력창 — 칠 수 없는 메신저 틀. 답장 차례에도 모습은 그대로이고, 시트는 저절로 섭니다. */
+.story-composer {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-8);
+  padding: var(--libitum-spacing-8) var(--libitum-layout-screen-padding-x) 0;
+  background-color: var(--libitum-color-background-primary);
+  border-top-width: var(--libitum-stroke-width-thin);
+  border-top-style: solid;
+  border-top-color: var(--libitum-color-gray-300);
+}
+
+.story-composer-field {
+  flex: 1;
+  min-height: var(--libitum-spacing-40);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0 var(--libitum-spacing-16);
+  border-radius: var(--libitum-radius-full);
+  border-width: var(--libitum-stroke-width-thin);
+  border-style: solid;
+  border-color: var(--libitum-color-gray-100);
+  background-color: var(--libitum-color-gray-100);
+}
+
+.story-composer-placeholder {
+  color: var(--libitum-color-gray-700);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: var(--libitum-typography-body-m-font-size);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  line-height: var(--libitum-typography-body-m-line-height);
+}

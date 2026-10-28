@@ -1,6 +1,8 @@
 import "background-only";
 
 // 백그라운드 갱신 — 원격 매니페스트 → 바뀐 에피소드만 받기 → 검증 → 캐시. 던지지 않습니다.
+import { contentManifestPathsFor } from "./content-manifest-path";
+import { ABSENT_HTTP_CODES } from "./episode-asset-sync";
 import type { AssetDeps } from "./episode-asset-sync";
 import {
   CONTENT_MANIFEST_KEY,
@@ -68,9 +70,9 @@ export type RefreshDeps = {
   onEpisodeReady?: (id: string) => void;
   /** 실행 시작의 첫 차례에 스플래시가 붙이는 관찰자입니다. */
   observer?: RefreshObserver;
+  /** 차례로 시도할 매니페스트 경로입니다. 없으면 이 앱의 수준(`CONTENT_CLIENT_LEVEL`)으로 정합니다(ADR-0087). */
+  manifestPaths?: readonly string[];
 };
-
-const MANIFEST_PATH = "manifest.json";
 
 function emptySummary(manifest: RefreshSummary["manifest"], persisted: boolean): RefreshSummary {
   return { manifest, fetched: [], locked: [], failed: [], removed: [], persisted };
@@ -83,6 +85,22 @@ async function safeFetch(fetchText: FetchText, relative: string): Promise<FetchT
   } catch {
     return { ok: false, reason: "network" };
   }
+}
+
+/**
+ * 매니페스트를 경로 차례대로 받습니다. 서버에 없는 경로(400 · 403 · 404 · 410)만 다음으로 넘어가고, 연결 실패 ·
+ * 다른 응답은 거기서 멈춥니다 — 수준 2 앱이 연결이 흔들린 틈에 수준 1 매니페스트를 받는 일이 없습니다.
+ */
+async function fetchManifest(
+  fetchText: FetchText,
+  paths: readonly string[],
+): Promise<FetchTextResult> {
+  let reply: FetchTextResult = { ok: false, reason: "network" };
+  for (const path of paths) {
+    reply = await safeFetch(fetchText, path);
+    if (!reply.ok || !ABSENT_HTTP_CODES.has(reply.status)) return reply;
+  }
+  return reply;
 }
 
 function parseManifestText(text: string): EpisodeManifest | null {
@@ -182,7 +200,8 @@ async function refresh(deps: RefreshDeps): Promise<RefreshSummary> {
   const { fetchText, store, bundled } = deps;
   const canStore = safeAvailable(store);
 
-  const reply = await safeFetch(fetchText, MANIFEST_PATH);
+  const paths = deps.manifestPaths ?? contentManifestPathsFor(CONTENT_CLIENT_LEVEL);
+  const reply = await fetchManifest(fetchText, paths);
   if (!reply.ok || reply.status !== 200) {
     return emptySummary("unavailable", canStore);
   }

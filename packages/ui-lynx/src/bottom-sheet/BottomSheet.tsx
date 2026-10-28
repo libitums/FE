@@ -20,7 +20,7 @@ export function BottomSheet(props: BottomSheetProps) {
 
   function handleScrimTap() {
     "background only";
-    props.ondismiss("scrim");
+    if (contract.dismissible) props.ondismiss("scrim");
   }
 
   function handlePanelTap() {
@@ -102,27 +102,29 @@ export function BottomSheet(props: BottomSheetProps) {
               {contract.title}
             </text>
           </view>
-          <view
-            className="ui-lynx-bottom-sheet-close"
-            data-testid="ui-lynx-bottom-sheet-close"
-            accessibility-element={true}
-            accessibility-label={contract.closeAccessibilityLabel}
-            accessibility-traits="button"
-            bindtap={handleCloseTap}
-          >
-            <view className="ui-lynx-bottom-sheet-close-surface">
-              <svg
-                className="ui-lynx-bottom-sheet-close-icon ui-lynx-bottom-sheet-close-icon-default"
-                content={cross}
-                current-color={color.fg["neutral-subtle"]}
-              />
-              <svg
-                className="ui-lynx-bottom-sheet-close-icon ui-lynx-bottom-sheet-close-icon-pressed"
-                content={cross}
-                current-color={color.fg.neutral}
-              />
+          {contract.dismissible ? (
+            <view
+              className="ui-lynx-bottom-sheet-close"
+              data-testid="ui-lynx-bottom-sheet-close"
+              accessibility-element={true}
+              accessibility-label={contract.closeAccessibilityLabel}
+              accessibility-traits="button"
+              bindtap={handleCloseTap}
+            >
+              <view className="ui-lynx-bottom-sheet-close-surface">
+                <svg
+                  className="ui-lynx-bottom-sheet-close-icon ui-lynx-bottom-sheet-close-icon-default"
+                  content={cross}
+                  current-color={color.fg["neutral-subtle"]}
+                />
+                <svg
+                  className="ui-lynx-bottom-sheet-close-icon ui-lynx-bottom-sheet-close-icon-pressed"
+                  content={cross}
+                  current-color={color.fg.neutral}
+                />
+              </view>
             </view>
-          </view>
+          ) : null}
         </view>
 
         {contract.hasBody ? (

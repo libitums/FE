@@ -1,0 +1,106 @@
+/* 막간 이야기 시작 화면(ADR-0088 D6). 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). 버튼 · 대화상자는
+   ui-lynx가 그립니다. */
+
+.story-intro {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: var(--libitum-color-gray-950);
+}
+
+.story-intro-image,
+.story-intro-shade {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+/* 그림 위 글자가 읽히게 덮는 짙은 면 — 스크림과 같은 45%입니다. */
+.story-intro-shade {
+  background-color: rgba(26, 28, 32, var(--libitum-opacity-scrim));
+}
+
+.story-intro-safe {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.story-intro-header {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: row;
+  padding: var(--libitum-layout-screen-padding-top) var(--libitum-layout-screen-padding-x) 0;
+}
+
+.story-intro-center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--libitum-spacing-8);
+  padding: 0 var(--libitum-layout-screen-padding-x);
+}
+
+.story-intro-overline {
+  color: var(--libitum-color-brand-secondary);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: var(--libitum-typography-label-m-font-size);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  line-height: var(--libitum-typography-label-m-line-height);
+  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
+}
+
+.story-intro-title {
+  color: var(--libitum-color-white);
+  text-align: center;
+  font-family: var(--libitum-typography-heading-l-font-family);
+  font-size: var(--libitum-typography-heading-l-font-size);
+  font-weight: var(--libitum-typography-heading-l-font-weight);
+  line-height: var(--libitum-typography-heading-l-line-height);
+  letter-spacing: var(--libitum-typography-heading-l-letter-spacing);
+}
+
+.story-intro-subtitle {
+  color: var(--libitum-color-gray-200);
+  text-align: center;
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: var(--libitum-typography-body-m-font-size);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  line-height: var(--libitum-typography-body-m-line-height);
+}
+
+/* 에피소드 첫 스페셜 유닛(`episode-intro-screen-actions`)과 같은 묶음입니다. */
+.story-intro-actions {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: var(--libitum-spacing-12);
+  padding: 0 var(--libitum-layout-screen-padding-x);
+}
+
+.story-intro-skip {
+  min-width: 87px;
+  flex-shrink: 0;
+  display: flex;
+}
+
+.story-intro-start {
+  flex: 1;
+  display: flex;
+}
+
+.story-intro-confirm {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: var(--libitum-elevation-z-sheet);
+}

@@ -127,6 +127,25 @@ describe("BottomSheet", () => {
     expect(dragArea).not.toHaveAttribute("catchtouchend");
   });
 
+  test("BS4: dismissible=false면 닫기 버튼 · 손잡이가 없고 scrim 탭이 닫지 않는다", () => {
+    const ondismiss = vi.fn<(reason: "scrim" | "close-button" | "drag") => void>();
+    render(
+      <BottomSheet
+        title="답장"
+        closeAccessibilityLabel="닫기"
+        dismissible={false}
+        ondismiss={ondismiss}
+      />,
+    );
+    expect(screen.queryByTestId("ui-lynx-bottom-sheet-close")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("ui-lynx-bottom-sheet-handle")).not.toBeInTheDocument();
+    expect(screen.getByTestId("ui-lynx-bottom-sheet-drag-area")).not.toHaveAttribute(
+      "catchtouchstart",
+    );
+    fireEvent.tap(screen.getByTestId("ui-lynx-bottom-sheet-scrim"), {});
+    expect(ondismiss).not.toHaveBeenCalled();
+  });
+
   test("children은 설명 아래 내용 자리에 그리고, 없으면 그 자리를 만들지 않는다", () => {
     const { unmount } = render(
       <BottomSheet title="국가 선택" closeAccessibilityLabel="닫기" ondismiss={() => undefined}>

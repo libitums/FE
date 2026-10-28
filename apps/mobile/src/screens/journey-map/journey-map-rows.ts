@@ -47,6 +47,7 @@ export function mapRowItems<T>(row: MapRow<T>): readonly T[] {
 export const catalogNodePlacement: Readonly<Record<CatalogUnitNodeRole, MapUnitPlacement>> = {
   lesson: "paired",
   culture: "solo",
+  story: "solo",
   final: "solo",
 };
 

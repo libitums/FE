@@ -36,6 +36,7 @@ export const catalogMapEn: CatalogMapCopy = {
   lessonTitle: (ordinal) => `Lesson ${ordinal}`,
   finalTitle: "Final test",
   cultureTitle: "Culture",
+  storyTitle: "Story",
   nodeLabel: (label, title) => `${label} ${title}`,
   caption: {
     pending: "COMING SOON",
@@ -58,9 +59,11 @@ export const catalogCoverEn: CatalogCoverCopy = {
   nextCut: (ordinal, total) => `Next scene, ${ordinal} of ${total}`,
   finishCover: "Finish intro",
   finishEpilogue: "Finish episode",
+  finishStory: "Finish story",
   thinking: "thinking",
   episodeStart: "Episode start!",
   episodeClear: "Episode clear!",
+  episodeContinue: "To be continued…",
   skipDescription: "You can watch it again anytime from the episode intro.",
 };
 

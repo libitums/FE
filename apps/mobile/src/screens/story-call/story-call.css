@@ -1,0 +1,279 @@
+/* 전화 막간(ADR-0088 D6) — 수신 · 통화 · 끊김. 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). */
+
+.story-call {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: var(--libitum-color-gray-950);
+}
+
+.story-call-image,
+.story-call-shade {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+.story-call-shade {
+  background-color: rgba(26, 28, 32, var(--libitum-opacity-scrim));
+}
+
+/* 통화 중에는 가운데 글자를 받치도록 더 짙게 덮습니다(맞는 토큰이 없어 값). */
+.story-call-shade-deep {
+  background-color: rgba(26, 28, 32, 0.6);
+}
+
+.story-call-safe {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.story-call-header {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: row;
+  padding: var(--libitum-layout-screen-padding-top) var(--libitum-layout-screen-padding-x) 0;
+}
+
+.story-call-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--libitum-spacing-24) var(--libitum-layout-screen-padding-x) 0;
+}
+
+.story-call-caption,
+.story-call-clock,
+.story-call-connecting,
+.story-call-line-en,
+.story-call-control-label,
+.story-call-answer-label {
+  color: var(--libitum-color-gray-200);
+  text-align: center;
+}
+
+.story-call-caption,
+.story-call-connecting {
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: var(--libitum-typography-body-m-font-size);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  line-height: var(--libitum-typography-body-m-line-height);
+}
+
+.story-call-avatar {
+  position: relative;
+  margin-top: var(--libitum-spacing-24);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 프로필 그림 — 수신은 크게(136), 통화 · 끊김은 104입니다. */
+.story-call-photo {
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-gray-100);
+}
+
+.story-call-photo-hero {
+  width: 136px;
+  height: 136px;
+}
+
+.story-call-photo-large {
+  width: 104px;
+  height: 104px;
+}
+
+/* 상대가 말할 때 · 벨이 울릴 때 아바타 둘레에서 깜빡이는 고리입니다(키우는 scale 토큰이 없어 불투명도만 바뀝니다). */
+.story-call-ring {
+  position: absolute;
+  top: calc(var(--libitum-spacing-8) * -1);
+  right: calc(var(--libitum-spacing-8) * -1);
+  bottom: calc(var(--libitum-spacing-8) * -1);
+  left: calc(var(--libitum-spacing-8) * -1);
+  border-radius: var(--libitum-radius-full);
+  border-width: var(--libitum-stroke-width-strong);
+  border-style: solid;
+  border-color: var(--libitum-color-brand-secondary);
+  animation: story-call-ring var(--libitum-motion-duration-d9) var(--libitum-motion-easing-easing)
+    infinite;
+}
+
+@keyframes story-call-ring {
+  0% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.story-call-name-l,
+.story-call-name {
+  margin-top: var(--libitum-spacing-16);
+  color: var(--libitum-color-white);
+  text-align: center;
+}
+
+.story-call-name-l {
+  font-family: var(--libitum-typography-heading-l-font-family);
+  font-size: var(--libitum-typography-heading-l-font-size);
+  font-weight: var(--libitum-typography-heading-l-font-weight);
+  line-height: var(--libitum-typography-heading-l-line-height);
+  letter-spacing: var(--libitum-typography-heading-l-letter-spacing);
+}
+
+.story-call-name {
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  line-height: var(--libitum-typography-heading-s-line-height);
+}
+
+.story-call-clock,
+.story-call-ended,
+.story-call-line-label,
+.story-call-control-label,
+.story-call-answer-label {
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: var(--libitum-typography-label-m-font-size);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  line-height: var(--libitum-typography-label-m-line-height);
+  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
+}
+
+.story-call-clock {
+  margin-top: var(--libitum-spacing-4);
+}
+
+/* 오류가 아니라 상태라 빨강 대신 밝은 회색입니다 — 그림 위에서도 읽힙니다. */
+.story-call-ended {
+  margin-top: var(--libitum-spacing-4);
+  color: var(--libitum-color-gray-200);
+}
+
+.story-call-spacer {
+  flex: 1;
+}
+
+/* 받기 — 초록(정답 색) 원. 거절은 두지 않습니다(이야기라서). */
+.story-call-answer {
+  width: 72px;
+  height: 72px;
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-feedback-correct);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.story-call-answer-icon {
+  width: var(--libitum-icon-size-lg);
+  height: var(--libitum-icon-size-lg);
+}
+
+.story-call-answer-label {
+  margin-top: var(--libitum-spacing-8);
+  color: var(--libitum-color-white);
+}
+
+/* 가운데 대사 한 줄 — 다음 줄이 오면 글만 바뀝니다. */
+.story-call-stage {
+  flex: 1;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.story-call-line {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-8);
+}
+
+.story-call-line-label {
+  color: var(--libitum-color-gray-500);
+}
+
+.story-call-line-self .story-call-line-label,
+.story-call-line-self .story-call-line-text {
+  color: var(--libitum-color-brand-primary);
+}
+
+.story-call-line-text,
+.story-call-end-text {
+  color: var(--libitum-color-white);
+  text-align: center;
+  font-family: var(--libitum-typography-heading-m-font-family);
+  font-size: var(--libitum-typography-heading-m-font-size);
+  font-weight: var(--libitum-typography-heading-m-font-weight);
+  line-height: var(--libitum-typography-heading-m-line-height);
+  letter-spacing: var(--libitum-typography-heading-m-letter-spacing);
+}
+
+.story-call-line-background .story-call-line-text,
+.story-call-line-background .story-call-line-en {
+  font-style: italic;
+}
+
+.story-call-line-en {
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: var(--libitum-typography-body-m-font-size);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  line-height: var(--libitum-typography-body-m-line-height);
+}
+
+/* 음소거 · 스피커 · 끊기 — 전화다운 틀일 뿐 누르지 않아 흐리게 둡니다. */
+.story-call-controls {
+  align-self: stretch;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 0 var(--libitum-spacing-32);
+  opacity: 0.55;
+}
+
+.story-call-control {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-6);
+}
+
+.story-call-control-surface {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--libitum-radius-full);
+  background-color: rgba(255, 255, 255, 0.16);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 끊기는 전화 아이콘을 눕혀 수화기를 내려놓은 모양으로 둡니다. */
+.story-call-control-icon {
+  width: var(--libitum-icon-size-lg);
+  height: var(--libitum-icon-size-lg);
+}
+
+.story-call-control-icon-end {
+  transform: rotate(225deg);
+}
+
+.story-call-control-end {
+  background-color: var(--libitum-color-feedback-incorrect);
+}
+
+.story-call-finish {
+  align-self: stretch;
+  display: flex;
+}
