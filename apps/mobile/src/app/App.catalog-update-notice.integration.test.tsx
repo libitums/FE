@@ -54,19 +54,53 @@ async function boot(store: Map<string, string>, load: () => Promise<Reply>) {
 const loaded = async (): Promise<Reply> => ({ status: 200, body: JSON.stringify(updatedProgress) });
 const dialog = () => screen.queryByTestId(ids.dialog);
 
-test("UNI1. 끝낸 에피소드에 새 유닛이 있으면 안내가 서고, 닫으면 서명을 적어 같은 상태로는 다시 안 뜬다", async () => {
+const record = (store: Map<string, string>) =>
+  JSON.parse(store.get(catalogUpdateNoticeStorageKey) ?? "{}") as {
+    versions: Record<string, string> | null;
+    muted: boolean;
+  };
+
+test("UNI1. 끝낸 에피소드에 새 유닛이 있고 기록이 없으면 안내가 서고, 닫으면 지금 버전을 적어 다시 켜도 안 뜬다", async () => {
   const store = new Map<string, string>();
   await boot(store, loaded);
   expect(dialog()).toBeInTheDocument();
   fireEvent.tap(within(screen.getByTestId(ids.confirm)).getByTestId("ui-lynx-button"), {});
   expect(dialog()).toBeNull();
-  expect(JSON.parse(store.get(catalogUpdateNoticeStorageKey) ?? "{}")).toEqual({
-    seen: [`${U00}:S5`],
-    muted: false,
-  });
+  expect(record(store).muted).toBe(false);
+  expect(typeof record(store).versions?.[U00]).toBe("string");
   cleanup();
   await boot(store, loaded);
   expect(dialog()).toBeNull();
+});
+
+test("UNI4. 버전이 그대로면 진행이 바뀌어도(유닛을 끝내 새 유닛이 줄어도) 안 뜨고, 그 에피소드 버전이 올라가면 한 번 뜬다", async () => {
+  const store = new Map<string, string>();
+  await boot(store, loaded);
+  fireEvent.tap(within(screen.getByTestId(ids.confirm)).getByTestId("ui-lynx-button"), {});
+  const seen = record(store);
+  cleanup();
+  const fewer = async (): Promise<Reply> => ({
+    status: 200,
+    body: JSON.stringify({
+      ...updatedProgress,
+      catalogProgress: {
+        [U00]: [
+          "intro",
+          ...TUTORIAL_LESSON_KEYS.filter((key) => key !== "S5" && key !== "S6"),
+          "RP",
+        ],
+      },
+    }),
+  });
+  await boot(store, fewer);
+  expect(dialog()).toBeNull();
+  cleanup();
+  store.set(
+    catalogUpdateNoticeStorageKey,
+    JSON.stringify({ ...seen, versions: { ...seen.versions, [U00]: "2000-01-01.1" } }),
+  );
+  await boot(store, loaded);
+  expect(dialog()).toBeInTheDocument();
 });
 
 test("UNI2. 체크하고 닫으면 끈 것으로 적고, 껐으면 새 상태에도 안 뜬다", async () => {
@@ -74,9 +108,9 @@ test("UNI2. 체크하고 닫으면 끈 것으로 적고, 껐으면 새 상태에
   await boot(store, loaded);
   fireEvent.tap(screen.getByTestId(ids.mute), {});
   fireEvent.tap(within(screen.getByTestId(ids.confirm)).getByTestId("ui-lynx-button"), {});
-  expect(JSON.parse(store.get(catalogUpdateNoticeStorageKey) ?? "{}").muted).toBe(true);
+  expect(record(store).muted).toBe(true);
   cleanup();
-  store.set(catalogUpdateNoticeStorageKey, JSON.stringify({ seen: [], muted: true }));
+  store.set(catalogUpdateNoticeStorageKey, JSON.stringify({ versions: null, muted: true }));
   await boot(store, loaded);
   expect(dialog()).toBeNull();
 });

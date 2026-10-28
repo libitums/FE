@@ -81,3 +81,23 @@ test("[LCN5] 다음이 없으면 맵으로 가는 버튼 하나다", () => {
   expect(screen.queryAllByTestId("lesson-complete-screen-next-actions").length).toBe(0);
   expect(screen.getByTestId("lesson-complete-screen-exit")).toHaveTextContent("Back to map");
 });
+
+test("LCN-S. 나가면 이야기(통과 뒤 컷)로 이어지면 나가는 버튼이 「Continue story」다 — 다음 학습이 있어도 없어도", () => {
+  const { unmount } = render(<LessonCompleteScreen {...fixture({ continuesStory: true })} />);
+  const single = screen.getByTestId("lesson-complete-screen-exit");
+  expect(single).toHaveTextContent("Continue story");
+  expect(single).not.toHaveTextContent("Back to map");
+  unmount();
+  render(<LessonCompleteScreen {...fixture({ continuesStory: true, next: nextOf() })} />);
+  const paired = screen.getByTestId("lesson-complete-screen-exit");
+  expect(paired).toHaveAttribute("accessibility-label", "Continue story");
+});
+
+test("LCN-F. 미통과면 continuesStory가 와도 「Back to map」이다(방어)", () => {
+  render(
+    <LessonCompleteScreen
+      {...fixture({ continuesStory: true, verdict: "failed", results: ["incorrect", "incorrect"] })}
+    />,
+  );
+  expect(screen.getByTestId("lesson-complete-screen-exit")).toHaveTextContent("Back to map");
+});

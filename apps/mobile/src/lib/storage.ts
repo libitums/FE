@@ -20,7 +20,7 @@
 // - `libitum.episode-survey.done` — 설문을 답했거나 건너뛴 에피소드 목록(ADR-0036)
 // - `libitum.app-review.requested` — 스토어 평점 창을 요청한 기록, 설치당 한 번(ADR-0036 D4)
 // - `libitum.learning-item-guides.seen` — 학습 문항 안내를 본 기록(ADR-0054 D3)
-// - `libitum.catalog-update-notice` — 끝낸 에피소드 업데이트 안내를 닫은 상태 서명 · 「다시 보지 않기」(ADR-0089)
+// - `libitum.catalog-update-notice` — 끝낸 에피소드 업데이트 안내의 마지막으로 본 에피소드 버전 · 「다시 보지 않기」(ADR-0089)
 
 /** 호스트가 `StorageModule`이라는 이름으로 등록합니다. */
 interface StorageModule {
