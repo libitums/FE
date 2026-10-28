@@ -172,11 +172,11 @@ export function StoryCallScreen({
             </view>
             <view className="story-call-controls" accessibility-elements-hidden={true}>
               {[
-                { label: copy.mute, icon: mic, end: false },
-                { label: copy.speaker, icon: volume, end: false },
-                { label: copy.end, icon: phone, end: true },
-              ].map(({ label, icon, end }) => (
-                <view key={label} className="story-call-control">
+                { id: "mute", label: copy.mute, icon: mic, end: false },
+                { id: "speaker", label: copy.speaker, icon: volume, end: false },
+                { id: "end", label: copy.end, icon: phone, end: true },
+              ].map(({ id, label, icon, end }) => (
+                <view key={id} className="story-call-control">
                   <view
                     className={`story-call-control-surface${end ? " story-call-control-end" : ""}`}
                   >
