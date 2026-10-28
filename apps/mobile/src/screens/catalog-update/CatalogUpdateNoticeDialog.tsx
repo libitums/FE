@@ -16,7 +16,7 @@ import {
 import "./catalog-update-notice.css";
 
 // 끝낸 에피소드가 업데이트됐을 때 지도 위 가운데 뜨는 안내입니다(시안 G-A). 어느 에피소드 · 무엇이 바뀌었는지는
-// 적지 않고 지도의 NEW 태그가 보입니다. ui-lynx `Dialog`는 체크 행을 받지 못해 티켓 대화상자처럼 같은 딤(`Overlay`)
+// 적지 않습니다(사용자 결정 — 바뀐 곳이 여럿일 수 있음). ui-lynx `Dialog`는 체크 행을 받지 못해 티켓 대화상자처럼 같은 딤(`Overlay`)
 // 위에 앱 쪽 상자를 짓고, 체크 행도 ui-lynx에 없어 여기서 짓습니다. 시스템 뒤로는 「Cool, got it」과 같습니다.
 export function CatalogUpdateNoticeDialog({ onClose }: CatalogUpdateNoticeDialogProps): ReactNode {
   const copy = useUiCopy().catalogUpdateNotice;

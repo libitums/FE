@@ -24,9 +24,8 @@ test("UNU1. 제목 · 본문 · 버튼 · 체크 행을 그린다 — 에피소�
   mount();
   const dialog = screen.getByTestId(ids.dialog);
   expect(dialog.textContent).toContain("Psst, something new! 👀");
-  expect(dialog.textContent).toContain(
-    "your progress is safe. Just look for the NEW tags on the map.",
-  );
+  expect(dialog.textContent).toContain("Don't worry, your progress is safe.");
+  expect(dialog.textContent).not.toContain("NEW");
   expect(dialog.textContent).toContain("Cool, got it");
   expect(dialog.textContent).toContain("Don't show this again");
   expect(mute().getAttribute("accessibility-label")).toBe("Don't show this again, not checked");

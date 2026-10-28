@@ -145,8 +145,6 @@ export type CatalogUnitNodeProps = {
   readonly episodeOrdinal: number;
   readonly node: Omit<CatalogUnitNode, "status"> & { readonly status: JourneyMapNodeStatus };
   readonly onSelect: CatalogUnitSelect;
-  /** 끝낸 에피소드에 업데이트로 생긴 유닛이면 참 — NEW 태그 · 낭독 꼬리(`catalogFreshUnitKeysOf`). */
-  readonly fresh?: boolean;
 };
 
 export type JourneyMapHeaderSlotProps = {
@@ -172,9 +170,6 @@ export type CatalogMapCopy = {
   readonly lessonTitle: (ordinal: number) => string;
   readonly finalTitle: string;
   readonly cultureTitle: string;
-  /** 끝낸 에피소드에 업데이트로 생긴 유닛의 태그 · 노드 낭독 꼬리. */
-  readonly freshTag: string;
-  readonly freshNodeLabel: (label: string) => string;
   /** 표지 · 레슨 · 최종 노드의 낭독 이름 — `Episode n. <제목>`. */
   readonly nodeLabel: (episodeLabel: string, title: string) => string;
   readonly caption: Readonly<Record<CatalogCaptionKind, string>>;

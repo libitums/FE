@@ -6,7 +6,6 @@ import { CatalogUnitNode } from "./CatalogUnitNode";
 import { FirstUnitMapTooltip } from "./FirstUnitMapTooltip";
 import { MapUnitCell, MapUnitRow } from "./MapUnitRow";
 import { catalogSectionDomId, catalogUnitDomId, catalogUnitNodesOf } from "./catalog-map";
-import { catalogFreshUnitKeysOf } from "./catalog-update";
 import type { CatalogEpisodeSectionProps } from "./catalog-map.contract";
 import { mapNodeStatusUnder } from "./journey-map-load";
 import { catalogRowsOf, mapRowItems } from "./journey-map-rows";
@@ -33,7 +32,6 @@ export function CatalogEpisodeSection({
 }: CatalogEpisodeSectionProps): ReactNode {
   const columns = useMapColumns();
   const guided = guide !== null;
-  const freshKeys = catalogFreshUnitKeysOf(section, progress);
   const startCover = (episodeId: string): void => {
     "background only";
     guide?.dismiss();
@@ -90,7 +88,6 @@ export function CatalogEpisodeSection({
                     episodeOrdinal={section.ordinal}
                     node={{ ...node, status: mapNodeStatusUnder(access, node.status) }}
                     onSelect={onSelectUnit}
-                    fresh={freshKeys.includes(node.key)}
                   />
                 </MapUnitCell>
               ))}

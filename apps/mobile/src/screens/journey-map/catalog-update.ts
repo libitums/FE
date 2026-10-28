@@ -7,7 +7,7 @@ import type { CatalogProgress, CatalogUnitKey } from "../../lib/catalog-progress
 import { isCatalogUnitDone } from "../../lib/catalog-progress";
 import type { CatalogMapSection } from "./catalog-map.contract";
 
-/** 최종 테스트를 끝낸 에피소드의 안 끝낸 유닛(유닛 순서) — 준비되지 않았거나 최종 전이면 빈 배열. 지도의 NEW 태그입니다. */
+/** 최종 테스트를 끝낸 에피소드의 안 끝낸 유닛(유닛 순서) — 준비되지 않았거나 최종 전이면 빈 배열. */
 export function catalogFreshUnitKeysOf(
   section: CatalogMapSection,
   progress: CatalogProgress,

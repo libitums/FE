@@ -27,7 +27,6 @@ export function SpecialUnitMapItem({
   layer = "map",
   sheetTargetId,
   children,
-  badge,
 }: SpecialUnitMapItemProps) {
   const copy = useUiCopy();
   const unitStatus = specialUnitStatusOf(status);
@@ -50,7 +49,7 @@ export function SpecialUnitMapItem({
           : "journey-special-unit"
       }
     >
-      <MapUnitStage targetId={sheetTargetId ?? null} badge={badge}>
+      <MapUnitStage targetId={sheetTargetId ?? null}>
         <SpecialUnit
           id={unitId}
           accessibilityLabel={specialUnitMapAccessibilityLabel(

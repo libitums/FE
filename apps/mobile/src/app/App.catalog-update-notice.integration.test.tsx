@@ -11,7 +11,7 @@ import { learningItemGuideSeenStorageKey } from "../lib/learning-item-guide";
 import { allLearningItemGuidesSeenValue } from "../lib/learning-item-guide.test-support";
 import { catalogUpdateNoticeTestIds as ids } from "../screens/catalog-update/catalog-update-notice.contract";
 
-// `integration` 계층: 진행 조회 → 완료한 에피소드(u00)에 안 끝낸 유닛(S5)이 있으면 지도 위 안내 · NEW 태그 → 닫기 →
+// `integration` 계층: 진행 조회 → 완료한 에피소드(u00)에 안 끝낸 유닛(S5)이 있으면 지도 위 안내 → 닫기 →
 // 기기 저장소 기록 → 같은 상태로 다시 켜면 안 뜸. 대역은 경계뿐입니다(저장소 · fetch). 판정 · 기록 모듈은 실물입니다.
 
 const token = `e30.${btoa(JSON.stringify({ sub: "learner" })).replace(/=+$/, "")}.sig`;
@@ -54,11 +54,10 @@ async function boot(store: Map<string, string>, load: () => Promise<Reply>) {
 const loaded = async (): Promise<Reply> => ({ status: 200, body: JSON.stringify(updatedProgress) });
 const dialog = () => screen.queryByTestId(ids.dialog);
 
-test("UNI1. 끝낸 에피소드에 새 유닛이 있으면 안내 · NEW 태그가 서고, 닫으면 서명을 적어 같은 상태로는 다시 안 뜬다", async () => {
+test("UNI1. 끝낸 에피소드에 새 유닛이 있으면 안내가 서고, 닫으면 서명을 적어 같은 상태로는 다시 안 뜬다", async () => {
   const store = new Map<string, string>();
   await boot(store, loaded);
   expect(dialog()).toBeInTheDocument();
-  expect(screen.getByTestId(`catalog-fresh-tag-${U00}-S5`)).toHaveTextContent("NEW");
   fireEvent.tap(within(screen.getByTestId(ids.confirm)).getByTestId("ui-lynx-button"), {});
   expect(dialog()).toBeNull();
   expect(JSON.parse(store.get(catalogUpdateNoticeStorageKey) ?? "{}")).toEqual({
@@ -68,7 +67,6 @@ test("UNI1. 끝낸 에피소드에 새 유닛이 있으면 안내 · NEW 태그�
   cleanup();
   await boot(store, loaded);
   expect(dialog()).toBeNull();
-  expect(screen.getByTestId(`catalog-fresh-tag-${U00}-S5`)).toBeInTheDocument();
 });
 
 test("UNI2. 체크하고 닫으면 끈 것으로 적고, 껐으면 새 상태에도 안 뜬다", async () => {

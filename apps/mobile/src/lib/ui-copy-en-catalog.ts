@@ -23,7 +23,7 @@ const unavailableTail = {
 
 export const catalogUpdateNoticeEn: CatalogUpdateNoticeCopy = {
   title: "Psst, something new! 👀",
-  body: "A few episodes you cleared got fresh bits. Don't worry, your progress is safe. Just look for the NEW tags on the map.",
+  body: "A few episodes you cleared got fresh bits. Don't worry, your progress is safe.",
   confirm: "Cool, got it",
   dontShowAgain: "Don't show this again",
   checked: "checked",
@@ -36,8 +36,6 @@ export const catalogMapEn: CatalogMapCopy = {
   lessonTitle: (ordinal) => `Lesson ${ordinal}`,
   finalTitle: "Final test",
   cultureTitle: "Culture",
-  freshTag: "NEW",
-  freshNodeLabel: (label) => `${label}, new`,
   nodeLabel: (label, title) => `${label} ${title}`,
   caption: {
     pending: "COMING SOON",
