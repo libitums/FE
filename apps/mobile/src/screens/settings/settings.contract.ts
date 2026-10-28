@@ -1,6 +1,7 @@
 // 설정 화면의 props·이벤트 타입을 소유합니다. 구현·JSX는 두지 않습니다.
 
 import type { AccountActionsProps, AccountActionsTestId } from "./account-actions.contract";
+import type { AppVersion } from "../../lib/app-version";
 import type { SessionOptionKey } from "../../lib/session-options";
 import type {
   LearnerProfileOpenedEvent,
@@ -26,6 +27,8 @@ export type SettingsScreenProps = {
   readonly onSelectNavTarget: (target: SettingsNavTarget) => void;
   /** 「Name and country in lessons」 줄의 설명입니다 — 지금 값 · `Not set` · 기기에만 저장됨. */
   readonly learnerProfileSummary: string;
+  /** 목록 끝 `Version 1.0 (11)` 줄입니다(ADR-0086). 호스트가 안 보내면(Explorer · 테스트) `null`이고 줄이 없습니다. */
+  readonly appVersion: AppVersion | null;
 } & AccountActionsProps;
 
 export type SettingsOpenedEvent = { readonly name: "settings_opened" };
@@ -61,5 +64,6 @@ export type SettingsTestId =
   | "settings-screen-title"
   | "settings-screen-scroll"
   | "settings-screen-list"
+  | "settings-screen-version"
   | `ui-lynx-settings-group-item-${SettingsNavTarget}`
   | AccountActionsTestId;

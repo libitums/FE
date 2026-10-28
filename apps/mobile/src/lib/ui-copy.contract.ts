@@ -30,6 +30,7 @@ import type { WordChoicePictureCopy } from "../screens/word-choice/word-choice-p
 import type { FeedbackCopy } from "./feedback.contract";
 import type { LearningItemGuideCopy } from "./learning-item-guide.contract";
 import type {
+  AppUpdateCopy,
   AssessmentCopy,
   CommonCopy,
   EpisodeIntroCopy,
@@ -98,6 +99,7 @@ export type UiCopy = {
   readonly specialUnitMap: SpecialUnitMapCopy;
   readonly tickets: TicketsCopy;
   readonly roleplayStory: RoleplayStoryCopy;
+  readonly appUpdate: AppUpdateCopy;
   readonly storyMessenger: StoryMessengerCopy;
   readonly storyIntro: StoryIntroCopy;
   readonly storyCall: StoryCallCopy;

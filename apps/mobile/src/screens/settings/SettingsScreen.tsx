@@ -12,6 +12,7 @@ import {
   signOutDialogActions,
 } from "./account-actions";
 import type { SettingsScreenProps } from "./settings.contract";
+import { appVersionLabel } from "../../lib/app-version";
 import { useAccountActions } from "./use-account-actions";
 import { settingsNavLabel, settingsNavTargets } from "./settings";
 import { useUiCopy } from "../../lib/ui-copy";
@@ -22,6 +23,7 @@ import "./settings-screen.css";
 export function SettingsScreen({
   onSelectNavTarget,
   learnerProfileSummary,
+  appVersion,
   onSignOut,
   onDeleteAccount,
   onLayerChange,
@@ -82,6 +84,19 @@ export function SettingsScreen({
               data-testid="settings-screen-account-error"
             >
               {accountDeletionFailureMessage(state.failure, copy)}
+            </text>
+          ) : null}
+          {/* 목록 끝 앱 버전 줄입니다(ADR-0086) — 호스트가 보낸 값이 없으면(Explorer · 테스트) 줄이 없습니다. 조작
+              단위가 아니라 읽기만 하는 요소 하나입니다. */}
+          {appVersion !== null ? (
+            <text
+              className="settings-screen-version"
+              data-testid="settings-screen-version"
+              flatten={false}
+              accessibility-element={true}
+              accessibility-label={appVersionLabel(appVersion, copy)}
+            >
+              {appVersionLabel(appVersion, copy)}
             </text>
           ) : null}
         </view>

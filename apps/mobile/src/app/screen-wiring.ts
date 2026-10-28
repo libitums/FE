@@ -4,6 +4,8 @@
 import type { AccountWiringArgs } from "./leave-app.contract";
 import type { Dispatch, SetStateAction } from "@lynx-js/react";
 import type { EpisodeIntroEventSink } from "../screens/episode-intro/episode-intro.contract";
+import type { AppUpdateStoreOutcome } from "../lib/app-update.contract";
+import type { AppVersion } from "../lib/app-version";
 import type { SafeAreaInsets } from "../lib/safe-area";
 import { accountWiring } from "./account-wiring";
 import { catalogWiring } from "./catalog-wiring";
@@ -88,6 +90,8 @@ export type ScreenWiring = {
   onSubmitFeedback: FeedbackScreenProps["onSubmit"];
   // 진입 흐름 화면의 결선입니다. `entryLanguage`만 App 상태를 그대로 내리고, 나머지는 전이·이벤트·토큰 저장을
   // 여는 콜백입니다(가입 직후 ① 이름 · ② 나라는 `LearnerSignupWiring`).
+  /** 호스트가 보낸 앱 버전 — 설정 끝 줄 · 스플래시의 강제 업데이트 판정(ADR-0086). 모르면 `null`. */
+  appVersion: AppVersion | null;
   onSplashTimeout: () => void;
   onOnboardingComplete: () => void;
   onSelectSocialLoginMethod: (method: SocialLoginMethod) => Promise<SocialSignInOutcome>;
@@ -96,6 +100,8 @@ export type ScreenWiring = {
   onVerifyPhoneOtp: (request: PhoneOtpVerifyRequest) => Promise<PhoneOtpVerifyOutcome>;
   onLoginBack: () => void;
   onOpenLegalDocument: (document: LegalDocument) => void;
+  /** 강제 업데이트 화면의 `Update` — 호스트가 스토어 페이지를 엽니다(ADR-0086). */
+  onOpenAppStore: () => Promise<AppUpdateStoreOutcome>;
   onLanguageSelectBack: () => void;
   onJourneyEntryBack: () => void;
   onVerificationCodeExit: () => void;
@@ -122,6 +128,7 @@ export type ScreenWiringArgs = {
   readonly setNotifications: Dispatch<SetStateAction<readonly NotificationItem[]>>;
   readonly sessionOptions: SessionOptions;
   readonly safeAreaInsets: SafeAreaInsets;
+  readonly appVersion: AppVersion | null;
   readonly gemCount: number;
   readonly phoneSignIn: PhoneSignInVisibility;
   readonly setScreenLayerOpen: Dispatch<SetStateAction<boolean>>;
@@ -140,6 +147,7 @@ export function screenWiring(args: ScreenWiringArgs): ScreenWiring {
     ...journey,
     legacyTutorialPassed: args.legacyTutorialPassed,
     safeAreaInsets: args.safeAreaInsets,
+    appVersion: args.appVersion,
     gemCount: args.gemCount,
     streakDays: args.streakDays,
     trophyCount: args.trophyCount,

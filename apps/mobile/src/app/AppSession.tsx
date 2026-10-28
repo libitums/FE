@@ -5,6 +5,7 @@ import { announce } from "../lib/accessibility";
 import type { AnswerResult } from "../lib/answer-result";
 import { loadUiLanguage } from "../lib/ui-language";
 import type { EntryLanguage } from "../lib/entry-language";
+import { appVersionFrom } from "../lib/app-version";
 import { safeAreaInsetsFrom, tappableBottomInsetFrom } from "../lib/safe-area";
 import { UiCopyContext, uiCopyFor } from "../lib/ui-copy";
 import { initialListenPace } from "../lib/listen-pace";
@@ -124,8 +125,11 @@ export function AppSession({
   const globalProps = useGlobalProps();
   const insets = safeAreaInsetsFrom(globalProps);
   const tappableBottom = tappableBottomInsetFrom(globalProps);
+  // 호스트가 보낸 앱 버전입니다 — 설정 끝 줄과 스플래시의 강제 업데이트 판정이 씁니다(ADR-0086).
+  const appVersion = appVersionFrom(globalProps);
   const screens = screenWiring({
     safeAreaInsets: insets,
+    appVersion,
     gemCount,
     phoneSignIn,
     setScreenLayerOpen,
