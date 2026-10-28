@@ -175,6 +175,7 @@ export function AppSession({
   const showsNavigator = showsTabNavigator(nav);
   // 끝낸 에피소드가 업데이트됐으면 지도 루트에서 다른 겹침이 없을 때 한 번 알립니다(시안 G-A).
   const updateNotice = useCatalogUpdateNotice({
+    catalog: episodeContent.catalog,
     sections: catalogSections,
     progress: catalogProgress,
     ready:

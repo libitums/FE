@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
 
 import type { CatalogMapSection, CatalogReadySection } from "./catalog-map.contract";
-import { catalogFreshUnitKeysOf, catalogUpdateSignaturesOf } from "./catalog-update";
+import { catalogFreshEpisodeIdsOf, catalogFreshUnitKeysOf } from "./catalog-update";
 
 // `unit` 계층: 끝낸 에피소드에 업데이트로 생긴 유닛 — 레슨은 순서대로만 열리므로 완료한 에피소드의 안 끝낸 유닛이
 // 업데이트로 생긴 것입니다.
@@ -42,10 +42,8 @@ test("UF2. 준비되지 않은 구획은 없다", () => {
   expect(catalogFreshUnitKeysOf(pending, { u09: ["RP"] })).toEqual([]);
 });
 
-test("UF3. 서명은 바뀐 에피소드마다 「에피소드:유닛,유닛」 — 새 유닛이 더 생기면 서명이 달라진다", () => {
+test("UF3. 새 유닛이 있는 에피소드 id를 구획 순서로 낸다", () => {
   const progress = { u03: ["S1", "S2", "RP"], u05: ["S1", "RP"] };
-  expect(catalogUpdateSignaturesOf([u03, u05], progress)).toEqual(["u03:INT", "u05:S2"]);
-  expect(catalogUpdateSignaturesOf([u03, u05], { u03: ["S1", "INT", "S2", "RP"] })).toEqual([]);
-  const grown = section("u03", ["S1", "INT", "S2", "INT2"]);
-  expect(catalogUpdateSignaturesOf([grown], progress)).toEqual(["u03:INT,INT2"]);
+  expect(catalogFreshEpisodeIdsOf([u03, u05], progress)).toEqual(["u03", "u05"]);
+  expect(catalogFreshEpisodeIdsOf([u03, u05], { u03: ["S1", "INT", "S2", "RP"] })).toEqual([]);
 });
