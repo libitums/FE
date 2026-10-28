@@ -148,7 +148,7 @@ test("EF4. (AC5) 건너뜀이 섞인 S5: 계획의 단어 선택 · 타자 문�
   ]);
 });
 
-test("EF5. (D9) S2의 대화 조립: 칸 0의 화자가 콘텐츠 턴 화자를 따른다 - 나부터 시작하는 문항은 me, 상대부터인 문항은 counterpart", async () => {
+test("EF5. (D9) S2의 대화 조립: 고정된 첫 줄(0번 줄)의 화자가 콘텐츠 첫 턴 화자를 따른다 - 나부터 시작하는 문항은 me, 상대부터인 문항은 counterpart", async () => {
   await boot({ [u01]: ["intro", "S1"] });
   const plan = lessonPlan(u01, "S2");
   tapNode(u01, "S2");
@@ -160,7 +160,7 @@ test("EF5. (D9) S2의 대화 조립: 칸 0의 화자가 콘텐츠 턴 화자를 
     const first = activity.form === "sentence-order" ? activity.questions[0] : undefined;
     const slot = screen.queryByTestId("sentence-order-dialogue-slot-0");
     if (first !== undefined || slot !== null) {
-      expected.push(first?.dialogue?.speakers[0]);
+      expected.push(first?.dialogue?.opening.speaker);
       shown.push(slot?.getAttribute("data-speaker") ?? null);
     }
     solveActivity(activity, true, index === plan.activities.length - 1);
@@ -179,9 +179,10 @@ test("EF7. S2의 대화 조립 아바타: 상대 줄은 에피소드 상대 이�
 
   const seen = new Set<string>();
   plan.activities.forEach((activity, index) => {
-    const speakers =
+    const dialogue =
       activity.form === "sentence-order" ? activity.questions[0]?.dialogue : undefined;
-    speakers?.speakers.forEach((speaker, position) => {
+    const rows = dialogue === undefined ? [] : [dialogue.opening.speaker, ...dialogue.speakers];
+    rows.forEach((speaker, position) => {
       const box = screen.getByTestId(`sentence-order-dialogue-avatar-${position}`);
       expect(box).toHaveClass(`sentence-order-dialogue-avatar-${speaker}`);
       expect(box.querySelector('[data-testid="ui-lynx-avatar-initials"]')).toHaveTextContent(

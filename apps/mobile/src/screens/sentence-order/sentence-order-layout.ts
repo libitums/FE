@@ -2,7 +2,7 @@
 
 import type { AnswerResult } from "../../lib/answer-result";
 import type { UiCopy } from "../../lib/ui-copy.contract";
-import { canCheckArrangement } from "./sentence-order";
+import { canCheckArrangement, canPlaceChip } from "./sentence-order";
 import type { SentenceOrderPhase, SentenceOrderSessionState } from "./sentence-order";
 import type {
   DialogueSpeaker,
@@ -78,3 +78,28 @@ export function dialogueChipAccessibilityLabel(
 
 /** 조각을 누를 수 있는가(`tappable`) 잠겼는가(`locked`)입니다. */
 export type SentenceOrderInteraction = "tappable" | "locked";
+
+/**
+ * 창고의 대화 조각을 다음 빈 칸에 놓을 수 있는가입니다 — 칸이 남아 있고(`canPlaceChip`) 조각의 화자가 그 칸의
+ * 화자와 같을 때만 참입니다. 내 조각은 상대 칸에, 상대 조각은 내 칸에 들어가지 않습니다. 조각 화자(`chipSpeakers`)가
+ * 없는 문항은 화자를 가리지 않습니다.
+ */
+export function canPlaceDialogueChip(
+  question: SentenceOrderQuestion,
+  state: SentenceOrderSessionState,
+  chipIndex: number,
+): boolean {
+  if (!canPlaceChip(question, state)) return false;
+  const chipSpeaker = question.dialogue?.chipSpeakers?.[chipIndex];
+  const slotSpeaker = question.dialogue?.speakers[state.placedChipIndexes.length];
+  return chipSpeaker === undefined || chipSpeaker === slotSpeaker;
+}
+
+/** 창고 대화 조각 하나의 조작 상태입니다 — `canPlaceDialogueChip`을 `tappable` · `locked`로 옮긴 것입니다. */
+export function dialogueChipInteractionOf(
+  question: SentenceOrderQuestion,
+  state: SentenceOrderSessionState,
+  chipIndex: number,
+): SentenceOrderInteraction {
+  return canPlaceDialogueChip(question, state, chipIndex) ? "tappable" : "locked";
+}
