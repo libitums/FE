@@ -3,9 +3,8 @@ package com.libitum.host;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import com.lynx.jsbridge.LynxMethod;
+import java.lang.reflect.Method;
 import org.junit.Test;
 
 /**
@@ -23,10 +22,10 @@ public final class AirbridgeUserIdentityTest {
   }
 
   @Test public void n_a9_moduleExposesBothMethods() throws Exception {
-    Path source =
-        Paths.get("src/main/java/com/libitum/host/AirbridgeEventsModule.java");
-    String text = new String(Files.readAllBytes(source), "UTF-8");
-    assertTrue(text.matches("(?s).*@LynxMethod public void setUserID\\(String userId\\).*"));
-    assertTrue(text.matches("(?s).*@LynxMethod public void clearUser\\(\\).*"));
+    Method setUserID = AirbridgeEventsModule.class.getMethod("setUserID", String.class);
+    assertTrue(setUserID.isAnnotationPresent(LynxMethod.class));
+    Method clearUser = AirbridgeEventsModule.class.getMethod("clearUser");
+    assertTrue(clearUser.isAnnotationPresent(LynxMethod.class));
   }
+
 }
