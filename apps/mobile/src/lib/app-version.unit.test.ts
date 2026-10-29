@@ -1,4 +1,4 @@
-import { describe, expect, test } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 
 import { appVersionFrom, appVersionLabel } from "./app-version";
 import { uiCopyEn } from "./ui-copy-en";
@@ -45,6 +45,26 @@ describe("appVersionFrom", () => {
       name: "0.0.1",
       build: 0,
     });
+  });
+});
+
+// Android 메인 스레드의 globalProps는 `Reflect.get`이 `not an object`를 던지는 엔진 값입니다(DURU-ANDROID-A).
+// Node에서는 재현되지 않아 `Reflect.get`이 던지게 해 두고 읽기가 그것에 기대지 않는지 봅니다.
+describe("appVersionFrom — Android 메인 스레드", () => {
+  test("AV5. Reflect.get이 던지는 환경에서도 값을 읽는다", () => {
+    const spy = vi.spyOn(Reflect, "get").mockImplementation(() => {
+      throw new TypeError("not an object");
+    });
+    // `expect`도 안에서 `Reflect.get`을 쓰므로 읽기만 가로챈 채로 하고 비교는 되돌린 뒤에 합니다.
+    let read: ReturnType<typeof appVersionFrom> | Error;
+    try {
+      read = appVersionFrom({ appVersion: { platform: "android", name: "1.0.0", build: 9 } });
+    } catch (error) {
+      read = error as Error;
+    } finally {
+      spy.mockRestore();
+    }
+    expect(read).toEqual({ platform: "android", name: "1.0.0", build: 9 });
   });
 });
 
