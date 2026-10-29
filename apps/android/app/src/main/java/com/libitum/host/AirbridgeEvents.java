@@ -79,6 +79,26 @@ final class AirbridgeEvents {
     }
   }
 
+  /** ADR-0090: SDK 사용자 ID(Supabase user id)를 건다. 시작되지 않았거나 값이 비면 아무것도 하지 않는다. */
+  static void setUserId(String userId) {
+    if (!started() || userId == null || userId.isEmpty()) return;
+    try {
+      Airbridge.setUserID(userId);
+    } catch (RuntimeException | LinkageError ignored) {
+      // 측정 실패가 화면을 막지 않는다.
+    }
+  }
+
+  /** ADR-0090: 로그아웃 · 계정 삭제 · 시험 계정 — SDK 사용자 정보를 지운다. 시작되지 않은 빌드에서는 아무것도 하지 않는다. */
+  static void clearUser() {
+    if (!started()) return;
+    try {
+      Airbridge.clearUser();
+    } catch (RuntimeException | LinkageError ignored) {
+      // 측정 실패가 화면을 막지 않는다.
+    }
+  }
+
   static void track(String category, Map<String, String> attributes) {
     if (!started() || category == null || category.isEmpty()) return;
     try {

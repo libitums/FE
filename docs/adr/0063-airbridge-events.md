@@ -28,6 +28,8 @@
 - **부분 대체됨(2026-10-22)**: **D6**(iOS restricted 변형 · ATT 없음 · IDFA 미수집)과 D13의 iOS SDK 매니페스트 서술은
   [ADR-0079](0079-ios-tracking-authorization.md)가 대신한다 — iOS는 일반판 `airbridge-ios-sdk` 4.12.0, 가입 뒤 여정 맵 첫 진입에
   추적 허용을 묻는다(사용자 결정). 「재검토 조건」의 「ATT 팝업을 열기로 한 때」가 발동했다. 나머지 결정은 그대로다.
+- **부분 대체됨(2026-10-29)**: **D7의 「`setUserID`를 부르지 않는다」와 「사용자 확인 필요」 6**은 [ADR-0090](0090-airbridge-user-id.md)이
+  대신한다 — PostHog과 같은 Supabase user id를 `setUserID`로 건다(사용자 결정). 이메일 · 전화번호 · 로그인 수단은 여전히 싣지 않는다.
 - 받은 적용 기록(결정을 바꾸지 않는다):
   2026-10-22 [ADR-0080](0080-airbridge-deeplink.md) — 「다루지 않는 것」의 딥링크 · 지연 딥링크 · Associated Domains를 열었다(재검토 조건
   「딥링크를 쓰기로 한 때」 발동). D5의 지연 딥링크 조회는 이제 쓰는 요청이고, Android Meta 지연 앱 링크 끄기는 그대로다.
@@ -171,7 +173,8 @@ App Name 규칙이 토큰보다 좁은 이유: 대시보드 고유 ID라 공백 
 - 콘텐츠 종류는 `label`에 싣는다 — Airbridge 리포트의 GroupBy 축이라 대시보드에서 바로 나눠 볼 수 있다(`type`은 리포트 축이
   아니다).
 - 커스텀 속성 · `action` · `value`를 쓰지 않는다. 사용자 ID · 이메일 · 전화번호 · 로그인 수단을 싣지 않고 `setUserID` ·
-  `setUserEmail` · `setUserPhone`을 부르지 않는다.
+  `setUserEmail` · `setUserPhone`을 부르지 않는다. ⟨2026-10-29 — [ADR-0090](0090-airbridge-user-id.md)⟩ `setUserID`는 이제 부른다
+  (Supabase user id). 이벤트 속성에는 여전히 싣지 않는다.
 - 와이어 값 넷(`airbridge.user.signup` · `airbridge.achieveLevel` · `level` · `label`)은 두 SDK의 상수와 같다 [실측 — Android JUnit
   `AirbridgeEventNamesTest`, iOS `AirbridgeEventsTests`의 N-I4]. SDK를 올려 상수가 바뀌면 이 두 테스트가 선다.
 - 설치 · 앱 실행 · 세션은 앱이 내지 않는다 — SDK 자동 이벤트이고 이름은 SDK 소유다.

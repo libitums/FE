@@ -82,7 +82,28 @@ export interface AirbridgeEventsModule {
    * 실행도 그 상태로 시작합니다. 두 플랫폼에 있습니다 — 옛 호스트에는 없습니다(`lib/tester-tracking.ts`).
    */
   setTrackingEnabled?(enabled: boolean): void;
+  /**
+   * ⟨ADR-0090⟩ SDK 사용자 ID를 겁니다(`Airbridge.setUserID`). 값은 PostHog `identify`와 같은 Supabase user id입니다.
+   * 두 플랫폼에 있습니다 — 옛 호스트에는 없습니다(`lib/airbridge-user.ts`). 응답 · 콜백이 없습니다.
+   */
+  setUserID?(userId: string): void;
+  /** ⟨ADR-0090⟩ SDK 사용자 정보를 지웁니다(`Airbridge.clearUser`). 두 플랫폼에 있습니다. 응답 · 콜백이 없습니다. */
+  clearUser?(): void;
 }
+
+// ------------------------------------------------------------------ 사용자 식별(ADR-0090)
+
+/**
+ * 저장된 액세스 토큰이 가리키는 Airbridge 사용자 ID입니다. 시험 계정이 아닌 토큰의 `sub`, 아니면 `null`
+ * (토큰 없음 · 못 읽음 · 시험 계정). 순수 · 던지지 않습니다.
+ */
+export type AirbridgeUserIdFor = (accessToken: string | null) => string | null;
+
+/**
+ * 렌더 뒤마다 저장된 액세스 토큰을 받아, 사용자 ID가 **바뀔 때만** 호스트를 부르는 함수입니다(첫 관찰도 바뀜).
+ * ID면 `setUserID(id)`, `null`이면 `clearUser()`. 호스트 없음 · 메서드 없음 · 호스트 예외에도 던지지 않습니다.
+ */
+export type AirbridgeUserSync = (accessToken: string | null) => void;
 
 // ------------------------------------------------------------------ JS 결선
 

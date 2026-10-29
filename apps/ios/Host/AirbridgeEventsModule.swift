@@ -16,6 +16,8 @@ final class AirbridgeEventsModule: NSObject, LynxModule {
       "requestTrackingAuthorization": NSStringFromSelector(#selector(requestTrackingAuthorization)),
       "takeOpenedDeeplink": NSStringFromSelector(#selector(takeOpenedDeeplink(_:))),
       "setTrackingEnabled": NSStringFromSelector(#selector(setTrackingEnabled(_:))),
+      "setUserID": NSStringFromSelector(#selector(setUserID(_:))),
+      "clearUser": NSStringFromSelector(#selector(clearUser)),
     ]
   }
 
@@ -41,6 +43,16 @@ final class AirbridgeEventsModule: NSObject, LynxModule {
   /// ⟨ADR-0085 D4⟩ 시험 계정 표시가 바뀌면 JS가 부른다. 응답이 없다.
   @objc func setTrackingEnabled(_ enabled: Bool) {
     AirbridgeEvents.setTrackingEnabled(enabled)
+  }
+
+  /// ⟨ADR-0090⟩ 저장된 세션의 사용자가 바뀌면 JS가 부른다. 값은 PostHog identify와 같은 Supabase user id. 응답이 없다.
+  @objc func setUserID(_ userId: String) {
+    AirbridgeEvents.setUserID(userId)
+  }
+
+  /// ⟨ADR-0090⟩ 세션이 사라지거나 시험 계정이면 JS가 부른다. 응답이 없다.
+  @objc func clearUser() {
+    AirbridgeEvents.clearUser()
   }
 
   /// 문자열 값만 남긴다. 순수.
