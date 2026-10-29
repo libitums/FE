@@ -116,7 +116,9 @@ grep -c 'AIRBRIDGE_APP_NAME = "";' apps/android/app/build/generated/source/build
 - ⟨2026-10-26 — [ADR-0085](adr/0085-tester-access.md) D4⟩ **시험 계정(`app_metadata.duru_tester`)은 표시가 실린 뒤로 아무것도 보내지 않는다** —
   앱 이벤트를 버리고 SDK 추적을 멈춘다(`stopTracking`, 기기에 기억해 다음 실행의 Install · Open도 재지 않음). 로그아웃하면 다시 잰다.
   표시를 켜기 전의 Install · 가입 완료는 이미 나가 있으므로 필요하면 대시보드에서 그 기기를 거른다.
-- 사용자 ID · 이메일 · 전화번호 · 로그인 수단은 싣지 않는다. Airbridge의 `setUserID` 등 사용자 식별 기능을 쓰지 않는다.
+- 이벤트 속성에는 사용자 ID · 이메일 · 전화번호 · 로그인 수단을 싣지 않는다. ⟨2026-10-29 — [ADR-0090](adr/0090-airbridge-user-id.md)⟩
+  SDK 사용자 ID는 건다 — PostHog `identify`와 같은 Supabase user id를 세션이 바뀔 때마다 `setUserID`, 로그아웃 · 계정 삭제 · 시험 계정은
+  `clearUser`. 이메일 · 전화번호(`setUserEmail` · `setUserPhone`)는 쓰지 않는다.
 - ~~iOS는 IDFA 코드가 없는 SDK 변형(restricted)이고 추적 허용 팝업을 띄우지 않는다.~~ ⟨2026-10-22 — [ADR-0079](adr/0079-ios-tracking-authorization.md)⟩
   iOS는 일반판 SDK이고, **가입을 마친 뒤 여정 맵에 처음 들어설 때** 아직 정하지 않았으면 추적 허용을 한 번 묻는다. 허용하면
   IDFA가 실린다. 설치 이벤트는 그 결정을 **최대 600초** 기다린다 — Real-time Logs에 Install이 늦게 보일 수 있다. 거부 ·

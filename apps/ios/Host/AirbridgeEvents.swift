@@ -83,6 +83,18 @@ enum AirbridgeEvents {
     }
   }
 
+  /// ⟨ADR-0090⟩ SDK 사용자 ID(Supabase user id)를 건다. 시작되지 않았거나 값이 비면 아무것도 하지 않는다.
+  static func setUserID(_ userId: String) {
+    guard isStarted, !userId.isEmpty else { return }
+    Airbridge.setUserID(userId)
+  }
+
+  /// ⟨ADR-0090⟩ 로그아웃 · 계정 삭제 · 시험 계정 — SDK 사용자 정보를 지운다. 시작되지 않은 빌드에서는 아무것도 하지 않는다.
+  static func clearUser() {
+    guard isStarted else { return }
+    Airbridge.clearUser()
+  }
+
   /// 시작되지 않았거나 카테고리가 비면 아무것도 하지 않는다(이중 방어). 속성이 비면 속성 없는 오버로드를 쓴다.
   static func track(_ category: String, semanticAttributes: [String: String]) {
     guard isStarted, !category.isEmpty else { return }
