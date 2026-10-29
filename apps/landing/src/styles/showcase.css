@@ -230,8 +230,12 @@
   display: none;
 }
 
+/* 카드는 그림 한 장입니다. 홍보용이라 문구는 그림 위의 숨김 층에 두고, 호버 · 포커스 · 누름으로만 비칩니다. */
 .scene {
+  position: relative;
   scroll-snap-align: start;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
 }
 
 .scene img,
@@ -243,21 +247,110 @@
 }
 
 .scene img {
+  display: block;
   object-fit: cover;
   background: var(--bg-secondary);
+  transition: transform 600ms var(--libitum-motion-easing-enter);
 }
 
-.scene--portrait img {
-  object-position: 50% 20%;
+.scene__peek {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-xl);
+  background: none;
+  color: inherit;
+  cursor: pointer;
 }
 
+.scene__peek:focus-visible {
+  outline-offset: -3px;
+}
+
+/* 번호 — [New 표] 번호. 그림 왼쪽 위에 얹힙니다. 그림마다 남길 자리는 인라인 object-position이 정합니다. */
 .scene__no {
-  margin-top: 20px;
-  color: var(--fg-muted);
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  background: rgb(26 28 32 / 72%);
+  color: var(--fg-inverted);
   font-family: var(--font-accent);
   font-size: 0.9375rem;
   font-weight: 500;
   letter-spacing: 0.06em;
+  backdrop-filter: blur(8px);
+}
+
+/* 맨 앞 카드(가장 새로운 에피소드)의 표입니다. 브랜드 주황 바탕에 흰 글자 — 사용자 결정(2026-10-29). 대비는 2.9:1이라
+   WCAG AA(4.5:1)에 못 미치고, landing.e2e의 axe 검사에서 이 표만 뺀다. 번호 알약은 어두운 바탕이라 그대로 통과한다. */
+.scene__new {
+  margin-left: -6px;
+  padding: 2px 10px;
+  border-radius: var(--radius-full);
+  background: var(--brand);
+  color: var(--fg-inverted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+/* 숨김 층 — 때 · 제목 · 한 문장. 보이지 않을 때는 접근성 트리에서도 빠집니다(visibility). */
+.scene__reveal {
+  position: absolute;
+  inset: auto 0 0;
+  padding: 72px 22px 24px;
+  background: linear-gradient(
+    to top,
+    rgb(26 28 32 / 88%) 0%,
+    rgb(26 28 32 / 70%) 55%,
+    transparent 100%
+  );
+  color: var(--fg-inverted);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(12px);
+  transition:
+    opacity 320ms var(--libitum-motion-easing-enter),
+    transform 320ms var(--libitum-motion-easing-enter),
+    visibility 0s 320ms;
+  pointer-events: none;
+}
+
+.scene:focus-within .scene__reveal,
+.scene.is-open .scene__reveal {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition-delay: 0s;
+}
+
+@media (hover: hover) {
+  .scene:hover .scene__reveal {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    transition-delay: 0s;
+  }
+
+  .scene:hover img,
+  .scene:focus-within img,
+  .scene.is-open img {
+    transform: scale(1.04);
+  }
+}
+
+.scene__when {
+  font-family: var(--font-accent);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  opacity: 0.8;
 }
 
 .scene h3 {
@@ -272,6 +365,19 @@
   color: var(--fg-muted);
   font-size: 0.9375rem;
   line-height: 1.6;
+}
+
+.scene__reveal .scene__desc {
+  color: inherit;
+  opacity: 0.88;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scene img,
+  .scene__reveal {
+    transition: none;
+    transform: none;
+  }
 }
 
 /* 이야기가 더 이어진다는 자리입니다. 무엇이 올지는 적지 않습니다. */

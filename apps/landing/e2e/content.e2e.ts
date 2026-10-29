@@ -83,15 +83,22 @@ test("히어로 첫 그림은 높은 우선순위로 가장 먼저 요청된다"
   await page.setViewportSize({ width: 390, height: 844 });
   const client = await page.context().newCDPSession(page);
   await client.send("Network.enable");
-  const scenes: { name: string; priority: string }[] = [];
+  // 히어로 그림은 버킷 사본이라 이름이 에피소드 컷 이름(pre-1-v2 …)입니다 — 산출 HTML의 src로 가립니다.
+  const requests: { path: string; priority: string }[] = [];
   client.on("Network.requestWillBeSent", ({ request }) => {
-    const name = /\/(scene-[a-z-]+)\./.exec(request.url)?.[1];
-    if (name) scenes.push({ name, priority: request.initialPriority });
+    const { pathname } = new URL(request.url);
+    if (/\.webp$/.test(pathname))
+      requests.push({ path: pathname, priority: request.initialPriority });
   });
   await page.goto("/", { waitUntil: "load" });
-  expect(scenes[0]).toEqual({ name: "scene-plane", priority: "High" });
+  const panels = await page
+    .locator(".hero__panel img")
+    .evaluateAll((images) => images.map((image) => image.getAttribute("src") ?? ""));
+  expect(panels).toHaveLength(3);
+  const scenes = requests.filter((entry) => panels.includes(entry.path));
+  expect(scenes[0]).toEqual({ path: panels[0], priority: "High" });
   // 좁은 화면에서는 세 패널이 겹쳐 있어 나머지도 요청되지만, 처음 우선순위는 첫 그림보다 낮아야 합니다.
-  for (const scene of scenes.filter((entry) => entry.name !== "scene-plane")) {
+  for (const scene of scenes.filter((entry) => entry.path !== panels[0])) {
     expect(scene.priority).not.toBe("High");
   }
 });

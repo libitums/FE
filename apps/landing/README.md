@@ -60,7 +60,7 @@ e2e 315건 통과 · 27 skip이다.
 | ↳ `SeoHead.astro` | 색인되는 페이지의 head — 공유 카드 · canonical · hreflang · JSON-LD. `Landing.astro`가 `Base`의 `head` 슬롯에 꽂는다 |
 | ↳ `Faq.astro` | 보이는 FAQ. 질문마다 `<details>`이고 스크립트가 없다. `SeoHead`가 받는 것과 **같은 배열**을 그린다 |
 | ↳ `NotFound.astro` | 404 본문. `noindex`이고 색인용 head와 랜딩 스크립트를 싣지 않는다. `pages/404.astro`가 기본 언어로 그린다 |
-| `src/styles/` | `base.css`(토큰 잇기 · 헤더 · 푸터) · `sections.css`(히어로 · 선언문 · 받기 · 404 · 반응형) · `showcase.css`(Features · Story · Phrases · FAQ) · `phone.css`(휴대폰 목업) |
+| `src/styles/` | `base.css`(토큰 잇기 · 헤더 · 푸터) · `sections.css`(히어로 · 선언문 · 받기 · 404 · 반응형) · `showcase.css`(Features · Story · Phrases · FAQ) · `phone.css`(휴대폰 목업 — 앱의 컷 화면 · 메신저 · 전화 · 따라 읽기를 구조 · 토큰 · 모션까지 옮긴 것, 보는 묶음에서만 연출이 돈다) |
 | `src/analytics/gtag.ts` · `components/Analytics.astro` | GA4 측정 ID 검증 · 동의 기본값 · 초기화 스크립트 |
 | `src/scripts/analytics-events.ts` · `analytics.contract.ts` | 화면의 행동을 이벤트로 옮기는 **순수 함수 셋**(`clickEventOf` · `faqEventOf` · `sectionEventOf`)과 그 타입. DOM이 아니라 거기서 읽은 값만 받고 아무것도 import하지 않는다 — `src/seo/`와 같은 모양 |
 | `src/scripts/analytics.ts` | 접착 — DOM에서 값을 읽어 위 함수에 넘기고 결과를 gtag에 전달한다. 섹션의 「한 번만」(`unobserve`)도 여기다 |
@@ -71,7 +71,9 @@ e2e 315건 통과 · 27 skip이다.
 | `src/i18n/trial-copy.ts` · `trial-ko.ts` | 체험판 문구(`TrialCopy` — 영어 원본 · 한국어 전부). 학습 내용(한국어 대사 · 영어 번역)은 콘텐츠에서 온다 |
 | `src/assets/trial/images/` · `public/trial/sfx/` | 체험판 그림 12(앱 `src/assets/content/images/`의 사본 — 표는 `src/trial/trial-images.ts`) · 효과음 5(`apps/ios/Host/sfx/`의 사본) |
 | `e2e/` | Playwright. 체험판은 `trial.e2e.ts`(흐름 · 말하기 · 랜딩 링크) · `trial-sound.e2e.ts`(소리 요청) · `trial-a11y.e2e.ts`(키보드 · 초점 · axe · 움직임 줄이기) · `trial-layout.e2e.ts` · `trial-reflow.e2e.ts`(폭 · 낮은 화면) · `trial-contrast.e2e.ts`(그림 위 글 대비) · `trial-analytics.e2e.ts`(GA) · `trial-transition.e2e.ts`(꿈 전환) · `trial-prereg.e2e.ts`(사전 등록, 가짜 응답) · `trial-fullscreen.e2e.ts`(모바일 전체화면, 가짜 함수) · `trial.support.ts` · `trial-fakes.support.ts`(가짜 인식기 · 버킷 · PostgREST). 랜딩은 `landing.e2e.ts`(넘침 · 제목 단계 · 키보드 · 포커스 · axe · 서체 · 404) · `content.e2e.ts`(산출물 내용, chromium만) · `layout.e2e.ts`(Features · Story · Phrases · FAQ · 휴대폰 틀) · `layout-page.e2e.ts`(머리 · 히어로 · 섹션 간격) · `layout.support.ts`(폭 상수 1440 · 390, 좌표 · 계산값 · 스크롤 도구) · `analytics.e2e.ts`(측정 ID 빌드의 `dataLayer`) · `serve.mjs`(정적 서버). 설정은 `playwright.config.ts` |
-| `src/assets/img/` | 앱 튜토리얼 그림의 WebP 사본. Astro가 크기별로 다시 굽는다 |
+| `src/assets/content/images/` | ⟨2026-10-29⟩ 랜딩 소개 그림 — 콘텐츠 버킷 `images/<unit>/…`의 사본(같은 상대 경로 · 같은 바이트). 표는 `src/assets/images.ts`(히어로 · Features · Phrases · 맺음), Story 카드는 `src/story/episodes.ts`. Astro가 크기별로 다시 굽는다 |
+| `src/story/` | ⟨2026-10-29⟩ Story 줄의 에피소드 카드 데이터 `episodes.ts`(새 것 먼저, 사람이 하나씩 더한다 — 아래 「Story 카드 더하기」) |
+| `scripts/` | `fetch-content-image.mjs` — 버킷 그림 하나를 `src/assets/content/`로 받는다 |
 | `public/` | 아이콘과 공유 카드 그림(`og-*.jpg`) — 그대로 복사된다 |
 | ↳ `public/naver….html` · `google….html` | 네이버 서치어드바이저 · Google Search Console의 소유 확인 파일. **지우거나 고치지 않는다** — 두 곳 모두 주기적으로 다시 확인한다. 검색엔진 확인 파일(`naver*.html` · `google*.html`)만 포매터 대상에서 뺐다 — 한 글자도 바뀌면 안 된다 |
 
@@ -185,18 +187,21 @@ Footer 링크의 `rel`을 지우면 UI-FO2가 `expected '' to contain 'noopener'
 - **검색 결과에 보이는 제목 · 설명** — `src/site.ts`의 `pages`.
 - **문구** — `src/i18n/copy.ts`와 `ko.ts`의 같은 키. 키를 더하면 두 파일 모두에 있어야 한다.
   휴대폰 목업 · 첫 표현 · 맺음 인용의 한국어 대사와 뜻풀이는 앱이 학습자에게 보여 주는 그대로라 컴포넌트에 적혀 있다.
-- **그림** — 원본은 `apps/mobile/src/assets`다. 바뀌면 다시 변환한다.
+- **그림** — ⟨2026-10-29⟩ 소개 그림은 전부 **콘텐츠 버킷**(Supabase public bucket `content`, 앱이 에피소드 컷으로 보여 주는 그림)의
+  사본이다. `src/assets/content/images/<unit>/<file>.webp`에 버킷과 같은 상대 경로 · 같은 바이트로 두고 **재인코딩하지 않는다**
+  (크기별 변환은 Astro `<Image>` · `getImage`가 빌드 때 한다). 받는 명령:
 
   ```sh
-  cwebp -q 82 apps/mobile/src/assets/story/tutorial/airplane-window.jpg -o apps/landing/src/assets/img/scene-plane.webp
+  node apps/landing/scripts/fetch-content-image.mjs images/u08-umbrella/pre-6.webp
+  # PUBLIC_SUPABASE_URL(없으면 apps/mobile/.env.local의 같은 키)의 버킷에서 src/assets/content/images/u08-umbrella/pre-6.webp로
   ```
+
+  어느 그림이 어디에 서는지는 `src/assets/images.ts`(히어로 셋 · Features 배경 넷 · 목업 속 미나와 프로필 · Phrases 셋 · 맺음 인용)와
+  `src/story/episodes.ts`(Story 카드)가 적는다. 그림을 바꾸면 그 자리의 대체 문구(`copy.ts` · `ko.ts`의 `…Alt` 키, Story는
+  항목의 `alt`)도 **보이는 것**대로 고친다. 튜토리얼 시절의 `src/assets/img/`(공항 · 상상 속 카페 · 민서)는 없앴다.
 
   | 사본 | 원본 |
   |---|---|
-  | `scene-plane` · `scene-flight` · `scene-descent` | `story/tutorial/airplane-window` · `final-flight` · `airplane-descent` |
-  | `scene-street` · `scene-cafe` · `scene-cafe-evening` | `story/tutorial/imagined-street` · `imagined-cafe` · `final-cafe` |
-  | `scene-arrival` | `story/tutorial/final-arrival` |
-  | `minseo` | `characters/minseo-profile` |
   | `public/favicon-96x96.png` · `apple-touch-icon.png` | `assets/store/app-icon-512.png` — `sharp`로 96 · 180px 정사각형으로 줄인다 |
 
   `public/logo-duru.webp`(헤더 · 푸터 로고)는 스플래시의 손글씨 로고
@@ -207,7 +212,22 @@ Footer 링크의 `rel`을 지우면 UI-FO2가 `expected '' to contain 'noopener'
   절대 주소다 — Google은 페이지의 `rel="icon"` 링크를 따라가 48px 배수의 정사각형 아이콘을 받는다. 벡터 원본이 없어
   `favicon.svg`는 아직 없다.
 
-  `public/og-en.jpg` · `og-ko.jpg`는 히어로를 1200×630으로 찍은 것이다. 히어로 문구나 그림을 바꾸면 다시 찍는다.
+  `public/og-en.jpg` · `og-ko.jpg`는 히어로를 1200×630으로 찍은 것이다. 히어로 문구나 그림을 바꾸면 다시 찍는다
+  (⟨2026-10-29⟩ 빌드를 `astro preview`로 띄우고 Playwright로 1200×630 뷰포트에서 머리의 섹션 링크 · 언어 메뉴 · 받기 버튼,
+  히어로의 체험판 버튼 · 스크롤 안내를 CSS로 숨긴 채 찍었다 — 브라우저 컨텍스트를 `reducedMotion: "reduce"`로 두면 스크롤 연출이
+  꺼져 세 패널이 모두 밝고 두 문장이 함께 보인다).
+
+- **Story 카드 더하기** — ⟨2026-10-29⟩ 에피소드가 나올 때마다 **사람이 하나씩** 더한다(사용자 결정 — 티저는 자동 생성하지 않는다).
+  1. 버킷에서 **인물이 나오지 않는** 컷 하나를 고르고 위 「그림」의 명령으로 받는다(얼굴을 먼저 보여 주면 만남의 기대가 꺾인다 —
+     손 · 뒷모습 정도는 된다). u00만은 체험판 사본(`src/assets/trial/images/u00-tutorial/`)과 **바이트가 겹치지 않는** 컷을 고른다(이름이 달라도
+     내용이 같으면 Vite가 빌드 결과에서 한 파일로 합치고, 그것을 `<Image>`로 변환하면 Astro가 원본을 지워 체험판이 404를 낸다 —
+     `episodes.unit.test.ts`가 대조한다).
+  2. `src/story/episodes.ts`의 배열 **맨 앞**에 항목을 더한다 — `id`(앱 unit id) · `number` · `when`(앱 JSON의 `day` · `time_of_day`) ·
+     `title`(앱 JSON의 `title_en` · `title` 그대로) · `teaser`(살짝만 스포하는 **한 문장** — 등장인물 이름 · 답 · 결말을 말하지 않는다) ·
+     `image` · `alt`(보이는 것만) · 필요하면 `focus`(4:5로 자를 때 남길 자리). 줄은 배열 순서 그대로이고 맨 앞 카드에 `New` 표가 붙는다.
+     카드에는 그림과 번호만 보이고, 때 · 제목 · 티저는 호버 · 포커스 · 누름으로 비치는 숨김 층에 들어간다.
+  3. `pnpm --filter @libitums/landing test:unit`(`src/story/episodes.unit.test.ts` — id 꼴 · 번호 내림차순 · 두 언어 · 세로 그림) ·
+     `test:ui`(카드 수 · New 표 · 숨김 층) · `test:integration`(빌드)을 돌린다.
 
 - **색 · 반경 · 서체** — `@libitums/design-tokens`의 CSS 변수를 `base.css`가 짧은 이름으로 잇는다. 값을 옮겨 적지 않는다.
 
