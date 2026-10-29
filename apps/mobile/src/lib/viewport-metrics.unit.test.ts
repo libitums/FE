@@ -1,4 +1,4 @@
-import { describe, expect, test } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 
 import { fontScaleFrom, viewportWidthFrom } from "./viewport-metrics";
 
@@ -29,4 +29,21 @@ describe("viewport-metrics", () => {
       expect(viewportWidthFrom({ viewportWidth: value })).toBeNull();
     },
   );
+
+  // Android 메인 스레드의 globalProps는 `Reflect.get`이 던지는 엔진 값입니다(`app-version` AV5).
+  test("V4. Reflect.get이 던지는 환경에서도 값을 읽는다", () => {
+    const spy = vi.spyOn(Reflect, "get").mockImplementation(() => {
+      throw new TypeError("not an object");
+    });
+    // `expect`도 안에서 `Reflect.get`을 쓰므로 읽기만 가로챈 채로 하고 비교는 되돌린 뒤에 합니다.
+    let read: readonly (number | null)[] | Error;
+    try {
+      read = [fontScaleFrom({ fontScale: 1.2 }), viewportWidthFrom({ viewportWidth: 360 })];
+    } catch (error) {
+      read = error as Error;
+    } finally {
+      spy.mockRestore();
+    }
+    expect(read).toEqual([1.2, 360]);
+  });
 });

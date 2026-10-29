@@ -26,10 +26,12 @@ export function isBuildNumber(value: unknown): value is number {
   return typeof value === "number" && Number.isInteger(value) && value >= 0;
 }
 
+// `Reflect.get`을 쓰지 않습니다 — Android 메인 스레드의 globalProps는 `typeof`가 "object"인 엔진 값이라 `Reflect.get`이
+// `not an object`를 던집니다(첫 렌더가 버려짐, DURU-ANDROID-A). `safe-area.ts`처럼 속성으로 읽습니다.
 /** globalProps의 `appVersion`을 좁힙니다. 던지지 않습니다. */
 export function appVersionFrom(globalProps: unknown): AppVersion | null {
   if (typeof globalProps !== "object" || globalProps === null) return null;
-  const raw: unknown = Reflect.get(globalProps, "appVersion");
+  const raw = (globalProps as { appVersion?: unknown }).appVersion;
   if (typeof raw !== "object" || raw === null) return null;
   const { platform, name, build } = raw as Record<string, unknown>;
   if (!isPlatform(platform)) return null;
