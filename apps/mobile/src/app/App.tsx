@@ -17,9 +17,12 @@ export function App(props: AppProps = {}) {
   const motion = motionFromReducedMotion(reducedMotionFrom(useGlobalProps()));
   // 에피소드 카탈로그를 읽고 서버의 새 에피소드를 앱 실행마다 한 번 받아 기기에 둡니다 — 세션(key) 밖이라
   // 로그아웃 · 재진입에 다시 돌지 않고, 결과는 세션에 prop으로 내립니다.
-  const { content: episodeContent, splash } = useEpisodeContentRefresh(
-    props.episodeIntroEventSink ?? null,
-  );
+  const {
+    content: episodeContent,
+    splash,
+    stagedReady,
+    applyStaged,
+  } = useEpisodeContentRefresh(props.episodeIntroEventSink ?? null);
   return (
     <MotionProvider motion={motion}>
       <SplashUpdateContext.Provider value={splash}>
@@ -27,6 +30,8 @@ export function App(props: AppProps = {}) {
           key={start.key}
           {...props}
           episodeContent={episodeContent}
+          stagedContentReady={stagedReady}
+          applyStagedContent={applyStaged}
           start={start.nav}
           exit={start.exit}
           onLeaveApp={(exit) => setStart((current) => nextAppStart(current, exit))}

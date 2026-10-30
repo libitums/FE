@@ -182,10 +182,10 @@ test("GW-S6: crash reporting starts before Fresco and the Lynx error callback is
     /onReceivedError\(\s*LynxError/,
     "MainActivity lacks an onReceivedError(LynxError ...) override",
   );
-  // 12번째는 ADR-0071의 `ContentFileModule`이다(입장 조건 ADR-0017 D1). 새 모듈은 이 수를 함께 올린다.
+  // 12번째는 ADR-0071의 `ContentFileModule`, 13번째는 ADR-0086의 `AppUpdateModule`이다(입장 조건 ADR-0017 D1). 새 모듈은 이 수를 함께 올린다.
   assert.equal(
     activity.match(/registerModule\(/g)?.length ?? 0,
-    12,
+    13,
     "registerModule( call count changed from 12",
   );
 });

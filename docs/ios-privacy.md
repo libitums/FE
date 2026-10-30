@@ -6,8 +6,8 @@
 
 ## 앱의 API 사용 사유
 
-| 카테고리 | 사유 | 코드 근거 |
-| --- | --- | --- |
+| 카테고리                                   | 사유     | 코드 근거                                                                                                                     |
+| ------------------------------------------ | -------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | `NSPrivacyAccessedAPICategoryUserDefaults` | `CA92.1` | `StorageModule.swift`의 `get`·`set`·`remove`가 `UserDefaults.standard`에서 `libitum.` 접두사 아래 앱 자체 정보를 읽고 씁니다. |
 
 앱 그룹이나 다른 앱의 defaults를 읽지 않습니다. Host는 배포되는 범용 SDK가 아니므로
@@ -20,15 +20,15 @@ App Store Connect의 공개된 응답과 배포 코드 경로를 대조했다. �
 
 ⟨2026-10-13⟩ **표의 두 행에 목적 `Developer Advertising`이 더해졌다** — 광고 측정 SDK 때문이다. 처음 더한 것은 Meta 앱 이벤트 SDK([ADR-0057](adr/0057-meta-app-events.md))였고, 같은 날 Airbridge SDK([ADR-0063](adr/0063-airbridge-events.md))로 바뀌었다 — 목적은 그대로 맞다. 이 두 칸은 **코드와 앱 manifest만 고친 것이고 App Store Connect의 응답과는 아직 대조하지 않았다** — 아래 [Airbridge SDK와 추적 선언](#airbridge-sdk와-추적-선언).
 
-| App Store 항목 / manifest 접미사 | 목적 | 코드 근거 |
-| --- | --- | --- |
-| 이름 / `Name` | App Functionality | Google·Facebook 로그인 시 Supabase에 기본 프로필 저장. Apple은 `requestedScopes = []` |
-| 이메일 / `EmailAddress` | App Functionality | Supabase 소셜 인증 프로필 |
-| 대략적인 위치 / `CoarseLocation` | Analytics | PostHog GeoIP 국가·지역·시간대. ADR-0029 D15의 서버 변환 설정 전제 |
-| 기타 사용자 콘텐츠 / `OtherUserContent` | Analytics | `feedback-api.ts` → `submit_feedback`: 선택적 평점·의견·화면/에피소드 맥락 |
-| 사용자 ID / `UserID` | App Functionality, Analytics | Supabase 계정별 저장 및 로그인 후 PostHog identify |
-| 기기 ID / `DeviceID` | App Functionality, **Developer Advertising** ⟨2026-10-13⟩ | `push_devices`의 APNs 토큰과 사용자 연결. Airbridge SDK 자체 manifest가 `DeviceID`를 tracking false로 선언한다(IDFV · SDK 생성 ID. IDFA 코드는 SDK에 없다 — 아래 절) |
-| 제품 상호작용 / `ProductInteraction` | App Functionality, Analytics, **Developer Advertising** ⟨2026-10-13⟩ | 서버 진행·학습 날짜·최근 접속 및 PostHog 화면/학습 이벤트. Airbridge로 가는 앱 설치 · 실행 · 가입 완료 · 레슨 완료 이벤트(`airbridge-events.ts`) |
+| App Store 항목 / manifest 접미사        | 목적                                                                 | 코드 근거                                                                                                                                                            |
+| --------------------------------------- | -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 이름 / `Name`                           | App Functionality                                                    | Google·Facebook 로그인 시 Supabase에 기본 프로필 저장. Apple은 `requestedScopes = []`                                                                                |
+| 이메일 / `EmailAddress`                 | App Functionality                                                    | Supabase 소셜 인증 프로필                                                                                                                                            |
+| 대략적인 위치 / `CoarseLocation`        | Analytics                                                            | PostHog GeoIP 국가·지역·시간대. ADR-0029 D15의 서버 변환 설정 전제                                                                                                   |
+| 기타 사용자 콘텐츠 / `OtherUserContent` | Analytics                                                            | `feedback-api.ts` → `submit_feedback`: 선택적 평점·의견·화면/에피소드 맥락                                                                                           |
+| 사용자 ID / `UserID`                    | App Functionality, Analytics                                         | Supabase 계정별 저장 및 로그인 후 PostHog identify                                                                                                                   |
+| 기기 ID / `DeviceID`                    | App Functionality, **Developer Advertising** ⟨2026-10-13⟩            | `push_devices`의 APNs 토큰과 사용자 연결. Airbridge SDK 자체 manifest가 `DeviceID`를 tracking false로 선언한다(IDFV · SDK 생성 ID. IDFA 코드는 SDK에 없다 — 아래 절) |
+| 제품 상호작용 / `ProductInteraction`    | App Functionality, Analytics, **Developer Advertising** ⟨2026-10-13⟩ | 서버 진행·학습 날짜·최근 접속 및 PostHog 화면/학습 이벤트. Airbridge로 가는 앱 설치 · 실행 · 가입 완료 · 레슨 완료 이벤트(`airbridge-events.ts`)                     |
 
 `NSPrivacyTracking = false`이며 각 수집 항목의 tracking도 false다. ~~광고 ID·광고 SDK는 사용하지 않는다.~~ ⟨2026-10-13 — 이 문장은 더는 참이 아니다. 광고 측정 SDK(Airbridge `airbridge-ios-sdk-restricted`)가 앱에 들어 있다. IDFA는 수집하지 않고 추적 허용(ATT)을 묻지 않는다 — 아래 [Airbridge SDK와 추적 선언](#airbridge-sdk와-추적-선언)⟩ 음성은 기기가 지원하면 온디바이스, 아니면 Apple Speech 서버에서 처리하며 앱 서버/분석에는 음성이나 인식 원문을 보내지 않는다. Apple 프레임워크 자체 수집은 개발자가 공개할 책임이 없다는 [Apple 안내](https://developer.apple.com/app-store/app-privacy-details/)의 “Apple frameworks or services” 기준을 따른다. 온디바이스라고만 안내해서는 안 된다.
 
@@ -44,20 +44,24 @@ App Store Connect의 공개된 응답과 배포 코드 경로를 대조했다. �
 > `NSPrivacyTracking = true` · 추적 도메인 18개 · `DeviceID` tracking true다(설치된 pod의 파일을 읽음). 아래 표와 서술 가운데
 > 「ATT 요청 · IDFA 수집을 하지 않는다」 · 「앱과 SDK가 모두 false」 · 처리방침 문안의 IDFA 문장은 **옛 기록**이다 — 줄을 그은 곳은
 > 새 값으로 읽는다. App Store Connect의 「추적」 질문은 이제 **「예」**로 답한다(한계 1 해소).
+>
+> ⟨2026-10-24 — [ADR-0079 D5](adr/0079-ios-tracking-authorization.md#d5-앱-프라이버시-매니페스트--추적한다로-바꾼다)⟩ 앱 manifest에도
+> `NSPrivacyTrackingDomains`로 SDK manifest의 추적 도메인 18개를 적었다. 도메인 없이 tracking만 true였던 빌드 8이 ITMS-91064로
+> 거부됐기 때문이다. App Store Connect 응답은 「기기 ID — 추적 예」로 게시했다.
 
 앱이 하는 것과 하지 않는 것(코드 근거).
 
-| 항목 | 상태 | 근거 |
-| --- | --- | --- |
-| 추적 허용(ATT) 요청 | ~~하지 않는다~~ ⟨2026-10-22⟩ **한다** — 가입 뒤 여정 맵 첫 진입, 아직 정하지 않았을 때만 | `NSUserTrackingUsageDescription`이 `Info.plist`에만 한 번 있다. 정적 검사 I-S4와 HostTests N-I9가 지킨다(ADR-0079) |
-| IDFA 수집 | ~~하지 않는다 — SDK 바이너리에 코드가 없다~~ ⟨2026-10-22⟩ **사용자가 허용하면 한다** — 일반판 4.12.0, AdSupport · ATT weak 링크 | pod이 IDFA · ATT를 빼고 만든 공식 변형 `airbridge-ios-sdk-restricted` 4.11.1이다. `otool -L`에 AdSupport · AppTrackingTransparency 링크가 없고 `advertisingIdentifier` 문자열이 0이다(2026-10-13 배포물 조회) |
-| IDFV · SDK 생성 ID | 쓴다 | 바이너리에 `identifierForVendor`가 있다. SDK manifest의 `DeviceID`(tracking false)가 이것이다 |
-| Apple Ads 귀속 | 쓴다 | AdServices(weak 링크)의 `attributionTokenWithError:` — 사용자 허용이 필요 없는 Apple의 경로다 |
-| SKAdNetwork | SDK가 전환값을 갱신한다. **`SKAdNetworkItems`는 없다** | 그 키는 광고를 **보여 주는** 앱의 설정이고 광고되는 앱에는 필요 없다(Apple 「configuring an advertised app」). Duru는 광고를 띄우지 않는다. ADR-0057이 적었던 Meta 식별자 둘은 근거가 틀려 지웠다(ADR-0063 D13) |
-| 자동 이벤트(설치 · 실행 · 세션) | 켠다 — **값이 있는 빌드에서만 나간다** | 옵션 기본값. App Name · App SDK Token이 없으면 호스트가 `initializeSDK`를 부르지 않는다 |
-| 앱이 보내는 이벤트 | 가입 완료 · 레슨 완료 둘. 속성은 콘텐츠 식별자뿐 | `apps/mobile/src/lib/airbridge-events.ts`. 사용자 ID · 이메일 · 전화번호 · 로그인 수단 없음, `setUserID` 등 사용자 식별 기능 미사용 |
-| 지연 딥링크 조회 | ⚠ 값이 있는 빌드에서 시작 때 요청이 나간다 | 앱은 딥링크를 쓰지 않는다. 가짜 값 빌드에서 `tracking-link.airbridge.io` 연결을 관찰했고 붙여넣기 허용 팝업은 뜨지 않았다. 끄는 옵션은 확인하지 못했다 |
-| URL scheme · Associated Domains · `LSApplicationQueriesSchemes` | 없다 | 딥링크 · 로그인 · 공유를 SDK로 하지 않는다 |
+| 항목                                                            | 상태                                                                                                                            | 근거                                                                                                                                                                                                            |
+| --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 추적 허용(ATT) 요청                                             | ~~하지 않는다~~ ⟨2026-10-22⟩ **한다** — 가입 뒤 여정 맵 첫 진입, 아직 정하지 않았을 때만                                        | `NSUserTrackingUsageDescription`이 `Info.plist`에만 한 번 있다. 정적 검사 I-S4와 HostTests N-I9가 지킨다(ADR-0079)                                                                                              |
+| IDFA 수집                                                       | ~~하지 않는다 — SDK 바이너리에 코드가 없다~~ ⟨2026-10-22⟩ **사용자가 허용하면 한다** — 일반판 4.12.0, AdSupport · ATT weak 링크 | pod이 IDFA · ATT를 빼고 만든 공식 변형 `airbridge-ios-sdk-restricted` 4.11.1이다. `otool -L`에 AdSupport · AppTrackingTransparency 링크가 없고 `advertisingIdentifier` 문자열이 0이다(2026-10-13 배포물 조회)   |
+| IDFV · SDK 생성 ID                                              | 쓴다                                                                                                                            | 바이너리에 `identifierForVendor`가 있다. SDK manifest의 `DeviceID`(tracking false)가 이것이다                                                                                                                   |
+| Apple Ads 귀속                                                  | 쓴다                                                                                                                            | AdServices(weak 링크)의 `attributionTokenWithError:` — 사용자 허용이 필요 없는 Apple의 경로다                                                                                                                   |
+| SKAdNetwork                                                     | SDK가 전환값을 갱신한다. **`SKAdNetworkItems`는 없다**                                                                          | 그 키는 광고를 **보여 주는** 앱의 설정이고 광고되는 앱에는 필요 없다(Apple 「configuring an advertised app」). Duru는 광고를 띄우지 않는다. ADR-0057이 적었던 Meta 식별자 둘은 근거가 틀려 지웠다(ADR-0063 D13) |
+| 자동 이벤트(설치 · 실행 · 세션)                                 | 켠다 — **값이 있는 빌드에서만 나간다**                                                                                          | 옵션 기본값. App Name · App SDK Token이 없으면 호스트가 `initializeSDK`를 부르지 않는다                                                                                                                         |
+| 앱이 보내는 이벤트                                              | 가입 완료 · 레슨 완료 둘. 속성은 콘텐츠 식별자뿐                                                                                | `apps/mobile/src/lib/airbridge-events.ts`. 사용자 ID · 이메일 · 전화번호 · 로그인 수단 없음, `setUserID` 등 사용자 식별 기능 미사용                                                                             |
+| 지연 딥링크 조회                                                | ⚠ 값이 있는 빌드에서 시작 때 요청이 나간다                                                                                      | 앱은 딥링크를 쓰지 않는다. 가짜 값 빌드에서 `tracking-link.airbridge.io` 연결을 관찰했고 붙여넣기 허용 팝업은 뜨지 않았다. 끄는 옵션은 확인하지 못했다                                                          |
+| URL scheme · Associated Domains · `LSApplicationQueriesSchemes` | 없다                                                                                                                            | 딥링크 · 로그인 · 공유를 SDK로 하지 않는다                                                                                                                                                                      |
 
 **앱 manifest** — 고치지 않았다. `NSPrivacyTracking = false`이고, `ProductInteraction` · `DeviceID`의 목적에 `NSPrivacyCollectedDataTypePurposeDeveloperAdvertising`이 있다(ADR-0057 때 더한 것 — 광고 성과 측정이라 그대로 맞다). 두 항목의 tracking은 false다.
 
@@ -137,10 +141,10 @@ Section 3(제3자) 표에는 Airbridge(AB180) 행을 더한다 — 기능 「adv
 3d-2([ADR-0059](adr/0059-learner-profile.md))가 **사용자가 직접 입력한 학습용 이름과 고른 나라**를 받는다. ⟨2026-10-20⟩ 가입 직후 ① 이름 · ② 나라 화면과 설정
 `Name and country in lessons`에서 입력하고(온보딩 마지막 스텝 · 에피소드 전 화면은 걷혔다), 레슨 문장의 `{이름}` · `{나라}`를 채우는 데만 쓴다. 둘 다 있어야 저장되고 건너뛰면 아무것도 저장하지 않는다.
 
-| 데이터 | 어디에 저장하나 | 목적 | 사용자 연결 | 추적 | 코드 근거 |
-| --- | --- | --- | --- | --- | --- |
-| 학습용 이름(자유 입력, 1 ~ 30자) | **서버** — Supabase `learner_profiles.name`(계정당 1행) · 기기 `UserDefaults` | App Functionality(레슨 문장에 넣기) | 예 — `user_id`로 계정에 묶인다 | 아니다 | `learner-profile-api.ts` → `save_learner_profile` · `load_learner_profile`, 마이그레이션 `20261013120000_learner_profiles.sql` |
-| 나라(목록에서 고름, ISO 코드 두 글자) | 위와 같음 — `learner_profiles.country_code` | App Functionality | 예 | 아니다 | 위와 같음 |
+| 데이터                                | 어디에 저장하나                                                               | 목적                                | 사용자 연결                    | 추적   | 코드 근거                                                                                                                      |
+| ------------------------------------- | ----------------------------------------------------------------------------- | ----------------------------------- | ------------------------------ | ------ | ------------------------------------------------------------------------------------------------------------------------------ |
+| 학습용 이름(자유 입력, 1 ~ 30자)      | **서버** — Supabase `learner_profiles.name`(계정당 1행) · 기기 `UserDefaults` | App Functionality(레슨 문장에 넣기) | 예 — `user_id`로 계정에 묶인다 | 아니다 | `learner-profile-api.ts` → `save_learner_profile` · `load_learner_profile`, 마이그레이션 `20261013120000_learner_profiles.sql` |
+| 나라(목록에서 고름, ISO 코드 두 글자) | 위와 같음 — `learner_profiles.country_code`                                   | App Functionality                   | 예                             | 아니다 | 위와 같음                                                                                                                      |
 
 - **기기 저장**: `libitum.learner-profile.<userId>`(서버가 확인한 값도 둔다 — 부팅 직후 · 오프라인에서 문장을 채우려고)와 로그인 전 온보딩에서 입력했을 때만 생기는
   `libitum.learner-profile.guest`(로그인 직후 사용자별 칸으로 옮기고 지운다). 위 「앱의 API 사용 사유」의 UserDefaults `CA92.1` 범위 안이다 — 앱 자체 정보다.
@@ -176,8 +180,8 @@ Section 3의 Supabase 행에 「learner profile (name and country you enter)」�
 [ADR-0062](adr/0062-progress-cache-first.md)이 **서버가 마지막으로 확인한 학습 진행을 기기에 남긴다** — 켤 때 서버 응답 전에 여정 맵을 지난 진행으로 그리려는 것이다.
 전에는 보내지 못한 진행(미전송)만 기기에 두고 서버가 확인하면 지웠다(ADR-0035 D3).
 
-| 데이터 | 어디에 저장하나 | 목적 | 사용자 연결 | 추적 | 코드 근거 |
-| --- | --- | --- | --- | --- | --- |
+| 데이터                                                                                                | 어디에 저장하나                                             | 목적                                        | 사용자 연결                      | 추적   | 코드 근거                                                                   |
+| ----------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- | ------------------------------------------- | -------------------------------- | ------ | --------------------------------------------------------------------------- |
 | 학습 진행 스냅숏(끝낸 스텝 · 유닛 · 카탈로그 유닛 키 — 서버 `learning_progress.progress`와 같은 모양) | 기기 `UserDefaults` — 키 `libitum.progress.cached.<userId>` | App Functionality(켤 때 진행을 바로 보이기) | 키에 사용자 id(이 기기 안에서만) | 아니다 | `app/cached-learning-progress.ts`, 쓰는 자리 `app/journey-progress-sync.ts` |
 
 - **담는 것**: 진행 스냅숏만이다. 이름 · 이메일 · 토큰 같은 식별 정보는 없다. 위 「앱의 API 사용 사유」의 UserDefaults `CA92.1` 범위 안이다 — 앱 자체 정보다.

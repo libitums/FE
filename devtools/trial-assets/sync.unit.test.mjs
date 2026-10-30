@@ -4,8 +4,12 @@ import { dirname, join, relative, sep } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 
-// 랜딩 체험판의 사본(u00 JSON · 그림 12 · 효과음 5)이 앱 원본과 바이트가 같은지 봅니다.
+// 랜딩 체험판의 사본(u00 JSON · 그림 12 · 효과음 5)이 원본과 바이트가 같은지 봅니다.
 // 루트 도구라 두 앱을 함께 읽어도 패키지 의존이 아닙니다.
+//
+// ⟨2026-10-26⟩ 앱 내장 u00이 버킷 최신본(4스텝)으로 바뀌었지만 체험판은 옛 14스텝 구조(S3 그림 고르기 · S9 · S12)에
+// 맞춰져 있어 2026-10-23판에 머뭅니다. 그래서 u00 사본 · 핀은 앱 테스트 고정본(`content/test-fixtures/bundled-2026-10-23`)과
+// 견주고, 그림은 앱에 아직 있는 것만 앱 원본과 견줍니다(옛 앞 컷 pre-1 ~ 6은 체험판 사본이 유일한 사본입니다).
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const at = (...parts) => join(root, ...parts);
@@ -53,19 +57,27 @@ const TRIAL_SFX = [
   "wrong_answer.mp3",
 ];
 
-test("TA1: 랜딩 u00 사본은 앱 내장본과 바이트가 같다", () => {
+/** 체험판이 머무는 u00 판의 원문 자리 — 앱 테스트 고정본입니다. */
+const TRIAL_U00_SOURCE = "apps/mobile/content/test-fixtures/bundled-2026-10-23";
+
+test("TA1: 랜딩 u00 사본은 체험판이 머무는 판(앱 테스트 고정본)과 바이트가 같다", () => {
   assertSameBytes(
     at("apps/landing/src/trial/content/u00-tutorial.json"),
-    at("apps/mobile/content/episodes/u00-tutorial.json"),
+    at(`${TRIAL_U00_SOURCE}/episodes/u00-tutorial.json`),
   );
 });
 
-test("TA2: 그림 사본은 정해진 12개이고 각각 앱 원본과 바이트가 같다", () => {
+test("TA2: 그림 사본은 정해진 12개이고, 앱에 아직 있는 그림은 앱 원본과 바이트가 같다", () => {
   const copyRoot = at("apps/landing/src/assets/trial/images");
   assert.deepEqual(filesUnder(copyRoot), TRIAL_IMAGES);
-  for (const path of TRIAL_IMAGES) {
-    assertSameBytes(join(copyRoot, path), at("apps/mobile/src/assets/content/images", path));
-  }
+  const appRoot = at("apps/mobile/src/assets/content/images");
+  const shared = TRIAL_IMAGES.filter((path) => existsSync(join(appRoot, path)));
+  // 앱에서 빠진 것은 옛 앞 컷 여섯 장뿐이어야 합니다 — 그 밖의 그림이 빠지면 사본이 원본을 잃은 것입니다.
+  assert.deepEqual(
+    TRIAL_IMAGES.filter((path) => !shared.includes(path)),
+    [1, 2, 3, 4, 5, 6].map((n) => `u00-tutorial/pre-${n}.webp`),
+  );
+  for (const path of shared) assertSameBytes(join(copyRoot, path), join(appRoot, path));
 });
 
 test("TA3: 효과음 사본은 정해진 5개이고 각각 iOS 원본과 바이트가 같다", () => {
@@ -84,8 +96,8 @@ test("TA4: 패키지와 앱의 zod 의존은 같은 정확 버전이다", () => 
   assert.equal(core, app);
 });
 
-test("TA5: 앱 매니페스트의 u00 version · sha256이 체험판 핀 원문에 들어 있다", () => {
-  const manifest = JSON.parse(readFileSync(at("apps/mobile/content/manifest.json"), "utf8"));
+test("TA5: 체험판이 머무는 판의 u00 version · sha256이 체험판 핀 원문에 들어 있다", () => {
+  const manifest = JSON.parse(readFileSync(at(`${TRIAL_U00_SOURCE}/manifest.json`), "utf8"));
   const u00 = manifest.episodes.find((entry) => entry.id === "u00-tutorial");
   assert.ok(u00, "매니페스트에 u00-tutorial이 없다");
   const pin = readFileSync(at("apps/landing/src/trial/trial-content.ts"), "utf8");

@@ -83,9 +83,13 @@ for (const path of paths) {
       await page.goto(path);
       // WebKit에서는 axe가 어두운 구간의 큰 제목 글자색을 #000으로 잘못 읽습니다(계산된 color는 흰색입니다).
       // 대비는 엔진과 무관한 값이라 chromium · firefox의 검사에 맡깁니다.
+      // 브랜드 주황 위 흰 글자(대비 2.9:1)를 앱 그대로 두기로 한 사용자 결정(2026-10-29): Story의 New 표와,
+      // 앱 화면을 옮겨 그린 휴대폰 목업(보조기술에는 숨긴 장식 그림)은 검사에서 뺀다.
       const result = await new AxeBuilder({ page })
         .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
         .disableRules(browserName === "webkit" ? ["color-contrast"] : [])
+        .exclude(".scene__new")
+        .exclude(".phone__screen")
         .analyze();
       expect(
         result.violations.map(

@@ -8,6 +8,7 @@ import { bundledCatalogInput } from "./episode-bundled";
 import {
   buildEpisodeCatalog,
   compareVersions,
+  CONTENT_CLIENT_LEVEL,
   type CatalogEntry,
   type CatalogInput,
 } from "./episode-catalog";
@@ -201,7 +202,9 @@ describe("buildEpisodeCatalog", () => {
 
   test("C7. 원격 min_client_level이 높으면 원격에서 온 항목만 client-too-old", () => {
     const remotes = [remote("u04-x", 4), remote("u01-water", 1, { version: "2026-10-11.9" })];
-    const catalog = buildEpisodeCatalog(input(cacheOf(remotes, true, { min_client_level: 2 })));
+    const catalog = buildEpisodeCatalog(
+      input(cacheOf(remotes, true, { min_client_level: CONTENT_CLIENT_LEVEL + 1 })),
+    );
     expect(find(catalog, "u04-x")).toMatchObject({ status: "locked", reason: "client-too-old" });
     for (const id of ["u00-tutorial", "u01-water", "u02-checkin", "u03-mina"]) {
       expect(find(catalog, id)).toMatchObject({ status: "ready", source: "bundled" });
@@ -211,7 +214,9 @@ describe("buildEpisodeCatalog", () => {
   // W-1: 원격이 이겼어도 문제가 있으면 같은 id의 내장본이 ready로 남는다(이미 열리던 에피소드가 닫히면 안 된다).
   test("C7b. 원격이 이긴 내장 id도 min_client_level이 높으면 내장본 ready/bundled", () => {
     const catalog = buildEpisodeCatalog(
-      input(cacheOf([remote("u01-water", 1)], true, { min_client_level: 2 })),
+      input(
+        cacheOf([remote("u01-water", 1)], true, { min_client_level: CONTENT_CLIENT_LEVEL + 1 }),
+      ),
     );
     expect(find(catalog, "u01-water")).toMatchObject({ status: "ready", source: "bundled" });
   });
@@ -229,7 +234,7 @@ describe("buildEpisodeCatalog", () => {
     ["schema 미지원", () => cacheOf([remote("u01-water", 1, { schema: "delivery-9" })])],
     [
       "min_client_level 높음",
-      () => cacheOf([remote("u01-water", 1)], true, { min_client_level: 2 }),
+      () => cacheOf([remote("u01-water", 1)], true, { min_client_level: CONTENT_CLIENT_LEVEL + 1 }),
     ],
   ])(
     "W1. 원격 u01이 높은 version이어도 %s이면 ready/bundled(pending · locked 아님)",

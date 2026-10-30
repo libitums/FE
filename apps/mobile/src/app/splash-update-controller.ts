@@ -14,6 +14,8 @@ export type SplashUpdateControllerDeps = {
   readonly now: () => number;
   /** 앱 시작 교체에서 올린 수. */
   readonly startPromoted: number;
+  /** 매니페스트 응답 전에도 스플래시를 붙잡는가 — 받아 둘 수 있을 때만(파일 모듈이 없으면 게이지도 없음). */
+  readonly waitForCheck: boolean;
   /** 자리표시 포트의 close가 effect 전에 불렸는가. "yes"면 창을 닫힌 채 시작합니다(교체 · 이벤트 없음). */
   readonly closedBeforeStart: "yes" | "no";
   /** 뷰가 바뀔 때만 부릅니다(같은 값이면 부르지 않음). */
@@ -37,14 +39,14 @@ export type SplashUpdateController = {
 export function createSplashUpdateController(
   deps: SplashUpdateControllerDeps,
 ): SplashUpdateController {
-  let state = initialSplashUpdateState(deps.now());
+  let state = initialSplashUpdateState(deps.now(), deps.waitForCheck);
   if (deps.closedBeforeStart === "yes") {
     state = splashUpdateReducer(state, { type: "closed" });
   }
   let shown = splashUpdateViewOf(state);
 
   const sameView = (a: SplashUpdateView, b: SplashUpdateView): boolean =>
-    a.kind === "plain" || b.kind === "plain"
+    a.kind !== "gauge" || b.kind !== "gauge"
       ? a.kind === b.kind
       : a.percent === b.percent && a.hold === b.hold;
 

@@ -6,6 +6,7 @@ import type { CatalogProgress, CatalogUnitKey } from "../lib/catalog-progress";
 import type { CatalogStartSource } from "../lib/catalog-learning-event.contract";
 import type { LessonCompleteNext } from "../screens/lesson-complete/LessonCompleteNextActions";
 import { catalogUnitNodesOf } from "../screens/journey-map/catalog-map";
+import { catalogIsStoryUnit } from "../screens/journey-map/catalog-map-story";
 import type { CatalogMapSection } from "../screens/journey-map/catalog-map.contract";
 
 export type CatalogNextUnit = {
@@ -58,6 +59,7 @@ export function catalogResultNextOf(
         episodeId,
         next.unitKey,
         input.catalogTicketUnits ?? {},
+        catalogIsStoryUnit(input.catalogSections, episodeId, next.unitKey),
       ),
       onStart: () => input.onStartCatalogUnit(episodeId, next.unitKey, "result"),
     },

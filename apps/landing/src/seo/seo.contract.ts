@@ -226,3 +226,20 @@ export interface RobotsTxtInput {
 }
 
 export type BuildRobotsTxt = (input: RobotsTxtInput) => string;
+
+// ---------------------------------------------------------------- 아이콘 링크
+
+/** `<head>`의 아이콘 `<link>` 하나입니다. `type` · `sizes`는 없으면 속성도 내지 않습니다. */
+export interface IconLink {
+  rel: "icon" | "apple-touch-icon";
+  /** 배포 주소가 있으면 `https://호스트/파일`, 없으면 `/파일`입니다. */
+  href: string;
+  type?: string;
+  sizes?: string;
+}
+
+/**
+ * 모든 페이지가 같은 순서로 싣는 아이콘 링크입니다. 검색 결과의 파비콘은 수집기가 페이지의 `<link rel="icon">`을
+ * 따라가 받으므로, 배포 주소가 있으면 절대 주소로 냅니다(상대 주소에서는 Google이 기본 지구본을 보이는 일이 있습니다).
+ */
+export type BuildIconLinks = (siteUrl: SiteUrl) => readonly IconLink[];

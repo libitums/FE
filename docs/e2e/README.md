@@ -132,6 +132,8 @@ UI 언어 문구표(영어 UI 둘러보기 · VoiceOver 낭독 · 레이아웃 �
 
 튜토리얼 u00(옛 내장 튜토리얼을 카탈로그 에피소드 `u00-tutorial`로 교체 — 새 설치 오프라인에서 내장 그림까지 · 맵 첫 구획 `Episode 0.` · u00 통과 → Episode 1 열림 · 옛 튜토리얼 통과 사용자의 Episode 1 유지 · 첫 유닛 안내가 u00 표지 · 티켓 없음 · 롤플레이 탭에 u00 없음 · 내장 그림 받기 0 · 큰 글꼴 · Android 재작성)의 수동 흐름은 [튜토리얼 u00 e2e](tutorial-u00.md)에 있다(EU-0 ~ EU-8 · 호스트 테스트 HA1 · HA2). 결정은 [ADR-0081](../adr/0081-tutorial-as-catalog-episode.md)가 진다. 2026-10-22에 iOS 시뮬레이터 **플레이그라운드 부분 회차**가 돌았다(1차 — 실제 로그인 대신 임시 화면에 실제 결선, EU-3 · EU-7 통과 · EU-1 · EU-2 · EU-4 · EU-5 부분). 사용자가 이 PR의 기기 확인을 이 부분 회차로 받아들였다(2026-10-22) — 제품 번들 오프라인 그림(iOS · Android 재작성) · 실제 로그인 · 저장소 시드 옛 사용자 · 서버 동기화 · 음성 12개 받기와 그림 받기 0 · 티켓 수 · Android(EU-8) · VoiceOver 실제 낭독은 아직 실행된 회차가 없다. 옛 튜토리얼 절차 넷(`tutorial-beginner-units` · `tutorial-final-story` · `tutorial-prologue` · `tutorial-story-review`)은 화면과 함께 지웠고, 옛 튜토리얼 · 특별 유닛을 단계로 쓰는 다른 문서에는 「더 실행할 수 없다 — 기록」 머리를 달았다. Android Maestro 흐름 둘(듣기 재생 · 손글씨)은 지웠고 그 문서의 계측 절차만 남았다([Android 오디오 재생](android-audio-playback.md) · [Android 손글씨](android-handwriting-trace.md)). 완료 낭독 · 앱 리뷰 · 말하기 권한 흐름 셋은 옛 튜토리얼 좌표라 깨진 상태이고, u00 경로로 고치는 일은 사용자 결정(2026-10-22)으로 후속 작업에 넘겼다.
 
+앱 버전 표시 · 강제 업데이트(설정 끝 `Version 1.0 (11)` 줄 · 버킷 `app-policy.json`의 최소 빌드보다 낮으면 스플래시 뒤 `Update Duru to continue` 화면 · `Update`로 스토어 열기 · 뒤로가기 = 종료 · 오프라인 저장본 · 정책 삭제로 풀기 · VoiceOver/TalkBack · 큰 글꼴)의 수동 흐름은 [앱 업데이트 e2e](app-update.md)에 있다(AU1 ~ AU8). 결정은 [ADR-0086](../adr/0086-app-version-and-forced-update.md). 2026-10-27 절차만 작성, 기기 실행 없음.
+
 학습 문항 음성 · 「천천히」(레슨 문항이 문항 음성을 들려주는가 · 듣기 문항의 `Slow`(0.85)가 길이만 약 1.18배 늘리고 음높이를 지키는가 · 원격 · 받아 둔 파일 · 일시정지 재개 · 레슨 안 유지와 나가면 꺼짐 · 컷 · 최종 1.0 · 옛 호스트 · u00 `S2` · `S7` · 간이 줄 재생 중 `Stop` · 판정 때 대본 낭독 · 판정 낭독 · 효과음과 음성의 겹침 · `Slow` 상태 재낭독)의 수동 흐름은 [학습 문항 음성 e2e](item-audio.md)에 있다(EU1 ~ EU9 · BA1 · BA2 · BA4 ~ BA7, 호스트 로그 보는 곳 포함). 결정은 [ADR-0082](../adr/0082-item-audio-and-slow-playback.md)이 진다. **아직 실행하지 않았다** — 호스트 테스트(iOS 11/11 · Android 계측 22/22)만 돌았다.
 
 학습 문항 리디자인(iPhone 13 mini에서 문항 시작 · 답한 뒤 모두 세로 스크롤 없이 서는가 · 캔버스 수정안과 같은 구조 · 토큰인가 · 로마자 기울임 · 판정 배지의 지시문 자리 · 줄 배치 `Check` · 대화 조립 상대 아바타 그림 · 문화 확인 장면과 해설 판 · 빈칸 밑줄 · 큰 글자 안전망 · VoiceOver · TalkBack)의 수동 흐름은 [학습 문항 리디자인 e2e](lesson-redesign.md)에 있다(EU1 ~ EU9). 결정은 [ADR-0084](../adr/0084-lesson-item-redesign.md)이 진다. **아직 회차가 없다.**
@@ -145,6 +147,12 @@ UI 언어 문구표(영어 UI 둘러보기 · VoiceOver 낭독 · 레이아웃 �
 새 에피소드 형식 ③(따라 읽기 · 그림 보고 말하기 · 첫 `Speak`의 권한 창 · 거부 뒤 막힘과 활동 안 잠금 · 건너뜀 수와 통과 분모)의 수동 흐름은 [말하기 화면 e2e](episode-format-speaking.md)에 있다. 결정은 [ADR-0067](../adr/0067-episode-format-speaking.md)이 진다. 2026-10-16에 iOS 시뮬레이터 한 회차가 **옛 진행 계정**으로 돌았고 **일부만 봤다**(u01 `Lesson 5` 따라 읽기 화면 · 권한 창 둘 · 둘 다 거부한 뒤의 막힘 · 남은 문장이 처음부터 막힘) — 허용 경로 · 실제 음성 인식 · 그림 보고 말하기 · 레슨 결과 · 한쪽만 거부 · 접근성 수정이 든 빌드 · VoiceOver 실청취 · Android는 아직 실행된 회차가 없다. **시뮬레이터의 마이크는 호스트 Mac의 것이고 인식기 없음 · `restricted`는 재현 수단이 없다** — 그 자리는 실기 확인으로 남는다.
 
 ⟨2026-10-21 — 튜토리얼의 다섯은 지워졌고 남은 스페셜은 카탈로그 표지 · `Final test`다⟩ 여정 맵의 스페셜 유닛(튜토리얼 표지 · 메신저 · 전화 · 비주얼 노벨 · 최종 테스트와 카탈로그의 표지 · `Final test`의 면 · 두께 · 별 · 두 줄 라벨, 잠김 · 열림 · 끝 · 확인 중 · 눌림, 동작 줄이기, 접근성 이름)의 수동 흐름은 [스페셜 유닛 e2e](special-unit.md)에 있다(SUE1 ~ SUE6). 카탈로그 `Culture`는 스페셜이 아니라 원형 노드다(SUE3이 함께 본다). 회차 1(2026-10-17, iOS 시뮬레이터)은 부분이다 — 끝남 상태와 접근성 트리를 봤고(그 회차의 「열림」은 정정 전 빌드의 문화 노드) 스페셜의 열림 · 잠김 · 확인 중 · 안내 말풍선 · 눌림 · 동작 줄이기는 미실행이다. VoiceOver 발화 · 키보드 focus ring은 시뮬레이터 · 맵 결선 한계로 판정 불가이고 Android는 네이티브 변경이 없어 절차를 두지 않는다.
+
+막간(INT) 이야기 유닛(맵의 스페셜 Story 노드 · 티켓 없는 말풍선 · 자막부터 서는 컷 화면 · 메신저 · 전화 막간)의 수동 흐름은 [막간 이야기 e2e](interlude-story.md)에 있다(IE1 ~ IE5). 결정은 [ADR-0088](../adr/0088-interlude-story-unit.md)이 진다. 회차 1(2026-10-26, iOS 시뮬레이터 · 임시 내장 픽스처)은 IE1 ~ IE3 통과, IE4 · IE5 · Android · VoiceOver 미확인.
+
+문자 막간의 시간 표시 화면 · 메신저 · 답장 시트는 [문자 막간 e2e](interlude-messenger.md)에 있다(ME1 ~ ME8, ADR-0088 D5).
+
+Story 노드 바로 시작 · 시작 화면 Skip · Start · 전화 막간 · 노드 아이콘은 [Story 시작 화면 · 전화 e2e](story-intro-call.md)에 있다(SC1 ~ SC8, ADR-0088 D6).
 
 기존 회원 로그인(서버 기록이 있는 계정은 로그인 뒤 언어 선택 · 여정 입장 없이 바로 여정 맵 · 새 계정 회귀 · 소셜 버튼 로딩 스피너가 버튼 가운데 · 세션 갱신 부팅 · 로딩 중 버튼 이름)의 수동 흐름은 [기존 회원 로그인 e2e](returning-user-login.md)에 있다. 결정은 [ADR-0069](../adr/0069-returning-learner-login.md)가 진다. 아직 실행된 회차가 없다 — 기존 계정 · 새 계정 둘과 실제 소셜 로그인이 필요하다(위 「공통 전제」의 초기 심사 빌드 제약).
 
@@ -164,4 +172,6 @@ UI 언어 문구표(영어 UI 둘러보기 · VoiceOver 낭독 · 레이아웃 �
 
 iOS 출시 전에 실기에서 확인할 **출시 조건**의 목록은 [iOS 출시 확인 목록](ios-release-checks.md)에 있다(Android 쪽은 [Android 출시 설정](android-release-config.md) R9의 확인 목록). 흐름이 아니라 목록이다 — 각 행의 절차는 그 행이 가리키는 흐름 문서에 있다. 첫 행은 학습 문항 안내의 VoiceOver · 실기 모습 넷(i1 ~ i4, [ADR-0054](../adr/0054-learning-item-guides.md))이고 아직 아무도 하지 않았다.
 
-Airbridge 앱 이벤트 SDK(값이 없는 빌드의 무동작 · 가짜 값 빌드의 시작 · 실제 값으로 대시보드 Real-time Logs 수신)의 수동 절차는 [Airbridge 앱 이벤트 e2e](airbridge-events.md)에 있다. A(값 없음)와 B(가짜 값)가 iOS 시뮬레이터 · Android 에뮬레이터 두 플랫폼의 실행 대상이고, C(실제 값)는 사용자 몫이다. 가입 완료 · 유닛 완료 구간은 로그인이 필요해 사람이 해야 한다. A · B는 2026-10-13에 두 플랫폼에서 한 번 돌았다 — 실행 · 재시작 · 로그인 화면까지이고 로그인 이후(이벤트 전달 B-6)는 수행하지 않은 한계가 있는 통과다. C는 실행되지 않았다. 이전 Meta SDK 절차(#242)는 이 문서로 대체되었다.
+Airbridge 앱 이벤트 SDK(값이 없는 빌드의 무동작 · 가짜 값 빌드의 시작 · 실제 값으로 대시보드 Real-time Logs 수신)의 수동 절차는 [Airbridge 앱 이벤트 e2e](airbridge-events.md)에 있다. A(값 없음)와 B(가짜 값)가 iOS 시뮬레이터 · Android 에뮬레이터 두 플랫폼의 실행 대상이고, C(실제 값)는 사용자 몫이다. 가입 완료 · 유닛 완료 구간은 로그인이 필요해 사람이 해야 한다. A · B는 2026-10-13에 두 플랫폼에서 한 번 돌았다 — 실행 · 재시작 · 로그인 화면까지이고 로그인 이후(이벤트 전달 B-6)는 수행하지 않은 한계가 있는 통과다. C는 실행되지 않았다. 이전 Meta SDK 절차(#242)는 이 문서로 대체되었다. ⟨2026-10-30⟩ 같은 문서의 **F**([ADR-0090](../adr/0090-landing-airbridge-web-sdk.md))는 앱이 아니라 **웹 랜딩**의 Airbridge Web SDK다 — 실제 Web SDK Token이 든 프로덕션에서 Android 실기의 Play 카드 → 설치 → Real-time Logs Install의 채널 · 캠페인(AB-M1), EU 시간대 브라우저의 수집 요청 · 쿠키 0(AB-M2), 데스크톱 · iOS Safari에서 Play 카드가 같은 랜딩으로 돌아오는 체감(AB-M3). Vercel에 토큰을 넣는 것이 사용자 몫이라 셋 다 실행되지 않았다. 자동 쪽(스텁 SDK · 로더 차단 · 시간대)은 `apps/landing/e2e/airbridge.e2e.ts`가 진다.
+
+끝낸 에피소드가 업데이트됐을 때의 지도 안내(ADR-0089)의 수동 흐름은 [업데이트 안내 e2e](catalog-update-notice.md)(CU1 ~ CU8)에 있다.

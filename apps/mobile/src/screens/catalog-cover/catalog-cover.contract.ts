@@ -52,8 +52,8 @@ export type CatalogCutPort = {
   readonly audioTimingOf: (audioId: string) => AudioTiming | null;
 };
 
-/** 같은 컷 화면이 서는 자리 — 에피소드 앞(표지)과 최종 테스트 통과 뒤. */
-export type CatalogCutStage = "prologue" | "epilogue";
+/** 같은 컷 화면이 서는 자리 — 에피소드 앞(표지), 최종 테스트 통과 뒤, 막간 이야기(ADR-0088). */
+export type CatalogCutStage = "prologue" | "epilogue" | "interlude";
 
 export type CatalogCoverScreenProps = {
   readonly insets: SafeAreaInsets;
@@ -68,7 +68,8 @@ export type CatalogCoverScreenProps = {
 };
 
 /** 배너의 종류 — 표지 컷 뒤(`start`) · 통과 뒤 컷 뒤(`clear`). */
-export type EpisodeBannerKind = "start" | "clear";
+/** `continue`는 막간 이야기(ADR-0088)를 끝낸 뒤 — 에피소드가 아직 이어진다는 배너입니다. */
+export type EpisodeBannerKind = "start" | "clear" | "continue";
 
 /** 글자의 등장 변형 — `reward`는 커지며, `fade`는 크기 변화 없이(동작 줄이기). */
 export type EpisodeBannerMotion = "reward" | "fade";
@@ -91,12 +92,16 @@ export type CatalogCoverCopy = {
   readonly finishCover: string;
   /** 진행 버튼 낭독(통과 뒤 컷의 마지막) */
   readonly finishEpilogue: string;
+  /** 막간 이야기의 마지막 컷 버튼 낭독입니다. */
+  readonly finishStory: string;
   /** 독백 낭독에서 화자 뒤에 붙는 말 — 괄호를 기호로 읽지 않게. */
   readonly thinking: string;
   /** 표지 컷을 끝까지 본 뒤의 배너 */
   readonly episodeStart: string;
   /** 통과 뒤 컷을 끝까지 본 뒤의 배너 */
   readonly episodeClear: string;
+  /** 막간 이야기를 끝낸 뒤의 배너 — 에피소드는 아직 이어집니다. */
+  readonly episodeContinue: string;
   /** 표지의 건너뛰기 확인 모달 설명 — 카탈로그 표지는 다시 열 수 있습니다. */
   readonly skipDescription: string;
 };

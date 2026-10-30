@@ -90,6 +90,8 @@ public final class MainActivity extends Activity {
     builder.registerModule("HandwritingTraceModule", HandwritingTraceModule.class);
     builder.registerModule("ContentFileModule", ContentFileModule.class);
     builder.registerModule("AppReviewModule", AppReviewModule.class, this);
+    // Google Play의 이 앱 페이지를 연다(ADR-0086). 목적지는 고정이고, 언제 열지는 JS(강제 업데이트 화면)가 정한다.
+    builder.registerModule("AppUpdateModule", AppUpdateModule.class, this);
     pushNotifications = new PushNotificationController(this);
     builder.registerModule("PushNotificationModule", PushNotificationModule.class, pushNotifications);
     builder.registerModule("SystemBackModule", SystemBackModule.class, this);
@@ -121,6 +123,8 @@ public final class MainActivity extends Activity {
     setContentView(lynxView);
     publishSafeAreaInsets();
     publishViewportMetrics();
+    // 앱 버전은 실행 중 바뀌지 않으니 로드 앞에 한 번만 건다(ADR-0086). 키 단위 병합이라 다른 값과 섞이지 않는다.
+    lynxView.updateGlobalProps(AppVersion.globalProps(BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE));
     // safe area와 따로 보낸다(updateGlobalProps는 키 단위 병합). 로드 앞에 첫 값을 걸어 둔다.
     publishReducedMotion(reducedMotionWatcher.read(getContentResolver()));
     reducedMotionWatcher.start(getContentResolver(), mainHandler, this::publishReducedMotion);

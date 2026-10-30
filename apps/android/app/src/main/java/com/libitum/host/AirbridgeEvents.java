@@ -1,11 +1,15 @@
 package com.libitum.host;
 
 import android.app.Application;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import co.ab180.airbridge.Airbridge;
 import co.ab180.airbridge.AirbridgeOption;
 import co.ab180.airbridge.AirbridgeOptionBuilder;
 import com.lynx.tasm.LynxViewBuilder;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -18,13 +22,30 @@ final class AirbridgeEvents {
 
   private AirbridgeEvents() {}
 
+  /** ADR-0085 D4: 시험 계정이라 추적을 멈췄는지 기억하는 자리. 다음 실행도 멈춘 채로 시작한다. */
+  static final String PREFS_NAME = "airbridge_events";
+  static final String TRACKING_STOPPED_KEY = "tracking_stopped";
+
+  private static SharedPreferences prefs(Context context) {
+    return context.getApplicationContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+  }
+
+  /**
+   * ADR-0080 D4 보충: 대시보드 Tracking Link › Custom Domain에 등록한 도메인. SDK에도 같은 FQDN을 넣어야 이 도메인의
+   * 링크를 Airbridge 링크로 알아본다(Airbridge Android SDK 문서 「Set up custom domain」).
+   */
+  static final List<String> TRACKING_LINK_CUSTOM_DOMAINS = Collections.singletonList("go.k-duru.com");
+
   static boolean start(Application app, AirbridgeEventsConfig config) {
     if (config == null) return false;
     try {
       // Meta 지연 앱 링크는 쓰지 않는다(ADR-0063 D5). Airbridge 딥링크 · 지연 딥링크는 ADR-0080.
+      // 멈춰 둔 기기(시험 계정)에서는 설치 · 실행도 재지 않고 시작한다(ADR-0085 D4).
       AirbridgeOption option =
           new AirbridgeOptionBuilder(config.appName(), config.sdkToken())
               .setTrackMetaDeferredAppLinkEnabled(false)
+              .setAutoStartTrackingEnabled(!prefs(app).getBoolean(TRACKING_STOPPED_KEY, false))
+              .setTrackingLinkCustomDomains(TRACKING_LINK_CUSTOM_DOMAINS)
               .build();
       Airbridge.initializeSDK(app, option);
       started = true;
@@ -44,6 +65,18 @@ final class AirbridgeEvents {
   static void configure(LynxViewBuilder builder) {
     if (!started()) return;
     builder.registerModule("AirbridgeEventsModule", AirbridgeEventsModule.class);
+  }
+
+  /** ADR-0085 D4: 추적을 켜거나 멈추고 그 값을 기억한다. 시작되지 않은 빌드에서는 아무것도 하지 않는다. */
+  static void setTrackingEnabled(Context context, boolean enabled) {
+    if (!started()) return;
+    try {
+      prefs(context).edit().putBoolean(TRACKING_STOPPED_KEY, !enabled).apply();
+      if (enabled) Airbridge.startTracking();
+      else Airbridge.stopTracking();
+    } catch (RuntimeException | LinkageError ignored) {
+      // 측정 전환 실패가 화면을 막지 않는다.
+    }
   }
 
   static void track(String category, Map<String, String> attributes) {

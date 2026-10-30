@@ -15,7 +15,7 @@ export function SpecialUnit(props: SpecialUnitProps) {
   // standard에서는 data-motion 속성을 아예 넘기지 않습니다. undefined로 넘기면 테스트 렌더러가 "null" 문자열로 남깁니다.
   const motionProps = motion === "reduced" ? { "data-motion": "reduced" } : {};
   const shaded = hasSpecialUnitPressedShade(contract.status, motion);
-  const iconContent = fivePointedStar.replace(/currentColor/g, contract.iconColor);
+  const iconContent = (props.icon ?? fivePointedStar).replace(/currentColor/g, contract.iconColor);
 
   function handleTap(event: SpecialUnitTapEvent) {
     "background only";

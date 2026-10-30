@@ -22,6 +22,7 @@ function setup(over: Partial<SplashUpdateControllerDeps> & { promoted?: readonly
   const deps: SplashUpdateControllerDeps = {
     now: () => clock.now,
     startPromoted: 0,
+    waitForCheck: true,
     closedBeforeStart: "no",
     onView: (view) => {
       calls.push("onView");

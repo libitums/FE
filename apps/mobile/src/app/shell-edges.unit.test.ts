@@ -37,6 +37,7 @@ const source = { episodeContent: content, learnerFill: noLearnerProfile };
 const fullBleedRoutes: readonly Screen[] = [
   asScreen({ name: "journey-entry" }),
   asScreen({ name: "catalog-cover", episodeId: "u01-water" }),
+  asScreen({ name: "catalog-story", episodeId: "u01-water", unitKey: "INT" }),
   asScreen({ name: "catalog-final", episodeId: "u01-water" }),
   asScreen({ name: "catalog-epilogue", episodeId: "u01-water" }),
 ];

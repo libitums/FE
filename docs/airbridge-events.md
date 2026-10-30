@@ -16,6 +16,10 @@ App SDK Token으로 Airbridge가 이벤트를 받는 것을 본 적이 없고, �
 - 값은 저장소에 커밋하지 않는다. 플랫폼마다 추적하지 않는 파일 하나에 적는다.
 - 매체(Meta · Google Ads · TikTok Ads · Apple Ads)와의 연결은 **앱이 아니라 Airbridge 대시보드에서** 한다. 앱에는 매체별
   SDK가 없다.
+- ⟨2026-10-30⟩ **웹 랜딩(`apps/landing`)은 같은 화면의 다른 값 — Web SDK Token**(App SDK Token이 아니다)을 Vercel 환경 변수 `PUBLIC_AIRBRIDGE_WEB_TOKEN`
+  (Production에만)으로 받아, 검색광고를 눌러 온 사람의 Play 카드 클릭을 `openDeeplink`로 보내 **랜딩에서 Play 설치를 귀속**한다. 값이 없으면 싣지 않는다.
+  켜는 법 · 동작은 [랜딩 README 「분석」 · 「배포」](../apps/landing/README.md#airbridge-web-sdk-2026-10-30), 결정은 [ADR-0090](adr/0090-landing-airbridge-web-sdk.md),
+  수신 확인은 [e2e F](e2e/airbridge-events.md#f--웹-랜딩--설치-귀속-adr-0090)(미실행). 이 문서의 나머지는 앱 쪽 그대로다.
 - ⚠ **Android는 값이 없는 빌드에도 광고 ID 권한이 실린다.** Play에 올리기 전에 콘솔의 선언부터 맞춘다
   ([스토어 고지에서 바뀌는 것](#스토어-고지에서-바뀌는-것)).
 
@@ -113,6 +117,9 @@ grep -c 'AIRBRIDGE_APP_NAME = "";' apps/android/app/build/generated/source/build
   기존 회원의 바로 맵 진입을 세는 새 제품 이벤트 `entry_returning_learner_entered`는 **Airbridge로 보내지 않는다**(PostHog에만 간다).
 - **「레슨 완료」는 사용자당 최대 2회다.** 여정의 메신저 유닛 하나와 비주얼 노벨 유닛 하나뿐이고, 표준 학습 유닛 · 전화
   유닛 · 카탈로그 레슨은 보낼 이벤트가 없다. 롤플레이(연습)에서 끝낸 것은 보내지 않는다.
+- ⟨2026-10-26 — [ADR-0085](adr/0085-tester-access.md) D4⟩ **시험 계정(`app_metadata.duru_tester`)은 표시가 실린 뒤로 아무것도 보내지 않는다** —
+  앱 이벤트를 버리고 SDK 추적을 멈춘다(`stopTracking`, 기기에 기억해 다음 실행의 Install · Open도 재지 않음). 로그아웃하면 다시 잰다.
+  표시를 켜기 전의 Install · 가입 완료는 이미 나가 있으므로 필요하면 대시보드에서 그 기기를 거른다.
 - 사용자 ID · 이메일 · 전화번호 · 로그인 수단은 싣지 않는다. Airbridge의 `setUserID` 등 사용자 식별 기능을 쓰지 않는다.
 - ~~iOS는 IDFA 코드가 없는 SDK 변형(restricted)이고 추적 허용 팝업을 띄우지 않는다.~~ ⟨2026-10-22 — [ADR-0079](adr/0079-ios-tracking-authorization.md)⟩
   iOS는 일반판 SDK이고, **가입을 마친 뒤 여정 맵에 처음 들어설 때** 아직 정하지 않았으면 추적 허용을 한 번 묻는다. 허용하면
@@ -157,6 +164,9 @@ grep -c 'AIRBRIDGE_APP_NAME = "";' apps/android/app/build/generated/source/build
 
 - 앱은 Airbridge 도메인 `duru.airbridge.io` · `duru.abr.ge`를 universal link · App Link로 받는다. App Name이 `duru`라서 이 이름이다 —
   App Name이 바뀌면 `Host.entitlements` · `AndroidManifest.xml`도 바꾼다.
+- 커스텀 도메인 `go.k-duru.com`도 받는다(ADR-0080 D4 보충). 대시보드 Tracking Link › Custom Domain에서 기본 도메인(별)으로 두면
+  새 커스텀 채널 링크가 이 주소로 만들어진다. DNS는 가비아에서 CNAME 하나다. 앱도 SDK 시작 때 같은 도메인을
+  `setTrackingLinkCustomDomains`로 넣는다 — 대시보드에서 도메인을 바꾸면 두 호스트의 상수도 함께 바꾼다.
 - 지연 딥링크(설치 전에 누른 링크)는 가입을 마치고 「여정 시작하기」 뒤에 열린다.
 - 확인 절차: [e2e 시나리오 E](e2e/airbridge-events.md#e--딥링크--지연-딥링크-adr-0080).
 

@@ -15,6 +15,27 @@
 	</array>
 	<key>NSPrivacyTracking</key>
 	<true/>
+	<key>NSPrivacyTrackingDomains</key>
+	<array>
+		<string>touchpoint-track.airbridge.io</string>
+		<string>tracking-link-track.airbridge.io</string>
+		<string>event-track.airbridge.io</string>
+		<string>attribution-track.airbridge.io</string>
+		<string>config-track.airbridge.io</string>
+		<string>iap-track.airbridge.io</string>
+		<string>touchpoint-track.ap1.airbridge.io</string>
+		<string>tracking-link-track.ap1.airbridge.io</string>
+		<string>event-track.ap1.airbridge.io</string>
+		<string>attribution-track.ap1.airbridge.io</string>
+		<string>config-track.ap1.airbridge.io</string>
+		<string>iap-track.ap1.airbridge.io</string>
+		<string>touchpoint-track.ap2.airbridge.io</string>
+		<string>tracking-link-track.ap2.airbridge.io</string>
+		<string>event-track.ap2.airbridge.io</string>
+		<string>attribution-track.ap2.airbridge.io</string>
+		<string>config-track.ap2.airbridge.io</string>
+		<string>iap-track.ap2.airbridge.io</string>
+	</array>
 	<key>NSPrivacyCollectedDataTypes</key>
 	<array>
 		<dict>

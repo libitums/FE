@@ -12,6 +12,7 @@ import { MapUnitEntranceProvider } from "./MapUnitStage";
 import { CatalogUnitSheet } from "./CatalogUnitSheet";
 import { catalogSheetKey, catalogSheetTargetOf, catalogSheetUnitSize } from "./catalog-sheet";
 import { mapGuideTargetOf } from "./catalog-gate";
+import { catalogIsStoryUnit } from "./catalog-map-story";
 import { measureRectsWithOptional, screenId, scrollId } from "./journey-map-scroll";
 import { sheetSwitchCandidates, sheetSwitchTargetAt } from "./journey-map-sheet-switch";
 import { mapTopLayout } from "./journey-map-insets";
@@ -98,12 +99,15 @@ export function JourneyMapScreen({
   };
 
   // 카탈로그 노드의 탭 핸들러(`"background only"`)가 부릅니다 — 여기에 지시문을 다시 두지 않습니다.
+  // 이야기 유닛은 에피소드 첫 스페셜 유닛처럼 말풍선 없이 바로 시작합니다(ADR-0088 D6).
   const handleSelectCatalogUnit = (episodeId: string, unitKey: string, tapY: number) =>
-    handleSelectStep(
-      catalogSheetKey(episodeId, unitKey),
-      tapY,
-      catalogSheetUnitSize(catalog.sections, episodeId, unitKey),
-    );
+    catalogIsStoryUnit(catalog.sections, episodeId, unitKey)
+      ? catalog.onStartUnit(episodeId, unitKey)
+      : handleSelectStep(
+          catalogSheetKey(episodeId, unitKey),
+          tapY,
+          catalogSheetUnitSize(catalog.sections, episodeId, unitKey),
+        );
 
   const access = nodeAccessOf(progressLoad);
   // 말풍선이 열린 동안 가림막을 누르면 그 자리의 다른 열린 유닛으로 말풍선 · 띠를 옮기고 그 유닛으로 스크롤합니다.

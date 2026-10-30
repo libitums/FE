@@ -22,7 +22,12 @@ import {
   nextCatalogCutIndex,
   nextCatalogCutScript,
 } from "./catalog-cover";
-import type { CatalogCoverScreenProps, CatalogCutScript } from "./catalog-cover.contract";
+import type {
+  CatalogCoverScreenProps,
+  CatalogCutScript,
+  CatalogCutStage,
+} from "./catalog-cover.contract";
+import type { UiCopy } from "../../lib/ui-copy.contract";
 import { voiceRevealIntervalMs } from "./voice-reveal";
 
 import "./catalog-cover-screen.css";
@@ -33,6 +38,13 @@ function claimCompletion(guard: { done: boolean }): boolean {
   guard.done = true;
   return true;
 }
+
+// 마지막 컷 버튼의 낭독 — 자리마다 다릅니다(막간 이야기는 ADR-0088).
+const finishLabelByStage = (copy: UiCopy): Readonly<Record<CatalogCutStage, string>> => ({
+  prologue: copy.catalogCover.finishCover,
+  epilogue: copy.catalogCover.finishEpilogue,
+  interlude: copy.catalogCover.finishStory,
+});
 
 // 카탈로그 에피소드의 컷 화면입니다 — 에피소드 앞(표지, `stage="prologue"`)과 최종 테스트
 // 통과 뒤(`"epilogue"`)가 같은 화면이고, 다른 것은 마지막 버튼의 낭독 하나뿐입니다. 컷을 차례로 보이고, 대사 상자를 누르면 영어와 로마자를 번갈아 보이며,
@@ -216,11 +228,7 @@ export function CatalogCoverScreen({
             accessibility-element={true}
             accessibility-traits="button"
             accessibility-label={
-              isLast
-                ? stage === "prologue"
-                  ? copy.catalogCover.finishCover
-                  : copy.catalogCover.finishEpilogue
-                : copy.catalogCover.nextCut(index + 1, total)
+              isLast ? finishLabelByStage(copy)[stage] : copy.catalogCover.nextCut(index + 1, total)
             }
             bindtap={handleNext}
           >

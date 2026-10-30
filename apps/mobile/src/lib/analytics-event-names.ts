@@ -10,6 +10,7 @@ export type AnalyticsEventName =
   | "entry_login_method_selected"
   | "entry_completed"
   | "entry_returning_learner_entered"
+  | "app_update_required_shown"
   | "notifications_opened"
   | "notification_item_tapped"
   | "notification_item_deleted"
@@ -43,4 +44,9 @@ export type AnalyticsEventName =
   | "tickets_ran_out"
   | "ticket_more_tapped"
   | "roleplay_story_opened"
+  | "episode_story_viewed"
+  | "episode_story_continued"
+  | "episode_story_skipped"
+  | "episode_story_exited"
+  | "episode_story_completed"
   | "roleplay_story_completed";

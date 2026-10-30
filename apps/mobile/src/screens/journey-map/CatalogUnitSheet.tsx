@@ -4,6 +4,7 @@ import { catalogUnitTicketCost } from "../../lib/catalog-ticket-cost";
 import { useUiCopy } from "../../lib/ui-copy";
 import { StepSheet } from "./StepSheet";
 import { catalogUnitNodeTitle, catalogUnitNodesOf } from "./catalog-map";
+import { catalogIsStoryUnit } from "./catalog-map-story";
 import type { JourneyMapCatalogProps } from "./catalog-map.contract";
 import { catalogSectionTitle, catalogSheetFigures } from "./catalog-sheet";
 import type { CatalogSheetTarget } from "./catalog-sheet";
@@ -61,6 +62,7 @@ export function CatalogUnitSheet({
         target.episodeId,
         target.unitKey,
         catalog.ticketUnits,
+        catalogIsStoryUnit(catalog.sections, target.episodeId, target.unitKey),
       )}
       onStart={() => catalog.onStartUnit(target.episodeId, target.unitKey)}
       onClose={onClose}

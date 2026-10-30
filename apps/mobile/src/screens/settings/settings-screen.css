@@ -88,3 +88,15 @@
   padding-left: calc(var(--libitum-spacing-4) + var(--libitum-spacing-20));
   padding-right: calc(var(--libitum-spacing-4) + var(--libitum-spacing-20));
 }
+
+/* 앱 버전 줄 — 목록 상자의 마지막 자식입니다(ADR-0086). 설정 셀의 설명 줄과 같은 역할(작은 본문 · 흐린 색)이고
+   가운데 정렬입니다. 위 간격은 목록 gap이 집니다. */
+.settings-screen-version {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-weight: var(--libitum-typography-body-s-font-weight);
+  font-size: var(--libitum-typography-body-s-font-size);
+  line-height: var(--libitum-typography-body-s-line-height);
+  letter-spacing: var(--libitum-typography-body-s-letter-spacing);
+  text-align: center;
+}

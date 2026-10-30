@@ -42,6 +42,7 @@ import {
   registerPushDeviceRequest,
   supabaseAuthRequest,
   supabaseLogoutRequest,
+  supabaseUpdateDisplayNameRequest,
   unregisterPushDeviceRequest,
 } from "./auth-request";
 import type { PushDevice } from "./push-notifications.contract";
@@ -202,6 +203,15 @@ export const refreshAuthSession: RefreshAuthSession = async (
   );
   return sessionResult(outcome, "refreshed", sessionRefreshFailureFrom);
 };
+
+/** Apple이 준 이름을 계정에 적습니다. 2xx → `true`. 실패는 삼킵니다 — 이름은 로그인을 막지 않습니다. */
+export async function saveAuthDisplayName(accessToken: string, fullName: string): Promise<boolean> {
+  const outcome = await send(
+    (config) => supabaseUpdateDisplayNameRequest(config, accessToken, fullName),
+    false,
+  );
+  return outcome.ok && isSuccessStatus(outcome.status);
+}
 
 /**
  * 로그아웃 요청을 시작만 하고 결과를 버립니다. 설정이 없으면 요청하지 않습니다. 거부하지 않습니다.

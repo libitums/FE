@@ -20,6 +20,8 @@ export type SplashUpdateCheck =
   | { readonly kind: "failed"; readonly episodes: readonly SplashEpisodeProgress[] };
 export type SplashUpdateState = {
   readonly window: "open" | "closed";
+  /** 매니페스트 응답 전에도 기다리는가 — 받아 둘 수 있는 환경(파일 모듈 · 저장소)에서만 참입니다. */
+  readonly waitsForCheck: boolean;
   readonly check: SplashUpdateCheck;
   readonly startedAt: number;
   readonly logoFinishedAt: number | null;
@@ -37,8 +39,17 @@ export type SplashUpdateSignal =
   | { readonly type: "logo-finished"; readonly at: number }
   | { readonly type: "closed" };
 
-export function initialSplashUpdateState(startedAt: number): SplashUpdateState {
-  return { window: "open", check: { kind: "pending" }, startedAt, logoFinishedAt: null };
+export function initialSplashUpdateState(
+  startedAt: number,
+  waitsForCheck: boolean = true,
+): SplashUpdateState {
+  return {
+    window: "open",
+    waitsForCheck,
+    check: { kind: "pending" },
+    startedAt,
+    logoFinishedAt: null,
+  };
 }
 
 function onProgress(episodes: readonly SplashEpisodeProgress[], signal: SplashUpdateSignal) {
@@ -112,6 +123,8 @@ const percentOf = (episodes: readonly SplashEpisodeProgress[]): number =>
 export function splashUpdateViewOf(state: SplashUpdateState): SplashUpdateView {
   const check = state.check;
   if (state.window === "closed") return { kind: "plain" };
+  if (check.kind === "pending")
+    return state.waitsForCheck ? { kind: "checking" } : { kind: "plain" };
   if (check.kind === "updating") {
     return { kind: "gauge", percent: Math.min(99, percentOf(check.episodes)), hold: "wait" };
   }

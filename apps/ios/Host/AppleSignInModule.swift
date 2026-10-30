@@ -3,7 +3,8 @@ import UIKit
 
 /// 네이티브 Sign in with Apple의 호스트 모듈이다(ADR-0028 개정). 메서드는 `start` 하나다 —
 /// 시스템 시트를 열고, 끝날 때 **정확히 한 번** 콜백한다. 난수는 이 모듈이 아니라
-/// `WebAuthenticationModule.randomBytes`가 낸다. 이름 · 이메일은 요청하지 않는다.
+/// `WebAuthenticationModule.randomBytes`가 낸다. 이름 · 이메일을 요청한다 — Apple은 첫 동의 때만 준다
+/// (2026-10-26, 대시보드에서 Apple 계정을 알아보려고). 이메일은 ID 토큰에 실려 Supabase가 적는다.
 @objc(AppleSignInModule)
 final class AppleSignInModule: NSObject, LynxModule {
   @objc static var name: String { "AppleSignInModule" }
@@ -43,7 +44,7 @@ final class AppleSignInModule: NSObject, LynxModule {
       }
 
       let request = ASAuthorizationAppleIDProvider().createRequest()
-      request.requestedScopes = []
+      request.requestedScopes = [.fullName, .email]
       request.nonce = hashedNonce
 
       let controller = ASAuthorizationController(authorizationRequests: [request])
@@ -75,6 +76,7 @@ extension AppleSignInModule: ASAuthorizationControllerDelegate {
       with: AppleSignInPayload.make(
         identityToken: credential?.identityToken,
         authorizationCode: credential?.authorizationCode,
+        fullName: credential?.fullName,
         error: nil))
   }
 
@@ -106,9 +108,13 @@ enum AppleSignInArguments {
 }
 
 /// 콜백 페이로드 조립이다 — 순수, `HostTests`가 잰다. 키는 `status` · `identityToken`, 코드가 비지 않은
-/// UTF-8이면 `authorizationCode`까지 셋이다. 코드는 계정 삭제 재인증(서버 철회)이 쓴다.
+/// UTF-8이면 `authorizationCode`, 이름이 있으면 `fullName`까지다. 코드는 계정 삭제 재인증(서버 철회)이 쓴다.
+/// 이름은 기기 언어의 순서로 잇는다(`PersonNameComponentsFormatter` — 한국어면 성 · 이름 순).
 enum AppleSignInPayload {
-  static func make(identityToken: Data?, authorizationCode: Data?, error: Error?) -> [String: Any] {
+  static func make(
+    identityToken: Data?, authorizationCode: Data?, fullName: PersonNameComponents? = nil,
+    error: Error?
+  ) -> [String: Any] {
     if let error = error {
       if let authError = error as? ASAuthorizationError, authError.code == .canceled {
         return ["status": "cancelled"]
@@ -127,9 +133,19 @@ enum AppleSignInPayload {
       {
         payload["authorizationCode"] = code
       }
+      if let name = displayName(from: fullName) {
+        payload["fullName"] = name
+      }
       return payload
     }
 
     return ["status": "failed"]
+  }
+
+  static func displayName(from components: PersonNameComponents?) -> String? {
+    guard let components else { return nil }
+    let formatted = PersonNameComponentsFormatter().string(from: components)
+      .trimmingCharacters(in: .whitespacesAndNewlines)
+    return formatted.isEmpty ? nil : formatted
   }
 }

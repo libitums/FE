@@ -277,3 +277,19 @@ FAQ의 키보드 조작, 스크립트 없는 화면, 404, 폭별 넘침, 그림 
   duplicate · failed — 이메일 없음)를 더했다. 랜딩 Download 섹션의 `download_click`은 그대로다.
 - D2 — 체험판 스크립트에 사전 등록 · 전체화면 · 전환이 더해져도 상한 40,000 bytes 안이다(빌드 테스트 IB5).
 
+**2026-10-30 — 랜딩 Airbridge Web SDK: 검색광고 클릭 → Play 설치 귀속** ([ADR-0090](0090-landing-airbridge-web-sdk.md)).
+
+- **D2 — 페이지 스크립트가 셋이 됐다.** `src/scripts/main.ts` · 체험판 `src/trial/trial-main.ts`에 더해 **조건부** 모듈 `src/scripts/airbridge-main.ts`
+  (Airbridge 모듈 891 bytes, 상한 4,000) — 토큰 `PUBLIC_AIRBRIDGE_WEB_TOKEN`이 있는 프로덕션 빌드의 `/` · `/ko/`에만 실리고, 토큰 없는 빌드의 산출물에는
+  `airbridge` 문자열이 없다. 「없어도 본문은 다 보인다」는 그대로다 — 스크립트가 없으면 Play 카드가 일반 링크다.
+- **「다른 호스트로 요청하지 않는다」(대가의 서체 문단 · D11)의 예외가 둘이 됐다** — GA의 `googletagmanager.com`에 더해 Airbridge 로더 `static.airbridge.io`.
+  조건은 GA와 같다(프로덕션 · 값 있음 · `is:inline` 부트스트랩). 서체 · 그림 정책은 분석 스크립트에 적용되지 않는다.
+- **D10 — GA 이벤트는 열셋 그대로다.** Airbridge는 GA 이벤트를 더하지 않고 `download_click { store: "android" }`를 그대로 둔다(리스너가 `stopPropagation`을 하지
+  않는다). EU 처리는 GA의 동의 지역 규칙과 같은 방향 — Web SDK에는 지역 기능이 없어 브라우저 시간대(`Europe/*` + EEA 대서양 다섯)로 `startTracking`을
+  가른다. 「측정 ID와 개인정보처리방침의 고지는 아직 없다」에 Airbridge Web SDK(루트 도메인 쿠키)도 더해진다 — 사용자 몫.
+- **새 빌드 env `PUBLIC_AIRBRIDGE_WEB_TOKEN`**(Web SDK Token — 공개 값). `astro.config.ts`가 측정 ID와 같은 자리에서 검사한다 — 비면 **프로덕션에서도 싣지 않고
+  성공**(`PUBLIC_SUPABASE_*`와 다르다 — 선택 값), 모양이 틀리면 빌드 실패(출력에 값을 싣지 않는다). Vercel Production에 값을 넣는 것은 사용자 몫이다
+  (D12 · [앱 README](../../apps/landing/README.md) 「배포」).
+- D9 — e2e `analytics` · `analytics-mobile` 프로젝트의 둘째 빌드에 가짜 토큰이 더 들어가고 `airbridge.e2e.ts`가 더해졌다(스텁 SDK · 로더 차단 · `timezoneId`).
+  GA e2e의 외부 호스트 단언은 「gtm 포함 · 모든 호스트 ∈ {gtm, static.airbridge.io}」로 느슨해졌다. 대시보드 수신 · EU 쿠키 · 데스크톱 폴백 체감은
+  [Airbridge e2e F](../e2e/airbridge-events.md#f--웹-랜딩--설치-귀속-adr-0090)(수동 · 미실행)다.

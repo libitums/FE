@@ -6,6 +6,9 @@ import type {
   RoleplayCopy,
   VisualNovelCopy,
 } from "./ui-copy-sections.contract";
+import type { StoryCallCopy } from "../screens/story-call/story-call.contract";
+import type { StoryIntroCopy } from "../screens/story-intro/story-intro.contract";
+import type { StoryMessengerCopy } from "../screens/story-messenger/story-messenger.contract";
 
 export const episodeIntroEn: EpisodeIntroCopy = {
   guide: {
@@ -49,4 +52,40 @@ export const roleplayEn: RoleplayCopy = {
   lockedSection: (name) => `${name}, locked, finish this episode in your journey to unlock it`,
   premiumLock: { episode: "locked", payment: "Plus only" },
   premiumNotice: (itemTitle) => `“${itemTitle}” is a Plus roleplay. Plus isn't available yet.`,
+};
+
+export const storyMessengerEn: StoryMessengerCopy = {
+  back: "Back to map",
+  typing: (speaker) => `${speaker} is typing`,
+  replyTitle: "How will you reply?",
+  closeReply: "Close",
+  send: "Send",
+  composerPlaceholder: "Message",
+  finish: "Finish story",
+};
+
+export const storyIntroEn: StoryIntroCopy = {
+  overline: (ordinal) => `STORY · EPISODE ${ordinal}`,
+  back: "Back to map",
+  skip: "Skip",
+  start: "Start",
+  skipDialog: {
+    title: "Skip the story?",
+    description: "You can watch it again anytime from the map.",
+    skip: "Skip",
+    keepWatching: "Keep watching",
+  },
+};
+
+export const storyCallEn: StoryCallCopy = {
+  incoming: "Incoming call",
+  answer: "Answer",
+  connecting: "Connecting…",
+  callEnded: (clock) => `Call ended · ${clock}`,
+  me: "Me",
+  mute: "Mute",
+  speaker: "Speaker",
+  end: "End",
+  back: "Back to map",
+  finish: "Finish story",
 };

@@ -25,6 +25,7 @@ export function SpecialUnitMapItem({
   status,
   onSelect,
   layer = "map",
+  icon,
   sheetTargetId,
   children,
 }: SpecialUnitMapItemProps) {
@@ -58,6 +59,7 @@ export function SpecialUnitMapItem({
           )}
           status={unitStatus}
           bindtap={handleSelect}
+          {...(icon === undefined ? {} : { icon })}
         />
       </MapUnitStage>
       <view

@@ -3,7 +3,10 @@ import { act, fireEvent, render, screen } from "@lynx-js/react/testing-library";
 import { MotionProvider } from "@libitums/ui-lynx/motion";
 import type { ReactNode } from "@lynx-js/react";
 
-import { entrySplashDurationMs, splashUpdateWaitMs } from "../../lib/entry-flow";
+import { entrySplashDurationMs } from "../../lib/entry-flow";
+
+// 시간 제한 없이 기다리는지 보는 긴 시간입니다(10분).
+const LONG_MS = 10 * 60 * 1000;
 import { SplashScreen } from "./SplashScreen";
 import { plainSplashUpdate, SplashUpdateContext } from "./splash-update-context";
 import type { SplashUpdatePort, SplashUpdateView } from "./splash.contract";
@@ -89,22 +92,23 @@ describe("SplashScreen 갱신 게이지", () => {
     expect(screen.queryByTestId("splash-update-fill")).toBeNull();
   });
 
-  it("[SPU3] wait에서 로고가 끝나면 logoFinished 1회, 대기 시간 직전까지 나가지 않고 그 시점에 close → onTimeout 순서로 나간다", () => {
+  it("[SPU3] wait에서 로고가 끝나면 logoFinished 1회, 시간이 아무리 지나도 나가지 않고 release가 되면 close → onTimeout 순서로 나간다", () => {
     const calls: string[] = [];
     const onTimeout = vi.fn(() => void calls.push("onTimeout"));
     const { port, logoFinished, close } = makePort(gauge(40, "wait"), calls);
-    render(withPort(port, <SplashScreen onTimeout={onTimeout} />));
+    const { rerender } = render(withPort(port, <SplashScreen onTimeout={onTimeout} />));
 
     endLogo();
     expect(logoFinished).toHaveBeenCalledTimes(1);
     expect(onTimeout).not.toHaveBeenCalled();
 
-    advance(splashUpdateWaitMs - 1);
+    advance(LONG_MS);
     expect(close).not.toHaveBeenCalled();
     expect(onTimeout).not.toHaveBeenCalled();
 
-    advance(1);
-    expect(close).toHaveBeenCalledTimes(1);
+    const released = makePort(gauge(100, "release"), calls);
+    rerender(withPort(released.port, <SplashScreen onTimeout={onTimeout} />));
+    expect(released.close).toHaveBeenCalledTimes(1);
     expect(onTimeout).toHaveBeenCalledTimes(1);
     expect(calls).toEqual(["logoFinished", "close", "onTimeout"]);
   });
@@ -122,12 +126,12 @@ describe("SplashScreen 갱신 게이지", () => {
     expect(onTimeout).toHaveBeenCalledTimes(1);
     expect(next.close).toHaveBeenCalledTimes(1);
 
-    advance(splashUpdateWaitMs + entrySplashDurationMs);
+    advance(LONG_MS);
     expect(onTimeout).toHaveBeenCalledTimes(1);
     expect(next.close).toHaveBeenCalledTimes(1);
   });
 
-  it("[SPU5] 로고 신호가 없으면 안전 타이머에 logoFinished, 거기서 대기 시간 뒤 나가며, 언마운트하면 그 뒤 0이다", () => {
+  it("[SPU5] 로고 신호가 없으면 안전 타이머에 logoFinished, wait면 그 뒤로도 나가지 않으며, 언마운트하면 그 뒤 0이다", () => {
     const onTimeout = vi.fn();
     const { port, logoFinished } = makePort(gauge(20, "wait"));
     const { unmount } = render(withPort(port, <SplashScreen onTimeout={onTimeout} />));
@@ -138,8 +142,8 @@ describe("SplashScreen 갱신 게이지", () => {
     expect(logoFinished).toHaveBeenCalledTimes(1);
     expect(onTimeout).not.toHaveBeenCalled();
 
-    advance(splashUpdateWaitMs);
-    expect(onTimeout).toHaveBeenCalledTimes(1);
+    advance(LONG_MS);
+    expect(onTimeout).not.toHaveBeenCalled();
     unmount();
 
     const again = vi.fn();
@@ -147,7 +151,7 @@ describe("SplashScreen 갱신 게이지", () => {
     const view = render(withPort(second.port, <SplashScreen onTimeout={again} />));
     advance(entrySplashDurationMs);
     view.unmount();
-    advance(splashUpdateWaitMs + entrySplashDurationMs);
+    advance(LONG_MS);
     expect(again).not.toHaveBeenCalled();
     expect(second.close).not.toHaveBeenCalled();
   });
@@ -161,9 +165,24 @@ describe("SplashScreen 갱신 게이지", () => {
     endLogo();
     expect(calls).toEqual(["logoFinished", "close", "onTimeout"]);
 
-    advance(entrySplashDurationMs + splashUpdateWaitMs);
+    advance(LONG_MS);
     expect(logoFinished).toHaveBeenCalledTimes(1);
     expect(close).toHaveBeenCalledTimes(1);
+    expect(onTimeout).toHaveBeenCalledTimes(1);
+  });
+
+  it("[SPU10] checking(매니페스트 응답 전)이면 로고가 끝나도 게이지 없이 기다리고, plain이 되면 바로 나간다", () => {
+    const onTimeout = vi.fn();
+    const checking = makePort({ kind: "checking" });
+    const { rerender } = render(withPort(checking.port, <SplashScreen onTimeout={onTimeout} />));
+    endLogo();
+    advance(LONG_MS);
+    expect(screen.queryByTestId("splash-update")).toBeNull();
+    expect(onTimeout).not.toHaveBeenCalled();
+
+    const plain = makePort({ kind: "plain" });
+    rerender(withPort(plain.port, <SplashScreen onTimeout={onTimeout} />));
+    expect(plain.close).toHaveBeenCalledTimes(1);
     expect(onTimeout).toHaveBeenCalledTimes(1);
   });
 

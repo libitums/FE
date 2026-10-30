@@ -9,7 +9,14 @@ import {
   startAppleSignIn,
 } from "./apple-sign-in";
 import type { AppleSignInResult } from "./apple-sign-in.contract";
-import { exchangeIdToken, exchangePkceCode, supabaseAuthorizeUrl } from "./api-client";
+import {
+  exchangeIdToken,
+  exchangePkceCode,
+  refreshAuthSession,
+  saveAuthDisplayName,
+  supabaseAuthorizeUrl,
+} from "./api-client";
+import type { AuthSession } from "./auth-session.contract";
 import type { EntryLoginMethod } from "./entry-flow";
 import { codeVerifierByteCount, pkcePairFrom } from "./pkce";
 import type {
@@ -169,11 +176,25 @@ async function signInWithApple(): Promise<SocialSignInResult> {
         nonce: nonce.raw,
       });
       if (exchangeResult.status === "exchanged") {
-        return { status: "signed-in", session: exchangeResult.session };
+        const session = await withAppleDisplayName(exchangeResult.session, result.fullName);
+        return { status: "signed-in", session };
       }
       return { status: "failed", reason: exchangeResult.reason };
     }
   }
+}
+
+// Apple은 이름을 첫 동의 때 한 번만, ID 토큰 밖으로 줍니다. 계정에 적고 세션을 한 번 갱신해 새 액세스 토큰의
+// `user_metadata`에 실리게 합니다 — 이름 칸 미리 채우기(`authDisplayNameFrom`)가 그 토큰을 읽습니다. 어느 단계가
+// 실패해도 받은 세션으로 로그인합니다.
+async function withAppleDisplayName(
+  session: AuthSession,
+  fullName: string | null,
+): Promise<AuthSession> {
+  if (fullName === null) return session;
+  if (!(await saveAuthDisplayName(session.accessToken, fullName))) return session;
+  const refreshed = await refreshAuthSession(session.refreshToken);
+  return refreshed.status === "refreshed" ? refreshed.session : session;
 }
 
 /** 로그인과 Android Apple 재인증이 공유하는 PKCE 창입니다. 교환 코드는 이 호출 안에서만 삽니다. */

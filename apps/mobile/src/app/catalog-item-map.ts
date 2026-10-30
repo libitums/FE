@@ -102,35 +102,47 @@ const isPermutation = (values: readonly number[]): boolean =>
   [...values].sort((a, b) => a - b).every((value, index) => value === index);
 
 /**
- * 대화 순서 맞추기입니다 — 대화 조립으로 그려집니다(지시문 말풍선 없이 칸마다 화자가 번갈아 섭니다). 정답
- * 인덱스는 원래 타일 기준이라 섞인 자리로 옮깁니다.
+ * 대화 순서 맞추기입니다 — 대화 조립으로 그려집니다(지시문 말풍선 없이 칸마다 화자가 섭니다). **정답의 첫 턴은
+ * 고정된 첫 줄**(`opening`)로 빠지고 창고에 들지 않습니다 — 학습자는 둘째 턴부터 놓습니다. 그래서 턴이 둘 미만이면
+ * 놓을 것이 없어 `malformed`입니다. 정답 인덱스는 원래 타일 기준이라 섞인 자리로 옮깁니다.
  */
 function turnOrderItemOf(item: ItemOf<"TURN_ORDER">, port: CatalogItemPort): CatalogMappedItem {
   const tiles = item.tiles.map((tile) => koOf(port, tile.ko));
   const prompt = koOf(port, item.context.ko);
   const valid =
-    tiles.length > 0 &&
+    tiles.length >= 2 &&
     !tiles.includes("") &&
     prompt !== "" &&
     item.answer.length === tiles.length &&
     isPermutation(item.answer);
   if (!valid) return skippedItem(item, "malformed");
   const speakers = catalogTurnSpeakersOf(item.tiles, item.answer);
-  if (speakers === null) return skippedItem(item, "malformed");
-  const order = shuffledOrder(`${port.episodeId}/${item.id}`, tiles.length);
+  const [openingTile, ...restAnswer] = item.answer;
+  const [openingSpeaker, ...slotSpeakers] = speakers ?? [];
+  if (openingTile === undefined || openingSpeaker === undefined) {
+    return skippedItem(item, "malformed");
+  }
+  // 창고 조각 = 첫 턴을 뺀 타일을 섞은 것입니다. `chipTiles[i]`가 i번째 조각의 원래 타일 번호입니다.
+  const chipTiles = shuffledOrder(`${port.episodeId}/${item.id}`, restAnswer.length).map(
+    (at) => restAnswer[at] ?? 0,
+  );
   // 창고 조각의 화자는 그 타일이 정답에서 서는 자리의 칸 화자입니다.
-  const chipSpeakers = order.map(
-    (tile): DialogueSpeaker => speakers[item.answer.indexOf(tile)] ?? "counterpart",
+  const chipSpeakers = chipTiles.map(
+    (tile): DialogueSpeaker => speakers?.[item.answer.indexOf(tile)] ?? "counterpart",
   );
   const meanings = item.tiles.map((tile) => englishOf(port, tile.en));
   const chipMeanings = meanings.every((meaning) => meaning !== undefined)
-    ? order.map((tile) => meanings[tile] ?? "")
+    ? chipTiles.map((tile) => meanings[tile] ?? "")
     : undefined;
   return sentenceOrder(item.id, {
     prompt,
-    chips: order.map((index) => tiles[index] ?? ""),
-    answerOrder: item.answer.map((tile) => order.indexOf(tile)),
-    dialogue: { speakers, chipSpeakers },
+    chips: chipTiles.map((tile) => tiles[tile] ?? ""),
+    answerOrder: restAnswer.map((tile) => chipTiles.indexOf(tile)),
+    dialogue: {
+      opening: { speaker: openingSpeaker, text: tiles[openingTile] ?? "" },
+      speakers: slotSpeakers,
+      chipSpeakers,
+    },
     ...(chipMeanings === undefined ? {} : { chipMeanings }),
     ...optionalField("instruction", instructionOf(port, item.prompt)),
   });

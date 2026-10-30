@@ -11,11 +11,15 @@ import type {
 /** 배너가 스스로 닫히기까지의 시간(ms)입니다. */
 export const EPISODE_BANNER_HOLD_MS = 1600;
 
-export type EpisodeBannerCopy = Pick<CatalogCoverCopy, "episodeStart" | "episodeClear">;
+export type EpisodeBannerCopy = Pick<
+  CatalogCoverCopy,
+  "episodeStart" | "episodeClear" | "episodeContinue"
+>;
 
-/** `start` → `copy.episodeStart`, `clear` → `copy.episodeClear`. */
+/** `start` → `episodeStart`, `clear` → `episodeClear`, `continue` → `episodeContinue`. */
 export function episodeBannerTextOf(kind: EpisodeBannerKind, copy: EpisodeBannerCopy): string {
-  return kind === "start" ? copy.episodeStart : copy.episodeClear;
+  if (kind === "start") return copy.episodeStart;
+  return kind === "clear" ? copy.episodeClear : copy.episodeContinue;
 }
 
 /** `standard` → `reward`, `reduced` → `fade`. */

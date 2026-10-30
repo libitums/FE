@@ -9,9 +9,13 @@ import type { AudioUnavailableCopy } from "../components/audio-unavailable.contr
 import type { LearnerProfileCopy } from "../components/learner-profile.contract";
 import type { TicketsCopy } from "../screens/tickets/tickets.contract";
 import type { RoleplayStoryCopy } from "../screens/roleplay-story/roleplay-story.contract";
+import type { StoryCallCopy } from "../screens/story-call/story-call.contract";
+import type { StoryIntroCopy } from "../screens/story-intro/story-intro.contract";
+import type { StoryMessengerCopy } from "../screens/story-messenger/story-messenger.contract";
 import type { CatalogCoverCopy } from "../screens/catalog-cover/catalog-cover.contract";
 import type { CatalogFinalCopy } from "../screens/catalog-final/catalog-final.contract";
 import type { CatalogMapCopy } from "../screens/journey-map/catalog-map.contract";
+import type { CatalogUpdateNoticeCopy } from "../screens/catalog-update/catalog-update-notice.contract";
 import type { ProgressLoadCopy } from "../screens/journey-map/journey-map-load.contract";
 import type { SpecialUnitMapCopy } from "../screens/journey-map/journey-special-unit.contract";
 import type { SplashCopy } from "../screens/splash/splash.contract";
@@ -26,6 +30,7 @@ import type { WordChoicePictureCopy } from "../screens/word-choice/word-choice-p
 import type { FeedbackCopy } from "./feedback.contract";
 import type { LearningItemGuideCopy } from "./learning-item-guide.contract";
 import type {
+  AppUpdateCopy,
   AssessmentCopy,
   CommonCopy,
   EpisodeIntroCopy,
@@ -76,6 +81,7 @@ export type UiCopy = {
   readonly feedback: FeedbackCopy;
   readonly gemPurchase: GemPurchaseCopy;
   readonly catalogMap: CatalogMapCopy;
+  readonly catalogUpdateNotice: CatalogUpdateNoticeCopy;
   readonly catalogCover: CatalogCoverCopy;
   readonly typing: TypingCopy;
   readonly vocabCard: VocabCardCopy;
@@ -93,6 +99,10 @@ export type UiCopy = {
   readonly specialUnitMap: SpecialUnitMapCopy;
   readonly tickets: TicketsCopy;
   readonly roleplayStory: RoleplayStoryCopy;
+  readonly appUpdate: AppUpdateCopy;
+  readonly storyMessenger: StoryMessengerCopy;
+  readonly storyIntro: StoryIntroCopy;
+  readonly storyCall: StoryCallCopy;
 };
 
 /**

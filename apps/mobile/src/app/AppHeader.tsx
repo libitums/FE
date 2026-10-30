@@ -64,6 +64,8 @@ export type AppHeaderProps = {
   readonly statBump?: StatBumpWiring;
   /** 학습 티켓 칩과 그 모달(시안 E1)입니다. 없으면 칩을 그리지 않습니다. */
   readonly tickets?: TicketHeaderWiring;
+  /** 시험 계정입니다(ADR-0085) — 티켓 칩이 「∞」이고 모달을 열지 않습니다. */
+  readonly ticketsUnlimited?: boolean;
 };
 
 export function AppHeader({
@@ -80,6 +82,7 @@ export function AppHeader({
   onSkipEpisodeSurvey,
   statBump,
   tickets,
+  ticketsUnlimited = false,
 }: AppHeaderProps): ReactNode {
   const [openLayer, setOpenLayer] = useState<AppHeaderLayer | null>(null);
   const close = () => setOpenLayer(null);
@@ -127,6 +130,7 @@ export function AppHeader({
           onOpenStreak={() => setOpenLayer("streak")}
           onOpenTrophy={() => setOpenLayer("trophy")}
           ticketCount={tickets?.status.available ?? null}
+          ticketsUnlimited={ticketsUnlimited}
           onOpenTickets={() => setOpenLayer("tickets")}
           bumps={statBump?.statBumps}
           bumpHeld={openLayer !== null || obscured || celebrateStreak}

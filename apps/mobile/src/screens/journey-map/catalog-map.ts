@@ -12,6 +12,8 @@ import type {
   CatalogUnitKey,
 } from "../../lib/catalog-progress";
 import type { CatalogEntry } from "../../lib/episode-catalog";
+import { catalogStoryKeysOf, catalogStoryFieldsOf } from "./catalog-map-story";
+import { isTesterAccessActive } from "../../lib/tester-access";
 import { TUTORIAL_EPISODE_ID } from "../../lib/tutorial-episode";
 import type { LearningUnit } from "../../lib/episode-content.model";
 import type { UiCopy } from "../../lib/ui-copy.contract";
@@ -50,13 +52,18 @@ export function catalogMapSectionsOf(
   return catalog.map((entry): CatalogMapSection => {
     const base = { episodeId: entry.id, ordinal: entry.order, title: entry.title };
     if (entry.status === "ready") {
+      const storyKeys = catalogStoryKeysOf(entry.episode.units);
+      // 이야기는 완료 키에서 뺍니다 — 이미 끝낸 에피소드가 새 막간 때문에 미완료로 되돌아가지 않게. 새로 하는
+      // 사람은 사슬(S4 → INT → S5) 때문에 반드시 거칩니다(ADR-0088).
+      const requires = entry.episode.completion?.requires ?? [entry.episode.finalTest.id];
       return {
         kind: "catalog-ready",
         ...base,
         lessonKeys: entry.episode.units.map((unit) => unit.id),
         finalKey: entry.episode.finalTest.id,
-        completionKeys: entry.episode.completion?.requires ?? [entry.episode.finalTest.id],
+        completionKeys: requires.filter((key) => !storyKeys.includes(key)),
         cultureKeys: catalogCultureKeysOf(entry.episode.units),
+        ...catalogStoryFieldsOf(entry.episode.units),
         ...(entry.episode.titleEn === undefined ? {} : { titleEn: entry.episode.titleEn }),
       };
     }
@@ -112,9 +119,9 @@ export function catalogCoverStatus(
   if (section === undefined || section.kind === "catalog-unavailable") return "locked";
   // 끝낸 표지는 앞이 아직이어도 숨기지 않습니다(다른 기기 진행 · 순서 변경).
   if (isCatalogUnitDone(gate.progress, section.episodeId, CATALOG_INTRO_KEY)) return "completed";
-  // 첫 구획은 늘 열립니다.
+  // 첫 구획은 늘 열립니다. 시험 계정은 모든 구획이 열립니다(ADR-0085).
   const previous = sections[index - 1];
-  if (previous === undefined) return "available";
+  if (previous === undefined || isTesterAccessActive()) return "available";
   const previousDone = isCatalogEpisodeComplete(
     gate.progress,
     previous.episodeId,
@@ -160,7 +167,7 @@ const chainOf = (section: CatalogReadySection): readonly CatalogUnitKey[] => [
 
 /**
  * 사슬에서 그 키의 상태를 파생합니다 — 끝낸 키는 앞이 아직이어도 `completed`, 바로 앞을 끝냈으면
- * `available`, 그 밖(모르는 키 포함)은 `locked`.
+ * `available`, 그 밖(모르는 키 포함)은 `locked`. 시험 계정은 사슬에 있는 키가 모두 `available`입니다(ADR-0085).
  */
 export function catalogUnitStatus(
   section: CatalogReadySection,
@@ -170,6 +177,7 @@ export function catalogUnitStatus(
   if (isCatalogUnitDone(progress, section.episodeId, unitKey)) return "completed";
   const chain = chainOf(section);
   const index = chain.indexOf(unitKey);
+  if (index >= 0 && isTesterAccessActive()) return "available";
   const previous = index > 0 ? chain[index - 1] : undefined;
   if (previous === undefined) return "locked";
   return isCatalogUnitDone(progress, section.episodeId, previous) ? "available" : "locked";
@@ -195,12 +203,18 @@ export function catalogUnitNodesOf(
       ? { status, ticketed: true }
       : { status };
   };
+  const storyKeys = section.storyKeys ?? [];
   return [
-    ...section.lessonKeys.map((key, index): CatalogUnitNode => ({
+    ...section.lessonKeys.map((key): CatalogUnitNode => ({
       key,
-      role: section.cultureKeys.includes(key) ? "culture" : "lesson",
-      ordinal: index + 1,
+      role: storyKeys.includes(key)
+        ? "story"
+        : section.cultureKeys.includes(key)
+          ? "culture"
+          : "lesson",
+      ordinal: lessonOrdinalIn(section, key) ?? 0,
       ...nodeOf(key),
+      ...(storyKeys.includes(key) ? { storyIcon: section.storyIcons?.[key] ?? "film" } : {}),
     })),
     {
       key: section.finalKey,
@@ -224,7 +238,17 @@ export function catalogLessonOrdinalOf(
   const section = sections.find((candidate) => candidate.episodeId === episodeId);
   if (section === undefined || section.kind !== "catalog-ready") return undefined;
   if (section.cultureKeys.includes(unitKey)) return undefined;
-  const index = section.lessonKeys.indexOf(unitKey);
+  return lessonOrdinalIn(section, unitKey);
+}
+
+// 레슨 번호는 이야기 유닛을 건너뛰고 셉니다 — 막간은 스페셜 노드라 「Lesson n」이 이어집니다(ADR-0088).
+function lessonOrdinalIn(
+  section: CatalogReadySection,
+  unitKey: CatalogUnitKey,
+): number | undefined {
+  const storyKeys = section.storyKeys ?? [];
+  if (storyKeys.includes(unitKey)) return undefined;
+  const index = section.lessonKeys.filter((key) => !storyKeys.includes(key)).indexOf(unitKey);
   return index < 0 ? undefined : index + 1;
 }
 
@@ -250,6 +274,8 @@ export function catalogUnitNodeTitle(
       return copy.catalogMap.lessonTitle(node.ordinal);
     case "culture":
       return copy.catalogMap.cultureTitle;
+    case "story":
+      return copy.catalogMap.storyTitle;
     case "final":
       return copy.catalogMap.finalTitle;
   }

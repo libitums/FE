@@ -435,3 +435,12 @@ Apple 경로(D7)에는 **콜백 URL이 없다** — 결과는 시트를 연 `sta
 - **스킴 이름이나 번들 ID를 바꾸는 시점** → D4. 스킴 리터럴과 대시보드 허용 목록이 함께 바뀐다
 - **인증 창 말고 다른 외부 페이지가 요구되는 시점**(약관 · 도움말 등) → ADR-0026 D4. 이 ADR은
   목적지 **하나**를 연 것이지 임의 URL 열기를 연 것이 아니다
+
+## 적용 기록 ⟨2026-10-26 — iOS Apple 로그인이 이름 · 이메일을 요청한다⟩
+
+- **사용자 결정**(2026-10-26): Apple 계정도 대시보드에서 알아볼 수 있어야 한다. 위 「버린 대안」의 「Apple 이름 · 이메일을 첫 로그인 때 받음」(쓰는 화면이 없다)을 되살린다. D7의 「이름 · 이메일을 요청하지 않는다」는 이 기록으로 바뀐다.
+- iOS `AppleSignInModule`이 `requestedScopes = [.fullName, .email]`로 요청한다. 이메일은 ID 토큰에 실려 Supabase가 적는다(가리기를 고르면 `privaterelay.appleid.com`).
+- 이름은 Apple이 **첫 동의 때 한 번만**, ID 토큰 밖으로 준다. 호스트가 `PersonNameComponentsFormatter`(기기 언어 순서)로 이어 페이로드 키 `fullName`으로 넘기고(AH1d), 흐름(`social-sign-in.ts`)이 교환 뒤 `PUT /auth/v1/user` `{ data: { full_name, name } }`로 계정에 적은 다음 세션을 한 번 갱신해 새 토큰의 `user_metadata`에 싣는다 — 이름 칸 미리 채우기(`authDisplayNameFrom`)가 그 토큰을 읽는다. 저장이나 갱신이 실패해도 교환한 세션으로 로그인한다(SN1 ~ SN3).
+- **이미 동의한 계정에는 이름이 오지 않는다** — 사용자가 iPhone 설정에서 Duru의 「Apple로 로그인」을 끊고 다시 로그인해야 한다.
+- Android의 Apple 로그인(웹 OAuth, [ADR-0039](0039-android-social-oauth.md))은 바꾸지 않았다. 그 경로에서 이름이 들어오는지는 확인하지 않았다.
+- `HttpRequestInit.method`에 `PUT`이 더해졌다(이 요청 하나만 쓴다).

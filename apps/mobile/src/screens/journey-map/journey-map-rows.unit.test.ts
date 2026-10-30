@@ -135,7 +135,13 @@ describe("mapRowItems", () => {
 
 describe("배치 표", () => {
   test("R11. 표가 계약의 값과 리터럴로 같다", () => {
-    expect(catalogNodePlacement).toEqual({ lesson: "paired", culture: "solo", final: "solo" });
+    // 막간 이야기는 스페셜 노드라 최종과 같은 한 칸 줄입니다(ADR-0088).
+    expect(catalogNodePlacement).toEqual({
+      lesson: "paired",
+      culture: "solo",
+      story: "solo",
+      final: "solo",
+    });
   });
 });
 

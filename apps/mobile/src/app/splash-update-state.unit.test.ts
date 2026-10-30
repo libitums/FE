@@ -35,16 +35,19 @@ const percentOf = (state: SplashUpdateState): number | null => {
 };
 
 describe("splashUpdateReducer · splashUpdateViewOf", () => {
-  test("SU1. 처음에는 응답 전이라 뷰가 plain이고 창이 열려 있다", () => {
+  test("SU1. 처음에는 응답 전이라 뷰가 checking(게이지 없이 기다림)이고 창이 열려 있다", () => {
     const state = initialSplashUpdateState(START);
 
     expect(state).toEqual({
       window: "open",
+      waitsForCheck: true,
       check: { kind: "pending" },
       startedAt: START,
       logoFinishedAt: null,
     });
-    expect(splashUpdateViewOf(state)).toEqual({ kind: "plain" });
+    expect(splashUpdateViewOf(state)).toEqual({ kind: "checking" });
+    // 받아 둘 수 없는 환경(파일 모듈 없음)은 응답을 기다리지 않습니다 — 게이지도 서지 않으므로.
+    expect(splashUpdateViewOf(initialSplashUpdateState(START, false))).toEqual({ kind: "plain" });
   });
 
   test("SU2. planned([])는 받을 것 없음이라 뷰가 plain이다", () => {

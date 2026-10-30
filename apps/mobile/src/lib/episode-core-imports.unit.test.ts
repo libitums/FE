@@ -62,6 +62,7 @@ describe("@libitums/episode-core importer", () => {
         "screens/word-choice/word-choice.ts",
         "screens/assessment/assessment.ts",
         "screens/catalog-cover/catalog-cover.ts",
+        "screens/story-messenger/story-messenger.ts",
       ].sort(),
     );
   });
@@ -98,7 +99,11 @@ describe("@libitums/episode-core importer", () => {
   });
 
   test("EM3. 화면 경로의 롤플레이 줄 · 화자 값은 zod 없는 ./lines에서 온다", () => {
-    const screenFiles = ["app/catalog-final-model.ts", "screens/catalog-cover/catalog-cover.ts"];
+    const screenFiles = [
+      "app/catalog-final-model.ts",
+      "screens/catalog-cover/catalog-cover.ts",
+      "screens/story-messenger/story-messenger.ts",
+    ];
     const notFromLines = screenFiles.filter(
       (file) =>
         !/from\s+["']@libitums\/episode-core\/lines["']/.test(

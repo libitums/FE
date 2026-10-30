@@ -126,6 +126,13 @@ describe("SpecialUnit", () => {
     );
   });
 
+  test("SUU13. icon을 주면 오각 별 대신 그 아이콘을 같은 색으로 그린다", () => {
+    render(
+      <SpecialUnit id="x" accessibilityLabel="special, Story" status="available" icon={tick} />,
+    );
+    expect(glyphOf(screen.getByTestId(`${root}-icon`))).toBe(tick);
+  });
+
   test("SUU4. 루트 → halo → body → [shade, face] → icon 순으로 선다", () => {
     render(unit("available"));
 

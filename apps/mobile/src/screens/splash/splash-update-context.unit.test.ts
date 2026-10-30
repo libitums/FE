@@ -12,6 +12,7 @@ import type { SplashCopy, SplashUpdateView } from "./splash.contract";
 describe("splash-update-context", () => {
   it("[SX1] splashMayLeave: plain · gauge release는 나가도 되고 gauge wait는 안 된다", () => {
     expect(splashMayLeave({ kind: "plain" })).toBe(true);
+    expect(splashMayLeave({ kind: "checking" })).toBe(false);
     expect(splashMayLeave({ kind: "gauge", percent: 40, hold: "wait" })).toBe(false);
     expect(splashMayLeave({ kind: "gauge", percent: 100, hold: "release" })).toBe(true);
   });

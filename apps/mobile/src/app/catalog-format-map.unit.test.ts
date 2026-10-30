@@ -184,24 +184,24 @@ describe("새 단어 선택 유형의 매핑", () => {
 });
 
 describe("대화 조립의 화자", () => {
-  test("MAP6. 화자가 있는 문항은 정답 순서의 화자가 칸마다 선다 — 플레이어부터도 그대로다", () => {
+  test("MAP6. 화자가 있는 문항은 첫 턴이 고정된 첫 줄로, 나머지가 정답 순서의 화자로 칸마다 선다 — 플레이어부터도 그대로다", () => {
     const tiles = turnTiles(["player", "counterpart", "player", "counterpart"]);
     const mapped = catalogItemOf(turnOrder(tiles, [0, 1, 2, 3]), port);
 
     expect(mapped.kind).toBe("sentence-order");
     expect(questionOf(mapped)?.["dialogue"]).toMatchObject({
-      speakers: ["me", "counterpart", "me", "counterpart"],
+      opening: { speaker: "me", text: tiles[0]?.ko },
+      speakers: ["counterpart", "me", "counterpart"],
     });
   });
 
-  test("MAP6. 화자가 없는 문항은 짝수 칸 상대 · 홀수 칸 나로 선다(지금 화면이 그리던 것)", () => {
-    const mapped = catalogItemOf(
-      turnOrder(turnTiles([null, null, null, null]), [0, 1, 2, 3]),
-      port,
-    );
+  test("MAP6. 화자가 없는 문항은 짝수 턴 상대 · 홀수 턴 나로 선다 — 첫 턴(상대)은 고정된 첫 줄이다", () => {
+    const tiles = turnTiles([null, null, null, null]);
+    const mapped = catalogItemOf(turnOrder(tiles, [0, 1, 2, 3]), port);
 
     expect(questionOf(mapped)?.["dialogue"]).toMatchObject({
-      speakers: ["counterpart", "me", "counterpart", "me"],
+      opening: { speaker: "counterpart", text: tiles[0]?.ko },
+      speakers: ["me", "counterpart", "me"],
     });
   });
 

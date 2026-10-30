@@ -99,6 +99,22 @@ describe("TURN_ORDER 대화 조각 (MP5)", () => {
     return sentenceOrderOf(catalogItemOf(source, portFor("u00-tutorial")));
   }
 
+  test("정답 첫 턴은 고정된 첫 줄(opening)로 빠지고 창고 조각에 들지 않는다", () => {
+    if (item.type !== "TURN_ORDER") throw new Error("모양 불일치");
+    const question = mapped(item);
+    const first = item.tiles[item.answer[0] ?? -1];
+
+    expect(question.dialogue?.opening).toEqual({
+      speaker: first?.speaker === "player" ? "me" : "counterpart",
+      text: first?.ko,
+    });
+    expect(question.chips).not.toContain(first?.ko);
+    expect(question.chips).toHaveLength(item.tiles.length - 1);
+    expect(question.answerOrder.map((index) => question.chips[index])).toEqual(
+      item.answer.slice(1).map((index) => item.tiles[index]?.ko),
+    );
+  });
+
   test("섞인 조각마다 원래 타일의 화자(player는 me)와 영어 뜻을 싣는다", () => {
     const question = mapped(item);
     const tiles = tilesOf(item);
@@ -127,7 +143,7 @@ describe("TURN_ORDER 대화 조각 (MP5)", () => {
     expect(question.dialogue?.chipSpeakers).toHaveLength(question.chips.length);
   });
 
-  test("화자가 전부 없으면 조각의 정답 자리가 짝수면 상대, 홀수면 나다", () => {
+  test("화자가 전부 없으면 조각의 정답 자리(고정된 첫 줄 다음부터)가 짝수면 상대, 홀수면 나다", () => {
     if (item.type !== "TURN_ORDER") throw new Error("모양 불일치");
     const unspoken = item.tiles.map((tile) => {
       const { speaker: _speaker, ...rest } = tile;
@@ -136,18 +152,20 @@ describe("TURN_ORDER 대화 조각 (MP5)", () => {
 
     const question = mapped({ ...item, tiles: unspoken });
 
+    expect(question.dialogue?.opening.speaker).toBe("counterpart");
     question.chips.forEach((_, chipIndex) => {
-      const position = question.answerOrder.indexOf(chipIndex);
+      const position = question.answerOrder.indexOf(chipIndex) + 1;
       expect(question.dialogue?.chipSpeakers?.[chipIndex]).toBe(
         position % 2 === 0 ? "counterpart" : "me",
       );
     });
   });
 
-  test("칸 화자는 그대로 정답 순서 기준이다", () => {
+  test("칸 화자는 그대로 정답 순서 기준이고 첫 턴은 고정된 첫 줄의 화자다", () => {
     const question = mapped(item);
 
-    expect(question.dialogue?.speakers).toEqual(["counterpart", "me", "counterpart", "me"]);
+    expect(question.dialogue?.opening.speaker).toBe("counterpart");
+    expect(question.dialogue?.speakers).toEqual(["me", "counterpart", "me"]);
   });
 });
 
@@ -158,10 +176,11 @@ describe("MP6. 가드 — 기존 매핑 결과", () => {
 
     const question = sentenceOrderOf(catalogItemOf(item, portFor("u00-tutorial")));
 
-    expect(question.answerOrder.map((index) => question.chips[index])).toEqual(
-      item.answer.map((index) => item.tiles[index]?.ko),
-    );
-    expect(question.dialogue?.speakers).toHaveLength(item.tiles.length);
+    expect([
+      question.dialogue?.opening.text,
+      ...question.answerOrder.map((index) => question.chips[index]),
+    ]).toEqual(item.answer.map((index) => item.tiles[index]?.ko));
+    expect(question.dialogue?.speakers).toHaveLength(item.tiles.length - 1);
   });
 });
 

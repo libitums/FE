@@ -4,6 +4,7 @@ import "background-only";
 // 주소 규약(버킷 경로 · 기준 주소 · 안전한 상대 경로)은 `@libitums/episode-core/content-url`이 정본입니다.
 import { contentBaseUrl, resolveContentUrlSafe } from "@libitums/episode-core/content-url";
 
+import { contentBucket } from "./content-bucket";
 import { sendGet } from "./supabase-transport";
 
 export {
@@ -58,7 +59,8 @@ export function createContentFetchText(now: () => number): FetchText {
     }
     const query = queryFor(relative, key, now());
     const outcome = await sendGet(
-      (config) => `${resolveContentUrlSafe(contentBaseUrl(config.url), relative) ?? ""}${query}`,
+      (config) =>
+        `${resolveContentUrlSafe(contentBaseUrl(config.url, contentBucket()), relative) ?? ""}${query}`,
       (config) => ({ apikey: config.anonKey }),
     );
     return outcome.ok

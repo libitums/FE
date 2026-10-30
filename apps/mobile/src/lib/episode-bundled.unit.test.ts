@@ -16,7 +16,10 @@ describe("bundledCatalogInput", () => {
     expect(manifest.episodes).toHaveLength(4);
     expect(manifest.episodes.map((e) => e.id)).toEqual(IDS);
     for (const e of manifest.episodes) {
-      const text = readFileSync(resolve(process.cwd(), `content/episodes/${e.id}.json`), "utf8");
+      const text = readFileSync(
+        resolve(process.cwd(), `content/test-fixtures/bundled-2026-10-23/episodes/${e.id}.json`),
+        "utf8",
+      );
       expect(e.sha256).toBe(sha256Hex(utf8Bytes(text)));
       expect(e.bytes).toBe(utf8Bytes(text).length);
     }

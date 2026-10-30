@@ -8,7 +8,6 @@ import {
   entryScreenViewedEvent,
   entrySplashDurationMs,
   requiresVerificationCode,
-  splashUpdateWaitMs,
   type EntryLoginMethod,
   type EntryViewedScreenName,
 } from "./entry-flow";
@@ -86,9 +85,6 @@ test("EF7. entryReturningLearnerEnteredEvent(method)가 이름과 입력 method�
   }
 });
 
-test("EF8. splashUpdateWaitMs가 3000(양의 정수)이고 entrySplashDurationMs는 4000 그대로다", () => {
-  expect(Number.isInteger(splashUpdateWaitMs)).toBe(true);
-  expect(splashUpdateWaitMs).toBeGreaterThan(0);
-  expect(splashUpdateWaitMs).toBe(3000);
+test("EF8. entrySplashDurationMs는 4000 그대로다(갱신 대기에는 시간 제한이 없다 — ADR-0078 정정)", () => {
   expect(entrySplashDurationMs).toBe(4000);
 });

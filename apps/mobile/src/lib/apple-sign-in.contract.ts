@@ -44,7 +44,8 @@ export type AppleSignInRequest = {
  *
  * - `completed` — Apple이 자격을 내줬습니다. `identityToken`은 ID 토큰(JWT) 문자열이고,
  *   `authorizationCode`는 계정 삭제의 재인증이 쓰는 일회용 코드입니다 — 코드가 없거나 문자열이
- *   아니거나 비면 `null`이며 `malformed`가 아닙니다. 로그인 경로는 이 값을 읽지 않습니다.
+ *   아니거나 비면 `null`이며 `malformed`가 아닙니다. 로그인 경로는 이 값을 읽지 않습니다. `fullName`은 Apple이
+ *   **첫 동의 때만** 주는 이름을 호스트가 기기 언어 순서로 이은 값입니다 — 없거나 비면 `null`입니다.
  * - `cancelled` — 사용자가 시트를 닫았습니다(`ASAuthorizationError.canceled`).
  * - `failed` — 그 밖의 오류, 또는 자격에 ID 토큰이 없습니다(권한 없는 빌드 포함).
  * - `already-active` — 이미 열린 시트가 있습니다.
@@ -55,6 +56,7 @@ export type AppleSignInResult =
       readonly status: "completed";
       readonly identityToken: string;
       readonly authorizationCode: string | null;
+      readonly fullName: string | null;
     }
   | { readonly status: "cancelled" }
   | { readonly status: "failed" }

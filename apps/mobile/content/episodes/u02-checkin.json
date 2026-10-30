@@ -26,7 +26,7 @@
       },
       "image_brief": "거실의 낯선 사람이 짐을 내려놓고 마당 쪽으로 고개를 돌린다.",
       "image_url": "content/images/u02-checkin/pre-1.webp",
-      "audio_url": "u02-checkin/pre-1-far"
+      "audio_url": "u02-checkin/pre-1-far-r2"
     },
     {
       "index": 2,
@@ -39,7 +39,7 @@
       },
       "image_brief": "마당에서 사장님이 빗자루를 문틀에 세워 두고 들어온다.",
       "image_url": "content/images/u02-checkin/pre-2.webp",
-      "audio_url": "u02-checkin/pre-2"
+      "audio_url": "u02-checkin/pre-2-r2"
     },
     {
       "index": 3,
@@ -58,7 +58,7 @@
       },
       "image_brief": "사장님이 캐리어와 플레이어를 번갈아 본다.",
       "image_url": "content/images/u02-checkin/pre-3.webp",
-      "audio_url": "u02-checkin/pre-3"
+      "audio_url": "u02-checkin/pre-3-r2"
     },
     {
       "index": 4,
@@ -90,7 +90,7 @@
       },
       "image_brief": "데스크 안쪽의 사장님이 공책을 펼치고 펜을 든다.",
       "image_url": "content/images/u02-checkin/pre-5.webp",
-      "audio_url": "u02-checkin/d-01"
+      "audio_url": "u02-checkin/d-01-r2"
     }
   ],
   "dialogue": [
@@ -104,7 +104,7 @@
         "roman": "ireumi eotteoke doeseyo?",
         "en": "May I have your name?"
       },
-      "audio_url": "u02-checkin/d-01"
+      "audio_url": "u02-checkin/d-01-r2"
     },
     {
       "seq": 2,
@@ -128,7 +128,7 @@
         "roman": "ne, yeogwon jom boyeojuseyo.",
         "en": "Okay, may I see your passport?"
       },
-      "audio_url": "u02-checkin/d-03"
+      "audio_url": "u02-checkin/d-03-r2"
     },
     {
       "seq": 4,
@@ -140,7 +140,7 @@
         "roman": "yeogwon yeogi isseoyo.",
         "en": "Here's my passport."
       },
-      "audio_url": "u02-checkin/d-04"
+      "audio_url": "u02-checkin/d-04-r2"
     },
     {
       "seq": 5,
@@ -152,7 +152,7 @@
         "roman": "myeochil mugeusijyo?",
         "en": "How many nights will you be staying?"
       },
-      "audio_url": "u02-checkin/d-05"
+      "audio_url": "u02-checkin/d-05-r2"
     },
     {
       "seq": 6,
@@ -164,7 +164,7 @@
         "roman": "iljuil mugeoyo.",
         "en": "I'm staying a week."
       },
-      "audio_url": "u02-checkin/d-06"
+      "audio_url": "u02-checkin/d-06-r2"
     },
     {
       "seq": 7,
@@ -176,7 +176,7 @@
         "roman": "bangeun 201hoyeyo.",
         "en": "Your room is 201."
       },
-      "audio_url": "u02-checkin/d-07"
+      "audio_url": "u02-checkin/d-07-r2"
     },
     {
       "seq": 8,
@@ -188,7 +188,7 @@
         "roman": "waipai bimilbeonhoga mwoyeyo?",
         "en": "What's the wifi password?"
       },
-      "audio_url": "u02-checkin/d-08"
+      "audio_url": "u02-checkin/d-08-r2"
     },
     {
       "seq": 9,
@@ -200,7 +200,7 @@
         "roman": "duruduruyeyo.",
         "en": "It's duruduru."
       },
-      "audio_url": "u02-checkin/d-09"
+      "audio_url": "u02-checkin/d-09-r2"
     },
     {
       "seq": 10,
@@ -212,7 +212,7 @@
         "roman": "chekeuauseun ojeon 11si matjyo?",
         "en": "Checkout is 11 in the morning, right?"
       },
-      "audio_url": "u02-checkin/d-10"
+      "audio_url": "u02-checkin/d-10-r2"
     },
     {
       "seq": 11,
@@ -224,7 +224,7 @@
         "roman": "ne majayo. jal swieoyo.",
         "en": "Yes, that's right. Enjoy your stay."
       },
-      "audio_url": "u02-checkin/d-11"
+      "audio_url": "u02-checkin/d-11-r2"
     },
     {
       "seq": 12,
@@ -236,7 +236,7 @@
         "roman": "bangi myeot cheungieyo?",
         "en": "What floor is the room on?"
       },
-      "audio_url": "u02-checkin/d-12",
+      "audio_url": "u02-checkin/d-12-r2",
       "branch_at": 8,
       "branch_part": "line",
       "situation": {
@@ -255,7 +255,7 @@
         "roman": "sam cheungieyo.",
         "en": "It's on the third floor."
       },
-      "audio_url": "u02-checkin/d-13",
+      "audio_url": "u02-checkin/d-13-r2",
       "branch_at": 8,
       "branch_part": "reply"
     }
@@ -278,7 +278,7 @@
       },
       "image_brief": "같은 프런트. 사장님이 열쇠를 건네다 말고 신발장 쪽을 가리킨다.",
       "image_url": "content/images/u02-checkin/post-1.webp",
-      "audio_url": "u02-checkin/post-1"
+      "audio_url": "u02-checkin/post-1-r2"
     },
     {
       "index": 2,
@@ -346,8 +346,8 @@
             "en": "Please show me the room."
           },
           "card_kind": "단어",
-          "audio_url": "u02-checkin/s1-01-word",
-          "example_audio_url": "u02-checkin/s1-01-ex"
+          "audio_url": "u02-checkin/s1-01-word-r2",
+          "example_audio_url": "u02-checkin/s1-01-ex-r2"
         },
         {
           "id": "S1-02",
@@ -369,8 +369,8 @@
             "en": "I booked under Eunji."
           },
           "card_kind": "단어",
-          "audio_url": "u02-checkin/s1-02-word",
-          "example_audio_url": "u02-checkin/d-02"
+          "audio_url": "u02-checkin/s1-02-word-r2",
+          "example_audio_url": "u02-checkin/d-02-r2"
         },
         {
           "id": "S1-03",
@@ -392,8 +392,8 @@
             "en": "Here's my passport."
           },
           "card_kind": "단어",
-          "audio_url": "u02-checkin/s1-03-word",
-          "example_audio_url": "u02-checkin/d-04"
+          "audio_url": "u02-checkin/s1-03-word-r2",
+          "example_audio_url": "u02-checkin/d-04-r2"
         },
         {
           "id": "S1-04",
@@ -415,8 +415,8 @@
             "en": "What's your name?"
           },
           "card_kind": "단어",
-          "audio_url": "u02-checkin/s1-04-word",
-          "example_audio_url": "u02-checkin/s1-04-ex"
+          "audio_url": "u02-checkin/s1-04-word-r2",
+          "example_audio_url": "u02-checkin/s1-04-ex-r2"
         },
         {
           "id": "S1-05",
@@ -438,8 +438,8 @@
             "en": "I'm staying a week."
           },
           "card_kind": "단어",
-          "audio_url": "u02-checkin/s1-05-word",
-          "example_audio_url": "u02-checkin/d-06"
+          "audio_url": "u02-checkin/s1-05-word-r2",
+          "example_audio_url": "u02-checkin/d-06-r2"
         },
         {
           "id": "S1-06",
@@ -461,8 +461,8 @@
             "en": "I'm staying a week."
           },
           "card_kind": "단어",
-          "audio_url": "u02-checkin/s1-06-word",
-          "example_audio_url": "u02-checkin/d-06"
+          "audio_url": "u02-checkin/s1-06-word-r2",
+          "example_audio_url": "u02-checkin/d-06-r2"
         },
         {
           "id": "S1-07",
@@ -484,8 +484,8 @@
             "en": "What's the wifi password?"
           },
           "card_kind": "단어",
-          "audio_url": "u02-checkin/s1-07-word",
-          "example_audio_url": "u02-checkin/d-08"
+          "audio_url": "u02-checkin/s1-07-word-r2",
+          "example_audio_url": "u02-checkin/d-08-r2"
         },
         {
           "id": "S1-08",
@@ -592,7 +592,7 @@
               "roman": "waipai bimilbeonhoga mwoyeyo?",
               "en": "What's the wifi password?"
             },
-            "audio_url": "u02-checkin/d-08",
+            "audio_url": "u02-checkin/d-08-r2",
             "image_url": ""
           },
           "options": [
@@ -744,7 +744,7 @@
               "roman": "bangeun 201hoyeyo.",
               "en": "Your room is 201."
             },
-            "audio_url": "u02-checkin/d-07",
+            "audio_url": "u02-checkin/d-07-r2",
             "image_url": ""
           },
           "options": [
@@ -896,7 +896,7 @@
               "roman": "eunjiro yeyakaesseoyo.",
               "en": "I booked under Eunji."
             },
-            "audio_url": "u02-checkin/d-02",
+            "audio_url": "u02-checkin/d-02-r2",
             "image_url": ""
           },
           "options": [
@@ -986,7 +986,7 @@
             "en": "Which word matches the picture?"
           },
           "stimulus": {
-            "audio_url": "u02-checkin/s1-03-word",
+            "audio_url": "u02-checkin/s1-03-word-r2",
             "image_brief": "passport - 한 컷으로 알아볼 수 있게",
             "image_url": "content/images/items/passport.webp"
           },
@@ -1038,7 +1038,7 @@
             "en": "Build the sentence."
           },
           "stimulus": {
-            "audio_url": "u02-checkin/d-04",
+            "audio_url": "u02-checkin/d-04-r2",
             "image_url": "",
             "en": "Here's my passport."
           },
@@ -1140,7 +1140,7 @@
               "roman": "ne, yeogwon jom boyeojuseyo.",
               "en": "Okay, may I see your passport?"
             },
-            "audio_url": "u02-checkin/d-03",
+            "audio_url": "u02-checkin/d-03-r2",
             "image_url": ""
           },
           "options": [
@@ -1294,7 +1294,7 @@
               "roman": "bangeun 201hoyeyo.",
               "en": "Your room is 201."
             },
-            "audio_url": "u02-checkin/d-07",
+            "audio_url": "u02-checkin/d-07-r2",
             "image_url": ""
           },
           "options": [
@@ -1348,7 +1348,7 @@
               "roman": "ne, yeogwon jom boyeojuseyo.",
               "en": "Okay, may I see your passport?"
             },
-            "audio_url": "u02-checkin/d-03",
+            "audio_url": "u02-checkin/d-03-r2",
             "image_url": ""
           },
           "options": [
@@ -1454,7 +1454,7 @@
               "roman": "iljuil mugeoyo.",
               "en": "I'm staying a week."
             },
-            "audio_url": "u02-checkin/d-06",
+            "audio_url": "u02-checkin/d-06-r2",
             "image_url": ""
           },
           "options": [
@@ -1510,7 +1510,7 @@
               "roman": "eunjiro yeyakaesseoyo.",
               "en": "I booked under Eunji."
             },
-            "audio_url": "u02-checkin/d-02",
+            "audio_url": "u02-checkin/d-02-r2",
             "image_url": ""
           },
           "tiles": [
@@ -1609,7 +1609,7 @@
               "roman": "ireumi eotteoke doeseyo?",
               "en": "May I have your name?"
             },
-            "audio_url": "u02-checkin/d-01",
+            "audio_url": "u02-checkin/d-01-r2",
             "image_url": ""
           },
           "options": [
@@ -1770,7 +1770,7 @@
               "roman": "waipai bimilbeonhoga mwoyeyo?",
               "en": "What's the wifi password?"
             },
-            "audio_url": "u02-checkin/d-08",
+            "audio_url": "u02-checkin/d-08-r2",
             "image_url": ""
           },
           "options": [
@@ -1926,7 +1926,7 @@
               "roman": "yeogwon yeogi isseoyo.",
               "en": "Here's my passport."
             },
-            "audio_url": "u02-checkin/d-04",
+            "audio_url": "u02-checkin/d-04-r2",
             "image_url": ""
           },
           "tiles": [
@@ -1987,8 +1987,8 @@
             "en": "What's the wifi password?"
           },
           "card_kind": "단어",
-          "audio_url": "u02-checkin/s3-01-word",
-          "example_audio_url": "u02-checkin/d-08"
+          "audio_url": "u02-checkin/s3-01-word-r2",
+          "example_audio_url": "u02-checkin/d-08-r2"
         },
         {
           "id": "S3-02",
@@ -2010,8 +2010,8 @@
             "en": "Checkout is 11 in the morning, right?"
           },
           "card_kind": "단어",
-          "audio_url": "u02-checkin/s3-02-word",
-          "example_audio_url": "u02-checkin/d-10"
+          "audio_url": "u02-checkin/s3-02-word-r2",
+          "example_audio_url": "u02-checkin/d-10-r2"
         },
         {
           "id": "S3-03",
@@ -2033,8 +2033,8 @@
             "en": "I'm coming in the afternoon."
           },
           "card_kind": "단어",
-          "audio_url": "u02-checkin/s3-03-word",
-          "example_audio_url": "u02-checkin/s3-03-ex"
+          "audio_url": "u02-checkin/s3-03-word-r2",
+          "example_audio_url": "u02-checkin/s3-03-ex-r2"
         },
         {
           "id": "S3-04",
@@ -2051,7 +2051,7 @@
             "en": "May I have your name?"
           },
           "card_kind": "단어",
-          "audio_url": "u02-checkin/s3-04-word"
+          "audio_url": "u02-checkin/s3-04-word-r2"
         },
         {
           "id": "S3-05",
@@ -2073,8 +2073,8 @@
             "en": "How many nights will you be staying?"
           },
           "card_kind": "단어",
-          "audio_url": "u02-checkin/s3-05-word",
-          "example_audio_url": "u02-checkin/d-05"
+          "audio_url": "u02-checkin/s3-05-word-r2",
+          "example_audio_url": "u02-checkin/d-05-r2"
         },
         {
           "id": "S3-06",
@@ -2096,8 +2096,8 @@
             "en": "Your room is 201."
           },
           "card_kind": "단어",
-          "audio_url": "u02-checkin/s3-06-word",
-          "example_audio_url": "u02-checkin/d-07"
+          "audio_url": "u02-checkin/s3-06-word-r2",
+          "example_audio_url": "u02-checkin/d-07-r2"
         },
         {
           "id": "S3-07",
@@ -2119,8 +2119,8 @@
             "en": "What floor is the room on?"
           },
           "card_kind": "단어",
-          "audio_url": "u02-checkin/s3-07-word",
-          "example_audio_url": "u02-checkin/d-12"
+          "audio_url": "u02-checkin/s3-07-word-r2",
+          "example_audio_url": "u02-checkin/d-12-r2"
         },
         {
           "id": "S3-08",
@@ -2223,7 +2223,7 @@
               "roman": "bangi myeot cheungieyo?",
               "en": "What floor is the room on?"
             },
-            "audio_url": "u02-checkin/d-12",
+            "audio_url": "u02-checkin/d-12-r2",
             "image_url": ""
           },
           "options": [
@@ -2317,7 +2317,7 @@
             "en": "Which word matches the picture?"
           },
           "stimulus": {
-            "audio_url": "u02-checkin/s3-01-word",
+            "audio_url": "u02-checkin/s3-01-word-r2",
             "image_brief": "password - 한 컷으로 알아볼 수 있게",
             "image_url": "content/images/items/password.webp"
           },
@@ -2374,7 +2374,7 @@
               "roman": "myeochil mugeusijyo?",
               "en": "How many nights will you be staying?"
             },
-            "audio_url": "u02-checkin/d-05",
+            "audio_url": "u02-checkin/d-05-r2",
             "image_url": ""
           },
           "options": [
@@ -2468,7 +2468,7 @@
             "en": "Tap the syllables to spell the word."
           },
           "stimulus": {
-            "audio_url": "u02-checkin/s1-02-word",
+            "audio_url": "u02-checkin/s1-02-word-r2",
             "image_url": "",
             "en": "reservation"
           },
@@ -2551,7 +2551,7 @@
             "en": "Tap the syllables to spell the word."
           },
           "stimulus": {
-            "audio_url": "u02-checkin/s1-05-word",
+            "audio_url": "u02-checkin/s1-05-word-r2",
             "image_url": "",
             "en": "one week"
           },
@@ -2604,7 +2604,7 @@
               "roman": "waipai bimilbeonhoga mwoyeyo?",
               "en": "What's the wifi password?"
             },
-            "audio_url": "u02-checkin/d-08",
+            "audio_url": "u02-checkin/d-08-r2",
             "image_url": ""
           },
           "options": [
@@ -2655,7 +2655,7 @@
             "en": "Tap the syllables to spell the word."
           },
           "stimulus": {
-            "audio_url": "u02-checkin/s1-07-word",
+            "audio_url": "u02-checkin/s1-07-word-r2",
             "image_url": "",
             "en": "Wi-Fi"
           },
@@ -2769,7 +2769,7 @@
               "roman": "bangeun 201hoyeyo.",
               "en": "Your room is 201."
             },
-            "audio_url": "u02-checkin/d-07",
+            "audio_url": "u02-checkin/d-07-r2",
             "image_url": ""
           },
           "options": [
@@ -2873,7 +2873,7 @@
               "roman": "chekeuauseun ojeon 11si matjyo?",
               "en": "Checkout is 11 in the morning, right?"
             },
-            "audio_url": "u02-checkin/d-10",
+            "audio_url": "u02-checkin/d-10-r2",
             "image_url": ""
           },
           "options": [
@@ -2929,7 +2929,7 @@
               "roman": "waipai bimilbeonhoga mwoyeyo?",
               "en": "What's the wifi password?"
             },
-            "audio_url": "u02-checkin/d-08",
+            "audio_url": "u02-checkin/d-08-r2",
             "image_url": ""
           },
           "options": [
@@ -3090,7 +3090,7 @@
               "roman": "myeochil mugeusijyo?",
               "en": "How many nights will you be staying?"
             },
-            "audio_url": "u02-checkin/d-05",
+            "audio_url": "u02-checkin/d-05-r2",
             "image_url": ""
           },
           "tiles": [
@@ -3139,7 +3139,7 @@
               "roman": "ireumi eotteoke doeseyo?",
               "en": "May I have your name?"
             },
-            "audio_url": "u02-checkin/d-01",
+            "audio_url": "u02-checkin/d-01-r2",
             "image_url": ""
           },
           "options": [
@@ -3293,7 +3293,7 @@
               "roman": "yeogwon yeogi isseoyo.",
               "en": "Here's my passport."
             },
-            "audio_url": "u02-checkin/d-04",
+            "audio_url": "u02-checkin/d-04-r2",
             "image_url": ""
           },
           "options": [
@@ -3349,7 +3349,7 @@
               "roman": "ireumi eotteoke doeseyo?",
               "en": "May I have your name?"
             },
-            "audio_url": "u02-checkin/d-01",
+            "audio_url": "u02-checkin/d-01-r2",
             "image_url": ""
           },
           "options": [
@@ -3455,7 +3455,7 @@
               "roman": "bangi myeot cheungieyo?",
               "en": "What floor is the room on?"
             },
-            "audio_url": "u02-checkin/d-12",
+            "audio_url": "u02-checkin/d-12-r2",
             "image_url": ""
           },
           "tiles": [
@@ -3507,7 +3507,7 @@
               "roman": "myeochil mugeusijyo?",
               "en": "How many nights will you be staying?"
             },
-            "audio_url": "u02-checkin/d-05",
+            "audio_url": "u02-checkin/d-05-r2",
             "image_url": ""
           },
           "options": [
@@ -3561,7 +3561,7 @@
               "roman": "eunjiro yeyakaesseoyo.",
               "en": "I booked under Eunji."
             },
-            "audio_url": "u02-checkin/d-02",
+            "audio_url": "u02-checkin/d-02-r2",
             "image_url": ""
           },
           "tiles": [
@@ -3615,7 +3615,7 @@
               "roman": "sam cheungieyo.",
               "en": "It's on the third floor."
             },
-            "audio_url": "u02-checkin/d-13",
+            "audio_url": "u02-checkin/d-13-r2",
             "image_url": ""
           }
         },
@@ -3637,7 +3637,7 @@
               "roman": "duruduruyeyo.",
               "en": "It's duruduru."
             },
-            "audio_url": "u02-checkin/d-09",
+            "audio_url": "u02-checkin/d-09-r2",
             "image_url": ""
           },
           "options": [
@@ -3693,7 +3693,7 @@
               "roman": "ne majayo. jal swieoyo.",
               "en": "Yes, that's right. Enjoy your stay."
             },
-            "audio_url": "u02-checkin/d-11",
+            "audio_url": "u02-checkin/d-11-r2",
             "image_url": ""
           },
           "options": [
@@ -3733,8 +3733,132 @@
       ]
     },
     {
+      "id": "INT",
+      "kind": "interlude",
+      "items": [],
+      "interlude": {
+        "form": "call",
+        "anchor": "earlier",
+        "caption": {
+          "ko": "오늘 아침, 공항",
+          "roman": "oneul achim, gonghang",
+          "en": "This morning, at the airport"
+        },
+        "cuts": [
+          {
+            "index": 1,
+            "with": "익선 게스트하우스",
+            "cut_kind": "call",
+            "speaker": "익선 게스트하우스",
+            "line": {
+              "ko": "여보세요. 익선 게스트하우스예요.",
+              "roman": "yeoboseyo. ikseon geseuteuhauseuyeyo.",
+              "en": "Hello, this is Ikseon Guesthouse."
+            },
+            "background_url": "content/images/u00-tutorial/post-4.webp"
+          },
+          {
+            "index": 2,
+            "with": "익선 게스트하우스",
+            "cut_kind": "call",
+            "speaker": "익선 게스트하우스",
+            "line": {
+              "ko": "오늘 오는 손님 맞죠?",
+              "roman": "oneul oneun sonnim matjyo?",
+              "en": "You're the guest coming today, right?"
+            },
+            "background_url": "content/images/u00-tutorial/post-4.webp"
+          },
+          {
+            "index": 3,
+            "with": "익선 게스트하우스",
+            "cut_kind": "call",
+            "speaker": "플레이어",
+            "line": {
+              "ko": "네, 맞아요.",
+              "roman": "ne, majayo.",
+              "en": "Yes, that's right."
+            },
+            "background_url": "content/images/u00-tutorial/post-4.webp"
+          },
+          {
+            "index": 4,
+            "with": "익선 게스트하우스",
+            "cut_kind": "call",
+            "line": {
+              "ko": "어, 새로 오셨나 봐요?",
+              "roman": "eo, saero osyeonna bwayo?",
+              "en": "Oh, you must be new here?"
+            },
+            "background_voice": true,
+            "voice_label": "뒤에서 작게",
+            "background_url": "content/images/u00-tutorial/post-4.webp"
+          },
+          {
+            "index": 5,
+            "with": "익선 게스트하우스",
+            "cut_kind": "call",
+            "speaker": "플레이어",
+            "line": {
+              "ko": "네...?",
+              "roman": "ne...?",
+              "en": "Um... yes?"
+            },
+            "background_url": "content/images/u00-tutorial/post-4.webp"
+          },
+          {
+            "index": 6,
+            "with": "익선 게스트하우스",
+            "cut_kind": "call",
+            "speaker": "익선 게스트하우스",
+            "line": {
+              "ko": "아, 미안해요. 다른 손님이에요.",
+              "roman": "a, mianhaeyo. dareun sonnimieyo.",
+              "en": "Oh, sorry. That was another guest."
+            },
+            "background_url": "content/images/u00-tutorial/post-4.webp"
+          },
+          {
+            "index": 7,
+            "with": "익선 게스트하우스",
+            "cut_kind": "call",
+            "speaker": "익선 게스트하우스",
+            "line": {
+              "ko": "천천히 와요.",
+              "roman": "cheoncheonhi wayo.",
+              "en": "Take your time."
+            },
+            "background_url": "content/images/u00-tutorial/post-4.webp"
+          },
+          {
+            "index": 8,
+            "with": "익선 게스트하우스",
+            "cut_kind": "call_end",
+            "narration": {
+              "ko": "뚝. 전화가 먼저 끊긴다.",
+              "roman": "ttuk. jeonhwaga meonjeo kkeunginda.",
+              "en": "Click. She hangs up first."
+            },
+            "background_url": "content/images/u00-tutorial/post-4.webp"
+          }
+        ],
+        "background_url": "content/images/u00-tutorial/post-4.webp",
+        "profiles": [
+          {
+            "speaker": "사장님",
+            "image_url": "content/images/profiles/yoonkyung-casual.webp"
+          },
+          {
+            "speaker": "익선 게스트하우스",
+            "image_url": "content/images/profiles/yoonkyung-casual.webp"
+          }
+        ]
+      },
+      "order": 5
+    },
+    {
       "id": "S5",
-      "order": 5,
+      "order": 6,
       "items": [
         {
           "id": "S5-01",
@@ -4009,7 +4133,7 @@
               "roman": "bang",
               "en": "room"
             },
-            "audio_url": "u02-checkin/s1-01-word",
+            "audio_url": "u02-checkin/s1-01-word-r2",
             "image_url": ""
           },
           "options": [
@@ -4054,7 +4178,7 @@
               "ko": "풀",
               "roman": "pul"
             },
-            "audio_url": "u02-checkin/s5-07-stim",
+            "audio_url": "u02-checkin/s5-07-stim-r2",
             "image_url": ""
           },
           "options": [
@@ -4099,7 +4223,7 @@
               "ko": "층이에요",
               "roman": "cheungieyo"
             },
-            "audio_url": "u02-checkin/s5-08-stim",
+            "audio_url": "u02-checkin/s5-08-stim-r2",
             "image_url": ""
           },
           "answers": [
@@ -4127,7 +4251,7 @@
               "ko": "201호예요",
               "roman": "201hoyeyo"
             },
-            "audio_url": "u02-checkin/s5-09-stim",
+            "audio_url": "u02-checkin/s5-09-stim-r2",
             "image_url": ""
           },
           "answers": [
@@ -4161,7 +4285,7 @@
               "roman": "yeogwon yeogi isseoyo.",
               "en": "Here's my passport."
             },
-            "audio_url": "u02-checkin/d-04",
+            "audio_url": "u02-checkin/d-04-r2",
             "image_url": ""
           },
           "answers": [
@@ -4196,7 +4320,7 @@
               "roman": "waipai bimilbeonhoga mwoyeyo?",
               "en": "What's the wifi password?"
             },
-            "audio_url": "u02-checkin/d-08",
+            "audio_url": "u02-checkin/d-08-r2",
             "image_url": ""
           },
           "answers": [
@@ -4231,7 +4355,7 @@
               "roman": "bangi myeot cheungieyo?",
               "en": "What floor is the room on?"
             },
-            "audio_url": "u02-checkin/d-12",
+            "audio_url": "u02-checkin/d-12-r2",
             "image_url": ""
           },
           "answers": [
@@ -4246,7 +4370,7 @@
     },
     {
       "id": "S6",
-      "order": 6,
+      "order": 7,
       "items": [
         {
           "id": "S6-01",
@@ -4344,7 +4468,7 @@
             "en": "Say the word for the picture."
           },
           "stimulus": {
-            "audio_url": "u02-checkin/s3-01-word",
+            "audio_url": "u02-checkin/s3-01-word-r2",
             "image_brief": "password - 한 컷으로 알아볼 수 있게",
             "image_url": "content/images/items/password.webp"
           },
@@ -4452,7 +4576,7 @@
             "en": "Say this in Korean."
           },
           "stimulus": {
-            "audio_url": "u02-checkin/s1-03-word",
+            "audio_url": "u02-checkin/s1-03-word-r2",
             "image_url": "",
             "en": "passport"
           },
@@ -4478,7 +4602,7 @@
             "en": "Build the sentence."
           },
           "stimulus": {
-            "audio_url": "u02-checkin/d-08",
+            "audio_url": "u02-checkin/d-08-r2",
             "image_url": "",
             "en": "What's the wifi password?"
           },
@@ -4519,7 +4643,7 @@
             "en": "Build the sentence."
           },
           "stimulus": {
-            "audio_url": "u02-checkin/d-01",
+            "audio_url": "u02-checkin/d-01-r2",
             "image_url": "",
             "en": "May I have your name?"
           },
@@ -4559,7 +4683,7 @@
             "en": "Say this in Korean."
           },
           "stimulus": {
-            "audio_url": "u02-checkin/s3-01-word",
+            "audio_url": "u02-checkin/s3-01-word-r2",
             "image_url": "",
             "en": "password"
           },
@@ -4590,7 +4714,7 @@
               "roman": "bangeun 201hoyeyo.",
               "en": "Your room is 201."
             },
-            "audio_url": "u02-checkin/d-07",
+            "audio_url": "u02-checkin/d-07-r2",
             "image_url": ""
           },
           "options": [
@@ -4641,7 +4765,7 @@
             "en": "Say this in Korean."
           },
           "stimulus": {
-            "audio_url": "u02-checkin/s3-06-word",
+            "audio_url": "u02-checkin/s3-06-word-r2",
             "image_url": "",
             "en": "No. (room number)"
           },
@@ -4667,7 +4791,7 @@
             "en": "Say this in Korean."
           },
           "stimulus": {
-            "audio_url": "u02-checkin/s3-07-word",
+            "audio_url": "u02-checkin/s3-07-word-r2",
             "image_url": "",
             "en": "layer, ~ floor"
           },
@@ -4683,7 +4807,7 @@
     },
     {
       "id": "S7",
-      "order": 7,
+      "order": 8,
       "items": [
         {
           "id": "S7-01",
@@ -4709,7 +4833,7 @@
               "roman": "yeogwon yeogi isseoyo.",
               "en": "Here's my passport."
             },
-            "audio_url": "u02-checkin/d-04",
+            "audio_url": "u02-checkin/d-04-r2",
             "image_url": ""
           },
           "answers": [
@@ -4744,7 +4868,7 @@
               "roman": "iljuil mugeoyo.",
               "en": "I'm staying a week."
             },
-            "audio_url": "u02-checkin/d-06",
+            "audio_url": "u02-checkin/d-06-r2",
             "image_url": ""
           },
           "answers": [
@@ -4769,7 +4893,7 @@
             "en": "Build the sentence."
           },
           "stimulus": {
-            "audio_url": "u02-checkin/d-10",
+            "audio_url": "u02-checkin/d-10-r2",
             "image_url": "",
             "en": "Checkout is 11 in the morning, right?"
           },
@@ -4869,7 +4993,7 @@
               "roman": "ne, yeogwon jom boyeojuseyo.",
               "en": "Okay, may I see your passport?"
             },
-            "audio_url": "u02-checkin/d-03",
+            "audio_url": "u02-checkin/d-03-r2",
             "image_url": ""
           },
           "options": [
@@ -4928,7 +5052,7 @@
               "roman": "chekeuauseun ojeon 11si matjyo?",
               "en": "Checkout is 11 in the morning, right?"
             },
-            "audio_url": "u02-checkin/d-10",
+            "audio_url": "u02-checkin/d-10-r2",
             "image_url": ""
           },
           "answers": [
@@ -5003,7 +5127,7 @@
             "en": "Build the sentence."
           },
           "stimulus": {
-            "audio_url": "u02-checkin/d-12",
+            "audio_url": "u02-checkin/d-12-r2",
             "image_url": "",
             "en": "What floor is the room on?"
           },
@@ -5053,7 +5177,7 @@
               "roman": "waipai bimilbeonhoga mwoyeyo?",
               "en": "What's the wifi password?"
             },
-            "audio_url": "u02-checkin/d-08",
+            "audio_url": "u02-checkin/d-08-r2",
             "image_url": ""
           },
           "answers": [
@@ -5088,7 +5212,7 @@
               "roman": "eunjiro yeyakaesseoyo.",
               "en": "I booked under Eunji."
             },
-            "audio_url": "u02-checkin/d-02",
+            "audio_url": "u02-checkin/d-02-r2",
             "image_url": ""
           },
           "answers": [
@@ -5118,7 +5242,7 @@
               "roman": "myeochil mugeusijyo?",
               "en": "How many nights will you be staying?"
             },
-            "audio_url": "u02-checkin/d-05",
+            "audio_url": "u02-checkin/d-05-r2",
             "image_url": ""
           },
           "options": [
@@ -5262,102 +5386,33 @@
     },
     {
       "id": "S8",
-      "order": 8,
+      "order": 9,
       "items": [
         {
           "id": "S8-01",
-          "type": "SPEAK_WORD",
-          "mode": "speech",
-          "event": "R",
-          "level": 4,
-          "skill": "말하기",
-          "skill_level": 2,
-          "ref": "voca:f5d3a388",
-          "prompt": {
-            "ko": "그림을 보고 말하세요.",
-            "en": "Say the word for the picture."
-          },
-          "stimulus": {
-            "audio_url": "u02-checkin/s3-02-word",
-            "image_brief": "morning, a.m. - 한 컷으로 알아볼 수 있게",
-            "image_url": "content/images/items/morning.webp"
-          },
-          "answers": [
-            {
-              "ko": "오전",
-              "roman": "ojeon",
-              "en": "morning, a.m."
-            }
-          ]
-        },
-        {
-          "id": "S8-02",
-          "type": "DICTATION",
-          "mode": "typing",
-          "event": "R",
-          "level": 4,
-          "skill": "쓰기",
-          "skill_level": 2,
-          "ref": "voca:1543e627",
-          "prompt": {
-            "ko": "들은 대로 쓰세요.",
-            "en": "Type what you hear."
-          },
-          "stimulus": {
-            "audio": {
-              "ko": "묵어요",
-              "roman": "mugeoyo"
-            },
-            "audio_url": "u02-checkin/s8-02-stim",
-            "image_url": ""
-          },
-          "answers": [
-            {
-              "ko": "묵어요",
-              "roman": "mugeoyo"
-            }
-          ]
-        },
-        {
-          "id": "S8-03",
           "type": "LISTEN_SELECT",
           "mode": "choice",
           "event": "R",
           "level": 2,
           "skill": "듣기",
           "skill_level": 1,
-          "ref": "voca:17268353",
+          "ref": "voca:f5d3a388",
           "prompt": {
             "ko": "무엇을 들었나요?",
             "en": "What did you hear?"
           },
           "stimulus": {
             "audio": {
-              "ko": "와이파이 비밀번호가 뭐예요?",
-              "roman": "waipai bimilbeonhoga mwoyeyo?",
-              "en": "What's the wifi password?"
+              "ko": "체크아웃은 오전 11시 맞죠?",
+              "roman": "chekeuauseun ojeon 11si matjyo?",
+              "en": "Checkout is 11 in the morning, right?"
             },
-            "audio_url": "u02-checkin/d-08",
+            "audio_url": "u02-checkin/d-10-r2",
             "image_url": ""
           },
           "options": [
             {
               "id": "o1",
-              "ko": "와이파이 비밀번호가 뭐예요?",
-              "roman": "waipai bimilbeonhoga mwoyeyo?",
-              "en": "What's the Wi-Fi password?",
-              "correct": true
-            },
-            {
-              "id": "o2",
-              "ko": "방이 몇 층이에요?",
-              "roman": "bangi myeot cheungieyo?",
-              "en": "What floor is the room on?",
-              "correct": false,
-              "why_wrong": "이 자리에 맞는 말이 아니다"
-            },
-            {
-              "id": "o3",
               "ko": "며칠 묵으시죠?",
               "roman": "myeochil mugeusijyo?",
               "en": "How many days are you staying?",
@@ -5365,17 +5420,81 @@
               "why_wrong": "이 자리에 맞는 말이 아니다"
             },
             {
+              "id": "o2",
+              "ko": "이름이 어떻게 되세요?",
+              "roman": "ireumi eotteoke doeseyo?",
+              "en": "May I have your name?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "체크아웃은 오전 11시 맞죠?",
+              "roman": "chekeuauseun ojeon 11si matjyo?",
+              "en": "Checkout is 11 in the morning, right?",
+              "correct": true
+            },
+            {
               "id": "o4",
-              "ko": "일주일 묵어요.",
-              "roman": "iljuil mugeoyo.",
-              "en": "I'm staying for a week.",
+              "ko": "duruduru예요.",
+              "roman": "duruduruyeyo.",
+              "en": "It's duruduru.",
               "correct": false,
               "why_wrong": "이 자리에 맞는 말이 아니다"
             }
           ]
         },
         {
-          "id": "S8-04",
+          "id": "S8-02",
+          "type": "LISTEN_BUILD",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "듣기",
+          "skill_level": 3,
+          "ref": "voca:1543e627",
+          "prompt": {
+            "ko": "듣고 문장을 만드세요.",
+            "en": "Listen and build the sentence."
+          },
+          "stimulus": {
+            "audio": {
+              "ko": "일주일 묵어요.",
+              "roman": "iljuil mugeoyo.",
+              "en": "I'm staying a week."
+            },
+            "audio_url": "u02-checkin/d-06-r2",
+            "image_url": ""
+          },
+          "tiles": [
+            {
+              "ko": "일주일",
+              "roman": "iljuil",
+              "en": "one week"
+            },
+            {
+              "ko": "묵어요.",
+              "roman": "mugeoyo."
+            },
+            {
+              "ko": "있어요.",
+              "roman": "isseoyo."
+            },
+            {
+              "ko": "뭐예요?",
+              "roman": "mwoyeyo?"
+            }
+          ],
+          "answers": [
+            {
+              "ko": "일주일 묵어요.",
+              "roman": "iljuil mugeoyo.",
+              "en": "I'm staying a week."
+            }
+          ]
+        },
+        {
+          "id": "S8-03",
           "type": "TRANSLATE_TO_EN",
           "mode": "choice",
           "event": "R",
@@ -5392,7 +5511,7 @@
               "ko": "이름이 어떻게 되세요?",
               "roman": "ireumi eotteoke doeseyo?"
             },
-            "audio_url": "u02-checkin/d-01",
+            "audio_url": "u02-checkin/d-01-r2",
             "image_url": ""
           },
           "options": [
@@ -5430,28 +5549,102 @@
           ]
         },
         {
-          "id": "S8-05",
-          "type": "TRANSLATE_TO_KO",
-          "mode": "typing",
+          "id": "S8-04",
+          "type": "LISTEN_SELECT",
+          "mode": "choice",
           "event": "R",
-          "level": 4,
-          "skill": "쓰기",
-          "skill_level": 3,
-          "ref": "voca:f8abac72",
+          "level": 2,
+          "skill": "듣기",
+          "skill_level": 1,
+          "ref": "voca:17268353",
           "prompt": {
-            "ko": "한국어로 쓰세요.",
-            "en": "Say this in Korean."
+            "ko": "무엇을 들었나요?",
+            "en": "What did you hear?"
           },
           "stimulus": {
-            "audio_url": "u02-checkin/s1-01-word",
-            "image_url": "",
-            "en": "room"
+            "audio": {
+              "ko": "와이파이 비밀번호가 뭐예요?",
+              "roman": "waipai bimilbeonhoga mwoyeyo?",
+              "en": "What's the wifi password?"
+            },
+            "audio_url": "u02-checkin/d-08-r2",
+            "image_url": ""
           },
+          "options": [
+            {
+              "id": "o1",
+              "ko": "와이파이 비밀번호가 뭐예요?",
+              "roman": "waipai bimilbeonhoga mwoyeyo?",
+              "en": "What's the Wi-Fi password?",
+              "correct": true
+            },
+            {
+              "id": "o2",
+              "ko": "방이 몇 층이에요?",
+              "roman": "bangi myeot cheungieyo?",
+              "en": "What floor is the room on?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o3",
+              "ko": "며칠 묵으시죠?",
+              "roman": "myeochil mugeusijyo?",
+              "en": "How many days are you staying?",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            },
+            {
+              "id": "o4",
+              "ko": "일주일 묵어요.",
+              "roman": "iljuil mugeoyo.",
+              "en": "I'm staying for a week.",
+              "correct": false,
+              "why_wrong": "이 자리에 맞는 말이 아니다"
+            }
+          ]
+        },
+        {
+          "id": "S8-05",
+          "type": "SYLLABLE_BUILD",
+          "mode": "tiles",
+          "event": "R",
+          "level": 3,
+          "skill": "쓰기",
+          "skill_level": 1,
+          "ref": "voca:50f4d3f6",
+          "prompt": {
+            "ko": "음절을 골라 낱말을 만드세요.",
+            "en": "Tap the syllables to spell the word."
+          },
+          "stimulus": {
+            "audio_url": "u02-checkin/s1-02-word-r2",
+            "image_url": "",
+            "en": "reservation"
+          },
+          "tiles": [
+            {
+              "ko": "예",
+              "roman": "ye"
+            },
+            {
+              "ko": "약",
+              "roman": "yak"
+            },
+            {
+              "ko": "주",
+              "roman": "ju"
+            },
+            {
+              "ko": "아",
+              "roman": "a"
+            }
+          ],
           "answers": [
             {
-              "ko": "방",
-              "roman": "bang",
-              "en": "room"
+              "ko": "예약",
+              "roman": "yeyak",
+              "en": "reservation"
             }
           ]
         },
@@ -5513,7 +5706,7 @@
               "roman": "iljuil mugeoyo.",
               "en": "I'm staying a week."
             },
-            "audio_url": "u02-checkin/d-06",
+            "audio_url": "u02-checkin/d-06-r2",
             "image_url": ""
           },
           "options": [
@@ -5552,31 +5745,50 @@
         },
         {
           "id": "S8-08",
-          "type": "DICTATION",
-          "mode": "typing",
+          "type": "LISTEN_BUILD",
+          "mode": "tiles",
           "event": "R",
-          "level": 4,
-          "skill": "쓰기",
-          "skill_level": 2,
-          "ref": "voca:f5d3a388",
+          "level": 3,
+          "skill": "듣기",
+          "skill_level": 3,
+          "ref": "voca:9710a021",
           "prompt": {
-            "ko": "들은 대로 쓰세요.",
-            "en": "Type what you hear."
+            "ko": "듣고 문장을 만드세요.",
+            "en": "Listen and build the sentence."
           },
           "stimulus": {
             "audio": {
-              "ko": "오전",
-              "roman": "ojeon",
-              "en": "morning, a.m."
+              "ko": "며칠 묵으시죠?",
+              "roman": "myeochil mugeusijyo?",
+              "en": "How many nights will you be staying?"
             },
-            "audio_url": "u02-checkin/s3-02-word",
+            "audio_url": "u02-checkin/d-05-r2",
             "image_url": ""
           },
+          "tiles": [
+            {
+              "ko": "며칠",
+              "roman": "myeochil",
+              "en": "how many days"
+            },
+            {
+              "ko": "묵으시죠?",
+              "roman": "mugeusijyo?"
+            },
+            {
+              "ko": "201호예요.",
+              "roman": "201hoyeyo."
+            },
+            {
+              "ko": "층이에요.",
+              "roman": "cheungieyo."
+            }
+          ],
           "answers": [
             {
-              "ko": "오전",
-              "roman": "ojeon",
-              "en": "morning, a.m."
+              "ko": "며칠 묵으시죠?",
+              "roman": "myeochil mugeusijyo?",
+              "en": "How many nights will you be staying?"
             }
           ]
         },
@@ -5598,7 +5810,7 @@
               "ko": "예약",
               "roman": "yeyak"
             },
-            "audio_url": "u02-checkin/s1-02-word",
+            "audio_url": "u02-checkin/s1-02-word-r2",
             "image_url": ""
           },
           "options": [
@@ -5637,31 +5849,58 @@
         },
         {
           "id": "S8-10",
-          "type": "DICTATION",
-          "mode": "typing",
+          "type": "LISTEN_BUILD",
+          "mode": "tiles",
           "event": "R",
-          "level": 4,
-          "skill": "쓰기",
-          "skill_level": 2,
+          "level": 3,
+          "skill": "듣기",
+          "skill_level": 3,
           "ref": "voca:23612f87",
           "prompt": {
-            "ko": "들은 대로 쓰세요.",
-            "en": "Type what you hear."
+            "ko": "듣고 문장을 만드세요.",
+            "en": "Listen and build the sentence."
           },
           "stimulus": {
             "audio": {
-              "ko": "여권",
-              "roman": "yeogwon",
-              "en": "passport"
+              "ko": "네, 여권 좀 보여주세요.",
+              "roman": "ne, yeogwon jom boyeojuseyo.",
+              "en": "Okay, may I see your passport?"
             },
-            "audio_url": "u02-checkin/s1-03-word",
+            "audio_url": "u02-checkin/d-03-r2",
             "image_url": ""
           },
-          "answers": [
+          "tiles": [
+            {
+              "ko": "네,",
+              "roman": "ne,"
+            },
             {
               "ko": "여권",
               "roman": "yeogwon",
               "en": "passport"
+            },
+            {
+              "ko": "좀",
+              "roman": "jom"
+            },
+            {
+              "ko": "보여주세요.",
+              "roman": "boyeojuseyo."
+            },
+            {
+              "ko": "201호예요.",
+              "roman": "201hoyeyo."
+            },
+            {
+              "ko": "층이에요.",
+              "roman": "cheungieyo."
+            }
+          ],
+          "answers": [
+            {
+              "ko": "네, 여권 좀 보여주세요.",
+              "roman": "ne, yeogwon jom boyeojuseyo.",
+              "en": "Okay, may I see your passport?"
             }
           ]
         },
@@ -5683,7 +5922,7 @@
               "ko": "일주일",
               "roman": "iljuil"
             },
-            "audio_url": "u02-checkin/s1-05-word",
+            "audio_url": "u02-checkin/s1-05-word-r2",
             "image_url": ""
           },
           "options": [
@@ -5739,7 +5978,7 @@
               "roman": "bangeun 201hoyeyo.",
               "en": "Your room is 201."
             },
-            "audio_url": "u02-checkin/d-07",
+            "audio_url": "u02-checkin/d-07-r2",
             "image_url": ""
           },
           "tiles": [
@@ -5770,27 +6009,45 @@
         },
         {
           "id": "S8-13",
-          "type": "TRANSLATE_TO_KO",
-          "mode": "typing",
+          "type": "SYLLABLE_BUILD",
+          "mode": "tiles",
           "event": "R",
-          "level": 4,
+          "level": 3,
           "skill": "쓰기",
-          "skill_level": 3,
-          "ref": "voca:e3c30bfa",
+          "skill_level": 1,
+          "ref": "voca:23612f87",
           "prompt": {
-            "ko": "한국어로 쓰세요.",
-            "en": "Say this in Korean."
+            "ko": "음절을 골라 낱말을 만드세요.",
+            "en": "Tap the syllables to spell the word."
           },
           "stimulus": {
-            "audio_url": "u02-checkin/s1-04-word",
+            "audio_url": "u02-checkin/s1-03-word-r2",
             "image_url": "",
-            "en": "name"
+            "en": "passport"
           },
+          "tiles": [
+            {
+              "ko": "여",
+              "roman": "yeo"
+            },
+            {
+              "ko": "권",
+              "roman": "gwon"
+            },
+            {
+              "ko": "밀",
+              "roman": "mil"
+            },
+            {
+              "ko": "다",
+              "roman": "da"
+            }
+          ],
           "answers": [
             {
-              "ko": "이름",
-              "roman": "ireum",
-              "en": "name"
+              "ko": "여권",
+              "roman": "yeogwon",
+              "en": "passport"
             }
           ]
         },
@@ -5813,7 +6070,7 @@
               "roman": "bangeun 201hoyeyo.",
               "en": "Your room is 201."
             },
-            "audio_url": "u02-checkin/d-07",
+            "audio_url": "u02-checkin/d-07-r2",
             "image_url": ""
           },
           "options": [
@@ -5852,31 +6109,53 @@
         },
         {
           "id": "S8-15",
-          "type": "DICTATION",
-          "mode": "typing",
+          "type": "LISTEN_BUILD",
+          "mode": "tiles",
           "event": "R",
-          "level": 4,
-          "skill": "쓰기",
-          "skill_level": 2,
-          "ref": "voca:9710a021",
+          "level": 3,
+          "skill": "듣기",
+          "skill_level": 3,
+          "ref": "voca:486ee669",
           "prompt": {
-            "ko": "들은 대로 쓰세요.",
-            "en": "Type what you hear."
+            "ko": "듣고 문장을 만드세요.",
+            "en": "Listen and build the sentence."
           },
           "stimulus": {
             "audio": {
-              "ko": "며칠",
-              "roman": "myeochil",
-              "en": "how many days"
+              "ko": "방이 몇 층이에요?",
+              "roman": "bangi myeot cheungieyo?",
+              "en": "What floor is the room on?"
             },
-            "audio_url": "u02-checkin/s3-05-word",
+            "audio_url": "u02-checkin/d-12-r2",
             "image_url": ""
           },
+          "tiles": [
+            {
+              "ko": "방이",
+              "roman": "bangi"
+            },
+            {
+              "ko": "몇",
+              "roman": "myeot"
+            },
+            {
+              "ko": "층이에요?",
+              "roman": "cheungieyo?"
+            },
+            {
+              "ko": "맞죠?",
+              "roman": "matjyo?"
+            },
+            {
+              "ko": "맞아요.",
+              "roman": "majayo."
+            }
+          ],
           "answers": [
             {
-              "ko": "며칠",
-              "roman": "myeochil",
-              "en": "how many days"
+              "ko": "방이 몇 층이에요?",
+              "roman": "bangi myeot cheungieyo?",
+              "en": "What floor is the room on?"
             }
           ]
         },
@@ -5898,7 +6177,7 @@
               "ko": "비밀번호",
               "roman": "bimilbeonho"
             },
-            "audio_url": "u02-checkin/s3-01-word",
+            "audio_url": "u02-checkin/s3-01-word-r2",
             "image_url": ""
           },
           "options": [
@@ -5937,22 +6216,48 @@
         },
         {
           "id": "S8-17",
-          "type": "TRANSLATE_TO_KO",
-          "mode": "typing",
+          "type": "SYLLABLE_BUILD",
+          "mode": "tiles",
           "event": "R",
-          "level": 4,
+          "level": 3,
           "skill": "쓰기",
-          "skill_level": 3,
+          "skill_level": 1,
           "ref": "voca:17268353",
           "prompt": {
-            "ko": "한국어로 쓰세요.",
-            "en": "Say this in Korean."
+            "ko": "음절을 골라 낱말을 만드세요.",
+            "en": "Tap the syllables to spell the word."
           },
           "stimulus": {
-            "audio_url": "u02-checkin/s1-07-word",
+            "audio_url": "u02-checkin/s1-07-word-r2",
             "image_url": "",
             "en": "Wi-Fi"
           },
+          "tiles": [
+            {
+              "ko": "와",
+              "roman": "wa"
+            },
+            {
+              "ko": "이",
+              "roman": "i"
+            },
+            {
+              "ko": "파",
+              "roman": "pa"
+            },
+            {
+              "ko": "이",
+              "roman": "i"
+            },
+            {
+              "ko": "밀",
+              "roman": "mil"
+            },
+            {
+              "ko": "다",
+              "roman": "da"
+            }
+          ],
           "answers": [
             {
               "ko": "와이파이",
@@ -5965,7 +6270,7 @@
     },
     {
       "id": "CULT",
-      "order": 9,
+      "order": 10,
       "items": [
         {
           "id": "CULT-01",
@@ -6205,7 +6510,7 @@
     },
     {
       "id": "RP",
-      "order": 10,
+      "order": 11,
       "items": [
         {
           "id": "RP-01",
@@ -6289,7 +6594,7 @@
                   "roman": "ireumi eotteoke doeseyo?",
                   "en": "May I have your name?"
                 },
-                "audio_url": "u02-checkin/d-01"
+                "audio_url": "u02-checkin/d-01-r2"
               }
             ],
             "reask": {
@@ -6299,7 +6604,7 @@
                 "roman": "ne?",
                 "en": "Sorry?"
               },
-              "audio_url": "u02-checkin/rp-01-reask"
+              "audio_url": "u02-checkin/rp-01-reask-r2"
             },
             "player_audio_url": ""
           }
@@ -6327,7 +6632,7 @@
               "roman": "yeogwon yeogi isseoyo.",
               "en": "Here's my passport."
             },
-            "audio_url": "u02-checkin/d-04",
+            "audio_url": "u02-checkin/d-04-r2",
             "image_url": "content/images/u02-checkin/pre-5.webp"
           },
           "tiles": [
@@ -6395,7 +6700,7 @@
                   "roman": "ne, yeogwon jom boyeojuseyo.",
                   "en": "Okay, may I see your passport?"
                 },
-                "audio_url": "u02-checkin/d-03"
+                "audio_url": "u02-checkin/d-03-r2"
               }
             ],
             "reask": {
@@ -6405,9 +6710,9 @@
                 "roman": "ne?",
                 "en": "Sorry?"
               },
-              "audio_url": "u02-checkin/rp-01-reask"
+              "audio_url": "u02-checkin/rp-01-reask-r2"
             },
-            "player_audio_url": "u02-checkin/d-04"
+            "player_audio_url": "u02-checkin/d-04-r2"
           }
         },
         {
@@ -6433,7 +6738,7 @@
               "roman": "iljuil mugeoyo.",
               "en": "I'm staying a week."
             },
-            "audio_url": "u02-checkin/d-06",
+            "audio_url": "u02-checkin/d-06-r2",
             "image_url": "content/images/u02-checkin/pre-5.webp"
           },
           "tiles": [
@@ -6493,7 +6798,7 @@
                   "roman": "myeochil mugeusijyo?",
                   "en": "How many nights will you be staying?"
                 },
-                "audio_url": "u02-checkin/d-05"
+                "audio_url": "u02-checkin/d-05-r2"
               }
             ],
             "reask": {
@@ -6503,9 +6808,9 @@
                 "roman": "ne?",
                 "en": "Sorry?"
               },
-              "audio_url": "u02-checkin/rp-01-reask"
+              "audio_url": "u02-checkin/rp-01-reask-r2"
             },
-            "player_audio_url": "u02-checkin/d-06"
+            "player_audio_url": "u02-checkin/d-06-r2"
           }
         },
         {
@@ -6531,7 +6836,7 @@
               "roman": "waipai bimilbeonhoga mwoyeyo?",
               "en": "What's the wifi password?"
             },
-            "audio_url": "u02-checkin/d-08",
+            "audio_url": "u02-checkin/d-08-r2",
             "image_url": "content/images/u02-checkin/pre-5.webp"
           },
           "tiles": [
@@ -6600,7 +6905,7 @@
                   "roman": "bangeun 201hoyeyo.",
                   "en": "Your room is 201."
                 },
-                "audio_url": "u02-checkin/d-07"
+                "audio_url": "u02-checkin/d-07-r2"
               }
             ],
             "reask": {
@@ -6610,9 +6915,9 @@
                 "roman": "ne?",
                 "en": "Sorry?"
               },
-              "audio_url": "u02-checkin/rp-01-reask"
+              "audio_url": "u02-checkin/rp-01-reask-r2"
             },
-            "player_audio_url": "u02-checkin/d-08"
+            "player_audio_url": "u02-checkin/d-08-r2"
           }
         },
         {
@@ -6638,7 +6943,7 @@
               "roman": "chekeuauseun ojeon 11si matjyo?",
               "en": "Checkout is 11 in the morning, right?"
             },
-            "audio_url": "u02-checkin/d-10",
+            "audio_url": "u02-checkin/d-10-r2",
             "image_url": "content/images/u02-checkin/pre-5.webp"
           },
           "tiles": [
@@ -6714,7 +7019,7 @@
                   "roman": "duruduruyeyo.",
                   "en": "It's duruduru."
                 },
-                "audio_url": "u02-checkin/d-09"
+                "audio_url": "u02-checkin/d-09-r2"
               }
             ],
             "reask": {
@@ -6724,9 +7029,9 @@
                 "roman": "ne?",
                 "en": "Sorry?"
               },
-              "audio_url": "u02-checkin/rp-01-reask"
+              "audio_url": "u02-checkin/rp-01-reask-r2"
             },
-            "player_audio_url": "u02-checkin/d-10"
+            "player_audio_url": "u02-checkin/d-10-r2"
           }
         }
       ],
@@ -6741,7 +7046,7 @@
               "roman": "ne majayo. jal swieoyo.",
               "en": "Yes, that's right. Enjoy your stay."
             },
-            "audio_url": ""
+            "audio_url": "u02-checkin/d-11-r2"
           }
         ],
         "closing_image_url": "content/images/u02-checkin/rp-end.webp",
@@ -6758,6 +7063,7 @@
       "S2",
       "S3",
       "S4",
+      "INT",
       "S5",
       "S6",
       "S7",

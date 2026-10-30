@@ -182,6 +182,11 @@ async function bootApp(mode: ContentFetchMode): Promise<Booted> {
 
 const manifestRequests = (urls: readonly string[]): string[] =>
   urls.filter((url) => contentPathOf(url) === "manifest.json");
+// 수준 2 앱은 `manifests/level-2.json`부터 묻습니다(ADR-0087) — 연결이 실패하면 거기서 멈춥니다.
+const anyManifestRequests = (urls: readonly string[]): string[] =>
+  urls.filter((url) =>
+    /^(manifest\.json|manifests\/level-\d+\.json)$/.test(contentPathOf(url) ?? ""),
+  );
 
 async function settle(): Promise<void> {
   for (let i = 0; i < 5; i += 1) {
@@ -224,7 +229,7 @@ test.each<[string, ContentFetchMode]>([
 ])("[I3] %s여도 첫 화면은 그대로 서고 예외도 저장도 없다", async (_name, mode) => {
   const { urls, store } = await bootApp(mode);
 
-  await vi.waitFor(() => expect(manifestRequests(urls).length).toBeGreaterThanOrEqual(1));
+  await vi.waitFor(() => expect(anyManifestRequests(urls).length).toBeGreaterThanOrEqual(1));
   await settle();
 
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();

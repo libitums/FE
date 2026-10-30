@@ -6,17 +6,18 @@ import type { ConversationCast } from "../../lib/conversation-cast";
 import type { SentenceOrderQuestion } from "./sentence-order-questions";
 
 // `ui` 계층: 대화 조립(대화 순서 문항)의 줄마다 36px 원형 아바타가 말풍선 옆 아래에 붙습니다 — 상대 줄은
-// 말풍선 왼쪽, 내 줄은 말풍선 오른쪽입니다. 빈 칸 줄에도 붙고, 아바타는 장식이라 낭독 트리에서 빠지며
-// 칸의 낭독(「Partner」 · 「You」)은 그대로입니다. 대화 순서가 아닌 문항에는 아바타가 없습니다.
+// 말풍선 왼쪽, 내 줄은 말풍선 오른쪽입니다. 고정된 첫 줄과 빈 칸 줄에도 붙고, 아바타는 장식이라 낭독 트리에서
+// 빠지며 칸의 낭독(「Partner」 · 「You」)은 그대로입니다. 대화 순서가 아닌 문항에는 아바타가 없습니다.
 
 const turns: SentenceOrderQuestion = {
   prompt: "대화 순서대로 놓으세요.",
-  chips: ["며칠 묵으시죠?", "일주일 묵어요.", "여권 여기 있어요.", "네, 여권 좀 보여주세요."],
-  answerOrder: [3, 2, 0, 1],
+  chips: ["며칠 묵으시죠?", "일주일 묵어요.", "여권 여기 있어요."],
+  answerOrder: [2, 0, 1],
   instruction: "Put the conversation in order.",
   dialogue: {
-    speakers: ["counterpart", "me", "counterpart", "me"],
-    chipSpeakers: ["counterpart", "me", "me", "counterpart"],
+    opening: { speaker: "counterpart", text: "네, 여권 좀 보여주세요." },
+    speakers: ["me", "counterpart", "me"],
+    chipSpeakers: ["counterpart", "me", "me"],
   },
 };
 
@@ -54,7 +55,7 @@ const childOrderOf = (position: number) =>
       : "bubble",
   );
 
-test("UA1. 빈 칸 줄마다 아바타가 서고 상대 줄은 말풍선 왼쪽 · 내 줄은 말풍선 오른쪽이다", () => {
+test("UA1. 고정된 첫 줄과 빈 칸 줄마다 아바타가 서고 상대 줄은 말풍선 왼쪽 · 내 줄은 말풍선 오른쪽이다", () => {
   mount([turns], CAST);
 
   expect([0, 1, 2, 3].map((position) => row(position).getAttribute("data-speaker"))).toEqual([
@@ -69,7 +70,11 @@ test("UA1. 빈 칸 줄마다 아바타가 서고 상대 줄은 말풍선 왼쪽 
   expect(childOrderOf(3)).toEqual(["bubble", "avatar"]);
   expect(avatarBox(0)).toHaveClass("sentence-order-dialogue-avatar-counterpart");
   expect(avatarBox(1)).toHaveClass("sentence-order-dialogue-avatar-me");
-  for (const position of [0, 1, 2, 3]) {
+  expect(within(row(0)).getByTestId("sentence-order-dialogue-slot-0")).toHaveAttribute(
+    "data-filled",
+    "true",
+  );
+  for (const position of [1, 2, 3]) {
     expect(
       within(row(position)).getByTestId(`sentence-order-dialogue-slot-${position}`),
     ).toHaveAttribute("data-filled", "false");
@@ -79,15 +84,19 @@ test("UA1. 빈 칸 줄마다 아바타가 서고 상대 줄은 말풍선 왼쪽 
 test("UA2. 놓은 말풍선 줄에도 아바타가 같은 쪽에 남는다", () => {
   mount([turns], CAST);
 
-  fireEvent.tap(screen.getByTestId("sentence-order-dialogue-chip-3"), {});
   fireEvent.tap(screen.getByTestId("sentence-order-dialogue-chip-2"), {});
+  fireEvent.tap(screen.getByTestId("sentence-order-dialogue-chip-0"), {});
 
-  expect(screen.getByTestId("sentence-order-dialogue-slot-0")).toHaveAttribute(
+  expect(screen.getByTestId("sentence-order-dialogue-slot-1")).toHaveAttribute(
     "data-filled",
     "true",
   );
-  expect(childOrderOf(0)).toEqual(["avatar", "bubble"]);
+  expect(screen.getByTestId("sentence-order-dialogue-slot-2")).toHaveAttribute(
+    "data-filled",
+    "true",
+  );
   expect(childOrderOf(1)).toEqual(["bubble", "avatar"]);
+  expect(childOrderOf(2)).toEqual(["avatar", "bubble"]);
 });
 
 test("UA3. 상대 아바타는 에피소드 상대 이름의 첫 글자, 내 아바타는 학습자 이름의 머리글자다", () => {
@@ -116,7 +125,7 @@ test("UA5. 아바타는 장식이라 낭독 트리에서 빠지고 칸 낭독은
   }
   expect(screen.getByTestId("sentence-order-dialogue-slot-0")).toHaveAttribute(
     "accessibility-label",
-    "Partner, turn 1, empty",
+    "Partner, turn 1: 네, 여권 좀 보여주세요.",
   );
   expect(screen.getByTestId("sentence-order-dialogue-slot-1")).toHaveAttribute(
     "accessibility-label",

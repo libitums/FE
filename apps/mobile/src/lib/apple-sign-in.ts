@@ -46,7 +46,9 @@ export function appleSignInResultFrom(payload: unknown): AppleSignInResult {
       }
       const code = record["authorizationCode"];
       const authorizationCode = typeof code === "string" && code.length > 0 ? code : null;
-      return { status: "completed", identityToken, authorizationCode };
+      const name = record["fullName"];
+      const fullName = typeof name === "string" && name.trim().length > 0 ? name.trim() : null;
+      return { status: "completed", identityToken, authorizationCode, fullName };
     }
     case "cancelled": {
       return { status: "cancelled" };

@@ -1,0 +1,61 @@
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). 배치는 `error-boundary.css`와 같은 골격 —
+   제목 · 본문이 위에 서고 버튼이 아래에 붙습니다. 화면 여백은 축마다 값이 다릅니다(`padding-x`를 네 방향에
+   쓰지 않습니다). */
+.update-required-screen {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: var(--libitum-layout-screen-padding-top) var(--libitum-layout-screen-padding-x)
+    var(--libitum-layout-screen-padding-bottom);
+  background: var(--libitum-color-background-primary);
+}
+
+/* 스크롤 상자 — 남는 높이를 차지한다. `<scroll-view>` 안은 강제 linear라 간격 · 여백은 안의 상자가 진다. */
+.update-required-screen-body {
+  flex: 1;
+}
+
+.update-required-screen-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-12);
+  padding-top: var(--libitum-spacing-48);
+  padding-bottom: var(--libitum-spacing-12);
+}
+
+.update-required-screen-footer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-12);
+  flex-shrink: 0;
+}
+
+/* 화면 제목 · 본문 역할 둘은 error-boundary와 같은 타이포입니다. */
+.update-required-screen-title {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  line-height: var(--libitum-typography-heading-s-line-height);
+  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
+  flex-shrink: 0;
+}
+
+.update-required-screen-description {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  font-size: var(--libitum-typography-body-m-font-size);
+  line-height: var(--libitum-typography-body-m-line-height);
+  letter-spacing: var(--libitum-typography-body-m-letter-spacing);
+}
+
+/* 실패 문구 — 설정의 삭제 실패 문구와 같은 타이포 · 색입니다. */
+.update-required-screen-failure {
+  color: var(--libitum-color-feedback-incorrect-text);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-weight: var(--libitum-typography-body-s-font-weight);
+  font-size: var(--libitum-typography-body-s-font-size);
+  line-height: var(--libitum-typography-body-s-line-height);
+  letter-spacing: var(--libitum-typography-body-s-letter-spacing);
+}

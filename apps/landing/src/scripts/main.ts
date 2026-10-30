@@ -35,6 +35,16 @@ function initRail() {
   }
 }
 
+/** Story 카드의 숨김 층(때 · 제목 · 티저)을 눌러 엽니다. 호버 · 포커스로 비치는 것은 CSS가 합니다. */
+function initPeek() {
+  for (const button of document.querySelectorAll<HTMLButtonElement>(".scene__peek")) {
+    button.addEventListener("click", () => {
+      const open = button.closest(".scene")?.classList.toggle("is-open") ?? false;
+      button.setAttribute("aria-expanded", String(open));
+    });
+  }
+}
+
 function initScroll() {
   const header = required(document, "#site-header");
   const hero = required(document, ".hero");
@@ -47,7 +57,22 @@ function initScroll() {
   const featureItems = [...features.querySelectorAll<HTMLElement>(".feature")];
   const navLinks = [...header.querySelectorAll<HTMLAnchorElement>(".site-nav a")];
   const navTargets = navLinks.map((link) => required(document, link.hash));
+  const wide = window.matchMedia("(min-width: 961px)");
   let queued = false;
+
+  // 휴대폰 목업의 연출(`is-playing`)은 좁은 화면에서는 묶음이 화면에 반 넘게 들어왔을 때 돕니다.
+  // 넓은 화면은 네 묶음이 한자리에 겹쳐 있어 보이는 묶음(`is-active`)을 아래 update가 고릅니다.
+  if (!reducedMotion) {
+    const seen = new IntersectionObserver(
+      (entries) => {
+        if (wide.matches) return;
+        for (const entry of entries)
+          entry.target.classList.toggle("is-playing", entry.isIntersecting);
+      },
+      { threshold: 0.5 },
+    );
+    for (const item of featureItems) seen.observe(item);
+  }
 
   const update = () => {
     queued = false;
@@ -88,6 +113,7 @@ function initScroll() {
     );
     featureItems.forEach((item, index) => {
       item.classList.toggle("is-active", index === activeFeature);
+      if (wide.matches) item.classList.toggle("is-playing", index === activeFeature);
     });
 
     for (const sentence of sentences) {
@@ -122,5 +148,6 @@ function initLanguageMenu() {
 
 initLanguageMenu();
 initRail();
+initPeek();
 initScroll();
 initAnalytics();

@@ -75,7 +75,10 @@ function typesOf(read: (id: EpisodeId) => Episode): Set<string> {
 
 describe("새 내장본의 모양 (IF1)", () => {
   test.each(BUNDLED_SHAPES)("IF1. $id의 바이트 · 컷 · 대화 · 단어 · 문항 수", (shape) => {
-    const text = readFileSync(resolve(process.cwd(), `content/episodes/${shape.id}.json`), "utf8");
+    const text = readFileSync(
+      resolve(process.cwd(), `content/test-fixtures/bundled-2026-10-23/episodes/${shape.id}.json`),
+      "utf8",
+    );
     const episode = bundled(shape.id);
 
     expect(utf8Bytes(text).length).toBe(shape.bytes);

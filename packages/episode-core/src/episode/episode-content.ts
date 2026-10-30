@@ -2,7 +2,6 @@ import "background-only";
 
 import {
   deliveryEpisodeSchema,
-  KNOWN_ITEM_TYPES,
   type DeliveryCompletion,
   type DeliveryEpisodeV2,
 } from "./episode-content.schema";
@@ -11,8 +10,11 @@ import type {
   DecodeResult,
   Episode,
   EpisodeCompletion,
+  EpisodeStory,
 } from "./episode-content.model";
+import { interludePlanOf } from "./episode-content.interlude";
 import {
+  findUnknownItemTypes,
   formatPath,
   isRecord,
   issue,
@@ -31,31 +33,6 @@ export type * from "./episode-content.model";
 // 의미 검사 → 정규화이고, 도메인 타입은 `episode-content.model.ts`에 있습니다.
 // 실패는 에피소드 단위입니다(반쪽 에피소드는 없습니다). 미해결 `ref`만 경고입니다.
 // 예외를 던지지 않습니다 — 어떤 입력에도 `DecodeResult`를 돌려줍니다.
-
-/** `steps[*].items[*].type`이 닫힌 목록 밖인 자리 — 구조 검사보다 먼저 봅니다. */
-function findUnknownItemTypes(input: Record<string, unknown>): DecodeIssue[] {
-  const known: readonly string[] = KNOWN_ITEM_TYPES;
-  const issues: DecodeIssue[] = [];
-  const steps = input["steps"];
-  if (!Array.isArray(steps)) {
-    return issues;
-  }
-  steps.forEach((step: unknown, i) => {
-    const items = isRecord(step) ? step["items"] : undefined;
-    if (!Array.isArray(items)) {
-      return;
-    }
-    items.forEach((item: unknown, j) => {
-      const type = isRecord(item) ? item["type"] : undefined;
-      if (typeof type === "string" && !known.includes(type)) {
-        issues.push(
-          issue("unknown-item-type", `steps[${i}].items[${j}].type`, `unknown item type: ${type}`),
-        );
-      }
-    });
-  });
-  return issues;
-}
 
 /** 구조를 통과한 뒤의 의미 검사 — 전부 모아서 돌려줍니다. `rpIndex`는 최종 테스트 스텝 자리(-1이면 없음). */
 function checkSemantics(wire: DeliveryEpisodeV2): { errors: DecodeIssue[]; rpIndex: number } {
@@ -201,7 +178,11 @@ function collectWarnings(wire: DeliveryEpisodeV2): DecodeIssue[] {
   return warnings;
 }
 
-function toEpisode(wire: DeliveryEpisodeV2, rpIndex: number): Episode {
+function toEpisode(
+  wire: DeliveryEpisodeV2,
+  rpIndex: number,
+  stories: ReadonlyMap<string, EpisodeStory>,
+): Episode {
   const rp = wire.steps[rpIndex];
   const learning = wire.steps.filter((_, i) => i !== rpIndex).sort(byKey((step) => step.order));
   const avatar = counterpartAvatarPathOf(wire.counterpart_avatar);
@@ -221,6 +202,7 @@ function toEpisode(wire: DeliveryEpisodeV2, rpIndex: number): Episode {
       id: step.id,
       order: step.order,
       items: step.items.map(toItem),
+      ...maybe("story", stories.get(step.id)),
     })),
     finalTest: {
       id: rp?.id ?? "RP",
@@ -266,15 +248,17 @@ function decode(input: unknown): DecodeResult {
     };
   }
 
-  const { errors, rpIndex } = checkSemantics(parsed.data);
+  // 막간 스텝은 의미 검사 앞에서 읽습니다 — 버린 스텝의 id가 `completion.requires`에 남아 실패하지 않게.
+  const interludes = interludePlanOf(parsed.data);
+  const { errors, rpIndex } = checkSemantics(interludes.wire);
   if (errors.length > 0) {
     return { ok: false, errors };
   }
 
   return {
     ok: true,
-    episode: toEpisode(parsed.data, rpIndex),
-    warnings: collectWarnings(parsed.data),
+    episode: toEpisode(interludes.wire, rpIndex, interludes.stories),
+    warnings: [...interludes.warnings, ...collectWarnings(interludes.wire)],
   };
 }
 

@@ -1,7 +1,7 @@
 // airbridge-events 단위 테스트가 함께 쓰는 입력 표입니다. 계약: ADR-0063.
 import type { AnalyticsEvent, AnalyticsEventName, AnalyticsEventSinks } from "./analytics.contract";
 
-/** 계약의 이름 36개 전부입니다 — 손으로 적고 타입에 묶습니다. */
+/** 계약의 이름 전부입니다 — 손으로 적고 타입에 묶습니다. */
 export const allEventNames = [
   "entry_screen_viewed",
   "entry_login_method_selected",
@@ -39,6 +39,11 @@ export const allEventNames = [
   "ticket_more_tapped",
   "roleplay_story_opened",
   "roleplay_story_completed",
+  "episode_story_viewed",
+  "episode_story_continued",
+  "episode_story_skipped",
+  "episode_story_exited",
+  "episode_story_completed",
 ] as const satisfies readonly AnalyticsEventName[];
 
 /** 매핑되는 둘(`entry_completed` · `episode_final_passed`)을 뺀 34개 이름마다 최소 이벤트 하나입니다. */
@@ -119,6 +124,17 @@ export const unmappedEvents = [
     judgedCount: "3",
     skippedCount: "0",
   },
+  { name: "episode_story_viewed", episodeId: "u04-directions", unitKey: "INT", form: "message" },
+  { name: "episode_story_continued", episodeId: "u04-directions", unitKey: "INT", form: "message" },
+  { name: "episode_story_skipped", episodeId: "u02-checkin", unitKey: "INT", form: "call" },
+  {
+    name: "episode_story_exited",
+    episodeId: "u01-water",
+    unitKey: "INT",
+    form: "cuts",
+    stage: "intro",
+  },
+  { name: "episode_story_completed", episodeId: "u04-directions", unitKey: "INT", form: "message" },
 ] as const satisfies readonly AnalyticsEvent[];
 
 export const entryCompleted = { name: "entry_completed" } as const satisfies AnalyticsEvent;

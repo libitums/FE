@@ -31,6 +31,8 @@ export type SentenceOrderSessionState = {
 
 export type SentenceOrderSessionAction =
   | { readonly type: "toggleChip"; readonly chipIndex: number }
+  /** 놓인 조각과 **그 뒤에 놓인 조각을 전부** 창고로 되돌립니다(대화 조립 — 칸 화자가 어긋나지 않게). */
+  | { readonly type: "returnChip"; readonly chipIndex: number }
   | { readonly type: "check" }
   | { readonly type: "nextQuestion" };
 
@@ -141,11 +143,13 @@ export function isSentenceOrderSessionComplete(
   return state.questionIndex >= total;
 }
 
-// 전이표 일곱 줄이 이 함수의 정본입니다. 변화 없으면 같은 참조를 돌려줍니다
+// 전이표 아홉 줄이 이 함수의 정본입니다. 변화 없으면 같은 참조를 돌려줍니다
 // — navReducer · stepSheetReducer · listeningSessionReducer와 같은 규약입니다.
 //
-// 막는 자리가 하나입니다 — phase === "checked"에서 toggleChip · check는 둘
-// 다 같은 참조로 흡수합니다. check가 배치 완료를 검사하지 않습니다 —
+// 막는 자리가 하나입니다 — phase === "checked"에서 toggleChip · returnChip · check는
+// 셋 다 같은 참조로 흡수합니다. returnChip은 놓이지 않은 조각에도 같은 참조입니다.
+// toggleChip의 빼기는 그 하나만 빼고 뒤를 당기지만(줄 배치), returnChip은 그 조각부터 뒤를
+// 전부 되돌립니다 — 대화 조립은 칸마다 화자가 정해져 있어 뒤 조각이 당겨지면 화자가 어긋납니다. check가 배치 완료를 검사하지 않습니다 —
 // canCheckArrangement가 그 판정을 지고, 덜 배치된 채로 check가 들어와도
 // judgeSentenceOrder가 조용히 incorrect를 돌려주므로 조용한 실패가 없습니다.
 //
@@ -173,6 +177,18 @@ export function sentenceOrderSessionReducer(
       return {
         questionIndex: state.questionIndex,
         placedChipIndexes: [...state.placedChipIndexes, chipIndex],
+        phase: state.phase,
+        submittedOrders: state.submittedOrders,
+      };
+    }
+    case "returnChip": {
+      const at = state.placedChipIndexes.indexOf(action.chipIndex);
+      if (state.phase === "checked" || at === -1) {
+        return state;
+      }
+      return {
+        questionIndex: state.questionIndex,
+        placedChipIndexes: state.placedChipIndexes.slice(0, at),
         phase: state.phase,
         submittedOrders: state.submittedOrders,
       };

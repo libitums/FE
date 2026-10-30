@@ -24,6 +24,8 @@ export type BottomSheetProps = {
   readonly description?: string;
   readonly actions?: readonly BottomSheetAction[];
   readonly draggable?: boolean;
+  /** false면 닫기 버튼 · 손잡이를 그리지 않고 scrim 탭 · 끌어내림으로 닫지 않습니다(고를 때까지 머무는 시트). 기본 true. */
+  readonly dismissible?: boolean;
   readonly motion?: BottomSheetMotion;
   readonly ondismiss: (reason: BottomSheetDismissReason) => void;
   /** 설명 아래·액션 위에 두는 임의 내용입니다(예: 스크롤 목록). 이 자리는 스스로 스크롤하지
@@ -37,6 +39,7 @@ export type BottomSheetContract = {
   readonly className: string;
   readonly closeAccessibilityLabel: string;
   readonly description: string | undefined;
+  readonly dismissible: boolean;
   readonly draggable: boolean;
   readonly hasBody: boolean;
   readonly motion: BottomSheetMotion;
@@ -75,13 +78,15 @@ export function getBottomSheetContract(
   }
 
   const motion = resolveMotion(props.motion, contextMotion);
-  const draggable = props.draggable ?? true;
+  const dismissible = props.dismissible ?? true;
+  const draggable = dismissible && (props.draggable ?? true);
 
   return {
     actions,
     className: `ui-lynx-bottom-sheet ui-lynx-bottom-sheet-motion-${motion}`,
     closeAccessibilityLabel,
     description: props.description,
+    dismissible,
     draggable,
     hasBody: props.description !== undefined,
     motion,

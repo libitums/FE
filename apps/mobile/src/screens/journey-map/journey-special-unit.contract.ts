@@ -33,6 +33,8 @@ export type SpecialUnitMapItemProps = {
   readonly children?: ReactNode;
   /** 이 항목이 여는 말풍선의 키(카탈로그 최종만). 없으면 튕김 · 반짝임이 서지 않습니다. */
   readonly sheetTargetId?: SheetTargetId;
+  /** 면 가운데 아이콘(SVG 문자열). 없으면 `SpecialUnit` 기본(오각 별)입니다. */
+  readonly icon?: string;
 };
 
 export type SpecialUnitMapTestId =

@@ -135,7 +135,10 @@ const u04Text = minimalEpisodeText("u04-x", [placeholderCut]);
 // 내장 매니페스트 원문에 넷째 항목만 더한 서버 매니페스트입니다(내장 셋은 같은 버전 · 해시라 그대로).
 function remoteManifestText(): string {
   const bundled = JSON.parse(
-    readFileSync(resolve(process.cwd(), "content/manifest.json"), "utf8"),
+    readFileSync(
+      resolve(process.cwd(), "content/test-fixtures/bundled-2026-10-23/manifest.json"),
+      "utf8",
+    ),
   ) as { episodes: unknown[] } & Record<string, unknown>;
   return JSON.stringify({
     ...bundled,

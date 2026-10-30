@@ -7,7 +7,9 @@ import {
   type SentenceOrderSessionState,
 } from "./sentence-order";
 import {
+  canPlaceDialogueChip,
   dialogueChipAccessibilityLabel,
+  dialogueChipInteractionOf,
   sentenceOrderBottomActionOf,
   sentenceOrderLayoutOf,
   sentenceOrderPlacedResultsOf,
@@ -31,13 +33,14 @@ const linesQuestion: SentenceOrderQuestion = {
 // u00 S11 모양 — 대화 조립입니다.
 const dialogueQuestion: SentenceOrderQuestion = {
   prompt: "대화 순서대로 놓으세요.",
-  chips: ["진짜요? 감사합니다!", "오, 한국어 잘하시네요!", "지금부터요!", "언제부터 공부하셨어요?"],
-  answerOrder: [1, 0, 3, 2],
+  chips: ["진짜요? 감사합니다!", "지금부터요!", "언제부터 공부하셨어요?"],
+  answerOrder: [0, 2, 1],
   dialogue: {
-    speakers: ["counterpart", "me", "counterpart", "me"],
-    chipSpeakers: ["me", "counterpart", "me", "counterpart"],
+    opening: { speaker: "counterpart", text: "오, 한국어 잘하시네요!" },
+    speakers: ["me", "counterpart", "me"],
+    chipSpeakers: ["me", "me", "counterpart"],
   },
-  chipMeanings: ["Really? Thank you!", "Oh, your Korean is so good!", "Starting now!", "How long?"],
+  chipMeanings: ["Really? Thank you!", "Starting now!", "How long?"],
 };
 
 function arranging(placed: readonly number[]): SentenceOrderSessionState {
@@ -97,16 +100,51 @@ describe("sentenceOrderBottomActionOf (SO2, SO3)", () => {
 
   test("SO3: dialogue — 덜 차면 버튼이 없고, 다 차면 Check가 켜지고, 채점 뒤는 next다", () => {
     expect(sentenceOrderBottomActionOf(dialogueQuestion, arranging([]))).toEqual({ kind: "none" });
-    expect(sentenceOrderBottomActionOf(dialogueQuestion, arranging([1, 0, 3]))).toEqual({
+    expect(sentenceOrderBottomActionOf(dialogueQuestion, arranging([0, 2]))).toEqual({
       kind: "none",
     });
-    expect(sentenceOrderBottomActionOf(dialogueQuestion, arranging([1, 0, 3, 2]))).toEqual({
+    expect(sentenceOrderBottomActionOf(dialogueQuestion, arranging([0, 2, 1]))).toEqual({
       kind: "check",
       availability: "enabled",
     });
-    expect(sentenceOrderBottomActionOf(dialogueQuestion, checked([1, 0, 3, 2]))).toEqual({
+    expect(sentenceOrderBottomActionOf(dialogueQuestion, checked([0, 2, 1]))).toEqual({
       kind: "next",
     });
+  });
+});
+
+describe("canPlaceDialogueChip · dialogueChipInteractionOf (SO7)", () => {
+  test("다음 빈 칸의 화자와 같은 조각만 놓을 수 있다 — 첫 칸(나)엔 내 조각 0 · 1만", () => {
+    expect(canPlaceDialogueChip(dialogueQuestion, arranging([]), 0)).toBe(true);
+    expect(canPlaceDialogueChip(dialogueQuestion, arranging([]), 1)).toBe(true);
+    expect(canPlaceDialogueChip(dialogueQuestion, arranging([]), 2)).toBe(false);
+  });
+
+  test("내 조각을 놓으면 다음 칸은 상대라 상대 조각 2만 열리고 내 조각 1은 잠긴다", () => {
+    expect(canPlaceDialogueChip(dialogueQuestion, arranging([0]), 2)).toBe(true);
+    expect(canPlaceDialogueChip(dialogueQuestion, arranging([0]), 1)).toBe(false);
+    expect(dialogueChipInteractionOf(dialogueQuestion, arranging([0]), 2)).toBe("tappable");
+    expect(dialogueChipInteractionOf(dialogueQuestion, arranging([0]), 1)).toBe("locked");
+  });
+
+  test("칸이 다 찼거나 채점 뒤면 화자가 맞아도 잠긴다", () => {
+    expect(canPlaceDialogueChip(dialogueQuestion, arranging([0, 2, 1]), 0)).toBe(false);
+    expect(canPlaceDialogueChip(dialogueQuestion, checked([0, 2]), 1)).toBe(false);
+    expect(dialogueChipInteractionOf(dialogueQuestion, checked([0, 2]), 1)).toBe("locked");
+  });
+
+  test("조각 화자가 없는 문항과 줄 배치 문항은 화자를 가리지 않는다", () => {
+    const unspoken: SentenceOrderQuestion = {
+      ...dialogueQuestion,
+      dialogue: {
+        opening: { speaker: "counterpart", text: "오, 한국어 잘하시네요!" },
+        speakers: ["me", "counterpart", "me"],
+      },
+    };
+
+    expect(canPlaceDialogueChip(unspoken, arranging([]), 2)).toBe(true);
+    expect(canPlaceDialogueChip(linesQuestion, arranging([]), 4)).toBe(true);
+    expect(canPlaceDialogueChip(linesQuestion, arranging([0, 1, 2]), 4)).toBe(false);
   });
 });
 

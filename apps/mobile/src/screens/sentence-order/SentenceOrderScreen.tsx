@@ -17,10 +17,10 @@ import { useAudioCue } from "../../lib/use-audio-cue";
 import { LearningShell } from "../learning/LearningShell";
 import { LearningActivityComplete } from "../learning/LearningActivityComplete";
 import { useLearningDensity } from "../learning/use-learning-density";
-import { SentenceOrderChip, SentenceOrderChipPlaceholder } from "./SentenceOrderChip";
 import { SentenceOrderDialogue } from "./SentenceOrderDialogue";
 import { SentenceOrderDialogueBank } from "./SentenceOrderDialogueBank";
 import { SentenceOrderLines } from "./SentenceOrderLines";
+import { SentenceOrderLinesBank } from "./SentenceOrderLinesBank";
 import { SentenceOrderListenHeader } from "./SentenceOrderListenHeader";
 import { SentenceOrderTextHeader } from "./SentenceOrderTextHeader";
 import {
@@ -36,6 +36,7 @@ import {
   sentenceOrderSessionResults,
 } from "./sentence-order";
 import {
+  dialogueChipInteractionOf,
   sentenceOrderBottomActionOf,
   sentenceOrderLayoutOf,
   sentenceOrderPlacedResultsOf,
@@ -53,7 +54,8 @@ import "./sentence-order-screen.css";
 // 무엇을 하는가뿐입니다.
 //
 // 줄 배치(듣고 조립 · 문장 순서)는 카드 없이 서고 Check가 흐름 안에 늘 서 있습니다 — 다 놓아도 저절로 채점되지 않고
-// Check로만 판정이 납니다. 판정 배지는 셸 지시문 자리에 섭니다(`verdict`). 대화 배치는 칸이 다 차면 Check가 섭니다.
+// Check로만 판정이 납니다. 판정 배지는 셸 지시문 자리에 섭니다(`verdict`). 대화 배치는 첫 줄이 고정된 채 서고, 조각은
+// 같은 화자의 칸에만 들어가며, 놓은 말풍선을 누르면 그 뒤까지 되돌아갑니다. 칸이 다 차면 Check가 섭니다.
 export type SentenceOrderActivityProps = {
   readonly questions: readonly SentenceOrderQuestion[];
   readonly gemCount: number;
@@ -126,6 +128,17 @@ export function SentenceOrderActivity({
   const toggle = (chipIndex: number) => {
     if (guide.visible) return;
     dispatch({ type: "toggleChip", chipIndex });
+  };
+  // 대화 조립 — 창고 조각은 화자가 맞는 칸에만 들어가고(잠긴 조각은 탭이 없지만 여기서도 막습니다), 놓은 말풍선은
+  // 그 뒤까지 함께 돌아갑니다.
+  const placeDialogueChip = (chipIndex: number) => {
+    if (guide.visible || question == null) return;
+    if (dialogueChipInteractionOf(question, state, chipIndex) === "locked") return;
+    dispatch({ type: "toggleChip", chipIndex });
+  };
+  const returnDialogueChip = (chipIndex: number) => {
+    if (guide.visible) return;
+    dispatch({ type: "returnChip", chipIndex });
   };
 
   const layout = question == null ? "lines" : sentenceOrderLayoutOf(question);
@@ -212,28 +225,17 @@ export function SentenceOrderActivity({
           meanings={question.chipMeanings}
           speakers={question.dialogue?.chipSpeakers ?? []}
           placedChipIndexes={state.placedChipIndexes}
-          interaction={bankInteraction}
-          onTap={toggle}
+          interactionOf={(chipIndex) => dialogueChipInteractionOf(question, state, chipIndex)}
+          onTap={placeDialogueChip}
         />
       )
     ) : (
-      // 창고 — 조각이 빠져나가도 그 자리에 회색 칸이 남아 배치가 흔들리지 않습니다.
-      <view className="sentence-order-screen-bank" data-testid="sentence-order-screen-bank">
-        {question.chips.map((text, chipIndex) =>
-          state.placedChipIndexes.includes(chipIndex) ? (
-            <SentenceOrderChipPlaceholder key={chipIndex} index={chipIndex} text={text} />
-          ) : (
-            <SentenceOrderChip
-              key={chipIndex}
-              index={chipIndex}
-              text={text}
-              placedOrdinal={null}
-              disabled={bankInteraction === "locked"}
-              onTap={toggle}
-            />
-          ),
-        )}
-      </view>
+      <SentenceOrderLinesBank
+        chips={question.chips}
+        placedChipIndexes={state.placedChipIndexes}
+        interaction={bankInteraction}
+        onTap={toggle}
+      />
     );
 
   return (
@@ -265,14 +267,15 @@ export function SentenceOrderActivity({
                 lesson={lesson}
                 testId="sentence-order-screen-complete"
               />
-            ) : layout === "dialogue" ? (
+            ) : question.dialogue !== undefined ? (
               <SentenceOrderDialogue
+                opening={question.dialogue.opening}
                 speakers={dialogueSpeakersOf(question)}
                 chips={question.chips}
                 placedChipIndexes={state.placedChipIndexes}
                 results={placedResults}
                 interaction={interaction}
-                onReturn={toggle}
+                onReturn={returnDialogueChip}
                 cast={cast}
               />
             ) : (

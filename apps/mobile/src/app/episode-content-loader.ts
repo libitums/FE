@@ -23,6 +23,7 @@ import {
 } from "../lib/episode-cache";
 import { buildEpisodeCatalog, parseCachedManifest } from "../lib/episode-catalog";
 import type { CatalogSourceText } from "../lib/episode-catalog";
+import { contentBucket } from "../lib/content-bucket";
 import { contentBaseUrl, resolveContentUrlSafe } from "../lib/episode-remote";
 import { fillPlaceholders } from "../lib/placeholder-fill";
 import { supabaseConfig } from "../lib/supabase-config";
@@ -31,7 +32,9 @@ import type { EpisodeContent } from "./episode-content";
 /** 버킷 상대 경로의 원격 주소입니다. 설정이 없으면 `null`입니다. */
 export function remoteContentUrlOf(relativePath: string): string | null {
   const config = supabaseConfig();
-  return config === null ? null : resolveContentUrlSafe(contentBaseUrl(config.url), relativePath);
+  return config === null
+    ? null
+    : resolveContentUrlSafe(contentBaseUrl(config.url, contentBucket()), relativePath);
 }
 
 // 받아 둔 파일이 먼저, 앱에 실은 그림이 그다음입니다 — 오프라인에서도 그림 · 소리가 나옵니다(ADR-0071). 음성도 이 포트를

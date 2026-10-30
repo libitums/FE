@@ -7,6 +7,7 @@ import { signedInBootSession } from "./signed-in-app";
 import { authSessionStorageKey, serializeAuthSession } from "../../lib/auth-session";
 import { minimalRoleplayTurnWire } from "../../lib/episode-content.test-support";
 import { entrySplashDurationMs } from "../../lib/entry-flow";
+import type { EntryEvent } from "../../lib/entry-flow";
 import { learningItemGuideSeenStorageKey } from "../../lib/learning-item-guide";
 import { allLearningItemGuidesSeenValue } from "../../lib/learning-item-guide.test-support";
 import { sha256Hex, utf8Bytes } from "../../lib/sha256";
@@ -119,6 +120,10 @@ export type BootOptions = {
   readonly offline?: boolean;
   /** 에피소드 소개 이벤트 sink — `App`의 `episodeIntroEventSink`로 넘깁니다. */
   readonly onEvent?: (event: EpisodeIntroEvent) => void;
+  /** 진입 이벤트 sink — `App`의 `entryEventSink`로 넘깁니다(강제 업데이트 이벤트 — ADR-0086). */
+  readonly onEntryEvent?: (event: EntryEvent) => void;
+  /** 부팅 전에 둘 호스트 globalProps(`appVersion` 등). 되돌리는 것은 부른 쪽의 몫입니다. */
+  readonly globalProps?: Record<string, unknown>;
 };
 
 export type Booted = { readonly urls: string[]; readonly store: Map<string, string> };
@@ -164,9 +169,15 @@ export async function bootContentApp(options: BootOptions): Promise<Booted> {
     return Promise.reject(new Error(`예상 밖 요청 ${url}`));
   });
 
+  if (options.globalProps !== undefined) {
+    (lynx as unknown as { __globalProps: unknown }).__globalProps = options.globalProps;
+  }
   vi.useFakeTimers();
   render(
-    <App {...(options.onEvent === undefined ? {} : { episodeIntroEventSink: options.onEvent })} />,
+    <App
+      {...(options.onEvent === undefined ? {} : { episodeIntroEventSink: options.onEvent })}
+      {...(options.onEntryEvent === undefined ? {} : { entryEventSink: options.onEntryEvent })}
+    />,
   );
   if (options.splash === "hold") {
     await act(async () => {

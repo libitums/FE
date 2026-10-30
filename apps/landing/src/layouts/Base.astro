@@ -11,12 +11,15 @@ import "../styles/showcase.css";
 import "../styles/phone.css";
 
 import type { BaseProps } from "../components/landing.contract";
+import { buildIconLinks } from "../seo/icon-links";
 import { pages } from "../site";
 
 type Props = BaseProps;
 
 const { language, title, description, robots } = Astro.props;
 const page = pages[language];
+// 아이콘은 배포 주소가 있으면 절대 주소로 냅니다 — 검색 결과의 파비콘이 이 링크를 따라갑니다.
+const icons = buildIconLinks(Astro.site?.origin ?? "");
 ---
 
 <!doctype html>
@@ -28,9 +31,7 @@ const page = pages[language];
     <meta name="description" content={description} />
     <meta name="robots" content={robots} />
     <meta name="theme-color" content="#F46B18" />
-    <link rel="icon" href="/favicon.ico" sizes="any" />
-    <link rel="icon" type="image/png" href="/icon-64.png" />
-    <link rel="apple-touch-icon" href="/icon-180.png" />
+    {icons.map((icon) => <link rel={icon.rel} href={icon.href} type={icon.type} sizes={icon.sizes} />)}
     <slot name="head" />
   </head>
   <body>

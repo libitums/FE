@@ -5,6 +5,7 @@ import { announce } from "../lib/accessibility";
 import type { AnswerResult } from "../lib/answer-result";
 import { loadUiLanguage } from "../lib/ui-language";
 import type { EntryLanguage } from "../lib/entry-language";
+import { appVersionFrom } from "../lib/app-version";
 import { safeAreaInsetsFrom, tappableBottomInsetFrom } from "../lib/safe-area";
 import { UiCopyContext, uiCopyFor } from "../lib/ui-copy";
 import { initialListenPace } from "../lib/listen-pace";
@@ -37,8 +38,11 @@ import { useCatalogFinishGuard } from "./catalog-finish-guard";
 import { episodeSurveyWiring } from "./episode-survey-wiring";
 import { firstUnitGuideEnabled } from "./first-unit-guide-enabled";
 import { OutOfTicketsDialog } from "../screens/tickets/OutOfTicketsDialog";
+import { CatalogUpdateNoticeDialog } from "../screens/catalog-update/CatalogUpdateNoticeDialog";
+import { useCatalogUpdateNotice } from "./use-catalog-update-notice";
 import { withLearningTickets } from "./ticket-wiring";
 import { useLearningTickets } from "./use-learning-tickets";
+import { useTesterAccess } from "./use-tester-access";
 import type { AppProgressSeed, AppProps } from "./app-props";
 import type { AppSessionControl } from "./leave-app.contract";
 import type { CatalogReviewItem } from "./catalog-review";
@@ -61,6 +65,8 @@ export function AppSession({
   exit,
   onLeaveApp,
   episodeContent,
+  stagedContentReady = 0,
+  applyStagedContent,
 }: AppProps & AppSessionControl & AppSessionContent) {
   // 이 리듀서를 부르는 유일한 자리입니다. `dispatch`는 셸에 콜백으로 내려갑니다 — 셸은 `NavAction`도 `dispatch`도
   // 받지 않습니다(ADR-0007 D3). 초기값이 `entryInitialNav`입니다 — 부팅이 진입 스택 `[{ name: "splash" }]`로
@@ -82,6 +88,8 @@ export function AppSession({
     [episodeContent.catalog],
   );
   // **진행의 진실의 출처입니다** — `Nav`에 적지 않고(ADR-0007 D3) 서버에 저장합니다(ADR-0035). 트로피의 완료 규칙은 구획에서 받습니다.
+  // 시험 계정 표시를 먼저 맞춥니다 — 아래 진행 · 티켓 · 맵 판정이 같은 렌더에서 읽습니다(ADR-0085).
+  const testerAccess = useTesterAccess(analyticsUser);
   const progress = useJourneyProgress(progressSeed, catalogSections);
   useProgressLoadEvents(progress.progressLoadPhase, episodeIntroEventSink);
   const learner = useLearnerProfile();
@@ -122,8 +130,11 @@ export function AppSession({
   const globalProps = useGlobalProps();
   const insets = safeAreaInsetsFrom(globalProps);
   const tappableBottom = tappableBottomInsetFrom(globalProps);
+  // 호스트가 보낸 앱 버전입니다 — 설정 끝 줄과 스플래시의 강제 업데이트 판정이 씁니다(ADR-0086).
+  const appVersion = appVersionFrom(globalProps);
   const screens = screenWiring({
     safeAreaInsets: insets,
+    appVersion,
     gemCount,
     phoneSignIn,
     setScreenLayerOpen,
@@ -173,6 +184,25 @@ export function AppSession({
   const screenNow = currentScreen(nav);
   useTrackingAuthorizationPrompt(nav.entry.length === 0 && screenNow.name === "journey-map");
   const showsNavigator = showsTabNavigator(nav);
+  // 앱 사용 중 받아진 바뀐 판은 여정맵 루트(열린 에피소드 화면 · 겹침 없음)에서 바로 바꿔 끼웁니다(ADR-0078 D4 정정).
+  const atMapRoot = nav.entry.length === 0 && screenNow.name === "journey-map" && !screenLayerOpen;
+  useEffect(() => {
+    if (atMapRoot && stagedContentReady > 0) applyStagedContent?.();
+  }, [atMapRoot, stagedContentReady, applyStagedContent]);
+  // 끝낸 에피소드가 업데이트됐으면 지도 루트에서 다른 겹침이 없을 때 한 번 알립니다(시안 G-A).
+  const updateNotice = useCatalogUpdateNotice({
+    catalog: episodeContent.catalog,
+    sections: catalogSections,
+    progress: catalogProgress,
+    ready:
+      progress.hasLoadedProgress &&
+      nav.entry.length === 0 &&
+      screenNow.name === "journey-map" &&
+      !screenLayerOpen &&
+      tickets.outOfTickets === null &&
+      progress.episodeSurvey === null &&
+      !progress.streakCelebration,
+  });
   // 셸 여백: 그림 화면 0 · 여정 맵 위 0 · 자판 화면 위만 — 비운 쪽은 화면이 잡습니다(`shell-edges`).
   const shellInsets = shellInsetsOf(screenNow, insets, wiring);
   const bottomLayout = shellBottomLayout({
@@ -213,6 +243,7 @@ export function AppSession({
                   onStreakCelebrated={progress.onStreakCelebrated}
                   statBump={progress.wiring}
                   tickets={tickets.header}
+                  ticketsUnlimited={testerAccess}
                   episodeSurvey={progress.episodeSurvey}
                   {...episodeSurveyWiring({
                     episodeIntroEventSink,
@@ -242,6 +273,9 @@ export function AppSession({
             {tickets.outOfTickets === null ? null : (
               <OutOfTicketsDialog {...tickets.outOfTickets} />
             )}
+            {updateNotice.open ? (
+              <CatalogUpdateNoticeDialog onClose={updateNotice.onClose} />
+            ) : null}
           </view>
         </ErrorBoundary>
       </FirstUnitGuideProvider>

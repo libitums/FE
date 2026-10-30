@@ -24,8 +24,9 @@ export function useSplashUpdate(): SplashUpdatePort {
   return useContext(SplashUpdateContext);
 }
 
-/** plain이거나 gauge · release면 나가도 됩니다. */
+/** plain이거나 gauge · release면 나가도 됩니다. checking(응답 전) · gauge · wait는 시간 제한 없이 기다립니다. */
 export function splashMayLeave(view: SplashUpdateView): boolean {
+  if (view.kind === "checking") return false;
   return view.kind === "plain" || view.hold === "release";
 }
 

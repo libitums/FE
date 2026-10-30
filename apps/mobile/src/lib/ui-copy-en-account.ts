@@ -2,6 +2,7 @@
 
 import type { FeedbackCopy } from "./feedback.contract";
 import type {
+  AppUpdateCopy,
   GemPurchaseCopy,
   NotificationsCopy,
   ProfileCopy,
@@ -45,6 +46,15 @@ export const settingsEn: SettingsCopy = {
     other: "Couldn't delete your account. Please try again.",
   },
   exitAnnouncement: { "signed-out": "You're signed out.", deleted: "Your account was deleted." },
+  version: (name, build) => `Version ${name} (${build})`,
+};
+
+export const appUpdateEn: AppUpdateCopy = {
+  title: "Update Duru to continue",
+  description:
+    "This version of Duru is no longer supported. Get the latest version from the store to keep learning.",
+  update: "Update",
+  failure: "Couldn't open the store. Please update Duru from the App Store or Google Play.",
 };
 
 export const feedbackEn: FeedbackCopy = {

@@ -173,6 +173,47 @@ describe("sentenceOrderSessionReducer — 불변식 셋", () => {
   });
 });
 
+describe("sentenceOrderSessionReducer — returnChip(대화 조립의 되돌리기)", () => {
+  it("놓인 조각을 되돌리면 그 조각부터 뒤가 전부 빠진다", () => {
+    const state = stateWith({ placedChipIndexes: [2, 0, 1] });
+    const next = sentenceOrderSessionReducer(state, { type: "returnChip", chipIndex: 0 });
+    expect(next.placedChipIndexes).toEqual([2]);
+  });
+
+  it("첫 조각을 되돌리면 전부 빠지고, 마지막 조각을 되돌리면 그 하나만 빠진다", () => {
+    const state = stateWith({ placedChipIndexes: [2, 0, 1] });
+    expect(
+      sentenceOrderSessionReducer(state, { type: "returnChip", chipIndex: 2 }).placedChipIndexes,
+    ).toEqual([]);
+    expect(
+      sentenceOrderSessionReducer(state, { type: "returnChip", chipIndex: 1 }).placedChipIndexes,
+    ).toEqual([2, 0]);
+  });
+
+  it("놓이지 않은 조각 · checked에서는 같은 참조다", () => {
+    const arranging = stateWith({ placedChipIndexes: [2, 0] });
+    expect(sentenceOrderSessionReducer(arranging, { type: "returnChip", chipIndex: 1 })).toBe(
+      arranging,
+    );
+    const checked = stateWith({ phase: "checked", placedChipIndexes: [2, 0, 1] });
+    expect(sentenceOrderSessionReducer(checked, { type: "returnChip", chipIndex: 0 })).toBe(
+      checked,
+    );
+  });
+
+  it("questionIndex · phase · submittedOrders는 그대로다", () => {
+    const state = stateWith({
+      questionIndex: 3,
+      placedChipIndexes: [1, 0],
+      submittedOrders: [[0]],
+    });
+    const next = sentenceOrderSessionReducer(state, { type: "returnChip", chipIndex: 1 });
+    expect(next.questionIndex).toBe(3);
+    expect(next.phase).toBe("arranging");
+    expect(next.submittedOrders).toEqual([[0]]);
+  });
+});
+
 describe("canCheckArrangement", () => {
   it("덜 배치되면 false다", () => {
     const state = stateWith({ placedChipIndexes: [0] });

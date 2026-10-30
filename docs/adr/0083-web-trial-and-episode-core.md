@@ -233,3 +233,9 @@
 - (r3) **마이그레이션 원격 적용** — `apps/supabase-functions/supabase/migrations/20261022130000_trial_speech_samples.sql` → `supabase/cron/trial-speech-samples-retention.sql` 1회 실행(pg_cron, 사용자 확인 뒤). **개인정보처리방침(Notion)** 에 초안 [web-trial-speech-samples-privacy](../specs/web-trial-speech-samples-privacy.md)를 붙인다(사용자). 실기 발음 사례 수집 — [웹 체험판 e2e](../e2e/web-trial.md) EU12.
 - 접근성 감사 제안 S2 · S4 · S6 · S8 · S9.
 - 성능 보고서: [웹 체험판 — 번들만](../performance/reports/web-trial-iphone-17-pro-simulator-01.md)(앱 번들 +614 B, 상한 그대로) · (r3) [02 — 체험판 스크립트 상한](../performance/reports/web-trial-iphone-17-pro-simulator-02.md).
+
+## 적용 기록 ⟨2026-10-26 — 체험판 u00은 2026-10-23판에 머문다⟩
+
+- 앱 내장 u00이 버킷 최신본 `2026-10-26.3`(4스텝 · 앞 컷 `-v2` 7장)으로 바뀌었다([ADR-0081](0081-tutorial-as-catalog-episode.md) 적용 기록 ⟨2026-10-26⟩). 체험판 모델(`buildTrialModel`)은 옛 14스텝 구조를 짚어(`S3` 그림 고르기 · `S9` · `S12`) 새 판에서 `item-malformed S3.IMG_MATCH · step-missing S9 · step-missing S12`로 멈춘다.
+- 그래서 **체험판 사본 · 핀 · 그림은 그대로 둔다**(`2026-10-23.1`). D6의 동기 검사(`devtools/trial-assets/sync.unit.test.mjs`)는 사본 · 핀을 앱 테스트 고정본(`apps/mobile/content/test-fixtures/bundled-2026-10-23`)과 견주고, 그림은 앱에 아직 있는 것만 앱 원본과 견준다. 옛 앞 컷 `pre-1` ~ `pre-6`은 이제 체험판 사본이 유일한 사본이다.
+- **재검토 조건**: 체험판을 새 u00으로 옮길 때 — 모델 조립을 새 스텝 구성에 맞추는 별도 작업이다.

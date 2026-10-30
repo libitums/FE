@@ -5,6 +5,7 @@ import type { CatalogProgress } from "../lib/catalog-progress";
 import { isCatalogUnitDone } from "../lib/catalog-progress";
 import type { NonEmpty } from "../lib/non-empty";
 import type { LearnerProfile } from "../lib/placeholder-fill";
+import { isTesterAccessActive } from "../lib/tester-access";
 import type { CatalogCuts } from "../screens/catalog-cover/catalog-cover.contract";
 import type { CatalogRoleplayTurn } from "../screens/catalog-final/catalog-final.contract";
 import type { CatalogMapSection } from "../screens/journey-map/catalog-map.contract";
@@ -74,7 +75,7 @@ export function roleplayStoryModelOf(
 
 /**
  * 롤플레이 탭의 카탈로그 구획입니다 — 준비된 에피소드마다 하나, 항목은 그 에피소드의 롤플레이 하나입니다.
- * 에피소드의 완료 키(`completion.requires`)를 모두 끝내면 열립니다. 말할 턴이 없는 에피소드는 싣지 않습니다.
+ * 에피소드의 완료 키(`completion.requires`)를 모두 끝내면 열립니다. 시험 계정은 늘 열립니다(ADR-0085). 말할 턴이 없는 에피소드는 싣지 않습니다.
  */
 export function catalogRoleplaySectionsOf(
   content: EpisodeContent,
@@ -92,9 +93,11 @@ export function catalogRoleplaySectionsOf(
         episodeId: section.episodeId,
         label: episodeLabel(section.ordinal),
         title: `${section.titleEn ?? section.title}.`,
-        unlocked: section.completionKeys.every((key) =>
-          isCatalogUnitDone(progress, section.episodeId, key),
-        ),
+        unlocked:
+          isTesterAccessActive() ||
+          section.completionKeys.every((key) =>
+            isCatalogUnitDone(progress, section.episodeId, key),
+          ),
         items: [
           {
             form: "story",

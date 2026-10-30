@@ -9,6 +9,9 @@ export type TicketMoreResult = { readonly granted: boolean } | null;
 export type TicketsCopy = {
   /** 칩 · 결과 줄의 「N tickets left」입니다. */
   readonly ticketsLeft: (count: number) => string;
+  /** 시험 계정의 칩 이름 「Unlimited tickets」과 보이는 글자 「∞」입니다(ADR-0085). */
+  readonly unlimited: string;
+  readonly unlimitedValue: string;
   readonly modal: {
     /** 큰 숫자 아래 제목 — 「tickets left」 · 「ticket left」. */
     readonly title: (count: number) => string;

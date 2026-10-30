@@ -4,6 +4,8 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { JSDOM } from "jsdom";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { pages as sitePages, storeLinks } from "../site";
+import { storeAvailabilityOf } from "./faq";
 
 // 실제 `astro build`를 임시 폴더로 돌려 env → 설정 → Astro.site → 산출물 경계를 봅니다.
 // describe마다 자기 빌드를 한 번만 돌리고(직렬), 작업 트리의 dist/는 건드리지 않습니다.
@@ -41,6 +43,7 @@ function runBuild(
   delete env.SITE_URL;
   if (siteUrl !== undefined) env.SITE_URL = siteUrl;
   delete env.PUBLIC_GA_MEASUREMENT_ID;
+  delete env.PUBLIC_AIRBRIDGE_WEB_TOKEN;
   if (measurementId !== undefined) env.PUBLIC_GA_MEASUREMENT_ID = measurementId;
   for (const key of Object.keys(env)) if (key.startsWith("VERCEL")) delete env[key];
   Object.assign(env, extra);
@@ -262,6 +265,24 @@ describe("빌드 A — SITE_URL 있음", () => {
     }
   });
 
+  it("I-A21 아이콘 링크가 모든 페이지에 절대 주소로 있고 그 파일이 산출물에 있다", () => {
+    for (const file of ["index.html", "ko/index.html", "404.html"]) {
+      const document = page(build, file);
+      const icons = attr(document, 'link[rel="icon"]', "href");
+      expect(icons, `${file} rel=icon`).toEqual([
+        `${origin}/favicon.ico`,
+        `${origin}/favicon-96x96.png`,
+      ]);
+      expect(attr(document, 'link[rel="apple-touch-icon"]', "href")).toEqual([
+        `${origin}/apple-touch-icon.png`,
+      ]);
+      expect(attr(document, 'link[rel="icon"][type="image/png"]', "sizes")).toEqual(["96x96"]);
+    }
+    for (const icon of ["favicon.ico", "favicon-96x96.png", "apple-touch-icon.png"]) {
+      expect(has(build, icon), `${icon} 이(가) 산출 폴더에 있어야 한다`).toBe(true);
+    }
+  });
+
   it("I-A20 밖으로 나가는 새 창 링크는 noopener와 noreferrer를 갖는다", () => {
     for (const { file } of pages) {
       const rels = attr(page(build, file), 'a[target="_blank"]', "rel");
@@ -315,14 +336,16 @@ describe("빌드 A — SITE_URL 있음", () => {
     }
   });
 
-  it("I-A14 스토어 주소가 비었으면 where 답이 출시 전을 말한다", () => {
-    const marker = { en: "not released yet", ko: "출시 전" } as const;
+  it("I-A14 where 답은 site.ts의 스토어 주소 유무를 따른다", () => {
+    // 스토어 주소가 하나라도 있으면 faqWhereAAvailable, 모두 비면 faqWhereASoon이 그 언어의 copy 그대로 실려야 합니다.
+    const key =
+      storeAvailabilityOf(storeLinks) === "available" ? "faqWhereAAvailable" : "faqWhereASoon";
     for (const { file, language } of pages) {
       const answer = page(build, file).querySelector(
         '[data-faq-id="where"] [data-testid="faq-answer"]',
       );
       expect(answer, `${file} where 답`).not.toBeNull();
-      expect(answer?.textContent).toContain(marker[language]);
+      expect(answer?.textContent?.trim()).toBe(sitePages[language].copy[key]);
     }
   });
 
@@ -432,6 +455,17 @@ describe("빌드 B — SITE_URL 없음", () => {
     expect(text).not.toContain("https://");
     const shown = screenFaq(page(build, "index.html"));
     expect(llmsFaq(text).map((entry) => entry.question)).toEqual(shown.questions);
+  });
+
+  it("I-B7 아이콘 링크는 상대 주소로 남는다", () => {
+    for (const file of ["index.html", "ko/index.html", "404.html"]) {
+      const hrefs = attr(
+        page(build, file),
+        'link[rel="icon"], link[rel="apple-touch-icon"]',
+        "href",
+      );
+      expect(hrefs).toEqual(["/favicon.ico", "/favicon-96x96.png", "/apple-touch-icon.png"]);
+    }
   });
 
   it("I-B6 화면 FAQ와 FAQPage가 주소와 무관하게 같다", () => {

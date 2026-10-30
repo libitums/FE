@@ -405,7 +405,7 @@ describe("catalogItemOf — 문장 순서", () => {
     expect(catalogItemOf(wordOrder("W", [], [t("가")]), port).kind).toBe("skipped");
   });
 
-  test("LP9. TURN_ORDER는 원래 정답 순서대로 읽히는 대화 조립 문항이다 — 지시문 말풍선 · 보조 글이 없다", () => {
+  test("LP9. TURN_ORDER는 첫 턴이 고정된 첫 줄로 서고 나머지가 정답 순서대로 읽히는 대화 조립 문항이다 — 지시문 말풍선 · 보조 글이 없다", () => {
     const item = realItem("u02-checkin", "S3-02");
     if (item.type !== "TURN_ORDER") throw new Error("모양 불일치");
 
@@ -415,20 +415,38 @@ describe("catalogItemOf — 문장 순서", () => {
       answerOrder: number[];
       prompt: string;
       instruction: string;
-      dialogue?: { speakers: string[] };
+      dialogue?: { opening: { speaker: string; text: string }; speakers: string[] };
       support?: unknown;
     };
+    const [first, ...rest] = item.answer;
+    const speakerAt = (at: number) =>
+      item.tiles[at]?.speaker === undefined
+        ? item.answer.indexOf(at) % 2 === 0
+          ? "counterpart"
+          : "me"
+        : item.tiles[at]?.speaker === "player"
+          ? "me"
+          : "counterpart";
 
     expect(mapped.kind).toBe("sentence-order");
-    expect(question.answerOrder.map((index) => question.chips[index])).toEqual(
-      item.answer.map((index) => item.tiles[index]?.ko),
-    );
-    expect(question.chips).not.toEqual(item.tiles.map((tile) => tile.ko));
-    expect(question.dialogue).toMatchObject({
-      speakers: item.answer.map((_, at) => (at % 2 === 0 ? "counterpart" : "me")),
+    expect(question.dialogue?.opening).toEqual({
+      speaker: speakerAt(first ?? -1),
+      text: item.tiles[first ?? -1]?.ko,
     });
+    expect(question.answerOrder.map((index) => question.chips[index])).toEqual(
+      rest.map((index) => item.tiles[index]?.ko),
+    );
+    expect(question.chips).toHaveLength(item.tiles.length - 1);
+    expect(question.chips).not.toEqual(rest.map((index) => item.tiles[index]?.ko));
+    expect(question.dialogue).toMatchObject({ speakers: rest.map(speakerAt) });
     expect(question.support).toBeUndefined();
     expect(question.instruction).toBe(item.prompt.en);
+  });
+
+  test("LP9. 타일이 하나뿐이면 고정된 첫 줄 뒤에 놓을 턴이 없어 malformed로 건너뛴다", () => {
+    const item = turnOrder("T", [t("가")], [0]);
+
+    expect(catalogItemOf(item, port)).toMatchObject(skippedWith("malformed"));
   });
 
   test("LP9. 대화 조립은 TURN_ORDER에만 붙는다 — WORD_ORDER는 기존 문장 순서다", () => {

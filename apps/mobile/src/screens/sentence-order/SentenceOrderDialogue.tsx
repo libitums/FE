@@ -9,14 +9,15 @@ import { useUiCopy } from "../../lib/ui-copy";
 import { dialogueAvatarNameOf } from "./sentence-order-avatar";
 import { SentenceOrderResultMark } from "./SentenceOrderResultMark";
 import type { SentenceOrderInteraction } from "./sentence-order-layout";
-import type { DialogueSpeaker } from "./sentence-order-questions";
+import type { DialogueSpeaker, SentenceOrderDialogueOpening } from "./sentence-order-questions";
 
 import "./sentence-order-dialogue.css";
 
-// 대화 조립(대화 순서 문항)의 카드 안입니다. 정답 길이만큼 칸이 위에서 아래로 서고, 칸마다 화자가
-// 번갈아 — 짝수 칸은 상대(왼쪽 · 흰 면), 홀수 칸은 나(오른쪽 · 주황 면)입니다. 빈 칸은 그 화자 쪽에 자리표시
-// 말풍선으로 서고, 창고의 조각을 누르면 다음 빈 칸에 그 칸 화자 모양으로 들어갑니다. 놓은 말풍선을
-// 누르면 창고로 돌아갑니다 — 문장 순서의 「놓인 조각을 누르면 되돌린다」와 같은 규칙입니다.
+// 대화 조립(대화 순서 문항)의 카드 안입니다. 맨 위 줄은 **고정된 첫 줄**(`opening`)로 처음부터 차 있고 누를 수 없으며
+// 채점에도 들지 않습니다. 그 아래 정답 길이만큼 칸이 위에서 아래로 서고, 칸마다 화자가 정해져 있습니다 — 상대는 왼쪽 ·
+// 흰 면, 나는 오른쪽 · 주황 면입니다. 빈 칸은 그 화자 쪽에 자리표시 말풍선으로 서고, 창고의 조각을 누르면 다음 빈 칸에
+// 그 칸 화자 모양으로 들어갑니다. 놓은 말풍선을 누르면 **그 말풍선과 그 뒤에 놓은 말풍선이 전부** 창고로 돌아갑니다 —
+// 칸마다 화자가 정해져 있어 뒤 조각이 앞으로 당겨지면 화자가 어긋나기 때문입니다(줄 배치의 「그 하나만 뺀다」와 다릅니다).
 //
 // 줄마다 말풍선 바깥 아래쪽에 원형 아바타가 붙습니다 — 상대는 말풍선 왼쪽, 나는 오른쪽입니다. 아바타는
 // 누가 말하는지를 눈으로만 보태는 장식이라 낭독 트리에서 빠지고, 칸의 낭독은 말풍선이 그대로 집니다.
@@ -24,7 +25,9 @@ import "./sentence-order-dialogue.css";
 // 상태가 없습니다. 놓인 조각 · 채점 여부는 화면(`SentenceOrderActivity`)의 세션 상태가 지고, 이
 // 조각은 그것을 그리고 눌림을 올려 보냅니다.
 export type SentenceOrderDialogueProps = {
-  /** 칸마다 화자입니다 — 길이가 곧 칸 수(문항의 정답 길이)입니다. */
+  /** 고정된 첫 줄입니다 — 0번 줄에 서고 창고에 없습니다. */
+  readonly opening: SentenceOrderDialogueOpening;
+  /** 칸마다 화자입니다 — 길이가 곧 칸 수(문항의 정답 길이)입니다. 첫 줄 다음부터 섭니다. */
   readonly speakers: readonly DialogueSpeaker[];
   readonly chips: readonly string[];
   /** 놓인 조각의 `chips` 인덱스입니다. 배열 순서가 곧 칸 순서입니다. */
@@ -33,6 +36,7 @@ export type SentenceOrderDialogueProps = {
   readonly results: readonly (AnswerResult | null)[] | null;
   /** 채점 뒤에는 말풍선을 누를 수 없습니다. */
   readonly interaction: SentenceOrderInteraction;
+  /** 놓은 말풍선을 눌렀을 때입니다 — 그 조각부터 뒤를 전부 되돌리는 것은 화면이 정합니다. */
   readonly onReturn: (chipIndex: number) => void;
   /** 아바타의 이름 · 그림입니다. 없으면 상대는 자리표시 그림, 나는 문구표 대체 이름입니다. */
   readonly cast?: ConversationCast | undefined;
@@ -40,6 +44,16 @@ export type SentenceOrderDialogueProps = {
 
 /** 칸이 비어 있을 때 말풍선 안에 서는 표시입니다 — 낭독하지 않고 칸 이름이 대신 읽힙니다. */
 const emptySlotMark = "----";
+
+/** 카드의 줄 하나입니다 — 고정된 첫 줄이거나, 조각이 들어가는 칸입니다. */
+type DialogueRow =
+  | { readonly kind: "fixed"; readonly speaker: DialogueSpeaker; readonly text: string }
+  | {
+      readonly kind: "slot";
+      readonly speaker: DialogueSpeaker;
+      readonly chipIndex: number | undefined;
+      readonly judged: AnswerResult | null;
+    };
 
 // 채점 뒤 칸 이름 뒤에 정오 접미사를 붙입니다 — 정오가 색 · 모양에만 실리지 않게 합니다.
 function withResultSuffix(
@@ -51,6 +65,7 @@ function withResultSuffix(
 }
 
 export function SentenceOrderDialogue({
+  opening,
   speakers,
   chips,
   placedChipIndexes,
@@ -62,17 +77,31 @@ export function SentenceOrderDialogue({
   const copy = useUiCopy();
   const locked = interaction === "locked";
   const names = { counterpart: cast?.counterpart.name, me: cast?.me.name };
+  const rows: readonly DialogueRow[] = [
+    { kind: "fixed", speaker: opening.speaker, text: opening.text },
+    ...speakers.map((speaker, slot): DialogueRow => ({
+      kind: "slot",
+      speaker,
+      chipIndex: placedChipIndexes[slot],
+      judged: results?.[slot] ?? null,
+    })),
+  ];
 
   return (
     <view className="sentence-order-dialogue" data-testid="sentence-order-dialogue">
-      {speakers.map((speaker, position) => {
+      {rows.map((row, position) => {
+        const { speaker } = row;
         const speakerName = copy.sentenceOrder.dialogueSpeaker[speaker];
-        const chipIndex = placedChipIndexes[position];
-        const text = chipIndex === undefined ? undefined : chips[chipIndex];
-        const filled = chipIndex !== undefined && text !== undefined;
+        const chipIndex = row.kind === "slot" ? row.chipIndex : undefined;
+        const text =
+          row.kind === "fixed" ? row.text : chipIndex === undefined ? undefined : chips[chipIndex];
+        const filled = text !== undefined;
+        const judged = row.kind === "slot" ? row.judged : null;
+        // 고정된 첫 줄은 누를 수 없습니다 — 채점 뒤의 칸과 같이 `text` 특성으로 읽힙니다.
+        const tappable = row.kind === "slot" && chipIndex !== undefined && filled && !locked;
         const handleTap = () => {
           "background only";
-          if (!filled) return;
+          if (chipIndex === undefined) return;
           playSound("button");
           onReturn(chipIndex);
         };
@@ -90,13 +119,13 @@ export function SentenceOrderDialogue({
             />
           </view>
         );
-        const judged = results?.[position] ?? null;
         const bubble = (
           <view
-            className={`sentence-order-dialogue-bubble sentence-order-dialogue-bubble-${speaker}${filled ? "" : " sentence-order-dialogue-bubble-empty"}${judged === null ? "" : ` sentence-order-dialogue-bubble-${judged}`}`}
+            className={`sentence-order-dialogue-bubble sentence-order-dialogue-bubble-${speaker}${filled ? "" : " sentence-order-dialogue-bubble-empty"}${row.kind === "fixed" ? " sentence-order-dialogue-bubble-fixed" : ""}${judged === null ? "" : ` sentence-order-dialogue-bubble-${judged}`}`}
             data-testid={`sentence-order-dialogue-slot-${position}`}
             data-speaker={speaker}
             data-filled={filled ? "true" : "false"}
+            data-fixed={row.kind === "fixed" ? "true" : "false"}
             accessibility-element={true}
             accessibility-label={withResultSuffix(
               filled
@@ -105,8 +134,10 @@ export function SentenceOrderDialogue({
               judged,
               copy.common.answerResultSuffix,
             )}
-            accessibility-traits={filled ? (locked ? "disabled" : "button") : "text"}
-            bindtap={filled && !locked ? handleTap : undefined}
+            accessibility-traits={
+              row.kind === "slot" && filled ? (locked ? "disabled" : "button") : "text"
+            }
+            bindtap={tappable ? handleTap : undefined}
           >
             <text
               className={`sentence-order-dialogue-text sentence-order-dialogue-text-${speaker}`}

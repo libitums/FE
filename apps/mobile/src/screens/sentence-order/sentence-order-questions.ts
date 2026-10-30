@@ -2,10 +2,23 @@ import type { QuestionAudio } from "../../lib/question-audio";
 
 export type DialogueSpeaker = "counterpart" | "me";
 
-/** 대화 조립 — 칸마다 화자입니다. 길이 = `answerOrder.length`(매핑이 보장). */
+/**
+ * 대화 조립의 고정된 첫 줄입니다 — 대화의 첫 턴은 처음부터 칸에 차 있고 창고에 없으며 뺄 수 없습니다. 학습자는
+ * 그 뒤의 턴만 놓습니다(⟨2026-10-28⟩ 사용자 결정).
+ */
+export type SentenceOrderDialogueOpening = {
+  readonly speaker: DialogueSpeaker;
+  readonly text: string;
+};
+
+/** 대화 조립 — 고정된 첫 줄과 그 뒤 칸마다 화자입니다. `speakers` 길이 = `answerOrder.length`(매핑이 보장). */
 export type SentenceOrderDialogueTurns = {
+  readonly opening: SentenceOrderDialogueOpening;
   readonly speakers: readonly DialogueSpeaker[];
-  /** 창고 조각마다 화자입니다. 길이 = `chips.length`입니다. */
+  /**
+   * 창고 조각마다 화자입니다. 길이 = `chips.length`입니다. 있으면 조각은 **같은 화자의 칸에만** 들어갑니다 — 내 조각은
+   * 상대 칸에, 상대 조각은 내 칸에 놓이지 않습니다.
+   */
   readonly chipSpeakers?: readonly DialogueSpeaker[];
 };
 
@@ -33,9 +46,9 @@ export type SentenceOrderQuestion = {
    */
   readonly answerOrder: readonly number[];
   /**
-   * 대화 조립 문항입니다(카탈로그 대화 순서). 지시문 말풍선 없이 정답 길이만큼 칸이 말풍선으로 서고,
-   * 이때 `prompt`는 화면에 그리지 않습니다. 칸마다 `speakers`의 화자로 섭니다(콘텐츠의 턴 화자). 채점은
-   * 다른 문장 순서와 같습니다.
+   * 대화 조립 문항입니다(카탈로그 대화 순서). 지시문 말풍선 없이 첫 줄(`opening`)이 고정된 말풍선으로 서고 그 아래
+   * 정답 길이만큼 칸이 말풍선으로 섭니다. 이때 `prompt`는 화면에 그리지 않습니다. 칸마다 `speakers`의 화자로
+   * 섭니다(콘텐츠의 턴 화자). 채점은 다른 문장 순서와 같습니다 — 고정된 첫 줄은 채점에 들지 않습니다.
    */
   readonly dialogue?: SentenceOrderDialogueTurns;
   /** 있으면 문구표 기본보다 앞서는 지시문입니다(카탈로그 문항). */

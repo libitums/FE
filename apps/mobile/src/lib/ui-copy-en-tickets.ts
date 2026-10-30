@@ -5,6 +5,8 @@ import { n } from "./ui-copy-en-plural";
 
 export const ticketsEn: TicketsCopy = {
   ticketsLeft: (count) => `${n(count, "ticket", "tickets")} left`,
+  unlimited: "Unlimited tickets",
+  unlimitedValue: "∞",
   modal: {
     title: (count) => (count === 1 ? "ticket left" : "tickets left"),
     nextTicketIn: "Next ticket in",
