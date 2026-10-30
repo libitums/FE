@@ -66,7 +66,7 @@
 - `{ app: "duru", webToken, utmParsing: true, defaultChannel: "k-duru.com", autoStartTrackingEnabled: false }`. `app` · `defaultChannel`은 `site.ts`의
   `airbridgeAppName` · `airbridgeDefaultChannel`이다(대시보드 App Name이 다르면 한 줄). 그 밖(`cookieWindow` 3일 · `shareCookieSubdomain` 등)은 SDK 기본값.
 - 모듈 스크립트가 `startsTrackingIn(Intl.DateTimeFormat().resolvedOptions().timeZone)`이 참일 때만 `airbridge.startTracking()`을 부른다 —
-  `Europe/*`와 EEA · EU 영토인데 IANA 구역이 `Europe/*`가 아닌 넷(`Atlantic/Reykjavik` · `Canary` · `Madeira` · `Faroe`)은 거짓, 그 밖(`undefined` · `""`
+  `Europe/*`와 EEA · EU 영토인데 IANA 구역이 `Europe/*`가 아닌 다섯(`Atlantic/Reykjavik` · `Canary` · `Madeira` · `Faroe` · `Azores`)은 거짓, 그 밖(`undefined` · `""`
   포함)은 참. SDK가 아직 안 떴으면 스텁이 큐에 쌓아 뒀다가 뜬 뒤 실행한다(공식 스니펫의 동작 — 모듈 스크립트가 `load`보다 먼저 돌아도 된다).
 - 이유: GA는 EU · EEA · 영국 · 스위스에서 동의 없이 저장을 막는다(ADR-0043 D10). Web SDK에는 지역 기능이 없으므로 **브라우저 시간대**를 지역의
   근사치로 쓴다(사용자 미확인 — 저장소 규칙의 기본값으로 진행).

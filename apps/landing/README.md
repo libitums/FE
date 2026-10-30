@@ -174,7 +174,7 @@ GA4와 따로, 랜딩은 Airbridge Web SDK도 싣는다 — **검색광고를 �
 - **init 옵션은 다섯 키로 닫힌다**: `app: "duru"`(대시보드 App Name — `src/site.ts`의 `airbridgeAppName`) · `webToken` · `utmParsing: true`(Google Ads 최종 URL
   접미사의 `utm_*`를 읽는다) · `defaultChannel: "k-duru.com"`(utm 없는 직접 유입) · `autoStartTrackingEnabled: false`.
 - **EU 시간대에서는 추적을 시작하지 않는다.** 모듈 스크립트가 브라우저 시간대(`Intl.DateTimeFormat().resolvedOptions().timeZone`)가 `Europe/*` 또는
-  EEA 대서양 영토 넷(`Atlantic/Reykjavik` · `Canary` · `Madeira` · `Faroe`)이 아닐 때만 `airbridge.startTracking()`을 부른다(`startsTrackingIn`). GA 동의 지역
+  EEA 대서양 영토 다섯(`Atlantic/Reykjavik` · `Canary` · `Madeira` · `Faroe` · `Azores`)이 아닐 때만 `airbridge.startTracking()`을 부른다(`startsTrackingIn`). GA 동의 지역
   규칙과 같은 방향이되 시간대는 지역의 근사치라 터키 · 러시아 등 EU 밖 유럽도 빠진다. 시간대를 모르는 브라우저는 시작한다.
 - **Android 카드 동작**: `a[data-store="android"]`의 click 리스너가 클릭 때마다 `window.airbridge`를 본다. SDK가 **떠 있을 때만**(`isSDKEnabled === true`)
   `preventDefault` + `openDeeplink({ type: "click", deeplinks: { android: "duru://journey", ios: "duru://journey", desktop: <지금 페이지 URL> },

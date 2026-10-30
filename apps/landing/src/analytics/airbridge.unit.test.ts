@@ -52,8 +52,8 @@ describe("startsTrackingIn", () => {
     }
   });
 
-  it("U-AB5 목록에 없는 Atlantic/Azores는 시작한다(목록을 넓히면 이 줄이 바뀐다)", () => {
-    expect(startsTrackingIn("Atlantic/Azores")).toBe(true);
+  it("U-AB5 Atlantic/Azores(포르투갈 — EU)도 시작하지 않는다", () => {
+    expect(startsTrackingIn("Atlantic/Azores")).toBe(false);
   });
 });
 

@@ -27,6 +27,7 @@ const euAtlanticZones: ReadonlySet<string> = new Set([
   "Atlantic/Canary",
   "Atlantic/Madeira",
   "Atlantic/Faroe",
+  "Atlantic/Azores",
 ]);
 
 /** `Europe/*`와 EEA 대서양 영토에서는 추적을 시작하지 않습니다. 시간대를 모르면 시작합니다. */

@@ -285,7 +285,7 @@ FAQ의 키보드 조작, 스크립트 없는 화면, 404, 폭별 넘침, 그림 
 - **「다른 호스트로 요청하지 않는다」(대가의 서체 문단 · D11)의 예외가 둘이 됐다** — GA의 `googletagmanager.com`에 더해 Airbridge 로더 `static.airbridge.io`.
   조건은 GA와 같다(프로덕션 · 값 있음 · `is:inline` 부트스트랩). 서체 · 그림 정책은 분석 스크립트에 적용되지 않는다.
 - **D10 — GA 이벤트는 열셋 그대로다.** Airbridge는 GA 이벤트를 더하지 않고 `download_click { store: "android" }`를 그대로 둔다(리스너가 `stopPropagation`을 하지
-  않는다). EU 처리는 GA의 동의 지역 규칙과 같은 방향 — Web SDK에는 지역 기능이 없어 브라우저 시간대(`Europe/*` + EEA 대서양 넷)로 `startTracking`을
+  않는다). EU 처리는 GA의 동의 지역 규칙과 같은 방향 — Web SDK에는 지역 기능이 없어 브라우저 시간대(`Europe/*` + EEA 대서양 다섯)로 `startTracking`을
   가른다. 「측정 ID와 개인정보처리방침의 고지는 아직 없다」에 Airbridge Web SDK(루트 도메인 쿠키)도 더해진다 — 사용자 몫.
 - **새 빌드 env `PUBLIC_AIRBRIDGE_WEB_TOKEN`**(Web SDK Token — 공개 값). `astro.config.ts`가 측정 ID와 같은 자리에서 검사한다 — 비면 **프로덕션에서도 싣지 않고
   성공**(`PUBLIC_SUPABASE_*`와 다르다 — 선택 값), 모양이 틀리면 빌드 실패(출력에 값을 싣지 않는다). Vercel Production에 값을 넣는 것은 사용자 몫이다
