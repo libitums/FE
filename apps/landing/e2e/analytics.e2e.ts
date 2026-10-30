@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { routeBlockedHosts } from "./analytics.support";
 import { ports } from "../playwright.config";
 
 // 측정 ID가 든 빌드(analytics 프로젝트)의 dataLayer를 봅니다. googletagmanager 요청은 빈 JS로 막습니다.
@@ -15,9 +16,7 @@ interface Watch {
 
 async function watch(page: Page): Promise<Watch> {
   const seen: Watch = { external: [], errors: [] };
-  await page.route("https://www.googletagmanager.com/**", (route) =>
-    route.fulfill({ status: 200, contentType: "text/javascript", body: "" }),
-  );
+  await routeBlockedHosts(page);
   page.on("request", (request) => {
     const url = new URL(request.url());
     if (url.protocol.startsWith("http") && url.hostname !== "127.0.0.1") {
@@ -63,7 +62,12 @@ test.describe("측정 ID가 있는 빌드", () => {
   test.afterEach(() => {
     expect(seen.errors).toEqual([]);
     expect(seen.external.length).toBeGreaterThanOrEqual(1);
-    expect(new Set(seen.external)).toEqual(new Set(["www.googletagmanager.com"]));
+    // Airbridge 로더 요청은 load 뒤에 나가 시점이 흔들리므로 있어도 없어도 됩니다.
+    const hosts = new Set(seen.external);
+    expect(hosts.has("www.googletagmanager.com")).toBe(true);
+    for (const host of hosts) {
+      expect(["www.googletagmanager.com", "static.airbridge.io"]).toContain(host);
+    }
   });
 
   test("GA-E1 받기 버튼은 cta_click header를 한 번 보낸다", async ({ page }) => {

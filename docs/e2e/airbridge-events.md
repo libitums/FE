@@ -19,6 +19,7 @@
 | C 실제 값으로 Airbridge 대시보드 확인 | **미실행 — 이번 범위 밖, 사용자 몫** |
 | D 추적 허용(ATT) 대화상자 ⟨2026-10-22, ADR-0079⟩ | **일부 통과** — 2026-10-22 · iPhone 13 mini · Release · 실제 값. D-2(맵 진입에 한 번 뜸) 통과, D-1 · D-3 · D-4 · D-5 미실행([D](#d--추적-허용att-대화상자-adr-0079)) |
 | E 딥링크 · 지연 딥링크 ⟨2026-10-22, ADR-0080⟩ | **일부 통과** — iOS 실기 E-1 ~ E-3 통과(사용자 관찰), Android는 호스트 수신까지, E-4 ~ E-6 미실행([E](#e--딥링크--지연-딥링크-adr-0080)) |
+| F 웹 랜딩 → 설치 귀속 ⟨2026-10-30, ADR-0090⟩ | **미실행 — AB-M1 · M2 · M3 전부.** Vercel Production에 Web SDK Token이 아직 없다(사용자 작업). 자동 e2e(AB-E1 ~ E4 · 128건 중 12)는 2026-10-30 통과([F](#f--웹-랜딩--설치-귀속-adr-0090)) |
 
 **미실행 · 관찰 불가는 통과가 아니다.** 2026-10-13 실행에서 이 문서의 명령 다섯 곳이 그대로는 맞지 않아 고쳤다 — [절차 정정 기록](#절차-정정-기록).
 
@@ -354,6 +355,27 @@ iOS 실기(iPhone 13 mini) · **Release** · 실제 값이 든 빌드. 추적 �
 |---|---|---|---|---|
 | 2026-10-22 | `b6124067` | iPhone 13 mini(iOS 27.0.1) — Release, 실제 값, 로그인된 세션 | **E-1 · E-2 · E-3 통과** | Safari 주소창에서 `duru://roleplay` · `duru://settings` · `duru://shop`을 열어 사용자가 기기에서 봤다(「잘되네」). 서명된 `.app`의 entitlements에 `applinks:duru.airbridge.io` · `applinks:duru.abr.ge`가 실렸다(`codesign -d --entitlements`). 콘솔에 맵 진입 직후 `takeOpenedDeeplink` 호출 |
 | 2026-10-22 | `b6124067` | Android 에뮬레이터(Pixel 8) — `bundled`, 실제 값, **로그인 전** | **호스트 수신만** | `am start -d duru://roleplay` → logcat `sendGlobalEvent airbridgeDeeplinkOpened`. 로그인 전이라 온보딩에 머물렀고(링크는 들고 있음 — D3대로), 탭 이동은 보지 않았다 |
+
+## F — 웹 랜딩 → 설치 귀속 (ADR-0090)
+
+⟨2026-10-30⟩ 앱이 아니라 **랜딩 `apps/landing`**의 Airbridge Web SDK다([ADR-0090](../adr/0090-landing-airbridge-web-sdk.md) · [랜딩 README 「분석」](../../apps/landing/README.md#airbridge-web-sdk-2026-10-30)).
+자동 e2e(`apps/landing/e2e/airbridge.e2e.ts` AB-E1 ~ E4 — 스텁 SDK에 넘어간 `init` · `openDeeplink` 인자 · 이동 없음 · GA `download_click` · 시간대별 `startTracking` · 스텁 없는 클릭의
+기본 이동 · 토큰 없는 빌드의 무동작)는 로더를 빈 스크립트로 막고 `window.airbridge`를 스텁으로 갈아 끼우므로 **실제 SDK · 대시보드 · 실기 설치는 보지 못한다.** 이 절이 그 셋이다.
+
+전제: Vercel 랜딩 프로젝트 **Production**에 `PUBLIC_AIRBRIDGE_WEB_TOKEN`(Airbridge [Settings] › [Tokens]의 **Web SDK Token** — App SDK Token · API Token이 아니다)을 넣고
+프로덕션(`k-duru.com`)을 다시 배포한 뒤. 프리뷰는 값이 있어도 싣지 않는다. Android 실기에는 앱이 **설치되어 있지 않아야** 한다(AB-M1). Airbridge 대시보드의
+Google Ads 연동 · Google Ads 최종 URL 접미사(`utm_source=google&utm_medium=cpc&utm_campaign={_c}&utm_content={_ag}&utm_term={keyword}`)는 사용자가 앞서 맞춘 것을 전제한다.
+**실제 토큰 값을 이 문서 · 실행 기록 · 로그 · 스크린샷에 적지 않는다**(테스트의 가짜 값은 `e2e-test-web-token-0000000000`뿐).
+
+| # | 기기 · 조건 | 하는 것 | 기대 |
+|---|---|---|---|
+| AB-M1 | 실제 토큰이 든 프로덕션, **Android Chrome 실기 · 앱 미설치**, Google Ads 테스트 링크(utm 접미사가 붙은 랜딩 주소) | 링크로 랜딩에 들어가 `/` 또는 `/ko/`의 Play 카드(「Android · Google Play · Download」)를 누른다 → Play 스토어에서 설치 → 첫 실행 → 「여정 시작하기」까지 | 카드를 누르면 **같은 탭**에서 Play 스토어로 간다(`google-play` 폴백 — 새 탭이 아니다). Airbridge **Real-time Logs**에 웹 이벤트(Web-to-App 클릭)가 먼저 찍히고, 설치 · 첫 실행 뒤 **Install**이 채널 `google.adwords`(연동) 또는 `k-duru.com`(직접 유입), 캠페인 · 광고그룹 · 키워드 = 접미사의 `utm_campaign` · `utm_content` · `utm_term` 값으로 찍힌다. 앱이 지연 딥링크로 여정 탭을 연다(E-4 꼴, [추정]). 랜딩 GA4 실시간에 `download_click { store: android }`가 함께 보인다 |
+| AB-M2 | 같은 배포, **데스크톱 Chrome**(DevTools › Sensors › Location으로 시간대 `Europe/Paris`) | 시크릿 창으로 `/`를 연다 → DevTools Network(`airbridge` · `abr.ge` 필터)와 Application › Cookies를 본다 → 시간대를 `Asia/Seoul`로 바꾸고 **새로고침** | `Europe/Paris`: `static.airbridge.io` 로더 요청 하나뿐이고 Airbridge **수집 요청 0 · `airbridge_*` 쿠키 0**(init은 되지만 `startTracking`이 불리지 않는다). `Asia/Seoul`로 바꾸고 새로고침하면 수집 요청 · 쿠키가 **생긴다**. 콘솔 오류 0 |
+| AB-M3 | 같은 배포, **데스크톱**(아무 브라우저)과 **iOS Safari**(앱 없음) | Play 카드를 누른다 | SDK가 떠 있으면 `desktop` · `fallbacks.ios`가 **지금 보는 랜딩 URL**이라 **같은 페이지로 돌아온다**(페이지가 다시 로드되고 포커스가 처음으로 간다) — 사용자 결정의 체감이다. 「아무 일도 안 일어난 것」처럼 보이면 ADR-0090 「재검토 조건」(Play 웹 주소 대안 · WCAG 2.4.4 · 2.4.3)의 자료로 적는다. SDK가 안 떴으면(차단기) 새 탭에 Play 웹 페이지가 열린다 |
+
+| 날짜 | 커밋 | 기기 | 판정 | 근거 |
+|---|---|---|---|---|
+| — | — | — | **미실행** | Vercel Production에 토큰을 넣기 전. 자동 e2e만 2026-10-30 통과(chromium · analytics · analytics-mobile 128건) |
 
 ## 이 절차로 확인되지 않는 것
 

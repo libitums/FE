@@ -12,15 +12,14 @@ import {
   tileTurn,
 } from "./trial.support";
 import { routePrereg, routeSound, say, withFakeSpeech, withoutSpeech } from "./trial-fakes.support";
+import { routeBlockedHosts, unexpectedHosts } from "./analytics.support";
 
-// 측정 ID가 든 빌드(analytics 프로젝트)에서 체험판 이벤트의 dataLayer를 봅니다(GT1 ~ GT3).
-// googletagmanager 요청은 빈 JS로 막고, 음성 버킷은 무음 소리로 답합니다.
+// 측정 ID가 든 빌드(analytics 프로젝트)에서 체험판 이벤트의 dataLayer를 봅니다(GT1 ~ GT3). 음성 버킷은 무음 소리로 답합니다.
 
 interface GaEvent {
   name: string;
   params: Record<string, string>;
 }
-
 interface Watch {
   external: string[];
   errors: string[];
@@ -28,9 +27,7 @@ interface Watch {
 
 async function watch(page: Page): Promise<Watch> {
   const seen: Watch = { external: [], errors: [] };
-  await page.route("https://www.googletagmanager.com/**", (route) =>
-    route.fulfill({ status: 200, contentType: "text/javascript", body: "" }),
-  );
+  await routeBlockedHosts(page);
   page.on("request", (request) => {
     const url = new URL(request.url());
     if (url.protocol.startsWith("http") && url.hostname !== "127.0.0.1") {
@@ -83,9 +80,7 @@ test.describe("체험판 — 측정 ID가 있는 빌드", () => {
     expect(seen.errors).toEqual([]);
     // 밖으로 가는 요청은 gtag(막음)와 음성 버킷(가로챔)뿐이다.
     expect(seen.external).toContain("www.googletagmanager.com");
-    expect(
-      seen.external.filter((host) => host !== "www.googletagmanager.com" && host !== contentHost),
-    ).toEqual([]);
+    expect(unexpectedHosts(seen.external).filter((host) => host !== contentHost)).toEqual([]);
   });
 
   test("GT1 말하기 경로 — trial_start · step ×9 · roleplay_result · complete 차례", async ({
@@ -271,7 +266,9 @@ test.describe("GT2 랜딩의 체험판 링크 — 측정 ID가 있는 빌드", (
 
   test.afterEach(() => {
     expect(seen.errors).toEqual([]);
-    expect(new Set(seen.external)).toEqual(new Set(["www.googletagmanager.com"]));
+    // Airbridge 로더 요청은 load 뒤에 나가 시점이 흔들리므로 있어도 없어도 된다.
+    expect(seen.external).toContain("www.googletagmanager.com");
+    expect(unexpectedHosts(seen.external)).toEqual([]);
   });
 
   for (const [id, location] of [

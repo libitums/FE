@@ -64,6 +64,8 @@ Duru를 처음 듣는 사람이 한 화면을 끝까지 내리는 동안 **"이�
    맺음 인용과 받기는 이어 읽히는 한 쌍이라 떼지 않고, FAQ는 그 앞에 선다.
 8. **맺음 인용** — 튜토리얼의 마지막 대사 「안녕하세요. 이제, 나의 이야기가 시작된다.」
 9. **받기** — 스토어 카드 둘. 주소가 없으면 `Coming soon`. ⟨2026-10-22⟩ 카드 아래 체험판 링크 「Not ready to install? Try the first scene in your browser」(아래 「웹 체험판」).
+   ⟨2026-10-30⟩ Android 카드는 프로덕션에서 Airbridge Web SDK가 떠 있을 때만 `openDeeplink`(`duru://journey` · Play 폴백)로 가고, SDK가 없으면(토큰 없음 · 차단기 ·
+   로드 전) 지금처럼 Play로 가는 일반 링크다. 마크업 · 문구는 그대로다([ADR-0090](../adr/0090-landing-airbridge-web-sdk.md)).
 10. **푸터** — 이용약관 · 개인정보처리방침(앱이 여는 것과 같은 문서), 저작권.
 
 **없는 주소(404)** — 랜딩과 따로 선 한 쪽이다. 안내 문장, 홈으로 가는 버튼, 기본 언어가 아닌 언어의 홈 링크. 헤더에는
@@ -137,6 +139,9 @@ unit 95 · ui 100 · integration 35 · e2e 182가 됐다. 사람 몫으로 남�
 
 **측정(출시 뒤)**: Search Console의 색인된 쪽 수(목표 2 — `/` · `/ko/`) · 노출 · 클릭, Lighthouse SEO 점수, 대표 질문에
 답변 엔진이 이 페이지를 인용하는지(수동 질의). 수집 장치는 이번 범위 밖이다 — 도메인이 없어 켤 수 없다.
+⟨2026-10-30⟩ **검색광고 → 설치 귀속**: Airbridge Real-time Logs · Actuals의 Install이 Google Ads 채널 · 캠페인 · 광고그룹 · 키워드로 찍히는가, Install 중 unattributed 비율이
+집행 전(100%)보다 내려가는가 — 새 GA 이벤트는 없고 `download_click { store: android }`는 그대로다([ADR-0090](../adr/0090-landing-airbridge-web-sdk.md) D6,
+[랜딩 README 「분석」](../../apps/landing/README.md#airbridge-web-sdk-2026-10-30)). 실제 토큰으로는 아직 보지 못했다([e2e F](../e2e/airbridge-events.md#f--웹-랜딩--설치-귀속-adr-0090)).
 
 ## 문구 (2026-10-05)
 

@@ -60,3 +60,8 @@ export interface FooterProps {
   /** 기본값 `"landing"`. */
   variant?: ChromeVariant;
 }
+
+/** `components/Airbridge.astro` — Web SDK 부트스트랩. `webToken`이 빈 문자열이면 아무것도 싣지 않습니다. */
+export interface AirbridgeProps {
+  webToken: string;
+}
