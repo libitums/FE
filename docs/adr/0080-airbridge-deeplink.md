@@ -10,8 +10,9 @@
 - 바꾸는 것: [ADR-0063](0063-airbridge-events.md) 「다루지 않는 것」의 딥링크 · 지연 딥링크 · Associated Domains를 연다(그 ADR의
   「재검토 조건」 「딥링크 · 지연 딥링크를 쓰기로 한 때 → D5」 발동). D5의 「지연 딥링크 조회 요청」은 이제 쓰는 요청이다.
   Android의 `setTrackMetaDeferredAppLinkEnabled(false)`(Meta 지연 앱 링크)는 그대로다.
-- 다루지 않는 것: 탭 밖 목적지(에피소드 · 롤플레이 하나) · 딥링크 열림 제품 이벤트(Airbridge가 딥링크 열림을 스스로 잰다) · 웹 랜딩 ·
-  커스텀 도메인.
+- 다루지 않는 것: 탭 밖 목적지(에피소드 · 롤플레이 하나) · 딥링크 열림 제품 이벤트(Airbridge가 딥링크 열림을 스스로 잰다) · ~~웹 랜딩~~ ·
+  ~~커스텀 도메인~~. ⟨2026-10-26⟩ 커스텀 도메인은 D4의 보충이 열었다. ⟨2026-10-30⟩ **웹 랜딩은 [ADR-0090](0090-landing-airbridge-web-sdk.md)이 연다** —
+  랜딩의 Android 카드가 Web SDK `openDeeplink`로 D2의 `duru://journey`를 연다(아래 D2 보충).
 
 근거 표시: **[코드]** · **[조회]** 2026-10-22 SDK 공개 API · **[추정]**.
 
@@ -42,6 +43,12 @@
 
 `app/deeplink-target.ts`의 순수 함수가 URL을 탭으로 읽는다(`duru:///<탭>` · 쿼리 · 끝 `/` · 대소문자 허용, DL1 · DL2). 그 밖은
 `null` — 앱만 열고 화면을 옮기지 않는다. 대시보드의 트래킹 링크 딥링크 주소는 이 셋 가운데 하나로 만든다.
+
+> ⟨2026-10-30⟩ **둘째 소비자 — 웹 랜딩.** 대시보드 트래킹 링크에 더해 랜딩 `apps/landing`의 Android(Google Play) 카드가 Airbridge Web SDK
+> `openDeeplink({ deeplinks: { android: "duru://journey", … }, fallbacks: { android: "google-play", … } })`로 같은 목적지를 연다
+> ([ADR-0090](0090-landing-airbridge-web-sdk.md) D5). 앱이 있으면 여정 탭, 없으면 Play 스토어 → 설치 뒤 지연 딥링크로 D3대로 「여정 시작하기」 뒤 여정
+> 탭이다 [추정 — 실기 미확인]. 호스트 · 클라이언트 쪽 코드는 바뀌지 않는다 — 목적지 셋 · 여는 때 그대로. 목적지가 셋 밖으로 늘면(대가 3) 랜딩의
+> `ANDROID_JOURNEY_DEEPLINK`도 함께 본다.
 
 ### D3. 여는 때 — 앱 구간에 들어선 뒤
 

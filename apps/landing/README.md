@@ -17,7 +17,7 @@ pnpm landing:dev     # 개발 서버 (http://localhost:4321, 한국어는 /ko/)
 pnpm landing:build   # apps/landing/dist 에 정적 파일을 만든다
 pnpm --filter @libitums/landing preview    # 빌드 결과를 그대로 띄운다
 pnpm --filter @libitums/landing typecheck  # astro check
-pnpm --filter @libitums/landing test:unit         # 순수 함수 (src/seo, 문구 데이터, src/scripts/analytics-events, src/trial의 리듀서 · 모델 · 파생)
+pnpm --filter @libitums/landing test:unit         # 순수 함수 (src/seo, 문구 데이터, src/scripts/analytics-events, src/analytics/airbridge*, src/trial의 리듀서 · 모델 · 파생)
 pnpm --filter @libitums/landing test:ui           # 컴포넌트 하나를 그려 마크업을 본다
 pnpm --filter @libitums/landing test:integration  # 실제로 빌드해 산출 파일을 본다
 pnpm --filter @libitums/landing test              # 위 셋을 차례로
@@ -27,13 +27,17 @@ pnpm test:trial-assets                           # 체험판 사본(u00 JSON · 
 
 2026-10-08 기준 unit 99 · ui 100 · integration 35 · e2e 190건이다. ⟨2026-10-22⟩ 체험판이 더해져 vitest 49 파일 481건(unit · ui · integration 합) ·
 e2e 272건 통과 · 18 skip, 같은 날 r2(표지 제거 · 꿈 전환 · Episode clear · 사전 등록 · 전체화면) 뒤 vitest 55 파일 555건(unit 224 · ui 188 · integration 143) ·
-e2e 315건 통과 · 27 skip이다.
+e2e 315건 통과 · 27 skip이다. ⟨2026-10-30⟩ Airbridge Web SDK(아래 「분석」)가 더해져 vitest unit 286 · ui 200 · integration 171,
+e2e는 chromium · analytics · analytics-mobile 세 프로젝트에서 128건 통과 · 1 skip(firefox · webkit · 모바일은 그날 돌리지 않았다)이다.
 
 브라우저 e2e는 처음 한 번 `pnpm --filter @libitums/landing exec playwright install chromium firefox webkit`로 브라우저를 받는다.
 **빌드는 둘, 프로젝트는 여섯이다**(`playwright.config.ts`). `SITE_URL=https://example.test` · `PUBLIC_SUPABASE_URL=https://content.example.test`(체험판 음성 · 사전 등록의 가짜 주소 — 요청은 테스트가 가로채 작은 소리 · 404 · 가짜 PostgREST 응답으로 답한다) · `PUBLIC_SUPABASE_ANON_KEY`(가짜 공개 키)로 `.e2e-dist/`에 지어 4399에 띄우고,
-거기에 테스트용 측정 ID `G-E2ETEST00`을 더해 `.e2e-dist-ga/`에 지어 4398에 띄운다(한 `e2e/serve.mjs` 프로세스가 둘 다 내리므로 개발 서버 4321과
+거기에 테스트용 측정 ID `G-E2ETEST00`과 ⟨2026-10-30⟩ 가짜 Airbridge Web SDK 토큰 `e2e-test-web-token-0000000000`(`playwright.config.ts`의 `webToken`)을 더해
+`.e2e-dist-ga/`에 지어 4398에 띄운다(한 `e2e/serve.mjs` 프로세스가 둘 다 내리므로 개발 서버 4321과
 부딪히지 않는다). chromium · firefox · webkit · 모바일(Pixel 7) 넷은 4399를 보고, `analytics`(Desktop Chrome) · `analytics-mobile`(Pixel 7)
-둘만 4398에서 `analytics.e2e.ts` · `trial-analytics.e2e.ts`를 돈다 — 측정 ID를 넣어도 `googletagmanager.com` 요청은 빈 스크립트로 막으므로 밖으로 나가는 것은 없다.
+둘만 4398에서 `analytics.e2e.ts` · `trial-analytics.e2e.ts` · `airbridge.e2e.ts`를 돈다 — 측정 ID · 토큰을 넣어도 `googletagmanager.com` · `static.airbridge.io` 요청은
+빈 스크립트로 막으므로(`e2e/analytics.support.ts`의 `blockedHosts`) 밖으로 나가는 것은 없다. Airbridge 로더 요청은 `load` 뒤에 나가 시점이 흔들리므로 GA e2e의 외부 호스트 단언은
+「gtm은 있고, 모든 호스트가 그 둘 안」이다.
 산출물의 내용만 보는 `content.e2e.ts`는 chromium만 돈다. 빌드 둘은 차례로 짓는다 — 동시에 지으면 Astro의 캐시 폴더(`node_modules/.astro`)를 두 빌드가 함께 써서 간헐적으로 깨질 수 있다 — 그래서 처음 한 번의 빌드 시간이 두 배다.
 **`pnpm verify`와 CI에는 들어 있지 않다** — CI에 브라우저를 받는 단계가 없다.
 
@@ -62,6 +66,8 @@ e2e 315건 통과 · 27 skip이다.
 | ↳ `NotFound.astro` | 404 본문. `noindex`이고 색인용 head와 랜딩 스크립트를 싣지 않는다. `pages/404.astro`가 기본 언어로 그린다 |
 | `src/styles/` | `base.css`(토큰 잇기 · 헤더 · 푸터) · `sections.css`(히어로 · 선언문 · 받기 · 404 · 반응형) · `showcase.css`(Features · Story · Phrases · FAQ) · `phone.css`(휴대폰 목업 — 앱의 컷 화면 · 메신저 · 전화 · 따라 읽기를 구조 · 토큰 · 모션까지 옮긴 것, 보는 묶음에서만 연출이 돈다) |
 | `src/analytics/gtag.ts` · `components/Analytics.astro` | GA4 측정 ID 검증 · 동의 기본값 · 초기화 스크립트 |
+| ⟨2026-10-30⟩ `src/analytics/airbridge*.ts` · `components/Airbridge.astro` | Airbridge Web SDK(아래 「분석」). `airbridge.contract.ts`(타입 · `duru://journey`) · `airbridge-loader.ts`(공식 로더 스니펫 원문) · `airbridge-bootstrap.ts`(**빌드 전용** — 토큰 검사 · init 옵션 · inline 부트스트랩) · `airbridge.ts`(**브라우저 순수** — 딥링크 옵션 · 시간대 판정 · SDK 판정). 둘을 파일로 가른 것은 모듈 스크립트 번들에 로더 스니펫이 들어가지 않게 하려는 것이다(빌드 테스트 I-AB2가 잰다) |
+| ⟨2026-10-30⟩ `src/scripts/airbridge-cta.ts` · `airbridge-main.ts` | 접착 — Android 카드 클릭을 SDK `openDeeplink`에 잇고 시간대에 따라 `startTracking`을 부른다(`airbridge-cta`, 의존 주입). `airbridge-main`은 `window` · `location` · `Intl`을 읽어 그 둘을 부르는 진입점이다. 토큰이 없는 빌드에는 실리지 않는다 |
 | `src/scripts/analytics-events.ts` · `analytics.contract.ts` | 화면의 행동을 이벤트로 옮기는 **순수 함수 셋**(`clickEventOf` · `faqEventOf` · `sectionEventOf`)과 그 타입. DOM이 아니라 거기서 읽은 값만 받고 아무것도 import하지 않는다 — `src/seo/`와 같은 모양 |
 | `src/scripts/analytics.ts` | 접착 — DOM에서 값을 읽어 위 함수에 넘기고 결과를 gtag에 전달한다. 섹션의 「한 번만」(`unobserve`)도 여기다 |
 | `src/scripts/main.ts` | 스크롤 연출과 탭. 없어도 본문은 다 보인다 |
@@ -70,7 +76,7 @@ e2e 315건 통과 · 27 skip이다.
 | `src/components/trial/` | 체험판 장면 컴포넌트(`TrialPage` · `TrialCuts` · `TrialVocabCard` · `TrialImageMatch` · `TrialReplySelect` · `TrialCultureCard` · `TrialRoleplay` · `TrialTurn` · `TrialClear` · `TrialComplete` · `TrialPrereg` 등)와 CSS 열둘(r2: `trial-transition` · `trial-clear` · `trial-prereg`). props · 문구 · test-id 타입은 `trial-components.contract.ts` |
 | `src/i18n/trial-copy.ts` · `trial-ko.ts` | 체험판 문구(`TrialCopy` — 영어 원본 · 한국어 전부). 학습 내용(한국어 대사 · 영어 번역)은 콘텐츠에서 온다 |
 | `src/assets/trial/images/` · `public/trial/sfx/` | 체험판 그림 12(앱 `src/assets/content/images/`의 사본 — 표는 `src/trial/trial-images.ts`) · 효과음 5(`apps/ios/Host/sfx/`의 사본) |
-| `e2e/` | Playwright. 체험판은 `trial.e2e.ts`(흐름 · 말하기 · 랜딩 링크) · `trial-sound.e2e.ts`(소리 요청) · `trial-a11y.e2e.ts`(키보드 · 초점 · axe · 움직임 줄이기) · `trial-layout.e2e.ts` · `trial-reflow.e2e.ts`(폭 · 낮은 화면) · `trial-contrast.e2e.ts`(그림 위 글 대비) · `trial-analytics.e2e.ts`(GA) · `trial-transition.e2e.ts`(꿈 전환) · `trial-prereg.e2e.ts`(사전 등록, 가짜 응답) · `trial-fullscreen.e2e.ts`(모바일 전체화면, 가짜 함수) · `trial.support.ts` · `trial-fakes.support.ts`(가짜 인식기 · 버킷 · PostgREST). 랜딩은 `landing.e2e.ts`(넘침 · 제목 단계 · 키보드 · 포커스 · axe · 서체 · 404) · `content.e2e.ts`(산출물 내용, chromium만) · `layout.e2e.ts`(Features · Story · Phrases · FAQ · 휴대폰 틀) · `layout-page.e2e.ts`(머리 · 히어로 · 섹션 간격) · `layout.support.ts`(폭 상수 1440 · 390, 좌표 · 계산값 · 스크롤 도구) · `analytics.e2e.ts`(측정 ID 빌드의 `dataLayer`) · `serve.mjs`(정적 서버). 설정은 `playwright.config.ts` |
+| `e2e/` | Playwright. 체험판은 `trial.e2e.ts`(흐름 · 말하기 · 랜딩 링크) · `trial-sound.e2e.ts`(소리 요청) · `trial-a11y.e2e.ts`(키보드 · 초점 · axe · 움직임 줄이기) · `trial-layout.e2e.ts` · `trial-reflow.e2e.ts`(폭 · 낮은 화면) · `trial-contrast.e2e.ts`(그림 위 글 대비) · `trial-analytics.e2e.ts`(GA) · `trial-transition.e2e.ts`(꿈 전환) · `trial-prereg.e2e.ts`(사전 등록, 가짜 응답) · `trial-fullscreen.e2e.ts`(모바일 전체화면, 가짜 함수) · `trial.support.ts` · `trial-fakes.support.ts`(가짜 인식기 · 버킷 · PostgREST). 랜딩은 `landing.e2e.ts`(넘침 · 제목 단계 · 키보드 · 포커스 · axe · 서체 · 404) · `content.e2e.ts`(산출물 내용, chromium만) · `layout.e2e.ts`(Features · Story · Phrases · FAQ · 휴대폰 틀) · `layout-page.e2e.ts`(머리 · 히어로 · 섹션 간격) · `layout.support.ts`(폭 상수 1440 · 390, 좌표 · 계산값 · 스크롤 도구) · `analytics.e2e.ts`(측정 ID 빌드의 `dataLayer`) · ⟨2026-10-30⟩ `airbridge.e2e.ts`(토큰 빌드의 Airbridge 결선 — 스텁 SDK · 차단 · 시간대) · `analytics.support.ts`(막는 호스트 둘과 외부 호스트 단언) · `serve.mjs`(정적 서버). 설정은 `playwright.config.ts` |
 | `src/assets/content/images/` | ⟨2026-10-29⟩ 랜딩 소개 그림 — 콘텐츠 버킷 `images/<unit>/…`의 사본(같은 상대 경로 · 같은 바이트). 표는 `src/assets/images.ts`(히어로 · Features · Phrases · 맺음), Story 카드는 `src/story/episodes.ts`. Astro가 크기별로 다시 굽는다 |
 | `src/story/` | ⟨2026-10-29⟩ Story 줄의 에피소드 카드 데이터 `episodes.ts`(새 것 먼저, 사람이 하나씩 더한다 — 아래 「Story 카드 더하기」) |
 | `scripts/` | `fetch-content-image.mjs` — 버킷 그림 하나를 `src/assets/content/`로 받는다 |
@@ -151,6 +157,36 @@ Footer 링크의 `rel`을 지우면 UI-FO2가 `expected '' to contain 'noopener'
   쌓여 4~6배)가 영원히 보내지지 않는다 — 2026-10-08까지 그랬고, GA-E7이 막는다. 임계값은 관찰을 시작할 때의 높이로 정하므로
   창 크기를 바꿔도 다시 재지 않는다.
 - **개인정보처리방침**에 웹사이트 분석(Google Analytics)을 적어야 한다 — 문서는 저장소 밖(Notion)에 있다.
+
+### Airbridge Web SDK ⟨2026-10-30⟩
+
+GA4와 따로, 랜딩은 Airbridge Web SDK도 싣는다 — **검색광고를 눌러 온 사람이 Play 카드로 설치하면 그 설치가 Airbridge에서 Google Ads 채널 · 캠페인 · 키워드로
+귀속되게** 하려는 것이다(Play 카드가 일반 URL인 동안은 전부 unattributed였다). 결정과 버린 대안은
+[ADR-0090](../../docs/adr/0090-landing-airbridge-web-sdk.md), 대시보드 쪽은 [Airbridge 운영 안내](../../docs/airbridge-events.md).
+
+- **켜기**: 빌드 환경에 `PUBLIC_AIRBRIDGE_WEB_TOKEN`(Airbridge **Web SDK Token** — App SDK Token · API Token이 아니다)을 준다. 싣는 조건은 GA와 같이
+  **프로덕션(색인되는 페이지 `/` · `/ko/`)이고 값이 있을 때**뿐이다 — 404 · 체험판 · 프리뷰 · 토큰 없는 빌드의 산출물에는 `airbridge` 문자열이 하나도 없다.
+  값이 없으면 프로덕션이어도 실패하지 않고 싣지 않는다(선택 값). 모양이 틀리면(공백 · 16자 미만 등) 빌드가 실패하고 메시지에는 변수 이름만 싣는다.
+  모양 규칙(`[A-Za-z0-9._-]{16,}`)은 이 저장소가 고른 추정이다 — 실제 토큰이 걸리면 규칙을 고친다. 아래 「배포」.
+- **싣는 방식**: GA와 같은 `is:inline` 부트스트랩(공식 로더 스니펫 원문 + `airbridge.init(…)`, 6,000 bytes 안) 하나와 조건부 모듈 스크립트 `scripts/airbridge-main.ts`
+  하나(Airbridge 모듈 891 bytes — 4,000 안, 로더 문자열 없음). 새로 나가는 외부 호스트는 로더 `static.airbridge.io` 하나다. 마크업은 바뀌지 않는다 — `Download.astro`
+  그대로, 새 test-id 0.
+- **init 옵션은 다섯 키로 닫힌다**: `app: "duru"`(대시보드 App Name — `src/site.ts`의 `airbridgeAppName`) · `webToken` · `utmParsing: true`(Google Ads 최종 URL
+  접미사의 `utm_*`를 읽는다) · `defaultChannel: "k-duru.com"`(utm 없는 직접 유입) · `autoStartTrackingEnabled: false`.
+- **EU 시간대에서는 추적을 시작하지 않는다.** 모듈 스크립트가 브라우저 시간대(`Intl.DateTimeFormat().resolvedOptions().timeZone`)가 `Europe/*` 또는
+  EEA 대서양 영토 다섯(`Atlantic/Reykjavik` · `Canary` · `Madeira` · `Faroe` · `Azores`)이 아닐 때만 `airbridge.startTracking()`을 부른다(`startsTrackingIn`). GA 동의 지역
+  규칙과 같은 방향이되 시간대는 지역의 근사치라 터키 · 러시아 등 EU 밖 유럽도 빠진다. 시간대를 모르는 브라우저는 시작한다.
+- **Android 카드 동작**: `a[data-store="android"]`의 click 리스너가 클릭 때마다 `window.airbridge`를 본다. SDK가 **떠 있을 때만**(`isSDKEnabled === true`)
+  `preventDefault` + `openDeeplink({ type: "click", deeplinks: { android: "duru://journey", ios: "duru://journey", desktop: <지금 페이지 URL> },
+  fallbacks: { android: "google-play", ios: <지금 페이지 URL> } })`. 스텁뿐이면(차단기 · `load` 전 · 느린 네트워크) 아무것도 하지 않아 `<a target="_blank">`가
+  Play로 그대로 간다 — 그 설치는 귀속되지 않는다. 수정키(Ctrl · Cmd · Shift · Alt) · 보조 버튼 클릭도 가로채지 않는다 — 새 탭으로 열려는 의도를 지킨다.
+  iOS 카드 · 체험판 링크는 결선하지 않는다.
+- **GA `download_click { store: "android" }`는 그대로 나간다** — 리스너가 `stopPropagation`을 하지 않아 `scripts/analytics.ts`의 document 리스너가 같은 클릭을 받는다.
+  **새 GA 이벤트 · 커스텀 웹 이벤트는 없다.** 잼은 Airbridge 대시보드의 Install 귀속(Real-time Logs · Actuals의 채널 · 캠페인 · 광고그룹 · 키워드)이고,
+  `setUserID` 등 사용자 식별 API는 부르지 않는다. 대시보드 수신은 자동으로 못 본다 — [Airbridge e2e F절](../../docs/e2e/airbridge-events.md#f--웹-랜딩--설치-귀속-adr-0090)(미실행).
+- 테스트: unit(토큰 · 옵션 · 시간대 · SDK 판정) · ui(토큰 유무의 출력 · `Landing`의 결선 조건 · `Download` 불변) · integration(JSDOM 클릭 결선 ·
+  빌드 산출물의 문자열 · 옵션 · 예산 · 실패) · e2e `airbridge.e2e.ts`(AB-E1 ~ E4 — 스텁 SDK의 `init` · `openDeeplink` 인자 · 이동 없음 · `dataLayer` · 시간대별
+  `startTracking` · 스텁 없는 클릭의 기본 이동 · 토큰 없는 빌드의 무동작, 데스크톱 · Pixel 7).
 
 ## 자주 고치는 것
 
@@ -242,7 +278,7 @@ Footer 링크의 `rel`을 지우면 UI-FO2가 `expected '' to contain 'noopener'
   Features의 2단 머무름(sticky · 글 왼쪽 · 미디어 오른쪽 · 비활성 묶음 숨김 · 구간 60%에서 셋째 묶음 활성)과 좁은 화면의 1단 쌓임,
   Story 카드 폭(320px · 화면의 72%)과 화살표의 표시 · 44px · 이동과 복귀, Phrases · FAQ의 2단/1단, 휴대폰 목업이 미디어 틀 안에
   있는지, 머리 요소의 비겹침 · 한 줄, 히어로가 풀리는 지점의 머리 배경 전환, 히어로 두 문장의 같은 자리 교대, 여덟 섹션의 비겹침 ·
-  안쪽 여백. `analytics.e2e.ts`는 GA 이벤트(위 「분석」). **여전히 보지 않는 것**: 색 · 대비 · 글꼴 · 그림의 **시각 품질**
+  안쪽 여백. `analytics.e2e.ts`는 GA 이벤트, ⟨2026-10-30⟩ `airbridge.e2e.ts`는 Airbridge 결선(위 「분석」). **여전히 보지 않는 것**: 색 · 대비 · 글꼴 · 그림의 **시각 품질**
   (스크린샷 비교를 하지 않는다), 실제 Safari · 스크린리더 낭독 · 외부 검증기.
 - **체험판(자동)** — unit · ui · integration이 리듀서 전이 · 모델 · 파생(음성 단서 · 효과음 · 이벤트) · 장면 마크업(en · ko) · 컨트롤러 결선(JSDOM에서
   끝까지) · 빌드(env 검사 · sitemap 제외 · 스크립트 상한 40,000 bytes — r2 실측 39,813 · zod 없음)를 보고, Playwright `trial*.e2e.ts`가 엔진별 클릭 · 소리 요청 ·
@@ -327,6 +363,13 @@ Footer 링크의 `rel`을 지우면 UI-FO2가 `expected '' to contain 'noopener'
 랜딩 프로젝트에만:
 
 - `PUBLIC_GA_MEASUREMENT_ID` — **Production 환경에만** 넣는다. (프리뷰에서는 값이 있어도 싣지 않는다.)
+- ⟨2026-10-30⟩ `PUBLIC_AIRBRIDGE_WEB_TOKEN` — Airbridge 대시보드 **[Settings] › [Tokens]의 Web SDK Token**(App SDK Token · API Token이 아니다 — 앱 호스트와 다른 값,
+  번들에 그대로 들어가는 공개 값). **Production 환경에만** 넣는다 — 프리뷰는 색인되지 않는 빌드라 값이 있어도 싣지 않는다. **없으면 싣지 않을 뿐 빌드는 성공한다**
+  (프로덕션에서도 — `PUBLIC_SUPABASE_*`와 다르다). 모양이 틀리면 빌드가 실패하고 출력에 값을 싣지 않는다. **아직 넣지 않았다 — 사용자 작업이다**
+  (Vercel 랜딩 프로젝트 → Settings → Environment Variables). **넣기 전에 로컬에서 한 번 짓는다** — 모양 규칙(영문 · 숫자 · `.` `_` `-` 16자 이상)은 이 저장소가
+  고른 추정이라, 실제 토큰이 규칙에 걸리면 Production 빌드 전체가 실패한다: `PUBLIC_AIRBRIDGE_WEB_TOKEN=<값> SITE_URL=https://k-duru.com pnpm landing:build`가
+  성공하는지 보고 넣는다(걸리면 `src/analytics/airbridge-bootstrap.ts`의 규칙을 넓힌다 — ADR-0090 재검토 조건). 넣은 뒤 할 일은
+  [Airbridge e2e F절](../../docs/e2e/airbridge-events.md#f--웹-랜딩--설치-귀속-adr-0090).
 - `SITE_URL` — 도메인이 정해지면 Production에 넣는다. **없으면 Vercel이 주는 프로덕션 주소**(`VERCEL_PROJECT_PRODUCTION_URL`)를 쓴다.
 - ⟨2026-10-22⟩ `PUBLIC_SUPABASE_URL` — 웹 체험판 음성 버킷의 Supabase 프로젝트 주소(`https://<프로젝트>.supabase.co`, 앱 `apps/mobile/.env.local`과 같은 값 ·
   번들에 그대로 들어가는 공개 값). **Production에 반드시 넣는다 — 없으면 프로덕션 빌드가 실패한다**(`VERCEL_ENV=production`일 때만 검사).
@@ -345,6 +388,7 @@ Footer 링크의 `rel`을 지우면 UI-FO2가 `expected '' to contain 'noopener'
 | `robots.txt` | 수집기 허용 + sitemap | `Disallow: /` |
 | canonical · hreflang · sitemap | 있음 | 없음 |
 | GA4 | 측정 ID가 있으면 실림 | 실리지 않음 |
+| Airbridge Web SDK `PUBLIC_AIRBRIDGE_WEB_TOKEN` | 토큰이 있으면 실림(없으면 **싣지 않고 성공**) | 실리지 않음 |
 | 체험판 음성 주소 `PUBLIC_SUPABASE_URL` | 없으면 **빌드 실패** | 없으면 소리 없는 체험판 |
 | 사전 등록 공개 키 `PUBLIC_SUPABASE_ANON_KEY` | 없으면 **빌드 실패** | 없으면 폼 대신 「지금은 등록할 수 없어요」 |
 

@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Language } from "../site";
 import Landing from "./Landing.astro";
 import { jsonLd, render, texts } from "./render.support";
@@ -120,5 +120,52 @@ describe("Landing", () => {
     const hero = document.querySelector('img[fetchpriority="high"]');
     expect(hero).not.toBeNull();
     expect(preloads[0]?.getAttribute("href")).toBe(hero?.getAttribute("src"));
+  });
+});
+
+describe("Landing Airbridge", () => {
+  const webToken = "e2e-test-web-token-0000000000";
+  interface Combo {
+    name: string;
+    vercelEnv: string | undefined;
+    token: string | undefined;
+    loads: boolean;
+  }
+  const combos: readonly Combo[] = [
+    { name: "배포 환경 없음 + 토큰", vercelEnv: undefined, token: webToken, loads: true },
+    { name: "preview + 토큰", vercelEnv: "preview", token: webToken, loads: false },
+    { name: "배포 환경 없음 + 토큰 없음", vercelEnv: undefined, token: undefined, loads: false },
+    { name: "production + 토큰", vercelEnv: "production", token: webToken, loads: true },
+  ];
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.resetModules();
+  });
+
+  // 환경 값은 Landing 모듈이 읽을 때 정해지므로, 조합마다 모듈을 새로 불러옵니다.
+  it.each(combos)("UI-LD10 $name", async ({ vercelEnv, token, loads }) => {
+    for (const language of languages) {
+      vi.stubEnv("VERCEL_ENV", vercelEnv);
+      vi.stubEnv("PUBLIC_AIRBRIDGE_WEB_TOKEN", token);
+      vi.resetModules();
+      const { default: FreshLanding } = await import("./Landing.astro");
+      const { render: freshRender } = await import("./render.support");
+      const { document, html } = await freshRender(FreshLanding, {
+        props: { language },
+        site: SITE,
+      });
+      if (!loads) {
+        expect(html).not.toMatch(/airbridge/i);
+        continue;
+      }
+      const bootstraps = [...document.head.querySelectorAll("script:not([src])")].filter((node) =>
+        (node.textContent ?? "").includes("airbridge.init("),
+      );
+      expect(bootstraps).toHaveLength(1);
+      const body = bootstraps[0]?.textContent ?? "";
+      expect(body).toContain('"app":"duru"');
+      expect(body).toContain(webToken);
+    }
   });
 });

@@ -79,3 +79,8 @@ export const languageRoutes: readonly LanguageRoute[] = languages.map((language)
   path: pathFor(language),
   locale: pages[language].locale,
 }));
+
+/** Airbridge 대시보드의 App Name입니다(앱 호스트의 `duru.airbridge.io`와 같은 이름 — ADR-0080). */
+export const airbridgeAppName = "duru";
+/** utm이 없는 유입에 Airbridge가 붙이는 기본 채널입니다. */
+export const airbridgeDefaultChannel = "k-duru.com";

@@ -90,7 +90,20 @@ describe.each(languages)("Download (%s)", (language) => {
     expect(texts(states(document))).toEqual([t.storeGet, t.storeGet]);
   });
 
-  it("UT13 체험판 링크 — 그 언어 /try/ · data-trial-link=download · trialDownload", async () => {
+  it("UI-DL5 Android 카드 마크업은 Airbridge 때문에 바뀌지 않는다", async () => {
+    const { document, html } = await renderWith(both, t, language);
+    const card = document.querySelector('a[data-testid="store"][data-store="android"]');
+    expect(card).not.toBeNull();
+    // data-astro-source-*는 개발 렌더가 붙이는 값이라 빼고 잽니다.
+    const names = (card?.getAttributeNames() ?? []).filter(
+      (name) => !name.startsWith("data-astro-source-"),
+    );
+    expect(names.sort()).toEqual(["class", "data-store", "data-testid", "href", "rel", "target"]);
+    expect(html).not.toMatch(/airbridge/i);
+    expect(document.querySelectorAll("script")).toHaveLength(0);
+  });
+
+  it("UT13체험판 링크 — 그 언어 /try/ · data-trial-link=download · trialDownload", async () => {
     for (const links of [none, both]) {
       const { document } = await renderWith(links, t, language);
       const found = document.querySelectorAll('[data-testid="download-trial-link"]');
