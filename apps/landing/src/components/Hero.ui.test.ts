@@ -32,11 +32,11 @@ describe("Hero", () => {
   });
 
   it("UI-HR3 회귀: 크기 · alt · h1", () => {
-    const alts = [en.scenePlaneAlt, en.scene2Alt, en.scene5Alt];
+    const alts = [en.heroSkyAlt, en.heroCafeAlt, en.heroMarketAlt];
     for (const panel of [0, 1, 2]) {
       const img = image(panel);
-      expect(img.getAttribute("width")).toBe("810");
-      expect(img.getAttribute("height")).toBe("1440");
+      expect(img.getAttribute("width")).toBe("864");
+      expect(img.getAttribute("height")).toBe("1536");
       // 검색 수집기가 읽는 설명은 있고, 패널 묶음이 aria-hidden이라 보조기술에는 숨는다.
       expect(img.getAttribute("alt")).toBe(alts[panel]);
       expect(img.closest('[aria-hidden="true"]')).not.toBeNull();

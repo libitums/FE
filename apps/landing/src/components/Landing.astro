@@ -44,7 +44,7 @@ const faq = buildFaq({ copy: t, storeAvailability: storeAvailabilityOf(storeLink
 >
   <Fragment slot="head">
     <SeoHead language={language} siteUrl={Astro.site?.origin ?? ""} faq={faq} />
-    <link rel="preload" as="image" href={img.scenePlane.src} fetchpriority="high" />
+    <link rel="preload" as="image" href={img.heroSky.src} fetchpriority="high" />
     <Analytics
       measurementId={indexable ? resolveMeasurementId(import.meta.env.PUBLIC_GA_MEASUREMENT_ID) : ""}
     />
@@ -54,7 +54,7 @@ const faq = buildFaq({ copy: t, storeAvailability: storeAvailabilityOf(storeLink
     <Hero language={language} t={t} />
     <Manifesto t={t} />
     <Features t={t} />
-    <Journey t={t} />
+    <Journey language={language} t={t} />
     <Words t={t} />
     <Faq t={t} entries={faq} />
     <Closing t={t} />
