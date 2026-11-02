@@ -41,7 +41,8 @@ export const statusBarSurfaceRegistry = {
       "StoryCallScreen",
       "EpisodeBannerScreen",
     ],
-    "catalog-final": ["CatalogFinalScreen"],
+    // 여정맵 파이널은 콘텐츠에 따라 RP 턴 화면 또는 이야기 파이널 화면 — 둘 다 짙은 장면 위입니다.
+    "catalog-final": ["CatalogFinalScreen", "CatalogStoryFinalScreen"],
     "catalog-epilogue": ["CatalogCoverScreen", "EpisodeBannerScreen"],
     // 에피소드 롤플레이 — 미리보기 → 표지 컷(같은 컷 화면) → 말하기 대화. 셋 다 짙은 장면 위입니다.
     "roleplay-story": ["RoleplayPreviewScreen", "CatalogCoverScreen", "RoleplayTalkScreen"],
@@ -53,6 +54,7 @@ export const statusBarSurfaceRegistry = {
     CatalogCoverScreen: "screens/catalog-cover/CatalogCoverScreen.tsx",
     EpisodeBannerScreen: "screens/catalog-cover/EpisodeBannerScreen.tsx",
     CatalogFinalScreen: "screens/catalog-final/CatalogFinalScreen.tsx",
+    CatalogStoryFinalScreen: "screens/catalog-story-final/CatalogStoryFinalScreen.tsx",
     RoleplayPreviewScreen: "screens/roleplay-story/RoleplayPreviewScreen.tsx",
     RoleplayTalkScreen: "screens/roleplay-story/RoleplayTalkScreen.tsx",
     StoryIntroScreen: "screens/story-intro/StoryIntroScreen.tsx",
