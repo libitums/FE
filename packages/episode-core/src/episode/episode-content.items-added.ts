@@ -55,6 +55,14 @@ export function toAddedItem(item: DeliveryAddedItem): AddedLearningItem {
         ),
       };
     }
+    case "CLOZE_TYPING":
+      return {
+        ...base,
+        type: item.type,
+        prompt: toText(item.prompt),
+        context: toText(item.context),
+        answers: toTexts(item.answers),
+      };
     case "HANGUL_WRITE":
       return {
         ...base,
