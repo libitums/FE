@@ -29,12 +29,16 @@ const run = (replies: Record<string, Reply>, manifestPaths?: readonly string[]) 
   }).then((summary) => ({ summary, calls, data }));
 };
 
-test("RL1. 경로를 주지 않으면 지금 앱 수준(2)이라 level-2를 먼저, 없으면 manifest.json을 받는다", async () => {
+test("RL1. 경로를 주지 않으면 지금 앱 수준(3)이라 level-3 · level-2를 먼저, 없으면 manifest.json을 받는다", async () => {
   const { calls, summary } = await run({
     "manifest.json": ok(manifestText([X])),
     [X.entry.url as string]: ok(X.text),
   });
-  expect(calls.slice(0, 2)).toEqual(["manifests/level-2.json", "manifest.json"]);
+  expect(calls.slice(0, 3)).toEqual([
+    "manifests/level-3.json",
+    "manifests/level-2.json",
+    "manifest.json",
+  ]);
   expect(summary.fetched).toEqual(["u04-x"]);
 });
 
