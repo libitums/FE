@@ -67,6 +67,10 @@ export function useStoryTrace(glyph: string, slot: string): StoryTrace {
       if (requestedAt !== generation.current) return;
       setGuideImage(outcome.status === "rendered" ? outcome.image : null);
     });
+    // 음절이 바뀌거나 화면이 사라지면 세대를 올려, 늦게 온 안내 · 견주기 답이 상태를 바꾸지 않게 합니다.
+    return () => {
+      generation.current += 1;
+    };
   }, [glyph, slot]);
 
   const grade = (onGraded: (passed: boolean) => void) => {
