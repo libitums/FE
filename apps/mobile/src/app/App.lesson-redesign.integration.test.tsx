@@ -356,6 +356,7 @@ describe("듣고 고르기 로마자 참고 줄", () => {
 
     tapNode(u00, "S2");
 
+    expect(present("listening-prompt-divider")).toBe(false);
     expect(present("listening-prompt-text")).toBe(false);
     expect(present("listening-prompt-romanization")).toBe(false);
 
