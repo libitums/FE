@@ -49,7 +49,7 @@ export function LessonCompleteStats({
         <StatChip
           tone="ticket"
           value={ticketChip.count}
-          {...(ticketChip.unlimited ? { valueText: copy.tickets.unlimitedValue } : {})}
+          valueText={ticketChip.unlimited ? copy.tickets.unlimitedValue : undefined}
           accessibilityLabel={
             ticketChip.unlimited
               ? copy.tickets.unlimited

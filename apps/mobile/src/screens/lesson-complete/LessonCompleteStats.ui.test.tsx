@@ -27,7 +27,7 @@ test("LS1. 티켓 값이 있으면 남은 장수 칩이 선다", () => {
   );
 });
 
-test("LS2. 시험 계정은 무제한 칩이고, 값이 없으면 티켓 칩이 없다", () => {
+test("LS2. 시험 계정은 무제한 칩으로 선다", () => {
   mount({ count: 0, unlimited: true });
   expect(screen.getByTestId("lesson-complete-screen-tickets-chip")).toBeInTheDocument();
 });
