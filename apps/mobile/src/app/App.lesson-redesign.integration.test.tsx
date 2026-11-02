@@ -351,16 +351,13 @@ describe("문항 판정 측정", () => {
 });
 
 describe("듣고 고르기 로마자 참고 줄", () => {
-  test("IT8. u00 S2는 처음에 한글 없이 구분선 아래 로마자만 보이고, 답하면 한글이 선다", async () => {
+  test("IT8. u00 S2는 답하기 전 한글도 로마자도 없고(정답 문장이라), 답하면 한글 + 로마자가 선다", async () => {
     await bootItemAudioApp({ progress: { [u00]: keysThrough(1) } });
 
     tapNode(u00, "S2");
 
-    expect(present("listening-prompt-divider")).toBe(true);
     expect(present("listening-prompt-text")).toBe(false);
-    expect(screen.getByTestId("listening-prompt-romanization")).toHaveTextContent(
-      "jinjjayo? gamsahamnida!",
-    );
+    expect(present("listening-prompt-romanization")).toBe(false);
 
     tapChoice(1);
 
