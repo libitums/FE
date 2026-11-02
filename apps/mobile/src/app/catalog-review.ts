@@ -1,11 +1,12 @@
-// 카탈로그 레슨의 「틀린 문제 다시 풀기」(사용자 결정 2026-10-23)의 순수 규칙입니다 — 활동 결과에서 틀린 문항을 골라
-// 줄을 세우고, 다시 푼 결과로 줄을 넘깁니다. 판정 · 기록 · 이벤트는 첫 시도 결과만 쓰므로 여기는 그것을 모릅니다.
+// 카탈로그 레슨의 「틀린 문제 다시 풀기」 순수 규칙입니다(ADR-0058 적용 기록 ⟨2026-10-30⟩). 일반 학습에서 틀린 문항을 결과
+// 전에 한 번씩 다시 풀게 합니다 — 고친 수만큼 첫 결과의 오답을 정답으로 쳐 다시 판정하므로 미통과도 그 자리에서 넘길 수 있습니다.
 //
-// 줄의 규칙: 맞히면 고친 것으로 빠지고, 또 틀리면 줄 맨 뒤로 갑니다 — 맞힐 때까지 뒤로 쌓입니다. 다시 풀 때
-// 건너뛰면(말하기를 못 씀) 막히지 않게 줄에서 뺍니다(고친 수에 셉니다).
+// 줄의 규칙: 틀린 문항을 레슨 순서대로 **한 번씩**만 풉니다. 맞히면 「고침」, 또 틀리거나 건너뛰면(말하기를 못 씀) 「놓침」이고
+// 어느 쪽이든 줄에서 빠집니다 — 맞힐 때까지 되풀이하지 않습니다.
 
 import type { AnswerResult } from "../lib/answer-result";
 import type { NonEmpty } from "../lib/non-empty";
+import type { AssessmentPassCriterion as PassCriterion } from "../screens/assessment/assessment";
 import type { CatalogActivity } from "./catalog-lesson-types";
 
 /** 다시 풀 문항 하나 — 레슨 계획의 몇 번째 활동의 몇 번째 문항인가입니다(둘 다 0부터). */
@@ -14,15 +15,31 @@ export type CatalogReviewItem = {
   readonly questionIndex: number;
 };
 
+/** 다시 푼 문항 하나의 결과입니다. */
+export type CatalogReviewOutcome = "fixed" | "missed";
+
 /** 다시 풀기 국면의 상태입니다. 줄의 머리가 지금 화면의 문항입니다. */
 export type CatalogReview = {
   readonly queue: NonEmpty<CatalogReviewItem>;
-  /** 고쳐서(또는 건너뛰어) 줄에서 빠진 수입니다. */
+  /** 지금까지 푼 문항의 결과입니다(푼 순서) — 길이가 곧 보인 다시 풀기 화면 수입니다. */
+  readonly outcomes: readonly CatalogReviewOutcome[];
+  /** 다시 풀기를 시작할 때 통과까지 더 맞혀야 했던 수입니다 — 이미 통과였으면 0입니다. */
+  readonly neededToPass: number;
+};
+
+/** 결과 화면에 싣는 다시 풀기 요약입니다. */
+export type CatalogReviewSummary = {
+  readonly outcomes: NonEmpty<CatalogReviewOutcome>;
+  /** 다 풀고도 통과까지 모자란 수입니다 — 통과면 0입니다. */
+  readonly remainingToPass: number;
+};
+
+/** 세션 헤더의 다시 풀기 카운터입니다 — `Review ordinal / total` · 막대(고친 몫) · 칩(남은 필요 수)입니다. */
+export type CatalogReviewCounter = {
+  readonly ordinal: number;
+  readonly total: number;
   readonly fixedCount: number;
-  /** 다시 풀기를 시작할 때의 틀린 문항 수입니다 — 「Let’s fix n mistakes」의 n입니다. */
-  readonly initialCount: number;
-  /** 지금까지 보인 다시 풀기 화면 수입니다(0부터) — 화면 열쇠 · 중복 finish 표식 · 카운터가 씁니다. */
-  readonly attempt: number;
+  readonly remainingToPass: number;
 };
 
 /**
@@ -50,50 +67,88 @@ export function catalogMistakesOf(
   return mistakes;
 }
 
-/** 틀린 문항이 있으면 다시 풀기를 시작하고, 없으면 `null`입니다. */
-export function catalogReviewOf(mistakes: readonly CatalogReviewItem[]): CatalogReview | null {
+/**
+ * 다시 풀기를 엽니다 — 틀린 채점 문항이 하나라도 있으면 통과 · 미통과와 관계없이 엽니다(사용자 결정 2026-10-30: 일반 학습 →
+ * 다시 도전 → 결과). 틀린 문항이 없으면 `null`입니다.
+ */
+export function catalogReviewOf(
+  mistakes: readonly CatalogReviewItem[],
+  results: readonly AnswerResult[],
+  criterion: PassCriterion,
+): CatalogReview | null {
+  const correctCount = results.filter((result) => result === "correct").length;
+  const neededToPass = Math.max(0, criterion.minCorrectCount - correctCount);
   const [first, ...rest] = mistakes;
   if (first === undefined) return null;
-  return { queue: [first, ...rest], fixedCount: 0, initialCount: mistakes.length, attempt: 0 };
+  return { queue: [first, ...rest], outcomes: [], neededToPass };
 }
 
 /**
- * 머리 문항을 다시 푼 결과로 다음 상태를 냅니다. 맞힘 · 건너뜀(`null`)은 줄에서 빼고, 틀림은 맨 뒤로 보냅니다.
- * 줄이 비면 `null` — 다시 풀기가 끝났습니다.
+ * 머리 문항을 다시 푼 결과로 한 걸음 갑니다. 결과가 `null`이면 건너뜀입니다(놓침으로 칩니다).
+ * `next`가 `null`이면 줄이 비었습니다 — `outcomes`로 판정합니다.
  */
-export function nextCatalogReview(
+export function catalogReviewStep(
   review: CatalogReview,
   result: AnswerResult | null,
-): CatalogReview | null {
-  const [head, ...rest] = review.queue;
-  const queue = result === "incorrect" ? [...rest, head] : rest;
-  const [first, ...others] = queue;
+): { readonly outcomes: readonly CatalogReviewOutcome[]; readonly next: CatalogReview | null } {
+  const outcomes: readonly CatalogReviewOutcome[] = [
+    ...review.outcomes,
+    result === "correct" ? "fixed" : "missed",
+  ];
+  const [, first, ...rest] = review.queue;
+  if (first === undefined) return { outcomes, next: null };
+  return { outcomes, next: { ...review, queue: [first, ...rest], outcomes } };
+}
+
+function fixedCountOf(outcomes: readonly CatalogReviewOutcome[]): number {
+  return outcomes.filter((outcome) => outcome === "fixed").length;
+}
+
+/** 통과까지 더 맞혀야 하는 수입니다 — 고친 수를 뺀 값이고 0 아래로 내려가지 않습니다. */
+export function catalogReviewRemainingToPass(
+  neededToPass: number,
+  outcomes: readonly CatalogReviewOutcome[],
+): number {
+  return Math.max(0, neededToPass - fixedCountOf(outcomes));
+}
+
+/** 첫 결과에서 고친 수만큼 앞에서부터 오답을 정답으로 바꾼 결과입니다 — 판정 · 기록 · 이벤트가 씁니다. */
+export function catalogReviewedResults(
+  results: readonly AnswerResult[],
+  outcomes: readonly CatalogReviewOutcome[],
+): readonly AnswerResult[] {
+  let fixed = fixedCountOf(outcomes);
+  return results.map((result) => {
+    if (result !== "incorrect" || fixed === 0) return result;
+    fixed -= 1;
+    return "correct";
+  });
+}
+
+/** 결과 화면 요약입니다. 아무것도 풀지 않았으면 `null`입니다. */
+export function catalogReviewSummaryOf(
+  neededToPass: number,
+  outcomes: readonly CatalogReviewOutcome[],
+): CatalogReviewSummary | null {
+  const [first, ...rest] = outcomes;
   if (first === undefined) return null;
   return {
-    queue: [first, ...others],
-    fixedCount: result === "incorrect" ? review.fixedCount : review.fixedCount + 1,
-    initialCount: review.initialCount,
-    attempt: review.attempt + 1,
+    outcomes: [first, ...rest],
+    remainingToPass: catalogReviewRemainingToPass(neededToPass, outcomes),
   };
 }
 
-/** 세션 헤더의 다시 풀기 카운터입니다 — `Review ordinal / total`과 막대 채움(고친 몫)입니다. */
-export type CatalogReviewCounter = {
-  readonly ordinal: number;
-  readonly total: number;
-  readonly fixedCount: number;
-};
-
 /**
- * 카운터 규칙: 순번은 지금까지 보인 다시 풀기 화면의 순번(`attempt + 1`)이고, 전체는 이미 보인 화면 수 + 남은 줄
- * 길이(`attempt + queue.length`)입니다. 맞히면 전체가 그대로 순번만 오르고, 또 틀려 뒤로 가면 풀어야 할 화면이
- * 하나 늘어 전체도 함께 오릅니다. 막대는 고친 몫(`fixedCount / total`)입니다.
+ * 카운터 규칙: 순번은 지금 화면의 순번(`outcomes.length + 1`), 전체는 처음 틀린 수(푼 수 + 남은 줄)라 바뀌지 않습니다.
+ * 막대는 고친 몫, 칩은 남은 필요 수입니다.
  */
 export function catalogReviewCounterOf(review: CatalogReview): CatalogReviewCounter {
+  const { outcomes, queue, neededToPass } = review;
   return {
-    ordinal: review.attempt + 1,
-    total: review.attempt + review.queue.length,
-    fixedCount: review.fixedCount,
+    ordinal: outcomes.length + 1,
+    total: outcomes.length + queue.length,
+    fixedCount: fixedCountOf(outcomes),
+    remainingToPass: catalogReviewRemainingToPass(neededToPass, outcomes),
   };
 }
 

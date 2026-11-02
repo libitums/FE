@@ -40,7 +40,7 @@ export function renderCatalogActivity(
   const key =
     review === undefined
       ? `${episodeId}:${unitKey}:${activityIndex}`
-      : `${episodeId}:${unitKey}:review:${review.attempt}`;
+      : `${episodeId}:${unitKey}:review:${review.outcomes.length}`;
   const onFinish: ActivityFinish = (results, skippedCount, skippedIndexes) =>
     review === undefined
       ? wiring.onFinishCatalogActivity(

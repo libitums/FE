@@ -8,6 +8,7 @@ import { useMotion } from "@libitums/ui-lynx/motion";
 
 import { learningProgressFillClassName, learningSessionHeader } from "./learning-shell.contract";
 import { learningReviewHeader } from "./learning-review";
+import { LearningReviewChip } from "./LearningReviewChip";
 import type { LearningReview } from "./learning-review";
 import type { LearningActivityForm } from "../../lib/learning-form";
 import { useUiCopy } from "../../lib/ui-copy";
@@ -115,9 +116,12 @@ export function LearningSessionHeader({
             </view>
             {/* 학습형 이름만 섭니다. ⟨2026-09-28⟩ 백분율 낱말을 걷었습니다 — 막대가 이미
                 같은 것을 말하고, 숫자가 둘이면 「어느 것을 보나」가 또 생깁니다. */}
-            <text className="learning-shell-form" data-testid="learning-shell-form">
-              {header.formLabel}
-            </text>
+            <view className="learning-shell-form-row">
+              <text className="learning-shell-form" data-testid="learning-shell-form">
+                {header.formLabel}
+              </text>
+              {review === null ? null : <LearningReviewChip review={review} />}
+            </view>
           </view>
         </view>
       </Card.Content>

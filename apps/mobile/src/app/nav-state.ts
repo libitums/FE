@@ -8,7 +8,7 @@
 // 가져옵니다.
 import type { AnswerResult } from "../lib/answer-result";
 import type { CatalogUnitKey } from "../lib/catalog-progress";
-import type { CatalogReview } from "./catalog-review";
+import type { CatalogReview, CatalogReviewSummary } from "./catalog-review";
 // 전화번호 로그인(Supabase OTP)의 공용 어휘입니다 — 코드 검증 화면이 보여 줄 번호를
 // 나릅니다.
 import type { PhoneNumber } from "../lib/auth-session.contract";
@@ -56,6 +56,8 @@ export type Screen =
       skippedCount: number;
       /** 채점 문항 수입니다(카드처럼 채점하지 않는 문항은 세지 않습니다) — 통과 기준의 분모입니다. */
       questionCount: number;
+      /** 틀린 문제를 다시 풀고 왔으면 그 요약입니다 — `results`는 이미 고친 수를 반영한 결과입니다. */
+      review?: CatalogReviewSummary;
     }
   // 최종 테스트 통과 뒤 컷입니다.
   | { name: "catalog-epilogue"; episodeId: string }

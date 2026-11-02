@@ -37,6 +37,11 @@ export type LearningShellBodyProps = {
   readonly scene: LearningShellScene;
   /** 아래 버튼 행이 흐름 안인가 떠 있는가입니다 — 완료 무대가 버튼 몫을 비울지 가릅니다. */
   readonly actions: LearningShellActionPlacement;
+  /**
+   * 다시 도전 판(떠 있는 자리에 겹쳐 섬)이 서 있는가입니다(ADR-0058 ⟨2026-10-30⟩). 참이면 스크롤 끝에 판 몫의 여유를 더해 판에
+   * 가린 아래 내용을 밀어 올려 볼 수 있게 합니다 — 끝에만 더하므로 서 있던 내용은 움직이지 않습니다.
+   */
+  readonly panelRoom?: boolean;
 };
 
 /**
@@ -59,7 +64,11 @@ export function LearningShellBody({
   transition,
   scene,
   actions,
+  panelRoom = false,
 }: LearningShellBodyProps): ReactNode {
+  const room = panelRoom ? (
+    <view className="learning-shell-panel-room" data-testid="learning-shell-panel-room" />
+  ) : null;
   // 전환 속성은 스프레드로 둡니다(idle이면 속성 자체가 없다). `<scroll-view>`에서는 스프레드가
   // `scroll-bar-enable={false}`보다 앞에 와야 lint:scroll-bars를 지납니다(ADR-0055 D1).
   const attributes = questionTransitionAttributes(transition);
@@ -114,6 +123,7 @@ export function LearningShellBody({
         >
           {stage}
           {workspace}
+          {room}
         </scroll-view>
       </>
     );
@@ -134,6 +144,7 @@ export function LearningShellBody({
           {instructionNode}
           {stage}
           {workspace}
+          {room}
         </view>
       </LearningShellWorkspace>
     );
@@ -151,6 +162,7 @@ export function LearningShellBody({
           transition={transition}
         >
           {workspace}
+          {room}
         </LearningShellWorkspace>
       )}
     </>

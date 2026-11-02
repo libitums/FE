@@ -8,6 +8,7 @@
 // `copy.x[key]`로 색인하므로 소유자 쪽 union이 늘면 그 자리에서 TS 오류로 섭니다. 설정 이동 항목
 // (`SettingsNavTarget`)만 타입으로 import합니다 — 항목이 늘면 문구 행이 따라오게 하려는 것입니다.
 
+import type { LearningReviewCopy, LessonCompleteReviewCopy } from "./ui-copy-review.contract";
 import type { SettingsNavTarget } from "../screens/settings/settings.contract";
 import type { AnswerResult } from "./answer-result";
 import type { SessionOptionKey } from "./session-options";
@@ -102,21 +103,8 @@ export type LearningShellCopy = {
   };
   readonly headerNoQuestions: (formLabel: string) => string;
   readonly headerQuestionOf: (formLabel: string, ordinal: number, count: number) => string;
-  /** 틀린 문제 다시 풀기(2026-10-23)의 시작 배지 · 세션 헤더 · 고침 판입니다. */
+  /** 틀린 문제 다시 풀기(ADR-0058 ⟨2026-10-30⟩)의 세션 헤더 · 칩 · 고침 판입니다. */
   readonly review: LearningReviewCopy;
-};
-
-export type LearningReviewCopy = {
-  /** 다시 풀기 시작 배지입니다 — `Let’s fix 2 mistakes`. 낭독도 같은 글입니다. */
-  readonly intro: (count: number) => string;
-  /** 세션 헤더의 순번입니다 — `Review 1 / 3`. */
-  readonly progress: (ordinal: number, total: number) => string;
-  /** 세션 헤더 막대의 낭독 이름입니다. */
-  readonly headerOf: (formLabel: string, ordinal: number, total: number) => string;
-  /** 학습형 이름표 뒤에 붙는 꼬리입니다 — `Word choice · try again`. */
-  readonly formSuffix: string;
-  /** 다시 푼 문항을 맞혔을 때 아래 판의 제목입니다. */
-  readonly fixed: string;
 };
 
 export type ListeningCopy = {
@@ -174,6 +162,8 @@ export type LessonCompleteCopy = {
   readonly nextFinal: string;
   /** 최종 테스트를 통과해 에필로그로 이어질 때의 나가는 버튼 — 맵이 아니라 이야기로 갑니다. */
   readonly continueStory: string;
+  /** ⟨2026-10-30⟩ 틀린 문제를 다시 풀고 온 결과 화면입니다. */
+  readonly review: LessonCompleteReviewCopy;
 };
 
 export type EpisodeIntroCopy = {
@@ -279,3 +269,5 @@ export type GemPurchaseCopy = {
   readonly paymentMethod: string;
   readonly notice: { readonly title: string; readonly description: string };
 };
+
+export type { LearningReviewCopy, LessonCompleteReviewCopy } from "./ui-copy-review.contract";

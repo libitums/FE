@@ -97,22 +97,23 @@ function lastReviewOf(log: readonly Entry[]): CatalogReview | null {
 }
 
 /**
- * CULT 마지막 활동(확인 셋)을 끝냅니다. 틀린 확인이 있으면 판정 없이 다시 풀기로 가므로(2026-10-23), 다시 풀기를 전부
- * 맞혀 끝낸 결선(첫 시도 결과를 든 다음 렌더)을 돌려줍니다 — 판정 · 기록 · 결과 화면은 그쪽 기록에 남습니다.
+ * CULT 마지막 활동(확인 셋)을 끝냅니다. 미통과면 판정 없이 곧바로 다시 풀기로 가므로(ADR-0058 ⟨2026-10-30⟩),
+ * 모두 또 틀려 첫 결과 그대로 판정한 결선을 돌려줍니다 — 판정 · 기록 · 결과 화면은 그쪽 기록에 남습니다.
  */
 function finishCultChecks(results: readonly AnswerResult[]) {
   const first = wiringOf(throughS8);
   first.wiring.onFinishCatalogActivity("u01-water", "CULT", 1, results, 0);
-  let review = lastReviewOf(first.log);
+  const review = lastReviewOf(first.log);
   if (review === null) return first;
   expect(eventsOf(first.log)).toEqual([]);
   expect(first.updaters).toHaveLength(0);
+  // 미통과라 곧바로 다시 풀기가 섰습니다 — 모두 또 틀려(고친 수 0) 첫 결과 그대로 판정한 다음 렌더의 결선을 돌려줍니다.
   const next = wiringOf(throughS8, results);
-  while (review !== null) {
-    // 마지막 걸음(판정)의 기록만 남깁니다 — 중간 다시 풀기 화면은 이 테스트의 관심이 아닙니다.
+  let current: CatalogReview | null = review;
+  while (current !== null) {
     next.log.length = 0;
-    next.wiring.onFinishCatalogReview("u01-water", "CULT", review, [correct]);
-    review = lastReviewOf(next.log);
+    next.wiring.onFinishCatalogReview("u01-water", "CULT", current, ["incorrect"]);
+    current = lastReviewOf(next.log);
   }
   return next;
 }
@@ -179,7 +180,6 @@ describe("CULT 단계 시작 (LWF)", () => {
   });
 
   test("LWF2. 확인 셋 중 둘을 맞히면 통과 이벤트 · CULT 기록 · 결과 화면(결과 셋 · 문항 3)이다", () => {
-    // 틀린 확인 하나를 다시 풀어 맞혀도 판정은 첫 시도(셋 중 둘)입니다.
     const { log, updaters } = finishCultChecks([correct, correct, incorrect]);
 
     expect(eventsOf(log)).toEqual([
@@ -208,6 +208,8 @@ describe("CULT 단계 시작 (LWF)", () => {
           results: [correct, correct, incorrect],
           skippedCount: 0,
           questionCount: 3,
+          // 틀린 확인 하나를 다시 도전했고(또 틀림) 이미 통과였습니다(ADR-0058 ⟨2026-10-30⟩).
+          review: { outcomes: ["missed"], remainingToPass: 0 },
         },
       },
     ]);

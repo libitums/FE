@@ -25,6 +25,6 @@
   },
   {
     "path": "apps/mobile/src/screens/learning/lesson-review-badge.css",
-    "reason": "틀린 문제 다시 풀기 시작 배지(사용자 결정 2026-10-23, ADR-0058 적용 기록). 「Let’s fix n mistakes」 알약이 톡 튀어 들어올 때 살짝 1을 넘는 크기 scale(1.06)은 토큰 scale 셋(0.95 · 0.96 · 0.8, 모두 1보다 작다)으로 표현할 수 없는 연출 값이다. 시작 크기는 scale.reward 토큰이고 길이(d7 · d4) · 가속(enter-expressive · exit · linear)은 전부 토큰이다. 움직임 줄이기에서는 크기 · 이동 없이 페이드(d4 · linear)만 남는다. 이 파일 밖의 새 리터럴은 허용하지 않는다."
+    "reason": "틀린 문제 다시 풀기 시작 배지(사용자 결정 2026-10-23 · 2026-10-30, ADR-0058 적용 기록). 「Let’s fix n mistakes」 알약이 톡 튀어 들어올 때 살짝 1을 넘는 크기 scale(1.06)은 토큰 scale 셋(0.95 · 0.96 · 0.8, 모두 1보다 작다)으로 표현할 수 없는 연출 값이다. 시작 크기는 scale.reward 토큰이고 길이(d7 · d4) · 가속(enter-expressive · exit · linear)은 전부 토큰이다. 움직임 줄이기에서는 크기 · 이동 없이 페이드(d4 · linear)만 남는다. 이 파일 밖의 새 리터럴은 허용하지 않는다."
   }
 ]

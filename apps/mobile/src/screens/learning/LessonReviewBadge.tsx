@@ -10,11 +10,11 @@ import { useUiCopy } from "../../lib/ui-copy";
 
 import "./lesson-review-badge.css";
 
-// 틀린 문제 다시 풀기의 시작 배지입니다(2026-10-23) — 「Let’s fix n mistakes」 알약이 내용 가운데 위에 한 번
-// 떴다가 사라집니다. 톡 튀어 들어와(살짝 1을 넘었다가 자리) 1초쯤 머문 뒤 조금 떠오르며 흐려집니다 — 전체 1.8초.
+// 틀린 문제 다시 도전의 시작 알약입니다(2026-10-23 · ⟨2026-10-30⟩ 시작 게이트에서 문항보다 먼저) — 「Let’s fix n mistakes」
+// 알약이 가운데에 한 번 떴다가 사라집니다. 톡 튀어 들어와(살짝 1을 넘었다가 자리) 1초쯤 머문 뒤 조금 떠오르며 흐려집니다 — 전체 1.8초.
 // 움직임 줄이기에서는 크기 · 이동 없이 나타났다 흐려지기만 합니다.
 //
-// 터치를 받지 않습니다(`user-interaction-enabled={false}`) — 떠 있는 동안에도 아래 문항을 바로 풀 수 있고, 다 끝나면
+// 알약 자체는 터치를 받지 않습니다(`user-interaction-enabled={false}`) — 누름은 감싼 시작 게이트가 받아 건너뜁니다. 다 끝나면
 // DOM에서 걷힙니다. 보이는 글을 서는 순간 한 번 낭독합니다(화면이 바뀐 까닭을 듣는 사람에게도 알립니다).
 
 /** 배지가 지나는 국면입니다 — 들어와 머묾 · 떠나며 흐려짐 · 걷힘. */
@@ -28,7 +28,14 @@ export const lessonReviewBadgeExitAtMs =
 export const lessonReviewBadgeGoneAtMs =
   lessonReviewBadgeExitAtMs + motionDurationMs(motionTokens.duration.d7);
 
-export function LessonReviewBadge({ count }: { readonly count: number }): ReactNode {
+export function LessonReviewBadge({
+  count,
+  onDone,
+}: {
+  readonly count: number;
+  /** 다 재생해 걷힐 때 한 번 부릅니다(시작 게이트가 문항 화면으로 넘어갑니다). */
+  readonly onDone?: () => void;
+}): ReactNode {
   const copy = useUiCopy();
   const reduced = useMotion() === "reduced";
   const [phase, setPhase] = useState<LessonReviewBadgePhase>("enter");
@@ -39,7 +46,10 @@ export function LessonReviewBadge({ count }: { readonly count: number }): ReactN
   useEffect(() => {
     announce(label);
     const exit = setTimeout(() => setPhase("exit"), lessonReviewBadgeExitAtMs);
-    const gone = setTimeout(() => setPhase("gone"), lessonReviewBadgeGoneAtMs);
+    const gone = setTimeout(() => {
+      setPhase("gone");
+      onDone?.();
+    }, lessonReviewBadgeGoneAtMs);
     return () => {
       clearTimeout(exit);
       clearTimeout(gone);

@@ -67,7 +67,13 @@ export function renderCatalogFlow(screen: CatalogFlowScreen, wiring: ScreenWirin
         screen.episodeId,
         screen.unitKey,
       );
-      const placed = ordinal === undefined ? lesson : { ...lesson, ordinal };
+      // ⟨2026-10-30⟩ 레슨은 완료 카드 없이 끝납니다 — 마지막 활동도 마지막 문항 뒤 곧바로 결과를 올리고, 결선이 틀린 문항
+      // 다시 도전 또는 결과 화면으로 잇습니다(사용자 결정: 일반 학습 → 다시 도전 → 결과, ADR-0058).
+      const placed: LessonPosition = {
+        ...lesson,
+        last: false,
+        ...(ordinal === undefined ? {} : { ordinal }),
+      };
       // 활동이 쓰는 출연진(이름 · 그림)과 문항별 보고용 참조를 계획에서 꺼내 넘깁니다.
       return renderCatalogActivity(
         activity,
@@ -122,6 +128,7 @@ export function renderCatalogFlow(screen: CatalogFlowScreen, wiring: ScreenWirin
           onExit={() => wiring.onExitCatalogUnitComplete(episodeId, unitKey, verdict)}
           onRetry={() => wiring.onStartCatalogUnit(episodeId, unitKey)}
           {...catalogResultNextOf(wiring, episodeId, unitKey)}
+          {...(screen.review === undefined ? {} : { review: screen.review })}
         />
       );
     }

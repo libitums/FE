@@ -132,14 +132,22 @@ export function advanceAfterAnswer(activity: CatalogActivity, questionIndex: num
   tapId(advances ? "learning-shell-advance" : "learning-shell-action");
 }
 
-/** 다시 풀기에서 맞힌 뒤의 「Fixed it!」 판을 확인하고 Continue(ui-lynx Button)를 누릅니다. */
-export function tapFixedContinue(): void {
-  expect(screen.getByTestId("learning-shell-feedback-body")).toHaveTextContent("Fixed it!");
-  const slot = screen.getByTestId("learning-shell-fixed-continue");
+/** 첫 다시 도전 문항 앞의 시작 게이트(알약)가 서 있으면 눌러 넘깁니다. */
+export function passReviewIntro(): void {
+  const gate = screen.queryByTestId("lesson-review-gate");
+  if (gate !== null) fireEvent.tap(gate, {});
+}
+
+/** 다시 도전에서 답한 뒤 판(맞힘 초록 Fixed it! · 틀림 빨강)을 확인하고 판 안 Continue를 누릅니다. */
+export function tapReviewContinue(right: boolean): void {
+  const panel = screen.getByTestId("learning-shell-feedback");
+  expect(panel).toHaveAttribute("data-tone", right ? "correct" : "incorrect");
+  if (right) expect(panel).toHaveTextContent("Fixed it!");
+  const slot = within(panel).getByTestId("learning-shell-review-continue");
   fireEvent.tap(within(slot).getByTestId("ui-lynx-button"), {});
 }
 
-/** 다시 풀기 화면 하나를 풉니다 — 맞히면 「Fixed it!」의 Continue, 틀리면 지금처럼 다음 걸음입니다. */
+/** 다시 도전 화면 하나를 풉니다 — 첫 화면이면 시작 게이트를 넘기고, 답한 뒤 판의 Continue로 넘어갑니다. */
 export function solveReviewItem(
   plan: CatalogLessonPlan,
   item: CatalogReviewItem,
@@ -147,10 +155,10 @@ export function solveReviewItem(
 ): void {
   const activity = plan.activities[item.activityIndex];
   if (activity === undefined) throw new Error(`no activity: ${item.activityIndex}`);
+  passReviewIntro();
   expect(screen.getByTestId("learning-shell-session-layer")).toHaveAttribute("data-review", "true");
   answerQuestion(activity, item.questionIndex, right);
-  if (right) tapFixedContinue();
-  else advanceAfterAnswer(activity, item.questionIndex);
+  tapReviewContinue(right);
 }
 
 /** 틀린 문항(레슨 순서)을 다시 풀기에서 차례로 맞혀 끝냅니다 — 다 맞히면 줄이 한 바퀴로 끝납니다. */
@@ -166,4 +174,10 @@ export function allReviewItemsOf(plan: CatalogLessonPlan): readonly CatalogRevie
       ? activity.questions.map((_, questionIndex) => ({ activityIndex, questionIndex }))
       : [],
   );
+}
+
+/** 다시 도전에서 주어진 문항(레슨 순서)을 모두 또 틀립니다 — 고친 수 0이라 판정은 첫 결과 그대로입니다(ADR-0058 ⟨2026-10-30⟩). */
+export function missReview(plan: CatalogLessonPlan, items: readonly CatalogReviewItem[]): void {
+  for (const item of items) solveReviewItem(plan, item, false);
+  expect(screen.queryByTestId("learning-shell-session-layer")).toBeNull();
 }

@@ -1,9 +1,9 @@
 // 카탈로그 레슨의 활동 잇기 · 틀린 문제 다시 풀기 · 판정입니다. `catalog-lesson-wiring.ts`가 커서 떼어 둔 것이고,
 // 시작 가드 · 세션 비움 · 기록 · 결과 이동 같은 공용 걸음은 그쪽이 만들어 넘깁니다.
 //
-// ⟨2026-10-23⟩ 마지막 활동 뒤 첫 시도에 틀린 채점 문항이 있으면 곧바로 판정하지 않고 다시 풀기로 갑니다(사용자 결정).
-// 틀린 문항을 원래 학습형 화면에 하나씩 세우고, 맞히면 빠지고 또 틀리면 줄 맨 뒤로 갑니다(`catalog-review.ts`). 줄이
-// 비면 지금까지처럼 판정합니다 — 판정 · 기록 · 이벤트는 **첫 시도 결과만** 씁니다. 다시 푼 답은 아무것도 바꾸지 않습니다.
+// ⟨2026-10-30⟩ 레슨의 순서는 늘 「일반 학습 → 틀린 문항 다시 도전 → 결과」입니다(사용자 결정). 마지막 활동 뒤 틀린 채점
+// 문항이 있으면 결과 화면 대신 곧바로 그 문항들을 원래 학습형 화면에 한 번씩 세우고, 다 풀면 고친 수만큼 오답을 정답으로
+// 쳐서 판정 · 기록 · 이벤트 · 결과 화면을 냅니다(`catalog-review.ts`). 틀린 문항이 없으면 곧바로 결과입니다.
 
 import type { Dispatch, SetStateAction } from "@lynx-js/react";
 
@@ -14,8 +14,14 @@ import type { EpisodeIntroEventSink } from "../screens/episode-intro/episode-int
 import { lessonFinishedEventOf } from "./catalog-events";
 import { catalogJudgedCountOf, catalogPassCriterion } from "./catalog-lesson-plan";
 import type { CatalogLessonPlan } from "./catalog-lesson-types";
-import { catalogMistakesOf, catalogReviewOf, nextCatalogReview } from "./catalog-review";
-import type { CatalogReview, CatalogReviewItem } from "./catalog-review";
+import {
+  catalogMistakesOf,
+  catalogReviewedResults,
+  catalogReviewOf,
+  catalogReviewStep,
+  catalogReviewSummaryOf,
+} from "./catalog-review";
+import type { CatalogReview, CatalogReviewItem, CatalogReviewSummary } from "./catalog-review";
 import type { NavAction } from "./nav-state";
 
 export type CatalogLessonFinish = {
@@ -56,6 +62,7 @@ export type CatalogLessonFinishDeps = {
     results: readonly AnswerResult[],
     skippedCount: number,
     questionCount: number,
+    review?: CatalogReviewSummary,
   ) => void;
 };
 
@@ -75,11 +82,13 @@ export function catalogLessonFinish(deps: CatalogLessonFinishDeps): CatalogLesso
     });
   };
 
-  // 유닛 전체를 첫 시도 결과로 한 번 판정합니다 — 이벤트 · 기록 · 결과 화면이 같은 결과를 씁니다.
+  // 유닛 전체를 한 번 판정합니다 — 이벤트 · 기록 · 결과 화면이 같은 결과를 씁니다. 다시 풀고 왔으면 `results`는 고친 수를
+  // 이미 반영한 결과이고, 기준(분모)은 첫 결과와 같습니다(문항 수가 바뀌지 않습니다).
   const judge = (
     plan: CatalogLessonPlan,
     results: readonly AnswerResult[],
     skippedCount: number,
+    review?: CatalogReviewSummary,
   ): void => {
     const { episodeId, unitKey } = plan;
     deps.clearSession();
@@ -97,7 +106,7 @@ export function catalogLessonFinish(deps: CatalogLessonFinishDeps): CatalogLesso
       ),
     );
     if (assessmentCompletesStep(verdict)) deps.markDone(episodeId, unitKey);
-    deps.showComplete(episodeId, unitKey, results, skippedCount, judged);
+    deps.showComplete(episodeId, unitKey, results, skippedCount, judged, review);
   };
 
   return {
@@ -131,12 +140,13 @@ export function catalogLessonFinish(deps: CatalogLessonFinishDeps): CatalogLesso
         });
         return;
       }
-      const review = catalogReviewOf(mistakes);
+      const criterion = catalogPassCriterion(catalogJudgedCountOf(plan.questionCount, gathered));
+      const review = catalogReviewOf(mistakes, gathered, criterion);
       if (review === null) {
         judge(plan, gathered, skippedTotal);
         return;
       }
-      // 첫 시도 결과는 판정 때까지 들고 있고, 틀린 문항 목록은 줄(route)로 옮겨 비웁니다.
+      // 첫 결과는 판정 때까지 들고 있고, 틀린 문항 목록은 줄(route)로 옮겨 비웁니다.
       deps.setPendingResults(gathered);
       deps.setPendingSkippedCount(skippedTotal);
       deps.setPendingMistakes([]);
@@ -145,14 +155,21 @@ export function catalogLessonFinish(deps: CatalogLessonFinishDeps): CatalogLesso
     onFinishCatalogReview: (episodeId, unitKey, review, results) => {
       const plan = planOf(episodeId, unitKey);
       if (plan === null) return;
-      if (!deps.claimFinish(`${episodeId}|${unitKey}|review|${String(review.attempt)}`)) return;
-      // 문항 하나짜리 화면이라 결과도 많아야 하나입니다. 없으면 건너뜀입니다(말하기를 못 씀).
-      const next = nextCatalogReview(review, results[0] ?? null);
-      if (next === null) {
-        judge(plan, deps.pendingResults, deps.pendingSkippedCount);
+      const attempt = review.outcomes.length;
+      if (!deps.claimFinish(`${episodeId}|${unitKey}|review|${String(attempt)}`)) return;
+      // 문항 하나짜리 화면이라 결과도 많아야 하나입니다. 없으면 건너뜀(말하기를 못 씀)이고 놓침으로 칩니다.
+      const { outcomes, next } = catalogReviewStep(review, results[0] ?? null);
+      if (next !== null) {
+        showReview(episodeId, unitKey, next);
         return;
       }
-      showReview(episodeId, unitKey, next);
+      const summary = catalogReviewSummaryOf(review.neededToPass, outcomes) ?? undefined;
+      judge(
+        plan,
+        catalogReviewedResults(deps.pendingResults, outcomes),
+        deps.pendingSkippedCount,
+        summary,
+      );
     },
   };
 }

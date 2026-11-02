@@ -8,12 +8,16 @@ import { LearningShell } from "./LearningShell";
 import { LearningReviewContext } from "./learning-review";
 import type { LearningReview } from "./learning-review";
 import type { LearningShellFeedback, LearningShellProps } from "./learning-shell-props";
-import { lessonReviewBadgeExitAtMs, lessonReviewBadgeGoneAtMs } from "./LessonReviewBadge";
 
-// `ui` 계층: 틀린 문제 다시 풀기(2026-10-23) 동안의 껍데기 — 세션 헤더 변형(Review i / k · 연한 주황 · try again),
-// 맞혔을 때의 「Fixed it!」 판(넘김 대신 Continue), 시작 배지(글 · 한 번 재생 · 터치 통과 · 움직임 줄이기)를 봅니다.
+// `ui` 계층: 틀린 문제 다시 도전(ADR-0058 ⟨2026-10-30⟩) 동안의 껍데기 — 세션 헤더 변형(Review i / n · 연한 주황 ·
+// try again · 칩), 판정 뒤 아래 판(맞힘 초록 Fixed it! · 틀림 빨강 Not quite)과 판 안 Continue를 봅니다.
 
-const review: LearningReview = { ordinal: 2, total: 3, fixedCount: 1, introCount: null };
+const review: LearningReview = {
+  ordinal: 2,
+  total: 3,
+  fixedCount: 1,
+  remainingToPass: 1,
+};
 
 afterEach(() => {
   vi.useRealTimers();
@@ -62,130 +66,109 @@ test("RS2. 다시 풀기 헤더: Review i / k(브랜드 강조) · 연한 주황
   const progress = screen.getByTestId("learning-shell-progress");
   expect(Number(progress.getAttribute("data-progress"))).toBeCloseTo(100 / 3);
   expect(progress).toHaveAttribute("accessibility-label", "Word choice, review 2 of 3");
-  // 헤더에 배지 · 칩을 더 세우지 않습니다.
-  expect(screen.queryByTestId("lesson-review-badge")).not.toBeInTheDocument();
+  // 이름표 줄 오른쪽에 남은 필요 수 칩이 섭니다.
+  const chip = screen.getByTestId("learning-shell-review-chip");
+  expect(chip).toHaveTextContent("1 more to pass");
+  expect(chip).not.toHaveAttribute("data-unlocked");
 });
 
 test("RS3. 아직 아무것도 못 고쳤으면 막대 채움이 서지 않는다", () => {
-  renderShell({}, { ordinal: 1, total: 2, fixedCount: 0, introCount: null });
+  renderShell({}, { ordinal: 1, total: 2, fixedCount: 0, remainingToPass: 1 });
   expect(screen.getByTestId("learning-shell-progress")).toHaveAttribute("data-progress", "0");
   expect(screen.queryByTestId("learning-shell-progress-fill")).not.toBeInTheDocument();
 });
 
-test("RS4. 맞히면 판정 배지 · 저절로 넘김 대신 Fixed it! 판과 ui-lynx Continue가 서고, 누르면 넘김 걸음을 밟는다", () => {
+function continueIn(panel: HTMLElement) {
+  return within(within(panel).getByTestId("learning-shell-review-continue")).getByTestId(
+    "ui-lynx-button",
+  );
+}
+
+test("RS4. 맞히면 배지 · 저절로 넘김 대신 초록 Fixed it! 판과 ui-lynx Continue가 서고, 누르면 넘김 걸음을 밟는다", () => {
   vi.useFakeTimers();
   const run = vi.fn<() => void>();
   renderShell({ verdict: "correct", advance: { label: "Continue", run, delayMs: 2500 } });
-
   const panel = screen.getByTestId("learning-shell-feedback");
   expect(panel).toHaveAttribute("data-tone", "correct");
-  expect(within(panel).getByTestId("learning-shell-feedback-body")).toHaveAttribute(
-    "accessibility-label",
-    "Fixed it!",
-  );
-  expect(screen.queryByTestId("learning-shell-advance")).not.toBeInTheDocument();
+  expect(within(panel).getByTestId("learning-shell-feedback-body")).toHaveTextContent("Fixed it!");
   expect(screen.queryByTestId("answer-verdict")).not.toBeInTheDocument();
-  // 저절로 넘어가지 않습니다 — Continue를 기다립니다.
+  expect(screen.queryByTestId("learning-shell-advance")).not.toBeInTheDocument();
   act(() => {
     vi.advanceTimersByTime(5000);
   });
   expect(run).not.toHaveBeenCalled();
-
-  const continueSlot = within(panel).getByTestId("learning-shell-fixed-continue");
-  const button = within(continueSlot).getByTestId("ui-lynx-button");
-  expect(button).toHaveTextContent("Continue");
-  fireEvent.tap(button, {});
+  fireEvent.tap(continueIn(panel), {});
   expect(run).toHaveBeenCalledTimes(1);
 });
 
-test("RS5. 카드 안에서 판정하는 활동(result)도 맞히면 Fixed it!이고 Continue가 아래 버튼 동작을 부른다", () => {
-  const onAction = vi.fn<() => void>();
-  renderShell({ result: "correct", actionLabel: "Next", onAction });
-  expect(screen.getByTestId("learning-shell-feedback-body")).toHaveTextContent("Fixed it!");
-  fireEvent.tap(
-    within(screen.getByTestId("learning-shell-fixed-continue")).getByTestId("ui-lynx-button"),
-    {},
-  );
-  expect(onAction).toHaveBeenCalledTimes(1);
+test("RS5. 또 틀리면 빨간 Not quite 판이 서고 Continue가 아래 버튼 동작(Next)을 부른다", () => {
+  const next = vi.fn<() => void>();
+  renderShell({ verdict: "incorrect", actionLabel: "Next", onAction: next });
+  const panel = screen.getByTestId("learning-shell-feedback");
+  expect(panel).toHaveAttribute("data-tone", "incorrect");
+  expect(panel).toHaveTextContent("Not quite");
+  expect(panel).toHaveTextContent("No worries");
+  fireEvent.tap(continueIn(panel), {});
+  expect(next).toHaveBeenCalledTimes(1);
 });
 
-test("RS6. 또 틀리면 지금 모습 그대로다 — Fixed it! 판 없이 배지와 넘김이 선다", () => {
-  const feedback: LearningShellFeedback = { tone: "incorrect", title: "Not quite", lines: [] };
-  renderShell({
-    verdict: "incorrect",
-    advance: { label: "Continue", run: () => {}, delayMs: 2500 },
-  });
-  expect(screen.queryByTestId("learning-shell-feedback")).not.toBeInTheDocument();
-  expect(screen.getByTestId("learning-shell-advance")).toBeInTheDocument();
-
-  renderShell({ feedback, actionLabel: "Continue", onAction: () => {} });
-  expect(screen.getAllByTestId("learning-shell-feedback-body")[0]).toHaveTextContent("Not quite");
+test("RS6. 카드 안에서 판정하는 활동(result)도 판이 서고, 해설 판을 쓰는 학습형은 맞히면 제목만 Fixed it!이다", () => {
+  const one = renderShell({ result: "correct", actionLabel: "Next", onAction: () => {} });
+  expect(screen.getByTestId("learning-shell-feedback")).toHaveAttribute("data-tone", "correct");
+  one.unmount();
+  const feedback: LearningShellFeedback = {
+    tone: "correct",
+    title: "Correct!",
+    lines: [{ text: "설명 줄", lang: "ko" }],
+  };
+  renderShell({ feedback, actionLabel: "Next", onAction: () => {} });
+  const panel = screen.getByTestId("learning-shell-feedback");
+  expect(panel).toHaveTextContent("Fixed it!");
+  expect(panel).toHaveTextContent("설명 줄");
 });
 
-test("RS7. 다시 풀기가 아니면 맞혀도 Fixed it! 판이 없다", () => {
+test("RS7. 다시 도전이 아니면 판 없이 지금 모습 그대로다(배지 · 넘김)", () => {
   renderShell(
     { verdict: "correct", advance: { label: "Continue", run: () => {}, delayMs: 2500 } },
     null,
   );
+  expect(screen.getByTestId("answer-verdict")).toHaveTextContent("Correct");
   expect(screen.queryByTestId("learning-shell-feedback")).not.toBeInTheDocument();
   expect(screen.getByTestId("learning-shell-advance")).toBeInTheDocument();
 });
 
-test("RS8. 첫 화면의 시작 배지: Let’s fix n mistakes · 터치 통과 · 한 번 재생 뒤 걷힘", () => {
-  vi.useFakeTimers();
-  renderShell({}, { ordinal: 1, total: 2, fixedCount: 0, introCount: 2 });
+test("RS8. 다시 풀기가 아니면 칩이 없다", () => {
+  renderShell({}, null);
+  expect(screen.queryByTestId("learning-shell-review-chip")).not.toBeInTheDocument();
+});
 
-  const badge = screen.getByTestId("lesson-review-badge");
-  expect(badge).toHaveTextContent("Let’s fix 2 mistakes");
-  expect(badge).toHaveAttribute("data-phase", "enter");
-  expect(badge).toHaveClass("lesson-review-badge-enter");
-  expect(screen.getByTestId("lesson-review-badge-layer")).toHaveAttribute(
-    "user-interaction-enabled",
-    "false",
+test("RS9. 통과선을 넘었으면 칩이 Pass unlocked(표식 data-unlocked)다", () => {
+  renderShell({}, { ordinal: 3, total: 3, fixedCount: 2, remainingToPass: 0 });
+  const chip = screen.getByTestId("learning-shell-review-chip");
+  expect(chip).toHaveTextContent("Pass unlocked");
+  expect(chip).toHaveAttribute("data-unlocked", "true");
+});
+
+test("RS13. 다시 도전 판은 제자리에 선다 — 미끄러짐 없이(steady) 떠 있는 버튼 자리에 겹쳐 선다", () => {
+  renderShell({ verdict: "incorrect", actionLabel: "Next", onAction: () => {} });
+  expect(screen.getByTestId("learning-shell-feedback")).toHaveClass(
+    "learning-shell-feedback-steady",
   );
-
-  act(() => {
-    vi.advanceTimersByTime(lessonReviewBadgeExitAtMs);
-  });
-  expect(screen.getByTestId("lesson-review-badge")).toHaveClass("lesson-review-badge-exit");
-  act(() => {
-    vi.advanceTimersByTime(lessonReviewBadgeGoneAtMs - lessonReviewBadgeExitAtMs);
-  });
-  expect(screen.queryByTestId("lesson-review-badge")).not.toBeInTheDocument();
-  expect(lessonReviewBadgeGoneAtMs).toBeGreaterThanOrEqual(1600);
-  expect(lessonReviewBadgeGoneAtMs).toBeLessThanOrEqual(2000);
+  expect(screen.getByTestId("learning-shell-feedback-bleed")).toHaveClass(
+    "learning-shell-feedback-bleed-steady",
+  );
 });
 
-test("RS9. 틀린 문항이 하나면 단수(mistake)다", () => {
-  renderShell({}, { ordinal: 1, total: 1, fixedCount: 0, introCount: 1 });
-  expect(screen.getByTestId("lesson-review-badge")).toHaveTextContent("Let’s fix 1 mistake");
-});
-
-test("RS10. 움직임 줄이기에서는 배지가 크기 · 이동 없는 페이드 클래스만 얻는다", () => {
-  vi.useFakeTimers();
-  renderShell({}, { ordinal: 1, total: 2, fixedCount: 0, introCount: 2 }, (node) => (
-    <MotionProvider motion="reduced">{node}</MotionProvider>
-  ));
-  const badge = screen.getByTestId("lesson-review-badge");
-  expect(badge).toHaveAttribute("data-motion", "reduced");
-  expect(badge).toHaveClass("lesson-review-badge-enter-reduced");
-  expect(badge).not.toHaveClass("lesson-review-badge-enter");
-  act(() => {
-    vi.advanceTimersByTime(lessonReviewBadgeExitAtMs);
+test("RS14. 다시 도전 판이 서면 스크롤 끝에 판 몫의 여유가 붙고, 판이 없으면 없다", () => {
+  const workspace = <view data-testid="fixture-workspace" />;
+  const one = renderShell({
+    verdict: "incorrect",
+    actionLabel: "Next",
+    onAction: () => {},
+    workspace,
   });
-  expect(screen.getByTestId("lesson-review-badge")).toHaveClass("lesson-review-badge-exit-reduced");
-});
-
-test("RS11. 시작 배지는 서는 순간 같은 글을 한 번 낭독한다", () => {
-  const accessibilityAnnounce = vi.fn<(options: { content: string }, done: () => void) => void>();
-  vi.stubGlobal("NativeModules", { LynxAccessibilityModule: { accessibilityAnnounce } });
-  try {
-    renderShell({}, { ordinal: 1, total: 3, fixedCount: 0, introCount: 3 });
-    expect(accessibilityAnnounce).toHaveBeenCalledWith(
-      { content: "Let’s fix 3 mistakes" },
-      expect.any(Function),
-    );
-  } finally {
-    vi.unstubAllGlobals();
-  }
+  expect(screen.getByTestId("learning-shell-panel-room")).toBeInTheDocument();
+  one.unmount();
+  renderShell({ workspace });
+  expect(screen.queryByTestId("learning-shell-panel-room")).not.toBeInTheDocument();
 });

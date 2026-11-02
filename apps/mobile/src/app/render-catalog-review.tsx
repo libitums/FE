@@ -1,4 +1,4 @@
-// 카탈로그 레슨의 틀린 문제 다시 풀기 화면입니다(2026-10-23) — 줄 머리 문항 하나를 원래 학습형 화면 그대로 세웁니다.
+// 카탈로그 레슨의 틀린 문제 다시 풀기 화면입니다(ADR-0058 ⟨2026-10-30⟩) — 줄 머리 문항 하나를 원래 학습형 화면 그대로 세웁니다.
 // `render-catalog.tsx`가 `screen.review`가 있을 때 부릅니다.
 
 import type { ReactNode } from "@lynx-js/react";
@@ -6,6 +6,7 @@ import type { ReactNode } from "@lynx-js/react";
 import type { ConversationCast } from "../lib/conversation-cast";
 import type { LessonPosition } from "../screens/learning/activity-finish";
 import { LearningReviewContext } from "../screens/learning/learning-review";
+import { LessonReviewIntroGate } from "../screens/learning/LessonReviewIntroGate";
 import type { LearningReview } from "../screens/learning/learning-review";
 import { renderCatalogActivity } from "./render-catalog-activity";
 import type { CatalogLessonPlan } from "./catalog-lesson-types";
@@ -36,15 +37,15 @@ export function renderCatalogReview(
       `Catalog review has no question: ${screen.episodeId}/${screen.unitKey}/${head.activityIndex}/${head.questionIndex}`,
     );
   }
-  const value: LearningReview = {
-    ...catalogReviewCounterOf(review),
-    // 시작 배지는 다시 풀기 첫 화면에서만 한 번 섭니다.
-    introCount: review.attempt === 0 ? review.initialCount : null,
-  };
+  const value: LearningReview = catalogReviewCounterOf(review);
+  // 첫 다시 도전 문항 앞에서만 시작 알약을 먼저 재생합니다.
+  const introCount = review.outcomes.length === 0 ? review.queue.length : null;
   // 다시 푼 답은 문항 이벤트를 내지 않습니다(판정 · 기록 · 이벤트는 첫 시도만) — 문항 참조를 비워 넘깁니다.
   return (
-    <LearningReviewContext.Provider value={value}>
-      {renderCatalogActivity(activity, reviewPosition, screen, wiring, cast, [])}
-    </LearningReviewContext.Provider>
+    <LessonReviewIntroGate count={introCount}>
+      <LearningReviewContext.Provider value={value}>
+        {renderCatalogActivity(activity, reviewPosition, screen, wiring, cast, [])}
+      </LearningReviewContext.Provider>
+    </LessonReviewIntroGate>
   );
 }

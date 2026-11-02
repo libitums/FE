@@ -20,7 +20,7 @@ import { catalogFinalPlanFor } from "./catalog-final-model";
 import { catalogLessonFinish } from "./catalog-lesson-finish";
 import type { CatalogLessonFinish } from "./catalog-lesson-finish";
 import { catalogLessonPlanFor, catalogPassCriterion } from "./catalog-lesson-plan";
-import type { CatalogReviewItem } from "./catalog-review";
+import type { CatalogReviewItem, CatalogReviewSummary } from "./catalog-review";
 import type { CatalogFinishGuard } from "./catalog-finish-guard";
 import type { NavAction } from "./nav-state";
 import type { CatalogStartSource } from "../lib/catalog-learning-event.contract";
@@ -110,6 +110,7 @@ export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLesso
     results: readonly AnswerResult[],
     skippedCount: number,
     questionCount: number,
+    review?: CatalogReviewSummary,
   ): void => {
     dispatch({
       type: action,
@@ -120,6 +121,7 @@ export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLesso
         results,
         skippedCount,
         questionCount,
+        ...(review === undefined ? {} : { review }),
       },
     });
   };
@@ -223,8 +225,8 @@ export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLesso
       claimFinish,
       clearSession,
       markDone,
-      showComplete: (episodeId, unitKey, results, skippedCount, questionCount) =>
-        showComplete("replace", episodeId, unitKey, results, skippedCount, questionCount),
+      showComplete: (episodeId, unitKey, results, skippedCount, questionCount, review) =>
+        showComplete("replace", episodeId, unitKey, results, skippedCount, questionCount, review),
     }),
     onFinishCatalogFinal: (episodeId, results) => {
       const plan = catalogFinalPlanFor(episodeContent, catalogSections, episodeId, learnerFill);

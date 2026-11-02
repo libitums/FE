@@ -134,7 +134,7 @@ export function TypingActivity({
           actionLabel={action?.label}
           onAction={action?.run}
           actionSound={action?.sound ?? "button"}
-          // 판정은 카드 안 배지가 그립니다 — 껍데기에는 다시 풀기의 「Fixed it!」 판을 가르라고만 넘깁니다.
+          // 판정은 카드 안 배지가 그립니다 — 껍데기에는 다시 도전의 판(Fixed it! · Not quite)을 세우라고만 넘깁니다.
           result={result ?? undefined}
           // 카드만 스크롤됩니다 — 큰 글자에서 카드가 길어져도 답 칸에 닿을 수 있고, 아래 버튼은 스크롤
           // 밖에 남습니다. 자판은 껍데기 밖 화면 바닥에 섭니다.

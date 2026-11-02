@@ -158,8 +158,8 @@ function lastReviewOf(log: readonly Entry[]): CatalogReview | null {
 }
 
 /**
- * 마지막 활동을 끝냅니다. 틀린 문항이 있으면 판정 없이 다시 풀기로 가므로(2026-10-23), 다시 풀기를 전부 맞혀 끝낸
- * 결선(첫 시도 결과를 든 다음 렌더)을 돌려줍니다 — 판정 · 기록 · 결과 화면은 그쪽 기록에 남습니다.
+ * 마지막 활동을 끝냅니다. 미통과면 판정 없이 곧바로 다시 풀기로 가므로(ADR-0058 ⟨2026-10-30⟩), 모두 또 틀려
+ * 첫 결과 그대로 판정한 결선(첫 결과를 든 다음 렌더)을 돌려줍니다 — 판정 · 기록 · 결과 화면은 그쪽 기록에 남습니다.
  */
 function finishLastThroughReview(
   progress: CatalogProgress,
@@ -169,15 +169,16 @@ function finishLastThroughReview(
 ): Harness {
   const first = harness({ progress });
   first.wiring.onFinishCatalogActivity("u01-water", unitKey, activityIndex, results, 0);
-  let review = lastReviewOf(first.log);
+  const review = lastReviewOf(first.log);
   if (review === null) return first;
   expect(events(first.log)).toEqual([]);
+  // 미통과라 곧바로 다시 풀기가 섰습니다 — 모두 또 틀려(고친 수 0) 첫 결과 그대로 판정한 다음 렌더의 결선을 돌려줍니다.
   const next = harness({ progress, pendingResults: results });
-  while (review !== null) {
-    // 마지막 걸음(판정)의 기록만 남깁니다 — 중간 다시 풀기 화면은 이 테스트의 관심이 아닙니다.
+  let current: CatalogReview | null = review;
+  while (current !== null) {
     next.log.length = 0;
-    next.wiring.onFinishCatalogReview("u01-water", unitKey, review, [correct]);
-    review = lastReviewOf(next.log);
+    next.wiring.onFinishCatalogReview("u01-water", unitKey, current, ["incorrect"]);
+    current = lastReviewOf(next.log);
   }
   return next;
 }
@@ -424,7 +425,6 @@ describe("카드가 든 레슨의 결선", () => {
   });
 
   test("LW-C4. 마지막 활동의 판정은 채점 문항 3개 기준(2개 정답이면 통과)이다", () => {
-    // 틀린 문항을 다시 풀어 맞혀도 판정은 첫 시도(셋 중 둘)입니다.
     const passing = finishLastThroughReview({ "u01-water": ["intro"] }, "S1", 1, [
       correct,
       correct,

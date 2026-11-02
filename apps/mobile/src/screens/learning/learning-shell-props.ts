@@ -20,6 +20,11 @@ export type LearningShellFeedback = {
   readonly tone: AnswerResult;
   readonly title: string;
   readonly lines: readonly LearningShellFeedbackLine[];
+  /**
+   * 판이 미끄러져 올라오지 않고 제자리에 서는가입니다(다시 도전 판, ADR-0058 ⟨2026-10-30⟩) — 면은 바로 서고 글만 나타나며,
+   * 흐름에 들지 않고 떠 있는 버튼 자리에 겹쳐 서서 몸통 배치 · 버튼 자리가 바뀌지 않습니다. 없으면 지금처럼 올라옵니다.
+   */
+  readonly steady?: boolean;
 };
 
 /** 껍데기가 받는 것입니다 — 각 줄의 뜻은 `LearningShell`의 머리 주석과 함께 읽습니다. */
@@ -107,7 +112,7 @@ export type LearningShellProps = {
   verdict?: AnswerResult;
   /**
    * 배지를 세우지 않고 카드 안에서 판정을 그리는 활동(자판 · 짝 잇기)의 판정입니다. 껍데기는 그리지 않고, 틀린 문제
-   * 다시 풀기에서 맞혔는가(「Fixed it!」 판)를 가르는 데만 씁니다.
+   * 다시 도전의 판(Fixed it! · Not quite)을 세우는 데만 씁니다.
    */
   result?: AnswerResult;
   /** 주면 아래 버튼 위에 해설 판이 섭니다. */
