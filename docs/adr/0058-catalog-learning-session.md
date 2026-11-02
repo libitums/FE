@@ -759,3 +759,15 @@ balance 묶음(2026-10-30)을 읽기 위한 디코더(episode-core) 변경이다
 - 최상위 `interlude` — INT 스텝 안 막간이 없을 때 쓴다(ADR-0088).
 - **모르는 형식 문항은 이제 그 문항만 빼고 `unknown-item-type` 경고**로 남긴다(이전에는 에피소드 거부) — 앞으로 생길 형식 하나가 에피소드 전체를 버리지 않게.
 - 도메인 모델 파일이 300줄을 넘어 바탕 타입(`model-base`) · 막간 타입(`model-interlude`)을 떼었다. `episode-content.model`이 그대로 다시 내보낸다.
+
+## 적용 기록 ⟨2026-11-02 — 여정맵 이야기 파이널 (level-3 balance S8)⟩
+
+사용자 결정(2026-11-02): balance 콘텐츠의 S8이 여정맵 파이널이 되고, 기존 RP 턴은 클리어 뒤 롤플레이 탭에서만 쓴다. 화면은 지금 최종 테스트 형태 그대로(시안 https://claude.ai/artifact/1y7az2qmKjSkujgjeMqnVP ①~⑤). 따라 쓰기는 획 데이터 없이 손글씨 탐침의 덮음 · 머무름 기준으로 채점한다.
+
+- **원천**: 문항이 하나 이상이고 모두 이야기 문항(`item.story`)인 **마지막 학습 유닛**(balance에서는 S8) — `catalogStoryFinalSourceOf`. 구획에 `storyFinalKey`로 싣고, 그 유닛은 레슨 노드 · 완료 키에서 뺀다. 파이널 노드의 진도 키는 그대로 `RP`라 다음 에피소드 열림 규칙이 바뀌지 않는다. 원천이 없으면(level-2 이하 콘텐츠) 파이널은 지금처럼 RP 턴이다.
+- **롤플레이 탭**: `catalogFinalPlanFor`(RP 턴)를 그대로 쓴다. 여정맵만 `catalogJourneyFinalPlanFor`가 이야기 · RP 중 하나를 고른다.
+- **화면** `CatalogStoryFinalScreen`: RP 최종 테스트 껍데기(전면 장면 · 머리 · 대화창 · 어두운 판)와 CSS를 함께 쓴다. 판 안 순서는 안내(`prompt.en`) → 판정 배지(가운데) → 내 대답 줄 → `Say:`(`story.line.en`) → 해설 자리(맞힘 `feedback.correct.en` · 틀림 `Answer` = `story.line.ko`, 곧 `hint_after_miss`) → 보기 · 타일. 상대 대사는 `story.lead`의 마지막 줄, 상황(`situation`)은 그리지 않는다.
+  - 보기(REPLY_SELECT · CLOZE_CHOICE): 고르면 바로 판정한다(Check 없음). 틀은 `context`에 `___`이 있을 때만.
+  - 타일(CLOZE · WORD_ORDER · SYLLABLE_BUILD): Check. 음절 잇기만 붙여 잇는다. 판정은 공백 · 문장부호를 보지 않는 `isTypedAnswerAccepted`.
+  - 따라 쓰기(HANGUL_WRITE): `answers[0]`의 음절마다 한 글자 칸(`CompactNumericInput` s 모양) · 220pt 쓰기 칸(호스트가 구운 안내 PNG, 획순 없음) · Redo · Listen(내 줄 소리가 있을 때) · Next letter(마지막은 Check). 음절 통과 = 덮음 ≥ 0.6 그리고 머무름 ≥ 0.6(성능 보고서 handwriting-trace-module-…-01의 시작 문턱), 턴 = 모든 음절 통과. 모듈이 없거나 호스트가 실패하면 그 음절을 막지 않는다. 쓰기 칸은 스크롤 밖에 서고(제스처 다툼, ADR-0022) 판정 뒤에도 남아 판 높이가 줄지 않는다.
+  - **밀림 없음**: 판정 배지 자리 · 해설 자리 · 대답 줄 높이를 판정 전에도 지켜, 판정 순간 판이 늘어 대화창이 밀리지 않는다. 빈칸은 상자 없이 밑줄로, 정답은 한 줄(「Answer: …」)로 보이고, 배지는 불투명한 초록 · 빨강이다(실기 검토 중 사용자 결정 2026-11-02).

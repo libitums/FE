@@ -15,7 +15,7 @@ import type { CatalogReadySection } from "../screens/journey-map/catalog-map.con
 import type { CatalogWiringValues } from "./catalog-cover-wiring";
 import { catalogUnitCompleteLeadsToEpilogue } from "./catalog-epilogue-route";
 import { finalPassedEventOf, lessonFinishedEventOf, lessonStartedEventOf } from "./catalog-events";
-import { catalogFinalPlanFor } from "./catalog-final-model";
+import { catalogJourneyFinalPlanFor } from "./catalog-journey-final";
 import {
   catalogJudgedCountOf,
   catalogLessonPlanFor,
@@ -152,12 +152,16 @@ export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLesso
     });
   };
 
+  // 여정맵 파이널 — 이야기 파이널 원천이 있으면 이야기 턴, 없으면 RP 턴입니다.
+  const finalPlanOf = (episodeId: string) =>
+    catalogJourneyFinalPlanFor(episodeContent, catalogSections, episodeId, learnerFill);
+
   const startFinal = (
     episodeId: string,
     unitKey: CatalogUnitKey,
     source?: CatalogStartSource,
   ): void => {
-    const plan = catalogFinalPlanFor(episodeContent, catalogSections, episodeId, learnerFill);
+    const plan = finalPlanOf(episodeId);
     if (plan === null) return;
     releaseFinish();
     clearSession();
@@ -195,10 +199,7 @@ export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLesso
       const section = sectionOf(episodeId);
       if (section === null) return 0;
       if (catalogUnitRoleOf(section, unitKey) === "final") {
-        return (
-          catalogFinalPlanFor(episodeContent, catalogSections, episodeId, learnerFill)?.turns
-            .length ?? 0
-        );
+        return finalPlanOf(episodeId)?.turns.length ?? 0;
       }
       return (
         catalogLessonPlanFor(episodeContent, episodeId, unitKey, learnerFill)?.shownItemCount ?? 0
@@ -258,7 +259,7 @@ export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLesso
       showComplete("replace", episodeId, unitKey, gathered, skippedTotal, judged);
     },
     onFinishCatalogFinal: (episodeId, results) => {
-      const plan = catalogFinalPlanFor(episodeContent, catalogSections, episodeId, learnerFill);
+      const plan = finalPlanOf(episodeId);
       const section = sectionOf(episodeId);
       if (plan === null || section === null) return;
       const turnCount = plan.turns.length;

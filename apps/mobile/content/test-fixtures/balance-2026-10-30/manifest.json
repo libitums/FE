@@ -1,0 +1,26 @@
+{
+  "schema": "manifest-1",
+  "generated_at": "2026-10-30T07:00:00Z",
+  "episodes": [
+    {
+      "id": "u00-tutorial",
+      "order": 0,
+      "title": "튜토리얼",
+      "schema": "delivery-2",
+      "version": "2026-10-23.1",
+      "sha256": "42134653f72075a0d728635899e66be0c460ebb75bfb5ffa794e53ae6719eb2a",
+      "bytes": 37847,
+      "url": "episodes/u00-tutorial.json"
+    },
+    {
+      "id": "u01-water",
+      "order": 1,
+      "title": "물 사기",
+      "schema": "delivery-2",
+      "version": "2026-10-30.1",
+      "sha256": "7235150e8dcfd8c75b1153f7aa2bc80a19127562274ad6b37b2cdc2faf5efed2",
+      "bytes": 130186,
+      "url": "episodes/u01-water.json"
+    }
+  ]
+}
