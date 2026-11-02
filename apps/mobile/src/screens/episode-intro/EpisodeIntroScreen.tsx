@@ -132,7 +132,7 @@ export function EpisodeIntroScreen({
           <view className="episode-intro-screen-actions">
             <view className="episode-intro-screen-skip" data-testid="episode-intro-screen-skip">
               <Button
-                label="Skip"
+                label={copy.common.skip}
                 variant="subtle"
                 size="xl"
                 width="fill"
@@ -141,7 +141,7 @@ export function EpisodeIntroScreen({
             </view>
             <view className="episode-intro-screen-next" data-testid="episode-intro-screen-next">
               <Button
-                label="Next"
+                label={copy.common.next}
                 variant="brand"
                 size="xl"
                 width="fill"

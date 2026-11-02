@@ -40,6 +40,8 @@
 	<key>UIAppFonts</key>
 	<array>
 		<string>fonts/Jost.ttf</string>
+		<!-- UI 언어가 베트남어일 때만 쓰는 강조 글꼴(ADR-0091 D5). Jost에 베트남어 글자가 없다. -->
+		<string>fonts/LeagueSpartan.ttf</string>
 	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>

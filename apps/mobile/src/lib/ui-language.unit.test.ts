@@ -96,9 +96,16 @@ test("UL5. uiLanguageFromDeviceTag는 고를 수 있는 영어만 받는다", ()
 });
 
 test("UL5. 목록에만 있는 언어 · 모르는 태그 · 빈 값은 null이다", () => {
-  for (const tag of ["ja-JP", "vi", "es-419", "ko-KR", "zh-Hant-TW", "", " ", null]) {
+  for (const tag of ["ja-JP", "es-419", "ko-KR", "zh-Hant-TW", "", " ", null]) {
     expect(uiLanguageFromDeviceTag(tag)).toBeNull();
   }
+});
+
+test("UL5b. 베트남어 기기 태그는 vi다(ADR-0091 D4)", () => {
+  for (const tag of ["vi", "vi-VN", "VI_vn"]) {
+    expect(uiLanguageFromDeviceTag(tag)).toBe("vi");
+  }
+  expect(returningUiLanguageFrom(null, "vi-VN")).toBe("vi");
 });
 
 test("UL6. returningUiLanguageFrom은 저장값 → 기기 → 영어 순이다", () => {

@@ -21,6 +21,16 @@ export type JourneyEntryScreenProps = {
   readonly onBack?: () => void;
 };
 
+/** 여정 진입 화면의 UI 문구 구획입니다(`UiCopy.journeyEntry`). */
+export type JourneyEntryCopy = {
+  readonly title: string;
+  readonly display: string;
+  readonly caption: string;
+  /** AI 생성 그림 고지입니다. */
+  readonly notice: string;
+  readonly start: string;
+};
+
 export type JourneyEntryTestId =
   | "journey-entry-screen-background"
   | "journey-entry-screen-header"

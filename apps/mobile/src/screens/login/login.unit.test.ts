@@ -1,6 +1,7 @@
 import { expect, test } from "vitest";
 
 import type { EntryLoginMethod } from "../../lib/entry-flow";
+import { uiCopyEn } from "../../lib/ui-copy-en";
 import {
   canRequestPhoneOtp,
   canStartSocialSignIn,
@@ -19,7 +20,7 @@ import {
 const allLoginMethods: readonly EntryLoginMethod[] = ["phone", "google", "apple", "facebook"];
 
 test("LG1. 수단 넷 각각에 공백 아닌 라벨이 있고 넷이 서로 다르다", () => {
-  const labels = allLoginMethods.map((method) => loginMethodLabel(method));
+  const labels = allLoginMethods.map((method) => loginMethodLabel(method, uiCopyEn.login));
 
   for (const label of labels) {
     expect(label.trim().length).toBeGreaterThan(0);

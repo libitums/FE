@@ -65,3 +65,10 @@ Pretendard를 넣으면 앱 전체 본문의 줄바꿈 · 너비가 바뀌어 �
 
 - 학습 문항의 로마자 줄이 **기울임(`font-style: italic`) · medium · muted**로 한글 · 뜻과 구별된다. 본문이 시스템 서체(SF Pro · Roboto)라 진짜 기울임이다 — D3(Pretendard를 넣지 않음)이 이 규칙의 전제다.
 - **재검토 조건 「Pretendard를 넣을 때」에 하나가 더해진다** — 그때 로마자 기울임은 합성이 되고 iOS가 똑바로 그릴 수 있다. 로마자만 `font-family-accent`(Jost) · medium · muted로 옮긴다(ADR-0084 재검토 조건 1, ADR README 보류 표 「로마자 기울임의 대안」). 로마자는 라틴 글자뿐이라 Jost가 모두 그린다.
+
+### 적용 기록 ⟨2026-11-02⟩ — 둘째 글꼴 League Spartan
+
+결정은 [ADR-0091](0091-vietnamese-localization.md) D5. 이 문서의 결정은 바뀌지 않는다.
+
+- Jost에 베트남어 글자가 없어(56자 중 48자 없음) UI 언어가 `vi`일 때만 강조 토큰 다섯을 League Spartan으로 다시 정의한다. 같은 방식(폴더 `fonts/` · `UIAppFonts`)으로 더했고 Android는 `assets/fonts/`에 같은 파일.
+- D2(「변환 없음」)와 다르게 **한 번 변환했다** — 배포물의 가변 기본값이 Thin(100)이라, 변수를 적용하지 않는 길에서 가늘게 그려진다. `wght` 축을 400–900, 기본 400으로 좁히고 이름 표를 Regular로 맞췄다. OFL에 예약 글꼴 이름이 없어 허용된다.

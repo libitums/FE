@@ -8,6 +8,7 @@
 // `copy.x[key]`로 색인하므로 소유자 쪽 union이 늘면 그 자리에서 TS 오류로 섭니다. 설정 이동 항목
 // (`SettingsNavTarget`)만 타입으로 import합니다 — 항목이 늘면 문구 행이 따라오게 하려는 것입니다.
 
+import type { LearningActivityForm } from "./learning-form";
 import type { SettingsNavTarget } from "../screens/settings/settings.contract";
 import type { AnswerResult } from "./answer-result";
 import type { SessionOptionKey } from "./session-options";
@@ -18,6 +19,8 @@ export type CommonCopy = {
   /** 특별 유닛 · 학습의 나가기 — 진입 출처가 목적지를 정합니다(ADR-0007 D6). */
   readonly exitTo: Readonly<Record<SpecialUnitEntrySource, string>>;
   readonly backToSettings: string;
+  /** 진입 흐름 화면들의 좌상단 뒤로 버튼(「뒤로」) */
+  readonly back: string;
   /** 보이는 판정 라벨입니다. */
   readonly answerResult: Readonly<Record<AnswerResult, string>>;
   /** 이름 뒤에 쉼표로 붙는 판정 접미 낱말입니다(소문자). */
@@ -82,12 +85,24 @@ export type JourneyMapCopy = {
     readonly streakHero: (days: number) => string;
     readonly episodesClearedHero: (count: number) => string;
     readonly slotProgress: (completed: number, total: number) => string;
+    /** 큰 숫자 아래 제목과 진행 줄 아래 문장 — 키는 `JourneyStatKind`. */
+    readonly kind: Readonly<
+      Record<"streak" | "trophy", { readonly title: string; readonly message: string }>
+    >;
+    /** 닫는 버튼 — 화살표는 디자인 표기대로 라벨 글자(→)입니다. */
+    readonly continue: string;
+    /** 요일 약칭 일곱 — 인덱스는 `Date#getDay()`와 같습니다(0 = 일). */
+    readonly weekdays: readonly [string, string, string, string, string, string, string];
   };
 };
 
-/** 학습 껍데기(머리 · 나가기 대화상자)입니다. 형식 라벨은 기존 영어(`formLabels`)를 받습니다. */
+/** 학습 껍데기(머리 · 나가기 대화상자)입니다. */
 export type LearningShellCopy = {
   readonly exitLesson: string;
+  /** 세션 헤더의 학습형 이름표 — 영어는 디자인(Figma 65-14)의 어휘입니다. */
+  readonly formLabels: Readonly<Record<LearningActivityForm, string>>;
+  /** 세션 헤더의 문항 순번 — 영어 `Lesson 2 / 11`. */
+  readonly progressLabel: (ordinal: number, total: number) => string;
   /** 문화 확인 문항일 때 세션 헤더의 학습형 이름표입니다(다른 낱말 고르기는 `Word choice`). */
   readonly cultureQuizLabel: string;
   readonly completionDescription: string;
@@ -150,6 +165,8 @@ export type AssessmentCopy = {
 export type LessonCompleteCopy = {
   readonly rewardDiamonds: (count: number) => string;
   readonly grade: (grade: string) => string;
+  /** 등급 낱말의 보이는 글자 — 영어는 받은 값 그대로(`AMAZING`). */
+  readonly gradeName: (grade: string) => string;
   readonly outcome: Readonly<Record<"passed" | "failed", string>>;
   readonly mistakes: (count: number) => string;
   /** 0이면 빈 문자열 — 없는 수를 읽지 않습니다. 앞 쉼표를 포함합니다. */
@@ -159,6 +176,16 @@ export type LessonCompleteCopy = {
   readonly nextFinal: string;
   /** 최종 테스트를 통과해 에필로그로 이어질 때의 나가는 버튼 — 맵이 아니라 이야기로 갑니다. */
   readonly continueStory: string;
+  /** 제목 세 갈래 — 만점 통과 · 만점 아닌 통과 · 미통과(`lessonCompleteTitle`). */
+  readonly title: Readonly<Record<"perfect" | "complete" | "failed", string>>;
+  /** 실수 수를 세는 부제(대문자 표기) — 0이면 「실수 없음」 문장입니다. */
+  readonly subtitle: (mistakeCount: number) => string;
+  /** 연속 학습 알약의 보이는 글자 — 영어 `3 Day Streak`. */
+  readonly streakLabel: (days: number) => string;
+  /** 다이아 보상 카드의 보이는 글자 — 영어 `+ 0 REWARD`. */
+  readonly rewardLabel: (count: number) => string;
+  /** 미통과에서 같은 유닛을 처음부터 다시 여는 버튼입니다. */
+  readonly tryAgain: string;
 };
 
 export type EpisodeIntroCopy = {

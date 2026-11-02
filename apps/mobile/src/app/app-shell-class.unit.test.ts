@@ -1,0 +1,16 @@
+import { expect, test } from "vitest";
+
+import { appShellClassName } from "./app-shell-class";
+
+// `unit` 계층: 앱 뿌리 클래스 — 스플래시 · 베트남어 강조 글꼴(ADR-0091 D5).
+
+test("AS1. 영어는 app, 스플래시는 app-splash를 더한다", () => {
+  expect(appShellClassName(false, "en")).toBe("app");
+  expect(appShellClassName(true, "en")).toBe("app app-splash");
+});
+
+test("AS2. 베트남어면 app-lang-vi를 더한다 — 다른 언어는 더하지 않는다", () => {
+  expect(appShellClassName(false, "vi")).toBe("app app-lang-vi");
+  expect(appShellClassName(true, "vi")).toBe("app app-splash app-lang-vi");
+  expect(appShellClassName(false, "ja")).toBe("app");
+});

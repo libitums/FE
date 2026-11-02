@@ -210,6 +210,14 @@ export type Episode = {
   patterns: Pattern[];
   /** 없으면 기존 규칙(최종 테스트 통과 = 완료). */
   completion?: EpisodeCompletion;
+  /** `translations` — 언어마다 「영어 원문 → 번역」 표입니다(ADR-0091 D1). 남은 항목이 없으면 키가 없습니다. */
+  translations?: EpisodeTranslations;
+};
+
+/** 콘텐츠 번역표가 있는 언어입니다(ADR-0091). */
+export type ContentLanguage = "vi";
+export type EpisodeTranslations = {
+  readonly [L in ContentLanguage]?: Readonly<Record<string, string>>;
 };
 
 export type DecodeIssueCode =
@@ -229,7 +237,9 @@ export type DecodeIssueCode =
   /** 경고 전용 — 자산 경로 규칙(상대 경로 · 이미지 확장자)에 어긋나 그 키를 버렸습니다. */
   | "invalid-asset-path"
   /** 경고 전용 — 막간 스텝의 `interlude`가 틀렸거나 그릴 컷이 없어 그 스텝을 버렸습니다(ADR-0088). */
-  | "invalid-interlude";
+  | "invalid-interlude"
+  /** 경고 전용 — 번역표의 모양이 틀렸거나 문자열이 아닌 · 빈 번역이 있어 그 부분을 버렸습니다(ADR-0091). */
+  | "invalid-translation";
 
 /** `path`는 **와이어** 경로입니다(`steps[0].items[3].options`) — 콘텐츠 쪽에 그대로 돌려줄 수 있게. */
 export type DecodeIssue = { code: DecodeIssueCode; path: string; message: string };

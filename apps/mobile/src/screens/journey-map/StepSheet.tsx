@@ -203,7 +203,7 @@ export function StepSheet({
               data-testid="step-sheet-title"
               accessibility-traits="header"
             >
-              {`${unitLabel ?? `Lesson ${String(lessonOrdinal)}`}: “${title}”`}
+              {`${unitLabel ?? copy.catalogMap.lessonTitle(lessonOrdinal)}: “${title}”`}
             </text>
             {/* 진행 줄입니다. 셋이 같은 수에서 나옵니다 — 낱말 둘과 막대가 어긋나지
                 않습니다. 막대는 장식이 아니라 값이므로, 낱말 둘을 한 접근성 요소로

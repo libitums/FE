@@ -4,7 +4,7 @@
 // 답을 짓습니다(`session-options.ts` · `screens/notifications/notifications.ts` 선례).
 
 // 2026-09-21 디자인 반영으로 목록이 Intermediate English · Vietnamese · Spanish ·
-// Japanese로 바뀌었고 지금은 영어만 고를 수 있습니다(`isEntryLanguageAvailable`).
+// Japanese로 바뀌었고 지금은 영어 · 베트남어만 고를 수 있습니다(`isEntryLanguageAvailable`).
 // 옛 목록(ko · en · ja · vi)을 대체합니다.
 export type EntryLanguage = "en" | "vi" | "es" | "ja";
 export type EntryLanguageLabel = "Intermediate English" | "Vietnamese" | "Spanish" | "Japanese";
@@ -34,14 +34,14 @@ export function entryLanguageLabel(language: EntryLanguage): EntryLanguageLabel 
   }
 }
 
-// 지금 고를 수 있는 언어인가입니다. 영어 과정만 열려 있고 나머지는 목록에
+// 지금 고를 수 있는 언어인가입니다. 영어 · 베트남어(ADR-0091 D4)가 열려 있고 나머지는 목록에
 // 보이되 고를 수 없습니다.
 export function isEntryLanguageAvailable(language: EntryLanguage): boolean {
   switch (language) {
-    case "en": {
+    case "en":
+    case "vi": {
       return true;
     }
-    case "vi":
     case "es":
     case "ja": {
       return false;

@@ -9,6 +9,7 @@ import { RoundButton } from "@libitums/ui-lynx/round-button";
 
 import { announce } from "../../lib/accessibility";
 import { authFailureMessage } from "../../lib/auth-failure";
+import { useUiCopy } from "../../lib/ui-copy";
 import { useScreenBack } from "../../lib/use-back-handler";
 import {
   canSubmitVerificationCode,
@@ -61,6 +62,8 @@ export function VerificationCodeScreen({
   onResendCode,
   onExit,
 }: VerificationCodeScreenProps): ReactNode {
+  const uiCopy = useUiCopy();
+  const copy = uiCopy.verificationCode;
   const [digits, setDigits] = useState<readonly string[]>(() => digitIndexes.map(() => ""));
   const code = verificationCodeFrom(digits.join(""));
   const complete = isVerificationCodeComplete(code);
@@ -97,7 +100,7 @@ export function VerificationCodeScreen({
   // 않습니다.
   useEffect(() => {
     if (status.kind === "failed") {
-      announce(authFailureMessage(status.reason));
+      announce(authFailureMessage(status.reason, uiCopy.authFailure));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status]);
@@ -150,7 +153,7 @@ export function VerificationCodeScreen({
     <view className="verification-code-screen">
       <view className="verification-code-screen-header" data-testid="verification-code-screen-exit">
         <RoundButton
-          accessibilityLabel="Back"
+          accessibilityLabel={uiCopy.common.back}
           icon={arrowLeft}
           variant="neutral"
           size="xl"
@@ -171,14 +174,14 @@ export function VerificationCodeScreen({
               data-testid="verification-code-screen-title"
               accessibility-traits="header"
             >
-              Verification code OTP
+              {copy.title}
             </text>
             <view className="verification-code-screen-sent">
               <text
                 className="verification-code-screen-description"
                 data-testid="verification-code-screen-description"
               >
-                A verification code has been sent to
+                {copy.sentTo}
               </text>
               <text
                 className="verification-code-screen-phone"
@@ -202,7 +205,7 @@ export function VerificationCodeScreen({
                 className={`verification-code-screen-digit verification-code-screen-digit-${index}`}
               >
                 <CompactNumericInput
-                  accessibilityLabel={`Digit ${index + 1} of ${verificationCodeLength}`}
+                  accessibilityLabel={copy.digit(index + 1, verificationCodeLength)}
                   size="s"
                   defaultValue={digits[index]}
                   error={status.kind === "failed" && status.reason === "invalid-code"}
@@ -217,7 +220,7 @@ export function VerificationCodeScreen({
               className="verification-code-screen-error"
               data-testid="verification-code-screen-error"
             >
-              {authFailureMessage(status.reason)}
+              {authFailureMessage(status.reason, uiCopy.authFailure)}
             </text>
           ) : null}
 
@@ -230,10 +233,10 @@ export function VerificationCodeScreen({
             </text>
 
             <view className="verification-code-screen-resend">
-              <text className="verification-code-screen-resend-hint">Didn't receive the code?</text>
+              <text className="verification-code-screen-resend-hint">{copy.resendHint}</text>
               <view data-testid="verification-code-screen-resend">
                 <Button
-                  label="Resend"
+                  label={copy.resend}
                   variant="text"
                   size="s"
                   loading={status.kind === "resending"}
@@ -250,7 +253,7 @@ export function VerificationCodeScreen({
             data-status={status.kind}
           >
             <Button
-              label="Continue"
+              label={copy.submit}
               variant="brand"
               size="xl"
               width="fill"

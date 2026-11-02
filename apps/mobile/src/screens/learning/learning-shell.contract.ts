@@ -8,27 +8,6 @@ import type { LearningActivityForm } from "../../lib/learning-form";
 import type { LearningShellActionPlacement, LearningShellFeedback } from "./learning-shell-props";
 
 /**
- * 세션 헤더에 서는 학습형 이름입니다. 영문인 것은 디자인(Figma 65-14)의 어휘이고,
- * 에피소드 헤더(`Episode 0.` · `Tutorial.`) · 말풍선(`Lesson 1:`)과 같은 갈래입니다 —
- * 메타 문구는 영문, 학습 내용은 한국어입니다.
- */
-const formLabels: Record<LearningActivityForm, string> = {
-  listening: "Listening",
-  "sentence-order": "Word order",
-  "word-choice": "Word choice",
-  culture: "Culture",
-  speaking: "Speaking",
-  writing: "Writing",
-  typing: "Typing",
-  "vocab-card": "New words",
-  "pair-match": "Matching",
-  "culture-card": "Culture",
-  "syllable-build": "Spelling",
-  "read-aloud": "Speaking",
-  "speak-word": "Speaking",
-};
-
-/**
  * 학습 화면이 서는 한 바퀴를 SDK가 재게 하는 표식입니다(ADR-0019 D3).
  *
  * **이 값이 없으면 학습 화면은 원리적으로 못 잽니다.** Lynx는 `__lynx_timing_flag`가
@@ -87,7 +66,7 @@ export function learningSessionHeader(
   copy: UiCopy,
   formLabelOverride?: string,
 ): LearningSessionHeader {
-  const formLabel = formLabelOverride ?? formLabels[form];
+  const formLabel = formLabelOverride ?? copy.learningShell.formLabels[form];
   if (!Number.isInteger(questionCount) || questionCount < 0) {
     throw new Error(`활동의 문항 수는 0 이상의 정수여야 합니다: ${questionCount}`);
   }
@@ -109,7 +88,7 @@ export function learningSessionHeader(
   const ordinal = questionIndex + 1;
 
   return {
-    progressLabel: `Lesson ${String(ordinal)} / ${String(questionCount)}`,
+    progressLabel: copy.learningShell.progressLabel(ordinal, questionCount),
     formLabel,
     fillPercent: (ordinal / questionCount) * 100,
     accessibilityLabel: copy.learningShell.headerQuestionOf(formLabel, ordinal, questionCount),
