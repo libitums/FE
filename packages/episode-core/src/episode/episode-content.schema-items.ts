@@ -1,6 +1,7 @@
 // 2026-10-15에 더한 문항 11종의 와이어 스키마입니다.
 import { z } from "zod/mini";
 import {
+  choiceFeedbackSchema,
   correctFeedbackSchema,
   itemCommon,
   optionsSchema,
@@ -21,6 +22,8 @@ export const ADDED_ITEM_TYPES = [
   "SYLLABLE_BUILD",
   "SHADOW",
   "SPEAK_WORD",
+  // 2026-10-30(balance) — 이야기 파이널의 따라 쓰기입니다.
+  "HANGUL_WRITE",
 ] as const;
 
 const stimulusChoice = {
@@ -34,6 +37,8 @@ const tilesBuild = {
   ...itemCommon,
   prompt: promptSchema,
   stimulus: stimulusSchema,
+  // 이야기 빈칸(level-3 S8)은 `___`이 든 문맥을 싣습니다.
+  context: z.optional(textSchema),
   tiles: z.array(textSchema),
   answers: z.array(textSchema),
 };
@@ -52,9 +57,19 @@ export const addedItemSchemas = [
     context: textSchema,
     options: optionsSchema,
     answers: z.array(textSchema),
-    feedback: correctFeedbackSchema,
+    // balance의 이야기 빈칸은 해설이 없습니다.
+    feedback: z.optional(correctFeedbackSchema),
   }),
-  z.object({ ...stimulusChoice, type: z.literal("REPLY_SELECT") }),
+  // 이야기 대답 고르기는 `stimulus` 없이 상대 말을 `context`로 싣고, 해설에 틀림 줄이 올 수 있습니다.
+  z.object({
+    ...itemCommon,
+    type: z.literal("REPLY_SELECT"),
+    prompt: promptSchema,
+    stimulus: z.optional(stimulusSchema),
+    context: z.optional(textSchema),
+    options: optionsSchema,
+    feedback: z.optional(choiceFeedbackSchema),
+  }),
   z.object({ ...stimulusChoice, type: z.literal("MIN_PAIR_AB") }),
   z.object({ ...stimulusChoice, type: z.literal("PARTICLE_FILL") }),
   z.object({ ...stimulusChoice, type: z.literal("PARTICLE_SWAP") }),
@@ -77,4 +92,12 @@ export const addedItemSchemas = [
   z.object({ ...tilesBuild, type: z.literal("SYLLABLE_BUILD") }),
   z.object({ ...speech, type: z.literal("SHADOW") }),
   z.object({ ...speech, type: z.literal("SPEAK_WORD") }),
+  z.object({
+    ...itemCommon,
+    type: z.literal("HANGUL_WRITE"),
+    prompt: promptSchema,
+    context: textSchema,
+    answers: z.array(textSchema).check(z.minLength(1)),
+    feedback: z.optional(correctFeedbackSchema),
+  }),
 ] as const;

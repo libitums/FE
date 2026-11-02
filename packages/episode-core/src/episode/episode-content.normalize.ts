@@ -11,6 +11,7 @@ import type {
   DialogueLine,
   EpisodeCut,
   ItemEvent,
+  ItemStory,
   Option,
   Stimulus,
   Text,
@@ -18,7 +19,7 @@ import type {
   Word,
 } from "./episode-content.model";
 
-// 와이어 → 도메인 변환의 공통 헬퍼와 컷 · 대화 · 단어 변환입니다.
+// 와이어 → 도메인 변환의 공통 헬퍼와 컷 · 대화 · 단어 · 이야기 장면 변환입니다.
 
 export const issue = (code: DecodeIssueCode, path: string, message: string): DecodeIssue => ({
   code,
@@ -55,6 +56,31 @@ export function toText(wire: WireText): Text {
   return { ko: wire.ko, ...maybe("roman", wire.roman), ...maybe("en", wire.en) };
 }
 
+type WireStory = {
+  line_id: string;
+  hint_after_miss?: boolean | undefined;
+  lead: { speaker: string; line: WireText; audio_url?: string | undefined }[];
+  line: WireText;
+  situation?: WireText | undefined;
+  image_url?: string | undefined;
+};
+
+/** 이야기 문항(level-3 S8)의 장면 — 빈 녹음 · 그림은 키를 싣지 않습니다. */
+function toStory(wire: WireStory): ItemStory {
+  return {
+    lineId: wire.line_id,
+    hintAfterMiss: wire.hint_after_miss === true,
+    lead: wire.lead.map((lead) => ({
+      speaker: lead.speaker,
+      line: toText(lead.line),
+      ...maybe("audioUrl", nonEmpty(lead.audio_url)),
+    })),
+    line: toText(wire.line),
+    ...maybe("situation", wire.situation === undefined ? undefined : toText(wire.situation)),
+    ...maybe("imageUrl", nonEmpty(wire.image_url)),
+  };
+}
+
 type WireItemCommon = {
   id: string;
   event: ItemEvent;
@@ -62,6 +88,7 @@ type WireItemCommon = {
   level?: number | undefined;
   skill?: string | undefined;
   skill_level?: number | undefined;
+  story?: WireStory | undefined;
 };
 
 /** 모든 문항이 함께 갖는 키 — 값이 없으면 키를 싣지 않습니다. */
@@ -73,6 +100,7 @@ export function itemBaseOf(item: WireItemCommon) {
     ...maybe("level", item.level),
     ...maybe("skill", nonEmpty(item.skill)),
     ...maybe("skillLevel", item.skill_level),
+    ...maybe("story", item.story === undefined ? undefined : toStory(item.story)),
   };
 }
 
@@ -182,6 +210,31 @@ export function toWord(wire: DeliveryWord): Word {
 }
 
 /** `steps[*].items[*].type`이 닫힌 목록 밖인 자리 — 구조 검사보다 먼저 봅니다. */
+/**
+ * 모르는 형식 문항을 뺀 얕은 사본과 그 경고입니다 — 앞으로 생길 형식 하나가 에피소드 전체를 거부하지 않게
+ * 합니다. 입력은 바꾸지 않습니다.
+ */
+export function withoutUnknownItems(input: Record<string, unknown>): {
+  readonly input: Record<string, unknown>;
+  readonly warnings: DecodeIssue[];
+} {
+  const warnings = findUnknownItemTypes(input);
+  const steps = input["steps"];
+  if (warnings.length === 0 || !Array.isArray(steps)) return { input, warnings };
+  const known: readonly string[] = KNOWN_ITEM_TYPES;
+  const isKnown = (item: unknown): boolean => {
+    const type = isRecord(item) ? item["type"] : undefined;
+    return typeof type !== "string" || known.includes(type);
+  };
+  const kept = steps.map((step: unknown) => {
+    const items = isRecord(step) ? step["items"] : undefined;
+    return isRecord(step) && Array.isArray(items)
+      ? { ...step, items: items.filter(isKnown) }
+      : step;
+  });
+  return { input: { ...input, steps: kept }, warnings };
+}
+
 export function findUnknownItemTypes(input: Record<string, unknown>): DecodeIssue[] {
   const known: readonly string[] = KNOWN_ITEM_TYPES;
   const issues: DecodeIssue[] = [];

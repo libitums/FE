@@ -747,3 +747,15 @@ route · 진행 저장 형식 · 이벤트 이름은 그대로라 새 ADR을 만
 - **눌림**: 색으로만 보인다 — 위치를 옮기는 눌림은 Android Lynx가 탭을 취소한다(유닛 표식 수정 #307과 같은 이유).
 - **측정**: `episode_lesson_started`에 선택 속성 `startSource: "result"` — 결과 화면에서 열었을 때만 실린다. 맵에서 열면 키가 없어 기존 이벤트와 바이트가 같다.
 - **코드**: `app/catalog-next-unit.ts`(다음 유닛 · 결과 화면 `next`), `LessonCompleteNextActions`, `render-catalog.tsx`, 문구 `lessonComplete.nextLesson` · `nextFinal`. 통합 테스트의 결과 화면 나가기는 `test-helpers/lesson-result.ts` 하나로 모았다(두 모양 모두).
+
+## 적용 기록 ⟨2026-11-02 — level-3(balance) 디코더⟩
+
+balance 묶음(2026-10-30)을 읽기 위한 디코더(episode-core) 변경이다. 화면 · 여정맵은 바꾸지 않는다(이야기 파이널은 뒤 PR).
+
+- 문항 `story`(`line_id` · `lead` · `line` · `situation` · `image_url` · `hint_after_miss`)를 도메인 `item.story`로 옮긴다.
+- REPLY_SELECT: `stimulus` 없이 `context`만 오면 그것을 `stimulus.text`로 받고, 해설의 틀림 줄 · 틀린 보기 id(선택)를 읽는다. CLOZE_CHOICE 해설은 선택이다.
+- 새 형식 `HANGUL_WRITE`(따라 쓰기) — 레슨에서는 건너뛴다(`skippedItem`).
+- 타일 조립 형식(SYLLABLE_BUILD · LISTEN_BUILD)도 선택 `context`(`___` 자리)를 읽는다.
+- 최상위 `interlude` — INT 스텝 안 막간이 없을 때 쓴다(ADR-0088).
+- **모르는 형식 문항은 이제 그 문항만 빼고 `unknown-item-type` 경고**로 남긴다(이전에는 에피소드 거부) — 앞으로 생길 형식 하나가 에피소드 전체를 버리지 않게.
+- 도메인 모델 파일이 300줄을 넘어 바탕 타입(`model-base`) · 막간 타입(`model-interlude`)을 떼었다. `episode-content.model`이 그대로 다시 내보낸다.

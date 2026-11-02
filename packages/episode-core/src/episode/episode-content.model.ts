@@ -2,64 +2,33 @@
 // `episode-content.schema.ts`가 검사하고, `decodeEpisode`가 이 모양으로 바꿉니다.
 // 와이어 정본은 `docs/specs/episode-content-json-contract.md`입니다.
 
-export type Text = { ko: string; roman?: string; en?: string };
-export type Option = {
-  id: string;
-  ko: string;
-  roman: string;
-  en?: string;
-  correct: boolean;
-  whyWrong?: string;
-};
-export type Stimulus = {
-  audio?: Text;
-  text?: Text;
-  imageBrief?: string;
-  audioUrl?: string;
-  imageUrl?: string;
-  /** 와이어 `stimulus.en` — 옮길 영어 원문(TRANSLATE_TO_KO · WORD_ORDER · SYLLABLE_BUILD). 빈 값은 없음. */
-  en?: string;
-};
-
-export type EpisodeCut =
-  | {
-      kind: "speech";
-      index: number;
-      speaker: string;
-      line: Text;
-      aside: Text;
-      imageBrief: string;
-      imageUrl?: string;
-      audioUrl?: string;
-    }
-  | {
-      kind: "monologue";
-      index: number;
-      speaker: string;
-      line: Text;
-      imageBrief: string;
-      imageUrl?: string;
-      audioUrl?: string;
-    }
-  | {
-      kind: "narration";
-      index: number;
-      narration: Text;
-      imageBrief: string;
-      imageUrl?: string;
-      audioUrl?: string;
-    };
-
-export type DialogueLine = {
-  seq: number;
-  role: "counterpart" | "player";
-  text: Text;
-  textbook?: Text;
-  audioUrl?: string;
-};
+export type * from "./episode-content.model-base";
+import type {
+  DialogueLine,
+  EpisodeCut,
+  Option,
+  Stimulus,
+  Text,
+} from "./episode-content.model-base";
 
 /** 와이어 `event` — E 노출 · R 회상 · D 변별(2026-10-15 MIN_PAIR_AB). */
 export type ItemEvent = "E" | "R" | "D";
+
+/** 이야기 문항의 앞 상대 줄 — 녹음이 비면 `audioUrl` 키가 없습니다. */
+export type StoryLead = { speaker: string; line: Text; audioUrl?: string };
+
+/**
+ * 이야기 문항(level-3 S8)의 장면입니다 — `lead`(앞 상대 줄들) 뒤에 내가 할 `line`이 옵니다. `lineId`는
+ * `dialogue`의 줄 id입니다. 비어 있는 그림 · 상황은 키가 없습니다.
+ */
+export type ItemStory = {
+  lineId: string;
+  hintAfterMiss: boolean;
+  lead: StoryLead[];
+  line: Text;
+  situation?: Text;
+  imageUrl?: string;
+};
 
 type ItemBase<T extends string> = {
   id: string;
@@ -70,10 +39,14 @@ type ItemBase<T extends string> = {
   level?: number;
   skill?: string;
   skillLevel?: number;
+  /** 이야기 문항이면 장면 — 여정맵 파이널이 씁니다. */
+  story?: ItemStory;
 };
 
 /** 문항 피드백의 정답 줄 — `feedback.correct`. */
 export type CorrectFeedback = { correct: Text };
+/** 대답 고르기의 해설 — 틀림 줄 · 틀린 보기 id는 있을 때만. */
+export type ChoiceFeedback = { correct: Text; wrong?: Text; wrongOption?: string };
 /** TURN_ORDER 타일 — 2026-10-15부터 화자가 실려 옵니다. */
 export type TurnTile = Text & { speaker?: DialogueLine["role"] };
 
@@ -138,6 +111,8 @@ type StimulusChoice<T extends string> = ItemBase<T> & {
 type TilesBuild<T extends string> = ItemBase<T> & {
   prompt: Text;
   stimulus: Stimulus;
+  /** 이야기 빈칸의 문맥(`___` 자리) — 없으면 키가 없습니다. */
+  context?: Text;
   tiles: Text[];
   answers: Text[];
 };
@@ -149,9 +124,16 @@ export type AddedLearningItem =
       context: Text;
       options: Option[];
       answers: Text[];
-      feedback: CorrectFeedback;
+      feedback?: CorrectFeedback;
     })
-  | StimulusChoice<"REPLY_SELECT">
+  | (ItemBase<"REPLY_SELECT"> & {
+      prompt: Text;
+      /** 와이어에 없으면 `context`가 `text`로 옵니다. */
+      stimulus: Stimulus;
+      context?: Text;
+      options: Option[];
+      feedback?: ChoiceFeedback;
+    })
   | StimulusChoice<"MIN_PAIR_AB">
   | StimulusChoice<"PARTICLE_FILL">
   | StimulusChoice<"PARTICLE_SWAP">
@@ -165,52 +147,17 @@ export type AddedLearningItem =
   | TilesBuild<"LISTEN_BUILD">
   | TilesBuild<"SYLLABLE_BUILD">
   | Speech<"SHADOW">
-  | Speech<"SPEAK_WORD">;
+  | Speech<"SPEAK_WORD">
+  /** 따라 쓰기 — `answers[0]`의 음절을 차례로 씁니다. `context`의 `___` 자리입니다. */
+  | (ItemBase<"HANGUL_WRITE"> & {
+      prompt: Text;
+      context: Text;
+      answers: Text[];
+      feedback?: CorrectFeedback;
+    });
 
-/** 메신저 막간의 한 줄입니다. `afterOption`이 있으면 바로 앞 답장에서 그 보기(1부터)를 고른 때만 나옵니다. */
-export type EpisodeChatTurn =
-  | { kind: "message"; speaker: string; line: Text; imageUrl?: string; afterOption?: number }
-  | { kind: "reply"; options: [Text, ...Text[]] };
-
-/** 문자(`form: "message"`) 막간의 대화입니다 — 답장 보기와 분기 줄을 모두 지닙니다. */
-export type EpisodeChat = {
-  counterpart: string;
-  /** 막간 `profiles`에서 상대 화자의 그림(콘텐츠 상대 경로) — 없으면 아바타가 이니셜입니다. */
-  counterpartImageUrl?: string;
-  backgroundUrl?: string;
-  turns: [EpisodeChatTurn, ...EpisodeChatTurn[]];
-};
-
-/** 전화 막간의 한 줄 — 상대(`caller`) · 나(`self`) · 배경 소리(`background`, `label`은 「안내 방송」 같은 이름)입니다. */
-export type EpisodeCallLine = {
-  kind: "caller" | "self" | "background";
-  label: string;
-  line: Text;
-  /** 그 줄의 소리 id(`audio/manifest.json` 키) — 녹음이 없으면 없습니다. */
-  audioUrl?: string;
-};
-
-/** 전화(`form: "call"`) 막간입니다 — 상대는 `with`, 끝 지문은 `call_end` 컷입니다. */
-export type EpisodeCall = {
-  counterpart: string;
-  counterpartImageUrl?: string;
-  backgroundUrl?: string;
-  lines: [EpisodeCallLine, ...EpisodeCallLine[]];
-  end?: Text;
-};
-
-/**
- * 막간(와이어 `kind: "interlude"`) 이야기입니다 — 비주얼 노벨 · 메신저 · 전화 형식이 모두 컷으로 정규화됩니다
- * (컷의 메신저 답장은 첫 보기의 흐름). 문자 형식은 분기를 지닌 `chat`도 함께 냅니다. `caption`은 「그 시각, …」
- * 같은 장면 자막입니다(ADR-0088).
- */
-export type EpisodeStory = {
-  form: string;
-  caption?: Text;
-  cuts: [EpisodeCut, ...EpisodeCut[]];
-  chat?: EpisodeChat;
-  call?: EpisodeCall;
-};
+export type * from "./episode-content.model-interlude";
+import type { EpisodeStory } from "./episode-content.model-interlude";
 
 /** `story`가 있으면 문항 없는 이야기 유닛입니다(`items`는 비어 있습니다). */
 export type LearningUnit = {
@@ -269,6 +216,7 @@ export type DecodeIssueCode =
   | "schema-mismatch"
   | "invalid-shape"
   | "option-correct-count"
+  /** 경고 전용 — 모르는 형식 문항은 그 문항만 버립니다(에피소드는 성공). */
   | "unknown-item-type"
   | "duplicate-item-id"
   | "final-test-missing"
