@@ -66,7 +66,7 @@ type WireStory = {
 };
 
 /** 이야기 문항(level-3 S8)의 장면 — 빈 녹음 · 그림은 키를 싣지 않습니다. */
-function toStory(wire: WireStory): ItemStory {
+function toItemStory(wire: WireStory): ItemStory {
   return {
     lineId: wire.line_id,
     hintAfterMiss: wire.hint_after_miss === true,
@@ -100,7 +100,7 @@ export function itemBaseOf(item: WireItemCommon) {
     ...maybe("level", item.level),
     ...maybe("skill", nonEmpty(item.skill)),
     ...maybe("skillLevel", item.skill_level),
-    ...maybe("story", item.story === undefined ? undefined : toStory(item.story)),
+    ...maybe("story", item.story === undefined ? undefined : toItemStory(item.story)),
   };
 }
 
