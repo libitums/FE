@@ -105,6 +105,7 @@ const CARRIER_PATHS = {
   entry: "screens/journey-entry/JourneyEntryScreen.tsx",
   catalogCover: "screens/catalog-cover/CatalogCoverScreen.tsx",
   catalogFinal: "screens/catalog-final/CatalogFinalScreen.tsx",
+  catalogStoryFinal: "screens/catalog-story-final/CatalogStoryFinalScreen.tsx",
   episodeBanner: "screens/catalog-cover/EpisodeBannerScreen.tsx",
   roleplayPreview: "screens/roleplay-story/RoleplayPreviewScreen.tsx",
   roleplayTalk: "screens/roleplay-story/RoleplayTalkScreen.tsx",
@@ -218,6 +219,10 @@ function healthyBase(overrides = {}) {
       [CARRIER_PATHS.entry]: carrierComponent("JourneyEntryScreen", "journey-entry-screen"),
       [CARRIER_PATHS.catalogCover]: carrierComponent("CatalogCoverScreen", "catalog-cover-screen"),
       [CARRIER_PATHS.catalogFinal]: carrierComponent("CatalogFinalScreen", "catalog-final-screen"),
+      [CARRIER_PATHS.catalogStoryFinal]: carrierComponent(
+        "CatalogStoryFinalScreen",
+        "catalog-story-final-screen",
+      ),
       [CARRIER_PATHS.roleplayPreview]: carrierComponent(
         "RoleplayPreviewScreen",
         "roleplay-story-screen",
