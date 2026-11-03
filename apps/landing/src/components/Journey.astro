@@ -1,21 +1,19 @@
 ---
 import { Image } from "astro:assets";
 
-import { img } from "../assets/images";
 import type { Copy } from "../i18n/copy";
+import type { Language } from "../site";
+import { storyEpisodes } from "../story/episodes";
 
 interface Props {
+  language: Language;
   t: Copy;
 }
 
-const { t } = Astro.props;
-const scenes = [
-  { image: img.sceneFlight, alt: t.scene1Alt, title: t.scene1Title, desc: t.scene1Desc },
-  { image: img.sceneStreet, alt: t.scene2Alt, title: t.scene2Title, desc: t.scene2Desc },
-  { image: img.minseo, alt: t.scene3Alt, title: t.scene3Title, desc: t.scene3Desc, portrait: true },
-  { image: img.sceneCafe, alt: t.scene4Alt, title: t.scene4Title, desc: t.scene4Desc },
-  { image: img.sceneArrival, alt: t.scene5Alt, title: t.scene5Title, desc: t.scene5Desc },
-];
+const { language, t } = Astro.props;
+const two = (n: number) => String(n).padStart(2, "0");
+// 카드는 그림과 번호만 보입니다. 때 · 제목 · 티저는 그림 위의 숨김 층(`scene__reveal`)에 있고,
+// 호버 · 포커스로 비치거나 단추를 눌러 엽니다(`main.ts`의 `initPeek`).
 ---
 
 <section class="journey" id="journey" aria-labelledby="journey-title">
@@ -40,17 +38,31 @@ const scenes = [
   </div>
   <ol class="journey__rail" id="journey-rail" tabindex="0" aria-labelledby="journey-title">
     {
-      scenes.map((scene, index) => (
-        <li class:list={["scene", { "scene--portrait": scene.portrait }]}>
-          <Image
-            src={scene.image}
-            alt={scene.alt}
-            widths={[320, 480, 640]}
-            sizes="(max-width: 760px) 72vw, 320px"
-          />
-          <p class="scene__no">{String(index + 1).padStart(2, "0")}</p>
-          <h3>{scene.title}</h3>
-          <p class="scene__desc">{scene.desc}</p>
+      storyEpisodes.map((episode, index) => (
+        <li class:list={["scene", { "scene--new": index === 0 }]} data-episode={episode.id}>
+          <button
+            type="button"
+            class="scene__peek"
+            aria-expanded="false"
+            aria-controls={`${episode.id}-peek`}
+          >
+            <Image
+              src={episode.image}
+              alt={episode.alt[language]}
+              widths={[320, 480, 640]}
+              sizes="(max-width: 760px) 72vw, 320px"
+              style={episode.focus ? `object-position: ${episode.focus}` : undefined}
+            />
+            <span class="scene__no">
+              {index === 0 && <span class="scene__new">{t.journeyNew}</span>}
+              <span>{two(episode.number)}</span>
+            </span>
+          </button>
+          <div class="scene__reveal" id={`${episode.id}-peek`}>
+            <p class="scene__when">{episode.when[language]}</p>
+            <h3>{episode.title[language]}</h3>
+            <p class="scene__desc">{episode.teaser[language]}</p>
+          </div>
         </li>
       ))
     }

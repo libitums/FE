@@ -75,14 +75,14 @@ describe("WORD_ORDER 읽기 줄 (MP3)", () => {
 });
 
 describe("LISTEN_BUILD 읽기 줄 (MP4)", () => {
-  test("u00 S7은 늘 보이는 읽기 줄을 정답 로마자로 싣는다", () => {
+  test("u00 S7은 확인 뒤에 보이는 읽기 줄을 정답 로마자로 싣는다 — 답 전에 보이면 로마자 순서대로 놓으면 끝난다", () => {
     const question = sentenceOrderOf(
       catalogItemOf(itemOf("u00-tutorial", "S7", "S7-01"), portFor("u00-tutorial")),
     );
 
     expect(question.reading).toEqual({
       romanization: "annyeonghaseyo! hangugeun cheoeumiseyo?",
-      shown: "always",
+      shown: "after-check",
     });
   });
 });

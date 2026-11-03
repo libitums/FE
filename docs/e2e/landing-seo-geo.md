@@ -358,18 +358,18 @@ GA-E1~E5 · E7은 공통으로 콘솔 · 페이지 오류 0, 외부 요청의 �
   1. **[명령]** 속성이 산출물에 그대로 있는지.
 
      ```sh
-     curl -s $B/ | grep -o '<img[^>]*>' | grep 'scene-' | head -3
+     curl -s $B/ | grep -o '<figure class="hero__panel"[^>]*>[^<]*<img[^>]*>' | head -3
      ```
 
   2. **[사람]** Chrome DevTools → Network 탭 → Img 필터 → 「Disable cache」 체크 → 우선순위 열 켜기(열 머리글 우클릭 → Priority). 기기 도구 모음으로 폭을 390px로 두고 `http://localhost:4399/`를 새로 연다. **스크롤하지 않는다.**
-  3. **[사람]** 요청 목록에서 `scene-plane` · `scene-street` · `scene-arrival`의 순서와 Priority 열을 읽는다. 그다음 천천히 스크롤해 나머지가 언제 요청되는지 본다.
+  3. **[사람]** 요청 목록에서 히어로 패널 셋(⟨2026-10-29⟩ 버킷 사본이라 이름이 `pre-1-v2` · `pre-5-v2` · `post-3`다 — 1단계의 `src`로 가린다)의 순서와 Priority 열을 읽는다. 그다음 천천히 스크롤해 나머지가 언제 요청되는지 본다.
   4. **[명령]**(LCP 요소 — 주 경로) 브라우저가 알려 주는 LCP 요소를 `PerformanceObserver`로 읽는다. Lighthouse 버전에 묶이지 않는다. Chrome DevTools 콘솔(폭 390px, 새로 고침 직후 — `buffered: true`라 늦게 붙여도 된다)에 붙여 넣는다.
 
      ```js
      new PerformanceObserver(l => { const e = l.getEntries().at(-1); console.log(e.element?.tagName + (e.element?.id ? '#' + e.element.id : ''), e.element?.outerHTML.slice(0, 120)); }).observe({ type: 'largest-contentful-paint', buffered: true });
      ```
 
-     헤드리스로 되풀이하려면 Playwright에서 같은 관찰자를 `page.addInitScript`로 심고 로드 뒤 값을 읽는다(요청 우선순위는 `context.newCDPSession(page)` → `Network.enable` → `Network.requestWillBeSent`의 `request.initialPriority`로 읽는다. `scene-` 요청만 거른다).
+     헤드리스로 되풀이하려면 Playwright에서 같은 관찰자를 `page.addInitScript`로 심고 로드 뒤 값을 읽는다(요청 우선순위는 `context.newCDPSession(page)` → `Network.enable` → `Network.requestWillBeSent`의 `request.initialPriority`로 읽는다. 히어로 `<img src>` 셋과 같은 경로의 요청만 거른다).
   5. **[명령]**(보조 — Lighthouse) 같은 값을 Lighthouse로도 본다. **감사 키 이름은 버전별로 다르다**: 13.5.0에는 `largest-contentful-paint-element`가 **없고** `lcp-breakdown-insight`(`details`에 LCP 요소 노드)로 바뀌었다. 모르는 키는 `Object.keys(r.audits).filter(k => /lcp/.test(k))`로 먼저 찾는다.
 
      ```sh
@@ -378,7 +378,7 @@ GA-E1~E5 · E7은 공통으로 콘솔 · 페이지 오류 0, 외부 요청의 �
      node -e 'const r=require("/tmp/lh-perf.json");console.log(r.lighthouseVersion,Object.keys(r.audits).filter(k=>/lcp/.test(k)))'
      ```
 - **기대 결과**
-  - 1단계: 출력 세 줄이 `scene-plane` · `scene-street` · `scene-arrival` 순서이고(히어로 패널 셋), 첫 그림(`scene-plane`)에 `fetchpriority="high"`가 있고 `loading`이 없다. 나머지 둘(`scene-street` · `scene-arrival`)은 `loading="lazy"`이고 `fetchpriority`가 없다.
+  - 1단계: 출력 세 줄이 히어로 패널 순서(`data-panel` 0 · 1 · 2)이고, 첫 그림에 `fetchpriority="high"`가 있고 `loading`이 없다. 나머지 둘은 `loading="lazy"`이고 `fetchpriority`가 없다. (2026-10-05 ~ 10-28의 빌드에서는 이름이 `scene-plane` · `scene-street` · `scene-arrival`였다.)
   - 3단계: DevTools Network의 **Priority 열**(또는 CDP `Network.requestWillBeSent`의 `request.initialPriority`)에서 `scene-plane`이 **High**이고 Img 요청 중 **가장 먼저** 나간다. 판정 기준은 이것이다: `scene-street` · `scene-arrival`의 우선순위가 `scene-plane`보다 **높으면 안 된다**(같거나 낮아야 한다).
   - **알려진 한계**: 좁은 화면(390px)에서는 히어로 세 패널이 **같은 자리에 겹쳐** 있어 `loading="lazy"`인 두 그림(`scene-street` · `scene-arrival`)도 **스크롤 전에 요청된다**(뷰포트 안에 있기 때문). 「스크롤 전에는 요청되지 않는다」는 기대하지 않는다 — 요청되는 것 자체는 실패가 아니다.
   - **알려진 관찰 — 요청 뒤의 우선순위 상향**: Chrome 154는 이 두 그림을 Low로 요청한 **뒤** High로 올린다(CDP의 우선순위 변경 이벤트로 관찰했다. 뷰포트 안의 그림이라고 판단한 것으로 보인다 — 추정. 첫 수행에서는 chrome-headless-shell 149에서도 같은 상향이 보였고 둘째에서는 Chrome 154에서만 보였다). 그래서 DevTools의 Priority 열에는 셋 다 High로 보일 수 있다. 판정은 **처음 요청할 때의 우선순위**(`initialPriority`)와 요청 순서로 한다: `scene-plane`이 처음부터 High이고 그림 중 가장 먼저 나가면 통과다. 나머지 둘이 나중에 High가 되는 것은 「`scene-plane`보다 높으면 안 된다」에 어긋나지 않는다(같다).

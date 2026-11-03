@@ -67,13 +67,14 @@ describe.each(languages)("Features (%s)", (language) => {
   it("UI-FT5 장식 그림 — 설명은 있고 보조기술에는 숨는다", () => {
     const images = [...document.querySelectorAll("#ways img")];
     expect(images.map((image) => image.getAttribute("alt"))).toEqual([
-      t.scene2Alt,
-      t.sceneCafeEveningAlt,
-      t.scene4Alt,
-      t.scene3Alt,
-      t.scene1Alt,
-      t.scene3Alt,
-      t.scene5Alt,
+      t.backdropAlleyAlt,
+      t.phoneMinaWaveAlt,
+      t.backdropCafeWindowAlt,
+      t.avatarMinaAlt,
+      t.backdropRainAlt,
+      t.backdropRainAlt,
+      t.avatarMinaAlt,
+      t.backdropSubwayAlt,
     ]);
     for (const image of images) {
       expect(image.getAttribute("aria-hidden")).toBe("true");

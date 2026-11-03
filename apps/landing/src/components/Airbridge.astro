@@ -1,0 +1,19 @@
+---
+import { buildAirbridgeBootstrap } from "../analytics/airbridge-bootstrap";
+import type { AirbridgeProps } from "./landing.contract";
+
+type Props = AirbridgeProps;
+
+const { webToken } = Astro.props;
+---
+
+{
+  webToken && (
+    <>
+      <script is:inline set:html={buildAirbridgeBootstrap(webToken)} />
+      <script>
+        import "../scripts/airbridge-main";
+      </script>
+    </>
+  )
+}

@@ -13,10 +13,31 @@ const { t } = Astro.props;
 // 배경은 흐리게 깔리는 그림이라 작게 구운 것으로 충분합니다(원본을 쓰면 장면마다 100KB 안팎을 더 받습니다).
 const small = async (image: ImageMetadata) => (await getImage({ src: image, width: 240 })).src;
 const backdrop = {
-  story: await small(img.sceneStreet),
-  messenger: await small(img.sceneCafe),
-  call: await small(img.sceneFlight),
-  practice: await small(img.sceneArrival),
+  story: await small(img.backdropAlley),
+  messenger: await small(img.backdropCafeWindow),
+  call: await small(img.backdropRain),
+  practice: await small(img.backdropSubway),
+};
+// 목업 화면의 그림은 화면 폭(약 300px)만큼만 필요합니다.
+const phoneStory = (await getImage({ src: img.phoneMinaWave, width: 600 })).src;
+const phoneCall = (await getImage({ src: img.backdropRain, width: 600 })).src;
+
+// 목업은 앱 화면을 그대로 옮긴 것입니다(phone.css 머리글). 대사 · 이름은 u03 「미나 만나기」의 실제 컷에서 가져왔고,
+// 화면 테두리의 문구(Next · Message · How will you reply? …)는 앱의 영어 UI 문구 그대로입니다.
+const storyLine = "안녕하세요. 이름이 뭐예요?";
+const readAloud = ["내일", "카페에서", "봬요."];
+
+const icons = {
+  back: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>',
+  close: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>',
+  up: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>',
+  check: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5L20 7"/></svg>',
+  mic: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a3 3 0 0 1 3 3v6a3 3 0 0 1-6 0V6a3 3 0 0 1 3-3zM5 11a7 7 0 0 0 14 0M12 18v3"/></svg>',
+  volume: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4zM16.5 8.5a5 5 0 0 1 0 7"/></svg>',
+  phone:
+    '<svg viewBox="0 0 24 24" aria-hidden="true" data-fill><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25 11.4 11.4 0 0 0 3.6.57 1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1 11.4 11.4 0 0 0 .57 3.6 1 1 0 0 1-.25 1z"/></svg>',
+  waves:
+    '<svg viewBox="0 0 72 56" aria-hidden="true" stroke-width="4"><path d="M8 24v8M18 16v24M28 8v40M36 20v16M44 4v48M54 14v28M64 22v12"/></svg>',
 };
 ---
 
@@ -34,17 +55,32 @@ const backdrop = {
         <p>{t.wayStoryDesc}</p>
       </div>
       <div class="feature__media">
-        <img class="feature__backdrop" src={backdrop.story} alt={t.scene2Alt} aria-hidden="true" loading="lazy" />
+        <img class="feature__backdrop" src={backdrop.story} alt={t.backdropAlleyAlt} aria-hidden="true" loading="lazy" />
         <div class="phone" data-testid="feature-phone">
           <div class="phone__screen">
-            <div class="screen screen--story">
-              <img src={img.sceneCafeEvening.src} alt={t.sceneCafeEveningAlt} aria-hidden="true" loading="lazy" />
-              <div class="dialog">
-                <p class="dialog__speaker">Me</p>
-                <p class="dialog__line" lang="ko">
-                  민서가 웃으며 손을 흔든다. 나도 웃으며 인사를 건넨다.
-                </p>
-                <p class="dialog__gloss">Minseo smiles and waves. I smile back.</p>
+            <div class="screen screen--story" aria-hidden="true">
+              <img class="vn__scene" src={phoneStory} alt={t.phoneMinaWaveAlt} aria-hidden="true" loading="lazy" />
+              <div class="vn__shade"></div>
+              <div class="vn__head">
+                <span class="round"><Fragment set:html={icons.back} /></span>
+                <div>
+                  <p class="vn__title">Episode 3.</p>
+                  <p class="vn__progress">Scene 4 / 4</p>
+                </div>
+              </div>
+              <div class="vn__bottom">
+                <div class="vn__dialog">
+                  <p class="vn__speaker" lang="ko">낯선 사람</p>
+                  <p class="vn__aside">
+                    <span lang="ko">수건을 어깨에 걸치며 이쪽을 돌아보고</span>
+                    <span>Draping the towel over one shoulder and turning this way.</span>
+                  </p>
+                  <p class="vn__line" lang="ko">
+                    {[...storyLine].map((ch, i) => <span class="vn__ch" style={`--i:${i}`}>{ch}</span>)}
+                  </p>
+                  <p class="vn__gloss">Hi. What’s your name?</p>
+                </div>
+                <span class="btn">Next</span>
               </div>
             </div>
           </div>
@@ -60,30 +96,46 @@ const backdrop = {
         <p>{t.wayMessengerDesc}</p>
       </div>
       <div class="feature__media">
-        <img class="feature__backdrop" src={backdrop.messenger} alt={t.scene4Alt} aria-hidden="true" loading="lazy" />
+        <img class="feature__backdrop" src={backdrop.messenger} alt={t.backdropCafeWindowAlt} aria-hidden="true" loading="lazy" />
         <div class="phone" data-testid="feature-phone">
           <div class="phone__screen">
-            <div class="screen screen--messenger">
+            <div class="screen screen--messenger" aria-hidden="true">
               <div class="chat__head">
-                <img src={img.minseo.src} alt={t.scene3Alt} aria-hidden="true" width="36" height="36" loading="lazy" />
-                <span>Minseo</span>
+                <span class="round"><Fragment set:html={icons.back} /></span>
+                <p class="chat__name" lang="ko">미나</p>
               </div>
-              <div class="chat__body">
-                <div class="bubble bubble--other">
-                  <p lang="ko">지금 뭐 해? 같이 커피 마실래?</p>
-                  <small>What are you up to? Want to get coffee?</small>
+              <div class="chat__log">
+                <div class="chat__row">
+                  <img class="chat__avatar" src={img.avatarMina.src} alt={t.avatarMinaAlt} aria-hidden="true" width="28" height="28" loading="lazy" />
+                  <div class="bubble bubble--other">
+                    <p lang="ko">지금 뭐 해? 같이 커피 마실래?</p>
+                    <small>What are you up to? Want to get coffee?</small>
+                  </div>
                 </div>
-                <div class="bubble bubble--self">
-                  <p lang="ko">좋아! 어디서 만나?</p>
-                  <small>Sure! Where should we meet?</small>
+                <div class="chat__row chat__row--typing">
+                  <span class="chat__avatar"></span>
+                  <div class="chat__typing"><i></i><i></i><i></i></div>
                 </div>
-                <div class="bubble bubble--other">
-                  <p lang="ko">골목 끝 카페에서 만나자.</p>
-                  <small>Let’s meet at the café at the end of the street.</small>
+                <div class="chat__row chat__row--late">
+                  <span class="chat__avatar"></span>
+                  <div class="bubble bubble--other">
+                    <p lang="ko">골목 끝 카페에서 만나자.</p>
+                    <small>Let’s meet at the café at the end of the street.</small>
+                  </div>
                 </div>
               </div>
-              <div class="chat__choices" aria-hidden="true">
-                <span lang="ko">먼저 가서 창가 자리 맡아둘게.</span>
+              <div class="chat__composer">
+                <span class="chat__field">Message</span>
+                <span class="round chat__send"><Fragment set:html={icons.up} /></span>
+              </div>
+              <div class="chat__scrim"></div>
+              <div class="chat__sheet">
+                <p class="chat__sheet-title">How will you reply?</p>
+                <p class="chat__quote" lang="ko">“골목 끝 카페에서 만나자.”</p>
+                <div class="chat__options">
+                  <span class="btn"><span lang="ko">좋아! 지금 갈게.</span><small>Sure! On my way.</small></span>
+                  <span class="btn"><span lang="ko">미안, 조금 늦을 것 같아.</span><small>Sorry, I might be a little late.</small></span>
+                </div>
               </div>
             </div>
           </div>
@@ -99,21 +151,45 @@ const backdrop = {
         <p>{t.wayCallDesc}</p>
       </div>
       <div class="feature__media">
-        <img class="feature__backdrop" src={backdrop.call} alt={t.scene1Alt} aria-hidden="true" loading="lazy" />
+        <img class="feature__backdrop" src={backdrop.call} alt={t.backdropRainAlt} aria-hidden="true" loading="lazy" />
         <div class="phone" data-testid="feature-phone">
           <div class="phone__screen">
-            <div class="screen screen--call">
-              <img class="call__avatar" src={img.minseo.src} alt={t.scene3Alt} aria-hidden="true" loading="lazy" />
-              <p class="call__name">Minseo</p>
-              <p class="call__status">On a call</p>
-              <div class="call__wave" aria-hidden="true">
-                <i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+            <div class="screen screen--call" aria-hidden="true">
+              <img class="call__bg" src={phoneCall} alt={t.backdropRainAlt} aria-hidden="true" loading="lazy" />
+              <div class="call__shade"></div>
+              <div class="call__head">
+                <span class="round"><Fragment set:html={icons.back} /></span>
               </div>
-              <div class="call__transcript">
-                <p lang="ko">저는 민서예요.</p>
-                <small>I’m Minseo.</small>
+              <div class="call__body">
+                <div class="call__avatar-wrap">
+                  <i class="call__ring"></i>
+                  <img class="call__avatar" src={img.avatarMina.src} alt={t.avatarMinaAlt} aria-hidden="true" width="88" height="88" loading="lazy" />
+                </div>
+                <p class="call__name" lang="ko">미나</p>
+                <p class="call__clock">00:12</p>
+                <div class="call__stage">
+                  <div class="call__line call__line--1">
+                    <p class="call__who" lang="ko">미나</p>
+                    <p class="call__ko" lang="ko">여보세요? 지금 어디예요?</p>
+                    <p class="call__en">Hello? Where are you now?</p>
+                  </div>
+                  <div class="call__line call__line--2 call__line--self">
+                    <p class="call__who">Me</p>
+                    <p class="call__ko" lang="ko">카페 앞이에요.</p>
+                    <p class="call__en">I’m in front of the café.</p>
+                  </div>
+                  <div class="call__line call__line--3">
+                    <p class="call__who" lang="ko">미나</p>
+                    <p class="call__ko" lang="ko">알았어요. 금방 갈게요!</p>
+                    <p class="call__en">Got it. Be right there!</p>
+                  </div>
+                </div>
+                <div class="call__controls">
+                  <span class="call__control"><i><Fragment set:html={icons.mic} /></i>Mute</span>
+                  <span class="call__control"><i><Fragment set:html={icons.volume} /></i>Speaker</span>
+                  <span class="call__control call__control--end"><i><Fragment set:html={icons.phone} /></i>End</span>
+                </div>
               </div>
-              <div class="call__reply" lang="ko">아, 민서 씨! 내일 카페에서 봬요.</div>
             </div>
           </div>
         </div>
@@ -128,22 +204,52 @@ const backdrop = {
         <p>{t.wayPracticeDesc}</p>
       </div>
       <div class="feature__media">
-        <img class="feature__backdrop" src={backdrop.practice} alt={t.scene5Alt} aria-hidden="true" loading="lazy" />
+        <img class="feature__backdrop" src={backdrop.practice} alt={t.backdropSubwayAlt} aria-hidden="true" loading="lazy" />
         <div class="phone" data-testid="feature-phone">
           <div class="phone__screen">
-            <div class="screen screen--practice">
-              <p class="practice__label">Trace one letter</p>
-              <div class="practice__pad" aria-hidden="true">
-                <span class="practice__ghost" lang="ko">나</span>
-                <span class="practice__ink" lang="ko">나</span>
+            <div class="screen screen--practice" aria-hidden="true">
+              <div class="ra__session">
+                <div class="ra__session-row">
+                  <Fragment set:html={icons.close} />
+                  <p class="ra__lesson">Lesson 2 / 5</p>
+                </div>
+                <div class="ra__track"><div class="ra__fill"></div></div>
+                <p class="ra__form">Speaking</p>
               </div>
-              <p class="practice__phrase" lang="ko">내일 만<mark>나</mark>요</p>
-              <p class="practice__gloss">See you tomorrow</p>
-              <ul class="practice__modes">
-                <li>Listen</li>
-                <li>Speak</li>
-                <li class="is-on">Write</li>
-              </ul>
+              <p class="ra__prompt">Read the sentence out loud.</p>
+              <div class="ra__stage">
+                <p class="ra__ko" lang="ko">
+                  {
+                    readAloud.map((word, i) => (
+                      <>
+                        {i > 0 && " "}
+                        <span class="ra__word" style={`--i:${i}`}>
+                          {word}
+                        </span>
+                      </>
+                    ))
+                  }
+                </p>
+                <p class="ra__roman">naeil kapeeseo bwaeyo.</p>
+                <p class="ra__en">See you at the café tomorrow.</p>
+                <div class="ra__listen">
+                  <span class="round"><Fragment set:html={icons.volume} /></span>
+                  <span class="ra__slow"><Fragment set:html={icons.check} />Slow</span>
+                </div>
+              </div>
+              <div class="ra__work">
+                <span class="ra__waves"><Fragment set:html={icons.waves} /></span>
+                <p class="ra__hint">You said all 3 words.</p>
+              </div>
+              <div class="ra__foot">
+                <div class="ra__actions ra__actions--heard">
+                  <span class="btn btn--outline">Try again</span>
+                  <span class="btn">Next</span>
+                </div>
+                <div class="ra__actions ra__actions--listening">
+                  <span class="btn">Stop speaking</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>

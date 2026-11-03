@@ -16,6 +16,10 @@ App SDK Token으로 Airbridge가 이벤트를 받는 것을 본 적이 없고, �
 - 값은 저장소에 커밋하지 않는다. 플랫폼마다 추적하지 않는 파일 하나에 적는다.
 - 매체(Meta · Google Ads · TikTok Ads · Apple Ads)와의 연결은 **앱이 아니라 Airbridge 대시보드에서** 한다. 앱에는 매체별
   SDK가 없다.
+- ⟨2026-10-30⟩ **웹 랜딩(`apps/landing`)은 같은 화면의 다른 값 — Web SDK Token**(App SDK Token이 아니다)을 Vercel 환경 변수 `PUBLIC_AIRBRIDGE_WEB_TOKEN`
+  (Production에만)으로 받아, 검색광고를 눌러 온 사람의 Play 카드 클릭을 `openDeeplink`로 보내 **랜딩에서 Play 설치를 귀속**한다. 값이 없으면 싣지 않는다.
+  켜는 법 · 동작은 [랜딩 README 「분석」 · 「배포」](../apps/landing/README.md#airbridge-web-sdk-2026-10-30), 결정은 [ADR-0090](adr/0090-landing-airbridge-web-sdk.md),
+  수신 확인은 [e2e F](e2e/airbridge-events.md#f--웹-랜딩--설치-귀속-adr-0090)(미실행). 이 문서의 나머지는 앱 쪽 그대로다.
 - ⚠ **Android는 값이 없는 빌드에도 광고 ID 권한이 실린다.** Play에 올리기 전에 콘솔의 선언부터 맞춘다
   ([스토어 고지에서 바뀌는 것](#스토어-고지에서-바뀌는-것)).
 

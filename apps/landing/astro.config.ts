@@ -1,6 +1,7 @@
 import sitemap from "@astrojs/sitemap";
 import { defineConfig } from "astro/config";
 
+import { resolveAirbridgeWebToken } from "./src/analytics/airbridge-bootstrap";
 import { resolveMeasurementId } from "./src/analytics/gtag";
 import { deployEnvironment } from "./src/seo/deploy-env";
 import { resolveSiteUrl } from "./src/seo/site-url";
@@ -19,6 +20,9 @@ const site = resolveSiteUrl({
 
 // 측정 ID의 모양이 틀리면 페이지를 그리기 전에 여기서 빌드를 멈춥니다. 값은 컴포넌트가 import.meta.env로 읽습니다.
 resolveMeasurementId(process.env.PUBLIC_GA_MEASUREMENT_ID);
+
+// Web SDK 토큰의 모양이 틀리면 여기서 빌드를 멈춥니다(값은 출력에 싣지 않음). 없으면 랜딩은 SDK를 싣지 않습니다.
+resolveAirbridgeWebToken(process.env.PUBLIC_AIRBRIDGE_WEB_TOKEN);
 
 // 체험판 음성 버킷 주소도 같은 자리에서 검사합니다 — 모양이 틀리면, 프로덕션 배포에 값이 없으면 빌드를 멈춥니다.
 // 값은 체험판 페이지가 import.meta.env로 읽습니다.

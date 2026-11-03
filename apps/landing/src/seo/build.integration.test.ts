@@ -43,6 +43,7 @@ function runBuild(
   delete env.SITE_URL;
   if (siteUrl !== undefined) env.SITE_URL = siteUrl;
   delete env.PUBLIC_GA_MEASUREMENT_ID;
+  delete env.PUBLIC_AIRBRIDGE_WEB_TOKEN;
   if (measurementId !== undefined) env.PUBLIC_GA_MEASUREMENT_ID = measurementId;
   for (const key of Object.keys(env)) if (key.startsWith("VERCEL")) delete env[key];
   Object.assign(env, extra);
