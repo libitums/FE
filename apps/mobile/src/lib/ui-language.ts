@@ -10,6 +10,7 @@ import type {
   LoadUiLanguage,
   ReturningUiLanguageFrom,
   SaveUiLanguage,
+  UiLanguage,
   UiLanguageFrom,
   UiLanguageFromDeviceTag,
   UiLanguageStorageKey,
@@ -27,10 +28,21 @@ export const saveUiLanguage: SaveUiLanguage = (language) => {
   setItem(uiLanguageStorageKey, language);
 };
 
+/** 설정 › Language — 고르는 즉시 세션 언어를 바꾸고 저장합니다(ADR-0093). 화면 전체가 그 자리에서 바뀝니다. */
+export function changeUiLanguage(
+  language: UiLanguage,
+  setLanguage: (language: UiLanguage) => void,
+): void {
+  setLanguage(language);
+  saveUiLanguage(language);
+}
+
 // 기기 태그의 주 하위 태그(`ja-JP` → `ja`, `_` 구분 허용)가 고를 수 있는 언어일 때만 받습니다.
 export const uiLanguageFromDeviceTag: UiLanguageFromDeviceTag = (deviceLanguageTag) => {
   if (deviceLanguageTag === null) return null;
-  const primary = (deviceLanguageTag.trim().split(/[-_]/)[0] ?? "").toLowerCase();
+  const raw = (deviceLanguageTag.trim().split(/[-_]/)[0] ?? "").toLowerCase();
+  // 옛 Android(자바 Locale)는 인도네시아어를 `in`으로 냅니다(ADR-0093).
+  const primary = raw === "in" ? "id" : raw;
   const language = entryLanguages.find((candidate) => candidate === primary);
   return language !== undefined && isEntryLanguageAvailable(language) ? language : null;
 };

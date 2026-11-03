@@ -33,7 +33,7 @@ afterEach(() => {
 
 // ------------------------------------------------------------------------- IT1
 
-test("[IT1] 설정 탭을 열면 계정 항목 여섯과 계정 동작 둘만 표시된다", async () => {
+test("[IT1] 설정 탭을 열면 계정 항목 일곱과 계정 동작 둘만 표시된다", async () => {
   await renderSignedInApp(<App progressSeed={legacyPassedSeed} />);
   openSettingsTab();
 
@@ -44,6 +44,7 @@ test("[IT1] 설정 탭을 열면 계정 항목 여섯과 계정 동작 둘만 �
   expect(itemTestIds).toEqual([
     "ui-lynx-settings-group-item-profile",
     "ui-lynx-settings-group-item-learner-profile",
+    "ui-lynx-settings-group-item-language",
     "ui-lynx-settings-group-item-notifications",
     "ui-lynx-settings-group-item-feedback",
     "ui-lynx-settings-group-item-privacy-policy",

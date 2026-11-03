@@ -23,6 +23,7 @@ import "./settings-screen.css";
 export function SettingsScreen({
   onSelectNavTarget,
   learnerProfileSummary,
+  languageSummary,
   appVersion,
   onSignOut,
   onDeleteAccount,
@@ -43,7 +44,12 @@ export function SettingsScreen({
     id: target,
     trailing: "navigation",
     title: settingsNavLabel(target, copy),
-    description: target === "learner-profile" ? learnerProfileSummary : undefined,
+    description:
+      target === "learner-profile"
+        ? learnerProfileSummary
+        : target === "language"
+          ? languageSummary
+          : undefined,
     onNavigate: () => onSelectNavTarget(target),
   }));
 

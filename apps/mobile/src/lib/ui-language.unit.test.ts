@@ -101,6 +101,13 @@ test("UL5. 목록에만 있는 언어 · 모르는 태그 · 빈 값은 null이�
   }
 });
 
+test("UL5c. 인도네시아어 기기 태그는 id다 — 옛 Android 코드 in도 같다(ADR-0093)", () => {
+  for (const tag of ["id", "id-ID", "in", "in-ID", "IN_id"]) {
+    expect(uiLanguageFromDeviceTag(tag)).toBe("id");
+  }
+  expect(returningUiLanguageFrom(null, "in-ID")).toBe("id");
+});
+
 test("UL5b. 베트남어 기기 태그는 vi다(ADR-0091 D4)", () => {
   for (const tag of ["vi", "vi-VN", "VI_vn"]) {
     expect(uiLanguageFromDeviceTag(tag)).toBe("vi");

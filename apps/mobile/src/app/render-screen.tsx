@@ -16,6 +16,8 @@ import { renderCatalogFlow } from "./render-catalog";
 import { renderCatalogCover } from "./render-catalog-cover";
 import { renderCatalogStory } from "./render-catalog-story";
 import { renderEntryScreen } from "./render-entry-screen";
+import { LanguageSelectScreen } from "../screens/language-select/LanguageSelectScreen";
+import { entryLanguageLabel } from "../lib/entry-language";
 import { learnerSettingsSummary, renderLearnerProfileSettings } from "./render-learner-profile";
 import { renderRoleplayStory } from "./render-roleplay-story";
 import type { ScreenWiring } from "./screen-wiring";
@@ -70,6 +72,7 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
         <SettingsScreen
           onSelectNavTarget={wiring.onSelectNavTarget}
           learnerProfileSummary={learnerSettingsSummary(wiring)}
+          languageSummary={entryLanguageLabel(wiring.entryLanguage)}
           appVersion={wiring.appVersion}
           onSignOut={wiring.onSignOut}
           onDeleteAccount={wiring.onDeleteAccount}
@@ -80,6 +83,15 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
       return <AccountProfileScreen onExit={wiring.onExitSettingsStack} />;
     case "learner-profile":
       return renderLearnerProfileSettings(wiring);
+    case "language-settings":
+      return (
+        <LanguageSelectScreen
+          selected={wiring.entryLanguage}
+          onSelect={wiring.onChangeUiLanguage}
+          onContinue={wiring.onExitSettingsStack}
+          onBack={wiring.onExitSettingsStack}
+        />
+      );
     case "feedback":
       return (
         <FeedbackScreen onSubmit={wiring.onSubmitFeedback} onExit={wiring.onExitSettingsStack} />

@@ -130,8 +130,8 @@ test("UC3. 입력 둘을 바꾸지 않고 던지지 않는다", () => {
   expect(overrides.common?.count?.gems).toBe(gems);
 });
 
-test("UC4. uiCopyCatalog의 키 집합이 정확히 en · es · ja · vi이고 en이 uiCopyEn이다", () => {
-  expect(Object.keys(uiCopyCatalog).sort()).toEqual(["en", "es", "ja", "vi"]);
+test("UC4. uiCopyCatalog의 키 집합이 정확히 en · es · id · ja · vi이고 en이 uiCopyEn이다", () => {
+  expect(Object.keys(uiCopyCatalog).sort()).toEqual(["en", "es", "id", "ja", "vi"]);
   expect(uiCopyCatalog.en).toBe(uiCopyEn);
 });
 

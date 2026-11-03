@@ -19,6 +19,8 @@ import type { LegalDocument, LegalDocumentOpenedEvent } from "../../lib/legal-do
 export type SettingsNavTarget =
   | "profile"
   | "learner-profile"
+  // UI 언어를 바꾸는 화면(ADR-0093) — 진입 흐름의 언어 선택 화면을 설정 탭 스택에 다시 씁니다.
+  | "language"
   | "notifications"
   | "feedback"
   | LegalDocument;
@@ -27,12 +29,15 @@ export type SettingsScreenProps = {
   readonly onSelectNavTarget: (target: SettingsNavTarget) => void;
   /** 「Name and country in lessons」 줄의 설명입니다 — 지금 값 · `Not set` · 기기에만 저장됨. */
   readonly learnerProfileSummary: string;
+  /** 「Language」 줄의 설명 — 지금 UI 언어의 이름입니다. */
+  readonly languageSummary: string;
   /** 목록 끝 `Version 1.0 (11)` 줄입니다(ADR-0086). 호스트가 안 보내면(Explorer · 테스트) `null`이고 줄이 없습니다. */
   readonly appVersion: AppVersion | null;
 } & AccountActionsProps;
 
 export type SettingsOpenedEvent = { readonly name: "settings_opened" };
 export type ProfileOpenedEvent = { readonly name: "profile_opened" };
+export type LanguageSettingsOpenedEvent = { readonly name: "language_settings_opened" };
 export type NotificationSettingsOpenedEvent = { readonly name: "notification_settings_opened" };
 export type FeedbackOpenedEvent = { readonly name: "feedback_opened" };
 /** 설정에서 피드백을 보냈습니다(성공한 것만). 글은 싣지 않습니다(ADR-0036). */
@@ -50,6 +55,7 @@ export type SessionOptionChangedEvent = {
 export type SettingsEvent =
   | SettingsOpenedEvent
   | ProfileOpenedEvent
+  | LanguageSettingsOpenedEvent
   | NotificationSettingsOpenedEvent
   | FeedbackOpenedEvent
   | FeedbackSubmittedEvent

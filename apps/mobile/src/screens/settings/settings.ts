@@ -7,6 +7,7 @@ import type { LegalDocumentOpenedEvent } from "../../lib/legal-document.contract
 import type { LearnerProfileOpenedEvent } from "../../lib/learner-profile.contract";
 import type {
   FeedbackOpenedEvent,
+  LanguageSettingsOpenedEvent,
   NotificationSettingsOpenedEvent,
   ProfileOpenedEvent,
   SessionOptionChangedEvent,
@@ -17,6 +18,7 @@ import type { SessionOptionKey } from "../../lib/session-options";
 export const settingsNavTargets: readonly SettingsNavTarget[] = [
   "profile",
   "learner-profile",
+  "language",
   "notifications",
   "feedback",
   "privacy-policy",
@@ -32,6 +34,7 @@ export function settingsNavOpenedEvent(
   target: SettingsNavTarget,
 ):
   | ProfileOpenedEvent
+  | LanguageSettingsOpenedEvent
   | LearnerProfileOpenedEvent
   | NotificationSettingsOpenedEvent
   | FeedbackOpenedEvent
@@ -41,6 +44,8 @@ export function settingsNavOpenedEvent(
       return { name: "profile_opened" };
     case "learner-profile":
       return { name: "learner_profile_opened" };
+    case "language":
+      return { name: "language_settings_opened" };
     case "notifications":
       return { name: "notification_settings_opened" };
     case "feedback":

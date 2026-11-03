@@ -52,3 +52,9 @@ test("TR6. 남은 항목이 하나도 없으면 그 언어 키도 없다", () =>
   const result = decoded({ vi: { a: 1 } });
   expect("translations" in result.episode).toBe(false);
 });
+
+test("TR7. 인도네시아어 표도 같은 규칙으로 옮긴다(ADR-0093)", () => {
+  const result = decoded({ vi: { water: "nước" }, id: { water: "air", bad: 1 } });
+  expect(result.episode.translations).toEqual({ vi: { water: "nước" }, id: { water: "air" } });
+  expect(codes(result).filter((code) => code === "invalid-translation")).toHaveLength(1);
+});
