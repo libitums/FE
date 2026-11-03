@@ -27,7 +27,9 @@ final class AppFonts {
 
   /** `MainActivity`가 템플릿을 그리기 전에 한 번 부른다. 실패한 파일은 그 글꼴만 대체 글꼴로 떨어진다. */
   static void install(Context context) {
-    File directory = new File(context.getFilesDir(), DIRECTORY);
+    File filesDir = context.getFilesDir();
+    if (filesDir == null) return;
+    File directory = new File(filesDir, DIRECTORY);
     if (!directory.isDirectory() && !directory.mkdirs()) return;
     for (String name : FILES) {
       File target = new File(directory, name);
@@ -41,10 +43,16 @@ final class AppFonts {
 
   private static void copy(InputStream in, File target) throws IOException {
     File partial = new File(target.getPath() + ".part");
-    try (OutputStream out = new FileOutputStream(partial)) {
-      byte[] buffer = new byte[16 * 1024];
-      for (int read; (read = in.read(buffer)) != -1; ) out.write(buffer, 0, read);
+    try {
+      try (OutputStream out = new FileOutputStream(partial)) {
+        byte[] buffer = new byte[16 * 1024];
+        for (int read; (read = in.read(buffer)) != -1; ) out.write(buffer, 0, read);
+      }
+      if (!partial.renameTo(target)) throw new IOException("rename failed: " + target);
+    } catch (IOException error) {
+      // 쓰다 만 파일을 남기지 않는다 — 다음 시작에 다시 복사한다.
+      partial.delete();
+      throw error;
     }
-    if (!partial.renameTo(target)) throw new IOException("rename failed: " + target);
   }
 }
