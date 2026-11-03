@@ -27,6 +27,11 @@ export type CatalogRoleplayTurn = {
   readonly counterpartAudioSource?: string;
   /** 정답 뒤 들려줄 내 줄(seq n)의 전체 주소. 없으면 키가 없습니다. */
   readonly replyAudioSource?: string;
+  /**
+   * 처음부터 대답 줄 앞에 놓여 뺄 수 없는 타일(보이는 순서의 번호)입니다 — 튜토리얼에서 상대 인사를 그대로 받는
+   * 「안녕하세요!」(2026-11-03 사용자 결정). 없으면 키가 없습니다.
+   */
+  readonly fixedTiles?: readonly number[];
 };
 
 export type CatalogRoleplayTurns = NonEmpty<CatalogRoleplayTurn>;
@@ -43,7 +48,8 @@ export type CatalogFinalState = {
 export type CatalogFinalAction =
   | { readonly type: "toggleTile"; readonly tileIndex: number }
   | { readonly type: "check"; readonly result: AnswerResult }
-  | { readonly type: "nextTurn" };
+  /** `placed`는 다음 턴에 미리 놓일 고정 타일입니다. */
+  | { readonly type: "nextTurn"; readonly placed?: readonly number[] };
 
 export type CatalogFinalScreenProps = {
   readonly insets: SafeAreaInsets;

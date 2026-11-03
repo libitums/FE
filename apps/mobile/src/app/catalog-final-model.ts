@@ -4,10 +4,11 @@
 
 import { roleplayLinesOf, type RoleplayLines } from "@libitums/episode-core/lines";
 
-import { isTypedAnswerAccepted } from "../lib/hangul-keyboard";
+import { isTypedAnswerAccepted, normalizeAnswerText } from "../lib/hangul-keyboard";
 import type { CatalogEntry } from "../lib/episode-catalog";
 import { contentAudioSourceOf } from "../lib/content-audio";
 import type { LearnerProfile } from "../lib/placeholder-fill";
+import { TUTORIAL_EPISODE_ID } from "../lib/tutorial-episode";
 import type { LearningItem } from "../lib/episode-content";
 import type { DialogueLine } from "../lib/episode-content.model";
 import type {
@@ -62,6 +63,7 @@ export function catalogRoleplayTurnOf(
   if (firstTile === undefined) return null;
 
   const imagePath = item.stimulus.imageUrl;
+  const fixedTiles = tutorialFixedTilesOf(port.episodeId, original, order, lineKo);
   return {
     id: item.id,
     instruction: englishOf(port, item.prompt.en) ?? "",
@@ -75,7 +77,25 @@ export function catalogRoleplayTurnOf(
     replyTranslation:
       englishOf(port, item.answers[0]?.en) ?? englishOf(port, item.stimulus.text?.en) ?? null,
     imageUrl: imagePath === undefined ? port.sceneImageUrl : port.imageUrlOf(imagePath),
+    ...(fixedTiles === null ? {} : { fixedTiles }),
   };
+}
+
+/**
+ * 튜토리얼에서 내 대답의 첫 타일이 상대 대사의 첫머리와 같으면(「안녕하세요!」로 받는 인사) 그 타일을 고정합니다
+ * (2026-11-03 사용자 결정). 보이는 순서의 번호로 냅니다. 튜토리얼이 아니거나 겹치지 않으면 `null`.
+ */
+export function tutorialFixedTilesOf(
+  episodeId: string,
+  original: readonly string[],
+  order: readonly number[],
+  lineKo: string,
+): readonly number[] | null {
+  if (episodeId !== TUTORIAL_EPISODE_ID || original.length < 2) return null;
+  const lead = normalizeAnswerText(original[0] ?? "");
+  if (lead === "" || !normalizeAnswerText(lineKo).startsWith(lead)) return null;
+  const shown = order.indexOf(0);
+  return shown < 0 ? null : [shown];
 }
 
 export type CatalogRoleplayLines = RoleplayLines;
