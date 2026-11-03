@@ -5,6 +5,7 @@ import { bundledCatalogInput as base } from "./episode-bundled.test-support";
 import type { CatalogInput } from "./episode-catalog";
 
 export const u01TitleVi = "Mua nước";
+export const u01TitleId = "Membeli Air";
 
 const u01 = base.episodes["u01-water"] as Record<string, unknown>;
 
@@ -12,6 +13,12 @@ export const bundledCatalogInput: CatalogInput["bundled"] = {
   ...base,
   episodes: {
     ...base.episodes,
-    "u01-water": { ...u01, translations: { vi: { [String(u01["title_en"])]: u01TitleVi } } },
+    "u01-water": {
+      ...u01,
+      translations: {
+        vi: { [String(u01["title_en"])]: u01TitleVi },
+        id: { [String(u01["title_en"])]: u01TitleId },
+      },
+    },
   },
 };

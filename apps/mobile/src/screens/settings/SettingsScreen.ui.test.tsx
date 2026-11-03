@@ -14,6 +14,7 @@ import { markedUiCopy } from "../../lib/ui-copy.test-support";
 // 기존 케이스는 `defaultSettingsScreenProps`(초기값 · no-op 콜백)만 채웁니다.
 const accountNoopProps = {
   learnerProfileSummary: "Not set",
+  languageSummary: "Intermediate English",
   appVersion: null,
   onSignOut: () => undefined,
   onDeleteAccount: () => new Promise<AccountDeletionResult>(() => undefined),
@@ -178,7 +179,7 @@ test("[ST4] 화면 안 header trait 요소가 settings-screen-title 하나다", 
 
 // ---------------------------------------------------------------- 영어 (AC1u E)
 
-test("[AC1u-E] 이동 항목 여섯이 영어 이름으로 낭독된다", () => {
+test("[AC1u-E] 이동 항목 일곱이 영어 이름으로 낭독된다", () => {
   render(<SettingsScreen {...defaultSettingsScreenProps} />);
 
   expect(settingsCell(settingsNavTargets[0])).toHaveAttribute(
@@ -191,17 +192,21 @@ test("[AC1u-E] 이동 항목 여섯이 영어 이름으로 낭독된다", () => 
   );
   expect(settingsCell(settingsNavTargets[2])).toHaveAttribute(
     "accessibility-label",
-    "Notifications",
+    "Language, Intermediate English",
   );
   expect(settingsCell(settingsNavTargets[3])).toHaveAttribute(
     "accessibility-label",
-    "Send feedback",
+    "Notifications",
   );
   expect(settingsCell(settingsNavTargets[4])).toHaveAttribute(
     "accessibility-label",
-    "Privacy Policy",
+    "Send feedback",
   );
   expect(settingsCell(settingsNavTargets[5])).toHaveAttribute(
+    "accessibility-label",
+    "Privacy Policy",
+  );
+  expect(settingsCell(settingsNavTargets[6])).toHaveAttribute(
     "accessibility-label",
     "Terms of Use",
   );
@@ -232,19 +237,22 @@ test("[AC1u-M] 제목 · 묶음 이름 · 이동 이름이 문구표에서 온�
     "accessibility-label",
     "⟦settings.nav.learner-profile⟧, Not set",
   );
-  expect(settingsCell(settingsNavTargets[2])).toHaveAttribute(
-    "accessibility-label",
-    "⟦settings.nav.notifications⟧",
+  expect(settingsCell(settingsNavTargets[2]).getAttribute("accessibility-label")).toMatch(
+    /^⟦settings\.nav\.language⟧/,
   );
   expect(settingsCell(settingsNavTargets[3])).toHaveAttribute(
     "accessibility-label",
-    "⟦settings.nav.feedback⟧",
+    "⟦settings.nav.notifications⟧",
   );
   expect(settingsCell(settingsNavTargets[4])).toHaveAttribute(
     "accessibility-label",
-    "⟦settings.nav.privacy-policy⟧",
+    "⟦settings.nav.feedback⟧",
   );
   expect(settingsCell(settingsNavTargets[5])).toHaveAttribute(
+    "accessibility-label",
+    "⟦settings.nav.privacy-policy⟧",
+  );
+  expect(settingsCell(settingsNavTargets[6])).toHaveAttribute(
     "accessibility-label",
     "⟦settings.nav.terms-of-use⟧",
   );
@@ -305,6 +313,7 @@ function renderAccount(options: { marked?: boolean } = {}) {
     <SettingsScreen
       onSelectNavTarget={() => undefined}
       learnerProfileSummary="Not set"
+      languageSummary="Intermediate English"
       appVersion={null}
       onSignOut={onSignOut}
       onDeleteAccount={onDeleteAccount}

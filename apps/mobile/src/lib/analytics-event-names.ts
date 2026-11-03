@@ -17,6 +17,7 @@ export type AnalyticsEventName =
   | "push_notification_opened"
   | "settings_opened"
   | "profile_opened"
+  | "language_settings_opened"
   | "notification_settings_opened"
   | "feedback_opened"
   | "feedback_submitted"

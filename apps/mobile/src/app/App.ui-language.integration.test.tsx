@@ -450,3 +450,27 @@ describe.each(screenCases)("[IL7] $name 화면", ({ open, screenTestId, content 
     expect(hangulOutside(anchor.ownerDocument.body, content)).toEqual([]);
   });
 });
+
+// ------------------------------------------------------------ IL9 · 설정에서 언어 바꾸기(ADR-0093)
+
+test("[IL9] 설정 › 언어에서 인도네시아어를 고르면 탭이 바로 바뀌고 저장되며, 돌아오면 설정이다", async () => {
+  const storage = sessionStorageWith({ [uiLanguageStorageKey]: "en" });
+  await renderSignedInApp(<App progressSeed={legacyPassedSeed} />, {
+    storageModule: storage.module,
+  });
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
+  const languageRow = screen.getByTestId("ui-lynx-settings-group-item-language");
+  expect(languageRow).toHaveTextContent("Intermediate English");
+  fireEvent.tap(within(languageRow).getByTestId("ui-lynx-settings-cell"), {});
+  expect(screen.getByTestId("language-select-screen-title")).toBeInTheDocument();
+
+  fireEvent.tap(screen.getByTestId("ui-lynx-option-selector-item-id"), {});
+  expect(storage.store.get(uiLanguageStorageKey)).toBe("id");
+  tapButtonIn("language-select-screen-next");
+
+  expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).toHaveAttribute(
+    "accessibility-label",
+    expect.stringMatching(/^Pengaturan/),
+  );
+});

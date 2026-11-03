@@ -107,6 +107,7 @@ export type ScreenWiring = {
   onVerificationCodeExit: () => void;
   entryLanguage: EntryLanguage;
   onSelectEntryLanguage: (language: EntryLanguage) => void;
+  onChangeUiLanguage: (language: EntryLanguage) => void;
   onContinueLanguageSelect: () => void;
   onEnterJourney: () => void;
 } & AccountWiring &

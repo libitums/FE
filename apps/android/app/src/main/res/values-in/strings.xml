@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 인도네시아어 기기의 알림 채널 이름 · 설명(ADR-0093). Android 리소스는 인도네시아어를 옛 코드 `in`으로 찾는다.
+     번역 초안 — 원어민 검수 필요. -->
+<resources>
+  <string name="notification_channel_name">Kabar Duru</string>
+  <string name="notification_channel_description">Kabar belajar dan pengumuman</string>
+</resources>

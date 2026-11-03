@@ -26,6 +26,7 @@ export const settingsVi: SettingsCopy = {
   nav: {
     profile: "Hồ sơ người dùng",
     "learner-profile": "Tên và quốc gia trong bài học",
+    language: "Ngôn ngữ",
     notifications: "Thông báo",
     feedback: "Gửi góp ý",
     "privacy-policy": "Chính sách quyền riêng tư",

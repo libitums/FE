@@ -6,7 +6,7 @@ import { learningProgressSnapshotFrom } from "./learning-progress";
 import { legacyPassedRecord } from "./test-helpers/progress-seed";
 import { renderSignedInApp, signedInBootSession } from "./test-helpers/signed-in-app";
 import { authSessionStorageKey, serializeAuthSession } from "../lib/auth-session";
-import { u01TitleVi } from "../lib/episode-bundled.vi.test-support";
+import { u01TitleId, u01TitleVi } from "../lib/episode-bundled.vi.test-support";
 import { learningItemGuideSeenStorageKey } from "../lib/learning-item-guide";
 import { allLearningItemGuidesSeenValue } from "../lib/learning-item-guide.test-support";
 import { uiLanguageStorageKey } from "../lib/ui-language";
@@ -49,6 +49,10 @@ async function roleplayTitle(language: string): Promise<string> {
 
 test("[IV1] 베트남어 사용자는 번역표의 제목을 본다", async () => {
   expect(await roleplayTitle("vi")).toBe(u01TitleVi);
+});
+
+test("[IV3] 인도네시아어 사용자는 id 표의 제목을 본다(ADR-0093)", async () => {
+  expect(await roleplayTitle("id")).toBe(u01TitleId);
 });
 
 test("[IV2] 영어 사용자는 같은 콘텐츠에서 영어 원문을 본다", async () => {

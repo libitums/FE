@@ -27,6 +27,9 @@ import "./language-select-screen.css";
 // 뒤로가기 → 제목 · 안내). 언어 넷을 ui-lynx OptionSelector(outlined · single ·
 // deferred)로 국기와 함께 늘어놓고 영어 말고는 고를 수 없게 둡니다
 // (`isEntryLanguageAvailable`). 아래에 Continue →.
+// 미리보기 카드의 한국어 예문입니다 — 학습 내용이라 UI 언어를 따르지 않습니다(한글 리터럴 검사의 허용 선언, ADR-0093 D7).
+const languagePreviewSample = { korean: "감사합니다", romanization: "gamsahamnida" } as const;
+
 const languageOptions = entryLanguages.map((language) => ({
   id: language,
   label: entryLanguageLabel(language),
@@ -39,10 +42,12 @@ export function LanguageSelectScreen({
   onSelect,
   onContinue,
   onBack,
+  showSteps = true,
 }: LanguageSelectScreenProps): ReactNode {
   // 시스템 뒤로가기 = 보이는 뒤로 버튼과 같은 함수입니다(버튼이 없으면 등록하지 않습니다).
   useScreenBack(onBack);
   const copy = useUiCopy();
+  const preview = copy.languageSelect.preview;
   return (
     <view className="language-select-screen">
       <view className="language-select-screen-header" data-testid="language-select-screen-header">
@@ -55,8 +60,8 @@ export function LanguageSelectScreen({
             bindtap={onBack}
           />
         ) : null}
-        {/* 가입 직후 세 화면(이름 → 나라 → 언어)의 마지막 칸입니다. */}
-        <EntryStepBar current={3} total={3} />
+        {/* 가입 직후 세 화면(이름 → 나라 → 언어)의 마지막 칸입니다. 설정에서 열면 단계가 없어 그리지 않습니다. */}
+        {showSteps ? <EntryStepBar current={3} total={3} /> : null}
       </view>
 
       <scroll-view
@@ -80,6 +85,28 @@ export function LanguageSelectScreen({
             >
               {copy.languageSelect.caption}
             </text>
+          </view>
+
+          {/* 고른 언어로 레슨이 어떻게 보이는지의 작은 예시입니다(시안 A). 장식이 아니라 내용이라 한 덩어리로 읽힙니다. */}
+          <view
+            className="language-select-screen-preview"
+            data-testid="language-select-screen-preview"
+            accessibility-element={true}
+            accessibility-label={`${preview.question} ${languagePreviewSample.korean}, ${preview.meaning}`}
+          >
+            <text className="language-select-screen-preview-question">{preview.question}</text>
+            <text className="language-select-screen-preview-korean">
+              {languagePreviewSample.korean}
+            </text>
+            <text className="language-select-screen-preview-roman">
+              {languagePreviewSample.romanization}
+            </text>
+            <text className="language-select-screen-preview-meaning">{preview.meaning}</text>
+            <view className="language-select-screen-preview-button">
+              <text className="language-select-screen-preview-button-label">
+                {copy.common.check}
+              </text>
+            </view>
           </view>
 
           <view

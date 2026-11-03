@@ -27,6 +27,8 @@ export const uiCopyLiteralPolicy = {
     "placeholder-fill.ts#PARTICLE_RULES",
     // 카탈로그 표지 컷의 자기 화자 값 비교 — 콘텐츠 데이터와 맞대는 값입니다(화면 문구가 아님).
     "catalog-cover.ts#CATALOG_SELF_SPEAKER",
+    // 언어 선택 미리보기 카드의 한국어 예문 — 학습 내용이라 UI 언어를 따르지 않습니다(ADR-0093 D7).
+    "LanguageSelectScreen.tsx#languagePreviewSample",
   ],
   // 아직 옮기지 않은 파일 — 줄어들기만 합니다(위반이 0이 되면 `check.mjs`가 지우라고 실패합니다).
   // `node devtools/ui-copy-literals/check.mjs --print-pending`이 지금 남은 파일을 찍습니다.

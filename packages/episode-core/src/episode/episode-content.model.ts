@@ -216,8 +216,8 @@ export type Episode = {
   translations?: EpisodeTranslations;
 };
 
-/** 콘텐츠 번역표가 있는 언어입니다(ADR-0091). */
-export type ContentLanguage = "vi";
+/** 콘텐츠 번역표가 있는 언어입니다(ADR-0091 · ADR-0093). */
+export type ContentLanguage = "vi" | "id";
 export type EpisodeTranslations = {
   readonly [L in ContentLanguage]?: Readonly<Record<string, string>>;
 };
