@@ -1,0 +1,227 @@
+/* 여정맵 이야기 파이널의 스타일입니다. 껍데기(장면 · 머리 · 대화창 · 판 · 판정 자리 · 버튼 자리)는 RP 최종 테스트의
+   `catalog-final-screen.css`를 그대로 쓰고, 여기는 판 안에서만 다른 조각입니다. 판의 면이 어두워 면 위 색은 흰색
+   반투명입니다 — 알파 색 토큰이 없어 rgba로 적습니다(RP 판과 같은 까닭, ADR-0014). */
+
+/* 해설 자리 — 맞힘 해설 한 줄 · 틀림 정답 상자가 서는 곳입니다. 판정 전에도 정답 상자 높이를 지켜, 판정 순간 판이
+   늘어 대화창이 밀리지 않습니다. */
+.catalog-story-final-note-slot {
+  /* 한 줄 높이만 미리 잡습니다 — 정답은 상자 대신 한 줄 글이라 「Say:」와 보기 사이가 벌어지지 않습니다(사용자 결정
+     2026-11-02). */
+  min-height: var(--libitum-spacing-24);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.catalog-story-final-note.catalog-story-final-answer {
+  color: var(--libitum-color-feedback-correct);
+}
+
+.catalog-story-final-note {
+  color: var(--libitum-color-gray-400);
+  text-align: center;
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  font-size: var(--libitum-typography-body-m-font-size);
+  line-height: var(--libitum-typography-body-m-line-height);
+  letter-spacing: var(--libitum-typography-body-m-letter-spacing);
+}
+
+/* 내 대답 줄 — RP의 줄과 같은 선 · 높이에, 틀의 글자가 칩 · 칸 양옆에 섭니다. */
+.catalog-story-final-reply {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: var(--libitum-spacing-8);
+  /* 칩(약 47pt) + 위아래 6이 들어가는 높이 — 빈칸 밑줄일 때와 칩이 놓였을 때 줄 높이가 같습니다. */
+  min-height: var(--libitum-spacing-64);
+  padding: var(--libitum-spacing-6) var(--libitum-spacing-16);
+  border-top: var(--libitum-stroke-width-thin) solid rgba(255, 255, 255, 0.16);
+  border-bottom: var(--libitum-stroke-width-thin) solid rgba(255, 255, 255, 0.16);
+  flex-shrink: 0;
+}
+
+.catalog-story-final-reply-text {
+  color: var(--libitum-color-white);
+  text-align: center;
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  line-height: var(--libitum-typography-heading-s-line-height);
+  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
+}
+
+/* 채울 자리 — 상자 없이 밑줄만 긋습니다(사용자 결정 2026-11-02). 높이는 칩과 맞춰 줄이 흔들리지 않게 둡니다. */
+.catalog-story-final-reply-blank {
+  width: var(--libitum-spacing-64);
+  height: var(--libitum-spacing-32);
+  border-bottom: var(--libitum-spacing-2) solid rgba(255, 255, 255, 0.6);
+}
+
+/* 보기 — 판 안에 세로로 섭니다. */
+.catalog-story-final-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-6);
+}
+
+.catalog-story-final-option {
+  /* 터치 최소(44)입니다 — 보기 셋과 정답 상자가 판 안에 함께 서야 합니다. */
+  min-height: calc(var(--libitum-spacing-40) + var(--libitum-spacing-4));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--libitum-spacing-8) var(--libitum-spacing-16);
+  border-radius: var(--libitum-radius-lg);
+  border: var(--libitum-stroke-width-thin) solid rgba(255, 255, 255, 0.18);
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.catalog-story-final-option-text {
+  color: var(--libitum-color-white);
+  text-align: center;
+  font-family: var(--libitum-typography-body-l-font-family);
+  font-weight: var(--libitum-typography-body-l-font-weight);
+  font-size: var(--libitum-typography-body-l-font-size);
+  line-height: var(--libitum-typography-body-l-line-height);
+  letter-spacing: var(--libitum-typography-body-l-letter-spacing);
+}
+
+.catalog-story-final-option-correct {
+  border-color: var(--libitum-color-feedback-correct);
+  background-color: rgba(53, 166, 111, 0.22);
+}
+
+.catalog-story-final-option-incorrect {
+  border-color: var(--libitum-color-feedback-incorrect);
+  background-color: rgba(223, 77, 84, 0.22);
+}
+
+.catalog-story-final-option-dim {
+  border-color: rgba(255, 255, 255, 0.08);
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+.catalog-story-final-option-dim .catalog-story-final-option-text {
+  color: var(--libitum-color-gray-700);
+}
+
+.catalog-story-final-bank {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--libitum-spacing-8);
+}
+
+/* 음절 칸 — 한 글자 입력(`CompactNumericInput` s)과 같은 모양 · 크기입니다. 쓰는 칸만 흰 면 + 테두리입니다. */
+.catalog-story-final-cells {
+  display: flex;
+  flex-direction: row;
+  gap: var(--libitum-spacing-6);
+}
+
+.catalog-story-final-cell {
+  width: var(--libitum-spacing-48);
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--libitum-radius-md);
+  background-color: var(--libitum-color-gray-100);
+}
+
+.catalog-story-final-cell-writing {
+  background-color: var(--libitum-color-white);
+  border: var(--libitum-stroke-width-thin) solid var(--libitum-color-brand-strong);
+}
+
+.catalog-story-final-cell-text {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  line-height: var(--libitum-typography-heading-s-line-height);
+}
+
+/* 쓰기 줄 — 칸과 Redo · Listen이 한 줄에 섭니다. 스크롤 밖이라 큰 글꼴에서도 칸이 밀리지 않습니다. */
+.catalog-story-final-write {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: var(--libitum-spacing-12);
+  flex-shrink: 0;
+}
+
+/* ⚠ 폭 · 높이는 토큰이 아니라 **수**입니다 — `storyTraceSurface`와 같은 수여야 획 좌표와 채점이 어긋나지 않습니다. */
+.catalog-story-final-pad {
+  position: relative;
+  width: 220px;
+  height: 220px;
+  flex-shrink: 0;
+  border-radius: var(--libitum-radius-lg);
+  border: var(--libitum-stroke-width-thin) solid rgba(255, 255, 255, 0.14);
+  background-color: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+
+.catalog-story-final-pad-guide,
+.catalog-story-final-pad-surface {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 220px;
+  height: 220px;
+}
+
+.catalog-story-final-pad-glyph {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 220px;
+  height: 220px;
+  text-align: center;
+  line-height: 220px;
+  font-size: 176px;
+  color: var(--libitum-color-gray-800);
+}
+
+.catalog-story-final-tools {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-8);
+  width: calc(var(--libitum-spacing-48) * 2);
+}
+
+.catalog-story-final-tool {
+  min-height: var(--libitum-spacing-48);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--libitum-radius-lg);
+  border: var(--libitum-stroke-width-thin) solid rgba(255, 255, 255, 0.18);
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.catalog-story-final-tool-text {
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+}
+
+/* 판정 자리 — 배지(안쪽 8 · 아이콘 · 글자 줄) 높이만큼 미리 잡습니다. RP 판의 32보다 높아, 판정 순간 판이 늘어나지
+   않습니다(실기에서 4pt 밀렸던 자리). */
+.catalog-story-final-verdict-slot {
+  min-height: var(--libitum-spacing-40);
+}
+
+/* 이야기 파이널의 판 안 간격 — RP 판(12)보다 좁혀, 배지 · 해설 자리를 미리 잡고도 보기가 한 화면에 섭니다. */
+.catalog-story-final-body {
+  gap: var(--libitum-spacing-8);
+}

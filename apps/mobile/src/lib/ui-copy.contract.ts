@@ -14,6 +14,7 @@ import type { StoryIntroCopy } from "../screens/story-intro/story-intro.contract
 import type { StoryMessengerCopy } from "../screens/story-messenger/story-messenger.contract";
 import type { CatalogCoverCopy } from "../screens/catalog-cover/catalog-cover.contract";
 import type { CatalogFinalCopy } from "../screens/catalog-final/catalog-final.contract";
+import type { CatalogStoryFinalCopy } from "../screens/catalog-story-final/catalog-story-final.contract";
 import type { CatalogMapCopy } from "../screens/journey-map/catalog-map.contract";
 import type { CatalogUpdateNoticeCopy } from "../screens/catalog-update/catalog-update-notice.contract";
 import type { ProgressLoadCopy } from "../screens/journey-map/journey-map-load.contract";
@@ -92,6 +93,7 @@ export type UiCopy = {
   readonly syllableBuild: SyllableBuildCopy;
   readonly wordChoicePicture: WordChoicePictureCopy;
   readonly catalogFinal: CatalogFinalCopy;
+  readonly catalogStoryFinal: CatalogStoryFinalCopy;
   readonly audioUnavailable: AudioUnavailableCopy;
   readonly learnerProfile: LearnerProfileCopy;
   readonly progressLoad: ProgressLoadCopy;

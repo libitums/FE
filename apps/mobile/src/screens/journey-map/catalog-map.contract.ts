@@ -26,10 +26,15 @@ export type CatalogReadySection = {
   readonly title: string;
   /** 에피소드의 영어 제목(`title_en`)입니다 — 말풍선 · 머리 띠가 씁니다. 없으면 `title`을 씁니다. */
   readonly titleEn?: string;
-  /** `episode.units`의 id, 순서 그대로 */
+  /** `episode.units`의 id, 순서 그대로 — 이야기 파이널 원천(`storyFinalKey`)은 뺍니다. */
   readonly lessonKeys: readonly CatalogUnitKey[];
-  /** `episode.finalTest.id` ("RP") */
+  /** `episode.finalTest.id` ("RP") — 진도 키입니다. 이야기 파이널이어도 이 키로 찍힙니다. */
   readonly finalKey: CatalogUnitKey;
+  /**
+   * 여정맵 파이널이 문항을 가져오는 이야기 유닛(level-3 S8)입니다. 없으면 파이널은 RP 턴입니다. 레슨 노드 · 완료
+   * 키에 없습니다.
+   */
+  readonly storyFinalKey?: CatalogUnitKey;
   /** 에피소드 완료 키 — `episode.completion?.requires ?? [episode.finalTest.id]`. 비지 않는다. */
   readonly completionKeys: readonly CatalogUnitKey[];
   /** 문화 유닛의 키 — `lessonKeys`의 부분집합(유닛 순서)입니다. 없으면 빈 배열. */

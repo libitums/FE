@@ -3,6 +3,7 @@
 import type { AudioUnavailableCopy } from "../components/audio-unavailable.contract";
 import type { CatalogCoverCopy } from "../screens/catalog-cover/catalog-cover.contract";
 import type { CatalogFinalCopy } from "../screens/catalog-final/catalog-final.contract";
+import type { CatalogStoryFinalCopy } from "../screens/catalog-story-final/catalog-story-final.contract";
 import type { CatalogMapCopy } from "../screens/journey-map/catalog-map.contract";
 import type { CatalogUpdateNoticeCopy } from "../screens/catalog-update/catalog-update-notice.contract";
 import type { CultureCardCopy } from "../screens/culture-card/culture-card.contract";
@@ -159,6 +160,15 @@ export const catalogFinalEn: CatalogFinalCopy = {
   replyHint: (translation) => `Say: ${translation}`,
   correctAnswer: (answer) => `Answer: ${answer}`,
   answerLabel: "Answer",
+};
+
+export const catalogStoryFinalEn: CatalogStoryFinalCopy = {
+  redo: "Redo",
+  listen: "Listen",
+  nextLetter: "Next letter",
+  letterLabel: (ordinal, total, state) =>
+    `Letter ${ordinal} of ${total}, ${state.kind === "written" ? state.syllable : state.kind === "writing" ? "writing" : "empty"}`,
+  padLabel: (syllable) => `Writing area. Trace ${syllable}`,
 };
 
 export const audioUnavailableEn: AudioUnavailableCopy = {
