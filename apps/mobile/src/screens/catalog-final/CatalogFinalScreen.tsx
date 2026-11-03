@@ -187,7 +187,7 @@ export function CatalogFinalScreen({
           </view>
         </view>
 
-        {/* 답안 판입니다 — 어두운 반투명 면이라 칩은 dark 면을 받고, 판정 배지는 또렷하게 불투명(light)입니다(2026-11-03).
+        {/* 답안 판입니다 — 어두운 반투명 면이라 칩은 dark 면을 받고, 판정 배지는 또렷하게 불투명(light)입니다.
             안쪽이 스크롤해서 큰 글꼴에서도 버튼이 밀려나지 않습니다. */}
         <view className="catalog-final-screen-panel">
           <scroll-view
