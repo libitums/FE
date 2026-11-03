@@ -3,7 +3,7 @@
 ## 실행 조건
 
 - 상태: 미측정 — 렌더링 · 메모리 캡처(`performance:capture`)를 돌리지 않았습니다.
-- 기능 PR: Android `versionCode` 10 → 11(버전 1.0.0 유지). #342 ~ #357(틀린 문항 다시 풀기 · 베트남어 · 인도네시아어 · 수준 3 콘텐츠 · 튜토리얼 staging 판 등)을 담아 Play에 올리기 위한 번호입니다. Android 실기 확인 뒤(2026-11-03) Android만 올립니다.
+- 기능 PR: Android `versionCode` 10 → 11, `versionName` 1.0.0 → 1.1.0(사용자 결정). #342 ~ #357(틀린 문항 다시 풀기 · 베트남어 · 인도네시아어 · 수준 3 콘텐츠 · 튜토리얼 staging 판 등)을 담아 Play에 올리기 위한 번호입니다. Android 실기 확인 뒤(2026-11-03) Android만 올립니다.
 - 대상 commit: `main` 위의 `chore/release-android-vc11`
 - 기기: 실행하지 않음
 - OS: 실행하지 않음
