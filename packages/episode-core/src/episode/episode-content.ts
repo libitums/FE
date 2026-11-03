@@ -13,6 +13,7 @@ import type {
   EpisodeStory,
 } from "./episode-content.model";
 import { interludePlanOf } from "./episode-content.interlude";
+import { translationsOf } from "./episode-content.translations";
 import {
   withoutUnknownItems,
   formatPath,
@@ -182,6 +183,7 @@ function toEpisode(
   wire: DeliveryEpisodeV2,
   rpIndex: number,
   stories: ReadonlyMap<string, EpisodeStory>,
+  translations: Episode["translations"],
 ): Episode {
   const rp = wire.steps[rpIndex];
   const learning = wire.steps.filter((_, i) => i !== rpIndex).sort(byKey((step) => step.order));
@@ -210,6 +212,7 @@ function toEpisode(
       items: (rp?.items ?? []).map(toItem),
     },
     ...maybe("completion", completionOf(wire.completion)),
+    ...maybe("translations", translations),
     epilogue: [...wire.post_cuts].sort(byKey((cut) => cut.index)).map(toCut),
     words: wire.words.map(toWord),
     patterns: wire.patterns.map((p) => ({
@@ -253,10 +256,16 @@ function decode(input: unknown): DecodeResult {
     return { ok: false, errors };
   }
 
+  const translated = translationsOf(parsed.data.translations);
   return {
     ok: true,
-    episode: toEpisode(interludes.wire, rpIndex, interludes.stories),
-    warnings: [...known.warnings, ...interludes.warnings, ...collectWarnings(interludes.wire)],
+    episode: toEpisode(interludes.wire, rpIndex, interludes.stories, translated.translations),
+    warnings: [
+      ...known.warnings,
+      ...interludes.warnings,
+      ...translated.warnings,
+      ...collectWarnings(interludes.wire),
+    ],
   };
 }
 

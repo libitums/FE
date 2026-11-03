@@ -22,25 +22,7 @@ import "./journey-stat-modal-motion.css";
 
 // 상단 지표 칩(연속 학습 · 트로피)을 누르면 맵 위에 뜨는 전체 화면 모달입니다
 // (Figma 47-14057 · 74-419). 두 모달은 뼈대가 같고 색 · 머리 아이콘 · 문구만 갈립니다.
-// 문구는 디자인 표기(영문) 그대로입니다.
-
-type JourneyStatCopy = {
-  readonly title: string;
-  readonly message: string;
-};
-
-const kindCopy: Record<JourneyStatKind, JourneyStatCopy> = {
-  streak: {
-    title: "day streak",
-    message: "Amazing work! Come back tomorrow to keep your streak alive!",
-  },
-  trophy: {
-    title: "Episode Clear!",
-    // Figma 원문은 "…to clear chapter"입니다. 제목(Episode Clear!)과 용어를 맞추고 관사 ·
-    // 문장 부호를 보태 고쳤습니다(PR #124 리뷰). Figma 쪽 반영이 뒤따라야 합니다.
-    message: "Amazing work! Come back tomorrow to clear the next episode!",
-  },
-};
+// 문구는 문구표의 `journeyMap.statModal`이 집니다(영어는 디자인 표기 그대로).
 
 export type JourneyStatModalProps = {
   readonly kind: JourneyStatKind;
@@ -66,7 +48,7 @@ export function JourneyStatModal({
   // (ADR-0064 — 시안 ②C). 움직임 줄이기에서는 페이드로 나타나고 반복이 없습니다 — 반복 층은 아예 서지 않습니다.
   const alive = useMotion() === "standard";
   const copy = useUiCopy();
-  const { title, message } = kindCopy[kind];
+  const { title, message } = copy.journeyMap.statModal.kind[kind];
   // 스크린리더가 큰 숫자와 제목을 한 문장으로 읽게 하는 이름입니다.
   const heroLabel =
     kind === "streak"
@@ -249,7 +231,12 @@ export function JourneyStatModal({
       <view className="journey-stat-modal-footer" data-testid="journey-stat-modal-continue">
         {/* 화살표는 디자인 표기대로 라벨 글자(→)입니다 — 아이콘 패키지의 arrow-right는
             모양이 달라 쓰지 않습니다. */}
-        <Button label="Continue →" variant="outline" size="xl" bindtap={handleClose} />
+        <Button
+          label={copy.journeyMap.statModal.continue}
+          variant="outline"
+          size="xl"
+          bindtap={handleClose}
+        />
       </view>
     </view>
   );

@@ -32,10 +32,11 @@ test("EL3. 네 코드 각각에 대해 entryLanguageLabel이 공백 아닌 문�
   expect(new Set(labels).size).toBe(allEntryLanguages.length);
 });
 
-// 2026-09-21 디자인 반영 — 영어만 고를 수 있는 언어라는 제약이 이 시점 확정입니다.
-test("EL4. 영어만 고를 수 있고 initialEntryLanguage가 고를 수 있는 언어다", () => {
+// 2026-11-02 베트남어를 연다(ADR-0091 D4) — 영어 · 베트남어만 고를 수 있습니다.
+test("EL4. 영어 · 베트남어만 고를 수 있고 initialEntryLanguage가 고를 수 있는 언어다", () => {
   expect(allEntryLanguages.filter((language) => isEntryLanguageAvailable(language))).toEqual([
     "en",
+    "vi",
   ]);
   expect(isEntryLanguageAvailable(initialEntryLanguage)).toBe(true);
 });

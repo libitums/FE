@@ -6,9 +6,6 @@ export type JourneyStatKind = "streak" | "trophy";
 /** 모달 아래 진행 줄의 칸 수입니다 — 한 주 7일입니다(Figma 47-14057 · 74-419). */
 export const journeyStatSlotCount = 7;
 
-// 요일 약칭은 디자인 표기 그대로입니다. 인덱스는 `Date#getDay()`와 같습니다(0 = 일).
-const weekdayLabels = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"] as const;
-
 export type JourneyStatTrack = {
   /** 앞에서부터 채워진 칸 수입니다. 0 … `journeyStatSlotCount`. */
   readonly completedCount: number;
@@ -27,8 +24,15 @@ function wholeCount(value: number): number {
  *
  * 24일 연속 · 오늘 월요일이면 이번 주간은 3일째(토 · 일 · 월)라 `Sa`부터 시작하는
  * 줄에 세 칸이 찹니다 — 디자인 예시 그대로입니다.
+ *
+ * 요일 약칭(`weekdayLabels`)은 UI 언어의 문구표(`journeyMap.statModal.weekdays`)에서 받습니다 —
+ * 인덱스는 `Date#getDay()`와 같습니다(0 = 일).
  */
-export function streakTrack(streakDays: number, todayWeekday: number): JourneyStatTrack {
+export function streakTrack(
+  streakDays: number,
+  todayWeekday: number,
+  weekdayLabels: readonly string[],
+): JourneyStatTrack {
   const days = wholeCount(streakDays);
   const completedCount = days === 0 ? 0 : ((days - 1) % journeyStatSlotCount) + 1;
   // 유한하지 않은 요일(NaN · Infinity)은 일요일(0)로 읽습니다 — 그대로 두면 나머지 연산이
@@ -39,7 +43,7 @@ export function streakTrack(streakDays: number, todayWeekday: number): JourneySt
   const firstWeekday = completedCount === 0 ? today : (today - (completedCount - 1) + 7) % 7;
   const dayLabels = Array.from(
     { length: journeyStatSlotCount },
-    (_, index) => weekdayLabels[(firstWeekday + index) % 7],
+    (_, index) => weekdayLabels[(firstWeekday + index) % 7] ?? "",
   );
   return { completedCount, dayLabels };
 }

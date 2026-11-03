@@ -10,6 +10,12 @@ export type LanguageSelectScreenProps = {
   readonly onBack?: () => void;
 };
 
+/** 언어 선택 화면의 UI 문구 구획입니다(`UiCopy.languageSelect`). 언어 이름은 `entryLanguageLabel`이 집니다. */
+export type LanguageSelectCopy = {
+  readonly title: string;
+  readonly caption: string;
+};
+
 // 2026-09-21 디자인 반영: 선택지는 ui-lynx OptionSelector가 그립니다 — 항목
 // testid는 `ui-lynx-option-selector-item-${EntryLanguage}`이고 이 화면은 감싸는
 // 자리만 둡니다.

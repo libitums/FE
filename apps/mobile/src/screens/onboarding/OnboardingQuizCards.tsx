@@ -10,6 +10,8 @@ import { AnswerLabel } from "@libitums/ui-lynx/answer-label";
 import { Card } from "@libitums/ui-lynx/card";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
 
+import { useUiCopy } from "../../lib/ui-copy";
+
 import "./onboarding-quiz-cards.css";
 
 // 표현과 한 글자를 칠하는 간격입니다. 칠하기는 띄어쓰기·문장부호까지 한 칸씩
@@ -26,6 +28,7 @@ export function OnboardingQuizCards(): ReactNode {
   // 실제 소리는 내지 않습니다 — 온보딩의 시연용 모양입니다. 재생하면 표현이 한
   // 글자씩 brand.primary로 칠해지고(`filled`), 끝까지 칠하면 저절로 멈춥니다.
   // `run`은 다시 듣기가 재생 중에도 처음부터 다시 칠하게 하는 회차 표시입니다.
+  const copy = useUiCopy();
   const [playing, setPlaying] = useState(false);
   const [filled, setFilled] = useState(0);
   const [run, setRun] = useState(0);
@@ -68,7 +71,11 @@ export function OnboardingQuizCards(): ReactNode {
                 <view className="onboarding-screen-quiz">
                   {/* 위: 정답 배지는 가로 가운데, 정보 아이콘은 오른쪽 끝입니다. */}
                   <view className="onboarding-screen-quiz-top">
-                    <AnswerLabel result="correct" size="s" label="Correct" />
+                    <AnswerLabel
+                      result="correct"
+                      size="s"
+                      label={copy.common.answerResult.correct}
+                    />
                     <svg
                       className="onboarding-screen-quiz-info"
                       content={info}
@@ -105,14 +112,16 @@ export function OnboardingQuizCards(): ReactNode {
                       가운데에 섭니다. */}
                   <view className="onboarding-screen-quiz-controls">
                     <RoundButton
-                      accessibilityLabel="Replay"
+                      accessibilityLabel={copy.onboarding.quiz.replay}
                       icon={refresh}
                       variant="brand"
                       size="l"
                       bindtap={replay}
                     />
                     <RoundButton
-                      accessibilityLabel={playing ? "Stop" : "Play"}
+                      accessibilityLabel={
+                        playing ? copy.onboarding.quiz.stop : copy.onboarding.quiz.play
+                      }
                       icon={playing ? stop : play}
                       variant="brand"
                       size="xl"

@@ -57,6 +57,29 @@ export type LoginScreenProps = {
   readonly onOpenLegalDocument: (document: LegalDocument) => void;
 };
 
+/** 로그인 화면의 UI 문구 구획입니다(`UiCopy.login`). 국가 이름은 `login-countries.ts`가 집니다. */
+export type LoginCopy = {
+  /** 수단 버튼 라벨 — 전화번호는 `Continue`입니다(`loginMethodLabel`). */
+  readonly method: Readonly<Record<EntryLoginMethod, string>>;
+  /** 제목 · 안내 — 전화번호 수단을 숨기면 전화번호를 말하지 않습니다(`loginHeading`). */
+  readonly heading: Readonly<
+    Record<PhoneSignInVisibility, { readonly title: string; readonly caption: string }>
+  >;
+  /** 국가 선택 칸의 접근성 이름 — `Country code, South Korea +82`. */
+  readonly countryCode: (name: string, dialCode: string) => string;
+  readonly phoneNumber: string;
+  /** 전화번호 수단과 소셜 셋 사이 구분선 글자입니다. */
+  readonly or: string;
+  readonly countrySheetTitle: string;
+  /** 약관 안내 — 앞 문장 · 두 문서 이름 · 그 사이 이음 글자입니다. */
+  readonly legal: {
+    readonly lead: string;
+    readonly termsOfUse: string;
+    readonly and: string;
+    readonly privacyPolicy: string;
+  };
+};
+
 /** 소셜 버튼 셋입니다. 상태를 읽어 요소마다 `data-status`를 내고, 요청 중이면 탭을 무시합니다. */
 export type LoginSocialMethodsProps = {
   readonly status: LoginStatus;

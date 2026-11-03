@@ -4,6 +4,7 @@ import type { PhoneNumber, PhoneOtpRequestResult } from "../../lib/auth-session.
 import type { EntryLoginMethod } from "../../lib/entry-flow";
 import type { SocialSignInOutcome } from "../../lib/social-sign-in.contract";
 import type {
+  LoginCopy,
   LoginMethodStatus,
   LoginStatus,
   PhoneSignInVisibility,
@@ -11,23 +12,10 @@ import type {
 } from "./login.contract";
 
 // 라벨은 임시가 아닌 최종값입니다 — `ui` 테스트도 리터럴을 단언하지 않지만 값
-// 자체는 자리표가 아닙니다. `default`를 두지 않습니다 — 수단이 늘면 TS2366으로
-// 섭니다.
-export function loginMethodLabel(method: EntryLoginMethod): string {
-  switch (method) {
-    case "phone": {
-      return "Continue";
-    }
-    case "google": {
-      return "Connect with Google";
-    }
-    case "apple": {
-      return "Sign in with Apple";
-    }
-    case "facebook": {
-      return "Connect with Facebook";
-    }
-  }
+// 자체는 자리표가 아닙니다. 값은 문구표의 `login.method`가 집니다 — 수단이 늘면 그 표가
+// TS 오류로 섭니다.
+export function loginMethodLabel(method: EntryLoginMethod, copy: LoginCopy): string {
+  return copy.method[method];
 }
 
 // 전화번호 앞에 붙는 국가 코드 선택지 한 칸입니다. 목록 전체는
@@ -154,14 +142,9 @@ export function loginStatusAfterEdit(status: LoginStatus): LoginStatus {
 export const productPhoneSignIn: PhoneSignInVisibility = "hidden";
 
 /** 로그인 화면의 제목과 안내입니다. 전화번호 수단을 숨기면 전화번호를 말하지 않습니다. */
-export function loginHeading(phoneSignIn: PhoneSignInVisibility): {
-  readonly title: string;
-  readonly caption: string;
-} {
-  return phoneSignIn === "visible"
-    ? {
-        title: "Log in or Sign up with your phone number",
-        caption: "Please enter your phone number to continue",
-      }
-    : { title: "Log in or Sign up", caption: "Choose how you'd like to continue" };
+export function loginHeading(
+  phoneSignIn: PhoneSignInVisibility,
+  copy: LoginCopy,
+): { readonly title: string; readonly caption: string } {
+  return copy.heading[phoneSignIn];
 }

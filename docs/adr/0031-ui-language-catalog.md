@@ -11,6 +11,7 @@
   [ADR-0016](0016-assistive-technology-semantics.md) D3 · D13 — 접미 낱말이 UI 언어를 따른다.
   [ADR-0003](0003-workspace-and-directory-structure.md) — `lib/answer-result.ts`가 라벨 함수를 잃었다.
 - 받은 적용 기록(결정을 바꾸지 않는다):
+  2026-11-02 [ADR-0091](0091-vietnamese-localization.md) — U1 「열 때 번역만 더한다」의 첫 적용: `vi`를 열고, 덮어쓰기 대신 완전한 표(`uiCopyVi: UiCopy`)로 채웠다. 화면에 하드코딩돼 있던 영어(진입 흐름 · 결과 제목 · 연속 학습 모달 등)를 표로 옮겼다.
   2026-10-18 [ADR-0069](0069-returning-learner-login.md) D5 — D4 「쓰는 때」에 둘째 자리(기존 회원의 바로 맵 경로)가 생겼다(D4 표 · 재검토 조건에 주).
 
 **왜 새 번호인가** — 없던 축을 처음 정한다(ADR-0010 D10). 이 회차의 계약은 `.agent-harness/`(추적 제외)에

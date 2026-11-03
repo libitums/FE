@@ -1,5 +1,6 @@
 import type { ReactNode } from "@lynx-js/react";
 
+import { useUiCopy } from "../../lib/ui-copy";
 import type { LoginScreenProps } from "./login.contract";
 
 // 약관 안내. 두 문서 이름만 gray.800으로 구분하고, 누르면 그 문서를 앱 위
@@ -8,10 +9,11 @@ import type { LoginScreenProps } from "./login.contract";
 export function LoginLegalNotice({
   onOpenLegalDocument,
 }: Pick<LoginScreenProps, "onOpenLegalDocument">): ReactNode {
+  const legal = useUiCopy().login.legal;
   return (
     <view className="login-screen-legal" data-testid="login-screen-legal">
       <text className="login-screen-legal-text" flatten={false} accessibility-element={true}>
-        By signing up, you agree to the
+        {legal.lead}
       </text>
       <view className="login-screen-legal-links">
         <text
@@ -19,27 +21,27 @@ export function LoginLegalNotice({
           data-testid="login-screen-legal-terms-of-use"
           flatten={false}
           accessibility-element={true}
-          accessibility-label="Terms of Use"
+          accessibility-label={legal.termsOfUse}
           accessibility-traits="button"
           accessibility-enable-tap={true}
           bindtap={() => onOpenLegalDocument("terms-of-use")}
         >
-          Terms of Use
+          {legal.termsOfUse}
         </text>
         <text className="login-screen-legal-text" flatten={false} accessibility-element={true}>
-          &
+          {legal.and}
         </text>
         <text
           className="login-screen-legal-emphasis"
           data-testid="login-screen-legal-privacy-policy"
           flatten={false}
           accessibility-element={true}
-          accessibility-label="Privacy Policy"
+          accessibility-label={legal.privacyPolicy}
           accessibility-traits="button"
           accessibility-enable-tap={true}
           bindtap={() => onOpenLegalDocument("privacy-policy")}
         >
-          Privacy Policy
+          {legal.privacyPolicy}
         </text>
       </view>
     </view>

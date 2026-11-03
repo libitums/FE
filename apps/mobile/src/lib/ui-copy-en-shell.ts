@@ -14,6 +14,7 @@ import { n } from "./ui-copy-en-plural";
 export const commonEn: CommonCopy = {
   exitTo: { journey: "Back to map", roleplay: "Back to list" },
   backToSettings: "Back to settings",
+  back: "Back",
   answerResult: { correct: "Correct", incorrect: "Incorrect" },
   answerResultSuffix: { correct: "correct", incorrect: "incorrect" },
   resultAnnouncement: (result) => `Result, ${result === "correct" ? "correct" : "incorrect"}`,
@@ -62,11 +63,42 @@ export const journeyMapEn: JourneyMapCopy = {
     streakHero: (days) => `${days}-day streak`,
     episodesClearedHero: (count) => `${n(count, "episode", "episodes")} cleared`,
     slotProgress: (completed, total) => `${completed} of ${total} completed`,
+    kind: {
+      streak: {
+        title: "day streak",
+        message: "Amazing work! Come back tomorrow to keep your streak alive!",
+      },
+      trophy: {
+        title: "Episode Clear!",
+        // Figma 원문은 "…to clear chapter"입니다. 제목(Episode Clear!)과 용어를 맞추고 관사 ·
+        // 문장 부호를 보태 고쳤습니다(PR #124 리뷰). Figma 쪽 반영이 뒤따라야 합니다.
+        message: "Amazing work! Come back tomorrow to clear the next episode!",
+      },
+    },
+    continue: "Continue →",
+    // 요일 약칭은 디자인 표기 그대로입니다.
+    weekdays: ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"],
   },
 };
 
 export const learningShellEn: LearningShellCopy = {
   exitLesson: "Leave lesson",
+  formLabels: {
+    listening: "Listening",
+    "sentence-order": "Word order",
+    "word-choice": "Word choice",
+    culture: "Culture",
+    speaking: "Speaking",
+    writing: "Writing",
+    typing: "Typing",
+    "vocab-card": "New words",
+    "pair-match": "Matching",
+    "culture-card": "Culture",
+    "syllable-build": "Spelling",
+    "read-aloud": "Speaking",
+    "speak-word": "Speaking",
+  },
+  progressLabel: (ordinal, total) => `Lesson ${String(ordinal)} / ${String(total)}`,
   cultureQuizLabel: "Culture quiz",
   completionDescription: "Take a breath. You're ready for the next step.",
   completedQuestions: (count) => `${count} of ${n(count, "question", "questions")} completed`,

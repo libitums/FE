@@ -318,7 +318,7 @@ test("[LA9-M] 문구표를 주입하면 지표 칩 · 보상 카드의 이름이
   );
   expect(screen.getByTestId("lesson-complete-screen-reward-grade")).toHaveAttribute(
     "accessibility-label",
-    "⟦lessonComplete.grade⟧(GREAT)",
+    "⟦lessonComplete.grade⟧(⟦lessonComplete.gradeName⟧(GREAT))",
   );
 });
 

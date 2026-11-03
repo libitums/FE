@@ -12,8 +12,9 @@ import type {
   UseUiCopy,
 } from "./ui-copy.contract";
 import { uiCopyEn } from "./ui-copy-en";
+import { uiCopyVi } from "./ui-copy-vi";
 
-export const uiCopyCatalog: UiCopyCatalog = { en: uiCopyEn, vi: {}, es: {}, ja: {} };
+export const uiCopyCatalog: UiCopyCatalog = { en: uiCopyEn, vi: uiCopyVi, es: {}, ja: {} };
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -41,6 +42,10 @@ export const uiCopyWithOverrides: UiCopyWithOverrides = (base, overrides) =>
 function buildTable(language: UiLanguage): UiCopy {
   if (language === "en") {
     return uiCopyEn;
+  }
+  // 베트남어는 완전한 표라 덮어쓰지 않고 그대로 씁니다(ADR-0091 D3).
+  if (language === "vi") {
+    return uiCopyVi;
   }
   const overrides: UiCopyOverrides = uiCopyCatalog[language];
   return uiCopyWithOverrides(uiCopyEn, overrides);

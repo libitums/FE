@@ -5,6 +5,7 @@ import { authFailureMessage } from "../../lib/auth-failure";
 import type { PhoneOtpRequestResult } from "../../lib/auth-session.contract";
 import { entryLoginMethods } from "../../lib/entry-flow";
 import type { SocialSignInOutcome } from "../../lib/social-sign-in.contract";
+import { uiCopyEn } from "../../lib/ui-copy-en";
 import { loginMethodLabel } from "./login";
 import { loginCountries } from "./login-countries";
 import { LoginScreen } from "./LoginScreen";
@@ -148,7 +149,10 @@ describe("LoginScreen", () => {
       const button = methodButton(method);
       expect(button).toHaveAttribute("accessibility-element", "true");
       expect(button).toHaveAttribute("accessibility-traits", "button");
-      expect(button).toHaveAttribute("accessibility-label", loginMethodLabel(method));
+      expect(button).toHaveAttribute(
+        "accessibility-label",
+        loginMethodLabel(method, uiCopyEn.login),
+      );
     }
 
     const rendered = Array.from(

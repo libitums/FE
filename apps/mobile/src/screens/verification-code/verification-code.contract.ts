@@ -24,6 +24,18 @@ export type VerificationCodeScreenProps = {
   readonly onExit: () => void;
 };
 
+/** 인증 코드 화면의 UI 문구 구획입니다(`UiCopy.verificationCode`). */
+export type VerificationCodeCopy = {
+  readonly title: string;
+  /** 번호 앞 문장 — 번호는 따로 선 글자입니다. */
+  readonly sentTo: string;
+  /** 숫자 칸의 접근성 이름 — `Digit 1 of 6`. */
+  readonly digit: (ordinal: number, total: number) => string;
+  readonly resendHint: string;
+  readonly resend: string;
+  readonly submit: string;
+};
+
 export type VerificationCodeTestId =
   | "verification-code-screen-scroll"
   | "verification-code-screen-title"

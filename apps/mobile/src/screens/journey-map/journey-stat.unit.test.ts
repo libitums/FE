@@ -1,20 +1,23 @@
 import { expect, test } from "vitest";
 
+import { uiCopyEn } from "../../lib/ui-copy-en";
 import { journeyStatSlotCount, streakTrack, trophyTrack } from "./journey-stat";
+
+const weekdays = uiCopyEn.journeyMap.statModal.weekdays;
 
 // `unit` 계층: 순수 함수의 입출력 (ADR-0006 D4).
 
 test("[JS1] 24일 연속 · 오늘 월요일이면 토요일부터 세 칸이 찬다 (디자인 예시)", () => {
-  expect(streakTrack(24, 1)).toEqual({
+  expect(streakTrack(24, 1, weekdays)).toEqual({
     completedCount: 3,
     dayLabels: ["Sa", "Su", "Mo", "Tu", "We", "Th", "Fr"],
   });
 });
 
 test("[JS2] 연속 7일째는 줄이 가득 차고, 8일째는 새 줄의 첫 칸이 오늘이다", () => {
-  expect(streakTrack(7, 3).completedCount).toBe(journeyStatSlotCount);
-  expect(streakTrack(7, 3).dayLabels?.[6]).toBe("We");
-  expect(streakTrack(8, 3)).toEqual({
+  expect(streakTrack(7, 3, weekdays).completedCount).toBe(journeyStatSlotCount);
+  expect(streakTrack(7, 3, weekdays).dayLabels?.[6]).toBe("We");
+  expect(streakTrack(8, 3, weekdays)).toEqual({
     completedCount: 1,
     dayLabels: ["We", "Th", "Fr", "Sa", "Su", "Mo", "Tu"],
   });
@@ -22,7 +25,7 @@ test("[JS2] 연속 7일째는 줄이 가득 차고, 8일째는 새 줄의 첫 �
 
 test("[JS3] 연속이 없으면(0 · 음수 · NaN) 빈 줄이 오늘부터 시작한다", () => {
   for (const days of [0, -2, Number.NaN]) {
-    const track = streakTrack(days, 0);
+    const track = streakTrack(days, 0, weekdays);
     expect(track.completedCount).toBe(0);
     expect(track.dayLabels?.[0]).toBe("Su");
   }
@@ -30,7 +33,15 @@ test("[JS3] 연속이 없으면(0 · 음수 · NaN) 빈 줄이 오늘부터 시�
 
 test("[JS5] 오늘 요일이 유한하지 않으면(NaN · ±Infinity) 일요일로 읽어 라벨이 비지 않는다", () => {
   for (const weekday of [Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY]) {
-    expect(streakTrack(1, weekday).dayLabels).toEqual(["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"]);
+    expect(streakTrack(1, weekday, weekdays).dayLabels).toEqual([
+      "Su",
+      "Mo",
+      "Tu",
+      "We",
+      "Th",
+      "Fr",
+      "Sa",
+    ]);
   }
 });
 

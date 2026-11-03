@@ -11,6 +11,7 @@ import { TextField } from "@libitums/ui-lynx/text-field";
 
 import { announce } from "../../lib/accessibility";
 import { authFailureMessage } from "../../lib/auth-failure";
+import { useUiCopy } from "../../lib/ui-copy";
 import { useLayerBack, useScreenBack } from "../../lib/use-back-handler";
 import {
   canRequestPhoneOtp,
@@ -59,7 +60,9 @@ export function LoginScreen({
   // 로그인 요청의 화면 로컬 상태입니다.
   const [status, setStatus] = useState<LoginStatus>({ kind: "idle" });
   const busy = isLoginBusy(status);
-  const heading = loginHeading(phoneSignIn);
+  const uiCopy = useUiCopy();
+  const copy = uiCopy.login;
+  const heading = loginHeading(phoneSignIn, copy);
   const phone = phoneNumberFrom(country.dialCode, phoneNumber);
   const phoneBoxClass = phoneFocused
     ? "login-screen-phone login-screen-phone-focused"
@@ -82,7 +85,7 @@ export function LoginScreen({
   // 객체라 같은 실패로 다시 렌더돼도 재발화하지 않습니다.
   useEffect(() => {
     if (status.kind === "failed") {
-      announce(authFailureMessage(status.reason));
+      announce(authFailureMessage(status.reason, uiCopy.authFailure));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status]);
@@ -125,7 +128,7 @@ export function LoginScreen({
         <view className="login-screen-header" data-testid="login-screen-header">
           {handleBack ? (
             <RoundButton
-              accessibilityLabel="Back"
+              accessibilityLabel={uiCopy.common.back}
               icon={arrowLeft}
               variant="neutral"
               size="xl"
@@ -166,7 +169,7 @@ export function LoginScreen({
                     className="login-screen-country"
                     data-testid="login-screen-country"
                     accessibility-element={true}
-                    accessibility-label={`Country code, ${country.name} ${country.dialCode}`}
+                    accessibility-label={copy.countryCode(country.name, country.dialCode)}
                     accessibility-traits="button"
                     bindtap={guard(() => setCountrySheetOpen(true))}
                   >
@@ -181,7 +184,7 @@ export function LoginScreen({
                   <view className="login-screen-phone-divider" />
                   <view className="login-screen-phone-field" data-testid="login-screen-phone-field">
                     <TextField
-                      accessibilityLabel="Phone number"
+                      accessibilityLabel={copy.phoneNumber}
                       placeholder="10 1234 5678"
                       purpose="telephone"
                       availability="enabled"
@@ -200,7 +203,7 @@ export function LoginScreen({
                     flatten={false}
                     accessibility-element={true}
                   >
-                    {authFailureMessage(status.reason)}
+                    {authFailureMessage(status.reason, uiCopy.authFailure)}
                   </text>
                 ) : null}
 
@@ -211,7 +214,7 @@ export function LoginScreen({
                   data-status={loginMethodStatus(status, "phone")}
                 >
                   <Button
-                    label={loginMethodLabel("phone")}
+                    label={loginMethodLabel("phone", copy)}
                     variant="brand"
                     size="xl"
                     width="fill"
@@ -224,7 +227,7 @@ export function LoginScreen({
 
                 <view className="login-screen-separator">
                   <view className="login-screen-separator-line" />
-                  <text className="login-screen-separator-label">or</text>
+                  <text className="login-screen-separator-label">{copy.or}</text>
                   <view className="login-screen-separator-line" />
                 </view>
               </>
@@ -241,7 +244,7 @@ export function LoginScreen({
                 flatten={false}
                 accessibility-element={true}
               >
-                {authFailureMessage(status.reason)}
+                {authFailureMessage(status.reason, uiCopy.authFailure)}
               </text>
             ) : null}
 

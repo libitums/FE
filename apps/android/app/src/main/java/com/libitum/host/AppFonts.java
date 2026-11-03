@@ -15,7 +15,7 @@ import java.io.OutputStream;
  */
 final class AppFonts {
   /** 복사할 파일. `app.css`의 `@font-face`가 같은 이름을 가리킨다. 이 판에 없는 파일은 건너뛴다. */
-  static final String[] FILES = {"Jost.ttf"};
+  static final String[] FILES = {"Jost.ttf", "LeagueSpartan.ttf"};
   private static final String DIRECTORY = "fonts";
 
   private AppFonts() {}

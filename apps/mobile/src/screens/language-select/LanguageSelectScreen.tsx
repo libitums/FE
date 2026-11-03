@@ -13,6 +13,7 @@ import {
   isEntryLanguageAvailable,
   type EntryLanguage,
 } from "../../lib/entry-language";
+import { useUiCopy } from "../../lib/ui-copy";
 import type { LanguageSelectScreenProps } from "./language-select.contract";
 import { useScreenBack } from "../../lib/use-back-handler";
 import { languageFlags } from "./language-flags";
@@ -41,12 +42,13 @@ export function LanguageSelectScreen({
 }: LanguageSelectScreenProps): ReactNode {
   // 시스템 뒤로가기 = 보이는 뒤로 버튼과 같은 함수입니다(버튼이 없으면 등록하지 않습니다).
   useScreenBack(onBack);
+  const copy = useUiCopy();
   return (
     <view className="language-select-screen">
       <view className="language-select-screen-header" data-testid="language-select-screen-header">
         {onBack ? (
           <RoundButton
-            accessibilityLabel="Back"
+            accessibilityLabel={copy.common.back}
             icon={arrowLeft}
             variant="neutral"
             size="xl"
@@ -70,13 +72,13 @@ export function LanguageSelectScreen({
               data-testid="language-select-screen-title"
               accessibility-traits="header"
             >
-              Select Language
+              {copy.languageSelect.title}
             </text>
             <text
               className="language-select-screen-caption"
               data-testid="language-select-screen-caption"
             >
-              Choose the language you want to proceed with
+              {copy.languageSelect.caption}
             </text>
           </view>
 
@@ -85,7 +87,7 @@ export function LanguageSelectScreen({
             data-testid="language-select-screen-options"
           >
             <OptionSelector
-              groupLabel="Select Language"
+              groupLabel={copy.languageSelect.title}
               options={languageOptions}
               selectedIds={[selected]}
               variant="outlined"
@@ -103,7 +105,7 @@ export function LanguageSelectScreen({
 
       <view className="language-select-screen-next" data-testid="language-select-screen-next">
         <Button
-          label="Continue"
+          label={copy.common.continue}
           variant="brand"
           size="xl"
           width="fill"

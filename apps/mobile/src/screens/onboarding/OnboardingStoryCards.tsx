@@ -3,6 +3,7 @@ import type { ReactNode } from "@lynx-js/react";
 import { Card } from "@libitums/ui-lynx/card";
 import { ChatBubble } from "@libitums/ui-lynx/chat-bubble";
 
+import { useUiCopy } from "../../lib/ui-copy";
 import storyBackground from "../../assets/story/story-background.png";
 import storyCharacter from "../../assets/story/story-character.png";
 
@@ -17,6 +18,8 @@ const onboardingStoryMessages = {
 } as const;
 
 export function OnboardingStoryCards(): ReactNode {
+  const copy = useUiCopy();
+  const chat = copy.onboarding.storyChat;
   return (
     <view className="onboarding-screen-cards" data-testid="onboarding-screen-cards">
       {/* 첫 카드: 배경 그림이 카드를 채우고, 인물이 카드보다 커서 위로 튀어나옵니다.
@@ -50,27 +53,27 @@ export function OnboardingStoryCards(): ReactNode {
             <view className="onboarding-screen-chat-list">
               <ChatBubble
                 direction="incoming"
-                speaker="Staff"
+                speaker={chat.staff}
                 message={onboardingStoryMessages.welcome}
-                translation="Welcome! Are you looking for anything?"
+                translation={chat.welcome}
                 size="s"
                 contentLanguage="learning"
                 languageTag="ko"
               />
               <ChatBubble
                 direction="outgoing"
-                speaker="Me"
+                speaker={copy.common.me}
                 message={onboardingStoryMessages.sunscreen}
-                translation="Do you have sunscreen?"
+                translation={chat.sunscreen}
                 size="s"
                 contentLanguage="learning"
                 languageTag="ko"
               />
               <ChatBubble
                 direction="incoming"
-                speaker="Staff"
+                speaker={chat.staff}
                 message={onboardingStoryMessages.thisWay}
-                translation="Yes, come this way."
+                translation={chat.thisWay}
                 size="s"
                 contentLanguage="learning"
                 languageTag="ko"

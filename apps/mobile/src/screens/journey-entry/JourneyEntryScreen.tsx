@@ -7,6 +7,7 @@ import { RoundButton } from "@libitums/ui-lynx/round-button";
 
 import { entryLanguageLabel } from "../../lib/entry-language";
 import { lightStatusBarIcons } from "../../lib/status-bar-icons";
+import { useUiCopy } from "../../lib/ui-copy";
 import { useScreenBack } from "../../lib/use-back-handler";
 import journeyBackground from "./assets/journey.png";
 import type { JourneyEntryScreenProps } from "./journey-entry.contract";
@@ -34,6 +35,8 @@ export function JourneyEntryScreen({
 }: JourneyEntryScreenProps): ReactNode {
   // 시스템 뒤로가기 = 보이는 뒤로 버튼과 같은 함수입니다(버튼이 없으면 등록하지 않습니다).
   useScreenBack(onBack);
+  const uiCopy = useUiCopy();
+  const copy = uiCopy.journeyEntry;
   return (
     <view className="journey-entry-screen" data-statusbar={lightStatusBarIcons}>
       {/* 배경 그림과 Fog는 순수 장식입니다. `<image>`는 기본 접근성 정지라서
@@ -65,7 +68,7 @@ export function JourneyEntryScreen({
         <view className="journey-entry-screen-header" data-testid="journey-entry-screen-header">
           {onBack ? (
             <RoundButton
-              accessibilityLabel="Back"
+              accessibilityLabel={uiCopy.common.back}
               icon={arrowLeft}
               variant="overlay"
               size="xl"
@@ -78,7 +81,7 @@ export function JourneyEntryScreen({
           data-testid="journey-entry-screen-title"
           accessibility-traits="header"
         >
-          Your journey awaits
+          {copy.title}
         </text>
         <text className="journey-entry-screen-language" data-testid="journey-entry-screen-language">
           {entryLanguageLabel(language)}
@@ -92,7 +95,7 @@ export function JourneyEntryScreen({
         {/* 구분선은 큰 제목 글자 폭만큼만 긋습니다 — 묶음을 글자 폭으로 줄입니다. */}
         <view className="journey-entry-screen-display-group">
           <text className="journey-entry-screen-display" data-testid="journey-entry-screen-display">
-            Start your story
+            {copy.display}
           </text>
           <view
             className="journey-entry-screen-separator"
@@ -100,13 +103,13 @@ export function JourneyEntryScreen({
           />
         </view>
         <text className="journey-entry-screen-caption" data-testid="journey-entry-screen-caption">
-          Explore Seoul, meet new people, and learn Korean along the way.
+          {copy.caption}
         </text>
         <text className="journey-entry-screen-notice" data-testid="journey-entry-screen-notice">
-          Some images in this service are generated using AI technology
+          {copy.notice}
         </text>
         <view className="journey-entry-screen-start" data-testid="journey-entry-screen-start">
-          <Button label="Start" variant="neutral" size="xl" width="fill" bindtap={onEnter} />
+          <Button label={copy.start} variant="neutral" size="xl" width="fill" bindtap={onEnter} />
         </view>
       </view>
     </view>

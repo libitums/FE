@@ -3,6 +3,7 @@ import type { ReactNode } from "@lynx-js/react";
 
 import { TopBar } from "../components/TopBar";
 import type { FeedbackRating } from "../lib/feedback.contract";
+import { useUiCopy } from "../lib/ui-copy";
 import type { StatBumpWiring } from "./learning-progress";
 import { EpisodeSurveySheet } from "../screens/episode-survey/EpisodeSurveySheet";
 import { JourneyStatModal } from "../screens/journey-map/JourneyStatModal";
@@ -85,6 +86,7 @@ export function AppHeader({
   ticketsUnlimited = false,
 }: AppHeaderProps): ReactNode {
   const [openLayer, setOpenLayer] = useState<AppHeaderLayer | null>(null);
+  const copy = useUiCopy();
   const close = () => setOpenLayer(null);
   const ticketModalOpen = openLayer === "tickets";
   // 티켓 모달이 떠 있는 동안 1초마다 다시 그리도록 알립니다(카운트다운). 닫히거나 머리가 내려가면 거둡니다.
@@ -145,7 +147,11 @@ export function AppHeader({
           value={openLayer === "streak" ? streakDays : (trophyCount ?? 0)}
           track={
             openLayer === "streak"
-              ? streakTrack(streakDays, todayWeekday ?? new Date().getDay())
+              ? streakTrack(
+                  streakDays,
+                  todayWeekday ?? new Date().getDay(),
+                  copy.journeyMap.statModal.weekdays,
+                )
               : trophyTrack(trophyCount ?? 0)
           }
           onClose={close}
