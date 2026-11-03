@@ -25,6 +25,7 @@ export const settingsEn: SettingsCopy = {
   nav: {
     profile: "User profile",
     "learner-profile": "Name and country in lessons",
+    language: "Language",
     notifications: "Notifications",
     feedback: "Send feedback",
     "privacy-policy": "Privacy Policy",

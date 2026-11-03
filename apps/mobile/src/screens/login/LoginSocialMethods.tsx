@@ -3,6 +3,7 @@ import type { ReactNode } from "@lynx-js/react";
 import { Button } from "@libitums/ui-lynx/button";
 
 import { entryLoginMethods } from "../../lib/entry-flow";
+import { useUiCopy } from "../../lib/ui-copy";
 import { canStartSocialSignIn, loginMethodLabel, loginMethodStatus } from "./login";
 import type { LoginSocialMethodsProps, SocialLoginMethod } from "./login.contract";
 import { appleLogo, facebookLogo, googleLogo } from "./login-logos";
@@ -27,6 +28,7 @@ const socialLogo: Record<SocialLoginMethod, string> = {
  * 불리언이 없는 이유). 누른 수단만 `Button loading`이 돕니다.
  */
 export function LoginSocialMethods({ status, onSelect }: LoginSocialMethodsProps): ReactNode {
+  const copy = useUiCopy().login;
   function handleTap(method: SocialLoginMethod) {
     if (!canStartSocialSignIn(status)) return;
     onSelect(method);
@@ -45,7 +47,7 @@ export function LoginSocialMethods({ status, onSelect }: LoginSocialMethodsProps
           >
             {/* Apple만 neutral(면은 login-screen.css가 HIG 검정으로 덮습니다), 나머지는 outline입니다. */}
             <Button
-              label={loginMethodLabel(method)}
+              label={loginMethodLabel(method, copy)}
               variant={method === "apple" ? "neutral" : "outline"}
               size="xl"
               width="fill"

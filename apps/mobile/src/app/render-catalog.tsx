@@ -5,10 +5,9 @@ import type { ReactNode } from "@lynx-js/react";
 
 import type { LessonPosition } from "../screens/learning/activity-finish";
 import { CatalogFinalScreen } from "../screens/catalog-final/CatalogFinalScreen";
-import type {
-  CatalogRoleplayTurn,
-  CatalogRoleplayTurns,
-} from "../screens/catalog-final/catalog-final.contract";
+import { CatalogStoryFinalScreen } from "../screens/catalog-story-final/CatalogStoryFinalScreen";
+import type { AnswerResult } from "../lib/answer-result";
+import type { NonEmpty } from "../lib/non-empty";
 import { judgeAssessment } from "../screens/assessment/assessment";
 import { LessonCompleteScreen } from "../screens/lesson-complete/LessonCompleteScreen";
 import { lessonRewardPlaceholder } from "../screens/lesson-complete/lesson-complete";
@@ -18,7 +17,7 @@ import { renderCatalogActivity } from "./render-catalog-activity";
 import { renderCatalogReview } from "./render-catalog-review";
 import { catalogEpilogueModelOf } from "./catalog-cover-wiring";
 import { catalogUnitCompleteLeadsToEpilogue } from "./catalog-epilogue-route";
-import { catalogFinalPlanFor } from "./catalog-final-model";
+import { catalogJourneyFinalPlanFor } from "./catalog-journey-final";
 import { catalogResultNextOf } from "./catalog-next-unit";
 import {
   catalogActivityPositionOf,
@@ -34,7 +33,7 @@ type CatalogFlowScreen = Extract<
   { name: "catalog-lesson" | "catalog-final" | "catalog-unit-complete" | "catalog-epilogue" }
 >;
 
-function nonEmptyTurns(turns: readonly CatalogRoleplayTurn[]): CatalogRoleplayTurns | null {
+function nonEmptyTurns<T>(turns: readonly T[]): NonEmpty<T> | null {
   const [first, ...rest] = turns;
   return first === undefined ? null : [first, ...rest];
 }
@@ -86,12 +85,30 @@ export function renderCatalogFlow(screen: CatalogFlowScreen, wiring: ScreenWirin
     }
     case "catalog-final": {
       const { episodeId } = screen;
-      const plan = catalogFinalPlanFor(
+      const plan = catalogJourneyFinalPlanFor(
         wiring.episodeContent,
         wiring.catalogSections,
         episodeId,
         wiring.learnerFill,
       );
+      const finish = (results: readonly AnswerResult[]) =>
+        wiring.onFinishCatalogFinal(episodeId, results);
+      // 이야기 파이널(level-3 S8)이면 그 화면, 옛 콘텐츠면 RP 턴 화면입니다.
+      if (plan?.kind === "story") {
+        const turns = nonEmptyTurns(plan.turns);
+        if (turns === null)
+          throw new Error(`Catalog final test has no playable turns: ${episodeId}`);
+        return (
+          <CatalogStoryFinalScreen
+            key={episodeId}
+            insets={wiring.safeAreaInsets}
+            ordinal={plan.ordinal}
+            turns={turns}
+            onFinish={finish}
+            onExit={wiring.onExitCatalogSession}
+          />
+        );
+      }
       const turns = plan === null ? null : nonEmptyTurns(plan.turns);
       if (plan === null || turns === null) {
         throw new Error(`Catalog final test has no playable turns: ${episodeId}`);
@@ -103,7 +120,7 @@ export function renderCatalogFlow(screen: CatalogFlowScreen, wiring: ScreenWirin
           ordinal={plan.ordinal}
           counterpartName={plan.counterpartName}
           turns={turns}
-          onFinish={(results) => wiring.onFinishCatalogFinal(episodeId, results)}
+          onFinish={finish}
           onExit={wiring.onExitCatalogSession}
         />
       );
@@ -124,6 +141,7 @@ export function renderCatalogFlow(screen: CatalogFlowScreen, wiring: ScreenWirin
           onStatBumped={wiring.onStatBumped}
           reward={lessonRewardPlaceholder}
           ticketsLeft={wiring.ticketsLeft}
+          ticketChip={wiring.ticketChip}
           continuesStory={catalogUnitCompleteLeadsToEpilogue(wiring, episodeId, unitKey, verdict)}
           onExit={() => wiring.onExitCatalogUnitComplete(episodeId, unitKey, verdict)}
           onRetry={() => wiring.onStartCatalogUnit(episodeId, unitKey)}

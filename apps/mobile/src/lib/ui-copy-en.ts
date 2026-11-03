@@ -1,10 +1,12 @@
 // 영어 문구표입니다. 값은 구획 파일에서 모읍니다(파일마다 300줄 아래).
 
+import { authFailureEn } from "./auth-failure";
 import type { UiCopy } from "./ui-copy.contract";
 import {
   audioUnavailableEn,
   catalogCoverEn,
   catalogFinalEn,
+  catalogStoryFinalEn,
   catalogMapEn,
   catalogUpdateNoticeEn,
   cultureCardEn,
@@ -33,6 +35,13 @@ import {
   speakingEn,
   wordChoiceEn,
 } from "./ui-copy-en-learning";
+import {
+  journeyEntryEn,
+  languageSelectEn,
+  loginEn,
+  onboardingEn,
+  verificationCodeEn,
+} from "./ui-copy-en-entry";
 import { learnerProfileEn } from "./ui-copy-en-profile";
 import { ticketsEn } from "./ui-copy-en-tickets";
 import { roleplayStoryEn } from "./ui-copy-en-roleplay-story";
@@ -88,6 +97,7 @@ export const uiCopyEn: UiCopy = {
   syllableBuild: syllableBuildEn,
   wordChoicePicture: wordChoicePictureEn,
   catalogFinal: catalogFinalEn,
+  catalogStoryFinal: catalogStoryFinalEn,
   audioUnavailable: audioUnavailableEn,
   learnerProfile: learnerProfileEn,
   progressLoad: progressLoadEn,
@@ -99,4 +109,10 @@ export const uiCopyEn: UiCopy = {
   storyMessenger: storyMessengerEn,
   storyIntro: storyIntroEn,
   storyCall: storyCallEn,
+  onboarding: onboardingEn,
+  languageSelect: languageSelectEn,
+  journeyEntry: journeyEntryEn,
+  login: loginEn,
+  verificationCode: verificationCodeEn,
+  authFailure: authFailureEn,
 };

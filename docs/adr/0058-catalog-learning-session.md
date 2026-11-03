@@ -767,3 +767,42 @@ route · 진행 저장 형식 · 이벤트 이름은 그대로라 새 ADR을 만
 - 결과 화면 낭독: 다시 도전을 했으면 보이는 셋(판정 · 고친 수 · 모자란 수)을 같은 순서로 읽는다(`lessonReviewAnnouncement`).
 - 확인: unit `catalog-review.unit.test.ts` · `catalog-lesson-wiring.review.unit.test.ts`, ui `LearningShell.review.ui.test.tsx` · `LessonReviewIntroGate.ui.test.tsx` · `LessonCompleteScreen.review.ui.test.tsx`, integration `App.lesson-review.integration.test.tsx`(다시 도전 답이 문항 이벤트를 내지 않음 · SO CLOSE 뒤 Try again이 깨끗이 다시 시작 포함). iOS 시뮬레이터에서 u03 Culture(해설 판 · 맞힘 · 틀림 · 고친 수로 통과)와 u04 Lesson 1(시작 게이트 · 단어 선택 맞힘 판 · 그림 문항 틀림 판)을 걸었다.
 - ⚠ 남은 위험: ① 판 높이가 `spacing-96` 여유를 넘는 경우(큰 글꼴 · 긴 해설)에는 아래 보기가 첫 화면에서 판에 가리고 스크롤해야 보인다. ② 다시 도전 줄은 문항을 (활동 순번, 문항 순번)으로 가리킨다 — 레슨 도중 음성 · 그림 받기가 끝나 계획이 다시 지어지면 문항 자리가 바뀔 수 있다(활동 순번에는 이미 있던 위험, 줄은 더 오래 들고 있다). ③ Android 기기 확인은 이 기록 시점에 끝나지 않았다.
+
+## 적용 기록 ⟨2026-11-02 — level-3(balance) 디코더⟩
+
+balance 묶음(2026-10-30)을 읽기 위한 디코더(episode-core) 변경이다. 화면 · 여정맵은 바꾸지 않는다(이야기 파이널은 뒤 PR).
+
+- 문항 `story`(`line_id` · `lead` · `line` · `situation` · `image_url` · `hint_after_miss`)를 도메인 `item.story`로 옮긴다.
+- REPLY_SELECT: `stimulus` 없이 `context`만 오면 그것을 `stimulus.text`로 받고, 해설의 틀림 줄 · 틀린 보기 id(선택)를 읽는다. CLOZE_CHOICE 해설은 선택이다.
+- 새 형식 `HANGUL_WRITE`(따라 쓰기) — 레슨에서는 건너뛴다(`skippedItem`).
+- 타일 조립 형식(SYLLABLE_BUILD · LISTEN_BUILD)도 선택 `context`(`___` 자리)를 읽는다.
+- 최상위 `interlude` — INT 스텝 안 막간이 없을 때 쓴다(ADR-0088).
+- **모르는 형식 문항은 이제 그 문항만 빼고 `unknown-item-type` 경고**로 남긴다(이전에는 에피소드 거부) — 앞으로 생길 형식 하나가 에피소드 전체를 버리지 않게.
+- 도메인 모델 파일이 300줄을 넘어 바탕 타입(`model-base`) · 막간 타입(`model-interlude`)을 떼었다. `episode-content.model`이 그대로 다시 내보낸다.
+
+## 적용 기록 ⟨2026-11-02 — 여정맵 이야기 파이널 (level-3 balance S8)⟩
+
+사용자 결정(2026-11-02): balance 콘텐츠의 S8이 여정맵 파이널이 되고, 기존 RP 턴은 클리어 뒤 롤플레이 탭에서만 쓴다. 화면은 지금 최종 테스트 형태 그대로(시안 https://claude.ai/artifact/1y7az2qmKjSkujgjeMqnVP ①~⑤). 따라 쓰기는 획 데이터 없이 손글씨 탐침의 덮음 · 머무름 기준으로 채점한다.
+
+- **원천**: 문항이 하나 이상이고 모두 이야기 문항(`item.story`)인 **마지막 학습 유닛**(balance에서는 S8) — `catalogStoryFinalSourceOf`. 구획에 `storyFinalKey`로 싣고, 그 유닛은 레슨 노드 · 완료 키에서 뺀다. 파이널 노드의 진도 키는 그대로 `RP`라 다음 에피소드 열림 규칙이 바뀌지 않는다. 원천이 없으면(level-2 이하 콘텐츠) 파이널은 지금처럼 RP 턴이다.
+- **롤플레이 탭**: `catalogFinalPlanFor`(RP 턴)를 그대로 쓴다. 여정맵만 `catalogJourneyFinalPlanFor`가 이야기 · RP 중 하나를 고른다.
+- **화면** `CatalogStoryFinalScreen`: RP 최종 테스트 껍데기(전면 장면 · 머리 · 대화창 · 어두운 판)와 CSS를 함께 쓴다. 판 안 순서는 안내(`prompt.en`) → 판정 배지(가운데) → 내 대답 줄 → `Say:`(`story.line.en`) → 해설 자리(맞힘 `feedback.correct.en` · 틀림 `Answer` = `story.line.ko`, 곧 `hint_after_miss`) → 보기 · 타일. 상대 대사는 `story.lead`의 마지막 줄, 상황(`situation`)은 그리지 않는다.
+  - 보기(REPLY_SELECT · CLOZE_CHOICE): 고르면 바로 판정한다(Check 없음). 틀은 `context`에 `___`이 있을 때만.
+  - 타일(CLOZE · WORD_ORDER · SYLLABLE_BUILD): Check. 음절 잇기만 붙여 잇는다. 판정은 공백 · 문장부호를 보지 않는 `isTypedAnswerAccepted`.
+  - 따라 쓰기(HANGUL_WRITE): `answers[0]`의 음절마다 한 글자 칸(`CompactNumericInput` s 모양) · 220pt 쓰기 칸(호스트가 구운 안내 PNG, 획순 없음) · Redo · Listen(내 줄 소리가 있을 때) · Next letter(마지막은 Check). 음절 통과 = 덮음 ≥ 0.6 그리고 머무름 ≥ 0.6(성능 보고서 handwriting-trace-module-…-01의 시작 문턱), 턴 = 모든 음절 통과. 모듈이 없거나 호스트가 실패하면 그 음절을 막지 않는다. 쓰기 칸은 스크롤 밖에 서고(제스처 다툼, ADR-0022) 판정 뒤에도 남아 판 높이가 줄지 않는다.
+  - **밀림 없음**: 판정 배지 자리 · 해설 자리 · 대답 줄 높이를 판정 전에도 지켜, 판정 순간 판이 늘어 대화창이 밀리지 않는다. 빈칸은 상자 없이 밑줄로, 정답은 한 줄(「Answer: …」)로 보이고, 배지는 불투명한 초록 · 빨강이다(실기 검토 중 사용자 결정 2026-11-02).
+
+## 적용 기록 ⟨2026-11-02 — 콘텐츠 수준 3 · 내장 balance⟩
+
+- `CONTENT_CLIENT_LEVEL` 3 — `manifests/level-3.json`부터 읽고, 없으면 level-2 → `manifest.json` 순서다. 지금 운영 앱(수준 2)은 level-3을 읽지 않는다.
+- 내장 u01~u10을 balance(2026-10-30.1)로 바꿨다. 버킷 level-2 판(2026-10-28.x)보다 version이 높아, level-3을 올리기 전에도 새 앱에는 내장 balance가 선다.
+- u04 · u06의 다시 그린 그림 12장은 버킷의 `-v2` 이름을 가리키게 내장 사본만 고쳤다(버킷의 같은 이름은 옛 그림, balance 원본은 같은 이름에 새 그림).
+- **남은 것(사용자)**: 버킷에 새 그림 6장 · 녹음 129개 · 음성 목록 갱신 · level-3 manifest 업로드. 올리기 전에는 새 녹음이 필요한 듣기 문항은 대본이 보이는 제시로 서고, 새 그림의 문항은 그림 없이 남는다.
+
+## 적용 기록 ⟨2026-11-02 — 답하기 전 정답 로마자 감추기⟩
+
+balance 일반 유닛 1,050문항을 화면 모델로 전수 점검한 결과(사용자 지시로 진행)에 따라 둘을 고쳤다.
+
+- 듣고 고르기(LISTEN_SELECT)는 **답하기 전에 로마자를 보이지 않는다**(154문항). 로마자가 정답 문장 그대로라 듣기가 아니라 글자 맞추기였다. 답한 뒤에는 한글 + 로마자가 선다. 소리가 없는 문항은 지금처럼 대본이 보이는 제시로 선다.
+- 듣고 문장 조립(LISTEN_BUILD)의 읽기 줄(정답 로마자)은 **확인 뒤에만** 보인다(77문항).
+- 알려진 한계: 답한 순간 대본(한글 + 로마자)이 생기며 제시 카드가 커져 보기가 아래로 밀린다(iOS 약 70pt). 대본 자리를 미리 비울지는 미정이다.

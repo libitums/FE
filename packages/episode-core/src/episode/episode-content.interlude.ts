@@ -127,7 +127,8 @@ export function interludePlanOf(wire: DeliveryEpisodeV2): InterludePlan {
   const warnings: DecodeIssue[] = [];
   wire.steps.forEach((step, i) => {
     if (step.kind !== INTERLUDE_KIND) return;
-    const interlude = interludeWireOf(step.interlude);
+    // 스텝 안 막간이 먼저이고, 없으면 최상위 `interlude`(balance · level-3 모양)입니다.
+    const interlude = interludeWireOf(step.interlude ?? wire.interlude);
     const story = interlude === null ? null : toStory(interlude);
     if (story === null) {
       dropped.add(step.id);

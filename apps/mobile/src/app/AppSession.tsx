@@ -4,6 +4,8 @@ import { FirstUnitGuideProvider } from "../components/first-unit-guide";
 import { announce } from "../lib/accessibility";
 import type { AnswerResult } from "../lib/answer-result";
 import { loadUiLanguage } from "../lib/ui-language";
+import { localizeCatalog } from "../lib/episode-localize";
+import { appShellClassName } from "./app-shell-class";
 import type { EntryLanguage } from "../lib/entry-language";
 import { appVersionFrom } from "../lib/app-version";
 import { safeAreaInsetsFrom, tappableBottomInsetFrom } from "../lib/safe-area";
@@ -64,7 +66,7 @@ export function AppSession({
   start,
   exit,
   onLeaveApp,
-  episodeContent,
+  episodeContent: sourceContent,
   stagedContentReady = 0,
   applyStagedContent,
 }: AppProps & AppSessionControl & AppSessionContent) {
@@ -75,6 +77,11 @@ export function AppSession({
 
   // 고른 언어(= UI 언어)입니다. 첫 렌더에 저장값을 읽고, Provider가 이 언어의 문구표를 내립니다.
   const [entryLanguage, setEntryLanguage] = useState<EntryLanguage>(loadUiLanguage);
+  // 콘텐츠의 영어 칸을 UI 언어 번역으로 바꾼 판입니다 — 아래 모든 화면이 이것을 받습니다(ADR-0091 D2).
+  const episodeContent = useMemo(
+    () => ({ ...sourceContent, catalog: localizeCatalog(sourceContent.catalog, entryLanguage) }),
+    [sourceContent, entryLanguage],
+  );
 
   // 떠난 뒤 새로 선 세션이면 결과를 한 번 낭독합니다 — 화면이 통째로 바뀌어 달리 알 길이 없습니다.
   useEffect(() => {
@@ -222,7 +229,7 @@ export function AppSession({
       >
         <ErrorBoundary>
           <view
-            className={screenNow.name === "splash" ? "app app-splash" : "app"}
+            className={appShellClassName(screenNow.name === "splash", entryLanguage)}
             data-testid="app-shell"
             style={{
               paddingTop: `${shellInsets.top}px`,

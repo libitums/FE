@@ -4,6 +4,7 @@
 // **학습 콘텐츠는 여기 없습니다.** 이 앱은 한국어를 배우는 앱이라 대사 · 예문 · 보기 ·
 // 받아쓰기 대상은 늘 한국어이고, 문구표는 그 둘레의 UI 문구만 집니다.
 
+import type { AuthFailureCopy } from "./auth-failure";
 import type { EntryLanguage } from "./entry-language";
 import type { AudioUnavailableCopy } from "../components/audio-unavailable.contract";
 import type { LearnerProfileCopy } from "../components/learner-profile.contract";
@@ -14,11 +15,17 @@ import type { StoryIntroCopy } from "../screens/story-intro/story-intro.contract
 import type { StoryMessengerCopy } from "../screens/story-messenger/story-messenger.contract";
 import type { CatalogCoverCopy } from "../screens/catalog-cover/catalog-cover.contract";
 import type { CatalogFinalCopy } from "../screens/catalog-final/catalog-final.contract";
+import type { CatalogStoryFinalCopy } from "../screens/catalog-story-final/catalog-story-final.contract";
 import type { CatalogMapCopy } from "../screens/journey-map/catalog-map.contract";
 import type { CatalogUpdateNoticeCopy } from "../screens/catalog-update/catalog-update-notice.contract";
 import type { ProgressLoadCopy } from "../screens/journey-map/journey-map-load.contract";
 import type { SpecialUnitMapCopy } from "../screens/journey-map/journey-special-unit.contract";
 import type { SplashCopy } from "../screens/splash/splash.contract";
+import type { JourneyEntryCopy } from "../screens/journey-entry/journey-entry.contract";
+import type { LanguageSelectCopy } from "../screens/language-select/language-select.contract";
+import type { LoginCopy } from "../screens/login/login.contract";
+import type { OnboardingScreenCopy } from "../screens/onboarding/onboarding.contract";
+import type { VerificationCodeCopy } from "../screens/verification-code/verification-code.contract";
 import type { CultureCardCopy } from "../screens/culture-card/culture-card.contract";
 import type { PairMatchCopy } from "../screens/pair-match/pair-match.contract";
 import type { ReadAloudCopy } from "../screens/read-aloud/read-aloud.contract";
@@ -92,6 +99,7 @@ export type UiCopy = {
   readonly syllableBuild: SyllableBuildCopy;
   readonly wordChoicePicture: WordChoicePictureCopy;
   readonly catalogFinal: CatalogFinalCopy;
+  readonly catalogStoryFinal: CatalogStoryFinalCopy;
   readonly audioUnavailable: AudioUnavailableCopy;
   readonly learnerProfile: LearnerProfileCopy;
   readonly progressLoad: ProgressLoadCopy;
@@ -103,6 +111,12 @@ export type UiCopy = {
   readonly storyMessenger: StoryMessengerCopy;
   readonly storyIntro: StoryIntroCopy;
   readonly storyCall: StoryCallCopy;
+  readonly onboarding: OnboardingScreenCopy;
+  readonly languageSelect: LanguageSelectCopy;
+  readonly journeyEntry: JourneyEntryCopy;
+  readonly login: LoginCopy;
+  readonly verificationCode: VerificationCodeCopy;
+  readonly authFailure: AuthFailureCopy;
 };
 
 /**

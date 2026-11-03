@@ -6,6 +6,7 @@ import type { StatBumpKind, StatBumps } from "../../lib/stat-bump";
 import type { AssessmentVerdict } from "../assessment/assessment";
 import type { LessonReward } from "./lesson-complete";
 import type { LessonCompleteNext } from "./LessonCompleteNextActions";
+import type { LessonCompleteTicketChip } from "./LessonCompleteStats";
 
 /** 다시 푼 문항 하나의 결과입니다(푼 순서). */
 export type LessonReviewOutcome = "fixed" | "missed";
@@ -52,6 +53,8 @@ export type LessonCompleteScreenProps = {
   readonly onStatBumped?: (kind: StatBumpKind) => void;
   /** 남은 학습 티켓 수입니다(시안 E5). 넘기지 않으면 줄이 서지 않습니다 — 레슨이 아닌 결과 화면입니다. */
   readonly ticketsLeft?: number;
+  /** 머리 티켓 칩 — 넘기지 않으면 서지 않습니다. */
+  readonly ticketChip?: LessonCompleteTicketChip;
   /** 통과 뒤 이어 갈 다음 유닛(시안 D) — 있으면 지도 버튼 + 「다음 학습」 한 줄, 없으면 맵 버튼 하나. */
   readonly next?: LessonCompleteNext;
   /**

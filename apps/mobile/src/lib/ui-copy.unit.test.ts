@@ -51,18 +51,18 @@ test("UC1. uiCopyFor는 언어마다 두 번 불러도 같은 객체를 낸다",
   }
 });
 
-test("UC2. 덮어쓰기가 비어 있는 vi · es · ja는 문자열 잎이 전부 영어와 같다", () => {
+test("UC2. 덮어쓰기가 비어 있는 es · ja는(vi는 완전한 표, ADR-0091) 문자열 잎이 전부 영어와 같다", () => {
   const english = stringLeaves(uiCopyEn);
   expect(Object.keys(english).length).toBeGreaterThan(0);
-  for (const language of ["vi", "es", "ja"] as const) {
+  for (const language of ["es", "ja"] as const) {
     expect(stringLeaves(uiCopyFor(language))).toEqual(english);
   }
 });
 
-test("UC2. 덮어쓰기가 비어 있는 vi · es · ja는 함수 잎이 같은 인자에 영어와 같은 결과를 낸다", () => {
+test("UC2. 덮어쓰기가 비어 있는 es · ja는(vi는 완전한 표, ADR-0091) 함수 잎이 같은 인자에 영어와 같은 결과를 낸다", () => {
   const functions = leavesOf(uiCopyEn).filter((leaf) => typeof leaf.value === "function");
   expect(functions.length).toBeGreaterThan(0);
-  for (const language of ["vi", "es", "ja"] as const) {
+  for (const language of ["es", "ja"] as const) {
     const table = uiCopyFor(language);
     for (const leaf of functions) {
       const other = at(table, leaf.path);
@@ -76,8 +76,8 @@ test("UC2. 덮어쓰기가 비어 있는 vi · es · ja는 함수 잎이 같은 
   }
 });
 
-test("UC2. 말하기 두 구획의 다섯 키는 vi · es · ja에서 영어로 채워진다", () => {
-  for (const language of ["vi", "es", "ja"] as const) {
+test("UC2. 말하기 두 구획의 다섯 키는 es · ja에서 영어로 채워진다", () => {
+  for (const language of ["es", "ja"] as const) {
     const table = uiCopyFor(language);
     expect(table.readAloud).not.toHaveProperty("badge");
     expect(table.readAloud.matched(2, 5)).toBe("You said the first 2 of 5 words.");
@@ -130,13 +130,13 @@ test("UC3. 입력 둘을 바꾸지 않고 던지지 않는다", () => {
   expect(overrides.common?.count?.gems).toBe(gems);
 });
 
-test("UC4. uiCopyCatalog의 키 집합이 정확히 en · es · ja · vi이고 en이 uiCopyEn이다", () => {
-  expect(Object.keys(uiCopyCatalog).sort()).toEqual(["en", "es", "ja", "vi"]);
+test("UC4. uiCopyCatalog의 키 집합이 정확히 en · es · id · ja · vi이고 en이 uiCopyEn이다", () => {
+  expect(Object.keys(uiCopyCatalog).sort()).toEqual(["en", "es", "id", "ja", "vi"]);
   expect(uiCopyCatalog.en).toBe(uiCopyEn);
 });
 
-test("JS4. specialUnitMap은 vi · es · ja에서 영어로 채워진다", () => {
-  for (const language of ["vi", "es", "ja"] as const) {
+test("JS4. specialUnitMap은 es · ja에서 영어로 채워진다", () => {
+  for (const language of ["es", "ja"] as const) {
     const table = uiCopyFor(language);
     expect(table.specialUnitMap.eyebrow).toBe("SPECIAL");
     expect(table.specialUnitMap.accessibilityLabel("x")).toBe("special, x");

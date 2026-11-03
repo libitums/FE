@@ -37,6 +37,7 @@ const events: readonly AnalyticsEvent[] = [
   { name: "push_notification_opened", target: "journey-map" },
   { name: "settings_opened" },
   { name: "profile_opened" },
+  { name: "language_settings_opened" },
   { name: "notification_settings_opened" },
   { name: "feedback_opened" },
   { name: "feedback_submitted", rating: "5", hasMessage: true },
@@ -86,9 +87,9 @@ describe("episode_content_refreshed", () => {
 });
 
 describe("analyticsCaptureFrom", () => {
-  test("AE1: 표가 이름 23개 · 모양 24개를 다 덮는다", () => {
-    expect(events).toHaveLength(24);
-    expect(new Set(events.map((e) => e.name)).size).toBe(23);
+  test("AE1: 표가 이름 24개 · 모양 25개를 다 덮는다", () => {
+    expect(events).toHaveLength(25);
+    expect(new Set(events.map((e) => e.name)).size).toBe(24);
   });
 
   test.each(events.map((e, i) => [`${i + 1}. ${e.name}`, e] as const))(
@@ -198,10 +199,10 @@ describe("AN1 분석 계약의 크기", () => {
   ];
 
   // ⟨ADR-0086⟩ `app_update_required_shown`, ⟨ADR-0088 D6⟩ 막간 이야기 다섯이 더해져 44이다.
-  test("AN1. 이벤트 이름은 44개이고 지운 여덟이 없다", () => {
+  test("AN1. 이벤트 이름은 45개이고 지운 여덟이 없다", () => {
     const source = readFileSync(resolve(process.cwd(), "src/lib/analytics-event-names.ts"), "utf8");
     const names = [...source.matchAll(/^\s+\| "([a-z_]+)"/gm)].map((match) => match[1]);
-    expect(names).toHaveLength(44);
+    expect(names).toHaveLength(45);
     expect(names).toContain("episode_story_skipped");
     expect(names).toContain("episode_listen_item_answered");
     expect(names).toContain("app_update_required_shown");

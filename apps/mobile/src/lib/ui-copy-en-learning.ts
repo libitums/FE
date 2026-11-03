@@ -64,6 +64,7 @@ export const assessmentEn: AssessmentCopy = {
 export const lessonCompleteEn: LessonCompleteCopy = {
   rewardDiamonds: (count) => `Reward, ${n(count, "diamond", "diamonds")}`,
   grade: (grade) => `Grade ${grade}`,
+  gradeName: (grade) => grade,
   outcome: { passed: "Lesson complete", failed: "Lesson not passed" },
   mistakes: (count) => (count === 0 ? "no mistakes" : n(count, "mistake", "mistakes")),
   skippedSuffix: (count) =>
@@ -71,6 +72,14 @@ export const lessonCompleteEn: LessonCompleteCopy = {
   nextLesson: "Next lesson",
   nextFinal: "Final test",
   continueStory: "Continue story",
+  title: { perfect: "PERFECT LESSON!", complete: "LESSON COMPLETE!", failed: "LESSON FAILED" },
+  subtitle: (mistakeCount) =>
+    mistakeCount === 0
+      ? "YOU MADE NO MISTAKES IN THIS LESSON"
+      : `YOU MADE ${mistakeCount} ${mistakeCount === 1 ? "MISTAKE" : "MISTAKES"} IN THIS LESSON`,
+  streakLabel: (days) => `${days} Day Streak`,
+  rewardLabel: (count) => `+ ${count} REWARD`,
+  tryAgain: "Try again",
   review: {
     soClose: "SO CLOSE!",
     fixedOf: (fixed, total) =>

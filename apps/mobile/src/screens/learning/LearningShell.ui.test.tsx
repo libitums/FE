@@ -378,7 +378,7 @@ test("[LS1-M] 문구표를 주입하면 나가기 · 진행 이름이 표의 경
   );
   expect(screen.getByTestId("learning-shell-progress")).toHaveAttribute(
     "accessibility-label",
-    "⟦learningShell.headerQuestionOf⟧(Listening, 2, 4)",
+    "⟦learningShell.headerQuestionOf⟧(⟦learningShell.formLabels.listening⟧, 2, 4)",
   );
 });
 
@@ -415,7 +415,7 @@ test("[LS1-M] 문구표를 주입하면 문항이 없는 진행 이름이 header
 
   expect(screen.getByTestId("learning-shell-progress")).toHaveAttribute(
     "accessibility-label",
-    "⟦learningShell.headerNoQuestions⟧(Listening)",
+    "⟦learningShell.headerNoQuestions⟧(⟦learningShell.formLabels.listening⟧)",
   );
 });
 

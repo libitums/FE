@@ -14,6 +14,7 @@ function renderSettings() {
     <SettingsScreen
       onSelectNavTarget={() => undefined}
       learnerProfileSummary="Not set"
+      languageSummary="Intermediate English"
       appVersion={null}
       onSignOut={onSignOut}
       onDeleteAccount={onDeleteAccount}

@@ -35,6 +35,29 @@ export const correctFeedbackSchema = z.object({
   correct: z.object({ ko: z.string(), en: optionalString }),
 });
 
+/** 대답 고르기의 해설 — 맞힘 줄과, 있으면 틀림 줄 · 틀린 보기 id. */
+export const choiceFeedbackSchema = z.object({
+  correct: z.object({ ko: z.string(), en: optionalString }),
+  wrong: z.optional(z.object({ ko: z.string(), en: optionalString })),
+  wrong_option: optionalString,
+});
+
+// 이야기 문항(level-3 S8)의 장면입니다 — 앞 상대 줄들(`lead`) 뒤에 내가 할 줄(`line`)이 옵니다. 대화 줄 id(`line_id`)는
+// `dialogue`의 줄을 가리킵니다.
+const storyLeadSchema = z.object({
+  speaker: z.string(),
+  line: textSchema,
+  audio_url: optionalString,
+});
+export const storySchema = z.object({
+  line_id: z.string(),
+  hint_after_miss: z.optional(z.boolean()),
+  lead: z.array(storyLeadSchema),
+  line: textSchema,
+  situation: z.optional(textSchema),
+  image_url: optionalString,
+});
+
 export const itemCommon = {
   id: z.string(),
   mode: z.string(),
@@ -43,6 +66,7 @@ export const itemCommon = {
   level: optionalInt,
   skill: optionalString,
   skill_level: optionalInt,
+  story: z.optional(storySchema),
 };
 
 // 막간(INT) 이야기의 와이어입니다(ADR-0088). 형식(`form`)과 컷 종류(`cut_kind`)는 콘텐츠가 늘려 가므로 문자열로

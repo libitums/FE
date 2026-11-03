@@ -33,6 +33,8 @@ const unscored = [
   "TRANSLATE_TO_KO",
   "SENT_BUILD",
   "ROLEPLAY_TURN",
+  // 이야기 파이널에서만 풀고 레슨 문항 보고에는 오지 않습니다.
+  "HANGUL_WRITE",
 ] as const;
 
 describe("scoredItemTypeOf (EV1)", () => {

@@ -5,12 +5,12 @@ import play from "@libitums/icons/lynx/play";
 import { Card } from "@libitums/ui-lynx/card";
 import { LearningUnit } from "@libitums/ui-lynx/learning-unit";
 
+import { useUiCopy } from "../../lib/ui-copy";
+
 import "./onboarding-unit-card.css";
 
 // 셋째 스텝의 학습 유닛이 「학습 중」에서 「완료」로 바뀌기까지의 시간입니다.
 const unitClearDelayMs = 1500;
-
-const unitTitle = "Shopping at a beauty store";
 
 /**
  * 온보딩 셋째 스텝의 학습 유닛 카드를 그립니다. 카드 안은 여정 맵과 같은 ui-lynx
@@ -20,6 +20,8 @@ const unitTitle = "Shopping at a beauty store";
  */
 export function OnboardingUnitCard(): ReactNode {
   const [unitCleared, setUnitCleared] = useState(false);
+  const unit = useUiCopy().onboarding.unit;
+  const unitTitle = unit.title;
 
   useEffect(() => {
     const timer = setTimeout(() => setUnitCleared(true), unitClearDelayMs);
@@ -32,13 +34,13 @@ export function OnboardingUnitCard(): ReactNode {
         <Card.Content>
           {/* 시연 카드라 누를 것이 없습니다. `LearningUnit`은 `active` · `clear`에서
               버튼으로 낭독되고 상태 접미사가 한국어라, 표식은 낭독에서 가리고 이 상자가
-              화면 문구와 같은 영어로 이름을 집니다. */}
+              화면 문구와 같은 UI 언어로 이름을 집니다. */}
           <view
             className="onboarding-screen-unit"
             data-testid="onboarding-screen-unit-content"
             data-status={unitCleared ? "clear" : "active"}
             accessibility-element={true}
-            accessibility-label={`${unitTitle}, ${unitCleared ? "Clear" : "Learning"}`}
+            accessibility-label={`${unitTitle}, ${unit.status[unitCleared ? "clear" : "active"]}`}
           >
             <view accessibility-elements-hidden={true}>
               <LearningUnit
@@ -49,7 +51,7 @@ export function OnboardingUnitCard(): ReactNode {
               />
             </view>
             <text className="onboarding-screen-unit-title">{unitTitle}</text>
-            <text className="onboarding-screen-unit-meta">Unit 1 · 5 min</text>
+            <text className="onboarding-screen-unit-meta">{unit.meta}</text>
           </view>
         </Card.Content>
       </Card>

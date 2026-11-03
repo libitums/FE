@@ -179,6 +179,8 @@ export type JourneyStats = {
   readonly trophyCount: number;
   /** 남은 학습 티켓 수입니다 — 레슨 결과 화면의 한 줄(시안 E5). 티켓 결선(`ticket-wiring.ts`)이 채웁니다. */
   readonly ticketsLeft?: number;
+  /** 결과 화면 머리의 티켓 칩 값 — 시험 계정이면 무제한입니다. 티켓 결선이 채웁니다. */
+  readonly ticketChip?: { readonly count: number; readonly unlimited: boolean };
   /** 티켓을 쓰고 연 유닛입니다 — 맵이 진한 색으로 세우고 말풍선이 「무료」로 셉니다. 티켓 결선이 채웁니다. */
   readonly catalogTicketUnits?: CatalogProgress;
 };

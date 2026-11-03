@@ -12,8 +12,16 @@ import type {
   UseUiCopy,
 } from "./ui-copy.contract";
 import { uiCopyEn } from "./ui-copy-en";
+import { uiCopyId } from "./ui-copy-id";
+import { uiCopyVi } from "./ui-copy-vi";
 
-export const uiCopyCatalog: UiCopyCatalog = { en: uiCopyEn, vi: {}, es: {}, ja: {} };
+export const uiCopyCatalog: UiCopyCatalog = {
+  en: uiCopyEn,
+  vi: uiCopyVi,
+  id: uiCopyId,
+  es: {},
+  ja: {},
+};
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -42,6 +50,14 @@ function buildTable(language: UiLanguage): UiCopy {
   if (language === "en") {
     return uiCopyEn;
   }
+  // 베트남어는 완전한 표라 덮어쓰지 않고 그대로 씁니다(ADR-0091 D3).
+  if (language === "vi") {
+    return uiCopyVi;
+  }
+  // 인도네시아어도 완전한 표입니다(ADR-0093).
+  if (language === "id") {
+    return uiCopyId;
+  }
   const overrides: UiCopyOverrides = uiCopyCatalog[language];
   return uiCopyWithOverrides(uiCopyEn, overrides);
 }
@@ -49,6 +65,7 @@ function buildTable(language: UiLanguage): UiCopy {
 const tables: Readonly<Record<UiLanguage, UiCopy>> = {
   en: buildTable("en"),
   vi: buildTable("vi"),
+  id: buildTable("id"),
   es: buildTable("es"),
   ja: buildTable("ja"),
 };

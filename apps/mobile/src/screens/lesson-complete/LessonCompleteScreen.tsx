@@ -9,7 +9,7 @@ import { color } from "@libitums/design-tokens";
 import { Button } from "@libitums/ui-lynx/button";
 import { useMotion } from "@libitums/ui-lynx/motion";
 
-import { StatChip, statChipDiamondColor } from "../../components/StatChip";
+import { statChipDiamondColor } from "../../components/StatChip";
 import { ticketIcon } from "../../components/ticket-icon";
 import { announce } from "../../lib/accessibility";
 import { playSound } from "../../lib/sound-effects";
@@ -19,7 +19,6 @@ import {
   lessonCompleteSubtitle,
   lessonCompleteTitle,
   lessonMistakeCount,
-  lessonStreakLabel,
 } from "./lesson-complete";
 import {
   lessonCompleteChipBumpDelayMs,
@@ -34,6 +33,7 @@ import {
   lessonReviewTitle,
 } from "./LessonCompleteReviewSummary";
 import { LessonCompleteNextActions } from "./LessonCompleteNextActions";
+import { LessonCompleteStats } from "./LessonCompleteStats";
 import { noStatBumps } from "../../lib/stat-bump";
 
 import type { LessonCompleteScreenProps } from "./lesson-complete-screen-props";
@@ -68,25 +68,28 @@ export function LessonCompleteScreen({
   statBumps = noStatBumps,
   onStatBumped,
   ticketsLeft,
+  ticketChip,
   next,
   review,
 }: LessonCompleteScreenProps): ReactNode {
   const copy = useUiCopy();
+  const lc = copy.lessonComplete;
   const toStory = continuesStory && verdict !== "failed"; // 미통과면 이야기로 이어지지 않습니다(방어).
-  const exitLabel = toStory ? copy.lessonComplete.continueStory : copy.common.exitTo[exitTo];
+  const exitLabel = toStory ? lc.continueStory : copy.common.exitTo[exitTo];
   // `reward` prop(재화)과 이름이 겹치지 않도록 배지 모션은 `rewardMotion`으로 둡니다.
   const rewardMotion = rewardMotionFor(verdict, useMotion());
   const chipBumpDelayMs = lessonCompleteChipBumpDelayMs(rewardMotion);
   // 시스템 뒤로가기 = 하단 나가기와 같은 함수입니다(미통과의 `Try again`이 아닙니다).
   useScreenBack(onExit);
   const mistakeCount = lessonMistakeCount(results);
+  const rewardLabel = lc.rewardLabel(reward.diamondAmount);
+  const gradeName = lc.gradeName(reward.grade);
 
   useEffect(() => {
     playSound(verdict === "failed" ? "failed_lesson" : "pass_lesson");
   }, [verdict]);
 
   // 이 화면이 사는 동안 정확히 한 번 발화합니다(ADR-0016 D11-2).
-  //
   // **dep이 `mistakeCount`입니다.** 빈 배열 + `eslint-disable`로 두면 「마운트 때 한 번」이
   // 규칙이 아니라 린트를 끈 결과가 되고, 나중에 이 값이 실제로 갈리는 날 발화가 조용히
   // 빠집니다. 값을 적어 두면 그날 `tsc`도 린트도 아닌 **화면이** 답합니다.
@@ -94,38 +97,25 @@ export function LessonCompleteScreen({
   // 그래도 두 번 울리지 않습니다: `results`는 이 화면 인스턴스의 것이고 라우트에 실려
   // 와서 `back`과 함께 죽습니다(`nav-state.ts`) — 사는 동안 갈리지 않으므로 파생값인
   // `mistakeCount`도 갈리지 않습니다. 듣기 화면이 `[complete]`를 dep으로 두고 같은
-  // 근거를 적는 것과 같은 자리입니다.
+  // 근거를 적는 것과 같은 자리입니다. `copy`는 언어별로 한 번 지은 같은 객체라 화면이 사는 동안 갈리지 않습니다.
   useEffect(() => {
     announce(
       review === undefined
         ? lessonCompleteAnnouncement(mistakeCount, verdict, skippedCount, copy)
         : lessonReviewAnnouncement(review, verdict, copy),
     );
-  }, [mistakeCount, verdict, skippedCount, review]);
+  }, [mistakeCount, verdict, skippedCount, review, copy]);
 
   return (
     <view className="lesson-complete-screen" data-testid="lesson-complete-screen">
-      {/* [고정] 머리 — 연속 학습 · 트로피. 읽기 전용입니다. */}
-      <view className="lesson-complete-screen-stats">
-        <StatChip
-          tone="streak"
-          value={streakDays}
-          accessibilityLabel={copy.common.count.streakDays(streakDays)}
-          testId="lesson-complete-screen-streak"
-          bumpFrom={statBumps.streak}
-          bumpDelayMs={chipBumpDelayMs}
-          onBumped={() => onStatBumped?.("streak")}
-        />
-        <StatChip
-          tone="trophy"
-          value={trophyCount}
-          accessibilityLabel={copy.common.count.trophies(trophyCount)}
-          testId="lesson-complete-screen-trophy"
-          bumpFrom={statBumps.trophy}
-          bumpDelayMs={chipBumpDelayMs}
-          onBumped={() => onStatBumped?.("trophy")}
-        />
-      </view>
+      <LessonCompleteStats
+        streakDays={streakDays}
+        trophyCount={trophyCount}
+        ticketChip={ticketChip}
+        statBumps={statBumps}
+        bumpDelayMs={chipBumpDelayMs}
+        onStatBumped={onStatBumped}
+      />
 
       <view className="lesson-complete-screen-spacer-top" />
 
@@ -146,7 +136,7 @@ export function LessonCompleteScreen({
           accessibility-traits="header"
         >
           {review === undefined
-            ? lessonCompleteTitle(mistakeCount, verdict, skippedCount)
+            ? lessonCompleteTitle(mistakeCount, verdict, skippedCount, copy)
             : lessonReviewTitle(verdict, copy)}
         </text>
         {/* 연속이 없으면(0일) 알약을 세우지 않습니다 — 「0 Day Streak」은 축하가 아닙니다. */}
@@ -163,7 +153,7 @@ export function LessonCompleteScreen({
               current-color={color.brand.primary}
             />
             <text className="lesson-complete-screen-streak-label">
-              {lessonStreakLabel(streakDays)}
+              {lc.streakLabel(streakDays)}
             </text>
           </view>
         ) : null}
@@ -172,7 +162,7 @@ export function LessonCompleteScreen({
           data-testid="lesson-complete-screen-subtitle"
         >
           {review === undefined
-            ? lessonCompleteSubtitle(mistakeCount)
+            ? lessonCompleteSubtitle(mistakeCount, copy)
             : lessonReviewSubtitle(review, copy)}
         </text>
         {review === undefined ? null : (
@@ -205,20 +195,20 @@ export function LessonCompleteScreen({
               content={diamond}
               current-color={statChipDiamondColor}
             />
-            <text className="lesson-complete-screen-reward-label">{`+ ${reward.diamondAmount} REWARD`}</text>
+            <text className="lesson-complete-screen-reward-label">{rewardLabel}</text>
           </view>
           <view
             className="lesson-complete-screen-reward lesson-complete-screen-reward-grade"
             data-testid="lesson-complete-screen-reward-grade"
             accessibility-element={true}
-            accessibility-label={copy.lessonComplete.grade(reward.grade)}
+            accessibility-label={lc.grade(gradeName)}
           >
             <svg
               className="lesson-complete-screen-reward-icon"
               content={trophy}
               current-color={color.feedback.warning}
             />
-            <text className="lesson-complete-screen-reward-label">{reward.grade}</text>
+            <text className="lesson-complete-screen-reward-label">{gradeName}</text>
           </view>
         </view>
       )}
@@ -249,7 +239,7 @@ export function LessonCompleteScreen({
           위에 두는 것은 미통과에서 사용자가 더 자주 고를 길이기 때문입니다. */}
       {verdict === "failed" && onRetry !== undefined ? (
         <view className="lesson-complete-screen-action" data-testid="lesson-complete-screen-retry">
-          <Button label="Try again" variant="brand" size="xl" width="fill" bindtap={onRetry} />
+          <Button label={lc.tryAgain} variant="brand" size="xl" width="fill" bindtap={onRetry} />
         </view>
       ) : null}
       {verdict !== "failed" && next !== undefined ? (

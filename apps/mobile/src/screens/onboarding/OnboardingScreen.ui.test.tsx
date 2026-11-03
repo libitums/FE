@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { act, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
+import { uiCopyEn } from "../../lib/ui-copy-en";
 import { onboardingActionLabel, onboardingSteps } from "./onboarding";
 import { OnboardingScreen } from "./OnboardingScreen";
 
@@ -98,12 +99,14 @@ describe("OnboardingScreen", () => {
     render(<OnboardingScreen onComplete={vi.fn()} />);
     const action = screen.getByTestId("onboarding-screen-next");
 
-    expect(action).toHaveTextContent(onboardingActionLabel(0));
+    expect(action).toHaveTextContent(onboardingActionLabel(0, uiCopyEn.onboarding));
     next();
-    expect(action).toHaveTextContent(onboardingActionLabel(1));
+    expect(action).toHaveTextContent(onboardingActionLabel(1, uiCopyEn.onboarding));
     next();
-    expect(action).toHaveTextContent(onboardingActionLabel(2));
-    expect(onboardingActionLabel(2)).not.toBe(onboardingActionLabel(0));
+    expect(action).toHaveTextContent(onboardingActionLabel(2, uiCopyEn.onboarding));
+    expect(onboardingActionLabel(2, uiCopyEn.onboarding)).not.toBe(
+      onboardingActionLabel(0, uiCopyEn.onboarding),
+    );
   });
 
   // OB-U7 — 진행 래퍼에 이름 있는 accessibility-element가 실재하고, 그 이름이
@@ -121,7 +124,10 @@ describe("OnboardingScreen", () => {
 
     const action = actionButton();
     expect(action).toHaveAttribute("accessibility-element", "true");
-    expect(action).toHaveAttribute("accessibility-label", onboardingActionLabel(0));
+    expect(action).toHaveAttribute(
+      "accessibility-label",
+      onboardingActionLabel(0, uiCopyEn.onboarding),
+    );
     expect(action).toHaveAttribute("accessibility-traits", "button");
 
     next();

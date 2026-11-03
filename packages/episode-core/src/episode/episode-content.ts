@@ -13,8 +13,9 @@ import type {
   EpisodeStory,
 } from "./episode-content.model";
 import { interludePlanOf } from "./episode-content.interlude";
+import { translationsOf } from "./episode-content.translations";
 import {
-  findUnknownItemTypes,
+  withoutUnknownItems,
   formatPath,
   isRecord,
   issue,
@@ -31,7 +32,7 @@ export type * from "./episode-content.model";
 
 // 와이어(delivery-2 JSON)를 도메인 `Episode`로 바꾸는 디코더입니다. 단계는 모양 검사 →
 // 의미 검사 → 정규화이고, 도메인 타입은 `episode-content.model.ts`에 있습니다.
-// 실패는 에피소드 단위입니다(반쪽 에피소드는 없습니다). 미해결 `ref`만 경고입니다.
+// 실패는 에피소드 단위입니다(반쪽 에피소드는 없습니다). 미해결 `ref`와 모르는 형식 문항(그 문항만 뺌)은 경고입니다.
 // 예외를 던지지 않습니다 — 어떤 입력에도 `DecodeResult`를 돌려줍니다.
 
 /** 구조를 통과한 뒤의 의미 검사 — 전부 모아서 돌려줍니다. `rpIndex`는 최종 테스트 스텝 자리(-1이면 없음). */
@@ -182,6 +183,7 @@ function toEpisode(
   wire: DeliveryEpisodeV2,
   rpIndex: number,
   stories: ReadonlyMap<string, EpisodeStory>,
+  translations: Episode["translations"],
 ): Episode {
   const rp = wire.steps[rpIndex];
   const learning = wire.steps.filter((_, i) => i !== rpIndex).sort(byKey((step) => step.order));
@@ -210,6 +212,7 @@ function toEpisode(
       items: (rp?.items ?? []).map(toItem),
     },
     ...maybe("completion", completionOf(wire.completion)),
+    ...maybe("translations", translations),
     epilogue: [...wire.post_cuts].sort(byKey((cut) => cut.index)).map(toCut),
     words: wire.words.map(toWord),
     patterns: wire.patterns.map((p) => ({
@@ -229,12 +232,10 @@ function decode(input: unknown): DecodeResult {
     };
   }
 
-  const unknownTypes = findUnknownItemTypes(input);
-  if (unknownTypes.length > 0) {
-    return { ok: false, errors: unknownTypes };
-  }
+  // 모르는 형식 문항은 그 문항만 빼고 경고로 남깁니다(에피소드는 계속 디코드합니다).
+  const known = withoutUnknownItems(input);
 
-  const parsed = deliveryEpisodeSchema.safeParse(input);
+  const parsed = deliveryEpisodeSchema.safeParse(known.input);
   if (!parsed.success) {
     return {
       ok: false,
@@ -255,17 +256,23 @@ function decode(input: unknown): DecodeResult {
     return { ok: false, errors };
   }
 
+  const translated = translationsOf(parsed.data.translations);
   return {
     ok: true,
-    episode: toEpisode(interludes.wire, rpIndex, interludes.stories),
-    warnings: [...interludes.warnings, ...collectWarnings(interludes.wire)],
+    episode: toEpisode(interludes.wire, rpIndex, interludes.stories, translated.translations),
+    warnings: [
+      ...known.warnings,
+      ...interludes.warnings,
+      ...translated.warnings,
+      ...collectWarnings(interludes.wire),
+    ],
   };
 }
 
 /**
  * delivery-2 에피소드 JSON(`JSON.parse` 결과)을 도메인 `Episode`로 바꿉니다.
  * 순수 함수 — 입력을 변형하지 않고(깊은 복사 결과) 예외를 던지지 않습니다.
- * 단계: 스키마 판별 → 문항 type 선검사 → 모양 검사 → 의미 검사 → 정규화 → 경고.
+ * 단계: 스키마 판별 → 모르는 형식 문항 빼기 → 모양 검사 → 의미 검사 → 정규화 → 경고.
  */
 export function decodeEpisode(input: unknown): DecodeResult {
   try {

@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
 
+import { uiCopyEn } from "../../lib/ui-copy-en";
 import type { OnboardingStep } from "./onboarding.contract";
 import {
   nextOnboardingStep,
@@ -26,9 +27,9 @@ test("OB2. nextOnboardingStep이 0→1·1→2·2→null이다", () => {
 });
 
 test("OB3. onboardingActionLabel이 0·1에서 같고 2에서 갈린다", () => {
-  const stepZero = onboardingActionLabel(0);
-  const stepOne = onboardingActionLabel(1);
-  const stepTwo = onboardingActionLabel(2);
+  const stepZero = onboardingActionLabel(0, uiCopyEn.onboarding);
+  const stepOne = onboardingActionLabel(1, uiCopyEn.onboarding);
+  const stepTwo = onboardingActionLabel(2, uiCopyEn.onboarding);
 
   expect(stepZero.trim().length).toBeGreaterThan(0);
   expect(stepTwo.trim().length).toBeGreaterThan(0);
@@ -38,7 +39,7 @@ test("OB3. onboardingActionLabel이 0·1에서 같고 2에서 갈린다", () => 
 
 test("OB4. 스텝 셋 각각에 공백 아닌 제목·본문이 있다", () => {
   for (const step of allOnboardingSteps) {
-    const copy = onboardingCopy(step);
+    const copy = onboardingCopy(step, uiCopyEn.onboarding);
 
     expect(copy.title.trim().length).toBeGreaterThan(0);
     expect(copy.body.trim().length).toBeGreaterThan(0);
@@ -46,7 +47,7 @@ test("OB4. 스텝 셋 각각에 공백 아닌 제목·본문이 있다", () => {
 });
 
 test("OB5. 스텝 셋의 제목이 서로 다르다", () => {
-  const titles = allOnboardingSteps.map((step) => onboardingCopy(step).title);
+  const titles = allOnboardingSteps.map((step) => onboardingCopy(step, uiCopyEn.onboarding).title);
 
   expect(new Set(titles).size).toBe(allOnboardingSteps.length);
 });

@@ -29,7 +29,7 @@ import type { EntryEventSink, EntryLoginMethod } from "../lib/entry-flow";
 import type { EntryLanguage } from "../lib/entry-language";
 import { learnerProfileSavedEvent, sameLearnerProfile } from "../lib/learner-profile";
 import type { LearnerProfilePort, LearnerProfileRecord } from "../lib/learner-profile.contract";
-import { loadReturningUiLanguage, saveUiLanguage } from "../lib/ui-language";
+import { changeUiLanguage, loadReturningUiLanguage, saveUiLanguage } from "../lib/ui-language";
 import type {
   AuthSession,
   PhoneNumber,
@@ -279,6 +279,7 @@ export function entryWiring({
     onSelectEntryLanguage: (language: EntryLanguage) => {
       setEntryLanguage(language);
     },
+    onChangeUiLanguage: (language: EntryLanguage) => changeUiLanguage(language, setEntryLanguage),
     // 언어 선택의 `다음`입니다 — 여정 입장 열람 → push.
     // 확정할 때 UI 언어를 저장합니다 — 재실행 · 재방문에도 남습니다. 고를 때가 아닌 이유: 이미 선택된
     // 항목을 다시 누르면 OptionSelector가 onChange를 내지 않아, 기본 선택(영어)은 저장될 길이 없다.

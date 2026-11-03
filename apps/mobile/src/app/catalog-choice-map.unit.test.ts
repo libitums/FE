@@ -48,8 +48,9 @@ describe("listeningItemOf — u00 S2", () => {
     expect(mapped).toMatchObject({ kind: "listening", itemId: item.id });
     if (mapped.kind !== "listening") return;
     expect(mapped.question.audio).toBeNull();
-    // MP1: 듣고 고르기는 답하기 전 로마자 참고 줄을 켭니다.
-    expect(mapped.question.beforeAnswer).toBe("romanization");
+    // MP1: 듣고 고르기도 답하기 전에는 대본(로마자 포함)을 보이지 않습니다 — 로마자가 정답 문장 그대로라 듣기가
+    // 아니라 글자 맞추기가 됩니다(2026-11-02 문항 분석).
+    expect(mapped.question).not.toHaveProperty("beforeAnswer");
     expect(mapped.question).not.toHaveProperty("romanizationHint");
   });
 

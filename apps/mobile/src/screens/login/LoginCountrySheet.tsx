@@ -6,6 +6,7 @@ import { Fog } from "@libitums/ui-lynx/fog";
 import { OptionSelector } from "@libitums/ui-lynx/option-selector";
 
 import { tappableBottomInsetFrom } from "../../lib/safe-area";
+import { useUiCopy } from "../../lib/ui-copy";
 import { loginCountries, loginCountryOptions } from "./login-countries";
 import type { LoginCountry } from "./login";
 
@@ -29,10 +30,15 @@ export function LoginCountrySheet({
   onClose,
 }: LoginCountrySheetProps): ReactNode {
   const [listScrolled, setListScrolled] = useState(false);
+  const copy = useUiCopy();
   // 설문 시트와 같은 이유입니다 — Android 3버튼 바가 가리는 높이만큼 시트 아래를 비웁니다(iOS · 제스처는 0).
   const tappableBottom = tappableBottomInsetFrom(useGlobalProps());
   return (
-    <BottomSheet title="Select country" closeAccessibilityLabel="Close" ondismiss={onClose}>
+    <BottomSheet
+      title={copy.login.countrySheetTitle}
+      closeAccessibilityLabel={copy.common.close}
+      ondismiss={onClose}
+    >
       {/* 국가 번호가 있는 모든 지역(245)을 OptionSelector로 늘어놓습니다. */}
       <view className="login-screen-country-list">
         <scroll-view
@@ -45,7 +51,7 @@ export function LoginCountrySheet({
           }
         >
           <OptionSelector
-            groupLabel="Select country"
+            groupLabel={copy.login.countrySheetTitle}
             options={loginCountryOptions}
             selectedIds={[selected.id]}
             variant="outlined"

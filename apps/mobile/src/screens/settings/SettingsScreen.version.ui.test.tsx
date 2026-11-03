@@ -13,6 +13,7 @@ import { markedUiCopy } from "../../lib/ui-copy.test-support";
 const baseProps = {
   onSelectNavTarget: () => undefined,
   learnerProfileSummary: "Not set",
+  languageSummary: "Intermediate English",
   onSignOut: () => undefined,
   onDeleteAccount: () => new Promise<AccountDeletionResult>(() => undefined),
   onLayerChange: () => undefined,

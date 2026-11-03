@@ -187,7 +187,8 @@ export function catalogItemOf(item: LearningItem, port: CatalogLessonItemPort): 
     case "SENT_BUILD":
       return typingItemOf(item, port);
     case "ROLEPLAY_TURN":
-      // 최종 테스트 문항은 최종 테스트 화면에서만 씁니다.
+    case "HANGUL_WRITE":
+      // 최종 테스트 문항(RP 턴 · 이야기 파이널의 따라 쓰기)은 최종 테스트 화면에서만 씁니다.
       return skippedItem(item, "malformed");
     case "VOCAB_CARD":
       return vocabCardItemOf(item, port);

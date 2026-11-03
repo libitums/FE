@@ -7,7 +7,6 @@ import { color } from "@libitums/design-tokens";
 import { useUiCopy } from "../../lib/ui-copy";
 import type { UiCopy } from "../../lib/ui-copy.contract";
 import type { AssessmentVerdict } from "../assessment/assessment";
-import { lessonCompletePassedTitle } from "./lesson-complete";
 import type { LessonReviewSummary } from "./lesson-complete-screen-props";
 
 import "./lesson-complete-review.css";
@@ -17,7 +16,9 @@ import "./lesson-complete-review.css";
 
 /** 다시 풀고 온 결과의 제목입니다 — 통과는 만점 표기 없이 `LESSON COMPLETE!`, 미통과는 `SO CLOSE!`. */
 export function lessonReviewTitle(verdict: AssessmentVerdict, copy: UiCopy): string {
-  return verdict === "failed" ? copy.lessonComplete.review.soClose : lessonCompletePassedTitle;
+  return verdict === "failed"
+    ? copy.lessonComplete.review.soClose
+    : copy.lessonComplete.title.complete;
 }
 
 /** 점 줄 한 행의 점 수입니다 — 넘으면 다음 행으로 끊습니다(사용자 결정 2026-10-30). */

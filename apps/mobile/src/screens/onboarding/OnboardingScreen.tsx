@@ -7,6 +7,7 @@ import { Button } from "@libitums/ui-lynx/button";
 import { PageIndicator } from "@libitums/ui-lynx/page-indicator";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
 import { playSound } from "../../lib/sound-effects";
+import { useUiCopy } from "../../lib/ui-copy";
 import { useScreenBack } from "../../lib/use-back-handler";
 
 import {
@@ -31,8 +32,9 @@ import "./onboarding-screen.css";
  */
 export function OnboardingScreen({ onComplete }: OnboardingScreenProps): ReactNode {
   const [step, setStep] = useState<OnboardingStep>(0);
-  const copy = onboardingCopy(step);
-  const actionLabel = onboardingActionLabel(step);
+  const uiCopy = useUiCopy();
+  const copy = onboardingCopy(step, uiCopy.onboarding);
+  const actionLabel = onboardingActionLabel(step, uiCopy.onboarding);
   const previous = previousOnboardingStep(step);
 
   function handleBack() {
@@ -63,7 +65,7 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps): ReactNo
       <view className="onboarding-screen-header" data-testid="onboarding-screen-header">
         {previous === null ? null : (
           <RoundButton
-            accessibilityLabel="Back"
+            accessibilityLabel={uiCopy.common.back}
             icon={arrowLeft}
             variant="neutral"
             size="xl"
@@ -102,7 +104,7 @@ export function OnboardingScreen({ onComplete }: OnboardingScreenProps): ReactNo
               data-testid="onboarding-screen-progress"
               flatten={false}
               accessibility-element={true}
-              accessibility-label={`Step ${step + 1} of ${onboardingSteps.length}`}
+              accessibility-label={uiCopy.onboarding.progress(step + 1, onboardingSteps.length)}
             >
               <PageIndicator pageCount={onboardingSteps.length} currentPage={step + 1} decorative />
             </view>

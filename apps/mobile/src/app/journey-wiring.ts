@@ -93,6 +93,10 @@ export function journeyWiring(args: JourneyWiringArgs) {
         dispatch({ type: "push", screen: { name: target } });
         return;
       }
+      if (target === "language") {
+        dispatch({ type: "push", screen: { name: "language-settings" } });
+        return;
+      }
       if (target === "notifications") {
         void openNotificationSettings();
         return;

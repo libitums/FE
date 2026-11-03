@@ -72,3 +72,80 @@
 .app-splash {
   background: var(--libitum-color-brand-primary);
 }
+
+/* Android의 강조 글꼴(ADR-0092) — Lynx Android는 번들 자산의 글꼴을 이름으로 찾지 못하고 `@font-face`의
+   `local(file://절대 경로)`만 읽는다. 호스트(`AppFonts`)가 첫 화면 전에 자산을 이 경로로 복사한다. 경로의 패키지 ·
+   파일 이름은 `devtools/android-bundle/host-app-fonts.integration.test.mjs`가 `build.gradle` · `AppFonts`와 맞춰 본다.
+   이름을 `Jost`가 아니라 `DuruJost`로 두는 것은 iOS 때문이다 — iOS는 `UIAppFonts`로 등록한 `Jost`를 먼저 찾고, 이
+   `@font-face`(iOS에서는 풀리지 않는 경로)는 목록에서 그 뒤라 닿지 않는다. */
+@font-face {
+  font-family: "DuruJost";
+  src: local(file:///data/data/libitum.duru.android/files/fonts/Jost.ttf);
+}
+
+/* 베트남어 강조 글꼴(ADR-0091 D5)도 같은 길로 — `.app-lang-vi` 목록에서 `League Spartan` 바로 뒤에 둔다. */
+@font-face {
+  font-family: "DuruLeagueSpartan";
+  src: local(file:///data/data/libitum.duru.android/files/fonts/LeagueSpartan.ttf);
+}
+
+/* 강조 토큰의 글꼴 목록에 `DuruJost`를 `Jost` 바로 뒤에 끼운다. 나머지 목록은 토큰의 대체 순서 그대로이고, 변수 안의
+   `var()`에 기대지 않으려 토큰마다 다시 적는다. */
+.app {
+  --libitum-font-family-accent:
+    "Jost Variable", "Jost", "DuruJost", "Pretendard Variable", "Pretendard", -apple-system,
+    BlinkMacSystemFont, system-ui, "Roboto", "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo",
+    "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+    sans-serif;
+  --libitum-typography-accent-chapter-font-family:
+    "Jost Variable", "Jost", "DuruJost", "Pretendard Variable", "Pretendard", -apple-system,
+    BlinkMacSystemFont, system-ui, "Roboto", "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo",
+    "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+    sans-serif;
+  --libitum-typography-accent-display-font-family:
+    "Jost Variable", "Jost", "DuruJost", "Pretendard Variable", "Pretendard", -apple-system,
+    BlinkMacSystemFont, system-ui, "Roboto", "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo",
+    "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+    sans-serif;
+  --libitum-typography-accent-metric-font-family:
+    "Jost Variable", "Jost", "DuruJost", "Pretendard Variable", "Pretendard", -apple-system,
+    BlinkMacSystemFont, system-ui, "Roboto", "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo",
+    "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+    sans-serif;
+  --libitum-typography-accent-reward-font-family:
+    "Jost Variable", "Jost", "DuruJost", "Pretendard Variable", "Pretendard", -apple-system,
+    BlinkMacSystemFont, system-ui, "Roboto", "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo",
+    "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+    sans-serif;
+}
+
+/* 베트남어 UI의 강조 글꼴(ADR-0091 D5) — Jost에 베트남어 글자가 없어 강조 토큰만 League Spartan으로 다시
+   정의합니다. 나머지 목록은 토큰의 대체 순서 그대로이고, 변수 안의 `var()`에 기대지 않으려 토큰마다 목록을 다시 적습니다. 본문 · 버튼 토큰은 손대지 않습니다.
+   iOS는 글꼴 이름(`League Spartan`), Android는 `DuruLeagueSpartan` `@font-face`(ADR-0092)로 찾습니다. */
+.app-lang-vi {
+  --libitum-font-family-accent:
+    "League Spartan", "DuruLeagueSpartan", "Pretendard Variable", "Pretendard", -apple-system,
+    BlinkMacSystemFont, system-ui, "Roboto", "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo",
+    "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+    sans-serif;
+  --libitum-typography-accent-chapter-font-family:
+    "League Spartan", "DuruLeagueSpartan", "Pretendard Variable", "Pretendard", -apple-system,
+    BlinkMacSystemFont, system-ui, "Roboto", "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo",
+    "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+    sans-serif;
+  --libitum-typography-accent-display-font-family:
+    "League Spartan", "DuruLeagueSpartan", "Pretendard Variable", "Pretendard", -apple-system,
+    BlinkMacSystemFont, system-ui, "Roboto", "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo",
+    "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+    sans-serif;
+  --libitum-typography-accent-metric-font-family:
+    "League Spartan", "DuruLeagueSpartan", "Pretendard Variable", "Pretendard", -apple-system,
+    BlinkMacSystemFont, system-ui, "Roboto", "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo",
+    "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+    sans-serif;
+  --libitum-typography-accent-reward-font-family:
+    "League Spartan", "DuruLeagueSpartan", "Pretendard Variable", "Pretendard", -apple-system,
+    BlinkMacSystemFont, system-ui, "Roboto", "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo",
+    "Noto Sans KR", "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+    sans-serif;
+}

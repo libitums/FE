@@ -191,7 +191,7 @@ function expectEnglishJourneyTabs(): void {
 
 // ------------------------------------------------------------ IL1 · IL2 · 부팅 읽기
 
-test("[IL1] ⭐ 저장된 언어가 vi인 재방문자는 부팅 중에 그 키를 읽고, 여정 맵에 영어 탭으로 선다", async () => {
+test("[IL1] ⭐ 저장된 언어가 vi인 재방문자는 부팅 중에 그 키를 읽고, 여정 맵에 베트남어 탭 · 강조 글꼴 클래스로 선다", async () => {
   const storage = sessionStorageWith({ [uiLanguageStorageKey]: "vi" });
 
   await renderSignedInApp(<App progressSeed={legacyPassedSeed} />, {
@@ -201,8 +201,15 @@ test("[IL1] ⭐ 저장된 언어가 vi인 재방문자는 부팅 중에 그 키�
   // 부팅이 언어 키를 실제로 읽었다 — 읽지 않았다면 아래 영어는 「기본값이 영어라서」 우연히 참이다.
   expect(languageKeyCalls(storage).gets).toBeGreaterThanOrEqual(1);
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
-  // vi는 열리지 않은 언어라 표가 영어로 채운다(AC3) — 던지지 않고 영어 탭이 선다.
-  expectEnglishJourneyTabs();
+  // vi는 2026-11-02에 열렸다(ADR-0091 D4) — 베트남어 표의 탭 이름과, 강조 글꼴을 바꾸는 뿌리 클래스가 선다.
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay")).toHaveAttribute(
+    "accessibility-label",
+    "Nhập vai",
+  );
+  expect(
+    screen.getByTestId("ui-lynx-bottom-navigator-item-journey").getAttribute("accessibility-label"),
+  ).toMatch(/^Hành trình/);
+  expect(screen.getByTestId("app-shell").getAttribute("class")).toContain("app-lang-vi");
 });
 
 describe.each([["ko"], [""]])("[IL2] 저장된 언어가 이상한 값(%j)", (stored) => {
@@ -442,4 +449,28 @@ describe.each(screenCases)("[IL7] $name 화면", ({ open, screenTestId, content 
     // 앵커 하나가 아니라 화면 전체(머리 · 탭 · 모달 포함)를 봅니다.
     expect(hangulOutside(anchor.ownerDocument.body, content)).toEqual([]);
   });
+});
+
+// ------------------------------------------------------------ IL9 · 설정에서 언어 바꾸기(ADR-0093)
+
+test("[IL9] 설정 › 언어에서 인도네시아어를 고르면 탭이 바로 바뀌고 저장되며, 돌아오면 설정이다", async () => {
+  const storage = sessionStorageWith({ [uiLanguageStorageKey]: "en" });
+  await renderSignedInApp(<App progressSeed={legacyPassedSeed} />, {
+    storageModule: storage.module,
+  });
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
+  const languageRow = screen.getByTestId("ui-lynx-settings-group-item-language");
+  expect(languageRow).toHaveTextContent("Intermediate English");
+  fireEvent.tap(within(languageRow).getByTestId("ui-lynx-settings-cell"), {});
+  expect(screen.getByTestId("language-select-screen-title")).toBeInTheDocument();
+
+  fireEvent.tap(screen.getByTestId("ui-lynx-option-selector-item-id"), {});
+  expect(storage.store.get(uiLanguageStorageKey)).toBe("id");
+  tapButtonIn("language-select-screen-next");
+
+  expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).toHaveAttribute(
+    "accessibility-label",
+    expect.stringMatching(/^Pengaturan/),
+  );
 });

@@ -78,7 +78,10 @@ export function listenBuildItemOf(
     chips: order.map((index) => tiles[index] ?? ""),
     answerOrder: picked.map((tile) => order.indexOf(tile)),
     audio,
-    ...(romanization === undefined ? {} : { reading: { romanization, shown: "always" as const } }),
+    // 정답 문장의 로마자라 확인 뒤에만 보입니다 — 답 전에 보이면 로마자 순서대로 놓으면 끝납니다(2026-11-02 문항 분석).
+    ...(romanization === undefined
+      ? {}
+      : { reading: { romanization, shown: "after-check" as const } }),
     ...optionalField("instruction", instructionOf(port, item.prompt)),
   };
   return { kind: "sentence-order", itemId: item.id, question };

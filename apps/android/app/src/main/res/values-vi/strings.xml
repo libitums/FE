@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 베트남어 기기의 알림 채널 이름 · 설명(ADR-0091 D6). 번역 초안 — 원어민 검수 필요. -->
+<resources>
+  <string name="notification_channel_name">Tin từ Duru</string>
+  <string name="notification_channel_description">Tin học tập và thông báo</string>
+</resources>

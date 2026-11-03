@@ -12,7 +12,7 @@ import type {
   CatalogUnitKey,
 } from "../../lib/catalog-progress";
 import type { CatalogEntry } from "../../lib/episode-catalog";
-import { catalogStoryKeysOf, catalogStoryFieldsOf } from "./catalog-map-story";
+import { catalogSectionKeysOf, catalogStoryFieldsOf } from "./catalog-map-story";
 import { isTesterAccessActive } from "../../lib/tester-access";
 import { TUTORIAL_EPISODE_ID } from "../../lib/tutorial-episode";
 import type { LearningUnit } from "../../lib/episode-content.model";
@@ -52,16 +52,12 @@ export function catalogMapSectionsOf(
   return catalog.map((entry): CatalogMapSection => {
     const base = { episodeId: entry.id, ordinal: entry.order, title: entry.title };
     if (entry.status === "ready") {
-      const storyKeys = catalogStoryKeysOf(entry.episode.units);
-      // 이야기는 완료 키에서 뺍니다 — 이미 끝낸 에피소드가 새 막간 때문에 미완료로 되돌아가지 않게. 새로 하는
-      // 사람은 사슬(S4 → INT → S5) 때문에 반드시 거칩니다(ADR-0088).
       const requires = entry.episode.completion?.requires ?? [entry.episode.finalTest.id];
       return {
         kind: "catalog-ready",
         ...base,
-        lessonKeys: entry.episode.units.map((unit) => unit.id),
         finalKey: entry.episode.finalTest.id,
-        completionKeys: requires.filter((key) => !storyKeys.includes(key)),
+        ...catalogSectionKeysOf(entry.episode.units, requires),
         cultureKeys: catalogCultureKeysOf(entry.episode.units),
         ...catalogStoryFieldsOf(entry.episode.units),
         ...(entry.episode.titleEn === undefined ? {} : { titleEn: entry.episode.titleEn }),

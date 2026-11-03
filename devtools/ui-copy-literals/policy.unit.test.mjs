@@ -130,7 +130,7 @@ test("PO3. 전환 목록에 없는 깨끗한 파일은 위반 0이다", () => {
 });
 
 // 학습 콘텐츠와 자모 표에 튜토리얼 혼합 대본 선언을 더합니다. 파일 전체를 허용하지 않습니다.
-test("PO4. 학습 콘텐츠 선언 표가 허용한 13항목과 같다 — 지운 튜토리얼 대본 · 문항 선언이 없다", () => {
+test("PO4. 학습 콘텐츠 선언 표가 허용한 14항목과 같다 — 지운 튜토리얼 대본 · 문항 선언이 없다", () => {
   const expected = [
     "OnboardingQuizCards.tsx#quizSyllables",
     "OnboardingStoryCards.tsx#onboardingStoryMessages",
@@ -145,9 +145,10 @@ test("PO4. 학습 콘텐츠 선언 표가 허용한 13항목과 같다 — 지�
     "placeholder-fill.ts#PLACEHOLDER_TOKENS",
     "placeholder-fill.ts#PARTICLE_RULES",
     "catalog-cover.ts#CATALOG_SELF_SPEAKER",
+    "LanguageSelectScreen.tsx#languagePreviewSample",
   ];
 
-  assert.equal(expected.length, 13);
+  assert.equal(expected.length, 14);
   assert.deepEqual(
     [...uiCopyLiteralPolicy.learningContentDeclarations].sort(),
     [...expected].sort(),

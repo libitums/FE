@@ -27,28 +27,20 @@ export function lessonMistakeCount(results: readonly AnswerResult[]): number {
  * 갈림의 기준이 실수 수 하나가 아니라 `isPerfectLesson`인 것이 D8입니다 — 건너뛴 문항이
  * 있으면 실수가 0이어도 만점이 아닙니다.
  */
-/** 통과(만점 아님)의 제목입니다 — 다시 도전 결과도 같은 글을 씁니다. */
-export const lessonCompletePassedTitle = "LESSON COMPLETE!";
-
 export function lessonCompleteTitle(
   mistakeCount: number,
   verdict: AssessmentVerdict,
   skippedCount: number,
+  copy: UiCopy,
 ): string {
-  if (verdict === "failed") return "LESSON FAILED";
-  return isPerfectLesson(mistakeCount, skippedCount)
-    ? "PERFECT LESSON!"
-    : lessonCompletePassedTitle;
+  const title = copy.lessonComplete.title;
+  if (verdict === "failed") return title.failed;
+  return isPerfectLesson(mistakeCount, skippedCount) ? title.perfect : title.complete;
 }
 
 /** 실수 수를 세는 문장은 통과 · 미통과가 같습니다 — 센 것이 같기 때문입니다. */
-export function lessonCompleteSubtitle(mistakeCount: number): string {
-  if (mistakeCount === 0) return "YOU MADE NO MISTAKES IN THIS LESSON";
-  return `YOU MADE ${mistakeCount} ${mistakeCount === 1 ? "MISTAKE" : "MISTAKES"} IN THIS LESSON`;
-}
-
-export function lessonStreakLabel(streakDays: number): string {
-  return `${streakDays} Day Streak`;
+export function lessonCompleteSubtitle(mistakeCount: number, copy: UiCopy): string {
+  return copy.lessonComplete.subtitle(mistakeCount);
 }
 
 /**
