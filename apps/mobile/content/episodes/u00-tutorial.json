@@ -7,7 +7,7 @@
   "time_of_day": "낮",
   "place": "인천행 비행기 안",
   "counterpart": "승무원",
-  "counterpart_avatar": "content/images/u00-tutorial/avatar.webp",
+  "counterpart_avatar": "content/level-3/images/u00-tutorial/avatar.webp",
   "pre_cuts": [
     {
       "index": 1,
@@ -20,7 +20,7 @@
         "en": "Korea, a country I've only seen on screens. What will this week bring?"
       },
       "image_brief": "비행기 창 너머로 구름이 흘러간다.",
-      "image_url": "content/images/u00-tutorial/pre-1-v2.webp",
+      "image_url": "content/level-3/images/u00-tutorial/pre-1.webp",
       "audio_url": ""
     },
     {
@@ -34,7 +34,7 @@
         "en": "All the Korean I know is a few words from dramas. Daebak, saranghaeyo, hwaiting…"
       },
       "image_brief": "좌석 화면에 한국 드라마가 흐릿하게 흐른다.",
-      "image_url": "content/images/u00-tutorial/pre-2-v2.webp",
+      "image_url": "content/level-3/images/u00-tutorial/pre-2.webp",
       "audio_url": ""
     },
     {
@@ -47,7 +47,7 @@
         "en": "Eyes close. A convenience store at night, spicy ramen and a triangle kimbap."
       },
       "image_brief": "꿈처럼 번지는 밤의 편의점. 창가 벽에 붙은 테이블에 매운 볶음면 큰컵과 삼각김밥.",
-      "image_url": "content/images/u00-tutorial/pre-3-v2.webp",
+      "image_url": "content/level-3/images/u00-tutorial/pre-3.webp",
       "audio_url": ""
     },
     {
@@ -60,7 +60,7 @@
         "en": "In a rainy alley, someone holds out an umbrella."
       },
       "image_brief": "비 오는 골목. 누군가 검은 우산을 내민다. 얼굴은 흐릿하다.",
-      "image_url": "content/images/u00-tutorial/pre-4-v2.webp",
+      "image_url": "content/level-3/images/u00-tutorial/pre-4.webp",
       "audio_url": ""
     },
     {
@@ -73,7 +73,7 @@
         "en": "Lights tremble on the river at night. The city's lights stretch long across the bridges."
       },
       "image_brief": "꿈처럼 번지는 한강의 밤. 불 켜진 다리와 도시 야경.",
-      "image_url": "content/images/u00-tutorial/pre-5-v2.webp",
+      "image_url": "content/level-3/images/u00-tutorial/pre-5.webp",
       "audio_url": ""
     },
     {
@@ -86,8 +86,8 @@
         "en": "Walking side by side with someone down a night alley. \"Next time…\""
       },
       "image_brief": "밤의 서울 주택가 골목. 구불구불한 오르막길에 나란히 걷는 두 사람의 그림자만 길게 드리운다. 왼쪽의 키 큰 그림자는 남자다. 가장자리는 꿈처럼 번진다.",
-      "image_url": "content/images/u00-tutorial/pre-6-v2.webp",
-      "audio_url": "u00-tutorial/pre-5-dream-r2"
+      "image_url": "content/level-3/images/u00-tutorial/pre-6.webp",
+      "audio_url": "level-3/u00-tutorial/pre-5-dream-r2"
     },
     {
       "index": 7,
@@ -105,8 +105,8 @@
         "en": "Leaning in to meet your eyes."
       },
       "image_brief": "기체가 살짝 흔들린다. 눈을 뜨자 통로의 승무원이 빈 옆자리 너머로 몸을 숙여 손을 내밀며 이쪽을 본다.",
-      "image_url": "content/images/u00-tutorial/pre-7-v2.webp",
-      "audio_url": "u00-tutorial/d-01-r2"
+      "image_url": "content/level-3/images/u00-tutorial/pre-7.webp",
+      "audio_url": "level-3/u00-tutorial/d-01-r2"
     }
   ],
   "dialogue": [
@@ -120,7 +120,7 @@
         "roman": "annyeonghaseyo! hangugeun cheoeumiseyo?",
         "en": "Hello! Is this your first time in Korea?"
       },
-      "audio_url": "u00-tutorial/d-01-r2"
+      "audio_url": "level-3/u00-tutorial/d-01-r2"
     },
     {
       "seq": 2,
@@ -132,7 +132,7 @@
         "roman": "annyeonghaseyo! ne, cheoeumieyo!",
         "en": "Hello! Yes, it's my first time!"
       },
-      "audio_url": "u00-tutorial/d-02-r2"
+      "audio_url": "level-3/u00-tutorial/d-02-r2"
     },
     {
       "seq": 3,
@@ -144,7 +144,7 @@
         "roman": "o, hangugeo jalhasineyo!",
         "en": "Oh, your Korean is so good!"
       },
-      "audio_url": "u00-tutorial/d-03-r2"
+      "audio_url": "level-3/u00-tutorial/d-03-r2"
     },
     {
       "seq": 4,
@@ -156,7 +156,7 @@
         "roman": "gamsahamnida!",
         "en": "Thank you!"
       },
-      "audio_url": ""
+      "audio_url": "level-3/u00-tutorial/d-04-v2"
     },
     {
       "seq": 5,
@@ -168,7 +168,7 @@
         "roman": "eonjebuteo gongbuhasyeosseoyo?",
         "en": "How long have you been studying?"
       },
-      "audio_url": "u00-tutorial/d-05-r2"
+      "audio_url": "level-3/u00-tutorial/d-05-r2"
     },
     {
       "seq": 6,
@@ -180,7 +180,7 @@
         "roman": "jigeumbuteoyo!",
         "en": "Starting now!"
       },
-      "audio_url": "u00-tutorial/d-06-r2"
+      "audio_url": "level-3/u00-tutorial/d-06-r2"
     }
   ],
   "post_cuts": [
@@ -194,8 +194,8 @@
         "en": "The sea and a city appear outside the window. An announcement says we'll land in Incheon soon."
       },
       "image_brief": "창밖으로 바다와 섬, 해안 도시가 가까워진다.",
-      "image_url": "content/images/u00-tutorial/post-1.webp",
-      "audio_url": "u00-tutorial/post-1-r2"
+      "image_url": "content/level-3/images/u00-tutorial/post-1.webp",
+      "audio_url": "level-3/u00-tutorial/post-1-r2"
     },
     {
       "index": 2,
@@ -213,8 +213,8 @@
         "en": "Bowing at the door."
       },
       "image_brief": "열린 비행기 문 앞에서 승무원이 고개 숙여 인사한다.",
-      "image_url": "content/images/u00-tutorial/post-2.webp",
-      "audio_url": "u00-tutorial/post-2-r2"
+      "image_url": "content/level-3/images/u00-tutorial/post-2.webp",
+      "audio_url": "level-3/u00-tutorial/post-2-r2"
     },
     {
       "index": 3,
@@ -227,7 +227,7 @@
         "en": "The dream is already fading. But that voice stays. Next time… who was it?"
       },
       "image_brief": "입국장으로 이어지는 긴 통로.",
-      "image_url": "content/images/u00-tutorial/post-3.webp",
+      "image_url": "content/level-3/images/u00-tutorial/post-3.webp",
       "audio_url": ""
     },
     {
@@ -241,7 +241,7 @@
         "en": "The trip starts now. Guesthouse in Ikseon-dong first?"
       },
       "image_brief": "공항 밖, 봄 하늘 아래 공항버스 정류장.",
-      "image_url": "content/images/u00-tutorial/post-4.webp",
+      "image_url": "content/level-3/images/u00-tutorial/post-4.webp",
       "audio_url": ""
     }
   ],
@@ -270,8 +270,8 @@
             "en": "Hello! Nice to meet you."
           },
           "card_kind": "단어",
-          "audio_url": "u00-tutorial/s1-01-word-r2",
-          "example_audio_url": ""
+          "audio_url": "level-3/u00-tutorial/s1-01-word-r2",
+          "example_audio_url": "level-3/u00-tutorial/s1-01-ex"
         },
         {
           "id": "S1-02",
@@ -287,9 +287,9 @@
             "en": "Which word matches the picture?"
           },
           "stimulus": {
-            "audio_url": "u00-tutorial/s1-01-word-r2",
+            "audio_url": "level-3/u00-tutorial/s1-01-word-r2",
             "image_brief": "Hello - 한 컷으로 알아볼 수 있게",
-            "image_url": "content/images/items/hello.webp"
+            "image_url": "content/level-3/images/items/hello.webp"
           },
           "options": [
             {
@@ -329,8 +329,8 @@
             "en": "Yes, thank you!"
           },
           "card_kind": "단어",
-          "audio_url": "u00-tutorial/s1-03-word-r2",
-          "example_audio_url": ""
+          "audio_url": "level-3/u00-tutorial/s1-03-word",
+          "example_audio_url": "level-3/u00-tutorial/s1-03-ex"
         },
         {
           "id": "S1-04",
@@ -351,7 +351,7 @@
               "roman": "gamsahamnida!",
               "en": "Thank you!"
             },
-            "audio_url": "",
+            "audio_url": "level-3/u00-tutorial/d-04-v2",
             "image_url": ""
           },
           "options": [
@@ -402,7 +402,7 @@
             "en": "Tap the syllables to spell the word."
           },
           "stimulus": {
-            "audio_url": "u00-tutorial/s1-03-word-r2",
+            "audio_url": "level-3/u00-tutorial/s1-03-word",
             "image_url": "",
             "en": "thank you"
           },
@@ -452,41 +452,6 @@
       "items": [
         {
           "id": "S2-01",
-          "type": "DICTATION",
-          "mode": "typing",
-          "event": "R",
-          "level": 4,
-          "skill": "쓰기",
-          "skill_level": 2,
-          "ref": "voca:90ed435d",
-          "prompt": {
-            "ko": "들은 대로 쓰세요.",
-            "en": "Type what you hear."
-          },
-          "stimulus": {
-            "audio": {
-              "ko": "감사합니다!",
-              "roman": "gamsahamnida!",
-              "en": "Thank you!"
-            },
-            "audio_url": "",
-            "image_url": ""
-          },
-          "answers": [
-            {
-              "ko": "감사합니다!",
-              "roman": "gamsahamnida!",
-              "en": "Thank you!"
-            },
-            {
-              "ko": "감사합니다",
-              "roman": "gamsahamnida",
-              "en": "thank you"
-            }
-          ]
-        },
-        {
-          "id": "S2-02",
           "type": "CLOZE",
           "mode": "tiles",
           "event": "R",
@@ -526,7 +491,7 @@
           ]
         },
         {
-          "id": "S2-03",
+          "id": "S2-02",
           "type": "LISTEN_BUILD",
           "mode": "tiles",
           "event": "R",
@@ -544,7 +509,7 @@
               "roman": "annyeonghaseyo! hangugeun cheoeumiseyo?",
               "en": "Hello! Is this your first time in Korea?"
             },
-            "audio_url": "u00-tutorial/d-01-r2",
+            "audio_url": "level-3/u00-tutorial/d-01-r2",
             "image_url": ""
           },
           "tiles": [
@@ -561,13 +526,12 @@
               "roman": "cheoeumiseyo?"
             },
             {
-              "ko": "감사합니다!",
-              "roman": "gamsahamnida!",
-              "en": "Thank you!"
-            },
-            {
               "ko": "처음이에요!",
               "roman": "cheoeumieyo!"
+            },
+            {
+              "ko": "잘하시네요!",
+              "roman": "jalhasineyo!"
             }
           ],
           "answers": [
@@ -605,17 +569,17 @@
           "options": [
             {
               "id": "o1",
-              "ko": "안녕히 가세요!",
-              "roman": "annyeonghi gaseyo!",
-              "en": "Goodbye. (to someone leaving)",
+              "ko": "감사합니다!",
+              "roman": "gamsahamnida!",
+              "en": "Thank you!",
               "correct": false,
               "why_wrong": "이 자리에 맞는 말이 아니다"
             },
             {
               "id": "o2",
-              "ko": "감사합니다!",
-              "roman": "gamsahamnida!",
-              "en": "Thank you!",
+              "ko": "안녕히 가세요!",
+              "roman": "annyeonghi gaseyo!",
+              "en": "Goodbye. (to someone leaving)",
               "correct": false,
               "why_wrong": "이 자리에 맞는 말이 아니다"
             },
@@ -704,7 +668,7 @@
               "en": "Say just \"annyeonghaseyo\" and you'll often hear \"Your Korean is so good!\" It's not teasing. People are happy you spoke Korean. That's why the line is famous among Korean learners."
             },
             "audio_url": "",
-            "image_url": "content/images/u00-tutorial/cult-u00-jalhasineyo.webp"
+            "image_url": "content/level-3/images/u00-tutorial/cult-u00-jalhasineyo.webp"
           },
           "feedback": {
             "correct": {
@@ -791,8 +755,8 @@
               "roman": "annyeonghaseyo! ne, cheoeumieyo!",
               "en": "Hello! Yes, it's my first time!"
             },
-            "audio_url": "u00-tutorial/d-02-r2",
-            "image_url": "content/images/u00-tutorial/pre-7-v2.webp"
+            "audio_url": "level-3/u00-tutorial/d-02-r2",
+            "image_url": "content/level-3/images/u00-tutorial/pre-7.webp"
           },
           "tiles": [
             {
@@ -858,7 +822,7 @@
                   "roman": "annyeonghaseyo! hangugeun cheoeumiseyo?",
                   "en": "Hello! Is this your first time in Korea?"
                 },
-                "audio_url": "u00-tutorial/d-01-r2"
+                "audio_url": "level-3/u00-tutorial/d-01-r2"
               }
             ],
             "reask": {
@@ -868,9 +832,9 @@
                 "roman": "ne?",
                 "en": "Sorry?"
               },
-              "audio_url": "u00-tutorial/rp-01-reask-r2"
+              "audio_url": "level-3/u00-tutorial/rp-01-reask-v2"
             },
-            "player_audio_url": "u00-tutorial/d-02-r2"
+            "player_audio_url": "level-3/u00-tutorial/d-02-r2"
           }
         },
         {
@@ -896,8 +860,8 @@
               "roman": "gamsahamnida!",
               "en": "Thank you!"
             },
-            "audio_url": "",
-            "image_url": "content/images/u00-tutorial/pre-7-v2.webp"
+            "audio_url": "level-3/u00-tutorial/d-04-v2",
+            "image_url": "content/level-3/images/u00-tutorial/pre-7.webp"
           },
           "tiles": [
             {
@@ -948,7 +912,7 @@
                   "roman": "o, hangugeo jalhasineyo!",
                   "en": "Oh, your Korean is so good!"
                 },
-                "audio_url": "u00-tutorial/d-03-r2"
+                "audio_url": "level-3/u00-tutorial/d-03-r2"
               }
             ],
             "reask": {
@@ -958,17 +922,17 @@
                 "roman": "ne?",
                 "en": "Sorry?"
               },
-              "audio_url": "u00-tutorial/rp-01-reask-r2"
+              "audio_url": "level-3/u00-tutorial/rp-01-reask-v2"
             },
-            "player_audio_url": ""
+            "player_audio_url": "level-3/u00-tutorial/d-04-v2"
           }
         }
       ],
       "scene": {
-        "background_image_url": "content/images/u00-tutorial/pre-7-v2.webp",
+        "background_image_url": "content/level-3/images/u00-tutorial/pre-7.webp",
         "counterpart": "승무원",
         "closing": [],
-        "closing_image_url": "content/images/u00-tutorial/rp-end.webp",
+        "closing_image_url": "content/level-3/images/u00-tutorial/rp-end.webp",
         "retry": {
           "hint_after_misses": 1,
           "reveal_after_misses": 2
@@ -1027,5 +991,99 @@
       "role": "exposure"
     }
   ],
-  "patterns": []
+  "patterns": [],
+  "translations": {
+    "vi": {
+      "Tutorial": "Hướng dẫn",
+      "Korea, a country I've only seen on screens. What will this week bring?": "Hàn Quốc, một đất nước mình chỉ thấy qua màn hình. Tuần này sẽ mang đến điều gì?",
+      "All the Korean I know is a few words from dramas. Daebak, saranghaeyo, hwaiting…": "Tiếng Hàn mình biết chỉ là vài từ trong phim. Daebak, saranghaeyo, hwaiting…",
+      "Eyes close. A convenience store at night, spicy ramen and a triangle kimbap.": "Nhắm mắt lại. Cửa hàng tiện lợi về đêm, mì cay và cơm nắm tam giác.",
+      "In a rainy alley, someone holds out an umbrella.": "Trong con hẻm mưa, có ai đó chìa ra một chiếc ô.",
+      "Lights tremble on the river at night. The city's lights stretch long across the bridges.": "Ánh đèn lung linh trên sông về đêm. Ánh đèn thành phố kéo dài trên những cây cầu.",
+      "Walking side by side with someone down a night alley. \"Next time…\"": "Sánh bước bên ai đó trong con hẻm đêm. \"Lần sau nhé…\"",
+      "Hello! Is this your first time in Korea?": "Xin chào! Đây có phải lần đầu bạn đến Hàn Quốc không?",
+      "Leaning in to meet your eyes.": "Nghiêng người tới để nhìn vào mắt bạn.",
+      "Hello! Yes, it's my first time!": "Xin chào! Vâng, đây là lần đầu của tôi!",
+      "Oh, your Korean is so good!": "Ồ, tiếng Hàn của bạn giỏi quá!",
+      "Thank you!": "Cảm ơn bạn!",
+      "How long have you been studying?": "Bạn học được bao lâu rồi?",
+      "Starting now!": "Bắt đầu thôi!",
+      "The sea and a city appear outside the window. An announcement says we'll land in Incheon soon.": "Biển và một thành phố hiện ra ngoài cửa sổ. Có thông báo rằng chúng ta sắp hạ cánh xuống Incheon.",
+      "Goodbye.": "Tạm biệt.",
+      "Bowing at the door.": "Cúi chào ở cửa.",
+      "The dream is already fading. But that voice stays. Next time… who was it?": "Giấc mơ đã dần mờ đi. Nhưng giọng nói ấy vẫn còn. Lần sau... đó là ai nhỉ?",
+      "The trip starts now. Guesthouse in Ikseon-dong first?": "Chuyến đi bắt đầu từ bây giờ. Đến nhà nghỉ ở Ikseon-dong trước nhé?",
+      "Hello": "Xin chào",
+      "Hello! Nice to meet you.": "Xin chào! Rất vui được gặp bạn.",
+      "Which word matches the picture?": "Từ nào khớp với bức hình?",
+      "thank you": "cảm ơn",
+      "Yes, thank you!": "Vâng, cảm ơn bạn!",
+      "What did you hear?": "Bạn đã nghe thấy gì?",
+      "Tap the syllables to spell the word.": "Chạm vào các âm tiết để ghép thành từ.",
+      "Fill in the blank.": "Điền vào chỗ trống.",
+      "Listen and build the sentence.": "Nghe và ghép câu.",
+      "What do you say?": "Bạn nói gì?",
+      "Goodbye. (to someone leaving)": "Tạm biệt. (nói với người đi)",
+      "Here you say \"Hello! Yes, it's my first time!\".": "Ở đây bạn nói \"Xin chào! Vâng, đây là lần đầu của tôi!\".",
+      "Put the conversation in order.": "Sắp xếp lại đoạn hội thoại.",
+      "\"Your Korean is so good!\"": "\"Tiếng Hàn của bạn giỏi quá!\"",
+      "Say just \"annyeonghaseyo\" and you'll often hear \"Your Korean is so good!\" It's not teasing. People are happy you spoke Korean. That's why the line is famous among Korean learners.": "Chỉ cần nói \"annyeonghaseyo\" là bạn thường nghe \"Tiếng Hàn của bạn giỏi quá!\" Đó không phải trêu chọc. Mọi người vui vì bạn nói tiếng Hàn. Vì vậy câu này nổi tiếng trong những người học tiếng Hàn.",
+      "Just say \"Thank you!\" And \"annyeonghaseyo\" works any time of day.": "Chỉ cần nói \"Cảm ơn!\" Và \"annyeonghaseyo\" dùng được vào bất cứ giờ nào trong ngày.",
+      "Pick the right one.": "Chọn đáp án đúng.",
+      "What do you say when you hear \"Your Korean is so good!\"?": "Bạn nói gì khi nghe \"Tiếng Hàn của bạn giỏi quá!\"?",
+      "Thanks for the meal!": "Cảm ơn vì bữa ăn!",
+      "Hello!": "Xin chào!",
+      "Answer a compliment with \"Thank you.\"": "Đáp lại lời khen bằng \"Cảm ơn.\"",
+      "Sorry?": "Dạ, sao ạ?",
+      "Korea": "Hàn Quốc",
+      "Korean language": "Tiếng Hàn",
+      "Did you study?": "Bạn đã học chưa?"
+    },
+    "id": {
+      "Tutorial": "Tutorial",
+      "Korea, a country I've only seen on screens. What will this week bring?": "Korea, negara yang baru kulihat di layar. Apa yang akan dibawa minggu ini?",
+      "All the Korean I know is a few words from dramas. Daebak, saranghaeyo, hwaiting…": "Bahasa Korea yang kutahu hanya beberapa kata dari drama. Daebak, saranghaeyo, hwaiting…",
+      "Eyes close. A convenience store at night, spicy ramen and a triangle kimbap.": "Mata terpejam. Minimarket di malam hari, ramen pedas dan kimbap segitiga.",
+      "In a rainy alley, someone holds out an umbrella.": "Di gang yang diguyur hujan, seseorang mengulurkan payung.",
+      "Lights tremble on the river at night. The city's lights stretch long across the bridges.": "Cahaya bergetar di sungai pada malam hari. Lampu kota terbentang panjang di atas jembatan-jembatan.",
+      "Walking side by side with someone down a night alley. \"Next time…\"": "Berjalan berdampingan dengan seseorang di gang malam. \"Lain kali…\"",
+      "Hello! Is this your first time in Korea?": "Halo! Ini pertama kalinya kamu ke Korea?",
+      "Leaning in to meet your eyes.": "Mencondongkan badan untuk menatap matamu.",
+      "Hello! Yes, it's my first time!": "Halo! Ya, ini pertama kalinya!",
+      "Oh, your Korean is so good!": "Oh, bahasa Korea kamu bagus sekali!",
+      "Thank you!": "Terima kasih!",
+      "How long have you been studying?": "Sudah berapa lama kamu belajar?",
+      "Starting now!": "Mulai sekarang!",
+      "The sea and a city appear outside the window. An announcement says we'll land in Incheon soon.": "Laut dan sebuah kota muncul di luar jendela. Terdengar pengumuman bahwa kita akan segera mendarat di Incheon.",
+      "Goodbye.": "Selamat tinggal.",
+      "Bowing at the door.": "Membungkuk di pintu.",
+      "The dream is already fading. But that voice stays. Next time… who was it?": "Mimpinya sudah mulai memudar. Tapi suara itu tetap ada. Lain kali... siapa itu?",
+      "The trip starts now. Guesthouse in Ikseon-dong first?": "Perjalanan dimulai sekarang. Guesthouse di Ikseon-dong dulu?",
+      "Hello": "Halo",
+      "Hello! Nice to meet you.": "Halo! Senang bertemu denganmu.",
+      "Which word matches the picture?": "Kata mana yang cocok dengan gambar?",
+      "thank you": "terima kasih",
+      "Yes, thank you!": "Ya, terima kasih!",
+      "What did you hear?": "Apa yang kamu dengar?",
+      "Tap the syllables to spell the word.": "Ketuk suku kata untuk mengeja kata itu.",
+      "Fill in the blank.": "Isi bagian yang kosong.",
+      "Listen and build the sentence.": "Dengarkan lalu susun kalimatnya.",
+      "What do you say?": "Apa yang kamu katakan?",
+      "Goodbye. (to someone leaving)": "Selamat tinggal. (kepada orang yang pergi)",
+      "Here you say \"Hello! Yes, it's my first time!\".": "Di sini kamu mengatakan \"Halo! Ya, ini pertama kalinya!\".",
+      "Put the conversation in order.": "Susun percakapan ini dengan urutan yang benar.",
+      "\"Your Korean is so good!\"": "\"Bahasa Korea kamu bagus sekali!\"",
+      "Say just \"annyeonghaseyo\" and you'll often hear \"Your Korean is so good!\" It's not teasing. People are happy you spoke Korean. That's why the line is famous among Korean learners.": "Cukup ucapkan \"annyeonghaseyo\" dan kamu akan sering mendengar \"Bahasa Korea-mu bagus sekali!\" Itu bukan ejekan. Orang senang kamu berbicara bahasa Korea. Itulah sebabnya kalimat ini terkenal di kalangan pelajar bahasa Korea.",
+      "Just say \"Thank you!\" And \"annyeonghaseyo\" works any time of day.": "Cukup katakan \"Terima kasih!\" Dan \"annyeonghaseyo\" bisa dipakai kapan saja.",
+      "Pick the right one.": "Pilih yang tepat.",
+      "What do you say when you hear \"Your Korean is so good!\"?": "Apa yang kamu katakan saat mendengar \"Bahasa Korea-mu bagus sekali!\"?",
+      "Thanks for the meal!": "Terima kasih atas makanannya!",
+      "Hello!": "Halo!",
+      "Answer a compliment with \"Thank you.\"": "Jawab pujian dengan \"Terima kasih.\"",
+      "Sorry?": "Maaf, bagaimana?",
+      "Korea": "Korea",
+      "Korean language": "Bahasa Korea",
+      "Did you study?": "Kamu sudah belajar?"
+    }
+  }
 }
