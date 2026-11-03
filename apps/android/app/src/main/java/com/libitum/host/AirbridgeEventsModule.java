@@ -25,6 +25,16 @@ public final class AirbridgeEventsModule extends LynxModule {
     AirbridgeEvents.setTrackingEnabled(appContext, enabled);
   }
 
+  /** ADR-0090: 저장된 세션의 사용자가 바뀌면 JS가 부른다. 값은 PostHog identify와 같은 Supabase user id. 응답이 없다. */
+  @LynxMethod public void setUserID(String userId) {
+    AirbridgeEvents.setUserId(userId);
+  }
+
+  /** ADR-0090: 세션이 사라지거나 시험 계정이면 JS가 부른다. 응답이 없다. */
+  @LynxMethod public void clearUser() {
+    AirbridgeEvents.clearUser();
+  }
+
   /** ADR-0080: 받아 둔 딥링크를 한 번 꺼낸다. 없으면 url: null. 해석은 JS가 한다. */
   @LynxMethod public void takeOpenedDeeplink(Callback callback) {
     JavaOnlyMap payload = new JavaOnlyMap();

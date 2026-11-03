@@ -185,6 +185,7 @@ export function catalogItemOf(item: LearningItem, port: CatalogLessonItemPort): 
     case "DICTATION":
     case "TRANSLATE_TO_KO":
     case "SENT_BUILD":
+    case "CLOZE_TYPING":
       return typingItemOf(item, port);
     case "ROLEPLAY_TURN":
     case "HANGUL_WRITE":

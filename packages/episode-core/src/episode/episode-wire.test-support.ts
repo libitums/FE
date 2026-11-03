@@ -175,6 +175,12 @@ export function item(type: ItemType, id: string, extra: Wire = {}): Wire {
       stimulus: { image_brief: "brief" },
       answers: [t3("단어")],
     },
+    CLOZE_TYPING: {
+      mode: "typing",
+      prompt: prompt(),
+      context: t3("두 ___ 주세요."),
+      answers: [t3("개")],
+    },
     HANGUL_WRITE: {
       mode: "draw",
       prompt: prompt(),
