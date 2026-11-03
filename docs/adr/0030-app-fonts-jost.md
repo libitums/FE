@@ -65,3 +65,7 @@ Pretendard를 넣으면 앱 전체 본문의 줄바꿈 · 너비가 바뀌어 �
 
 - 학습 문항의 로마자 줄이 **기울임(`font-style: italic`) · medium · muted**로 한글 · 뜻과 구별된다. 본문이 시스템 서체(SF Pro · Roboto)라 진짜 기울임이다 — D3(Pretendard를 넣지 않음)이 이 규칙의 전제다.
 - **재검토 조건 「Pretendard를 넣을 때」에 하나가 더해진다** — 그때 로마자 기울임은 합성이 되고 iOS가 똑바로 그릴 수 있다. 로마자만 `font-family-accent`(Jost) · medium · muted로 옮긴다(ADR-0084 재검토 조건 1, ADR README 보류 표 「로마자 기울임의 대안」). 로마자는 라틴 글자뿐이라 Jost가 모두 그린다.
+
+### 적용 기록 ⟨2026-11-02⟩ — Android에서 Jost를 그린다
+
+결정은 [ADR-0092](0092-android-app-fonts.md). 재검토 조건 「Android 호스트가 생길 때 → `res/font/`」는 그대로 따를 수 없었다 — Lynx Android는 자산 · 리소스 글꼴을 이름으로 찾지 않는다. 호스트가 `files/fonts/`로 복사하고 CSS `@font-face`(`DuruJost`)가 그 경로를 가리킨다. iOS의 D1(`UIAppFonts`)은 바뀌지 않는다.

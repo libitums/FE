@@ -28,6 +28,7 @@ export function withLearningTickets<W extends ScreenWiring>(
     ...wiring,
     // 시험 계정은 결과 화면의 남은 장수 줄을 세우지 않습니다(ADR-0085).
     ...(isTesterAccessActive() ? {} : { ticketsLeft: tickets.status.available }),
+    ticketChip: { count: tickets.status.available, unlimited: isTesterAccessActive() },
     catalogTicketUnits: ticketUnits,
     onStartCatalogUnit: (episodeId, unitKey, source) => {
       "background only";
