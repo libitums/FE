@@ -25,7 +25,7 @@ const valueAt = (root: unknown, path: string): unknown =>
     .split(".")
     .reduce<unknown>((node, key) => (node as Record<string, unknown> | undefined)?.[key], root);
 
-test("ID1. uiCopyFor('vi')는 인도네시아어 표다", () => {
+test("ID1. uiCopyFor('id')는 인도네시아어 표다", () => {
   expect(uiCopyFor("id")).toBe(uiCopyId);
 });
 

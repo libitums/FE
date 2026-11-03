@@ -116,8 +116,8 @@ export const readAloudId: ReadAloudCopy = {
         : `Kamu sudah mengucapkan semua ${total} kata.`;
     }
     // 앞에서부터 이어 맞은 수입니다 — 0이면 "pertama"를 붙이지 않습니다.
-    const lead = matched === 0 ? "" : "pertama ";
-    return `Kamu mengucapkan ${lead}${matched} dari ${total} kata.`;
+    const lead = matched === 0 ? "" : " pertama";
+    return `Kamu mengucapkan ${matched}${lead} dari ${total} kata.`;
   },
   pronunciation: (romanization) => `Pelafalan: ${romanization}`,
 };
