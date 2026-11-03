@@ -7,9 +7,9 @@
       "order": 0,
       "title": "튜토리얼",
       "schema": "delivery-2",
-      "version": "2026-10-26.3",
-      "sha256": "29aec43832a4dccf7f9b57b1140f985e9a9fb0aa28a3b633dafbd10589c16bca",
-      "bytes": 32893,
+      "version": "2026-11-03.1",
+      "sha256": "3af4dcc45a3cf6291c1f2187d6ae286fa41d3ac357423786159622a992d8b5f4",
+      "bytes": 41083,
       "url": "episodes/u00-tutorial.json"
     },
     {
