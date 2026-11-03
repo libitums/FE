@@ -759,3 +759,16 @@ id 규약(Q6 제안): `<episode_id>/<kind>-<n>` — 확장자 없는 불투명 i
   컷 대사 글자당 간격은 `speech_end_ms` 기준 110 ~ 274 ms, `duration_ms` 기준 136 ~ 328 ms다(파일 길이만 쓰면 u01 `pre-3` 하나가 상한 300에 걸린다).
 - **부록 C 업로드 현황과 다른 점**: 내장 본문이 참조하는 음성 id 13개 가운데 **`u03-mina/d-01`(대화 seq 1 · 표지 컷 pre-4가 다시 씀)은 버킷이 400**이다 — 부록 C의 ⟨2026-10-14⟩ 표는 이 파일을 「올라감」으로 적었지만 지금은 없다(녹음 없음 — [ADR-0071](../adr/0071-episode-background-download.md) D3의 「400」 관찰 · [백그라운드 받기 e2e](../e2e/episode-background-download.md) 실행 기록과 같다).
   그래서 정보 파일에도 그 항목이 없고 그 줄은 소리 없이 35ms다. 정보 파일의 u03 `d-03` · `d-09` · `d-11` · `post-1`은 지금 내장 본문이 쓰지 않는 id다 — 앱은 쓰이지 않는 키를 무시한다.
+
+## 부록 F. level-3(balance) 모양 ⟨2026-11-02⟩
+
+balance 묶음(2026-10-30)의 새 모양과 앱의 해석입니다. 앱 콘텐츠 수준 3부터 읽고(`manifests/level-3.json`), 결정은 ADR-0058 적용 기록 ⟨2026-11-02⟩에 있습니다.
+
+| 자리 | 모양 | 앱 |
+|---|---|---|
+| 문항 `story` | `{ line_id, hint_after_miss?, lead: [{ speaker, line, audio_url? }], line, situation?, image_url? }` | 모든 문항이 `story`인 마지막 학습 유닛(S8)이 여정맵 파이널이 됩니다. 상대 대사 = `lead`의 마지막 줄, 틀리면 `line`을 정답으로 보입니다. `situation`은 그리지 않습니다. |
+| REPLY_SELECT | `stimulus` 없이 `context`, `feedback.wrong` · `wrong_option` 선택 | 자극이 없으면 `context`를 `stimulus.text`로 받습니다. |
+| CLOZE_CHOICE | `feedback` 없음 | 받습니다(선택). |
+| `HANGUL_WRITE` | `mode: "draw"`, `context`(`___` 자리), `answers[0]`(쓸 말), `feedback.correct` 선택 | 파이널 따라 쓰기 — 음절마다 덮음 · 머무름 0.6 이상이면 통과. 레슨에서는 건너뜁니다. |
+| 최상위 `interlude` | INT 스텝 밖에 막간 | INT 스텝 안 막간이 없으면 이것을 씁니다. |
+| 모르는 문항 형식 | — | 그 문항만 빼고 `unknown-item-type` 경고(이전에는 에피소드 거부). |

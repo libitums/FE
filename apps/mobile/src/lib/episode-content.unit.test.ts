@@ -190,6 +190,12 @@ function item(type: ItemType, id: string, extra: Wire = {}): Wire {
       stimulus: { image_brief: "brief" },
       answers: [t3("단어")],
     },
+    HANGUL_WRITE: {
+      mode: "draw",
+      prompt: prompt(),
+      context: t3("___ 할게요."),
+      answers: [t3("카드로")],
+    },
   };
   return { ...base, ...bodies[type], ...extra };
 }
@@ -309,19 +315,28 @@ describe("decodeEpisode", () => {
     }
   });
 
-  test("U4. 모르는 문항 type은 unknown-item-type 하나, path는 type, message에 값", () => {
-    const errors = failed(decodeEpisode(withItem(roleLine("S1-01", { type: "QUIZ" }))));
-    expect(errors).toHaveLength(1);
-    expect(errors[0]?.code).toBe("unknown-item-type");
-    expect(errors[0]?.path).toBe("steps[0].items[0].type");
-    expect(errors[0]?.message).toContain("QUIZ");
+  test("U4. 모르는 문항 type은 그 문항만 빼고 unknown-item-type 경고 하나, path는 type, message에 값", () => {
+    const { episode, warnings } = passed(
+      decodeEpisode(
+        minimalEpisode({
+          steps: [
+            step("S1", 1, [roleLine("S1-01"), roleLine("S1-02", { type: "QUIZ" })]),
+            rpStep(2),
+          ],
+        }),
+      ),
+    );
+    expect(episode.units[0]?.items.map((found) => found.id)).toEqual(["S1-01"]);
+    const unknown = warnings.filter((warning) => warning.code === "unknown-item-type");
+    expect(unknown).toHaveLength(1);
+    expect(unknown[0]?.path).toBe("steps[0].items[1].type");
+    expect(unknown[0]?.message).toContain("QUIZ");
   });
 
-  test("U4. 모르는 type이 있으면 다른 구조 오류와 섞이지 않는다", () => {
+  test("U4. 모르는 type 문항을 빼도 다른 구조 오류는 그대로 실패로 남는다", () => {
     const input = without(withItem({ id: "S1-01", type: "QUIZ" }), "title");
-    const errors = failed(decodeEpisode(input));
-    expect(codeAndPath(errors)).toEqual([
-      { code: "unknown-item-type", path: "steps[0].items[0].type" },
+    expect(codeAndPath(failed(decodeEpisode(input)))).toEqual([
+      { code: "invalid-shape", path: "title" },
     ]);
   });
 
@@ -700,8 +715,8 @@ describe("decodeEpisode", () => {
   });
 
   // 가드: 상수라 스캐폴드에서도 green입니다.
-  test("U26. KNOWN_ITEM_TYPES는 24종이고 계약의 순서 그대로다", () => {
-    expect(KNOWN_ITEM_TYPES).toHaveLength(24);
+  test("U26. KNOWN_ITEM_TYPES는 25종이고 계약의 순서 그대로다", () => {
+    expect(KNOWN_ITEM_TYPES).toHaveLength(25);
     expect([...KNOWN_ITEM_TYPES]).toEqual([
       "VOCAB_CARD",
       "CLOZE",
@@ -727,6 +742,7 @@ describe("decodeEpisode", () => {
       "SYLLABLE_BUILD",
       "SHADOW",
       "SPEAK_WORD",
+      "HANGUL_WRITE",
     ]);
   });
 

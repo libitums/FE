@@ -35,7 +35,7 @@ const BASE_ITEM_TYPES = [
   "ROLEPLAY_TURN",
 ] as const;
 
-/** 문항 `type`의 닫힌 목록 — 앞 13종 + 2026-10-15에 더한 11종, 이 순서. */
+/** 문항 `type`의 닫힌 목록 — 앞 13종 + 2026-10-15에 더한 11종 + 2026-10-30 따라 쓰기, 이 순서. */
 export const KNOWN_ITEM_TYPES = [...BASE_ITEM_TYPES, ...ADDED_ITEM_TYPES] as const;
 
 const cutCommon = {
@@ -241,6 +241,8 @@ export const deliveryEpisodeSchema = z.object({
   dialogue: z.array(dialogueLineSchema),
   post_cuts: z.array(cutSchema),
   steps: z.array(stepSchema),
+  // balance(level-3)는 막간을 INT 스텝 밖 최상위에 둡니다. 스텝 안 막간이 없을 때 이것을 씁니다(ADR-0088).
+  interlude: z.optional(z.unknown()),
   completion: z.optional(z.object({ requires: z.array(z.string()) })),
   words: z.array(wordSchema),
   patterns: z.array(patternSchema),
