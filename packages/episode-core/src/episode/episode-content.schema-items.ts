@@ -24,6 +24,8 @@ export const ADDED_ITEM_TYPES = [
   "SPEAK_WORD",
   // 2026-10-30(balance) — 이야기 파이널의 따라 쓰기입니다.
   "HANGUL_WRITE",
+  // 2026-11-02(u11 ~ u13) — 빈칸에 직접 쳐 넣는 문항입니다.
+  "CLOZE_TYPING",
 ] as const;
 
 const stimulusChoice = {
@@ -99,5 +101,12 @@ export const addedItemSchemas = [
     context: textSchema,
     answers: z.array(textSchema).check(z.minLength(1)),
     feedback: z.optional(correctFeedbackSchema),
+  }),
+  z.object({
+    ...itemCommon,
+    type: z.literal("CLOZE_TYPING"),
+    prompt: promptSchema,
+    context: textSchema,
+    answers: z.array(textSchema).check(z.minLength(1)),
   }),
 ] as const;
