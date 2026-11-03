@@ -5,7 +5,7 @@ import {
   SentenceOrderChip,
   SentenceOrderChipPlaceholder,
 } from "../sentence-order/SentenceOrderChip";
-import { storyReplyText, storyTemplateParts } from "./catalog-story-final";
+import { storyReplyText, storyTemplateParts, storyTilesNeeded } from "./catalog-story-final";
 import type {
   StoryFinalChoiceTurn,
   StoryFinalState,
@@ -176,20 +176,27 @@ export function StoryReplyLine({
       ) : turn.kind === "tiles" ? (
         <>
           <TemplateText text={before} />
-          {state.placed.length === 0 ? (
-            <view className="catalog-story-final-reply-blank" />
-          ) : (
-            state.placed.map((tileIndex, position) => (
-              <SentenceOrderChip
-                key={tileIndex}
-                index={tileIndex}
-                text={turn.tiles[tileIndex]?.ko ?? ""}
-                placedOrdinal={position + 1}
-                disabled={state.phase === "checked"}
-                surface="dark"
-                onTap={onToggle}
+          {state.placed.map((tileIndex, position) => (
+            <SentenceOrderChip
+              key={tileIndex}
+              index={tileIndex}
+              text={turn.tiles[tileIndex]?.ko ?? ""}
+              placedOrdinal={position + 1}
+              disabled={state.phase === "checked"}
+              surface="dark"
+              onTap={onToggle}
+            />
+          ))}
+          {/* 남은 타일 수만큼 밑줄입니다 — 놓을 때마다 하나씩 칩으로 바뀌어 몇 개가 더 필요한지 보입니다. */}
+          {Array.from(
+            { length: Math.max(0, storyTilesNeeded(turn) - state.placed.length) },
+            (_, index) => (
+              <view
+                key={`blank-${String(index)}`}
+                className="catalog-story-final-reply-blank"
+                data-testid="catalog-story-final-reply-blank"
               />
-            ))
+            ),
           )}
           <TemplateText text={after} />
         </>

@@ -149,6 +149,16 @@ describe("CatalogStoryFinalScreen", () => {
     expect(actionText()).toHaveTextContent("See results");
   });
 
+  test("SU4b. 대답 줄의 밑줄은 정답 타일 수만큼이고, 타일을 놓을 때마다 하나씩 줄어든다", () => {
+    mount([tiles]);
+    const blanks = () => screen.queryAllByTestId("catalog-story-final-reply-blank");
+    expect(blanks()).toHaveLength(2);
+    tap(screen.getByTestId("sentence-order-chip-1"));
+    expect(blanks()).toHaveLength(1);
+    tap(screen.getByTestId("sentence-order-chip-0"));
+    expect(blanks()).toHaveLength(0);
+  });
+
   test("SU5. 따라 쓰기는 음절 칸 · 쓰기 칸 · Redo · Listen이 서고, 음절마다 넘겨 마지막에 판정한다", () => {
     mount([write]);
     const cells = screen.getAllByTestId(/^catalog-story-final-cell-/);

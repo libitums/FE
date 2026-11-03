@@ -7,6 +7,7 @@ import {
   storyFinalReducer,
   storyReplyText,
   storyTemplateParts,
+  storyTilesNeeded,
   storyTracePassed,
 } from "./catalog-story-final";
 import type {
@@ -153,4 +154,21 @@ test("C4. 틀은 빈칸 앞 · 뒤로 가르고, 틀이 없으면 둘 다 비어
     after: ". 여기서",
   });
   expect(storyTemplateParts(null)).toEqual({ before: "", after: "" });
+});
+
+test("C5. 밑줄 수는 정답에 들어가는 타일 수다 — 남는 타일(오답 보기)은 세지 않고, 못 맞추면 타일 전부다", () => {
+  expect(
+    storyTilesNeeded(
+      tiles(" ", null, ["처음이에요!", "안녕하세요!", "네,"], "안녕하세요! 네, 처음이에요!"),
+    ),
+  ).toBe(3);
+  expect(
+    storyTilesNeeded(
+      tiles(" ", "아니요, ___.", ["괜찮아요", "봉투", "영수증은"], "영수증은 괜찮아요"),
+    ),
+  ).toBe(2);
+  expect(storyTilesNeeded(tiles("", null, ["요", "세", "안", "녕", "하"], "안녕하세요"))).toBe(5);
+  expect(storyTilesNeeded(tiles(" ", null, ["괜찮아요", "봉투", "영수증은"], "전혀 다른 말"))).toBe(
+    3,
+  );
 });

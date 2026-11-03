@@ -8,7 +8,11 @@
 import { normalizeAnswerText } from "@libitums/episode-core/judge";
 
 // 채점(NFC · 기호 · 공백 제거 뒤 비교)은 `@libitums/episode-core/judge`가 정본입니다.
-export { isTypedAnswerAccepted, isTypedAnswerCorrect } from "@libitums/episode-core/judge";
+export {
+  isTypedAnswerAccepted,
+  isTypedAnswerCorrect,
+  normalizeAnswerText,
+} from "@libitums/episode-core/judge";
 
 const initials = [..."ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ"];
 const medials = [..."ㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢㅣ"];
