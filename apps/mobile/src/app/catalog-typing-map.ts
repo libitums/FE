@@ -1,4 +1,4 @@
-// 받아쓰기 · 한국어로 쓰기 · 패턴 쓰기 문항을 타자 입력 문항으로 바꿉니다(순수).
+// 받아쓰기 · 한국어로 쓰기 · 패턴 쓰기 · 빈칸 타자 문항을 타자 입력 문항으로 바꿉니다(순수).
 
 import { isTypeableAnswer } from "../lib/hangul-keyboard";
 import type { LearningItem } from "../lib/episode-content.model";
@@ -12,7 +12,10 @@ import type {
 } from "./catalog-lesson-types";
 import { englishOf, instructionOf, koOf, latinOf, skippedItem } from "./catalog-item-text";
 
-type TypingSource = Extract<LearningItem, { type: "DICTATION" | "TRANSLATE_TO_KO" | "SENT_BUILD" }>;
+type TypingSource = Extract<
+  LearningItem,
+  { type: "DICTATION" | "TRANSLATE_TO_KO" | "SENT_BUILD" | "CLOZE_TYPING" }
+>;
 
 type TypingParts = {
   readonly kind: TypingCueKind;
@@ -82,6 +85,19 @@ export function typingItemOf(item: TypingSource, port: CatalogLessonItemPort): C
         cueSupport: null,
         hint: null,
         audio: catalogAnswerEchoOf(item, port),
+      });
+    }
+    case "CLOZE_TYPING": {
+      // 빈칸 문장의 뜻이 단서, 빈칸 문장이 힌트입니다 — 패턴 쓰기와 같은 모양이고 정답은 빈칸에 들어갈 말입니다.
+      const cue = englishOf(port, item.context.en) ?? firstEnglish(item, port);
+      if (cue === undefined) return skippedItem(item, "no-source");
+      const hint = koOf(port, item.context.ko);
+      return typingItem(item, port, {
+        kind: "pattern",
+        cue,
+        cueSupport: null,
+        hint: hint === "" ? null : hint,
+        audio: null,
       });
     }
     case "SENT_BUILD": {

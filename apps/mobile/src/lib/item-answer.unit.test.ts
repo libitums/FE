@@ -35,6 +35,8 @@ const unscored = [
   "ROLEPLAY_TURN",
   // 이야기 파이널에서만 풀고 레슨 문항 보고에는 오지 않습니다.
   "HANGUL_WRITE",
+  // 타자 입력 문항이라 받아쓰기 · 패턴 쓰기처럼 채점 보고 밖입니다.
+  "CLOZE_TYPING",
 ] as const;
 
 describe("scoredItemTypeOf (EV1)", () => {

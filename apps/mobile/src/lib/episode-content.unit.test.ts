@@ -196,6 +196,12 @@ function item(type: ItemType, id: string, extra: Wire = {}): Wire {
       context: t3("___ 할게요."),
       answers: [t3("카드로")],
     },
+    CLOZE_TYPING: {
+      mode: "typing",
+      prompt: prompt(),
+      context: t3("두 ___ 주세요."),
+      answers: [t3("개")],
+    },
   };
   return { ...base, ...bodies[type], ...extra };
 }
@@ -715,8 +721,8 @@ describe("decodeEpisode", () => {
   });
 
   // 가드: 상수라 스캐폴드에서도 green입니다.
-  test("U26. KNOWN_ITEM_TYPES는 25종이고 계약의 순서 그대로다", () => {
-    expect(KNOWN_ITEM_TYPES).toHaveLength(25);
+  test("U26. KNOWN_ITEM_TYPES는 26종이고 계약의 순서 그대로다", () => {
+    expect(KNOWN_ITEM_TYPES).toHaveLength(26);
     expect([...KNOWN_ITEM_TYPES]).toEqual([
       "VOCAB_CARD",
       "CLOZE",
@@ -743,6 +749,7 @@ describe("decodeEpisode", () => {
       "SHADOW",
       "SPEAK_WORD",
       "HANGUL_WRITE",
+      "CLOZE_TYPING",
     ]);
   });
 

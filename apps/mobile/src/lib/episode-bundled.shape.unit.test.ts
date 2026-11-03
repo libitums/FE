@@ -128,22 +128,28 @@ describe("옛 내장본 픽스처의 모양 (IF2)", () => {
 });
 
 describe("문항 유형 합집합 (IF3)", () => {
-  test("IF3. 새 내장 셋은 25종에서 PAIR_MATCH · SENT_BUILD · HANGUL_WRITE를 뺀 22종이다", () => {
+  test("IF3. 새 내장 셋은 26종에서 PAIR_MATCH · SENT_BUILD · HANGUL_WRITE · CLOZE_TYPING을 뺀 22종이다", () => {
     const expected = KNOWN_ITEM_TYPES.filter(
-      (type) => type !== "PAIR_MATCH" && type !== "SENT_BUILD" && type !== "HANGUL_WRITE",
+      (type) =>
+        type !== "PAIR_MATCH" &&
+        type !== "SENT_BUILD" &&
+        type !== "HANGUL_WRITE" &&
+        type !== "CLOZE_TYPING",
     );
     expect(typesOf(bundled)).toEqual(new Set<string>(expected));
     expect(typesOf(bundled).size).toBe(22);
   });
 
-  test("IF3. 옛 픽스처 셋은 앞 13종이고 둘의 합이 따라 쓰기를 뺀 KNOWN_ITEM_TYPES 24종이다", () => {
+  test("IF3. 옛 픽스처 셋은 앞 13종이고 둘의 합이 따라 쓰기 · 빈칸 타자를 뺀 KNOWN_ITEM_TYPES 24종이다", () => {
     expect(typesOf(legacy)).toEqual(new Set<string>(KNOWN_ITEM_TYPES.slice(0, 13)));
     expect(typesOf(legacy).size).toBe(13);
-    // 따라 쓰기(HANGUL_WRITE)는 balance(level-3)부터라 두 고정본 어디에도 없습니다.
+    // 따라 쓰기(HANGUL_WRITE)는 balance(level-3), 빈칸 타자(CLOZE_TYPING)는 u11 ~ u13부터라 두 고정본 어디에도 없습니다.
     expect(new Set([...typesOf(bundled), ...typesOf(legacy)])).toEqual(
-      new Set<string>(KNOWN_ITEM_TYPES.filter((type) => type !== "HANGUL_WRITE")),
+      new Set<string>(
+        KNOWN_ITEM_TYPES.filter((type) => type !== "HANGUL_WRITE" && type !== "CLOZE_TYPING"),
+      ),
     );
-    expect(KNOWN_ITEM_TYPES).toHaveLength(25);
+    expect(KNOWN_ITEM_TYPES).toHaveLength(26);
   });
 });
 
