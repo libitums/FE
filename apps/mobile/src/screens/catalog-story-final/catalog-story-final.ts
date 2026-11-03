@@ -115,21 +115,18 @@ export function judgeStoryTiles(
  */
 export function storyTilesNeeded(turn: StoryFinalTilesTurn): number {
   const pieces = turn.tiles.map((tile) => normalizeAnswerText(tile.ko));
-  const cover = (rest: string, used: readonly boolean[]): number | null => {
+  // 쓴 타일은 비트로 셉니다(타일은 몇 개뿐) — 재귀마다 배열을 만들지 않습니다.
+  const cover = (rest: string, used: number): number | null => {
     if (rest === "") return 0;
     for (const [index, piece] of pieces.entries()) {
-      if (used[index] === true || piece === "" || !rest.startsWith(piece)) continue;
-      const next = used.map((flag, at) => flag || at === index);
-      const count = cover(rest.slice(piece.length), next);
+      if ((used & (1 << index)) !== 0 || piece === "" || !rest.startsWith(piece)) continue;
+      const count = cover(rest.slice(piece.length), used | (1 << index));
       if (count !== null) return count + 1;
     }
     return null;
   };
   for (const answer of turn.accepted) {
-    const count = cover(
-      normalizeAnswerText(answer),
-      pieces.map(() => false),
-    );
+    const count = cover(normalizeAnswerText(answer), 0);
     if (count !== null && count > 0) return count;
   }
   return turn.tiles.length;
