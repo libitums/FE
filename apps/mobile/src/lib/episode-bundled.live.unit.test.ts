@@ -58,7 +58,7 @@ describe("실제 내장본", () => {
 
   test("BL4. u00이 가리키는 그림은 모두 앱에 실은 그림이고 파일이 있다", () => {
     const images = episodeAssetPaths(bundledCatalogInput.episodes[TUTORIAL_EPISODE_ID]).filter(
-      (path) => !path.startsWith("audio/"),
+      (path) => path.includes("images/"),
     );
     expect(images.length).toBeGreaterThan(0);
     for (const path of images) {

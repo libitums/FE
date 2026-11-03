@@ -40,7 +40,7 @@ describe("bundledContentImages", () => {
     expect(typeof value).toBe("string");
     expect(value).not.toBe("");
     expect(bundledContentImageUrl("level-3/images/u00-tutorial/pre-1.webp")).toBe(value);
-    expect(bundledContentImageUrl("content/images/u00-tutorial/pre-1-v2.webp")).toBeNull();
+    expect(bundledContentImageUrl("content/level-3/images/u00-tutorial/pre-1.webp")).toBeNull();
     expect(bundledContentImageUrl("images/u01-water/pre-1.jpg")).toBeNull();
     expect(bundledContentImageUrl("")).toBeNull();
     expect(bundledContentImageUrl("toString")).toBeNull();

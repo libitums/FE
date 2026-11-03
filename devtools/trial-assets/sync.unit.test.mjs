@@ -9,7 +9,7 @@ import { fileURLToPath } from "node:url";
 //
 // ⟨2026-10-26⟩ 앱 내장 u00이 버킷 최신본(4스텝)으로 바뀌었지만 체험판은 옛 14스텝 구조(S3 그림 고르기 · S9 · S12)에
 // 맞춰져 있어 2026-10-23판에 머뭅니다. 그래서 u00 사본 · 핀은 앱 테스트 고정본(`content/test-fixtures/bundled-2026-10-23`)과
-// 견주고, 그림은 앱에 아직 있는 것만 앱 원본과 견줍니다(옛 앞 컷 pre-1 ~ 6은 체험판 사본이 유일한 사본입니다).
+// 견줍니다. 그림은 ⟨2026-11-03⟩부터 체험판 사본이 유일한 사본입니다(TA2).
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const at = (...parts) => join(root, ...parts);
@@ -67,17 +67,12 @@ test("TA1: 랜딩 u00 사본은 체험판이 머무는 판(앱 테스트 고정�
   );
 });
 
-test("TA2: 그림 사본은 정해진 12개이고, 앱에 아직 있는 그림은 앱 원본과 바이트가 같다", () => {
+// ⟨2026-11-03⟩ 앱 내장 u00이 staging 판으로 바뀌며 앱 그림은 `assets/content/level-3/images/`(staging 그림)로 옮겼습니다.
+// 옛 u00 그림 폴더(`assets/content/images/`)는 앱에서 없어졌고, 체험판 사본 12장이 옛 판의 유일한 사본입니다.
+test("TA2: 그림 사본은 정해진 12개이고, 앱에는 옛 u00 그림 폴더가 남아 있지 않다", () => {
   const copyRoot = at("apps/landing/src/assets/trial/images");
   assert.deepEqual(filesUnder(copyRoot), TRIAL_IMAGES);
-  const appRoot = at("apps/mobile/src/assets/content/images");
-  const shared = TRIAL_IMAGES.filter((path) => existsSync(join(appRoot, path)));
-  // 앱에서 빠진 것은 옛 앞 컷 여섯 장뿐이어야 합니다 — 그 밖의 그림이 빠지면 사본이 원본을 잃은 것입니다.
-  assert.deepEqual(
-    TRIAL_IMAGES.filter((path) => !shared.includes(path)),
-    [1, 2, 3, 4, 5, 6].map((n) => `u00-tutorial/pre-${n}.webp`),
-  );
-  for (const path of shared) assertSameBytes(join(copyRoot, path), join(appRoot, path));
+  assert.deepEqual(filesUnder(at("apps/mobile/src/assets/content/images")), []);
 });
 
 test("TA3: 효과음 사본은 정해진 5개이고 각각 iOS 원본과 바이트가 같다", () => {
