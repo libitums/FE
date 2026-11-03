@@ -56,9 +56,14 @@ final class AirbridgeEventsTests: XCTestCase {
     XCTAssertEqual(AirbridgeEventsModule.name, "AirbridgeEventsModule")
     XCTAssertEqual(
       Set(AirbridgeEventsModule.methodLookup.keys),
-      ["trackEvent", "requestTrackingAuthorization", "takeOpenedDeeplink", "setTrackingEnabled"])
+      [
+        "trackEvent", "requestTrackingAuthorization", "takeOpenedDeeplink", "setTrackingEnabled",
+        "setUserID", "clearUser",
+      ])
     XCTAssertEqual(AirbridgeEventsModule.methodLookup["takeOpenedDeeplink"], "takeOpenedDeeplink:")
     XCTAssertEqual(AirbridgeEventsModule.methodLookup["setTrackingEnabled"], "setTrackingEnabled:")
+    XCTAssertEqual(AirbridgeEventsModule.methodLookup["setUserID"], "setUserID:")
+    XCTAssertEqual(AirbridgeEventsModule.methodLookup["clearUser"], "clearUser")
     XCTAssertEqual(
       AirbridgeEventsModule.methodLookup["trackEvent"], "trackEvent:semanticAttributes:")
     XCTAssertEqual(
@@ -73,6 +78,18 @@ final class AirbridgeEventsTests: XCTestCase {
     defaults.removePersistentDomain(forName: "AirbridgeEventsTests.NI12")
     AirbridgeEvents.setTrackingEnabled(false, defaults: defaults)
     XCTAssertNil(defaults.object(forKey: AirbridgeEvents.trackingStoppedKey))
+  }
+
+  // N-I14: ⟨ADR-0090⟩ 사용자 ID 걸기 · 지우기는 SDK가 시작되지 않은 빌드에서 아무것도 하지 않는다.
+  func testNI14UserIdentityIsNoOpWhenNotStarted() throws {
+    try XCTSkipIf(AirbridgeEvents.isStarted, "값이 있는 빌드에서는 실제 SDK 사용자 정보가 바뀌므로 부르지 않는다")
+    let module = AirbridgeEventsModule()
+
+    module.setUserID("user-1")
+    module.setUserID("")
+    module.clearUser()
+
+    XCTAssertFalse(AirbridgeEvents.isStarted)
   }
 
   // N-I10(ADR-0080): 우리 scheme만 딥링크로 받고, 로그인 콜백 · 다른 scheme은 받지 않는다.
