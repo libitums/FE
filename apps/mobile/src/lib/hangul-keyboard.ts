@@ -5,10 +5,14 @@
 // 마지막 키 하나를 빼고 다시 조합하면 되므로, 조합 중 음절을 자모 하나씩 되돌리는
 // 휴대폰 키보드의 동작이 따로 규칙 없이 나옵니다.
 
-import { normalizeAnswerText } from "@libitums/episode-core/judge";
+import {
+  isTypedAnswerAccepted,
+  isTypedAnswerCorrect,
+  normalizeAnswerText,
+} from "@libitums/episode-core/judge";
 
 // 채점(NFC · 기호 · 공백 제거 뒤 비교)은 `@libitums/episode-core/judge`가 정본입니다.
-export { isTypedAnswerAccepted, isTypedAnswerCorrect } from "@libitums/episode-core/judge";
+export { isTypedAnswerAccepted, isTypedAnswerCorrect, normalizeAnswerText };
 
 const initials = [..."ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ"];
 const medials = [..."ㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢㅣ"];

@@ -2,7 +2,7 @@
 // 않습니다.
 
 import type { AnswerResult } from "../../lib/answer-result";
-import { isTypedAnswerAccepted } from "../../lib/hangul-keyboard";
+import { isTypedAnswerAccepted, normalizeAnswerText } from "../../lib/hangul-keyboard";
 import type { HandwritingTraceOutcome } from "../../lib/handwriting-trace";
 import type { AudioCue } from "../../lib/use-audio-cue";
 import { STORY_FINAL_TRACE_THRESHOLD } from "./catalog-story-final.contract";
@@ -106,6 +106,30 @@ export function judgeStoryTiles(
   placed: readonly number[],
 ): AnswerResult {
   return isTypedAnswerAccepted(tilesText(turn, placed), turn.accepted) ? "correct" : "incorrect";
+}
+
+/**
+ * 정답에 들어가는 타일 수입니다 — 대답 줄에 그 수만큼 밑줄을 그어 「몇 개를 놓는지」 보이게 합니다(2026-11-03 사용자
+ * 지적: 밑줄이 하나면 하나만 넣는 줄로 읽힌다). 정답 글을 타일로 앞에서부터 남김없이 덮는 조합을 찾고(공백 ·
+ * 문장부호는 보지 않음), 못 찾으면 타일 전부입니다.
+ */
+export function storyTilesNeeded(turn: StoryFinalTilesTurn): number {
+  const pieces = turn.tiles.map((tile) => normalizeAnswerText(tile.ko));
+  // 쓴 타일은 비트로 셉니다(타일은 몇 개뿐) — 재귀마다 배열을 만들지 않습니다.
+  const cover = (rest: string, used: number): number | null => {
+    if (rest === "") return 0;
+    for (const [index, piece] of pieces.entries()) {
+      if ((used & (1 << index)) !== 0 || piece === "" || !rest.startsWith(piece)) continue;
+      const count = cover(rest.slice(piece.length), used | (1 << index));
+      if (count !== null) return count + 1;
+    }
+    return null;
+  };
+  for (const answer of turn.accepted) {
+    const count = cover(normalizeAnswerText(answer), 0);
+    if (count !== null && count > 0) return count;
+  }
+  return turn.tiles.length;
 }
 
 /**

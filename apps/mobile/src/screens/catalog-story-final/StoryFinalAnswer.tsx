@@ -1,3 +1,4 @@
+import { useMemo } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import { useUiCopy } from "../../lib/ui-copy";
@@ -5,7 +6,7 @@ import {
   SentenceOrderChip,
   SentenceOrderChipPlaceholder,
 } from "../sentence-order/SentenceOrderChip";
-import { storyReplyText, storyTemplateParts } from "./catalog-story-final";
+import { storyReplyText, storyTemplateParts, storyTilesNeeded } from "./catalog-story-final";
 import type {
   StoryFinalChoiceTurn,
   StoryFinalState,
@@ -155,6 +156,8 @@ export function StoryReplyLine({
       ? state.placed.length === 0
       : turn.kind === "choice" && state.picked === null;
   const { before, after } = storyTemplateParts(turn.template);
+  // 턴이 같으면 같은 수입니다 — 타일을 놓고 뺄 때마다 다시 찾지 않습니다.
+  const needed = useMemo(() => (turn.kind === "tiles" ? storyTilesNeeded(turn) : 0), [turn]);
   return (
     <view
       className="catalog-story-final-reply"
@@ -176,21 +179,25 @@ export function StoryReplyLine({
       ) : turn.kind === "tiles" ? (
         <>
           <TemplateText text={before} />
-          {state.placed.length === 0 ? (
-            <view className="catalog-story-final-reply-blank" />
-          ) : (
-            state.placed.map((tileIndex, position) => (
-              <SentenceOrderChip
-                key={tileIndex}
-                index={tileIndex}
-                text={turn.tiles[tileIndex]?.ko ?? ""}
-                placedOrdinal={position + 1}
-                disabled={state.phase === "checked"}
-                surface="dark"
-                onTap={onToggle}
-              />
-            ))
-          )}
+          {state.placed.map((tileIndex, position) => (
+            <SentenceOrderChip
+              key={tileIndex}
+              index={tileIndex}
+              text={turn.tiles[tileIndex]?.ko ?? ""}
+              placedOrdinal={position + 1}
+              disabled={state.phase === "checked"}
+              surface="dark"
+              onTap={onToggle}
+            />
+          ))}
+          {/* 남은 타일 수만큼 밑줄입니다 — 놓을 때마다 하나씩 칩으로 바뀌어 몇 개가 더 필요한지 보입니다. */}
+          {Array.from({ length: Math.max(0, needed - state.placed.length) }, (_, index) => (
+            <view
+              key={`blank-${String(index)}`}
+              className="catalog-story-final-reply-blank"
+              data-testid="catalog-story-final-reply-blank"
+            />
+          ))}
           <TemplateText text={after} />
         </>
       ) : (
