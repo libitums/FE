@@ -6,7 +6,7 @@ import { backHandlers } from "../../lib/back-handler";
 import { CatalogFinalScreen } from "./CatalogFinalScreen";
 import type { CatalogRoleplayTurn, CatalogRoleplayTurns } from "./catalog-final.contract";
 
-// `ui` 계층: 어두운 반투명 면 — 화면이 대사 패널을 translucent로, 판 안 다섯 자리에 dark를 실제
+// `ui` 계층: 어두운 반투명 면 — 화면이 대사 패널을 translucent로, 판 안 네 자리에 dark를 실제
 // 부품에 넘기는지 `data-surface` 속성으로 봅니다(클래스 · 계산 스타일은 보지 않습니다).
 
 const insets = { top: 0, bottom: 0, left: 0, right: 0 };
@@ -85,7 +85,7 @@ describe("CatalogFinalScreen 어두운 면", () => {
     );
   });
 
-  test("FDU2. 창고 칩 · 놓인 칩 · 빈칸 · 판정이 dark 면을 받고 정답 상자는 어두운 변형이 없다", () => {
+  test("FDU2. 창고 칩 · 놓인 칩 · 빈칸이 dark 면을 받고 판정 배지 · 정답 상자는 불투명(light)이다", () => {
     mount();
 
     expect(chip(0)).toHaveAttribute("data-surface", "dark");
@@ -111,7 +111,7 @@ describe("CatalogFinalScreen 어두운 면", () => {
       "answer-verdict",
     );
     expect(correct).toHaveAttribute("data-result", "correct");
-    expect(correct).toHaveAttribute("data-surface", "dark");
+    expect(correct).toHaveAttribute("data-surface", "light");
 
     fireEvent.tap(actionButton(), {});
     place(wrongOrder);
@@ -120,7 +120,7 @@ describe("CatalogFinalScreen 어두운 면", () => {
       "answer-verdict",
     );
     expect(incorrect).toHaveAttribute("data-result", "incorrect");
-    expect(incorrect).toHaveAttribute("data-surface", "dark");
+    expect(incorrect).toHaveAttribute("data-surface", "light");
     // 정답 상자는 어두운 변형 없이 불투명 면으로 선다.
     expect(screen.getByTestId("catalog-final-screen-answer")).not.toHaveAttribute("data-surface");
   });
