@@ -113,6 +113,17 @@ export const learningShellVi: LearningShellCopy = {
   },
   headerNoQuestions: (formLabel) => `${formLabel}, không có câu hỏi`,
   headerQuestionOf: (formLabel, ordinal, count) => `${formLabel}, câu ${ordinal} / ${count}`,
+  review: {
+    intro: (count) => `Cùng sửa ${count} lỗi sai nhé`,
+    remaining: (count) => `Còn ${count} câu nữa để qua`,
+    unlocked: "Đã đủ điểm qua",
+    progress: (ordinal, total) => `Ôn lại ${ordinal} / ${total}`,
+    headerOf: (formLabel, ordinal, total) => `${formLabel}, ôn lại ${ordinal} trên ${total}`,
+    formSuffix: " \u00b7 thử lại",
+    fixed: "Sửa được rồi!",
+    missed: "Chưa đúng lắm",
+    missedLine: "Không sao \u2014 tiếp tục nhé.",
+  },
 };
 
 export const specialUnitMapVi: SpecialUnitMapCopy = {

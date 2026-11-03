@@ -22,6 +22,7 @@ import {
   u02,
   u03,
 } from "./test-helpers/episode-format-harness";
+import { missReview } from "./test-helpers/catalog-review-solver";
 import {
   rightTiles,
   solveActivity,
@@ -96,7 +97,6 @@ test("ES1. (AC1 · 2 통과) CULT: 카드 셋을 넘기면 보기 번역이 선 
   expect(screen.queryByTestId("lesson-complete-screen")).not.toBeInTheDocument();
   expect(screen.getByTestId("word-choice-screen-content")).toBeInTheDocument();
   answerChecks(checks, () => true);
-  tapId("learning-shell-action");
 
   expect(title()).toHaveTextContent("PERFECT LESSON!");
   exitResult();
@@ -138,7 +138,12 @@ test("ES2. (AC2 실패) CULT: 문화 확인을 하나만 맞히면 실패 → Tr
   tapNode(u01, "CULT");
   passCards(cards.questions.length);
   answerChecks(checks, (index) => index === 0);
-  tapId("learning-shell-action");
+  // 틀린 확인 둘은 결과 전에 다시 도전합니다 — 또 틀려 판정은 첫 결과(하나만 맞힘) 그대로입니다(ADR-0058 ⟨2026-10-30⟩).
+  const checksIndex = plan.activities.indexOf(checks);
+  missReview(plan, [
+    { activityIndex: checksIndex, questionIndex: 1 },
+    { activityIndex: checksIndex, questionIndex: 2 },
+  ]);
 
   expect(screen.getByTestId("lesson-complete-screen-retry")).toBeInTheDocument();
   expect(title()).not.toHaveTextContent("PERFECT LESSON!");

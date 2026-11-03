@@ -114,6 +114,17 @@ export const learningShellId: LearningShellCopy = {
   },
   headerNoQuestions: (formLabel) => `${formLabel}, tidak ada soal`,
   headerQuestionOf: (formLabel, ordinal, count) => `${formLabel}, soal ${ordinal} dari ${count}`,
+  review: {
+    intro: (count) => `Ayo perbaiki ${count} kesalahan`,
+    remaining: (count) => `${count} lagi untuk lulus`,
+    unlocked: "Sudah cukup untuk lulus",
+    progress: (ordinal, total) => `Ulang ${ordinal} / ${total}`,
+    headerOf: (formLabel, ordinal, total) => `${formLabel}, ulang ${ordinal} dari ${total}`,
+    formSuffix: " \u00b7 coba lagi",
+    fixed: "Berhasil diperbaiki!",
+    missed: "Belum tepat",
+    missedLine: "Tidak apa-apa \u2014 lanjut saja.",
+  },
 };
 
 export const specialUnitMapId: SpecialUnitMapCopy = {

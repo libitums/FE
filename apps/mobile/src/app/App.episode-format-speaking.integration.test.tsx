@@ -20,6 +20,7 @@ import {
   u02,
 } from "./test-helpers/episode-format-harness";
 import { solveActivity } from "./test-helpers/episode-format-solvers";
+import { missReview } from "./test-helpers/catalog-review-solver";
 
 // `integration` 계층: 새 형식 내장본(모킹 없음) 그대로 앱 전체를 걷습니다 - S5의 읽기(SHADOW)와 S6의
 // 낱말 말하기(SPEAK_WORD)가 실제로 서고, 음성 인식 대역(경계)에 따라 들림 · 오답 · 권한 막힘 → Skip이 진행되며,
@@ -179,9 +180,8 @@ test("SPK2. (AC2 인식) S5: 들은 글자가 문장과 같으면 조각이 모�
     expect(screen.getByTestId("read-aloud-hint")).toHaveTextContent(
       `You said all ${words.length} words.`,
     );
-    expect(screen.getByTestId("learning-shell-action")).toHaveTextContent(
-      index === sentences.length - 1 ? "See results" : "Next",
-    );
+    // 레슨은 완료 카드 없이 끝나 마지막 문장도 Next입니다(ADR-0058 ⟨2026-10-30⟩).
+    expect(screen.getByTestId("learning-shell-action")).toHaveTextContent("Next");
     tapId("learning-shell-action");
   }
 
@@ -261,6 +261,8 @@ test("SPK4. (AC3 오답) S6: 다른 낱말을 말하면 오답 배지 · 정답 
   expect(screen.queryByTestId("learning-shell-action")).not.toBeInTheDocument();
   tapId("learning-shell-advance");
   solveAfter(plan, target);
+  // 틀린 낱말은 결과 전에 다시 도전합니다 — 또 같은 말이 들려 판정은 첫 결과(실수 1) 그대로입니다(ADR-0058 ⟨2026-10-30⟩).
+  missReview(plan, [{ activityIndex: target, questionIndex: 0 }]);
 
   expect(title()).toHaveTextContent("LESSON COMPLETE!");
   expect(title()).not.toHaveTextContent("PERFECT LESSON!");
@@ -322,16 +324,24 @@ test("SPK6. (AC4 분모) u02 S6: 낱말을 건너뛰고 나머지 11 중 8만 �
 
   tapNode(u02, "S6");
   let graded = 0;
+  const wrong: { activityIndex: number; questionIndex: number }[] = [];
   plan.activities.forEach((activity, index) => {
     if (activity.form === "speak-word") {
       skipSpeakWord();
       return;
     }
-    solveActivity(activity, graded < 8, index === plan.activities.length - 1);
+    const right = graded < 8;
+    solveActivity(activity, right, index === plan.activities.length - 1);
+    if (!right)
+      activity.questions.forEach((_, questionIndex) =>
+        wrong.push({ activityIndex: index, questionIndex }),
+      );
     graded += activity.questions.length;
   });
 
   expect(graded).toBe(11);
+  // 틀린 문항은 결과 전에 다시 도전합니다(건너뛴 낱말은 빠집니다) — 또 틀려 판정은 첫 결과 그대로입니다.
+  missReview(plan, wrong);
   expect(title()).toHaveTextContent("LESSON COMPLETE!");
   expect(screen.queryByTestId("lesson-complete-screen-retry")).not.toBeInTheDocument();
   exitResult();

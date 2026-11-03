@@ -1,4 +1,5 @@
 import { legacyPassedSeed, legacyPassedRecord } from "./test-helpers/progress-seed";
+import { missReview } from "./test-helpers/catalog-review-solver";
 import { tapResultExit } from "./test-helpers/lesson-result";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -434,7 +435,6 @@ function solveActivity(activity: CatalogActivity, right: boolean, last: boolean)
       }
       break;
   }
-  if (last) action();
 }
 
 /** 계획의 활동을 순서대로 풀며 서는 화면의 루트 testid를 모읍니다. */
@@ -514,7 +514,11 @@ test("I2. (AC2 기준) 카드를 다 넘겨도 통과에 세지 않는다: 셋 �
   tapNode(u01, "S1");
   flipCards(3);
   answerWordChoice(wordChoiceAt(plan, 1), [true, false, false]);
-  action();
+  // 틀린 둘은 결과 전에 다시 도전합니다 — 또 틀려 판정은 첫 결과(셋 중 하나) 그대로입니다(ADR-0058 ⟨2026-10-30⟩).
+  missReview(plan, [
+    { activityIndex: 1, questionIndex: 1 },
+    { activityIndex: 1, questionIndex: 2 },
+  ]);
   expect(screen.getByTestId("lesson-complete-screen-retry")).toBeInTheDocument();
   expect(title()).not.toHaveTextContent("PERFECT LESSON!");
   await flush();
@@ -524,7 +528,7 @@ test("I2. (AC2 기준) 카드를 다 넘겨도 통과에 세지 않는다: 셋 �
   expect(screen.getByTestId("vocab-card-content")).toBeInTheDocument();
   flipCards(3);
   answerWordChoice(wordChoiceAt(plan, 1), [true, true, false]);
-  action();
+  missReview(plan, [{ activityIndex: 1, questionIndex: 2 }]);
   expect(screen.queryByTestId("lesson-complete-screen-retry")).not.toBeInTheDocument();
   exitResult();
   await vi.waitFor(() => expect(savedUnits(rpcs, u01)).toContain("S1"));
@@ -577,10 +581,16 @@ test("I3. (AC3) u03 S9: 짝 맞추기가 단어 선택 · 받아쓰기 사이에
     if (wrong) expect(screen.getByTestId("pair-match-reveal")).toBeInTheDocument();
     else expect(screen.queryByTestId("pair-match-reveal")).not.toBeInTheDocument();
     action();
-    if (last) action();
   });
 
   expect(seen).toEqual(plan.activities.map((activity) => contentIdOf[activity.form]));
+  // 틀린 첫 짝 화면은 결과 전에 다시 도전합니다 — 또 틀려 판정은 첫 결과(11 중 10) 그대로입니다.
+  missReview(plan, [
+    {
+      activityIndex: plan.activities.findIndex((activity) => activity.form === "pair-match"),
+      questionIndex: 0,
+    },
+  ]);
   expect(title()).toHaveTextContent("LESSON COMPLETE!");
   expect(screen.queryByTestId("lesson-complete-screen-retry")).not.toBeInTheDocument();
   exitResult();
@@ -647,7 +657,6 @@ test("I4. (AC4) 캐시에서 온 그림 문항: 그림이 서고 error면 뜻 �
     tapId(`ui-lynx-option-selector-item-choice-${question.answerIndex}`);
     advance();
   }
-  action();
   expect(screen.queryByTestId("lesson-complete-screen-retry")).not.toBeInTheDocument();
   expect(title()).toHaveTextContent("PERFECT LESSON!");
 });
@@ -738,7 +747,6 @@ test("I5. (AC4 실데이터) 그림 경로가 없는 실데이터에는 그림 �
     tapId(`ui-lynx-option-selector-item-choice-${question.answerIndex}`);
     advance();
   }
-  action();
   expect(screen.queryByTestId("word-choice-picture")).not.toBeInTheDocument();
   expect(title()).toHaveTextContent("PERFECT LESSON!");
 });

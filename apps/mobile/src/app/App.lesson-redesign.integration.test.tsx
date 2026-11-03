@@ -145,7 +145,6 @@ describe("줄 배치와 Check", () => {
     expect(nextElement).toHaveAttribute("accessibility-label", "Next");
 
     tapId("learning-shell-action");
-    tapId("learning-shell-action");
     expect(present("lesson-complete-screen")).toBe(true);
   });
 
@@ -227,7 +226,6 @@ describe("문화 확인", () => {
     expect(screen.getByTestId("learning-shell-feedback")).toHaveTextContent("Nice reply!");
     expect(present("learning-shell-advance")).toBe(false);
 
-    tapId("learning-shell-action");
     tapId("learning-shell-action");
     expect(present("lesson-complete-screen")).toBe(true);
   });

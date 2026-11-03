@@ -159,7 +159,6 @@ export function solveActivity(activity: CatalogActivity, right: boolean, last = 
       solveSpeakWord(activity.questions.length);
       break;
   }
-  if (last) tapId("learning-shell-action");
 }
 
 /** 계획의 활동을 순서대로 풀며 서는 화면의 루트 testid를 모읍니다. */

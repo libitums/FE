@@ -99,6 +99,11 @@ export function speakWordSkippedCount(heard: readonly (string | null)[]): number
   return heard.filter((text) => text === null).length;
 }
 
+/** 건너뛴 문항의 자리(0부터)입니다 — 결과가 답한 문항만 담으므로 결선이 결과를 문항에 맞출 때 씁니다. */
+export function speakWordSkippedIndexes(heard: readonly (string | null)[]): readonly number[] {
+  return heard.flatMap((text, index) => (text === null ? [index] : []));
+}
+
 export function isSpeakWordSessionComplete(state: SpeakWordSessionState, total: number): boolean {
   return state.questionIndex >= total;
 }

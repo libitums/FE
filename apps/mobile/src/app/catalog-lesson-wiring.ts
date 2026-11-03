@@ -1,4 +1,5 @@
 // 카탈로그 레슨 · 최종 테스트의 결선입니다 — 시작 가드 · 활동 잇기 · 판정 · 기록 · 이벤트 · 결과 뒤 이동.
+// 레슨의 활동 잇기 · 틀린 문제 다시 풀기 · 판정은 `catalog-lesson-finish.ts`가 집니다.
 
 import type { Dispatch, SetStateAction } from "@lynx-js/react";
 
@@ -21,11 +22,14 @@ import {
   catalogLessonPlanFor,
   catalogPassCriterion,
 } from "./catalog-lesson-plan";
+import { catalogLessonFinish } from "./catalog-lesson-finish";
+import type { CatalogLessonFinish } from "./catalog-lesson-finish";
+import type { CatalogReviewItem, CatalogReviewSummary } from "./catalog-review";
 import type { CatalogFinishGuard } from "./catalog-finish-guard";
 import type { NavAction } from "./nav-state";
 import type { CatalogStartSource } from "../lib/catalog-learning-event.contract";
 
-export type CatalogLessonWiring = {
+export type CatalogLessonWiring = CatalogLessonFinish & {
   /** `source`는 맵이 아닌 곳에서 열 때만 줍니다 — 결과 화면의 「다음 학습」(`result`). 시작 이벤트에 실립니다. */
   readonly onStartCatalogUnit: (
     episodeId: string,
@@ -35,13 +39,6 @@ export type CatalogLessonWiring = {
   /** 맵 말풍선의 진행 줄 전체 수 — 레슨은 표시 문항 수, 최종 테스트는 턴 수입니다. 짓지 못하면 0. */
   readonly catalogUnitItemCountOf: (episodeId: string, unitKey: CatalogUnitKey) => number;
   readonly onExitCatalogSession: () => void;
-  readonly onFinishCatalogActivity: (
-    episodeId: string,
-    unitKey: CatalogUnitKey,
-    activityIndex: number,
-    results: readonly AnswerResult[],
-    skippedCount: number,
-  ) => void;
   readonly onFinishCatalogFinal: (episodeId: string, results: readonly AnswerResult[]) => void;
   readonly onExitCatalogUnitComplete: (
     episodeId: string,
@@ -59,6 +56,9 @@ export type CatalogLessonWiringArgs = CatalogWiringValues & {
   readonly setPendingResults: Dispatch<SetStateAction<readonly AnswerResult[]>>;
   readonly pendingSkippedCount: number;
   readonly setPendingSkippedCount: Dispatch<SetStateAction<number>>;
+  /** 첫 시도에 틀린 채점 문항입니다 — 마지막 활동 뒤 다시 풀기 줄이 됩니다. 결과 · 건너뜀 수와 함께 비웁니다. */
+  readonly pendingMistakes: readonly CatalogReviewItem[];
+  readonly setPendingMistakes: Dispatch<SetStateAction<readonly CatalogReviewItem[]>>;
   /**
    * 방금 끝낸 활동의 표식입니다. 결선은 렌더마다 새로 만들어지고 같은 렌더 안의 연타는 상태를
    * 보지 못하므로, 렌더 사이에 살아남는 가변 값(ref)이어야 합니다.
@@ -77,10 +77,9 @@ export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLesso
     learnerFill,
     dispatch,
     episodeIntroEventSink: sink,
-    pendingResults,
     setPendingResults,
-    pendingSkippedCount,
     setPendingSkippedCount,
+    setPendingMistakes,
     finishGuard,
     setListenPace,
   } = args;
@@ -96,10 +95,11 @@ export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLesso
     finishGuard.current = null;
   };
 
-  // 세션이 드는 셋을 한 자리에서 비웁니다 — 한쪽만 리셋하는 자리가 생기지 않게 합니다.
+  // 세션이 드는 넷을 한 자리에서 비웁니다 — 한쪽만 리셋하는 자리가 생기지 않게 합니다.
   const clearSession = (): void => {
     setPendingResults([]);
     setPendingSkippedCount(0);
+    setPendingMistakes([]);
     setListenPace(initialListenPace);
   };
 
@@ -114,6 +114,7 @@ export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLesso
     results: readonly AnswerResult[],
     skippedCount: number,
     questionCount: number,
+    review?: CatalogReviewSummary,
   ): void => {
     dispatch({
       type: action,
@@ -124,6 +125,7 @@ export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLesso
         results,
         skippedCount,
         questionCount,
+        ...(review === undefined ? {} : { review }),
       },
     });
   };
@@ -220,44 +222,17 @@ export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLesso
       clearSession();
       dispatch({ type: "backToRoot" });
     },
-    onFinishCatalogActivity: (episodeId, unitKey, activityIndex, results, skippedCount) => {
-      const plan = catalogLessonPlanFor(episodeContent, episodeId, unitKey, learnerFill);
-      if (plan === null) return;
-      if (!claimFinish(`${episodeId}|${unitKey}|${activityIndex}`)) return;
-      const gathered = [...pendingResults, ...results];
-      const skippedTotal = pendingSkippedCount + skippedCount;
-      // 활동이 남았으면 판정하지 않고 다음 활동으로 갈아탑니다 — 판정은 유닛 전체를 놓고 한 번만 합니다.
-      if (plan.activities[activityIndex + 1] !== undefined) {
-        setPendingResults(gathered);
-        setPendingSkippedCount(skippedTotal);
-        dispatch({
-          type: "replace",
-          screen: {
-            name: "catalog-lesson",
-            episodeId,
-            unitKey,
-            activityIndex: activityIndex + 1,
-          },
-        });
-        return;
-      }
-      clearSession();
-      const judged = catalogJudgedCountOf(plan.questionCount, gathered);
-      const verdict = judgeAssessment(gathered, catalogPassCriterion(judged));
-      sink?.(
-        lessonFinishedEventOf(
-          episodeId,
-          unitKey,
-          "lesson",
-          gathered,
-          plan.questionCount,
-          verdict,
-          skippedTotal,
-        ),
-      );
-      if (assessmentCompletesStep(verdict)) markDone(episodeId, unitKey);
-      showComplete("replace", episodeId, unitKey, gathered, skippedTotal, judged);
-    },
+    ...catalogLessonFinish({
+      ...args,
+      planOf: (episodeId, unitKey) =>
+        catalogLessonPlanFor(episodeContent, episodeId, unitKey, learnerFill),
+      sink,
+      claimFinish,
+      clearSession,
+      markDone,
+      showComplete: (episodeId, unitKey, results, skippedCount, questionCount, review) =>
+        showComplete("replace", episodeId, unitKey, results, skippedCount, questionCount, review),
+    }),
     onFinishCatalogFinal: (episodeId, results) => {
       const plan = finalPlanOf(episodeId);
       const section = sectionOf(episodeId);

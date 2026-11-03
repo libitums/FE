@@ -116,6 +116,17 @@ export const learningShellEn: LearningShellCopy = {
   },
   headerNoQuestions: (formLabel) => `${formLabel}, no questions`,
   headerQuestionOf: (formLabel, ordinal, count) => `${formLabel}, question ${ordinal} of ${count}`,
+  review: {
+    intro: (count) => `Let\u2019s fix ${n(count, "mistake", "mistakes")}`,
+    remaining: (count) => `${count} more to pass`,
+    unlocked: "Pass unlocked",
+    progress: (ordinal, total) => `Review ${ordinal} / ${total}`,
+    headerOf: (formLabel, ordinal, total) => `${formLabel}, review ${ordinal} of ${total}`,
+    formSuffix: " \u00b7 try again",
+    fixed: "Fixed it!",
+    missed: "Not quite",
+    missedLine: "No worries \u2014 keep going.",
+  },
 };
 
 export const specialUnitMapEn: SpecialUnitMapCopy = {

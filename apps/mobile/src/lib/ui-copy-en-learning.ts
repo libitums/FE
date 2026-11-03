@@ -80,6 +80,14 @@ export const lessonCompleteEn: LessonCompleteCopy = {
   streakLabel: (days) => `${days} Day Streak`,
   rewardLabel: (count) => `+ ${count} REWARD`,
   tryAgain: "Try again",
+  review: {
+    soClose: "SO CLOSE!",
+    fixedOf: (fixed, total) =>
+      `YOU FIXED ${fixed} OF ${total} ${total === 1 ? "MISTAKE" : "MISTAKES"}`,
+    dotsLabel: (fixed, total) => `Fixed ${fixed} of ${n(total, "mistake", "mistakes")}`,
+    neededMore: (count) =>
+      `You needed ${count} more right. Try the lesson again \u2014 it\u2019ll feel easier now.`,
+  },
 };
 
 // 학습 문항 안내 문구입니다. 닫는 법 줄은 `episodeIntro.guide.continue`를 씁니다.

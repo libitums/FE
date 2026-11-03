@@ -1,0 +1,50 @@
+/* 다시 풀고 온 결과 화면의 점 줄 · 모자란 수 줄입니다(ADR-0058 ⟨2026-10-30⟩). 판정 묶음(`-summary`) 안에서 설명 줄 아래에 섭니다. */
+.lesson-complete-review-dots {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-8);
+}
+
+/* 한 행에 점 10개까지입니다(`lessonReviewDotsPerRow`) — 남는 행도 가운데에 섭니다. */
+.lesson-complete-review-dots-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: var(--libitum-spacing-8);
+}
+
+.lesson-complete-review-dot {
+  width: calc(var(--libitum-spacing-24) + var(--libitum-spacing-4));
+  height: calc(var(--libitum-spacing-24) + var(--libitum-spacing-4));
+  border-radius: var(--libitum-radius-full);
+  box-sizing: border-box;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lesson-complete-review-dot-fixed {
+  background-color: var(--libitum-color-feedback-correct);
+}
+
+.lesson-complete-review-dot-missed {
+  background-color: var(--libitum-color-feedback-incorrect-surface);
+  border: var(--libitum-spacing-2) solid var(--libitum-color-feedback-incorrect);
+}
+
+.lesson-complete-review-dot-icon {
+  width: var(--libitum-icon-size-xs);
+  height: var(--libitum-icon-size-xs);
+}
+
+.lesson-complete-review-needed {
+  max-width: calc(var(--libitum-spacing-96) * 3);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: var(--libitum-typography-body-m-font-size);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  line-height: var(--libitum-typography-body-m-line-height);
+  color: var(--libitum-color-fg-neutral-muted);
+  text-align: center;
+}

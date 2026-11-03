@@ -1,0 +1,116 @@
+/* 틀린 문제 다시 풀기의 시작 배지입니다(2026-10-23). 길이 · 가속은 전부 토큰이고, 들어올 때 살짝 1을 넘는 크기
+   (scale(1.06))만 토큰에 없는 연출 값이라 이 파일이 `lint:motion` allowlist에 있습니다 — 사유는 allowlist가 집니다.
+   국면(들어옴 → 떠남 → 걷힘)은 컴포넌트가 토큰 길이의 타이머로 바꿉니다. */
+
+/* 셸 전체를 덮는 층이지만 터치는 받지 않습니다(TSX `user-interaction-enabled={false}`). 배지를 내용 가운데에 세웁니다. */
+.lesson-review-badge-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--libitum-elevation-z-floating);
+}
+
+.lesson-review-badge {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-8);
+  padding: var(--libitum-spacing-12) var(--libitum-spacing-20);
+  border-radius: var(--libitum-radius-full);
+  background: var(--libitum-color-brand-primary);
+}
+
+.lesson-review-badge-icon {
+  width: var(--libitum-icon-size-sm);
+  height: var(--libitum-icon-size-sm);
+  flex-shrink: 0;
+}
+
+.lesson-review-badge-label {
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-weight: var(--libitum-typography-label-l-font-weight);
+  font-size: var(--libitum-typography-label-l-font-size);
+  line-height: var(--libitum-typography-label-l-line-height);
+  letter-spacing: var(--libitum-typography-label-l-letter-spacing);
+}
+
+/* 들어옴 — 작게(`scale-reward`) 투명하게 시작해 살짝 1을 넘었다가 자리에 앉습니다. 머무는 동안 그대로입니다. */
+.lesson-review-badge-enter {
+  animation: lesson-review-badge-pop var(--libitum-motion-duration-d7)
+    var(--libitum-motion-easing-enter-expressive) both;
+}
+
+@keyframes lesson-review-badge-pop {
+  0% {
+    opacity: 0;
+    transform: scale(var(--libitum-motion-scale-reward));
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* 떠남 — 조금 떠오르며 흐려집니다. */
+.lesson-review-badge-exit {
+  animation: lesson-review-badge-float-out var(--libitum-motion-duration-d7)
+    var(--libitum-motion-easing-exit) both;
+}
+
+@keyframes lesson-review-badge-float-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(calc(-1 * var(--libitum-spacing-24)));
+  }
+}
+
+/* 움직임 줄이기 — 크기 · 이동 없이 나타났다 흐려지기만 합니다. */
+.lesson-review-badge-enter-reduced {
+  animation: lesson-review-badge-fade-in var(--libitum-motion-duration-d4)
+    var(--libitum-motion-easing-linear) both;
+}
+
+.lesson-review-badge-exit-reduced {
+  animation: lesson-review-badge-fade-out var(--libitum-motion-duration-d4)
+    var(--libitum-motion-easing-linear) both;
+}
+
+@keyframes lesson-review-badge-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes lesson-review-badge-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* 시작 게이트 — 문항 화면이 서기 전 빈 화면입니다(학습 화면과 같은 바탕). 알약 층은 이 안에서 가운데에 섭니다. */
+.lesson-review-gate {
+  position: relative;
+  display: flex;
+  flex: 1;
+  background: var(--libitum-color-background-primary);
+}

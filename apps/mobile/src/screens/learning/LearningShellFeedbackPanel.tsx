@@ -31,14 +31,22 @@ export function LearningShellFeedbackPanel({
   const className = [
     "learning-shell-feedback",
     `learning-shell-feedback-${feedback.tone}`,
-    reduced ? "learning-shell-feedback-motion-reduced" : undefined,
+    feedback.steady === true
+      ? "learning-shell-feedback-steady"
+      : reduced
+        ? "learning-shell-feedback-motion-reduced"
+        : undefined,
   ]
     .filter((token): token is string => token !== undefined)
     .join(" ");
   const safeBottom = safeAreaInsetsFrom(useGlobalProps()).bottom;
   return (
     <view
-      className="learning-shell-feedback-bleed"
+      className={
+        feedback.steady === true
+          ? "learning-shell-feedback-bleed learning-shell-feedback-bleed-steady"
+          : "learning-shell-feedback-bleed"
+      }
       data-testid="learning-shell-feedback-bleed"
       style={{ marginBottom: `${-safeBottom}px` }}
     >

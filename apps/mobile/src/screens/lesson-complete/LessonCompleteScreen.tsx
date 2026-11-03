@@ -14,15 +14,11 @@ import { ticketIcon } from "../../components/ticket-icon";
 import { announce } from "../../lib/accessibility";
 import { playSound } from "../../lib/sound-effects";
 import { useScreenBack } from "../../lib/use-back-handler";
-import type { AnswerResult } from "../../lib/answer-result";
-import type { SpecialUnitEntrySource } from "../../lib/special-unit-entry-source";
-import type { AssessmentVerdict } from "../assessment/assessment";
 import {
   lessonCompleteAnnouncement,
   lessonCompleteSubtitle,
   lessonCompleteTitle,
   lessonMistakeCount,
-  type LessonReward,
 } from "./lesson-complete";
 import {
   lessonCompleteChipBumpDelayMs,
@@ -30,12 +26,22 @@ import {
   rewardMotionFor,
 } from "./lesson-complete-reward";
 import { LessonCompleteBadge } from "./LessonCompleteBadge";
-import { LessonCompleteStats, type LessonCompleteTicketChip } from "./LessonCompleteStats";
-import { LessonCompleteNextActions, type LessonCompleteNext } from "./LessonCompleteNextActions";
-import { noStatBumps, type StatBumpKind, type StatBumps } from "../../lib/stat-bump";
+import {
+  LessonCompleteReviewSummary,
+  lessonReviewAnnouncement,
+  lessonReviewSubtitle,
+  lessonReviewTitle,
+} from "./LessonCompleteReviewSummary";
+import { LessonCompleteNextActions } from "./LessonCompleteNextActions";
+import { LessonCompleteStats } from "./LessonCompleteStats";
+import { noStatBumps } from "../../lib/stat-bump";
+
+import type { LessonCompleteScreenProps } from "./lesson-complete-screen-props";
 
 import "./lesson-complete-screen.css";
 import "../tickets/tickets.css";
+
+export type { LessonCompleteScreenProps } from "./lesson-complete-screen-props";
 
 // 학습 유닛을 마치면 뜨는 화면입니다(Figma 65-466). ⟨2026-09-28⟩ **통과와 미통과가 이
 // 화면 하나입니다** — 그전에는 통과만 여기였고 미통과는 옆의 평가 화면이라, 같은 순간의
@@ -47,46 +53,6 @@ import "../tickets/tickets.css";
 // **보상은 미통과에서 서지 않습니다.** 얻지 않은 것을 그리면 그 화면이 거짓말을 합니다.
 //
 // **DOM 순서가 곧 낭독 순서입니다** — 지표 → 판정 → 보상 → 액션. 상태가 없습니다.
-export type LessonCompleteScreenProps = {
-  readonly results: readonly AnswerResult[];
-  /**
-   * 건너뛴 말하기 문항 수입니다(D8). 통과 계산에는 이미 `results`를 통해 세어져
-   * 있고, 이 값은 **만점 판정**에만 씁니다 — 실수가 없어도 이 값이 0이 아니면
-   * 만점이 아닙니다. 제목(`lessonCompleteTitle`)과 낭독이 이 값을 보고, 부제는
-   * 보지 않습니다 — 부제가 세는 것은 실수이고 건너뛴 것은 실수가 아닙니다.
-   */
-  readonly skippedCount: number;
-  /** 통과 여부입니다. 화면이 계산하지 않고 받습니다 — 판정의 정본은 `judgeAssessment`입니다. */
-  readonly verdict: AssessmentVerdict;
-  /** 진행 지표입니다. 상단에는 연속 학습과 트로피만 표시합니다. */
-  readonly streakDays: number;
-  readonly trophyCount: number;
-  readonly reward: LessonReward;
-  readonly exitTo?: SpecialUnitEntrySource;
-  /** 나가면 맵이 아니라 에필로그(최종 통과 뒤 컷)로 이어지는가 — 참이면 나가는 버튼이 「Continue story」입니다. */
-  readonly continuesStory?: boolean;
-  readonly onExit: () => void;
-  /**
-   * 미통과에서만 씁니다 — 같은 유닛을 첫 문항부터 다시 엽니다.
-   *
-   * **나가는 수단이 아니라 나아가는 수단입니다**(ADR-0022 D1의 「나가는 수단은 어느
-   * 시점에도 정확히 하나」와 부딪히지 않습니다). 뒤로 가는 것이 아니라 새 세션을 여는
-   * 것이고, 뒤로 가는 길은 여전히 `onExit` 하나입니다.
-   */
-  readonly onRetry?: () => void;
-  /**
-   * 활동으로 오르기 전 지표 값입니다(ADR-0064). 머리 칩이 배지가 자리 잡은 뒤 그 값에서 지금 값으로 한 번
-   * 굴리고 `onStatBumped`로 알립니다. 이 화면에서 굴리면 맵의 머리 칩은 다시 굴리지 않습니다.
-   */
-  readonly statBumps?: StatBumps;
-  readonly onStatBumped?: (kind: StatBumpKind) => void;
-  /** 남은 학습 티켓 수입니다(시안 E5). 넘기지 않으면 줄이 서지 않습니다 — 레슨이 아닌 결과 화면입니다. */
-  readonly ticketsLeft?: number;
-  /** 머리 티켓 칩 — 넘기지 않으면 서지 않습니다. */
-  readonly ticketChip?: LessonCompleteTicketChip;
-  /** 통과 뒤 이어 갈 다음 유닛(시안 D) — 있으면 지도 버튼 + 「다음 학습」 한 줄, 없으면 맵 버튼 하나. */
-  readonly next?: LessonCompleteNext;
-};
 
 export function LessonCompleteScreen({
   results,
@@ -104,6 +70,7 @@ export function LessonCompleteScreen({
   ticketsLeft,
   ticketChip,
   next,
+  review,
 }: LessonCompleteScreenProps): ReactNode {
   const copy = useUiCopy();
   const lc = copy.lessonComplete;
@@ -130,10 +97,14 @@ export function LessonCompleteScreen({
   // 그래도 두 번 울리지 않습니다: `results`는 이 화면 인스턴스의 것이고 라우트에 실려
   // 와서 `back`과 함께 죽습니다(`nav-state.ts`) — 사는 동안 갈리지 않으므로 파생값인
   // `mistakeCount`도 갈리지 않습니다. 듣기 화면이 `[complete]`를 dep으로 두고 같은
-  // 근거를 적는 것과 같은 자리입니다.
+  // 근거를 적는 것과 같은 자리입니다. `copy`는 언어별로 한 번 지은 같은 객체라 화면이 사는 동안 갈리지 않습니다.
   useEffect(() => {
-    announce(lessonCompleteAnnouncement(mistakeCount, verdict, skippedCount, copy));
-  }, [mistakeCount, verdict, skippedCount]);
+    announce(
+      review === undefined
+        ? lessonCompleteAnnouncement(mistakeCount, verdict, skippedCount, copy)
+        : lessonReviewAnnouncement(review, verdict, copy),
+    );
+  }, [mistakeCount, verdict, skippedCount, review, copy]);
 
   return (
     <view className="lesson-complete-screen" data-testid="lesson-complete-screen">
@@ -164,7 +135,9 @@ export function LessonCompleteScreen({
           data-testid="lesson-complete-screen-title"
           accessibility-traits="header"
         >
-          {lessonCompleteTitle(mistakeCount, verdict, skippedCount, copy)}
+          {review === undefined
+            ? lessonCompleteTitle(mistakeCount, verdict, skippedCount, copy)
+            : lessonReviewTitle(verdict, copy)}
         </text>
         {/* 연속이 없으면(0일) 알약을 세우지 않습니다 — 「0 Day Streak」은 축하가 아닙니다. */}
         {streakDays > 0 ? (
@@ -188,8 +161,13 @@ export function LessonCompleteScreen({
           className="lesson-complete-screen-subtitle"
           data-testid="lesson-complete-screen-subtitle"
         >
-          {lessonCompleteSubtitle(mistakeCount, copy)}
+          {review === undefined
+            ? lessonCompleteSubtitle(mistakeCount, copy)
+            : lessonReviewSubtitle(review, copy)}
         </text>
+        {review === undefined ? null : (
+          <LessonCompleteReviewSummary review={review} verdict={verdict} />
+        )}
       </view>
 
       {/* 보상 카드 둘 — 읽기 전용입니다. 카드마다 한 요소로 묶어 이름을 답니다.

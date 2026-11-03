@@ -14,6 +14,7 @@ import { lessonRewardPlaceholder } from "../screens/lesson-complete/lesson-compl
 import { catalogLessonOrdinalOf } from "../screens/journey-map/catalog-map";
 import { CatalogEpilogueFlow } from "./CatalogCutsFlow";
 import { renderCatalogActivity } from "./render-catalog-activity";
+import { renderCatalogReview } from "./render-catalog-review";
 import { catalogEpilogueModelOf } from "./catalog-cover-wiring";
 import { catalogUnitCompleteLeadsToEpilogue } from "./catalog-epilogue-route";
 import { catalogJourneyFinalPlanFor } from "./catalog-journey-final";
@@ -54,20 +55,31 @@ export function renderCatalogFlow(screen: CatalogFlowScreen, wiring: ScreenWirin
           `Catalog lesson has no activity: ${screen.episodeId}/${screen.unitKey}/${screen.activityIndex}`,
         );
       }
+      const cast = catalogLessonCastOf(plan, wiring.learnerFill.name ?? "");
+      // 틀린 문제 다시 풀기 국면이면 줄 머리 문항 하나를 원래 학습형 화면으로 세웁니다.
+      if (screen.review !== undefined) {
+        return renderCatalogReview(plan, { ...screen, review: screen.review }, wiring, cast);
+      }
       // 완료 카드의 `Lesson n` 칩은 맵 노드와 같은 순번입니다 — 계획은 구획을 모르므로 여기서 붙입니다.
       const ordinal = catalogLessonOrdinalOf(
         wiring.catalogSections,
         screen.episodeId,
         screen.unitKey,
       );
-      const placed = ordinal === undefined ? lesson : { ...lesson, ordinal };
+      // ⟨2026-10-30⟩ 레슨은 완료 카드 없이 끝납니다 — 마지막 활동도 마지막 문항 뒤 곧바로 결과를 올리고, 결선이 틀린 문항
+      // 다시 도전 또는 결과 화면으로 잇습니다(사용자 결정: 일반 학습 → 다시 도전 → 결과, ADR-0058).
+      const placed: LessonPosition = {
+        ...lesson,
+        last: false,
+        ...(ordinal === undefined ? {} : { ordinal }),
+      };
       // 활동이 쓰는 출연진(이름 · 그림)과 문항별 보고용 참조를 계획에서 꺼내 넘깁니다.
       return renderCatalogActivity(
         activity,
         placed,
         screen,
         wiring,
-        catalogLessonCastOf(plan, wiring.learnerFill.name ?? ""),
+        cast,
         plan.itemRefs[screen.activityIndex] ?? [],
       );
     }
@@ -134,6 +146,7 @@ export function renderCatalogFlow(screen: CatalogFlowScreen, wiring: ScreenWirin
           onExit={() => wiring.onExitCatalogUnitComplete(episodeId, unitKey, verdict)}
           onRetry={() => wiring.onStartCatalogUnit(episodeId, unitKey)}
           {...catalogResultNextOf(wiring, episodeId, unitKey)}
+          {...(screen.review === undefined ? {} : { review: screen.review })}
         />
       );
     }

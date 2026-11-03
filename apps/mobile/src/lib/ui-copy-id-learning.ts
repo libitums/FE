@@ -83,6 +83,13 @@ export const lessonCompleteId: LessonCompleteCopy = {
   streakLabel: (days) => `Beruntun ${days} hari`,
   rewardLabel: (count) => `+ ${count} HADIAH`,
   tryAgain: "Coba lagi",
+  review: {
+    soClose: "SEDIKIT LAGI!",
+    fixedOf: (fixed, total) => `KAMU MEMPERBAIKI ${fixed} DARI ${total} KESALAHAN`,
+    dotsLabel: (fixed, total) => `Diperbaiki ${fixed} dari ${total} kesalahan`,
+    neededMore: (count) =>
+      `Kamu perlu ${count} jawaban benar lagi. Ulangi pelajarannya \u2014 sekarang pasti lebih mudah.`,
+  },
 };
 
 // 학습 문항 안내 문구입니다. 닫는 법 줄은 `episodeIntro.guide.continue`를 씁니다.

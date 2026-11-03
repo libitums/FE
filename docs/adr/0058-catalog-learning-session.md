@@ -748,6 +748,26 @@ route · 진행 저장 형식 · 이벤트 이름은 그대로라 새 ADR을 만
 - **측정**: `episode_lesson_started`에 선택 속성 `startSource: "result"` — 결과 화면에서 열었을 때만 실린다. 맵에서 열면 키가 없어 기존 이벤트와 바이트가 같다.
 - **코드**: `app/catalog-next-unit.ts`(다음 유닛 · 결과 화면 `next`), `LessonCompleteNextActions`, `render-catalog.tsx`, 문구 `lessonComplete.nextLesson` · `nextFinal`. 통합 테스트의 결과 화면 나가기는 `test-helpers/lesson-result.ts` 하나로 모았다(두 모양 모두).
 
+## 적용 기록 ⟨2026-10-30 — 틀린 문제 다시 도전⟩
+
+사용자 결정 2026-10-30(시안 https://claude.ai/artifact/8y2LkYE6N13wzQ986dD5dY 「결과 흐름」, 이후 기기 확인에서 조정). 10-23에 시작한 WIP(맞힐 때까지 반복 · 첫 시도만 판정 · 시작 배지)를 대신한다. 통과 기준(채점 문항 60% 올림 · 분모 = 판정한 문항)은 그대로다.
+
+- **레슨 순서는 늘 「일반 학습 → 틀린 문항 다시 도전 → 결과」다.** 카탈로그 레슨은 완료 카드(「All questions done → See results」) 없이 끝난다 — 마지막 활동도 마지막 문항 뒤 곧바로 결과를 올린다(`render-catalog.tsx`가 자리를 `last: false`로 넘긴다). 결선은 틀린 채점 문항이 있으면 통과 · 미통과와 관계없이 결과 화면 대신 다시 도전으로, 없으면 결과 화면으로 간다. 최종 테스트 · 롤플레이는 그대로다.
+- **한 번씩만.** 틀린 문항을 레슨 순서대로 원래 학습형 화면(문항 하나짜리 활동)에 세운다. 맞히면 「고침」, 또 틀리거나 건너뛰면(말하기를 못 씀) 「놓침」이고 어느 쪽이든 줄에서 빠진다 — 뒤로 쌓지 않는다(`catalog-review.ts`).
+- **판정은 첫 결과 + 고친 수.** 다 풀면 첫 결과의 오답을 앞에서부터 고친 수만큼 정답으로 바꾼 결과로 판정 · 진행 기록 · `episode_lesson_finished` · 결과 화면을 낸다 — 미통과도 그 자리에서 넘길 수 있다. 다시 푼 답은 문항 이벤트(`episode_item_answered`)를 내지 않는다. 다시 도전 전용 분석 이벤트는 더하지 않았다.
+- **다시 풀지 않는 것**: 단어 카드 · 문화 카드 · 읽기(결과를 내지 않는 활동), 첫 시도에 건너뛴 문항. 결과를 문항 자리에 맞추는 규칙(`skippedIndexes`, `catalogMistakesOf`)은 10-23 그대로다.
+- **route** — 새 화면 이름 없이 `catalog-lesson`에 선택 필드 `review`(줄 · 푼 결과 · 시작 때 통과까지 모자란 수). 결과 화면 route `catalog-unit-complete`에 선택 필드 `review`(푼 결과 · 다 풀고도 모자란 수). 다시 도전 도중 나가면 레슨 도중 나가기와 같다(기록 없음).
+- **화면** — 활동 컴포넌트는 다시 도전을 모른다. 껍데기만 context(`LearningReviewContext`)를 읽는다.
+  - 세션 헤더: 회색 상자의 면만 `brand-reward-disabled-surface`(연한 주황), 순번 `Review i / n`(`n` = 처음 틀린 수, 바뀌지 않음) · `fg-brand`, 이름표에 `· try again`, 막대는 고친 몫. 이름표 줄 오른쪽에 칩 — 통과까지 모자라면 `n more to pass`(흰 면 · 브랜드 글), 넘었거나 이미 통과였으면 `Pass unlocked`(초록 면). 순번 줄의 가운데 정렬을 건드리지 않으려고 이름표 줄에 둔다(시안과 다름).
+  - 판정 뒤: **학습형과 관계없이 아래 판이 선다** — 맞히면 초록 `Fixed it!`, 또 틀리면 빨강 `Not quite`(학습형이 해설 판을 주면 그 제목 · 줄). 판 안 ui-lynx `Button`(brand · xl) `Continue`가 활동의 다음 걸음(넘김 걸음, 없으면 아래 버튼 동작)을 밟고, 판정 배지 · 저절로 넘김 · 아래 버튼은 서지 않는다. 카드 안에서 판정하는 자판 · 짝 잇기는 껍데기에 판정만 넘기는 prop(`result`)을 준다(`learning-review.ts` `learningReviewPanel`).
+  - 판의 자리: **흐름에 들지 않고 떠 있는 버튼 자리에 겹쳐 선다**(`steady` — `.learning-shell-feedback-bleed-steady`). 판 전체가 미끄러져 오르지 않고 면은 바로 서며 글만 나타나 Continue가 움직이지 않는다. 판이 서 있는 동안 스크롤 끝에 `spacing-96` 여유(`learning-shell-panel-room`)를 더해 가린 아래 내용을 밀어 올려 볼 수 있다. ⟨기기 확인 · 사용자 지적 셋⟩ ① 처음 얹은 판이 흐름에 들어 정답 보기를 가리고 판 위로 흰 띠가 비쳤다 — 원인은 떠 있는 버튼 몫(약 80px)을 몸통이 계속 비워 둔 것 ② 그래서 배지 글만 갈음하는 안으로 바꿨더니 「초록 · 빨간 배경이 없어졌다」 ③ 판을 되살려 흐름에 넣자 몸통이 내용 높이인 배치(대화 순서)에서 판이 내용 바로 아래에 붙고, 판과 함께 버튼이 미끄러져 올랐다 — 지금의 겹침 · 제자리로 정리했다.
+  - 시작 게이트: 첫 다시 도전 문항 **앞에** 빈 화면 위로 `Let’s fix n mistake(s)` 알약(`brand-primary` · `refresh`)을 한 번 재생하고(1.8초, 낭독) 다 걷히면 문항 화면을 세운다(`LessonReviewIntroGate`, 사용자 결정 「틀린 거 다시 뜨기 전에 애니메이션이 먼저」). 화면을 누르거나 시스템 뒤로를 누르면 기다리지 않고 건너뛴다 — 게이트 동안은 껍데기의 나가기 확인이 아직 서지 않아 뒤로를 등록하지 않으면 Android에서 앱이 내려간다. 움직임 줄이기에서는 페이드만. 1을 넘는 크기 하나만 `lint:motion` allowlist.
+- **결과 화면** — 다시 도전을 했으면 설명 줄이 `YOU FIXED x OF y MISTAKES`, 그 아래 문항별 점(푼 순서, 고침 ✓ 초록 · 놓침 ✗ 빨강 테두리, **한 행 10개씩** — 사용자 결정), 미통과 제목은 `SO CLOSE!` + 「You needed n more right. …」, 통과 제목은 만점 표기 없이 `LESSON COMPLETE!`. props는 `lesson-complete-screen-props.ts`로 옮겼다(300줄).
+- ⟨버린 안⟩ 미통과에만 「Almost there!」 진입 화면(Fix mistakes / See results) — 기기에서 본 뒤 사용자가 「결과 보기 없이 곧바로 다시 도전, 순서는 늘 같게」로 바꿨다.
+- 결과 화면 낭독: 다시 도전을 했으면 보이는 셋(판정 · 고친 수 · 모자란 수)을 같은 순서로 읽는다(`lessonReviewAnnouncement`).
+- 확인: unit `catalog-review.unit.test.ts` · `catalog-lesson-wiring.review.unit.test.ts`, ui `LearningShell.review.ui.test.tsx` · `LessonReviewIntroGate.ui.test.tsx` · `LessonCompleteScreen.review.ui.test.tsx`, integration `App.lesson-review.integration.test.tsx`(다시 도전 답이 문항 이벤트를 내지 않음 · SO CLOSE 뒤 Try again이 깨끗이 다시 시작 포함). iOS 시뮬레이터에서 u03 Culture(해설 판 · 맞힘 · 틀림 · 고친 수로 통과)와 u04 Lesson 1(시작 게이트 · 단어 선택 맞힘 판 · 그림 문항 틀림 판)을 걸었다.
+- ⚠ 남은 위험: ① 판 높이가 `spacing-96` 여유를 넘는 경우(큰 글꼴 · 긴 해설)에는 아래 보기가 첫 화면에서 판에 가리고 스크롤해야 보인다. ② 다시 도전 줄은 문항을 (활동 순번, 문항 순번)으로 가리킨다 — 레슨 도중 음성 · 그림 받기가 끝나 계획이 다시 지어지면 문항 자리가 바뀔 수 있다(활동 순번에는 이미 있던 위험, 줄은 더 오래 들고 있다). ③ Android 기기 확인은 이 기록 시점에 끝나지 않았다.
+
 ## 적용 기록 ⟨2026-11-02 — level-3(balance) 디코더⟩
 
 balance 묶음(2026-10-30)을 읽기 위한 디코더(episode-core) 변경이다. 화면 · 여정맵은 바꾸지 않는다(이야기 파이널은 뒤 PR).

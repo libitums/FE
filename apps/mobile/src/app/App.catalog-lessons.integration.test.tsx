@@ -33,6 +33,7 @@ import type { EpisodeIntroEvent } from "../screens/episode-intro/episode-intro.c
 import { EPISODE_BANNER_HOLD_MS } from "../screens/catalog-cover/episode-banner";
 import { tapTargetById } from "../screens/sentence-order/sentence-order-check.test-support";
 import { catalogNodeTestId } from "./test-helpers/map-unit-testid";
+import { allReviewItemsOf, missReview } from "./test-helpers/catalog-review-solver";
 
 // 옛 형식 내장본(2026-10-14)의 흐름을 걷는 테스트입니다 — 내장본 자리를 옛 픽스처로 바꿉니다.
 vi.mock("../lib/episode-bundled", async () => {
@@ -383,7 +384,6 @@ function solveActivity(activity: CatalogActivity, right: boolean, last = true): 
       }
       break;
   }
-  if (last) tapId("learning-shell-action");
 }
 
 /** 계획의 활동을 순서대로 풀며 서는 화면의 루트 testid를 모읍니다. */
@@ -633,6 +633,8 @@ test("L4. (AC2 실패) S3를 전부 틀리면 기록이 없고 Try again이 첫 
 
   tapNode(u01, "S3");
   solveLesson(plan, false);
+  // 틀린 문항은 결과 전에 다시 도전합니다 — 모두 또 틀려 판정은 첫 결과(전부 틀림) 그대로입니다(ADR-0058 ⟨2026-10-30⟩).
+  missReview(plan, allReviewItemsOf(plan));
   expect(screen.getByTestId("lesson-complete-screen-retry")).toBeInTheDocument();
   expect(title()).not.toHaveTextContent("PERFECT LESSON!");
   await flush();
@@ -676,7 +678,8 @@ test("L5. (AC3 · 4) S6 받아쓰기: 소리 없는 카드 · 마침표와 띄�
     tapId("learning-shell-action");
     tapId("learning-shell-action");
   }
-  tapId("learning-shell-action");
+  // 둘째 문항을 틀렸으므로 결과 전에 다시 도전합니다 — 또 틀려 판정은 첫 결과 그대로 통과입니다(ADR-0058 ⟨2026-10-30⟩).
+  missReview(plan, [{ activityIndex: 0, questionIndex: 1 }]);
 
   expect(screen.getByTestId("lesson-complete-screen")).toBeInTheDocument();
   expect(screen.queryByTestId("lesson-complete-screen-retry")).not.toBeInTheDocument();
@@ -848,6 +851,7 @@ test("L10. 결과의 Try again 뒤 나가면 스택은 맵 하나라 시스템 �
 
   tapNode(u01, "S3");
   solveLesson(lessonPlan(u01, "S3"), false);
+  missReview(lessonPlan(u01, "S3"), allReviewItemsOf(lessonPlan(u01, "S3")));
   tapButtonIn("lesson-complete-screen-retry");
   expect(screen.getByTestId(contentIdOf["word-choice"])).toBeInTheDocument();
   tapId("learning-shell-exit");

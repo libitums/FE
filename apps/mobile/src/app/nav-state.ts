@@ -8,6 +8,7 @@
 // 가져옵니다.
 import type { AnswerResult } from "../lib/answer-result";
 import type { CatalogUnitKey } from "../lib/catalog-progress";
+import type { CatalogReview, CatalogReviewSummary } from "./catalog-review";
 // 전화번호 로그인(Supabase OTP)의 공용 어휘입니다 — 코드 검증 화면이 보여 줄 번호를
 // 나릅니다.
 import type { PhoneNumber } from "../lib/auth-session.contract";
@@ -35,8 +36,15 @@ export type Screen =
   | { name: "notifications" }
   // 카탈로그 에피소드의 표지 컷입니다. 에피소드는 카탈로그 id입니다.
   | { name: "catalog-cover"; episodeId: string }
-  // 카탈로그 레슨의 활동 하나입니다. 유닛 하나가 같은 학습형이 이어지는 구간 여럿을 잇습니다.
-  | { name: "catalog-lesson"; episodeId: string; unitKey: CatalogUnitKey; activityIndex: number }
+  // 카탈로그 레슨의 활동 하나입니다. 유닛 하나가 같은 학습형이 이어지는 구간 여럿을 잇습니다. `review`가 있으면
+  // 틀린 문제 다시 풀기 국면이고, `activityIndex`는 줄 머리 문항의 활동입니다(학습형 · 자판 도킹이 그것을 읽습니다).
+  | {
+      name: "catalog-lesson";
+      episodeId: string;
+      unitKey: CatalogUnitKey;
+      activityIndex: number;
+      review?: CatalogReview;
+    }
   // 카탈로그 막간 이야기 유닛(INT)의 컷입니다(ADR-0088).
   | { name: "catalog-story"; episodeId: string; unitKey: CatalogUnitKey }
   // 카탈로그 최종 테스트(RP)입니다.
@@ -50,6 +58,8 @@ export type Screen =
       skippedCount: number;
       /** 채점 문항 수입니다(카드처럼 채점하지 않는 문항은 세지 않습니다) — 통과 기준의 분모입니다. */
       questionCount: number;
+      /** 틀린 문제를 다시 풀고 왔으면 그 요약입니다 — `results`는 이미 고친 수를 반영한 결과입니다. */
+      review?: CatalogReviewSummary;
     }
   // 최종 테스트 통과 뒤 컷입니다.
   | { name: "catalog-epilogue"; episodeId: string }

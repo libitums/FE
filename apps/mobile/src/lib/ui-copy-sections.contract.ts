@@ -9,6 +9,7 @@
 // (`SettingsNavTarget`)만 타입으로 import합니다 — 항목이 늘면 문구 행이 따라오게 하려는 것입니다.
 
 import type { LearningActivityForm } from "./learning-form";
+import type { LearningReviewCopy, LessonCompleteReviewCopy } from "./ui-copy-review.contract";
 import type { SettingsNavTarget } from "../screens/settings/settings.contract";
 import type { AnswerResult } from "./answer-result";
 import type { SessionOptionKey } from "./session-options";
@@ -117,6 +118,8 @@ export type LearningShellCopy = {
   };
   readonly headerNoQuestions: (formLabel: string) => string;
   readonly headerQuestionOf: (formLabel: string, ordinal: number, count: number) => string;
+  /** 틀린 문제 다시 풀기(ADR-0058 ⟨2026-10-30⟩)의 세션 헤더 · 칩 · 고침 판입니다. */
+  readonly review: LearningReviewCopy;
 };
 
 export type ListeningCopy = {
@@ -186,6 +189,8 @@ export type LessonCompleteCopy = {
   readonly rewardLabel: (count: number) => string;
   /** 미통과에서 같은 유닛을 처음부터 다시 여는 버튼입니다. */
   readonly tryAgain: string;
+  /** ⟨2026-10-30⟩ 틀린 문제를 다시 풀고 온 결과 화면입니다. */
+  readonly review: LessonCompleteReviewCopy;
 };
 
 export type EpisodeIntroCopy = {
@@ -291,3 +296,5 @@ export type GemPurchaseCopy = {
   readonly paymentMethod: string;
   readonly notice: { readonly title: string; readonly description: string };
 };
+
+export type { LearningReviewCopy, LessonCompleteReviewCopy } from "./ui-copy-review.contract";

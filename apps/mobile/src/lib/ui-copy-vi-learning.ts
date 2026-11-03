@@ -84,6 +84,13 @@ export const lessonCompleteVi: LessonCompleteCopy = {
   streakLabel: (days) => `Chuỗi ${days} ngày`,
   rewardLabel: (count) => `+ ${count} THƯỞNG`,
   tryAgain: "Thử lại",
+  review: {
+    soClose: "SUÝT NỮA RỒI!",
+    fixedOf: (fixed, total) => `BẠN ĐÃ SỬA ${fixed} TRÊN ${total} LỖI`,
+    dotsLabel: (fixed, total) => `Đã sửa ${fixed} trên ${total} lỗi`,
+    neededMore: (count) =>
+      `Bạn cần đúng thêm ${count} câu. Hãy học lại bài này \u2014 lần này sẽ dễ hơn.`,
+  },
 };
 
 // 학습 문항 안내 문구입니다. 닫는 법 줄은 `episodeIntro.guide.continue`를 씁니다.

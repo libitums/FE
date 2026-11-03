@@ -55,6 +55,8 @@ function setup(progress: CatalogProgress, pending: readonly AnswerResult[] = [])
       setPendingResults: () => undefined,
       pendingSkippedCount: 0,
       setPendingSkippedCount: () => undefined,
+      pendingMistakes: [],
+      setPendingMistakes: () => undefined,
       finishGuard: guard,
       setListenPace: () => {},
     });
