@@ -129,4 +129,29 @@ describe("LanguageSelectScreen", () => {
       ),
     ).toBeNull();
   });
+
+  // 2026-11-03 사용자 결정(시안 A): 목록 위에 「감사합니다」 미리보기 카드 — 안내 · 뜻 · 버튼이 지금 UI 언어로 섭니다.
+  it("[LS-U7] 목록 위에 미리보기 카드가 서고, 한국어 · 로마자 · 지금 언어의 안내 · 뜻 · 버튼을 보인다", () => {
+    render(<LanguageSelectScreen selected="en" onSelect={vi.fn()} onContinue={vi.fn()} />);
+    const card = screen.getByTestId("language-select-screen-preview");
+    expect(card).toHaveTextContent("What did you hear?");
+    expect(card).toHaveTextContent("감사합니다");
+    expect(card).toHaveTextContent("gamsahamnida");
+    expect(card).toHaveTextContent("Thank you");
+    expect(card).toHaveTextContent("Check");
+  });
+
+  it("[LS-U8] showSteps가 false면(설정에서 열 때) 단계 진행 막대를 그리지 않는다", () => {
+    render(
+      <LanguageSelectScreen
+        selected="en"
+        onSelect={vi.fn()}
+        onContinue={vi.fn()}
+        showSteps={false}
+      />,
+    );
+    expect(
+      within(screen.getByTestId("language-select-screen-header")).queryByTestId("entry-step-bar"),
+    ).toBeNull();
+  });
 });

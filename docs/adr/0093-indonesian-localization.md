@@ -39,11 +39,19 @@
 - **고르는 즉시 바꾸고 저장한다**(`changeUiLanguage`) — 화면 전체가 그 자리에서 그 언어로 바뀐다. `Continue` · 뒤로는 설정 루트로 돌아간다.
 - 이벤트 `language_settings_opened`(속성 없음) — 열람만 센다.
 
+### D7. 언어 선택 화면에 미리보기 카드를 둔다 — 고른 언어로 어떻게 보이는지
+
+- 사용자 지적(2026-11-03): 「번역이나 버튼 등이 해당 언어로 보여진다는 시각적인 효과가 부족」. 시안 셋 가운데 **A(목록 위 미리보기 카드) — 사용자 결정**(https://claude.ai/artifact/GWp43sUsg5KZ1e6UTwUNK4).
+- 카드: 안내(「What did you hear?」) · 한국어 예문 「감사합니다」 · 로마자 · 뜻 · 「Check」 버튼(보이기만). 안내 · 뜻 · 버튼은 지금 UI 언어 문구표(`languageSelect.preview` · `common.check`)라, 언어를 고르면 화면 제목 · Continue와 함께 바로 바뀐다.
+- 한국어 예문 · 로마자는 학습 내용이라 문구표가 아니라 화면 상수(`languagePreviewSample`, 한글 리터럴 검사의 허용 선언)다.
+- **설정 › Language에서 열면 단계 진행 막대(3/3)를 그리지 않는다**(`showSteps={false}`) — 가입 단계가 아니다.
+
 ## 테스트 계획
 
 | 계층 | 무엇 |
 |---|---|
 | unit (episode-core) | TR7: `translations.id` 정규화 |
+| ui | LS-U7: 미리보기 카드가 한국어 · 로마자 · 지금 언어의 안내 · 뜻 · 버튼을 보인다. LS-U8: `showSteps={false}`면 단계 막대가 없다 |
 | unit (app) | EL3 · EL4(다섯 언어 · 고를 수 있는 셋), UL5c(`id` · `id-ID` · `in` · `in-ID`), LZ6(`id` 표 적용 · 없으면 같은 객체), ID1 ~ ID3(문구표 완전성 · 번역 비율), UC4(문구표 키 집합) |
 | integration | IV3: 번역표가 있는 콘텐츠를 인도네시아어 사용자가 번역으로 본다. IL9: 설정 › Language에서 인도네시아어를 고르면 탭이 바로 바뀌고 저장되며 돌아오면 설정. IT1: 설정 항목 일곱 |
 | 실기 | iOS 시뮬레이터에서 `id`로 지도 · 레슨 · 결과 |

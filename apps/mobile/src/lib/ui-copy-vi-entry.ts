@@ -47,6 +47,10 @@ export const onboardingVi: OnboardingScreenCopy = {
 export const languageSelectVi: LanguageSelectCopy = {
   title: "Chọn ngôn ngữ",
   caption: "Chọn ngôn ngữ bạn muốn sử dụng",
+  preview: {
+    question: "Bạn đã nghe gì?",
+    meaning: "Cảm ơn",
+  },
 };
 
 export const journeyEntryVi: JourneyEntryCopy = {

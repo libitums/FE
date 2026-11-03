@@ -90,6 +90,7 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
           onSelect={wiring.onChangeUiLanguage}
           onContinue={wiring.onExitSettingsStack}
           onBack={wiring.onExitSettingsStack}
+          showSteps={false}
         />
       );
     case "feedback":

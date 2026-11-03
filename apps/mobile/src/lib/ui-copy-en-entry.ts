@@ -45,6 +45,10 @@ export const onboardingEn: OnboardingScreenCopy = {
 export const languageSelectEn: LanguageSelectCopy = {
   title: "Select Language",
   caption: "Choose the language you want to proceed with",
+  preview: {
+    question: "What did you hear?",
+    meaning: "Thank you",
+  },
 };
 
 // 제목 · 안내 · 큰 제목은 자리표입니다(디자인 문구 확정 전).
