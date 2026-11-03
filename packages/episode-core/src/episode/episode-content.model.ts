@@ -148,6 +148,8 @@ export type AddedLearningItem =
   | TilesBuild<"SYLLABLE_BUILD">
   | Speech<"SHADOW">
   | Speech<"SPEAK_WORD">
+  /** 빈칸 타자 입력 — `context`의 `___` 자리에 `answers` 가운데 하나를 쳐 넣습니다. */
+  | (ItemBase<"CLOZE_TYPING"> & { prompt: Text; context: Text; answers: Text[] })
   /** 따라 쓰기 — `answers[0]`의 음절을 차례로 씁니다. `context`의 `___` 자리입니다. */
   | (ItemBase<"HANGUL_WRITE"> & {
       prompt: Text;

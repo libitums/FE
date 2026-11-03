@@ -771,6 +771,7 @@ balance 묶음(2026-10-30)의 새 모양과 앱의 해석입니다. 앱 콘텐�
 | CLOZE_CHOICE | `feedback` 없음 | 받습니다(선택). |
 | `HANGUL_WRITE` | `mode: "draw"`, `context`(`___` 자리), `answers[0]`(쓸 말), `feedback.correct` 선택 | 파이널 따라 쓰기 — 음절마다 덮음 · 머무름 0.6 이상이면 통과. 레슨에서는 건너뜁니다. |
 | 최상위 `interlude` | INT 스텝 밖에 막간 | INT 스텝 안 막간이 없으면 이것을 씁니다. |
+| `CLOZE_TYPING` ⟨2026-11-02⟩ | `mode: "typing"`, `prompt`, `context`(`___` 빈칸 문장), `answers`(빈칸에 들어갈 말, 1개 이상) | 레슨의 타자 입력 — 단서는 `context.en`(없으면 정답의 `en`), 힌트는 `context.ko`. 정답은 한글 자판으로 칠 수 있어야 합니다. |
 | 모르는 문항 형식 | — | 그 문항만 빼고 `unknown-item-type` 경고(이전에는 에피소드 거부). |
 
 ## 부록 G. 번역표 `translations` ⟨2026-11-02⟩
