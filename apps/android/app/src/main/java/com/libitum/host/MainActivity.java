@@ -125,6 +125,8 @@ public final class MainActivity extends Activity {
     publishViewportMetrics();
     // 앱 버전은 실행 중 바뀌지 않으니 로드 앞에 한 번만 건다(ADR-0086). 키 단위 병합이라 다른 값과 섞이지 않는다.
     lynxView.updateGlobalProps(AppVersion.globalProps(BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE));
+    // 앱 글꼴을 `app.css`의 `@font-face`가 읽는 자리에 둔다(ADR-0092). 템플릿을 그리기 전이어야 한다.
+    AppFonts.install(this);
     // safe area와 따로 보낸다(updateGlobalProps는 키 단위 병합). 로드 앞에 첫 값을 걸어 둔다.
     publishReducedMotion(reducedMotionWatcher.read(getContentResolver()));
     reducedMotionWatcher.start(getContentResolver(), mainHandler, this::publishReducedMotion);

@@ -58,8 +58,8 @@ export function listeningItemOf(
     romanization,
     audio,
     ...optionalField("instruction", instructionOf(port, item.prompt)),
-    // 최소 대립쌍은 로마자가 곧 정답(소리 차이)이라 답하기 전에 보이지 않습니다.
-    ...(item.type === "LISTEN_SELECT" ? { beforeAnswer: "romanization" as const } : {}),
+    // 답하기 전에는 대본을 보이지 않습니다 — 최소 대립쌍은 로마자가 곧 정답(소리 차이)이고, 듣고 고르기도 로마자가
+    // 정답 문장 그대로라 듣기가 아니라 글자 맞추기가 됩니다(2026-11-02 문항 분석). 답한 뒤에는 한글 + 로마자가 섭니다.
   };
   let question: ListeningQuestion;
   if (isPair(choices)) {

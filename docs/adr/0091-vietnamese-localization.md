@@ -51,7 +51,7 @@
 - 파일: google/fonts `ofl/leaguespartan/LeagueSpartan[wght].ttf`, commit `e2332cf862ac3145c0ee5f24f04f4c1819b2410b`(가변 글꼴 하나로 굵기 전부, 95,116 bytes).
   - **한 번 변환했다** — 배포물의 가변 기본값이 Thin(100)이라 변수를 적용하지 않는 길(Android 자산 글꼴)에서 가늘게 그려진다. fontTools `instancer`로 `wght` 축을 400–900 · 기본 400으로 좁히고(Jost와 같은 기본값) 이름 표를 `League Spartan` / `Regular`로 맞췄다. 결과 92,440 bytes, SHA-256 `6cbb11fa55132d68863c5e24443350aad2e505d80f3d1d5f1027e73958489ff7`. 베트남어 글자는 모두 있고 `∞`만 없다(글리프 단위로 대체 글꼴).
   - iOS `apps/ios/Host/fonts/LeagueSpartan.ttf` + `UIAppFonts` 등록, 시스템이 글꼴 이름 `League Spartan`으로 찾는다.
-  - Android `apps/android/app/src/main/assets/fonts/LeagueSpartan.ttf` — Lynx가 `fonts/<family>.ttf`를 찾으므로 CSS에 `LeagueSpartan`도 둔다.
+  - Android `apps/android/app/src/main/assets/fonts/LeagueSpartan.ttf` — ⟨2026-11-03 정정⟩ Lynx Android는 자산 글꼴을 이름으로 찾지 않는다([ADR-0092](0092-android-app-fonts.md)). 호스트 `AppFonts`가 `files/fonts/`로 복사하고 `@font-face` `DuruLeagueSpartan`이 가리킨다 — `.app-lang-vi` 목록에서 `League Spartan` 바로 뒤.
   - 라이선스 `LeagueSpartan-OFL.txt`를 각 폴더에. SIL OFL 1.1, **예약 글꼴 이름 없음**.
 - 성조 부호는 위아래로 높다 — 강조 글자가 서는 고정 높이 자리는 iOS · Android 실기에서 잘림을 본다.
 
