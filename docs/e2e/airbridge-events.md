@@ -356,7 +356,7 @@ iOS 실기(iPhone 13 mini) · **Release** · 실제 값이 든 빌드. 추적 �
 | 2026-10-22 | `b6124067` | iPhone 13 mini(iOS 27.0.1) — Release, 실제 값, 로그인된 세션 | **E-1 · E-2 · E-3 통과** | Safari 주소창에서 `duru://roleplay` · `duru://settings` · `duru://shop`을 열어 사용자가 기기에서 봤다(「잘되네」). 서명된 `.app`의 entitlements에 `applinks:duru.airbridge.io` · `applinks:duru.abr.ge`가 실렸다(`codesign -d --entitlements`). 콘솔에 맵 진입 직후 `takeOpenedDeeplink` 호출 |
 | 2026-10-22 | `b6124067` | Android 에뮬레이터(Pixel 8) — `bundled`, 실제 값, **로그인 전** | **호스트 수신만** | `am start -d duru://roleplay` → logcat `sendGlobalEvent airbridgeDeeplinkOpened`. 로그인 전이라 온보딩에 머물렀고(링크는 들고 있음 — D3대로), 탭 이동은 보지 않았다 |
 
-## F — 사용자 ID (ADR-0090, 사용자 몫)
+## G — 사용자 ID (ADR-0090, 사용자 몫)
 
 ⚠ 실행된 적이 없는 절차다. 실제 값이 든 빌드에서 Airbridge 대시보드 Raw Data › App Real-time Logs를 본다.
 
