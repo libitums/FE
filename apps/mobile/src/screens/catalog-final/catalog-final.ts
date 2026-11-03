@@ -36,7 +36,7 @@ export function catalogFinalReducer(
       if (state.phase !== "checked") return state;
       return {
         turnIndex: state.turnIndex + 1,
-        placed: [],
+        placed: action.placed ?? [],
         phase: "arranging",
         results: state.results,
       };

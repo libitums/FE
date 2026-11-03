@@ -34,9 +34,7 @@ import "./catalog-final-screen.css";
 
 // 카탈로그 에피소드의 최종 테스트 화면입니다 — 상대 대사를 보고 섞인 타일을 놓아 내 대답을 만듭니다.
 // 턴마다 한 번 답하고(`Check`) 판정과 정답을 본 뒤 `Next`로 넘어갑니다. 마지막 턴 뒤 `See results`가
-// 결과를 한 번 올립니다.
-//
-// 그림과 글은 **형제 층**입니다 — 글 층은 그림의 상태를 읽지 않아, 그림이 없거나 늦거나 실패해도 머리 ·
+// 결과를 한 번 올립니다. 그림과 글은 **형제 층**입니다 — 글 층은 그림의 상태를 읽지 않아, 그림이 없거나 늦거나 실패해도 머리 ·
 // 대사 · 타일이 첫 프레임부터 서고 바탕은 어두운 단색으로 남습니다. 낭독 순서 = DOM 순서이고
 // 지시문 → 내 대답 → 뜻 힌트 → 판정 → 정답 → 타일 창고 → 버튼입니다.
 export function CatalogFinalScreen({
@@ -49,7 +47,11 @@ export function CatalogFinalScreen({
 }: CatalogFinalScreenProps): ReactNode {
   const copy = useUiCopy();
   const reducedMotion = resolveReducedMotion(undefined, useMotion());
-  const [state, dispatch] = useReducer(catalogFinalReducer, initialCatalogFinalState);
+  // 고정 타일(튜토리얼의 「안녕하세요!」)은 턴이 열릴 때부터 놓여 있고 뺄 수 없습니다.
+  const [state, dispatch] = useReducer(catalogFinalReducer, {
+    ...initialCatalogFinalState,
+    placed: turns[0].fixedTiles ?? [],
+  });
   const finished = useRef({ done: false });
 
   const turn = turns[state.turnIndex] ?? turns[0];
@@ -68,8 +70,10 @@ export function CatalogFinalScreen({
   // 시스템 뒤로가기 = 보이는 나가기와 같은 함수입니다.
   useScreenBack(handleExit);
 
+  const fixed = turn.fixedTiles ?? [];
   const toggle = (tileIndex: number) => {
     "background only";
+    if (fixed.includes(tileIndex)) return;
     playSound("button");
     dispatch({ type: "toggleTile", tileIndex });
   };
@@ -82,7 +86,7 @@ export function CatalogFinalScreen({
           "background only";
           playSound("button");
           if (!isLastTurn) {
-            dispatch({ type: "nextTurn" });
+            dispatch({ type: "nextTurn", placed: turns[state.turnIndex + 1]?.fixedTiles ?? [] });
             return;
           }
           // 연타해도 결과는 한 번만 올립니다.
@@ -222,7 +226,7 @@ export function CatalogFinalScreen({
                     index={tileIndex}
                     text={turn.tiles[tileIndex]?.ko ?? ""}
                     placedOrdinal={position + 1}
-                    disabled={checked}
+                    disabled={checked || fixed.includes(tileIndex)}
                     surface="dark"
                     onTap={toggle}
                   />
@@ -253,7 +257,7 @@ export function CatalogFinalScreen({
 
               <view className="catalog-final-screen-bank" data-testid="catalog-final-screen-bank">
                 {turn.tiles.map((tile, tileIndex) =>
-                  state.placed.includes(tileIndex) ? (
+                  fixed.includes(tileIndex) ? null : state.placed.includes(tileIndex) ? (
                     <SentenceOrderChipPlaceholder
                       key={tileIndex}
                       index={tileIndex}
