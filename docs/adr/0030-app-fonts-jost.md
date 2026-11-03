@@ -72,3 +72,6 @@ Pretendard를 넣으면 앱 전체 본문의 줄바꿈 · 너비가 바뀌어 �
 
 - Jost에 베트남어 글자가 없어(56자 중 48자 없음) UI 언어가 `vi`일 때만 강조 토큰 다섯을 League Spartan으로 다시 정의한다. 같은 방식(폴더 `fonts/` · `UIAppFonts`)으로 더했고 Android는 `assets/fonts/`에 같은 파일.
 - D2(「변환 없음」)와 다르게 **한 번 변환했다** — 배포물의 가변 기본값이 Thin(100)이라, 변수를 적용하지 않는 길에서 가늘게 그려진다. `wght` 축을 400–900, 기본 400으로 좁히고 이름 표를 Regular로 맞췄다. OFL에 예약 글꼴 이름이 없어 허용된다.
+### 적용 기록 ⟨2026-11-02⟩ — Android에서 Jost를 그린다
+
+결정은 [ADR-0092](0092-android-app-fonts.md). 재검토 조건 「Android 호스트가 생길 때 → `res/font/`」는 그대로 따를 수 없었다 — Lynx Android는 자산 · 리소스 글꼴을 이름으로 찾지 않는다. 호스트가 `files/fonts/`로 복사하고 CSS `@font-face`(`DuruJost`)가 그 경로를 가리킨다. iOS의 D1(`UIAppFonts`)은 바뀌지 않는다.

@@ -9,7 +9,7 @@ import { color } from "@libitums/design-tokens";
 import { Button } from "@libitums/ui-lynx/button";
 import { useMotion } from "@libitums/ui-lynx/motion";
 
-import { StatChip, statChipDiamondColor } from "../../components/StatChip";
+import { statChipDiamondColor } from "../../components/StatChip";
 import { ticketIcon } from "../../components/ticket-icon";
 import { announce } from "../../lib/accessibility";
 import { playSound } from "../../lib/sound-effects";
@@ -30,6 +30,7 @@ import {
   rewardMotionFor,
 } from "./lesson-complete-reward";
 import { LessonCompleteBadge } from "./LessonCompleteBadge";
+import { LessonCompleteStats, type LessonCompleteTicketChip } from "./LessonCompleteStats";
 import { LessonCompleteNextActions, type LessonCompleteNext } from "./LessonCompleteNextActions";
 import { noStatBumps, type StatBumpKind, type StatBumps } from "../../lib/stat-bump";
 
@@ -81,6 +82,8 @@ export type LessonCompleteScreenProps = {
   readonly onStatBumped?: (kind: StatBumpKind) => void;
   /** 남은 학습 티켓 수입니다(시안 E5). 넘기지 않으면 줄이 서지 않습니다 — 레슨이 아닌 결과 화면입니다. */
   readonly ticketsLeft?: number;
+  /** 머리 티켓 칩 — 넘기지 않으면 서지 않습니다. */
+  readonly ticketChip?: LessonCompleteTicketChip;
   /** 통과 뒤 이어 갈 다음 유닛(시안 D) — 있으면 지도 버튼 + 「다음 학습」 한 줄, 없으면 맵 버튼 하나. */
   readonly next?: LessonCompleteNext;
 };
@@ -99,6 +102,7 @@ export function LessonCompleteScreen({
   statBumps = noStatBumps,
   onStatBumped,
   ticketsLeft,
+  ticketChip,
   next,
 }: LessonCompleteScreenProps): ReactNode {
   const copy = useUiCopy();
@@ -133,27 +137,14 @@ export function LessonCompleteScreen({
 
   return (
     <view className="lesson-complete-screen" data-testid="lesson-complete-screen">
-      {/* [고정] 머리 — 연속 학습 · 트로피. 읽기 전용입니다. */}
-      <view className="lesson-complete-screen-stats">
-        <StatChip
-          tone="streak"
-          value={streakDays}
-          accessibilityLabel={copy.common.count.streakDays(streakDays)}
-          testId="lesson-complete-screen-streak"
-          bumpFrom={statBumps.streak}
-          bumpDelayMs={chipBumpDelayMs}
-          onBumped={() => onStatBumped?.("streak")}
-        />
-        <StatChip
-          tone="trophy"
-          value={trophyCount}
-          accessibilityLabel={copy.common.count.trophies(trophyCount)}
-          testId="lesson-complete-screen-trophy"
-          bumpFrom={statBumps.trophy}
-          bumpDelayMs={chipBumpDelayMs}
-          onBumped={() => onStatBumped?.("trophy")}
-        />
-      </view>
+      <LessonCompleteStats
+        streakDays={streakDays}
+        trophyCount={trophyCount}
+        ticketChip={ticketChip}
+        statBumps={statBumps}
+        bumpDelayMs={chipBumpDelayMs}
+        onStatBumped={onStatBumped}
+      />
 
       <view className="lesson-complete-screen-spacer-top" />
 
