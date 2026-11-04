@@ -25,5 +25,5 @@ const AUDIO_PATH = /^audio\/(.+)\.m4a$/;
 /** 표에 있으면 호스트 번들 음성 이름, 없으면 null입니다. 순수 · 던지지 않음. */
 export function bundledContentAudioSource(relativePath: string): string | null {
   const id = AUDIO_PATH.exec(relativePath)?.[1];
-  return id !== undefined && bundled.has(id) ? id.replaceAll("/", "-") : null;
+  return id !== undefined && bundled.has(id) ? id.replace(/\//g, "-") : null;
 }

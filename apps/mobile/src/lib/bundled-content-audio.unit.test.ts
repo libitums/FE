@@ -15,7 +15,9 @@ const tutorialJson = readFileSync(
 const tutorialAudioIds = [
   ...new Set(
     [
-      ...tutorialJson.matchAll(/"(?:audio_url|example_audio_url|player_audio_url)": "([^"]+)"/g),
+      ...tutorialJson.matchAll(
+        /"(?:audio_url|example_audio_url|player_audio_url)"\s*:\s*"([^"]+)"/g,
+      ),
     ].map((match) => match[1] ?? ""),
   ),
 ].filter((id) => id !== "");
