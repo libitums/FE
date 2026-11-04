@@ -44,6 +44,17 @@ export type DownloadSheetCopy = {
   readonly close: string;
   readonly checked: string;
   readonly unchecked: string;
+  /** 모두 끝낸 뒤 새 편을 확인하게 하는 시트(ADR-0095 D9, 시안 5). */
+  readonly allCleared: {
+    readonly title: string;
+    readonly description: string;
+    readonly offline: string;
+    readonly lastChecked: (daysAgo: number | null) => string;
+    readonly checkNow: string;
+    readonly later: string;
+    readonly autoNote: string;
+    readonly offlineHint: string;
+  };
 };
 
 export type SettingsCopy = {

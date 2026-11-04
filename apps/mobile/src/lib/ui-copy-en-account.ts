@@ -133,4 +133,21 @@ export const downloadSheetEn: DownloadSheetCopy = {
   close: "Close",
   checked: "checked",
   unchecked: "not checked",
+  allCleared: {
+    title: "You've finished every story here",
+    description: "New episodes may be waiting. Connect to the internet and we'll check for you.",
+    offline: "You're offline",
+    lastChecked: (d) =>
+      d === null
+        ? "Not checked yet"
+        : d === 0
+          ? "Last checked today"
+          : d === 1
+            ? "Last checked yesterday"
+            : `Last checked ${d} days ago`,
+    checkNow: "Check now",
+    later: "Later",
+    autoNote: "We'll also check automatically when you're back online.",
+    offlineHint: "We'll check as soon as you're connected.",
+  },
 };

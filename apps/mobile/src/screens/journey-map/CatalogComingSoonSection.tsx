@@ -2,8 +2,10 @@ import type { ReactNode } from "@lynx-js/react";
 
 import lock from "@libitums/icons/lynx/lock";
 import { color } from "@libitums/design-tokens";
+import { Button } from "@libitums/ui-lynx/button";
 
 import { useUiCopy } from "../../lib/ui-copy";
+import type { CatalogFreshness } from "../../lib/manifest-check";
 import { catalogSectionDomId } from "./catalog-map";
 
 import "./episode-pending.css";
@@ -19,6 +21,10 @@ export type CatalogComingSoonSectionProps = {
   readonly episodeId?: string;
   /** 받는 중인 편 카드를 눌렀을 때 — 받기 시트를 엽니다(ADR-0095 D6 · D7). `episodeId`가 있을 때만 누를 수 있습니다. */
   readonly onTap?: (episodeId: string) => void;
+  /** 맨 끝 카드의 목록 확인 신선도(ADR-0095 D9). 없으면 지금 문구 그대로입니다. */
+  readonly freshness?: CatalogFreshness;
+  /** 오래 확인 못 했을 때의 「새 이야기 확인」 — 모두 끝낸 뒤 시트를 엽니다. */
+  readonly onCheckNew?: () => void;
 };
 
 // 빈 지도의 줄입니다 — 표지 하나, 두 열 두 줄(실제 배치와 같습니다). 줄마다 조금씩 더 흐립니다.
@@ -31,9 +37,23 @@ export function CatalogComingSoonSection({
   ordinal,
   episodeId,
   onTap,
+  freshness,
+  onCheckNew,
 }: CatalogComingSoonSectionProps): ReactNode {
   const copy = useUiCopy();
   const episodeLabel = copy.catalogMap.episodeLabel(ordinal);
+  const soon = copy.catalogMap.comingSoon;
+  // 오래 확인 못 했으면 「준비 중」이 아니라 「확인을 못 함」입니다(ADR-0095 D9). 받는 중인 편 카드에는 붙이지 않습니다.
+  const stale = episodeId === undefined && freshness?.stale === true;
+  const checkedLine =
+    episodeId === undefined &&
+    freshness !== undefined &&
+    !freshness.stale &&
+    freshness.daysAgo !== null
+      ? freshness.daysAgo === 0
+        ? soon.checkedToday
+        : soon.checkedDaysAgo(freshness.daysAgo)
+      : null;
 
   return (
     <view
@@ -76,11 +96,24 @@ export function CatalogComingSoonSection({
               </text>
             </view>
             <text className="catalog-coming-soon-title" data-testid="catalog-coming-soon-title">
-              {copy.catalogMap.comingSoon.title}
+              {stale ? soon.staleTitle : soon.title}
             </text>
             <text className="catalog-coming-soon-body" data-testid="catalog-coming-soon-body">
-              {copy.catalogMap.comingSoon.body}
+              {stale ? soon.staleBody : soon.body}
             </text>
+            {checkedLine === null ? null : (
+              <text
+                className="catalog-coming-soon-checked"
+                data-testid="catalog-coming-soon-checked"
+              >
+                {checkedLine}
+              </text>
+            )}
+            {stale && onCheckNew !== undefined ? (
+              <view className="catalog-coming-soon-check" data-testid="catalog-coming-soon-check">
+                <Button label={soon.checkNew} variant="brand" size="m" bindtap={onCheckNew} />
+              </view>
+            ) : null}
           </view>
         </view>
       </view>

@@ -12,6 +12,8 @@ export type DownloadControls = {
   readonly assetsComplete: (episodeId: string) => boolean;
   /** 목록에 실린 그 편의 그림 · 음성 크기 — 받기 시트의 크기 줄. 없으면 `null`. */
   readonly assetsBytes: (episodeId: string) => number | null;
+  /** 목록을 마지막으로 받은 시각(epoch ms) — 끝 카드 · 모두 끝낸 뒤 시트(D9). 없으면 `null`. */
+  readonly manifestCheckedAt: number | null;
 };
 
 export type DownloadSettingsWiring = Omit<DownloadSettingsScreenProps, "onBack">;

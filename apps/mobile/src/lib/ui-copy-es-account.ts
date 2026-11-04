@@ -146,4 +146,21 @@ export const downloadSheetEs: DownloadSheetCopy = {
   close: "Cerrar",
   checked: "marcado",
   unchecked: "sin marcar",
+  allCleared: {
+    title: "Terminaste todas las historias de aquí",
+    description: "Puede haber episodios nuevos. Conéctate a internet y los buscaremos por ti.",
+    offline: "Estás sin conexión",
+    lastChecked: (d) =>
+      d === null
+        ? "Aún no se ha revisado"
+        : d === 0
+          ? "Última revisión: hoy"
+          : d === 1
+            ? "Última revisión: ayer"
+            : `Última revisión: hace ${d} días`,
+    checkNow: "Buscar ahora",
+    later: "Más tarde",
+    autoNote: "También buscaremos automáticamente cuando vuelvas a tener conexión.",
+    offlineHint: "Buscaremos en cuanto tengas conexión.",
+  },
 };

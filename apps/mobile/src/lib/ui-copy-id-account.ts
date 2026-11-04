@@ -143,4 +143,21 @@ export const downloadSheetId: DownloadSheetCopy = {
   close: "Tutup",
   checked: "dicentang",
   unchecked: "tidak dicentang",
+  allCleared: {
+    title: "Kamu sudah menyelesaikan semua cerita di sini",
+    description: "Mungkin ada episode baru. Sambungkan ke internet, nanti kami cek untukmu.",
+    offline: "Kamu sedang offline",
+    lastChecked: (d) =>
+      d === null
+        ? "Belum pernah dicek"
+        : d === 0
+          ? "Terakhir dicek hari ini"
+          : d === 1
+            ? "Terakhir dicek kemarin"
+            : `Terakhir dicek ${d} hari lalu`,
+    checkNow: "Cek sekarang",
+    later: "Nanti",
+    autoNote: "Kami juga akan mengecek otomatis saat kamu online lagi.",
+    offlineHint: "Kami akan mengecek begitu kamu tersambung.",
+  },
 };

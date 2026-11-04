@@ -1,6 +1,7 @@
 // `ScreenWiring` 타입을 선언하고, 부분 팩토리(`journeyWiring`·`entryWiring`·`catalogWiring` 등)를
 // 합쳐 하나의 wiring을 만듭니다.
 
+import type { CatalogFreshness } from "../lib/manifest-check";
 import { downloadSettingsWiring } from "./download-wiring";
 import type { DownloadControls, DownloadSettingsWiring } from "./download-wiring";
 import type { AccountWiringArgs } from "./leave-app.contract";
@@ -57,6 +58,9 @@ export type ScreenWiring = {
   downloadSettings: DownloadSettingsWiring;
   /** 받는 중인 편의 「준비 중」 카드를 눌렀을 때(ADR-0095 D6 · D7) — 받기 문지기가 덮어씁니다. 기본은 아무것도 안 함. */
   onTapPendingEpisode: (episodeId: string) => void;
+  /** 맨 끝 카드의 목록 확인 신선도 · 「새 이야기 확인」(ADR-0095 D9) — 받기 문지기가 채웁니다. */
+  catalogFreshness?: CatalogFreshness;
+  onCheckNewStories?: () => void;
   journeyMapProgressLoad: JourneyMapProgressLoad;
   /** 옛 튜토리얼 최종 테스트를 통과한 기록이 있는가 — 튜토리얼 다음 구획의 문 입력입니다. */
   legacyTutorialPassed: boolean;

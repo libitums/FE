@@ -177,10 +177,13 @@ export function AppSession({
     downloadControls,
     catalogIds: () => episodeContent.catalog.map((entry) => entry.id),
   });
-  const downloadGate = useDownloadGate(downloadControls, catalogSections);
+  const screenNow = currentScreen(nav);
+  // 앱 사용 중 받아진 바뀐 판은 여정맵 루트(열린 에피소드 화면 · 겹침 없음)에서 바로 바꿔 끼웁니다(ADR-0078 D4 정정).
+  const atMapRoot = nav.entry.length === 0 && screenNow.name === "journey-map" && !screenLayerOpen;
+  const downloadGate = useDownloadGate(downloadControls, catalog, atMapRoot);
   const wiring = withDownloadGate(
     withLearningTickets(screens, tickets, progress, catalogSections),
-    downloadGate.guard,
+    downloadGate,
   );
 
   // 셸이 가장자리 여백을 잡고 배경을 칠합니다(자판 화면은 위만 — shell-edges.ts). 스플래시만 브랜드색.
@@ -196,11 +199,8 @@ export function AppSession({
   // Android 시스템 뒤로가기는 화면의 닫기와 같은 경로를 탑니다(ADR-0043).
   useSystemBack(nav, dispatch);
 
-  const screenNow = currentScreen(nav);
   useTrackingAuthorizationPrompt(nav.entry.length === 0 && screenNow.name === "journey-map");
   const showsNavigator = showsTabNavigator(nav);
-  // 앱 사용 중 받아진 바뀐 판은 여정맵 루트(열린 에피소드 화면 · 겹침 없음)에서 바로 바꿔 끼웁니다(ADR-0078 D4 정정).
-  const atMapRoot = nav.entry.length === 0 && screenNow.name === "journey-map" && !screenLayerOpen;
   useEffect(() => {
     if (atMapRoot && stagedContentReady > 0) applyStagedContent?.();
   }, [atMapRoot, stagedContentReady, applyStagedContent]);

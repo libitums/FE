@@ -141,4 +141,21 @@ export const downloadSheetJa: DownloadSheetCopy = {
   close: "閉じる",
   checked: "オン",
   unchecked: "オフ",
+  allCleared: {
+    title: "ここにあるストーリーはすべて終わりました",
+    description: "新しいエピソードがあるかもしれません。インターネットにつなぐと確認します。",
+    offline: "オフラインです",
+    lastChecked: (d) =>
+      d === null
+        ? "まだ確認していません"
+        : d === 0
+          ? "最終確認：今日"
+          : d === 1
+            ? "最終確認：昨日"
+            : `最終確認：${d}日前`,
+    checkNow: "今すぐ確認",
+    later: "あとで",
+    autoNote: "オンラインに戻ると自動でも確認します。",
+    offlineHint: "つながったらすぐに確認します。",
+  },
 };
