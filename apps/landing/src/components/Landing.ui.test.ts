@@ -1,10 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { Language } from "../site";
+import { type Language, languages } from "../site";
 import Landing from "./Landing.astro";
 import { jsonLd, render, texts } from "./render.support";
 
 const SITE = "https://example.test";
-const languages: readonly Language[] = ["en", "ko"];
 
 const renderLanding = (language: Language) => render(Landing, { props: { language }, site: SITE });
 

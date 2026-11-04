@@ -85,7 +85,12 @@ const texts = (document: Document, selector: string): string[] =>
 const pages = [
   { file: "index.html", language: "en", path: "/", image: "og-en.jpg" },
   { file: "ko/index.html", language: "ko", path: "/ko/", image: "og-ko.jpg" },
+  { file: "vi/index.html", language: "vi", path: "/vi/", image: "og-vi.jpg" },
+  { file: "id/index.html", language: "id", path: "/id/", image: "og-id.jpg" },
+  { file: "ms/index.html", language: "ms", path: "/ms/", image: "og-ms.jpg" },
 ] as const;
+const languageCodes = pages.map((entry) => entry.language);
+const languagePaths = pages.map((entry) => `${origin}${entry.path}`);
 
 interface JsonLdNode {
   "@type": string;
@@ -189,19 +194,18 @@ describe("빌드 A — SITE_URL 있음", () => {
     }
   });
 
-  it("I-A5 hreflang이 en · ko · x-default, x-default는 /", () => {
+  it("I-A5 hreflang이 언어 전부 · x-default, x-default는 /", () => {
     for (const { file } of pages) {
       const document = page(build, file);
       const links = [...document.querySelectorAll("link[rel=alternate][hreflang]")];
       const byLang = Object.fromEntries(
         links.map((link) => [link.getAttribute("hreflang"), link.getAttribute("href")]),
       );
-      expect(links).toHaveLength(3);
-      expect(Object.keys(byLang).sort()).toEqual(["en", "ko", "x-default"]);
+      expect(links).toHaveLength(pages.length + 1);
+      expect(Object.keys(byLang).sort()).toEqual([...languageCodes, "x-default"].sort());
       for (const href of Object.values(byLang)) expect(String(href).startsWith(origin)).toBe(true);
       expect(byLang["x-default"]).toBe(`${origin}/`);
-      expect(byLang.en).toBe(`${origin}/`);
-      expect(byLang.ko).toBe(`${origin}/ko/`);
+      for (const { language, path } of pages) expect(byLang[language]).toBe(`${origin}${path}`);
     }
   });
 
@@ -225,13 +229,13 @@ describe("빌드 A — SITE_URL 있음", () => {
     expect(lines).toEqual([`Sitemap: ${origin}/sitemap-index.xml`]);
   });
 
-  it("I-A8 sitemap의 loc이 두 페이지뿐이고 404가 없다", () => {
+  it("I-A8 sitemap의 loc이 언어별 홈뿐이고 404가 없다", () => {
     const index = read(build, "sitemap-index.xml");
     const target = /<loc>([^<]+)<\/loc>/.exec(index)?.[1];
     expect(target).toBeDefined();
     const sitemap = read(build, new URL(target as string).pathname.replace(/^\//, ""));
     const locs = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]);
-    expect(locs.sort()).toEqual([`${origin}/`, `${origin}/ko/`]);
+    expect(locs.sort()).toEqual([...languagePaths].sort());
     expect(sitemap).not.toContain("404");
   });
 
@@ -240,8 +244,7 @@ describe("빌드 A — SITE_URL 있음", () => {
     expect(lines[0]).toBe("# Duru");
     expect(lines.filter((line) => line.startsWith("> "))).toHaveLength(1);
     const text = lines.join("\n");
-    expect(text).toContain(`(${origin}/)`);
-    expect(text).toContain(`(${origin}/ko/)`);
+    for (const path of languagePaths) expect(text).toContain(`(${path})`);
   });
 
   it("I-A19 서체를 밖에서 받지 않고 산출물에 함께 싣는다", () => {
@@ -297,7 +300,12 @@ describe("빌드 A — SITE_URL 있음", () => {
     const text = read(build, "llms.txt");
     // 다른 언어의 페이지도 영어 이름으로 가리킵니다 — 본문에 한글이 없어 응답의 charset에 기대지 않습니다.
     expect(text).toContain(`(${origin}/ko/): Korean`);
+    expect(text).toContain(`(${origin}/vi/): Vietnamese`);
+    expect(text).toContain(`(${origin}/id/): Indonesian`);
+    expect(text).toContain(`(${origin}/ms/): Malay`);
     expect(text).not.toMatch(/[\u1100-\u11ff\u3130-\u318f\uac00-\ud7a3]/);
+    // 베트남어 성조 글자도 없다(영어 이름으로만 가리킨다).
+    expect(text).not.toMatch(/[\u1ea0-\u1ef9]/);
   });
 
   it("I-A10 llms.txt의 FAQ가 / 화면 FAQ와 같다", () => {

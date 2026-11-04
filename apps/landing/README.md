@@ -4,10 +4,11 @@ Duru 랜딩 페이지다. [Astro](https://astro.build)로 만든 정적 사이�
 ([ADR-0043](../../docs/adr/0043-landing-static-site.md)). 무엇을 왜 싣는지는
 [스펙](../../docs/specs/landing-page.md)에 있다.
 
-**기본은 영어(`/`), 한국어는 선택(`/ko/`)이다.** 두 주소 모두 빌드 때 HTML로 구워진다 —
-검색엔진이 스크립트를 돌리지 않아도 그 언어의 본문 · 제목 · 설명을 읽는다.
+**기본은 영어(`/`), 나머지는 선택이다 — 한국어 `/ko/`, ⟨2026-11-04⟩ 베트남어 `/vi/` · 인도네시아어 `/id/` · 말레이어 `/ms/`**
+([ADR-0094](../../docs/adr/0094-landing-vi-id-ms.md)). 다섯 주소 모두 빌드 때 HTML로 구워진다 —
+검색엔진이 스크립트를 돌리지 않아도 그 언어의 본문 · 제목 · 설명을 읽는다. 세 새 언어의 문구는 **초안**이다(원어민 검수 필요).
 
-⟨2026-10-22⟩ 두 번째 페이지 **웹 체험판** `/try/` · `/ko/try/`가 있다 — 앱 설치 없이 튜토리얼 u00의 첫 장면을 브라우저에서 해 본다
+⟨2026-10-22⟩ 두 번째 페이지 **웹 체험판** `/try/` · `/<코드>/try/`가 있다 — 앱 설치 없이 튜토리얼 u00의 첫 장면을 브라우저에서 해 본다
 ([ADR-0083](../../docs/adr/0083-web-trial-and-episode-core.md)). 색인하지 않는다. 아래 「웹 체험판」.
 
 ## 명령
@@ -50,8 +51,8 @@ e2e는 chromium · analytics · analytics-mobile 세 프로젝트에서 128건 �
 | 어디 | 무엇 |
 |---|---|
 | `src/site.ts` | **배포 주소의 기본값 · 서비스 이름 · 스토어 주소 · 언어별 제목/설명/공유 카드** — 운영 값은 전부 여기다 |
-| `src/i18n/copy.ts` | 영어 문구(원본)와 `Copy` 타입 |
-| `src/i18n/ko.ts` | 한국어 문구. `Copy`를 전부 채워야 타입 검사를 지난다 |
+| `src/i18n/copy.ts` | 영어 문구(원본)와 `Copy` 타입. ⟨2026-11-04⟩ 목업 · 첫 표현 · 맺음 인용의 **UI 문구 · 뜻풀이**(`mock…` · `word…Gloss` · `closingGloss`)도 여기 키다 — 한국어 대사만 컴포넌트에 남는다 |
+| `src/i18n/ko.ts` · `vi.ts` · `id.ts` · `ms.ts` | 한국어 · 베트남어 · 인도네시아어 · 말레이어 문구. `Copy`를 전부 채워야 타입 검사를 지난다. ko의 목업 문구는 앱이 보여 주는 영어 그대로(앱에 한국어 UI가 없다) |
 | `src/pages/` | `index.astro`(기본 언어 `/`) · `[lang]/index.astro`(나머지 언어 `/<코드>/`) · `try/index.astro` · `[lang]/try/index.astro`(웹 체험판) · `404.astro`(`/404.html`) · `robots.txt.ts` · `llms.txt.ts`. **여기 있는 `.ts`는 전부 주소가 된다 — 테스트 파일을 두지 않는다** |
 | `src/layouts/Base.astro` | 모든 페이지가 함께 쓰는 문서 껍데기 — 문자셋 · 제목 · 설명 · `robots` · 아이콘 · 서체 · 건너뛰기 링크. 페이지마다 다른 head는 이름 붙은 슬롯 `head`로 받는다 |
 | `src/seo/` | 검색 · 답변 엔진용 값을 만드는 **순수 모듈 여섯**. Astro · `site.ts` · 문구를 import하지 않고 값을 인자로 받는다. 타입은 `seo.contract.ts` |
@@ -74,12 +75,12 @@ e2e는 chromium · analytics · analytics-mobile 세 프로젝트에서 128건 �
 | `src/trial/` | **웹 체험판의 로직**(아래 「웹 체험판」). 순수 모듈(`trial-model*` · `trial-machine` · `trial-view` · `trial-transition`(꿈 전환 판정) · `trial-events` · `trial-copy-format` · `trial-env` · `trial-prereg`(사전 등록 정규화 · 형식 · 요청 · 상태 · env) · ⟨r3⟩ `trial-browser`(UA 분류) · `trial-samples`(수집 행 · 요청 · env) · `trial-speech`의 분류 함수 · `trial-fullscreen`의 판정)과 브라우저 접점(`trial-audio` · `trial-prefetch` · `trial-speech`의 인식기 · `trial-prereg-client`(PostgREST) · ⟨r3⟩ `trial-samples-client`(수집, keepalive · 던지지 않음) · `trial-prereg-form` · `trial-fullscreen` · `trial-controller` · `trial-dom*` · `trial-motion` · 진입 `trial-main`). 계약은 `*.contract.ts` 여섯 |
 | ↳ `src/trial/content/u00-tutorial.json` | 앱 내장 u00의 **바이트 같은 사본**. 포매터 대상에서 뺐다(한 바이트도 바뀌면 동기 검사가 실패한다). 판 · 길이 · sha256 핀은 `trial-content.ts`의 `TRIAL_CONTENT` |
 | `src/components/trial/` | 체험판 장면 컴포넌트(`TrialPage` · `TrialCuts` · `TrialVocabCard` · `TrialImageMatch` · `TrialReplySelect` · `TrialCultureCard` · `TrialRoleplay` · `TrialTurn` · `TrialClear` · `TrialComplete` · `TrialPrereg` 등)와 CSS 열둘(r2: `trial-transition` · `trial-clear` · `trial-prereg`). props · 문구 · test-id 타입은 `trial-components.contract.ts` |
-| `src/i18n/trial-copy.ts` · `trial-ko.ts` | 체험판 문구(`TrialCopy` — 영어 원본 · 한국어 전부). 학습 내용(한국어 대사 · 영어 번역)은 콘텐츠에서 온다 |
+| `src/i18n/trial-copy.ts` · `trial-ko.ts` · `trial-vi.ts` · `trial-id.ts` · `trial-ms.ts` | 체험판 문구(`TrialCopy` — 영어 원본 · 나머지 전부). 학습 내용(한국어 대사 · 영어 번역)은 콘텐츠에서 오고 **번역은 어느 페이지에서나 영어**다(사본에 번역표가 없다 — ADR-0094 D4) |
 | `src/assets/trial/images/` · `public/trial/sfx/` | 체험판 그림 12(앱 `src/assets/content/images/`의 사본 — 표는 `src/trial/trial-images.ts`) · 효과음 5(`apps/ios/Host/sfx/`의 사본) |
 | `e2e/` | Playwright. 체험판은 `trial.e2e.ts`(흐름 · 말하기 · 랜딩 링크) · `trial-sound.e2e.ts`(소리 요청) · `trial-a11y.e2e.ts`(키보드 · 초점 · axe · 움직임 줄이기) · `trial-layout.e2e.ts` · `trial-reflow.e2e.ts`(폭 · 낮은 화면) · `trial-contrast.e2e.ts`(그림 위 글 대비) · `trial-analytics.e2e.ts`(GA) · `trial-transition.e2e.ts`(꿈 전환) · `trial-prereg.e2e.ts`(사전 등록, 가짜 응답) · `trial-fullscreen.e2e.ts`(모바일 전체화면, 가짜 함수) · `trial.support.ts` · `trial-fakes.support.ts`(가짜 인식기 · 버킷 · PostgREST). 랜딩은 `landing.e2e.ts`(넘침 · 제목 단계 · 키보드 · 포커스 · axe · 서체 · 404) · `content.e2e.ts`(산출물 내용, chromium만) · `layout.e2e.ts`(Features · Story · Phrases · FAQ · 휴대폰 틀) · `layout-page.e2e.ts`(머리 · 히어로 · 섹션 간격) · `layout.support.ts`(폭 상수 1440 · 390, 좌표 · 계산값 · 스크롤 도구) · `analytics.e2e.ts`(측정 ID 빌드의 `dataLayer`) · ⟨2026-10-30⟩ `airbridge.e2e.ts`(토큰 빌드의 Airbridge 결선 — 스텁 SDK · 차단 · 시간대) · `analytics.support.ts`(막는 호스트 둘과 외부 호스트 단언) · `serve.mjs`(정적 서버). 설정은 `playwright.config.ts` |
 | `src/assets/content/images/` | ⟨2026-10-29⟩ 랜딩 소개 그림 — 콘텐츠 버킷 `images/<unit>/…`의 사본(같은 상대 경로 · 같은 바이트). 표는 `src/assets/images.ts`(히어로 · Features · Phrases · 맺음), Story 카드는 `src/story/episodes.ts`. Astro가 크기별로 다시 굽는다 |
-| `src/story/` | ⟨2026-10-29⟩ Story 줄의 에피소드 카드 데이터 `episodes.ts`(새 것 먼저, 사람이 하나씩 더한다 — 아래 「Story 카드 더하기」) |
-| `scripts/` | `fetch-content-image.mjs` — 버킷 그림 하나를 `src/assets/content/`로 받는다 |
+| `src/story/` | ⟨2026-10-29⟩ Story 줄의 에피소드 카드(새 것 먼저, 사람이 하나씩 더한다 — 아래 「Story 카드 더하기」). ⟨2026-11-04⟩ `episodes.contract.ts`(id 목록 · 타입) · `text/<코드>.ts`(언어별 때 · 제목 · 티저 · alt) · `episodes.ts`(번호 · 그림 · 조립) — 글이 다섯 언어가 되어 한 파일이 300줄(lint `max-lines`)을 넘겨 나눴다 |
+| `scripts/` | `fetch-content-image.mjs` — 버킷 그림 하나를 `src/assets/content/`로 받는다. ⟨2026-11-04⟩ `shoot-og.mjs` — 빌드 결과에서 공유 카드 그림 `public/og-<코드>.jpg`를 찍는다(아래 「그림」) |
 | `public/` | 아이콘과 공유 카드 그림(`og-*.jpg`) — 그대로 복사된다 |
 | ↳ `public/naver….html` · `google….html` | 네이버 서치어드바이저 · Google Search Console의 소유 확인 파일. **지우거나 고치지 않는다** — 두 곳 모두 주기적으로 다시 확인한다. 검색엔진 확인 파일(`naver*.html` · `google*.html`)만 포매터 대상에서 뺐다 — 한 글자도 바뀌면 안 된다 |
 
@@ -111,15 +112,23 @@ Footer 링크의 `rel`을 지우면 UI-FO2가 `expected '' to contain 'noopener'
 ## 언어 더하기
 
 언어가 늘어도 헤더의 언어 메뉴 · 주소 · hreflang · `og:locale:alternate` · sitemap · `llms.txt`의 페이지 링크 · 404의
-언어 링크는 목록을 따라 자동으로 늘어난다. 할 일은 넷이다.
+언어 링크 · 체험판 페이지는 목록을 따라 자동으로 늘어난다. 할 일은 일곱이다(⟨2026-11-04⟩ vi · id · ms를 더한 절차 — [ADR-0094](../../docs/adr/0094-landing-vi-id-ms.md)).
 
 1. `src/i18n/<코드>.ts`를 만들어 `Copy`를 전부 채운다(`ko.ts`를 복사해 번역한다). 빠진 키는 타입 검사가 짚는다.
    FAQ 문구(`faq…Q` · `faq…A` 열다섯 키)와 404 문구(`notFound…`)도 `Copy`의 키다. **FAQ의 질문과 답은 태그 없는
-   평문으로 쓴다** — 같은 문자열이 화면과 JSON-LD에 함께 들어가므로 `<`가 섞이면 빌드가 실패한다.
-2. `src/site.ts`의 `languages`에 코드를 더한다 — **첫째가 기본 언어(`/`)** 이고 나머지는 `/<코드>/`에 선다.
-3. 같은 파일의 `pages`에 그 언어의 이름(`label`) · 제목 · 설명 · 공유 카드 그림(`image`)과 그 그림의 대체 문구
+   평문으로 쓴다** — 같은 문자열이 화면과 JSON-LD에 함께 들어가므로 `<`가 섞이면 빌드가 실패한다. 목업 · 첫 표현 · 맺음 인용의
+   UI 문구 · 뜻풀이(`mock…` · `word…Gloss` · `closingGloss`)는 **앱이 그 언어 UI로 보여 주는 낱말**(`apps/mobile/src/lib/ui-copy-<코드>-*.ts`)과 맞춘다.
+   `src/i18n/faq-copy.unit.test.ts`의 언어별 금지어 · 「출시 전」 표지 · `Duru`로 시작하는 꼴도 그 언어 줄을 더한다.
+2. `src/i18n/trial-<코드>.ts`를 만들어 `TrialCopy`를 전부 채우고 `components/trial/TrialPage.astro`의 `copies`에 잇는다
+   (`trial-copy.ui.test.ts` · `TrialPage.ui.test.ts` · `TrialAccessibility.ui.test.ts`의 표도).
+3. `src/site.ts`의 `languages`에 코드를 더한다 — **첫째가 기본 언어(`/`)** 이고 나머지는 `/<코드>/`에 선다.
+4. 같은 파일의 `pages`에 그 언어의 이름(`label`) · 영어 이름 · locale · 제목 · 설명 · 공유 카드 그림(`image`)과 그 그림의 대체 문구
    (`imageAlt`)를 적는다. 빠뜨리면 타입 검사가 짚는다.
-4. `public/og-<코드>.jpg`(1200×630)를 찍어 넣는다.
+5. `src/story/text/<코드>.ts`를 만들어 에피소드마다 `when` · `title` · `teaser` · `alt`를 채우고 `episodes.ts`의 `text` 표에 잇는다(타입이 짚는다).
+6. `pnpm landing:build && node apps/landing/scripts/shoot-og.mjs <코드>`로 `public/og-<코드>.jpg`(1200×630)를 찍는다.
+7. 체험판의 사전 등록 · 인식 글자 수집 표의 `locale` check를 넓히는 **Supabase 마이그레이션**을 더하고(`20261104120000_web_trial_locales.sql`처럼)
+   `src/trial/trial-prereg.contract.ts`의 `PreregLocale`을 맞춘다. 원격 적용 전에는 그 언어 페이지의 등록이 「다시 시도」로 선다.
+   라틴 밖 글자(베트남어 성조 등)가 있는 언어면 `base.css`의 `html[lang="vi"]`처럼 서체도 본다 — Jost · Pretendard에는 없다.
 
 `/llms.txt`와 `/404.html`은 파일이 하나라 **기본 언어로만** 쓰인다. 새 언어는 거기에 링크로 걸린다.
 `llms.txt`는 다른 언어의 페이지도 **영어 이름**으로 가리킨다(`Duru in Korean`) — `pages`의 `englishName`을 채운다.
@@ -248,24 +257,28 @@ GA4와 따로, 랜딩은 Airbridge Web SDK도 싣는다 — **검색광고를 �
   절대 주소다 — Google은 페이지의 `rel="icon"` 링크를 따라가 48px 배수의 정사각형 아이콘을 받는다. 벡터 원본이 없어
   `favicon.svg`는 아직 없다.
 
-  `public/og-en.jpg` · `og-ko.jpg`는 히어로를 1200×630으로 찍은 것이다. 히어로 문구나 그림을 바꾸면 다시 찍는다
-  (⟨2026-10-29⟩ 빌드를 `astro preview`로 띄우고 Playwright로 1200×630 뷰포트에서 머리의 섹션 링크 · 언어 메뉴 · 받기 버튼,
-  히어로의 체험판 버튼 · 스크롤 안내를 CSS로 숨긴 채 찍었다 — 브라우저 컨텍스트를 `reducedMotion: "reduce"`로 두면 스크롤 연출이
-  꺼져 세 패널이 모두 밝고 두 문장이 함께 보인다).
+  `public/og-<코드>.jpg`(en · ko · vi · id · ms)는 히어로를 1200×630으로 찍은 것이다. 히어로 문구나 그림을 바꾸면 다시 찍는다 —
+  ⟨2026-11-04⟩ `pnpm landing:build && node apps/landing/scripts/shoot-og.mjs [코드…]`(코드를 주지 않으면 전부). 스크립트는 빌드를
+  e2e의 정적 서버(`e2e/serve.mjs`)로 띄우고(Astro 7의 `astro preview`는 데몬으로 남아 쓰지 않는다) Playwright로 1200×630 뷰포트에서 머리의 섹션 링크 · 언어 메뉴 · 받기 버튼, 히어로의 체험판 버튼 · 스크롤 안내를
+  CSS로 숨긴 채 찍는다 — 브라우저 컨텍스트가 `reducedMotion: "reduce"`라 스크롤 연출이 꺼져 세 패널이 모두 밝고 두 문장이 함께 보인다.
 
 - **Story 카드 더하기** — ⟨2026-10-29⟩ 에피소드가 나올 때마다 **사람이 하나씩** 더한다(사용자 결정 — 티저는 자동 생성하지 않는다).
   1. 버킷에서 **인물이 나오지 않는** 컷 하나를 고르고 위 「그림」의 명령으로 받는다(얼굴을 먼저 보여 주면 만남의 기대가 꺾인다 —
      손 · 뒷모습 정도는 된다). u00만은 체험판 사본(`src/assets/trial/images/u00-tutorial/`)과 **바이트가 겹치지 않는** 컷을 고른다(이름이 달라도
      내용이 같으면 Vite가 빌드 결과에서 한 파일로 합치고, 그것을 `<Image>`로 변환하면 Astro가 원본을 지워 체험판이 404를 낸다 —
      `episodes.unit.test.ts`가 대조한다).
-  2. `src/story/episodes.ts`의 배열 **맨 앞**에 항목을 더한다 — `id`(앱 unit id) · `number` · `when`(앱 JSON의 `day` · `time_of_day`) ·
-     `title`(앱 JSON의 `title_en` · `title` 그대로) · `teaser`(살짝만 스포하는 **한 문장** — 등장인물 이름 · 답 · 결말을 말하지 않는다) ·
-     `image` · `alt`(보이는 것만) · 필요하면 `focus`(4:5로 자를 때 남길 자리). 줄은 배열 순서 그대로이고 맨 앞 카드에 `New` 표가 붙는다.
+  2. `src/story/episodes.contract.ts`의 `storyEpisodeIds` **맨 앞**에 id(앱 unit id)를 더하고, `src/story/text/<코드>.ts` 다섯에 같은 id로
+     `when`(앱 JSON의 `day` · `time_of_day`) · `title`(앱 JSON의 `title_en` · `title` · 번역표 제목 그대로) · `teaser`(살짝만 스포하는 **한 문장** —
+     등장인물 이름 · 답 · 결말을 말하지 않는다) · `alt`(보이는 것만)를 채운다. 그런 다음 `episodes.ts` 배열 **맨 앞**에 `card(id, number, image[, focus])`를
+     더한다(`focus`는 4:5로 자를 때 남길 자리). 빠진 언어 · id는 타입 검사가 짚는다. 줄은 배열 순서 그대로이고 맨 앞 카드에 `New` 표가 붙는다.
      카드에는 그림과 번호만 보이고, 때 · 제목 · 티저는 호버 · 포커스 · 누름으로 비치는 숨김 층에 들어간다.
   3. `pnpm --filter @libitums/landing test:unit`(`src/story/episodes.unit.test.ts` — id 꼴 · 번호 내림차순 · 두 언어 · 세로 그림) ·
      `test:ui`(카드 수 · New 표 · 숨김 층) · `test:integration`(빌드)을 돌린다.
 
 - **색 · 반경 · 서체** — `@libitums/design-tokens`의 CSS 변수를 `base.css`가 짧은 이름으로 잇는다. 값을 옮겨 적지 않는다.
+  ⟨2026-11-04⟩ 예외는 **베트남어 페이지**(`html[lang="vi"]`)다 — Jost · Pretendard에 베트남어 글자가 없어 강조를 League Spartan(앱과 같이,
+  ADR-0091 D5), 본문을 Inter(Pretendard의 바탕)로 바꾸고 체험판의 타이포 토큰도 같은 자리에서 돌린다. 둘 다 fontsource 패키지라 산출물에 함께
+  실리고 `unicode-range` 덕에 다른 언어 페이지는 받지 않는다.
 
 ## 확인
 
