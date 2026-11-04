@@ -1,6 +1,6 @@
 /* 끝낸 유닛에서 다음 유닛으로 이어지는 발자국입니다(ADR-0100). 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1).
    층은 구획(`.journey-map-screen-episode`, position relative)의 첫 자식 · 0 × 0 절대 상자라 줄 배치를 밀지 않고,
-   유닛 줄이 DOM 뒤에 서므로 발자국은 유닛 아래 · 맵 배경 위에 그려집니다. 발자국 12 × 14 기하값은 `map-footprints.ts`가
+   유닛 줄이 DOM 뒤에 서므로 발자국은 유닛 아래 · 맵 배경 위에 그려집니다(`z-index` 없이 DOM 순서만 — 스크롤 컨테이너 안 z-index 자식은 별도 레이어로 떠 쌓임이 어긋날 수 있습니다). 발자국 12 × 14 기하값은 `map-footprints.ts`가
    집니다(토큰 미정 기하값 — `special-unit.css`와 같은 선례). */
 .map-footprints {
   position: absolute;
@@ -9,7 +9,6 @@
   width: 0;
   height: 0;
   overflow: visible;
-  z-index: 0;
 }
 
 /* 바깥 상자 — 자리와 발끝 방향(인라인 `transform: rotate() scaleX()`)만 집니다. */
