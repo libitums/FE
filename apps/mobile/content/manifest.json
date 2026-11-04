@@ -53,7 +53,8 @@
       "version": "2026-11-04.2",
       "sha256": "5820fe8555d13de3d43a4db78cf21fb4c5edf134640447f3b35d211ae234ef9c",
       "bytes": 226101,
-      "url": "episodes/u04-directions.json"
+      "url": "episodes/u04-directions.json",
+      "cover": "images/covers/u04-directions.webp"
     },
     {
       "id": "u05-baekban",
@@ -63,7 +64,8 @@
       "version": "2026-11-04.2",
       "sha256": "3bd35935426f5f53572e7453734de0fbaa49b03cd42853f9c03a0ba1e992bb41",
       "bytes": 222966,
-      "url": "episodes/u05-baekban.json"
+      "url": "episodes/u05-baekban.json",
+      "cover": "images/covers/u05-baekban.webp"
     },
     {
       "id": "u06-cafe",
@@ -73,7 +75,8 @@
       "version": "2026-11-04.2",
       "sha256": "24f718f9d8c95b3ab5622ae194b2241398179ec8ff4531bf9df4589e412e7987",
       "bytes": 250246,
-      "url": "episodes/u06-cafe.json"
+      "url": "episodes/u06-cafe.json",
+      "cover": "images/covers/u06-cafe.webp"
     },
     {
       "id": "u07-jaemin",

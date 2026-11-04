@@ -31,20 +31,23 @@ const COVER_PATHS = [
   "images/covers/u01-water.webp",
   "images/covers/u02-checkin.webp",
   "images/covers/u03-mina.webp",
+  "images/covers/u04-directions.webp",
+  "images/covers/u05-baekban.webp",
+  "images/covers/u06-cafe.webp",
 ];
 
 describe("bundledContentImages", () => {
-  test("BI1. 표의 키는 u00 그림 15장 + 표지 3장과 같고 값은 비어 있지 않고 서로 다르다", () => {
+  test("BI1. 표의 키는 u00 그림 15장 + 표지 6장과 같고 값은 비어 있지 않고 서로 다르다", () => {
     expect(new Set(Object.keys(bundledContentImages))).toEqual(
       new Set([...U00_IMAGE_PATHS, ...COVER_PATHS]),
     );
     const values = Object.values(bundledContentImages);
-    expect(values).toHaveLength(18);
+    expect(values).toHaveLength(21);
     for (const value of values) expect(value).not.toBe("");
-    expect(new Set(values).size).toBe(18);
+    expect(new Set(values).size).toBe(21);
   });
 
-  test("BI3. 표지 셋은 표에 있고 webp 주소다", () => {
+  test("BI3. 표지 여섯은 표에 있고 webp 주소다", () => {
     for (const path of COVER_PATHS) {
       const value = bundledContentImageUrl(path);
       expect(typeof value).toBe("string");

@@ -16,6 +16,9 @@ import imgU00TutorialAvatar from "../assets/content/level-3/images/u00-tutorial/
 import imgCoverU01Water from "../assets/content/covers/u01-water.webp";
 import imgCoverU02Checkin from "../assets/content/covers/u02-checkin.webp";
 import imgCoverU03Mina from "../assets/content/covers/u03-mina.webp";
+import imgCoverU04Directions from "../assets/content/covers/u04-directions.webp";
+import imgCoverU05Baekban from "../assets/content/covers/u05-baekban.webp";
+import imgCoverU06Cafe from "../assets/content/covers/u06-cafe.webp";
 import imgItemsHello from "../assets/content/level-3/images/items/hello.webp";
 
 export const bundledContentImages: Readonly<Record<string, string>> = {
@@ -38,6 +41,9 @@ export const bundledContentImages: Readonly<Record<string, string>> = {
   "images/covers/u01-water.webp": imgCoverU01Water,
   "images/covers/u02-checkin.webp": imgCoverU02Checkin,
   "images/covers/u03-mina.webp": imgCoverU03Mina,
+  "images/covers/u04-directions.webp": imgCoverU04Directions,
+  "images/covers/u05-baekban.webp": imgCoverU05Baekban,
+  "images/covers/u06-cafe.webp": imgCoverU06Cafe,
 };
 
 /** 표에 있으면 그 주소, 없으면 null입니다. 순수 · 던지지 않음. */

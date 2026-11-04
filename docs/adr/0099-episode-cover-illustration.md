@@ -35,7 +35,7 @@
 
 ### D5. 자산 — u10까지 내장, 780px webp
 
-- 원본(1452 × 1083 PNG, 흰 배경)을 `devtools/content/cover-webp.mjs`로 폭 780 · q80 webp(표시 폭 260 × 3배)로 바꿔 `apps/mobile/src/assets/content/covers/<id>.webp`에 싣고, `bundled-content-images.ts` 표와 내장 매니페스트 항목의 `cover`를 더한다. 이번에 u01 · u02 · u03(19 · 25 · 11 kB). u04 ~ u10은 일러스트가 오는 대로 같은 절차.
+- 원본(1452 × 1083 PNG, 흰 배경)을 `devtools/content/cover-webp.mjs`로 폭 780 · q80 webp(표시 폭 260 × 3배)로 바꿔 `apps/mobile/src/assets/content/covers/<id>.webp`에 싣고, `bundled-content-images.ts` 표와 내장 매니페스트 항목의 `cover`를 더한다. 이번에 u01 ~ u06(19 · 25 · 11 · 13 · 8 · 12 kB — u04 ~ u06은 2026-11-04 같은 날 추가). u07 ~ u10은 일러스트가 오는 대로 같은 절차.
 - u11부터는 버킷 `images/covers/<id>.webp` + 버킷 매니페스트 항목 `cover`(앱 변경 없음). 흰 배경은 맵 배경(#FFFDFC)과 거의 같아 그대로 둔다 — 투명판이 오면 교체.
 
 ## 대가
