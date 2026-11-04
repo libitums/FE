@@ -20,7 +20,8 @@
       "version": "2026-10-23.1",
       "sha256": "c489e8457b25c3e3cecdb66a562810443920d685cdf8c8df74d7bce642944a80",
       "bytes": 164907,
-      "url": "episodes/u01-water.json"
+      "url": "episodes/u01-water.json",
+      "cover": "images/covers/u01-water.webp"
     },
     {
       "id": "u02-checkin",

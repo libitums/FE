@@ -26,6 +26,7 @@ export function CatalogMapSections({
   onTapPending,
   freshness,
   onCheckNew,
+  coverImageUrlOf,
 }: CatalogMapSectionsProps): ReactNode {
   const comingSoon = catalogComingSoonOrdinal(sections);
   const target = guide?.visible === true ? mapGuideTargetOf(sections) : null;
@@ -53,6 +54,7 @@ export function CatalogMapSections({
                 }
                 onStartCover={onStartCover}
                 onSelectUnit={onSelectUnit}
+                {...(coverImageUrlOf === undefined ? {} : { coverImageUrlOf })}
               />
             </view>
           );

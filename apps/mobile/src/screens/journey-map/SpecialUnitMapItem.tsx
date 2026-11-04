@@ -28,6 +28,7 @@ export function SpecialUnitMapItem({
   icon,
   sheetTargetId,
   children,
+  label = "two-line",
 }: SpecialUnitMapItemProps) {
   const copy = useUiCopy();
   const unitStatus = specialUnitStatusOf(status);
@@ -63,17 +64,22 @@ export function SpecialUnitMapItem({
         />
       </MapUnitStage>
       <view
-        className={`journey-special-unit-label journey-special-unit-label-${specialUnitLabelToneOf(unitStatus)}`}
+        className={`journey-special-unit-label journey-special-unit-label-${specialUnitLabelToneOf(unitStatus)}${
+          label === "title-only" ? " journey-special-unit-label-title-only" : ""
+        }`}
         data-testid={`journey-special-unit-label-${unitId}`}
         accessibility-element={false}
       >
-        <text
-          className="journey-special-unit-eyebrow"
-          data-testid={`journey-special-unit-eyebrow-${unitId}`}
-          accessibility-element={false}
-        >
-          {copy.specialUnitMap.eyebrow}
-        </text>
+        {/* 카탈로그 표지는 제목 한 줄(`title-only`) — 윗줄 「SPECIAL」을 내지 않습니다. */}
+        {label === "title-only" ? null : (
+          <text
+            className="journey-special-unit-eyebrow"
+            data-testid={`journey-special-unit-eyebrow-${unitId}`}
+            accessibility-element={false}
+          >
+            {copy.specialUnitMap.eyebrow}
+          </text>
+        )}
         <text
           className="journey-special-unit-title"
           data-testid={`journey-special-unit-title-${unitId}`}

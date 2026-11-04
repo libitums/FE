@@ -17,6 +17,8 @@ const paths = [
   "images/u00-tutorial/avatar.webp",
   "images/items/hello.webp",
   "images/items/thanks.webp",
+  // 표지 일러스트 — 고정본 매니페스트의 u01에만 `cover`가 있습니다.
+  "images/covers/u01-water.webp",
 ];
 
 export const bundledContentImages: Readonly<Record<string, string>> = Object.fromEntries(

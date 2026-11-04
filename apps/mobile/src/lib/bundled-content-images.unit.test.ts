@@ -26,13 +26,30 @@ const U00_IMAGE_PATHS = [
   "level-3/images/items/hello.webp",
 ];
 
+// 표지 일러스트 — 내장 매니페스트 `cover`가 가리키는 경로(수준과 무관하게 `images/covers/`)입니다.
+const COVER_PATHS = [
+  "images/covers/u01-water.webp",
+  "images/covers/u02-checkin.webp",
+  "images/covers/u03-mina.webp",
+];
+
 describe("bundledContentImages", () => {
-  test("BI1. 표의 키는 u00 그림 15장과 같고 값은 비어 있지 않고 서로 다르다", () => {
-    expect(new Set(Object.keys(bundledContentImages))).toEqual(new Set(U00_IMAGE_PATHS));
+  test("BI1. 표의 키는 u00 그림 15장 + 표지 3장과 같고 값은 비어 있지 않고 서로 다르다", () => {
+    expect(new Set(Object.keys(bundledContentImages))).toEqual(
+      new Set([...U00_IMAGE_PATHS, ...COVER_PATHS]),
+    );
     const values = Object.values(bundledContentImages);
-    expect(values).toHaveLength(15);
+    expect(values).toHaveLength(18);
     for (const value of values) expect(value).not.toBe("");
-    expect(new Set(values).size).toBe(15);
+    expect(new Set(values).size).toBe(18);
+  });
+
+  test("BI3. 표지 셋은 표에 있고 webp 주소다", () => {
+    for (const path of COVER_PATHS) {
+      const value = bundledContentImageUrl(path);
+      expect(typeof value).toBe("string");
+      expect(value).toMatch(/\.webp$/);
+    }
   });
 
   test("BI2. 표에 있는 경로는 표의 값을, 선두 content/ · 모르는 경로 · 빈 문자열은 null을 낸다", () => {

@@ -33,7 +33,7 @@ export const catalogUpdateNoticeId: CatalogUpdateNoticeCopy = {
 
 export const catalogMapId: CatalogMapCopy = {
   episodeLabel: (ordinal) => `Episode ${ordinal}.`,
-  coverTitle: "Pengantar episode",
+  coverTitle: "Pengantar",
   lessonTitle: (ordinal) => `Pelajaran ${ordinal}`,
   sheetHeading: (unit, title) => `${unit}: “${title}”`,
   finalTitle: "Tes akhir",

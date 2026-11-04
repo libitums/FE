@@ -358,8 +358,11 @@ u01 · u02는 전부 해결, u03은 18문항이 같은 세 id(에피소드 2의 
 | `episodes[].bytes` | 필수 | int | 원문 UTF-8 바이트 수. 다르면 위와 같다 |
 | `episodes[].assets_bytes` | 선택 | int | ⟨2026-11-03⟩ 그 에피소드의 그림 · 음성 합계 바이트. 받을지 묻는 시트 · 받은 용량 표시가 쓴다. 0 이상 정수가 아니면 **그 값만** 버리고 매니페스트는 받는다. 옛 앱은 모르는 키로 버린다([ADR-0095](../adr/0095-content-delivery-and-data-policy.md) D3) |
 | `episodes[].url` | 필수 | string | 기준 상대 경로. 빈 값 · 선두 `/` · `..` 조각 · `://`가 든 값은 거부한다 |
+| `episodes[].cover` | 선택 | string | ⟨2026-11-04⟩ 표지 일러스트의 기준 상대 경로 — `images/covers/<id>.webp`(규칙은 `url`과 같다). 여정 맵 표지 노드 뒤에 깐다. 없으면 같은 id **내장** 항목의 값, 그것도 없으면 노드만. 빈 문자열은 없음. 옛 앱은 모르는 키로 버린다([ADR-0099](../adr/0099-episode-cover-illustration.md)) |
 
 모르는 키는 버린다(`.strict()` 아님).
+
+⟨2026-11-04⟩ **표지 일러스트(`cover`)**: 버킷에 `images/covers/<id>.webp`(폭 780 · 4:3 · webp)를 올리고 그 항목에 `cover`를 적으면 앱 변경 없이 표지 뒤에 선다. u01 ~ u10은 앱에 내장한다(내장 매니페스트 `apps/mobile/content/manifest.json`의 `cover` + `apps/mobile/src/assets/content/covers/`). 변환은 `node devtools/content/cover-webp.mjs <png> <id>`. 내장본과 같은 id의 원격 항목에 `cover`가 없어도 내장 일러스트가 남는다.
 
 - **`min_app_version` → `min_client_level`(정수)로 정정했다.** 제안본은 semver `min_app_version: "1.3.0"`이었는데, 앱의 JS에는 비교할 앱 버전 상수가 없다(`import.meta.env`는 SUPABASE · POSTHOG · ANALYTICS_ENVIRONMENT뿐). 그래서 콘텐츠가 요구하는 「클라이언트 수준」을 정수로 두고, 앱이 그 수준을 그릴 수 있게 되면 앱의 상수를 올린다. Q18의 「`min_app_version`으로 1차 차단」은 이 키로 읽는다.
 - `title`을 매니페스트에도 두는 이유: 아직 내려받지 않은 에피소드도 맵에 **「준비 중」 구획으로 머리만** 보여야 한다(ADR-0024 D13 · D14의 `pending` 에피소드가 바로 이 상태다). 본문은 받은 뒤 채운다.

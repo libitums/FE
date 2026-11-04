@@ -5,6 +5,7 @@ import { CatalogCoverMapItem } from "./CatalogCoverMapItem";
 import { CatalogUnitNode } from "./CatalogUnitNode";
 import { FirstUnitMapTooltip } from "./FirstUnitMapTooltip";
 import { MapUnitCell, MapUnitRow } from "./MapUnitRow";
+import { catalogCoverIllustrationOf } from "./catalog-cover-illustration";
 import { catalogSectionDomId, catalogUnitDomId, catalogUnitNodesOf } from "./catalog-map";
 import type { CatalogEpisodeSectionProps } from "./catalog-map.contract";
 import { mapNodeStatusUnder } from "./journey-map-load";
@@ -29,9 +30,13 @@ export function CatalogEpisodeSection({
   guide,
   onStartCover,
   onSelectUnit,
+  coverImageUrlOf,
 }: CatalogEpisodeSectionProps): ReactNode {
   const columns = useMapColumns();
   const guided = guide !== null;
+  // 일러스트 주소는 렌더마다 순수하게 파생합니다 — 주소 함수가 없으면(옛 호출부) 일러스트 없음.
+  const illustration =
+    coverImageUrlOf === undefined ? null : catalogCoverIllustrationOf(section, coverImageUrlOf);
   const startCover = (episodeId: string): void => {
     "background only";
     guide?.dismiss();
@@ -59,6 +64,7 @@ export function CatalogEpisodeSection({
               status={coverStatus}
               onSelect={startCover}
               layer={guided ? "guide" : "map"}
+              illustration={illustration}
             >
               {guided ? (
                 <FirstUnitMapTooltip

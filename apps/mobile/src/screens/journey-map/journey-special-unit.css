@@ -58,3 +58,10 @@
 .journey-special-unit-label-correct .journey-special-unit-title {
   color: var(--libitum-color-fg-neutral);
 }
+
+/* 제목 한 줄 라벨(카탈로그 표지 「Intro」) — 열림 · 끝은 brand.primary, 잠김은 위 muted 그대로(사용자 결정, ADR-0099). */
+.journey-special-unit-label-title-only.journey-special-unit-label-brand .journey-special-unit-title,
+.journey-special-unit-label-title-only.journey-special-unit-label-correct
+  .journey-special-unit-title {
+  color: var(--libitum-color-brand-primary);
+}

@@ -48,6 +48,7 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
             ...(wiring.onCheckNewStories === undefined
               ? {}
               : { onCheckNew: wiring.onCheckNewStories }),
+            coverImageUrlOf: wiring.episodeContent.imageUrlOf,
           }}
         />
       );

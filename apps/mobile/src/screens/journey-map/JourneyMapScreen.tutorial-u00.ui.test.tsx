@@ -50,11 +50,11 @@ describe("맵 구획", () => {
     expect(sections[0]?.querySelectorAll('[data-testid^="journey-map-cell-"]').length).toBe(15);
   });
 
-  test("MU2. u00 노드 제목은 S1~S11 Lesson 1~11, S12 · S13 Culture, RP Final test이고 표지 낭독은 Episode 0. Episode intro다", () => {
+  test("MU2. u00 노드 제목은 S1~S11 Lesson 1~11, S12 · S13 Culture, RP Final test이고 표지 낭독은 Episode 0. Intro다", () => {
     render(u00Screen(u00Catalog()));
 
     expect(screen.getByTestId(coverId).getAttribute("accessibility-label")).toContain(
-      "Episode 0. Episode intro",
+      "Episode 0. Intro",
     );
     for (let lesson = 1; lesson <= 11; lesson += 1) {
       expect(nodeOf(`S${lesson}`).getAttribute("accessibility-label")).toContain(

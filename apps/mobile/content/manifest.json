@@ -20,7 +20,8 @@
       "version": "2026-11-04.2",
       "sha256": "2d143912209c3922adc0d7a1996d9ea8ddbfec9c5a1a685991ee070b6438b063",
       "bytes": 202118,
-      "url": "episodes/u01-water.json"
+      "url": "episodes/u01-water.json",
+      "cover": "images/covers/u01-water.webp"
     },
     {
       "id": "u02-checkin",
@@ -30,7 +31,8 @@
       "version": "2026-11-04.2",
       "sha256": "00598f184a7d26f2200765159acf6c7ef90a980e3317a641ae08979cb28edf5c",
       "bytes": 230562,
-      "url": "episodes/u02-checkin.json"
+      "url": "episodes/u02-checkin.json",
+      "cover": "images/covers/u02-checkin.webp"
     },
     {
       "id": "u03-mina",
@@ -40,7 +42,8 @@
       "version": "2026-11-04.2",
       "sha256": "01ece9df5cd7f3f253a749cd1fb46576af6cffa67f4e4175bf06900d147d32d5",
       "bytes": 241130,
-      "url": "episodes/u03-mina.json"
+      "url": "episodes/u03-mina.json",
+      "cover": "images/covers/u03-mina.webp"
     },
     {
       "id": "u04-directions",

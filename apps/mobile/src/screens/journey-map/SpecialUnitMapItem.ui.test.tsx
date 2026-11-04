@@ -1,5 +1,5 @@
 import { describe, expect, test, vi } from "vitest";
-import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
+import { cleanup, fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
 import type { JourneyMapNodeStatus } from "./journey-map-types";
 import { SpecialUnitMapItem } from "./SpecialUnitMapItem";
@@ -17,6 +17,7 @@ function mount(
     readonly accessibilityName?: string;
     readonly title?: string;
     readonly withChild?: boolean;
+    readonly label?: "two-line" | "title-only";
   } = {},
 ) {
   const onSelect = vi.fn<(tapY: number) => void>();
@@ -28,6 +29,7 @@ function mount(
       status={status}
       onSelect={onSelect}
       {...(overrides.layer === undefined ? {} : { layer: overrides.layer })}
+      {...(overrides.label === undefined ? {} : { label: overrides.label })}
     >
       {overrides.withChild === true ? <view data-testid="extra-layer" /> : null}
     </SpecialUnitMapItem>,
@@ -137,5 +139,22 @@ describe("SpecialUnitMapItem", () => {
       0,
     );
     expect(view.container.querySelectorAll(".ui-lynx-learning-unit")).toHaveLength(0);
+  });
+
+  test("SMI7. label=title-only는 SPECIAL 윗줄 없이 제목만 세우고 라벨에 title-only 클래스가 붙는다", () => {
+    mount("available", { title: "Intro", label: "title-only" });
+
+    expect(screen.queryByTestId("journey-special-unit-eyebrow-x")).toBeNull();
+    expect(screen.getByTestId("journey-special-unit-title-x")).toHaveTextContent("Intro");
+    const label = screen.getByTestId(labelTestId);
+    expect(label).toHaveClass("journey-special-unit-label-title-only");
+    expect(label).toHaveClass("journey-special-unit-label-brand");
+    const unit = screen.getByTestId(unitTestId);
+    expect(unit.compareDocumentPosition(label) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+
+    cleanup();
+    mount("locked", { title: "Intro", label: "title-only" });
+    expect(screen.getByTestId(labelTestId)).toHaveClass("journey-special-unit-label-muted");
+    expect(screen.queryByTestId("journey-special-unit-eyebrow-x")).toBeNull();
   });
 });

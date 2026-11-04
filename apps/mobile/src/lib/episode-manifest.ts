@@ -15,6 +15,8 @@ export type ManifestEntry = {
   /** 그림 · 음성 합계 바이트(ADR-0095 D3). 없거나 틀린 값이면 키가 없습니다. */
   assetsBytes?: number;
   url: string;
+  /** 표지 일러스트의 기준 상대 경로(`images/covers/<id>.webp`)입니다. 선택 — 없으면 일러스트 없음. */
+  cover?: string;
 };
 
 export type EpisodeManifest = {
@@ -81,6 +83,8 @@ function decode(input: unknown): ManifestDecodeResult {
       bytes: entry.bytes,
       ...assetsBytesOf(entry.assets_bytes),
       url: entry.url,
+      // 빈 값 · 공백만은 「없음」입니다 — 경로의 유효성(선두 / · .. · ://)은 주소를 만드는 쪽이 거릅니다.
+      ...(entry.cover === undefined || entry.cover.trim() === "" ? {} : { cover: entry.cover }),
     }))
     .sort((a, b) => a.order - b.order);
 
@@ -128,6 +132,7 @@ export function encodeManifestText(manifest: EpisodeManifest): string {
       bytes: entry.bytes,
       ...(entry.assetsBytes === undefined ? {} : { assets_bytes: entry.assetsBytes }),
       url: entry.url,
+      ...(entry.cover === undefined ? {} : { cover: entry.cover }),
     })),
   });
 }

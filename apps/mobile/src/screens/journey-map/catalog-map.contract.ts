@@ -9,6 +9,7 @@ import type { SheetEntranceMotion } from "./journey-map-sheet-entrance.contract"
 import type { JourneyMapItemStatus, JourneyMapNodeStatus } from "./journey-map-types";
 import type { SpecialUnitMapLayer } from "./journey-special-unit.contract";
 import type { JourneyMapNodeAccess, JourneyMapProgressLoad } from "./journey-map-load.contract";
+import type { CatalogCoverIllustration } from "./catalog-cover-illustration";
 
 /** 열린 카탈로그 유닛 말풍선의 키입니다(`catalogSheetKey`). */
 export type CatalogSheetKey = `catalog:${string}`;
@@ -47,6 +48,8 @@ export type CatalogReadySection = {
   readonly storyKeys?: readonly CatalogUnitKey[];
   /** 이야기 유닛의 노드 아이콘 — 컷 · 사진 보기는 필름, 문자는 말풍선, 전화는 전화(ADR-0088 D6). */
   readonly storyIcons?: Readonly<Record<CatalogUnitKey, CatalogStoryIcon>>;
+  /** 표지 일러스트의 기준 상대 경로(매니페스트 `cover`). 없으면 일러스트 없이 노드만. */
+  readonly cover?: string;
 };
 
 export type CatalogUnavailableSection = {
@@ -97,6 +100,8 @@ export type JourneyMapCatalogProps = {
   readonly onStartCover: (episodeId: string) => void;
   /** 말풍선의 `Start`를 눌렀을 때입니다. 노드를 누르면 맵이 먼저 말풍선을 엽니다. */
   readonly onStartUnit: (episodeId: string, unitKey: CatalogUnitKey) => void;
+  /** 표지 일러스트 경로 → 주소(번들 또는 원격). 없으면 일러스트를 그리지 않습니다. */
+  readonly coverImageUrlOf?: (relativePath: string) => string | null;
   /**
    * 말풍선 진행 줄의 전체 수 — 그 유닛을 열면 서는 문항 수입니다. 없거나 0이면 진행 줄을 그리지
    * 않습니다(학습자 프로필이 아직 없어 문항을 지을 수 없을 때 등).
@@ -130,6 +135,7 @@ export type CatalogMapSectionsProps = {
   readonly onTapPending?: (episodeId: string) => void;
   readonly freshness?: CatalogFreshness;
   readonly onCheckNew?: () => void;
+  readonly coverImageUrlOf?: (relativePath: string) => string | null;
 };
 
 export type CatalogEpisodeSectionProps = {
@@ -143,6 +149,7 @@ export type CatalogEpisodeSectionProps = {
   readonly guide: CatalogCoverGuide | null;
   readonly onStartCover: (episodeId: string) => void;
   readonly onSelectUnit: CatalogUnitSelect;
+  readonly coverImageUrlOf?: (relativePath: string) => string | null;
 };
 
 export type CatalogUnavailableSectionProps = {
@@ -158,6 +165,8 @@ export type CatalogCoverMapItemProps = {
   readonly layer?: SpecialUnitMapLayer; // 기본 "map"
   /** 안내 말풍선 자리입니다. */
   readonly children?: ReactNode;
+  /** 노드 뒤 일러스트. 없거나 null이면 노드만 섭니다. */
+  readonly illustration?: CatalogCoverIllustration | null;
 };
 
 export type FirstUnitMapTooltipProps = {

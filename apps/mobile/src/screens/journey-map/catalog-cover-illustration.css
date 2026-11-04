@@ -1,0 +1,41 @@
+/* 표지 노드 뒤 일러스트입니다(ADR-0099). 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1).
+   기하값은 `special-unit.css`의 토큰 미정 기하값과 같은 선례로 px 그대로입니다 — 일러스트 260 × 194(4:3),
+   노드 halo 124는 래퍼 가운데(x 120 ~ 244)에 서서 자리가 최종 노드와 같습니다. 일러스트만 왼쪽(짝수 에피소드 —
+   노드 면이 4사분면) 또는 오른쪽(홀수 — 3사분면) 위로 물러납니다. 위 여백 87은 일러스트가 노드 위로 나오는 높이라
+   래퍼 안에 들어 조상 `overflow`에 잘리지 않습니다. */
+.catalog-cover-illustrated {
+  position: relative;
+  width: 364px;
+  padding-top: 87px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: visible;
+}
+
+.catalog-cover-illustration {
+  position: absolute;
+  top: 0;
+  width: 260px;
+  height: 194px;
+  z-index: 0;
+}
+
+.catalog-cover-illustrated-left .catalog-cover-illustration {
+  left: 0;
+}
+
+.catalog-cover-illustrated-right .catalog-cover-illustration {
+  right: 0;
+}
+
+/* 잠긴 표지는 원색을 흐립니다 — 런타임 filter 대신 불투명도(기기 안정성 · 자산 한 벌). */
+.catalog-cover-illustration-locked {
+  opacity: 0.45;
+}
+
+/* 노드 · 라벨은 일러스트 위에 섭니다. */
+.catalog-cover-illustrated .journey-special-unit {
+  position: relative;
+  z-index: 1;
+}

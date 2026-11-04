@@ -92,7 +92,7 @@ test("UE5. 부록 B 대표 문구와 문자열이 같다", () => {
 
 test("UC-C1. 카탈로그 맵 · 표지 문구가 문구표 값과 같다", () => {
   expect(c.catalogMap.episodeLabel(4)).toBe("Episode 4.");
-  expect(c.catalogMap.coverTitle).toBe("Episode intro");
+  expect(c.catalogMap.coverTitle).toBe("Intro");
   expect(c.catalogMap.lessonTitle(2)).toBe("Lesson 2");
   expect(c.catalogMap.finalTitle).toBe("Final test");
   expect(c.catalogMap.caption).toEqual({

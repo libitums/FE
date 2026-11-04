@@ -15,6 +15,9 @@ export type SpecialUnitMapCopy = {
 
 export type SpecialUnitLabelTone = "muted" | "brand" | "correct";
 
+/** 스페셜 라벨의 줄 수입니다. */
+export type SpecialUnitLabelLayout = "two-line" | "title-only";
+
 /** 안내 말풍선이 떠 있는 표지만 `"guide"`(스크림 위로 들림 · 흰 라벨). */
 export type SpecialUnitMapLayer = "map" | "guide";
 
@@ -35,6 +38,8 @@ export type SpecialUnitMapItemProps = {
   readonly sheetTargetId?: SheetTargetId;
   /** 면 가운데 아이콘(SVG 문자열). 없으면 `SpecialUnit` 기본(오각 별)입니다. */
   readonly icon?: string;
+  /** 라벨 줄 수 — 기본 `two-line`(SPECIAL + 제목). `title-only`는 제목만(카탈로그 표지). */
+  readonly label?: SpecialUnitLabelLayout;
 };
 
 export type SpecialUnitMapTestId =
