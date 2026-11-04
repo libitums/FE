@@ -274,12 +274,14 @@ describe("syncEpisodeAssets — 동시 받기", () => {
     async function run(order: readonly string[]) {
       const d = held();
       const store = memoryStore();
-      const done = ensureEpisodeAssets(store, d, { id: "u09", sha256: "abc" }, [
-        "a",
-        "b",
-        "c",
-        "d",
-      ]);
+      // 시계를 고정합니다 — 「서버에 없음」이 있으면 확인 시각이 표시에 들어갑니다(ADR-0095 D2).
+      const done = ensureEpisodeAssets(
+        store,
+        d,
+        { id: "u09", sha256: "abc" },
+        ["a", "b", "c", "d"],
+        { now: () => 1000 },
+      );
       await flush();
       expect(d.started).toEqual(["a", "b", "c", "d"]);
       for (const path of order) {
@@ -296,6 +298,7 @@ describe("syncEpisodeAssets — 동시 받기", () => {
     expect(JSON.parse(reversed.marker ?? "{}")).toEqual({
       sha256: "abc",
       missing: ["a", "c", "d"],
+      checkedAt: 1000,
     });
     expect(forward.marker).toBe(reversed.marker);
   });
@@ -407,7 +410,7 @@ describe("syncEpisodeAssets — 동시 받기", () => {
 describe("ensureEpisodeAssets — 옵션", () => {
   const entry = { id: "u09", sha256: "abc" };
 
-  test("ASO1. 옵션 없이 부르면 활성 표시 contentAssetsKey(id)에 {sha256, missing}을 쓴다", async () => {
+  test("ASO1. 옵션 없이 부르면 활성 표시 contentAssetsKey(id)에 {sha256, missing}을 쓰고, 빠진 것이 있으면 확인 시각도 쓴다", async () => {
     const store = memoryStore();
     const d = deps({ "audio/a.m4a": notFound });
 
@@ -418,6 +421,7 @@ describe("ensureEpisodeAssets — 옵션", () => {
     expect(JSON.parse(store.data.get(contentAssetsKey("u09")) ?? "")).toEqual({
       sha256: "abc",
       missing: ["audio/a.m4a"],
+      checkedAt: expect.any(Number),
     });
   });
 

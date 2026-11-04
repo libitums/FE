@@ -12,6 +12,9 @@ const manifestEntrySchema = z.object({
   version: z.string(),
   sha256: z.string().check(z.regex(/^[0-9a-f]{64}$/)),
   bytes: z.int(),
+  // 선택 — 그 에피소드의 그림 · 음성 합계 바이트(ADR-0095 D3). 틀린 값이 매니페스트 전체를 버리지 않도록 여기서는
+  // 무엇이든 받고 디코더가 0 이상 정수만 남깁니다.
+  assets_bytes: z.optional(z.unknown()),
   url: z.string(),
 });
 

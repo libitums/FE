@@ -93,18 +93,27 @@ describe("refreshEpisodeCatalog — 바뀐 에피소드는 스테이징", () => 
     });
   });
 
-  test("RS2. 관찰자는 planned 한 번 → 줄지 않는 progressed → ready 순으로 받는다", async () => {
+  // ⟨2026-11-03⟩ 스플래시는 튜토리얼만 기다립니다(ADR-0095 D1) — 다른 바뀐 편은 관찰자에 알리지 않습니다.
+  test("RS2. 튜토리얼이 아닌 바뀐 편은 관찰자에 planned(빈 목록) 한 번뿐이고 진행 · 준비를 알리지 않는다", async () => {
     const { watch, run } = setup();
 
     await run();
 
-    expect(watch.events).toEqual([
-      "planned:u04-x",
-      "progressed:u04-x:1/3",
-      "progressed:u04-x:2/3",
-      "progressed:u04-x:3/3",
-      "ready:u04-x",
-    ]);
+    expect(watch.events).toEqual(["planned:"]);
+  });
+
+  test("RS2. 튜토리얼이 바뀌면 관찰자는 planned 한 번 → 줄지 않는 progressed → ready 순으로 받는다", async () => {
+    const tutorial = versioned("u00-tutorial", 0, "2099-01-01.1", "튜토리얼");
+    const { watch, run } = setup([tutorial]);
+
+    await run();
+
+    expect(watch.events[0]).toBe("planned:u00-tutorial");
+    const progressed = watch.events.filter((event) => event.startsWith("progressed:"));
+    const counts = progressed.map((event) => Number(event.split(":")[2]?.split("/")[0]));
+    expect(progressed.length).toBeGreaterThan(0);
+    expect(counts).toEqual([...counts].sort((a, b) => a - b));
+    expect(watch.events.at(-1)).toBe("ready:u00-tutorial");
   });
 
   test("RS3. 받은 뒤 교체하면 카탈로그가 새 버전을 연다", async () => {
@@ -127,7 +136,7 @@ describe("refreshEpisodeCatalog — 바뀐 에피소드는 스테이징", () => 
     const summary = await run();
 
     expect(summary.locked).toEqual([{ id: ID, reason: "integrity-mismatch" }]);
-    expect(watch.events[0]).toBe("planned:u04-x");
+    expect(watch.events[0]).toBe("planned:");
     expect(data.get(CONTENT_RECEIVED_MANIFEST_KEY)).toBe(manifestText([bad]));
     expect(stagedKeys(ID).some((key) => data.has(key))).toBe(false);
     expect(activeBytes(data, ID).slice(1)).toEqual(before.slice(1));
@@ -243,7 +252,7 @@ describe("refreshEpisodeCatalog — 바뀐 에피소드는 스테이징", () => 
     for (const key of stagedKeys(ID)) expect(data.has(key)).toBe(false);
   });
 
-  test("RS10. 새 에피소드는 지금처럼 활성에 받아 준비 알림을 내고 바뀐 에피소드는 스테이징에 받는다 — 관찰자는 두 id를 order 순으로 받는다", async () => {
+  test("RS10. 새 에피소드는 지금처럼 활성에 받아 준비 알림을 내고 바뀐 에피소드는 스테이징에 받는다 — 둘 다 튜토리얼이 아니라 관찰자는 빈 목록을 받는다", async () => {
     const fresh = versioned("u05-n", 5, "2026-10-14.1", "새 에피소드");
     const { data, ready, watch, run } = setup([V2, fresh]);
 
@@ -254,7 +263,8 @@ describe("refreshEpisodeCatalog — 바뀐 에피소드는 스테이징", () => 
     expect(manifestEntryIn(data.get(CONTENT_MANIFEST_KEY), "u05-n")).toEqual(entryOf(fresh));
     expect(manifestEntryIn(data.get(CONTENT_MANIFEST_KEY), ID)).toEqual(entryOf(V1));
     expect(data.get(contentEpisodeKey(ID))).toBe(V1.text);
-    expect(watch.events[0]).toBe("planned:u04-x,u05-n");
+    // 튜토리얼이 아니므로 스플래시가 기다릴 id는 없습니다(ADR-0095 D1).
+    expect(watch.events[0]).toBe("planned:");
   });
 
   test("RS11. 새 에피소드 본문을 내장 자산 받기보다 먼저 받고, 매니페스트가 404이거나 손상이면 planned를 부르지 않는다", async () => {
@@ -363,7 +373,7 @@ describe("refreshEpisodeCatalog — 동시 받기는 에피소드 안에서만",
       cover: { image_url: `content/images/${id}/c.jpg`, audio_url: `${id}/l1` },
     });
 
-  test("RS13. A의 자산 셋이 함께 시작되고 A가 끝나기 전에는 B 본문을 받지 않으며 진행은 줄지 않고 ready(A)로 끝난다", async () => {
+  test("RS13. A의 자산 셋이 함께 시작되고 A가 끝나기 전에는 B 본문을 받지 않는다", async () => {
     const A = threeAssets("u04-a", 4);
     const B = twoAssets("u05-b", 5);
     const log: string[] = [];
@@ -396,15 +406,8 @@ describe("refreshEpisodeCatalog — 동시 받기는 에피소드 안에서만",
     expect(held.release(aPaths[2] ?? "")).toBe(true);
     await flush();
 
-    expect(watch.events.filter((event) => event.startsWith("progressed:u04-a"))).toEqual([
-      "progressed:u04-a:1/4",
-      "progressed:u04-a:2/4",
-      "progressed:u04-a:3/4",
-      "progressed:u04-a:4/4",
-    ]);
-    expect(watch.events.indexOf("ready:u04-a")).toBeGreaterThan(
-      watch.events.indexOf("progressed:u04-a:4/4"),
-    );
+    // 튜토리얼이 아니므로 관찰자에는 진행을 알리지 않습니다(ADR-0095 D1) — 받는 순서는 그대로입니다.
+    expect(watch.events).toEqual(["planned:"]);
     expect(log).toContain("episodes/u05-b.json");
 
     for (const path of ["images/u05-b/c.jpg", "audio/u05-b/l1.m4a"]) {

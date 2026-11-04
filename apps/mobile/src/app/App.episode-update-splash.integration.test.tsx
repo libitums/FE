@@ -24,6 +24,9 @@ import type { EpisodeIntroEvent } from "../screens/episode-intro/episode-intro.c
 // 봅니다. 대역은 경계뿐입니다 — 가짜 전송(`fetch`) · `StorageModule` · `ContentFileModule` · 가짜 시계.
 // 「다음 시작」은 `cleanup()` 뒤 같은 저장소 내용으로 `App`을 다시 그려 만듭니다. 버전은 맵에서 보이는
 // 것으로 가릅니다 — v2에만 레슨 노드 `S2`가 더 있습니다.
+//
+// ⟨2026-11-03⟩ 스플래시는 튜토리얼만 기다립니다(ADR-0095 D1). 그래서 기다리는 시나리오의 에피소드는 튜토리얼이고,
+// 내장본(`2026-11-03.1`)보다 높은 버전으로 둡니다. 다른 편이 스플래시를 붙잡지 않는 것은 [EUI4] · [EUI10]이 봅니다.
 
 afterEach(() => {
   cleanup();
@@ -32,10 +35,10 @@ afterEach(() => {
   vi.unstubAllEnvs();
 });
 
-const idOfEpisode = "u04-x";
+const idOfEpisode = "u00-tutorial";
 const closedEventName = "episode_update_splash_closed";
-const v1Version = "2026-10-13.1";
-const v2Version = "2026-10-14.1";
+const v1Version = "2099-01-01.1";
+const v2Version = "2099-01-02.1";
 
 type Version = "v1" | "v2";
 
@@ -72,8 +75,8 @@ function manifestFor(
   );
 }
 
-const v1Entry = { id: idOfEpisode, order: 4, text: v1Text, version: v1Version };
-const v2Entry = { id: idOfEpisode, order: 4, text: v2Text, version: v2Version };
+const v1Entry = { id: idOfEpisode, order: 0, text: v1Text, version: v1Version };
+const v2Entry = { id: idOfEpisode, order: 0, text: v2Text, version: v2Version };
 
 // 지난 실행에서 v1을 다 갖춰 둔 기기(활성 매니페스트 · 본문 · 자산 표시).
 const seedV1 = {
@@ -267,7 +270,7 @@ test("[EUI3] 받는 도중 앱이 꺼져도 준비된 새 버전은 다음 시�
   expect(sink.closed()[0]).toMatchObject({ outcome: "unchecked", replacedCount: "1" });
 });
 
-test("[EUI4] 새 에피소드도 스플래시가 다 받을 때까지 기다려 첫 맵에 바로 선다", async () => {
+test("[EUI4] 튜토리얼이 아닌 새 에피소드는 스플래시가 기다리지 않고, 받는 대로 맵에 선다", async () => {
   const files = fileModule();
   const fresh = {
     id: "u05-x",
@@ -286,19 +289,61 @@ test("[EUI4] 새 에피소드도 스플래시가 다 받을 때까지 기다려 
     splash: "hold",
   });
   await flush();
-  expect(gauge()).not.toBeNull();
+  expect(gauge()).toBeNull();
 
   await endLogo();
-  await advance(LONG_MS);
-  expect(splashUp()).toBe(true);
+  expect(splashUp()).toBe(false);
 
   await act(async () => {
     files.releaseAll();
   });
   await flush();
 
-  expect(splashUp()).toBe(false);
   expect(screen.getByTestId("catalog-section-u05-x")).toBeInTheDocument();
+});
+
+test("[EUI10] 튜토리얼이 아닌 바뀐 에피소드도 스플래시가 기다리지 않고, 맵 루트에서 받은 뒤 바뀐다", async () => {
+  const files = fileModule();
+  const other = "u04-x";
+  const oldText = minimalEpisodeText(other, {
+    title: "옛",
+    cover: { image_url: "content/images/u04-x/v1.jpg" },
+  });
+  const newText = minimalEpisodeText(other, {
+    title: "새",
+    cover: { image_url: "content/images/u04-x/v2.jpg" },
+  });
+  const oldEntry = { id: other, order: 4, text: oldText, version: "2026-10-13.1" };
+  const newEntry = { id: other, order: 4, text: newText, version: "2026-10-14.1" };
+  const sink = collector();
+  const { store } = await bootContentApp({
+    content: { "manifest.json": manifestFor([newEntry]), [`episodes/${other}.json`]: newText },
+    contentFiles: files.module,
+    preStore: {
+      [CONTENT_MANIFEST_KEY]: manifestFor([oldEntry]),
+      [contentEpisodeKey(other)]: oldText,
+      [contentAssetsKey(other)]: JSON.stringify({
+        sha256: sha256Hex(utf8Bytes(oldText)),
+        missing: [],
+      }),
+    },
+    splash: "hold",
+    onEvent: sink.onEvent,
+  });
+  await flush();
+  expect(gauge()).toBeNull();
+
+  await endLogo();
+  expect(splashUp()).toBe(false);
+  expect(sink.closed()[0]).toMatchObject({ outcome: "nothing" });
+  expect(store.get(contentEpisodeKey(other))).toBe(oldText);
+
+  await act(async () => {
+    files.releaseAll();
+  });
+  await flush();
+
+  expect(store.get(contentEpisodeKey(other))).toBe(newText);
 });
 
 test("[EUI9] 스플래시에서 못 받은 새 버전도 앱 사용 중 받아지면 여정맵 루트에서 바로 바뀐다", async () => {

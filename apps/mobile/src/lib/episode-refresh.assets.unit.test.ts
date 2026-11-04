@@ -171,6 +171,46 @@ describe("refreshEpisodeCatalog — 자산", () => {
     ]);
   });
 
+  // ⟨2026-11-03⟩ 「서버에 없음」 재확인(ADR-0095 D2) — 받기 차례 전체에서: 같은 매니페스트 · 하루 안이면 다시 묻지
+  // 않고, 확인 시각이 없는 옛 표시(지금 기기들)면 다음 차례에 다시 받아 missing을 비웁니다.
+  test("RA4b. 서버에 없던 자산이 나중에 올라오면 옛 표시는 다음 차례에 다시 받고, 새 표시는 하루 안에 다시 묻지 않는다", async () => {
+    const answers: Record<string, DownloadResult> = {
+      "images/u04-a/c.jpg": { status: "http", code: 404 },
+    };
+    const { fetchText, assets, log } = recorder(answers, bundledPaths);
+    const { store, data } = fakeStore();
+    const run = () =>
+      refreshEpisodeCatalog({
+        fetchText,
+        store,
+        bundled: bundledCatalogInput,
+        manifestPaths: LEVEL_1_PATHS,
+        assets,
+      });
+    const markerOf = () =>
+      JSON.parse(data.get(contentAssetsKey("u04-a")) ?? "{}") as {
+        missing?: string[];
+        checkedAt?: number;
+      };
+    const asked = () => log.filter((line) => line === "asset images/u04-a/c.jpg").length;
+
+    await run();
+    expect(markerOf().missing).toEqual(["images/u04-a/c.jpg"]);
+    expect(typeof markerOf().checkedAt).toBe("number");
+    expect(asked()).toBe(1);
+
+    delete answers["images/u04-a/c.jpg"];
+    await run();
+    expect(asked()).toBe(1);
+    expect(markerOf().missing).toEqual(["images/u04-a/c.jpg"]);
+
+    const { checkedAt: _dropped, ...legacy } = markerOf();
+    data.set(contentAssetsKey("u04-a"), JSON.stringify(legacy));
+    await run();
+    expect(asked()).toBe(2);
+    expect(markerOf().missing).toEqual([]);
+  });
+
   test("RA5. 내장 에피소드의 자산도 받는다(준비 알림은 없다 — 내장은 늘 열려 있음)", async () => {
     const { log, fetchText, assets } = recorder();
     const { store } = fakeStore();
