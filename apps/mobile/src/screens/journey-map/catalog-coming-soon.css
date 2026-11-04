@@ -120,3 +120,18 @@
   font-weight: var(--libitum-typography-body-s-font-weight);
   line-height: var(--libitum-typography-body-s-line-height);
 }
+
+/* 최근에 확인한 날 · 오래 확인 못 했을 때의 확인 버튼(ADR-0095 D9). */
+.catalog-coming-soon-checked {
+  margin-top: var(--libitum-spacing-4);
+  color: var(--libitum-color-feedback-correct-text);
+  font-family: var(--libitum-typography-caption-font-family);
+  font-size: var(--libitum-typography-caption-font-size);
+  font-weight: var(--libitum-typography-caption-font-weight);
+  line-height: var(--libitum-typography-caption-line-height);
+}
+
+.catalog-coming-soon-check {
+  margin-top: var(--libitum-spacing-12);
+  align-self: flex-start;
+}

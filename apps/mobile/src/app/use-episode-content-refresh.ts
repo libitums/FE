@@ -8,7 +8,11 @@ import {
 } from "@lynx-js/react";
 
 import { refreshAppPolicy } from "../lib/app-policy-refresh";
-import { downloadedAssetBytes } from "../lib/download-usage";
+import {
+  downloadedAssetBytes,
+  episodeAssetsBytes,
+  episodeAssetsComplete,
+} from "../lib/download-usage";
 import {
   assetDownloadAllowed,
   loadAllowedEpisodes,
@@ -21,6 +25,8 @@ import { bundledCatalogInput } from "../lib/episode-bundled";
 import { refreshEpisodeCatalog } from "../lib/episode-refresh";
 import { fetchContentText } from "../lib/episode-remote";
 import { readNetworkProperties } from "../lib/network-status";
+import { MANIFEST_CHECKED_AT_KEY, manifestCheckedAtFrom } from "../lib/manifest-check";
+import { safeGet, trySet } from "../lib/episode-cache";
 import { TUTORIAL_EPISODE_ID } from "../lib/tutorial-episode";
 import type { EpisodeIntroEventSink } from "../screens/episode-intro/episode-intro.contract";
 import type { SplashUpdatePort } from "../screens/splash/splash.contract";
@@ -79,6 +85,8 @@ export type EpisodeContentRefresh = {
 export function useEpisodeContentRefresh(sink: EpisodeIntroEventSink): EpisodeContentRefresh {
   const [content, setContent] = useState<EpisodeContent>(noEpisodeContent);
   const [stagedReady, setStagedReady] = useState(0);
+  // 목록을 마지막으로 받은 시각(ADR-0095 D9) — 받기 차례가 목록을 받을 때마다 다시 씁니다.
+  const [manifestCheckedAt, setManifestCheckedAt] = useState<number | null>(null);
   // 스플래시가 나갔는가 — 그 전에 갖춰진 스테이징은 스플래시의 `close()`가 바꿔 끼웁니다.
   const splashClosed = useRef(false);
   // 받기는 비동기로 늦게 끝납니다 — 그사이 sink가 바뀌면 최신 것으로 보내도록 ref로 읽습니다.
@@ -110,6 +118,7 @@ export function useEpisodeContentRefresh(sink: EpisodeIntroEventSink): EpisodeCo
         catalog: mergeCatalogForSession(previous.catalog, next.catalog),
       }));
     };
+    setManifestCheckedAt(manifestCheckedAtFrom(safeGet(hostContentStore, MANIFEST_CHECKED_AT_KEY)));
     const startPromoted = promoteStagedEpisodes(hostContentStore).promoted.length;
     setContent(loadEpisodeContent());
     const controller = createSplashUpdateController({
@@ -151,6 +160,12 @@ export function useEpisodeContentRefresh(sink: EpisodeIntroEventSink): EpisodeCo
         observer: watching ? controller.observer : undefined,
       });
       if (watching) controller.finished();
+      // 목록을 받았으면(바뀌지 않았어도) 확인 시각을 적습니다 — 「준비 중」과 「확인을 못 함」을 가릅니다(D9).
+      if (summary.manifest !== "unavailable") {
+        const now = Date.now();
+        if (trySet(hostContentStore, MANIFEST_CHECKED_AT_KEY, String(now)))
+          setManifestCheckedAt(now);
+      }
       const event = episodeContentRefreshedEventOf(summary);
       if (event !== null && !reported.current) {
         reported.current = true;
@@ -193,8 +208,21 @@ export function useEpisodeContentRefresh(sink: EpisodeIntroEventSink): EpisodeCo
         "background only";
         return downloadedAssetBytes(hostContentStore);
       },
+      assetsComplete: (episodeId) => {
+        "background only";
+        return episodeAssetsComplete(
+          hostContentStore,
+          bundledCatalogInput.manifest.episodes,
+          episodeId,
+        );
+      },
+      assetsBytes: (episodeId) => {
+        "background only";
+        return episodeAssetsBytes(hostContentStore, episodeId);
+      },
+      manifestCheckedAt,
     }),
-    [],
+    [manifestCheckedAt],
   );
   return { content, splash, stagedReady, applyStaged, downloads };
 }

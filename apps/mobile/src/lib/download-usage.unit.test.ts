@@ -2,7 +2,7 @@ import { expect, test } from "vitest";
 
 import { contentAssetsKey } from "./episode-asset-sync";
 import { CONTENT_MANIFEST_KEY } from "./episode-cache";
-import { downloadedAssetBytes } from "./download-usage";
+import { downloadedAssetBytes, episodeAssetsComplete } from "./download-usage";
 import { fakeStore } from "./episode-refresh.test-support";
 
 // `unit` 계층: 받은 크기(ADR-0095 D8) — 다 받은 편의 `assets_bytes`만 더합니다.
@@ -55,4 +55,17 @@ test("DU3. 크기는 실렸지만 다 받은 편이 없으면 0이다", () => {
   const { store, data } = fakeStore();
   data.set(CONTENT_MANIFEST_KEY, manifest([{ id: "u01", sha: sha("a"), assetsBytes: 1000 }]));
   expect(downloadedAssetBytes(store)).toBe(0);
+});
+
+test("DU4. 편의 자산 표시가 활성 목록 또는 내장 목록의 그 편 sha와 맞으면 다 받은 것이다", () => {
+  const { store, data } = fakeStore();
+  data.set(CONTENT_MANIFEST_KEY, manifest([{ id: "u01", sha: sha("a") }]));
+  const bundled = [{ id: "u02", sha256: sha("b") }];
+  data.set(contentAssetsKey("u01"), JSON.stringify({ sha256: sha("a"), missing: [] }));
+  data.set(contentAssetsKey("u02"), JSON.stringify({ sha256: sha("b"), missing: [] }));
+  data.set(contentAssetsKey("u03"), JSON.stringify({ sha256: sha("c"), missing: [] }));
+  expect(episodeAssetsComplete(store, bundled, "u01")).toBe(true);
+  expect(episodeAssetsComplete(store, bundled, "u02")).toBe(true);
+  expect(episodeAssetsComplete(store, bundled, "u03")).toBe(false);
+  expect(episodeAssetsComplete(store, bundled, "u04")).toBe(false);
 });

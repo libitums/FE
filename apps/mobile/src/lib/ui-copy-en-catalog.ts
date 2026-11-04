@@ -50,6 +50,11 @@ export const catalogMapEn: CatalogMapCopy = {
     title: "Coming soon",
     body: "We're preparing the next story.",
     label: (episodeLabel) => `${episodeLabel} Coming soon. We're preparing the next story.`,
+    checkedToday: "Checked today",
+    checkedDaysAgo: (d) => (d === 1 ? "Checked yesterday" : `Checked ${d} days ago`),
+    staleTitle: "New stories may be waiting",
+    staleBody: "Connect to the internet to check for new episodes.",
+    checkNew: "Check for new stories",
   },
 };
 

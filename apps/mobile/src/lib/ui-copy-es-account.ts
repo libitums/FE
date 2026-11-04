@@ -9,6 +9,7 @@ import type {
   ProfileCopy,
   SettingsCopy,
 } from "./ui-copy-sections.contract";
+import type { DownloadSheetCopy } from "./ui-copy-settings.contract";
 
 export const notificationsEs: NotificationsCopy = {
   title: "Notificaciones",
@@ -124,5 +125,42 @@ export const gemPurchaseEs: GemPurchaseCopy = {
   notice: {
     title: "Pagos próximamente",
     description: "Aún no se pueden comprar gemas. Vuelve pronto.",
+  },
+};
+
+export const downloadSheetEs: DownloadSheetCopy = {
+  askTitle: (n) => `¿Descargar el Episodio ${n}?`,
+  askDescription:
+    "Las imágenes y el audio de este episodio aún no están en tu teléfono. La descarga usa datos móviles.",
+  size: (size) => `Unos ${size}`,
+  downloadNow: "Descargar ahora",
+  onWifi: "Descargar con Wi-Fi",
+  dontAskAgain: "No volver a preguntar",
+  wifiOnlyTitle: (n) => `El Episodio ${n} se descarga con Wi-Fi`,
+  wifiOnlyDescription: "Elegiste Solo con Wi-Fi en Ajustes. Se descargará cuando tengas Wi-Fi.",
+  ok: "OK",
+  offlineTitle: "Estás sin conexión",
+  offlineDescription: (n) =>
+    `El Episodio ${n} aún no se ha descargado. Se descargará cuando vuelvas a tener conexión.`,
+  openAnyway: "Abrir de todos modos",
+  close: "Cerrar",
+  checked: "marcado",
+  unchecked: "sin marcar",
+  allCleared: {
+    title: "Terminaste todas las historias de aquí",
+    description: "Puede haber episodios nuevos. Conéctate a internet y los buscaremos por ti.",
+    offline: "Estás sin conexión",
+    lastChecked: (d) =>
+      d === null
+        ? "Aún no se ha revisado"
+        : d === 0
+          ? "Última revisión: hoy"
+          : d === 1
+            ? "Última revisión: ayer"
+            : `Última revisión: hace ${d} días`,
+    checkNow: "Buscar ahora",
+    later: "Más tarde",
+    autoNote: "También buscaremos automáticamente cuando vuelvas a tener conexión.",
+    offlineHint: "Buscaremos en cuanto tengas conexión.",
   },
 };

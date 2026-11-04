@@ -51,6 +51,11 @@ export const catalogMapEs: CatalogMapCopy = {
     body: "Estamos preparando la próxima historia.",
     label: (episodeLabel) =>
       `${episodeLabel} Próximamente. Estamos preparando la próxima historia.`,
+    checkedToday: "Revisado hoy",
+    checkedDaysAgo: (d) => (d === 1 ? "Revisado ayer" : `Revisado hace ${d} días`),
+    staleTitle: "Puede haber historias nuevas",
+    staleBody: "Conéctate a internet para buscar episodios nuevos.",
+    checkNew: "Buscar historias nuevas",
   },
 };
 

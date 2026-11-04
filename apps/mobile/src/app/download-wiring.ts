@@ -8,6 +8,12 @@ import type { DownloadSettingsScreenProps } from "../screens/download-settings/d
 export type DownloadControls = {
   readonly requestSync: () => void;
   readonly loadDownloadedBytes: () => number | null;
+  /** 그 편의 그림 · 음성을 다 받았는가(에피소드를 열 때의 받기 판정, D6). */
+  readonly assetsComplete: (episodeId: string) => boolean;
+  /** 목록에 실린 그 편의 그림 · 음성 크기 — 받기 시트의 크기 줄. 없으면 `null`. */
+  readonly assetsBytes: (episodeId: string) => number | null;
+  /** 목록을 마지막으로 받은 시각(epoch ms) — 끝 카드 · 모두 끝낸 뒤 시트(D9). 없으면 `null`. */
+  readonly manifestCheckedAt: number | null;
 };
 
 export type DownloadSettingsWiring = Omit<DownloadSettingsScreenProps, "onBack">;

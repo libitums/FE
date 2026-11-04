@@ -9,6 +9,7 @@ import type {
   ProfileCopy,
   SettingsCopy,
 } from "./ui-copy-sections.contract";
+import type { DownloadSheetCopy } from "./ui-copy-settings.contract";
 
 export const notificationsId: NotificationsCopy = {
   title: "Notifikasi",
@@ -120,5 +121,43 @@ export const gemPurchaseId: GemPurchaseCopy = {
   notice: {
     title: "Pembayaran segera hadir",
     description: "Pembayaran permata belum tersedia. Silakan cek kembali nanti.",
+  },
+};
+
+export const downloadSheetId: DownloadSheetCopy = {
+  askTitle: (n) => `Unduh Episode ${n}?`,
+  askDescription:
+    "Gambar dan audio episode ini belum ada di ponselmu. Mengunduh akan memakai data seluler.",
+  size: (size) => `Sekitar ${size}`,
+  downloadNow: "Unduh sekarang",
+  onWifi: "Unduh saat Wi-Fi",
+  dontAskAgain: "Jangan tanya lagi",
+  wifiOnlyTitle: (n) => `Episode ${n} diunduh saat Wi-Fi`,
+  wifiOnlyDescription:
+    "Kamu memilih Hanya Wi-Fi di Pengaturan. Episode ini akan diunduh saat kamu memakai Wi-Fi.",
+  ok: "OK",
+  offlineTitle: "Kamu sedang offline",
+  offlineDescription: (n) =>
+    `Episode ${n} belum diunduh. Episode ini akan diunduh saat kamu online lagi.`,
+  openAnyway: "Tetap buka",
+  close: "Tutup",
+  checked: "dicentang",
+  unchecked: "tidak dicentang",
+  allCleared: {
+    title: "Kamu sudah menyelesaikan semua cerita di sini",
+    description: "Mungkin ada episode baru. Sambungkan ke internet, nanti kami cek untukmu.",
+    offline: "Kamu sedang offline",
+    lastChecked: (d) =>
+      d === null
+        ? "Belum pernah dicek"
+        : d === 0
+          ? "Terakhir dicek hari ini"
+          : d === 1
+            ? "Terakhir dicek kemarin"
+            : `Terakhir dicek ${d} hari lalu`,
+    checkNow: "Cek sekarang",
+    later: "Nanti",
+    autoNote: "Kami juga akan mengecek otomatis saat kamu online lagi.",
+    offlineHint: "Kami akan mengecek begitu kamu tersambung.",
   },
 };

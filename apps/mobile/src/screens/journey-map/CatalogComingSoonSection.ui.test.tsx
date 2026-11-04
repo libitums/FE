@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { cleanup, fireEvent, render, screen } from "@lynx-js/react/testing-library";
+import { cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
+import { CatalogComingSoonSection } from "./CatalogComingSoonSection";
 import { CatalogMapSections } from "./CatalogMapSections";
 import type { CatalogGate, CatalogMapSection } from "./catalog-map.contract";
 
@@ -86,4 +87,65 @@ describe("CatalogComingSoonSection", () => {
     expect(onStartCover).not.toHaveBeenCalled();
     expect(onSelectUnit).not.toHaveBeenCalled();
   });
+});
+
+// ⟨2026-11-04⟩ 받는 중인 편의 카드는 눌러서 받기 시트를 엽니다(ADR-0095 D6 · D7). 맨 끝 카드는 누를 수 없습니다.
+test("CS-TAP1. 받는 중인 편 카드는 onTap이 있으면 버튼으로 읽히고, 누르면 그 id로 부른다", () => {
+  const onTap = vi.fn();
+  render(<CatalogComingSoonSection ordinal={11} episodeId="u11" onTap={onTap} />);
+  const card = screen.getByTestId("catalog-pending-u11");
+  expect(card).toHaveAttribute("accessibility-traits", "button");
+  fireEvent.tap(card, {});
+  expect(onTap).toHaveBeenCalledWith("u11");
+});
+
+test("CS-TAP2. 맨 끝 카드 · onTap이 없는 카드는 누를 수 없다", () => {
+  const onTap = vi.fn();
+  const { unmount } = render(<CatalogComingSoonSection ordinal={12} onTap={onTap} />);
+  fireEvent.tap(screen.getByTestId("catalog-coming-soon"), {});
+  expect(onTap).not.toHaveBeenCalled();
+  expect(screen.getByTestId("catalog-coming-soon")).not.toHaveAttribute("accessibility-traits");
+  unmount();
+  render(<CatalogComingSoonSection ordinal={11} episodeId="u11" />);
+  expect(screen.getByTestId("catalog-pending-u11")).not.toHaveAttribute("accessibility-traits");
+});
+
+// ⟨2026-11-04⟩ 맨 끝 카드의 두 상태(ADR-0095 D9) — 오래 확인 못 함: 「새 이야기가 있을 수 있어요」 + 확인 버튼,
+// 최근에 확인함: 지금 문구 + 확인한 날.
+test("CS-F1. 오래 확인 못 했으면 새 이야기 안내와 확인 버튼이 서고, 누르면 onCheckNew를 부른다", () => {
+  const onCheckNew = vi.fn();
+  render(
+    <CatalogComingSoonSection
+      ordinal={12}
+      freshness={{ stale: true, daysAgo: 5 }}
+      onCheckNew={onCheckNew}
+    />,
+  );
+  expect(screen.getByTestId("catalog-coming-soon-title")).toHaveTextContent(
+    "New stories may be waiting",
+  );
+  fireEvent.tap(
+    within(screen.getByTestId("catalog-coming-soon-check")).getByTestId("ui-lynx-button"),
+    {},
+  );
+  expect(onCheckNew).toHaveBeenCalledTimes(1);
+});
+
+test("CS-F2. 최근에 확인했으면 지금 문구에 확인한 날이 붙고 버튼이 없다", () => {
+  const { unmount } = render(
+    <CatalogComingSoonSection ordinal={12} freshness={{ stale: false, daysAgo: 0 }} />,
+  );
+  expect(screen.getByTestId("catalog-coming-soon-title")).toHaveTextContent("Coming soon");
+  expect(screen.getByTestId("catalog-coming-soon-checked")).toHaveTextContent("Checked today");
+  expect(screen.queryByTestId("catalog-coming-soon-check")).not.toBeInTheDocument();
+  unmount();
+  render(<CatalogComingSoonSection ordinal={12} freshness={{ stale: false, daysAgo: 2 }} />);
+  expect(screen.getByTestId("catalog-coming-soon-checked")).toHaveTextContent("Checked 2 days ago");
+});
+
+test("CS-F3. 신선도를 모르면(넘기지 않으면) 지금 그대로다", () => {
+  render(<CatalogComingSoonSection ordinal={12} />);
+  expect(screen.getByTestId("catalog-coming-soon-title")).toHaveTextContent("Coming soon");
+  expect(screen.queryByTestId("catalog-coming-soon-checked")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("catalog-coming-soon-check")).not.toBeInTheDocument();
 });

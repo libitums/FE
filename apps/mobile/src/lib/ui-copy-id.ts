@@ -25,6 +25,7 @@ import {
   notificationsId,
   profileId,
   settingsId,
+  downloadSheetId,
 } from "./ui-copy-id-account";
 import {
   assessmentId,
@@ -83,6 +84,7 @@ export const uiCopyId: UiCopy = {
   roleplay: roleplayId,
   notifications: notificationsId,
   settings: settingsId,
+  downloadSheet: downloadSheetId,
   profile: profileId,
   feedback: feedbackId,
   gemPurchase: gemPurchaseId,

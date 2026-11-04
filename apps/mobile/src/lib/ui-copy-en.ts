@@ -25,6 +25,7 @@ import {
   notificationsEn,
   profileEn,
   settingsEn,
+  downloadSheetEn,
 } from "./ui-copy-en-account";
 import {
   assessmentEn,
@@ -82,6 +83,7 @@ export const uiCopyEn: UiCopy = {
   roleplay: roleplayEn,
   notifications: notificationsEn,
   settings: settingsEn,
+  downloadSheet: downloadSheetEn,
   profile: profileEn,
   feedback: feedbackEn,
   gemPurchase: gemPurchaseEn,

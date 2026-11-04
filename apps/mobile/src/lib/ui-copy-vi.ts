@@ -25,6 +25,7 @@ import {
   notificationsVi,
   profileVi,
   settingsVi,
+  downloadSheetVi,
 } from "./ui-copy-vi-account";
 import {
   assessmentVi,
@@ -83,6 +84,7 @@ export const uiCopyVi: UiCopy = {
   roleplay: roleplayVi,
   notifications: notificationsVi,
   settings: settingsVi,
+  downloadSheet: downloadSheetVi,
   profile: profileVi,
   feedback: feedbackVi,
   gemPurchase: gemPurchaseVi,

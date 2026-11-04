@@ -9,6 +9,7 @@ import type {
   ProfileCopy,
   SettingsCopy,
 } from "./ui-copy-sections.contract";
+import type { DownloadSheetCopy } from "./ui-copy-settings.contract";
 
 export const notificationsVi: NotificationsCopy = {
   title: "Thông báo",
@@ -112,5 +113,41 @@ export const gemPurchaseVi: GemPurchaseCopy = {
   notice: {
     title: "Sắp có thanh toán",
     description: "Hiện chưa thể thanh toán ngọc. Vui lòng quay lại sau.",
+  },
+};
+
+export const downloadSheetVi: DownloadSheetCopy = {
+  askTitle: (n) => `Tải Tập ${n}?`,
+  askDescription:
+    "Hình ảnh và âm thanh của tập này chưa có trên điện thoại. Tải xuống sẽ dùng dữ liệu di động.",
+  size: (size) => `Khoảng ${size}`,
+  downloadNow: "Tải ngay",
+  onWifi: "Tải khi có Wi-Fi",
+  dontAskAgain: "Không hỏi lại",
+  wifiOnlyTitle: (n) => `Tập ${n} sẽ tải khi có Wi-Fi`,
+  wifiOnlyDescription: "Bạn đã chọn Chỉ Wi-Fi trong Cài đặt. Tập này sẽ tải khi bạn dùng Wi-Fi.",
+  ok: "OK",
+  offlineTitle: "Bạn đang ngoại tuyến",
+  offlineDescription: (n) => `Tập ${n} chưa được tải. Tập này sẽ tải khi bạn có mạng trở lại.`,
+  openAnyway: "Vẫn mở",
+  close: "Đóng",
+  checked: "đã chọn",
+  unchecked: "chưa chọn",
+  allCleared: {
+    title: "Bạn đã học hết các câu chuyện ở đây",
+    description: "Có thể đã có tập mới. Hãy kết nối internet, chúng tôi sẽ kiểm tra giúp bạn.",
+    offline: "Bạn đang ngoại tuyến",
+    lastChecked: (d) =>
+      d === null
+        ? "Chưa kiểm tra"
+        : d === 0
+          ? "Kiểm tra lần cuối hôm nay"
+          : d === 1
+            ? "Kiểm tra lần cuối hôm qua"
+            : `Kiểm tra lần cuối ${d} ngày trước`,
+    checkNow: "Kiểm tra ngay",
+    later: "Để sau",
+    autoNote: "Chúng tôi cũng sẽ tự kiểm tra khi bạn có mạng trở lại.",
+    offlineHint: "Chúng tôi sẽ kiểm tra ngay khi bạn có kết nối.",
   },
 };

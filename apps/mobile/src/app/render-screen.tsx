@@ -41,6 +41,13 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
             onStartCover: wiring.onStartCatalogCover,
             onStartUnit: wiring.onStartCatalogUnit,
             unitItemCountOf: wiring.catalogUnitItemCountOf,
+            onTapPending: wiring.onTapPendingEpisode,
+            ...(wiring.catalogFreshness === undefined
+              ? {}
+              : { freshness: wiring.catalogFreshness }),
+            ...(wiring.onCheckNewStories === undefined
+              ? {}
+              : { onCheckNew: wiring.onCheckNewStories }),
           }}
         />
       );
