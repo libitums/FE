@@ -6,7 +6,7 @@ import TrialIcon from "./TrialIcon.astro";
 
 type Props = TrialCultureCardProps;
 
-const { t, culture } = Astro.props;
+const { t, glossLang, culture } = Astro.props;
 const { title, body, tip } = culture;
 ---
 
@@ -44,7 +44,7 @@ const { title, body, tip } = culture;
               </p>
               {
                 title.en !== null && (
-                  <p class="trial-culture-card__title-en trial-type-body-m" lang="en">
+                  <p class="trial-culture-card__title-en trial-type-body-m" lang={glossLang}>
                     {title.en}
                   </p>
                 )
@@ -73,7 +73,7 @@ const { title, body, tip } = culture;
             <div class="trial-culture-card__body" data-testid="trial-culture-body">
               {
                 body.en !== null && (
-                  <p class="trial-culture-card__body-en trial-type-body-l" lang="en">
+                  <p class="trial-culture-card__body-en trial-type-body-l" lang={glossLang}>
                     {body.en}
                   </p>
                 )
@@ -85,7 +85,7 @@ const { title, body, tip } = culture;
             <div class="trial-note trial-note--tip" data-testid="trial-culture-tip">
               {
                 tip.en !== null && (
-                  <p class="trial-type-body-m" lang="en">
+                  <p class="trial-type-body-m" lang={glossLang}>
                     {tip.en}
                   </p>
                 )

@@ -7,7 +7,7 @@ import TrialOptionList from "./TrialOptionList.astro";
 
 type Props = TrialImageMatchProps;
 
-const { t, item } = Astro.props;
+const { t, glossLang, item } = Astro.props;
 const answer = item.options[item.answerIndex]?.ko ?? "";
 ---
 
@@ -35,7 +35,7 @@ const answer = item.options[item.answerIndex]?.ko ?? "";
         data-testid="trial-image-match-image"
       />
       <div class="trial-prompt">
-        <p class="trial-type-heading-s" lang="en" data-testid="trial-image-match-prompt">
+        <p class="trial-type-heading-s" lang={glossLang} data-testid="trial-image-match-prompt">
           {item.prompt}
         </p>
         {
@@ -52,7 +52,7 @@ const answer = item.options[item.answerIndex]?.ko ?? "";
         }
       </div>
     </div>
-    <TrialOptionList options={item.options} />
+    <TrialOptionList glossLang={glossLang} options={item.options} />
   </div>
   <TrialChoiceFooter t={t}><TrialAnswerCopy template={t.correctAnswer} answer={answer} /></TrialChoiceFooter>
 </section>

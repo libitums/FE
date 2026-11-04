@@ -26,10 +26,13 @@ const { language } = Astro.props;
 // 프리뷰 배포는 방문을 세지 않습니다.
 const { indexable } = deployEnvironment(process.env);
 const supabaseUrl = (import.meta.env.PUBLIC_SUPABASE_URL ?? "").trim();
-const model = loadTrialModel({
-  imageUrlOf: trialImageUrlOf,
-  contentBase: supabaseUrl === "" ? "" : contentBaseUrl(supabaseUrl),
-});
+const model = loadTrialModel(
+  {
+    imageUrlOf: trialImageUrlOf,
+    contentBase: supabaseUrl === "" ? "" : contentBaseUrl(supabaseUrl),
+  },
+  language,
+);
 // 사전 등록 보낼 곳(공개 키) — 프로덕션 검사는 astro.config가 먼저 했고, 없으면 폼이 unavailable입니다.
 const prereg = resolvePreregConfig(
   import.meta.env.PUBLIC_SUPABASE_URL,

@@ -69,6 +69,7 @@ function choiceAnnouncement(
 }
 
 function turnAnnouncement(
+  root: HTMLElement,
   model: TrialModel,
   copy: TrialScriptCopy,
   prev: TrialState,
@@ -102,10 +103,15 @@ function turnAnnouncement(
       ordinal: String(turn.index + 1),
       total: String(model.roleplay.turns.length),
     });
+    // 번역의 lang은 그려진 요소를 따른다 — 번역표가 있는 페이지면 페이지 언어, 아니면 en.
+    const section = byTestId(root, "trial-step-roleplay");
+    const turnElement =
+      section === null ? undefined : allByTestId(section, "trial-turn")[turn.index];
+    const translation = turnElement?.querySelector('[data-testid="trial-turn-translation"]');
     return joined([
       page(progress),
       { text: item.line.ko, lang: KO },
-      { text: item.line.en ?? "", lang: "en" },
+      translation ? fromElement(translation) : { text: item.line.en ?? "", lang: "en" },
       page(freshNotice ? notice : ""),
     ]);
   }
@@ -129,7 +135,7 @@ export function announcementOf(
     case "reply-select":
       return choiceAnnouncement(model, copy, prev, next);
     case "roleplay":
-      return turnAnnouncement(model, copy, prev, next);
+      return turnAnnouncement(root, model, copy, prev, next);
     default:
       return null;
   }

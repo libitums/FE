@@ -140,6 +140,7 @@ export const TRIAL_PAGE_TEST_IDS = [
   "trial-turn-progress",
   "trial-turn-counterpart",
   "trial-turn-line",
+  "trial-turn-translation",
   "trial-turn-replay",
   "trial-turn-reply",
   "trial-turn-verdict",

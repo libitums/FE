@@ -19,6 +19,7 @@ import { trialMs } from "../../i18n/trial-ms";
 import { trialVi } from "../../i18n/trial-vi";
 import Base from "../../layouts/Base.astro";
 import { robotsNoindex } from "../../seo/head-meta";
+import { trialGlossLangOf } from "../../trial/trial-content";
 import { type Language, languages, pages, pathFor, trialPathFor } from "../../site";
 import Analytics from "../Analytics.astro";
 import type {
@@ -48,6 +49,8 @@ const copies: Record<Language, TrialCopy> = {
   ms: trialMs,
 };
 const t = copies[language];
+// 뜻풀이 · 안내의 lang — 번역표가 있는 언어면 페이지 언어, en · ko는 영어.
+const glossLang = trialGlossLangOf(language);
 
 // 스크립트가 쓰는 문구만 모델과 함께 페이지 JSON에 싣습니다.
 const scriptCopyKeys = [
@@ -104,19 +107,20 @@ const dataJson = JSON.stringify(data).replace(/</g, "\\u003c");
   <main id="main" class="trial" data-testid="trial" data-step="prologue" lang={language}>
     <TrialBar language={language} t={t} />
     <div class="trial-veil" aria-hidden="true" data-testid="trial-veil"></div>
-    <TrialCuts t={t} step="prologue" cuts={model.prologue} />
-    <TrialVocabCard t={t} vocab={model.vocab} />
-    <TrialImageMatch t={t} item={model.imageMatch} />
-    <TrialReplySelect t={t} item={model.replySelect} />
-    <TrialCultureCard t={t} culture={model.culture} />
+    <TrialCuts t={t} glossLang={glossLang} step="prologue" cuts={model.prologue} />
+    <TrialVocabCard t={t} glossLang={glossLang} vocab={model.vocab} />
+    <TrialImageMatch t={t} glossLang={glossLang} item={model.imageMatch} />
+    <TrialReplySelect t={t} glossLang={glossLang} item={model.replySelect} />
+    <TrialCultureCard t={t} glossLang={glossLang} culture={model.culture} />
     <TrialRoleplay
       t={t}
+      glossLang={glossLang}
       counterpartName={model.counterpartName}
       imageUrl={model.roleplay.imageUrl}
       turns={model.roleplay.turns}
       collects={samples !== null}
     />
-    <TrialCuts t={t} step="epilogue" cuts={model.epilogue} />
+    <TrialCuts t={t} glossLang={glossLang} step="epilogue" cuts={model.epilogue} />
     <TrialClear t={t} />
     <TrialComplete t={t} language={language} prereg={prereg !== null} />
     <div class="trial-sr-only" aria-live="polite" data-testid="trial-live"></div>

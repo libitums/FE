@@ -7,7 +7,7 @@ import TrialOptionList from "./TrialOptionList.astro";
 
 type Props = TrialReplySelectProps;
 
-const { t, item } = Astro.props;
+const { t, glossLang, item } = Astro.props;
 const answer = item.options[item.answerIndex]?.ko ?? "";
 ---
 
@@ -58,13 +58,13 @@ const answer = item.options[item.answerIndex]?.ko ?? "";
       }
       {
         item.line.en !== null && (
-          <p class="trial-muted trial-type-body-m" lang="en">
+          <p class="trial-muted trial-type-body-m" lang={glossLang}>
             {item.line.en}
           </p>
         )
       }
     </div>
-    <TrialOptionList options={item.options} />
+    <TrialOptionList glossLang={glossLang} options={item.options} />
   </div>
   <TrialChoiceFooter t={t}><TrialAnswerCopy template={t.correctAnswer} answer={answer} /></TrialChoiceFooter>
 </section>

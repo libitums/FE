@@ -5,6 +5,8 @@
 import { decodeEpisode } from "@libitums/episode-core/episode";
 
 import u00Tutorial from "./content/u00-tutorial.json";
+import { u00Translations } from "./content/u00-translations";
+import { localizeTrialModel } from "./trial-localize";
 import type { LoadTrialModel, TrialContentPin } from "./trial-model.contract";
 import { buildTrialModel } from "./trial-model-build";
 
@@ -19,13 +21,22 @@ export const TRIAL_CONTENT: TrialContentPin = {
 const describe = (errors: readonly { code: string; path: string }[]) =>
   errors.map((error) => `${error.code} ${error.path}`).join(", ");
 
-/** 사본 → decodeEpisode → 모델 조립(`trialModelOf`와 같음). 실패면 오류 코드 · 경로를 메시지에 담아 던집니다(빌드 실패). */
-export const loadTrialModel: LoadTrialModel = (port) => {
+const translationTableOf = (language: string) =>
+  Object.hasOwn(u00Translations, language)
+    ? u00Translations[language as keyof typeof u00Translations]
+    : null;
+
+/** 뜻풀이 · 안내 요소의 `lang` — 번역표가 있는 언어(vi · id · ms)면 그 언어, 아니면 콘텐츠의 영어. */
+export const trialGlossLangOf = (language: string): string =>
+  translationTableOf(language) === null ? "en" : language;
+
+/** 사본 → decodeEpisode → 모델 조립(`trialModelOf`와 같음) → 페이지 언어의 번역표 적용. 실패면 오류 코드 · 경로를 메시지에 담아 던집니다(빌드 실패). */
+export const loadTrialModel: LoadTrialModel = (port, language = "en") => {
   const decoded = decodeEpisode(u00Tutorial);
   if (!decoded.ok) {
     throw new Error(`체험판 사본 디코드 실패: decode-failed ${describe(decoded.errors)}`);
   }
   const result = buildTrialModel(decoded.episode, port, TRIAL_CONTENT.version);
   if (!result.ok) throw new Error(`체험판 모델 실패: ${describe(result.errors)}`);
-  return result.model;
+  return localizeTrialModel(result.model, translationTableOf(language));
 };
