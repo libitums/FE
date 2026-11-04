@@ -51,6 +51,11 @@ export const catalogMapJa: CatalogMapCopy = {
     title: "近日公開",
     body: "次のストーリーを準備中です。",
     label: (episodeLabel) => `${episodeLabel} 近日公開。次のストーリーを準備中です。`,
+    checkedToday: "今日確認済み",
+    checkedDaysAgo: (d) => (d === 1 ? "昨日確認済み" : `${d}日前に確認`),
+    staleTitle: "新しいストーリーがあるかもしれません",
+    staleBody: "インターネットにつないで新しいエピソードを確認しましょう。",
+    checkNew: "新しいストーリーを確認",
   },
 };
 

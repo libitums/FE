@@ -133,4 +133,21 @@ export const downloadSheetVi: DownloadSheetCopy = {
   close: "Đóng",
   checked: "đã chọn",
   unchecked: "chưa chọn",
+  allCleared: {
+    title: "Bạn đã học hết các câu chuyện ở đây",
+    description: "Có thể đã có tập mới. Hãy kết nối internet, chúng tôi sẽ kiểm tra giúp bạn.",
+    offline: "Bạn đang ngoại tuyến",
+    lastChecked: (d) =>
+      d === null
+        ? "Chưa kiểm tra"
+        : d === 0
+          ? "Kiểm tra lần cuối hôm nay"
+          : d === 1
+            ? "Kiểm tra lần cuối hôm qua"
+            : `Kiểm tra lần cuối ${d} ngày trước`,
+    checkNow: "Kiểm tra ngay",
+    later: "Để sau",
+    autoNote: "Chúng tôi cũng sẽ tự kiểm tra khi bạn có mạng trở lại.",
+    offlineHint: "Chúng tôi sẽ kiểm tra ngay khi bạn có kết nối.",
+  },
 };

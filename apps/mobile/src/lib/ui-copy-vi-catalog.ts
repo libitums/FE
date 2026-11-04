@@ -51,6 +51,11 @@ export const catalogMapVi: CatalogMapCopy = {
     body: "Chúng mình đang chuẩn bị câu chuyện tiếp theo.",
     label: (episodeLabel) =>
       `${episodeLabel} Sắp ra mắt. Chúng mình đang chuẩn bị câu chuyện tiếp theo.`,
+    checkedToday: "Đã kiểm tra hôm nay",
+    checkedDaysAgo: (d) => (d === 1 ? "Đã kiểm tra hôm qua" : `Đã kiểm tra ${d} ngày trước`),
+    staleTitle: "Có thể đã có câu chuyện mới",
+    staleBody: "Kết nối internet để kiểm tra tập mới.",
+    checkNew: "Kiểm tra câu chuyện mới",
   },
 };
 
