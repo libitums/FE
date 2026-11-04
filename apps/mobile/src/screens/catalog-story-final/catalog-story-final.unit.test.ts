@@ -7,6 +7,7 @@ import {
   storyFinalReducer,
   storyReplyText,
   storyTemplateParts,
+  storyBlankSizes,
   storyTilesNeeded,
   storyTracePassed,
 } from "./catalog-story-final";
@@ -154,6 +155,28 @@ test("C4. 틀은 빈칸 앞 · 뒤로 가르고, 틀이 없으면 둘 다 비어
     after: ". 여기서",
   });
   expect(storyTemplateParts(null)).toEqual({ before: "", after: "" });
+});
+
+test("C5b. 밑줄 폭은 정답 순서대로 각 조각의 음절 수다 — 문장부호 · 공백은 세지 않는다(사용자 지적 2026-11-04)", () => {
+  expect(
+    storyBlankSizes(
+      tiles(" ", null, ["처음이에요!", "안녕하세요!", "네,"], "안녕하세요! 네, 처음이에요!"),
+    ),
+  ).toEqual([5, 1, 5]);
+  expect(
+    storyBlankSizes(
+      tiles(" ", "아니요, ___.", ["괜찮아요", "봉투", "영수증은"], "영수증은 괜찮아요"),
+    ),
+  ).toEqual([4, 4]);
+  expect(storyBlankSizes(tiles("", null, ["요", "세", "안", "녕", "하"], "안녕하세요"))).toEqual([
+    1, 1, 1, 1, 1,
+  ]);
+});
+
+test("C5c. 정답을 타일로 덮지 못하면 크기를 모른다(0) — 개수는 타일 전부다", () => {
+  expect(
+    storyBlankSizes(tiles(" ", null, ["괜찮아요", "봉투", "영수증은"], "전혀 다른 말")),
+  ).toEqual([0, 0, 0]);
 });
 
 test("C5. 밑줄 수는 정답에 들어가는 타일 수다 — 남는 타일(오답 보기)은 세지 않고, 못 맞추면 타일 전부다", () => {
