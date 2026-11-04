@@ -71,24 +71,28 @@ const hide = `
   .site-nav, .lang-menu, [data-testid="header-cta"], .hero__trial, .hero__cue { display: none !important; }
 `;
 
-const browser = await chromium.launch();
+// 서버는 브라우저가 못 뜨거나 찍다 실패해도 반드시 내린다 — 남으면 포트를 쥔 채 백그라운드에 살아 있다.
 try {
-  const context = await browser.newContext({
-    viewport: { width: 1200, height: 630 },
-    deviceScaleFactor: 1,
-    reducedMotion: "reduce",
-  });
-  const page = await context.newPage();
-  for (const code of targets) {
-    const path = code === "en" ? "/" : `/${code}/`;
-    await page.goto(`${origin}${path}`, { waitUntil: "networkidle" });
-    await page.addStyleTag({ content: hide });
-    await page.evaluate(() => document.fonts.ready);
-    const file = join(root, "public", `og-${code}.jpg`);
-    await page.screenshot({ path: file, type: "jpeg", quality: 88, fullPage: false });
-    console.log(`찍음 ${path} → public/og-${code}.jpg`);
+  const browser = await chromium.launch();
+  try {
+    const context = await browser.newContext({
+      viewport: { width: 1200, height: 630 },
+      deviceScaleFactor: 1,
+      reducedMotion: "reduce",
+    });
+    const page = await context.newPage();
+    for (const code of targets) {
+      const path = code === "en" ? "/" : `/${code}/`;
+      await page.goto(`${origin}${path}`, { waitUntil: "networkidle" });
+      await page.addStyleTag({ content: hide });
+      await page.evaluate(() => document.fonts.ready);
+      const file = join(root, "public", `og-${code}.jpg`);
+      await page.screenshot({ path: file, type: "jpeg", quality: 88, fullPage: false });
+      console.log(`찍음 ${path} → public/og-${code}.jpg`);
+    }
+  } finally {
+    await browser.close();
   }
 } finally {
-  await browser.close();
   preview.kill();
 }
