@@ -69,6 +69,7 @@ export function AppSession({
   episodeContent: sourceContent,
   stagedContentReady = 0,
   applyStagedContent,
+  downloadControls,
 }: AppProps & AppSessionControl & AppSessionContent) {
   // 이 리듀서를 부르는 유일한 자리입니다. `dispatch`는 셸에 콜백으로 내려갑니다 — 셸은 `NavAction`도 `dispatch`도
   // 받지 않습니다(ADR-0007 D3). 초기값이 `entryInitialNav`입니다 — 부팅이 진입 스택 `[{ name: "splash" }]`로
@@ -172,6 +173,8 @@ export function AppSession({
     finishGuard,
     listenPace,
     setListenPace,
+    downloadControls,
+    catalogIds: () => episodeContent.catalog.map((entry) => entry.id),
   });
   const wiring = withLearningTickets(screens, tickets, progress, catalogSections);
 

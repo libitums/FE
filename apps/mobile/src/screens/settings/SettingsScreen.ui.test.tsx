@@ -179,7 +179,7 @@ test("[ST4] 화면 안 header trait 요소가 settings-screen-title 하나다", 
 
 // ---------------------------------------------------------------- 영어 (AC1u E)
 
-test("[AC1u-E] 이동 항목 일곱이 영어 이름으로 낭독된다", () => {
+test("[AC1u-E] 이동 항목 여덟이 영어 이름으로 낭독된다", () => {
   render(<SettingsScreen {...defaultSettingsScreenProps} />);
 
   expect(settingsCell(settingsNavTargets[0])).toHaveAttribute(
@@ -194,19 +194,20 @@ test("[AC1u-E] 이동 항목 일곱이 영어 이름으로 낭독된다", () => 
     "accessibility-label",
     "Language, Intermediate English",
   );
-  expect(settingsCell(settingsNavTargets[3])).toHaveAttribute(
+  expect(settingsCell(settingsNavTargets[3])).toHaveAttribute("accessibility-label", "Downloads");
+  expect(settingsCell(settingsNavTargets[4])).toHaveAttribute(
     "accessibility-label",
     "Notifications",
   );
-  expect(settingsCell(settingsNavTargets[4])).toHaveAttribute(
+  expect(settingsCell(settingsNavTargets[5])).toHaveAttribute(
     "accessibility-label",
     "Send feedback",
   );
-  expect(settingsCell(settingsNavTargets[5])).toHaveAttribute(
+  expect(settingsCell(settingsNavTargets[6])).toHaveAttribute(
     "accessibility-label",
     "Privacy Policy",
   );
-  expect(settingsCell(settingsNavTargets[6])).toHaveAttribute(
+  expect(settingsCell(settingsNavTargets[7])).toHaveAttribute(
     "accessibility-label",
     "Terms of Use",
   );
@@ -242,17 +243,21 @@ test("[AC1u-M] 제목 · 묶음 이름 · 이동 이름이 문구표에서 온�
   );
   expect(settingsCell(settingsNavTargets[3])).toHaveAttribute(
     "accessibility-label",
-    "⟦settings.nav.notifications⟧",
+    "⟦settings.nav.download⟧",
   );
   expect(settingsCell(settingsNavTargets[4])).toHaveAttribute(
     "accessibility-label",
-    "⟦settings.nav.feedback⟧",
+    "⟦settings.nav.notifications⟧",
   );
   expect(settingsCell(settingsNavTargets[5])).toHaveAttribute(
     "accessibility-label",
-    "⟦settings.nav.privacy-policy⟧",
+    "⟦settings.nav.feedback⟧",
   );
   expect(settingsCell(settingsNavTargets[6])).toHaveAttribute(
+    "accessibility-label",
+    "⟦settings.nav.privacy-policy⟧",
+  );
+  expect(settingsCell(settingsNavTargets[7])).toHaveAttribute(
     "accessibility-label",
     "⟦settings.nav.terms-of-use⟧",
   );

@@ -16,6 +16,7 @@ import { renderCatalogFlow } from "./render-catalog";
 import { renderCatalogCover } from "./render-catalog-cover";
 import { renderCatalogStory } from "./render-catalog-story";
 import { renderEntryScreen } from "./render-entry-screen";
+import { DownloadSettingsScreen } from "../screens/download-settings/DownloadSettingsScreen";
 import { LanguageSelectScreen } from "../screens/language-select/LanguageSelectScreen";
 import { entryLanguageLabel } from "../lib/entry-language";
 import { learnerSettingsSummary, renderLearnerProfileSettings } from "./render-learner-profile";
@@ -83,6 +84,10 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
       return <AccountProfileScreen onExit={wiring.onExitSettingsStack} />;
     case "learner-profile":
       return renderLearnerProfileSettings(wiring);
+    case "download-settings":
+      return (
+        <DownloadSettingsScreen {...wiring.downloadSettings} onBack={wiring.onExitSettingsStack} />
+      );
     case "language-settings":
       return (
         <LanguageSelectScreen

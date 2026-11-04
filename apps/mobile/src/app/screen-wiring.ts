@@ -1,6 +1,8 @@
 // `ScreenWiring` 타입을 선언하고, 부분 팩토리(`journeyWiring`·`entryWiring`·`catalogWiring` 등)를
 // 합쳐 하나의 wiring을 만듭니다.
 
+import { downloadSettingsWiring } from "./download-wiring";
+import type { DownloadControls, DownloadSettingsWiring } from "./download-wiring";
 import type { AccountWiringArgs } from "./leave-app.contract";
 import type { Dispatch, SetStateAction } from "@lynx-js/react";
 import type { EpisodeIntroEventSink } from "../screens/episode-intro/episode-intro.contract";
@@ -51,6 +53,8 @@ import { journeyWiring } from "./journey-wiring";
 // 모릅니다(ADR-0007 D3). 화면이 받는 것은 "무엇이 일어났다"는 콜백뿐이고,
 // 그것을 무슨 네비게이션 동작으로 옮길지는 `App`이 정합니다.
 export type ScreenWiring = {
+  /** 설정 › 다운로드(ADR-0095 D8). */
+  downloadSettings: DownloadSettingsWiring;
   journeyMapProgressLoad: JourneyMapProgressLoad;
   /** 옛 튜토리얼 최종 테스트를 통과한 기록이 있는가 — 튜토리얼 다음 구획의 문 입력입니다. */
   legacyTutorialPassed: boolean;
@@ -136,6 +140,8 @@ export type ScreenWiringArgs = {
   readonly roleplaySections: readonly RoleplaySection[];
   readonly entryLanguage: EntryLanguage;
   readonly setEntryLanguage: Dispatch<SetStateAction<EntryLanguage>>;
+  readonly downloadControls?: DownloadControls;
+  readonly catalogIds: () => readonly string[];
 } & ProgressWiringArgs &
   LearnerProfileControls &
   Omit<CatalogWiringArgs, "dispatch">;
@@ -146,6 +152,7 @@ export function screenWiring(args: ScreenWiringArgs): ScreenWiring {
 
   return {
     ...journey,
+    downloadSettings: downloadSettingsWiring(args.downloadControls, args.catalogIds),
     legacyTutorialPassed: args.legacyTutorialPassed,
     safeAreaInsets: args.safeAreaInsets,
     appVersion: args.appVersion,

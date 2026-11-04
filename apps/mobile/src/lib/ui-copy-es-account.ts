@@ -27,10 +27,33 @@ export const settingsEs: SettingsCopy = {
     profile: "Perfil de usuario",
     "learner-profile": "Nombre y país en las lecciones",
     language: "Idioma",
+    download: "Descargas",
     notifications: "Notificaciones",
     feedback: "Enviar comentarios",
     "privacy-policy": "Política de privacidad",
     "terms-of-use": "Términos de uso",
+  },
+  downloads: {
+    title: "Descargas",
+    caption: "Elige cuándo se descargan las imágenes y el audio.",
+    mobileDataHeading: "Descargar con datos móviles",
+    policy: {
+      ask: "Preguntar siempre",
+      always: "Descargar siempre",
+      "wifi-only": "Solo con Wi-Fi",
+    },
+    offlineHeading: "Sin conexión",
+    downloadAll: "Descargar todo para usar sin conexión",
+    downloadAllCaption: "Imágenes y audio de todos los episodios, para que aprendas sin conexión.",
+    downloadAllStarted: "Descargando en segundo plano. Puedes seguir aprendiendo.",
+    downloaded: (size) => `Descargado: ${size}`,
+    confirm: {
+      title: "¿Descargar con datos móviles?",
+      description:
+        "Descargar todos los episodios puede usar muchos datos. También puedes esperar al Wi-Fi.",
+      download: "Descargar ahora",
+      cancel: "Cancelar",
+    },
   },
   sessionOption: {
     "auto-play-audio": "Reproducción automática",
