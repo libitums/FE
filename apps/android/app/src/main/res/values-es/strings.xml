@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 스페인어 기기의 알림 채널 이름 · 설명(ADR-0097). 번역 초안 — 원어민 검수 필요. -->
+<resources>
+  <string name="notification_channel_name">Novedades de Duru</string>
+  <string name="notification_channel_description">Novedades de aprendizaje y anuncios</string>
+</resources>

@@ -42,8 +42,8 @@ describe("학습 문항 안내 문구", () => {
     }
   });
 
-  test("CP6: 표가 빈 언어(es · ja)는 영어 표의 값을 그대로 쓴다(vi는 완전한 표, ADR-0091)", () => {
-    for (const language of ["es", "ja"] as const) {
+  test("CP6: 표가 빈 언어(ja)는 영어 표의 값을 그대로 쓴다(vi · id · es는 완전한 표, ADR-0091 · 0093 · 0097)", () => {
+    for (const language of ["ja"] as const) {
       expect(uiCopyFor(language).learningItemGuide, language).toEqual(copy);
     }
   });

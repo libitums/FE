@@ -474,3 +474,25 @@ test("[IL9] 설정 › 언어에서 인도네시아어를 고르면 탭이 바�
     expect.stringMatching(/^Pengaturan/),
   );
 });
+
+// ------------------------------------------------------------ IL10 · 설정에서 스페인어(ADR-0097)
+
+test("[IL10] 설정 › 언어에서 스페인어를 고르면 탭이 바로 바뀌고 저장되며, 돌아오면 설정이다", async () => {
+  const storage = sessionStorageWith({ [uiLanguageStorageKey]: "en" });
+  await renderSignedInApp(<App progressSeed={legacyPassedSeed} />, {
+    storageModule: storage.module,
+  });
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
+  const languageRow = screen.getByTestId("ui-lynx-settings-group-item-language");
+  fireEvent.tap(within(languageRow).getByTestId("ui-lynx-settings-cell"), {});
+
+  fireEvent.tap(screen.getByTestId("ui-lynx-option-selector-item-es"), {});
+  expect(storage.store.get(uiLanguageStorageKey)).toBe("es");
+  tapButtonIn("language-select-screen-next");
+
+  expect(screen.getByTestId("settings-screen-title")).toHaveTextContent("Ajustes");
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).toHaveAttribute(
+    "accessibility-label",
+    expect.stringMatching(/^Ajustes/),
+  );
+});

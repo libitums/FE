@@ -4,7 +4,7 @@
 import type { ContentLanguage, DecodeIssue, EpisodeTranslations } from "./episode-content.model";
 import { isRecord, issue } from "./episode-content.normalize";
 
-const LANGUAGES: readonly ContentLanguage[] = ["vi", "id"];
+const LANGUAGES: readonly ContentLanguage[] = ["vi", "id", "es"];
 
 export type TranslationsPlan = {
   readonly translations: EpisodeTranslations | undefined;

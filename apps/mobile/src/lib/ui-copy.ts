@@ -12,6 +12,7 @@ import type {
   UseUiCopy,
 } from "./ui-copy.contract";
 import { uiCopyEn } from "./ui-copy-en";
+import { uiCopyEs } from "./ui-copy-es";
 import { uiCopyId } from "./ui-copy-id";
 import { uiCopyVi } from "./ui-copy-vi";
 
@@ -19,7 +20,7 @@ export const uiCopyCatalog: UiCopyCatalog = {
   en: uiCopyEn,
   vi: uiCopyVi,
   id: uiCopyId,
-  es: {},
+  es: uiCopyEs,
   ja: {},
 };
 
@@ -57,6 +58,10 @@ function buildTable(language: UiLanguage): UiCopy {
   // 인도네시아어도 완전한 표입니다(ADR-0093).
   if (language === "id") {
     return uiCopyId;
+  }
+  // 스페인어도 완전한 표입니다(ADR-0097).
+  if (language === "es") {
+    return uiCopyEs;
   }
   const overrides: UiCopyOverrides = uiCopyCatalog[language];
   return uiCopyWithOverrides(uiCopyEn, overrides);

@@ -27,8 +27,8 @@ test("CP1. 따라 읽기 배지 문구 키가 없다", () => {
   expect(Object.keys(c.readAloud).sort()).toEqual(["matched", "pronunciation"].sort());
 });
 
-test("CP1. 표가 빈 언어(es · ja)도 새 문구를 영어로 채운다", () => {
-  for (const language of ["es", "ja"] as const) {
+test("CP1. 표가 빈 언어(ja)도 새 문구를 영어로 채운다", () => {
+  for (const language of ["ja"] as const) {
     const table = uiCopyFor(language);
     expect(table.wordChoice.culture.sceneInstruction).toBe(c.wordChoice.culture.sceneInstruction);
     expect(table.sentenceOrder.dialogueLine.me("hi")).toBe("Your line: hi");
