@@ -10,6 +10,7 @@ import {
   compareVersions,
 } from "./episode-catalog";
 import type { EpisodeManifest, ManifestEntry } from "./episode-manifest";
+import { TUTORIAL_EPISODE_ID } from "./tutorial-episode";
 import { sha256Hex, utf8Bytes } from "./sha256";
 
 export type EpisodeUpdateKind = "new" | "changed" | "current" | "bundled";
@@ -90,11 +91,16 @@ export function planEpisodeUpdates(input: EpisodeUpdatePlanInput): readonly Plan
   return [...planned.values()].sort(byTurn);
 }
 
-/** 스플래시가 기다릴 id — staging이 "available"이면 new · changed, 아니면 빈 목록. 계획 순서 그대로. */
+/**
+ * 스플래시가 기다릴 id — staging이 "available"이고 튜토리얼이 new · changed일 때만 그 id 하나, 아니면 빈 목록.
+ * 다른 새 · 바뀐 편은 기다리지 않고 뒤에서 받습니다(ADR-0095 D1).
+ */
 export function splashEpisodeIds(
   plan: readonly PlannedEpisode[],
   staging: "available" | "unavailable",
 ): readonly string[] {
   if (staging === "unavailable") return [];
-  return plan.filter(isUpdating).map((planned) => planned.entry.id);
+  return plan
+    .filter((planned) => isUpdating(planned) && planned.entry.id === TUTORIAL_EPISODE_ID)
+    .map((planned) => planned.entry.id);
 }
