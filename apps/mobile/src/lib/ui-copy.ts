@@ -14,6 +14,7 @@ import type {
 import { uiCopyEn } from "./ui-copy-en";
 import { uiCopyEs } from "./ui-copy-es";
 import { uiCopyId } from "./ui-copy-id";
+import { uiCopyJa } from "./ui-copy-ja";
 import { uiCopyVi } from "./ui-copy-vi";
 
 export const uiCopyCatalog: UiCopyCatalog = {
@@ -21,7 +22,7 @@ export const uiCopyCatalog: UiCopyCatalog = {
   vi: uiCopyVi,
   id: uiCopyId,
   es: uiCopyEs,
-  ja: {},
+  ja: uiCopyJa,
 };
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
@@ -62,6 +63,10 @@ function buildTable(language: UiLanguage): UiCopy {
   // 스페인어도 완전한 표입니다(ADR-0097).
   if (language === "es") {
     return uiCopyEs;
+  }
+  // 일본어도 완전한 표입니다(ADR-0098).
+  if (language === "ja") {
+    return uiCopyJa;
   }
   const overrides: UiCopyOverrides = uiCopyCatalog[language];
   return uiCopyWithOverrides(uiCopyEn, overrides);

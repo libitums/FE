@@ -13,6 +13,7 @@
 - 받은 적용 기록(결정을 바꾸지 않는다):
   2026-11-03 [ADR-0093](0093-indonesian-localization.md) — 언어 목록에 `id`(Indonesian)를 더해 다섯이 됐고, `vi`와 같은 방식(완전한 표)으로 채웠다.
   2026-11-04 [ADR-0097](0097-spanish-localization.md) — `es`(Spanish)를 고를 수 있게 열고 같은 방식(완전한 표)으로 채웠다. 남은 빈 표는 `ja`뿐이다.
+  2026-11-04 [ADR-0098](0098-japanese-localization.md) — `ja`(Japanese)까지 열어 다섯 모두 완전한 표다. 빈 덮어쓰기를 영어로 채우는 병합 규칙은 `uiCopyWithOverrides`에 남는다.
   2026-11-02 [ADR-0091](0091-vietnamese-localization.md) — U1 「열 때 번역만 더한다」의 첫 적용: `vi`를 열고, 덮어쓰기 대신 완전한 표(`uiCopyVi: UiCopy`)로 채웠다. 화면에 하드코딩돼 있던 영어(진입 흐름 · 결과 제목 · 연속 학습 모달 등)를 표로 옮겼다.
   2026-10-18 [ADR-0069](0069-returning-learner-login.md) D5 — D4 「쓰는 때」에 둘째 자리(기존 회원의 바로 맵 경로)가 생겼다(D4 표 · 재검토 조건에 주).
 

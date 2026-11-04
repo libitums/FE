@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 
-import { uiCopyFor } from "./ui-copy";
+import { uiCopyWithOverrides } from "./ui-copy";
 import { uiCopyEn } from "./ui-copy-en";
 
 // `unit` 계층: 학습 문항 리디자인이 더한 문구 값의 입출력만 봅니다. 표본 인자는 영어로 줍니다.
@@ -27,9 +27,9 @@ test("CP1. 따라 읽기 배지 문구 키가 없다", () => {
   expect(Object.keys(c.readAloud).sort()).toEqual(["matched", "pronunciation"].sort());
 });
 
-test("CP1. 표가 빈 언어(ja)도 새 문구를 영어로 채운다", () => {
-  for (const language of ["ja"] as const) {
-    const table = uiCopyFor(language);
+test("CP1. 빈 덮어쓰기도 새 문구를 영어로 채운다(ADR-0098 D3)", () => {
+  {
+    const table = uiCopyWithOverrides(uiCopyEn, {});
     expect(table.wordChoice.culture.sceneInstruction).toBe(c.wordChoice.culture.sceneInstruction);
     expect(table.sentenceOrder.dialogueLine.me("hi")).toBe("Your line: hi");
     expect(table.syllableBuild.usedTile("ga")).toBe("ga, used");

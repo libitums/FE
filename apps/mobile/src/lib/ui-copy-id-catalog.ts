@@ -35,6 +35,7 @@ export const catalogMapId: CatalogMapCopy = {
   episodeLabel: (ordinal) => `Episode ${ordinal}.`,
   coverTitle: "Pengantar episode",
   lessonTitle: (ordinal) => `Pelajaran ${ordinal}`,
+  sheetHeading: (unit, title) => `${unit}: “${title}”`,
   finalTitle: "Tes akhir",
   cultureTitle: "Budaya",
   storyTitle: "Cerita",

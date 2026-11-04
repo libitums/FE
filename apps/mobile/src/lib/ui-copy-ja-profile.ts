@@ -51,7 +51,7 @@ export const learnerProfileJa: LearnerProfileCopy = {
   },
   settings: {
     title: "名前と国",
-    body: "練習する文の中で使います。変更は次に開くレッスンから反映されます。",
+    body: "練習する文で使います。変更は次のレッスンから反映されます。",
     submit: "保存",
     saved: "保存しました",
   },

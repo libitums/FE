@@ -23,9 +23,9 @@ const unavailableTail = {
 } as const;
 
 export const catalogUpdateNoticeJa: CatalogUpdateNoticeCopy = {
-  title: "ねえねえ、新しい内容があるよ！👀",
+  title: "新しい内容が届きました！👀",
   body: "クリアしたエピソードの一部に新しい内容が加わりました。進捗はそのままなのでご安心を。",
-  confirm: "いいね、了解！",
+  confirm: "わかりました",
   dontShowAgain: "今後表示しない",
   checked: "チェック済み",
   unchecked: "未チェック",
@@ -35,6 +35,8 @@ export const catalogMapJa: CatalogMapCopy = {
   episodeLabel: (ordinal) => `エピソード${ordinal}.`,
   coverTitle: "エピソード紹介",
   lessonTitle: (ordinal) => `レッスン${ordinal}`,
+  // 말풍선 폭에 한 줄 약 12자 — 괄호 하나가 다음 줄로 넘어가지 않게 제목을 둘째 줄에 둡니다.
+  sheetHeading: (unit, title) => `${unit}\n${title}`,
   finalTitle: "最終テスト",
   cultureTitle: "文化",
   storyTitle: "ストーリー",

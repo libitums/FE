@@ -51,24 +51,24 @@ test("UC1. uiCopyFor는 언어마다 두 번 불러도 같은 객체를 낸다",
   }
 });
 
-test("UC2. 덮어쓰기가 비어 있는 ja는(vi · id · es는 완전한 표, ADR-0091 · 0093 · 0097) 문자열 잎이 전부 영어와 같다", () => {
+test("UC2. 빈 덮어쓰기는(다섯 언어 모두 완전한 표, ADR-0098 D3) 문자열 잎이 전부 영어와 같다", () => {
   const english = stringLeaves(uiCopyEn);
   expect(Object.keys(english).length).toBeGreaterThan(0);
-  for (const language of ["ja"] as const) {
-    expect(stringLeaves(uiCopyFor(language))).toEqual(english);
+  {
+    expect(stringLeaves(uiCopyWithOverrides(uiCopyEn, {}))).toEqual(english);
   }
 });
 
-test("UC2. 덮어쓰기가 비어 있는 ja는(vi · id · es는 완전한 표, ADR-0091 · 0093 · 0097) 함수 잎이 같은 인자에 영어와 같은 결과를 낸다", () => {
+test("UC2. 빈 덮어쓰기는(다섯 언어 모두 완전한 표, ADR-0098 D3) 함수 잎이 같은 인자에 영어와 같은 결과를 낸다", () => {
   const functions = leavesOf(uiCopyEn).filter((leaf) => typeof leaf.value === "function");
   expect(functions.length).toBeGreaterThan(0);
-  for (const language of ["ja"] as const) {
-    const table = uiCopyFor(language);
+  {
+    const table = uiCopyWithOverrides(uiCopyEn, {});
     for (const leaf of functions) {
       const other = at(table, leaf.path);
-      expect(typeof other, `${language}:${leaf.path}`).toBe("function");
+      expect(typeof other, leaf.path).toBe("function");
       for (const arg of sampleArgs) {
-        expect(callWith(other, arg), `${language}:${leaf.path}(${String(arg)})`).toEqual(
+        expect(callWith(other, arg), `${leaf.path}(${String(arg)})`).toEqual(
           callWith(leaf.value, arg),
         );
       }
@@ -76,9 +76,9 @@ test("UC2. 덮어쓰기가 비어 있는 ja는(vi · id · es는 완전한 표, 
   }
 });
 
-test("UC2. 말하기 두 구획의 다섯 키는 ja에서 영어로 채워진다", () => {
-  for (const language of ["ja"] as const) {
-    const table = uiCopyFor(language);
+test("UC2. 말하기 두 구획의 다섯 키는 빈 덮어쓰기에서 영어로 채워진다", () => {
+  {
+    const table = uiCopyWithOverrides(uiCopyEn, {});
     expect(table.readAloud).not.toHaveProperty("badge");
     expect(table.readAloud.matched(2, 5)).toBe("You said the first 2 of 5 words.");
     expect(table.readAloud.pronunciation("kadeu")).toBe("Pronunciation: kadeu");
@@ -135,9 +135,9 @@ test("UC4. uiCopyCatalog의 키 집합이 정확히 en · es · id · ja · vi�
   expect(uiCopyCatalog.en).toBe(uiCopyEn);
 });
 
-test("JS4. specialUnitMap은 ja에서 영어로 채워진다", () => {
-  for (const language of ["ja"] as const) {
-    const table = uiCopyFor(language);
+test("JS4. specialUnitMap은 빈 덮어쓰기에서 영어로 채워진다", () => {
+  {
+    const table = uiCopyWithOverrides(uiCopyEn, {});
     expect(table.specialUnitMap.eyebrow).toBe("SPECIAL");
     expect(table.specialUnitMap.accessibilityLabel("x")).toBe("special, x");
   }

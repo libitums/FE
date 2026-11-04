@@ -35,6 +35,7 @@ export const catalogMapVi: CatalogMapCopy = {
   episodeLabel: (ordinal) => `Tập ${ordinal}.`,
   coverTitle: "Giới thiệu tập",
   lessonTitle: (ordinal) => `Bài ${ordinal}`,
+  sheetHeading: (unit, title) => `${unit}: “${title}”`,
   finalTitle: "Bài kiểm tra cuối",
   cultureTitle: "Văn hóa",
   storyTitle: "Câu chuyện",

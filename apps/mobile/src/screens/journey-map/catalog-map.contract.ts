@@ -185,6 +185,8 @@ export type CatalogMapCopy = {
   readonly episodeLabel: (ordinal: number) => string;
   readonly coverTitle: string;
   readonly lessonTitle: (ordinal: number) => string;
+  /** 스텝 말풍선 제목 — 유닛 이름과 레슨 제목을 잇습니다. 일본어는 줄을 바꿔 제목을 둘째 줄에 둡니다(ADR-0098). */
+  readonly sheetHeading: (unit: string, title: string) => string;
   readonly finalTitle: string;
   readonly cultureTitle: string;
   /** 막간 이야기 노드의 제목(스페셜 라벨의 둘째 줄)입니다. */

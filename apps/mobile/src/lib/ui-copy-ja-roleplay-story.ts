@@ -4,7 +4,7 @@
 import type { RoleplayStoryCopy } from "../screens/roleplay-story/roleplay-story.contract";
 
 export const roleplayStoryJa: RoleplayStoryCopy = {
-  lineCount: (count) => `${String(count)}個のセリフ`,
+  lineCount: (count) => `${String(count)}つのセリフ`,
   withCounterpart: (name) => `${name}と`,
   previewBody: (name) =>
     `${name}とこの場面を演じましょう。それぞれのセリフに声に出して答えてください。`,

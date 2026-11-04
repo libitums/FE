@@ -46,3 +46,10 @@ test("JA3. 영어와 같은 문자열은 고유 명사 · 기호 정도만 — �
   const same = strings.filter(({ path, value }) => valueAt(uiCopyEn, path) === value);
   expect(same.length / strings.length).toBeLessThan(0.1);
 });
+
+test("JA4. 스텝 말풍선 제목은 일본어에서 줄을 바꿔 제목을 둘째 줄에 두고, 영어는 지금처럼 콜론 · 따옴표다", () => {
+  expect(uiCopyJa.catalogMap.sheetHeading("レッスン1", "チュートリアル")).toBe(
+    "レッスン1\nチュートリアル",
+  );
+  expect(uiCopyEn.catalogMap.sheetHeading("Lesson 1", "Tutorial")).toBe("Lesson 1: “Tutorial”");
+});
