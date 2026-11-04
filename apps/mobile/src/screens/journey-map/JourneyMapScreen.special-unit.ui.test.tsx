@@ -1,7 +1,14 @@
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
+import card from "@libitums/icons/lynx/card";
+import dumbbell from "@libitums/icons/lynx/dumbbell";
+import earth from "@libitums/icons/lynx/earth";
 import star from "@libitums/icons/lynx/five-pointed-star";
+import light from "@libitums/icons/lynx/light";
+import mic from "@libitums/icons/lynx/mic";
+import play from "@libitums/icons/lynx/play";
+import tick from "@libitums/icons/lynx/tick";
 
 import { FirstUnitGuideProvider } from "../../components/first-unit-guide";
 import type { CatalogProgress } from "../../lib/catalog-progress";
@@ -176,5 +183,40 @@ describe("JourneyMapScreen 스페셜 유닛", () => {
     expect(
       screen.queryByTestId("journey-special-unit-eyebrow-catalog-unit-u01-water-RP"),
     ).toBeNull();
+  });
+
+  // 묶음별 아이콘(ADR-0101 B안) — 잠긴 유닛도 자물쇠 대신 묶음 아이콘(잠김 색)이고, 끝은 체크 · 열림은 같은 아이콘(brand).
+  test("JMS-G1. 레슨 · 문화 노드는 잠김에도 묶음 아이콘이고 최종은 별, 끝은 체크다", () => {
+    render(mapScreen({ catalog: catalogOf({ "u01-water": ["intro", "S1"] }) }));
+
+    const glyph = (key: string) =>
+      glyphOf(
+        screen
+          .getByTestId(`ui-lynx-learning-unit-catalog-unit-u01-water-${key}`)
+          .querySelector(
+            `[data-testid="ui-lynx-learning-unit-catalog-unit-u01-water-${key}-icon"]`,
+          ) as Element,
+      );
+    expect(glyph("S1")).toBe(tick); // 끝
+    expect(glyph("S2")).toBe(card); // 열림
+    expect(screen.getByTestId("ui-lynx-learning-unit-catalog-unit-u01-water-S2")).toHaveAttribute(
+      "data-status",
+      "available",
+    );
+    // 잠김 — 자물쇠가 아니라 묶음 아이콘, 낭독 접미사는 그대로 locked.
+    expect(glyph("S3")).toBe(light);
+    expect(glyph("S4")).toBe(card);
+    expect(glyph("S5")).toBe(dumbbell);
+    expect(glyph("S6")).toBe(dumbbell);
+    expect(glyph("S7")).toBe(mic);
+    expect(glyph("S8")).toBe(play);
+    expect(glyph("CULT")).toBe(earth);
+    const locked = screen.getByTestId("ui-lynx-learning-unit-catalog-unit-u01-water-S3");
+    expect(locked).toHaveAttribute("data-status", "default");
+    expect((locked.getAttribute("accessibility-label") ?? "").endsWith(", locked")).toBe(true);
+    const finalIcon = screen
+      .getByTestId("ui-lynx-special-unit-catalog-unit-u01-water-RP")
+      .querySelector('[data-testid="ui-lynx-special-unit-catalog-unit-u01-water-RP-icon"]');
+    expect(glyphOf(finalIcon as Element)).toBe(star);
   });
 });

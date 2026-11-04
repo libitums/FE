@@ -27,7 +27,11 @@ export type LearningUnitProps = {
    * 쓰입니다. 좌표가 필요 없는 호출자는 인자를 받지 않으면 그만입니다.
    */
   readonly bindtap?: (event: LearningUnitTapEvent) => void;
+  /** 잠긴(`default`) 유닛의 아이콘 — 기본 `"lock"`(자물쇠), `"icon"`이면 받은 아이콘을 잠김 색으로 둡니다. */
+  readonly lockedGlyph?: LearningUnitLockedGlyph;
 };
+
+export type LearningUnitLockedGlyph = "lock" | "icon";
 
 export type LearningUnitContract = {
   readonly testId: string;
@@ -51,6 +55,7 @@ const statuses = new Set<LearningUnitStatus>([
   "checking",
 ]);
 const narratives = new Set<LearningUnitNarrative>(["none", "narrative"]);
+const lockedGlyphs = new Set<LearningUnitLockedGlyph>(["lock", "icon"]);
 
 export function getLearningUnitContract(
   props: LearningUnitProps,
@@ -78,6 +83,10 @@ export function getLearningUnitContract(
   if (props.focused !== undefined && typeof props.focused !== "boolean") {
     throw new Error("LearningUnit focused must be a boolean");
   }
+  const lockedGlyph = props.lockedGlyph ?? "lock";
+  if (!lockedGlyphs.has(lockedGlyph)) {
+    throw new Error(`Unsupported LearningUnit lockedGlyph: ${String(lockedGlyph)}`);
+  }
   if (props.bindtap !== undefined && typeof props.bindtap !== "function") {
     throw new Error("LearningUnit bindtap must be a function");
   }
@@ -96,7 +105,16 @@ export function getLearningUnitContract(
 
   // 「확인 중」은 유닛 아이콘을 넘겨받은 채로 두되 면과 같은 색으로 칠해 자리만 잡습니다 —
   // 자물쇠 · 체크는 모르는 상태를 주장하므로 쓰지 않고, 채워질 때 아이콘 칸이 움직이지 않습니다.
-  const iconKind = status === "default" ? "lock" : status === "clear" ? "tick" : "learning";
+  // 잠김은 자물쇠가 기본이고, `lockedGlyph: "icon"`이면 받은 아이콘을 잠김 색으로 둡니다(여정 맵 B안 — 묶음 아이콘이
+  // 잠긴 유닛에서도 보여 흐름이 읽힙니다). 상태 접미사 · traits는 그대로라 낭독은 변하지 않습니다.
+  const iconKind =
+    status === "default"
+      ? lockedGlyph === "icon"
+        ? "learning"
+        : "lock"
+      : status === "clear"
+        ? "tick"
+        : "learning";
   const iconColor =
     status === "default"
       ? color.gray[700]

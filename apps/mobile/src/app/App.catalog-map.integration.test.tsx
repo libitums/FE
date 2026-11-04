@@ -25,6 +25,10 @@ import { sha256Hex, utf8Bytes } from "../lib/sha256";
 import { systemBackEventName } from "../lib/system-back";
 import { EPISODE_BANNER_HOLD_MS } from "../screens/catalog-cover/episode-banner";
 import { catalogMapSectionsOf } from "../screens/journey-map/catalog-map";
+import earth from "@libitums/icons/lynx/earth";
+import star from "@libitums/icons/lynx/five-pointed-star";
+import light from "@libitums/icons/lynx/light";
+
 import { catalogSectionDomId } from "../screens/journey-map/catalog-map";
 import { catalogMarkDomId } from "../screens/journey-map/map-footprints";
 import {
@@ -952,4 +956,24 @@ test("IF2. 콜드 부팅의 끝낸 진행(intro · S1)은 등장 모션 없이 �
   expect((horizontal[0] as HTMLElement).style.transform).toBe("rotate(90deg) scaleX(-1)");
   expect(document.querySelector(".map-footprint-enter")).toBeNull();
   expect(footprintsOf("u01-water", "S2")).toHaveLength(0);
+});
+
+// ---------------------------------------------------------------- 묶음별 아이콘(ADR-0101)
+
+const glyphAt = (testId: string): string => {
+  const node = screen.getByTestId(testId);
+  const content = node.getAttribute("content") ?? "";
+  const painted = node.getAttribute("current-color") ?? "";
+  return painted === "" ? content : content.split(painted).join("currentColor");
+};
+
+test("IG1. 콜드 부팅 맵의 잠긴 u01 S1은 전구, CULT는 지구, 최종은 별이고 낭독 접미사는 locked다", async () => {
+  await boot();
+
+  const s1 = screen.getByTestId("ui-lynx-learning-unit-catalog-unit-u01-water-S1");
+  expect(s1).toHaveAttribute("data-status", "default");
+  expect((s1.getAttribute("accessibility-label") ?? "").endsWith(", locked")).toBe(true);
+  expect(glyphAt("ui-lynx-learning-unit-catalog-unit-u01-water-S1-icon")).toBe(light);
+  expect(glyphAt("ui-lynx-learning-unit-catalog-unit-u01-water-CULT-icon")).toBe(earth);
+  expect(glyphAt("ui-lynx-special-unit-catalog-unit-u01-water-RP-icon")).toBe(star);
 });

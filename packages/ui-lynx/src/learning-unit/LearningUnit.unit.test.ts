@@ -227,4 +227,39 @@ describe("LearningUnit 기존 status 넷 (LU5 가드)", () => {
     expect(hasPressedShade(status, "reduced")).toBe(status !== "default");
     expect(hasPressedShade(status, "standard")).toBe(false);
   });
+
+  // 잠긴 유닛에도 묶음 아이콘을 보이는 선택(ADR-0101 B안). 색 · 접미사 · traits는 자물쇠 때와 같다.
+  test("LU-L1. lockedGlyph icon이면 default에서 받은 아이콘을 잠김 색으로 두고, lock · 기본은 자물쇠다", () => {
+    const withIcon = getLearningUnitContract({
+      accessibilityLabel: "듣기",
+      icon,
+      lockedGlyph: "icon",
+    });
+    expect(withIcon).toMatchObject({
+      status: "default",
+      iconKind: "learning",
+      iconColor: color.gray[700],
+      accessibilityLabel: "듣기, locked",
+      traits: "disabled",
+      interactive: false,
+    });
+    expect(
+      getLearningUnitContract({ accessibilityLabel: "듣기", icon, lockedGlyph: "lock" }).iconKind,
+    ).toBe("lock");
+    expect(getLearningUnitContract({ accessibilityLabel: "듣기", icon }).iconKind).toBe("lock");
+    // 다른 상태는 영향이 없다.
+    for (const status of ["available", "active", "clear", "checking"] as const) {
+      expect(
+        getLearningUnitContract({ accessibilityLabel: "듣기", icon, status, lockedGlyph: "icon" })
+          .iconKind,
+      ).toBe(getLearningUnitContract({ accessibilityLabel: "듣기", icon, status }).iconKind);
+    }
+    expect(() =>
+      getLearningUnitContract({
+        accessibilityLabel: "듣기",
+        icon,
+        lockedGlyph: "padlock" as unknown as "lock",
+      }),
+    ).toThrow("Unsupported LearningUnit lockedGlyph: padlock");
+  });
 });
