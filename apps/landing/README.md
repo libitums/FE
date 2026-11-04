@@ -79,7 +79,7 @@ e2e는 chromium · analytics · analytics-mobile 세 프로젝트에서 128건 �
 | `src/assets/trial/images/` · `public/trial/sfx/` | 체험판 그림 12(앱 `src/assets/content/images/`의 사본 — 표는 `src/trial/trial-images.ts`) · 효과음 5(`apps/ios/Host/sfx/`의 사본) |
 | `e2e/` | Playwright. 체험판은 `trial.e2e.ts`(흐름 · 말하기 · 랜딩 링크) · `trial-sound.e2e.ts`(소리 요청) · `trial-a11y.e2e.ts`(키보드 · 초점 · axe · 움직임 줄이기) · `trial-layout.e2e.ts` · `trial-reflow.e2e.ts`(폭 · 낮은 화면) · `trial-contrast.e2e.ts`(그림 위 글 대비) · `trial-analytics.e2e.ts`(GA) · `trial-transition.e2e.ts`(꿈 전환) · `trial-prereg.e2e.ts`(사전 등록, 가짜 응답) · `trial-fullscreen.e2e.ts`(모바일 전체화면, 가짜 함수) · `trial.support.ts` · `trial-fakes.support.ts`(가짜 인식기 · 버킷 · PostgREST). 랜딩은 `landing.e2e.ts`(넘침 · 제목 단계 · 키보드 · 포커스 · axe · 서체 · 404) · `content.e2e.ts`(산출물 내용, chromium만) · `layout.e2e.ts`(Features · Story · Phrases · FAQ · 휴대폰 틀) · `layout-page.e2e.ts`(머리 · 히어로 · 섹션 간격) · `layout.support.ts`(폭 상수 1440 · 390, 좌표 · 계산값 · 스크롤 도구) · `analytics.e2e.ts`(측정 ID 빌드의 `dataLayer`) · ⟨2026-10-30⟩ `airbridge.e2e.ts`(토큰 빌드의 Airbridge 결선 — 스텁 SDK · 차단 · 시간대) · `analytics.support.ts`(막는 호스트 둘과 외부 호스트 단언) · `serve.mjs`(정적 서버). 설정은 `playwright.config.ts` |
 | `src/assets/content/images/` | ⟨2026-10-29⟩ 랜딩 소개 그림 — 콘텐츠 버킷 `images/<unit>/…`의 사본(같은 상대 경로 · 같은 바이트). 표는 `src/assets/images.ts`(히어로 · Features · Phrases · 맺음), Story 카드는 `src/story/episodes.ts`. Astro가 크기별로 다시 굽는다 |
-| `src/story/` | ⟨2026-10-29⟩ Story 줄의 에피소드 카드 데이터 `episodes.ts`(새 것 먼저, 사람이 하나씩 더한다 — 아래 「Story 카드 더하기」) |
+| `src/story/` | ⟨2026-10-29⟩ Story 줄의 에피소드 카드(새 것 먼저, 사람이 하나씩 더한다 — 아래 「Story 카드 더하기」). ⟨2026-11-04⟩ `episodes.contract.ts`(id 목록 · 타입) · `text/<코드>.ts`(언어별 때 · 제목 · 티저 · alt) · `episodes.ts`(번호 · 그림 · 조립) — 글이 다섯 언어가 되어 한 파일이 300줄(lint `max-lines`)을 넘겨 나눴다 |
 | `scripts/` | `fetch-content-image.mjs` — 버킷 그림 하나를 `src/assets/content/`로 받는다. ⟨2026-11-04⟩ `shoot-og.mjs` — 빌드 결과에서 공유 카드 그림 `public/og-<코드>.jpg`를 찍는다(아래 「그림」) |
 | `public/` | 아이콘과 공유 카드 그림(`og-*.jpg`) — 그대로 복사된다 |
 | ↳ `public/naver….html` · `google….html` | 네이버 서치어드바이저 · Google Search Console의 소유 확인 파일. **지우거나 고치지 않는다** — 두 곳 모두 주기적으로 다시 확인한다. 검색엔진 확인 파일(`naver*.html` · `google*.html`)만 포매터 대상에서 뺐다 — 한 글자도 바뀌면 안 된다 |
@@ -124,7 +124,7 @@ Footer 링크의 `rel`을 지우면 UI-FO2가 `expected '' to contain 'noopener'
 3. `src/site.ts`의 `languages`에 코드를 더한다 — **첫째가 기본 언어(`/`)** 이고 나머지는 `/<코드>/`에 선다.
 4. 같은 파일의 `pages`에 그 언어의 이름(`label`) · 영어 이름 · locale · 제목 · 설명 · 공유 카드 그림(`image`)과 그 그림의 대체 문구
    (`imageAlt`)를 적는다. 빠뜨리면 타입 검사가 짚는다.
-5. `src/story/episodes.ts`의 에피소드마다 `when` · `title` · `teaser` · `alt`에 그 언어를 채운다(타입이 짚는다).
+5. `src/story/text/<코드>.ts`를 만들어 에피소드마다 `when` · `title` · `teaser` · `alt`를 채우고 `episodes.ts`의 `text` 표에 잇는다(타입이 짚는다).
 6. `pnpm landing:build && node apps/landing/scripts/shoot-og.mjs <코드>`로 `public/og-<코드>.jpg`(1200×630)를 찍는다.
 7. 체험판의 사전 등록 · 인식 글자 수집 표의 `locale` check를 넓히는 **Supabase 마이그레이션**을 더하고(`20261104120000_web_trial_locales.sql`처럼)
    `src/trial/trial-prereg.contract.ts`의 `PreregLocale`을 맞춘다. 원격 적용 전에는 그 언어 페이지의 등록이 「다시 시도」로 선다.
@@ -267,9 +267,10 @@ GA4와 따로, 랜딩은 Airbridge Web SDK도 싣는다 — **검색광고를 �
      손 · 뒷모습 정도는 된다). u00만은 체험판 사본(`src/assets/trial/images/u00-tutorial/`)과 **바이트가 겹치지 않는** 컷을 고른다(이름이 달라도
      내용이 같으면 Vite가 빌드 결과에서 한 파일로 합치고, 그것을 `<Image>`로 변환하면 Astro가 원본을 지워 체험판이 404를 낸다 —
      `episodes.unit.test.ts`가 대조한다).
-  2. `src/story/episodes.ts`의 배열 **맨 앞**에 항목을 더한다 — `id`(앱 unit id) · `number` · `when`(앱 JSON의 `day` · `time_of_day`) ·
-     `title`(앱 JSON의 `title_en` · `title` 그대로) · `teaser`(살짝만 스포하는 **한 문장** — 등장인물 이름 · 답 · 결말을 말하지 않는다) ·
-     `image` · `alt`(보이는 것만) · 필요하면 `focus`(4:5로 자를 때 남길 자리). 줄은 배열 순서 그대로이고 맨 앞 카드에 `New` 표가 붙는다.
+  2. `src/story/episodes.contract.ts`의 `storyEpisodeIds` **맨 앞**에 id(앱 unit id)를 더하고, `src/story/text/<코드>.ts` 다섯에 같은 id로
+     `when`(앱 JSON의 `day` · `time_of_day`) · `title`(앱 JSON의 `title_en` · `title` · 번역표 제목 그대로) · `teaser`(살짝만 스포하는 **한 문장** —
+     등장인물 이름 · 답 · 결말을 말하지 않는다) · `alt`(보이는 것만)를 채운다. 그런 다음 `episodes.ts` 배열 **맨 앞**에 `card(id, number, image[, focus])`를
+     더한다(`focus`는 4:5로 자를 때 남길 자리). 빠진 언어 · id는 타입 검사가 짚는다. 줄은 배열 순서 그대로이고 맨 앞 카드에 `New` 표가 붙는다.
      카드에는 그림과 번호만 보이고, 때 · 제목 · 티저는 호버 · 포커스 · 누름으로 비치는 숨김 층에 들어간다.
   3. `pnpm --filter @libitums/landing test:unit`(`src/story/episodes.unit.test.ts` — id 꼴 · 번호 내림차순 · 두 언어 · 세로 그림) ·
      `test:ui`(카드 수 · New 표 · 숨김 층) · `test:integration`(빌드)을 돌린다.
