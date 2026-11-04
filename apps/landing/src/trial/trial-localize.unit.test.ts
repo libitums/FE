@@ -11,7 +11,7 @@ describe("TL 체험판 콘텐츠 번역", () => {
     const english = englishStringsOf(u00TrialModel());
     expect(english.length).toBeGreaterThan(20);
     for (const language of languages) {
-      const missing = english.filter((text) => !(text in u00Translations[language]));
+      const missing = english.filter((text) => !Object.hasOwn(u00Translations[language], text));
       expect(missing, language).toEqual([]);
     }
   });
@@ -58,6 +58,15 @@ describe("TL 체험판 콘텐츠 번역", () => {
       // 「Tutorial」 · 「Korea」처럼 번역이 영어와 같은 낱말만 남을 수 있다 — 표가 그렇게 정한 값이다.
       for (const text of left) expect(u00Translations[language][text], language).toBe(text);
     }
+  });
+
+  it("TL6 프로토타입의 키(constructor · toString)는 번역으로 집지 않는다", () => {
+    const model = u00TrialModel();
+    const probe = { ...model, imageMatch: { ...model.imageMatch, instruction: "constructor" } };
+    expect(localizeTrialModel(probe, u00Translations.vi).imageMatch.instruction).toBe(
+      "constructor",
+    );
+    expect(localizeTrialModel(probe, {}).imageMatch.instruction).toBe("constructor");
   });
 
   it("TL5 표의 값은 비지 않은 평문이고 자리표시자 · 태그가 없다", () => {

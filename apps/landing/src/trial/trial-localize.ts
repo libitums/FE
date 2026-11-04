@@ -13,8 +13,11 @@ function localizeValue(value: unknown, table: TrialTranslationTable): unknown {
   return Object.fromEntries(
     Object.entries(value as Record<string, unknown>).map(([key, inner]) => [
       key,
+      // 자기 키만 본다 — 「constructor」 같은 영어가 프로토타입의 함수를 집어 오지 않게.
       englishKeys.has(key) && typeof inner === "string"
-        ? (table[inner] ?? inner)
+        ? Object.hasOwn(table, inner)
+          ? table[inner]
+          : inner
         : localizeValue(inner, table),
     ]),
   );
