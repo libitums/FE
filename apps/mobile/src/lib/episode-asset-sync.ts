@@ -28,7 +28,14 @@ export type AssetSyncOptions = {
   readonly markerKey?: string;
   /** 경로 하나가 끝날 때마다(이미 있음 · 받음 · 서버에 없음) 부릅니다. 실패한 경로에는 부르지 않습니다. */
   readonly onPathSettled?: (path: string) => void;
+  /** 확인 시각을 재는 시계입니다(테스트 주입). 없으면 `Date.now`. */
+  readonly now?: () => number;
+  /** 이번 차례에 매니페스트가 바뀌었는가 — 그러면 시간과 상관없이 「서버에 없음」을 다시 봅니다(ADR-0095 D2). */
+  readonly recheckMissing?: boolean;
 };
+
+/** 「서버에 없음」으로 적힌 경로를 다시 보는 간격입니다(ADR-0095 D2). */
+export const MISSING_RECHECK_INTERVAL_MS = 24 * 60 * 60 * 1000;
 
 export const contentAssetsKey = (id: string): string => `libitum.content.assets.${id}`;
 
@@ -124,13 +131,59 @@ export function markAssetsComplete(
   sha256: string,
   missing: readonly string[],
   markerKey?: string,
+  checkedAt?: number,
 ): boolean {
   try {
-    store.set(markerKey ?? contentAssetsKey(id), JSON.stringify({ sha256, missing }));
+    // 확인 시각은 다시 볼 것(「서버에 없음」)이 있을 때만 씁니다 — 다 받은 표시는 바이트가 그대로입니다.
+    const marker =
+      checkedAt === undefined || missing.length === 0
+        ? { sha256, missing }
+        : { sha256, missing, checkedAt };
+    store.set(markerKey ?? contentAssetsKey(id), JSON.stringify(marker));
     return true;
   } catch {
     return false;
   }
+}
+
+/** 다시 볼 「서버에 없음」 경로 — 그 본문의 표시이고 간격 · 매니페스트 변경 · 옛 표시 조건이 맞을 때만. 던지지 않음. */
+function missingDueForRecheck(
+  store: ContentStore,
+  key: string,
+  sha256: string,
+  now: number,
+  recheck: boolean,
+): readonly string[] {
+  try {
+    const text = store.get(key);
+    if (text === null) return [];
+    const marker = JSON.parse(text) as { sha256?: unknown; missing?: unknown; checkedAt?: unknown };
+    if (marker.sha256 !== sha256 || !Array.isArray(marker.missing)) return [];
+    const missing = marker.missing.filter((path): path is string => typeof path === "string");
+    if (missing.length === 0) return [];
+    const checkedAt = typeof marker.checkedAt === "number" ? marker.checkedAt : null;
+    const due = recheck || checkedAt === null || now - checkedAt >= MISSING_RECHECK_INTERVAL_MS;
+    return due ? missing : [];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * 「서버에 없음」 경로만 다시 받습니다. 끝까지 받았으면 아직 없는 것만 남겨 표시를 새로 쓰고, 연결이 끊기면 표시를
+ * 그대로 둡니다(다음 차례에 다시). 열림 판정은 sha만 보므로 이 함수가 바꾸지 않습니다.
+ */
+async function recheckMissing(
+  store: ContentStore,
+  deps: AssetDeps,
+  entry: { readonly id: string; readonly sha256: string },
+  missing: readonly string[],
+  markerKey: string | undefined,
+  now: number,
+): Promise<void> {
+  const result = await syncEpisodeAssets(deps, missing);
+  if (result.state === "incomplete") return;
+  markAssetsComplete(store, entry.id, entry.sha256, result.missing, markerKey, now);
 }
 
 export type EnsureOutcome = "already" | "completed" | "incomplete";
@@ -147,10 +200,22 @@ export async function ensureEpisodeAssets(
   options?: AssetSyncOptions,
 ): Promise<EnsureOutcome> {
   const markerKey = options?.markerKey;
-  if (isAssetsComplete(store, entry.id, entry.sha256, markerKey)) return "already";
+  const now = (options?.now ?? Date.now)();
+  if (isAssetsComplete(store, entry.id, entry.sha256, markerKey)) {
+    const key = markerKey ?? contentAssetsKey(entry.id);
+    const due = missingDueForRecheck(
+      store,
+      key,
+      entry.sha256,
+      now,
+      options?.recheckMissing === true,
+    );
+    if (due.length > 0) await recheckMissing(store, deps, entry, due, markerKey, now);
+    return "already";
+  }
   const result = await syncEpisodeAssets(deps, paths, options?.onPathSettled);
   if (result.state === "incomplete") return "incomplete";
-  return markAssetsComplete(store, entry.id, entry.sha256, result.missing, markerKey)
+  return markAssetsComplete(store, entry.id, entry.sha256, result.missing, markerKey, now)
     ? "completed"
     : "incomplete";
 }

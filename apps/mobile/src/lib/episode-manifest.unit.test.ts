@@ -116,6 +116,41 @@ function parseOrNull(text: string): unknown {
   }
 }
 
+describe("decodeManifest — assets_bytes (ADR-0095 D3)", () => {
+  test("EM5. assets_bytes가 0 이상 정수면 assetsBytes로 읽고, 없으면 키가 없다", () => {
+    const decoded = passed(
+      decodeManifest(manifest([entry("u01-a", 1, { assets_bytes: 2_500_000 }), entry("u02-b", 2)])),
+    );
+    expect(decoded.episodes[0]?.assetsBytes).toBe(2_500_000);
+    expect(decoded.episodes[1]).not.toHaveProperty("assetsBytes");
+  });
+
+  test("EM5. 잘못된 assets_bytes(문자열 · 소수 · 음수 · null)는 그 값만 버리고 매니페스트는 받는다", () => {
+    for (const bad of ["3MB", 1.5, -1, null]) {
+      const decoded = passed(decodeManifest(manifest([entry("u01-a", 1, { assets_bytes: bad })])));
+      expect(decoded.episodes[0]).not.toHaveProperty("assetsBytes");
+    }
+  });
+
+  test("EM5. assetsBytes는 인코드로 왕복하고 bytes 다음 자리에 assets_bytes로 쓴다", () => {
+    const decoded = passed(decodeManifest(manifest([entry("u01-a", 1, { assets_bytes: 1234 })])));
+    const text = encodeManifestText(decoded);
+    expect(decodeManifest(parseOrNull(text))).toEqual({ ok: true, manifest: decoded });
+    const wire = parseOrNull(text) as { episodes: Record<string, unknown>[] };
+    expect(Object.keys(wire.episodes[0] ?? {})).toEqual([
+      "id",
+      "order",
+      "title",
+      "schema",
+      "version",
+      "sha256",
+      "bytes",
+      "assets_bytes",
+      "url",
+    ]);
+  });
+});
+
 describe("encodeManifestText", () => {
   const withLevel: EpisodeManifest = {
     generatedAt: "2026-10-12T00:00:00Z",
