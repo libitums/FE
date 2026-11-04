@@ -104,8 +104,12 @@ test("MG7. 형식이 틀린 email은 23514", async () => {
   expect(await stored()).toEqual([]);
 });
 
-test("MG8. locale은 en · ko, source는 web-trial만(그 밖 23514 · RLS 정책)", async () => {
+test("MG8. locale은 en · ko · vi · id · ms, source는 web-trial만(그 밖 23514 · RLS 정책)", async () => {
   await expect(insert({ email: "a@b.co", locale: "ja" })).rejects.toMatchObject({ code: "23514" });
+  // ⟨2026-11-04⟩ 랜딩의 세 언어(마이그레이션 20261104120000)
+  for (const locale of ["vi", "id", "ms"]) await insert({ email: `${locale}@b.co`, locale });
+  expect((await stored()).map((row) => row.locale)).toEqual(["vi", "id", "ms"]);
+  await db.admin.query("truncate public.pre_registrations restart identity");
   await expect(insert({ email: "a@b.co", source: "app" })).rejects.toMatchObject({
     code: expect.stringMatching(/^(23514|42501)$/),
   });

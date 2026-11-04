@@ -1,6 +1,7 @@
 // 영어 문구가 원본이고 `Copy`의 모양을 정합니다. 다른 언어는 같은 키를 전부 채웁니다(ko.ts).
 // 값에 든 `<br />`은 제목의 줄바꿈입니다 — 컴포넌트가 set:html로 넣으므로 그 밖의 태그는 쓰지 않습니다.
-// 휴대폰 목업 · 첫 표현 · 맺음 인용의 한국어 대사와 뜻풀이는 앱이 학습자에게 보여 주는 그대로라 여기에 없습니다.
+// 휴대폰 목업 · 첫 표현 · 맺음 인용의 **한국어 대사**는 앱이 학습자에게 보여 주는 그대로라 컴포넌트에 있고,
+// 그 화면의 UI 문구와 뜻풀이(`mock…` · `word…Gloss` · `closingGloss`)는 페이지 언어를 따라 여기서 옵니다.
 export const en = {
   skip: "Skip to content",
   navWays: "Features",
@@ -85,10 +86,10 @@ export const en = {
     "In Duru you read story scenes, reply to messages, take phone calls, and practice by listening, speaking and tracing letters by hand. Short lessons sit between the story moments.",
   faqHangulQ: "Can I start Duru without knowing Hangul?",
   faqHangulA:
-    "Yes — Duru’s lessons show Korean phrases together with their romanization and meaning, and its story scenes come with English translations, so you can start without reading Hangul. The first lessons guide you to tap a single phrase, so you can do them without a Korean keyboard.",
+    "Yes — Duru’s lessons show Korean phrases together with their romanization and meaning, and its story scenes come with translations, so you can start without reading Hangul. The first lessons guide you to tap a single phrase, so you can do them without a Korean keyboard.",
   faqLanguageQ: "What language is the Duru app in?",
   faqLanguageA:
-    "Duru’s app interface is in English for now. The Korean you learn comes with English meanings and romanization.",
+    "Duru’s app is available in English, Vietnamese and Indonesian. The Korean you learn comes with its meaning and romanization.",
   faqWhereQ: "Where can I download Duru?",
   faqWhereASoon:
     "Duru is not released yet. We are preparing it for iPhone (App Store) and Android (Google Play), and the store links will appear on this website when it is ready.",
@@ -98,6 +99,38 @@ export const en = {
   notFoundBody:
     "The address may have a typo, or the page may have moved. Start again from the home page.",
   notFoundHome: "Back to Duru",
+  // 휴대폰 목업(Features) — 화면 테두리의 UI 문구는 앱이 그 언어로 보여 주는 것이고, 뜻풀이는 u03 「미나 만나기」 컷의 번역입니다.
+  mockEpisode: "Episode 3.",
+  mockScene: "Scene 4 / 4",
+  mockNext: "Next",
+  mockAside: "Draping the towel over one shoulder and turning this way.",
+  mockStoryGloss: "Hi. What’s your name?",
+  mockChatA: "What are you up to? Want to get coffee?",
+  mockChatB: "Let’s meet at the café at the end of the street.",
+  mockComposer: "Message",
+  mockReplyTitle: "How will you reply?",
+  mockOptionA: "Sure! On my way.",
+  mockOptionB: "Sorry, I might be a little late.",
+  mockMe: "Me",
+  mockCall1: "Hello? Where are you now?",
+  mockCall2: "I’m in front of the café.",
+  mockCall3: "Got it. Be right there!",
+  mockMute: "Mute",
+  mockSpeaker: "Speaker",
+  mockEnd: "End",
+  mockLesson: "Lesson 2 / 5",
+  mockSpeaking: "Speaking",
+  mockReadPrompt: "Read the sentence out loud.",
+  mockReadGloss: "See you at the café tomorrow.",
+  mockSlow: "Slow",
+  mockHeard: "You said all 3 words.",
+  mockTryAgain: "Try again",
+  mockStop: "Stop speaking",
+  // 첫 표현 셋 · 맺음 인용의 뜻풀이
+  wordHelloGloss: "Hello",
+  wordWaterGloss: "Water, please",
+  wordTomorrowGloss: "See you tomorrow",
+  closingGloss: "Hello. This is where my story begins.",
 };
 
 export type Copy = Record<keyof typeof en, string>;

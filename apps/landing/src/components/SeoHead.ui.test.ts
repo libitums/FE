@@ -2,7 +2,15 @@ import { describe, expect, it } from "vitest";
 import { buildFaq } from "../seo/faq";
 import { buildHeadMeta } from "../seo/head-meta";
 import { buildStructuredData } from "../seo/structured-data";
-import { defaultLanguage, languageRoutes, pages, siteName, type Language } from "../site";
+import {
+  defaultLanguage,
+  languageRoutes,
+  languages,
+  pages,
+  pathFor,
+  siteName,
+  type Language,
+} from "../site";
 import { jsonLd, render } from "./render.support";
 import SeoHead from "./SeoHead.astro";
 
@@ -23,7 +31,7 @@ const one = (document: Document, selector: string): string | null => {
 
 describe("SeoHead", () => {
   it("UI-SH1 주소 없음: 절대 주소가 필요한 태그가 없다", async () => {
-    for (const language of ["en", "ko"] as const) {
+    for (const language of languages) {
       const { document } = await renderHead(language, "");
       // 껍데기가 아무것도 내지 않아도 공허하게 통과하지 않도록, 있어야 하는 것을 먼저 본다.
       expect(document.querySelectorAll('meta[property="og:title"]')).toHaveLength(1);
@@ -45,7 +53,7 @@ describe("SeoHead", () => {
   });
 
   it("UI-SH2 주소 없음에도 있는 것", async () => {
-    for (const language of ["en", "ko"] as const) {
+    for (const language of languages) {
       const page = pages[language];
       const { document } = await renderHead(language, "");
       expect(one(document, 'meta[property="og:title"]')).toBe(page.title);
@@ -60,13 +68,23 @@ describe("SeoHead", () => {
 
   it("UI-SH3 og:locale:alternate", async () => {
     const en = await renderHead("en", "");
-    expect(metaContent(en.document, 'meta[property="og:locale:alternate"]')).toEqual(["ko_KR"]);
+    expect(metaContent(en.document, 'meta[property="og:locale:alternate"]')).toEqual([
+      "ko_KR",
+      "vi_VN",
+      "id_ID",
+      "ms_MY",
+    ]);
     const ko = await renderHead("ko", "");
-    expect(metaContent(ko.document, 'meta[property="og:locale:alternate"]')).toEqual(["en_US"]);
+    expect(metaContent(ko.document, 'meta[property="og:locale:alternate"]')).toEqual([
+      "en_US",
+      "vi_VN",
+      "id_ID",
+      "ms_MY",
+    ]);
   });
 
   it("UI-SH4 주소 있음: canonical · og:url", async () => {
-    for (const language of ["en", "ko"] as const) {
+    for (const language of languages) {
       const { absolute } = buildHeadMeta({
         siteUrl: SITE,
         language,
@@ -82,20 +100,22 @@ describe("SeoHead", () => {
   });
 
   it("UI-SH5 주소 있음: hreflang", async () => {
-    for (const language of ["en", "ko"] as const) {
+    for (const language of languages) {
       const { document } = await renderHead(language, SITE);
       const links = [...document.querySelectorAll("link[rel=alternate][hreflang]")];
-      expect(links.map((link) => link.getAttribute("hreflang"))).toEqual(["en", "ko", "x-default"]);
+      expect(links.map((link) => link.getAttribute("hreflang"))).toEqual([
+        ...languages,
+        "x-default",
+      ]);
       expect(links.map((link) => link.getAttribute("href"))).toEqual([
-        `${SITE}/`,
-        `${SITE}/ko/`,
+        ...languages.map((code) => `${SITE}${pathFor(code)}`),
         `${SITE}/`,
       ]);
     }
   });
 
   it("UI-SH6 주소 있음: 공유 그림", async () => {
-    for (const language of ["en", "ko"] as const) {
+    for (const language of languages) {
       const page = pages[language];
       const imageUrl = SITE + page.image;
       const { document } = await renderHead(language, SITE);
@@ -110,7 +130,7 @@ describe("SeoHead", () => {
 
   it("UI-SH7 JSON-LD는 하나이고 buildStructuredData와 같다", async () => {
     for (const siteUrl of ["", SITE]) {
-      for (const language of ["en", "ko"] as const) {
+      for (const language of languages) {
         const { document } = await renderHead(language, siteUrl);
         const scripts = document.querySelectorAll('script[type="application/ld+json"]');
         expect(scripts).toHaveLength(1);

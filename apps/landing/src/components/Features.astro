@@ -23,7 +23,8 @@ const phoneStory = (await getImage({ src: img.phoneMinaWave, width: 600 })).src;
 const phoneCall = (await getImage({ src: img.backdropRain, width: 600 })).src;
 
 // 목업은 앱 화면을 그대로 옮긴 것입니다(phone.css 머리글). 대사 · 이름은 u03 「미나 만나기」의 실제 컷에서 가져왔고,
-// 화면 테두리의 문구(Next · Message · How will you reply? …)는 앱의 영어 UI 문구 그대로입니다.
+// 화면 테두리의 문구(Next · Message · How will you reply? …)와 뜻풀이는 페이지 언어의 `t.mock…`입니다 —
+// 앱이 그 언어 UI로 보여 주는 것(en · vi · id)이거나, ko처럼 앱에 그 언어 UI가 없으면 앱의 영어 그대로입니다.
 const storyLine = "안녕하세요. 이름이 뭐예요?";
 const readAloud = ["내일", "카페에서", "봬요."];
 
@@ -64,8 +65,8 @@ const icons = {
               <div class="vn__head">
                 <span class="round"><Fragment set:html={icons.back} /></span>
                 <div>
-                  <p class="vn__title">Episode 3.</p>
-                  <p class="vn__progress">Scene 4 / 4</p>
+                  <p class="vn__title">{t.mockEpisode}</p>
+                  <p class="vn__progress">{t.mockScene}</p>
                 </div>
               </div>
               <div class="vn__bottom">
@@ -73,14 +74,14 @@ const icons = {
                   <p class="vn__speaker" lang="ko">낯선 사람</p>
                   <p class="vn__aside">
                     <span lang="ko">수건을 어깨에 걸치며 이쪽을 돌아보고</span>
-                    <span>Draping the towel over one shoulder and turning this way.</span>
+                    <span>{t.mockAside}</span>
                   </p>
                   <p class="vn__line" lang="ko">
                     {[...storyLine].map((ch, i) => <span class="vn__ch" style={`--i:${i}`}>{ch}</span>)}
                   </p>
-                  <p class="vn__gloss">Hi. What’s your name?</p>
+                  <p class="vn__gloss">{t.mockStoryGloss}</p>
                 </div>
-                <span class="btn">Next</span>
+                <span class="btn">{t.mockNext}</span>
               </div>
             </div>
           </div>
@@ -109,7 +110,7 @@ const icons = {
                   <img class="chat__avatar" src={img.avatarMina.src} alt={t.avatarMinaAlt} aria-hidden="true" width="28" height="28" loading="lazy" />
                   <div class="bubble bubble--other">
                     <p lang="ko">지금 뭐 해? 같이 커피 마실래?</p>
-                    <small>What are you up to? Want to get coffee?</small>
+                    <small>{t.mockChatA}</small>
                   </div>
                 </div>
                 <div class="chat__row chat__row--typing">
@@ -120,21 +121,21 @@ const icons = {
                   <span class="chat__avatar"></span>
                   <div class="bubble bubble--other">
                     <p lang="ko">골목 끝 카페에서 만나자.</p>
-                    <small>Let’s meet at the café at the end of the street.</small>
+                    <small>{t.mockChatB}</small>
                   </div>
                 </div>
               </div>
               <div class="chat__composer">
-                <span class="chat__field">Message</span>
+                <span class="chat__field">{t.mockComposer}</span>
                 <span class="round chat__send"><Fragment set:html={icons.up} /></span>
               </div>
               <div class="chat__scrim"></div>
               <div class="chat__sheet">
-                <p class="chat__sheet-title">How will you reply?</p>
+                <p class="chat__sheet-title">{t.mockReplyTitle}</p>
                 <p class="chat__quote" lang="ko">“골목 끝 카페에서 만나자.”</p>
                 <div class="chat__options">
-                  <span class="btn"><span lang="ko">좋아! 지금 갈게.</span><small>Sure! On my way.</small></span>
-                  <span class="btn"><span lang="ko">미안, 조금 늦을 것 같아.</span><small>Sorry, I might be a little late.</small></span>
+                  <span class="btn"><span lang="ko">좋아! 지금 갈게.</span><small>{t.mockOptionA}</small></span>
+                  <span class="btn"><span lang="ko">미안, 조금 늦을 것 같아.</span><small>{t.mockOptionB}</small></span>
                 </div>
               </div>
             </div>
@@ -171,23 +172,23 @@ const icons = {
                   <div class="call__line call__line--1">
                     <p class="call__who" lang="ko">미나</p>
                     <p class="call__ko" lang="ko">여보세요? 지금 어디예요?</p>
-                    <p class="call__en">Hello? Where are you now?</p>
+                    <p class="call__en">{t.mockCall1}</p>
                   </div>
                   <div class="call__line call__line--2 call__line--self">
-                    <p class="call__who">Me</p>
+                    <p class="call__who">{t.mockMe}</p>
                     <p class="call__ko" lang="ko">카페 앞이에요.</p>
-                    <p class="call__en">I’m in front of the café.</p>
+                    <p class="call__en">{t.mockCall2}</p>
                   </div>
                   <div class="call__line call__line--3">
                     <p class="call__who" lang="ko">미나</p>
                     <p class="call__ko" lang="ko">알았어요. 금방 갈게요!</p>
-                    <p class="call__en">Got it. Be right there!</p>
+                    <p class="call__en">{t.mockCall3}</p>
                   </div>
                 </div>
                 <div class="call__controls">
-                  <span class="call__control"><i><Fragment set:html={icons.mic} /></i>Mute</span>
-                  <span class="call__control"><i><Fragment set:html={icons.volume} /></i>Speaker</span>
-                  <span class="call__control call__control--end"><i><Fragment set:html={icons.phone} /></i>End</span>
+                  <span class="call__control"><i><Fragment set:html={icons.mic} /></i>{t.mockMute}</span>
+                  <span class="call__control"><i><Fragment set:html={icons.volume} /></i>{t.mockSpeaker}</span>
+                  <span class="call__control call__control--end"><i><Fragment set:html={icons.phone} /></i>{t.mockEnd}</span>
                 </div>
               </div>
             </div>
@@ -211,12 +212,12 @@ const icons = {
               <div class="ra__session">
                 <div class="ra__session-row">
                   <Fragment set:html={icons.close} />
-                  <p class="ra__lesson">Lesson 2 / 5</p>
+                  <p class="ra__lesson">{t.mockLesson}</p>
                 </div>
                 <div class="ra__track"><div class="ra__fill"></div></div>
-                <p class="ra__form">Speaking</p>
+                <p class="ra__form">{t.mockSpeaking}</p>
               </div>
-              <p class="ra__prompt">Read the sentence out loud.</p>
+              <p class="ra__prompt">{t.mockReadPrompt}</p>
               <div class="ra__stage">
                 <p class="ra__ko" lang="ko">
                   {
@@ -231,23 +232,23 @@ const icons = {
                   }
                 </p>
                 <p class="ra__roman">naeil kapeeseo bwaeyo.</p>
-                <p class="ra__en">See you at the café tomorrow.</p>
+                <p class="ra__en">{t.mockReadGloss}</p>
                 <div class="ra__listen">
                   <span class="round"><Fragment set:html={icons.volume} /></span>
-                  <span class="ra__slow"><Fragment set:html={icons.check} />Slow</span>
+                  <span class="ra__slow"><Fragment set:html={icons.check} />{t.mockSlow}</span>
                 </div>
               </div>
               <div class="ra__work">
                 <span class="ra__waves"><Fragment set:html={icons.waves} /></span>
-                <p class="ra__hint">You said all 3 words.</p>
+                <p class="ra__hint">{t.mockHeard}</p>
               </div>
               <div class="ra__foot">
                 <div class="ra__actions ra__actions--heard">
-                  <span class="btn btn--outline">Try again</span>
-                  <span class="btn">Next</span>
+                  <span class="btn btn--outline">{t.mockTryAgain}</span>
+                  <span class="btn">{t.mockNext}</span>
                 </div>
                 <div class="ra__actions ra__actions--listening">
-                  <span class="btn">Stop speaking</span>
+                  <span class="btn">{t.mockStop}</span>
                 </div>
               </div>
             </div>

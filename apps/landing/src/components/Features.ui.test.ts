@@ -64,6 +64,36 @@ describe.each(languages)("Features (%s)", (language) => {
     }
   });
 
+  it("UI-FT7 목업의 UI 문구 · 뜻풀이가 페이지 언어를 따른다", () => {
+    const [story, messenger, call, practice] = features();
+    expect(story?.querySelector(".vn__title")?.textContent).toBe(t.mockEpisode);
+    expect(story?.querySelector(".vn__gloss")?.textContent).toBe(t.mockStoryGloss);
+    expect(story?.querySelector(".vn__bottom .btn")?.textContent).toBe(t.mockNext);
+    expect(messenger?.querySelector(".chat__sheet-title")?.textContent).toBe(t.mockReplyTitle);
+    expect(messenger?.querySelector(".chat__field")?.textContent).toBe(t.mockComposer);
+    expect(texts(messenger?.querySelectorAll(".bubble small") ?? [])).toEqual([
+      t.mockChatA,
+      t.mockChatB,
+    ]);
+    expect(texts(call?.querySelectorAll(".call__en") ?? [])).toEqual([
+      t.mockCall1,
+      t.mockCall2,
+      t.mockCall3,
+    ]);
+    expect(texts(call?.querySelectorAll(".call__control") ?? [])).toEqual([
+      t.mockMute,
+      t.mockSpeaker,
+      t.mockEnd,
+    ]);
+    expect(practice?.querySelector(".ra__prompt")?.textContent).toBe(t.mockReadPrompt);
+    expect(practice?.querySelector(".ra__en")?.textContent).toBe(t.mockReadGloss);
+    expect(practice?.querySelector(".ra__hint")?.textContent).toBe(t.mockHeard);
+    // 한국어 대사는 그대로다 — 번역 자리에는 한글이 없다.
+    for (const node of document.querySelectorAll(".vn__gloss, .bubble small, .call__en, .ra__en")) {
+      expect(node.textContent).not.toMatch(/[가-힣]/);
+    }
+  });
+
   it("UI-FT5 장식 그림 — 설명은 있고 보조기술에는 숨는다", () => {
     const images = [...document.querySelectorAll("#ways img")];
     expect(images.map((image) => image.getAttribute("alt"))).toEqual([

@@ -1,6 +1,9 @@
 import type { Copy } from "./i18n/copy";
 import { en } from "./i18n/copy";
+import { id } from "./i18n/id";
 import { ko } from "./i18n/ko";
+import { ms } from "./i18n/ms";
+import { vi } from "./i18n/vi";
 import type { LanguageRoute } from "./seo/seo.contract";
 
 /** 배포 주소의 기본값입니다. 배포 설정의 SITE_URL이 있으면 그것이 이깁니다. 최종 주소는 Astro.site입니다. */
@@ -19,7 +22,7 @@ export const storeLinks = {
  * 지원 언어입니다. 첫째가 기본 언어(`/`)이고 나머지는 `/<코드>/`에 섭니다.
  * 언어를 더하는 절차는 README 「언어 더하기」에 있습니다.
  */
-export const languages = ["en", "ko"] as const;
+export const languages = ["en", "ko", "vi", "id", "ms"] as const;
 export type Language = (typeof languages)[number];
 export const defaultLanguage: Language = languages[0];
 
@@ -70,6 +73,43 @@ export const pages: Record<Language, LanguagePage> = {
     description:
       "Duru는 이야기 속에서 한국어를 배우는 앱이에요. 한국에서의 하루로 들어가 만나는 사람들과 메시지와 전화로 대화하고, 직접 쓴 말을 내 것으로 만들어 보세요.",
     copy: ko,
+  },
+  // 베트남어 · 인도네시아어 · 말레이어(2026-11-04, ADR-0094). 문구는 초안입니다 — 원어민 검수 필요.
+  vi: {
+    label: "Tiếng Việt",
+    englishName: "Vietnamese",
+    locale: "vi_VN",
+    image: "/og-vi.jpg",
+    imageAlt:
+      "Duru — “Tiếng Hàn, sống như một câu chuyện” trên ba cảnh: cửa sổ máy bay trên biển, một nhân viên pha chế sau quầy cà phê và một con hẻm chợ dưới mái vòm.",
+    title: "Duru — Học tiếng Hàn bằng cách sống trong một câu chuyện",
+    description:
+      "Duru là ứng dụng học tiếng Hàn qua câu chuyện. Bước vào một ngày ở Hàn Quốc, nhắn tin và gọi điện với những người bạn gặp, và giữ lại những lời bạn đã dùng.",
+    copy: vi,
+  },
+  id: {
+    label: "Bahasa Indonesia",
+    englishName: "Indonesian",
+    locale: "id_ID",
+    image: "/og-id.jpg",
+    imageAlt:
+      "Duru — “Bahasa Korea, dijalani sebagai cerita” di atas tiga adegan: jendela pesawat di atas laut, barista di balik konter kafe, dan lorong pasar di bawah atap melengkung.",
+    title: "Duru — Belajar bahasa Korea dengan menjalani cerita",
+    description:
+      "Duru adalah aplikasi belajar bahasa Korea berbasis cerita. Masuk ke satu hari di Korea, mengobrol dan menelepon orang-orang yang kamu temui, dan simpan kata-kata yang kamu pakai.",
+    copy: id,
+  },
+  ms: {
+    label: "Bahasa Melayu",
+    englishName: "Malay",
+    locale: "ms_MY",
+    image: "/og-ms.jpg",
+    imageAlt:
+      "Duru — “Bahasa Korea, dihayati sebagai cerita” di atas tiga babak: tingkap pesawat di atas laut, barista di belakang kaunter kafe dan lorong pasar di bawah bumbung melengkung.",
+    title: "Duru — Belajar bahasa Korea dengan menghayati cerita",
+    description:
+      "Duru ialah aplikasi belajar bahasa Korea berasaskan cerita. Masuk ke satu hari di Korea, berbual dan menelefon orang yang anda temui, dan simpan kata-kata yang anda gunakan.",
+    copy: ms,
   },
 };
 

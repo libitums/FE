@@ -29,6 +29,9 @@ test("llms.txt는 영어로만 쓰고 FAQ 일곱을 담는다", async ({ request
   expect(lines[0]).toBe("# Duru");
   expect(lines.filter((line) => line.startsWith("### "))).toHaveLength(7);
   expect(body).toContain(`(${siteUrl}/ko/): Korean`);
+  expect(body).toContain(`(${siteUrl}/vi/): Vietnamese`);
+  expect(body).toContain(`(${siteUrl}/id/): Indonesian`);
+  expect(body).toContain(`(${siteUrl}/ms/): Malay`);
   expect(body).not.toMatch(/[ᄀ-ᇿ㄰-㆏가-힣]/);
 });
 
@@ -47,24 +50,29 @@ test("llms.txt의 FAQ가 화면의 FAQ와 글자까지 같다", async ({ page, r
   }
 });
 
-test("sitemap에는 언어별 홈 둘뿐이고 404는 없다", async ({ request }) => {
+test("sitemap에는 언어별 홈 다섯뿐이고 404는 없다", async ({ request }) => {
   const index = await (await request.get("/sitemap-index.xml")).text();
   expect(index).toContain(`${siteUrl}/sitemap-0.xml`);
   const sitemap = await (await request.get("/sitemap-0.xml")).text();
   const locs = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]).sort();
-  expect(locs).toEqual([`${siteUrl}/`, `${siteUrl}/ko/`]);
+  expect(locs).toEqual(
+    [`${siteUrl}/`, `${siteUrl}/ko/`, `${siteUrl}/vi/`, `${siteUrl}/id/`, `${siteUrl}/ms/`].sort(),
+  );
 });
 
 for (const [path, language, locale] of [
   ["/", "en", "en_US"],
   ["/ko/", "ko", "ko_KR"],
+  ["/vi/", "vi", "vi_VN"],
+  ["/id/", "id", "id_ID"],
+  ["/ms/", "ms", "ms_MY"],
 ] as const) {
   test(`${path}의 head — 언어 · canonical · hreflang · 구조화 데이터`, async ({ page }) => {
     await page.goto(path);
     await expect(page.locator("html")).toHaveAttribute("lang", language);
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", siteUrl + path);
     await expect(page.locator('meta[property="og:locale"]')).toHaveAttribute("content", locale);
-    await expect(page.locator('link[rel="alternate"][hreflang]')).toHaveCount(3);
+    await expect(page.locator('link[rel="alternate"][hreflang]')).toHaveCount(6);
     await expect(page.locator('meta[name="robots"]')).toHaveCount(1);
 
     const graph = JSON.parse(

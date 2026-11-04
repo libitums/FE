@@ -106,6 +106,9 @@ function scriptBytes(build: BuildResult, html: string): { bytes: number; text: s
 const TRIAL_PAGES = [
   { file: "try/index.html", language: "en" },
   { file: "ko/try/index.html", language: "ko" },
+  { file: "vi/try/index.html", language: "vi" },
+  { file: "id/try/index.html", language: "id" },
+  { file: "ms/try/index.html", language: "ms" },
 ] as const;
 
 describe("빌드 T-A — PUBLIC_SUPABASE_URL · PUBLIC_SUPABASE_ANON_KEY · SITE_URL 있음", () => {
@@ -204,10 +207,13 @@ describe("빌드 T-A — PUBLIC_SUPABASE_URL · PUBLIC_SUPABASE_ANON_KEY · SITE
     );
   });
 
-  it("IB7 랜딩 / · /ko/의 체험판 링크", () => {
+  it("IB7 랜딩 / · /<언어>/의 체험판 링크", () => {
     for (const [file, href] of [
       ["index.html", "/try/"],
       ["ko/index.html", "/ko/try/"],
+      ["vi/index.html", "/vi/try/"],
+      ["id/index.html", "/id/try/"],
+      ["ms/index.html", "/ms/try/"],
     ] as const) {
       const document = page(build, file);
       for (const id of ["hero-trial-link", "download-trial-link"]) {

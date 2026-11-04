@@ -13,7 +13,10 @@ import "./trial-prereg.css";
 import "./trial-site.css";
 
 import { trialEn } from "../../i18n/trial-copy";
+import { trialId } from "../../i18n/trial-id";
 import { trialKo } from "../../i18n/trial-ko";
+import { trialMs } from "../../i18n/trial-ms";
+import { trialVi } from "../../i18n/trial-vi";
 import Base from "../../layouts/Base.astro";
 import { robotsNoindex } from "../../seo/head-meta";
 import { type Language, languages, pages, pathFor, trialPathFor } from "../../site";
@@ -37,7 +40,13 @@ import TrialVocabCard from "./TrialVocabCard.astro";
 type Props = TrialPageProps;
 
 const { language, model, measurementId, prereg, samples } = Astro.props;
-const copies: Record<Language, TrialCopy> = { en: trialEn, ko: trialKo };
+const copies: Record<Language, TrialCopy> = {
+  en: trialEn,
+  ko: trialKo,
+  vi: trialVi,
+  id: trialId,
+  ms: trialMs,
+};
 const t = copies[language];
 
 // 스크립트가 쓰는 문구만 모델과 함께 페이지 JSON에 싣습니다.

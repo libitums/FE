@@ -3,6 +3,10 @@
 // Pretendard는 글자 범위별 조각이라 화면에 쓰인 글자의 조각만 내려받습니다.
 import "@fontsource-variable/jost/wght.css";
 import "pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css";
+// 베트남어 페이지만 쓰는 서체(base.css의 `html[lang="vi"]`). Jost · Pretendard에 베트남어 글자가 없어서다 —
+// 강조는 앱과 같은 League Spartan(ADR-0091 D5), 본문은 Pretendard의 바탕인 Inter. 다른 언어 페이지는 요청하지 않는다(unicode-range).
+import "@fontsource-variable/league-spartan/wght.css";
+import "@fontsource-variable/inter/wght.css";
 import "@libitums/design-tokens/css/variables.css";
 import "@libitums/design-tokens/css/typography.css";
 import "../styles/base.css";

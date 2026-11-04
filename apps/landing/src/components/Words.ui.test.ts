@@ -3,15 +3,16 @@ import { languages, pages } from "../site";
 import Words from "./Words.astro";
 import { plain, render } from "./render.support";
 
-// 학습 콘텐츠는 두 언어에서 같습니다.
+// 학습 콘텐츠(한국어 · 로마자)는 모든 언어에서 같고, 뜻풀이는 페이지 언어를 따릅니다.
 const phrases = [
-  { ko: "안녕하세요", roman: "annyeonghaseyo", gloss: "Hello" },
-  { ko: "물 주세요", roman: "mul juseyo", gloss: "Water, please" },
-  { ko: "내일 만나요", roman: "naeil mannayo", gloss: "See you tomorrow" },
+  { ko: "안녕하세요", roman: "annyeonghaseyo" },
+  { ko: "물 주세요", roman: "mul juseyo" },
+  { ko: "내일 만나요", roman: "naeil mannayo" },
 ];
 
 describe.each(languages)("Words (%s)", (language) => {
   const t = pages[language].copy;
+  const glosses = [t.wordHelloGloss, t.wordWaterGloss, t.wordTomorrowGloss];
   let document: Document;
 
   const items = () => [...document.querySelectorAll("#words li")];
@@ -44,11 +45,11 @@ describe.each(languages)("Words (%s)", (language) => {
       expect(ko.length).toBe(1);
       expect(ko[0]?.textContent?.trim()).toBe(expected?.ko);
       expect(li.textContent).toContain(expected?.roman);
-      expect(li.textContent).toContain(expected?.gloss);
+      expect(li.textContent).toContain(glosses[index]);
     });
   });
 
-  it("UI-WD3 학습 콘텐츠는 언어와 무관 · 소제목 없음", () => {
+  it("UI-WD3 학습 콘텐츠는 언어와 무관 · 뜻풀이는 페이지 언어 · 소제목 없음", () => {
     const found = items();
     expect(found.length).toBe(3);
     expect(found.map((li) => li.querySelector('[lang="ko"]')?.textContent?.trim())).toEqual(
@@ -56,7 +57,9 @@ describe.each(languages)("Words (%s)", (language) => {
     );
     found.forEach((li, index) => {
       expect(li.textContent).toContain(phrases[index]?.roman);
-      expect(li.textContent).toContain(phrases[index]?.gloss);
+      expect(li.textContent).toContain(glosses[index]);
+      // 뜻풀이 안에 한글이 없다 — 한국어 표현은 lang=ko 요소 하나뿐이다.
+      expect(li.querySelector(".word__gloss")?.textContent).not.toMatch(/[가-힣]/);
     });
     expect(document.querySelectorAll("#words h3, #words h4, #words h5, #words h6").length).toBe(0);
   });
