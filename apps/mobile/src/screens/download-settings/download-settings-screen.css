@@ -1,0 +1,70 @@
+/* 설정 › 다운로드(ADR-0095 D8). 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). 배치는 언어 선택 화면과
+   같은 값이고, 선택지 · 버튼 · 대화 상자 모양은 ui-lynx가 집니다. */
+
+.download-settings-screen {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: var(--libitum-layout-gap-block);
+  padding: var(--libitum-layout-screen-padding-top) var(--libitum-layout-screen-padding-x)
+    var(--libitum-layout-screen-padding-bottom);
+  background: var(--libitum-color-background-primary);
+}
+
+.download-settings-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: calc(var(--libitum-spacing-48) + var(--libitum-spacing-8));
+  flex-shrink: 0;
+}
+
+.download-settings-scroll {
+  flex: 1;
+}
+
+.download-settings-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-16);
+}
+
+.download-settings-heading {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-8);
+  margin-bottom: var(--libitum-spacing-8);
+}
+
+.download-settings-title {
+  color: var(--libitum-color-gray-900);
+  font-family: var(--libitum-typography-heading-l-font-family);
+  font-weight: var(--libitum-typography-heading-l-font-weight);
+  font-size: var(--libitum-typography-heading-l-font-size);
+  line-height: var(--libitum-typography-heading-l-line-height);
+  letter-spacing: var(--libitum-typography-heading-l-letter-spacing);
+}
+
+.download-settings-section {
+  margin-top: var(--libitum-spacing-8);
+  color: var(--libitum-color-gray-900);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  line-height: var(--libitum-typography-heading-s-line-height);
+}
+
+.download-settings-caption,
+.download-settings-note {
+  color: var(--libitum-color-gray-700);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-weight: var(--libitum-typography-body-s-font-weight);
+  font-size: var(--libitum-typography-body-s-font-size);
+  line-height: var(--libitum-typography-body-s-line-height);
+}
+
+.download-settings-offline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-12);
+}

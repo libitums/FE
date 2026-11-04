@@ -121,6 +121,14 @@ async function ensureAssets(
   return outcome;
 }
 
+function safePolicy(policy: (id: string) => boolean, id: string): boolean {
+  try {
+    return policy(id);
+  } catch {
+    return true;
+  }
+}
+
 /** 한 에피소드를 받습니다. 자산을 못 갖췄으면 "stop"(그 자리에서 멈춤), 그 밖은 "continue". 던지지 않음. */
 export async function runPlannedEpisode(
   run: PlannedEpisodeRun,
@@ -141,6 +149,11 @@ export async function runPlannedEpisode(
   // 검증을 통과한 본문이라 일어나지 않아야 합니다 — 그래도 읽지 못한 본문을 「자산 없음 = 완료」로 열지 않습니다.
   if (wire === null || wire === undefined) return "continue";
   if (deps.assets === undefined || !run.canStore) return "continue";
+  // 받기 정책이 막으면 자산을 건너뛰고 다음 편으로 갑니다 — 멈추지 않습니다(ADR-0095 D5). 던지면 막지 않습니다.
+  if (deps.assetPolicy !== undefined && !safePolicy(deps.assetPolicy, entry.id)) {
+    run.summary.deferred.push(entry.id);
+    return "continue";
+  }
   const outcome = await ensureAssets(run, deps.assets, entry, wire, staged ? "staged" : "active");
   if (outcome === "incomplete") return "stop";
   if (outcome === "completed" && !staged && (kind === "new" || kind === "changed")) {

@@ -1,5 +1,6 @@
 // 여정 맵의 카탈로그 구획 계약입니다. 타입만 둡니다 — 튜토리얼(u00)도 카탈로그 에피소드의 하나입니다.
 
+import type { CatalogFreshness } from "../../lib/manifest-check";
 import type { LockReason } from "../../lib/episode-catalog";
 import type { CatalogProgress, CatalogUnitKey } from "../../lib/catalog-progress";
 import type { ReactNode } from "@lynx-js/react";
@@ -101,6 +102,11 @@ export type JourneyMapCatalogProps = {
    * 않습니다(학습자 프로필이 아직 없어 문항을 지을 수 없을 때 등).
    */
   readonly unitItemCountOf?: (episodeId: string, unitKey: CatalogUnitKey) => number;
+  /** 받는 중인 편의 「준비 중」 카드를 눌렀을 때 — 받기 시트(ADR-0095 D6 · D7). 없으면 누를 수 없습니다. */
+  readonly onTapPending?: (episodeId: string) => void;
+  /** 맨 끝 카드의 목록 확인 신선도 · 「새 이야기 확인」(ADR-0095 D9). */
+  readonly freshness?: CatalogFreshness;
+  readonly onCheckNew?: () => void;
 };
 
 /** 열린 노드를 눌렀을 때 — 탭의 세로 좌표는 유닛을 재기 전까지 말풍선이 설 어림 자리입니다. */
@@ -121,6 +127,9 @@ export type CatalogMapSectionsProps = {
   readonly guide?: CatalogMapGuide;
   readonly onStartCover: (episodeId: string) => void;
   readonly onSelectUnit: CatalogUnitSelect;
+  readonly onTapPending?: (episodeId: string) => void;
+  readonly freshness?: CatalogFreshness;
+  readonly onCheckNew?: () => void;
 };
 
 export type CatalogEpisodeSectionProps = {
@@ -200,6 +209,13 @@ export type CatalogMapCopy = {
     readonly title: string;
     readonly body: string;
     readonly label: (episodeLabel: string) => string;
+    /** 최근에 확인했을 때 덧붙이는 줄(ADR-0095 D9) — 오늘 · n일 전. */
+    readonly checkedToday: string;
+    readonly checkedDaysAgo: (days: number) => string;
+    /** 오래 확인하지 못했을 때의 제목 · 안내 · 버튼(D9). */
+    readonly staleTitle: string;
+    readonly staleBody: string;
+    readonly checkNew: string;
   };
 };
 

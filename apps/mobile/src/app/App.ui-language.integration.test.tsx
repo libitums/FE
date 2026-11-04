@@ -283,14 +283,17 @@ test("[IL4] ⭐ 고른 언어는 App을 내렸다 다시 그려도 부팅에서 
 // ② 나라에서 저장한 이름 · 나라의 프로필 캐시 칸(ADR-0059 D3)은 언어와 무관해 따로 셉니다.
 const withoutProfile = (keys: readonly string[]): string[] =>
   keys.filter((key) => !key.startsWith("libitum.learner-profile."));
+// ③ 받기 차례가 쓰는 콘텐츠 칸(목록 확인 시각 등, ADR-0095 D9)도 언어와 무관해 뺍니다.
+const entryKeysOf = (storage: RecordedStorage): string[] =>
+  keysOf(storage).filter((key) => !key.startsWith("libitum.content."));
 
 test("[IL5] 진입 흐름을 마친 뒤의 저장 키는 세션 · UI 언어와 프로필 칸 하나다 — 언어를 누르지 않고 Continue만 눌러도 같다", async () => {
   const picked = recordedStorage();
   await walkEntryFlow(picked, { pickLanguage: true });
-  expect(withoutProfile(keysOf(picked))).toEqual(
+  expect(withoutProfile(entryKeysOf(picked))).toEqual(
     [authSessionStorageKey, uiLanguageStorageKey].sort(),
   );
-  expect(keysOf(picked).length - withoutProfile(keysOf(picked)).length).toBe(1);
+  expect(entryKeysOf(picked).length - withoutProfile(entryKeysOf(picked)).length).toBe(1);
   cleanup();
   vi.useRealTimers();
   vi.unstubAllGlobals();
@@ -298,7 +301,7 @@ test("[IL5] 진입 흐름을 마친 뒤의 저장 키는 세션 · UI 언어와 
 
   const skipped = recordedStorage();
   await walkEntryFlow(skipped, { pickLanguage: false });
-  expect(withoutProfile(keysOf(skipped))).toEqual(
+  expect(withoutProfile(entryKeysOf(skipped))).toEqual(
     [authSessionStorageKey, uiLanguageStorageKey].sort(),
   );
 });

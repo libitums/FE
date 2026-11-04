@@ -9,6 +9,7 @@ import type {
   ProfileCopy,
   SettingsCopy,
 } from "./ui-copy-sections.contract";
+import type { DownloadSheetCopy } from "./ui-copy-settings.contract";
 
 export const notificationsId: NotificationsCopy = {
   title: "Notifikasi",
@@ -27,10 +28,29 @@ export const settingsId: SettingsCopy = {
     profile: "Profil pengguna",
     "learner-profile": "Nama dan negara dalam pelajaran",
     language: "Bahasa",
+    download: "Unduhan",
     notifications: "Notifikasi",
     feedback: "Kirim masukan",
     "privacy-policy": "Kebijakan Privasi",
     "terms-of-use": "Ketentuan Penggunaan",
+  },
+  downloads: {
+    title: "Unduhan",
+    caption: "Pilih kapan gambar dan audio diunduh.",
+    mobileDataHeading: "Unduh dengan data seluler",
+    policy: { ask: "Tanya setiap kali", always: "Selalu unduh", "wifi-only": "Hanya Wi-Fi" },
+    offlineHeading: "Offline",
+    downloadAll: "Unduh semua untuk offline",
+    downloadAllCaption: "Gambar dan audio semua episode, agar kamu bisa belajar tanpa koneksi.",
+    downloadAllStarted: "Sedang mengunduh di latar belakang. Kamu bisa terus belajar.",
+    downloaded: (size) => `Sudah diunduh: ${size}`,
+    confirm: {
+      title: "Unduh dengan data seluler?",
+      description:
+        "Mengunduh semua episode bisa memakai banyak data. Kamu juga bisa menunggu Wi-Fi.",
+      download: "Unduh sekarang",
+      cancel: "Batal",
+    },
   },
   sessionOption: { "auto-play-audio": "Putar otomatis", "show-transcript": "Tampilkan transkrip" },
   optionState: { on: "aktif", off: "nonaktif" },
@@ -101,5 +121,43 @@ export const gemPurchaseId: GemPurchaseCopy = {
   notice: {
     title: "Pembayaran segera hadir",
     description: "Pembayaran permata belum tersedia. Silakan cek kembali nanti.",
+  },
+};
+
+export const downloadSheetId: DownloadSheetCopy = {
+  askTitle: (n) => `Unduh Episode ${n}?`,
+  askDescription:
+    "Gambar dan audio episode ini belum ada di ponselmu. Mengunduh akan memakai data seluler.",
+  size: (size) => `Sekitar ${size}`,
+  downloadNow: "Unduh sekarang",
+  onWifi: "Unduh saat Wi-Fi",
+  dontAskAgain: "Jangan tanya lagi",
+  wifiOnlyTitle: (n) => `Episode ${n} diunduh saat Wi-Fi`,
+  wifiOnlyDescription:
+    "Kamu memilih Hanya Wi-Fi di Pengaturan. Episode ini akan diunduh saat kamu memakai Wi-Fi.",
+  ok: "OK",
+  offlineTitle: "Kamu sedang offline",
+  offlineDescription: (n) =>
+    `Episode ${n} belum diunduh. Episode ini akan diunduh saat kamu online lagi.`,
+  openAnyway: "Tetap buka",
+  close: "Tutup",
+  checked: "dicentang",
+  unchecked: "tidak dicentang",
+  allCleared: {
+    title: "Kamu sudah menyelesaikan semua cerita di sini",
+    description: "Mungkin ada episode baru. Sambungkan ke internet, nanti kami cek untukmu.",
+    offline: "Kamu sedang offline",
+    lastChecked: (d) =>
+      d === null
+        ? "Belum pernah dicek"
+        : d === 0
+          ? "Terakhir dicek hari ini"
+          : d === 1
+            ? "Terakhir dicek kemarin"
+            : `Terakhir dicek ${d} hari lalu`,
+    checkNow: "Cek sekarang",
+    later: "Nanti",
+    autoNote: "Kami juga akan mengecek otomatis saat kamu online lagi.",
+    offlineHint: "Kami akan mengecek begitu kamu tersambung.",
   },
 };

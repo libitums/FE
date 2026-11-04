@@ -2,20 +2,36 @@ import {
   useCallback,
   useEffect,
   useLynxGlobalEventListener,
+  useMemo,
   useRef,
   useState,
 } from "@lynx-js/react";
 
 import { refreshAppPolicy } from "../lib/app-policy-refresh";
+import {
+  downloadedAssetBytes,
+  episodeAssetsBytes,
+  episodeAssetsComplete,
+} from "../lib/download-usage";
+import {
+  assetDownloadAllowed,
+  loadAllowedEpisodes,
+  loadMobileDataPolicy,
+} from "../lib/download-policy";
 import { changesAudioTiming, refreshAudioManifest } from "../lib/audio-manifest-refresh";
 import { hostContentStore } from "../lib/episode-cache";
 import { promoteStagedEpisodes } from "../lib/episode-staging";
 import { bundledCatalogInput } from "../lib/episode-bundled";
 import { refreshEpisodeCatalog } from "../lib/episode-refresh";
 import { fetchContentText } from "../lib/episode-remote";
+import { readNetworkProperties } from "../lib/network-status";
+import { MANIFEST_CHECKED_AT_KEY, manifestCheckedAtFrom } from "../lib/manifest-check";
+import { safeGet, trySet } from "../lib/episode-cache";
+import { TUTORIAL_EPISODE_ID } from "../lib/tutorial-episode";
 import type { EpisodeIntroEventSink } from "../screens/episode-intro/episode-intro.contract";
 import type { SplashUpdatePort } from "../screens/splash/splash.contract";
 import { createSyncRunner } from "./content-sync-runner";
+import { createDeferredRecheck } from "./deferred-recheck";
 import type { SyncRunner } from "./content-sync-runner";
 import {
   episodeContentRefreshedEventOf,
@@ -24,11 +40,27 @@ import {
   refreshChangesCatalog,
 } from "./episode-content";
 import type { EpisodeContent } from "./episode-content";
+import type { DownloadControls } from "./download-wiring";
 import { hostAssetDeps, loadEpisodeContent } from "./episode-content-loader";
 import { createSplashUpdateController } from "./splash-update-controller";
 
 /** 호스트가 받기 좋은 때(끊겼던 연결이 돌아옴 · 앱이 포그라운드로 돌아옴)를 알리는 전역 이벤트입니다(ADR-0071). */
 export const contentSyncEventName = "contentSyncOpportunity";
+
+/**
+ * 받기 정책으로 건너뛴 편이 있을 때 연결을 다시 보는 간격입니다(ADR-0095 D5). 호스트 신호는 모바일 데이터 → Wi-Fi
+ * 전환에는 오지 않아(끊김 → 연결만), 앱이 켜져 있는 동안 이 간격으로 요금 없는 연결이 됐는지 봅니다.
+ */
+export const deferredRecheckIntervalMs = 60_000;
+
+/** 받기 차례마다 한 번 읽는 정책 — 연결 종류 · 저장된 설정 · 허락한 편. 차례 안에서는 같은 값을 씁니다. */
+function assetPolicyForRound(): (id: string) => boolean {
+  const network = readNetworkProperties();
+  const policy = loadMobileDataPolicy();
+  const allowed = loadAllowedEpisodes();
+  return (episodeId) =>
+    assetDownloadAllowed({ network, policy, allowed, episodeId, tutorialId: TUTORIAL_EPISODE_ID });
+}
 
 /**
  * 내장 + 기기 캐시에서 카탈로그를 읽고, 서버의 매니페스트로 새 에피소드를 **하나씩**(본문 → 그림 · 음성) 받아
@@ -46,11 +78,15 @@ export type EpisodeContentRefresh = {
    */
   readonly stagedReady: number;
   readonly applyStaged: () => void;
+  /** 설정 › 다운로드가 쓰는 것 — 받기 차례를 다시 돌리기 · 받은 크기 읽기(ADR-0095 D8). */
+  readonly downloads: DownloadControls;
 };
 
 export function useEpisodeContentRefresh(sink: EpisodeIntroEventSink): EpisodeContentRefresh {
   const [content, setContent] = useState<EpisodeContent>(noEpisodeContent);
   const [stagedReady, setStagedReady] = useState(0);
+  // 목록을 마지막으로 받은 시각(ADR-0095 D9) — 받기 차례가 목록을 받을 때마다 다시 씁니다.
+  const [manifestCheckedAt, setManifestCheckedAt] = useState<number | null>(null);
   // 스플래시가 나갔는가 — 그 전에 갖춰진 스테이징은 스플래시의 `close()`가 바꿔 끼웁니다.
   const splashClosed = useRef(false);
   // 받기는 비동기로 늦게 끝납니다 — 그사이 sink가 바뀌면 최신 것으로 보내도록 ref로 읽습니다.
@@ -82,6 +118,7 @@ export function useEpisodeContentRefresh(sink: EpisodeIntroEventSink): EpisodeCo
         catalog: mergeCatalogForSession(previous.catalog, next.catalog),
       }));
     };
+    setManifestCheckedAt(manifestCheckedAtFrom(safeGet(hostContentStore, MANIFEST_CHECKED_AT_KEY)));
     const startPromoted = promoteStagedEpisodes(hostContentStore).promoted.length;
     setContent(loadEpisodeContent());
     const controller = createSplashUpdateController({
@@ -115,6 +152,7 @@ export function useEpisodeContentRefresh(sink: EpisodeIntroEventSink): EpisodeCo
         store: hostContentStore,
         bundled: bundledCatalogInput,
         assets: hostAssetDeps(),
+        assetPolicy: assetPolicyForRound(),
         onEpisodeReady: reload,
         onEpisodeStaged: () => {
           if (splashClosed.current) setStagedReady((count) => count + 1);
@@ -122,6 +160,12 @@ export function useEpisodeContentRefresh(sink: EpisodeIntroEventSink): EpisodeCo
         observer: watching ? controller.observer : undefined,
       });
       if (watching) controller.finished();
+      // 목록을 받았으면(바뀌지 않았어도) 확인 시각을 적습니다 — 「준비 중」과 「확인을 못 함」을 가릅니다(D9).
+      if (summary.manifest !== "unavailable") {
+        const now = Date.now();
+        if (trySet(hostContentStore, MANIFEST_CHECKED_AT_KEY, String(now)))
+          setManifestCheckedAt(now);
+      }
       const event = episodeContentRefreshedEventOf(summary);
       if (event !== null && !reported.current) {
         reported.current = true;
@@ -132,8 +176,16 @@ export function useEpisodeContentRefresh(sink: EpisodeIntroEventSink): EpisodeCo
         store: hostContentStore,
       });
       if (refreshChangesCatalog(summary) || changesAudioTiming(audio)) reload();
+      recheck.update(summary.deferred.length > 0);
+    });
+    // 건너뛴 편이 있으면 요금 없는 연결이 될 때까지 간격마다 봅니다 — 되면 받기를 다시 돌립니다.
+    const recheck = createDeferredRecheck({
+      intervalMs: deferredRecheckIntervalMs,
+      isUnmetered: () => readNetworkProperties().networkCost === "unmetered",
+      onUnmetered: () => void runner.current?.request(),
     });
     void runner.current.request();
+    return recheck.stop;
   }, []);
   useLynxGlobalEventListener(contentSyncEventName, () => {
     "background only";
@@ -146,5 +198,31 @@ export function useEpisodeContentRefresh(sink: EpisodeIntroEventSink): EpisodeCo
     if (promoteStagedEpisodes(hostContentStore).promoted.length > 0)
       setContent(loadEpisodeContent());
   }, []);
-  return { content, splash, stagedReady, applyStaged };
+  const downloads = useMemo<DownloadControls>(
+    () => ({
+      requestSync: () => {
+        "background only";
+        void runner.current?.request();
+      },
+      loadDownloadedBytes: () => {
+        "background only";
+        return downloadedAssetBytes(hostContentStore);
+      },
+      assetsComplete: (episodeId) => {
+        "background only";
+        return episodeAssetsComplete(
+          hostContentStore,
+          bundledCatalogInput.manifest.episodes,
+          episodeId,
+        );
+      },
+      assetsBytes: (episodeId) => {
+        "background only";
+        return episodeAssetsBytes(hostContentStore, episodeId);
+      },
+      manifestCheckedAt,
+    }),
+    [manifestCheckedAt],
+  );
+  return { content, splash, stagedReady, applyStaged, downloads };
 }

@@ -264,6 +264,7 @@ App (app/App.tsx)                                        ← 유일한 결선 �
 | `settings_opened` | 없음(`{ name }`만) | 바텀 네비게이션 `설정` tap → **탭이 실제로 설정으로 바뀔 때** `dispatch` 직전 1회 | 이미 설정 탭인데 다시 누를 때 · 설정 스택 안 이동 · `설정으로`로 돌아올 때 |
 | `profile_opened` | 없음 | `사용자 프로필` tap → `push` 직전 1회 | 그 밖 |
 | `language_settings_opened` ⟨2026-11-03⟩ | 없음 | `Language` tap → `push` 직전 1회([ADR-0093](../adr/0093-indonesian-localization.md) D6) | 언어를 바꾼 것 자체는 세지 않는다 |
+| `download_settings_opened` ⟨2026-11-04⟩ | 없음 | `Downloads` tap → `push` 직전 1회([ADR-0095](../adr/0095-content-delivery-and-data-policy.md) D8) | 정책을 바꾼 것 자체는 세지 않는다 |
 | `terms_opened` | 없음 | `개인정보 보호 및 약관` tap → `push` 직전 1회 | 그 밖 |
 | `session_option_changed` | `option`(`auto-play-audio` \| `show-transcript`) · `value`(boolean) | 토글 tap → `setSessionOptions` **직전** 1회. `value`는 **바뀐 뒤** 값 | 설정 화면을 열거나 떠날 때 · 듣기 화면이 값을 읽을 때 |
 

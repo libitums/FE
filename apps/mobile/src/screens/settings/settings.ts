@@ -6,6 +6,7 @@ import { legalDocumentOpenedEvent } from "../../lib/legal-document";
 import type { LegalDocumentOpenedEvent } from "../../lib/legal-document.contract";
 import type { LearnerProfileOpenedEvent } from "../../lib/learner-profile.contract";
 import type {
+  DownloadSettingsOpenedEvent,
   FeedbackOpenedEvent,
   LanguageSettingsOpenedEvent,
   NotificationSettingsOpenedEvent,
@@ -19,6 +20,7 @@ export const settingsNavTargets: readonly SettingsNavTarget[] = [
   "profile",
   "learner-profile",
   "language",
+  "download",
   "notifications",
   "feedback",
   "privacy-policy",
@@ -35,6 +37,7 @@ export function settingsNavOpenedEvent(
 ):
   | ProfileOpenedEvent
   | LanguageSettingsOpenedEvent
+  | DownloadSettingsOpenedEvent
   | LearnerProfileOpenedEvent
   | NotificationSettingsOpenedEvent
   | FeedbackOpenedEvent
@@ -46,6 +49,8 @@ export function settingsNavOpenedEvent(
       return { name: "learner_profile_opened" };
     case "language":
       return { name: "language_settings_opened" };
+    case "download":
+      return { name: "download_settings_opened" };
     case "notifications":
       return { name: "notification_settings_opened" };
     case "feedback":

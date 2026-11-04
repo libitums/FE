@@ -8,6 +8,7 @@ import type {
   ProfileCopy,
   SettingsCopy,
 } from "./ui-copy-sections.contract";
+import type { DownloadSheetCopy } from "./ui-copy-settings.contract";
 
 export const notificationsEn: NotificationsCopy = {
   title: "Notifications",
@@ -26,10 +27,29 @@ export const settingsEn: SettingsCopy = {
     profile: "User profile",
     "learner-profile": "Name and country in lessons",
     language: "Language",
+    download: "Downloads",
     notifications: "Notifications",
     feedback: "Send feedback",
     "privacy-policy": "Privacy Policy",
     "terms-of-use": "Terms of Use",
+  },
+  downloads: {
+    title: "Downloads",
+    caption: "Choose when pictures and audio download.",
+    mobileDataHeading: "Download on mobile data",
+    policy: { ask: "Ask every time", always: "Always download", "wifi-only": "Wi-Fi only" },
+    offlineHeading: "Offline",
+    downloadAll: "Download all for offline",
+    downloadAllCaption:
+      "Pictures and audio for every episode, so you can learn without a connection.",
+    downloadAllStarted: "Downloading in the background. You can keep learning.",
+    downloaded: (size) => `Downloaded: ${size}`,
+    confirm: {
+      title: "Download on mobile data?",
+      description: "Downloading every episode can use a lot of data. You can also wait for Wi-Fi.",
+      download: "Download now",
+      cancel: "Cancel",
+    },
   },
   sessionOption: { "auto-play-audio": "Auto-play", "show-transcript": "Show transcript" },
   optionState: { on: "on", off: "off" },
@@ -92,5 +112,42 @@ export const gemPurchaseEn: GemPurchaseCopy = {
   notice: {
     title: "Payment coming soon",
     description: "Gem payments aren't available yet. Please check back soon.",
+  },
+};
+
+export const downloadSheetEn: DownloadSheetCopy = {
+  askTitle: (n) => `Download Episode ${n}?`,
+  askDescription:
+    "Pictures and audio for this episode aren't on your phone yet. Downloading uses mobile data.",
+  size: (size) => `About ${size}`,
+  downloadNow: "Download now",
+  onWifi: "Download on Wi-Fi",
+  dontAskAgain: "Don't ask again",
+  wifiOnlyTitle: (n) => `Episode ${n} downloads on Wi-Fi`,
+  wifiOnlyDescription: "You chose Wi-Fi only in Settings. It will download when you're on Wi-Fi.",
+  ok: "OK",
+  offlineTitle: "You're offline",
+  offlineDescription: (n) =>
+    `Episode ${n} isn't downloaded yet. It will download when you're back online.`,
+  openAnyway: "Open anyway",
+  close: "Close",
+  checked: "checked",
+  unchecked: "not checked",
+  allCleared: {
+    title: "You've finished every story here",
+    description: "New episodes may be waiting. Connect to the internet and we'll check for you.",
+    offline: "You're offline",
+    lastChecked: (d) =>
+      d === null
+        ? "Not checked yet"
+        : d === 0
+          ? "Last checked today"
+          : d === 1
+            ? "Last checked yesterday"
+            : `Last checked ${d} days ago`,
+    checkNow: "Check now",
+    later: "Later",
+    autoNote: "We'll also check automatically when you're back online.",
+    offlineHint: "We'll check as soon as you're connected.",
   },
 };

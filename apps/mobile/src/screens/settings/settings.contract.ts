@@ -21,6 +21,8 @@ export type SettingsNavTarget =
   | "learner-profile"
   // UI 언어를 바꾸는 화면(ADR-0093) — 진입 흐름의 언어 선택 화면을 설정 탭 스택에 다시 씁니다.
   | "language"
+  // 콘텐츠 받기 설정(ADR-0095 D8) — 설정 탭 스택에 쌓는 화면입니다.
+  | "download"
   | "notifications"
   | "feedback"
   | LegalDocument;
@@ -38,6 +40,7 @@ export type SettingsScreenProps = {
 export type SettingsOpenedEvent = { readonly name: "settings_opened" };
 export type ProfileOpenedEvent = { readonly name: "profile_opened" };
 export type LanguageSettingsOpenedEvent = { readonly name: "language_settings_opened" };
+export type DownloadSettingsOpenedEvent = { readonly name: "download_settings_opened" };
 export type NotificationSettingsOpenedEvent = { readonly name: "notification_settings_opened" };
 export type FeedbackOpenedEvent = { readonly name: "feedback_opened" };
 /** 설정에서 피드백을 보냈습니다(성공한 것만). 글은 싣지 않습니다(ADR-0036). */
@@ -56,6 +59,7 @@ export type SettingsEvent =
   | SettingsOpenedEvent
   | ProfileOpenedEvent
   | LanguageSettingsOpenedEvent
+  | DownloadSettingsOpenedEvent
   | NotificationSettingsOpenedEvent
   | FeedbackOpenedEvent
   | FeedbackSubmittedEvent
