@@ -9,6 +9,7 @@ import type {
   ProfileCopy,
   SettingsCopy,
 } from "./ui-copy-sections.contract";
+import type { DownloadSheetCopy } from "./ui-copy-settings.contract";
 
 export const notificationsVi: NotificationsCopy = {
   title: "Thông báo",
@@ -113,4 +114,23 @@ export const gemPurchaseVi: GemPurchaseCopy = {
     title: "Sắp có thanh toán",
     description: "Hiện chưa thể thanh toán ngọc. Vui lòng quay lại sau.",
   },
+};
+
+export const downloadSheetVi: DownloadSheetCopy = {
+  askTitle: (n) => `Tải Tập ${n}?`,
+  askDescription:
+    "Hình ảnh và âm thanh của tập này chưa có trên điện thoại. Tải xuống sẽ dùng dữ liệu di động.",
+  size: (size) => `Khoảng ${size}`,
+  downloadNow: "Tải ngay",
+  onWifi: "Tải khi có Wi-Fi",
+  dontAskAgain: "Không hỏi lại",
+  wifiOnlyTitle: (n) => `Tập ${n} sẽ tải khi có Wi-Fi`,
+  wifiOnlyDescription: "Bạn đã chọn Chỉ Wi-Fi trong Cài đặt. Tập này sẽ tải khi bạn dùng Wi-Fi.",
+  ok: "OK",
+  offlineTitle: "Bạn đang ngoại tuyến",
+  offlineDescription: (n) => `Tập ${n} chưa được tải. Tập này sẽ tải khi bạn có mạng trở lại.`,
+  openAnyway: "Vẫn mở",
+  close: "Đóng",
+  checked: "đã chọn",
+  unchecked: "chưa chọn",
 };

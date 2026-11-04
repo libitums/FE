@@ -8,6 +8,7 @@ import type {
   ProfileCopy,
   SettingsCopy,
 } from "./ui-copy-sections.contract";
+import type { DownloadSheetCopy } from "./ui-copy-settings.contract";
 
 export const notificationsEn: NotificationsCopy = {
   title: "Notifications",
@@ -112,4 +113,24 @@ export const gemPurchaseEn: GemPurchaseCopy = {
     title: "Payment coming soon",
     description: "Gem payments aren't available yet. Please check back soon.",
   },
+};
+
+export const downloadSheetEn: DownloadSheetCopy = {
+  askTitle: (n) => `Download Episode ${n}?`,
+  askDescription:
+    "Pictures and audio for this episode aren't on your phone yet. Downloading uses mobile data.",
+  size: (size) => `About ${size}`,
+  downloadNow: "Download now",
+  onWifi: "Download on Wi-Fi",
+  dontAskAgain: "Don't ask again",
+  wifiOnlyTitle: (n) => `Episode ${n} downloads on Wi-Fi`,
+  wifiOnlyDescription: "You chose Wi-Fi only in Settings. It will download when you're on Wi-Fi.",
+  ok: "OK",
+  offlineTitle: "You're offline",
+  offlineDescription: (n) =>
+    `Episode ${n} isn't downloaded yet. It will download when you're back online.`,
+  openAnyway: "Open anyway",
+  close: "Close",
+  checked: "checked",
+  unchecked: "not checked",
 };

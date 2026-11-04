@@ -8,7 +8,11 @@ import {
 } from "@lynx-js/react";
 
 import { refreshAppPolicy } from "../lib/app-policy-refresh";
-import { downloadedAssetBytes } from "../lib/download-usage";
+import {
+  downloadedAssetBytes,
+  episodeAssetsBytes,
+  episodeAssetsComplete,
+} from "../lib/download-usage";
 import {
   assetDownloadAllowed,
   loadAllowedEpisodes,
@@ -192,6 +196,18 @@ export function useEpisodeContentRefresh(sink: EpisodeIntroEventSink): EpisodeCo
       loadDownloadedBytes: () => {
         "background only";
         return downloadedAssetBytes(hostContentStore);
+      },
+      assetsComplete: (episodeId) => {
+        "background only";
+        return episodeAssetsComplete(
+          hostContentStore,
+          bundledCatalogInput.manifest.episodes,
+          episodeId,
+        );
+      },
+      assetsBytes: (episodeId) => {
+        "background only";
+        return episodeAssetsBytes(hostContentStore, episodeId);
       },
     }),
     [],

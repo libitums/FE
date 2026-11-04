@@ -39,6 +39,7 @@ export function JourneyMapCatalogSlot({
         guide={guide}
         onStartCover={catalog.onStartCover}
         onSelectUnit={onSelectUnit}
+        {...(catalog.onTapPending === undefined ? {} : { onTapPending: catalog.onTapPending })}
       />
     </view>
   );

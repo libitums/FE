@@ -26,6 +26,26 @@ export type DownloadSettingsCopy = {
   };
 };
 
+/** 에피소드를 열 때의 받기 시트(ADR-0095 D6 · D7)입니다. */
+export type DownloadSheetCopy = {
+  readonly askTitle: (ordinal: number) => string;
+  readonly askDescription: string;
+  /** 크기를 알 때 — `size`는 `12.3 MB` 꼴입니다. */
+  readonly size: (size: string) => string;
+  readonly downloadNow: string;
+  readonly onWifi: string;
+  readonly dontAskAgain: string;
+  readonly wifiOnlyTitle: (ordinal: number) => string;
+  readonly wifiOnlyDescription: string;
+  readonly ok: string;
+  readonly offlineTitle: string;
+  readonly offlineDescription: (ordinal: number) => string;
+  readonly openAnyway: string;
+  readonly close: string;
+  readonly checked: string;
+  readonly unchecked: string;
+};
+
 export type SettingsCopy = {
   readonly title: string;
   readonly group: Readonly<Record<"account" | "learning" | "accountActions", string>>;

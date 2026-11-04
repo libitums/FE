@@ -55,6 +55,8 @@ import { journeyWiring } from "./journey-wiring";
 export type ScreenWiring = {
   /** 설정 › 다운로드(ADR-0095 D8). */
   downloadSettings: DownloadSettingsWiring;
+  /** 받는 중인 편의 「준비 중」 카드를 눌렀을 때(ADR-0095 D6 · D7) — 받기 문지기가 덮어씁니다. 기본은 아무것도 안 함. */
+  onTapPendingEpisode: (episodeId: string) => void;
   journeyMapProgressLoad: JourneyMapProgressLoad;
   /** 옛 튜토리얼 최종 테스트를 통과한 기록이 있는가 — 튜토리얼 다음 구획의 문 입력입니다. */
   legacyTutorialPassed: boolean;
@@ -153,6 +155,7 @@ export function screenWiring(args: ScreenWiringArgs): ScreenWiring {
   return {
     ...journey,
     downloadSettings: downloadSettingsWiring(args.downloadControls, args.catalogIds),
+    onTapPendingEpisode: () => {},
     legacyTutorialPassed: args.legacyTutorialPassed,
     safeAreaInsets: args.safeAreaInsets,
     appVersion: args.appVersion,

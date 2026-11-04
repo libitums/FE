@@ -20,3 +20,23 @@ export function downloadedAssetBytes(store: ContentStore): number | null {
   }
   return sized ? total : null;
 }
+
+/**
+ * 그 편의 그림 · 음성을 다 받았는가 — 자산 표시의 sha가 활성 매니페스트나 내장 목록의 그 편 sha와 맞을 때입니다
+ * (에피소드를 열 때의 받기 판정, ADR-0095 D6). 그 편이 어디에도 없으면 false.
+ */
+export function episodeAssetsComplete(
+  store: ContentStore,
+  bundled: readonly { readonly id: string; readonly sha256: string }[],
+  id: string,
+): boolean {
+  const active = parseCachedManifest(safeGet(store, CONTENT_MANIFEST_KEY))?.episodes ?? [];
+  const shas = [...active, ...bundled].filter((entry) => entry.id === id).map((e) => e.sha256);
+  return shas.some((sha256) => isAssetsComplete(store, id, sha256));
+}
+
+/** 활성 매니페스트에 실린 그 편의 그림 · 음성 크기입니다(받기 시트의 크기 줄). 없으면 `null`. */
+export function episodeAssetsBytes(store: ContentStore, id: string): number | null {
+  const manifest = parseCachedManifest(safeGet(store, CONTENT_MANIFEST_KEY));
+  return manifest?.episodes.find((entry) => entry.id === id)?.assetsBytes ?? null;
+}

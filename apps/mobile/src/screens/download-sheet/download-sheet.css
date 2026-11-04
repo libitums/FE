@@ -1,0 +1,54 @@
+/* 받기 시트(ADR-0095 D6 · D7) — 크기 줄과 「다시 묻지 않기」 체크 행. 체크 행은 업데이트 안내 창과 같은 값입니다. */
+
+.download-sheet-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-8);
+}
+
+.download-sheet-size {
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: var(--libitum-typography-label-m-font-size);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  line-height: var(--libitum-typography-label-m-line-height);
+  color: var(--libitum-color-gray-900);
+}
+
+.download-sheet-dont-ask {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-8);
+  padding: var(--libitum-spacing-8) 0;
+}
+
+.download-sheet-box {
+  width: var(--libitum-icon-size-md);
+  height: var(--libitum-icon-size-md);
+  border-radius: var(--libitum-radius-sm);
+  border-width: 2px;
+  border-style: solid;
+  border-color: var(--libitum-color-border-strong);
+  background-color: var(--libitum-color-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.download-sheet-box-on {
+  border-color: var(--libitum-color-brand-primary);
+  background-color: var(--libitum-color-brand-primary);
+}
+
+.download-sheet-check {
+  width: var(--libitum-icon-size-sm);
+  height: var(--libitum-icon-size-sm);
+}
+
+.download-sheet-dont-ask-label {
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: var(--libitum-typography-body-m-font-size);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  line-height: var(--libitum-typography-body-m-line-height);
+  color: var(--libitum-color-fg-neutral-muted);
+}

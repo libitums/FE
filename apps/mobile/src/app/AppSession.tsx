@@ -43,6 +43,7 @@ import { OutOfTicketsDialog } from "../screens/tickets/OutOfTicketsDialog";
 import { CatalogUpdateNoticeDialog } from "../screens/catalog-update/CatalogUpdateNoticeDialog";
 import { useCatalogUpdateNotice } from "./use-catalog-update-notice";
 import { withLearningTickets } from "./ticket-wiring";
+import { useDownloadGate, withDownloadGate } from "./use-download-gate";
 import { useLearningTickets } from "./use-learning-tickets";
 import { useTesterAccess } from "./use-tester-access";
 import type { AppProgressSeed, AppProps } from "./app-props";
@@ -176,7 +177,11 @@ export function AppSession({
     downloadControls,
     catalogIds: () => episodeContent.catalog.map((entry) => entry.id),
   });
-  const wiring = withLearningTickets(screens, tickets, progress, catalogSections);
+  const downloadGate = useDownloadGate(downloadControls, catalogSections);
+  const wiring = withDownloadGate(
+    withLearningTickets(screens, tickets, progress, catalogSections),
+    downloadGate.guard,
+  );
 
   // 셸이 가장자리 여백을 잡고 배경을 칠합니다(자판 화면은 위만 — shell-edges.ts). 스플래시만 브랜드색.
   // 아래쪽만 예외입니다 — 바가 서면 셸은 터치를 가로채는 시스템 바만큼(`tappableBottomInset`,
@@ -283,6 +288,7 @@ export function AppSession({
             {tickets.outOfTickets === null ? null : (
               <OutOfTicketsDialog {...tickets.outOfTickets} />
             )}
+            {downloadGate.layer}
             {updateNotice.open ? (
               <CatalogUpdateNoticeDialog onClose={updateNotice.onClose} />
             ) : null}

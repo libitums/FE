@@ -9,6 +9,7 @@ import type {
   ProfileCopy,
   SettingsCopy,
 } from "./ui-copy-sections.contract";
+import type { DownloadSheetCopy } from "./ui-copy-settings.contract";
 
 export const notificationsJa: NotificationsCopy = {
   title: "お知らせ",
@@ -120,4 +121,24 @@ export const gemPurchaseJa: GemPurchaseCopy = {
     title: "お支払いは近日公開",
     description: "ジェムの購入はまだご利用いただけません。もうしばらくお待ちください。",
   },
+};
+
+export const downloadSheetJa: DownloadSheetCopy = {
+  askTitle: (n) => `エピソード${n}をダウンロードしますか？`,
+  askDescription:
+    "このエピソードの画像と音声はまだ端末にありません。ダウンロードにはモバイルデータを使います。",
+  size: (size) => `約${size}`,
+  downloadNow: "今すぐダウンロード",
+  onWifi: "Wi-Fiでダウンロード",
+  dontAskAgain: "今後確認しない",
+  wifiOnlyTitle: (n) => `エピソード${n}はWi-Fiでダウンロードします`,
+  wifiOnlyDescription: "設定で「Wi-Fiのみ」を選んでいます。Wi-Fiにつながるとダウンロードします。",
+  ok: "OK",
+  offlineTitle: "オフラインです",
+  offlineDescription: (n) =>
+    `エピソード${n}はまだダウンロードされていません。オンラインに戻るとダウンロードします。`,
+  openAnyway: "このまま開く",
+  close: "閉じる",
+  checked: "オン",
+  unchecked: "オフ",
 };

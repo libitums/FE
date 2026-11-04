@@ -101,6 +101,8 @@ export type JourneyMapCatalogProps = {
    * 않습니다(학습자 프로필이 아직 없어 문항을 지을 수 없을 때 등).
    */
   readonly unitItemCountOf?: (episodeId: string, unitKey: CatalogUnitKey) => number;
+  /** 받는 중인 편의 「준비 중」 카드를 눌렀을 때 — 받기 시트(ADR-0095 D6 · D7). 없으면 누를 수 없습니다. */
+  readonly onTapPending?: (episodeId: string) => void;
 };
 
 /** 열린 노드를 눌렀을 때 — 탭의 세로 좌표는 유닛을 재기 전까지 말풍선이 설 어림 자리입니다. */
@@ -121,6 +123,7 @@ export type CatalogMapSectionsProps = {
   readonly guide?: CatalogMapGuide;
   readonly onStartCover: (episodeId: string) => void;
   readonly onSelectUnit: CatalogUnitSelect;
+  readonly onTapPending?: (episodeId: string) => void;
 };
 
 export type CatalogEpisodeSectionProps = {

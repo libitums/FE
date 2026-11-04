@@ -17,6 +17,8 @@ export type CatalogComingSoonSectionProps = {
    * `catalog-pending-<id>`를 답니다 — 다 받으면 같은 자리에 열린 구획이 섭니다(ADR-0071 D4). 없으면 맨 끝 구획입니다.
    */
   readonly episodeId?: string;
+  /** 받는 중인 편 카드를 눌렀을 때 — 받기 시트를 엽니다(ADR-0095 D6 · D7). `episodeId`가 있을 때만 누를 수 있습니다. */
+  readonly onTap?: (episodeId: string) => void;
 };
 
 // 빈 지도의 줄입니다 — 표지 하나, 두 열 두 줄(실제 배치와 같습니다). 줄마다 조금씩 더 흐립니다.
@@ -28,6 +30,7 @@ const ghostRows = [["cover"], ["a", "b"], ["c", "d"]] as const;
 export function CatalogComingSoonSection({
   ordinal,
   episodeId,
+  onTap,
 }: CatalogComingSoonSectionProps): ReactNode {
   const copy = useUiCopy();
   const episodeLabel = copy.catalogMap.episodeLabel(ordinal);
@@ -39,6 +42,9 @@ export function CatalogComingSoonSection({
       data-testid={episodeId === undefined ? "catalog-coming-soon" : `catalog-pending-${episodeId}`}
       accessibility-element={true}
       accessibility-label={copy.catalogMap.comingSoon.label(episodeLabel)}
+      {...(episodeId !== undefined && onTap !== undefined
+        ? { "accessibility-traits": "button", bindtap: () => onTap(episodeId) }
+        : {})}
     >
       <view className="episode-pending-divider" />
       <view className="catalog-coming-soon-stage" accessibility-elements-hidden={true}>

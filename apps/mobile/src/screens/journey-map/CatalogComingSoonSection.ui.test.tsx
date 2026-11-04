@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
+import { CatalogComingSoonSection } from "./CatalogComingSoonSection";
 import { CatalogMapSections } from "./CatalogMapSections";
 import type { CatalogGate, CatalogMapSection } from "./catalog-map.contract";
 
@@ -86,4 +87,25 @@ describe("CatalogComingSoonSection", () => {
     expect(onStartCover).not.toHaveBeenCalled();
     expect(onSelectUnit).not.toHaveBeenCalled();
   });
+});
+
+// ⟨2026-11-04⟩ 받는 중인 편의 카드는 눌러서 받기 시트를 엽니다(ADR-0095 D6 · D7). 맨 끝 카드는 누를 수 없습니다.
+test("CS-TAP1. 받는 중인 편 카드는 onTap이 있으면 버튼으로 읽히고, 누르면 그 id로 부른다", () => {
+  const onTap = vi.fn();
+  render(<CatalogComingSoonSection ordinal={11} episodeId="u11" onTap={onTap} />);
+  const card = screen.getByTestId("catalog-pending-u11");
+  expect(card).toHaveAttribute("accessibility-traits", "button");
+  fireEvent.tap(card, {});
+  expect(onTap).toHaveBeenCalledWith("u11");
+});
+
+test("CS-TAP2. 맨 끝 카드 · onTap이 없는 카드는 누를 수 없다", () => {
+  const onTap = vi.fn();
+  const { unmount } = render(<CatalogComingSoonSection ordinal={12} onTap={onTap} />);
+  fireEvent.tap(screen.getByTestId("catalog-coming-soon"), {});
+  expect(onTap).not.toHaveBeenCalled();
+  expect(screen.getByTestId("catalog-coming-soon")).not.toHaveAttribute("accessibility-traits");
+  unmount();
+  render(<CatalogComingSoonSection ordinal={11} episodeId="u11" />);
+  expect(screen.getByTestId("catalog-pending-u11")).not.toHaveAttribute("accessibility-traits");
 });
