@@ -63,6 +63,9 @@ final class ViewController: UIViewController {
       config.register(AppUpdateModule.self)
       // 에피소드 그림 · 소리를 앱 전용 폴더에 받아 둔다. 언제 받을지는 JS가 정한다.
       config.register(ContentFileModule.self)
+      // 분석 이벤트에 싣는 연결 종류(ADR-0096). 감지기는 첫 이벤트 전에 첫 경로를 받도록 여기서 먼저 띄운다.
+      NetworkStatusMonitor.shared.start()
+      config.register(NetworkStatusModule.self)
       // Airbridge 이벤트 전달(ADR-0063). **설정이 있어 SDK가 시작된 빌드에서만** 등록한다 —
       // 없으면 JS의 `NativeModules`에 이 이름이 없고, 그것이 「보낼 곳 없음」의 신호다.
       if AirbridgeEvents.isStarted {

@@ -34,6 +34,8 @@ App Store Connect의 공개된 응답과 배포 코드 경로를 대조했다. �
 
 신고 화면의 7개 항목은 현재 공개 상태와 일치한다(2026-10-01 기준 — 2026-10-13에 더한 `Developer Advertising` 목적 둘은 신고 화면에 아직 없다). 다만 신고 일치가 공개 처리방침의 완결성이나 운영 SaaS 설정을 증명하지는 않는다. 운영 PostHog 프로젝트 632540의 키가 Release 설정과 일치하는지 값 노출 없이 대조했다. `anonymize_ips = true`와 활성 GeoIP 변환 소스(국가·대륙·1단계 행정구역·시간대만 추가)를 MCP로 확인했다. 실제 `entry_screen_viewed` 속성 목록도 이 위치 항목들만 보고한다. 프로젝트의 replay/성능 수집 토글은 켜져 있지만 앱은 PostHogCore의 수동 이벤트만 쓰므로 웹 SDK 자동 수집 기능을 실행하지 않는다. 이번 검토에서는 운영 설정을 변경하지 않았다.
 
+⟨2026-11-04⟩ **PostHog 이벤트마다 연결 종류가 실린다**([ADR-0096](adr/0096-network-type-in-analytics.md)) — `network`(Wi-Fi · 셀룰러 · 유선 · 기타 · 오프라인) · `networkCost`(요금 없음 · 요금제 · 저데이터 모드). 통신사 · IP · Wi-Fi 이름은 싣지 않는다. 위 7개 항목 가운데 딱 맞는 것이 없고 가장 가까운 것은 **기타 진단 데이터 / `OtherDiagnosticData`**(사용자와 연결 · 목적 Analytics)다. **신고 화면과 앱 manifest에 더할지는 사용자 확인 전이다** — 출시 전에 정한다.
+
 ### Airbridge SDK와 추적 선언
 
 2026-10-13. 광고 측정용 Airbridge(MMP) SDK가 Host에 들어 있다 — 같은 날 들어왔던 Meta 앱 이벤트 SDK(ADR-0057)를 대신한다. 결정은 [ADR-0063](adr/0063-airbridge-events.md), 값 넣기 · 대시보드 연동 · 스토어 콘솔 순서는 [운영 안내](airbridge-events.md)가 진다. 여기는 **iOS의 선언이 무엇이고 어디가 약한가**만 적는다.

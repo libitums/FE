@@ -31,6 +31,8 @@ iOS 쪽의 짝은 [`docs/ios-privacy.md`](ios-privacy.md)다. 결정과 그 근�
 | 앱 정보 및 성능 → **진단** | 예 | **아니오** | 앱 기능 · 분석 | 세션(크래시 없는 세션 비율의 재료 — 시작 · 끝 · 상태) · 이벤트에 붙는 `release` · `environment` · 기기 · OS context |
 | 기기 또는 기타 ID | **아니오 — 기기 쪽 근거는 섰다. 서버 쪽 확인 하나가 남았다** | — | — | SDK 기본값은 설치 id를 **세 자리**에 싣는다: 이벤트의 `user.id` · 세션의 `distinctId` · 이벤트의 `contexts.device.id`(`sendDefaultPii`와 무관) [정적 — AAR 바이트코드]. 이 앱은 `beforeSend`에서 `user`와 `device.id`를 지우고 `setDistinctId(null)`로 세션 쪽을 끈다 [코드 — JUnit `CrashEventPolicyTest`]. **기기 밖으로 나가기 직전의 envelope에서 `user` · `did` · `ip_address` · `contexts.device.id`가 없었고, 그 기기의 설치 id · `android_id` 문자열을 envelope 전체에서 찾아 0건이었다** [실측 — 에뮬레이터 1대, `bundled`, JS 이벤트 4건 · Java 크래시 1건 · 세션 전부]. **서버 화면에서도 모든 이슈의 사용자 수가 0이고 Device 컨텍스트에 `id` · `name` · `boot_time`이 없었다** [실측 — 사용자가 대시보드에서 확인, 2026-10-13] |
 
+⟨2026-11-04⟩ **PostHog 이벤트에 연결 종류가 실린다**([ADR-0096](adr/0096-network-type-in-analytics.md)) — `network` · `networkCost`. PostHog 이벤트는 로그인 뒤 사용자와 연결되므로 위 「진단」 행의 「사용자와 연결: 아니오」(Sentry 기준)와 다르다. **「진단」을 「연결 예」로 바꿀지는 사용자 확인 전이다** — 출시 전에 정한다.
+
 **식별자 칸의 근거와 남은 것.** 처음 구현은 `contexts.device.name`만 지워 **설치 id가 `contexts.device.id`로 모든 이벤트에 실려 나갈 뻔했고 리뷰가 잡았다**(ADR-0061 「정정 기록」 2026-10-13) —
 이 문서의 앞선 판도 그 자리를 모른 채 「아니오」라고 적었고, 그 뒤 판은 「B6 전에는 아니오로 내지 않는다」고 적었다. **B6은 기기 쪽에서 통과했고, 서버 화면의 사용자 수 0 · Device 컨텍스트도 사용자가 확인했다**(위 표). 양식에 「수집 안 함」을 내기 전에 남은 것은 셋이다:
 

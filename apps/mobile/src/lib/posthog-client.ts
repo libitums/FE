@@ -5,6 +5,7 @@ import { PostHogCore } from "@posthog/core";
 import type { PostHogFetchOptions, PostHogFetchResponse } from "@posthog/core";
 
 import type {
+  AnalyticsCaptureClient,
   AnalyticsConfig,
   AnalyticsQueueRetryDelaysMs,
   AnalyticsQueueStorageKey,
@@ -17,6 +18,7 @@ import type {
 import { analyticsConfig } from "./analytics-config";
 import { getItem, removeItem, setItem } from "./storage";
 import { analyticsEventSinksFrom, noAnalyticsSession } from "./analytics-events";
+import { readNetworkProperties } from "./network-status";
 
 export const postHogCoreVersion = "1.55.2" as const;
 
@@ -213,8 +215,15 @@ export const createAnalyticsSession: CreateAnalyticsSession = (config, transport
     return noAnalyticsSession;
   }
   const client = new LynxPostHogClient(config, transport);
+  // 이벤트마다 그때의 연결 종류를 싣습니다(ADR-0096 D2). `register`는 비동기라 쓰지 않습니다 — 읽기는 던지지 않고
+  // 모르면 `unknown`입니다.
+  const capturing: AnalyticsCaptureClient = {
+    capture: (event, properties) =>
+      client.capture(event, { ...properties, ...readNetworkProperties() }),
+    identify: (distinctId) => client.identify(distinctId),
+  };
   return {
-    sinks: analyticsEventSinksFrom(client),
+    sinks: analyticsEventSinksFrom(capturing),
     user: {
       identify: (userId) => {
         try {
