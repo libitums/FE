@@ -108,6 +108,8 @@ async function ensureAssets(
   watch?.progressed(entry.id, done, total);
   const outcome = await ensureEpisodeAssets(run.deps.store, assets, entry, paths, {
     ...(marker === "staged" ? { markerKey: contentStagedAssetsKey(entry.id) } : {}),
+    // 이번 차례에 매니페스트가 바뀌었으면 「서버에 없음」을 시간과 상관없이 다시 봅니다(ADR-0095 D2).
+    recheckMissing: run.summary.manifest === "updated",
     onPathSettled: () => {
       done += 1;
       watch?.progressed(entry.id, done, total);

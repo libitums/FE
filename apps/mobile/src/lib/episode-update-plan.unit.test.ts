@@ -160,10 +160,24 @@ describe("splashEpisodeIds", () => {
     { entry: bundledEntry, kind: "bundled" },
   ];
 
-  test("PL7. available면 new · changed의 id를 계획 순서대로 내고 unavailable이면 빈 목록이다", () => {
-    expect(splashEpisodeIds(plan, "available")).toEqual(["u04-x", "u05-n"]);
+  // ⟨2026-11-03⟩ 스플래시는 튜토리얼만 기다립니다(ADR-0095 D1) — 다른 새 · 바뀐 편은 뒤에서 받습니다.
+  test("PL7. available이어도 튜토리얼이 계획에 없으면 기다릴 id가 없고, unavailable이면 빈 목록이다", () => {
+    expect(splashEpisodeIds(plan, "available")).toEqual([]);
     expect(splashEpisodeIds(plan, "unavailable")).toEqual([]);
     expect(splashEpisodeIds([], "available")).toEqual([]);
+  });
+
+  test("PL7. 튜토리얼이 new · changed일 때만 그 id 하나를 내고, current · bundled면 내지 않는다", () => {
+    const tutorial = entryOf(versioned("u00-tutorial", 0, OLD, "튜토리얼", "without"));
+    for (const kind of ["new", "changed"] as const) {
+      expect(splashEpisodeIds([{ entry: tutorial, kind }, ...plan], "available")).toEqual([
+        "u00-tutorial",
+      ]);
+    }
+    for (const kind of ["current", "bundled"] as const) {
+      expect(splashEpisodeIds([{ entry: tutorial, kind }, ...plan], "available")).toEqual([]);
+    }
+    expect(splashEpisodeIds([{ entry: tutorial, kind: "new" }], "unavailable")).toEqual([]);
   });
 });
 

@@ -12,6 +12,8 @@ export type ManifestEntry = {
   version: string;
   sha256: string;
   bytes: number;
+  /** 그림 · 음성 합계 바이트(ADR-0095 D3). 없거나 틀린 값이면 키가 없습니다. */
+  assetsBytes?: number;
   url: string;
 };
 
@@ -77,6 +79,7 @@ function decode(input: unknown): ManifestDecodeResult {
       version: entry.version,
       sha256: entry.sha256,
       bytes: entry.bytes,
+      ...assetsBytesOf(entry.assets_bytes),
       url: entry.url,
     }))
     .sort((a, b) => a.order - b.order);
@@ -88,6 +91,13 @@ function decode(input: unknown): ManifestDecodeResult {
     episodes,
   };
   return { ok: true, manifest };
+}
+
+/** 0 이상 정수만 `assetsBytes`로 남깁니다 — 그 밖은 조용히 버립니다(매니페스트는 받습니다). */
+function assetsBytesOf(value: unknown): { assetsBytes?: number } {
+  return typeof value === "number" && Number.isInteger(value) && value >= 0
+    ? { assetsBytes: value }
+    : {};
 }
 
 export function decodeManifest(input: unknown): ManifestDecodeResult {
@@ -116,6 +126,7 @@ export function encodeManifestText(manifest: EpisodeManifest): string {
       version: entry.version,
       sha256: entry.sha256,
       bytes: entry.bytes,
+      ...(entry.assetsBytes === undefined ? {} : { assets_bytes: entry.assetsBytes }),
       url: entry.url,
     })),
   });
