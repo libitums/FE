@@ -4,7 +4,9 @@ import { CATALOG_INTRO_KEY } from "../../lib/catalog-progress";
 import { CatalogCoverMapItem } from "./CatalogCoverMapItem";
 import { CatalogUnitNode } from "./CatalogUnitNode";
 import { FirstUnitMapTooltip } from "./FirstUnitMapTooltip";
+import { MapFootprints } from "./MapFootprints";
 import { MapUnitCell, MapUnitRow } from "./MapUnitRow";
+import { useMapFootprints } from "./useMapFootprints";
 import { catalogCoverIllustrationOf } from "./catalog-cover-illustration";
 import { catalogSectionDomId, catalogUnitDomId, catalogUnitNodesOf } from "./catalog-map";
 import type { CatalogEpisodeSectionProps } from "./catalog-map.contract";
@@ -31,12 +33,19 @@ export function CatalogEpisodeSection({
   onStartCover,
   onSelectUnit,
   coverImageUrlOf,
+  clearedUnit = null,
 }: CatalogEpisodeSectionProps): ReactNode {
   const columns = useMapColumns();
   const guided = guide !== null;
   // 일러스트 주소는 렌더마다 순수하게 파생합니다 — 주소 함수가 없으면(옛 호출부) 일러스트 없음.
   const illustration =
     coverImageUrlOf === undefined ? null : catalogCoverIllustrationOf(section, coverImageUrlOf);
+  // 끝낸 유닛 → 다음 유닛 발자국(ADR-0100). 자리는 호스트 측정에서 한 번 계산합니다.
+  const footprints = useMapFootprints({
+    section,
+    progress,
+    enteringFrom: clearedUnit?.episodeId === section.episodeId ? clearedUnit.unitKey : null,
+  });
   const startCover = (episodeId: string): void => {
     "background only";
     guide?.dismiss();
@@ -52,6 +61,12 @@ export function CatalogEpisodeSection({
       {/* 자식은 **하나의 식**으로 냅니다 — 정적 자식과 식이 섞이면 Lynx가 식의 결과를 래퍼 상자에
           감싸 줄이 구획 상자의 직계 자식이 아니게 됩니다. 구분선 → 표지(늘 한 줄 전용 줄) → 노드 줄. */}
       {[
+        <MapFootprints
+          key="footprints"
+          episodeId={section.episodeId}
+          segments={footprints.segments}
+          enteringFrom={footprints.enteringFrom}
+        />,
         <view key="divider" className="episode-pending-divider" />,
         <MapUnitRow key="cover" kind="solo">
           <MapUnitCell

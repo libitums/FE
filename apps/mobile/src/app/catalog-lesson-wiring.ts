@@ -1,6 +1,7 @@
 // 카탈로그 레슨 · 최종 테스트의 결선입니다 — 시작 가드 · 활동 잇기 · 판정 · 기록 · 이벤트 · 결과 뒤 이동.
 // 레슨의 활동 잇기 · 틀린 문제 다시 풀기 · 판정은 `catalog-lesson-finish.ts`가 집니다.
 
+import { rememberMapCleared } from "../screens/journey-map/journey-map-cleared-memory";
 import type { Dispatch, SetStateAction } from "@lynx-js/react";
 
 import type { AnswerResult } from "../lib/answer-result";
@@ -105,6 +106,8 @@ export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLesso
 
   const markDone = (episodeId: string, unitKey: CatalogUnitKey): void => {
     setCatalogProgress((progress) => markCatalogUnitDone(progress, episodeId, unitKey));
+    // 맵이 돌아오면 이 유닛 → 다음 유닛 발자국이 찍히게(ADR-0100 D4).
+    rememberMapCleared(episodeId, unitKey);
   };
 
   const showComplete = (

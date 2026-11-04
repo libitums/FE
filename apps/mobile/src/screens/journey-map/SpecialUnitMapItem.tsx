@@ -28,6 +28,7 @@ export function SpecialUnitMapItem({
   icon,
   sheetTargetId,
   children,
+  markId,
 }: SpecialUnitMapItemProps) {
   const copy = useUiCopy();
   const unitStatus = specialUnitStatusOf(status);
@@ -50,7 +51,7 @@ export function SpecialUnitMapItem({
           : "journey-special-unit"
       }
     >
-      <MapUnitStage targetId={sheetTargetId ?? null}>
+      <MapUnitStage targetId={sheetTargetId ?? null} {...(markId === undefined ? {} : { markId })}>
         <SpecialUnit
           id={unitId}
           accessibilityLabel={specialUnitMapAccessibilityLabel(

@@ -319,12 +319,14 @@ describe("CatalogMapSections 줄 구조", () => {
 
   const twoColumnKinds = ["solo", "pair", "pair", "pair", "pair", "solo"];
 
-  test("UG-C1. 레슨 8 구획의 직계 자식은 구분선 뒤에 줄 여섯이고 종류는 solo(표지), pair 넷, solo(최종)다", () => {
+  test("UG-C1. 레슨 8 구획의 직계 자식은 발자국 층 · 구분선 뒤에 줄 여섯이고 종류는 solo(표지), pair 넷, solo(최종)다", () => {
     mount();
 
     const children = sectionChildren("u01-water");
-    expect(classesOf(children[0])).toContain("episode-pending-divider");
-    expect(children.slice(1).map((child) => child.getAttribute("data-testid"))).toEqual(
+    // 발자국 층(ADR-0100)은 0 × 0 절대 상자라 줄 배치에 끼지 않습니다 — 맨 앞에 섭니다.
+    expect(classesOf(children[0])).toContain("map-footprints");
+    expect(classesOf(children[1])).toContain("episode-pending-divider");
+    expect(children.slice(2).map((child) => child.getAttribute("data-testid"))).toEqual(
       twoColumnKinds.map(() => "journey-map-row"),
     );
     expect(rowKindsOf("u01-water")).toEqual(twoColumnKinds);

@@ -1,5 +1,6 @@
 // 카탈로그 표지의 결선입니다 — 시작 가드 · 이벤트 · 진행 기록 · 이동, route 모델 만들기.
 
+import { rememberMapCleared } from "../screens/journey-map/journey-map-cleared-memory";
 import type { Dispatch, SetStateAction } from "@lynx-js/react";
 
 import { CATALOG_INTRO_KEY, isCatalogUnitDone, markCatalogUnitDone } from "../lib/catalog-progress";
@@ -119,6 +120,8 @@ export function catalogCoverWiring(args: CatalogCoverWiringArgs): CatalogCoverWi
 
   const markIntroDone = (episodeId: string): void => {
     setCatalogProgress((progress) => markCatalogUnitDone(progress, episodeId, CATALOG_INTRO_KEY));
+    // 맵이 돌아오면 표지 → 레슨 1 발자국이 찍히게(ADR-0100 D4).
+    rememberMapCleared(episodeId, CATALOG_INTRO_KEY);
   };
 
   // 표지 컷 끝: 이벤트 → 진행 기록 순서입니다. 이동하지 않습니다 — 배너가 닫힐 때 `onCloseCatalogCover`가 합니다.
