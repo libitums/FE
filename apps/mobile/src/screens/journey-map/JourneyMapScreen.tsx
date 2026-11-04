@@ -19,6 +19,7 @@ import { mapTopLayout } from "./journey-map-insets";
 import { mapScrollTargetOf } from "./journey-map-next-unit";
 import { useAutoScrollToNext } from "./useAutoScrollToNext";
 import { useMapGlide } from "./use-map-glide";
+import { takeMapCleared } from "./journey-map-cleared-memory";
 import { rememberedMapScroll, rememberMapScroll } from "./journey-map-scroll-memory";
 import { useStepSheet } from "./useStepSheet";
 import { lightStatusBarIcons } from "../../lib/status-bar-icons";
@@ -58,6 +59,9 @@ export function JourneyMapScreen({
   const top = mapTopLayout(statusBarInset);
   // 이 실행에서 맵을 연 적이 있으면 그 자리에서 엽니다(마운트 때 한 번 읽습니다).
   const [restoredScrollTop] = useState(rememberedMapScroll);
+  // 방금 끝낸 유닛 — 이 마운트에서 한 번 읽어 그 다음 구간 발자국만 등장 모션(ADR-0100). 본문이 `memo`라 객체는 기억해 둡니다.
+  const [clearedUnit] = useState(takeMapCleared);
+  const bodyCatalog = useMemo(() => ({ ...catalog, clearedUnit }), [catalog, clearedUnit]);
   const glider = useMapGlide();
   const {
     sheetState,
@@ -185,7 +189,7 @@ export function JourneyMapScreen({
         >
           <MapUnitEntranceProvider value={unitEntrance}>
             <JourneyMapBody
-              catalog={catalog}
+              catalog={bodyCatalog}
               access={access}
               guideVisible={guide.visible}
               handlers={bodyHandlers}

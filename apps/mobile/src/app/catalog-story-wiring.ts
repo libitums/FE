@@ -1,6 +1,7 @@
 // 막간 이야기 유닛의 결선입니다(ADR-0088) — 레슨 시작 결선 앞에 서서 이야기 유닛이면 이야기 화면을 쌓습니다. 티켓 · 레슨
 // 이벤트는 없고, 에피소드 첫 스페셜 유닛과 같은 다섯 때를 `episode_story_*`로 잽니다(D6).
 
+import { rememberMapCleared } from "../screens/journey-map/journey-map-cleared-memory";
 import type { Dispatch, SetStateAction } from "@lynx-js/react";
 
 import type { CatalogProgress, CatalogUnitKey } from "../lib/catalog-progress";
@@ -47,6 +48,7 @@ export function withCatalogStory(
   const sink = args.episodeIntroEventSink;
   const markDone: StoryHandler = (episodeId, unitKey) => {
     setCatalogProgress((progress) => markCatalogUnitDone(progress, episodeId, unitKey));
+    rememberMapCleared(episodeId, unitKey);
   };
   // 이벤트 공통 속성 — 형식을 모르면(닿지 않는 경우) 빈 문자열입니다.
   const base = (episodeId: string, unitKey: CatalogUnitKey) => ({

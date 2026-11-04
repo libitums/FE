@@ -10,6 +10,7 @@ import type { JourneyMapItemStatus, JourneyMapNodeStatus } from "./journey-map-t
 import type { SpecialUnitMapLayer } from "./journey-special-unit.contract";
 import type { JourneyMapNodeAccess, JourneyMapProgressLoad } from "./journey-map-load.contract";
 import type { CatalogCoverIllustration } from "./catalog-cover-illustration";
+import type { MapClearedUnit } from "./journey-map-cleared-memory";
 
 /** 열린 카탈로그 유닛 말풍선의 키입니다(`catalogSheetKey`). */
 export type CatalogSheetKey = `catalog:${string}`;
@@ -112,6 +113,8 @@ export type JourneyMapCatalogProps = {
   /** 맨 끝 카드의 목록 확인 신선도 · 「새 이야기 확인」(ADR-0095 D9). */
   readonly freshness?: CatalogFreshness;
   readonly onCheckNew?: () => void;
+  /** 방금 끝낸 유닛(맵 마운트 때 한 번 읽은 기억) — 그 다음 구간 발자국만 등장 모션. 없으면 null. */
+  readonly clearedUnit?: MapClearedUnit | null;
 };
 
 /** 열린 노드를 눌렀을 때 — 탭의 세로 좌표는 유닛을 재기 전까지 말풍선이 설 어림 자리입니다. */
@@ -136,6 +139,7 @@ export type CatalogMapSectionsProps = {
   readonly freshness?: CatalogFreshness;
   readonly onCheckNew?: () => void;
   readonly coverImageUrlOf?: (relativePath: string) => string | null;
+  readonly clearedUnit?: MapClearedUnit | null;
 };
 
 export type CatalogEpisodeSectionProps = {
@@ -150,6 +154,7 @@ export type CatalogEpisodeSectionProps = {
   readonly onStartCover: (episodeId: string) => void;
   readonly onSelectUnit: CatalogUnitSelect;
   readonly coverImageUrlOf?: (relativePath: string) => string | null;
+  readonly clearedUnit?: MapClearedUnit | null;
 };
 
 export type CatalogUnavailableSectionProps = {

@@ -33,6 +33,8 @@ export type SpecialUnitMapItemProps = {
   readonly sheetTargetId?: SheetTargetId;
   /** 면 가운데 아이콘(SVG 문자열). 없으면 `SpecialUnit` 기본(오각 별)입니다. */
   readonly icon?: string;
+  /** 표식 상자의 DOM id(`MapUnitStage`) — 발자국이 노드 중심을 잽니다. */
+  readonly markId?: string;
 };
 
 export type SpecialUnitMapTestId =

@@ -62,6 +62,9 @@
 /* 에피소드 한 덩어리 — 헤더와 그 에피소드의 유닛들입니다. 유닛 사이 간격은
    맵(`.journey-map-screen-map`)이 주고, 이 상자는 헤더와 첫 유닛 사이만 집니다. */
 .journey-map-screen-episode {
+  /* 발자국 층(ADR-0100)의 기준 상자입니다 — 층이 0 × 0 절대 상자라 줄 배치는 그대로입니다. */
+  position: relative;
+  overflow: visible;
   display: flex;
   flex-direction: column;
   align-items: center;

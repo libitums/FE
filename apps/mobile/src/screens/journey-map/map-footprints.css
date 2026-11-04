@@ -1,0 +1,52 @@
+/* 끝낸 유닛에서 다음 유닛으로 이어지는 발자국입니다(ADR-0100). 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1).
+   층은 구획(`.journey-map-screen-episode`, position relative)의 첫 자식 · 0 × 0 절대 상자라 줄 배치를 밀지 않고,
+   유닛 줄이 DOM 뒤에 서므로 발자국은 유닛 아래 · 맵 배경 위에 그려집니다. 발자국 12 × 14 기하값은 `map-footprints.ts`가
+   집니다(토큰 미정 기하값 — `special-unit.css`와 같은 선례). */
+.map-footprints {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  overflow: visible;
+  z-index: 0;
+}
+
+/* 바깥 상자 — 자리와 발끝 방향(인라인 `transform: rotate() scaleX()`)만 집니다. */
+.map-footprint {
+  position: absolute;
+  width: 12px;
+  height: 14px;
+  overflow: visible;
+}
+
+/* 안쪽 상자 — 등장 모션만 집니다. 바깥과 나누는 이유: 애니메이션의 transform이 회전을 덮지 않게. */
+.map-footprint-body {
+  width: 12px;
+  height: 14px;
+  overflow: visible;
+}
+
+.map-footprint-glyph {
+  width: 12px;
+  height: 14px;
+}
+
+/* 등장 — 유닛이 끝남 색으로 바뀐 뒤 발자국마다 늦게(지연은 인라인 `animation-delay`, 토큰 ms에서 계산) 톡 찍힙니다.
+   움직임 줄이기에서는 이 클래스가 붙지 않습니다. */
+.map-footprint-enter {
+  opacity: 0;
+  animation: map-footprint-in var(--libitum-motion-duration-d4)
+    var(--libitum-motion-easing-enter-expressive) both;
+}
+
+@keyframes map-footprint-in {
+  0% {
+    opacity: 0;
+    transform: scale(var(--libitum-motion-scale-reward));
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

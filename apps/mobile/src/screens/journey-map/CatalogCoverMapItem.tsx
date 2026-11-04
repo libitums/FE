@@ -1,7 +1,9 @@
 import type { ReactNode } from "@lynx-js/react";
 
 import { useUiCopy } from "../../lib/ui-copy";
+import { CATALOG_INTRO_KEY } from "../../lib/catalog-progress";
 import { catalogCoverAccessibilityLabel } from "./catalog-map";
+import { catalogMarkDomId } from "./map-footprints";
 import type { CatalogCoverMapItemProps } from "./catalog-map.contract";
 
 import { SpecialUnitMapItem } from "./SpecialUnitMapItem";
@@ -30,6 +32,7 @@ export function CatalogCoverMapItem({
       accessibilityName={catalogCoverAccessibilityLabel(ordinal, copy)}
       status={status}
       layer={layer}
+      markId={catalogMarkDomId(episodeId, CATALOG_INTRO_KEY)}
       onSelect={() => {
         "background only";
         onSelect(episodeId);

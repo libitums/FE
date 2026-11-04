@@ -25,6 +25,13 @@ import { sha256Hex, utf8Bytes } from "../lib/sha256";
 import { systemBackEventName } from "../lib/system-back";
 import { EPISODE_BANNER_HOLD_MS } from "../screens/catalog-cover/episode-banner";
 import { catalogMapSectionsOf } from "../screens/journey-map/catalog-map";
+import { catalogSectionDomId } from "../screens/journey-map/catalog-map";
+import { catalogMarkDomId } from "../screens/journey-map/map-footprints";
+import {
+  forgetMapCleared,
+  takeMapCleared,
+} from "../screens/journey-map/journey-map-cleared-memory";
+import { stubHost, type Rect } from "../screens/journey-map/JourneyMapScreen.test-support";
 import type { EpisodeIntroEvent } from "../screens/episode-intro/episode-intro.contract";
 import { catalogNodeTestId } from "./test-helpers/map-unit-testid";
 import {
@@ -877,4 +884,72 @@ test("IC2. 원격 매니페스트 항목의 cover는 공개 버킷 주소로 서
   expect(image).not.toHaveClass("catalog-cover-illustration-locked");
   // 그림은 <image>가 직접 받는다 — fetch 대역에 covers 요청이 없다.
   expect(urls.filter((url) => url.includes("images/covers/"))).toEqual([]);
+});
+
+// ---------------------------------------------------------------- 발자국(ADR-0100)
+
+const footprintSel = (id: string) => `#${id}`;
+const footprintRects: Record<string, Rect> = {
+  [footprintSel(catalogSectionDomId("u01-water"))]: { left: 16, top: 400, width: 358, height: 900 },
+  [footprintSel(catalogMarkDomId("u01-water", "intro"))]: {
+    left: 133,
+    top: 460,
+    width: 124,
+    height: 124,
+  },
+  [footprintSel(catalogMarkDomId("u01-water", "S1"))]: {
+    left: 51.5,
+    top: 644,
+    width: 100,
+    height: 100,
+  },
+  [footprintSel(catalogMarkDomId("u01-water", "S2"))]: {
+    left: 238.5,
+    top: 644,
+    width: 100,
+    height: 100,
+  },
+};
+const footprintsOf = (episodeId: string, from: string) =>
+  Array.from(document.querySelectorAll(`[data-testid^="map-footprint-${episodeId}-${from}-"]`));
+
+test("IF1. 표지를 끝내고 맵으로 돌아오면 intro→S1 발자국이 등장 모션으로 서고 기억은 비워진다", async () => {
+  forgetMapCleared();
+  stubHost({ rects: footprintRects });
+  await boot({ seed: tutorialDoneSeed });
+  expect(footprintsOf("u01-water", "intro")).toHaveLength(0);
+
+  useBannerClock();
+  tapCover("u01-water");
+  tapIntroNext();
+  readAllCuts(6);
+  await settleFake();
+  passBanner();
+  await flush();
+
+  expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
+  expect(cover("u01-water")).toHaveAttribute("data-status", "clear");
+  const prints = footprintsOf("u01-water", "intro");
+  expect(prints.length).toBeGreaterThanOrEqual(2);
+  for (const print of prints) {
+    expect(print.querySelector(".map-footprint-enter")).not.toBeNull();
+  }
+  // 맵이 마운트 때 기억을 읽어 비웠다 — 다음 맵은 정지 발자국이다.
+  expect(takeMapCleared()).toBeNull();
+});
+
+test("IF2. 콜드 부팅의 끝낸 진행(intro · S1)은 등장 모션 없이 두 구간의 발자국이 선다", async () => {
+  forgetMapCleared();
+  stubHost({ rects: footprintRects });
+  await boot({
+    seed: tutorialDoneSeed,
+    load: { ...tutorialDoneSnapshot, catalogProgress: { "u01-water": ["intro", "S1"] } },
+  });
+
+  expect(footprintsOf("u01-water", "intro").length).toBeGreaterThanOrEqual(2);
+  const horizontal = footprintsOf("u01-water", "S1");
+  expect(horizontal).toHaveLength(4);
+  expect((horizontal[0] as HTMLElement).style.transform).toBe("rotate(90deg) scaleX(-1)");
+  expect(document.querySelector(".map-footprint-enter")).toBeNull();
+  expect(footprintsOf("u01-water", "S2")).toHaveLength(0);
 });
