@@ -1,22 +1,17 @@
 import type { ReactNode } from "@lynx-js/react";
 
 import film from "@libitums/icons/lynx/film";
-import lantern from "@libitums/icons/lynx/lantern-05";
 import message from "@libitums/icons/lynx/message";
 import phone from "@libitums/icons/lynx/phone";
-import play from "@libitums/icons/lynx/play";
 import { LearningUnit } from "@libitums/ui-lynx/learning-unit";
 import type { LearningUnitTapEvent } from "@libitums/ui-lynx/learning-unit";
 
 import { useUiCopy } from "../../lib/ui-copy";
 import { catalogSheetKey } from "./catalog-sheet";
 import { catalogUnitNodeAccessibilityLabel, catalogUnitNodeTitle } from "./catalog-map";
+import { catalogUnitIconOf } from "./catalog-unit-icon";
 import { catalogMarkDomId } from "./map-footprints";
-import type {
-  CatalogStoryIcon,
-  CatalogUnitNodeProps,
-  CatalogUnitNodeRole,
-} from "./catalog-map.contract";
+import type { CatalogStoryIcon, CatalogUnitNodeProps } from "./catalog-map.contract";
 
 import { canSelectMapNode } from "./journey-map-load";
 import { MapUnitStage } from "./MapUnitStage";
@@ -39,13 +34,6 @@ function lessonUnitStatusOf(node: CatalogUnitNodeProps["node"]) {
     : unitStatusByStatus[node.status];
 }
 
-// 문화는 레슨처럼 배우는 단위라 원형으로 남고 아이콘으로만 갈립니다(사용자 결정 2026-10-17).
-const lessonIconByRole: Readonly<Record<Exclude<CatalogUnitNodeRole, "final" | "story">, string>> =
-  {
-    lesson: play,
-    culture: lantern,
-  };
-
 // 이야기 노드의 아이콘 — 형식으로 갈립니다(ADR-0088 D6). 최종 테스트는 기본 오각 별입니다.
 const storyIconSvg: Readonly<Record<CatalogStoryIcon, string>> = { film, chat: message, phone };
 
@@ -57,7 +45,9 @@ export function CatalogUnitNode(props: CatalogUnitNodeProps): ReactNode {
   return role === "final" || role === "story" ? (
     <CatalogSpecialNode {...props} />
   ) : (
-    <CatalogLessonNode {...props} icon={lessonIconByRole[role]} />
+    // 문화는 레슨처럼 배우는 단위라 원형으로 남고 아이콘으로만 갈립니다(사용자 결정 2026-10-17). 아이콘은 묶음별
+    // (ADR-0101 D1) — 스텝 id에서 정합니다.
+    <CatalogLessonNode {...props} icon={catalogUnitIconOf(role, props.node.key)} />
   );
 }
 
@@ -108,6 +98,8 @@ function CatalogLessonNode({
           id={`catalog-unit-${episodeId}-${node.key}`}
           accessibilityLabel={catalogUnitNodeAccessibilityLabel(episodeOrdinal, node, copy)}
           icon={icon}
+          // 잠긴 유닛도 묶음 아이콘(잠김 색)으로 — 에피소드 흐름이 맵에서 읽힙니다(ADR-0101 D2, B안).
+          lockedGlyph="icon"
           status={lessonUnitStatusOf(node)}
           narrative="none"
           bindtap={handleSelect}

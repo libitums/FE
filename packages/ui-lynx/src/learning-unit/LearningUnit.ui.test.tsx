@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
+import { cleanup, fireEvent, render, screen } from "@lynx-js/react/testing-library";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, test, vi } from "vitest";
@@ -218,5 +218,23 @@ describe("LearningUnit motion 컨텍스트", () => {
     expect(element).not.toHaveAttribute("data-motion");
     expect(element.hasAttribute("data-motion")).toBe(false);
     expect(element.getAttribute("class") ?? "").not.toContain("motion");
+  });
+
+  test("LU-L2. lockedGlyph icon이면 잠긴 유닛이 자물쇠 대신 받은 아이콘을 잠김 색으로 그린다", () => {
+    render(<LearningUnit id="g" accessibilityLabel="듣기" icon={headset} lockedGlyph="icon" />);
+    const unit = screen.getByTestId("ui-lynx-learning-unit-g");
+    expect(unit).toHaveAttribute("accessibility-label", "듣기, locked");
+    expect(unit).toHaveAttribute("accessibility-traits", "disabled");
+    const content =
+      screen.getByTestId("ui-lynx-learning-unit-g-icon").getAttribute("content") ?? "";
+    // 받은 아이콘의 path가 그대로이고(currentColor만 잠김 색으로), 자물쇠 path가 아니다.
+    const painted =
+      screen.getByTestId("ui-lynx-learning-unit-g-icon").getAttribute("current-color") ?? "";
+    expect(content.split(painted).join("currentColor")).toBe(headset);
+    cleanup();
+    render(<LearningUnit id="l" accessibilityLabel="듣기" icon={headset} />);
+    const lockContent =
+      screen.getByTestId("ui-lynx-learning-unit-l-icon").getAttribute("content") ?? "";
+    expect(lockContent).not.toBe(content);
   });
 });
