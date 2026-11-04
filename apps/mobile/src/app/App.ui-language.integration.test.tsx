@@ -496,3 +496,25 @@ test("[IL10] 설정 › 언어에서 스페인어를 고르면 탭이 바로 바
     expect.stringMatching(/^Ajustes/),
   );
 });
+
+// ------------------------------------------------------------ IL11 · 설정에서 일본어(ADR-0098)
+
+test("[IL11] 설정 › 언어에서 일본어를 고르면 탭이 바로 바뀌고 저장되며, 돌아오면 설정이다", async () => {
+  const storage = sessionStorageWith({ [uiLanguageStorageKey]: "en" });
+  await renderSignedInApp(<App progressSeed={legacyPassedSeed} />, {
+    storageModule: storage.module,
+  });
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
+  const languageRow = screen.getByTestId("ui-lynx-settings-group-item-language");
+  fireEvent.tap(within(languageRow).getByTestId("ui-lynx-settings-cell"), {});
+
+  fireEvent.tap(screen.getByTestId("ui-lynx-option-selector-item-ja"), {});
+  expect(storage.store.get(uiLanguageStorageKey)).toBe("ja");
+  tapButtonIn("language-select-screen-next");
+
+  expect(screen.getByTestId("settings-screen-title")).toHaveTextContent("設定");
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).toHaveAttribute(
+    "accessibility-label",
+    expect.stringMatching(/^設定/),
+  );
+});

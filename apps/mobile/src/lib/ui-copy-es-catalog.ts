@@ -35,6 +35,7 @@ export const catalogMapEs: CatalogMapCopy = {
   episodeLabel: (ordinal) => `Episodio ${ordinal}.`,
   coverTitle: "Intro del episodio",
   lessonTitle: (ordinal) => `Lección ${ordinal}`,
+  sheetHeading: (unit, title) => `${unit}: “${title}”`,
   finalTitle: "Prueba final",
   cultureTitle: "Cultura",
   storyTitle: "Historia",

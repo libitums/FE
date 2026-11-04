@@ -3,7 +3,7 @@ import { describe, expect, test } from "vitest";
 import { learningItemGuideKinds } from "./learning-item-guide";
 import type { LearningItemGuideKind } from "./learning-item-guide.contract";
 import { uiCopyEn } from "./ui-copy-en";
-import { uiCopyFor } from "./ui-copy";
+import { uiCopyWithOverrides } from "./ui-copy";
 
 // `unit` 계층: 안내 문구의 값(CP7만 리터럴)과 길이 · 금지 표현 제약.
 
@@ -42,9 +42,9 @@ describe("학습 문항 안내 문구", () => {
     }
   });
 
-  test("CP6: 표가 빈 언어(ja)는 영어 표의 값을 그대로 쓴다(vi · id · es는 완전한 표, ADR-0091 · 0093 · 0097)", () => {
-    for (const language of ["ja"] as const) {
-      expect(uiCopyFor(language).learningItemGuide, language).toEqual(copy);
+  test("CP6: 빈 덮어쓰기는 영어 표의 값을 그대로 쓴다(다섯 언어 모두 완전한 표, ADR-0098 D3)", () => {
+    {
+      expect(uiCopyWithOverrides(uiCopyEn, {}).learningItemGuide).toEqual(copy);
     }
   });
 
