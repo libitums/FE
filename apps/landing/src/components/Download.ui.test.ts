@@ -25,7 +25,13 @@ afterEach(() => {
   vi.resetModules();
 });
 
-const TRIAL_PATH: Record<Language, string> = { en: "/try/", ko: "/ko/try/" };
+const TRIAL_PATH: Record<Language, string> = {
+  en: "/try/",
+  ko: "/ko/try/",
+  vi: "/vi/try/",
+  id: "/id/try/",
+  ms: "/ms/try/",
+};
 
 const none: Links = { ios: "", android: "" };
 const iosOnly: Links = { ios: "https://apps.apple.com/app/id1", android: "" };

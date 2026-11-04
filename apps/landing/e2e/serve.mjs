@@ -15,6 +15,8 @@ const types = {
   ".webp": "image/webp",
   ".png": "image/png",
   ".jpg": "image/jpeg",
+  ".ico": "image/x-icon",
+  ".woff2": "font/woff2",
 };
 
 function serve(root, port) {

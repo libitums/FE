@@ -167,7 +167,7 @@ Firebase 프로젝트에 Android 앱을 등록하고 FCM HTTP v1 API 권한이 �
 ## 웹 체험판 사전 등록 표 (ADR-0083 r2)
 
 `20261022120000_pre_registrations.sql` — 랜딩 체험판(`/try/`) 완료 화면의 이메일 사전 등록이 쌓이는 표 `public.pre_registrations`
-(`email` · `locale` en/ko · `source` web-trial · `created_at`). 함수가 아니라 표 하나와 정책이다.
+(`email` · `locale` en/ko — ⟨2026-11-04⟩ vi/id/ms도, 마이그레이션 `20261104120000_web_trial_locales.sql`(랜딩 ADR-0094) · `source` web-trial · `created_at`). 함수가 아니라 표 하나와 정책이다.
 
 - **랜딩은 공개 키(anon)로 PostgREST `POST /rest/v1/pre_registrations`만 한다**(`Prefer: return=minimal`, `apikey` 머리만). RLS를 켜고
   anon에 insert 정책 하나, 표 권한은 `email` · `locale` · `source` 세 열의 insert뿐이다 — 읽기 · 고치기 · 지우기 · `id` · `created_at` 지정은

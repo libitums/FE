@@ -39,7 +39,13 @@ importers:
       '@astrojs/sitemap':
         specifier: 3.7.4
         version: 3.7.4
+      '@fontsource-variable/inter':
+        specifier: 5.3.0
+        version: 5.3.0
       '@fontsource-variable/jost':
+        specifier: 5.3.0
+        version: 5.3.0
+      '@fontsource-variable/league-spartan':
         specifier: 5.3.0
         version: 5.3.0
       '@libitums/design-tokens':
@@ -197,13 +203,13 @@ importers:
         version: 10.6.2(@types/react@18.3.31)(prettier@3.9.9)(react@19.2.8)
       storybook-lynx-rsbuild:
         specifier: 0.1.0
-        version: 0.1.0(@lynx-js/css-serializer@0.1.6)(@rsbuild/core@2.1.7)(@rspack/core@2.1.10(@swc/helpers@0.5.23))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(storybook@10.6.2(@types/react@18.3.31)(prettier@3.9.9)(react@19.2.8))(typescript@5.9.3)(vite@8.3.3(@types/node@24.19.1)(esbuild@0.28.2)(terser@5.50.0)(yaml@2.9.1))
+        version: 0.1.0(@lynx-js/css-serializer@0.1.6)(@rsbuild/core@2.1.7)(@rspack/core@2.1.10(@swc/helpers@0.5.23))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(storybook@10.6.2(@types/react@18.3.31)(prettier@3.9.9)(react@19.2.8))(typescript@5.9.3)(vite@8.3.3(@types/node@22.20.0)(esbuild@0.28.2)(terser@5.50.0)(yaml@2.9.1))
       typescript:
         specifier: 5.9.3
         version: 5.9.3
       vitest:
         specifier: 4.1.12
-        version: 4.1.12(@types/node@22.20.0)(@vitest/coverage-v8@4.1.12)(jsdom@27.4.0)(vite@8.3.3(@types/node@24.19.1)(esbuild@0.28.2)(terser@5.50.0)(yaml@2.9.1))
+        version: 4.1.12(@types/node@22.20.0)(@vitest/coverage-v8@4.1.12)(jsdom@27.4.0)(vite@8.3.3(@types/node@22.20.0)(esbuild@0.28.2)(terser@5.50.0)(yaml@2.9.1))
 
   apps/supabase-functions:
     devDependencies:
@@ -815,8 +821,14 @@ packages:
       '@noble/hashes':
         optional: true
 
+  '@fontsource-variable/inter@5.3.0':
+    resolution: {integrity: sha512-OupL48va4JNofb97w6NYeF9S7W/kHNKM0Er8Dem5nqi4jeOLrVJDoE8tZEpnMJmtkvNbB1EIPPwHcdkF6b1oUA==}
+
   '@fontsource-variable/jost@5.3.0':
     resolution: {integrity: sha512-9FS8iBMJnfyPqQOi9dfMjSwYBIWd0kBD3/jl8VvtbIMY2pK+CSp3oAaTLS1V60rDoM7AfyPvuT+IUfJfGeCTKg==}
+
+  '@fontsource-variable/league-spartan@5.3.0':
+    resolution: {integrity: sha512-dn7OVujDOZ6//Bs0TEhi7QTZvwOJ8YNdNfviT29AC219TKaimMpWtyMGTCdN7IB3ho6HxQj7VEbolHah2tER3g==}
 
   '@img/colour@1.1.0':
     resolution: {integrity: sha512-Td76q7j57o/tLVdgS746cYARfSyxk8iEfRxewL9h4OMzYhbW4TAcppl0mT4eyqXddh6L/jwoM75mo7ixa/pCeQ==}
@@ -6263,7 +6275,11 @@ snapshots:
 
   '@exodus/bytes@1.15.1': {}
 
+  '@fontsource-variable/inter@5.3.0': {}
+
   '@fontsource-variable/jost@5.3.0': {}
+
+  '@fontsource-variable/league-spartan@5.3.0': {}
 
   '@img/colour@1.1.0': {}
 
@@ -7906,13 +7922,13 @@ snapshots:
       chai: 6.3.0
       tinyrainbow: 3.2.0
 
-  '@vitest/mocker@3.2.4(vite@8.3.3(@types/node@24.19.1)(esbuild@0.28.2)(terser@5.50.0)(yaml@2.9.1))':
+  '@vitest/mocker@3.2.4(vite@8.3.3(@types/node@22.20.0)(esbuild@0.28.2)(terser@5.50.0)(yaml@2.9.1))':
     dependencies:
       '@vitest/spy': 3.2.4
       estree-walker: 3.0.3
       magic-string: 0.30.21
     optionalDependencies:
-      vite: 8.3.3(@types/node@24.19.1)(esbuild@0.28.2)(terser@5.50.0)(yaml@2.9.1)
+      vite: 8.3.3(@types/node@22.20.0)(esbuild@0.28.2)(terser@5.50.0)(yaml@2.9.1)
 
   '@vitest/mocker@4.1.12(vite@8.3.3(@types/node@22.20.0)(esbuild@0.28.2)(terser@5.50.0)(yaml@2.9.1))':
     dependencies:
@@ -7921,14 +7937,6 @@ snapshots:
       magic-string: 0.30.21
     optionalDependencies:
       vite: 8.3.3(@types/node@22.20.0)(esbuild@0.28.2)(terser@5.50.0)(yaml@2.9.1)
-
-  '@vitest/mocker@4.1.12(vite@8.3.3(@types/node@24.19.1)(esbuild@0.28.2)(terser@5.50.0)(yaml@2.9.1))':
-    dependencies:
-      '@vitest/spy': 4.1.12
-      estree-walker: 3.0.3
-      magic-string: 0.30.21
-    optionalDependencies:
-      vite: 8.3.3(@types/node@24.19.1)(esbuild@0.28.2)(terser@5.50.0)(yaml@2.9.1)
 
   '@vitest/pretty-format@3.2.4':
     dependencies:
@@ -10730,11 +10738,11 @@ snapshots:
       es-errors: 1.3.0
       internal-slot: 1.1.0
 
-  storybook-builder-rsbuild@3.3.4(@rsbuild/core@2.1.7)(@rspack/core@2.1.10(@swc/helpers@0.5.23))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(storybook@10.6.2(@types/react@18.3.31)(prettier@3.9.9)(react@19.2.8))(typescript@5.9.3)(vite@8.3.3(@types/node@24.19.1)(esbuild@0.28.2)(terser@5.50.0)(yaml@2.9.1)):
+  storybook-builder-rsbuild@3.3.4(@rsbuild/core@2.1.7)(@rspack/core@2.1.10(@swc/helpers@0.5.23))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(storybook@10.6.2(@types/react@18.3.31)(prettier@3.9.9)(react@19.2.8))(typescript@5.9.3)(vite@8.3.3(@types/node@22.20.0)(esbuild@0.28.2)(terser@5.50.0)(yaml@2.9.1)):
     dependencies:
       '@rsbuild/core': 2.1.7
       '@rsbuild/plugin-type-check': 1.6.0(@rsbuild/core@2.1.7)(@rspack/core@2.1.10(@swc/helpers@0.5.23))(typescript@5.9.3)
-      '@vitest/mocker': 3.2.4(vite@8.3.3(@types/node@24.19.1)(esbuild@0.28.2)(terser@5.50.0)(yaml@2.9.1))
+      '@vitest/mocker': 3.2.4(vite@8.3.3(@types/node@22.20.0)(esbuild@0.28.2)(terser@5.50.0)(yaml@2.9.1))
       browser-assert: 1.2.1
       case-sensitive-paths-webpack-plugin: 2.4.0
       cjs-module-lexer: 2.2.1
@@ -10762,7 +10770,7 @@ snapshots:
       - msw
       - vite
 
-  storybook-lynx-rsbuild@0.1.0(@lynx-js/css-serializer@0.1.6)(@rsbuild/core@2.1.7)(@rspack/core@2.1.10(@swc/helpers@0.5.23))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(storybook@10.6.2(@types/react@18.3.31)(prettier@3.9.9)(react@19.2.8))(typescript@5.9.3)(vite@8.3.3(@types/node@24.19.1)(esbuild@0.28.2)(terser@5.50.0)(yaml@2.9.1)):
+  storybook-lynx-rsbuild@0.1.0(@lynx-js/css-serializer@0.1.6)(@rsbuild/core@2.1.7)(@rspack/core@2.1.10(@swc/helpers@0.5.23))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(storybook@10.6.2(@types/react@18.3.31)(prettier@3.9.9)(react@19.2.8))(typescript@5.9.3)(vite@8.3.3(@types/node@22.20.0)(esbuild@0.28.2)(terser@5.50.0)(yaml@2.9.1)):
     dependencies:
       '@lynx-js/lynx-core': 0.1.4
       '@lynx-js/web-core': 0.22.2(@lynx-js/css-serializer@0.1.6)(@lynx-js/lynx-core@0.1.4)(tslib@2.8.1)
@@ -10770,7 +10778,7 @@ snapshots:
       '@rsbuild/core': 2.1.7
       '@storybook/html': 10.5.3(storybook@10.6.2(@types/react@18.3.31)(prettier@3.9.9)(react@19.2.8))
       storybook: 10.6.2(@types/react@18.3.31)(prettier@3.9.9)(react@19.2.8)
-      storybook-builder-rsbuild: 3.3.4(@rsbuild/core@2.1.7)(@rspack/core@2.1.10(@swc/helpers@0.5.23))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(storybook@10.6.2(@types/react@18.3.31)(prettier@3.9.9)(react@19.2.8))(typescript@5.9.3)(vite@8.3.3(@types/node@24.19.1)(esbuild@0.28.2)(terser@5.50.0)(yaml@2.9.1))
+      storybook-builder-rsbuild: 3.3.4(@rsbuild/core@2.1.7)(@rspack/core@2.1.10(@swc/helpers@0.5.23))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(storybook@10.6.2(@types/react@18.3.31)(prettier@3.9.9)(react@19.2.8))(typescript@5.9.3)(vite@8.3.3(@types/node@22.20.0)(esbuild@0.28.2)(terser@5.50.0)(yaml@2.9.1))
       tslib: 2.8.1
     transitivePeerDependencies:
       - '@lynx-js/css-serializer'
@@ -11178,20 +11186,6 @@ snapshots:
       terser: 5.50.0
       yaml: 2.9.1
 
-  vite@8.3.3(@types/node@24.19.1)(esbuild@0.28.2)(terser@5.50.0)(yaml@2.9.1):
-    dependencies:
-      lightningcss: 1.33.0
-      picomatch: 4.0.7
-      postcss: 8.5.28
-      rolldown: 1.2.12
-      tinyglobby: 0.2.17
-    optionalDependencies:
-      '@types/node': 24.19.1
-      esbuild: 0.28.2
-      fsevents: 2.3.3
-      terser: 5.50.0
-      yaml: 2.9.1
-
   vitefu@1.1.3(vite@8.3.3(@types/node@22.20.0)(esbuild@0.28.2)(terser@5.50.0)(yaml@2.9.1)):
     optionalDependencies:
       vite: 8.3.3(@types/node@22.20.0)(esbuild@0.28.2)(terser@5.50.0)(yaml@2.9.1)
@@ -11217,35 +11211,6 @@ snapshots:
       tinyglobby: 0.2.17
       tinyrainbow: 3.2.0
       vite: 8.3.3(@types/node@22.20.0)(esbuild@0.28.2)(terser@5.50.0)(yaml@2.9.1)
-      why-is-node-running: 2.3.0
-    optionalDependencies:
-      '@types/node': 22.20.0
-      '@vitest/coverage-v8': 4.1.12(vitest@4.1.12)
-      jsdom: 27.4.0
-    transitivePeerDependencies:
-      - msw
-
-  vitest@4.1.12(@types/node@22.20.0)(@vitest/coverage-v8@4.1.12)(jsdom@27.4.0)(vite@8.3.3(@types/node@24.19.1)(esbuild@0.28.2)(terser@5.50.0)(yaml@2.9.1)):
-    dependencies:
-      '@vitest/expect': 4.1.12
-      '@vitest/mocker': 4.1.12(vite@8.3.3(@types/node@24.19.1)(esbuild@0.28.2)(terser@5.50.0)(yaml@2.9.1))
-      '@vitest/pretty-format': 4.1.12
-      '@vitest/runner': 4.1.12
-      '@vitest/snapshot': 4.1.12
-      '@vitest/spy': 4.1.12
-      '@vitest/utils': 4.1.12
-      es-module-lexer: 2.3.2
-      expect-type: 1.4.0
-      magic-string: 0.30.21
-      obug: 2.2.1
-      pathe: 2.0.3
-      picomatch: 4.0.7
-      std-env: 4.3.0
-      tinybench: 2.9.0
-      tinyexec: 1.3.1
-      tinyglobby: 0.2.17
-      tinyrainbow: 3.2.0
-      vite: 8.3.3(@types/node@24.19.1)(esbuild@0.28.2)(terser@5.50.0)(yaml@2.9.1)
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/node': 22.20.0

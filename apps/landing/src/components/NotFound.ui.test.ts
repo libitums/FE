@@ -49,14 +49,21 @@ describe("NotFound", () => {
     const others = languages.filter((code) => code !== defaultLanguage);
     const links = [...document.querySelectorAll('[data-testid="not-found-languages"] a')];
     expect(links).toHaveLength(others.length);
-    expect(others).toEqual(["ko"]);
-    const [link] = links;
-    expect(link?.getAttribute("href")).toBe(pathFor("ko"));
-    expect(link?.getAttribute("href")).toBe("/ko/");
-    expect(link?.getAttribute("lang")).toBe("ko");
-    expect(link?.getAttribute("hreflang")).toBe("ko");
-    expect(link?.textContent).toBe(pages.ko.label);
-    expect(link?.textContent).toBe("한국어");
+    expect(others).toEqual(["ko", "vi", "id", "ms"]);
+    others.forEach((code, index) => {
+      const link = links[index];
+      expect(link?.getAttribute("href")).toBe(pathFor(code));
+      expect(link?.getAttribute("href")).toBe(`/${code}/`);
+      expect(link?.getAttribute("lang")).toBe(code);
+      expect(link?.getAttribute("hreflang")).toBe(code);
+      expect(link?.textContent).toBe(pages[code].label);
+    });
+    expect(links.map((link) => link.textContent)).toEqual([
+      "한국어",
+      "Tiếng Việt",
+      "Bahasa Indonesia",
+      "Bahasa Melayu",
+    ]);
   });
 
   it("UI-NF7 헤더에 언어 메뉴 없음, 본문 언어 링크", () => {

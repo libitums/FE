@@ -4,7 +4,10 @@
 import { beforeAll, describe, expect, it } from "vitest";
 
 import { trialEn } from "../../i18n/trial-copy";
+import { trialId } from "../../i18n/trial-id";
 import { trialKo } from "../../i18n/trial-ko";
+import { trialMs } from "../../i18n/trial-ms";
+import { trialVi } from "../../i18n/trial-vi";
 import type { Language } from "../../site";
 import type { TrialModel } from "../../trial/trial-model.contract";
 import { u00TrialModel } from "../../trial/trial.test-support";
@@ -13,7 +16,13 @@ import type { TrialCopy } from "./trial-components.contract";
 import TrialPage from "./TrialPage.astro";
 import { accessibleNameOf, allByTestId, langOf, oneByTestId, textOf } from "./trial-ui.support";
 
-const copies: Record<Language, TrialCopy> = { en: trialEn, ko: trialKo };
+const copies: Record<Language, TrialCopy> = {
+  en: trialEn,
+  ko: trialKo,
+  vi: trialVi,
+  id: trialId,
+  ms: trialMs,
+};
 const clean = (value: string | null | undefined) => (value ?? "").replace(/\s+/g, " ").trim();
 
 /** 요소 안 글 조각과 그 조각의 가장 가까운 lang. */

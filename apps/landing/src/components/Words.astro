@@ -11,14 +11,14 @@ interface Props {
 const { t } = Astro.props;
 // 92px 정사각형에 들어가는 그림이라 작게 구운 것으로 충분합니다(원본은 세로 9:16, 가운데를 자릅니다).
 const small = async (image: ImageMetadata) => (await getImage({ src: image, width: 184 })).src;
-// 표현 · 로마자 · 뜻풀이는 앱이 학습자에게 보여 주는 그대로입니다.
+// 표현 · 로마자는 앱이 학습자에게 보여 주는 그대로이고, 뜻풀이는 페이지 언어를 따릅니다(`t.word…Gloss`).
 const phrases = [
-  { ko: "안녕하세요", roman: "annyeonghaseyo", gloss: "Hello", image: await small(img.wordHello), alt: t.wordHelloAlt },
-  { ko: "물 주세요", roman: "mul juseyo", gloss: "Water, please", image: await small(img.wordWater), alt: t.wordWaterAlt },
+  { ko: "안녕하세요", roman: "annyeonghaseyo", gloss: t.wordHelloGloss, image: await small(img.wordHello), alt: t.wordHelloAlt },
+  { ko: "물 주세요", roman: "mul juseyo", gloss: t.wordWaterGloss, image: await small(img.wordWater), alt: t.wordWaterAlt },
   {
     ko: "내일 만나요",
     roman: "naeil mannayo",
-    gloss: "See you tomorrow",
+    gloss: t.wordTomorrowGloss,
     image: await small(img.wordTomorrow),
     alt: t.wordTomorrowAlt,
   },

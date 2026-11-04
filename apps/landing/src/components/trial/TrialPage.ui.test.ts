@@ -1,7 +1,10 @@
 import { beforeAll, describe, expect, it } from "vitest";
 
 import { trialEn } from "../../i18n/trial-copy";
+import { trialId } from "../../i18n/trial-id";
 import { trialKo } from "../../i18n/trial-ko";
+import { trialMs } from "../../i18n/trial-ms";
+import { trialVi } from "../../i18n/trial-vi";
 import type { Language } from "../../site";
 import { formatCopy } from "../../trial/trial-copy-format";
 import type { TrialModel } from "../../trial/trial-model.contract";
@@ -22,7 +25,13 @@ import {
   textOf,
 } from "./trial-ui.support";
 
-const copies: Record<Language, TrialCopy> = { en: trialEn, ko: trialKo };
+const copies: Record<Language, TrialCopy> = {
+  en: trialEn,
+  ko: trialKo,
+  vi: trialVi,
+  id: trialId,
+  ms: trialMs,
+};
 const PREREG = {
   endpoint: "https://proj.example.test/rest/v1/pre_registrations",
   apiKey: "sb_publishable_test_key_0000000000",

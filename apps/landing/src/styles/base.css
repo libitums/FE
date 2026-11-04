@@ -28,6 +28,31 @@
   --header-height: 64px;
 }
 
+/* 베트남어 — Jost(강조) · Pretendard(본문)에 베트남어 글자가 없어 글리프마다 대체 서체로 흩어진다.
+   강조는 앱과 같은 League Spartan(ADR-0091 D5), 본문은 Pretendard의 바탕인 Inter로 통째 바꾼다.
+   체험판의 타이포 토큰도 같은 자리에서 다시 정의한다(trial-type.css가 토큰을 읽는다). */
+html[lang="vi"] {
+  --font-default: "Inter Variable", "Inter", var(--libitum-font-family-default);
+  --font-accent: "League Spartan Variable", "League Spartan", var(--libitum-font-family-accent);
+  --libitum-typography-accent-display-font-family: var(--font-accent);
+  --libitum-typography-accent-metric-font-family: var(--font-accent);
+  --libitum-typography-display-font-family: var(--font-default);
+  --libitum-typography-heading-l-font-family: var(--font-default);
+  --libitum-typography-heading-m-font-family: var(--font-default);
+  --libitum-typography-heading-s-font-family: var(--font-default);
+  --libitum-typography-body-l-font-family: var(--font-default);
+  --libitum-typography-body-m-font-family: var(--font-default);
+  --libitum-typography-body-s-font-family: var(--font-default);
+  --libitum-typography-label-xl-font-family: var(--font-default);
+  --libitum-typography-label-l-font-family: var(--font-default);
+  --libitum-typography-label-m-font-family: var(--font-default);
+  --libitum-typography-label-s-font-family: var(--font-default);
+  --libitum-typography-button-xl-font-family: var(--font-default);
+  --libitum-typography-button-m-font-family: var(--font-default);
+  --libitum-typography-dialogue-speaker-font-family: var(--font-default);
+  --libitum-typography-dialogue-body-font-family: var(--font-default);
+}
+
 *,
 *::before,
 *::after {
