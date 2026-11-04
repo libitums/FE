@@ -58,8 +58,8 @@
       "title": "혼자 밥 먹기",
       "schema": "delivery-2",
       "version": "2026-10-30.1",
-      "sha256": "98a1f09ea0e35c7780196c51b92755125deb65fd3c49740adc6be50a965b9c7d",
-      "bytes": 211709,
+      "sha256": "327c66e9e63bfad13aee2255ea727a4f07c20c26f51248ddba783dc1b3c13bec",
+      "bytes": 211711,
       "url": "episodes/u05-baekban.json"
     },
     {
@@ -68,8 +68,8 @@
       "title": "커피 주문",
       "schema": "delivery-2",
       "version": "2026-10-30.1",
-      "sha256": "9df38c45d0cc5001b1668560557b007f38ca38c8d1c6eaa53bd264842695f089",
-      "bytes": 236698,
+      "sha256": "1f07e79d23f295113e26f8792aaa538935d1b84e1f85fa5f900cb3b22c0c4698",
+      "bytes": 236701,
       "url": "episodes/u06-cafe.json"
     },
     {
@@ -98,7 +98,7 @@
       "title": "지하철 타기",
       "schema": "delivery-2",
       "version": "2026-10-30.1",
-      "sha256": "25fcfeba4e4137bf067cde1bdcb59b733e3e57b5e1ba97333051ab17d6f1cd49",
+      "sha256": "28c5e8c5533e2b43f9b7d4feb11fc2cae0a9afa43539cfcca21605816c9cf43c",
       "bytes": 228177,
       "url": "episodes/u09-subway.json"
     },
