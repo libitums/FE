@@ -120,6 +120,15 @@ test("LZ5. 카탈로그: ready 항목만 바꾸고, 같은 (카탈로그, 언어
   expect(localizeCatalog(catalog, "en")).toBe(catalog);
 });
 
+test("LZ8. 일본어는 ja 표를 쓰고, 다른 언어 표만 있으면 같은 객체다(ADR-0098)", () => {
+  const all = episodeOf({ es: { water: "agua" }, ja: { water: "水" } });
+  expect((localizeEpisode(all, "ja") as unknown as Record<string, any>).words[0].glossEn).toBe(
+    "水",
+  );
+  const noJa = episodeOf({ es: { water: "agua" } });
+  expect(localizeEpisode(noJa, "ja")).toBe(noJa);
+});
+
 test("LZ7. 스페인어는 es 표를 쓰고, 다른 언어 표만 있으면 같은 객체다(ADR-0097)", () => {
   const all = episodeOf({ vi: { water: "nước" }, id: { water: "air" }, es: { water: "agua" } });
   expect((localizeEpisode(all, "es") as unknown as Record<string, any>).words[0].glossEn).toBe(

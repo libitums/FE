@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 일본어 기기의 알림 채널 이름 · 설명(ADR-0098). 번역 초안 — 원어민 검수 필요. -->
+<resources>
+  <string name="notification_channel_name">Duruからのお知らせ</string>
+  <string name="notification_channel_description">学習のお知らせと案内</string>
+</resources>

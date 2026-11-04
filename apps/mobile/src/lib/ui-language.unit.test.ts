@@ -96,7 +96,7 @@ test("UL5. uiLanguageFromDeviceTag는 고를 수 있는 영어만 받는다", ()
 });
 
 test("UL5. 목록에만 있는 언어 · 모르는 태그 · 빈 값은 null이다", () => {
-  for (const tag of ["ja-JP", "ko-KR", "zh-Hant-TW", "", " ", null]) {
+  for (const tag of ["ko-KR", "zh-Hant-TW", "fr-FR", "", " ", null]) {
     expect(uiLanguageFromDeviceTag(tag)).toBeNull();
   }
 });
@@ -115,6 +115,13 @@ test("UL5d. 스페인어 기기 태그는 나라 · 지역과 상관없이 es다
   expect(returningUiLanguageFrom(null, "es-CO")).toBe("es");
 });
 
+test("UL5e. 일본어 기기 태그는 ja다(ADR-0098)", () => {
+  for (const tag of ["ja", "ja-JP", "JA_jp"]) {
+    expect(uiLanguageFromDeviceTag(tag)).toBe("ja");
+  }
+  expect(returningUiLanguageFrom(null, "ja-JP")).toBe("ja");
+});
+
 test("UL5b. 베트남어 기기 태그는 vi다(ADR-0091 D4)", () => {
   for (const tag of ["vi", "vi-VN", "VI_vn"]) {
     expect(uiLanguageFromDeviceTag(tag)).toBe("vi");
@@ -125,7 +132,7 @@ test("UL5b. 베트남어 기기 태그는 vi다(ADR-0091 D4)", () => {
 test("UL6. returningUiLanguageFrom은 저장값 → 기기 → 영어 순이다", () => {
   expect(returningUiLanguageFrom("ja", "en-US")).toBe("ja");
   expect(returningUiLanguageFrom(null, "en-US")).toBe("en");
-  expect(returningUiLanguageFrom(null, "ja-JP")).toBe("en");
+  expect(returningUiLanguageFrom(null, "ko-KR")).toBe("en");
   expect(returningUiLanguageFrom("xx", null)).toBe("en");
   expect(returningUiLanguageFrom(" en", null)).toBe("en");
   expect(returningUiLanguageFrom(null, null)).toBe("en");
