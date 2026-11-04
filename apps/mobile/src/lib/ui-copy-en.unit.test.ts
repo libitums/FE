@@ -92,7 +92,7 @@ test("UE5. 부록 B 대표 문구와 문자열이 같다", () => {
 
 test("UC-C1. 카탈로그 맵 · 표지 문구가 문구표 값과 같다", () => {
   expect(c.catalogMap.episodeLabel(4)).toBe("Episode 4.");
-  expect(c.catalogMap.coverTitle).toBe("Episode intro");
+  expect(c.catalogMap.coverTitle).toBe("Intro");
   expect(c.catalogMap.lessonTitle(2)).toBe("Lesson 2");
   expect(c.catalogMap.finalTitle).toBe("Final test");
   expect(c.catalogMap.caption).toEqual({
@@ -216,13 +216,12 @@ test("UC-L. 학습자 프로필 문구 함수가 인자를 문장에 싣는다",
   expect(p.countryMissing).not.toBe(p.nameIssue.empty);
 });
 
-test("JS4. 맵 스페셜 항목 문구는 영어 SPECIAL과 special, 낭독이다", () => {
-  expect(c.specialUnitMap.eyebrow).toBe("SPECIAL");
+test("JS4. 맵 스페셜 항목 문구는 special, 낭독 하나다 — 보이는 SPECIAL 윗줄은 없다", () => {
   expect(c.specialUnitMap.accessibilityLabel("A Call from Minseo")).toBe(
     "special, A Call from Minseo",
   );
-  expect(leavesOf(c.specialUnitMap).length).toBe(2);
-  expect(JSON.stringify(c.specialUnitMap.eyebrow)).not.toMatch(/[\u3131-\uD79D]/);
+  expect(leavesOf(c.specialUnitMap).length).toBe(1);
+  expect("eyebrow" in c.specialUnitMap).toBe(false);
 });
 
 test("CP1. 스플래시 갱신 문구는 영어 Updating episodes와 진행률을 함께 읽는 라벨이다", () => {

@@ -42,6 +42,9 @@ export function JourneyMapCatalogSlot({
         {...(catalog.onTapPending === undefined ? {} : { onTapPending: catalog.onTapPending })}
         {...(catalog.freshness === undefined ? {} : { freshness: catalog.freshness })}
         {...(catalog.onCheckNew === undefined ? {} : { onCheckNew: catalog.onCheckNew })}
+        {...(catalog.coverImageUrlOf === undefined
+          ? {}
+          : { coverImageUrlOf: catalog.coverImageUrlOf })}
       />
     </view>
   );

@@ -199,3 +199,68 @@ describe("encodeManifestText", () => {
     expect(text).toBe(JSON.stringify(parseOrNull(text)));
   });
 });
+
+describe("cover(표지 일러스트 경로)", () => {
+  const withCover = (cover: unknown): Wire =>
+    manifest([entry("u01-a", 1, { cover }), entry("u02-b", 2)]);
+
+  test("EM-C1. cover가 있는 항목은 디코드 뒤 entry.cover로 남고 없는 항목엔 키가 없다", () => {
+    const decoded = passed(decodeManifest(withCover("images/covers/u01-a.webp")));
+    expect(decoded.episodes.map((e) => e.cover)).toEqual(["images/covers/u01-a.webp", undefined]);
+    expect("cover" in (decoded.episodes[1] ?? {})).toBe(false);
+  });
+
+  test("EM-C2. 빈 문자열 · 공백만인 cover는 없음이고, 문자열이 아니면 invalid-shape", () => {
+    for (const blank of ["", "   "]) {
+      const decoded = passed(decodeManifest(withCover(blank)));
+      expect("cover" in (decoded.episodes[0] ?? {})).toBe(false);
+    }
+    expect(failed(decodeManifest(withCover(123)))).toEqual([
+      { code: "invalid-shape", path: "episodes[0].cover" },
+    ]);
+  });
+
+  test("EM-C3. encode는 cover를 url 뒤에 쓰고 없으면 키를 안 쓴다 — 왕복", () => {
+    const withLevel: EpisodeManifest = {
+      generatedAt: "2026-10-12T00:00:00Z",
+      episodes: [
+        {
+          id: "u04-x",
+          order: 4,
+          title: "제목",
+          schema: "delivery-2",
+          version: "2026-10-12.1",
+          sha256: HASH,
+          bytes: 10,
+          url: "episodes/u04-x.json",
+          cover: "images/covers/u04-x.webp",
+        },
+        {
+          id: "u05-y",
+          order: 5,
+          title: "제목",
+          schema: "delivery-2",
+          version: "2026-10-12.1",
+          sha256: HASH,
+          bytes: 10,
+          url: "episodes/u05-y.json",
+        },
+      ],
+    };
+    const text = encodeManifestText(withLevel);
+    const parsed = parseOrNull(text) as { episodes?: Record<string, unknown>[] } | null;
+    expect(Object.keys(parsed?.episodes?.[0] ?? {})).toEqual([
+      "id",
+      "order",
+      "title",
+      "schema",
+      "version",
+      "sha256",
+      "bytes",
+      "url",
+      "cover",
+    ]);
+    expect("cover" in (parsed?.episodes?.[1] ?? {})).toBe(false);
+    expect(decodeManifest(parseOrNull(text))).toEqual({ ok: true, manifest: withLevel });
+  });
+});

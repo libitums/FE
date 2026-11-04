@@ -16,6 +16,8 @@ const manifestEntrySchema = z.object({
   // 무엇이든 받고 디코더가 0 이상 정수만 남깁니다.
   assets_bytes: z.optional(z.unknown()),
   url: z.string(),
+  /** 표지 일러스트의 기준 상대 경로. 선택 — 옛 앱은 모르는 키로 버린다. */
+  cover: z.optional(z.string()),
 });
 
 export const episodeManifestSchema = z.object({

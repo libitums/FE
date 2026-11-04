@@ -147,4 +147,34 @@ describe("JourneyMapScreen 스페셜 유닛", () => {
     expect(catalog.onStartCover).not.toHaveBeenCalled();
     expect(catalog.onStartUnit).not.toHaveBeenCalled();
   });
+
+  test("JMS-C1. cover가 있는 구획의 표지 뒤에만 일러스트가 서고 최종 노드 라벨은 두 줄 그대로다", () => {
+    const withCover: CatalogMapSection = { ...section, cover: "images/covers/u01-water.webp" };
+    const plain: CatalogMapSection = {
+      ...section,
+      episodeId: "u02-checkin",
+      ordinal: 2,
+      title: "Check-in",
+    };
+    const coverImageUrlOf = vi.fn((path: string) => `/static/fixture/${path}`);
+    render(
+      mapScreen({
+        catalog: { ...catalogOf(), sections: [withCover, plain], coverImageUrlOf },
+      }),
+    );
+
+    const image = screen.getByTestId("catalog-cover-illustration-u01-water");
+    expect(image).toHaveAttribute("src", "/static/fixture/images/covers/u01-water.webp");
+    expect(screen.getByTestId("catalog-cover-illustrated-u01-water")).toHaveClass(
+      "catalog-cover-illustrated-right",
+    );
+    expect(screen.queryByTestId("catalog-cover-illustration-u02-checkin")).toBeNull();
+    expect(coverImageUrlOf).toHaveBeenCalledTimes(1);
+    expect(coverImageUrlOf).toHaveBeenCalledWith("images/covers/u01-water.webp");
+    // 표지 · 최종 라벨 모두 한 줄 — SPECIAL 윗줄 없음.
+    expect(screen.queryByTestId("journey-special-unit-eyebrow-catalog-cover-u01-water")).toBeNull();
+    expect(
+      screen.queryByTestId("journey-special-unit-eyebrow-catalog-unit-u01-water-RP"),
+    ).toBeNull();
+  });
 });

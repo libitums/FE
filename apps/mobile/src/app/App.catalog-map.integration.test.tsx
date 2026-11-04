@@ -133,7 +133,8 @@ const placeholderCut = {
 const u04Text = minimalEpisodeText("u04-x", [placeholderCut]);
 
 // 내장 매니페스트 원문에 넷째 항목만 더한 서버 매니페스트입니다(내장 셋은 같은 버전 · 해시라 그대로).
-function remoteManifestText(): string {
+/** 원격 매니페스트 — 고정 내장본 넷 + 원격 전용 u04-x. `u04Extra`는 u04-x 항목에 더할 키(예: `cover`)입니다. */
+function remoteManifestText(u04Extra: Record<string, unknown> = {}): string {
   const bundled = JSON.parse(
     readFileSync(
       resolve(process.cwd(), "content/test-fixtures/bundled-2026-10-23/manifest.json"),
@@ -153,6 +154,7 @@ function remoteManifestText(): string {
         sha256: sha256Hex(utf8Bytes(u04Text)),
         bytes: utf8Bytes(u04Text).length,
         url: "episodes/u04-x.json",
+        ...u04Extra,
       },
     ],
   });
@@ -827,4 +829,52 @@ test("I14b. (AC6) 배너에서 시스템 뒤로는 넘어가기이고 맵 하나
   pressSystemBack("2");
   await settleFake();
   expect(respond).toHaveBeenCalledWith("2", "leave");
+});
+
+// ---------------------------------------------------------------- 표지 일러스트(ADR-0099)
+
+test("IC1. 내장 매니페스트의 cover(고정본 u01)는 번들 주소로 표지 뒤에 서고, cover 없는 u02 · u00은 노드만이다", async () => {
+  await boot();
+
+  const image = screen.getByTestId("catalog-cover-illustration-u01-water");
+  expect(image).toHaveAttribute("src", "/static/fixture/images/covers/u01-water.webp");
+  expect(image).toHaveAttribute("accessibility-element", "false");
+  // Episode 1 — 홀수라 오른쪽. 노드는 그대로 표지 testid로 선다.
+  expect(screen.getByTestId("catalog-cover-illustrated-u01-water")).toHaveClass(
+    "catalog-cover-illustrated-right",
+  );
+  expect(cover("u01-water")).toHaveAttribute("data-status", "default");
+  expect(image).toHaveClass("catalog-cover-illustration-locked");
+  for (const id of ["u00-tutorial", "u02-checkin", "u03-mina"]) {
+    expect(screen.queryByTestId(`catalog-cover-illustration-${id}`)).not.toBeInTheDocument();
+  }
+  // 내장 그림은 받지 않는다 — 버킷 요청에 covers 경로가 없다.
+  expect(screen.queryByTestId("catalog-cover-illustration-u01-water")).toBeInTheDocument();
+});
+
+test("IC2. 원격 매니페스트 항목의 cover는 공개 버킷 주소로 서고, 앞 에피소드를 끝내 열리면 흐림이 걷힌다", async () => {
+  const manifest = remoteManifestText({ cover: "images/covers/u04-x.webp" });
+  const { releaseBodies, urls } = await boot({
+    seed: tutorialDoneSeed,
+    load: { ...tutorialDoneSnapshot, catalogProgress: { "u03-mina": u03CompletedKeys } },
+    preStore: { [CONTENT_MANIFEST_KEY]: manifest },
+    serve: { manifest, episodes: { "u04-x": u04Text } },
+    holdBodies: true,
+  });
+  releaseBodies();
+  await vi.waitFor(() => expect(screen.getByTestId("catalog-section-u04-x")).toBeInTheDocument());
+
+  const image = screen.getByTestId("catalog-cover-illustration-u04-x");
+  expect(image).toHaveAttribute(
+    "src",
+    `${supabaseUrl}/storage/v1/object/public/content/images/covers/u04-x.webp`,
+  );
+  // Episode 4 — 짝수라 왼쪽. u03을 끝냈으니 열림 → 흐림 없음.
+  expect(screen.getByTestId("catalog-cover-illustrated-u04-x")).toHaveClass(
+    "catalog-cover-illustrated-left",
+  );
+  expect(cover("u04-x")).toHaveAttribute("data-status", "available");
+  expect(image).not.toHaveClass("catalog-cover-illustration-locked");
+  // 그림은 <image>가 직접 받는다 — fetch 대역에 covers 요청이 없다.
+  expect(urls.filter((url) => url.includes("images/covers/"))).toEqual([]);
 });

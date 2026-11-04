@@ -33,7 +33,7 @@ export const catalogUpdateNoticeVi: CatalogUpdateNoticeCopy = {
 
 export const catalogMapVi: CatalogMapCopy = {
   episodeLabel: (ordinal) => `Tập ${ordinal}.`,
-  coverTitle: "Giới thiệu tập",
+  coverTitle: "Giới thiệu",
   lessonTitle: (ordinal) => `Bài ${ordinal}`,
   sheetHeading: (unit, title) => `${unit}: “${title}”`,
   finalTitle: "Bài kiểm tra cuối",

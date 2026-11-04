@@ -67,13 +67,7 @@ export function SpecialUnitMapItem({
         data-testid={`journey-special-unit-label-${unitId}`}
         accessibility-element={false}
       >
-        <text
-          className="journey-special-unit-eyebrow"
-          data-testid={`journey-special-unit-eyebrow-${unitId}`}
-          accessibility-element={false}
-        >
-          {copy.specialUnitMap.eyebrow}
-        </text>
+        {/* 라벨은 제목 한 줄입니다 — 「SPECIAL」 윗줄은 표지 · 최종 · 막간 모두 내지 않습니다(사용자 결정 2026-11-04, ADR-0099 D4). */}
         <text
           className="journey-special-unit-title"
           data-testid={`journey-special-unit-title-${unitId}`}

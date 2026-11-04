@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 
 import { describe, expect, test } from "vitest";
 
-// `unit` 계층: 두 줄 라벨의 톤 색 · 타이포 · 안내 겹 규칙이 CSS 텍스트에 있는지만 봅니다
+// `unit` 계층: 한 줄 라벨(제목)의 톤 색 · 타이포 · 안내 겹 규칙이 CSS 텍스트에 있는지만 봅니다
 // (선례: journey-map-row.css.unit.test.ts).
 
 const srcDir = resolve(process.cwd(), "src");
@@ -37,30 +37,26 @@ const colorOf = (body: string): string | undefined => /(?:^|[ ;])color:\s*([^;]+
 const mapCss = readCss("screens/journey-map/journey-special-unit.css");
 const guideCss = readCss("components/first-unit-guide.css");
 
+// 열림 · 끝은 brand.primary, 잠김 · 확인 중은 muted(ADR-0099 D4 — 표지 · 최종 · 막간 모두 한 줄).
 const toneColors = [
-  ["muted", "var(--libitum-color-fg-neutral-muted)", "var(--libitum-color-fg-neutral-muted)"],
-  ["brand", "var(--libitum-color-fg-brand)", "var(--libitum-color-fg-neutral)"],
-  ["correct", "var(--libitum-color-feedback-correct-text)", "var(--libitum-color-fg-neutral)"],
+  ["muted", "var(--libitum-color-fg-neutral-muted)"],
+  ["brand", "var(--libitum-color-brand-primary)"],
+  ["correct", "var(--libitum-color-brand-primary)"],
 ] as const;
 
 describe("journey-special-unit.css", () => {
-  test.each(toneColors)("SC7. %s 톤의 SPECIAL · 제목 색", (tone, eyebrow, title) => {
-    const at = (line: string): string =>
-      bodyOf(mapCss, `.journey-special-unit-label-${tone} .journey-special-unit-${line}`);
-    expect(colorOf(at("eyebrow"))).toBe(eyebrow);
-    expect(colorOf(at("title"))).toBe(title);
+  test.each(toneColors)("SC7. %s 톤의 제목 색", (tone, title) => {
+    expect(
+      colorOf(bodyOf(mapCss, `.journey-special-unit-label-${tone} .journey-special-unit-title`)),
+    ).toBe(title);
   });
 
-  test("SC7. SPECIAL은 label-s, 제목은 label-m 타이포 토큰 다섯을 쓴다", () => {
+  test("SC7. SPECIAL 윗줄 규칙이 없고 제목은 label-m 타이포 토큰 다섯을 쓴다", () => {
+    expect(mapCss).not.toContain("journey-special-unit-eyebrow");
     const properties = ["font-family", "font-weight", "font-size", "line-height", "letter-spacing"];
-    for (const [line, size] of [
-      ["eyebrow", "label-s"],
-      ["title", "label-m"],
-    ] as const) {
-      const body = bodyOf(mapCss, `.journey-special-unit-${line}`);
-      for (const property of properties) {
-        expect(body).toContain(`${property}: var(--libitum-typography-${size}-${property})`);
-      }
+    const body = bodyOf(mapCss, ".journey-special-unit-title");
+    for (const property of properties) {
+      expect(body).toContain(`${property}: var(--libitum-typography-label-m-${property})`);
     }
   });
 
@@ -71,12 +67,12 @@ describe("journey-special-unit.css", () => {
 });
 
 describe("first-unit-guide.css", () => {
-  test("SC7. 안내 겹은 SPECIAL과 제목 두 줄 모두 흰색이고 선택자 클래스가 셋이다", () => {
-    for (const line of ["eyebrow", "title"]) {
-      const selector = `.journey-special-unit-guided .journey-special-unit-label .journey-special-unit-${line}`;
-      expect(colorOf(bodyOf(guideCss, selector))).toBe("var(--libitum-color-white)");
-      expect(selector.match(/\./g)).toHaveLength(3);
-    }
+  test("SC7. 안내 겹은 제목이 흰색이고 선택자 클래스가 셋이다", () => {
+    const selector =
+      ".journey-special-unit-guided .journey-special-unit-label .journey-special-unit-title";
+    expect(colorOf(bodyOf(guideCss, selector))).toBe("var(--libitum-color-white)");
+    expect(selector.match(/\./g)).toHaveLength(3);
+    expect(guideCss).not.toContain("journey-special-unit-eyebrow");
   });
 
   test("SC7. 속성 선택자를 쓰지 않는다", () => {

@@ -129,7 +129,6 @@ export const learningShellJa: LearningShellCopy = {
 };
 
 export const specialUnitMapJa: SpecialUnitMapCopy = {
-  eyebrow: "スペシャル",
   accessibilityLabel: (name) => `スペシャル、${name}`,
 };
 

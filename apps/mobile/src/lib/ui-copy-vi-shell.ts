@@ -127,7 +127,6 @@ export const learningShellVi: LearningShellCopy = {
 };
 
 export const specialUnitMapVi: SpecialUnitMapCopy = {
-  eyebrow: "ĐẶC BIỆT",
   accessibilityLabel: (name) => `đặc biệt, ${name}`,
 };
 

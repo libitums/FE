@@ -130,7 +130,6 @@ export const learningShellEn: LearningShellCopy = {
 };
 
 export const specialUnitMapEn: SpecialUnitMapCopy = {
-  eyebrow: "SPECIAL",
   accessibilityLabel: (name) => `special, ${name}`,
 };
 

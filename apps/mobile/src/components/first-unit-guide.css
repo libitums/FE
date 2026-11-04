@@ -80,8 +80,7 @@
   z-index: var(--libitum-elevation-z-dialog);
 }
 
-/* 톤 규칙(클래스 둘)보다 구체도가 높아야 스크림 위에서 두 줄 모두 흰색입니다. */
-.journey-special-unit-guided .journey-special-unit-label .journey-special-unit-eyebrow,
+/* 톤 규칙(클래스 둘)보다 구체도가 높아야 스크림 위에서 제목이 흰색입니다. */
 .journey-special-unit-guided .journey-special-unit-label .journey-special-unit-title {
   color: var(--libitum-color-white);
 }

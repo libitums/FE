@@ -138,7 +138,6 @@ test("UC4. uiCopyCatalog의 키 집합이 정확히 en · es · id · ja · vi�
 test("JS4. specialUnitMap은 빈 덮어쓰기에서 영어로 채워진다", () => {
   {
     const table = uiCopyWithOverrides(uiCopyEn, {});
-    expect(table.specialUnitMap.eyebrow).toBe("SPECIAL");
     expect(table.specialUnitMap.accessibilityLabel("x")).toBe("special, x");
   }
 });

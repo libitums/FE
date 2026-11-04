@@ -104,9 +104,7 @@ describe("CatalogMapSections", () => {
 
     const cover = within(section).getByTestId(coverId("u01-water"));
     expect(
-      (cover.getAttribute("accessibility-label") ?? "").startsWith(
-        "special, Episode 1. Episode intro",
-      ),
+      (cover.getAttribute("accessibility-label") ?? "").startsWith("special, Episode 1. Intro"),
     ).toBe(true);
     expect(section.textContent ?? "").not.toContain("COMING SOON");
 
@@ -114,7 +112,7 @@ describe("CatalogMapSections", () => {
       expect(within(section).getByText(`Lesson ${n}`)).toBeInTheDocument();
     }
     expect(within(section).getByText("Final test")).toBeInTheDocument();
-    expect(within(section).getByText("Episode intro")).toBeInTheDocument();
+    expect(within(section).getByText("Intro")).toBeInTheDocument();
   });
 
   test("UM2′. 진행 없이는 레슨 · 최종 노드를 탭해도 시작을 올리지 않는다", () => {

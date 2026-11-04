@@ -32,6 +32,8 @@ export type CatalogEntry =
       source: EpisodeSourceKind;
       episode: Episode;
       warnings: DecodeIssue[];
+      /** 표지 일러스트 경로 — 이긴 항목의 `cover`, 없으면 같은 id 내장 항목의 값. */
+      cover?: string;
     }
   | { status: "pending"; id: string; order: number; title: string; version: string }
   | {
@@ -148,6 +150,7 @@ function readyEntry(
   source: EpisodeSourceKind,
   episode: Episode,
   warnings: DecodeIssue[],
+  cover?: string,
 ): CatalogEntry {
   return {
     status: "ready",
@@ -158,6 +161,7 @@ function readyEntry(
     source,
     episode,
     warnings,
+    ...(cover === undefined ? {} : { cover }),
   };
 }
 
@@ -180,7 +184,9 @@ function bundledFallback(
     return null;
   }
   const decoded = decodeEpisode(input.bundled.episodes[bundled.id]);
-  return decoded.ok ? readyEntry(bundled, "bundled", decoded.episode, decoded.warnings) : null;
+  return decoded.ok
+    ? readyEntry(bundled, "bundled", decoded.episode, decoded.warnings, bundled.cover)
+    : null;
 }
 
 export function buildEpisodeCatalog(input: CatalogInput): CatalogEntry[] {
@@ -190,7 +196,14 @@ export function buildEpisodeCatalog(input: CatalogInput): CatalogEntry[] {
 
   const entries = pickWinners(input.bundled.manifest, remote).map(
     ({ entry, fromRemote }): CatalogEntry => {
-      const resolved = resolveEntry(input, entry, fromRemote, clientTooOld);
+      const bundledEntry = bundledById.get(entry.id);
+      const resolved = resolveEntry(
+        input,
+        entry,
+        fromRemote,
+        clientTooOld,
+        coverOf(entry, bundledEntry),
+      );
       if (fromRemote && resolved.status !== "ready") {
         return bundledFallback(input, bundledById.get(entry.id)) ?? resolved;
       }
@@ -201,11 +214,17 @@ export function buildEpisodeCatalog(input: CatalogInput): CatalogEntry[] {
   return entries.sort((a, b) => a.order - b.order || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
 }
 
+/** 이긴 항목의 `cover`, 없으면 같은 id 내장 항목의 값 — 원격 매니페스트가 키를 안 적어도 내장 일러스트가 남습니다. */
+function coverOf(entry: ManifestEntry, bundled: ManifestEntry | undefined): string | undefined {
+  return entry.cover ?? bundled?.cover;
+}
+
 function resolveEntry(
   input: CatalogInput,
   entry: ManifestEntry,
   fromRemote: boolean,
   clientTooOld: boolean,
+  cover: string | undefined,
 ): CatalogEntry {
   if (fromRemote && clientTooOld) {
     return lockedEntry(entry, "client-too-old");
@@ -216,7 +235,7 @@ function resolveEntry(
   if (!fromRemote) {
     const decoded = decodeEpisode(input.bundled.episodes[entry.id]);
     return decoded.ok
-      ? readyEntry(entry, "bundled", decoded.episode, decoded.warnings)
+      ? readyEntry(entry, "bundled", decoded.episode, decoded.warnings, cover)
       : lockedEntry(entry, "decode-failed");
   }
   const text = input.cache.episodes[entry.id];
@@ -225,6 +244,6 @@ function resolveEntry(
   }
   const checked = checkEpisodeText(entry, text);
   return checked.ok
-    ? readyEntry(entry, "cache", checked.episode, checked.warnings)
+    ? readyEntry(entry, "cache", checked.episode, checked.warnings, cover)
     : lockedEntry(entry, checked.reason);
 }

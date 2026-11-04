@@ -7,8 +7,6 @@ import type { JourneyMapNodeStatus } from "./journey-map-types";
 
 /** `UiCopy.specialUnitMap` — 맵이 스페셜 항목에 붙이는 보조 라벨과 낭독 이름. */
 export type SpecialUnitMapCopy = {
-  /** 보이는 보조 라벨 — 대문자 문자열 그대로(`SPECIAL`). */
-  readonly eyebrow: string;
   /** 낭독 이름 — `special, <이름>`. 상태 접미사는 붙이지 않는다(컴포넌트 몫). */
   readonly accessibilityLabel: (name: string) => string;
 };
@@ -21,7 +19,7 @@ export type SpecialUnitMapLayer = "map" | "guide";
 export type SpecialUnitMapItemProps = {
   /** `SpecialUnit`의 `id` — testid `ui-lynx-special-unit-<unitId>` · 라벨 testid의 꼬리. */
   readonly unitId: string;
-  /** 보이는 제목(둘째 줄). */
+  /** 보이는 제목(라벨 한 줄). */
   readonly title: string;
   /** 낭독 이름의 `<이름>` 자리 — 튜토리얼은 제목, 카탈로그는 `Episode n. <제목>`. */
   readonly accessibilityName: string;
@@ -39,5 +37,4 @@ export type SpecialUnitMapItemProps = {
 
 export type SpecialUnitMapTestId =
   | `journey-special-unit-label-${string}`
-  | `journey-special-unit-eyebrow-${string}`
   | `journey-special-unit-title-${string}`;

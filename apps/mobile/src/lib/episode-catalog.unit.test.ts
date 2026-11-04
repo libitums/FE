@@ -349,3 +349,54 @@ describe("compareVersions", () => {
     expect(offenders).toEqual([]);
   });
 });
+
+describe("cover(표지 일러스트 경로)", () => {
+  const bundledWithCover = (cover: string): CatalogInput["bundled"] => ({
+    ...bundledCatalogInput,
+    manifest: {
+      ...bundledCatalogInput.manifest,
+      episodes: bundledCatalogInput.manifest.episodes.map((e) =>
+        e.id === "u01-water" ? { ...e, cover } : e,
+      ),
+    },
+  });
+  const coverOf = (entry: CatalogEntry): string | undefined =>
+    entry.status === "ready" ? entry.cover : undefined;
+
+  test("EC-C1. 내장 항목의 cover가 ready 항목에 실리고 없는 항목엔 키가 없다", () => {
+    const catalog = buildEpisodeCatalog({
+      bundled: bundledWithCover("images/covers/u01-water.webp"),
+      cache: EMPTY_CACHE,
+    });
+    expect(coverOf(find(catalog, "u01-water"))).toBe("images/covers/u01-water.webp");
+    expect("cover" in find(catalog, "u02-checkin")).toBe(false);
+  });
+
+  test("EC-C2. 원격이 이긴 항목은 원격 cover, 원격에 없으면 같은 id 내장 항목의 cover", () => {
+    const newer = { version: "2026-12-01.1" };
+    const withRemoteCover = buildEpisodeCatalog({
+      bundled: bundledWithCover("images/covers/u01-water.webp"),
+      cache: cacheOf([
+        remote("u01-water", 1, { ...newer, cover: "images/covers/u01-remote.webp" }),
+      ]),
+    });
+    expect(find(withRemoteCover, "u01-water").status).toBe("ready");
+    expect(coverOf(find(withRemoteCover, "u01-water"))).toBe("images/covers/u01-remote.webp");
+
+    const withoutRemoteCover = buildEpisodeCatalog({
+      bundled: bundledWithCover("images/covers/u01-water.webp"),
+      cache: cacheOf([remote("u01-water", 1, newer)]),
+    });
+    expect(find(withoutRemoteCover, "u01-water").status).toBe("ready");
+    expect(coverOf(find(withoutRemoteCover, "u01-water"))).toBe("images/covers/u01-water.webp");
+
+    // 원격이 이겼지만 본문이 못 쓰여 내장본으로 연 경우도 내장 항목의 값이다.
+    const broken = remote("u01-water", 1, newer, "{not json");
+    const fallback = buildEpisodeCatalog({
+      bundled: bundledWithCover("images/covers/u01-water.webp"),
+      cache: cacheOf([broken]),
+    });
+    expect(find(fallback, "u01-water").status).toBe("ready");
+    expect(coverOf(find(fallback, "u01-water"))).toBe("images/covers/u01-water.webp");
+  });
+});

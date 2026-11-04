@@ -46,8 +46,11 @@ const realCatalog = buildEpisodeCatalog({
 });
 const baseReady = realCatalog.find((entry) => entry.id === "u01-water") as ReadyEntry;
 
+// 고정본 u01에는 표지 일러스트(`cover`)가 있습니다 — 일반 구획 검사에서는 떼고, CM-C1이 따로 봅니다.
+const { cover: _baseCover, ...baseReadyWithoutCover } = baseReady;
+
 function ready(id: string, order: number, title = `제목 ${id}`): ReadyEntry {
-  return { ...baseReady, id, order, title };
+  return { ...baseReadyWithoutCover, id, order, title };
 }
 
 // 완료 조건이 없는 옛 형식 에피소드 — 기본 완료 키(RP)로 판정되는 구획을 만듭니다.
@@ -510,7 +513,7 @@ describe("캡션과 라벨", () => {
     expect(catalogUnitNodeTitle(final, uiCopyEn)).toBe("Final test");
     expect(catalogUnitNodeAccessibilityLabel(1, lesson, uiCopyEn)).toBe("Episode 1. Lesson 1");
     expect(catalogUnitNodeAccessibilityLabel(1, final, uiCopyEn)).toBe("Episode 1. Final test");
-    expect(catalogCoverAccessibilityLabel(1, uiCopyEn)).toBe("Episode 1. Episode intro");
+    expect(catalogCoverAccessibilityLabel(1, uiCopyEn)).toBe("Episode 1. Intro");
   });
 
   test("CM11. 준비 안 된 구획의 낭독은 사유 종류별 꼬리를 문다", () => {
@@ -587,5 +590,16 @@ describe("catalogUnitDomId", () => {
       }
     }
     expect(catalogUnitDomId("u01-water", "intro")).not.toBe(catalogUnitDomId("u01-water", "S1"));
+  });
+});
+
+describe("cover(표지 일러스트 경로)", () => {
+  test("CM-C1. ready 항목의 cover가 구획에 실리고 없으면 키가 없다", () => {
+    const sections = catalogMapSectionsOf([
+      { ...ready("a", 1), cover: "images/covers/a.webp" },
+      ready("b", 2),
+    ]);
+    expect(readySection(sections, 0).cover).toBe("images/covers/a.webp");
+    expect("cover" in readySection(sections, 1)).toBe(false);
   });
 });

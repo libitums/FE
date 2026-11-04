@@ -6,7 +6,7 @@
 | 이미 지는 층 | 무엇을 |
 | --- | --- |
 | unit | 막간 해석(IL1 ~ IL8) · 이야기 키 · 레슨 번호 · 사슬 · 완료 · 티켓 · 컷 모델(ST1 ~ ST7) |
-| ui | 맵의 Story 노드가 `SpecialUnit` · 라벨 `SPECIAL`/`Story` · S5 = Lesson 5(SU1 ~ SU3) |
+| ui | 맵의 Story 노드가 `SpecialUnit` · 라벨 `Story` 한 줄(`SPECIAL` 윗줄 없음 — 2026-11-04) · S5 = Lesson 5(SU1 ~ SU3) |
 | integration | Story 시작 → 컷 → 끝 → 진행에 INT · 티켓 기록 없음 · S5 열림(SI1) |
 
 ## 전제
@@ -18,7 +18,7 @@
 
 | id | 조작 | 기대 |
 | --- | --- | --- |
-| IE1 | 맵에서 u01 구획을 본다 | Lesson 4와 Lesson 5 사이에 스페셜 노드(둥근 사각 · 별) · 라벨 `SPECIAL` / `Story`, 아래 레슨이 Lesson 5부터 이어진다 |
+| IE1 | 맵에서 u01 구획을 본다 | Lesson 4와 Lesson 5 사이에 스페셜 노드(둥근 사각 · 별) · 라벨 `Story` 한 줄, 아래 레슨이 Lesson 5부터 이어진다 |
 | IE2 | Story 노드를 누른다 | 말풍선 제목 `Story: “<에피소드 제목>”`, 티켓 표시 없음, `Start` |
 | IE3 | `Start` | 컷 화면, 머리 `Episode n.` · `Scene 1 / N`, 첫 컷이 자막(「그 시각, …」)과 영어 줄, 그림은 막간 첫 컷 |
 | IE4 | 끝까지 넘긴다 | 마지막 버튼 뒤 「To be continued…」 배너, 그 뒤 맵으로 돌아오고 Story가 끝남, 티켓 수 그대로 |

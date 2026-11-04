@@ -61,6 +61,7 @@ export function catalogMapSectionsOf(
         cultureKeys: catalogCultureKeysOf(entry.episode.units),
         ...catalogStoryFieldsOf(entry.episode.units),
         ...(entry.episode.titleEn === undefined ? {} : { titleEn: entry.episode.titleEn }),
+        ...(entry.cover === undefined ? {} : { cover: entry.cover }),
       };
     }
     return {

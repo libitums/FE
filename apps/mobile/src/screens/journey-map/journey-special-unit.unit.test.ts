@@ -57,7 +57,7 @@ describe("맵 낭독 이름", () => {
   });
 
   test("JS3. 상태 접미사를 붙이지 않는다", () => {
-    const label = specialUnitMapAccessibilityLabel("Episode intro", specialUnitMapEn);
+    const label = specialUnitMapAccessibilityLabel("Intro", specialUnitMapEn);
     for (const suffix of ["locked", "loading", "current", "completed", "story"]) {
       expect(label).not.toContain(suffix);
     }

@@ -454,11 +454,11 @@ test("L1b. (낭독) 표지 · 레슨 · 최종 노드의 이름은 Episode n.으
   );
   expect(cover(u01)).toHaveAttribute(
     "accessibility-label",
-    expect.stringMatching(/^special, Episode 1\. Episode intro, completed/),
+    expect.stringMatching(/^special, Episode 1\. Intro, completed/),
   );
   expect(cover(u02)).toHaveAttribute(
     "accessibility-label",
-    expect.stringMatching(/^special, Episode 2\. Episode intro, locked/),
+    expect.stringMatching(/^special, Episode 2\. Intro, locked/),
   );
   expect(document.querySelectorAll('[data-testid^="catalog-section-caption"]')).toHaveLength(0);
 });
