@@ -30,12 +30,13 @@
 
 ### D4. 라벨 — 제목 한 줄 · `brand.primary`
 
-- `SpecialUnitMapItem`에 `label?: "two-line" | "title-only"`(기본 두 줄). 카탈로그 표지만 `title-only` — 「SPECIAL」 윗줄 없이 제목만. 열림 · 끝 상태의 제목 색은 `brand.primary`(#F46B18), 잠김 · 확인 중은 muted 그대로. 최종 · 막간 노드는 두 줄 그대로.
+- `SpecialUnitMapItem`의 라벨은 제목 한 줄 — 「SPECIAL」 윗줄을 없앤다. 열림 · 끝 상태의 제목 색은 `brand.primary`(#F46B18), 잠김 · 확인 중은 muted 그대로.
+  - 처음엔 표지만 한 줄(`label?: "two-line" | "title-only"`)이었으나 2026-11-04 기기 확인 뒤 사용자 결정으로 **최종 · 막간도 한 줄**로 넓혔다 — prop과 `eyebrow` 문구(5개 언어)를 지웠다. 낭독 이름의 `special, <이름>` 접두는 그대로다(시각 윗줄과 별개).
 - 문구 `catalogMap.coverTitle`: `Episode intro` → `Intro`(vi `Giới thiệu` · id `Pengantar`) — 시안의 라벨. [추론 — 사용자 미확인].
 
 ### D5. 자산 — u10까지 내장, 780px webp
 
-- 원본(1452 × 1083 PNG, 흰 배경)을 `devtools/content/cover-webp.mjs`로 폭 780 · q80 webp(표시 폭 260 × 3배)로 바꿔 `apps/mobile/src/assets/content/covers/<id>.webp`에 싣고, `bundled-content-images.ts` 표와 내장 매니페스트 항목의 `cover`를 더한다. u01 ~ u10 열 장 전부 내장(19 · 25 · 11 · 13 · 8 · 12 · 11 · 8 · 13 · 12 kB, 합 133 kB — 2026-11-04 같은 날 세 번에 나눠 추가).
+- 원본(1452 × 1083 PNG, 흰 배경)을 `devtools/content/cover-webp.mjs`로 폭 780 · q80 webp(표시 폭 260 × 3배)로 바꿔 `apps/mobile/src/assets/content/covers/<id>.webp`에 싣고, `bundled-content-images.ts` 표와 내장 매니페스트 항목의 `cover`를 더한다. u00 ~ u10 열한 장 전부 내장(u00 비행기 11 · u01 19 · u02 25 · u03 캐리어 10 · u04 13 · u05 8 · u06 12 · u07 11 · u08 8 · u09 13 · u10 12 kB, 합 143 kB — 2026-11-04 같은 날 나눠 추가. 처음에 u03에 u00 파일을 잘못 썼다가 기기 확인에서 바로잡음).
 - u11부터는 버킷 `images/covers/<id>.webp` + 버킷 매니페스트 항목 `cover`(앱 변경 없음). 흰 배경은 맵 배경(#FFFDFC)과 거의 같아 그대로 둔다 — 투명판이 오면 교체.
 
 ## 대가

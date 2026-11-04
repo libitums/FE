@@ -17,7 +17,6 @@ function mount(
     readonly accessibilityName?: string;
     readonly title?: string;
     readonly withChild?: boolean;
-    readonly label?: "two-line" | "title-only";
   } = {},
 ) {
   const onSelect = vi.fn<(tapY: number) => void>();
@@ -29,7 +28,6 @@ function mount(
       status={status}
       onSelect={onSelect}
       {...(overrides.layer === undefined ? {} : { layer: overrides.layer })}
-      {...(overrides.label === undefined ? {} : { label: overrides.label })}
     >
       {overrides.withChild === true ? <view data-testid="extra-layer" /> : null}
     </SpecialUnitMapItem>,
@@ -38,18 +36,16 @@ function mount(
 }
 
 describe("SpecialUnitMapItem", () => {
-  test("SMI1. 두 줄 라벨(SPECIAL + 제목)이 유닛 뒤에 서고 셋 다 낭독 요소가 아니다", () => {
+  test("SMI1. 제목 한 줄 라벨(SPECIAL 윗줄 없음)이 유닛 뒤에 서고 둘 다 낭독 요소가 아니다", () => {
     mount("available", { title: "Our Imagined Café" });
 
-    const eyebrow = screen.getByTestId("journey-special-unit-eyebrow-x");
     const title = screen.getByTestId("journey-special-unit-title-x");
     const label = screen.getByTestId(labelTestId);
-    expect(eyebrow).toHaveTextContent("SPECIAL");
+    expect(screen.queryByTestId("journey-special-unit-eyebrow-x")).toBeNull();
+    expect(label.querySelectorAll("text")).toHaveLength(1);
     expect(title).toHaveTextContent("Our Imagined Café");
-    expect(eyebrow).toHaveAttribute("accessibility-element", "false");
     expect(title).toHaveAttribute("accessibility-element", "false");
     expect(label).toHaveAttribute("accessibility-element", "false");
-    expect(label.contains(eyebrow)).toBe(true);
     expect(label.contains(title)).toBe(true);
     const unit = screen.getByTestId(unitTestId);
     expect(unit.compareDocumentPosition(label) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
@@ -141,19 +137,18 @@ describe("SpecialUnitMapItem", () => {
     expect(view.container.querySelectorAll(".ui-lynx-learning-unit")).toHaveLength(0);
   });
 
-  test("SMI7. label=title-only는 SPECIAL 윗줄 없이 제목만 세우고 라벨에 title-only 클래스가 붙는다", () => {
-    mount("available", { title: "Intro", label: "title-only" });
+  test("SMI7. 표지 제목 「Intro」도 한 줄이고 열림은 brand · 잠김은 muted 톤이다", () => {
+    mount("available", { title: "Intro" });
 
     expect(screen.queryByTestId("journey-special-unit-eyebrow-x")).toBeNull();
     expect(screen.getByTestId("journey-special-unit-title-x")).toHaveTextContent("Intro");
     const label = screen.getByTestId(labelTestId);
-    expect(label).toHaveClass("journey-special-unit-label-title-only");
     expect(label).toHaveClass("journey-special-unit-label-brand");
     const unit = screen.getByTestId(unitTestId);
     expect(unit.compareDocumentPosition(label) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 
     cleanup();
-    mount("locked", { title: "Intro", label: "title-only" });
+    mount("locked", { title: "Intro" });
     expect(screen.getByTestId(labelTestId)).toHaveClass("journey-special-unit-label-muted");
     expect(screen.queryByTestId("journey-special-unit-eyebrow-x")).toBeNull();
   });

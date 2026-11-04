@@ -86,7 +86,7 @@ describe("CatalogCoverMapItem 일러스트", () => {
     const title = screen.getByTestId(`journey-special-unit-title-catalog-cover-${episodeId}`);
     expect(title).toHaveTextContent("Intro");
     expect(screen.getByTestId(`journey-special-unit-label-catalog-cover-${episodeId}`)).toHaveClass(
-      "journey-special-unit-label-title-only",
+      "journey-special-unit-label-brand",
     );
   });
 

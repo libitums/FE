@@ -171,10 +171,10 @@ describe("JourneyMapScreen 스페셜 유닛", () => {
     expect(screen.queryByTestId("catalog-cover-illustration-u02-checkin")).toBeNull();
     expect(coverImageUrlOf).toHaveBeenCalledTimes(1);
     expect(coverImageUrlOf).toHaveBeenCalledWith("images/covers/u01-water.webp");
-    // 표지 라벨은 한 줄, 최종은 두 줄.
+    // 표지 · 최종 라벨 모두 한 줄 — SPECIAL 윗줄 없음.
     expect(screen.queryByTestId("journey-special-unit-eyebrow-catalog-cover-u01-water")).toBeNull();
     expect(
-      screen.getByTestId("journey-special-unit-eyebrow-catalog-unit-u01-water-RP"),
-    ).toHaveTextContent("SPECIAL");
+      screen.queryByTestId("journey-special-unit-eyebrow-catalog-unit-u01-water-RP"),
+    ).toBeNull();
   });
 });

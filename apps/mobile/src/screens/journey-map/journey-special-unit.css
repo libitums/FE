@@ -1,8 +1,8 @@
 /* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1).
 
    표식(Halo · 면 · 그림자 · 아이콘)은 ui-lynx `SpecialUnit`이 그립니다 — 크기도 컴포넌트가
-   집습니다. 여기 남는 것은 표식과 두 줄 라벨을 세로로 묶는 상자와 라벨 글자뿐입니다.
-   줄은 「SPECIAL」(label-s)과 제목(label-m)이고, 색은 상태 톤 수식자가 정합니다. */
+   집습니다. 여기 남는 것은 표식과 한 줄 라벨(제목, label-m)을 세로로 묶는 상자와 라벨 글자뿐입니다.
+   「SPECIAL」 윗줄은 없습니다(사용자 결정 2026-11-04 — 표지 · 최종 · 막간 모두). 색은 상태 톤 수식자가 정합니다. */
 .journey-special-unit {
   overflow: visible;
   display: flex;
@@ -22,14 +22,6 @@
   text-align: center;
 }
 
-.journey-special-unit-eyebrow {
-  font-family: var(--libitum-typography-label-s-font-family);
-  font-weight: var(--libitum-typography-label-s-font-weight);
-  font-size: var(--libitum-typography-label-s-font-size);
-  line-height: var(--libitum-typography-label-s-line-height);
-  letter-spacing: var(--libitum-typography-label-s-letter-spacing);
-}
-
 .journey-special-unit-title {
   font-family: var(--libitum-typography-label-m-font-family);
   font-weight: var(--libitum-typography-label-m-font-weight);
@@ -38,30 +30,12 @@
   letter-spacing: var(--libitum-typography-label-m-letter-spacing);
 }
 
-.journey-special-unit-label-muted .journey-special-unit-eyebrow,
+/* 제목 색 — 열림 · 끝은 brand.primary, 잠김 · 확인 중은 muted(사용자 결정, ADR-0099 D4). */
 .journey-special-unit-label-muted .journey-special-unit-title {
   color: var(--libitum-color-fg-neutral-muted);
 }
 
-.journey-special-unit-label-brand .journey-special-unit-eyebrow {
-  color: var(--libitum-color-fg-brand);
-}
-
-.journey-special-unit-label-brand .journey-special-unit-title {
-  color: var(--libitum-color-fg-neutral);
-}
-
-.journey-special-unit-label-correct .journey-special-unit-eyebrow {
-  color: var(--libitum-color-feedback-correct-text);
-}
-
+.journey-special-unit-label-brand .journey-special-unit-title,
 .journey-special-unit-label-correct .journey-special-unit-title {
-  color: var(--libitum-color-fg-neutral);
-}
-
-/* 제목 한 줄 라벨(카탈로그 표지 「Intro」) — 열림 · 끝은 brand.primary, 잠김은 위 muted 그대로(사용자 결정, ADR-0099). */
-.journey-special-unit-label-title-only.journey-special-unit-label-brand .journey-special-unit-title,
-.journey-special-unit-label-title-only.journey-special-unit-label-correct
-  .journey-special-unit-title {
   color: var(--libitum-color-brand-primary);
 }

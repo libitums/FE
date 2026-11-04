@@ -17,16 +17,16 @@
 
 ## 이 변경이 무엇을 건드렸나
 
-- JS: 매니페스트 디코더 · 카탈로그에 `cover` 한 줄씩, 순수 모듈 `catalog-cover-illustration.ts`(함수 둘), 표지 노드의 래퍼 + `<image>`, `SpecialUnitMapItem`의 라벨 분기, CSS 규칙 7개.
-- 정적 그림: 내장 webp 10장(`static/image/u01-water.*.webp` 19,096 · `u02-checkin` 25,228 · `u03-mina` 11,268 · `u04-directions` 12,874 · `u05-baekban` 8,416 · `u06-cafe` 12,086 · `u07-jaemin` 11,398 · `u08-umbrella` 8,040 · `u09-subway` 12,594 · `u10-laundry` 12,170 bytes, 합 133,170). `static/image` 예산 안.
+- JS: 매니페스트 디코더 · 카탈로그에 `cover` 한 줄씩, 순수 모듈 `catalog-cover-illustration.ts`(함수 둘), 표지 노드의 래퍼 + `<image>`, `SpecialUnitMapItem`의 라벨 한 줄화(「SPECIAL」 윗줄 · `eyebrow` 문구 5개 언어 삭제), CSS 규칙 6개(z-index 없음).
+- 정적 그림: 내장 webp 11장(`static/image/u00-tutorial.*.webp` 11,268 · `u01-water` 19,096 · `u02-checkin` 25,228 · `u03-mina` 10,040 · `u04-directions` 12,874 · `u05-baekban` 8,416 · `u06-cafe` 12,086 · `u07-jaemin` 11,398 · `u08-umbrella` 8,040 · `u09-subway` 12,594 · `u10-laundry` 12,170 bytes, 합 143,210). `static/image` 예산 안.
 - 의존성 · 음원 · 네이티브는 바뀌지 않았다.
 
 ## 분석 결과
 
 | 산출물 | main `fdbb6ce6` | 이 변경 | 차이 |
 | --- | ---: | ---: | ---: |
-| `main.lynx.bundle` | 3,864,263 bytes | 3,869,734 bytes | +5,471 (+0.14 %) |
-| `static/image` | 4,100 kB | 4,248 kB | +148 kB (webp 10장) |
+| `main.lynx.bundle` | 3,864,263 bytes | 3,866,861 bytes | +2,598 (+0.07 %) |
+| `static/image` | 4,100 kB | 4,260 kB | +160 kB (webp 11장) |
 
 - 상한(`main.lynx.bundle` 4,060,000 · `static/image` 11,520,000)은 그대로 둔다 — 둘 다 안이다.
 

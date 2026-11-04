@@ -13,6 +13,7 @@ import imgU00TutorialPost4 from "../assets/content/level-3/images/u00-tutorial/p
 import imgU00TutorialCultU00Jalhasineyo from "../assets/content/level-3/images/u00-tutorial/cult-u00-jalhasineyo.webp";
 import imgU00TutorialRpEnd from "../assets/content/level-3/images/u00-tutorial/rp-end.webp";
 import imgU00TutorialAvatar from "../assets/content/level-3/images/u00-tutorial/avatar.webp";
+import imgCoverU00Tutorial from "../assets/content/covers/u00-tutorial.webp";
 import imgCoverU01Water from "../assets/content/covers/u01-water.webp";
 import imgCoverU02Checkin from "../assets/content/covers/u02-checkin.webp";
 import imgCoverU03Mina from "../assets/content/covers/u03-mina.webp";
@@ -42,6 +43,7 @@ export const bundledContentImages: Readonly<Record<string, string>> = {
   "level-3/images/u00-tutorial/avatar.webp": imgU00TutorialAvatar,
   "level-3/images/items/hello.webp": imgItemsHello,
   // 표지 일러스트(내장 매니페스트 `cover`) — 수준과 무관하게 `images/covers/`입니다.
+  "images/covers/u00-tutorial.webp": imgCoverU00Tutorial,
   "images/covers/u01-water.webp": imgCoverU01Water,
   "images/covers/u02-checkin.webp": imgCoverU02Checkin,
   "images/covers/u03-mina.webp": imgCoverU03Mina,

@@ -44,14 +44,14 @@ test("SU1. 이야기 유닛은 SpecialUnit이고 레슨 노드(LearningUnit)가 
   expect(screen.queryByTestId("ui-lynx-learning-unit-catalog-unit-u01-water-INT")).toBeNull();
 });
 
-test("SU2. 이야기 노드의 라벨은 SPECIAL · Story이고, S4 뒤라 열려 있다", () => {
+test("SU2. 이야기 노드의 라벨은 Story 한 줄(SPECIAL 윗줄 없음)이고, S4 뒤라 열려 있다", () => {
   render(<JourneyMapScreen catalog={catalogOf(progressThroughS4)} />);
 
   const node = screen.getByTestId("ui-lynx-special-unit-catalog-unit-u01-water-INT");
   expect(node.getAttribute("data-status")).toBe("available");
   const item = node.closest(".journey-special-unit") as HTMLElement;
   expect(within(item).getByText("Story")).toBeInTheDocument();
-  expect(within(item).getByText("SPECIAL")).toBeInTheDocument();
+  expect(within(item).queryByText("SPECIAL")).toBeNull();
 });
 
 test("SU3. 레슨 번호는 이야기를 건너뛰어 S5가 Lesson 5다", () => {

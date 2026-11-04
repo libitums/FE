@@ -18,7 +18,6 @@
   top: 0;
   width: 260px;
   height: 194px;
-  z-index: 0;
 }
 
 .catalog-cover-illustrated-left .catalog-cover-illustration {
@@ -34,8 +33,6 @@
   opacity: 0.45;
 }
 
-/* 노드 · 라벨은 일러스트 위에 섭니다. */
-.catalog-cover-illustrated .journey-special-unit {
-  position: relative;
-  z-index: 1;
-}
+/* 노드 · 라벨은 일러스트 위에 섭니다 — DOM 순서(일러스트 먼저, 노드 나중)만으로 겹칩니다. `z-index`는 쓰지 않습니다:
+   스크롤 컨테이너 안에서 z-index 자식은 별도 합성 레이어로 떠서 쌓임이 어긋날 수 있습니다(Lynx 문서 Pitfall 5 —
+   2026-11-04 iPhone 13 mini Release에서 노드가 일러스트 뒤로 숨었다). */

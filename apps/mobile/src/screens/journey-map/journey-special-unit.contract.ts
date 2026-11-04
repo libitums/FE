@@ -7,16 +7,11 @@ import type { JourneyMapNodeStatus } from "./journey-map-types";
 
 /** `UiCopy.specialUnitMap` — 맵이 스페셜 항목에 붙이는 보조 라벨과 낭독 이름. */
 export type SpecialUnitMapCopy = {
-  /** 보이는 보조 라벨 — 대문자 문자열 그대로(`SPECIAL`). */
-  readonly eyebrow: string;
   /** 낭독 이름 — `special, <이름>`. 상태 접미사는 붙이지 않는다(컴포넌트 몫). */
   readonly accessibilityLabel: (name: string) => string;
 };
 
 export type SpecialUnitLabelTone = "muted" | "brand" | "correct";
-
-/** 스페셜 라벨의 줄 수입니다. */
-export type SpecialUnitLabelLayout = "two-line" | "title-only";
 
 /** 안내 말풍선이 떠 있는 표지만 `"guide"`(스크림 위로 들림 · 흰 라벨). */
 export type SpecialUnitMapLayer = "map" | "guide";
@@ -24,7 +19,7 @@ export type SpecialUnitMapLayer = "map" | "guide";
 export type SpecialUnitMapItemProps = {
   /** `SpecialUnit`의 `id` — testid `ui-lynx-special-unit-<unitId>` · 라벨 testid의 꼬리. */
   readonly unitId: string;
-  /** 보이는 제목(둘째 줄). */
+  /** 보이는 제목(라벨 한 줄). */
   readonly title: string;
   /** 낭독 이름의 `<이름>` 자리 — 튜토리얼은 제목, 카탈로그는 `Episode n. <제목>`. */
   readonly accessibilityName: string;
@@ -38,11 +33,8 @@ export type SpecialUnitMapItemProps = {
   readonly sheetTargetId?: SheetTargetId;
   /** 면 가운데 아이콘(SVG 문자열). 없으면 `SpecialUnit` 기본(오각 별)입니다. */
   readonly icon?: string;
-  /** 라벨 줄 수 — 기본 `two-line`(SPECIAL + 제목). `title-only`는 제목만(카탈로그 표지). */
-  readonly label?: SpecialUnitLabelLayout;
 };
 
 export type SpecialUnitMapTestId =
   | `journey-special-unit-label-${string}`
-  | `journey-special-unit-eyebrow-${string}`
   | `journey-special-unit-title-${string}`;
