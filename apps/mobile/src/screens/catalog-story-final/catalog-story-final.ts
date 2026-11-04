@@ -109,27 +109,42 @@ export function judgeStoryTiles(
 }
 
 /**
- * 정답에 들어가는 타일 수입니다 — 대답 줄에 그 수만큼 밑줄을 그어 「몇 개를 놓는지」 보이게 합니다(2026-11-03 사용자
- * 지적: 밑줄이 하나면 하나만 넣는 줄로 읽힌다). 정답 글을 타일로 앞에서부터 남김없이 덮는 조합을 찾고(공백 ·
- * 문장부호는 보지 않음), 못 찾으면 타일 전부입니다.
+ * 정답을 타일로 앞에서부터 남김없이 덮는 조합의 조각 길이(음절 수)입니다 — 공백 · 문장부호는 보지 않습니다. 정답이
+ * 여럿이면 처음 덮이는 것. 못 덮으면 `null`.
  */
-export function storyTilesNeeded(turn: StoryFinalTilesTurn): number {
+function coveringPieceLengths(turn: StoryFinalTilesTurn): readonly number[] | null {
   const pieces = turn.tiles.map((tile) => normalizeAnswerText(tile.ko));
   // 쓴 타일은 비트로 셉니다(타일은 몇 개뿐) — 재귀마다 배열을 만들지 않습니다.
-  const cover = (rest: string, used: number): number | null => {
-    if (rest === "") return 0;
+  const cover = (rest: string, used: number): number[] | null => {
+    if (rest === "") return [];
     for (const [index, piece] of pieces.entries()) {
       if ((used & (1 << index)) !== 0 || piece === "" || !rest.startsWith(piece)) continue;
-      const count = cover(rest.slice(piece.length), used | (1 << index));
-      if (count !== null) return count + 1;
+      const tail = cover(rest.slice(piece.length), used | (1 << index));
+      if (tail !== null) return [piece.length, ...tail];
     }
     return null;
   };
   for (const answer of turn.accepted) {
-    const count = cover(normalizeAnswerText(answer), 0);
-    if (count !== null && count > 0) return count;
+    const lengths = cover(normalizeAnswerText(answer), 0);
+    if (lengths !== null && lengths.length > 0) return lengths;
   }
-  return turn.tiles.length;
+  return null;
+}
+
+/**
+ * 대답 줄 밑줄마다의 음절 수입니다(정답 순서) — 밑줄 폭을 들어갈 조각 길이에 맞춥니다(2026-11-04 사용자 지적: 한 음절
+ * 자리 밑줄이 너무 길다). 못 덮으면 타일 수만큼 0(크기 모름 — 기본 폭).
+ */
+export function storyBlankSizes(turn: StoryFinalTilesTurn): readonly number[] {
+  return coveringPieceLengths(turn) ?? turn.tiles.map(() => 0);
+}
+
+/**
+ * 정답에 들어가는 타일 수입니다 — 대답 줄에 그 수만큼 밑줄을 그어 「몇 개를 놓는지」 보이게 합니다(2026-11-03 사용자
+ * 지적: 밑줄이 하나면 하나만 넣는 줄로 읽힌다). 못 덮으면 타일 전부입니다.
+ */
+export function storyTilesNeeded(turn: StoryFinalTilesTurn): number {
+  return storyBlankSizes(turn).length;
 }
 
 /**

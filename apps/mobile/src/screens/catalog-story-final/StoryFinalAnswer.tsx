@@ -6,7 +6,7 @@ import {
   SentenceOrderChip,
   SentenceOrderChipPlaceholder,
 } from "../sentence-order/SentenceOrderChip";
-import { storyReplyText, storyTemplateParts, storyTilesNeeded } from "./catalog-story-final";
+import { storyBlankSizes, storyReplyText, storyTemplateParts } from "./catalog-story-final";
 import type {
   StoryFinalChoiceTurn,
   StoryFinalState,
@@ -19,6 +19,15 @@ import type {
 // 합니다(쓰기 칸은 스크롤 밖에 서야 해서 화면이 따로 둡니다).
 
 type OptionState = "idle" | "correct" | "incorrect" | "dim";
+
+/** 밑줄 폭 — 한 음절 · 두 음절 · 그 이상(또는 크기 모름)입니다(2026-11-04 사용자 지적: 한 음절 자리가 너무 길다). */
+type BlankSize = "s" | "m" | "l";
+
+function blankSizeOf(syllables: number): BlankSize {
+  if (syllables === 1) return "s";
+  if (syllables === 2) return "m";
+  return "l";
+}
 
 function optionStateOf(
   turn: StoryFinalChoiceTurn,
@@ -156,8 +165,8 @@ export function StoryReplyLine({
       ? state.placed.length === 0
       : turn.kind === "choice" && state.picked === null;
   const { before, after } = storyTemplateParts(turn.template);
-  // 턴이 같으면 같은 수입니다 — 타일을 놓고 뺄 때마다 다시 찾지 않습니다.
-  const needed = useMemo(() => (turn.kind === "tiles" ? storyTilesNeeded(turn) : 0), [turn]);
+  // 턴이 같으면 같은 조각입니다 — 타일을 놓고 뺄 때마다 다시 찾지 않습니다.
+  const blankSizes = useMemo(() => (turn.kind === "tiles" ? storyBlankSizes(turn) : []), [turn]);
   return (
     <view
       className="catalog-story-final-reply"
@@ -190,14 +199,19 @@ export function StoryReplyLine({
               onTap={onToggle}
             />
           ))}
-          {/* 남은 타일 수만큼 밑줄입니다 — 놓을 때마다 하나씩 칩으로 바뀌어 몇 개가 더 필요한지 보입니다. */}
-          {Array.from({ length: Math.max(0, needed - state.placed.length) }, (_, index) => (
-            <view
-              key={`blank-${String(index)}`}
-              className="catalog-story-final-reply-blank"
-              data-testid="catalog-story-final-reply-blank"
-            />
-          ))}
+          {/* 남은 타일 수만큼 밑줄입니다 — 놓을 때마다 하나씩 칩으로 바뀌어 몇 개가 더 필요한지 보입니다. 폭은 정답
+              순서의 남은 조각 길이를 따릅니다. */}
+          {blankSizes.slice(state.placed.length).map((syllables, index) => {
+            const size = blankSizeOf(syllables);
+            return (
+              <view
+                key={`blank-${String(index)}`}
+                className={`catalog-story-final-reply-blank catalog-story-final-reply-blank-${size}`}
+                data-testid="catalog-story-final-reply-blank"
+                data-size={size}
+              />
+            );
+          })}
           <TemplateText text={after} />
         </>
       ) : (

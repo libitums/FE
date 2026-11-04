@@ -159,6 +159,29 @@ describe("CatalogStoryFinalScreen", () => {
     expect(blanks()).toHaveLength(0);
   });
 
+  test("SU4c. 밑줄 폭은 들어갈 조각의 음절 수를 따른다 — 한 음절은 짧고, 놓으면 남은 조각 차례로 줄어든다", () => {
+    mount([
+      {
+        ...tiles,
+        template: null,
+        answer: "안녕하세요! 네,",
+        tiles: [
+          { ko: "네,", roman: "" },
+          { ko: "안녕하세요!", roman: "" },
+          { ko: "처음", roman: "" },
+        ],
+        accepted: ["안녕하세요! 네,"],
+      },
+    ]);
+    const sizes = () =>
+      screen
+        .queryAllByTestId("catalog-story-final-reply-blank")
+        .map((blank) => blank.getAttribute("data-size"));
+    expect(sizes()).toEqual(["l", "s"]);
+    tap(screen.getByTestId("sentence-order-chip-1"));
+    expect(sizes()).toEqual(["s"]);
+  });
+
   test("SU5. 따라 쓰기는 음절 칸 · 쓰기 칸 · Redo · Listen이 서고, 음절마다 넘겨 마지막에 판정한다", () => {
     mount([write]);
     const cells = screen.getAllByTestId(/^catalog-story-final-cell-/);
