@@ -204,3 +204,7 @@
 - **테스트 고정본 분리**: 흐름 테스트 33개 파일(145건)이 옛 내장본의 문장 · 단계 키 · 소리 id · 편 수를 짚고 있었다. 내장본을 갈 때마다 고치지 않게, 옛 내장본(u00 ~ u03 `2026-10-23.1`)을 `apps/mobile/content/test-fixtures/bundled-2026-10-23`에 두고 `vitest.setup.ts`가 `episode-bundled` · `bundled-content-images`를 그 고정본(`*.test-support.ts`)으로 바꾼다. 실제 내장본은 `episode-bundled.live.unit.test.ts`(편 수 · 해시 · 해석기 · ready · u00 그림 표)와 `bundled-content-images.unit.test.ts`가 `vi.unmock`으로 본다. **내장본을 다시 갈 때는 이 두 파일만 맞춘다.**
 - **랜딩 체험판은 2026-10-23판에 머문다**([ADR-0083](0083-web-trial-and-episode-core.md) 적용 기록 ⟨2026-10-26⟩) — 위 「둘째 소비자」 적용 기록의 「사본 = 내장본」이 여기서 갈라진다.
 - 앱 번들 `main.lynx.bundle` 2,826,612 B(.env.local 없는 설정) — 상한을 3,080,000 B로 올렸다(`devtools/bundle-size/budget.json` 메모). 커진 몫은 내장 JSON이고 코드 · 의존성 변경은 없다.
+- ⟨2026-11-04⟩ **사용자 결정 — 튜토리얼 음성도 앱에 싣는다.** 그림 15장은 이미 내장(D2)이었고 소리 14개는 버킷에서 받았다. 첫 실행이 오프라인이거나 모바일 데이터면 튜토리얼이 소리 없이 돌 수 있어(ADR-0095의 받기 정책은 튜토리얼을 늘 받지만, 받는 동안 · 오프라인에는 없다), 내장 u00이 가리키는 소리 14개(`audio_url` · `example_audio_url` · `player_audio_url`)를 버킷 바이트 그대로 `apps/ios/Host/audio/`에 실었다(372 KB, Android는 같은 폴더를 복사 — ADR-0045).
+  - 호스트는 `/` 없는 이름 하나만 받으므로 `level-3/u00-tutorial/d-01-r2` → `level-3-u00-tutorial-d-01-r2.m4a`로 잇는다. 표는 `bundled-content-audio.ts` 하나, `bundled-content-audio.unit.test.ts`가 표 = 내장 u00의 소리 id · 각 파일이 폴더에 있음을 본다. **내장 u00을 다시 갈 때는 이 표와 파일도 맞춘다.**
+  - 재생 주소는 받아 둔 파일(`file://`)이 먼저, 없으면 내장 이름이다(원격으로는 여전히 내려가지 않는다). 받기 차례는 내장 소리를 이미 있는 것으로 보고 받지 않는다.
+  - 네이티브 리소스라 `main.lynx.bundle` 크기는 그대로다.
