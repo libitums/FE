@@ -147,7 +147,7 @@ test("SS7. outcome · browser · locale · similarity · turn_index 범위(그 �
   });
   for (const row of [
     { browser: "Mozilla/5.0" },
-    { locale: "ja" },
+    { locale: "fr" },
     { similarity: 1.01 },
     { similarity: -0.01 },
     { turn_index: -1 },
@@ -157,9 +157,9 @@ test("SS7. outcome · browser · locale · similarity · turn_index 범위(그 �
   }
   for (const outcome of ["strict", "lenient", "incorrect"]) await insert({ outcome });
   for (const browser of ["ios-safari", "in-app", "desktop", "other"]) await insert({ browser });
-  // ⟨2026-11-04⟩ 랜딩의 세 언어(마이그레이션 20261104120000)
-  for (const locale of ["en", "vi", "id", "ms"]) await insert({ locale });
-  expect(await stored()).toHaveLength(11);
+  // ⟨2026-11-04⟩ 랜딩의 세 언어(마이그레이션 20261104120000) + 스페인어 · 일본어(20261104140000)
+  for (const locale of ["en", "vi", "id", "ms", "es", "ja"]) await insert({ locale });
+  expect(await stored()).toHaveLength(13);
 });
 
 test("SS8. 보관 90일 — purge가 90일 넘은 행만 지우고 지운 수를 돌려준다, anon은 부를 수 없다", async () => {

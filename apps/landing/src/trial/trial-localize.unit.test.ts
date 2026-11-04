@@ -4,7 +4,7 @@ import { u00Translations } from "./content/u00-translations";
 import { englishStringsOf, localizeTrialModel } from "./trial-localize";
 import { u00TrialModel } from "./trial.test-support";
 
-const languages = ["vi", "id", "ms"] as const;
+const languages = ["vi", "id", "ms", "es", "ja"] as const;
 
 describe("TL 체험판 콘텐츠 번역", () => {
   it("TL1 모델에 실린 영어 문장은 세 언어 표에 전부 있다", () => {

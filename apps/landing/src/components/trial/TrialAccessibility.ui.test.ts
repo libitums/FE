@@ -4,7 +4,9 @@
 import { beforeAll, describe, expect, it } from "vitest";
 
 import { trialEn } from "../../i18n/trial-copy";
+import { trialEs } from "../../i18n/trial-es";
 import { trialId } from "../../i18n/trial-id";
+import { trialJa } from "../../i18n/trial-ja";
 import { trialKo } from "../../i18n/trial-ko";
 import { trialMs } from "../../i18n/trial-ms";
 import { trialVi } from "../../i18n/trial-vi";
@@ -22,6 +24,8 @@ const copies: Record<Language, TrialCopy> = {
   vi: trialVi,
   id: trialId,
   ms: trialMs,
+  es: trialEs,
+  ja: trialJa,
 };
 const clean = (value: string | null | undefined) => (value ?? "").replace(/\s+/g, " ").trim();
 

@@ -36,7 +36,7 @@ describe("loadTrialModel", () => {
     const port = { imageUrlOf: trialImageUrlOf, contentBase: TEST_CONTENT_BASE };
     const en = loadTrialModel(port);
     expect(loadTrialModel(port, "ko")).toEqual(en);
-    for (const language of ["vi", "id", "ms"] as const) {
+    for (const language of ["vi", "id", "ms", "es", "ja"] as const) {
       const model = loadTrialModel(port, language);
       expect(model.imageMatch.instruction).toBe(
         u00Translations[language][en.imageMatch.instruction],
@@ -54,7 +54,9 @@ describe("loadTrialModel", () => {
     expect(trialGlossLangOf("vi")).toBe("vi");
     expect(trialGlossLangOf("id")).toBe("id");
     expect(trialGlossLangOf("ms")).toBe("ms");
-    expect(trialGlossLangOf("ja")).toBe("en");
+    expect(trialGlossLangOf("es")).toBe("es");
+    expect(trialGlossLangOf("ja")).toBe("ja");
+    expect(trialGlossLangOf("fr")).toBe("en");
   });
 
   it("TM8 모델을 만들 수 없으면 던지고 메시지에 오류 코드 · 경로가 있다", () => {

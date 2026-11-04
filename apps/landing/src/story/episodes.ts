@@ -38,14 +38,24 @@ import type {
   StoryEpisodeText,
 } from "./episodes.contract";
 import { en } from "./text/en";
+import { es } from "./text/es";
 import { id } from "./text/id";
+import { ja } from "./text/ja";
 import { ko } from "./text/ko";
 import { ms } from "./text/ms";
 import { vi } from "./text/vi";
 
 export type { StoryEpisode } from "./episodes.contract";
 
-const text: Record<Language, Record<StoryEpisodeId, StoryEpisodeText>> = { en, ko, vi, id, ms };
+const text: Record<Language, Record<StoryEpisodeId, StoryEpisodeText>> = {
+  en,
+  ko,
+  vi,
+  id,
+  ms,
+  es,
+  ja,
+};
 
 const localized = (episodeId: StoryEpisodeId, key: keyof StoryEpisodeText): Localized =>
   Object.fromEntries(

@@ -3,8 +3,8 @@
 
 /** 빌드 때 정한 보낼 곳 — `<PUBLIC_SUPABASE_URL>/rest/v1/pre_registrations`와 공개 키. */
 export type TrialPreregConfig = { readonly endpoint: string; readonly apiKey: string };
-/** 페이지 언어(`site.ts`의 `languages`)와 같은 목록 — DB의 `locale` check와도 같아야 합니다(마이그레이션 20261104120000). */
-export type PreregLocale = "en" | "ko" | "vi" | "id" | "ms";
+/** 페이지 언어(`site.ts`의 `languages`)와 같은 목록 — DB의 `locale` check와도 같아야 합니다(마이그레이션 20261104120000 · 20261104140000). */
+export type PreregLocale = "en" | "ko" | "vi" | "id" | "ms" | "es" | "ja";
 /** 응답 해석 — 중복은 남에게 등록 여부를 알리지 않게 화면에서 완료와 같다. */
 export type PreregOutcome = "submitted" | "duplicate" | "failed";
 export type PreregStatus = "idle" | "invalid" | "sending" | "done" | "failed" | "unavailable";

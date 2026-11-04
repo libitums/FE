@@ -1,6 +1,8 @@
 import type { Copy } from "./i18n/copy";
 import { en } from "./i18n/copy";
+import { es } from "./i18n/es";
 import { id } from "./i18n/id";
+import { ja } from "./i18n/ja";
 import { ko } from "./i18n/ko";
 import { ms } from "./i18n/ms";
 import { vi } from "./i18n/vi";
@@ -22,7 +24,7 @@ export const storeLinks = {
  * 지원 언어입니다. 첫째가 기본 언어(`/`)이고 나머지는 `/<코드>/`에 섭니다.
  * 언어를 더하는 절차는 README 「언어 더하기」에 있습니다.
  */
-export const languages = ["en", "ko", "vi", "id", "ms"] as const;
+export const languages = ["en", "ko", "vi", "id", "ms", "es", "ja"] as const;
 export type Language = (typeof languages)[number];
 export const defaultLanguage: Language = languages[0];
 
@@ -110,6 +112,31 @@ export const pages: Record<Language, LanguagePage> = {
     description:
       "Duru ialah aplikasi belajar bahasa Korea berasaskan cerita. Masuk ke satu hari di Korea, berbual dan menelefon orang yang anda temui, dan simpan kata-kata yang anda gunakan.",
     copy: ms,
+  },
+  // 스페인어 · 일본어(2026-11-04, ADR-0097). 문구는 초안입니다 — 원어민 검수 필요.
+  es: {
+    label: "Español",
+    englishName: "Spanish",
+    locale: "es_ES",
+    image: "/og-es.jpg",
+    imageAlt:
+      "Duru — “Coreano, vivido como una historia” sobre tres escenas: la ventanilla de un avión sobre el mar, un barista tras la barra de una cafetería y un pasillo de mercado bajo un techo abovedado.",
+    title: "Duru — Aprende coreano viviendo una historia",
+    description:
+      "Duru es una app para aprender coreano a través de una historia. Entra en un día en Corea, chatea y llama a la gente que conoces, y quédate con las palabras que usaste.",
+    copy: es,
+  },
+  ja: {
+    label: "日本語",
+    englishName: "Japanese",
+    locale: "ja_JP",
+    image: "/og-ja.jpg",
+    imageAlt:
+      "Duru — 「物語として生きる韓国語」と、海の上の飛行機の窓、カフェのカウンターに立つバリスタ、アーチ型の屋根の下の市場の通路という3つの場面。",
+    title: "Duru — 物語を生きて学ぶ韓国語",
+    description:
+      "Duruは物語の中で韓国語を学ぶアプリです。韓国での一日に入り込み、出会った人とメッセージや電話で話し、自分で使ったことばを身につけましょう。",
+    copy: ja,
   },
 };
 

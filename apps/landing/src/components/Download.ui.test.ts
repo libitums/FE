@@ -31,6 +31,8 @@ const TRIAL_PATH: Record<Language, string> = {
   vi: "/vi/try/",
   id: "/id/try/",
   ms: "/ms/try/",
+  es: "/es/try/",
+  ja: "/ja/try/",
 };
 
 const none: Links = { ios: "", android: "" };
