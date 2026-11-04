@@ -180,7 +180,7 @@ export function AppSession({
   const screenNow = currentScreen(nav);
   // 앱 사용 중 받아진 바뀐 판은 여정맵 루트(열린 에피소드 화면 · 겹침 없음)에서 바로 바꿔 끼웁니다(ADR-0078 D4 정정).
   const atMapRoot = nav.entry.length === 0 && screenNow.name === "journey-map" && !screenLayerOpen;
-  const downloadGate = useDownloadGate(downloadControls, catalog, atMapRoot);
+  const downloadGate = useDownloadGate(downloadControls, catalog, atMapRoot, progress);
   const wiring = withDownloadGate(
     withLearningTickets(screens, tickets, progress, catalogSections),
     downloadGate,

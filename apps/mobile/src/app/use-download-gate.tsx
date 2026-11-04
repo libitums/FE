@@ -17,7 +17,7 @@ import { DownloadSheet } from "../screens/download-sheet/DownloadSheet";
 import { catalogAllCleared } from "../screens/journey-map/catalog-all-cleared";
 import type { DownloadSheetState } from "../screens/download-sheet/download-sheet.contract";
 import type { CatalogMapSection } from "../screens/journey-map/catalog-map.contract";
-import { allClearedNoticeStep } from "./all-cleared-notice";
+import { allClearedNoticeStep, type AllClearedNoticeState } from "./all-cleared-notice";
 import type { DownloadControls } from "./download-wiring";
 import type { ScreenWiring } from "./screen-wiring";
 
@@ -55,6 +55,8 @@ export function useDownloadGate(
     readonly catalogProgress: CatalogProgress;
   },
   atMapRoot: boolean,
+  /** 진행을 다 읽었는가 — 읽는 동안의 변화를 「끝낸 순간」으로 세지 않습니다. */
+  progress: { readonly hasLoadedProgress: boolean },
 ): DownloadGate {
   const sections = catalog.catalogSections;
   const [sheet, setSheet] = useState<OpenSheet | null>(null);
@@ -63,10 +65,12 @@ export function useDownloadGate(
 
   // 마지막 편을 「끝낸 순간」을 기억했다가 맵 루트에서 한 번 판정합니다(D9, `allClearedNoticeStep`).
   const allCleared = catalogAllCleared(sections, catalog.catalogProgress);
-  const notice = useRef({ previousCleared: allCleared, pending: false });
+  const loaded = progress.hasLoadedProgress;
+  const notice = useRef<AllClearedNoticeState>({ previousCleared: null, pending: false });
   useEffect(() => {
     if (controls === undefined) return;
     const step = allClearedNoticeStep(notice.current, {
+      loaded,
       allCleared,
       atMapRoot,
       stale: catalogFreshness(checkedAt, Date.now()).stale,
@@ -74,7 +78,7 @@ export function useDownloadGate(
     });
     notice.current = step.state;
     if (step.show) setSheet({ kind: "all-cleared" });
-  }, [allCleared, atMapRoot, controls, checkedAt]);
+  }, [loaded, allCleared, atMapRoot, controls, checkedAt]);
 
   const guard = useCallback<DownloadGuard>(
     (episodeId, open) => {
