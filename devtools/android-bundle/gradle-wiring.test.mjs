@@ -186,7 +186,7 @@ test("GW-S6: crash reporting starts before Fresco and the Lynx error callback is
   assert.equal(
     activity.match(/registerModule\(/g)?.length ?? 0,
     14,
-    "registerModule( call count changed from 14",
+    "registerModule( call count must be 14",
   );
 });
 
