@@ -205,7 +205,7 @@ export function StoryReplyLine({
             const size = blankSizeOf(syllables);
             return (
               <view
-                key={`blank-${String(index)}`}
+                key={`blank-${String(state.placed.length + index)}`}
                 className={`catalog-story-final-reply-blank catalog-story-final-reply-blank-${size}`}
                 data-testid="catalog-story-final-reply-blank"
                 data-size={size}
