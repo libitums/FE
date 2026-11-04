@@ -86,7 +86,8 @@
       "version": "2026-11-04.2",
       "sha256": "691ab810650a037295e7b267924df95944d4fe27337e6e3d98ce277d27e1c5a8",
       "bytes": 240709,
-      "url": "episodes/u07-jaemin.json"
+      "url": "episodes/u07-jaemin.json",
+      "cover": "images/covers/u07-jaemin.webp"
     },
     {
       "id": "u08-umbrella",
@@ -96,7 +97,8 @@
       "version": "2026-11-04.2",
       "sha256": "a1a9097a2672a9a7d0828f1f216f08d02891796b654e7faea5f60b08de9907d8",
       "bytes": 247764,
-      "url": "episodes/u08-umbrella.json"
+      "url": "episodes/u08-umbrella.json",
+      "cover": "images/covers/u08-umbrella.webp"
     },
     {
       "id": "u09-subway",
@@ -106,7 +108,8 @@
       "version": "2026-11-04.2",
       "sha256": "1dc97e43aa1fec97aa2489744b5468b18fe5e5089baff3f1a75df3293ee502bc",
       "bytes": 242797,
-      "url": "episodes/u09-subway.json"
+      "url": "episodes/u09-subway.json",
+      "cover": "images/covers/u09-subway.webp"
     },
     {
       "id": "u10-laundry",
@@ -116,7 +119,8 @@
       "version": "2026-11-04.2",
       "sha256": "2f92b80a9da618abaf799adbac4b381e04e85794237e2c2f319c9b2f76e5f58e",
       "bytes": 239772,
-      "url": "episodes/u10-laundry.json"
+      "url": "episodes/u10-laundry.json",
+      "cover": "images/covers/u10-laundry.webp"
     }
   ]
 }

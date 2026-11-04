@@ -18,15 +18,15 @@
 ## 이 변경이 무엇을 건드렸나
 
 - JS: 매니페스트 디코더 · 카탈로그에 `cover` 한 줄씩, 순수 모듈 `catalog-cover-illustration.ts`(함수 둘), 표지 노드의 래퍼 + `<image>`, `SpecialUnitMapItem`의 라벨 분기, CSS 규칙 7개.
-- 정적 그림: 내장 webp 6장(`static/image/u01-water.*.webp` 19,096 · `u02-checkin` 25,228 · `u03-mina` 11,268 · `u04-directions` 12,874 · `u05-baekban` 8,416 · `u06-cafe` 12,086 bytes). `static/image` 예산 안.
+- 정적 그림: 내장 webp 10장(`static/image/u01-water.*.webp` 19,096 · `u02-checkin` 25,228 · `u03-mina` 11,268 · `u04-directions` 12,874 · `u05-baekban` 8,416 · `u06-cafe` 12,086 · `u07-jaemin` 11,398 · `u08-umbrella` 8,040 · `u09-subway` 12,594 · `u10-laundry` 12,170 bytes, 합 133,170). `static/image` 예산 안.
 - 의존성 · 음원 · 네이티브는 바뀌지 않았다.
 
 ## 분석 결과
 
 | 산출물 | main `fdbb6ce6` | 이 변경 | 차이 |
 | --- | ---: | ---: | ---: |
-| `main.lynx.bundle` | 3,864,263 bytes | 3,869,209 bytes | +4,946 (+0.13 %) |
-| `static/image` | 4,100 kB | 4,200 kB | +100 kB (webp 6장) |
+| `main.lynx.bundle` | 3,864,263 bytes | 3,869,734 bytes | +5,471 (+0.14 %) |
+| `static/image` | 4,100 kB | 4,248 kB | +148 kB (webp 10장) |
 
 - 상한(`main.lynx.bundle` 4,060,000 · `static/image` 11,520,000)은 그대로 둔다 — 둘 다 안이다.
 
@@ -38,4 +38,4 @@
 ## 결론과 후속
 
 - 표지 일러스트의 실제 배치 · 스크롤 · 오프라인 표시는 [e2e](../../e2e/episode-cover-illustration.md) EC-1 ~ EC-7로 기기에서 확인한다.
-- u07 ~ u10 일러스트가 더해지면 `static/image`가 장당 약 10 ~ 25 kB씩 는다 — 예산 11.5 MB 안.
+- u10까지 내장이 끝났다. u11부터는 버킷(`images/covers/`)이라 `static/image`는 더 늘지 않는다.

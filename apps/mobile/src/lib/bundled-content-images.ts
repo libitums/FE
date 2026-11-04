@@ -19,6 +19,10 @@ import imgCoverU03Mina from "../assets/content/covers/u03-mina.webp";
 import imgCoverU04Directions from "../assets/content/covers/u04-directions.webp";
 import imgCoverU05Baekban from "../assets/content/covers/u05-baekban.webp";
 import imgCoverU06Cafe from "../assets/content/covers/u06-cafe.webp";
+import imgCoverU07Jaemin from "../assets/content/covers/u07-jaemin.webp";
+import imgCoverU08Umbrella from "../assets/content/covers/u08-umbrella.webp";
+import imgCoverU09Subway from "../assets/content/covers/u09-subway.webp";
+import imgCoverU10Laundry from "../assets/content/covers/u10-laundry.webp";
 import imgItemsHello from "../assets/content/level-3/images/items/hello.webp";
 
 export const bundledContentImages: Readonly<Record<string, string>> = {
@@ -44,6 +48,10 @@ export const bundledContentImages: Readonly<Record<string, string>> = {
   "images/covers/u04-directions.webp": imgCoverU04Directions,
   "images/covers/u05-baekban.webp": imgCoverU05Baekban,
   "images/covers/u06-cafe.webp": imgCoverU06Cafe,
+  "images/covers/u07-jaemin.webp": imgCoverU07Jaemin,
+  "images/covers/u08-umbrella.webp": imgCoverU08Umbrella,
+  "images/covers/u09-subway.webp": imgCoverU09Subway,
+  "images/covers/u10-laundry.webp": imgCoverU10Laundry,
 };
 
 /** 표에 있으면 그 주소, 없으면 null입니다. 순수 · 던지지 않음. */
