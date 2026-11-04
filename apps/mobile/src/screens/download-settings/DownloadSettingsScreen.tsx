@@ -35,11 +35,13 @@ export function DownloadSettingsScreen({
   const [downloadedBytes, setDownloadedBytes] = useState<number | null>(null);
   const [confirming, setConfirming] = useState(false);
   const [started, setStarted] = useState(false);
-  // 저장소 읽기는 효과 안에서 — 그리기 중에는 저장소가 없을 수 있습니다(메인 스레드).
+  // 저장소 읽기는 효과 안에서 — 그리기 중에는 저장소가 없을 수 있습니다(메인 스레드). 화면을 열 때 한 번만 읽습니다:
+  // 결선은 렌더마다 새 함수를 넘기고, 받은 크기 읽기는 목록 · 표시를 모두 파싱합니다.
   useEffect(() => {
     setPolicy(loadPolicy());
     setDownloadedBytes(loadDownloadedBytes());
-  }, [loadPolicy, loadDownloadedBytes]);
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const startDownloadAll = () => {
     setConfirming(false);
