@@ -23,6 +23,9 @@ export function CatalogMapSections({
   guide,
   onStartCover,
   onSelectUnit,
+  onTapPending,
+  freshness,
+  onCheckNew,
 }: CatalogMapSectionsProps): ReactNode {
   const comingSoon = catalogComingSoonOrdinal(sections);
   const target = guide?.visible === true ? mapGuideTargetOf(sections) : null;
@@ -63,7 +66,11 @@ export function CatalogMapSections({
             accessibility-elements-hidden={covered}
           >
             {section.reason === "pending" ? (
-              <CatalogComingSoonSection ordinal={section.ordinal} episodeId={section.episodeId} />
+              <CatalogComingSoonSection
+                ordinal={section.ordinal}
+                episodeId={section.episodeId}
+                {...(onTapPending === undefined ? {} : { onTap: onTapPending })}
+              />
             ) : (
               <CatalogUnavailableSection section={section} />
             )}
@@ -72,7 +79,11 @@ export function CatalogMapSections({
       })}
       {comingSoon === null ? null : (
         <view className="catalog-map-section-cover" accessibility-elements-hidden={guiding}>
-          <CatalogComingSoonSection ordinal={comingSoon} />
+          <CatalogComingSoonSection
+            ordinal={comingSoon}
+            {...(freshness === undefined ? {} : { freshness })}
+            {...(onCheckNew === undefined ? {} : { onCheckNew })}
+          />
         </view>
       )}
     </view>

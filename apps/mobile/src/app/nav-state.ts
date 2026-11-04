@@ -32,6 +32,8 @@ export type Screen =
   | { name: "learner-profile" }
   // 설정 탭의 「Language」 화면입니다(ADR-0093). 진입 흐름의 `language-select`와 같은 화면을 다른 결선으로 씁니다.
   | { name: "language-settings" }
+  // 설정 탭의 「Downloads」 화면입니다(ADR-0095 D8).
+  | { name: "download-settings" }
   // 필드가 없습니다 — 목록은 App이 넘기고 알림 화면에는 진행이 없습니다.
   | { name: "notifications" }
   // 카탈로그 에피소드의 표지 컷입니다. 에피소드는 카탈로그 id입니다.

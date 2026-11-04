@@ -51,6 +51,11 @@ export const catalogMapId: CatalogMapCopy = {
     body: "Kami sedang menyiapkan cerita berikutnya.",
     label: (episodeLabel) =>
       `${episodeLabel} Segera hadir. Kami sedang menyiapkan cerita berikutnya.`,
+    checkedToday: "Dicek hari ini",
+    checkedDaysAgo: (d) => (d === 1 ? "Dicek kemarin" : `Dicek ${d} hari lalu`),
+    staleTitle: "Mungkin ada cerita baru",
+    staleBody: "Sambungkan ke internet untuk mengecek episode baru.",
+    checkNew: "Cek cerita baru",
   },
 };
 

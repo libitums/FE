@@ -45,6 +45,8 @@ export type RefreshSummary = {
   failed: { id: string; reason: "network" | "http" }[];
   removed: string[];
   persisted: boolean;
+  /** 받기 정책(`assetPolicy`)이 막아 자산을 건너뛴 편입니다(ADR-0095 D5). 연결이 바뀌면 다음 차례에 받습니다. */
+  deferred: string[];
 };
 
 /** 실행 시작의 받기를 스플래시가 지켜보는 자리입니다. 없으면 아무도 지켜보지 않습니다. */
@@ -74,10 +76,15 @@ export type RefreshDeps = {
   observer?: RefreshObserver;
   /** 차례로 시도할 매니페스트 경로입니다. 없으면 이 앱의 수준(`CONTENT_CLIENT_LEVEL`)으로 정합니다(ADR-0087). */
   manifestPaths?: readonly string[];
+  /**
+   * 있으면 에피소드마다 자산을 받기 전에 묻습니다 — `false`면 그 편은 본문만 받고 자산은 건너뛰며(`deferred`), 받기를
+   * 멈추지 않고 다음 편으로 갑니다(ADR-0095 D5). 없으면 지금처럼 모두 받습니다.
+   */
+  assetPolicy?: (id: string) => boolean;
 };
 
 function emptySummary(manifest: RefreshSummary["manifest"], persisted: boolean): RefreshSummary {
-  return { manifest, fetched: [], locked: [], failed: [], removed: [], persisted };
+  return { manifest, fetched: [], locked: [], failed: [], removed: [], persisted, deferred: [] };
 }
 
 /** 전송 호출 하나가 reject하면 그 호출만 연결 실패로 봅니다. */

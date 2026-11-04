@@ -1,6 +1,7 @@
 // 세션이 받는 에피소드 콘텐츠 포트와 그 순수 도우미입니다. 화면 경로가 닿는 파일이라 3a 모듈은
 // 타입만 가져옵니다(값을 가져오면 메인 스레드 빌드가 깨집니다).
 
+import type { DownloadControls } from "./download-wiring";
 import type { AudioTiming } from "../lib/audio-manifest";
 import type { CatalogEntry } from "../lib/episode-catalog";
 import type { RefreshSummary } from "../lib/episode-refresh";
@@ -44,6 +45,8 @@ export type AppSessionContent = {
   readonly stagedContentReady?: number;
   /** 갖춰진 바뀐 에피소드를 지금 바꿔 끼웁니다 — 셸이 여정맵 루트에서만 부릅니다. */
   readonly applyStagedContent?: () => void;
+  /** 설정 › 다운로드의 받기 다시 돌리기 · 받은 크기(ADR-0095 D8). 없으면(테스트) 저장만 합니다. */
+  readonly downloadControls?: DownloadControls;
 };
 
 function byOrderThenId(a: CatalogEntry, b: CatalogEntry): number {

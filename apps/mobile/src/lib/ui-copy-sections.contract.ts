@@ -6,13 +6,11 @@
 // **키 union** — `lib/` 밖(화면 · 앱)이 소유한 union은 import하지 않고 같은 멤버를 여기
 // 적습니다(`lib/`는 `screens/` · `app/`을 import하지 않습니다 — ADR-0003). 소비자가
 // `copy.x[key]`로 색인하므로 소유자 쪽 union이 늘면 그 자리에서 TS 오류로 섭니다. 설정 이동 항목
-// (`SettingsNavTarget`)만 타입으로 import합니다 — 항목이 늘면 문구 행이 따라오게 하려는 것입니다.
+// (`SettingsNavTarget`)만 타입으로 import합니다(`ui-copy-settings.contract.ts`) — 항목이 늘면 문구 행이 따라오게 하려는 것입니다.
 
 import type { LearningActivityForm } from "./learning-form";
 import type { LearningReviewCopy, LessonCompleteReviewCopy } from "./ui-copy-review.contract";
-import type { SettingsNavTarget } from "../screens/settings/settings.contract";
 import type { AnswerResult } from "./answer-result";
-import type { SessionOptionKey } from "./session-options";
 import type { SpecialUnitEntrySource } from "./special-unit-entry-source";
 
 /** 여러 화면이 같은 뜻으로 쓰는 낱말입니다. */
@@ -244,33 +242,7 @@ export type NotificationsCopy = {
   readonly destination: Readonly<Record<"roleplay-list", string>>;
 };
 
-export type SettingsCopy = {
-  readonly title: string;
-  readonly group: Readonly<Record<"account" | "learning" | "accountActions", string>>;
-  readonly nav: Readonly<Record<SettingsNavTarget, string>>;
-  readonly sessionOption: Readonly<Record<SessionOptionKey, string>>;
-  /** 접미 낱말(소문자) — `Auto-play, on` */
-  readonly optionState: Readonly<Record<"on" | "off", string>>;
-  /** 「Account actions」 묶음의 행 제목 — 키는 `AccountAction` */
-  readonly action: Readonly<Record<"sign-out" | "delete-account", string>>;
-  readonly signOutDialog: {
-    readonly title: string;
-    readonly confirm: string;
-    readonly cancel: string;
-  };
-  readonly deleteDialog: {
-    readonly title: string;
-    readonly description: string;
-    readonly confirm: string;
-    readonly cancel: string;
-  };
-  /** 삭제 실패 문구 — `network`만 따로, 나머지 넷은 `other` */
-  readonly deleteFailure: Readonly<Record<"network" | "other", string>>;
-  /** 떠난 뒤 새 세션이 한 번 낭독하는 결과 — 키는 `AccountExit` */
-  readonly exitAnnouncement: Readonly<Record<"signed-out" | "deleted", string>>;
-  /** 목록 끝 한 줄 — `Version 1.0 (11)`(ADR-0086). */
-  readonly version: (name: string, build: number) => string;
-};
+export type { SettingsCopy } from "./ui-copy-settings.contract";
 
 /** 강제 업데이트 화면(진입 `update-required`)의 문구입니다(ADR-0086). */
 export type AppUpdateCopy = {

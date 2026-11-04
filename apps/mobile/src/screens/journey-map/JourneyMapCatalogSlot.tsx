@@ -39,6 +39,9 @@ export function JourneyMapCatalogSlot({
         guide={guide}
         onStartCover={catalog.onStartCover}
         onSelectUnit={onSelectUnit}
+        {...(catalog.onTapPending === undefined ? {} : { onTapPending: catalog.onTapPending })}
+        {...(catalog.freshness === undefined ? {} : { freshness: catalog.freshness })}
+        {...(catalog.onCheckNew === undefined ? {} : { onCheckNew: catalog.onCheckNew })}
       />
     </view>
   );

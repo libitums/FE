@@ -43,6 +43,7 @@ import { OutOfTicketsDialog } from "../screens/tickets/OutOfTicketsDialog";
 import { CatalogUpdateNoticeDialog } from "../screens/catalog-update/CatalogUpdateNoticeDialog";
 import { useCatalogUpdateNotice } from "./use-catalog-update-notice";
 import { withLearningTickets } from "./ticket-wiring";
+import { useDownloadGate, withDownloadGate } from "./use-download-gate";
 import { useLearningTickets } from "./use-learning-tickets";
 import { useTesterAccess } from "./use-tester-access";
 import type { AppProgressSeed, AppProps } from "./app-props";
@@ -69,6 +70,7 @@ export function AppSession({
   episodeContent: sourceContent,
   stagedContentReady = 0,
   applyStagedContent,
+  downloadControls,
 }: AppProps & AppSessionControl & AppSessionContent) {
   // 이 리듀서를 부르는 유일한 자리입니다. `dispatch`는 셸에 콜백으로 내려갑니다 — 셸은 `NavAction`도 `dispatch`도
   // 받지 않습니다(ADR-0007 D3). 초기값이 `entryInitialNav`입니다 — 부팅이 진입 스택 `[{ name: "splash" }]`로
@@ -172,8 +174,17 @@ export function AppSession({
     finishGuard,
     listenPace,
     setListenPace,
+    downloadControls,
+    catalogIds: () => episodeContent.catalog.map((entry) => entry.id),
   });
-  const wiring = withLearningTickets(screens, tickets, progress, catalogSections);
+  const screenNow = currentScreen(nav);
+  // 앱 사용 중 받아진 바뀐 판은 여정맵 루트(열린 에피소드 화면 · 겹침 없음)에서 바로 바꿔 끼웁니다(ADR-0078 D4 정정).
+  const atMapRoot = nav.entry.length === 0 && screenNow.name === "journey-map" && !screenLayerOpen;
+  const downloadGate = useDownloadGate(downloadControls, catalog, atMapRoot, progress);
+  const wiring = withDownloadGate(
+    withLearningTickets(screens, tickets, progress, catalogSections),
+    downloadGate,
+  );
 
   // 셸이 가장자리 여백을 잡고 배경을 칠합니다(자판 화면은 위만 — shell-edges.ts). 스플래시만 브랜드색.
   // 아래쪽만 예외입니다 — 바가 서면 셸은 터치를 가로채는 시스템 바만큼(`tappableBottomInset`,
@@ -188,11 +199,8 @@ export function AppSession({
   // Android 시스템 뒤로가기는 화면의 닫기와 같은 경로를 탑니다(ADR-0043).
   useSystemBack(nav, dispatch);
 
-  const screenNow = currentScreen(nav);
   useTrackingAuthorizationPrompt(nav.entry.length === 0 && screenNow.name === "journey-map");
   const showsNavigator = showsTabNavigator(nav);
-  // 앱 사용 중 받아진 바뀐 판은 여정맵 루트(열린 에피소드 화면 · 겹침 없음)에서 바로 바꿔 끼웁니다(ADR-0078 D4 정정).
-  const atMapRoot = nav.entry.length === 0 && screenNow.name === "journey-map" && !screenLayerOpen;
   useEffect(() => {
     if (atMapRoot && stagedContentReady > 0) applyStagedContent?.();
   }, [atMapRoot, stagedContentReady, applyStagedContent]);
@@ -280,6 +288,7 @@ export function AppSession({
             {tickets.outOfTickets === null ? null : (
               <OutOfTicketsDialog {...tickets.outOfTickets} />
             )}
+            {downloadGate.layer}
             {updateNotice.open ? (
               <CatalogUpdateNoticeDialog onClose={updateNotice.onClose} />
             ) : null}

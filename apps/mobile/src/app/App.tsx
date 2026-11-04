@@ -22,6 +22,7 @@ export function App(props: AppProps = {}) {
     splash,
     stagedReady,
     applyStaged,
+    downloads,
   } = useEpisodeContentRefresh(props.episodeIntroEventSink ?? null);
   return (
     <MotionProvider motion={motion}>
@@ -32,6 +33,7 @@ export function App(props: AppProps = {}) {
           episodeContent={episodeContent}
           stagedContentReady={stagedReady}
           applyStagedContent={applyStaged}
+          downloadControls={downloads}
           start={start.nav}
           exit={start.exit}
           onLeaveApp={(exit) => setStart((current) => nextAppStart(current, exit))}

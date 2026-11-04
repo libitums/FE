@@ -9,6 +9,7 @@ import type {
   ProfileCopy,
   SettingsCopy,
 } from "./ui-copy-sections.contract";
+import type { DownloadSheetCopy } from "./ui-copy-settings.contract";
 
 export const notificationsJa: NotificationsCopy = {
   title: "お知らせ",
@@ -27,10 +28,29 @@ export const settingsJa: SettingsCopy = {
     profile: "ユーザープロフィール",
     "learner-profile": "レッスンで使う名前と国",
     language: "言語",
+    download: "ダウンロード",
     notifications: "お知らせ",
     feedback: "フィードバックを送る",
     "privacy-policy": "プライバシーポリシー",
     "terms-of-use": "利用規約",
+  },
+  downloads: {
+    title: "ダウンロード",
+    caption: "画像と音声をダウンロードするタイミングを選べます。",
+    mobileDataHeading: "モバイルデータでのダウンロード",
+    policy: { ask: "毎回確認する", always: "常にダウンロード", "wifi-only": "Wi-Fiのみ" },
+    offlineHeading: "オフライン",
+    downloadAll: "オフライン用にすべてダウンロード",
+    downloadAllCaption: "すべてのエピソードの画像と音声。通信なしでも学習できます。",
+    downloadAllStarted: "バックグラウンドでダウンロード中です。学習を続けられます。",
+    downloaded: (size) => `ダウンロード済み：${size}`,
+    confirm: {
+      title: "モバイルデータでダウンロードしますか？",
+      description:
+        "すべてのエピソードをダウンロードすると、多くのデータを使う場合があります。Wi-Fiを待つこともできます。",
+      download: "今すぐダウンロード",
+      cancel: "キャンセル",
+    },
   },
   sessionOption: { "auto-play-audio": "自動再生", "show-transcript": "字幕を表示" },
   optionState: { on: "オン", off: "オフ" },
@@ -100,5 +120,42 @@ export const gemPurchaseJa: GemPurchaseCopy = {
   notice: {
     title: "お支払いは近日公開",
     description: "ジェムの購入はまだご利用いただけません。もうしばらくお待ちください。",
+  },
+};
+
+export const downloadSheetJa: DownloadSheetCopy = {
+  askTitle: (n) => `エピソード${n}をダウンロードしますか？`,
+  askDescription:
+    "このエピソードの画像と音声はまだ端末にありません。ダウンロードにはモバイルデータを使います。",
+  size: (size) => `約${size}`,
+  downloadNow: "今すぐダウンロード",
+  onWifi: "Wi-Fiでダウンロード",
+  dontAskAgain: "今後確認しない",
+  wifiOnlyTitle: (n) => `エピソード${n}はWi-Fiでダウンロードします`,
+  wifiOnlyDescription: "設定で「Wi-Fiのみ」を選んでいます。Wi-Fiにつながるとダウンロードします。",
+  ok: "OK",
+  offlineTitle: "オフラインです",
+  offlineDescription: (n) =>
+    `エピソード${n}はまだダウンロードされていません。オンラインに戻るとダウンロードします。`,
+  openAnyway: "このまま開く",
+  close: "閉じる",
+  checked: "オン",
+  unchecked: "オフ",
+  allCleared: {
+    title: "ここにあるストーリーはすべて終わりました",
+    description: "新しいエピソードがあるかもしれません。インターネットにつなぐと確認します。",
+    offline: "オフラインです",
+    lastChecked: (d) =>
+      d === null
+        ? "まだ確認していません"
+        : d === 0
+          ? "最終確認：今日"
+          : d === 1
+            ? "最終確認：昨日"
+            : `最終確認：${d}日前`,
+    checkNow: "今すぐ確認",
+    later: "あとで",
+    autoNote: "オンラインに戻ると自動でも確認します。",
+    offlineHint: "つながったらすぐに確認します。",
   },
 };

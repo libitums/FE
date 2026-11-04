@@ -211,6 +211,49 @@ describe("refreshEpisodeCatalog — 자산", () => {
     expect(markerOf().missing).toEqual([]);
   });
 
+  // ⟨2026-11-04⟩ 받기 정책(ADR-0095 D5) — 정책이 막은 편은 본문만 받고 자산은 건너뛰며, 받기를 멈추지 않고 다음 편으로 갑니다.
+  test("RA7. assetPolicy가 막은 편은 자산을 받지 않고 deferred에 적으며, 다음 편은 끝까지 받는다", async () => {
+    const { log, fetchText, assets } = recorder({}, bundledPaths);
+    const { store, data } = fakeStore();
+    const ready: string[] = [];
+
+    const summary = await refreshEpisodeCatalog({
+      fetchText,
+      store,
+      bundled: bundledCatalogInput,
+      manifestPaths: LEVEL_1_PATHS,
+      assets,
+      assetPolicy: (id) => id !== "u04-a",
+      onEpisodeReady: (id) => ready.push(id),
+    });
+
+    expect(log).toEqual([
+      "fetch manifest.json",
+      "fetch episodes/u04-a.json",
+      "fetch episodes/u05-b.json",
+      "asset images/u05-b/c.jpg",
+    ]);
+    expect(summary.deferred).toEqual(["u04-a"]);
+    expect(ready).toEqual(["u05-b"]);
+    expect(data.has(contentEpisodeKey("u04-a"))).toBe(true);
+    expect(data.has(contentAssetsKey("u04-a"))).toBe(false);
+  });
+
+  test("RA8. assetPolicy가 없거나 다 허락하면 deferred는 비고 지금처럼 받는다", async () => {
+    const { fetchText, assets } = recorder({}, bundledPaths);
+    const { store } = fakeStore();
+    const summary = await refreshEpisodeCatalog({
+      fetchText,
+      store,
+      bundled: bundledCatalogInput,
+      manifestPaths: LEVEL_1_PATHS,
+      assets,
+      assetPolicy: () => true,
+    });
+    expect(summary.deferred).toEqual([]);
+    expect(summary.fetched).toEqual(["u04-a", "u05-b"]);
+  });
+
   test("RA5. 내장 에피소드의 자산도 받는다(준비 알림은 없다 — 내장은 늘 열려 있음)", async () => {
     const { log, fetchText, assets } = recorder();
     const { store } = fakeStore();
