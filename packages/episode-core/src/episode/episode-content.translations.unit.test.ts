@@ -53,6 +53,12 @@ test("TR6. 남은 항목이 하나도 없으면 그 언어 키도 없다", () =>
   expect("translations" in result.episode).toBe(false);
 });
 
+test("TR8. 스페인어 표도 같은 규칙으로 옮긴다(ADR-0097)", () => {
+  const result = decoded({ id: { water: "air" }, es: { water: "agua", bad: 1 } });
+  expect(result.episode.translations).toEqual({ id: { water: "air" }, es: { water: "agua" } });
+  expect(codes(result).filter((code) => code === "invalid-translation")).toHaveLength(1);
+});
+
 test("TR7. 인도네시아어 표도 같은 규칙으로 옮긴다(ADR-0093)", () => {
   const result = decoded({ vi: { water: "nước" }, id: { water: "air", bad: 1 } });
   expect(result.episode.translations).toEqual({ vi: { water: "nước" }, id: { water: "air" } });

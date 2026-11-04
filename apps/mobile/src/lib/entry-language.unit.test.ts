@@ -32,12 +32,13 @@ test("EL3. 다섯 코드 각각에 대해 entryLanguageLabel이 공백 아닌 �
   expect(new Set(labels).size).toBe(allEntryLanguages.length);
 });
 
-// 2026-11-02 베트남어(ADR-0091 D4), 2026-11-03 인도네시아어(ADR-0093)를 연다.
-test("EL4. 영어 · 베트남어 · 인도네시아어만 고를 수 있고 initialEntryLanguage가 고를 수 있는 언어다", () => {
+// 2026-11-02 베트남어(ADR-0091 D4), 2026-11-03 인도네시아어(ADR-0093), 2026-11-04 스페인어(ADR-0097)를 연다.
+test("EL4. 영어 · 베트남어 · 인도네시아어 · 스페인어만 고를 수 있고 initialEntryLanguage가 고를 수 있는 언어다", () => {
   expect(allEntryLanguages.filter((language) => isEntryLanguageAvailable(language))).toEqual([
     "en",
     "vi",
     "id",
+    "es",
   ]);
   expect(isEntryLanguageAvailable(initialEntryLanguage)).toBe(true);
 });

@@ -6,6 +6,7 @@ import type { CatalogInput } from "./episode-catalog";
 
 export const u01TitleVi = "Mua nước";
 export const u01TitleId = "Membeli Air";
+export const u01TitleEs = "Comprar agua";
 
 const u01 = base.episodes["u01-water"] as Record<string, unknown>;
 
@@ -18,6 +19,7 @@ export const bundledCatalogInput: CatalogInput["bundled"] = {
       translations: {
         vi: { [String(u01["title_en"])]: u01TitleVi },
         id: { [String(u01["title_en"])]: u01TitleId },
+        es: { [String(u01["title_en"])]: u01TitleEs },
       },
     },
   },

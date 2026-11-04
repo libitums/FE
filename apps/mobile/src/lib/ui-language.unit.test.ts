@@ -96,7 +96,7 @@ test("UL5. uiLanguageFromDeviceTag는 고를 수 있는 영어만 받는다", ()
 });
 
 test("UL5. 목록에만 있는 언어 · 모르는 태그 · 빈 값은 null이다", () => {
-  for (const tag of ["ja-JP", "es-419", "ko-KR", "zh-Hant-TW", "", " ", null]) {
+  for (const tag of ["ja-JP", "ko-KR", "zh-Hant-TW", "", " ", null]) {
     expect(uiLanguageFromDeviceTag(tag)).toBeNull();
   }
 });
@@ -106,6 +106,13 @@ test("UL5c. 인도네시아어 기기 태그는 id다 — 옛 Android 코드 in�
     expect(uiLanguageFromDeviceTag(tag)).toBe("id");
   }
   expect(returningUiLanguageFrom(null, "in-ID")).toBe("id");
+});
+
+test("UL5d. 스페인어 기기 태그는 나라 · 지역과 상관없이 es다(ADR-0097)", () => {
+  for (const tag of ["es", "es-ES", "es-419", "es-MX", "ES_ar"]) {
+    expect(uiLanguageFromDeviceTag(tag)).toBe("es");
+  }
+  expect(returningUiLanguageFrom(null, "es-CO")).toBe("es");
 });
 
 test("UL5b. 베트남어 기기 태그는 vi다(ADR-0091 D4)", () => {
