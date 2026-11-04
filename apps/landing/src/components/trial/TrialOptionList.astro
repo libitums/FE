@@ -3,7 +3,7 @@ import type { TrialOptionListProps } from "./trial-components.contract";
 
 type Props = TrialOptionListProps;
 
-const { options } = Astro.props;
+const { glossLang, options } = Astro.props;
 ---
 
 <div class="trial-options">
@@ -23,7 +23,7 @@ const { options } = Astro.props;
         <span class="trial-option__roman trial-type-body-s" lang="ko-Latn">
           {option.roman ?? ""}
         </span>
-        <span class="trial-option__en trial-type-body-s" lang="en">
+        <span class="trial-option__en trial-type-body-s" lang={glossLang}>
           {option.en ?? ""}
         </span>
       </button>

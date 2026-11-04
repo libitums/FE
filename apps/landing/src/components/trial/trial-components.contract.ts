@@ -142,25 +142,32 @@ export interface TrialBarProps {
   t: TrialCopy;
 }
 /** 컷 묶음 — 학습 앞(prologue)과 끝(epilogue)이 같은 모양이라 이름 붙은 변형으로 가른다. */
+/** 뜻풀이 · 안내의 `lang` — 번역표가 있는 페이지면 페이지 언어, 아니면(en · ko) 콘텐츠의 영어 `en`(`trialGlossLangOf`). */
+export type TrialGlossLang = string;
 export interface TrialCutsProps {
   t: TrialCopy;
+  glossLang: TrialGlossLang;
   step: "prologue" | "epilogue";
   cuts: NonEmpty<TrialCut>;
 }
 export interface TrialVocabCardProps {
   t: TrialCopy;
+  glossLang: TrialGlossLang;
   vocab: TrialVocab;
 }
 export interface TrialImageMatchProps {
   t: TrialCopy;
+  glossLang: TrialGlossLang;
   item: TrialImageMatch;
 }
 export interface TrialReplySelectProps {
   t: TrialCopy;
+  glossLang: TrialGlossLang;
   item: TrialReplySelect;
 }
 /** 두 고르기 화면이 함께 쓰는 보기 목록 — 화면별 머리는 각 화면이 `slot`으로 앞에 둔다. */
 export interface TrialOptionListProps {
+  glossLang: TrialGlossLang;
   options: TrialImageMatch["options"];
 }
 /** 두 고르기 화면이 함께 쓰는 판정 줄 + Continue. */
@@ -169,10 +176,12 @@ export interface TrialChoiceFooterProps {
 }
 export interface TrialCultureCardProps {
   t: TrialCopy;
+  glossLang: TrialGlossLang;
   culture: TrialCulture;
 }
 export interface TrialRoleplayProps {
   t: TrialCopy;
+  glossLang: TrialGlossLang;
   counterpartName: string;
   imageUrl: string | null;
   turns: NonEmpty<TrialTurn>;
@@ -181,6 +190,7 @@ export interface TrialRoleplayProps {
 }
 export interface TrialTurnProps {
   t: TrialCopy;
+  glossLang: TrialGlossLang;
   turn: TrialTurn;
   index: number;
   total: number;
@@ -253,6 +263,7 @@ export type TrialTestId =
   | "trial-turn-progress"
   | "trial-turn-counterpart"
   | "trial-turn-line"
+  | "trial-turn-translation"
   | "trial-turn-replay"
   | "trial-turn-reply"
   | "trial-turn-verdict"

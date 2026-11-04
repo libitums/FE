@@ -126,6 +126,33 @@ describe("빌드 T-A — PUBLIC_SUPABASE_URL · PUBLIC_SUPABASE_ANON_KEY · SITE
     expect(build.status === 0 ? "ok" : build.output).toBe("ok");
   });
 
+  it("IB1b 번역표가 있는 언어(vi · id · ms)는 모델 · 화면의 뜻풀이가 그 언어고 lang도 그 언어, en · ko는 영어", () => {
+    const english = pageData(page(build, "try/index.html")).model;
+    for (const { file, language } of TRIAL_PAGES) {
+      const document = page(build, file);
+      const { model } = pageData(document);
+      const translated = language === "vi" || language === "id" || language === "ms";
+      const instruction = document.querySelector('[data-testid="trial-choice-instruction"]');
+      const translation = document.querySelector('[data-testid="trial-cut-translation"]');
+      expect(translation?.getAttribute("lang"), file).toBe(translated ? language : "en");
+      expect(
+        document.querySelector('[data-testid="trial-turn-translation"]')?.getAttribute("lang"),
+        file,
+      ).toBe(translated ? language : "en");
+      if (translated) {
+        expect(model.imageMatch.instruction, file).not.toBe(english.imageMatch.instruction);
+        expect(model.prologue[0]?.text.en, file).not.toBe(english.prologue[0]?.text.en);
+        expect(translation?.textContent?.trim(), file).toBe(model.prologue[0]?.text.en);
+      } else {
+        expect(model.imageMatch.instruction, file).toBe(english.imageMatch.instruction);
+        expect(instruction?.textContent?.trim(), file).toBe(english.imageMatch.instruction);
+      }
+      // 한국어 대사 · 정답은 언어와 무관하다
+      expect(model.prologue[0]?.text.ko).toBe(english.prologue[0]?.text.ko);
+      expect(model.roleplay.turns[0]?.accepted).toEqual(english.roleplay.turns[0]?.accepted);
+    }
+  });
+
   it("IB1 두 체험판 페이지 — html[lang] · trial-model JSON · noindex", () => {
     for (const { file, language } of TRIAL_PAGES) {
       const document = page(build, file);

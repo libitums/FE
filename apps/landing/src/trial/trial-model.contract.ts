@@ -130,8 +130,8 @@ export type TrialModelOf = (
   | { readonly ok: true; readonly model: TrialModel }
   | { readonly ok: false; readonly errors: readonly TrialModelError[] };
 
-/** 빌드 때 한 번 — 사본을 decodeEpisode → trialModelOf. 실패면 던진다. */
-export type LoadTrialModel = (port: TrialAssetPort) => TrialModel;
+/** 빌드 때 한 번 — 사본을 decodeEpisode → trialModelOf → 페이지 언어의 번역표 적용(`trial-localize`). 실패면 던진다. */
+export type LoadTrialModel = (port: TrialAssetPort, language?: string) => TrialModel;
 
 /** 사본 고정값. */
 export type TrialContentPin = {
