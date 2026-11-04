@@ -104,11 +104,13 @@ test("MG7. 형식이 틀린 email은 23514", async () => {
   expect(await stored()).toEqual([]);
 });
 
-test("MG8. locale은 en · ko · vi · id · ms, source는 web-trial만(그 밖 23514 · RLS 정책)", async () => {
-  await expect(insert({ email: "a@b.co", locale: "ja" })).rejects.toMatchObject({ code: "23514" });
-  // ⟨2026-11-04⟩ 랜딩의 세 언어(마이그레이션 20261104120000)
-  for (const locale of ["vi", "id", "ms"]) await insert({ email: `${locale}@b.co`, locale });
-  expect((await stored()).map((row) => row.locale)).toEqual(["vi", "id", "ms"]);
+test("MG8. locale은 en · ko · vi · id · ms · es · ja, source는 web-trial만(그 밖 23514 · RLS 정책)", async () => {
+  // ja는 2026-11-04부터 허용 — 목록 밖은 fr로 본다.
+  await expect(insert({ email: "a@b.co", locale: "fr" })).rejects.toMatchObject({ code: "23514" });
+  // ⟨2026-11-04⟩ 랜딩의 세 언어(마이그레이션 20261104120000) + 스페인어 · 일본어(20261104140000)
+  for (const locale of ["vi", "id", "ms", "es", "ja"])
+    await insert({ email: `${locale}@b.co`, locale });
+  expect((await stored()).map((row) => row.locale)).toEqual(["vi", "id", "ms", "es", "ja"]);
   await db.admin.query("truncate public.pre_registrations restart identity");
   await expect(insert({ email: "a@b.co", source: "app" })).rejects.toMatchObject({
     code: expect.stringMatching(/^(23514|42501)$/),

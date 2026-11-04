@@ -48,6 +48,9 @@ importers:
       '@fontsource-variable/league-spartan':
         specifier: 5.3.0
         version: 5.3.0
+      '@fontsource-variable/noto-sans-jp':
+        specifier: 5.3.1
+        version: 5.3.1
       '@libitums/design-tokens':
         specifier: 0.5.0
         version: 0.5.0
@@ -829,6 +832,9 @@ packages:
 
   '@fontsource-variable/league-spartan@5.3.0':
     resolution: {integrity: sha512-dn7OVujDOZ6//Bs0TEhi7QTZvwOJ8YNdNfviT29AC219TKaimMpWtyMGTCdN7IB3ho6HxQj7VEbolHah2tER3g==}
+
+  '@fontsource-variable/noto-sans-jp@5.3.1':
+    resolution: {integrity: sha512-/anGvJFc5y36f8DJ+3TSh2+KAvaRLA9PaLUMvneeY5s4j8m+8X4F3lE/sjTuG9YI5BX4sykvCk4TuJMG7ecMRQ==}
 
   '@img/colour@1.1.0':
     resolution: {integrity: sha512-Td76q7j57o/tLVdgS746cYARfSyxk8iEfRxewL9h4OMzYhbW4TAcppl0mT4eyqXddh6L/jwoM75mo7ixa/pCeQ==}
@@ -6280,6 +6286,8 @@ snapshots:
   '@fontsource-variable/jost@5.3.0': {}
 
   '@fontsource-variable/league-spartan@5.3.0': {}
+
+  '@fontsource-variable/noto-sans-jp@5.3.1': {}
 
   '@img/colour@1.1.0': {}
 

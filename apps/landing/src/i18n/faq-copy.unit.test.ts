@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import { buildFaq } from "../seo/faq";
 import type { FaqCopy, FaqCopyKey, FaqEntry, StoreAvailability } from "../seo/seo.contract";
 import { en } from "./copy";
+import { es } from "./es";
 import { id } from "./id";
+import { ja } from "./ja";
 import { ko } from "./ko";
 import { ms } from "./ms";
 import { vi } from "./vi";
@@ -27,7 +29,7 @@ const faqKeys: readonly FaqCopyKey[] = [
   "faqWhereAAvailable",
 ];
 
-const languages = { en, ko, vi, id, ms } as const;
+const languages = { en, ko, vi, id, ms, es, ja } as const;
 type Language = keyof typeof languages;
 const states: readonly StoreAvailability[] = ["coming-soon", "available"];
 
@@ -64,6 +66,8 @@ describe("FAQ 문구 데이터", () => {
       vi: /miễn phí|giá|trả phí|đăng ký thuê bao|chi phí|xếp hạng|đánh giá|lượt tải|người dùng/i,
       id: /\b(gratis|harga|berbayar|langganan|biaya|peringkat|bintang|ulasan|unduhan|pengguna)\b/i,
       ms: /\b(percuma|harga|berbayar|langganan|kos|penarafan|bintang|ulasan|muat turun|pengguna)\b/i,
+      es: /\b(gratis|precio|de pago|suscripción|coste|costo|valoración|estrellas?|reseñas?|descargas|usuarios)\b/i,
+      ja: /無料|有料|価格|料金|サブスク|課金|評価|星|レビュー|ダウンロード数|ユーザー数|万人/,
     } as const;
     for (const { language, state } of cases) {
       for (const text of textsOf(faqOf(language, state))) {
@@ -87,6 +91,8 @@ describe("FAQ 문구 데이터", () => {
       vi: /sân bay|máy bay|chuyến bay/i,
       id: /bandara|pesawat|penerbangan/i,
       ms: /lapangan terbang|pesawat|penerbangan/i,
+      es: /aeropuerto|avión|vuelo/i,
+      ja: /空港|飛行機|機内/,
     } as const;
     for (const { language, state } of cases) {
       for (const text of textsOf(faqOf(language, state))) {
@@ -102,6 +108,8 @@ describe("FAQ 문구 데이터", () => {
       vi: "chưa ra mắt",
       id: "belum dirilis",
       ms: "belum dilancarkan",
+      es: "aún no está disponible",
+      ja: "まだ公開されていません",
     } as const;
     for (const language of languageCodes) {
       const soon = faqOf(language, "coming-soon").find((entry) => entry.id === "where");
@@ -118,9 +126,12 @@ describe("FAQ 문구 데이터", () => {
       vi: /^(Duru|Trong Duru)/,
       id: /^(Duru|Di Duru)/,
       ms: /^(Duru|Dalam Duru)/,
+      es: /^(Duru|En Duru)/,
+      ja: /^Duru/,
     } as const;
+    // 일본어는 「。」 뒤에 빈칸이 없어 마침표 자체로 가른다.
     const sentencesOf = (answer: string) =>
-      answer.split(/(?<=\.)\s+/).filter((sentence) => sentence.trim() !== "");
+      answer.split(/(?<=\.)\s+|(?<=。)/).filter((sentence) => sentence.trim() !== "");
     for (const { language, state } of cases) {
       const faq = faqOf(language, state);
       for (const entry of faq) {
@@ -145,8 +156,8 @@ describe("FAQ 문구 데이터", () => {
     }
   });
 
-  it("U-CP8 vi · id · ms는 en 답을 그대로 베끼지 않는다", () => {
-    for (const language of ["vi", "id", "ms"] as const) {
+  it("U-CP8 vi · id · ms · es · ja는 en 답을 그대로 베끼지 않는다", () => {
+    for (const language of ["vi", "id", "ms", "es", "ja"] as const) {
       for (const key of faqKeys) {
         expect(copyOf(language)[key], `${language}.${key}`).not.toBe(copyOf("en")[key]);
       }

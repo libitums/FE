@@ -88,6 +88,8 @@ const pages = [
   { file: "vi/index.html", language: "vi", path: "/vi/", image: "og-vi.jpg" },
   { file: "id/index.html", language: "id", path: "/id/", image: "og-id.jpg" },
   { file: "ms/index.html", language: "ms", path: "/ms/", image: "og-ms.jpg" },
+  { file: "es/index.html", language: "es", path: "/es/", image: "og-es.jpg" },
+  { file: "ja/index.html", language: "ja", path: "/ja/", image: "og-ja.jpg" },
 ] as const;
 const languageCodes = pages.map((entry) => entry.language);
 const languagePaths = pages.map((entry) => `${origin}${entry.path}`);
@@ -247,6 +249,30 @@ describe("빌드 A — SITE_URL 있음", () => {
     for (const path of languagePaths) expect(text).toContain(`(${path})`);
   });
 
+  it("I-A20 ja · es 페이지의 서체 — 산출 CSS에 언어별 규칙과 Noto Sans JP · Inter @font-face가 있고 파일이 동봉된다", () => {
+    const cssOf = (file: string) => {
+      const document = page(build, file);
+      return [
+        ...texts(document, "style"),
+        ...attr(document, 'link[rel="stylesheet"]', "href")
+          .filter((href) => href.startsWith("/"))
+          .map((href) => read(build, href.slice(1))),
+      ].join("\n");
+    };
+    const css = cssOf("ja/index.html");
+    expect(css).toMatch(/html\[lang="?ja"?\]/);
+    expect(css).toMatch(/html\[lang="?es"?\]/);
+    expect(css).toContain("Noto Sans JP Variable");
+    expect(css).toContain("Inter Variable");
+    // @font-face의 파일이 산출물 안에 있다(밖에서 받지 않는다).
+    const fontUrls = [...css.matchAll(/url\((["']?)(\/[^)"']+\.woff2)\1\)/g)].map((m) => m[2]);
+    const jp = fontUrls.filter((url) => /noto-sans-jp/i.test(url));
+    expect(jp.length).toBeGreaterThan(0);
+    for (const url of jp) expect(has(build, url.slice(1)), url).toBe(true);
+    // 영어 페이지의 CSS도 같은 파일이지만 unicode-range가 있어 글자가 없으면 받지 않는다 — 규칙 자체는 같은 CSS에 있다.
+    expect(cssOf("index.html")).toContain("Noto Sans JP Variable");
+  });
+
   it("I-A19 서체를 밖에서 받지 않고 산출물에 함께 싣는다", () => {
     for (const { file } of pages) {
       const document = page(build, file);
@@ -303,6 +329,10 @@ describe("빌드 A — SITE_URL 있음", () => {
     expect(text).toContain(`(${origin}/vi/): Vietnamese`);
     expect(text).toContain(`(${origin}/id/): Indonesian`);
     expect(text).toContain(`(${origin}/ms/): Malay`);
+    expect(text).toContain(`(${origin}/es/): Spanish`);
+    expect(text).toContain(`(${origin}/ja/): Japanese`);
+    // 일본어 가나 · 한자도 없다.
+    expect(text).not.toMatch(/[\u3040-\u30ff\u4e00-\u9fff]/);
     expect(text).not.toMatch(/[\u1100-\u11ff\u3130-\u318f\uac00-\ud7a3]/);
     // 베트남어 성조 글자도 없다(영어 이름으로만 가리킨다).
     expect(text).not.toMatch(/[\u1ea0-\u1ef9]/);

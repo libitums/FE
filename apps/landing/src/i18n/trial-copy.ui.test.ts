@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 import { trialEn } from "./trial-copy";
+import { trialEs } from "./trial-es";
 import { trialId } from "./trial-id";
+import { trialJa } from "./trial-ja";
 import { trialKo } from "./trial-ko";
 import { trialMs } from "./trial-ms";
 import { trialVi } from "./trial-vi";
@@ -15,6 +17,8 @@ const others = [
   ["vi", trialVi],
   ["id", trialId],
   ["ms", trialMs],
+  ["es", trialEs],
+  ["ja", trialJa],
 ] as const;
 
 describe("TK1 체험판 문구", () => {
@@ -79,6 +83,8 @@ describe("TK1 체험판 문구", () => {
     expect(trialVi.preregPrivacy).toContain("ra mắt");
     expect(trialId.preregPrivacy).toContain("peluncuran");
     expect(trialMs.preregPrivacy).toContain("pelancaran");
+    expect(trialEs.preregPrivacy).toContain("lanzamiento");
+    expect(trialJa.preregPrivacy).toContain("公開");
   });
 
   it("r3 — 마이크 아래 수집 안내(글자로 저장 · 채점 개선)", () => {

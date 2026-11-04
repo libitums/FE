@@ -53,6 +53,49 @@ html[lang="vi"] {
   --libitum-typography-dialogue-body-font-family: var(--font-default);
 }
 
+/* 스페인어 — Pretendard에 á í ó ú ñ이 없어 본문만 Inter로. 강조 Jost는 라틴-1을 다 가져 그대로(ADR-0097). */
+html[lang="es"] {
+  --font-default: "Inter Variable", "Inter", var(--libitum-font-family-default);
+  --libitum-typography-display-font-family: var(--font-default);
+  --libitum-typography-heading-l-font-family: var(--font-default);
+  --libitum-typography-heading-m-font-family: var(--font-default);
+  --libitum-typography-heading-s-font-family: var(--font-default);
+  --libitum-typography-body-l-font-family: var(--font-default);
+  --libitum-typography-body-m-font-family: var(--font-default);
+  --libitum-typography-body-s-font-family: var(--font-default);
+  --libitum-typography-label-xl-font-family: var(--font-default);
+  --libitum-typography-label-l-font-family: var(--font-default);
+  --libitum-typography-label-m-font-family: var(--font-default);
+  --libitum-typography-label-s-font-family: var(--font-default);
+  --libitum-typography-button-xl-font-family: var(--font-default);
+  --libitum-typography-button-m-font-family: var(--font-default);
+  --libitum-typography-dialogue-speaker-font-family: var(--font-default);
+  --libitum-typography-dialogue-body-font-family: var(--font-default);
+}
+
+/* 일본어 — Jost(강조) · Pretendard(본문)에 신자체 한자가 없어 강조 · 본문을 통째로 Noto Sans JP로(ADR-0097). */
+html[lang="ja"] {
+  --font-default: "Noto Sans JP Variable", "Noto Sans JP", var(--libitum-font-family-default);
+  --font-accent: "Noto Sans JP Variable", "Noto Sans JP", var(--libitum-font-family-accent);
+  --libitum-typography-accent-display-font-family: var(--font-accent);
+  --libitum-typography-accent-metric-font-family: var(--font-accent);
+  --libitum-typography-display-font-family: var(--font-default);
+  --libitum-typography-heading-l-font-family: var(--font-default);
+  --libitum-typography-heading-m-font-family: var(--font-default);
+  --libitum-typography-heading-s-font-family: var(--font-default);
+  --libitum-typography-body-l-font-family: var(--font-default);
+  --libitum-typography-body-m-font-family: var(--font-default);
+  --libitum-typography-body-s-font-family: var(--font-default);
+  --libitum-typography-label-xl-font-family: var(--font-default);
+  --libitum-typography-label-l-font-family: var(--font-default);
+  --libitum-typography-label-m-font-family: var(--font-default);
+  --libitum-typography-label-s-font-family: var(--font-default);
+  --libitum-typography-button-xl-font-family: var(--font-default);
+  --libitum-typography-button-m-font-family: var(--font-default);
+  --libitum-typography-dialogue-speaker-font-family: var(--font-default);
+  --libitum-typography-dialogue-body-font-family: var(--font-default);
+}
+
 *,
 *::before,
 *::after {

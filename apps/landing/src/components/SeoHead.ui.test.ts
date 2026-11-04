@@ -73,6 +73,8 @@ describe("SeoHead", () => {
       "vi_VN",
       "id_ID",
       "ms_MY",
+      "es_ES",
+      "ja_JP",
     ]);
     const ko = await renderHead("ko", "");
     expect(metaContent(ko.document, 'meta[property="og:locale:alternate"]')).toEqual([
@@ -80,6 +82,8 @@ describe("SeoHead", () => {
       "vi_VN",
       "id_ID",
       "ms_MY",
+      "es_ES",
+      "ja_JP",
     ]);
   });
 

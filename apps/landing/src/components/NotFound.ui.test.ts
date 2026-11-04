@@ -49,7 +49,7 @@ describe("NotFound", () => {
     const others = languages.filter((code) => code !== defaultLanguage);
     const links = [...document.querySelectorAll('[data-testid="not-found-languages"] a')];
     expect(links).toHaveLength(others.length);
-    expect(others).toEqual(["ko", "vi", "id", "ms"]);
+    expect(others).toEqual(["ko", "vi", "id", "ms", "es", "ja"]);
     others.forEach((code, index) => {
       const link = links[index];
       expect(link?.getAttribute("href")).toBe(pathFor(code));
@@ -63,6 +63,8 @@ describe("NotFound", () => {
       "Tiếng Việt",
       "Bahasa Indonesia",
       "Bahasa Melayu",
+      "Español",
+      "日本語",
     ]);
   });
 

@@ -109,6 +109,8 @@ const TRIAL_PAGES = [
   { file: "vi/try/index.html", language: "vi" },
   { file: "id/try/index.html", language: "id" },
   { file: "ms/try/index.html", language: "ms" },
+  { file: "es/try/index.html", language: "es" },
+  { file: "ja/try/index.html", language: "ja" },
 ] as const;
 
 describe("빌드 T-A — PUBLIC_SUPABASE_URL · PUBLIC_SUPABASE_ANON_KEY · SITE_URL 있음", () => {
@@ -131,7 +133,7 @@ describe("빌드 T-A — PUBLIC_SUPABASE_URL · PUBLIC_SUPABASE_ANON_KEY · SITE
     for (const { file, language } of TRIAL_PAGES) {
       const document = page(build, file);
       const { model } = pageData(document);
-      const translated = language === "vi" || language === "id" || language === "ms";
+      const translated = language !== "en" && language !== "ko";
       const instruction = document.querySelector('[data-testid="trial-choice-instruction"]');
       const translation = document.querySelector('[data-testid="trial-cut-translation"]');
       expect(translation?.getAttribute("lang"), file).toBe(translated ? language : "en");
@@ -241,6 +243,8 @@ describe("빌드 T-A — PUBLIC_SUPABASE_URL · PUBLIC_SUPABASE_ANON_KEY · SITE
       ["vi/index.html", "/vi/try/"],
       ["id/index.html", "/id/try/"],
       ["ms/index.html", "/ms/try/"],
+      ["es/index.html", "/es/try/"],
+      ["ja/index.html", "/ja/try/"],
     ] as const) {
       const document = page(build, file);
       for (const id of ["hero-trial-link", "download-trial-link"]) {

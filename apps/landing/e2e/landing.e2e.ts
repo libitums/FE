@@ -1,7 +1,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
-const paths = ["/", "/ko/", "/vi/", "/id/", "/ms/"] as const;
+const paths = ["/", "/ko/", "/vi/", "/id/", "/ms/", "/es/", "/ja/"] as const;
 
 for (const path of paths) {
   test.describe(path, () => {
@@ -130,6 +130,30 @@ test("서체를 다른 호스트에서 받지 않고, 두 서체가 실제로 �
     pretendard: document.fonts.check('700 32px "Pretendard Variable"', "이야기"),
   }));
   expect(loaded).toEqual({ jost: true, pretendard: true });
+});
+
+test("일본어 페이지는 Noto Sans JP를, 스페인어 페이지는 본문 Inter를 실제로 싣고 다른 호스트에서 받지 않는다", async ({
+  page,
+}) => {
+  const external: string[] = [];
+  page.on("request", (request) => {
+    const url = new URL(request.url());
+    if (url.hostname !== "127.0.0.1") external.push(url.hostname);
+  });
+  const loadedFamilies = () =>
+    page.evaluate(() =>
+      [...document.fonts].filter((face) => face.status === "loaded").map((face) => face.family),
+    );
+  await page.goto("/ja/", { waitUntil: "load" });
+  await page.evaluate(() => document.fonts.ready);
+  expect((await loadedFamilies()).some((family) => /Noto Sans JP/.test(family))).toBe(true);
+  await page.goto("/es/", { waitUntil: "load" });
+  await page.evaluate(() => document.fonts.ready);
+  const es = await loadedFamilies();
+  expect(es.some((family) => /Inter/.test(family))).toBe(true);
+  // 스페인어 페이지에는 일본어 글자가 없어 Noto Sans JP 조각을 받지 않는다.
+  expect(es.some((family) => /Noto Sans JP/.test(family))).toBe(false);
+  expect(external).toEqual([]);
 });
 
 test.describe("넓은 화면의 머리", () => {
