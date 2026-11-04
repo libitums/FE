@@ -8,7 +8,7 @@ import TrialIcon from "./TrialIcon.astro";
 
 type Props = TrialTurnProps;
 
-const { t, turn, index, total, counterpartName, collects } = Astro.props;
+const { t, glossLang, turn, index, total, counterpartName, collects } = Astro.props;
 // 수집이 켜진 빌드면 마이크 아래 안내 한 줄 — 마이크 버튼이 설명으로 가리킵니다.
 const savedId = collects ? `trial-turn-saved-${index}` : undefined;
 const hint =
@@ -39,7 +39,7 @@ const hint =
     {
       turn.line.en !== null && (
         <div class="trial-dialog__translation">
-          <p class="trial-type-body-m" lang="en">
+          <p class="trial-type-body-m" lang={glossLang} data-testid="trial-turn-translation">
             {turn.line.en}
           </p>
         </div>

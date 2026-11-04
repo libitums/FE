@@ -4,7 +4,7 @@ import TrialTurn from "./TrialTurn.astro";
 
 type Props = TrialRoleplayProps;
 
-const { t, counterpartName, imageUrl, turns, collects } = Astro.props;
+const { t, glossLang, counterpartName, imageUrl, turns, collects } = Astro.props;
 ---
 
 <section
@@ -25,6 +25,7 @@ const { t, counterpartName, imageUrl, turns, collects } = Astro.props;
     turns.map((turn, index) => (
       <TrialTurn
         t={t}
+        glossLang={glossLang}
         turn={turn}
         index={index}
         total={turns.length}

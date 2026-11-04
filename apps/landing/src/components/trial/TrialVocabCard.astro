@@ -4,7 +4,7 @@ import TrialIcon from "./TrialIcon.astro";
 
 type Props = TrialVocabCardProps;
 
-const { t, vocab } = Astro.props;
+const { t, glossLang, vocab } = Astro.props;
 const { word, example } = vocab;
 ---
 
@@ -31,7 +31,7 @@ const { word, example } = vocab;
         {word.roman ?? ""}
       </p>
       <hr class="trial-vocab__rule" />
-      <p class="trial-vocab__meaning trial-type-heading-s" lang="en" data-testid="trial-vocab-meaning">
+      <p class="trial-vocab__meaning trial-type-heading-s" lang={glossLang} data-testid="trial-vocab-meaning">
         {word.en ?? ""}
       </p>
       {
@@ -60,7 +60,7 @@ const { word, example } = vocab;
               </p>
             )}
             {example.en !== null && (
-              <p class="trial-muted trial-type-body-m" lang="en">
+              <p class="trial-muted trial-type-body-m" lang={glossLang}>
                 {example.en}
               </p>
             )}

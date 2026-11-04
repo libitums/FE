@@ -45,11 +45,16 @@
   `unicode-range`가 있어 **다른 언어 페이지는 이 파일을 받지 않는다**. 인도네시아어 · 말레이어는 기본 라틴뿐이라 Jost · Pretendard 그대로(ADR-0093 D4와 같은 판단).
 - 버린 안: 베트남어도 Pretendard → 시스템 서체 폴백에 맡기기(앱의 본문이 그렇다) — 웹은 글리프 단위 폴백이 눈에 보여 버렸다. Jost 전체를 바꾸기 — 영어 페이지의 인상을 바꿀 이유가 없다.
 
-### D4. 체험판은 UI 문구만 그 언어다 — 콘텐츠(u00) 뜻풀이는 영어 그대로
+### D4. 체험판은 UI 문구와 **콘텐츠 뜻풀이** 둘 다 그 언어다 — 번역표는 랜딩이 따로 든다
 
 - `/vi/try/` 등은 `TrialCopy`를 그 언어로 그리고, 사전 등록 · 수집의 `locale`에 페이지 언어를 보낸다(`PreregLocale`을 `languages`와 같게 넓혔다).
-- 체험판 사본 `src/trial/content/u00-tutorial.json`은 앱 **테스트 고정본(2026-10-23판)에 바이트로 핀**돼 있고 번역표가 없다(`devtools/trial-assets`). 그래서 컷 번역 · 보기 뜻풀이는
-  앱이 번역표 없는 에피소드를 보일 때와 같이 **영어**다(ADR-0091 「대가」와 같은 상태). 재검토 조건: 체험판을 u00 최신판(번역표 있음)으로 옮길 때 `episode-core`의 번역표로 뜻풀이를 바꾼다.
+- 체험판 사본 `src/trial/content/u00-tutorial.json`은 앱 **테스트 고정본(2026-10-23판)에 바이트로 핀**돼 있고 번역표가 없다(`devtools/trial-assets`). 사본을 건드리는 대신
+  **랜딩이 번역표를 따로 든다** — `src/trial/content/u00-translations.ts`(앱 번역표와 같은 「영어 원문 → 번역」 꼴, vi · id · ms × 47문장). vi · id는 앱 내장 u00의
+  `translations`에서 같은 영어 38문장을 가져오고 거기 없는 아홉은 사람이, ms는 전부 사람이 옮겼다(초안). ⟨2026-11-04 사용자 지적 「체험판 해석본 설정언어로 안되어 있지 않나」⟩
+- 적용은 빌드 때 모델에 한 번 — `loadTrialModel(port, language)`가 `localizeTrialModel`(순수, `trial-localize.ts`)로 `en` · `instruction` · `prompt` · `replyTranslation` 칸을 바꾼다.
+  한국어 · 로마자 · 정답 · 주소는 불변. 표에 없는 언어(en · ko)는 같은 객체. `trial-localize.unit.test.ts` TL1이 모델의 영어가 표에 전부 있는지 잰다 — 사본이 바뀌면 여기서 걸린다.
+- 뜻풀이 요소의 `lang`은 번역표가 있는 언어면 페이지 언어, 아니면 `en`(`trialGlossLangOf`) — 컴포넌트가 `glossLang` prop으로 받고, 낭독(`trial-dom-live`)은 그려진 요소의 lang을 따른다.
+- 버린 안: 사본을 번역표 있는 최신 u00으로 올리기 — 체험판은 옛 14스텝 구조에 맞춰져 있어(trial-assets 머리글) 판을 올리면 S3 · S9 · S12 조립이 깨진다.
 
 ### D5. DB `locale` 목록을 넓힌다 — 마이그레이션 `20261104120000_web_trial_locales.sql`
 
@@ -66,9 +71,9 @@
 
 | 계층 | 무엇 |
 |---|---|
-| unit | `faq-copy`: 다섯 언어 × 두 상태의 FAQ 모양(가격 · 수치 · 공항 금지 · 둘 이하 문장 · `Duru`로 시작 · 출시 전 표지 · 한글 유무 · en 베끼기 없음). `episodes`: 다섯 언어의 제목 · 때 · 티저 · 대체 문구 |
+| unit | `faq-copy`: 다섯 언어 × 두 상태의 FAQ 모양(가격 · 수치 · 공항 금지 · 둘 이하 문장 · `Duru`로 시작 · 출시 전 표지 · 한글 유무 · en 베끼기 없음). `episodes`: 다섯 언어의 제목 · 때 · 티저 · 대체 문구. `trial-localize` TL1 ~ TL5: 모델의 영어가 세 표에 전부 있음 · null이면 같은 객체 · 영어 칸만 바뀜 · 바꾼 뒤 영어 없음 · 값 모양. `trial-content` TM9 · TM10 |
 | ui | `trial-copy`: 네 언어가 en의 키 · 자리표시자와 같고 en을 베끼지 않음. `Features` FT7 · `Words` WD2/3 · `Closing` CL1: 목업 UI 문구 · 뜻풀이가 `t`를 따르고 한글이 섞이지 않음(다섯 언어). `Header` · `NotFound` · `SeoHead` · `Landing` · `TrialPage` · `TrialAccessibility`: 언어 목록을 따름 |
-| integration | `build`: 다섯 페이지의 hreflang(6) · sitemap(5) · `llms.txt`(영어 이름 · 성조 글자 없음) · og 파일. `trial-build`: 다섯 체험판 페이지 · 랜딩 링크. supabase `pre-registrations` MG8 · `trial-speech-samples` SS7 |
+| integration | `build`: 다섯 페이지의 hreflang(6) · sitemap(5) · `llms.txt`(영어 이름 · 성조 글자 없음) · og 파일. `trial-build`: 다섯 체험판 페이지 · 랜딩 링크 · IB1b(vi · id · ms의 모델 · 화면 뜻풀이와 lang이 그 언어, en · ko는 영어). supabase `pre-registrations` MG8 · `trial-speech-samples` SS7 |
 | e2e | `landing.e2e.ts` 다섯 주소의 넘침 · 제목 단계 · 키보드 · axe · 서체, `content.e2e.ts`의 head · sitemap · `llms.txt` |
 | 사람 | `/vi/`의 강조 · 본문 서체가 League Spartan · Inter로 그려지고 성조 부호가 잘리지 않는가. 번역 검수 |
 
@@ -76,11 +81,11 @@
 
 - 산출물에 서체 둘이 더해진다(베트남어 페이지만 받는다). 빌드 페이지 수 2 → 5(체험판 포함 4 → 10).
 - 번역은 초안이다. 말레이어 목업은 앱에 없는 화면을 약속한다(D2 — 사용자 결정).
-- 체험판의 콘텐츠 뜻풀이는 영어다(D4).
+- 체험판 번역표는 사본과 따로 살아 사본이 바뀌면 함께 고쳐야 한다(TL1이 잡는다).
 
 ## 재검토 조건
 
 - 앱이 말레이어 UI를 열면 → D2의 ms 목업 문구를 앱 문구표와 맞춘다.
-- 체험판 사본을 번역표 있는 u00으로 올리면 → D4.
+- 체험판 사본을 번역표 있는 u00으로 올리면 → D4의 랜딩 표를 지우고 `episode-core`의 표를 쓴다.
 - 언어가 더 늘면 → `languages` · 문구표 둘 · `story/text/<코드>.ts` · `og-<코드>.jpg` · DB check(마이그레이션) 다섯 자리만 더한다.
   (Story 글은 다섯 언어가 되며 `episodes.ts`가 300줄 상한을 넘겨 언어별 파일로 나눴다 — `episodes.contract.ts`의 id 목록이 다섯 파일과 배열을 타입으로 묶는다.) 라틴 밖 글자면 D3처럼 서체를 본다.

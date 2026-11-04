@@ -4,7 +4,7 @@ import type { TrialCutsProps } from "./trial-components.contract";
 
 type Props = TrialCutsProps;
 
-const { t, step, cuts } = Astro.props;
+const { t, glossLang, step, cuts } = Astro.props;
 const headingId = `trial-heading-${step}`;
 const lastIndex = cuts.length - 1;
 // 표지가 없어 prologue가 첫 화면입니다 — 열 때부터 보입니다(JS가 꺼져도 컷 1은 보임).
@@ -53,7 +53,7 @@ const speakerOf = (cut: TrialCut) =>
             <p class="trial-dialog__roman trial-type-body-s" lang="ko-Latn" data-testid="trial-cut-roman">
               {cut.text.roman ?? ""}
             </p>
-            <p class="trial-type-body-m" lang="en" data-testid="trial-cut-translation">
+            <p class="trial-type-body-m" lang={glossLang} data-testid="trial-cut-translation">
               {cut.text.en ?? ""}
             </p>
           </div>

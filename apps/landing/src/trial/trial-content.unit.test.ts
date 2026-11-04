@@ -3,7 +3,8 @@ import { existsSync, readFileSync } from "node:fs";
 
 import { describe, expect, it } from "vitest";
 
-import { loadTrialModel, TRIAL_CONTENT } from "./trial-content";
+import { u00Translations } from "./content/u00-translations";
+import { loadTrialModel, trialGlossLangOf, TRIAL_CONTENT } from "./trial-content";
 import { trialImageUrlOf } from "./trial-images";
 import { TEST_CONTENT_BASE, TRIAL_COPY_PATH } from "./trial.test-support";
 
@@ -29,6 +30,31 @@ describe("loadTrialModel", () => {
     const model = loadTrialModel({ imageUrlOf: trialImageUrlOf, contentBase: TEST_CONTENT_BASE });
     expect(model.episodeId).toBe("u00-tutorial");
     expect(model.version).toBe(TRIAL_CONTENT.version);
+  });
+
+  it("TM9 페이지 언어에 번역표가 있으면(vi · id · ms) 영어 칸을 바꾸고, en · ko는 영어 그대로", () => {
+    const port = { imageUrlOf: trialImageUrlOf, contentBase: TEST_CONTENT_BASE };
+    const en = loadTrialModel(port);
+    expect(loadTrialModel(port, "ko")).toEqual(en);
+    for (const language of ["vi", "id", "ms"] as const) {
+      const model = loadTrialModel(port, language);
+      expect(model.imageMatch.instruction).toBe(
+        u00Translations[language][en.imageMatch.instruction],
+      );
+      expect(model.prologue[0].text.en).toBe(
+        u00Translations[language][en.prologue[0].text.en ?? ""],
+      );
+      expect(model.prologue[0].text.ko).toBe(en.prologue[0].text.ko);
+    }
+  });
+
+  it("TM10 뜻풀이의 lang — 번역표가 있는 언어는 그 언어, 아니면 en", () => {
+    expect(trialGlossLangOf("en")).toBe("en");
+    expect(trialGlossLangOf("ko")).toBe("en");
+    expect(trialGlossLangOf("vi")).toBe("vi");
+    expect(trialGlossLangOf("id")).toBe("id");
+    expect(trialGlossLangOf("ms")).toBe("ms");
+    expect(trialGlossLangOf("ja")).toBe("en");
   });
 
   it("TM8 모델을 만들 수 없으면 던지고 메시지에 오류 코드 · 경로가 있다", () => {
