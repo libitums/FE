@@ -25,8 +25,19 @@ describe("catalogUnitGroupOf", () => {
     expect(catalogUnitGroupOf(stepId)).toBe(group);
   });
 
-  test("UI-G1. 표 밖(S8 · S9 · RP · INT · 빈 값)은 null", () => {
-    for (const stepId of ["S8", "S9", "S13", "RP", "INT", "", "s1"]) {
+  test("UI-G1. 표 밖(S8 · S9 · RP · INT · 빈 값 · 프로토타입 키)은 null", () => {
+    for (const stepId of [
+      "S8",
+      "S9",
+      "S13",
+      "RP",
+      "INT",
+      "",
+      "s1",
+      "toString",
+      "__proto__",
+      "constructor",
+    ]) {
       expect(catalogUnitGroupOf(stepId)).toBeNull();
     }
   });
