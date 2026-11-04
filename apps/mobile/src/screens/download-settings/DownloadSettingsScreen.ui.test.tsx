@@ -94,3 +94,21 @@ describe("DownloadSettingsScreen", () => {
     expect(onBack).toHaveBeenCalledTimes(1);
   });
 });
+
+test("DSU7. 다시 그려져도(새 함수를 받아도) 저장소는 화면을 열 때 한 번만 읽는다", () => {
+  const loadDownloadedBytes = vi.fn<() => number | null>(() => null);
+  const loadPolicy = vi.fn<() => "ask">(() => "ask");
+  const { rerender } = render(
+    <DownloadSettingsScreen {...props({ loadPolicy, loadDownloadedBytes })} />,
+  );
+  rerender(
+    <DownloadSettingsScreen
+      {...props({
+        loadPolicy: () => loadPolicy(),
+        loadDownloadedBytes: () => loadDownloadedBytes(),
+      })}
+    />,
+  );
+  expect(loadPolicy).toHaveBeenCalledTimes(1);
+  expect(loadDownloadedBytes).toHaveBeenCalledTimes(1);
+});
