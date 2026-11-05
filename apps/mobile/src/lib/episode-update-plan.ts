@@ -12,6 +12,7 @@ import {
 import type { EpisodeManifest, ManifestEntry } from "./episode-manifest";
 import { TUTORIAL_EPISODE_ID } from "./tutorial-episode";
 import { textDigestOf } from "./verified-text-cache";
+import { measureTask } from "./perf-probe";
 
 export type EpisodeUpdateKind = "new" | "changed" | "current" | "bundled";
 export type PlannedEpisode = { readonly entry: ManifestEntry; readonly kind: EpisodeUpdateKind };
@@ -37,6 +38,15 @@ export function matchesEntry(entry: ManifestEntry, text: string): boolean {
 
 /** 활성 매니페스트의 원격 항목 가운데 지금 열리는 id. assets가 "required"면 활성 자산 표시도 그 sha여야 합니다. */
 export function activeReadyIds(
+  store: ContentStore,
+  active: EpisodeManifest | null,
+  bundled: EpisodeManifest,
+  assets: "required" | "not-required",
+): ReadonlySet<string> {
+  return measureTask("refresh.activeReady", () => activeReadySet(store, active, bundled, assets));
+}
+
+function activeReadySet(
   store: ContentStore,
   active: EpisodeManifest | null,
   bundled: EpisodeManifest,

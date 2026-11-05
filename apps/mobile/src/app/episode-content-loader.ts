@@ -27,6 +27,7 @@ import { buildEpisodeCatalog, parseCachedManifest } from "../lib/episode-catalog
 import type { CatalogSourceText } from "../lib/episode-catalog";
 import { contentBucket } from "../lib/content-bucket";
 import { contentBaseUrl, resolveContentUrlSafe } from "../lib/episode-remote";
+import { measureTask } from "../lib/perf-probe";
 import { fillPlaceholders } from "../lib/placeholder-fill";
 import { sameTranslationTables } from "../lib/translation-tables";
 import { supabaseConfig } from "../lib/supabase-config";
@@ -128,7 +129,7 @@ function audioTableOf(text: string | null): AudioTimingTable | null {
 export function loadEpisodeContent(): EpisodeContent {
   let catalog: EpisodeContent["catalog"];
   try {
-    catalog = catalogOf(readSource());
+    catalog = measureTask("catalog.load", () => catalogOf(readSource()));
   } catch {
     catalog = buildEpisodeCatalog({
       bundled: bundledCatalogInput,

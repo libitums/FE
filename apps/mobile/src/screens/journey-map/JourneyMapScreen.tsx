@@ -32,6 +32,7 @@ import { knownProgressLoad, nodeAccessOf } from "./journey-map-load";
 import type { JourneyMapProgressLoad } from "./journey-map-load.contract";
 
 import "./journey-map-screen.css";
+import { perfProbe } from "../../lib/perf-probe";
 
 export type JourneyMapScreenProps = {
   /** 카탈로그 구획 — 튜토리얼(u00)도 그 하나입니다. 진행은 `App`이 소유하고 props로 내립니다. */
@@ -60,6 +61,7 @@ export function JourneyMapScreen({
   progressLoad = knownProgressLoad,
   statusBarInset = 0,
 }: JourneyMapScreenProps): ReactNode {
+  perfProbe().countRender("JourneyMap");
   // 첫 유닛 안내는 첫 구획이 준비된 튜토리얼일 때만 섭니다 — 대상이 없으면 가림막도 서지 않습니다.
   const guide = useFirstUnitGuide("map", mapGuideTargetOf(catalog.sections) !== null);
   // 스크롤 상자가 화면 맨 위(상태 표시줄 뒤)에서 시작하도록 화면 위 여백을 스크롤 안쪽으로 옮기고, 위 모서리
