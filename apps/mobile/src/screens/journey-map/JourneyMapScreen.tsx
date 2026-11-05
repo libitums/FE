@@ -19,6 +19,7 @@ import { mapTopLayout } from "./journey-map-insets";
 import { mapScrollTargetOf } from "./journey-map-next-unit";
 import { useAutoScrollToNext } from "./useAutoScrollToNext";
 import { useMapGlide } from "./use-map-glide";
+import { useGuideAlignment } from "./use-guide-alignment";
 import { takeMapCleared } from "./journey-map-cleared-memory";
 import { rememberedMapScroll, rememberMapScroll } from "./journey-map-scroll-memory";
 import { useStepSheet } from "./useStepSheet";
@@ -63,6 +64,13 @@ export function JourneyMapScreen({
   const [clearedUnit] = useState(takeMapCleared);
   const bodyCatalog = useMemo(() => ({ ...catalog, clearedUnit }), [catalog, clearedUnit]);
   const glider = useMapGlide();
+  // 가이드는 지도를 맨 위(표지)로 옮긴 뒤에 보입니다 — 어긋난 자리에 강조가 서지 않게 합니다.
+  const alignment = useGuideAlignment({
+    visible: guide.visible,
+    initialScrollTop: restoredScrollTop ?? 0,
+    glider,
+  });
+  const guideShown = guide.visible && alignment.aligned;
   const {
     sheetState,
     sheetTop,
@@ -98,6 +106,7 @@ export function JourneyMapScreen({
   const handleMapScroll = (event: ScrollEvent) => {
     "background only";
     rememberMapScroll(event.detail.scrollTop);
+    alignment.handleScroll(event);
     handleScroll(event);
     autoScroll.handleScroll(event);
   };
@@ -178,7 +187,7 @@ export function JourneyMapScreen({
         main-thread:ref={glider.scrollRef}
         bindscroll={handleMapScroll}
         initial-scroll-offset={restoredScrollTop ?? undefined}
-        enable-scroll={guide.visible ? false : undefined}
+        enable-scroll={guideShown ? false : undefined}
       >
         <view
           className="journey-map-screen-map"
@@ -191,7 +200,7 @@ export function JourneyMapScreen({
             <JourneyMapBody
               catalog={bodyCatalog}
               access={access}
-              guideVisible={guide.visible}
+              guideVisible={guideShown}
               handlers={bodyHandlers}
             />
           </MapUnitEntranceProvider>
@@ -199,7 +208,7 @@ export function JourneyMapScreen({
       </scroll-view>
       {/* [겹침 레이어] 머리 띠입니다 — 말풍선이 열린 동안만 **스크롤 밖에** 섭니다(구획마다
           `position: sticky`로 두면 Lynx에서 첫 카드가 풀리지 않습니다). */}
-      {guide.visible ? (
+      {guideShown ? (
         <view
           className="first-unit-map-scrim"
           data-testid="first-unit-guide-map"
