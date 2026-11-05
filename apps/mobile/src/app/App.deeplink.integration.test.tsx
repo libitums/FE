@@ -9,6 +9,7 @@ import {
   fakeTransport,
   runEntryFlow,
 } from "./test-helpers/airbridge-events-harness";
+import { expectJourneyMapHidden } from "./test-helpers/tab-keep-alive";
 
 // 「호스트 AirbridgeEventsModule.takeOpenedDeeplink → 해석 → 탭 이동」을 한 트리에서 봅니다(ADR-0080).
 // 대역은 호스트 모듈뿐입니다. 링크를 받는 것(scheme · universal link · App Link · 지연 딥링크)은 호스트가 지고 e2e가 봅니다.
@@ -50,7 +51,7 @@ test("DI1. 링크로 켜진 앱은 앱 구간에 들어선 뒤 그 탭(롤플레
   await flush();
 
   expect(screen.getByTestId("roleplay-list-screen-title")).toBeInTheDocument();
-  expect(screen.queryByTestId("journey-map-screen")).not.toBeInTheDocument();
+  expectJourneyMapHidden();
 });
 
 test("DI2. 켜진 채 링크가 오면 호스트 이벤트로 꺼내 설정 탭을 연다", async () => {

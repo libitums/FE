@@ -19,6 +19,7 @@ import { legacyPassedRecord, tutorialDoneProgress } from "./test-helpers/progres
 import { renderSignedInApp } from "./test-helpers/signed-in-app";
 import { catalogUnitDomId } from "../screens/journey-map/catalog-map";
 import { stubHost, type HostStub } from "../screens/journey-map/JourneyMapScreen.test-support";
+import { expectJourneyMapHidden } from "./test-helpers/tab-keep-alive";
 
 // 부드러운 이동은 main thread가 프레임마다 옮기지만(`useMapGlide`), 이 파일은 「어디로 부드럽게 갔나」만 봅니다 —
 // 대역이 끝 위치로 부드러운 `scrollTo` 한 번을 남깁니다.
@@ -156,17 +157,17 @@ test("I4. (AC6) 호스트의 reducedMotion: true는 App의 MotionProvider를 거
   expect(scrollsOnMap()).toEqual([smoothTo(unitTop, false)]);
 });
 
-test("I5. 탭을 롤플레이로 갔다가 여정으로 돌아오면 다시 마운트되어 한 번 더 움직인다", async () => {
+test("I5. 탭을 롤플레이로 갔다가 여정으로 돌아오면 지도는 숨겨 둔 그대로라(ADR-0106) 다시 움직이지 않는다", async () => {
   unitRect(catalogUnitDomId(u01, "S2"));
   await bootWithSeed(tutorialDoneWith({ [u01]: ["intro", "S1"] }));
   expect(scrollsOnMap()).toHaveLength(1);
 
   tapTab("roleplay");
-  expect(screen.queryByTestId("journey-map-screen")).not.toBeInTheDocument();
+  expectJourneyMapHidden();
   tapTab("journey");
 
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
-  expect(scrollsOnMap()).toEqual([smoothTo(unitTop), smoothTo(unitTop)]);
+  expect(scrollsOnMap()).toEqual([smoothTo(unitTop)]);
 });
 
 test("I6. 씨앗 0으로 선 맵에 서버 진행이 늦게 닿으면 닿은 뒤 한 번 움직인다", async () => {

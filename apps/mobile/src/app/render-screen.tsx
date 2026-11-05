@@ -26,32 +26,7 @@ import type { ScreenWiring } from "./screen-wiring";
 export function renderScreen(screen: Screen, wiring: ScreenWiring) {
   switch (screen.name) {
     case "journey-map":
-      return (
-        <JourneyMapScreen
-          statusBarInset={wiring.safeAreaInsets.top}
-          onLayerChange={wiring.onScreenLayerChange}
-          progressLoad={wiring.journeyMapProgressLoad}
-          catalog={{
-            sections: wiring.catalogSections,
-            progress: wiring.catalogProgress,
-            ...(wiring.catalogTicketUnits === undefined
-              ? {}
-              : { ticketUnits: wiring.catalogTicketUnits }),
-            legacyTutorialPassed: wiring.legacyTutorialPassed,
-            onStartCover: wiring.onStartCatalogCover,
-            onStartUnit: wiring.onStartCatalogUnit,
-            unitItemCountOf: wiring.catalogUnitItemCountOf,
-            onTapPending: wiring.onTapPendingEpisode,
-            ...(wiring.catalogFreshness === undefined
-              ? {}
-              : { freshness: wiring.catalogFreshness }),
-            ...(wiring.onCheckNewStories === undefined
-              ? {}
-              : { onCheckNew: wiring.onCheckNewStories }),
-            coverImageUrlOf: wiring.episodeContent.imageUrlOf,
-          }}
-        />
-      );
+      return renderJourneyMap(wiring, true);
     case "roleplay-list":
       return (
         <RoleplayListScreen
@@ -156,4 +131,31 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
       return exhaustive;
     }
   }
+}
+
+/** 여정맵 화면 — 탭 루트 사이에서는 셸이 숨겨 둔 채 `active={false}`로도 그립니다(ADR-0106). */
+export function renderJourneyMap(wiring: ScreenWiring, active: boolean) {
+  return (
+    <JourneyMapScreen
+      active={active}
+      statusBarInset={wiring.safeAreaInsets.top}
+      onLayerChange={wiring.onScreenLayerChange}
+      progressLoad={wiring.journeyMapProgressLoad}
+      catalog={{
+        sections: wiring.catalogSections,
+        progress: wiring.catalogProgress,
+        ...(wiring.catalogTicketUnits === undefined
+          ? {}
+          : { ticketUnits: wiring.catalogTicketUnits }),
+        legacyTutorialPassed: wiring.legacyTutorialPassed,
+        onStartCover: wiring.onStartCatalogCover,
+        onStartUnit: wiring.onStartCatalogUnit,
+        unitItemCountOf: wiring.catalogUnitItemCountOf,
+        onTapPending: wiring.onTapPendingEpisode,
+        ...(wiring.catalogFreshness === undefined ? {} : { freshness: wiring.catalogFreshness }),
+        ...(wiring.onCheckNewStories === undefined ? {} : { onCheckNew: wiring.onCheckNewStories }),
+        coverImageUrlOf: wiring.episodeContent.imageUrlOf,
+      }}
+    />
+  );
 }

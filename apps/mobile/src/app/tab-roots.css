@@ -1,0 +1,29 @@
+/* 탭 루트 배치(ADR-0106) — 여정맵은 늘 흐름 안에 있고, 다른 탭은 그 위에 상자를 채워 겹칩니다. */
+
+.app-tab-roots {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  position: relative;
+}
+
+.app-tab-map {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+/* 숨김은 레이아웃을 유지합니다 — 숨긴 동안 지도가 바뀌어도 측정(발자국 · 스크롤)이 0이 되지 않습니다. */
+.app-tab-map-hidden {
+  visibility: hidden;
+}
+
+.app-tab-current {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+}

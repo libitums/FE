@@ -9,6 +9,7 @@ import {
 } from "./test-helpers/airbridge-events-harness";
 import { tapTab } from "./test-helpers/journey-map-host";
 import { renderSignedInApp } from "./test-helpers/signed-in-app";
+import { expectJourneyMapHidden } from "./test-helpers/tab-keep-alive";
 
 // 「진입 흐름 → 여정 맵 → NativeModules.AirbridgeEventsModule.requestTrackingAuthorization」을 한 트리에서
 // 봅니다(ADR-0079 D2). 대역은 호스트 모듈뿐입니다 — 「아직 정하지 않았을 때만 묻는다」는 호스트가 지고
@@ -53,7 +54,7 @@ test("TA2. 탭을 옮겼다가 맵으로 돌아와도 다시 부르지 않는다
   expect(host.requests).toBe(1);
 
   tapTab("roleplay");
-  expect(screen.queryByTestId("journey-map-screen")).not.toBeInTheDocument();
+  expectJourneyMapHidden();
   tapTab("journey");
 
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();

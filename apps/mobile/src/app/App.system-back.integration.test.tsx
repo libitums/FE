@@ -8,6 +8,7 @@ import { renderSignedInApp } from "./test-helpers/signed-in-app";
 import { entrySplashDurationMs } from "../lib/entry-flow";
 import { systemBackEventName } from "../lib/system-back";
 import type { SettingsEvent } from "../screens/settings/settings.contract";
+import { expectJourneyMapHidden } from "./test-helpers/tab-keep-alive";
 
 // 「호스트 `systemBackPressed` 전역 이벤트 → 스택 → `navReducer` → `SystemBackModule.respond`」를
 // App 전체 트리에서 봅니다(IB1~IB15, android-back 계약의 결선 훅 절). 대역은 호스트 경계뿐입니다 —
@@ -334,7 +335,7 @@ test("[IB15] 인자 없는 이벤트와 수 인자는 응답하지 않고 화면
 
   expect(host.respond).not.toHaveBeenCalled();
   expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
-  expect(screen.queryByTestId("journey-map-screen")).not.toBeInTheDocument();
+  expectJourneyMapHidden();
 
   // 리스너가 살아 있다는 앵커 — 올바른 토큰은 같은 자리에서 응답을 낸다(없으면 위 단언이 공허하다).
   const token = pressBack();
