@@ -5,6 +5,7 @@ import "background-only";
 import { isAudioAvailable } from "../lib/audio";
 import { parseAudioManifest } from "../lib/audio-manifest";
 import type { AudioTimingTable } from "../lib/audio-manifest";
+import { bundledContentAudioSource } from "../lib/bundled-content-audio";
 import { bundledContentImageUrl } from "../lib/bundled-content-images";
 import {
   contentFileUrl,
@@ -37,18 +38,20 @@ export function remoteContentUrlOf(relativePath: string): string | null {
     : resolveContentUrlSafe(contentBaseUrl(config.url, contentBucket()), relativePath);
 }
 
-// 받아 둔 파일이 먼저, 앱에 실은 그림이 그다음입니다 — 오프라인에서도 그림 · 소리가 나옵니다(ADR-0071). 음성도 이 포트를
-// 쓰지만 내장 표에 음성 키는 없습니다.
+// 받아 둔 파일이 먼저, 앱에 실은 그림이 그다음입니다 — 오프라인에서도 그림 · 소리가 나옵니다(ADR-0071).
 function imageUrlOf(relativePath: string): string | null {
   return localOrRemoteUrl(relativePath, remoteContentUrlOf, bundledContentImageUrl);
 }
 
-// 학습 문항 음성은 기기에 받아 둔 파일의 file:// 주소만 돌려줍니다(v4) — 원격 주소로 내려가지 않습니다. 재생 모듈이
-// 없거나 받은 파일이 없으면 null이라 문항이 소리 없음과 같은 길로 갑니다. 부를 때마다 판정해 스레드 · 메모와 무관합니다.
+// 학습 문항 음성은 기기에 받아 둔 파일의 file:// 주소, 없으면 앱에 실은 음성 이름(내장 튜토리얼)을 돌려줍니다(v4) — 원격
+// 주소로 내려가지 않습니다. 재생 모듈이 없거나 둘 다 없으면 null이라 문항이 소리 없음과 같은 길로 갑니다. 부를 때마다
+// 판정해 스레드 · 메모와 무관합니다.
 function audioUrlOf(relativePath: string): string | null {
   if (!isAudioAvailable()) return null;
   const relative = resolveContentUrlSafe("", relativePath);
-  return relative === null ? null : contentFileUrl(relative);
+  return relative === null
+    ? null
+    : (contentFileUrl(relative) ?? bundledContentAudioSource(relative));
 }
 
 function cachedManifestText(): string | null {
@@ -146,7 +149,10 @@ export function loadEpisodeContent(): EpisodeContent {
 export function hostAssetDeps(): AssetDeps | undefined {
   if (!contentFilesAvailable()) return undefined;
   return {
-    has: (path) => bundledContentImageUrl(path) !== null || contentFileUrl(path) !== null,
+    has: (path) =>
+      bundledContentImageUrl(path) !== null ||
+      bundledContentAudioSource(path) !== null ||
+      contentFileUrl(path) !== null,
     download: downloadContentFile,
     remoteUrlOf: remoteContentUrlOf,
   };

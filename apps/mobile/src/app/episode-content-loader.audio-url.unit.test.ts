@@ -105,6 +105,48 @@ describe("loadEpisodeContent - audioUrlOf", () => {
   });
 });
 
+describe("loadEpisodeContent - 앱에 실은 튜토리얼 음성", () => {
+  const TUTORIAL = "audio/level-3/u00-tutorial/d-01-r2.m4a";
+  const modules = (fileUrl: (path: string) => string) => ({
+    StorageModule: storage,
+    AudioPlaybackModule: audioModule,
+    ContentFileModule: { download: () => {}, fileUrl },
+  });
+
+  test("BA-L1. 받은 파일이 없으면 내장 튜토리얼 음성은 호스트 번들 이름이고, 표 밖 음성은 그대로 null이다", async () => {
+    vi.stubGlobal(
+      "NativeModules",
+      modules(() => ""),
+    );
+    const { loadEpisodeContent } = await freshLoader();
+    const audioUrlOf = audioUrlOfPort(loadEpisodeContent());
+
+    expect(audioUrlOf(TUTORIAL)).toBe("level-3-u00-tutorial-d-01-r2");
+    expect(audioUrlOf("audio/level-3/u01-water/d-01.m4a")).toBeNull();
+  });
+
+  test("BA-L2. 받아 둔 파일이 있으면 그 file 주소가 먼저다", async () => {
+    vi.stubGlobal(
+      "NativeModules",
+      modules((path) => `file:///f/${path}`),
+    );
+    const { loadEpisodeContent } = await freshLoader();
+
+    expect(audioUrlOfPort(loadEpisodeContent())(TUTORIAL)).toBe(`file:///f/${TUTORIAL}`);
+  });
+
+  test("BA-L3. 받기는 내장 튜토리얼 음성을 이미 있는 것으로 본다", async () => {
+    vi.stubGlobal(
+      "NativeModules",
+      modules(() => ""),
+    );
+    const deps = (await freshLoader()).hostAssetDeps();
+
+    expect(deps?.has(TUTORIAL)).toBe(true);
+    expect(deps?.has("audio/level-3/u01-water/d-01.m4a")).toBe(false);
+  });
+});
+
 describe("noEpisodeContent - audioUrlOf", () => {
   test("CL1. 콘텐츠가 없을 때는 모든 경로가 null이다", () => {
     expect(audioUrlOfPort(noEpisodeContent)(PATH)).toBeNull();
