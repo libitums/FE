@@ -25,7 +25,8 @@ final class ContentDigest {
         hex[i * 2 + 1] = HEX[digest[i] & 0xF];
       }
       return new String(hex) + ":" + bytes.length;
-    } catch (NoSuchAlgorithmException | RuntimeException error) {
+    } catch (NoSuchAlgorithmException | RuntimeException | OutOfMemoryError error) {
+      // 빈 문자열이면 JS가 순수 구현으로 계산합니다 — 큰 본문의 할당 실패로 앱이 내려가지 않게 합니다.
       return "";
     }
   }
