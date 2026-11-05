@@ -57,6 +57,8 @@ export type TutorialBootOptions = {
   readonly contentFiles?: object;
   /** 부팅 전에 기기 저장소에 둘 값입니다. */
   readonly preStore?: Readonly<Record<string, string>>;
+  /** false면 학습 문항 안내를 하나도 보지 않은 설치로 부팅합니다(ADR-0104). 기본은 모두 본 설치입니다. */
+  readonly guidesSeen?: boolean;
   /** 이전 실행의 저장소를 그대로 이어 쓸 때 넘깁니다(`preStore`보다 우선). */
   readonly store?: Map<string, string>;
   /** 부팅 때 호스트가 쥔 푸시 목적지입니다. 주면 푸시 모듈 대역을 세웁니다. */
@@ -86,7 +88,8 @@ export async function bootTutorialApp(options: TutorialBootOptions = {}): Promis
     authSessionStorageKey,
     serializeAuthSession({ accessToken: "a", refreshToken: "r", expiresAt: 4_102_444_800_000 }),
   );
-  store.set(learningItemGuideSeenStorageKey, allLearningItemGuidesSeenValue);
+  if (options.guidesSeen === false) store.delete(learningItemGuideSeenStorageKey);
+  else store.set(learningItemGuideSeenStorageKey, allLearningItemGuidesSeenValue);
   const tracked: TrackCall[] = [];
   const requestReview = vi.fn<() => void>();
   const pushHost: PushHost = { opened: options.pushOpened ?? null };

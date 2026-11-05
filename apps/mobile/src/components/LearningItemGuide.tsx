@@ -5,6 +5,7 @@ import { useGlobalProps } from "@lynx-js/react";
 
 import arrowDown03 from "@libitums/icons/lynx/arrow-down-03";
 import { color } from "@libitums/design-tokens";
+import { useMotion } from "@libitums/ui-lynx/motion";
 import { Overlay } from "@libitums/ui-lynx/overlay";
 
 import type { LearningItemGuideProps } from "../lib/learning-item-guide.contract";
@@ -19,6 +20,11 @@ export function LearningItemGuide({ kind, onDismiss }: LearningItemGuideProps) {
   // 이 레이어는 셸 밖(`position: fixed`)이라 안전 영역을 스스로 읽습니다(lib/safe-area.ts).
   const insets = safeAreaInsetsFrom(useGlobalProps());
   const uiCopy = useUiCopy();
+  // 화살표는 위아래로 오르내립니다 — 움직임 줄이기면 멈춥니다(ADR-0104 D4).
+  const arrowClass =
+    useMotion() === "reduced"
+      ? "first-unit-guide-arrow"
+      : "first-unit-guide-arrow learning-item-guide-arrow-bob";
   const message = uiCopy.learningItemGuide[kind];
   const continueText = uiCopy.episodeIntro.guide.continue;
   const handleDismiss = () => {
@@ -63,11 +69,7 @@ export function LearningItemGuide({ kind, onDismiss }: LearningItemGuideProps) {
           {message.description}
         </text>
         <view className="first-unit-guide-continue">
-          <svg
-            className="first-unit-guide-arrow"
-            content={arrowDown03}
-            current-color={color.brand.primary}
-          />
+          <svg className={arrowClass} content={arrowDown03} current-color={color.brand.primary} />
           <text className="first-unit-guide-instruction" accessibility-element={false}>
             {continueText}
           </text>

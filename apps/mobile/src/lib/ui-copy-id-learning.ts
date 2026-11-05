@@ -99,4 +99,29 @@ export const learningItemGuideId: LearningItemGuideCopy = {
     description:
       "Biasanya kamu menyusun beberapa kepingan. Kali ini hanya ada satu, jadi ketuk kepingan itu, lalu ketuk Periksa.",
   },
+  "activity-vocab-card": {
+    title: "Kata baru",
+    description: "Dengarkan katanya dan lihat artinya. Ketuk Berikutnya jika sudah siap.",
+  },
+  "activity-word-choice": {
+    title: "Pilih satu",
+    description: "Pilih jawaban yang cocok, lalu ketuk Periksa.",
+  },
+  "activity-listening": {
+    title: "Dengarkan dulu",
+    description: "Ketuk pengeras suara untuk mendengar lagi. Lalu pilih yang kamu dengar.",
+  },
+  "activity-syllable-build": {
+    title: "Susun katanya",
+    description: "Ketuk blok suku kata secara berurutan untuk membentuk kata. Lalu ketuk Periksa.",
+  },
+  "activity-sentence-order": {
+    title: "Susun urutannya",
+    description:
+      "Ketuk potongan secara berurutan untuk membentuk kalimat. Ketuk lagi untuk mengembalikannya.",
+  },
+  "activity-culture-card": {
+    title: "Catatan budaya",
+    description: "Tips singkat tentang kehidupan di Korea. Baca, lalu ketuk Berikutnya.",
+  },
 };

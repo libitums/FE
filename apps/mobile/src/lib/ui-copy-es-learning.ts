@@ -107,4 +107,30 @@ export const learningItemGuideEs: LearningItemGuideCopy = {
     description:
       "Normalmente ordenas varias piezas. Aquí solo hay una: tócala y luego toca Comprobar.",
   },
+  "activity-vocab-card": {
+    title: "Palabra nueva",
+    description: "Escucha la palabra y mira su significado. Toca Siguiente cuando estés listo.",
+  },
+  "activity-word-choice": {
+    title: "Elige una",
+    description: "Elige la respuesta correcta y toca Comprobar.",
+  },
+  "activity-listening": {
+    title: "Primero escucha",
+    description: "Toca el altavoz para escucharlo otra vez. Luego elige lo que oíste.",
+  },
+  "activity-syllable-build": {
+    title: "Forma la palabra",
+    description:
+      "Toca los bloques de sílabas en orden para formar la palabra. Luego toca Comprobar.",
+  },
+  "activity-sentence-order": {
+    title: "Ponlo en orden",
+    description:
+      "Toca las piezas en orden para formar la frase. Toca una pieza otra vez para quitarla.",
+  },
+  "activity-culture-card": {
+    title: "Nota cultural",
+    description: "Un consejo breve sobre la vida en Corea. Léelo y toca Siguiente.",
+  },
 };

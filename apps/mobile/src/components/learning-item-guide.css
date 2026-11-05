@@ -21,3 +21,22 @@
   background-color: rgba(26, 28, 32, 0.9);
   border-radius: var(--libitum-radius-xl);
 }
+
+/* 아래 화살표의 오르내림입니다(ADR-0104 D4). 길이 · 가속은 토큰이고, 5회(약 5초)로 끝나 WCAG 2.2.2 안입니다.
+   움직임 줄이기면 컴포넌트가 이 클래스를 붙이지 않습니다. */
+@keyframes learning-item-guide-arrow-bob {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(10px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.learning-item-guide-arrow-bob {
+  animation: learning-item-guide-arrow-bob var(--libitum-motion-duration-d9)
+    var(--libitum-motion-easing-easing) 5;
+}

@@ -97,4 +97,28 @@ export const learningItemGuideEn: LearningItemGuideCopy = {
     description:
       "Usually you put several pieces in order. Here there's only one, so tap it, then tap Check.",
   },
+  "activity-vocab-card": {
+    title: "New word",
+    description: "Listen to the word and look at its meaning. Tap Next when you're ready.",
+  },
+  "activity-word-choice": {
+    title: "Pick one",
+    description: "Choose the answer that fits, then tap Check.",
+  },
+  "activity-listening": {
+    title: "Listen first",
+    description: "Tap the speaker to hear it again. Then choose what you heard.",
+  },
+  "activity-syllable-build": {
+    title: "Build the word",
+    description: "Tap the syllable blocks in order to make the word. Then tap Check.",
+  },
+  "activity-sentence-order": {
+    title: "Put it in order",
+    description: "Tap the pieces in order to make the sentence. Tap a piece again to take it back.",
+  },
+  "activity-culture-card": {
+    title: "Culture note",
+    description: "A short tip about life in Korea. Read it, then tap Next.",
+  },
 };

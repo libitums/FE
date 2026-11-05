@@ -420,3 +420,4 @@ ADR-0016은 `대체됨`이 아니다. D9의 결정(겹침 뒤쪽을 `accessibili
 - **안내 종류가 여섯 → 하나**(`sentence-order`)다 — 메신저 · 전화 · 비주얼 노벨 · 말하기 · 쓰기 화면이 지워져 그 종류 · 판정 갈래 · 문구(`ui-copy-en-learning.ts`)를 함께 지웠다(`LearningItemGuideKind = "sentence-order"`). 남은 하나는 카탈로그 레슨의 문장 만들기(`SentenceOrderActivity`)가 띄운다.
 - 맥락 2 · U6의 「튜토리얼의 문항」은 옛 튜토리얼의 것이다 — 튜토리얼 u00은 다른 에피소드와 같은 카탈로그 문항이다. 「새 사용자는 튜토리얼에서 안내를 열 번」도 그때의 수다.
 - 저장 키(`libitum.learning-item-guides.seen`)는 그대로다.
+- ⟨2026-11-05⟩ **카탈로그 레슨 활동 안내가 같은 부품 · 같은 기록 키를 쓴다** — [ADR-0104](0104-lesson-activity-guides.md). 종류가 여섯 늘고(`activity-*`), 이 문서의 아래 화살표에 오르내림(d9 × 5회, 움직임 줄이기는 정지)이 붙었다. 「조각 하나」 안내의 판정 · 문구는 그대로다.

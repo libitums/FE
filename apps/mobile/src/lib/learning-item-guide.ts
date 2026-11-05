@@ -2,6 +2,7 @@
 // 필드에서 파생하고, 본 종류는 기기 저장소에 종류 문자열의 JSON 배열로 둡니다.
 
 import type {
+  ActivityGuideKindFor,
   LearningItemGuideKind,
   LearningItemGuideKindFor,
   LearningItemGuideSeenStorageKey,
@@ -13,7 +14,15 @@ import type {
 } from "./learning-item-guide.contract";
 import { getItem, isStorageAvailable, setItem } from "./storage";
 
-export const learningItemGuideKinds: readonly LearningItemGuideKind[] = ["sentence-order"];
+export const learningItemGuideKinds: readonly LearningItemGuideKind[] = [
+  "sentence-order",
+  "activity-vocab-card",
+  "activity-word-choice",
+  "activity-listening",
+  "activity-syllable-build",
+  "activity-sentence-order",
+  "activity-culture-card",
+];
 
 export const learningItemGuideSeenStorageKey: LearningItemGuideSeenStorageKey =
   "libitum.learning-item-guides.seen";
@@ -21,6 +30,27 @@ export const learningItemGuideSeenStorageKey: LearningItemGuideSeenStorageKey =
 export const learningItemGuideKindFor: LearningItemGuideKindFor = (subject) => {
   if (subject === null) return null;
   return subject.chips.length === 1 ? "sentence-order" : null;
+};
+
+// 활동 안내는 학습형에만 겁니다(ADR-0104 D1) — 콘텐츠 id를 보지 않아 튜토리얼 본문이 바뀌어도 화면 종류로 뜹니다.
+const activityGuideKinds: ReadonlyMap<string, LearningItemGuideKind> = new Map([
+  ["vocab-card", "activity-vocab-card"],
+  ["word-choice", "activity-word-choice"],
+  ["listening", "activity-listening"],
+  ["syllable-build", "activity-syllable-build"],
+  ["sentence-order", "activity-sentence-order"],
+  ["culture-card", "activity-culture-card"],
+]);
+
+export const activityGuideKindFor: ActivityGuideKindFor = ({
+  form,
+  questionCount,
+  firstChipCount,
+}) => {
+  if (questionCount === 0) return null;
+  // 문장 만들기의 첫 문항 조각이 하나면 화면 안의 「조각 하나」 안내가 뜨므로 미룹니다.
+  if (form === "sentence-order" && (firstChipCount === null || firstChipCount < 2)) return null;
+  return activityGuideKinds.get(form) ?? null;
 };
 
 function isKnownKind(value: unknown): value is LearningItemGuideKind {

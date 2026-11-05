@@ -100,4 +100,28 @@ export const learningItemGuideVi: LearningItemGuideCopy = {
     description:
       "Thường bạn sẽ xếp nhiều mảnh theo thứ tự. Lần này chỉ có một mảnh, hãy chạm vào nó rồi chạm Kiểm tra.",
   },
+  "activity-vocab-card": {
+    title: "Từ mới",
+    description: "Nghe từ và xem nghĩa của nó. Sẵn sàng thì chạm Tiếp.",
+  },
+  "activity-word-choice": {
+    title: "Chọn một",
+    description: "Chọn đáp án phù hợp, rồi chạm Kiểm tra.",
+  },
+  "activity-listening": {
+    title: "Nghe trước",
+    description: "Chạm loa để nghe lại. Rồi chọn điều bạn nghe được.",
+  },
+  "activity-syllable-build": {
+    title: "Ghép thành từ",
+    description: "Chạm các khối âm tiết theo thứ tự để tạo thành từ. Sau đó chạm Kiểm tra.",
+  },
+  "activity-sentence-order": {
+    title: "Sắp xếp theo thứ tự",
+    description: "Chạm các mảnh theo thứ tự để tạo thành câu. Chạm lại một mảnh để bỏ nó ra.",
+  },
+  "activity-culture-card": {
+    title: "Ghi chú văn hóa",
+    description: "Một mẹo ngắn về cuộc sống ở Hàn Quốc. Đọc xong thì chạm Tiếp.",
+  },
 };

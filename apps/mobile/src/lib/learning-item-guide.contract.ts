@@ -2,8 +2,28 @@
 // `learning-item-guide.ts`, 훅은 `components/use-learning-item-guide.ts`, 그림은
 // `components/LearningItemGuide.tsx`가 집니다.
 
-/** 안내의 종류입니다. 종류마다 기기에서 한 번만 뜹니다. */
-export type LearningItemGuideKind = "sentence-order";
+/**
+ * 안내의 종류입니다. 종류마다 기기에서 한 번만 뜹니다. `sentence-order`는 「조각 하나」 안내(ADR-0054),
+ * `activity-*`는 카탈로그 레슨 활동 화면 종류별 첫 안내(ADR-0104)입니다.
+ */
+export type LearningItemGuideKind =
+  | "sentence-order"
+  | "activity-vocab-card"
+  | "activity-word-choice"
+  | "activity-listening"
+  | "activity-syllable-build"
+  | "activity-sentence-order"
+  | "activity-culture-card";
+
+/**
+ * 활동 안내의 판정 입력입니다(ADR-0104 D1). 콘텐츠(에피소드 · 문항 id)는 싣지 않습니다 — 활동의 학습형과,
+ * 문장 만들기면 첫 문항의 조각 수만 봅니다. 문항이 없으면 `firstChipCount`는 `null`입니다.
+ */
+export type ActivityGuideSubject = {
+  readonly form: string;
+  readonly questionCount: number;
+  readonly firstChipCount: number | null;
+};
 
 /**
  * 화면이 설 때의 첫 문항(첫 답장)에서 뽑은 판정 입력입니다. 화면은 자기 데이터의 필드를
@@ -31,6 +51,7 @@ export type LearningItemGuideCopy = {
 export type LearningItemGuideKindFor = (
   subject: LearningItemGuideSubject | null,
 ) => LearningItemGuideKind | null;
+export type ActivityGuideKindFor = (subject: ActivityGuideSubject) => LearningItemGuideKind | null;
 export type SeenLearningItemGuidesFrom = (raw: string | null) => readonly LearningItemGuideKind[];
 export type WithLearningItemGuideSeen = (
   seen: readonly LearningItemGuideKind[],
@@ -56,6 +77,10 @@ export type LearningItemGuideState =
     };
 export type UseLearningItemGuide = (
   subject: LearningItemGuideSubject | null,
+) => LearningItemGuideState;
+export type UseActivityGuide = (
+  subject: ActivityGuideSubject,
+  enabled: boolean,
 ) => LearningItemGuideState;
 
 // ---- 컴포넌트 (components/LearningItemGuide.tsx)

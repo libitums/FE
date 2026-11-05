@@ -96,4 +96,28 @@ export const learningItemGuideJa: LearningItemGuideCopy = {
     description:
       "いつもは複数のピースを並べますが、今回は1つだけです。タップしてから「確認」をタップしてください。",
   },
+  "activity-vocab-card": {
+    title: "新しい単語",
+    description: "音声を聞いて、意味を確認しましょう。準備ができたら「次へ」をタップ。",
+  },
+  "activity-word-choice": {
+    title: "ひとつ選ぶ",
+    description: "合う答えを選んで「確認」をタップ。",
+  },
+  "activity-listening": {
+    title: "まず聞く",
+    description: "スピーカーをタップするともう一度聞けます。聞こえたものを選びましょう。",
+  },
+  "activity-syllable-build": {
+    title: "単語を組み立てる",
+    description: "音節ブロックを順番にタップして単語を作りましょう。できたら「確認」をタップ。",
+  },
+  "activity-sentence-order": {
+    title: "順番に並べる",
+    description: "ピースを順番にタップして文を作りましょう。もう一度タップすると戻せます。",
+  },
+  "activity-culture-card": {
+    title: "カルチャーノート",
+    description: "韓国での暮らしのちょっとしたヒントです。読んだら「次へ」をタップ。",
+  },
 };
