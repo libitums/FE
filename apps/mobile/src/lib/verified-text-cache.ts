@@ -4,6 +4,7 @@ import "background-only";
 // 받아 둔 본문 전부의 sha256 · 디코드를 다시 하면 탭 처리와 같은 백그라운드 스레드가 막혔습니다. 같은 id · 같은 원문이면
 // 이전 결과를 씁니다 — 원문이 한 글자라도 다르면 다시 계산하므로 무결성 판정은 그대로입니다. id마다 마지막 하나만 둡니다.
 
+import { nativeContentDigest } from "./content-files";
 import { sha256Hex, utf8Bytes } from "./sha256";
 
 type Digest = { readonly sha256: string; readonly bytes: number };
@@ -16,10 +17,15 @@ const decodes = new Map<string, { readonly sha256: string; readonly result: unkn
 export function textDigestOf(id: string, text: string): Digest {
   const known = digests.get(id);
   if (known !== undefined && known.text === text) return known.digest;
-  const bytes = utf8Bytes(text);
-  const digest = { sha256: sha256Hex(bytes), bytes: bytes.length };
+  // 호스트가 계산할 수 있으면 그것(ADR-0105 D4), 없으면 JS 순수 구현입니다.
+  const digest = nativeContentDigest(text) ?? jsDigestOf(text);
   digests.set(id, { text, digest });
   return digest;
+}
+
+function jsDigestOf(text: string): Digest {
+  const bytes = utf8Bytes(text);
+  return { sha256: sha256Hex(bytes), bytes: bytes.length };
 }
 
 /**

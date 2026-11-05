@@ -179,3 +179,22 @@ final class ContentFileStoreTests: XCTestCase {
     XCTAssertEqual(values.isExcludedFromBackup, true)
   }
 }
+
+/// 받은 본문의 SHA-256 · UTF-8 바이트 수(ADR-0105 D4) — Android `ContentDigestTest`와 같은 값이어야 한다.
+final class ContentDigestTests: XCTestCase {
+  func testEmptyText() {
+    XCTAssertEqual(
+      ContentDigest.of(""), "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855:0")
+  }
+
+  func testAsciiText() {
+    XCTAssertEqual(
+      ContentDigest.of("abc"), "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad:3")
+  }
+
+  func testKoreanTextIsHashedAsUtf8() {
+    XCTAssertEqual(
+      ContentDigest.of("물 사기 — 가"),
+      "21c3c06eb1841c6ea8aed6f31b9c48bad037ab99e42187c0c4177242fe728ed9:18")
+  }
+}

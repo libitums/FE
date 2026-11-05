@@ -10,6 +10,8 @@ interface ContentFileModule {
   download(url: string, path: string, callback: (payload: unknown) => void): void;
   fileUrl(path: string): string | null;
   remove(prefix: string, callback: (payload: unknown) => void): void;
+  /** 원문의 SHA-256과 UTF-8 바이트 수 `"<sha>:<bytes>"`(ADR-0105 D4). 옛 호스트에는 없습니다. */
+  sha256?(text: string): unknown;
 }
 
 function nativeModule(): ContentFileModule | undefined {
@@ -87,4 +89,24 @@ export function localOrRemoteUrl(
   const relative = resolveContentUrlSafe("", path);
   if (relative === null) return remoteUrlOf(path);
   return contentFileUrl(relative) ?? bundledUrlOf(relative) ?? remoteUrlOf(path);
+}
+
+const DIGEST_REPLY = /^([0-9a-f]{64}):(\d+)$/;
+
+/**
+ * 받은 본문의 SHA-256 · UTF-8 바이트 수를 호스트로 계산합니다(ADR-0105 D4) — JS 순수 구현은 JIT 없는 기기 엔진에서 본문
+ * 한 편에 수백 ms가 걸렸습니다. 모듈 · 메서드가 없거나(옛 호스트) 답이 틀리거나 던지면 `null`이고, 부르는 쪽이 JS로
+ * 계산합니다.
+ */
+export function nativeContentDigest(text: string): { sha256: string; bytes: number } | null {
+  try {
+    const module = nativeModule();
+    if (typeof module?.sha256 !== "function") return null;
+    const reply = module.sha256(text);
+    const match = typeof reply === "string" ? DIGEST_REPLY.exec(reply) : null;
+    if (match === null) return null;
+    return { sha256: match[1] ?? "", bytes: Number(match[2]) };
+  } catch {
+    return null;
+  }
 }

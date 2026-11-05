@@ -1,4 +1,4 @@
-import { beforeEach, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, expect, test, vi } from "vitest";
 
 // `unit` 계층 — 버그 재현: 받기 중 카탈로그를 다시 만들 때마다 이미 검증한 원격 본문 전부의 sha256 · 디코드를 다시
 // 해 백그라운드 스레드(탭 처리와 같은 스레드)를 막았다. 같은 id · 같은 원문은 이전 검증 결과를 다시 써야 한다.
@@ -36,6 +36,11 @@ const readyEpisode = (entries: ReturnType<typeof build>, id: string) => {
 
 beforeEach(() => {
   sha.calls = 0;
+});
+
+// 단언이 실패해도 호스트 대역이 다음 테스트로 새지 않게 늘 풉니다.
+afterEach(() => {
+  vi.unstubAllGlobals();
 });
 
 test("VC1. 같은 원문으로 카탈로그를 다시 만들면 sha256을 다시 계산하지 않고 디코드 결과도 같은 객체다", () => {
@@ -110,4 +115,34 @@ test("VC4. 받기 차례의 활성 본문 확인(activeReadyIds)도 같은 원�
 
   expect([...second]).toEqual([...first]);
   expect(sha.calls).toBe(afterFirst);
+});
+
+test("VC5. 호스트가 SHA-256을 계산할 수 있으면 JS 순수 구현을 부르지 않고, 결과는 같다", async () => {
+  const actual = await vi.importActual<typeof import("./sha256")>("./sha256");
+  vi.stubGlobal("NativeModules", {
+    ContentFileModule: {
+      download: () => {},
+      fileUrl: () => "",
+      remove: () => {},
+      sha256: (text: string) => {
+        const bytes = actual.utf8Bytes(text);
+        return `${actual.sha256Hex(bytes)}:${String(bytes.length)}`;
+      },
+    },
+  });
+  const fresh = [remote("u41-n", 41), remote("u42-n", 42)];
+  sha.calls = 0;
+
+  const entries = buildEpisodeCatalog({
+    bundled: bundledCatalogInput,
+    cache: {
+      manifest: manifestText(fresh),
+      episodes: Object.fromEntries(fresh.map((r) => [r.entry.id as string, r.text])),
+    },
+  });
+
+  expect(sha.calls).toBe(0);
+  expect(
+    entries.filter((entry) => entry.id.startsWith("u4") && entry.status === "ready"),
+  ).toHaveLength(2);
 });

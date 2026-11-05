@@ -45,6 +45,11 @@ public final class ContentFileModule extends LynxModule {
     });
   }
 
+  /** **동기.** 원문의 SHA-256과 UTF-8 바이트 수 `"<sha>:<bytes>"`, 실패면 `""`(ADR-0105 D4). */
+  @LynxMethod public String sha256(String text) {
+    return ContentDigest.of(text);
+  }
+
   @LynxMethod public String fileUrl(String path) {
     try {
       return store.fileUrl(path);

@@ -2,7 +2,7 @@ import "background-only";
 
 // 에피소드 카탈로그 — 내장 · 기기 캐시 · 원격 매니페스트를 합쳐 order순 목록을 냅니다(순수).
 import { decodeEpisode } from "./episode-content";
-import type { DecodeIssue, Episode } from "./episode-content";
+import type { DecodeIssue, DecodeResult, Episode } from "./episode-content";
 import { decodeManifest } from "./episode-manifest";
 import type { EpisodeManifest, ManifestEntry } from "./episode-manifest";
 import { rememberedDecode, textDigestOf } from "./verified-text-cache";
@@ -227,6 +227,21 @@ function coverOf(entry: ManifestEntry, bundled: ManifestEntry | undefined): stri
   return entry.cover ?? bundled?.cover;
 }
 
+// 내장본은 바뀌지 않으므로 편마다 한 번만 디코드합니다(ADR-0105 D4 — 기기에서 카탈로그 읽기가 2초대였습니다). 입력 객체가
+// 같을 때만 다시 씁니다.
+const bundledDecodes = new Map<
+  string,
+  { readonly input: unknown; readonly result: DecodeResult }
+>();
+
+function bundledDecodeOf(id: string, input: unknown): DecodeResult {
+  const known = bundledDecodes.get(id);
+  if (known !== undefined && known.input === input) return known.result;
+  const result = decodeEpisode(input);
+  bundledDecodes.set(id, { input, result });
+  return result;
+}
+
 function resolveEntry(
   input: CatalogInput,
   entry: ManifestEntry,
@@ -241,7 +256,7 @@ function resolveEntry(
     return lockedEntry(entry, "unsupported-schema");
   }
   if (!fromRemote) {
-    const decoded = decodeEpisode(input.bundled.episodes[entry.id]);
+    const decoded = bundledDecodeOf(entry.id, input.bundled.episodes[entry.id]);
     return decoded.ok
       ? readyEntry(entry, "bundled", decoded.episode, decoded.warnings, cover)
       : lockedEntry(entry, "decode-failed");
