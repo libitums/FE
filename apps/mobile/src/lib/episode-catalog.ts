@@ -95,7 +95,7 @@ export function checkEpisodeText(entry: ManifestEntry, text: string): EpisodeTex
   if (digest.bytes !== entry.bytes || digest.sha256 !== entry.sha256) {
     return { ok: false, reason: "integrity-mismatch" };
   }
-  return rememberedDecode(entry.id, text, () => decodeText(text));
+  return rememberedDecode(entry.id, entry.sha256, () => decodeText(text));
 }
 
 function decodeText(text: string): EpisodeTextCheck {
