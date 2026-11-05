@@ -1,5 +1,6 @@
 // 음성 정보 파일(audio/manifest.json)의 해석입니다 - 순수 함수만 두어 두 스레드에 실려도 안전합니다.
 import { contentAudioPathOf } from "./content-audio";
+import { measureTask } from "./perf-probe";
 
 /** 음성 정보 파일의 스키마 이름입니다. 이 값과 정확히 같을 때만 읽습니다. */
 export const AUDIO_MANIFEST_SCHEMA = "audio-manifest-1";
@@ -44,6 +45,10 @@ function timingOf(value: unknown): AudioTiming | null {
  * id 규약 밖 키 · 값이 양의 정수가 아닌 항목은 그 항목만 버립니다. 던지지 않습니다.
  */
 export function parseAudioManifest(text: string | null): AudioTimingTable | null {
+  return measureTask("audio.parse", () => parseAudioManifestText(text));
+}
+
+function parseAudioManifestText(text: string | null): AudioTimingTable | null {
   if (text === null) return null;
   const root = parseJson(text);
   if (!isRecord(root) || root.schema !== AUDIO_MANIFEST_SCHEMA || !isRecord(root.audio)) {

@@ -7,6 +7,7 @@ import { decodeManifest } from "./episode-manifest";
 import type { EpisodeManifest, ManifestEntry } from "./episode-manifest";
 import { rememberedDecode, textDigestOf } from "./verified-text-cache";
 import { translationTablesOf } from "./episode-catalog-translations";
+import { measureTask } from "./perf-probe";
 
 /**
  * 이 앱이 이해하는 콘텐츠 수준. 매니페스트 `min_client_level`이 이보다 크면 원격 항목을 잠급니다. 2는 막간 이야기
@@ -91,6 +92,10 @@ export type EpisodeTextCheck =
 
 /** 받은 원문을 매니페스트 항목의 해시 · 바이트로 검증하고 디코드합니다. 예외를 던지지 않습니다. */
 export function checkEpisodeText(entry: ManifestEntry, text: string): EpisodeTextCheck {
+  return measureTask("episode.check", () => checkEpisodeTextNow(entry, text));
+}
+
+function checkEpisodeTextNow(entry: ManifestEntry, text: string): EpisodeTextCheck {
   const digest = textDigestOf(entry.id, text);
   if (digest.bytes !== entry.bytes || digest.sha256 !== entry.sha256) {
     return { ok: false, reason: "integrity-mismatch" };

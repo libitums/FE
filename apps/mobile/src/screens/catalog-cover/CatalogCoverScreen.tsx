@@ -31,6 +31,7 @@ import type { UiCopy } from "../../lib/ui-copy.contract";
 import { voiceRevealIntervalMs } from "./voice-reveal";
 
 import "./catalog-cover-screen.css";
+import { perfProbe } from "../../lib/perf-probe";
 
 // 완료는 한 번만 올립니다 — 처음 부른 쪽만 true를 받습니다.
 function claimCompletion(guard: { done: boolean }): boolean {
@@ -61,6 +62,7 @@ export function CatalogCoverScreen({
   onComplete,
   onExit,
 }: CatalogCoverScreenProps): ReactNode {
+  perfProbe().countRender("CatalogCover");
   const copy = useUiCopy();
   const [index, setIndex] = useState(0);
   // 읽는 사람의 선택이라 컷을 넘겨도 유지됩니다. 화면을 나가면 버립니다.

@@ -5,6 +5,7 @@
 
 import type { CatalogEntry } from "./episode-catalog";
 import type { Episode, EpisodeTranslations } from "./episode-content.model";
+import { measureTask } from "./perf-probe";
 import type { UiLanguage } from "./ui-copy.contract";
 
 /** 영어가 실리는 칸 이름입니다. 한국어 설명(`whyWrong`) · 로마자 · id는 들지 않습니다. */
@@ -53,11 +54,13 @@ export function localizeCatalog(
   }
   const cached = byLanguage.get(language);
   if (cached !== undefined) return cached;
-  const localized = catalog.map((entry) => {
-    if (entry.status !== "ready") return entry;
-    const episode = localizeEpisode(entry.episode, language);
-    return episode === entry.episode ? entry : { ...entry, episode };
-  });
+  const localized = measureTask("catalog.localize", () =>
+    catalog.map((entry) => {
+      if (entry.status !== "ready") return entry;
+      const episode = localizeEpisode(entry.episode, language);
+      return episode === entry.episode ? entry : { ...entry, episode };
+    }),
+  );
   byLanguage.set(language, localized);
   return localized;
 }

@@ -25,6 +25,7 @@ import { playSound } from "../../lib/sound-effects";
 import { useLayerBack, useScreenBack } from "../../lib/use-back-handler";
 
 import "./learning-shell.css";
+import { perfProbe } from "../../lib/perf-probe";
 
 export type { LearningShellProps, LearningShellStage } from "./learning-shell-props";
 
@@ -65,6 +66,7 @@ export function LearningShell({
   densityOverride,
   formLabel,
 }: LearningShellProps): ReactNode {
+  perfProbe().countRender("LearningShell");
   const copy = useUiCopy();
   // 활동 안내 층이 덮었으면 화면이 넘기지 않아도 가립니다(ADR-0104 D3). 화면의 `true`는 언제나 이깁니다.
   const guideObscured = useContext(LearningGuideObscuredContext);

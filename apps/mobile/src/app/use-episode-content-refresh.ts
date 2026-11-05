@@ -8,6 +8,7 @@ import {
 } from "@lynx-js/react";
 
 import { refreshAppPolicy } from "../lib/app-policy-refresh";
+import { measureTask } from "../lib/perf-probe";
 import {
   downloadedAssetBytes,
   episodeAssetsBytes,
@@ -123,7 +124,9 @@ export function useEpisodeContentRefresh(sink: EpisodeIntroEventSink): EpisodeCo
       const next = loadEpisodeContent();
       setContent((previous) => ({
         ...next,
-        catalog: mergeCatalogForSession(previous.catalog, next.catalog),
+        catalog: measureTask("catalog.merge", () =>
+          mergeCatalogForSession(previous.catalog, next.catalog),
+        ),
       }));
     };
     setManifestCheckedAt(manifestCheckedAtFrom(safeGet(hostContentStore, MANIFEST_CHECKED_AT_KEY)));

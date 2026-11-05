@@ -91,6 +91,8 @@ public final class MainActivity extends Activity {
     builder.registerModule("ContentFileModule", ContentFileModule.class);
     // 분석 이벤트에 싣는 연결 종류(ADR-0096). 이미 있는 ACCESS_NETWORK_STATE만 쓴다.
     builder.registerModule("NetworkStatusModule", NetworkStatusModule.class);
+    // 측정 빌드의 성능 기록(ADR-0105 D2). JS가 PUBLIC_PERF_PROBE=1일 때만 부른다.
+    builder.registerModule("PerfLogModule", PerfLogModule.class);
     builder.registerModule("AppReviewModule", AppReviewModule.class, this);
     // Google Play의 이 앱 페이지를 연다(ADR-0086). 목적지는 고정이고, 언제 열지는 JS(강제 업데이트 화면)가 정한다.
     builder.registerModule("AppUpdateModule", AppUpdateModule.class, this);
