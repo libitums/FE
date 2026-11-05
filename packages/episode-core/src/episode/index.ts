@@ -2,6 +2,7 @@
 
 export type * from "./episode-content.model";
 export { decodeEpisode } from "./episode-content";
+export { translationsOf } from "./episode-content.translations";
 export { KNOWN_ITEM_TYPES } from "./episode-content.schema";
 export { formatPath, isRecord } from "./episode-content.normalize";
 export { EPISODE_SELF_SPEAKER } from "./speaker";

@@ -28,6 +28,8 @@ import { readNetworkProperties } from "../lib/network-status";
 import { MANIFEST_CHECKED_AT_KEY, manifestCheckedAtFrom } from "../lib/manifest-check";
 import { safeGet, trySet } from "../lib/episode-cache";
 import { TUTORIAL_EPISODE_ID } from "../lib/tutorial-episode";
+import { loadUiLanguage, onUiLanguageSaved } from "../lib/ui-language";
+import type { ContentLanguage } from "../lib/episode-content";
 import type { EpisodeIntroEventSink } from "../screens/episode-intro/episode-intro.contract";
 import type { SplashUpdatePort } from "../screens/splash/splash.contract";
 import { createSyncRunner } from "./content-sync-runner";
@@ -60,6 +62,12 @@ function assetPolicyForRound(): (id: string) => boolean {
   const allowed = loadAllowedEpisodes();
   return (episodeId) =>
     assetDownloadAllowed({ network, policy, allowed, episodeId, tutorialId: TUTORIAL_EPISODE_ID });
+}
+
+/** 받기 차례마다 지금 UI 언어를 읽습니다 — 영어(원문)면 번역 파일을 받지 않습니다(ADR-0102 D3). */
+function translationLanguageForRound(): ContentLanguage | null {
+  const language = loadUiLanguage();
+  return language === "en" ? null : language;
 }
 
 /**
@@ -153,6 +161,7 @@ export function useEpisodeContentRefresh(sink: EpisodeIntroEventSink): EpisodeCo
         bundled: bundledCatalogInput,
         assets: hostAssetDeps(),
         assetPolicy: assetPolicyForRound(),
+        translationLanguage: translationLanguageForRound(),
         onEpisodeReady: reload,
         onEpisodeStaged: () => {
           if (splashClosed.current) setStagedReady((count) => count + 1);
@@ -185,7 +194,12 @@ export function useEpisodeContentRefresh(sink: EpisodeIntroEventSink): EpisodeCo
       onUnmetered: () => void runner.current?.request(),
     });
     void runner.current.request();
-    return recheck.stop;
+    // UI 언어를 바꾸면 그 언어의 번역 파일을 받는 차례를 한 번 돌립니다(ADR-0102 D3).
+    const offLanguage = onUiLanguageSaved(() => void runner.current?.request());
+    return () => {
+      offLanguage();
+      recheck.stop();
+    };
   }, []);
   useLynxGlobalEventListener(contentSyncEventName, () => {
     "background only";

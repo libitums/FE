@@ -59,6 +59,21 @@ function byOrderThenId(a: CatalogEntry, b: CatalogEntry): number {
  * 않습니다 — 갱신이 새 버전을 들였거나 원격에서 사라졌거나 쓸 수 없게 만든 항목이라도 같은 실행 안에서는
  * 이전 본문을 유지합니다(레슨 도중 문항이 바뀌지 않게). 새 버전은 캐시에 저장되어 다음 실행에 반영됩니다.
  */
+type ReadyCatalogEntry = Extract<CatalogEntry, { status: "ready" }>;
+
+// 같은 판(version · 출처)이면 번역표만 새 것으로 바꿉니다 — 언어를 바꿔 받은 번역 파일이 다음 실행을 기다리지 않게
+// (ADR-0102 D3). 구조는 이전 그대로라 열린 화면이 흔들리지 않고, 내용이 같으면 같은 참조입니다.
+function withFreshTranslations(before: ReadyCatalogEntry, next: CatalogEntry): ReadyCatalogEntry {
+  if (next.status !== "ready" || next.version !== before.version || next.source !== before.source) {
+    return before;
+  }
+  const fresh = next.episode.translations;
+  if (JSON.stringify(fresh ?? null) === JSON.stringify(before.episode.translations ?? null)) {
+    return before;
+  }
+  return { ...before, episode: { ...before.episode, translations: fresh } };
+}
+
 export function mergeCatalogForSession(
   previous: readonly CatalogEntry[],
   next: readonly CatalogEntry[],
@@ -66,7 +81,7 @@ export function mergeCatalogForSession(
   const merged: CatalogEntry[] = [];
   for (const entry of next) {
     const before = previous.find((candidate) => candidate.id === entry.id);
-    merged.push(before?.status === "ready" ? before : entry);
+    merged.push(before?.status === "ready" ? withFreshTranslations(before, entry) : entry);
   }
   for (const entry of previous) {
     if (entry.status === "ready" && !next.some((candidate) => candidate.id === entry.id)) {
@@ -77,7 +92,12 @@ export function mergeCatalogForSession(
 }
 
 export function refreshChangesCatalog(summary: RefreshSummary): boolean {
-  return summary.manifest === "updated" || summary.fetched.length > 0 || summary.removed.length > 0;
+  return (
+    summary.manifest === "updated" ||
+    summary.fetched.length > 0 ||
+    summary.removed.length > 0 ||
+    summary.translations.length > 0
+  );
 }
 
 function joinedUnique(values: readonly string[]): string {

@@ -2,7 +2,17 @@ import "background-only";
 
 // 매니페스트 디코더 — 와이어(`manifest-1`)를 앱 모양으로 바꿉니다. 예외를 던지지 않습니다.
 import { formatPath, isRecord } from "@libitums/episode-core/episode";
+import type { ContentLanguage } from "./episode-content";
 import { episodeManifestSchema } from "./episode-manifest.schema";
+
+/** 언어별 번역 파일 하나의 항목입니다(ADR-0102 D2). 본문 `version`과 따로 오릅니다. */
+export type TranslationRef = {
+  url: string;
+  version: string;
+  sha256: string;
+  bytes: number;
+};
+export type TranslationRefs = { [L in ContentLanguage]?: TranslationRef };
 
 export type ManifestEntry = {
   id: string;
@@ -17,6 +27,8 @@ export type ManifestEntry = {
   url: string;
   /** 표지 일러스트의 기준 상대 경로(`images/covers/<id>.webp`)입니다. 선택 — 없으면 일러스트 없음. */
   cover?: string;
+  /** 언어별 번역 파일(ADR-0102). 선택 — 수준 4 매니페스트만 적습니다. 틀린 언어 항목은 그 언어만 버립니다. */
+  translations?: TranslationRefs;
 };
 
 export type EpisodeManifest = {
@@ -85,6 +97,7 @@ function decode(input: unknown): ManifestDecodeResult {
       url: entry.url,
       // 빈 값 · 공백만은 「없음」입니다 — 경로의 유효성(선두 / · .. · ://)은 주소를 만드는 쪽이 거릅니다.
       ...(entry.cover === undefined || entry.cover.trim() === "" ? {} : { cover: entry.cover }),
+      ...translationRefsOf(entry.translations),
     }))
     .sort((a, b) => a.order - b.order);
 
@@ -95,6 +108,33 @@ function decode(input: unknown): ManifestDecodeResult {
     episodes,
   };
   return { ok: true, manifest };
+}
+
+const TRANSLATION_LANGUAGES: readonly ContentLanguage[] = ["vi", "id", "es", "ja"];
+const SHA256 = /^[0-9a-f]{64}$/;
+
+/** 언어마다 모양이 맞는 항목만 남깁니다 — 틀린 언어 · 모르는 언어는 조용히 버리고, 남는 것이 없으면 키가 없습니다. */
+function translationRefsOf(value: unknown): { translations?: TranslationRefs } {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) return {};
+  const refs: TranslationRefs = {};
+  for (const language of TRANSLATION_LANGUAGES) {
+    const ref = (value as Record<string, unknown>)[language];
+    if (ref === null || typeof ref !== "object") continue;
+    const { url, version, sha256, bytes } = ref as Record<string, unknown>;
+    if (
+      typeof url === "string" &&
+      url.trim() !== "" &&
+      typeof version === "string" &&
+      typeof sha256 === "string" &&
+      SHA256.test(sha256) &&
+      typeof bytes === "number" &&
+      Number.isInteger(bytes) &&
+      bytes >= 0
+    ) {
+      refs[language] = { url, version, sha256, bytes };
+    }
+  }
+  return Object.keys(refs).length > 0 ? { translations: refs } : {};
 }
 
 /** 0 이상 정수만 `assetsBytes`로 남깁니다 — 그 밖은 조용히 버립니다(매니페스트는 받습니다). */
@@ -133,6 +173,7 @@ export function encodeManifestText(manifest: EpisodeManifest): string {
       ...(entry.assetsBytes === undefined ? {} : { assets_bytes: entry.assetsBytes }),
       url: entry.url,
       ...(entry.cover === undefined ? {} : { cover: entry.cover }),
+      ...(entry.translations === undefined ? {} : { translations: entry.translations }),
     })),
   });
 }

@@ -24,9 +24,27 @@ export const uiLanguageFrom: UiLanguageFrom = (stored) =>
 
 export const loadUiLanguage: LoadUiLanguage = () => uiLanguageFrom(getItem(uiLanguageStorageKey));
 
+const savedListeners = new Set<(language: UiLanguage) => void>();
+
 export const saveUiLanguage: SaveUiLanguage = (language) => {
   setItem(uiLanguageStorageKey, language);
+  // 번역 받기 같은 듣는 쪽의 실패가 저장을 막지 않습니다.
+  for (const listener of savedListeners) {
+    try {
+      listener(language);
+    } catch {
+      // 다음 함수로 갑니다.
+    }
+  }
 };
+
+/** UI 언어가 저장될 때 부를 함수를 등록합니다(ADR-0102 D3 — 그 언어 번역 받기). 돌려준 함수로 뗍니다. */
+export function onUiLanguageSaved(listener: (language: UiLanguage) => void): () => void {
+  savedListeners.add(listener);
+  return () => {
+    savedListeners.delete(listener);
+  };
+}
 
 /** 설정 › Language — 고르는 즉시 세션 언어를 바꾸고 저장합니다(ADR-0093). 화면 전체가 그 자리에서 바뀝니다. */
 export function changeUiLanguage(

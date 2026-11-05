@@ -6,13 +6,15 @@ import type { DecodeIssue, Episode } from "./episode-content";
 import { decodeManifest } from "./episode-manifest";
 import type { EpisodeManifest, ManifestEntry } from "./episode-manifest";
 import { sha256Hex, utf8Bytes } from "./sha256";
+import { translationTablesOf } from "./episode-catalog-translations";
 
 /**
  * 이 앱이 이해하는 콘텐츠 수준. 매니페스트 `min_client_level`이 이보다 크면 원격 항목을 잠급니다. 2는 막간 이야기
  * 유닛을 그리는 수준(ADR-0087 · ADR-0088), 3은 이야기 파이널(S8 `story` · 따라 쓰기 · 최상위 막간)을 그리는
- * 수준이고, `manifests/level-3.json`부터 읽습니다(ADR-0058 적용 기록 ⟨2026-11-02⟩).
+ * 수준(ADR-0058 적용 기록 ⟨2026-11-02⟩), 4는 언어별 번역 파일을 읽는 수준이고(ADR-0102), `manifests/level-4.json`부터
+ * 읽습니다.
  */
-export const CONTENT_CLIENT_LEVEL = 3;
+export const CONTENT_CLIENT_LEVEL = 4;
 export const SUPPORTED_EPISODE_SCHEMAS: readonly string[] = ["delivery-2"];
 
 export type LockReason =
@@ -49,6 +51,8 @@ export type CatalogEntry =
 export type CatalogSourceText = {
   manifest: string | null;
   episodes: Readonly<Record<string, string>>;
+  /** 저장된 언어별 번역 파일 원문(ADR-0102) — 에피소드 id → 언어 → 원문. 없으면 본문 안 표만 씁니다. */
+  translations?: Readonly<Record<string, Readonly<Record<string, string>>>>;
 };
 
 export type CatalogInput = {
@@ -243,7 +247,8 @@ function resolveEntry(
     return pendingEntry(entry);
   }
   const checked = checkEpisodeText(entry, text);
-  return checked.ok
-    ? readyEntry(entry, "cache", checked.episode, checked.warnings, cover)
-    : lockedEntry(entry, checked.reason);
+  if (!checked.ok) return lockedEntry(entry, checked.reason);
+  // 이긴 원격 항목이 적은 언어의 저장 번역 파일로 그 언어 표를 바꿉니다(ADR-0102 D3).
+  const episode = translationTablesOf(entry, checked.episode, input.cache.translations?.[entry.id]);
+  return readyEntry(entry, "cache", episode, checked.warnings, cover);
 }
