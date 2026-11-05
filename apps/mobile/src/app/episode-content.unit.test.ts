@@ -43,6 +43,7 @@ function summary(overrides: Partial<RefreshSummary> = {}): RefreshSummary {
     removed: [],
     persisted: false,
     deferred: [],
+    translations: [],
     ...overrides,
   };
 }
@@ -119,6 +120,7 @@ describe("refreshChangesCatalog", () => {
     ["updated · 비어 있음", summary({ manifest: "updated" }), true],
     ["unchanged · fetched 있음", summary({ fetched: ["x"] }), true],
     ["unchanged · removed 있음", summary({ removed: ["x"] }), true],
+    ["unchanged · 번역 파일 받음", summary({ translations: ["vi/x"] }), true],
     ["unchanged · 전부 빔", summary(), false],
     ["unavailable · 전부 빔", summary({ manifest: "unavailable" }), false],
     ["invalid · 전부 빔", summary({ manifest: "invalid" }), false],

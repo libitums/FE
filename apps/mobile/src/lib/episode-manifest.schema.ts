@@ -18,6 +18,8 @@ const manifestEntrySchema = z.object({
   url: z.string(),
   /** 표지 일러스트의 기준 상대 경로. 선택 — 옛 앱은 모르는 키로 버린다. */
   cover: z.optional(z.string()),
+  // 선택 — 언어별 번역 파일(ADR-0102). 틀린 언어 항목이 매니페스트 전체를 버리지 않도록 무엇이든 받고 디코더가 거릅니다.
+  translations: z.optional(z.unknown()),
 });
 
 export const episodeManifestSchema = z.object({

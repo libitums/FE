@@ -332,6 +332,7 @@ u01 · u02는 전부 해결, u03은 18문항이 같은 세 id(에피소드 2의 
   "schema": "manifest-1",
   "generated_at": "2026-10-12T00:00:00Z",
   "min_client_level": 1,               // 선택. 정수. 앱의 CONTENT_CLIENT_LEVEL보다 크면 원격 항목을 잠근다
+  // 항목의 선택 키 translations(수준 4, ⟨2026-11-05⟩)는 부록 G-2
   "episodes": [
     { "id": "u01-water", "order": 1, "title": "익선동 골목 어귀 편의점",
       "schema": "delivery-2", "version": "2026-10-12.1",
@@ -794,3 +795,27 @@ UI 언어가 영어가 아닐 때 콘텐츠의 영어(안내 · 뜻 풀이 · �
 | 언어 | `vi`(베트남어) · `id`(인도네시아어, ⟨2026-11-03⟩ [ADR-0093](../adr/0093-indonesian-localization.md)) · `es`(스페인어, ⟨2026-11-04⟩ [ADR-0097](../adr/0097-spanish-localization.md)) · `ja`(일본어, ⟨2026-11-04⟩ [ADR-0098](../adr/0098-japanese-localization.md))를 읽습니다. 모르는 언어 키는 조용히 버립니다. |
 | 틀린 표 | 문자열이 아닌 값 · 빈 번역은 그 항목만 빼고 `invalid-translation` 경고. 표 전체가 객체가 아니어도 에피소드는 디코드됩니다. |
 | 빠진 번역 | 표에 없는 영어는 영어로 보입니다. |
+
+### G-2. 언어별 번역 파일 ⟨2026-11-05 — 수준 4⟩
+
+[ADR-0102](../adr/0102-episode-translation-files.md). **수준 4 매니페스트(`manifests/level-4.json`)부터** 번역표를 본문에서 떼어 언어마다 파일로 둡니다. 수준 2 · 3 본문은 위의 최상위 `translations`를 그대로 품습니다(옛 앱 호환).
+
+```jsonc
+// translations/vi/u01-water.json
+{ "schema": "translation-1", "episode": "u01-water", "language": "vi",
+  "entries": { "Fill in the blank.": "Điền vào chỗ trống.", "water": "nước" } }
+
+// manifests/level-4.json 의 항목 — 선택 키 translations (언어마다 version은 본문과 따로)
+{ "id": "u01-water", "…": "…", "url": "episodes/level-4/u01-water.json",
+  "translations": { "vi": { "url": "translations/vi/u01-water.json", "version": "2026-11-05.2",
+                            "sha256": "…64 hex…", "bytes": 10127 } } }
+```
+
+| 규칙 | 내용 |
+|---|---|
+| 파일 경로 | `translations/<언어>/<id>.json` — 수준과 무관하게 하나. `entries`는 위 표와 같은 모양 · 같은 정규화 |
+| 매니페스트 | 항목의 선택 키 `translations.<언어>{url, version, sha256, bytes}`. 틀린 언어 항목 · 모르는 언어는 **그 언어만** 버리고 매니페스트는 받습니다 |
+| 수준 4 본문 | 최상위 `translations`를 두지 않습니다 |
+| 앱이 받는 범위 | 지금 UI 언어의 파일 하나(영어면 없음). sha256이 맞아야 저장. 요금제 연결에서도 받습니다(텍스트) |
+| 적용 | 파일이 있는 언어는 본문 표를 **통째로** 바꿉니다(섞지 않음). 받기 전 · 실패면 본문 표, 그것도 없으면 영어 |
+| 고칠 때 | 번역만 고치면 그 언어 파일과 매니페스트의 그 언어 `version` · `sha256` · `bytes`만 바꿉니다 — 본문은 다시 받지 않습니다 |

@@ -50,7 +50,12 @@ export type TutorialBootOptions = {
   /** `load_learning_progress`의 답입니다. 기본 `null`(서버에 진행 없음). */
   readonly load?: object | null;
   /** 서버가 내주는 콘텐츠입니다. 없으면 버킷 요청은 404입니다(`offline`이면 연결 실패). */
-  readonly serve?: { readonly manifest: string; readonly episodes: Record<string, string> };
+  readonly serve?: {
+    readonly manifest: string;
+    readonly episodes: Record<string, string>;
+    /** 그 밖의 버킷 경로(번역 파일 · 수준별 매니페스트 등) → 원문. 먼저 봅니다. */
+    readonly files?: Record<string, string>;
+  };
   /** 참이면 콘텐츠 버킷 요청이 모두 연결 실패(reject)입니다. */
   readonly offline?: boolean;
   /** 있으면 `NativeModules.ContentFileModule`로 세웁니다(받아 둔 파일 모듈 대역). */
@@ -138,6 +143,8 @@ export async function bootTutorialApp(options: TutorialBootOptions = {}): Promis
     if (isContentRequest(url)) {
       if (options.offline === true) return Promise.reject(new Error("offline"));
       if (options.serve === undefined) return Promise.resolve(contentNotFoundResponse());
+      const served = options.serve.files?.[contentPathOf(url) ?? ""];
+      if (served !== undefined) return Promise.resolve({ status: 200, text: async () => served });
       if (contentPathOf(url) === "manifest.json") {
         return Promise.resolve({ status: 200, text: async () => options.serve?.manifest ?? "" });
       }

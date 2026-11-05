@@ -21,12 +21,14 @@ import {
   CONTENT_MANIFEST_KEY,
   hostContentStore,
   readCachedSource,
+  readCachedTranslations,
 } from "../lib/episode-cache";
 import { buildEpisodeCatalog, parseCachedManifest } from "../lib/episode-catalog";
 import type { CatalogSourceText } from "../lib/episode-catalog";
 import { contentBucket } from "../lib/content-bucket";
 import { contentBaseUrl, resolveContentUrlSafe } from "../lib/episode-remote";
 import { fillPlaceholders } from "../lib/placeholder-fill";
+import { sameTranslationTables } from "../lib/translation-tables";
 import { supabaseConfig } from "../lib/supabase-config";
 import type { EpisodeContent } from "./episode-content";
 
@@ -68,18 +70,21 @@ function readSource(): CatalogSourceText {
   const remoteEntries = parseCachedManifest(cachedManifestText())?.episodes ?? [];
   const cachedIds = remoteEntries.map((entry) => entry.id);
   const ids = [...bundledIds, ...cachedIds.filter((id) => !bundledIds.includes(id))];
+  // 원격 항목이 적은 언어의 저장 번역 파일도 함께 읽습니다(ADR-0102) — 카탈로그가 그 언어 표를 바꿉니다.
+  const translations = readCachedTranslations(hostContentStore, remoteEntries);
   // 파일 모듈이 있으면 원격 에피소드는 자산까지 갖춘 뒤에만 엽니다. 없으면(Explorer · 옛 호스트) 받을 수 없으니
   // 지금처럼 본문만으로 엽니다.
-  if (!contentFilesAvailable()) return readCachedSource(hostContentStore, ids);
+  if (!contentFilesAvailable()) return { ...readCachedSource(hostContentStore, ids), translations };
   const keep = (id: string): boolean => {
     const entry = remoteEntries.find((candidate) => candidate.id === id);
     return entry === undefined || isAssetsComplete(hostContentStore, id, entry.sha256);
   };
-  return readCachedSource(hostContentStore, ids, keep);
+  return { ...readCachedSource(hostContentStore, ids, keep), translations };
 }
 
 function sameSource(a: CatalogSourceText, b: CatalogSourceText): boolean {
   if (a.manifest !== b.manifest) return false;
+  if (!sameTranslationTables(a.translations, b.translations)) return false;
   const keys = Object.keys(a.episodes);
   return (
     keys.length === Object.keys(b.episodes).length &&

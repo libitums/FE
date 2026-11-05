@@ -2,6 +2,7 @@ import "background-only";
 
 // 기기 캐시 — 검증을 통과한 원격 매니페스트 · 에피소드 원문을 호스트 저장소에 둡니다.
 import type { CatalogSourceText } from "./episode-catalog";
+import type { ManifestEntry } from "./episode-manifest";
 import { getItem, isStorageAvailable, removeItem, setItem } from "./storage";
 
 /** 활성 매니페스트 — 카탈로그가 여는 본문들의 항목입니다(받은 원문에서 보류된 id만 지금 항목으로 둔 것). */
@@ -10,6 +11,9 @@ export const CONTENT_MANIFEST_KEY = "libitum.content.manifest";
 export const CONTENT_RECEIVED_MANIFEST_KEY = "libitum.content.manifest.received";
 export const CONTENT_AUDIO_MANIFEST_KEY = "libitum.content.audio-manifest";
 export const contentEpisodeKey = (id: string): string => `libitum.content.episode.${id}`;
+/** 언어별 번역 파일 원문(ADR-0102) — sha256을 맞춰 본 것만 둡니다. */
+export const contentTranslationKey = (language: string, id: string): string =>
+  `libitum.content.translation.${language}.${id}`;
 
 export type ContentStore = {
   available(): boolean;
@@ -80,4 +84,20 @@ export function readCachedSource(
     }
   }
   return { manifest: safeGet(store, CONTENT_MANIFEST_KEY), episodes };
+}
+
+/** 항목마다 매니페스트가 적은 언어의 저장 번역 파일 원문을 읽습니다(ADR-0102) — 에피소드 id → 언어 → 원문. */
+export function readCachedTranslations(
+  store: ContentStore,
+  entries: readonly ManifestEntry[],
+): Record<string, Record<string, string>> {
+  const out: Record<string, Record<string, string>> = {};
+  for (const entry of entries) {
+    for (const language of Object.keys(entry.translations ?? {})) {
+      const text = safeGet(store, contentTranslationKey(language, entry.id));
+      if (text === null) continue;
+      out[entry.id] = { ...out[entry.id], [language]: text };
+    }
+  }
+  return out;
 }

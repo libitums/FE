@@ -14,6 +14,7 @@ import {
   trySet,
 } from "./episode-cache";
 import type { ContentStore } from "./episode-cache";
+import type { ContentLanguage } from "./episode-content";
 import {
   CONTENT_CLIENT_LEVEL,
   SUPPORTED_EPISODE_SCHEMAS,
@@ -23,6 +24,7 @@ import type { CatalogInput, LockReason } from "./episode-catalog";
 import { decodeManifest } from "./episode-manifest";
 import type { EpisodeManifest, ManifestEntry } from "./episode-manifest";
 import { runPlannedEpisode } from "./episode-refresh-entry";
+import { syncTranslations } from "./episode-translation-sync";
 import type { PlannedEpisodeRun } from "./episode-refresh-entry";
 import type { FetchText, FetchTextResult } from "./episode-remote";
 import {
@@ -47,6 +49,8 @@ export type RefreshSummary = {
   persisted: boolean;
   /** 받기 정책(`assetPolicy`)이 막아 자산을 건너뛴 편입니다(ADR-0095 D5). 연결이 바뀌면 다음 차례에 받습니다. */
   deferred: string[];
+  /** 이번 차례에 새로 받아 저장한 번역 파일(`<언어>/<id>`, ADR-0102 D3)입니다. */
+  translations: string[];
 };
 
 /** 실행 시작의 받기를 스플래시가 지켜보는 자리입니다. 없으면 아무도 지켜보지 않습니다. */
@@ -81,10 +85,21 @@ export type RefreshDeps = {
    * 멈추지 않고 다음 편으로 갑니다(ADR-0095 D5). 없으면 지금처럼 모두 받습니다.
    */
   assetPolicy?: (id: string) => boolean;
+  /** 번역 파일을 받을 UI 언어(ADR-0102 D3). 없거나 `null`(영어)이면 번역 단계를 건너뜁니다. */
+  translationLanguage?: ContentLanguage | null;
 };
 
 function emptySummary(manifest: RefreshSummary["manifest"], persisted: boolean): RefreshSummary {
-  return { manifest, fetched: [], locked: [], failed: [], removed: [], persisted, deferred: [] };
+  return {
+    manifest,
+    fetched: [],
+    locked: [],
+    failed: [],
+    removed: [],
+    persisted,
+    deferred: [],
+    translations: [],
+  };
 }
 
 /** 전송 호출 하나가 reject하면 그 호출만 연결 실패로 봅니다. */
@@ -252,6 +267,15 @@ async function refresh(deps: RefreshDeps): Promise<RefreshSummary> {
   deps.observer?.planned(watched);
   reportLocked(deps, remote, summary);
   if (canStore) discardStale(store, plan, summary);
+  // 번역은 본문보다 먼저 — 작고, 편이 열리는 순간(onEpisodeReady) 그 언어 표가 이미 있게 합니다(ADR-0102 D3).
+  if (canStore) {
+    summary.translations = await syncTranslations({
+      fetchText,
+      store,
+      manifest: remote,
+      language: deps.translationLanguage ?? null,
+    });
+  }
   await runPlan({ deps, summary, canStore, staging, watched: new Set(watched) }, plan);
   if (canStore) {
     removeVanished(store, parseCachedManifest(previousText), remote, summary);
