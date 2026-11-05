@@ -6,7 +6,7 @@ import "background-only";
 import { contentTranslationKey, safeGet, trySet } from "./episode-cache";
 import type { ContentStore } from "./episode-cache";
 import type { ContentLanguage } from "./episode-content";
-import type { EpisodeManifest } from "./episode-manifest";
+import type { EpisodeManifest, TranslationRef } from "./episode-manifest";
 import type { FetchText, FetchTextResult } from "./episode-remote";
 import { decodeTranslationFile } from "./episode-translation-files";
 import { sha256Hex, utf8Bytes } from "./sha256";
@@ -29,21 +29,43 @@ async function safeFetch(fetchText: FetchText, relative: string): Promise<FetchT
   }
 }
 
-/** 새로 저장한 `<언어>/<id>` 목록을 돌려줍니다. 저장된 원문의 sha가 같으면 받지 않습니다. */
+/** 동시에 받는 파일 수 — 그림 · 음성 받기와 같습니다(ADR-0071). */
+const CONCURRENCY = 4;
+
+/** 한 편의 번역 파일 — 같은 sha면 건너뛰고, 받아 검증한 뒤 저장했으면 `<언어>/<id>`, 아니면 `null`입니다. */
+async function syncOne(
+  input: TranslationSyncInput,
+  language: ContentLanguage,
+  id: string,
+  ref: TranslationRef,
+): Promise<string | null> {
+  const key = contentTranslationKey(language, id);
+  const current = safeGet(input.store, key);
+  if (current !== null && shaOf(current) === ref.sha256) return null;
+  const reply = await safeFetch(input.fetchText, ref.url);
+  if (!reply.ok || reply.status !== 200 || shaOf(reply.text) !== ref.sha256) return null;
+  if (decodeTranslationFile(reply.text, { episodeId: id, language }) === null) return null;
+  return trySet(input.store, key, reply.text) ? `${language}/${id}` : null;
+}
+
+/** 새로 저장한 `<언어>/<id>` 목록(매니페스트 순서)을 돌려줍니다. 4개까지 동시에 받습니다. */
 export async function syncTranslations(input: TranslationSyncInput): Promise<string[]> {
-  const { fetchText, store, manifest, language } = input;
+  const { manifest, language } = input;
   if (language === null) return [];
-  const stored: string[] = [];
-  for (const entry of manifest.episodes) {
+  const jobs = manifest.episodes.flatMap((entry) => {
     const ref = entry.translations?.[language];
-    if (ref === undefined) continue;
-    const key = contentTranslationKey(language, entry.id);
-    const current = safeGet(store, key);
-    if (current !== null && shaOf(current) === ref.sha256) continue;
-    const reply = await safeFetch(fetchText, ref.url);
-    if (!reply.ok || reply.status !== 200 || shaOf(reply.text) !== ref.sha256) continue;
-    if (decodeTranslationFile(reply.text, { episodeId: entry.id, language }) === null) continue;
-    if (trySet(store, key, reply.text)) stored.push(`${language}/${entry.id}`);
-  }
-  return stored;
+    return ref === undefined ? [] : [{ id: entry.id, ref }];
+  });
+  const results: (string | null)[] = new Array<string | null>(jobs.length).fill(null);
+  let next = 0;
+  const worker = async (): Promise<void> => {
+    while (next < jobs.length) {
+      const index = next;
+      next += 1;
+      const job = jobs[index];
+      if (job !== undefined) results[index] = await syncOne(input, language, job.id, job.ref);
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(CONCURRENCY, jobs.length) }, worker));
+  return results.filter((stored): stored is string => stored !== null);
 }

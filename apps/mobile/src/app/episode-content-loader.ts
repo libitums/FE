@@ -28,6 +28,7 @@ import type { CatalogSourceText } from "../lib/episode-catalog";
 import { contentBucket } from "../lib/content-bucket";
 import { contentBaseUrl, resolveContentUrlSafe } from "../lib/episode-remote";
 import { fillPlaceholders } from "../lib/placeholder-fill";
+import { sameTranslationTables } from "../lib/translation-tables";
 import { supabaseConfig } from "../lib/supabase-config";
 import type { EpisodeContent } from "./episode-content";
 
@@ -83,7 +84,7 @@ function readSource(): CatalogSourceText {
 
 function sameSource(a: CatalogSourceText, b: CatalogSourceText): boolean {
   if (a.manifest !== b.manifest) return false;
-  if (JSON.stringify(a.translations ?? {}) !== JSON.stringify(b.translations ?? {})) return false;
+  if (!sameTranslationTables(a.translations, b.translations)) return false;
   const keys = Object.keys(a.episodes);
   return (
     keys.length === Object.keys(b.episodes).length &&

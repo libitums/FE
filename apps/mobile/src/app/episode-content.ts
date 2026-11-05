@@ -4,6 +4,7 @@
 import type { DownloadControls } from "./download-wiring";
 import type { AudioTiming } from "../lib/audio-manifest";
 import type { CatalogEntry } from "../lib/episode-catalog";
+import { sameTranslationTables } from "../lib/translation-tables";
 import type { RefreshSummary } from "../lib/episode-refresh";
 import type { fillPlaceholders } from "../lib/placeholder-fill";
 import type { EpisodeContentRefreshedEvent } from "../screens/episode-intro/episode-intro.contract";
@@ -68,9 +69,7 @@ function withFreshTranslations(before: ReadyCatalogEntry, next: CatalogEntry): R
     return before;
   }
   const fresh = next.episode.translations;
-  if (JSON.stringify(fresh ?? null) === JSON.stringify(before.episode.translations ?? null)) {
-    return before;
-  }
+  if (sameTranslationTables(fresh, before.episode.translations)) return before;
   return { ...before, episode: { ...before.episode, translations: fresh } };
 }
 

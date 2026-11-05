@@ -130,3 +130,29 @@ describe("syncTranslations", () => {
     );
   });
 });
+
+describe("syncTranslations — 동시 받기", () => {
+  test("TS7. 동시에 4개까지 받고(1개보다 많이), 받은 목록은 매니페스트 순서다", async () => {
+    const ids = ["u01", "u02", "u03", "u04", "u05", "u06"];
+    const texts = Object.fromEntries(ids.map((id) => [id, fileText(id, "vi")]));
+    const manifest = manifestOf(ids.map((id) => ({ id, langs: { vi: texts[id] as string } })));
+    let inFlight = 0;
+    let peak = 0;
+    const fetchText = async (relative: string) => {
+      inFlight += 1;
+      peak = Math.max(peak, inFlight);
+      // 뒤 편이 먼저 끝나게 해 순서가 도착 순이 아님을 봅니다.
+      const id = /translations\/vi\/(.+)\.json/.exec(relative)?.[1] ?? "";
+      await new Promise((resolve) => setTimeout(resolve, 12 - ids.indexOf(id) * 2));
+      inFlight -= 1;
+      return { ok: true as const, status: 200, text: texts[id] as string };
+    };
+    const { store } = fakeStore();
+
+    const stored = await syncTranslations({ fetchText, store, manifest, language: "vi" });
+
+    expect(peak).toBeGreaterThan(1);
+    expect(peak).toBeLessThanOrEqual(4);
+    expect(stored).toEqual(ids.map((id) => `vi/${id}`));
+  });
+});
