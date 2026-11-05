@@ -1,5 +1,6 @@
 import { JSDOM } from "jsdom";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { airbridgeDeeplinkOptionsOf } from "../analytics/airbridge";
 import type { AirbridgeDeeplinkOptions, AirbridgeSdk } from "../analytics/airbridge.contract";
 import { pages } from "../site";
 import { initAirbridgeCta, initAirbridgeTracking } from "./airbridge-cta";
@@ -17,11 +18,12 @@ const both: Links = {
   android: "https://play.google.com/store/apps/details?id=app.duru",
 };
 
-const deeplink: AirbridgeDeeplinkOptions = {
+/** 클릭한 링크의 href를 그대로 되돌려 주는 가짜 — 어느 href로 불렸는지 `openDeeplink` 인자로 드러납니다. */
+const deeplinkOf = (storeHref: string): AirbridgeDeeplinkOptions => ({
   type: "click",
-  deeplinks: { android: "duru://journey", ios: "duru://journey", desktop: "https://k-duru.com/" },
-  fallbacks: { android: "google-play", ios: "https://k-duru.com/" },
-};
+  deeplinks: { android: "duru://journey", ios: "duru://journey", desktop: storeHref },
+  fallbacks: { android: "google-play", ios: storeHref },
+});
 
 afterEach(() => {
   vi.doUnmock("../site");
@@ -80,22 +82,35 @@ function fakeSdk(): { sdk: AirbridgeSdk; calls: AirbridgeDeeplinkOptions[] } {
 }
 
 describe("Airbridge 클릭 결선 (Download 마크업 위)", () => {
-  it("I-AC1 SDK가 있으면 Android 클릭이 preventDefault + openDeeplink, 클릭은 document까지 전파", async () => {
+  it("I-AC1 SDK가 있으면 Android 클릭이 preventDefault + 카드 href로 만든 옵션의 openDeeplink, 클릭은 document까지 전파", async () => {
     const document = await mount(both);
     const seen = watchDocument(document);
     const { sdk, calls } = fakeSdk();
-    expect(initAirbridgeCta({ root: document, sdkOf: () => sdk, deeplink })).toBe(1);
+    expect(initAirbridgeCta({ root: document, sdkOf: () => sdk, deeplinkOf })).toBe(1);
     click(document, "android");
     expect(calls).toHaveLength(1);
-    expect(calls[0]).toEqual(deeplink);
+    expect(calls[0]).toEqual(deeplinkOf(both.android));
     expect(seen).toEqual([{ prevented: true, store: "android" }]);
+  });
+
+  it("I-AC5 실제 옵션 함수를 꽂으면 desktop · iOS 폴백이 카드의 Play 주소다 — 페이지 주소가 아니다", async () => {
+    const document = await mount(both);
+    const { sdk, calls } = fakeSdk();
+    initAirbridgeCta({ root: document, sdkOf: () => sdk, deeplinkOf: airbridgeDeeplinkOptionsOf });
+    click(document, "android");
+    expect(calls).toHaveLength(1);
+    expect(calls[0]?.deeplinks.desktop).toBe(both.android);
+    expect(calls[0]?.fallbacks.ios).toBe(both.android);
+    expect(calls[0]?.deeplinks.android).toBe("duru://journey");
+    expect(calls[0]?.fallbacks.android).toBe("google-play");
+    expect(JSON.stringify(calls[0])).not.toContain(document.location.href);
   });
 
   it("I-AC2 SDK가 없으면 무동작 — 기본 이동을 막지 않고 전파", async () => {
     const document = await mount(both);
     const seen = watchDocument(document);
     const { calls } = fakeSdk();
-    initAirbridgeCta({ root: document, sdkOf: () => null, deeplink });
+    initAirbridgeCta({ root: document, sdkOf: () => null, deeplinkOf });
     click(document, "android");
     expect(calls).toHaveLength(0);
     expect(seen).toEqual([{ prevented: false, store: "android" }]);
@@ -106,7 +121,7 @@ describe("Airbridge 클릭 결선 (Download 마크업 위)", () => {
     const seen = watchDocument(document);
     const { sdk, calls } = fakeSdk();
     const sdkOf = vi.fn<() => AirbridgeSdk | null>().mockReturnValue(sdk);
-    initAirbridgeCta({ root: document, sdkOf, deeplink });
+    initAirbridgeCta({ root: document, sdkOf, deeplinkOf });
     click(document, "android", { metaKey: true });
     click(document, "android", { ctrlKey: true });
     click(document, "android", { shiftKey: true });
@@ -123,7 +138,7 @@ describe("Airbridge 클릭 결선 (Download 마크업 위)", () => {
     watchDocument(document);
     const { sdk, calls } = fakeSdk();
     const sdkOf = vi.fn<() => AirbridgeSdk | null>().mockReturnValueOnce(null).mockReturnValue(sdk);
-    initAirbridgeCta({ root: document, sdkOf, deeplink });
+    initAirbridgeCta({ root: document, sdkOf, deeplinkOf });
     click(document, "android");
     expect(calls).toHaveLength(0);
     click(document, "android");
@@ -135,13 +150,13 @@ describe("Airbridge 클릭 결선 (Download 마크업 위)", () => {
     const document = await mount(both);
     const seen = watchDocument(document);
     const { sdk, calls } = fakeSdk();
-    initAirbridgeCta({ root: document, sdkOf: () => sdk, deeplink });
+    initAirbridgeCta({ root: document, sdkOf: () => sdk, deeplinkOf });
     click(document, "ios");
     expect(calls).toHaveLength(0);
     expect(seen).toEqual([{ prevented: false, store: "ios" }]);
 
     const empty = await mount(none);
-    expect(initAirbridgeCta({ root: empty, sdkOf: () => sdk, deeplink })).toBe(0);
+    expect(initAirbridgeCta({ root: empty, sdkOf: () => sdk, deeplinkOf })).toBe(0);
   });
 
   it("I-AC5 추적 시작 — 지역이 허용될 때만 startTracking, 전역이 없어도 던지지 않음", () => {

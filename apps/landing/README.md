@@ -190,8 +190,9 @@ GA4와 따로, 랜딩은 Airbridge Web SDK도 싣는다 — **검색광고를 �
   EEA 대서양 영토 다섯(`Atlantic/Reykjavik` · `Canary` · `Madeira` · `Faroe` · `Azores`)이 아닐 때만 `airbridge.startTracking()`을 부른다(`startsTrackingIn`). GA 동의 지역
   규칙과 같은 방향이되 시간대는 지역의 근사치라 터키 · 러시아 등 EU 밖 유럽도 빠진다. 시간대를 모르는 브라우저는 시작한다.
 - **Android 카드 동작**: `a[data-store="android"]`의 click 리스너가 클릭 때마다 `window.airbridge`를 본다. SDK가 **떠 있을 때만**(`isSDKEnabled === true`)
-  `preventDefault` + `openDeeplink({ type: "click", deeplinks: { android: "duru://journey", ios: "duru://journey", desktop: <지금 페이지 URL> },
-  fallbacks: { android: "google-play", ios: <지금 페이지 URL> } })`. 스텁뿐이면(차단기 · `load` 전 · 느린 네트워크) 아무것도 하지 않아 `<a target="_blank">`가
+  `preventDefault` + `openDeeplink({ type: "click", deeplinks: { android: "duru://journey", ios: "duru://journey", desktop: <카드의 Play 주소> },
+  fallbacks: { android: "google-play", ios: <카드의 Play 주소> } })` — 폴백은 클릭한 `<a>`의 `href`(`storeLinks.android`)를 DOM에서 읽는다
+  (⟨2026-11-05⟩ 처음엔 지금 페이지 URL이었고 데스크톱 · iPhone에서 랜딩으로 되돌아와 바꿨다 — ADR-0090 D5 정정 기록). 스텁뿐이면(차단기 · `load` 전 · 느린 네트워크) 아무것도 하지 않아 `<a target="_blank">`가
   Play로 그대로 간다 — 그 설치는 귀속되지 않는다. 수정키(Ctrl · Cmd · Shift · Alt) · 보조 버튼 클릭도 가로채지 않는다 — 새 탭으로 열려는 의도를 지킨다.
   iOS 카드 · 체험판 링크는 결선하지 않는다.
 - **GA `download_click { store: "android" }`는 그대로 나간다** — 리스너가 `stopPropagation`을 하지 않아 `scripts/analytics.ts`의 document 리스너가 같은 클릭을 받는다.

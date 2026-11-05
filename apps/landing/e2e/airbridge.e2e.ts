@@ -117,7 +117,7 @@ test.describe("AB-E1 스텁 SDK", () => {
   test.afterEach(() => expectCleanHosts(seen));
 
   for (const path of ["/", "/ko/"]) {
-    test(`init 한 번 · Android 카드 클릭은 openDeeplink로 가고 이동하지 않는다 (${path})`, async ({
+    test(`init 한 번 · Android 카드 클릭은 카드의 Play 주소를 폴백으로 openDeeplink로 가고 이동하지 않는다 (${path})`, async ({
       page,
       baseURL,
     }) => {
@@ -126,10 +126,14 @@ test.describe("AB-E1 스텁 SDK", () => {
       await installClickProbe(page);
       const before = page.url();
       const pageCount = page.context().pages().length;
+      // 폴백은 카드가 가리키는 Play 웹 목록 주소다 — 지금 보는 페이지 주소가 아니다(ADR-0090 정정 기록 2026-11-05).
+      const play = await androidCard(page).getAttribute("href");
+      expect(play).toMatch(/^https:\/\/play\.google\.com\//);
+      const home = `${new URL(baseURL ?? "").origin}${path}`;
+      expect(play).not.toBe(home);
 
       await androidCard(page).click();
 
-      const home = `${new URL(baseURL ?? "").origin}${path}`;
       await expect
         .poll(() => callsOf(page, "openDeeplink"))
         .toEqual([
@@ -137,8 +141,8 @@ test.describe("AB-E1 스텁 SDK", () => {
             "openDeeplink",
             {
               type: "click",
-              deeplinks: { android: "duru://journey", ios: "duru://journey", desktop: home },
-              fallbacks: { android: "google-play", ios: home },
+              deeplinks: { android: "duru://journey", ios: "duru://journey", desktop: play },
+              fallbacks: { android: "google-play", ios: play },
             },
           ],
         ]);

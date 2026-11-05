@@ -3,7 +3,7 @@
 import { startsTrackingIn } from "../analytics/airbridge";
 import type { InitAirbridgeCta, InitAirbridgeTracking } from "../analytics/airbridge.contract";
 
-export const initAirbridgeCta: InitAirbridgeCta = ({ root, sdkOf, deeplink }) => {
+export const initAirbridgeCta: InitAirbridgeCta = ({ root, sdkOf, deeplinkOf }) => {
   const links = root.querySelectorAll<HTMLAnchorElement>('a[data-store="android"]');
   for (const link of links) {
     link.addEventListener("click", (event) => {
@@ -14,7 +14,7 @@ export const initAirbridgeCta: InitAirbridgeCta = ({ root, sdkOf, deeplink }) =>
       const sdk = sdkOf();
       if (!sdk) return;
       event.preventDefault();
-      sdk.openDeeplink(deeplink);
+      sdk.openDeeplink(deeplinkOf(link.href));
     });
   }
   return links.length;
