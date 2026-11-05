@@ -116,7 +116,9 @@
   padding: var(--libitum-spacing-24) var(--libitum-spacing-12);
 }
 
+/* 오버레이 위 가이드 문구는 흰색입니다 — 다른 첫 안내(제목 · 설명)와 같습니다. */
 .first-unit-map-tooltip .ui-lynx-tooltip-message {
+  color: var(--libitum-color-white);
   text-align: center;
   font-family: var(--libitum-typography-heading-s-font-family);
   font-size: var(--libitum-typography-heading-s-font-size);

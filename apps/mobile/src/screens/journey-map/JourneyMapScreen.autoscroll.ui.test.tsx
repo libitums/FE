@@ -54,6 +54,9 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+// 가이드가 설 때 맨 위로 맞추는 스크롤 — 이 파일의 이동 대역은 끝 위치로 부드러운 `scrollTo` 하나를 남깁니다.
+const guideTopScroll = scrollToCall(0, true);
+
 describe("JourneyMapScreen 자동 스크롤", () => {
   test("AS1. 진행이 없으면 스크롤하지 않고 대상 셀도 재지 않는다", () => {
     const host = stubHost({ rects: asRects() });
@@ -205,14 +208,15 @@ describe("JourneyMapScreen 자동 스크롤", () => {
     const host = stubHost({ rects: asRects() });
     mount(<FirstUnitGuideProvider enabled>{u00Screen(u00Catalog())}</FirstUnitGuideProvider>);
     expect(screen.queryByTestId("first-unit-guide-map")).not.toBeNull();
-    expect(host.scrollTos()).toEqual([]);
+    // 가이드가 서며 맨 위(0)로 맞추는 한 번뿐입니다(ADR-0068 ⟨2026-11-05⟩) — 다음 유닛으로의 자동 스크롤은 없습니다.
+    expect(host.scrollTos()).toEqual([guideTopScroll]);
 
     act(() => {
       fireEvent.tap(screen.getByTestId("first-unit-guide-map"), { eventType: "catchEvent" });
     });
 
     expect(screen.queryByTestId("first-unit-guide-map")).toBeNull();
-    expect(host.scrollTos()).toEqual([]);
+    expect(host.scrollTos()).toEqual([guideTopScroll]);
     expect(host.scrollIntoViews()).toEqual([]);
   });
 
@@ -227,14 +231,14 @@ describe("JourneyMapScreen 자동 스크롤", () => {
     expect(screen.queryByTestId("first-unit-guide-map")).not.toBeNull();
 
     host.flush();
-    expect(host.scrollTos()).toEqual([]);
+    expect(host.scrollTos()).toEqual([guideTopScroll]);
 
     act(() => {
       fireEvent.tap(screen.getByTestId("first-unit-guide-map"), { eventType: "catchEvent" });
     });
     host.flush();
 
-    expect(host.scrollTos()).toEqual([]);
+    expect(host.scrollTos()).toEqual([guideTopScroll]);
     expect(host.scrollIntoViews()).toEqual([]);
   });
 
