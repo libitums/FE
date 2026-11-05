@@ -20,6 +20,7 @@ import { mapScrollTargetOf } from "./journey-map-next-unit";
 import { useAutoScrollToNext } from "./useAutoScrollToNext";
 import { useMapGlide } from "./use-map-glide";
 import { useGuideAlignment } from "./use-guide-alignment";
+import { useStableBodyCatalog } from "./use-stable-body-catalog";
 import { takeMapCleared } from "./journey-map-cleared-memory";
 import { rememberedMapScroll, rememberMapScroll } from "./journey-map-scroll-memory";
 import { useStepSheet } from "./useStepSheet";
@@ -68,7 +69,12 @@ export function JourneyMapScreen({
   const [restoredScrollTop] = useState(rememberedMapScroll);
   // 방금 끝낸 유닛 — 이 마운트에서 한 번 읽어 그 다음 구간 발자국만 등장 모션(ADR-0100). 본문이 `memo`라 객체는 기억해 둡니다.
   const [clearedUnit] = useState(takeMapCleared);
-  const bodyCatalog = useMemo(() => ({ ...catalog, clearedUnit }), [catalog, clearedUnit]);
+  // 셸이 매번 새 catalog 객체를 넘겨도 내용이 같으면 본문을 다시 그리지 않습니다.
+  const stableCatalog = useStableBodyCatalog(catalog);
+  const bodyCatalog = useMemo(
+    () => ({ ...stableCatalog, clearedUnit }),
+    [stableCatalog, clearedUnit],
+  );
   const glider = useMapGlide();
   // 가이드는 지도를 맨 위(표지)로 옮긴 뒤에 보입니다 — 어긋난 자리에 강조가 서지 않게 합니다.
   const alignment = useGuideAlignment({
