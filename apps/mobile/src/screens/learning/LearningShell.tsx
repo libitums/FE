@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "@lynx-js/react";
+import { useContext, useEffect, useRef, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import { useMotion } from "@libitums/ui-lynx/motion";
@@ -17,6 +17,7 @@ import {
 import { LearningShellHeader } from "./LearningShellHeader";
 import { learningReviewPanel, useLearningReview } from "./learning-review";
 import { learningReviewContinue } from "./LearningReviewContinue";
+import { LearningGuideObscuredContext } from "./learning-guide-obscured";
 import type { LearningShellProps } from "./learning-shell-props";
 import { scrollLearningShellToTop, useLearningShellScrollReset } from "./learning-shell-scroll";
 import { useUiCopy } from "../../lib/ui-copy";
@@ -54,7 +55,7 @@ export function LearningShell({
   onAction: onActionProp,
   actionSound = "button",
   advance: advanceProp,
-  obscured,
+  obscured: obscuredProp,
   runProgress,
   actionButton: actionButtonProp,
   verdict: verdictProp,
@@ -65,6 +66,10 @@ export function LearningShell({
   formLabel,
 }: LearningShellProps): ReactNode {
   const copy = useUiCopy();
+  // 활동 안내 층이 덮었으면 화면이 넘기지 않아도 가립니다(ADR-0104 D3). 화면의 `true`는 언제나 이깁니다.
+  const guideObscured = useContext(LearningGuideObscuredContext);
+  const obscured =
+    obscuredProp === true || guideObscured === true ? true : (obscuredProp ?? guideObscured);
   // 다시 도전(ADR-0058 ⟨2026-10-30⟩)에서 판정이 서면 학습형과 관계없이 아래 판(Fixed it! · Not quite)과 판 안 Continue가
   // 배지 · 저절로 넘김 · 아래 버튼을 대신합니다 — Continue는 활동의 다음 걸음(넘김 걸음, 없으면 아래 버튼 동작)을 밟습니다.
   const review = useLearningReview();

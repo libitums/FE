@@ -16,6 +16,8 @@ import { SyllableBuildActivity } from "../screens/syllable-build/SyllableBuildAc
 import { TypingActivity } from "../screens/typing/TypingActivity";
 import { VocabCardActivity } from "../screens/vocab-card/VocabCardActivity";
 import { WordChoiceActivity } from "../screens/word-choice/WordChoiceScreen";
+import { activityGuideSubjectOf } from "./catalog-activity-guide-subject";
+import { CatalogActivityGuideLayer } from "./CatalogActivityGuideLayer";
 import { catalogLessonAudioOf } from "./catalog-lesson-audio";
 import type { CatalogActivity, CatalogItemRef } from "./catalog-lesson-plan";
 import type { Screen } from "./nav-state";
@@ -28,6 +30,32 @@ type LessonScreen = Extract<Screen, { name: "catalog-lesson" }>;
 // 콘텐츠 문항 참조라, 채점 문항이 처음 판정될 때 올라온 보고를 문항 이벤트로 잇습니다. 다시 풀기 화면(`screen.review`)은
 // 결과를 줄 넘기기로 올리고, 문항 이벤트를 내지 않도록 빈 `itemRefs`를 받습니다.
 export function renderCatalogActivity(
+  activity: CatalogActivity,
+  lesson: LessonPosition,
+  screen: LessonScreen,
+  wiring: ScreenWiring,
+  cast: ConversationCast,
+  itemRefs: readonly CatalogItemRef[],
+): ReactNode {
+  // 화면 종류별 첫 안내 층으로 감쌉니다(ADR-0104) — 학습형으로만 판정하고, 다시 풀기 화면에서는 끕니다.
+  return (
+    <CatalogActivityGuideLayer
+      key={guideLayerKeyOf(screen)}
+      subject={activityGuideSubjectOf(activity)}
+      enabled={screen.review === undefined}
+    >
+      {activityScreenOf(activity, lesson, screen, wiring, cast, itemRefs)}
+    </CatalogActivityGuideLayer>
+  );
+}
+
+// 층은 활동마다 새로 서야 판정이 그 활동 기준입니다 — 활동 화면의 열쇠와 같은 규칙입니다.
+const guideLayerKeyOf = ({ episodeId, unitKey, activityIndex, review }: LessonScreen): string =>
+  review === undefined
+    ? `guide:${episodeId}:${unitKey}:${activityIndex}`
+    : `guide:${episodeId}:${unitKey}:review:${review.outcomes.length}`;
+
+function activityScreenOf(
   activity: CatalogActivity,
   lesson: LessonPosition,
   screen: LessonScreen,

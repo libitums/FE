@@ -6,9 +6,11 @@ import { useRef, useState } from "@lynx-js/react";
 import type {
   LearningItemGuideKind,
   LearningItemGuideState,
+  UseActivityGuide,
   UseLearningItemGuide,
 } from "../lib/learning-item-guide.contract";
 import {
+  activityGuideKindFor,
   learningItemGuideKindFor,
   loadSeenLearningItemGuides,
   markLearningItemGuideSeen,
@@ -16,9 +18,9 @@ import {
 } from "../lib/learning-item-guide";
 import { isStorageAvailable } from "../lib/storage";
 
-export const useLearningItemGuide: UseLearningItemGuide = (subject) => {
+/** 종류 하나를 받아 화면이 설 때 한 번 판정하고, 닫을 때 그 종류를 기록하는 공통 훅입니다. */
+function useGuideOnce(candidate: LearningItemGuideKind | null): LearningItemGuideState {
   const [kind, setKind] = useState<LearningItemGuideKind | null>(() => {
-    const candidate = learningItemGuideKindFor(subject);
     if (candidate === null) return null;
     const show = shouldShowLearningItemGuide({
       kind: candidate,
@@ -42,4 +44,11 @@ export const useLearningItemGuide: UseLearningItemGuide = (subject) => {
     setKind(null);
   };
   return { visible: true, kind, dismiss };
-};
+}
+
+export const useLearningItemGuide: UseLearningItemGuide = (subject) =>
+  useGuideOnce(learningItemGuideKindFor(subject));
+
+/** 카탈로그 레슨 활동 안내(ADR-0104) — 다시 풀기 화면(`enabled` false)이면 판정하지 않습니다. */
+export const useActivityGuide: UseActivityGuide = (subject, enabled) =>
+  useGuideOnce(enabled ? activityGuideKindFor(subject) : null);

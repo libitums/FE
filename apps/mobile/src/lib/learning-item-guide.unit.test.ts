@@ -178,8 +178,16 @@ describe("저장 접점", () => {
 });
 
 describe("종류", () => {
-  test("KC1: 안내 종류는 sentence-order 하나이고 지원 값이 같은 종류를 낸다", () => {
-    expect(learningItemGuideKinds).toEqual(["sentence-order"]);
+  test("KC1: 안내 종류는 조각 하나 안내와 활동 안내 여섯이고 지원 값이 같은 종류를 낸다", () => {
+    expect(learningItemGuideKinds).toEqual([
+      "sentence-order",
+      "activity-vocab-card",
+      "activity-word-choice",
+      "activity-listening",
+      "activity-syllable-build",
+      "activity-sentence-order",
+      "activity-culture-card",
+    ]);
     expect(seenLearningItemGuidesFrom(allLearningItemGuidesSeenValue)).toEqual(
       learningItemGuideKinds,
     );
