@@ -10,5 +10,5 @@ initAirbridgeTracking({
 initAirbridgeCta({
   root: document,
   sdkOf: () => airbridgeSdkOf((window as { airbridge?: unknown }).airbridge),
-  deeplink: airbridgeDeeplinkOptionsOf({ origin: location.origin, pathname: location.pathname }),
+  deeplinkOf: airbridgeDeeplinkOptionsOf,
 });

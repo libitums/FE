@@ -2,22 +2,22 @@ import { describe, expect, it } from "vitest";
 import { airbridgeDeeplinkOptionsOf, airbridgeSdkOf, startsTrackingIn } from "./airbridge";
 
 describe("airbridgeDeeplinkOptionsOf", () => {
-  it("U-AB4 지금 페이지 주소를 desktop · ios 폴백에 쓴다", () => {
-    expect(airbridgeDeeplinkOptionsOf({ origin: "https://k-duru.com", pathname: "/ko/" })).toEqual({
+  const play = "https://play.google.com/store/apps/details?id=libitum.duru.android";
+
+  it("U-AB4 클릭한 카드의 href를 desktop · ios 폴백에 쓴다 — 페이지 주소가 아니다", () => {
+    expect(airbridgeDeeplinkOptionsOf(play)).toEqual({
       type: "click",
-      deeplinks: {
-        android: "duru://journey",
-        ios: "duru://journey",
-        desktop: "https://k-duru.com/ko/",
-      },
-      fallbacks: { android: "google-play", ios: "https://k-duru.com/ko/" },
+      deeplinks: { android: "duru://journey", ios: "duru://journey", desktop: play },
+      fallbacks: { android: "google-play", ios: play },
     });
-    expect(
-      airbridgeDeeplinkOptionsOf({ origin: "https://k-duru.com", pathname: "/" }).deeplinks.desktop,
-    ).toBe("https://k-duru.com/");
-    const local = airbridgeDeeplinkOptionsOf({ origin: "http://127.0.0.1:4398", pathname: "/" });
-    expect(local.deeplinks.desktop).toBe("http://127.0.0.1:4398/");
-    expect(local.fallbacks.ios).toBe("http://127.0.0.1:4398/");
+  });
+
+  it("U-AB4 href의 쿼리 · 조각을 손대지 않고 다른 주소도 그대로 반영한다", () => {
+    const other = "https://play.google.com/store/apps/details?id=app.duru&hl=ko#x";
+    const options = airbridgeDeeplinkOptionsOf(other);
+    expect(options.deeplinks.desktop).toBe(other);
+    expect(options.fallbacks.ios).toBe(other);
+    expect(options.deeplinks.desktop).not.toContain("k-duru.com");
   });
 });
 

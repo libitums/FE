@@ -5,7 +5,8 @@
   추정이다(아래 「사용자 확인 필요」).
 - 날짜: 2026-10-30.
 - **사용자 결정**(2026-10-30): 귀속은 **Airbridge Web SDK**로 한다(`gtag.ts`의 EU 밖 `ad_storage`를 켜는 길은 범위 밖) · 결선은 **Android(Google Play)
-  카드**만 · 데스크톱 · iOS 폴백은 **랜딩 URL**(지금 보는 페이지).
+  카드**만 · 데스크톱 · iOS 폴백은 **랜딩 URL**(지금 보는 페이지). **정정 기록(2026-11-05)**: 사용자가 「playstore 다운로드 버튼이 이상한데」로
+  재검토 조건(AB-M3)을 발동 — 데스크톱 · iOS 폴백은 **클릭한 카드의 Play 웹 목록 주소**로 바뀌었다(아래 D5 정정 기록).
 - 다루는 축: 랜딩 웹→앱 귀속 — 싣는 법 · 싣는 조건 · 토큰 · init 옵션 · 추적을 시작하는 지역 · Android 카드 결선 · `openDeeplink` 옵션 · 측정.
 - 바꾸는 것: [ADR-0080](0080-airbridge-deeplink.md) 「다루지 않는 것」의 **웹 랜딩**을 연다 — D2 목적지 `duru://journey`의 둘째 소비자.
   [ADR-0043](0043-landing-static-site.md)의 적용 기록(페이지 스크립트가 셋 · 외부 호스트 예외 둘째).
@@ -73,9 +74,9 @@
 - EU 시간대에서도 Android 카드 클릭은 **`openDeeplink` 그대로**다(추적만 시작하지 않는다). 클릭 자체가 SDK의 귀속 신호라 EU에서는 귀속이 되지
   않거나 약해진다 [추론]. 대안(EU에서는 결선도 하지 않아 일반 링크)은 기록만.
 
-### D5. Android 카드 — SDK가 떠 있을 때만 `preventDefault` + `openDeeplink`, 폴백은 랜딩 URL
+### D5. Android 카드 — SDK가 떠 있을 때만 `preventDefault` + `openDeeplink`, 폴백은 카드의 Play 주소(정정 2026-11-05 — 처음엔 랜딩 URL)
 
-- `scripts/airbridge-cta.ts`의 `initAirbridgeCta({ root, sdkOf, deeplink })`: `a[data-store="android"]`마다 click 리스너. **클릭 때마다** `sdkOf()`로
+- `scripts/airbridge-cta.ts`의 `initAirbridgeCta({ root, sdkOf, deeplinkOf })`: `a[data-store="android"]`마다 click 리스너. **클릭 때마다** `sdkOf()`로
   `window.airbridge`를 본다(SDK는 `load` 뒤에 뜨므로 결선 시점에 판정하면 늘 스텁이다). `airbridgeSdkOf`는 객체이고 `isSDKEnabled === true`이고
   `openDeeplink`가 함수일 때만 그 객체, 아니면 null(스텁 · undefined · 차단).
 - SDK가 있으면 `event.preventDefault()` 뒤 `sdk.openDeeplink(옵션)`. 없으면 아무것도 하지 않아 `<a target="_blank">`가 Play로 그대로 간다 — 차단기 ·
@@ -84,16 +85,18 @@
   Enter로 합성된 click은 `button 0` · 수정키 없음이라 가로채진다(의도대로 — 포커스는 링크에 남는다).
 - `stopPropagation` · `stopImmediatePropagation`을 하지 않는다 — `scripts/analytics.ts`의 document 리스너가 같은 클릭으로 `download_click { store: "android" }`를
   보낸다. `preventDefault`는 GA에 영향이 없다.
-- 옵션 `airbridgeDeeplinkOptionsOf({ origin, pathname })`: `{ type: "click", deeplinks: { android: "duru://journey", ios: "duru://journey", desktop: landing },
-  fallbacks: { android: "google-play", ios: landing } }`, `landing = origin + pathname`(쿼리 · 조각 없음 — 지금 보는 `/` 또는 `/ko/`). 언어 · 사이트 주소를
-  빌드 때 박지 않고 `location`에서 읽는다. `duru://journey`는 ADR-0080 D2의 목적지 셋 중 하나(앱이 여정 탭으로 연다). iOS 딥링크도 같은 값 — iOS 앱이
-  없는 동안 SDK가 폴백(랜딩)으로 보낸다. `"google-play"` 키워드는 대시보드 앱의 스토어로 보낸다 [조회].
-- **데스크톱 · iOS 폴백 = 랜딩 URL은 사용자 결정이다(2026-10-30).** 대안은 Play 웹 목록 주소(`storeLinks.android`)다 — 데스크톱에서 SDK가 켜져 있으면
-  Play 카드가 **같은 페이지로 돌아온다**. 접근성 점검(2026-10-30) A1 Major가 이것을 짚었다: 접근성 이름 「Android Google Play Download」가 예고하는
-  목적지와 실제 결과가 다르고(WCAG 2.4.4 Link Purpose), 같은 페이지가 다시 로드되면 포커스가 문서 처음으로 돌아가 사용자가 Download 섹션으로
-  되돌아가야 한다(2.4.3 Focus Order · 3.2.2 On Input). 시각 사용자에게는 「아무 일도 안 일어났다」로 보인다 [추론 — SDK 런타임은 e2e가 스텁으로 막아
-  실제 리다이렉트는 보지 못했다]. 결정은 바꾸지 않고 「재검토 조건」에 올린다 — 사용자가 Play 웹 주소로 바꾸면 `airbridgeDeeplinkOptionsOf`가 `page`와
-  함께 Android 주소를 받게 계약을 한 줄 넓히면 되고, `Download.astro`는 그대로다.
+- 옵션 `airbridgeDeeplinkOptionsOf(storeHref)`(정정 2026-11-05): `{ type: "click", deeplinks: { android: "duru://journey", ios: "duru://journey", desktop: storeHref },
+  fallbacks: { android: "google-play", ios: storeHref } }`, `storeHref` = **클릭한 카드의 `href`**(= `storeLinks.android`, Play 웹 목록 주소 — 쿼리 `?id=`를
+  손대지 않는다). 접착이 클릭 때 `deeplinkOf(link.href)`로 만든다 — 주소를 빌드 때 박지도, `location`을 읽지도 않고 **DOM에서** 읽는다(브라우저 번들에
+  `site.ts`를 끌어오지 않는다). `duru://journey`는 ADR-0080 D2의 목적지 셋 중 하나(앱이 여정 탭으로 연다). iOS 딥링크도 같은 값 — iOS 앱이 없는 동안 SDK가
+  폴백(Play 웹)으로 보낸다. `"google-play"` 키워드는 대시보드 앱의 스토어로 보낸다 [조회].
+- **정정 기록(2026-11-05) — 데스크톱 · iOS 폴백은 처음엔 랜딩 URL이었다(사용자 결정 2026-10-30, `airbridgeDeeplinkOptionsOf({ origin, pathname })`).**
+  접근성 점검(2026-10-30) A1 Major가 짚은 대로(접근성 이름 「Android Google Play Download」가 예고하는 목적지와 결과가 다름 — WCAG 2.4.4, 같은 페이지
+  재로드로 포커스가 처음으로 — 2.4.3 · 3.2.2) 실제 토큰이 든 프로덕션에서 **재현됐다**(2026-11-05, Playwright — 데스크톱: 랜딩이 `?airbridge_referrer=…`로
+  다시 열림 · iPhone: `duru.airbridge.io/journey`를 거쳐 랜딩으로 복귀 · Android: `intent://details?id=…`로 Play 앱, 정상). 사용자가 「버튼이 이상하다」로
+  재검토 조건을 발동해 **D5의 대안(Play 웹 주소)**을 택했다. 버린 대안: 데스크톱 · iOS를 결선에서 빼기(UA 판별 코드가 생기고, 그 클릭은 Airbridge에
+  안 잡힌다). 대가: 데스크톱에서 Play 웹이 **같은 탭**에서 열리고(SDK가 `target`을 모른다) 주소 뒤에 Airbridge 쿼리가 붙는다 — Play는 무시한다.
+  `Download.astro`는 그대로다.
 - iOS 카드(`storeLinks.ios`가 비어 `<div>`) · 체험판 링크는 결선하지 않는다. `storeLinks.android`가 비면 결선 대상 0, 오류 없음.
 
 ### D6. 측정 — 새 GA 이벤트 0, 잼은 Airbridge의 Install 귀속
@@ -139,9 +142,9 @@
 ## 재검토 조건
 
 - **실제 Web SDK Token이 모양 규칙 `[A-Za-z0-9._-]{16,}`에 걸려 빌드가 실패하면** → `airbridge-bootstrap.ts`의 규칙을 넓힌다(값은 적지 않는다).
-- **데스크톱 · iOS Safari에서 Play 카드가 같은 페이지로 돌아오는 것이 체감되면**(AB-M3) → `deeplinks.desktop` · `fallbacks.ios`를 Play 웹 목록 주소로
-  (D5의 대안 — 2.4.4 · 2.4.3 근거). 또는 데스크톱을 결선 대상에서 뺀다.
-- **iOS 앱이 출시되면** → `deeplinks.ios`가 실제로 앱을 열게 되고 `fallbacks.ios`는 App Store여야 한다(지금은 랜딩).
+- ~~**데스크톱 · iOS Safari에서 Play 카드가 같은 페이지로 돌아오는 것이 체감되면**(AB-M3) → `deeplinks.desktop` · `fallbacks.ios`를 Play 웹 목록 주소로~~
+  **적용됨(2026-11-05, D5 정정 기록)** — 사용자가 체감해 Play 웹 주소로 바꿨다. 데스크톱에서 **같은 탭** 이동이 거슬리면 → 데스크톱을 결선에서 빼는 대안.
+- **iOS 앱이 출시되면** → `deeplinks.ios`가 실제로 앱을 열게 되고 `fallbacks.ios`는 App Store여야 한다(지금은 Play 웹 — iOS 카드가 자기 주소를 받으면 된다).
 - **Airbridge Web SDK가 지역 · 동의 기능을 주면** → 시간대 판정(D4)을 그것으로 바꾼다.
 - **Install 중 unattributed 비율이 집행 뒤에도 내려가지 않으면** → Google Ads 연동 · 접미사 · PAW(사용자 몫)부터 본다 — 웹 쪽은 Real-time Logs의
   Web-to-App 클릭 유무로 가른다.

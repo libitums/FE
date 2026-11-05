@@ -12,7 +12,7 @@ export interface AirbridgeInitOptions {
   readonly autoStartTrackingEnabled: false;
 }
 
-/** `airbridge.openDeeplink`에 넘기는 옵션. `desktop` · `fallbacks.ios`는 지금 보는 랜딩 페이지 주소입니다. */
+/** `airbridge.openDeeplink`에 넘기는 옵션. `desktop` · `fallbacks.ios`는 클릭한 카드의 href(Play 웹 목록 주소)입니다. */
 export interface AirbridgeDeeplinkOptions {
   readonly type: "click";
   readonly deeplinks: {
@@ -37,12 +37,6 @@ export interface AirbridgeSdk {
   openDeeplink(options: AirbridgeDeeplinkOptions): void;
 }
 
-/** `location`에서 읽은 값입니다(쿼리 · 조각 없음). */
-export interface PageLocation {
-  readonly origin: string;
-  readonly pathname: string;
-}
-
 declare global {
   interface Window {
     airbridge?: AirbridgeGlobal;
@@ -57,7 +51,8 @@ export type AirbridgeInitOptionsOf = (webToken: string) => AirbridgeInitOptions;
 export type BuildAirbridgeBootstrap = (webToken: string) => string;
 
 // 브라우저 순수(`airbridge.ts`)
-export type AirbridgeDeeplinkOptionsOf = (page: PageLocation) => AirbridgeDeeplinkOptions;
+/** 입력은 클릭한 `<a data-store="android">`의 `href`(절대 주소). 쿼리 · 조각을 손대지 않고 그대로 넣습니다. */
+export type AirbridgeDeeplinkOptionsOf = (storeHref: string) => AirbridgeDeeplinkOptions;
 /** `Europe/*` · Atlantic/{Reykjavik,Canary,Madeira,Faroe} → false, 그 밖(undefined · "" 포함) → true. */
 export type StartsTrackingIn = (timeZone: string | undefined) => boolean;
 export type AirbridgeSdkOf = (candidate: unknown) => AirbridgeSdk | null;
@@ -67,7 +62,8 @@ export interface AirbridgeCtaDeps {
   readonly root: ParentNode;
   /** 클릭 때마다 부릅니다 — SDK는 `load` 뒤에 뜹니다. */
   readonly sdkOf: () => AirbridgeSdk | null;
-  readonly deeplink: AirbridgeDeeplinkOptions;
+  /** 클릭한 링크의 `href`로 옵션을 만듭니다(`airbridgeDeeplinkOptionsOf`). */
+  readonly deeplinkOf: (storeHref: string) => AirbridgeDeeplinkOptions;
 }
 /** `a[data-store="android"]`마다 click 리스너. 돌려주는 값은 결선한 링크 수. */
 export type InitAirbridgeCta = (deps: AirbridgeCtaDeps) => number;
