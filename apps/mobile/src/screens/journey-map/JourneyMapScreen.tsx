@@ -103,8 +103,9 @@ export function JourneyMapScreen({
   // 다른 탭으로 숨겨질 때 열린 말풍선을 닫습니다(ADR-0106 D2).
   useEffect(() => {
     if (!active && sheetOpen) handleCloseSheet();
+    // `handleCloseSheet`는 그릴 때마다 새 함수라 넣지 않습니다 — 조건(`active` · `sheetOpen`)이 바뀔 때만 봅니다.
     // oxlint-disable-next-line react-hooks/exhaustive-deps
-  }, [active]);
+  }, [active, sheetOpen]);
 
   // 다음에 풀 유닛으로 맵이 서자마자 스스로 스크롤합니다. 말풍선이 열려 있거나 첫 유닛 가이드가
   // 떠 있으면 옮기지 않고 이 마운트에서 잠급니다.

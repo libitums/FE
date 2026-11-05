@@ -9,8 +9,9 @@ import type { JourneyMapCatalogProps } from "./catalog-map.contract";
 
 /** 작은 데이터(진행 · 티켓 유닛 · 확인 시각)를 내용이 같으면 이전 참조로 둡니다. */
 function useSameContent<T>(value: T): T {
-  const kept = useRef<{ value: T; key: string } | null>(null);
-  const key = JSON.stringify(value ?? null);
+  const kept = useRef<{ value: T; key: string | undefined } | null>(null);
+  // `undefined`는 `JSON.stringify`가 문자열이 아닌 `undefined`로 돌려줘 `null`("null")과 갈립니다.
+  const key: string | undefined = JSON.stringify(value);
   if (kept.current === null || kept.current.key !== key) kept.current = { value, key };
   return kept.current.value;
 }
