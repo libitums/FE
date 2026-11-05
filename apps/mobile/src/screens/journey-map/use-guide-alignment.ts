@@ -26,7 +26,9 @@ export function useGuideAlignment(input: {
 }): GuideAlignment {
   const { visible, initialScrollTop, glider } = input;
   const scrollTop = useRef(initialScrollTop);
-  const [aligned, setAligned] = useState(initialScrollTop <= TOP_SLOP_PX);
+  // 처음에는 맞지 않은 것으로 둡니다 — 가이드가 서는 첫 그림에서 이펙트가 맞추기 전에 스크림 · 가이드가 한 프레임 비치지
+  // 않게 합니다(리뷰 반영). 가이드가 내려가면 다시 맞지 않은 것으로 돌립니다.
+  const [aligned, setAligned] = useState(false);
 
   useEffect(() => {
     if (!visible) return;
@@ -35,11 +37,13 @@ export function useGuideAlignment(input: {
     glider.glide(scrollTop.current, 0, 0);
     if (scrollTop.current <= TOP_SLOP_PX) {
       setAligned(true);
-      return;
+      return () => setAligned(false);
     }
-    setAligned(false);
     const fallback = setTimeout(() => setAligned(true), GUIDE_ALIGN_FALLBACK_MS);
-    return () => clearTimeout(fallback);
+    return () => {
+      clearTimeout(fallback);
+      setAligned(false);
+    };
     // 가이드가 설 때만 맞춥니다 — 스크롤마다 다시 옮기지 않습니다.
     // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [visible]);
