@@ -5,6 +5,7 @@ import { fireEvent, screen } from "@lynx-js/react/testing-library";
 
 import { App } from "./App";
 import { renderSignedInApp } from "./test-helpers/signed-in-app";
+import { expectJourneyMapHidden } from "./test-helpers/tab-keep-alive";
 
 // `integration` 계층: 여러 실제 모듈의 협력을 봅니다(ADR-0006 D4).
 // 여기서는 App · navReducer · BottomNavigator · 화면 셋 · ErrorBoundary가 맞물립니다.
@@ -57,7 +58,7 @@ test("설정 탭에서 여정 탭으로 전환하면 여정 맵 화면이 나오
   );
 });
 
-test("여정 탭에서 롤플레이 탭으로 전환하면 롤플레이 화면이 나오고 여정 맵 화면은 사라진다", async () => {
+test("여정 탭에서 롤플레이 탭으로 전환하면 롤플레이 화면이 나오고 여정 맵 화면은 숨겨진다", async () => {
   await renderSignedInApp(<App progressSeed={u01OpenSeed} />);
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
@@ -65,7 +66,7 @@ test("여정 탭에서 롤플레이 탭으로 전환하면 롤플레이 화면�
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
 
   expect(screen.getByTestId("roleplay-list-screen-title")).toHaveTextContent("Roleplay");
-  expect(screen.queryByTestId("journey-map-screen")).not.toBeInTheDocument();
+  expectJourneyMapHidden();
   expect(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay")).toHaveAttribute(
     "data-selected",
     "true",
@@ -76,7 +77,7 @@ test("여정 탭에서 롤플레이 탭으로 전환하면 롤플레이 화면�
   );
 });
 
-test("여정 탭에서 설정 탭으로 전환하면 설정 화면이 나오고 여정 맵 화면은 사라진다", async () => {
+test("여정 탭에서 설정 탭으로 전환하면 설정 화면이 나오고 여정 맵 화면은 숨겨진다", async () => {
   await renderSignedInApp(<App progressSeed={u01OpenSeed} />);
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
@@ -84,7 +85,7 @@ test("여정 탭에서 설정 탭으로 전환하면 설정 화면이 나오고 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
 
   expect(screen.getByTestId("settings-screen-title")).toHaveTextContent("Settings");
-  expect(screen.queryByTestId("journey-map-screen")).not.toBeInTheDocument();
+  expectJourneyMapHidden();
   expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).toHaveAttribute(
     "data-selected",
     "true",
@@ -107,7 +108,7 @@ test("설정 → 여정 → 설정으로 왕복하면 설정의 루트 화면이
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
 
   expect(screen.getByTestId("settings-screen-title")).toHaveTextContent("Settings");
-  expect(screen.queryByTestId("journey-map-screen")).not.toBeInTheDocument();
+  expectJourneyMapHidden();
   expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).toHaveAttribute(
     "data-selected",
     "true",
@@ -188,7 +189,7 @@ test("시트가 열린 동안에도 탭 전환이 동작한다", async () => {
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
 
   expect(screen.getByTestId("roleplay-list-screen-title")).toHaveTextContent("Roleplay");
-  expect(screen.queryByTestId("journey-map-screen")).not.toBeInTheDocument();
+  expectJourneyMapHidden();
   expect(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay")).toHaveAttribute(
     "data-selected",
     "true",
@@ -222,7 +223,8 @@ test("탭 셋을 순회하며 각 화면에 스크롤 컨테이너가 하나씩 
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-roleplay"), {});
   expect(screen.getByTestId("roleplay-list-screen-scroll")).toBeInTheDocument();
-  expect(screen.queryByTestId("journey-map-screen-scroll")).not.toBeInTheDocument();
+  // 여정맵 스크롤은 숨김 상자에 남습니다(ADR-0106) — 보이는 스크롤 컨테이너는 이 탭의 것 하나입니다.
+  expectJourneyMapHidden();
 
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
   expect(screen.getByTestId("settings-screen-scroll")).toBeInTheDocument();

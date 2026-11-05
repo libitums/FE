@@ -13,6 +13,7 @@ import { uiCopyEn } from "../lib/ui-copy-en";
 import { renderSignedInApp } from "./test-helpers/signed-in-app";
 import { contentNotFoundResponse, isContentRequest } from "./test-helpers/content-requests";
 import { mapUnitTestId } from "./test-helpers/map-unit-testid";
+import { expectJourneyMapHidden } from "./test-helpers/tab-keep-alive";
 
 // 「기기 저장본 → 맵 · 확인 중 · 로딩 줄 → 서버 응답」을 App 한 트리에서 봅니다(I1 ~ I13, I6' · I7' · I-T1).
 // 대역은 경계뿐입니다 - `StorageModule`(연산을 기록하는 저장소) · `fetch`(Supabase 갱신 · 학습 RPC · 계정 삭제 함수) ·
@@ -429,17 +430,17 @@ describe("저장본 없음 - 확인 중 · 로딩 줄", () => {
     expect(env.events.at(-1)).toEqual({ name: "progress_load_recovered", trigger: "auto" });
   });
 
-  test("I11. 실패 줄이 선 채 설정 탭을 다녀오면 줄이 다시 서서 다시 읽지만 측정은 다시 세지 않는다", async () => {
+  test("I11. 실패 줄이 선 채 설정 탭을 다녀오면 숨겨 둔 지도의 줄이 그대로 서 있고(ADR-0106) 다시 읽지도 다시 세지도 않는다", async () => {
     await boot({ load: async () => down });
     expect(announcedCount(copy.failed)).toBe(1);
 
     openSettings();
-    expect(screen.queryByTestId("journey-map-screen")).toBeNull();
+    expectJourneyMapHidden();
     openJourney();
     await flush();
 
     expect(rowStatus()).toBe("failed");
-    expect(announcedCount(copy.failed)).toBe(2);
+    expect(announcedCount(copy.failed)).toBe(1);
     expect(env.events).toHaveLength(1);
   });
 

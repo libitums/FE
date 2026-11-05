@@ -26,7 +26,7 @@ import { catalogMapSectionsOf } from "../screens/journey-map/catalog-map";
 import type { AppSessionContent } from "./episode-content";
 import { shellHeaderTop } from "./full-bleed-screens";
 import { shellInsetsOf } from "./shell-edges";
-import { renderScreen } from "./render-screen";
+import { renderAppContent } from "./render-app-content";
 import { screenWiring } from "./screen-wiring";
 import { useTrackingAuthorizationPrompt } from "./use-tracking-authorization-prompt";
 import { useOpenedDeeplink } from "./use-opened-deeplink";
@@ -247,7 +247,7 @@ export function AppSession({
             }}
           >
             <view className="app-content">
-              {renderScreen(screenNow, wiring)}
+              {renderAppContent(screenNow, wiring)}
               {/* 탭 루트에서는 전역 머리가 콘텐츠 위에 겹칩니다. */}
               {showsNavigator ? (
                 <AppHeader

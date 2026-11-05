@@ -16,6 +16,7 @@ import { legacyPassedRecord } from "./test-helpers/progress-seed";
 import { renderSignedInApp } from "./test-helpers/signed-in-app";
 import { catalogUnitDomId } from "../screens/journey-map/catalog-map";
 import { stubHost, type HostStub } from "../screens/journey-map/JourneyMapScreen.test-support";
+import { expectJourneyMapHidden } from "./test-helpers/tab-keep-alive";
 
 // 부드러운 이동(본 이동 · 보정)은 main thread가 프레임마다 옮기지만(`useMapGlide`), 이 파일은 「어디로 부드럽게 갔나」만
 // 봅니다 — 대역이 끝 위치로 부드러운 `scrollTo` 한 번을 남깁니다.
@@ -105,7 +106,7 @@ test("I11. 앱 세션에서 도착하는 사이 대상이 30 위로 밀리면 �
   expect(scrollsOnMap().at(-1)).toEqual(correctedTo(offsetFor(unitTop) - 30));
 });
 
-test("I12. 도착 뒤 탭을 바꿨다 돌아오면 마지막 스크롤 자리에서 곧바로 열리고 움직이지 않는다", async () => {
+test("I12. 도착 뒤 탭을 바꿨다 돌아오면 숨겨 둔 지도가 그 자리 그대로 서고(ADR-0106) 움직이지 않는다", async () => {
   const s2 = catalogUnitDomId(u01, "S2");
   await bootCatalogLesson(s2);
   arrive(s2);
@@ -113,16 +114,15 @@ test("I12. 도착 뒤 탭을 바꿨다 돌아오면 마지막 스크롤 자리�
   expect(scrollsOnMap().at(-1)).toEqual(correctedTo(offsetFor(unitTop) - 30));
   host.scroll(offsetFor(unitTop) - 30);
 
+  const mapScroll = screen.getByTestId("journey-map-screen-scroll");
   tapTab("roleplay");
-  expect(screen.queryByTestId("journey-map-screen")).not.toBeInTheDocument();
+  expectJourneyMapHidden();
   host.rects[`#${s2}`] = { top: unitTop, height: 100 };
   tapTab("journey");
   await flushAsync();
 
-  expect(screen.getByTestId("journey-map-screen-scroll")).toHaveAttribute(
-    "initial-scroll-offset",
-    String(offsetFor(unitTop) - 30),
-  );
+  // 다시 만들지 않은 같은 스크롤 상자라 자리가 그대로입니다.
+  expect(screen.getByTestId("journey-map-screen-scroll")).toBe(mapScroll);
   expect(scrollsOnMap()).toHaveLength(first);
 });
 

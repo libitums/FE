@@ -1,7 +1,7 @@
 import { Overlay } from "@libitums/ui-lynx/overlay";
 import { useFirstUnitGuide } from "../../components/first-unit-guide";
 import "../../components/first-unit-guide.css";
-import { useMemo, useRef, useState } from "@lynx-js/react";
+import { useEffect, useMemo, useRef, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 import type { ScrollEvent } from "@lynx-js/types";
 
@@ -20,6 +20,7 @@ import { mapScrollTargetOf } from "./journey-map-next-unit";
 import { useAutoScrollToNext } from "./useAutoScrollToNext";
 import { useMapGlide } from "./use-map-glide";
 import { useGuideAlignment } from "./use-guide-alignment";
+import { useStableBodyCatalog } from "./use-stable-body-catalog";
 import { takeMapCleared } from "./journey-map-cleared-memory";
 import { rememberedMapScroll, rememberMapScroll } from "./journey-map-scroll-memory";
 import { useStepSheet } from "./useStepSheet";
@@ -35,6 +36,11 @@ import "./journey-map-screen.css";
 export type JourneyMapScreenProps = {
   /** 카탈로그 구획 — 튜토리얼(u00)도 그 하나입니다. 진행은 `App`이 소유하고 props로 내립니다. */
   readonly catalog: JourneyMapCatalogProps;
+  /**
+   * 지금 보이는 탭인가(ADR-0106). 다른 탭 루트에 있는 동안 셸이 지도를 숨겨 두고 `false`를 넘깁니다 — 겹침 신호 ·
+   * 뒤로가기 · 자동 스크롤 · 첫 유닛 안내를 하지 않고, 열린 말풍선은 닫습니다. 기본 `true`.
+   */
+  readonly active?: boolean;
   /** 말풍선이 열리고 닫힐 때 부릅니다 — 전역 머리를 그 동안 낭독에서 가리는 데 씁니다. */
   readonly onLayerChange?: (open: boolean) => void;
   /**
@@ -49,6 +55,7 @@ export type JourneyMapScreenProps = {
 // 시트 열림 상태는 이 화면이 소유합니다(`useStepSheet`). `Nav`는 관여하지 않습니다.
 export function JourneyMapScreen({
   catalog,
+  active = true,
   onLayerChange,
   progressLoad = knownProgressLoad,
   statusBarInset = 0,
@@ -62,15 +69,20 @@ export function JourneyMapScreen({
   const [restoredScrollTop] = useState(rememberedMapScroll);
   // 방금 끝낸 유닛 — 이 마운트에서 한 번 읽어 그 다음 구간 발자국만 등장 모션(ADR-0100). 본문이 `memo`라 객체는 기억해 둡니다.
   const [clearedUnit] = useState(takeMapCleared);
-  const bodyCatalog = useMemo(() => ({ ...catalog, clearedUnit }), [catalog, clearedUnit]);
+  // 셸이 매번 새 catalog 객체를 넘겨도 내용이 같으면 본문을 다시 그리지 않습니다.
+  const stableCatalog = useStableBodyCatalog(catalog);
+  const bodyCatalog = useMemo(
+    () => ({ ...stableCatalog, clearedUnit }),
+    [stableCatalog, clearedUnit],
+  );
   const glider = useMapGlide();
   // 가이드는 지도를 맨 위(표지)로 옮긴 뒤에 보입니다 — 어긋난 자리에 강조가 서지 않게 합니다.
   const alignment = useGuideAlignment({
-    visible: guide.visible,
+    visible: active && guide.visible,
     initialScrollTop: restoredScrollTop ?? 0,
     glider,
   });
-  const guideShown = guide.visible && alignment.aligned;
+  const guideShown = active && guide.visible && alignment.aligned;
   const {
     sheetState,
     sheetTop,
@@ -85,9 +97,15 @@ export function JourneyMapScreen({
   const sheetOpen = openCatalog !== null;
   // 말풍선이 열린 동안 셸의 전역 머리(칩 · 알림 버튼)도 가려야 합니다 — 전에는 머리가 이
   // 화면 안에 있어 아래 맵 가림과 함께 가렸습니다.
-  useScreenLayer(sheetOpen || guide.visible, onLayerChange);
+  useScreenLayer(active && (sheetOpen || guide.visible), onLayerChange);
   // 시스템 뒤로가기: 첫 유닛 안내 가림막이 떠 있으면 안내만 넘깁니다(말풍선은 `StepSheet`가 등록합니다).
-  useLayerBack(guide.visible ? guide.dismiss : null);
+  useLayerBack(active && guide.visible ? guide.dismiss : null);
+  // 다른 탭으로 숨겨질 때 열린 말풍선을 닫습니다(ADR-0106 D2).
+  useEffect(() => {
+    if (!active && sheetOpen) handleCloseSheet();
+    // `handleCloseSheet`는 그릴 때마다 새 함수라 넣지 않습니다 — 조건(`active` · `sheetOpen`)이 바뀔 때만 봅니다.
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
+  }, [active, sheetOpen]);
 
   // 다음에 풀 유닛으로 맵이 서자마자 스스로 스크롤합니다. 말풍선이 열려 있거나 첫 유닛 가이드가
   // 떠 있으면 옮기지 않고 이 마운트에서 잠급니다.
@@ -96,7 +114,7 @@ export function JourneyMapScreen({
       catalogSections: catalog.sections,
       gate: { legacyTutorialPassed: catalog.legacyTutorialPassed, progress: catalog.progress },
     }),
-    blocked: sheetOpen || guide.visible,
+    blocked: !active || sheetOpen || guide.visible,
     restoredScrollTop,
     glider,
   });
