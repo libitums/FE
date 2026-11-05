@@ -5,7 +5,7 @@ import { decodeEpisode } from "./episode-content";
 import type { DecodeIssue, Episode } from "./episode-content";
 import { decodeManifest } from "./episode-manifest";
 import type { EpisodeManifest, ManifestEntry } from "./episode-manifest";
-import { sha256Hex, utf8Bytes } from "./sha256";
+import { rememberedDecode, textDigestOf } from "./verified-text-cache";
 import { translationTablesOf } from "./episode-catalog-translations";
 
 /**
@@ -91,10 +91,14 @@ export type EpisodeTextCheck =
 
 /** 받은 원문을 매니페스트 항목의 해시 · 바이트로 검증하고 디코드합니다. 예외를 던지지 않습니다. */
 export function checkEpisodeText(entry: ManifestEntry, text: string): EpisodeTextCheck {
-  const bytes = utf8Bytes(text);
-  if (bytes.length !== entry.bytes || sha256Hex(bytes) !== entry.sha256) {
+  const digest = textDigestOf(entry.id, text);
+  if (digest.bytes !== entry.bytes || digest.sha256 !== entry.sha256) {
     return { ok: false, reason: "integrity-mismatch" };
   }
+  return rememberedDecode(entry.id, text, () => decodeText(text));
+}
+
+function decodeText(text: string): EpisodeTextCheck {
   let parsed: unknown;
   try {
     parsed = JSON.parse(text);

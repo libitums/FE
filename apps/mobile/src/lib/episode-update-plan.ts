@@ -11,7 +11,7 @@ import {
 } from "./episode-catalog";
 import type { EpisodeManifest, ManifestEntry } from "./episode-manifest";
 import { TUTORIAL_EPISODE_ID } from "./tutorial-episode";
-import { sha256Hex, utf8Bytes } from "./sha256";
+import { textDigestOf } from "./verified-text-cache";
 
 export type EpisodeUpdateKind = "new" | "changed" | "current" | "bundled";
 export type PlannedEpisode = { readonly entry: ManifestEntry; readonly kind: EpisodeUpdateKind };
@@ -31,8 +31,8 @@ export function winsOverBundled(entry: ManifestEntry, bundled: EpisodeManifest):
 
 /** 원문이 항목의 bytes · sha256과 맞는가(디코드하지 않음). */
 export function matchesEntry(entry: ManifestEntry, text: string): boolean {
-  const bytes = utf8Bytes(text);
-  return bytes.length === entry.bytes && sha256Hex(bytes) === entry.sha256;
+  const digest = textDigestOf(entry.id, text);
+  return digest.bytes === entry.bytes && digest.sha256 === entry.sha256;
 }
 
 /** 활성 매니페스트의 원격 항목 가운데 지금 열리는 id. assets가 "required"면 활성 자산 표시도 그 sha여야 합니다. */
