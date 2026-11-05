@@ -1,6 +1,7 @@
 // 첫 유닛 가이드와 지도 위치를 맞춥니다. 지도가 맨 위가 아닌 채(복원 · 사용자 스크롤) 가이드가 서면, 스크림 위로 들어
-// 올린 튜토리얼 표지가 지도와 어긋나 「노드가 하나 더 있는 것처럼」 보였습니다(2026-11-05 Android 실기). 가이드가 서면
-// 지도를 맨 위(표지 — 첫 구획)로 즉시 옮기고, 맨 위에 닿았다는 스크롤 소식이 오거나 잠시가 지나야 보이게 합니다.
+// 올린 튜토리얼 표지가 지도와 어긋나 「노드가 하나 더 있는 것처럼」 보였습니다(2026-11-05 Android 실기) — 들어 올린 표지는
+// 스크롤을 따라가지 않아 맨 위(0)에서만 겹칩니다. 가이드가 서면 지도를 맨 위(표지 — 첫 구획)로 늘 즉시 옮기고, 알던 위치가
+// 맨 위가 아니었으면 맨 위에 닿았다는 스크롤 소식이 오거나 잠시가 지나야 보이게 합니다.
 
 import { useEffect, useRef, useState } from "@lynx-js/react";
 import type { ScrollEvent } from "@lynx-js/types";
@@ -29,13 +30,14 @@ export function useGuideAlignment(input: {
 
   useEffect(() => {
     if (!visible) return;
+    // 알고 있는 위치가 맨 위여도 늘 옮깁니다 — 내용이 늘며 스크롤 소식 없이 밀린 위치는 알 수 없습니다(기기에서 확인).
+    glider.stop();
+    glider.glide(scrollTop.current, 0, 0);
     if (scrollTop.current <= TOP_SLOP_PX) {
       setAligned(true);
       return;
     }
     setAligned(false);
-    glider.stop();
-    glider.glide(scrollTop.current, 0, 0);
     const fallback = setTimeout(() => setAligned(true), GUIDE_ALIGN_FALLBACK_MS);
     return () => clearTimeout(fallback);
     // 가이드가 설 때만 맞춥니다 — 스크롤마다 다시 옮기지 않습니다.

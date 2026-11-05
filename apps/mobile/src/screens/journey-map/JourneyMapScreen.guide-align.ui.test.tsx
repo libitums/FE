@@ -88,12 +88,12 @@ describe("첫 유닛 가이드와 지도 위치", () => {
     expect(scrimShown()).toBe(true);
   });
 
-  test("GA4. 이미 맨 위면 옮기지 않고 바로 보인다", () => {
+  test("GA4. 알던 위치가 맨 위여도 맨 위로 즉시 한 번 옮기고(소식 없이 밀렸을 수 있음) 바로 보인다", () => {
     const host = stubHost({ rects: asRects() });
     mount(guided(true));
 
     expect(scrimShown()).toBe(true);
-    expect(host.scrollTos()).toEqual([]);
+    expect(host.scrollTos()).toEqual([scrollToCall(0, false)]);
   });
 });
 
