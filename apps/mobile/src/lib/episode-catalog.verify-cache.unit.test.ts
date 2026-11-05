@@ -111,3 +111,34 @@ test("VC4. 받기 차례의 활성 본문 확인(activeReadyIds)도 같은 원�
   expect([...second]).toEqual([...first]);
   expect(sha.calls).toBe(afterFirst);
 });
+
+test("VC5. 호스트가 SHA-256을 계산할 수 있으면 JS 순수 구현을 부르지 않고, 결과는 같다", async () => {
+  const actual = await vi.importActual<typeof import("./sha256")>("./sha256");
+  vi.stubGlobal("NativeModules", {
+    ContentFileModule: {
+      download: () => {},
+      fileUrl: () => "",
+      remove: () => {},
+      sha256: (text: string) => {
+        const bytes = actual.utf8Bytes(text);
+        return `${actual.sha256Hex(bytes)}:${String(bytes.length)}`;
+      },
+    },
+  });
+  const fresh = [remote("u41-n", 41), remote("u42-n", 42)];
+  sha.calls = 0;
+
+  const entries = buildEpisodeCatalog({
+    bundled: bundledCatalogInput,
+    cache: {
+      manifest: manifestText(fresh),
+      episodes: Object.fromEntries(fresh.map((r) => [r.entry.id as string, r.text])),
+    },
+  });
+
+  expect(sha.calls).toBe(0);
+  expect(
+    entries.filter((entry) => entry.id.startsWith("u4") && entry.status === "ready"),
+  ).toHaveLength(2);
+  vi.unstubAllGlobals();
+});
