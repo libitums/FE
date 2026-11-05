@@ -1,6 +1,6 @@
 // 끝낸 에피소드 업데이트 안내의 결선입니다 — 새 유닛이 있는 에피소드와 콘텐츠 버전을 기기 기록과 비교해 띄울지 정하고,
 // 닫을 때 지금 버전을 적습니다. 띄울 것 없이 지도에 닿아도 지금 버전을 조용히 적어, 이후 유닛을 끝내거나 에피소드를 클리어해
-// 진행이 바뀌어도 뜨지 않습니다 — 콘텐츠가 바뀐(앱 시작에 적용된) 뒤 처음 한 번만 뜹니다. 언제 띄워도 되는지(`ready`)는
+// 진행이 바뀌어도 뜨지 않습니다 — 콘텐츠가 바뀐 뒤 처음 한 번만, 한 실행에서는 한 번만 뜹니다. 언제 띄워도 되는지(`ready`)는
 // 셸이 정합니다(지도 루트 · 다른 겹침 없음 · 진행 조회 끝).
 
 import { useEffect, useMemo, useState } from "@lynx-js/react";
@@ -39,6 +39,9 @@ export function useCatalogUpdateNotice(input: {
 }): CatalogUpdateNotice {
   const { catalog, sections, progress, ready } = input;
   const [record, setRecord] = useState(loadCatalogUpdateNotice);
+  // 한 실행에서는 한 번만 띄웁니다 — 받기 중 바뀐 편이 지도 루트에서 한 편씩 바꿔 끼워져(ADR-0078 D4) 버전이 거듭 바뀌어도
+  // 다시 뜨지 않고, 그 버전은 아래 동기화가 조용히 기록에 맞춥니다.
+  const [closedThisRun, setClosedThisRun] = useState(false);
   const versions = useMemo(() => versionsOf(catalog), [catalog]);
   const freshIds = useMemo(
     () => catalogFreshEpisodeIdsOf(sections, progress),
@@ -46,7 +49,9 @@ export function useCatalogUpdateNotice(input: {
   );
   const storageAvailable = isCatalogUpdateNoticeStorageAvailable();
   const open =
-    ready && shouldShowCatalogUpdateNotice({ record, versions, freshIds, storageAvailable });
+    ready &&
+    !closedThisRun &&
+    shouldShowCatalogUpdateNotice({ record, versions, freshIds, storageAvailable });
   const save = (next: CatalogUpdateNoticeRecord) => {
     setRecord(next);
     saveCatalogUpdateNotice(next);
@@ -61,6 +66,9 @@ export function useCatalogUpdateNotice(input: {
   }, [ready, open, versions]);
   return {
     open,
-    onClose: (muted) => save(withCatalogUpdateNoticeVersions(record, versions, muted)),
+    onClose: (muted) => {
+      setClosedThisRun(true);
+      save(withCatalogUpdateNoticeVersions(record, versions, muted));
+    },
   };
 }
