@@ -159,6 +159,8 @@
 | `libitum.learning-item-guides.seen` ⟨2026-10-09 — 적용 기록⟩ | 그대로 | 그대로 |
 | `libitum.content.manifest` · `libitum.content.episode.<id>` ⟨2026-10-12 — 적용 기록⟩ | 그대로 | 그대로 |
 | `libitum.content.manifest.received` · `libitum.content.staged.episode.<id>` · `libitum.content.staged.entry.<id>` · `libitum.content.staged.assets.<id>` ⟨2026-10-20 — 적용 기록, [ADR-0078](0078-episode-update-on-splash.md) D1⟩ | 그대로 | 그대로 |
+| `libitum.content.assets.<id>` · **`libitum.content.assets.<id>.common`** · **`libitum.content.assets.<id>.unit.<key>`** ⟨2026-11-06 — 적용 기록, [ADR-0071](0071-episode-background-download.md) D3 ⟨2026-11-06⟩⟩ | 그대로 | 그대로 |
+| `libitum.download.mobile-data` · `libitum.download.allowed` ⟨2026-11-06 — 적용 기록, [ADR-0095](0095-content-delivery-and-data-policy.md) D5 · 3a · 3d⟩ | 그대로 | 그대로 |
 | `libitum.learner-profile.<userId>` ⟨2026-10-13 — 적용 기록⟩ | 그대로 | **지움**(그 사용자의 칸) |
 | `libitum.learner-profile.guest` ⟨2026-10-13 — 적용 기록⟩ | — (로그인 뒤 첫 동기화가 지운다) | — |
 | `libitum.progress.cached.<userId>` ⟨2026-10-15 — 적용 기록⟩ | 그대로 | **지움**(그 사용자의 키) |
@@ -189,6 +191,13 @@ ADR-0036의 것)를 싣지 않는다 — 이번에 채우지 않았다.
 ([ADR-0062](0062-progress-cache-first.md) D1 · D12). 진행 미전송 키(`libitum.progress.pending.<userId>` — 이 표에 없던 ADR-0035의 키)와 **같은 규칙**이다 —
 로그아웃은 남기고(같은 계정으로 다시 들어오면 응답 전에 맵이 지난 진행으로 선다. 다른 계정은 키가 달라 읽지 않는다 — 사용자가 기본값을 확정했다),
 계정 삭제 성공은 `account-wiring.ts`의 같은 묶음에서 지운다. 삭제 뒤 키가 없는 것 · 로그아웃 뒤 남는 것은 unit · integration까지 확인했고 기기에서는 보지 않았다.
+
+⟨2026-11-06 — 적용 기록, 새 결정 아님⟩ 표의 아홉째 · 열째 줄은 그림 · 음성을 받아 둔 표시와 받기 정책이다. 아홉째 줄의 편 표시 `libitum.content.assets.<id>`는
+2026-10-19부터 있던 키([ADR-0071](0071-episode-background-download.md) D3)인데 이 표에는 처음 싣고, 같은 날 묶음 표시 둘(`.common` · `.unit.<key>` — 값은 편 표시와 같은
+`{sha256, missing}`)이 더해졌다(ADR-0071 ⟨2026-11-06⟩). 열째 줄은 모바일 데이터 정책(`ask` · `always` · `wifi-only`)과 허락 목록(JSON 문자열 배열 — 원소는 `"<id>"` 편 전체 또는
+`"<id>#<unitKey>"` 유닛 하나, 옛 원소는 편 허락 — [ADR-0095](0095-content-delivery-and-data-policy.md) D5 ⟨2026-11-06⟩)이다. **넷 다 계정이 아니라 기기의 것**(공개 콘텐츠의 캐시 표시 ·
+기기 설정)이라 다섯째 줄의 콘텐츠 키와 같은 규칙으로 로그아웃 · 삭제 모두 지우지 않는다 — 삭제 경로에 이 키를 지우는 코드가 없다는 것까지다 [코드]. 같은 기기의 다음 사람은
+앞사람이 받아 둔 그림 · 음성과 허락 · 정책을 그대로 받는다(언어 키와 같은 판정).
 
 ### D7. 분석 — `AnalyticsSession`의 `identify` 자리가 `user`가 된다
 

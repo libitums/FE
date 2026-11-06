@@ -44,12 +44,17 @@ export const settingsJa: SettingsCopy = {
     downloadAllCaption: "すべてのエピソードの画像と音声。通信なしでも学習できます。",
     downloadAllStarted: "バックグラウンドでダウンロード中です。学習を続けられます。",
     downloaded: (size) => `ダウンロード済み：${size}`,
+    episodeRow: (n, d, t) => `エピソード${n}：${t}レッスン中${d}`,
+    episodeRowComplete: (n) => `エピソード${n}：完了`,
+    downloadRest: (n) => `エピソード${n}の残りをダウンロード`,
     confirm: {
       title: "モバイルデータでダウンロードしますか？",
       description:
         "すべてのエピソードをダウンロードすると、多くのデータを使う場合があります。Wi-Fiを待つこともできます。",
       download: "今すぐダウンロード",
       cancel: "キャンセル",
+      restDescription: (n) =>
+        `エピソード${n}の残りをモバイルデータでダウンロードします。Wi-Fiを待つこともできます。`,
     },
   },
   sessionOption: { "auto-play-audio": "自動再生", "show-transcript": "字幕を表示" },
@@ -130,17 +135,32 @@ export const downloadSheetJa: DownloadSheetCopy = {
   size: (size) => `約${size}`,
   downloadNow: "今すぐダウンロード",
   onWifi: "Wi-Fiでダウンロード",
-  dontAskAgain: "今後確認しない",
   wifiOnlyTitle: (n) => `エピソード${n}はWi-Fiでダウンロードします`,
-  wifiOnlyDescription: "設定で「Wi-Fiのみ」を選んでいます。Wi-Fiにつながるとダウンロードします。",
+  wifiOnlyDescription:
+    "設定で「Wi-Fiのみ」を選んでいます。今回だけモバイルデータを使う、画像と音声なしで開く、または設定を変更できます。",
   ok: "OK",
   offlineTitle: "オフラインです",
   offlineDescription: (n) =>
     `エピソード${n}はまだダウンロードされていません。オンラインに戻るとダウンロードします。`,
   openAnyway: "このまま開く",
   close: "閉じる",
-  checked: "オン",
-  unchecked: "オフ",
+  askUnitTitle: (l) => `${l}をダウンロードしますか？`,
+  askUnitDescription:
+    "このレッスンの画像と音声はまだ端末にありません。ダウンロードにはモバイルデータを使います。",
+  rows: {
+    common: "共通の画像と音声",
+    allLessons: "このエピソードのすべてのレッスン",
+    otherLessons: "ほかのレッスン",
+    status: { done: "端末にあります", pending: "今ダウンロード", wifi: "Wi-Fiで" },
+  },
+  askHint: "毎回確認します。設定 › ダウンロードで変更できます。",
+  wifiOnlyUnitTitle: (l) => `${l}はWi-Fiでダウンロードします`,
+  mobileDataOnce: "今回だけモバイルデータを使う",
+  openWithout: "画像と音声なしで開く",
+  changeSetting: "設定を変更",
+  offlineUnitDescription: (l) =>
+    `${l}はまだダウンロードされていません。オンラインに戻るとダウンロードします。`,
+  offlineHint: "画像は単色で表示され、リスニングの問題はスキップされます。",
   allCleared: {
     title: "ここにあるストーリーはすべて終わりました",
     description: "新しいエピソードがあるかもしれません。インターネットにつなぐと確認します。",

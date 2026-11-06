@@ -1,6 +1,9 @@
 // 설정 › 다운로드 화면의 결선입니다(ADR-0095 D8). 저장 · 연결 종류 · 받기 다시 돌리기를 화면 props로 묶습니다.
 
+import type { CatalogUnitKey } from "../lib/catalog-progress";
 import { allowEpisodes, loadMobileDataPolicy, saveMobileDataPolicy } from "../lib/download-policy";
+import type { AssetTarget } from "../lib/download-policy";
+import { downloadProgressSummaryOf, type DownloadCatalogInput } from "./download-progress";
 import { readNetworkProperties } from "../lib/network-status";
 import type { DownloadSettingsScreenProps } from "../screens/download-settings/download-settings.contract";
 
@@ -8,8 +11,10 @@ import type { DownloadSettingsScreenProps } from "../screens/download-settings/d
 export type DownloadControls = {
   readonly requestSync: () => void;
   readonly loadDownloadedBytes: () => number | null;
-  /** 그 편의 그림 · 음성을 다 받았는가(에피소드를 열 때의 받기 판정, D6). */
-  readonly assetsComplete: (episodeId: string) => boolean;
+  /** 대상(편 · 공통 · 유닛)의 그림 · 음성을 다 받았는가(에피소드를 열 때의 받기 판정, D6). */
+  readonly assetsComplete: (episodeId: string, target: AssetTarget) => boolean;
+  /** 받은 유닛 수 — 설정 집계. */
+  readonly downloadedUnits: (episodeId: string, unitKeys: readonly CatalogUnitKey[]) => number;
   /** 목록에 실린 그 편의 그림 · 음성 크기 — 받기 시트의 크기 줄. 없으면 `null`. */
   readonly assetsBytes: (episodeId: string) => number | null;
   /** 목록을 마지막으로 받은 시각(epoch ms) — 끝 카드 · 모두 끝낸 뒤 시트(D9). 없으면 `null`. */
@@ -20,7 +25,7 @@ export type DownloadSettingsWiring = Omit<DownloadSettingsScreenProps, "onBack">
 
 export function downloadSettingsWiring(
   controls: DownloadControls | undefined,
-  catalogIds: () => readonly string[],
+  catalog: () => DownloadCatalogInput,
 ): DownloadSettingsWiring {
   return {
     loadPolicy: loadMobileDataPolicy,
@@ -34,8 +39,17 @@ export function downloadSettingsWiring(
       return cost === "metered" || cost === "constrained";
     },
     loadDownloadedBytes: () => controls?.loadDownloadedBytes() ?? null,
+    loadDownloadProgress: () =>
+      downloadProgressSummaryOf(
+        catalog(),
+        (episodeId, unitKeys) => controls?.downloadedUnits(episodeId, unitKeys) ?? 0,
+      ),
+    onDownloadRestOfCurrent: (episodeId) => {
+      allowEpisodes([episodeId]);
+      controls?.requestSync();
+    },
     onDownloadAll: () => {
-      allowEpisodes(catalogIds());
+      allowEpisodes(catalog().entries.map((entry) => entry.episodeId));
       controls?.requestSync();
     },
   };

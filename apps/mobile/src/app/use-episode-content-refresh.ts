@@ -11,9 +11,11 @@ import { refreshAppPolicy } from "../lib/app-policy-refresh";
 import { measureTask } from "../lib/perf-probe";
 import {
   downloadedAssetBytes,
+  downloadedUnitCount,
   episodeAssetsBytes,
-  episodeAssetsComplete,
+  episodeAssetsCompleteFor,
 } from "../lib/download-usage";
+import type { AssetTarget } from "../lib/download-policy";
 import {
   assetDownloadAllowed,
   loadAllowedEpisodes,
@@ -57,12 +59,19 @@ export const contentSyncEventName = "contentSyncOpportunity";
 export const deferredRecheckIntervalMs = 60_000;
 
 /** 받기 차례마다 한 번 읽는 정책 — 연결 종류 · 저장된 설정 · 허락한 편. 차례 안에서는 같은 값을 씁니다. */
-function assetPolicyForRound(): (id: string) => boolean {
+function assetPolicyForRound(): (id: string, target: AssetTarget) => boolean {
   const network = readNetworkProperties();
   const policy = loadMobileDataPolicy();
   const allowed = loadAllowedEpisodes();
-  return (episodeId) =>
-    assetDownloadAllowed({ network, policy, allowed, episodeId, tutorialId: TUTORIAL_EPISODE_ID });
+  return (episodeId, target) =>
+    assetDownloadAllowed({
+      network,
+      policy,
+      allowed,
+      episodeId,
+      tutorialId: TUTORIAL_EPISODE_ID,
+      target,
+    });
 }
 
 /** 받기 차례마다 지금 UI 언어를 읽습니다 — 영어(원문)면 번역 파일을 받지 않습니다(ADR-0102 D3). */
@@ -225,12 +234,22 @@ export function useEpisodeContentRefresh(sink: EpisodeIntroEventSink): EpisodeCo
         "background only";
         return downloadedAssetBytes(hostContentStore);
       },
-      assetsComplete: (episodeId) => {
+      assetsComplete: (episodeId, target) => {
         "background only";
-        return episodeAssetsComplete(
+        return episodeAssetsCompleteFor(
           hostContentStore,
           bundledCatalogInput.manifest.episodes,
           episodeId,
+          target,
+        );
+      },
+      downloadedUnits: (episodeId, unitKeys) => {
+        "background only";
+        return downloadedUnitCount(
+          hostContentStore,
+          bundledCatalogInput.manifest.episodes,
+          episodeId,
+          unitKeys,
         );
       },
       assetsBytes: (episodeId) => {

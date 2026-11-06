@@ -1,5 +1,7 @@
 import { describe, expect, test, vi } from "vitest";
-import { fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
+import { act, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
+
+import { backHandlers } from "../../lib/back-handler";
 
 import { AllClearedSheet } from "./AllClearedSheet";
 
@@ -60,5 +62,25 @@ describe("AllClearedSheet", () => {
     expect(onCheckNow).toHaveBeenCalledTimes(1);
     tap(action("later"));
     expect(onLater).toHaveBeenCalledTimes(1);
+  });
+
+  test("ACS9. 시스템 뒤로가기는 「나중에」와 같다 — onLater 1회, 내려가면 핸들러가 남지 않는다", () => {
+    const onLater = vi.fn();
+    const { unmount } = render(
+      <AllClearedSheet
+        daysAgo={null}
+        isOffline={() => false}
+        onCheckNow={vi.fn()}
+        onLater={onLater}
+      />,
+    );
+    let handled = false;
+    act(() => {
+      handled = backHandlers.runTop();
+    });
+    expect(handled).toBe(true);
+    expect(onLater).toHaveBeenCalledTimes(1);
+    unmount();
+    expect(backHandlers.runTop()).toBe(false);
   });
 });

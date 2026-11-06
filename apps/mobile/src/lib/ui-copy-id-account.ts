@@ -44,12 +44,17 @@ export const settingsId: SettingsCopy = {
     downloadAllCaption: "Gambar dan audio semua episode, agar kamu bisa belajar tanpa koneksi.",
     downloadAllStarted: "Sedang mengunduh di latar belakang. Kamu bisa terus belajar.",
     downloaded: (size) => `Sudah diunduh: ${size}`,
+    episodeRow: (n, d, t) => `Episode ${n}: ${d} dari ${t} pelajaran`,
+    episodeRowComplete: (n) => `Episode ${n}: selesai`,
+    downloadRest: (n) => `Unduh sisa Episode ${n}`,
     confirm: {
       title: "Unduh dengan data seluler?",
       description:
         "Mengunduh semua episode bisa memakai banyak data. Kamu juga bisa menunggu Wi-Fi.",
       download: "Unduh sekarang",
       cancel: "Batal",
+      restDescription: (n) =>
+        `Sisa Episode ${n} diunduh dengan data seluler. Kamu juga bisa menunggu Wi-Fi.`,
     },
   },
   sessionOption: { "auto-play-audio": "Putar otomatis", "show-transcript": "Tampilkan transkrip" },
@@ -131,18 +136,32 @@ export const downloadSheetId: DownloadSheetCopy = {
   size: (size) => `Sekitar ${size}`,
   downloadNow: "Unduh sekarang",
   onWifi: "Unduh saat Wi-Fi",
-  dontAskAgain: "Jangan tanya lagi",
   wifiOnlyTitle: (n) => `Episode ${n} diunduh saat Wi-Fi`,
   wifiOnlyDescription:
-    "Kamu memilih Hanya Wi-Fi di Pengaturan. Episode ini akan diunduh saat kamu memakai Wi-Fi.",
+    "Kamu memilih Hanya Wi-Fi di Pengaturan. Pakai data seluler sekali ini saja, buka tanpa gambar dan audio, atau ubah pengaturan.",
   ok: "OK",
   offlineTitle: "Kamu sedang offline",
   offlineDescription: (n) =>
     `Episode ${n} belum diunduh. Episode ini akan diunduh saat kamu online lagi.`,
   openAnyway: "Tetap buka",
   close: "Tutup",
-  checked: "dicentang",
-  unchecked: "tidak dicentang",
+  askUnitTitle: (l) => `Unduh ${l}?`,
+  askUnitDescription:
+    "Gambar dan audio pelajaran ini belum ada di ponselmu. Mengunduh akan memakai data seluler.",
+  rows: {
+    common: "Gambar dan audio bersama",
+    allLessons: "Semua pelajaran di episode ini",
+    otherLessons: "Pelajaran lainnya",
+    status: { done: "Ada di ponselmu", pending: "Diunduh sekarang", wifi: "Lewat Wi-Fi" },
+  },
+  askHint: "Kamu akan ditanya setiap kali. Ubah di Pengaturan › Unduhan.",
+  wifiOnlyUnitTitle: (l) => `${l} diunduh saat Wi-Fi`,
+  mobileDataOnce: "Pakai data seluler sekali ini",
+  openWithout: "Buka tanpa gambar dan audio",
+  changeSetting: "Ubah pengaturan",
+  offlineUnitDescription: (l) =>
+    `${l} belum diunduh. Pelajaran ini akan diunduh saat kamu online lagi.`,
+  offlineHint: "Gambar tampil sebagai warna polos dan soal mendengarkan dilewati.",
   allCleared: {
     title: "Kamu sudah menyelesaikan semua cerita di sini",
     description: "Mungkin ada episode baru. Sambungkan ke internet, nanti kami cek untukmu.",

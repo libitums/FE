@@ -2,6 +2,7 @@ import "background-only";
 
 // 백그라운드 갱신 — 원격 매니페스트 → 바뀐 에피소드만 받기 → 검증 → 캐시. 던지지 않습니다.
 import { contentManifestPathsFor } from "./content-manifest-path";
+import type { AssetTarget } from "./download-policy";
 import { ABSENT_HTTP_CODES } from "./episode-asset-sync";
 import type { AssetDeps } from "./episode-asset-sync";
 import {
@@ -81,10 +82,10 @@ export type RefreshDeps = {
   /** 차례로 시도할 매니페스트 경로입니다. 없으면 이 앱의 수준(`CONTENT_CLIENT_LEVEL`)으로 정합니다(ADR-0087). */
   manifestPaths?: readonly string[];
   /**
-   * 있으면 에피소드마다 자산을 받기 전에 묻습니다 — `false`면 그 편은 본문만 받고 자산은 건너뛰며(`deferred`), 받기를
-   * 멈추지 않고 다음 편으로 갑니다(ADR-0095 D5). 없으면 지금처럼 모두 받습니다.
+   * 있으면 묶음(공통 · 유닛)마다 자산을 받기 전에 묻습니다 — `false`면 그 묶음은 건너뛰고(편은 `deferred`), 받기를
+   * 멈추지 않고 다음 묶음 · 편으로 갑니다(ADR-0095 D5). 없으면 지금처럼 모두 받습니다.
    */
-  assetPolicy?: (id: string) => boolean;
+  assetPolicy?: (id: string, target: AssetTarget) => boolean;
   /** 번역 파일을 받을 UI 언어(ADR-0102 D3). 없거나 `null`(영어)이면 번역 단계를 건너뜁니다. */
   translationLanguage?: ContentLanguage | null;
 };

@@ -10,7 +10,8 @@ import { RoundButton } from "@libitums/ui-lynx/round-button";
 import { mobileDataPolicies } from "../../lib/download-policy";
 import type { MobileDataPolicy } from "../../lib/download-policy";
 import { useUiCopy } from "../../lib/ui-copy";
-import { useScreenBack } from "../../lib/use-back-handler";
+import { useLayerBack, useScreenBack } from "../../lib/use-back-handler";
+import type { DownloadProgressSummary } from "../../app/download-progress";
 import { formatDownloadedSize } from "./download-settings";
 import type { DownloadSettingsScreenProps } from "./download-settings.contract";
 
@@ -25,7 +26,9 @@ export function DownloadSettingsScreen({
   savePolicy,
   isOnMobileData,
   loadDownloadedBytes,
+  loadDownloadProgress,
   onDownloadAll,
+  onDownloadRestOfCurrent,
   onBack,
 }: DownloadSettingsScreenProps): ReactNode {
   useScreenBack(onBack);
@@ -33,20 +36,31 @@ export function DownloadSettingsScreen({
   const text = copy.settings.downloads;
   const [policy, setPolicy] = useState<MobileDataPolicy>("ask");
   const [downloadedBytes, setDownloadedBytes] = useState<number | null>(null);
-  const [confirming, setConfirming] = useState(false);
+  const [progress, setProgress] = useState<DownloadProgressSummary>({ rows: [], current: null });
+  const [confirming, setConfirming] = useState<"all" | "rest" | null>(null);
   const [started, setStarted] = useState(false);
+  // 확인 창이 떠 있으면 시스템 뒤로가기는 그 창만 닫습니다(화면을 나가지 않습니다).
+  useLayerBack(confirming !== null ? () => setConfirming(null) : null);
   // 저장소 읽기는 효과 안에서 — 그리기 중에는 저장소가 없을 수 있습니다(메인 스레드). 화면을 열 때 한 번만 읽습니다:
   // 결선은 렌더마다 새 함수를 넘기고, 받은 크기 읽기는 목록 · 표시를 모두 파싱합니다.
   useEffect(() => {
     setPolicy(loadPolicy());
     setDownloadedBytes(loadDownloadedBytes());
+    setProgress(loadDownloadProgress());
     // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const { current } = progress;
+  const showRest = current !== null && current.downloadedLessons < current.totalLessons;
   const startDownloadAll = () => {
-    setConfirming(false);
+    setConfirming(null);
     setStarted(true);
     onDownloadAll();
+  };
+  const startDownloadRest = () => {
+    setConfirming(null);
+    setStarted(true);
+    if (current !== null) onDownloadRestOfCurrent(current.episodeId);
   };
 
   return (
@@ -64,6 +78,8 @@ export function DownloadSettingsScreen({
         className="download-settings-scroll"
         scroll-orientation="vertical"
         scroll-bar-enable={false}
+
+        accessibility-elements-hidden={confirming !== null}
       >
         <view className="download-settings-content">
           <view className="download-settings-heading">
@@ -101,13 +117,39 @@ export function DownloadSettingsScreen({
           </text>
           <view className="download-settings-offline">
             <text className="download-settings-caption">{text.downloadAllCaption}</text>
+            {progress.rows.length > 0 ? (
+              <view className="download-settings-episodes" data-testid="download-settings-episodes">
+                {progress.rows.map((row) => (
+                  <text
+                    key={row.episodeId}
+                    className="download-settings-episodes-row"
+                    data-testid={`download-settings-episode-${row.episodeId}`}
+                  >
+                    {row.downloadedLessons < row.totalLessons
+                      ? text.episodeRow(row.ordinal, row.downloadedLessons, row.totalLessons)
+                      : text.episodeRowComplete(row.ordinal)}
+                  </text>
+                ))}
+              </view>
+            ) : null}
+            {showRest ? (
+              <view data-testid="download-settings-download-rest">
+                <Button
+                  label={text.downloadRest(current.ordinal)}
+                  variant="neutral"
+                  size="l"
+                  width="fill"
+                  bindtap={() => (isOnMobileData() ? setConfirming("rest") : startDownloadRest())}
+                />
+              </view>
+            ) : null}
             <view data-testid="download-settings-download-all">
               <Button
                 label={text.downloadAll}
-                variant="neutral"
+                variant="outline"
                 size="l"
                 width="fill"
-                bindtap={() => (isOnMobileData() ? setConfirming(true) : startDownloadAll())}
+                bindtap={() => (isOnMobileData() ? setConfirming("all") : startDownloadAll())}
               />
             </view>
             {started ? (
@@ -126,16 +168,26 @@ export function DownloadSettingsScreen({
           </view>
         </view>
       </scroll-view>
-      {confirming ? (
+      {confirming !== null ? (
         <view data-testid="download-settings-confirm">
           <Dialog
             title={text.confirm.title}
-            description={text.confirm.description}
+            description={
+              confirming === "rest" && current !== null
+                ? text.confirm.restDescription(current.ordinal)
+                : text.confirm.description
+            }
             actions={[
               { id: "download", label: text.confirm.download },
               { id: "cancel", label: text.confirm.cancel },
             ]}
-            bindaction={(id) => (id === "download" ? startDownloadAll() : setConfirming(false))}
+            bindaction={(id) =>
+              id === "download"
+                ? confirming === "rest"
+                  ? startDownloadRest()
+                  : startDownloadAll()
+                : setConfirming(null)
+            }
           />
         </view>
       ) : null}

@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 
 import { bundledCatalogInput } from "./episode-bundled";
+import type { AssetTarget } from "./download-policy";
 import { contentAssetsKey, type AssetDeps, type DownloadResult } from "./episode-asset-sync";
 import { episodeAssetPaths } from "./episode-assets";
 import { contentEpisodeKey } from "./episode-cache";
@@ -61,6 +62,10 @@ function recorder(answers: Record<string, DownloadResult> = {}, present: string[
   };
   return { log, fetchText, assets };
 }
+
+// `assetPolicy`는 (id, target) 모양이 계약입니다 — 뼈대 타입이 옛 시그니처라 캐스트로 넘깁니다(런타임은 같은 함수).
+const targetPolicy = (fn: (id: string, target: AssetTarget) => boolean) =>
+  fn as unknown as (id: string) => boolean;
 
 const bundledPaths = bundledCatalogInput.manifest.episodes.flatMap((entry) =>
   episodeAssetPaths(bundledCatalogInput.episodes[entry.id]),
@@ -212,10 +217,11 @@ describe("refreshEpisodeCatalog — 자산", () => {
   });
 
   // ⟨2026-11-04⟩ 받기 정책(ADR-0095 D5) — 정책이 막은 편은 본문만 받고 자산은 건너뛰며, 받기를 멈추지 않고 다음 편으로 갑니다.
-  test("RA7. assetPolicy가 막은 편은 자산을 받지 않고 deferred에 적으며, 다음 편은 끝까지 받는다", async () => {
+  test("RA7. assetPolicy(id, target)이 편을 전부 막으면 자산을 받지 않고 deferred에 적으며, 다음 편은 끝까지 받는다", async () => {
     const { log, fetchText, assets } = recorder({}, bundledPaths);
     const { store, data } = fakeStore();
     const ready: string[] = [];
+    const asked: string[] = [];
 
     const summary = await refreshEpisodeCatalog({
       fetchText,
@@ -223,7 +229,10 @@ describe("refreshEpisodeCatalog — 자산", () => {
       bundled: bundledCatalogInput,
       manifestPaths: LEVEL_1_PATHS,
       assets,
-      assetPolicy: (id) => id !== "u04-a",
+      assetPolicy: targetPolicy((id, target) => {
+        asked.push(`${id}:${target?.kind}`);
+        return id !== "u04-a";
+      }),
       onEpisodeReady: (id) => ready.push(id),
     });
 
@@ -233,6 +242,7 @@ describe("refreshEpisodeCatalog — 자산", () => {
       "fetch episodes/u05-b.json",
       "asset images/u05-b/c.jpg",
     ]);
+    expect(asked).toEqual(expect.arrayContaining(["u04-a:common", "u05-b:common"]));
     expect(summary.deferred).toEqual(["u04-a"]);
     expect(ready).toEqual(["u05-b"]);
     expect(data.has(contentEpisodeKey("u04-a"))).toBe(true);

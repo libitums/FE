@@ -219,3 +219,21 @@ export async function ensureEpisodeAssets(
     ? "completed"
     : "incomplete";
 }
+
+/** 표시가 그 sha의 것이면 그 `missing`(문자열만), 아니면 `null`. 던지지 않음. */
+export function readAssetMarkerMissing(
+  store: ContentStore,
+  key: string,
+  sha256: string,
+): readonly string[] | null {
+  try {
+    const text = store.get(key);
+    if (text === null) return null;
+    const marker = JSON.parse(text) as { sha256?: unknown; missing?: unknown };
+    if (marker.sha256 !== sha256) return null;
+    if (!Array.isArray(marker.missing)) return [];
+    return marker.missing.filter((path): path is string => typeof path === "string");
+  } catch {
+    return null;
+  }
+}
