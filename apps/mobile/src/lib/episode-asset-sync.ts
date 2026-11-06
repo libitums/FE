@@ -229,8 +229,8 @@ export function readAssetMarkerMissing(
   try {
     const text = store.get(key);
     if (text === null) return null;
-    const marker = JSON.parse(text) as { sha256?: unknown; missing?: unknown };
-    if (marker.sha256 !== sha256) return null;
+    const marker = JSON.parse(text) as { sha256?: unknown; missing?: unknown } | null;
+    if (typeof marker !== "object" || marker === null || marker.sha256 !== sha256) return null;
     if (!Array.isArray(marker.missing)) return [];
     return marker.missing.filter((path): path is string => typeof path === "string");
   } catch {

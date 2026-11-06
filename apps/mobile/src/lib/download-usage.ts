@@ -50,7 +50,10 @@ function shasOf(
   id: string,
 ): string[] {
   const active = parseCachedManifest(safeGet(store, CONTENT_MANIFEST_KEY))?.episodes ?? [];
-  return [...active, ...bundled].filter((entry) => entry.id === id).map((e) => e.sha256);
+  // 받은 판과 내장 판이 같은 sha면 한 번만 봅니다(리뷰 반영).
+  return [
+    ...new Set([...active, ...bundled].filter((entry) => entry.id === id).map((e) => e.sha256)),
+  ];
 }
 
 /**
