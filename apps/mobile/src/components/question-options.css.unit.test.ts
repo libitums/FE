@@ -31,12 +31,14 @@ const romanSelector = ".question-options-compact .ui-lynx-option-selector-romani
 const textSelector = ".question-options-compact .ui-lynx-option-selector-text";
 
 describe("보기 로마자 compact 축소 (CSS)", () => {
-  test("CSS-CR1. compact 로마자 줄은 caption 토큰 네 개를 쓴다", () => {
+  test("CSS-CR1. compact 로마자 줄은 caption 크기 토큰 셋을 쓰고 글꼴은 바꾸지 않는다", () => {
     const body = bodyOf(css, romanSelector);
 
-    for (const property of ["font-family", "font-size", "line-height", "letter-spacing"]) {
+    for (const property of ["font-size", "line-height", "letter-spacing"]) {
       expect(body).toContain(`${property}: var(--libitum-typography-caption-${property});`);
     }
+    // 글꼴은 앱의 로마자 기울임 글꼴 한 곳(app.css)이 정한다 — caption 글꼴(Duru Sans)로 덮으면 합성 기울임이 된다.
+    expect(body).not.toContain("font-family");
     // 굵기는 ui-lynx 규칙(medium)을 그대로 두므로 이 규칙은 굵기를 생값으로 바꾸지 않는다.
     expect(body).not.toMatch(/font-weight:\s*(\d|bold|normal)/);
   });
@@ -68,5 +70,19 @@ describe("보기 로마자 compact 축소 (CSS)", () => {
     for (const match of css.matchAll(/var\((--[A-Za-z0-9_-]+)/g)) {
       expect(match[1]).toMatch(/^--libitum-/);
     }
+  });
+});
+
+// ADR-0107 · ADR-0108 D8: 로마자는 어느 자리든 같은 기울임 글꼴 목록 하나로 그린다.
+describe("보기 로마자 글꼴 (CSS)", () => {
+  const appCss = readCss("app/app.css");
+
+  test("CSS-CR2. 앱의 로마자 글꼴 규칙이 보기 로마자 줄까지 덮고 Duru Roman이 맨 앞이다", () => {
+    const rule = rulesOf(appCss).find((candidate) =>
+      candidate.selector.includes(".app .ui-lynx-option-selector-romanization"),
+    );
+
+    expect(rule?.body).toMatch(/font-family: "Duru Roman", "DuruRoman",/);
+    expect(rule?.selector).toContain(".app .ui-lynx-chat-bubble-annotation-romanization");
   });
 });

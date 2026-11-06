@@ -17,6 +17,10 @@ const appFonts = readFileSync(
   join(root, "apps/android/app/src/main/java/com/libitum/host/AppFonts.java"),
   "utf8",
 );
+const mainActivity = readFileSync(
+  join(root, "apps/android/app/src/main/java/com/libitum/host/MainActivity.java"),
+  "utf8",
+);
 const assetsDir = join(root, "apps/android/app/src/main/assets/fonts");
 
 const faces = [
@@ -37,4 +41,15 @@ test("AF-W2: @font-face가 가리키는 파일은 AppFonts가 복사하고 asset
     assert.ok(copied.includes(face.file), `AppFonts.FILES에 ${face.file}이 없다`);
     assert.ok(existsSync(join(assetsDir, face.file)), `assets/fonts/${face.file}이 없다`);
   }
+});
+
+// ADR-0107: 일반 자원 가져오기를 켠 채 등록하지 않으면 배포 빌드가 `@font-face` 글꼴을 그리지 않는다(Debug만 그린다).
+test("AF-W3: 일반 자원 가져오기를 켜면 main 소스에서 가져오기를 등록한다", () => {
+  if (!/setEnableGenericResourceFetcher\(\s*LynxBooleanOption\.TRUE\s*\)/.test(mainActivity))
+    return;
+  assert.match(
+    mainActivity,
+    /setGenericResourceFetcher\(\s*new UnavailableResourceFetcher\(\)\s*\)/,
+    "MainActivity가 배포 빌드용 가져오기를 등록하지 않는다",
+  );
 });

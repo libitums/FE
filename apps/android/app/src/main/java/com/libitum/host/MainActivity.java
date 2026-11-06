@@ -72,6 +72,8 @@ public final class MainActivity extends Activity {
     LynxViewBuilder builder = new LynxViewBuilder();
     builder.setTemplateProvider(new AndroidTemplateProvider(this));
     builder.setEnableGenericResourceFetcher(LynxBooleanOption.TRUE);
+    // 켜 둔 채 가져오기가 없으면 앱 글꼴(`@font-face`)이 그려지지 않는다(ADR-0107). Debug는 아래 DebugSupport가 바꾼다.
+    builder.setGenericResourceFetcher(new UnavailableResourceFetcher());
     coreFontScale = getResources().getConfiguration().fontScale;
     builder.setFontScale(coreFontScale);
     builder.addBehaviors(new XElementBehaviors().create());

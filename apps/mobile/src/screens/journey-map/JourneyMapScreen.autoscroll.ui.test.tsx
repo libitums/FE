@@ -204,9 +204,18 @@ describe("JourneyMapScreen 자동 스크롤", () => {
     expect(second.filter((call) => call.method === "scrollTo")).toEqual([scrollToCall(490, true)]);
   });
 
+  /** 지도 내용이 놓였다는 소식 — 가이드의 맨 위 맞춤은 이 뒤에만 나갑니다(DURU-ANDROID-F). */
+  const laidOut = () =>
+    act(() => {
+      fireEvent.layoutchange(screen.getByTestId("journey-map-screen-map"), {
+        detail: { height: 3000 },
+      });
+    });
+
   test("AS12. 첫 유닛 가이드가 떠 있는 동안과 닫은 뒤에도 옮기지 않는다", () => {
     const host = stubHost({ rects: asRects() });
     mount(<FirstUnitGuideProvider enabled>{u00Screen(u00Catalog())}</FirstUnitGuideProvider>);
+    laidOut();
     expect(screen.queryByTestId("first-unit-guide-map")).not.toBeNull();
     // 가이드가 서며 맨 위(0)로 맞추는 한 번뿐입니다(ADR-0068 ⟨2026-11-05⟩) — 다음 유닛으로의 자동 스크롤은 없습니다.
     expect(host.scrollTos()).toEqual([guideTopScroll]);
@@ -228,6 +237,7 @@ describe("JourneyMapScreen 자동 스크롤", () => {
         {u00Screen(u00Catalog({ progress: { "u00-tutorial": ["intro", "S1", "S2"] } }))}
       </FirstUnitGuideProvider>,
     );
+    laidOut();
     expect(screen.queryByTestId("first-unit-guide-map")).not.toBeNull();
 
     host.flush();

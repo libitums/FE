@@ -5,9 +5,8 @@
 }
 
 /* compact 밀도에서만 보기 로마자 줄을 caption으로 내리고 글 묶음 간격을 없앱니다 — 스크롤을 피하려는 것입니다.
-   색 · 기울임 · 굵기는 ui-lynx 규칙을 그대로 둡니다(상태 색 우선순위 불변). */
+   색 · 기울임 · 굵기는 ui-lynx 규칙을, 글꼴은 앱의 로마자 글꼴(app.css)을 그대로 둡니다(상태 색 우선순위 불변). */
 .question-options-compact .ui-lynx-option-selector-romanization {
-  font-family: var(--libitum-typography-caption-font-family);
   font-size: var(--libitum-typography-caption-font-size);
   line-height: var(--libitum-typography-caption-line-height);
   letter-spacing: var(--libitum-typography-caption-letter-spacing);

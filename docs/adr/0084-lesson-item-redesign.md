@@ -248,3 +248,7 @@
 - **D15 문화 확인 보기도 대상이다**(로마자 · 한글 · 뜻 세 줄, 사용자 결정 3).
 - 「미확인 · 후속」 5의 design-system 보고 목록에 `romanization`을 더했다.
 - ⚠ ui-lynx `dist` 상한 556,000 → 559,000(실측 557,772). 앱 main 상한 그대로. 기기 확인 전이다.
+
+### 적용 기록 ⟨2026-11-06⟩ — 재검토 조건 1이 왔다: 로마자는 Duru Roman
+
+[ADR-0107](0107-app-body-font-duru-sans.md)이 본문 글꼴(Duru Sans = Pretendard JP 서브셋)을 앱에 넣었다. 로마자 기울임이 합성이 되지 않도록 `.text-role-romanization`(과 언어 선택 미리보기 · ChatBubble 로마자)의 글꼴을 **Duru Roman(Inter 4.1 Italic 500 서브셋)**으로 바꿨다. 기울임 · medium · muted 규칙은 그대로다. 「버린 대안 4」의 Jost 대신 Inter Italic을 고른 이유는 본문과 결이 같아서다.
