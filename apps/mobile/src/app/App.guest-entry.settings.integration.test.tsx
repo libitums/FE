@@ -42,6 +42,15 @@ const navigatorItems = (): HTMLElement[] =>
   screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/);
 const settingsId = (id: string): string => `ui-lynx-settings-group-item-${id}`;
 // 학습 묶음(보기 로마자 — ADR-0108 · 진동 — ADR-0109 D4 토글)은 기기 설정이라 비회원 · 로그인 사용자 모두에게 선다.
+// Facebook 버튼을 정책으로 연 상태(숨김 목록 비움) — 기본값은 숨김(ADR-0111 개정 4).
+const openFacebookPolicy = {
+  "app-policy.json": JSON.stringify({
+    schema: "app-policy-1",
+    min_build: {},
+    hidden_login_methods: { all: [], android: [] },
+  }),
+};
+
 const guestRows = [
   "show-choice-romanization",
   "vibration",
@@ -94,7 +103,7 @@ test("[GE5b] 로그인 사용자의 설정은 그대로 여덟 항목과 계정 
 // ------------------------------------------------------------------------- GE6
 
 test("[GE6] 「로그인」 행은 비회원 버튼 없는 로그인 화면을 탭 바 없이 열고 뒤로 가면 설정과 탭 바가 돌아온다", async () => {
-  const host = installGuestHost({ store: guestStore() });
+  const host = installGuestHost({ store: guestStore(), content: openFacebookPolicy });
   await renderGuestApp(host, { platform: "ios" });
   openSettingsTab();
   host.events.length = 0;
@@ -109,7 +118,7 @@ test("[GE6] 「로그인」 행은 비회원 버튼 없는 로그인 화면을 �
   expect(eventLabels(host.events)).toEqual(["viewed:login"]);
   expect(host.requests).toEqual([]);
 
-  // 같은 LoginScreen이라 같은 사용 불가 안내가 선다(개정 2) — 요청 · 인증 창 0.
+  // 같은 LoginScreen이라 같은 사용 불가 안내가 선다(개정 2) — 정책이 Facebook 버튼을 열어 둔 상태, 요청 · 인증 창 0.
   expect(present("login-screen-method-facebook")).toBe(true);
   tapButtonIn("login-screen-method-facebook");
   await flush();
@@ -189,7 +198,7 @@ test("[GE11] 로그인 사용자가 로그아웃하면 온보딩 위 로그인 �
 
   expect(present("login-screen-title")).toBe(true);
   expect(present("login-screen-method-guest")).toBe(true);
-  expect(present("login-screen-method-facebook")).toBe(true);
+  expect(present("login-screen-method-facebook")).toBe(false); // 기본 숨김(개정 4)
   expect(present("login-screen-method-apple")).toBe(true);
   expect(host.store.has(guestMarkerKey)).toBe(false);
   expect(host.store.has(authSessionStorageKey)).toBe(false);

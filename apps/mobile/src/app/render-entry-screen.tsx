@@ -52,6 +52,7 @@ export function renderEntryScreen(screen: EntryScreen, wiring: ScreenWiring) {
       return (
         <LoginScreen
           phoneSignIn={wiring.phoneSignIn}
+          visibleMethods={wiring.visibleSocialMethods()}
           unavailableMethods={wiring.unavailableSocialMethods()}
           guestSignIn="visible"
           onContinueAsGuest={wiring.onContinueAsGuest}
@@ -120,6 +121,7 @@ export function renderGuestLoginScreen(wiring: ScreenWiring) {
   return (
     <LoginScreen
       phoneSignIn="hidden"
+      visibleMethods={wiring.visibleSocialMethods()}
       unavailableMethods={wiring.unavailableSocialMethods()}
       guestSignIn="hidden"
       onSelectSocialMethod={wiring.onSelectGuestSignInMethod}

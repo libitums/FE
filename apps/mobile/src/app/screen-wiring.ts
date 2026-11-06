@@ -2,7 +2,10 @@
 // 합쳐 하나의 wiring을 만듭니다.
 
 import { loadStoredAppPolicy } from "../lib/app-policy";
-import { unavailableSocialLoginMethodsFor } from "../screens/login/login";
+import {
+  unavailableSocialLoginMethodsFor,
+  visibleSocialLoginMethodsFor,
+} from "../screens/login/login";
 import type { CatalogFreshness } from "../lib/manifest-check";
 import { downloadSettingsWiring } from "./download-wiring";
 import type { DownloadCatalogInput } from "./download-progress";
@@ -111,6 +114,8 @@ export type ScreenWiring = {
   appVersion: AppVersion | null;
   /** 로그인 화면의 사용 불가 소셜 수단 — 기기에 저장된 앱 정책 · 플랫폼으로(ADR-0111 개정 3). 렌더 때 부른다. */
   readonly unavailableSocialMethods: () => readonly SocialLoginMethod[];
+  /** 로그인 화면에 그릴 소셜 수단 — 정책 `hidden_login_methods` · 플랫폼으로(ADR-0111 개정 4). */
+  readonly visibleSocialMethods: () => readonly SocialLoginMethod[];
   onSplashTimeout: () => void;
   onOnboardingComplete: () => void;
   onSelectSocialLoginMethod: (method: SocialLoginMethod) => Promise<SocialSignInOutcome>;
@@ -178,6 +183,8 @@ export function screenWiring(args: ScreenWiringArgs): ScreenWiring {
     legacyTutorialPassed: args.legacyTutorialPassed,
     safeAreaInsets: args.safeAreaInsets,
     appVersion: args.appVersion,
+    visibleSocialMethods: () =>
+      visibleSocialLoginMethodsFor(args.appVersion?.platform ?? null, loadStoredAppPolicy()),
     unavailableSocialMethods: () =>
       unavailableSocialLoginMethodsFor(args.appVersion?.platform ?? null, loadStoredAppPolicy()),
     gemCount: args.gemCount,

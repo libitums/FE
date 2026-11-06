@@ -135,3 +135,35 @@ describe("decodeAppPolicy — unavailable_login_methods (개정 3)", () => {
     });
   });
 });
+
+test("AP-U6. hidden_login_methods 칸은 unavailable과 같은 규칙으로 읽힌다 — 없으면 필드 없음 · 모르는 이름 버림 · 칸만 무시", () => {
+  const base = { schema: "app-policy-1", min_build: { android: 6 } };
+  expect(decodeAppPolicy(JSON.stringify(base))?.hiddenLoginMethods).toBeUndefined();
+  expect(
+    decodeAppPolicy(
+      JSON.stringify({
+        ...base,
+        hidden_login_methods: { all: ["facebook", "nope"], android: ["apple"] },
+      }),
+    ),
+  ).toEqual({
+    minBuild: { android: 6 },
+    hiddenLoginMethods: { all: ["facebook"], android: ["apple"] },
+  });
+  const broken = decodeAppPolicy(JSON.stringify({ ...base, hidden_login_methods: "facebook" }));
+  expect(broken?.hiddenLoginMethods).toBeUndefined();
+  expect(broken?.minBuild).toEqual({ android: 6 });
+  expect(
+    decodeAppPolicy(
+      JSON.stringify({
+        ...base,
+        unavailable_login_methods: { all: ["google"] },
+        hidden_login_methods: { all: [] },
+      }),
+    ),
+  ).toEqual({
+    minBuild: { android: 6 },
+    unavailableLoginMethods: { all: ["google"], android: [] },
+    hiddenLoginMethods: { all: [], android: [] },
+  });
+});

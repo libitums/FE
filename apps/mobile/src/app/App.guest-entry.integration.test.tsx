@@ -38,34 +38,37 @@ const today = (): string => localDayFrom(new Date());
 
 // ------------------------------------------------------------------------- GE1
 
-test("[GE1] iOS · Android 모두 로그인 화면은 Apple · Google · Facebook · 비회원 버튼이다 — Android에서 Apple을 탭하면 안내 대화상자이고 창 · 시트가 0이다", async () => {
+test("[GE1] iOS · Android 모두 로그인 화면은 Apple · Google · 비회원 버튼이고 Facebook은 숨김이다 — Android에서 Apple을 탭하면 웹 인증 창이 바로 선다", async () => {
   const ios = installGuestHost();
   await renderGuestApp(ios, { platform: "ios" });
   completeOnboarding();
 
   expect(present("login-screen-title")).toBe(true);
-  for (const id of ["apple", "google", "facebook", "guest"]) {
+  for (const id of ["apple", "google", "guest"]) {
     expect(present(`login-screen-method-${id}`)).toBe(true);
   }
+  expect(present("login-screen-method-facebook")).toBe(false);
   expect(present("login-screen-unavailable-dialog")).toBe(false);
 
   cleanup();
   resetGuestHost();
   const android = installGuestHost();
+  android.web.mode = "cancelled";
   await renderGuestApp(android, { platform: "android" });
   completeOnboarding();
 
   expect(present("login-screen-title")).toBe(true);
-  for (const id of ["apple", "google", "facebook", "guest"]) {
+  for (const id of ["apple", "google", "guest"]) {
     expect(present(`login-screen-method-${id}`)).toBe(true);
   }
+  expect(present("login-screen-method-facebook")).toBe(false);
   tapButtonIn("login-screen-method-apple");
   await flush();
 
-  expect(present("login-screen-unavailable-dialog")).toBe(true);
-  expect(android.webStarts).toEqual([]);
-  expect(android.requests).toEqual([]);
-  expect(present("learner-name-screen-title")).toBe(false);
+  // Android의 Apple은 웹 OAuth로 바로 간다(2026-11-06 실기 확인 — 사용 불가 기본값에서 제외).
+  expect(present("login-screen-unavailable-dialog")).toBe(false);
+  expect(android.webStarts).toHaveLength(1);
+  expect(JSON.stringify(android.webStarts[0])).toContain("apple");
 });
 
 // ------------------------------------------------------------------------- GE2

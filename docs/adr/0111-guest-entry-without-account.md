@@ -1,29 +1,29 @@
-# ADR-0111 — Facebook 수단을 임시로 「사용 불가」로 안내하고, 계정 없이 「비회원으로 계속」한다 (Android는 Apple도 사용 불가 · 기기 전용 진행 · 설정에서 로그인하면 이어 올린다)
+# ADR-0111 — Facebook 수단을 임시로 **숨기고**(정책이 열어 두면 「사용 불가」 안내), 계정 없이 「비회원으로 계속」한다 (기기 전용 진행 · 설정에서 로그인하면 이어 올린다 — Android의 Apple은 된다)
 
 - 상태: **채택 — 임시.** 서버 · 호스트 · ui-lynx · 토큰 변경은 0이다(RPC · 마이그레이션 · globalProps · 새 토큰 0).
   사용자 발화(2026-11-06)는 둘이다 — 첫째 「페이스북 로그인을 임시로 제거하고 비회원으로도 임시로 진행할 수 있는 버튼을 추가」 + 인자(비회원은 언어 선택 → 여정 입장 → 여정 맵,
   진행 · 프로필은 기기에만, 나중에 로그인하면 기기 값이 서버로). 둘째(같은 날, 개정 1 구현 뒤) 「**페이스북 로그인 끄지 말고** 잠시 이관 작업 중이다 뭐 이런 식으로 추천 방안으로 **에러 뜨면 모달창만 띄워줘**」 —
-  이 발화가 [추론] 첫째(표시 제외 방식)를 **되돌려** D1이 「사용 불가 안내 모달」로 다시 쓰였다(**개정 2**). 셋째(같은 날, 개정 2 구현 뒤) 사용자 결정 「**A로 진행**」 — 상수를 비우는 되살리기는 앱 재배포 · 스토어 심사가 필요하다는 지적에, 사용 불가 목록의 **정본을 앱 정책 파일(`app-policy.json`)로** 옮기고 상수는 기본값으로 남겼다(**개정 3**, D1 · 재검토 조건 1 · 2). 그 밖의 결정은 **사용자 부재 · 자율 진행**으로 요구사항의 [추론] 일곱(Android의 Apple도 같은 안내 ·
+  이 발화가 [추론] 첫째(표시 제외 방식)를 **되돌려** D1이 「사용 불가 안내 모달」로 다시 쓰였다(**개정 2**). 셋째(같은 날, 개정 2 구현 뒤) 사용자 결정 「**A로 진행**」 — 상수를 비우는 되살리기는 앱 재배포 · 스토어 심사가 필요하다는 지적에, 사용 불가 목록의 **정본을 앱 정책 파일(`app-policy.json`)로** 옮기고 상수는 기본값으로 남겼다(**개정 3**, D1 · 재검토 조건 1 · 2). 넷째 · 다섯째(같은 날 저녁, 개정 3 병합 뒤 — **개정 4**) 사용자 결정 둘: 「**메타 로그인 버튼 숨겨줘**」 — Facebook 버튼을 다시 **숨긴다**(개정 2의 「버튼은 두고 모달」을 사용자가 되돌렸다 — 숨김 목록도 정책 파일의 새 선택 칸 `hidden_login_methods`가 정본 · 모달 기능은 남는다), 그리고 「**안드로이드에서 애플 로그인 될 텐데 … 테스트했어 되네**」 — **Android의 Apple 웹 OAuth는 된다**(사용자가 실기에서 로그인 성공 · 메인이 차등 테스트로 뒷받침 — 맥락 10). 그래서 Android의 Apple은 사용 불가 기본값에서 빠졌고, 아래 맥락 1 · 2의 「Android Apple 완료 0 = 죽은 버튼」은 **오판**으로 정정한다. 그 밖의 결정은 **사용자 부재 · 자율 진행**으로 요구사항의 [추론] 일곱(~~Android의 Apple도 같은 안내~~ ⟨개정 4 — 사용자가 정정⟩ ·
   재실행 때 바로 맵 · 알림 권한 미요청 · 합치기 규칙 · 서버 전용 행 숨김 · `method: "guest"` 값 하나 · 낮은 강조 한 줄 버튼)을 계약 단계가 그대로 채택하고, 메인이 수용했다(아래 「확인 필요」).
   ⚠ **기기 확인이 아직 없다** — [비회원 진입 e2e](../e2e/guest-entry.md) GE-E1 ~ GE-E8은 실행된 회차가 없다.
-- 날짜: 2026-11-06(개정 2 · 개정 3도 같은 날).
-- **임시의 뜻 — 재검토 조건이 둘 있다.** ① Meta 앱 게시가 끝나면 버킷 `app-policy.json`의 `unavailable_login_methods.all`에서 `facebook`을 지운다 — 다음 실행부터 Facebook이 두 플랫폼에서 다시 인증 창을 연다.
-  ② Supabase Apple 제공자의 Services ID(Android 웹 OAuth, [ADR-0039](0039-android-social-oauth.md))가 설정되면 `unavailable_login_methods.android`에서 `apple`을 지운다 — Android의 Apple이 다시 인증 창을 연다.
-  둘은 각각 정책 파일의 배열 원소 하나이고 따로 되돌릴 수 있다 — **앱 배포 0**(개정 3). 절차는 [정책 파일 스펙 「되살리기」](../specs/app-update-policy.md). ⚠ 2026-11-06 현재 버킷에 그 파일이 **없다** — 첫 업로드 전까지는 `screens/login/login.ts`의 상수 기본값(`facebook` · Android `apple`)이 적용된다(확인 필요 12). **비회원 진입 자체는 수단이 돌아와도 자동으로 걷지 않는다** — 비회원 선택 비율 · 전환율(「측정」)을 보고 따로 정한다.
-- 다루는 축: **로그인 수단의 사용 불가 안내**(어느 수단을 · 언제 띄우나 · 무엇을 말하나 · 되돌리는 법) · **비회원 진입과 표식**(누가 비회원인가 · 재실행 때 어디로 가는가) · **기기 전용 진행**(어느 칸에 · 서버 요청 없이 · 연속 학습일 계산) ·
+- 날짜: 2026-11-06(개정 2 · 개정 3 · 개정 4도 같은 날).
+- **임시의 뜻 — 재검토 조건이 하나 남았다**(개정 4 — 둘이었다). ① Meta 앱 게시가 끝나면 버킷 `app-policy.json`의 `hidden_login_methods.all`에서 `facebook`을 지운다(필요하면 `unavailable_login_methods.all`에서도) — 다음 실행부터 Facebook 버튼이 두 플랫폼에 다시 서고 인증 창을 연다.
+  ~~② Supabase Apple 제공자의 Services ID(Android 웹 OAuth, [ADR-0039](0039-android-social-oauth.md))가 설정되면 `unavailable_login_methods.android`에서 `apple`을 지운다~~ ⟨개정 4⟩ **닫혔다** — Services ID(`com.libitum.host.web`)는 이미 있고 Android의 Apple은 실기에서 된다(맥락 10). 기본값에서 Android 몫은 비어 있다(`androidUnavailableLoginMethods = []` · `androidHiddenLoginMethods = []`).
+  되살리기는 정책 파일의 배열 원소 하나를 지우는 것 — **앱 배포 0**(개정 3). 절차는 [정책 파일 스펙 「되살리기」](../specs/app-update-policy.md). ⚠ 2026-11-06 현재 버킷에 그 파일이 **없다** — 첫 업로드 전까지는 `screens/login/login.ts`의 상수 기본값(숨김 `facebook` · 사용 불가 `facebook` · Android 추가 없음)이 적용된다(확인 필요 12). **비회원 진입 자체는 수단이 돌아와도 자동으로 걷지 않는다** — 비회원 선택 비율 · 전환율(「측정」)을 보고 따로 정한다.
+- 다루는 축: **로그인 수단의 숨김과 사용 불가 안내**(어느 수단을 숨기나 · 보이는 수단 가운데 어느 것을 · 언제 띄우나 · 무엇을 말하나 · 되돌리는 법) · **비회원 진입과 표식**(누가 비회원인가 · 재실행 때 어디로 가는가) · **기기 전용 진행**(어느 칸에 · 서버 요청 없이 · 연속 학습일 계산) ·
   **설정에서의 로그인과 이관**(어느 화면 · 어떤 순서 · 무엇을 옮기는가 · 어디로 돌아오는가) · **측정** · **비회원에게 숨기는 서버 행**.
   **다루지 않는 것**: 서버 쪽 비회원 저장(기기를 바꾸면 비회원 기록은 사라진다 — 의도) · Facebook · Apple 코드 · 계약 · 분석 어휘 삭제 · Meta 앱 게시 · Apple Services ID 설정(대시보드 작업) ·
   전화번호 수단(지금처럼 숨김) · 「기록 지우기」 · 비회원 계정 삭제(삭제할 계정이 없다) · 로그인 화면 문구(안내 모달의 네 문구는 제외 — D1) · 가입 설득 카피 · 온보딩 변경 · 안내 모달 노출 횟수 측정(확인 필요 10) ·
   수단 성공을 보고 정책을 스스로 고치는 **자동 플립(B)** · 정책 즉시 재조회(개정 3 scope_out — 앱 시작마다 받으므로 다음 실행부터 반영).
 - 이어받는 결정(결정 문장은 바꾸지 않는다 — 각 ADR에 적용 기록 ⟨2026-11-06⟩):
-  [ADR-0028](0028-social-oauth-web-authentication.md)(Facebook · Android Apple은 버튼은 그대로 서고 **누르면 인증 창 대신 사용 불가 안내** — 결정 · 코드 · 어휘는 그대로),
+  [ADR-0028](0028-social-oauth-web-authentication.md)(Facebook 버튼은 **숨김**(개정 4) — 정책이 열어 두면 서고 누르면 인증 창 대신 사용 불가 안내; Android Apple 「완료 0건」 문장은 정정 — 결정 · 코드 · 어휘는 그대로),
   [ADR-0029](0029-product-analytics-posthog.md) D8(비회원 구간 식별 0) · D14(`entry_login_method_selected.method` 값 +1, 이름 수 변경 0),
   [ADR-0032](0032-account-sign-out-and-deletion.md) D6(키 표 세 행),
   [ADR-0034](0034-server-push-notifications.md) D4(비회원은 진입 끝에서 묻지 않는다 · 「진입 흐름의 끝」 셋째 자리),
   [ADR-0059](0059-learner-profile.md) D3 · D7(손님 칸이 비회원 구간 전체에 산다 · ① 이름 · ② 나라를 비회원도 지난다),
   [ADR-0062](0062-progress-cache-first.md)(비회원 미전송 칸이 로그인 때 사용자 미전송 칸에 합쳐진다),
   [ADR-0069](0069-returning-learner-login.md)(설정에서의 비회원 로그인은 판정을 지나지 않는다),
-  [ADR-0086](0086-app-version-and-forced-update.md) D3(개정 3 — 같은 `app-policy.json`에 선택 칸 `unavailable_login_methods`가 더해진다 · `schema` 불변 · 칸 모양이 틀리면 칸만 무시).
+  [ADR-0086](0086-app-version-and-forced-update.md) D3(개정 3 · 4 — 같은 `app-policy.json`에 선택 칸 **둘** `unavailable_login_methods` · `hidden_login_methods`가 더해진다 · 같은 모양 · `schema` 불변 · 칸 모양이 틀리면 칸만 무시).
 
 **왜 새 번호인가** — 진입 흐름의 전이 표([진입 흐름 계약](../specs/entry-flow.md) §3) · 세션 저장 자리(ADR-0029 D8이 가리키는 `storeSession`) · 설정 행 구성(ADR-0032 D8) · 분석 값(ADR-0029 D14) ·
 알림 묻는 자리(ADR-0034 D4) 위에 코드 · 테스트 · 측정이 이미 지어졌고, 이 변경이 그 결정 여럿을 **한꺼번에** 건드린다(ADR README 「형식」의 둘째 줄). 0103은 비어 있지만 재사용하지 않고(「형식」 첫째 항목), 0106이 마지막이던 아침에 0107로 썼으나 같은 날 [ADR-0107](0107-app-body-font-duru-sans.md)(글꼴 · #386) · [ADR-0108](0108-choice-romanization.md)(보기 로마자 · #388) · [ADR-0109](0109-haptic-feedback.md)(진동 · #390) · [ADR-0110](0110-app-version-in-analytics.md)(앱 버전 속성 · #389)이 먼저 병합되어 **0111**로 옮겼다.
@@ -33,10 +33,9 @@
 
 ## 맥락
 
-1. **로그인 수단 둘이 죽어 있다** [실측 — PostHog, 2026-11-06 조회]. 2026-10-20 이후 로그인 화면에서 **Facebook 흐름을 시작한 930건 · Android의 Apple 흐름 95건** 가운데 **완료가 0건**이다.
-   같은 기간 로그인 화면에 닿은 사용자 가운데 로그인에 성공한 비율은 **55 %**다. 사용자의 **63 %가 필리핀 · 27 %가 인도**(로그인 화면 기준)다 — Facebook 비중이 큰 시장이다.
-2. **원인은 저장소 밖에 있다** [추론 — 대시보드 상태]. Facebook은 Meta 앱이 게시 전(테스터가 아닌 계정은 거절)이고, Android의 Apple은 웹 OAuth 경로(ADR-0039)인데 Supabase Apple 제공자에
-   Services ID가 없다. 둘 다 코드가 아니라 대시보드 작업이고, 언제 끝날지 이 저장소가 정하지 못한다 — 그래서 **임시**다.
+1. **로그인 수단 하나가 죽어 있다**(개정 4 정정 — 「둘」이었다) [실측 — PostHog, 2026-11-06 조회]. 2026-10-20 이후 로그인 화면에서 **Facebook 흐름을 시작한 930건** 가운데 **완료가 0건**이다.
+   ~~Android의 Apple 흐름 95건(뒤에 108건)도 완료 0~~ ⟨개정 4⟩ **이 수치는 「안 된다」의 증거가 아니었다** — Apple ID가 없는 Android 사용자가 웹 OAuth 창을 닫은 것이고, 경로 자체는 산다(맥락 10). 같은 기간 로그인 화면에 닿은 사용자 가운데 로그인에 성공한 비율은 **55 %**다. 사용자의 **63 %가 필리핀 · 27 %가 인도**(로그인 화면 기준)다 — Facebook 비중이 큰 시장이다.
+2. **원인은 저장소 밖에 있다** [추론 — 대시보드 상태]. Facebook은 Meta 앱이 게시 전(테스터가 아닌 계정은 거절)이다. ~~Android의 Apple은 웹 OAuth 경로(ADR-0039)인데 Supabase Apple 제공자에 Services ID가 없다~~ ⟨개정 4⟩ **오판** — Services ID `com.libitum.host.web`가 있고 Apple이 진짜 로그인 폼을 준다(맥락 10). 남은 것(Meta 게시)은 코드가 아니라 대시보드 작업이고, 언제 끝날지 이 저장소가 정하지 못한다 — 그래서 **임시**다.
 3. **플랫폼은 이미 내려온다** [코드]. 호스트 globalProps `appVersion.platform`(`lib/app-version.ts` `AppPlatform = "ios" | "android"`, 없으면 `null` — Explorer · 테스트)이 `ScreenWiring.appVersion`으로 화면 결선에 있다.
 4. **비회원이 서버에 닿지 않게 하는 장치는 대부분 있다** [코드]. `syncPushDevice({ ask })`는 `loadAuthSession() === null`이면 첫 줄에서 돌아가고(알림 권한을 묻지 않는다 — 코드 변경 0),
    `authorizedRpc`는 세션이 없으면 요청 없이 `null`이다. 다만 진행 동기화 객체(`createJourneyProgressSync`)는 세션 없이 세우면 `load` 실패 → 재시도 루프 · 맵의 「확인 실패」 줄이 선다 —
@@ -46,13 +45,21 @@
 7. `AppSession.tsx` · `entry-wiring.ts`가 **각 300줄**(상한)이다 [코드] — 새 줄을 더하려면 먼저 떼어야 한다.
 8. **인증 창 안의 실패를 앱은 알 수 없다** [코드 — ADR-0028 D1 · D2]. 창은 제공자의 것이고 사용자가 닫으면 `cancelled`만 온다 — 「에러 뜨면 모달」을 글자 그대로 하려면 Meta의 거절 페이지를 먼저 보여 준 뒤에야 모달이 설 수 있고, 그 순간을 잡을 신호도 없다(개정 2의 D1이 「누르는 즉시」인 이유). 같은 이유로 수단이 **살아났는지**도 앱은 스스로 알 수 없다 — 되살리기는 사람이 정하는 스위치여야 한다(개정 3).
 9. **앱 정책 파일은 이미 앱 시작마다 받아 기기에 저장된다** [코드 — ADR-0086 D3]. `lib/app-policy.ts`의 디코더 · `loadStoredAppPolicy()`는 순수이고 결선이 이미 import한다. 상수 두 줄을 비우는 되살리기는 앱 재배포 · 스토어 심사를 거쳐야 한다 [사용자 지적, 2026-11-06] — 그 창을 서버 쪽 플래그 하나로 닫을 자리가 이 파일이다. ⚠ 2026-11-06 현재 버킷에 그 파일은 **없다**(`storage.objects` 조회).
+10. **Android의 Apple 웹 OAuth는 된다**(개정 4) [사용자 — 실기 로그인 성공, 2026-11-06 「테스트했어 되네」] + [실측 — 차등 테스트]. Supabase `/auth/v1/authorize?provider=apple`이 Apple에 `client_id=com.libitum.host.web`(Services ID)로 보내고 Apple이 **진짜 로그인 폼**을 돌려준다 — 같은 요청에 가짜 `client_id`를 넣으면 `invalid_client`다. 즉 Services ID는 이미 등록되어 있고(ADR-0039의 「필요하다」는 충족된 상태), 맥락 1의 「완료 0건」은 Apple ID 없는 사용자가 창을 닫은 것이다. 이 저장소가 「완료 0 = 죽은 버튼」으로 읽은 것은 **추론을 실측으로 적은 오판**이었다 — 완료 0은 「안 된다」의 충분조건이 아니다.
+11. **보이는 버튼이 「되는 척」하는 것보다 없는 쪽이 낫다**(개정 4) [사용자 — 「메타 로그인 버튼 숨겨줘」]. 개정 2가 고른 「버튼은 두고 모달로 설명」은 Facebook 사용자에게 탭 한 번 뒤 「안 된다」를 보여 주는 길이었고, 사용자는 그 버튼이 서 있는 것 자체를 원하지 않았다. 모달 기능은 코드에 남아 **정책이 열어 둔 수단**에만 쓰인다.
 
 ## 결정
 
-### D1. 수단을 숨기지 않고, 누르면 **「사용 불가 안내」 모달**을 띄운다 — 사용 불가 목록의 정본은 **앱 정책 파일**이고 상수는 기본값, 코드 · 계약 · 어휘는 그대로다 (개정 2 · 개정 3 — 2026-11-06, 사용자 결정)
+### D1. Facebook 버튼은 **숨기고**(정책 칸 `hidden`), 보이는 수단 가운데 사용 불가인 것(정책 칸 `unavailable`)은 누르면 **「사용 불가 안내」 모달**이다 — 두 목록의 정본은 **앱 정책 파일**이고 상수는 기본값, 코드 · 계약 · 어휘는 그대로다 (개정 2 · 3 · 4 — 2026-11-06, 사용자 결정)
 
-- **버튼은 셋 다 선다**(두 플랫폼 — Apple · Google · Facebook, `socialLoginMethods` 상수 하나 · `LoginSocialMethods`는 `methods` prop을 그대로 순회). 사용 불가 수단을 누르면 **인증 요청 0건으로** 안내 모달이 뜬다 — 「지금은 이 수단으로 로그인할 수 없다 · 새 설정으로 옮기는 중 · Google로 계속하거나 계정 없이 진행하라」.
-- **사용 불가 목록 한 곳** — `screens/login/login.ts`: 상수 `productUnavailableLoginMethods = ["facebook"]`(두 플랫폼) · `androidUnavailableLoginMethods = ["apple"]`(Android만), 순수 함수 `unavailableLoginMethods({ platform, unavailable })`(둘의 합집합 — 어휘 순서 · 중복 없음 · 입력 불변 · `platform`이 `null`이면 플랫폼 몫은 없다) ·
+- **개정 4(2026-11-06 저녁 — 사용자 결정 「메타 로그인 버튼 숨겨줘」 · 「안드로이드에서 애플 로그인 될 텐데 … 되네」).** 기본값에서 **Facebook 버튼은 두 플랫폼에서 없다** — 로그인 화면(진입 · `guest-login`)의 소셜 버튼은 Apple · Google **둘**이다. 정책 파일에 **선택 칸 둘**이 있고 모양이 같다(`LoginMethodSelection = { all, android }`):
+  - `hidden_login_methods` — **버튼 자체가 없다.** 없으면 상수 기본값 `productHiddenLoginMethods = ["facebook"]` · `androidHiddenLoginMethods = []`. 순수 `hiddenLoginMethodsFor(platform, policy)`(칸이 있으면 `all ∪ (Android면 android)`, 없으면 상수 · 어휘 순서 · 중복 없음) · `visibleSocialLoginMethodsFor(platform, policy)` = `socialLoginMethods` − 숨김. 결선 `ScreenWiring.visibleSocialMethods()`가 렌더 때 `loadStoredAppPolicy()`로 만들어 **새 prop `LoginScreenProps.visibleMethods`**로 넘기고, `LoginScreen`은 `socialLoginMethods` 상수 대신 그것을 그린다.
+  - `unavailable_login_methods` — **보이는 버튼 가운데** 누르면 모달인 수단(개정 2 · 3 그대로). 기본값 `productUnavailableLoginMethods = ["facebook"]` · `androidUnavailableLoginMethods = []`(~~`["apple"]`~~ — Android의 Apple은 된다, 맥락 10).
+  - **두 칸의 관계 — `hidden`이 이기고, `unavailable`은 보이는 버튼에만 적용된다.** 같은 수단이 둘에 다 들면 버튼이 없으니 모달도 없다(기본값의 Facebook이 그렇다). 정책이 `hidden.all`에서 `facebook`을 지우되 `unavailable.all`에 두면 버튼이 서고 탭하면 모달(GE13 · LG-G3) — 「이관 중」 설명을 보여 주고 싶을 때의 중간 상태다. 둘에서 다 지우면 인증 창이다(GE14).
+  - 되살리기 = 정책 `hidden_login_methods.all`에서 `facebook`을 지운다(필요하면 `unavailable`에서도) — **앱 배포 0** · 다음 실행부터(GE15 · GE-E9). 디코더는 두 칸에 **같은 규칙**(`decodeLoginMethodSelection` — 키 없음 · object 아님이면 그 칸만 없음 · 모르는 이름 버림 · `min_build` 불변, AP-U6).
+  - 아래 개정 2 · 3 문단의 「버튼은 셋 다 선다」 · `androidUnavailableLoginMethods = ["apple"]`은 이 개정이 바꿨다 — 모달의 모양 · 동작 · 문구 · `guest-login` 적용 · 분석 0은 그대로 산다.
+- ~~**버튼은 셋 다 선다**(두 플랫폼 — Apple · Google · Facebook, `socialLoginMethods` 상수 하나 · `LoginSocialMethods`는 `methods` prop을 그대로 순회)~~ ⟨개정 4⟩ 버튼은 `visibleMethods`(기본 Apple · Google)다. 보이는 수단 가운데 사용 불가 수단을 누르면 **인증 요청 0건으로** 안내 모달이 뜬다 — 「지금은 이 수단으로 로그인할 수 없다 · 새 설정으로 옮기는 중 · Google로 계속하거나 계정 없이 진행하라」.
+- **사용 불가 목록 한 곳** — `screens/login/login.ts`: 상수 `productUnavailableLoginMethods = ["facebook"]`(두 플랫폼) · `androidUnavailableLoginMethods = ~~["apple"]~~ []`(Android만 — 개정 4에서 비웠다), 순수 함수 `unavailableLoginMethods({ platform, unavailable })`(둘의 합집합 — 어휘 순서 · 중복 없음 · 입력 불변 · `platform`이 `null`이면 플랫폼 몫은 없다) ·
   `isLoginMethodUnavailable(method, input)` · `unavailableSocialLoginMethods(platform, unavailable = productUnavailableLoginMethods)`(`phone` 제외) · `unavailableDialogActions(copy)`. ~~되돌리기는 **상수 비우기** — 비우면 모달 없이 지금처럼 인증 창이 열린다.~~ 개정 3: 상수는 **정책이 없을 때의 기본값**이다 — 아래.
 - **정본은 정책, 상수는 기본값**(개정 3 · 사용자 결정 「A로 진행」). 버킷 `app-policy.json`(ADR-0086 D3)의 선택 칸 `unavailable_login_methods: { "all": [...], "android": [...] }`를 `lib/app-policy.ts`가 `AppPolicy.unavailableLoginMethods?`로 디코드한다 — 키 없음 · object 아님이면 필드 없음(**정책 전체는 유효** — `min_build` 판정 불변), `all` · `android`는 각각 없거나 배열이 아니면 `[]`, 모르는 이름 · 문자열 아닌 원소는 버리고 중복 없이 어휘 순서. `schema`는 `app-policy-1` 그대로(호환 변경) · `app-policy-refresh.ts` 변경 0.
   판정은 `login.ts`의 `unavailableLoginMethodsFor(platform, policy)` — 칸이 있으면 `all ∪ (Android면 android)`, 없으면 위 상수 경로 — 와 `unavailableSocialLoginMethodsFor`(`phone` 제외). 결선 `ScreenWiring.unavailableSocialMethods()`가 렌더 때 `loadStoredAppPolicy()`로 저장본을 읽어 만들고, `LoginScreenProps.platform`은 **`unavailableMethods: readonly SocialLoginMethod[]`**(플랫폼 · 정책이 이미 반영된 목록)로 바뀌었다 — 훅 `use-login-unavailable`은 `includes`로만 판정한다. 진입 로그인 · `guest-login` 둘이 같은 함수를 지난다.
@@ -64,10 +71,10 @@
   액션 둘 — **「Connect with Google」**(화면의 Google 버튼 라벨 `loginMethodLabel("google")` 재사용 — 같은 동작 같은 이름, 접근성 R2; `use-google` · brand → 닫고 `google` 탭과 같은 경로 = `onSelectSocialMethod("google")`) · **「Close」**(`close` · subtle → 닫기). 시스템 뒤로가기(`useLayerBack` — 국가 시트와 같은 훅) = 닫기. 떠 있는 동안 뒤 화면은 `accessibility-elements-hidden`(Dialog 기존 규칙, ADR-0016 D9).
   새 copy 키 **넷**(`login.unavailable.title · description · descriptionWithoutGuest · close`, 다섯 언어 동시 — 대가 8). 모달 안에 비회원 동작은 두지 않는다 — 화면에 이미 「Continue without an account」가 있다.
 - **설정에서 연 로그인(`guest-login`, D5)도 같다** — 같은 `LoginScreen`이라 같은 모달이 선다(결선 · 분석 변경 0). 모달의 「Connect with Google」은 그 화면의 Google 경로(D6)로 간다.
-- `EntryLoginMethod` 넷 · `entryLoginMethods` 순서 · `oauthProviderFor` · `socialLogo` · Facebook · Apple의 코드 · 계약 · 분석 어휘 · Airbridge 매핑은 **변경 0**이다.
+- `EntryLoginMethod` 넷 · `entryLoginMethods` 순서 · `socialLoginMethods` 셋 · `oauthProviderFor` · `socialLogo` · Facebook · Apple의 코드 · 계약 · 분석 어휘 · Airbridge 매핑은 **변경 0**이다(개정 4도 — 숨김은 그리는 목록만 줄인다).
 - 왜 `lib/entry-flow.ts`가 아니라 `login.ts`인가 — 「전화번호를 잠시 숨긴다」(`productPhoneSignIn`, ADR-0027 D7)와 같은 성격의 **제품 표시 결정**이고 그 선례가 여기 있다. 어휘는 바뀌지 않는다.
-- 테스트는 `unavailable` 입력으로 **사용 불가 · 복원 두 상태를 모두** 본다 — 되돌리는 날 테스트를 고치지 않는다. 개정 3은 정책 입력으로 셋째 상태(정책이 비운 목록 · 정책이 다른 수단을 막는 목록)를 더 본다 — unit AP-U1 ~ U5 · LG-P1 ~ P4, ui LG-D7, integration GE14 · GE14b · GE14c.
-- **개정 1(같은 날 아침)은 「표시 목록 제외」였다** — `visibleLoginMethods` + `productHiddenLoginMethods` · `androidHiddenLoginMethods`로 버튼을 숨겼다(unit 4,700 · ui 2,113 · integration 741로 green). 사용자가 되돌렸고(머리의 둘째 발화) 그 다섯 export는 삭제됐다 — 버린 대안 10.
+- 테스트는 `unavailable` 입력으로 **사용 불가 · 복원 두 상태를 모두** 본다 — 되돌리는 날 테스트를 고치지 않는다. 개정 3은 정책 입력으로 셋째 상태(정책이 비운 목록 · 정책이 다른 수단을 막는 목록)를 더 본다 — unit AP-U1 ~ U5 · LG-P1 ~ P4, ui LG-D7, integration GE14 · GE14b · GE14c. 개정 4는 숨김을 같은 방식으로 본다 — unit AP-U6 · LG-H1 ~ H3, ui LG-G3(`visibleMethods` 둘 · 셋 · 0), integration GE15(정책 없음 → 숨김 · `hidden` 비운 정책 → 버튼 복귀) · GE13 · GE14는 **정책이 Facebook을 열어 둔 상태**로 돈다.
+- **개정 1(같은 날 아침)은 「표시 목록 제외」였다** — `visibleLoginMethods` + `productHiddenLoginMethods` · `androidHiddenLoginMethods`로 버튼을 숨겼다(unit 4,700 · ui 2,113 · integration 741로 green). 사용자가 되돌렸고(머리의 둘째 발화) 그 다섯 export는 삭제됐다 — 버린 대안 10. ⟨개정 4⟩ 숨김이 **다시 기본**이 됐다 — 다만 개정 1과 달리 숨김 목록의 정본이 정책 파일이고(상수는 기본값), 모달 기능이 함께 남으며, Android의 Apple은 숨기지도 막지도 않는다.
 
 ### D2. 비회원은 기기 표식 하나로 서고, 세션이 표식을 이긴다
 
@@ -152,10 +159,10 @@
 
 | 계층 | 판정 | 볼 것 | 결과 [실측] |
 |---|---|---|---|
-| unit | 적용 | 사용 불가 목록 LG-A1 ~ A6(`unavailableLoginMethods` 기본 입력 iOS = [facebook] · android = [apple, facebook] 어휘 순서 · null 플랫폼 = iOS · 비운 입력 · 입력 불변 · `isLoginMethodUnavailable` · `socialLoginMethods` 셋) · **개정 3** 정책 칸 디코드 AP-U1 ~ U5(`lib/app-policy.unit.test.ts` — 칸 없음 → 필드 없음 · 정상 · object 아님 → 필드 없음 + `min_build` 유지 · 배열 아님 → 그 키만 `[]` · 모르는 이름 · 중복 · 어휘 순서) · 정책 판정 LG-P1 ~ P4(`unavailableLoginMethodsFor` — null 정책 = 상수 · 빈 배열 = 없음 · android 분기 · phone 제외) · 표식 · `accountStateFrom` · `entryAuthStateFrom` 셋째 갈래 · 연속 규칙 · 합치기 · 이관 · 저장 객체의 current · capture · settle · 설정 행 · 전이표 한 줄 · 이벤트 팩토리 · `storeSignedInSession` 순서 · 비회원 결선 넷 · 스플래시 guest 갈래 | 4,807 / 4,807 |
-| ui | 적용 | `LoginScreen` 비회원 버튼 · `hidden` 미렌더 · 소셜 셋(두 플랫폼) · 요청 중 무동작 · `LoginSocialMethods` `methods` 순회 · **사용 불가 모달 LG-D1 ~ D5**(Facebook 탭 → 모달 · `onSelectSocialMethod` 0회 · 제목에 제공자 이름(버튼 라벨 아님) / 「use-google」 → 닫힘 + `google` 1회 / 「close」 · 뒤로가기 → 닫힘 · 호출 0 / Android Apple 탭 → 모달 · iOS Apple 탭 → 인증 / 요청 중 탭 → 모달 0), `SettingsScreen` 비회원 행 구성 · 「Sign in」 행 · 로그인 사용자 회귀 · **개정 3** LG-D7(`unavailableMethods: []` → facebook 탭 → `onSelectSocialMethod("facebook")` 1회 · 대화상자 0; LG-D 전부 `unavailableMethods` prop으로 — 기본 `["facebook"]` · Android `["apple","facebook"]`) | 2,146 / 2,146 |
-| integration | 적용 | `App.guest-entry*.integration.test.tsx` GE1 ~ GE13 — 비회원 완주(fetch 0 · 저장 키) · 유닛 완료 → 기기 저장 · RPC 0 · 재실행 → 바로 맵 · 설정 행 · 설정 로그인 → 이관 · 세션 · 식별 · `backToRoot` · 서버 합치기 · 재실행 세션 갱신 · 비회원 설문 없음 · **GE13 Facebook 탭 → 모달 · fetch · 인증 창 0 → 「use-google」 → Google 인증 창 1회**(GE1 Android Apple 탭 · GE6 `guest-login`에서 같은 모달). 기존 `App.entry` · `App.returning-login`의 수단 순회 줄은 사용 불가 수단을 제외 · **개정 3** GE14(저장소 `libitum.app-policy` = `{schema, min_build:{}, unavailable_login_methods:{all:[],android:[]}}` → iOS Facebook 탭 → 대화상자 0 · 웹 인증 창 1회(facebook 인자)) · GE14b(정책 있음 · 칸 없음 → 상수 기본 → 대화상자) · GE14c(정책이 `google`을 막으면 Google 탭도 대화상자 — 목록은 정책이 정한다) · GE13은 정책 없음 그대로. test-helpers `content` 옵션(콘텐츠 버킷 파일 서빙 — 정책 refresh가 404로 저장본을 지우는 것을 막음) | 764 / 764 |
-| e2e | 적용(수동) | [비회원 진입 e2e](../e2e/guest-entry.md) GE-E1 ~ E8 — 기기에서만 보는 것: 실제 Android 호스트의 Apple 탭 → 안내 모달(플랫폼 값) · 실기의 Facebook 탭 → 모달 · 「Connect with Google」로 Google 창 · 실제 Google 로그인으로의 이관과 Supabase 행 · 알림 다이얼로그 타이밍 · 네트워크 0건(프록시) · 재설치 뒤 비회원 기록 소멸(의도) · **개정 3** GE-E9(버킷에 `all: []` 정책 업로드 → 완전 종료 · 재실행 → Facebook 탭이 인증 창 · 되돌려 올리면 다시 대화상자) | **미실행** |
+| unit | 적용 | 사용 불가 목록 LG-A1 ~ A6(`unavailableLoginMethods` 기본 입력 iOS · Android 모두 = [facebook] — 개정 4, Android의 Apple 제외 · 어휘 순서 · null 플랫폼 = iOS · 비운 입력 · 입력 불변 · `isLoginMethodUnavailable` · `socialLoginMethods` 셋) · **개정 3** 정책 칸 디코드 AP-U1 ~ U5(`lib/app-policy.unit.test.ts` — 칸 없음 → 필드 없음 · 정상 · object 아님 → 필드 없음 + `min_build` 유지 · 배열 아님 → 그 키만 `[]` · 모르는 이름 · 중복 · 어휘 순서) · 정책 판정 LG-P1 ~ P4(`unavailableLoginMethodsFor` — null 정책 = 상수 · 빈 배열 = 없음 · android 분기 · phone 제외) · **개정 4** 숨김 AP-U6(`hidden_login_methods` 칸 — unavailable과 같은 디코드 규칙) · LG-H1 ~ H3(`hiddenLoginMethodsFor` 기본 = 두 플랫폼 [facebook] · 정책이 정본(빈 배열 = 숨김 없음 · android 목록은 Android만) · `visibleSocialLoginMethodsFor` 기본 [apple, google] · 정책이 열면 셋) · 표식 · `accountStateFrom` · `entryAuthStateFrom` 셋째 갈래 · 연속 규칙 · 합치기 · 이관 · 저장 객체의 current · capture · settle · 설정 행 · 전이표 한 줄 · 이벤트 팩토리 · `storeSignedInSession` 순서 · 비회원 결선 넷 · 스플래시 guest 갈래 | 4,855 / 4,855 |
+| ui | 적용 | `LoginScreen` 비회원 버튼 · `hidden` 미렌더 · 소셜 **둘**(두 플랫폼 — Facebook 기본 숨김, LG-U1 · LG-G2 · **LG-G3** `visibleMethods` 둘 · 셋 · 0 — 개정 4) · 요청 중 무동작 · `LoginSocialMethods` `methods` 순회 · **사용 불가 모달 LG-D1 ~ D5**(Facebook 탭 → 모달 · `onSelectSocialMethod` 0회 · 제목에 제공자 이름(버튼 라벨 아님) / 「use-google」 → 닫힘 + `google` 1회 / 「close」 · 뒤로가기 → 닫힘 · 호출 0 / ~~Android Apple 탭 → 모달~~ ⟨개정 4⟩ LG-D4는 「목록이 apple을 품으면(정책이 Android Apple을 막은 경우) 모달 · 기본값에서는 두 플랫폼 모두 인증」 / 요청 중 탭 → 모달 0), `SettingsScreen` 비회원 행 구성 · 「Sign in」 행 · 로그인 사용자 회귀 · **개정 3** LG-D7(`unavailableMethods: []` → facebook 탭 → `onSelectSocialMethod("facebook")` 1회 · 대화상자 0; LG-D 전부 `unavailableMethods` prop으로 — 기본 `["facebook"]` · Android `["apple","facebook"]`) | 2,146 / 2,146 |
+| integration | 적용 | `App.guest-entry*.integration.test.tsx` GE1 ~ GE15 — GE1(**개정 4** 두 플랫폼 소셜 둘 + 비회원 · Facebook 부재 · Android Apple 탭 → 웹 인증 창 1회) · 비회원 완주(fetch 0 · 저장 키) · 유닛 완료 → 기기 저장 · RPC 0 · 재실행 → 바로 맵 · 설정 행 · 설정 로그인 → 이관 · 세션 · 식별 · `backToRoot` · 서버 합치기 · 재실행 세션 갱신 · 비회원 설문 없음 · **GE13 (정책이 Facebook을 열어 둔 상태) Facebook 탭 → 모달 · fetch · 인증 창 0 → 「use-google」 → Google 인증 창 1회**(GE6 · GE11 `guest-login`에서 같은 모달 — 같은 열어 둔 정책). 기존 `App.entry`(IPH1 — 소셜 **둘**) · `App.returning-login`의 수단 순회 줄은 숨김 · 사용 불가 수단을 제외 · **개정 3** GE14(저장소 `libitum.app-policy` = `{schema, min_build:{}, unavailable_login_methods:{all:[],android:[]}}` → iOS Facebook 탭 → 대화상자 0 · 웹 인증 창 1회(facebook 인자)) · GE14b(정책 있음 · 두 칸 없음 → 상수 기본 → **Facebook 버튼 숨김** — 개정 4) · GE14c(정책이 `google`을 막으면 Google 탭도 대화상자 — 목록은 정책이 정한다) · **개정 4** GE15(정책 파일 없음 → 두 플랫폼 Facebook 숨김 · `hidden_login_methods: { all: [], android: [] }` 정책이 오면 버튼이 돌아온다). test-helpers `content` 옵션(콘텐츠 버킷 파일 서빙 — 정책 refresh가 404로 저장본을 지우는 것을 막음) | 777 / 777 |
+| e2e | 적용(수동) | [비회원 진입 e2e](../e2e/guest-entry.md) GE-E1 ~ E8 — 기기에서만 보는 것: 실기 로그인 화면에 **Facebook 버튼이 없고** 소셜이 둘인가 · 실제 Android 호스트의 Apple 탭 → 웹 OAuth 창(개정 4) · 「Connect with Google」로 Google 창(정책으로 열었을 때) · 실제 Google 로그인으로의 이관과 Supabase 행 · 알림 다이얼로그 타이밍 · 네트워크 0건(프록시) · 재설치 뒤 비회원 기록 소멸(의도) · **개정 3 · 4** GE-E9(버킷에 `hidden.all: []` 정책 업로드 → 완전 종료 · 재실행 → Facebook 버튼이 선다 · `unavailable`에 두면 탭이 모달, 둘에서 지우면 인증 창 · 되돌려 올리면 버튼이 사라진다) | **미실행** |
 
 ## 버린 대안
 
@@ -168,9 +175,11 @@
 7. **비회원 로그인을 App 세션 재시작(`leaveApp`)으로** — 진행 · 알림 · 젬 상태가 처음 값으로 돌아간다. 같은 사람이 계정을 얻는 것이라 재시작이 아니다(D6).
 8. **비회원도 기존 회원 판정(ADR-0069)을 지나기** — 이미 앱 구간이고 언어 선택 · 여정 입장을 다시 지날 자리가 없다. 서버 기록 유무와 무관하게 합치기 규칙(ADR-0062)이 같은 결과를 낸다(D6).
 9. **서버 쪽 비회원 저장**(익명 사용자 · 기기 ID 행) — 서버 · 마이그레이션 변경 0이 제약이고, 기기를 바꾸면 사라지는 것을 의도로 받았다(scope_out).
-10. **수단 숨기기 — 표시 목록에서 Facebook(두 플랫폼) · Apple(Android)을 빼기**(개정 1 · 같은 날 구현 · green까지 갔다). **사용자가 되돌렸다** — 이유: 버튼이 사라지면 Facebook으로 쓰던 사용자에게 아무 설명이 없고, 「이관 중」임을 알리고 Google로 유도하는 쪽이 사용자에게 설명이 된다(D1). 「인증 창 안에서 에러가 난 뒤 모달」도 버렸다 — 앱이 그 실패를 볼 수 없다(맥락 8).
+10. **수단 숨기기 — 표시 목록에서 Facebook(두 플랫폼) · Apple(Android)을 빼기**(개정 1 · 같은 날 구현 · green까지 갔다). 개정 2에서 **사용자가 되돌렸다** — 이유: 버튼이 사라지면 Facebook으로 쓰던 사용자에게 아무 설명이 없고, 「이관 중」임을 알리고 Google로 유도하는 쪽이 사용자에게 설명이 된다(D1). 「인증 창 안에서 에러가 난 뒤 모달」도 버렸다 — 앱이 그 실패를 볼 수 없다(맥락 8). ⟨개정 4⟩ Facebook 숨김은 **다시 채택**됐다(13) — 다만 Android의 Apple은 숨기지 않는다(맥락 10), 숨김 목록은 상수가 아니라 정책 칸이 정본이다.
 11. **수단이 살아난 것을 앱이 자동 감지해 모달을 거두기**(개정 3 검토) — 인증 창 안의 성공 · 실패를 앱이 못 본다(맥락 8). 모달을 띄우는 한 시도 자체가 없어 신호가 생기지 않는다. 사람이 끄는 스위치(정책 파일)만 둔다(D1).
 12. **B — 자동 플립**(서버 정기 작업이 그 수단의 완료 1건을 보고 정책에서 지우기 · 모달에 「그래도 시도」 버튼) — 성공 1건이 나오기 전까지는 A(정책 플래그)와 결과가 같고, 서버 작업 · 버튼 하나가 더 든다. 사용자가 A로 정했다(2026-11-06) — 후속으로 미룬다(scope_out).
+13. **「버튼은 두고 모달만」을 기본으로 유지**(개정 2 · 3의 D1 — 2026-11-06 낮까지의 결정). **사용자가 되돌렸다**(개정 4 「메타 로그인 버튼 숨겨줘」) — 이유: 되는 척하고 서 있는 버튼보다 없는 쪽이 낫다(맥락 11). 모달 코드 · 문구 · 테스트는 지우지 않고 **정책이 열어 둔 수단**의 길로 남긴다 — `hidden`에서 빼고 `unavailable`에 두면 개정 2의 모양이 그대로 돌아온다(GE13).
+14. **Android의 Apple을 계속 숨기거나 막기** — 실기에서 되고(맥락 10) 「완료 0」은 오판이었다. 되는 수단을 막으면 Android 사용자의 로그인 길 하나를 이유 없이 끊는다. 기본값에서 Android 몫은 둘 다 빈 배열이다.
 
 ## 대가
 
@@ -179,20 +188,21 @@
 3. **설정에서 연 로그인 화면(`guest-login`)에서는 전화번호 수단을 켤 수 없다**(D5 — `phoneSignIn` 고정 `hidden`). 전화번호를 되살리는 날 설정 스택용 코드 검증 route가 필요하다.
 4. **비회원 → 사용자 전환 때 맵이 한 렌더 비어 보일 수 있다** [추론] — `use-journey-progress`의 계정 전환 되돌림(`apply(initial)`)이 돌고 바로 뒤 사용자 객체가 옮긴 미전송 칸을 읽어 다시 적용한다. 지금 계정 전환과 같은 성질이다. 통합 GE7에서는 체감되지 않았다.
 5. **비회원 구간의 이벤트는 익명이다** — 전환율은 같은 기기의 `$identify`로만 읽힌다. 앱을 지우고 다시 설치하면 끊긴다(ADR-0029 D8 그대로).
-6. **Facebook으로 가입한 계정이 있다면 지금 로그인 화면에서 들어올 수 없다** [추론] — 2026-10-20 이후 Facebook 완료가 0이라 그 뒤 가입은 없지만, 그 전에 가입한 계정이 있는지는 보지 않았다(「확인 필요」 4). 개정 2로 그 사용자에게는 적어도 「이관 중 · Google로」라는 설명이 선다.
-7. **번들** [실측 — 측정 커밋 bda2be5f, 개정 2 포함]: main 3,915.6 kB(상한 4,060.0 kB — 개정 1 시점 3,910.1에서 모달 컴포넌트 · 훅 · 문구 셋 × 다섯 언어로 +5.5 kB) · ui-lynx 555.6 kB(상한 556.0 kB, 변경 0). 상한을 올리지 않았다. 런타임은 재지 않았다([보고서](../performance/reports/guest-entry-01.md)).
+6. **Facebook으로 가입한 계정이 있다면 지금 로그인 화면에서 들어올 수 없다** [추론] — 2026-10-20 이후 Facebook 완료가 0이라 그 뒤 가입은 없지만, 그 전에 가입한 계정이 있는지는 보지 않았다(「확인 필요」 4). ~~개정 2로 그 사용자에게는 적어도 「이관 중 · Google로」라는 설명이 선다.~~ ⟨개정 4⟩ 버튼이 없으므로 그 설명도 없다 — 그 사용자에게는 Google · Apple · 비회원 길만 보인다. 설명을 보여 주고 싶으면 정책으로 `hidden`에서 빼고 `unavailable`에 두는 중간 상태가 있다(D1).
+7. **번들** [실측 — 측정 커밋 bda2be5f, 개정 2 포함]: main 3,915.6 kB(상한 4,060.0 kB — 개정 1 시점 3,910.1에서 모달 컴포넌트 · 훅 · 문구 셋 × 다섯 언어로 +5.5 kB) · ui-lynx 555.6 kB(상한 556.0 kB, 변경 0). 상한을 올리지 않았다. 런타임은 재지 않았다([보고서](../performance/reports/guest-entry-01.md)). 개정 4(0144b005)는 main **3,963.6 kB**(직전 main 3,962.6에서 +1.0 kB — 정책 칸 하나 · 순수 함수 둘 · prop 하나) · ui-lynx 557.8 / 559.0 kB([별도 보고서](../performance/reports/hide-facebook-login-01.md)).
 8. **문구 다섯 언어는 번역 초안이다**(`login.guest` · `settings.action.sign-in` · 개정 2의 `login.unavailable` 넷). 언어 검수 없음.
-9. **Facebook(두 플랫폼) · Apple(Android) 사용자는 눌러 보고 나서야 안다**(모달 1회) — 버튼이 서 있으니 누르게 되고, 그때 「사용 불가」를 본다. 숨기기(버린 대안 10)보다 탭 한 번이 더 들지만 설명이 선다. 개정 1의 「비회원 길만 보인다」와 달리 Google 유도가 모달 안에 있다.
-10. **정책 파일이 로그인 수단까지 쥔다**(개정 3) — 최소 빌드만 들던 `app-policy.json`에 잘못 올린 배열 하나가 **모든 사용자의 소셜 수단을 다음 실행부터 막을 수 있다**(`all: ["apple","google","facebook"]`이면 셋 다 대화상자 — 전화번호는 숨김이라 로그인 길이 없다). 코드가 막지 않는다 — 통합 GE14c가 「정책이 google을 막으면 Google도 대화상자」를 그대로 보여 준다. 방어는 정책 파일 스펙 「올리는 규칙」 2(배열을 눈으로 본다 · 올린 뒤 받아 본다)와 cacheControl 60초(되돌리면 1분 안에 엣지가 따라온다)뿐이다. 막는 방향의 실수가 치명적인 것은 `min_build`와 같다(ADR-0086 「올리는 규칙」 1).
+9. ~~**Facebook(두 플랫폼) · Apple(Android) 사용자는 눌러 보고 나서야 안다**(모달 1회)~~ ⟨개정 4⟩ 이 대가는 **정책이 Facebook을 열어 두고 `unavailable`에 둔 상태**에만 해당한다. 기본값에서는 반대의 대가다 — **Facebook 사용자는 왜 버튼이 없는지 알 길이 없다**(대가 6). 사용자가 그쪽을 택했다(맥락 11).
+10. **정책 파일이 로그인 수단까지 쥔다**(개정 3 · 4) — 최소 빌드만 들던 `app-policy.json`에 잘못 올린 배열 하나가 **모든 사용자의 소셜 수단을 다음 실행부터 막거나 지울 수 있다**(`unavailable.all: ["apple","google","facebook"]`이면 셋 다 대화상자, `hidden.all`에 셋을 넣으면 소셜 버튼이 **0개** — 전화번호는 숨김이라 비회원 길만 남는다, LG-G3). 코드가 막지 않는다 — 통합 GE14c가 「정책이 google을 막으면 Google도 대화상자」를 그대로 보여 준다. 방어는 정책 파일 스펙 「올리는 규칙」 2(배열을 눈으로 본다 · 올린 뒤 받아 본다)와 cacheControl 60초(되돌리면 1분 안에 엣지가 따라온다)뿐이다. 막는 방향의 실수가 치명적인 것은 `min_build`와 같다(ADR-0086 「올리는 규칙」 1).
+11. **정책 칸이 둘이라 섞어 읽을 수 있다**(개정 4) — `hidden`과 `unavailable`에 같은 이름을 넣거나, 「되살리기」로 `hidden`만 비우고 `unavailable`을 잊으면 버튼은 돌아오는데 탭마다 모달이다. 규칙은 하나다 — **`hidden`이 이기고, `unavailable`은 보이는 버튼에만 판정된다**(D1). 두 칸을 함께 보는 테스트(GE13 · GE14 · GE15)와 정책 파일 스펙의 「되살리기」 표가 그 순서를 적는다. 칸 하나로 합치지 않은 이유는 「버튼은 두되 설명」(개정 2)과 「없음」(개정 4)이 서로 다른 제품 선택이고 사용자가 둘을 번갈아 골랐기 때문이다.
 
 ## 확인 필요
 
-1. ⚠ **[사용자] [추론] 일곱** — 사용자 부재 · 자율 진행으로 채택했다(머리). 특히 **Android의 Apple도 같은 안내**(데이터 95건 · 완료 0 — 별도 상수라 따로 되돌릴 수 있다)와 **알림 미요청**은 사용자 결정이 아니다. 개정 2에서 더해진 [추론] 둘 — **누르는 즉시 모달**(인증 창을 열지 않는다 — 맥락 8) · **모달 문구 네 줄의 영어 정본** — 도 사용자 확인 대상이다. [추론] 첫째(숨기기)는 사용자가 되돌렸다(버린 대안 10).
+1. ⚠ **[사용자] [추론] 일곱** — 사용자 부재 · 자율 진행으로 채택했다(머리). ~~특히 **Android의 Apple도 같은 안내**(데이터 95건 · 완료 0 — 별도 상수라 따로 되돌릴 수 있다)~~ ⟨개정 4⟩ 이 추론은 사용자가 실기로 **정정**했다(맥락 10 — 「완료 0」을 「안 된다」로 읽은 오판) · **알림 미요청**은 여전히 사용자 결정이 아니다. 개정 2에서 더해진 [추론] 둘 — **누르는 즉시 모달**(인증 창을 열지 않는다 — 맥락 8) · **모달 문구 네 줄의 영어 정본** — 도 사용자 확인 대상이다. [추론] 첫째(숨기기)는 사용자가 되돌렸다(버린 대안 10).
 2. ⚠ **[사용자] 로그인 성공 뒤 복귀 자리 = 설정 루트**(D6 ⑤). 요구사항은 「설정(또는 맵)」이었다 — 맵을 원하면 한 줄(버린 대안 6).
 3. **토큰에 `sub`가 없는 세션**(D6 ①)은 비회원 칸을 옮기지 않고 남긴다(표식은 지운다). 실제 Supabase 토큰에는 `sub`가 늘 있어 관찰되지 않는 경우다 [추론].
 4. **Facebook으로 가입한 기존 계정 수**(대가 6) — PostHog · Supabase `auth.users`의 `provider`로 확인할 수 있다. 있으면 그 사용자에게 수단이 없다.
 5. **통합 테스트가 전제한 둘**(GE9 · GE7, integration-design 보고) — 로그인 뒤 `libitum.learner-profile.guest` 칸이 지워진다는 가정(`createLearnerProfileSync`의 손님 칸 처리 — 코드 그대로) · 설정 로그인 성공 뒤 `register_push_device` **1회** 전제. 기기 회차(GE-E6 · GE-E7)가 본다.
-6. **실제 Android 호스트가 `appVersion.platform = "android"`를 준다는 것**(D1) — 테스트는 값을 넣어 줄 뿐이다. GE-E2가 본다(Apple 탭이 모달이면 값이 왔고, 인증 창이면 `null`이다).
+6. **실제 Android 호스트가 `appVersion.platform = "android"`를 준다는 것**(D1) — 테스트는 값을 넣어 줄 뿐이다. ~~GE-E2가 본다(Apple 탭이 모달이면 값이 왔고, 인증 창이면 `null`이다)~~ ⟨개정 4⟩ 기본값에서 Android 몫이 비어 있어 **로그인 화면으로는 더 구별할 수 없다** — 정책 `android` 배열에 이름을 넣은 테스트 버킷 회차(GE-E9 변형)나 설정의 버전 줄(ADR-0086 D2 — `platform`이 보인다)로 본다.
 7. **문구 「Sign in」** — 계약 표 원안은 "Log in"이었고 ui-scaffold가 기존 「Sign out」과 짝으로 "Sign in"으로 정정했다(2026-11-06). 영어 정본 확정은 사용자 몫.
 8. **계약과 코드가 다른 작은 점**(구현 보고 — 결정은 바꾸지 않는다): 새 CSS 규칙 1 → **0**(디자인 판정 「부모 gap만」 — 규칙을 두지 않았다) · `EntryWiringArgs`의 새 필드 둘은 scaffold에서 optional이었다가 integration에서 필수화 ·
    `use-account-actions`가 대화상자가 열리지 않는 `sign-in` 효과에서 `onLayerChange`를 부르지 않는다(공용 `useScreenLayer` 불변) · 분석 이벤트 이름 수는 계약 문서의 47이 아니라 **46**이다 [코드 — `analytics-event-names.ts`](변경 0은 같다) ·
@@ -202,16 +212,19 @@
 10. **안내 모달 노출을 재지 않는다**(D1 · 개정 2 scope_out) — 사용 불가 수단의 탭은 `entry_login_method_selected`를 내지 않고 새 이벤트도 없다(이벤트 이름 수 46 불변). 그래서 「Facebook을 누른 사람이 몇이고 그중 몇이 Google로 갔나」는 지금 읽을 수 없다 — 로그인 화면 → `method: "google"` 비율의 변화로 간접 추정만 가능하다. 재고 싶으면 이벤트 이름 하나(또는 `method` 값)가 필요하고, 그것은 ADR-0029 D14의 어휘 변경이다.
 
 11. **접근성 후속(개정 2 점검 R4 · R5 · R6)** — ui 테스트 LG-D에 본문 가림 `true/false` · 액션 라벨 · traits · 「Connect with Google」 뒤 Google 버튼 `loading` 발화 단언이 없다(지금 트리에서 전부 참 — 회귀 가드만 비어 있다). 모달 열림 · 전이 뒤 초점과 최대 배율의 세로 넘침은 기기 몫([e2e](../e2e/guest-entry.md) GE-A6 · A7). Dialog 열림 발화 0 · 초점 이동 0은 이 앱의 Dialog 사용처 전부와 같은 규칙이라 ADR-0016 D8 적용 기록 한 줄이 남아 있다.
-12. **버킷에 `app-policy.json`이 없다**(2026-11-06 `storage.objects` 조회 — ADR-0086 「후속」의 첫 업로드가 아직) — 개정 3의 정책 경로는 코드 · 테스트로만 확인됐고 **지금 사용자에게 적용되는 것은 상수 기본값**이다. 첫 업로드(지금 기본값을 그대로 적은 파일 — 정책 파일 스펙 「되살리기」)는 사용자 몫. 자동 플립 B(버린 대안 12)는 후속이고, 정책 즉시 재조회도 하지 않았다(다음 실행부터 — 켜 둔 앱은 바뀌지 않는다).
+12. **버킷에 `app-policy.json`이 없다**(2026-11-06 `storage.objects` 조회 — ADR-0086 「후속」의 첫 업로드가 아직 · 개정 4 시점에도 그대로) — 개정 3 · 4의 정책 경로는 코드 · 테스트로만 확인됐고 **지금 사용자에게 적용되는 것은 상수 기본값**(Facebook 숨김 · Android Apple 됨)이다. 첫 업로드(지금 기본값을 그대로 적은 파일 — 정책 파일 스펙 「되살리기」)는 사용자 몫. 자동 플립 B(버린 대안 12)는 후속이고, 정책 즉시 재조회도 하지 않았다(다음 실행부터 — 켜 둔 앱은 바뀌지 않는다).
+13. **Android Apple의 Services ID `com.libitum.host.web`는 누가 언제 Supabase Apple 제공자에 넣었나**(개정 4) — 이 저장소의 기록([ADR-0028](0028-social-oauth-web-authentication.md) 「남음」 · [ADR-0039](0039-android-social-oauth.md))에는 「필요하다」만 있고 설정한 날짜 · 사람이 없다. 차등 테스트는 **있다**는 것만 보여 준다. 사용자가 기록을 남겨 주면 ADR-0039 적용 기록에 적는다 — 그래야 다음에 「완료 0」 같은 수치를 다시 오판하지 않는다.
+14. **「완료 0 = 죽은 버튼」을 다시 쓰지 않기 위한 확인 절차**(개정 4 교훈) — 수단이 죽었다고 적기 전에 ① 제공자 authorize 요청을 실제 `client_id`로 보내 응답(로그인 폼 vs `invalid_client` · `provider_disabled`)을 본다 ② 실기 1회. PostHog 시작 · 완료 수는 **보조 증거**다(사용자가 창을 닫은 것과 서버가 거절한 것을 구별하지 못한다).
 
 ## 재검토 조건
 
-1. **Meta 앱이 게시되면** → D1. 버킷 `app-policy.json`의 `unavailable_login_methods.all`에서 `facebook`을 지우고 다시 올린다(**앱 배포 없음** — 개정 3) — 다음 실행부터 모달이 사라지고 Facebook 탭이 인증 창을 연다. 실기에서 Facebook 완료 1건을 본 뒤 지운다 — 절차는 [정책 파일 스펙 「되살리기」](../specs/app-update-policy.md) · ADR README 보류 표 「Facebook · Android Apple 로그인 수단 되살리기」 · 기기 확인 GE-E9. 파일이 아직 없으면 먼저 첫 업로드(확인 필요 12). 상수 `productUnavailableLoginMethods`를 비우는 것은 그 뒤 앱 배포에 실을 정리다.
-2. **Supabase Apple 제공자에 Services ID가 설정되면** → D1. 같은 파일의 `unavailable_login_methods.android`에서 `apple`을 지운다(앱 배포 없음). ADR-0039의 Android Apple 웹 OAuth 절차(e2e)가 다시 돈다.
+1. **Meta 앱이 게시되면** → D1. 버킷 `app-policy.json`의 `hidden_login_methods.all`에서 `facebook`을 지우고(개정 4 — 버튼이 돌아온다), `unavailable_login_methods.all`에서도 지우고(탭이 모달이 아니라 인증 창) 다시 올린다(**앱 배포 없음** — 개정 3) — 다음 실행부터. 설명을 먼저 보여 주고 싶으면 `hidden`만 비우는 중간 단계를 거친다(버튼은 서고 탭은 「이관 중」 모달). 실기에서 Facebook 완료 1건을 본 뒤 `unavailable`에서 지운다 — 절차는 [정책 파일 스펙 「되살리기」](../specs/app-update-policy.md) · ADR README 보류 표 「Facebook 로그인 수단 되살리기」 · 기기 확인 GE-E9. 파일이 아직 없으면 먼저 첫 업로드(확인 필요 12). 상수 `productHiddenLoginMethods` · `productUnavailableLoginMethods`를 비우는 것은 그 뒤 앱 배포에 실을 정리다.
+2. ~~**Supabase Apple 제공자에 Services ID가 설정되면** → D1. 같은 파일의 `unavailable_login_methods.android`에서 `apple`을 지운다(앱 배포 없음). ADR-0039의 Android Apple 웹 OAuth 절차(e2e)가 다시 돈다.~~ ⟨개정 4 · 2026-11-06⟩ **닫혔다** — Services ID는 이미 있고 Android의 Apple은 실기에서 된다(맥락 10). 기본값의 Android 몫은 비어 있다. 다시 열리는 조건: Android 실기에서 Apple 웹 OAuth가 `invalid_client` 꼴로 실제 거절될 때 — 그때는 정책 `unavailable_login_methods.android`에 `apple`을 넣어 올린다(앱 배포 0).
 3. **수단이 돌아온 뒤 비회원 진입을 유지할지** → D2 ~ D6. 비회원 선택 비율 · 전환율 · 첫 유닛 완료율(D8)로 정한다. 걷으면 `guestSignIn: "hidden"` 한 줄로 버튼이 사라지고, 표식이 남은 설치는 D2 갈래로 계속 맵에 들어간다 — 그 설치의 처리를 그때 정한다.
 4. **전화번호 수단을 되살릴 때** → D5. `guest-login`의 `phoneSignIn` 고정 `hidden`과 설정 스택용 코드 검증 route를 함께 본다(대가 3).
 5. **「기록 지우기」 · 비회원 계정 삭제 요구가 오면** → D2 · D4. 표식 · `pending.guest` 둘 · 손님 프로필 칸을 지우는 설정 행이 필요하다(ADR-0059 재검토 조건 4와 같은 날).
 6. **기기 변경 때 비회원 기록 소실의 불만이 쌓이면** → 버린 대안 9(서버 쪽 비회원 저장)를 다시 본다 — 서버 · 마이그레이션이 필요하다.
 7. **로그인 성공 뒤 복귀 자리를 맵으로 바꾸라는 결정이 오면** → D6 ⑤. 한 줄(버린 대안 6).
 8. **GE-E1 ~ E8 첫 회차가 돌면** → 「확인 필요」 5 · 6을 닫고, 다르면 해당 D를 정정 기록한다.
+10. **사용자가 Facebook 버튼을 「이관 중」 설명과 함께 다시 세우고 싶어지면** → D1 중간 상태. 정책 `hidden.all`에서 `facebook`을 빼고 `unavailable.all`에 둔다(앱 배포 0) — 개정 2의 모양이 돌아온다. 코드 변경 0.
 9. **되살린 수단의 완료가 쌓이고 자동 플립이 필요해지면** → 버린 대안 12(B). 서버 정기 작업이 그 수단의 완료를 보고 정책 배열에서 지우는 길 — 서버 코드가 생기므로 새 ADR이다.

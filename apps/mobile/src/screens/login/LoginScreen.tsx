@@ -23,7 +23,6 @@ import {
   loginStatusAfterEdit,
   loginStatusAfterSocialOutcome,
   phoneNumberFrom,
-  socialLoginMethods,
   type LoginCountry,
 } from "./login";
 import { loginCountries } from "./login-countries";
@@ -45,6 +44,7 @@ import "./login-screen.css";
 
 export function LoginScreen({
   phoneSignIn,
+  visibleMethods,
   unavailableMethods,
   guestSignIn,
   onContinueAsGuest,
@@ -245,7 +245,7 @@ export function LoginScreen({
             ) : null}
 
             <LoginSocialMethods
-              methods={socialLoginMethods}
+              methods={visibleMethods}
               status={status}
               onSelect={unavailable.tap}
             />

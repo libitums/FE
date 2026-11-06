@@ -4,7 +4,7 @@
 
 - 상태: 미측정 — 렌더링 · 메모리 · 프레임 캡처를 돌리지 않았습니다.
 - 기능 PR: 로그인 화면에서 Facebook(두 플랫폼) · Apple(Android)을 누르면 인증 창 대신 「사용 불가 안내」 대화상자를 띄우고(개정 2 — 버튼은 숨기지 않습니다), 「Continue without an account」로 계정 없이 ① 이름 → ② 나라 → 언어 선택 → 여정 입장 → 맵까지 서버 요청 0건으로 들어가며, 진행 · 학습일을 기기에만 적고, 설정 「Sign in」으로 로그인하면 기기 기록을 그 계정의 미전송 칸으로 옮겨 올립니다 — ADR-0111(임시).
-- 대상 commit: `feat/guest-entry` bda2be5f(개정 2 — 사용 불가 안내 대화상자까지 든 커밋, `pnpm verify` 안의 `size:check`로 잼). 개정 1 시점(15c2195d)은 main 3,910.1 kB였고, 개정 2의 새 컴포넌트 · 훅 · 문구 셋 × 다섯 언어로 **+5.5 kB**다. 개정 3(정책 칸 · 결선) 포함 재측정: main **3,961.6 kB**(상한 4,060.0 — 여유 98.4 kB) · ui-lynx 557.8 / 559.0 kB(`pnpm verify`, HEAD b6964c92).
+- 대상 commit: `feat/guest-entry` bda2be5f(개정 2 — 사용 불가 안내 대화상자까지 든 커밋, `pnpm verify` 안의 `size:check`로 잼). 개정 1 시점(15c2195d)은 main 3,910.1 kB였고, 개정 2의 새 컴포넌트 · 훅 · 문구 셋 × 다섯 언어로 **+5.5 kB**다. 개정 3(정책 칸 · 결선) 포함 재측정: main **3,961.6 kB**(상한 4,060.0 — 여유 98.4 kB) · ui-lynx 557.8 / 559.0 kB(`pnpm verify`, HEAD b6964c92). 개정 4(Facebook 버튼 숨김 기본 · 정책 칸 `hidden_login_methods` · `visibleMethods` prop · Android Apple 사용 불가 제외)는 별도 보고서 [hide-facebook-login-01](hide-facebook-login-01.md)에 있다 — main **3,963.6 kB**(직전 main 3,962.6에서 +1.0 kB) · ui-lynx 557.8 / 559.0 kB.
 - 기기: 측정 기기 없음.
 - OS: 해당 없음
 - Lynx SDK: 4.0.1

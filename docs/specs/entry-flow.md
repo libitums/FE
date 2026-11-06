@@ -65,9 +65,9 @@
 > 화면 · props · testid · `NavAction` · 리듀서는 바뀌지 않았다. 바뀐 자리는 §0의 3 · 6, §3 표의 두 성공 행과 새 행, §4 ⭐ 대가, §5 머리, §6 표, §8이다.
 > **어긋나는 줄은 이 개정이 이긴다.**
 
-> **개정 (2026-11-06) — Facebook(두 플랫폼) · Apple(Android)은 버튼은 그대로 두고 누르면 인증 창 대신 「사용 불가 안내」 모달을 띄우며(같은 날 아침의 「표시 목록 제외」는 사용자가 되돌렸다 — 개정 2), 로그인 화면에 「비회원으로 계속」이 섰다.** 결정과 근거는
-> [ADR-0111](../adr/0111-guest-entry-without-account.md)(**채택 — 임시**, 재검토 = Meta 앱 게시 · Apple Services ID)이 진다. 사용 불가 판정은 `screens/login/login.ts`의
-> 순수 함수 `unavailableLoginMethodsFor(platform, policy)` 한 곳이고(**개정 3** — 정본은 기기에 저장된 앱 정책 `app-policy.json`의 선택 칸 `unavailable_login_methods`, 정책이나 칸이 없으면 상수 `productUnavailableLoginMethods` · `androidUnavailableLoginMethods`가 기본값 — [정책 파일 스펙](app-update-policy.md)), 사용 불가 수단의 탭은 결선에 닿지 않아(`onSelectSocialMethod` 0회 · 이벤트 0) 아래 §3 표의 소셜 행은 **사용 가능한 수단에만** 적용된다. `EntryLoginMethod` 넷 · 어휘 순서 · 소셜 교환은 바뀌지 않았다. 계약 타입이 하나 늘었다 —
+> **개정 (2026-11-06) — Facebook 버튼은 두 플랫폼에서 숨기고(개정 4 — 사용자 「메타 로그인 버튼 숨겨줘」; 개정 2의 「버튼은 두고 모달」은 정책이 열어 둔 수단의 중간 상태로 남는다), 로그인 화면에 「비회원으로 계속」이 섰다. Android의 Apple은 웹 OAuth 그대로다(개정 4 정정).** 결정과 근거는
+> [ADR-0111](../adr/0111-guest-entry-without-account.md)(**채택 — 임시**, 재검토 = Meta 앱 게시)이 진다. 숨김 · 사용 불가 판정은 `screens/login/login.ts`의
+> 순수 함수 `hiddenLoginMethodsFor` · `visibleSocialLoginMethodsFor` · `unavailableLoginMethodsFor(platform, policy)` 한 곳이고(**개정 3 · 4** — 정본은 기기에 저장된 앱 정책 `app-policy.json`의 선택 칸 둘 `hidden_login_methods` · `unavailable_login_methods`, 정책이나 칸이 없으면 상수 `productHiddenLoginMethods = ["facebook"]` · `productUnavailableLoginMethods` · Android 몫 `[]`가 기본값 — [정책 파일 스펙](app-update-policy.md)), 숨긴 수단은 버튼이 없고 사용 불가 수단의 탭은 결선에 닿지 않아(`onSelectSocialMethod` 0회 · 이벤트 0) 아래 §3 표의 소셜 행은 **보이고 사용 가능한 수단에만** 적용된다. `EntryLoginMethod` 넷 · 어휘 순서 · 소셜 교환은 바뀌지 않았다. 계약 타입이 하나 늘었다 —
 > `lib/guest-session.ts`(기기 표식 `libitum.auth.guest` · `AccountState = signed-out | guest | signed-in`). `EntryAuthState`에 셋째 갈래 `guest`(세션 없음 + 표식 — 스플래시가 갱신 없이 `enterApp`),
 > `EntryLoginMethodSelectedEvent.method`가 `EntryLoginChoice = EntryLoginMethod | "guest"`로 넓어졌다(이벤트 이름 0 추가). 세션 저장은 `entry-wiring`의 `storeSession`이 아니라 새 `app/store-session.ts`의
 > `storeSignedInSession`(부팅 갱신 · 소셜 · 코드 검증 · 비회원 로그인 넷이 부른다 — 저장 → 표식 삭제 → 계정 상태 → 진행 동기화 → 식별)이다. 비회원 결선은 새 `app/guest-wiring.ts`, 설정에서 여는 로그인 화면은

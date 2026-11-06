@@ -22,18 +22,21 @@ afterEach(() => {
 
 const dialog = "login-screen-unavailable-dialog";
 
-function policyWith(unavailable: unknown): string {
+/** 정책 파일 본문 — `hidden`을 안 주면 Facebook 버튼을 **연다**(숨김 목록 비움). 기본값(파일 없음)은 숨김이다(개정 4). */
+function policyWith(unavailable?: unknown, hidden: unknown = { all: [], android: [] }): string {
   return JSON.stringify({
     schema: "app-policy-1",
     min_build: {},
-    unavailable_login_methods: unavailable,
+    ...(unavailable === undefined ? {} : { unavailable_login_methods: unavailable }),
+    hidden_login_methods: hidden,
   });
 }
+const openFacebook = { "app-policy.json": policyWith() };
 
 async function openFacebookDialog(
-  content?: Readonly<Record<string, string>>,
+  content: Readonly<Record<string, string>> = openFacebook,
 ): Promise<ReturnType<typeof installGuestHost>> {
-  const host = installGuestHost(content === undefined ? {} : { content });
+  const host = installGuestHost({ content });
   await renderGuestApp(host, { platform: "ios" });
   completeOnboarding();
   tapButtonIn("login-screen-method-facebook");
@@ -41,7 +44,7 @@ async function openFacebookDialog(
   return host;
 }
 
-test("[GE13] Facebook을 탭하면 안내 대화상자가 서고 요청 · 웹 인증 창이 0이며, 「Google로 계속」은 대화상자를 닫고 Google 웹 인증 창을 한 번 시작한다", async () => {
+test("[GE13] (정책이 Facebook 버튼을 연 상태) Facebook을 탭하면 안내 대화상자가 서고 요청 · 웹 인증 창이 0이며, 「Google로 계속」은 대화상자를 닫고 Google 웹 인증 창을 한 번 시작한다", async () => {
   const host = await openFacebookDialog();
 
   expect(present(dialog)).toBe(true);
@@ -84,13 +87,32 @@ test("[GE14] 저장된 앱 정책이 사용 불가 목록을 비우면 Facebook 
   expect(JSON.stringify(host.webStarts[0])).toContain("facebook");
 });
 
-test("[GE14b] 정책 파일이 있어도 그 칸이 없으면 기본값(상수)대로 Facebook은 대화상자다", async () => {
-  const host = await openFacebookDialog({
-    "app-policy.json": JSON.stringify({ schema: "app-policy-1", min_build: {} }),
+test("[GE14b] 정책 파일이 있어도 두 칸이 없으면 기본값(상수)대로 — Facebook 버튼은 숨김이다", async () => {
+  const host = installGuestHost({
+    content: { "app-policy.json": JSON.stringify({ schema: "app-policy-1", min_build: {} }) },
   });
+  await renderGuestApp(host, { platform: "ios" });
+  completeOnboarding();
 
-  expect(present(dialog)).toBe(true);
+  expect(present("login-screen-method-facebook")).toBe(false);
+  expect(present("login-screen-method-apple")).toBe(true);
+  expect(present(dialog)).toBe(false);
   expect(host.webStarts).toEqual([]);
+});
+
+test("[GE15] 정책 파일이 없으면(기본값) Facebook 버튼이 두 플랫폼에서 숨김이고, hidden_login_methods를 비운 정책이 오면 버튼이 돌아온다", async () => {
+  const bare = installGuestHost();
+  await renderGuestApp(bare, { platform: "android" });
+  completeOnboarding();
+  expect(present("login-screen-method-facebook")).toBe(false);
+  expect(present("login-screen-method-google")).toBe(true);
+
+  cleanup();
+  resetGuestHost();
+  const opened = installGuestHost({ content: openFacebook });
+  await renderGuestApp(opened, { platform: "android" });
+  completeOnboarding();
+  expect(present("login-screen-method-facebook")).toBe(true);
 });
 
 test("[GE14c] 정책이 Google을 막으면 Google 탭도 같은 대화상자다 — 목록은 정책이 정한다", async () => {
