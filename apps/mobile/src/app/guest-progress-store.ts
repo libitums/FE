@@ -105,7 +105,9 @@ export function createGuestLearningDayStore(
         return Promise.resolve();
       }
       const days = readPendingLearningDays(guestProgressId);
-      const next = days.includes(day) ? days : [...days, day].sort();
+      // 같은 날의 두 번째 기록은 쓰기 · 상태 갱신 없이 끝낸다(연속 수가 바뀌지 않는다 — PR #392 리뷰).
+      if (days.includes(day)) return Promise.resolve();
+      const next = [...days, day].sort();
       writePendingLearningDays(guestProgressId, next);
       apply(streakNow(next), true);
       return Promise.resolve();
