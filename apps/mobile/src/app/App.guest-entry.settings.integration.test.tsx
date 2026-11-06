@@ -41,9 +41,10 @@ const guestStore = (): Map<string, string> =>
 const navigatorItems = (): HTMLElement[] =>
   screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/);
 const settingsId = (id: string): string => `ui-lynx-settings-group-item-${id}`;
-// 학습 묶음(보기 로마자 토글 — ADR-0108)은 기기 설정이라 비회원 · 로그인 사용자 모두에게 선다.
+// 학습 묶음(보기 로마자 — ADR-0108 · 진동 — ADR-0109 D4 토글)은 기기 설정이라 비회원 · 로그인 사용자 모두에게 선다.
 const guestRows = [
   "show-choice-romanization",
+  "vibration",
   "profile",
   "learner-profile",
   "language",
@@ -74,6 +75,7 @@ test("[GE5b] 로그인 사용자의 설정은 그대로 여덟 항목과 계정 
   expect(settingsItemIds()).toEqual(
     [
       "show-choice-romanization",
+      "vibration",
       "profile",
       "learner-profile",
       "language",

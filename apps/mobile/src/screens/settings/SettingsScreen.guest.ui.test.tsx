@@ -53,6 +53,7 @@ test("[ST3] guest면 계정 묶음 여섯과 로그인 행 하나만 서고 라�
   expect(itemTestIds()).toEqual([
     // 학습 묶음(보기 로마자 토글 — ADR-0108)은 비회원에게도 선다(기기 설정).
     "ui-lynx-settings-group-item-show-choice-romanization",
+    "ui-lynx-settings-group-item-vibration",
     ...settingsNavTargetsFor("guest").map((target) => `ui-lynx-settings-group-item-${target}`),
     "ui-lynx-settings-group-item-sign-in",
   ]);
