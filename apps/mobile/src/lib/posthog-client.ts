@@ -19,6 +19,7 @@ import { analyticsConfig } from "./analytics-config";
 import { getItem, removeItem, setItem } from "./storage";
 import { analyticsEventSinksFrom, noAnalyticsSession } from "./analytics-events";
 import { readNetworkProperties } from "./network-status";
+import { readAppVersionProperties } from "./app-version-properties";
 
 export const postHogCoreVersion = "1.55.2" as const;
 
@@ -215,19 +216,44 @@ export const createAnalyticsSession: CreateAnalyticsSession = (config, transport
     return noAnalyticsSession;
   }
   const client = new LynxPostHogClient(config, transport);
-  // 이벤트마다 그때의 연결 종류를 싣습니다(ADR-0096 D2). `register`는 비동기라 쓰지 않습니다 — 읽기는 던지지 않고
-  // 모르면 `unknown`입니다.
+  // 이벤트마다 그때의 앱 버전 셋(ADR-0110 D1)과 연결 종류(ADR-0096 D2)를 싣습니다. capture마다 펼치는 것이 정본이고
+  // (`register`는 비동기라 첫 이벤트를 보장하지 않습니다), 버전 셋은 등록 속성으로도 걸어 SDK가 스스로 만드는
+  // `$identify` · `$set` 이벤트에도 실리게 합니다(실행 중 바뀌지 않는 값입니다). 자동 속성이 앞, 이벤트 필드가
+  // 뒤입니다 — 이벤트 필드가 이깁니다(`app_update_required_shown`의 `platform`).
+  client.register(readAppVersionProperties());
+  // 식별은 같은 셋을 사람 속성으로 보냅니다(ADR-0110 D2) — 세션을 저장할 때마다 불리므로 앱 업데이트 뒤 첫 온라인
+  // 실행에서 재로그인 없이 갱신됩니다. 마지막 값이 이깁니다. 모르는 값(`unknown`)은 보내지 않습니다 — 버전을 모르는
+  // 호스트(Explorer · 개발 호스트)의 로그인이 실제 값을 덮어쓰지 않게. 사람 속성의 `appBuild`는 숫자입니다 —
+  // 코호트가 빌드 번호를 크기로 비교할 수 있게(이벤트 속성은 계약상 문자열).
+  const identifyWithAppVersion = (distinctId: string) => {
+    const version = readAppVersionProperties();
+    if (version.platform === "unknown") {
+      client.identify(distinctId);
+      return;
+    }
+    client.identify(distinctId, {
+      $set: {
+        platform: version.platform,
+        appVersion: version.appVersion,
+        appBuild: Number(version.appBuild),
+      },
+    });
+  };
   const capturing: AnalyticsCaptureClient = {
     capture: (event, properties) =>
-      client.capture(event, { ...properties, ...readNetworkProperties() }),
-    identify: (distinctId) => client.identify(distinctId),
+      client.capture(event, {
+        ...readAppVersionProperties(),
+        ...readNetworkProperties(),
+        ...properties,
+      }),
+    identify: identifyWithAppVersion,
   };
   return {
     sinks: analyticsEventSinksFrom(capturing),
     user: {
       identify: (userId) => {
         try {
-          client.identify(userId);
+          identifyWithAppVersion(userId);
         } catch {
           // 식별 실패는 화면에 드러내지 않습니다.
         }
@@ -239,8 +265,8 @@ export const createAnalyticsSession: CreateAnalyticsSession = (config, transport
             client.discardQueue();
           }
           client.reset();
-          // reset이 등록 속성을 지우므로 D13 속성을 다시 겁니다.
-          client.register({ environment: config.environment });
+          // reset이 등록 속성을 지우므로 D13 속성과 버전 셋을 다시 겁니다.
+          client.register({ environment: config.environment, ...readAppVersionProperties() });
         } catch {
           // 되돌리기 실패는 화면에 드러내지 않습니다.
         }
