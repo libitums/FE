@@ -6,6 +6,7 @@
 - 날짜: 2026-10-27.
 - 다루는 축: 앱이 자기 버전을 아는 길 · 설정의 표시 · 「이 빌드보다 낮으면 못 쓴다」를 운영자가 켜는 자리 · 앱이 그것을 읽고 막는 때와 화면 · 스토어로 보내는 호스트 접점 · 측정.
   **다루지 않는 것**: Play In-App Updates(즉시 갱신 API) · 선택(soft) 업데이트 · 설정의 「업데이트 확인」 행 · 버전을 분석 사용자 속성으로 싣기.
+  ⟨2026-11-06⟩ 마지막 항목(분석 속성)은 [ADR-0110](0110-app-version-in-analytics.md)이 채웠다 — 아래 「적용 기록」.
 
 ## 맥락
 
@@ -74,3 +75,7 @@ Android `versionCode` 6 · iOS 빌드 11까지 올렸지만(#320) 옛 빌드를 
 ## 후속
 
 - Apple App ID 채우기(D5) · `app-policy.json` 첫 업로드(사용자) · 기기 확인([e2e](../e2e/app-update.md)) · PostHog 이벤트 사전(wiki)에 `app_update_required_shown` 추가.
+
+## 적용 기록
+
+- ⟨2026-11-06 — 적용 기록이고 결정을 바꾸지 않는다⟩ **「다루지 않는 것」의 「버전을 분석 사용자 속성으로 싣기」가 [ADR-0110](0110-app-version-in-analytics.md)으로 채워졌다.** globalProps `appVersion`의 **둘째 소비자**가 생겼다 — `lib/app-version-properties.ts`가 background 스레드에서 `lynx.__globalProps`를 `appVersionFrom`에 넘겨 모든 PostHog 이벤트의 `platform` · `appVersion` · `appBuild`와 `identify`의 사람 속성으로 싣는다(모르면 셋 모두 `unknown`). D1의 모양(`{ platform, name, build }`) · 보내는 시점 · `appVersionFrom` 자체는 변경 0이고, D2의 설정 줄과 PostHog 속성은 한 값의 두 표현이다(줄이 없으면 `unknown`). D6의 `app_update_required_shown.platform`은 자동 속성과 같은 이름 · 같은 값인데, 펼침 순서를 「이벤트 필드가 이김」으로 고정했으므로 이 이벤트의 모양은 그대로다. 「대가」 4의 「버전을 모르는 호스트」는 분석에서도 같다 — 이 결정 이전 빌드의 이벤트에는 속성이 없고(`unknown`이 아니라 없음), 그것이 곧 옛 빌드 잔존의 다른 읽기다.

@@ -149,6 +149,12 @@ const analytics = __BACKGROUND__ ? productAnalyticsSession() : noAnalyticsSessio
     `analyticsIdentify`에서 `analyticsUser`로 같은 자리에서 바뀌었다. reset이 던져도 뒤처리는 계속된다(D11).
   - 검증: unit `auth-user-id`(UI1–UI3) · integration `App.entry` ID1–ID5 · `App.analytics`
     IA-ID1–IA-ID2.
+- ⟨2026-11-06 — 적용 기록이고 결정을 바꾸지 않는다⟩ **`identify`가 이제 사람 속성을 함께 보낸다.** 어댑터가
+  `client.identify(userId, { $set: { platform, appVersion, appBuild } })`를 보낸다([ADR-0110](0110-app-version-in-analytics.md) D2 — 모르면 `$set` 없음, 사람 속성 `appBuild`는 숫자).
+  `$set` 객체는 어댑터 안에서만 만들어지고 `AnalyticsUser.identify(userId)` 계약 · 부르는 자리(`storeSession` 셋 —
+  소셜 로그인 · 전화 코드 검증 · 부팅 세션 갱신)는 그대로다. 부팅 세션 갱신이 식별을 다시 하므로 앱 업데이트 뒤
+  첫 온라인 실행에서 재로그인 없이 새 값으로 바뀐다 — 마지막 값이 이긴다. 영속 속성이 메모리뿐이라는 이 D8의
+  성질 때문에 실행마다 첫 식별은 `$identify` + `$set` 경로다. `identified_only`라 익명 구간에는 붙지 않는다.
 
 ### D9. 끄는 것
 
@@ -160,6 +166,13 @@ feature flag(`preloadFeatureFlags: false` · `disableRemoteFeatureFlags: true` �
 `$process_person_profile` · `$is_identified` · `$geoip_disable` 여섯뿐이다 — 기기 모델 · OS 버전은
 없다. 앱이 모든 이벤트에 더하는 속성은 `environment` 하나다(D13).
 ⟨2026-09-30 — **GeoIP는 켰다**(D15). `disableGeoip: false`이고 `$geoip_disable`는 더는 붙지 않는다⟩
+⟨2026-11-06 — 적용 기록이고 결정을 바꾸지 않는다⟩ **「앱이 모든 이벤트에 더하는 속성은 `environment` 하나다」는 더
+참이 아니다.** [ADR-0096](0096-network-type-in-analytics.md) D2의 `network` · `networkCost`와
+[ADR-0110](0110-app-version-in-analytics.md) D1의 `platform` · `appVersion` · `appBuild`가 더해져 **여섯**이다 —
+`environment`만 `register`(D13)이고 나머지 다섯은 capture마다 읽어 본문에 펼친다. 펼침 순서는 **자동 속성이 앞,
+이벤트 필드가 뒤** — 이벤트 필드가 이긴다(`app_update_required_shown.platform`). 「기기 모델 · OS 버전은 없다」는
+그대로지만 플랫폼 · 앱 버전은 이제 있다(「대가」 4). GitHub wiki 이벤트 사전의 「공통 속성」 절은 저장소 밖이라
+따로 고친다(ADR-0110 「출시 전 확인」).
 
 ### D10. 전송 해석 — `globalThis.fetch` → 맨 식별자 `lynx.fetch` → `null`, 호출마다
 
@@ -459,6 +472,7 @@ sink는 던지지 않는다 — 매핑 · `capture`를 `try`로 감싸 삼킨다
 3. **오프라인 재시도는 다섯 번(합 약 8분)으로 끝난다**(D12) — 그 뒤는 다음 이벤트나 다음 실행을
    기다린다. 대기열이 200건을 넘으면 가장 오래된 것부터 버린다.
 4. **기기 · OS 속성 없음** — 플랫폼 비교를 못 한다. ⟨2026-09-30 — 위치는 나라 · 주 단위로 있다(D15). 도시 단위는 없다⟩
+   ⟨2026-11-06 — 플랫폼 · 앱 버전 · 빌드는 있다([ADR-0110](0110-app-version-in-analytics.md)). 기기 모델 · OS 버전은 여전히 없다⟩
 5. **옵트아웃 수단 없음** — 설정에 수집 끄기가 없다. 필요해지면 `optOut()` 자리를 새 결정으로 연다.
 6. **화면 조회 · 앱 시작 이벤트 없음** — 퍼널의 분모가 진입 이벤트 · 유닛 열림에 한정된다.
 7. **전송 실패는 `console.error` 한 줄로만 남는다** — 화면에 드러나지 않는다(의도).
