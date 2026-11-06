@@ -48,12 +48,17 @@ export const settingsEs: SettingsCopy = {
     downloadAllCaption: "Imágenes y audio de todos los episodios, para que aprendas sin conexión.",
     downloadAllStarted: "Descargando en segundo plano. Puedes seguir aprendiendo.",
     downloaded: (size) => `Descargado: ${size}`,
+    episodeRow: (n, d, t) => `Episodio ${n}: ${d} de ${t} lecciones`,
+    episodeRowComplete: (n) => `Episodio ${n}: completo`,
+    downloadRest: (n) => `Descargar el resto del Episodio ${n}`,
     confirm: {
       title: "¿Descargar con datos móviles?",
       description:
         "Descargar todos los episodios puede usar muchos datos. También puedes esperar al Wi-Fi.",
       download: "Descargar ahora",
       cancel: "Cancelar",
+      restDescription: (n) =>
+        `El resto del Episodio ${n} se descarga con datos móviles. También puedes esperar al Wi-Fi.`,
     },
   },
   sessionOption: {
@@ -135,17 +140,32 @@ export const downloadSheetEs: DownloadSheetCopy = {
   size: (size) => `Unos ${size}`,
   downloadNow: "Descargar ahora",
   onWifi: "Descargar con Wi-Fi",
-  dontAskAgain: "No volver a preguntar",
   wifiOnlyTitle: (n) => `El Episodio ${n} se descarga con Wi-Fi`,
-  wifiOnlyDescription: "Elegiste Solo con Wi-Fi en Ajustes. Se descargará cuando tengas Wi-Fi.",
+  wifiOnlyDescription:
+    "Elegiste Solo con Wi-Fi en Ajustes. Usa datos móviles solo esta vez, abre sin imágenes ni audio o cambia el ajuste.",
   ok: "OK",
   offlineTitle: "Estás sin conexión",
   offlineDescription: (n) =>
     `El Episodio ${n} aún no se ha descargado. Se descargará cuando vuelvas a tener conexión.`,
   openAnyway: "Abrir de todos modos",
   close: "Cerrar",
-  checked: "marcado",
-  unchecked: "sin marcar",
+  askUnitTitle: (l) => `¿Descargar ${l}?`,
+  askUnitDescription:
+    "Las imágenes y el audio de esta lección aún no están en tu teléfono. La descarga usa datos móviles.",
+  rows: {
+    common: "Imágenes y audio compartidos",
+    allLessons: "Todas las lecciones de este episodio",
+    otherLessons: "Otras lecciones",
+    status: { done: "En tu teléfono", pending: "Se descarga ahora", wifi: "Con Wi-Fi" },
+  },
+  askHint: "Se te preguntará cada vez. Cámbialo en Ajustes › Descargas.",
+  wifiOnlyUnitTitle: (l) => `${l} se descarga con Wi-Fi`,
+  mobileDataOnce: "Usar datos móviles solo esta vez",
+  openWithout: "Abrir sin imágenes ni audio",
+  changeSetting: "Cambiar ajuste",
+  offlineUnitDescription: (l) =>
+    `${l} aún no se ha descargado. Se descargará cuando vuelvas a tener conexión.`,
+  offlineHint: "Las imágenes se ven de un solo color y se omiten los ejercicios de escucha.",
   allCleared: {
     title: "Terminaste todas las historias de aquí",
     description: "Puede haber episodios nuevos. Conéctate a internet y los buscaremos por ti.",

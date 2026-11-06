@@ -1,5 +1,6 @@
 // 설정 › 다운로드 화면의 props · 문구 타입입니다(ADR-0095 D8). 구현 · JSX는 두지 않습니다.
 
+import type { DownloadProgressSummary } from "../../app/download-progress";
 import type { MobileDataPolicy } from "../../lib/download-policy";
 
 export type { DownloadSettingsCopy } from "../../lib/ui-copy-settings.contract";
@@ -15,13 +16,20 @@ export type DownloadSettingsScreenProps = {
   readonly isOnMobileData: () => boolean;
   /** 다 받은 편의 그림 · 음성 합(바이트). 목록에 크기가 없으면 `null`이고 줄을 그리지 않습니다. */
   readonly loadDownloadedBytes: () => number | null;
+  /** 편별 레슨 집계 + 진행 중인 편 — 화면을 열 때 한 번(효과 안) 읽습니다. */
+  readonly loadDownloadProgress: () => DownloadProgressSummary;
   readonly onDownloadAll: () => void;
+  /** 「이 편 나머지 받기」 — 진행 중인 편 id. 모바일 데이터면 확인 창 뒤에. */
+  readonly onDownloadRestOfCurrent: (episodeId: string) => void;
   readonly onBack: () => void;
 };
 
 export type DownloadSettingsTestId =
   | "download-settings-screen"
   | "download-settings-title"
+  | "download-settings-episodes"
+  | `download-settings-episode-${string}`
+  | "download-settings-download-rest"
   | "download-settings-download-all"
   | "download-settings-download-all-started"
   | "download-settings-downloaded"

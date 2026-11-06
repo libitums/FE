@@ -4,6 +4,7 @@ import type { ReactNode } from "@lynx-js/react";
 import { BottomSheet } from "@libitums/ui-lynx/bottom-sheet";
 
 import { useUiCopy } from "../../lib/ui-copy";
+import { useLayerBack } from "../../lib/use-back-handler";
 
 import "./download-sheet.css";
 
@@ -26,6 +27,8 @@ export function AllClearedSheet({
   onCheckNow,
   onLater,
 }: AllClearedSheetProps): ReactNode {
+  // 시스템 뒤로가기는 「나중에」와 같습니다(ADR-0043 D2).
+  useLayerBack(onLater);
   const copy = useUiCopy().downloadSheet;
   const text = copy.allCleared;
   const [waiting, setWaiting] = useState(false);
@@ -50,11 +53,11 @@ export function AllClearedSheet({
             {text.lastChecked(daysAgo)}
           </text>
           {waiting ? (
-            <text className="download-sheet-dont-ask-label" data-testid="all-cleared-sheet-hint">
+            <text className="download-sheet-note" data-testid="all-cleared-sheet-hint">
               {text.offlineHint}
             </text>
           ) : null}
-          <text className="download-sheet-dont-ask-label" data-testid="all-cleared-sheet-note">
+          <text className="download-sheet-note" data-testid="all-cleared-sheet-note">
             {text.autoNote}
           </text>
         </view>

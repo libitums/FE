@@ -3,6 +3,9 @@ import "background-only";
 // 설정 › 다운로드의 「받은 크기」(ADR-0095 D8) — 활성 매니페스트에서 그림 · 음성을 다 받은 편의 `assets_bytes` 합입니다.
 // 파일을 세지 않습니다. 크기가 실린 편이 하나도 없으면 `null`(줄을 그리지 않음).
 
+import type { CatalogUnitKey } from "./catalog-progress";
+import type { AssetTarget } from "./download-policy";
+import { contentCommonAssetsKey, contentUnitAssetsKey } from "./episode-asset-groups-sync";
 import { isAssetsComplete } from "./episode-asset-sync";
 import { CONTENT_MANIFEST_KEY, safeGet } from "./episode-cache";
 import type { ContentStore } from "./episode-cache";
@@ -39,4 +42,47 @@ export function episodeAssetsComplete(
 export function episodeAssetsBytes(store: ContentStore, id: string): number | null {
   const manifest = parseCachedManifest(safeGet(store, CONTENT_MANIFEST_KEY));
   return manifest?.episodes.find((entry) => entry.id === id)?.assetsBytes ?? null;
+}
+
+function shasOf(
+  store: ContentStore,
+  bundled: readonly { readonly id: string; readonly sha256: string }[],
+  id: string,
+): string[] {
+  const active = parseCachedManifest(safeGet(store, CONTENT_MANIFEST_KEY))?.episodes ?? [];
+  // 받은 판과 내장 판이 같은 sha면 한 번만 봅니다(리뷰 반영).
+  return [
+    ...new Set([...active, ...bundled].filter((entry) => entry.id === id).map((e) => e.sha256)),
+  ];
+}
+
+/**
+ * 대상별 받음 — `episode`: 편 표시. `common`: 편 표시 또는 공통 표시. `unit`: 편 표시 또는
+ * (공통 표시 그리고 그 유닛 표시). sha는 활성 매니페스트 · 내장 목록의 그 편 sha 가운데 하나입니다.
+ */
+export function episodeAssetsCompleteFor(
+  store: ContentStore,
+  bundled: readonly { readonly id: string; readonly sha256: string }[],
+  id: string,
+  target: AssetTarget,
+): boolean {
+  return shasOf(store, bundled, id).some((sha256) => {
+    if (isAssetsComplete(store, id, sha256)) return true;
+    if (target.kind === "episode") return false;
+    if (!isAssetsComplete(store, id, sha256, contentCommonAssetsKey(id))) return false;
+    if (target.kind === "common") return true;
+    return isAssetsComplete(store, id, sha256, contentUnitAssetsKey(id, target.unitKey));
+  });
+}
+
+/** 받은 유닛 수 — `unitKeys` 가운데 `unit` 판정이 참인 것(편 표시가 완료면 전부). */
+export function downloadedUnitCount(
+  store: ContentStore,
+  bundled: readonly { readonly id: string; readonly sha256: string }[],
+  id: string,
+  unitKeys: readonly CatalogUnitKey[],
+): number {
+  return unitKeys.filter((unitKey) =>
+    episodeAssetsCompleteFor(store, bundled, id, { kind: "unit", unitKey }),
+  ).length;
 }

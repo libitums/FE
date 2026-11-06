@@ -1,4 +1,4 @@
-/* 받기 시트(ADR-0095 D6 · D7) — 크기 줄과 「다시 묻지 않기」 체크 행. 체크 행은 업데이트 안내 창과 같은 값입니다. */
+/* 받기 시트(ADR-0095 D6 · D7) — 크기 줄 · 상태 행 · 안내 한 줄. */
 
 .download-sheet-body {
   display: flex;
@@ -14,41 +14,72 @@
   color: var(--libitum-color-gray-900);
 }
 
-.download-sheet-dont-ask {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: var(--libitum-spacing-8);
-  padding: var(--libitum-spacing-8) 0;
-}
-
-.download-sheet-box {
-  width: var(--libitum-icon-size-md);
-  height: var(--libitum-icon-size-md);
-  border-radius: var(--libitum-radius-sm);
-  border-width: 2px;
-  border-style: solid;
-  border-color: var(--libitum-color-border-strong);
-  background-color: var(--libitum-color-white);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.download-sheet-box-on {
-  border-color: var(--libitum-color-brand-primary);
-  background-color: var(--libitum-color-brand-primary);
-}
-
-.download-sheet-check {
-  width: var(--libitum-icon-size-sm);
-  height: var(--libitum-icon-size-sm);
-}
-
-.download-sheet-dont-ask-label {
+.download-sheet-note {
   font-family: var(--libitum-typography-body-m-font-family);
   font-size: var(--libitum-typography-body-m-font-size);
   font-weight: var(--libitum-typography-body-m-font-weight);
   line-height: var(--libitum-typography-body-m-line-height);
+  color: var(--libitum-color-fg-neutral-muted);
+}
+
+.download-sheet-rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-8);
+}
+
+.download-sheet-row {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  column-gap: var(--libitum-spacing-8);
+  min-height: var(--libitum-typography-body-m-line-height);
+}
+
+.download-sheet-row-icon {
+  width: var(--libitum-icon-size-sm);
+  height: var(--libitum-icon-size-sm);
+  flex-shrink: 0;
+}
+
+.download-sheet-row-label,
+.download-sheet-row-status {
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: var(--libitum-typography-body-m-font-size);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  line-height: var(--libitum-typography-body-m-line-height);
+  letter-spacing: var(--libitum-typography-body-m-letter-spacing);
+}
+
+.download-sheet-row-label {
+  flex: 1;
+  min-width: var(--libitum-spacing-0);
+}
+
+.download-sheet-row-status {
+  text-align: right;
+}
+
+.download-sheet-row-done .download-sheet-row-label,
+.download-sheet-row-done .download-sheet-row-status {
+  color: var(--libitum-color-feedback-correct-text);
+}
+
+.download-sheet-row-pending .download-sheet-row-label,
+.download-sheet-row-pending .download-sheet-row-status {
+  color: var(--libitum-color-fg-neutral);
+}
+
+.download-sheet-row-wifi .download-sheet-row-label,
+.download-sheet-row-wifi .download-sheet-row-status {
+  color: var(--libitum-color-fg-neutral-muted);
+}
+
+.download-sheet-hint {
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  font-weight: var(--libitum-typography-body-s-font-weight);
+  line-height: var(--libitum-typography-body-s-line-height);
+  letter-spacing: var(--libitum-typography-body-s-letter-spacing);
   color: var(--libitum-color-fg-neutral-muted);
 }

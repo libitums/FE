@@ -2,10 +2,9 @@ import { useCallback, useEffect, useRef, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import {
-  allowEpisodes,
+  isDownloadAllowed,
   loadAllowedEpisodes,
   loadMobileDataPolicy,
-  saveMobileDataPolicy,
 } from "../lib/download-policy";
 import type { CatalogProgress } from "../lib/catalog-progress";
 import { episodeOpenGate } from "../lib/episode-open-gate";
@@ -13,24 +12,27 @@ import { catalogFreshness, type CatalogFreshness } from "../lib/manifest-check";
 import { readNetworkProperties } from "../lib/network-status";
 import { TUTORIAL_EPISODE_ID } from "../lib/tutorial-episode";
 import { AllClearedSheet } from "../screens/download-sheet/AllClearedSheet";
-import { DownloadSheet } from "../screens/download-sheet/DownloadSheet";
 import { catalogAllCleared } from "../screens/journey-map/catalog-all-cleared";
-import type { DownloadSheetState } from "../screens/download-sheet/download-sheet.contract";
+import type {
+  DownloadSheetState,
+  DownloadSheetTarget,
+} from "../screens/download-sheet/download-sheet.contract";
 import type { CatalogMapSection } from "../screens/journey-map/catalog-map.contract";
+import { DownloadGateLayer, type OpenDownloadSheet } from "./download-gate-layer";
+import {
+  assetTargetOf,
+  downloadSheetUnitOf,
+  type DownloadGateTarget,
+} from "./download-gate-target";
 import { allClearedNoticeStep, type AllClearedNoticeState } from "./all-cleared-notice";
 import type { DownloadControls } from "./download-wiring";
 import type { ScreenWiring } from "./screen-wiring";
 
 /** 에피소드를 열기 전 받기 판정 — `open`이 `null`이면 열 수 없는 편(받는 중인 「준비 중」 카드)입니다. */
-export type DownloadGuard = (episodeId: string, open: (() => void) | null) => void;
+export type DownloadGuard = (target: DownloadGateTarget, open: (() => void) | null) => void;
 
 type OpenSheet =
-  | {
-      readonly kind: "download";
-      readonly state: DownloadSheetState;
-      readonly episodeId: string;
-      readonly open: (() => void) | null;
-    }
+  | ({ readonly kind: "download" } & OpenDownloadSheet)
   | { readonly kind: "all-cleared" };
 
 export type DownloadGate = {
@@ -57,6 +59,8 @@ export function useDownloadGate(
   atMapRoot: boolean,
   /** 진행을 다 읽었는가 — 읽는 동안의 변화를 「끝낸 순간」으로 세지 않습니다. */
   progress: { readonly hasLoadedProgress: boolean },
+  /** 「설정 바꾸기」 — 설정 탭 루트로 간 뒤 설정 › 다운로드를 쌓습니다. */
+  nav: { readonly openDownloadSettings: () => void },
 ): DownloadGate {
   const sections = catalog.catalogSections;
   const [sheet, setSheet] = useState<OpenSheet | null>(null);
@@ -81,31 +85,42 @@ export function useDownloadGate(
   }, [loaded, allCleared, atMapRoot, controls, checkedAt]);
 
   const guard = useCallback<DownloadGuard>(
-    (episodeId, open) => {
+    (target, open) => {
       "background only";
       if (controls === undefined) {
         open?.();
         return;
       }
+      const episodeId = target.episodeId;
+      const assetTarget = assetTargetOf(target);
       const gate = episodeOpenGate({
-        assetsComplete: controls.assetsComplete(episodeId),
+        assetsComplete: controls.assetsComplete(episodeId, assetTarget),
         isTutorial: episodeId === TUTORIAL_EPISODE_ID,
         network: readNetworkProperties(),
         policy: loadMobileDataPolicy(),
-        allowed: loadAllowedEpisodes().has(episodeId),
+        allowed: isDownloadAllowed(loadAllowedEpisodes(), episodeId, assetTarget),
       });
       if (gate === "open") {
         open?.();
         return;
       }
       const ordinal = sections.find((section) => section.episodeId === episodeId)?.ordinal ?? 0;
+      const sheetTarget: DownloadSheetTarget =
+        target.kind === "episode"
+          ? { kind: "episode", ordinal, sizeBytes: controls.assetsBytes(episodeId) }
+          : {
+              kind: "unit",
+              ordinal,
+              unit: downloadSheetUnitOf(sections, episodeId, target.unitKey),
+            };
+      const commonDone = controls.assetsComplete(episodeId, { kind: "common" });
       const state: DownloadSheetState =
         gate === "ask"
-          ? { kind: "ask", ordinal, sizeBytes: controls.assetsBytes(episodeId) }
+          ? { kind: "ask", target: sheetTarget, commonDone }
           : gate === "wifi-only"
-            ? { kind: "wifi-only", ordinal }
-            : { kind: "offline", ordinal, canOpenAnyway: open !== null };
-      setSheet({ kind: "download", state, episodeId, open });
+            ? { kind: "wifi-only", target: sheetTarget, commonDone }
+            : { kind: "offline", target: sheetTarget, canOpenAnyway: open !== null };
+      setSheet({ kind: "download", state, target, open });
     },
     [controls, sections],
   );
@@ -122,26 +137,7 @@ export function useDownloadGate(
         onLater={() => setSheet(null)}
       />
     ) : (
-      <DownloadSheet
-        state={sheet.state}
-        onDownloadNow={(dontAskAgain) => {
-          allowEpisodes([sheet.episodeId]);
-          if (dontAskAgain) saveMobileDataPolicy("always");
-          controls?.requestSync();
-          setSheet(null);
-          // 열린 편은 받는 동안 엽니다 — 받는 대로 그림 · 소리가 채워집니다. 「준비 중」 편은 다 받으면 맵에 열립니다.
-          sheet.open?.();
-        }}
-        onWifiLater={(dontAskAgain) => {
-          if (dontAskAgain) saveMobileDataPolicy("wifi-only");
-          setSheet(null);
-        }}
-        onOpenAnyway={() => {
-          setSheet(null);
-          sheet.open?.();
-        }}
-        onClose={() => setSheet(null)}
-      />
+      <DownloadGateLayer sheet={sheet} controls={controls} nav={nav} close={() => setSheet(null)} />
     );
   const openAllCleared = useCallback(() => setSheet({ kind: "all-cleared" }), []);
   return { guard, layer, freshness, openAllCleared };
@@ -157,18 +153,18 @@ export function withDownloadGate<W extends ScreenWiring>(wiring: W, gate: Downlo
     onCheckNewStories: gate.openAllCleared,
     onStartCatalogCover: (episodeId) => {
       "background only";
-      guard(episodeId, () => wiring.onStartCatalogCover(episodeId));
+      guard({ kind: "episode", episodeId }, () => wiring.onStartCatalogCover(episodeId));
     },
     onStartCatalogUnit: (episodeId, unitKey, source) => {
       "background only";
-      guard(episodeId, () => {
+      guard({ kind: "unit", episodeId, unitKey }, () => {
         if (source === undefined) wiring.onStartCatalogUnit(episodeId, unitKey);
         else wiring.onStartCatalogUnit(episodeId, unitKey, source);
       });
     },
     onTapPendingEpisode: (episodeId) => {
       "background only";
-      guard(episodeId, null);
+      guard({ kind: "episode", episodeId }, null);
     },
   };
 }

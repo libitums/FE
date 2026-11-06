@@ -1,9 +1,11 @@
 import "background-only";
 
 // 갱신 모듈 안쪽 — 에피소드 하나의 본문 · 자산을 분류에 따라 받습니다. 다른 곳에서 쓰지 않습니다.
-import { ensureEpisodeAssets } from "./episode-asset-sync";
+import type { AssetTarget } from "./download-policy";
+import { ensureEpisodeAssetGroups } from "./episode-asset-groups-sync";
+import type { EnsureGroupsOutcome } from "./episode-asset-groups-sync";
 import type { AssetDeps } from "./episode-asset-sync";
-import { episodeAssetPaths } from "./episode-assets";
+import { episodeAssetGroups, episodeAssetPaths } from "./episode-assets";
 import { contentEpisodeKey, safeGet, trySet } from "./episode-cache";
 import { checkEpisodeText } from "./episode-catalog";
 import type { ManifestEntry } from "./episode-manifest";
@@ -93,40 +95,58 @@ async function stagedText(run: PlannedEpisodeRun, entry: ManifestEntry): Promise
   return text;
 }
 
-/** 자산을 갖추고 지켜보는 쪽에 파일 진행을 알립니다. 표시를 둔 키는 활성 또는 스테이징입니다. */
+function safePolicy(
+  policy: (id: string, target: AssetTarget) => boolean,
+  id: string,
+  target: AssetTarget,
+): boolean {
+  try {
+    return policy(id, target);
+  } catch {
+    return true;
+  }
+}
+
+/** 자산을 공통 → 유닛 순으로 갖추고 지켜보는 쪽에 파일 진행을 알립니다. 표시를 둔 키는 활성 또는 스테이징입니다. */
 async function ensureAssets(
   run: PlannedEpisodeRun,
   assets: AssetDeps,
   entry: ManifestEntry,
   wire: unknown,
   marker: "active" | "staged",
-): Promise<"completed" | "already" | "incomplete"> {
+): Promise<EnsureGroupsOutcome> {
   const watch = run.watched.has(entry.id) ? run.deps.observer : undefined;
-  const paths = episodeAssetPaths(wire);
-  const total = paths.length + 1;
+  const total = episodeAssetPaths(wire).length + 1;
+  const settled = new Set<string>();
   let done = 1;
   watch?.progressed(entry.id, done, total);
-  const outcome = await ensureEpisodeAssets(run.deps.store, assets, entry, paths, {
-    ...(marker === "staged" ? { markerKey: contentStagedAssetsKey(entry.id) } : {}),
-    // 이번 차례에 매니페스트가 바뀌었으면 「서버에 없음」을 시간과 상관없이 다시 봅니다(ADR-0095 D2).
-    recheckMissing: run.summary.manifest === "updated",
-    onPathSettled: () => {
-      done += 1;
-      watch?.progressed(entry.id, done, total);
+  const policy = run.deps.assetPolicy;
+  const outcome = await ensureEpisodeAssetGroups(
+    run.deps.store,
+    assets,
+    entry,
+    episodeAssetGroups(wire),
+    {
+      ...(marker === "staged" ? { markerKey: contentStagedAssetsKey(entry.id) } : {}),
+      groupMarkers: marker === "staged" ? "none" : "active",
+      ...(policy === undefined
+        ? {}
+        : { allowed: (target: AssetTarget) => safePolicy(policy, entry.id, target) }),
+      // 이번 차례에 매니페스트가 바뀌었으면 「서버에 없음」을 시간과 상관없이 다시 봅니다(ADR-0095 D2).
+      recheckMissing: run.summary.manifest === "updated",
+      // 묶음에 겹친 경로는 한 번만 셉니다 — done이 total을 넘지 않습니다.
+      onPathSettled: (path) => {
+        if (settled.has(path)) return;
+        settled.add(path);
+        done += 1;
+        watch?.progressed(entry.id, done, total);
+      },
     },
-  });
-  if (outcome === "incomplete") return outcome;
+  );
+  if (outcome === "incomplete" || outcome === "deferred") return outcome;
   if (done < total) watch?.progressed(entry.id, total, total);
   watch?.ready(entry.id);
   return outcome;
-}
-
-function safePolicy(policy: (id: string) => boolean, id: string): boolean {
-  try {
-    return policy(id);
-  } catch {
-    return true;
-  }
 }
 
 /** 한 에피소드를 받습니다. 자산을 못 갖췄으면 "stop"(그 자리에서 멈춤), 그 밖은 "continue". 던지지 않음. */
@@ -149,12 +169,12 @@ export async function runPlannedEpisode(
   // 검증을 통과한 본문이라 일어나지 않아야 합니다 — 그래도 읽지 못한 본문을 「자산 없음 = 완료」로 열지 않습니다.
   if (wire === null || wire === undefined) return "continue";
   if (deps.assets === undefined || !run.canStore) return "continue";
-  // 받기 정책이 막으면 자산을 건너뛰고 다음 편으로 갑니다 — 멈추지 않습니다(ADR-0095 D5). 던지면 막지 않습니다.
-  if (deps.assetPolicy !== undefined && !safePolicy(deps.assetPolicy, entry.id)) {
+  const outcome = await ensureAssets(run, deps.assets, entry, wire, staged ? "staged" : "active");
+  // 받기 정책이 묶음을 막으면 나머지만 받고 다음 편으로 갑니다 — 멈추지 않습니다(ADR-0095 D5).
+  if (outcome === "deferred") {
     run.summary.deferred.push(entry.id);
     return "continue";
   }
-  const outcome = await ensureAssets(run, deps.assets, entry, wire, staged ? "staged" : "active");
   if (outcome === "incomplete") return "stop";
   if (outcome === "completed" && !staged && (kind === "new" || kind === "changed")) {
     deps.onEpisodeReady?.(entry.id);
