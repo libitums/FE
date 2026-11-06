@@ -728,3 +728,13 @@ LIB-253이 더한 셋째 항목은 **종료 발화 priority API**다. Android에
 - **재검토 조건 「한 모듈의 메서드가 다섯을 넘는 시점」에는 닿지 않았다** — 다섯이다. 다음 메서드 하나가 그 조건이다.
 - **`source`의 세 갈래(번들 id · `https` · 받아 둔 `file://`)는 그대로다** — 속도는 해석 뒤 플레이어에만 걸린다. 학습 문항의 `stimulus.audio_url`이 이제 이 경로로 재생된다([ADR-0060](0060-episode-voice-remote-audio.md) 재검토 조건 1의 처리).
 - 재진술 둘 — iOS `AudioPlaybackModule.swift`와 JS `lib/audio.ts`의 머리 주석(「메서드는 다섯」)은 같은 변경에서 고쳤다.
+
+## 적용 기록 ⟨2026-11-06 — 학습 판정 진동(햅틱)⟩
+
+결정은 [ADR-0109](0109-haptic-feedback.md) D1 ~ D3. 입장 조건(D1)은 바뀌지 않았고 **발동하지도 않았다** — 새 모듈이 아니라 기존 `SoundEffectsModule`의 메서드 하나다.
+
+- **`SoundEffectsModule`의 메서드 표면이 둘 → 셋이다** — `play(id)` · `stopRing()` · `haptic(kind)`. D1의 조건 셋은 **새 모듈을 열 때** 걸리므로 이 변경에는 적용되지 않는다. 그래도 조건 (3)에 해당하는 자리는 채웠다 — [`docs/e2e/haptic-feedback.md`](../e2e/haptic-feedback.md)가 손 · 귀 · 시스템 설정 끔 · 옛 빌드 덮어 설치를 사람이 판정하는 항목으로 잰다.
+- **재검토 조건 「한 모듈의 메서드가 다섯을 넘는 시점」에는 닿지 않았다** — 셋이다. 재생 모듈(`AudioPlaybackModule`)의 다섯과는 별개 모듈이다.
+- **진동은 이 ADR의 어느 목록에도 없던 축이다.** D1 「여전히 하지 않는 것」(푸시 · 딥링크 · 코드 서명 · 스토어 배포 · 커스텀 UI · 커스텀 네이티브 엘리먼트)에도, D3 재생 모듈의 「여기 없는 것은 하지 않는 것이다」(일시정지 · 시크 · 볼륨 · 페이드 …)에도 진동 · 햅틱은 적힌 적이 없다. 금지된 것이 열린 게 아니라 **적힌 적 없는 축을 ADR-0109가 처음 정한 것**이고, 그래서 이 ADR의 문면은 고치지 않는다.
+- 권한은 요구하지 않는다 — Android `View.performHapticFeedback`(1인자 오버로드 · 시스템 「터치 피드백」 설정 추종)과 iOS `UINotificationFeedbackGenerator`(「시스템 햅틱」 설정 추종)는 권한 · required-reason API가 아니다. `VIBRATE`는 더하지 않았다(ADR-0109 재검토 조건 (a) — 벨 반복 진동이 열릴 때 함께 본다).
+- 호스트 모듈 표(`docs/adr/README.md`)의 `SoundEffectsModule` 행은 같은 날 메서드 셋으로 고쳤다. Android · iOS 둘 다 같은 날 같은 변경에 들어가 이관 빚은 생기지 않았다.

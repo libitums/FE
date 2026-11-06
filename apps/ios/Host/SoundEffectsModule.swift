@@ -69,6 +69,25 @@ final class SoundEffectsPlayer {
   }
 }
 
+/// 판정 햅틱의 종류다. 플랫폼 기본 알림 햅틱만 쓰고, 설정의 「시스템 햅틱」은 UIKit이 따른다.
+enum HapticFeedbackKind: String, CaseIterable {
+  case success
+  case error
+
+  var feedbackType: UINotificationFeedbackGenerator.FeedbackType {
+    switch self {
+    case .success: .success
+    case .error: .error
+    }
+  }
+
+  /// nil · 빈 문자열 · 모르는 값은 nil — 호출자는 조용히 무시한다.
+  static func of(_ raw: String?) -> HapticFeedbackKind? {
+    guard let raw else { return nil }
+    return HapticFeedbackKind(rawValue: raw)
+  }
+}
+
 @objc(SoundEffectsModule)
 final class SoundEffectsModule: NSObject, LynxModule {
   @objc static var name: String { "SoundEffectsModule" }
@@ -77,10 +96,13 @@ final class SoundEffectsModule: NSObject, LynxModule {
     [
       "play": NSStringFromSelector(#selector(play(_:))),
       "stopRing": NSStringFromSelector(#selector(stopRing)),
+      "haptic": NSStringFromSelector(#selector(haptic(_:))),
     ]
   }
 
   private let effects = SoundEffectsPlayer()
+  // 생성기 하나를 들고 미리 prepare()해 둔다 — 매번 만들면 Taptic Engine이 식은 채 시작해 소리보다 늦는다.
+  private let feedback = UINotificationFeedbackGenerator()
   private var backgroundObserver: NSObjectProtocol?
 
   @objc override init() {
@@ -98,7 +120,10 @@ final class SoundEffectsModule: NSObject, LynxModule {
   }
 
   private func setUp() {
-    DispatchQueue.main.async { [weak self] in self?.effects.preload() }
+    DispatchQueue.main.async { [weak self] in
+      self?.effects.preload()
+      self?.feedback.prepare()
+    }
     backgroundObserver = NotificationCenter.default.addObserver(
       forName: UIApplication.didEnterBackgroundNotification,
       object: nil,
@@ -112,5 +137,16 @@ final class SoundEffectsModule: NSObject, LynxModule {
 
   @objc func stopRing() {
     DispatchQueue.main.async { [weak self] in self?.effects.stopRing() }
+  }
+
+  /// 햅틱 없는 기기(iPad · 시뮬레이터)에서는 UIKit이 무동작이다. 낸 뒤 다음 판정을 위해 다시 prepare()한다.
+  @objc func haptic(_ kind: String?) {
+    guard let kind = HapticFeedbackKind.of(kind) else { return }
+    let type = kind.feedbackType
+    DispatchQueue.main.async { [weak self] in
+      guard let self else { return }
+      self.feedback.notificationOccurred(type)
+      self.feedback.prepare()
+    }
   }
 }

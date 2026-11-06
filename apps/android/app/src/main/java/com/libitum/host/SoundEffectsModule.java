@@ -4,7 +4,7 @@ import android.content.Context;
 import com.lynx.jsbridge.LynxMethod;
 import com.lynx.jsbridge.LynxModule;
 
-/** Android side of the iOS SoundEffectsModule contract: play(id) and stopRing(). */
+/** Android side of the iOS SoundEffectsModule contract: play(id), stopRing() and haptic(kind). */
 public final class SoundEffectsModule extends LynxModule {
   private final SoundEffectsController effects;
 
@@ -19,5 +19,9 @@ public final class SoundEffectsModule extends LynxModule {
 
   @LynxMethod public void stopRing() {
     if (effects != null) effects.stopRing();
+  }
+
+  @LynxMethod public void haptic(String kind) {
+    if (effects != null) effects.haptic(kind);
   }
 }
