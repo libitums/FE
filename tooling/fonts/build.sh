@@ -51,7 +51,9 @@ for hi in range(0x88, 0x99):  # JIS X 0208 1수준 한자(Shift_JIS 0x889F–0x9
 files = glob.glob(root + "/apps/mobile/content/**/*.json", recursive=True)
 files += glob.glob(root + "/apps/mobile/src/lib/ui-copy-*.ts")
 for path in files:
-    for ch in open(path, encoding="utf-8").read():
+    with open(path, encoding="utf-8") as source:
+        text = source.read()
+    for ch in text:
         if 0xAC00 <= ord(ch) <= 0xD7A3 or 0x4E00 <= ord(ch) <= 0x9FFF: chars.add(ch)
 print(",".join("U+%04X" % ord(c) for c in sorted(chars)))
 EOF
