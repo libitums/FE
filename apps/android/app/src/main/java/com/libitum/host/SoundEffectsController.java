@@ -8,8 +8,10 @@ import android.media.SoundPool;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
+import android.os.VibratorManager;
 import android.util.Log;
-import android.view.View;
 import java.io.IOException;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -19,16 +21,16 @@ import java.util.Map;
  * Plays the host sound effects: short ones through a SoundPool, the looping bell through a
  * MediaPlayer. Decisions come from {@link SoundEffectsSession}; this class only executes them.
  * It never requests audio focus, so it cannot pause the lesson speech that holds it. It also
- * fires the verdict haptic through the activity's decor view, so the user's touch-feedback
- * setting is honoured by the platform and no VIBRATE permission is needed.
+ * plays the verdict vibration through {@code Vibrator} with media attributes, so it vibrates
+ * even when the system touch-feedback setting is off (ADR-0109 D3 rev 2, needs VIBRATE).
  */
 final class SoundEffectsController {
   private static final String TAG = "SoundEffects";
   private static final int SHORT_EFFECT_COUNT = 7;
 
   private final Context context;
-  // Activity-bound (decor view): cleared in release() so the module param never retains the Activity.
-  private View hapticView;
+  // Null on devices without a vibrator; then haptic() is a no-op.
+  private Vibrator vibrator;
   private final Handler mainHandler = new Handler(Looper.getMainLooper());
   private final SoundEffectsSession session = new SoundEffectsSession();
   private final AudioAttributes attributes;
@@ -41,13 +43,8 @@ final class SoundEffectsController {
   private boolean released;
 
   SoundEffectsController(Context context) {
-    this(context, null);
-  }
-
-  /** {@code hapticView} may be null; then {@link #haptic(String)} is a no-op. */
-  SoundEffectsController(Context context, View hapticView) {
     this.context = context.getApplicationContext();
-    this.hapticView = hapticView;
+    this.vibrator = vibratorOf(this.context);
     attributes = new AudioAttributes.Builder()
         .setUsage(AudioAttributes.USAGE_MEDIA)
         .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
@@ -88,14 +85,31 @@ final class SoundEffectsController {
     });
   }
 
-  /** Unknown kinds are ignored. Only the platform constant, no flags, result discarded. */
+  /** Unknown kinds are ignored. One-shot waveform, never repeats; failures are swallowed. */
   void haptic(String kind) {
-    int constant = HapticFeedbackConstant.of(kind, Build.VERSION.SDK_INT);
-    if (constant == HapticFeedbackConstant.NONE) return;
+    HapticPattern pattern = HapticPattern.of(kind);
+    if (pattern == null) return;
     onMain(() -> {
-      if (released || hapticView == null) return;
-      hapticView.performHapticFeedback(constant);
+      if (released || vibrator == null) return;
+      try {
+        VibrationEffect effect = VibrationEffect.createWaveform(pattern.timings, pattern.amplitudes, -1);
+        // Media usage, not touch: touch vibrations are scaled to zero when touch feedback is off.
+        vibrator.vibrate(effect, attributes);
+      } catch (RuntimeException error) {
+        Log.w(TAG, "Cannot vibrate", error);
+      }
     });
+  }
+
+  private static Vibrator vibratorOf(Context context) {
+    Vibrator found;
+    if (Build.VERSION.SDK_INT >= 31) {
+      VibratorManager manager = context.getSystemService(VibratorManager.class);
+      found = manager == null ? null : manager.getDefaultVibrator();
+    } else {
+      found = context.getSystemService(Vibrator.class);
+    }
+    return found != null && found.hasVibrator() ? found : null;
   }
 
   void release() {
@@ -103,7 +117,8 @@ final class SoundEffectsController {
       if (released) return;
       stopEverything();
       released = true;
-      hapticView = null;
+      if (vibrator != null) vibrator.cancel();
+      vibrator = null;
       if (soundPool != null) {
         soundPool.release();
         soundPool = null;

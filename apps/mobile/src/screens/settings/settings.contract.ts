@@ -31,7 +31,10 @@ export type SettingsNavTarget =
   | "feedback"
   | LegalDocument;
 
-export type SettingsSessionOptionKey = Extract<SessionOptionKey, "show-choice-romanization">;
+export type SettingsSessionOptionKey = Extract<
+  SessionOptionKey,
+  "show-choice-romanization" | "vibration"
+>;
 
 export type SettingsScreenProps = {
   readonly onSelectNavTarget: (target: SettingsNavTarget) => void;

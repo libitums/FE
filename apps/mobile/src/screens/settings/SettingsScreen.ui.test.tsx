@@ -164,6 +164,7 @@ test("[ST2] account가 signed-in이면 목록 상자 안에 학습, 계정, 계�
   ).map((el) => el.getAttribute("data-testid"));
   expect(testids).toEqual([
     "ui-lynx-settings-group-item-show-choice-romanization",
+    "ui-lynx-settings-group-item-vibration",
     ...settingsNavTargets.map((target) => `ui-lynx-settings-group-item-${target}`),
     "ui-lynx-settings-group-item-sign-out",
     "ui-lynx-settings-group-item-delete-account",

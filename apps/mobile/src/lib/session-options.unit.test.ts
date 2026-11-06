@@ -32,12 +32,13 @@ describe("initialSessionOptions", () => {
 });
 
 describe("sessionOptionKeys", () => {
-  it("SO2. 길이가 3이고 순서가 [auto-play-audio, show-transcript, show-choice-romanization]다", () => {
-    expect(sessionOptionKeys).toHaveLength(3);
+  it("SO2. 길이가 4이고 순서가 [auto-play-audio, show-transcript, show-choice-romanization, vibration]다", () => {
+    expect(sessionOptionKeys).toHaveLength(4);
     expect(sessionOptionKeys).toEqual([
       "auto-play-audio",
       "show-transcript",
       "show-choice-romanization",
+      "vibration",
     ]);
   });
 

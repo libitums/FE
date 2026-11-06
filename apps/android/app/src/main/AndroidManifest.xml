@@ -8,6 +8,8 @@
   <uses-permission android:name="com.google.android.gms.permission.AD_ID" />
   <uses-permission android:name="android.permission.RECORD_AUDIO" />
   <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+  <!-- 학습 판정 진동을 시스템 터치 진동 설정과 상관없이 낸다(ADR-0109 D3 2판). 설치 시 자동 허용 권한이다. -->
+  <uses-permission android:name="android.permission.VIBRATE" />
   <queries>
     <intent>
       <action android:name="android.speech.RecognitionService" />

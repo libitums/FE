@@ -172,3 +172,53 @@ test("RS14. 다시 도전 판이 서면 스크롤 끝에 판 몫의 여유가 �
   renderShell({ workspace });
   expect(screen.queryByTestId("learning-shell-panel-room")).not.toBeInTheDocument();
 });
+
+// 다시 풀기 판이 배지(AnswerVerdict)를 대신하면 판정음 · 진동이 같이 사라졌다(2026-11-06 실기). 판이 서는 순간
+// 셸이 배지가 냈을 판정음을 한 번 낸다 — 진동은 판정음의 그림자라 따라 난다(ADR-0109 D2).
+function stubSoundHost(calls: string[]) {
+  vi.stubGlobal("NativeModules", {
+    SoundEffectsModule: {
+      play: (id: string) => calls.push(`play:${id}`),
+      stopRing: () => {},
+      haptic: (kind: string) => calls.push(`haptic:${kind}`),
+    },
+  });
+}
+
+test.each([
+  ["correct", "play:correct_answer", "haptic:success"],
+  ["incorrect", "play:wrong_answer", "haptic:error"],
+] as const)(
+  "RS14. 다시 풀기에서 %s 판정이 서면 판정음과 진동이 한 번씩 난다",
+  (verdict, sound, haptic) => {
+    const calls: string[] = [];
+    stubSoundHost(calls);
+
+    renderShell({ verdict, onAction: () => {}, actionLabel: "Next" });
+
+    expect(screen.queryByTestId("answer-verdict")).toBeNull();
+    expect(calls).toEqual([sound, haptic]);
+    vi.unstubAllGlobals();
+  },
+);
+
+test("RS14. 다시 풀기가 아니면 배지가 판정음을 내고 셸은 한 번 더 내지 않는다", () => {
+  const calls: string[] = [];
+  stubSoundHost(calls);
+
+  renderShell({ verdict: "correct", onAction: () => {}, actionLabel: "Next" }, null);
+
+  expect(screen.getByTestId("answer-verdict")).toBeInTheDocument();
+  expect(calls).toEqual(["play:correct_answer", "haptic:success"]);
+  vi.unstubAllGlobals();
+});
+
+test("RS14. 카드 안에서 판정하는 활동(result)은 자기 배지가 소리를 내므로 셸이 내지 않는다", () => {
+  const calls: string[] = [];
+  stubSoundHost(calls);
+
+  renderShell({ result: "correct", onAction: () => {}, actionLabel: "Next" });
+
+  expect(calls).toEqual([]);
+  vi.unstubAllGlobals();
+});

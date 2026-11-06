@@ -61,6 +61,11 @@
 > **영속은 그 키 하나다** — `libitum.session-option.show-choice-romanization`(`"on"` / `"off"`, 기기 범위, 로그아웃 · 삭제에 남음). 그래서 §0의 1 · 5 · 6,
 > §2의 표(토글 둘), §4의 「저장하지 않는다」는 **자동 재생 · 대본 표시에 한해** 참이고, 그 둘은 지금 설정에 서지 않는다. 이벤트는 §6 표의
 > `session_option_changed`가 새 `option` 값을 받는다(새 이벤트 0). 기기 절차는 [보기 로마자 e2e](../e2e/choice-romanization.md)다.
+>
+> ⟨2026-11-06 개정 — ADR-0109 D4⟩ `Learning` 묶음에 둘째 토글 **`Vibration`**(`vibration` — 판정 진동, **기본 켬**, 설명 `Vibrate when your answer is right or wrong.`, 다섯 언어 동시)이
+> 로마자 줄 아래에 선다. `settingsSessionOptionKeys = ["show-choice-romanization", "vibration"]`, test-id `ui-lynx-settings-group-item-vibration`.
+> 영속 키가 하나 늘어 둘이다 — `libitum.session-option.vibration`(`"on"` / `"off"`, 기기 범위, 로그아웃 · 삭제에 남음). 효과음(`playSound`)이 판정마다
+> 저장값을 직접 읽어 끔이면 진동만 건너뛴다(소리는 그대로). 이벤트는 같은 `session_option_changed`(`option: "vibration"`).
 
 ## 0. 고정 범위와 불변식
 

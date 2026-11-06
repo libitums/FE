@@ -1,4 +1,6 @@
 /** iOS · Android 호스트의 효과음 접점. 모듈이 없는 호스트(Explorer · 테스트)에서는 조용히 무동작한다. */
+import { storedVibrationEnabled } from "./session-options-storage";
+
 export type SoundEffectId =
   | "button"
   | "correct_answer"
@@ -55,8 +57,9 @@ export function playSound(id: SoundEffectId): void {
     // 효과음은 필수 기능이 아니다. 재생 실패가 채점·탐색을 막지 않는다.
   }
   // 진동은 효과음의 그림자다 — 같은 자리에서, 효과음 뒤에, 정책이 정한 id에만(ADR-0109 D2).
+  // 설정에서 끄면 효과음만 낸다(ADR-0109 D4) — 진동이 붙는 id에서만 저장값을 읽는다.
   const kind = hapticFor(id);
-  if (kind === null || typeof module?.haptic !== "function") return;
+  if (kind === null || typeof module?.haptic !== "function" || !storedVibrationEnabled()) return;
   try {
     module.haptic(kind);
   } catch {

@@ -65,10 +65,12 @@ export const settingsEs: SettingsCopy = {
     "auto-play-audio": "Reproducción automática",
     "show-transcript": "Ver transcripción",
     "show-choice-romanization": "Romanización en las opciones",
+    vibration: "Vibración",
   },
   sessionOptionDescription: {
     "show-choice-romanization":
       "Muestra cómo se lee cada respuesta en coreano, en letra pequeña encima.",
+    vibration: "Vibra cuando tu respuesta es correcta o incorrecta.",
   },
   optionState: { on: "activado", off: "desactivado" },
   action: {

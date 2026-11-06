@@ -44,11 +44,13 @@ const transcriptOff: SessionOptions = {
   "auto-play-audio": true,
   "show-transcript": false,
   "show-choice-romanization": true,
+  vibration: true,
 };
 const transcriptOn: SessionOptions = {
   "auto-play-audio": true,
   "show-transcript": true,
   "show-choice-romanization": true,
+  vibration: true,
 };
 
 const announceFn =

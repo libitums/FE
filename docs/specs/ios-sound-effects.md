@@ -67,9 +67,9 @@ Android 호스트에도 같은 이름의 `SoundEffectsModule`이 있다. JS(`lib
 | 메서드 | `play(id)` · `stopRing()` · `haptic(kind)` — 반환 · 콜백 없음 | 같음 |
 | 허용 id | `SoundEffectAsset` 8개 | `SoundEffectAsset` 8개 — 같은 문자열. 정확히 같을 때만 받는다 |
 | 모르는 id | 무시, 던지지 않음 | 같음(로그도 없음) |
-| `haptic(kind)` | `HapticFeedbackKind.of(kind)` → 모듈이 든 `UINotificationFeedbackGenerator` 하나(생성 때 · 매 진동 뒤 `prepare()`)의 `notificationOccurred(.success` · `.error)`, 메인 큐. 「시스템 햅틱」 설정은 UIKit이 따른다 | `HapticFeedbackConstant.of(kind, SDK_INT)` → decorView `performHapticFeedback` 1인자(API 30+ `CONFIRM` · `REJECT`, 26 ~ 29 `KEYBOARD_TAP` · `LONG_PRESS`), 메인 스레드. 「터치 피드백」 설정을 따른다 — 무시 플래그 없음 |
+| `haptic(kind)` | `HapticFeedbackKind.of(kind)` → 모듈이 든 `UINotificationFeedbackGenerator` 하나(생성 때 · 매 진동 뒤 `prepare()`)의 `notificationOccurred(.success` · `.error)`, 메인 큐. 「시스템 햅틱」 설정은 UIKit이 따른다 | ⟨2판⟩ `HapticPattern.of(kind)` → `Vibrator.vibrate(createWaveform(…, -1), AudioAttributes USAGE_MEDIA)`, 메인 스레드. `VIBRATE` 권한 — 「터치 피드백」 설정과 **상관없이** 진동한다([ADR-0109](../adr/0109-haptic-feedback.md) D3 2판) |
 | 모르는 kind · null | 무시, 던지지 않음 | 같음(`NONE`, 로그 없음) |
-| 햅틱 없는 기기 | iPad · 시뮬레이터 — 무동작 | 에뮬레이터 — 무동작. `hapticView`가 null이면 무동작 |
+| 햅틱 없는 기기 | iPad · 시뮬레이터 — 무동작 | `hasVibrator()`가 거짓이면(에뮬레이터 등) 무동작 |
 | 음량 | 자산별 상수 | 같은 값(`button` 0.25 · 판정 0.5 · 레슨 결과 0.55 · `ring_bell` 0.35 · `accept_call` 0.4) |
 | 플레이어 | 효과음마다 `AVAudioPlayer` | 짧은 효과음 7개는 `SoundPool`(동시 7), `ring_bell`은 `MediaPlayer` |
 | 미리 읽기 | 모듈 생성 때 8개 | `MainActivity.onCreate`에서 8개 로드 시작. 로드 전 요청은 로드가 끝날 때 한 번 재생 |
@@ -108,7 +108,7 @@ Android 호스트에도 같은 이름의 `SoundEffectsModule`이 있다. JS(`lib
 
 ### Android 검증
 
-- JUnit `SoundEffectAssetTest`(id · 경로 · 음량 · 반복 · 원본 파일 8개와 1:1) · `SoundEffectsSessionTest`(로드 전 요청 · 벨 상태 · 멈춤) · `HapticFeedbackConstantTest`(kind + SDK → 상수 표 전체, 경계 29/30, 모르는 값 `NONE`).
+- JUnit `SoundEffectAssetTest`(id · 경로 · 음량 · 반복 · 원본 파일 8개와 1:1) · `SoundEffectsSessionTest`(로드 전 요청 · 벨 상태 · 멈춤) · `HapticPatternTest`(kind → 파형 표, 모르는 값 null, 한 번 파형 · 세기 범위).
 - 계측 `SoundEffectsModuleTest` 5건: 8개 자산 열기 · 준비, 모르는 id와 무동작 `stopRing`, 벨 시작 한 번과 `stopRing`, 짧은 효과음이 벨을 건드리지 않고 `stopAll`이 멈춤.
 - 에뮬레이터: AAB 분할 설치에서 8개 id 전부 플레이어 시작 기록과 짝(E2 · E3 · E4), 벨 21초 반복 뒤 받기에 `paused`, 홈 1.0초 뒤 `paused`(E8).
   청음은 하지 않았다.

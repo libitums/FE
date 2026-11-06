@@ -60,9 +60,11 @@ export const settingsVi: SettingsCopy = {
     "auto-play-audio": "Tự động phát",
     "show-transcript": "Hiện phụ đề",
     "show-choice-romanization": "Phiên âm ở các lựa chọn",
+    vibration: "Rung",
   },
   sessionOptionDescription: {
     "show-choice-romanization": "Hiện cách đọc của từng đáp án tiếng Hàn bằng chữ nhỏ phía trên.",
+    vibration: "Rung khi câu trả lời của bạn đúng hoặc sai.",
   },
   optionState: { on: "bật", off: "tắt" },
   action: {

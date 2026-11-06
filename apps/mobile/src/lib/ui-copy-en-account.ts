@@ -60,9 +60,11 @@ export const settingsEn: SettingsCopy = {
     "auto-play-audio": "Auto-play",
     "show-transcript": "Show transcript",
     "show-choice-romanization": "Romanization on choices",
+    vibration: "Vibration",
   },
   sessionOptionDescription: {
     "show-choice-romanization": "Show how each Korean answer is read, in small text above it.",
+    vibration: "Vibrate when your answer is right or wrong.",
   },
   optionState: { on: "on", off: "off" },
   action: {

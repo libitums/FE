@@ -6,6 +6,8 @@ import {
   loadSessionOptions,
   saveSessionOption,
   storedChoiceRomanizationFrom,
+  storedVibrationEnabled,
+  vibrationStorageKey,
 } from "./session-options-storage";
 
 // `unit` 계층: 보기 로마자 설정의 기기 저장 — 읽기 해석 · 불러오기 · 쓰기의 입출력만 봅니다.
@@ -122,5 +124,45 @@ describe("saveSessionOption", () => {
     saveSessionOption("show-choice-romanization", false);
 
     expect(loadSessionOptions()["show-choice-romanization"]).toBe(false);
+  });
+});
+
+// ADR-0109 D4 — 앱 안 진동 끔. 보기 로마자와 같은 모양(기기 저장 · 정확히 off만 끔)입니다.
+describe("진동 설정 저장", () => {
+  test("VB1. 저장 키는 libitum.session-option.vibration이고 켬/끔을 on/off로 쓴다", () => {
+    const store = stubStore();
+
+    saveSessionOption("vibration", false);
+    saveSessionOption("vibration", true);
+
+    expect(vibrationStorageKey).toBe("libitum.session-option.vibration");
+    expect(store.set.mock.calls).toEqual([
+      [vibrationStorageKey, "off"],
+      [vibrationStorageKey, "on"],
+    ]);
+  });
+
+  test("VB1. 불러오기는 저장된 off만 진동을 끄고 없거나 깨진 값은 켬이다", () => {
+    const store = stubStore();
+    store.get.mockImplementation((key) => (key === vibrationStorageKey ? "off" : null));
+    expect(loadSessionOptions().vibration).toBe(false);
+    expect(loadSessionOptions()["show-choice-romanization"]).toBe(true);
+
+    stubStore("garbage");
+    expect(loadSessionOptions().vibration).toBe(true);
+  });
+
+  test("VB1. storedVibrationEnabled는 지금 저장값을 읽고, 저장소가 없거나 던지면 켬이다", () => {
+    stubStore("off");
+    expect(storedVibrationEnabled()).toBe(false);
+    stubStore("on");
+    expect(storedVibrationEnabled()).toBe(true);
+    vi.stubGlobal("NativeModules", undefined);
+    expect(storedVibrationEnabled()).toBe(true);
+    const store = stubStore();
+    store.get.mockImplementation(() => {
+      throw new Error("read failed");
+    });
+    expect(storedVibrationEnabled()).toBe(true);
   });
 });

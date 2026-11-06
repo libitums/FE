@@ -61,10 +61,12 @@ export const settingsId: SettingsCopy = {
     "auto-play-audio": "Putar otomatis",
     "show-transcript": "Tampilkan transkrip",
     "show-choice-romanization": "Romanisasi pada pilihan",
+    vibration: "Getar",
   },
   sessionOptionDescription: {
     "show-choice-romanization":
       "Tampilkan cara membaca tiap jawaban berbahasa Korea dalam teks kecil di atasnya.",
+    vibration: "Bergetar saat jawabanmu benar atau salah.",
   },
   optionState: { on: "aktif", off: "nonaktif" },
   action: {

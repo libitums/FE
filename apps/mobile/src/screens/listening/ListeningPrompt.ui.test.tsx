@@ -19,6 +19,7 @@ const transcriptOn: SessionOptions = {
   "auto-play-audio": true,
   "show-transcript": true,
   "show-choice-romanization": true,
+  vibration: true,
 };
 
 // `ui` 계층: 렌더 결과와 상호작용만 봅니다 (ADR-0006 D4). `toHaveClass`·`toHaveStyle`·
@@ -472,6 +473,7 @@ test("LP3. 답 전에는 구분선도 로마자도 한글도 없다", () => {
         "auto-play-audio": false,
         "show-transcript": false,
         "show-choice-romanization": true,
+        vibration: true,
       }}
     />,
   );

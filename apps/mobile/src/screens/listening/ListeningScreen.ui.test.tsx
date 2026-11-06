@@ -18,6 +18,7 @@ const transcriptOn: SessionOptions = {
   "auto-play-audio": true,
   "show-transcript": true,
   "show-choice-romanization": true,
+  vibration: true,
 };
 
 // 무대(가운데 카드) 안만 세는 헬퍼입니다. 뼈대는 `LearningShell`의 것이고 그 계약은

@@ -20,6 +20,7 @@ function renderPrompt(showTranscript: boolean, revealed: boolean) {
     "auto-play-audio": false,
     "show-transcript": showTranscript,
     "show-choice-romanization": true,
+    vibration: true,
   };
   return render(
     <PlaybackPrompt
@@ -81,6 +82,7 @@ test("[RV6] 답함 — 한국어와 로마자가 함께 보이고 로마자 줄�
         "auto-play-audio": false,
         "show-transcript": false,
         "show-choice-romanization": true,
+        vibration: true,
       }}
       revealed={true}
     />,
@@ -100,6 +102,7 @@ test("LP4. 소리 구별 문항은 답 전에 로마자가 문서에 없고 답�
         "auto-play-audio": false,
         "show-transcript": false,
         "show-choice-romanization": true,
+        vibration: true,
       }}
       revealed={false}
     />,
@@ -118,6 +121,7 @@ test("LP4. 소리 구별 문항은 답 전에 로마자가 문서에 없고 답�
         "auto-play-audio": false,
         "show-transcript": false,
         "show-choice-romanization": true,
+        vibration: true,
       }}
       revealed={true}
     />,
@@ -138,6 +142,7 @@ test("LP5. 한글은 korean-text-heading-l(11자) · 로마자는 text-role-roma
         "auto-play-audio": false,
         "show-transcript": true,
         "show-choice-romanization": true,
+        vibration: true,
       }}
       revealed={false}
     />,
@@ -159,6 +164,7 @@ test("LP5. compact 밀도는 한글이 한 단계 아래(heading-m)이고 로마
         "auto-play-audio": false,
         "show-transcript": true,
         "show-choice-romanization": true,
+        vibration: true,
       }}
       revealed={false}
       density="compact"

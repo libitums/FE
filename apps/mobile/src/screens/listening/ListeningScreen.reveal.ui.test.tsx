@@ -24,6 +24,7 @@ const transcriptOff: SessionOptions = {
   "auto-play-audio": false,
   "show-transcript": false,
   "show-choice-romanization": true,
+  vibration: true,
 };
 
 function renderScreen(
@@ -94,6 +95,7 @@ test("[RS5] 설정에서 대본 표시를 켜면 판정 전에도 보인다", ()
     "auto-play-audio": false,
     "show-transcript": true,
     "show-choice-romanization": true,
+    vibration: true,
   });
 
   expect(text()).toHaveTextContent(first.prompt);
