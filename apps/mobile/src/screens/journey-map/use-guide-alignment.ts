@@ -4,7 +4,7 @@
 // 맨 위가 아니었으면 맨 위에 닿았다는 스크롤 소식이 오거나 잠시가 지나야 보이게 합니다.
 
 import { useEffect, useRef, useState } from "@lynx-js/react";
-import type { ScrollEvent } from "@lynx-js/types";
+import type { LayoutChangeEvent, ScrollEvent } from "@lynx-js/types";
 
 import type { MapGlider } from "./use-map-glide";
 
@@ -17,6 +17,8 @@ export type GuideAlignment = {
   /** 가이드를 보여도 되는가(맨 위에 닿음). */
   readonly aligned: boolean;
   readonly handleScroll: (event: ScrollEvent) => void;
+  /** 지도 내용(스크롤 상자 안쪽)의 `bindlayoutchange`에 붙입니다. */
+  readonly handleContentLayout: (event: LayoutChangeEvent) => void;
 };
 
 export function useGuideAlignment(input: {
@@ -30,18 +32,33 @@ export function useGuideAlignment(input: {
   // 않게 합니다(리뷰 반영). 가이드가 내려가면 다시 맞지 않은 것으로 돌립니다.
   const [aligned, setAligned] = useState(false);
 
+  // 지도 내용이 놓였는가(높이 > 0)와, 가이드가 선 뒤 아직 맨 위로 옮기지 않았는가입니다. 내용이 놓이기 전에 옮기면
+  // Lynx가 스크롤 범위를 「0 − 화면 높이」로 보고 0도 범위 밖이라며 오류를 냈습니다(DURU-ANDROID-F, 1.2.0 신규 설치).
+  const contentLaidOut = useRef(false);
+  const pendingTop = useRef(false);
+  const moveToTop = () => {
+    pendingTop.current = false;
+    glider.stop();
+    glider.glide(scrollTop.current, 0, 0);
+  };
+
   useEffect(() => {
     if (!visible) return;
     // 알고 있는 위치가 맨 위여도 늘 옮깁니다 — 내용이 늘며 스크롤 소식 없이 밀린 위치는 알 수 없습니다(기기에서 확인).
-    glider.stop();
-    glider.glide(scrollTop.current, 0, 0);
+    // 내용이 아직 놓이지 않았으면 놓인 첫 소식에 옮깁니다.
+    if (contentLaidOut.current) moveToTop();
+    else pendingTop.current = true;
     if (scrollTop.current <= TOP_SLOP_PX) {
       setAligned(true);
-      return () => setAligned(false);
+      return () => {
+        pendingTop.current = false;
+        setAligned(false);
+      };
     }
     const fallback = setTimeout(() => setAligned(true), GUIDE_ALIGN_FALLBACK_MS);
     return () => {
       clearTimeout(fallback);
+      pendingTop.current = false;
       setAligned(false);
     };
     // 가이드가 설 때만 맞춥니다 — 스크롤마다 다시 옮기지 않습니다.
@@ -54,6 +71,13 @@ export function useGuideAlignment(input: {
       "background only";
       scrollTop.current = event.detail.scrollTop;
       if (visible && event.detail.scrollTop <= TOP_SLOP_PX) setAligned(true);
+    },
+    handleContentLayout: (event) => {
+      "background only";
+      // 한 번 놓인 뒤의 레이아웃 소식은 볼 것이 없습니다 — 그 뒤에는 이펙트가 바로 옮깁니다(리뷰 반영).
+      if (contentLaidOut.current || event.detail.height <= 0) return;
+      contentLaidOut.current = true;
+      if (pendingTop.current) moveToTop();
     },
   };
 }
