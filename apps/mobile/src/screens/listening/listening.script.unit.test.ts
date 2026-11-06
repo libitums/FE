@@ -16,18 +16,27 @@ function questionOf(prompt: string): ListeningQuestion {
 
 describe("listeningScriptOf (LP1)", () => {
   test.each([
-    ["romanization", false, false, "romanization"],
-    ["romanization", true, false, "full"],
-    ["romanization", false, true, "full"],
-    ["romanization", true, true, "full"],
-    ["nothing", false, false, "none"],
-    ["nothing", true, false, "full"],
-    ["nothing", false, true, "full"],
-    ["nothing", true, true, "full"],
+    [false, false, "none"],
+    [true, false, "full"],
+    [false, true, "full"],
+    [true, true, "full"],
+  ] as const)("RS1. showTranscript %s · revealed %s → %s", (showTranscript, revealed, expected) => {
+    expect(listeningScriptOf({ showTranscript, revealed })).toBe(expected);
+  });
+
+  // 답 전 로마자만 보이던 갈래는 없다(보기 로마자 결정 1) — 옛 입력이 와도 결과에 romanization이 없다.
+  test.each([
+    [false, false, "none"],
+    [true, false, "full"],
+    [false, true, "full"],
+    [true, true, "full"],
   ] as const)(
-    "beforeAnswer %s · showTranscript %s · revealed %s → %s",
-    (beforeAnswer, showTranscript, revealed, expected) => {
-      expect(listeningScriptOf({ beforeAnswer, showTranscript, revealed })).toBe(expected);
+    "RS1. 옛 beforeAnswer 입력은 무시된다 — showTranscript %s · revealed %s → %s",
+    (showTranscript, revealed, expected) => {
+      const legacy = { showTranscript, revealed, beforeAnswer: "romanization" };
+
+      expect(listeningScriptOf(legacy as never)).toBe(expected);
+      expect(listeningScriptOf(legacy as never)).not.toBe("romanization");
     },
   );
 });

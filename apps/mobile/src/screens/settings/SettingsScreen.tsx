@@ -14,7 +14,7 @@ import {
 import type { SettingsScreenProps } from "./settings.contract";
 import { appVersionLabel } from "../../lib/app-version";
 import { useAccountActions } from "./use-account-actions";
-import { settingsNavLabel, settingsNavTargets } from "./settings";
+import { settingsNavLabel, settingsNavTargets, settingsSessionOptionRows } from "./settings";
 import { useUiCopy } from "../../lib/ui-copy";
 
 import "./settings-screen.css";
@@ -28,8 +28,22 @@ export function SettingsScreen({
   onSignOut,
   onDeleteAccount,
   onLayerChange,
+  sessionOptions,
+  onToggleSessionOption,
 }: SettingsScreenProps): ReactNode {
   const copy = useUiCopy();
+  // 학습 묶음은 목록 맨 위입니다 — 켬/끔 줄은 셀 전체가 탭 대상이고 바뀐 뒤 값을 알립니다.
+  const learningItems: readonly SettingsGroupItem[] = settingsSessionOptionRows(
+    sessionOptions,
+    copy,
+  ).map((row) => ({
+    id: row.key,
+    trailing: "toggle",
+    title: row.title,
+    description: row.description,
+    checked: row.checked,
+    onChange: (checked: boolean) => onToggleSessionOption(row.key, checked),
+  }));
   const account = useAccountActions({ onSignOut, onDeleteAccount, onLayerChange });
   const { state } = account;
   const layerOpen = accountActionsLayerOpen(state);
@@ -79,6 +93,7 @@ export function SettingsScreen({
         {/* `<scroll-view>`의 직계 자식은 이 상자 하나입니다(ADR-0022 D4) — 간격은
             이 상자가 집니다(`<scroll-view>` 안은 강제 linear라 `gap`이 무동작입니다). */}
         <view className="settings-screen-list" data-testid="settings-screen-list">
+          <SettingsGroup accessibilityLabel={copy.settings.group.learning} items={learningItems} />
           <SettingsGroup accessibilityLabel={copy.settings.group.account} items={accountItems} />
           <SettingsGroup
             accessibilityLabel={copy.settings.group.accountActions}

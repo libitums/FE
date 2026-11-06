@@ -39,7 +39,11 @@ const audioQuestion: ListeningQuestion = {
   answerIndex: 0,
 };
 
-const transcriptOff: SessionOptions = { "auto-play-audio": true, "show-transcript": false };
+const transcriptOff: SessionOptions = {
+  "auto-play-audio": true,
+  "show-transcript": false,
+  "show-choice-romanization": true,
+};
 
 // 호스트 경계 하나만 대역으로 세웁니다 — `lib/audio.ts`를 mock하지 않습니다.
 function stubHost() {

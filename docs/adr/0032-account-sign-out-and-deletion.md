@@ -162,6 +162,7 @@
 | `libitum.learner-profile.<userId>` ⟨2026-10-13 — 적용 기록⟩ | 그대로 | **지움**(그 사용자의 칸) |
 | `libitum.learner-profile.guest` ⟨2026-10-13 — 적용 기록⟩ | — (로그인 뒤 첫 동기화가 지운다) | — |
 | `libitum.progress.cached.<userId>` ⟨2026-10-15 — 적용 기록⟩ | 그대로 | **지움**(그 사용자의 키) |
+| `libitum.session-option.show-choice-romanization` ⟨2026-11-06 — 적용 기록⟩ | 그대로 | 그대로 |
 
 언어는 사용자 설정이지 계정 데이터가 아니다 — 같은 기기의 다음 사람도 같은 UI 언어로 온보딩을 본다
 (ADR-0031 D4 재검토 조건의 판정).
@@ -189,6 +190,11 @@ ADR-0036의 것)를 싣지 않는다 — 이번에 채우지 않았다.
 ([ADR-0062](0062-progress-cache-first.md) D1 · D12). 진행 미전송 키(`libitum.progress.pending.<userId>` — 이 표에 없던 ADR-0035의 키)와 **같은 규칙**이다 —
 로그아웃은 남기고(같은 계정으로 다시 들어오면 응답 전에 맵이 지난 진행으로 선다. 다른 계정은 키가 달라 읽지 않는다 — 사용자가 기본값을 확정했다),
 계정 삭제 성공은 `account-wiring.ts`의 같은 묶음에서 지운다. 삭제 뒤 키가 없는 것 · 로그아웃 뒤 남는 것은 unit · integration까지 확인했고 기기에서는 보지 않았다.
+
+⟨2026-11-06 — 적용 기록, 새 결정 아님⟩ 표의 아홉째 줄은 보기 로마자 표시 설정이다(`"on"` / `"off"`,
+[ADR-0108](0108-choice-romanization.md) D3). UI 언어와 같은 **기기 설정**이라 로그아웃 · 계정 삭제 어느 쪽도 지우지 않는다 — 같은 기기의
+다음 사람도 고른 값을 이어받는다. 삭제 경로 · 로그아웃 경로에 이 키를 지우는 코드가 없다는 것까지다 [코드]. 로그아웃 뒤 남는 것은
+integration(`App.choice-romanization`)까지 확인했고 기기에서는 보지 않았다([보기 로마자 e2e](../e2e/choice-romanization.md) CR-E4).
 
 ### D7. 분석 — `AnalyticsSession`의 `identify` 자리가 `user`가 된다
 

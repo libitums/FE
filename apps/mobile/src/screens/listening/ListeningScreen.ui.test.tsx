@@ -14,7 +14,11 @@ import { expectChoiceResult } from "../../components/question-options.test-suppo
 import { listenButtonIn, roundButtonId } from "../../components/listen-round-buttons.test-support";
 
 // 대본 표시를 켠 fixture입니다 — 기본값이 꺼짐(v2)이 되어도 이 파일의 단언은 대본이 보이는 화면을 봅니다.
-const transcriptOn: SessionOptions = { "auto-play-audio": true, "show-transcript": true };
+const transcriptOn: SessionOptions = {
+  "auto-play-audio": true,
+  "show-transcript": true,
+  "show-choice-romanization": true,
+};
 
 // 무대(가운데 카드) 안만 세는 헬퍼입니다. 뼈대는 `LearningShell`의 것이고 그 계약은
 // 껍데기 자신의 테스트가 답니다 — 여기서 화면 전체를 세면 상단 바의 칩 · 알림 버튼과

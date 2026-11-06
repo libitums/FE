@@ -25,33 +25,57 @@ function OptionSelectorText({
   readonly contract: OptionSelectorItemContract;
   readonly languageTag?: string;
 }) {
-  if (contract.meaning === null) {
+  const { id, label, meaning, romanization } = contract;
+  const labelNode = (
+    <text
+      className="ui-lynx-option-selector-label"
+      data-testid={`ui-lynx-option-selector-label-${id}`}
+      data-lang={languageTag}
+    >
+      {label}
+    </text>
+  );
+  if (meaning === null && romanization === null) return labelNode;
+  // FE 확장: 로마자 · 뜻은 장식에 가까운 보조 줄이라 접근성 이름(항목 이름)에만 실립니다.
+  // 로마자 줄은 뜻 줄의 색 규칙을 그대로 공유하고 기울임만 더합니다.
+  // 줄이 있고 없음은 JSX 조건식이 아니라 갈래로 나눕니다 — 조건식은 줄마다 `wrapper`를 끼워 DOM 순서를 흐립니다.
+  const romanNode = (
+    <text
+      className="ui-lynx-option-selector-meaning ui-lynx-option-selector-romanization"
+      data-testid={`ui-lynx-option-selector-romanization-${id}`}
+    >
+      {romanization}
+    </text>
+  );
+  const meaningNode = (
+    <text
+      className="ui-lynx-option-selector-meaning"
+      data-testid={`ui-lynx-option-selector-meaning-${id}`}
+    >
+      {meaning}
+    </text>
+  );
+  if (meaning === null) {
     return (
-      <text
-        className="ui-lynx-option-selector-label"
-        data-testid={`ui-lynx-option-selector-label-${contract.id}`}
-        data-lang={languageTag}
-      >
-        {contract.label}
-      </text>
+      <view className="ui-lynx-option-selector-text">
+        {romanNode}
+        {labelNode}
+      </view>
     );
   }
-  // FE 확장: 뜻은 장식에 가까운 보조 줄이라 접근성 이름(항목 이름)에만 실립니다.
+  if (romanization === null) {
+    return (
+      <view className="ui-lynx-option-selector-text">
+        {labelNode}
+        {meaningNode}
+      </view>
+    );
+  }
   return (
     <view className="ui-lynx-option-selector-text">
-      <text
-        className="ui-lynx-option-selector-label"
-        data-testid={`ui-lynx-option-selector-label-${contract.id}`}
-        data-lang={languageTag}
-      >
-        {contract.label}
-      </text>
-      <text
-        className="ui-lynx-option-selector-meaning"
-        data-testid={`ui-lynx-option-selector-meaning-${contract.id}`}
-      >
-        {contract.meaning}
-      </text>
+      {romanNode}
+      {labelNode}
+      {meaningNode}
     </view>
   );
 }

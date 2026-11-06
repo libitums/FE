@@ -15,9 +15,10 @@ import {
 } from "../screens/notifications/notifications";
 import type { RoleplayItem } from "../screens/roleplay-list/roleplay-list.contract";
 import { openLegalDocument } from "../lib/legal-document";
-import { settingsNavOpenedEvent } from "../screens/settings/settings";
+import { sessionOptionChangedEvent, settingsNavOpenedEvent } from "../screens/settings/settings";
 import type { SettingsEventSink, SettingsNavTarget } from "../screens/settings/settings.contract";
-import type { SessionOptions } from "../lib/session-options";
+import type { SessionOptionKey, SessionOptions } from "../lib/session-options";
+import type { SessionOptionsWiring } from "./use-session-options";
 import { roleplayScreenFor } from "./screen-routing";
 import { tabRootActions } from "./nav-reducer";
 import { submitFeedback } from "../lib/feedback-api";
@@ -34,6 +35,7 @@ export type JourneyWiringArgs = {
   readonly notifications: readonly NotificationItem[];
   readonly setNotifications: Dispatch<SetStateAction<readonly NotificationItem[]>>;
   readonly sessionOptions: SessionOptions;
+  readonly setSessionOption: SessionOptionsWiring["setSessionOption"];
 };
 
 export function journeyWiring(args: JourneyWiringArgs) {
@@ -87,6 +89,11 @@ export function journeyWiring(args: JourneyWiringArgs) {
     // 열림 이벤트 → 프로필은 `push`, 문서 둘은 앱 위 브라우저(ADR-0033). 문서는 설정 탭
     // 스택에 쌓이지 않고, 브라우저를 닫으면 설정 화면 그대로입니다.
     sessionOptions: args.sessionOptions,
+    // 설정의 세션 옵션 토글입니다. 이벤트를 먼저 보내고 상태 · 저장을 바꿉니다. `value`는 바뀐 뒤 값입니다.
+    onToggleSessionOption: (key: SessionOptionKey, value: boolean) => {
+      settingsEventSink?.(sessionOptionChangedEvent(key, value));
+      args.setSessionOption(key, value);
+    },
     onSelectNavTarget: (target: SettingsNavTarget) => {
       settingsEventSink?.(settingsNavOpenedEvent(target));
       if (target === "profile" || target === "feedback" || target === "learner-profile") {

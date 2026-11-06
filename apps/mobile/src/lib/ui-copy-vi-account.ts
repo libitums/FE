@@ -51,7 +51,14 @@ export const settingsVi: SettingsCopy = {
       cancel: "Hủy",
     },
   },
-  sessionOption: { "auto-play-audio": "Tự động phát", "show-transcript": "Hiện phụ đề" },
+  sessionOption: {
+    "auto-play-audio": "Tự động phát",
+    "show-transcript": "Hiện phụ đề",
+    "show-choice-romanization": "Phiên âm ở các lựa chọn",
+  },
+  sessionOptionDescription: {
+    "show-choice-romanization": "Hiện cách đọc của từng đáp án tiếng Hàn bằng chữ nhỏ phía trên.",
+  },
   optionState: { on: "bật", off: "tắt" },
   action: { "sign-out": "Đăng xuất", "delete-account": "Xóa tài khoản" },
   signOutDialog: { title: "Đăng xuất?", confirm: "Đăng xuất", cancel: "Vẫn đăng nhập" },

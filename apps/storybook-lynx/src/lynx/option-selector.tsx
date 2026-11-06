@@ -34,6 +34,13 @@ const meanings: Readonly<Record<string, string>> = {
   water: "A clear drink",
 };
 
+const romanizations: Readonly<Record<string, string>> = {
+  coffee: "keopi",
+  tea: "cha",
+  juice: "juseu",
+  water: "mul",
+};
+
 const longOptions: readonly OptionSelectorOption[] = [
   { id: "coffee", label: "Could I get a large iced coffee with oat milk, please?" },
   { id: "tea", label: "I'd like a cup of hot green tea." },
@@ -61,10 +68,14 @@ function App() {
   const baseOptions = args.longLabels === true ? longOptions : shortOptions;
   const judged = args.judged === true && variant !== "filled";
   const options = baseOptions.map((option, index): OptionSelectorOption => {
+    const withRomanization =
+      args.withRomanization === true && romanizations[option.id] !== undefined
+        ? { ...option, romanization: romanizations[option.id] }
+        : option;
     const withMeaning =
       args.withMeaning === true && variant !== "filled" && meanings[option.id] !== undefined
-        ? { ...option, meaning: meanings[option.id] }
-        : option;
+        ? { ...withRomanization, meaning: meanings[option.id] }
+        : withRomanization;
     // 확정 뒤 모습: 첫 보기는 정답, 둘째 보기는 고른 오답입니다.
     if (judged && index === 0) return { ...withMeaning, feedback: "correct" };
     if (judged && index === 1) return { ...withMeaning, feedback: "incorrect" };

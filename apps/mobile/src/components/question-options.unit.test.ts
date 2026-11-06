@@ -4,6 +4,7 @@ import {
   type QuestionOptionsInput,
   questionOptionId,
   questionOptionIndexOf,
+  questionOptionsOf,
   questionOptionSelectorPropsOf,
 } from "./question-options";
 
@@ -146,5 +147,105 @@ describe("questionOptionSelectorPropsOf", () => {
     const waiting = questionOptionSelectorPropsOf(input({ state: { kind: "waiting" } }));
 
     expect(waiting).toEqual(open);
+  });
+});
+
+describe("questionOptionsOf (QO7)", () => {
+  const choices = ["안녕하세요.", "네.", "저는 민아예요."];
+
+  test("QO7. shown: 로마자가 있는 자리만 romanization 키가 서고 null · 빈 자리는 키가 없다", () => {
+    const options = questionOptionsOf(
+      { choices, romanizations: ["annyeonghaseyo.", null, ""] },
+      "shown",
+    );
+
+    expect(options[0]).toEqual({ text: "안녕하세요.", romanization: "annyeonghaseyo." });
+    expect(options[1]).toEqual({ text: "네." });
+    expect(options[2]).toEqual({ text: "저는 민아예요." });
+    expect(Object.keys(options[1] ?? {})).not.toContain("romanization");
+    expect(Object.keys(options[2] ?? {})).not.toContain("romanization");
+  });
+
+  test("QO7. shown: 뜻은 로마자와 함께 유지된다", () => {
+    const options = questionOptionsOf(
+      { choices, romanizations: ["a", "b", "c"], meanings: ["Hello.", "Yes.", "I am Mina."] },
+      "shown",
+    );
+
+    expect(options).toEqual([
+      { text: "안녕하세요.", romanization: "a", meaning: "Hello." },
+      { text: "네.", romanization: "b", meaning: "Yes." },
+      { text: "저는 민아예요.", romanization: "c", meaning: "I am Mina." },
+    ]);
+  });
+
+  test("QO7. hidden: romanization 키가 하나도 없고 로마자를 안 준 옛 출력과 toEqual이다", () => {
+    const withRomans = questionOptionsOf(
+      { choices, romanizations: ["a", "b", "c"], meanings: ["x", "y", "z"] },
+      "hidden",
+    );
+    const legacy = questionOptionsOf({ choices, meanings: ["x", "y", "z"] }, "shown");
+
+    expect(withRomans).toEqual(legacy);
+    expect(withRomans.every((option) => !("romanization" in option))).toBe(true);
+    expect(withRomans.map((option) => option.meaning)).toEqual(["x", "y", "z"]);
+  });
+
+  test("QO7. romanizations가 없으면 shown이어도 키가 없다", () => {
+    const options = questionOptionsOf({ choices }, "shown");
+
+    expect(options).toEqual(choices.map((text) => ({ text })));
+  });
+
+  test("QO7. meanings는 길이가 같을 때만 싣는다", () => {
+    const options = questionOptionsOf({ choices, meanings: ["only one"] }, "shown");
+
+    expect(options.every((option) => option.meaning === undefined)).toBe(true);
+  });
+});
+
+describe("questionOptionSelectorPropsOf — 로마자 (QO8)", () => {
+  const romanOptions = [
+    { text: "카페", romanization: "kape", meaning: "Cafe" },
+    { text: "학교", meaning: "School" },
+    { text: "병원", romanization: "byeongwon", meaning: "Hospital" },
+  ];
+  const labels = ["카페, kape, Cafe", "학교, School", "병원, byeongwon, Hospital"];
+  const romanOf = (option: object | undefined): unknown =>
+    Reflect.get(option ?? {}, "romanization");
+
+  test("QO8. romanization을 OptionSelectorOption.romanization으로 넘기고 없는 자리는 키가 없다", () => {
+    const props = questionOptionSelectorPropsOf(
+      input({ options: romanOptions, accessibilityLabels: labels }),
+    );
+
+    expect(props.options.map(romanOf)).toEqual(["kape", undefined, "byeongwon"]);
+    expect(Object.keys(props.options[1] ?? {})).not.toContain("romanization");
+  });
+
+  test("QO8. 판정 뒤 접힘이면 고른 보기 하나와 그 로마자만 남는다", () => {
+    const props = questionOptionSelectorPropsOf(
+      input({
+        options: romanOptions,
+        accessibilityLabels: labels,
+        state: { kind: "judged", index: 2, result: "correct", rest: "collapsed" },
+      }),
+    );
+
+    expect(props.options).toHaveLength(1);
+    expect(romanOf(props.options[0])).toBe("byeongwon");
+    expect(props.options[0]).toMatchObject({ id: "choice-2", feedback: "correct" });
+  });
+
+  test("QO8. 판정 뒤 비활성이어도 모든 보기의 로마자가 남는다", () => {
+    const props = questionOptionSelectorPropsOf(
+      input({
+        options: romanOptions,
+        accessibilityLabels: labels,
+        state: { kind: "judged", index: 0, result: "incorrect", rest: "disabled" },
+      }),
+    );
+
+    expect(props.options.map(romanOf)).toEqual(["kape", undefined, "byeongwon"]);
   });
 });

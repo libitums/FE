@@ -20,7 +20,11 @@ const first = questions[0];
 const second = questions[1];
 if (first === undefined || second === undefined) throw new Error("ordering 문항이 모자란다");
 
-const transcriptOff: SessionOptions = { "auto-play-audio": false, "show-transcript": false };
+const transcriptOff: SessionOptions = {
+  "auto-play-audio": false,
+  "show-transcript": false,
+  "show-choice-romanization": true,
+};
 
 function renderScreen(
   sessionOptions: SessionOptions,
@@ -86,7 +90,11 @@ test("[RS4] 다음 문항으로 가면 대본이 다시 없다", () => {
 });
 
 test("[RS5] 설정에서 대본 표시를 켜면 판정 전에도 보인다", () => {
-  renderScreen({ "auto-play-audio": false, "show-transcript": true });
+  renderScreen({
+    "auto-play-audio": false,
+    "show-transcript": true,
+    "show-choice-romanization": true,
+  });
 
   expect(text()).toHaveTextContent(first.prompt);
   expect(romanization()).toHaveTextContent(first.romanization);

@@ -569,3 +569,121 @@ describe("OptionSelector outlined-subtle 상태 클래스 (OS9)", () => {
     expect(firstItem({ selectedIds: ["a"] }).indicatorColor).toBe(color.fg.brand);
   });
 });
+
+// `unit` 계층: 보기 로마자(romanization) 확장의 항목 계산 — 값 정리, 열거 여부, 접근성 이름 조합만 봅니다.
+// 타입에 아직 없는 필드는 구조 캐스트로 넘겨, 확장이 들어오기 전에도 이 파일이 컴파일됩니다.
+
+function optionsOf(patch: Record<string, unknown> = {}): readonly OptionSelectorOption[] {
+  return [
+    { id: "a", label: "안녕", ...patch } as unknown as OptionSelectorOption,
+    { id: "b", label: "네" },
+    { id: "c", label: "고마워요" },
+  ];
+}
+
+function romanizationFirstItem(
+  patch: Record<string, unknown>,
+  props: Partial<OptionSelectorProps> = {},
+) {
+  return getOptionSelectorContract({
+    groupLabel: "알맞은 것을 고르세요",
+    options: optionsOf(patch),
+    selectedIds: [],
+    onChange: noop,
+    variant: "outlined-subtle",
+    ...props,
+  }).items[0]!;
+}
+
+const romanOf = (item: object): unknown => Reflect.get(item, "romanization");
+
+describe("OptionSelector romanization 값 (U-OS-R1)", () => {
+  test("OS-R1. 앞뒤 공백을 걷은 값이 항목에 실린다", () => {
+    const item = romanizationFirstItem({ romanization: " annyeong " });
+
+    expect(romanOf(item)).toBe("annyeong");
+    expect(Object.keys(item)).toContain("romanization");
+  });
+
+  test("OS-R1. 없으면 null이고 열거되지 않는다 — 확장 없는 항목 모양이 그대로다", () => {
+    const item = romanizationFirstItem({});
+
+    expect(romanOf(item)).toBeNull();
+    expect(Object.keys(item)).not.toContain("romanization");
+    expect(item).toEqual({
+      id: "a",
+      label: "안녕",
+      icon: null,
+      selected: false,
+      disabled: false,
+      interactive: true,
+      className: "ui-lynx-option-selector-item ui-lynx-option-selector-item-pressable",
+      accessibilityLabel: "안녕",
+      traits: "button",
+      indicatorColor: null,
+    });
+  });
+
+  test("OS-R1. 공백뿐인 값은 던지지 않고 없음과 같다", () => {
+    const item = romanizationFirstItem({ romanization: "   " });
+
+    expect(romanOf(item)).toBeNull();
+    expect(Object.keys(item)).not.toContain("romanization");
+  });
+
+  test("OS-R1. 뜻과 함께 줘도 둘 다 항목에 실린다", () => {
+    const item = romanizationFirstItem({ romanization: "annyeong", meaning: "Hi" });
+
+    expect(romanOf(item)).toBe("annyeong");
+    expect(item.meaning).toBe("Hi");
+  });
+});
+
+describe("OptionSelector 접근성 이름 — 로마자 (U-OS-R2)", () => {
+  test("OS-R2. 명시 이름이 없으면 라벨, 로마자 순서다", () => {
+    expect(romanizationFirstItem({ romanization: "annyeong" }).accessibilityLabel).toBe(
+      "안녕, annyeong",
+    );
+  });
+
+  test("OS-R2. 라벨, 로마자, 뜻 순서이고 선택 접미사가 끝에 붙는다", () => {
+    expect(
+      romanizationFirstItem({ romanization: "annyeong", meaning: "Hi" }).accessibilityLabel,
+    ).toBe("안녕, annyeong, Hi");
+    expect(
+      romanizationFirstItem({ romanization: "annyeong", meaning: "Hi" }, { selectedIds: ["a"] })
+        .accessibilityLabel,
+    ).toBe("안녕, annyeong, Hi, selected");
+    expect(
+      romanizationFirstItem({ romanization: "annyeong" }, { selectedIds: ["a"] })
+        .accessibilityLabel,
+    ).toBe("안녕, annyeong, selected");
+  });
+
+  test("OS-R2. 판정이 있으면 라벨, 로마자, 뜻, 판정 순서다", () => {
+    expect(
+      romanizationFirstItem({ romanization: "annyeong", meaning: "Hi", feedback: "correct" })
+        .accessibilityLabel,
+    ).toBe("안녕, annyeong, Hi, correct");
+  });
+
+  test("OS-R2. 명시 이름과 로마자를 함께 주면 명시 이름 그대로이고 selected가 붙지 않는다", () => {
+    const item = romanizationFirstItem(
+      { romanization: "annyeong", accessibilityLabel: "안녕, annyeong, correct" },
+      { selectedIds: ["a"] },
+    );
+
+    expect(item.accessibilityLabel).toBe("안녕, annyeong, correct");
+  });
+
+  test("OS-R2. 로마자가 없는 경로는 지금 값 그대로다", () => {
+    expect(romanizationFirstItem({}).accessibilityLabel).toBe("안녕");
+    expect(romanizationFirstItem({}, { selectedIds: ["a"] }).accessibilityLabel).toBe(
+      "안녕, selected",
+    );
+    expect(
+      romanizationFirstItem({ accessibilityLabel: "안녕!" }, { selectedIds: ["a"] })
+        .accessibilityLabel,
+    ).toBe("안녕!, selected");
+  });
+});

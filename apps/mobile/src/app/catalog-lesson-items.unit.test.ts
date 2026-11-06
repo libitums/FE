@@ -469,6 +469,7 @@ describe("pictureChoiceItemOf", () => {
       question: {
         prompt: "water",
         choices: ["카드", "현금", "물", "영수증"],
+        choiceRomanizations: ["kadeu", "hyeongeum", "mul", "yeongsujeung"],
         answerIndex: 2,
         instruction: "Which word matches the picture?",
         picture: { url: "https://cdn/images/u01-water/s1-05.jpg", answerRomanization: "mul" },

@@ -43,7 +43,8 @@ import type {
   RoleplaySection,
 } from "../screens/roleplay-list/roleplay-list.contract";
 import type { SettingsEventSink, SettingsNavTarget } from "../screens/settings/settings.contract";
-import type { SessionOptions } from "../lib/session-options";
+import type { SessionOptionKey, SessionOptions } from "../lib/session-options";
+import type { SessionOptionsWiring } from "./use-session-options";
 import type { NavAction } from "./nav-state";
 import { entryWiring, type LearnerSignupWiring } from "./entry-wiring";
 import { journeyWiring } from "./journey-wiring";
@@ -95,6 +96,7 @@ export type ScreenWiring = {
   // 세션 옵션의 진실의 출처와 설정 탭의 이동·토글·나가기 콜백 셋입니다. 화면은
   // 스택도 `dispatch`도 모릅니다(위 원칙 그대로).
   sessionOptions: SessionOptions;
+  onToggleSessionOption: (key: SessionOptionKey, value: boolean) => void;
   onSelectNavTarget: (target: SettingsNavTarget) => void;
   onExitSettingsStack: () => void;
   onSubmitFeedback: FeedbackScreenProps["onSubmit"];
@@ -138,6 +140,7 @@ export type ScreenWiringArgs = {
   readonly notifications: readonly NotificationItem[];
   readonly setNotifications: Dispatch<SetStateAction<readonly NotificationItem[]>>;
   readonly sessionOptions: SessionOptions;
+  readonly setSessionOption: SessionOptionsWiring["setSessionOption"];
   readonly safeAreaInsets: SafeAreaInsets;
   readonly appVersion: AppVersion | null;
   readonly gemCount: number;

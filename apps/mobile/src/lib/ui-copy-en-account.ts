@@ -51,7 +51,14 @@ export const settingsEn: SettingsCopy = {
       cancel: "Cancel",
     },
   },
-  sessionOption: { "auto-play-audio": "Auto-play", "show-transcript": "Show transcript" },
+  sessionOption: {
+    "auto-play-audio": "Auto-play",
+    "show-transcript": "Show transcript",
+    "show-choice-romanization": "Romanization on choices",
+  },
+  sessionOptionDescription: {
+    "show-choice-romanization": "Show how each Korean answer is read, in small text above it.",
+  },
   optionState: { on: "on", off: "off" },
   action: { "sign-out": "Sign out", "delete-account": "Delete account" },
   signOutDialog: { title: "Sign out?", confirm: "Sign out", cancel: "Stay signed in" },

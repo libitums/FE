@@ -4,6 +4,7 @@ import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/
 import { backHandlers } from "../../lib/back-handler";
 import type { AccountDeletionResult } from "../../lib/account.contract";
 import { SettingsScreen } from "./SettingsScreen";
+import { initialSessionOptions } from "../../lib/session-options";
 
 function renderSettings() {
   const onSignOut = vi.fn<() => void>();
@@ -16,6 +17,8 @@ function renderSettings() {
       learnerProfileSummary="Not set"
       languageSummary="Intermediate English"
       appVersion={null}
+      sessionOptions={initialSessionOptions}
+      onToggleSessionOption={() => undefined}
       onSignOut={onSignOut}
       onDeleteAccount={onDeleteAccount}
       onLayerChange={() => undefined}

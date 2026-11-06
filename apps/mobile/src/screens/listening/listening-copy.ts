@@ -12,11 +12,15 @@ export function choiceAccessibilityLabel(
   text: string,
   result: AnswerResult | null,
   copy: UiCopy,
+  romanization?: string,
 ): string {
+  // 로마자는 다른 화면처럼 `Pronunciation:` 접두로 읽습니다(ADR-0084 D19) — 한글 · 뜻과 소리로 가립니다.
+  const base =
+    romanization === undefined ? text : `${text}, ${copy.readAloud.pronunciation(romanization)}`;
   if (result === null) {
-    return text;
+    return base;
   }
-  return `${text}, ${copy.common.answerResultSuffix[result]}`;
+  return `${base}, ${copy.common.answerResultSuffix[result]}`;
 }
 
 // ---------------------------------------------------------------- 완료 전이 발화

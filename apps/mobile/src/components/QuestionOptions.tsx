@@ -48,7 +48,7 @@ export function QuestionOptions({ testId, onSelect, ...input }: QuestionOptionsP
   );
 
   return (
-    <view data-testid={testId}>
+    <view className={`question-options question-options-${input.density}`} data-testid={testId}>
       {input.state.kind === "waiting" ? (
         <view className="question-options-waiting" data-testid="question-options-waiting">
           {selector}

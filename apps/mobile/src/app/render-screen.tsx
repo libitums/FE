@@ -58,6 +58,8 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
           learnerProfileSummary={learnerSettingsSummary(wiring)}
           languageSummary={entryLanguageLabel(wiring.entryLanguage)}
           appVersion={wiring.appVersion}
+          sessionOptions={wiring.sessionOptions}
+          onToggleSessionOption={wiring.onToggleSessionOption}
           onSignOut={wiring.onSignOut}
           onDeleteAccount={wiring.onDeleteAccount}
           onLayerChange={wiring.onScreenLayerChange}

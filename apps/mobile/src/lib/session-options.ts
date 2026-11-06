@@ -8,12 +8,13 @@ import type { UiCopy } from "./ui-copy.contract";
 // 근거로 올라온 선례입니다. 이 모듈은 타입과 순수 함수뿐입니다 — UI를 import하지
 // 않습니다.
 
-export type SessionOptionKey = "auto-play-audio" | "show-transcript";
+export type SessionOptionKey = "auto-play-audio" | "show-transcript" | "show-choice-romanization";
 export type SessionOptions = Readonly<Record<SessionOptionKey, boolean>>;
 
 export const sessionOptionKeys: readonly SessionOptionKey[] = [
   "auto-play-audio",
   "show-transcript",
+  "show-choice-romanization",
 ];
 
 // 자동 재생은 켜짐, 대본은 꺼짐이 초기값입니다 — 문항마다 진짜 음성이 붙어서 소리만으로
@@ -23,7 +24,15 @@ export const sessionOptionKeys: readonly SessionOptionKey[] = [
 export const initialSessionOptions: SessionOptions = {
   "auto-play-audio": true,
   "show-transcript": false,
+  "show-choice-romanization": true,
 };
+
+/** 보기 로마자를 그리는가 — 화면이 받는 갈래입니다. */
+export type ChoiceRomanization = "shown" | "hidden";
+
+export function choiceRomanizationOf(options: SessionOptions): ChoiceRomanization {
+  return options["show-choice-romanization"] ? "shown" : "hidden";
+}
 
 export function sessionOptionLabel(key: SessionOptionKey, copy: UiCopy): string {
   return copy.settings.sessionOption[key];

@@ -25,6 +25,7 @@ const meta = {
     disabledLast: { control: "boolean" },
     committed: { control: "boolean" },
     withMeaning: { control: "boolean" },
+    withRomanization: { control: "boolean" },
     judged: { control: "boolean" },
     motion: { control: "inline-radio", options: ["standard", "reduced"] },
     onChange: { control: false },
@@ -41,6 +42,7 @@ const meta = {
     disabledLast: false,
     committed: false,
     withMeaning: false,
+    withRomanization: false,
     judged: false,
     motion: "standard",
     onChange: fn(),
@@ -55,6 +57,12 @@ export const Default: Story = {};
 export const Filled: Story = { args: { variant: "filled" } };
 export const OutlinedSubtle: Story = { args: { variant: "outlined-subtle" } };
 export const WithMeaning: Story = { args: { variant: "outlined-subtle", withMeaning: true } };
+export const WithRomanization: Story = {
+  args: { variant: "outlined-subtle", withRomanization: true },
+};
+export const WithRomanizationAndMeaning: Story = {
+  args: { variant: "outlined-subtle", withRomanization: true, withMeaning: true },
+};
 export const Judged: Story = {
   args: { variant: "outlined-subtle", withMeaning: true, judged: true, commit: "immediate" },
 };

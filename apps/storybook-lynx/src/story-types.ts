@@ -135,6 +135,8 @@ export type OptionSelectorStoryArgs = {
   committed: boolean;
   /** 보기마다 아래 뜻 줄을 그립니다(FE 확장). */
   withMeaning: boolean;
+  /** 보기마다 위 로마자 줄을 그립니다(FE 확장). */
+  withRomanization: boolean;
   /** 확정 뒤 모습입니다 — 고른 보기와 정답 보기에 판정을 싣습니다(FE 확장). */
   judged: boolean;
   motion: Motion;

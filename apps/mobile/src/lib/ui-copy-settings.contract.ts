@@ -1,7 +1,10 @@
 // 설정 화면의 문구 타입입니다 — `ui-copy-sections.contract.ts`가 300줄을 넘지 않게 떼어 두고 그 파일이 다시 내보냅니다.
 
 import type { MobileDataPolicy } from "./download-policy";
-import type { SettingsNavTarget } from "../screens/settings/settings.contract";
+import type {
+  SettingsNavTarget,
+  SettingsSessionOptionKey,
+} from "../screens/settings/settings.contract";
 import type { SessionOptionKey } from "./session-options";
 
 /** 설정 › 다운로드 화면의 문구입니다(ADR-0095 D8). */
@@ -64,6 +67,8 @@ export type SettingsCopy = {
   /** 설정 › 다운로드 화면(ADR-0095 D8)입니다. */
   readonly downloads: DownloadSettingsCopy;
   readonly sessionOption: Readonly<Record<SessionOptionKey, string>>;
+  /** 설정에 서는 세션 옵션 줄의 설명 줄입니다. */
+  readonly sessionOptionDescription: Readonly<Record<SettingsSessionOptionKey, string>>;
   /** 접미 낱말(소문자) — `Auto-play, on` */
   readonly optionState: Readonly<Record<"on" | "off", string>>;
   /** 「Account actions」 묶음의 행 제목 — 키는 `AccountAction` */

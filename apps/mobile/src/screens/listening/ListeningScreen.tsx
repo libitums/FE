@@ -26,7 +26,8 @@ import {
 import { listenCueOf, standaloneLessonAudio } from "../../lib/question-audio";
 import type { LessonAudio } from "../../lib/question-audio";
 import type { ItemAnswerReporter } from "../../lib/item-answer";
-import type { SessionOptions } from "../../lib/session-options";
+import { choiceRomanizationOf, type SessionOptions } from "../../lib/session-options";
+import { questionOptionsOf } from "../../components/question-options";
 import { handsOffAfter, lessonCounter } from "../learning/activity-finish";
 import { useLearningDensity } from "../learning/use-learning-density";
 import type { ActivityFinish, LessonPosition } from "../learning/activity-finish";
@@ -157,6 +158,20 @@ export function ListeningActivity({
     questions.length,
   );
 
+  // 보기 로마자는 답하기 전부터 섭니다 — 제시 카드는 답 전에 재생 줄만 남깁니다.
+  const options =
+    question === null
+      ? []
+      : questionOptionsOf(
+          {
+            choices: question.choices,
+            ...(question.choiceRomanizations === undefined
+              ? {}
+              : { romanizations: question.choiceRomanizations }),
+          },
+          choiceRomanizationOf(sessionOptions),
+        );
+
   return (
     <LearningShell
       form="listening"
@@ -179,10 +194,15 @@ export function ListeningActivity({
           <QuestionOptions
             testId="listening-screen-choices"
             groupLabel={question.instruction ?? copy.listening.instruction}
-            options={question.choices.map((text) => ({ text }))}
-            accessibilityLabels={question.choices.map((text, choiceIndex) =>
+            options={options}
+            accessibilityLabels={options.map((option, choiceIndex) =>
               // 판정을 지는 보기는 고른 하나뿐입니다 — 고르지 않은 정답 보기는 null입니다.
-              choiceAccessibilityLabel(text, choiceResultAt(state, question, choiceIndex), copy),
+              choiceAccessibilityLabel(
+                option.text,
+                choiceResultAt(state, question, choiceIndex),
+                copy,
+                option.romanization,
+              ),
             )}
             layout="stack"
             density={density}
@@ -226,7 +246,6 @@ export function ListeningActivity({
               sessionOptions={sessionOptions}
               revealed={answered}
               playback={playback}
-              beforeAnswer={question.beforeAnswer ?? "nothing"}
               density={density}
             />
           )}

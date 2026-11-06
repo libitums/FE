@@ -463,6 +463,11 @@
   color: var(--libitum-color-fg-disabled);
 }
 
+/* 로마자 줄(FE 확장) — 뜻 줄 규칙을 공유하고 기울임만 더합니다. */
+.ui-lynx-option-selector-romanization {
+  font-style: italic;
+}
+
 /* Feedback(FE 확장) — 우선순위가 가장 높습니다. 판정 항목은 선택 · 비활성 클래스를 함께 갖지 않습니다.
    테두리 2px = item 바깥 1px + surface 안쪽 1px. */
 .ui-lynx-option-selector-item-correct {

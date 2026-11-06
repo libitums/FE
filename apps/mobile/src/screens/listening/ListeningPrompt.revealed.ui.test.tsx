@@ -19,6 +19,7 @@ function renderPrompt(showTranscript: boolean, revealed: boolean) {
   const sessionOptions: SessionOptions = {
     "auto-play-audio": false,
     "show-transcript": showTranscript,
+    "show-choice-romanization": true,
   };
   return render(
     <PlaybackPrompt
@@ -70,33 +71,18 @@ test("[RV5] 대본이 없어도 재생 조작은 그대로 있다", () => {
   expect(screen.getAllByTestId("ui-lynx-round-button")).toHaveLength(2);
 });
 
-// LP4 — 듣고 고르기(LISTEN_SELECT)는 답하기 전에도 정답 문장의 로마자 한 줄을 참고로 보입니다 — 한글 대본은 여전히 가립니다.
-test("[RV5] beforeAnswer=romanization + 설정 꺼짐 + 아직 안 답함 — 로마자만 보이고 한국어는 문서에 없다", () => {
+test("[RV6] 답함 — 한국어와 로마자가 함께 보이고 로마자 줄은 하나다", () => {
   render(
     <PlaybackPrompt
       text={TEXT}
       romanization={ROMANIZATION}
       audioSource="u00-tutorial/d-04"
-      sessionOptions={{ "auto-play-audio": false, "show-transcript": false }}
-      revealed={false}
-      beforeAnswer="romanization"
-    />,
-  );
-
-  expect(text()).not.toBeInTheDocument();
-  expect(romanization()).toHaveTextContent(ROMANIZATION);
-  expect(screen.getAllByTestId("listening-prompt-romanization")).toHaveLength(1);
-});
-
-test("[RV6] beforeAnswer=romanization + 답함 — 한국어와 로마자가 함께 보이고 로마자 줄은 하나다", () => {
-  render(
-    <PlaybackPrompt
-      text={TEXT}
-      romanization={ROMANIZATION}
-      audioSource="u00-tutorial/d-04"
-      sessionOptions={{ "auto-play-audio": false, "show-transcript": false }}
+      sessionOptions={{
+        "auto-play-audio": false,
+        "show-transcript": false,
+        "show-choice-romanization": true,
+      }}
       revealed={true}
-      beforeAnswer="romanization"
     />,
   );
 
@@ -104,13 +90,17 @@ test("[RV6] beforeAnswer=romanization + 답함 — 한국어와 로마자가 함
   expect(screen.getAllByTestId("listening-prompt-romanization")).toHaveLength(1);
 });
 
-test("LP4. 소리 구별 문항(beforeAnswer 없음)은 답 전에 로마자가 문서에 없고 답한 뒤에 한글과 로마자가 선다", () => {
+test("LP4. 소리 구별 문항은 답 전에 로마자가 문서에 없고 답한 뒤에 한글과 로마자가 선다", () => {
   const view = render(
     <PlaybackPrompt
       text={TEXT}
       romanization={ROMANIZATION}
       audioSource="u00-tutorial/d-04"
-      sessionOptions={{ "auto-play-audio": false, "show-transcript": false }}
+      sessionOptions={{
+        "auto-play-audio": false,
+        "show-transcript": false,
+        "show-choice-romanization": true,
+      }}
       revealed={false}
     />,
   );
@@ -124,7 +114,11 @@ test("LP4. 소리 구별 문항(beforeAnswer 없음)은 답 전에 로마자가 
       text={TEXT}
       romanization={ROMANIZATION}
       audioSource="u00-tutorial/d-04"
-      sessionOptions={{ "auto-play-audio": false, "show-transcript": false }}
+      sessionOptions={{
+        "auto-play-audio": false,
+        "show-transcript": false,
+        "show-choice-romanization": true,
+      }}
       revealed={true}
     />,
   );
@@ -140,9 +134,12 @@ test("LP5. 한글은 korean-text-heading-l(11자) · 로마자는 text-role-roma
       text={TEXT}
       romanization={ROMANIZATION}
       audioSource="u00-tutorial/d-04"
-      sessionOptions={{ "auto-play-audio": false, "show-transcript": true }}
+      sessionOptions={{
+        "auto-play-audio": false,
+        "show-transcript": true,
+        "show-choice-romanization": true,
+      }}
       revealed={false}
-      beforeAnswer="romanization"
     />,
   );
 
@@ -158,7 +155,11 @@ test("LP5. compact 밀도는 한글이 한 단계 아래(heading-m)이고 로마
       text={TEXT}
       romanization={ROMANIZATION}
       audioSource="u00-tutorial/d-04"
-      sessionOptions={{ "auto-play-audio": false, "show-transcript": true }}
+      sessionOptions={{
+        "auto-play-audio": false,
+        "show-transcript": true,
+        "show-choice-romanization": true,
+      }}
       revealed={false}
       density="compact"
     />,

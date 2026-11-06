@@ -13,8 +13,9 @@ import type {
   ProfileOpenedEvent,
   SessionOptionChangedEvent,
   SettingsNavTarget,
+  SettingsSessionOptionKey,
 } from "./settings.contract";
-import type { SessionOptionKey } from "../../lib/session-options";
+import type { SessionOptionKey, SessionOptions } from "../../lib/session-options";
 
 export const settingsNavTargets: readonly SettingsNavTarget[] = [
   "profile",
@@ -68,4 +69,27 @@ export function sessionOptionChangedEvent(
   value: boolean,
 ): SessionOptionChangedEvent {
   return { name: "session_option_changed", option: key, value };
+}
+
+export const settingsSessionOptionKeys: readonly SettingsSessionOptionKey[] = [
+  "show-choice-romanization",
+];
+
+export type SettingsSessionOptionRow = {
+  readonly key: SettingsSessionOptionKey;
+  readonly title: string;
+  readonly description: string;
+  readonly checked: boolean;
+};
+
+export function settingsSessionOptionRows(
+  options: SessionOptions,
+  copy: UiCopy,
+): readonly SettingsSessionOptionRow[] {
+  return settingsSessionOptionKeys.map((key) => ({
+    key,
+    title: copy.settings.sessionOption[key],
+    description: copy.settings.sessionOptionDescription[key],
+    checked: options[key],
+  }));
 }
