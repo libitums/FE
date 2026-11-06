@@ -60,7 +60,7 @@ e2e는 chromium · analytics · analytics-mobile 세 프로젝트에서 128건 �
 | ↳ `site-url.ts` | `resolveSiteUrl` — 배포 주소를 고르고 검사한다(아래 「배포 주소」) |
 | ↳ `head-meta.ts` | `buildHeadMeta` — canonical · hreflang · 공유 카드 그림의 절대 주소, `robots` 값 둘(`robotsIndexable` · `robotsNoindex`) |
 | ↳ `faq.ts` | `buildFaq` — 질문 일곱의 순서와, 스토어 주소 유무에 따른 「받는 곳」의 답 |
-| ↳ `structured-data.ts` | `buildStructuredData` — JSON-LD(`WebSite` · `SoftwareApplication` · `FAQPage`) |
+| ↳ `structured-data.ts` | `buildStructuredData` — JSON-LD(`WebSite` · `Organization` · `SoftwareApplication` · `FAQPage`). ⟨2026-11-06⟩ 브랜드를 스토어 · 프로필과 묶는 `alternateName` · `logo` · `sameAs`는 `site.ts`의 `siteAlternateNames` · `siteLogoPath` · `brandLinks()`에서 온다 — 새 공식 프로필은 `brandProfiles`에 더한다 |
 | ↳ `llms-txt.ts` · `robots-txt.ts` | `/llms.txt` · `/robots.txt`의 본문. 이름으로 허용하는 수집기 목록(`answerEngineCrawlers`)도 여기다 |
 | `src/components/` | `Landing.astro`가 섹션 컴포넌트를 순서대로 놓는다. props 타입은 `landing.contract.ts` |
 | ↳ `SeoHead.astro` | 색인되는 페이지의 head — 공유 카드 · canonical · hreflang · JSON-LD. `Landing.astro`가 `Base`의 `head` 슬롯에 꽂는다 |

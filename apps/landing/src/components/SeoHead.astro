@@ -1,7 +1,14 @@
 ---
 import { buildHeadMeta } from "../seo/head-meta";
 import { buildStructuredData, serializeStructuredData } from "../seo/structured-data";
-import { languageRoutes, pages, siteName } from "../site";
+import {
+  brandLinks,
+  languageRoutes,
+  pages,
+  siteAlternateNames,
+  siteLogoPath,
+  siteName,
+} from "../site";
 import type { SeoHeadProps } from "./landing.contract";
 
 type Props = SeoHeadProps;
@@ -21,6 +28,9 @@ const structured = serializeStructuredData(
     language,
     path: route?.path ?? "/",
     name: siteName,
+    alternateNames: siteAlternateNames,
+    logoPath: siteLogoPath,
+    sameAs: brandLinks(),
     description: page.description,
     faq,
   }),

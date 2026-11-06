@@ -21,6 +21,29 @@ export const storeLinks = {
 };
 
 /**
+ * 같은 것을 부르는 다른 이름입니다 — JSON-LD 세 노드의 `alternateName`. 검색엔진이 「duru」 한 단어 질의를 이 사이트와
+ * 스토어 목록으로 묶는 근거가 됩니다. Play 제목(대문자 표기) · 앱의 한글 이름(Android 알림 채널 「두루 소식」) 순입니다.
+ */
+export const siteAlternateNames: readonly string[] = [
+  "DURU",
+  "DURU: Learn Korean in Stories",
+  "두루",
+];
+
+/** JSON-LD `Organization.logo`입니다. Google이 112px 이상 정사각에 가까운 그림을 받으므로 글자 로고(159×60)가 아니라 앱 아이콘 180px입니다. */
+export const siteLogoPath = "/apple-touch-icon.png";
+
+/** 스토어 밖에서 이 브랜드를 가리키는 공식 프로필입니다(사용자 확인 2026-11-06). `https://` 절대 주소만. 새 프로필이 생기면 여기 더합니다. */
+export const brandProfiles: readonly string[] = [
+  "https://www.instagram.com/duru.korean/",
+  "https://www.threads.com/@mina.duru.korean",
+];
+
+/** JSON-LD `sameAs` — 비어 있지 않은 스토어 주소와 프로필을 순서대로 모은 것입니다. */
+export const brandLinks = (): readonly string[] =>
+  [storeLinks.ios, storeLinks.android, ...brandProfiles].filter((link) => link !== "");
+
+/**
  * 지원 언어입니다. 첫째가 기본 언어(`/`)이고 나머지는 `/<코드>/`에 섭니다.
  * 언어를 더하는 절차는 README 「언어 더하기」에 있습니다.
  */

@@ -84,8 +84,12 @@ GPTBot · OAI-SearchBot · ChatGPT-User · ClaudeBot · PerplexityBot · Google-
 
 - 두 자리가 따로 문구를 가지면 어긋난다. `FAQPage`의 질문 · 답은 보이는 문구와 **글자까지 같아야** 한다(스펙의 수용 기준).
 - 문구는 **태그 없는 평문**이다. `<`가 섞이면 `buildFaq`가 던져 빌드가 실패한다.
-- JSON-LD는 페이지마다 하나, `@graph`에 `WebSite` · `SoftwareApplication` · `FAQPage` 셋이다. **`offers` · 평점 · 리뷰 ·
-  조직 정보는 타입에 없다** — 근거 없는 구조화 데이터를 싣지 않는다([스펙](../specs/landing-page.md)의 「사실만 싣는다」).
+- JSON-LD는 페이지마다 하나, `@graph`에 `WebSite` · `Organization` · `SoftwareApplication` · `FAQPage` 넷이다(⟨2026-11-06⟩ 정정 —
+  처음엔 `Organization` 없이 셋이었다). **`offers` · 평점 · 리뷰 · 법인 정보(주소 · 설립자 · 연락처)는 타입에 없다** — 근거 없는
+  구조화 데이터를 싣지 않는다([스펙](../specs/landing-page.md)의 「사실만 싣는다」). `Organization`은 법인이 아니라 **브랜드**다:
+  이름 · 다른 표기(`alternateName` — Play 제목 「DURU: Learn Korean in Stories」 · 한글 「두루」) · 로고(앱 아이콘 180px) ·
+  같은 것을 가리키는 바깥 주소(`sameAs` — 스토어 · 공식 인스타그램 · Threads)만 싣고, 같은 `alternateName` · `sameAs`를
+  `SoftwareApplication`에도 둔다. 값은 전부 `src/site.ts`의 상수다.
 - FAQ 섹션은 Phrases 다음, 맺음 인용 앞에 서고 헤더 메뉴의 넷째 항목이 된다. 질문은 `<details>`이고 스크립트가 없다.
 - 문구는 저장소 문서에서 뽑은 **초안**이고 사용자 확인 전이다.
 
@@ -241,6 +245,14 @@ FAQ의 키보드 조작, 스크립트 없는 화면, 404, 폭별 넘침, 그림 
   섹션별 배치 · 연출 전환 · 머리 전환 · 겹침 · 잘림을 수치로 단언, 네 브라우저 구성)로 낡았다. 지금 사람 몫으로 남은 것은 색 · 글꼴 ·
   그림의 시각 품질, 실제 Safari, 스크린리더 낭독, 외부 검증기다. e2e 구성은 다섯(chromium · firefox · webkit · 모바일 · analytics)이고
   GA 이벤트 e2e가 측정 ID를 넣은 두 번째 빌드로 돈다. 자세한 범위는 `apps/landing/README.md` 「확인」.
+
+- **2026-11-06 — D7의 「조직 정보는 타입에 없다」.** 「duru」 한 단어 검색에서 사이트가 안 보이는 문제를 보니, 같은 이름의 다른
+  것들(성씨 · 식품 브랜드 · 식당 · 같은 이름의 한국어 학습 사이트 `durukorean.com`)과 구별할 **브랜드 엔티티 신호**가 페이지에 없었다 —
+  검색엔진이 `k-duru.com` · Play 목록 · 인스타그램을 같은 「Duru」로 묶을 근거가 없다. 그래서 `@graph`에 `Organization`(브랜드)을 더하고
+  `alternateName` · `logo` · `sameAs`를 실었다. **「근거 없는 구조화 데이터를 싣지 않는다」는 그대로다** — 더한 값은 전부 저장소 · 스토어가
+  뒷받침하는 사실(앱 이름 · Play 제목 · Android 알림 채널의 한글 이름 「두루」 · 앱 아이콘 · 사용자가 준 공식 인스타그램 · Threads 주소)이고, 법인 정보
+  (주소 · 설립자 · 연락처 · 직원 수)와 가격 · 평점은 여전히 타입에 없다. 틀린 것은 「조직 정보」를 통째로 근거 없음에 넣은 것 — 브랜드가
+  무엇인지는 근거가 있었다. 스펙의 scope_out도 같은 날 고쳤다. 색인 · 순위 자체는 서치콘솔 · 백링크 · 도메인 나이의 몫이라 코드가 보장하지 않는다.
 
 ## 적용 기록
 

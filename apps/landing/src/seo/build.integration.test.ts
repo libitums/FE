@@ -99,6 +99,9 @@ interface JsonLdNode {
   inLanguage?: string;
   description?: string;
   url?: string;
+  alternateName?: string[];
+  logo?: string;
+  sameAs?: string[];
   mainEntity?: { name: string; acceptedAnswer: { text: string } }[];
 }
 
@@ -155,16 +158,31 @@ describe("빌드 A — SITE_URL 있음", () => {
     expect(build.status === 0 ? "ok" : build.output).toBe("ok");
   });
 
-  it("I-A1 JSON-LD가 페이지마다 하나, @graph가 세 타입", () => {
+  it("I-A1 JSON-LD가 페이지마다 하나, @graph가 네 타입", () => {
     for (const { file } of pages) {
       const types = graphOf(page(build, file)).map((node) => node["@type"]);
-      expect(types).toEqual(["WebSite", "SoftwareApplication", "FAQPage"]);
+      expect(types).toEqual(["WebSite", "Organization", "SoftwareApplication", "FAQPage"]);
+    }
+  });
+
+  it("I-A1b Organization · SoftwareApplication이 브랜드를 스토어 목록과 묶는다 — 다른 표기 · 절대 주소 로고 · sameAs", () => {
+    for (const { file } of pages) {
+      const nodes = graphOf(page(build, file));
+      const organization = nodes.find((node) => node["@type"] === "Organization");
+      const app = nodes.find((node) => node["@type"] === "SoftwareApplication");
+      expect(organization?.url).toBe(`${origin}/`);
+      expect(organization?.logo).toMatch(new RegExp(`^${origin}/.+\\.png$`));
+      expect(organization?.alternateName).toContain("DURU");
+      expect(organization?.sameAs).toContain(storeLinks.android);
+      expect(app?.sameAs).toEqual(organization?.sameAs);
+      expect(app?.alternateName).toEqual(organization?.alternateName);
+      expect(organization && "inLanguage" in organization).toBe(false);
     }
   });
 
   it("I-A2 inLanguage가 페이지 언어이고 /ko/는 한글 설명 · FAQ", () => {
     for (const { file, language } of pages) {
-      const nodes = graphOf(page(build, file));
+      const nodes = graphOf(page(build, file)).filter((node) => node["@type"] !== "Organization");
       expect(nodes.map((node) => node.inLanguage)).toEqual([language, language, language]);
     }
     const ko = graphOf(page(build, "ko/index.html"));
@@ -471,15 +489,20 @@ describe("빌드 B — SITE_URL 없음", () => {
     expect(robots).not.toMatch(/sitemap/i);
   });
 
-  it("I-B4 JSON-LD는 하나씩, 세 타입, url 없음", () => {
+  it("I-B4 JSON-LD는 하나씩, 네 타입, url · logo 없음 — sameAs는 바깥 주소라 남는다", () => {
     for (const { file } of pages) {
       const nodes = graphOf(page(build, file));
       expect(nodes.map((node) => node["@type"])).toEqual([
         "WebSite",
+        "Organization",
         "SoftwareApplication",
         "FAQPage",
       ]);
-      for (const node of nodes) expect(node).not.toHaveProperty("url");
+      for (const node of nodes) {
+        expect(node).not.toHaveProperty("url");
+        expect(node).not.toHaveProperty("logo");
+      }
+      expect(nodes[1]?.sameAs).toContain(storeLinks.android);
     }
   });
 
