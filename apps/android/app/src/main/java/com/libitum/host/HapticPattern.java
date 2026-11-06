@@ -7,11 +7,12 @@ package com.libitum.host;
  * touch-feedback setting is off (ADR-0109 D3 rev 2).
  */
 final class HapticPattern {
-  // Count and length carry the meaning, not amplitude: most budget motors have no amplitude
-  // control, and pulses under ~40 ms never spin them up, so 25 ms / 30 ms felt identical.
-  private static final HapticPattern SUCCESS = new HapticPattern(new long[] {0, 40}, new int[] {0, 255});
-  private static final HapticPattern ERROR =
-      new HapticPattern(new long[] {0, 70, 110, 70}, new int[] {0, 255, 0, 255});
+  // Rhythm carries the meaning, not amplitude: most budget motors have no amplitude control and
+  // pulses under ~50 ms barely spin them up. A quick double tap reads as "done", one long buzz as
+  // "no" (the same split as iOS .success / .error).
+  private static final HapticPattern SUCCESS =
+      new HapticPattern(new long[] {0, 55, 70, 55}, new int[] {0, 255, 0, 255});
+  private static final HapticPattern ERROR = new HapticPattern(new long[] {0, 280}, new int[] {0, 255});
 
   final long[] timings;
   final int[] amplitudes;

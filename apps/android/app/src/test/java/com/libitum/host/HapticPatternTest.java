@@ -9,18 +9,18 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 public final class HapticPatternTest {
-  @Test public void successIsOneShortPulse() {
+  @Test public void successIsTwoQuickTaps() {
     HapticPattern pattern = HapticPattern.of("success");
     assertNotNull(pattern);
-    assertArrayEquals(new long[] {0, 40}, pattern.timings);
-    assertArrayEquals(new int[] {0, 255}, pattern.amplitudes);
+    assertArrayEquals(new long[] {0, 55, 70, 55}, pattern.timings);
+    assertArrayEquals(new int[] {0, 255, 0, 255}, pattern.amplitudes);
   }
 
-  @Test public void errorIsTwoLongerPulses() {
+  @Test public void errorIsOneLongBuzz() {
     HapticPattern pattern = HapticPattern.of("error");
     assertNotNull(pattern);
-    assertArrayEquals(new long[] {0, 70, 110, 70}, pattern.timings);
-    assertArrayEquals(new int[] {0, 255, 0, 255}, pattern.amplitudes);
+    assertArrayEquals(new long[] {0, 280}, pattern.timings);
+    assertArrayEquals(new int[] {0, 255}, pattern.amplitudes);
   }
 
   @Test public void unknownKindsHaveNoPattern() {
@@ -43,23 +43,23 @@ public final class HapticPatternTest {
         total += pattern.timings[i];
       }
       // A verdict cue, not an alert: the whole pattern stays under 300 ms.
-      assertTrue(total > 0 && total < 300);
+      assertTrue(total > 0 && total <= 300);
     }
   }
 
-  @Test public void errorDiffersFromSuccessByCountAndLengthNotOnlyAmplitude() {
-    // Most budget motors have no amplitude control (Galaxy A52s: capabilities 0), so the two
-    // verdicts must differ in pulse count and pulse length; each pulse is long enough (>= 40 ms)
-    // for a slow motor to spin up, and the error gap (>= 100 ms) keeps its two pulses apart.
+  @Test public void verdictsDifferByRhythmNotOnlyAmplitude() {
+    // Most budget motors have no amplitude control (Galaxy A52s: capabilities 0), so meaning rides
+    // on rhythm: a quick double tap reads as "done", one long buzz as "no" (user feedback: one
+    // 40 ms pulse felt weak and not like a correct answer). Every pulse is >= 50 ms so a slow
+    // motor spins up, and the long buzz is clearly longer than both taps together.
     HapticPattern success = HapticPattern.of("success");
     HapticPattern error = HapticPattern.of("error");
     assertNotNull(success);
     assertNotNull(error);
-    assertEquals(1, pulses(success));
-    assertEquals(2, pulses(error));
-    assertTrue(error.timings[1] > success.timings[1]);
-    assertTrue(success.timings[1] >= 40);
-    assertTrue(error.timings[2] >= 100);
+    assertEquals(2, pulses(success));
+    assertEquals(1, pulses(error));
+    for (int i = 1; i < success.timings.length; i += 2) assertTrue(success.timings[i] >= 50);
+    assertTrue(error.timings[1] > success.timings[1] + success.timings[3]);
   }
 
   private static int pulses(HapticPattern pattern) {

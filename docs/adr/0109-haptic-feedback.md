@@ -3,7 +3,7 @@
 - 상태: **채택 — 클라이언트 · 호스트.** 화면 코드 변경 0. 서버 · 저장 · 상태 변경 0. ⟨2판 2026-11-06⟩ Android는 `VIBRATE` 권한으로 시스템 터치 진동 설정과 상관없이 진동한다 — 아래 「D3 2판」. ⚠ **실기 체감 미확인** — 아래 「기기 확인 상태」.
 - 날짜: 2026-11-06.
 - **사용자 결정**(2026-11-06): 「휴대폰 진동 정책은 어떻게할까」 → 추천안(진동은 효과음의 그림자 · 판정 넷만 · 시스템 기본 패턴 · 토글 없음 · 벨은 2단계) → 「/change 로 진행」.
-- **사용자 결정 2판**(2026-11-06, 1.2.0 bundled 실기 Galaxy A52s): 「진동안되고」 → 원인은 기기의 「터치 상호작용」 진동 끔(`haptic_feedback_enabled=0`) → 「설정 상관없이 진동」. D3의 Android 열만 바꾼다. 이어서 「틀린거랑 맞은거랑 진동 구분안되고」 → 파형을 횟수 · 길이로 다시 정했다. 「앱 내 설정에선 진동 끌 수 있게 해줘야지」 → **D4**(앱 안 진동 토글).
+- **사용자 결정 2판**(2026-11-06, 1.2.0 bundled 실기 Galaxy A52s): 「진동안되고」 → 원인은 기기의 「터치 상호작용」 진동 끔(`haptic_feedback_enabled=0`) → 「설정 상관없이 진동」. D3의 Android 열만 바꾼다. 이어서 「틀린거랑 맞은거랑 진동 구분안되고」 · 「정답 진동도 약하고 별로 정답같은 느낌도 안든다」 → 파형을 리듬(정답 톡톡 · 오답 부웅)으로 다시 정했다. 「앱 내 설정에선 진동 끌 수 있게 해줘야지」 → **D4**(앱 안 진동 토글).
 - 다루는 축: 효과음이 나는 그 순간에 **어느 효과음에 어떤 시스템 진동을 붙이는가** — 정책이 어디에 있는가(D1), JS ↔ 호스트 결선(D2), 두 호스트가 쓰는 플랫폼 API와 설정 · 권한(D3).
   **다루지 않는 것**: 통화 벨 반복 진동(`ring_bell`), 앱 안 진동 토글(⟨2판⟩ D4가 연다), 사용자 정의 파형 · 길이 · 세기, 타일 끌기 · 칩 놓기 등 다른 상호작용의 진동, 효과음 자체(자산 · 음량 · 재생 규칙)의 변경, 진동 분석 이벤트.
 
@@ -69,7 +69,7 @@
 | 항목 | 1판 | 2판 |
 |---|---|---|
 | API | decorView `performHapticFeedback(constant)` 1인자 | `Vibrator.vibrate(VibrationEffect.createWaveform(timings, amplitudes, -1), AudioAttributes)` — 메인 스레드, 던지면 `Log.w`만 |
-| 패턴 | `CONFIRM` · `REJECT`(API 30+), `CONTEXT_CLICK` · `LONG_PRESS`(26 ~ 29) | 순수 클래스 `HapticPattern.of(kind)`의 한 번 파형 — `success` 40 ms 1회, `error` 70 ms × 2(쉼 110 ms), 세기는 모두 255. **뜻은 횟수 · 길이가 진다** — 첫 판(25 ms · 30 ms × 2)은 Galaxy A52s(모터 세기 조절 없음 · `mCapabilities` 0)에서 「구분 안 됨」(사용자, 2026-11-06): 세기 차이는 사라지고 40 ms 미만은 모터가 다 돌기 전에 끝난다. 모든 API 같은 파형 |
+| 패턴 | `CONFIRM` · `REJECT`(API 30+), `CONTEXT_CLICK` · `LONG_PRESS`(26 ~ 29) | 순수 클래스 `HapticPattern.of(kind)`의 한 번 파형 — `success` **톡톡** 55 ms × 2(쉼 70 ms), `error` **부웅** 280 ms 1회, 세기는 모두 255. **뜻은 리듬이 진다** — 세기 조절이 없는 모터(Galaxy A52s, `mCapabilities` 0)에서 첫 판(25 ms · 30 ms × 2)은 「구분 안 됨」, 둘째 판(40 ms 1회 · 70 ms × 2)은 「정답 진동이 약하고 정답 같은 느낌이 안 든다」(사용자, 2026-11-06). 짧은 두 번 = 됐다, 긴 한 번 = 아니다로 iOS `.success` · `.error`와 같은 나눔이고, 펄스는 모두 50 ms 이상(느린 모터가 다 돈다). 모든 API 같은 파형 |
 | 속성 | — | 효과음과 같은 `AudioAttributes`(`USAGE_MEDIA` · `CONTENT_TYPE_SONIFICATION`). 터치 용도(`USAGE_TOUCH`)로 내면 Android 13+가 터치 진동 세기(끔 = 0)로 줄여 다시 꺼진다 |
 | 권한 | 없음 | `android.permission.VIBRATE`(설치 시 자동 허용 · 사용자 승인 창 없음) |
 | 시스템 설정 | 「터치 피드백」을 따름 | 따르지 않는다 — 꺼져 있어도 진동 |
@@ -152,7 +152,7 @@
 - unit(`lib/sound-effects.unit.test.ts`, HF-U1 ~ U10): `hapticFor` 표 8행, 새 호스트 모의에서 판정 넷 → `play` 1회 + `haptic` 1회 · 나머지 넷 → `haptic` 0회, 호출 순서 `["play:…", "haptic:…"]`, 옛 호스트 모의 · `haptic`이 함수 아님 · `haptic` 던짐 · `play` 던짐 · 모듈 없음에서 던지지 않음, `stopRing`은 `haptic`을 부르지 않음. **결과 33/33**(기존 3 + 새 10의 테스트 케이스). red 증명: 결선 전 10건 단언 실패.
 - integration(`sentence-order-sound.integration.test.tsx`, HF-I1 + 기존 HF-I2): 문장 만들기 칩 → `Check` → `Next` → 활동 완료 흐름에서 `haptic:success`가 판정 직후에 정확히 1개. **결과 2/2.**
 - 회귀(모바일 전체): unit 318파일 4672/4672 · ui 241파일 2104/2104(옛 호스트 모의의 기존 UI 테스트가 전부 green = 옛 호스트 경로의 회귀 그물) · integration 80파일 728/728.
-- 호스트 ⟨2판⟩: Android JUnit `HapticPatternTest` **5/5**(파형 표 · 모르는 값 null · 한 번 파형의 길이 · 세기 범위 · 총 300 ms 미만 · 정답 1회 / 오답 2회 · 펄스 ≥ 40 ms · 오답 쉼 ≥ 100 ms), red 증명은 클래스가 없어 컴파일 실패. 전체 JUnit 실패 0.
+- 호스트 ⟨2판⟩: Android JUnit `HapticPatternTest` **5/5**(파형 표 · 모르는 값 null · 한 번 파형의 길이 · 세기 범위 · 총 300 ms 이하 · 정답 2회 / 오답 1회 · 펄스 ≥ 50 ms · 오답 길이 > 정답 두 펄스 합), red 증명은 클래스가 없어 컴파일 실패. 전체 JUnit 실패 0.
 - 호스트(1판 기록): Android JUnit `HapticFeedbackConstantTest` **5/5**(경계 29/30 · 모르는 값 `NONE` · 상수 구별) · `assembleDebug` · `assembleBundled` 성공 · 매니페스트 diff 0. iOS HostTests `SoundEffectsModuleTests` **7/7**(기존 3 + HF-H1 ~ H4: `HapticFeedbackKind` 분류 · `methodLookup` 키 셋 · 시뮬레이터에서 `haptic`이 던지지 않음). 계측 HF-H9는 미실행 — `(Context)` 생성자 유지 · 컴파일 확인만.
 - 빌드 · 번들: `pnpm --filter mobile build`(CI 설정) 성공, `size:check` 통과 — [성능 보고서](../performance/reports/haptic-feedback-01.md).
 - e2e(수동): [`docs/e2e/haptic-feedback.md`](../e2e/haptic-feedback.md) HF-E1 ~ E12.
