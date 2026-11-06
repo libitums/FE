@@ -1,12 +1,22 @@
 /* 글 역할 — 한글 주인공 줄 · 로마자 · 구분선 · 뜻입니다. 토큰은 CSS 커스텀 프로퍼티로만 소비합니다
    (ADR-0014 D1). 구별은 색이 아니라 모양(기울기 · 굵기 · 구분선)이 하고, muted / neutral 색차는 보조입니다. */
 
-/* 로마자(읽는 법) — 기울임 · medium · muted. 앱 본문은 시스템 서체라 기울임은 합성이 아니라 진짜 기울임입니다.
+/* 로마자(읽는 법) — 기울임 · medium · muted. 본문 글꼴 Duru Sans에는 기울임 판이 없어, 로마자만 진짜 기울임 판인
+   Duru Roman(Inter Italic 500 서브셋)으로 그립니다(ADR-0107). 없으면 시스템 서체의 기울임으로 떨어집니다.
    한글이 `display` · `heading-l`이면 body-l, 그 아래 단계면 `-s`(body-m)입니다. */
 .text-role-romanization {
   color: var(--libitum-color-fg-neutral-muted);
   font-style: italic;
-  font-family: var(--libitum-typography-body-l-font-family);
+  font-family:
+    "Duru Roman",
+    "DuruRoman",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    "Roboto",
+    "Helvetica Neue",
+    "Segoe UI",
+    sans-serif;
   font-weight: var(--libitum-font-weight-medium);
   font-size: var(--libitum-typography-body-l-font-size);
   line-height: var(--libitum-typography-body-l-line-height);
@@ -15,7 +25,6 @@
 }
 
 .text-role-romanization-s {
-  font-family: var(--libitum-typography-body-m-font-family);
   font-size: var(--libitum-typography-body-m-font-size);
   line-height: var(--libitum-typography-body-m-line-height);
   letter-spacing: var(--libitum-typography-body-m-letter-spacing);

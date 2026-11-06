@@ -147,7 +147,17 @@
 .language-select-screen-preview-roman {
   color: var(--libitum-color-gray-600);
   font-style: italic;
-  font-family: var(--libitum-typography-body-s-font-family);
+  /* 로마자는 기울임 판 Duru Roman으로 그립니다(ADR-0107 · text-roles.css와 같은 목록). */
+  font-family:
+    "Duru Roman",
+    "DuruRoman",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    "Roboto",
+    "Helvetica Neue",
+    "Segoe UI",
+    sans-serif;
   font-size: var(--libitum-typography-body-s-font-size);
   line-height: var(--libitum-typography-body-s-line-height);
 }

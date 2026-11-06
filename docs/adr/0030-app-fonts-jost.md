@@ -75,3 +75,10 @@ Pretendard를 넣으면 앱 전체 본문의 줄바꿈 · 너비가 바뀌어 �
 ### 적용 기록 ⟨2026-11-02⟩ — Android에서 Jost를 그린다
 
 결정은 [ADR-0092](0092-android-app-fonts.md). 재검토 조건 「Android 호스트가 생길 때 → `res/font/`」는 그대로 따를 수 없었다 — Lynx Android는 자산 · 리소스 글꼴을 이름으로 찾지 않는다. 호스트가 `files/fonts/`로 복사하고 CSS `@font-face`(`DuruJost`)가 그 경로를 가리킨다. iOS의 D1(`UIAppFonts`)은 바뀌지 않는다.
+
+### 적용 기록 ⟨2026-11-06⟩ — D3을 닫는다: 본문 글꼴 Duru Sans
+
+결정은 [ADR-0107](0107-app-body-font-duru-sans.md). **D3(「Pretendard는 이번에 넣지 않는다」)을 대체한다.**
+
+- 본문 · 버튼 토큰 목록 맨 앞에 Duru Sans(Pretendard JP 1.3.9의 서브셋 — OFL 예약 이름 때문에 새 이름)를 끼운다. 같은 방식(폴더 `fonts/` · `UIAppFonts`, Android `assets/fonts/`)으로 더했다.
+- 로마자 기울임은 합성이 되지 않도록 로마자만 Duru Roman(Inter 4.1 Italic 500)으로 그린다 — 위 적용 기록이 말한 「로마자만 Jost」 대안은 쓰지 않았다(본문과 결이 다르다).

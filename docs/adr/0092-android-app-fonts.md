@@ -42,3 +42,11 @@
 
 - ADR-0091(베트남어)이 병합되면 → `AppFonts.FILES`에 `LeagueSpartan.ttf`, `app.css`에 `DuruLeagueSpartan` `@font-face`, `.app-lang-vi` 목록에 `"DuruLeagueSpartan"`을 더한다.
 - Lynx가 번들 자산 글꼴 등록 API를 고치면(`addFont`가 반영되면) → 고정 경로를 버린다.
+
+### 적용 기록 ⟨2026-11-06⟩ — 배포 빌드에서는 그려지지 않았다
+
+[ADR-0107](0107-app-body-font-duru-sans.md) D4. 이 문서의 확인(「이것만 그렸다」 · 700 제목)은 **Debug 빌드**였다. 배포(`release` · `bundled`) 빌드는 Jost까지 Roboto로 그렸다(에뮬레이터 API 30 · 37).
+
+- 원인: `setEnableGenericResourceFetcher(TRUE)`인데 일반 자원 가져오기를 Debug(`DevResourceFetcher`)만 등록했다. 가져오기가 없으면 Lynx가 `@font-face` 글꼴을 그리지 않는다 — 아무 일도 하지 않는 가져오기를 등록하자 바로 그렸고, 그 가져오기는 한 번도 불리지 않았다. R8은 원인이 아니다(끈 빌드도 같았다).
+- 고침: main 소스의 `UnavailableResourceFetcher`를 모든 빌드에서 등록하고 Debug가 덮어쓴다. AF-W3이 지킨다.
+- `AppFonts.FILES`에 `DuruSans.ttf` · `DuruRoman.ttf`를 더했다(설치 직후 첫 실행에 약 4.1 MB를 한 번 복사 — 에뮬레이터 첫 화면 중앙 191 → 196 ms).

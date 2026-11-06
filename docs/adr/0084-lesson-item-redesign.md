@@ -235,3 +235,7 @@
 4. **아바타 그림 업로드와 JSON 갱신** — ⟨2026-10-23 해소⟩ 버킷 u00 `2026-10-23.1`에 `counterpart_avatar`가 들어갔고, 앱 내장 u00을 그 판으로 바꾸며 그림도 내장했다(D16). u01 이후 에피소드의 아바타는 콘텐츠 몫이다. ⟨2026-10-23⟩ 내장 u01 ~ u03도 버킷 `2026-10-23.1`판(각 `content/images/<id>/avatar.webp`)으로 바꿨다 — 그림은 내장하지 않고 받는다(D16). 기기 확인(EU6)은 2의 후속 그대로다.
 5. **design-system 보고** — `outlined-subtle` 상태 대비(기본 테두리 1.15) · `meaning` · Feedback 축 · ChatBubble `annotation`.
 6. GitHub wiki 이벤트 사전(`episode_item_answered`)은 저장소 밖이라 따로 고친다.
+
+### 적용 기록 ⟨2026-11-06⟩ — 재검토 조건 1이 왔다: 로마자는 Duru Roman
+
+[ADR-0107](0107-app-body-font-duru-sans.md)이 본문 글꼴(Duru Sans = Pretendard JP 서브셋)을 앱에 넣었다. 로마자 기울임이 합성이 되지 않도록 `.text-role-romanization`(과 언어 선택 미리보기 · ChatBubble 로마자)의 글꼴을 **Duru Roman(Inter 4.1 Italic 500 서브셋)**으로 바꿨다. 기울임 · medium · muted 규칙은 그대로다. 「버린 대안 4」의 Jost 대신 Inter Italic을 고른 이유는 본문과 결이 같아서다.
