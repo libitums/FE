@@ -62,6 +62,7 @@ export const journeyEntryVi: JourneyEntryCopy = {
 };
 
 export const loginVi: LoginCopy = {
+  guest: "Tiếp tục không cần tài khoản",
   method: {
     phone: "Tiếp tục",
     google: "Tiếp tục với Google",
@@ -80,10 +81,19 @@ export const loginVi: LoginCopy = {
   or: "hoặc",
   countrySheetTitle: "Chọn quốc gia",
   legal: {
-    lead: "Khi đăng ký, bạn đồng ý với",
+    lead: "Khi tiếp tục, bạn đồng ý với",
     termsOfUse: "Điều khoản sử dụng",
     and: "&",
     privacyPolicy: "Chính sách quyền riêng tư",
+  },
+  // 수단 사용 불가 안내 대화상자(ADR-0111 개정 2).
+  unavailable: {
+    title: (method) => `Đăng nhập bằng ${method} tạm thời không khả dụng`,
+    description:
+      "Chúng tôi đang chuyển cách đăng nhập này sang thiết lập mới. Tạm thời, hãy tiếp tục với Google hoặc không cần tài khoản.",
+    descriptionWithoutGuest:
+      "Chúng tôi đang chuyển cách đăng nhập này sang thiết lập mới. Tạm thời, hãy tiếp tục với Google.",
+    close: "Đóng",
   },
 };
 

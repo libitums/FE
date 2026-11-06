@@ -5,7 +5,7 @@
   `@libitums/ui-lynx` 입력 소비 · 측정 이벤트 셋. 화면 명세 쪽 변경(진입 흐름 표 · 구현 순서
   11·12번)은 [화면 명세](../screens.md)가 진다.
 - 계약 타입: `apps/mobile/src/lib/entry-flow.ts` · `lib/entry-language.ts` · ~~`lib/auth-token.ts`~~(2026-09-29 삭제),
-  화면 폴더의 `*.contract.ts` 여섯, 네비게이션 어휘 `apps/mobile/src/app/navigation.ts`(`Screen`).
+  화면 폴더의 `*.contract.ts` 여섯, 네비게이션 어휘 `apps/mobile/src/app/navigation.ts`(`Screen`). ⟨2026-11-06⟩ `lib/guest-session.ts`(비회원 표식 · `AccountState`)가 늘었다.
 - 상태: **고정·구현됨.** unit · ui · integration 계층이 녹색이다. 수동 iOS 흐름은 설계됐고
   **한 번도 실행되지 않았다**(§8).
 - 이 문서는 공개 계약의 요약이다. 값의 정본은 코드이고, 수동 절차의 정본은
@@ -64,6 +64,15 @@
 > `app/returning-learner-probe.ts`(조회 · 3초 경주)이고, `lib/ui-language.ts`에 기존 회원 언어 규칙 셋, `lib/entry-flow.ts`에 이벤트 하나가 늘었다.
 > 화면 · props · testid · `NavAction` · 리듀서는 바뀌지 않았다. 바뀐 자리는 §0의 3 · 6, §3 표의 두 성공 행과 새 행, §4 ⭐ 대가, §5 머리, §6 표, §8이다.
 > **어긋나는 줄은 이 개정이 이긴다.**
+
+> **개정 (2026-11-06) — Facebook(두 플랫폼) · Apple(Android)은 버튼은 그대로 두고 누르면 인증 창 대신 「사용 불가 안내」 모달을 띄우며(같은 날 아침의 「표시 목록 제외」는 사용자가 되돌렸다 — 개정 2), 로그인 화면에 「비회원으로 계속」이 섰다.** 결정과 근거는
+> [ADR-0111](../adr/0111-guest-entry-without-account.md)(**채택 — 임시**, 재검토 = Meta 앱 게시 · Apple Services ID)이 진다. 사용 불가 판정은 `screens/login/login.ts`의
+> 순수 함수 `unavailableLoginMethodsFor(platform, policy)` 한 곳이고(**개정 3** — 정본은 기기에 저장된 앱 정책 `app-policy.json`의 선택 칸 `unavailable_login_methods`, 정책이나 칸이 없으면 상수 `productUnavailableLoginMethods` · `androidUnavailableLoginMethods`가 기본값 — [정책 파일 스펙](app-update-policy.md)), 사용 불가 수단의 탭은 결선에 닿지 않아(`onSelectSocialMethod` 0회 · 이벤트 0) 아래 §3 표의 소셜 행은 **사용 가능한 수단에만** 적용된다. `EntryLoginMethod` 넷 · 어휘 순서 · 소셜 교환은 바뀌지 않았다. 계약 타입이 하나 늘었다 —
+> `lib/guest-session.ts`(기기 표식 `libitum.auth.guest` · `AccountState = signed-out | guest | signed-in`). `EntryAuthState`에 셋째 갈래 `guest`(세션 없음 + 표식 — 스플래시가 갱신 없이 `enterApp`),
+> `EntryLoginMethodSelectedEvent.method`가 `EntryLoginChoice = EntryLoginMethod | "guest"`로 넓어졌다(이벤트 이름 0 추가). 세션 저장은 `entry-wiring`의 `storeSession`이 아니라 새 `app/store-session.ts`의
+> `storeSignedInSession`(부팅 갱신 · 소셜 · 코드 검증 · 비회원 로그인 넷이 부른다 — 저장 → 표식 삭제 → 계정 상태 → 진행 동기화 → 식별)이다. 비회원 결선은 새 `app/guest-wiring.ts`, 설정에서 여는 로그인 화면은
+> 새 route `{ name: "guest-login" }`(**설정 탭 스택** — `entry` 스택이 아니고 `EntryScreen` 아홉에 들지 않는다). `LoginScreenProps` + `platform` · `guestSignIn` · `onContinueAsGuest`, `LoginSocialMethodsProps` + `methods`.
+> 바뀐 자리는 §3 표의 세 행(비회원 · 비회원 재실행 · 설정 로그인)과 §9다. 수동 절차는 [비회원 진입 e2e](../e2e/guest-entry.md)가 진다. **어긋나는 줄은 이 개정이 이긴다.**
 
 ## 0. 고정 범위와 불변식
 
@@ -201,6 +210,9 @@ App (app/App.tsx)                                  ← 유일한 결선 자리. 
 | 코드 `로그인으로` | **`back`** | 한 겹 위 = 로그인 |
 | 언어 `다음` | `push` | `[…, 여정 입장]` |
 | `여정 시작하기` | `enterApp` | `[]` → 여정 맵 |
+| ⟨2026-11-06⟩ 로그인 「비회원으로 계속」(`login-screen-method-guest`) | `push` | `[…, ① 이름]` — 세션 · 기존 회원 판정 없음, 기기 표식 `libitum.auth.guest` 저장 · `entry_login_method_selected { method: "guest" }` · `entry_screen_viewed { screen: "learner-name" }`. 그 뒤 ② 나라 → 언어 선택 → 여정 입장 → `enterApp`은 위 표 그대로(② 나라는 손님 칸에 저장, 여정 입장의 알림 다이얼로그는 세션이 없어 뜨지 않는다). 소셜 요청 중에는 무동작 |
+| ⟨2026-11-06⟩ 고정 시간 종료 · **세션 없음 + 비회원 표식** | `enterApp` | `[]` → 여정 맵 — 갱신 요청 0 · `entry_*` 0 · 알림 · 프로필 동기화 0. 세션이 있으면 표식과 무관하게 위 「세션 있음」 행이다. 강제 업데이트 판정은 이 분기 앞 |
+| ⟨2026-11-06⟩ **앱 구간** · 설정 「Sign in」 → `guest-login`(설정 스택) → 소셜 성공 | `push` / `backToRoot`(`entry` 스택 아님) | 설정 스택 `[설정, guest-login]` → `[설정]`. 비회원 칸 이관(세션 저장 전) → 세션 저장 · 표식 삭제 · 식별 → 프로필 동기화 → 설정 루트 → 알림 질문. 기존 회원 판정 · 언어 선택 · 여정 입장 없음. 뒤로는 `back`(설정), 취소 · 실패는 전이 없음. 비회원 버튼 · 전화번호 수단은 이 화면에 없다 |
 
 - **스플래시만 `replace`다.** 끝난 화면은 스택에 남길 자리가 아니고, 돌아가면 **타이머가 다시
   돈다.** ⚠ 출구를 맞추려고 고른 것이 아니다(ADR-0007 **D6.3**이 그 근거를 금지한다).
@@ -375,6 +387,9 @@ App (app/App.tsx)                                  ← 유일한 결선 자리. 
 조건의 기준선이 아니다** — 그 사실과 관찰 구간의 한계는 그 보고서에 있다.
 ⟨2026-10-18⟩ 기존 회원 판정(로그인 뒤 최대 3초 대기)의 기록은
 [`returning-user-login-iphone-17-pro-simulator-01`](../performance/reports/returning-user-login-iphone-17-pro-simulator-01.md)이다(번들만).
+
+⟨2026-11-06⟩ 비회원 진입 · Facebook 사용 불가 안내의 기록은
+[`guest-entry-01`](../performance/reports/guest-entry-01.md)이다(번들만 — main 3,915.6 / 4,060.0 kB, ui-lynx 변경 0 — 개정 2 포함 측정).
 
 ## 비고
 

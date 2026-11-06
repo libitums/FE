@@ -3,11 +3,13 @@ import { describe, expect, it } from "vitest";
 import { initialSessionOptions, type SessionOptionKey } from "../../lib/session-options";
 import {
   sessionOptionChangedEvent,
+  settingsAccountStateOf,
   settingsNavLabel,
   settingsNavOpenedEvent,
   settingsNavTargets,
   settingsSessionOptionKeys,
   settingsSessionOptionRows,
+  settingsNavTargetsFor,
 } from "./settings";
 import type { SettingsNavTarget } from "./settings.contract";
 import { uiCopyEn } from "../../lib/ui-copy-en";
@@ -157,5 +159,25 @@ describe("입력 불변 · 부수효과 없음 (가드)", () => {
       expect(sessionOptionChangedEvent(key, true)).toEqual(sessionOptionChangedEvent(key, true));
       expect(key).toBe(before);
     }
+  });
+});
+
+describe("settingsNavTargetsFor · settingsAccountStateOf", () => {
+  it("SN7. signed-in은 여덟 그대로, guest는 notifications · feedback을 뺀 여섯(순서 유지)이다", () => {
+    expect(settingsNavTargetsFor("signed-in")).toEqual(settingsNavTargets);
+    expect(settingsNavTargetsFor("guest")).toEqual([
+      "profile",
+      "learner-profile",
+      "language",
+      "download",
+      "privacy-policy",
+      "terms-of-use",
+    ]);
+  });
+
+  it("SN7. 계정 상태는 guest만 guest이고 signed-in · signed-out은 signed-in으로 본다", () => {
+    expect(settingsAccountStateOf("guest")).toBe("guest");
+    expect(settingsAccountStateOf("signed-in")).toBe("signed-in");
+    expect(settingsAccountStateOf("signed-out")).toBe("signed-in");
   });
 });

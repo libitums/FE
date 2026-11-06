@@ -2,6 +2,7 @@
 
 import type { MobileDataPolicy } from "./download-policy";
 import type { DownloadSheetRowStatus } from "../screens/download-sheet/download-sheet-rows";
+import type { AccountAction } from "../screens/settings/account-actions.contract";
 import type {
   SettingsNavTarget,
   SettingsSessionOptionKey,
@@ -90,7 +91,7 @@ export type SettingsCopy = {
   /** 접미 낱말(소문자) — `Auto-play, on` */
   readonly optionState: Readonly<Record<"on" | "off", string>>;
   /** 「Account actions」 묶음의 행 제목 — 키는 `AccountAction` */
-  readonly action: Readonly<Record<"sign-out" | "delete-account", string>>;
+  readonly action: Readonly<Record<AccountAction, string>>;
   readonly signOutDialog: {
     readonly title: string;
     readonly confirm: string;

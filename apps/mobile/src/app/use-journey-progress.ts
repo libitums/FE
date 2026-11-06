@@ -23,6 +23,9 @@ import { emptyLegacyTutorialRecord, legacyTutorialPassed } from "./legacy-tutori
 import type { LegacyTutorialRecord } from "./legacy-tutorial-progress";
 import { createLearningDaySync } from "./learning-day-sync";
 import { createJourneyProgressSync } from "./journey-progress-sync";
+import { guestProgressId } from "./guest-progress";
+import { createGuestLearningDayStore, createGuestProgressStore } from "./guest-progress-store";
+import type { LearningDayHandle, ProgressSyncHandle } from "./guest-progress-store";
 import { progressUserId } from "./pending-learning-progress";
 import { journeyMapProgressLoadOf } from "./progress-load";
 import { useProgressLoad } from "./use-progress-load";
@@ -66,8 +69,8 @@ export function useJourneyProgress(
   const latest = useRef(state);
   latest.current = state;
   const initial = useRef(state);
-  const sync = useRef<ReturnType<typeof createJourneyProgressSync> | null>(null);
-  const days = useRef<ReturnType<typeof createLearningDaySync> | null>(null);
+  const sync = useRef<ProgressSyncHandle | null>(null);
+  const days = useRef<LearningDayHandle | null>(null);
   const renderedSync = sync.current;
   const renderedDays = days.current;
   useEffect(
@@ -98,22 +101,33 @@ export function useJourneyProgress(
     setTicketUnits(next.ticketUnits ?? {});
   };
 
+  // 계정이 바뀔 때 앞 계정의 객체 둘을 버리고 화면 상태를 처음으로 되돌립니다.
+  const resetForOtherAccount = (): void => {
+    sync.current?.dispose();
+    days.current?.dispose();
+    apply(initial.current);
+    setStreakDays(0);
+    setStreakCelebration(false);
+    setStatBumps(noStatBumps);
+    setEpisodeSurvey(null);
+    setRecordingDay(false);
+  };
+  const applyStreak = (streak: number, celebrate: boolean): void => {
+    if (celebrate && streak > streakRef.current) {
+      const previous = streakRef.current;
+      setStreakCelebration(true);
+      setStatBumps((bumps) => recordStatBump(bumps, "streak", previous, streak));
+    }
+    setStreakDays(streak);
+  };
+
   /** 로그인 뒤 호출합니다. 로컬 미전송 진행을 즉시 복구한 다음 서버와 합칩니다. */
   const syncFromServer = async (): Promise<void> => {
     "background only";
     const userId = progressUserId();
     if (userId === null) return;
     if (sync.current?.userId !== userId) {
-      if (sync.current !== null) {
-        sync.current.dispose();
-        days.current?.dispose();
-        apply(initial.current);
-        setStreakDays(0);
-        setStreakCelebration(false);
-        setStatBumps(noStatBumps);
-        setEpisodeSurvey(null);
-        setRecordingDay(false);
-      }
+      if (sync.current !== null) resetForOtherAccount();
       sync.current = createJourneyProgressSync(
         userId,
         () => latest.current,
@@ -121,16 +135,20 @@ export function useJourneyProgress(
         progressLoad.settle,
       );
       progressLoad.start(sync.current.restoredLocal);
-      days.current = createLearningDaySync(userId, (streak, celebrate) => {
-        if (celebrate && streak > streakRef.current) {
-          const previous = streakRef.current;
-          setStreakCelebration(true);
-          setStatBumps((bumps) => recordStatBump(bumps, "streak", previous, streak));
-        }
-        setStreakDays(streak);
-      });
+      days.current = createLearningDaySync(userId, applyStreak);
     }
     await Promise.all([sync.current.flush(), days.current?.flush()]);
+  };
+
+  /** 비회원 진입 · 재실행 때 기기 전용 객체를 세웁니다(ADR-0111). RPC 0건. 이미 비회원 객체면 아무것도 안 합니다. */
+  const startGuestProgress = (): void => {
+    "background only";
+    if (sync.current?.userId === guestProgressId) return;
+    if (sync.current !== null) resetForOtherAccount();
+    sync.current = createGuestProgressStore(() => latest.current, apply, progressLoad.settle);
+    progressLoad.start(sync.current.restoredLocal);
+    days.current = createGuestLearningDayStore(applyStreak);
+    void Promise.all([sync.current.flush(), days.current.flush()]);
   };
 
   useEffect(() => {
@@ -182,6 +200,7 @@ export function useJourneyProgress(
       statBumps,
       onStatBumped,
       syncProgress: syncFromServer,
+      startGuestProgress,
       journeyMapProgressLoad: journeyMapProgressLoadOf(progressLoad.phase, () => {
         progressLoad.requestRetry();
         void sync.current?.flush();
@@ -198,7 +217,7 @@ export function useJourneyProgress(
     onStreakCelebrated: () => setStreakCelebration(false),
     statBumps,
     onStatBumped,
-    episodeSurvey: recordingDay ? null : episodeSurvey,
+    episodeSurvey: recordingDay || renderedSync?.userId === guestProgressId ? null : episodeSurvey,
     onEpisodeSurveyClosed: () => setEpisodeSurvey(null),
     trophyCount,
     headerTrophyCount,

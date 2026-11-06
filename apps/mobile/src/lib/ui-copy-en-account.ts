@@ -67,7 +67,11 @@ export const settingsEn: SettingsCopy = {
     vibration: "Vibrate when your answer is right or wrong.",
   },
   optionState: { on: "on", off: "off" },
-  action: { "sign-out": "Sign out", "delete-account": "Delete account" },
+  action: {
+    "sign-in": "Sign in",
+    "sign-out": "Sign out",
+    "delete-account": "Delete account",
+  },
   signOutDialog: { title: "Sign out?", confirm: "Sign out", cancel: "Stay signed in" },
   deleteDialog: {
     title: "Delete your account?",

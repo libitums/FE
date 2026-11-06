@@ -15,6 +15,9 @@ function renderLogin(
   return render(
     <LoginScreen
       phoneSignIn="visible"
+      unavailableMethods={[]}
+      guestSignIn="visible"
+      onContinueAsGuest={() => undefined}
       onSelectSocialMethod={overrides.onSelectSocialMethod ?? (() => new Promise(() => {}))}
       onSubmitPhoneNumber={() => Promise.resolve({ status: "sent" as const })}
       onBack={overrides.onBack}

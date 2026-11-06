@@ -2,6 +2,7 @@
 
 import type { AccountActionsProps, AccountActionsTestId } from "./account-actions.contract";
 import type { AppVersion } from "../../lib/app-version";
+import type { AccountState } from "../../lib/guest-session";
 import type { SessionOptionKey, SessionOptions } from "../../lib/session-options";
 import type {
   LearnerProfileOpenedEvent,
@@ -16,6 +17,9 @@ import type { LegalDocument, LegalDocumentOpenedEvent } from "../../lib/legal-do
 //
 // 이동 항목 목록을 props로 따로 받지 않습니다 — 셋은 이 union이 이미 닫았습니다
 // (`BottomNavigator`가 세 탭을 모듈 내부 상수로 둔 것과 같은 근거입니다).
+/** 설정 화면이 받는 계정 상태 — 설정은 앱 구간이라 `signed-out`은 오지 않습니다. */
+export type SettingsAccountState = Exclude<AccountState, "signed-out">;
+
 export type SettingsNavTarget =
   | "profile"
   | "learner-profile"
@@ -44,6 +48,8 @@ export type SettingsScreenProps = {
   readonly sessionOptions: SessionOptions;
   /** 옵션 줄을 눌렀을 때 부릅니다. `value`는 바뀐 뒤 값입니다. */
   readonly onToggleSessionOption: (key: SessionOptionKey, value: boolean) => void;
+  /** 행 구성을 고릅니다 — 계정 묶음은 `settingsNavTargetsFor`, 계정 동작은 `accountActionsFor`. */
+  readonly account: SettingsAccountState;
 } & AccountActionsProps;
 
 export type SettingsOpenedEvent = { readonly name: "settings_opened" };

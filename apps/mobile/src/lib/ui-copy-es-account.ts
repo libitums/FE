@@ -73,7 +73,11 @@ export const settingsEs: SettingsCopy = {
     vibration: "Vibra cuando tu respuesta es correcta o incorrecta.",
   },
   optionState: { on: "activado", off: "desactivado" },
-  action: { "sign-out": "Cerrar sesión", "delete-account": "Eliminar cuenta" },
+  action: {
+    "sign-in": "Iniciar sesión",
+    "sign-out": "Cerrar sesión",
+    "delete-account": "Eliminar cuenta",
+  },
   signOutDialog: { title: "¿Cerrar sesión?", confirm: "Cerrar sesión", cancel: "Seguir conectado" },
   deleteDialog: {
     title: "¿Eliminar tu cuenta?",

@@ -189,6 +189,8 @@ export type JourneyStats = {
 export type ProgressWiringArgs = JourneyStats &
   StatBumpWiring & {
     readonly syncProgress: () => Promise<void>;
+    /** 비회원 저장 객체를 세웁니다(ADR-0111). 던지지 않습니다. */
+    readonly startGuestProgress: () => void;
     readonly journeyMapProgressLoad: JourneyMapProgressLoad;
   };
 

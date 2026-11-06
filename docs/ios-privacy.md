@@ -206,6 +206,29 @@ Section 3의 Supabase 행에 「learner profile (name and country you enter)」�
 새 저장 키는 없고 위 표의 두 키(저장본 · 미전송)와 서버 `learning_progress.progress` 안에 산다 — 보존 · 삭제도 그대로다. 식별 정보가 아니고 App Store 신고 항목은 바뀌지 않는다.
 새 PostHog 이벤트 둘(`tickets_ran_out` · `ticket_more_tapped`)은 화면 자리와 불리언만 싣는다.
 
+## 비회원 진입 — 기기 전용 표식 · 진행 (2026-11-06)
+
+> **App Store 신고 항목은 바뀌지 않는다** — 새로 모으는 데이터가 아니라 이미 기기에 두는 미전송 학습 진행 · 학습일(위 「학습 진행 저장본」)과 손님 프로필 칸(위 「학습자 프로필」)을 **계정 없이** 쓰는 것이고, 서버로 가는 값은 로그인 전까지 0이다.
+> 공개 처리방침 문구의 수정 여부는 앞 절과 같이 사용자 판단으로 남긴다.
+
+[ADR-0111](adr/0111-guest-entry-without-account.md)(임시)이 로그인 화면에 「Continue without an account」를 두어 **계정 없이** 이름 · 나라 → 언어 → 여정 입장 → 맵으로 들어가고, 유닛을 끝내면 진행 · 학습일을 기기에만 적는다. 그동안 Supabase RPC · 푸시 등록 · 피드백 · 분석 식별은 **0**이다(분석 이벤트는 익명 id로 나간다 — 위 「수집 항목 대조」의 분석 항목 그대로).
+
+| 데이터 | 어디에 저장하나 | 목적 | 사용자 연결 | 추적 | 코드 근거 |
+| --- | --- | --- | --- | --- | --- |
+| 비회원 표식(값 `"1"` 하나 — 누구인지 · 언제인지 담지 않는다) | 기기 `UserDefaults` — 키 `libitum.auth.guest` | App Functionality(다음 실행에 온보딩 · 로그인을 다시 보이지 않고 맵으로) | 아니다 — 계정이 없다 | 아니다 | `lib/guest-session.ts`, 쓰는 자리 `app/guest-wiring.ts` · `app/store-session.ts` · `app/entry-wiring.ts` |
+| 비회원의 학습 진행 스냅숏(끝낸 스텝 · 유닛 · 카탈로그 유닛 키 · 티켓 — 서버 `learning_progress.progress`와 같은 모양) | 기기 `UserDefaults` — 키 `libitum.progress.pending.guest`(기존 미전송 키의 `<userId>` 자리가 `guest`) | App Functionality(맵에 진행을 보이기 · 로그인하면 계정으로 올리기) | 로그인 전에는 아니다. 로그인 때 그 사용자의 미전송 칸으로 옮겨져 계정에 묶인다 | 아니다 | `app/guest-progress-store.ts`, 이관 `app/guest-progress.ts` `adoptGuestRecords` |
+| 비회원의 학습한 날짜 목록(`YYYY-MM-DD`) | 기기 `UserDefaults` — 키 `libitum.learning-days.pending.guest` | App Functionality(연속 학습일을 기기에서 세기 · 로그인하면 올리기) | 위와 같다 | 아니다 | 위와 같다 |
+| 비회원의 이름 · 나라 | 기기 `UserDefaults` — 기존 손님 칸 `libitum.learner-profile.guest`(위 「학습자 프로필」) — 비회원 구간 전체에서 산다 | App Functionality(레슨 문장) | 위와 같다 — 로그인 때 기존 규칙으로 사용자 칸에 옮겨진다 | 아니다 | `app/learner-profile-sync.ts`(변경 0) |
+
+- **담는 것**: 진행 · 날짜 · 이름 · 나라와 표식뿐이다. 이메일 · 토큰 · 기기 ID 같은 식별 정보는 없다. 위 「앱의 API 사용 사유」의 UserDefaults `CA92.1` 범위 안이다 — 앱 자체 정보다.
+- **서버 전송 없음**: 비회원 상태에서는 어느 값도 서버로 가지 않는다(통합 테스트가 fetch 0건을 지킨다 · 기기 프록시 확인은 [비회원 진입 e2e](e2e/guest-entry.md) GE-E3). 설정 「Sign in」으로 로그인하면 표식은 지워지고 진행 · 날짜 · 프로필은 **그 계정의 미전송 값**이 되어 기존 규칙(ADR-0035 · ADR-0062 · ADR-0059)으로 올라간다 — 그 뒤는 위 두 절의 보존 · 삭제 규칙이다.
+- **보존 · 삭제**: 비회원은 로그아웃 · 계정 삭제 행이 없다(삭제할 계정이 없다). 기록을 지우는 길은 **앱 삭제**뿐이고, 기기를 바꾸면 기록은 따라가지 않는다(의도 — 서버 저장 없음). 「기록 지우기」 기능은 아직 없다(ADR-0111 재검토 조건 5).
+- **분석에는 값이 없다.** `entry_login_method_selected`의 `method` 값 `"guest"` 하나가 더해졌고 새 이벤트 · 새 속성은 없다. 비회원 구간의 이벤트는 익명 distinct id로 가고 `$identify`는 로그인 때만이다([ADR-0029](adr/0029-product-analytics-posthog.md) D8 · D14 적용 기록).
+
+**공개 개인정보처리방침 문안 초안**(공개 페이지에는 반영하지 않았다 — 위 「학습 진행 저장본」의 2 “Information stored on your device”에 덧붙이는 꼴):
+
+> If you continue without an account, your learning progress, learning dates, and the name and country you enter are stored only on your device and are not sent to our servers. If you later sign in from Settings, they are moved to your account and uploaded. Uninstalling the App removes them; they are not available on another device until you sign in.
+
 ## 배포 산출물 확인
 
 1. `pnpm bundle:host`로 production 번들을 준비합니다.

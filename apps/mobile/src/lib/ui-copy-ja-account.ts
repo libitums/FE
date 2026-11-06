@@ -68,7 +68,11 @@ export const settingsJa: SettingsCopy = {
     vibration: "答えが正解か不正解のときに振動します。",
   },
   optionState: { on: "オン", off: "オフ" },
-  action: { "sign-out": "ログアウト", "delete-account": "アカウントを削除" },
+  action: {
+    "sign-in": "ログイン",
+    "sign-out": "ログアウト",
+    "delete-account": "アカウントを削除",
+  },
   signOutDialog: {
     title: "ログアウトしますか？",
     confirm: "ログアウト",

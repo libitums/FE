@@ -82,6 +82,8 @@ export type Screen =
   | { name: "splash" }
   | { name: "onboarding" }
   | { name: "login" }
+  // 비회원이 설정 › 「로그인」으로 여는 로그인 화면(ADR-0111). 설정 탭 스택에 쌓입니다.
+  | { name: "guest-login" }
   | { name: "verification-code"; phoneNumber: PhoneNumber }
   // 가입 직후 ① 이름 · ② 나라입니다(ADR-0059 D7 2026-10-20). ①은 미리 채울 이름을, ②는 ①에서 정한 이름을 듭니다
   // — 뒤로 돌아왔을 때 친 값이 그대로 서도록 route가 값을 집니다.

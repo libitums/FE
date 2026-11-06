@@ -339,3 +339,7 @@ D8(진행 모름) · D9(줄 자리)의 규칙은 그대로이고, 그것이 얹�
 - **진행 캐시(`libitum.progress.cached.<사용자>`) · 미전송 저장본은 같은 스냅숏 함수를 쓴다** — 스냅숏 v1 그대로이고 옛 튜토리얼 필드 여섯은 얼린 기록이라 저장 모양 · 키 · 사용자 경계(D12)가 이 변경 전과 같다. 옛 앱이 쓴 캐시도 그대로 읽힌다.
 - D7 「실패하면 연다」 · 「실패 뒤 튜토리얼 표지만 열림」의 튜토리얼 표지는 이제 **u00 표지**(첫 카탈로그 구획 — 늘 열림)다.
 - D13 머리 띠의 설명 줄은 구획 번호(`order`)를 쓴다 — u00은 `Episode 0, unit NN` · 제목 `Tutorial`이다. 옛 튜토리얼 띠(`Episode 0.` / `Tutorial.`)는 사라졌다.
+
+## 적용 기록 ⟨2026-11-06 — 비회원 진입([ADR-0111](0111-guest-entry-without-account.md))⟩
+
+결정은 바꾸지 않는다. **비회원의 진행은 미전송 칸만 쓴다** — 기존 키 `libitum.progress.pending.<userId>`의 `<userId>` 자리에 `"guest"`를 쓴 칸(`libitum.progress.pending.guest`)이고, **`cached` 칸(D1)은 만들지 않는다**(서버가 확인한 진행이 없다). 비회원에게는 이 ADR의 동기화 객체(`createJourneyProgressSync`)를 세우지 않고 RPC 0건의 저장 객체(`createGuestProgressStore`)를 같은 자리에 둔다 — 상태 기계(D5)에는 `flush()`가 첫 호출에서 `loaded`를 한 번 settle해 맵이 「확인 중」 없이 기기 값으로 선다. **로그인 때 비회원 칸이 사용자 미전송 칸에 합쳐진다** — `adoptGuestRecords(userId)`가 세션 저장 **전**에 `writePendingProgress(userId, mergeJourneyProgress(readPendingProgress(userId), readPendingProgress("guest")))`(한쪽만 있으면 그쪽)를 쓰고 비회원 칸을 지운다. 그 뒤는 D1 ~ D5 **그대로**다 — 세션 저장 직후 서는 사용자 동기화 객체가 `localProgressFrom(cached, pending)`으로 옮긴 미전송을 먼저 적용하고(D3), 서버를 불러와 `mergeJourneyProgress`로 합치고(기기 값 먼저 — 통합 GE8의 기대 순서), 덮이지 않은 것을 저장한다(D4). 그 계정에 서버 기록이 이미 있으면 **합쳐지고**, 새 계정이면 서버 행이 기기 값과 같아진다. 계정 전환 되돌림(D12)이 비회원 → 사용자 전환에도 돌아 맵이 한 렌더 비어 보일 수 있다는 것은 ADR-0111 대가 4다. 사용자 경계(D12)는 그대로다 — 비회원 칸은 로그인 때 옮겨져 로그아웃 · 삭제 시점에 없고(ADR-0032 D6 키 표), 비회원 상태로 앱을 지우면 함께 사라진다(의도).

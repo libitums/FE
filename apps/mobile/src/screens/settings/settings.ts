@@ -12,9 +12,11 @@ import type {
   NotificationSettingsOpenedEvent,
   ProfileOpenedEvent,
   SessionOptionChangedEvent,
+  SettingsAccountState,
   SettingsNavTarget,
   SettingsSessionOptionKey,
 } from "./settings.contract";
+import type { AccountState } from "../../lib/guest-session";
 import type { SessionOptionKey, SessionOptions } from "../../lib/session-options";
 
 export const settingsNavTargets: readonly SettingsNavTarget[] = [
@@ -27,6 +29,19 @@ export const settingsNavTargets: readonly SettingsNavTarget[] = [
   "privacy-policy",
   "terms-of-use",
 ];
+
+/** `signed-in` → 여덟 그대로, `guest` → 서버 행이 필요한 둘을 뺀 여섯입니다(ADR-0111). */
+export function settingsNavTargetsFor(account: SettingsAccountState): readonly SettingsNavTarget[] {
+  if (account === "signed-in") {
+    return settingsNavTargets;
+  }
+  return settingsNavTargets.filter((target) => target !== "notifications" && target !== "feedback");
+}
+
+/** `AccountState` → 설정의 둘. `signed-out`은 `signed-in`으로 봅니다. */
+export function settingsAccountStateOf(state: AccountState): SettingsAccountState {
+  return state === "guest" ? "guest" : "signed-in";
+}
 
 export function settingsNavLabel(target: SettingsNavTarget, copy: UiCopy): string {
   return copy.settings.nav[target];

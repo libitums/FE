@@ -18,6 +18,8 @@ const baseProps = {
   learnerProfileSummary: "Not set",
   languageSummary: "Intermediate English",
   onSignOut: () => undefined,
+  onSignIn: () => undefined,
+  account: "signed-in" as const,
   onDeleteAccount: () => new Promise<AccountDeletionResult>(() => undefined),
   onLayerChange: () => undefined,
 };

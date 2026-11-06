@@ -69,7 +69,11 @@ export const settingsId: SettingsCopy = {
     vibration: "Bergetar saat jawabanmu benar atau salah.",
   },
   optionState: { on: "aktif", off: "nonaktif" },
-  action: { "sign-out": "Keluar", "delete-account": "Hapus akun" },
+  action: {
+    "sign-in": "Masuk",
+    "sign-out": "Keluar",
+    "delete-account": "Hapus akun",
+  },
   signOutDialog: { title: "Keluar?", confirm: "Keluar", cancel: "Tetap masuk" },
   deleteDialog: {
     title: "Hapus akun kamu?",

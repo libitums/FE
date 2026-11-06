@@ -1,8 +1,10 @@
 import { expect, test } from "vitest";
 
+import type { AppPolicy } from "../../lib/app-policy";
 import type { EntryLoginMethod } from "../../lib/entry-flow";
 import { uiCopyEn } from "../../lib/ui-copy-en";
 import {
+  androidUnavailableLoginMethods,
   canRequestPhoneOtp,
   canStartSocialSignIn,
   loginMethodLabel,
@@ -11,6 +13,12 @@ import {
   loginStatusAfterPhoneResult,
   loginStatusAfterSocialOutcome,
   phoneNumberFrom,
+  isLoginMethodUnavailable,
+  productUnavailableLoginMethods,
+  socialLoginMethods,
+  unavailableLoginMethods,
+  unavailableLoginMethodsFor,
+  unavailableSocialLoginMethodsFor,
 } from "./login";
 
 // 라벨 리터럴 자체는 단언하지 않습니다(공백 아님·서로 다름만). 수단 넷은
@@ -145,4 +153,101 @@ test("LS5. loginStatusAfterEdit — failed는 수단과 무관하게 idle, 나�
     method: "phone",
   });
   expect(loginStatusAfterEdit({ kind: "idle" })).toEqual({ kind: "idle" });
+});
+
+// ---------------------------------------------------------------- 사용 불가 수단 (ADR-0111 개정 2)
+
+const productUnavailable: readonly EntryLoginMethod[] = ["facebook"];
+
+test("LG-A1. 제품 기본 입력은 iOS = [facebook], Android = [apple, facebook](어휘 순서)", () => {
+  expect(unavailableLoginMethods({ platform: "ios", unavailable: productUnavailable })).toEqual([
+    "facebook",
+  ]);
+  expect(unavailableLoginMethods({ platform: "android", unavailable: productUnavailable })).toEqual(
+    ["apple", "facebook"],
+  );
+});
+
+test("LG-A2. platform이 null이면 iOS와 같다", () => {
+  expect(unavailableLoginMethods({ platform: null, unavailable: productUnavailable })).toEqual([
+    "facebook",
+  ]);
+});
+
+test("LG-A3. unavailable이 비어도 Android는 [apple], iOS · null은 []이다", () => {
+  expect(unavailableLoginMethods({ platform: "android", unavailable: [] })).toEqual(["apple"]);
+  expect(unavailableLoginMethods({ platform: "ios", unavailable: [] })).toEqual([]);
+  expect(unavailableLoginMethods({ platform: null, unavailable: [] })).toEqual([]);
+});
+
+test("LG-A4. 겹쳐도 중복 없이 어휘 순서를 지키고 입력은 바뀌지 않는다", () => {
+  const unavailable: readonly EntryLoginMethod[] = ["facebook", "apple"];
+
+  expect(unavailableLoginMethods({ platform: "android", unavailable })).toEqual([
+    "apple",
+    "facebook",
+  ]);
+  expect(unavailableLoginMethods({ platform: "ios", unavailable })).toEqual(["apple", "facebook"]);
+  expect(unavailable).toEqual(["facebook", "apple"]);
+});
+
+test("LG-A5. isLoginMethodUnavailable — 목록에 든 수단만 참", () => {
+  const ios = { platform: "ios", unavailable: productUnavailable } as const;
+  const android = { platform: "android", unavailable: productUnavailable } as const;
+
+  expect(isLoginMethodUnavailable("facebook", ios)).toBe(true);
+  expect(isLoginMethodUnavailable("apple", ios)).toBe(false);
+  expect(isLoginMethodUnavailable("google", ios)).toBe(false);
+  expect(isLoginMethodUnavailable("phone", ios)).toBe(false);
+  expect(isLoginMethodUnavailable("apple", android)).toBe(true);
+  expect(isLoginMethodUnavailable("facebook", android)).toBe(true);
+  expect(isLoginMethodUnavailable("google", android)).toBe(false);
+  expect(isLoginMethodUnavailable("facebook", { platform: "ios", unavailable: [] })).toBe(false);
+});
+
+test("LG-A6. 소셜 목록은 phone을 빼고 셋 전부이며, 제품 상수는 되돌리기 한 줄의 가드로 고정된다", () => {
+  expect(socialLoginMethods).toEqual(["apple", "google", "facebook"]);
+  expect(productUnavailableLoginMethods).toEqual(["facebook"]);
+  expect(androidUnavailableLoginMethods).toEqual(["apple"]);
+});
+
+// ---- 개정 3: 사용 불가 목록은 정책이 정하고, 정책이 없으면 상수 기본값 ----
+
+const policyWith = (all: EntryLoginMethod[], android: EntryLoginMethod[]): AppPolicy => ({
+  minBuild: {},
+  unavailableLoginMethods: { all, android },
+});
+
+test("LG-P1. 정책이 없으면(null) 상수 기본값 — iOS [facebook] · Android [apple, facebook] · 모름 [facebook]", () => {
+  expect(unavailableLoginMethodsFor("ios", null)).toEqual(["facebook"]);
+  expect(unavailableLoginMethodsFor("android", null)).toEqual(["apple", "facebook"]);
+  expect(unavailableLoginMethodsFor(null, null)).toEqual(["facebook"]);
+  // 정책은 있으나 칸이 없어도 같은 기본값이다.
+  expect(unavailableLoginMethodsFor("android", { minBuild: {} })).toEqual(["apple", "facebook"]);
+});
+
+test("LG-P2. 정책이 빈 배열이면 상수와 무관하게 아무것도 사용 불가가 아니다", () => {
+  const policy = policyWith([], []);
+
+  expect(unavailableLoginMethodsFor("ios", policy)).toEqual([]);
+  expect(unavailableLoginMethodsFor("android", policy)).toEqual([]);
+  expect(unavailableLoginMethodsFor(null, policy)).toEqual([]);
+});
+
+test("LG-P3. 정책의 android 목록은 Android에서만 all과 합쳐지고 어휘 순서 · 중복 없음이다", () => {
+  const policy = policyWith(["facebook", "google"], ["google", "apple"]);
+
+  expect(unavailableLoginMethodsFor("ios", policy)).toEqual(["google", "facebook"]);
+  expect(unavailableLoginMethodsFor(null, policy)).toEqual(["google", "facebook"]);
+  expect(unavailableLoginMethodsFor("android", policy)).toEqual(["apple", "google", "facebook"]);
+});
+
+test("LG-P4. 소셜 판은 phone을 뺀다 — 정책 · 기본값 양쪽", () => {
+  const policy = policyWith(["phone", "facebook"], ["apple"]);
+
+  expect(unavailableLoginMethodsFor("android", policy)).toEqual(["phone", "apple", "facebook"]);
+  expect(unavailableSocialLoginMethodsFor("android", policy)).toEqual(["apple", "facebook"]);
+  expect(unavailableSocialLoginMethodsFor("ios", policy)).toEqual(["facebook"]);
+  expect(unavailableSocialLoginMethodsFor("ios", null)).toEqual(["facebook"]);
+  expect(unavailableSocialLoginMethodsFor("android", null)).toEqual(["apple", "facebook"]);
 });

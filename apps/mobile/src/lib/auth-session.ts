@@ -54,10 +54,16 @@ export function parseAuthSession(raw: string | null): AuthSession | null {
   return { accessToken, refreshToken, expiresAt };
 }
 
-/** 계약 `EntryAuthState`의 판정입니다 — 세션이 있으면 `refresh`, 없으면 `none`. */
-export function entryAuthStateFrom(session: AuthSession | null): EntryAuthState {
+/** 계약 `EntryAuthState`의 판정입니다 — 세션이 있으면 `refresh`, 비회원 표식이 있으면 `guest`, 아니면 `none`. */
+export function entryAuthStateFrom(
+  session: AuthSession | null,
+  guest: boolean = false,
+): EntryAuthState {
   if (session !== null) {
     return { kind: "refresh", refreshToken: session.refreshToken };
+  }
+  if (guest) {
+    return { kind: "guest" };
   }
   return { kind: "none" };
 }

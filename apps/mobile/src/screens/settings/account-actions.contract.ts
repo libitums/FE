@@ -15,7 +15,7 @@ import type { UiCopy } from "../../lib/ui-copy.contract";
  * 「Account actions」 묶음의 항목 id입니다. 순서가 곧 표시 순서입니다(덜 파괴적인 것이 먼저).
  * `SettingsGroup` 항목 testid(`ui-lynx-settings-group-item-{id}`)가 이 이름을 씁니다.
  */
-export type AccountAction = "sign-out" | "delete-account";
+export type AccountAction = "sign-in" | "sign-out" | "delete-account";
 
 /**
  * 대화상자 액션 id입니다. 순서는 늘 **확인 → 취소**입니다 — `Dialog`는 마지막 액션을 취소
@@ -36,6 +36,8 @@ export type AccountDialogActionId = "sign-out" | "stay" | "delete" | "keep";
  * - `onLayerChange` — 대화상자가 열리고 닫힐 때(`useScreenLayer`). 전역 머리를 낭독에서 가립니다.
  */
 export type AccountActionsProps = {
+  /** 「로그인」 행 — 비회원만 봅니다(ADR-0111). 대화상자 없이 곧바로 한 번. */
+  readonly onSignIn: () => void;
   readonly onSignOut: () => void;
   readonly onDeleteAccount: () => Promise<AccountDeletionResult>;
   readonly onLayerChange: (open: boolean) => void;
@@ -72,7 +74,7 @@ export type AccountActionsEvent =
   | { readonly type: "settle"; readonly result: AccountDeletionResult };
 
 /** 전이가 요구하는 부수효과입니다. 훅이 이 값대로 콜백을 **한 번** 부릅니다. */
-export type AccountActionsEffect = "none" | "sign-out" | "delete-account";
+export type AccountActionsEffect = "none" | "sign-in" | "sign-out" | "delete-account";
 
 export type AccountActionsTransition = {
   readonly state: AccountActionsState;

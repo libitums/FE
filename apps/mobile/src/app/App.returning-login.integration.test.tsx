@@ -159,9 +159,11 @@ test("[RL6] 판정이 늦으면 소셜 버튼이 로딩인 채 3초까지 기다
   expect(button.getAttribute("data-loading")).toBe("true");
   expect(within(google).queryByTestId("ui-lynx-button-spinner")).not.toBeNull();
   const starts = host.webStarts.length;
-  tapButtonIn("login-screen-method-facebook");
+  const appleStarts = host.appleStarts.length;
+  tapButtonIn("login-screen-method-apple");
   await settle();
   expect(host.webStarts).toHaveLength(starts);
+  expect(host.appleStarts).toHaveLength(appleStarts);
 
   await advance(1);
   expect(present("learner-name-screen-title")).toBe(true);

@@ -67,7 +67,11 @@ export const settingsVi: SettingsCopy = {
     vibration: "Rung khi câu trả lời của bạn đúng hoặc sai.",
   },
   optionState: { on: "bật", off: "tắt" },
-  action: { "sign-out": "Đăng xuất", "delete-account": "Xóa tài khoản" },
+  action: {
+    "sign-in": "Đăng nhập",
+    "sign-out": "Đăng xuất",
+    "delete-account": "Xóa tài khoản",
+  },
   signOutDialog: { title: "Đăng xuất?", confirm: "Đăng xuất", cancel: "Vẫn đăng nhập" },
   deleteDialog: {
     title: "Xóa tài khoản của bạn?",

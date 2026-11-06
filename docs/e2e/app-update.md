@@ -7,7 +7,7 @@
 
 - iOS: iPhone 시뮬레이터 또는 실기 · Debug 호스트 + `--bundle-url=main.lynx`. Android: 에뮬레이터 · `bundled` 변형.
 - **테스트 버킷**이 있으면 그것을 쓴다(`PUBLIC_SUPABASE_URL`을 테스트 프로젝트로). 실서버 버킷에 정책을 올리면 **모든 사용자**에게 적용된다 — 실서버에는 올리지 않는다.
-- 정책 파일: `{ "schema": "app-policy-1", "min_build": { "android": 999 } }`(막음) · `{ "android": 1 }`(안 막음) · iOS는 `ios` 키로 같은 식. cacheControl 60초.
+- 정책 파일: `{ "schema": "app-policy-1", "min_build": { "android": 999 } }`(막음) · `{ "android": 1 }`(안 막음) · iOS는 `ios` 키로 같은 식. cacheControl 60초. ⟨2026-11-06⟩ 같은 파일에 선택 칸 `unavailable_login_methods`(사용 불가 로그인 수단 — [ADR-0111](../adr/0111-guest-entry-without-account.md) 개정 3)가 생겼다 — 이 문서의 강제 업데이트 판정은 **불변**이고 그 칸이 있든 모양이 틀리든 `min_build` 결과는 같다(AP-U3). 로그인 칸의 기기 확인은 [비회원 진입 e2e](guest-entry.md) GE-E9.
 - 판정: 화면 캡처 · Accessibility Inspector / TalkBack · 저장소(`libitum.libitum.app-policy` — iOS `UserDefaults`는 키 앞에 `libitum.`을 하나 더 붙인다).
 
 | # | 조작 | 기대 | 환경 | 결과 |

@@ -64,6 +64,7 @@ export const journeyEntryJa: JourneyEntryCopy = {
 };
 
 export const loginJa: LoginCopy = {
+  guest: "アカウントなしで続ける",
   method: {
     phone: "続ける",
     google: "Googleで続ける",
@@ -83,10 +84,19 @@ export const loginJa: LoginCopy = {
   countrySheetTitle: "国を選択",
   // 문서 이름 두 개가 앞 문장 뒤에 붙는 순서라, 앞 문장을 "다음에 동의" 꼴로 둡니다.
   legal: {
-    lead: "登録すると、次の内容に同意したものとみなされます：",
+    lead: "続けると、次の内容に同意したものとみなされます：",
     termsOfUse: "利用規約",
     and: "・",
     privacyPolicy: "プライバシーポリシー",
+  },
+  // 수단 사용 불가 안내 대화상자(ADR-0111 개정 2).
+  unavailable: {
+    title: (method) => `${method}でのログインは現在ご利用いただけません`,
+    description:
+      "このログイン方法は新しい仕組みへ移行中です。しばらくは、Googleで続けるか、アカウントなしで続けてください。",
+    descriptionWithoutGuest:
+      "このログイン方法は新しい仕組みへ移行中です。しばらくは、Googleで続けてください。",
+    close: "閉じる",
   },
 };
 

@@ -20,7 +20,7 @@ import {
   signOutDialogActions,
 } from "./account-actions";
 
-// test-plan §2.5 AX1 ~ AX8. 전이표는 계약 파일(account-actions.contract.ts)의 아홉 줄이다.
+// test-plan §2.5 AX1 ~ AX8. 전이표는 계약 파일(account-actions.contract.ts)의 열 줄이다(ADR-0111 「로그인」 한 줄 포함).
 
 const idle = (failure: AccountDeletionFailure | null): AccountActionsState => ({
   kind: "idle",
@@ -40,6 +40,7 @@ const failureReasons: readonly AccountDeletionFailure[] = [
 
 const openSignOut: AccountActionsEvent = { type: "open", action: "sign-out" };
 const openDelete: AccountActionsEvent = { type: "open", action: "delete-account" };
+const openSignIn: AccountActionsEvent = { type: "open", action: "sign-in" };
 const dismiss: AccountActionsEvent = { type: "dismiss" };
 const confirm: AccountActionsEvent = { type: "confirm" };
 const settleDeleted: AccountActionsEvent = { type: "settle", result: { status: "deleted" } };
@@ -59,6 +60,7 @@ const allStates: readonly AccountActionsState[] = [
 const allEvents: readonly AccountActionsEvent[] = [
   openSignOut,
   openDelete,
+  openSignIn,
   dismiss,
   confirm,
   settleDeleted,
@@ -73,6 +75,9 @@ function tableRow(
 ): AccountActionsTransition | undefined {
   switch (state.kind) {
     case "idle": {
+      if (event.type === "open" && event.action === "sign-in") {
+        return { state: idle(null), effect: "sign-in" };
+      }
       if (event.type === "open" && event.action === "sign-out") {
         return { state: confirmingSignOut, effect: "none" };
       }
@@ -108,10 +113,11 @@ describe("accountActions · initialAccountActionsState", () => {
 });
 
 describe("accountActionsTransition", () => {
-  test("AX2: 표의 아홉 줄 — 다음 상태 · 효과가 정확히 같다", () => {
+  test("AX2: 표의 열 줄 — 다음 상태 · 효과가 정확히 같다", () => {
     const rows: [AccountActionsState, AccountActionsEvent, AccountActionsTransition][] = [
       [idle(null), openSignOut, { state: confirmingSignOut, effect: "none" }],
       [idle(null), openDelete, { state: confirmingDelete, effect: "none" }],
+      [idle(null), openSignIn, { state: idle(null), effect: "sign-in" }],
       [confirmingSignOut, dismiss, { state: idle(null), effect: "none" }],
       [confirmingSignOut, confirm, { state: idle(null), effect: "sign-out" }],
       [confirmingDelete, dismiss, { state: idle(null), effect: "none" }],
