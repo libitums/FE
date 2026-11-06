@@ -97,3 +97,12 @@ test("AS8. 저장소가 없는 환경에서 loadAuthSession이 null이고 저장
   expect(() => saveAuthSession(sampleSession)).not.toThrow();
   expect(() => clearAuthSession()).not.toThrow();
 });
+
+test("AS9. entryAuthStateFrom — 세션 없음 + 비회원 표식이면 guest, 세션이 있으면 표식과 무관하게 refresh다", () => {
+  expect(entryAuthStateFrom(null, true)).toEqual({ kind: "guest" });
+  expect(entryAuthStateFrom(sampleSession, true)).toEqual({
+    kind: "refresh",
+    refreshToken: sampleSession.refreshToken,
+  });
+  expect(entryAuthStateFrom(null, false)).toEqual({ kind: "none" });
+});

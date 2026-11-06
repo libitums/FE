@@ -3,10 +3,14 @@ import { act, fireEvent, render, screen, within } from "@lynx-js/react/testing-l
 
 import { authFailureMessage } from "../../lib/auth-failure";
 import type { PhoneOtpRequestResult } from "../../lib/auth-session.contract";
-import { entryLoginMethods } from "../../lib/entry-flow";
 import type { SocialSignInOutcome } from "../../lib/social-sign-in.contract";
 import { uiCopyEn } from "../../lib/ui-copy-en";
-import { loginMethodLabel } from "./login";
+import {
+  loginMethodLabel,
+  socialLoginMethods,
+  unavailableSocialLoginMethods,
+  unavailableSocialLoginMethodsFor,
+} from "./login";
 import { loginCountries } from "./login-countries";
 import { LoginScreen } from "./LoginScreen";
 import type { LoginScreenProps } from "./login.contract";
@@ -65,9 +69,11 @@ function actionUnitIds(container: Element): (string | null)[] {
   ].map((el) => el.closest('[data-testid^="login-screen-"]')?.getAttribute("data-testid") ?? null);
 }
 
-// 소셜 셋만 남긴 목록입니다 — 화면이 쓰는 `SocialLoginMethod`와 같은 걸러내기를
-// 테스트 쪽에서 다시 짓지 않고 phone 하나만 뺍니다.
-const socialMethods = entryLoginMethods.filter((method) => method !== "phone");
+// 화면이 그리는 소셜 수단 전부입니다 — `[apple, google, facebook]`. 사용 불가 수단도 버튼은
+// 서고(탭하면 안내 대화상자), 판정은 순수 함수의 몫이라 그 결과를 그대로 씁니다.
+const socialMethods = socialLoginMethods;
+// 기본 렌더에 서는 수단 전부(전화번호 + 소셜)입니다.
+const shownMethods = ["phone", ...socialMethods] as const;
 
 // ------------------------------------------------------------ 렌더 헬퍼
 //
@@ -79,6 +85,9 @@ function renderLogin(
     onSelectSocialMethod?: LoginScreenProps["onSelectSocialMethod"];
     onSubmitPhoneNumber?: LoginScreenProps["onSubmitPhoneNumber"];
     onBack?: LoginScreenProps["onBack"];
+    unavailableMethods?: LoginScreenProps["unavailableMethods"];
+    guestSignIn?: LoginScreenProps["guestSignIn"];
+    onContinueAsGuest?: LoginScreenProps["onContinueAsGuest"];
     phoneSignIn?: LoginScreenProps["phoneSignIn"];
     onOpenLegalDocument?: LoginScreenProps["onOpenLegalDocument"];
   } = {},
@@ -87,6 +96,12 @@ function renderLogin(
     <LoginScreen
       // 전화번호 수단의 동작을 보는 케이스가 대부분이라 기본은 `visible`입니다.
       phoneSignIn={overrides.phoneSignIn ?? "visible"}
+      // 기본은 iOS · 비회원 버튼 보임 — 제품의 진입 흐름과 같습니다.
+      unavailableMethods={
+        overrides.unavailableMethods ?? unavailableSocialLoginMethodsFor("ios", null)
+      }
+      guestSignIn={overrides.guestSignIn ?? "visible"}
+      onContinueAsGuest={overrides.onContinueAsGuest ?? (() => undefined)}
       onSelectSocialMethod={overrides.onSelectSocialMethod ?? vi.fn()}
       onSubmitPhoneNumber={
         overrides.onSubmitPhoneNumber ?? (() => Promise.resolve({ status: "sent" as const }))
@@ -142,10 +157,12 @@ afterEach(() => {
 });
 
 describe("LoginScreen", () => {
-  it("[LG-U1] 수단 넷이 어휘 순서로 서고 각각 조작 단위다", () => {
+  it("[LG-U1] 수단(전화번호 · apple · google · facebook)이 어휘 순서로 서고 각각 조작 단위이며 비회원 버튼이 뒤에 선다", () => {
     const { container } = renderLogin();
 
-    for (const method of entryLoginMethods) {
+    expect(screen.getByTestId("login-screen-method-facebook")).toBeInTheDocument();
+    expect(screen.getByTestId("login-screen-method-guest")).toBeInTheDocument();
+    for (const method of shownMethods) {
       const button = methodButton(method);
       expect(button).toHaveAttribute("accessibility-element", "true");
       expect(button).toHaveAttribute("accessibility-traits", "button");
@@ -158,13 +175,21 @@ describe("LoginScreen", () => {
     const rendered = Array.from(
       container.querySelectorAll('[data-testid^="login-screen-method-"]'),
     ).map((el) => el.getAttribute("data-testid"));
-    expect(rendered).toEqual(entryLoginMethods.map((method) => `login-screen-method-${method}`));
+    expect(rendered).toEqual([
+      ...shownMethods.map((method) => `login-screen-method-${method}`),
+      "login-screen-method-guest",
+    ]);
   });
 
   // spec.md §2.3 개정 — `onSelectSocialMethod`의 반환이 `void`에서
   // `Promise<SocialSignInOutcome>`로 바뀝니다. 반환 모양만 바뀌었고 호출 단언은
   // 그대로입니다(test-plan §4 LG-U2 「반환 모양만」).
-  it.each(socialMethods)(
+  // 개정 2(2026-11-06) — 사용 불가 수단(제품값: Facebook)은 안내 대화상자가 서고 호출 0회다
+  // (LoginScreen.unavailable.ui.test LG-D1). 여기서는 iOS에서 쓸 수 있는 수단만 돈다.
+  const availableSocialMethods = socialMethods.filter(
+    (method) => !unavailableSocialLoginMethods("ios").includes(method),
+  );
+  it.each(availableSocialMethods)(
     "[LG-U2] %s를 누르면 onSelectSocialMethod가 그 수단으로 1회(반환 Promise), onSubmitPhoneNumber는 0회다",
     (method) => {
       const onSelectSocialMethod = vi.fn((): Promise<SocialSignInOutcome> => new Promise(() => {}));
@@ -225,10 +250,10 @@ describe("LoginScreen", () => {
     });
   });
 
-  // 로그인 상태 표 — google이 요청 중일 동안 나머지 셋(apple · facebook ·
-  // phone)의 `data-status`는 `idle`입니다. LG-S2가 조작 무동작을 잰다면 이 케이스는
+  // 로그인 상태 표 — google이 요청 중일 동안 나머지(apple · phone)의
+  // `data-status`는 `idle`입니다. LG-S2가 조작 무동작을 잰다면 이 케이스는
   // `data-status`만 잽니다.
-  it("[LG-S1] google 요청이 안 끝난 동안 google만 requesting이고 나머지 셋은 idle이다", () => {
+  it("[LG-S1] google 요청이 안 끝난 동안 google만 requesting이고 나머지는 idle이다", () => {
     const onSelectSocialMethod = vi.fn((): Promise<SocialSignInOutcome> => new Promise(() => {}));
     renderLogin({ onSelectSocialMethod });
 
@@ -296,7 +321,7 @@ describe("LoginScreen", () => {
   });
 
   // 취소는 idle과 구별되지 않습니다. 문구 · 발화 0.
-  it("[LG-S3] cancelled로 끝나면 넷 다 idle로 돌아가고 오류·발화가 없다", async () => {
+  it("[LG-S3] cancelled로 끝나면 서 있는 수단이 모두 idle로 돌아가고 오류·발화가 없다", async () => {
     const calls = stubAnnounceHost();
     const { promise, resolve } = deferred<SocialSignInOutcome>();
     const onSelectSocialMethod = vi.fn(() => promise);
@@ -306,7 +331,7 @@ describe("LoginScreen", () => {
     resolve({ status: "cancelled" });
     await flushMicrotasks();
 
-    for (const method of entryLoginMethods) {
+    for (const method of shownMethods) {
       expect(methodStatus(method)).toBe("idle");
     }
     expect(screen.queryByTestId("login-screen-error")).not.toBeInTheDocument();
@@ -325,7 +350,6 @@ describe("LoginScreen", () => {
 
     expect(methodStatus("google")).toBe("failed");
     expect(methodStatus("apple")).toBe("idle");
-    expect(methodStatus("facebook")).toBe("idle");
     expect(screen.getByTestId("login-screen-error")).toHaveTextContent(
       authFailureMessage("unsupported"),
     );
@@ -368,7 +392,7 @@ describe("LoginScreen", () => {
     expect(methodStatus("google")).toBe("idle");
   });
 
-  it("[LG-S7] signed-in으로 끝나면 넷 다 idle이고 오류·발화가 없다", async () => {
+  it("[LG-S7] signed-in으로 끝나면 서 있는 수단이 모두 idle이고 오류·발화가 없다", async () => {
     const calls = stubAnnounceHost();
     const { promise, resolve } = deferred<SocialSignInOutcome>();
     const onSelectSocialMethod = vi.fn(() => promise);
@@ -378,7 +402,7 @@ describe("LoginScreen", () => {
     resolve({ status: "signed-in" });
     await flushMicrotasks();
 
-    for (const method of entryLoginMethods) {
+    for (const method of shownMethods) {
       expect(methodStatus(method)).toBe("idle");
     }
     expect(screen.queryByTestId("login-screen-error")).not.toBeInTheDocument();
@@ -457,12 +481,13 @@ describe("LoginScreen", () => {
 
   // LG-U5 — 전화번호 TextField의 <input>은 접근성 요소이지만 traits="button"이
   // 아니라 이 목록에서 빠집니다. 법률 문서 링크 둘은 수단 뒤에 섭니다(ADR-0033).
-  it("[LG-U5] 조작 단위 목록이 국가 칩과 수단 넷과 법률 문서 링크 둘과 정확히 같다", () => {
+  it("[LG-U5] 조작 단위 목록이 국가 칩과 수단 셋과 비회원 버튼과 법률 문서 링크 둘과 정확히 같다", () => {
     const { container } = renderLogin();
 
     expect(actionUnitIds(container)).toEqual([
       "login-screen-country",
-      ...entryLoginMethods.map((method) => `login-screen-method-${method}`),
+      ...shownMethods.map((method) => `login-screen-method-${method}`),
+      "login-screen-method-guest",
       "login-screen-legal-terms-of-use",
       "login-screen-legal-privacy-policy",
     ]);
@@ -550,10 +575,10 @@ describe("전화번호 수단을 숨긴 로그인", () => {
     expect(container.querySelector(".login-screen-separator")).toBeNull();
   });
 
-  it("[PH2] 소셜 셋과 약관 안내는 그대로 선다", () => {
+  it("[PH2] 소셜 수단과 약관 안내는 그대로 선다", () => {
     renderLogin({ phoneSignIn: "hidden" });
 
-    for (const method of ["apple", "google", "facebook"] as const) {
+    for (const method of socialMethods) {
       expect(screen.getByTestId(`login-screen-method-${method}`)).toBeInTheDocument();
     }
     expect(screen.getByTestId("login-screen-legal")).toBeInTheDocument();

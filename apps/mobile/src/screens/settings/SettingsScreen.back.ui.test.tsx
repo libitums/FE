@@ -20,6 +20,8 @@ function renderSettings() {
       sessionOptions={initialSessionOptions}
       onToggleSessionOption={() => undefined}
       onSignOut={onSignOut}
+      onSignIn={() => undefined}
+      account="signed-in"
       onDeleteAccount={onDeleteAccount}
       onLayerChange={() => undefined}
     />,

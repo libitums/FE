@@ -22,6 +22,8 @@ function mount(
       appVersion={null}
       sessionOptions={options}
       onToggleSessionOption={onToggleSessionOption}
+      account="signed-in"
+      onSignIn={() => undefined}
       onSignOut={() => undefined}
       onDeleteAccount={() => new Promise<AccountDeletionResult>(() => undefined)}
       onLayerChange={() => undefined}

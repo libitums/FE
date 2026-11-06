@@ -15,7 +15,8 @@ import type { Screen } from "./nav-state";
 import { renderCatalogFlow } from "./render-catalog";
 import { renderCatalogCover } from "./render-catalog-cover";
 import { renderCatalogStory } from "./render-catalog-story";
-import { renderEntryScreen } from "./render-entry-screen";
+import { renderEntryScreen, renderGuestLoginScreen } from "./render-entry-screen";
+import { settingsAccountStateOf } from "../screens/settings/settings";
 import { DownloadSettingsScreen } from "../screens/download-settings/DownloadSettingsScreen";
 import { LanguageSelectScreen } from "../screens/language-select/LanguageSelectScreen";
 import { entryLanguageLabel } from "../lib/entry-language";
@@ -60,6 +61,8 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
           appVersion={wiring.appVersion}
           sessionOptions={wiring.sessionOptions}
           onToggleSessionOption={wiring.onToggleSessionOption}
+          account={settingsAccountStateOf(wiring.accountState)}
+          onSignIn={wiring.onSignIn}
           onSignOut={wiring.onSignOut}
           onDeleteAccount={wiring.onDeleteAccount}
           onLayerChange={wiring.onScreenLayerChange}
@@ -128,6 +131,9 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
     case "roleplay-story":
     case "roleplay-story-complete":
       return renderRoleplayStory(screen, wiring);
+    // 비회원이 설정 › 「로그인」으로 여는 로그인 화면입니다(ADR-0111).
+    case "guest-login":
+      return renderGuestLoginScreen(wiring);
     default: {
       const exhaustive: never = screen;
       return exhaustive;

@@ -87,12 +87,14 @@ export function stubServer(options: ServerOptions): Server {
 export type Host = {
   readonly store: Map<string, string>;
   readonly webStarts: unknown[];
+  readonly appleStarts: unknown[];
   readonly register: ReturnType<typeof vi.fn<(callback: (payload: unknown) => void) => void>>;
 };
 
 export function stubHost(initial: Record<string, string> = {}): Host {
   const store = new Map<string, string>(Object.entries(initial));
   const webStarts: unknown[] = [];
+  const appleStarts: unknown[] = [];
   const register = vi.fn<(callback: (payload: unknown) => void) => void>((callback) =>
     callback({ permission: "authorized", token: "push-token-1", environment: "sandbox" }),
   );
@@ -110,8 +112,10 @@ export function stubHost(initial: Record<string, string> = {}): Host {
       },
     },
     AppleSignInModule: {
-      start: (_args: unknown, callback: (payload: unknown) => void) =>
-        callback({ status: "completed", identityToken: "apple-id-token-1" }),
+      start: (args: unknown, callback: (payload: unknown) => void) => {
+        appleStarts.push(args);
+        callback({ status: "completed", identityToken: "apple-id-token-1" });
+      },
     },
     PushNotificationModule: {
       getStatus: (callback: (payload: unknown) => void) =>
@@ -121,7 +125,7 @@ export function stubHost(initial: Record<string, string> = {}): Host {
       openSettings: vi.fn<() => void>(),
     },
   });
-  return { store, webStarts, register };
+  return { store, webStarts, appleStarts, register };
 }
 
 export async function advance(ms: number): Promise<void> {

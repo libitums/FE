@@ -164,6 +164,9 @@
 | `libitum.learner-profile.<userId>` ⟨2026-10-13 — 적용 기록⟩ | 그대로 | **지움**(그 사용자의 칸) |
 | `libitum.learner-profile.guest` ⟨2026-10-13 — 적용 기록⟩ | — (로그인 뒤 첫 동기화가 지운다) | — |
 | `libitum.progress.cached.<userId>` ⟨2026-10-15 — 적용 기록⟩ | 그대로 | **지움**(그 사용자의 키) |
+| `libitum.auth.guest` ⟨2026-11-06 — 적용 기록, [ADR-0111](0111-guest-entry-without-account.md) D2⟩ | 지움(방어 — 정상 경로엔 이미 없다) | 지움(방어 — 정상 경로엔 이미 없다) |
+| `libitum.progress.pending.guest` ⟨2026-11-06 — 적용 기록, [ADR-0111](0111-guest-entry-without-account.md) D4 · D6⟩ | — (로그인 때 그 사용자의 미전송 칸으로 옮겨져 없다) | — |
+| `libitum.learning-days.pending.guest` ⟨2026-11-06 — 적용 기록, [ADR-0111](0111-guest-entry-without-account.md) D4 · D6⟩ | — (로그인 때 그 사용자의 미전송 칸으로 옮겨져 없다) | — |
 | `libitum.session-option.show-choice-romanization` ⟨2026-11-06 — 적용 기록⟩ | 그대로 | 그대로 |
 
 언어는 사용자 설정이지 계정 데이터가 아니다 — 같은 기기의 다음 사람도 같은 UI 언어로 온보딩을 본다
@@ -192,6 +195,8 @@ ADR-0036의 것)를 싣지 않는다 — 이번에 채우지 않았다.
 ([ADR-0062](0062-progress-cache-first.md) D1 · D12). 진행 미전송 키(`libitum.progress.pending.<userId>` — 이 표에 없던 ADR-0035의 키)와 **같은 규칙**이다 —
 로그아웃은 남기고(같은 계정으로 다시 들어오면 응답 전에 맵이 지난 진행으로 선다. 다른 계정은 키가 달라 읽지 않는다 — 사용자가 기본값을 확정했다),
 계정 삭제 성공은 `account-wiring.ts`의 같은 묶음에서 지운다. 삭제 뒤 키가 없는 것 · 로그아웃 뒤 남는 것은 unit · integration까지 확인했고 기기에서는 보지 않았다.
+
+⟨2026-11-06 — 적용 기록, 새 결정 아님⟩ 표의 비회원 세 줄(`libitum.auth.guest` · `…pending.guest` 둘)은 비회원 진입([ADR-0111](0111-guest-entry-without-account.md))의 기기 칸이다. **비회원 표식** `libitum.auth.guest`(값 `"1"`)는 세션 저장 자리(`storeSignedInSession`)가 지우는 것이 정상 경로이고, 로그아웃 · 삭제 뒤처리(`account-wiring.ts` `leave()`)는 **표식이 있을 때만** 지우는 방어다 — 비회원은 로그아웃 · 삭제 행을 보지 못하므로(설정의 계정 동작이 「Sign in」 하나다) 이 경로에 표식이 남아 있을 길이 없다 [코드]. **비회원 진행 · 학습일**은 기존 미전송 키(`libitum.progress.pending.<userId>` · `libitum.learning-days.pending.<userId>` — ADR-0035)의 `<userId>` 자리에 `"guest"`를 쓴 칸이다. 새 키 형식은 아니다. 로그인 성공 때 `adoptGuestRecords(userId)`가 그 사용자의 미전송 칸에 합쳐 옮기고(진행은 `mergeJourneyProgress`, 날짜는 합집합) 비회원 칸을 지우므로 로그아웃 · 삭제 시점에는 없다 — 그 뒤는 사용자 미전송 칸의 규칙(로그아웃 남김 · 삭제 지움) 그대로다. 비회원 상태로 앱을 지우면 함께 사라진다(의도 — 서버 저장 없음). 이 세 키가 실제로 지워지는지는 unit · integration(GE6 · GE7 · GE11)까지 확인했고 기기에서는 보지 않았다.
 
 ⟨2026-11-06 — 적용 기록, 새 결정 아님⟩ 표의 아홉째 · 열째 줄은 그림 · 음성을 받아 둔 표시와 받기 정책이다. 아홉째 줄의 편 표시 `libitum.content.assets.<id>`는
 2026-10-19부터 있던 키([ADR-0071](0071-episode-background-download.md) D3)인데 이 표에는 처음 싣고, 같은 날 묶음 표시 둘(`.common` · `.unit.<key>` — 값은 편 표시와 같은

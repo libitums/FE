@@ -50,6 +50,7 @@ export const allEventNames = [
 export const unmappedEvents = [
   { name: "entry_screen_viewed", screen: "onboarding" },
   { name: "entry_login_method_selected", method: "phone" },
+  { name: "entry_login_method_selected", method: "guest" },
   { name: "entry_returning_learner_entered", method: "google" },
   { name: "notifications_opened" },
   { name: "notification_item_tapped", notificationId: "n-1", target: "roleplay-list" },

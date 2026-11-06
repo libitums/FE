@@ -413,6 +413,11 @@ sink는 던지지 않는다 — 매핑 · `capture`를 `try`로 감싸 삼킨다
   - **속성**(문자열) — `episodeId` · `unitKey` · `itemId` · `itemType`(채점 유형 16 가운데 하나) · `result`(`correct` · `incorrect` · `skipped`) · `density`(`regular` · `compact` — 그 문항의 밀도). PII 없음.
   - **읽는 법** — 유형별 정답률 = `itemType`별 correct ÷ (correct + incorrect), 줄 배치 Check 뒤 오답률 = `itemType ∈ {LISTEN_BUILD, WORD_ORDER}`의 incorrect 비율, 대화 조립 정답률 = `TURN_ORDER`. 모두 `density`로 갈라 작은 화면 효과를 본다. 레슨 이탈은 기존 `episode_lesson_started` 대비 `episode_lesson_finished`로 읽는다.
   - **한계** — 새 이벤트라 리디자인 전 기준선이 없다(전후 비교는 이탈 · 레슨 정답률로). 판정 전에 나간 문항은 빠진다. Airbridge · Meta 매핑은 없다. PostHog 도착은 보지 않았다. GitHub wiki 이벤트 사전은 저장소 밖이라 따로 고친다(후속).
+- ⟨2026-11-06 — 비회원 진입. 적용 기록이고 이 ADR의 결정을 바꾸지 않는다⟩ **새 이벤트는 없고 이름 수는 그대로다**(`analytics-event-names.ts` 46개 [코드]). 결정은 [ADR-0111](0111-guest-entry-without-account.md) D8.
+  - **`entry_login_method_selected.method`에 값 하나 `"guest"`가 더해졌다** — 타입 `EntryLoginChoice = EntryLoginMethod | "guest"`. 로그인 화면 「Continue without an account」에서 비회원 표식 저장 직후 1회. 이름 · sink · 모양(속성 집합)은 그대로라 `AnalyticsContractChecks` 변경 0.
+  - **비회원 구간은 익명이다**(D8 그대로) — 식별은 세션 저장 자리(`app/store-session.ts` `storeSignedInSession` — `entry-wiring`의 `storeSession`을 떼어 낸 것, 부르는 순서 같음)에만 있고, 비회원은 세션이 없다. 비회원의 유닛 완료 · 설문 · 설정 이벤트는 그 실행의 익명 `distinct_id`로 나가고, 설정에서 로그인하면 `$identify`가 같은 실행의 앞 이벤트를 잇는다.
+  - **설정에서의 로그인은 같은 이벤트 · 같은 모양이다** — `entry_login_method_selected { method }`에 「화면 출처」 속성을 더하지 않았다(모양이 바뀌면 퍼널 해석이 단절된다 — ADR-0069 Q3와 같은 판단). 설정 「Sign in」 행은 `entry_screen_viewed { screen: "login" }`을 내고, 성공 뒤 `entry_returning_learner_entered`는 내지 않는다(판정 없음).
+  - **읽는 법** — 비회원 선택 비율 = `method: "guest"` ÷ `entry_screen_viewed { screen: "login" }`, 비회원 → 로그인 전환 = 같은 기기의 `method: "guest"` 뒤 `$identify`, 첫 유닛 완료율은 기존 유닛 완료 이벤트를 익명 · 식별로 갈라 본다. **해석 단절**: `method` 값 `facebook`(두 플랫폼) · `apple`(Android)은 그 수단의 탭이 결선에 닿지 않고 「사용 불가 안내」 모달에서 멈추므로 당분간 나지 않는다(ADR-0111 D1 개정 2 — 임시. 모달 노출 자체는 재지 않는다 — 그 ADR 확인 필요 10). Airbridge 매핑은 이벤트 이름 기준이라 변경 0. PostHog 도착은 보지 않았다. GitHub wiki 이벤트 사전은 저장소 밖이라 따로 고친다(후속).
 
 ### D15. 나라 · 주 · 시간대만 IP로 추정하고, IP는 저장하지 않는다
 

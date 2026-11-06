@@ -12,10 +12,11 @@ import {
   clearAuthSession,
   entryAuthStateFrom,
   loadAuthSession,
-  saveAuthSession,
   sessionRefreshDisposition,
 } from "../lib/auth-session";
-import { authDisplayNameFrom, authUserIdFrom } from "../lib/auth-user-id";
+import { authDisplayNameFrom } from "../lib/auth-user-id";
+import { loadGuestSession } from "../lib/guest-session";
+import type { AccountState } from "../lib/guest-session";
 import { legalDocumentOpenedEvent, openLegalDocument } from "../lib/legal-document";
 import type { LegalDocument } from "../lib/legal-document.contract";
 import {
@@ -44,6 +45,7 @@ import type { NavAction } from "./nav-state";
 import { syncPushDevice } from "./push-wiring";
 import { probeEntryRouteAfterLogin } from "./returning-learner-probe";
 import { entryScreenAfterLogin } from "./screen-routing";
+import { storeSignedInSession } from "./store-session";
 
 export type EntryWiringArgs = {
   readonly entryEventSink: EntryEventSink;
@@ -60,6 +62,9 @@ export type EntryWiringArgs = {
   readonly learnerPort: LearnerProfilePort;
   readonly saveLearnerProfile: (record: LearnerProfileRecord) => unknown;
   readonly syncLearnerProfile: () => Promise<void>;
+  // 스플래시 `guest` 갈래가 기기 전용 진행을 세웁니다(ADR-0111). 세션 저장 자리는 계정 상태도 적습니다.
+  readonly startGuestProgress: () => void;
+  readonly setAccountState: (state: AccountState) => void;
 };
 
 /** 가입 직후 ① 이름 · ② 나라 화면의 콜백 셋입니다(ADR-0059 D7 2026-10-20). */
@@ -81,20 +86,12 @@ export function entryWiring({
   learnerPort,
   saveLearnerProfile,
   syncLearnerProfile,
+  startGuestProgress,
+  setAccountState,
 }: EntryWiringArgs) {
-  // 세션을 저장한 자리마다 그 사용자로 분석을 식별합니다(ADR-0029 D8). 저장한 세션에는 사용자
-  // ID가 없어 손에 든 액세스 토큰에서 읽습니다. 못 읽으면 식별하지 않고, 식별의 실패는 로그인을
-  // 막지 않습니다.
+  // 세션을 저장하는 한 자리입니다(`store-session.ts`) — 부팅 갱신 · 소셜 · 코드 검증이 부릅니다.
   const storeSession = (session: AuthSession) => {
-    saveAuthSession(session);
-    void syncProgress().catch(() => undefined);
-    const userId = authUserIdFrom(session.accessToken);
-    if (userId === null) return;
-    try {
-      analyticsUser?.identify(userId);
-    } catch {
-      // 분석은 화면을 막지 않습니다.
-    }
+    storeSignedInSession(session, { analyticsUser, syncProgress, setAccountState });
   };
 
   // 로그인 직후 기존 회원인지 판정하고 갈래를 탑니다. 프로필 동기화는 판정 뒤에 시작해, 손님
@@ -128,10 +125,7 @@ export function entryWiring({
   };
 
   return {
-    // 스플래시 시간 종료입니다. 세션이 있으면(`refresh`) 갱신을
-    // 시도하는 동안 스플래시가 그대로 섭니다. 세션이 없으면(`none`)
-    // 「onboarding」 열람을 올리고 `replace`합니다 — 스플래시는 스택에
-    // 남지 않습니다.
+    // 스플래시 종료입니다. `refresh`는 갱신하는 동안 스플래시가 서고, `none`은 「onboarding」 열람을 올리고 `replace`합니다.
     onSplashTimeout: () => {
       // 강제 업데이트가 먼저입니다(ADR-0086) — 기기에 저장된 마지막 정책(이 실행에서 받았으면 그것)으로 판정하고,
       // 막히면 세션 갱신 · 앱 진입을 하지 않습니다. 버전을 모르면(Explorer · 테스트) 막지 않습니다.
@@ -142,11 +136,17 @@ export function entryWiring({
         dispatch({ type: "replace", screen: { name: "update-required" } });
         return;
       }
-      const authState = entryAuthStateFrom(loadAuthSession());
+      const authState = entryAuthStateFrom(loadAuthSession(), loadGuestSession());
       switch (authState.kind) {
         case "none": {
           entryEventSink?.(entryScreenViewedEvent("onboarding"));
           dispatch({ type: "replace", screen: { name: "onboarding" } });
+          return;
+        }
+        // 세션 없음 + 비회원 표식 — 갱신 없이 곧바로 앱입니다. `entry_*` 이벤트 · 알림 · 프로필 동기화 0(ADR-0111).
+        case "guest": {
+          startGuestProgress();
+          dispatch({ type: "enterApp" });
           return;
         }
         case "refresh": {

@@ -71,7 +71,11 @@ export const settingsEs: SettingsCopy = {
       "Muestra cómo se lee cada respuesta en coreano, en letra pequeña encima.",
   },
   optionState: { on: "activado", off: "desactivado" },
-  action: { "sign-out": "Cerrar sesión", "delete-account": "Eliminar cuenta" },
+  action: {
+    "sign-in": "Iniciar sesión",
+    "sign-out": "Cerrar sesión",
+    "delete-account": "Eliminar cuenta",
+  },
   signOutDialog: { title: "¿Cerrar sesión?", confirm: "Cerrar sesión", cancel: "Seguir conectado" },
   deleteDialog: {
     title: "¿Eliminar tu cuenta?",

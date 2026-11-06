@@ -63,6 +63,7 @@ export const journeyEntryEs: JourneyEntryCopy = {
 };
 
 export const loginEs: LoginCopy = {
+  guest: "Continuar sin cuenta",
   method: {
     phone: "Continuar",
     google: "Continuar con Google",
@@ -81,10 +82,19 @@ export const loginEs: LoginCopy = {
   or: "o",
   countrySheetTitle: "Elige un país",
   legal: {
-    lead: "Al registrarte, aceptas los",
+    lead: "Al continuar, aceptas los",
     termsOfUse: "Términos de uso",
     and: "y la",
     privacyPolicy: "Política de privacidad",
+  },
+  // 수단 사용 불가 안내 대화상자(ADR-0111 개정 2).
+  unavailable: {
+    title: (method) => `El inicio de sesión con ${method} no está disponible por ahora`,
+    description:
+      "Estamos cambiando este inicio de sesión a una nueva configuración. Por ahora, continúa con Google o sin cuenta.",
+    descriptionWithoutGuest:
+      "Estamos cambiando este inicio de sesión a una nueva configuración. Por ahora, continúa con Google.",
+    close: "Cerrar",
   },
 };
 

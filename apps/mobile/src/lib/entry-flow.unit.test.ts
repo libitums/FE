@@ -8,6 +8,7 @@ import {
   entryScreenViewedEvent,
   entrySplashDurationMs,
   requiresVerificationCode,
+  type EntryLoginChoice,
   type EntryLoginMethod,
   type EntryViewedScreenName,
 } from "./entry-flow";
@@ -58,9 +59,11 @@ test("EF4. entryScreenViewedEvent(screen)이 이름과 입력 screen만 싣는�
 
 // 같은 근거로 수단 넷 전부를 왕복합니다.
 const loginMethodsForTest: readonly EntryLoginMethod[] = ["phone", "google", "apple", "facebook"];
+// 로그인 화면에서 고른 것은 수단 넷 + 「비회원으로 계속」입니다(ADR-0111).
+const loginChoicesForTest: readonly EntryLoginChoice[] = [...loginMethodsForTest, "guest"];
 
-test("EF5. entryLoginMethodSelectedEvent(method)가 이름과 입력 method만 싣는다", () => {
-  for (const method of loginMethodsForTest) {
+test("EF5. entryLoginMethodSelectedEvent(method)가 이름과 입력 method(guest 포함)만 싣는다", () => {
+  for (const method of loginChoicesForTest) {
     const event = entryLoginMethodSelectedEvent(method);
 
     expect(event).toEqual({ name: "entry_login_method_selected", method });

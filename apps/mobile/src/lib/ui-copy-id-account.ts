@@ -67,7 +67,11 @@ export const settingsId: SettingsCopy = {
       "Tampilkan cara membaca tiap jawaban berbahasa Korea dalam teks kecil di atasnya.",
   },
   optionState: { on: "aktif", off: "nonaktif" },
-  action: { "sign-out": "Keluar", "delete-account": "Hapus akun" },
+  action: {
+    "sign-in": "Masuk",
+    "sign-out": "Keluar",
+    "delete-account": "Hapus akun",
+  },
   signOutDialog: { title: "Keluar?", confirm: "Keluar", cancel: "Tetap masuk" },
   deleteDialog: {
     title: "Hapus akun kamu?",

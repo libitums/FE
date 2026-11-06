@@ -1,7 +1,9 @@
 // 로그인 순수 로직을 소유합니다.
 
+import type { AppPolicy } from "../../lib/app-policy";
+import type { AppPlatform } from "../../lib/app-version";
 import type { PhoneNumber, PhoneOtpRequestResult } from "../../lib/auth-session.contract";
-import type { EntryLoginMethod } from "../../lib/entry-flow";
+import { entryLoginMethods, type EntryLoginMethod } from "../../lib/entry-flow";
 import type { SocialSignInOutcome } from "../../lib/social-sign-in.contract";
 import type {
   LoginCopy,
@@ -147,4 +149,100 @@ export function loginHeading(
   copy: LoginCopy,
 ): { readonly title: string; readonly caption: string } {
   return copy.heading[phoneSignIn];
+}
+
+// ------------------------------------------------------------------ 사용 불가 수단 (ADR-0111 개정 2)
+
+/** 제품이 **사용 불가로 안내하는** 수단입니다(Meta 앱 게시 전). 되돌릴 때 비웁니다. */
+export const productUnavailableLoginMethods: readonly EntryLoginMethod[] = ["facebook"];
+/** Android에서만 사용 불가인 수단(Apple Services ID 전). 되돌릴 때 비웁니다. */
+export const androidUnavailableLoginMethods: readonly EntryLoginMethod[] = ["apple"];
+
+export type LoginMethodAvailabilityInput = {
+  /** 호스트가 보낸 플랫폼. 모르면(`null`) 플랫폼 제외는 없습니다. */
+  readonly platform: AppPlatform | null;
+  /** 플랫폼과 무관하게 사용 불가인 수단 — 제품값은 `productUnavailableLoginMethods`. */
+  readonly unavailable: readonly EntryLoginMethod[];
+};
+
+/** 사용 불가 수단 전체입니다(어휘 순서 · 중복 없음). */
+export function unavailableLoginMethods(
+  input: LoginMethodAvailabilityInput,
+): readonly EntryLoginMethod[] {
+  const platformUnavailable = input.platform === "android" ? androidUnavailableLoginMethods : [];
+  return entryLoginMethods.filter(
+    (method) => input.unavailable.includes(method) || platformUnavailable.includes(method),
+  );
+}
+
+/** `method`가 사용 불가 목록에 들었는지입니다. */
+export function isLoginMethodUnavailable(
+  method: EntryLoginMethod,
+  input: LoginMethodAvailabilityInput,
+): boolean {
+  return unavailableLoginMethods(input).includes(method);
+}
+
+/** 안내 대화상자 제목에 들어가는 제공자 이름 — 상표라 번역하지 않는다(버튼 라벨 `loginMethodLabel`과 다르다). */
+export const socialProviderName: Readonly<Record<SocialLoginMethod, string>> = {
+  apple: "Apple",
+  google: "Google",
+  facebook: "Facebook",
+};
+
+/**
+ * 사용 불가 안내 대화상자의 액션 — 「Connect with Google」(brand, 첫째) → 「Close」(subtle) 순서다.
+ * 첫 동작의 라벨은 화면의 Google 버튼과 같은 문구다(WCAG 3.2.4 — 같은 동작 같은 이름).
+ */
+export function unavailableDialogActions(
+  copy: LoginCopy,
+): readonly { readonly id: string; readonly label: string }[] {
+  return [
+    { id: "use-google", label: loginMethodLabel("google", copy) },
+    { id: "close", label: copy.unavailable.close },
+  ];
+}
+
+/** 소셜 수단 전체(phone 제외)입니다. */
+export const socialLoginMethods: readonly SocialLoginMethod[] = ["apple", "google", "facebook"];
+
+/** 사용 불가인 소셜 수단 — 테스트 · 되돌리기 확인용(화면은 `isLoginMethodUnavailable`로 수단마다 판정한다). */
+export function unavailableSocialLoginMethods(
+  platform: AppPlatform | null,
+  unavailable: readonly EntryLoginMethod[] = productUnavailableLoginMethods,
+): readonly SocialLoginMethod[] {
+  const result: SocialLoginMethod[] = [];
+  for (const method of unavailableLoginMethods({ platform, unavailable })) {
+    if (method !== "phone") {
+      result.push(method);
+    }
+  }
+  return result;
+}
+
+/** 정책(없으면 상수 기본값)을 반영한 사용 불가 수단입니다(어휘 순서 · 중복 없음). */
+export function unavailableLoginMethodsFor(
+  platform: AppPlatform | null,
+  policy: AppPolicy | null,
+): readonly EntryLoginMethod[] {
+  const fromPolicy = policy?.unavailableLoginMethods;
+  if (fromPolicy === undefined) {
+    return unavailableLoginMethods({ platform, unavailable: productUnavailableLoginMethods });
+  }
+  const platformList = platform === "android" ? fromPolicy.android : [];
+  return entryLoginMethods.filter(
+    (method) => fromPolicy.all.includes(method) || platformList.includes(method),
+  );
+}
+
+/** 위에서 phone을 뺀 소셜 수단입니다. */
+export function unavailableSocialLoginMethodsFor(
+  platform: AppPlatform | null,
+  policy: AppPolicy | null,
+): readonly SocialLoginMethod[] {
+  const result: SocialLoginMethod[] = [];
+  for (const method of unavailableLoginMethodsFor(platform, policy)) {
+    if (method !== "phone") result.push(method);
+  }
+  return result;
 }

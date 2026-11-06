@@ -12,9 +12,15 @@ import type {
   DeleteDialogActions,
   SignOutDialogActions,
 } from "./account-actions.contract";
+import type { SettingsAccountState } from "./settings.contract";
 
 /** 묶음의 행 순서이자 표시 순서입니다. */
 export const accountActions: readonly AccountAction[] = ["sign-out", "delete-account"];
+
+/** `guest` → `["sign-in"]`, `signed-in` → `accountActions`(ADR-0111). */
+export function accountActionsFor(account: SettingsAccountState): readonly AccountAction[] {
+  return account === "guest" ? ["sign-in"] : accountActions;
+}
 
 export const initialAccountActionsState: AccountActionsState = { kind: "idle", failure: null };
 
@@ -26,6 +32,9 @@ export const accountActionsTransition: AccountActionsTransitionFn = (state, even
     case "idle": {
       if (event.type !== "open") {
         return unchanged;
+      }
+      if (event.action === "sign-in") {
+        return { state: idle, effect: "sign-in" };
       }
       return {
         state:
