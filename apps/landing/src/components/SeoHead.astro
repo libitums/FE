@@ -1,7 +1,16 @@
 ---
 import { buildHeadMeta } from "../seo/head-meta";
 import { buildStructuredData, serializeStructuredData } from "../seo/structured-data";
-import { languageRoutes, pages, siteName } from "../site";
+import {
+  brandKeywords,
+  brandLinks,
+  brandProfiles,
+  languageRoutes,
+  pages,
+  siteAlternateNames,
+  siteLogoPath,
+  siteName,
+} from "../site";
 import type { SeoHeadProps } from "./landing.contract";
 
 type Props = SeoHeadProps;
@@ -21,12 +30,17 @@ const structured = serializeStructuredData(
     language,
     path: route?.path ?? "/",
     name: siteName,
+    alternateNames: siteAlternateNames,
+    logoPath: siteLogoPath,
+    sameAs: brandLinks(),
     description: page.description,
     faq,
   }),
 );
 ---
 
+<meta name="keywords" content={brandKeywords().join(", ")} />
+{brandProfiles.map((profile) => <link rel="me" href={profile.url} />)}
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content={siteName} />
 <meta property="og:locale" content={ogLocale} />

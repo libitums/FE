@@ -3,12 +3,18 @@ import { buildFaq } from "../seo/faq";
 import { buildHeadMeta } from "../seo/head-meta";
 import { buildStructuredData } from "../seo/structured-data";
 import {
+  brandKeywords,
+  brandLinks,
+  brandProfiles,
   defaultLanguage,
   languageRoutes,
   languages,
   pages,
   pathFor,
+  siteAlternateNames,
+  siteLogoPath,
   siteName,
+  storeLinks,
   type Language,
 } from "../site";
 import { jsonLd, render } from "./render.support";
@@ -145,6 +151,9 @@ describe("SeoHead", () => {
             language,
             path: route?.path ?? "",
             name: siteName,
+            alternateNames: siteAlternateNames,
+            logoPath: siteLogoPath,
+            sameAs: brandLinks(),
             description: pages[language].description,
             faq,
           }),
@@ -152,6 +161,43 @@ describe("SeoHead", () => {
       }
     }
     expect(defaultLanguage).toBe("en");
+  });
+
+  it("UI-SH9 JSON-LD의 Organization은 이름 · 다른 표기 · 로고 · 스토어 주소를 싣는다", async () => {
+    const { document } = await renderHead("en", SITE);
+    const [data] = jsonLd(document) as {
+      "@graph"?: {
+        "@type": string;
+        name?: string;
+        alternateName?: string[];
+        logo?: string;
+        sameAs?: string[];
+      }[];
+    }[];
+    const organization = data?.["@graph"]?.find((node) => node["@type"] === "Organization");
+    expect(organization?.name).toBe(siteName);
+    expect(organization?.alternateName).toEqual(siteAlternateNames);
+    expect(organization?.logo).toBe(SITE + siteLogoPath);
+    expect(organization?.sameAs).toContain(storeLinks.android);
+    expect(organization?.sameAs).toContain("https://www.instagram.com/duru.korean/");
+    expect(organization?.sameAs).toContain("https://www.threads.com/@mina.duru.korean");
+    expect(organization?.sameAs ?? []).not.toContain("");
+    const app = data?.["@graph"]?.find((node) => node["@type"] === "SoftwareApplication");
+    expect(app?.sameAs).toEqual(organization?.sameAs);
+  });
+
+  it("UI-SH10 rel=me 링크가 프로필마다 하나, keywords는 브랜드 이름들 — 주소 유무와 무관", async () => {
+    for (const siteUrl of ["", SITE]) {
+      for (const language of languages) {
+        const { document } = await renderHead(language, siteUrl);
+        expect(
+          [...document.querySelectorAll('link[rel="me"]')].map((node) => node.getAttribute("href")),
+        ).toEqual(brandProfiles.map((profile) => profile.url));
+        expect(one(document, 'meta[name="keywords"]')).toBe(brandKeywords().join(", "));
+      }
+    }
+    expect(brandKeywords()).toContain("Duru");
+    expect(brandKeywords()).toContain("두루");
   });
 
   it("UI-SH8 JSON-LD의 FAQPage는 넘긴 faq와 같다", async () => {

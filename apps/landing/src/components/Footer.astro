@@ -1,5 +1,5 @@
 ---
-import { pathFor } from "../site";
+import { brandProfiles, pathFor } from "../site";
 import type { FooterProps } from "./landing.contract";
 
 type Props = FooterProps;
@@ -20,6 +20,17 @@ const home = variant === "page" ? pathFor(language) : "#top";
       <li>
         <a href="https://gregarious-pharaoh-bb6.notion.site/DURU-Privacy-Policy-3eb0c2540c01802cad91cc0430552402" target="_blank" rel="noopener noreferrer">{t.footerPrivacy}</a>
       </li>
+    </ul>
+    <ul class="site-footer__links site-footer__social" data-testid="footer-social">
+      {
+        brandProfiles.map((profile) => (
+          <li>
+            <a href={profile.url} target="_blank" rel="me noopener noreferrer">
+              {profile.name}
+            </a>
+          </li>
+        ))
+      }
     </ul>
     <p class="site-footer__copy">© 2026 Duru</p>
   </div>

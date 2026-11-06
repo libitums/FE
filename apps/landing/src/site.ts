@@ -11,14 +11,55 @@ import type { LanguageRoute } from "./seo/seo.contract";
 /** 배포 주소의 기본값입니다. 배포 설정의 SITE_URL이 있으면 그것이 이깁니다. 최종 주소는 Astro.site입니다. */
 export const fallbackSiteUrl = "";
 
-/** JSON-LD · llms.txt · og:site_name이 함께 읽는 서비스 이름입니다. */
+/** JSON-LD · llms.txt · og:site_name · 웹 앱 매니페스트 · `application-name`이 함께 읽는 서비스 이름입니다. */
 export const siteName = "Duru";
+
+/** 웹 앱 매니페스트의 주소입니다(`src/pages/site.webmanifest.ts`). 모든 페이지의 `<link rel="manifest">`가 가리킵니다. */
+export const webManifestPath = "/site.webmanifest";
 
 /** 스토어 주소입니다. 비어 있으면 그 카드는 링크가 아니라 "Coming soon"으로 섭니다. */
 export const storeLinks = {
   ios: "",
   android: "https://play.google.com/store/apps/details?id=libitum.duru.android",
 };
+
+/**
+ * 같은 것을 부르는 다른 이름입니다 — JSON-LD 세 노드의 `alternateName`. 검색엔진이 「duru」 한 단어 질의를 이 사이트와
+ * 스토어 목록으로 묶는 근거가 됩니다. Play 제목(대문자 표기) · 앱의 한글 이름(Android 알림 채널 「두루 소식」) 순입니다.
+ */
+export const siteAlternateNames: readonly string[] = [
+  "DURU",
+  "DURU: Learn Korean in Stories",
+  "두루",
+];
+
+/** JSON-LD `Organization.logo`입니다. Google이 112px 이상 정사각에 가까운 그림을 받으므로 글자 로고(159×60)가 아니라 앱 아이콘 180px입니다. */
+export const siteLogoPath = "/apple-touch-icon.png";
+
+/** 공식 프로필 하나입니다. `name`은 번역하지 않는 서비스 이름이라 그대로 화면(푸터)에 섭니다. */
+export interface BrandProfile {
+  name: string;
+  /** `https://` 절대 주소입니다. */
+  url: string;
+}
+
+/**
+ * 스토어 밖에서 이 브랜드를 가리키는 공식 프로필입니다(사용자 확인 2026-11-06). 푸터 링크 · `<link rel="me">` ·
+ * JSON-LD `sameAs` · `llms.txt`가 같은 목록을 읽습니다. 새 프로필이 생기면 여기 더합니다.
+ */
+export const brandProfiles: readonly BrandProfile[] = [
+  { name: "Instagram", url: "https://www.instagram.com/duru.korean/" },
+  { name: "Threads", url: "https://www.threads.com/@mina.duru.korean" },
+];
+
+/** JSON-LD `sameAs` — 비어 있지 않은 스토어 주소와 프로필 주소를 순서대로 모은 것입니다. */
+export const brandLinks = (): readonly string[] =>
+  [storeLinks.ios, storeLinks.android, ...brandProfiles.map((profile) => profile.url)].filter(
+    (link) => link !== "",
+  );
+
+/** 브랜드 이름 전부(`siteName` + 다른 표기)입니다. `keywords` 메타가 씁니다 — 언어와 무관한 브랜드 검색어만 둡니다. */
+export const brandKeywords = (): readonly string[] => [siteName, ...siteAlternateNames];
 
 /**
  * 지원 언어입니다. 첫째가 기본 언어(`/`)이고 나머지는 `/<코드>/`에 섭니다.

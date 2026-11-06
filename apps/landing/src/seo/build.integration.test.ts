@@ -99,6 +99,9 @@ interface JsonLdNode {
   inLanguage?: string;
   description?: string;
   url?: string;
+  alternateName?: string[];
+  logo?: string;
+  sameAs?: string[];
   mainEntity?: { name: string; acceptedAnswer: { text: string } }[];
 }
 
@@ -155,16 +158,31 @@ describe("빌드 A — SITE_URL 있음", () => {
     expect(build.status === 0 ? "ok" : build.output).toBe("ok");
   });
 
-  it("I-A1 JSON-LD가 페이지마다 하나, @graph가 세 타입", () => {
+  it("I-A1 JSON-LD가 페이지마다 하나, @graph가 네 타입", () => {
     for (const { file } of pages) {
       const types = graphOf(page(build, file)).map((node) => node["@type"]);
-      expect(types).toEqual(["WebSite", "SoftwareApplication", "FAQPage"]);
+      expect(types).toEqual(["WebSite", "Organization", "SoftwareApplication", "FAQPage"]);
+    }
+  });
+
+  it("I-A1b Organization · SoftwareApplication이 브랜드를 스토어 목록과 묶는다 — 다른 표기 · 절대 주소 로고 · sameAs", () => {
+    for (const { file } of pages) {
+      const nodes = graphOf(page(build, file));
+      const organization = nodes.find((node) => node["@type"] === "Organization");
+      const app = nodes.find((node) => node["@type"] === "SoftwareApplication");
+      expect(organization?.url).toBe(`${origin}/`);
+      expect(organization?.logo).toMatch(new RegExp(`^${origin}/.+\\.png$`));
+      expect(organization?.alternateName).toContain("DURU");
+      expect(organization?.sameAs).toContain(storeLinks.android);
+      expect(app?.sameAs).toEqual(organization?.sameAs);
+      expect(app?.alternateName).toEqual(organization?.alternateName);
+      expect(organization && "inLanguage" in organization).toBe(false);
     }
   });
 
   it("I-A2 inLanguage가 페이지 언어이고 /ko/는 한글 설명 · FAQ", () => {
     for (const { file, language } of pages) {
-      const nodes = graphOf(page(build, file));
+      const nodes = graphOf(page(build, file)).filter((node) => node["@type"] !== "Organization");
       expect(nodes.map((node) => node.inLanguage)).toEqual([language, language, language]);
     }
     const ko = graphOf(page(build, "ko/index.html"));
@@ -247,6 +265,55 @@ describe("빌드 A — SITE_URL 있음", () => {
     expect(lines.filter((line) => line.startsWith("> "))).toHaveLength(1);
     const text = lines.join("\n");
     for (const path of languagePaths) expect(text).toContain(`(${path})`);
+  });
+
+  it("I-A21 llms.txt에 다른 표기 줄과 공식 주소 절이 있다 — 스토어 · 프로필, 영어 표기만", () => {
+    const text = read(build, "llms.txt");
+    expect(text).toContain("Also known as: DURU, DURU: Learn Korean in Stories.");
+    expect(text).toContain("## Official links");
+    expect(text).toContain(`- [Google Play](${storeLinks.android})`);
+    expect(text).toContain("- [Instagram](https://www.instagram.com/duru.korean/)");
+    expect(text).toContain("- [Threads](https://www.threads.com/@mina.duru.korean)");
+  });
+
+  it("I-A22 웹 앱 매니페스트 — 모든 페이지가 가리키고, 이름이 Duru, 아이콘이 절대 주소이며 산출물에 있다", () => {
+    const manifest = JSON.parse(read(build, "site.webmanifest")) as {
+      name: string;
+      short_name: string;
+      lang: string;
+      icons: { src: string; sizes: string; type: string }[];
+    };
+    expect(manifest.name).toBe("Duru");
+    expect(manifest.short_name).toBe("Duru");
+    expect(manifest.lang).toBe("en");
+    expect(manifest.icons.map((icon) => icon.sizes)).toEqual(["96x96", "180x180", "512x512"]);
+    for (const icon of manifest.icons) {
+      expect(icon.src.startsWith(`${origin}/`)).toBe(true);
+      expect(has(build, icon.src.slice(origin.length + 1)), `${icon.src} 파일`).toBe(true);
+    }
+    for (const file of [...pages.map((entry) => entry.file), "404.html"]) {
+      const document = page(build, file);
+      expect(attr(document, 'link[rel="manifest"]', "href")).toEqual(["/site.webmanifest"]);
+      expect(attr(document, 'meta[name="application-name"]', "content")).toEqual(["Duru"]);
+      expect(attr(document, 'meta[name="apple-mobile-web-app-title"]', "content")).toEqual([
+        "Duru",
+      ]);
+    }
+  });
+
+  it("I-A23 색인 페이지마다 rel=me 링크 · keywords 메타 · 푸터 프로필 링크가 있다", () => {
+    for (const { file } of pages) {
+      const document = page(build, file);
+      expect(attr(document, 'link[rel="me"]', "href")).toEqual([
+        "https://www.instagram.com/duru.korean/",
+        "https://www.threads.com/@mina.duru.korean",
+      ]);
+      expect(attr(document, 'meta[name="keywords"]', "content")[0]).toContain("Duru");
+      expect(attr(document, '[data-testid="footer-social"] a', "href")).toEqual([
+        "https://www.instagram.com/duru.korean/",
+        "https://www.threads.com/@mina.duru.korean",
+      ]);
+    }
   });
 
   it("I-A20 ja · es 페이지의 서체 — 산출 CSS에 언어별 규칙과 Noto Sans JP · Inter @font-face가 있고 파일이 동봉된다", () => {
@@ -471,15 +538,20 @@ describe("빌드 B — SITE_URL 없음", () => {
     expect(robots).not.toMatch(/sitemap/i);
   });
 
-  it("I-B4 JSON-LD는 하나씩, 세 타입, url 없음", () => {
+  it("I-B4 JSON-LD는 하나씩, 네 타입, url · logo 없음 — sameAs는 바깥 주소라 남는다", () => {
     for (const { file } of pages) {
       const nodes = graphOf(page(build, file));
       expect(nodes.map((node) => node["@type"])).toEqual([
         "WebSite",
+        "Organization",
         "SoftwareApplication",
         "FAQPage",
       ]);
-      for (const node of nodes) expect(node).not.toHaveProperty("url");
+      for (const node of nodes) {
+        expect(node).not.toHaveProperty("url");
+        expect(node).not.toHaveProperty("logo");
+      }
+      expect(nodes[1]?.sameAs).toContain(storeLinks.android);
     }
   });
 
@@ -490,7 +562,11 @@ describe("빌드 B — SITE_URL 없음", () => {
     expect(lines.filter((line) => line.startsWith("> "))).toHaveLength(1);
     expect(text).toContain("](/)");
     expect(text).toContain("](/ko/)");
-    expect(text).not.toContain("https://");
+    // 페이지 링크는 상대 주소다. 절대 주소는 `## Official links`(스토어 · 프로필 — 바깥 주소)에만 있다.
+    const pagesSection = text.split("## Pages")[1]?.split("## ")[0] ?? "";
+    expect(pagesSection).toContain("](/)");
+    expect(pagesSection).not.toContain("https://");
+    expect(text.split("## Official links")[1]?.split("## ")[0]).toContain(storeLinks.android);
     const shown = screenFaq(page(build, "index.html"));
     expect(llmsFaq(text).map((entry) => entry.question)).toEqual(shown.questions);
   });
@@ -504,6 +580,15 @@ describe("빌드 B — SITE_URL 없음", () => {
       );
       expect(hrefs).toEqual(["/favicon.ico", "/favicon-96x96.png", "/apple-touch-icon.png"]);
     }
+  });
+
+  it("I-B8 매니페스트 아이콘은 상대 주소로 남는다", () => {
+    const manifest = JSON.parse(read(build, "site.webmanifest")) as { icons: { src: string }[] };
+    expect(manifest.icons.map((icon) => icon.src)).toEqual([
+      "/favicon-96x96.png",
+      "/apple-touch-icon.png",
+      "/icon-512.png",
+    ]);
   });
 
   it("I-B6 화면 FAQ와 FAQPage가 주소와 무관하게 같다", () => {

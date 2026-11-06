@@ -130,20 +130,38 @@ export type BuildFaq = (input: FaqInput) => readonly FaqEntry[];
 export interface WebSiteNode {
   "@type": "WebSite";
   name: string;
+  /** 같은 것을 부르는 다른 이름입니다(스토어 제목 · 대문자 · 한글 표기). 비어 있으면 키도 없습니다. */
+  alternateName?: readonly string[];
   description: string;
   inLanguage: string;
   url?: string;
+}
+
+/**
+ * 브랜드 자체입니다 — 검색엔진이 「Duru」라는 질의를 이 사이트 · 스토어 · 프로필과 같은 것으로 묶게 하는 자리입니다.
+ * 법인 정보(주소 · 설립자 · 연락처 · 직원 수)는 근거가 없어 두지 않습니다. `url`은 사이트 루트, `logo`는 배포 주소가 있을 때만 절대 주소입니다.
+ */
+export interface OrganizationNode {
+  "@type": "Organization";
+  name: string;
+  alternateName?: readonly string[];
+  url?: string;
+  logo?: string;
+  /** 같은 것을 가리키는 바깥 주소(스토어 · 프로필)입니다. 비어 있으면 키도 없습니다. */
+  sameAs?: readonly string[];
 }
 
 /** 가격(`offers`) · 평점(`aggregateRating`) · 리뷰 · 만든 곳(`author` · `publisher`)은 근거가 없어 두지 않습니다. */
 export interface SoftwareApplicationNode {
   "@type": "SoftwareApplication";
   name: string;
+  alternateName?: readonly string[];
   description: string;
   applicationCategory: "EducationalApplication";
   operatingSystem: "iOS, Android";
   inLanguage: string;
   url?: string;
+  sameAs?: readonly string[];
 }
 
 export interface FaqQuestionNode {
@@ -164,7 +182,7 @@ export interface FaqPageNode {
 
 export interface StructuredData {
   "@context": "https://schema.org";
-  "@graph": readonly [WebSiteNode, SoftwareApplicationNode, FaqPageNode];
+  "@graph": readonly [WebSiteNode, OrganizationNode, SoftwareApplicationNode, FaqPageNode];
 }
 
 export interface StructuredDataInput {
@@ -174,12 +192,21 @@ export interface StructuredDataInput {
   path: string;
   /** 서비스 이름입니다(`Duru`). */
   name: string;
+  /** 같은 것을 부르는 다른 이름입니다(`siteAlternateNames`). 세 노드의 `alternateName`이 됩니다. */
+  alternateNames: readonly string[];
+  /** `public/`의 로고 주소입니다(`/apple-touch-icon.png`). `/`로 시작해야 합니다. */
+  logoPath: string;
+  /** 같은 것을 가리키는 바깥 `https://` 주소입니다(스토어 · 프로필). 빈 문자열은 넘기기 전에 걸러야 합니다. */
+  sameAs: readonly string[];
   /** 그 언어의 검색 설명입니다(`pages[language].description`). */
   description: string;
   faq: readonly FaqEntry[];
 }
 
-/** `faq`가 비었으면 던집니다 — 빈 `FAQPage`를 내지 않습니다. */
+/**
+ * `faq`가 비었으면 던집니다 — 빈 `FAQPage`를 내지 않습니다. `logoPath`가 `/`로 시작하지 않거나
+ * `sameAs`에 `https://`가 아닌 것이 있어도 던집니다.
+ */
 export type BuildStructuredData = (input: StructuredDataInput) => StructuredData;
 
 /** `<script type="application/ld+json">` 안에 넣을 문자열입니다. `<`를 `<`로 바꿔 태그가 닫히지 않게 합니다. */
@@ -195,18 +222,32 @@ export interface LlmsTxtPage {
   path: string;
 }
 
+/** `## Official links`의 항목 하나입니다(스토어 · 프로필). */
+export interface LlmsTxtLink {
+  label: string;
+  /** `https://` 절대 주소입니다. */
+  url: string;
+}
+
 export interface LlmsTxtInput {
   siteUrl: SiteUrl;
   name: string;
   /** 한 문단 요약입니다. 줄바꿈이 없어야 합니다. */
   summary: string;
+  /** 다른 표기입니다(`Also known as:` 줄). 영어로만 쓰는 파일이라 인쇄 가능한 ASCII만 받습니다. 비면 줄이 없습니다. */
+  alsoKnownAs: readonly string[];
+  /** 공식 바깥 주소입니다. 비면 절이 없습니다. */
+  links: readonly LlmsTxtLink[];
   /** 언어 목록 순서 그대로입니다. */
   pages: readonly LlmsTxtPage[];
   /** 기본 언어의 FAQ입니다. */
   faq: readonly FaqEntry[];
 }
 
-/** `summary`에 줄바꿈이 있거나 `pages` · `faq`가 비었으면 던집니다. */
+/**
+ * `summary`에 줄바꿈이 있거나 `pages` · `faq`가 비었으면 던집니다. `alsoKnownAs`에 ASCII 밖 글자가 있거나
+ * `links`의 주소가 `https://`로 시작하지 않아도 던집니다.
+ */
 export type BuildLlmsTxt = (input: LlmsTxtInput) => string;
 
 // ---------------------------------------------------------------- robots.txt
