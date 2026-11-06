@@ -64,8 +64,8 @@ describe("settingsNavOpenedEvent", () => {
 });
 
 describe("settingsSessionOptionRows", () => {
-  it("SN8. 설정에 오르는 세션 옵션 키는 show-choice-romanization 하나다", () => {
-    expect(settingsSessionOptionKeys).toEqual(["show-choice-romanization"]);
+  it("SN8. 설정에 오르는 세션 옵션 키는 show-choice-romanization · vibration 둘이다(ADR-0109 D4)", () => {
+    expect(settingsSessionOptionKeys).toEqual(["show-choice-romanization", "vibration"]);
   });
 
   it("SN8. 행은 { key, title, description, checked }이고 초기값에서 checked: true다", () => {
@@ -76,6 +76,12 @@ describe("settingsSessionOptionRows", () => {
         description: "Show how each Korean answer is read, in small text above it.",
         checked: true,
       },
+      {
+        key: "vibration",
+        title: "Vibration",
+        description: "Vibrate when your answer is right or wrong.",
+        checked: true,
+      },
     ]);
   });
 
@@ -84,8 +90,9 @@ describe("settingsSessionOptionRows", () => {
 
     const rows = settingsSessionOptionRows(off, uiCopyEn);
 
-    expect(rows).toHaveLength(1);
+    expect(rows).toHaveLength(2);
     expect(rows[0]?.checked).toBe(false);
+    expect(rows[1]?.checked).toBe(true);
     expect(
       settingsSessionOptionRows(
         { ...off, "auto-play-audio": false, "show-transcript": true },

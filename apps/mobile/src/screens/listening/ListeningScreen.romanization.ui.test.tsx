@@ -31,8 +31,9 @@ const on: SessionOptions = {
   "auto-play-audio": false,
   "show-transcript": false,
   "show-choice-romanization": true,
+  vibration: true,
 };
-const off: SessionOptions = { ...on, "show-choice-romanization": false };
+const off: SessionOptions = { ...on, "show-choice-romanization": false, vibration: true };
 
 afterEach(() => {
   cleanup();

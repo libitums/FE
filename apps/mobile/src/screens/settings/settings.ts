@@ -73,6 +73,7 @@ export function sessionOptionChangedEvent(
 
 export const settingsSessionOptionKeys: readonly SettingsSessionOptionKey[] = [
   "show-choice-romanization",
+  "vibration",
 ];
 
 export type SettingsSessionOptionRow = {

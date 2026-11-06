@@ -5,8 +5,12 @@ import type { HapticKind, SoundEffectId } from "./sound-effects";
 
 afterEach(() => vi.unstubAllGlobals());
 
-/** 새 호스트 모의 — play · haptic을 한 배열에 순서대로 적는다. */
-function stubHost(calls: string[], overrides: Record<string, unknown> = {}) {
+/** 새 호스트 모의 — play · haptic을 한 배열에 순서대로 적는다. `vibration`을 주면 그 값이 저장된 진동 설정이다. */
+function stubHost(
+  calls: string[],
+  overrides: Record<string, unknown> = {},
+  vibration?: string | null,
+) {
   vi.stubGlobal("NativeModules", {
     SoundEffectsModule: {
       play: (id: string) => calls.push(`play:${id}`),
@@ -14,6 +18,15 @@ function stubHost(calls: string[], overrides: Record<string, unknown> = {}) {
       haptic: (kind: string) => calls.push(`haptic:${kind}`),
       ...overrides,
     },
+    ...(vibration === undefined
+      ? {}
+      : {
+          StorageModule: {
+            get: (key: string) => (key === "libitum.session-option.vibration" ? vibration : null),
+            set: () => {},
+            remove: () => {},
+          },
+        }),
   });
 }
 
@@ -162,4 +175,40 @@ test("벨 중지는 진동을 요청하지 않는다", () => {
   stopRing();
 
   expect(calls).toEqual(["stopRing"]);
+});
+
+// ADR-0109 D4 — 설정에서 진동을 끄면 효과음만 낸다.
+test.each<SoundEffectId>(["correct_answer", "wrong_answer", "pass_lesson", "failed_lesson"])(
+  "VB2. 진동 설정이 off면 %s는 효과음만 내고 진동을 요청하지 않는다",
+  (id) => {
+    const calls: string[] = [];
+    stubHost(calls, {}, "off");
+
+    playSound(id);
+
+    expect(calls).toEqual([`play:${id}`]);
+  },
+);
+
+test("VB2. 진동 설정이 on이거나 없으면 지금처럼 진동한다", () => {
+  for (const stored of ["on", null]) {
+    const calls: string[] = [];
+    stubHost(calls, {}, stored);
+
+    playSound("wrong_answer");
+
+    expect(calls).toEqual(["play:wrong_answer", "haptic:error"]);
+  }
+});
+
+test("VB2. 진동이 없는 효과음은 진동 설정을 읽지 않는다", () => {
+  const get = vi.fn<(key: string) => string | null>(() => "off");
+  vi.stubGlobal("NativeModules", {
+    SoundEffectsModule: { play: () => {}, stopRing: () => {}, haptic: () => {} },
+    StorageModule: { get, set: () => {}, remove: () => {} },
+  });
+
+  playSound("button");
+
+  expect(get).not.toHaveBeenCalled();
 });

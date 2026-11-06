@@ -162,6 +162,7 @@ test("[ST2] 목록 상자 안에 학습, 계정, 계정 동작 그룹을 이 순
   ).map((el) => el.getAttribute("data-testid"));
   expect(testids).toEqual([
     "ui-lynx-settings-group-item-show-choice-romanization",
+    "ui-lynx-settings-group-item-vibration",
     ...settingsNavTargets.map((target) => `ui-lynx-settings-group-item-${target}`),
     "ui-lynx-settings-group-item-sign-out",
     "ui-lynx-settings-group-item-delete-account",

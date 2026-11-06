@@ -65,16 +65,19 @@ const autoPlayOff: SessionOptions = {
   "auto-play-audio": false,
   "show-transcript": true,
   "show-choice-romanization": true,
+  vibration: true,
 };
 const transcriptOff: SessionOptions = {
   "auto-play-audio": true,
   "show-transcript": false,
   "show-choice-romanization": true,
+  vibration: true,
 };
 const bothOff: SessionOptions = {
   "auto-play-audio": false,
   "show-transcript": false,
   "show-choice-romanization": true,
+  vibration: true,
 };
 
 test("[LP1] 자동 재생 꺼짐 — 마운트 시 play 0회 · 이름 'Play' · 아이콘 play", () => {
@@ -147,6 +150,7 @@ const bothOn: SessionOptions = {
   "auto-play-audio": true,
   "show-transcript": true,
   "show-choice-romanization": true,
+  vibration: true,
 };
 
 test("[LP7] 둘 다 켬 — play 1회 · 이름 'Pause' · 대본 있음", () => {
