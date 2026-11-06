@@ -18,7 +18,7 @@ public final class StoredValueCodecTest {
   }
 
   @Test public void decodeRestoresTheExactValue() {
-    for (String value : new String[] {"{\n  \"a\": 1\n}\n", "a\n", "\n", "", "plain", "한글\n", ""}) {
+    for (String value : new String[] {"{\n  \"a\": 1\n}\n", "a\n", "\n", "", "plain", "한글\n", "\uE000"}) {
       assertEquals(value, StoredValueCodec.decode(StoredValueCodec.encode(value)));
     }
   }
@@ -29,7 +29,7 @@ public final class StoredValueCodecTest {
     // An old body already damaged on disk stays damaged; its SHA-256 check fails and the app
     // fetches it again, and that write goes through the codec.
     assertEquals("{\n}\n    ", StoredValueCodec.decode("{\n}\n    "));
-    assertEquals("", StoredValueCodec.decode(""));
+    assertEquals("\uE000", StoredValueCodec.decode("\uE000"));
   }
 
   @Test public void nullStaysNull() {

@@ -9,7 +9,7 @@ package com.libitum.host;
  * content. Values written before this codec have no marks and are read as they are. Pure for JUnit.
  */
 final class StoredValueCodec {
-  private static final char MARK = '';
+  private static final char MARK = '\uE000';
 
   private StoredValueCodec() {}
 
