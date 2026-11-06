@@ -15,11 +15,11 @@ public final class StorageModule extends LynxModule {
   }
 
   @LynxMethod public String get(String key) {
-    return preferences.getString("libitum." + key, null);
+    return StoredValueCodec.decode(preferences.getString("libitum." + key, null));
   }
 
   @LynxMethod public void set(String key, String value) {
-    SharedPreferences.Editor editor = preferences.edit().putString("libitum." + key, value);
+    SharedPreferences.Editor editor = preferences.edit().putString("libitum." + key, StoredValueCodec.encode(value));
     if (AUTH_SESSION_KEY.equals(key)) {
       // Keep login state durable even if the app process stops immediately afterward.
       editor.commit();
