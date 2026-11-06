@@ -74,7 +74,8 @@ export function useGuideAlignment(input: {
     },
     handleContentLayout: (event) => {
       "background only";
-      if (event.detail.height <= 0) return;
+      // 한 번 놓인 뒤의 레이아웃 소식은 볼 것이 없습니다 — 그 뒤에는 이펙트가 바로 옮깁니다(리뷰 반영).
+      if (contentLaidOut.current || event.detail.height <= 0) return;
       contentLaidOut.current = true;
       if (pendingTop.current) moveToTop();
     },
