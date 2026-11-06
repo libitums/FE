@@ -212,6 +212,7 @@ export function JourneyMapScreen({
         <view
           className="journey-map-screen-map"
           data-testid="journey-map-screen-map"
+          bindlayoutchange={alignment.handleContentLayout}
           style={{ paddingTop: `${top.mapPaddingTop}px` }}
           accessibility-elements-hidden={sheetOpen}
           bindtouchstart={autoScroll.handleTouchStart}

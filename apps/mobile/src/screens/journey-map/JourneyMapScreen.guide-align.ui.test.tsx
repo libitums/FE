@@ -41,6 +41,11 @@ const scrollTo = (scrollTop: number) =>
     const scrollRef = realQuery().select("#journey-map-screen-scroll");
     fireEvent.scroll(scrollRef as unknown as Element, { detail: { scrollTop } });
   });
+/** 지도 내용의 레이아웃이 잡혔다는 호스트 소식입니다(높이 0이면 아직 비어 있음). */
+const laidOut = (height = 3000) =>
+  act(() => {
+    fireEvent.layoutchange(screen.getByTestId("journey-map-screen-map"), { detail: { height } });
+  });
 const guided = (enabled: boolean) => (
   <FirstUnitGuideProvider enabled={enabled}>{u00Screen(u00Catalog())}</FirstUnitGuideProvider>
 );
@@ -49,6 +54,7 @@ describe("첫 유닛 가이드와 지도 위치", () => {
   test("GA1. 지도가 내려가 있는 채 가이드가 서면 먼저 맨 위로 즉시 옮기고, 맨 위에 닿은 뒤에야 스크림을 보인다", () => {
     const host = stubHost({ rects: asRects() });
     const view = mount(guided(false));
+    laidOut();
     scrollTo(900);
 
     rerender(view, guided(true));
@@ -65,6 +71,7 @@ describe("첫 유닛 가이드와 지도 위치", () => {
     rememberMapScroll(1200);
     const host = stubHost({ rects: asRects() });
     mount(guided(true));
+    laidOut();
 
     expect(scrimShown()).toBe(false);
     expect(host.scrollTos()).toContainEqual(scrollToCall(0, false));
@@ -91,8 +98,27 @@ describe("첫 유닛 가이드와 지도 위치", () => {
   test("GA4. 알던 위치가 맨 위여도 맨 위로 즉시 한 번 옮기고(소식 없이 밀렸을 수 있음) 바로 보인다", () => {
     const host = stubHost({ rects: asRects() });
     mount(guided(true));
+    laidOut();
 
     expect(scrimShown()).toBe(true);
+    expect(host.scrollTos()).toEqual([scrollToCall(0, false)]);
+  });
+
+  // DURU-ANDROID-F(1.2.0 신규 설치마다 1회): 지도 내용이 레이아웃되기 전에 맨 위로 옮기면 Lynx가 스크롤 범위를
+  // 「0 − 화면 높이」로 보고 0도 범위 밖이라며 오류를 냈다. 내용이 실제로 놓인 뒤(높이 > 0)에만 옮긴다.
+  test("GA6. 지도 내용이 레이아웃되기 전에는 옮기지 않고, 높이가 생긴 첫 소식에 한 번 옮긴다", () => {
+    const host = stubHost({ rects: asRects() });
+    mount(guided(true));
+
+    expect(host.scrollTos()).toEqual([]);
+    // 처음 열린 지도는 맨 위라 가이드는 기다리지 않고 바로 섭니다.
+    expect(scrimShown()).toBe(true);
+
+    laidOut(0);
+    expect(host.scrollTos()).toEqual([]);
+
+    laidOut(3000);
+    laidOut(3200);
     expect(host.scrollTos()).toEqual([scrollToCall(0, false)]);
   });
 });
