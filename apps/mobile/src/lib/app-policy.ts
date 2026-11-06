@@ -13,17 +13,20 @@ export const APP_POLICY_PATH = "app-policy.json";
 /** 검증을 통과한 원문을 두는 저장소 키입니다. */
 export const APP_POLICY_KEY = "libitum.app-policy";
 
-/** 사용 불가로 안내하는 로그인 수단 — `all`은 모든 플랫폼, `android`는 Android만. */
-export type UnavailableLoginMethods = {
+/** 로그인 수단 목록 — `all`은 모든 플랫폼, `android`는 Android만. 사용 불가(안내 모달) · 숨김 두 칸이 같은 모양이다. */
+export type LoginMethodSelection = {
   readonly all: readonly EntryLoginMethod[];
   readonly android: readonly EntryLoginMethod[];
 };
+export type UnavailableLoginMethods = LoginMethodSelection;
 
 export type AppPolicy = {
   /** 플랫폼별 최소 빌드. 키가 없으면 그 플랫폼은 제한이 없습니다. */
   readonly minBuild: Partial<Record<AppPlatform, number>>;
-  /** 사용 불가 로그인 수단. 칸이 없으면 필드가 없고 앱 상수 기본값을 씁니다. */
-  readonly unavailableLoginMethods?: UnavailableLoginMethods;
+  /** 사용 불가 로그인 수단(버튼은 서고 누르면 안내 모달). 칸이 없으면 필드가 없고 앱 상수 기본값을 씁니다. */
+  readonly unavailableLoginMethods?: LoginMethodSelection;
+  /** 숨기는 로그인 수단(버튼 자체가 없음 — ADR-0111 개정 4). 칸이 없으면 필드가 없고 앱 상수 기본값을 씁니다. */
+  readonly hiddenLoginMethods?: LoginMethodSelection;
 };
 
 export type AppUpdateDecision = "required" | "none";
@@ -53,12 +56,13 @@ export function decodeAppPolicy(text: string): AppPolicy | null {
     if (!isBuildNumber(value)) return null;
     minBuild[platform] = value;
   }
-  const unavailableLoginMethods = decodeUnavailableLoginMethods(
-    parsed["unavailable_login_methods"],
-  );
-  return unavailableLoginMethods === undefined
-    ? { minBuild }
-    : { minBuild, unavailableLoginMethods };
+  const unavailableLoginMethods = decodeLoginMethodSelection(parsed["unavailable_login_methods"]);
+  const hiddenLoginMethods = decodeLoginMethodSelection(parsed["hidden_login_methods"]);
+  return {
+    minBuild,
+    ...(unavailableLoginMethods === undefined ? {} : { unavailableLoginMethods }),
+    ...(hiddenLoginMethods === undefined ? {} : { hiddenLoginMethods }),
+  };
 }
 
 /** 문자열 배열에서 아는 수단만 어휘 순서로 — 배열이 아니면 `[]`. */
@@ -68,10 +72,10 @@ function knownLoginMethods(value: unknown): readonly EntryLoginMethod[] {
 }
 
 /**
- * `unavailable_login_methods` 칸(ADR-0111 개정 3). 키가 없거나 모양이 틀리면 **칸만** 없는 것으로 — 정책 전체(최소 빌드)는
- * 그대로 산다. 모르는 수단 이름은 버린다.
+ * `unavailable_login_methods` · `hidden_login_methods` 칸(ADR-0111 개정 3 · 4). 키가 없거나 모양이 틀리면 **칸만** 없는
+ * 것으로 — 정책 전체(최소 빌드)는 그대로 산다. 모르는 수단 이름은 버린다.
  */
-function decodeUnavailableLoginMethods(raw: unknown): UnavailableLoginMethods | undefined {
+function decodeLoginMethodSelection(raw: unknown): LoginMethodSelection | undefined {
   if (!isPlainRecord(raw)) return undefined;
   return { all: knownLoginMethods(raw["all"]), android: knownLoginMethods(raw["android"]) };
 }

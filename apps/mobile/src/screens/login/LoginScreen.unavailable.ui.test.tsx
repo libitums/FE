@@ -4,7 +4,12 @@ import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/
 import { backHandlers } from "../../lib/back-handler";
 import type { SocialSignInOutcome } from "../../lib/social-sign-in.contract";
 import { uiCopyEn } from "../../lib/ui-copy-en";
-import { loginMethodLabel, socialProviderName, unavailableSocialLoginMethodsFor } from "./login";
+import {
+  loginMethodLabel,
+  socialLoginMethods,
+  socialProviderName,
+  unavailableSocialLoginMethodsFor,
+} from "./login";
 import { LoginScreen } from "./LoginScreen";
 import type { LoginScreenProps } from "./login.contract";
 
@@ -23,6 +28,7 @@ function renderLogin(overrides: Partial<LoginScreenProps> = {}) {
   render(
     <LoginScreen
       phoneSignIn="visible"
+      visibleMethods={socialLoginMethods}
       unavailableMethods={unavailableSocialLoginMethodsFor("ios", null)}
       guestSignIn="visible"
       onContinueAsGuest={() => undefined}
@@ -132,10 +138,8 @@ describe("LoginScreen 사용 불가 수단 안내", () => {
     expect(onSelectSocialMethod).not.toHaveBeenCalled();
   });
 
-  it("[LG-D4] android에서 apple을 누르면 대화상자가 서고 호출은 0회다(제목은 Apple 라벨)", () => {
-    const { onSelectSocialMethod } = renderLogin({
-      unavailableMethods: unavailableSocialLoginMethodsFor("android", null),
-    });
+  it("[LG-D4] 목록이 apple을 품으면(정책이 Android Apple을 막은 경우) apple 탭은 대화상자고 호출 0회다(제목은 Apple 라벨)", () => {
+    const { onSelectSocialMethod } = renderLogin({ unavailableMethods: ["apple", "facebook"] });
 
     fireEvent.tap(methodButton("apple"), {});
 
@@ -145,7 +149,7 @@ describe("LoginScreen 사용 불가 수단 안내", () => {
     expect(onSelectSocialMethod).not.toHaveBeenCalled();
   });
 
-  it("[LG-D4] iOS에서 apple을 누르면 대화상자 없이 onSelectSocialMethod('apple') 1회다", () => {
+  it("[LG-D4] 기본값(iOS · Android 모두)에서 apple을 누르면 대화상자 없이 onSelectSocialMethod('apple') 1회다", () => {
     const { onSelectSocialMethod } = renderLogin({
       unavailableMethods: unavailableSocialLoginMethodsFor("ios", null),
     });
@@ -157,10 +161,11 @@ describe("LoginScreen 사용 불가 수단 안내", () => {
     expect(onSelectSocialMethod).toHaveBeenCalledWith("apple");
   });
 
-  it("[LG-D4] android에서 google은 대화상자 없이 그대로 요청된다", () => {
+  it("[LG-D4] android 기본값에서 google은 대화상자 없이 그대로 요청된다(apple도 같다 — 위 기본값 케이스)", () => {
     const { onSelectSocialMethod } = renderLogin({
       unavailableMethods: unavailableSocialLoginMethodsFor("android", null),
     });
+    expect(unavailableSocialLoginMethodsFor("android", null)).toEqual(["facebook"]);
 
     fireEvent.tap(methodButton("google"), {});
 

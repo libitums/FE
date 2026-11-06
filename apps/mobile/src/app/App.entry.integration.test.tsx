@@ -1840,7 +1840,7 @@ test("[IN7] Apple 콜백을 보류한 채: google 탭 → 웹 start 0 · Continu
 
 // ------------------------------------------------------------------------- 전화번호 수단 숨김
 
-test("[IPH1] 제품의 기본값으로 부팅하면 로그인에 전화번호 수단이 없고 소셜 셋(iOS 기준)이 선다", () => {
+test("[IPH1] 제품의 기본값으로 부팅하면 로그인에 전화번호 수단이 없고 소셜 둘(Apple · Google — Facebook은 기본 숨김)이 선다", () => {
   emptyStorageStub();
   vi.useFakeTimers();
   render(<App />);
@@ -1850,9 +1850,11 @@ test("[IPH1] 제품의 기본값으로 부팅하면 로그인에 전화번호 �
   expect(screen.getByTestId("login-screen-title")).toBeInTheDocument();
   expect(screen.queryByTestId("login-screen-phone-field")).not.toBeInTheDocument();
   expect(screen.queryByTestId("login-screen-method-phone")).not.toBeInTheDocument();
-  for (const method of ["apple", "google", "facebook"] as const) {
+  for (const method of ["apple", "google"] as const) {
     expect(screen.getByTestId(`login-screen-method-${method}`)).toBeInTheDocument();
   }
+  // Facebook은 정책 `hidden_login_methods` 기본값으로 숨긴다(ADR-0111 개정 4) — 정책이 열면 GE15가 본다.
+  expect(screen.queryByTestId("login-screen-method-facebook")).not.toBeInTheDocument();
   expect(screen.queryByTestId("login-screen-unavailable-dialog")).not.toBeInTheDocument();
 });
 

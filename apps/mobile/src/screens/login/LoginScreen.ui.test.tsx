@@ -7,9 +7,9 @@ import type { SocialSignInOutcome } from "../../lib/social-sign-in.contract";
 import { uiCopyEn } from "../../lib/ui-copy-en";
 import {
   loginMethodLabel,
-  socialLoginMethods,
   unavailableSocialLoginMethods,
   unavailableSocialLoginMethodsFor,
+  visibleSocialLoginMethodsFor,
 } from "./login";
 import { loginCountries } from "./login-countries";
 import { LoginScreen } from "./LoginScreen";
@@ -69,9 +69,9 @@ function actionUnitIds(container: Element): (string | null)[] {
   ].map((el) => el.closest('[data-testid^="login-screen-"]')?.getAttribute("data-testid") ?? null);
 }
 
-// 화면이 그리는 소셜 수단 전부입니다 — `[apple, google, facebook]`. 사용 불가 수단도 버튼은
-// 서고(탭하면 안내 대화상자), 판정은 순수 함수의 몫이라 그 결과를 그대로 씁니다.
-const socialMethods = socialLoginMethods;
+// 화면이 기본으로 그리는 소셜 수단입니다 — 숨김 기본값(Facebook)을 뺀 `[apple, google]`(ADR-0111 개정 4).
+// 숨기지 않은 사용 불가 수단은 버튼이 서고 탭하면 안내 대화상자입니다(LoginScreen.unavailable.ui.test).
+const socialMethods = visibleSocialLoginMethodsFor("ios", null);
 // 기본 렌더에 서는 수단 전부(전화번호 + 소셜)입니다.
 const shownMethods = ["phone", ...socialMethods] as const;
 
@@ -85,6 +85,7 @@ function renderLogin(
     onSelectSocialMethod?: LoginScreenProps["onSelectSocialMethod"];
     onSubmitPhoneNumber?: LoginScreenProps["onSubmitPhoneNumber"];
     onBack?: LoginScreenProps["onBack"];
+    visibleMethods?: LoginScreenProps["visibleMethods"];
     unavailableMethods?: LoginScreenProps["unavailableMethods"];
     guestSignIn?: LoginScreenProps["guestSignIn"];
     onContinueAsGuest?: LoginScreenProps["onContinueAsGuest"];
@@ -97,6 +98,7 @@ function renderLogin(
       // 전화번호 수단의 동작을 보는 케이스가 대부분이라 기본은 `visible`입니다.
       phoneSignIn={overrides.phoneSignIn ?? "visible"}
       // 기본은 iOS · 비회원 버튼 보임 — 제품의 진입 흐름과 같습니다.
+      visibleMethods={overrides.visibleMethods ?? socialMethods}
       unavailableMethods={
         overrides.unavailableMethods ?? unavailableSocialLoginMethodsFor("ios", null)
       }
@@ -157,10 +159,10 @@ afterEach(() => {
 });
 
 describe("LoginScreen", () => {
-  it("[LG-U1] 수단(전화번호 · apple · google · facebook)이 어휘 순서로 서고 각각 조작 단위이며 비회원 버튼이 뒤에 선다", () => {
+  it("[LG-U1] 수단(전화번호 · apple · google)이 어휘 순서로 서고 각각 조작 단위이며 비회원 버튼이 뒤에 선다 — Facebook은 기본 숨김", () => {
     const { container } = renderLogin();
 
-    expect(screen.getByTestId("login-screen-method-facebook")).toBeInTheDocument();
+    expect(screen.queryByTestId("login-screen-method-facebook")).not.toBeInTheDocument();
     expect(screen.getByTestId("login-screen-method-guest")).toBeInTheDocument();
     for (const method of shownMethods) {
       const button = methodButton(method);
@@ -261,7 +263,6 @@ describe("LoginScreen", () => {
 
     expect(methodStatus("google")).toBe("requesting");
     expect(methodStatus("apple")).toBe("idle");
-    expect(methodStatus("facebook")).toBe("idle");
     expect(methodStatus("phone")).toBe("idle");
   });
 

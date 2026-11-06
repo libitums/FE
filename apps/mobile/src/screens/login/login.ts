@@ -156,7 +156,7 @@ export function loginHeading(
 /** 제품이 **사용 불가로 안내하는** 수단입니다(Meta 앱 게시 전). 되돌릴 때 비웁니다. */
 export const productUnavailableLoginMethods: readonly EntryLoginMethod[] = ["facebook"];
 /** Android에서만 사용 불가인 수단(Apple Services ID 전). 되돌릴 때 비웁니다. */
-export const androidUnavailableLoginMethods: readonly EntryLoginMethod[] = ["apple"];
+export const androidUnavailableLoginMethods: readonly EntryLoginMethod[] = [];
 
 export type LoginMethodAvailabilityInput = {
   /** 호스트가 보낸 플랫폼. 모르면(`null`) 플랫폼 제외는 없습니다. */
@@ -245,4 +245,34 @@ export function unavailableSocialLoginMethodsFor(
     if (method !== "phone") result.push(method);
   }
   return result;
+}
+
+// ------------------------------------------------------------------ 숨기는 수단 (ADR-0111 개정 4)
+
+/** 제품이 **숨기는** 수단의 기본값 — 정책 `hidden_login_methods`가 없을 때. Meta 앱 게시 전 Facebook. 되돌릴 때는 정책에서 지운다. */
+export const productHiddenLoginMethods: readonly EntryLoginMethod[] = ["facebook"];
+/** Android에서만 숨기는 수단의 기본값 — 비어 있다. */
+export const androidHiddenLoginMethods: readonly EntryLoginMethod[] = [];
+
+/** 숨기는 수단 — 정책 `hidden_login_methods`가 있으면 그것(all ∪ android), 없으면 상수 기본값. 어휘 순서 · 중복 없음. */
+export function hiddenLoginMethodsFor(
+  platform: AppPlatform | null,
+  policy: AppPolicy | null,
+): readonly EntryLoginMethod[] {
+  const fromPolicy = policy?.hiddenLoginMethods;
+  const all = fromPolicy === undefined ? productHiddenLoginMethods : fromPolicy.all;
+  const android = fromPolicy === undefined ? androidHiddenLoginMethods : fromPolicy.android;
+  const platformList = platform === "android" ? android : [];
+  return entryLoginMethods.filter(
+    (method) => all.includes(method) || platformList.includes(method),
+  );
+}
+
+/** 화면에 그릴 소셜 수단 — `socialLoginMethods`에서 숨기는 수단을 뺀 것. 결선이 `LoginScreenProps.visibleMethods`로 넘긴다. */
+export function visibleSocialLoginMethodsFor(
+  platform: AppPlatform | null,
+  policy: AppPolicy | null,
+): readonly SocialLoginMethod[] {
+  const hidden = hiddenLoginMethodsFor(platform, policy);
+  return socialLoginMethods.filter((method) => !hidden.includes(method));
 }

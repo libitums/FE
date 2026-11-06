@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
+import { cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import type { SocialSignInOutcome } from "../../lib/social-sign-in.contract";
 import { uiCopyEn } from "../../lib/ui-copy-en";
 import { LoginScreen } from "./LoginScreen";
-import { unavailableSocialLoginMethodsFor } from "./login";
+import { unavailableSocialLoginMethodsFor, visibleSocialLoginMethodsFor } from "./login";
 import type { LoginScreenProps } from "./login.contract";
 
 // `ui` 계층: 「비회원으로 계속」 버튼과 플랫폼별 소셜 목록(spec §3-1, test-plan LG-G1~4).
@@ -14,6 +14,7 @@ function renderLogin(overrides: Partial<LoginScreenProps> = {}) {
   return render(
     <LoginScreen
       phoneSignIn="visible"
+      visibleMethods={visibleSocialLoginMethodsFor("ios", null)}
       unavailableMethods={unavailableSocialLoginMethodsFor("ios", null)}
       guestSignIn="visible"
       onContinueAsGuest={() => undefined}
@@ -61,18 +62,17 @@ describe("LoginScreen 비회원으로 계속", () => {
     const { container } = renderLogin({ guestSignIn: "hidden" });
 
     expect(screen.queryByTestId("login-screen-method-guest")).not.toBeInTheDocument();
-    expect(renderedSocialMethods(container)).toEqual(["apple", "google", "facebook"]);
+    // 기본값은 Facebook 숨김(ADR-0111 개정 4) — 정책이 열면 LG-G3이 셋을 본다.
+    expect(renderedSocialMethods(container)).toEqual(["apple", "google"]);
   });
 
-  it("[LG-G3] 사용 불가 목록이 무엇이든 소셜 셋이 모두 선다(android 목록 · 빈 목록)", () => {
-    const android = renderLogin({
-      unavailableMethods: unavailableSocialLoginMethodsFor("android", null),
-    });
-    expect(renderedSocialMethods(android.container)).toEqual(["apple", "google", "facebook"]);
-    android.unmount();
-
-    const unknown = renderLogin({ unavailableMethods: [] });
-    expect(renderedSocialMethods(unknown.container)).toEqual(["apple", "google", "facebook"]);
+  it("[LG-G3] 그리는 소셜 수단은 visibleMethods가 정한다 — 기본 둘, 정책이 열면 셋(Facebook은 사용 불가 안내 대상), 빈 목록이면 0", () => {
+    const opened = renderLogin({ visibleMethods: ["apple", "google", "facebook"] });
+    expect(renderedSocialMethods(opened.container)).toEqual(["apple", "google", "facebook"]);
+    cleanup();
+    const none = renderLogin({ visibleMethods: [] });
+    expect(renderedSocialMethods(none.container)).toEqual([]);
+    expect(screen.getByTestId("login-screen-method-guest")).toBeInTheDocument();
   });
 
   it("[LG-G4] google 요청이 안 끝난 동안 비회원 버튼을 눌러도 onContinueAsGuest가 불리지 않는다", () => {

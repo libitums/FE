@@ -15,6 +15,7 @@ function renderLogin(
   return render(
     <LoginScreen
       phoneSignIn="visible"
+      visibleMethods={["apple", "google"]}
       unavailableMethods={[]}
       guestSignIn="visible"
       onContinueAsGuest={() => undefined}

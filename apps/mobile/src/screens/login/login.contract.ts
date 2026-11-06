@@ -42,7 +42,8 @@ export type GuestSignInVisibility = "visible" | "hidden";
 
 export type LoginScreenProps = {
   readonly phoneSignIn: PhoneSignInVisibility;
-  /** 호스트 플랫폼 — 소셜 목록을 `socialLoginMethods`(전체)로 그립니다. 모르면 `null`. */
+  /** 화면에 그릴 소셜 수단(숨김 반영 — ADR-0111 개정 4). 결선이 `visibleSocialLoginMethodsFor`로 만든다. */
+  readonly visibleMethods: readonly SocialLoginMethod[];
   /** 이미 플랫폼 · 앱 정책이 반영된 사용 불가 소셜 수단(ADR-0111 개정 3). 결선이 `unavailableSocialLoginMethodsFor`로 만든다. */
   readonly unavailableMethods: readonly SocialLoginMethod[];
   readonly guestSignIn: GuestSignInVisibility;
