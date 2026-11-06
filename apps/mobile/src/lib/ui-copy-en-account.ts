@@ -44,11 +44,16 @@ export const settingsEn: SettingsCopy = {
       "Pictures and audio for every episode, so you can learn without a connection.",
     downloadAllStarted: "Downloading in the background. You can keep learning.",
     downloaded: (size) => `Downloaded: ${size}`,
+    episodeRow: (n, d, t) => `Episode ${n}: ${d} of ${t} lessons`,
+    episodeRowComplete: (n) => `Episode ${n}: complete`,
+    downloadRest: (n) => `Download the rest of Episode ${n}`,
     confirm: {
       title: "Download on mobile data?",
       description: "Downloading every episode can use a lot of data. You can also wait for Wi-Fi.",
       download: "Download now",
       cancel: "Cancel",
+      restDescription: (n) =>
+        `The rest of Episode ${n} downloads on mobile data. You can also wait for Wi-Fi.`,
     },
   },
   sessionOption: {
@@ -129,17 +134,32 @@ export const downloadSheetEn: DownloadSheetCopy = {
   size: (size) => `About ${size}`,
   downloadNow: "Download now",
   onWifi: "Download on Wi-Fi",
-  dontAskAgain: "Don't ask again",
   wifiOnlyTitle: (n) => `Episode ${n} downloads on Wi-Fi`,
-  wifiOnlyDescription: "You chose Wi-Fi only in Settings. It will download when you're on Wi-Fi.",
+  wifiOnlyDescription:
+    "You chose Wi-Fi only in Settings. Use mobile data this once, open without pictures and audio, or change the setting.",
   ok: "OK",
   offlineTitle: "You're offline",
   offlineDescription: (n) =>
     `Episode ${n} isn't downloaded yet. It will download when you're back online.`,
   openAnyway: "Open anyway",
   close: "Close",
-  checked: "checked",
-  unchecked: "not checked",
+  askUnitTitle: (l) => `Download ${l}?`,
+  askUnitDescription:
+    "Pictures and audio for this lesson aren't on your phone yet. Downloading uses mobile data.",
+  rows: {
+    common: "Shared pictures and audio",
+    allLessons: "All lessons in this episode",
+    otherLessons: "Other lessons",
+    status: { done: "On your phone", pending: "Downloads now", wifi: "On Wi-Fi" },
+  },
+  askHint: "You'll be asked each time. Change this in Settings › Downloads.",
+  wifiOnlyUnitTitle: (l) => `${l} downloads on Wi-Fi`,
+  mobileDataOnce: "Use mobile data this once",
+  openWithout: "Open without pictures and audio",
+  changeSetting: "Change setting",
+  offlineUnitDescription: (l) =>
+    `${l} isn't downloaded yet. It will download when you're back online.`,
+  offlineHint: "Pictures show as plain color and listening items are skipped.",
   allCleared: {
     title: "You've finished every story here",
     description: "New episodes may be waiting. Connect to the internet and we'll check for you.",

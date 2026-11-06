@@ -7,6 +7,7 @@ import {
   ensureEpisodeAssets,
   isAssetsComplete,
   markAssetsComplete,
+  readAssetMarkerMissing,
   syncEpisodeAssets,
   type AssetDeps,
   type DownloadResult,
@@ -481,5 +482,21 @@ describe("ensureEpisodeAssets — 옵션", () => {
       }),
     ).toBe("incomplete");
     expect(settled).not.toContain("images/b.jpg");
+  });
+});
+
+describe("readAssetMarkerMissing", () => {
+  test("[U-AM3] 같은 sha면 missing(문자열만), 다른 sha · 없음 · 깨짐은 null이다", () => {
+    const store = memoryStore();
+    store.data.set("k", JSON.stringify({ sha256: "s1", missing: ["a.jpg", 3, null, "b.m4a"] }));
+    expect(readAssetMarkerMissing(store, "k", "s1")).toEqual(["a.jpg", "b.m4a"]);
+
+    store.data.set("empty", JSON.stringify({ sha256: "s1", missing: [] }));
+    expect(readAssetMarkerMissing(store, "empty", "s1")).toEqual([]);
+
+    expect(readAssetMarkerMissing(store, "k", "s2")).toBeNull();
+    expect(readAssetMarkerMissing(store, "none", "s1")).toBeNull();
+    store.data.set("broken", "{");
+    expect(readAssetMarkerMissing(store, "broken", "s1")).toBeNull();
   });
 });

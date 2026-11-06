@@ -3,8 +3,10 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import {
   allowEpisodes,
   allowedEpisodesFrom,
+  allowEpisodeUnits,
   assetDownloadAllowed,
   downloadPolicyStorageKey,
+  isDownloadAllowed,
   loadAllowedEpisodes,
   loadMobileDataPolicy,
   mobileDataPolicyFrom,
@@ -27,6 +29,7 @@ const base = (over: Partial<AssetDownloadInput>): AssetDownloadInput => ({
   allowed: new Set(),
   episodeId: "u03-mina",
   tutorialId: "u00-tutorial",
+  target: { kind: "episode" },
   ...over,
 });
 
@@ -40,10 +43,17 @@ test("DP1. 요금 없는 연결 · 모르는 연결 · 오프라인은 정책과
   }
 });
 
-test("DP2. 요금제 · 데이터 절약에서 ask · wifi-only면 허락하지 않은 편은 받지 않는다", () => {
+test("DP2. 요금제 · 데이터 절약에서 ask · wifi-only면 허락하지 않은 편은 어느 대상이든 받지 않는다", () => {
+  const targets: AssetDownloadInput["target"][] = [
+    { kind: "episode" },
+    { kind: "common" },
+    { kind: "unit", unitKey: "S3" },
+  ];
   for (const network of [cellular, saver]) {
-    expect(assetDownloadAllowed(base({ network, policy: "ask" }))).toBe(false);
-    expect(assetDownloadAllowed(base({ network, policy: "wifi-only" }))).toBe(false);
+    for (const target of targets) {
+      expect(assetDownloadAllowed(base({ network, policy: "ask", target }))).toBe(false);
+      expect(assetDownloadAllowed(base({ network, policy: "wifi-only", target }))).toBe(false);
+    }
   }
 });
 
@@ -52,12 +62,29 @@ test("DP3. 요금제에서도 always면 받는다", () => {
   expect(assetDownloadAllowed(base({ network: saver, policy: "always" }))).toBe(true);
 });
 
-test("DP4. 요금제에서도 튜토리얼과 허락한 편은 받는다", () => {
-  expect(assetDownloadAllowed(base({ episodeId: "u00-tutorial" }))).toBe(true);
-  expect(assetDownloadAllowed(base({ policy: "wifi-only", allowed: new Set(["u03-mina"]) }))).toBe(
-    true,
+test("DP4. 요금제에서도 튜토리얼은 대상과 상관없이, 편을 허락했으면 episode · common · unit 모두 받는다", () => {
+  const targets: AssetDownloadInput["target"][] = [
+    { kind: "episode" },
+    { kind: "common" },
+    { kind: "unit", unitKey: "S3" },
+  ];
+  for (const target of targets) {
+    expect(assetDownloadAllowed(base({ episodeId: "u00-tutorial", target }))).toBe(true);
+    expect(
+      assetDownloadAllowed(base({ policy: "wifi-only", allowed: new Set(["u03-mina"]), target })),
+    ).toBe(true);
+    expect(assetDownloadAllowed(base({ allowed: new Set(["u04-directions"]), target }))).toBe(
+      false,
+    );
+  }
+  // 유닛 토큰만 허락한 편은 그 유닛 대상만 받는다.
+  const unitOnly = new Set(["u03-mina#S3"]);
+  expect(
+    assetDownloadAllowed(base({ allowed: unitOnly, target: { kind: "unit", unitKey: "S3" } })),
+  ).toBe(true);
+  expect(assetDownloadAllowed(base({ allowed: unitOnly, target: { kind: "episode" } }))).toBe(
+    false,
   );
-  expect(assetDownloadAllowed(base({ allowed: new Set(["u04-directions"]) }))).toBe(false);
 });
 
 test("DP5. 저장된 정책은 세 값만 받고 나머지는 ask다", () => {
@@ -78,6 +105,36 @@ test("DP6. 허락한 편 목록은 JSON 문자열 배열의 문자열만 받고,
   for (const bad of [null, undefined, "", "{", '{"a":1}', "1", 3]) {
     expect(allowedEpisodesFrom(bad).size).toBe(0);
   }
+});
+
+test("[U-DP10] 허락 목록은 편 토큰과 유닛 토큰을 그대로 두고, 빈 문자열 · 문자열 아님은 버린다", () => {
+  expect([...allowedEpisodesFrom('["u01-water","u02-checkin#S3"]')]).toEqual([
+    "u01-water",
+    "u02-checkin#S3",
+  ]);
+  expect([...allowedEpisodesFrom('["u01-water","",1,null,"u02-checkin#S3"]')]).toEqual([
+    "u01-water",
+    "u02-checkin#S3",
+  ]);
+});
+
+test("[U-DP11] isDownloadAllowed — 유닛 토큰은 그 유닛과 common만, 편 토큰은 전부, 빈 집합은 어느 것도 아니다", () => {
+  const unitOnly = new Set(["u02#S3"]);
+  expect(isDownloadAllowed(unitOnly, "u02", { kind: "unit", unitKey: "S3" })).toBe(true);
+  expect(isDownloadAllowed(unitOnly, "u02", { kind: "unit", unitKey: "S4" })).toBe(false);
+  expect(isDownloadAllowed(unitOnly, "u02", { kind: "common" })).toBe(true);
+  expect(isDownloadAllowed(unitOnly, "u02", { kind: "episode" })).toBe(false);
+  expect(isDownloadAllowed(unitOnly, "u03", { kind: "unit", unitKey: "S3" })).toBe(false);
+
+  const whole = new Set(["u02"]);
+  expect(isDownloadAllowed(whole, "u02", { kind: "unit", unitKey: "S9" })).toBe(true);
+  expect(isDownloadAllowed(whole, "u02", { kind: "common" })).toBe(true);
+  expect(isDownloadAllowed(whole, "u02", { kind: "episode" })).toBe(true);
+
+  const empty = new Set<string>();
+  expect(isDownloadAllowed(empty, "u02", { kind: "unit", unitKey: "S3" })).toBe(false);
+  expect(isDownloadAllowed(empty, "u02", { kind: "common" })).toBe(false);
+  expect(isDownloadAllowed(empty, "u02", { kind: "episode" })).toBe(false);
 });
 
 describe("저장", () => {
@@ -118,5 +175,18 @@ describe("저장", () => {
     expect(() => saveMobileDataPolicy("always")).not.toThrow();
     expect(() => allowEpisodes(["u03-mina"])).not.toThrow();
     expect(loadAllowedEpisodes().size).toBe(0);
+  });
+
+  test("[U-DP12] allowEpisodeUnits — 유닛 토큰을 중복 · 빈 키 없이 쓰고, 편이 이미 허락이면 쓰지 않으며, 저장소가 없어도 던지지 않는다", () => {
+    stubStorage();
+    allowEpisodeUnits("u02", ["S3", "S3", ""]);
+    expect([...loadAllowedEpisodes()]).toEqual(["u02#S3"]);
+
+    allowEpisodes(["u05"]);
+    allowEpisodeUnits("u05", ["S1"]);
+    expect([...loadAllowedEpisodes()]).toEqual(["u02#S3", "u05"]);
+
+    vi.stubGlobal("NativeModules", undefined);
+    expect(() => allowEpisodeUnits("u02", ["S4"])).not.toThrow();
   });
 });

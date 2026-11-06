@@ -3,6 +3,7 @@
 
 import type { CatalogFreshness } from "../lib/manifest-check";
 import { downloadSettingsWiring } from "./download-wiring";
+import type { DownloadCatalogInput } from "./download-progress";
 import type { DownloadControls, DownloadSettingsWiring } from "./download-wiring";
 import type { AccountWiringArgs } from "./leave-app.contract";
 import type { Dispatch, SetStateAction } from "@lynx-js/react";
@@ -150,7 +151,7 @@ export type ScreenWiringArgs = {
   readonly entryLanguage: EntryLanguage;
   readonly setEntryLanguage: Dispatch<SetStateAction<EntryLanguage>>;
   readonly downloadControls?: DownloadControls;
-  readonly catalogIds: () => readonly string[];
+  readonly downloadCatalog: () => DownloadCatalogInput;
 } & ProgressWiringArgs &
   LearnerProfileControls &
   Omit<CatalogWiringArgs, "dispatch">;
@@ -161,7 +162,7 @@ export function screenWiring(args: ScreenWiringArgs): ScreenWiring {
 
   return {
     ...journey,
-    downloadSettings: downloadSettingsWiring(args.downloadControls, args.catalogIds),
+    downloadSettings: downloadSettingsWiring(args.downloadControls, args.downloadCatalog),
     onTapPendingEpisode: () => {},
     legacyTutorialPassed: args.legacyTutorialPassed,
     safeAreaInsets: args.safeAreaInsets,

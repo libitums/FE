@@ -43,6 +43,7 @@ import { OutOfTicketsDialog } from "../screens/tickets/OutOfTicketsDialog";
 import { CatalogUpdateNoticeDialog } from "../screens/catalog-update/CatalogUpdateNoticeDialog";
 import { useCatalogUpdateNotice } from "./use-catalog-update-notice";
 import { withLearningTickets } from "./ticket-wiring";
+import { downloadCatalogOf, downloadSettingsNav } from "./download-settings-nav";
 import { useDownloadGate, withDownloadGate } from "./use-download-gate";
 import { useLearningTickets } from "./use-learning-tickets";
 import { useTesterAccess } from "./use-tester-access";
@@ -73,8 +74,7 @@ export function AppSession({
   downloadControls,
 }: AppProps & AppSessionControl & AppSessionContent) {
   // 이 리듀서를 부르는 유일한 자리입니다. `dispatch`는 셸에 콜백으로 내려갑니다 — 셸은 `NavAction`도 `dispatch`도
-  // 받지 않습니다(ADR-0007 D3). 초기값이 `entryInitialNav`입니다 — 부팅이 진입 스택 `[{ name: "splash" }]`로
-  // 시작합니다. `initialNav` 자신은 안 바뀝니다 — 그래서 이 한 줄이 부팅 화면을 바꾸는 유일한 자리입니다.
+  // 받지 않습니다(ADR-0007 D3). 초기값은 `entryInitialNav`(부팅 진입 스택 `[{ name: "splash" }]`)입니다.
   const [nav, dispatch] = useReducer(navReducer, start);
 
   // 고른 언어(= UI 언어)입니다. 첫 렌더에 저장값을 읽고, Provider가 이 언어의 문구표를 내립니다.
@@ -92,10 +92,8 @@ export function AppSession({
   }, []);
 
   // 카탈로그 구획은 카탈로그가 바뀔 때만 새로 만듭니다 — 진행은 섞지 않고 렌더에서 파생합니다.
-  const catalogSections = useMemo(
-    () => catalogMapSectionsOf(episodeContent.catalog),
-    [episodeContent.catalog],
-  );
+  const { catalog: catalogEntries } = episodeContent;
+  const catalogSections = useMemo(() => catalogMapSectionsOf(catalogEntries), [catalogEntries]);
   // **진행의 진실의 출처입니다** — `Nav`에 적지 않고(ADR-0007 D3) 서버에 저장합니다(ADR-0035). 트로피의 완료 규칙은 구획에서 받습니다.
   // 시험 계정 표시를 먼저 맞춥니다 — 아래 진행 · 티켓 · 맵 판정이 같은 렌더에서 읽습니다(ADR-0085).
   const testerAccess = useTesterAccess(analyticsUser);
@@ -175,12 +173,13 @@ export function AppSession({
     listenPace,
     setListenPace,
     downloadControls,
-    catalogIds: () => episodeContent.catalog.map((entry) => entry.id),
+    downloadCatalog: () => downloadCatalogOf(episodeContent, catalogSections, catalogProgress),
   });
   const screenNow = currentScreen(nav);
   // 앱 사용 중 받아진 바뀐 판은 여정맵 루트(열린 에피소드 화면 · 겹침 없음)에서 바로 바꿔 끼웁니다(ADR-0078 D4 정정).
   const atMapRoot = nav.entry.length === 0 && screenNow.name === "journey-map" && !screenLayerOpen;
-  const downloadGate = useDownloadGate(downloadControls, catalog, atMapRoot, progress);
+  const gateNav = downloadSettingsNav(dispatch);
+  const downloadGate = useDownloadGate(downloadControls, catalog, atMapRoot, progress, gateNav);
   const wiring = withDownloadGate(
     withLearningTickets(screens, tickets, progress, catalogSections),
     downloadGate,
