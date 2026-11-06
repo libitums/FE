@@ -81,6 +81,13 @@ export function LearningShell({
     copy,
   );
   const verdict = panel === null ? verdictProp : undefined;
+  // 판이 배지(AnswerVerdict)를 대신하면 배지가 내던 판정음 · 진동도 같이 사라졌습니다 — 그 자리에서 셸이 한 번 냅니다.
+  // 카드 안 배지로 판정하는 활동(`result`)은 자기 배지가 그대로 소리를 내므로 여기 걸리지 않습니다.
+  const replacedVerdict = panel === null ? undefined : verdictProp;
+  useEffect(() => {
+    if (replacedVerdict === undefined) return;
+    playSound(replacedVerdict === "correct" ? "correct_answer" : "wrong_answer");
+  }, [replacedVerdict]);
   const feedback = panel ?? feedbackProp;
   const advance = panel === null ? advanceProp : undefined;
   const onAction =
