@@ -84,7 +84,7 @@ public final class MainActivity extends Activity {
         getWindow().getDecorView());
     audioPlayback = new AudioPlaybackController(this);
     builder.registerModule("AudioPlaybackModule", AudioPlaybackModule.class, audioPlayback);
-    soundEffects = new SoundEffectsController(this);
+    soundEffects = new SoundEffectsController(this, getWindow().getDecorView());
     builder.registerModule("SoundEffectsModule", SoundEffectsModule.class, soundEffects);
     speechRecognition = new SpeechRecognitionController(this);
     builder.registerModule("SpeechRecognitionModule", SpeechRecognitionModule.class,

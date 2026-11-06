@@ -35,4 +35,29 @@ final class SoundEffectsModuleTests: XCTestCase {
     XCTAssertFalse(correct.isPlaying)
     XCTAssertFalse(button.isPlaying)
   }
+
+  func testHapticKindsMapToNotificationFeedbackTypes() {
+    XCTAssertEqual(HapticFeedbackKind.of("success")?.feedbackType, .success)
+    XCTAssertEqual(HapticFeedbackKind.of("error")?.feedbackType, .error)
+    XCTAssertEqual(HapticFeedbackKind.allCases.count, 2)
+  }
+
+  func testUnknownHapticKindsAreNil() {
+    XCTAssertNil(HapticFeedbackKind.of(nil))
+    XCTAssertNil(HapticFeedbackKind.of(""))
+    XCTAssertNil(HapticFeedbackKind.of("SUCCESS"))
+    XCTAssertNil(HapticFeedbackKind.of("confirm"))
+  }
+
+  func testModuleExposesHapticNextToPlayAndStopRing() {
+    XCTAssertEqual(Set(SoundEffectsModule.methodLookup.keys), ["play", "stopRing", "haptic"])
+    XCTAssertEqual(SoundEffectsModule.name, "SoundEffectsModule")
+  }
+
+  func testHapticNeverThrowsForAnyInput() {
+    let module = SoundEffectsModule()
+    module.haptic("bogus")
+    module.haptic(nil)
+    module.haptic("success")
+  }
 }

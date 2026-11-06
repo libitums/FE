@@ -5,9 +5,11 @@ import android.content.res.AssetFileDescriptor;
 import android.media.AudioAttributes;
 import android.media.MediaPlayer;
 import android.media.SoundPool;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
+import android.view.View;
 import java.io.IOException;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -16,13 +18,17 @@ import java.util.Map;
 /**
  * Plays the host sound effects: short ones through a SoundPool, the looping bell through a
  * MediaPlayer. Decisions come from {@link SoundEffectsSession}; this class only executes them.
- * It never requests audio focus, so it cannot pause the lesson speech that holds it.
+ * It never requests audio focus, so it cannot pause the lesson speech that holds it. It also
+ * fires the verdict haptic through the activity's decor view, so the user's touch-feedback
+ * setting is honoured by the platform and no VIBRATE permission is needed.
  */
 final class SoundEffectsController {
   private static final String TAG = "SoundEffects";
   private static final int SHORT_EFFECT_COUNT = 7;
 
   private final Context context;
+  // Activity-bound (decor view): cleared in release() so the module param never retains the Activity.
+  private View hapticView;
   private final Handler mainHandler = new Handler(Looper.getMainLooper());
   private final SoundEffectsSession session = new SoundEffectsSession();
   private final AudioAttributes attributes;
@@ -35,7 +41,13 @@ final class SoundEffectsController {
   private boolean released;
 
   SoundEffectsController(Context context) {
+    this(context, null);
+  }
+
+  /** {@code hapticView} may be null; then {@link #haptic(String)} is a no-op. */
+  SoundEffectsController(Context context, View hapticView) {
     this.context = context.getApplicationContext();
+    this.hapticView = hapticView;
     attributes = new AudioAttributes.Builder()
         .setUsage(AudioAttributes.USAGE_MEDIA)
         .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
@@ -76,11 +88,22 @@ final class SoundEffectsController {
     });
   }
 
+  /** Unknown kinds are ignored. Only the platform constant, no flags, result discarded. */
+  void haptic(String kind) {
+    int constant = HapticFeedbackConstant.of(kind, Build.VERSION.SDK_INT);
+    if (constant == HapticFeedbackConstant.NONE) return;
+    onMain(() -> {
+      if (released || hapticView == null) return;
+      hapticView.performHapticFeedback(constant);
+    });
+  }
+
   void release() {
     onMain(() -> {
       if (released) return;
       stopEverything();
       released = true;
+      hapticView = null;
       if (soundPool != null) {
         soundPool.release();
         soundPool = null;

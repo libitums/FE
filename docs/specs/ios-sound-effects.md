@@ -10,15 +10,15 @@
 
 ## 계약
 
-| 자산 | 사건 |
-| --- | --- |
-| `button` | 온보딩 다음·뒤로·시작, 하단 탭, 여정 레슨 시작, 문화 퀴즈 시작, 일반 학습의 단어 칩 넣기·빼기와 진행·나가기·듣기·녹음·건너뛰기 버튼 |
-| `correct_answer`, `wrong_answer` | 정오 판정 표시 |
-| `lesson_complete` | 활동의 모든 문항 완료 안내 |
-| `pass_lesson`, `failed_lesson` | 레슨 결과 화면의 통과(퍼펙트 포함)·미통과 |
-| `ring_bell`, `accept_call` | 수신 화면과 수락 |
+| 자산 | 사건 | 진동(2026-11-06) |
+| --- | --- | --- |
+| `button` | 온보딩 다음·뒤로·시작, 하단 탭, 여정 레슨 시작, 문화 퀴즈 시작, 일반 학습의 단어 칩 넣기·빼기와 진행·나가기·듣기·녹음·건너뛰기 버튼 | 없음 |
+| `correct_answer`, `wrong_answer` | 정오 판정 표시 | `success` · `error` |
+| `lesson_complete` | 활동의 모든 문항 완료 안내 | 없음 — 바로 뒤 결과 화면이 진동한다 |
+| `pass_lesson`, `failed_lesson` | 레슨 결과 화면의 통과(퍼펙트 포함)·미통과 | `success` · `error` |
+| `ring_bell`, `accept_call` | 수신 화면과 수락 | 없음 |
 
-Lynx의 `SoundEffectsModule`은 `play(id)`와 `stopRing()`만 제공한다. 식별자는 위 표의 값만 허용한다. `AudioPlaybackModule`의 API와 세션 설정은 바꾸지 않는다. 일반 버튼음은 즉시 판정음이 뒤따르는 확인·보기 탭에는 붙이지 않는다.
+Lynx의 `SoundEffectsModule`은 `play(id)` · `stopRing()` · `haptic(kind)` 셋을 제공한다(`haptic`은 2026-11-06에 더해졌다 — 아래 [진동](#진동-2026-11-06)). 식별자는 위 표의 값만 허용한다. `AudioPlaybackModule`의 API와 세션 설정은 바꾸지 않는다. 일반 버튼음은 즉시 판정음이 뒤따르는 확인·보기 탭에는 붙이지 않는다.
 
 ## 테스트 계획
 
@@ -64,9 +64,12 @@ Android 호스트에도 같은 이름의 `SoundEffectsModule`이 있다. JS(`lib
 
 | 항목 | iOS (`apps/ios/Host/SoundEffectsModule.swift`) | Android (`apps/android/app/src/main/java/com/libitum/host/SoundEffects*.java`) |
 | --- | --- | --- |
-| 메서드 | `play(id)` · `stopRing()` — 반환 · 콜백 없음 | 같음 |
+| 메서드 | `play(id)` · `stopRing()` · `haptic(kind)` — 반환 · 콜백 없음 | 같음 |
 | 허용 id | `SoundEffectAsset` 8개 | `SoundEffectAsset` 8개 — 같은 문자열. 정확히 같을 때만 받는다 |
 | 모르는 id | 무시, 던지지 않음 | 같음(로그도 없음) |
+| `haptic(kind)` | `HapticFeedbackKind.of(kind)` → 모듈이 든 `UINotificationFeedbackGenerator` 하나(생성 때 · 매 진동 뒤 `prepare()`)의 `notificationOccurred(.success` · `.error)`, 메인 큐. 「시스템 햅틱」 설정은 UIKit이 따른다 | `HapticFeedbackConstant.of(kind, SDK_INT)` → decorView `performHapticFeedback` 1인자(API 30+ `CONFIRM` · `REJECT`, 26 ~ 29 `KEYBOARD_TAP` · `LONG_PRESS`), 메인 스레드. 「터치 피드백」 설정을 따른다 — 무시 플래그 없음 |
+| 모르는 kind · null | 무시, 던지지 않음 | 같음(`NONE`, 로그 없음) |
+| 햅틱 없는 기기 | iPad · 시뮬레이터 — 무동작 | 에뮬레이터 — 무동작. `hapticView`가 null이면 무동작 |
 | 음량 | 자산별 상수 | 같은 값(`button` 0.25 · 판정 0.5 · 레슨 결과 0.55 · `ring_bell` 0.35 · `accept_call` 0.4) |
 | 플레이어 | 효과음마다 `AVAudioPlayer` | 짧은 효과음 7개는 `SoundPool`(동시 7), `ring_bell`은 `MediaPlayer` |
 | 미리 읽기 | 모듈 생성 때 8개 | `MainActivity.onCreate`에서 8개 로드 시작. 로드 전 요청은 로드가 끝날 때 한 번 재생 |
@@ -105,7 +108,17 @@ Android 호스트에도 같은 이름의 `SoundEffectsModule`이 있다. JS(`lib
 
 ### Android 검증
 
-- JUnit `SoundEffectAssetTest`(id · 경로 · 음량 · 반복 · 원본 파일 8개와 1:1) · `SoundEffectsSessionTest`(로드 전 요청 · 벨 상태 · 멈춤).
+- JUnit `SoundEffectAssetTest`(id · 경로 · 음량 · 반복 · 원본 파일 8개와 1:1) · `SoundEffectsSessionTest`(로드 전 요청 · 벨 상태 · 멈춤) · `HapticFeedbackConstantTest`(kind + SDK → 상수 표 전체, 경계 29/30, 모르는 값 `NONE`).
 - 계측 `SoundEffectsModuleTest` 5건: 8개 자산 열기 · 준비, 모르는 id와 무동작 `stopRing`, 벨 시작 한 번과 `stopRing`, 짧은 효과음이 벨을 건드리지 않고 `stopAll`이 멈춤.
 - 에뮬레이터: AAB 분할 설치에서 8개 id 전부 플레이어 시작 기록과 짝(E2 · E3 · E4), 벨 21초 반복 뒤 받기에 `paused`, 홈 1.0초 뒤 `paused`(E8).
   청음은 하지 않았다.
+
+## 진동 (2026-11-06)
+
+결정 · 버린 대안 · 접근성 · 기기 확인 상태는 [ADR-0109](../adr/0109-haptic-feedback.md)가 진다. 여기는 계약 요약만 둔다.
+
+- **정책은 JS 하나다.** `lib/sound-effects.ts`의 `hapticFor(id)`가 효과음 id를 `"success"` · `"error"` · `null`로 가른다(위 계약표의 「진동」 열). 판정 넷만 진동하고 진행 · 조작은 하지 않는다. 호스트는 두 문자열만 안다.
+- **결선.** `playSound(id)`는 `play(id)`를 먼저 보내고, 정책이 `null`이 아니고 모듈에 `haptic`이 함수로 있을 때만 `haptic(kind)`를 1회 보낸다. 두 호출은 독립 `try`라 한쪽 실패가 다른 쪽을 막지 않는다. `haptic`이 없는 옛 호스트 · 모듈 없는 환경(Explorer · 테스트)에서는 소리만 나거나 무동작이다. `stopRing()`은 진동과 무관하다.
+- **호스트.** 위 [iOS 대조표](#ios-대조표)의 `haptic(kind)` 행. 플랫폼 기본 상수만 쓰고 사용자 정의 파형 · `Vibrator` · `CoreHaptics`는 쓰지 않는다. 권한 없음 — `AndroidManifest.xml`에 `VIBRATE`를 더하지 않는다. 시스템 설정(iOS 「시스템 햅틱」 · Android 「터치 피드백」)을 플랫폼 API가 따르므로 앱이 따로 읽지 않고, 앱 안 토글도 없다.
+- **알려진 한계.** Android 26 ~ 29의 `CONTEXT_CLICK` · `LONG_PRESS`는 성공 · 오류를 세기로만 가른다. 진동은 보조 채널(WCAG 1.3.3)이라 받아들인다.
+- **검증.** JS unit(`sound-effects.unit.test.ts` — 정책 표 8행 · 결선 순서 · 옛 호스트 · 던짐) · integration(문장 만들기 흐름에서 `haptic:success`가 판정 직후에 정확히 1개) · iOS HostTests(`HapticFeedbackKind` 분류 · `methodLookup` 키 셋 · 시뮬레이터에서 던지지 않음) · Android JUnit(위 「Android 검증」). 실제 진동 · 설정 끔 · 옛 빌드 덮어 설치는 [기기 확인](../e2e/haptic-feedback.md)이 잰다 — 2026-11-06 기준 실기 미실행.
