@@ -117,6 +117,26 @@ final class AirbridgeEventsTests: XCTestCase {
     XCTAssertEqual(AirbridgeEvents.trackingLinkCustomDomains, ["go.k-duru.com"])
   }
 
+  // N-I15(ADR-0079 적용 기록 2026-11-06): 요청은 SDK가 섰고 아직 정하지 않았을 때만, 앱이 활성이면 지금, 아니면
+  // 활성화를 기다린다. 비활성 때 보낸 요청을 iOS가 대화상자 없이 버리는 것(심사 거절 2.1)을 막는 판정이다.
+  func testNI15TrackingPromptStepDecision() {
+    typealias Step = AirbridgeEvents.TrackingPromptStep
+    XCTAssertEqual(
+      AirbridgeEvents.trackingPromptStep(isStarted: true, isUndetermined: true, isActive: true), Step.request)
+    XCTAssertEqual(
+      AirbridgeEvents.trackingPromptStep(isStarted: true, isUndetermined: true, isActive: false),
+      Step.waitForActive)
+    for isActive in [true, false] {
+      XCTAssertEqual(
+        AirbridgeEvents.trackingPromptStep(isStarted: true, isUndetermined: false, isActive: isActive),
+        Step.skip)
+      XCTAssertEqual(
+        AirbridgeEvents.trackingPromptStep(isStarted: false, isUndetermined: true, isActive: isActive),
+        Step.skip)
+    }
+    XCTAssertEqual(AirbridgeEvents.trackingPromptMaxRetries, 2)
+  }
+
   // N-I9(ADR-0079): 추적 허용 문구가 번들에 있다(없으면 요청 순간 앱이 죽는다).
   func testNI9TrackingUsageDescriptionIsInTheBundle() {
     let text = Bundle.main.object(forInfoDictionaryKey: "NSUserTrackingUsageDescription") as? String
