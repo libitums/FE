@@ -12,7 +12,7 @@ final class HapticPattern {
   // "no" (the same split as iOS .success / .error).
   private static final HapticPattern SUCCESS =
       new HapticPattern(new long[] {0, 55, 70, 55}, new int[] {0, 255, 0, 255});
-  private static final HapticPattern ERROR = new HapticPattern(new long[] {0, 280}, new int[] {0, 255});
+  private static final HapticPattern ERROR = new HapticPattern(new long[] {0, 220}, new int[] {0, 255});
 
   final long[] timings;
   final int[] amplitudes;
