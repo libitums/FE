@@ -42,6 +42,9 @@
 		<string>fonts/Jost.ttf</string>
 		<!-- UI 언어가 베트남어일 때만 쓰는 강조 글꼴(ADR-0091 D5). Jost에 베트남어 글자가 없다. -->
 		<string>fonts/LeagueSpartan.ttf</string>
+		<!-- 본문 글꼴 Duru Sans(Pretendard JP 서브셋)와 로마자 기울임 글꼴 Duru Roman(Inter Italic 서브셋) — ADR-0107. -->
+		<string>fonts/DuruSans.ttf</string>
+		<string>fonts/DuruRoman.ttf</string>
 	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
