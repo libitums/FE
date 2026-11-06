@@ -2,6 +2,7 @@ import { expect, test } from "vitest";
 import { render, screen } from "@lynx-js/react/testing-library";
 
 import { SettingsScreen } from "./SettingsScreen";
+import { initialSessionOptions } from "../../lib/session-options";
 import type { AccountDeletionResult } from "../../lib/account.contract";
 import type { AppVersion } from "../../lib/app-version";
 import { UiCopyContext } from "../../lib/ui-copy";
@@ -12,6 +13,8 @@ import { markedUiCopy } from "../../lib/ui-copy.test-support";
 
 const baseProps = {
   onSelectNavTarget: () => undefined,
+  sessionOptions: initialSessionOptions,
+  onToggleSessionOption: () => undefined,
   learnerProfileSummary: "Not set",
   languageSummary: "Intermediate English",
   onSignOut: () => undefined,

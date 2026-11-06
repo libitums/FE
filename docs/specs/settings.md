@@ -49,6 +49,19 @@
 > 자식**으로 `settings-screen-version`(`Version 1.0 (11)`, `copy.settings.version(name, build)`)이 서고, `null`이면 줄이 없다. 조작 단위가
 > 아니다(탭 없음 · button 아님). §0의 1 「이동 항목 → 토글」 순서는 그대로이고 그 뒤에 계정 동작 둘 → 버전 줄이 온다.
 
+> **개정 (2026-11-06, 보기 로마자).** 결정과 근거는 [ADR-0108](../adr/0108-choice-romanization.md)이 진다. **지금 화면 기준으로 정정한다** —
+> 세션 토글 둘(`Auto-play` · `Show transcript`)은 PR #185 뒤로 화면에 서지 않았고 이 문서가 그것을 적지 않았다. 지금 설정 목록은 위에서부터
+> **`Learning` 묶음(토글 하나)** → 이동 항목 묶음 → `Account actions` → (오류 줄) → 버전 줄이다. `Learning`의 토글은 **`Romanization on choices`**
+> (`show-choice-romanization` — 한국어 보기의 한글 위 로마자 줄, **기본 켬**) 하나이고 설명 줄 `Show how each Korean answer is read, in small text above it.`가
+> 붙는다(다섯 언어 동시, `copy.settings.sessionOptionDescription`). 보이는 묶음 제목은 없고 묶음 이름 `Learning`은 낭독에만 실린다.
+> 셀 낭독은 `Romanization on choices, Show how each Korean answer is read, in small text above it., on` — **상태 낱말 `on`/`off`는 여전히 ui-lynx 영어
+> 리터럴이다**(위 2026-09-29 개정의 ⚠, ADR-0108 「대가」 3 · CR-A2). 바뀐 계약: `SettingsScreenProps`에 필수 prop 둘(`sessionOptions` ·
+> `onToggleSessionOption(key, value)` — `value`는 바뀐 뒤 값), 설정에 서는 키는 `settingsSessionOptionKeys = ["show-choice-romanization"]`,
+> test-id `ui-lynx-settings-group-item-show-choice-romanization`.
+> **영속은 그 키 하나다** — `libitum.session-option.show-choice-romanization`(`"on"` / `"off"`, 기기 범위, 로그아웃 · 삭제에 남음). 그래서 §0의 1 · 5 · 6,
+> §2의 표(토글 둘), §4의 「저장하지 않는다」는 **자동 재생 · 대본 표시에 한해** 참이고, 그 둘은 지금 설정에 서지 않는다. 이벤트는 §6 표의
+> `session_option_changed`가 새 `option` 값을 받는다(새 이벤트 0). 기기 절차는 [보기 로마자 e2e](../e2e/choice-romanization.md)다.
+
 ## 0. 고정 범위와 불변식
 
 1. 설정 탭 루트에 **이동 항목 둘**(사용자 프로필 · 개인정보 보호 및 약관) 다음 **세션 토글 둘**
@@ -266,7 +279,7 @@ App (app/App.tsx)                                        ← 유일한 결선 �
 | `language_settings_opened` ⟨2026-11-03⟩ | 없음 | `Language` tap → `push` 직전 1회([ADR-0093](../adr/0093-indonesian-localization.md) D6) | 언어를 바꾼 것 자체는 세지 않는다 |
 | `download_settings_opened` ⟨2026-11-04⟩ | 없음 | `Downloads` tap → `push` 직전 1회([ADR-0095](../adr/0095-content-delivery-and-data-policy.md) D8) | 정책을 바꾼 것 자체는 세지 않는다 |
 | `terms_opened` | 없음 | `개인정보 보호 및 약관` tap → `push` 직전 1회 | 그 밖 |
-| `session_option_changed` | `option`(`auto-play-audio` \| `show-transcript`) · `value`(boolean) | 토글 tap → `setSessionOptions` **직전** 1회. `value`는 **바뀐 뒤** 값 | 설정 화면을 열거나 떠날 때 · 듣기 화면이 값을 읽을 때 |
+| `session_option_changed` | `option`(`auto-play-audio` \| `show-transcript` \| ⟨2026-11-06⟩ `show-choice-romanization`) · `value`(boolean) | 토글 tap → `setSessionOptions` **직전** 1회. `value`는 **바뀐 뒤** 값. ⟨2026-11-06⟩ 지금 내는 것은 `show-choice-romanization` 토글뿐이다 — tap → 상태 · 저장 **직전** 1회([ADR-0108](../adr/0108-choice-romanization.md)) | 설정 화면을 열거나 떠날 때 · 듣기 · 단어 선택 화면이 값을 읽을 때 · 앱이 켜지며 저장값을 읽을 때 |
 
 | 지표 | 계산 |
 |---|---|

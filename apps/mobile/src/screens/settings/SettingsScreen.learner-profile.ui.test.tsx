@@ -2,6 +2,7 @@ import { afterEach, expect, test, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { SettingsScreen } from "./SettingsScreen";
+import { initialSessionOptions } from "../../lib/session-options";
 import type { AccountDeletionResult } from "../../lib/account.contract";
 
 // `ui` 계층: 설정 목록의 「레슨에 쓰는 이름 · 나라」 줄입니다(프로필 줄 바로 다음). 줄의 제목은 사용자
@@ -16,6 +17,8 @@ function renderSettings(summary: string, onSelect: (target: string) => void = ()
     learnerProfileSummary: summary,
     languageSummary: "Intermediate English",
     appVersion: null,
+    sessionOptions: initialSessionOptions,
+    onToggleSessionOption: () => undefined,
     onSignOut: () => undefined,
     onDeleteAccount: () => new Promise<AccountDeletionResult>(() => undefined),
     onLayerChange: () => undefined,
@@ -62,6 +65,8 @@ test("[US-1b] 요약이 바뀌면 설명이 따라 바뀐다(기기에만 저장
       learnerProfileSummary={pending}
       languageSummary="Intermediate English"
       appVersion={null}
+      sessionOptions={initialSessionOptions}
+      onToggleSessionOption={() => undefined}
       onSignOut={() => undefined}
       onDeleteAccount={() => new Promise<AccountDeletionResult>(() => undefined)}
       onLayerChange={() => undefined}

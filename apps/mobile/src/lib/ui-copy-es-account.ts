@@ -64,6 +64,11 @@ export const settingsEs: SettingsCopy = {
   sessionOption: {
     "auto-play-audio": "Reproducción automática",
     "show-transcript": "Ver transcripción",
+    "show-choice-romanization": "Romanización en las opciones",
+  },
+  sessionOptionDescription: {
+    "show-choice-romanization":
+      "Muestra cómo se lee cada respuesta en coreano, en letra pequeña encima.",
   },
   optionState: { on: "activado", off: "desactivado" },
   action: { "sign-out": "Cerrar sesión", "delete-account": "Eliminar cuenta" },

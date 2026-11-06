@@ -1,17 +1,23 @@
 import { describe, expect, it } from "vitest";
 
-import type { SessionOptionKey } from "../../lib/session-options";
+import { initialSessionOptions, type SessionOptionKey } from "../../lib/session-options";
 import {
   sessionOptionChangedEvent,
   settingsNavLabel,
   settingsNavOpenedEvent,
   settingsNavTargets,
+  settingsSessionOptionKeys,
+  settingsSessionOptionRows,
 } from "./settings";
 import type { SettingsNavTarget } from "./settings.contract";
 import { uiCopyEn } from "../../lib/ui-copy-en";
 
 const allNavTargets: readonly SettingsNavTarget[] = ["profile", "privacy-policy", "terms-of-use"];
-const allSessionOptionKeys: readonly SessionOptionKey[] = ["auto-play-audio", "show-transcript"];
+const allSessionOptionKeys: readonly SessionOptionKey[] = [
+  "auto-play-audio",
+  "show-transcript",
+  "show-choice-romanization",
+];
 
 describe("settingsNavTargets", () => {
   it("SN1. 길이가 8이고 순서가 [profile, learner-profile, language, download, notifications, feedback, privacy-policy, terms-of-use]다", () => {
@@ -57,6 +63,38 @@ describe("settingsNavOpenedEvent", () => {
   });
 });
 
+describe("settingsSessionOptionRows", () => {
+  it("SN8. 설정에 오르는 세션 옵션 키는 show-choice-romanization 하나다", () => {
+    expect(settingsSessionOptionKeys).toEqual(["show-choice-romanization"]);
+  });
+
+  it("SN8. 행은 { key, title, description, checked }이고 초기값에서 checked: true다", () => {
+    expect(settingsSessionOptionRows(initialSessionOptions, uiCopyEn)).toEqual([
+      {
+        key: "show-choice-romanization",
+        title: "Romanization on choices",
+        description: "Show how each Korean answer is read, in small text above it.",
+        checked: true,
+      },
+    ]);
+  });
+
+  it("SN8. 옵션이 꺼져 있으면 checked: false다 — 다른 키 값은 행에 영향이 없다", () => {
+    const off = { ...initialSessionOptions, "show-choice-romanization": false };
+
+    const rows = settingsSessionOptionRows(off, uiCopyEn);
+
+    expect(rows).toHaveLength(1);
+    expect(rows[0]?.checked).toBe(false);
+    expect(
+      settingsSessionOptionRows(
+        { ...off, "auto-play-audio": false, "show-transcript": true },
+        uiCopyEn,
+      ),
+    ).toEqual(rows);
+  });
+});
+
 describe("sessionOptionChangedEvent", () => {
   it("SN5. 네 조합이 { name: session_option_changed, option: key, value }와 toEqual이다", () => {
     for (const key of allSessionOptionKeys) {
@@ -68,6 +106,19 @@ describe("sessionOptionChangedEvent", () => {
         });
       }
     }
+  });
+
+  it("SN9. show-choice-romanization 끔 · 켬이 { name, option, value }와 toEqual이다", () => {
+    expect(sessionOptionChangedEvent("show-choice-romanization", false)).toEqual({
+      name: "session_option_changed",
+      option: "show-choice-romanization",
+      value: false,
+    });
+    expect(sessionOptionChangedEvent("show-choice-romanization", true)).toEqual({
+      name: "session_option_changed",
+      option: "show-choice-romanization",
+      value: true,
+    });
   });
 
   it("SN6. (가드) payload 키가 정확히 name·option·value 셋이다 — PII 없음", () => {

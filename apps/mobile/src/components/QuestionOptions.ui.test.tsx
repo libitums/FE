@@ -133,3 +133,37 @@ test("QOU4. judged collapsed는 고른 보기 하나만 남긴다", () => {
   expect(screen.queryByTestId(itemId(1))).not.toBeInTheDocument();
   expect(screen.queryByTestId(itemId(3))).not.toBeInTheDocument();
 });
+
+test("QOU5. 래퍼 클래스가 밀도를 따르고 로마자 줄은 로마자가 있는 보기에만 선다", () => {
+  const regular = render(
+    <QuestionOptions
+      {...props({
+        options: [
+          { text: "안녕하세요", romanization: "annyeonghaseyo" },
+          { text: "감사합니다" },
+          { text: "미안합니다", romanization: "mianhamnida" },
+        ],
+      })}
+    />,
+  );
+
+  const wrapper = screen.getByTestId("question-options");
+  expect(wrapper).toHaveClass("question-options");
+  expect(wrapper).toHaveClass("question-options-regular");
+  expect(wrapper).not.toHaveClass("question-options-compact");
+  expect(screen.getByTestId("ui-lynx-option-selector-romanization-choice-0")).toHaveTextContent(
+    "annyeonghaseyo",
+  );
+  expect(screen.queryByTestId("ui-lynx-option-selector-romanization-choice-1")).toBeNull();
+  expect(screen.getByTestId("ui-lynx-option-selector-romanization-choice-2")).toHaveTextContent(
+    "mianhamnida",
+  );
+  regular.unmount();
+
+  render(<QuestionOptions {...props({ density: "compact" })} />);
+
+  const compact = screen.getByTestId("question-options");
+  expect(compact).toHaveClass("question-options");
+  expect(compact).toHaveClass("question-options-compact");
+  expect(compact).not.toHaveClass("question-options-regular");
+});

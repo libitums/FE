@@ -5,7 +5,7 @@
 // 실물입니다. 이 헬퍼를 쓰는 파일은 `../lib/episode-bundled`를 `withItemAudioIds`로 갈아 끼웁니다.
 
 import { vi } from "vitest";
-import { render } from "@lynx-js/react/testing-library";
+import { cleanup, render } from "@lynx-js/react/testing-library";
 
 import { App } from "../App";
 import { catalogLessonPlanOf } from "../catalog-lesson-plan";
@@ -23,6 +23,7 @@ import { allLearningItemGuidesSeenValue } from "../../lib/learning-item-guide.te
 import { fillPlaceholders } from "../../lib/placeholder-fill";
 import type { FillScript } from "../../lib/placeholder-fill";
 import type { EpisodeIntroEvent } from "../../screens/episode-intro/episode-intro.contract";
+import type { SettingsEventSink } from "../../screens/settings/settings.contract";
 
 const supabaseUrl = "https://test.supabase.co";
 const contentBase = `${supabaseUrl}/storage/v1/object/public/content/`;
@@ -50,6 +51,10 @@ export type AudioHostKind = "modern" | "legacy" | "none";
 export type ItemAudioBooted = {
   readonly events: EpisodeIntroEvent[];
   readonly host: HostSpies;
+  /** 기기 저장소 대역의 실제 내용입니다 — 저장 키를 읽고 쓰는 테스트가 씁니다. */
+  readonly store: Map<string, string>;
+  /** 같은 저장소 · 대역으로 App을 지우고 다시 세웁니다(앱 재시작). */
+  readonly restart: () => Promise<void>;
 };
 
 export type ItemAudioBootOptions = {
@@ -61,6 +66,9 @@ export type ItemAudioBootOptions = {
   readonly heard?: (attempt: number) => string | null;
   /** 받아 둔 그림 파일의 버킷 상대 경로입니다(예: 상대 아바타). 없으면 그림 파일은 하나도 없습니다. */
   readonly imageFiles?: readonly string[];
+  /** 부팅 전에 기기 저장소에 심는 값입니다(예: 저장된 설정). */
+  readonly seed?: Readonly<Record<string, string>>;
+  readonly settingsEventSink?: SettingsEventSink;
 };
 
 const refreshedBody = JSON.stringify({
@@ -88,6 +96,7 @@ export async function bootItemAudioApp(options: ItemAudioBootOptions): Promise<I
     serializeAuthSession({ accessToken: "a", refreshToken: "r", expiresAt: 4_102_444_800_000 }),
   );
   store.set(learningItemGuideSeenStorageKey, allLearningItemGuidesSeenValue);
+  for (const [key, value] of Object.entries(options.seed ?? {})) store.set(key, value);
   const host: HostSpies = {
     play: vi.fn<(source: string, done: Done) => void>(),
     playAtRate: vi.fn<(source: string, rate: number, done: Done) => void>(),
@@ -180,14 +189,25 @@ export async function bootItemAudioApp(options: ItemAudioBootOptions): Promise<I
   });
 
   const events: EpisodeIntroEvent[] = [];
-  vi.useFakeTimers();
-  render(
-    <App progressSeed={legacyPassedSeed} episodeIntroEventSink={(event) => events.push(event)} />,
-  );
-  await passSplash();
-  vi.useRealTimers();
-  await flush();
-  return { events, host };
+  const mount = async (): Promise<void> => {
+    vi.useFakeTimers();
+    render(
+      <App
+        progressSeed={legacyPassedSeed}
+        episodeIntroEventSink={(event) => events.push(event)}
+        settingsEventSink={options.settingsEventSink ?? null}
+      />,
+    );
+    await passSplash();
+    vi.useRealTimers();
+    await flush();
+  };
+  await mount();
+  const restart = async (): Promise<void> => {
+    cleanup();
+    await mount();
+  };
+  return { events, host, store, restart };
 }
 
 // ---------------------------------------------------------------- 계획 (정답의 출처)

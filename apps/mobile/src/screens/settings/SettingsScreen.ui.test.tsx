@@ -2,6 +2,7 @@ import { afterEach, expect, test, vi } from "vitest";
 import { act, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { SettingsScreen } from "./SettingsScreen";
+import { initialSessionOptions } from "../../lib/session-options";
 import { settingsNavTargets } from "./settings";
 import type { AccountDeletionResult } from "../../lib/account.contract";
 import { UiCopyContext } from "../../lib/ui-copy";
@@ -22,6 +23,8 @@ const accountNoopProps = {
 };
 const defaultSettingsScreenProps = {
   onSelectNavTarget: () => undefined,
+  sessionOptions: initialSessionOptions,
+  onToggleSessionOption: () => undefined,
   ...accountNoopProps,
 };
 
@@ -144,12 +147,13 @@ function settingsCell(id: string): HTMLElement {
   );
 }
 
-test("[ST2] 목록 상자 안에 계정과 계정 동작 그룹만 표시한다", () => {
+test("[ST2] 목록 상자 안에 학습, 계정, 계정 동작 그룹을 이 순서로 표시한다", () => {
   render(<SettingsScreen {...defaultSettingsScreenProps} />);
 
   const list = screen.getByTestId("settings-screen-list");
   const groups = within(list).getAllByTestId("ui-lynx-settings-group");
   expect(groups.map((group) => group.getAttribute("accessibility-label"))).toEqual([
+    "Learning",
     "Account",
     "Account actions",
   ]);
@@ -157,6 +161,7 @@ test("[ST2] 목록 상자 안에 계정과 계정 동작 그룹만 표시한다"
     list.querySelectorAll('[data-testid^="ui-lynx-settings-group-item-"]'),
   ).map((el) => el.getAttribute("data-testid"));
   expect(testids).toEqual([
+    "ui-lynx-settings-group-item-show-choice-romanization",
     ...settingsNavTargets.map((target) => `ui-lynx-settings-group-item-${target}`),
     "ui-lynx-settings-group-item-sign-out",
     "ui-lynx-settings-group-item-delete-account",
@@ -218,7 +223,7 @@ test("[AC1u-E] 이동 항목 여덟이 영어 이름으로 낭독된다", () => 
 test("[AC1u-M] 제목 · 묶음 이름 · 이동 이름이 문구표에서 온다", () => {
   const { container } = render(
     <UiCopyContext.Provider value={markedUiCopy}>
-      <SettingsScreen onSelectNavTarget={() => undefined} {...accountNoopProps} />
+      <SettingsScreen {...defaultSettingsScreenProps} />
     </UiCopyContext.Provider>,
   );
 
@@ -227,6 +232,7 @@ test("[AC1u-M] 제목 · 묶음 이름 · 이동 이름이 문구표에서 온�
     "ui-lynx-settings-group",
   );
   expect(groups.map((group) => group.getAttribute("accessibility-label"))).toEqual([
+    "⟦settings.group.learning⟧",
     "⟦settings.group.account⟧",
     "⟦settings.group.accountActions⟧",
   ]);
@@ -320,6 +326,8 @@ function renderAccount(options: { marked?: boolean } = {}) {
       learnerProfileSummary="Not set"
       languageSummary="Intermediate English"
       appVersion={null}
+      sessionOptions={initialSessionOptions}
+      onToggleSessionOption={() => undefined}
       onSignOut={onSignOut}
       onDeleteAccount={onDeleteAccount}
       onLayerChange={onLayerChange}
@@ -364,28 +372,28 @@ async function settleWith(gate: Deferred, result: AccountDeletionResult) {
   await flush();
 }
 
-test("[SU1-E] 두 번째 묶음이 Account actions이고 sign-out → delete-account 순서로 서며, 대화상자와 실패 문구는 없다", () => {
+test("[SU1-E] 세 번째 묶음이 Account actions이고 sign-out → delete-account 순서로 서며, 대화상자와 실패 문구는 없다", () => {
   renderAccount();
 
   const groups = within(screen.getByTestId("settings-screen-list")).getAllByTestId(
     "ui-lynx-settings-group",
   );
-  expect(groups).toHaveLength(2);
-  expect(groups[1]).toHaveAttribute("accessibility-label", "Account actions");
+  expect(groups).toHaveLength(3);
+  expect(groups[2]).toHaveAttribute("accessibility-label", "Account actions");
   const items = Array.from(
-    groups[1]!.querySelectorAll('[data-testid^="ui-lynx-settings-group-item-"]'),
+    groups[2]!.querySelectorAll('[data-testid^="ui-lynx-settings-group-item-"]'),
   ).map((el) => el.getAttribute("data-testid"));
   expect(items).toEqual([
     "ui-lynx-settings-group-item-sign-out",
     "ui-lynx-settings-group-item-delete-account",
   ]);
-  expect(within(groups[1]!).getByText("Sign out")).toBeInTheDocument();
-  expect(within(groups[1]!).getByText("Delete account")).toBeInTheDocument();
+  expect(within(groups[2]!).getByText("Sign out")).toBeInTheDocument();
+  expect(within(groups[2]!).getByText("Delete account")).toBeInTheDocument();
   expect(screen.queryByTestId("settings-screen-account-error")).not.toBeInTheDocument();
   expect(screen.queryByTestId("settings-screen-sign-out-dialog")).not.toBeInTheDocument();
   expect(screen.queryByTestId("settings-screen-delete-dialog")).not.toBeInTheDocument();
   expect(screen.queryByTestId("ui-lynx-dialog")).not.toBeInTheDocument();
-  expect(groups[0]).toHaveAttribute("accessibility-label", "Account");
+  expect(groups[1]).toHaveAttribute("accessibility-label", "Account");
 });
 
 test("[SU1-M] 묶음 이름과 두 행 제목이 문구표에서 온다", () => {
@@ -394,7 +402,7 @@ test("[SU1-M] 묶음 이름과 두 행 제목이 문구표에서 온다", () => 
   const groups = within(screen.getByTestId("settings-screen-list")).getAllByTestId(
     "ui-lynx-settings-group",
   );
-  expect(groups[1]).toHaveAttribute("accessibility-label", "⟦settings.group.accountActions⟧");
+  expect(groups[2]).toHaveAttribute("accessibility-label", "⟦settings.group.accountActions⟧");
   expect(screen.getByText("⟦settings.action.sign-out⟧")).toBeInTheDocument();
   expect(screen.getByText("⟦settings.action.delete-account⟧")).toBeInTheDocument();
 });

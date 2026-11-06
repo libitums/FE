@@ -40,8 +40,16 @@ const second: ListeningQuestion = withAudio(
   listenAudioOf("LISTEN_SELECT", "S2-02"),
 );
 
-const transcriptOff: SessionOptions = { "auto-play-audio": true, "show-transcript": false };
-const transcriptOn: SessionOptions = { "auto-play-audio": true, "show-transcript": true };
+const transcriptOff: SessionOptions = {
+  "auto-play-audio": true,
+  "show-transcript": false,
+  "show-choice-romanization": true,
+};
+const transcriptOn: SessionOptions = {
+  "auto-play-audio": true,
+  "show-transcript": true,
+  "show-choice-romanization": true,
+};
 
 const announceFn =
   vi.fn<(args: { content: string }, callback: (result: unknown) => void) => void>();

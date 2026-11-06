@@ -33,6 +33,8 @@ export type OptionSelectorOption = {
   readonly feedback?: OptionSelectorFeedbackResult;
   /** Label 아래 한 줄 뜻(FE 확장)입니다. 접근성 이름에 Label 뒤로 붙습니다. */
   readonly meaning?: string;
+  /** Label 위 한 줄 읽는 법(FE 확장, 2026-11-06). 접근성 이름에 Label 뒤 · 뜻 앞으로 붙습니다. */
+  readonly romanization?: string;
 };
 
 export type OptionSelectorProps = {
@@ -68,6 +70,8 @@ export type OptionSelectorItemContract = {
   readonly icon: string | null;
   /** Selected일 때만 Indicator를 그립니다. svg current-color는 CSS 변수를 읽지 못해 TS token 값을 넘깁니다. */
   readonly indicatorColor: string | null;
+  /** Label 위 로마자 줄입니다. 없으면 null입니다. */
+  readonly romanization: string | null;
   /** Label 아래 뜻 줄입니다. 없으면 null입니다. */
   readonly meaning: string | null;
   /** 확정 뒤 판정입니다. 없으면 null입니다. */
@@ -139,17 +143,20 @@ export function isSameOptionSelection(a: readonly string[], b: readonly string[]
 function accessibilityLabelOf(
   option: OptionSelectorOption,
   label: string,
-  meaning: string | null,
+  extras: { readonly romanization: string | null; readonly meaning: string | null },
   selected: boolean,
 ): string {
+  const { romanization, meaning } = extras;
   const explicit = option.accessibilityLabel?.trim();
-  const composed = meaning !== null || option.feedback !== undefined;
+  const composed = meaning !== null || romanization !== null || option.feedback !== undefined;
   // 판정이나 뜻을 앱이 이름에 담아 준 항목은 그 이름을 그대로 읽습니다.
   if (explicit && composed) return explicit;
   const spoken = explicit || label;
   if (explicit) return selected ? `${spoken}, selected` : spoken;
   const tail = option.feedback ?? (selected ? "selected" : null);
-  return [spoken, meaning, tail].filter((part): part is string => part !== null).join(", ");
+  return [spoken, romanization, meaning, tail]
+    .filter((part): part is string => part !== null)
+    .join(", ");
 }
 
 function itemClassNameOf(
@@ -182,6 +189,7 @@ function optionItemOf(
   const { variant, committed, selected } = context;
   const feedback = option.feedback ?? null;
   const meaning = option.meaning === undefined ? null : option.meaning.trim();
+  const romanization = option.romanization?.trim() || null;
   const disabled = committed || option.disabled === true || feedback !== null;
   const label = option.label.trim();
   const item: OptionSelectorItemContract = {
@@ -193,15 +201,16 @@ function optionItemOf(
     interactive: !disabled,
     className: itemClassNameOf(feedback, { selected, disabled }),
     // 선택 여부는 이름 뒤 접미사로 냅니다(ADR-0016 D3). 비선택은 이름만 둡니다.
-    accessibilityLabel: accessibilityLabelOf(option, label, meaning, selected),
+    accessibilityLabel: accessibilityLabelOf(option, label, { romanization, meaning }, selected),
     // traits는 한 값입니다. 확정·비활성 항목은 다시 조작할 수 없어 disabled로 둡니다(ADR-0016 D2·D10).
     traits: disabled ? "disabled" : "button",
     indicatorColor: indicatorColorOf({ variant, selected, disabled, feedback }),
+    romanization,
     meaning,
     feedback,
   };
   // 값이 없는 두 칸은 세지 않는 속성으로 둡니다 — 확장을 쓰지 않는 쪽의 항목 모양이 그대로 남습니다.
-  for (const key of ["meaning", "feedback"] as const) {
+  for (const key of ["romanization", "meaning", "feedback"] as const) {
     if (item[key] === null) Object.defineProperty(item, key, { value: null, enumerable: false });
   }
   return item;

@@ -14,6 +14,7 @@ import type {
   CatalogMappedItem,
 } from "./catalog-lesson-types";
 import {
+  choiceRomanizationsOf,
   englishOf,
   instructionOf,
   koOf,
@@ -45,6 +46,10 @@ export function listeningItemOf(
   const prompt = line === undefined ? "" : koOf(port, line.ko);
   const romanization = latinOf(port, line?.roman);
   const choices = options.map((option) => koOf(port, option.ko));
+  const choiceRoms = choiceRomanizationsOf(
+    port,
+    options.map((option) => option.roman),
+  );
   const answer = options.findIndex((option) => option.correct);
   if (prompt === "" || romanization === undefined || answer < 0 || choices.includes("")) {
     return skippedItem(item, "malformed");
@@ -58,6 +63,7 @@ export function listeningItemOf(
     romanization,
     audio,
     ...optionalField("instruction", instructionOf(port, item.prompt)),
+    ...(choiceRoms === undefined ? {} : { choiceRomanizations: choiceRoms }),
     // 답하기 전에는 대본을 보이지 않습니다 — 최소 대립쌍은 로마자가 곧 정답(소리 차이)이고, 듣고 고르기도 로마자가
     // 정답 문장 그대로라 듣기가 아니라 글자 맞추기가 됩니다(2026-11-02 문항 분석). 답한 뒤에는 한글 + 로마자가 섭니다.
   };
@@ -80,6 +86,8 @@ type WordChoiceParts = {
   readonly translation?: string | undefined;
   /** 보기마다 번역 줄입니다 — 있으면 길이 = `choices.length`입니다. */
   readonly choiceTranslations?: readonly string[] | undefined;
+  /** 보기마다 로마자 줄입니다 — 있으면 길이 = `choices.length`입니다. */
+  readonly choiceRomanizations?: readonly (string | null)[] | undefined;
   /** 소리가 있으면 싣습니다(없으면 키 자체를 싣지 않습니다). */
   readonly audio?: QuestionAudio | null | undefined;
   /** 로마자 줄 안 정답 자리입니다(빈칸 채우기). */
@@ -112,6 +120,10 @@ export function wordChoiceItem(
     ...(parts.romanizationEmphasis === undefined
       ? {}
       : { romanizationEmphasis: parts.romanizationEmphasis }),
+    ...(parts.choiceRomanizations !== undefined &&
+    parts.choiceRomanizations.length === choices.length
+      ? { choiceRomanizations: parts.choiceRomanizations }
+      : {}),
     ...(parts.culture === undefined ? {} : { culture: parts.culture }),
     ...(parts.choiceTranslations !== undefined && parts.choiceTranslations.length === choices.length
       ? { choiceTranslations: parts.choiceTranslations }
@@ -133,6 +145,10 @@ export function roleLineItemOf(
     romanization: latinOf(port, item.context.roman),
     translation: englishOf(port, item.context.en),
     choices: item.options.map((option) => koOf(port, option.ko)),
+    choiceRomanizations: choiceRomanizationsOf(
+      port,
+      item.options.map((option) => option.roman),
+    ),
     answerIndex: correctIndex(item.options),
   });
 }
@@ -169,6 +185,10 @@ export function clozeItemOf(item: ItemOf<"CLOZE">, port: CatalogItemPort): Catal
     romanizationEmphasis: filled?.emphasis,
     translation: englishOf(port, item.context.en),
     choices,
+    choiceRomanizations: choiceRomanizationsOf(
+      port,
+      order.map((index) => item.tiles[index]?.roman),
+    ),
     answerIndex: answer === "" ? -1 : choices.indexOf(answer),
   });
 }
@@ -183,6 +203,10 @@ export function clozeChoiceItemOf(
     romanization: latinOf(port, item.context.roman),
     translation: englishOf(port, item.context.en),
     choices: item.options.map((option) => koOf(port, option.ko)),
+    choiceRomanizations: choiceRomanizationsOf(
+      port,
+      item.options.map((option) => option.roman),
+    ),
     answerIndex: correctIndex(item.options),
   });
 }
@@ -199,6 +223,10 @@ export function replySelectItemOf(
     romanization: latinOf(port, line.roman),
     translation: englishOf(port, line.en),
     choices: item.options.map((option) => koOf(port, option.ko)),
+    choiceRomanizations: choiceRomanizationsOf(
+      port,
+      item.options.map((option) => option.roman),
+    ),
     answerIndex: correctIndex(item.options),
     audio: catalogListenAudioOf(item, port),
   });
@@ -216,6 +244,10 @@ export function particleItemOf(
     romanization: latinOf(port, text.roman),
     translation: englishOf(port, text.en),
     choices: item.options.map((option) => koOf(port, option.ko)),
+    choiceRomanizations: choiceRomanizationsOf(
+      port,
+      item.options.map((option) => option.roman),
+    ),
     answerIndex: correctIndex(item.options),
   });
 }
@@ -239,12 +271,17 @@ export function pictureChoiceItemOf(
   if (url === null) return skippedItem(item, "image-missing");
   const prompt = englishOf(port, correct?.en) ?? port.glossOf(item.ref);
   if (prompt === undefined || prompt === null) return skippedItem(item, "no-gloss");
+  const choiceRoms = choiceRomanizationsOf(
+    port,
+    item.options.map((option) => option.roman),
+  );
   const question: WordChoiceQuestion = {
     prompt,
     choices,
     answerIndex,
     ...optionalField("instruction", instructionOf(port, item.prompt)),
     ...audioField(catalogAnswerEchoOf(item, port)),
+    ...(choiceRoms === undefined ? {} : { choiceRomanizations: choiceRoms }),
     picture: { url, answerRomanization: latinOf(port, correct?.roman) ?? null },
   };
   return { kind: "word-choice", itemId: item.id, question };

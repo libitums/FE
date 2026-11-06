@@ -4,8 +4,39 @@ import type { OptionSelectorOption, OptionSelectorProps } from "@libitums/ui-lyn
 
 import type { AnswerResult } from "../lib/answer-result";
 import type { LearningDensity } from "../lib/learning-density";
+import type { ChoiceRomanization } from "../lib/session-options";
 
-export type QuestionOption = { readonly text: string; readonly meaning?: string };
+export type QuestionOption = {
+  readonly text: string;
+  readonly romanization?: string;
+  readonly meaning?: string;
+};
+
+export type ChoiceTexts = {
+  readonly choices: readonly string[];
+  readonly romanizations?: readonly (string | null)[];
+  readonly meanings?: readonly string[];
+};
+
+/** 보기 글 · 로마자(켬일 때만) · 뜻을 보기 목록으로 묶습니다 — 뜻은 길이가 같을 때만 싣습니다. */
+export function questionOptionsOf(
+  texts: ChoiceTexts,
+  display: ChoiceRomanization,
+): readonly QuestionOption[] {
+  const { choices, romanizations, meanings } = texts;
+  const withMeanings = meanings !== undefined && meanings.length === choices.length;
+  return choices.map((text, index) => {
+    const romanization = display === "shown" ? romanizations?.[index] : undefined;
+    const meaning = withMeanings ? meanings[index] : undefined;
+    return {
+      text,
+      ...(romanization === undefined || romanization === null || romanization === ""
+        ? {}
+        : { romanization }),
+      ...(meaning === undefined ? {} : { meaning }),
+    };
+  });
+}
 
 export type QuestionOptionsState =
   | { readonly kind: "open" }
@@ -49,6 +80,7 @@ function optionOf(input: QuestionOptionsInput, index: number): OptionSelectorOpt
     id: questionOptionId(index),
     label: option.text,
     accessibilityLabel: input.accessibilityLabels[index] ?? option.text,
+    ...(option.romanization === undefined ? {} : { romanization: option.romanization }),
     ...(option.meaning === undefined ? {} : { meaning: option.meaning }),
   };
 }

@@ -61,9 +61,21 @@ const icon = () => {
   return found;
 };
 
-const autoPlayOff: SessionOptions = { "auto-play-audio": false, "show-transcript": true };
-const transcriptOff: SessionOptions = { "auto-play-audio": true, "show-transcript": false };
-const bothOff: SessionOptions = { "auto-play-audio": false, "show-transcript": false };
+const autoPlayOff: SessionOptions = {
+  "auto-play-audio": false,
+  "show-transcript": true,
+  "show-choice-romanization": true,
+};
+const transcriptOff: SessionOptions = {
+  "auto-play-audio": true,
+  "show-transcript": false,
+  "show-choice-romanization": true,
+};
+const bothOff: SessionOptions = {
+  "auto-play-audio": false,
+  "show-transcript": false,
+  "show-choice-romanization": true,
+};
 
 test("[LP1] 자동 재생 꺼짐 — 마운트 시 play 0회 · 이름 'Play' · 아이콘 play", () => {
   const calls = stubHost();
@@ -131,7 +143,11 @@ test("[LP6] 둘 다 꺼짐 — play 0회이고 대본이 없다", () => {
 
 // LP7 (가드·앵커) — 「둘 다 켜면 지금 동작 그대로」가 여기 섭니다. 초기값이 아니라 명시한
 // 켠 값으로 섭니다(초기값은 대본 꺼짐으로 바뀌었다 — LP8).
-const bothOn: SessionOptions = { "auto-play-audio": true, "show-transcript": true };
+const bothOn: SessionOptions = {
+  "auto-play-audio": true,
+  "show-transcript": true,
+  "show-choice-romanization": true,
+};
 
 test("[LP7] 둘 다 켬 — play 1회 · 이름 'Pause' · 대본 있음", () => {
   const calls = stubHost();

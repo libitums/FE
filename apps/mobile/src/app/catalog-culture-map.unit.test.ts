@@ -173,6 +173,11 @@ describe("문화 확인 매핑 (CKM)", () => {
       answerIndex: 1,
       instruction: "Pick the right one.",
       choiceTranslations: ["Bags are free.", "Bags usually cost extra.", "There are no bags."],
+      choiceRomanizations: [
+        "r-봉투는 공짜예요.",
+        "r-봉투는 보통 따로 돈을 내요.",
+        "r-봉투가 없어요.",
+      ],
       culture: { scene: null, explanation: { en: "Right", ko: "맞아요" } },
     });
   });
@@ -195,6 +200,42 @@ describe("문화 확인 매핑 (CKM)", () => {
       expect(Object.prototype.hasOwnProperty.call(question, "choiceTranslations")).toBe(false);
       expect(question).toEqual(rest);
     }
+  });
+
+  test("CCM8. CULTURE_CHECK는 choiceRomanizations와 choiceTranslations를 같은 길이 · 순서로 싣는다", () => {
+    const question = questionOf(cultureCheckItemOf(cultureCheck(), port)) ?? {};
+    const romans = question["choiceRomanizations"] as readonly (string | null)[];
+    const translations = question["choiceTranslations"] as readonly string[];
+
+    expect(romans).toEqual([
+      "r-봉투는 공짜예요.",
+      "r-봉투는 보통 따로 돈을 내요.",
+      "r-봉투가 없어요.",
+    ]);
+    expect(romans).toHaveLength(translations.length);
+    expect(romans).toHaveLength((question["choices"] as readonly string[]).length);
+  });
+
+  test("CCM8. 보기 하나의 roman이 비면 그 자리만 null이고 번역은 그대로다", () => {
+    const item = cultureCheck({
+      options: [
+        opt("o1", "봉투는 공짜예요.", false, "Bags are free."),
+        {
+          ...opt("o2", "봉투는 보통 따로 돈을 내요.", true, "Bags usually cost extra."),
+          roman: "",
+        },
+        opt("o3", "봉투가 없어요.", false, "There are no bags."),
+      ],
+    });
+
+    const question = questionOf(cultureCheckItemOf(item, port)) ?? {};
+
+    expect(question["choiceRomanizations"]).toEqual([
+      "r-봉투는 공짜예요.",
+      null,
+      "r-봉투가 없어요.",
+    ]);
+    expect(question["choiceTranslations"]).toHaveLength(3);
   });
 
   test("CKM3. 보기가 하나이거나 빈 보기가 있거나 질문(context.ko)이 비면 malformed다", () => {

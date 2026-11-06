@@ -119,6 +119,7 @@ describe("새 단어 선택 유형의 매핑", () => {
       romanization: "___ halgeyo.",
       translation: "I'll pay by card.",
       choices: ["봉투로", "주스로", "카드로"],
+      choiceRomanizations: ["r-봉투로", "r-주스로", "r-카드로"],
       answerIndex: 2,
       instruction: "Fill in the blank.",
     });
@@ -133,6 +134,7 @@ describe("새 단어 선택 유형의 매핑", () => {
       romanization: "samcheon wonimnida.",
       translation: "That's three thousand won.",
       choices: ["카드로 할게요.", "아니요, 괜찮아요.", "따뜻한 물 주세요."],
+      choiceRomanizations: ["r-카드로 할게요.", "r-아니요, 괜찮아요.", "r-따뜻한 물 주세요."],
       answerIndex: 0,
       instruction: "How do you reply?",
     });
@@ -151,6 +153,7 @@ describe("새 단어 선택 유형의 매핑", () => {
       romanization: "kadeu___ halgeyo.",
       translation: "I'll pay by card.",
       choices: ["으로", "로"],
+      choiceRomanizations: ["r-으로", "r-로"],
       answerIndex: 1,
       instruction: "Which particle fits?",
     });
@@ -165,6 +168,7 @@ describe("새 단어 선택 유형의 매핑", () => {
       romanization: "bongtui",
       translation: "plastic bag",
       choices: ["으로", "가", "은"],
+      choiceRomanizations: ["r-으로", "r-가", "r-은"],
       answerIndex: 1,
       instruction: "Fix the particle.",
     });

@@ -53,6 +53,8 @@ export type WordChoiceQuestion = {
   readonly picture?: WordChoicePicture;
   /** 보기마다 아래 작은 번역 줄입니다. 있으면 길이 = `choices.length`(매핑이 보장)이고 보기는 세로로 쌓입니다. */
   readonly choiceTranslations?: readonly string[];
+  /** 보기마다 라벨 위 로마자입니다. 있으면 길이 = `choices.length`(표시 순서), 빈 자리는 null입니다. */
+  readonly choiceRomanizations?: readonly (string | null)[];
   /** 문항 음성입니다 — 단어 선택(REPLY_SELECT)은 듣기 갈래, 그림 고르기 · 뜻 고르기는 판정 뒤 재생 갈래. 없으면 키가 없습니다. */
   readonly audio?: QuestionAudio;
   /** 로마자 줄 안에서 정답이 들어간 자리입니다(빈칸 채우기). 없으면 강조가 없습니다. */

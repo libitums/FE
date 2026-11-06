@@ -13,6 +13,15 @@ export function latinOf(port: CatalogItemPort, text: string | undefined): string
   return filled === "" ? undefined : filled;
 }
 
+/** 보기 로마자 원문 배열을 표시 순서의 `(string|null)[]`로 정규화합니다 — 전부 비면 `undefined`. */
+export function choiceRomanizationsOf(
+  port: CatalogItemPort,
+  romans: readonly (string | undefined)[],
+): readonly (string | null)[] | undefined {
+  const values = romans.map((roman) => latinOf(port, roman) ?? null);
+  return values.some((value) => value !== null) ? values : undefined;
+}
+
 /** 영어 자리 문자열입니다 — 없거나 비면 `undefined`. 나라는 영어 이름으로 섭니다. */
 export function englishOf(port: CatalogItemPort, text: string | undefined): string | undefined {
   if (text === undefined) return undefined;

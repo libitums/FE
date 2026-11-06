@@ -15,6 +15,7 @@ import { SpeakWordActivity } from "../screens/speak-word/SpeakWordActivity";
 import { SyllableBuildActivity } from "../screens/syllable-build/SyllableBuildActivity";
 import { TypingActivity } from "../screens/typing/TypingActivity";
 import { VocabCardActivity } from "../screens/vocab-card/VocabCardActivity";
+import { choiceRomanizationOf } from "../lib/session-options";
 import { WordChoiceActivity } from "../screens/word-choice/WordChoiceScreen";
 import { activityGuideSubjectOf } from "./catalog-activity-guide-subject";
 import { CatalogActivityGuideLayer } from "./CatalogActivityGuideLayer";
@@ -127,6 +128,7 @@ function activityScreenOf(
           lessonAudio={lessonAudio}
           cast={cast}
           onItemAnswered={onItemAnswered}
+          choiceRomanization={choiceRomanizationOf(wiring.sessionOptions)}
         />
       );
     case "typing":

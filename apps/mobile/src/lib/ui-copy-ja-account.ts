@@ -57,7 +57,14 @@ export const settingsJa: SettingsCopy = {
         `エピソード${n}の残りをモバイルデータでダウンロードします。Wi-Fiを待つこともできます。`,
     },
   },
-  sessionOption: { "auto-play-audio": "自動再生", "show-transcript": "字幕を表示" },
+  sessionOption: {
+    "auto-play-audio": "自動再生",
+    "show-transcript": "字幕を表示",
+    "show-choice-romanization": "選択肢のローマ字",
+  },
+  sessionOptionDescription: {
+    "show-choice-romanization": "韓国語の各選択肢の読み方を、上に小さく表示します。",
+  },
   optionState: { on: "オン", off: "オフ" },
   action: { "sign-out": "ログアウト", "delete-account": "アカウントを削除" },
   signOutDialog: {

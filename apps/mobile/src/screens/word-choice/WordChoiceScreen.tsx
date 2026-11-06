@@ -33,7 +33,12 @@ import type { ConversationCast } from "../../lib/conversation-cast";
 import type { ItemAnswerReporter } from "../../lib/item-answer";
 import { answerEchoCueOf, listenCueOf, standaloneLessonAudio } from "../../lib/question-audio";
 import type { LessonAudio } from "../../lib/question-audio";
-import { initialSessionOptions } from "../../lib/session-options";
+import {
+  choiceRomanizationOf,
+  initialSessionOptions,
+  type ChoiceRomanization,
+} from "../../lib/session-options";
+import { questionOptionsOf } from "../../components/question-options";
 import { useAudioCue } from "../../lib/use-audio-cue";
 import { handsOffAfter, lessonCounter } from "../learning/activity-finish";
 import type { ActivityFinish, LessonPosition } from "../learning/activity-finish";
@@ -65,6 +70,8 @@ export type WordChoiceActivityProps = {
   readonly cast?: ConversationCast;
   /** 문항이 처음 판정되는 순간 한 번 부릅니다(측정). */
   readonly onItemAnswered?: ItemAnswerReporter;
+  /** 보기 로마자를 그리는가. 없으면 `choiceRomanizationOf(initialSessionOptions)`(`"shown"`)입니다. */
+  readonly choiceRomanization?: ChoiceRomanization;
 };
 
 const emptyCast: ConversationCast = { counterpart: {}, me: {} };
@@ -77,6 +84,7 @@ export function WordChoiceActivity({
   lessonAudio,
   cast = emptyCast,
   onItemAnswered,
+  choiceRomanization = choiceRomanizationOf(initialSessionOptions),
 }: WordChoiceActivityProps): ReactNode {
   const copy = useUiCopy();
   const deviceDensity = useLearningDensity();
@@ -175,6 +183,22 @@ export function WordChoiceActivity({
       ? copy.wordChoice.instruction
       : copy.wordChoice.culture.sceneInstruction);
 
+  const options =
+    question === null
+      ? []
+      : questionOptionsOf(
+          {
+            choices: question.choices,
+            ...(question.choiceRomanizations === undefined
+              ? {}
+              : { romanizations: question.choiceRomanizations }),
+            ...(question.choiceTranslations === undefined
+              ? {}
+              : { meanings: question.choiceTranslations }),
+          },
+          choiceRomanization,
+        );
+
   const select = (index: number): void => {
     if (question === null || !answerable) return;
     const judged = index === question.answerIndex ? "correct" : "incorrect";
@@ -217,17 +241,15 @@ export function WordChoiceActivity({
           <QuestionOptions
             testId="word-choice-screen-options"
             groupLabel={instruction}
-            options={question.choices.map((text, index) => {
-              const meaning = question.choiceTranslations?.[index];
-              return meaning === undefined ? { text } : { text, meaning };
-            })}
-            accessibilityLabels={question.choices.map((text, index) =>
+            options={options}
+            accessibilityLabels={options.map((option, index) =>
               // 판정을 지는 보기는 고른 하나뿐입니다 — 고르지 않은 정답 보기는 접미사가 없습니다.
               optionAccessibilityLabel(
-                text,
+                option.text,
                 choiceResultAt(state, question, index),
                 copy,
-                question.choiceTranslations?.[index],
+                option.meaning,
+                option.romanization,
               ),
             )}
             layout={question.picture === undefined ? "stack" : "grid"}

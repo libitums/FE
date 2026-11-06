@@ -57,7 +57,15 @@ export const settingsId: SettingsCopy = {
         `Sisa Episode ${n} diunduh dengan data seluler. Kamu juga bisa menunggu Wi-Fi.`,
     },
   },
-  sessionOption: { "auto-play-audio": "Putar otomatis", "show-transcript": "Tampilkan transkrip" },
+  sessionOption: {
+    "auto-play-audio": "Putar otomatis",
+    "show-transcript": "Tampilkan transkrip",
+    "show-choice-romanization": "Romanisasi pada pilihan",
+  },
+  sessionOptionDescription: {
+    "show-choice-romanization":
+      "Tampilkan cara membaca tiap jawaban berbahasa Korea dalam teks kecil di atasnya.",
+  },
   optionState: { on: "aktif", off: "nonaktif" },
   action: { "sign-out": "Keluar", "delete-account": "Hapus akun" },
   signOutDialog: { title: "Keluar?", confirm: "Keluar", cancel: "Tetap masuk" },

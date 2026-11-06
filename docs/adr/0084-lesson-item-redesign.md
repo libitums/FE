@@ -89,6 +89,8 @@
 
 ### D7. S2 듣기 대본 — `LISTEN_SELECT`는 답하기 전 로마자만 (사용자 결정)
 
+> ⟨2026-11-06 — 부분 대체, [ADR-0108](0108-choice-romanization.md) D6⟩ 답 전 갈래(`romanization` | `nothing`)는 지워졌다. 듣기 답 전 제시는 재생 줄만이고, 로마자는 **보기**에 선다. 끝의 「적용 기록」.
+
 - 문항이 「답 전에 무엇을 보이는가」를 갈래로 싣는다 — `romanization` | `nothing`, **없으면 `nothing`**(정답 노출 방지가 기본). `LISTEN_SELECT`만 `romanization`.
 - 카드 = 재생 줄 → 구분선 → 로마자. 답한 뒤(또는 대본 표시 설정이 켜지면) 한글 + 로마자. `MIN_PAIR_AB`는 답 전 구분선 · 로마자가 없다.
 
@@ -233,8 +235,19 @@
 2. **남은 기기 확인(사용자 결정으로 후속, 2026-10-22)** — [학습 문항 리디자인 e2e](../e2e/lesson-redesign.md) 「결과」의 미실행 항목: Android(EU1-A · EU8) · VoiceOver · TalkBack 청취(EU5 — 해설 판 → `Continue` 도달, 판정 뒤 지시문 미낭독, `Check` → `Next` 초점 유지 포함) · 아바타 그림(EU6 — 버킷 업로드 뒤). ⟨2026-10-23, 사용자 결정 D-F1⟩ EU3 iPhone 16 Pro Max · 답한 뒤 상태(보통 크기), EU9 큰 글자 `S11` · u01 ~ u03 문화 확인 질문 카드, `S5` · `S8` 답한 뒤 상태(음성 인식 필요)도 후속이다. ⟨2026-10-22⟩ 캔버스 대조(EU1) · regular 기기(EU3, iPhone 15 시뮬레이터) · 큰 글꼴(EU9, 해설 판 글 스크롤과 `Continue` 화면 안)은 최종 HEAD에서 실행했다 — EU3 · EU9 통과, EU1의 불일치 둘 중 `S13` 머리 학습형 이름은 `Culture quiz`로 고쳤고(사용자 결정 3), neutral 듣기 아이콘 회색은 디자인 시스템대로 둔다(사용자 결정 2).
 3. **큰 글자 `S8` 아래 버튼 행 `Speak` 잘림 — 고침**(사용자 결정 D-F2, 2026-10-23). 리베이스 재확인 회차의 관찰이었고, 보조 버튼과 짝인 행이 넘치면 위아래로 쌓이게 했다(D18). 13 mini 큰 글자 `S8`에서 `Speak`가 전체 폭 343 pt로 서고, `S5`는 한 줄에 들어 잘림이 없다. 보통 크기 버튼 행은 이전과 같다.
 4. **아바타 그림 업로드와 JSON 갱신** — ⟨2026-10-23 해소⟩ 버킷 u00 `2026-10-23.1`에 `counterpart_avatar`가 들어갔고, 앱 내장 u00을 그 판으로 바꾸며 그림도 내장했다(D16). u01 이후 에피소드의 아바타는 콘텐츠 몫이다. ⟨2026-10-23⟩ 내장 u01 ~ u03도 버킷 `2026-10-23.1`판(각 `content/images/<id>/avatar.webp`)으로 바꿨다 — 그림은 내장하지 않고 받는다(D16). 기기 확인(EU6)은 2의 후속 그대로다.
-5. **design-system 보고** — `outlined-subtle` 상태 대비(기본 테두리 1.15) · `meaning` · Feedback 축 · ChatBubble `annotation`.
+5. **design-system 보고** — `outlined-subtle` 상태 대비(기본 테두리 1.15) · `meaning` · Feedback 축 · ChatBubble `annotation`. ⟨2026-11-06⟩ `OptionSelector` `romanization`(라벨 위 로마자 줄 — [ADR-0108](0108-choice-romanization.md) D4)도 더한다.
 6. GitHub wiki 이벤트 사전(`episode_item_answered`)은 저장소 밖이라 따로 고친다.
+
+## 적용 기록 ⟨2026-11-06 — 보기 로마자⟩
+
+결정은 [ADR-0108](0108-choice-romanization.md). 밀도 판정 · 판정 자리 · 글 역할 · 변형 · 판정 축 · 선택 규칙은 바뀌지 않는다 — 닿는 자리만 적는다.
+
+- **D7 부분 대체 — 듣기 답 전 「로마자만」 갈래를 지웠다**(사용자 결정 2026-11-06 「제시문의 답 전 로마자를 없애고 보기 로마자를 보인다」). `ListeningBeforeAnswer` · `ListeningQuestion.beforeAnswer` · `ListeningPromptProps.beforeAnswer` · 대본 갈래 `"romanization"`이 없다. `LISTEN_SELECT` · `MIN_PAIR_AB`의 답 전 제시 카드는 **재생 줄만**이고(구분선 · 로마자 · 한글 대본 없음), 설정 `Romanization on choices`가 켜져 있으면 **보기**에 로마자가 답 전부터 선다(ADR-0108 D6). 답한 뒤 한글 + 로마자 · 대본 표시 설정 · 소리 없는 문항의 대본 규칙은 그대로다. 카탈로그 매핑은 이 갈래를 실은 적이 없어(늘 `nothing`) 화면에서 사라진 것은 쓰이지 않던 갈래와 그 테스트다.
+- **D5 — `OptionSelector` FE 확장에 `romanization?: string`이 더해졌다**(넷째 확장, ADR-0108 D4). 항목 안 줄 순서는 **로마자 → 라벨 → 뜻**(있는 것만)이고, 로마자 · 뜻이 모두 없으면 라벨 `<text>` 하나 그대로다. 로마자 줄은 뜻 줄의 크기 · 상태 색을 공유하고 기울임만 더한다(D3의 로마자 모양). 접근성 이름은 명시 이름 + 조합 요소(뜻 · 로마자 · 판정)면 명시 이름 그대로 — 앱이 `한글, Pronunciation: 로마자[, 뜻][, 판정]`을 준다(D19의 접두 규칙 그대로).
+- **D5 — compact 축소 두 규칙**(사용자 결정 2026-11-06 「스크롤은 최대한 없어야」). `QuestionOptions` 바깥 상자에 밀도 클래스가 서고, compact에서만 보기 로마자 줄이 `typography-caption-*`(11/16), 보기 글 묶음 row-gap이 0이다. regular는 그대로다. D1의 문턱 · 안전망(합친 흐름)은 바뀌지 않는다 — 13 mini 실측은 [보기 로마자 e2e](../e2e/choice-romanization.md) CR-E6 몫이다.
+- **D15 문화 확인 보기도 대상이다**(로마자 · 한글 · 뜻 세 줄, 사용자 결정 3).
+- 「미확인 · 후속」 5의 design-system 보고 목록에 `romanization`을 더했다.
+- ⚠ ui-lynx `dist` 상한 556,000 → 559,000(실측 557,772). 앱 main 상한 그대로. 기기 확인 전이다.
 
 ### 적용 기록 ⟨2026-11-06⟩ — 재검토 조건 1이 왔다: 로마자는 Duru Roman
 

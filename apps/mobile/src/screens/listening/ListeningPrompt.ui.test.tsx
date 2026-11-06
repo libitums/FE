@@ -15,7 +15,11 @@ import { UiCopyContext } from "../../lib/ui-copy";
 import { markedUiCopy } from "../../lib/ui-copy.test-support";
 
 // 대본 표시를 켠 fixture입니다 — 기본값이 꺼짐(v2)이 되어도 이 파일의 단언은 대본이 보이는 화면을 봅니다.
-const transcriptOn: SessionOptions = { "auto-play-audio": true, "show-transcript": true };
+const transcriptOn: SessionOptions = {
+  "auto-play-audio": true,
+  "show-transcript": true,
+  "show-choice-romanization": true,
+};
 
 // `ui` 계층: 렌더 결과와 상호작용만 봅니다 (ADR-0006 D4). `toHaveClass`·`toHaveStyle`·
 // `toBeVisible`을 쓰지 않습니다 (docs/conventions/code.md).
@@ -456,40 +460,19 @@ test("DOM 순서가 다시듣기 → 재생 → 구분선 → 한글 → 로마�
   ]);
 });
 
-// LP3 — 답하기 전 로마자 참고 줄은 재생 줄 → 구분선 → 로마자 순이고, 한글은 문서에 없다.
-test("LP3. beforeAnswer가 romanization이면 답 전에 재생 줄 → 구분선 → 로마자가 서고 한글은 없다", () => {
-  stubHost();
-  const { container } = render(
-    <PlaybackPrompt
-      text={TEXT}
-      romanization={ROMANIZATION}
-      audioSource={SOURCE}
-      sessionOptions={{ "auto-play-audio": false, "show-transcript": false }}
-      beforeAnswer="romanization"
-    />,
-  );
-
-  const order = [...container.querySelectorAll("[data-testid]")]
-    .map((el) => el.getAttribute("data-testid") ?? "")
-    .filter((id) => id.startsWith("listening-prompt-"));
-  expect(order).toEqual([
-    "listening-prompt-replay",
-    "listening-prompt-playback",
-    "listening-prompt-divider",
-    "listening-prompt-romanization",
-  ]);
-  expect(screen.queryByTestId("listening-prompt-text")).not.toBeInTheDocument();
-});
-
-test("LP3. beforeAnswer가 nothing이면 답 전에 구분선도 로마자도 없다", () => {
+// LP3 — 답하기 전 제시 카드는 재생 줄만 선다(로마자 갈래 없음 — ADR-0108 D6).
+test("LP3. 답 전에는 구분선도 로마자도 한글도 없다", () => {
   stubHost();
   render(
     <PlaybackPrompt
       text={TEXT}
       romanization={ROMANIZATION}
       audioSource={SOURCE}
-      sessionOptions={{ "auto-play-audio": false, "show-transcript": false }}
-      beforeAnswer="nothing"
+      sessionOptions={{
+        "auto-play-audio": false,
+        "show-transcript": false,
+        "show-choice-romanization": true,
+      }}
     />,
   );
 

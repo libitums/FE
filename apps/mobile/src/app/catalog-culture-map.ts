@@ -12,7 +12,7 @@ import type {
 } from "../screens/word-choice/word-choice-questions";
 import { wordChoiceEn } from "../lib/ui-copy-en-learning";
 import { wordChoiceItem } from "./catalog-choice-map";
-import { englishOf, koOf, latinOf } from "./catalog-item-text";
+import { choiceRomanizationsOf, englishOf, koOf, latinOf } from "./catalog-item-text";
 import type {
   CatalogItemPort,
   CatalogLessonItemPort,
@@ -140,6 +140,10 @@ export function cultureCheckItemOf(
     choices: item.options.map((option) => koOf(port, option.ko)),
     answerIndex: item.options.findIndex((option) => option.correct),
     choiceTranslations: choiceTranslationsOf(port, item.options),
+    choiceRomanizations: choiceRomanizationsOf(
+      port,
+      item.options.map((option) => option.roman),
+    ),
     culture,
   });
 }

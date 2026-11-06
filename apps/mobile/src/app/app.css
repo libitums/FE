@@ -360,9 +360,10 @@
     "Malgun Gothic", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
 }
 
-/* 대화 버블의 로마자(ui-lynx ChatBubble annotation)도 앱의 로마자 글꼴로 그립니다(ADR-0107) — 부품은 토큰의 본문 글꼴을
-   쓰므로 앱이 셸 아래에서 다시 정합니다. 목록은 `text-roles.css`의 로마자와 같습니다. */
-.app .ui-lynx-chat-bubble-annotation-romanization {
+/* ui-lynx 부품의 로마자(ChatBubble annotation · OptionSelector 보기 로마자)도 앱의 로마자 글꼴로 그립니다(ADR-0107 ·
+   ADR-0108 D8) — 부품은 토큰의 본문 글꼴을 쓰므로 앱이 셸 아래에서 다시 정합니다. 목록은 `text-roles.css`의 로마자와 같습니다. */
+.app .ui-lynx-chat-bubble-annotation-romanization,
+.app .ui-lynx-option-selector-romanization {
   font-family:
     "Duru Roman",
     "DuruRoman",

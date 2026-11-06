@@ -2,7 +2,7 @@
 
 import type { AccountActionsProps, AccountActionsTestId } from "./account-actions.contract";
 import type { AppVersion } from "../../lib/app-version";
-import type { SessionOptionKey } from "../../lib/session-options";
+import type { SessionOptionKey, SessionOptions } from "../../lib/session-options";
 import type {
   LearnerProfileOpenedEvent,
   LearnerProfileSavedEvent,
@@ -27,6 +27,8 @@ export type SettingsNavTarget =
   | "feedback"
   | LegalDocument;
 
+export type SettingsSessionOptionKey = Extract<SessionOptionKey, "show-choice-romanization">;
+
 export type SettingsScreenProps = {
   readonly onSelectNavTarget: (target: SettingsNavTarget) => void;
   /** 「Name and country in lessons」 줄의 설명입니다 — 지금 값 · `Not set` · 기기에만 저장됨. */
@@ -35,6 +37,10 @@ export type SettingsScreenProps = {
   readonly languageSummary: string;
   /** 목록 끝 `Version 1.0 (11)` 줄입니다(ADR-0086). 호스트가 안 보내면(Explorer · 테스트) `null`이고 줄이 없습니다. */
   readonly appVersion: AppVersion | null;
+  /** 지금 세션 옵션 값입니다. 설정에 서는 줄의 켬 상태가 여기서 나옵니다. */
+  readonly sessionOptions: SessionOptions;
+  /** 옵션 줄을 눌렀을 때 부릅니다. `value`는 바뀐 뒤 값입니다. */
+  readonly onToggleSessionOption: (key: SessionOptionKey, value: boolean) => void;
 } & AccountActionsProps;
 
 export type SettingsOpenedEvent = { readonly name: "settings_opened" };
@@ -76,4 +82,5 @@ export type SettingsTestId =
   | "settings-screen-list"
   | "settings-screen-version"
   | `ui-lynx-settings-group-item-${SettingsNavTarget}`
+  | `ui-lynx-settings-group-item-${SettingsSessionOptionKey}`
   | AccountActionsTestId;

@@ -4,9 +4,6 @@ import type { ListenAudio } from "../../lib/question-audio";
 
 // ---------------------------------------------------------------- 도메인 타입
 
-/** 답하기 전 대본 자리에 보이는 것 — 로마자 참고 줄(`romanization`) 또는 아무것도(`nothing`, 기본)입니다. */
-export type ListeningBeforeAnswer = "romanization" | "nothing";
-
 export type ListeningQuestion = {
   readonly prompt: string;
   /**
@@ -23,8 +20,8 @@ export type ListeningQuestion = {
   // 끕니다). 옵셔널이 아닙니다: `audio?`면 "아직 없는 문항"이 타입에 생깁니다.
   readonly audio: ListenAudio | null;
   readonly instruction?: string;
-  /** 답하기 전 대본 자리의 갈래입니다. 없으면 `nothing`입니다. */
-  readonly beforeAnswer?: ListeningBeforeAnswer;
+  /** 보기마다 라벨 위 로마자입니다. 있으면 길이 = `choices.length`(표시 순서), 빈 자리는 null입니다. */
+  readonly choiceRomanizations?: readonly (string | null)[];
 } & (
   | {
       readonly choices: readonly [string, string];

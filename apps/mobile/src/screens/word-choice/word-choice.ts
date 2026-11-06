@@ -71,8 +71,12 @@ export function optionAccessibilityLabel(
   result: AnswerResult | null,
   copy: UiCopy,
   translation?: string,
+  romanization?: string,
 ): string {
-  const base = translation === undefined ? text : `${text}, ${translation}`;
+  // 로마자는 다른 화면처럼 `Pronunciation:` 접두로 읽습니다(ADR-0084 D19) — 뒤따르는 뜻과 소리로 가립니다.
+  const spoken =
+    romanization === undefined ? undefined : copy.readAloud.pronunciation(romanization);
+  const base = [text, spoken, translation].filter((part) => part !== undefined).join(", ");
   if (result === null) {
     return base;
   }
