@@ -19,7 +19,7 @@ public final class HapticPatternTest {
   @Test public void errorIsOneLongBuzz() {
     HapticPattern pattern = HapticPattern.of("error");
     assertNotNull(pattern);
-    assertArrayEquals(new long[] {0, 280}, pattern.timings);
+    assertArrayEquals(new long[] {0, 220}, pattern.timings);
     assertArrayEquals(new int[] {0, 255}, pattern.amplitudes);
   }
 

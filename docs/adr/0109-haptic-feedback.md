@@ -69,7 +69,7 @@
 | 항목 | 1판 | 2판 |
 |---|---|---|
 | API | decorView `performHapticFeedback(constant)` 1인자 | `Vibrator.vibrate(VibrationEffect.createWaveform(timings, amplitudes, -1), AudioAttributes)` — 메인 스레드, 던지면 `Log.w`만 |
-| 패턴 | `CONFIRM` · `REJECT`(API 30+), `CONTEXT_CLICK` · `LONG_PRESS`(26 ~ 29) | 순수 클래스 `HapticPattern.of(kind)`의 한 번 파형 — `success` **톡톡** 55 ms × 2(쉼 70 ms), `error` **부웅** 280 ms 1회, 세기는 모두 255. **뜻은 리듬이 진다** — 세기 조절이 없는 모터(Galaxy A52s, `mCapabilities` 0)에서 첫 판(25 ms · 30 ms × 2)은 「구분 안 됨」, 둘째 판(40 ms 1회 · 70 ms × 2)은 「정답 진동이 약하고 정답 같은 느낌이 안 든다」(사용자, 2026-11-06). 짧은 두 번 = 됐다, 긴 한 번 = 아니다로 iOS `.success` · `.error`와 같은 나눔이고, 펄스는 모두 50 ms 이상(느린 모터가 다 돈다). 모든 API 같은 파형 |
+| 패턴 | `CONFIRM` · `REJECT`(API 30+), `CONTEXT_CLICK` · `LONG_PRESS`(26 ~ 29) | 순수 클래스 `HapticPattern.of(kind)`의 한 번 파형 — `success` **톡톡** 55 ms × 2(쉼 70 ms), `error` **부웅** 220 ms 1회, 세기는 모두 255. **뜻은 리듬이 진다** — 세기 조절이 없는 모터(Galaxy A52s, `mCapabilities` 0)에서 첫 판(25 ms · 30 ms × 2)은 「구분 안 됨」, 둘째 판(40 ms 1회 · 70 ms × 2)은 「정답 진동이 약하고 정답 같은 느낌이 안 든다」(사용자, 2026-11-06). 오답 길이는 사용자 지정으로 280 → 220 ms(2026-11-06 「오답 진동 길이 한 220으로」). 짧은 두 번 = 됐다, 긴 한 번 = 아니다로 iOS `.success` · `.error`와 같은 나눔이고, 펄스는 모두 50 ms 이상(느린 모터가 다 돈다). 모든 API 같은 파형 |
 | 속성 | — | 효과음과 같은 `AudioAttributes`(`USAGE_MEDIA` · `CONTENT_TYPE_SONIFICATION`). 터치 용도(`USAGE_TOUCH`)로 내면 Android 13+가 터치 진동 세기(끔 = 0)로 줄여 다시 꺼진다 |
 | 권한 | 없음 | `android.permission.VIBRATE`(설치 시 자동 허용 · 사용자 승인 창 없음) |
 | 시스템 설정 | 「터치 피드백」을 따름 | 따르지 않는다 — 꺼져 있어도 진동 |
