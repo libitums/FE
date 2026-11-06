@@ -53,7 +53,9 @@ export type AuthSession = {
  */
 export type EntryAuthState =
   | { readonly kind: "refresh"; readonly refreshToken: string }
-  | { readonly kind: "none" };
+  | { readonly kind: "none" }
+  /** 세션 없음 + 비회원 표식 — 스플래시가 갱신 없이 `enterApp`합니다(ADR-0111). */
+  | { readonly kind: "guest" };
 
 /**
  * 갱신이 실패했을 때 저장된 세션을 어떻게 할지입니다. 서버가 거절한 세션만 지웁니다 —

@@ -61,6 +61,7 @@ export const journeyEntryEn: JourneyEntryCopy = {
 };
 
 export const loginEn: LoginCopy = {
+  guest: "Continue without an account",
   method: {
     phone: "Continue",
     google: "Connect with Google",
@@ -79,10 +80,19 @@ export const loginEn: LoginCopy = {
   or: "or",
   countrySheetTitle: "Select country",
   legal: {
-    lead: "By signing up, you agree to the",
+    lead: "By continuing, you agree to the",
     termsOfUse: "Terms of Use",
     and: "&",
     privacyPolicy: "Privacy Policy",
+  },
+  // 수단 사용 불가 안내 대화상자(ADR-0111 개정 2).
+  unavailable: {
+    title: (method) => `${method} sign-in is temporarily unavailable`,
+    description:
+      "We're moving this sign-in to a new setup. For now, continue with Google or without an account.",
+    descriptionWithoutGuest:
+      "We're moving this sign-in to a new setup. For now, please continue with Google.",
+    close: "Close",
   },
 };
 

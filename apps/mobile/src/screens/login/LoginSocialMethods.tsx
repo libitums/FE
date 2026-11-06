@@ -2,19 +2,10 @@ import type { ReactNode } from "@lynx-js/react";
 
 import { Button } from "@libitums/ui-lynx/button";
 
-import { entryLoginMethods } from "../../lib/entry-flow";
 import { useUiCopy } from "../../lib/ui-copy";
 import { canStartSocialSignIn, loginMethodLabel, loginMethodStatus } from "./login";
 import type { LoginSocialMethodsProps, SocialLoginMethod } from "./login.contract";
 import { appleLogo, facebookLogo, googleLogo } from "./login-logos";
-
-// 소셜 수단만 남깁니다 — 전화번호를 뺀 어휘 순서를 그대로 씁니다(2026-09-21
-// 디자인 반영 순서 승계).
-function isSocialMethod(method: string): method is SocialLoginMethod {
-  return method !== "phone";
-}
-
-const socialMethods: readonly SocialLoginMethod[] = entryLoginMethods.filter(isSocialMethod);
 
 const socialLogo: Record<SocialLoginMethod, string> = {
   apple: appleLogo,
@@ -27,7 +18,11 @@ const socialLogo: Record<SocialLoginMethod, string> = {
  * 요청 중(어느 수단이든)이면 탭을 무시합니다(네 수단 상호 배제 — `LoginSocialMethodsProps`에
  * 불리언이 없는 이유). 누른 수단만 `Button loading`이 돕니다.
  */
-export function LoginSocialMethods({ status, onSelect }: LoginSocialMethodsProps): ReactNode {
+export function LoginSocialMethods({
+  methods,
+  status,
+  onSelect,
+}: LoginSocialMethodsProps): ReactNode {
   const copy = useUiCopy().login;
   function handleTap(method: SocialLoginMethod) {
     if (!canStartSocialSignIn(status)) return;
@@ -36,7 +31,7 @@ export function LoginSocialMethods({ status, onSelect }: LoginSocialMethodsProps
 
   return (
     <view className="login-screen-methods">
-      {socialMethods.map((method) => {
+      {methods.map((method) => {
         const methodStatus = loginMethodStatus(status, method);
         return (
           <view

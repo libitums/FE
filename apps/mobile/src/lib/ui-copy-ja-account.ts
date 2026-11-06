@@ -66,7 +66,11 @@ export const settingsJa: SettingsCopy = {
     "show-choice-romanization": "韓国語の各選択肢の読み方を、上に小さく表示します。",
   },
   optionState: { on: "オン", off: "オフ" },
-  action: { "sign-out": "ログアウト", "delete-account": "アカウントを削除" },
+  action: {
+    "sign-in": "ログイン",
+    "sign-out": "ログアウト",
+    "delete-account": "アカウントを削除",
+  },
   signOutDialog: {
     title: "ログアウトしますか？",
     confirm: "ログアウト",

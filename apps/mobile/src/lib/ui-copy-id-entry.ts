@@ -63,6 +63,7 @@ export const journeyEntryId: JourneyEntryCopy = {
 };
 
 export const loginId: LoginCopy = {
+  guest: "Lanjutkan tanpa akun",
   method: {
     phone: "Lanjut",
     google: "Hubungkan dengan Google",
@@ -81,10 +82,19 @@ export const loginId: LoginCopy = {
   or: "atau",
   countrySheetTitle: "Pilih negara",
   legal: {
-    lead: "Dengan mendaftar, kamu menyetujui",
+    lead: "Dengan melanjutkan, kamu menyetujui",
     termsOfUse: "Ketentuan Penggunaan",
     and: "&",
     privacyPolicy: "Kebijakan Privasi",
+  },
+  // 수단 사용 불가 안내 대화상자(ADR-0111 개정 2).
+  unavailable: {
+    title: (method) => `Masuk dengan ${method} sedang tidak tersedia`,
+    description:
+      "Kami sedang memindahkan cara masuk ini ke pengaturan baru. Untuk sementara, lanjutkan dengan Google atau tanpa akun.",
+    descriptionWithoutGuest:
+      "Kami sedang memindahkan cara masuk ini ke pengaturan baru. Untuk sementara, lanjutkan dengan Google.",
+    close: "Tutup",
   },
 };
 

@@ -73,3 +73,65 @@ describe("loadAppPolicy", () => {
     expect(loadAppPolicy(store)).toBeNull();
   });
 });
+
+describe("decodeAppPolicy — unavailable_login_methods (개정 3)", () => {
+  const withUnavailable = (value: unknown) =>
+    decodeAppPolicy(policyText({ android: 6 }, { unavailable_login_methods: value }));
+
+  test("AP-U1. 칸이 없으면 unavailableLoginMethods 필드가 없다", () => {
+    const policy = decodeAppPolicy(policyText({ android: 6 }));
+
+    expect(policy).not.toBeNull();
+    expect(policy?.unavailableLoginMethods).toBeUndefined();
+  });
+
+  test("AP-U2. 정상 값은 all · android 그대로 읽힌다", () => {
+    expect(withUnavailable({ all: ["facebook"], android: ["apple"] })).toEqual({
+      minBuild: { android: 6 },
+      unavailableLoginMethods: { all: ["facebook"], android: ["apple"] },
+    });
+    expect(withUnavailable({ all: [], android: [] })?.unavailableLoginMethods).toEqual({
+      all: [],
+      android: [],
+    });
+    expect(withUnavailable({ all: ["google"] })?.unavailableLoginMethods).toEqual({
+      all: ["google"],
+      android: [],
+    });
+  });
+
+  test.each<[label: string, value: unknown]>([
+    ["문자열", "facebook"],
+    ["배열", ["facebook"]],
+    ["null", null],
+    ["숫자", 3],
+  ])("AP-U3. 값이 object가 아니면(%s) 필드가 없고 min_build 판정은 유지된다", (_label, value) => {
+    const policy = withUnavailable(value);
+
+    expect(policy).not.toBeNull();
+    expect(policy?.unavailableLoginMethods).toBeUndefined();
+    expect(policy?.minBuild).toEqual({ android: 6 });
+  });
+
+  test("AP-U4. all · android가 배열이 아니면 그 키만 []이다", () => {
+    expect(
+      withUnavailable({ all: "facebook", android: ["apple"] })?.unavailableLoginMethods,
+    ).toEqual({ all: [], android: ["apple"] });
+    expect(withUnavailable({ all: ["facebook"], android: {} })?.unavailableLoginMethods).toEqual({
+      all: ["facebook"],
+      android: [],
+    });
+  });
+
+  test("AP-U5. 모르는 이름 · 문자열 아닌 원소는 버리고, 중복을 없애고, 어휘 순서로 정렬한다", () => {
+    const policy = withUnavailable({
+      all: ["facebook", "twitter", 7, "phone", "facebook", null],
+      android: ["google", "apple", "apple"],
+    });
+
+    expect(policy?.unavailableLoginMethods).toEqual({
+      all: ["phone", "facebook"],
+      android: ["apple", "google"],
+    });
+  });
+});

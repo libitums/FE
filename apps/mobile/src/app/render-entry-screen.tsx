@@ -52,6 +52,9 @@ export function renderEntryScreen(screen: EntryScreen, wiring: ScreenWiring) {
       return (
         <LoginScreen
           phoneSignIn={wiring.phoneSignIn}
+          unavailableMethods={wiring.unavailableSocialMethods()}
+          guestSignIn="visible"
+          onContinueAsGuest={wiring.onContinueAsGuest}
           onSelectSocialMethod={wiring.onSelectSocialLoginMethod}
           onSubmitPhoneNumber={wiring.onRequestPhoneOtp}
           onBack={wiring.onLoginBack}
@@ -108,3 +111,24 @@ export function renderEntryScreen(screen: EntryScreen, wiring: ScreenWiring) {
       );
   }
 }
+
+/**
+ * 비회원이 설정에서 여는 로그인 화면입니다(ADR-0111). 비회원 버튼이 없고, 전화번호 수단은 고정으로 숨깁니다 —
+ * 코드 검증 route는 진입 스택 전용 전이를 타서 설정 스택에서는 열지 않습니다.
+ */
+export function renderGuestLoginScreen(wiring: ScreenWiring) {
+  return (
+    <LoginScreen
+      phoneSignIn="hidden"
+      unavailableMethods={wiring.unavailableSocialMethods()}
+      guestSignIn="hidden"
+      onSelectSocialMethod={wiring.onSelectGuestSignInMethod}
+      onSubmitPhoneNumber={wiring.onRequestPhoneOtp}
+      onContinueAsGuest={noop}
+      onBack={wiring.onGuestSignInBack}
+      onOpenLegalDocument={wiring.onOpenLegalDocument}
+    />
+  );
+}
+
+const noop = (): void => undefined;

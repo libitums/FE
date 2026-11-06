@@ -65,7 +65,11 @@ export const settingsVi: SettingsCopy = {
     "show-choice-romanization": "Hiện cách đọc của từng đáp án tiếng Hàn bằng chữ nhỏ phía trên.",
   },
   optionState: { on: "bật", off: "tắt" },
-  action: { "sign-out": "Đăng xuất", "delete-account": "Xóa tài khoản" },
+  action: {
+    "sign-in": "Đăng nhập",
+    "sign-out": "Đăng xuất",
+    "delete-account": "Xóa tài khoản",
+  },
   signOutDialog: { title: "Đăng xuất?", confirm: "Đăng xuất", cancel: "Vẫn đăng nhập" },
   deleteDialog: {
     title: "Xóa tài khoản của bạn?",

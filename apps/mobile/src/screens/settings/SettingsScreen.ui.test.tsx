@@ -18,6 +18,8 @@ const accountNoopProps = {
   languageSummary: "Intermediate English",
   appVersion: null,
   onSignOut: () => undefined,
+  onSignIn: () => undefined,
+  account: "signed-in" as const,
   onDeleteAccount: () => new Promise<AccountDeletionResult>(() => undefined),
   onLayerChange: () => undefined,
 };
@@ -147,8 +149,8 @@ function settingsCell(id: string): HTMLElement {
   );
 }
 
-test("[ST2] 목록 상자 안에 학습, 계정, 계정 동작 그룹을 이 순서로 표시한다", () => {
-  render(<SettingsScreen {...defaultSettingsScreenProps} />);
+test("[ST2] account가 signed-in이면 목록 상자 안에 학습, 계정, 계정 동작 그룹을 이 순서로 표시하고 로그인 행은 없다", () => {
+  render(<SettingsScreen {...defaultSettingsScreenProps} account="signed-in" />);
 
   const list = screen.getByTestId("settings-screen-list");
   const groups = within(list).getAllByTestId("ui-lynx-settings-group");
@@ -329,6 +331,8 @@ function renderAccount(options: { marked?: boolean } = {}) {
       sessionOptions={initialSessionOptions}
       onToggleSessionOption={() => undefined}
       onSignOut={onSignOut}
+      onSignIn={() => undefined}
+      account="signed-in"
       onDeleteAccount={onDeleteAccount}
       onLayerChange={onLayerChange}
     />

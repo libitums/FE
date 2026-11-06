@@ -1,10 +1,9 @@
-import { useEffect, useGlobalProps, useMemo, useReducer, useState } from "@lynx-js/react";
+import { useEffect, useGlobalProps, useReducer, useState } from "@lynx-js/react";
 
 import { FirstUnitGuideProvider } from "../components/first-unit-guide";
 import { announce } from "../lib/accessibility";
 import type { AnswerResult } from "../lib/answer-result";
 import { loadUiLanguage } from "../lib/ui-language";
-import { localizeCatalog } from "../lib/episode-localize";
 import { appShellClassName } from "./app-shell-class";
 import type { EntryLanguage } from "../lib/entry-language";
 import { appVersionFrom } from "../lib/app-version";
@@ -22,7 +21,8 @@ import { currentScreen, navReducer, showsTabNavigator, tabRootActions } from "./
 import { shellBottomLayout } from "./shell-bottom-layout";
 import { notificationList } from "./app-content";
 import { roleplaySectionsOf } from "./roleplay-sections";
-import { catalogMapSectionsOf } from "../screens/journey-map/catalog-map";
+import { useAccountState } from "./use-account-state";
+import { useSessionCatalog } from "./use-session-catalog";
 import type { AppSessionContent } from "./episode-content";
 import { shellHeaderTop } from "./full-bleed-screens";
 import { shellInsetsOf } from "./shell-edges";
@@ -79,11 +79,10 @@ export function AppSession({
 
   // 고른 언어(= UI 언어)입니다. 첫 렌더에 저장값을 읽고, Provider가 이 언어의 문구표를 내립니다.
   const [entryLanguage, setEntryLanguage] = useState<EntryLanguage>(loadUiLanguage);
-  // 콘텐츠의 영어 칸을 UI 언어 번역으로 바꾼 판입니다 — 아래 모든 화면이 이것을 받습니다(ADR-0091 D2).
-  const episodeContent = useMemo(
-    () => ({ ...sourceContent, catalog: localizeCatalog(sourceContent.catalog, entryLanguage) }),
-    [sourceContent, entryLanguage],
-  );
+  // 콘텐츠의 영어 칸을 UI 언어 번역으로 바꾼 판과 카탈로그 구획입니다 — 아래 모든 화면이 받습니다(ADR-0091 D2).
+  const { episodeContent, catalogSections } = useSessionCatalog(sourceContent, entryLanguage);
+  // 앱이 누구로 도는지입니다(ADR-0111) — 설정 행 구성이 읽고, 결선이 전이를 적습니다.
+  const [accountState, setAccountState] = useAccountState();
 
   // 떠난 뒤 새로 선 세션이면 결과를 한 번 낭독합니다 — 화면이 통째로 바뀌어 달리 알 길이 없습니다.
   useEffect(() => {
@@ -91,9 +90,6 @@ export function AppSession({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 카탈로그 구획은 카탈로그가 바뀔 때만 새로 만듭니다 — 진행은 섞지 않고 렌더에서 파생합니다.
-  const { catalog: catalogEntries } = episodeContent;
-  const catalogSections = useMemo(() => catalogMapSectionsOf(catalogEntries), [catalogEntries]);
   // **진행의 진실의 출처입니다** — `Nav`에 적지 않고(ADR-0007 D3) 서버에 저장합니다(ADR-0035). 트로피의 완료 규칙은 구획에서 받습니다.
   // 시험 계정 표시를 먼저 맞춥니다 — 아래 진행 · 티켓 · 맵 판정이 같은 렌더에서 읽습니다(ADR-0085).
   const testerAccess = useTesterAccess(analyticsUser);
@@ -174,6 +170,8 @@ export function AppSession({
     setListenPace,
     downloadControls,
     downloadCatalog: () => downloadCatalogOf(episodeContent, catalogSections, catalogProgress),
+    accountState,
+    setAccountState,
   });
   const screenNow = currentScreen(nav);
   // 앱 사용 중 받아진 바뀐 판은 여정맵 루트(열린 에피소드 화면 · 겹침 없음)에서 바로 바꿔 끼웁니다(ADR-0078 D4 정정).

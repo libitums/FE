@@ -23,26 +23,31 @@ import {
   loginStatusAfterEdit,
   loginStatusAfterSocialOutcome,
   phoneNumberFrom,
+  socialLoginMethods,
   type LoginCountry,
 } from "./login";
 import { loginCountries } from "./login-countries";
 import { LoginCountrySheet } from "./LoginCountrySheet";
 import { LoginLegalNotice } from "./LoginLegalNotice";
+import { LoginUnavailableDialog } from "./LoginUnavailableDialog";
+import { useLoginUnavailable } from "./use-login-unavailable";
 import { LoginSocialMethods } from "./LoginSocialMethods";
 import type { LoginScreenProps, LoginStatus, SocialLoginMethod } from "./login.contract";
 
 import "./login-screen.css";
 
-// 2026-09-21 디자인 반영: 뒤로가기 → 제목·안내 → 국가+번호 입력 → Continue →
-// or 구분선 → 플랫폼 버튼 셋 순서입니다. 번호는 Continue에서 국가 번호와 합쳐 인증
-// 코드 요청으로만 나가고, 이 화면은 저장하지 않습니다. 소셜 버튼 묶음은
-// `LoginSocialMethods`(S9)로 뗐습니다.
+// 2026-09-21 디자인 반영: 뒤로가기 → 제목·안내 → 국가+번호 입력 → Continue → or 구분선 →
+// 플랫폼 버튼 셋 순서입니다. 번호는 Continue에서 국가 번호와 합쳐 인증 코드 요청으로만 나가고,
+// 이 화면은 저장하지 않습니다. 소셜 버튼 묶음은 `LoginSocialMethods`(S9)로 뗐습니다.
 
 // 국가 목록은 ui-lynx OptionSelector(outlined · s · single · immediate)로
 // 그립니다. 고르면 곧바로 확정하고 시트를 닫습니다.
 
 export function LoginScreen({
   phoneSignIn,
+  unavailableMethods,
+  guestSignIn,
+  onContinueAsGuest,
   onSelectSocialMethod,
   onSubmitPhoneNumber,
   onBack,
@@ -79,7 +84,10 @@ export function LoginScreen({
   const handleBack = onBack ? guard(onBack) : null;
   const closeCountrySheet = () => setCountrySheetOpen(false);
   useScreenBack(handleBack);
-  useLayerBack(countrySheetOpen ? closeCountrySheet : null);
+  const unavailable = useLoginUnavailable(unavailableMethods, busy, handleSocialSelect);
+  useLayerBack(
+    countrySheetOpen ? closeCountrySheet : unavailable.notice !== null ? unavailable.close : null,
+  );
 
   // 실패마다 정확히 한 번만 발화합니다 — `status`는 `setStatus`마다 새
   // 객체라 같은 실패로 다시 렌더돼도 재발화하지 않습니다.
@@ -123,8 +131,11 @@ export function LoginScreen({
 
   return (
     <view className="login-screen">
-      {/* 국가 선택 시트가 열린 동안 뒤쪽을 보조기술에서 가립니다(ADR-0016 D9). */}
-      <view className="login-screen-body" accessibility-elements-hidden={countrySheetOpen}>
+      {/* 국가 선택 시트 · 안내 대화상자가 열린 동안 뒤쪽을 보조기술에서 가립니다(ADR-0016 D9). */}
+      <view
+        className="login-screen-body"
+        accessibility-elements-hidden={countrySheetOpen || unavailable.notice !== null}
+      >
         <view className="login-screen-header" data-testid="login-screen-header">
           {handleBack ? (
             <RoundButton
@@ -233,7 +244,11 @@ export function LoginScreen({
               </>
             ) : null}
 
-            <LoginSocialMethods status={status} onSelect={handleSocialSelect} />
+            <LoginSocialMethods
+              methods={socialLoginMethods}
+              status={status}
+              onSelect={unavailable.tap}
+            />
 
             {/* 소셜 실패 문구입니다 — 같은 testid를 재사용합니다(새 testid 없이
                 ). 자리와 가운데 정렬만 새 클래스로 다릅니다. */}
@@ -248,6 +263,19 @@ export function LoginScreen({
               </text>
             ) : null}
 
+            {/* 비회원 길은 수단이 아니라 빠져나가는 길이라 소셜 묶음 밖, 약관 안내 위에 섭니다(간격은 부모 gap). */}
+            {guestSignIn === "visible" ? (
+              <view className="login-screen-method" data-testid="login-screen-method-guest">
+                <Button
+                  label={copy.guest}
+                  variant="text"
+                  size="l"
+                  width="fill"
+                  bindtap={guard(onContinueAsGuest)}
+                />
+              </view>
+            ) : null}
+
             <LoginLegalNotice onOpenLegalDocument={onOpenLegalDocument} />
           </view>
         </scroll-view>
@@ -260,6 +288,13 @@ export function LoginScreen({
           onClose={closeCountrySheet}
         />
       ) : null}
+
+      <LoginUnavailableDialog
+        notice={unavailable.notice}
+        guestSignIn={guestSignIn}
+        copy={copy}
+        onAction={unavailable.onAction}
+      />
     </view>
   );
 }

@@ -55,9 +55,11 @@ export type EntryScreenViewedEvent = {
   readonly name: "entry_screen_viewed";
   readonly screen: EntryViewedScreenName;
 };
+/** 로그인 화면에서 고른 것 — 수단 넷 + 「비회원으로 계속」(ADR-0111). */
+export type EntryLoginChoice = EntryLoginMethod | "guest";
 export type EntryLoginMethodSelectedEvent = {
   readonly name: "entry_login_method_selected";
-  readonly method: EntryLoginMethod;
+  readonly method: EntryLoginChoice;
 };
 export type EntryCompletedEvent = { readonly name: "entry_completed" };
 export type EntryReturningLearnerEnteredEvent = {
@@ -95,7 +97,7 @@ export function entryScreenViewedEvent(screen: EntryViewedScreenName): EntryScre
 }
 
 export function entryLoginMethodSelectedEvent(
-  method: EntryLoginMethod,
+  method: EntryLoginChoice,
 ): EntryLoginMethodSelectedEvent {
   return { name: "entry_login_method_selected", method };
 }

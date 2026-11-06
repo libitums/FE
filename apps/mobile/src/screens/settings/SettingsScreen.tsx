@@ -5,7 +5,7 @@ import { SettingsGroup } from "@libitums/ui-lynx/settings-cell";
 import type { SettingsGroupItem } from "@libitums/ui-lynx/settings-cell";
 
 import {
-  accountActions,
+  accountActionsFor,
   accountDeletionFailureMessage,
   accountActionsLayerOpen,
   deleteDialogActions,
@@ -14,7 +14,7 @@ import {
 import type { SettingsScreenProps } from "./settings.contract";
 import { appVersionLabel } from "../../lib/app-version";
 import { useAccountActions } from "./use-account-actions";
-import { settingsNavLabel, settingsNavTargets, settingsSessionOptionRows } from "./settings";
+import { settingsNavLabel, settingsNavTargetsFor, settingsSessionOptionRows } from "./settings";
 import { useUiCopy } from "../../lib/ui-copy";
 
 import "./settings-screen.css";
@@ -25,6 +25,8 @@ export function SettingsScreen({
   learnerProfileSummary,
   languageSummary,
   appVersion,
+  account: accountState,
+  onSignIn,
   onSignOut,
   onDeleteAccount,
   onLayerChange,
@@ -44,28 +46,30 @@ export function SettingsScreen({
     checked: row.checked,
     onChange: (checked: boolean) => onToggleSessionOption(row.key, checked),
   }));
-  const account = useAccountActions({ onSignOut, onDeleteAccount, onLayerChange });
+  const account = useAccountActions({ onSignIn, onSignOut, onDeleteAccount, onLayerChange });
   const { state } = account;
   const layerOpen = accountActionsLayerOpen(state);
-  const actionItems: readonly SettingsGroupItem[] = accountActions.map((id) => ({
+  const actionItems: readonly SettingsGroupItem[] = accountActionsFor(accountState).map((id) => ({
     id,
     trailing: "navigation",
     title: copy.settings.action[id],
     onNavigate: () => account.open(id),
   }));
   // 「레슨에 쓰는 이름 · 나라」 줄의 설명이 지금 값을 보입니다.
-  const accountItems: readonly SettingsGroupItem[] = settingsNavTargets.map((target) => ({
-    id: target,
-    trailing: "navigation",
-    title: settingsNavLabel(target, copy),
-    description:
-      target === "learner-profile"
-        ? learnerProfileSummary
-        : target === "language"
-          ? languageSummary
-          : undefined,
-    onNavigate: () => onSelectNavTarget(target),
-  }));
+  const accountItems: readonly SettingsGroupItem[] = settingsNavTargetsFor(accountState).map(
+    (target) => ({
+      id: target,
+      trailing: "navigation",
+      title: settingsNavLabel(target, copy),
+      description:
+        target === "learner-profile"
+          ? learnerProfileSummary
+          : target === "language"
+            ? languageSummary
+            : undefined,
+      onNavigate: () => onSelectNavTarget(target),
+    }),
+  );
 
   return (
     <view className="settings-screen">

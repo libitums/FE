@@ -4,6 +4,8 @@
 import { appPlatforms, isBuildNumber } from "./app-version";
 import type { AppPlatform, AppVersion } from "./app-version";
 import type { ContentStore } from "./episode-cache";
+import { entryLoginMethods } from "./entry-flow";
+import type { EntryLoginMethod } from "./entry-flow";
 import { getItem } from "./storage";
 
 /** 콘텐츠 버킷 기준 상대 경로입니다. */
@@ -11,9 +13,17 @@ export const APP_POLICY_PATH = "app-policy.json";
 /** 검증을 통과한 원문을 두는 저장소 키입니다. */
 export const APP_POLICY_KEY = "libitum.app-policy";
 
+/** 사용 불가로 안내하는 로그인 수단 — `all`은 모든 플랫폼, `android`는 Android만. */
+export type UnavailableLoginMethods = {
+  readonly all: readonly EntryLoginMethod[];
+  readonly android: readonly EntryLoginMethod[];
+};
+
 export type AppPolicy = {
   /** 플랫폼별 최소 빌드. 키가 없으면 그 플랫폼은 제한이 없습니다. */
   readonly minBuild: Partial<Record<AppPlatform, number>>;
+  /** 사용 불가 로그인 수단. 칸이 없으면 필드가 없고 앱 상수 기본값을 씁니다. */
+  readonly unavailableLoginMethods?: UnavailableLoginMethods;
 };
 
 export type AppUpdateDecision = "required" | "none";
@@ -43,7 +53,27 @@ export function decodeAppPolicy(text: string): AppPolicy | null {
     if (!isBuildNumber(value)) return null;
     minBuild[platform] = value;
   }
-  return { minBuild };
+  const unavailableLoginMethods = decodeUnavailableLoginMethods(
+    parsed["unavailable_login_methods"],
+  );
+  return unavailableLoginMethods === undefined
+    ? { minBuild }
+    : { minBuild, unavailableLoginMethods };
+}
+
+/** 문자열 배열에서 아는 수단만 어휘 순서로 — 배열이 아니면 `[]`. */
+function knownLoginMethods(value: unknown): readonly EntryLoginMethod[] {
+  if (!Array.isArray(value)) return [];
+  return entryLoginMethods.filter((method) => value.includes(method));
+}
+
+/**
+ * `unavailable_login_methods` 칸(ADR-0111 개정 3). 키가 없거나 모양이 틀리면 **칸만** 없는 것으로 — 정책 전체(최소 빌드)는
+ * 그대로 산다. 모르는 수단 이름은 버린다.
+ */
+function decodeUnavailableLoginMethods(raw: unknown): UnavailableLoginMethods | undefined {
+  if (!isPlainRecord(raw)) return undefined;
+  return { all: knownLoginMethods(raw["all"]), android: knownLoginMethods(raw["android"]) };
 }
 
 /** 버전 · 정책 둘 다 있고 그 플랫폼의 최소 빌드보다 낮으면 `required`. */

@@ -1,6 +1,8 @@
 // `ScreenWiring` 타입을 선언하고, 부분 팩토리(`journeyWiring`·`entryWiring`·`catalogWiring` 등)를
 // 합쳐 하나의 wiring을 만듭니다.
 
+import { loadStoredAppPolicy } from "../lib/app-policy";
+import { unavailableSocialLoginMethodsFor } from "../screens/login/login";
 import type { CatalogFreshness } from "../lib/manifest-check";
 import { downloadSettingsWiring } from "./download-wiring";
 import type { DownloadCatalogInput } from "./download-progress";
@@ -48,6 +50,8 @@ import type { SessionOptionKey, SessionOptions } from "../lib/session-options";
 import type { SessionOptionsWiring } from "./use-session-options";
 import type { NavAction } from "./nav-state";
 import { entryWiring, type LearnerSignupWiring } from "./entry-wiring";
+import { guestWiring, type GuestWiring } from "./guest-wiring";
+import type { AccountState } from "../lib/guest-session";
 import { journeyWiring } from "./journey-wiring";
 
 // 화면 결선이 `renderScreen`에 넘기는 것입니다. 셸이 소유한 값 하나와 콜백 셋입니다.
@@ -105,6 +109,8 @@ export type ScreenWiring = {
   // 여는 콜백입니다(가입 직후 ① 이름 · ② 나라는 `LearnerSignupWiring`).
   /** 호스트가 보낸 앱 버전 — 설정 끝 줄 · 스플래시의 강제 업데이트 판정(ADR-0086). 모르면 `null`. */
   appVersion: AppVersion | null;
+  /** 로그인 화면의 사용 불가 소셜 수단 — 기기에 저장된 앱 정책 · 플랫폼으로(ADR-0111 개정 3). 렌더 때 부른다. */
+  readonly unavailableSocialMethods: () => readonly SocialLoginMethod[];
   onSplashTimeout: () => void;
   onOnboardingComplete: () => void;
   onSelectSocialLoginMethod: (method: SocialLoginMethod) => Promise<SocialSignInOutcome>;
@@ -123,7 +129,10 @@ export type ScreenWiring = {
   onChangeUiLanguage: (language: EntryLanguage) => void;
   onContinueLanguageSelect: () => void;
   onEnterJourney: () => void;
-} & AccountWiring &
+  /** 설정이 행 구성을 고르는 값(ADR-0111). */
+  accountState: AccountState;
+} & GuestWiring &
+  AccountWiring &
   JourneyStats &
   StatBumpWiring &
   CatalogWiring &
@@ -152,6 +161,8 @@ export type ScreenWiringArgs = {
   readonly setEntryLanguage: Dispatch<SetStateAction<EntryLanguage>>;
   readonly downloadControls?: DownloadControls;
   readonly downloadCatalog: () => DownloadCatalogInput;
+  readonly accountState: AccountState;
+  readonly setAccountState: (state: AccountState) => void;
 } & ProgressWiringArgs &
   LearnerProfileControls &
   Omit<CatalogWiringArgs, "dispatch">;
@@ -167,6 +178,8 @@ export function screenWiring(args: ScreenWiringArgs): ScreenWiring {
     legacyTutorialPassed: args.legacyTutorialPassed,
     safeAreaInsets: args.safeAreaInsets,
     appVersion: args.appVersion,
+    unavailableSocialMethods: () =>
+      unavailableSocialLoginMethodsFor(args.appVersion?.platform ?? null, loadStoredAppPolicy()),
     gemCount: args.gemCount,
     streakDays: args.streakDays,
     trophyCount: args.trophyCount,
@@ -183,6 +196,8 @@ export function screenWiring(args: ScreenWiringArgs): ScreenWiring {
       args.dispatch({ type: "back" });
     },
     ...entry,
+    ...guestWiring(args),
+    accountState: args.accountState,
     ...accountWiring({
       analyticsUser: args.analyticsUser,
       entryEventSink: args.entryEventSink,

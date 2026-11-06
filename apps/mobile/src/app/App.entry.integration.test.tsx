@@ -9,6 +9,7 @@ import { entryLoginMethods, entrySplashDurationMs } from "../lib/entry-flow";
 import type { EntryEvent, EntryLoginMethod } from "../lib/entry-flow";
 import { entryLanguageLabel, initialEntryLanguage } from "../lib/entry-language";
 import { uiLanguageStorageKey } from "../lib/ui-language";
+import { productUnavailableLoginMethods, socialLoginMethods } from "../screens/login/login";
 import { passLearnerSignup } from "./test-helpers/learner-signup";
 import {
   contentNotFoundResponse,
@@ -832,9 +833,14 @@ test("[IA11] 설정이 없으면 Continue를 눌러도 fetch가 0회이고 uncon
 // **비동기**로 언어 선택에 닿는지를 봅니다. google · facebook은 웹 창 · PKCE 교환,
 // apple은 네이티브 시트 · id_token 교환입니다(`stubHostWithApple` · `stubSupabase`).
 // 콜백의 값 자체가 화면에 노출되지 않으므로 검증은 여전히 「없다」입니다.
-test("[IE6] 구글·애플·페이스북은 코드 검증을 건너뛰고 ① 이름이 선다(비동기)", async () => {
-  const nonPhoneMethods = entryLoginMethods.filter((method) => method !== "phone");
-  expect(nonPhoneMethods.length).toBeGreaterThan(0);
+// 사용 불가 수단은 순회에서 뺍니다 — Facebook은 제품이 임시로 막아 탭하면 안내 대화상자가 서고 요청이 0건입니다
+// (ADR-0111 개정 2 · `productUnavailableLoginMethods` — 그 분기는 GE13이 봅니다).
+test("[IE6] 구글·애플은 코드 검증을 건너뛰고 ① 이름이 선다(비동기)", async () => {
+  expect(socialLoginMethods).toEqual(["apple", "google", "facebook"]);
+  const nonPhoneMethods = socialLoginMethods.filter(
+    (method) => !productUnavailableLoginMethods.includes(method),
+  );
+  expect(nonPhoneMethods).toEqual(["apple", "google"]);
 
   for (const method of nonPhoneMethods) {
     const { appleStarts, webStarts } = stubHostWithApple(completedAppleSignIn);
@@ -990,9 +996,13 @@ test("[IE8] 여정 입장에서 진행하면 여정 맵이 서고 바텀 네비�
 // 대역으로 돕니다.
 // 언어를 **고른 뒤**라 키가 하나 더 늘어납니다 — ADR-0007 D1의 둘째 예외(`libitum.ui.language`).
 test("[IE9] 어느 수단으로 진행해도 저장된 키가 authSessionStorageKey · UI 언어 키 · 프로필 캐시 칸 하나뿐이다", async () => {
-  expect(entryLoginMethods.length).toBeGreaterThan(0);
+  // 사용 불가 수단(Facebook, ADR-0111 개정 2)은 탭하면 안내 대화상자가 서고 요청이 0건이라 순회에서 뺍니다.
+  const shownMethods = entryLoginMethods.filter(
+    (method) => !productUnavailableLoginMethods.includes(method),
+  );
+  expect(shownMethods).toEqual(["phone", "apple", "google"]);
 
-  for (const method of entryLoginMethods) {
+  for (const method of shownMethods) {
     let store: Map<string, string>;
     if (method === "phone") {
       store = emptyStorageStub();
@@ -1830,7 +1840,7 @@ test("[IN7] Apple 콜백을 보류한 채: google 탭 → 웹 start 0 · Continu
 
 // ------------------------------------------------------------------------- 전화번호 수단 숨김
 
-test("[IPH1] 제품의 기본값으로 부팅하면 로그인에 전화번호 수단이 없고 소셜 셋만 선다", () => {
+test("[IPH1] 제품의 기본값으로 부팅하면 로그인에 전화번호 수단이 없고 소셜 셋(iOS 기준)이 선다", () => {
   emptyStorageStub();
   vi.useFakeTimers();
   render(<App />);
@@ -1843,6 +1853,7 @@ test("[IPH1] 제품의 기본값으로 부팅하면 로그인에 전화번호 �
   for (const method of ["apple", "google", "facebook"] as const) {
     expect(screen.getByTestId(`login-screen-method-${method}`)).toBeInTheDocument();
   }
+  expect(screen.queryByTestId("login-screen-unavailable-dialog")).not.toBeInTheDocument();
 });
 
 // ------------------------------------------------------------------------- 분석 사용자 식별

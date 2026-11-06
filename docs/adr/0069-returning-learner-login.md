@@ -179,3 +179,7 @@ ui-lynx `button.css`는 바뀌지 않는다. 로고 배치 규칙(`-surface` rel
 - **손님 프로필이 서버 프로필을 덮는 규칙을 고칠 때**(보류 표) → D3의 순서와 「프로필 행 = 기존 회원」의 귀결(대가 7)을 함께 본다.
 - **판정에 쓸 서버 기록이 하나 더 생길 때**(예: 계정 수준의 「온보딩 완료」 표시) → D2의 「기존 RPC 둘」과 D4의 표를 다시 본다.
 - **로그인 화면에 busy 가드가 생길 때** → 대가 4를 닫는다.
+
+## 적용 기록 ⟨2026-11-06 — 비회원 진입([ADR-0111](0111-guest-entry-without-account.md))⟩
+
+결정은 바꾸지 않는다. **설정에서의 비회원 로그인은 기존 회원 판정을 지나지 않는다** — D1 · D3 · D6은 진입 구간(소셜 · 코드 검증)의 로그인을 다루고, 비회원은 이미 앱 구간(여정 맵 · 설정)에 있어 언어 선택 · 여정 입장을 다시 지날 자리가 없다. `guest-login`(설정 스택)의 소셜 성공은 비회원 칸 이관 → 세션 저장(`storeSignedInSession`) → `entry_login_method_selected { method }` → **프로필 동기화를 세션 저장 직후** 시작 → `backToRoot`(설정) → `syncPushDevice({ ask: true })`다(ADR-0111 D6). 프로필 동기화가 판정 뒤가 아니라 바로 서는 것은 D3의 예외가 아니라 **판정이 없기 때문**이고, 그 결과 손님 칸(비회원 구간에서 적은 이름 · 나라)이 `pending`으로 서버 행을 덮는 것은 [ADR-0059](0059-learner-profile.md) D3의 규칙 그대로다 — 비회원이 설정에서 로그인한 계정에 서버 프로필이 있으면 기기 값이 이긴다. `entry_returning_learner_entered`는 이 경로에서 **0**이다(판정이 없으니 「기존 회원 비율」의 분자 · 분모 어디에도 들지 않는다 — 비회원 → 로그인 전환은 ADR-0111 D8이 `method: "guest"` 뒤 `$identify`로 따로 잰다). 진입 구간의 로그인(소셜 · 코드 검증 · 부팅 갱신)은 이 ADR 그대로다 — 세션 저장이 `entry-wiring`의 `storeSession`에서 `app/store-session.ts`의 `storeSignedInSession`으로 옮겨졌을 뿐 D6 표의 순서는 같다. Facebook(두 플랫폼) · Apple(Android)이 표시 목록에서 빠져 「측정」 표의 `method` 값 가운데 `facebook`은 두 플랫폼에서, `apple`은 Android에서 당분간 나지 않는다(ADR-0111 D1 — 임시).

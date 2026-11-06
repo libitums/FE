@@ -1,6 +1,7 @@
 // `login.ts`(순수 로직)와 `loginMethodLabel`의 이름·시그니처는 이 화면의 계약이
 // 소유하는 자리입니다.
 
+import type { AppPlatform } from "../../lib/app-version";
 import type { EntryLoginMethod } from "../../lib/entry-flow";
 import type {
   PhoneNumber,
@@ -36,8 +37,17 @@ export type LoginMethodStatus = LoginStatus["kind"];
  */
 export type PhoneSignInVisibility = "visible" | "hidden";
 
+/** 「비회원으로 계속」을 그릴지 — 진입 흐름 `visible`, 설정에서 연 `guest-login`은 `hidden`(ADR-0111). */
+export type GuestSignInVisibility = "visible" | "hidden";
+
 export type LoginScreenProps = {
   readonly phoneSignIn: PhoneSignInVisibility;
+  /** 호스트 플랫폼 — 소셜 목록을 `socialLoginMethods`(전체)로 그립니다. 모르면 `null`. */
+  /** 이미 플랫폼 · 앱 정책이 반영된 사용 불가 소셜 수단(ADR-0111 개정 3). 결선이 `unavailableSocialLoginMethodsFor`로 만든다. */
+  readonly unavailableMethods: readonly SocialLoginMethod[];
+  readonly guestSignIn: GuestSignInVisibility;
+  /** 「비회원으로 계속」 — 요청 중이면 부르지 않습니다. `hidden`이면 버튼이 없어 부를 길이 없습니다. */
+  readonly onContinueAsGuest: () => void;
   /**
    * 소셜 버튼입니다. 요청 중이 아닐 때만 부릅니다. `signed-in`이면 결선이 이미 다음 화면으로
    * 옮겼습니다. `cancelled`면 조용히 `idle`, `failed`면 화면이 문구를 그립니다.
@@ -59,6 +69,8 @@ export type LoginScreenProps = {
 
 /** 로그인 화면의 UI 문구 구획입니다(`UiCopy.login`). 국가 이름은 `login-countries.ts`가 집니다. */
 export type LoginCopy = {
+  /** 「비회원으로 계속」 버튼 라벨. */
+  readonly guest: string;
   /** 수단 버튼 라벨 — 전화번호는 `Continue`입니다(`loginMethodLabel`). */
   readonly method: Readonly<Record<EntryLoginMethod, string>>;
   /** 제목 · 안내 — 전화번호 수단을 숨기면 전화번호를 말하지 않습니다(`loginHeading`). */
@@ -78,10 +90,22 @@ export type LoginCopy = {
     readonly and: string;
     readonly privacyPolicy: string;
   };
+  /** 사용 불가 수단을 눌렀을 때의 안내 대화상자(ADR-0111 개정 2). `method`는 수단 표시 이름. */
+  readonly unavailable: {
+    /** 인자는 제공자 이름(`socialProviderName` — 버튼 라벨이 아니다). */
+    readonly title: (provider: string) => string;
+    /** 비회원 버튼이 보일 때 — 「Google 또는 계정 없이」. */
+    readonly description: string;
+    /** 비회원 버튼이 없는 화면(설정 › Sign in) — 「Google로」. */
+    readonly descriptionWithoutGuest: string;
+    readonly close: string;
+  };
 };
 
 /** 소셜 버튼 셋입니다. 상태를 읽어 요소마다 `data-status`를 내고, 요청 중이면 탭을 무시합니다. */
 export type LoginSocialMethodsProps = {
+  /** 그릴 수단 · 순서 — `LoginScreen`이 계산해 내립니다. 빈 배열이면 묶음만 서고 버튼이 없습니다. */
+  readonly methods: readonly SocialLoginMethod[];
   readonly status: LoginStatus;
   readonly onSelect: (method: SocialLoginMethod) => void;
 };
@@ -95,4 +119,6 @@ export type LoginTestId =
   | "login-screen-legal"
   | `login-screen-legal-${LegalDocument}`
   | "login-screen-error" // 신규
-  | `login-screen-method-${EntryLoginMethod}`;
+  | "login-screen-unavailable-dialog" // 사용 불가 수단 안내 대화상자(개정 2)
+  | `login-screen-method-${EntryLoginMethod}`
+  | "login-screen-method-guest"; // `guestSignIn: "visible"`일 때만 존재

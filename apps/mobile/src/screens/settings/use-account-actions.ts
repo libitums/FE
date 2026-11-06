@@ -43,7 +43,9 @@ export const useAccountActions: UseAccountActions = (props): AccountActionsContr
       stateRef.current = next;
       setState(next);
     }
-    if (effect === "sign-out") {
+    if (effect === "sign-in") {
+      propsRef.current.onSignIn();
+    } else if (effect === "sign-out") {
       propsRef.current.onSignOut();
     } else if (effect === "delete-account") {
       const settle = (result: AccountDeletionResult): void => {
@@ -64,7 +66,13 @@ export const useAccountActions: UseAccountActions = (props): AccountActionsContr
     }
   }, [state]);
 
-  useScreenLayer(accountActionsLayerOpen(state), props.onLayerChange);
+  // 대화상자를 한 번도 열지 않았다면 알릴 변화가 없습니다(처음 그릴 때의 닫힘 `false`를 걸러
+  // 비회원 설정처럼 대화상자가 없는 화면이 호스트를 건드리지 않게 합니다).
+  const everOpenedRef = useRef(false);
+  useScreenLayer(accountActionsLayerOpen(state), (open) => {
+    if (open) everOpenedRef.current = true;
+    if (everOpenedRef.current) propsRef.current.onLayerChange(open);
+  });
   // 시스템 뒤로가기 = 대화상자의 취소(`stay` · `keep`)와 같은 `dismiss` 사건입니다. `deleting` 동안은
   // 전이표가 `dismiss`를 무시하므로 불려도 아무 일도 하지 않습니다.
   useLayerBack(accountActionsLayerOpen(state) ? () => dispatch({ type: "dismiss" }) : null);

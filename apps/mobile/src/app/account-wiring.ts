@@ -2,6 +2,7 @@
 // `entry_screen_viewed(login)` → App 세션 재시작)를 잇습니다. 어휘는 `leave-app.contract.ts`입니다.
 
 import { authUserIdFrom } from "../lib/auth-user-id";
+import { clearGuestSession, loadGuestSession } from "../lib/guest-session";
 import { clearLearnerProfileCache } from "../lib/learner-profile-cache";
 import { clearPendingLearningDays } from "./pending-learning-days";
 import { clearCachedProgress } from "./cached-learning-progress";
@@ -37,6 +38,8 @@ export function accountWiring({
 }: AccountWiringArgs): AccountWiring {
   const leave = (exit: AccountExit): void => {
     clearAuthSession();
+    // 방어입니다 — 정상 경로에서는 표식이 이미 없어 저장소를 건드리지 않습니다.
+    if (loadGuestSession()) clearGuestSession();
     try {
       analyticsUser?.reset(analyticsResetScopeFor(exit));
     } catch {

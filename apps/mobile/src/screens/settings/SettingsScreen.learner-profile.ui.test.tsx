@@ -20,6 +20,8 @@ function renderSettings(summary: string, onSelect: (target: string) => void = ()
     sessionOptions: initialSessionOptions,
     onToggleSessionOption: () => undefined,
     onSignOut: () => undefined,
+    onSignIn: () => undefined,
+    account: "signed-in" as const,
     onDeleteAccount: () => new Promise<AccountDeletionResult>(() => undefined),
     onLayerChange: () => undefined,
   };
@@ -68,6 +70,8 @@ test("[US-1b] 요약이 바뀌면 설명이 따라 바뀐다(기기에만 저장
       sessionOptions={initialSessionOptions}
       onToggleSessionOption={() => undefined}
       onSignOut={() => undefined}
+      onSignIn={() => undefined}
+      account="signed-in"
       onDeleteAccount={() => new Promise<AccountDeletionResult>(() => undefined)}
       onLayerChange={() => undefined}
     />,
