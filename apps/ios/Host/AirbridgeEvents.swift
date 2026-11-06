@@ -61,14 +61,65 @@ enum AirbridgeEvents {
     AirbridgeDeeplinks.handleDeferred()
   }
 
+  /// 추적 허용 요청을 지금 할지(`request`), 앱이 활성이 될 때까지 기다릴지(`waitForActive`), 아무것도 안 할지(`skip`).
+  /// 순수 판정이다 — ⟨2026-11-06 심사 거절 보충⟩ iOS는 앱이 **활성이 아닐 때** 들어온 요청을 대화상자 없이 조용히
+  /// 버리고 상태를 `notDetermined`로 둔다. 기존 계정 로그인은 Apple 로그인 시트가 닫히는 중(비활성)에 바로 맵에 들어서므로
+  /// 그 순간의 요청이 사라질 수 있었다.
+  enum TrackingPromptStep: Equatable {
+    case request
+    case waitForActive
+    case skip
+  }
+
+  static func trackingPromptStep(isStarted: Bool, isUndetermined: Bool, isActive: Bool)
+    -> TrackingPromptStep
+  {
+    guard isStarted, isUndetermined else { return .skip }
+    return isActive ? .request : .waitForActive
+  }
+
+  /// 대화상자 없이 돌아온 요청을 다음 활성화에 다시 시도하는 상한이다. 「앱이 추적을 요청하도록 허용」이 꺼진 기기는
+  /// 요청 즉시 `denied`가 되어 여기 걸리지 않는다 — 이 상한은 비활성 전환과 겹친 경우만 막는다.
+  static let trackingPromptMaxRetries = 2
+  private static var activeObserver: NSObjectProtocol?
+
   /// 추적 허용(ATT)을 **아직 정하지 않았을 때만** 시스템 대화상자를 띄운다(ADR-0079 D2). 이미 정했으면 아무것도
   /// 하지 않는다 — 시스템도 다시 묻지 않는다. 시작되지 않은 빌드에서는 묻지 않는다(보낼 곳이 없다).
-  /// 대화상자는 앱이 활성일 때만 뜨므로 메인 큐에서 부른다.
+  /// 대화상자는 앱이 활성일 때만 뜨므로 메인 큐에서 부르고, 활성이 아니면 `didBecomeActive` 한 번을 기다렸다가 묻는다.
   static func requestTrackingAuthorizationIfUndetermined() {
     guard isStarted else { return }
-    DispatchQueue.main.async {
-      guard Airbridge.trackingAuthorizationStatus() == .notDetermined else { return }
-      Airbridge.requestTrackingAuthorization { _ in }
+    DispatchQueue.main.async { promptTrackingAuthorization(retriesLeft: trackingPromptMaxRetries) }
+  }
+
+  private static func promptTrackingAuthorization(retriesLeft: Int) {
+    let step = trackingPromptStep(
+      isStarted: isStarted,
+      isUndetermined: isStarted && Airbridge.trackingAuthorizationStatus() == .notDetermined,
+      isActive: UIApplication.shared.applicationState == .active)
+    switch step {
+    case .skip:
+      return
+    case .waitForActive:
+      promptTrackingAuthorizationWhenActive(retriesLeft: retriesLeft)
+    case .request:
+      Airbridge.requestTrackingAuthorization { _ in
+        DispatchQueue.main.async {
+          // 대화상자를 못 띄운 채 돌아오면 상태가 그대로 `notDetermined`다 — 다음 활성화에 한 번 더.
+          guard retriesLeft > 0, Airbridge.trackingAuthorizationStatus() == .notDetermined else { return }
+          promptTrackingAuthorizationWhenActive(retriesLeft: retriesLeft - 1)
+        }
+      }
+    }
+  }
+
+  private static func promptTrackingAuthorizationWhenActive(retriesLeft: Int) {
+    guard activeObserver == nil else { return }
+    activeObserver = NotificationCenter.default.addObserver(
+      forName: UIApplication.didBecomeActiveNotification, object: nil, queue: .main
+    ) { _ in
+      if let observer = activeObserver { NotificationCenter.default.removeObserver(observer) }
+      activeObserver = nil
+      promptTrackingAuthorization(retriesLeft: retriesLeft)
     }
   }
 

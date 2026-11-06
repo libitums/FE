@@ -93,3 +93,23 @@ IDFA를 싣는다 [추정 — SDK 문서].
 - 허용률이 낮아 묻는 때를 바꾸고 싶을 때 → D2. 안내 화면(pre-prompt)은 새 결정이다.
 - Android SDK를 4.12.x로 올릴 때 → 두 플랫폼 버전을 맞출지 함께 본다(ADR-0063 「재검토 조건」의 SDK 올리기 점검).
 - 기기에서 600초 대기가 설치 이벤트를 잃게 하는 것이 보일 때 → D3.
+
+## 적용 기록
+
+결정을 바꾸지 않는다. 결정이 새 사례에 어떻게 걸렸는지만 적는다.
+
+**2026-11-06 — App Store 심사 거절(Guideline 2.1, 1.0 (9), iOS 27.2 · iPhone 17 Pro Max): 「ATT 프레임워크를 쓰는데 권한 요청을 찾지 못했다」.**
+
+- 심사 빌드에 D2의 코드는 들어 있다(`ae35307c` ⊂ 빌드 9 `fea1dff6`). 묻는 때는 D2 그대로 「가입 뒤 여정 맵 첫 진입」이다.
+- **가장 유력한 원인 [추론]** — 재심사라 심사자는 첫 심사 때 만든 계정으로 **다시 로그인**했고, 기록 있는 계정은 바로 맵에 들어선다(ADR-0069).
+  그 순간은 Apple 로그인 시트(`ASAuthorizationController` · `ASWebAuthenticationSession`)가 닫히는 중이라 앱이 **비활성**일 수 있고,
+  iOS는 비활성 때의 `requestTrackingAuthorization`을 대화상자 없이 버리고 상태를 `notDetermined`로 둔다(맥락 5). JS는 한 세션에 한 번만 부르고(D2)
+  호스트도 다시 묻지 않았으므로, 그 세션에서는 영영 뜨지 않았다. 다른 가능성: 심사 기기의 「앱이 추적을 요청하도록 허용」이 꺼져 있음(그러면
+  코드로 할 것이 없고 녹화로 답한다) · 첫 심사 때 같은 기기에서 이미 답함.
+- **호스트 보강(결정은 그대로)** — `AirbridgeEvents.requestTrackingAuthorizationIfUndetermined()`가 `UIApplication.shared.applicationState`를
+  보고, 활성이 아니면 `didBecomeActiveNotification` 한 번을 기다렸다가 묻는다. 요청이 대화상자 없이 돌아와 상태가 `notDetermined`면 다음 활성화에
+  다시 시도한다(상한 2회 — `trackingPromptMaxRetries`). 판정은 순수 함수 `trackingPromptStep(isStarted:isUndetermined:isActive:)`(HostTests N-I15).
+  「앱이 추적을 요청하도록 허용」이 꺼진 기기는 요청 즉시 `denied`가 되어 재시도에 걸리지 않는다.
+- **심사 답변** — Apple이 요구한 대로 실기 화면 녹화(새 설치 → 진입 흐름 → 맵 진입 때 대화상자 → 그 뒤 흐름)를 App Review Information의
+  Notes에 붙인다. 절차는 [e2e 시나리오 D](../e2e/airbridge-events.md#d--추적-허용att-대화상자-adr-0079)의 D-6 · 「심사용 녹화」.
+- 재검토 조건에 더한다: 같은 거절이 보강 뒤에도 오면 → D2의 「묻는 때」를 첫 활성(온보딩 첫 화면)으로 앞당기는 새 결정.
