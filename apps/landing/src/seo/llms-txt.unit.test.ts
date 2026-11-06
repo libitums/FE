@@ -6,6 +6,8 @@ const base: LlmsTxtInput = {
   siteUrl: "",
   name: "Duru",
   summary: "Duru is a story-based Korean learning app.",
+  alsoKnownAs: [],
+  links: [],
   pages: [
     { title: "Duru — Korean, lived as a story", label: "English", path: "/" },
     { title: "Duru — 이야기로 살아보는 한국어", label: "한국어", path: "/ko/" },
@@ -98,5 +100,37 @@ describe("buildLlmsTxt", () => {
     expect(() => buildLlmsTxt(input({ summary: "a\nb" }))).toThrow(/\S/);
     expect(() => buildLlmsTxt(input({ pages: [] }))).toThrow(/\S/);
     expect(() => buildLlmsTxt(input({ faq: [] }))).toThrow(/\S/);
+    expect(() => buildLlmsTxt(input({ alsoKnownAs: ["두루"] }))).toThrow(/alsoKnownAs/);
+    expect(() => buildLlmsTxt(input({ alsoKnownAs: ["Du\nru"] }))).toThrow(/alsoKnownAs/);
+    expect(() =>
+      buildLlmsTxt(input({ links: [{ label: "Play", url: "http://play.example.test" }] })),
+    ).toThrow(/link/);
+  });
+
+  it("U-LL9 다른 표기는 요약 다음 한 줄, 공식 주소는 Pages 다음 절 — 비면 둘 다 없다", () => {
+    const text = buildLlmsTxt(
+      input({
+        alsoKnownAs: ["DURU", "DURU: Learn Korean in Stories"],
+        links: [
+          { label: "Google Play", url: "https://play.example.test/app" },
+          { label: "Instagram", url: "https://instagram.example.test/duru" },
+        ],
+      }),
+    );
+    const blocks = text.split("\n\n");
+    expect(blocks[1]).toBe("> Duru is a story-based Korean learning app.");
+    expect(blocks[2]).toBe("Also known as: DURU, DURU: Learn Korean in Stories.");
+    expect(blocks[3]).toBe("## Pages");
+    expect(blocks[5]).toBe("## Official links");
+    expect(blocks[6]).toBe(
+      [
+        "- [Google Play](https://play.example.test/app)",
+        "- [Instagram](https://instagram.example.test/duru)",
+      ].join("\n"),
+    );
+    expect(blocks[7]).toBe("## FAQ");
+    const bare = buildLlmsTxt(input());
+    expect(bare).not.toContain("Also known as");
+    expect(bare).not.toContain("## Official links");
   });
 });

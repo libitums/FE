@@ -18,7 +18,7 @@ import "../styles/phone.css";
 
 import type { BaseProps } from "../components/landing.contract";
 import { buildIconLinks } from "../seo/icon-links";
-import { pages } from "../site";
+import { pages, siteName, webManifestPath } from "../site";
 
 type Props = BaseProps;
 
@@ -37,6 +37,9 @@ const icons = buildIconLinks(Astro.site?.origin ?? "");
     <meta name="description" content={description} />
     <meta name="robots" content={robots} />
     <meta name="theme-color" content="#F46B18" />
+    <meta name="application-name" content={siteName} />
+    <meta name="apple-mobile-web-app-title" content={siteName} />
+    <link rel="manifest" href={webManifestPath} />
     {icons.map((icon) => <link rel={icon.rel} href={icon.href} type={icon.type} sizes={icon.sizes} />)}
     <slot name="head" />
   </head>

@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from "vitest";
-import { languages, pages, pathFor } from "../site";
+import { brandProfiles, languages, pages, pathFor } from "../site";
 import Footer from "./Footer.astro";
 import { render } from "./render.support";
 
@@ -27,7 +27,9 @@ describe.each(languages)("Footer (%s)", (language) => {
   });
 
   it("UI-FO2 약관 · 개인정보 링크", () => {
-    const links = [...document.querySelectorAll("footer li a")];
+    const links = [
+      ...document.querySelectorAll('footer ul:not([data-testid="footer-social"]) li a'),
+    ];
     expect(links.length).toBe(2);
     expect(links.map((a) => a.textContent)).toEqual([t.footerTerms, t.footerPrivacy]);
     for (const link of links) {
@@ -36,6 +38,21 @@ describe.each(languages)("Footer (%s)", (language) => {
       expect(rel).toContain("noopener");
       expect(rel).toContain("noreferrer");
       expect(link.getAttribute("href")).toMatch(/^https:\/\//);
+    }
+  });
+
+  it("UI-FO4 공식 프로필 링크 — 이름 그대로 · 새 창 · rel에 me", () => {
+    const links = [...document.querySelectorAll('[data-testid="footer-social"] li a')];
+    expect(links.length).toBe(brandProfiles.length);
+    expect(links.length).toBeGreaterThan(0);
+    expect(links.map((a) => a.textContent?.trim())).toEqual(brandProfiles.map((p) => p.name));
+    expect(links.map((a) => a.getAttribute("href"))).toEqual(brandProfiles.map((p) => p.url));
+    for (const link of links) {
+      expect(link.getAttribute("target")).toBe("_blank");
+      const rel = (link.getAttribute("rel") ?? "").split(/\s+/);
+      expect(rel).toContain("me");
+      expect(rel).toContain("noopener");
+      expect(rel).toContain("noreferrer");
     }
   });
 

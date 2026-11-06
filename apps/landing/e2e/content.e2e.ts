@@ -92,10 +92,15 @@ for (const [path, language, locale] of [
     )["@graph"] as { "@type": string; inLanguage?: string; mainEntity?: unknown[] }[];
     expect(graph.map((node) => node["@type"]).sort()).toEqual([
       "FAQPage",
+      "Organization",
       "SoftwareApplication",
       "WebSite",
     ]);
     expect(graph.find((node) => node["@type"] === "FAQPage")?.mainEntity).toHaveLength(7);
+    // 브랜드 신호 — 프로필마다 rel=me 하나, 매니페스트 링크 하나, 푸터의 프로필 링크(ADR-0043 정정 2026-11-06).
+    await expect(page.locator('link[rel="me"]')).toHaveCount(2);
+    await expect(page.locator('link[rel="manifest"]')).toHaveAttribute("href", "/site.webmanifest");
+    await expect(page.locator('[data-testid="footer-social"] a')).toHaveCount(2);
   });
 }
 

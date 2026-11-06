@@ -253,6 +253,13 @@ FAQ의 키보드 조작, 스크립트 없는 화면, 404, 폭별 넘침, 그림 
   뒷받침하는 사실(앱 이름 · Play 제목 · Android 알림 채널의 한글 이름 「두루」 · 앱 아이콘 · 사용자가 준 공식 인스타그램 · Threads 주소)이고, 법인 정보
   (주소 · 설립자 · 연락처 · 직원 수)와 가격 · 평점은 여전히 타입에 없다. 틀린 것은 「조직 정보」를 통째로 근거 없음에 넣은 것 — 브랜드가
   무엇인지는 근거가 있었다. 스펙의 scope_out도 같은 날 고쳤다. 색인 · 순위 자체는 서치콘솔 · 백링크 · 도메인 나이의 몫이라 코드가 보장하지 않는다.
+  **같은 날 뒤 — 코드로 할 수 있는 브랜드 신호를 마저 더했다**(사용자 「코드적으로 할 수 있는 건 다 해야 해」): `/site.webmanifest`
+  (`name` · `short_name` = Duru, 아이콘 96 · 180 · 512 — 검색엔진의 사이트 이름 출처 하나, `Base.astro`가 모든 페이지에 `<link rel="manifest">` ·
+  `application-name` · `apple-mobile-web-app-title`로 싣는다), 색인 페이지의 `<link rel="me">`(프로필마다 하나)와 `keywords` 메타(브랜드 이름들만 —
+  언어별 검색어는 두지 않는다), 푸터의 공식 프로필 링크(`rel="me noopener noreferrer"`, 이름은 번역하지 않는 서비스 이름이라 문구 키가 없다),
+  `llms.txt`의 「Also known as」 줄(D8의 영어만 규칙으로 ASCII 표기만)과 `## Official links` 절. 프로필 목록은 `src/site.ts`의 `brandProfiles` 한 곳이다.
+  **하지 않은 것** — `SoftwareApplication.offers`(무료 여부를 저장소가 뒷받침하지 않는다), H1에 브랜드 이름 넣기(문구 결정), 언어별 `keywords`,
+  sitemap `lastmod`(배포마다 전부 바뀐 것으로 보여 부정확하다).
 
 ## 적용 기록
 

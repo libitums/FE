@@ -56,12 +56,13 @@ e2e는 chromium · analytics · analytics-mobile 세 프로젝트에서 128건 �
 | `src/i18n/ko.ts` · `vi.ts` · `id.ts` · `ms.ts` · `es.ts` · `ja.ts` | 한국어 · 베트남어 · 인도네시아어 · 말레이어 · 스페인어 · 일본어 문구. `Copy`를 전부 채워야 타입 검사를 지난다. ko의 목업 문구는 앱이 보여 주는 영어 그대로(앱에 한국어 UI가 없다) |
 | `src/pages/` | `index.astro`(기본 언어 `/`) · `[lang]/index.astro`(나머지 언어 `/<코드>/`) · `try/index.astro` · `[lang]/try/index.astro`(웹 체험판) · `404.astro`(`/404.html`) · `robots.txt.ts` · `llms.txt.ts`. **여기 있는 `.ts`는 전부 주소가 된다 — 테스트 파일을 두지 않는다** |
 | `src/layouts/Base.astro` | 모든 페이지가 함께 쓰는 문서 껍데기 — 문자셋 · 제목 · 설명 · `robots` · 아이콘 · 서체 · 건너뛰기 링크. 페이지마다 다른 head는 이름 붙은 슬롯 `head`로 받는다 |
-| `src/seo/` | 검색 · 답변 엔진용 값을 만드는 **순수 모듈 여섯**. Astro · `site.ts` · 문구를 import하지 않고 값을 인자로 받는다. 타입은 `seo.contract.ts` |
+| `src/seo/` | 검색 · 답변 엔진용 값을 만드는 **순수 모듈 일곱**. Astro · `site.ts` · 문구를 import하지 않고 값을 인자로 받는다. 타입은 `seo.contract.ts` |
 | ↳ `site-url.ts` | `resolveSiteUrl` — 배포 주소를 고르고 검사한다(아래 「배포 주소」) |
 | ↳ `head-meta.ts` | `buildHeadMeta` — canonical · hreflang · 공유 카드 그림의 절대 주소, `robots` 값 둘(`robotsIndexable` · `robotsNoindex`) |
 | ↳ `faq.ts` | `buildFaq` — 질문 일곱의 순서와, 스토어 주소 유무에 따른 「받는 곳」의 답 |
 | ↳ `structured-data.ts` | `buildStructuredData` — JSON-LD(`WebSite` · `Organization` · `SoftwareApplication` · `FAQPage`). ⟨2026-11-06⟩ 브랜드를 스토어 · 프로필과 묶는 `alternateName` · `logo` · `sameAs`는 `site.ts`의 `siteAlternateNames` · `siteLogoPath` · `brandLinks()`에서 온다 — 새 공식 프로필은 `brandProfiles`에 더한다 |
-| ↳ `llms-txt.ts` · `robots-txt.ts` | `/llms.txt` · `/robots.txt`의 본문. 이름으로 허용하는 수집기 목록(`answerEngineCrawlers`)도 여기다 |
+| ↳ `llms-txt.ts` · `robots-txt.ts` | `/llms.txt` · `/robots.txt`의 본문. 이름으로 허용하는 수집기 목록(`answerEngineCrawlers`)도 여기다. ⟨2026-11-06⟩ `llms.txt`에 「Also known as」 줄(ASCII 표기만)과 `## Official links`(스토어 · 프로필) |
+| ↳ `web-manifest.ts` | ⟨2026-11-06⟩ `buildWebManifest` — `/site.webmanifest`(`name` · `short_name` = 서비스 이름, 아이콘 96 · 180 · 512). 검색엔진이 사이트 이름을 읽는 자리 하나를 더한 것. 주소는 `src/pages/site.webmanifest.ts`, 아이콘 목록은 `icon-links.ts`의 `manifestIcons`, 타입은 `web-manifest.contract.ts`(`seo.contract.ts`의 300줄 제한 때문에 따로) |
 | `src/components/` | `Landing.astro`가 섹션 컴포넌트를 순서대로 놓는다. props 타입은 `landing.contract.ts` |
 | ↳ `SeoHead.astro` | 색인되는 페이지의 head — 공유 카드 · canonical · hreflang · JSON-LD. `Landing.astro`가 `Base`의 `head` 슬롯에 꽂는다 |
 | ↳ `Faq.astro` | 보이는 FAQ. 질문마다 `<details>`이고 스크립트가 없다. `SeoHead`가 받는 것과 **같은 배열**을 그린다 |
@@ -83,7 +84,7 @@ e2e는 chromium · analytics · analytics-mobile 세 프로젝트에서 128건 �
 | `src/assets/content/images/` | ⟨2026-10-29⟩ 랜딩 소개 그림 — 콘텐츠 버킷 `images/<unit>/…`의 사본(같은 상대 경로 · 같은 바이트). 표는 `src/assets/images.ts`(히어로 · Features · Phrases · 맺음), Story 카드는 `src/story/episodes.ts`. Astro가 크기별로 다시 굽는다 |
 | `src/story/` | ⟨2026-10-29⟩ Story 줄의 에피소드 카드(새 것 먼저, 사람이 하나씩 더한다 — 아래 「Story 카드 더하기」). ⟨2026-11-04⟩ `episodes.contract.ts`(id 목록 · 타입) · `text/<코드>.ts`(언어별 때 · 제목 · 티저 · alt) · `episodes.ts`(번호 · 그림 · 조립) — 글이 다섯 언어가 되어 한 파일이 300줄(lint `max-lines`)을 넘겨 나눴다 |
 | `scripts/` | `fetch-content-image.mjs` — 버킷 그림 하나를 `src/assets/content/`로 받는다. ⟨2026-11-04⟩ `shoot-og.mjs` — 빌드 결과에서 공유 카드 그림 `public/og-<코드>.jpg`를 찍는다(아래 「그림」) |
-| `public/` | 아이콘과 공유 카드 그림(`og-*.jpg`) — 그대로 복사된다 |
+| `public/` | 아이콘과 공유 카드 그림(`og-*.jpg`) — 그대로 복사된다. ⟨2026-11-06⟩ `icon-512.png`는 `assets/store/app-icon-512.png`의 바이트 사본(매니페스트용) |
 | ↳ `public/naver….html` · `google….html` | 네이버 서치어드바이저 · Google Search Console의 소유 확인 파일. **지우거나 고치지 않는다** — 두 곳 모두 주기적으로 다시 확인한다. 검색엔진 확인 파일(`naver*.html` · `google*.html`)만 포매터 대상에서 뺐다 — 한 글자도 바뀌면 안 된다 |
 
 테스트 파일은 소스 옆에 두고 이름이 계층을 가른다 — `*.unit.test.ts` · `*.ui.test.ts` · `*.integration.test.ts`
@@ -256,7 +257,8 @@ GA4와 따로, 랜딩은 Airbridge Web SDK도 싣는다 — **검색광고를 �
 
   `public/logo-duru.webp`(헤더 · 푸터 로고)는 스플래시의 손글씨 로고
   (`apps/mobile/src/screens/splash/assets/logo-handwriting.webp`, 애니메이션)의 **마지막 프레임**을 브랜드 주황
-  `#F46B18`으로 채운 것이다. 앱 아이콘은 파비콘에만 쓴다.
+  `#F46B18`으로 채운 것이다. 앱 아이콘은 파비콘 · 웹 앱 매니페스트(`icon-512.png`) · JSON-LD `Organization.logo`(180px)에 쓴다 — 글자 로고는
+  112px 미만이라 로고 구조화 데이터에 못 쓴다.
 
   파비콘 `<link>`는 `src/seo/icon-links.ts`가 만들고 `Base.astro`가 모든 페이지에 싣는다. 배포 주소(`Astro.site`)가 있으면
   절대 주소다 — Google은 페이지의 `rel="icon"` 링크를 따라가 48px 배수의 정사각형 아이콘을 받는다. 벡터 원본이 없어

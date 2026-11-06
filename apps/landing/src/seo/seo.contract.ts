@@ -222,18 +222,32 @@ export interface LlmsTxtPage {
   path: string;
 }
 
+/** `## Official links`의 항목 하나입니다(스토어 · 프로필). */
+export interface LlmsTxtLink {
+  label: string;
+  /** `https://` 절대 주소입니다. */
+  url: string;
+}
+
 export interface LlmsTxtInput {
   siteUrl: SiteUrl;
   name: string;
   /** 한 문단 요약입니다. 줄바꿈이 없어야 합니다. */
   summary: string;
+  /** 다른 표기입니다(`Also known as:` 줄). 영어로만 쓰는 파일이라 인쇄 가능한 ASCII만 받습니다. 비면 줄이 없습니다. */
+  alsoKnownAs: readonly string[];
+  /** 공식 바깥 주소입니다. 비면 절이 없습니다. */
+  links: readonly LlmsTxtLink[];
   /** 언어 목록 순서 그대로입니다. */
   pages: readonly LlmsTxtPage[];
   /** 기본 언어의 FAQ입니다. */
   faq: readonly FaqEntry[];
 }
 
-/** `summary`에 줄바꿈이 있거나 `pages` · `faq`가 비었으면 던집니다. */
+/**
+ * `summary`에 줄바꿈이 있거나 `pages` · `faq`가 비었으면 던집니다. `alsoKnownAs`에 ASCII 밖 글자가 있거나
+ * `links`의 주소가 `https://`로 시작하지 않아도 던집니다.
+ */
 export type BuildLlmsTxt = (input: LlmsTxtInput) => string;
 
 // ---------------------------------------------------------------- robots.txt

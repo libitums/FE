@@ -2,7 +2,9 @@
 import { buildHeadMeta } from "../seo/head-meta";
 import { buildStructuredData, serializeStructuredData } from "../seo/structured-data";
 import {
+  brandKeywords,
   brandLinks,
+  brandProfiles,
   languageRoutes,
   pages,
   siteAlternateNames,
@@ -37,6 +39,8 @@ const structured = serializeStructuredData(
 );
 ---
 
+<meta name="keywords" content={brandKeywords().join(", ")} />
+{brandProfiles.map((profile) => <link rel="me" href={profile.url} />)}
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content={siteName} />
 <meta property="og:locale" content={ogLocale} />
