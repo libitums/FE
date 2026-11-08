@@ -3,7 +3,7 @@
 
 import type { ChatSendEnv } from "./chat-send.contract.ts";
 import type { Outbound, OutboundRequest } from "./delete-account.contract.ts";
-import { serviceKeyHeaders } from "./service-key.ts";
+import { isJwtShaped, serviceKeyHeaders } from "./service-key.ts";
 
 export class RpcFailed extends Error {
   constructor(
@@ -56,4 +56,39 @@ export function authUserIdRequest(env: ChatSendEnv, accessToken: string): Outbou
     headers: { apikey: env.supabaseAnonKey, Authorization: `Bearer ${accessToken}` },
     body: null,
   };
+}
+
+/** 길이가 같을 때만 글자를 다 비교합니다 — 첫 차이에서 멈추지 않습니다. */
+export function sameSecret(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let difference = 0;
+  for (let i = 0; i < a.length; i += 1) difference |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return difference === 0;
+}
+
+/**
+ * 호출자가 이 프로젝트의 서버 키를 냈는가(ops-dashboard · 예약 작업). 런타임 키와 글자가 같으면 통과, 아니면 Auth 관리 API에 그 키로
+ * 물어 200이면 통과합니다 — 런타임은 새 비밀 키(`sb_secret_…`)를, 호출자는 레거시 `service_role` 키를 들고 있을 수 있습니다
+ * (`send-push`와 같은 규칙, 2026-11-09 운영에서 확인).
+ */
+export async function isServiceKey(
+  outbound: Outbound,
+  env: ChatSendEnv,
+  presented: string,
+): Promise<boolean> {
+  if (sameSecret(presented, env.supabaseServiceRoleKey)) return true;
+  // 형식 검사는 불필요한 조회만 줄입니다. 권한은 아래 Auth 응답으로 확인합니다.
+  if (!isJwtShaped(presented) && !(presented.startsWith("sb_secret_") && presented.length > 10))
+    return false;
+  try {
+    const response = await outbound({
+      url: `${env.supabaseUrl}/auth/v1/admin/users?page=1&per_page=1`,
+      method: "GET",
+      headers: serviceKeyHeaders(presented),
+      body: null,
+    });
+    return response.status === 200;
+  } catch {
+    return false;
+  }
 }

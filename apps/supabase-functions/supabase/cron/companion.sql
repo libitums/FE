@@ -6,7 +6,7 @@
 --   create extension if not exists pg_cron;
 --   create extension if not exists pg_net;
 --   select vault.create_secret('<service role 키>', 'companion_service_role_key');
---   ⚠ 이 키는 Edge 런타임의 SUPABASE_SERVICE_ROLE_KEY와 **같은 값**이어야 한다(`companion-proactive`는 글자로 비교한다).
+--   레거시 service_role 키(eyJ…)든 새 비밀 키(sb_secret_…)든 된다 — 런타임 키와 다르면 함수가 Auth에 물어 확인한다.
 
 -- 닫히지 않은 크레딧 예약 해제(서버가 턴 중간에 죽은 경우) — 5분마다, 10분 넘은 것.
 select cron.schedule(

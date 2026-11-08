@@ -54,6 +54,7 @@ const finished = {
   balance: null,
 };
 const assistantId = "50000000-0000-4000-8000-000000000001";
+const legacyKey = "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoic2VydmljZV9yb2xlIn0.c2lnbmF0dXJl";
 
 type Rpc = { fn: string; args: Record<string, unknown> };
 type Options = {
@@ -82,6 +83,13 @@ function setup(options: Options = {}) {
     companion_save_summary: null,
   };
   const outbound = async (request: OutboundRequest) => {
+    // 서버 키 확인: 런타임 키와 다른 레거시 키를 Auth 관리 API가 받아 준다.
+    if (request.url.includes("/auth/v1/admin/users")) {
+      return {
+        status: request.headers["apikey"] === legacyKey ? 200 : 401,
+        text: async () => "{}",
+      };
+    }
     if (request.url.endsWith("/auth/v1/user")) {
       return {
         status: options.authStatus ?? 200,
@@ -233,9 +241,17 @@ describe("스트림 전 판정", () => {
       p_region: "US",
     });
     expect(finishArgs()).toMatchObject({ p_assistant: { meta: { playground: true } } });
-    expect((await handler(post(body(), { Authorization: "Bearer service-secret" }))).status).toBe(
+    const asPlayground = (key: string, user: string = playground) =>
+      handler(post(body(), { Authorization: `Bearer ${key}`, "x-companion-user-id": user }));
+    expect((await asPlayground("service-secret", "not-a-uuid")).status).toBe(401);
+    // 운영(2026-11-09): 런타임은 새 비밀 키, 대시보드는 레거시 service_role 키 — Auth가 받아 주면 통과한다.
+    const legacy = await asPlayground(legacyKey);
+    expect(legacy.status).toBe(200);
+    await legacy.text();
+    expect((await asPlayground("eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiYW5vbiJ9.Zm9yZ2Vk")).status).toBe(
       401,
     );
+    await settle();
   });
 });
 

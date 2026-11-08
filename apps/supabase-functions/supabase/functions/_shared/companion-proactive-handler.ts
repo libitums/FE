@@ -9,7 +9,7 @@ import type { ChatSendDeps, HistoryEntry, PersonaCard, Segment } from "./chat-se
 import { collectSegments, createSegmentSplitter, segmentsToPlain } from "./companion-segments.ts";
 import { systemSplit } from "./companion-llm.ts";
 import { companionSystemPrompt } from "./companion-prompt.ts";
-import { callRpc } from "./companion-rpc.ts";
+import { callRpc, isServiceKey } from "./companion-rpc.ts";
 import { bearerTokenFrom } from "./supabase-auth.ts";
 
 const historyLimit = 12;
@@ -39,13 +39,6 @@ type Outcome = {
 
 const json = (status: number, body: unknown) =>
   new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
-
-function sameSecret(a: string, b: string): boolean {
-  if (a.length !== b.length) return false;
-  let difference = 0;
-  for (let i = 0; i < a.length; i += 1) difference |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  return difference === 0;
-}
 
 async function proactiveOne(deps: ChatSendDeps, target: Target, force: boolean): Promise<Outcome> {
   const env = deps.env!;
@@ -128,7 +121,7 @@ export function createProactiveHandler(
     if (request.method !== "POST") return json(405, { error: "method_not_allowed" });
     if (deps.env === null || deps.llm === null) return json(500, { error: "server_misconfigured" });
     const token = bearerTokenFrom(request.headers.get("authorization"));
-    if (token === null || !sameSecret(token, deps.env.supabaseServiceRoleKey))
+    if (token === null || !(await isServiceKey(deps.outbound, deps.env, token)))
       return json(401, { error: "invalid_session" });
 
     let body: Record<string, unknown>;

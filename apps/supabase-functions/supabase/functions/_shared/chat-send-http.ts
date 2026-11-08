@@ -10,7 +10,7 @@ import {
   type PreStreamErrorCode,
   type TurnEvent,
 } from "./companion-contract/index.ts";
-import { authUserIdRequest } from "./companion-rpc.ts";
+import { authUserIdRequest, isServiceKey } from "./companion-rpc.ts";
 import { bearerTokenFrom } from "./supabase-auth.ts";
 
 const uuidShape = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -35,13 +35,6 @@ export function errorResponse(
   );
 }
 
-function sameSecret(a: string, b: string): boolean {
-  if (a.length !== b.length) return false;
-  let difference = 0;
-  for (let i = 0; i < a.length; i += 1) difference |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  return difference === 0;
-}
-
 /** 사용자 id, 또는 실패면 null. 서버 키 + 헤더면 플레이그라운드 경로입니다. */
 export async function callerUserId(
   deps: ChatSendDeps,
@@ -50,9 +43,12 @@ export async function callerUserId(
 ): Promise<{ userId: string; playground: boolean } | null> {
   const token = bearerTokenFrom(request.headers.get("authorization"));
   if (token === null) return null;
-  if (sameSecret(token, env.supabaseServiceRoleKey)) {
-    const userId = request.headers.get("x-companion-user-id")?.trim() ?? "";
-    return uuidShape.test(userId) ? { userId: userId.toLowerCase(), playground: true } : null;
+  // 유저 헤더가 있으면 플레이그라운드 경로 — 토큰은 서버 키여야 합니다. 없으면 유저 토큰으로 봅니다.
+  const playgroundUser = request.headers.get("x-companion-user-id")?.trim();
+  if (playgroundUser !== undefined && playgroundUser !== "") {
+    if (!uuidShape.test(playgroundUser) || !(await isServiceKey(deps.outbound, env, token)))
+      return null;
+    return { userId: playgroundUser.toLowerCase(), playground: true };
   }
   try {
     const response = await deps.outbound(authUserIdRequest(env, token));
