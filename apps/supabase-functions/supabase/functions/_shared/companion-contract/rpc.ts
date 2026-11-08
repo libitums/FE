@@ -64,7 +64,28 @@ export const companionMessagesPageSchema = z.object({
   hasMore: z.boolean(),
 });
 
+/** `companion_list_memories(p_character_id)`의 원소입니다(M3). `characterId`가 null이면 모든 캐릭터가 읽는 공유 기억입니다. */
+export const companionMemorySchema = z.object({
+  id: z.uuid(),
+  characterId: z.nullable(z.string()),
+  kind: z.enum(["fact", "event", "summary"]),
+  content: z.string(),
+  createdAt: z.iso.datetime({ offset: true }),
+});
+
+/** `companion_get_wallet()`의 반환입니다(M4). 버킷별 잔액과 덕수쌤 체험 남은 수, 티어입니다. */
+export const companionWalletSchema = z.object({
+  tier: z.enum(["free", "premium"]),
+  sub: z.int().check(z.nonnegative()),
+  subExpiresAt: z.nullable(z.string()),
+  grant: z.int().check(z.nonnegative()),
+  paid: z.int().check(z.nonnegative()),
+  trialRemaining: z.int().check(z.nonnegative()),
+});
+
 export type FeedbackMode = z.infer<typeof feedbackModeSchema>;
+export type CompanionMemory = z.infer<typeof companionMemorySchema>;
+export type CompanionWallet = z.infer<typeof companionWalletSchema>;
 export type CompanionProfile = z.infer<typeof companionProfileSchema>;
 export type CompanionCharacter = z.infer<typeof companionCharacterSchema>;
 export type CompanionMessage = z.infer<typeof companionMessageSchema>;

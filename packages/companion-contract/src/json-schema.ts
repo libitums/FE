@@ -5,8 +5,10 @@ import { z } from "zod/mini";
 import { chatSendRequestSchema, preStreamErrorBodySchema } from "./chat-send";
 import {
   companionCharacterSchema,
+  companionMemorySchema,
   companionMessagesPageSchema,
   companionProfileSchema,
+  companionWalletSchema,
 } from "./rpc";
 import { turnEventSchema } from "./sse-events";
 
@@ -17,6 +19,8 @@ const schemas = {
   "companion-profile": companionProfileSchema,
   "companion-character": companionCharacterSchema,
   "companion-messages-page": companionMessagesPageSchema,
+  "companion-memory": companionMemorySchema,
+  "companion-wallet": companionWalletSchema,
 } as const;
 
 /** 산출 파일 이름(확장자 없음) → JSON Schema(draft 2020-12)입니다. 이름 순으로 돌려줍니다. */

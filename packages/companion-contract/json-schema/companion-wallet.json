@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "tier": {
+      "type": "string",
+      "enum": ["free", "premium"]
+    },
+    "sub": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "subExpiresAt": {
+      "type": ["string", "null"]
+    },
+    "grant": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "paid": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "trialRemaining": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    }
+  },
+  "required": ["tier", "sub", "subExpiresAt", "grant", "paid", "trialRemaining"],
+  "additionalProperties": false
+}
