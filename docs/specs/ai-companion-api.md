@@ -13,6 +13,8 @@
    표 권한을 걷는다. 저장소의 기존 표(`learning_progress` · `learner_profiles` · `push_devices`)와 같은 방식이다.
 3. 앱이 닿는 길은 둘뿐이다 — Edge Function `chat-send`, 그리고 **`public` 스키마의 창구 함수(`public.companion_*`)**. 앱은 `companion`
    스키마의 표 · 함수를 직접 부르지 않는다(§3).
+   **서버(Edge Function · 워커)도 같은 길을 쓴다** — `companion` 스키마는 PostgREST에 노출하지 않으므로 서버 키로도 REST로는 그 표에
+   닿지 못한다. 서버가 부르는 함수는 `public.companion_*`에 두고 **service_role에만** 실행 권한을 준다(§3.1 · §3.3).
 4. 크레딧 · 사용량 · 메모리 쓰기는 서버(Edge Function · 워커)만 한다. 앱용 창구 함수는 본인 행만 읽고, 쓰기는 프로필 · 메모리
    수정 · 신고로 한정한다.
 5. 로그 · 분석에 대화 원문 · 생년 · 이메일 · 토큰을 싣지 않는다. Edge Function 로그는 기존 함수처럼 요청당 한 줄
@@ -25,6 +27,7 @@
 - 앱 요청은 `Authorization: Bearer <사용자 액세스 토큰>`이다. Edge Function은 기존 `delete-account`처럼 `verify_jwt = false`로
   배포하고 **함수가 스스로 토큰을 검증한다**(Auth 사용자 조회). 창구 함수는 PostgREST가 토큰을 검증하고 함수가 `auth.uid()`를 쓴다.
 - 내부 엔드포인트(`job-worker` · 선톡)는 service role 키만 받는다. 기존 `send-push`와 같은 검증(`_shared/service-key.ts`)을 쓴다.
+- Edge Function이 DB에 닿을 때는 service role 키로 §3.3의 서버용 함수를 HTTP RPC로 부른다. DB에 직접 연결하지 않는다(§3.1).
 - 비회원(서버 계정 없음)은 부를 수 없다 — [제안] PRD §3.13 · O7.
 - [제안] M4 전에는 토큰의 `app_metadata.duru_tester`가 `true`인 계정만 `chat-send`를 부를 수 있다([ADR-0085](../adr/0085-tester-access.md)).
   서버는 토큰 내용을 Auth 서버 조회 결과로 읽는다(앱처럼 서명 없이 읽지 않는다).
@@ -142,7 +145,7 @@ Accept: text/event-stream
 ### 2.4 결제 연결점 (M4)
 
 - M4는 결제를 만들지 않는다. 결제 작업(`billing-webhook` 등)이 부를 **지급 함수**와 **티어를 읽는 자리**만 정한다.
-- 지급: `companion.grant_credits(p_user_id, p_bucket, p_amount, p_reason, p_ref_id, p_expires_at)` — service role 전용, `p_ref_id`
+- 지급: `public.companion_grant_credits(p_user_id, p_bucket, p_amount, p_reason, p_ref_id, p_expires_at)` — service role 전용, `p_ref_id`
   (영수증 · 거래 id)로 멱등. §6.4.
 - 티어: `companion.entitlements(user_id, tier, expires_at, source)` 표를 결제 작업이 채운다. 컴패니언은 읽기만 한다. 행이 없으면
   무료 티어로 본다.
@@ -158,12 +161,19 @@ Accept: text/event-stream
 PostgREST(Supabase가 DB 함수를 `/rest/v1/rpc/<이름>` URL로 열어 주는 장치)는 설정에 등록된 스키마만 바깥에 보인다. 기본은
 `public`뿐이다. `companion` 스키마를 등록하면 그 안의 표 · 함수가 노출 후보가 되고, 그 설정은 코드가 아니라 대시보드에 있다.
 
-그래서 **`companion` 스키마는 노출하지 않고**, 앱이 불러야 하는 기능만 `public.companion_*` 창구 함수로 연다.
+그래서 **`companion` 스키마는 노출하지 않고**, 불러야 하는 기능만 `public.companion_*` 함수로 연다. 함수는 두 갈래다.
 
-- 창구 함수는 `security definer` · `set search_path = ''`이고, 첫 줄에서 `auth.uid()`가 없으면 `28000`을 던진다. 본문은
-  `companion` 스키마의 표를 직접 읽거나 내부 함수를 부른다.
-- 권한은 `revoke all … from public, anon` 뒤 `grant execute … to authenticated`다(기존 `save_learner_profile`과 같다).
-- 내부 함수(`companion.*`)는 `authenticated`에 실행 권한이 없다. Edge Function · 워커가 service role로 부른다.
+| 갈래 | 누가 부르나 | 권한 | 첫 줄 |
+|---|---|---|---|
+| 앱용 창구 함수(§3.2) | 앱(사용자 토큰) | `revoke all … from public, anon` 뒤 `grant execute … to authenticated` — 기존 `save_learner_profile`과 같다 | `auth.uid()`가 없으면 `28000` |
+| 서버용 함수(§3.3) | Edge Function · 워커(service role 키) | `revoke all … from public, anon, authenticated` 뒤 `grant execute … to service_role` — 기존 `reengagement_devices`(`send-push`가 부른다)와 같다 | 인수로 받은 `p_user_id`를 쓴다 |
+
+- 둘 다 `security definer` · `set search_path = ''`이고, 본문이 `companion` 스키마의 표를 읽고 쓴다.
+- **서버도 DB에 직접 연결하지 않는다**(2026-11-09 결정). Edge Function은 기존 함수처럼 HTTP로 RPC를 부른다 — Postgres 드라이버 ·
+  연결 관리 · 연결 수 한도를 새로 들이지 않으려는 것이다. 크레딧처럼 여러 단계를 한 번에 해야 하는 일은 어차피 트랜잭션 DB 함수
+  하나가 하므로 직접 연결로 얻는 것이 없다.
+- 운영자가 SQL 편집기에서 직접 실행하는 함수(`companion.sync_expressions` — 학습 표현 동기화)는 `companion` 스키마에 둔다. REST로
+  부르지 않으므로 노출할 필요가 없다.
 
 ### 3.2 앱용 창구 함수
 
@@ -201,23 +211,24 @@ PostgREST(Supabase가 DB 함수를 `/rest/v1/rpc/<이름>` URL로 열어 주는 
 }
 ```
 
-### 3.3 내부 함수 (`companion` 스키마, service role 전용)
+### 3.3 서버용 함수 (`public.companion_*`, service_role 전용)
 
 | 함수 | 마일스톤 | 하는 일 |
 |---|---|---|
-| `turn_gate(p_user_id, p_character_id, p_client_message_id, p_now)` | M1 | §2.1 판정 5 ~ 9를 한 번에 보고 결과 코드 · 대화 id · 연령대 · 지역 규칙을 돌려준다 |
-| `begin_turn(…)` | M1 | 대화가 없으면 만들고, 유저 메시지를 `status = 'pending'`으로 저장한다(멱등) |
-| `finish_turn(…)` | M1 | 캐릭터 메시지 · 상태 JSON 결과(친밀도 · 화제 상태)를 저장하고 유저 메시지 상태를 닫는다 |
-| `record_usage(p_user_id, p_now, p_seconds)` | M1 | 이용 시간 누적(§7 `usage_daily`) |
-| `record_notice(p_user_id, p_kind, p_now)` | M1 | AI 고지 · 휴식 알림 보낸 시각 |
-| `record_moderation(…)` | M1 | 가드레일 판정 기록 |
-| `load_learning_context(p_user_id)` | M1 | `learning_progress`의 `catalogProgress` → 해금 에피소드 · 학습 표현 목록 |
-| `reserve_credits` · `settle_credits` · `release_credits` | M4 | §6 |
-| `grant_credits` | M4 | §6.4 · §2.4 |
-| `expire_sub_credits(p_now)` | M4 | 구독 크레딧 소멸(pg_cron) |
+| `companion_turn_gate(p_user_id, p_character_id, p_client_message_id, p_now)` | M1 | §2.1 판정 5 ~ 9를 한 번에 보고 결과 코드 · 대화 id · 연령대 · 지역 규칙을 돌려준다 |
+| `companion_begin_turn(…)` | M1 | 대화가 없으면 만들고, 유저 메시지를 `status = 'pending'`으로 저장한다(멱등) |
+| `companion_finish_turn(…)` | M1 | 캐릭터 메시지 · 상태 JSON 결과(친밀도 · 화제 상태)를 저장하고 유저 메시지 상태를 닫는다 |
+| `companion_record_usage(p_user_id, p_now, p_seconds)` | M1 | 이용 시간 누적(§7 `usage_daily`) |
+| `companion_record_notice(p_user_id, p_kind, p_now)` | M1 | AI 고지 · 휴식 알림 보낸 시각 |
+| `companion_record_moderation(…)` | M1 | 가드레일 판정 기록 |
+| `companion_learning_context(p_user_id)` | M1 | `learning_progress`의 `catalogProgress` → 해금 에피소드 · 학습 표현 목록 |
+| `companion_reserve_credits` · `companion_settle_credits` · `companion_release_credits` | M4 | §6 |
+| `companion_grant_credits` | M4 | §6.4 · §2.4 |
+| `companion_expire_sub_credits(p_now)` | M4 | 구독 크레딧 소멸(pg_cron) |
 
-`learning_progress`는 RLS를 켜고 정책이 없어 본인 RPC로만 읽힌다. `load_learning_context`는 `security definer`로 그 표를 읽고
-service role에만 실행 권한을 준다.
+- `learning_progress`는 RLS를 켜고 정책이 없어 본인 RPC로만 읽힌다. `companion_learning_context`는 `security definer`로 그 표를 읽는다.
+- §6에서 접두사 없이 부른 이름(`reserve_credits` 등)은 이 표의 `public.companion_*` 함수다.
+- 앱 사용자가 이 함수를 부르면 `42501`이다 — 통합 테스트가 함수마다 고정한다.
 
 ## 4. SSE 이벤트
 
@@ -353,7 +364,7 @@ chat-send 판정 11  reserve_credits(user, client_message_id, amount)   → hold
 
 | 표 | 마일스톤 | 열(요지) | 비고 |
 |---|---|---|---|
-| `expressions` | M0 | `id` text PK(`voca:` · `expr:` · `patt:`) · `kind` · `surface` · `roman` · `gloss_en` · `grade` · `lemma`(null 허용, 태깅은 뒤로) · `first_episode` · `retired` · `updated_at` | 사용자 데이터가 아니다. 빌드 스크립트가 upsert. id 재사용 금지 |
+| `expressions` | M0 | `id` text PK(`voca:` · `expr:` · `patt:` · `gram:` · `nume:` — 배포 콘텐츠에서 관찰한 다섯) · `kind` · `surface` · `roman` · `gloss_en` · `grade` · `lemma`(null 허용, 태깅은 뒤로) · `first_episode` · `retired` · `updated_at` | 사용자 데이터가 아니다. 빌드 스크립트가 upsert. id 재사용 금지 |
 | `expression_units` | M0 | PK(`expression_id`, `episode_id`, `unit_key`) | [제안] 위키 초안의 `episodes[]`를 대신한다(PRD §3.7) |
 | `profiles` | M0 | `user_id` PK · `birth_year` · `age_source` · `l1` · `feedback_mode` · `updated_at` | 연령대는 읽을 때 계산. 생년은 개인정보 |
 | `characters` | M1 | `id` text PK · `bible_version` · `persona` jsonb · `active` · `sort_order` | `bible.yaml` `companion:` 빌드 결과 |
@@ -394,8 +405,9 @@ packages/companion-contract/
     error-codes.ts        §5의 코드 목록과 HTTP 상태 · retryable
     rpc.ts                창구 함수 인수 · 반환 스키마(Message 포함)
     sse-parse.ts          SSE 텍스트 → 이벤트 목록(순수 함수, fixture 재생과 앱 수신이 같이 쓴다)
-  fixtures/               §9의 재생용 파일
-  dist/json-schema/       JSON Schema 산출물(생성물)
+  fixtures.ts             §9의 재생용 fixture 입구(`@libitums/companion-contract/fixtures`)
+  fixtures-streams.ts     턴 스트림 fixture — 이벤트를 타입으로 적고 SSE 글자로 바꾼다
+  json-schema/            JSON Schema 산출물(생성물, 커밋한다)
 ```
 
 - zod 버전은 앱 · `episode-core`와 같은 `4.6.5`다. JSON Schema는 zod 4의 `z.toJSONSchema`로 만든다.
@@ -407,7 +419,7 @@ packages/companion-contract/
 |---|---|
 | `apps/mobile` | `workspace:*`로 import(code.md 「import」) |
 | `apps/supabase-functions` | [제안] **생성 사본** `supabase/functions/_shared/companion-contract/`. 패키지 스크립트가 복사하고, 정본과 사본이 다르면 테스트가 실패한다(`bundle:android` 사본 + 동기화 테스트와 같은 방식). 사본의 `zod`는 함수 폴더의 import map으로 `npm:zod@4.6.5`에 잇는다. Supabase 배포가 `supabase/functions` 밖 파일을 싣는다고 기대하지 않기 위해서다 |
-| ops-dashboard(Python) | `dist/json-schema/*.json`을 받는다. 전달 방식(산출물 커밋 · 패키지 배포)은 M0에서 정한다 |
+| ops-dashboard(Python) | `json-schema/*.json`을 받는다. 전달 방식(산출물 커밋 · 패키지 배포)은 M0에서 정한다 |
 
 - 이 공유는 `docs/conventions/code.md`의 「Edge Function은 앱과 코드를 나누지 않는다」와 부딪힌다. 컴패니언 계약 한정 예외를 ADR
   후보 5와 함께 규약에 넣는다(PRD §9).
@@ -420,23 +432,26 @@ packages/companion-contract/
 
 ## 9. mock fixture
 
-FE가 네트워크 없이 재생한다. 파일 하나 = 스트림 하나 또는 사전 오류 하나.
+FE가 네트워크 없이 재생한다. **파일이 아니라 TS 모듈**이다(2026-11-08 구현 때 바꿨다) — Lynx 앱은 실행 중에 레포의 파일을 읽지
+못하고 import한 코드만 싣기 때문이다. `import { turnFixtureText, errorFixtures, messagesPageFixture } from "@libitums/companion-contract/fixtures"`.
+턴 스트림은 이벤트를 타입으로 적고 `formatSseEvent`로 SSE 글자를 만들어, 계약이 바뀌었는데 fixture를 고치지 않으면 타입 검사가
+먼저 실패한다. 아래 표의 이름이 fixture 키다.
 
 | 파일 | 내용 | 마일스톤 |
 |---|---|---|
-| `turn-normal.sse` | `start` → `notice`(`ai_disclosure`) → `delta` 여러 조각(대사 · 지문 · 나레이션) → `correction`(`none`) → `state` → `done` | M0 |
-| `turn-with-correction.sse` | 조각 사이에 `correction`(`kind: correction`, 항목 둘 + `better`)이 끼어 오는 스트림 | M0 |
-| `turn-l1-to-ko.sse` | 모국어 입력에 `correction`(`kind: l1_to_ko`) | M0 |
-| `turn-speech-level-up.sse` | `state.speechLevelChanged: true`(`polite → casual`) | M0 |
-| `turn-correction-unavailable.sse` | 답변 정상 · `correction`(`unavailable`) | M0 |
-| `error-insufficient-credits.json` | 402 사전 오류 | M0 |
-| `error-trial-exhausted.json` | 402 사전 오류 | M0 |
-| `error-usage-time-limit.json` | 403 사전 오류 + `resetsAt` | M0 |
-| `error-age-restricted.json` | 403 사전 오류 | M0 |
-| `turn-guardrail-blocked.sse` | `start` → `error`(`guardrail_blocked`) | M0 |
-| `turn-crisis.sse` | `start` → `crisis`(상담 기관 예시 — 실제 번호가 아닌 자리표시자) → `done`(`creditsSpent: 0`) | M0 |
-| `turn-upstream-error.sse` | 조각 몇 개 뒤 `error`(`upstream_unavailable`) | M0 |
-| `messages-page.json` | `companion_list_messages` 응답(유저 · 캐릭터 · 피드백 · 숨김 · 위기 · 선톡 메시지 포함) | M0 |
+| `turn-normal` | `start` → `notice`(`ai_disclosure`) → `delta` 여러 조각(대사 · 지문 · 나레이션) → `correction`(`none`) → `state` → `done` | M0 |
+| `turn-with-correction` | 조각 사이에 `correction`(`kind: correction`, 항목 둘 + `better`)이 끼어 오는 스트림 | M0 |
+| `turn-l1-to-ko` | 모국어 입력에 `correction`(`kind: l1_to_ko`) | M0 |
+| `turn-speech-level-up` | `state.speechLevelChanged: true`(`polite → casual`) | M0 |
+| `turn-correction-unavailable` | 답변 정상 · `correction`(`unavailable`) | M0 |
+| `error-insufficient-credits` | 402 사전 오류 | M0 |
+| `error-trial-exhausted` | 402 사전 오류 | M0 |
+| `error-usage-time-limit` | 403 사전 오류 + `resetsAt` | M0 |
+| `error-age-restricted` | 403 사전 오류 | M0 |
+| `turn-guardrail-blocked` | `start` → `error`(`guardrail_blocked`) | M0 |
+| `turn-crisis` | `start` → `crisis`(상담 기관 예시 — 실제 번호가 아닌 자리표시자) → `done`(`creditsSpent: 0`) | M0 |
+| `turn-upstream-error` | 조각 몇 개 뒤 `error`(`upstream_unavailable`) | M0 |
+| `messagesPageFixture` | `companion_list_messages` 응답(유저 · 캐릭터 · 피드백 · 숨김 · 위기 · 선톡 메시지 포함) | M0 |
 
 - 사용자가 요청한 다섯(정상 · 교정 포함 · 크레딧 부족 · 차단 · 위기 프로토콜)에 상한 · 연령 · 실패 경로를 더했다.
 - 재생 속도(조각 간격)는 fixture에 넣지 않는다. 재생하는 쪽이 정한다.

@@ -134,7 +134,8 @@ FE가 받는 것은 **값과 시점**이다. 예를 들어 「말투가 반말�
 
 v1은 단순하게 간다.
 
-1. 전역 표 `companion.expressions`에 배포 에피소드의 단어 · 표현 · 문형(`voca:` · `expr:` · `patt:` id)을 모은다.
+1. 전역 표 `companion.expressions`에 배포 에피소드의 단어 · 표현 · 문형을 모은다. id 접두사는 배포 콘텐츠에서 관찰한 다섯이다 —
+   `voca:`(어휘) · `expr:`(표현) · `patt:`(문형) · `gram:`(문법) · `nume:`(수 단위). 뒤의 둘은 위키에 없다(비고 9).
 2. 유저의 완료 유닛(`learning_progress.progress.catalogProgress` — 에피소드 id → 끝낸 유닛 키 배열, [ADR-0035](../adr/0035-learning-progress-and-streak-on-server.md)
    적용 기록 ⟨2026-10-12⟩)을 읽는다.
 3. 끝낸 유닛에 걸린 표현을 골라 프롬프트에 넣는다. 캐릭터 어휘는 그 범위 + 약간 위(i+1)다.
@@ -445,7 +446,7 @@ ADR 파일은 아직 만들지 않는다. 번호는 만들 때 `main` 기준 다
 | 3 | 메모리 자체 구축 | Postgres + pgvector · 외부 메모리 서비스를 쓰지 않는 이유 · 캐릭터 격리 · 스포일러 게이트 | M3 시작 전 |
 | 4 | `companion` 스키마 분리 | 운영 DB에서 개발하는 동안의 격리 · RLS를 켜고 정책 없이 두는 방식 · 기존 `public` 표와의 경계 | M0 시작 전 |
 | 5 | 계약 패키지 공유와 규약 예외 | `docs/conventions/code.md`의 「Edge Function은 앱과 코드를 나누지 않는다」에 컴패니언 계약 한정 예외 · 생성 사본과 동기화 테스트 | M0 시작 전 |
-| 6 | 앱용 RPC는 `public`의 창구 함수 | `companion` 스키마를 PostgREST에 노출하지 않고 `public.companion_*` 창구 함수만 여는 이유 | M0 시작 전 |
+| 6 | DB 접근은 `public.companion_*` 함수로만 | `companion` 스키마를 PostgREST에 노출하지 않는다. 앱용 함수는 `authenticated`, 서버용 함수는 `service_role`에게만 연다. Edge Function도 DB에 직접 연결하지 않고 HTTP RPC로 부른다(2026-11-09 결정) | M0 시작 전 |
 
 ## 비고 — 위키와 저장소가 어긋나는 점 (2026-11-08)
 
@@ -461,3 +462,6 @@ ADR 파일은 아직 만들지 않는다. 번호는 만들 때 `main` 기준 다
 | 6 | 위키 05는 플레이그라운드 테스트 유저를 「이메일 도메인으로 구분(확인 필요)」이라고 한다. 저장소에는 이미 `app_metadata.duru_tester`([ADR-0085](../adr/0085-tester-access.md))가 있고 PostHog · Airbridge 제외에 쓴다 | 같은 표시를 쓴다. 크레딧 차감은 우회하지 않는다(§3.13) |
 | 7 | 위키 05의 RPC 목록에 `get_session_report`가 있지만 위키 02는 컴패니언에 세션 리포트가 없다고 한다 | 1단계에서 뺀다. 미션 리포트는 2단계(§0) |
 | 8 | 작업 지시가 진도 구조의 근거로 든 `docs/specs/learning-progress-completion.md`는 진행 막대 UI 스펙이다 | `catalogProgress` 정의는 ADR-0035 적용 기록과 마이그레이션 `20261012120000_learning_progress_catalog.sql`을 인용한다 |
+| 9 | 위키 05의 `expressions.id`는 `voca:` · `expr:` · `patt:` 셋이지만 배포 콘텐츠에는 `gram:`(문법, 4개 — u05 · u07 · u09 · u10)과 `nume:`(수 단위, 1개 — u10)도 있고 문항 25개가 그 id를 가리킨다(2026-11-08 내장 콘텐츠 측정) | 다섯을 모두 받는다. 접두사의 정확한 뜻은 콘텐츠 쪽 확인이 필요하다(§3.7) |
+
+**콘텐츠 결함(2026-11-08 내장 콘텐츠 측정)**: `u07-jaemin`의 문항 `S5-02` · `S6-06` · `S6-12`가 어느 에피소드에도 정의가 없는 `patt:f35fb813`을 가리킨다. 표현 동기화 리포트에 「풀리지 않는 ref」로 남고, 그 유닛의 문형은 프롬프트에 들어가지 않는다. 콘텐츠 쪽에 알린다.
