@@ -308,6 +308,10 @@ test("TV8. 기억 — 같은 원본은 한 번, 앱이 보고 · 고치고 · �
     ]);
   expect((await add(first.userMessageId)).rows[0].n).toBe(2);
   expect((await add(first.userMessageId)).rows[0].n).toBe(0);
+  // 다른 턴에서 같은 기억이 다시 나와도 하나만 남는다.
+  const second = await begin();
+  await finish(second, "complete");
+  expect((await add(second.userMessageId)).rows[0].n).toBe(0);
 
   const shared = await app.query("select public.companion_list_memories(null) as m");
   expect(shared.rows[0].m).toMatchObject([{ content: "고양이를 키운다", characterId: null }]);

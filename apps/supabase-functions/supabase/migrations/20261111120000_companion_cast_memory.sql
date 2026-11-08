@@ -124,7 +124,7 @@ grant select, update on table companion.settings to service_role;
 
 -- ------------------------------------------------------------------ 서버용 (service_role)
 
--- 턴 뒤 추출한 기억을 넣는다. 같은 원본 메시지에서 두 번 넣지 않는다(작업이 두 번 돌아도 결과가 같다).
+-- 턴 뒤 추출한 기억을 넣는다. 같은 원본 메시지에서 두 번 넣지 않고(작업이 두 번 돌아도 결과가 같다), 이미 있는 글도 넣지 않는다.
 -- p_items: [{ kind: 'fact' | 'event', content, shared: boolean }]
 create function public.companion_add_memories(p_user_id uuid, p_character_id text, p_source_message_id uuid, p_items jsonb)
 returns integer
@@ -146,7 +146,14 @@ begin
   insert into companion.memories (user_id, character_id, kind, content, source_message_id)
   select p_user_id, case when coalesce(r.shared, false) then null else p_character_id end, r.kind, left(r.content, 500), p_source_message_id
   from jsonb_to_recordset(p_items) as r(kind text, content text, shared boolean)
-  where r.kind in ('fact', 'event') and coalesce(btrim(r.content), '') <> '';
+  where r.kind in ('fact', 'event') and coalesce(btrim(r.content), '') <> ''
+    -- 같은 층(공유 · 이 캐릭터)에 같은 글이 이미 있으면 넣지 않는다 — 같은 말을 여러 번 해도 기억은 하나.
+    and not exists (
+      select 1 from companion.memories m
+      where m.user_id = p_user_id and m.deleted_at is null
+        and m.character_id is not distinct from (case when coalesce(r.shared, false) then null else p_character_id end)
+        and lower(btrim(m.content)) = lower(btrim(r.content))
+    );
   get diagnostics v_count = row_count;
   return v_count;
 end;
