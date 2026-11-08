@@ -1,0 +1,388 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "event": {
+          "type": "string",
+          "const": "start"
+        },
+        "id": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "contractVersion": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "conversationId": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "userMessageId": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "assistantMessageId": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "speechLevel": {
+              "type": "string",
+              "enum": ["polite", "casual", "slang"]
+            }
+          },
+          "required": [
+            "contractVersion",
+            "conversationId",
+            "userMessageId",
+            "assistantMessageId",
+            "speechLevel"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": ["event", "id", "data"],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "event": {
+          "type": "string",
+          "const": "notice"
+        },
+        "id": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": ["ai_disclosure", "minor_notice", "break_reminder"]
+            }
+          },
+          "required": ["kind"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["event", "id", "data"],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "event": {
+          "type": "string",
+          "const": "delta"
+        },
+        "id": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "segment": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "kind": {
+              "type": "string",
+              "enum": ["speech", "action", "narration"]
+            },
+            "text": {
+              "type": "string"
+            }
+          },
+          "required": ["segment", "kind", "text"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["event", "id", "data"],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "event": {
+          "type": "string",
+          "const": "correction"
+        },
+        "id": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "userMessageId": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "status": {
+              "type": "string",
+              "enum": ["ok", "none", "unavailable"]
+            },
+            "kind": {
+              "type": "string",
+              "enum": ["correction", "better", "l1_to_ko"]
+            },
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "original": {
+                    "type": "string"
+                  },
+                  "corrected": {
+                    "type": "string"
+                  },
+                  "reason": {
+                    "type": "string"
+                  }
+                },
+                "required": ["original", "corrected", "reason"],
+                "additionalProperties": false
+              }
+            },
+            "better": {
+              "type": "object",
+              "properties": {
+                "text": {
+                  "type": "string"
+                },
+                "meaning": {
+                  "type": "string"
+                },
+                "explanation": {
+                  "type": "string"
+                }
+              },
+              "required": ["text", "meaning", "explanation"],
+              "additionalProperties": false
+            },
+            "l1ToKo": {
+              "type": "object",
+              "properties": {
+                "text": {
+                  "type": "string"
+                },
+                "meaning": {
+                  "type": "string"
+                }
+              },
+              "required": ["text", "meaning"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["userMessageId", "status"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["event", "id", "data"],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "event": {
+          "type": "string",
+          "const": "translation"
+        },
+        "id": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "segment": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "text": {
+              "type": "string"
+            }
+          },
+          "required": ["segment", "text"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["event", "id", "data"],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "event": {
+          "type": "string",
+          "const": "state"
+        },
+        "id": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "speechLevel": {
+              "type": "string",
+              "enum": ["polite", "casual", "slang"]
+            },
+            "speechLevelChanged": {
+              "type": "boolean"
+            }
+          },
+          "required": ["speechLevel", "speechLevelChanged"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["event", "id", "data"],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "event": {
+          "type": "string",
+          "const": "crisis"
+        },
+        "id": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "resources": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "phone": {
+                    "type": "string"
+                  },
+                  "url": {
+                    "type": "string"
+                  },
+                  "hours": {
+                    "type": "string"
+                  }
+                },
+                "required": ["name"],
+                "additionalProperties": false
+              }
+            },
+            "region": {
+              "type": ["string", "null"]
+            }
+          },
+          "required": ["resources", "region"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["event", "id", "data"],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "event": {
+          "type": "string",
+          "const": "error"
+        },
+        "id": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "string",
+              "enum": ["internal_error", "guardrail_blocked", "upstream_unavailable"]
+            },
+            "retryable": {
+              "type": "boolean"
+            }
+          },
+          "required": ["code", "retryable"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["event", "id", "data"],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "event": {
+          "type": "string",
+          "const": "done"
+        },
+        "id": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "assistantMessageId": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "creditsSpent": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "balance": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": ["assistantMessageId", "creditsSpent", "balance"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["event", "id", "data"],
+      "additionalProperties": false
+    }
+  ]
+}

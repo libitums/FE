@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "birthYear": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "ageSource": {
+      "anyOf": [
+        {
+          "type": "string",
+          "enum": ["self", "social", "store_signal"]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "l1": {
+      "type": ["string", "null"]
+    },
+    "feedbackMode": {
+      "anyOf": [
+        {
+          "type": "string",
+          "enum": ["separate", "natural", "prefix"]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": ["birthYear", "ageSource", "l1", "feedbackMode"],
+  "additionalProperties": false
+}

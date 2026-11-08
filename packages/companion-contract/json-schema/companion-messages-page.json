@@ -1,0 +1,182 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "messages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "role": {
+            "type": "string",
+            "enum": ["user", "assistant", "notice"]
+          },
+          "origin": {
+            "type": "string",
+            "enum": ["turn", "proactive", "crisis"]
+          },
+          "status": {
+            "type": "string",
+            "enum": ["complete", "blocked", "crisis", "failed"]
+          },
+          "hidden": {
+            "type": "boolean"
+          },
+          "text": {
+            "type": ["string", "null"]
+          },
+          "inputMode": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": ["text", "voice"]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "segments": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "type": "string",
+                  "enum": ["speech", "action", "narration"]
+                },
+                "text": {
+                  "type": "string"
+                }
+              },
+              "required": ["kind", "text"],
+              "additionalProperties": false
+            }
+          },
+          "notice": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": ["ai_disclosure", "minor_notice", "break_reminder"]
+                  }
+                },
+                "required": ["kind"],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "feedback": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "userMessageId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": ["ok", "none", "unavailable"]
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": ["correction", "better", "l1_to_ko"]
+                  },
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "original": {
+                          "type": "string"
+                        },
+                        "corrected": {
+                          "type": "string"
+                        },
+                        "reason": {
+                          "type": "string"
+                        }
+                      },
+                      "required": ["original", "corrected", "reason"],
+                      "additionalProperties": false
+                    }
+                  },
+                  "better": {
+                    "type": "object",
+                    "properties": {
+                      "text": {
+                        "type": "string"
+                      },
+                      "meaning": {
+                        "type": "string"
+                      },
+                      "explanation": {
+                        "type": "string"
+                      }
+                    },
+                    "required": ["text", "meaning", "explanation"],
+                    "additionalProperties": false
+                  },
+                  "l1ToKo": {
+                    "type": "object",
+                    "properties": {
+                      "text": {
+                        "type": "string"
+                      },
+                      "meaning": {
+                        "type": "string"
+                      }
+                    },
+                    "required": ["text", "meaning"],
+                    "additionalProperties": false
+                  }
+                },
+                "required": ["userMessageId", "status"],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          }
+        },
+        "required": [
+          "id",
+          "role",
+          "origin",
+          "status",
+          "hidden",
+          "text",
+          "inputMode",
+          "segments",
+          "notice",
+          "feedback",
+          "createdAt"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "hasMore": {
+      "type": "boolean"
+    }
+  },
+  "required": ["messages", "hasMore"],
+  "additionalProperties": false
+}
