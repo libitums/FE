@@ -27,6 +27,8 @@
 - 앱 요청은 `Authorization: Bearer <사용자 액세스 토큰>`이다. Edge Function은 기존 `delete-account`처럼 `verify_jwt = false`로
   배포하고 **함수가 스스로 토큰을 검증한다**(Auth 사용자 조회). 창구 함수는 PostgREST가 토큰을 검증하고 함수가 `auth.uid()`를 쓴다.
 - 내부 엔드포인트(`job-worker` · 선톡)는 service role 키만 받는다. 기존 `send-push`와 같은 검증(`_shared/service-key.ts`)을 쓴다.
+- **플레이그라운드 경로**(M1): `chat-send`는 `Authorization: Bearer <서버 키>` + `x-companion-user-id: <계정 id>`도 받는다. 서버 키를 가진 ops-dashboard만
+  쓸 수 있고, 그 계정도 시험 계정 판정(판정 5)을 똑같이 지난다. 메시지 `meta.playground`에 표시가 남는다.
 - Edge Function이 DB에 닿을 때는 service role 키로 §3.3의 서버용 함수를 HTTP RPC로 부른다. DB에 직접 연결하지 않는다(§3.1).
 - 비회원(서버 계정 없음)은 부를 수 없다 — [제안] PRD §3.13 · O7.
 - [제안] M4 전에는 토큰의 `app_metadata.duru_tester`가 `true`인 계정만 `chat-send`를 부를 수 있다([ADR-0085](../adr/0085-tester-access.md)).
@@ -237,6 +239,7 @@ ops-dashboard 컴패니언 탭이 부른다. ops-dashboard는 서버에서 돌�
 
 | 함수 | 마일스톤 | 돌려주는 것 |
 |---|---|---|
+| `companion_inspect_testers()` | M1 | 시험 계정 목록(`userId` · `email` · `ageBand` · `l1`) — 플레이그라운드가 고를 계정 |
 | `companion_inspect_conversation(p_user_id, p_character_id, p_before, p_limit)` | M1 | 메시지(최신부터) · 각 턴의 판정 기록 · 신고 · 보낸 고지. 커서는 앱용 `companion_list_messages`와 같다 |
 | `companion_inspect_moderation(p_since, p_outcome, p_limit)` | M1 | 기간 안의 판정(차단 · 위기 · 비동기 검사 실패)을 최신부터. `p_outcome`이 null이면 전부 |
 | `companion_inspect_reports(p_since, p_limit)` | M1 | 메시지 신고와 신고된 메시지 앞뒤 턴 |
