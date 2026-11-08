@@ -305,7 +305,15 @@ test("CH8. 학습 맥락 — catalogProgress의 끝낸 유닛에 걸린 표현�
 test("CH9. 운영 조회 — 시험 계정 목록 · 대화(내부 상태 · 판정 · 신고) · 판정 목록", async () => {
   const testers = await server.query("select public.companion_inspect_testers() as testers");
   expect(testers.rows[0].testers).toEqual([
-    { userId: tester, email: "tester@libitum.test", ageBand: "unknown", l1: null },
+    {
+      userId: tester,
+      email: "tester@libitum.test",
+      ageBand: "unknown",
+      birthYear: null,
+      l1: null,
+      region: null,
+      feedbackMode: null,
+    },
   ]);
 
   const one = await begin(messageId(1), "죽고 싶어");

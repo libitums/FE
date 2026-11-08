@@ -286,6 +286,28 @@ as $$
   where ch.id = p_character_id
 $$;
 
+-- 시험 계정 목록(M1)에 생년 · 지역 · 피드백 방식을 더한다 — 플레이그라운드가 지금 값을 보여 준다.
+create or replace function public.companion_inspect_testers()
+returns jsonb
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select coalesce(jsonb_agg(jsonb_build_object(
+    'userId', u.id,
+    'email', u.email,
+    'ageBand', companion.age_band(p.birth_year, now()),
+    'birthYear', p.birth_year,
+    'l1', p.l1,
+    'region', p.last_region,
+    'feedbackMode', p.feedback_mode
+  ) order by u.email), '[]'::jsonb)
+  from auth.users u
+  left join companion.profiles p on p.user_id = u.id
+  where u.raw_app_meta_data->>'duru_tester' = 'true'
+$$;
+
 -- ------------------------------------------------------------------ 앱용 (authenticated) — 기억 보기 · 고치기 · 지우기(무료, PRD §3.9)
 
 create function public.companion_list_memories(p_character_id text)
@@ -374,7 +396,7 @@ as $$
   )
 $$;
 
--- 플레이그라운드에서 시험 계정의 연령 · 모국어 · 피드백 방식 · 지역을 바꾼다. null 인수는 그 열을 바꾸지 않고, p_clear_age면 생년을 지운다.
+-- 플레이그라운드에서 시험 계정의 연령 · 모국어 · 피드백 방식 · 지역을 바꾼다. null 인수는 그 열을 바꾸지 않고, p_clear_age면 생년을, p_region ''이면 지역을 지운다.
 create function public.companion_operator_set_profile(
   p_user_id uuid, p_birth_year integer, p_clear_age boolean, p_l1 text, p_feedback_mode text, p_region text
 )
@@ -393,13 +415,15 @@ begin
     age_source = case when p_clear_age then null when p_birth_year is not null then 'self' else age_source end,
     l1 = coalesce(p_l1, l1),
     feedback_mode = coalesce(p_feedback_mode, feedback_mode),
-    last_region = coalesce(nullif(p_region, ''), last_region),
+    -- 빈 문자열이면 지역을 지운다(null은 그대로 둔다).
+    last_region = case when p_region = '' then null else coalesce(p_region, last_region) end,
     updated_at = now()
   where user_id = p_user_id;
 end;
 $$;
 
--- 플레이그라운드: 시험 계정의 관계 · 제재 · 대화를 처음으로 되돌린다(크레딧 원장은 건드리지 않는다).
+-- 플레이그라운드: 시험 계정의 그 캐릭터 대화 · 관계와 계정의 공유 기억 · 제재 · 고지 · 체험 사용량을 처음으로 되돌린다.
+-- 공유 기억은 모든 캐릭터가 읽어서 함께 지운다. 크레딧 지갑 · 원장은 건드리지 않는다(체험 사용량은 M4 마이그레이션 뒤에만 있다).
 create function public.companion_operator_reset(p_user_id uuid, p_character_id text)
 returns void
 language plpgsql
@@ -412,7 +436,7 @@ begin
   end if;
   delete from companion.conversations where user_id = p_user_id and character_id = p_character_id;
   delete from companion.relationships where user_id = p_user_id and character_id = p_character_id;
-  delete from companion.memories where user_id = p_user_id and (character_id = p_character_id);
+  delete from companion.memories where user_id = p_user_id and (character_id = p_character_id or character_id is null);
   delete from companion.moderation_state where user_id = p_user_id;
   delete from companion.notice_state where user_id = p_user_id;
 end;

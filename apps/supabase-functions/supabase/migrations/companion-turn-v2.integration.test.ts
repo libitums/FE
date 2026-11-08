@@ -369,3 +369,48 @@ test("TV10. 요약 원문 — 기록 창 밖 메시지가 기준 수만큼 모�
   await server.query("select public.companion_save_summary($1, '요약', $2)", [id, ready.until]);
   expect(await read(2)).toBeNull();
 });
+
+test("TV11. 운영자 — 프로필 바꾸기 · 지역 지우기 · 초기화(공유 기억 · 체험 사용량까지, 크레딧은 그대로)", async () => {
+  const set = (birthYear: number | null, region: string | null, mode: string | null) =>
+    server.query("select public.companion_operator_set_profile($1, $2, false, 'tl', $3, $4)", [
+      tester,
+      birthYear,
+      mode,
+      region,
+    ]);
+  await set(1990, "PH", "prefix");
+  const testers = await server.query("select public.companion_inspect_testers() as t");
+  expect(testers.rows[0].t[0]).toMatchObject({
+    birthYear: 1990,
+    region: "PH",
+    feedbackMode: "prefix",
+    l1: "tl",
+    ageBand: "adult",
+  });
+  await set(null, "", null);
+  const cleared = await server.query("select public.companion_inspect_testers() as t");
+  expect(cleared.rows[0].t[0]).toMatchObject({
+    birthYear: 1990,
+    region: null,
+    feedbackMode: "prefix",
+  });
+
+  await db.admin.query("update companion.settings set trial_limit = 1");
+  const first = await begin();
+  await finish(first, "complete");
+  await server.query("select public.companion_add_memories($1, 'duksu', $2, $3::jsonb)", [
+    tester,
+    first.userMessageId,
+    JSON.stringify([{ kind: "fact", content: "공유 기억", shared: true }]),
+  ]);
+  await grant(5);
+  await server.query("select public.companion_operator_reset($1, 'duksu')", [tester]);
+  const left = await db.admin.query(
+    `select (select count(*) from companion.memories)::int as memories,
+            (select count(*) from companion.trial_usage)::int as trials,
+            (select count(*) from companion.conversations)::int as conversations,
+            (select grant_balance from companion.credit_wallets) as credits`,
+  );
+  expect(left.rows[0]).toEqual({ memories: 0, trials: 0, conversations: 0, credits: 5 });
+  expect(await turn()).toMatchObject({ creditsSpent: 0 });
+});

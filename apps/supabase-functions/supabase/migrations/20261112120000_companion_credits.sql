@@ -285,6 +285,26 @@ begin
 end;
 $$;
 
+-- 플레이그라운드 초기화가 체험 사용량도 되돌린다(M3의 companion_operator_reset을 표가 생긴 뒤 다시 쓴다).
+create or replace function public.companion_operator_reset(p_user_id uuid, p_character_id text)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  if not exists (select 1 from auth.users where id = p_user_id and raw_app_meta_data->>'duru_tester' = 'true') then
+    raise exception 'not a tester' using errcode = 'P0002';
+  end if;
+  delete from companion.conversations where user_id = p_user_id and character_id = p_character_id;
+  delete from companion.relationships where user_id = p_user_id and character_id = p_character_id;
+  delete from companion.memories where user_id = p_user_id and (character_id = p_character_id or character_id is null);
+  delete from companion.moderation_state where user_id = p_user_id;
+  delete from companion.notice_state where user_id = p_user_id;
+  delete from companion.trial_usage where user_id = p_user_id and character_id = p_character_id;
+end;
+$$;
+
 revoke all on function public.companion_grant_credits(uuid, text, integer, text, text, timestamptz) from public, anon, authenticated;
 revoke all on function public.companion_expire_sub_credits(timestamptz) from public, anon, authenticated;
 revoke all on function public.companion_release_stale_holds(interval) from public, anon, authenticated;
