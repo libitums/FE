@@ -493,3 +493,19 @@ FE가 네트워크 없이 재생한다. **파일이 아니라 TS 모듈**이다(
 - 위키와 저장소가 어긋나는 점은 [PRD 비고](ai-companion.md#비고--위키와-저장소가-어긋나는-점-2026-11-08)가 진다.
 - 배포는 기존 함수처럼 사람이 로컬에서 한다. 운영 DB에서 개발하므로 `supabase db push` 전에 `main`의 다른 미배포 마이그레이션이
   같이 올라가지 않는지 확인한다(위키 05, 2026-11-08).
+
+## 구현 메모 — M1 ~ M4 MVP에서 명세와 다르게 간 것 (2026-11-09, `feat/companion-m1`)
+
+리뷰에서 그대로 둘지 정한다. 코드 쪽 정본은 `apps/supabase-functions/README.md` 「AI 컴패니언」.
+
+| 명세 | 구현 | 이유 |
+|---|---|---|
+| 서버 설정 값(단가 · 체험 수 · 문턱 · 확률 · 상한)은 「설정 값」 | DB 한 행 `companion.settings` — SQL로 바꾸면 다음 턴부터. 분기 확률 · 쿨다운만 코드 상수(`companion-branching.ts`) | 배포 없이 깎기(C). 값은 전부 초안 |
+| 판정 10 · 11 → 12(저장) | 체험 · 크레딧 예약과 유저 메시지 저장을 `companion_begin_turn` 한 트랜잭션에. 확정 · 해제도 `companion_finish_turn` 안에서 | RPC 왕복을 줄이고, 예약만 남고 메시지가 없는 상태를 없앤다 |
+| 후처리는 pgmq 큐 + `companion-job-worker` | 턴이 끝난 뒤 같은 요청에서 `waitUntil`로 기억 추출 · 요약 | MVP. 재시도가 필요해지면 큐로 옮긴다. 성인 사후 출력 검사는 아직 없다 |
+| 장기 메모리 의미 검색은 pgvector | 최근 기억 N개(`memory_prompt_limit`)를 넣는다 | 임베딩 모델 미정(C). `embedding` 열은 모델을 고른 뒤 더한다 |
+| 티어 | `free` · `premium` 둘. 무료는 체험 캐릭터(덕수쌤)만 — 체험을 다 쓰면 크레딧이 있을 때만 이어진다 | O2 · O3 전 초안 |
+| 말투 단계 상한 | 페르소나의 `maxSpeechLevel`(bible.yaml register에서): 윤경 · 재민 · 덕수쌤 polite, 도윤 casual, 미나 slang | bible이 「끝까지 존댓말」을 정한 인물이 있다 |
+| 선톡 푸시 | 메시지만 저장. 푸시는 `send-push` 목적지 추가 뒤 | §2.3 그대로 M3 남은 일 |
+| 반복 위반 단계(회피 → 경고 → 차단) | 입력 차단만 세어 창(24시간) 안 3회면 30분 차단. 경고 이벤트는 없다(회피는 페르소나 프롬프트) | 계약에 경고 이벤트가 없다 |
+| — | 운영자 함수 `companion_operator_set_profile` · `companion_operator_reset` · `companion_set_entitlement` · `companion_inspect_memory` · `companion_inspect_wallet`, Edge Function `companion-proactive`(서버 키, `force`는 공백 · 상한만 건너뜀) | 플레이그라운드 |
