@@ -1,9 +1,27 @@
-// 메인 답변 받기: 조각으로 나누고, 검사가 끝날 때까지 모아 두었다가 내보냅니다. 조각을 내보내기 전 실패는 한 번 다시 시도합니다.
+// 메인 답변과 피드백(M2) 받기: 조각으로 나누고, 검사가 끝날 때까지 모아 두었다가 내보냅니다. 조각을 내보내기 전 실패는 한 번 다시 시도합니다.
 
-import type { BegunTurn, ChatSendDeps, CompanionLlm, HistoryEntry } from "./chat-send.contract.ts";
-import { collectSegments, createSegmentSplitter, type SegmentDelta } from "./companion-segments.ts";
+import type {
+  BegunTurn,
+  ChatSendDeps,
+  CompanionLlm,
+  Feedback,
+  HistoryEntry,
+  TurnState,
+} from "./chat-send.contract.ts";
+import {
+  collectSegments,
+  createSegmentSplitter,
+  segmentsToPlain,
+  type SegmentDelta,
+} from "./companion-segments.ts";
 
 export const defaultLlmTimeoutMs = 45_000;
+const defaultFeedbackTimeoutMs = 8_000;
+
+type FeedbackContext = ReplyContext & {
+  readonly turn: Pick<BegunTurn, "history">;
+  readonly gate: { readonly l1: string | null };
+};
 
 type ReplyContext = {
   readonly deps: ChatSendDeps;
@@ -27,6 +45,7 @@ export function startReply(
   let emitted = 0;
   let live: ((delta: SegmentDelta) => void) | null = null;
   let firstDeltaMs: number | null = null;
+  let state: TurnState | null = null;
   const started = context.deps.nowMs();
 
   const push = (items: SegmentDelta[]) => {
@@ -53,6 +72,7 @@ export function startReply(
       push(splitter.push(chunk));
     }
     push(splitter.end());
+    state = splitter.state();
   };
 
   const done = (async () => {
@@ -73,6 +93,7 @@ export function startReply(
       segments: collectSegments(deltas),
       firstDeltaMs,
       totalMs: context.deps.nowMs() - started,
+      state: state as TurnState | null,
     };
   })();
   // 결과를 아무도 기다리지 않는 경로(위기 · 차단으로 버림)에서 처리되지 않은 거부가 되지 않게 합니다.
@@ -95,4 +116,29 @@ export function historyFrom(turn: BegunTurn): HistoryEntry[] {
       return entry.text === null ? [] : [{ role: "user", text: entry.text }];
     return entry.segments.length === 0 ? [] : [{ role: "assistant", segments: entry.segments }];
   });
+}
+
+/** 피드백을 제한 시간 안에 받습니다. 실패 · 시간 초과는 `unavailable` — 턴을 실패시키지 않습니다(PRD §3.5). */
+export function startFeedback(context: FeedbackContext, abort: AbortController): Promise<Feedback> {
+  const lastAssistant = [...context.turn.history]
+    .reverse()
+    .find((entry) => entry.role === "assistant");
+  const timeoutMs = context.deps.feedbackTimeoutMs ?? defaultFeedbackTimeoutMs;
+  const signal = AbortSignal.any([abort.signal, AbortSignal.timeout(timeoutMs)]);
+  const unavailable: Feedback = { status: "unavailable" };
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  // 구현이 신호를 따르지 않아도 제한 시간에 끝나게 타이머와 겨룹니다.
+  return Promise.race([
+    context.llm
+      .feedback({
+        text: context.body.text,
+        l1: context.gate.l1,
+        previous: lastAssistant === undefined ? null : segmentsToPlain(lastAssistant.segments),
+        signal,
+      })
+      .catch(() => unavailable),
+    new Promise<Feedback>((resolve) => {
+      timer = setTimeout(() => resolve(unavailable), timeoutMs);
+    }),
+  ]).finally(() => clearTimeout(timer));
 }

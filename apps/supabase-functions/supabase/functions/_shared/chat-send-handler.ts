@@ -1,15 +1,18 @@
 // `POST /functions/v1/chat-send` — 턴 하나(API §2.1). 스트림 전 판정 1 ~ 12는 HTTP 오류, 그 뒤는 SSE 이벤트입니다.
 //
-// 흐름: 판정(gate) → 유저 메시지 저장(begin) → SSE 시작 → 입력 검사와 메인 답변을 **동시에** 시작 →
-//   위기면 답을 버리고 `crisis`, 차단이면 `error` →
-//   성인은 검사 통과 뒤 받는 대로 조각을 보내고, 미성년자 · 나이 모름은 답을 끝까지 받아 출력 검사를 통과한 뒤 보냄 →
-//   `state` → 저장(finish) → `done`.
-// 앱이 연결을 끊어도 턴은 끝까지 돌아 저장됩니다(`waitUntil`).
+// 흐름: 판정(gate) → 체험 · 크레딧 예약과 유저 메시지 저장(begin, 한 트랜잭션) → SSE 시작 → 턴(`chat-send-turn.ts`) →
+//   스트림을 닫은 뒤 턴 뒤 작업(기억 추출 · 요약, `companion-after-turn.ts`).
+// 앱이 연결을 끊어도 턴과 뒤 작업은 끝까지 돕니다(`waitUntil`).
 //
 // 플레이그라운드 경로: `Authorization: Bearer <서버 키>` + `x-companion-user-id: <시험 계정 id>`. 서버 키를 가진 ops-dashboard만
 // 쓸 수 있고, 판정은 같은 시험 계정 검사를 지납니다.
 
-import type { BegunTurn, ChatSendDeps, GateResult, LearningContext } from "./chat-send.contract.ts";
+import type {
+  BeginResult,
+  ChatSendDeps,
+  GateResult,
+  LearningContext,
+} from "./chat-send.contract.ts";
 import {
   callerUserId,
   createSink,
@@ -18,12 +21,14 @@ import {
   readBody,
 } from "./chat-send-http.ts";
 import { runTurn, type TurnContext } from "./chat-send-turn.ts";
+import { runAfterTurn } from "./companion-after-turn.ts";
 import type { PreStreamErrorCode } from "./companion-contract/index.ts";
 import { callRpc } from "./companion-rpc.ts";
 
 const historyLimit = 20;
 const expressionLimit = 40;
 const defaultPingIntervalMs = 15_000;
+const afterTurnTimeoutMs = 30_000;
 
 // ------------------------------------------------------------------ 핸들러
 
@@ -56,7 +61,7 @@ export function createChatSendHandler(deps: ChatSendDeps): (request: Request) =>
         p_character_id: body.character_id,
         p_client_message_id: body.client_message_id,
         p_now: new Date(deps.nowMs()).toISOString(),
-        p_daily_limit_seconds: env.dailyLimitSeconds,
+        p_region: body.client_region ?? null,
       });
     } catch {
       return respond(errorResponse("internal_error"), "gate_failed");
@@ -68,17 +73,19 @@ export function createChatSendHandler(deps: ChatSendDeps): (request: Request) =>
       return respond(errorResponse(code, "detail" in gate ? gate.detail : undefined), code);
     }
 
-    let turn: BegunTurn;
+    let begun: BeginResult;
     let learning: LearningContext;
     try {
-      [turn, learning] = await Promise.all([
-        callRpc<BegunTurn>(deps.outbound, env, "companion_begin_turn", {
+      [begun, learning] = await Promise.all([
+        callRpc<BeginResult>(deps.outbound, env, "companion_begin_turn", {
           p_user_id: caller.userId,
           p_character_id: body.character_id,
           p_client_message_id: body.client_message_id,
           p_text: body.text,
           p_input_mode: body.input_mode,
           p_history_limit: historyLimit,
+          p_region: body.client_region ?? null,
+          p_now: new Date(deps.nowMs()).toISOString(),
         }),
         callRpc<LearningContext>(deps.outbound, env, "companion_learning_context", {
           p_user_id: caller.userId,
@@ -88,6 +95,11 @@ export function createChatSendHandler(deps: ChatSendDeps): (request: Request) =>
     } catch {
       return respond(errorResponse("internal_error"), "begin_failed");
     }
+    // 판정 10 · 11(M4): 체험 한도 · 크레딧 부족이면 아무것도 저장하지 않고 402.
+    if (begun.result !== "ok") {
+      return respond(errorResponse(begun.result, begun.detail), begun.result);
+    }
+    const turn = begun;
 
     const sink = createSink(deps.pingIntervalMs ?? defaultPingIntervalMs);
     const context: TurnContext = {
@@ -96,20 +108,33 @@ export function createChatSendHandler(deps: ChatSendDeps): (request: Request) =>
       llm,
       sink,
       body,
+      userId: caller.userId,
       gate: gate as Extract<GateResult, { result: "ok" }>,
       turn,
       learning,
       assistantMessageId: deps.randomUuid(),
       playground: caller.playground,
+      historyLimit,
     };
     const work = runTurn(context)
       .catch(() => {
         sink.send({ event: "error", data: { code: "internal_error", retryable: true } });
-        return "internal_error";
+        return { outcome: "internal_error", afterTurn: null };
       })
-      .then((outcome) => {
+      .then(async ({ outcome, afterTurn }) => {
         sink.close();
         deps.log({ event: "chat_send", status: "stream", outcome });
+        if (afterTurn === null) return;
+        try {
+          const result = await runAfterTurn(deps.outbound, env, llm, afterTurn, afterTurnTimeoutMs);
+          deps.log({
+            event: "companion_after_turn",
+            status: "stream",
+            outcome: `memories=${result.memories} summarized=${result.summarized}`,
+          });
+        } catch {
+          deps.log({ event: "companion_after_turn", status: "stream", outcome: "failed" });
+        }
       });
     deps.waitUntil?.(work);
 

@@ -21,7 +21,6 @@ test("CE1. 필수 값과 기본 모델", () => {
       model: defaultCompanionModel,
       moderationModel: defaultCompanionModel,
     },
-    dailyLimitSeconds: null,
   });
   for (const name of [
     "SUPABASE_URL",
@@ -41,13 +40,11 @@ test("CE2. fake는 COMPANION_LLM=fake일 때만 · 모르는 값은 설정 오�
   expect(from({ ...base, COMPANION_LLM: "openai" })).toBeNull();
 });
 
-test("CE3. 모델 · 상한 · 로컬 주소", () => {
+test("CE3. 모델 · 로컬 주소", () => {
   expect(from({ ...base, COMPANION_MODEL: "claude-sonnet-5-5" })?.llm).toMatchObject({
     model: "claude-sonnet-5-5",
     moderationModel: "claude-sonnet-5-5",
   });
-  expect(from({ ...base, COMPANION_DAILY_LIMIT_SECONDS: "10800" })?.dailyLimitSeconds).toBe(10800);
-  expect(from({ ...base, COMPANION_DAILY_LIMIT_SECONDS: "-1" })).toBeNull();
   expect(from({ ...base, SUPABASE_URL: "http://kong:8000" })?.supabaseUrl).toBe("http://kong:8000");
   expect(from({ ...base, SUPABASE_URL: "http://evil.example" })).toBeNull();
 });

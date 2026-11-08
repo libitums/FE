@@ -7,5 +7,8 @@ verify_jwt = false
 [functions.chat-send]
 verify_jwt = false
 
+[functions.companion-proactive]
+verify_jwt = false
+
 [functions.send-push]
 verify_jwt = false

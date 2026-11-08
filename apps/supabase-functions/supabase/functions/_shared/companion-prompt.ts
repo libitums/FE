@@ -1,15 +1,30 @@
 // 메인 LLM의 시스템 프롬프트를 만듭니다. 순수 함수입니다.
 //
 // 캐시를 위해 바뀌지 않는 앞부분(규칙 · 페르소나)을 먼저, 유저마다 다른 뒷부분(학습 표현 · 요약 · 연령대)을 나중에 둡니다.
-// 규칙: PRD §3.1 ~ §3.3 · §3.7 · §3.11 ~ §3.12.
+// 규칙: PRD §3.1 ~ §3.3 · §3.6 ~ §3.9 · §3.11 ~ §3.12.
 
-import type { AgeBand, LearningExpression, PersonaCard } from "./chat-send.contract.ts";
+import type {
+  AgeBand,
+  FeedbackMode,
+  LearningExpression,
+  PersonaCard,
+} from "./chat-send.contract.ts";
 import type { SpeechLevel } from "./companion-contract/index.ts";
 
 const speechLevelRule: Record<SpeechLevel, string> = {
   polite: "Speak in polite 해요체 (존댓말). Never use 반말.",
   casual: "Speak in friendly 반말 (casual), the way close friends talk.",
   slang: "Speak in very casual 반말 with light, common slang a Korean friend would use.",
+};
+
+// 피드백 방식은 페르소나 답변만 바꾼다 — correction 이벤트는 세 방식 모두 따로 온다(PRD §3.6).
+const feedbackRule: Record<FeedbackMode, string> = {
+  separate:
+    "Do not correct the learner's Korean in your reply. Corrections are shown to them separately.",
+  natural:
+    "If the learner made a Korean mistake, naturally say the correct form back inside your reply (a recast), without pointing out the mistake.",
+  prefix:
+    "If the learner made a Korean mistake, start with one very short, friendly correction line (e.g. \"'마리아예요'라고 해요!\"), then continue the conversation.",
 };
 
 export type PromptInput = {
@@ -19,6 +34,11 @@ export type PromptInput = {
   readonly l1: string | null;
   readonly expressions: readonly LearningExpression[];
   readonly summary: string | null;
+  readonly feedbackMode: FeedbackMode;
+  /** 기억(공유 · 캐릭터별). 지운 기억은 들어오지 않는다. */
+  readonly memories: readonly string[];
+  /** 서버가 고른 이번 턴 지시(화제 전환 · 학습 표현 삽입). 없으면 null. */
+  readonly directive: string | null;
 };
 
 const list = (items: readonly string[] | undefined) =>
@@ -35,7 +55,8 @@ ${persona.job ? `- Job: ${persona.job}\n` : ""}${persona.role ? `- Role: ${perso
 # How to chat
 - Write in Korean that the learner can follow: short, natural sentences, one step above their level. Reuse the words and patterns they have learned (listed below) when they fit naturally. Do not lecture about grammar.
 - Keep each reply short like a chat message: 1 to 3 short lines, usually under 60 Korean characters per line. Ask at most one question.
-- If the learner writes in another language or makes mistakes, answer naturally in Korean anyway. Do not correct them here; corrections are shown separately.
+- If the learner writes in another language, answer naturally in Korean anyway.
+- You only know the parts of the story the learner has reached. Do not reveal later events.
 - Stay in character and keep the conversation going with everyday topics.
 
 # Hard limits
@@ -48,19 +69,25 @@ Write one line per message bubble. Start every line with a tag:
 - "@speech " for what you say out loud
 - "@action " for a short action in third person, e.g. "@action 칠판에 '소고기'라고 쓴다"
 - "@narration " only for rare scene descriptions
-Write nothing else: no markdown, no quotes around lines, no translations.`;
+Write nothing else: no markdown, no quotes around lines, no translations.
+After the bubbles, write exactly one last line for the app (never shown to the learner):
+@state {"intimacy_delta": <integer from -2 to 3: how much warmer this exchange made the relationship>, "topic": "<2-4 word Korean topic of this exchange>", "user_wants_switch": <true if the learner signals they want a new topic>}`;
 
   const dynamic = [
     `# This learner
 - Speech level: ${speechLevelRule[input.speechLevel]}
 - Age: ${input.ageBand === "adult" ? "adult" : "may be a minor — keep everything appropriate for a 13-year-old"}
-${input.l1 ? `- Their language: ${input.l1}` : ""}`,
+${input.l1 ? `- Their language: ${input.l1}\n` : ""}- Mistakes: ${feedbackRule[input.feedbackMode]}`,
+    input.memories.length > 0
+      ? `# What you remember about them (use only when relevant, never list it)\n${list(input.memories)}`
+      : "",
     input.expressions.length > 0
       ? `# Korean they have learned in the app (reuse naturally)\n${input.expressions
           .map((entry) => `- ${entry.surface}${entry.gloss ? ` (${entry.gloss})` : ""}`)
           .join("\n")}`
       : "# Korean they have learned in the app\n- (none yet — keep it very simple)",
     input.summary ? `# Earlier in this conversation\n${input.summary}` : "",
+    input.directive ? `# For this reply\n${input.directive}` : "",
   ]
     .filter((part) => part !== "")
     .join("\n\n");

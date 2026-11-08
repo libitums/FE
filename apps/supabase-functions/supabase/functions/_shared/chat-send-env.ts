@@ -39,19 +39,10 @@ export const chatSendEnvFrom: ChatSendEnvFrom = (read) => {
     return null;
   }
 
-  const rawLimit = value("COMPANION_DAILY_LIMIT_SECONDS");
-  const dailyLimitSeconds = rawLimit === null ? null : Number(rawLimit);
-  if (
-    dailyLimitSeconds !== null &&
-    (!Number.isInteger(dailyLimitSeconds) || dailyLimitSeconds <= 0)
-  )
-    return null;
-
   return {
     supabaseUrl: rawUrl.replace(/\/+$/, ""),
     supabaseAnonKey,
     supabaseServiceRoleKey,
     llm,
-    dailyLimitSeconds,
   };
 };

@@ -16,8 +16,7 @@ export type ChatSendEnvName =
   | "ANTHROPIC_API_KEY"
   | "COMPANION_LLM"
   | "COMPANION_MODEL"
-  | "COMPANION_MODERATION_MODEL"
-  | "COMPANION_DAILY_LIMIT_SECONDS";
+  | "COMPANION_MODERATION_MODEL";
 
 export type ChatSendEnv = {
   readonly supabaseUrl: string;
@@ -35,8 +34,6 @@ export type ChatSendEnv = {
         readonly moderationModel: string;
       }
     | { readonly kind: "fake" };
-  /** 하루 이용 시간 상한(초). 없으면 상한을 보지 않습니다(값은 PRD O4 — 팀 논의). */
-  readonly dailyLimitSeconds: number | null;
 };
 
 export type ChatSendEnvFrom = (
@@ -70,6 +67,9 @@ export type PersonaCard = {
   readonly samples?: readonly string[];
   readonly doNot?: readonly string[];
   readonly memorySeed?: readonly string[];
+  readonly maxSpeechLevel?: SpeechLevel;
+  /** 화제 뱅크 씨앗(PRD §3.8 · O6 초안). */
+  readonly topics?: readonly string[];
 };
 
 export type ReplyRequest = {
@@ -92,11 +92,73 @@ export type ModerationRequest = {
   readonly signal: AbortSignal;
 };
 
-/** 벤더 추상화 계층(PRD §5 M1). 메인 답변은 글자 조각의 흐름, 검사는 판정 하나입니다. */
+export type FeedbackMode = "separate" | "natural" | "prefix";
+
+/** SSE `correction`의 본문에서 `userMessageId`를 뺀 것(M2). */
+export type Feedback = {
+  readonly status: "ok" | "none" | "unavailable";
+  readonly kind?: "correction" | "better" | "l1_to_ko";
+  readonly items?: { original: string; corrected: string; reason: string }[];
+  readonly better?: { text: string; meaning: string; explanation: string };
+  readonly l1ToKo?: { text: string; meaning: string };
+};
+
+export type FeedbackRequest = {
+  readonly text: string;
+  /** 설명 · 뜻을 쓸 언어. 없으면 영어(PRD §3.5). */
+  readonly l1: string | null;
+  /** 바로 앞 캐릭터 말 — 대답으로서 자연스러운지 보려고. */
+  readonly previous: string | null;
+  readonly signal: AbortSignal;
+};
+
+export type MemoryItem = {
+  readonly kind: "fact" | "event";
+  readonly content: string;
+  readonly shared: boolean;
+};
+
+export type MemoryRequest = {
+  readonly userText: string;
+  readonly reply: string;
+  readonly existing: readonly string[];
+  /** 미성년자 · 나이 모름이면 건강 · 심리 정보를 뺀다(뉴욕 Art.48). */
+  readonly minor: boolean;
+  readonly signal: AbortSignal;
+};
+
+export type SummaryRequest = {
+  readonly previous: string | null;
+  readonly messages: readonly HistoryEntry[];
+  readonly signal: AbortSignal;
+};
+
+/** 벤더 추상화 계층(PRD §5 M1). 메인 답변은 글자 조각의 흐름, 나머지는 구조화된 결과 하나입니다. */
 export type CompanionLlm = {
   readonly model: string;
   reply(request: ReplyRequest): AsyncIterable<string>;
   moderate(request: ModerationRequest): Promise<ModerationVerdict>;
+  feedback(request: FeedbackRequest): Promise<Feedback>;
+  extractMemories(request: MemoryRequest): Promise<MemoryItem[]>;
+  summarize(request: SummaryRequest): Promise<string>;
+};
+
+/** 메인 답변 끝의 `@state` 줄(PRD §3.2 · §3.8). 모델이 빠뜨리면 null. */
+export type TurnState = {
+  readonly intimacyDelta: number;
+  readonly topic: string | null;
+  readonly userWantsSwitch: boolean;
+};
+
+/** 대화의 화제 상태(conversations.topic_state). 서버가 분기를 고르는 데 쓴다. */
+export type TopicState = {
+  readonly turn: number;
+  readonly topic: string | null;
+  readonly topicTurns: number;
+  readonly shortStreak: number;
+  readonly wantsSwitch: boolean;
+  readonly lastInsertTurn: number | null;
+  readonly lastSwitchTurn: number | null;
 };
 
 // ------------------------------------------------------------------ DB 창구(서버용 함수)
@@ -108,11 +170,27 @@ export type GateResult =
       readonly result: "ok";
       readonly ageBand: AgeBand;
       readonly l1: string | null;
+      readonly region: string | null;
+      readonly tier: "free" | "premium";
+      readonly feedbackMode: FeedbackMode;
+      readonly memoryEnabled: boolean;
       readonly notices: readonly NoticeKind[];
     }
   | { readonly result: string; readonly detail?: Record<string, unknown> };
 
+export type BeginResult =
+  | ({ readonly result: "ok" } & BegunTurn)
+  | {
+      readonly result: "trial_exhausted" | "insufficient_credits";
+      readonly detail?: Record<string, unknown>;
+    };
+
 export type BegunTurn = {
+  readonly holdId: string;
+  readonly creditsReserved: number;
+  readonly trial: boolean;
+  readonly topicState: Partial<TopicState> | null;
+  readonly memories: readonly { kind: string; content: string; shared: boolean }[];
   readonly conversationId: string;
   readonly userMessageId: string;
   readonly speechLevel: SpeechLevel;
@@ -133,7 +211,7 @@ export type LearningContext = {
 // ------------------------------------------------------------------ 의존성
 
 export type ChatSendLogEntry = {
-  readonly event: "chat_send";
+  readonly event: "chat_send" | "companion_after_turn" | "companion_proactive";
   readonly status: number | "stream";
   readonly outcome?: string;
   readonly error?: string;
@@ -152,4 +230,8 @@ export type ChatSendDeps = {
   readonly pingIntervalMs?: number;
   /** LLM 호출 하나의 제한 시간. */
   readonly llmTimeoutMs?: number;
+  /** 피드백을 기다리는 시간. 넘으면 `unavailable`(PRD §3.5). */
+  readonly feedbackTimeoutMs?: number;
+  /** 분기의 랜덤(0 ~ 1). 테스트가 고정합니다. */
+  readonly random?: () => number;
 };
