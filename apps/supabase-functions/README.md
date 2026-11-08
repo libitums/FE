@@ -1,7 +1,7 @@
 # @libitums/supabase-functions
 
-Supabase Edge Function 앱이다. 함수는 셋 — `delete-account`, `send-push`(서버 푸시, 아래 「send-push」 ·
-[ADR-0034](../../docs/adr/0034-server-push-notifications.md)), `chat-send`(AI 컴패니언 턴, 아래 「AI 컴패니언」). 먼저 `delete-account` — 로그인한 사용자가 자기 계정을 지운다
+Supabase Edge Function 앱이다. 함수는 넷 — `delete-account`, `send-push`(서버 푸시, 아래 「send-push」 ·
+[ADR-0034](../../docs/adr/0034-server-push-notifications.md)), `chat-send` · `companion-proactive`(AI 컴패니언 턴 · 선톡, 아래 「AI 컴패니언」). 먼저 `delete-account` — 로그인한 사용자가 자기 계정을 지운다
 (Apple 사용자는 Apple 토큰 철회까지). 결정과 HTTP 계약(판정 순서 · 상태 코드)은
 [ADR-0032](../../docs/adr/0032-account-sign-out-and-deletion.md) D1~D3, 타입은
 `supabase/functions/_shared/delete-account.contract.ts`가 정본이다.
@@ -202,52 +202,73 @@ Firebase 프로젝트에 Android 앱을 등록하고 FCM HTTP v1 API 권한이 �
 - 개인정보처리방침에 붙일 문구 초안: [`docs/specs/web-trial-speech-samples-privacy.md`](../../docs/specs/web-trial-speech-samples-privacy.md)(사용자가 Notion에 반영).
 - 남은 위험: 사전 등록 표와 같이 빈도 제한 · 봇 막기가 없다. 사용자가 말로 개인정보를 말하면 글자로 남는다(90일 뒤 삭제).
 
-## AI 컴패니언 — chat-send (M1 MVP)
+## AI 컴패니언 — chat-send · companion-proactive (M1 ~ M4)
 
-턴 하나를 SSE로 돌려주는 `chat-send`와 그 밑의 DB 함수다. 계약은 `packages/companion-contract`(사본 `_shared/companion-contract/`),
-결정은 [ADR-0112](../../docs/adr/0112-companion-schema.md) · [0113](../../docs/adr/0113-companion-contract-package.md) ·
+턴 하나를 SSE로 돌려주는 `chat-send`, 선톡을 만드는 `companion-proactive`, 그 밑의 DB 함수다. 계약은 `packages/companion-contract`
+(사본 `_shared/companion-contract/`), 결정은 [ADR-0112](../../docs/adr/0112-companion-schema.md) · [0113](../../docs/adr/0113-companion-contract-package.md) ·
 [0114](../../docs/adr/0114-companion-public-function-access.md), 명세는 `docs/specs/ai-companion-api.md`.
 
-- 마이그레이션: `20261108120000_companion_foundation.sql`(M0 — 스키마 · 학습 표현 · 프로필), `20261109120000_companion_chat_core.sql`
-  (M1 — 캐릭터 · 대화 · 메시지 · 고지 · 이용 시간 · 판정 · 신고, 서버용 · 앱용 · 운영 조회 함수, 덕수쌤 한 명). 통합 테스트 CF1 ~ CF11 · CH1 ~ CH10.
-- 함수: `chat-send/index.ts` → `_shared/chat-send-handler.ts`(판정 · 저장) → `chat-send-turn.ts`(입력 검사와 메인 답변을 동시에 · 위기 · 차단 ·
-  미성년자 동기 출력 검사) · `chat-send-reply.ts`(조각 나누기 · 한 번 재시도). LLM 계층은 `companion-llm.ts`(Anthropic · fake). 단위 테스트 CS1 ~ CS9 · SG · CE.
-- Deno import map: `chat-send/deno.json`(`zod` · `zod/mini` · `@anthropic-ai/sdk`). 버전은 `package.json`과 같게 둔다.
-- **아직 없는 것(M1 남은 일)**: 성인 턴의 사후 출력 검사 작업(`companion-job-worker`) · 단기 메모리 요약 · 이용 시간 상한 값(O4) · 시간 상한 연속 사용 판정.
-  피드백(M2) · 다른 캐릭터와 친밀도(M3) · 크레딧(M4)도 없다 — 스트림의 `done.creditsSpent`는 늘 0, `balance`는 null.
+| 마이그레이션 | 내용 |
+|---|---|
+| `20261108120000_companion_foundation.sql` (M0) | `companion` 스키마 · 학습 표현 · 컴패니언 프로필 |
+| `20261109120000_companion_chat_core.sql` (M1) | 캐릭터 · 대화 · 메시지 · 고지 · 이용 시간 · 판정 · 신고, 앱용 · 운영 조회 함수 |
+| `20261110120000_companion_feedback.sql` (M2) | 피드백 표 `corrections` · 메시지 목록에 피드백 |
+| `20261111120000_companion_cast_memory.sql` (M3) | 설정 한 행 `companion.settings` · 페르소나 다섯 · 장기 메모리 · 반복 위반 · 선톡 · 요약 · 운영자 함수 |
+| `20261112120000_companion_credits.sql` (M4) | 지갑 · 원장 · 예약 · 체험 사용량 · 티어, 지급 · 소멸 · 정리 · 조회 |
+| `20261113120000_companion_turn_v2.sql` | 판정 · 시작 · 끝을 M2 ~ M4까지 합친 판 |
 
-### 환경
+통합 테스트 CF1 ~ CF11 · CH1 ~ CH10 · TV1 ~ TV10, 함수 단위 테스트 CS1 ~ CS10 · SG · CE · BR.
+
+**턴 흐름** — 판정(시험 계정 · 티어 · 연령 · 일시 차단 · 이용 시간 · 멱등) → 시작(체험 · 크레딧 예약 + 유저 메시지 저장, 한 트랜잭션) →
+SSE → 입력 검사 · 메인 답변 · 피드백을 동시에 → 위기(`crisis`) · 차단(`guardrail_blocked`) / 조각(`delta`, 미성년자 · 나이 모름은 출력 검사 뒤) ·
+교정(`correction`) → 끝(피드백 · 친밀도 → 말투 · 화제 · 제재 · 예약 확정/해제, 한 트랜잭션) → `state` · `done` → 스트림을 닫고 기억 추출 · 요약.
+
+**값을 바꾸는 곳** — 단가 · 체험 수 · 말투 문턱 · 선톡 공백 · 제재 횟수 같은 값(PRD §8 C · O1 ~ O5 초안)은 `companion.settings` 한 행이다.
+SQL 편집기에서 `update companion.settings set trial_limit = 30;`처럼 바꾸면 배포 없이 다음 턴부터 적용된다. `testers_only`가 참이면(기본)
+`duru_tester` 계정만 쓴다.
+
+**아직 없는 것** — 선톡 푸시(`send-push`에 컴패니언 목적지 필요 — 메시지는 저장된다) · 성인 턴의 사후 출력 검사 작업 · 의미 검색(pgvector — 임베딩 모델 미정이라 최근 기억을 넣는다) ·
+결제(영수증 검증 · 웹 결제 — 결제 작업이 `companion_grant_credits` · `companion_set_entitlement`를 부른다) · 스포일러 게이트(해금 에피소드 밖 서사 차단은 프롬프트 지시만).
+
+### 환경 · 비밀
+
+비밀 값은 `supabase/functions/.env`(견본 `env.example`, `.env`는 커밋되지 않는다 — 루트 .gitignore가 `.env` · `.env.*`를 막는다)에 넣는다. 로컬 `supabase functions serve`가 이 파일을 읽고,
+운영은 `supabase secrets set --env-file supabase/functions/.env`로 올린다.
 
 | 이름 | 필수 | 뜻 |
 |---|---|---|
-| `SUPABASE_URL` · `SUPABASE_ANON_KEY` · `SUPABASE_SERVICE_ROLE_KEY` | 예 | Edge 런타임이 넣어 준다 |
-| `ANTHROPIC_API_KEY` | `COMPANION_LLM`이 `anthropic`(기본)일 때 | 컴패니언 전용 키(원가 분리 — 위키 05) |
-| `COMPANION_LLM` | 아니오 | `anthropic`(기본) 또는 `fake`(키 없이 정해진 답 — 로컬 · 플레이그라운드 화면 확인용). 키가 없다고 fake로 넘어가지 않는다 |
-| `COMPANION_MODEL` · `COMPANION_MODERATION_MODEL` | 아니오 | 기본 `claude-opus-5-5`(검사 모델은 메인 모델을 따른다). 응답은 `effort: low`, 정책 거절 때 서버 쪽 대체 모델(`fallbacks: "default"`) |
-| `COMPANION_DAILY_LIMIT_SECONDS` | 아니오 | 하루 이용 시간 상한(초). 없으면 보지 않는다 |
+| `SUPABASE_URL` · `SUPABASE_ANON_KEY` · `SUPABASE_SERVICE_ROLE_KEY` | 예 | Edge 런타임이 넣어 준다 — 파일에 적지 않는다 |
+| `ANTHROPIC_API_KEY` | `COMPANION_LLM=anthropic`일 때 | 컴패니언 전용 키(원가 분리 — 위키 05) |
+| `COMPANION_LLM` | 아니오 | `anthropic`(기본) 또는 `fake`(키 없이 정해진 답 — 화면 확인용). 키가 없다고 fake로 넘어가지 않는다 |
+| `COMPANION_MODEL` · `COMPANION_MODERATION_MODEL` | 아니오 | 기본 `claude-opus-5-5`(검사 · 피드백 · 기억 · 요약은 메인 모델을 따른다). 답변은 `effort: low`, 정책 거절 때 서버 쪽 대체 모델(`fallbacks: "default"`) |
+
+fake 모드에서 흐름을 일부러 일으키는 낱말은 `_shared/companion-llm-fake.ts` 머리 주석에 있다(위기 · 차단 · 교정 · 기억 · 친밀도).
 
 ### 로컬에서 끝까지 돌리기 (운영 DB를 건드리지 않는다)
 
 ```sh
 cd apps/supabase-functions
 supabase start -x studio,imgproxy,mailpit,logflare,vector,supavisor,realtime,storage-api   # 마이그레이션 전부 적용
-printf 'COMPANION_LLM=fake\n' > /tmp/companion.env    # 실제 모델이면 ANTHROPIC_API_KEY=... 를 이 파일에(커밋 금지)
-supabase functions serve chat-send --env-file /tmp/companion.env --no-verify-jwt
+cp supabase/functions/env.example supabase/functions/.env                                  # 처음 한 번 — 값은 직접
+supabase functions serve --no-verify-jwt                                                   # chat-send · companion-proactive
 ```
 
 시험 계정은 Auth admin API로 `app_metadata: { duru_tester: true }`를 붙여 만든다. 앱 경로는 그 계정의 액세스 토큰,
 플레이그라운드 경로는 `Authorization: Bearer <서버 키>` + `x-companion-user-id: <계정 id>`다(서버 키를 가진 ops-dashboard만).
+마이그레이션을 고친 뒤에는 `supabase db reset --local`(로컬 DB만 지운다).
 
 ### 운영 적용 (사람이 한다)
 
-운영 프로젝트 `duru`에서 개발한다(위키 05). 기존 기능과 표 · 함수 이름이 겹치지 않고(`companion` 스키마 · `public.companion_*` 함수만 새로 생긴다)
+운영 프로젝트 `duru`에서 개발한다(위키 05). 새로 생기는 것은 `companion` 스키마 · `public.companion_*` 함수 · Edge Function 둘뿐이고,
 앱은 아직 컴패니언을 부르지 않는다.
 
-1. `supabase db push --dry-run`으로 **컴패니언 두 마이그레이션만** 올라가는지 본다. `main`의 다른 미배포 마이그레이션이 같이 올라가면 멈추고 담당자와 확인한다(위키 05).
-2. `supabase db push`(또는 두 SQL을 SQL 편집기에서 차례로).
-3. `supabase secrets set ANTHROPIC_API_KEY=…`(대시보드에서 넣어도 된다). 처음 화면 확인만이면 `COMPANION_LLM=fake`.
-4. `supabase functions deploy chat-send`(`config.toml`의 `verify_jwt = false`를 따른다).
-5. 시험 계정 하나에 `duru_tester`를 켜고 플레이그라운드에서 정상 · 위기(「죽고 싶어」) · 차단 턴을 한 번씩 돌려 본다.
-   학습 표현을 프롬프트에 넣으려면 `devtools/companion-expressions/`로 만든 SQL을 SQL 편집기에서 한 번 실행한다.
+1. `supabase db push --dry-run`으로 **컴패니언 마이그레이션 여섯(20261108 ~ 20261113)만** 올라가는지 본다. `main`의 다른 미배포 마이그레이션이 같이 올라가면 멈추고 담당자와 확인한다(위키 05).
+2. `supabase db push`(또는 여섯 SQL을 SQL 편집기에서 차례로).
+3. 비밀: `supabase secrets set --env-file supabase/functions/.env`. 키가 아직 없으면 `COMPANION_LLM=fake`로 화면만 먼저 본다.
+4. `supabase functions deploy chat-send` · `supabase functions deploy companion-proactive`(`config.toml`의 `verify_jwt = false`를 따른다).
+5. 예약 작업: Vault에 서버 키(`companion_service_role_key`)를 넣고 `supabase/cron/companion.sql`을 SQL 편집기에서 한 번 실행한다.
+6. 학습 표현: `node devtools/companion-expressions/build.mjs --base <버킷 주소> --out /tmp/expr`로 만든 `sync-expressions.sql`을 SQL 편집기에서 한 번 실행한다.
+7. 시험 계정에 `duru_tester`를 켜고 플레이그라운드에서 정상 · 위기 · 차단 · 크레딧 턴을 한 번씩 돌린다.
 
-되돌리기: 함수는 `supabase functions delete chat-send`. 표 · 함수는 `drop schema companion cascade` 뒤 `public.companion_*` 함수를 지운다(다른 기능이 쓰지 않는다).
+되돌리기: 함수는 `supabase functions delete chat-send` · `companion-proactive`, 예약은 `select cron.unschedule('companion-…')`.
+표 · 함수는 `drop schema companion cascade` 뒤 `public.companion_*` 함수를 지운다(다른 기능이 쓰지 않는다).
