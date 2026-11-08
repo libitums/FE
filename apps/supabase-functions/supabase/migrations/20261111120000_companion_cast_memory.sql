@@ -116,6 +116,7 @@ create table companion.moderation_state (
   blocked_until timestamptz
 );
 
+alter table companion.settings enable row level security;
 alter table companion.memories enable row level security;
 alter table companion.moderation_state enable row level security;
 revoke all on table companion.memories, companion.moderation_state, companion.settings from public, anon, authenticated;

@@ -418,3 +418,11 @@ test("TV11. 운영자 — 프로필 바꾸기 · 지역 지우기 · 초기화(�
   expect(left.rows[0]).toEqual({ memories: 0, trials: 0, conversations: 0, credits: 5 });
   expect(await turn()).toMatchObject({ creditsSpent: 0 });
 });
+
+// TV12 — 표 하나라도 RLS를 빠뜨리면 노출 설정이 바뀌는 날 그 표가 열린다. 스키마의 모든 표를 확인한다.
+test("TV12. companion 스키마의 모든 표는 RLS가 켜져 있다", async () => {
+  const result = await db.admin.query(
+    "select c.relname from pg_class c join pg_namespace n on n.oid = c.relnamespace where n.nspname = 'companion' and c.relkind = 'r' and not c.relrowsecurity",
+  );
+  expect(result.rows).toEqual([]);
+});
