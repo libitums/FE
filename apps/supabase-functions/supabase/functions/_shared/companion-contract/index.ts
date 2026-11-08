@@ -32,6 +32,8 @@ export {
   stateDataSchema,
   translationDataSchema,
   turnEventSchema,
+  type NoticeKind,
+  type SegmentKind,
   type SpeechLevel,
   type TurnEvent,
   type TurnEventName,

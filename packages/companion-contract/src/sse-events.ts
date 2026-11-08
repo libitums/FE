@@ -96,3 +96,5 @@ export const turnEventSchema = z.discriminatedUnion("event", [
 export type TurnEvent = z.infer<typeof turnEventSchema>;
 export type TurnEventName = TurnEvent["event"];
 export type SpeechLevel = z.infer<typeof speechLevelSchema>;
+export type SegmentKind = z.infer<typeof segmentKindSchema>;
+export type NoticeKind = z.infer<typeof noticeKindSchema>;
