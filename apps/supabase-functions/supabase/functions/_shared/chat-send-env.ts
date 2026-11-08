@@ -1,0 +1,57 @@
+import type { ChatSendEnvFrom, ChatSendEnvName } from "./chat-send.contract.ts";
+
+/** 모델을 정하지 않으면 쓰는 기본값입니다. 바꿀 때는 `COMPANION_MODEL` · `COMPANION_MODERATION_MODEL`. */
+export const defaultCompanionModel = "claude-opus-5-5";
+
+export const chatSendEnvFrom: ChatSendEnvFrom = (read) => {
+  const value = (name: ChatSendEnvName): string | null => {
+    const trimmed = read(name)?.trim() ?? "";
+    return trimmed === "" ? null : trimmed;
+  };
+
+  const rawUrl = value("SUPABASE_URL");
+  const supabaseAnonKey = value("SUPABASE_ANON_KEY");
+  const supabaseServiceRoleKey = value("SUPABASE_SERVICE_ROLE_KEY");
+  if (rawUrl === null || supabaseAnonKey === null || supabaseServiceRoleKey === null) return null;
+  // 로컬 스택(`supabase start`)은 http다. 운영은 https만 받는다.
+  if (
+    !rawUrl.startsWith("https://") &&
+    !/^http:\/\/(127\.0\.0\.1|localhost|kong)(:\d+)?/.test(rawUrl)
+  ) {
+    return null;
+  }
+
+  const mode = value("COMPANION_LLM") ?? "anthropic";
+  let llm;
+  if (mode === "fake") {
+    llm = { kind: "fake" } as const;
+  } else if (mode === "anthropic") {
+    const apiKey = value("ANTHROPIC_API_KEY");
+    if (apiKey === null) return null;
+    const model = value("COMPANION_MODEL") ?? defaultCompanionModel;
+    llm = {
+      kind: "anthropic",
+      apiKey,
+      model,
+      moderationModel: value("COMPANION_MODERATION_MODEL") ?? model,
+    } as const;
+  } else {
+    return null;
+  }
+
+  const rawLimit = value("COMPANION_DAILY_LIMIT_SECONDS");
+  const dailyLimitSeconds = rawLimit === null ? null : Number(rawLimit);
+  if (
+    dailyLimitSeconds !== null &&
+    (!Number.isInteger(dailyLimitSeconds) || dailyLimitSeconds <= 0)
+  )
+    return null;
+
+  return {
+    supabaseUrl: rawUrl.replace(/\/+$/, ""),
+    supabaseAnonKey,
+    supabaseServiceRoleKey,
+    llm,
+    dailyLimitSeconds,
+  };
+};

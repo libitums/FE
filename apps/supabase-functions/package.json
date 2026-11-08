@@ -9,6 +9,7 @@
     "test:integration": "vitest run integration.test"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "1.3.0",
     "zod": "4.6.5"
   },
   "devDependencies": {
