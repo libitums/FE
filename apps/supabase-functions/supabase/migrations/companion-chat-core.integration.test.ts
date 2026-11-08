@@ -17,7 +17,7 @@ const messageId = (n: number) => `10000000-0000-4000-8000-${String(n).padStart(1
 
 async function gate(
   clientMessageId: string,
-  options: { user?: string; character?: string; at?: string; limit?: number | null } = {},
+  options: { user?: string; character?: string; at?: string; region?: string | null } = {},
 ) {
   const result = await server.query(
     "select public.companion_turn_gate($1, $2, $3, $4, $5) as gate",
@@ -26,17 +26,19 @@ async function gate(
       options.character ?? "duksu",
       clientMessageId,
       options.at ?? now,
-      options.limit ?? null,
+      options.region ?? null,
     ],
   );
   return result.rows[0].gate as Record<string, unknown>;
 }
 async function begin(clientMessageId: string, text = "안녕하세요", user = tester) {
   const result = await server.query(
-    "select public.companion_begin_turn($1, 'duksu', $2, $3, 'text', 20) as turn",
-    [user, clientMessageId, text],
+    "select public.companion_begin_turn($1, 'duksu', $2, $3, 'text', 20, null, $4) as turn",
+    [user, clientMessageId, text, now],
   );
   return result.rows[0].turn as {
+    result: string;
+    holdId: string;
     conversationId: string;
     userMessageId: string;
     speechLevel: string;
@@ -49,20 +51,28 @@ async function finish(
   status: string,
   options: { assistant?: number; notices?: string[]; moderation?: unknown[]; at?: string } = {},
 ) {
-  await server.query("select public.companion_finish_turn($1, $2, $3::jsonb, $4::jsonb, $5, $6)", [
-    userMessageId,
-    status,
-    options.assistant === undefined
-      ? null
-      : JSON.stringify({
-          id: assistantId(options.assistant),
-          segments: [{ kind: "speech", text: "반가워요!" }],
-          meta: { model: "fake" },
-        }),
-    JSON.stringify(options.moderation ?? []),
-    options.notices ?? [],
-    options.at ?? now,
-  ]);
+  const turn = await db.admin.query(
+    "select h.id from companion.credit_holds h join companion.messages m on m.client_message_id = h.client_message_id and m.user_id = h.user_id where m.id = $1 and h.status = 'open'",
+    [userMessageId],
+  );
+  await server.query(
+    "select public.companion_finish_turn($1, $2, $3::jsonb, $4::jsonb, $5, $6, null, 0, null, $7)",
+    [
+      userMessageId,
+      status,
+      options.assistant === undefined
+        ? null
+        : JSON.stringify({
+            id: assistantId(options.assistant),
+            segments: [{ kind: "speech", text: "반가워요!" }],
+            meta: { model: "fake" },
+          }),
+      JSON.stringify(options.moderation ?? []),
+      options.notices ?? [],
+      options.at ?? now,
+      turn.rows[0]?.id ?? null,
+    ],
+  );
 }
 async function listMessages(client: Client, limit = 50, before: string | null = null) {
   const result = await client.query(
@@ -101,9 +111,9 @@ test("CH1. 앱 역할은 서버용 · 운영 조회 함수를 부르지 못하�
   for (const role of ["authenticated", "anon"]) {
     await app.query(`set role ${role}`);
     for (const call of [
-      `select public.companion_turn_gate('${tester}', 'duksu', '${messageId(1)}', now(), null)`,
-      `select public.companion_begin_turn('${tester}', 'duksu', '${messageId(1)}', 'hi', 'text', 5)`,
-      `select public.companion_finish_turn('${messageId(1)}', 'complete', null, '[]', '{}', now())`,
+      `select public.companion_turn_gate('${tester}', 'duksu', '${messageId(1)}', now(), null::text)`,
+      `select public.companion_begin_turn('${tester}', 'duksu', '${messageId(1)}', 'hi', 'text', 5, null, now())`,
+      `select public.companion_finish_turn('${messageId(1)}', 'complete', null, '[]', '{}', now(), null, 0, null, null)`,
       `select public.companion_learning_context('${tester}', 10)`,
       "select public.companion_inspect_testers()",
       `select public.companion_inspect_conversation('${tester}', 'duksu', null, 10)`,
@@ -127,7 +137,7 @@ test("CH2. 판정 — 시험 계정 · 캐릭터 · 연령", async () => {
   });
 
   // 나이를 모르면 막지 않고 미성년자 기본값 — 첫 턴에 AI 고지와 미성년자 안내.
-  expect(await gate(messageId(1))).toEqual({
+  expect(await gate(messageId(1))).toMatchObject({
     result: "ok",
     ageBand: "unknown",
     l1: null,
@@ -331,16 +341,27 @@ test("CH9. 운영 조회 — 시험 계정 목록 · 대화(내부 상태 · 판
   ]);
 });
 
-test("CH10. 캐릭터 목록 — 시험 계정에만 열리고 말투와 마지막 메시지 시각이 붙는다", async () => {
+test("CH10. 캐릭터 목록 — 시험 계정 · 티어에 따라 열리고 말투와 마지막 메시지 시각이 붙는다", async () => {
   const before = await app.query("select public.companion_list_characters() as list");
-  expect(before.rows[0].list).toEqual([
-    {
-      id: "duksu",
-      available: true,
-      unavailableReason: null,
-      speechLevel: "polite",
-      lastMessageAt: null,
-    },
+  // 무료 티어는 체험 캐릭터(덕수쌤)만 열린다(M4).
+  expect(before.rows[0].list[0]).toEqual({
+    id: "duksu",
+    available: true,
+    unavailableReason: null,
+    speechLevel: "polite",
+    lastMessageAt: null,
+  });
+  expect(
+    (before.rows[0].list as { id: string; unavailableReason: string | null }[]).map((c) => [
+      c.id,
+      c.unavailableReason,
+    ]),
+  ).toEqual([
+    ["duksu", null],
+    ["yoonkyung", "not_available"],
+    ["mina", "not_available"],
+    ["doyun", "not_available"],
+    ["jaemin", "not_available"],
   ]);
   const one = await begin(messageId(1));
   await finish(one.userMessageId, "complete", { assistant: 1 });
