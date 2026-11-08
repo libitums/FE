@@ -230,6 +230,22 @@ PostgREST(Supabase가 DB 함수를 `/rest/v1/rpc/<이름>` URL로 열어 주는 
 - §6에서 접두사 없이 부른 이름(`reserve_credits` 등)은 이 표의 `public.companion_*` 함수다.
 - 앱 사용자가 이 함수를 부르면 `42501`이다 — 통합 테스트가 함수마다 고정한다.
 
+### 3.4 운영 조회 함수 (`public.companion_inspect_*`, service_role 전용)
+
+ops-dashboard 컴패니언 탭이 부른다. ops-dashboard는 서버에서 돌고 서버 키를 가지므로 §3.3과 같은 등급 · 같은 HTTP RPC 길이다.
+`companion` 스키마를 노출하지 않으니 대시보드도 표를 직접 읽지 않는다. 전부 **읽기만** 한다.
+
+| 함수 | 마일스톤 | 돌려주는 것 |
+|---|---|---|
+| `companion_inspect_conversation(p_user_id, p_character_id, p_before, p_limit)` | M1 | 메시지(최신부터) · 각 턴의 판정 기록 · 신고 · 보낸 고지. 커서는 앱용 `companion_list_messages`와 같다 |
+| `companion_inspect_moderation(p_since, p_outcome, p_limit)` | M1 | 기간 안의 판정(차단 · 위기 · 비동기 검사 실패)을 최신부터. `p_outcome`이 null이면 전부 |
+| `companion_inspect_reports(p_since, p_limit)` | M1 | 메시지 신고와 신고된 메시지 앞뒤 턴 |
+| `companion_inspect_memory(p_user_id, p_character_id)` | M3 | 장기 메모리 항목(지운 항목 제외)과 요약 |
+| `companion_inspect_wallet(p_user_id, p_limit)` | M4 | 지갑 잔액 · 최근 원장 · 열린 예약 |
+
+- 미성년자 대화도 보인다. 조회 기록을 남길지(누가 언제 어느 유저를 봤나)는 M1 구현 때 정한다 — [제안] `companion.inspect_log`에 남긴다.
+- 반환 모양은 계약 패키지의 `json-schema/`에 함께 싣는다(§8.2).
+
 ## 4. SSE 이벤트
 
 ### 4.1 형식
@@ -419,7 +435,7 @@ packages/companion-contract/
 |---|---|
 | `apps/mobile` | `workspace:*`로 import(code.md 「import」) |
 | `apps/supabase-functions` | [제안] **생성 사본** `supabase/functions/_shared/companion-contract/`. 패키지 스크립트가 복사하고, 정본과 사본이 다르면 테스트가 실패한다(`bundle:android` 사본 + 동기화 테스트와 같은 방식). 사본의 `zod`는 함수 폴더의 import map으로 `npm:zod@4.6.5`에 잇는다. Supabase 배포가 `supabase/functions` 밖 파일을 싣는다고 기대하지 않기 위해서다 |
-| ops-dashboard(Python) | `json-schema/*.json`을 받는다. 전달 방식(산출물 커밋 · 패키지 배포)은 M0에서 정한다 |
+| ops-dashboard(Python) | 패키지에 **커밋한** `json-schema/*.json`을 읽는다(M0에서 정함 — 스키마와 다르면 테스트가 실패한다). 운영 조회 함수(§3.4)도 서버 키 HTTP RPC로 부른다 |
 
 - 이 공유는 `docs/conventions/code.md`의 「Edge Function은 앱과 코드를 나누지 않는다」와 부딪힌다. 컴패니언 계약 한정 예외를 ADR
   후보 5와 함께 규약에 넣는다(PRD §9).
