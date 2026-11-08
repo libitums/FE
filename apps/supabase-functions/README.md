@@ -1,7 +1,7 @@
 # @libitums/supabase-functions
 
-Supabase Edge Function 앱이다. 함수는 둘 — `delete-account`와 `send-push`(서버 푸시, 아래 「send-push」 ·
-[ADR-0034](../../docs/adr/0034-server-push-notifications.md)). 먼저 `delete-account` — 로그인한 사용자가 자기 계정을 지운다
+Supabase Edge Function 앱이다. 함수는 셋 — `delete-account`, `send-push`(서버 푸시, 아래 「send-push」 ·
+[ADR-0034](../../docs/adr/0034-server-push-notifications.md)), `chat-send`(AI 컴패니언 턴, 아래 「AI 컴패니언」). 먼저 `delete-account` — 로그인한 사용자가 자기 계정을 지운다
 (Apple 사용자는 Apple 토큰 철회까지). 결정과 HTTP 계약(판정 순서 · 상태 코드)은
 [ADR-0032](../../docs/adr/0032-account-sign-out-and-deletion.md) D1~D3, 타입은
 `supabase/functions/_shared/delete-account.contract.ts`가 정본이다.
@@ -201,3 +201,53 @@ Firebase 프로젝트에 Android 앱을 등록하고 FCM HTTP v1 API 권한이 �
   ② `create extension if not exists pg_cron;` 뒤 예약 SQL 1회 ③ 랜딩 배포. ①이 없으면 수집 요청이 404로 조용히 버려진다(체험은 그대로).
 - 개인정보처리방침에 붙일 문구 초안: [`docs/specs/web-trial-speech-samples-privacy.md`](../../docs/specs/web-trial-speech-samples-privacy.md)(사용자가 Notion에 반영).
 - 남은 위험: 사전 등록 표와 같이 빈도 제한 · 봇 막기가 없다. 사용자가 말로 개인정보를 말하면 글자로 남는다(90일 뒤 삭제).
+
+## AI 컴패니언 — chat-send (M1 MVP)
+
+턴 하나를 SSE로 돌려주는 `chat-send`와 그 밑의 DB 함수다. 계약은 `packages/companion-contract`(사본 `_shared/companion-contract/`),
+결정은 [ADR-0112](../../docs/adr/0112-companion-schema.md) · [0113](../../docs/adr/0113-companion-contract-package.md) ·
+[0114](../../docs/adr/0114-companion-public-function-access.md), 명세는 `docs/specs/ai-companion-api.md`.
+
+- 마이그레이션: `20261108120000_companion_foundation.sql`(M0 — 스키마 · 학습 표현 · 프로필), `20261109120000_companion_chat_core.sql`
+  (M1 — 캐릭터 · 대화 · 메시지 · 고지 · 이용 시간 · 판정 · 신고, 서버용 · 앱용 · 운영 조회 함수, 덕수쌤 한 명). 통합 테스트 CF1 ~ CF11 · CH1 ~ CH10.
+- 함수: `chat-send/index.ts` → `_shared/chat-send-handler.ts`(판정 · 저장) → `chat-send-turn.ts`(입력 검사와 메인 답변을 동시에 · 위기 · 차단 ·
+  미성년자 동기 출력 검사) · `chat-send-reply.ts`(조각 나누기 · 한 번 재시도). LLM 계층은 `companion-llm.ts`(Anthropic · fake). 단위 테스트 CS1 ~ CS9 · SG · CE.
+- Deno import map: `chat-send/deno.json`(`zod` · `zod/mini` · `@anthropic-ai/sdk`). 버전은 `package.json`과 같게 둔다.
+- **아직 없는 것(M1 남은 일)**: 성인 턴의 사후 출력 검사 작업(`companion-job-worker`) · 단기 메모리 요약 · 이용 시간 상한 값(O4) · 시간 상한 연속 사용 판정.
+  피드백(M2) · 다른 캐릭터와 친밀도(M3) · 크레딧(M4)도 없다 — 스트림의 `done.creditsSpent`는 늘 0, `balance`는 null.
+
+### 환경
+
+| 이름 | 필수 | 뜻 |
+|---|---|---|
+| `SUPABASE_URL` · `SUPABASE_ANON_KEY` · `SUPABASE_SERVICE_ROLE_KEY` | 예 | Edge 런타임이 넣어 준다 |
+| `ANTHROPIC_API_KEY` | `COMPANION_LLM`이 `anthropic`(기본)일 때 | 컴패니언 전용 키(원가 분리 — 위키 05) |
+| `COMPANION_LLM` | 아니오 | `anthropic`(기본) 또는 `fake`(키 없이 정해진 답 — 로컬 · 플레이그라운드 화면 확인용). 키가 없다고 fake로 넘어가지 않는다 |
+| `COMPANION_MODEL` · `COMPANION_MODERATION_MODEL` | 아니오 | 기본 `claude-opus-5-5`(검사 모델은 메인 모델을 따른다). 응답은 `effort: low`, 정책 거절 때 서버 쪽 대체 모델(`fallbacks: "default"`) |
+| `COMPANION_DAILY_LIMIT_SECONDS` | 아니오 | 하루 이용 시간 상한(초). 없으면 보지 않는다 |
+
+### 로컬에서 끝까지 돌리기 (운영 DB를 건드리지 않는다)
+
+```sh
+cd apps/supabase-functions
+supabase start -x studio,imgproxy,mailpit,logflare,vector,supavisor,realtime,storage-api   # 마이그레이션 전부 적용
+printf 'COMPANION_LLM=fake\n' > /tmp/companion.env    # 실제 모델이면 ANTHROPIC_API_KEY=... 를 이 파일에(커밋 금지)
+supabase functions serve chat-send --env-file /tmp/companion.env --no-verify-jwt
+```
+
+시험 계정은 Auth admin API로 `app_metadata: { duru_tester: true }`를 붙여 만든다. 앱 경로는 그 계정의 액세스 토큰,
+플레이그라운드 경로는 `Authorization: Bearer <서버 키>` + `x-companion-user-id: <계정 id>`다(서버 키를 가진 ops-dashboard만).
+
+### 운영 적용 (사람이 한다)
+
+운영 프로젝트 `duru`에서 개발한다(위키 05). 기존 기능과 표 · 함수 이름이 겹치지 않고(`companion` 스키마 · `public.companion_*` 함수만 새로 생긴다)
+앱은 아직 컴패니언을 부르지 않는다.
+
+1. `supabase db push --dry-run`으로 **컴패니언 두 마이그레이션만** 올라가는지 본다. `main`의 다른 미배포 마이그레이션이 같이 올라가면 멈추고 담당자와 확인한다(위키 05).
+2. `supabase db push`(또는 두 SQL을 SQL 편집기에서 차례로).
+3. `supabase secrets set ANTHROPIC_API_KEY=…`(대시보드에서 넣어도 된다). 처음 화면 확인만이면 `COMPANION_LLM=fake`.
+4. `supabase functions deploy chat-send`(`config.toml`의 `verify_jwt = false`를 따른다).
+5. 시험 계정 하나에 `duru_tester`를 켜고 플레이그라운드에서 정상 · 위기(「죽고 싶어」) · 차단 턴을 한 번씩 돌려 본다.
+   학습 표현을 프롬프트에 넣으려면 `devtools/companion-expressions/`로 만든 SQL을 SQL 편집기에서 한 번 실행한다.
+
+되돌리기: 함수는 `supabase functions delete chat-send`. 표 · 함수는 `drop schema companion cascade` 뒤 `public.companion_*` 함수를 지운다(다른 기능이 쓰지 않는다).
