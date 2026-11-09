@@ -2,7 +2,7 @@
    design 4 · 5절). 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). 머리 · 대화 · 말풍선 · 보기 면은 공용 chat.css,
    버튼 · 아바타 · 말풍선은 ui-lynx가 그립니다. 화면 지역 상수(토큰 없음): 사진 P-W × P-H 180 × 240 · 음성 V-W 220 ·
    파형 V-WAVE-H 28 · 알약 F-PILL-H 34 · 입력 칸 C-FIELD-H 44 · 토글 T-H 36 · 메뉴 MENU-W 208.
-   z-index는 쓰지 않습니다 — 문서 순서가 겹침 순서입니다(ADR-0022). 흰 글 면은 새로 만드는 작은 면만 brand-strong입니다(D1 안 A).
+   z-index는 쓰지 않습니다 — 문서 순서가 겹침 순서입니다(ADR-0022). 주황 면은 brand-primary입니다(사용자 결정 — 흰 글 3.02:1은 다른 brand-primary 단추와 같은 앱 전체 예외).
    상태 변형은 `[data-…]` 속성 선택자가 아니라 클래스 변형(`…-open` · `…-selected` …)입니다 — Lynx CSS 속성 선택자는
    dataset(`data-*`)을 맞추지 않아 기기에서 규칙이 한 번도 적용되지 않았습니다(device-findings-1 D1). */
 
@@ -87,9 +87,9 @@
   border-radius: var(--libitum-radius-full);
 }
 
-/* Snapshot: 새로 만드는 흰 글 면이라 brand-strong(5.46). 가격은 화폐 아이콘 없이 수만. */
+/* Snapshot: 주황 면은 brand-primary(사용자 결정, 흰 글 3.02:1은 앱 전체 예외). 가격은 화폐 아이콘 없이 수만. */
 .messenger-chat-pill-snapshot {
-  background-color: var(--libitum-color-brand-strong);
+  background-color: var(--libitum-color-brand-primary);
 }
 
 .messenger-chat-pill-snapshot:active {
@@ -273,7 +273,7 @@
 
 .messenger-chat-composer-pill-focused {
   border-width: var(--libitum-stroke-width-strong);
-  border-color: var(--libitum-color-brand-strong);
+  border-color: var(--libitum-color-brand-primary);
 }
 
 .messenger-chat-bulb {
@@ -423,7 +423,7 @@
 }
 
 .messenger-chat-toggle-selected {
-  background-color: var(--libitum-color-brand-strong);
+  background-color: var(--libitum-color-brand-primary);
 }
 
 .messenger-chat-toggle-label {

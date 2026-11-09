@@ -185,7 +185,7 @@
   color: var(--libitum-color-fg-brand);
 }
 
-/* 안 읽은 수 알약 — 면은 brand-strong입니다(흰 글 대비 4.5 이상). */
+/* 안 읽은 수 알약 — 면은 brand-primary입니다(사용자 결정 — 흰 글 3.02:1은 다른 brand-primary 단추와 같은 앱 전체 예외). */
 .messenger-list-unread {
   display: flex;
   align-items: center;
@@ -195,7 +195,7 @@
   min-height: var(--libitum-spacing-20);
   padding: 0 var(--libitum-spacing-6);
   border-radius: var(--libitum-radius-full);
-  background: var(--libitum-color-brand-strong);
+  background: var(--libitum-color-brand-primary);
 }
 
 .messenger-list-unread-text {
