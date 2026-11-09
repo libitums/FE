@@ -6,6 +6,7 @@
 
 import type { Outbound } from "./delete-account.contract.ts";
 import type { NoticeKind, SegmentKind, SpeechLevel } from "./companion-contract/index.ts";
+import type { SuggestRequest, SuggestionDraft } from "./companion-suggest.contract.ts";
 
 // ------------------------------------------------------------------ 환경
 
@@ -19,7 +20,8 @@ export type ChatSendEnvName =
   | "COMPANION_MODERATION_MODEL"
   | "COMPANION_FEEDBACK_MODEL"
   | "COMPANION_TRANSLATION"
-  | "COMPANION_TRANSLATION_MODEL";
+  | "COMPANION_TRANSLATION_MODEL"
+  | "COMPANION_SUGGEST_MODEL";
 
 export type ChatSendEnv = {
   readonly supabaseUrl: string;
@@ -40,6 +42,7 @@ export type ChatSendEnv = {
         readonly feedbackModel: string;
         /** 캐릭터 답의 L1 번역. 기본은 검사 모델. */
         readonly translationModel: string;
+        readonly suggestModel?: string; // 추천 답변 칩. 없으면 검사 모델.
       }
     | { readonly kind: "fake" };
   /**
@@ -196,6 +199,7 @@ export type CompanionLlm = {
   translate(request: TranslationRequest): Promise<string[]>;
   extractMemories(request: MemoryRequest): Promise<MemoryItem[]>;
   summarize(request: SummaryRequest): Promise<string>;
+  suggest(request: SuggestRequest): Promise<SuggestionDraft[]>;
 };
 
 /** 메인 답변 끝의 `@state` 줄(PRD §3.2 · §3.8). 모델이 빠뜨리면 null. */

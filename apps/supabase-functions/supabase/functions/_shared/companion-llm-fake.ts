@@ -12,6 +12,7 @@
 //   「나는 너를」 → 자연스러운 표현(better)   「[better]」 → 더 나은 표현   번역은 「[언어] 원문」
 //   「*…*」 → 학습자의 행동 · 속마음 — 답은 몸짓에 반응하고 속마음 글을 따라 말하지 않는다, 말투 판정에서 뺀다
 //   「저는 … 좋아해요」 → 기억   「[slow]」 → 조각 사이를 늦춘다   「[warm]」 → 친밀도 +3
+//   추천 답변 칩: 최근 대화에 「[suggest-bad]」 → 몫이 빠진 칩(다시 묻기 · 받지 못함)   「[unsafe-suggest]」 → 출력 검사에 걸리는 칩
 // 위 낱말이 없는 말은 정상 턴(조각 셋 · 친밀도 +1)입니다.
 
 import type {
@@ -21,7 +22,7 @@ import type {
   MemoryItem,
   ModerationVerdict,
 } from "./chat-send.contract.ts";
-import { emptyFeedback } from "./companion-llm-prompts.ts";
+import { emptyFeedback, suggestionMeaningLanguage } from "./companion-llm-prompts.ts";
 
 // 위기 · 욕 · 모욕 — 학습자 언어가 여럿이라(en · vi · id · ja · es · my · th · tl …) 언어마다 한두 개씩 둔다.
 const crisisWords = [
@@ -246,6 +247,29 @@ export function fakeCompanionLlm(): CompanionLlm {
     },
     async summarize(request) {
       return `요약(가짜): 메시지 ${request.messages.length}개${request.previous ? " · 앞 요약 이어 씀" : ""}`;
+    },
+    async suggest(request) {
+      const recent = request.history.map((entry) => entry.text).join("\n");
+      const language = suggestionMeaningLanguage(request.l1);
+      const polite = (request.speechLevel ?? "polite") === "polite";
+      const lines: [string, string][] = polite
+        ? [
+            ["continue", "저도 오늘 한국어 공부했어요."],
+            ["ask", `${request.character.name}은 오늘 뭐 했어요?`],
+            ["react", "와, 진짜요?"],
+          ]
+        : [
+            ["continue", "나도 오늘 한국어 공부했어."],
+            ["ask", "너는 오늘 뭐 했어?"],
+            ["react", "헐, 진짜?"],
+          ];
+      if (recent.includes("[unsafe-suggest]")) lines[2] = ["react", "[unsafe] 위험한 칩"];
+      const items = lines.map(([intent, text]) => ({
+        intent,
+        text,
+        meaning: language === null ? null : `[${language}] ${text}`,
+      }));
+      return recent.includes("[suggest-bad]") ? items.slice(0, 2) : items;
     },
   };
 }

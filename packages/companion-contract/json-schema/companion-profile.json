@@ -57,6 +57,9 @@
     },
     "timezone": {
       "type": ["string", "null"]
+    },
+    "replySuggestions": {
+      "type": "boolean"
     }
   },
   "required": [
@@ -66,7 +69,8 @@
     "feedbackMode",
     "proactivePref",
     "proactiveHour",
-    "timezone"
+    "timezone",
+    "replySuggestions"
   ],
   "additionalProperties": false
 }

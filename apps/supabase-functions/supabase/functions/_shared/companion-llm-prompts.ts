@@ -9,6 +9,8 @@ import type {
   HistoryEntry,
   Segment,
 } from "./chat-send.contract.ts";
+import type { SuggestRequest, SuggestionDraft } from "./companion-suggest.contract.ts";
+import type { ReplySuggestion, SpeechLevel } from "./companion-contract/index.ts";
 import { segmentsToPlain } from "./companion-segments.ts";
 
 /** 피드백에 맥락으로 넣는 최근 메시지 수(유저 · 캐릭터 합쳐 — 약 세 번 주고받기). 설정이 아니라 상수다. */
@@ -199,3 +201,84 @@ export function refusalDirective(stage: RefusalStage, topic: string): string {
 /** 거절 답을 만들 때 유저 말 자리에 넣는 앱 안내(학습자의 글 대신). */
 export const refusalUserText = (topic: string): string =>
   `(앱 안내: 학습자의 마지막 메시지는 안전 규칙에 걸려 보이지 않는다 — ${topic}. 캐릭터가 성격대로 짧게 거절한다.)`;
+
+// ------------------------------------------------------------------ 추천 답변 칩(`companion-suggest`)
+
+/**
+ * 추천 답변 칩의 시스템 프롬프트. 호출마다 바뀌는 것(캐릭터 · 말투 · 뜻 언어 · 대화)은 모두 user 쪽(`suggestionContent`)에 두어
+ * 시스템 글은 늘 같습니다 — 문서 화면(`?docs=1`)이 이 글을 그대로 보여 줍니다.
+ */
+export const suggestionSystem = `You suggest what a Korean learner could send next in a chat with a story character. The app shows your suggestions as three tap-to-send chips under the character's latest message.
+
+Return "items" with exactly 3 suggestions, one for each "intent":
+- "continue": carries the conversation forward — answers the character's latest message or adds something about the learner.
+- "ask": asks the character something back, about what they just said or about them.
+- "react": a short, natural reaction (one to four words, e.g. 진짜요? · 대박! · 아 그렇구나).
+
+Each "text":
+- Is written as the learner, speaking to the character, as one short natural chat line in Korean. Plain speech only: no *actions*, no emoji, no quotes, no romanization, no notes.
+- Uses the relationship speech level given in the request.
+- Fits the recent conversation, especially the character's latest message. The three must clearly differ from each other.
+- Is pitched one small step above the learner's own recent messages (i+1): reuse words and patterns they already use and add at most one small new thing (a word, an ending or a connector). If they write very simple Korean, keep it very simple. Never much harder than what they write.
+- Is never romantic, flirtatious or sexual, never uses profanity, insults or vulgar slang (even mild), never asks for or shares personal contact details, and is safe for a teenager.
+
+"meaning": the meaning of "text" in the language named in the request, natural and short. If the request says the language is Korean, "meaning" is null.`;
+
+const suggestionSpeechRule: Record<SpeechLevel, string> = {
+  polite: "polite 해요체 (존댓말) — never 반말",
+  casual: "friendly 반말 (casual), the way close friends talk",
+  slang: "very casual 반말 with light, common slang a Korean friend would use — never swearing",
+};
+
+/** 뜻 언어 — 학습자 언어가 한국어면 null(뜻을 비운다), 모르면 영어(피드백과 같은 기본값). */
+export function suggestionMeaningLanguage(l1: string | null): string | null {
+  const language = l1 ?? "en";
+  return language.toLowerCase().startsWith("ko") ? null : language;
+}
+
+export function suggestionContent(request: SuggestRequest): string {
+  const character = `Character: ${request.character.name}${request.character.role ? ` (${request.character.role})` : ""}`;
+  const level = `Relationship speech level: ${suggestionSpeechRule[request.speechLevel ?? "polite"]}`;
+  const language = suggestionMeaningLanguage(request.l1);
+  const meaning =
+    language === null
+      ? 'Meaning language: Korean — set every "meaning" to null.'
+      : `Meaning language (BCP 47): ${language}`;
+  const conversation = request.history
+    .map((entry) => `${entry.role === "user" ? "Learner" : "Character"}: ${entry.text}`)
+    .join("\n");
+  return `${character}\n${level}\n${meaning}\n\nRecent conversation (oldest first):\n${conversation}`;
+}
+
+const suggestionIntents = ["continue", "ask", "react"] as const;
+const suggestionTextLimit = 80;
+const hangulText = /[가-힣]/;
+
+/**
+ * 모델이 낸 칩을 검사해 응답 모양(continue · ask · react 순서로 정확히 셋)으로 다듬습니다. 몫마다 첫 칩을 쓰고, 몫이 빠졌거나 글이
+ * 비었거나 한글이 없거나 길거나 `*행동*`이 섞였거나 셋이 겹치거나 뜻이 비면 null — 부르는 쪽이 한 번 다시 묻습니다.
+ */
+export function suggestionsFrom(
+  drafts: readonly SuggestionDraft[],
+  l1: string | null,
+): ReplySuggestion[] | null {
+  const language = suggestionMeaningLanguage(l1);
+  const items: ReplySuggestion[] = [];
+  for (const intent of suggestionIntents) {
+    const draft = drafts.find((item) => item.intent === intent);
+    if (draft === undefined) return null;
+    const text = draft.text.trim();
+    if (
+      text === "" ||
+      text.length > suggestionTextLimit ||
+      !hangulText.test(text) ||
+      text.includes("*")
+    )
+      return null;
+    const meaning = language === null ? null : draft.meaning?.trim() || null;
+    if (language !== null && meaning === null) return null;
+    items.push({ text, meaning, intent });
+  }
+  if (new Set(items.map((item) => item.text)).size !== items.length) return null;
+  return items;
+}

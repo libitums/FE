@@ -12,6 +12,7 @@ import {
   memorySystem,
   refusalDirective,
   refusalUserText,
+  suggestionSystem,
   summarySystem,
   translationSystem,
 } from "./companion-llm-prompts.ts";
@@ -90,6 +91,8 @@ export function promptDocs() {
     translation: translationSystem(placeholder("l1"), placeholder("segment count")),
     memory: { adult: memorySystem(false), minor: memorySystem(true) },
     summary: summarySystem,
+    // 추천 답변 칩(`companion-suggest`). 캐릭터 · 말투 · 뜻 언어 · 대화는 user 쪽이라 시스템 글은 이것 하나다.
+    suggestions: suggestionSystem,
     proactiveDirective,
     // 성격대로 거절: 단계마다 이번 답 지시(시스템 프롬프트의 `# For this reply`)와 유저 말 자리의 앱 안내. 걸린 글은 넣지 않는다.
     refusal: {

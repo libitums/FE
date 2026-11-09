@@ -3,7 +3,12 @@ import { expect, test } from "vitest";
 import type { ChatSendEnv, CompanionLlm } from "./chat-send.contract.ts";
 import { createCompanionEvalHandler, evalModels } from "./companion-eval-handler.ts";
 import { companionLlmWithModel, StructuredUnavailable } from "./companion-llm.ts";
-import { feedbackSystem, refusalDirective, refusalUserText } from "./companion-llm-prompts.ts";
+import {
+  feedbackSystem,
+  refusalDirective,
+  refusalUserText,
+  suggestionSystem,
+} from "./companion-llm-prompts.ts";
 import { companionSystemPrompt, proactiveDirective, stateLine } from "./companion-prompt.ts";
 import { moderationInstruction } from "./companion-safety.ts";
 import { fakeCompanionLlm } from "./companion-llm-fake.ts";
@@ -377,6 +382,8 @@ test("EV10. ?docs=1 — 캐릭터마다 말투 상한까지 시스템 프롬프�
     feedback: "claude-sonnet-5-5",
     moderation: "claude-haiku-5-5",
     translation: "claude-haiku-5-5",
+    // 환경 객체에 칩 모델이 없으면 검사 모델.
+    suggest: "claude-haiku-5-5",
   });
   expect(body["settings"]).toEqual(inspected.companion_inspect_settings);
   expect(body["inspectAvailable"]).toBe(true);
@@ -444,6 +451,7 @@ test("EV10. ?docs=1 — 캐릭터마다 말투 상한까지 시스템 프롬프�
     userText: refusalUserText("{{category}}"),
   });
   expect((prompts["refusal"] as Record<string, string>)["warn"]).toContain("not okay");
+  expect(prompts["suggestions"]).toBe(suggestionSystem);
 });
 
 test("EV11. 운영 조회 함수가 아직 없으면 characters · settings는 null, 프롬프트는 그대로", async () => {
@@ -487,4 +495,66 @@ test("EV12. 피드백 케이스의 history는 운영처럼 마지막 6개 맥락
     cases: [{ id: "x", text: "a", history: [{ role: "system", text: "b" }] }],
   });
   expect(bad.status).toBe(400);
+});
+
+test("EV13. 추천 칩 — text는 캐릭터의 마지막 말, 검사를 지난 셋만 · 못 지나면 mismatch · 모델을 고르지 않으면 칩 모델", async () => {
+  const models: string[] = [];
+  const requests: unknown[] = [];
+  const fake = fakeCompanionLlm();
+  const { call } = setup({
+    env: anthropicEnv,
+    llmFor: (model) => {
+      models.push(model);
+      return {
+        ...fake,
+        suggest: async (request) => {
+          requests.push({ ...request, signal: undefined });
+          return fake.suggest(request);
+        },
+      };
+    },
+  });
+  const { status, body } = await call("POST", {
+    kind: "suggestions",
+    cases: [
+      {
+        id: "casual",
+        text: "오늘 뭐 했어?",
+        l1: "vi",
+        speechLevel: "casual",
+        character: { name: "윤경", role: "친구" },
+        history: [{ role: "user", text: "안녕!" }],
+      },
+      { id: "bad", text: "[suggest-bad] 안녕하세요" },
+    ],
+  });
+  expect(status).toBe(200);
+  expect(body["model"]).toBe("claude-haiku-5-5");
+  expect(models).toEqual(["claude-haiku-5-5"]);
+  const results = body["results"] as Record<string, unknown>[];
+  expect(results[0]).toMatchObject({
+    id: "casual",
+    ok: true,
+    output: {
+      items: [
+        {
+          intent: "continue",
+          text: "나도 오늘 한국어 공부했어.",
+          meaning: "[vi] 나도 오늘 한국어 공부했어.",
+        },
+        { intent: "ask" },
+        { intent: "react" },
+      ],
+    },
+  });
+  expect(results[1]).toMatchObject({ id: "bad", ok: false, error: "mismatch" });
+  expect(requests[0]).toMatchObject({
+    character: { name: "윤경", role: "친구" },
+    speechLevel: "casual",
+    l1: "vi",
+    history: [
+      { role: "user", text: "안녕!" },
+      { role: "assistant", text: "오늘 뭐 했어?" },
+    ],
+  });
 });

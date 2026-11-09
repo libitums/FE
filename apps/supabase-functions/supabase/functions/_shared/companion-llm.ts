@@ -17,6 +17,8 @@ import {
   feedbackFrom,
   feedbackSystem,
   memorySystem,
+  suggestionContent,
+  suggestionSystem,
   summarySystem,
   translationContent,
   translationSystem,
@@ -56,6 +58,17 @@ const feedbackSchema = z.object({
 });
 
 const translationSchema = z.object({ lines: z.array(z.string()) });
+
+// 추천 답변 칩. 몫(intent)은 열거로 묶고, 개수 · 몫마다 하나 · 뜻 규칙은 받은 뒤 `suggestionsFrom`이 본다.
+const suggestionSchema = z.object({
+  items: z.array(
+    z.object({
+      text: z.string(),
+      meaning: z.string().nullable(),
+      intent: z.enum(["continue", "ask", "react"]),
+    }),
+  ),
+});
 
 const memorySchema = z.object({
   items: z.array(
@@ -208,6 +221,17 @@ export function anthropicCompanionLlm(
       if (text === "") throw new StructuredUnavailable("empty summary");
       return text;
     },
+    async suggest(request) {
+      // Haiku에는 서버 쪽 대체 모델이 없지만 `parse`는 대체 옵션을 싣지 않으므로 모델과 상관없이 같은 호출이다.
+      const result = await parse(
+        config.suggestModel ?? config.moderationModel,
+        suggestionSchema,
+        suggestionSystem,
+        suggestionContent(request),
+        request.signal,
+      );
+      return result.items;
+    },
   };
 }
 
@@ -224,5 +248,6 @@ export function companionLlmWithModel(env: ChatSendEnv, model: string): Companio
     moderationModel: model,
     feedbackModel: model,
     translationModel: model,
+    suggestModel: model,
   });
 }
