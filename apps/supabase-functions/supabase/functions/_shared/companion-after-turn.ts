@@ -19,6 +19,9 @@ export type AfterTurnInput = {
   readonly historyLimit: number;
 };
 
+/** `companion_add_memories`의 반환(마이그레이션 20261117) — 넣은 수 · 상한에 닿아 지운 수 · 모두 유저가 고친 기억이라 못 넣은 수. */
+export type AddedMemories = { added: number; evicted: number; skipped: number; full: boolean };
+
 type SummarySource = {
   summary: string | null;
   until: string;
@@ -31,8 +34,8 @@ export async function runAfterTurn(
   llm: CompanionLlm,
   input: AfterTurnInput,
   timeoutMs: number,
-): Promise<{ memories: number; summarized: boolean }> {
-  let memories = 0;
+): Promise<{ memories: number; evicted: number; memoryFull: boolean; summarized: boolean }> {
+  let added: AddedMemories = { added: 0, evicted: 0, skipped: 0, full: false };
   // 미국 12 ~ 15세 · 미국 나이 모름은 추출 자체를 돌리지 않는다(PRD §3.9).
   if (input.memoryEnabled) {
     const items = await llm.extractMemories({
@@ -43,7 +46,7 @@ export async function runAfterTurn(
       signal: AbortSignal.timeout(timeoutMs),
     });
     if (items.length > 0) {
-      memories = await callRpc<number>(outbound, env, "companion_add_memories", {
+      added = await callRpc<AddedMemories>(outbound, env, "companion_add_memories", {
         p_user_id: input.userId,
         p_character_id: input.characterId,
         p_source_message_id: input.userMessageId,
@@ -56,7 +59,8 @@ export async function runAfterTurn(
     p_conversation_id: input.conversationId,
     p_keep: input.historyLimit,
   });
-  if (source === null) return { memories, summarized: false };
+  const memories = { memories: added.added, evicted: added.evicted, memoryFull: added.full };
+  if (source === null) return { ...memories, summarized: false };
   const messages = source.messages.flatMap((entry): HistoryEntry[] =>
     entry.role === "user"
       ? entry.text === null
@@ -74,5 +78,5 @@ export async function runAfterTurn(
     p_summary: summary,
     p_until: source.until,
   });
-  return { memories, summarized: true };
+  return { ...memories, summarized: true };
 }

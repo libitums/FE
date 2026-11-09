@@ -77,13 +77,29 @@ export const companionMessagesPageSchema = z.object({
   hasMore: z.boolean(),
 });
 
-/** `companion_list_memories(p_character_id)`의 원소입니다(M3). `characterId`가 null이면 모든 캐릭터가 읽는 공유 기억입니다. */
+/**
+ * `companion_list_memories(p_character_id)`의 기억 하나입니다(M3). `characterId`가 null이면 모든 캐릭터가 읽는 공유 기억입니다.
+ * `userEdited`가 참이면 유저가 고친 기억이라 상한에 닿아도 저절로 지워지지 않습니다.
+ */
 export const companionMemorySchema = z.object({
   id: z.uuid(),
   characterId: z.nullable(z.string()),
   kind: z.enum(["fact", "event", "summary"]),
   content: z.string(),
+  userEdited: z.boolean(),
   createdAt: z.iso.datetime({ offset: true }),
+});
+
+/**
+ * `companion_list_memories(p_character_id)`의 반환입니다 — 한 층(캐릭터 · 공유)의 기억(최신이 앞)과 수 · 상한 · 가득 참.
+ * 상한에 닿으면 서버가 유저가 고치지 않은 가장 오래된 기억부터 지우고, 모두 유저가 고친 것이면 새 기억을 넣지 못해 `full`이
+ * 참입니다 — 앱이 「기억이 가득 찼어요 — 정리해 주세요」를 보입니다.
+ */
+export const companionMemoryListSchema = z.object({
+  memories: z.array(companionMemorySchema),
+  count: z.int().check(z.nonnegative()),
+  cap: z.int().check(z.positive()),
+  full: z.boolean(),
 });
 
 /** `companion_get_wallet()`의 반환입니다(M4). 버킷별 잔액과 덕수쌤 체험 남은 수, 티어입니다. */
@@ -98,6 +114,7 @@ export const companionWalletSchema = z.object({
 
 export type FeedbackMode = z.infer<typeof feedbackModeSchema>;
 export type CompanionMemory = z.infer<typeof companionMemorySchema>;
+export type CompanionMemoryList = z.infer<typeof companionMemoryListSchema>;
 export type CompanionWallet = z.infer<typeof companionWalletSchema>;
 export type CompanionProfile = z.infer<typeof companionProfileSchema>;
 export type ProactivePref = z.infer<typeof proactivePrefSchema>;

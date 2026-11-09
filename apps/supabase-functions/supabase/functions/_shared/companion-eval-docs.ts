@@ -10,6 +10,8 @@ import type { Outbound } from "./delete-account.contract.ts";
 import {
   feedbackSystem,
   memorySystem,
+  refusalDirective,
+  refusalUserText,
   summarySystem,
   translationSystem,
 } from "./companion-llm-prompts.ts";
@@ -89,6 +91,12 @@ export function promptDocs() {
     memory: { adult: memorySystem(false), minor: memorySystem(true) },
     summary: summarySystem,
     proactiveDirective,
+    // 성격대로 거절: 단계마다 이번 답 지시(시스템 프롬프트의 `# For this reply`)와 유저 말 자리의 앱 안내. 걸린 글은 넣지 않는다.
+    refusal: {
+      deflect: refusalDirective("deflect", placeholder("category")),
+      warn: refusalDirective("warn", placeholder("category")),
+      userText: refusalUserText(placeholder("category")),
+    },
     feedbackModes: { ...feedbackModeRule },
     stateLine,
   };

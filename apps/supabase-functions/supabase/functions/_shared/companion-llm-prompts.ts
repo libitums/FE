@@ -164,3 +164,38 @@ ${minor ? "- The learner may be a minor: never store health, mental health, or e
 
 export const summarySystem =
   "Summarize this Korean-learning chat for the character's memory in at most 6 short Korean sentences: what the learner shared, ongoing topics, and anything promised. Merge with the previous summary. No preamble.";
+
+// ------------------------------------------------------------------ 성격대로 거절(PRD §3.11 5층 — 회피 → 경고 → 일시 차단)
+
+/** 거절 단계. 일시 차단은 답 없이 `guardrail_blocked`라 여기 없다. */
+export type RefusalStage = "deflect" | "warn";
+
+const refusalTopics: Record<string, string> = {
+  sexual: "sexual content",
+  romance: "romance or flirting with you",
+  profanity: "abusive language aimed at you",
+  violence: "graphic violence",
+  hate: "hateful content",
+  personal_info: "personal contact details",
+};
+
+/** 검사 분류 → 거절 지시에 넣는 말. 모르는 분류는 「안전하지 않은 내용」. */
+export const refusalTopic = (category: string): string =>
+  refusalTopics[category] ?? "something unsafe";
+
+/**
+ * 거절 답의 이번 답 지시(시스템 프롬프트의 `# For this reply`). 학습자의 걸린 글은 모델에 주지 않고 분류(`topic`)와 단계만 준다 —
+ * 모델이 그 내용을 이어 받지 못하게. 문서 화면은 `topic` 자리에 자리 표시 글자를 넣는다.
+ */
+export function refusalDirective(stage: RefusalStage, topic: string): string {
+  const common = `The learner's last message was hidden because it broke the app's safety rules (it was about ${topic}). You never saw its words: do not guess, quote or ask about them.`;
+  const shape =
+    "Stay fully in character and keep your current speech level. Keep it short: 1–2 speech bubbles, optionally one short @action. Never mention rules, the app, AI, filters or moderation, and do not lecture.";
+  return stage === "deflect"
+    ? `${common} Lightly decline in your own personality, without making a big deal of it, then steer the conversation to a different everyday topic with one easy question. ${shape}`
+    : `${common} This has happened before. Decline clearly in your own personality and say plainly that this kind of talk is not okay with you, without insulting or shaming the learner, then offer to talk about something else. ${shape}`;
+}
+
+/** 거절 답을 만들 때 유저 말 자리에 넣는 앱 안내(학습자의 글 대신). */
+export const refusalUserText = (topic: string): string =>
+  `(앱 안내: 학습자의 마지막 메시지는 안전 규칙에 걸려 보이지 않는다 — ${topic}. 캐릭터가 성격대로 짧게 거절한다.)`;

@@ -346,11 +346,10 @@ test("TV8. 기억 — 같은 원본은 한 번, 앱이 보고 · 고치고 · �
     { kind: "event", content: "어제 경복궁에 갔다", shared: false },
   ]);
   const add = (source: string) =>
-    server.query("select public.companion_add_memories($1, 'duksu', $2, $3::jsonb) as n", [
-      tester,
-      source,
-      items,
-    ]);
+    server.query(
+      "select (public.companion_add_memories($1, 'duksu', $2, $3::jsonb))->'added' as n",
+      [tester, source, items],
+    );
   expect((await add(first.userMessageId)).rows[0].n).toBe(2);
   expect((await add(first.userMessageId)).rows[0].n).toBe(0);
   // 다른 턴에서 같은 기억이 다시 나와도 하나만 남는다.
@@ -359,9 +358,11 @@ test("TV8. 기억 — 같은 원본은 한 번, 앱이 보고 · 고치고 · �
   expect((await add(second.userMessageId)).rows[0].n).toBe(0);
 
   const shared = await app.query("select public.companion_list_memories(null) as m");
-  expect(shared.rows[0].m).toMatchObject([{ content: "고양이를 키운다", characterId: null }]);
+  expect(shared.rows[0].m.memories).toMatchObject([
+    { content: "고양이를 키운다", characterId: null },
+  ]);
   const own = await app.query("select public.companion_list_memories('duksu') as m");
-  const eventId = own.rows[0].m[0].id as string;
+  const eventId = own.rows[0].m.memories[0].id as string;
   await app.query("select public.companion_update_memory($1, '어제 덕수궁에 갔다')", [eventId]);
   expect((await begin()).memories.map((m) => m.content).sort()).toEqual([
     "고양이를 키운다",

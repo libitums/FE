@@ -271,6 +271,9 @@
             },
             "speechLevelChanged": {
               "type": "boolean"
+            },
+            "memoryFull": {
+              "type": "boolean"
             }
           },
           "required": ["speechLevel", "speechLevelChanged"],
@@ -394,6 +397,17 @@
                   "type": "null"
                 }
               ]
+            },
+            "refusal": {
+              "type": "object",
+              "properties": {
+                "stage": {
+                  "type": "string",
+                  "enum": ["deflect", "warn"]
+                }
+              },
+              "required": ["stage"],
+              "additionalProperties": false
             }
           },
           "required": ["assistantMessageId", "creditsSpent", "balance"],

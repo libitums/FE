@@ -61,9 +61,14 @@ export const correctionDataSchema = z.object({
 
 export const translationDataSchema = z.object({ segment: nonNegativeInt, text: z.string() });
 
+/**
+ * `memoryFull`: 이 캐릭터 기억이나 공유 기억이 상한에 닿았고 모두 유저가 고친 것이라 새 기억을 넣지 못한다 — 앱이 「기억이 가득
+ * 찼어요 — 정리해 주세요」를 보입니다. 턴 시작 때 값입니다(이번 턴의 기억 추출은 스트림이 닫힌 뒤 돕니다). 서버가 모르면 없습니다.
+ */
 export const stateDataSchema = z.object({
   speechLevel: speechLevelSchema,
   speechLevelChanged: z.boolean(),
+  memoryFull: z.optional(z.boolean()),
 });
 
 export const crisisResourceSchema = z.object({
@@ -83,11 +88,18 @@ export const errorDataSchema = z.object({
   retryable: z.boolean(),
 });
 
-/** `balance`는 크레딧이 없는 동안(M4 전) `null`입니다. */
+export const refusalStageSchema = z.enum(["deflect", "warn"]);
+
+/**
+ * `balance`는 크레딧이 없는 동안(M4 전) `null`입니다.
+ * `refusal`은 입력 검사에 걸린 턴에서 캐릭터가 성격대로 거절한 답일 때만 있습니다 — `deflect`(피하고 화제를 돌림) · `warn`(그런 말은
+ * 안 된다고 분명히 말함, 한 번 더 걸리면 일시 차단). 유저 메시지는 차단으로 저장되고 차감 · 피드백(`correction`)이 없습니다.
+ */
 export const doneDataSchema = z.object({
   assistantMessageId: z.uuid(),
   creditsSpent: nonNegativeInt,
   balance: z.nullable(nonNegativeInt),
+  refusal: z.optional(z.object({ stage: refusalStageSchema })),
 });
 
 const eventOf = <Name extends string, Data extends z.ZodMiniType>(event: Name, data: Data) =>
@@ -110,3 +122,4 @@ export type TurnEventName = TurnEvent["event"];
 export type SpeechLevel = z.infer<typeof speechLevelSchema>;
 export type SegmentKind = z.infer<typeof segmentKindSchema>;
 export type NoticeKind = z.infer<typeof noticeKindSchema>;
+export type RefusalStage = z.infer<typeof refusalStageSchema>;

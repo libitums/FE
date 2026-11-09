@@ -219,11 +219,12 @@ Firebase 프로젝트에 Android 앱을 등록하고 FCM HTTP v1 API 권한이 �
 | `20261114120000_companion_inspect_docs.sql` | 운영 조회 `companion_inspect_characters()` · `companion_inspect_settings()`(문서 화면) · 덕수쌤 `banmalFeedback: correction` |
 | `20261115120000_companion_proactive_prefs.sql` | 선톡 빈도 유저 설정(off · daily1 · daily2) · 선호 시각 · 시간대 · 조용한 시간, 앱 프로필 · 운영자 함수 확장 |
 | `20261116120000_companion_feedback_card.sql` | 피드백 고정 카드 — `corrections.card` 열 · `correction_json`(옛 행은 읽을 때 카드로) · `companion_finish_turn` 피드백 저장 |
+| `20261117120000_companion_refusal_memory_cap.sql` | 성격대로 거절 — `companion_turn_status` · 페르소나 `refusalLines`, 기억 상한 — `settings.memory_cap` · `shared_memory_cap` · `memories.user_edited` · `companion_add_memories` 지우기 · `companion_list_memories` `{ memories, count, cap, full }` |
 
-통합 테스트 CF1 ~ CF11 · CH1 ~ CH10 · TV1 ~ TV13 · ID1 ~ ID3 · PP1 ~ PP9, 함수 단위 테스트 CS1 ~ CS19 · SG · CE · BR · LL · EV · FB · SF.
+통합 테스트 CF1 ~ CF11 · CH1 ~ CH10 · TV1 ~ TV13 · ID1 ~ ID3 · PP1 ~ PP9 · RM1 ~ RM8, 함수 단위 테스트 CS1 ~ CS23 · SG · CE · BR · LL · EV · FB · SF · RF.
 
 **턴 흐름** — 판정(시험 계정 · 티어 · 연령 · 일시 차단 · 이용 시간 · 멱등) → 시작(체험 · 크레딧 예약 + 유저 메시지 저장, 한 트랜잭션) →
-SSE → 입력 검사 · 메인 답변 · 피드백을 동시에 → 위기(`crisis`) · 차단(`guardrail_blocked`) / 조각(`delta`, 미성년자 · 나이 모름은 출력 검사 뒤) ·
+SSE → 입력 검사 · 메인 답변 · 피드백을 동시에 → 위기(`crisis`) · 입력 차단(단계에 따라 성격대로 거절 또는 `guardrail_blocked`, 아래) / 조각(`delta`, 미성년자 · 나이 모름은 출력 검사 뒤) ·
 교정(`correction`) → 답 조각이 다 모이면 L1 번역(`translation`, 남은 기다림과 동시에) → 끝(피드백 · 친밀도 → 말투 · 화제 · 제재 · 예약 확정/해제, 한 트랜잭션) → `state` · `done` → 스트림을 닫고 기억 추출 · 요약.
 
 **값을 바꾸는 곳** — 단가 · 체험 수 · 말투 문턱 · 선톡 공백 · 제재 횟수 같은 값(PRD §8 C · O1 ~ O4 초안)은 `companion.settings` 한 행이다.
@@ -294,6 +295,24 @@ fake 모드에서 흐름을 일부러 일으키는 낱말은 `_shared/companion-
 피드백도 비속어로 고치지 않는다(2026-11-09 결정). 혼잣말 욕은 통과(피드백이 순화). 언어를 가리지 않는다 — 검사 지시는 「어떤 언어든」이라고 하고 한국어 · 영어 · 타갈로그어 · 베트남어 · 인도네시아어 ·
 일본어 · 스페인어 · 타이어 예(가린 꼴 포함)를 든다. 위기 판정도 「어떤 언어든」이고 미얀마어까지 예를 든다(미얀마어 욕설 예는 확인할 수 있는 것이 없어 넣지 않았다). 캐릭터 답의 욕은 가벼워도 출력 차단 — 출력 동기 검사는 미성년자 · 나이 모름 턴에만 돌아서, 성인 턴은 답
 프롬프트의 금지 규칙(가장 편한 말투 slang도 욕이 아니라 친근한 말)에 기댄다. 띄어 쓰거나 줄이거나 로마자로 쓰거나 가린 꼴(ㅅㅂ · 시1발 · ㅂㅅ · f*ck · đ.m · k*so)까지. 피드백 · 번역은 학습자 언어(BCP 47)를 그대로 받고, 기본값 en 말고 언어를 박아 둔 곳은 없다.
+
+**성격대로 거절 — 단계 제재(20261117, PRD §3.11 5층).** 입력 검사 차단(위기 아님)은 턴 시작 때 읽은 반복 위반 수(`companion_turn_status` — 지금
+`strike_window` 안의 수 · `strike_limit`)에 이번 차단을 더해 단계를 고른다. 기본값(상한 3 · 창 24시간 · 차단 30분)이면 첫째 **회피**(캐릭터가 성격 · 말투대로 가볍게
+피하고 다른 화제를 묻는다), 둘째 **경고**(그런 말은 안 된다고 분명히 말하고 다른 얘기를 권한다), 셋째 **일시 차단**(지금처럼 `start` → `error guardrail_blocked`,
+다음 턴부터 403 `temporarily_blocked`). 일반식: 상한 번째 = 차단, 그 하나 앞 = 경고, 그 앞 = 회피. 세는 일은 그대로 `companion_finish_turn`이 한다.
+거절 답은 답 모델이 페르소나 시스템 프롬프트에 거절 지시(`refusalDirective` — `_shared/companion-llm-prompts.ts`, `?docs=1`의 `prompts.refusal`)를 넣어 만든다.
+**학습자의 걸린 글은 모델에 주지 않는다** — 유저 말 자리는 분류만 적은 앱 안내(`refusalUserText`), 지난 대화는 그대로. 대사 둘 · 행동 하나까지, 미성년자 · 나이 모름은
+보통 답과 같은 출력 검사. 생성 실패 · 시간 초과(10초) · 출력 검사 차단이면 페르소나 `refusalLines[단계][말투]`(없으면 존댓말 줄, 그것도 없으면 코드 기본 줄)로 끝낸다.
+스트림: `start` → `notice` → `delta` → `translation` → `state` → `done { refusal: { stage } }` — `correction` 없음(차단 턴의 피드백은 그대로 없다).
+저장: 유저 메시지 `blocked`, 거절은 보통 assistant 메시지(`complete`, 차감 0)에 meta `refusal: true` · `refusalStage` · `refusalCategory` · `refusalSource`(model · canned).
+예약은 풀리고(차감 없음) 반복 위반으로 센다. 기억 추출 · 요약은 돌리지 않는다. 출력 검사 차단(캐릭터 답이 걸린 것)은 거절하지 않고 지금처럼 `guardrail_blocked`.
+`companion_turn_status`를 읽지 못하면 입력 차단은 지금처럼 `guardrail_blocked`다.
+
+**기억 상한(20261117).** 의미 검색 전까지 기억 수만 막는다. `settings.memory_cap`(유저 · 캐릭터마다, 기본 50) · `settings.shared_memory_cap`(공유 기억, 기본 30).
+턴 뒤 추출이 상한에 닿으면 유저가 고치지 않은 가장 오래된 기억부터 지운다(`deleted_at`, 운영 조회에 `deleted`). `companion_update_memory`로 고친 기억(`user_edited`)은
+지우지 않고, 지울 것이 없으면 새 기억을 넣지 않는다 — **가득 참**(그 층이 상한 이상이고 모두 고친 것). 따로 저장하지 않고 늘 계산하므로 하나 지우거나 상한을 올리면 풀린다.
+`companion_add_memories` → `{ added, evicted, skipped, full }`(턴 뒤 로그 `memories= evicted= memory_full=`), `companion_list_memories(p)` → `{ memories[{…, userEdited}], count, cap, full }`
+(계약 `companion-memories`), SSE `state.memoryFull`(이 캐릭터 또는 공유 층이 가득 참 — 턴 시작 때 값), 운영 `companion_inspect_memory`에 `capacity { character, shared }` · `userEdited`.
 
 **학습자의 `*…*`** — `*웃으며* 안녕하세요` · `*배고프다…*`처럼 별표 안은 학습자의 행동 · 속마음이다. 답 프롬프트: 행동에는 자연스럽게 반응하고,
 속마음은 장면에 맞으면 가볍게 받아도 되지만 엿들은 것처럼 그대로 되풀이하지 않는다. 검사는 별표 안까지 전체를 본다. 저장 글은 친 그대로다.

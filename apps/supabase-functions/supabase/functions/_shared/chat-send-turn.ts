@@ -4,6 +4,7 @@
 // 미성년자 · 나이 모름은 출력 검사 뒤) 준비되는 대로 `correction`으로 보내고, `done` 전에는 반드시 한 번 보냅니다.
 // 답 조각이 다 모이면 L1 번역(`chat-send-translate.ts`)을 남은 기다림과 동시에 돌려 `state` 앞에 `translation`으로 보냅니다.
 // 저장(finish)이 친밀도 → 말투(M3)와 크레딧 확정/해제(M4)까지 한 트랜잭션으로 하고, 그 결과로 `state` · `done`을 씁니다.
+// 입력 검사에 걸리면 반복 위반 단계에 따라 캐릭터가 성격대로 거절하거나(`chat-send-refusal.ts`) 지금처럼 `guardrail_blocked`로 끝냅니다.
 
 import type {
   AgeBand,
@@ -17,21 +18,27 @@ import type {
   ModerationVerdict,
   PersonaCard,
 } from "./chat-send.contract.ts";
+import {
+  type Finished,
+  type ModerationRecord,
+  type TurnStatus,
+  turnFinisher,
+} from "./chat-send-finish.ts";
 import type { Sink } from "./chat-send-http.ts";
+import { refusalStage, sendRefusal } from "./chat-send-refusal.ts";
 import { defaultLlmTimeoutMs, historyFrom, startFeedback, startReply } from "./chat-send-reply.ts";
-import { sendTranslations, startTranslation, withTranslations } from "./chat-send-translate.ts";
+import { applyTranslation, startTranslation } from "./chat-send-translate.ts";
 import type { AfterTurnInput } from "./companion-after-turn.ts";
 import { chooseBranch, nextTopicState, topicStateFrom } from "./companion-branching.ts";
 import {
   CONTRACT_VERSION,
   STREAM_ERRORS,
   type ChatSendRequest,
-  type SpeechLevel,
   type StreamErrorCode,
 } from "./companion-contract/index.ts";
 import { systemSplit } from "./companion-llm.ts";
-import { companionSystemPrompt } from "./companion-prompt.ts";
-import { callRpc } from "./companion-rpc.ts";
+import type { RefusalStage } from "./companion-llm-prompts.ts";
+import { companionSystemPrompt, type PromptInput } from "./companion-prompt.ts";
 import { crisisResourcesFor } from "./companion-safety.ts";
 import { segmentsToPlain, type SegmentDelta } from "./companion-segments.ts";
 
@@ -45,21 +52,11 @@ export type TurnContext = {
   gate: Extract<GateResult, { result: "ok" }>;
   turn: BegunTurn;
   learning: LearningContext;
+  /** 턴 시작 때 반복 위반 수 · 기억 가득 참. 읽지 못했으면 null — 입력 차단은 지금처럼 `guardrail_blocked`, `memoryFull`은 싣지 않는다. */
+  status: TurnStatus | null;
   assistantMessageId: string;
   playground: boolean;
   historyLimit: number;
-};
-
-type ModerationRecord = {
-  layer: "input" | "output_sync";
-  category: string;
-  action: "allow" | "block" | "crisis";
-};
-type Finished = {
-  speechLevel: SpeechLevel;
-  speechLevelChanged: boolean;
-  creditsSpent: number;
-  balance: number | null;
 };
 
 export async function runTurn(
@@ -76,7 +73,7 @@ export async function runTurn(
     expressions: context.learning.expressions,
     random: deps.random ?? Math.random,
   });
-  const prompt = companionSystemPrompt({
+  const promptInput: PromptInput = {
     persona,
     speechLevel: turn.speechLevel,
     ageBand,
@@ -86,34 +83,9 @@ export async function runTurn(
     feedbackMode: gate.feedbackMode,
     memories: turn.memories.map((memory) => memory.content),
     directive: branch.directive,
-  });
-  const done = (finished: Finished) =>
-    sink.send({
-      event: "done",
-      data: {
-        assistantMessageId: context.assistantMessageId,
-        creditsSpent: finished.creditsSpent,
-        balance: finished.balance,
-      },
-    });
-
-  const finish = (
-    status: "complete" | "blocked" | "crisis" | "failed",
-    assistant: Record<string, unknown> | null,
-    extra: { feedback?: Feedback; intimacyDelta?: number; topicState?: unknown } = {},
-  ) =>
-    callRpc<Finished>(deps.outbound, env, "companion_finish_turn", {
-      p_user_message_id: turn.userMessageId,
-      p_status: status,
-      p_assistant: assistant,
-      p_moderation: moderation,
-      p_notices: status === "failed" ? [] : gate.notices,
-      p_now: new Date(deps.nowMs()).toISOString(),
-      p_feedback: extra.feedback ?? null,
-      p_intimacy_delta: extra.intimacyDelta ?? 0,
-      p_topic_state: extra.topicState ?? null,
-      p_hold_id: turn.holdId,
-    });
+  };
+  const prompt = companionSystemPrompt(promptInput);
+  const { finish, sendState, done } = turnFinisher(context, moderation);
   const fail = async (code: StreamErrorCode, status: "blocked" | "failed") => {
     abort.abort();
     sink.send({ event: "error", data: { code, retryable: STREAM_ERRORS[code].retryable } });
@@ -123,6 +95,39 @@ export async function runTurn(
       // 저장 실패는 정리 작업(오래된 pending · 열린 예약)이 푼다.
     }
     return { outcome: code, afterTurn: null };
+  };
+  // 성격대로 거절 — 걸린 글 대신 분류와 단계만 준 답을 보통 답처럼 보내고 `blocked`로 저장한다(`chat-send-refusal.ts`).
+  const refuse = async (stage: RefusalStage, category: string) => {
+    const outcome = await sendRefusal(
+      {
+        deps,
+        env,
+        llm,
+        sink,
+        l1: gate.l1,
+        persona,
+        speechLevel: turn.speechLevel,
+        ageBand,
+        history: historyFrom(turn),
+        assistantMessageId: context.assistantMessageId,
+        meta: { model: llm.model, trial: turn.trial, playground: context.playground },
+      },
+      {
+        systemWith: (directive) => {
+          const system = companionSystemPrompt({ ...promptInput, directive });
+          return `${system.stable}${systemSplit}${system.dynamic}`;
+        },
+        record: (output) => moderation.push(output),
+        finish: async (assistant) => {
+          const finished = await finish("blocked", assistant);
+          sendState(finished);
+          done(finished, stage);
+        },
+      },
+      stage,
+      category,
+    );
+    return { outcome, afterTurn: null };
   };
 
   sink.send({
@@ -181,7 +186,12 @@ export async function runTurn(
     done(finished);
     return { outcome: "crisis", afterTurn: null };
   }
-  if (input.action === "block") return fail("guardrail_blocked", "blocked");
+  if (input.action === "block") {
+    const stage = context.status === null ? "block" : refusalStage(context.status);
+    if (stage === "block") return fail("guardrail_blocked", "blocked");
+    abort.abort();
+    return refuse(stage, input.category);
+  }
 
   const sendDelta = (delta: SegmentDelta) => sink.send({ event: "delta", data: delta });
   // 성인은 받는 대로(사후 검사 작업은 아직 없다), 미성년자 · 나이 모름은 출력 검사 뒤에.
@@ -229,15 +239,7 @@ export async function runTurn(
 
   const [feedbackResult, translated] = await Promise.all([feedback, translation]);
   sendCorrection(feedbackResult);
-  const segments = withTranslations(result.segments, translated);
-  sendTranslations(sink, segments);
-  if (!["ok", "off", "skipped_ko"].includes(translated.status))
-    deps.log({
-      event: "chat_send",
-      status: "stream",
-      outcome: "translation_unavailable",
-      error: translated.status,
-    });
+  const segments = applyTranslation(sink, deps.log, result.segments, translated);
 
   let finished: Finished;
   try {
@@ -275,10 +277,7 @@ export async function runTurn(
     sink.send({ event: "error", data: { code: "internal_error", retryable: true } });
     return { outcome: "internal_error", afterTurn: null };
   }
-  sink.send({
-    event: "state",
-    data: { speechLevel: finished.speechLevel, speechLevelChanged: finished.speechLevelChanged },
-  });
+  sendState(finished);
   done(finished);
   return {
     outcome: "complete",

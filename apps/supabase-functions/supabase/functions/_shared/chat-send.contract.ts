@@ -289,6 +289,8 @@ export type ChatSendDeps = {
   readonly feedbackTimeoutMs?: number;
   /** 번역을 기다리는 시간. 넘으면 번역 없이 턴을 끝냅니다. */
   readonly translationTimeoutMs?: number;
+  /** 거절 답을 기다리는 시간. 넘으면 페르소나의 정해진 거절 줄로 끝냅니다. */
+  readonly refusalTimeoutMs?: number;
   /** 분기의 랜덤(0 ~ 1). 테스트가 고정합니다. */
   readonly random?: () => number;
 };

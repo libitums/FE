@@ -99,17 +99,28 @@ export function fakeCompanionLlm(): CompanionLlm {
       // 속마음 · 행동(*…*)은 따라 말하지 않는다.
       const echo = request.userText.replace(tags, "").replace(asterisks, "").trim().slice(0, 40);
       const directive = request.system.includes("# For this reply") ? " (지시 반영)" : "";
-      const lines = [
-        "@action 이동식 칠판을 끌고 온다",
-        ...(/\*[^*]+\*/.test(request.userText) ? ["@action 학습자의 몸짓을 보고 웃는다"] : []),
-        `@speech 오, '${echo}'! 좋아요, 좋아요!${directive}`,
-        request.userText.includes("[unsafe-reply]")
-          ? "@speech [unsafe] 위험한 답"
-          : request.userText.includes("[swear-reply]")
-            ? "@speech 아 씨, 진짜요?"
-            : "@speech 그럼 퀴즈! 소 더하기 고기는?",
-        `@state {"intimacy_delta": ${request.userText.includes("[warm]") ? 3 : 1}, "topic": "인사", "user_wants_switch": false}`,
-      ];
+      // 성격대로 거절(거절 지시가 붙은 답) — 유저 말 자리는 앱 안내라 따라 말하지 않는다.
+      const refusal = request.system.includes("broke the app's safety rules");
+      const warn = request.system.includes("This has happened before");
+      const lines = refusal
+        ? [
+            "@action 고개를 살짝 젓는다",
+            warn
+              ? "@speech 그런 말은 안 돼요. 다른 얘기 해요."
+              : "@speech 그 얘기는 말고요, 퀴즈 하나 할까요?",
+            `@state {"intimacy_delta": 0, "topic": "퀴즈", "user_wants_switch": false}`,
+          ]
+        : [
+            "@action 이동식 칠판을 끌고 온다",
+            ...(/\*[^*]+\*/.test(request.userText) ? ["@action 학습자의 몸짓을 보고 웃는다"] : []),
+            `@speech 오, '${echo}'! 좋아요, 좋아요!${directive}`,
+            request.userText.includes("[unsafe-reply]")
+              ? "@speech [unsafe] 위험한 답"
+              : request.userText.includes("[swear-reply]")
+                ? "@speech 아 씨, 진짜요?"
+                : "@speech 그럼 퀴즈! 소 더하기 고기는?",
+            `@state {"intimacy_delta": ${request.userText.includes("[warm]") ? 3 : 1}, "topic": "인사", "user_wants_switch": false}`,
+          ];
       for (const line of lines) {
         for (const piece of [line.slice(0, 8), `${line.slice(8)}\n`]) {
           if (request.signal.aborted) throw new Error("aborted");

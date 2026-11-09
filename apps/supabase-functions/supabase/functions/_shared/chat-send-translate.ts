@@ -4,7 +4,7 @@
 // 답 조각이 다 모인 뒤 한 번 부르고, 남은 기다림(피드백 · 미성년자 출력 검사)과 동시에 돌려 늘어나는 지연을 줄입니다. 차단 · 위기
 // 답은 내보내지도 저장하지도 않습니다(검사에 걸리면 신호로 끊습니다). 실패 · 시간 초과는 턴을 실패시키지 않습니다 — 번역만 없습니다.
 
-import type { ChatSendEnv, CompanionLlm, Segment } from "./chat-send.contract.ts";
+import type { ChatSendDeps, ChatSendEnv, CompanionLlm, Segment } from "./chat-send.contract.ts";
 import type { Sink } from "./chat-send-http.ts";
 
 export const defaultTranslationTimeoutMs = 6_000;
@@ -71,4 +71,23 @@ export function sendTranslations(sink: Sink, segments: readonly Segment[]): void
     if (entry.translation !== undefined)
       sink.send({ event: "translation", data: { segment, text: entry.translation } });
   }
+}
+
+/** 번역을 조각에 붙여 `translation` 이벤트로 보내고, 번역이 없으면 로그에 남깁니다. 저장할 조각을 돌려줍니다. */
+export function applyTranslation(
+  sink: Sink,
+  log: ChatSendDeps["log"],
+  segments: readonly Segment[],
+  outcome: TranslationOutcome,
+): Segment[] {
+  const translated = withTranslations(segments, outcome);
+  sendTranslations(sink, translated);
+  if (!["ok", "off", "skipped_ko"].includes(outcome.status))
+    log({
+      event: "chat_send",
+      status: "stream",
+      outcome: "translation_unavailable",
+      error: outcome.status,
+    });
+  return translated;
 }

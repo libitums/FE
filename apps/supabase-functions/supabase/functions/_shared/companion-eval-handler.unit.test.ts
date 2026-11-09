@@ -3,7 +3,7 @@ import { expect, test } from "vitest";
 import type { ChatSendEnv, CompanionLlm } from "./chat-send.contract.ts";
 import { createCompanionEvalHandler, evalModels } from "./companion-eval-handler.ts";
 import { companionLlmWithModel, StructuredUnavailable } from "./companion-llm.ts";
-import { feedbackSystem } from "./companion-llm-prompts.ts";
+import { feedbackSystem, refusalDirective, refusalUserText } from "./companion-llm-prompts.ts";
 import { companionSystemPrompt, proactiveDirective, stateLine } from "./companion-prompt.ts";
 import { moderationInstruction } from "./companion-safety.ts";
 import { fakeCompanionLlm } from "./companion-llm-fake.ts";
@@ -437,6 +437,13 @@ test("EV10. ?docs=1 — 캐릭터마다 말투 상한까지 시스템 프롬프�
     "prefix",
   ]);
   expect(typeof prompts["summary"]).toBe("string");
+  // 성격대로 거절 — 실제 호출과 같은 지시 · 앱 안내, 분류 자리만 자리 표시.
+  expect(prompts["refusal"]).toEqual({
+    deflect: refusalDirective("deflect", "{{category}}"),
+    warn: refusalDirective("warn", "{{category}}"),
+    userText: refusalUserText("{{category}}"),
+  });
+  expect((prompts["refusal"] as Record<string, string>)["warn"]).toContain("not okay");
 });
 
 test("EV11. 운영 조회 함수가 아직 없으면 characters · settings는 null, 프롬프트는 그대로", async () => {

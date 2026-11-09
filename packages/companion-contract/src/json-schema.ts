@@ -5,6 +5,7 @@ import { z } from "zod/mini";
 import { chatSendRequestSchema, preStreamErrorBodySchema } from "./chat-send";
 import {
   companionCharacterSchema,
+  companionMemoryListSchema,
   companionMemorySchema,
   companionMessagesPageSchema,
   companionProfileSchema,
@@ -20,6 +21,7 @@ const schemas = {
   "companion-character": companionCharacterSchema,
   "companion-messages-page": companionMessagesPageSchema,
   "companion-memory": companionMemorySchema,
+  "companion-memories": companionMemoryListSchema,
   "companion-wallet": companionWalletSchema,
 } as const;
 

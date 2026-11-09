@@ -141,6 +141,26 @@ export const turnFixtureEvents = {
     start(),
     { event: "error", data: { code: "guardrail_blocked", retryable: false } },
   ]),
+  "turn-refusal": numbered([
+    start(),
+    delta(0, "action", "고개를 살짝 젓는다"),
+    delta(1, "speech", "어이쿠, 그 얘기는 오늘 수업에 없어요! 대신 퀴즈 하나 갈게요."),
+    { event: "translation", data: { segment: 0, text: "Shakes his head slightly." } },
+    {
+      event: "translation",
+      data: { segment: 1, text: "Whoa, that's not in today's lesson! Here's a quiz instead." },
+    },
+    state("polite"),
+    {
+      event: "done",
+      data: {
+        assistantMessageId: ids.assistant,
+        creditsSpent: 0,
+        balance: null,
+        refusal: { stage: "deflect" },
+      },
+    },
+  ]),
   "turn-crisis": numbered([
     start(),
     {
