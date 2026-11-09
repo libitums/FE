@@ -1,0 +1,261 @@
+/* 채팅 목록(M1 · M2) — 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1).
+   화면 지역 상수(토큰 없음): L-EMPTY 72 = 빈 상태 원 지름(design.md 10절). */
+
+.messenger-list-screen {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  background: var(--libitum-color-background-primary);
+}
+
+.messenger-list-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  /* 위 여백은 화면 여백에 전역 머리 몫을 더한 것입니다 — 롤플레이 목록과 같은 계산식입니다.
+     shorthand에 calc를 쓰면 Lynx가 선언 전체를 버려 longhand로 적습니다. */
+  padding-top: calc(
+    var(--libitum-layout-screen-padding-top) + var(--libitum-spacing-32) +
+      var(--libitum-spacing-8) + var(--libitum-layout-gap-block)
+  );
+}
+
+/* [고정] 머리 — 제목과 젬 칩입니다. */
+.messenger-list-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--libitum-spacing-12);
+  flex-shrink: 0;
+  padding: 0 var(--libitum-layout-screen-padding-x);
+}
+
+.messenger-list-title {
+  min-width: 0;
+  flex-shrink: 1;
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-l-font-family);
+  font-weight: var(--libitum-typography-heading-l-font-weight);
+  font-size: var(--libitum-typography-heading-l-font-size);
+  line-height: var(--libitum-typography-heading-l-line-height);
+  letter-spacing: var(--libitum-typography-heading-l-letter-spacing);
+}
+
+/* [흐름] 목록 — 세로 스크롤은 방향을 적어야 합니다. */
+.messenger-list-scroll {
+  flex: 1;
+  justify-content: flex-start;
+}
+
+/* 스크롤의 유일한 직계 자식입니다. 아래 여백은 바텀 네비게이션 몫입니다(바가 콘텐츠 위에 겹침). */
+.messenger-list-list {
+  display: flex;
+  flex-direction: column;
+  padding-top: var(--libitum-spacing-8);
+  padding-bottom: calc(var(--libitum-spacing-64) + var(--libitum-spacing-4));
+}
+
+/* 줄 — 76 min-height(큰 글자에서 늘어남). 눌림은 즉시 gray-100. */
+.messenger-list-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-12);
+  min-height: calc(var(--libitum-spacing-64) + var(--libitum-spacing-12));
+  padding: 0 var(--libitum-layout-screen-padding-x);
+}
+
+.messenger-list-row:active {
+  background: var(--libitum-color-gray-100);
+}
+
+/* 잠긴 줄은 누르지 않으므로 눌림 면이 없습니다. */
+.messenger-list-row-locked:active {
+  background: transparent;
+}
+
+.messenger-list-avatar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.messenger-list-avatar-face {
+  display: flex;
+}
+
+/* 잠김은 아바타만 흐립니다(줄 전체를 흐리면 조건 글이 읽히지 않습니다). */
+.messenger-list-avatar-dim {
+  display: flex;
+  opacity: var(--libitum-opacity-45);
+}
+
+/* 잠금 표지는 아바타 오른쪽 아래 모서리 배지입니다. 이니셜이 비치는 가운데를 흰 아이콘으로 덮으면 글자가 깨져 보였습니다
+   (device-findings-1 D4 — 흐린 아바타 면 위 흰 아이콘은 대비도 없음). 스크롤 안이라 z-index 없이 문서 순서로 아바타 위에
+   그립니다(ADR-0022). 배지 면 gray-700 위 흰 아이콘. */
+.messenger-list-lock {
+  position: absolute;
+  right: calc(var(--libitum-spacing-4) * -1);
+  bottom: calc(var(--libitum-spacing-4) * -1);
+  width: var(--libitum-spacing-20);
+  height: var(--libitum-spacing-20);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-gray-700);
+}
+
+.messenger-list-lock-icon {
+  width: var(--libitum-spacing-12);
+  height: var(--libitum-spacing-12);
+}
+
+.messenger-list-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-2);
+}
+
+.messenger-list-line {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-8);
+}
+
+.messenger-list-name {
+  flex: 1;
+  min-width: 0;
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-label-xl-font-family);
+  font-weight: var(--libitum-typography-label-xl-font-weight);
+  font-size: var(--libitum-typography-label-xl-font-size);
+  line-height: var(--libitum-typography-label-xl-line-height);
+  letter-spacing: var(--libitum-typography-label-xl-letter-spacing);
+  text-overflow: ellipsis;
+  lines: 1;
+}
+
+.messenger-list-name-locked {
+  color: var(--libitum-color-fg-neutral-muted);
+}
+
+.messenger-list-time {
+  flex-shrink: 0;
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-weight: var(--libitum-typography-body-s-font-weight);
+  font-size: var(--libitum-typography-body-s-font-size);
+  line-height: var(--libitum-typography-body-s-line-height);
+  letter-spacing: var(--libitum-typography-body-s-letter-spacing);
+}
+
+.messenger-list-time-unread {
+  color: var(--libitum-color-fg-brand);
+}
+
+.messenger-list-preview {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  font-size: var(--libitum-typography-body-m-font-size);
+  line-height: var(--libitum-typography-body-m-line-height);
+  letter-spacing: var(--libitum-typography-body-m-letter-spacing);
+  text-overflow: ellipsis;
+  lines: 1;
+}
+
+.messenger-list-preview-muted {
+  color: var(--libitum-color-fg-neutral-muted);
+}
+
+.messenger-list-preview-unread {
+  color: var(--libitum-color-fg-neutral);
+}
+
+.messenger-list-preview-activity {
+  color: var(--libitum-color-fg-brand);
+}
+
+/* 안 읽은 수 알약 — 면은 brand-strong입니다(흰 글 대비 4.5 이상). */
+.messenger-list-unread {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  min-width: var(--libitum-spacing-20);
+  min-height: var(--libitum-spacing-20);
+  padding: 0 var(--libitum-spacing-6);
+  border-radius: var(--libitum-radius-full);
+  background: var(--libitum-color-brand-strong);
+}
+
+.messenger-list-unread-text {
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
+}
+
+/* 빈 상태 — 세로 가운데 묶음입니다. */
+.messenger-list-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--libitum-spacing-12);
+  padding: 0 var(--libitum-spacing-32);
+  /* 바텀 네비게이션이 겹치는 높이만큼 위로 올려 눈에 보이는 가운데에 둡니다. */
+  padding-bottom: calc(var(--libitum-spacing-64) + var(--libitum-spacing-4));
+}
+
+.messenger-list-empty-circle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(var(--libitum-spacing-64) + var(--libitum-spacing-8));
+  height: calc(var(--libitum-spacing-64) + var(--libitum-spacing-8));
+  border-radius: var(--libitum-radius-full);
+  background: var(--libitum-color-background-elevated);
+}
+
+.messenger-list-empty-icon {
+  width: var(--libitum-icon-size-xl);
+  height: var(--libitum-icon-size-xl);
+}
+
+.messenger-list-empty-title {
+  color: var(--libitum-color-fg-neutral);
+  text-align: center;
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  line-height: var(--libitum-typography-heading-s-line-height);
+  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
+}
+
+.messenger-list-empty-body {
+  color: var(--libitum-color-fg-neutral-muted);
+  text-align: center;
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  font-size: var(--libitum-typography-body-m-font-size);
+  line-height: var(--libitum-typography-body-m-line-height);
+  letter-spacing: var(--libitum-typography-body-m-letter-spacing);
+}
+
+.messenger-list-empty-go {
+  display: flex;
+  margin-top: var(--libitum-spacing-8);
+}

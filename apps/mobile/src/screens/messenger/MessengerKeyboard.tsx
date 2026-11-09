@@ -15,6 +15,7 @@ import { KEY_REPEAT, createKeyRepeater } from "../../lib/key-repeat";
 import { createKeyHaptic } from "../../lib/sound-effects";
 import { useUiCopy } from "../../lib/ui-copy";
 import { backspaceIcon } from "./backspace-icon";
+import { fittedKeyHeight } from "./keyboard-fit";
 import { keyboardLayout, keyHint, keyLabel } from "./keyboard-layout";
 import type { KeyboardCell } from "./keyboard-layout";
 import type { MessengerKeyboardProps } from "./messenger.contract";
@@ -66,6 +67,7 @@ export function MessengerKeyboard({
   onBackspace,
   onShift,
   edges,
+  height,
 }: MessengerKeyboardProps): ReactNode {
   const copy = useUiCopy();
   const [pressed, setPressed] = useState<Readonly<Record<string, true>>>({});
@@ -190,6 +192,9 @@ export function MessengerKeyboard({
     }
   };
 
+  // 방이 면 높이를 정하면(height) 키 높이가 거기에 맞춰 늘고 줄고, 말풍선은 그 키 위 4에 뜹니다. 없으면 지금 그대로입니다.
+  const keyHeight = height === undefined ? null : fittedKeyHeight(height, edges.bottom);
+
   const renderCell = (cell: KeyboardCell, edge: PreviewEdge) => {
     const isPressed = pressed[cell.id] === true;
     const previewClass =
@@ -222,12 +227,16 @@ export function MessengerKeyboard({
         bindtouchcancel={() => handleTouchEnd(cell)}
         bindtap={() => handleTap(cell)}
       >
-        <view className={keyClass}>
+        <view
+          className={keyClass}
+          style={keyHeight === null ? undefined : { height: `${keyHeight}px` }}
+        >
           {cell.preview && isPressed && latest?.id === cell.id ? (
             <view
               className={previewClass}
               data-testid="messenger-key-preview"
               user-interaction-enabled={false}
+              style={keyHeight === null ? undefined : { bottom: `${keyHeight + 4}px` }}
             >
               <text className="messenger-keyboard-preview-label" accessibility-element={false}>
                 {latest.label}
@@ -266,7 +275,13 @@ export function MessengerKeyboard({
   };
 
   return (
-    <view className="messenger-keyboard" data-testid="messenger-keyboard">
+    <view
+      className={
+        height === undefined ? "messenger-keyboard" : "messenger-keyboard messenger-keyboard-sized"
+      }
+      data-testid="messenger-keyboard"
+      style={height === undefined ? undefined : { height: `${height}px` }}
+    >
       <view
         className="messenger-keyboard-rows"
         data-testid="messenger-keyboard-rows"

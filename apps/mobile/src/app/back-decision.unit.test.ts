@@ -72,4 +72,42 @@ describe("defaultBackDecision", () => {
     };
     expect(defaultBackDecision(nav)).toEqual({ kind: "leave" });
   });
+
+  // MC-U27 — 탭 넷의 stacks 리터럴로 직접 만든 Nav. 키가 하나라도 빠지면 이 픽스처가 틀린다.
+  const fourStacks: Nav["stacks"] = {
+    journey: [{ name: "journey-map" }],
+    roleplay: [{ name: "roleplay-list" }],
+    messenger: [{ name: "messenger-list" }],
+    settings: [{ name: "settings" }],
+  };
+  const room: Screen = { name: "messenger-chat", roomId: "mina" };
+
+  it("BD8. 메신저 탭 루트는 여정 탭 루트로 가는 navigate다(MC-U27)", () => {
+    const nav: Nav = { ...initialNav, tab: "messenger", stacks: fourStacks };
+    const decision = defaultBackDecision(nav);
+
+    expect(decision).toEqual({ kind: "navigate", actions: tabRootActions("journey") });
+    expect(foldActions(nav, decision).tab).toBe("journey");
+  });
+
+  it("BD9. 메신저 방([목록, 방])에서는 기본 동작이 leave고, 화면의 뒤로(back)는 목록이다(MC-U27)", () => {
+    const nav: Nav = {
+      ...initialNav,
+      tab: "messenger",
+      stacks: { ...fourStacks, messenger: [{ name: "messenger-list" }, room] },
+    };
+
+    expect(defaultBackDecision(nav)).toEqual({ kind: "leave" });
+    const back = navReducer(nav, { type: "back" });
+    expect(back.stacks.messenger).toEqual([{ name: "messenger-list" }]);
+  });
+
+  it("BD10. initialNav.stacks 는 키가 정확히 넷이다(MC-U27)", () => {
+    expect(Object.keys(initialNav.stacks).sort()).toEqual([
+      "journey",
+      "messenger",
+      "roleplay",
+      "settings",
+    ]);
+  });
 });

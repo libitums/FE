@@ -23,6 +23,11 @@
   box-shadow: var(--libitum-elevation-shadow-s3);
 }
 
+/* 방이 면 높이를 정하면(height prop, messenger-chat-ui spec §6.3) 키 높이가 거기에 맞고 남는 높이는 판 위쪽 여백입니다. */
+.messenger-keyboard-sized {
+  justify-content: flex-end;
+}
+
 /* 키 줄 묶음 — 인셋은 이 상자의 인라인 바깥 여백으로 면 여백에 더해집니다. */
 .messenger-keyboard-rows {
   width: 100%;

@@ -1,0 +1,188 @@
+// ui 테스트 지원 — 자유 대화 화면 테스트가 함께 쓰는 씨앗 · 출처 · 마운트 · 이벤트 도우미입니다.
+// 제품 코드는 이 파일을 import하지 않습니다. 한국어 대화 내용은 테스트 데이터입니다.
+
+import { vi } from "vitest";
+import { act, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
+
+import { backHandlers } from "../../lib/back-handler";
+import { zeroKeyboardDockEdges, type KeyboardDockEdges } from "../../lib/keyboard-dock";
+import { createFixtureChatSource } from "./chat-fixture-source";
+import type { ChatFixtureRoom, ChatFixtureSeed, ChatSource } from "./chat-source.contract";
+import { MessengerChatScreen } from "./MessengerChatScreen";
+import { messengerChatTestIds as ids } from "./messenger-chat.contract";
+import type { KeyboardHeightStore, KoreanKeyboardProbe } from "./keyboard-ports";
+import { emptyKeyboardHeightStore, unknownKoreanKeyboardProbe } from "./keyboard-ports";
+
+export const imageUrlOf = (path: string): string => `https://cdn/${path}`;
+
+export const ideaSetA = [
+  { ko: "네, 좋아요", roman: "ne, joayo", en: "Yes, sounds good" },
+  { ko: "아니요", roman: "aniyo", en: "No" },
+  { ko: "잘 모르겠어요", roman: "jal moreugesseoyo", en: "I'm not sure" },
+] as const;
+
+export const ideaSetB = [
+  { ko: "다시 말해 주세요", roman: "dasi malhae juseyo", en: "Please say it again" },
+  { ko: "천천히요", roman: "cheoncheonhiyo", en: "Slowly, please" },
+  { ko: "고마워요", roman: "gomawoyo", en: "Thank you" },
+] as const;
+
+export const LAST_THEM = { ko: "오늘 뭐 해요?", en: "What are you doing today?" } as const;
+export const CANNED = { ko: "좋아요!", en: "Sounds good!" } as const;
+
+export function fixtureRoom(id: string, over: Partial<ChatFixtureRoom> = {}): ChatFixtureRoom {
+  return {
+    roomId: id,
+    counterpart: { id, name: "미나", avatarPath: null },
+    access: { kind: "open" },
+    unread: 0,
+    messages: [{ kind: "text", from: "them", text: LAST_THEM, minutesAgo: 5 }],
+    storyPoints: [
+      { id: "sp-1", episodeNumber: 1, title: "Buying water", relation: "just-met", unlocked: true },
+      {
+        id: "sp-2",
+        episodeNumber: 2,
+        title: "Getting lost",
+        relation: "getting-to-know",
+        unlocked: true,
+      },
+      { id: "sp-3", episodeNumber: 3, title: "A cafe", relation: "friends", unlocked: false },
+    ],
+    settings: { autoIdeas: true, storyPointId: "sp-1" },
+    ideaSets: [ideaSetA, ideaSetB],
+    cannedReplies: [CANNED],
+    photoPath: "content/images/photo-a.webp",
+    voiceLine: { durationMs: 4000, text: { ko: "안녕하세요", en: "Hello" } },
+    ...over,
+  };
+}
+
+export const seedOf = (...rooms: ChatFixtureRoom[]): ChatFixtureSeed => ({ rooms });
+
+export function makeSource(seed: ChatFixtureSeed = seedOf(fixtureRoom("mina"))): ChatSource {
+  return createFixtureChatSource({ imageUrlOf, seed, now: () => Date.now() });
+}
+
+export type MountChatOptions = {
+  readonly roomId?: string;
+  readonly seed?: ChatFixtureSeed;
+  readonly source?: ChatSource;
+  readonly probe?: KoreanKeyboardProbe;
+  readonly store?: KeyboardHeightStore;
+  readonly edges?: KeyboardDockEdges;
+  readonly gemBalance?: number;
+  readonly learnerName?: string;
+};
+
+export function presenceProbe(presence: "present" | "absent" | "unknown"): KoreanKeyboardProbe {
+  return { presence: () => presence };
+}
+
+export function mountChat(options: MountChatOptions = {}) {
+  const source = options.source ?? makeSource(options.seed);
+  const onExit = vi.fn<() => void>();
+  const view = render(
+    <MessengerChatScreen
+      roomId={options.roomId ?? "mina"}
+      source={source}
+      keyboardProbe={options.probe ?? unknownKoreanKeyboardProbe}
+      keyboardHeightStore={options.store ?? emptyKeyboardHeightStore}
+      edges={options.edges ?? zeroKeyboardDockEdges}
+      learnerName={options.learnerName ?? "Hana"}
+      gemBalance={options.gemBalance ?? 0}
+      onExit={onExit}
+    />,
+  );
+  return { source, onExit, view };
+}
+
+// ---------------------------------------------------------------- 이벤트 도우미
+
+/**
+ * test-id 요소를 누릅니다. 그 안에 ui-lynx RoundButton · Button이 있으면(감싸개가 test-id를 갖는 결선) 안쪽 단추가
+ * 탭을 받으므로 그것을 누르고, 아니면 요소 자신을 누릅니다.
+ */
+export const tapId = (testId: string): void => {
+  const el = screen.getByTestId(testId);
+  const inner = el.querySelector(
+    '[data-testid="ui-lynx-round-button"], [data-testid="ui-lynx-button"]',
+  );
+  fireEvent.tap(inner ?? el, {});
+};
+
+/** ui-lynx 버튼은 감싸개가 test-id를 갖고 탭은 안쪽 `ui-lynx-button`이 받습니다. */
+export const tapButtonIn = (wrapperTestId: string): void => {
+  fireEvent.tap(within(screen.getByTestId(wrapperTestId)).getByTestId("ui-lynx-button"), {});
+};
+
+export const tapKeys = (...keys: string[]): void => {
+  for (const key of keys) fireEvent.tap(screen.getByTestId(`messenger-key-${key}`), {});
+};
+
+/** 「안」 — ㅇ ㅏ ㄴ. */
+export const KEYS_AN = ["ㅇ", "ㅏ", "ㄴ"] as const;
+/** 「안녕하」. */
+export const KEYS_ANNYEONGHA = ["ㅇ", "ㅏ", "ㄴ", "ㄴ", "ㅕ", "ㅇ", "ㅎ", "ㅏ"] as const;
+
+export const textOf = (testId: string): string => screen.getByTestId(testId).textContent ?? "";
+
+/** `<input>`의 네이티브 이벤트(input · focus · blur · confirm)를 흉내 냅니다. */
+export function nativeInput(
+  name: "input" | "focus" | "blur" | "confirm",
+  value: string,
+  testId: string = ids.input,
+): void {
+  const target = screen.getByTestId(testId);
+  const EventConstructor = target.ownerDocument.defaultView?.CustomEvent;
+  if (EventConstructor === undefined) throw new Error("CustomEvent is unavailable");
+  const ref = lynx.createSelectorQuery().select(`[data-testid="${testId}"]`);
+  fireEvent(
+    ref as unknown as Element,
+    new EventConstructor(`bindEvent:${name}`, { detail: { value } }),
+  );
+}
+
+export const advance = (ms: number): void => {
+  act(() => {
+    vi.advanceTimersByTime(ms);
+  });
+};
+
+/** 시스템 뒤로가기 한 번(가장 위 등록 하나)입니다. 처리했으면 true. */
+export function systemBack(): boolean {
+  let handled = false;
+  act(() => {
+    handled = backHandlers.runTop();
+  });
+  return handled;
+}
+
+/** 테스트 사이에 남은 뒤로가기 등록을 비웁니다. */
+export function clearBackHandlers(): void {
+  while (backHandlers.runTop()) {
+    /* 남은 핸들러를 비웁니다 */
+  }
+}
+
+// ---------------------------------------------------------------- 창 높이
+
+type SystemInfoShape = { pixelHeight: number; pixelRatio: number };
+
+/** 창 높이(pt)를 바꿉니다. 돌려주는 함수를 afterEach에서 부릅니다. */
+export function useWindowHeight(points: number): () => void {
+  const scope = globalThis as unknown as { SystemInfo: SystemInfoShape };
+  const previous = scope.SystemInfo;
+  scope.SystemInfo = { ...previous, pixelHeight: points * 2, pixelRatio: 2 };
+  return () => {
+    scope.SystemInfo = previous;
+  };
+}
+
+// ---------------------------------------------------------------- 방 안 관찰
+
+export const incomingCount = (): number => screen.queryAllByTestId(ids.incoming).length;
+export const outgoingCount = (): number => screen.queryAllByTestId(ids.outgoing).length;
+export const slotContent = (): string | null =>
+  screen.getByTestId(ids.slot).getAttribute("data-content");
+export const slotHeight = (): string | null =>
+  screen.getByTestId(ids.slot).getAttribute("data-height");

@@ -9,6 +9,7 @@
 // 깃발이고, `flag`는 사각 깃발이라 모양이 다릅니다.
 import flag from "@libitums/icons/lynx/flag-03";
 import friends from "@libitums/icons/lynx/friends";
+import message from "@libitums/icons/lynx/message";
 import settings from "@libitums/icons/lynx/settings";
 
 import { BottomNavigator as UiBottomNavigator } from "@libitums/ui-lynx/bottom-navigator";
@@ -20,12 +21,14 @@ import type { Tab } from "../app/navigation";
 import { playSound } from "../lib/sound-effects";
 import { useUiCopy } from "../lib/ui-copy";
 
+import "./bottom-navigator.css";
+
 export type BottomNavigatorProps = {
   tab: Tab;
   onSelectTab: (tab: Tab) => void;
 };
 
-// 항목은 모듈 내부 상수입니다. export하지 않고 props로도 받지 않습니다 — 세 탭은
+// 항목은 모듈 내부 상수입니다. export하지 않고 props로도 받지 않습니다 — 네 탭은
 // `Tab` union이 이미 닫아 두었습니다. 배열 순서가 좌→우 배치 순서입니다.
 //
 // `id`를 `Tab` 값과 같게 두는 것이 이 어댑터의 전부입니다. 아래 `toTab`이 되돌릴 때
@@ -34,6 +37,7 @@ export type BottomNavigatorProps = {
 const tabs: readonly { readonly id: Tab; readonly icon: string }[] = [
   { id: "journey", icon: flag },
   { id: "roleplay", icon: friends },
+  { id: "messenger", icon: message },
   { id: "settings", icon: settings },
 ];
 

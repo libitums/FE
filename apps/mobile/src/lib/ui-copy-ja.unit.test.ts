@@ -2,6 +2,10 @@ import { expect, test } from "vitest";
 
 import { uiCopyFor } from "./ui-copy";
 import { uiCopyEn } from "./ui-copy-en";
+import {
+  messengerChatKeyPaths,
+  messengerChatProblems,
+} from "./ui-copy-messenger-chat.test-support";
 import { uiCopyJa } from "./ui-copy-ja";
 
 // `unit` 계층: 일본어 문구표(ADR-0098) — 영어와 같은 모양의 완전한 표. 모양 자체는 `UiCopy` 타입이 잡고,
@@ -52,4 +56,17 @@ test("JA4. 스텝 말풍선 제목은 일본어에서 줄을 바꿔 제목을 �
     "レッスン1\nチュートリアル",
   );
   expect(uiCopyEn.catalogMap.sheetHeading("Lesson 1", "Tutorial")).toBe("Lesson 1: “Tutorial”");
+});
+
+test("MC-U28. ja messengerChat 의 키 집합이 영어와 같고 함수 키가 빈 문자열을 내지 않으며 한글이 없다", () => {
+  expect(messengerChatKeyPaths(uiCopyEn).length).toBeGreaterThan(0);
+  expect(messengerChatKeyPaths(uiCopyJa)).toEqual(messengerChatKeyPaths(uiCopyEn));
+  expect(messengerChatProblems(uiCopyJa, uiCopyEn)).toEqual([]);
+});
+
+test("MC-U28. ja 탭 이름에 메신저가 있고 비지 않았다", () => {
+  const label = uiCopyJa.shell.tabs as unknown as Record<string, string>;
+  expect(typeof label.messenger).toBe("string");
+  expect((label.messenger ?? "").trim().length).toBeGreaterThan(0);
+  expect(label.messenger).not.toBe(label.journey);
 });

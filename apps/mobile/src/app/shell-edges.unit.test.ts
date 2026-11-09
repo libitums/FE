@@ -54,6 +54,7 @@ const otherForms: readonly CatalogActivityForm[] = [
 ];
 const paddedRoutes: readonly Screen[] = [
   asScreen({ name: "journey-map" }),
+  asScreen({ name: "messenger-list" }),
   asScreen({ name: "settings" }),
   asScreen({ name: "notifications" }),
   asScreen({ name: "catalog-unit-complete", episodeId: "u01-water", unitKey: "S3" }),
@@ -90,6 +91,25 @@ describe("shellEdgeModeFor", () => {
       expect(shellEdgeModeFor(screen, "typing")).toBe("padded");
     },
   );
+});
+
+describe("메신저 route (MC-U26)", () => {
+  const chatRoom = asScreen({ name: "messenger-chat", roomId: "mina" });
+
+  test("MC-U26. 방은 keyboard-dock 이다 — 학습형을 줘도 안 줘도", () => {
+    expect(shellEdgeModeFor(chatRoom, null)).toBe("keyboard-dock");
+    expect(shellEdgeModeFor(chatRoom, "typing")).toBe("keyboard-dock");
+  });
+
+  test("MC-U26. 목록은 padded 다", () => {
+    expect(shellEdgeModeFor(asScreen({ name: "messenger-list" }), null)).toBe("padded");
+  });
+
+  test("MC-U26. 방의 셸 인셋은 위만이고 목록은 전부다", () => {
+    expect(shellInsetsOf(chatRoom, ios, source)).toEqual(topOnly(59));
+    expect(shellInsetsOf(chatRoom, threeButton, source)).toEqual(topOnly(24));
+    expect(shellInsetsOf(asScreen({ name: "messenger-list" }), ios, source)).toEqual(ios);
+  });
 });
 
 describe("shellInsetsFor", () => {

@@ -1,15 +1,22 @@
-import { useMainThreadRef, useRef } from "@lynx-js/react";
+import { useRef } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
-import type { MainThread } from "@lynx-js/types";
 
 import arrowLeft03 from "@libitums/icons/lynx/arrow-left-03";
-import { Avatar } from "@libitums/ui-lynx/avatar";
 import { BottomSheet } from "@libitums/ui-lynx/bottom-sheet";
 import { Button } from "@libitums/ui-lynx/button";
-import { ChatBubble } from "@libitums/ui-lynx/chat-bubble";
 import { resolveReducedMotion, useMotion } from "@libitums/ui-lynx/motion";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
 
+import { ChatHeader, ChatHeaderSide } from "../../components/chat/ChatHeader";
+import { ChatLog } from "../../components/chat/ChatLog";
+import {
+  ChatIncomingRow,
+  ChatOutgoingRow,
+  ChatPhoto,
+  ChatTextBubble,
+} from "../../components/chat/ChatMessageRow";
+import { ChatReplyOption } from "../../components/chat/ChatReplyOption";
+import { ChatTypingRow } from "../../components/chat/ChatTypingRow";
 import { useUiCopy } from "../../lib/ui-copy";
 import { useScreenBack } from "../../lib/use-back-handler";
 import { StoryComposer } from "./StoryComposer";
@@ -32,43 +39,21 @@ type MessageRowProps = {
 function MessageRow({ item, counterpart, avatarUrl, selfName }: MessageRowProps): ReactNode {
   const outgoing = item.direction === "outgoing";
   const bubble = (
-    <ChatBubble
+    <ChatTextBubble
       direction={item.direction}
       message={item.text.ko}
       speaker={outgoing ? selfName : counterpart}
-      size="m"
-      contentLanguage="learning"
-      languageTag="ko"
       translation={item.text.en}
     />
   );
-  if (outgoing) {
-    return (
-      <view className="story-messenger-row story-messenger-row-outgoing" data-testid={ids.outgoing}>
-        {bubble}
-      </view>
-    );
-  }
+  if (outgoing) return <ChatOutgoingRow testId={ids.outgoing}>{bubble}</ChatOutgoingRow>;
   return (
-    <view className="story-messenger-row" data-testid={ids.incoming}>
-      <Avatar
-        name={counterpart}
-        imageSource={avatarUrl ?? undefined}
-        size="sm"
-        accessibility="hidden"
-      />
-      <view className="story-messenger-stack">
-        {item.imageUrl === null ? null : (
-          <image
-            className="story-messenger-photo"
-            data-testid={ids.photo}
-            src={item.imageUrl}
-            mode="aspectFill"
-          />
-        )}
-        {bubble}
-      </view>
-    </view>
+    <ChatIncomingRow avatar={{ name: counterpart, imageUrl: avatarUrl }} testId={ids.incoming}>
+      {item.imageUrl === null ? null : (
+        <ChatPhoto src={item.imageUrl} aspect="portrait-9x16" testId={ids.photo} />
+      )}
+      {bubble}
+    </ChatIncomingRow>
   );
 }
 
@@ -85,13 +70,6 @@ export function StoryMessengerScreen({
   const state = useStoryChat(chat.turns, true);
   const completed = useRef(false);
   const reducedMotion = resolveReducedMotion(undefined, useMotion());
-  const logRef = useMainThreadRef<MainThread.Element>(null);
-
-  // 말풍선이 늘 때마다 대화 끝으로 내립니다 — 내용 높이가 바뀐 그 프레임에 화면 쪽 스레드에서 옮깁니다.
-  const followEnd = (event: { detail: { scrollHeight: number } }) => {
-    "main thread";
-    void logRef.current?.invoke("scrollTo", { offset: event.detail.scrollHeight, smooth: true });
-  };
 
   const handleExit = () => {
     "background only";
@@ -104,13 +82,12 @@ export function StoryMessengerScreen({
       className={`story-messenger-screen${reducedMotion ? " story-messenger-motion-reduced" : ""}`}
       data-testid={ids.screen}
     >
-      <view
-        className="story-messenger-header"
-        data-testid={ids.header}
-        style={{ paddingTop: `${insets.top}px` }}
-      >
-        <view className="story-messenger-header-row">
-          <view className="story-messenger-header-side" data-testid={ids.back}>
+      <ChatHeader
+        title={chat.counterpart}
+        insetTop={insets.top}
+        testIds={{ root: ids.header, title: ids.title }}
+        start={
+          <ChatHeaderSide testId={ids.back}>
             <RoundButton
               accessibilityLabel={copy.back}
               icon={arrowLeft03}
@@ -118,57 +95,28 @@ export function StoryMessengerScreen({
               size="l"
               bindtap={handleExit}
             />
-          </view>
-          <text
-            className="story-messenger-title"
-            data-testid={ids.title}
-            accessibility-traits="header"
-          >
-            {chat.counterpart}
-          </text>
-          <view className="story-messenger-header-side" />
-        </view>
-      </view>
-      <scroll-view
-        className="story-messenger-log"
-        data-testid={ids.log}
-        scroll-orientation="vertical"
-        scroll-bar-enable={false}
-        main-thread:ref={logRef}
-        main-thread:bindcontentsizechanged={followEnd}
-      >
-        <view className="story-messenger-log-inner">
-          {state.log.map((item) => (
-            <MessageRow
-              key={item.id}
-              item={item}
-              counterpart={chat.counterpart}
-              avatarUrl={chat.counterpartAvatarUrl}
-              selfName={uiCopy.common.me}
-            />
-          ))}
-          {state.typing ? (
-            <view
-              className="story-messenger-row"
-              data-testid={ids.typing}
-              accessibility-element={true}
-              accessibility-label={copy.typing(chat.counterpart)}
-            >
-              <Avatar
-                name={chat.counterpart}
-                imageSource={chat.counterpartAvatarUrl ?? undefined}
-                size="sm"
-                accessibility="hidden"
-              />
-              <view className="story-messenger-typing">
-                <view className="story-messenger-dot" />
-                <view className="story-messenger-dot story-messenger-dot-2" />
-                <view className="story-messenger-dot story-messenger-dot-3" />
-              </view>
-            </view>
-          ) : null}
-        </view>
-      </scroll-view>
+          </ChatHeaderSide>
+        }
+        end={null}
+      />
+      <ChatLog testId={ids.log}>
+        {state.log.map((item) => (
+          <MessageRow
+            key={item.id}
+            item={item}
+            counterpart={chat.counterpart}
+            avatarUrl={chat.counterpartAvatarUrl}
+            selfName={uiCopy.common.me}
+          />
+        ))}
+        {state.typing ? (
+          <ChatTypingRow
+            avatar={{ name: chat.counterpart, imageUrl: chat.counterpartAvatarUrl }}
+            label={copy.typing(chat.counterpart)}
+            testId={ids.typing}
+          />
+        ) : null}
+      </ChatLog>
       {state.done ? (
         <view className="story-messenger-footer" data-testid={ids.finish}>
           <Button
@@ -198,23 +146,14 @@ export function StoryMessengerScreen({
             {/* 시트 설명 자리는 스크롤 몸통이라 기기에서 높이가 0으로 접혀, 인용은 내용 자리에 둡니다. */}
             <text className="story-messenger-quote">{`“${state.lastIncoming}”`}</text>
             {state.reply.options.map((option, index) => (
-              <view
+              <ChatReplyOption
                 key={`${index}:${option.ko}`}
-                className="story-messenger-option"
-                data-testid={ids.option(index)}
-                accessibility-element={true}
-                accessibility-label={`${option.ko}, ${option.en}`}
-                accessibility-traits="button"
-                bindtap={() => {
-                  "background only";
-                  state.pick(index + 1);
-                }}
-              >
-                <text className="story-messenger-option-ko">{option.ko}</text>
-                {option.en === "" ? null : (
-                  <text className="story-messenger-option-en">{option.en}</text>
-                )}
-              </view>
+                primary={option.ko}
+                lines={[option.en]}
+                state="idle"
+                testId={ids.option(index)}
+                onPick={() => state.pick(index + 1)}
+              />
             ))}
           </view>
         </BottomSheet>

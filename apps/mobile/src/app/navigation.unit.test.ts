@@ -12,6 +12,7 @@ import {
   isEntrySection,
   navReducer,
   roleplayScreenFor,
+  showsTabNavigator,
   speechProbeNav,
   tabRootActions,
   type Nav,
@@ -82,11 +83,19 @@ describe("initialNav", () => {
     expect(activeStack(initialNav)).toEqual(initialNav.stacks.journey);
   });
 
-  it("I3. entry가 비어 있고 세 탭 스택이 각각 자기 루트 화면 하나로 시작한다", () => {
+  it("I3. entry가 비어 있고 네 탭 스택이 각각 자기 루트 화면 하나로 시작한다", () => {
     expect(initialNav.entry).toEqual([]);
     expect(initialNav.stacks.journey).toEqual([{ name: "journey-map" }]);
     expect(initialNav.stacks.roleplay).toEqual([{ name: "roleplay-list" }]);
+    // MC-U26: 메신저 탭(셋째)의 루트는 대화 목록이다.
+    expect(initialNav.stacks.messenger).toEqual([{ name: "messenger-list" }]);
     expect(initialNav.stacks.settings).toEqual([{ name: "settings" }]);
+    expect(Object.keys(initialNav.stacks).sort()).toEqual([
+      "journey",
+      "messenger",
+      "roleplay",
+      "settings",
+    ]);
   });
 });
 
@@ -592,8 +601,8 @@ describe("tabRootActions", () => {
     ]);
   });
 
-  it("NV4. 세 탭 각각에서 길이 2 — 첫째가 switchTab, 둘째가 backToRoot다", () => {
-    const tabs: readonly Tab[] = ["journey", "roleplay", "settings"];
+  it("NV4. 네 탭 각각에서 길이 2 — 첫째가 switchTab, 둘째가 backToRoot다", () => {
+    const tabs: readonly Tab[] = ["journey", "roleplay", "messenger", "settings"];
 
     for (const tab of tabs) {
       const actions = tabRootActions(tab);
@@ -763,4 +772,64 @@ describe("탐침 route 도달 경로 — 제품 부팅이 탐침에 닿지 않�
       expect(probe.boot.stacks.settings).toEqual(initialNav.stacks.settings);
     });
   }
+});
+
+// MC-U26 — 메신저 탭(Tab "messenger") · 방 route(messenger-chat)의 순수 규칙.
+describe("메신저 탭 (MC-U26)", () => {
+  const room: Screen = { name: "messenger-chat", roomId: "mina" };
+
+  it("MC-U26. switchTab messenger 는 탭만 바꾸고 다른 탭 스택은 그대로다", () => {
+    expect(initialNav.stacks.messenger).toBeDefined();
+    const next = navReducer(initialNav, { type: "switchTab", tab: "messenger" });
+
+    expect(next.tab).toBe("messenger");
+    expect(currentScreen(next)).toEqual({ name: "messenger-list" });
+    expect(next.stacks.journey).toEqual(initialNav.stacks.journey);
+    expect(next.stacks.messenger).toEqual([{ name: "messenger-list" }]);
+  });
+
+  it("MC-U26. 메신저 탭에서 방을 push 하면 [목록, 방] 이고 다른 탭은 그대로다", () => {
+    expect(initialNav.stacks.messenger).toBeDefined();
+    const onMessenger = navReducer(initialNav, { type: "switchTab", tab: "messenger" });
+    const next = navReducer(onMessenger, { type: "push", screen: room });
+
+    expect(next.stacks.messenger).toEqual([{ name: "messenger-list" }, room]);
+    expect(next.stacks.journey).toEqual(initialNav.stacks.journey);
+    expect(currentScreen(next)).toEqual(room);
+  });
+
+  it("MC-U26. 방에서 back 하면 목록이다", () => {
+    const inRoom: Nav = {
+      ...initialNav,
+      tab: "messenger",
+      stacks: { ...initialNav.stacks, messenger: [{ name: "messenger-list" }, room] },
+    };
+
+    expect(currentScreen(navReducer(inRoom, { type: "back" }))).toEqual({ name: "messenger-list" });
+  });
+
+  it("MC-U26. 방이 열려 있으면 탭 바가 없고 목록이면 있다", () => {
+    expect(initialNav.stacks.messenger).toBeDefined();
+    const inRoom: Nav = {
+      ...initialNav,
+      tab: "messenger",
+      stacks: { ...initialNav.stacks, messenger: [{ name: "messenger-list" }, room] },
+    };
+    const onList: Nav = { ...initialNav, tab: "messenger" };
+
+    expect(showsTabNavigator(inRoom)).toBe(false);
+    expect(showsTabNavigator(onList)).toBe(true);
+  });
+
+  it("MC-U26. 메신저 탭 루트 동작: tabRootActions(messenger)를 접으면 목록 하나로 접힌다", () => {
+    const inRoom: Nav = {
+      ...initialNav,
+      tab: "messenger",
+      stacks: { ...initialNav.stacks, messenger: [{ name: "messenger-list" }, room] },
+    };
+    const folded = tabRootActions("messenger").reduce(navReducer, inRoom);
+
+    expect(folded.tab).toBe("messenger");
+    expect(folded.stacks.messenger).toEqual([{ name: "messenger-list" }]);
+  });
 });

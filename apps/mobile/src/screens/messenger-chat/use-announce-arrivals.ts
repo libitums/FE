@@ -1,0 +1,67 @@
+// 상대 말 도착 낭독입니다(접근성 M1 — 4.1.3 Status Messages). 초점은 입력 줄에 있어 스크린리더 사용자는 로그를 다시 훑기
+// 전까지 답이 왔는지 모릅니다. 이미 있던 줄 · 내가 보낸 줄 · 요청 중 자리(pending) · 입력 중 시작은 낭독하지 않습니다.
+
+import { useEffect, useRef } from "@lynx-js/react";
+
+import { announce } from "../../lib/accessibility";
+import type { MessengerChatCopy } from "./messenger-chat.contract";
+import { voiceDurationLabel } from "./chat-rules";
+import type { ChatMessage } from "./chat-source.contract";
+
+/** 말풍선 낭독과 같은 문장입니다. 낭독할 것이 없으면 null. */
+export function arrivalAnnouncement(
+  message: ChatMessage,
+  name: string,
+  copy: MessengerChatCopy["room"],
+): string | null {
+  switch (message.kind) {
+    case "text":
+      if (message.from === "me") return null;
+      return message.text.en === ""
+        ? `${name}: ${message.text.ko}`
+        : `${name}: ${message.text.ko}, ${message.text.en}`;
+    case "photo":
+      return copy.photoLabel(name);
+    case "voice":
+      return copy.voiceLabel(
+        name,
+        voiceDurationLabel(message.durationMs),
+        message.text.ko,
+        message.text.en,
+      );
+    case "photo-pending":
+    case "voice-pending":
+      return null;
+    default: {
+      const unreachable: never = message;
+      return unreachable;
+    }
+  }
+}
+
+/**
+ * 대화 줄이 늘거나 요청 중 자리가 도착으로 바뀔 때 상대 쪽이면 한 번 낭독합니다. 처음 서는 대화는 낭독하지 않고,
+ * `muted`(겹침이 열려 있을 때)에는 낭독을 생략합니다.
+ */
+export function useAnnounceArrivals(
+  messages: readonly ChatMessage[] | null,
+  name: string,
+  copy: MessengerChatCopy["room"],
+  muted: boolean,
+): void {
+  const seen = useRef<ReadonlyMap<string, ChatMessage["kind"]> | null>(null);
+  const mutedRef = useRef(muted);
+  mutedRef.current = muted;
+
+  useEffect(() => {
+    if (messages === null) return;
+    const known = seen.current;
+    seen.current = new Map(messages.map((message) => [message.id, message.kind]));
+    if (known === null || mutedRef.current) return;
+    for (const message of messages) {
+      if (known.get(message.id) === message.kind) continue;
+      const content = arrivalAnnouncement(message, name, copy);
+      if (content !== null) announce(content);
+    }
+  }, [messages, name, copy]);
+}

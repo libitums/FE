@@ -77,7 +77,7 @@ test("[IT2] 사용자 프로필 항목을 tap하면 프로필 화면이 서고 �
     "data-selected",
     "true",
   );
-  expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(3);
+  expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(4);
 });
 
 // ------------------------------------------------------------------------- IT3
@@ -214,7 +214,7 @@ test("[IT12] (가드) sink 없이 render(App) — 탭·항목 tap이 던지지 �
 test("[IT13] 쌓인 화면에서는 탭으로 나갈 수단이 없고, 나가면 탭이 다시 선다", async () => {
   await renderSignedInApp(<App progressSeed={legacyPassedSeed} />);
   openSettingsTab();
-  expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(3);
+  expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(4);
 
   fireEvent.tap(settingsCell("profile"), {});
 
@@ -224,7 +224,7 @@ test("[IT13] 쌓인 화면에서는 탭으로 나갈 수단이 없고, 나가면
   fireEvent.tap(exitButton("profile-screen-exit"), {});
 
   expect(screen.getByTestId("settings-screen-title")).toBeInTheDocument();
-  expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(3);
+  expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(4);
 });
 
 test("프로필은 갱신된 로그인 계정의 한글 이름·이메일·전화번호를 표시한다", async () => {

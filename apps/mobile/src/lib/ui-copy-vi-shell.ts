@@ -46,7 +46,12 @@ export const commonVi: CommonCopy = {
 };
 
 export const shellVi: ShellCopy = {
-  tabs: { journey: "Hành trình", roleplay: "Nhập vai", settings: "Cài đặt" },
+  tabs: {
+    journey: "Hành trình",
+    roleplay: "Nhập vai",
+    messenger: "Trò chuyện",
+    settings: "Cài đặt",
+  },
   notifications: "Thông báo",
   errorBoundary: { title: "Đã xảy ra lỗi", retry: "Thử lại" },
 };

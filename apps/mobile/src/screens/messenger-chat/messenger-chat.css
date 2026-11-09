@@ -1,0 +1,744 @@
+/* 자유 대화 방 — 화면 · 기능 줄 · 「…」 메뉴 · 입력 줄 · 토글 · 키보드 자리 · 답장 보기 · 매체 말풍선(messenger-chat-ui
+   design 4 · 5절). 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). 머리 · 대화 · 말풍선 · 보기 면은 공용 chat.css,
+   버튼 · 아바타 · 말풍선은 ui-lynx가 그립니다. 화면 지역 상수(토큰 없음): 사진 P-W × P-H 180 × 240 · 음성 V-W 220 ·
+   파형 V-WAVE-H 28 · 알약 F-PILL-H 34 · 입력 칸 C-FIELD-H 44 · 토글 T-H 36 · 메뉴 MENU-W 208.
+   z-index는 쓰지 않습니다 — 문서 순서가 겹침 순서입니다(ADR-0022). 흰 글 면은 새로 만드는 작은 면만 brand-strong입니다(D1 안 A).
+   상태 변형은 `[data-…]` 속성 선택자가 아니라 클래스 변형(`…-open` · `…-selected` …)입니다 — Lynx CSS 속성 선택자는
+   dataset(`data-*`)을 맞추지 않아 기기에서 규칙이 한 번도 적용되지 않았습니다(device-findings-1 D1). */
+
+.messenger-chat-screen {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: var(--libitum-color-background-primary);
+}
+
+/* 겹침이 열리면 이 상자가 낭독에서 숨습니다. 「…」 메뉴가 독 밖으로 솟으므로 overflow는 보입니다. */
+.messenger-chat-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
+}
+
+.messenger-chat-main {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------------------------------------------------------------- 독 */
+
+.messenger-chat-dock {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
+  background-color: var(--libitum-color-background-primary);
+}
+
+.messenger-chat-dock-body {
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
+}
+
+.messenger-chat-features-wrap {
+  position: relative;
+  overflow: visible;
+}
+
+.messenger-chat-features {
+  min-height: calc(var(--libitum-spacing-48) + var(--libitum-spacing-4));
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-8);
+  padding: var(--libitum-spacing-6) var(--libitum-spacing-12);
+  background-color: var(--libitum-color-background-primary);
+}
+
+/* 알약 둘은 가로 스크롤 — 큰 글자에서 넘치면 밀어 봅니다. */
+.messenger-chat-features-scroll {
+  flex: 1;
+  min-width: 0;
+}
+
+.messenger-chat-features-pills {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-8);
+}
+
+.messenger-chat-pill {
+  flex-shrink: 0;
+  min-height: 34px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-4);
+  padding: var(--libitum-spacing-4) var(--libitum-spacing-12) var(--libitum-spacing-4)
+    var(--libitum-spacing-8);
+  border-radius: var(--libitum-radius-full);
+}
+
+/* Snapshot: 새로 만드는 흰 글 면이라 brand-strong(5.46). 가격은 화폐 아이콘 없이 수만. */
+.messenger-chat-pill-snapshot {
+  background-color: var(--libitum-color-brand-strong);
+}
+
+.messenger-chat-pill-snapshot:active {
+  opacity: var(--libitum-opacity-90);
+}
+
+/* Snap voice: 흰 면 · 회색 테두리 · 주황 글. */
+.messenger-chat-pill-voice {
+  background-color: var(--libitum-color-white);
+  border-width: var(--libitum-stroke-width-regular);
+  border-style: solid;
+  border-color: var(--libitum-color-gray-400);
+}
+
+.messenger-chat-pill-voice:active {
+  background-color: var(--libitum-color-gray-100);
+}
+
+.messenger-chat-pill-name {
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: var(--libitum-typography-label-m-font-size);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  line-height: var(--libitum-typography-label-m-line-height);
+}
+
+.messenger-chat-pill-price {
+  font-family: var(--libitum-typography-caption-font-family);
+  font-size: var(--libitum-typography-caption-font-size);
+  font-weight: var(--libitum-typography-caption-font-weight);
+  line-height: var(--libitum-typography-caption-line-height);
+}
+
+.messenger-chat-pill-snapshot .messenger-chat-pill-name,
+.messenger-chat-pill-snapshot .messenger-chat-pill-price {
+  color: var(--libitum-color-white);
+}
+
+.messenger-chat-pill-voice .messenger-chat-pill-name,
+.messenger-chat-pill-voice .messenger-chat-pill-price {
+  color: var(--libitum-color-fg-brand);
+}
+
+.messenger-chat-icon-xs {
+  width: var(--libitum-icon-size-xs);
+  height: var(--libitum-icon-size-xs);
+}
+
+.messenger-chat-icon-sm {
+  width: var(--libitum-icon-size-sm);
+  height: var(--libitum-icon-size-sm);
+}
+
+/* 「…」 — 40 원, 열리면 면이 짙어집니다. */
+.messenger-chat-more {
+  flex-shrink: 0;
+  width: var(--libitum-spacing-40);
+  height: var(--libitum-spacing-40);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--libitum-radius-full);
+  border-width: var(--libitum-stroke-width-regular);
+  border-style: solid;
+  border-color: var(--libitum-color-gray-400);
+  background-color: var(--libitum-color-white);
+}
+
+/* 가로 점 셋 — circle(보이는 지름이 칸의 60%)을 10px 칸 셋으로 이어 놓아 점 지름 6 · 점 사이 4입니다. */
+.messenger-chat-more-dots {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.messenger-chat-more-dot {
+  width: 10px;
+  height: 10px;
+}
+
+.messenger-chat-more-open {
+  border-color: var(--libitum-color-gray-700);
+  background-color: var(--libitum-color-gray-300);
+}
+
+/* 「…」 메뉴 — 메뉴 밖 투명 면(화면 전체)이 탭을 받아 닫습니다. 메뉴가 문서에서 뒤라 그 위에 그려집니다. */
+.messenger-chat-more-scrim {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+/* 높이는 자동 계산에 맡기지 않습니다 — 기기(Lynx)에서 `bottom: 100%` 절대 배치 상자의 자동 높이가 0으로 접혀 상자가 얇은
+   막대가 되고 항목이 기능 줄 위에 겹쳤습니다(device-findings-1 D8). 항목 셋(48 × 3) + 구분선(1 + 위아래 4) + 안쪽 여백 6 × 2
+   + 테두리 1 × 2 = 167 → 최소 높이 168(화면 지역 상수 MENU-H). 큰 글자에서는 항목이 min-height라 이보다 커집니다. */
+.messenger-chat-more-menu {
+  position: absolute;
+  right: var(--libitum-spacing-12);
+  bottom: 100%;
+  width: 208px;
+  min-height: 168px;
+  display: flex;
+  flex-direction: column;
+  padding: var(--libitum-spacing-6);
+  border-radius: var(--libitum-radius-lg);
+  border-width: var(--libitum-stroke-width-thin);
+  border-style: solid;
+  border-color: var(--libitum-color-gray-300);
+  background-color: var(--libitum-color-white);
+  box-shadow: var(--libitum-elevation-shadow-s3);
+}
+
+.messenger-chat-more-item {
+  flex-shrink: 0;
+  min-height: var(--libitum-spacing-48);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-12);
+  padding: 0 var(--libitum-spacing-12);
+  border-radius: var(--libitum-radius-md);
+}
+
+.messenger-chat-more-item:active {
+  background-color: var(--libitum-color-gray-100);
+}
+
+.messenger-chat-more-item-label {
+  flex: 1;
+  min-width: 0;
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-button-m-font-family);
+  font-size: var(--libitum-typography-button-m-font-size);
+  font-weight: var(--libitum-typography-button-m-font-weight);
+  line-height: var(--libitum-typography-button-m-line-height);
+}
+
+.messenger-chat-more-item-danger .messenger-chat-more-item-label {
+  color: var(--libitum-color-feedback-incorrect-text);
+}
+
+.messenger-chat-more-divider {
+  height: var(--libitum-stroke-width-thin);
+  margin: var(--libitum-spacing-4) var(--libitum-spacing-8);
+  background-color: var(--libitum-color-gray-300);
+}
+
+/* ---------------------------------------------------------------- 입력 줄 */
+
+.messenger-chat-composer {
+  min-height: calc(var(--libitum-spacing-48) + var(--libitum-spacing-12));
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-8);
+  padding: var(--libitum-spacing-8) var(--libitum-layout-screen-padding-x);
+  border-top-width: var(--libitum-stroke-width-thin);
+  border-top-style: solid;
+  border-top-color: var(--libitum-color-gray-300);
+  background-color: var(--libitum-color-background-primary);
+}
+
+/* 입력 칸 — 왼쪽 전구가 칸 안에 듭니다. 휴대폰 입력에 초점이 가면 테두리가 짙어집니다. */
+.messenger-chat-composer-pill {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding-left: var(--libitum-spacing-6);
+  padding-right: var(--libitum-spacing-16);
+  gap: var(--libitum-spacing-8);
+  border-radius: var(--libitum-radius-full);
+  border-width: var(--libitum-stroke-width-regular);
+  border-style: solid;
+  border-color: var(--libitum-color-gray-100);
+  background-color: var(--libitum-color-gray-100);
+}
+
+.messenger-chat-composer-pill-focused {
+  border-width: var(--libitum-stroke-width-strong);
+  border-color: var(--libitum-color-brand-strong);
+}
+
+.messenger-chat-bulb {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-gray-300);
+}
+
+.messenger-chat-bulb-open {
+  background-color: var(--libitum-color-gray-400);
+}
+
+.messenger-chat-bulb-disabled {
+  opacity: var(--libitum-opacity-disabled);
+}
+
+.messenger-chat-field {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+/* 학습 키보드 · 보기 모드의 글 표시 — 깜박이지 않는 커서 막대가 뒤따릅니다. */
+/* 아래 정렬 — 상한(다섯 줄)을 넘으면 위가 잘리고 방금 친 글자 · 커서가 늘 보입니다(접근성 M3). */
+.messenger-chat-display {
+  flex: 1;
+  min-width: 0;
+  max-height: calc(var(--libitum-spacing-24) * 5);
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  overflow: hidden;
+}
+
+.messenger-chat-display-off {
+  display: none;
+}
+
+.messenger-chat-display-text {
+  flex-shrink: 1;
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: var(--libitum-typography-body-m-font-size);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  line-height: var(--libitum-typography-body-m-line-height);
+}
+
+.messenger-chat-display-placeholder {
+  color: var(--libitum-color-fg-neutral-muted);
+}
+
+.messenger-chat-caret {
+  flex-shrink: 0;
+  width: var(--libitum-stroke-width-strong);
+  height: var(--libitum-spacing-20);
+  margin-left: var(--libitum-spacing-2);
+  background-color: var(--libitum-color-brand-primary);
+}
+
+/* 휴대폰 입력 — 늘 마운트된 <input> 하나입니다. 학습 · 보기 모드에서는 투명하고 터치를 받지 않습니다(숨은 입력). */
+.messenger-chat-phone-input {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0;
+  border-width: 0;
+  background-color: transparent;
+  color: var(--libitum-color-fg-neutral);
+  caret-color: var(--libitum-color-brand-primary);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: var(--libitum-typography-body-m-font-size);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  line-height: var(--libitum-typography-body-m-line-height);
+}
+
+.messenger-chat-phone-input-off {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  opacity: 0;
+}
+
+.messenger-chat-send {
+  flex-shrink: 0;
+  width: var(--libitum-spacing-40);
+  height: var(--libitum-spacing-40);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-brand-primary);
+}
+
+.messenger-chat-send:active {
+  background-color: var(--libitum-color-brand-primary-pressed);
+}
+
+.messenger-chat-send-disabled {
+  background-color: var(--libitum-color-gray-400);
+}
+
+/* 꺼진 보내기는 눌려도 색이 바뀌지 않습니다(:active가 더 구체적이라 따로 맞춥니다). */
+.messenger-chat-send-disabled:active {
+  background-color: var(--libitum-color-gray-400);
+}
+
+/* ---------------------------------------------------------------- 토글 · 키보드 자리 */
+
+.messenger-chat-toggle-row {
+  min-height: var(--libitum-spacing-48);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: var(--libitum-spacing-6) var(--libitum-spacing-12);
+  background-color: var(--libitum-color-white);
+}
+
+.messenger-chat-toggle-track {
+  flex: 1;
+  min-height: 36px;
+  display: flex;
+  flex-direction: row;
+  gap: 3px;
+  padding: 3px;
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-gray-200);
+}
+
+.messenger-chat-toggle {
+  flex: 1;
+  min-height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--libitum-radius-full);
+}
+
+.messenger-chat-toggle-selected {
+  background-color: var(--libitum-color-brand-strong);
+}
+
+.messenger-chat-toggle-label {
+  color: var(--libitum-color-gray-900);
+  text-align: center;
+  font-family: var(--libitum-typography-button-m-font-family);
+  font-size: var(--libitum-typography-button-m-font-size);
+  font-weight: var(--libitum-typography-button-m-font-weight);
+  line-height: var(--libitum-typography-button-m-line-height);
+}
+
+.messenger-chat-toggle-selected .messenger-chat-toggle-label {
+  color: var(--libitum-color-white);
+}
+
+/* 고정 높이 자리 — 학습 키보드 · 빈 자리 표시 · 보기 판이 같은 자리에서 바뀌어 끼워집니다(전환 없음). */
+.messenger-chat-slot {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
+  background-color: var(--libitum-color-white);
+}
+
+.messenger-chat-slot-spacer {
+  flex: 1;
+}
+
+/* ---------------------------------------------------------------- 답장 보기 판 */
+
+.messenger-chat-ideas {
+  flex: 1 1 0px;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-8);
+  padding: var(--libitum-spacing-12) var(--libitum-spacing-16) var(--libitum-spacing-8);
+  border-top-width: var(--libitum-stroke-width-thin);
+  border-top-style: solid;
+  border-top-color: var(--libitum-color-gray-300);
+  background-color: var(--libitum-color-background-primary);
+}
+
+.messenger-chat-ideas-head {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-12);
+}
+
+.messenger-chat-ideas-quote {
+  flex: 1;
+  min-width: 0;
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: var(--libitum-typography-body-m-font-size);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  line-height: var(--libitum-typography-body-m-line-height);
+}
+
+.messenger-chat-ideas-spacer {
+  flex: 1;
+}
+
+.messenger-chat-ideas-myself {
+  flex-shrink: 0;
+  min-height: var(--libitum-spacing-32);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-6);
+  padding: 0 var(--libitum-spacing-12);
+  border-radius: var(--libitum-radius-full);
+  border-width: var(--libitum-stroke-width-regular);
+  border-style: solid;
+  border-color: var(--libitum-color-gray-300);
+  background-color: var(--libitum-color-white);
+}
+
+.messenger-chat-ideas-myself:active {
+  background-color: var(--libitum-color-gray-100);
+}
+
+.messenger-chat-ideas-myself-label {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-button-s-font-family);
+  font-size: var(--libitum-typography-button-s-font-size);
+  font-weight: var(--libitum-typography-button-s-font-weight);
+  line-height: var(--libitum-typography-button-s-line-height);
+}
+
+/* 남은 높이는 퍼센트가 아닌 0px 기준으로 받습니다 — 부모 높이가 확정이 아니면 퍼센트 기준은 내용 높이로 풀려 보기가
+   슬롯 밖으로 넘쳤습니다(device-findings-1 D7). 판 높이는 ReplyIdeasPanel이 px로 직접 줍니다. */
+.messenger-chat-ideas-scroll {
+  flex: 1 1 0px;
+  min-height: 0;
+}
+
+.messenger-chat-ideas-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-8);
+}
+
+/* ---------------------------------------------------------------- 매체 말풍선 */
+
+/* 사진 스켈레톤 — 도착한 3:4 사진(chat-photo-3x4)과 같은 180 × 240이라 목록이 튀지 않습니다. */
+.messenger-chat-photo-pending {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-6);
+}
+
+.messenger-chat-photo-skeleton {
+  position: relative;
+  width: 180px;
+  height: 240px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--libitum-spacing-24);
+  padding: var(--libitum-spacing-12);
+  overflow: hidden;
+  border-radius: var(--libitum-radius-md);
+  border-end-start-radius: var(--libitum-spacing-0);
+  background-color: var(--libitum-color-gray-300);
+}
+
+.messenger-chat-photo-disc {
+  width: var(--libitum-spacing-48);
+  height: var(--libitum-spacing-48);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-white);
+}
+
+.messenger-chat-skeleton-lines {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-8);
+}
+
+.messenger-chat-skeleton-line {
+  height: var(--libitum-spacing-8);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-gray-400);
+}
+
+.messenger-chat-skeleton-line-long {
+  width: 70%;
+}
+
+.messenger-chat-skeleton-line-short {
+  width: 45%;
+}
+
+.messenger-chat-status {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  font-weight: var(--libitum-typography-body-s-font-weight);
+  line-height: var(--libitum-typography-body-s-line-height);
+}
+
+/* 도착한 사진이 없을 때(그림 해석 실패) 같은 크기의 빈 면. */
+.messenger-chat-photo-empty {
+  background-color: var(--libitum-color-gray-300);
+}
+
+/* 반짝임 — 상자 안을 빛 띠가 지나갑니다. 움직임 줄이기에서는 띠가 멈춥니다. */
+.messenger-chat-shimmer {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 60%;
+  opacity: var(--libitum-opacity-45);
+  background-image: linear-gradient(
+    90deg,
+    transparent,
+    var(--libitum-color-white) 50%,
+    transparent
+  );
+  animation: messenger-chat-shimmer-sweep var(--libitum-motion-duration-d9)
+    var(--libitum-motion-easing-linear) infinite;
+}
+
+/* 움직임 줄이기 — 띠 없이 정지한 면만 남습니다. */
+.messenger-chat-skeleton-still .messenger-chat-shimmer {
+  animation: none;
+  display: none;
+}
+
+@keyframes messenger-chat-shimmer-sweep {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(260%);
+  }
+}
+
+/* 음성 — 스켈레톤과 도착이 같은 폭 V-W 220이라 안 튑니다. */
+.messenger-chat-voice-pending {
+  position: relative;
+  width: 220px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-8);
+  padding: var(--libitum-spacing-12);
+  overflow: hidden;
+  border-radius: var(--libitum-radius-md);
+  border-end-start-radius: var(--libitum-spacing-0);
+  background-color: var(--libitum-color-gray-300);
+}
+
+.messenger-chat-voice {
+  position: relative;
+  width: 220px;
+  border-radius: var(--libitum-radius-md);
+  border-end-start-radius: var(--libitum-spacing-0);
+  background-color: var(--libitum-color-gray-100);
+}
+
+.messenger-chat-voice-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-6);
+  padding: var(--libitum-spacing-12);
+}
+
+.messenger-chat-voice-top {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-8);
+}
+
+/* 재생 자리 — 도착한 말풍선에서는 이 자리에 재생 버튼이 얹힙니다. */
+.messenger-chat-voice-slot {
+  flex-shrink: 0;
+  width: var(--libitum-spacing-32);
+  height: var(--libitum-spacing-32);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-gray-400);
+}
+
+/* 도착한 말풍선에서는 재생 버튼이 이 자리에 얹히므로 원 면을 비웁니다. */
+.messenger-chat-voice-slot-clear {
+  background-color: transparent;
+}
+
+.messenger-chat-voice-play {
+  position: absolute;
+  top: var(--libitum-spacing-12);
+  left: var(--libitum-spacing-12);
+  width: var(--libitum-spacing-32);
+  height: var(--libitum-spacing-32);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-brand-primary);
+}
+
+.messenger-chat-voice-play:active {
+  background-color: var(--libitum-color-brand-primary-pressed);
+}
+
+.messenger-chat-wave {
+  flex: 1;
+  min-width: 0;
+  height: 28px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 3px;
+}
+
+.messenger-chat-wave-bar {
+  flex: 1;
+  border-radius: 2px;
+  background-color: var(--libitum-color-brand-secondary);
+}
+
+.messenger-chat-voice-pending .messenger-chat-wave-bar {
+  background-color: var(--libitum-color-gray-500);
+}
+
+.messenger-chat-voice-duration {
+  flex-shrink: 0;
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  font-weight: var(--libitum-typography-body-s-font-weight);
+  line-height: var(--libitum-typography-body-s-line-height);
+}
+
+.messenger-chat-voice-ko {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: var(--libitum-typography-body-m-font-size);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  line-height: var(--libitum-typography-body-m-line-height);
+}
+
+.messenger-chat-voice-en {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  font-weight: var(--libitum-typography-body-s-font-weight);
+  line-height: var(--libitum-typography-body-s-line-height);
+}

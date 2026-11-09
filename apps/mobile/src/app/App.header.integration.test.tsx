@@ -16,10 +16,10 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-test("[AH-I1] 탭 루트 셋 모두에 머리와 바텀 네비게이션이 함께 선다", async () => {
+test("[AH-I1] 탭 루트 넷 모두에 머리와 바텀 네비게이션이 함께 선다", async () => {
   await renderSignedInApp(<App progressSeed={u01OpenSeed} />);
 
-  for (const tab of ["journey", "roleplay", "settings"] as const) {
+  for (const tab of ["journey", "roleplay", "messenger", "settings"] as const) {
     fireEvent.tap(screen.getByTestId(`ui-lynx-bottom-navigator-item-${tab}`), {});
     expect(screen.getByTestId("ui-lynx-bottom-navigator")).toBeInTheDocument();
     expect(screen.getByTestId("app-header")).toBeInTheDocument();
@@ -92,9 +92,9 @@ function expectTopBarShape(): void {
   }
 }
 
-test("[NBI1] 탭 루트 셋은 같은 알림 아이콘 · 칩 높이를 그리고, 학습 화면에는 상단 줄이 없다", async () => {
+test("[NBI1] 탭 루트 넷은 같은 알림 아이콘 · 칩 높이를 그리고, 학습 화면에는 상단 줄이 없다", async () => {
   await renderSignedInApp(<App progressSeed={u01OpenSeed} />);
-  for (const tab of ["journey", "roleplay", "settings"] as const) {
+  for (const tab of ["journey", "roleplay", "messenger", "settings"] as const) {
     fireEvent.tap(screen.getByTestId(`ui-lynx-bottom-navigator-item-${tab}`), {});
     expectTopBarShape();
   }

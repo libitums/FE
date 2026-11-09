@@ -2,6 +2,10 @@ import { expect, test } from "vitest";
 
 import type { SplashCopy } from "../screens/splash/splash.contract";
 import { uiCopyEn } from "./ui-copy-en";
+import {
+  messengerChatKeyPaths,
+  messengerChatProblems,
+} from "./ui-copy-messenger-chat.test-support";
 
 type Leaf = { readonly path: string; readonly value: string | ((...args: never[]) => unknown) };
 
@@ -237,4 +241,44 @@ test("CP1. 듣기 문구는 Slow · Play again이고 켜짐 · 꺼짐 접미사�
   expect(c.listening.slow).toBe("Slow");
   expect(c.listening.playAgain).toBe("Play again");
   expect(c.settings.optionState).toEqual({ on: "on", off: "off" });
+});
+
+test("MC-U28. en messengerChat 이 있고 함수 키가 빈 문자열을 내지 않으며 한글이 없다", () => {
+  expect(messengerChatKeyPaths(uiCopyEn).length).toBeGreaterThan(0);
+  expect(messengerChatProblems(uiCopyEn, uiCopyEn)).toEqual([]);
+});
+
+test("MC-U28. en 탭 이름 — 메신저 탭은 Chats 다", () => {
+  const tabs = uiCopyEn.shell.tabs as unknown as Record<string, string>;
+  expect(tabs.messenger).toBe("Chats");
+});
+
+test("MC-U28. en messengerChat 문구 표본(spec §8)", () => {
+  const m = (uiCopyEn as unknown as { messengerChat: Record<string, any> }).messengerChat;
+  expect(m).toBeDefined();
+  expect(m.list.title).toBe("Chats");
+  expect(m.list.gemsLabel(5)).toBe("5 gems, get more");
+  expect(m.list.mine("hi")).toBe("You: hi");
+  expect(m.list.voice("0:04")).toBe("Voice message · 0:04");
+  expect(m.list.typing("Mina")).toBe("Mina is typing…");
+  expect(m.list.sendingPhoto("Mina")).toBe("Mina is sending a picture…");
+  expect(m.list.recordingVoice("Mina")).toBe("Mina is recording a voice message…");
+  expect(m.list.lockedCondition(4)).toBe("Finish Episode 4 to start chatting");
+  expect(m.list.unreadLabel(3)).toBe("3 unread");
+  expect(m.time.today(10, 24)).toBe("10:24");
+  expect(m.time.date(11, 2)).toBe("11/2");
+  expect(m.time.weekdays).toEqual(["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]);
+  expect(m.toggle.selected("Hangul keys")).toBe("Hangul keys, selected");
+  expect(m.features.pillLabel("Snapshot", 30)).toBe("Snapshot, 30 gems");
+  expect(m.askMedia.confirmLabel(30)).toBe("Ask for 30 gems");
+  expect(m.askMedia.balance(2)).toBe("You have 2 gems");
+  expect(m.sidebar.calledBy("Mina", "Duru")).toBe("Mina calls you 「Duru」");
+  expect(m.deleteChat.description("Mina")).toBe("Your chat with Mina will be removed.");
+  expect(Object.keys(m.report.reasons).sort()).toEqual([
+    "hateful",
+    "other",
+    "rude",
+    "sexual",
+    "wrong-korean",
+  ]);
 });

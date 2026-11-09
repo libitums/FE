@@ -1,0 +1,467 @@
+/* 자유 대화 겹침 여덟의 스타일입니다(messenger-chat-ui design §7). 색·간격·글자·움직임은 전부 토큰입니다.
+   22(체크·라디오)·10(라디오 점)·304(사이드바 폭)는 토큰에 없는 화면 지역 상수(CHK · RADIO-DOT · SIDE-W)입니다. */
+
+/* ---------------------------------------------------------------- 가운데 상자(ChatModalFrame) */
+
+.chat-modal {
+  position: fixed;
+  top: var(--libitum-spacing-0);
+  right: var(--libitum-spacing-0);
+  bottom: var(--libitum-spacing-0);
+  left: var(--libitum-spacing-0);
+  z-index: var(--libitum-elevation-z-dialog);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 딤은 `absolute`입니다 — fixed 안의 fixed는 Lynx에서 화면 일부만 덮습니다(ui-lynx Dialog와 같은 이유). */
+.chat-modal .ui-lynx-overlay {
+  position: absolute;
+  top: var(--libitum-spacing-0);
+  right: var(--libitum-spacing-0);
+  bottom: var(--libitum-spacing-0);
+  left: var(--libitum-spacing-0);
+  z-index: 0;
+}
+
+.chat-modal-container {
+  position: relative;
+  z-index: 1;
+  width: calc(100% - var(--libitum-spacing-48));
+  max-width: 360px;
+  padding: var(--libitum-spacing-24) var(--libitum-spacing-20) var(--libitum-spacing-20);
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--libitum-spacing-12);
+  background-color: var(--libitum-color-white);
+  border-radius: var(--libitum-radius-lg);
+  box-shadow: var(--libitum-elevation-shadow-s3);
+  animation: chat-modal-enter var(--libitum-motion-duration-dialog)
+    var(--libitum-motion-easing-enter) both;
+}
+
+@keyframes chat-modal-enter {
+  from {
+    opacity: 0;
+    transform: scale(var(--libitum-motion-scale-enter));
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* 움직임 줄이기: 열림 움직임 없이 즉시 섭니다. */
+.chat-modal-motion-reduced .chat-modal-container {
+  animation: none;
+}
+
+.chat-modal-title {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  line-height: var(--libitum-typography-heading-s-line-height);
+  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
+}
+
+.chat-modal-description {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: var(--libitum-typography-body-m-font-size);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  line-height: var(--libitum-typography-body-m-line-height);
+  letter-spacing: var(--libitum-typography-body-m-letter-spacing);
+}
+
+.chat-modal-align-center .chat-modal-title,
+.chat-modal-align-center .chat-modal-description,
+.chat-modal-align-center .chat-ask-balance {
+  text-align: center;
+}
+
+.chat-modal-actions {
+  margin-top: var(--libitum-spacing-6);
+  display: flex;
+  flex-direction: row;
+  column-gap: var(--libitum-spacing-8);
+}
+
+.chat-modal-action {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* 잔액 줄: 작게, 흐리게(가격은 주 버튼에만 있습니다). */
+.chat-ask-balance {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  font-weight: var(--libitum-typography-body-s-font-weight);
+  line-height: var(--libitum-typography-body-s-line-height);
+  letter-spacing: var(--libitum-typography-body-s-letter-spacing);
+}
+
+/* 주 버튼: 흰 다이아몬드 + 수. ui-lynx Button xl brand와 같은 크기 · 색입니다. */
+.chat-gem-button {
+  min-height: var(--libitum-spacing-48);
+  padding: var(--libitum-spacing-12) var(--libitum-spacing-16);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  column-gap: var(--libitum-spacing-6);
+  background-color: var(--libitum-color-brand-primary);
+  border-radius: var(--libitum-radius-lg);
+}
+
+.chat-gem-button:active {
+  background-color: var(--libitum-color-brand-primary-pressed);
+}
+
+.chat-gem-button-icon {
+  width: var(--libitum-icon-size-xs);
+  height: var(--libitum-icon-size-xs);
+  flex-shrink: 0;
+}
+
+.chat-gem-button-label {
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-button-xl-font-family);
+  font-size: var(--libitum-typography-button-xl-font-size);
+  font-weight: var(--libitum-typography-button-xl-font-weight);
+  line-height: var(--libitum-typography-button-xl-line-height);
+  letter-spacing: var(--libitum-typography-button-xl-letter-spacing);
+}
+
+/* 고쳐 주세요 입력 칸 감싸개(ui-lynx TextField 그대로). */
+.chat-fix-field {
+  width: 100%;
+}
+
+/* ---------------------------------------------------------------- ui-lynx Dialog 덧씌움 */
+
+.chat-dialog-centered .ui-lynx-dialog-title,
+.chat-dialog-centered .ui-lynx-dialog-description {
+  text-align: center;
+}
+
+/* Delete 면은 위험 색입니다(흰 글 6.86). */
+.chat-delete-dialog .ui-lynx-button-brand .ui-lynx-button-surface {
+  background-color: var(--libitum-color-feedback-incorrect-strong-surface);
+}
+
+/* ---------------------------------------------------------------- 신고 사유(체크 줄) · 이야기 시점(라디오 줄) */
+
+.chat-check-list {
+  display: flex;
+  flex-direction: column;
+  margin-top: var(--libitum-spacing-12);
+}
+
+.chat-check-row {
+  min-height: var(--libitum-spacing-48);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  column-gap: var(--libitum-spacing-12);
+  border-bottom-width: var(--libitum-stroke-width-thin);
+  border-bottom-style: solid;
+  border-bottom-color: var(--libitum-color-gray-300);
+}
+
+.chat-check-box {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--libitum-radius-sm);
+  border-width: var(--libitum-stroke-width-strong);
+  border-style: solid;
+  border-color: var(--libitum-color-border-default);
+  background-color: var(--libitum-color-white);
+}
+
+.chat-check-box-on {
+  background-color: var(--libitum-color-brand-primary);
+  border-color: var(--libitum-color-brand-primary);
+}
+
+.chat-check-icon {
+  width: var(--libitum-icon-size-xs);
+  height: var(--libitum-icon-size-xs);
+}
+
+.chat-check-label {
+  flex: 1;
+  min-width: 0;
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-body-l-font-family);
+  font-size: var(--libitum-typography-body-l-font-size);
+  font-weight: var(--libitum-typography-body-l-font-weight);
+  line-height: var(--libitum-typography-body-l-line-height);
+  letter-spacing: var(--libitum-typography-body-l-letter-spacing);
+}
+
+.chat-radio-list {
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--libitum-spacing-12);
+  margin-top: var(--libitum-spacing-12);
+  margin-bottom: var(--libitum-spacing-12);
+}
+
+.chat-radio-row {
+  min-height: calc(var(--libitum-spacing-48) + var(--libitum-spacing-8));
+  padding: var(--libitum-spacing-8) var(--libitum-spacing-12);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  column-gap: var(--libitum-spacing-12);
+  border-radius: var(--libitum-radius-lg);
+  border-width: var(--libitum-stroke-width-regular);
+  border-style: solid;
+  border-color: var(--libitum-color-gray-300);
+}
+
+.chat-radio-row-selected {
+  border-color: var(--libitum-color-brand-primary);
+  background-color: var(--libitum-color-background-elevated);
+}
+
+.chat-radio {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--libitum-radius-full);
+  border-width: var(--libitum-stroke-width-strong);
+  border-style: solid;
+  border-color: var(--libitum-color-border-default);
+}
+
+.chat-radio-on {
+  border-color: var(--libitum-color-brand-primary);
+}
+
+.chat-radio-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-brand-primary);
+}
+
+.chat-radio-row-locked .chat-radio {
+  border-color: var(--libitum-color-gray-400);
+}
+
+.chat-radio-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--libitum-spacing-2);
+}
+
+.chat-radio-title {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-size: var(--libitum-typography-label-l-font-size);
+  font-weight: var(--libitum-typography-label-l-font-weight);
+  line-height: var(--libitum-typography-label-l-line-height);
+  letter-spacing: var(--libitum-typography-label-l-letter-spacing);
+}
+
+.chat-radio-row-locked .chat-radio-title {
+  color: var(--libitum-color-fg-neutral-subtlest);
+}
+
+.chat-radio-subtitle {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  font-weight: var(--libitum-typography-body-s-font-weight);
+  line-height: var(--libitum-typography-body-s-line-height);
+  letter-spacing: var(--libitum-typography-body-s-letter-spacing);
+}
+
+.chat-radio-lock {
+  width: var(--libitum-icon-size-xs);
+  height: var(--libitum-icon-size-xs);
+  flex-shrink: 0;
+}
+
+/* ---------------------------------------------------------------- 채팅 설정 사이드바 */
+
+.chat-sidebar {
+  position: fixed;
+  top: var(--libitum-spacing-0);
+  right: var(--libitum-spacing-0);
+  bottom: var(--libitum-spacing-0);
+  left: var(--libitum-spacing-0);
+  z-index: var(--libitum-elevation-z-sheet);
+}
+
+.chat-sidebar .ui-lynx-overlay {
+  position: absolute;
+  top: var(--libitum-spacing-0);
+  right: var(--libitum-spacing-0);
+  bottom: var(--libitum-spacing-0);
+  left: var(--libitum-spacing-0);
+  z-index: 0;
+}
+
+.chat-sidebar-panel {
+  position: absolute;
+  top: var(--libitum-spacing-0);
+  right: var(--libitum-spacing-0);
+  bottom: var(--libitum-spacing-0);
+  z-index: 1;
+  width: 304px;
+  max-width: calc(100% - var(--libitum-spacing-40));
+  padding: var(--libitum-spacing-24) var(--libitum-spacing-20) var(--libitum-spacing-8);
+  display: flex;
+  flex-direction: column;
+  background-color: var(--libitum-color-background-primary);
+  box-shadow: var(--libitum-elevation-shadow-s3);
+}
+
+/* 오른쪽에서 밀려 들어옵니다. 움직임 줄이기면 이 클래스가 붙지 않아 즉시 섭니다. */
+.chat-sidebar-panel-slide {
+  animation: chat-sidebar-enter var(--libitum-motion-duration-sheet)
+    var(--libitum-motion-easing-enter) both;
+}
+
+@keyframes chat-sidebar-enter {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.chat-sidebar-head {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.chat-sidebar-title {
+  flex: 1;
+  min-width: 0;
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  line-height: var(--libitum-typography-heading-s-line-height);
+  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
+}
+
+.chat-sidebar-close {
+  width: var(--libitum-spacing-48);
+  height: var(--libitum-spacing-48);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.chat-sidebar-close-icon {
+  width: var(--libitum-icon-size-sm);
+  height: var(--libitum-icon-size-sm);
+}
+
+.chat-sidebar-scroll {
+  flex: 1;
+  min-height: 0;
+}
+
+/* `<scroll-view>` 안은 강제 linear라 간격은 이 상자(직계 자식 하나)가 집니다. */
+.chat-sidebar-content {
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--libitum-spacing-12);
+  padding-bottom: var(--libitum-spacing-16);
+}
+
+.chat-sidebar-gems {
+  padding: var(--libitum-spacing-12) var(--libitum-spacing-16);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  column-gap: var(--libitum-spacing-12);
+  border-radius: var(--libitum-radius-lg);
+  background-color: var(--libitum-color-background-elevated);
+}
+
+.chat-sidebar-gems-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.chat-sidebar-gems-label {
+  color: var(--libitum-color-brand-strong);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  font-weight: var(--libitum-typography-body-s-font-weight);
+  line-height: var(--libitum-typography-body-s-line-height);
+  letter-spacing: var(--libitum-typography-body-s-letter-spacing);
+}
+
+.chat-sidebar-gems-count {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  line-height: var(--libitum-typography-heading-s-line-height);
+  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
+}
+
+/* 프로필 · 이야기 시점 줄: 셀의 흰 면과 가로 여백을 걷고 아래 선만 둡니다. */
+.chat-sidebar-row {
+  border-bottom-width: var(--libitum-stroke-width-thin);
+  border-bottom-style: solid;
+  border-bottom-color: var(--libitum-color-gray-300);
+}
+
+.chat-sidebar-row .ui-lynx-settings-cell {
+  padding-left: var(--libitum-spacing-0);
+  padding-right: var(--libitum-spacing-0);
+  background-color: transparent;
+}
+
+/* 따로 띄운 토글 상자(위 여백이 더해져 앞 줄과 떨어집니다). */
+.chat-sidebar-toggle-box {
+  margin-top: var(--libitum-spacing-12);
+  border-radius: var(--libitum-radius-lg);
+  background-color: var(--libitum-color-gray-100);
+  overflow: hidden;
+}
+
+.chat-sidebar-toggle-box .ui-lynx-settings-cell {
+  background-color: transparent;
+}
+
+.chat-sidebar-delete {
+  flex-shrink: 0;
+  padding-top: var(--libitum-spacing-8);
+}
+
+.chat-sidebar-delete .ui-lynx-button-outline .ui-lynx-button-surface {
+  border-color: var(--libitum-color-feedback-incorrect-text);
+}
+
+.chat-sidebar-delete .ui-lynx-button-outline .ui-lynx-button-label {
+  color: var(--libitum-color-feedback-incorrect-text);
+}

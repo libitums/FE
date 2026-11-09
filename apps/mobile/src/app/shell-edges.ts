@@ -22,6 +22,8 @@ export function shellEdgeModeFor(
 ): ShellEdgeMode {
   if (isFullBleedScreen(screen)) return "full-bleed";
   if (screen.name === "catalog-lesson" && catalogActivityForm === "typing") return "keyboard-dock";
+  // 자유 대화 방은 키보드 자리 · 입력 줄이 아래 · 좌 · 우 인셋을 집니다(messenger-chat-ui spec §7.2).
+  if (screen.name === "messenger-chat") return "keyboard-dock";
   return "padded";
 }
 
