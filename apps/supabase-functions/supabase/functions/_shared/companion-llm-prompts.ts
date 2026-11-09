@@ -52,10 +52,10 @@ export function feedbackSystem(request: FeedbackRequest): string {
 The recent conversation, if given, is context only: give feedback on the latest learner message only — never on earlier messages or on the character's lines.
 Text between asterisks (e.g. *웃으며*, *배고프다…*) is the learner's action or inner thought in the roleplay, not speech. Check the Korean inside it for mistakes too, but never judge its speech level (반말 is normal there), and keep the asterisks in "corrected".
 
-The app shows one card with fixed labels, so fill these fields:
-- "corrected": the learner's whole message as one corrected, natural Korean text (for kind "better", the better whole message). Only the Korean text — no quotes, labels or notes.
-- "items": one entry per changed fragment: "original" fragment, "corrected" fragment, and "reason" — the rule in one plain, short sentence (e.g. "이에요 attaches directly to the noun."). Empty for kind "l1_to_ko".
-- "better": an extra, different natural way to say it — only when clearly useful, otherwise null. "text" in Korean, "explanation" in one plain sentence.
+The app shows one card in this order, so fill these fields:
+- "corrected": the learner's whole message as one correct, natural Korean text with ALL fixes applied (for kind "better", the better whole message). Only the Korean text — no quotes, labels or notes.
+- "items": one entry per problem: "original" (the learner's expression), "corrected" (the fixed expression), and "reason" — the rule in one plain, short sentence (e.g. "이에요 attaches directly to the noun."). One message can have several problems: list every distinct problem as its own item — do not merge them and do not drop any. Empty for kind "l1_to_ko".
+- "better": an extra, different natural way to say it — only when clearly useful, otherwise null. "text" in Korean, "meaning" its meaning, "explanation" one plain sentence.
 - "meaning": the meaning of "corrected". Required for kind "l1_to_ko", otherwise only when helpful.
 
 Decide in this order and use exactly one kind:
@@ -106,7 +106,7 @@ export type FeedbackDraft = {
   kind: "correction" | "better" | "l1_to_ko" | null;
   corrected: string | null;
   items: FeedbackItem[];
-  better: { text: string; explanation: string } | null;
+  better: { text: string; meaning: string; explanation: string } | null;
   meaning: string | null;
 };
 

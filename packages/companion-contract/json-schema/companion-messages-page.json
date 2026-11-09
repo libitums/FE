@@ -137,11 +137,14 @@
                           "text": {
                             "type": "string"
                           },
+                          "meaning": {
+                            "type": "string"
+                          },
                           "explanation": {
                             "type": "string"
                           }
                         },
-                        "required": ["text", "explanation"],
+                        "required": ["text", "meaning", "explanation"],
                         "additionalProperties": false
                       },
                       {

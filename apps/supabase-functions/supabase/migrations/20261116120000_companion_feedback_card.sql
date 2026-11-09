@@ -1,10 +1,11 @@
 -- AI 컴패니언 — 피드백을 고정 카드 한 모양으로(앱 이름표: 고친 문장 / 이유 / 더 나은 표현 / 뜻).
 --
---   카드: { status, kind, original, corrected, items, better: {text, explanation} | null, meaning } — 칸은 늘 모두 있다(없는 값은 null · 빈 배열).
+--   카드: { status, kind, original, corrected, items, better: {text, meaning, explanation} | null, meaning } — 칸은 늘 모두 있다(없는 값은 null · 빈 배열).
+--   앱 순서: 올바른 문장(corrected) → 고칠 점(items — 원문 표현 · 고친 표현 · 이유, 여럿일 수 있다) → 더 나은 표현(better — 표현 · 뜻 · 설명).
 --   `companion.corrections`에 `card` 열을 더해 카드 전체를 저장하고, `correction_json`(메시지 목록 · 운영 조회의 `feedback`)이 카드를 돌려준다.
 --   옛 행(카드 없음 — kind마다 다른 모양)은 읽을 때 카드로 바꾼다: `original`은 그 유저 메시지 글, `corrected`는 옛 `l1_to_ko.text`
---   (교정 · 더 나은 표현의 옛 행은 고친 문장 전체가 없어 null), `items`는 옛 조각(없으면 빈 배열), `better`는 옛 better의 text · explanation,
---   `meaning`은 옛 l1_to_ko · better의 뜻. 표 · 행은 바꾸지 않는다.
+--   (교정 · 더 나은 표현의 옛 행은 고친 문장 전체가 없어 null), `items`는 옛 조각(없으면 빈 배열), `better`는 옛 better의 text · meaning ·
+--   explanation, `meaning`은 옛 l1_to_ko의 뜻. 표 · 행은 바꾸지 않는다.
 --   `companion_finish_turn`은 같은 인수로 다시 만든다 — 바뀐 곳은 피드백 저장뿐이다.
 --
 -- 기존 컴패니언 마이그레이션(20261108 ~ 20261115) 뒤에 적용한다.
@@ -32,12 +33,16 @@ returns jsonb language sql stable as $$
     ),
     'better', case
       when c.card is not null then case when jsonb_typeof(c.card->'better') = 'object' then c.card->'better' else 'null'::jsonb end
-      when c.better is not null then jsonb_build_object('text', c.better->>'text', 'explanation', coalesce(c.better->>'explanation', ''))
+      when c.better is not null then jsonb_build_object(
+        'text', c.better->>'text',
+        'meaning', coalesce(c.better->>'meaning', ''),
+        'explanation', coalesce(c.better->>'explanation', '')
+      )
       else 'null'::jsonb
     end,
     'meaning', case
       when c.card is not null then c.card->'meaning'
-      else to_jsonb(coalesce(c.l1_to_ko->>'meaning', c.better->>'meaning'))
+      else to_jsonb(c.l1_to_ko->>'meaning')
     end
   )
 $$;

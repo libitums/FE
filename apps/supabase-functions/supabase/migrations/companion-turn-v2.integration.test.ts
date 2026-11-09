@@ -121,7 +121,7 @@ test("TV1. 피드백 카드 — 정상 턴에만 저장되고 메시지 목록�
     original: "안녕하세요",
     corrected: "안녕하세요!",
     items: [{ original: "마리아 이에요", corrected: "마리아예요", reason: "noun + 예요" }],
-    better: { text: "반가워요!", explanation: "casual" },
+    better: { text: "반가워요!", meaning: "Nice to meet you!", explanation: "casual" },
     meaning: null,
   };
   await turn("duksu", { feedback });
@@ -174,8 +174,8 @@ test("TV13. 피드백 카드 — 옛 행(kind마다 다른 모양)은 읽을 때
     original: "저는 마리아 이에요",
     corrected: null,
     items: [{ original: "마리아 이에요", corrected: "마리아예요", reason: "r" }],
-    better: { text: "마리아라고 해요.", explanation: "e" },
-    meaning: "I am called Maria.",
+    better: { text: "마리아라고 해요.", meaning: "I am called Maria.", explanation: "e" },
+    meaning: null,
   });
 });
 

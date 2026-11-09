@@ -28,9 +28,12 @@ const feedback = (text: string, overrides: Partial<FeedbackRequest> = {}) =>
 test("FB1. 피드백 프롬프트 — 카드 칸 · 섞인 언어 · 말투 · 맞춤법 · 비속어 · 자연스러움 · *행동* · 피로 규칙", () => {
   const polite = feedbackSystem(request());
   for (const rule of [
-    '"corrected": the learner\'s whole message as one corrected, natural Korean text',
-    '"items": one entry per changed fragment',
+    '"corrected": the learner\'s whole message as one correct, natural Korean text with ALL fixes applied',
+    '"items": one entry per problem',
     '"better": an extra, different natural way to say it — only when clearly useful',
+    '"meaning" its meaning, "explanation" one plain sentence',
+    "list every distinct problem as its own item — do not merge them and do not drop any",
+    "with ALL fixes applied",
     '"meaning": the meaning of "corrected". Required for kind "l1_to_ko"',
     "If any part of the message is not Korean (the whole message, or some words",
     "Never explain why it should be in Korean",
@@ -76,7 +79,7 @@ test("FB2. 받은 결과 다듬기 — 고정 카드", () => {
         kind: "l1_to_ko",
         corrected: "커피 좋아해요",
         items: [item],
-        better: { text: "커피가 좋아요", explanation: "e" },
+        better: { text: "커피가 좋아요", meaning: "m", explanation: "e" },
         meaning: "I like coffee",
       },
       "I like coffee",
@@ -113,7 +116,7 @@ test("FB2. 받은 결과 다듬기 — 고정 카드", () => {
         kind: "correction",
         ...draft,
         items: [item],
-        better: { text: "저는 마리아예요", explanation: "e" },
+        better: { text: "저는 마리아예요", meaning: "m", explanation: "e" },
       },
       original,
     ),
@@ -143,7 +146,7 @@ test("FB3. 가짜 계층 — 섞인 언어는 l1_to_ko(이유 설명 없음, 조
   expect(await feedback("반가워요 [better]")).toMatchObject({
     kind: "better",
     corrected: "만나서 반가워요!",
-    better: { text: "반가워요!" },
+    better: { text: "반가워요!", meaning: "Nice to meet you!" },
   });
 });
 
@@ -271,4 +274,46 @@ test("FB7. 피드백 맥락 — 최근 대화 6개, 맥락일 뿐이라고 밝�
   expect(feedbackSystem(request())).toContain(
     "The recent conversation, if given, is context only: give feedback on the latest learner message only",
   );
+});
+
+// FB10 — 한 메시지에 고칠 점이 여럿이면 하나씩 따로, 올바른 문장에는 전부 적용(사용자 결정 2026-11-09, Moly 형식).
+test("FB10. 고칠 점 여럿 — 항목마다 따로, 올바른 문장은 모두 고친 것", async () => {
+  expect(await feedback("안녕하새요. 저는 마리아 이에요. 학생 이에요")).toEqual({
+    status: "ok",
+    kind: "correction",
+    original: "안녕하새요. 저는 마리아 이에요. 학생 이에요",
+    corrected: "안녕하세요. 저는 마리아이에요. 학생이에요",
+    items: [
+      {
+        original: "마리아 이에요",
+        corrected: "마리아이에요",
+        reason: "Attach 이에요/예요 to the noun without a space.",
+      },
+      {
+        original: "학생 이에요",
+        corrected: "학생이에요",
+        reason: "Attach 이에요/예요 to the noun without a space.",
+      },
+      { original: "하새요", corrected: "하세요", reason: "The ending is spelled 세요." },
+    ],
+    better: null,
+    meaning: null,
+  });
+});
+
+test("FB11. 학습자 언어 — 라틴이 아닌 글자가 섞여도 l1_to_ko, 설명 언어는 l1 그대로", async () => {
+  for (const text of [
+    "저는 コーヒー 좋아해요",
+    "저는 กาแฟ 좋아해요",
+    "저는 ကော်ဖီ 좋아해요",
+    "저는 cà phê 좋아해요",
+  ]) {
+    expect(await feedback(text), text).toMatchObject({
+      kind: "l1_to_ko",
+      corrected: "저는 좋아해요",
+    });
+  }
+  for (const l1 of ["vi", "id", "ja", "es", "my", "th", "tl"]) {
+    expect(feedbackSystem(request({ l1 }))).toContain(`BCP 47 tag "${l1}"`);
+  }
 });

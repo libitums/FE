@@ -85,6 +85,7 @@ export const turnFixtureEvents = {
         ],
         better: {
           text: "저는 마리아라고 해요.",
+          meaning: "My name is Maria.",
           explanation: "A natural, polite way to introduce yourself.",
         },
         meaning: "I'm Maria. I'm a student.",

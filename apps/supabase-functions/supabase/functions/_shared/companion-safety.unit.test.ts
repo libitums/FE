@@ -21,11 +21,36 @@ test("SF1. 검사 지시 — profanity 분류, 입력 · 출력 규칙, 가린 �
   for (const ageBand of ["adult", "minor", "unknown"] as const) {
     const input = moderationInstruction("input", ageBand);
     expect(input).toContain(
-      'insults or harassment aimed at the character, slurs, or degrading abuse → "block" with category "profanity"',
+      "insults or harassment aimed at the character, slurs, or degrading abuse (e.g.",
     );
+    expect(input).toContain('→ "block" with category "profanity"');
     expect(input).toContain('Casual swearing not aimed at anyone (e.g. "아 씨 시험 망했어"');
     expect(input).toContain("ㅅㅂ, 시1발, ㅂㅅ, f*ck");
-    expect(input).toContain("Korean, English and Tagalog profanity");
+    expect(input).toContain("Profanity, in any language");
+    expect(input).toContain("Judge every language the same way");
+    for (const example of [
+      "gago ka",
+      "đồ ngu",
+      "dasar goblok",
+      "死ね",
+      "eres un pendejo",
+      "ไอ้ควาย",
+      "đm trễ rồi",
+      "くそ、遅刻だ",
+      "mierda, llego tarde",
+    ])
+      expect(input, example).toContain(example);
+    expect(input).toContain('in any language (e.g. "죽고 싶어", "I want to die"');
+    for (const example of [
+      "tôi muốn chết",
+      "aku ingin bunuh diri",
+      "死にたい",
+      "quiero morir",
+      "อยากตาย",
+      "သေချင်တယ်",
+    ])
+      expect(input, example).toContain(example);
+    expect(input).not.toContain("Korean, English and Tagalog");
     expect(input).toContain("Text between asterisks (*…*)");
     const output = moderationInstruction("output_sync", ageBand);
     expect(output).toContain(
@@ -78,4 +103,34 @@ test("SF3. 답 프롬프트 — 비속어 금지(가장 편한 말투도), *행�
   expect(all).toContain("friendly informal speech, never swearing");
   expect(all).toContain("between asterisks");
   expect(all).toContain("never repeat it back word for word as if you overheard it");
+});
+
+test("SF4. 가짜 검사 — 여러 언어의 위기 · 모욕은 잡고 혼잣말 욕은 통과", async () => {
+  for (const text of [
+    "tôi muốn chết",
+    "aku ingin bunuh diri",
+    "死にたい",
+    "quiero morir",
+    "อยากตาย",
+    "သေချင်တယ်",
+    "gusto ko nang mamatay",
+  ]) {
+    expect(await check(text), text).toEqual({ category: "self_harm", action: "crisis" });
+  }
+  for (const text of ["đồ ngu", "dasar goblok", "死ね", "eres un pendejo", "ไอ้ควาย"]) {
+    expect(await check(text), text).toEqual({ category: "profanity", action: "block" });
+  }
+  for (const text of [
+    "đ.m trễ rồi",
+    "anjir telat",
+    "くそ、遅刻だ",
+    "mierda, llego tarde",
+    "เหี้ย สายแล้ว",
+  ]) {
+    expect(await check(text), text).toEqual({ category: "safe", action: "allow" });
+    expect(await check(text, "output_sync"), text).toEqual({
+      category: "profanity",
+      action: "block",
+    });
+  }
 });

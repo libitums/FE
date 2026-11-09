@@ -38,13 +38,14 @@ export const feedbackKindSchema = z.enum(["correction", "better", "l1_to_ko"]);
 
 /**
  * 유저 메시지 하나의 피드백 카드입니다. 칸은 늘 모두 있고(없는 값은 null · 빈 배열), 앱은 고정 이름표로 그립니다 —
- * 고친 문장(`corrected`) / 이유(`items[].reason`) / 더 나은 표현(`better`) / 뜻(`meaning`).
+ * 올바른 문장(`corrected`) → 고칠 점 목록(`items` — 원문 표현 · 고친 표현 · 이유) → 분명히 도움이 될 때만 더 나은 표현(`better` — 표현 · 뜻 · 설명).
  * - `kind`: `correction`(틀린 곳을 고침) · `better`(맞지만 더 자연스럽게 — 비속어를 순화한 것 포함) · `l1_to_ko`(다른 언어가 섞인 말을
  *   자연스러운 한국어로). `status`가 `ok`가 아니면 null.
  * - `original`: 학습자가 보낸 메시지 그대로.
  * - `corrected`: 고친 · 자연스러운 한국어 문장 전체. `ok`면 늘 있다(`better`는 더 나은 문장 전체).
- * - `items`: 조각 단위 고침과 이유(학습자 언어로 한 문장). `l1_to_ko`면 비어 있다.
- * - `better`: 덧붙이는 다른 자연스러운 표현 — 분명히 도움이 될 때만.
+ * - `items`: 고칠 점마다 하나(한 메시지에 여럿일 수 있다 — 합치거나 빼지 않는다). 이유는 학습자 언어로 한 문장. `l1_to_ko`면 비어 있다.
+ *   `corrected`는 모든 고침을 적용한 최종 문장이다.
+ * - `better`: 덧붙이는 다른 자연스러운 표현 — 분명히 도움이 될 때만. `meaning` · `explanation`은 학습자 언어.
  * - `meaning`: `corrected`의 뜻(학습자 언어). `l1_to_ko`면 늘 있다.
  * `none`(고칠 것 없음)과 `unavailable`(생성 실패 · 시간 초과)도 한 번 와서, 받는 쪽이 기다림을 끝낼 수 있게 합니다.
  * 2026-11-09 이전 판(kind마다 다른 모양 · `l1ToKo`)은 앱이 피드백을 쓰기 전이라 같은 계약 판(1)에서 바꿨습니다.
@@ -56,7 +57,7 @@ export const correctionDataSchema = z.object({
   original: z.string(),
   corrected: z.nullable(z.string()),
   items: z.array(correctionItemSchema),
-  better: z.nullable(z.object({ text: z.string(), explanation: z.string() })),
+  better: z.nullable(z.object({ text: z.string(), meaning: z.string(), explanation: z.string() })),
   meaning: z.nullable(z.string()),
 });
 

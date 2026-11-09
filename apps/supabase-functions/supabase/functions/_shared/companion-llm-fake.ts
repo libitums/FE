@@ -3,7 +3,8 @@
 // 플레이그라운드에서 흐름을 일부러 일으키는 낱말:
 //   「죽고 싶」 · 「자살」 → 위기   「[block]」 · 「사랑해」 → 입력 차단   「[unsafe-reply]」 · 「[swear-reply]」 → 출력 차단
 //   욕설 · 모욕(「병신」 · 「ㅂㅅ」 · 「멍청이」 · 「bobo」 · 욕 + 「너」 · 「you」) → 입력 차단(profanity)
-//   혼잣말 욕(「아 씨」 · 「ㅅㅂ」 · 「시1발」 · 「존나」) → 통과 · 피드백은 순화(better)
+//   혼잣말 욕(「아 씨」 · 「ㅅㅂ」 · 「시1발」 · 「존나」) → 통과 · 피드백은 순화(better). 위기 · 욕 · 모욕은 여러 언어 낱말(아래 목록)
+//   한 메시지에 「 이에요」 · 「하새요」가 함께 있으면 고칠 점 둘(교정 하나에 items 여럿)
 //   한글 없는 문장 · 한글과 영어가 섞인 문장 → l1_to_ko   「 이에요」 · 「 예요」 → 띄어쓰기 교정   「하새요」 → 맞춤법 교정
 //   「…요 … 뭐 해?」 → 말투 섞임 교정   존댓말 관계에서 「뭐 해?」 → 존댓말 제안(better, 페르소나 banmalFeedback=correction이면 교정)
 //   「나는 너를」 → 자연스러운 표현(better)   「[better]」 → 더 나은 표현   번역은 「[언어] 원문」
@@ -20,7 +21,23 @@ import type {
 } from "./chat-send.contract.ts";
 import { emptyFeedback } from "./companion-llm-prompts.ts";
 
-const crisisWords = ["죽고 싶", "자살", "kill myself", "suicide", "end my life"];
+// 위기 · 욕 · 모욕 — 학습자 언어가 여럿이라(en · vi · id · ja · es · my · th · tl …) 언어마다 한두 개씩 둔다.
+const crisisWords = [
+  "죽고 싶",
+  "자살",
+  "kill myself",
+  "suicide",
+  "end my life",
+  "want to die",
+  "gusto ko nang mamatay",
+  "muốn chết",
+  "bunuh diri",
+  "ingin mati",
+  "死にたい",
+  "quiero morir",
+  "อยากตาย",
+  "သေချင်",
+];
 const blockWords = ["[block]", "사랑해", "섹스", "sex"];
 // 모욕(상대를 겨냥) · 혼잣말 욕. 띄어 쓰거나 숫자 · 별표를 끼운 꼴도 잡게 비교 전에 지운다.
 const insultWords = [
@@ -33,12 +50,41 @@ const insultWords = [
   "bobo",
   "gago",
   "tanga",
+  "đồngu",
+  "goblok",
+  "bangsat",
+  "死ね",
+  "バカ",
+  "pendejo",
+  "idiota",
+  "ควาย",
 ];
-const swearWords = ["ㅅㅂ", "시발", "씨발", "존나", "fuck", "fck", "shit", "putangina"];
+const swearWords = [
+  "ㅅㅂ",
+  "시발",
+  "씨발",
+  "존나",
+  "fuck",
+  "fck",
+  "shit",
+  "putangina",
+  "đm",
+  "địt",
+  "anjing",
+  "anjir",
+  "くそ",
+  "クソ",
+  "mierda",
+  "joder",
+  "เหี้ย",
+];
 const casualSwear = /(^|\s)아\s?씨(\s|$|[,.!])/;
 const aimed = /(^|\s)(너|넌|니가|you|ikaw|mo)(\s|$)/i;
 const hangul = /[가-힣]/;
-const latinWord = /[A-Za-z]{2,}/;
+// 한글이 아닌 글자(라틴 · 가나 · 타이 · 미얀마 …)가 둘 이상 이어지면 다른 언어로 본다.
+// 결합 부호(\p{M})도 글자로 친다 — 미얀마 · 타이 문자의 모음 부호.
+const foreignWord = /(?:(?![ㄱ-ㆎ가-힣])[\p{L}\p{M}]){2,}/u;
+const foreignRun = /(?:(?![ㄱ-ㆎ가-힣])[\p{L}\p{M}'])+(?:\s+(?:(?![ㄱ-ㆎ가-힣])[\p{L}\p{M}'])+)*/gu;
 const tags = /\[[a-z-]+\]/g;
 const asterisks = /\*[^*]*\*/g;
 
@@ -108,23 +154,36 @@ export function fakeCompanionLlm(): CompanionLlm {
       if (!hangul.test(text))
         return card("l1_to_ko", "안녕하세요, 반가워요.", [], text.slice(0, 80));
       // 섞인 문장 — 한국어 부분만 남긴 것을 「자연스러운 한국어」로 둔다(가짜라 번역은 하지 않는다).
-      if (latinWord.test(text)) {
-        const korean = text
-          .replace(/[A-Za-z][A-Za-z' ]*/g, " ")
-          .replace(/\s+/g, " ")
-          .trim();
+      if (foreignWord.test(text)) {
+        const korean = text.replace(foreignRun, " ").replace(/\s+/g, " ").trim();
         return card("l1_to_ko", korean, [], text);
       }
+      // 한 메시지의 고칠 점을 모두 모은다 — 하나씩 따로, 고친 문장에는 전부 적용.
+      const items: FeedbackItem[] = [];
       if (/요[.!?~]?\s/.test(spoken) && spoken.includes("뭐 해?"))
-        return fix("뭐 해?", "뭐 해요?", "Use one speech level in a message.");
-      const match = /(\S+) (이에요|예요)/.exec(text);
-      if (match)
-        return fix(
-          match[0],
-          `${match[1]}${match[2]}`,
-          "Attach 이에요/예요 to the noun without a space.",
+        items.push({
+          original: "뭐 해?",
+          corrected: "뭐 해요?",
+          reason: "Use one speech level in a message.",
+        });
+      for (const match of text.matchAll(/(\S+) (이에요|예요)/g))
+        items.push({
+          original: match[0],
+          corrected: `${match[1]}${match[2]}`,
+          reason: "Attach 이에요/예요 to the noun without a space.",
+        });
+      if (text.includes("하새요"))
+        items.push({
+          original: "하새요",
+          corrected: "하세요",
+          reason: "The ending is spelled 세요.",
+        });
+      if (items.length > 0)
+        return card(
+          "correction",
+          items.reduce((sentence, item) => sentence.replace(item.original, item.corrected), text),
+          items,
         );
-      if (text.includes("하새요")) return fix("하새요", "하세요", "The ending is spelled 세요.");
       if (request.speechLevel === "polite" && spoken.includes("뭐 해?")) {
         if (request.character?.banmalFeedback === "correction")
           return fix("뭐 해?", "뭐 해요?", "Use 존댓말 with this character.");
@@ -160,7 +219,11 @@ export function fakeCompanionLlm(): CompanionLlm {
           ...card("better", "만나서 반가워요!", [
             { original: text, corrected: "만나서 반가워요!", reason: "More natural greeting." },
           ]),
-          better: { text: "반가워요!", explanation: "Shorter and casual." },
+          better: {
+            text: "반가워요!",
+            meaning: "Nice to meet you!",
+            explanation: "Shorter and casual.",
+          },
           meaning: "Nice to meet you!",
         };
       return emptyFeedback("none", original);

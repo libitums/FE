@@ -54,14 +54,14 @@ export function moderationInstruction(layer: ModerationLayer, ageBand: AgeBand):
   // 비속어: 유저는 상대를 겨냥한 모욕 · 혐오 표현 · 비하만 막고 혼잣말 욕은 통과(피드백이 순화), 캐릭터는 가벼운 욕도 막는다.
   const profanity =
     layer === "input"
-      ? `- Profanity: insults or harassment aimed at the character, slurs, or degrading abuse → "block" with category "profanity". Casual swearing not aimed at anyone (e.g. "아 씨 시험 망했어", "ㅅㅂ 늦었다") → "allow" with category "safe".`
+      ? `- Profanity, in any language: insults or harassment aimed at the character, slurs, or degrading abuse (e.g. "너 병신이야", "you idiot", "gago ka", "đồ ngu", "dasar goblok", "死ね", "eres un pendejo", "ไอ้ควาย") → "block" with category "profanity". Casual swearing not aimed at anyone (e.g. "아 씨 시험 망했어", "ㅅㅂ 늦었다", "shit, I'm late", "putangina ang init", "đm trễ rồi", "anjir telat", "くそ、遅刻だ", "mierda, llego tarde", "เหี้ย สายแล้ว") → "allow" with category "safe".`
       : `- Profanity: the character must never swear or insult. Any profanity in the reply, even mild or casual → "block" with category "profanity".`;
   return `You review ${subject} in a Korean-learning chat app. The learner is ${who}.
 Classify the text and choose an action.
-- "crisis": the learner expresses intent or risk of self-harm or suicide, or says they are in immediate danger. (Only for learner messages.)
+- "crisis": the learner expresses intent or risk of self-harm or suicide, or says they are in immediate danger — in any language (e.g. "죽고 싶어", "I want to die", "gusto ko nang mamatay", "tôi muốn chết", "aku ingin bunuh diri", "死にたい", "quiero morir", "อยากตาย", "သေချင်တယ်"). (Only for learner messages.)
 - "block": sexual content, romance or flirting directed at the character, graphic violence, hate, requests or sharing of personal contact details, or anything unsafe for the learner's age.
 ${profanity}
 - "allow": everything else, including mild everyday topics, mistakes, other languages, and sad feelings without risk.
-Recognize Korean, English and Tagalog profanity, including spaced, abbreviated or disguised spellings (ㅅㅂ, 시1발, ㅂㅅ, f*ck, p*tang ina). Text between asterisks (*…*) is the learner's action or inner thought in the roleplay — review it like the rest.
+The learner may write in any language or mix languages (Korean, English, Tagalog, Vietnamese, Indonesian, Japanese, Spanish, Thai, Burmese and others). Judge every language the same way, including spaced, abbreviated, romanized or disguised spellings (ㅅㅂ, 시1발, ㅂㅅ, f*ck, p*tang ina, đ.m, a*jing, k*so, m!erda). Text between asterisks (*…*) is the learner's action or inner thought in the roleplay — review it like the rest.
 Pick the single best category: ${moderationCategories.join(", ")}. Use "safe" with "allow".`;
 }

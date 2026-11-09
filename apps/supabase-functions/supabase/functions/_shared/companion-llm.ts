@@ -51,7 +51,7 @@ const feedbackSchema = z.object({
   kind: z.enum(["correction", "better", "l1_to_ko"]).nullable(),
   corrected: z.string().nullable(),
   items: z.array(z.object({ original: z.string(), corrected: z.string(), reason: z.string() })),
-  better: z.object({ text: z.string(), explanation: z.string() }).nullable(),
+  better: z.object({ text: z.string(), meaning: z.string(), explanation: z.string() }).nullable(),
   meaning: z.string().nullable(),
 });
 
