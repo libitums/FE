@@ -16,7 +16,8 @@ export type ChatSendEnvName =
   | "ANTHROPIC_API_KEY"
   | "COMPANION_LLM"
   | "COMPANION_MODEL"
-  | "COMPANION_MODERATION_MODEL";
+  | "COMPANION_MODERATION_MODEL"
+  | "COMPANION_FEEDBACK_MODEL";
 
 export type ChatSendEnv = {
   readonly supabaseUrl: string;
@@ -31,7 +32,10 @@ export type ChatSendEnv = {
         readonly kind: "anthropic";
         readonly apiKey: string;
         readonly model: string;
+        /** 검사 · 기억 추출 · 요약. */
         readonly moderationModel: string;
+        /** 피드백(교정). 기본은 메인 모델 — 교정 품질이 검사보다 모델 크기를 더 탄다. */
+        readonly feedbackModel: string;
       }
     | { readonly kind: "fake" };
 };
@@ -211,7 +215,7 @@ export type LearningContext = {
 // ------------------------------------------------------------------ 의존성
 
 export type ChatSendLogEntry = {
-  readonly event: "chat_send" | "companion_after_turn" | "companion_proactive";
+  readonly event: "chat_send" | "companion_after_turn" | "companion_proactive" | "companion_eval";
   readonly status: number | "stream";
   readonly outcome?: string;
   readonly error?: string;

@@ -16,7 +16,7 @@ import {
 } from "./companion-segments.ts";
 
 export const defaultLlmTimeoutMs = 45_000;
-const defaultFeedbackTimeoutMs = 8_000;
+export const defaultFeedbackTimeoutMs = 8_000;
 
 type FeedbackContext = ReplyContext & {
   readonly turn: Pick<BegunTurn, "history">;

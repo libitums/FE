@@ -204,7 +204,7 @@ Firebase 프로젝트에 Android 앱을 등록하고 FCM HTTP v1 API 권한이 �
 
 ## AI 컴패니언 — chat-send · companion-proactive (M1 ~ M4)
 
-턴 하나를 SSE로 돌려주는 `chat-send`, 선톡을 만드는 `companion-proactive`, 그 밑의 DB 함수다. 계약은 `packages/companion-contract`
+턴 하나를 SSE로 돌려주는 `chat-send`, 선톡을 만드는 `companion-proactive`, 그 밑의 DB 함수다(LLM 한 단계 평가 창구 `companion-eval`은 아래 따로). 계약은 `packages/companion-contract`
 (사본 `_shared/companion-contract/`), 결정은 [ADR-0112](../../docs/adr/0112-companion-schema.md) · [0113](../../docs/adr/0113-companion-contract-package.md) ·
 [0114](../../docs/adr/0114-companion-public-function-access.md), 명세는 `docs/specs/ai-companion-api.md`.
 
@@ -217,7 +217,7 @@ Firebase 프로젝트에 Android 앱을 등록하고 FCM HTTP v1 API 권한이 �
 | `20261112120000_companion_credits.sql` (M4) | 지갑 · 원장 · 예약 · 체험 사용량 · 티어, 지급 · 소멸 · 정리 · 조회 |
 | `20261113120000_companion_turn_v2.sql` | 판정 · 시작 · 끝을 M2 ~ M4까지 합친 판 |
 
-통합 테스트 CF1 ~ CF11 · CH1 ~ CH10 · TV1 ~ TV10, 함수 단위 테스트 CS1 ~ CS10 · SG · CE · BR.
+통합 테스트 CF1 ~ CF11 · CH1 ~ CH10 · TV1 ~ TV10, 함수 단위 테스트 CS1 ~ CS10 · SG · CE · BR · LL · EV.
 
 **턴 흐름** — 판정(시험 계정 · 티어 · 연령 · 일시 차단 · 이용 시간 · 멱등) → 시작(체험 · 크레딧 예약 + 유저 메시지 저장, 한 트랜잭션) →
 SSE → 입력 검사 · 메인 답변 · 피드백을 동시에 → 위기(`crisis`) · 차단(`guardrail_blocked`) / 조각(`delta`, 미성년자 · 나이 모름은 출력 검사 뒤) ·
@@ -240,9 +240,26 @@ SQL 편집기에서 `update companion.settings set trial_limit = 30;`처럼 바�
 | `SUPABASE_URL` · `SUPABASE_ANON_KEY` · `SUPABASE_SERVICE_ROLE_KEY` | 예 | Edge 런타임이 넣어 준다 — 파일에 적지 않는다 |
 | `ANTHROPIC_API_KEY` | `COMPANION_LLM=anthropic`일 때 | 컴패니언 전용 키(원가 분리 — 위키 05) |
 | `COMPANION_LLM` | 아니오 | `anthropic`(기본) 또는 `fake`(키 없이 정해진 답 — 화면 확인용). 키가 없다고 fake로 넘어가지 않는다 |
-| `COMPANION_MODEL` · `COMPANION_MODERATION_MODEL` | 아니오 | 기본 `claude-opus-5-5`(검사 · 피드백 · 기억 · 요약은 메인 모델을 따른다). 답변은 `effort: low`, 정책 거절 때 서버 쪽 대체 모델(`fallbacks: "default"`) |
+| `COMPANION_MODEL` | 아니오 | 답변 모델. 기본 `claude-opus-5-5`. `effort: low`, 정책 거절 때 서버 쪽 대체 모델(`fallbacks: "default"`) — `claude-haiku`로 시작하는 모델은 대체 모델이 없어 이 옵션을 빼고 보낸다 |
+| `COMPANION_MODERATION_MODEL` | 아니오 | 입력 · 출력 검사 · 기억 추출 · 요약. 기본은 `COMPANION_MODEL` |
+| `COMPANION_FEEDBACK_MODEL` | 아니오 | 피드백(교정). 기본은 `COMPANION_MODEL`(검사 모델이 아니다) — 운영(답변 Sonnet · 검사 Haiku)에서는 피드백이 Sonnet으로 돈다 |
 
 fake 모드에서 흐름을 일부러 일으키는 낱말은 `_shared/companion-llm-fake.ts` 머리 주석에 있다(위기 · 차단 · 교정 · 기억 · 친밀도).
+
+### companion-eval — LLM 한 단계 평가
+
+ops-dashboard가 검사 · 피드백 프롬프트를 케이스 묶음으로 돌려 보는 창구다. 운영과 같은 `moderate()` · `feedback()`(같은 프롬프트 · 요청 모양)을
+부르고, **DB에 쓰지 않고 크레딧도 쓰지 않는다.** 대신 케이스 하나마다 실제 Claude API 호출이라 **API 비용이 든다**(`COMPANION_LLM=fake`면 들지 않는다).
+서버 키(`Authorization: Bearer <서버 키>`, `isServiceKey` 규칙)만 받고, 아니면 401 `{"error":"invalid_session"}`.
+
+- `GET` → `{"models":{"reply","feedback","moderation"},"allowed":["claude-haiku-5-5","claude-sonnet-5-5","claude-opus-5-5"],"llm":"anthropic"|"fake"}`
+- `POST {"kind":"moderation"|"feedback","model"?,"cases":[{"id","text","ageBand"?,"layer"?,"l1"?,"context"?}]}` — 케이스 1 ~ 20개, `text` ≤ 2000자,
+  `id` ≤ 64자. `model`은 `allowed` 안에서만(생략하면 그 단계에 설정된 모델). 기본값 `ageBand` adult · `layer` input · `l1` null. `context`는
+  검사에서는 앞선 유저 메시지(출력 검사), 피드백에서는 바로 앞 캐릭터 말이다.
+- 응답 `{"kind","model","results":[{"id","ok":true,"output","ms"} | {"id","ok":false,"error","ms"}]}` — `output`은 판정 `{category, action}` 또는
+  `Feedback`. 동시에 4개씩, 케이스마다 턴 경로와 같은 제한 시간(검사 45초 · 피드백 8초 — 넘으면 `error: "timeout"`, 운영이라면 `unavailable`).
+  케이스 하나의 실패는 그 케이스만 `ok: false`(`timeout` · `structured_unavailable` · `upstream_<상태>` · `upstream_error`). 본문이 틀리면 400 `invalid_request`.
+- 배포: `supabase functions deploy companion-eval`(`config.toml`의 `verify_jwt = false`를 따른다). 비밀은 `chat-send`와 같다.
 
 ### 로컬에서 끝까지 돌리기 (운영 DB를 건드리지 않는다)
 
@@ -250,7 +267,7 @@ fake 모드에서 흐름을 일부러 일으키는 낱말은 `_shared/companion-
 cd apps/supabase-functions
 supabase start -x studio,imgproxy,mailpit,logflare,vector,supavisor,realtime,storage-api   # 마이그레이션 전부 적용
 cp supabase/functions/env.example supabase/functions/.env                                  # 처음 한 번 — 값은 직접
-supabase functions serve --no-verify-jwt                                                   # chat-send · companion-proactive
+supabase functions serve --no-verify-jwt                                                   # chat-send · companion-proactive · companion-eval
 ```
 
 시험 계정은 Auth admin API로 `app_metadata: { duru_tester: true }`를 붙여 만든다. 앱 경로는 그 계정의 액세스 토큰,
@@ -259,16 +276,16 @@ supabase functions serve --no-verify-jwt                                        
 
 ### 운영 적용 (사람이 한다)
 
-운영 프로젝트 `duru`에서 개발한다(위키 05). 새로 생기는 것은 `companion` 스키마 · `public.companion_*` 함수 · Edge Function 둘뿐이고,
+운영 프로젝트 `duru`에서 개발한다(위키 05). 새로 생기는 것은 `companion` 스키마 · `public.companion_*` 함수 · Edge Function 셋뿐이고,
 앱은 아직 컴패니언을 부르지 않는다.
 
 1. `supabase db push --dry-run`으로 **컴패니언 마이그레이션 여섯(20261108 ~ 20261113)만** 올라가는지 본다. `main`의 다른 미배포 마이그레이션이 같이 올라가면 멈추고 담당자와 확인한다(위키 05).
 2. `supabase db push`(또는 여섯 SQL을 SQL 편집기에서 차례로).
 3. 비밀: `supabase secrets set --env-file supabase/functions/.env`. 키가 아직 없으면 `COMPANION_LLM=fake`로 화면만 먼저 본다.
-4. `supabase functions deploy chat-send` · `supabase functions deploy companion-proactive`(`config.toml`의 `verify_jwt = false`를 따른다).
+4. `supabase functions deploy chat-send` · `supabase functions deploy companion-proactive` · `supabase functions deploy companion-eval`(`config.toml`의 `verify_jwt = false`를 따른다).
 5. 예약 작업: Vault에 서버 키(`companion_service_role_key`)를 넣고 `supabase/cron/companion.sql`을 SQL 편집기에서 한 번 실행한다.
 6. 학습 표현: `node devtools/companion-expressions/build.mjs --base <버킷 주소> --out /tmp/expr`로 만든 `sync-expressions.sql`을 SQL 편집기에서 한 번 실행한다.
 7. 시험 계정에 `duru_tester`를 켜고 플레이그라운드에서 정상 · 위기 · 차단 · 크레딧 턴을 한 번씩 돌린다.
 
-되돌리기: 함수는 `supabase functions delete chat-send` · `companion-proactive`, 예약은 `select cron.unschedule('companion-…')`.
+되돌리기: 함수는 `supabase functions delete chat-send` · `companion-proactive` · `companion-eval`, 예약은 `select cron.unschedule('companion-…')`.
 표 · 함수는 `drop schema companion cascade` 뒤 `public.companion_*` 함수를 지운다(다른 기능이 쓰지 않는다).

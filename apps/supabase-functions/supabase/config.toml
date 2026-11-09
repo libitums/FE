@@ -10,5 +10,8 @@ verify_jwt = false
 [functions.companion-proactive]
 verify_jwt = false
 
+[functions.companion-eval]
+verify_jwt = false
+
 [functions.send-push]
 verify_jwt = false

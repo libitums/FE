@@ -21,6 +21,17 @@ export const systemSplit = "\n\n<<<DYNAMIC>>>\n\n";
 
 export class StructuredUnavailable extends Error {}
 
+/**
+ * 메인 답변의 서버 쪽 대체 모델 옵션. 정책 거절이 나면 서버가 다른 모델로 같은 요청을 다시 돌립니다.
+ * Haiku 5.5에는 대체 모델이 없어 옵션을 실으면 요청이 거절되므로, `claude-haiku`로 시작하는 모델은 빼고 보냅니다.
+ */
+export function serverFallbackOptions(
+  model: string,
+): { betas: ["server-side-fallback-2026-07-01"]; fallbacks: "default" } | Record<never, never> {
+  if (model.startsWith("claude-haiku")) return {};
+  return { betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" };
+}
+
 const verdictSchema = z.object({
   category: z.enum(moderationCategories),
   action: z.enum(["allow", "block", "crisis"]),
@@ -72,6 +83,7 @@ export function anthropicCompanionLlm(
   const client = new Anthropic({ apiKey: config.apiKey, maxRetries: 0 });
 
   async function parse<T>(
+    model: string,
     schema: z.ZodType<T>,
     system: string,
     content: string,
@@ -79,7 +91,7 @@ export function anthropicCompanionLlm(
   ): Promise<T> {
     const response = await client.messages.parse(
       {
-        model: config.moderationModel,
+        model,
         max_tokens: 2000,
         output_config: { effort: "low", format: zodOutputFormat(schema) },
         system,
@@ -103,9 +115,7 @@ export function anthropicCompanionLlm(
           max_tokens: 2000,
           // 채팅은 짧고 빨라야 합니다 — 생각 깊이를 낮춥니다.
           output_config: { effort: "low" },
-          // 정책 거절이 나면 서버가 다른 모델로 같은 요청을 다시 돌립니다.
-          betas: ["server-side-fallback-2026-07-01"],
-          fallbacks: "default",
+          ...serverFallbackOptions(config.model),
           system: [
             { type: "text", text: stable ?? "", cache_control: { type: "ephemeral" } },
             { type: "text", text: dynamic },
@@ -125,6 +135,7 @@ export function anthropicCompanionLlm(
       const context =
         request.context === null ? "" : `Learner's message for context:\n${request.context}\n\n`;
       const verdict = await parse(
+        config.moderationModel,
         verdictSchema,
         moderationInstruction(request.layer, request.ageBand),
         `${context}Text to review:\n${request.text}`,
@@ -138,6 +149,7 @@ export function anthropicCompanionLlm(
     async feedback(request) {
       const language = request.l1 ?? "en";
       const result = await parse(
+        config.feedbackModel,
         feedbackSchema,
         `You give feedback on one chat message written by a Korean learner. Write reasons, meanings and explanations in the language with BCP 47 tag "${language}".
 - If the message is entirely in another language (no Korean), use kind "l1_to_ko": how to say it naturally in Korean, plus its meaning.
@@ -160,6 +172,7 @@ Keep reasons short (one sentence). Do not correct casual chat style that is natu
     },
     async extractMemories(request) {
       const result = await parse(
+        config.moderationModel,
         memorySchema,
         `You maintain long-term memory for a chat character. From the latest exchange, extract at most 3 new, durable facts about the learner (preferences, plans, life events) worth remembering in later conversations. Write each in short Korean.
 - "shared": true if any character could know it (name, home country, hobbies, level), false if it only belongs to this conversation.
@@ -199,4 +212,15 @@ ${request.minor ? "- The learner may be a minor: never store health, mental heal
 
 export function companionLlmFor(env: ChatSendEnv): CompanionLlm {
   return env.llm.kind === "fake" ? fakeCompanionLlm() : anthropicCompanionLlm(env.llm);
+}
+
+/** 모든 단계를 한 모델로 돌리는 계층(`companion-eval`의 모델 바꿔 보기). fake는 모델과 상관없이 가짜입니다. */
+export function companionLlmWithModel(env: ChatSendEnv, model: string): CompanionLlm {
+  if (env.llm.kind === "fake") return fakeCompanionLlm();
+  return anthropicCompanionLlm({
+    ...env.llm,
+    model,
+    moderationModel: model,
+    feedbackModel: model,
+  });
 }

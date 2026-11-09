@@ -20,6 +20,7 @@ test("CE1. 필수 값과 기본 모델", () => {
       apiKey: "sk-test",
       model: defaultCompanionModel,
       moderationModel: defaultCompanionModel,
+      feedbackModel: defaultCompanionModel,
     },
   });
   for (const name of [
@@ -44,7 +45,23 @@ test("CE3. 모델 · 로컬 주소", () => {
   expect(from({ ...base, COMPANION_MODEL: "claude-sonnet-5-5" })?.llm).toMatchObject({
     model: "claude-sonnet-5-5",
     moderationModel: "claude-sonnet-5-5",
+    feedbackModel: "claude-sonnet-5-5",
   });
   expect(from({ ...base, SUPABASE_URL: "http://kong:8000" })?.supabaseUrl).toBe("http://kong:8000");
   expect(from({ ...base, SUPABASE_URL: "http://evil.example" })).toBeNull();
+});
+
+// CE4 — 운영 값(답변 Sonnet · 검사 Haiku)에서 피드백은 검사 모델이 아니라 답변 모델을 따른다.
+test("CE4. 피드백 모델은 따로 · 기본은 답변 모델", () => {
+  const split = { ...base, COMPANION_MODEL: "claude-sonnet-5-5" };
+  expect(from({ ...split, COMPANION_MODERATION_MODEL: "claude-haiku-5-5" })?.llm).toMatchObject({
+    model: "claude-sonnet-5-5",
+    moderationModel: "claude-haiku-5-5",
+    feedbackModel: "claude-sonnet-5-5",
+  });
+  expect(from({ ...split, COMPANION_FEEDBACK_MODEL: "claude-opus-5-5" })?.llm).toMatchObject({
+    model: "claude-sonnet-5-5",
+    moderationModel: "claude-sonnet-5-5",
+    feedbackModel: "claude-opus-5-5",
+  });
 });
