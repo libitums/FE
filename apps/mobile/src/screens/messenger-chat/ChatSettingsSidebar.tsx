@@ -183,18 +183,21 @@ export function ChatSettingsSidebar({
             </view>
           </view>
         </scroll-view>
-        <view className="chat-sidebar-delete" data-testid={ids.sidebarDelete} data-order="6">
+        <view className="chat-sidebar-delete">
           <view
             id={ids.sidebarDelete}
+            className="chat-sidebar-delete-button"
+            data-testid={ids.sidebarDelete}
+            data-order="6"
             accessibility-element={true}
             accessibility-traits="button"
             accessibility-label={copy.deleteChat}
             accessibility-enable-tap={true}
             bindtap={handleDelete}
           >
-            <view accessibility-elements-hidden={true}>
-              <Button label={copy.deleteChat} variant="outline" size="xl" width="fill" />
-            </view>
+            <text className="chat-sidebar-delete-label" accessibility-elements-hidden={true}>
+              {copy.deleteChat}
+            </text>
           </view>
         </view>
         <view style={{ height: `${insets.bottom}px`, flexShrink: 0 }} />

@@ -458,10 +458,30 @@
   padding-top: var(--libitum-spacing-8);
 }
 
-.chat-sidebar-delete .ui-lynx-button-outline .ui-lynx-button-surface {
-  border-color: var(--libitum-color-feedback-incorrect-text);
+/* 채팅 지우기 — 앱 쪽 파괴 윤곽 단추입니다(ui-lynx 단추 속 클래스를 덮지 않고 토큰만으로 짓습니다). 크기는 단추 xl과 같습니다. */
+.chat-sidebar-delete-button {
+  width: 100%;
+  min-height: var(--libitum-spacing-24);
+  padding: var(--libitum-spacing-16) var(--libitum-spacing-24);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--libitum-radius-lg);
+  border-width: var(--libitum-stroke-width-regular);
+  border-style: solid;
+  border-color: var(--libitum-color-feedback-incorrect);
+  background-color: var(--libitum-color-white);
 }
 
-.chat-sidebar-delete .ui-lynx-button-outline .ui-lynx-button-label {
+.chat-sidebar-delete-button:active {
+  background-color: var(--libitum-color-feedback-incorrect-surface);
+}
+
+.chat-sidebar-delete-label {
   color: var(--libitum-color-feedback-incorrect-text);
+  font-family: var(--libitum-typography-button-xl-font-family);
+  font-size: var(--libitum-typography-button-xl-font-size);
+  font-weight: var(--libitum-typography-button-xl-font-weight);
+  line-height: var(--libitum-typography-button-xl-line-height);
+  letter-spacing: var(--libitum-typography-button-xl-letter-spacing);
 }
