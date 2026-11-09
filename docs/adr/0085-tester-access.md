@@ -58,3 +58,7 @@
 
 - 시험 계정의 이벤트를 따로 보고 싶을 때 — D4처럼 버리지 않고 `duru_tester` 속성을 실어 PostHog 「Filter out internal and test users」로 거르는 방식으로 바꾼다.
 - 시험 계정이 많아져 관리 화면이 필요할 때.
+
+## 개정 기록
+
+- ⟨2026-11-09⟩ **D3 「머리 칩」 · 「결과 화면 줄」 행 개정 — [ADR-0115](0115-unlimited-ticket-presentation.md).** 머리 칩은 「∞」 글자 대신 무제한 칩(주황 그라데이션 · 흰 티켓 · 그린 무한 기호 · 빛 훑기)이고, **누르면 무제한 모달의 시험 계정 판**(「GUEST PASS」 · 안내 · 「Got it」)이 열린다 — 「누를 수 없음」을 바꿨다. 결과 화면은 「N tickets left」 줄 대신 「No ticket used · Unlimited」 알약이 서고, 「Next lesson」 버튼에 무한 기호 태그가 붙는다. 판정 함수(티켓 비용 · 유닛 상태 · 롤플레이)와 D1 · D2 · D4는 그대로다.
