@@ -1,6 +1,6 @@
 # ADR-0117 — 컴패니언 기억은 우리 Postgres(`companion` 스키마)에 직접 만든다 — 외부 메모리 서비스 없음, 의미 검색(pgvector)은 미룸
 
-- 상태: **제안** — FE 팀 리뷰 대기. `feat/companion-m1`의 M3 마이그레이션(`20261111120000_companion_cast_memory.sql`)과 턴 뒤 작업(`_shared/companion-after-turn.ts`)이 이 결정대로 쓰였다. 용량 상한(D4)은 **구현 중**이다.
+- 상태: **제안** — FE 팀 리뷰 대기. `feat/companion-m1`의 M3 마이그레이션(`20261111120000_companion_cast_memory.sql`)과 턴 뒤 작업(`_shared/companion-after-turn.ts`)이 이 결정대로 쓰였다. 용량 상한(D4)은 `20261117120000_companion_refusal_memory_cap.sql`이다.
 - 날짜: (채택일에 적는다)
 - 다루는 축: 캐릭터가 유저를 **무엇을 · 어디에 · 어떻게 기억하는가**, 캐릭터 사이 · 해금 에피소드 밖으로 **어떻게 새지 않게 하는가**, 기억이 **얼마나 쌓이는가**.
   **다루지 않는 것**: 표의 칸 하나하나(→ [API 명세 §7](../specs/ai-companion-api.md)) · 표가 사는 스키마(→ [ADR-0112](0112-companion-schema.md) 초안) · 기억 용량 과금(→ PRD O8).
@@ -34,11 +34,11 @@
 - 프롬프트에는 최근 기억 `settings.memory_prompt_limit`개(초안 30)를 넣는다. `embedding` 열은 만들지 않았다.
 - 스포일러 게이트는 지금 **프롬프트 지시**다 — 해금 에피소드 · 학습 표현만 프롬프트에 넣고(`companion_learning_context`), 그 밖 서사를 말하지 말라고 지시한다. 기억 쪽 거름(해금 밖 사건을 기억에서 빼기)은 없다.
 
-### D4. 용량 상한 — 유저가 고친 기억은 지킨다 [사용자 — 2026-11-09 · 구현 중]
+### D4. 용량 상한 — 유저가 고친 기억은 지킨다 [사용자 — 2026-11-09]
 
-- `settings.memory_cap`(초안 50, 유저 × 캐릭터마다 — 값은 PRD O22).
-- 가득 차면 유저가 고치지 않은 기억 중 가장 오래된 것부터 밀어낸다. 유저가 고친 기억은 밀어내지 않는다.
-- 전부 고친 기억이면 새 기억을 넣지 않고 앱에 알린다 — 목록 RPC `{ count, cap, full }` · 턴 `state.memoryFull`. 정리를 권하는 화면은 FE 몫이다.
+- `settings.memory_cap`(초안 50, 유저 × 캐릭터마다) · `settings.shared_memory_cap`(초안 30, 유저의 공유 층) — 값은 PRD O22.
+- 가득 차면 유저가 고치지 않은 기억 중 가장 오래된 것부터 지운다(`deleted_at`). 유저가 고친 기억(`user_edited` — `companion_update_memory`가 켠다)은 지우지 않는다.
+- 전부 고친 기억이면 새 기억을 넣지 않는다. 「가득 참」은 저장하지 않고 읽을 때 계산한다(수 ≥ 상한이고 모두 고친 것) — 목록 RPC `{ memories, count, cap, full }` · 턴 `state.memoryFull`. 정리를 권하는 화면은 FE 몫이다.
 
 ## 버린 대안
 

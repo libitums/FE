@@ -19,7 +19,7 @@
 
 ### D1. 핸들러는 `CompanionLlm` 인터페이스만 안다
 
-- `chat-send` · `companion-proactive` · `companion-eval`(그리고 구현 중인 `companion-suggest`)은 `CompanionLlm`의 메서드만 부른다. 벤더 SDK 타입은 핸들러에 새지 않는다.
+- `chat-send` · `companion-proactive` · `companion-eval` · `companion-suggest`는 `CompanionLlm`의 메서드만 부른다. 벤더 SDK 타입은 핸들러에 새지 않는다.
 - 구현은 둘이다 — 운영 `anthropicCompanionLlm`(`companion-llm.ts`), 키 없는 `fakeCompanionLlm`(`companion-llm-fake.ts`). 벤더를 바꾸면 이 두 파일과 환경 읽기(`chat-send-env.ts`)만 바뀐다.
 - 프롬프트 글 · 결과 다듬기(`feedbackFrom` 등)는 벤더와 무관한 모듈(`companion-llm-prompts.ts`)에 둔다 — 평가 창구가 같은 함수를 부르므로 고치면 평가도 같이 바뀐다.
 
@@ -36,7 +36,7 @@
 | 피드백 | `COMPANION_FEEDBACK_MODEL` | `COMPANION_MODEL` | Sonnet |
 | 검사 · 기억 추출 · 요약 | `COMPANION_MODERATION_MODEL` | `COMPANION_MODEL` | Haiku |
 | L1 번역 | `COMPANION_TRANSLATION_MODEL` | 검사 모델 | Haiku |
-| 추천 답변(구현 중) | `COMPANION_SUGGEST_MODEL` | 검사 모델 | Haiku |
+| 추천 답변 | `COMPANION_SUGGEST_MODEL` | 검사 모델 | Haiku |
 
 - 번역 스위치 `COMPANION_TRANSLATION`(`every` · `off`). 모르는 값이면 설정 오류(500)다.
 - `companion-eval`은 모든 단계를 한 모델로 바꿔 돌려 볼 수 있다(`companionLlmWithModel`, 허용 목록 Haiku · Sonnet · Opus).
