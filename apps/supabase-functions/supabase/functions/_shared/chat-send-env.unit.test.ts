@@ -22,6 +22,7 @@ test("CE1. 필수 값과 기본 모델", () => {
       moderationModel: defaultCompanionModel,
       feedbackModel: defaultCompanionModel,
       translationModel: defaultCompanionModel,
+      suggestModel: defaultCompanionModel,
     },
     translation: "every",
   });
@@ -83,5 +84,12 @@ test("CE5. 번역 — 기본 every · off · 모르는 값은 설정 오류, 번
   ).toMatchObject({ translationModel: "claude-haiku-5-5" });
   expect(from({ ...base, COMPANION_TRANSLATION_MODEL: "claude-sonnet-5-5" })?.llm).toMatchObject({
     translationModel: "claude-sonnet-5-5",
+  });
+  // 추천 답변 칩 모델도 번역처럼 검사 모델을 따른다.
+  expect(from({ ...base, COMPANION_MODERATION_MODEL: "claude-haiku-5-5" })?.llm).toMatchObject({
+    suggestModel: "claude-haiku-5-5",
+  });
+  expect(from({ ...base, COMPANION_SUGGEST_MODEL: "claude-sonnet-5-5" })?.llm).toMatchObject({
+    suggestModel: "claude-sonnet-5-5",
   });
 });

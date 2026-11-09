@@ -66,3 +66,15 @@ export {
   type FeedbackMode,
   type ProactivePref,
 } from "./rpc";
+export {
+  companionSuggestRequestSchema,
+  companionSuggestResponseSchema,
+  replySuggestionSchema,
+  suggestReasonSchema,
+  suggestionIntentSchema,
+  type CompanionSuggestRequest,
+  type CompanionSuggestResponse,
+  type ReplySuggestion,
+  type SuggestReason,
+  type SuggestionIntent,
+} from "./suggest";

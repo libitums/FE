@@ -3,7 +3,7 @@ import type { ChatSendEnvFrom, ChatSendEnvName } from "./chat-send.contract.ts";
 /**
  * 모델을 정하지 않으면 쓰는 기본값입니다. 바꿀 때는 `COMPANION_MODEL`(답변) · `COMPANION_FEEDBACK_MODEL`(피드백, 기본은
  * 답변 모델) · `COMPANION_MODERATION_MODEL`(검사 · 기억 · 요약, 기본은 답변 모델) · `COMPANION_TRANSLATION_MODEL`(L1 번역,
- * 기본은 검사 모델).
+ * 기본은 검사 모델) · `COMPANION_SUGGEST_MODEL`(추천 답변 칩, 기본은 검사 모델).
  */
 export const defaultCompanionModel = "claude-opus-5-5";
 
@@ -44,6 +44,7 @@ export const chatSendEnvFrom: ChatSendEnvFrom = (read) => {
       moderationModel,
       feedbackModel: value("COMPANION_FEEDBACK_MODEL") ?? model,
       translationModel: value("COMPANION_TRANSLATION_MODEL") ?? moderationModel,
+      suggestModel: value("COMPANION_SUGGEST_MODEL") ?? moderationModel,
     } as const;
   } else {
     return null;

@@ -2,7 +2,7 @@
 // 서버 키만 받는다(ops-dashboard). DB에 쓰지 않고 크레딧도 쓰지 않는다 — 케이스마다 실제 API 비용만 든다.
 //
 // GET  → 지금 설정된 모델 · 고를 수 있는 모델 · LLM 종류. `?docs=1`이면 프롬프트 · 캐릭터 · 설정 문서(`companion-eval-docs.ts`).
-// POST { kind, model?, cases[] } → 케이스마다 `moderate()` 판정 · `feedback()` 결과 · `translate()` 한 줄. 케이스 하나가 실패해도
+// POST { kind, model?, cases[] } → 케이스마다 `moderate()` 판정 · `feedback()` 결과 · `translate()` 한 줄 · `suggest()` 칩 셋. 케이스 하나가 실패해도
 // 나머지는 돈다. 요청 모양은 턴 경로(`chat-send-turn.ts` · `chat-send-reply.ts`)와 같고, 프롬프트는 `CompanionLlm` 구현 안에 있어 그대로 쓴다.
 
 import { z } from "zod";
@@ -19,7 +19,8 @@ import { defaultTranslationTimeoutMs } from "./chat-send-translate.ts";
 import type { Outbound } from "./delete-account.contract.ts";
 import { companionDocs } from "./companion-eval-docs.ts";
 import { StructuredUnavailable } from "./companion-llm.ts";
-import { recentFeedbackHistory } from "./companion-llm-prompts.ts";
+import { recentFeedbackHistory, suggestionsFrom } from "./companion-llm-prompts.ts";
+import type { ReplySuggestion } from "./companion-contract/index.ts";
 import { isServiceKey } from "./companion-rpc.ts";
 import { bearerTokenFrom } from "./supabase-auth.ts";
 
@@ -68,7 +69,7 @@ const caseSchema = z.object({
     .optional(),
 });
 const bodySchema = z.object({
-  kind: z.enum(["moderation", "feedback", "translation"]),
+  kind: z.enum(["moderation", "feedback", "translation", "suggestions"]),
   model: z.enum(evalModels).optional(),
   cases: z.array(caseSchema).min(1).max(20),
 });
@@ -76,7 +77,12 @@ type EvalCase = z.infer<typeof caseSchema>;
 type EvalKind = z.infer<typeof bodySchema>["kind"];
 
 type CaseResult =
-  | { id: string; ok: true; output: ModerationVerdict | Feedback | { text: string }; ms: number }
+  | {
+      id: string;
+      ok: true;
+      output: ModerationVerdict | Feedback | { text: string } | { items: ReplySuggestion[] };
+      ms: number;
+    }
   | { id: string; ok: false; error: string; ms: number };
 
 const json = (status: number, body: unknown, headers: Record<string, string> = {}) =>
@@ -88,12 +94,19 @@ const json = (status: number, body: unknown, headers: Record<string, string> = {
 /** 지금 설정된 단계별 모델. fake면 모두 `fake`. */
 export function configuredModels(env: ChatSendEnv) {
   if (env.llm.kind === "fake")
-    return { reply: "fake", feedback: "fake", moderation: "fake", translation: "fake" };
+    return {
+      reply: "fake",
+      feedback: "fake",
+      moderation: "fake",
+      translation: "fake",
+      suggest: "fake",
+    };
   return {
     reply: env.llm.model,
     feedback: env.llm.feedbackModel,
     moderation: env.llm.moderationModel,
     translation: env.llm.translationModel,
+    suggest: env.llm.suggestModel ?? env.llm.moderationModel,
   };
 }
 
@@ -151,6 +164,24 @@ function runCase(deps: CompanionEvalDeps, llm: CompanionLlm, kind: EvalKind, ite
       return { text: lines[0]! };
     });
   }
+  if (kind === "suggestions") {
+    // `text`는 캐릭터의 마지막 말이고 `history`(앞 대화) 뒤에 붙인다. 운영처럼 검사(`suggestionsFrom`)를 지난 셋만 낸다 — 못 지나면 `mismatch`.
+    return withTimeout(deps.feedbackTimeoutMs ?? defaultFeedbackTimeoutMs, async (signal) => {
+      const drafts = await llm.suggest({
+        character: { name: item.character?.name ?? "캐릭터", role: item.character?.role ?? null },
+        speechLevel: item.speechLevel ?? null,
+        l1: item.l1 ?? null,
+        history: recentFeedbackHistory([
+          ...(item.history ?? []),
+          { role: "assistant", text: item.text },
+        ]),
+        signal,
+      });
+      const items = suggestionsFrom(drafts, item.l1 ?? null);
+      if (items === null) throw new Mismatch();
+      return { items };
+    });
+  }
   return withTimeout(deps.feedbackTimeoutMs ?? defaultFeedbackTimeoutMs, (signal) =>
     llm.feedback({
       text: item.text,
@@ -206,8 +237,8 @@ export function createCompanionEvalHandler(
     if (request.method === "GET" && new URL(request.url).searchParams.get("docs") === "1")
       return json(200, await companionDocs(env, deps.outbound, models));
     if (request.method === "GET") {
-      // 대시보드가 쓰는 계약 그대로 — 번역 모델은 싣지 않는다.
-      const { translation: _translation, ...contractModels } = models;
+      // 대시보드가 쓰는 계약 그대로 — 번역 · 추천 칩 모델은 싣지 않는다(문서 화면 `?docs=1`에는 있다).
+      const { translation: _translation, suggest: _suggest, ...contractModels } = models;
       return json(200, { models: contractModels, allowed: evalModels, llm: env.llm.kind });
     }
 
@@ -220,7 +251,7 @@ export function createCompanionEvalHandler(
     const parsed = bodySchema.safeParse(raw);
     if (!parsed.success) return json(400, { error: "invalid_request" });
     const { kind, cases } = parsed.data;
-    const model = parsed.data.model ?? models[kind];
+    const model = parsed.data.model ?? models[kind === "suggestions" ? "suggest" : kind];
     const llm = deps.llmFor(model);
 
     const results = await mapLimited(

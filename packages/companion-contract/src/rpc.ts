@@ -27,6 +27,8 @@ export const companionProfileSchema = z.object({
   proactiveHour: z.nullable(z.int().check(z.gte(0), z.lte(23))),
   /** IANA 시간대(예: `Asia/Manila`). null이면 지역의 대표 시간대, 그것도 없으면 시각 맞추기 · 조용한 시간을 건너뛴다. 지우기는 `p_timezone = ''`. */
   timezone: z.nullable(z.string()),
+  /** 추천 답변 칩(`companion-suggest`)을 쓰는가. 기본 참. 저장은 `companion_save_profile`의 `p_reply_suggestions`. */
+  replySuggestions: z.boolean(),
 });
 
 export const characterAvailabilitySchema = z.enum([
