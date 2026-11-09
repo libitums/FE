@@ -3,7 +3,7 @@
 // 플레이그라운드에서 흐름을 일부러 일으키는 낱말:
 //   「죽고 싶」 · 「자살」 → 위기   「[block]」 · 「사랑해」 → 입력 차단   「[unsafe-reply]」 → 출력 차단
 //   한글 없는 문장 · 한글과 영어가 섞인 문장 → l1_to_ko   「 이에요」 · 「 예요」 → 띄어쓰기 교정   「하새요」 → 맞춤법 교정
-//   「…요 … 뭐 해?」 → 말투 섞임 교정   존댓말 관계에서 「뭐 해?」 → 존댓말 제안(better)   「나는 너를」 → 자연스러운 표현(better)
+//   「…요 … 뭐 해?」 → 말투 섞임 교정   존댓말 관계에서 「뭐 해?」 → 존댓말 제안(better, 페르소나 banmalFeedback=correction이면 교정)   「나는 너를」 → 자연스러운 표현(better)
 //   「[better]」 → 더 나은 표현   번역은 「[언어] 원문」
 //   「저는 … 좋아해요」 → 기억   「[slow]」 → 조각 사이를 늦춘다   「[warm]」 → 친밀도 +3
 // 위 낱말이 없는 말은 정상 턴(조각 셋 · 친밀도 +1)입니다.
@@ -95,8 +95,11 @@ export function fakeCompanionLlm(): CompanionLlm {
         kind: "better",
         better: { text: sentence, meaning: text, explanation },
       });
-      if (request.speechLevel === "polite" && text.includes("뭐 해?"))
+      if (request.speechLevel === "polite" && text.includes("뭐 해?")) {
+        if (request.character?.banmalFeedback === "correction")
+          return item("뭐 해?", "뭐 해요?", "Use 존댓말 with this character.");
         return better("뭐 해요?", "Use 존댓말 until the relationship becomes casual.");
+      }
       if (text.includes("나는 너를"))
         return better("너 좋아해요.", "Koreans usually drop obvious pronouns.");
       if (request.text.includes("[better]")) {

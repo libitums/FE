@@ -1,7 +1,7 @@
 // `/functions/v1/companion-eval` — 운영과 같은 프롬프트로 LLM 한 단계(입력 · 출력 검사 또는 피드백)만 돌려 보는 평가 창구.
 // 서버 키만 받는다(ops-dashboard). DB에 쓰지 않고 크레딧도 쓰지 않는다 — 케이스마다 실제 API 비용만 든다.
 //
-// GET  → 지금 설정된 모델 · 고를 수 있는 모델 · LLM 종류.
+// GET  → 지금 설정된 모델 · 고를 수 있는 모델 · LLM 종류. `?docs=1`이면 프롬프트 · 캐릭터 · 설정 문서(`companion-eval-docs.ts`).
 // POST { kind, model?, cases[] } → 케이스마다 `moderate()` 판정 · `feedback()` 결과 · `translate()` 한 줄. 케이스 하나가 실패해도
 // 나머지는 돈다. 요청 모양은 턴 경로(`chat-send-turn.ts` · `chat-send-reply.ts`)와 같고, 프롬프트는 `CompanionLlm` 구현 안에 있어 그대로 쓴다.
 
@@ -17,6 +17,7 @@ import type {
 import { defaultFeedbackTimeoutMs, defaultLlmTimeoutMs } from "./chat-send-reply.ts";
 import { defaultTranslationTimeoutMs } from "./chat-send-translate.ts";
 import type { Outbound } from "./delete-account.contract.ts";
+import { companionDocs } from "./companion-eval-docs.ts";
 import { StructuredUnavailable } from "./companion-llm.ts";
 import { isServiceKey } from "./companion-rpc.ts";
 import { bearerTokenFrom } from "./supabase-auth.ts";
@@ -52,7 +53,11 @@ const caseSchema = z.object({
   // 피드백만: 관계 말투 단계 · 상대 캐릭터. 생략하면 모름(말투 규칙은 한 메시지 안 섞임만 본다).
   speechLevel: z.enum(["polite", "casual", "slang"]).nullable().optional(),
   character: z
-    .object({ name: z.string().min(1).max(64), role: z.string().max(200).nullable().optional() })
+    .object({
+      name: z.string().min(1).max(64),
+      role: z.string().max(200).nullable().optional(),
+      banmalFeedback: z.enum(["correction", "better"]).optional(),
+    })
     .nullable()
     .optional(),
 });
@@ -149,7 +154,11 @@ function runCase(deps: CompanionEvalDeps, llm: CompanionLlm, kind: EvalKind, ite
       character:
         item.character == null
           ? null
-          : { name: item.character.name, role: item.character.role ?? null },
+          : {
+              name: item.character.name,
+              role: item.character.role ?? null,
+              banmalFeedback: item.character.banmalFeedback ?? "better",
+            },
       signal,
     }),
   );
@@ -187,6 +196,8 @@ export function createCompanionEvalHandler(
       return json(401, { error: "invalid_session" });
 
     const models = configuredModels(env);
+    if (request.method === "GET" && new URL(request.url).searchParams.get("docs") === "1")
+      return json(200, await companionDocs(env, deps.outbound, models));
     if (request.method === "GET") {
       // 대시보드가 쓰는 계약 그대로 — 번역 모델은 싣지 않는다.
       const { translation: _translation, ...contractModels } = models;

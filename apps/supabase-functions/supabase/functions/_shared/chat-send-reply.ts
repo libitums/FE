@@ -142,7 +142,11 @@ export function startFeedback(context: FeedbackContext, abort: AbortController):
         character:
           context.turn.persona === null
             ? null
-            : { name: context.turn.persona.name, role: context.turn.persona.role ?? null },
+            : {
+                name: context.turn.persona.name,
+                role: context.turn.persona.role ?? null,
+                banmalFeedback: context.turn.persona.banmalFeedback ?? "better",
+              },
         signal,
       })
       .catch(() => unavailable),

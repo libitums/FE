@@ -538,7 +538,15 @@ describe("L1 번역", () => {
     expect(feedbackRequests[0]).toMatchObject({
       previous: "반가워요",
       speechLevel: "polite",
-      character: { name: "덕수쌤", role: null },
+      character: { name: "덕수쌤", role: null, banmalFeedback: "better" },
     });
+    // 페르소나가 정하면 그대로 넘어간다(덕수쌤은 마이그레이션 20261114가 correction으로 둔다).
+    const strict = setup({
+      llm,
+      begin: { ...begun, persona: { name: "덕수쌤", banmalFeedback: "correction" } },
+    });
+    await (await strict.handler(post())).text();
+    await strict.settle();
+    expect(feedbackRequests[1]).toMatchObject({ character: { banmalFeedback: "correction" } });
   });
 });

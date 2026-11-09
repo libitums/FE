@@ -216,8 +216,9 @@ Firebase 프로젝트에 Android 앱을 등록하고 FCM HTTP v1 API 권한이 �
 | `20261111120000_companion_cast_memory.sql` (M3) | 설정 한 행 `companion.settings` · 페르소나 다섯 · 장기 메모리 · 반복 위반 · 선톡 · 요약 · 운영자 함수 |
 | `20261112120000_companion_credits.sql` (M4) | 지갑 · 원장 · 예약 · 체험 사용량 · 티어, 지급 · 소멸 · 정리 · 조회 |
 | `20261113120000_companion_turn_v2.sql` | 판정 · 시작 · 끝을 M2 ~ M4까지 합친 판 |
+| `20261114120000_companion_inspect_docs.sql` | 운영 조회 `companion_inspect_characters()` · `companion_inspect_settings()`(문서 화면) · 덕수쌤 `banmalFeedback: correction` |
 
-통합 테스트 CF1 ~ CF11 · CH1 ~ CH10 · TV1 ~ TV10, 함수 단위 테스트 CS1 ~ CS16 · SG · CE · BR · LL · EV · FB.
+통합 테스트 CF1 ~ CF11 · CH1 ~ CH10 · TV1 ~ TV10 · ID1 ~ ID3, 함수 단위 테스트 CS1 ~ CS16 · SG · CE · BR · LL · EV · FB.
 
 **턴 흐름** — 판정(시험 계정 · 티어 · 연령 · 일시 차단 · 이용 시간 · 멱등) → 시작(체험 · 크레딧 예약 + 유저 메시지 저장, 한 트랜잭션) →
 SSE → 입력 검사 · 메인 답변 · 피드백을 동시에 → 위기(`crisis`) · 차단(`guardrail_blocked`) / 조각(`delta`, 미성년자 · 나이 모름은 출력 검사 뒤) ·
@@ -258,6 +259,7 @@ fake 모드에서 흐름을 일부러 일으키는 낱말은 `_shared/companion-
 **피드백 규칙** — `_shared/companion-llm-prompts.ts`. 한국어가 아닌 부분이 있으면(전부 · 일부) `l1_to_ko`로 메시지 전체를 자연스러운 한국어
 한 문장(`l1ToKo.text` — 앱이 「자연스러운 한국어 표현은 …」으로 보인다)과 뜻으로 돌려주고, 한국어로 써야 하는 이유는 말하지 않는다. 한 메시지 안의
 말투 섞임 · 맞춤법 · 문법은 `correction`, 존댓말 관계(또는 선생님 · 어른 캐릭터)에 반말은 `better`(존댓말 제안), 반말 관계의 존댓말은 피드백 없음.
+페르소나 칸 `banmalFeedback: "correction"`인 캐릭터(지금은 덕수쌤 — 마이그레이션 20261114)는 존댓말 관계의 반말을 `correction`으로 고친다.
 띄어쓰기는 뜻이 바뀌거나 읽기 어려울 때만, ㅋㅋ · ㅎㅎ · ㅇㅇ · ~ · 이모지는 피드백 없음. `better`는 원어민에게 분명히 어색할 때 하나만, 애매하면 `none`.
 피드백 요청에는 관계 말투 단계와 캐릭터(이름 · 역할)가 들어간다.
 
@@ -277,6 +279,12 @@ ops-dashboard가 검사 · 피드백 프롬프트를 케이스 묶음으로 돌�
 - 응답 `{"kind","model","results":[{"id","ok":true,"output","ms"} | {"id","ok":false,"error","ms"}]}` — `output`은 판정 `{category, action}` 또는
   `Feedback` 또는 `{text}`. 동시에 4개씩, 케이스마다 턴 경로와 같은 제한 시간(검사 45초 · 피드백 8초 · 번역 6초 — 넘으면 `error: "timeout"`).
   케이스 하나의 실패는 그 케이스만 `ok: false`(`timeout` · `structured_unavailable` · `mismatch` · `upstream_<상태>` · `upstream_error`). 본문이 틀리면 400 `invalid_request`.
+- `GET ?docs=1` → ops-dashboard 「문서」 화면: `{"models"(번역 모델 포함),"characters","settings","inspectAvailable","prompts"}`. `characters`는 페르소나 카드 칸 전부 ·
+  `id` · `active` · `sortOrder` · `maxSpeechLevel` · `systemPrompt`(말투 상한까지 단계마다), `settings`는 `companion.settings` 한 행. `prompts`는
+  `feedback` · `moderation.{input,output_sync}.{adult,minor,unknown}` · `translation` · `memory.{adult,minor}` · `summary` · `proactiveDirective` ·
+  `feedbackModes.{separate,natural,prefix}` · `stateLine` — 실제 호출과 같은 함수로 그린 글이다(사본 없음, `_shared/companion-eval-docs.ts`). 대표 입력은
+  학습자 언어 en · 성인 · 기억 · 학습 표현 · 요약 없음 · 피드백 방식 separate, 피드백은 존댓말 관계 · 부드러운 반말 규칙으로 그리고, 호출마다 바뀌는 자리는
+  `{{l1}}`처럼 표시한다. 마이그레이션 20261114를 적용하기 전에는 `characters` · `settings`가 null이고 `inspectAvailable: false`다. API 비용은 들지 않는다.
 - 배포: `supabase functions deploy companion-eval`(`config.toml`의 `verify_jwt = false`를 따른다). 비밀은 `chat-send`와 같다.
 
 ### 로컬에서 끝까지 돌리기 (운영 DB를 건드리지 않는다)
@@ -297,8 +305,9 @@ supabase functions serve --no-verify-jwt                                        
 운영 프로젝트 `duru`에서 개발한다(위키 05). 새로 생기는 것은 `companion` 스키마 · `public.companion_*` 함수 · Edge Function 셋뿐이고,
 앱은 아직 컴패니언을 부르지 않는다.
 
-1. `supabase db push --dry-run`으로 **컴패니언 마이그레이션 여섯(20261108 ~ 20261113)만** 올라가는지 본다. `main`의 다른 미배포 마이그레이션이 같이 올라가면 멈추고 담당자와 확인한다(위키 05).
-2. `supabase db push`(또는 여섯 SQL을 SQL 편집기에서 차례로).
+1. `supabase db push --dry-run`으로 **컴패니언 마이그레이션 일곱(20261108 ~ 20261114)만** 올라가는지 본다. `main`의 다른 미배포 마이그레이션이 같이 올라가면 멈추고 담당자와 확인한다(위키 05).
+2. `supabase db push`(또는 일곱 SQL을 SQL 편집기에서 차례로). 여섯(20261108 ~ 20261113)을 이미 적용했으면 `20261114120000_companion_inspect_docs.sql`
+   하나만 SQL 편집기에서 실행한다 — 반드시 여섯 **뒤에**(`companion.characters` · `companion.settings`가 있어야 한다).
 3. 비밀: `supabase secrets set --env-file supabase/functions/.env`. 키가 아직 없으면 `COMPANION_LLM=fake`로 화면만 먼저 본다.
 4. `supabase functions deploy chat-send` · `supabase functions deploy companion-proactive` · `supabase functions deploy companion-eval`(`config.toml`의 `verify_jwt = false`를 따른다).
 5. 예약 작업: Vault에 서버 키(`companion_service_role_key`)를 넣고 `supabase/cron/companion.sql`을 SQL 편집기에서 한 번 실행한다.

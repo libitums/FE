@@ -88,6 +88,8 @@ export type PersonaCard = {
   readonly maxSpeechLevel?: SpeechLevel;
   /** 화제 뱅크 씨앗(PRD §3.8 · O6 초안). */
   readonly topics?: readonly string[];
+  /** 존댓말 관계에서 학습자가 반말을 쓸 때 피드백 종류. 없으면 `better`(부드럽게). 덕수쌤(선생님)은 `correction`. */
+  readonly banmalFeedback?: BanmalFeedback;
 };
 
 export type ReplyRequest = {
@@ -111,6 +113,7 @@ export type ModerationRequest = {
 };
 
 export type FeedbackMode = "separate" | "natural" | "prefix";
+export type BanmalFeedback = "correction" | "better";
 
 /** SSE `correction`의 본문에서 `userMessageId`를 뺀 것(M2). */
 export type Feedback = {
@@ -129,8 +132,12 @@ export type FeedbackRequest = {
   readonly previous: string | null;
   /** 지금 관계의 말투 단계 — 존댓말 · 반말 일관성을 보려고. 모르면 null(말투 규칙을 건너뛴다). */
   readonly speechLevel: SpeechLevel | null;
-  /** 상대 캐릭터(이름 · 역할) — 선생님 같은 상대에게 반말인지 보려고. */
-  readonly character: { readonly name: string; readonly role: string | null } | null;
+  /** 상대 캐릭터(이름 · 역할 · 반말 피드백 종류) — 선생님 같은 상대에게 반말인지 보려고. */
+  readonly character: {
+    readonly name: string;
+    readonly role: string | null;
+    readonly banmalFeedback: BanmalFeedback;
+  } | null;
   readonly signal: AbortSignal;
 };
 

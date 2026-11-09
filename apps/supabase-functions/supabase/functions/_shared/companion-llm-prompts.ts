@@ -7,8 +7,12 @@ import type { Feedback, FeedbackRequest, Segment } from "./chat-send.contract.ts
 function speechLevelRule(request: FeedbackRequest): string {
   const elder =
     "If the character is a teacher or an elder, treat 반말 to them as in the polite case.";
-  if (request.speechLevel === "polite")
+  if (request.speechLevel === "polite") {
+    // 덕수쌤처럼 페르소나가 `banmalFeedback: correction`이면 교정으로 — 다른 캐릭터는 부드럽게 제안만.
+    if (request.character?.banmalFeedback === "correction")
+      return `The relationship is polite (존댓말) and this character expects 존댓말 from learners. If the learner writes in 반말, use kind "correction" with one item per 반말 ending, corrected to polite style.`;
     return `The relationship is still polite (존댓말). If the learner writes in 반말 throughout, use kind "better" with the same sentence in polite style and a one-sentence explanation — not a correction.`;
+  }
   if (request.speechLevel === "casual" || request.speechLevel === "slang")
     return `The relationship is casual, so 반말 is fine. ${elder} 존댓말 is always acceptable — never give feedback on it.`;
   return `The relationship's speech level is unknown: give no feedback on choosing 존댓말 or 반말 (mixing inside one message is still a mistake). ${elder}`;
@@ -65,7 +69,8 @@ export function feedbackFrom(result: {
   };
 }
 
-export function translationSystem(l1: string, count: number): string {
+/** `count`는 조각 수. 문서 화면은 자리 표시 글자를 넣는다. */
+export function translationSystem(l1: string, count: number | string): string {
   return `Translate a Korean chat character's message into the language with BCP 47 tag "${l1}". The message is a numbered list of lines; each line is "speech" (what the character says) or "action" / "narration" (stage directions). Return "lines" with exactly ${count} strings, one per input line, in the same order. Translate naturally in the character's tone, keep names, and translate stage directions as short stage directions. No romanization, notes or quotes.`;
 }
 
@@ -74,3 +79,13 @@ export function translationContent(segments: readonly Segment[]): string {
     .map((segment, index) => `${index + 1}. [${segment.kind}] ${segment.text}`)
     .join("\n");
 }
+
+export function memorySystem(minor: boolean): string {
+  return `You maintain long-term memory for a chat character. From the latest exchange, extract at most 3 new, durable facts about the learner (preferences, plans, life events) worth remembering in later conversations. Write each in short Korean.
+- "shared": true if any character could know it (name, home country, hobbies, level), false if it only belongs to this conversation.
+- Skip anything already in the existing memory, small talk, and anything about the character.
+${minor ? "- The learner may be a minor: never store health, mental health, or emotional-state information.\n" : ""}- If nothing is worth remembering, return an empty list.`;
+}
+
+export const summarySystem =
+  "Summarize this Korean-learning chat for the character's memory in at most 6 short Korean sentences: what the learner shared, ongoing topics, and anything promised. Merge with the previous summary. No preamble.";

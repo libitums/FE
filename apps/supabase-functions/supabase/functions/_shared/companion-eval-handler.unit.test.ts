@@ -3,6 +3,9 @@ import { expect, test } from "vitest";
 import type { ChatSendEnv, CompanionLlm } from "./chat-send.contract.ts";
 import { createCompanionEvalHandler, evalModels } from "./companion-eval-handler.ts";
 import { companionLlmWithModel, StructuredUnavailable } from "./companion-llm.ts";
+import { feedbackSystem } from "./companion-llm-prompts.ts";
+import { companionSystemPrompt, proactiveDirective, stateLine } from "./companion-prompt.ts";
+import { moderationInstruction } from "./companion-safety.ts";
 import { fakeCompanionLlm } from "./companion-llm-fake.ts";
 import type { OutboundRequest } from "./delete-account.contract.ts";
 
@@ -29,6 +32,8 @@ type Options = {
   env?: ChatSendEnv | null;
   llmFor?: ((model: string) => CompanionLlm) | null;
   feedbackTimeoutMs?: number;
+  /** 운영 조회 RPC 응답. 없는 이름은 404(마이그레이션 적용 전). */
+  rpc?: Record<string, unknown>;
 };
 
 function setup(options: Options = {}) {
@@ -39,6 +44,14 @@ function setup(options: Options = {}) {
     env,
     outbound: async (request) => {
       outbound.push(request);
+      const fn = request.url.split("/rest/v1/rpc/")[1];
+      if (fn !== undefined) {
+        const found = options.rpc !== undefined && fn in options.rpc;
+        return {
+          status: found ? 200 : 404,
+          text: async () => JSON.stringify(found ? options.rpc![fn] : { code: "PGRST202" }),
+        };
+      }
       return { status: 401, text: async () => "{}" };
     },
     llmFor:
@@ -54,9 +67,9 @@ function setup(options: Options = {}) {
       ? {}
       : { feedbackTimeoutMs: options.feedbackTimeoutMs }),
   });
-  const call = async (method: string, body?: unknown, token = "service-secret") => {
+  const call = async (method: string, body?: unknown, token = "service-secret", query = "") => {
     const response = await handler(
-      new Request("https://ref.supabase.co/functions/v1/companion-eval", {
+      new Request(`https://ref.supabase.co/functions/v1/companion-eval${query}`, {
         method,
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
         ...(body === undefined
@@ -285,7 +298,13 @@ test("EV9. 피드백 케이스의 말투 · 캐릭터가 운영 요청으로 넘
         id: "polite",
         text: "뭐 해?",
         speechLevel: "polite",
-        character: { name: "덕수쌤", role: "teacher" },
+        character: { name: "윤경", role: "guesthouse owner" },
+      },
+      {
+        id: "strict",
+        text: "뭐 해?",
+        speechLevel: "polite",
+        character: { name: "덕수쌤", role: "teacher", banmalFeedback: "correction" },
       },
       { id: "casual", text: "뭐 해?", speechLevel: "casual" },
     ],
@@ -294,10 +313,121 @@ test("EV9. 피드백 케이스의 말투 · 캐릭터가 운영 요청으로 넘
     (body["results"] as { output: { kind?: string; status: string } }[]).map(
       (r) => r.output.kind ?? r.output.status,
     ),
-  ).toEqual(["better", "none"]);
+  ).toEqual(["better", "correction", "none"]);
   const bad = await call("POST", {
     kind: "feedback",
     cases: [{ id: "x", text: "뭐 해?", speechLevel: "honorific" }],
   });
   expect(bad.status).toBe(400);
+});
+
+const duksuPersona = {
+  name: "덕수쌤",
+  age: "30대",
+  role: "선생님",
+  samples: ["소 더하기 고기는? 소고기!"],
+  maxSpeechLevel: "polite",
+  banmalFeedback: "correction",
+};
+const inspected = {
+  companion_inspect_characters: [
+    {
+      id: "duksu",
+      bibleVersion: "b@1",
+      active: true,
+      sortOrder: 0,
+      maxSpeechLevel: "polite",
+      persona: duksuPersona,
+    },
+    {
+      id: "mina",
+      bibleVersion: "b@1",
+      active: false,
+      sortOrder: 3,
+      maxSpeechLevel: "slang",
+      persona: { name: "미나" },
+    },
+  ],
+  companion_inspect_settings: { trial_limit: 20, testers_only: true },
+};
+
+test("EV10. ?docs=1 — 캐릭터마다 말투 상한까지 시스템 프롬프트, 설정, 실제 호출과 같은 프롬프트 글", async () => {
+  const { call } = setup({ env: anthropicEnv, llmFor: () => fakeCompanionLlm(), rpc: inspected });
+  expect((await call("GET", undefined, "user-token", "?docs=1")).status).toBe(401);
+  const { status, body } = await call("GET", undefined, "service-secret", "?docs=1");
+  expect(status).toBe(200);
+  expect(body["models"]).toEqual({
+    reply: "claude-sonnet-5-5",
+    feedback: "claude-sonnet-5-5",
+    moderation: "claude-haiku-5-5",
+    translation: "claude-haiku-5-5",
+  });
+  expect(body["settings"]).toEqual(inspected.companion_inspect_settings);
+  expect(body["inspectAvailable"]).toBe(true);
+  const characters = body["characters"] as Record<string, unknown>[];
+  expect(characters.map((c) => [c["id"], Object.keys(c["systemPrompt"] as object)])).toEqual([
+    ["duksu", ["polite"]],
+    ["mina", ["polite", "casual", "slang"]],
+  ]);
+  expect(characters[0]).toMatchObject({ ...duksuPersona, id: "duksu", active: true, sortOrder: 0 });
+  const rendered = companionSystemPrompt({
+    persona: duksuPersona as never,
+    speechLevel: "polite",
+    ageBand: "adult",
+    l1: "en",
+    expressions: [],
+    summary: null,
+    feedbackMode: "separate",
+    memories: [],
+    directive: null,
+  });
+  expect((characters[0]!["systemPrompt"] as Record<string, string>)["polite"]).toBe(
+    `${rendered.stable}\n\n${rendered.dynamic}`,
+  );
+  const prompts = body["prompts"] as Record<string, unknown>;
+  expect(prompts["moderation"]).toEqual({
+    input: {
+      adult: moderationInstruction("input", "adult"),
+      minor: moderationInstruction("input", "minor"),
+      unknown: moderationInstruction("input", "unknown"),
+    },
+    output_sync: {
+      adult: moderationInstruction("output_sync", "adult"),
+      minor: moderationInstruction("output_sync", "minor"),
+      unknown: moderationInstruction("output_sync", "unknown"),
+    },
+  });
+  expect(prompts["feedback"]).toBe(
+    feedbackSystem({
+      text: "{{learner message}}",
+      l1: "{{l1}}",
+      previous: null,
+      speechLevel: "polite",
+      character: null,
+      signal: new AbortController().signal,
+    }),
+  );
+  expect(prompts["translation"]).toContain('BCP 47 tag "{{l1}}"');
+  expect(prompts["translation"]).toContain("exactly {{segment count}} strings");
+  expect(Object.keys(prompts["memory"] as object)).toEqual(["adult", "minor"]);
+  expect((prompts["memory"] as Record<string, string>)["minor"]).toContain("may be a minor");
+  expect(prompts["proactiveDirective"]).toBe(proactiveDirective);
+  expect(prompts["stateLine"]).toBe(stateLine);
+  expect(rendered.stable).toContain(stateLine);
+  expect(Object.keys(prompts["feedbackModes"] as object)).toEqual([
+    "separate",
+    "natural",
+    "prefix",
+  ]);
+  expect(typeof prompts["summary"]).toBe("string");
+});
+
+test("EV11. 운영 조회 함수가 아직 없으면 characters · settings는 null, 프롬프트는 그대로", async () => {
+  const { call } = setup();
+  const { status, body } = await call("GET", undefined, "service-secret", "?docs=1");
+  expect(status).toBe(200);
+  expect(body).toMatchObject({ characters: null, settings: null, inspectAvailable: false });
+  expect(body["prompts"]).toHaveProperty("stateLine");
+  // 쿼리 없는 GET은 계약 그대로.
+  expect(Object.keys((await call("GET")).body)).toEqual(["models", "allowed", "llm"]);
 });

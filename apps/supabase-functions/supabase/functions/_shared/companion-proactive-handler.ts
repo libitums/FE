@@ -9,7 +9,11 @@ import type { ChatSendDeps, HistoryEntry, PersonaCard, Segment } from "./chat-se
 import { startTranslation, withTranslations } from "./chat-send-translate.ts";
 import { collectSegments, createSegmentSplitter, segmentsToPlain } from "./companion-segments.ts";
 import { systemSplit } from "./companion-llm.ts";
-import { companionSystemPrompt } from "./companion-prompt.ts";
+import {
+  companionSystemPrompt,
+  proactiveDirective,
+  proactiveUserText,
+} from "./companion-prompt.ts";
 import { callRpc, isServiceKey } from "./companion-rpc.ts";
 import { bearerTokenFrom } from "./supabase-auth.ts";
 
@@ -70,8 +74,7 @@ async function proactiveOne(deps: ChatSendDeps, target: Target, force: boolean):
     summary: context.summary,
     feedbackMode: "separate",
     memories: context.memories,
-    directive:
-      "The learner has not talked to you for a while. Send a short, warm opener in character (1–2 bubbles) that invites them back, e.g. about your day or something they told you. No guilt-tripping, no pressure.",
+    directive: proactiveDirective,
   });
   const history = context.history.flatMap((entry): HistoryEntry[] =>
     entry.role === "user"
@@ -85,7 +88,7 @@ async function proactiveOne(deps: ChatSendDeps, target: Target, force: boolean):
   for await (const chunk of llm.reply({
     system: `${prompt.stable}${systemSplit}${prompt.dynamic}`,
     history,
-    userText: "(앱 안내: 학습자가 한동안 대화하지 않았다. 캐릭터가 먼저 짧게 말을 건다.)",
+    userText: proactiveUserText,
     signal: AbortSignal.timeout(deps.llmTimeoutMs ?? 45_000),
   })) {
     deltas.push(...splitter.push(chunk));

@@ -9,7 +9,7 @@ const request = (overrides: Partial<FeedbackRequest> = {}): FeedbackRequest => (
   l1: "en",
   previous: null,
   speechLevel: "polite",
-  character: { name: "덕수쌤", role: "teacher" },
+  character: { name: "윤경", role: "guesthouse owner", banmalFeedback: "better" },
   signal: new AbortController().signal,
   ...overrides,
 });
@@ -42,7 +42,7 @@ test("FB1. 피드백 프롬프트 — 섞인 언어 · 말투 · 맞춤법 · �
   expect(feedbackSystem(request({ speechLevel: null }))).toContain("speech level is unknown");
   expect(feedbackSystem(request({ l1: null }))).toContain('BCP 47 tag "en"');
   expect(feedbackContent(request({ previous: "뭐 해요?", text: "밥 먹어요" }))).toBe(
-    "Character: 덕수쌤 (teacher)\nRelationship speech level: polite\nThe character just said: 뭐 해요?\nLearner's message: 밥 먹어요",
+    "Character: 윤경 (guesthouse owner)\nRelationship speech level: polite\nThe character just said: 뭐 해요?\nLearner's message: 밥 먹어요",
   );
   expect(feedbackContent(request({ character: null, speechLevel: null }))).toBe(
     "Learner's message: 안녕하세요",
@@ -111,4 +111,20 @@ test("FB5. 가짜 계층 — 맞춤법은 교정, 채팅 관습은 없음, 어�
     better: { text: "너 좋아해요." },
   });
   expect(await feedback("저는 학생 이에요")).toMatchObject({ kind: "correction" });
+});
+
+// FB6 — 사용자 결정(2026-11-09): 덕수쌤(선생님)에게 존댓말 관계에서 반말은 교정. 페르소나 칸 `banmalFeedback`이 정한다.
+test("FB6. 페르소나 banmalFeedback=correction이면 존댓말 관계의 반말은 교정 — 다른 캐릭터는 better", async () => {
+  const duksu = { name: "덕수쌤", role: "teacher", banmalFeedback: "correction" } as const;
+  const strict = feedbackSystem(request({ character: duksu }));
+  expect(strict).toContain('use kind "correction" with one item per 반말 ending');
+  expect(strict).not.toContain('use kind "better" with the same sentence in polite style');
+  expect(feedbackSystem(request())).toContain(
+    'use kind "better" with the same sentence in polite style',
+  );
+  expect(await feedback("뭐 해?", { character: duksu })).toMatchObject({
+    kind: "correction",
+    items: [{ original: "뭐 해?", corrected: "뭐 해요?" }],
+  });
+  expect(await feedback("뭐 해?")).toMatchObject({ kind: "better" });
 });

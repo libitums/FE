@@ -18,7 +18,7 @@ const speechLevelRule: Record<SpeechLevel, string> = {
 };
 
 // 피드백 방식은 페르소나 답변만 바꾼다 — correction 이벤트는 세 방식 모두 따로 온다(PRD §3.6).
-const feedbackRule: Record<FeedbackMode, string> = {
+export const feedbackModeRule: Record<FeedbackMode, string> = {
   separate:
     "Do not correct the learner's Korean in your reply. Corrections are shown to them separately.",
   natural:
@@ -26,6 +26,15 @@ const feedbackRule: Record<FeedbackMode, string> = {
   prefix:
     "If the learner made a Korean mistake, start with one very short, friendly correction line (e.g. \"'마리아예요'라고 해요!\"), then continue the conversation.",
 };
+
+/** 답 끝의 앱용 줄(PRD §3.2 · §3.8). 학습자에게는 보이지 않는다. */
+export const stateLine = `@state {"intimacy_delta": <integer from -2 to 3: how much warmer this exchange made the relationship>, "topic": "<2-4 word Korean topic of this exchange>", "user_wants_switch": <true if the learner signals they want a new topic>}`;
+
+/** 선톡(PRD §3.8)의 이번 답 지시와, 유저 말 자리에 넣는 앱 안내. */
+export const proactiveDirective =
+  "The learner has not talked to you for a while. Send a short, warm opener in character (1–2 bubbles) that invites them back, e.g. about your day or something they told you. No guilt-tripping, no pressure.";
+export const proactiveUserText =
+  "(앱 안내: 학습자가 한동안 대화하지 않았다. 캐릭터가 먼저 짧게 말을 건다.)";
 
 export type PromptInput = {
   readonly persona: PersonaCard;
@@ -71,13 +80,13 @@ Write one line per message bubble. Start every line with a tag:
 - "@narration " only for rare scene descriptions
 Write nothing else: no markdown, no quotes around lines, no translations.
 After the bubbles, write exactly one last line for the app (never shown to the learner):
-@state {"intimacy_delta": <integer from -2 to 3: how much warmer this exchange made the relationship>, "topic": "<2-4 word Korean topic of this exchange>", "user_wants_switch": <true if the learner signals they want a new topic>}`;
+${stateLine}`;
 
   const dynamic = [
     `# This learner
 - Speech level: ${speechLevelRule[input.speechLevel]}
 - Age: ${input.ageBand === "adult" ? "adult" : "may be a minor — keep everything appropriate for a 13-year-old"}
-${input.l1 ? `- Their language: ${input.l1}\n` : ""}- Mistakes: ${feedbackRule[input.feedbackMode]}`,
+${input.l1 ? `- Their language: ${input.l1}\n` : ""}- Mistakes: ${feedbackModeRule[input.feedbackMode]}`,
     input.memories.length > 0
       ? `# What you remember about them (use only when relevant, never list it)\n${list(input.memories)}`
       : "",

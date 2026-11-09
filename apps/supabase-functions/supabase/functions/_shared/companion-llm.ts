@@ -16,6 +16,8 @@ import {
   feedbackContent,
   feedbackFrom,
   feedbackSystem,
+  memorySystem,
+  summarySystem,
   translationContent,
   translationSystem,
 } from "./companion-llm-prompts.ts";
@@ -178,10 +180,7 @@ export function anthropicCompanionLlm(
       const result = await parse(
         config.moderationModel,
         memorySchema,
-        `You maintain long-term memory for a chat character. From the latest exchange, extract at most 3 new, durable facts about the learner (preferences, plans, life events) worth remembering in later conversations. Write each in short Korean.
-- "shared": true if any character could know it (name, home country, hobbies, level), false if it only belongs to this conversation.
-- Skip anything already in the existing memory, small talk, and anything about the character.
-${request.minor ? "- The learner may be a minor: never store health, mental health, or emotional-state information.\n" : ""}- If nothing is worth remembering, return an empty list.`,
+        memorySystem(request.minor),
         `Existing memory:\n${request.existing.map((item) => `- ${item}`).join("\n") || "(none)"}\n\nLearner: ${request.userText}\nCharacter: ${request.reply}`,
         request.signal,
       );
@@ -193,8 +192,7 @@ ${request.minor ? "- The learner may be a minor: never store health, mental heal
           model: config.moderationModel,
           max_tokens: 1500,
           output_config: { effort: "low" },
-          system:
-            "Summarize this Korean-learning chat for the character's memory in at most 6 short Korean sentences: what the learner shared, ongoing topics, and anything promised. Merge with the previous summary. No preamble.",
+          system: summarySystem,
           messages: [
             {
               role: "user",
