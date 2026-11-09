@@ -1,4 +1,4 @@
-import { useEffect, useState } from "@lynx-js/react";
+import { useEffect, useMemo, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import { TopBar } from "../components/TopBar";
@@ -97,6 +97,16 @@ export function AppHeader({
   // 무제한 레이어가 열린 채 무제한 상태가 사라지면(로그아웃 · 표시 해제) 열린 레이어가 없는 것으로 봅니다 — 아무것도 그리지
   // 않으면서 머리만 낭독에서 가려진 채 남지 않게 합니다.
   const layer = openLayer === "unlimited" && unlimitedPass === undefined ? null : openLayer;
+  const unlimitedOpen = layer === "unlimited";
+  // 모달의 모양은 열릴 때(그리고 무제한 상태가 바뀔 때) 한 번 셉니다 — 렌더마다 `Date.now()`로 새 객체를 만들면 머리가
+  // 다시 그려질 때마다 모달도 다시 그려집니다. 남은 날은 하루 단위라 모달이 떠 있는 동안 다시 셀 필요가 없습니다.
+  const unlimitedView = useMemo(
+    () =>
+      unlimitedOpen && unlimitedPass !== undefined
+        ? unlimitedPassView(unlimitedPass, Date.now())
+        : null,
+    [unlimitedOpen, unlimitedPass],
+  );
   const ticketModalOpen = openLayer === "tickets";
   // 티켓 모달이 떠 있는 동안 1초마다 다시 그리도록 알립니다(카운트다운). 닫히거나 머리가 내려가면 거둡니다.
   useEffect(() => {
@@ -180,8 +190,8 @@ export function AppHeader({
           onClose={close}
         />
       ) : null}
-      {layer === "unlimited" && unlimitedPass !== undefined ? (
-        <UnlimitedTicketModal view={unlimitedPassView(unlimitedPass, Date.now())} onClose={close} />
+      {unlimitedView !== null ? (
+        <UnlimitedTicketModal view={unlimitedView} onClose={close} />
       ) : null}
       {openLayer === "survey" && episodeSurvey !== null ? (
         <EpisodeSurveySheet
