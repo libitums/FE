@@ -19,6 +19,7 @@ import { defaultTranslationTimeoutMs } from "./chat-send-translate.ts";
 import type { Outbound } from "./delete-account.contract.ts";
 import { companionDocs } from "./companion-eval-docs.ts";
 import { StructuredUnavailable } from "./companion-llm.ts";
+import { recentFeedbackHistory } from "./companion-llm-prompts.ts";
 import { isServiceKey } from "./companion-rpc.ts";
 import { bearerTokenFrom } from "./supabase-auth.ts";
 
@@ -50,6 +51,11 @@ const caseSchema = z.object({
   l1: z.string().min(1).max(35).nullable().optional(),
   // 검사: 출력 검사 때 앞선 유저 메시지. 피드백: 바로 앞 캐릭터 말.
   context: z.string().max(2000).nullable().optional(),
+  // 피드백만: 최근 대화(맥락, 오래된 것부터 — 운영처럼 마지막 6개만 쓴다).
+  history: z
+    .array(z.object({ role: z.enum(["user", "assistant"]), text: z.string().max(2000) }))
+    .max(20)
+    .optional(),
   // 피드백만: 관계 말투 단계 · 상대 캐릭터. 생략하면 모름(말투 규칙은 한 메시지 안 섞임만 본다).
   speechLevel: z.enum(["polite", "casual", "slang"]).nullable().optional(),
   character: z
@@ -150,6 +156,7 @@ function runCase(deps: CompanionEvalDeps, llm: CompanionLlm, kind: EvalKind, ite
       text: item.text,
       l1: item.l1 ?? null,
       previous: item.context ?? null,
+      history: recentFeedbackHistory(item.history ?? []),
       speechLevel: item.speechLevel ?? null,
       character:
         item.character == null

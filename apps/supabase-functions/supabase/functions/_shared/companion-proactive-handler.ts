@@ -1,6 +1,7 @@
 // `POST /functions/v1/companion-proactive` — 선톡(PRD §3.8, API §2.3). 서버 키만 받는다(pg_cron · ops-dashboard).
 //
-// 본문 { user_id, character_id, force? } — 한 대화(플레이그라운드). `force`는 공백 · 하루 상한만 건너뛴다. 연령 · 지역 규칙은 건너뛰지 않는다.
+// 본문 { user_id, character_id, force? } — 한 대화(플레이그라운드). `force`는 빈도 판정(유저 설정 off · 선호 시각 · 조용한 시간 · 하루 상한 ·
+// 공백)을 모두 건너뛴다. 연령 · 지역 규칙은 건너뛰지 않는다.
 // 본문 { batch: n } — 후보(`companion_proactive_candidates`)를 n개까지(예약 작업).
 // 선톡은 유저 없이 나가므로 연령과 상관없이 출력 검사를 지난 것만 저장한다. 크레딧을 차감하지 않는다.
 // ⚠ 푸시는 아직 보내지 않는다 — `send-push`에 컴패니언 목적지가 없다(API §2.3, M3 남은 일). 앱은 다음 조회 때 메시지 목록에서 본다.
@@ -29,6 +30,8 @@ type ProactiveContext = {
   hasConversation: boolean;
   allowed: boolean;
   capReached: boolean;
+  /** 빈도 판정(20261115): off · quiet_hours · hour · daily_cap · gap · spacing, 보내도 되면 null. 이전 DB에는 없다. */
+  skipReason?: string | null;
   memories: string[];
   history: { role: "user" | "assistant"; text: string | null; segments: Segment[] }[];
 } | null;
@@ -63,7 +66,16 @@ async function proactiveOne(deps: ChatSendDeps, target: Target, force: boolean):
   if (context === null) return { ...target, result: "character_not_found" };
   if (!context.hasConversation) return { ...target, result: "no_conversation" };
   if (!context.allowed) return { ...target, result: "not_allowed_for_age" };
-  if (context.capReached && !force) return { ...target, result: "daily_cap" };
+  // `force`(플레이그라운드)는 빈도 판정(설정 off · 시각 · 상한 · 공백)을 모두 건너뛴다 — 연령 · 지역은 위에서 이미 막았다.
+  if (!force) {
+    const skip =
+      context.skipReason === undefined
+        ? context.capReached
+          ? "daily_cap"
+          : null
+        : context.skipReason;
+    if (skip !== null) return { ...target, result: skip };
+  }
 
   const prompt = companionSystemPrompt({
     persona: context.persona,

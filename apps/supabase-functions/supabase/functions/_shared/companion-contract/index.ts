@@ -58,6 +58,7 @@ export {
   companionProfileSchema,
   companionWalletSchema,
   feedbackModeSchema,
+  proactivePrefSchema,
   type CompanionCharacter,
   type CompanionMemory,
   type CompanionMessage,
@@ -65,4 +66,5 @@ export {
   type CompanionProfile,
   type CompanionWallet,
   type FeedbackMode,
+  type ProactivePref,
 } from "./rpc.ts";

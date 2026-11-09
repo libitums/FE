@@ -22,7 +22,8 @@ select cron.schedule(
   $$ select public.companion_expire_sub_credits(now()); $$
 );
 
--- 선톡 — 매시 30분, 후보 20개까지. 공백 · 하루 상한 · 연령 규칙은 companion.settings와 후보 함수가 정한다.
+-- 선톡 — 매시 30분, 후보 20개까지. 유저마다 빈도(off · 하루 1 · 2회) · 선호 시각 · 조용한 시간 · 공백 · 연령 규칙은 후보 함수가 정한다
+-- (마이그레이션 20261115). 매시간 도는 까닭은 유저마다 현지 시각이 달라서다 — 한 유저에게 보내는 수는 설정을 넘지 않는다.
 -- ⚠ 푸시는 아직 나가지 않는다(send-push에 컴패니언 목적지가 없다). 메시지는 저장되어 앱의 다음 조회에 보인다.
 select cron.schedule(
   'companion-proactive',

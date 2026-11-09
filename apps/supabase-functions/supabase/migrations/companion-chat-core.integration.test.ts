@@ -313,6 +313,9 @@ test("CH9. 운영 조회 — 시험 계정 목록 · 대화(내부 상태 · 판
       l1: null,
       region: null,
       feedbackMode: null,
+      proactivePref: "daily1",
+      proactiveHour: null,
+      timezone: null,
     },
   ]);
 

@@ -2,12 +2,19 @@ import { expect, test } from "vitest";
 
 import type { FeedbackRequest } from "./chat-send.contract.ts";
 import { fakeCompanionLlm } from "./companion-llm-fake.ts";
-import { feedbackContent, feedbackFrom, feedbackSystem } from "./companion-llm-prompts.ts";
+import {
+  feedbackContent,
+  feedbackFrom,
+  feedbackHistoryLimit,
+  feedbackSystem,
+  recentFeedbackHistory,
+} from "./companion-llm-prompts.ts";
 
 const request = (overrides: Partial<FeedbackRequest> = {}): FeedbackRequest => ({
   text: "안녕하세요",
   l1: "en",
   previous: null,
+  history: [],
   speechLevel: "polite",
   character: { name: "윤경", role: "guesthouse owner", banmalFeedback: "better" },
   signal: new AbortController().signal,
@@ -42,10 +49,10 @@ test("FB1. 피드백 프롬프트 — 섞인 언어 · 말투 · 맞춤법 · �
   expect(feedbackSystem(request({ speechLevel: null }))).toContain("speech level is unknown");
   expect(feedbackSystem(request({ l1: null }))).toContain('BCP 47 tag "en"');
   expect(feedbackContent(request({ previous: "뭐 해요?", text: "밥 먹어요" }))).toBe(
-    "Character: 윤경 (guesthouse owner)\nRelationship speech level: polite\nThe character just said: 뭐 해요?\nLearner's message: 밥 먹어요",
+    "Character: 윤경 (guesthouse owner)\nRelationship speech level: polite\nThe character just said: 뭐 해요?\nLatest learner message (give feedback on this only): 밥 먹어요",
   );
   expect(feedbackContent(request({ character: null, speechLevel: null }))).toBe(
-    "Learner's message: 안녕하세요",
+    "Latest learner message (give feedback on this only): 안녕하세요",
   );
 });
 
@@ -127,4 +134,49 @@ test("FB6. 페르소나 banmalFeedback=correction이면 존댓말 관계의 반�
     items: [{ original: "뭐 해?", corrected: "뭐 해요?" }],
   });
   expect(await feedback("뭐 해?")).toMatchObject({ kind: "better" });
+});
+
+// FB7 — 최근 대화는 맥락일 뿐: 마지막 6개 · 글자만 · 빈 줄 없음, 이번 메시지만 피드백한다는 틀.
+test("FB7. 피드백 맥락 — 최근 대화 6개, 맥락일 뿐이라고 밝힌다", () => {
+  const history = recentFeedbackHistory([
+    { role: "user", text: "하나" },
+    { role: "assistant", segments: [{ kind: "speech", text: "둘", translation: "two" }] },
+    { role: "user", text: "셋" },
+    { role: "assistant", segments: [] },
+    { role: "user", text: "넷" },
+    {
+      role: "assistant",
+      segments: [
+        { kind: "action", text: "웃는다" },
+        { kind: "speech", text: "다섯" },
+      ],
+    },
+    { role: "user", text: "  " },
+    { role: "user", text: "여섯" },
+    { role: "assistant", segments: [{ kind: "speech", text: "일곱" }] },
+  ]);
+  expect(history).toEqual([
+    { role: "assistant", text: "둘" },
+    { role: "user", text: "셋" },
+    { role: "user", text: "넷" },
+    { role: "assistant", text: "웃는다\n다섯" },
+    { role: "user", text: "여섯" },
+    { role: "assistant", text: "일곱" },
+  ]);
+  expect(feedbackHistoryLimit).toBe(6);
+  const content = feedbackContent(
+    request({
+      history: history.slice(-2),
+      previous: "일곱",
+      text: "좋아요",
+      character: null,
+      speechLevel: null,
+    }),
+  );
+  expect(content).toBe(
+    "Recent conversation (context only — do not give feedback on it):\nLearner: 여섯\nCharacter: 일곱\n\nLatest learner message (give feedback on this only): 좋아요",
+  );
+  expect(feedbackSystem(request())).toContain(
+    "The recent conversation, if given, is context only: give feedback on the latest learner message only",
+  );
 });

@@ -38,8 +38,35 @@
           "type": "null"
         }
       ]
+    },
+    "proactivePref": {
+      "type": "string",
+      "enum": ["off", "daily1", "daily2"]
+    },
+    "proactiveHour": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 23
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "timezone": {
+      "type": ["string", "null"]
     }
   },
-  "required": ["birthYear", "ageSource", "l1", "feedbackMode"],
+  "required": [
+    "birthYear",
+    "ageSource",
+    "l1",
+    "feedbackMode",
+    "proactivePref",
+    "proactiveHour",
+    "timezone"
+  ],
   "additionalProperties": false
 }

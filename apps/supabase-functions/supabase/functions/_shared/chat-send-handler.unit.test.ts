@@ -537,6 +537,11 @@ describe("L1 번역", () => {
     ]);
     expect(feedbackRequests[0]).toMatchObject({
       previous: "반가워요",
+      // 최근 대화 맥락 — 글자만, 번역 없이.
+      history: [
+        { role: "user", text: "안녕" },
+        { role: "assistant", text: "반가워요" },
+      ],
       speechLevel: "polite",
       character: { name: "덕수쌤", role: null, banmalFeedback: "better" },
     });

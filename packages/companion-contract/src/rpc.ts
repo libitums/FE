@@ -12,13 +12,21 @@ import {
 
 export const feedbackModeSchema = z.enum(["separate", "natural", "prefix"]);
 export const ageSourceSchema = z.enum(["self", "social", "store_signal"]);
+export const proactivePrefSchema = z.enum(["off", "daily1", "daily2"]);
 
 /** `companion_load_profile()`의 반환입니다. 행이 없으면 함수가 `null`을 돌려줍니다. */
 export const companionProfileSchema = z.object({
   birthYear: z.nullable(z.int()),
   ageSource: z.nullable(ageSourceSchema),
   l1: z.nullable(z.string()),
+  /** 비어 있으면 서버 기본 `separate`(결정: separate, 2026-11-09 — PRD O5). */
   feedbackMode: z.nullable(feedbackModeSchema),
+  /** 선톡 빈도 — 끔 · 하루 1회(기본) · 하루 2회. 저장은 `companion_save_profile`의 `p_proactive_pref`. */
+  proactivePref: proactivePrefSchema,
+  /** 선톡을 받고 싶은 현지 시각(0 ~ 23). null이면 아무 때나(조용한 시간 22 ~ 08시 제외). 지우기는 `p_proactive_hour = -1`. */
+  proactiveHour: z.nullable(z.int().check(z.gte(0), z.lte(23))),
+  /** IANA 시간대(예: `Asia/Manila`). null이면 지역의 대표 시간대, 그것도 없으면 시각 맞추기 · 조용한 시간을 건너뛴다. 지우기는 `p_timezone = ''`. */
+  timezone: z.nullable(z.string()),
 });
 
 export const characterAvailabilitySchema = z.enum([
@@ -90,6 +98,7 @@ export type FeedbackMode = z.infer<typeof feedbackModeSchema>;
 export type CompanionMemory = z.infer<typeof companionMemorySchema>;
 export type CompanionWallet = z.infer<typeof companionWalletSchema>;
 export type CompanionProfile = z.infer<typeof companionProfileSchema>;
+export type ProactivePref = z.infer<typeof proactivePrefSchema>;
 export type CompanionCharacter = z.infer<typeof companionCharacterSchema>;
 export type CompanionMessage = z.infer<typeof companionMessageSchema>;
 export type CompanionMessagesPage = z.infer<typeof companionMessagesPageSchema>;

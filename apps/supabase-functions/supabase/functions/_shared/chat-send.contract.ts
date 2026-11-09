@@ -113,6 +113,7 @@ export type ModerationRequest = {
 };
 
 export type FeedbackMode = "separate" | "natural" | "prefix";
+export type FeedbackHistoryEntry = { readonly role: "user" | "assistant"; readonly text: string };
 export type BanmalFeedback = "correction" | "better";
 
 /** SSE `correction`의 본문에서 `userMessageId`를 뺀 것(M2). */
@@ -128,8 +129,10 @@ export type FeedbackRequest = {
   readonly text: string;
   /** 설명 · 뜻을 쓸 언어. 없으면 영어(PRD §3.5). */
   readonly l1: string | null;
-  /** 바로 앞 캐릭터 말 — 대답으로서 자연스러운지 보려고. */
+  /** 바로 앞 캐릭터 말 — 대답으로서 자연스러운지 보려고. `history`가 있으면 그쪽이 맥락이다. */
   readonly previous: string | null;
+  /** 최근 대화(오래된 것부터, 이번 유저 메시지 제외) — 맥락일 뿐 피드백 대상이 아니다. 비면 `previous`만. */
+  readonly history: readonly FeedbackHistoryEntry[];
   /** 지금 관계의 말투 단계 — 존댓말 · 반말 일관성을 보려고. 모르면 null(말투 규칙을 건너뛴다). */
   readonly speechLevel: SpeechLevel | null;
   /** 상대 캐릭터(이름 · 역할 · 반말 피드백 종류) — 선생님 같은 상대에게 반말인지 보려고. */

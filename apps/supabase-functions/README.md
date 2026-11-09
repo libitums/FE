@@ -217,14 +217,16 @@ Firebase 프로젝트에 Android 앱을 등록하고 FCM HTTP v1 API 권한이 �
 | `20261112120000_companion_credits.sql` (M4) | 지갑 · 원장 · 예약 · 체험 사용량 · 티어, 지급 · 소멸 · 정리 · 조회 |
 | `20261113120000_companion_turn_v2.sql` | 판정 · 시작 · 끝을 M2 ~ M4까지 합친 판 |
 | `20261114120000_companion_inspect_docs.sql` | 운영 조회 `companion_inspect_characters()` · `companion_inspect_settings()`(문서 화면) · 덕수쌤 `banmalFeedback: correction` |
+| `20261115120000_companion_proactive_prefs.sql` | 선톡 빈도 유저 설정(off · daily1 · daily2) · 선호 시각 · 시간대 · 조용한 시간, 앱 프로필 · 운영자 함수 확장 |
 
-통합 테스트 CF1 ~ CF11 · CH1 ~ CH10 · TV1 ~ TV10 · ID1 ~ ID3, 함수 단위 테스트 CS1 ~ CS16 · SG · CE · BR · LL · EV · FB.
+통합 테스트 CF1 ~ CF11 · CH1 ~ CH10 · TV1 ~ TV10 · ID1 ~ ID3 · PP1 ~ PP9, 함수 단위 테스트 CS1 ~ CS16 · SG · CE · BR · LL · EV · FB.
 
 **턴 흐름** — 판정(시험 계정 · 티어 · 연령 · 일시 차단 · 이용 시간 · 멱등) → 시작(체험 · 크레딧 예약 + 유저 메시지 저장, 한 트랜잭션) →
 SSE → 입력 검사 · 메인 답변 · 피드백을 동시에 → 위기(`crisis`) · 차단(`guardrail_blocked`) / 조각(`delta`, 미성년자 · 나이 모름은 출력 검사 뒤) ·
 교정(`correction`) → 답 조각이 다 모이면 L1 번역(`translation`, 남은 기다림과 동시에) → 끝(피드백 · 친밀도 → 말투 · 화제 · 제재 · 예약 확정/해제, 한 트랜잭션) → `state` · `done` → 스트림을 닫고 기억 추출 · 요약.
 
-**값을 바꾸는 곳** — 단가 · 체험 수 · 말투 문턱 · 선톡 공백 · 제재 횟수 같은 값(PRD §8 C · O1 ~ O5 초안)은 `companion.settings` 한 행이다.
+**값을 바꾸는 곳** — 단가 · 체험 수 · 말투 문턱 · 선톡 공백 · 제재 횟수 같은 값(PRD §8 C · O1 ~ O4 초안)은 `companion.settings` 한 행이다.
+**피드백 방식 기본값 — 결정: separate (2026-11-09, PRD O5).** 프로필 `feedback_mode`가 비면 `separate`(교정은 따로 오고 답은 고치지 않는다).
 SQL 편집기에서 `update companion.settings set trial_limit = 30;`처럼 바꾸면 배포 없이 다음 턴부터 적용된다. `testers_only`가 참이면(기본)
 `duru_tester` 계정만 쓴다.
 
@@ -261,7 +263,31 @@ fake 모드에서 흐름을 일부러 일으키는 낱말은 `_shared/companion-
 말투 섞임 · 맞춤법 · 문법은 `correction`, 존댓말 관계(또는 선생님 · 어른 캐릭터)에 반말은 `better`(존댓말 제안), 반말 관계의 존댓말은 피드백 없음.
 페르소나 칸 `banmalFeedback: "correction"`인 캐릭터(지금은 덕수쌤 — 마이그레이션 20261114)는 존댓말 관계의 반말을 `correction`으로 고친다.
 띄어쓰기는 뜻이 바뀌거나 읽기 어려울 때만, ㅋㅋ · ㅎㅎ · ㅇㅇ · ~ · 이모지는 피드백 없음. `better`는 원어민에게 분명히 어색할 때 하나만, 애매하면 `none`.
-피드백 요청에는 관계 말투 단계와 캐릭터(이름 · 역할)가 들어간다.
+피드백 요청에는 관계 말투 단계와 캐릭터(이름 · 역할)가 들어간다. 최근 대화 6개(유저 · 캐릭터 합쳐 약 세 번 주고받기, 상수 `feedbackHistoryLimit` —
+글자만, 번역 · 숨김 · 차단 메시지 없음)를 「맥락일 뿐 — 마지막 학습자 메시지만 피드백」이라는 틀로 user 메시지에 싣는다. 시스템 글은 (언어 · 말투 단계 ·
+반말 규칙)마다 같아 바뀌는 글은 모두 user 쪽이다 — 시스템이 캐시 최소 길이보다 짧아 `cache_control`은 달지 않는다. 피드백 제한 시간(8초)은 그대로다.
+
+**선톡 빈도 — 유저 설정(20261115).** 프로필 `proactive_pref` off · daily1(기본) · daily2, `proactive_hour`(현지 0 ~ 23, null이면 아무 때나), `timezone`(IANA).
+판정은 `companion.proactive_skip_reason` 하나(이유 off · quiet_hours · hour · daily_cap · gap · spacing):
+
+| | 하루 횟수 | 마지막 메시지 뒤 | 직전 선톡 뒤 | 선호 시각 |
+|---|---|---|---|---|
+| off | 0 | — | — | — |
+| daily1 | 1 | `proactive_gap`(24시간) | `proactive_spacing`(8시간) | 그 시각 |
+| daily2 | 2 | `proactive_gap_daily2`(10시간) | `proactive_spacing`(8시간) | 그 시각과 10시간 뒤 |
+
+- 하루 횟수는 `settings.proactive_daily_cap`(전체 상한, 이 마이그레이션이 기본 1 → 2로)을 넘지 않는다. 선톡도 메시지라 마지막 메시지 시각을 바꾼다 — daily2의
+  두 번째가 첫 번째 10시간 뒤 이후인 까닭이다.
+- 시간대를 알면(프로필 `timezone`, 없으면 지역 대표 시간대 — KR · JP · PH · IN · VN · TH · ID · MY · SG · TW · HK · CN) 현지 22:00 ~ 08:00에는 보내지 않고 「하루」는
+  현지 자정부터다. 선호 시각의 10시간 뒤가 조용한 시간이면 그날은 한 번. 시간대를 모르면(미국처럼 여럿인 나라 포함) 시각 맞추기 · 조용한 시간을 건너뛰고 하루는 UTC.
+- 한 회차에 유저마다 후보 하나(가장 오래 조용한 대화). 연령 · 지역 규칙은 그대로.
+- 예약 작업은 매시 30분 그대로 둔다 — 유저마다 현지 시각이 달라 매시간 봐야 선호 시각을 맞춘다. 유저마다 보내는 수는 위 규칙이 정한다.
+- 플레이그라운드 `force`는 빈도 판정을 모두(off 포함) 건너뛴다. 연령 · 지역 규칙은 건너뛰지 않는다.
+- 앱: `companion_save_profile(p_birth_year, p_age_source, p_l1, p_feedback_mode, p_proactive_pref = null, p_proactive_hour = null, p_timezone = null)` —
+  null은 그대로, `p_proactive_hour = -1`은 지우기(아무 때나), `p_timezone = ''`은 지우기, 틀린 값(모르는 시간대 포함)은 22023. 옛 4인수 호출은 그대로 된다.
+  `companion_load_profile()`이 `proactivePref` · `proactiveHour` · `timezone`을 더 돌려준다(계약 `companion-profile`).
+- 운영: `companion_operator_set_profile(p_user_id, p_birth_year, p_clear_age, p_l1, p_feedback_mode, p_region, p_proactive_pref = null, p_proactive_hour = null,
+  p_timezone = null)` — 지우기 규칙은 앱과 같다. 옛 6인수 호출은 그대로 된다. `companion_inspect_testers()`가 세 값을 보여 준다.
 
 ### companion-eval — LLM 한 단계 평가
 
@@ -276,6 +302,8 @@ ops-dashboard가 검사 · 피드백 프롬프트를 케이스 묶음으로 돌�
   말투 선택 규칙을 건너뛴다)과 `character`(`{"name","role"?}`)를 더 받는다. `translation` 케이스는 한국어 한 줄 `text`와 `l1`(생략하면 en)을 받아
   `output: {"text"}`를 돌려준다(운영은 말풍선 묶음을 한 번에 번역한다).
   평가 때 볼 것: 한국어 · 영어가 섞인 입력은 `l1_to_ko` 하나(이유 설명 없음)로, 존댓말 관계의 반말은 `better`로, 반말 관계의 존댓말과 자연스러운 문장은 `none`으로 나와야 한다.
+- 피드백 케이스는 `history`(`[{"role":"user"|"assistant","text"}]`, 오래된 것부터, 최대 20 — 운영처럼 마지막 6개만 쓴다)도 받는다. `context`는 계속
+  앞 캐릭터 말 한 줄이고, `history`가 있으면 그쪽이 맥락이다.
 - 응답 `{"kind","model","results":[{"id","ok":true,"output","ms"} | {"id","ok":false,"error","ms"}]}` — `output`은 판정 `{category, action}` 또는
   `Feedback` 또는 `{text}`. 동시에 4개씩, 케이스마다 턴 경로와 같은 제한 시간(검사 45초 · 피드백 8초 · 번역 6초 — 넘으면 `error: "timeout"`).
   케이스 하나의 실패는 그 케이스만 `ok: false`(`timeout` · `structured_unavailable` · `mismatch` · `upstream_<상태>` · `upstream_error`). 본문이 틀리면 400 `invalid_request`.
@@ -305,9 +333,12 @@ supabase functions serve --no-verify-jwt                                        
 운영 프로젝트 `duru`에서 개발한다(위키 05). 새로 생기는 것은 `companion` 스키마 · `public.companion_*` 함수 · Edge Function 셋뿐이고,
 앱은 아직 컴패니언을 부르지 않는다.
 
-1. `supabase db push --dry-run`으로 **컴패니언 마이그레이션 일곱(20261108 ~ 20261114)만** 올라가는지 본다. `main`의 다른 미배포 마이그레이션이 같이 올라가면 멈추고 담당자와 확인한다(위키 05).
+1. `supabase db push --dry-run`으로 **컴패니언 마이그레이션 여덟(20261108 ~ 20261115)만** 올라가는지 본다. `main`의 다른 미배포 마이그레이션이 같이 올라가면 멈추고 담당자와 확인한다(위키 05).
 2. `supabase db push`(또는 일곱 SQL을 SQL 편집기에서 차례로). 여섯(20261108 ~ 20261113)을 이미 적용했으면 `20261114120000_companion_inspect_docs.sql`
    하나만 SQL 편집기에서 실행한다 — 반드시 여섯 **뒤에**(`companion.characters` · `companion.settings`가 있어야 한다).
+   `20261115120000_companion_proactive_prefs.sql`은 20261114 **뒤에** 적용한다. SQL 편집기로 올릴 때는 파일 본문을 `begin; … commit;`으로 감싸고 앞에
+   「20261114가 있는가 · 이미 적용했는가」 검사(`to_regprocedure`)를 둔 묶음을 쓴다 — 이미 적용했으면 아무것도 바꾸지 않고 멈추고,
+   `supabase_migrations.schema_migrations`가 있으면 판을 기록해 뒤의 `supabase db push`가 다시 올리지 않는다.
 3. 비밀: `supabase secrets set --env-file supabase/functions/.env`. 키가 아직 없으면 `COMPANION_LLM=fake`로 화면만 먼저 본다.
 4. `supabase functions deploy chat-send` · `supabase functions deploy companion-proactive` · `supabase functions deploy companion-eval`(`config.toml`의 `verify_jwt = false`를 따른다).
 5. 예약 작업: Vault에 서버 키(`companion_service_role_key`)를 넣고 `supabase/cron/companion.sql`을 SQL 편집기에서 한 번 실행한다.

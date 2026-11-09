@@ -8,6 +8,7 @@ import type {
   HistoryEntry,
   TurnState,
 } from "./chat-send.contract.ts";
+import { recentFeedbackHistory } from "./companion-llm-prompts.ts";
 import {
   collectSegments,
   createSegmentSplitter,
@@ -110,7 +111,7 @@ export function startReply(
   };
 }
 
-export function historyFrom(turn: BegunTurn): HistoryEntry[] {
+export function historyFrom(turn: Pick<BegunTurn, "history">): HistoryEntry[] {
   return turn.history.flatMap((entry): HistoryEntry[] => {
     if (entry.role === "user")
       return entry.text === null ? [] : [{ role: "user", text: entry.text }];
@@ -138,6 +139,8 @@ export function startFeedback(context: FeedbackContext, abort: AbortController):
         text: context.body.text,
         l1: context.gate.l1,
         previous: lastAssistant === undefined ? null : segmentsToPlain(lastAssistant.segments),
+        // 숨김 · 차단 메시지는 판정 함수가 이미 뺐다. 번역은 글자만 쓰니 들어가지 않는다.
+        history: recentFeedbackHistory(historyFrom(context.turn)),
         speechLevel: context.turn.speechLevel,
         character:
           context.turn.persona === null

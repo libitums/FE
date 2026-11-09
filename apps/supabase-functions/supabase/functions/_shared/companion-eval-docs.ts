@@ -74,6 +74,7 @@ export function promptDocs() {
     text: placeholder("learner message"),
     l1: placeholder("l1"),
     previous: null,
+    history: [],
     speechLevel: "polite",
     character: null,
     signal: new AbortController().signal,

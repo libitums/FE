@@ -1,7 +1,33 @@
 // 피드백 · 번역 프롬프트와 받은 결과 다듬기. 벤더와 무관한 글이라 `companion-llm.ts`(Anthropic 호출)에서 떼어 둡니다.
 // `companion-eval`이 같은 `feedback()` · `translate()`를 부르므로 여기를 고치면 평가 결과도 함께 바뀝니다.
 
-import type { Feedback, FeedbackRequest, Segment } from "./chat-send.contract.ts";
+import type {
+  Feedback,
+  FeedbackHistoryEntry,
+  FeedbackRequest,
+  HistoryEntry,
+  Segment,
+} from "./chat-send.contract.ts";
+import { segmentsToPlain } from "./companion-segments.ts";
+
+/** 피드백에 맥락으로 넣는 최근 메시지 수(유저 · 캐릭터 합쳐 — 약 세 번 주고받기). 설정이 아니라 상수다. */
+export const feedbackHistoryLimit = 6;
+const feedbackLineLimit = 500;
+
+/** 최근 대화를 피드백 맥락으로 — 글자만(번역 · 태그 없음), 빈 줄 빼고, 마지막 `feedbackHistoryLimit`개. */
+export function recentFeedbackHistory(
+  history: readonly (HistoryEntry | FeedbackHistoryEntry)[],
+): FeedbackHistoryEntry[] {
+  return history
+    .map((entry): FeedbackHistoryEntry => ({
+      role: entry.role,
+      text: ("text" in entry ? entry.text : segmentsToPlain(entry.segments))
+        .trim()
+        .slice(0, feedbackLineLimit),
+    }))
+    .filter((entry) => entry.text !== "")
+    .slice(-feedbackHistoryLimit);
+}
 
 /** 관계 말투 규칙. 존댓말 → 반말은 부드럽게(better), 반말 관계의 존댓말은 늘 괜찮다. */
 function speechLevelRule(request: FeedbackRequest): string {
@@ -22,6 +48,8 @@ export function feedbackSystem(request: FeedbackRequest): string {
   const language = request.l1 ?? "en";
   return `You give feedback on one chat message a Korean learner sent to a chat character. Write meanings, reasons and explanations in the language with BCP 47 tag "${language}". Too much feedback tires learners: give only what clearly helps, and when unsure return status "none".
 
+The recent conversation, if given, is context only: give feedback on the latest learner message only — never on earlier messages or on the character's lines.
+
 Decide in this order and use exactly one kind:
 1. Non-Korean parts. If any part of the message is not Korean (the whole message, or some words or a clause in another language), use kind "l1_to_ko". "l1ToKo.text" is the whole message as natural Korean: keep the learner's Korean parts, put the rest into Korean, and silently fix any Korean mistakes in it. "l1ToKo.meaning" is its meaning. "l1ToKo.text" is only the Korean sentence — no quotes, labels or notes. Leave "items" and "better" null. Never explain why it should be in Korean and never comment on the choice of language. Names, brands and acronyms usually written in Latin letters (BTS, iPhone, K-pop), numbers and emoji are not non-Korean parts.
 2. Mistakes. Use kind "correction" with one item per mistake (original fragment, corrected fragment, reason) for grammar, particles, conjugation, spelling and typos, wrong words, and speech levels mixed inside one message (e.g. "안녕하세요! 뭐 해?" — make the whole message one level, matching the relationship). Spacing only when it changes the meaning or makes the sentence hard to read; ignore ordinary chat spacing slips. You may also fill "better" if the corrected sentence is still clearly unnatural.
@@ -40,8 +68,16 @@ export function feedbackContent(request: FeedbackRequest): string {
       : `Character: ${request.character.name}${request.character.role ? ` (${request.character.role})` : ""}\n`;
   const level =
     request.speechLevel === null ? "" : `Relationship speech level: ${request.speechLevel}\n`;
-  const previous = request.previous ? `The character just said: ${request.previous}\n` : "";
-  return `${character}${level}${previous}Learner's message: ${request.text}`;
+  // 최근 대화가 있으면 그것이 맥락(앞 캐릭터 말을 포함한다), 없으면 앞 캐릭터 말 한 줄.
+  const context =
+    request.history.length > 0
+      ? `Recent conversation (context only — do not give feedback on it):\n${request.history
+          .map((entry) => `${entry.role === "user" ? "Learner" : "Character"}: ${entry.text}`)
+          .join("\n")}\n\n`
+      : request.previous
+        ? `The character just said: ${request.previous}\n`
+        : "";
+  return `${character}${level}${context}Latest learner message (give feedback on this only): ${request.text}`;
 }
 
 /** 구조화 출력(nullable 칸)을 계약 모양으로. kind에 맞는 본문이 없으면 `none`, l1_to_ko에는 번역만 남깁니다. */

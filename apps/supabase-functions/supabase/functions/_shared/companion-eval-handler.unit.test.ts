@@ -402,6 +402,7 @@ test("EV10. ?docs=1 — 캐릭터마다 말투 상한까지 시스템 프롬프�
       text: "{{learner message}}",
       l1: "{{l1}}",
       previous: null,
+      history: [],
       speechLevel: "polite",
       character: null,
       signal: new AbortController().signal,
@@ -430,4 +431,37 @@ test("EV11. 운영 조회 함수가 아직 없으면 characters · settings는 n
   expect(body["prompts"]).toHaveProperty("stateLine");
   // 쿼리 없는 GET은 계약 그대로.
   expect(Object.keys((await call("GET")).body)).toEqual(["models", "allowed", "llm"]);
+});
+
+test("EV12. 피드백 케이스의 history는 운영처럼 마지막 6개 맥락으로, context는 앞 캐릭터 말 한 줄로", async () => {
+  const seen: unknown[] = [];
+  const fake = fakeCompanionLlm();
+  const { call } = setup({
+    llmFor: () => ({
+      ...fake,
+      feedback: (request) => {
+        seen.push(request);
+        return fake.feedback(request);
+      },
+    }),
+  });
+  const history = Array.from({ length: 8 }, (_, i) => ({
+    role: i % 2 === 0 ? "user" : "assistant",
+    text: `줄${i}`,
+  }));
+  const ok = await call("POST", {
+    kind: "feedback",
+    cases: [
+      { id: "h", text: "좋아요", history },
+      { id: "c", text: "좋아요", context: "뭐 해요?" },
+    ],
+  });
+  expect(ok.status).toBe(200);
+  expect(seen[0]).toMatchObject({ history: history.slice(-6), previous: null });
+  expect(seen[1]).toMatchObject({ history: [], previous: "뭐 해요?" });
+  const bad = await call("POST", {
+    kind: "feedback",
+    cases: [{ id: "x", text: "a", history: [{ role: "system", text: "b" }] }],
+  });
+  expect(bad.status).toBe(400);
 });

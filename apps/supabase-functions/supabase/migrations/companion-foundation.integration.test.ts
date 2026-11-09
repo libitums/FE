@@ -90,6 +90,10 @@ test("CF2. 본인이 저장한 프로필을 읽고, 저장한 적 없으면 null
     ageSource: "self",
     l1: "tl",
     feedbackMode: "natural",
+    // 선톡 설정(20261115) — 저장한 적 없으면 기본값.
+    proactivePref: "daily1",
+    proactiveHour: null,
+    timezone: null,
   });
 });
 
@@ -103,6 +107,10 @@ test("CF3. null인 인수는 그 열을 바꾸지 않는다", async () => {
     ageSource: "self",
     l1: "en",
     feedbackMode: "prefix",
+    // 선톡 설정(20261115) — 저장한 적 없으면 기본값.
+    proactivePref: "daily1",
+    proactiveHour: null,
+    timezone: null,
   });
 });
 
