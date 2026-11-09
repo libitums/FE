@@ -44,8 +44,8 @@ export function useGuideAlignment(input: {
 
   useEffect(() => {
     if (!visible) return;
-    // 알고 있는 위치가 맨 위여도 늘 옮깁니다 — 내용이 늘며 스크롤 소식 없이 밀린 위치는 알 수 없습니다(기기에서 확인).
-    // 내용이 아직 놓이지 않았으면 놓인 첫 소식에 옮깁니다.
+    // 이미 놓인 지도는 알고 있는 위치가 맨 위여도 늘 옮깁니다 — 내용이 늘며 스크롤 소식 없이 밀린 위치는 알 수 없습니다
+    // (기기에서 확인). 내용이 아직 놓이지 않았으면 놓인 첫 소식에서 정합니다(아래 `handleContentLayout`).
     if (contentLaidOut.current) moveToTop();
     else pendingTop.current = true;
     if (scrollTop.current <= TOP_SLOP_PX) {
@@ -77,7 +77,12 @@ export function useGuideAlignment(input: {
       // 한 번 놓인 뒤의 레이아웃 소식은 볼 것이 없습니다 — 그 뒤에는 이펙트가 바로 옮깁니다(리뷰 반영).
       if (contentLaidOut.current || event.detail.height <= 0) return;
       contentLaidOut.current = true;
-      if (pendingTop.current) moveToTop();
+      if (!pendingTop.current) return;
+      // 처음 놓인 지도가 맨 위면 옮길 것이 없습니다 — 레이아웃 전에는 밀릴 내용도 없습니다. 실기에서는 이 소식 뒤에도
+      // 네이티브 스크롤 범위가 아직 「0 − 화면 높이」인 순간이 있어, 여기서 보낸 `scrollTo(0)`이 신규 설치마다
+      // 오류였습니다(DURU-ANDROID-F · G). 복원 위치에서 열린 지도만 옮깁니다.
+      if (scrollTop.current <= TOP_SLOP_PX) pendingTop.current = false;
+      else moveToTop();
     },
   };
 }
