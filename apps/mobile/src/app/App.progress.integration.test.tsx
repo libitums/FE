@@ -130,7 +130,7 @@ test("[IPG1] 부팅 뒤 서버 진행을 불러와 맵에 그리고, 연속 칩�
   expect(progressRpcs[1]!.body).toEqual({ p_today: localDayFrom(new Date()) });
 });
 
-test("[IPG2] 활동을 끝내면 오늘을 적고 진행을 저장하며, 연속 칩이 새 일수로 바뀐다", async () => {
+test("[IPG2] 표지만 끝내면 진행은 저장하지만 오늘을 적지 않고, 연속 칩 · 모달이 그대로다 (ADR-0035 U2 개정 2026-11-09)", async () => {
   const rpcs = await boot({ load: { status: 200, body: "null" }, streak: 0, recorded: 1 });
   expect(screen.getByTestId("top-bar-streak")).toHaveAttribute(
     "accessibility-label",
@@ -140,33 +140,15 @@ test("[IPG2] 활동을 끝내면 오늘을 적고 진행을 저장하며, 연속
   finishIntro();
   await flush();
 
-  const record = rpcs.find((rpc) => rpc.name === "record_learning_days");
-  expect(record?.body).toEqual({
-    p_days: [localDayFrom(new Date())],
-    p_today: localDayFrom(new Date()),
-  });
   const save = rpcs.find((rpc) => rpc.name === "save_learning_progress");
   expect((save?.body["p_progress"] as Record<string, unknown>)["catalogProgress"]).toEqual({
     "u00-tutorial": ["intro"],
   });
+  // 표지는 연속 학습의 하루가 아니다 — 일반 학습(레슨 · 문화 · 최종 테스트)을 끝내야 적는다(레슨 쪽은 App.catalog-lessons L-ST1).
+  expect(rpcs.some((rpc) => rpc.name === "record_learning_days")).toBe(false);
   expect(screen.getByTestId("top-bar-streak")).toHaveAttribute(
     "accessibility-label",
-    "1-day streak",
-  );
-  // 연속이 늘어 맵으로 돌아오면 연속 학습 모달이 한 번 뜹니다.
-  expect(screen.getByTestId("journey-stat-modal-streak")).toBeInTheDocument();
-  expect(screen.getByTestId("journey-stat-modal-value")).toHaveTextContent("1");
-});
-
-test("[IPG4] 이미 오늘 한 날(일수가 그대로)이면 모달이 뜨지 않는다", async () => {
-  await boot({ load: { status: 200, body: "null" }, streak: 3, recorded: 3 });
-
-  finishIntro();
-  await flush();
-
-  expect(screen.getByTestId("top-bar-streak")).toHaveAttribute(
-    "accessibility-label",
-    "3-day streak",
+    "0-day streak",
   );
   expect(screen.queryByTestId("journey-stat-modal-streak")).toBeNull();
 });
@@ -179,5 +161,6 @@ test("[IPG3] 불러오기가 실패했으면 저장하지 않고 다시 불러�
 
   expect(rpcs.some((rpc) => rpc.name === "save_learning_progress")).toBe(false);
   expect(rpcs.filter((rpc) => rpc.name === "load_learning_progress")).toHaveLength(2);
-  expect(rpcs.some((rpc) => rpc.name === "record_learning_days")).toBe(true);
+  // 표지는 연속 학습의 하루가 아니어서 날짜도 적지 않는다(ADR-0035 U2 개정 2026-11-09).
+  expect(rpcs.some((rpc) => rpc.name === "record_learning_days")).toBe(false);
 });
