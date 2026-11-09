@@ -27,6 +27,8 @@
 - 앱 요청은 `Authorization: Bearer <사용자 액세스 토큰>`이다. Edge Function은 기존 `delete-account`처럼 `verify_jwt = false`로
   배포하고 **함수가 스스로 토큰을 검증한다**(Auth 사용자 조회). 창구 함수는 PostgREST가 토큰을 검증하고 함수가 `auth.uid()`를 쓴다.
 - 내부 엔드포인트(`job-worker` · 선톡)는 service role 키만 받는다. 기존 `send-push`와 같은 검증(`_shared/service-key.ts`)을 쓴다.
+  ⟨2026-11-09⟩ `companion-proactive` · `companion-eval`이 이 등급이다. `companion-suggest`(구현 중)는 `chat-send`처럼 사용자 토큰과
+  서버 키 + 유저 둘 다 받는다(§2.6).
 - **플레이그라운드 경로**(M1): `chat-send`는 `Authorization: Bearer <서버 키>` + `x-companion-user-id: <계정 id>`도 받는다. 서버 키를 가진 ops-dashboard만
   쓸 수 있고, 그 계정도 시험 계정 판정(판정 5)을 똑같이 지난다. 메시지 `meta.playground`에 표시가 남는다.
 - Edge Function이 DB에 닿을 때는 service role 키로 §3.3의 서버용 함수를 HTTP RPC로 부른다. DB에 직접 연결하지 않는다(§3.1).
@@ -117,6 +119,14 @@ Accept: text/event-stream
   (`hidden: true`).
 - `done`을 보내기 전에 피드백을 기다린다. 피드백이 제한 시간(설정 값) 안에 오지 않으면 `correction`을 `status: "unavailable"`로
   보내고 끝낸다.
+- **L1 번역 [결정 2026-11-09]**: 답 조각이 다 모이면 번역 호출 하나(`COMPANION_TRANSLATION_MODEL`)를 남은 기다림(피드백 ·
+  미성년자 출력 검사)과 동시에 시작한다. 제한 시간 6초. 결과는 `translation` 이벤트로(§4.2) 보내고 조각의 `translation`에 저장한다.
+  `l1`이 `ko` · `COMPANION_TRANSLATION=off`면 부르지 않는다. 출력 검사에 걸린 답은 번역을 내보내지도 저장하지도 않는다. 실패 ·
+  시간 초과 · 줄 수 불일치는 턴을 실패시키지 않고 `meta.translation`에 이유만 남는다.
+- **차단 턴의 페르소나 거절 [결정 2026-11-09 · 구현 중]**: 입력 검사가 막으면(위기 제외) `error`(`guardrail_blocked`)로 끝내는 대신
+  캐릭터가 거절하는 답을 만든다(PRD §3.11). 모델에는 분류 · 위반 단계만 넘기고 막힌 글은 넘기지 않는다. 생성이 실패하면 페르소나별
+  정해진 문장. 차감하지 않고(`creditsSpent: 0`), 보통 답처럼 `translation`이 붙는다. 이벤트 모양 · 메시지 `status`의 정본은 구현
+  PR의 계약 패키지다 — 머지 뒤 §4.3 규칙 8을 고친다.
 - 유저가 연결을 끊어도 서버는 턴을 끝까지 처리해 저장한다. 앱은 다시 열 때 메시지 목록으로 결과를 받는다.
 - 제한 시간 · 재시도: LLM 호출의 첫 토큰 · 전체 제한 시간은 설정 값이다. LLM 호출 실패는 서버 안에서 한 번만 다시 시도한다
   (조각을 하나도 보내기 전일 때만). 그래도 실패하면 `error`(`upstream_unavailable`, `retryable: true`)이고 예약을 해제한다.
@@ -144,6 +154,45 @@ Accept: text/event-stream
   계약에 목적지를 더해야 한다(M3 작업. 앱 쪽 목적지 처리는 FE).
 - 미국 12 ~ 17세 · 나이 모름 [제안 — 나이 모름은 미성년자 기본값]에게는 보내지 않는다. 크레딧을 차감하지 않는다 [제안].
 
+**구현 [2026-11-09]** — Edge Function `POST /functions/v1/companion-proactive`(서버 키만).
+
+| 본문 | 하는 일 |
+|---|---|
+| `{ batch: n }`(1 ~ 50, 기본 20) | 매시 30분 pg_cron(`supabase/cron/companion.sql`). `companion_proactive_candidates`가 유저마다 후보 하나를 고른다 |
+| `{ user_id, character_id, force? }` | 한 대화(플레이그라운드). `force`는 빈도 규칙만 건너뛴다 — 연령 · 지역은 건너뛰지 않는다 |
+
+- 빈도 규칙은 `companion.proactive_skip_reason` 하나가 판정한다(PRD §3.8 표). 응답 `outcomes[].result`가 `sent` 또는 건너뛴 이유
+  (`off` · `quiet_hours` · `hour` · `daily_cap` · `gap` · `spacing` · `not_allowed_for_age` · `no_conversation` · `blocked` · `failed` 등)다.
+- 연령 · 지역: 성인, 또는 지역을 알고 미국이 아닌 미성년자만 후보다. 나이 모름은 후보가 아니다.
+- 선톡은 유저 입력 없이 나가므로 **연령과 상관없이 동기 출력 검사를 지난 것만** 저장한다. L1 번역을 붙여 저장한다. 차감하지 않는다.
+
+#### 2.3.1 푸시 연결 — 세현님 인계
+
+**지금 있는 것**
+
+- `companion-proactive`는 선톡을 만들어 `companion_save_proactive`로 **저장만 한다.** 푸시는 보내지 않는다. 앱은 다음
+  `companion_list_messages` 조회 때 `origin: "proactive"` 메시지로 본다.
+- `send-push`(ADR-0034)의 `PushTarget`에 컴패니언 목적지가 없다(`journey-map` · `notifications` · `roleplay-list` · `messenger` ·
+  `phone-call` · `visual-novel`).
+
+**연결에 필요한 것**
+
+| 항목 | 내용 |
+|---|---|
+| 목적지 | `send-push` 계약에 컴패니언 목적지 하나 — 예 `{ kind: "companion-chat", characterId }`. 서버 `_shared/send-push.contract.ts`와 앱 `apps/mobile/src/lib/push-target.ts`가 같은 모양을 각자 적는다(앱은 목적지를 다시 검증한다 — 앱 쪽은 FE) |
+| 페이로드 | 유저 id · 캐릭터 id · 선톡 메시지 id · 짧은 미리보기 글(넣을지는 정할 것 — 잠금 화면에 대화가 보인다) · 그 대화로 가는 딥링크(목적지) |
+| 미국 12 ~ 17세 | 푸시 없음. 후보 단계에서 이미 빠지지만 푸시 쪽에서도 연령 규칙을 다시 지킨다 |
+| 조용한 시간 | 현지 22:00 ~ 08:00 금지. 후보 판정이 이미 지키지만 재시도 · 지연 발송이 이 시간에 떨어지지 않게 한다 |
+| 유저 설정 | `proactive_pref = off`면 선톡도 푸시도 없다. 앱의 알림 권한 · 기기 등록(`push_devices`)이 없으면 보내지 않는다 |
+| 실패 | 푸시 실패가 **저장된 메시지를 되돌리지 않는다.** 결과는 `outcomes`에 따로 적는다(예 `push: "sent" \| "no_device" \| "failed"`) |
+
+**걸 자리**
+
+- `apps/supabase-functions/supabase/functions/_shared/companion-proactive-handler.ts`의 `proactiveOne()` 안,
+  `callRpc(…, "companion_save_proactive", …)`가 성공한 **바로 뒤**. 저장된 `messageId` · `segments`(미리보기) · `target`이 그 자리에
+  다 있다.
+- 플레이그라운드 `force` 호출에 푸시를 보낼지(시험 기기로) · 보내지 않을지도 같이 정한다.
+
 ### 2.4 결제 연결점 (M4)
 
 - M4는 결제를 만들지 않는다. 결제 작업(`billing-webhook` 등)이 부를 **지급 함수**와 **티어를 읽는 자리**만 정한다.
@@ -155,6 +204,28 @@ Accept: text/event-stream
 ### 2.5 TTS
 
 1단계에 없다. M4 뒤 이미지 생성과 함께 다시 정한다(PRD §0).
+
+### 2.6 `POST /functions/v1/companion-suggest` — 추천 답변 [결정 2026-11-09 · 구현 중]
+
+| | |
+|---|---|
+| 인증 | 사용자 토큰 + 본문 `{ character_id, refresh? }`. 플레이그라운드는 서버 키 + 본문 `{ user_id, character_id, refresh? }` |
+| 응답 | 정확히 3개 `[{ text, meaning, intent }]` — `text` 한국어, `meaning` L1 뜻(`l1`이 `ko`면 `null`), `intent` `continue` · `ask` · `react` |
+| 수준 | 관계 말투 단계에 맞추고 학습자 수준보다 조금 위(i+1) |
+| 모델 | Haiku — `COMPANION_SUGGEST_MODEL`, 비우면 검사 모델 |
+| 캐시 | 마지막 캐릭터 메시지에 붙여 둔다. 같은 메시지에 다시 부르면 캐시, `refresh: true`면 다시 만든다 |
+| 없음 | 마지막 턴이 위기 · 차단 · 거절 · 프로필 `reply_suggestions`(기본 `true`)가 꺼짐 |
+| 검사 | 미성년자 · 나이 모름은 출력 검사를 지난 것만 |
+| 크레딧 | 지금은 차감하지 않는다(PRD O20) |
+
+- 로마자는 앱이 만든다. 에러 코드 · 캐시 자리의 정본은 구현 PR의 계약 패키지다.
+
+### 2.7 `companion-eval` — 한 단계 평가 (내부, 2026-11-09)
+
+서버 키만. DB에 쓰지 않고 크레딧도 쓰지 않는다(케이스마다 실제 API 비용).
+
+- `GET` → 지금 모델 · 고를 수 있는 모델(`allowed`) · LLM 종류. `GET ?docs=1` → 캐릭터 · 설정 · 프롬프트 문서(ops-dashboard 문서 화면).
+- `POST { kind: "moderation" | "feedback" | "translation", model?, cases }`(케이스 1 ~ 20) → 운영과 같은 프롬프트로 케이스마다 결과.
 
 ## 3. DB 함수(RPC)
 
@@ -191,6 +262,12 @@ PostgREST(Supabase가 DB 함수를 `/rest/v1/rpc/<이름>` URL로 열어 주는 
 | `companion_delete_memory(p_memory_id uuid)` | M3 | — | `void`(지운 표시 `deleted_at`) | `28000` · `P0002` |
 | `companion_get_wallet()` | M4 | — | `{ sub, subExpiresAt, grant, paid, trialRemaining }` | `28000` |
 
+- ⟨2026-11-09⟩ 프로필 확장: `companion_save_profile`에 `p_proactive_pref`(`off` · `daily1` · `daily2`) · `p_proactive_hour`(0 ~ 23,
+  `-1`이면 지움) · `p_timezone`(IANA, `''`이면 지움)을 더했다(기본값 `null` — 옛 호출은 그대로). `companion_load_profile`이
+  `proactivePref` · `proactiveHour` · `timezone`을 더 돌려준다. **구현 중**: 토글 `reply_suggestions`(기본 `true`, §2.6)도 같은
+  방식으로 더한다.
+- **구현 중** ⟨2026-11-09⟩ `companion_list_memories`가 목록과 함께 용량 `{ count, cap, full }`을 돌려준다(PRD §3.9). 정확한 반환
+  모양은 구현 PR의 계약 패키지가 정본이다.
 - 친밀도 수치는 어느 함수도 돌려주지 않는다.
 - `unavailableReason`: `trial_exhausted` · `not_available`(M4 전 비시험 계정 · 아직 열리지 않은 캐릭터) · `age_restricted`.
 - `l1`은 앱의 언어 선택 값을 앱이 넣는다(BCP 47 언어 태그, 예 `en` · `tl` · `hi`). `feedback_mode`: `separate` · `natural` · `prefix`.
@@ -272,8 +349,8 @@ data: {"segment":0,"kind":"speech","text":"안녕하세요, "}
 | `notice` | M1 | `{ kind }` — `ai_disclosure` · `minor_notice` · `break_reminder` | 0 ~ 3, `delta`보다 앞 |
 | `delta` | M1 | `{ segment, kind, text }` — `segment`는 조각 번호(0부터), `kind`는 `speech` · `action` · `narration`, `text`는 이어 붙일 글자 | 0 ~ n |
 | `correction` | M2 | 아래 | M2부터 유저 메시지당 정확히 1(차단 · 위기 턴은 0) |
-| `translation` | 미정(O9) | `{ segment, text }` — 조각의 모국어 번역 | 0 ~ n |
-| `state` | M1 | `{ speechLevel, speechLevelChanged }` | 정상 턴에서 정확히 1, `done` 바로 앞 |
+| `translation` | 2026-11-09 | `{ segment, text }` — 조각의 모국어 번역. 메시지 목록에서는 조각의 `translation` | 조각당 0 ~ 1(번역 끔 · `ko` · 실패면 0), 마지막 `delta` 뒤 `state` 앞 |
+| `state` | M1 | `{ speechLevel, speechLevelChanged }` — **구현 중** `memoryFull`(기억이 가득 차 새 기억을 넣지 못함, PRD §3.9) | 정상 턴에서 정확히 1, `done` 바로 앞 |
 | `crisis` | M1 | `{ resources: [{ name, phone?, url?, hours? }], region }` — 안내 글은 O15 | 위기 턴에서 1, 그 뒤 `done` |
 | `error` | M1 | `{ code, retryable }` | 0 ~ 1, **마지막**(뒤에 `done` 없음) |
 | `done` | M1 | `{ assistantMessageId, creditsSpent, balance }` — `balance`는 M4 전 `null` | 정상 · 위기 턴에서 정확히 1, 마지막 |
@@ -293,17 +370,36 @@ data: {"segment":0,"kind":"speech","text":"안녕하세요, "}
 }
 ```
 
+**[결정 2026-11-09] 고정 카드** — 위 모양을 아래로 바꿨다(`feat/companion-m1`, 마이그레이션 `20261116120000_companion_feedback_card.sql`).
+칸은 늘 다 오고 없으면 `null` · `[]`다. `l1ToKo`는 없어지고 `l1_to_ko`도 `corrected` · `meaning`을 쓴다. 저장은 `corrections.card`
+(옛 행은 읽을 때 카드로 바꾼다). 메시지 목록의 `feedback`도 같은 카드다. 앱이 피드백을 쓰기 전이라 계약 판은 `1` 그대로다.
+
+```jsonc
+{
+  "userMessageId": "uuid",
+  "status": "ok",                          // "ok" | "none" | "unavailable"
+  "kind": "correction",                    // "correction" | "better" | "l1_to_ko" | null(status≠ok)
+  "original": "안녕하세요 저는 마리아 이에요",   // 학습자 메시지(서버가 채운다)
+  "corrected": "안녕하세요, 저는 마리아예요.",   // 올바른 문장 전체. status≠ok면 null
+  "items": [                               // 고친 곳마다. l1_to_ko는 []
+    { "original": "마리아 이에요", "corrected": "마리아예요", "reason": "…(l1)" }
+  ],
+  "better": { "text": "…", "meaning": "…(l1)", "explanation": "…(l1)" },   // 더 나은 표현, 없으면 null
+  "meaning": "…(l1)"                       // corrected의 뜻. l1_to_ko는 필수, 그 밖은 선택
+}
+```
+
 ### 4.3 순서 규칙
 
 1. `start`가 맨 앞이다.
 2. `notice`는 첫 `delta`보다 앞이다.
 3. `delta`의 `segment`는 0부터 늘어나기만 한다. 한 조각의 글자는 여러 `delta`로 나뉘어 올 수 있다.
 4. `correction`은 `start` 뒤 `done` 앞 어디든 온다(`delta` 사이 포함).
-5. `state`는 `done` 바로 앞이다.
+5. `state`는 `done` 바로 앞이다. `translation`은 마지막 `delta` 뒤 · `state` 앞이다(2026-11-09).
 6. 스트림의 끝은 `done` 또는 `error` 하나다. 둘 다 오지 않고 연결이 끊기면 앱은 실패로 보지 말고 메시지 목록을 다시 읽는다
    (서버는 턴을 끝까지 처리한다, §2.1).
 7. 위기 턴: `start` → (`notice`) → `crisis` → `done`(`creditsSpent: 0`). `delta`가 없다.
-8. 입력 검사 차단 턴: `start` → `error`(`guardrail_blocked`).
+8. 입력 검사 차단 턴: `start` → `error`(`guardrail_blocked`). **구현 중** — 페르소나 거절 답(§2.1)으로 바뀐다.
 9. 동기 출력 검사에 걸린 턴: `delta` 없이 `error`(`guardrail_blocked`). 비동기 검사는 스트림에 영향이 없다(§2.1).
 
 ## 5. 에러 코드
@@ -402,6 +498,17 @@ chat-send 판정 11  reserve_credits(user, client_message_id, amount)   → hold
 | `credit_holds` | M4 | `id` · `user_id` · `client_message_id`(고유: `user_id`와 함께) · `amount` · `buckets` jsonb · `status`(`open` · `settled` · `released`) · `created_at` · `closed_at` | |
 | `trial_usage` | M4 | PK(`user_id`, `character_id`) · `used` | |
 | `entitlements` | M4 | `user_id` PK · `tier` · `expires_at` · `source` | 결제 작업이 채운다(§2.4) |
+
+**2026-11-09 구현에서 바뀐 칸**
+
+| 표 | 바뀐 것 |
+|---|---|
+| `settings`(새 표, 한 행) | 단가 · 체험 수 · 문턱 · 상한 같은 설정 값(구현 메모). 선톡 `proactive_daily_cap` 2 · `proactive_gap` · `proactive_gap_daily2` · `proactive_spacing`. **구현 중** `memory_cap`(초안 50) |
+| `profiles` | `proactive_pref`(기본 `daily1`) · `proactive_hour` · `timezone`. **구현 중** `reply_suggestions`(기본 `true`) |
+| `corrections` | `card` jsonb — 고정 카드 전체(§4.2). 옛 열(`status` · `kind` · `items` · `better`)은 찾아보기용으로 함께 쓴다 |
+| `messages` | `segments[].translation`(L1 번역) · `meta.translation`(번역 결과 이유). **구현 중** 추천 답변 캐시(마지막 캐릭터 메시지) |
+| `memories` | `embedding` 열 없음(pgvector 미룸). **구현 중** 유저가 고쳤다는 표시(용량 밀어내기에서 지킴) |
+| `moderation_events` | `category` 값에 `profanity`(열은 글자 — 표 변경 없음) |
 
 **1단계에 넣지 않는 위키 초안 표**: `mission_results`(2단계) · `item_attempts` · `user_expressions`(채팅 완료 뒤) ·
 `roleplay_turn_logs`(별도 FE 작업). 위키 05의 `learner_profiles` 확장은 `profiles`가 대신한다(PRD 비고 3).
@@ -502,10 +609,17 @@ FE가 네트워크 없이 재생한다. **파일이 아니라 TS 모듈**이다(
 |---|---|---|
 | 서버 설정 값(단가 · 체험 수 · 문턱 · 확률 · 상한)은 「설정 값」 | DB 한 행 `companion.settings` — SQL로 바꾸면 다음 턴부터. 분기 확률 · 쿨다운만 코드 상수(`companion-branching.ts`) | 배포 없이 깎기(C). 값은 전부 초안 |
 | 판정 10 · 11 → 12(저장) | 체험 · 크레딧 예약과 유저 메시지 저장을 `companion_begin_turn` 한 트랜잭션에. 확정 · 해제도 `companion_finish_turn` 안에서 | RPC 왕복을 줄이고, 예약만 남고 메시지가 없는 상태를 없앤다 |
-| 후처리는 pgmq 큐 + `companion-job-worker` | 턴이 끝난 뒤 같은 요청에서 `waitUntil`로 기억 추출 · 요약 | MVP. 재시도가 필요해지면 큐로 옮긴다. 성인 사후 출력 검사는 아직 없다 |
-| 장기 메모리 의미 검색은 pgvector | 최근 기억 N개(`memory_prompt_limit`)를 넣는다 | 임베딩 모델 미정(C). `embedding` 열은 모델을 고른 뒤 더한다 |
+| 후처리는 pgmq 큐 + `companion-job-worker` | 턴이 끝난 뒤 같은 요청에서 `waitUntil`로 기억 추출 · 요약 | MVP. 재시도가 필요해지면 큐로 옮긴다. 성인 사후 출력 검사는 아직 없다 — **2026-11-09 결정: 미룸**(PRD §3.11 · O21) |
+| 장기 메모리 의미 검색은 pgvector | 최근 기억 N개(`memory_prompt_limit`)를 넣는다 | 임베딩 모델 미정(C). `embedding` 열은 모델을 고른 뒤 더한다 — **2026-11-09 결정: 미룸**. 용량 상한 `memory_cap`은 **구현 중**(PRD §3.9) |
 | 티어 | `free` · `premium` 둘. 무료는 체험 캐릭터(덕수쌤)만 — 체험을 다 쓰면 크레딧이 있을 때만 이어진다 | O2 · O3 전 초안 |
 | 말투 단계 상한 | 페르소나의 `maxSpeechLevel`(bible.yaml register에서): 윤경 · 재민 · 덕수쌤 polite, 도윤 casual, 미나 slang | bible이 「끝까지 존댓말」을 정한 인물이 있다 |
-| 선톡 푸시 | 메시지만 저장. 푸시는 `send-push` 목적지 추가 뒤 | §2.3 그대로 M3 남은 일 |
-| 반복 위반 단계(회피 → 경고 → 차단) | 입력 차단만 세어 창(24시간) 안 3회면 30분 차단. 경고 이벤트는 없다(회피는 페르소나 프롬프트) | 계약에 경고 이벤트가 없다 |
+| 선톡 푸시 | 메시지만 저장. 푸시는 `send-push` 목적지 추가 뒤 | §2.3 그대로 M3 남은 일 — 세현님 인계(§2.3.1) |
+| 반복 위반 단계(회피 → 경고 → 차단) | 입력 차단만 세어 창(24시간) 안 3회면 30분 차단. 경고 이벤트는 없다(회피는 페르소나 프롬프트) | 계약에 경고 이벤트가 없다. 회피 · 경고는 **페르소나 거절로 구현 중**(§2.1) |
+| 모델 하나(설정 값) | 단계별 환경 변수 — 답변 · 피드백 Sonnet, 검사 · 기억 · 요약 · 번역 Haiku. Haiku 호출에는 서버 쪽 대체 모델을 싣지 않는다 | 원가 · 지연(PRD §3.14, ADR-0116 초안) |
+| `translation` 미정(O9) | 턴마다 답 뒤 따로 호출, 6초 · 실패해도 턴은 정상 | PRD §3.4 · §2.1 |
+| `correction` kind별 모양 | 고정 카드(§4.2) · 피드백에 최근 6메시지 · 말투 · 캐릭터 맥락 | PRD §3.5 |
+| 검사 분류 | `profanity` 추가, 언어 무관. 캐릭터를 겨냥한 심한 욕만 차단, 혼잣말 욕은 피드백 | PRD §3.11 |
+| 선톡 하루 상한 · 공백 | 유저별 빈도 · 선호 시각 · 시간대 · 조용한 시간, 전체 상한 2, 매시간 유저당 후보 하나 | PRD §3.8 · §2.3 |
+| — | 추천 답변 `companion-suggest`(**구현 중**) · 평가 창구 `companion-eval` | §2.6 · §2.7 |
+| 운영 반영은 `db push` | 컴패니언 마이그레이션은 SQL 편집기로 적용, `schema_migrations` 미기록(일부러) | 기록 맞추기는 세현님 결정(PRD §7 위험 5) |
 | — | 운영자 함수 `companion_operator_set_profile` · `companion_operator_reset` · `companion_set_entitlement` · `companion_inspect_memory` · `companion_inspect_wallet`, Edge Function `companion-proactive`(서버 키, `force`는 공백 · 상한만 건너뜀) | 플레이그라운드 |
