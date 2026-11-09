@@ -1,7 +1,7 @@
 // `POST /functions/v1/chat-send` — 턴 하나(API §2.1). 스트림 전 판정 1 ~ 12는 HTTP 오류, 그 뒤는 SSE 이벤트입니다.
 //
 // 흐름: 판정(gate) → 체험 · 크레딧 예약과 유저 메시지 저장(begin, 한 트랜잭션) → SSE 시작 → 턴(`chat-send-turn.ts`) →
-//   스트림을 닫은 뒤 턴 뒤 작업(기억 추출 · 요약, `companion-after-turn.ts`).
+//   스트림을 닫은 뒤 추천 답변 칩 저장(만들었으면) → 턴 뒤 작업(기억 추출 · 요약, `companion-after-turn.ts`).
 // 앱이 연결을 끊어도 턴과 뒤 작업은 끝까지 돕니다(`waitUntil`).
 //
 // 플레이그라운드 경로: `Authorization: Bearer <서버 키>` + `x-companion-user-id: <시험 계정 id>`. 서버 키를 가진 ops-dashboard만
@@ -13,7 +13,7 @@ import type {
   GateResult,
   LearningContext,
 } from "./chat-send.contract.ts";
-import type { TurnStatus } from "./chat-send-finish.ts";
+import type { TurnOutcome, TurnStatus } from "./chat-send-finish.ts";
 import {
   callerUserId,
   createSink,
@@ -23,6 +23,7 @@ import {
 } from "./chat-send-http.ts";
 import { runTurn, type TurnContext } from "./chat-send-turn.ts";
 import { runAfterTurn } from "./companion-after-turn.ts";
+import { saveSuggestions } from "./companion-suggest-generate.ts";
 import type { PreStreamErrorCode } from "./companion-contract/index.ts";
 import { callRpc } from "./companion-rpc.ts";
 
@@ -127,13 +128,26 @@ export function createChatSendHandler(deps: ChatSendDeps): (request: Request) =>
       historyLimit,
     };
     const work = runTurn(context)
-      .catch(() => {
+      .catch((): TurnOutcome => {
         sink.send({ event: "error", data: { code: "internal_error", retryable: true } });
         return { outcome: "internal_error", afterTurn: null };
       })
-      .then(async ({ outcome, afterTurn }) => {
+      .then(async ({ outcome, afterTurn, suggestions }) => {
         sink.close();
         deps.log({ event: "chat_send", status: "stream", outcome });
+        // 칩은 끝(finish)이 캐릭터 메시지를 만든 뒤에야 붙일 수 있다 — `done`을 늦추지 않게 스트림을 닫고 저장한다.
+        if (suggestions) {
+          const saved = await saveSuggestions(deps.outbound, env, {
+            userId: caller.userId,
+            messageId: context.assistantMessageId,
+            items: suggestions,
+            model: llm.model,
+            createdAt: new Date(deps.nowMs()).toISOString(),
+            playground: caller.playground,
+          });
+          if (!saved)
+            deps.log({ event: "chat_send", status: "stream", outcome: "suggestions_save_failed" });
+        }
         if (afterTurn === null) return;
         try {
           const result = await runAfterTurn(deps.outbound, env, llm, afterTurn, afterTurnTimeoutMs);

@@ -3,7 +3,8 @@
 
 import type { BegunTurn, ChatSendDeps, ChatSendEnv, Feedback } from "./chat-send.contract.ts";
 import type { Sink } from "./chat-send-http.ts";
-import type { RefusalStage, SpeechLevel } from "./companion-contract/index.ts";
+import type { AfterTurnInput } from "./companion-after-turn.ts";
+import type { RefusalStage, ReplySuggestion, SpeechLevel } from "./companion-contract/index.ts";
 import { callRpc } from "./companion-rpc.ts";
 
 /** `companion_turn_status`의 반환 — 턴 시작 때 반복 위반 수(지금 창 안) · 상한, 기억이 가득 찼는지(마이그레이션 20261117). */
@@ -24,6 +25,13 @@ export type Finished = {
   speechLevelChanged: boolean;
   creditsSpent: number;
   balance: number | null;
+};
+
+/** 턴의 결과. `afterTurn`은 스트림을 닫은 뒤의 기억 추출 · 요약, `suggestions`는 그 앞에 저장할 칩(`done`을 늦추지 않게 닫은 뒤 저장). */
+export type TurnOutcome = {
+  readonly outcome: string;
+  readonly afterTurn: AfterTurnInput | null;
+  readonly suggestions?: readonly ReplySuggestion[] | null;
 };
 
 export type TurnStatusName = "complete" | "blocked" | "crisis" | "failed";

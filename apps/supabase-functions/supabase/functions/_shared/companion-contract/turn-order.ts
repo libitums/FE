@@ -16,7 +16,11 @@ export type TurnOrderViolation =
   | "state-not-before-done"
   | "state-missing"
   | "crisis-with-delta"
-  | "crisis-charged";
+  | "crisis-charged"
+  | "duplicate-suggestions"
+  | "suggestions-not-after-reply"
+  | "crisis-with-suggestions"
+  | "refusal-with-suggestions";
 
 export type TurnOrderResult =
   | { ok: true }
@@ -39,6 +43,7 @@ export function checkTurnOrder(events: readonly TurnEvent[]): TurnOrderResult {
   let sawCrisis = false;
   let corrections = 0;
   let stateAt = -1;
+  let suggestionsAt = -1;
 
   for (const [index, event] of events.entries()) {
     if (event.id !== index) return fail("id-not-sequential", index);
@@ -53,6 +58,7 @@ export function checkTurnOrder(events: readonly TurnEvent[]): TurnOrderResult {
         if (sawContent) return fail("notice-after-content", index);
         break;
       case "delta":
+        if (suggestionsAt !== -1) return fail("suggestions-not-after-reply", suggestionsAt);
         if (event.data.segment < lastSegment) return fail("segment-went-back", index);
         lastSegment = event.data.segment;
         sawContent = true;
@@ -69,10 +75,21 @@ export function checkTurnOrder(events: readonly TurnEvent[]): TurnOrderResult {
       case "state":
         stateAt = index;
         break;
+      // 칩은 답 조각 · 번역이 다 나간 뒤 한 번 — 위기 · 거절 턴에는 없다.
+      case "suggestions":
+        if (suggestionsAt !== -1) return fail("duplicate-suggestions", index);
+        if (sawCrisis) return fail("crisis-with-suggestions", index);
+        if (!sawDelta) return fail("suggestions-not-after-reply", index);
+        suggestionsAt = index;
+        break;
       case "translation":
+        if (suggestionsAt !== -1) return fail("suggestions-not-after-reply", suggestionsAt);
+        break;
       case "error":
         break;
       case "done":
+        if (event.data.refusal !== undefined && suggestionsAt !== -1)
+          return fail("refusal-with-suggestions", suggestionsAt);
         if (sawCrisis) {
           if (sawDelta) return fail("crisis-with-delta", index);
           if (event.data.creditsSpent !== 0) return fail("crisis-charged", index);

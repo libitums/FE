@@ -202,7 +202,7 @@ export function refusalDirective(stage: RefusalStage, topic: string): string {
 export const refusalUserText = (topic: string): string =>
   `(앱 안내: 학습자의 마지막 메시지는 안전 규칙에 걸려 보이지 않는다 — ${topic}. 캐릭터가 성격대로 짧게 거절한다.)`;
 
-// ------------------------------------------------------------------ 추천 답변 칩(`companion-suggest`)
+// ------------------------------------------------------------------ 추천 답변 칩(`chat-send` 매 턴 · `companion-suggest` 다시 만들기)
 
 /**
  * 추천 답변 칩의 시스템 프롬프트. 호출마다 바뀌는 것(캐릭터 · 말투 · 뜻 언어 · 대화)은 모두 user 쪽(`suggestionContent`)에 두어

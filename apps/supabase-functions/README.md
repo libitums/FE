@@ -221,12 +221,13 @@ Firebase 프로젝트에 Android 앱을 등록하고 FCM HTTP v1 API 권한이 �
 | `20261116120000_companion_feedback_card.sql` | 피드백 고정 카드 — `corrections.card` 열 · `correction_json`(옛 행은 읽을 때 카드로) · `companion_finish_turn` 피드백 저장 |
 | `20261117120000_companion_refusal_memory_cap.sql` | 성격대로 거절 — `companion_turn_status` · 페르소나 `refusalLines`, 기억 상한 — `settings.memory_cap` · `shared_memory_cap` · `memories.user_edited` · `companion_add_memories` 지우기 · `companion_list_memories` `{ memories, count, cap, full }` |
 | `20261118120000_companion_reply_suggestions.sql` | 추천 답변 칩 — `messages.suggestions` · `profiles.reply_suggestions` 열, `companion_suggest_context` · `companion_save_suggestions`, 앱 프로필 · 운영자 함수 확장 |
+| `20261119120000_companion_auto_suggestions.sql` | 추천 답변 칩 자동 — `companion_turn_gate`가 `replySuggestions`를 돌려준다 · 메시지 목록(`message_json`)에 `suggestions` |
 
-통합 테스트 CF1 ~ CF11 · CH1 ~ CH10 · TV1 ~ TV13 · ID1 ~ ID3 · PP1 ~ PP9 · RM1 ~ RM8 · RS1 ~ RS8, 함수 단위 테스트 CS1 ~ CS23 · SG · CE · BR · LL · EV · FB · SF · RF · SU.
+통합 테스트 CF1 ~ CF11 · CH1 ~ CH10 · TV1 ~ TV13 · ID1 ~ ID3 · PP1 ~ PP9 · RM1 ~ RM8 · RS1 ~ RS8 · AS1 ~ AS3, 함수 단위 테스트 CS1 ~ CS28 · SG · CE · BR · LL · EV · FB · SF · RF · SU.
 
 **턴 흐름** — 판정(시험 계정 · 티어 · 연령 · 일시 차단 · 이용 시간 · 멱등) → 시작(체험 · 크레딧 예약 + 유저 메시지 저장, 한 트랜잭션) →
 SSE → 입력 검사 · 메인 답변 · 피드백을 동시에 → 위기(`crisis`) · 입력 차단(단계에 따라 성격대로 거절 또는 `guardrail_blocked`, 아래) / 조각(`delta`, 미성년자 · 나이 모름은 출력 검사 뒤) ·
-교정(`correction`) → 답 조각이 다 모이면 L1 번역(`translation`, 남은 기다림과 동시에) → 끝(피드백 · 친밀도 → 말투 · 화제 · 제재 · 예약 확정/해제, 한 트랜잭션) → `state` · `done` → 스트림을 닫고 기억 추출 · 요약.
+교정(`correction`) → 답 조각이 다 모이면 L1 번역(`translation`)과 칩 스위치가 켜졌으면 추천 답변 칩(`suggestions`)을 남은 기다림과 동시에 → 끝(피드백 · 친밀도 → 말투 · 화제 · 제재 · 예약 확정/해제, 한 트랜잭션) → `state` · `done` → 스트림을 닫고 칩 저장 · 기억 추출 · 요약.
 
 **값을 바꾸는 곳** — 단가 · 체험 수 · 말투 문턱 · 선톡 공백 · 제재 횟수 같은 값(PRD §8 C · O1 ~ O4 초안)은 `companion.settings` 한 행이다.
 **피드백 방식 기본값 — 결정: separate (2026-11-09, PRD O5).** 프로필 `feedback_mode`가 비면 `separate`(교정은 따로 오고 답은 고치지 않는다).
@@ -251,7 +252,7 @@ SQL 편집기에서 `update companion.settings set trial_limit = 30;`처럼 바�
 | `COMPANION_FEEDBACK_MODEL` | 아니오 | 피드백(교정). 기본은 `COMPANION_MODEL`(검사 모델이 아니다) — 운영(답변 Sonnet · 검사 Haiku)에서는 피드백이 Sonnet으로 돈다 |
 | `COMPANION_TRANSLATION` | 아니오 | 캐릭터 답의 L1 번역. `every`(기본, 턴마다) 또는 `off`. 모르는 값이면 설정 오류(500). PRD O9(매 메시지 · 탭할 때)가 정해지면 바꾼다 |
 | `COMPANION_TRANSLATION_MODEL` | 아니오 | L1 번역 모델. 기본은 `COMPANION_MODERATION_MODEL`(운영 Haiku) |
-| `COMPANION_SUGGEST_MODEL` | 아니오 | 추천 답변 칩 모델(`companion-suggest`). 기본은 `COMPANION_MODERATION_MODEL`(운영 Haiku) |
+| `COMPANION_SUGGEST_MODEL` | 아니오 | 추천 답변 칩 모델(`chat-send`의 매 턴 칩 · `companion-suggest`). 기본은 `COMPANION_MODERATION_MODEL`(운영 Haiku) |
 
 fake 모드에서 흐름을 일부러 일으키는 낱말은 `_shared/companion-llm-fake.ts` 머리 주석에 있다(위기 · 차단 · 교정 · 섞인 언어 · 말투 · 맞춤법 · 기억 · 친밀도). fake 번역은 `[언어] 원문`이다.
 
@@ -367,10 +368,28 @@ ops-dashboard가 검사 · 피드백 프롬프트를 케이스 묶음으로 돌�
   `{{l1}}`처럼 표시한다. 마이그레이션 20261114를 적용하기 전에는 `characters` · `settings`가 null이고 `inspectAvailable: false`다. API 비용은 들지 않는다.
 - 배포: `supabase functions deploy companion-eval`(`config.toml`의 `verify_jwt = false`를 따른다). 비밀은 `chat-send`와 같다.
 
-### companion-suggest — 추천 답변 칩
+### 추천 답변 칩 — chat-send 매 턴 자동 · companion-suggest 다시 만들기
 
-학습자가 탭해서 보낼 다음 말 셋(이어 가기 `continue` · 되묻기 `ask` · 짧은 리액션 `react`)을 만든다. **매 턴 만들지 않고** 앱의 「추천 답변」 버튼을
-누를 때만 부른다 — 가벼운 호출 한 번(`COMPANION_SUGGEST_MODEL`, 기본 검사 모델)이 원하는 때만 든다. **크레딧을 차감하지 않는다**(차감 · 하루 상한은 열린 질문).
+학습자가 탭해서 보낼 다음 말 셋(이어 가기 `continue` · 되묻기 `ask` · 짧은 리액션 `react`). **Zeta처럼 유저가 켜고 끄는 스위치**(프로필 `reply_suggestions`,
+기본 참)이고, **켜져 있으면 캐릭터 답마다 탭 없이 칩이 뜬다**(20261119). 호출 한 번(`COMPANION_SUGGEST_MODEL`, 기본 검사 모델)이 턴마다 들고,
+**크레딧을 차감하지 않는다**(차감 · 하루 상한은 열린 질문).
+
+**chat-send 자동 칩** — 판정(`companion_turn_gate`)의 `replySuggestions`가 참이면 답 조각이 다 모인 뒤 번역과 같이 시작해 남은 기다림(피드백 · 미성년자
+출력 검사 · 번역)과 동시에 돌린다(`_shared/chat-send-suggest.ts`, 만들기는 `companion-suggest`와 같은 `_shared/companion-suggest-generate.ts`).
+- 이벤트: `translation` 뒤 · `state` 앞에 한 번 `suggestions {"messageId","status":"ok"|"unavailable","items":[{"text","meaning","intent"}],"reason"?}`.
+  `ok`면 칩 셋(continue · ask · react 순서), `unavailable`이면 빈 `items`와 `reason` — `generation_failed`(다시 물어도 실패 · 시간 초과) · `blocked`(미성년자 ·
+  나이 모름의 출력 검사). 앱은 `unavailable`이면 `companion-suggest`로 대신 받는다.
+- 보내지 않는 때: 스위치가 꺼짐 · 판정이 스위치를 모름(20261119 전 DB) · 위기 · 입력 차단(`guardrail_blocked`) · 성격대로 거절 · 출력 차단 · 답 실패. 앱은 스위치를
+  켰는데 이벤트가 없으면 `companion-suggest`를 부른다(저장된 칩이 있으면 그대로, 없으면 만든다).
+- 맥락: 턴이 이미 읽은 대화 + 이번 유저 말 + 새 답을 `companion-suggest`와 같은 모양(최근 6개 · 한 줄 500자 · 번역 없음)으로. 관계 말투는 턴 시작 때 값.
+- 제한 시간 6초(다시 묻기 · 출력 검사 포함 — 다시 묻기는 2초 이상 남았을 때만). 실패해도 턴은 끝나고 로그(`suggestions_unavailable`)와 meta(`suggestions`)에 남는다.
+- 저장: `ok`면 스트림을 닫은 뒤 `companion_save_suggestions`로 그 캐릭터 메시지의 `messages.suggestions`에(`companion-suggest`의 캐시와 같은 `{items, model,
+  createdAt, playground?}`). 끝(finish) 트랜잭션이 메시지를 만든 뒤에야 붙일 수 있어 `done`을 늦추지 않게 닫은 뒤 한다 — 저장 실패는 로그(`suggestions_save_failed`)만.
+  메시지 목록(`companion_list_messages`)의 캐릭터 메시지에 `suggestions`(칩 셋, 없으면 null)로 다시 온다.
+- 늘어나는 지연: 번역과 겹쳐 돌아 `state` · `done`이 늦어지는 것은 둘 중 긴 쪽만큼 — 칩이 번역보다 늦으면 그 차이, 최악 6초(칩 제한 시간)다.
+
+**companion-suggest** — 「다시 만들기」(`refresh: true`)와 자동 칩이 `unavailable`이었거나 오지 않은 턴의 대체 경로. 같은 메시지에 저장된 칩(자동으로 만든 것 포함)이
+있으면 모델을 부르지 않고 돌려준다.
 
 - 호출자: 앱은 `Authorization: Bearer <JWT>` + `{"character_id","refresh"?}`. ops-dashboard 플레이그라운드는 `Bearer <서버 키>`(`isServiceKey` 규칙) +
   `{"user_id","character_id","refresh"?}` — 앱 토큰으로 `user_id`를 보내면 401. 계약은 `companion-suggest-request` · `companion-suggest-response`(JSON Schema).
@@ -416,6 +435,8 @@ supabase functions serve --no-verify-jwt                                        
    `20261116120000_companion_feedback_card.sql`은 20261115 **뒤에** 적용한다(같은 방식의 묶음 — 이 묶음은 `schema_migrations`에 쓰지 않는다).
    **새 함수(chat-send)를 배포하기 전에** 적용한다 — 옛 DB의 `companion_finish_turn`은 카드의 `original` · `corrected` · `meaning`을 버린다.
    `20261118120000_companion_reply_suggestions.sql`은 20261116 **뒤에**, `companion-suggest`를 배포하기 전에 적용한다(같은 방식의 묶음 — `schema_migrations`에 쓰지 않는다).
+   `20261119120000_companion_auto_suggestions.sql`은 20261118 **뒤에** 적용한다(같은 방식의 묶음). 함수보다 먼저든 나중이든 깨지지 않는다 — 옛 DB면 새 `chat-send`가
+   칩을 만들지 않을 뿐이고, 옛 `chat-send`는 판정의 새 칸을 모른 채 그대로 돈다. 그다음 `chat-send` · `companion-suggest`를 다시 배포한다.
 3. 비밀: `supabase secrets set --env-file supabase/functions/.env`. 키가 아직 없으면 `COMPANION_LLM=fake`로 화면만 먼저 본다.
 4. `supabase functions deploy chat-send` · `supabase functions deploy companion-proactive` · `supabase functions deploy companion-eval`(`config.toml`의 `verify_jwt = false`를 따른다).
 5. 예약 작업: Vault에 서버 키(`companion_service_role_key`)를 넣고 `supabase/cron/companion.sql`을 SQL 편집기에서 한 번 실행한다.

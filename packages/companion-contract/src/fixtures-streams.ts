@@ -137,6 +137,45 @@ export const turnFixtureEvents = {
     state("polite"),
     done(),
   ]),
+  "turn-with-suggestions": numbered([
+    start(),
+    delta(0, "speech", "오늘은 시장에 갔어요? 뭐 샀어요?"),
+    noCorrection,
+    {
+      event: "translation",
+      data: { segment: 0, text: "Did you go to the market? What did you buy?" },
+    },
+    {
+      event: "suggestions",
+      data: {
+        messageId: ids.assistant,
+        status: "ok",
+        items: [
+          { text: "사과를 샀어요.", meaning: "I bought apples.", intent: "continue" },
+          { text: "쌤은 시장 좋아해요?", meaning: "Do you like markets?", intent: "ask" },
+          { text: "네, 갔어요!", meaning: "Yes, I went!", intent: "react" },
+        ],
+      },
+    },
+    state("polite"),
+    done(),
+  ]),
+  "turn-suggestions-unavailable": numbered([
+    start(),
+    delta(0, "speech", "좋아요. 내일 또 얘기해요!"),
+    noCorrection,
+    {
+      event: "suggestions",
+      data: {
+        messageId: ids.assistant,
+        status: "unavailable",
+        items: [],
+        reason: "generation_failed",
+      },
+    },
+    state("polite"),
+    done(),
+  ]),
   "turn-guardrail-blocked": numbered([
     start(),
     { event: "error", data: { code: "guardrail_blocked", retryable: false } },

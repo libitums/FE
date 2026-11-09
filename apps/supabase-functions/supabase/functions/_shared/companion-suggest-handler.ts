@@ -1,28 +1,26 @@
 // `POST /functions/v1/companion-suggest` — 추천 답변 칩(학습자가 탭해서 보낼 다음 말 셋: 이어 가기 · 되묻기 · 리액션).
 //
-// 매 턴 만들지 않습니다. 앱의 「추천 답변」 버튼을 누를 때만 가벼운 호출 한 번을 씁니다(비용). 만든 칩은 마지막 캐릭터 메시지에
-// 저장하고(`messages.suggestions`), 같은 메시지에 다시 누르면 모델을 부르지 않고 저장된 칩을 돌려줍니다. 새 턴이 오면 마지막
-// 메시지가 바뀌어 캐시가 저절로 무효가 됩니다. `refresh: true`면 새로 만듭니다.
+// 칩 스위치(`reply_suggestions`)가 켜져 있으면 `chat-send`가 캐릭터 답마다 칩을 만들어 SSE `suggestions`로 보내고 그 메시지에 저장합니다
+// (`chat-send-suggest.ts`). 이 함수는 「다시 만들기」(`refresh: true`)와, 자동 생성이 `unavailable`이었거나 이벤트가 오지 않은 턴의 대체
+// 경로입니다. 만든 칩은 마지막 캐릭터 메시지에 저장하고(`messages.suggestions`), 같은 메시지에 다시 부르면 모델을 부르지 않고 저장된 칩을
+// 돌려줍니다 — 자동으로 만든 칩도 같은 자리라 그대로 돌려줍니다. 새 턴이 오면 마지막 메시지가 바뀌어 캐시가 저절로 무효가 됩니다.
 //
 // 호출자: 앱은 JWT + `{ character_id }`. ops-dashboard 플레이그라운드는 서버 키 + `{ user_id, character_id }`(`companion-proactive`와
 // 같은 `isServiceKey` 규칙). 둘 다 `chat-send`와 같은 판정(시험 계정 · 티어 · 연령 · 일시 차단 · 이용 시간 · 진행 중인 턴)을 지납니다.
 //
-// ⚠ 무료입니다 — 크레딧을 차감하지 않습니다. 탭마다 모델 호출 한 번(캐시가 없을 때)이라 남용되면 비용이 듭니다. 차감 · 하루 상한을
+// ⚠ 무료입니다 — 크레딧을 차감하지 않습니다. 다시 만들기마다 모델 호출 한 번이라 남용되면 비용이 듭니다. 차감 · 하루 상한을
 // 둘지는 정하지 않았습니다(열린 질문).
 
-import type { ChatSendEnv, HistoryEntry } from "./chat-send.contract.ts";
+import type { ChatSendEnv } from "./chat-send.contract.ts";
+import { historyFrom } from "./chat-send-reply.ts";
 import {
   companionSuggestRequestSchema,
   type CompanionSuggestResponse,
-  type ReplySuggestion,
   type SuggestReason,
 } from "./companion-contract/index.ts";
-import type {
-  CompanionSuggestDeps,
-  SuggestContext,
-  SuggestionDraft,
-} from "./companion-suggest.contract.ts";
-import { recentFeedbackHistory, suggestionsFrom } from "./companion-llm-prompts.ts";
+import type { CompanionSuggestDeps, SuggestContext } from "./companion-suggest.contract.ts";
+import { generateSuggestions, saveSuggestions } from "./companion-suggest-generate.ts";
+import { recentFeedbackHistory } from "./companion-llm-prompts.ts";
 import { authUserIdRequest, callRpc, isServiceKey } from "./companion-rpc.ts";
 import { bearerTokenFrom } from "./supabase-auth.ts";
 
@@ -60,27 +58,6 @@ const gateReasons = new Set<string>([
   "usage_time_limit",
   "turn_in_progress",
 ]);
-
-class Timeout extends Error {}
-
-/** 구현이 신호를 따르지 않아도 제한 시간에 끝나게 타이머와 겨룹니다. */
-async function withTimeout<T>(ms: number, run: (signal: AbortSignal) => Promise<T>): Promise<T> {
-  const controller = new AbortController();
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  try {
-    return await Promise.race([
-      run(controller.signal),
-      new Promise<T>((_, reject) => {
-        timer = setTimeout(() => {
-          controller.abort();
-          reject(new Timeout());
-        }, ms);
-      }),
-    ]);
-  } finally {
-    clearTimeout(timer);
-  }
-}
 
 type Caller = { userId: string; playground: boolean };
 
@@ -185,78 +162,32 @@ export function createSuggestHandler(
       return respond(200, response, "cached");
     }
 
-    const timeoutMs = deps.suggestTimeoutMs ?? defaultSuggestTimeoutMs;
-    const suggestRequest = {
-      character: { name: context.persona?.name ?? "", role: context.persona?.role ?? null },
-      speechLevel: context.speechLevel,
-      l1: context.l1,
-      history: recentFeedbackHistory(
-        context.history.flatMap((entry): HistoryEntry[] =>
-          entry.role === "user"
-            ? entry.text === null
-              ? []
-              : [{ role: "user", text: entry.text }]
-            : [{ role: "assistant", segments: entry.segments }],
-        ),
-      ),
-    };
-    // 구조화 출력이 깨지거나(거절 · 모양 오류) 검사(`suggestionsFrom`)를 못 지나면 한 번만 다시 묻습니다.
-    let items: ReplySuggestion[] | null = null;
-    for (let attempt = 0; attempt < 2 && items === null; attempt += 1) {
-      try {
-        const drafts: SuggestionDraft[] = await withTimeout(timeoutMs, (signal) =>
-          llm.suggest({ ...suggestRequest, signal }),
-        );
-        items = suggestionsFrom(drafts, context.l1);
-      } catch (error) {
-        // 시간 초과는 다시 물어도 늦기만 해서 다시 묻지 않습니다.
-        if (error instanceof Timeout) break;
-      }
+    const generated = await generateSuggestions(llm, {
+      request: {
+        character: { name: context.persona?.name ?? "", role: context.persona?.role ?? null },
+        speechLevel: context.speechLevel,
+        l1: context.l1,
+        history: recentFeedbackHistory(historyFrom(context)),
+      },
+      ageBand: context.ageBand,
+      timeoutMs: deps.suggestTimeoutMs ?? defaultSuggestTimeoutMs,
+    });
+    if (generated.status !== "ok") {
+      const outcome = generated.outcome === "timeout" ? "generation_failed" : generated.outcome;
+      return respond(200, answer("unavailable", latest.id, generated.reason), outcome);
     }
-    if (items === null)
-      return respond(
-        200,
-        answer("unavailable", latest.id, "generation_failed"),
-        "generation_failed",
-      );
+    const items = generated.items;
 
-    // 답과 같은 규칙입니다 — 출력 동기 검사는 미성년자 · 나이 모름에만 돌고, 성인은 프롬프트의 금지 규칙에 기댑니다.
-    // 검사가 실패해도 검사하지 않은 칩을 내보내지 않습니다.
-    if (context.ageBand !== "adult") {
-      const verdict = await withTimeout(timeoutMs, (signal) =>
-        llm.moderate({
-          layer: "output_sync",
-          text: items!.map((item) => item.text).join("\n"),
-          context: null,
-          ageBand: context.ageBand,
-          signal,
-        }),
-      ).catch(() => null);
-      if (verdict === null)
-        return respond(
-          200,
-          answer("unavailable", latest.id, "generation_failed"),
-          "moderation_failed",
-        );
-      if (verdict.action !== "allow")
-        return respond(200, answer("unavailable", latest.id, "blocked"), "blocked");
-    }
-
-    try {
-      await callRpc(deps.outbound, env, "companion_save_suggestions", {
-        p_user_id: caller.userId,
-        p_message_id: latest.id,
-        p_suggestions: {
-          items,
-          model: llm.model,
-          createdAt: new Date(deps.nowMs()).toISOString(),
-          ...(caller.playground ? { playground: true } : {}),
-        },
-      });
-    } catch {
-      // 저장 실패는 칩을 막지 않습니다 — 다음 탭에 다시 만들 뿐입니다.
-      deps.log({ event: "companion_suggest", status: 200, outcome: "save_failed" });
-    }
+    const saved = await saveSuggestions(deps.outbound, env, {
+      userId: caller.userId,
+      messageId: latest.id,
+      items,
+      model: llm.model,
+      createdAt: new Date(deps.nowMs()).toISOString(),
+      playground: caller.playground,
+    });
+    // 저장 실패는 칩을 막지 않습니다 — 다음 탭에 다시 만들 뿐입니다.
+    if (!saved) deps.log({ event: "companion_suggest", status: 200, outcome: "save_failed" });
     const response: CompanionSuggestResponse = {
       status: "ok",
       messageId: latest.id,

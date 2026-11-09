@@ -29,6 +29,7 @@ export {
   speechLevelSchema,
   startDataSchema,
   stateDataSchema,
+  suggestionsDataSchema,
   translationDataSchema,
   turnEventSchema,
   type NoticeKind,

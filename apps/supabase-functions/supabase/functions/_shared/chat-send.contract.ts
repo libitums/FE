@@ -45,10 +45,7 @@ export type ChatSendEnv = {
         readonly suggestModel?: string; // 추천 답변 칩. 없으면 검사 모델.
       }
     | { readonly kind: "fake" };
-  /**
-   * 캐릭터 답을 학습자 언어로 번역하는가(PRD O9 — 매 메시지 · 탭할 때 중 미정). `every`는 턴마다 SSE `translation`을 보내고
-   * 저장하며, `off`는 번역하지 않는다.
-   */
+  /** 캐릭터 답을 학습자 언어로 번역하는가(PRD O9 — 매 메시지 · 탭할 때 중 미정). `every`는 턴마다 SSE `translation`을 보내고 저장, `off`는 번역하지 않는다. */
   readonly translation: "every" | "off";
 };
 
@@ -233,6 +230,7 @@ export type GateResult =
       readonly tier: "free" | "premium";
       readonly feedbackMode: FeedbackMode;
       readonly memoryEnabled: boolean;
+      readonly replySuggestions?: boolean; // 추천 답변 칩 스위치(20261119) — 참이면 답마다 칩. 옛 DB는 칸이 없다(만들지 않는다).
       readonly notices: readonly NoticeKind[];
     }
   | { readonly result: string; readonly detail?: Record<string, unknown> };
@@ -293,6 +291,7 @@ export type ChatSendDeps = {
   readonly feedbackTimeoutMs?: number;
   /** 번역을 기다리는 시간. 넘으면 번역 없이 턴을 끝냅니다. */
   readonly translationTimeoutMs?: number;
+  readonly suggestionTimeoutMs?: number; // 추천 답변 칩을 기다리는 시간(다시 묻기 · 출력 검사 포함). 넘으면 `unavailable`.
   /** 거절 답을 기다리는 시간. 넘으면 페르소나의 정해진 거절 줄로 끝냅니다. */
   readonly refusalTimeoutMs?: number;
   /** 분기의 랜덤(0 ~ 1). 테스트가 고정합니다. */

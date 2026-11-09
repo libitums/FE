@@ -1,7 +1,8 @@
 // 생성 파일입니다 — 고치지 않습니다. 정본은 packages/companion-contract/src이고
 // `pnpm --filter @libitums/companion-contract sync:functions`가 다시 씁니다.
 // `POST /functions/v1/companion-suggest`의 요청 · 응답입니다 — 추천 답변 칩(학습자가 탭해서 보낼 수 있는 다음 말 셋).
-// 매 턴 만들지 않고 앱의 「추천 답변」 버튼을 누를 때만 부릅니다. 요청 키는 `chat-send`처럼 snake_case, 응답은 camelCase입니다.
+// 칩 스위치가 켜져 있으면 `chat-send`가 캐릭터 답마다 같은 칩을 SSE `suggestions`로 보내고, 이 함수는 「다시 만들기」(`refresh`)와 자동 칩이
+// `unavailable`이었거나 오지 않은 턴에 부릅니다. 요청 키는 `chat-send`처럼 snake_case, 응답은 camelCase입니다.
 import { z } from "zod/mini";
 
 /** 칩 셋의 몫 — 대화 이어 가기 · 캐릭터에게 되묻기 · 짧은 리액션. 응답에는 이 순서로 하나씩 옵니다. */

@@ -68,4 +68,41 @@ describe("턴 순서 규칙", () => {
     );
     expect(violation(numbered([...events, events[2]!]))).toBe("event-after-terminal");
   });
+
+  // TO7 — 칩은 답이 다 나간 뒤 한 번이고, 위기 · 거절 턴에는 없습니다(앱이 칩을 그 답 밑에 붙입니다).
+  test("TO7. suggestions는 조각 · 번역 뒤 · state 앞에 한 번, 위기 · 거절 턴에는 없다", () => {
+    const events = strip(turnFixtureEvents["turn-with-suggestions"]);
+    const at = events.findIndex((event) => event.event === "suggestions");
+    const chips = events[at]!;
+    const without = events.filter((_, index) => index !== at);
+    const stateAt = without.findIndex((event) => event.event === "state");
+    const translationAt = without.findIndex((event) => event.event === "translation");
+    expect(violation(numbered(events))).toBe("ok");
+    expect(violation(numbered([...events.slice(0, at + 1), chips, ...events.slice(at + 1)]))).toBe(
+      "duplicate-suggestions",
+    );
+    expect(
+      violation(
+        numbered([...without.slice(0, translationAt), chips, ...without.slice(translationAt)]),
+      ),
+    ).toBe("suggestions-not-after-reply");
+    expect(violation(numbered([events[0]!, chips, ...without.slice(1)]))).toBe(
+      "suggestions-not-after-reply",
+    );
+    expect(
+      violation(numbered([...without.slice(0, stateAt + 1), chips, ...without.slice(stateAt + 1)])),
+    ).toBe("state-not-before-done");
+
+    const crisis = strip(turnFixtureEvents["turn-crisis"]);
+    expect(violation(numbered([...crisis.slice(0, 2), chips, ...crisis.slice(2)]))).toBe(
+      "crisis-with-suggestions",
+    );
+    const refusal = strip(turnFixtureEvents["turn-refusal"]);
+    const refusalState = refusal.findIndex((event) => event.event === "state");
+    expect(
+      violation(
+        numbered([...refusal.slice(0, refusalState), chips, ...refusal.slice(refusalState)]),
+      ),
+    ).toBe("refusal-with-suggestions");
+  });
 });

@@ -11,6 +11,7 @@ import {
   segmentKindSchema,
   speechLevelSchema,
 } from "./sse-events.ts";
+import { replySuggestionSchema } from "./suggest.ts";
 
 export const feedbackModeSchema = z.enum(["separate", "natural", "prefix"]);
 export const ageSourceSchema = z.enum(["self", "social", "store_signal"]);
@@ -29,7 +30,10 @@ export const companionProfileSchema = z.object({
   proactiveHour: z.nullable(z.int().check(z.gte(0), z.lte(23))),
   /** IANA 시간대(예: `Asia/Manila`). null이면 지역의 대표 시간대, 그것도 없으면 시각 맞추기 · 조용한 시간을 건너뛴다. 지우기는 `p_timezone = ''`. */
   timezone: z.nullable(z.string()),
-  /** 추천 답변 칩(`companion-suggest`)을 쓰는가. 기본 참. 저장은 `companion_save_profile`의 `p_reply_suggestions`. */
+  /**
+   * 추천 답변 칩 스위치. 기본 참. 켜져 있으면 `chat-send`가 캐릭터 답마다 칩을 만들어 SSE `suggestions`로 보낸다(탭 없이).
+   * 꺼져 있으면 칩이 없다(`companion-suggest`도 `suggestions_off`). 저장은 `companion_save_profile`의 `p_reply_suggestions`.
+   */
   replySuggestions: z.boolean(),
 });
 
@@ -70,6 +74,8 @@ export const companionMessageSchema = z.object({
   segments: z.array(segmentSchema),
   notice: z.nullable(z.object({ kind: noticeKindSchema })),
   feedback: z.nullable(correctionDataSchema),
+  /** 캐릭터 메시지에 저장된 추천 답변 칩(SSE `suggestions` · `companion-suggest`와 같은 셋). 없으면 null, 옛 서버는 칸이 없습니다. */
+  suggestions: z.optional(z.nullable(z.array(replySuggestionSchema))),
   createdAt: z.iso.datetime({ offset: true }),
 });
 

@@ -1,8 +1,8 @@
 // 턴 하나의 스트림(API §2.1 판정 12 ~ 15 · §4 순서 규칙). 핸들러가 판정 · 예약 · 유저 메시지 저장을 끝낸 뒤 부릅니다.
 //
-// 입력 검사 · 메인 답변 · 피드백(M2)을 동시에 시작합니다. 피드백은 답이 나가도 되는 것이 확인된 뒤(성인은 입력 검사 뒤,
-// 미성년자 · 나이 모름은 출력 검사 뒤) 준비되는 대로 `correction`으로 보내고, `done` 전에는 반드시 한 번 보냅니다.
-// 답 조각이 다 모이면 L1 번역(`chat-send-translate.ts`)을 남은 기다림과 동시에 돌려 `state` 앞에 `translation`으로 보냅니다.
+// 입력 검사 · 메인 답변 · 피드백(M2)을 동시에 시작합니다. 피드백은 답이 나가도 되는 것이 확인된 뒤(성인은 입력 검사 뒤, 미성년자 · 나이 모름은
+// 출력 검사 뒤) 준비되는 대로 `correction`으로 보내고, `done` 전에는 반드시 한 번 보냅니다. 답 조각이 다 모이면 L1 번역(`chat-send-translate.ts`)과
+// (스위치가 켜졌으면) 추천 답변 칩(`chat-send-suggest.ts`)을 남은 기다림과 동시에 돌려 `state` 앞에 `translation` → `suggestions`로 보냅니다.
 // 저장(finish)이 친밀도 → 말투(M3)와 크레딧 확정/해제(M4)까지 한 트랜잭션으로 하고, 그 결과로 `state` · `done`을 씁니다.
 // 입력 검사에 걸리면 반복 위반 단계에 따라 캐릭터가 성격대로 거절하거나(`chat-send-refusal.ts`) 지금처럼 `guardrail_blocked`로 끝냅니다.
 
@@ -21,14 +21,15 @@ import type {
 import {
   type Finished,
   type ModerationRecord,
+  type TurnOutcome,
   type TurnStatus,
   turnFinisher,
 } from "./chat-send-finish.ts";
 import type { Sink } from "./chat-send-http.ts";
 import { refusalStage, sendRefusal } from "./chat-send-refusal.ts";
 import { defaultLlmTimeoutMs, historyFrom, startFeedback, startReply } from "./chat-send-reply.ts";
+import { sendSuggestions, startSuggestions, suggestionsMeta } from "./chat-send-suggest.ts";
 import { applyTranslation, startTranslation } from "./chat-send-translate.ts";
-import type { AfterTurnInput } from "./companion-after-turn.ts";
 import { chooseBranch, nextTopicState, topicStateFrom } from "./companion-branching.ts";
 import {
   CONTRACT_VERSION,
@@ -59,9 +60,7 @@ export type TurnContext = {
   historyLimit: number;
 };
 
-export async function runTurn(
-  context: TurnContext,
-): Promise<{ outcome: string; afterTurn: AfterTurnInput | null }> {
+export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
   const { deps, env, llm, sink, body, gate, turn } = context;
   const ageBand: AgeBand = gate.ageBand;
   const moderation: ModerationRecord[] = [];
@@ -214,6 +213,7 @@ export async function runTurn(
     { segments: result.segments, l1: gate.l1, timeoutMs: deps.translationTimeoutMs },
     abort.signal,
   );
+  const chips = startSuggestions(context, persona, result.segments, abort.signal);
 
   if (ageBand !== "adult") {
     let output: ModerationVerdict;
@@ -237,9 +237,10 @@ export async function runTurn(
     reply.goLive(sendDelta);
   }
 
-  const [feedbackResult, translated] = await Promise.all([feedback, translation]);
+  const [feedbackResult, translated, suggested] = await Promise.all([feedback, translation, chips]);
   sendCorrection(feedbackResult);
   const segments = applyTranslation(sink, deps.log, result.segments, translated);
+  const saved = sendSuggestions(sink, deps.log, context.assistantMessageId, suggested);
 
   let finished: Finished;
   try {
@@ -259,6 +260,7 @@ export async function runTurn(
           turnState: result.state,
           feedbackMode: gate.feedbackMode,
           translation: translated.status,
+          suggestions: suggestionsMeta(suggested),
           trial: turn.trial,
           playground: context.playground,
         },
@@ -281,6 +283,7 @@ export async function runTurn(
   done(finished);
   return {
     outcome: "complete",
+    suggestions: saved,
     afterTurn: {
       userId: context.userId,
       characterId: body.character_id,

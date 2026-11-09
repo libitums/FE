@@ -1,10 +1,11 @@
 // 생성 파일입니다 — 고치지 않습니다. 정본은 packages/companion-contract/src이고
 // `pnpm --filter @libitums/companion-contract sync:functions`가 다시 씁니다.
-// `chat-send` 스트림의 이벤트 아홉 종입니다. 한 이벤트는 SSE의 `event` 이름 · `id`(턴 안 0부터) · `data`(JSON)입니다.
+// `chat-send` 스트림의 이벤트 열 종입니다. 한 이벤트는 SSE의 `event` 이름 · `id`(턴 안 0부터) · `data`(JSON)입니다.
 // 친밀도 수치는 어느 이벤트에도 싣지 않습니다 — 유저에게 보이는 관계 결과는 말투 단계뿐입니다.
 import { z } from "zod/mini";
 
 import { streamErrorCodeSchema } from "./error-codes.ts";
+import { replySuggestionSchema } from "./suggest.ts";
 
 export const speechLevelSchema = z.enum(["polite", "casual", "slang"]);
 export const segmentKindSchema = z.enum(["speech", "action", "narration"]);
@@ -64,6 +65,21 @@ export const correctionDataSchema = z.object({
 export const translationDataSchema = z.object({ segment: nonNegativeInt, text: z.string() });
 
 /**
+ * 이 턴 캐릭터 답의 추천 답변 칩(`companion-suggest` 응답의 `items`와 같은 모양)입니다. 유저가 칩 스위치(`reply_suggestions`)를 켰을 때만,
+ * 보통 답 턴에만 옵니다 — 끄면 · 위기 · 차단 · 거절 턴이면 오지 않습니다. 오면 한 번, `translation` 뒤 · `state` 앞입니다.
+ * - `messageId`: 칩이 묶인 캐릭터 메시지(`start`의 `assistantMessageId`). 같은 칩이 그 메시지의 `suggestions`에 저장됩니다.
+ * - `ok`면 `items`가 정확히 셋(continue · ask · react 순서), `unavailable`이면 빈 배열과 `reason`(`generation_failed` — 모델 실패 ·
+ *   시간 초과, `blocked` — 미성년자 · 나이 모름의 출력 검사) — 앱은 `companion-suggest`(다시 만들기)로 대신 받을 수 있습니다.
+ * 스위치가 켜져 있는데 이벤트가 없으면(옛 서버 등) 앱은 `companion-suggest`를 부릅니다.
+ */
+export const suggestionsDataSchema = z.object({
+  messageId: z.uuid(),
+  status: z.enum(["ok", "unavailable"]),
+  items: z.array(replySuggestionSchema),
+  reason: z.optional(z.enum(["generation_failed", "blocked"])),
+});
+
+/**
  * `memoryFull`: 이 캐릭터 기억이나 공유 기억이 상한에 닿았고 모두 유저가 고친 것이라 새 기억을 넣지 못한다 — 앱이 「기억이 가득
  * 찼어요 — 정리해 주세요」를 보입니다. 턴 시작 때 값입니다(이번 턴의 기억 추출은 스트림이 닫힌 뒤 돕니다). 서버가 모르면 없습니다.
  */
@@ -113,6 +129,7 @@ export const turnEventSchema = z.discriminatedUnion("event", [
   eventOf("delta", deltaDataSchema),
   eventOf("correction", correctionDataSchema),
   eventOf("translation", translationDataSchema),
+  eventOf("suggestions", suggestionsDataSchema),
   eventOf("state", stateDataSchema),
   eventOf("crisis", crisisDataSchema),
   eventOf("error", errorDataSchema),
