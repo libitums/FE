@@ -116,13 +116,29 @@ export type FeedbackMode = "separate" | "natural" | "prefix";
 export type FeedbackHistoryEntry = { readonly role: "user" | "assistant"; readonly text: string };
 export type BanmalFeedback = "correction" | "better";
 
-/** SSE `correction`의 본문에서 `userMessageId`를 뺀 것(M2). */
+/** 조각 하나의 고침과 이유(학습자 언어로 한 문장). */
+export type FeedbackItem = {
+  readonly original: string;
+  readonly corrected: string;
+  readonly reason: string;
+};
+
+/**
+ * SSE `correction`의 본문에서 `userMessageId`를 뺀 것 — 고정 카드(계약 `correctionDataSchema`). 칸은 늘 모두 있다.
+ * 앱 이름표: 고친 문장(`corrected`) / 이유(`items[].reason`) / 더 나은 표현(`better`) / 뜻(`meaning`).
+ */
 export type Feedback = {
   readonly status: "ok" | "none" | "unavailable";
-  readonly kind?: "correction" | "better" | "l1_to_ko";
-  readonly items?: { original: string; corrected: string; reason: string }[];
-  readonly better?: { text: string; meaning: string; explanation: string };
-  readonly l1ToKo?: { text: string; meaning: string };
+  readonly kind: "correction" | "better" | "l1_to_ko" | null;
+  /** 학습자 메시지 그대로. */
+  readonly original: string;
+  /** 고친 · 자연스러운 한국어 문장 전체. `ok`면 늘 있다. */
+  readonly corrected: string | null;
+  readonly items: FeedbackItem[];
+  /** 덧붙이는 다른 자연스러운 표현 — 분명히 도움이 될 때만. */
+  readonly better: { readonly text: string; readonly explanation: string } | null;
+  /** `corrected`의 뜻(학습자 언어). `l1_to_ko`면 늘 있다. */
+  readonly meaning: string | null;
 };
 
 export type FeedbackRequest = {

@@ -45,9 +45,10 @@ const done = (creditsSpent = 0): Body<TurnEvent> => ({
   data: { assistantMessageId: ids.assistant, creditsSpent, balance: null },
 });
 
+const emptyCard = { kind: null, corrected: null, items: [], better: null, meaning: null };
 const noCorrection: Body<TurnEvent> = {
   event: "correction",
-  data: { userMessageId: ids.user, status: "none" },
+  data: { userMessageId: ids.user, status: "none", original: "오늘 시장에 갔어요.", ...emptyCard },
 };
 
 /** 픽스처 이름 → 이벤트 목록입니다. */
@@ -72,6 +73,8 @@ export const turnFixtureEvents = {
         userMessageId: ids.user,
         status: "ok",
         kind: "correction",
+        original: "저는 마리아 이에요. 학생 이에요.",
+        corrected: "저는 마리아예요. 학생이에요.",
         items: [
           { original: "마리아 이에요", corrected: "마리아예요", reason: "Use 예요 after a vowel." },
           {
@@ -82,9 +85,9 @@ export const turnFixtureEvents = {
         ],
         better: {
           text: "저는 마리아라고 해요.",
-          meaning: "My name is Maria.",
           explanation: "A natural, polite way to introduce yourself.",
         },
+        meaning: "I'm Maria. I'm a student.",
       },
     },
     delta(0, "speech", "반가워요. 한국어 공부한 지 얼마나 됐어요?"),
@@ -100,7 +103,11 @@ export const turnFixtureEvents = {
         userMessageId: ids.user,
         status: "ok",
         kind: "l1_to_ko",
-        l1ToKo: { text: "배고파요.", meaning: "I'm hungry." },
+        original: "I'm hungry",
+        corrected: "배고파요.",
+        items: [],
+        better: null,
+        meaning: "I'm hungry.",
       },
     },
     state("polite"),
@@ -117,7 +124,15 @@ export const turnFixtureEvents = {
   "turn-correction-unavailable": numbered([
     start(),
     delta(0, "speech", "좋아요. 내일 또 얘기해요!"),
-    { event: "correction", data: { userMessageId: ids.user, status: "unavailable" } },
+    {
+      event: "correction",
+      data: {
+        userMessageId: ids.user,
+        status: "unavailable",
+        original: "내일 봐요!",
+        ...emptyCard,
+      },
+    },
     state("polite"),
     done(),
   ]),

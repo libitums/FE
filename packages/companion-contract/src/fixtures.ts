@@ -83,9 +83,13 @@ export const messagesPageFixture: CompanionMessagesPage = {
         userMessageId: "3a7b8c90-4d5e-4f60-b172-8d9e0f1a2b34",
         status: "ok",
         kind: "correction",
+        original: "저는 마리아 이에요",
+        corrected: "저는 마리아예요",
         items: [
           { original: "마리아 이에요", corrected: "마리아예요", reason: "Use 예요 after a vowel." },
         ],
+        better: null,
+        meaning: null,
       },
       createdAt: "2026-11-08T11:00:00+09:00",
     },

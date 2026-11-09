@@ -94,8 +94,21 @@
                     "enum": ["ok", "none", "unavailable"]
                   },
                   "kind": {
-                    "type": "string",
-                    "enum": ["correction", "better", "l1_to_ko"]
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": ["correction", "better", "l1_to_ko"]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "original": {
+                    "type": "string"
+                  },
+                  "corrected": {
+                    "type": ["string", "null"]
                   },
                   "items": {
                     "type": "array",
@@ -117,36 +130,39 @@
                     }
                   },
                   "better": {
-                    "type": "object",
-                    "properties": {
-                      "text": {
-                        "type": "string"
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "text": {
+                            "type": "string"
+                          },
+                          "explanation": {
+                            "type": "string"
+                          }
+                        },
+                        "required": ["text", "explanation"],
+                        "additionalProperties": false
                       },
-                      "meaning": {
-                        "type": "string"
-                      },
-                      "explanation": {
-                        "type": "string"
+                      {
+                        "type": "null"
                       }
-                    },
-                    "required": ["text", "meaning", "explanation"],
-                    "additionalProperties": false
+                    ]
                   },
-                  "l1ToKo": {
-                    "type": "object",
-                    "properties": {
-                      "text": {
-                        "type": "string"
-                      },
-                      "meaning": {
-                        "type": "string"
-                      }
-                    },
-                    "required": ["text", "meaning"],
-                    "additionalProperties": false
+                  "meaning": {
+                    "type": ["string", "null"]
                   }
                 },
-                "required": ["userMessageId", "status"],
+                "required": [
+                  "userMessageId",
+                  "status",
+                  "kind",
+                  "original",
+                  "corrected",
+                  "items",
+                  "better",
+                  "meaning"
+                ],
                 "additionalProperties": false
               },
               {

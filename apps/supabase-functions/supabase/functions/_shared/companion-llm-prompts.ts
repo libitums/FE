@@ -4,6 +4,7 @@
 import type {
   Feedback,
   FeedbackHistoryEntry,
+  FeedbackItem,
   FeedbackRequest,
   HistoryEntry,
   Segment,
@@ -36,8 +37,8 @@ function speechLevelRule(request: FeedbackRequest): string {
   if (request.speechLevel === "polite") {
     // 덕수쌤처럼 페르소나가 `banmalFeedback: correction`이면 교정으로 — 다른 캐릭터는 부드럽게 제안만.
     if (request.character?.banmalFeedback === "correction")
-      return `The relationship is polite (존댓말) and this character expects 존댓말 from learners. If the learner writes in 반말, use kind "correction" with one item per 반말 ending, corrected to polite style.`;
-    return `The relationship is still polite (존댓말). If the learner writes in 반말 throughout, use kind "better" with the same sentence in polite style and a one-sentence explanation — not a correction.`;
+      return `The relationship is polite (존댓말) and this character expects 존댓말 from learners. If the learner speaks in 반말, use kind "correction": "corrected" in polite style, one item per 반말 ending.`;
+    return `The relationship is still polite (존댓말). If the learner speaks in 반말 throughout, use kind "better" (not a correction): "corrected" is the same message in polite style, with one item per changed ending.`;
   }
   if (request.speechLevel === "casual" || request.speechLevel === "slang")
     return `The relationship is casual, so 반말 is fine. ${elder} 존댓말 is always acceptable — never give feedback on it.`;
@@ -46,19 +47,27 @@ function speechLevelRule(request: FeedbackRequest): string {
 
 export function feedbackSystem(request: FeedbackRequest): string {
   const language = request.l1 ?? "en";
-  return `You give feedback on one chat message a Korean learner sent to a chat character. Write meanings, reasons and explanations in the language with BCP 47 tag "${language}". Too much feedback tires learners: give only what clearly helps, and when unsure return status "none".
+  return `You give feedback on one chat message a Korean learner sent to a chat character. Write reasons, explanations and meanings in the language with BCP 47 tag "${language}". Too much feedback tires learners: give only what clearly helps, and when unsure return status "none".
 
 The recent conversation, if given, is context only: give feedback on the latest learner message only — never on earlier messages or on the character's lines.
+Text between asterisks (e.g. *웃으며*, *배고프다…*) is the learner's action or inner thought in the roleplay, not speech. Check the Korean inside it for mistakes too, but never judge its speech level (반말 is normal there), and keep the asterisks in "corrected".
+
+The app shows one card with fixed labels, so fill these fields:
+- "corrected": the learner's whole message as one corrected, natural Korean text (for kind "better", the better whole message). Only the Korean text — no quotes, labels or notes.
+- "items": one entry per changed fragment: "original" fragment, "corrected" fragment, and "reason" — the rule in one plain, short sentence (e.g. "이에요 attaches directly to the noun."). Empty for kind "l1_to_ko".
+- "better": an extra, different natural way to say it — only when clearly useful, otherwise null. "text" in Korean, "explanation" in one plain sentence.
+- "meaning": the meaning of "corrected". Required for kind "l1_to_ko", otherwise only when helpful.
 
 Decide in this order and use exactly one kind:
-1. Non-Korean parts. If any part of the message is not Korean (the whole message, or some words or a clause in another language), use kind "l1_to_ko". "l1ToKo.text" is the whole message as natural Korean: keep the learner's Korean parts, put the rest into Korean, and silently fix any Korean mistakes in it. "l1ToKo.meaning" is its meaning. "l1ToKo.text" is only the Korean sentence — no quotes, labels or notes. Leave "items" and "better" null. Never explain why it should be in Korean and never comment on the choice of language. Names, brands and acronyms usually written in Latin letters (BTS, iPhone, K-pop), numbers and emoji are not non-Korean parts.
-2. Mistakes. Use kind "correction" with one item per mistake (original fragment, corrected fragment, reason) for grammar, particles, conjugation, spelling and typos, wrong words, and speech levels mixed inside one message (e.g. "안녕하세요! 뭐 해?" — make the whole message one level, matching the relationship). Spacing only when it changes the meaning or makes the sentence hard to read; ignore ordinary chat spacing slips. You may also fill "better" if the corrected sentence is still clearly unnatural.
+1. Non-Korean parts. If any part of the message is not Korean (the whole message, or some words or a clause in another language), use kind "l1_to_ko": "corrected" is the whole message as natural Korean — keep the learner's Korean parts, put the rest into Korean, and silently fix any Korean mistakes in it — and "meaning" is its meaning. Leave "items" empty and "better" null. Never explain why it should be in Korean and never comment on the choice of language. Names, brands and acronyms usually written in Latin letters (BTS, iPhone, K-pop), numbers and emoji are not non-Korean parts.
+2. Mistakes. Use kind "correction" for grammar, particles, conjugation, spelling and typos, wrong words, and speech levels mixed inside one message (e.g. "안녕하세요! 뭐 해?" — make the whole message one level, matching the relationship). Spacing only when it changes the meaning or makes the sentence hard to read; ignore ordinary chat spacing slips.
 3. Speech level. ${speechLevelRule(request)}
-4. Naturalness. Use kind "better" only when the sentence is clearly unnatural or translationese to a native speaker (e.g. pronoun overuse like "나는 너를 좋아해요", word-for-word calques). Give one suggestion: "better.text" in Korean, "better.meaning", and "better.explanation" in one plain sentence. Never suggest alternatives for a sentence that is already natural.
-5. Otherwise use status "none" and leave everything else null.
+4. Profanity. If the message uses swear words or vulgar slang that are not aimed at anyone (e.g. "아 씨 시험 망했어", ㅅㅂ, 존나), use kind "better": "corrected" says the same thing without the vulgar word, and one item whose reason says plainly that the word is 비속어 (vulgar) and gives the neutral form. Recognize disguised spellings (ㅅㅂ, 시1발, ㅂㅅ, f*ck).
+5. Naturalness. Use kind "better" only when the sentence is clearly unnatural or translationese to a native speaker (e.g. pronoun overuse like "나는 너를 좋아해요", word-for-word calques): one suggestion as "corrected", with one item explaining it. Never suggest alternatives for a sentence that is already natural.
+6. Otherwise use status "none" with "corrected", "better" and "meaning" null and "items" empty.
 
 Never give feedback on chat conventions: ㅋㅋ, ㅎㅎ, ㅇㅇ, ~ endings, emoji, missing punctuation, or casual style natives use.
-A reason states the rule plainly in one short sentence (e.g. "이에요 attaches directly to the noun."). No comments about the learner, the character or the conversation.`;
+Reasons and explanations state the rule plainly. No comments about the learner, the character or the conversation.`;
 }
 
 export function feedbackContent(request: FeedbackRequest): string {
@@ -80,29 +89,59 @@ export function feedbackContent(request: FeedbackRequest): string {
   return `${character}${level}${context}Latest learner message (give feedback on this only): ${request.text}`;
 }
 
-/** 구조화 출력(nullable 칸)을 계약 모양으로. kind에 맞는 본문이 없으면 `none`, l1_to_ko에는 번역만 남깁니다. */
-export function feedbackFrom(result: {
+/** 고칠 것 없음 · 받지 못함 카드. */
+export const emptyFeedback = (status: "none" | "unavailable", original: string): Feedback => ({
+  status,
+  kind: null,
+  original,
+  corrected: null,
+  items: [],
+  better: null,
+  meaning: null,
+});
+
+/** 모델이 낸 카드(학습자 메시지 `original`은 서버가 채운다). */
+export type FeedbackDraft = {
   status: "ok" | "none";
   kind: "correction" | "better" | "l1_to_ko" | null;
-  items: { original: string; corrected: string; reason: string }[] | null;
-  better: { text: string; meaning: string; explanation: string } | null;
-  l1ToKo: { text: string; meaning: string } | null;
-}): Feedback {
-  const none: Feedback = { status: "none" };
-  if (result.status === "none" || result.kind === null) return none;
-  if (result.kind === "l1_to_ko")
-    return result.l1ToKo === null
-      ? none
-      : { status: "ok", kind: "l1_to_ko", l1ToKo: result.l1ToKo };
-  if (result.kind === "better" && result.better === null) return none;
-  const items = result.items?.length ? result.items : null;
-  if (result.kind === "correction" && items === null) return none;
-  return {
-    status: "ok",
-    kind: result.kind,
-    ...(items === null ? {} : { items }),
-    ...(result.better === null ? {} : { better: result.better }),
-  };
+  corrected: string | null;
+  items: FeedbackItem[];
+  better: { text: string; explanation: string } | null;
+  meaning: string | null;
+};
+
+/** 조각 고침을 원문에 차례로 적용 — 모델이 `corrected`를 빠뜨린 교정 카드를 살린다. */
+const applyItems = (original: string, items: readonly FeedbackItem[]) =>
+  items.reduce((text, item) => text.replace(item.original, item.corrected), original);
+
+/**
+ * 모델 결과를 고정 카드로 다듬는다. `ok`면 `corrected`가 늘 있게(교정은 조각을 적용해서라도), `l1_to_ko`는 조각 · 덧붙임 없이,
+ * 본문이 없으면 `none`. 덧붙임이 고친 문장과 같으면 뺀다.
+ */
+export function feedbackFrom(draft: FeedbackDraft, original: string): Feedback {
+  const none = emptyFeedback("none", original);
+  if (draft.status === "none" || draft.kind === null) return none;
+  const corrected = draft.corrected?.trim() || null;
+  const meaning = draft.meaning?.trim() || null;
+  if (draft.kind === "l1_to_ko") {
+    if (corrected === null) return none;
+    return {
+      status: "ok",
+      kind: "l1_to_ko",
+      original,
+      corrected,
+      items: [],
+      better: null,
+      meaning,
+    };
+  }
+  const items = draft.items.filter(
+    (item) => item.original.trim() !== "" && item.corrected !== item.original,
+  );
+  const fixed = corrected ?? (items.length > 0 ? applyItems(original, items) : null);
+  if (fixed === null || (draft.kind === "correction" && items.length === 0)) return none;
+  const better = draft.better !== null && draft.better.text.trim() !== fixed ? draft.better : null;
+  return { status: "ok", kind: draft.kind, original, corrected: fixed, items, better, meaning };
 }
 
 /** `count`는 조각 수. 문서 화면은 자리 표시 글자를 넣는다. */

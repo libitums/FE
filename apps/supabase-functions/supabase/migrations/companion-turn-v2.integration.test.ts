@@ -114,11 +114,15 @@ beforeEach(async () => {
   await signIn(app, tester);
 });
 
-test("TV1. 피드백 — 정상 턴에만 저장되고 메시지 목록의 유저 메시지에 붙는다", async () => {
+test("TV1. 피드백 카드 — 정상 턴에만 저장되고 메시지 목록의 유저 메시지에 그대로 붙는다", async () => {
   const feedback = {
     status: "ok",
     kind: "correction",
+    original: "안녕하세요",
+    corrected: "안녕하세요!",
     items: [{ original: "마리아 이에요", corrected: "마리아예요", reason: "noun + 예요" }],
+    better: { text: "반가워요!", explanation: "casual" },
+    meaning: null,
   };
   await turn("duksu", { feedback });
   const blocked = await begin();
@@ -132,6 +136,47 @@ test("TV1. 피드백 — 정상 턴에만 저장되고 메시지 목록의 유�
     ["blocked", null],
     ["complete", { userMessageId: expect.any(String), ...feedback }],
   ]);
+});
+
+// TV13 — 카드 이전(20261116 전)에 저장된 행도 메시지 목록에서 같은 카드 모양으로 읽힌다.
+test("TV13. 피드백 카드 — 옛 행(kind마다 다른 모양)은 읽을 때 카드로 바뀐다", async () => {
+  const one = await begin("duksu", nextId(), "I'm hungry");
+  await finish(one, "complete");
+  const two = await begin("duksu", nextId(), "저는 마리아 이에요");
+  await finish(two, "complete");
+  await db.admin.query(
+    `insert into companion.corrections (message_id, status, kind, items, better, l1_to_ko) values
+       ($1, 'ok', 'l1_to_ko', null, null, '{"text": "배고파요.", "meaning": "I am hungry."}'),
+       ($2, 'ok', 'correction', '[{"original": "마리아 이에요", "corrected": "마리아예요", "reason": "r"}]',
+        '{"text": "마리아라고 해요.", "meaning": "I am called Maria.", "explanation": "e"}', null)`,
+    [one.userMessageId, two.userMessageId],
+  );
+  const page = await app.query("select public.companion_list_messages('duksu', null, 20) as p");
+  const byText = Object.fromEntries(
+    (page.rows[0].p.messages as { role: string; text: string; feedback: unknown }[])
+      .filter((m) => m.role === "user")
+      .map((m) => [m.text, m.feedback]),
+  );
+  expect(byText["I'm hungry"]).toEqual({
+    userMessageId: one.userMessageId,
+    status: "ok",
+    kind: "l1_to_ko",
+    original: "I'm hungry",
+    corrected: "배고파요.",
+    items: [],
+    better: null,
+    meaning: "I am hungry.",
+  });
+  expect(byText["저는 마리아 이에요"]).toEqual({
+    userMessageId: two.userMessageId,
+    status: "ok",
+    kind: "correction",
+    original: "저는 마리아 이에요",
+    corrected: null,
+    items: [{ original: "마리아 이에요", corrected: "마리아예요", reason: "r" }],
+    better: { text: "마리아라고 해요.", explanation: "e" },
+    meaning: "I am called Maria.",
+  });
 });
 
 test("TV2. 친밀도 — 범위로 잘리고, 문턱에서 말투가 한 번 바뀌고, 페르소나 상한을 넘지 않는다", async () => {

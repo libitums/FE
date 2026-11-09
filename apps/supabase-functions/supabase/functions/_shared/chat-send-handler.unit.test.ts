@@ -9,6 +9,7 @@ import type {
 } from "./chat-send.contract.ts";
 import { createChatSendHandler } from "./chat-send-handler.ts";
 import { fakeCompanionLlm } from "./companion-llm-fake.ts";
+import { emptyFeedback } from "./companion-llm-prompts.ts";
 import {
   checkTurnOrder,
   decodeTurnEvent,
@@ -277,9 +278,13 @@ describe("턴 스트림", () => {
           userMessageId: begun.userMessageId,
           status: "ok",
           kind: "correction",
+          original: "안녕하세요 저는 마리아 이에요",
+          corrected: "안녕하세요 저는 마리아이에요",
           items: [
             { original: "마리아 이에요", corrected: "마리아이에요", reason: expect.any(String) },
           ],
+          better: null,
+          meaning: null,
         },
       },
     ]);
@@ -339,7 +344,9 @@ describe("턴 스트림", () => {
   test("CS7. 성인은 받는 대로 보내고, 피드백이 늦으면 unavailable로 끝낸다", async () => {
     const slow = llmWith({
       feedback: () =>
-        new Promise((resolve) => setTimeout(() => resolve({ status: "none" }), 5_000)),
+        new Promise((resolve) =>
+          setTimeout(() => resolve(emptyFeedback("none", "느린 답")), 5_000),
+        ),
     });
     const { handler, finishArgs, settle } = setup({
       gate: { ...okGate, ageBand: "adult", notices: [] },
@@ -553,5 +560,74 @@ describe("L1 번역", () => {
     await (await strict.handler(post())).text();
     await strict.settle();
     expect(feedbackRequests[1]).toMatchObject({ character: { banmalFeedback: "correction" } });
+  });
+});
+
+describe("비속어 · *행동*", () => {
+  const adult = { ...okGate, ageBand: "adult", notices: [] };
+
+  test("CS17. 상대를 겨냥한 욕은 입력 차단(제재로 센다), 혼잣말 욕은 답이 가고 피드백은 순화", async () => {
+    const blocked = setup({ gate: adult });
+    const list = await events(await blocked.handler(post(body({ text: "너 병신이야" }))));
+    await blocked.settle();
+    expect(list.at(-1)).toMatchObject({ event: "error", data: { code: "guardrail_blocked" } });
+    expect(blocked.finishArgs()).toMatchObject({
+      p_status: "blocked",
+      p_moderation: [{ layer: "input", category: "profanity", action: "block" }],
+    });
+    const casual = setup({ gate: adult });
+    const ok = await events(await casual.handler(post(body({ text: "아 씨 시험 망했어" }))));
+    await casual.settle();
+    expect(ok.at(-1)?.event).toBe("done");
+    expect(ok.find((event) => event.event === "correction")).toMatchObject({
+      data: { kind: "better", corrected: "아이고 시험 망했어" },
+    });
+  });
+
+  test("CS18. 미성년자 · 나이 모름 — 캐릭터 답에 욕이 있으면 출력 차단", async () => {
+    const { handler, finishArgs, settle } = setup();
+    const list = await events(await handler(post(body({ text: "안녕 [swear-reply]" }))));
+    await settle();
+    expect(names(list).filter((name) => name === "delta")).toEqual([]);
+    expect(finishArgs()).toMatchObject({
+      p_status: "blocked",
+      p_moderation: [
+        { layer: "input", action: "allow" },
+        { layer: "output_sync", category: "profanity", action: "block" },
+      ],
+    });
+  });
+
+  test("CS19. *행동 · 속마음* — 글은 그대로 저장, 답은 몸짓에 반응하고 속마음을 따라 말하지 않는다", async () => {
+    const systems: string[] = [];
+    const base = fakeCompanionLlm();
+    const llm: CompanionLlm = {
+      ...base,
+      reply: (request) => {
+        systems.push(request.system);
+        return base.reply(request);
+      },
+    };
+    const { handler, rpcs, finishArgs, settle } = setup({ gate: adult, llm });
+    const text = "*배고프다… 라면 먹고 싶다* 안녕하세요";
+    const list = await events(await handler(post(body({ text }))));
+    await settle();
+    expect(rpcs.find((rpc) => rpc.fn === "companion_begin_turn")?.args).toMatchObject({
+      p_text: text,
+    });
+    expect(systems[0]).toContain("between asterisks");
+    const spoken = list
+      .flatMap((event) => (event.event === "delta" ? [event.data.text] : []))
+      .join("");
+    expect(spoken).toContain("학습자의 몸짓을 보고 웃는다");
+    expect(spoken).not.toContain("라면 먹고 싶다");
+    expect(finishArgs()).toMatchObject({ p_status: "complete" });
+    // 별표 안도 검사한다.
+    const romance = setup({ gate: adult });
+    const blocked = await events(
+      await romance.handler(post(body({ text: "*사랑해* 안녕하세요" }))),
+    );
+    await romance.settle();
+    expect(blocked.at(-1)).toMatchObject({ event: "error", data: { code: "guardrail_blocked" } });
   });
 });

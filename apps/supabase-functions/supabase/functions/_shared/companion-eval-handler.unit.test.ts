@@ -160,6 +160,8 @@ test("EV4. 피드백 — 운영 Feedback 그대로 · 모델을 고르지 않으
     {
       status: "ok",
       kind: "correction",
+      original: "학생 이에요",
+      corrected: "학생이에요",
       items: [
         {
           original: "학생 이에요",
@@ -167,13 +169,27 @@ test("EV4. 피드백 — 운영 Feedback 그대로 · 모델을 고르지 않으
           reason: "Attach 이에요/예요 to the noun without a space.",
         },
       ],
+      better: null,
+      meaning: null,
     },
     {
       status: "ok",
       kind: "l1_to_ko",
-      l1ToKo: { text: "안녕하세요, 반가워요.", meaning: "Hello there" },
+      original: "Hello there",
+      corrected: "안녕하세요, 반가워요.",
+      items: [],
+      better: null,
+      meaning: "Hello there",
     },
-    { status: "none" },
+    {
+      status: "none",
+      kind: null,
+      original: "좋아요",
+      corrected: null,
+      items: [],
+      better: null,
+      meaning: null,
+    },
   ]);
   await fakeFor.call("POST", { kind: "moderation", cases: [{ id: "a", text: "안녕" }] });
   expect(models).toEqual(["claude-sonnet-5-5", "claude-haiku-5-5"]);

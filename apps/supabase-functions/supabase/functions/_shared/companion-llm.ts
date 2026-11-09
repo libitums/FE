@@ -45,15 +45,14 @@ const verdictSchema = z.object({
   action: z.enum(["allow", "block", "crisis"]),
 });
 
-// 구조화 출력은 선택 칸 대신 nullable로 둡니다. 받은 뒤 null 칸을 지웁니다.
+// 피드백 카드(학습자 메시지 `original`은 서버가 채운다). 구조화 출력은 선택 칸 대신 nullable로 둡니다.
 const feedbackSchema = z.object({
   status: z.enum(["ok", "none"]),
   kind: z.enum(["correction", "better", "l1_to_ko"]).nullable(),
-  items: z
-    .array(z.object({ original: z.string(), corrected: z.string(), reason: z.string() }))
-    .nullable(),
-  better: z.object({ text: z.string(), meaning: z.string(), explanation: z.string() }).nullable(),
-  l1ToKo: z.object({ text: z.string(), meaning: z.string() }).nullable(),
+  corrected: z.string().nullable(),
+  items: z.array(z.object({ original: z.string(), corrected: z.string(), reason: z.string() })),
+  better: z.object({ text: z.string(), explanation: z.string() }).nullable(),
+  meaning: z.string().nullable(),
 });
 
 const translationSchema = z.object({ lines: z.array(z.string()) });
@@ -164,7 +163,7 @@ export function anthropicCompanionLlm(
         feedbackContent(request),
         request.signal,
       );
-      return feedbackFrom(result);
+      return feedbackFrom(result, request.text);
     },
     async translate(request) {
       const result = await parse(

@@ -41,6 +41,7 @@ export const moderationCategories = [
   "violence",
   "hate",
   "personal_info",
+  "profanity",
   "other_harm",
 ] as const;
 
@@ -50,10 +51,17 @@ export function moderationInstruction(layer: ModerationLayer, ageBand: AgeBand):
     layer === "input"
       ? "a message the learner sent to an AI character"
       : "a reply the AI character is about to send to the learner";
+  // 비속어: 유저는 상대를 겨냥한 모욕 · 혐오 표현 · 비하만 막고 혼잣말 욕은 통과(피드백이 순화), 캐릭터는 가벼운 욕도 막는다.
+  const profanity =
+    layer === "input"
+      ? `- Profanity: insults or harassment aimed at the character, slurs, or degrading abuse → "block" with category "profanity". Casual swearing not aimed at anyone (e.g. "아 씨 시험 망했어", "ㅅㅂ 늦었다") → "allow" with category "safe".`
+      : `- Profanity: the character must never swear or insult. Any profanity in the reply, even mild or casual → "block" with category "profanity".`;
   return `You review ${subject} in a Korean-learning chat app. The learner is ${who}.
 Classify the text and choose an action.
 - "crisis": the learner expresses intent or risk of self-harm or suicide, or says they are in immediate danger. (Only for learner messages.)
 - "block": sexual content, romance or flirting directed at the character, graphic violence, hate, requests or sharing of personal contact details, or anything unsafe for the learner's age.
+${profanity}
 - "allow": everything else, including mild everyday topics, mistakes, other languages, and sad feelings without risk.
+Recognize Korean, English and Tagalog profanity, including spaced, abbreviated or disguised spellings (ㅅㅂ, 시1발, ㅂㅅ, f*ck, p*tang ina). Text between asterisks (*…*) is the learner's action or inner thought in the roleplay — review it like the rest.
 Pick the single best category: ${moderationCategories.join(", ")}. Use "safe" with "allow".`;
 }

@@ -8,7 +8,7 @@ import type {
   HistoryEntry,
   TurnState,
 } from "./chat-send.contract.ts";
-import { recentFeedbackHistory } from "./companion-llm-prompts.ts";
+import { emptyFeedback, recentFeedbackHistory } from "./companion-llm-prompts.ts";
 import {
   collectSegments,
   createSegmentSplitter,
@@ -130,7 +130,7 @@ export function startFeedback(context: FeedbackContext, abort: AbortController):
     .find((entry) => entry.role === "assistant");
   const timeoutMs = context.deps.feedbackTimeoutMs ?? defaultFeedbackTimeoutMs;
   const signal = AbortSignal.any([abort.signal, AbortSignal.timeout(timeoutMs)]);
-  const unavailable: Feedback = { status: "unavailable" };
+  const unavailable = emptyFeedback("unavailable", context.body.text);
   let timer: ReturnType<typeof setTimeout> | undefined;
   // 구현이 신호를 따르지 않아도 제한 시간에 끝나게 타이머와 겨룹니다.
   return Promise.race([
