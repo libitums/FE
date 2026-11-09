@@ -29,7 +29,7 @@ CSS(`messenger-keyboard.css`): 칸 = `flex: <비율> 1 0` · 안쪽 3px · 틈 0
 - 같은 키의 새 touchstart는 그 키의 앞 열린 누름을 닫는다(끝 이벤트가 빠진 경우). 열린 누름 창 30,000ms는 기록이 쌓이지 않게 하는 상한일 뿐이다 — 3초로 두면 오래 누른 키의 끝 · tap이 같은 누름으로 묶이지 않아 두 번 입력됐다(하네스 리뷰 W1, KT-U22).
 - 키마다 따로, 호출마다 낡은 기록을 먼저 버린다(끝 이벤트가 사라져도 쌓이지 않는다). 시계가 뒤로 가도 던지지 않는다.
 
-손가락이 키 밖으로 미끄러져도 이미 입력됐으므로 취소되지 않는다. 겹친 누름(두 손가락)은 칸마다 따로 입력된다. 윗글쇠도 같은 길이라 touchstart로 켜진 뒤 같은 누름의 tap이 다시 끄지 않는다.
+자판은 **기본 자모**를 올리고 쌍자음 적용은 지금처럼 입력창 리듀서가 자기 윗글쇠 상태로 한다 — 자판이 렌더 때의 `shifted`로 미리 바꾸면 다시 그리기 전에 온 둘째 키까지 쌍자음이 된다(코드 리뷰 #403, KT-UI20). 손가락이 키 밖으로 미끄러져도 이미 입력됐으므로 취소되지 않는다. 겹친 누름(두 손가락)은 칸마다 따로 입력된다. 윗글쇠도 같은 길이라 touchstart로 켜진 뒤 같은 누름의 tap이 다시 끄지 않는다.
 
 ### D3. 되돌리는 스위치 하나
 
@@ -38,7 +38,7 @@ CSS(`messenger-keyboard.css`): 칸 = `flex: <비율> 1 0` · 안쪽 3px · 틈 0
 ### D4. 눌림 표시 · 말풍선 · 힌트
 
 - 누르는 동안 보이는 키가 `gray-600`(즉시 — transition 없음, reduced motion과 같은 모습). 손을 떼거나 취소되면 풀린다. 끝 이벤트가 오지 않아도 **1,500ms** 안전 타이머가 푼다(지우기는 반복 전체 + 1,500ms).
-- 자모 · 문장부호 칸은 눌린 동안 키 위에 글자 말풍선 하나(가장 최근 칸만). 첫 줄 ㅂ · ㅔ는 왼쪽 · 오른쪽 가장자리에 맞춘다(가운데면 좁은 화면 밖으로 나간다). z-index는 쓰지 않는다([ADR-0022](0022-scroll-regions-and-fixed-affordances.md) — TalkBack 순서) — 판 · 키 줄 · 줄 · 칸 · 키 면 다섯 상자가 `overflow: visible`.
+- 자모 · 문장부호 칸은 눌린 동안 키 위에 글자 말풍선 하나(가장 최근 칸만). 첫 줄 ㅂ · ㅔ는 왼쪽 · 오른쪽 가장자리에 맞춘다(가운데면 좁은 화면 밖으로 나간다). 말풍선은 `user-interaction-enabled={false}` — 위 줄을 덮어도 그 아래 키가 터치를 받는다(코드 리뷰 #403, KT-UI21). z-index는 쓰지 않는다([ADR-0022](0022-scroll-regions-and-fixed-affordances.md) — TalkBack 순서) — 판 · 키 줄 · 줄 · 칸 · 키 면 다섯 상자가 `overflow: visible`.
 - 라벨 · 힌트는 키 안의 잘리는 면(`messenger-keyboard-key-face`, `overflow: hidden`)에 두고 말풍선은 그 형제다 — 큰 글꼴([ADR-0020](0020-dynamic-type-font-scale.md))에서 라벨 · 힌트가 이웃 키로 번지지 않는다. 힌트 · 말풍선 글자는 `accessibility-element={false}`.
 - 쌍자음 · ㅒ · ㅖ가 있는 일곱 키는 꺼져 있을 때 모서리에 그 글자를 작게(`label-s`) 보인다. 칸 라벨에는 섞지 않는다. 윗글쇠가 켜지면 키 면이 `brand-strong` + 흰 아이콘(5.46:1). 켜진 윗글쇠를 누르는 동안(면이 `gray-600`)은 아이콘을 `gray-900`으로 — 흰색은 2.1:1이라 비텍스트 3:1에 못 미친다.
 
@@ -51,7 +51,7 @@ CSS(`messenger-keyboard.css`): 칸 = `flex: <비율> 1 0` · 안쪽 3px · 틈 0
 `lib/sound-effects.ts`의 `createKeyHaptic()`이 설정(ADR-0109 D4)과 모듈을 **처음 누를 때 한 번** 읽고, 켜져 있으면 입력마다 `haptic("key")` 1회. 반복 삭제에는 진동이 없다. 호스트:
 
 - iOS: `HapticFeedbackKind.key` → 판정 생성기와 별도의 `UIImpactFeedbackGenerator(.light)`(예열 · 매번 뒤 `prepare()`), 메인 큐. 「시스템 햅틱」은 UIKit이 따른다.
-- Android: `HapticKindRoute.of(kind)` → `KEY`면 API 29+ `EFFECT_TICK`, 26 ~ 28 20ms one-shot. **터치 용도**(API 33+ `VibrationAttributes.USAGE_TOUCH`, 그 아래 `AudioAttributes.USAGE_ASSISTANCE_SONIFICATION`)라 시스템 「터치 진동」을 따른다 — API 37 AVD에서 끔 → `ignored_for_settings` 확인, API 26 ~ 32는 미확인 — 판정 진동(ADR-0109 D3 2판: 미디어 용도, 시스템 설정과 상관없이)과 **일부러 다르다**: 키 진동은 시스템 자판과 같은 성격이고, 판정은 학습 결과다.
+- Android: `HapticKindRoute.of(kind)` → `KEY`면 API 29+ `EFFECT_TICK`, 26 ~ 28 20ms one-shot. **터치 용도**(API 33+ `VibrationAttributes.USAGE_TOUCH`, 그 아래 `AudioAttributes.USAGE_ASSISTANCE_SONIFICATION`)라 시스템 「터치 진동」을 따른다 — API 33+는 시스템이 터치 용도를 그 설정으로 줄이고(API 37 AVD에서 끔 → `ignored_for_settings` 확인), 그 아래는 진동 API가 설정을 확실히 보지 않아 `Settings.System.HAPTIC_FEEDBACK_ENABLED`를 직접 읽고 0이면 내지 않는다(`HapticKindRoute.keyTickAllowed`, 코드 리뷰 #403 — 기기 미확인) — 판정 진동(ADR-0109 D3 2판: 미디어 용도, 시스템 설정과 상관없이)과 **일부러 다르다**: 키 진동은 시스템 자판과 같은 성격이고, 판정은 학습 결과다.
 - `key`를 모르는 옛 호스트는 무시한다(ADR-0109 「모르는 값 무시」) — 새 번들이 옛 앱에 와도 진동만 없다.
 
 설정 화면의 진동 설명은 5개 언어에서 「답과 키 입력에 진동」으로 바꿨다(en: 「Vibrate for right or wrong answers and keyboard taps.」).
@@ -106,9 +106,9 @@ CSS(`messenger-keyboard.css`): 칸 = `flex: <비율> 1 0` · 안쪽 3px · 틈 0
 [ADR-0006](0006-command-interface-and-test-layers.md) 계층 판정: unit · ui · integration required, e2e required(수동), 호스트 required.
 
 - unit: `keyboard-layout` · `key-press-gate` · `key-repeat` · `sound-effects`(createKeyHaptic) — 4 파일 77/77(하네스 리뷰 뒤 KT-U22 · U23 · U24 red → green, red 22 → green, 접근성 점검 뒤 `hasOpenPress` KT-U21 red → green). CSS 규칙(`messenger-keyboard.css.unit.test.ts`) 7/7(예전 CSS에서 6 실패).
-- ui: `MessengerKeyboard.ui.test.tsx` 20/20(하네스 리뷰 뒤 KT-UI15 강화 · UI19 추가, red 10 → green, 접근성 점검 뒤 KT-UI14 ~ UI17 red 4 → green, 기기 확인 뒤 KT-UI18 — 윗글쇠로 누른 키의 말풍선 글자 — red 1 → green) — touchstart 한 번 · 같은 누름의 tap 버림 · tap만 입력 · 눌림 · 안전 타이머 · 말풍선 · 힌트 · 반복 · 언마운트 정리 · 겹친 누름 · 진동.
+- ui: `MessengerKeyboard.ui.test.tsx` 22/22(코드 리뷰 #403 뒤 KT-UI20 · UI21 추가, 하네스 리뷰 뒤 KT-UI15 강화 · UI19 추가, red 10 → green, 접근성 점검 뒤 KT-UI14 ~ UI17 red 4 → green, 기기 확인 뒤 KT-UI18 — 윗글쇠로 누른 키의 말풍선 글자 — red 1 → green) — touchstart 한 번 · 같은 누름의 tap 버림 · tap만 입력 · 눌림 · 안전 타이머 · 말풍선 · 힌트 · 반복 · 언마운트 정리 · 겹친 누름 · 진동.
 - integration: `TypingActivity.keyboard-touch.integration.test.tsx` 6/6 — 옛 컴포넌트에서 3 실패(공허하지 않음).
-- 회귀: 모바일 unit 4,899 · ui 2,168 · integration 783.
+- 회귀: 모바일 unit 4,899 · ui 2,172 · integration 783.
 - 호스트: Android JUnit `HapticKindRouteTest` 4/4 · `HapticPatternTest` 5/5 · assembleDebug · assembleBundled, iOS HostTests `SoundEffectsModuleTests` 8/8.
 - 번들: `main.lynx.bundle` 3,976.8 / 4,060.0 kB(+11.8 kB) — [성능 보고서](../performance/reports/keyboard-touch-01.md)(미측정 — 번들만).
 - e2e(수동): [`docs/e2e/keyboard-touch.md`](../e2e/keyboard-touch.md) KT-E1 ~ E11.
@@ -120,6 +120,11 @@ CSS(`messenger-keyboard.css`): 칸 = `flex: <비율> 1 0` · 안쪽 3px · 틈 0
 - iOS 시뮬레이터(iPhone SE 3 · 17 Pro · iPad mini): 배치 정상 · 일곱 번 탭 → 일곱 자모 한 번씩 · 접근성 트리 31 `AXButton` 라벨 불변 · 칸 맞닿음.
 - Android AVD(API 37 412dp · API 30 2GB 392 / 360dp): 「안녕」 · 「빠」 정확 · 틈 탭 → 한 키 · 미끄러짐 → 한 번 · 눌림 · 말풍선 · 지우기 반복과 멈춤 · `vibrator_manager`에 `usage: TOUCH` TICK, 시스템 터치 진동 끔 → `ignored_for_settings` · FATAL 0.
 - 미실행: 두 손가락 · 첫 줄 말풍선 · 스크린리더 두 번 탭 · 손 체감 · 옛 호스트 · 가로.
+
+## 코드 리뷰 #403에서 받아들인 것과 남긴 것
+
+- 고침: 윗글쇠 이중 적용(기본 자모를 올림) · 말풍선이 터치를 가로챔 · Android 33 미만 시스템 터치 진동 · ref 초기값을 매 렌더 만들던 것.
+- 남김(사유): (a) 지우기를 누른 채 끝 이벤트가 끝내 오지 않으면 상한(약 4초)까지 지운다 — 플랫폼은 손을 떼면 끝 · 취소를 보내고, 다른 키 누름 · 상한이 끊는다(KT-E7). (b) 진동 설정을 자판이 떠 있는 동안 바꾸면 다음에 자판이 설 때 반영된다 — 학습 화면에서는 설정에 갈 수 없다. (c) touchstart 뒤 tap이 오지 않은 누름의 기록이 500ms 안의 스크린리더 tap을 한 번 삼킬 수 있다 — 같은 키를 손가락과 스크린리더로 0.5초 안에 번갈아 누르는 경우뿐이다. (d) Android `HapticKindRoute` · `HapticPattern`의 종류 문자열 중복 — 판정 종류가 늘 때 함께 고친다.
 
 ## 재검토 조건
 

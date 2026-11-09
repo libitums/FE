@@ -12,6 +12,7 @@ import android.os.VibrationAttributes;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.os.VibratorManager;
+import android.provider.Settings;
 import android.util.Log;
 import java.io.IOException;
 import java.util.EnumMap;
@@ -123,6 +124,7 @@ final class SoundEffectsController {
   private void keyTick() {
     onMain(() -> {
       if (released || vibrator == null) return;
+      if (!HapticKindRoute.keyTickAllowed(Build.VERSION.SDK_INT, hapticFeedbackSetting())) return;
       try {
         VibrationEffect effect = Build.VERSION.SDK_INT >= 29
             ? VibrationEffect.createPredefined(VibrationEffect.EFFECT_TICK)
@@ -136,6 +138,17 @@ final class SoundEffectsController {
         Log.w(TAG, "Cannot vibrate key tap", error);
       }
     });
+  }
+
+  /** The system touch-feedback switch (1 = on, the default when unreadable). Only read below API 33. */
+  private int hapticFeedbackSetting() {
+    if (Build.VERSION.SDK_INT >= 33) return 1;
+    try {
+      return Settings.System.getInt(
+          context.getContentResolver(), Settings.System.HAPTIC_FEEDBACK_ENABLED, 1);
+    } catch (RuntimeException error) {
+      return 1;
+    }
   }
 
   private static Vibrator vibratorOf(Context context) {

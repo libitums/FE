@@ -115,11 +115,12 @@ describe("MessengerKeyboard", () => {
     expect(handlers.onPress).toHaveBeenLastCalledWith("?");
   });
 
-  test("KT-UI5. 윗글쇠가 켜지면 쌍자음이 입력되고 힌트가 사라지며 윗글쇠 칸이 켜짐을 알린다", () => {
+  // 자판은 기본 자모를 올리고 쌍자음 적용은 입력창 리듀서가 자기 윗글쇠 상태로 한다(예전 계약 — 코드 리뷰 #403).
+  test("KT-UI5. 윗글쇠가 켜져도 기본 자모를 올리고, 힌트가 사라지며 윗글쇠 칸이 켜짐을 알린다", () => {
     const handlers = mount(edges, true);
 
     touchStart("ㅂ");
-    expect(handlers.onPress).toHaveBeenCalledWith("ㅃ");
+    expect(handlers.onPress).toHaveBeenCalledWith("ㅂ");
     expect(screen.queryByTestId("messenger-key-hint-ㅂ")).toBeNull();
     expect(key("shift").getAttribute("data-shifted")).toBe("true");
     expect(key("ㅂ").getAttribute("accessibility-label")).toBe("ㅃ");
@@ -326,9 +327,27 @@ describe("MessengerKeyboard", () => {
     const view = render(<MessengerKeyboard shifted={true} edges={edges} {...handlers} />);
 
     touchStart("ㅂ");
-    expect(handlers.onPress).toHaveBeenCalledWith("ㅃ");
+    expect(handlers.onPress).toHaveBeenCalledWith("ㅂ");
     view.rerender(<MessengerKeyboard shifted={false} edges={edges} {...handlers} />);
 
     expect(previews()[0]?.textContent).toBe("ㅃ");
+  });
+
+  // 코드 리뷰 #403: 다시 그리기 전에 두 키가 연달아 와도(두 손가락) 윗글쇠를 자판이 두 번 쓰지 않는다 —
+  // 둘 다 기본 자모로 올리고, 한 번만 먹는 윗글쇠는 리듀서가 적용한다.
+  test("KT-UI20. 윗글쇠가 켜진 채 다시 그리기 전에 두 키가 와도 둘 다 기본 자모다", () => {
+    const handlers = mount(edges, true);
+
+    touchStart("ㅂ");
+    touchStart("ㅈ");
+    expect(handlers.onPress.mock.calls.map(([value]) => value)).toEqual(["ㅂ", "ㅈ"]);
+  });
+
+  // 코드 리뷰 #403: 말풍선은 위 줄을 덮으므로 터치를 받지 않는다 — 그 아래 키가 받는다.
+  test("KT-UI21. 말풍선은 터치를 받지 않는다", () => {
+    mount();
+    touchStart("ㅁ");
+
+    expect(previews()[0]?.getAttribute("user-interaction-enabled")).toBe("false");
   });
 });

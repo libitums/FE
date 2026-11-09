@@ -24,4 +24,14 @@ enum HapticKindRoute {
         return NONE;
     }
   }
+
+  /**
+   * Whether the key tick may play. From API 33 the touch usage is scaled by the system touch-feedback
+   * setting itself; below that the vibrator does not reliably check it (only
+   * View.performHapticFeedback did), so the controller reads Settings.System.HAPTIC_FEEDBACK_ENABLED
+   * and passes it here (0 = off).
+   */
+  static boolean keyTickAllowed(int sdk, int hapticFeedbackSetting) {
+    return sdk >= 33 || hapticFeedbackSetting != 0;
+  }
 }

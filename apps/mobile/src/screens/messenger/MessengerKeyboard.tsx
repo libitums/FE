@@ -74,16 +74,17 @@ export function MessengerKeyboard({
     null,
   );
   const gate = useRef(emptyKeyPressGate);
-  const safetyTimers = useRef(new Map<string, ReturnType<typeof setTimeout>>());
+  // 초기값은 처음 한 번만 만듭니다 — useRef(값)은 매 렌더 값을 새로 만들고 버립니다(코드 리뷰 #403).
+  const [safetyTimers] = useState(() => new Map<string, ReturnType<typeof setTimeout>>());
   const haptic = useRef<(() => void) | null>(null);
   const backspaceRef = useRef(onBackspace);
   backspaceRef.current = onBackspace;
   // 반복마다 지우기 누름이 아직 열려 있는지 봅니다 — 손을 뗐는데 멈춤이 빠진 경우를 끊습니다. 끝 이벤트 자체가
   // 빠지면 다른 키 누름(아래)과 상한(50, 약 4초)이 끝냅니다(a11y M5 · review W3).
-  const repeater = useRef(
+  const [repeater] = useState(() =>
     createKeyRepeater(() => {
       if (!hasOpenPress(gate.current, "backspace", Date.now())) {
-        repeater.current.stop();
+        repeater.stop();
         release("backspace");
         return;
       }
@@ -92,8 +93,8 @@ export function MessengerKeyboard({
   );
 
   useEffect(() => {
-    const timers = safetyTimers.current;
-    const repeat = repeater.current;
+    const timers = safetyTimers;
+    const repeat = repeater;
     return () => {
       repeat.stop();
       for (const handle of timers.values()) clearTimeout(handle);
@@ -108,10 +109,10 @@ export function MessengerKeyboard({
   };
 
   const release = (id: string) => {
-    const handle = safetyTimers.current.get(id);
+    const handle = safetyTimers.get(id);
     if (handle !== undefined) clearTimeout(handle);
-    safetyTimers.current.delete(id);
-    if (id === "backspace") repeater.current.stop();
+    safetyTimers.delete(id);
+    if (id === "backspace") repeater.stop();
     setPressed((current) => {
       if (current[id] === undefined) return current;
       const next = { ...current };
@@ -121,10 +122,10 @@ export function MessengerKeyboard({
   };
 
   const press = (id: string, label: string) => {
-    const previous = safetyTimers.current.get(id);
+    const previous = safetyTimers.get(id);
     if (previous !== undefined) clearTimeout(previous);
     const wait = id === "backspace" ? BACKSPACE_SAFETY_MS : PRESS_SAFETY_MS;
-    safetyTimers.current.set(
+    safetyTimers.set(
       id,
       setTimeout(() => release(id), wait),
     );
@@ -145,18 +146,20 @@ export function MessengerKeyboard({
         onPress(" ");
         return;
       default:
-        onPress(keyLabel(cell, shifted));
+        // 기본 자모(· 문장부호)를 올립니다. 쌍자음은 입력창 리듀서가 자기 윗글쇠 상태로 적용합니다 — 자판이
+        // 렌더 때의 shifted로 미리 바꾸면 다시 그리기 전에 온 둘째 키까지 쌍자음이 됩니다(코드 리뷰 #403).
+        onPress(cell.id);
     }
   };
 
   const handleTouchStart = (cell: KeyboardCell) => {
     // 지우기 반복 중 다른 키가 눌리면 반복을 멈춥니다 — 끝 이벤트가 빠졌어도 다음 입력이 끊습니다(a11y M5).
-    if (cell.kind !== "backspace" && repeater.current.active) release("backspace");
+    if (cell.kind !== "backspace" && repeater.active) release("backspace");
     press(cell.id, keyLabel(cell, shifted));
     if (!INPUT_ON_TOUCH_START) return;
     gate.current = gateTouchStart(gate.current, cell.id, Date.now()).gate;
     activate(cell);
-    if (cell.kind === "backspace") repeater.current.start();
+    if (cell.kind === "backspace") repeater.start();
   };
 
   const handleTouchEnd = (cell: KeyboardCell) => {
@@ -221,7 +224,11 @@ export function MessengerKeyboard({
       >
         <view className={keyClass}>
           {cell.preview && isPressed && latest?.id === cell.id ? (
-            <view className={previewClass} data-testid="messenger-key-preview">
+            <view
+              className={previewClass}
+              data-testid="messenger-key-preview"
+              user-interaction-enabled={false}
+            >
               <text className="messenger-keyboard-preview-label" accessibility-element={false}>
                 {latest.label}
               </text>
