@@ -95,24 +95,48 @@ describe("첫 유닛 가이드와 지도 위치", () => {
     expect(scrimShown()).toBe(true);
   });
 
-  test("GA4. 알던 위치가 맨 위여도 맨 위로 즉시 한 번 옮기고(소식 없이 밀렸을 수 있음) 바로 보인다", () => {
+  // DURU-ANDROID-F(1.2.0) · G(1.3.0) — 처음 놓인 지도에 보내던 `scrollTo(0)`이 신규 설치마다 오류였다(실기에서는 내용의
+  // 레이아웃 소식 뒤에도 네이티브 스크롤 범위가 아직 「0 − 화면 높이」인 순간이 있다). 처음 놓인 지도는 이미 맨 위라 할 일이
+  // 없으므로 보내지 않는다.
+  test("GA4. 처음 열린 지도가 맨 위면 레이아웃 뒤에도 옮기지 않고 가이드는 바로 선다", () => {
     const host = stubHost({ rects: asRects() });
     mount(guided(true));
     laidOut();
 
     expect(scrimShown()).toBe(true);
+    expect(host.scrollTos()).toEqual([]);
+  });
+
+  test("GA4b. 이미 놓인 지도에 나중에 가이드가 서면, 알던 위치가 맨 위여도 한 번 옮긴다(소식 없이 밀렸을 수 있음)", () => {
+    const host = stubHost({ rects: asRects() });
+    const view = mount(guided(false));
+    laidOut();
+
+    rerender(view, guided(true));
+
+    expect(scrimShown()).toBe(true);
     expect(host.scrollTos()).toEqual([scrollToCall(0, false)]);
   });
 
-  // DURU-ANDROID-F(1.2.0 신규 설치마다 1회): 지도 내용이 레이아웃되기 전에 맨 위로 옮기면 Lynx가 스크롤 범위를
-  // 「0 − 화면 높이」로 보고 0도 범위 밖이라며 오류를 냈다. 내용이 실제로 놓인 뒤(높이 > 0)에만 옮긴다.
-  test("GA6. 지도 내용이 레이아웃되기 전에는 옮기지 않고, 높이가 생긴 첫 소식에 한 번 옮긴다", () => {
+  test("GA6. 처음 열린 지도는 레이아웃 전 · 높이 0 · 높이가 생긴 뒤 모두 옮기지 않는다", () => {
     const host = stubHost({ rects: asRects() });
     mount(guided(true));
 
     expect(host.scrollTos()).toEqual([]);
-    // 처음 열린 지도는 맨 위라 가이드는 기다리지 않고 바로 섭니다.
     expect(scrimShown()).toBe(true);
+
+    laidOut(0);
+    laidOut(3000);
+    laidOut(3200);
+    expect(host.scrollTos()).toEqual([]);
+  });
+
+  test("GA6b. 복원 위치에서 열린 지도는 레이아웃되기 전에는 옮기지 않고, 높이가 생긴 첫 소식에 한 번 옮긴다", () => {
+    rememberMapScroll(1200);
+    const host = stubHost({ rects: asRects() });
+    mount(guided(true));
+
+    expect(host.scrollTos()).toEqual([]);
 
     laidOut(0);
     expect(host.scrollTos()).toEqual([]);
