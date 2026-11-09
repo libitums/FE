@@ -6,6 +6,7 @@
 // ⚠ 푸시는 아직 보내지 않는다 — `send-push`에 컴패니언 목적지가 없다(API §2.3, M3 남은 일). 앱은 다음 조회 때 메시지 목록에서 본다.
 
 import type { ChatSendDeps, HistoryEntry, PersonaCard, Segment } from "./chat-send.contract.ts";
+import { startTranslation, withTranslations } from "./chat-send-translate.ts";
 import { collectSegments, createSegmentSplitter, segmentsToPlain } from "./companion-segments.ts";
 import { systemSplit } from "./companion-llm.ts";
 import { companionSystemPrompt } from "./companion-prompt.ts";
@@ -77,7 +78,7 @@ async function proactiveOne(deps: ChatSendDeps, target: Target, force: boolean):
       ? entry.text === null
         ? []
         : [{ role: "user", text: entry.text }]
-      : [{ role: "assistant", segments: entry.segments }],
+      : [{ role: "assistant", segments: entry.segments.map(({ kind, text }) => ({ kind, text })) }],
   );
   const splitter = createSegmentSplitter();
   const deltas = [];
@@ -101,17 +102,25 @@ async function proactiveOne(deps: ChatSendDeps, target: Target, force: boolean):
     signal: AbortSignal.timeout(deps.llmTimeoutMs ?? 45_000),
   });
   if (verdict.action !== "allow") return { ...target, result: "blocked" };
+  // 턴과 같이 L1 번역을 붙여 저장한다(이벤트가 없으니 메시지 목록으로만 보인다). 실패해도 번역 없이 보낸다.
+  const translated = await startTranslation(
+    llm,
+    env,
+    { segments, l1: context.l1, timeoutMs: deps.translationTimeoutMs },
+    AbortSignal.timeout(deps.llmTimeoutMs ?? 45_000),
+  );
+  const stored = withTranslations(segments, translated);
 
   const messageId = deps.randomUuid();
   await callRpc(deps.outbound, env, "companion_save_proactive", {
     p_user_id: target.userId,
     p_character_id: target.characterId,
     p_message_id: messageId,
-    p_segments: segments,
-    p_meta: { model: llm.model, forced: force },
+    p_segments: stored,
+    p_meta: { model: llm.model, forced: force, translation: translated.status },
     p_now: now,
   });
-  return { ...target, result: "sent", messageId, segments };
+  return { ...target, result: "sent", messageId, segments: stored };
 }
 
 export function createProactiveHandler(

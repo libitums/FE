@@ -8,11 +8,17 @@ import { z } from "zod";
 import type {
   ChatSendEnv,
   CompanionLlm,
-  Feedback,
   HistoryEntry,
   ReplyRequest,
 } from "./chat-send.contract.ts";
 import { fakeCompanionLlm } from "./companion-llm-fake.ts";
+import {
+  feedbackContent,
+  feedbackFrom,
+  feedbackSystem,
+  translationContent,
+  translationSystem,
+} from "./companion-llm-prompts.ts";
 import { segmentsToPlain, segmentsToTagged } from "./companion-segments.ts";
 import { moderationCategories, moderationInstruction } from "./companion-safety.ts";
 
@@ -47,6 +53,8 @@ const feedbackSchema = z.object({
   better: z.object({ text: z.string(), meaning: z.string(), explanation: z.string() }).nullable(),
   l1ToKo: z.object({ text: z.string(), meaning: z.string() }).nullable(),
 });
+
+const translationSchema = z.object({ lines: z.array(z.string()) });
 
 const memorySchema = z.object({
   items: z.array(
@@ -147,28 +155,24 @@ export function anthropicCompanionLlm(
       return verdict;
     },
     async feedback(request) {
-      const language = request.l1 ?? "en";
       const result = await parse(
         config.feedbackModel,
         feedbackSchema,
-        `You give feedback on one chat message written by a Korean learner. Write reasons, meanings and explanations in the language with BCP 47 tag "${language}".
-- If the message is entirely in another language (no Korean), use kind "l1_to_ko": how to say it naturally in Korean, plus its meaning.
-- If the Korean has mistakes (grammar, particles, spelling, spacing that changes meaning, unnatural word choice), use kind "correction" with one item per mistake (original fragment, corrected fragment, short reason). You may also fill "better".
-- If it is correct but could sound more natural, you may use kind "better".
-- If it is fine, use status "none" and leave everything else null.
-Keep reasons short (one sentence). Do not correct casual chat style that is natural.`,
-        `${request.previous ? `The character just said: ${request.previous}\n` : ""}Learner's message: ${request.text}`,
+        feedbackSystem(request),
+        feedbackContent(request),
         request.signal,
       );
-      if (result.status === "none" || result.kind === null) return { status: "none" };
-      const feedback: Feedback = {
-        status: "ok",
-        kind: result.kind,
-        ...(result.items === null ? {} : { items: result.items }),
-        ...(result.better === null ? {} : { better: result.better }),
-        ...(result.l1ToKo === null ? {} : { l1ToKo: result.l1ToKo }),
-      };
-      return feedback;
+      return feedbackFrom(result);
+    },
+    async translate(request) {
+      const result = await parse(
+        config.translationModel,
+        translationSchema,
+        translationSystem(request.l1, request.segments.length),
+        translationContent(request.segments),
+        request.signal,
+      );
+      return result.lines;
     },
     async extractMemories(request) {
       const result = await parse(
@@ -222,5 +226,6 @@ export function companionLlmWithModel(env: ChatSendEnv, model: string): Companio
     model,
     moderationModel: model,
     feedbackModel: model,
+    translationModel: model,
   });
 }

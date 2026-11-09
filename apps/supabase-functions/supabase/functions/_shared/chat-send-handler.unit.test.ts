@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 
 import type {
   ChatSendEnv,
+  ChatSendLogEntry,
   CompanionLlm,
   Feedback,
   ModerationVerdict,
@@ -22,6 +23,7 @@ const env: ChatSendEnv = {
   supabaseAnonKey: "anon",
   supabaseServiceRoleKey: "service-secret",
   llm: { kind: "fake" },
+  translation: "every",
 };
 const okGate = {
   result: "ok",
@@ -65,10 +67,12 @@ type Options = {
   llm?: CompanionLlm | null;
   envOverride?: ChatSendEnv | null;
   authStatus?: number;
+  translationTimeoutMs?: number;
 };
 
 function setup(options: Options = {}) {
   const rpcs: Rpc[] = [];
+  const logs: ChatSendLogEntry[] = [];
   const pending: Promise<unknown>[] = [];
   const responses: Record<string, unknown> = {
     companion_turn_gate: options.gate ?? okGate,
@@ -108,15 +112,16 @@ function setup(options: Options = {}) {
     nowMs: () => Date.parse("2026-11-09T09:00:00Z"),
     randomUuid: () => assistantId,
     waitUntil: (work) => pending.push(work),
-    log: () => undefined,
+    log: (entry) => logs.push(entry),
     pingIntervalMs: 60_000,
+    translationTimeoutMs: options.translationTimeoutMs ?? 500,
     llmTimeoutMs: 2_000,
     feedbackTimeoutMs: 200,
     // 분기 확률을 넘기지 않게 고정 — 지시가 붙지 않는다.
     random: () => 0.99,
   });
   const finishArgs = () => rpcs.find((rpc) => rpc.fn === "companion_finish_turn")?.args;
-  return { handler, rpcs, finishArgs, settle: () => Promise.all(pending) };
+  return { handler, rpcs, logs, finishArgs, settle: () => Promise.all(pending) };
 }
 
 const body = (overrides: Record<string, unknown> = {}) =>
@@ -390,5 +395,150 @@ describe("턴 스트림", () => {
     await (await handler(post(body({ text: "저는 떡볶이를 좋아해요" })))).text();
     await settle();
     expect(rpcs.some((rpc) => rpc.fn === "companion_add_memories")).toBe(false);
+  });
+});
+
+describe("L1 번역", () => {
+  const adult = { ...okGate, ageBand: "adult", notices: [] };
+  const translationsOf = (list: TurnEvent[]) =>
+    list.flatMap((event) => (event.event === "translation" ? [event.data] : []));
+  const storedSegments = (args: Record<string, unknown> | undefined) =>
+    (args?.["p_assistant"] as { segments: { kind: string; text: string; translation?: string }[] })
+      .segments;
+  const translatingWith = (translate: CompanionLlm["translate"]): CompanionLlm => ({
+    ...fakeCompanionLlm(),
+    translate,
+  });
+
+  test("CS11. 조각 delta 뒤 · state 앞에 조각마다 translation, 저장 조각에도 번역", async () => {
+    for (const gate of [okGate, adult]) {
+      const { handler, finishArgs, settle } = setup({ gate });
+      const list = await events(await handler(post()));
+      await settle();
+      expect(checkTurnOrder(list)).toEqual({ ok: true });
+      const kinds = names(list);
+      const firstTranslation = kinds.indexOf("translation");
+      expect(kinds.lastIndexOf("delta")).toBeLessThan(firstTranslation);
+      expect(kinds.lastIndexOf("translation")).toBeLessThan(kinds.indexOf("state"));
+      const segments = storedSegments(finishArgs());
+      expect(translationsOf(list)).toEqual(
+        segments.map((segment, index) => ({ segment: index, text: `[en] ${segment.text}` })),
+      );
+      expect(segments.length).toBe(3);
+      expect(segments[0]).toEqual({
+        kind: "action",
+        text: "이동식 칠판을 끌고 온다",
+        translation: "[en] 이동식 칠판을 끌고 온다",
+      });
+      expect(finishArgs()).toMatchObject({ p_assistant: { meta: { translation: "ok" } } });
+    }
+  });
+
+  test("CS12. COMPANION_TRANSLATION=off면 번역 이벤트 · 저장 번역이 없다", async () => {
+    const { handler, finishArgs, settle } = setup({ envOverride: { ...env, translation: "off" } });
+    const list = await events(await handler(post()));
+    await settle();
+    expect(translationsOf(list)).toEqual([]);
+    expect(storedSegments(finishArgs()).some((segment) => "translation" in segment)).toBe(false);
+    expect(finishArgs()).toMatchObject({ p_assistant: { meta: { translation: "off" } } });
+  });
+
+  test("CS13. 학습자 언어가 한국어면 건너뛰고, 모르면 영어", async () => {
+    const korean = setup({ gate: { ...okGate, l1: "ko-KR" } });
+    expect(translationsOf(await events(await korean.handler(post())))).toEqual([]);
+    await korean.settle();
+    expect(korean.finishArgs()).toMatchObject({
+      p_assistant: { meta: { translation: "skipped_ko" } },
+    });
+    const unknown = setup({ gate: { ...okGate, l1: null } });
+    const list = await events(await unknown.handler(post()));
+    await unknown.settle();
+    expect(translationsOf(list)[0]?.text.startsWith("[en] ")).toBe(true);
+  });
+
+  test("CS14. 번역 실패 · 시간 초과 · 개수 틀림은 턴을 실패시키지 않는다 — 번역만 없고 로그에 남는다", async () => {
+    const cases: [CompanionLlm["translate"], string][] = [
+      [async () => Promise.reject(new Error("overloaded")), "failed"],
+      [() => new Promise(() => undefined), "timeout"],
+      [async () => ["하나뿐"], "mismatch"],
+    ];
+    for (const [translate, status] of cases) {
+      const { handler, finishArgs, logs, settle } = setup({
+        llm: translatingWith(translate),
+        translationTimeoutMs: 50,
+      });
+      const list = await events(await handler(post()));
+      await settle();
+      expect(checkTurnOrder(list)).toEqual({ ok: true });
+      expect(list.at(-1)?.event).toBe("done");
+      expect(translationsOf(list)).toEqual([]);
+      expect(finishArgs()).toMatchObject({
+        p_status: "complete",
+        p_assistant: { meta: { translation: status } },
+      });
+      expect(logs).toContainEqual({
+        event: "chat_send",
+        status: "stream",
+        outcome: "translation_unavailable",
+        error: status,
+      });
+    }
+  });
+
+  test("CS15. 미성년자 · 나이 모름 — 출력 검사에 걸린 답은 번역을 내보내지도 저장하지도 않는다", async () => {
+    const seen: AbortSignal[] = [];
+    const llm: CompanionLlm = {
+      ...llmWith({ output: { category: "other_harm", action: "block" } }),
+      translate: (request) => {
+        seen.push(request.signal);
+        return new Promise(() => undefined);
+      },
+    };
+    const { handler, finishArgs, settle } = setup({ llm });
+    const list = await events(await handler(post()));
+    await settle();
+    expect(names(list).filter((name) => name === "delta" || name === "translation")).toEqual([]);
+    expect(list.at(-1)).toMatchObject({ event: "error", data: { code: "guardrail_blocked" } });
+    expect(finishArgs()).toMatchObject({ p_status: "blocked", p_assistant: null });
+    // 검사와 동시에 시작했어도 차단되면 끊는다.
+    expect(seen.length).toBe(1);
+    expect(seen[0]?.aborted).toBe(true);
+  });
+
+  test("CS16. 저장된 번역은 답 모델의 history로 다시 들어가지 않는다 · 피드백은 말투 · 캐릭터를 받는다", async () => {
+    const histories: unknown[] = [];
+    const feedbackRequests: unknown[] = [];
+    const base = fakeCompanionLlm();
+    const llm: CompanionLlm = {
+      ...base,
+      reply: (request) => {
+        histories.push(request.history);
+        return base.reply(request);
+      },
+      feedback: (request) => {
+        feedbackRequests.push(request);
+        return base.feedback(request);
+      },
+    };
+    const history = [
+      { role: "user", text: "안녕", segments: [] },
+      {
+        role: "assistant",
+        text: null,
+        segments: [{ kind: "speech", text: "반가워요", translation: "Nice to meet you" }],
+      },
+    ];
+    const { handler, settle } = setup({ llm, begin: { ...begun, history } });
+    await (await handler(post())).text();
+    await settle();
+    expect(histories[0]).toEqual([
+      { role: "user", text: "안녕" },
+      { role: "assistant", segments: [{ kind: "speech", text: "반가워요" }] },
+    ]);
+    expect(feedbackRequests[0]).toMatchObject({
+      previous: "반가워요",
+      speechLevel: "polite",
+      character: { name: "덕수쌤", role: null },
+    });
   });
 });

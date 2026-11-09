@@ -1,0 +1,76 @@
+// 피드백 · 번역 프롬프트와 받은 결과 다듬기. 벤더와 무관한 글이라 `companion-llm.ts`(Anthropic 호출)에서 떼어 둡니다.
+// `companion-eval`이 같은 `feedback()` · `translate()`를 부르므로 여기를 고치면 평가 결과도 함께 바뀝니다.
+
+import type { Feedback, FeedbackRequest, Segment } from "./chat-send.contract.ts";
+
+/** 관계 말투 규칙. 존댓말 → 반말은 부드럽게(better), 반말 관계의 존댓말은 늘 괜찮다. */
+function speechLevelRule(request: FeedbackRequest): string {
+  const elder =
+    "If the character is a teacher or an elder, treat 반말 to them as in the polite case.";
+  if (request.speechLevel === "polite")
+    return `The relationship is still polite (존댓말). If the learner writes in 반말 throughout, use kind "better" with the same sentence in polite style and a one-sentence explanation — not a correction.`;
+  if (request.speechLevel === "casual" || request.speechLevel === "slang")
+    return `The relationship is casual, so 반말 is fine. ${elder} 존댓말 is always acceptable — never give feedback on it.`;
+  return `The relationship's speech level is unknown: give no feedback on choosing 존댓말 or 반말 (mixing inside one message is still a mistake). ${elder}`;
+}
+
+export function feedbackSystem(request: FeedbackRequest): string {
+  const language = request.l1 ?? "en";
+  return `You give feedback on one chat message a Korean learner sent to a chat character. Write meanings, reasons and explanations in the language with BCP 47 tag "${language}". Too much feedback tires learners: give only what clearly helps, and when unsure return status "none".
+
+Decide in this order and use exactly one kind:
+1. Non-Korean parts. If any part of the message is not Korean (the whole message, or some words or a clause in another language), use kind "l1_to_ko". "l1ToKo.text" is the whole message as natural Korean: keep the learner's Korean parts, put the rest into Korean, and silently fix any Korean mistakes in it. "l1ToKo.meaning" is its meaning. "l1ToKo.text" is only the Korean sentence — no quotes, labels or notes. Leave "items" and "better" null. Never explain why it should be in Korean and never comment on the choice of language. Names, brands and acronyms usually written in Latin letters (BTS, iPhone, K-pop), numbers and emoji are not non-Korean parts.
+2. Mistakes. Use kind "correction" with one item per mistake (original fragment, corrected fragment, reason) for grammar, particles, conjugation, spelling and typos, wrong words, and speech levels mixed inside one message (e.g. "안녕하세요! 뭐 해?" — make the whole message one level, matching the relationship). Spacing only when it changes the meaning or makes the sentence hard to read; ignore ordinary chat spacing slips. You may also fill "better" if the corrected sentence is still clearly unnatural.
+3. Speech level. ${speechLevelRule(request)}
+4. Naturalness. Use kind "better" only when the sentence is clearly unnatural or translationese to a native speaker (e.g. pronoun overuse like "나는 너를 좋아해요", word-for-word calques). Give one suggestion: "better.text" in Korean, "better.meaning", and "better.explanation" in one plain sentence. Never suggest alternatives for a sentence that is already natural.
+5. Otherwise use status "none" and leave everything else null.
+
+Never give feedback on chat conventions: ㅋㅋ, ㅎㅎ, ㅇㅇ, ~ endings, emoji, missing punctuation, or casual style natives use.
+A reason states the rule plainly in one short sentence (e.g. "이에요 attaches directly to the noun."). No comments about the learner, the character or the conversation.`;
+}
+
+export function feedbackContent(request: FeedbackRequest): string {
+  const character =
+    request.character === null
+      ? ""
+      : `Character: ${request.character.name}${request.character.role ? ` (${request.character.role})` : ""}\n`;
+  const level =
+    request.speechLevel === null ? "" : `Relationship speech level: ${request.speechLevel}\n`;
+  const previous = request.previous ? `The character just said: ${request.previous}\n` : "";
+  return `${character}${level}${previous}Learner's message: ${request.text}`;
+}
+
+/** 구조화 출력(nullable 칸)을 계약 모양으로. kind에 맞는 본문이 없으면 `none`, l1_to_ko에는 번역만 남깁니다. */
+export function feedbackFrom(result: {
+  status: "ok" | "none";
+  kind: "correction" | "better" | "l1_to_ko" | null;
+  items: { original: string; corrected: string; reason: string }[] | null;
+  better: { text: string; meaning: string; explanation: string } | null;
+  l1ToKo: { text: string; meaning: string } | null;
+}): Feedback {
+  const none: Feedback = { status: "none" };
+  if (result.status === "none" || result.kind === null) return none;
+  if (result.kind === "l1_to_ko")
+    return result.l1ToKo === null
+      ? none
+      : { status: "ok", kind: "l1_to_ko", l1ToKo: result.l1ToKo };
+  if (result.kind === "better" && result.better === null) return none;
+  const items = result.items?.length ? result.items : null;
+  if (result.kind === "correction" && items === null) return none;
+  return {
+    status: "ok",
+    kind: result.kind,
+    ...(items === null ? {} : { items }),
+    ...(result.better === null ? {} : { better: result.better }),
+  };
+}
+
+export function translationSystem(l1: string, count: number): string {
+  return `Translate a Korean chat character's message into the language with BCP 47 tag "${l1}". The message is a numbered list of lines; each line is "speech" (what the character says) or "action" / "narration" (stage directions). Return "lines" with exactly ${count} strings, one per input line, in the same order. Translate naturally in the character's tone, keep names, and translate stage directions as short stage directions. No romanization, notes or quotes.`;
+}
+
+export function translationContent(segments: readonly Segment[]): string {
+  return segments
+    .map((segment, index) => `${index + 1}. [${segment.kind}] ${segment.text}`)
+    .join("\n");
+}

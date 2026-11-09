@@ -36,7 +36,12 @@ export const companionCharacterSchema = z.object({
   lastMessageAt: z.nullable(z.iso.datetime({ offset: true })),
 });
 
-const segmentSchema = z.object({ kind: segmentKindSchema, text: z.string() });
+/** 말풍선 하나. `translation`은 학습자 언어(L1) 번역 한 줄 — 번역이 꺼졌거나 실패했으면 없습니다(SSE `translation`과 같은 글). */
+const segmentSchema = z.object({
+  kind: segmentKindSchema,
+  text: z.string(),
+  translation: z.optional(z.string()),
+});
 
 /**
  * 메시지 목록의 한 줄입니다. `feedback`은 유저 메시지에 붙은 SSE `correction`의 본문과 같은 모양이고, 끊긴 스트림의

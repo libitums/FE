@@ -21,7 +21,9 @@ test("CE1. 필수 값과 기본 모델", () => {
       model: defaultCompanionModel,
       moderationModel: defaultCompanionModel,
       feedbackModel: defaultCompanionModel,
+      translationModel: defaultCompanionModel,
     },
+    translation: "every",
   });
   for (const name of [
     "SUPABASE_URL",
@@ -63,5 +65,23 @@ test("CE4. 피드백 모델은 따로 · 기본은 답변 모델", () => {
     model: "claude-sonnet-5-5",
     moderationModel: "claude-sonnet-5-5",
     feedbackModel: "claude-opus-5-5",
+  });
+});
+
+test("CE5. 번역 — 기본 every · off · 모르는 값은 설정 오류, 번역 모델은 검사 모델을 따른다", () => {
+  expect(from({ ...base, COMPANION_TRANSLATION: "off" })?.translation).toBe("off");
+  expect(from({ ...base, COMPANION_LLM: "fake", COMPANION_TRANSLATION: "off" })?.translation).toBe(
+    "off",
+  );
+  expect(from({ ...base, COMPANION_TRANSLATION: "tap" })).toBeNull();
+  expect(
+    from({
+      ...base,
+      COMPANION_MODEL: "claude-sonnet-5-5",
+      COMPANION_MODERATION_MODEL: "claude-haiku-5-5",
+    })?.llm,
+  ).toMatchObject({ translationModel: "claude-haiku-5-5" });
+  expect(from({ ...base, COMPANION_TRANSLATION_MODEL: "claude-sonnet-5-5" })?.llm).toMatchObject({
+    translationModel: "claude-sonnet-5-5",
   });
 });

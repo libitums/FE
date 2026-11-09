@@ -11,6 +11,7 @@ const fakeEnv: ChatSendEnv = {
   supabaseAnonKey: "anon",
   supabaseServiceRoleKey: "service-secret",
   llm: { kind: "fake" },
+  translation: "every",
 };
 const anthropicEnv: ChatSendEnv = {
   ...fakeEnv,
@@ -20,6 +21,7 @@ const anthropicEnv: ChatSendEnv = {
     model: "claude-sonnet-5-5",
     moderationModel: "claude-haiku-5-5",
     feedbackModel: "claude-sonnet-5-5",
+    translationModel: "claude-haiku-5-5",
   },
 };
 
@@ -242,4 +244,60 @@ test("EV7. 케이스 하나의 실패 · 시간 초과는 그 케이스만 ok: f
     { id: "c3", ok: false, error: "timeout" },
     { id: "c4", ok: true, error: undefined },
   ]);
+});
+
+test("EV8. 번역 — 한 줄씩 { text }, 모델을 고르지 않으면 번역 모델", async () => {
+  const models: string[] = [];
+  const { call } = setup({
+    env: anthropicEnv,
+    llmFor: (model) => {
+      models.push(model);
+      return fakeCompanionLlm();
+    },
+  });
+  const { status, body } = await call("POST", {
+    kind: "translation",
+    cases: [
+      { id: "vi", text: "안녕하세요!", l1: "vi" },
+      { id: "default", text: "반가워요" },
+    ],
+  });
+  expect(status).toBe(200);
+  expect(body["model"]).toBe("claude-haiku-5-5");
+  expect(models).toEqual(["claude-haiku-5-5"]);
+  expect(
+    (body["results"] as { id: string; output: unknown }[]).map(({ id, output }) => ({
+      id,
+      output,
+    })),
+  ).toEqual([
+    { id: "vi", output: { text: "[vi] 안녕하세요!" } },
+    { id: "default", output: { text: "[en] 반가워요" } },
+  ]);
+});
+
+test("EV9. 피드백 케이스의 말투 · 캐릭터가 운영 요청으로 넘어간다", async () => {
+  const { call } = setup();
+  const { body } = await call("POST", {
+    kind: "feedback",
+    cases: [
+      {
+        id: "polite",
+        text: "뭐 해?",
+        speechLevel: "polite",
+        character: { name: "덕수쌤", role: "teacher" },
+      },
+      { id: "casual", text: "뭐 해?", speechLevel: "casual" },
+    ],
+  });
+  expect(
+    (body["results"] as { output: { kind?: string; status: string } }[]).map(
+      (r) => r.output.kind ?? r.output.status,
+    ),
+  ).toEqual(["better", "none"]);
+  const bad = await call("POST", {
+    kind: "feedback",
+    cases: [{ id: "x", text: "뭐 해?", speechLevel: "honorific" }],
+  });
+  expect(bad.status).toBe(400);
 });

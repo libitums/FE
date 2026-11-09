@@ -217,11 +217,11 @@ Firebase 프로젝트에 Android 앱을 등록하고 FCM HTTP v1 API 권한이 �
 | `20261112120000_companion_credits.sql` (M4) | 지갑 · 원장 · 예약 · 체험 사용량 · 티어, 지급 · 소멸 · 정리 · 조회 |
 | `20261113120000_companion_turn_v2.sql` | 판정 · 시작 · 끝을 M2 ~ M4까지 합친 판 |
 
-통합 테스트 CF1 ~ CF11 · CH1 ~ CH10 · TV1 ~ TV10, 함수 단위 테스트 CS1 ~ CS10 · SG · CE · BR · LL · EV.
+통합 테스트 CF1 ~ CF11 · CH1 ~ CH10 · TV1 ~ TV10, 함수 단위 테스트 CS1 ~ CS16 · SG · CE · BR · LL · EV · FB.
 
 **턴 흐름** — 판정(시험 계정 · 티어 · 연령 · 일시 차단 · 이용 시간 · 멱등) → 시작(체험 · 크레딧 예약 + 유저 메시지 저장, 한 트랜잭션) →
 SSE → 입력 검사 · 메인 답변 · 피드백을 동시에 → 위기(`crisis`) · 차단(`guardrail_blocked`) / 조각(`delta`, 미성년자 · 나이 모름은 출력 검사 뒤) ·
-교정(`correction`) → 끝(피드백 · 친밀도 → 말투 · 화제 · 제재 · 예약 확정/해제, 한 트랜잭션) → `state` · `done` → 스트림을 닫고 기억 추출 · 요약.
+교정(`correction`) → 답 조각이 다 모이면 L1 번역(`translation`, 남은 기다림과 동시에) → 끝(피드백 · 친밀도 → 말투 · 화제 · 제재 · 예약 확정/해제, 한 트랜잭션) → `state` · `done` → 스트림을 닫고 기억 추출 · 요약.
 
 **값을 바꾸는 곳** — 단가 · 체험 수 · 말투 문턱 · 선톡 공백 · 제재 횟수 같은 값(PRD §8 C · O1 ~ O5 초안)은 `companion.settings` 한 행이다.
 SQL 편집기에서 `update companion.settings set trial_limit = 30;`처럼 바꾸면 배포 없이 다음 턴부터 적용된다. `testers_only`가 참이면(기본)
@@ -243,8 +243,23 @@ SQL 편집기에서 `update companion.settings set trial_limit = 30;`처럼 바�
 | `COMPANION_MODEL` | 아니오 | 답변 모델. 기본 `claude-opus-5-5`. `effort: low`, 정책 거절 때 서버 쪽 대체 모델(`fallbacks: "default"`) — `claude-haiku`로 시작하는 모델은 대체 모델이 없어 이 옵션을 빼고 보낸다 |
 | `COMPANION_MODERATION_MODEL` | 아니오 | 입력 · 출력 검사 · 기억 추출 · 요약. 기본은 `COMPANION_MODEL` |
 | `COMPANION_FEEDBACK_MODEL` | 아니오 | 피드백(교정). 기본은 `COMPANION_MODEL`(검사 모델이 아니다) — 운영(답변 Sonnet · 검사 Haiku)에서는 피드백이 Sonnet으로 돈다 |
+| `COMPANION_TRANSLATION` | 아니오 | 캐릭터 답의 L1 번역. `every`(기본, 턴마다) 또는 `off`. 모르는 값이면 설정 오류(500). PRD O9(매 메시지 · 탭할 때)가 정해지면 바꾼다 |
+| `COMPANION_TRANSLATION_MODEL` | 아니오 | L1 번역 모델. 기본은 `COMPANION_MODERATION_MODEL`(운영 Haiku) |
 
-fake 모드에서 흐름을 일부러 일으키는 낱말은 `_shared/companion-llm-fake.ts` 머리 주석에 있다(위기 · 차단 · 교정 · 기억 · 친밀도).
+fake 모드에서 흐름을 일부러 일으키는 낱말은 `_shared/companion-llm-fake.ts` 머리 주석에 있다(위기 · 차단 · 교정 · 섞인 언어 · 말투 · 맞춤법 · 기억 · 친밀도). fake 번역은 `[언어] 원문`이다.
+
+**L1 번역** — 답 조각이 다 모이면(미성년자 · 나이 모름은 출력 검사와 동시에) 번역을 한 번 부르고, 피드백 기다림과 함께 기다린다. 조각 delta 뒤 ·
+`state` 앞에 조각마다 `translation {segment, text}`을 보내고, 저장 조각에 `translation`을 붙인다(메시지 목록 · 운영 조회에 보인다 — 계약
+`companion-messages-page`의 segment에 선택 칸). 저장 번역은 답 모델의 history에 다시 넣지 않는다. 학습자 언어가 `ko…`면 건너뛰고, 모르면 영어.
+제한 시간 6초 — 실패 · 시간 초과 · 줄 수가 다르면 번역 없이 턴을 끝내고 로그(`translation_unavailable`)와 meta(`translation`)에 남긴다. 차단 · 위기 답은
+번역을 내보내지도 저장하지도 않는다. 선톡도 같은 번역을 붙여 저장한다(이벤트 없음). 로마자 표기는 앱이 규칙으로 만든다.
+늘어나는 지연: 성인은 답이 끝난 뒤 번역만큼(피드백이 더 늦으면 0), 미성년자는 출력 검사와 겹쳐 둘 중 긴 쪽만큼 `state` · `done`이 늦어진다.
+
+**피드백 규칙** — `_shared/companion-llm-prompts.ts`. 한국어가 아닌 부분이 있으면(전부 · 일부) `l1_to_ko`로 메시지 전체를 자연스러운 한국어
+한 문장(`l1ToKo.text` — 앱이 「자연스러운 한국어 표현은 …」으로 보인다)과 뜻으로 돌려주고, 한국어로 써야 하는 이유는 말하지 않는다. 한 메시지 안의
+말투 섞임 · 맞춤법 · 문법은 `correction`, 존댓말 관계(또는 선생님 · 어른 캐릭터)에 반말은 `better`(존댓말 제안), 반말 관계의 존댓말은 피드백 없음.
+띄어쓰기는 뜻이 바뀌거나 읽기 어려울 때만, ㅋㅋ · ㅎㅎ · ㅇㅇ · ~ · 이모지는 피드백 없음. `better`는 원어민에게 분명히 어색할 때 하나만, 애매하면 `none`.
+피드백 요청에는 관계 말투 단계와 캐릭터(이름 · 역할)가 들어간다.
 
 ### companion-eval — LLM 한 단계 평가
 
@@ -253,12 +268,15 @@ ops-dashboard가 검사 · 피드백 프롬프트를 케이스 묶음으로 돌�
 서버 키(`Authorization: Bearer <서버 키>`, `isServiceKey` 규칙)만 받고, 아니면 401 `{"error":"invalid_session"}`.
 
 - `GET` → `{"models":{"reply","feedback","moderation"},"allowed":["claude-haiku-5-5","claude-sonnet-5-5","claude-opus-5-5"],"llm":"anthropic"|"fake"}`
-- `POST {"kind":"moderation"|"feedback","model"?,"cases":[{"id","text","ageBand"?,"layer"?,"l1"?,"context"?}]}` — 케이스 1 ~ 20개, `text` ≤ 2000자,
+- `POST {"kind":"moderation"|"feedback"|"translation","model"?,"cases":[{"id","text","ageBand"?,"layer"?,"l1"?,"context"?,"speechLevel"?,"character"?}]}` — 케이스 1 ~ 20개, `text` ≤ 2000자,
   `id` ≤ 64자. `model`은 `allowed` 안에서만(생략하면 그 단계에 설정된 모델). 기본값 `ageBand` adult · `layer` input · `l1` null. `context`는
-  검사에서는 앞선 유저 메시지(출력 검사), 피드백에서는 바로 앞 캐릭터 말이다.
+  검사에서는 앞선 유저 메시지(출력 검사), 피드백에서는 바로 앞 캐릭터 말이다. 피드백 케이스는 `speechLevel`(polite · casual · slang, 생략하면 모름 —
+  말투 선택 규칙을 건너뛴다)과 `character`(`{"name","role"?}`)를 더 받는다. `translation` 케이스는 한국어 한 줄 `text`와 `l1`(생략하면 en)을 받아
+  `output: {"text"}`를 돌려준다(운영은 말풍선 묶음을 한 번에 번역한다).
+  평가 때 볼 것: 한국어 · 영어가 섞인 입력은 `l1_to_ko` 하나(이유 설명 없음)로, 존댓말 관계의 반말은 `better`로, 반말 관계의 존댓말과 자연스러운 문장은 `none`으로 나와야 한다.
 - 응답 `{"kind","model","results":[{"id","ok":true,"output","ms"} | {"id","ok":false,"error","ms"}]}` — `output`은 판정 `{category, action}` 또는
-  `Feedback`. 동시에 4개씩, 케이스마다 턴 경로와 같은 제한 시간(검사 45초 · 피드백 8초 — 넘으면 `error: "timeout"`, 운영이라면 `unavailable`).
-  케이스 하나의 실패는 그 케이스만 `ok: false`(`timeout` · `structured_unavailable` · `upstream_<상태>` · `upstream_error`). 본문이 틀리면 400 `invalid_request`.
+  `Feedback` 또는 `{text}`. 동시에 4개씩, 케이스마다 턴 경로와 같은 제한 시간(검사 45초 · 피드백 8초 · 번역 6초 — 넘으면 `error: "timeout"`).
+  케이스 하나의 실패는 그 케이스만 `ok: false`(`timeout` · `structured_unavailable` · `mismatch` · `upstream_<상태>` · `upstream_error`). 본문이 틀리면 400 `invalid_request`.
 - 배포: `supabase functions deploy companion-eval`(`config.toml`의 `verify_jwt = false`를 따른다). 비밀은 `chat-send`와 같다.
 
 ### 로컬에서 끝까지 돌리기 (운영 DB를 건드리지 않는다)

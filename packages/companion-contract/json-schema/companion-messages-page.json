@@ -52,6 +52,9 @@
                 },
                 "text": {
                   "type": "string"
+                },
+                "translation": {
+                  "type": "string"
                 }
               },
               "required": ["kind", "text"],

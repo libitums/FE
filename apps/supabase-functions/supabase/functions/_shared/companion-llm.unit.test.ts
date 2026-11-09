@@ -34,6 +34,7 @@ vi.mock("@anthropic-ai/sdk", () => ({
             category: "safe",
             action: "allow",
             items: [],
+            lines: ["a", "b"],
           },
         };
       },
@@ -50,6 +51,7 @@ const config = {
   model: "claude-sonnet-5-5",
   moderationModel: "claude-haiku-5-5",
   feedbackModel: "claude-sonnet-5-5",
+  translationModel: "claude-haiku-5-5",
 } as const;
 const signal = new AbortController().signal;
 
@@ -86,7 +88,14 @@ test("LL1. 답변은 서버 쪽 대체 모델을 싣는다 — Haiku만 뺀다",
 
 test("LL2. 피드백은 피드백 모델, 검사 · 기억은 검사 모델", async () => {
   const llm = anthropicCompanionLlm(config);
-  await llm.feedback({ text: "안녕", l1: null, previous: null, signal });
+  await llm.feedback({
+    text: "안녕",
+    l1: null,
+    previous: null,
+    speechLevel: null,
+    character: null,
+    signal,
+  });
   await llm.moderate({ layer: "input", text: "안녕", context: null, ageBand: "adult", signal });
   await llm.extractMemories({ userText: "a", reply: "b", existing: [], minor: false, signal });
   expect(calls.parse.map((params) => params["model"])).toEqual([
@@ -98,14 +107,46 @@ test("LL2. 피드백은 피드백 모델, 검사 · 기억은 검사 모델", as
 
 test("LL3. 모델 바꿔 보기는 모든 단계를 그 모델로", async () => {
   const llm = companionLlmWithModel(
-    { supabaseUrl: "", supabaseAnonKey: "", supabaseServiceRoleKey: "", llm: config },
+    {
+      supabaseUrl: "",
+      supabaseAnonKey: "",
+      supabaseServiceRoleKey: "",
+      llm: config,
+      translation: "every",
+    },
     "claude-opus-5-5",
   );
   expect(llm.model).toBe("claude-opus-5-5");
-  await llm.feedback({ text: "안녕", l1: null, previous: null, signal });
+  await llm.feedback({
+    text: "안녕",
+    l1: null,
+    previous: null,
+    speechLevel: null,
+    character: null,
+    signal,
+  });
   await llm.moderate({ layer: "input", text: "안녕", context: null, ageBand: "adult", signal });
   expect(calls.parse.map((params) => params["model"])).toEqual([
     "claude-opus-5-5",
     "claude-opus-5-5",
+  ]);
+});
+
+test("LL4. 번역은 번역 모델로 · 조각마다 한 줄", async () => {
+  const llm = anthropicCompanionLlm(config);
+  const lines = await llm.translate({
+    segments: [
+      { kind: "action", text: "손을 흔든다" },
+      { kind: "speech", text: "안녕!" },
+    ],
+    l1: "vi",
+    signal,
+  });
+  expect(lines).toEqual(["a", "b"]);
+  expect(calls.parse[0]).toMatchObject({ model: "claude-haiku-5-5" });
+  expect(calls.parse[0]?.["system"]).toContain('BCP 47 tag "vi"');
+  expect(calls.parse[0]?.["system"]).toContain("exactly 2 strings");
+  expect(calls.parse[0]?.["messages"]).toEqual([
+    { role: "user", content: "1. [action] 손을 흔든다\n2. [speech] 안녕!" },
   ]);
 });

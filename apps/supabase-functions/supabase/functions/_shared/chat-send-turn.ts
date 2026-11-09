@@ -2,6 +2,7 @@
 //
 // 입력 검사 · 메인 답변 · 피드백(M2)을 동시에 시작합니다. 피드백은 답이 나가도 되는 것이 확인된 뒤(성인은 입력 검사 뒤,
 // 미성년자 · 나이 모름은 출력 검사 뒤) 준비되는 대로 `correction`으로 보내고, `done` 전에는 반드시 한 번 보냅니다.
+// 답 조각이 다 모이면 L1 번역(`chat-send-translate.ts`)을 남은 기다림과 동시에 돌려 `state` 앞에 `translation`으로 보냅니다.
 // 저장(finish)이 친밀도 → 말투(M3)와 크레딧 확정/해제(M4)까지 한 트랜잭션으로 하고, 그 결과로 `state` · `done`을 씁니다.
 
 import type {
@@ -18,6 +19,7 @@ import type {
 } from "./chat-send.contract.ts";
 import type { Sink } from "./chat-send-http.ts";
 import { defaultLlmTimeoutMs, historyFrom, startFeedback, startReply } from "./chat-send-reply.ts";
+import { sendTranslations, startTranslation, withTranslations } from "./chat-send-translate.ts";
 import type { AfterTurnInput } from "./companion-after-turn.ts";
 import { chooseBranch, nextTopicState, topicStateFrom } from "./companion-branching.ts";
 import {
@@ -195,6 +197,13 @@ export async function runTurn(
     return fail("upstream_unavailable", "failed");
   }
   if (result.segments.length === 0) return fail("upstream_unavailable", "failed");
+  // 번역은 남은 기다림(출력 검사 · 피드백)과 동시에. 검사에 걸리면 `fail`의 abort가 끊고, 걸린 답의 번역은 내보내지 않는다.
+  const translation = startTranslation(
+    llm,
+    env,
+    { segments: result.segments, l1: gate.l1, timeoutMs: deps.translationTimeoutMs },
+    abort.signal,
+  );
 
   if (ageBand !== "adult") {
     let output: ModerationVerdict;
@@ -218,8 +227,17 @@ export async function runTurn(
     reply.goLive(sendDelta);
   }
 
-  const feedbackResult = await feedback;
+  const [feedbackResult, translated] = await Promise.all([feedback, translation]);
   sendCorrection(feedbackResult);
+  const segments = withTranslations(result.segments, translated);
+  sendTranslations(sink, segments);
+  if (!["ok", "off", "skipped_ko"].includes(translated.status))
+    deps.log({
+      event: "chat_send",
+      status: "stream",
+      outcome: "translation_unavailable",
+      error: translated.status,
+    });
 
   let finished: Finished;
   try {
@@ -228,7 +246,7 @@ export async function runTurn(
       {
         id: context.assistantMessageId,
         origin: "turn",
-        segments: result.segments,
+        segments,
         meta: {
           model: llm.model,
           ageBand,
@@ -238,6 +256,7 @@ export async function runTurn(
           branch: branch.action,
           turnState: result.state,
           feedbackMode: gate.feedbackMode,
+          translation: translated.status,
           trial: turn.trial,
           playground: context.playground,
         },

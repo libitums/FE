@@ -19,7 +19,7 @@ export const defaultLlmTimeoutMs = 45_000;
 export const defaultFeedbackTimeoutMs = 8_000;
 
 type FeedbackContext = ReplyContext & {
-  readonly turn: Pick<BegunTurn, "history">;
+  readonly turn: Pick<BegunTurn, "history" | "speechLevel" | "persona">;
   readonly gate: { readonly l1: string | null };
 };
 
@@ -114,7 +114,11 @@ export function historyFrom(turn: BegunTurn): HistoryEntry[] {
   return turn.history.flatMap((entry): HistoryEntry[] => {
     if (entry.role === "user")
       return entry.text === null ? [] : [{ role: "user", text: entry.text }];
-    return entry.segments.length === 0 ? [] : [{ role: "assistant", segments: entry.segments }];
+    // 저장된 번역은 다시 넣지 않습니다 — 모델이 번역문 투로 답하지 않게.
+    if (entry.segments.length === 0) return [];
+    return [
+      { role: "assistant", segments: entry.segments.map(({ kind, text }) => ({ kind, text })) },
+    ];
   });
 }
 
@@ -134,6 +138,11 @@ export function startFeedback(context: FeedbackContext, abort: AbortController):
         text: context.body.text,
         l1: context.gate.l1,
         previous: lastAssistant === undefined ? null : segmentsToPlain(lastAssistant.segments),
+        speechLevel: context.turn.speechLevel,
+        character:
+          context.turn.persona === null
+            ? null
+            : { name: context.turn.persona.name, role: context.turn.persona.role ?? null },
         signal,
       })
       .catch(() => unavailable),

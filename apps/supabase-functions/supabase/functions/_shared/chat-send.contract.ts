@@ -17,7 +17,9 @@ export type ChatSendEnvName =
   | "COMPANION_LLM"
   | "COMPANION_MODEL"
   | "COMPANION_MODERATION_MODEL"
-  | "COMPANION_FEEDBACK_MODEL";
+  | "COMPANION_FEEDBACK_MODEL"
+  | "COMPANION_TRANSLATION"
+  | "COMPANION_TRANSLATION_MODEL";
 
 export type ChatSendEnv = {
   readonly supabaseUrl: string;
@@ -36,8 +38,15 @@ export type ChatSendEnv = {
         readonly moderationModel: string;
         /** 피드백(교정). 기본은 메인 모델 — 교정 품질이 검사보다 모델 크기를 더 탄다. */
         readonly feedbackModel: string;
+        /** 캐릭터 답의 L1 번역. 기본은 검사 모델. */
+        readonly translationModel: string;
       }
     | { readonly kind: "fake" };
+  /**
+   * 캐릭터 답을 학습자 언어로 번역하는가(PRD O9 — 매 메시지 · 탭할 때 중 미정). `every`는 턴마다 SSE `translation`을 보내고
+   * 저장하며, `off`는 번역하지 않는다.
+   */
+  readonly translation: "every" | "off";
 };
 
 export type ChatSendEnvFrom = (
@@ -51,7 +60,12 @@ export type HistoryEntry =
   | { readonly role: "user"; readonly text: string }
   | { readonly role: "assistant"; readonly segments: readonly Segment[] };
 
-export type Segment = { readonly kind: SegmentKind; readonly text: string };
+/** 말풍선 하나. `translation`은 저장된 L1 번역 — 프롬프트(history)에는 다시 넣지 않습니다. */
+export type Segment = {
+  readonly kind: SegmentKind;
+  readonly text: string;
+  readonly translation?: string;
+};
 
 export type LearningExpression = {
   readonly id: string;
@@ -113,6 +127,18 @@ export type FeedbackRequest = {
   readonly l1: string | null;
   /** 바로 앞 캐릭터 말 — 대답으로서 자연스러운지 보려고. */
   readonly previous: string | null;
+  /** 지금 관계의 말투 단계 — 존댓말 · 반말 일관성을 보려고. 모르면 null(말투 규칙을 건너뛴다). */
+  readonly speechLevel: SpeechLevel | null;
+  /** 상대 캐릭터(이름 · 역할) — 선생님 같은 상대에게 반말인지 보려고. */
+  readonly character: { readonly name: string; readonly role: string | null } | null;
+  readonly signal: AbortSignal;
+};
+
+export type TranslationRequest = {
+  /** 캐릭터 답의 말풍선들. 대사뿐 아니라 행동 · 서술도 번역합니다. */
+  readonly segments: readonly Segment[];
+  /** 번역할 언어(BCP 47). */
+  readonly l1: string;
   readonly signal: AbortSignal;
 };
 
@@ -143,6 +169,8 @@ export type CompanionLlm = {
   reply(request: ReplyRequest): AsyncIterable<string>;
   moderate(request: ModerationRequest): Promise<ModerationVerdict>;
   feedback(request: FeedbackRequest): Promise<Feedback>;
+  /** 말풍선마다 번역 한 줄 — 같은 개수 · 같은 순서. */
+  translate(request: TranslationRequest): Promise<string[]>;
   extractMemories(request: MemoryRequest): Promise<MemoryItem[]>;
   summarize(request: SummaryRequest): Promise<string>;
 };
@@ -236,6 +264,8 @@ export type ChatSendDeps = {
   readonly llmTimeoutMs?: number;
   /** 피드백을 기다리는 시간. 넘으면 `unavailable`(PRD §3.5). */
   readonly feedbackTimeoutMs?: number;
+  /** 번역을 기다리는 시간. 넘으면 번역 없이 턴을 끝냅니다. */
+  readonly translationTimeoutMs?: number;
   /** 분기의 랜덤(0 ~ 1). 테스트가 고정합니다. */
   readonly random?: () => number;
 };
