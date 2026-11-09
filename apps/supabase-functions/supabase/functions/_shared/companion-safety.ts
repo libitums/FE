@@ -51,10 +51,12 @@ export function moderationInstruction(layer: ModerationLayer, ageBand: AgeBand):
     layer === "input"
       ? "a message the learner sent to an AI character"
       : "a reply the AI character is about to send to the learner";
-  // 비속어: 유저는 상대를 겨냥한 모욕 · 혐오 표현 · 비하만 막고 혼잣말 욕은 통과(피드백이 순화), 캐릭터는 가벼운 욕도 막는다.
+  // 비속어: 유저는 캐릭터를 겨냥한 심한 욕 · 혐오 표현 · 성희롱 · 비하 · 위협만 막고, 가벼운 놀림(바보 · 멍청이 · idiot)과 혼잣말 욕은
+  // 통과시킵니다(혼잣말 욕은 피드백이 순화). 가벼운 놀림까지 막으면 친구끼리 하는 장난에도 캐릭터가 거절해 대화가 끊깁니다.
+  // 캐릭터는 가벼운 욕도 막습니다.
   const profanity =
     layer === "input"
-      ? `- Profanity, in any language: insults or harassment aimed at the character, slurs, or degrading abuse (e.g. "너 병신이야", "you idiot", "gago ka", "đồ ngu", "dasar goblok", "死ね", "eres un pendejo", "ไอ้ควาย") → "block" with category "profanity". Casual swearing not aimed at anyone (e.g. "아 씨 시험 망했어", "ㅅㅂ 늦었다", "shit, I'm late", "putangina ang init", "đm trễ rồi", "anjir telat", "くそ、遅刻だ", "mierda, llego tarde", "เหี้ย สายแล้ว") → "allow" with category "safe".`
+      ? `- Profanity, in any language: block only severe abuse aimed at the character — strong swear words or vulgar insults directed at them (e.g. "너 병신이야", "씨발놈아", "개새끼야", "fuck you", "putang ina mo", "đụ má mày", "anjing lo", "死ね", "hijo de puta", "ไอ้สัตว์"), slurs, degrading or sexual harassment, or threats → "block" with category "profanity". Mild insults and playful teasing are fine (e.g. "바보", "멍청이", "you idiot", "dummy", "bobo ka", "đồ ngốc", "dasar bodoh", "バカ", "tonto", "ไอ้บ้า") → "allow" with category "safe". Casual swearing not aimed at anyone (e.g. "아 씨 시험 망했어", "ㅅㅂ 늦었다", "shit, I'm late", "putangina ang init", "đm trễ rồi", "anjir telat", "くそ、遅刻だ", "mierda, llego tarde", "เหี้ย สายแล้ว") → "allow" with category "safe".`
       : `- Profanity: the character must never swear or insult. Any profanity in the reply, even mild or casual → "block" with category "profanity".`;
   return `You review ${subject} in a Korean-learning chat app. The learner is ${who}.
 Classify the text and choose an action.

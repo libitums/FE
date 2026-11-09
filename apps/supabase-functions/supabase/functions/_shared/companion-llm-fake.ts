@@ -2,7 +2,9 @@
 //
 // 플레이그라운드에서 흐름을 일부러 일으키는 낱말:
 //   「죽고 싶」 · 「자살」 → 위기   「[block]」 · 「사랑해」 → 입력 차단   「[unsafe-reply]」 · 「[swear-reply]」 → 출력 차단
-//   욕설 · 모욕(「병신」 · 「ㅂㅅ」 · 「멍청이」 · 「bobo」 · 욕 + 「너」 · 「you」) → 입력 차단(profanity)
+//   심한 욕 · 모욕(「병신」 · 「ㅂㅅ」 · 「개새끼」 · 욕 + 「너」 · 「you」 — 「fuck you」 · 「putang ina mo」) → 입력 차단(profanity)
+//   가벼운 놀림(「바보」 · 「멍청이」 · 「idiot」 · 「bobo」) → 통과 · 피드백 없음
+//   입력 차단은 그 턴의 반복 위반 수로 단계가 갈린다 — 캐릭터가 성격대로 피함 → 경고 → 일시 차단(`chat-send-refusal.ts`)
 //   혼잣말 욕(「아 씨」 · 「ㅅㅂ」 · 「시1발」 · 「존나」) → 통과 · 피드백은 순화(better). 위기 · 욕 · 모욕은 여러 언어 낱말(아래 목록)
 //   한 메시지에 「 이에요」 · 「하새요」가 함께 있으면 고칠 점 둘(교정 하나에 items 여럿)
 //   한글 없는 문장 · 한글과 영어가 섞인 문장 → l1_to_ko   「 이에요」 · 「 예요」 → 띄어쓰기 교정   「하새요」 → 맞춤법 교정
@@ -39,26 +41,21 @@ const crisisWords = [
   "သေချင်",
 ];
 const blockWords = ["[block]", "사랑해", "섹스", "sex"];
-// 모욕(상대를 겨냥) · 혼잣말 욕. 띄어 쓰거나 숫자 · 별표를 끼운 꼴도 잡게 비교 전에 지운다.
+// 심한 욕 · 모욕(상대를 겨냥). 띄어 쓰거나 숫자 · 별표를 끼운 꼴도 잡게 비교 전에 지운다.
+// 가벼운 놀림(바보 · 멍청이 · idiot · dummy · bobo · tonto · バカ)은 여기 없다 — 통과하고 피드백도 비속어로 치지 않는다.
 const insultWords = [
   "병신",
   "ㅂㅅ",
-  "멍청이",
-  "바보야",
-  "idiot",
-  "stupid",
-  "bobo",
-  "gago",
-  "tanga",
-  "đồngu",
-  "goblok",
-  "bangsat",
+  "개새끼",
+  "씨발놈",
+  "putanginamo",
+  "đụmá",
   "死ね",
-  "バカ",
-  "pendejo",
-  "idiota",
-  "ควาย",
+  "hijodeputa",
+  "ไอ้สัตว์",
 ];
+// 가벼운 놀림 — 유저는 통과, 캐릭터 답에서는 출력 차단(캐릭터는 놀리는 말도 하지 않는다).
+const mildInsultWords = ["바보", "멍청이", "idiot", "dummy", "stupid", "bobo", "tonto", "バカ"];
 const swearWords = [
   "ㅅㅂ",
   "시발",
@@ -90,6 +87,7 @@ const asterisks = /\*[^*]*\*/g;
 
 const squash = (text: string) => text.toLowerCase().replace(/[\s\d*._-]/g, "");
 const hasInsult = (text: string) => insultWords.some((word) => squash(text).includes(word));
+const hasMildInsult = (text: string) => mildInsultWords.some((word) => squash(text).includes(word));
 const swearIn = (text: string) =>
   casualSwear.test(text) ? "아 씨" : swearWords.find((word) => squash(text).includes(word));
 
@@ -128,7 +126,7 @@ export function fakeCompanionLlm(): CompanionLlm {
       if (request.layer !== "input") {
         if (text.includes("[unsafe]")) return { category: "other_harm", action: "block" };
         // 캐릭터는 가벼운 욕도 쓰지 않는다.
-        if (hasInsult(text) || swearIn(request.text) !== undefined)
+        if (hasInsult(text) || hasMildInsult(text) || swearIn(request.text) !== undefined)
           return { category: "profanity", action: "block" };
         return { category: "safe", action: "allow" };
       }
