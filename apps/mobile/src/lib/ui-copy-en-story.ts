@@ -28,7 +28,6 @@ export const messengerEn: MessengerCopy = {
     shift: "Shift",
     shiftOn: "Shift, on",
     backspace: "Delete",
-    comma: "Comma",
     period: "Period",
     space: "Space",
     questionMark: "Question mark",

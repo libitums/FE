@@ -8,6 +8,7 @@ import android.media.SoundPool;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.VibrationAttributes;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.os.VibratorManager;
@@ -27,6 +28,8 @@ import java.util.Map;
 final class SoundEffectsController {
   private static final String TAG = "SoundEffects";
   private static final int SHORT_EFFECT_COUNT = 7;
+  // API 26–28 have no predefined tick; 20 ms is about the shortest pulse budget motors still feel.
+  private static final long KEY_TICK_FALLBACK_MS = 20;
 
   private final Context context;
   // Null on devices without a vibrator; then haptic() is a no-op.
@@ -34,6 +37,11 @@ final class SoundEffectsController {
   private final Handler mainHandler = new Handler(Looper.getMainLooper());
   private final SoundEffectsSession session = new SoundEffectsSession();
   private final AudioAttributes attributes;
+  // Below API 33 the touch usage is reached through audio attributes (assistance sonification).
+  private final AudioAttributes touchAttributes = new AudioAttributes.Builder()
+      .setUsage(AudioAttributes.USAGE_ASSISTANCE_SONIFICATION)
+      .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+      .build();
   private final Map<SoundEffectAsset, Integer> sampleIds = new EnumMap<>(SoundEffectAsset.class);
   private final Map<Integer, SoundEffectAsset> assetsBySample = new HashMap<>();
   private final Map<SoundEffectAsset, Integer> streamIds = new EnumMap<>(SoundEffectAsset.class);
@@ -87,6 +95,12 @@ final class SoundEffectsController {
 
   /** Unknown kinds are ignored. One-shot waveform, never repeats; failures are swallowed. */
   void haptic(String kind) {
+    HapticKindRoute route = HapticKindRoute.of(kind);
+    if (route == HapticKindRoute.NONE) return;
+    if (route == HapticKindRoute.KEY) {
+      keyTick();
+      return;
+    }
     HapticPattern pattern = HapticPattern.of(kind);
     if (pattern == null) return;
     onMain(() -> {
@@ -97,6 +111,29 @@ final class SoundEffectsController {
         vibrator.vibrate(effect, attributes);
       } catch (RuntimeException error) {
         Log.w(TAG, "Cannot vibrate", error);
+      }
+    });
+  }
+
+  /**
+   * The keyboard tap (ADR-0112): a predefined tick where the device has one (API 29+), else a short
+   * one-shot. Touch usage, so it is silenced when the system touch-feedback setting is off. Typing
+   * fast posts many of these; each replaces the last, and failures are swallowed.
+   */
+  private void keyTick() {
+    onMain(() -> {
+      if (released || vibrator == null) return;
+      try {
+        VibrationEffect effect = Build.VERSION.SDK_INT >= 29
+            ? VibrationEffect.createPredefined(VibrationEffect.EFFECT_TICK)
+            : VibrationEffect.createOneShot(KEY_TICK_FALLBACK_MS, VibrationEffect.DEFAULT_AMPLITUDE);
+        if (Build.VERSION.SDK_INT >= 33) {
+          vibrator.vibrate(effect, VibrationAttributes.createForUsage(VibrationAttributes.USAGE_TOUCH));
+        } else {
+          vibrator.vibrate(effect, touchAttributes);
+        }
+      } catch (RuntimeException error) {
+        Log.w(TAG, "Cannot vibrate key tap", error);
       }
     });
   }

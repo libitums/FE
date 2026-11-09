@@ -29,7 +29,6 @@ export const messengerEs: MessengerCopy = {
     shift: "Mayúsculas",
     shiftOn: "Mayúsculas, activado",
     backspace: "Borrar",
-    comma: "Coma",
     period: "Punto",
     space: "Espacio",
     questionMark: "Signo de interrogación",

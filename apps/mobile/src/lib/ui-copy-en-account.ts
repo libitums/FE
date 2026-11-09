@@ -64,7 +64,7 @@ export const settingsEn: SettingsCopy = {
   },
   sessionOptionDescription: {
     "show-choice-romanization": "Show how each Korean answer is read, in small text above it.",
-    vibration: "Vibrate when your answer is right or wrong.",
+    vibration: "Vibrate for right or wrong answers and keyboard taps.",
   },
   optionState: { on: "on", off: "off" },
   action: {

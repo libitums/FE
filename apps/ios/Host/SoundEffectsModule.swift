@@ -69,15 +69,19 @@ final class SoundEffectsPlayer {
   }
 }
 
-/// 판정 햅틱의 종류다. 플랫폼 기본 알림 햅틱만 쓰고, 설정의 「시스템 햅틱」은 UIKit이 따른다.
+/// 진동 종류다. 판정은 플랫폼 기본 알림 햅틱, 키 입력은 가벼운 impact이고, 설정의 「시스템 햅틱」은 UIKit이 따른다.
 enum HapticFeedbackKind: String, CaseIterable {
   case success
   case error
+  /// 자판 키 입력(ADR-0112). 판정과 달리 가벼운 impact다.
+  case key
 
-  var feedbackType: UINotificationFeedbackGenerator.FeedbackType {
+  /// 판정 둘은 notification 생성기, 키는 impact 생성기라 nil이다.
+  var feedbackType: UINotificationFeedbackGenerator.FeedbackType? {
     switch self {
     case .success: .success
     case .error: .error
+    case .key: nil
     }
   }
 
@@ -103,6 +107,8 @@ final class SoundEffectsModule: NSObject, LynxModule {
   private let effects = SoundEffectsPlayer()
   // 생성기 하나를 들고 미리 prepare()해 둔다 — 매번 만들면 Taptic Engine이 식은 채 시작해 소리보다 늦는다.
   private let feedback = UINotificationFeedbackGenerator()
+  // 키 입력 진동은 별도 생성기다 — 연타마다 판정 생성기의 예열을 흩뜨리지 않는다(ADR-0112).
+  private let keyFeedback = UIImpactFeedbackGenerator(style: .light)
   private var backgroundObserver: NSObjectProtocol?
 
   @objc override init() {
@@ -123,6 +129,7 @@ final class SoundEffectsModule: NSObject, LynxModule {
     DispatchQueue.main.async { [weak self] in
       self?.effects.preload()
       self?.feedback.prepare()
+      self?.keyFeedback.prepare()
     }
     backgroundObserver = NotificationCenter.default.addObserver(
       forName: UIApplication.didEnterBackgroundNotification,
@@ -142,11 +149,15 @@ final class SoundEffectsModule: NSObject, LynxModule {
   /// 햅틱 없는 기기(iPad · 시뮬레이터)에서는 UIKit이 무동작이다. 낸 뒤 다음 판정을 위해 다시 prepare()한다.
   @objc func haptic(_ kind: String?) {
     guard let kind = HapticFeedbackKind.of(kind) else { return }
-    let type = kind.feedbackType
     DispatchQueue.main.async { [weak self] in
       guard let self else { return }
-      self.feedback.notificationOccurred(type)
-      self.feedback.prepare()
+      if let type = kind.feedbackType {
+        self.feedback.notificationOccurred(type)
+        self.feedback.prepare()
+      } else {
+        self.keyFeedback.impactOccurred()
+        self.keyFeedback.prepare()
+      }
     }
   }
 }
