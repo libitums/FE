@@ -1,10 +1,10 @@
-// 스페인어 문구표 구획 — 계정 · 기타(notifications ~ gemPurchase).
+// 스페인어 문구표 구획 — 계정 · 기타(notifications ~ coinShop).
 // 번역 초안 — 원어민 검수 필요(ADR-0097).
 
 import type { FeedbackCopy } from "./feedback.contract";
 import type {
   AppUpdateCopy,
-  GemPurchaseCopy,
+  CoinShopCopy,
   NotificationsCopy,
   ProfileCopy,
   SettingsCopy,
@@ -134,13 +134,24 @@ export const profileEs: ProfileCopy = {
   },
 };
 
-export const gemPurchaseEs: GemPurchaseCopy = {
-  packAmount: (count, display) => `${display} ${count === 1 ? "gema" : "gemas"}`,
-  balance: (count, display) => `Tienes ${display} ${count === 1 ? "gema" : "gemas"}`,
-  paymentMethod: "Método de pago",
+export const coinShopEs: CoinShopCopy = {
+  title: "Yeopjeon",
+  subtitle: "Antiguas monedas coreanas de latón",
+  balanceLabel: "Tienes",
+  balance: (count, display) => `Tienes ${display} ${count === 1 ? "moneda" : "monedas"}`,
+  pickTitle: "Elige una bolsa",
+  pickCaption: "Gana monedas en las lecciones o consigue más aquí.",
+  packName: { bundle: "Sarta de monedas", pouch: "Bolsa de monedas", big: "Bolsa grande" },
+  coinsUnit: "MONEDAS",
+  packAmount: (count, display) => `${display} ${count === 1 ? "moneda" : "monedas"}`,
+  bonus: (display) => `+${display} de regalo`,
+  bestValue: "MEJOR PRECIO",
+  buy: (price) => `Comprar por ${price}`,
+  storeNote: "Se cobra en tu cuenta de la tienda de apps.",
+  openShop: (count) => `${count} ${count === 1 ? "moneda" : "monedas"}, conseguir más`,
   notice: {
     title: "Pagos próximamente",
-    description: "Aún no se pueden comprar gemas. Vuelve pronto.",
+    description: "Aún no se pueden comprar monedas. Vuelve pronto.",
   },
 };
 

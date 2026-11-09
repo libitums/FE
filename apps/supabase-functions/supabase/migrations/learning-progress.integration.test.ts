@@ -367,3 +367,43 @@ test.each([
     expect(await load(writerA)).toEqual({ ...first, ticketUnits: { "u01-water": ["S1", "S2"] } });
   },
 );
+
+// 엽전을 받은 유닛(ADR-0116) — ticketUnits와 같은 모양 · 같은 병합입니다.
+test("CU1 엽전을 받은 유닛은 키별 합집합으로 합쳐지고 원소는 정렬된다 — 순서를 바꿔도 같다", async () => {
+  const expected = { "u01-water": ["S1", "S2", "S3"], "u02-checkin": ["S1"] };
+  await save(writerA, { ...empty, coinUnits: unitsA });
+  await save(writerB, { ...empty, coinUnits: unitsB });
+  expect(await load(writerA)).toEqual({ ...empty, coinUnits: expected });
+  await db.admin.query("truncate public.learning_progress");
+  await save(writerA, { ...empty, coinUnits: unitsB });
+  await save(writerB, { ...empty, coinUnits: unitsA });
+  expect(await load(writerA)).toEqual({ ...empty, coinUnits: expected });
+});
+
+test("CU2 엽전 유닛이 없는 저장(옛 앱)은 저장된 값을 지우지 않고, 양쪽 모두 없으면 키가 없다", async () => {
+  await save(writerA, { ...empty, coinUnits: unitsA });
+  await save(writerB, first);
+  expect(await load(writerA)).toEqual({ ...first, coinUnits: { "u01-water": ["S1", "S2"] } });
+  await db.admin.query("truncate public.learning_progress");
+  await save(writerA, first);
+  await save(writerB, second);
+  expect(await load(writerA)).not.toHaveProperty("coinUnits");
+});
+
+test.each([
+  ["객체가 아님", "x"],
+  ["빈 키", { "": ["S1"] }],
+  ["배열이 아님", { a: "S1" }],
+  ["빈 유닛", { a: [""] }],
+  ["문자열이 아닌 유닛", { a: [1] }],
+] as const)(
+  "CU3 잘못된 엽전 유닛(%s)은 22023으로 거절하고 기존 진행을 보존한다",
+  async (_name, bad) => {
+    await save(writerA, { ...first, coinUnits: unitsA });
+    await expect(save(writerB, { ...empty, coinUnits: bad })).rejects.toMatchObject({
+      code: "22023",
+      message: "invalid coin units",
+    });
+    expect(await load(writerA)).toEqual({ ...first, coinUnits: { "u01-water": ["S1", "S2"] } });
+  },
+);

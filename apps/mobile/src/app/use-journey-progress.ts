@@ -2,6 +2,7 @@
 
 import { markCatalogUnitDone } from "../lib/catalog-progress";
 import type { CatalogProgress, CatalogUnitKey } from "../lib/catalog-progress";
+import { coinBalanceOf } from "../lib/coins";
 import { fullTicketLedger } from "../lib/learning-tickets";
 import type { TicketLedger } from "../lib/learning-tickets";
 import { useEffect, useRef, useState } from "@lynx-js/react";
@@ -47,6 +48,8 @@ export function useJourneyProgress(
   const [tickets, setTickets] = useState<TicketLedger>(fullTicketLedger);
   // 티켓을 쓰고 연 유닛 — 다시 열 때 티켓을 또 쓰지 않습니다. 원장과 같은 저장 · 병합 경로를 탑니다.
   const [ticketUnits, setTicketUnits] = useState<CatalogProgress>({});
+  // 엽전을 받은 유닛(ADR-0116) — 보유 엽전은 여기서 파생합니다. 티켓 유닛과 같은 저장 · 병합 경로를 탑니다.
+  const [coinUnits, setCoinUnits] = useState<CatalogProgress>({});
   const [streakDays, setStreakDays] = useState(0);
   // 빈 초기값은 신규 사용자라는 뜻이 아닙니다. 유효한 서버 기록을 합친 뒤에만 안내를 판단합니다.
   // 기기 저장본을 적용한 것만으로는 참이 아닙니다.
@@ -65,7 +68,13 @@ export function useJourneyProgress(
   // (연속 모달이 먼저입니다).
   const [recordingDay, setRecordingDay] = useState(false);
 
-  const state: JourneyProgressState = { legacyTutorial, catalogProgress, tickets, ticketUnits };
+  const state: JourneyProgressState = {
+    legacyTutorial,
+    catalogProgress,
+    tickets,
+    ticketUnits,
+    coinUnits,
+  };
   const latest = useRef(state);
   latest.current = state;
   const initial = useRef(state);
@@ -99,6 +108,7 @@ export function useJourneyProgress(
     setCatalogProgress(next.catalogProgress);
     setTickets(next.tickets ?? fullTicketLedger);
     setTicketUnits(next.ticketUnits ?? {});
+    setCoinUnits(next.coinUnits ?? {});
   };
 
   // 계정이 바뀔 때 앞 계정의 객체 둘을 버리고 화면 상태를 처음으로 되돌립니다.
@@ -180,14 +190,15 @@ export function useJourneyProgress(
 
     renderedSync?.capture(state);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [catalogProgress, tickets, ticketUnits]);
+  }, [catalogProgress, tickets, ticketUnits, coinUnits]);
 
   const onStatBumped = (kind: StatBumpKind): void =>
     setStatBumps((bumps) => clearStatBump(bumps, kind));
   const trophyCount = trophyCountFrom(state, completionKeysOf);
   // 전역 머리의 트로피 칩입니다. 노드가 「확인 중」인 동안(응답을 기다리는 동안)은 0을 보이지 않도록 `null`입니다.
-  const headerTrophyCount: number | null =
-    progressLoad.phase === "checking" || progressLoad.phase === "loading" ? null : trophyCount;
+  const progressPending = progressLoad.phase === "checking" || progressLoad.phase === "loading";
+  const headerTrophyCount: number | null = progressPending ? null : trophyCount;
+  const coinCount = coinBalanceOf(coinUnits);
 
   return {
     ...state,
@@ -197,6 +208,10 @@ export function useJourneyProgress(
     wiring: {
       streakDays,
       trophyCount,
+      coinCount,
+      coinUnits,
+      markCoinUnit: (episodeId: string, unitKey: CatalogUnitKey) =>
+        setCoinUnits((units) => markCatalogUnitDone(units, episodeId, unitKey)),
       statBumps,
       onStatBumped,
       syncProgress: syncFromServer,
@@ -221,6 +236,8 @@ export function useJourneyProgress(
     onEpisodeSurveyClosed: () => setEpisodeSurvey(null),
     trophyCount,
     headerTrophyCount,
+    /** 지도 머리의 엽전 칩입니다 — 트로피와 같이 불러오는 동안은 `null`입니다. */
+    headerCoinCount: progressPending ? null : coinCount,
     syncFromServer,
   };
 }

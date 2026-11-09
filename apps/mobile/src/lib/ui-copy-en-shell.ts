@@ -40,7 +40,7 @@ export const commonEn: CommonCopy = {
     streakDays: (days) => `${days}-day streak`,
     trophies: (count) => n(count, "trophy", "trophies"),
     gems: (count) => n(count, "gem", "gems"),
-    diamonds: (count) => n(count, "diamond", "diamonds"),
+    coins: (count) => n(count, "coin", "coins"),
   },
 };
 

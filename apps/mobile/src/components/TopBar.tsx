@@ -13,7 +13,7 @@ import { hasTopBarNotificationsShade, topBarNotificationsClassName } from "./top
 
 import "./top-bar.css";
 
-// 화면들이 함께 쓰는 상단 줄입니다 — 왼쪽에 연속 학습 · 트로피 · 학습 티켓, 오른쪽에 알림 버튼.
+// 화면들이 함께 쓰는 상단 줄입니다 — 왼쪽에 연속 학습 · 트로피 · 학습 티켓 · 엽전, 오른쪽에 알림 버튼.
 // 젬 구매가 준비될 때까지 젬 칩과 구매 진입점은 표시하지 않습니다. 화면 제목은 여기 없습니다. 여정 맵에서는
 // 에피소드 헤더 카드가, 학습 화면에서는 세션 헤더가 「지금 어디인가」를 이미 말하므로
 // 제목 줄을 따로 두면 같은 말이 두 번 섭니다.
@@ -30,6 +30,10 @@ export type TopBarProps = {
   /** 남은 학습 티켓 수입니다. 넘기지 않거나 `null`이면 칩을 그리지 않습니다. */
   readonly ticketCount?: number | null;
   readonly onOpenTickets?: () => void;
+  /** 보유 엽전입니다(ADR-0116). 넘기지 않거나 `null`(진행을 불러오는 중)이면 칩을 그리지 않습니다. */
+  readonly coinCount?: number | null;
+  /** 엽전 상점을 엽니다. 넘기면 엽전 칩이 「+」를 단 버튼이 되고, 없으면 읽기 전용입니다. */
+  readonly onOpenCoins?: () => void;
   /** 시험 계정입니다(ADR-0085) — 티켓 칩이 숫자 대신 「∞」이고 누를 수 없습니다. */
   readonly ticketsUnlimited?: boolean;
   /** 활동으로 오르기 전 값입니다(ADR-0064). 칩이 그 값에서 지금 값으로 한 번 굴립니다. */
@@ -51,6 +55,8 @@ export function TopBar({
   ticketCount = null,
   onOpenTickets,
   ticketsUnlimited = false,
+  coinCount = null,
+  onOpenCoins,
   bumps = noStatBumps,
   bumpHeld = false,
   onBumped,
@@ -76,6 +82,10 @@ export function TopBar({
   const handleOpenTickets = () => {
     "background only";
     onOpenTickets?.();
+  };
+  const handleOpenCoins = () => {
+    "background only";
+    onOpenCoins?.();
   };
 
   // 막은 있을 때와 없을 때를 갈래로 나눕니다 — 조건 자식 한 칸을 두면 렌더러가 그 칸을 감싸는
@@ -109,7 +119,10 @@ export function TopBar({
 
   return (
     <view className="top-bar">
-      <view className="top-bar-stats">
+      {/* 엽전 칩이 서면 칩이 넷이라 간격 · 칩 좌우 여백을 줄입니다 — 360 폭에서 알림 버튼과 겹치지 않게(ADR-0116). */}
+      <view
+        className={coinCount === null ? "top-bar-stats" : "top-bar-stats top-bar-stats-compact"}
+      >
         {/* 칩은 누르면 지표 모달을 여는 버튼입니다. 숫자만 낭독되면 무엇의 3인지 알 수
             없으므로 칩마다 이름을 답니다 — 아이콘은 그 이름 안에 이미 들어 있습니다. */}
         <StatChip
@@ -154,6 +167,23 @@ export function TopBar({
             onTap={ticketsUnlimited || onOpenTickets === undefined ? undefined : handleOpenTickets}
             dropFrom={ticketDropFrom}
             onDropped={onTicketDropped}
+          />
+        )}
+        {/* 보유 엽전(ADR-0116) — 상점을 열 수 있으면 「+」를 단 버튼이고 이름이 「120 coins, get more」입니다. */}
+        {coinCount === null ? null : (
+          <StatChip
+            tone="coin"
+            value={coinCount}
+            accessibilityLabel={
+              onOpenCoins === undefined
+                ? copy.common.count.coins(coinCount)
+                : copy.coinShop.openShop(coinCount)
+            }
+            testId="top-bar-coins"
+            surface="white"
+            height="touch-target"
+            onTap={onOpenCoins === undefined ? undefined : handleOpenCoins}
+            plus={onOpenCoins !== undefined}
           />
         )}
       </view>

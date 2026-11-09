@@ -42,7 +42,7 @@ import type {
   AssessmentCopy,
   CommonCopy,
   EpisodeIntroCopy,
-  GemPurchaseCopy,
+  CoinShopCopy,
   JourneyMapCopy,
   LearningShellCopy,
   LessonCompleteCopy,
@@ -88,7 +88,7 @@ export type UiCopy = {
   readonly downloadSheet: DownloadSheetCopy;
   readonly profile: ProfileCopy;
   readonly feedback: FeedbackCopy;
-  readonly gemPurchase: GemPurchaseCopy;
+  readonly coinShop: CoinShopCopy;
   readonly catalogMap: CatalogMapCopy;
   readonly catalogUpdateNotice: CatalogUpdateNoticeCopy;
   readonly catalogCover: CatalogCoverCopy;

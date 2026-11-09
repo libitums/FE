@@ -1,15 +1,12 @@
 import { useUiCopy } from "../../lib/ui-copy";
-import { useEffect } from "@lynx-js/react";
+import { useEffect, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
-import diamond from "@libitums/icons/lynx/diamond";
 import fire from "@libitums/icons/lynx/fire";
-import trophy from "@libitums/icons/lynx/trophy";
 import { color } from "@libitums/design-tokens";
 import { Button } from "@libitums/ui-lynx/button";
 import { useMotion } from "@libitums/ui-lynx/motion";
 
-import { statChipDiamondColor } from "../../components/StatChip";
 import { ticketIcon } from "../../components/ticket-icon";
 import { announce } from "../../lib/accessibility";
 import { playSound } from "../../lib/sound-effects";
@@ -22,9 +19,13 @@ import {
 } from "./lesson-complete";
 import {
   lessonCompleteChipBumpDelayMs,
+  lessonCompleteCoinFlightDelayMs,
   lessonCompleteRiseClassName,
   rewardMotionFor,
 } from "./lesson-complete-reward";
+import { coinFlightValueAt } from "../../lib/coins";
+import { LessonCompleteCoinFlight } from "./LessonCompleteCoinFlight";
+import { LessonCompleteRewards } from "./LessonCompleteRewards";
 import { LessonCompleteBadge } from "./LessonCompleteBadge";
 import {
   LessonCompleteReviewSummary,
@@ -69,6 +70,7 @@ export function LessonCompleteScreen({
   onStatBumped,
   ticketsLeft,
   ticketChip,
+  coinCount,
   next,
   review,
 }: LessonCompleteScreenProps): ReactNode {
@@ -82,8 +84,11 @@ export function LessonCompleteScreen({
   // 시스템 뒤로가기 = 하단 나가기와 같은 함수입니다(미통과의 `Try again`이 아닙니다).
   useScreenBack(onExit);
   const mistakeCount = lessonMistakeCount(results);
-  const rewardLabel = lc.rewardLabel(reward.diamondAmount);
-  const gradeName = lc.gradeName(reward.grade);
+  // 엽전(ADR-0116) — 받은 엽전이 있으면 성취 모션에서는 하나씩 날아 칩이 1씩 오르고, 줄이기에서는 칩이 한 번 바뀝니다.
+  const coinReward = verdict === "failed" ? 0 : reward.coinAmount;
+  const coinsFly = coinCount !== undefined && coinReward > 0 && rewardMotion === "expressive";
+  const [coinsLanded, setCoinsLanded] = useState(0);
+  const [coinBumped, setCoinBumped] = useState(false);
 
   useEffect(() => {
     playSound(verdict === "failed" ? "failed_lesson" : "pass_lesson");
@@ -112,6 +117,23 @@ export function LessonCompleteScreen({
         streakDays={streakDays}
         trophyCount={trophyCount}
         ticketChip={ticketChip}
+        coinChip={
+          coinCount === undefined
+            ? undefined
+            : {
+                count: coinCount,
+                shown: coinsFly
+                  ? coinFlightValueAt(coinCount - coinReward, coinsLanded, coinReward)
+                  : coinCount,
+                bumpFrom:
+                  rewardMotion === "fade" && coinReward > 0 && !coinBumped
+                    ? coinCount - coinReward
+                    : null,
+                onBumped: () => setCoinBumped(true),
+                // 아이콘은 마지막 엽전이 닿을 때 한 번만 튑니다 — 닿을 때마다(50 ms 간격) 다시 튀면 떨림으로 보입니다.
+                pulseKey: coinsFly && coinsLanded >= coinReward ? 1 : 0,
+              }
+        }
         statBumps={statBumps}
         bumpDelayMs={chipBumpDelayMs}
         onStatBumped={onStatBumped}
@@ -170,47 +192,10 @@ export function LessonCompleteScreen({
         )}
       </view>
 
-      {/* 보상 카드 둘 — 읽기 전용입니다. 카드마다 한 요소로 묶어 이름을 답니다.
-
-          **미통과에서는 아예 서지 않습니다** — 얻지 않은 것을 그리면 화면이 거짓말을
-          합니다. 빈 상자도 두지 않습니다: 「자리는 있는데 비었다」와 「자리가 없다」가
-          구분되지 않고, 다음 화면이 그 빈 상자를 복사합니다(ADR-0022 D1과 같은 근거). */}
+      {/* 보상 카드 줄(엽전 · 등급) — **미통과에서는 아예 서지 않습니다**. 얻지 않은 것을 그리면 화면이 거짓말을
+          합니다. 빈 상자도 두지 않습니다(ADR-0022 D1과 같은 근거). */}
       {verdict === "failed" ? null : (
-        <view
-          className={[
-            "lesson-complete-screen-rewards",
-            lessonCompleteRiseClassName(rewardMotion, "rewards"),
-          ]
-            .filter(Boolean)
-            .join(" ")}
-        >
-          <view
-            className="lesson-complete-screen-reward lesson-complete-screen-reward-diamond"
-            data-testid="lesson-complete-screen-reward-diamond"
-            accessibility-element={true}
-            accessibility-label={copy.lessonComplete.rewardDiamonds(reward.diamondAmount)}
-          >
-            <svg
-              className="lesson-complete-screen-reward-icon"
-              content={diamond}
-              current-color={statChipDiamondColor}
-            />
-            <text className="lesson-complete-screen-reward-label">{rewardLabel}</text>
-          </view>
-          <view
-            className="lesson-complete-screen-reward lesson-complete-screen-reward-grade"
-            data-testid="lesson-complete-screen-reward-grade"
-            accessibility-element={true}
-            accessibility-label={lc.grade(gradeName)}
-          >
-            <svg
-              className="lesson-complete-screen-reward-icon"
-              content={trophy}
-              current-color={color.feedback.warning}
-            />
-            <text className="lesson-complete-screen-reward-label">{gradeName}</text>
-          </view>
-        </view>
+        <LessonCompleteRewards reward={reward} rewardMotion={rewardMotion} />
       )}
 
       {ticketsLeft === undefined ? null : (
@@ -230,6 +215,14 @@ export function LessonCompleteScreen({
       )}
 
       <view className="lesson-complete-screen-spacer" />
+
+      {coinsFly ? (
+        <LessonCompleteCoinFlight
+          reward={coinReward}
+          delayMs={lessonCompleteCoinFlightDelayMs(rewardMotion)}
+          onLanded={setCoinsLanded}
+        />
+      ) : null}
 
       {/* [고정] 액션. **나가는 수단은 어느 경우에도 하나**입니다 — 맵(또는 이어지는 이야기)으로 가는 길입니다.
           미통과에서만 그 위에 `Try again`이 한 줄 더 섭니다. 그것은 나가는 수단이 아니라

@@ -28,8 +28,8 @@ test("UE1. 복수형 — 젬 · 트로피 · 다이아 · 연속 일수", () => 
   expect(c.common.count.gems(5)).toBe("5 gems");
   expect(c.common.count.trophies(1)).toBe("1 trophy");
   expect(c.common.count.trophies(3)).toBe("3 trophies");
-  expect(c.common.count.diamonds(1)).toBe("1 diamond");
-  expect(c.common.count.diamonds(12)).toBe("12 diamonds");
+  expect(c.common.count.coins(1)).toBe("1 coin");
+  expect(c.common.count.coins(12)).toBe("12 coins");
   expect(c.common.count.streakDays(1)).toBe("1-day streak");
   expect(c.common.count.streakDays(3)).toBe("3-day streak");
 });
@@ -42,8 +42,9 @@ test("UE1. 복수형 — 활동 수 · 에피소드 · 젬 팩 · 잔액", () =>
   expect(c.journeyMap.activityProgressLabel(1, 1)).toBe("1 of 1 activity done");
   expect(c.journeyMap.activityProgressLabel(1, 4)).toBe("1 of 4 activities done");
   expect(c.journeyMap.statModal.episodesClearedHero(1)).toBe("1 episode cleared");
-  expect(c.gemPurchase.packAmount(1200, "1,200")).toBe("1,200 gems");
-  expect(c.gemPurchase.balance(1, "1")).toBe("You have 1 gem");
+  expect(c.coinShop.packAmount(140, "140")).toBe("140 coins");
+  expect(c.coinShop.balance(1, "1")).toBe("You have 1 coin");
+  expect(c.coinShop.openShop(120)).toBe("120 coins, get more");
 });
 
 test("UE2. 조건부 문구 — 실수 · 건너뜀", () => {

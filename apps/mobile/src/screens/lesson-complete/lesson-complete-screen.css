@@ -15,6 +15,8 @@
         var(--libitum-spacing-12)
     );
   background: var(--libitum-color-background-primary);
+  /* 엽전 날기 층(ADR-0116)의 기준 상자입니다. */
+  position: relative;
 }
 
 /* 칩 사이 9는 여정 맵 상단 바와 같은 실측값입니다. */
@@ -183,13 +185,13 @@
   border-radius: var(--libitum-radius-xl);
 }
 
-/* 다이아 카드 면(#D9F6FF)과 글자(#00C3FF)는 맞는 색 토큰이 없어 디자인 값을 적습니다. */
-.lesson-complete-screen-reward-diamond {
-  background-color: #d9f6ff;
+/* 엽전 카드(ADR-0116) — 면(#FFF4E0)과 글자(#9A5E12)는 황동 계열 색 토큰이 없어 디자인 값을 적습니다. */
+.lesson-complete-screen-reward-coins {
+  background-color: #fff4e0;
 }
 
-.lesson-complete-screen-reward-diamond .lesson-complete-screen-reward-label {
-  color: #00c3ff;
+.lesson-complete-screen-reward-coins .lesson-complete-screen-reward-label {
+  color: #9a5e12;
 }
 
 .lesson-complete-screen-reward-grade {

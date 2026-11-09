@@ -55,6 +55,11 @@ export type LessonCompleteScreenProps = {
   readonly ticketsLeft?: number;
   /** 머리 티켓 칩 — 넘기지 않으면 서지 않습니다. */
   readonly ticketChip?: LessonCompleteTicketChip;
+  /**
+   * 보유 엽전(이번 보상까지 더한 값, ADR-0116)입니다. 넘기지 않으면 머리 엽전 칩이 서지 않습니다. 이번 보상
+   * (`reward.coinAmount`)이 있으면 칩이 보상 전 값에서 시작해 엽전이 하나씩 닿을 때마다 1씩 오릅니다.
+   */
+  readonly coinCount?: number;
   /** 통과 뒤 이어 갈 다음 유닛(시안 D) — 있으면 지도 버튼 + 「다음 학습」 한 줄, 없으면 맵 버튼 하나. */
   readonly next?: LessonCompleteNext;
   /**

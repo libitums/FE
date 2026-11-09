@@ -6,7 +6,7 @@ import type { Dispatch, SetStateAction } from "@lynx-js/react";
 
 import type { AnswerResult } from "../lib/answer-result";
 import type { CatalogProgress, CatalogUnitKey } from "../lib/catalog-progress";
-import { markCatalogUnitDone } from "../lib/catalog-progress";
+import { isCatalogUnitDone, markCatalogUnitDone } from "../lib/catalog-progress";
 import { initialListenPace } from "../lib/listen-pace";
 import type { ListenPace } from "../lib/listen-pace";
 import { assessmentCompletesStep, judgeAssessment } from "../screens/assessment/assessment";
@@ -67,6 +67,10 @@ export type CatalogLessonWiringArgs = CatalogWiringValues & {
   readonly finishGuard: CatalogFinishGuard;
   /** 「천천히」 상태의 setter입니다 — 세션을 비우는 자리에서 함께 되돌립니다. */
   readonly setListenPace: Dispatch<SetStateAction<ListenPace>>;
+  /** 엽전을 받은 유닛으로 적습니다(ADR-0116). 처음 끝낸 유닛에만 부릅니다. 넘기지 않으면 엽전이 없습니다. */
+  readonly markCoinUnit?: (episodeId: string, unitKey: CatalogUnitKey) => void;
+  /** 엽전을 이미 받은 유닛입니다(ADR-0116). 끝냄 기록이 없어도 여기 있으면 처음 통과가 아닙니다. */
+  readonly coinUnits?: CatalogProgress;
 };
 
 export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLessonWiring {
@@ -83,6 +87,8 @@ export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLesso
     setPendingMistakes,
     finishGuard,
     setListenPace,
+    markCoinUnit,
+    coinUnits = {},
   } = args;
 
   // 같은 활동 · 같은 최종 테스트의 두 번째 finish를 거릅니다 — 처음 오면 표식을 남기고 true.
@@ -104,7 +110,14 @@ export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLesso
     setListenPace(initialListenPace);
   };
 
+  // 처음 끝내는가는 이 렌더의 진행(끝내기 전)으로 봅니다 — 결과 화면의 엽전 보상과 엽전 기록이 같은 답을 씁니다.
+  // 끝냄 기록과 엽전 기록 중 하나라도 있으면 처음이 아닙니다 — 이미 받은 유닛에 「+ 10」 카드가 서지 않게.
+  const firstClearOf = (episodeId: string, unitKey: CatalogUnitKey): boolean =>
+    !isCatalogUnitDone(catalogProgress, episodeId, unitKey) &&
+    !isCatalogUnitDone(coinUnits, episodeId, unitKey);
+
   const markDone = (episodeId: string, unitKey: CatalogUnitKey): void => {
+    if (firstClearOf(episodeId, unitKey)) markCoinUnit?.(episodeId, unitKey);
     setCatalogProgress((progress) => markCatalogUnitDone(progress, episodeId, unitKey));
     // 맵이 돌아오면 이 유닛 → 다음 유닛 발자국이 찍히게(ADR-0100 D4).
     rememberMapCleared(episodeId, unitKey);
@@ -128,6 +141,7 @@ export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLesso
         results,
         skippedCount,
         questionCount,
+        firstClear: firstClearOf(episodeId, unitKey),
         ...(review === undefined ? {} : { review }),
       },
     });

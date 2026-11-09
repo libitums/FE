@@ -20,6 +20,17 @@
   gap: 9px;
 }
 
+/* 칩 넷(엽전 칩이 선 때 — ADR-0116) — 간격 9 → 6, 칩 좌우 여백 12 → 8. 칩 넷 + 알림 44가 360 폭 화면(좌우 여백
+   포함)에서 엽전 세 자리 수까지 들어가도록 줄인 값이고, 맞는 간격 토큰이 없어 6은 px로 적습니다. */
+.top-bar-stats-compact {
+  gap: 6px;
+}
+
+.top-bar-stats-compact .stat-chip {
+  padding-left: var(--libitum-spacing-8);
+  padding-right: var(--libitum-spacing-8);
+}
+
 /* 지표 칩 하나하나의 모양은 `components/stat-chip.css`가 집니다. */
 
 /* 알림 버튼 — 44pt 원형입니다(Apple HIG 터치 영역). 폭 · 높이를 적지 않고 내용으로 섭니다:

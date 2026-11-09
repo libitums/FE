@@ -79,6 +79,8 @@ function harness(
     pendingSkippedCount?: number;
     pendingMistakes?: readonly CatalogReviewItem[];
     sinkNull?: boolean;
+    markCoinUnit?: (episodeId: string, unitKey: string) => void;
+    coinUnits?: CatalogProgress;
   } = {},
 ): Harness {
   const catalog = options.catalog ?? realCatalog;
@@ -116,6 +118,8 @@ function harness(
       void log.push({ kind: "mistakes", value: resolveAction(action, pendingMistakes) }),
     finishGuard: newCatalogFinishGuard(),
     setListenPace: () => {},
+    ...(options.markCoinUnit === undefined ? {} : { markCoinUnit: options.markCoinUnit }),
+    ...(options.coinUnits === undefined ? {} : { coinUnits: options.coinUnits }),
   };
   const setCompletedStepCount = vi.fn<(count: number) => void>();
   // 튜토리얼 진행 setter도 인자에 함께 넣어 카탈로그가 건드리지 않는지 봅니다.
@@ -285,6 +289,7 @@ describe("onStartCatalogUnit — 레슨", () => {
         type: "push",
         screen: expect.objectContaining({
           name: "catalog-unit-complete",
+          firstClear: true,
           episodeId: "u01-water",
           unitKey: "S1",
           results: [],
@@ -294,6 +299,34 @@ describe("onStartCatalogUnit — 레슨", () => {
     ]);
     expect(eventIndex(log, "episode_lesson_finished")).toBeLessThan(progressIndex(log));
     expect(progressIndex(log)).toBeLessThan(dispatchIndex(log, "push"));
+  });
+
+  test.each([
+    ["처음 끝내면 엽전 유닛으로 적고 결과 화면이 처음 통과다", ["intro"], {}, true],
+    ["이미 끝낸 유닛이면 적지 않고 결과 화면이 처음 통과가 아니다", ["intro", "S1"], {}, false],
+    [
+      "끝냄 기록이 없어도 이미 엽전을 받은 유닛이면 적지 않고 처음 통과가 아니다",
+      ["intro"],
+      { "u01-water": ["S1"] },
+      false,
+    ],
+  ] as const)("LW3-C. %s(ADR-0116)", (_name, done, coinUnits, first) => {
+    const markCoinUnit = vi.fn<(episodeId: string, unitKey: string) => void>();
+    const { wiring, log } = harness({
+      catalog: catalogWithEmptyS1(),
+      progress: { "u01-water": done },
+      coinUnits,
+      markCoinUnit,
+    });
+
+    wiring.onStartCatalogUnit("u01-water", "S1");
+
+    expect(markCoinUnit.mock.calls).toEqual(first ? [["u01-water", "S1"]] : []);
+    expect(dispatches(log)).toEqual([
+      expect.objectContaining({
+        screen: expect.objectContaining({ name: "catalog-unit-complete", firstClear: first }),
+      }),
+    ]);
   });
 
   test("LW3. 실데이터 u01 S1은 카드 셋을 포함해 표시 6 · 채점 3으로 활동 화면에 간다", () => {
@@ -393,6 +426,7 @@ describe("카드가 든 레슨의 결선", () => {
         type: "replace",
         screen: {
           name: "catalog-unit-complete",
+          firstClear: true,
           episodeId: "u01-water",
           unitKey: "S1",
           results: [],
@@ -560,6 +594,7 @@ describe("onFinishCatalogActivity", () => {
         type: "replace",
         screen: {
           name: "catalog-unit-complete",
+          firstClear: true,
           episodeId: "u01-water",
           unitKey: "S3",
           results: many(10, correct),
@@ -691,6 +726,7 @@ describe("최종 테스트", () => {
         type: "replace",
         screen: {
           name: "catalog-unit-complete",
+          firstClear: true,
           episodeId: "u01-water",
           unitKey: "RP",
           results: [correct, correct, incorrect],

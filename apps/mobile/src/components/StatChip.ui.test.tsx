@@ -7,11 +7,11 @@ import { statChipClassName } from "./stat-chip-class";
 // `ui` 계층: 컴포넌트 렌더와 상호작용 (ADR-0006 D4).
 
 test("[SC1] onTap이 없으면 읽기 전용 — 이름은 달고 버튼 특성은 없다", () => {
-  render(<StatChip tone="diamond" value={4} accessibilityLabel="다이아 4개" testId="chip" />);
+  render(<StatChip tone="coin" value={4} accessibilityLabel="엽전 4개" testId="chip" />);
 
   const chip = screen.getByTestId("chip");
   expect(chip).toHaveTextContent("4");
-  expect(chip).toHaveAttribute("accessibility-label", "다이아 4개");
+  expect(chip).toHaveAttribute("accessibility-label", "엽전 4개");
   expect(chip).not.toHaveAttribute("accessibility-traits");
 });
 

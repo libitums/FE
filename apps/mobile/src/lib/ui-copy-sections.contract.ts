@@ -61,7 +61,7 @@ export type CommonCopy = {
     readonly streakDays: (days: number) => string;
     readonly trophies: (count: number) => string;
     readonly gems: (count: number) => string;
-    readonly diamonds: (count: number) => string;
+    readonly coins: (count: number) => string;
   };
 };
 
@@ -164,7 +164,7 @@ export type AssessmentCopy = {
 };
 
 export type LessonCompleteCopy = {
-  readonly rewardDiamonds: (count: number) => string;
+  readonly rewardCoins: (count: number) => string;
   readonly grade: (grade: string) => string;
   /** 등급 낱말의 보이는 글자 — 영어는 받은 값 그대로(`AMAZING`). */
   readonly gradeName: (grade: string) => string;
@@ -261,11 +261,28 @@ export type ProfileCopy = {
   readonly itemLabel: Readonly<Record<"name" | "email" | "phone" | "learning-language", string>>;
 };
 
-export type GemPurchaseCopy = {
-  /** `display`는 `formatGemCount`의 결과, 복수형은 `count`가 정합니다. */
-  readonly packAmount: (count: number, display: string) => string;
+/** 엽전 상점의 팩입니다(ADR-0116) — 왼쪽부터 엮음 · 주머니 · 큰 주머니. */
+export type CoinPackId = "bundle" | "pouch" | "big";
+
+export type CoinShopCopy = {
+  readonly title: string;
+  readonly subtitle: string;
+  /** 보유 카드의 작은 머리말입니다. 카드 낭독은 `balance`입니다. */
+  readonly balanceLabel: string;
+  /** `display`는 `formatCoinCount`의 결과, 복수형은 `count`가 정합니다. */
   readonly balance: (count: number, display: string) => string;
-  readonly paymentMethod: string;
+  readonly pickTitle: string;
+  readonly pickCaption: string;
+  readonly packName: Readonly<Record<CoinPackId, string>>;
+  /** 팩 카드 숫자 옆의 단위입니다(디자인 「COINS」). */
+  readonly coinsUnit: string;
+  readonly packAmount: (count: number, display: string) => string;
+  readonly bonus: (display: string) => string;
+  readonly bestValue: string;
+  readonly buy: (price: string) => string;
+  readonly storeNote: string;
+  /** 머리 엽전 칩이 상점을 여는 버튼일 때의 이름입니다. */
+  readonly openShop: (count: number) => string;
   readonly notice: { readonly title: string; readonly description: string };
 };
 

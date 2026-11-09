@@ -190,6 +190,7 @@ export function screenWiring(args: ScreenWiringArgs): ScreenWiring {
     gemCount: args.gemCount,
     streakDays: args.streakDays,
     trophyCount: args.trophyCount,
+    ...(args.coinCount === undefined ? {} : { coinCount: args.coinCount }),
     statBumps: args.statBumps,
     onStatBumped: args.onStatBumped,
     journeyMapProgressLoad: args.journeyMapProgressLoad,

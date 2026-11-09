@@ -251,6 +251,7 @@ export function AppSession({
                   top={shellHeaderTop(screenNow, insets)}
                   streakDays={progress.streakDays}
                   trophyCount={progress.headerTrophyCount}
+                  coinCount={progress.headerCoinCount}
                   celebrateStreak={progress.streakCelebration}
                   onStreakCelebrated={progress.onStreakCelebrated}
                   statBump={progress.wiring}

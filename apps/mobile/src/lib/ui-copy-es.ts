@@ -21,7 +21,7 @@ import {
 import {
   appUpdateEs,
   feedbackEs,
-  gemPurchaseEs,
+  coinShopEs,
   notificationsEs,
   profileEs,
   settingsEs,
@@ -87,7 +87,7 @@ export const uiCopyEs: UiCopy = {
   downloadSheet: downloadSheetEs,
   profile: profileEs,
   feedback: feedbackEs,
-  gemPurchase: gemPurchaseEs,
+  coinShop: coinShopEs,
   catalogMap: catalogMapEs,
   catalogUpdateNotice: catalogUpdateNoticeEs,
   catalogCover: catalogCoverEs,

@@ -1,10 +1,10 @@
-// 일본어 문구표 구획 — 계정 · 기타(notifications ~ gemPurchase).
+// 일본어 문구표 구획 — 계정 · 기타(notifications ~ coinShop).
 // 번역 초안 — 원어민 검수 필요(ADR-0098).
 
 import type { FeedbackCopy } from "./feedback.contract";
 import type {
   AppUpdateCopy,
-  GemPurchaseCopy,
+  CoinShopCopy,
   NotificationsCopy,
   ProfileCopy,
   SettingsCopy,
@@ -131,13 +131,24 @@ export const profileJa: ProfileCopy = {
   },
 };
 
-export const gemPurchaseJa: GemPurchaseCopy = {
-  packAmount: (_count, display) => `${display}ジェム`,
-  balance: (_count, display) => `所持ジェム：${display}`,
-  paymentMethod: "支払い方法",
+export const coinShopJa: CoinShopCopy = {
+  title: "Yeopjeon",
+  subtitle: "朝鮮の昔の真鍮の銭",
+  balanceLabel: "所持",
+  balance: (_count, display) => `所持コイン：${display}枚`,
+  pickTitle: "袋を選ぶ",
+  pickCaption: "コインはレッスンでもらえます。ここで増やすこともできます。",
+  packName: { bundle: "コインの束", pouch: "コインの袋", big: "大きな袋" },
+  coinsUnit: "枚",
+  packAmount: (_count, display) => `コイン${display}枚`,
+  bonus: (display) => `+${display}枚ボーナス`,
+  bestValue: "いちばんお得",
+  buy: (price) => `${price}で購入`,
+  storeNote: "アプリストアのアカウントに請求されます。",
+  openShop: (count) => `コイン${count}枚、追加する`,
   notice: {
     title: "お支払いは近日公開",
-    description: "ジェムの購入はまだご利用いただけません。もうしばらくお待ちください。",
+    description: "コインの購入はまだご利用いただけません。もうしばらくお待ちください。",
   },
 };
 

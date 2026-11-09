@@ -62,7 +62,7 @@ export const assessmentId: AssessmentCopy = {
 };
 
 export const lessonCompleteId: LessonCompleteCopy = {
-  rewardDiamonds: (count) => `Hadiah, ${count} berlian`,
+  rewardCoins: (count) => `Hadiah, ${count} koin`,
   grade: (grade) => `Nilai ${grade}`,
   gradeName: (grade) => grade,
   outcome: { passed: "Pelajaran selesai", failed: "Pelajaran belum lulus" },

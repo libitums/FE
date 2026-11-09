@@ -11,6 +11,7 @@ import type { NonEmpty } from "../lib/non-empty";
 import { judgeAssessment } from "../screens/assessment/assessment";
 import { LessonCompleteScreen } from "../screens/lesson-complete/LessonCompleteScreen";
 import { lessonRewardPlaceholder } from "../screens/lesson-complete/lesson-complete";
+import { lessonCoinReward } from "../lib/coins";
 import { catalogLessonOrdinalOf } from "../screens/journey-map/catalog-map";
 import { CatalogEpilogueFlow } from "./CatalogCutsFlow";
 import { renderCatalogActivity } from "./render-catalog-activity";
@@ -139,7 +140,11 @@ export function renderCatalogFlow(screen: CatalogFlowScreen, wiring: ScreenWirin
           trophyCount={wiring.trophyCount}
           statBumps={wiring.statBumps}
           onStatBumped={wiring.onStatBumped}
-          reward={lessonRewardPlaceholder}
+          reward={{
+            ...lessonRewardPlaceholder,
+            coinAmount: lessonCoinReward(verdict, screen.firstClear === true),
+          }}
+          {...(wiring.coinCount === undefined ? {} : { coinCount: wiring.coinCount })}
           ticketsLeft={wiring.ticketsLeft}
           ticketChip={wiring.ticketChip}
           continuesStory={catalogUnitCompleteLeadsToEpilogue(wiring, episodeId, unitKey, verdict)}

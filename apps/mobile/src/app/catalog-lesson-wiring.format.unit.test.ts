@@ -203,6 +203,7 @@ describe("CULT 단계 시작 (LWF)", () => {
         type: "replace",
         screen: {
           name: "catalog-unit-complete",
+          firstClear: true,
           episodeId: "u01-water",
           unitKey: "CULT",
           results: [correct, correct, incorrect],
@@ -282,6 +283,7 @@ describe("말하기 단계의 끝 (LWS)", () => {
         type: "replace",
         screen: {
           name: "catalog-unit-complete",
+          firstClear: true,
           episodeId: "u01-water",
           unitKey: "S5",
           results: manyOf(8, correct),
@@ -339,6 +341,7 @@ describe("말하기 단계의 끝 (LWS)", () => {
           type: "replace",
           screen: expect.objectContaining({
             name: "catalog-unit-complete",
+            firstClear: true,
             skippedCount: 2,
             questionCount: 10,
           }),
