@@ -193,7 +193,7 @@
                     },
                     "intent": {
                       "type": "string",
-                      "enum": ["continue", "ask", "react"]
+                      "enum": ["elaborate", "ask", "reflect", "redirect", "boundary", "progress"]
                     }
                   },
                   "required": ["text", "meaning", "intent"],

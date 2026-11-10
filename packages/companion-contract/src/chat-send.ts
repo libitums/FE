@@ -28,10 +28,18 @@ export const chatSendRequestSchema = z.object({
   input_mode: inputModeSchema,
   client_region: z.optional(z.string().check(z.regex(/^[A-Z]{2}$/))),
   /**
-   * 추천 답변 칩을 탭해 그대로 보냈으면 참입니다. 서버는 `text`가 마지막 캐릭터 메시지에 저장된 칩 하나와 (앞뒤 공백을 걷고) 똑같을 때만
-   * 피드백을 건너뜁니다(`correction`의 `status: "skipped"`). 칩을 고쳐 보냈거나 직접 입력했으면 보내지 않습니다 — 보내도 글이 다르면
-   * 보통처럼 피드백합니다.
+   * 추천 답변 칩을 탭해 보냈으면 그 칩입니다 — 칩이 묶인 캐릭터 메시지(`suggestions`의 `messageId`)와 `items`의 자리. 서버는
+   * `message_id`가 지금 마지막 캐릭터 메시지이고 `text`가 그 자리의 칩과 (앞뒤 공백을 걷고) 똑같을 때만 칩을 그대로 보낸 것으로 보고
+   * 피드백을 건너뜁니다(`correction`의 `status: "skipped"`). 그 사이 새 답이 왔으면 지난 칩(stale), 글이 다르면 직접 입력으로 보고
+   * 보통처럼 피드백합니다. 칩 수정은 없습니다 — 입력 길은 탭 전송 · 직접 입력 둘뿐이고(2026-11-10), 직접 입력이면 보내지 않습니다.
    */
+  suggestion: z.optional(
+    z.object({
+      message_id: z.uuid(),
+      index: z.int().check(z.gte(0), z.lte(2)),
+    }),
+  ),
+  /** 옛 표시(`suggestion` 앞). 참이면 마지막 캐릭터 메시지의 칩 어느 하나와 글이 같을 때 피드백을 건너뜁니다. */
   from_suggestion: z.optional(z.boolean()),
 });
 

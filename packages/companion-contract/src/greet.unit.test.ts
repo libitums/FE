@@ -28,9 +28,8 @@ describe("companion-greet", () => {
         messageId,
         status: "ok",
         items: [
-          { text: "안녕! 반가워.", meaning: "Hi! Nice to meet you.", intent: "continue" },
+          { text: "안녕! 반가워.", meaning: "Hi! Nice to meet you.", intent: "reflect" },
           { text: "어디에서 왔어?", meaning: "Where are you from?", intent: "ask" },
-          { text: "우와!", meaning: "Wow!", intent: "react" },
         ],
       },
     };

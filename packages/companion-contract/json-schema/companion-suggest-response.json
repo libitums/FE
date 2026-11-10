@@ -19,6 +19,7 @@
       ]
     },
     "items": {
+      "maxItems": 3,
       "type": "array",
       "items": {
         "type": "object",
@@ -32,7 +33,7 @@
           },
           "intent": {
             "type": "string",
-            "enum": ["continue", "ask", "react"]
+            "enum": ["elaborate", "ask", "reflect", "redirect", "boundary", "progress"]
           }
         },
         "required": ["text", "meaning", "intent"],
@@ -55,8 +56,10 @@
         "temporarily_blocked",
         "usage_time_limit",
         "turn_in_progress",
+        "suggestions_disabled",
         "generation_failed",
-        "blocked"
+        "blocked",
+        "no_valid_candidates"
       ]
     }
   },

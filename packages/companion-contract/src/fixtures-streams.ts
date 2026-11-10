@@ -168,9 +168,12 @@ export const turnFixtureEvents = {
         messageId: ids.assistant,
         status: "ok",
         items: [
-          { text: "사과를 샀어요.", meaning: "I bought apples.", intent: "continue" },
+          {
+            text: "사과를 샀어요. 시장이 정말 컸어요.",
+            meaning: "I bought apples. The market was really big.",
+            intent: "elaborate",
+          },
           { text: "쌤은 시장 좋아해요?", meaning: "Do you like markets?", intent: "ask" },
-          { text: "네, 갔어요!", meaning: "Yes, I went!", intent: "react" },
         ],
       },
     },

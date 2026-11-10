@@ -53,9 +53,12 @@ export const messagesPageFixture: CompanionMessagesPage = {
       status: "complete",
       segments: [{ kind: "speech", text: "오늘 수업 어땠어요? 생각나서 연락했어요." }],
       suggestions: [
-        { text: "재미있었어요!", meaning: "It was fun!", intent: "continue" },
+        {
+          text: "오늘 수업 재미있었어요. 발음 연습을 많이 했어요.",
+          meaning: "Class was fun today. I practiced pronunciation a lot.",
+          intent: "elaborate",
+        },
         { text: "쌤은 오늘 뭐 했어요?", meaning: "What did you do today?", intent: "ask" },
-        { text: "고마워요!", meaning: "Thanks!", intent: "react" },
       ],
       createdAt: "2026-11-08T12:00:00+09:00",
     },

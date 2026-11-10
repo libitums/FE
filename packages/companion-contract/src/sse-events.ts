@@ -69,15 +69,17 @@ export const translationDataSchema = z.object({ segment: nonNegativeInt, text: z
  * 이 턴 캐릭터 답의 추천 답변 칩(`companion-suggest` 응답의 `items`와 같은 모양)입니다. 유저가 칩 스위치(`reply_suggestions`)를 켰을 때만,
  * 보통 답 턴에만 옵니다 — 끄면 · 위기 · 차단 · 거절 턴이면 오지 않습니다. 오면 한 번, `translation` 뒤 · `state` 앞입니다.
  * - `messageId`: 칩이 묶인 캐릭터 메시지(`start`의 `assistantMessageId`). 같은 칩이 그 메시지의 `suggestions`에 저장됩니다.
- * - `ok`면 `items`가 정확히 셋(continue · ask · react 순서), `unavailable`이면 빈 배열과 `reason`(`generation_failed` — 모델 실패 ·
- *   시간 초과, `blocked` — 미성년자 · 나이 모름의 출력 검사) — 앱은 `companion-suggest`(다시 만들기)로 대신 받을 수 있습니다.
+ * - `ok`면 `items`가 검증을 지난 1 ~ `settings.suggestion_display_max`개(기본 2 — 모델이 낸 후보 셋 가운데 의도가 서로 다른 것),
+ *   `unavailable`이면 빈 배열과 `reason`(`generation_failed` — 모델 실패 · 시간 초과, `blocked` — 미성년자 · 나이 모름의 출력 검사,
+ *   `no_valid_candidates` — 후보가 모두 검증에서 빠짐) — 앱은 `companion-suggest`(다시 만들기)로 대신 받을 수 있습니다.
+ *   어느 쪽이든 입력창은 막지 않습니다.
  * 스위치가 켜져 있는데 이벤트가 없으면(옛 서버 등) 앱은 `companion-suggest`를 부릅니다.
  */
 export const suggestionsDataSchema = z.object({
   messageId: z.uuid(),
   status: z.enum(["ok", "unavailable"]),
-  items: z.array(replySuggestionSchema),
-  reason: z.optional(z.enum(["generation_failed", "blocked"])),
+  items: z.array(replySuggestionSchema).check(z.maxLength(3)),
+  reason: z.optional(z.enum(["generation_failed", "blocked", "no_valid_candidates"])),
 });
 
 /**

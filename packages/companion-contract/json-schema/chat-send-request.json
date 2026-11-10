@@ -28,6 +28,23 @@
       "type": "string",
       "pattern": "^[A-Z]{2}$"
     },
+    "suggestion": {
+      "type": "object",
+      "properties": {
+        "message_id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "index": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2
+        }
+      },
+      "required": ["message_id", "index"],
+      "additionalProperties": false
+    },
     "from_suggestion": {
       "type": "boolean"
     }

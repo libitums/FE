@@ -5,8 +5,18 @@
 // `unavailable`이었거나 오지 않은 턴에 부릅니다. 요청 키는 `chat-send`처럼 snake_case, 응답은 camelCase입니다.
 import { z } from "zod/mini";
 
-/** 칩 셋의 몫 — 대화 이어 가기 · 캐릭터에게 되묻기 · 짧은 리액션. 응답에는 이 순서로 하나씩 옵니다. */
-export const suggestionIntentSchema = z.enum(["continue", "ask", "react"]);
+/**
+ * 칩의 숨은 의도 — 검색 · 평가용이고 앱은 보이지 않습니다(설계 문서 §06). 더 설명하기 · 되묻기 · 반응하기 · 방향 바꾸기 · 경계 긋기 ·
+ * 다음 단계. 정해진 조합은 없습니다 — 맥락에 맞는 것만 옵니다.
+ */
+export const suggestionIntentSchema = z.enum([
+  "elaborate",
+  "ask",
+  "reflect",
+  "redirect",
+  "boundary",
+  "progress",
+]);
 
 export const replySuggestionSchema = z.object({
   /** 학습자가 그대로 보낼 수 있는 한국어 한 줄입니다. `*행동*` 없이 말만 담습니다. */
@@ -28,8 +38,10 @@ export const companionSuggestRequestSchema = z.object({
 
 /**
  * `status`가 `ok`가 아닐 때의 이유입니다.
- * - `none`: 지금은 추천할 자리가 아닙니다 — 캐릭터 답이 아직 없음 · 마지막 턴이 차단 · 위기 · 거절 · 유저가 설정에서 끔.
- * - `unavailable`: 지금 대화할 수 없거나(`chat-send` 판정과 같은 이유) 만들지 못했습니다(모델 실패 · 출력 검사 차단).
+ * - `none`: 지금은 추천할 자리가 아닙니다 — 캐릭터 답이 아직 없음 · 마지막 턴이 차단 · 위기 · 거절 · 유저가 설정에서 끔 ·
+ *   운영이 칩을 모두 끔(`suggestions_disabled`, `settings.suggestions_enabled`).
+ * - `unavailable`: 지금 대화할 수 없거나(`chat-send` 판정과 같은 이유) 만들지 못했습니다(모델 실패 · 출력 검사 차단 · 후보 셋이 모두
+ *   검증에서 빠짐 `no_valid_candidates`).
  */
 export const suggestReasonSchema = z.enum([
   "no_assistant_message",
@@ -42,18 +54,21 @@ export const suggestReasonSchema = z.enum([
   "temporarily_blocked",
   "usage_time_limit",
   "turn_in_progress",
+  "suggestions_disabled",
   "generation_failed",
   "blocked",
+  "no_valid_candidates",
 ]);
 
 /**
- * 응답 본문(HTTP 200)입니다. `ok`면 `items`가 정확히 셋(continue · ask · react 순서)이고 `messageId`는 칩이 묶인 마지막 캐릭터
+ * 응답 본문(HTTP 200)입니다. `ok`면 `items`가 검증을 지난 후보 가운데 1 ~ `settings.suggestion_display_max`개(기본 2, 의도가 서로
+ * 다르게 고른 것)이고 — 억지로 채우지 않습니다 — `messageId`는 칩이 묶인 마지막 캐릭터
  * 메시지입니다 — 새 턴이 오면 그 id가 바뀌어 캐시가 저절로 무효가 됩니다. `cached`는 저장된 칩을 그대로 돌려줬는지입니다.
  */
 export const companionSuggestResponseSchema = z.object({
   status: z.enum(["ok", "none", "unavailable"]),
   messageId: z.nullable(z.uuid()),
-  items: z.array(replySuggestionSchema),
+  items: z.array(replySuggestionSchema).check(z.maxLength(3)),
   cached: z.boolean(),
   reason: z.optional(suggestReasonSchema),
 });

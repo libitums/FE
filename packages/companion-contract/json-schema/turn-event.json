@@ -279,6 +279,7 @@
               "enum": ["ok", "unavailable"]
             },
             "items": {
+              "maxItems": 3,
               "type": "array",
               "items": {
                 "type": "object",
@@ -292,7 +293,7 @@
                   },
                   "intent": {
                     "type": "string",
-                    "enum": ["continue", "ask", "react"]
+                    "enum": ["elaborate", "ask", "reflect", "redirect", "boundary", "progress"]
                   }
                 },
                 "required": ["text", "meaning", "intent"],
@@ -301,7 +302,7 @@
             },
             "reason": {
               "type": "string",
-              "enum": ["generation_failed", "blocked"]
+              "enum": ["generation_failed", "blocked", "no_valid_candidates"]
             }
           },
           "required": ["messageId", "status", "items"],

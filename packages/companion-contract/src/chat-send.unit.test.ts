@@ -47,6 +47,18 @@ describe("chat-send 요청", () => {
     );
   });
 
+  test("CS3c. suggestion은 칩이 묶인 메시지 id와 자리(0 ~ 2)", () => {
+    const suggestion = { message_id: "0d4e5f60-1a2b-4c3d-8e4f-5a6b7c8d9e01", index: 1 };
+    expect(chatSendRequestSchema.parse({ ...valid, suggestion })).toEqual({ ...valid, suggestion });
+    for (const bad of [
+      { ...suggestion, index: 3 },
+      { ...suggestion, index: -1 },
+      { ...suggestion, message_id: "x" },
+      { index: 0 },
+    ])
+      expect(chatSendRequestSchema.safeParse({ ...valid, suggestion: bad }).success).toBe(false);
+  });
+
   // CS4 — 모르는 판은 모양 오류가 아니라 `unsupported_contract_version`으로 갈라야 하므로, 스키마는 정수면 통과시킵니다.
   test("CS4. contract_version은 정수면 통과한다(판 지원 여부는 서버가 가린다)", () => {
     expect(chatSendRequestSchema.safeParse({ ...valid, contract_version: 99 }).success).toBe(true);
