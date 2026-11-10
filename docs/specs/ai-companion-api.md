@@ -83,6 +83,9 @@ Accept: text/event-stream
 }
 ```
 
+- ⟨2026-11-10⟩ 선택 칸 둘 더: `suggestion { message_id, index }` — 추천 답변 칩을 탭해 보냄(§2.6). `replaces_message_id` — 고쳐서 다시 보내기,
+  고칠 마지막 유저 메시지 id(§2.8). 이것이 있으면 칩 표시는 보지 않는다.
+
 - 피드백 방식은 요청에 싣지 않는다. 프로필의 값(§3 `companion_save_profile`)을 쓴다. 바꾼 방식은 다음 턴부터다.
 - 대화는 [제안] **캐릭터당 하나**다(O14). 첫 턴에 서버가 만든다. 그래서 요청에 대화 id가 없다.
 
@@ -212,29 +215,39 @@ Accept: text/event-stream
 
 1단계에 없다. M4 뒤 이미지 생성과 함께 다시 정한다(PRD §0).
 
-### 2.6 `POST /functions/v1/companion-suggest` — 추천 답변 [결정 2026-11-09]
+### 2.6 `POST /functions/v1/companion-suggest` — 추천 답변 [결정 2026-11-09 · 2판 2026-11-10]
 
-⟨2026-11-10⟩ 칩은 이제 `chat-send`가 턴마다 자동으로 만들고(SSE `suggestions`), 이 함수는 다시 만들기 · 자동 칩이 없던 턴용이다. 2판 규칙(숨은 의도 여섯 · 검증 · 0 ~ `suggestion_display_max`개 · 전체 끄기 · 칩 표시 `suggestion { message_id, index }`)은 PRD §3.4. 아래 표에서 「정확히 3개 · `continue` · `ask` · `react`」와 「최근 6메시지」는 1판 내용이다 — 정본은 계약 패키지 `suggest.ts`.
+칩은 `chat-send`가 턴마다 자동으로 만든다(유저 스위치 `profiles.reply_suggestions`가 켜져 있을 때, SSE `suggestions` — translation 뒤 ·
+state 앞). 첫 인사(`companion-greet`) · 선톡(20261123)에도 붙는다. 이 함수는 「다시 만들기」(`refresh`)와 자동 칩이 `unavailable`이었거나
+오지 않은 턴의 대체 경로다. 규칙의 정본은 PRD §3.4, 모양의 정본은 계약 패키지 `suggest.ts`.
 
 | | |
 |---|---|
 | 인증 | 사용자 토큰 + 본문 `{ character_id, refresh? }`. 플레이그라운드는 서버 키 + 본문 `{ user_id, character_id, refresh? }` |
-| 응답 | 200 `{ status, messageId, items, cached, reason? }` — `status` `ok` · `none` · `unavailable`. `ok`면 `items`가 정확히 3개 `[{ text, meaning, intent }]`, `continue` · `ask` · `react` 차례. `text` 한국어, `meaning` L1 뜻(`l1`이 `ko`면 `null`) |
-| 수준 | 관계 말투 단계에 맞추고 학습자 수준보다 조금 위(i+1) |
+| 응답 | 200 `{ status, messageId, items, cached, reason? }` — `status` `ok` · `none` · `unavailable`. `ok`면 `items`가 1 ~ `settings.suggestion_display_max`개(기본 2, 0 ~ 3) `[{ text, meaning, intent }]` — 억지로 채우지 않는다. `text` 한국어, `meaning` L1 뜻(`l1`이 `ko`면 `null`) |
+| 의도 | 숨은 의도 여섯 — `elaborate` · `ask` · `reflect` · `redirect` · `boundary` · `progress`. 정해진 조합은 없고 앱에는 보이지 않는다(검색 · 평가용) |
+| 생성 · 검증 | 모델이 후보 3개를 내고, 서버가 후보마다 검증한다 — 형식 · 한글 · `*행동*` · 서식 · 길이(80자) · 뜻 · 연락처 꼴 · 앞 후보와 겹침 · 최근 칩 셋 반복, 미성년자 · 나이 모름은 출력 검사(한 번에). 통과한 것 가운데 의도가 서로 다른 것을 고른다. 통과가 0이면 한 번 더 묻고, 그래도 0이면 `unavailable` · `no_valid_candidates` |
+| 맥락 | 최근 8메시지 · 대화 요약 · 최근 칩 셋 5개(고름 · 무시). 다시 만들기는 지금 칩 셋도 지난 셋으로 넘겨 다른 칩이 나오게 한다 |
+| 수준 | 관계 말투 단계에 맞추고 학습자 수준보다 조금 위(i+1). 확인되지 않은 감정 · 관계 · 동의 · 약속 · 개인정보를 학습자 대신 말하지 않는다(프롬프트) |
 | 모델 | Haiku — `COMPANION_SUGGEST_MODEL`, 비우면 검사 모델 |
-| 캐시 | 마지막 캐릭터 메시지의 `messages.suggestions`. 같은 메시지에 다시 부르면 모델 없이 캐시(`cached: true`), `refresh: true`면 다시 만든다. 새 턴이 오면 저절로 무효 |
+| 캐시 | 마지막 캐릭터 메시지의 `messages.suggestions`(2판 — 보인 칩 `items`와 후보 · 검증 결과 `candidates`). 같은 메시지에 다시 부르면 모델 없이 캐시(`cached: true`), `refresh: true`면 다시 만든다. 1판 캐시는 쓰지 않고 다시 만든다 |
 | 판정 | `companion_suggest_context`가 `companion_turn_gate`와 같은 판정(시험 계정 · 티어 · 연령 · 일시 차단 · 이용 시간 · 진행 중인 턴)을 먼저 돈다. 저장은 `companion_save_suggestions` |
-| 검사 | 미성년자 · 나이 모름은 출력 검사를 지난 것만 |
-| 생성 | 맥락은 최근 6메시지. 제한 시간 8초, 모양이 틀리면 한 번 다시 |
+| 끄기 | 유저 스위치가 꺼져 있으면 `none` · `suggestions_off`, 운영 전체 끄기(`settings.suggestions_enabled = false`)면 `none` · `suggestions_disabled` |
+| 생성 시간 | 제한 8초(자동 칩은 6초) |
 | 크레딧 | 지금은 차감하지 않는다(PRD O20) |
 
 | `status` | `reason` |
 |---|---|
-| `none` | `no_assistant_message` · `latest_turn_blocked` · `latest_turn_crisis` · `latest_turn_refusal` · `suggestions_off` |
-| `unavailable` | `not_available` · `age_restricted` · `temporarily_blocked` · `usage_time_limit` · `turn_in_progress`(판정) · `generation_failed`(재시도 뒤에도 틀림 · 시간 초과 · 검사 호출 실패) · `blocked`(출력 검사) |
+| `none` | `no_assistant_message` · `latest_turn_blocked` · `latest_turn_crisis` · `latest_turn_refusal` · `suggestions_off` · `suggestions_disabled` |
+| `unavailable` | `not_available` · `age_restricted` · `temporarily_blocked` · `usage_time_limit` · `turn_in_progress`(판정) · `generation_failed`(실패 · 시간 초과) · `blocked`(출력 검사) · `no_valid_candidates` |
 
+- 칩을 탭해 보내면 `chat-send` 본문에 `suggestion { message_id, index }`(§2.1). 지금 칩과 글이 같으면 피드백을 건너뛰고(`correction`
+  `status: skipped` · `reason: suggestion`), 지난 칩(`stale`) · 직접 입력(`manual`)이면 보통 피드백. 칩 수정은 없다 — 탭 전송 · 직접 입력 둘뿐.
+  입력 출처는 스트림을 닫은 뒤 `companion_record_choice`가 유저 메시지 meta와 앞 칩 셋의 결과(`chosen` · `ignored`)에 적는다. 칩으로 고른
+  말은 기억 · 요약에서 학습자의 사실로 쓰지 않는다.
+- 운영 지표 `companion_suggestion_stats(p_since, p_playground)` — 노출 성공률 · 사용률 · 의도 · 빠진 까닭 · 시간 · 토큰.
 - HTTP 오류: 400 `invalid_request` · 401 `invalid_session`(앱 토큰에 `user_id`를 실어도) · 404 `character_not_found` · 405 · 500.
-- 로마자는 앱이 만든다. 모양의 정본은 계약 패키지 `suggest.ts`.
+- 로마자는 앱이 만든다.
 
 ### 2.7 `companion-eval` — 한 단계 평가 (내부, 2026-11-09)
 
@@ -244,16 +257,17 @@ Accept: text/event-stream
 - `POST { kind: "moderation" | "feedback" | "translation" | "suggestions", model?, cases }`(케이스 1 ~ 20) → 운영과 같은 프롬프트로 케이스마다 결과.
 - `?docs=1`의 `prompts`에 `refusal { deflect, warn, userText }` · `suggestions`, `models`에 `suggest`가 있다.
 
-### 2.8 답변 평가 · 고쳐서 다시 보내기 · 학습 연결 [제안 2026-11-10]
+### 2.8 답변 평가 · 고쳐서 다시 보내기 · 학습 연결 [답변 평가 · 고쳐서 다시 보내기: 구현 2026-11-10 · 학습 연결: 제안]
 
-PRD §3.15 · §3.7의 짝. 아직 코드가 없다 — 모양은 구현 때 계약 패키지가 정본이 된다.
+PRD §3.15 · §3.7의 짝. 답변 평가 · 고쳐서 다시 보내기는 FE `feat/companion-m1`(마이그레이션 20261124)에 있다 — 모양의 정본은 계약
+패키지(`chat-send.ts`의 `replaces_message_id` · `error-codes.ts`의 `not_latest_message` · `rpc.ts`의 `messageRatingSchema`). 학습 연결은 아직 코드가 없다.
 
-| 무엇 | 창구 [제안] | 모양 |
+| 무엇 | 창구 | 모양 |
 |---|---|---|
-| 답변 평가 | 앱용 RPC `companion_rate_message(p_message_id uuid, p_rating text, p_reasons text[], p_note text)` | `p_rating` `up` · `down` · `null`(지움). `p_reasons`는 `down`일 때만 — `awkward_korean` · `out_of_character` · `too_hard` · `uncomfortable` · `other`. `p_note` 200자까지. 본인 대화의 캐릭터 메시지만(`P0002`). 저장 `companion.message_ratings`. `companion_list_messages`의 Message에 `rating { value, reasons }`를 더한다 |
-| 고쳐서 다시 보내기 | `chat-send` 본문 `replaces_message_id`(마지막 유저 메시지 id) | 서버가 그 메시지가 마지막 유저 메시지이고 그 뒤에 다른 유저 메시지가 없는지 확인한다. 아니면 409 `not_latest_message`. 맞으면 그 턴(유저 메시지 · 캐릭터 답 · 교정)을 `hidden` + `meta.replacedBy`로 숨기고 새 턴을 평소처럼 돈다(차감 · 검사 그대로). 숨긴 턴은 `companion_list_messages`와 기억 · 요약 원문에서 빠진다 |
+| 답변 평가 [구현] | 앱용 RPC `companion_rate_message(p_message_id uuid, p_rating text, p_reasons text[], p_note text)` · 플레이그라운드 `companion_operator_rate_message(p_user_id, …)`(서버 키, 시험 계정만) | `p_rating` `up` · `down` · `null`(지움). `p_reasons`(여럿, 중복은 하나로) · `p_note`(200자)는 `down`에만 — `awkward_korean` · `out_of_character` · `too_hard` · `uncomfortable` · `other`. 본인 대화의 보이는 캐릭터 메시지(첫 인사 · 선톡 · 거절 포함, 위기 안내 · 숨김 제외)만, 아니면 `P0002`. 값이 틀리면 `22023`. 저장 `companion.message_ratings`(메시지당 한 행, 대화가 지워지면 따라 지워짐). `companion_list_messages`의 Message에 `rating { value, reasons, note }`(없으면 `null`) |
+| 고쳐서 다시 보내기 [구현] | `chat-send` 본문 `replaces_message_id`(마지막 유저 메시지 id) → 서버용 `companion_begin_replacement` | 그 대화의 마지막 유저 메시지이고 그 뒤에 그 답이 아닌 캐릭터 메시지(선톡 등)도 없어야 한다. 아니면 409 `not_latest_message`, 그 턴이 아직 돌면 409 `turn_in_progress`. 맞으면 이전 턴(유저 메시지 · 캐릭터 답 — 교정 · 칩 · 평가는 메시지를 따라, 공지는 두고)을 `hidden`으로 숨기고(`meta.replacedBy` ↔ 새 유저 메시지 `meta.replaces`) 같은 트랜잭션에서 보통 시작을 한다 — 시작이 402로 막히면 숨기기도 되돌린다. 같은 `client_message_id` 재시도는 멱등. 차감 · 입력 검사 · 위반 횟수는 새 턴에 그대로. 이 칸이 있으면 칩 표시는 보지 않는다(직접 입력). 숨긴 턴은 `companion_list_messages` · 지난 대화 · 기억 · 요약 원문 · 칩 이력 · 칩 지표에서 빠진다 |
 | 학습 연결 기록 (주기 · 방식 셋 · 대상은 PRD §3.7 [결정 2026-11-10]) | 서버용 RPC(턴 끝 `companion_finish_turn`에 합친다) | 쓴 표현 id(`@state` + 서버 확인) · 방식(`expose` · `elicit` · `chip`)을 `companion.user_expressions`에 센다. 유저 산출은 피드백 결과의 `learnedUsed: [expressionId]` — `correction` 이벤트에 `learnedUsed`(있을 때만)를 더해 카드가 「배운 표현을 썼어요」를 그린다 |
-| 운영 조회 | `companion_inspect_learning(p_user_id)` · 평가 지표 RPC | 유저의 표현 기록 · 삽입 이력, 👍/👎 비율과 이유(캐릭터 · 모델 · 단계별) |
+| 운영 조회 | 평가 지표 `companion_rating_stats(p_since, p_playground, p_limit)` [구현] · `companion_inspect_learning(p_user_id)` [제안] | 👍/👎 수 · 캐릭터 · 모델 · 출처(origin)별 · 이유별 · 최근 👎 원문(ops-dashboard 평가 후보로). 학습: 유저의 표현 기록 · 삽입 이력 |
 
 ## 3. DB 함수(RPC)
 
@@ -450,6 +464,7 @@ data: {"segment":0,"kind":"speech","text":"안녕하세요, "}
 | `usage_time_limit` | 사전 | 403 | 아니오 | `{ limit: "daily" \| "continuous", resetsAt }` | 이용 시간 상한 |
 | `duplicate_message` | 사전 | 409 | 아니오 | `{ messageId, messageStatus }` | 이미 처리된 메시지 |
 | `turn_in_progress` | 사전 | 409 | 예(잠시 뒤) | — | 같은 대화에 진행 중인 턴 |
+| `not_latest_message` | 사전 | 409 | 아니오 | — | 고쳐서 다시 보내기(`replaces_message_id`)의 메시지가 마지막 유저 메시지가 아님 — 그 뒤에 다른 메시지(선톡 등)가 왔다(2026-11-10, §2.8) |
 | `trial_exhausted` | 사전 | 402 | 아니오 | `{ characterId }` | 덕수쌤 체험 한도(M4) |
 | `insufficient_credits` | 사전 | 402 | 아니오 | `{ required, balance }` | 크레딧 부족(M4) |
 | `rate_limited` | 사전 | 429 | 예 | `{ retryAfterSeconds }` | 짧은 시간에 너무 많은 요청 [제안 — 값은 설정] |
@@ -495,6 +510,7 @@ chat-send 판정 11  reserve_credits(user, client_message_id, amount)   → hold
 | `duplicate_message` | 메시지 목록을 읽는다 | 아무것도 하지 않는다 |
 | 메시지 상태가 `failed` | 같은 `client_message_id`로 다시 보낼 수 있다 | 같은 유저 메시지로 턴을 다시 돌린다. 앞 hold는 이미 해제됐다 |
 | `turn_in_progress` · `rate_limited` | 잠시 뒤 다시 | — |
+| `not_latest_message` | 메시지 목록을 다시 읽고 고치기를 닫는다(고친 글은 입력창에 남긴다) | 아무것도 숨기지 않는다 |
 | `invalid_session` | 토큰 갱신 뒤 같은 id로 다시 | — |
 
 ### 6.4 지급
