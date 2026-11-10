@@ -23,6 +23,7 @@ import {
 } from "./ChatMediaBubbles";
 import { ChatRoomDock } from "./ChatRoomDock";
 import { ChatRoomOverlays } from "./ChatRoomOverlays";
+import { MoreMenu, overlayForMore } from "./MoreMenu";
 import type { ChatMessage, ChatThread } from "./chat-source.contract";
 import { chatKeyboardSlotHeight } from "./keyboard-height";
 import {
@@ -209,6 +210,14 @@ export function MessengerChatScreen({
               />
             ) : null}
           </ChatLog>
+          {state.overlay.kind === "more-menu" ? (
+            <MoreMenu
+              onSelect={(action) =>
+                dispatch({ type: "open-overlay", overlay: overlayForMore(action) })
+              }
+              onDismiss={() => dispatch({ type: "close-overlay" })}
+            />
+          ) : null}
         </view>
         <ChatRoomDock
           state={state}

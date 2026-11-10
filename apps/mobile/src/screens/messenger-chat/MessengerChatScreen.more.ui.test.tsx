@@ -161,3 +161,21 @@ test("MC-UI16. 학습 모드에서는 겹침을 열어도 입력 초점을 건�
   expect(screen.getByTestId(ids.reportSheet)).toBeTruthy();
   expect(inputFocus.blurPhoneInput).not.toHaveBeenCalled();
 });
+
+// 기기 점검(사용자, 2026-11-10): 항목을 눌러도 열리지 않았다 — 메뉴가 기능 줄 상자 밖(위)으로 튀어나와 그려져
+// 탭이 닿지 않았다. 메뉴는 대화 영역(머리 + 로그) 안에 있고, 기능 줄 감싸개 안에는 없다.
+test("MC-UI16b. 「…」 메뉴는 기능 줄 감싸개가 아니라 대화 영역 안에 그려진다", () => {
+  mountChat();
+  tapId(ids.more);
+
+  const menu = screen.getByTestId(ids.moreMenu);
+  const classesUp: string[] = [];
+  for (let el = menu.parentElement; el !== null; el = el.parentElement) {
+    classesUp.push(el.getAttribute("class") ?? "");
+  }
+
+  expect(classesUp.some((c) => c.split(/\s+/).includes("messenger-chat-features-wrap"))).toBe(
+    false,
+  );
+  expect(classesUp.some((c) => c.split(/\s+/).includes("messenger-chat-main"))).toBe(true);
+});

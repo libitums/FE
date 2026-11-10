@@ -84,6 +84,18 @@ describe("D8. 「…」 메뉴", () => {
     expect(menu).toMatch(/min-height:\s*\d+px/);
     expect(item).toContain("flex-shrink: 0");
   });
+
+  // 기기 점검(사용자, 2026-11-10): 메뉴는 보이는데 항목(Report · Ask for a fix · New reply ideas)을 눌러도 열리지 않았다.
+  // fixed 투명 막은 Lynx에서 문서 순서와 무관하게 위에 올라 항목 탭을 가로채고, 부모 밖으로 튀어나온(bottom: 100%)
+  // 메뉴는 부모 영역 밖이라 탭이 전달되지 않을 수 있다. 막 · 메뉴 모두 대화 영역 안의 absolute로 둔다.
+  test("막은 fixed가 아니고, 메뉴는 부모 밖으로 튀어나오지 않는다(bottom: 100% 없음)", () => {
+    const scrim = bodyOf(files.chat, ".messenger-chat-more-scrim");
+    const menu = bodyOf(files.chat, ".messenger-chat-more-menu");
+
+    expect(scrim).toContain("position: absolute");
+    expect(scrim).not.toContain("position: fixed");
+    expect(menu).not.toMatch(/bottom:\s*100%/);
+  });
 });
 
 describe("M3. 큰 글자에서 잘리지 않는 고정 높이", () => {

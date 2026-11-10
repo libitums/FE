@@ -25,6 +25,7 @@
 }
 
 .messenger-chat-main {
+  position: relative;
   flex: 1;
   min-height: 0;
   display: flex;
@@ -174,9 +175,10 @@
   background-color: var(--libitum-color-gray-300);
 }
 
-/* 「…」 메뉴 — 메뉴 밖 투명 면(화면 전체)이 탭을 받아 닫습니다. 메뉴가 문서에서 뒤라 그 위에 그려집니다. */
+/* 「…」 메뉴 — 대화 영역(머리 + 로그, .messenger-chat-main) 안의 absolute입니다. 투명 면이 그 영역을 덮어 밖을 누르면 닫고,
+   메뉴는 문서에서 뒤라 그 위에 그려집니다. fixed · 부모 밖(bottom: 100%) 배치는 기기에서 항목 탭을 막았습니다(2026-11-10). */
 .messenger-chat-more-scrim {
-  position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
   right: 0;
@@ -189,7 +191,7 @@
 .messenger-chat-more-menu {
   position: absolute;
   right: var(--libitum-spacing-12);
-  bottom: 100%;
+  bottom: var(--libitum-spacing-4);
   width: 208px;
   min-height: 168px;
   display: flex;

@@ -12,8 +12,6 @@ import { chatKeyboardSlotHeight, chatSlotContent } from "./keyboard-height";
 import type { KeyboardPlan } from "./keyboard-plan";
 import { KeyboardSlot, PhoneKeyboardSpacer } from "./KeyboardSlot";
 import { KeyboardToggleRow } from "./KeyboardToggleRow";
-import type { ChatMoreAction } from "./messenger-chat.contract";
-import { MoreMenu } from "./MoreMenu";
 import { ReplyIdeasPanel } from "./ReplyIdeasPanel";
 
 import "./messenger-chat.css";
@@ -60,24 +58,6 @@ export function ChatRoomDock({
   const menuOpen = state.overlay.kind === "more-menu";
   const ideasOpen = state.slot.kind === "ideas";
 
-  const selectMore = (action: ChatMoreAction) => {
-    switch (action) {
-      case "ideas":
-        dispatch({ type: "open-overlay", overlay: { kind: "regen" } });
-        return;
-      case "fix":
-        dispatch({ type: "open-overlay", overlay: { kind: "fix", text: "" } });
-        return;
-      case "report":
-        dispatch({ type: "open-overlay", overlay: { kind: "report", reasons: [] } });
-        return;
-      default: {
-        const unreachable: never = action;
-        return unreachable;
-      }
-    }
-  };
-
   // 휴대폰 모드에서 깔아 둔 학습 키보드(밑판)는 보이기만 하고 입력은 받지 않습니다.
   const typeOnLearning = (action: ChatRoomAction) => {
     if (state.keyboard === "learning") dispatch(action);
@@ -103,9 +83,6 @@ export function ChatRoomDock({
                 : dispatch({ type: "open-overlay", overlay: { kind: "more-menu" } })
             }
           />
-          {menuOpen ? (
-            <MoreMenu onSelect={selectMore} onDismiss={() => dispatch({ type: "close-overlay" })} />
-          ) : null}
         </view>
         <ComposerRow
           state={state}

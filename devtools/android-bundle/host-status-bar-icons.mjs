@@ -86,11 +86,6 @@ export const statusBarSurfaceRegistry = {
       classification: "default-scrim",
       carriers: [],
     },
-    // 「…」 메뉴 밖 투명 면(탭으로 닫기) — 바탕을 어둡게 하지 않으니 아이콘 명암이 바뀌지 않는다.
-    "screens/messenger-chat/messenger-chat.css": {
-      classification: "transparent",
-      carriers: [],
-    },
     "screens/gem-purchase/gem-purchase-screen.css": {
       classification: "unreachable",
       carriers: [],
