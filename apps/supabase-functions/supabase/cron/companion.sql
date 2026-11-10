@@ -8,6 +8,9 @@
 --   select vault.create_secret('<service role 키>', 'companion_service_role_key');
 --   레거시 service_role 키(eyJ…)든 새 비밀 키(sb_secret_…)든 된다 — 런타임 키와 다르면 함수가 Auth에 물어 확인한다.
 
+-- 함수 호출 두 개(선톡 · 기억 마저 뽑기)는 `timeout_milliseconds`를 Edge Function 실행 상한(150초)에 맞춘다. pg_net 기본값 5초로는
+-- 후보가 없어도 응답 전에 끊겼다(2026-11-10 운영 `net._http_response`의 timed_out).
+
 -- 닫히지 않은 크레딧 예약 해제(서버가 턴 중간에 죽은 경우) — 5분마다, 10분 넘은 것.
 select cron.schedule(
   'companion-release-stale-holds',
@@ -37,7 +40,8 @@ select cron.schedule(
         select decrypted_secret from vault.decrypted_secrets where name = 'companion_service_role_key'
       )
     ),
-    body := jsonb_build_object('batch', 20)
+    body := jsonb_build_object('batch', 20),
+    timeout_milliseconds := 150000
   );
   $$
 );
@@ -56,7 +60,8 @@ select cron.schedule(
         select decrypted_secret from vault.decrypted_secrets where name = 'companion_service_role_key'
       )
     ),
-    body := jsonb_build_object('mode', 'memory_flush', 'batch', 20)
+    body := jsonb_build_object('mode', 'memory_flush', 'batch', 20),
+    timeout_milliseconds := 150000
   );
   $$
 );
