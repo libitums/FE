@@ -51,7 +51,7 @@ export const companionCharacterSchema = z.object({
 });
 
 /** 말풍선 하나. `translation`은 학습자 언어(L1) 번역 한 줄 — 번역이 꺼졌거나 실패했으면 없습니다(SSE `translation`과 같은 글). */
-const segmentSchema = z.object({
+export const segmentSchema = z.object({
   kind: segmentKindSchema,
   text: z.string(),
   translation: z.optional(z.string()),
@@ -64,7 +64,8 @@ const segmentSchema = z.object({
 export const companionMessageSchema = z.object({
   id: z.uuid(),
   role: z.enum(["user", "assistant", "notice"]),
-  origin: z.enum(["turn", "proactive", "crisis"]),
+  /** `greeting`은 대화가 비었을 때 캐릭터가 먼저 건 첫 인사(`companion-greet`)입니다. */
+  origin: z.enum(["turn", "proactive", "crisis", "greeting"]),
   status: z.enum(["complete", "blocked", "crisis", "failed"]),
   hidden: z.boolean(),
   text: z.nullable(z.string()),

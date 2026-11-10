@@ -37,6 +37,12 @@ export const proactiveDirective =
 export const proactiveUserText =
   "(앱 안내: 학습자가 한동안 대화하지 않았다. 캐릭터가 먼저 짧게 말을 건다.)";
 
+/** 첫 인사(`companion-greet`)의 이번 답 지시와, 유저 말 자리에 넣는 앱 안내. 대화가 비었을 때만 — 지난 대화가 없다. */
+export const greetingDirective =
+  "This is the very first message of a new conversation: the learner just opened the chat and has not said anything yet. Greet them first, in character, the way you would on first meeting them in your scene (if you remember things about them, greet them as someone you know). 1–3 short bubbles, at most one action. Let your situation show who you are, and end with one easy question a beginner can answer. Keep the Korean very simple.";
+export const greetingUserText =
+  "(앱 안내: 학습자가 대화방을 처음 열었다. 아직 아무 말도 하지 않았다. 캐릭터가 먼저 인사를 건넨다.)";
+
 export type PromptInput = {
   readonly persona: PersonaCard;
   readonly speechLevel: SpeechLevel;

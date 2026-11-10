@@ -19,6 +19,8 @@ import {
 import {
   companionSystemPrompt,
   feedbackModeRule,
+  greetingDirective,
+  greetingUserText,
   proactiveDirective,
   stateLine,
 } from "./companion-prompt.ts";
@@ -95,6 +97,8 @@ export function promptDocs() {
     // 시스템 글은 이것 하나다.
     suggestions: suggestionSystem,
     proactiveDirective,
+    // 첫 인사(`companion-greet`, 대화가 비었을 때): 이번 답 지시와 유저 말 자리의 앱 안내.
+    greeting: { directive: greetingDirective, userText: greetingUserText },
     // 성격대로 거절: 단계마다 이번 답 지시(시스템 프롬프트의 `# For this reply`)와 유저 말 자리의 앱 안내. 걸린 글은 넣지 않는다.
     refusal: {
       deflect: refusalDirective("deflect", placeholder("category")),

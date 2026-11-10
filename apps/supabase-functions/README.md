@@ -224,8 +224,9 @@ Firebase 프로젝트에 Android 앱을 등록하고 FCM HTTP v1 API 권한이 �
 | `20261119120000_companion_auto_suggestions.sql` | 추천 답변 칩 자동 — `companion_turn_gate`가 `replySuggestions`를 돌려준다 · 메시지 목록(`message_json`)에 `suggestions` |
 | `20261120120000_companion_turn_cost.sql` | 턴 비용 · 지난 대화 — `companion_begin_turn`의 지난 대화를 마지막 요약 뒤 메시지로, 기억 묶음 `settings.memory_every` · `conversations.memory_extracted_until` · `companion_memory_source` · `companion_mark_memories` |
 | `20261121110000_companion_suggestion_feedback.sql` | 칩을 그대로 보낸 메시지는 피드백 건너뛰기 — `corrections.status`에 `skipped` · `correction_json`의 `reason` · `companion_turn_status`의 `latestSuggestions` |
+| `20261121120000_companion_greeting.sql` | 첫 인사 — `messages.origin`에 `greeting` · 페르소나 `greetingLines` · `companion_greet_context` · `companion_save_greeting` |
 
-통합 테스트 CF1 ~ CF11 · CH1 ~ CH10 · TV1 ~ TV13 · ID1 ~ ID3 · PP1 ~ PP9 · RM1 ~ RM8 · RS1 ~ RS8 · AS1 ~ AS3 · TC1 ~ TC4 · SN1 ~ SN2, 함수 단위 테스트 CS1 ~ CS34 · SG · CE · BR · LL · EV · FB · SF · RF · SU.
+통합 테스트 CF1 ~ CF11 · CH1 ~ CH10 · TV1 ~ TV13 · ID1 ~ ID3 · PP1 ~ PP9 · RM1 ~ RM8 · RS1 ~ RS8 · AS1 ~ AS3 · TC1 ~ TC4 · SN1 ~ SN2 · GR1 ~ GR4, 함수 단위 테스트 CS1 ~ CS34 · SG · CE · BR · LL · EV · FB · SF · RF · SU · GT.
 
 **턴 흐름** — 판정(시험 계정 · 티어 · 연령 · 일시 차단 · 이용 시간 · 멱등) → 시작(체험 · 크레딧 예약 + 유저 메시지 저장, 한 트랜잭션) →
 SSE → 입력 검사 · 메인 답변 · 피드백을 동시에 → 위기(`crisis`) · 입력 차단(단계에 따라 성격대로 거절 또는 `guardrail_blocked`, 아래) / 조각(`delta`, 미성년자 · 나이 모름은 출력 검사 뒤) ·
@@ -433,6 +434,27 @@ ops-dashboard가 검사 · 피드백 프롬프트를 케이스 묶음으로 돌�
 - 평가: `companion-eval`의 `kind: "suggestions"` — 케이스 `text`는 캐릭터의 마지막 말(`history` 뒤에 붙는다), `output: {"items"}`, 검사를 못 지나면 `mismatch`.
 - 배포: `supabase functions deploy companion-suggest`(`verify_jwt = false`). 마이그레이션 20261118을 먼저 적용한다.
 
+### 첫 인사 — companion-greet
+
+대화가 비었을 때(새 대화 · 대화 초기화 뒤) 캐릭터가 먼저 말을 건다(Zeta의 첫 메시지처럼). 앱은 캐릭터 화면을 열 때 메시지가 하나도 없으면 부른다.
+무료다(크레딧 · 체험 횟수를 쓰지 않는다). `_shared/companion-greet-handler.ts`.
+
+- 요청: 앱은 JWT + `{"character_id"}`, ops-dashboard 플레이그라운드는 서버 키 + `{"user_id","character_id"}`(`companion-suggest`와 같은 규칙 — 앱 토큰으로
+  `user_id`를 보내면 401). 계약은 `companion-greet-request` · `companion-greet-response`(JSON Schema).
+- 응답(HTTP 200): `{"status":"ok"|"none"|"unavailable","messageId","segments":[{kind,text,translation?}],"source"?:"model"|"canned","suggestions","reason"?}`.
+  - `none` · `has_messages`: 메시지가 이미 있다(모델 안 부름) — 만드는 사이 다른 호출이 저장했거나 유저가 먼저 보낸 경우 포함. 두 번 불려도 인사는 하나다.
+  - `unavailable`: `chat-send`와 같은 판정 이유(`not_available` · `age_restricted` · `temporarily_blocked` · `usage_time_limit` · `turn_in_progress`).
+  - `suggestions`: 칩 스위치가 켜져 있으면 SSE `suggestions`와 같은 모양(인사 메시지에 저장 — `companion-suggest` 캐시 · 메시지 목록에도 그대로), 꺼져 있으면 null.
+- 흐름: `companion_greet_context`(판정 + 페르소나 · 말투 · 학습자 언어 · 연령대 · 칩 설정 · 기억 · 메시지 있음) → 답 모델(선톡과 같은 페르소나 시스템 프롬프트 +
+  `greetingDirective`, 지난 대화 없이 유저 말 자리에 `greetingUserText`) → **연령과 상관없이 출력 검사**(유저 말 없이 나가는 글이라 선톡과 같다) → L1 번역 · 칩을
+  동시에 → `companion_save_greeting`(대화가 없으면 만들고 그 행을 잠근 뒤 메시지가 없을 때만 `origin: 'greeting'`으로 저장).
+- 생성 실패 · 시간 초과(15초) · 빈 답 · 출력 검사 차단 · 검사 실패면 페르소나의 정해진 인사(`persona.greetingLines[말투]`, 없으면 존댓말 줄, 그것도 없으면
+  코드의 기본 줄) — 인사는 늘 나간다(`source: "canned"`, meta `greetingFallback`).
+- 저장 meta: `model` · `ageBand` · `greeting`(model · canned) · `translation` · `suggestions` · `usage` · `playground`.
+- 인사 뒤 첫 턴: 인사는 보통 캐릭터 메시지라 `chat-send`의 지난 대화 · 입력 검사 맥락 · 칩 건너뛰기(`latestSuggestions`)에 그대로 들어간다. AI 고지(`ai_disclosure`)
+  같은 안내는 지금처럼 첫 턴의 `notice`로 온다(인사에는 붙이지 않는다).
+- 배포: `supabase functions deploy companion-greet`(`verify_jwt = false`). 마이그레이션 20261121120000을 먼저 적용한다.
+
 ### 로컬에서 끝까지 돌리기 (운영 DB를 건드리지 않는다)
 
 ```sh
@@ -467,6 +489,8 @@ supabase functions serve --no-verify-jwt                                        
    그대로 돈다(지난 대화가 요약 뒤로 줄 뿐). 적용 뒤 `chat-send` · `companion-proactive` · `companion-eval`을 다시 배포한다.
    `20261121110000_companion_suggestion_feedback.sql`은 20261120 **뒤에** 적용한다(같은 방식의 묶음). 함수보다 먼저든 나중이든 깨지지 않는다 — 옛 DB면
    `latestSuggestions`가 없어 새 `chat-send`가 `skipped`를 만들지 않고 보통처럼 피드백할 뿐이다. 그다음 `chat-send`를 다시 배포한다.
+   `20261121120000_companion_greeting.sql`은 20261121110000 **뒤에**, `companion-greet`를 처음 배포하기 전에 적용한다(같은 방식의 묶음). 옛 DB면 새 함수가
+   맥락을 읽지 못해 500(`context_failed`)을 낸다. 다른 함수는 이 마이그레이션과 상관없다(`companion-eval`의 `?docs=1`에 인사 프롬프트가 더해질 뿐).
 3. 비밀: `supabase secrets set --env-file supabase/functions/.env`. 키가 아직 없으면 `COMPANION_LLM=fake`로 화면만 먼저 본다.
 4. `supabase functions deploy chat-send` · `supabase functions deploy companion-proactive` · `supabase functions deploy companion-eval`(`config.toml`의 `verify_jwt = false`를 따른다).
 5. 예약 작업: Vault에 서버 키(`companion_service_role_key`)를 넣고 `supabase/cron/companion.sql`을 SQL 편집기에서 한 번 실행한다.

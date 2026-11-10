@@ -61,6 +61,7 @@ export {
   companionWalletSchema,
   feedbackModeSchema,
   proactivePrefSchema,
+  segmentSchema,
   type CompanionCharacter,
   type CompanionMemory,
   type CompanionMemoryList,
@@ -83,3 +84,11 @@ export {
   type SuggestReason,
   type SuggestionIntent,
 } from "./suggest";
+export {
+  companionGreetRequestSchema,
+  companionGreetResponseSchema,
+  greetReasonSchema,
+  type CompanionGreetRequest,
+  type CompanionGreetResponse,
+  type GreetReason,
+} from "./greet";

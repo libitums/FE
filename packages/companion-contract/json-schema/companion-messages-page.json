@@ -18,7 +18,7 @@
           },
           "origin": {
             "type": "string",
-            "enum": ["turn", "proactive", "crisis"]
+            "enum": ["turn", "proactive", "crisis", "greeting"]
           },
           "status": {
             "type": "string",

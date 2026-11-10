@@ -59,11 +59,11 @@ const gateReasons = new Set<string>([
   "turn_in_progress",
 ]);
 
-type Caller = { userId: string; playground: boolean };
+export type Caller = { userId: string; playground: boolean };
 
-/** 서버 키 + 본문 `user_id`면 플레이그라운드, 아니면 앱 JWT. 앱 토큰으로 `user_id`를 보내면 거절합니다. */
-async function callerFor(
-  deps: CompanionSuggestDeps,
+/** 서버 키 + 본문 `user_id`면 플레이그라운드, 아니면 앱 JWT. 앱 토큰으로 `user_id`를 보내면 거절합니다. `companion-greet`도 씁니다. */
+export async function callerFor(
+  deps: Pick<CompanionSuggestDeps, "outbound">,
   env: ChatSendEnv,
   token: string,
   bodyUserId: string | undefined,
