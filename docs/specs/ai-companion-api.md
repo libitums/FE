@@ -242,6 +242,17 @@ Accept: text/event-stream
 - `POST { kind: "moderation" | "feedback" | "translation" | "suggestions", model?, cases }`(케이스 1 ~ 20) → 운영과 같은 프롬프트로 케이스마다 결과.
 - `?docs=1`의 `prompts`에 `refusal { deflect, warn, userText }` · `suggestions`, `models`에 `suggest`가 있다.
 
+### 2.8 답변 평가 · 고쳐서 다시 보내기 · 학습 연결 [제안 2026-11-10]
+
+PRD §3.15 · §3.7의 짝. 아직 코드가 없다 — 모양은 구현 때 계약 패키지가 정본이 된다.
+
+| 무엇 | 창구 [제안] | 모양 |
+|---|---|---|
+| 답변 평가 | 앱용 RPC `companion_rate_message(p_message_id uuid, p_rating text, p_reasons text[], p_note text)` | `p_rating` `up` · `down` · `null`(지움). `p_reasons`는 `down`일 때만 — `awkward_korean` · `out_of_character` · `too_hard` · `uncomfortable` · `other`. `p_note` 200자까지. 본인 대화의 캐릭터 메시지만(`P0002`). 저장 `companion.message_ratings`. `companion_list_messages`의 Message에 `rating { value, reasons }`를 더한다 |
+| 고쳐서 다시 보내기 | `chat-send` 본문 `replaces_message_id`(마지막 유저 메시지 id) | 서버가 그 메시지가 마지막 유저 메시지이고 그 뒤에 다른 유저 메시지가 없는지 확인한다. 아니면 409 `not_latest_message`. 맞으면 그 턴(유저 메시지 · 캐릭터 답 · 교정)을 `hidden` + `meta.replacedBy`로 숨기고 새 턴을 평소처럼 돈다(차감 · 검사 그대로). 숨긴 턴은 `companion_list_messages`와 기억 · 요약 원문에서 빠진다 |
+| 학습 연결 기록 | 서버용 RPC(턴 끝 `companion_finish_turn`에 합친다) | 쓴 표현 id(`@state` + 서버 확인) · 방식(`expose` · `elicit` · `chip`)을 `companion.user_expressions`에 센다. 유저 산출은 피드백 결과의 `learnedUsed: [expressionId]` — `correction` 이벤트에 `learnedUsed`(있을 때만)를 더해 카드가 「배운 표현을 썼어요」를 그린다 |
+| 운영 조회 | `companion_inspect_learning(p_user_id)` · 평가 지표 RPC | 유저의 표현 기록 · 삽입 이력, 👍/👎 비율과 이유(캐릭터 · 모델 · 단계별) |
+
 ## 3. DB 함수(RPC)
 
 ### 3.1 왜 `public`의 창구 함수인가 [제안 — ADR 후보 6]
