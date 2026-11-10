@@ -26,7 +26,12 @@ async function begin(text = "안녕하세요") {
 }
 
 /** 대화에 정상 메시지를 직접 넣는다 — minute마다 유저 · 캐릭터 한 쌍. */
-async function seed(conversationId: string, minutes: number[], status = "complete", hidden = false) {
+async function seed(
+  conversationId: string,
+  minutes: number[],
+  status = "complete",
+  hidden = false,
+) {
   for (const minute of minutes) {
     await db.admin.query(
       `insert into companion.messages (conversation_id, user_id, role, status, client_message_id, text, hidden, created_at)
@@ -36,7 +41,12 @@ async function seed(conversationId: string, minutes: number[], status = "complet
     await db.admin.query(
       `insert into companion.messages (conversation_id, user_id, role, status, segments, created_at)
        values ($1, $2, 'assistant', 'complete', $3::jsonb, $4)`,
-      [conversationId, tester, JSON.stringify([{ kind: "speech", text: `캐릭터 ${minute}` }]), at(minute + 0.5)],
+      [
+        conversationId,
+        tester,
+        JSON.stringify([{ kind: "speech", text: `캐릭터 ${minute}` }]),
+        at(minute + 0.5),
+      ],
     );
   }
 }
@@ -104,10 +114,9 @@ test("TC1. 지난 대화는 마지막 요약 뒤 메시지 전부 — 요약된 
     "select public.companion_begin_turn($1, 'duksu', $2, '네 번째', 'text', 2, null, $3) as t",
     [tester, crypto.randomUUID(), now],
   );
-  expect(limited.rows[0].t.history.map((entry: { text: string | null }) => entry.text ?? "(캐릭터)")).toEqual([
-    "유저 4",
-    "(캐릭터)",
-  ]);
+  expect(
+    limited.rows[0].t.history.map((entry: { text: string | null }) => entry.text ?? "(캐릭터)"),
+  ).toEqual(["유저 4", "(캐릭터)"]);
 });
 
 test("TC2. 기억 묶음 — 유저 메시지가 memory_every개 모여야 주고, 표시를 옮기면 다음 묶음까지 비어 있다", async () => {
@@ -120,13 +129,9 @@ test("TC2. 기억 묶음 — 유저 메시지가 memory_every개 모여야 주�
 
   await seed(conversationId, [7]);
   const batch = await memorySource(conversationId);
-  expect(batch?.messages.filter((entry) => entry.role === "user").map((entry) => entry.text)).toEqual([
-    "유저 1",
-    "유저 2",
-    "유저 3",
-    "유저 4",
-    "유저 7",
-  ]);
+  expect(
+    batch?.messages.filter((entry) => entry.role === "user").map((entry) => entry.text),
+  ).toEqual(["유저 1", "유저 2", "유저 3", "유저 4", "유저 7"]);
   expect(batch?.messages).toHaveLength(12); // 유저 5 + 캐릭터 7(차단 · 숨김 유저 메시지의 짝 캐릭터 말 포함)
   expect(new Date(batch!.until).toISOString()).toBe(at(7.5));
   const last = await db.admin.query(
@@ -135,7 +140,10 @@ test("TC2. 기억 묶음 — 유저 메시지가 memory_every개 모여야 주�
   );
   expect(batch?.sourceMessageId).toBe(last.rows[0].id);
 
-  await server.query("select public.companion_mark_memories($1, $2)", [conversationId, batch!.until]);
+  await server.query("select public.companion_mark_memories($1, $2)", [
+    conversationId,
+    batch!.until,
+  ]);
   expect(await memorySource(conversationId)).toBeNull();
   // 뒤로 돌아가지 않는다(늦게 끝난 작업).
   await server.query("select public.companion_mark_memories($1, $2)", [conversationId, at(1)]);
@@ -148,10 +156,9 @@ test("TC2. 기억 묶음 — 유저 메시지가 memory_every개 모여야 주�
   // 설정을 바꾸면 다음 턴부터.
   await db.admin.query("update companion.settings set memory_every = 1");
   await seed(conversationId, [8]);
-  expect((await memorySource(conversationId))?.messages.map((entry) => entry.text ?? "(캐릭터)")).toEqual([
-    "유저 8",
-    "(캐릭터)",
-  ]);
+  expect(
+    (await memorySource(conversationId))?.messages.map((entry) => entry.text ?? "(캐릭터)"),
+  ).toEqual(["유저 8", "(캐릭터)"]);
 });
 
 test("TC3. 표시 없는 오래된 대화는 최근 p_limit개만 — 그 앞은 건너뛴다", async () => {

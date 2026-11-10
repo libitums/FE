@@ -1,40 +1,31 @@
 // 턴 하나의 스트림(API §2.1 판정 12 ~ 15 · §4 순서 규칙). 핸들러가 판정 · 예약 · 유저 메시지 저장을 끝낸 뒤 부릅니다.
-//
-// 입력 검사 · 메인 답변 · 피드백(M2)을 동시에 시작합니다. 피드백은 답이 나가도 되는 것이 확인된 뒤(성인은 입력 검사 뒤, 미성년자 · 나이 모름은
-// 출력 검사 뒤) 준비되는 대로 `correction`으로 보내고, `done` 전에는 반드시 한 번 보냅니다. 답 조각이 다 모이면 L1 번역(`chat-send-translate.ts`)과
-// (스위치가 켜졌으면) 추천 답변 칩(`chat-send-suggest.ts`)을 남은 기다림과 동시에 돌려 `state` 앞에 `translation` → `suggestions`로 보냅니다.
-// 저장(finish)이 친밀도 → 말투(M3)와 크레딧 확정/해제(M4)까지 한 트랜잭션으로 하고, 그 결과로 `state` · `done`을 씁니다.
-// 입력 검사에 걸리면 반복 위반 단계에 따라 캐릭터가 성격대로 거절하거나(`chat-send-refusal.ts`) 지금처럼 `guardrail_blocked`로 끝냅니다.
+// 입력 검사 · 메인 답변 · 피드백을 동시에 시작해, 피드백은 답이 나가도 되는 것이 확인된 뒤 `correction`으로 `done` 전에 한 번 보내고, 답 조각이 다
+// 모이면 L1 번역(`chat-send-translate.ts`) · 추천 답변 칩(`chat-send-suggest.ts`, 스위치 켬)을 남은 기다림과 동시에 돌려 `state` 앞에 보냅니다.
+// 저장(finish)이 친밀도 → 말투 · 크레딧 확정/해제를 한 트랜잭션으로 하고 그 결과로 `state` · `done`을 씁니다. 입력 검사에 걸리면 반복 위반
+// 단계에 따라 성격대로 거절하거나(`chat-send-refusal.ts`) `guardrail_blocked`로 끝냅니다.
 
-import type {
-  AgeBand,
-  BegunTurn,
-  ChatSendDeps,
-  ChatSendEnv,
-  CompanionLlm,
-  Feedback,
-  GateResult,
-  LearningContext,
-  ModerationVerdict,
-  PersonaCard,
-} from "./chat-send.contract.ts";
+import type { AgeBand, Feedback, ModerationVerdict, PersonaCard } from "./chat-send.contract.ts";
+import type { TurnContext } from "./chat-send-context.ts";
 import {
   type Finished,
   type ModerationRecord,
   type TurnOutcome,
-  type TurnStatus,
   turnFinisher,
 } from "./chat-send-finish.ts";
-import type { Sink } from "./chat-send-http.ts";
 import { refusalStage, sendRefusal } from "./chat-send-refusal.ts";
-import { defaultLlmTimeoutMs, historyFrom, startFeedback, startReply } from "./chat-send-reply.ts";
+import {
+  defaultLlmTimeoutMs,
+  historyFrom,
+  moderateInput,
+  startFeedback,
+  startReply,
+} from "./chat-send-reply.ts";
 import { sendSuggestions, startSuggestions, suggestionsMeta } from "./chat-send-suggest.ts";
 import { applyTranslation, startTranslation } from "./chat-send-translate.ts";
 import { chooseBranch, nextTopicState, topicStateFrom } from "./companion-branching.ts";
 import {
   CONTRACT_VERSION,
   STREAM_ERRORS,
-  type ChatSendRequest,
   type StreamErrorCode,
 } from "./companion-contract/index.ts";
 import { systemSplit } from "./companion-llm.ts";
@@ -42,27 +33,9 @@ import type { RefusalStage } from "./companion-llm-prompts.ts";
 import { companionSystemPrompt, type PromptInput } from "./companion-prompt.ts";
 import { crisisResourcesFor } from "./companion-safety.ts";
 import { segmentsToPlain, type SegmentDelta } from "./companion-segments.ts";
-import type { UsageCollector } from "./companion-usage.ts";
+import { withUsageMeta } from "./companion-usage.ts";
 
-export type TurnContext = {
-  deps: ChatSendDeps;
-  env: ChatSendEnv;
-  llm: CompanionLlm;
-  sink: Sink;
-  body: ChatSendRequest;
-  userId: string;
-  gate: Extract<GateResult, { result: "ok" }>;
-  turn: BegunTurn;
-  learning: LearningContext;
-  /** 턴 시작 때 반복 위반 수 · 기억 가득 참. 읽지 못했으면 null — 입력 차단은 지금처럼 `guardrail_blocked`, `memoryFull`은 싣지 않는다. */
-  status: TurnStatus | null;
-  assistantMessageId: string;
-  playground: boolean;
-  /** 요약 뒤에도 남기는 최근 메시지 수(`companion_summary_source`의 p_keep). */
-  historyKeep: number;
-  /** 이 턴의 LLM 사용량 — `llm`이 기록하는 곳. 저장 meta의 `usage`가 된다. */
-  usage: UsageCollector;
-};
+export type { TurnContext };
 
 export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
   const { deps, env, llm, sink, body, gate, turn } = context;
@@ -89,10 +62,7 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
     directive: null,
   };
   const prompt = companionSystemPrompt(promptInput);
-  const withUsage = (assistant: Record<string, unknown>) => ({
-    ...assistant,
-    meta: { ...(assistant.meta as Record<string, unknown> | undefined), usage: context.usage.summary() },
-  });
+  const withUsage = (assistant: Record<string, unknown>) => withUsageMeta(assistant, context.usage);
   const { finish, sendState, done } = turnFinisher(context, moderation);
   const fail = async (code: StreamErrorCode, status: "blocked" | "failed") => {
     abort.abort();
@@ -169,14 +139,7 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
 
   let input: ModerationVerdict;
   try {
-    const previous = [...history].reverse().find((entry) => entry.role === "assistant");
-    input = await llm.moderate({
-      layer: "input",
-      text: body.text,
-      context: previous?.role === "assistant" ? segmentsToPlain(previous.segments) : null,
-      ageBand,
-      signal: abort.signal,
-    });
+    input = await moderateInput(llm, body.text, history, ageBand, abort.signal);
   } catch {
     return fail("upstream_unavailable", "failed");
   }
@@ -190,7 +153,12 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
     });
     const finished = await finish(
       "crisis",
-      withUsage({ id: context.assistantMessageId, origin: "crisis", segments: [], meta: { ageBand } }),
+      withUsage({
+        id: context.assistantMessageId,
+        origin: "crisis",
+        segments: [],
+        meta: { ageBand },
+      }),
     );
     done(finished);
     return { outcome: "crisis", afterTurn: null };

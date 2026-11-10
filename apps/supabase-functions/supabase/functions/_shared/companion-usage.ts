@@ -56,3 +56,14 @@ export function usageLine(summary: UsageSummary): string {
     )
     .join(" ");
 }
+
+/** 저장할 캐릭터 메시지의 meta에 지금까지의 사용량(`usage`)을 붙인다. */
+export function withUsageMeta(
+  assistant: Record<string, unknown>,
+  usage: UsageCollector,
+): Record<string, unknown> {
+  return {
+    ...assistant,
+    meta: { ...(assistant.meta as Record<string, unknown> | undefined), usage: usage.summary() },
+  };
+}

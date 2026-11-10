@@ -3,7 +3,7 @@
 
 import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
-import { z } from "zod";
+import type { z } from "zod";
 
 import type {
   ChatSendEnv,
@@ -26,7 +26,14 @@ import {
   translationSystem,
 } from "./companion-llm-prompts.ts";
 import { segmentsToPlain, segmentsToTagged } from "./companion-segments.ts";
-import { moderationCategories, moderationInstruction } from "./companion-safety.ts";
+import {
+  feedbackSchema,
+  memorySchema,
+  suggestionSchema,
+  translationSchema,
+  verdictSchema,
+} from "./companion-llm-schemas.ts";
+import { moderationInstruction } from "./companion-safety.ts";
 
 /** 묶음 하나(몇 턴)에서 뽑는 기억 수의 상한. */
 export const memoryBatchLimit = 5;
@@ -46,40 +53,6 @@ export function serverFallbackOptions(
   if (model.startsWith("claude-haiku")) return {};
   return { betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" };
 }
-
-const verdictSchema = z.object({
-  category: z.enum(moderationCategories),
-  action: z.enum(["allow", "block", "crisis"]),
-});
-
-// 피드백 카드(학습자 메시지 `original`은 서버가 채운다). 구조화 출력은 선택 칸 대신 nullable로 둡니다.
-const feedbackSchema = z.object({
-  status: z.enum(["ok", "none"]),
-  kind: z.enum(["correction", "better", "l1_to_ko"]).nullable(),
-  corrected: z.string().nullable(),
-  items: z.array(z.object({ original: z.string(), corrected: z.string(), reason: z.string() })),
-  better: z.object({ text: z.string(), meaning: z.string(), explanation: z.string() }).nullable(),
-  meaning: z.string().nullable(),
-});
-
-const translationSchema = z.object({ lines: z.array(z.string()) });
-
-// 추천 답변 칩. 몫(intent)은 열거로 묶고, 개수 · 몫마다 하나 · 뜻 규칙은 받은 뒤 `suggestionsFrom`이 본다.
-const suggestionSchema = z.object({
-  items: z.array(
-    z.object({
-      text: z.string(),
-      meaning: z.string().nullable(),
-      intent: z.enum(["continue", "ask", "react"]),
-    }),
-  ),
-});
-
-const memorySchema = z.object({
-  items: z.array(
-    z.object({ kind: z.enum(["fact", "event"]), content: z.string(), shared: z.boolean() }),
-  ),
-});
 
 /**
  * 지난 대화 + 이번 유저 말(+ 이번 턴 지시). 지난 대화의 마지막 메시지에 캐시 표시를 단다 — 지난 대화는 요약 사이에 뒤로 붙기만 하므로

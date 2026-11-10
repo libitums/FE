@@ -1,11 +1,13 @@
 // 메인 답변과 피드백(M2) 받기: 조각으로 나누고, 검사가 끝날 때까지 모아 두었다가 내보냅니다. 조각을 내보내기 전 실패는 한 번 다시 시도합니다.
 
 import type {
+  AgeBand,
   BegunTurn,
   ChatSendDeps,
   CompanionLlm,
   Feedback,
   HistoryEntry,
+  ModerationVerdict,
   TurnState,
 } from "./chat-send.contract.ts";
 import { emptyFeedback, recentFeedbackHistory } from "./companion-llm-prompts.ts";
@@ -18,6 +20,19 @@ import {
 
 export const defaultLlmTimeoutMs = 45_000;
 export const defaultFeedbackTimeoutMs = 8_000;
+
+/** 입력 검사. 바로 앞 캐릭터 말 한 줄을 맥락으로 준다(판정은 학습자 글에만). */
+export function moderateInput(
+  llm: CompanionLlm,
+  text: string,
+  history: readonly HistoryEntry[],
+  ageBand: AgeBand,
+  signal: AbortSignal,
+): Promise<ModerationVerdict> {
+  const previous = [...history].reverse().find((entry) => entry.role === "assistant");
+  const context = previous?.role === "assistant" ? segmentsToPlain(previous.segments) : null;
+  return llm.moderate({ layer: "input", text, context, ageBand, signal });
+}
 
 type FeedbackContext = ReplyContext & {
   readonly turn: Pick<BegunTurn, "history" | "speechLevel" | "persona">;

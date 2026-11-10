@@ -165,7 +165,9 @@ test("LL4. 번역은 번역 모델로 · 조각마다 한 줄", async () => {
   });
   expect(lines).toEqual(["a", "b"]);
   expect(calls.parse[0]).toMatchObject({ model: "claude-haiku-5-5" });
-  const system = (calls.parse[0]?.["system"] as { text: string }[]).map((block) => block.text).join("");
+  const system = (calls.parse[0]?.["system"] as { text: string }[])
+    .map((block) => block.text)
+    .join("");
   expect(system).toContain('BCP 47 tag "vi"');
   expect(system).toContain("exactly 2 strings");
   expect(calls.parse[0]?.["messages"]).toEqual([
@@ -232,7 +234,13 @@ test("LL8. withUsage — 호출마다 단계 · 모델 · 토큰을 기록한다
   const seen: unknown[] = [];
   const llm = anthropicCompanionLlm(config).withUsage!((usage) => seen.push(usage));
   await reply(llm);
-  await llm.moderate({ layer: "output_sync", text: "안녕", context: "hi", ageBand: "minor", signal });
+  await llm.moderate({
+    layer: "output_sync",
+    text: "안녕",
+    context: "hi",
+    ageBand: "minor",
+    signal,
+  });
   expect(seen).toEqual([
     {
       step: "reply",
@@ -255,8 +263,20 @@ test("LL8. withUsage — 호출마다 단계 · 모델 · 토큰을 기록한다
 
 test("LL9. 입력 검사의 맥락은 직전 캐릭터 말로, 출력 검사의 맥락은 유저 말로 적는다", async () => {
   const llm = anthropicCompanionLlm(config);
-  await llm.moderate({ layer: "input", text: "응 할게", context: "같이 갈래요?", ageBand: "adult", signal });
-  await llm.moderate({ layer: "output_sync", text: "좋아요", context: "응 할게", ageBand: "minor", signal });
+  await llm.moderate({
+    layer: "input",
+    text: "응 할게",
+    context: "같이 갈래요?",
+    ageBand: "adult",
+    signal,
+  });
+  await llm.moderate({
+    layer: "output_sync",
+    text: "좋아요",
+    context: "응 할게",
+    ageBand: "minor",
+    signal,
+  });
   const contents = calls.parse.map(
     (params) => (params["messages"] as { content: string }[])[0]?.content,
   );

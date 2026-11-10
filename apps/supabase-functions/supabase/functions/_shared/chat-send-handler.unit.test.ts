@@ -513,15 +513,40 @@ describe("턴 스트림", () => {
     });
     await (await handler(post(body()))).text();
     await settle();
-    const meta = (rpcs.find((rpc) => rpc.fn === "companion_finish_turn")?.args["p_assistant"] as {
-      meta: { usage: Record<string, unknown> };
-    }).meta;
+    const meta = (
+      rpcs.find((rpc) => rpc.fn === "companion_finish_turn")?.args["p_assistant"] as {
+        meta: { usage: Record<string, unknown> };
+      }
+    ).meta;
     expect(meta.usage).toEqual({
-      reply: { model: "m", calls: 1, inputTokens: 10, cacheReadTokens: 5, cacheWriteTokens: 1, outputTokens: 2 },
-      moderation_input: { model: "m", calls: 1, inputTokens: 10, cacheReadTokens: 5, cacheWriteTokens: 1, outputTokens: 2 },
-      feedback: { model: "m", calls: 1, inputTokens: 10, cacheReadTokens: 5, cacheWriteTokens: 1, outputTokens: 2 },
+      reply: {
+        model: "m",
+        calls: 1,
+        inputTokens: 10,
+        cacheReadTokens: 5,
+        cacheWriteTokens: 1,
+        outputTokens: 2,
+      },
+      moderation_input: {
+        model: "m",
+        calls: 1,
+        inputTokens: 10,
+        cacheReadTokens: 5,
+        cacheWriteTokens: 1,
+        outputTokens: 2,
+      },
+      feedback: {
+        model: "m",
+        calls: 1,
+        inputTokens: 10,
+        cacheReadTokens: 5,
+        cacheWriteTokens: 1,
+        outputTokens: 2,
+      },
     });
-    const line = logs.find((entry) => entry.event === "chat_send" && entry.status === "stream")?.outcome;
+    const line = logs.find(
+      (entry) => entry.event === "chat_send" && entry.status === "stream",
+    )?.outcome;
     expect(line).toMatch(/^complete usage /);
     expect(line).toContain("reply=10/5/1/2");
   });
@@ -547,7 +572,15 @@ describe("턴 스트림", () => {
       begin: {
         ...begun,
         // 같은 화제가 오래 이어져 화제 전환 지시가 붙는 상태.
-        topicState: { turn: 9, topic: "날씨", topicTurns: 6, shortStreak: 3, wantsSwitch: true, lastInsertTurn: null, lastSwitchTurn: null },
+        topicState: {
+          turn: 9,
+          topic: "날씨",
+          topicTurns: 6,
+          shortStreak: 3,
+          wantsSwitch: true,
+          lastInsertTurn: null,
+          lastSwitchTurn: null,
+        },
         history: [
           { role: "user", text: "전에 한 말", segments: [] },
           { role: "assistant", text: null, segments: [{ kind: "speech", text: "같이 갈래요?" }] },
