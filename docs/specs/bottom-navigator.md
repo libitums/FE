@@ -117,3 +117,9 @@ producedBy: specification
 
 이 계약은 frozen이다. 시각 정본과 충돌하거나 제품 앱 이관이 필요해지면 구현에서 추측하지 않고
 요구사항/스펙 단계로 되돌린다.
+
+## 앱 적용 기록
+
+이 절은 위 계약을 바꾸지 않는다 — 제품 앱이 이 컴포넌트를 어떻게 쓰는지만 적는다.
+
+- ⟨2026-11-09 — [ADR-0113](../adr/0113-messenger-chat-ui.md)⟩ **앱 바 항목이 넷이 됐다** — 여정 · 롤플레이 · 메신저 · 설정(`apps/mobile/src/components/BottomNavigator.tsx`, 메신저는 `@libitums/icons/lynx/message`). 위 「3/4개는 정본의 32px 간격을 목표 폭에서 유지」대로면 넷은 4 × 64 + 3 × 32 + 2 × 24 = 400pt라 375pt · 360dp 화면을 넘는다. 그래서 **앱 쪽 CSS(`apps/mobile/src/components/bottom-navigator.css`)가 `.app-navigator` 아래에서 항목 간격을 24, 좌우 여백을 16으로 덮어** 360pt로 줄인다(세로 여백 · 항목 48 터치 · 선택 pill · 접근성 이름은 그대로). ui-lynx 패키지 · Storybook · 이 계약은 바뀌지 않는다. 360dp에서는 좌우 남는 폭이 0이다 — 기기 확인은 [탭 e2e](../e2e/tab-navigation.md) · [메신저 e2e](../e2e/messenger-chat-ui.md) MC-E1.

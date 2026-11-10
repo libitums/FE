@@ -1,7 +1,8 @@
-import { expect, test, vi } from "vitest";
+import { afterEach, expect, test, vi } from "vitest";
 import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
 import flag from "@libitums/icons/lynx/flag-03";
 import friends from "@libitums/icons/lynx/friends";
+import message from "@libitums/icons/lynx/message";
 import settings from "@libitums/icons/lynx/settings";
 import { color } from "@libitums/design-tokens";
 
@@ -168,7 +169,7 @@ test("[SH1-E] 비선택 탭들도 각자 자기 라벨을 accessibility-label로
   );
 });
 
-test("[BN1] 탭 루트 testid가 DOM 순서로 정확히 여정·롤플레이·설정이다", () => {
+test("[BN1] 탭 루트 testid가 DOM 순서로 정확히 여정·롤플레이·메신저·설정이다", () => {
   const { container } = render(<BottomNavigator tab="journey" onSelectTab={() => {}} />);
 
   const tabs = Array.from(
@@ -178,6 +179,7 @@ test("[BN1] 탭 루트 testid가 DOM 순서로 정확히 여정·롤플레이·�
   expect(tabs).toEqual([
     "ui-lynx-bottom-navigator-item-journey",
     "ui-lynx-bottom-navigator-item-roleplay",
+    "ui-lynx-bottom-navigator-item-messenger",
     "ui-lynx-bottom-navigator-item-settings",
   ]);
 });
@@ -223,4 +225,51 @@ test("[SH1-M] 문구표를 주입하면 탭 이름이 표의 경로로 나오고
     "accessibility-label",
     "⟦shell.tabs.settings⟧",
   );
+});
+
+// ---------------------------------------------------------------------- MC-UI1 (탭 넷)
+
+test("[MC-UI1] 메신저 탭은 셋째 자리에 message 아이콘 · 라벨 Chats로 선다", () => {
+  render(<BottomNavigator tab="messenger" onSelectTab={() => {}} />);
+
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-icon-messenger-default")).toHaveAttribute(
+    "content",
+    selected(message),
+  );
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-messenger")).toHaveAttribute(
+    "accessibility-label",
+    "Chats, selected",
+  );
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-messenger")).toHaveAttribute(
+    "__lynx_timing_flag",
+    "libitum:navigation:messenger",
+  );
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-item-settings")).toHaveAttribute(
+    "accessibility-label",
+    "Settings",
+  );
+});
+
+test("[MC-UI1] 메신저 탭을 tap하면 onSelectTab이 messenger로 한 번 불린다", () => {
+  const onSelectTab = vi.fn<(tab: Tab) => void>();
+  render(<BottomNavigator tab="journey" onSelectTab={onSelectTab} />);
+
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-messenger"), {});
+
+  expect(onSelectTab).toHaveBeenCalledTimes(1);
+  expect(onSelectTab).toHaveBeenCalledWith("messenger");
+});
+
+afterEach(() => vi.unstubAllGlobals());
+
+test("[MC-UI1] 메신저 탭을 누르면 버튼 소리 뒤에 화면을 바꾼다", () => {
+  const calls: string[] = [];
+  vi.stubGlobal("NativeModules", {
+    SoundEffectsModule: { play: (id: string) => calls.push(`sound:${id}`), stopRing: () => {} },
+  });
+  render(<BottomNavigator tab="journey" onSelectTab={(tab) => calls.push(`tab:${tab}`)} />);
+
+  fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-messenger"), {});
+
+  expect(calls).toEqual(["sound:button", "tab:messenger"]);
 });

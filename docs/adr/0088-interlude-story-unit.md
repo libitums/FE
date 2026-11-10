@@ -53,3 +53,7 @@
 1. 사진 보기 막간은 당분간 비주얼 노벨 컷으로 보인다. 문자는 D5의 메신저, 전화는 D6의 통화 화면으로 보인다.
 2. 결과 화면 「다음」 카드는 INT를 「Next lesson」으로 부른다(카드 종류는 lesson · final 둘뿐).
 3. 막간에는 소리가 없다(콘텐츠에 녹음이 없다).
+
+## 적용 기록
+
+- ⟨2026-11-09⟩ **문자 막간(D5)의 메신저 부품이 공용 `components/chat/`로 옮겨졌다** — [ADR-0113](0113-messenger-chat-ui.md) D2. `StoryMessengerScreen`은 머리 · 상대/내 줄(사진 9:16 포함) · 입력 중 점 · 로그 · 답장 보기를 공용 부품으로 그린다. 클래스 18개는 선언 그대로 `story-messenger-*` → `chat-*`로 이름만 바뀌었고, DOM 순서 · 크기 · 색 · 낭독 · test-id(`storyMessengerTestIds`) · 진행(`storyChatProgressOf`) · 문구(`StoryMessengerCopy`)는 같다 — **모양 불변**. 기존 `StoryMessengerScreen` ui 테스트는 고치지 않고 통과하고, `StoryMessengerScreen.shared.ui.test.tsx`가 공용 부품 사용을 지킨다. 보기 낭독은 `chatReplyOptionLabel`로 바뀌어 영어가 비면 끝 「, 」가 사라졌다. 기기 전후 비교는 [메신저 e2e](../e2e/messenger-chat-ui.md) MC-E13(미실행).

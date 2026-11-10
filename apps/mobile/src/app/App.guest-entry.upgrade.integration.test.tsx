@@ -73,7 +73,7 @@ test("[GE7] 설정에서 google로 로그인하면 비회원 기록이 사용자
   expect(present("login-screen-title")).toBe(false);
   expect(present("language-select-screen-next")).toBe(false);
   expect(present("journey-entry-screen-start")).toBe(false);
-  expect(navigatorItems()).toHaveLength(3);
+  expect(navigatorItems()).toHaveLength(4);
   expect(settingsItemIds()).toContain(settingsId("sign-out"));
   expect(settingsItemIds()).not.toContain(settingsId("sign-in"));
   // 이벤트 · 알림.

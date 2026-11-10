@@ -351,3 +351,52 @@ describe("MessengerKeyboard", () => {
     expect(previews()[0]?.getAttribute("user-interaction-enabled")).toBe("false");
   });
 });
+
+// MC-UI25: 자유 대화 방이 정하는 선택 prop `height`(messenger-chat-ui spec §6.3). 없으면 지금과 같다.
+describe("MessengerKeyboard height (MC-UI25)", () => {
+  const rowsOf = () =>
+    screen.getByTestId("messenger-keyboard").querySelectorAll(".messenger-keyboard-row");
+  const props = {
+    shifted: false,
+    onPress: () => {},
+    onBackspace: () => {},
+    onShift: () => {},
+  };
+
+  test("MC-UI25. height가 없으면 면에 인라인 높이가 없다", () => {
+    render(<MessengerKeyboard {...props} edges={edges} />);
+
+    expect(screen.getByTestId("messenger-keyboard").style.height).toBe("");
+    expect(screen.getByTestId("messenger-keyboard").style.cssText).not.toMatch(/height/);
+  });
+
+  test("MC-UI25. height 300이면 면 높이가 300px이고 edges.bottom 34는 그 안에 든다(높이를 더하지 않는다)", () => {
+    render(<MessengerKeyboard {...props} edges={{ bottom: 34, left: 0, right: 0 }} height={300} />);
+
+    expect(screen.getByTestId("messenger-keyboard").style.height).toBe("300px");
+    expect(marginsOf("messenger-keyboard-rows")?.marginBottom).toBe("34px");
+  });
+
+  test("MC-UI25. height가 있어도 줄은 넷이고 키는 서른하나 그대로다", () => {
+    render(<MessengerKeyboard {...props} edges={edges} height={300} />);
+
+    expect(rowsOf()).toHaveLength(4);
+    for (const id of keyIds) expect(key(id)).toBeTruthy();
+    expect(keyIds).toHaveLength(31);
+  });
+
+  test("MC-UI25. height가 없을 때도 줄은 넷이다(배치 불변)", () => {
+    render(<MessengerKeyboard {...props} edges={edges} />);
+
+    expect(rowsOf()).toHaveLength(4);
+  });
+
+  test("MC-UI25. height를 바꿔 다시 그리면 면 높이가 따라간다", () => {
+    const { rerender } = render(<MessengerKeyboard {...props} edges={edges} height={260} />);
+    expect(screen.getByTestId("messenger-keyboard").style.height).toBe("260px");
+
+    rerender(<MessengerKeyboard {...props} edges={edges} height={320} />);
+
+    expect(screen.getByTestId("messenger-keyboard").style.height).toBe("320px");
+  });
+});

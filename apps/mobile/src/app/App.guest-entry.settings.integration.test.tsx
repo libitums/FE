@@ -138,7 +138,7 @@ test("[GE6] 「로그인」 행은 비회원 버튼 없는 로그인 화면을 �
 
   expect(present("settings-screen-title")).toBe(true);
   expect(present("login-screen-title")).toBe(false);
-  expect(navigatorItems()).toHaveLength(3);
+  expect(navigatorItems()).toHaveLength(4);
 });
 
 // ------------------------------------------------------------------------- GE10

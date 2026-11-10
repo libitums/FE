@@ -10,6 +10,7 @@ import type { CatalogActivityForm } from "./catalog-lesson-types";
 import type { EpisodeContent } from "./episode-content";
 import type { Screen } from "./nav-state";
 import {
+  appHeaderVisibleOn,
   catalogActivityFormOf,
   shellEdgeModeFor,
   shellInsetsFor,
@@ -54,6 +55,7 @@ const otherForms: readonly CatalogActivityForm[] = [
 ];
 const paddedRoutes: readonly Screen[] = [
   asScreen({ name: "journey-map" }),
+  asScreen({ name: "messenger-list" }),
   asScreen({ name: "settings" }),
   asScreen({ name: "notifications" }),
   asScreen({ name: "catalog-unit-complete", episodeId: "u01-water", unitKey: "S3" }),
@@ -90,6 +92,40 @@ describe("shellEdgeModeFor", () => {
       expect(shellEdgeModeFor(screen, "typing")).toBe("padded");
     },
   );
+});
+
+describe("메신저 route (MC-U26)", () => {
+  const chatRoom = asScreen({ name: "messenger-chat", roomId: "mina" });
+
+  test("MC-U26. 방은 keyboard-dock 이다 — 학습형을 줘도 안 줘도", () => {
+    expect(shellEdgeModeFor(chatRoom, null)).toBe("keyboard-dock");
+    expect(shellEdgeModeFor(chatRoom, "typing")).toBe("keyboard-dock");
+  });
+
+  test("MC-U26. 목록은 padded 다", () => {
+    expect(shellEdgeModeFor(asScreen({ name: "messenger-list" }), null)).toBe("padded");
+  });
+
+  test("MC-U26. 방의 셸 인셋은 위만이고 목록은 전부다", () => {
+    expect(shellInsetsOf(chatRoom, ios, source)).toEqual(topOnly(59));
+    expect(shellInsetsOf(chatRoom, threeButton, source)).toEqual(topOnly(24));
+    expect(shellInsetsOf(asScreen({ name: "messenger-list" }), ios, source)).toEqual(ios);
+  });
+});
+
+describe("appHeaderVisibleOn (사용자 결정 2026-11-09: 메신저 목록에는 전역 머리가 없다)", () => {
+  test("메신저 목록에서만 전역 머리(AppHeader)가 숨는다", () => {
+    expect(appHeaderVisibleOn(asScreen({ name: "messenger-list" }))).toBe(false);
+  });
+
+  test.each([
+    asScreen({ name: "journey-map" }),
+    asScreen({ name: "roleplay-list" }),
+    asScreen({ name: "settings" }),
+    asScreen({ name: "messenger-chat", roomId: "mina" }),
+  ])("그 밖의 화면($name)은 그대로 보인다", (screen) => {
+    expect(appHeaderVisibleOn(screen)).toBe(true);
+  });
 });
 
 describe("shellInsetsFor", () => {

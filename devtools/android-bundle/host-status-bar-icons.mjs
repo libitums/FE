@@ -83,6 +83,11 @@ export const statusBarSurfaceRegistry = {
       classification: "default-scrim",
       carriers: [],
     },
+    // 메신저 채팅방 겹침(ADR-0113) — 가운데 모달 · 설정 사이드바는 ui-lynx 기본 스크림(0.45)이라 표지가 없다.
+    "screens/messenger-chat/chat-overlays.css": {
+      classification: "default-scrim",
+      carriers: [],
+    },
     "screens/gem-purchase/gem-purchase-screen.css": {
       classification: "unreachable",
       carriers: [],

@@ -21,6 +21,7 @@ import { DownloadSettingsScreen } from "../screens/download-settings/DownloadSet
 import { LanguageSelectScreen } from "../screens/language-select/LanguageSelectScreen";
 import { entryLanguageLabel } from "../lib/entry-language";
 import { learnerSettingsSummary, renderLearnerProfileSettings } from "./render-learner-profile";
+import { renderMessengerChat, renderMessengerList } from "./render-messenger-chat";
 import { renderRoleplayStory } from "./render-roleplay-story";
 import type { ScreenWiring } from "./screen-wiring";
 
@@ -37,6 +38,10 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
           onLayerChange={wiring.onScreenLayerChange}
         />
       );
+    case "messenger-list":
+      return renderMessengerList(wiring);
+    case "messenger-chat":
+      return renderMessengerChat(screen.roomId, wiring);
     case "roleplay-episode": {
       // 없는 에피소드는 데이터 오류라 숨기지 않고 던집니다 — 이 route를 여는 자리는
       // 구획 머리 하나뿐이고, 거기서 온 id는 구획에 반드시 있습니다.

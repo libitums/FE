@@ -26,7 +26,7 @@ import { useAccountState } from "./use-account-state";
 import { useSessionCatalog } from "./use-session-catalog";
 import type { AppSessionContent } from "./episode-content";
 import { shellHeaderTop } from "./full-bleed-screens";
-import { shellInsetsOf } from "./shell-edges";
+import { appHeaderVisibleOn, shellInsetsOf } from "./shell-edges";
 import { renderAppContent } from "./render-app-content";
 import { screenWiring } from "./screen-wiring";
 import { useTrackingAuthorizationPrompt } from "./use-tracking-authorization-prompt";
@@ -247,7 +247,7 @@ export function AppSession({
             <view className="app-content">
               {renderAppContent(screenNow, wiring)}
               {/* 탭 루트에서는 전역 머리가 콘텐츠 위에 겹칩니다. */}
-              {showsNavigator ? (
+              {showsNavigator && appHeaderVisibleOn(screenNow) ? (
                 <AppHeader
                   top={shellHeaderTop(screenNow, insets)}
                   streakDays={progress.streakDays}

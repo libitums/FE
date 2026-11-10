@@ -1,0 +1,161 @@
+/* 공용 채팅 부품 — 머리 · 대화 · 입력 중 · 답장 보기(messenger-chat-ui spec §4.2). 토큰은 CSS 커스텀 프로퍼티로만
+   소비합니다(ADR-0014 D1). 말풍선 · 버튼 · 아바타는 ui-lynx가 그립니다. */
+
+/* 머리 — 흰 바, 가운데 제목, 아래 가는 선. */
+.chat-header {
+  flex-shrink: 0;
+  background-color: var(--libitum-color-background-primary);
+  border-bottom-width: var(--libitum-stroke-width-thin);
+  border-bottom-style: solid;
+  border-bottom-color: var(--libitum-color-gray-300);
+}
+
+.chat-header-row {
+  min-height: var(--libitum-spacing-64);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: var(--libitum-spacing-8) var(--libitum-spacing-16);
+}
+
+.chat-header-side {
+  width: var(--libitum-spacing-48);
+  flex-shrink: 0;
+}
+
+.chat-title {
+  flex: 1;
+  text-align: center;
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  line-height: var(--libitum-typography-heading-s-line-height);
+}
+
+.chat-log {
+  flex: 1;
+}
+
+.chat-log-inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-12);
+  padding: var(--libitum-spacing-16) var(--libitum-layout-screen-padding-x);
+}
+
+/* 상대 줄 — 말풍선마다 왼쪽 위에 아바타. */
+.chat-row {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: var(--libitum-spacing-8);
+}
+
+.chat-row-outgoing {
+  justify-content: flex-end;
+}
+
+.chat-stack {
+  flex-shrink: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-6);
+}
+
+/* 사진 메시지 — ChatBubble에 그림 갈래가 없어 말풍선 위 카드로 둡니다(시안 벗어남). 학습 콘텐츠 사진은 세로
+   9:16(864×1536)이라 같은 비율로 그려 얼굴 · 소품이 잘리지 않게 합니다. */
+.chat-photo-9x16 {
+  width: 180px;
+  height: 320px;
+  border-radius: var(--libitum-radius-md);
+}
+
+/* 자유 대화 사진은 3:4(180×240)입니다. */
+.chat-photo-3x4 {
+  width: 180px;
+  height: 240px;
+  border-radius: var(--libitum-radius-md);
+}
+
+.chat-typing {
+  display: flex;
+  flex-direction: row;
+  gap: var(--libitum-spacing-4);
+  padding: var(--libitum-spacing-16);
+  border-radius: var(--libitum-radius-md);
+  border-end-start-radius: var(--libitum-spacing-0);
+  background-color: var(--libitum-color-gray-100);
+}
+
+.chat-dot {
+  width: var(--libitum-spacing-6);
+  height: var(--libitum-spacing-6);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-gray-700);
+  animation: chat-dot var(--libitum-motion-duration-d9) var(--libitum-motion-easing-easing) infinite;
+}
+
+.chat-dot-2 {
+  animation-delay: var(--libitum-motion-duration-d3);
+}
+
+.chat-dot-3 {
+  animation-delay: var(--libitum-motion-duration-d6);
+}
+
+/* 움직임 줄이기 — 점은 멈춘 채 입력 중만 알립니다. */
+.chat-typing-still .chat-dot {
+  animation: none;
+}
+
+@keyframes chat-dot {
+  0%,
+  60%,
+  100% {
+    opacity: 0.45;
+    transform: translateY(0);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+}
+
+/* 답장 보기 — brand.primary 면에 흰 글(Button brand와 같은 값), 아래 번역 줄. 고른 보기는 눌림과 같은 진한 면. */
+.chat-reply-option {
+  min-height: var(--libitum-spacing-48);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-2);
+  padding: var(--libitum-spacing-16) var(--libitum-spacing-24);
+  border-radius: var(--libitum-radius-lg);
+  background-color: var(--libitum-color-brand-primary);
+}
+
+.chat-reply-option:active {
+  background-color: var(--libitum-color-brand-primary-pressed);
+}
+
+.chat-reply-option-picked {
+  background-color: var(--libitum-color-brand-primary-pressed);
+}
+
+.chat-reply-option-primary {
+  color: var(--libitum-color-white);
+  text-align: center;
+  font-family: var(--libitum-typography-button-xl-font-family);
+  font-size: var(--libitum-typography-button-xl-font-size);
+  font-weight: var(--libitum-typography-button-xl-font-weight);
+  line-height: var(--libitum-typography-button-xl-line-height);
+}
+
+.chat-reply-option-line {
+  color: var(--libitum-color-gray-200);
+  text-align: center;
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  font-weight: var(--libitum-typography-body-s-font-weight);
+  line-height: var(--libitum-typography-body-s-line-height);
+}

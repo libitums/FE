@@ -15,7 +15,9 @@ import type { StorageModuleDouble } from "./test-helpers/signed-in-app";
 import { authSessionStorageKey, serializeAuthSession } from "../lib/auth-session";
 import { entrySplashDurationMs } from "../lib/entry-flow";
 import type { EntryEvent } from "../lib/entry-flow";
+import { uiCopyFor } from "../lib/ui-copy";
 import { uiLanguageStorageKey } from "../lib/ui-language";
+import { resetMessengerChatSource } from "./test-helpers/messenger-chat-app";
 
 // UI 언어 문구표의 App 수준 협력을 봅니다(ADR-0006 D4). 이 파일이 재는 것은 두 갈래입니다.
 //
@@ -521,3 +523,31 @@ test("[IL11] 설정 › 언어에서 일본어를 고르면 탭이 바로 바뀌
     expect.stringMatching(/^設定/),
   );
 });
+
+// ------------------------------------------------------------ MC-I8 · 메신저 탭 문구(messenger-chat-ui)
+
+describe.each(["en", "vi", "id", "es", "ja"] as const)(
+  "[MC-I8] 저장된 언어가 %s인 설치의 메신저 탭",
+  (language) => {
+    test("바 라벨 · 목록 제목 · 빈 상태 문구가 그 언어 문구표 값이다", async () => {
+      await resetMessengerChatSource();
+      const copy = uiCopyFor(language);
+      const storage = sessionStorageWith({ [uiLanguageStorageKey]: language });
+      await renderSignedInApp(<App progressSeed={legacyPassedSeed} />, {
+        storageModule: storage.module,
+      });
+
+      fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-messenger"), {});
+
+      expect(
+        screen
+          .getByTestId("ui-lynx-bottom-navigator-item-messenger")
+          .getAttribute("accessibility-label"),
+      ).toContain(copy.shell.tabs.messenger);
+      expect(screen.getByTestId("messenger-list-screen")).toBeInTheDocument();
+      expect(screen.getByTestId("messenger-list-title")).toHaveTextContent(
+        copy.messengerChat.list.title,
+      );
+    });
+  },
+);
