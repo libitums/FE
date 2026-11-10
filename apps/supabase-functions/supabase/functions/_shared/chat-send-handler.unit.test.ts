@@ -85,6 +85,7 @@ function setup(options: Options = {}) {
   const responses: Record<string, unknown> = {
     companion_turn_gate: options.gate ?? okGate,
     companion_begin_turn: options.begin ?? begun,
+    companion_begin_replacement: options.begin ?? begun,
     companion_learning_context: {
       episodes: ["u01-water"],
       expressions: [{ id: "voca:water", kind: "voca", surface: "물", roman: null, gloss: "water" }],
@@ -1504,5 +1505,44 @@ describe("칩을 그대로 보낸 메시지는 피드백을 건너뛴다 — 입
         p_choice: entry.choice,
       });
     }
+  });
+
+  test("CS35. 고쳐서 다시 보내기 — 시작 대신 companion_begin_replacement, 칩 표시는 보지 않고 직접 입력처럼 피드백한다", async () => {
+    const replaces = "40000000-0000-4000-8000-0000000000ee";
+    const { llm, calls } = counting();
+    const { handler, rpcs, settle } = setup({ status, llm });
+    const list = await events(
+      await handler(
+        post(
+          body({
+            text: chips[1],
+            suggestion: { message_id: chipMessageId, index: 1 },
+            replaces_message_id: replaces,
+          }),
+        ),
+      ),
+    );
+    await settle();
+    expect(checkTurnOrder(list)).toEqual({ ok: true });
+    expect(rpcs.some((rpc) => rpc.fn === "companion_begin_turn")).toBe(false);
+    expect(rpcs.find((rpc) => rpc.fn === "companion_begin_replacement")?.args).toMatchObject({
+      p_user_id: userId,
+      p_character_id: "duksu",
+      p_text: chips[1],
+      p_replaces_message_id: replaces,
+    });
+    expect(calls()).toBe(1);
+    expect(choiceOf(rpcs)).toEqual({
+      p_user_message_id: begun.userMessageId,
+      p_choice: { inputSource: "manual" },
+    });
+  });
+
+  test("CS36. 고칠 메시지가 마지막이 아니면 409 not_latest_message — 스트림 없이", async () => {
+    const response = await setup({ begin: { result: "not_latest_message" } }).handler(
+      post(body({ replaces_message_id: "40000000-0000-4000-8000-0000000000ee" })),
+    );
+    expect(response.status).toBe(409);
+    expect(await response.json()).toEqual({ error: "not_latest_message", retryable: false });
   });
 });

@@ -227,6 +227,7 @@ Firebase 프로젝트에 Android 앱을 등록하고 FCM HTTP v1 API 권한이 �
 | `20261121120000_companion_greeting.sql` | 첫 인사 — `messages.origin`에 `greeting` · 페르소나 `greetingLines` · `companion_greet_context` · `companion_save_greeting` |
 | `20261122120000_companion_suggestion_v2.sql` | 칩 2판 — `settings.suggestions_enabled` · `suggestion_display_max` · `companion.choice_sets` · `companion_turn_status` 칩 셋 · `companion_record_choice` · `companion_suggestion_stats` · 기억 원문의 `inputSource` · 1판 의도 이름 바꾸기, 첫 인사만 있는 대화의 선톡 제외 |
 | `20261123120000_companion_quality.sql` | 품질 보완 — 답 없는 선톡(`settings.proactive_unanswered_limit` · `proactive_backoff` · `companion.proactive_conversation_skip_reason`) · 선톡 맥락 · 선톡 칩(`companion_save_proactive`의 `p_suggestions`), 기억 고치기 · 잊기(`companion_apply_memory_ops` · `memories.history` · `updated_at` · `deleted_reason`), 쉬는 대화의 기억(`settings.memory_flush_idle` · `companion_memory_flush_candidates` · `companion_memory_source(…, p_flush)`), 요약 원문의 `inputSource` |
+| `20261124120000_companion_ratings_resend.sql` | 답변 평가 — `companion.message_ratings` · `companion_rate_message`(앱) · `companion_operator_rate_message`(플레이그라운드) · 메시지 줄의 `rating` · `companion_rating_stats`, 고쳐서 다시 보내기 — `companion_begin_replacement`(이전 턴 숨기기 + 시작, 막히면 되돌림) · 메시지 목록에서 고쳐서 숨긴 턴 빼기 · 칩 지표에서도 빼기 |
 
 통합 테스트 CF1 ~ CF11 · CH1 ~ CH10 · TV1 ~ TV13 · ID1 ~ ID3 · PP1 ~ PP9 · RM1 ~ RM8 · RS1 ~ RS8 · AS1 ~ AS3 · TC1 ~ TC4 · SN1 ~ SN2 · GR1 ~ GR4 · SV1 ~ SV6 · QL1 ~ QL6, 함수 단위 테스트 CS1 ~ CS34 · SG · CE · BR · LL · EV · FB · SF · RF · SU · GT · PR.
 
@@ -449,6 +450,16 @@ ops-dashboard가 검사 · 피드백 프롬프트를 케이스 묶음으로 돌�
   선호 · 계획을 저장하지 말라고 한다. 역할극 `*행동*`도 학습자의 사실이 아니다.
 - 늘어나는 지연: 번역과 겹쳐 돌아 `state` · `done`이 늦어지는 것은 둘 중 긴 쪽만큼 — 최악 6초(칩 제한 시간)다.
 
+**답변 평가 · 고쳐서 다시 보내기(20261124, PRD §3.15).**
+
+- 👍/👎: 앱이 `companion_rate_message(p_message_id, p_rating, p_reasons, p_note)`를 부른다 — `p_rating` `up` · `down` · null(지움). 👎만 이유(`awkward_korean` ·
+  `out_of_character` · `too_hard` · `uncomfortable` · `other`, 여럿)와 글(200자). 본인 대화의 보이는 캐릭터 메시지(첫 인사 · 선톡 · 거절 포함, 위기 안내 제외)만 — 아니면 `P0002`.
+  메시지 목록 줄에 `rating {value, reasons, note}`. 운영 지표는 `companion_rating_stats(p_since, p_playground, p_limit)`(캐릭터 · 모델 · 출처 · 이유별, 최근 👎 원문).
+- 고쳐서 다시 보내기: `chat-send` 본문 `replaces_message_id`(마지막 유저 메시지). `companion_begin_replacement`가 시작 대신 돈다 — 그 대화의 마지막 유저 메시지이고 그 뒤에
+  그 답이 아닌 캐릭터 메시지(선톡 등)가 없을 때만 이전 턴(유저 메시지 · 캐릭터 답)을 `hidden`으로 숨기고(`meta.replacedBy` ↔ 새 유저 메시지 `meta.replaces`) 보통 턴을 시작한다.
+  아니면 409 `not_latest_message`, 그 턴이 도는 중이면 `turn_in_progress`. 시작이 막히면(402) 숨기기도 되돌린다. 같은 `client_message_id` 재시도는 멱등.
+  차감 · 입력 검사 · 위반 횟수는 새 턴에 그대로. 칩 표시는 보지 않는다(`inputSource: manual`). 숨긴 턴은 지난 대화 · 기억 · 요약 원문 · 칩 이력 · 메시지 목록 · 칩 지표에서 빠진다.
+
 **companion-suggest** — 「다시 만들기」(`refresh: true`)와 자동 칩이 `unavailable`이었거나 오지 않은 턴의 대체 경로. 같은 메시지에 저장된 2판 칩이 있으면
 모델을 부르지 않고 돌려준다(1판 저장은 새로 만든다).
 
@@ -533,6 +544,8 @@ supabase functions serve --no-verify-jwt                                        
    `20261123120000_companion_quality.sql`은 20261122 **뒤에**, **새 함수(chat-send · companion-proactive)를 배포하기 전에** 적용한다(같은 방식의 묶음). 새 함수는
    `companion_apply_memory_ops` · `companion_save_proactive(…, p_suggestions)`를 불러서 옛 DB면 기억 작업 · 칩 붙은 선톡 저장이 실패한다. 적용 뒤 `chat-send` ·
    `companion-proactive` · `companion-greet` · `companion-eval`을 다시 배포하고, 예약 `companion-memory-flush`를 `supabase/cron/companion.sql`에서 더한다.
+   `20261124120000_companion_ratings_resend.sql`은 20261123 **뒤에**, 새 `chat-send`를 배포하기 전에 적용한다(같은 방식의 묶음). 옛 DB에서 새 `chat-send`는
+   `replaces_message_id`가 온 턴만 시작이 실패한다(500 `begin_failed`) — 보통 턴은 그대로다. 평가 RPC는 함수 배포와 상관없다. 적용 뒤 `chat-send`를 다시 배포한다.
 3. 비밀: `supabase secrets set --env-file supabase/functions/.env`. 키가 아직 없으면 `COMPANION_LLM=fake`로 화면만 먼저 본다.
 4. `supabase functions deploy chat-send` · `supabase functions deploy companion-proactive` · `supabase functions deploy companion-eval`(`config.toml`의 `verify_jwt = false`를 따른다).
 5. 예약 작업: Vault에 서버 키(`companion_service_role_key`)를 넣고 `supabase/cron/companion.sql`을 SQL 편집기에서 한 번 실행한다.

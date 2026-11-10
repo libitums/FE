@@ -227,7 +227,13 @@ export type GateResult =
 export type BeginResult =
   | ({ readonly result: "ok" } & BegunTurn)
   | {
-      readonly result: "trial_exhausted" | "insufficient_credits";
+      // 고쳐서 다시 보내기(`companion_begin_replacement`)는 앞의 셋도 낸다.
+      readonly result:
+        | "trial_exhausted"
+        | "insufficient_credits"
+        | "not_latest_message"
+        | "turn_in_progress"
+        | "duplicate_message";
       readonly detail?: Record<string, unknown>;
     };
 

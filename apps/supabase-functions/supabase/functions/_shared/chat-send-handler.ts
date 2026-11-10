@@ -93,16 +93,27 @@ export function createChatSendHandler(deps: ChatSendDeps): (request: Request) =>
     let learning: LearningContext;
     try {
       [begun, learning] = await Promise.all([
-        callRpc<BeginResult>(deps.outbound, env, "companion_begin_turn", {
-          p_user_id: caller.userId,
-          p_character_id: body.character_id,
-          p_client_message_id: body.client_message_id,
-          p_text: body.text,
-          p_input_mode: body.input_mode,
-          p_history_limit: historyCap,
-          p_region: body.client_region ?? null,
-          p_now: new Date(deps.nowMs()).toISOString(),
-        }),
+        // 고쳐서 다시 보내기(마이그레이션 20261124): 이전 턴을 숨기고 같은 시작을 한 트랜잭션에서 — 시작이 막히면 숨기기도 되돌린다.
+        callRpc<BeginResult>(
+          deps.outbound,
+          env,
+          body.replaces_message_id === undefined
+            ? "companion_begin_turn"
+            : "companion_begin_replacement",
+          {
+            p_user_id: caller.userId,
+            p_character_id: body.character_id,
+            p_client_message_id: body.client_message_id,
+            p_text: body.text,
+            p_input_mode: body.input_mode,
+            p_history_limit: historyCap,
+            p_region: body.client_region ?? null,
+            p_now: new Date(deps.nowMs()).toISOString(),
+            ...(body.replaces_message_id === undefined
+              ? {}
+              : { p_replaces_message_id: body.replaces_message_id }),
+          },
+        ),
         callRpc<LearningContext>(deps.outbound, env, "companion_learning_context", {
           p_user_id: caller.userId,
           p_limit: expressionLimit,
@@ -111,7 +122,7 @@ export function createChatSendHandler(deps: ChatSendDeps): (request: Request) =>
     } catch {
       return respond(errorResponse("internal_error"), "begin_failed");
     }
-    // 판정 10 · 11(M4): 체험 한도 · 크레딧 부족이면 아무것도 저장하지 않고 402.
+    // 판정 10 · 11(M4): 체험 한도 · 크레딧 부족이면 아무것도 저장하지 않고 402. 고칠 메시지가 마지막이 아니면 409.
     if (begun.result !== "ok") {
       return respond(errorResponse(begun.result, begun.detail), begun.result);
     }

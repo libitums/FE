@@ -3,7 +3,8 @@
 // 메시지의 칩(`companion_turn_status.latestSuggestionSet`)과 맞춰 본다.
 //   · suggestion — 지금 칩을 글 그대로 보냄. 피드백 모델을 부르지 않는다(칩은 이미 자연스러운 문장).
 //   · stale      — 그 사이 새 캐릭터 답이 와 지난 칩이 됨. 직접 입력처럼 피드백한다.
-//   · manual     — 직접 입력. 표시가 왔는데 글이 칩과 다르거나 칩을 확인할 수 없어도 여기다(방어).
+//   · manual     — 직접 입력. 표시가 왔는데 글이 칩과 다르거나 칩을 확인할 수 없어도 여기다(방어). 고쳐서 다시 보내기
+//                  (`replaces_message_id`)도 늘 여기다 — 고친 글은 유저가 쓴 글이다.
 // 결과는 스트림을 닫은 뒤 `companion_record_choice`가 유저 메시지 meta와 앞 캐릭터 메시지의 칩 셋(`outcome`)에 적는다.
 
 import type { TurnStatus } from "./chat-send-finish.ts";
@@ -21,9 +22,10 @@ export type Choice = {
 const manual: Choice = { inputSource: "manual" };
 
 export function resolveChoice(
-  body: Pick<ChatSendRequest, "text" | "suggestion" | "from_suggestion">,
+  body: Pick<ChatSendRequest, "text" | "suggestion" | "from_suggestion" | "replaces_message_id">,
   status: TurnStatus | null,
 ): Choice {
+  if (body.replaces_message_id !== undefined) return manual;
   const text = body.text.trim();
   const latest = status?.latestSuggestionSet;
   if (body.suggestion !== undefined) {
