@@ -43,6 +43,13 @@
   padding-right: var(--libitum-spacing-6);
 }
 
+/* 무제한 티켓 칩(ADR-0115)은 아이콘 둘이라 숫자 칩보다 넓다 — 320 폭에서 알림 버튼이 엽전 칩 끝에 약 3pt 닿아 좌우
+   여백을 4로 더 줄인다(약 4pt). 같은 세기의 `.stat-chip` 규칙보다 뒤에 둬야 이긴다. */
+.top-bar-stats-dense .unlimited-ticket-chip {
+  padding-left: var(--libitum-spacing-4);
+  padding-right: var(--libitum-spacing-4);
+}
+
 /* 지표 칩 하나하나의 모양은 `components/stat-chip.css`가 집니다. */
 
 /* 알림 버튼 — 44pt 원형입니다(Apple HIG 터치 영역). 폭 · 높이를 적지 않고 내용으로 섭니다:
