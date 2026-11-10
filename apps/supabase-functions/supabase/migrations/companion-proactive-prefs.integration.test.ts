@@ -28,7 +28,14 @@ async function conversation(character: string, lastMessageAt: string) {
     "insert into companion.conversations (user_id, character_id, last_message_at) values ($1, $2, $3) returning id",
     [user, character, lastMessageAt],
   );
-  return result.rows[0].id as string;
+  const id = result.rows[0].id as string;
+  // 유저가 한 번은 말한 대화 — 첫 인사만 있는 대화는 후보가 아니다(20261122).
+  await db.admin.query(
+    `insert into companion.messages (conversation_id, user_id, role, origin, status, text, client_message_id, created_at)
+     values ($1, $2, 'user', 'turn', 'complete', '안녕하세요', gen_random_uuid(), $3)`,
+    [id, user, lastMessageAt],
+  );
+  return id;
 }
 async function proactiveAt(conversationId: string, at: string) {
   await db.admin.query(

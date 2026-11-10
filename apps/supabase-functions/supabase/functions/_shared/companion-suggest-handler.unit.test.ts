@@ -54,9 +54,8 @@ const context = (overrides: Record<string, unknown> = {}) => ({
 });
 
 const storedItems = [
-  { text: "공부했어요.", meaning: "I studied.", intent: "continue" },
-  { text: "쌤은요?", meaning: "And you?", intent: "ask" },
-  { text: "좋아요!", meaning: "Nice!", intent: "react" },
+  { text: "오늘은 단어를 공부했어요.", meaning: "I studied words today.", intent: "elaborate" },
+  { text: "쌤은 오늘 뭐 했어요?", meaning: "What did you do?", intent: "ask" },
 ];
 
 type Rpc = { fn: string; args: Record<string, unknown> };
@@ -161,23 +160,23 @@ test("SU1. 메서드 · 설정 · 토큰 · 본문 검사", async () => {
   expect(rpcs).toEqual([]);
 });
 
-test("SU2. 앱 JWT — 맥락으로 칩 셋을 만들어 마지막 캐릭터 메시지에 저장한다", async () => {
+test("SU2. 앱 JWT — 후보 셋을 검증해 의도가 다른 둘을 보이고, 후보 전부와 함께 마지막 캐릭터 메시지에 저장한다", async () => {
   const { llm, suggests, moderations } = recordingLlm();
   const { call, rpcs, saved, logs } = setup({ llm });
   const { status, body } = await call();
   expect(status).toBe(200);
+  const shown = [
+    {
+      intent: "elaborate",
+      text: "저도 오늘 한국어 공부를 조금 했어요.",
+      meaning: "[en] 저도 오늘 한국어 공부를 조금 했어요.",
+    },
+    { intent: "ask", text: "덕수쌤은 오늘 뭐 했어요?", meaning: "[en] 덕수쌤은 오늘 뭐 했어요?" },
+  ];
   expect(companionSuggestResponseSchema.parse(body)).toEqual({
     status: "ok",
     messageId: assistantId,
-    items: [
-      {
-        intent: "continue",
-        text: "저도 오늘 한국어 공부했어요.",
-        meaning: "[en] 저도 오늘 한국어 공부했어요.",
-      },
-      { intent: "ask", text: "덕수쌤은 오늘 뭐 했어요?", meaning: "[en] 덕수쌤은 오늘 뭐 했어요?" },
-      { intent: "react", text: "와, 진짜요?", meaning: "[en] 와, 진짜요?" },
-    ],
+    items: shown,
     cached: false,
   });
   expect(rpcs[0]).toEqual({
@@ -185,16 +184,18 @@ test("SU2. 앱 JWT — 맥락으로 칩 셋을 만들어 마지막 캐릭터 메
     args: {
       p_user_id: userId,
       p_character_id: "duksu",
-      p_history_limit: 6,
+      p_history_limit: 8,
       p_now: "2026-11-18T09:00:00.000Z",
     },
   });
-  // 맥락은 피드백과 같은 모양 — 글자만(번역 없음).
+  // 맥락 — 글자만(번역 없음) + 요약 · 지난 칩 셋(옛 DB면 없음).
   expect(suggests).toHaveLength(1);
   expect(suggests[0]).toMatchObject({
     character: { name: "덕수쌤", role: "한국어 선생님" },
     speechLevel: "polite",
     l1: "en",
+    summary: null,
+    recentChoiceSets: [],
     history: [
       { role: "user", text: "안녕하세요" },
       { role: "assistant", text: "손을 흔든다\n오늘 뭐 했어요?" },
@@ -206,27 +207,46 @@ test("SU2. 앱 JWT — 맥락으로 칩 셋을 만들어 마지막 캐릭터 메
     p_user_id: userId,
     p_message_id: assistantId,
     p_suggestions: {
-      items: body["items"],
+      version: 2,
+      items: shown,
+      candidates: [
+        { ...shown[0], shown: true },
+        { ...shown[1], shown: true },
+        {
+          intent: "reflect",
+          text: "와, 정말 재미있었겠어요!",
+          meaning: "[en] 와, 정말 재미있었겠어요!",
+          shown: false,
+        },
+      ],
       model: "fake",
       createdAt: "2026-11-18T09:00:00.000Z",
+      ms: expect.any(Number),
     },
   });
   expect(logs).toEqual([{ event: "companion_suggest", status: 200, outcome: "generated" }]);
 });
 
-test("SU3. 맥락은 마지막 6개 · 한 줄 500자까지", async () => {
-  const history = Array.from({ length: 8 }, (_, index) =>
+test("SU3. 맥락은 마지막 8개 · 한 줄 500자까지 + 요약 · 지난 칩 셋", async () => {
+  const history = Array.from({ length: 10 }, (_, index) =>
     index % 2 === 0
       ? { role: "user", text: `유저 ${index} ${"가".repeat(600)}`, segments: [] }
       : { role: "assistant", text: null, segments: [{ kind: "speech", text: `캐릭터 ${index}` }] },
   );
   const { llm, suggests } = recordingLlm();
-  await setup({ llm, context: context({ history }) }).call();
+  const recentChoiceSets = [
+    { messageId: assistantId, items: [{ text: "네, 좋아요!", intent: "reflect" }], outcome: null },
+  ];
+  await setup({
+    llm,
+    context: context({ history, summary: "학습자는 서울에 산다.", recentChoiceSets }),
+  }).call();
   const sent = suggests[0]!.history;
-  expect(sent).toHaveLength(6);
+  expect(sent).toHaveLength(8);
   expect(sent[0]!.text.startsWith("유저 2")).toBe(true);
   expect(sent[0]!.text).toHaveLength(500);
-  expect(sent.at(-1)).toEqual({ role: "assistant", text: "캐릭터 7" });
+  expect(sent.at(-1)).toEqual({ role: "assistant", text: "캐릭터 9" });
+  expect(suggests[0]).toMatchObject({ summary: "학습자는 서울에 산다.", recentChoiceSets });
 });
 
 test("SU4. 저장된 칩은 모델 없이 그대로(cached) · refresh면 새로 만든다", async () => {
@@ -236,7 +256,7 @@ test("SU4. 저장된 칩은 모델 없이 그대로(cached) · refresh면 새로
       status: "complete",
       origin: "turn",
       refusal: false,
-      suggestions: { items: storedItems, model: "fake" },
+      suggestions: { version: 2, items: storedItems, model: "fake" },
     },
   });
   const first = recordingLlm();
@@ -256,6 +276,23 @@ test("SU4. 저장된 칩은 모델 없이 그대로(cached) · refresh면 새로
   expect(body).toMatchObject({ status: "ok", cached: false });
   expect(second.suggests).toHaveLength(1);
   expect(refreshed.saved()).toBeDefined();
+
+  // 1판 저장(version 없음 · 늘 셋)은 캐시로 쓰지 않는다.
+  const legacy = recordingLlm();
+  const legacyRun = setup({
+    llm: legacy.llm,
+    context: context({
+      latest: {
+        id: assistantId,
+        status: "complete",
+        origin: "turn",
+        refusal: false,
+        suggestions: { items: storedItems, model: "fake" },
+      },
+    }),
+  });
+  expect((await legacyRun.call()).body).toMatchObject({ status: "ok", cached: false });
+  expect(legacy.suggests).toHaveLength(1);
 });
 
 test("SU5. 추천할 자리가 아니면 none — 모델을 부르지 않는다", async () => {
@@ -271,6 +308,8 @@ test("SU5. 추천할 자리가 아니면 none — 모델을 부르지 않는다"
   });
   const cases: [Record<string, unknown>, string, string | null][] = [
     [{ replySuggestions: false }, "suggestions_off", assistantId],
+    [{ suggestionsEnabled: false }, "suggestions_disabled", assistantId],
+    [{ suggestionDisplayMax: 0 }, "suggestions_disabled", assistantId],
     [{ latest: null }, "no_assistant_message", null],
     [{ latestTurnBlocked: true }, "latest_turn_blocked", assistantId],
     [latest({ status: "crisis", origin: "crisis" }), "latest_turn_crisis", assistantId],
@@ -312,72 +351,117 @@ test("SU6. chat-send와 같은 판정에 걸리면 unavailable · 캐릭터 없�
   expect((await setup({ context: { result: "invalid_session" } }).call()).status).toBe(401);
 });
 
-test("SU7. 모양이 틀리거나 구조화 출력이 깨지면 한 번만 다시 묻고, 그래도 안 되면 unavailable", async () => {
-  const twoOnly: SuggestionDraft[] = [
-    { intent: "continue", text: "좋아요", meaning: "Good" },
-    { intent: "ask", text: "왜요?", meaning: "Why?" },
+test("SU7. 통과 후보가 없거나 구조화 출력이 깨지면 한 번만 다시 묻는다 — 그래도 없으면 unavailable", async () => {
+  const marked: SuggestionDraft[] = [
+    { intent: "elaborate", text: "*웃으며* 좋아요", meaning: "Good" },
+    { intent: "ask", text: "Why?", meaning: "Why?" },
   ];
-  const retried = recordingLlm([twoOnly]);
+  const retried = recordingLlm([marked]);
   expect((await setup({ llm: retried.llm }).call()).body).toMatchObject({
     status: "ok",
     cached: false,
   });
   expect(retried.suggests).toHaveLength(2);
 
-  const broken = recordingLlm([new StructuredUnavailable("refusal"), twoOnly, twoOnly]);
-  const run = setup({ llm: broken.llm });
-  expect((await run.call()).body).toEqual({
+  // 후보 하나라도 지나면 다시 묻지 않는다(셋을 다 채우려 하지 않는다).
+  const one = recordingLlm([
+    [
+      { intent: "ask", text: "덕수쌤은 주말에 뭐 해요?", meaning: "What do you do on weekends?" },
+      { intent: "reflect", text: "*끄덕*", meaning: "nod" },
+    ],
+  ]);
+  expect(((await setup({ llm: one.llm }).call()).body["items"] as unknown[]).length).toBe(1);
+  expect(one.suggests).toHaveLength(1);
+
+  const empty = recordingLlm([marked, marked]);
+  const emptyRun = setup({ llm: empty.llm });
+  expect((await emptyRun.call()).body).toEqual({
     status: "unavailable",
     messageId: assistantId,
     items: [],
     cached: false,
+    reason: "no_valid_candidates",
+  });
+  expect(emptyRun.saved()).toBeUndefined();
+
+  const broken = recordingLlm([new StructuredUnavailable("refusal"), new Error("again")]);
+  const run = setup({ llm: broken.llm });
+  expect((await run.call()).body).toMatchObject({
+    status: "unavailable",
     reason: "generation_failed",
   });
   expect(broken.suggests).toHaveLength(2);
   expect(run.saved()).toBeUndefined();
 });
 
-test("SU8. 칩 검사 — *행동* · 뜻 빠짐 · 겹침은 받지 않는다", async () => {
-  const base: SuggestionDraft[] = [
-    { intent: "react", text: "대박!", meaning: "Wow!" },
-    { intent: "continue", text: "저도요.", meaning: "Me too." },
-    { intent: "ask", text: "언제요?", meaning: "When?" },
+test("SU8. 후보 검증 — 빠진 것만 빼고, 의도가 다른 것을 앞에서부터 고른다", async () => {
+  const drafts: SuggestionDraft[] = [
+    { intent: "ask", text: "덕수쌤은 언제 한국어를 가르쳤어요?", meaning: "When did you start?" },
+    { intent: "ask", text: "덕수쌤은 언제 한국어를 가르쳤어요!", meaning: "dup" },
+    { intent: "reflect", text: "와, 오래 하셨네요!", meaning: "Wow, a long time!" },
   ];
-  // 순서가 뒤섞여 와도 continue · ask · react로 낸다.
-  const ordered = recordingLlm([base]);
+  const run = setup({ llm: recordingLlm([drafts]).llm });
+  const { body } = await run.call();
+  expect((body["items"] as { intent: string }[]).map((item) => item.intent)).toEqual([
+    "ask",
+    "reflect",
+  ]);
+  const candidates = (run.saved()!["p_suggestions"] as { candidates: { reason?: string }[] })
+    .candidates;
+  expect(candidates.map((item) => item.reason ?? "ok")).toEqual(["ok", "duplicate", "ok"]);
+
+  // 같은 의도뿐이면 자리를 채운다 · 서식 · 뜻 빠짐 · 한글 없음 · 너무 김 · 연락처 · 모르는 의도는 뺀다.
+  const bad: SuggestionDraft[] = [
+    { intent: "elaborate", text: "*웃으며* 좋아요", meaning: "x" },
+    { intent: "ask", text: "주말에 뭐 해요?", meaning: null },
+    { intent: "ask", text: "What?", meaning: "x" },
+    { intent: "ask", text: "가".repeat(81), meaning: "x" },
+    { intent: "ask", text: "제 번호는 010-1234-5678이에요.", meaning: "x" },
+    { intent: "continue", text: "저도 좋아요.", meaning: "x" },
+    { intent: "elaborate", text: "저는 어제 친구랑 시장에 갔어요.", meaning: "x" },
+    { intent: "elaborate", text: "오늘은 집에서 쉬고 싶어요.", meaning: "x" },
+  ];
+  const second = setup({ llm: recordingLlm([bad]).llm });
+  expect(((await second.call()).body["items"] as unknown[]).length).toBe(2);
   expect(
-    ((await setup({ llm: ordered.llm }).call()).body["items"] as { intent: string }[]).map(
-      (item) => item.intent,
+    (second.saved()!["p_suggestions"] as { candidates: { reason?: string }[] }).candidates.map(
+      (item) => item.reason ?? "ok",
     ),
-  ).toEqual(["continue", "ask", "react"]);
-  for (const bad of [
-    base.map((item) => (item.intent === "react" ? { ...item, text: "*웃으며* 대박!" } : item)),
-    base.map((item) => (item.intent === "ask" ? { ...item, meaning: null } : item)),
-    base.map((item) => (item.intent === "ask" ? { ...item, text: "저도요." } : item)),
-    base.map((item) => (item.intent === "ask" ? { ...item, text: "When?" } : item)),
-  ]) {
-    const { llm } = recordingLlm([bad, bad]);
-    expect((await setup({ llm }).call()).body).toMatchObject({ status: "unavailable" });
-  }
+  ).toEqual([
+    "markup",
+    "missing_meaning",
+    "no_hangul",
+    "too_long",
+    "contact_info",
+    "unknown_intent",
+    "ok",
+    "ok",
+  ]);
 });
 
-test("SU9. 학습자 언어가 한국어면 뜻은 null", async () => {
+test("SU9. 학습자 언어가 한국어면 뜻은 null · 지난 칩과 거의 같은 후보는 뺀다", async () => {
   const { llm } = recordingLlm([
     [
-      { intent: "continue", text: "저도요.", meaning: "나도" },
-      { intent: "ask", text: "언제요?", meaning: null },
-      { intent: "react", text: "대박!", meaning: null },
+      { intent: "elaborate", text: "저도 주말에 쉬었어요.", meaning: "나도" },
+      { intent: "ask", text: "덕수쌤은 언제 쉬어요?", meaning: null },
+      { intent: "reflect", text: "와, 진짜 좋았겠어요!", meaning: null },
     ],
   ]);
-  const { body } = await setup({ llm, context: context({ l1: "ko" }) }).call();
-  expect((body["items"] as { meaning: unknown }[]).map((item) => item.meaning)).toEqual([
-    null,
-    null,
-    null,
+  const recentChoiceSets = [
+    {
+      messageId: "50000000-0000-4000-8000-000000000000",
+      items: [{ text: "와, 진짜 좋았겠어요.", intent: "reflect" }],
+      outcome: "ignored",
+    },
+  ];
+  const { body } = await setup({ llm, context: context({ l1: "ko", recentChoiceSets }) }).call();
+  expect(body["items"]).toEqual([
+    { intent: "elaborate", text: "저도 주말에 쉬었어요.", meaning: null },
+    { intent: "ask", text: "덕수쌤은 언제 쉬어요?", meaning: null },
   ]);
 });
 
-test("SU10. 미성년자 · 나이 모름은 칩을 합쳐 출력 검사 — 걸리면 unavailable(저장 안 함)", async () => {
+test("SU10. 미성년자 · 나이 모름은 통과 후보를 합쳐 출력 검사 — 걸리면 unavailable(저장 안 함)", async () => {
   const safe = recordingLlm();
   const { body } = await setup({ llm: safe.llm, context: context({ ageBand: "minor" }) }).call();
   expect(body).toMatchObject({ status: "ok" });
@@ -385,7 +469,7 @@ test("SU10. 미성년자 · 나이 모름은 칩을 합쳐 출력 검사 — 걸
   expect(safe.moderations[0]).toMatchObject({
     layer: "output_sync",
     ageBand: "minor",
-    text: "저도 오늘 한국어 공부했어요.\n덕수쌤은 오늘 뭐 했어요?\n와, 진짜요?",
+    text: "저도 오늘 한국어 공부를 조금 했어요.\n덕수쌤은 오늘 뭐 했어요?\n와, 정말 재미있었겠어요!",
   });
 
   const unsafe = recordingLlm();
@@ -404,6 +488,13 @@ test("SU10. 미성년자 · 나이 모름은 칩을 합쳐 출력 검사 — 걸
     reason: "blocked",
   });
   expect(run.saved()).toBeUndefined();
+});
+
+test("SU14. 보일 수(settings.suggestion_display_max)만큼 — 3이면 셋", async () => {
+  const { body } = await setup({ context: context({ suggestionDisplayMax: 3 }) }).call();
+  expect((body["items"] as unknown[]).length).toBe(3);
+  const one = await setup({ context: context({ suggestionDisplayMax: 1 }) }).call();
+  expect((one.body["items"] as unknown[]).length).toBe(1);
 });
 
 test("SU11. 시간 초과는 다시 묻지 않고 unavailable", async () => {

@@ -21,6 +21,7 @@ import {
   preStreamCodes,
   readBody,
 } from "./chat-send-http.ts";
+import { resolveChoice } from "./chat-send-choice.ts";
 import { runTurn, type TurnContext } from "./chat-send-turn.ts";
 import { runAfterTurn } from "./companion-after-turn.ts";
 import { saveSuggestions } from "./companion-suggest-generate.ts";
@@ -115,6 +116,7 @@ export function createChatSendHandler(deps: ChatSendDeps): (request: Request) =>
     }
     const turn = begun;
 
+    const turnStatus = await status;
     const sink = createSink(deps.pingIntervalMs ?? defaultPingIntervalMs);
     const usage = createUsageCollector();
     const context: TurnContext = {
@@ -127,7 +129,8 @@ export function createChatSendHandler(deps: ChatSendDeps): (request: Request) =>
       gate: gate as Extract<GateResult, { result: "ok" }>,
       turn,
       learning,
-      status: await status,
+      status: turnStatus,
+      choice: resolveChoice(body, turnStatus),
       assistantMessageId: deps.randomUuid(),
       playground: caller.playground,
       historyKeep,
@@ -146,12 +149,21 @@ export function createChatSendHandler(deps: ChatSendDeps): (request: Request) =>
           status: "stream",
           outcome: turnUsage === "" ? outcome : `${outcome} usage ${turnUsage}`,
         });
+        // 입력 출처를 유저 메시지에, 앞 캐릭터 메시지의 칩 셋에 결과(고름 · 고침 · 무시)를 적는다. 실패해도 턴은 끝났다.
+        await callRpc(deps.outbound, env, "companion_record_choice", {
+          p_user_message_id: turn.userMessageId,
+          p_choice: context.choice,
+        }).catch(() =>
+          deps.log({ event: "chat_send", status: "stream", outcome: "record_choice_failed" }),
+        );
         // 칩은 끝(finish)이 캐릭터 메시지를 만든 뒤에야 붙일 수 있다 — `done`을 늦추지 않게 스트림을 닫고 저장한다.
         if (suggestions) {
           const saved = await saveSuggestions(deps.outbound, env, {
             userId: caller.userId,
             messageId: context.assistantMessageId,
-            items: suggestions,
+            items: suggestions.items,
+            candidates: suggestions.candidates,
+            ms: suggestions.ms,
             model: llm.model,
             createdAt: new Date(deps.nowMs()).toISOString(),
             playground: caller.playground,

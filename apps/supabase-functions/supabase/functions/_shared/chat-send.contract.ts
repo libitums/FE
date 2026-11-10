@@ -63,7 +63,7 @@ export type ChatSendEnvFrom = (
 
 /** 프롬프트에 넣는 지난 턴 하나입니다. 캐릭터 답은 조각을 태그 줄로 다시 씁니다. */
 export type HistoryEntry =
-  | { readonly role: "user"; readonly text: string }
+  | { readonly role: "user"; readonly text: string; readonly picked?: boolean }
   | { readonly role: "assistant"; readonly segments: readonly Segment[] };
 
 /** 말풍선 하나. `translation`은 저장된 L1 번역 — 프롬프트(history)에는 다시 넣지 않습니다. */

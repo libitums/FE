@@ -3,12 +3,8 @@ import { expect, test } from "vitest";
 import type { ChatSendEnv, CompanionLlm } from "./chat-send.contract.ts";
 import { createCompanionEvalHandler, evalModels } from "./companion-eval-handler.ts";
 import { companionLlmWithModel, StructuredUnavailable } from "./companion-llm.ts";
-import {
-  feedbackSystem,
-  refusalDirective,
-  refusalUserText,
-  suggestionSystem,
-} from "./companion-llm-prompts.ts";
+import { feedbackSystem, refusalDirective, refusalUserText } from "./companion-llm-prompts.ts";
+import { suggestionSystem } from "./companion-suggest-prompts.ts";
 import { companionSystemPrompt, proactiveDirective, stateLine } from "./companion-prompt.ts";
 import { moderationInstruction } from "./companion-safety.ts";
 import { fakeCompanionLlm } from "./companion-llm-fake.ts";
@@ -497,7 +493,7 @@ test("EV12. 피드백 케이스의 history는 운영처럼 마지막 6개 맥락
   expect(bad.status).toBe(400);
 });
 
-test("EV13. 추천 칩 — text는 캐릭터의 마지막 말, 검사를 지난 셋만 · 못 지나면 mismatch · 모델을 고르지 않으면 칩 모델", async () => {
+test("EV13. 추천 칩 — text는 캐릭터의 마지막 말, 보인 칩과 후보 전부 · 지난 칩 · 모델을 고르지 않으면 칩 모델", async () => {
   const models: string[] = [];
   const requests: unknown[] = [];
   const fake = fakeCompanionLlm();
@@ -525,7 +521,7 @@ test("EV13. 추천 칩 — text는 캐릭터의 마지막 말, 검사를 지난 
         character: { name: "윤경", role: "친구" },
         history: [{ role: "user", text: "안녕!" }],
       },
-      { id: "bad", text: "[suggest-bad] 안녕하세요" },
+      { id: "none", text: "[suggest-none] 안녕하세요", pastSuggestions: ["네, 좋아요!"] },
     ],
   });
   expect(status).toBe(200);
@@ -538,16 +534,27 @@ test("EV13. 추천 칩 — text는 캐릭터의 마지막 말, 검사를 지난 
     output: {
       items: [
         {
-          intent: "continue",
-          text: "나도 오늘 한국어 공부했어.",
-          meaning: "[vi] 나도 오늘 한국어 공부했어.",
+          intent: "elaborate",
+          text: "나도 오늘 한국어 공부를 조금 했어.",
+          meaning: "[vi] 나도 오늘 한국어 공부를 조금 했어.",
         },
         { intent: "ask" },
-        { intent: "react" },
       ],
+      candidates: [{ shown: true }, { shown: true }, { intent: "reflect", shown: false }],
     },
   });
-  expect(results[1]).toMatchObject({ id: "bad", ok: false, error: "mismatch" });
+  // 통과 후보가 없어도 실패가 아니다 — 빈 칩과 빠진 까닭을 낸다(채점은 대시보드).
+  expect(results[1]).toMatchObject({
+    id: "none",
+    ok: true,
+    output: {
+      items: [],
+      candidates: [{ reason: "markup" }, { reason: "markup" }, { reason: "markup" }],
+    },
+  });
+  expect(requests[1]).toMatchObject({
+    recentChoiceSets: [{ items: [{ text: "네, 좋아요!", intent: null }], outcome: null }],
+  });
   expect(requests[0]).toMatchObject({
     character: { name: "윤경", role: "친구" },
     speechLevel: "casual",

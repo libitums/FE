@@ -4,8 +4,10 @@
 import type { BegunTurn, ChatSendDeps, ChatSendEnv, Feedback } from "./chat-send.contract.ts";
 import type { Sink } from "./chat-send-http.ts";
 import type { AfterTurnInput } from "./companion-after-turn.ts";
-import type { RefusalStage, ReplySuggestion, SpeechLevel } from "./companion-contract/index.ts";
+import type { RefusalStage, SpeechLevel } from "./companion-contract/index.ts";
 import { callRpc } from "./companion-rpc.ts";
+import type { SuggestOutcome } from "./companion-suggest-generate.ts";
+import type { ChoiceSet } from "./companion-suggest.contract.ts";
 
 /** `companion_turn_status`의 반환 — 턴 시작 때 반복 위반 수(지금 창 안) · 상한, 기억이 가득 찼는지(마이그레이션 20261117). */
 export type TurnStatus = {
@@ -14,6 +16,16 @@ export type TurnStatus = {
   readonly memoryFull: boolean;
   /** 마지막 캐릭터 메시지에 저장된 칩의 글(마이그레이션 20261121) — `from_suggestion` 확인용. 옛 DB에는 없다. */
   readonly latestSuggestions?: readonly string[];
+  /** 마지막 캐릭터 메시지 id와 그 칩(20261122) — `suggestion: { message_id, index }` 확인용. 캐릭터 메시지가 없으면 null. */
+  readonly latestSuggestionSet?: {
+    readonly messageId: string;
+    readonly items: readonly { readonly text: string; readonly intent: string | null }[];
+  } | null;
+  /** 이 대화의 최근 칩 셋(20261122, 오래된 것부터) — 칩 생성 맥락. */
+  readonly recentChoiceSets?: readonly ChoiceSet[];
+  /** 운영의 전체 끄기 · 보일 칩 수(20261122). 옛 DB에는 없다(켜짐 · 2). */
+  readonly suggestionsEnabled?: boolean;
+  readonly suggestionDisplayMax?: number;
 };
 
 export type ModerationRecord = {
@@ -33,7 +45,7 @@ export type Finished = {
 export type TurnOutcome = {
   readonly outcome: string;
   readonly afterTurn: AfterTurnInput | null;
-  readonly suggestions?: readonly ReplySuggestion[] | null;
+  readonly suggestions?: Extract<SuggestOutcome, { status: "ok" }> | null;
 };
 
 export type TurnStatusName = "complete" | "blocked" | "crisis" | "failed";

@@ -12,10 +12,10 @@ import {
   memorySystem,
   refusalDirective,
   refusalUserText,
-  suggestionSystem,
   summarySystem,
   translationSystem,
 } from "./companion-llm-prompts.ts";
+import { suggestionSystem } from "./companion-suggest-prompts.ts";
 import {
   companionSystemPrompt,
   feedbackModeRule,

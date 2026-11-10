@@ -29,7 +29,13 @@ type MemorySource = {
   messages: StoredMessage[];
 } | null;
 
-type StoredMessage = { role: "user" | "assistant"; text: string | null; segments: Segment[] };
+type StoredMessage = {
+  role: "user" | "assistant";
+  text: string | null;
+  segments: Segment[];
+  /** 유저 메시지의 입력 출처(20261122 — `companion_memory_source`만 준다). `suggestion`이면 칩을 그대로 고른 말. */
+  inputSource?: string | null;
+};
 
 /** 기억 묶음 하나에 넣는 메시지 수의 상한(표시가 없는 오래된 대화가 한꺼번에 몰리지 않게). */
 const memorySourceLimit = 40;
@@ -39,7 +45,11 @@ const toHistory = (messages: readonly StoredMessage[]): HistoryEntry[] =>
     entry.role === "user"
       ? entry.text === null
         ? []
-        : [{ role: "user", text: entry.text }]
+        : [
+            entry.inputSource === "suggestion"
+              ? { role: "user", text: entry.text, picked: true }
+              : { role: "user", text: entry.text },
+          ]
       : [{ role: "assistant", segments: entry.segments }],
   );
 

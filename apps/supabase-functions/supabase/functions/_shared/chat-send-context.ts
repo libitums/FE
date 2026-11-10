@@ -8,6 +8,7 @@ import type {
   GateResult,
   LearningContext,
 } from "./chat-send.contract.ts";
+import type { Choice } from "./chat-send-choice.ts";
 import type { TurnStatus } from "./chat-send-finish.ts";
 import type { Sink } from "./chat-send-http.ts";
 import type { ChatSendRequest } from "./companion-contract/index.ts";
@@ -25,6 +26,8 @@ export type TurnContext = {
   learning: LearningContext;
   /** 턴 시작 때 반복 위반 수 · 기억 가득 참. 읽지 못했으면 null — 입력 차단은 지금처럼 `guardrail_blocked`, `memoryFull`은 싣지 않는다. */
   status: TurnStatus | null;
+  /** 이번 유저 말의 입력 출처(칩 그대로 · 고침 · 지난 칩 · 직접 입력) — `resolveChoice`. */
+  choice: Choice;
   assistantMessageId: string;
   playground: boolean;
   /** 요약 뒤에도 남기는 최근 메시지 수(`companion_summary_source`의 p_keep). */

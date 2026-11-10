@@ -121,10 +121,14 @@ test("RS1. 대화가 없으면 latest null · 기본값(칩 켬 · 존댓말 · 
     ageBand: "unknown",
     l1: null,
     replySuggestions: true,
+    suggestionsEnabled: true,
+    suggestionDisplayMax: 2,
     persona: expect.objectContaining({ name: expect.any(String) }),
     speechLevel: "polite",
+    summary: null,
     latest: null,
     latestTurnBlocked: false,
+    recentChoiceSets: [],
     history: [],
   });
 });

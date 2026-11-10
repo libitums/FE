@@ -19,7 +19,9 @@ import { defaultTranslationTimeoutMs } from "./chat-send-translate.ts";
 import type { Outbound } from "./delete-account.contract.ts";
 import { companionDocs } from "./companion-eval-docs.ts";
 import { StructuredUnavailable } from "./companion-llm.ts";
-import { recentFeedbackHistory, suggestionsFrom } from "./companion-llm-prompts.ts";
+import { recentFeedbackHistory } from "./companion-llm-prompts.ts";
+import { evalSuggestions } from "./companion-eval-suggest.ts";
+import type { CandidateRecord } from "./companion-suggest-select.ts";
 import type { ReplySuggestion } from "./companion-contract/index.ts";
 import { isServiceKey } from "./companion-rpc.ts";
 import { bearerTokenFrom } from "./supabase-auth.ts";
@@ -67,6 +69,9 @@ const caseSchema = z.object({
     })
     .nullable()
     .optional(),
+  // 칩만: 대화 요약 · 이 대화에서 앞서 보인 칩 글(반복 검사 · 프롬프트의 지난 칩).
+  summary: z.string().max(2000).nullable().optional(),
+  pastSuggestions: z.array(z.string().max(200)).max(15).optional(),
 });
 const bodySchema = z.object({
   kind: z.enum(["moderation", "feedback", "translation", "suggestions"]),
@@ -80,7 +85,11 @@ type CaseResult =
   | {
       id: string;
       ok: true;
-      output: ModerationVerdict | Feedback | { text: string } | { items: ReplySuggestion[] };
+      output:
+        | ModerationVerdict
+        | Feedback
+        | { text: string }
+        | { items: ReplySuggestion[]; candidates: CandidateRecord[] };
       ms: number;
     }
   | { id: string; ok: false; error: string; ms: number };
@@ -164,24 +173,10 @@ function runCase(deps: CompanionEvalDeps, llm: CompanionLlm, kind: EvalKind, ite
       return { text: lines[0]! };
     });
   }
-  if (kind === "suggestions") {
-    // `text`는 캐릭터의 마지막 말이고 `history`(앞 대화) 뒤에 붙인다. 운영처럼 검사(`suggestionsFrom`)를 지난 셋만 낸다 — 못 지나면 `mismatch`.
-    return withTimeout(deps.feedbackTimeoutMs ?? defaultFeedbackTimeoutMs, async (signal) => {
-      const drafts = await llm.suggest({
-        character: { name: item.character?.name ?? "캐릭터", role: item.character?.role ?? null },
-        speechLevel: item.speechLevel ?? null,
-        l1: item.l1 ?? null,
-        history: recentFeedbackHistory([
-          ...(item.history ?? []),
-          { role: "assistant", text: item.text },
-        ]),
-        signal,
-      });
-      const items = suggestionsFrom(drafts, item.l1 ?? null);
-      if (items === null) throw new Mismatch();
-      return { items };
-    });
-  }
+  if (kind === "suggestions")
+    return withTimeout(deps.feedbackTimeoutMs ?? defaultFeedbackTimeoutMs, (signal) =>
+      evalSuggestions(llm, item, signal),
+    );
   return withTimeout(deps.feedbackTimeoutMs ?? defaultFeedbackTimeoutMs, (signal) =>
     llm.feedback({
       text: item.text,

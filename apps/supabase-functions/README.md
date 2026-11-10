@@ -225,8 +225,9 @@ Firebase 프로젝트에 Android 앱을 등록하고 FCM HTTP v1 API 권한이 �
 | `20261120120000_companion_turn_cost.sql` | 턴 비용 · 지난 대화 — `companion_begin_turn`의 지난 대화를 마지막 요약 뒤 메시지로, 기억 묶음 `settings.memory_every` · `conversations.memory_extracted_until` · `companion_memory_source` · `companion_mark_memories` |
 | `20261121110000_companion_suggestion_feedback.sql` | 칩을 그대로 보낸 메시지는 피드백 건너뛰기 — `corrections.status`에 `skipped` · `correction_json`의 `reason` · `companion_turn_status`의 `latestSuggestions` |
 | `20261121120000_companion_greeting.sql` | 첫 인사 — `messages.origin`에 `greeting` · 페르소나 `greetingLines` · `companion_greet_context` · `companion_save_greeting` |
+| `20261122120000_companion_suggestion_v2.sql` | 칩 2판 — `settings.suggestions_enabled` · `suggestion_display_max` · `companion.choice_sets` · `companion_turn_status` 칩 셋 · `companion_record_choice` · `companion_suggestion_stats` · 기억 원문의 `inputSource` · 1판 의도 이름 바꾸기, 첫 인사만 있는 대화의 선톡 제외 |
 
-통합 테스트 CF1 ~ CF11 · CH1 ~ CH10 · TV1 ~ TV13 · ID1 ~ ID3 · PP1 ~ PP9 · RM1 ~ RM8 · RS1 ~ RS8 · AS1 ~ AS3 · TC1 ~ TC4 · SN1 ~ SN2 · GR1 ~ GR4, 함수 단위 테스트 CS1 ~ CS34 · SG · CE · BR · LL · EV · FB · SF · RF · SU · GT.
+통합 테스트 CF1 ~ CF11 · CH1 ~ CH10 · TV1 ~ TV13 · ID1 ~ ID3 · PP1 ~ PP9 · RM1 ~ RM8 · RS1 ~ RS8 · AS1 ~ AS3 · TC1 ~ TC4 · SN1 ~ SN2 · GR1 ~ GR4 · SV1 ~ SV6, 함수 단위 테스트 CS1 ~ CS34 · SG · CE · BR · LL · EV · FB · SF · RF · SU · GT.
 
 **턴 흐름** — 판정(시험 계정 · 티어 · 연령 · 일시 차단 · 이용 시간 · 멱등) → 시작(체험 · 크레딧 예약 + 유저 메시지 저장, 한 트랜잭션) →
 SSE → 입력 검사 · 메인 답변 · 피드백을 동시에 → 위기(`crisis`) · 입력 차단(단계에 따라 성격대로 거절 또는 `guardrail_blocked`, 아래) / 조각(`delta`, 미성년자 · 나이 모름은 출력 검사 뒤) ·
@@ -357,7 +358,8 @@ fake 모드에서 흐름을 일부러 일으키는 낱말은 `_shared/companion-
   현지 자정부터다. 선호 시각의 10시간 뒤가 조용한 시간이면 그날은 한 번. 시간대를 모르면(미국처럼 여럿인 나라 포함) 시각 맞추기 · 조용한 시간을 건너뛰고 하루는 UTC.
 - 한 회차에 유저마다 후보 하나(가장 오래 조용한 대화). 연령 · 지역 규칙은 그대로.
 - 예약 작업은 매시 30분 그대로 둔다 — 유저마다 현지 시각이 달라 매시간 봐야 선호 시각을 맞춘다. 유저마다 보내는 수는 위 규칙이 정한다.
-- 플레이그라운드 `force`는 빈도 판정을 모두(off 포함) 건너뛴다. 연령 · 지역 규칙은 건너뛰지 않는다.
+- 유저가 한 번도 말하지 않은 대화(첫 인사만 있음)는 후보가 아니다(20261122) — 맥락의 `hasUserMessage: false`면 함수가 `no_user_message`로 건너뛴다.
+- 플레이그라운드 `force`는 빈도 판정을 모두(off 포함) 건너뛴다. 연령 · 지역 규칙과 첫 인사만 있는 대화는 건너뛰지 않는다.
 - 앱: `companion_save_profile(p_birth_year, p_age_source, p_l1, p_feedback_mode, p_proactive_pref = null, p_proactive_hour = null, p_timezone = null)` —
   null은 그대로, `p_proactive_hour = -1`은 지우기(아무 때나), `p_timezone = ''`은 지우기, 틀린 값(모르는 시간대 포함)은 22023. 옛 4인수 호출은 그대로 된다.
   `companion_load_profile()`이 `proactivePref` · `proactiveHour` · `timezone`을 더 돌려준다(계약 `companion-profile`).
@@ -392,47 +394,65 @@ ops-dashboard가 검사 · 피드백 프롬프트를 케이스 묶음으로 돌�
 
 ### 추천 답변 칩 — chat-send 매 턴 자동 · companion-suggest 다시 만들기
 
-학습자가 탭해서 보낼 다음 말 셋(이어 가기 `continue` · 되묻기 `ask` · 짧은 리액션 `react`). **Zeta처럼 유저가 켜고 끄는 스위치**(프로필 `reply_suggestions`,
-기본 참)이고, **켜져 있으면 캐릭터 답마다 탭 없이 칩이 뜬다**(20261119). 호출 한 번(`COMPANION_SUGGEST_MODEL`, 기본 검사 모델)이 턴마다 들고,
-**크레딧을 차감하지 않는다**(차감 · 하루 상한은 열린 질문).
+학습자가 탭해서 그대로 보낼 다음 말 1 ~ 2개(설계 문서 「AI 컴패니언 선택지 기능 설계」 §04 ~ §10을 따른 2판, 20261122). **Zeta처럼 유저가 켜고 끄는
+스위치**(프로필 `reply_suggestions`, 기본 참)이고, 켜져 있으면 캐릭터 답마다 탭 없이 칩을 만든다. 호출 한 번(`COMPANION_SUGGEST_MODEL`, 기본 검사 모델)이
+턴마다 들고, **크레딧을 차감하지 않는다**(차감 · 하루 상한은 열린 질문). **칩 수정은 없다 — 입력 길은 탭 전송 · 직접 입력 둘뿐이다(사용자 결정 2026-11-10).**
 
-**chat-send 자동 칩** — 판정(`companion_turn_gate`)의 `replySuggestions`가 참이면 답 조각이 다 모인 뒤 번역과 같이 시작해 남은 기다림(피드백 · 미성년자
+**후보 → 검증 → 고르기** — 모델은 숨은 의도를 단 후보 셋을 낸다(`elaborate` 더 말하기 · `ask` 되묻기 · `reflect` 반응 · `redirect` 방향 바꾸기 · `boundary` 경계 ·
+`progress` 다음 단계, 정해진 조합 없음). 서버가 후보마다 검증해(`_shared/companion-suggest-select.ts`) 못 지난 것만 뺀다 — 모르는 의도 · 빈 글 · 한글 없음 ·
+서식(`*` `<>` 등 · 링크) · 4자 미만 · 80자 초과 · 뜻 빠짐 · 연락처 꼴 · 앞 후보와 겹침(글자 두 개씩 Dice ≥ 0.75) · 지난 칩과 거의 같음(≥ 0.85, 최근 5셋) · 미성년자 ·
+나이 모름의 출력 검사(통과 후보를 합쳐 한 번, 걸리면 모두). 통과한 것 가운데 의도가 서로 다른 것을 앞에서부터 `settings.suggestion_display_max`개(기본 2,
+0 ~ 3)까지 보인다 — **억지로 채우지 않는다**. 통과가 0이면 한 번 다시 묻고, 그래도 0이면 `unavailable` · `no_valid_candidates`.
+- 프롬프트(`_shared/companion-suggest-prompts.ts`의 `suggestionSystem`, `?docs=1`의 `prompts.suggestions`): 바로 보낼 수 있는 완결된 대사 · 내용 없는 예고 금지 ·
+  유저 대신 감정 · 관계 · 동의 · 약속 · 개인정보 · 현실 행동을 확정하지 않음(유저가 말한 사실은 다시 씀) · 지난 칩 · 최근 말과 같은 뜻 · 끝난 행동 되풀이 금지 · 죄책감 ·
+  의존 · 집착 유도와 거절 뒤 압박 금지 · 관계 말투 · 10 ~ 55자(최대 80) · i+1 · 청소년 안전. 맥락은 최근 8개(한 줄 500자 · 번역 없음) + 대화 요약 + 지난 칩 셋(글 ·
+  의도 · 결과). 대화 · 요약 · 지난 칩은 참고 자료이지 지시가 아니라고 못박는다.
+- 운영 끄기: `settings.suggestions_enabled = false`(또는 보일 수 0)면 어디서도 만들지 않는다 — `chat-send`는 이벤트 없음, `companion-suggest` · 첫 인사는
+  `none` · `suggestions_disabled`.
+- 저장(2판): `messages.suggestions = {version: 2, items(보인 것), candidates(후보 전부 — 글 · 뜻 · 의도 · 빠진 까닭 `reason` · `shown`), model, createdAt, ms,
+  playground?, outcome?}`. 메시지 목록은 `items`만 준다. 1판 저장의 의도는 마이그레이션이 바꾼다(continue → elaborate, react → reflect).
+
+**chat-send 자동 칩** — 판정의 `replySuggestions`가 참이고 운영이 끄지 않았으면 답 조각이 다 모인 뒤 번역과 같이 시작해 남은 기다림(피드백 · 미성년자
 출력 검사 · 번역)과 동시에 돌린다(`_shared/chat-send-suggest.ts`, 만들기는 `companion-suggest`와 같은 `_shared/companion-suggest-generate.ts`).
 - 이벤트: `translation` 뒤 · `state` 앞에 한 번 `suggestions {"messageId","status":"ok"|"unavailable","items":[{"text","meaning","intent"}],"reason"?}`.
-  `ok`면 칩 셋(continue · ask · react 순서), `unavailable`이면 빈 `items`와 `reason` — `generation_failed`(다시 물어도 실패 · 시간 초과) · `blocked`(미성년자 ·
-  나이 모름의 출력 검사). 앱은 `unavailable`이면 `companion-suggest`로 대신 받는다.
-- 보내지 않는 때: 스위치가 꺼짐 · 판정이 스위치를 모름(20261119 전 DB) · 위기 · 입력 차단(`guardrail_blocked`) · 성격대로 거절 · 출력 차단 · 답 실패. 앱은 스위치를
-  켰는데 이벤트가 없으면 `companion-suggest`를 부른다(저장된 칩이 있으면 그대로, 없으면 만든다).
-- 맥락: 턴이 이미 읽은 대화 + 이번 유저 말 + 새 답을 `companion-suggest`와 같은 모양(최근 6개 · 한 줄 500자 · 번역 없음)으로. 관계 말투는 턴 시작 때 값.
-- 제한 시간 6초(다시 묻기 · 출력 검사 포함 — 다시 묻기는 2초 이상 남았을 때만). 실패해도 턴은 끝나고 로그(`suggestions_unavailable`)와 meta(`suggestions`)에 남는다.
-- 저장: `ok`면 스트림을 닫은 뒤 `companion_save_suggestions`로 그 캐릭터 메시지의 `messages.suggestions`에(`companion-suggest`의 캐시와 같은 `{items, model,
-  createdAt, playground?}`). 끝(finish) 트랜잭션이 메시지를 만든 뒤에야 붙일 수 있어 `done`을 늦추지 않게 닫은 뒤 한다 — 저장 실패는 로그(`suggestions_save_failed`)만.
-  메시지 목록(`companion_list_messages`)의 캐릭터 메시지에 `suggestions`(칩 셋, 없으면 null)로 다시 온다.
-- 칩을 그대로 보낸 메시지: 앱이 칩을 탭해 고치지 않고 보내면 요청에 `from_suggestion: true`를 싣는다. 서버는 글이 마지막 캐릭터 메시지에 저장된 칩 하나와
-  (앞뒤 공백을 걷고) 똑같을 때만(`companion_turn_status`의 `latestSuggestions`, 마이그레이션 20261121) 피드백 모델을 부르지 않고
-  `correction {"status":"skipped","reason":"suggestion",…}`을 보내고 그 카드를 저장한다(앱: 「피드백 생략(추천 답변)」). 칩을 고쳤거나 직접 입력했으면,
-  또 옛 DB라 칩을 읽지 못했으면 보통처럼 피드백한다. 캐릭터 메시지 `meta.fromSuggestion`: `matched`(건너뜀) · `edited`(표시는 왔지만 글이 다름).
-- 늘어나는 지연: 번역과 겹쳐 돌아 `state` · `done`이 늦어지는 것은 둘 중 긴 쪽만큼 — 칩이 번역보다 늦으면 그 차이, 최악 6초(칩 제한 시간)다.
+  `ok`면 칩 1 ~ N개, `unavailable`이면 빈 `items`와 `reason` — `generation_failed`(실패 · 시간 초과) · `blocked`(출력 검사) · `no_valid_candidates`. 어느 쪽이든
+  입력창은 막지 않는다. 앱은 `unavailable`이면 `companion-suggest`로 대신 받을 수 있다.
+- 보내지 않는 때: 스위치가 꺼짐 · 운영 끔 · 판정이 스위치를 모름(20261119 전 DB) · 위기 · 입력 차단 · 성격대로 거절 · 출력 차단 · 답 실패.
+- 제한 시간 6초(다시 묻기 · 출력 검사 포함 — 다시 묻기는 2초 이상 남았을 때만). 결과와 걸린 시간은 meta `suggestions` · `suggestionsMs`에 남는다.
+- 저장은 스트림을 닫은 뒤 `companion_save_suggestions`(끝 트랜잭션이 메시지를 만든 뒤라야 붙일 수 있다 — 실패는 로그 `suggestions_save_failed`만).
+- **입력 출처** — 앱이 칩을 탭해 보내면 `suggestion: {"message_id","index"}`(옛 `from_suggestion: true`도 받는다). 서버는 턴 시작 때 읽은 마지막 캐릭터
+  메시지의 칩(`companion_turn_status.latestSuggestionSet`)과 맞춘다(`_shared/chat-send-choice.ts`).
+  - `suggestion` — 지금 칩을 글 그대로(앞뒤 공백 무시). 피드백 모델을 부르지 않고 `correction {"status":"skipped","reason":"suggestion",…}`(앱: 「피드백 생략(추천 답변)」).
+  - `stale` — 그 사이 새 답이 와 지난 칩이 됨. `manual` — 직접 입력, 또는 표시가 왔는데 글이 칩과 다르거나 칩을 확인할 수 없음(방어). 둘 다 보통처럼 피드백한다.
+  - 캐릭터 메시지 `meta.inputSource`, 스트림을 닫은 뒤 `companion_record_choice`가 유저 메시지 meta(`inputSource` · `suggestionMessageId` · `suggestionIndex` ·
+    `suggestionIntent`)와 앞 캐릭터 메시지 칩 셋의 결과(`outcome` chosen · ignored, 한 번만)를 적는다 — 칩 저장 · 기억 묶음보다 먼저.
+- **기억** — 칩을 그대로 고른 유저 말(`inputSource: suggestion`)은 기억 원문에 「학습자(추천 답변을 그대로 고름)」로 표시되고, 기억 프롬프트가 그것만으로는 사실 ·
+  선호 · 계획을 저장하지 말라고 한다. 역할극 `*행동*`도 학습자의 사실이 아니다.
+- 늘어나는 지연: 번역과 겹쳐 돌아 `state` · `done`이 늦어지는 것은 둘 중 긴 쪽만큼 — 최악 6초(칩 제한 시간)다.
 
-**companion-suggest** — 「다시 만들기」(`refresh: true`)와 자동 칩이 `unavailable`이었거나 오지 않은 턴의 대체 경로. 같은 메시지에 저장된 칩(자동으로 만든 것 포함)이
-있으면 모델을 부르지 않고 돌려준다.
+**companion-suggest** — 「다시 만들기」(`refresh: true`)와 자동 칩이 `unavailable`이었거나 오지 않은 턴의 대체 경로. 같은 메시지에 저장된 2판 칩이 있으면
+모델을 부르지 않고 돌려준다(1판 저장은 새로 만든다).
 
 - 호출자: 앱은 `Authorization: Bearer <JWT>` + `{"character_id","refresh"?}`. ops-dashboard 플레이그라운드는 `Bearer <서버 키>`(`isServiceKey` 규칙) +
   `{"user_id","character_id","refresh"?}` — 앱 토큰으로 `user_id`를 보내면 401. 계약은 `companion-suggest-request` · `companion-suggest-response`(JSON Schema).
-- 응답(200) `{"status":"ok"|"none"|"unavailable","messageId","items":[{"text","meaning","intent"}],"cached","reason"?}` — `ok`면 칩이 정확히 셋(continue · ask · react
-  순서), `meaning`은 학습자 언어(한국어면 null). `messageId`는 칩이 묶인 마지막 캐릭터 메시지다.
-  - `none`(모델 안 부름): `no_assistant_message` · `latest_turn_blocked` · `latest_turn_crisis` · `latest_turn_refusal`(메시지 `meta.refusal`) · `suggestions_off`(프로필).
-  - `unavailable`: `chat-send`와 같은 판정(`companion_turn_gate`)에 걸림 — `not_available` · `age_restricted` · `temporarily_blocked` · `usage_time_limit` · `turn_in_progress`,
-    또는 `generation_failed`(구조화 출력이 깨지거나 검사를 못 지나면 한 번 다시 묻고 그래도 실패 · 시간 초과 8초 · 출력 검사 실패) · `blocked`(미성년자 · 나이 모름의 출력 검사).
+- 응답(200) `{"status":"ok"|"none"|"unavailable","messageId","items":[{"text","meaning","intent"}],"cached","reason"?}` — `ok`면 칩 1 ~ N개, `meaning`은 학습자
+  언어(한국어면 null). `messageId`는 칩이 묶인 마지막 캐릭터 메시지다.
+  - `none`(모델 안 부름): `no_assistant_message` · `latest_turn_blocked` · `latest_turn_crisis` · `latest_turn_refusal` · `suggestions_off`(프로필) · `suggestions_disabled`(운영).
+  - `unavailable`: `chat-send`와 같은 판정에 걸림 — `not_available` · `age_restricted` · `temporarily_blocked` · `usage_time_limit` · `turn_in_progress`, 또는
+    `generation_failed`(시간 초과 8초 포함) · `blocked` · `no_valid_candidates`.
   - HTTP 오류: 400 `invalid_request` · 401 `invalid_session` · 404 `character_not_found` · 405 · 500 `server_misconfigured` · `internal_error`.
-- 캐시: 만든 칩은 마지막 캐릭터 메시지의 `messages.suggestions`(`{items, model, createdAt, playground?}`)에 저장하고, 다시 누르면 그대로(`cached: true`) 돌려준다.
-  새 턴이 오면 마지막 메시지가 바뀌어 저절로 무효다. `refresh: true`면 새로 만든다.
-- 맥락: 페르소나 이름 · 역할, 관계 말투, 학습자 언어, 최근 6개(피드백과 같은 모양 — 한 줄 500자 · 번역 없음). 프롬프트는 `suggestionSystem`(고정 글,
-  `?docs=1`의 `prompts.suggestions`) + user 쪽 맥락. 칩 검사(`suggestionsFrom`): 몫마다 하나 · 한글 · 80자 이하 · `*행동*` 없음 · 셋이 다름 · 뜻 있음.
+- 맥락: 자동 칩과 같다(최근 8개 + 요약 + 지난 칩 셋 — 다시 만들기는 지금 칩 셋도 지난 칩으로 보아 다른 것을 낸다).
 - 설정: 프로필 `reply_suggestions`(기본 참). 앱 `companion_save_profile(…, p_reply_suggestions = null)` · `companion_load_profile().replySuggestions`, 운영
-  `companion_operator_set_profile(…, p_reply_suggestions = null)` · `companion_inspect_testers().replySuggestions`. 옛 인수만 쓰는 호출은 그대로 된다.
-- 평가: `companion-eval`의 `kind: "suggestions"` — 케이스 `text`는 캐릭터의 마지막 말(`history` 뒤에 붙는다), `output: {"items"}`, 검사를 못 지나면 `mismatch`.
-- 배포: `supabase functions deploy companion-suggest`(`verify_jwt = false`). 마이그레이션 20261118을 먼저 적용한다.
+  `companion_operator_set_profile(…, p_reply_suggestions = null)` · `companion_inspect_testers().replySuggestions`.
+- 평가: `companion-eval`의 `kind: "suggestions"` — 케이스 `text`는 캐릭터의 마지막 말(`history` 뒤), `summary` · `pastSuggestions`(지난 칩 글)를 더 받는다.
+  `output: {"items","candidates"}` — 보인 칩(0개일 수 있다)과 후보 전부 · 빠진 까닭. 채점(맥락 적합 · 완결성, 의미 다양성 · 반복, 사용자 의도 보존, 안전 · 표현
+  품질)은 ops-dashboard가 한다.
+- 지표: `companion_suggestion_stats(p_since, p_playground = null)`(service_role) — 대상 턴 · 노출(1 · 2 · 3 · 통과 0 · 실패) · 다음 말이 온 턴 · 고름 · 무시 ·
+  보인 의도 · 고른 의도 · 빠진 까닭 · 생성 시간 p50/p95 · 칩 단계 토큰 합(비용은 대시보드가 단가로 계산).
+- 배포: `supabase functions deploy companion-suggest`(`verify_jwt = false`).
+
+**설계 문서에서 미룬 것** — A/B(자유 입력만 / 칩 + 자유 입력) · `choice_sets` · `choices` 별도 테이블(지금은 메시지의 `suggestions` JSON) · revision 기반 낙관적
+잠금과 작업 큐(지금은 `client_message_id` 멱등 + 마지막 캐릭터 메시지 id 비교) · 역할극 모드 · 학습 모드 연결(난이도별 표현 추천) · 칩 편집(쓰지 않기로 함).
 
 ### 첫 인사 — companion-greet
 

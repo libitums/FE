@@ -19,13 +19,12 @@ import {
   feedbackFrom,
   feedbackSystemParts,
   memorySystem,
-  suggestionContent,
-  suggestionSystem,
   summarySystem,
   translationContent,
   translationSystem,
 } from "./companion-llm-prompts.ts";
 import { segmentsToPlain, segmentsToTagged } from "./companion-segments.ts";
+import { suggestionContent, suggestionSystem } from "./companion-suggest-prompts.ts";
 import {
   feedbackSchema,
   memorySchema,
@@ -101,7 +100,7 @@ const transcript = (history: readonly HistoryEntry[]) =>
   history
     .map((entry) =>
       entry.role === "user"
-        ? `학습자: ${entry.text}`
+        ? `${entry.picked ? "학습자(추천 답변을 그대로 고름)" : "학습자"}: ${entry.text}`
         : `캐릭터: ${segmentsToPlain(entry.segments)}`,
     )
     .join("\n");

@@ -12,7 +12,8 @@
 //   「나는 너를」 → 자연스러운 표현(better)   「[better]」 → 더 나은 표현   번역은 「[언어] 원문」
 //   「*…*」 → 학습자의 행동 · 속마음 — 답은 몸짓에 반응하고 속마음 글을 따라 말하지 않는다, 말투 판정에서 뺀다
 //   「저는 … 좋아해요」 → 기억(유저 메시지가 settings.memory_every개 모여 묶음으로 뽑힐 때)   「[slow]」 → 조각 사이를 늦춘다   「[warm]」 → 친밀도 +3
-//   추천 답변 칩: 최근 대화에 「[suggest-bad]」 → 몫이 빠진 칩(다시 묻기 · 받지 못함)   「[unsafe-suggest]」 → 출력 검사에 걸리는 칩
+//   추천 답변 칩: 최근 대화에 「[suggest-bad]」 → 후보가 둘뿐   「[unsafe-suggest]」 → 출력 검사에 걸리는 칩   「[suggest-dup]」 → 겹치는 후보
+//   「[suggest-none]」 → 통과 후보 0(다시 묻고도 `no_valid_candidates`)
 // 위 낱말이 없는 말은 정상 턴(조각 셋 · 친밀도 +1)입니다.
 
 import type {
@@ -22,7 +23,8 @@ import type {
   MemoryItem,
   ModerationVerdict,
 } from "./chat-send.contract.ts";
-import { emptyFeedback, suggestionMeaningLanguage } from "./companion-llm-prompts.ts";
+import { emptyFeedback } from "./companion-llm-prompts.ts";
+import { suggestionMeaningLanguage } from "./companion-suggest-prompts.ts";
 
 // 위기 · 욕 · 모욕 — 학습자 언어가 여럿이라(en · vi · id · ja · es · my · th · tl …) 언어마다 한두 개씩 둔다.
 const crisisWords = [
@@ -264,16 +266,19 @@ export function fakeCompanionLlm(): CompanionLlm {
       const polite = (request.speechLevel ?? "polite") === "polite";
       const lines: [string, string][] = polite
         ? [
-            ["continue", "저도 오늘 한국어 공부했어요."],
+            ["elaborate", "저도 오늘 한국어 공부를 조금 했어요."],
             ["ask", `${request.character.name}은 오늘 뭐 했어요?`],
-            ["react", "와, 진짜요?"],
+            ["reflect", "와, 정말 재미있었겠어요!"],
           ]
         : [
-            ["continue", "나도 오늘 한국어 공부했어."],
+            ["elaborate", "나도 오늘 한국어 공부를 조금 했어."],
             ["ask", "너는 오늘 뭐 했어?"],
-            ["react", "헐, 진짜?"],
+            ["reflect", "와, 진짜 재미있었겠다!"],
           ];
-      if (recent.includes("[unsafe-suggest]")) lines[2] = ["react", "[unsafe] 위험한 칩"];
+      if (recent.includes("[unsafe-suggest]")) lines[2] = ["reflect", "[unsafe] 위험한 칩이에요"];
+      // 「[suggest-dup]」 → 둘째 후보가 첫째와 거의 같다(검증에서 빠짐). 「[suggest-none]」 → 모두 서식 위반(통과 0).
+      if (recent.includes("[suggest-dup]")) lines[1] = ["ask", lines[0]![1].replace(".", "!")];
+      if (recent.includes("[suggest-none]")) for (const line of lines) line[1] = `*${line[1]}*`;
       const items = lines.map(([intent, text]) => ({
         intent,
         text,

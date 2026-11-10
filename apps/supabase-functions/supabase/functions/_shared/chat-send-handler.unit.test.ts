@@ -437,6 +437,34 @@ describe("턴 스트림", () => {
     });
   });
 
+  test("CS9b. 칩을 그대로 고른 유저 말(inputSource suggestion)은 기억 추출에 표시가 붙는다", async () => {
+    const seen: unknown[] = [];
+    const base = fakeCompanionLlm();
+    const llm: CompanionLlm = {
+      ...base,
+      async extractMemories(request) {
+        seen.push(...request.messages);
+        return base.extractMemories(request);
+      },
+    };
+    const { handler, settle } = setup({
+      llm,
+      memorySource: {
+        ...memoryBatch,
+        messages: [
+          { role: "user", text: "저는 서울에 살아요", segments: [], inputSource: "suggestion" },
+          { role: "user", text: "저는 떡볶이를 좋아해요", segments: [], inputSource: "manual" },
+        ],
+      },
+    });
+    await events(await handler(post()));
+    await settle();
+    expect(seen).toEqual([
+      { role: "user", text: "저는 서울에 살아요", picked: true },
+      { role: "user", text: "저는 떡볶이를 좋아해요" },
+    ]);
+  });
+
   test("CS10. 장기 메모리를 끈 판정이면 추출하지 않고 표시만 옮긴다(미국 12 ~ 15세)", async () => {
     const { handler, rpcs, settle } = setup({
       gate: { ...okGate, memoryEnabled: false },
@@ -1065,9 +1093,12 @@ describe("추천 답변 칩(스위치가 켜져 있으면 매 턴)", () => {
         messageId: assistantId,
         status: "ok",
         items: [
-          { text: "저도 오늘 한국어 공부했어요.", meaning: expect.any(String), intent: "continue" },
+          {
+            text: "저도 오늘 한국어 공부를 조금 했어요.",
+            meaning: expect.any(String),
+            intent: "elaborate",
+          },
           { text: "덕수쌤은 오늘 뭐 했어요?", meaning: expect.any(String), intent: "ask" },
-          { text: "와, 진짜요?", meaning: expect.any(String), intent: "react" },
         ],
       });
       // 맥락: 턴이 읽은 대화 + 이번 유저 말 + 새 답(번역 없이 글자만, 마지막이 캐릭터 말).
@@ -1085,7 +1116,9 @@ describe("추천 답변 칩(스위치가 켜져 있으면 매 턴)", () => {
       expect(history.at(-1)).toMatchObject({ role: "assistant" });
       expect(history.at(-1)!.text).toContain("이동식 칠판을 끌고 온다");
       expect(history.at(-1)!.text).not.toContain("[en]");
-      expect(finishArgs()).toMatchObject({ p_assistant: { meta: { suggestions: "ok" } } });
+      expect(finishArgs()).toMatchObject({
+        p_assistant: { meta: { suggestions: "ok", suggestionsMs: expect.any(Number) } },
+      });
       const saved = saves(rpcs);
       expect(saved).toHaveLength(1);
       expect(rpcs.indexOf(saved[0]!)).toBeGreaterThan(
@@ -1095,12 +1128,53 @@ describe("추천 답변 칩(스위치가 켜져 있으면 매 턴)", () => {
         p_user_id: userId,
         p_message_id: assistantId,
         p_suggestions: {
+          version: 2,
           items: chips!.items,
+          candidates: expect.any(Array),
           model: "fake",
           createdAt: "2026-11-09T09:00:00.000Z",
+          ms: expect.any(Number),
         },
       });
     }
+  });
+
+  test("CS24b. 운영이 칩을 껐거나(suggestions_enabled) 보일 수가 0이면 만들지 않는다 · 지난 칩 셋 · 요약 · 보일 수를 넘긴다", async () => {
+    for (const status of [
+      { strikes: 0, strikeLimit: 3, memoryFull: false, suggestionsEnabled: false },
+      { strikes: 0, strikeLimit: 3, memoryFull: false, suggestionDisplayMax: 0 },
+    ]) {
+      const { llm, requests } = watching(fakeCompanionLlm());
+      const { handler, rpcs, settle } = setup({ gate: on, llm, status });
+      const list = await events(await handler(post()));
+      await settle();
+      expect(names(list)).not.toContain("suggestions");
+      expect(requests).toHaveLength(0);
+      expect(saves(rpcs)).toHaveLength(0);
+    }
+    const recentChoiceSets = [
+      {
+        messageId: assistantId,
+        items: [{ text: "네, 좋아요!", intent: "reflect" }],
+        outcome: "ignored",
+      },
+    ];
+    const { llm, requests } = watching(fakeCompanionLlm());
+    const { handler, settle } = setup({
+      gate: on,
+      llm,
+      status: {
+        strikes: 0,
+        strikeLimit: 3,
+        memoryFull: false,
+        recentChoiceSets,
+        suggestionDisplayMax: 3,
+      },
+    });
+    const list = await events(await handler(post()));
+    await settle();
+    expect(requests[0]).toMatchObject({ recentChoiceSets });
+    expect(chipsOf(list)[0]!.items).toHaveLength(3);
   });
 
   test("CS25. 꺼져 있거나 판정이 스위치를 모르면(옛 DB) 이벤트 · 모델 호출 · 저장이 없다", async () => {
@@ -1188,6 +1262,20 @@ describe("추천 답변 칩(스위치가 켜져 있으면 매 턴)", () => {
       // 실패는 한 번 다시 묻고, 시간 초과는 다시 묻지 않는다.
       expect(requests).toHaveLength(logged === "generation_failed" ? 2 : 1);
     }
+    // 통과 후보가 하나도 없으면(다시 묻고도) no_valid_candidates.
+    {
+      const { llm, requests } = watching(fakeCompanionLlm());
+      const { handler, finishArgs, settle } = setup({ gate: on, llm });
+      const list = await events(await handler(post(body({ text: "[suggest-none] 안녕하세요" }))));
+      await settle();
+      expect(chipsOf(list)).toEqual([
+        { messageId: assistantId, status: "unavailable", items: [], reason: "no_valid_candidates" },
+      ]);
+      expect(finishArgs()).toMatchObject({
+        p_assistant: { meta: { suggestions: "no_valid_candidates" } },
+      });
+      expect(requests).toHaveLength(2);
+    }
   });
 
   test("CS28. 한 번 실패하면 다시 묻는다 · 저장 실패는 칩 · 턴을 막지 않고 로그에 남는다", async () => {
@@ -1212,9 +1300,22 @@ describe("추천 답변 칩(스위치가 켜져 있으면 매 턴)", () => {
   });
 });
 
-describe("칩을 그대로 보낸 메시지는 피드백을 건너뛴다", () => {
-  const chips = ["저도 오늘 한국어 공부했어요.", "덕수쌤은 오늘 뭐 했어요?", "와, 진짜요?"];
-  const status = { strikes: 0, strikeLimit: 3, memoryFull: false, latestSuggestions: chips };
+describe("칩을 그대로 보낸 메시지는 피드백을 건너뛴다 — 입력 길은 탭 전송 · 직접 입력 둘뿐", () => {
+  const chipMessageId = "50000000-0000-4000-8000-0000000000c1";
+  const chips = ["저도 오늘 한국어 공부했어요.", "덕수쌤은 오늘 뭐 했어요?"];
+  const status = {
+    strikes: 0,
+    strikeLimit: 3,
+    memoryFull: false,
+    latestSuggestions: chips,
+    latestSuggestionSet: {
+      messageId: chipMessageId,
+      items: [
+        { text: chips[0], intent: "elaborate" },
+        { text: chips[1], intent: "ask" },
+      ],
+    },
+  };
   const counting = () => {
     let calls = 0;
     const llm = llmWith({
@@ -1235,16 +1336,10 @@ describe("칩을 그대로 보낸 메시지는 피드백을 건너뛴다", () =>
   };
   const correctionOf = (list: TurnEvent[]) =>
     list.flatMap((event) => (event.event === "correction" ? [event.data] : []));
+  const choiceOf = (rpcs: Rpc[]) => rpcs.find((rpc) => rpc.fn === "companion_record_choice")?.args;
 
-  test("CS33. 표시 + 저장된 칩과 같은 글(앞뒤 공백 무시)이면 모델 없이 skipped를 보내고 저장 · meta에 남긴다", async () => {
-    const { llm, calls } = counting();
-    const { handler, finishArgs, settle } = setup({ status, llm });
-    const text = `  ${chips[1]} `;
-    const list = await events(await handler(post(body({ text, from_suggestion: true }))));
-    await settle();
-    expect(checkTurnOrder(list)).toEqual({ ok: true });
-    expect(calls()).toBe(0);
-    const skipped = {
+  test("CS33. 지금 칩을 글 그대로(앞뒤 공백 무시) 보내면 모델 없이 skipped · 입력 출처를 적는다", async () => {
+    const skipped = (text: string) => ({
       status: "skipped",
       reason: "suggestion",
       kind: null,
@@ -1253,33 +1348,85 @@ describe("칩을 그대로 보낸 메시지는 피드백을 건너뛴다", () =>
       items: [],
       better: null,
       meaning: null,
-    };
-    expect(correctionOf(list)).toEqual([{ userMessageId: begun.userMessageId, ...skipped }]);
-    expect(finishArgs()).toMatchObject({
-      p_feedback: skipped,
-      p_assistant: { meta: { fromSuggestion: "matched" } },
     });
+    const text = `  ${chips[1]} `;
+    for (const marker of [
+      { suggestion: { message_id: chipMessageId, index: 1 } },
+      { from_suggestion: true },
+    ]) {
+      const { llm, calls } = counting();
+      const { handler, rpcs, finishArgs, settle } = setup({ status, llm });
+      const list = await events(await handler(post(body({ text, ...marker }))));
+      await settle();
+      expect(checkTurnOrder(list)).toEqual({ ok: true });
+      expect(calls()).toBe(0);
+      expect(correctionOf(list)).toEqual([
+        { userMessageId: begun.userMessageId, ...skipped(text) },
+      ]);
+      expect(finishArgs()).toMatchObject({
+        p_feedback: skipped(text),
+        p_assistant: { meta: { inputSource: "suggestion" } },
+      });
+      // 스트림을 닫은 뒤 유저 메시지 meta와 앞 칩 셋의 결과를 적는다 — 칩 저장 · 기억보다 먼저.
+      expect(choiceOf(rpcs)).toEqual({
+        p_user_message_id: begun.userMessageId,
+        p_choice: {
+          inputSource: "suggestion",
+          suggestionMessageId: chipMessageId,
+          suggestionIndex: 1,
+          suggestionIntent: "ask",
+        },
+      });
+    }
   });
 
-  test("CS34. 칩을 고쳤거나 · 표시가 없거나 · 칩을 읽지 못했으면(옛 DB) 보통처럼 피드백한다", async () => {
-    const cases: { overrides: Record<string, unknown>; status: unknown; meta?: string }[] = [
+  test("CS34. 직접 입력 · 글이 다른 표시(방어) · 지난 칩(stale) · 칩을 읽지 못함(옛 DB)은 보통처럼 피드백한다", async () => {
+    const cases: { overrides: Record<string, unknown>; status: unknown; choice: unknown }[] = [
+      { overrides: { text: chips[0] }, status, choice: { inputSource: "manual" } },
+      {
+        overrides: {
+          text: "덕수쌤은 어제 뭐 했어요?",
+          suggestion: { message_id: chipMessageId, index: 1 },
+        },
+        status,
+        choice: { inputSource: "manual" },
+      },
       {
         overrides: { text: "덕수쌤은 어제 뭐 했어요?", from_suggestion: true },
         status,
-        meta: "edited",
+        choice: { inputSource: "manual" },
       },
-      { overrides: { text: chips[0] }, status },
-      { overrides: { text: chips[0], from_suggestion: true }, status: undefined, meta: "edited" },
+      {
+        overrides: {
+          text: chips[0],
+          suggestion: { message_id: "50000000-0000-4000-8000-0000000000c0", index: 0 },
+        },
+        status,
+        choice: {
+          inputSource: "stale",
+          suggestionMessageId: "50000000-0000-4000-8000-0000000000c0",
+          suggestionIndex: 0,
+        },
+      },
+      {
+        overrides: { text: chips[0], suggestion: { message_id: chipMessageId, index: 0 } },
+        status: undefined,
+        choice: { inputSource: "manual" },
+      },
     ];
     for (const entry of cases) {
       const { llm, calls } = counting();
-      const { handler, finishArgs, settle } = setup({ status: entry.status, llm });
+      const { handler, rpcs, finishArgs, settle } = setup({ status: entry.status, llm });
       const list = await events(await handler(post(body(entry.overrides))));
       await settle();
       expect(calls()).toBe(1);
       expect(correctionOf(list)[0]!.status).not.toBe("skipped");
       const meta = (finishArgs()!.p_assistant as { meta: Record<string, unknown> }).meta;
-      expect(meta.fromSuggestion).toBe(entry.meta);
+      expect(meta.inputSource).toBe((entry.choice as { inputSource: string }).inputSource);
+      expect(choiceOf(rpcs)).toEqual({
+        p_user_message_id: begun.userMessageId,
+        p_choice: entry.choice,
+      });
     }
   });
 });

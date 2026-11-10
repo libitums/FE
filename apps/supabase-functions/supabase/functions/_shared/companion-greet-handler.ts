@@ -17,12 +17,17 @@ import {
   type SpeechLevel,
 } from "./companion-contract/index.ts";
 import { systemSplit } from "./companion-llm.ts";
-import { recentFeedbackHistory } from "./companion-llm-prompts.ts";
 import { companionSystemPrompt, greetingDirective, greetingUserText } from "./companion-prompt.ts";
 import { callRpc } from "./companion-rpc.ts";
 import { collectSegments, createSegmentSplitter, segmentsToPlain } from "./companion-segments.ts";
-import { generateSuggestions, type SuggestOutcome } from "./companion-suggest-generate.ts";
+import {
+  generateSuggestions,
+  type SuggestOutcome,
+  suggestionRecord,
+} from "./companion-suggest-generate.ts";
 import { callerFor } from "./companion-suggest-handler.ts";
+import { recentSuggestionHistory } from "./companion-suggest-prompts.ts";
+import { defaultSuggestionDisplayMax } from "./companion-suggest-select.ts";
 import { createUsageCollector, usageLine } from "./companion-usage.ts";
 import { bearerTokenFrom } from "./supabase-auth.ts";
 
@@ -52,6 +57,9 @@ type GreetContext =
       readonly l1: string | null;
       readonly feedbackMode: "separate" | "natural" | "prefix";
       readonly replySuggestions: boolean;
+      /** 운영의 전체 끄기 · 보일 칩 수(20261122). 옛 DB에는 없다(켜짐 · 2). */
+      readonly suggestionsEnabled?: boolean;
+      readonly suggestionDisplayMax?: number;
       readonly persona: GreetingPersona | null;
       readonly speechLevel: SpeechLevel;
       readonly hasMessages: boolean;
@@ -200,6 +208,9 @@ export function createGreetHandler(deps: GreetDeps): (request: Request) => Promi
 
     const messageId = deps.randomUuid();
     const budgetMs = deps.suggestionTimeoutMs ?? defaultSuggestionTimeoutMs;
+    const displayMax = context.suggestionDisplayMax ?? defaultSuggestionDisplayMax;
+    const chipsOn =
+      context.replySuggestions && context.suggestionsEnabled !== false && displayMax > 0;
     const [translated, chips] = await Promise.all([
       startTranslation(
         llm,
@@ -207,17 +218,18 @@ export function createGreetHandler(deps: GreetDeps): (request: Request) => Promi
         { segments, l1: context.l1, timeoutMs: deps.translationTimeoutMs },
         AbortSignal.timeout(timeoutMs),
       ),
-      context.replySuggestions
+      chipsOn
         ? generateSuggestions(llm, {
             request: {
               character: { name: persona.name, role: persona.role ?? null },
               speechLevel: context.speechLevel,
               l1: context.l1,
-              history: recentFeedbackHistory([{ role: "assistant", segments }]),
+              history: recentSuggestionHistory([{ role: "assistant", segments }]),
             },
             ageBand: context.ageBand,
             timeoutMs: budgetMs,
             budgetMs,
+            displayMax,
           })
         : Promise.resolve(null),
     ]);
@@ -237,18 +249,25 @@ export function createGreetHandler(deps: GreetDeps): (request: Request) => Promi
           greeting: source,
           ...(source === "canned" ? { greetingFallback: outcome } : {}),
           translation: translated.status,
-          ...(chips === null ? {} : { suggestions: chips.status === "ok" ? "ok" : chips.outcome }),
+          ...(chips === null
+            ? {}
+            : {
+                suggestions: chips.status === "ok" ? "ok" : chips.outcome,
+                suggestionsMs: chips.ms,
+              }),
           usage: usage.summary(),
           ...(caller.playground ? { playground: true } : {}),
         },
         p_suggestions:
           chips?.status === "ok"
-            ? {
+            ? suggestionRecord({
                 items: chips.items,
+                candidates: chips.candidates,
+                ms: chips.ms,
                 model: llm.model,
                 createdAt: now(),
-                ...(caller.playground ? { playground: true } : {}),
-              }
+                playground: caller.playground,
+              })
             : null,
         p_now: now(),
       });

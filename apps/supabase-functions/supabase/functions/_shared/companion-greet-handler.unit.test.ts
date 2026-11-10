@@ -131,7 +131,7 @@ test("GT1. 빈 대화면 인사를 만들어 출력 검사(성인도) · 번역 
     ],
     suggestions: { messageId, status: "ok" },
   });
-  expect((body.suggestions as { items: unknown[] }).items).toHaveLength(3);
+  expect((body.suggestions as { items: unknown[] }).items).toHaveLength(2);
   expect(calls).toEqual(
     expect.arrayContaining(["reply", "moderate:output_sync", "translate", "suggest"]),
   );
@@ -140,8 +140,19 @@ test("GT1. 빈 대화면 인사를 만들어 출력 검사(성인도) · 번역 
     p_character_id: "mina",
     p_message_id: messageId,
     p_segments: body.segments,
-    p_meta: { model: "fake", greeting: "model", translation: "ok", suggestions: "ok" },
-    p_suggestions: { items: (body.suggestions as { items: unknown[] }).items, model: "fake" },
+    p_meta: {
+      model: "fake",
+      greeting: "model",
+      translation: "ok",
+      suggestions: "ok",
+      suggestionsMs: expect.any(Number),
+    },
+    p_suggestions: {
+      version: 2,
+      items: (body.suggestions as { items: unknown[] }).items,
+      candidates: expect.any(Array),
+      model: "fake",
+    },
   });
 });
 

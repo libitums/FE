@@ -125,6 +125,24 @@ test("LL2. 피드백은 피드백 모델, 검사 · 기억은 검사 모델", as
   ]);
 });
 
+test("LL2b. 칩을 그대로 고른 유저 말은 기억 원문에 표시가 붙고, 시스템 글이 그것을 근거로 쓰지 말라고 한다", async () => {
+  const llm = anthropicCompanionLlm(config);
+  await llm.extractMemories({
+    messages: [
+      { role: "user", text: "저는 서울에 살아요", picked: true },
+      { role: "user", text: "저는 떡볶이를 좋아해요" },
+    ],
+    existing: [],
+    minor: false,
+    signal,
+  });
+  const params = calls.parse.at(-1)!;
+  const content = (params["messages"] as { content: string }[])[0]!.content;
+  expect(content).toContain("학습자(추천 답변을 그대로 고름): 저는 서울에 살아요");
+  expect(content).toContain("학습자: 저는 떡볶이를 좋아해요");
+  expect(JSON.stringify(params["system"])).toContain("never store a fact");
+});
+
 test("LL3. 모델 바꿔 보기는 모든 단계를 그 모델로", async () => {
   const llm = companionLlmWithModel(
     {

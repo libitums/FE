@@ -21,13 +21,13 @@ export const feedbackSchema = z.object({
 
 export const translationSchema = z.object({ lines: z.array(z.string()) });
 
-// 추천 답변 칩. 몫(intent)은 열거로 묶고, 개수 · 몫마다 하나 · 뜻 규칙은 받은 뒤 `suggestionsFrom`이 본다.
+// 추천 답변 칩 후보. 의도(intent)는 열거로 묶고, 검증 · 고르기는 받은 뒤 `checkCandidates` · `pickShown`이 한다.
 export const suggestionSchema = z.object({
   items: z.array(
     z.object({
       text: z.string(),
       meaning: z.string().nullable(),
-      intent: z.enum(["continue", "ask", "react"]),
+      intent: z.enum(["elaborate", "ask", "reflect", "redirect", "boundary", "progress"]),
     }),
   ),
 });

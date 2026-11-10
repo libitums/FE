@@ -1,9 +1,10 @@
-// `POST /functions/v1/companion-suggest` — 추천 답변 칩(학습자가 탭해서 보낼 다음 말 셋: 이어 가기 · 되묻기 · 리액션).
+// `POST /functions/v1/companion-suggest` — 추천 답변 칩(학습자가 탭해서 보낼 다음 말 1 ~ 2개, 모델 후보 셋을 검증해 의도가 다른 것만).
 //
 // 칩 스위치(`reply_suggestions`)가 켜져 있으면 `chat-send`가 캐릭터 답마다 칩을 만들어 SSE `suggestions`로 보내고 그 메시지에 저장합니다
 // (`chat-send-suggest.ts`). 이 함수는 「다시 만들기」(`refresh: true`)와, 자동 생성이 `unavailable`이었거나 이벤트가 오지 않은 턴의 대체
 // 경로입니다. 만든 칩은 마지막 캐릭터 메시지에 저장하고(`messages.suggestions`), 같은 메시지에 다시 부르면 모델을 부르지 않고 저장된 칩을
 // 돌려줍니다 — 자동으로 만든 칩도 같은 자리라 그대로 돌려줍니다. 새 턴이 오면 마지막 메시지가 바뀌어 캐시가 저절로 무효가 됩니다.
+// 1판 저장(의도 continue · ask · react, 늘 셋)은 캐시로 쓰지 않고 새로 만듭니다. 운영이 칩을 모두 껐으면(`suggestions_enabled`) `none`.
 //
 // 호출자: 앱은 JWT + `{ character_id }`. ops-dashboard 플레이그라운드는 서버 키 + `{ user_id, character_id }`(`companion-proactive`와
 // 같은 `isServiceKey` 규칙). 둘 다 `chat-send`와 같은 판정(시험 계정 · 티어 · 연령 · 일시 차단 · 이용 시간 · 진행 중인 턴)을 지납니다.
@@ -20,12 +21,11 @@ import {
 } from "./companion-contract/index.ts";
 import type { CompanionSuggestDeps, SuggestContext } from "./companion-suggest.contract.ts";
 import { generateSuggestions, saveSuggestions } from "./companion-suggest-generate.ts";
-import { recentFeedbackHistory } from "./companion-llm-prompts.ts";
+import { recentSuggestionHistory, suggestionHistoryLimit } from "./companion-suggest-prompts.ts";
+import { defaultSuggestionDisplayMax } from "./companion-suggest-select.ts";
 import { authUserIdRequest, callRpc, isServiceKey } from "./companion-rpc.ts";
 import { bearerTokenFrom } from "./supabase-auth.ts";
 
-/** 맥락 메시지 수 — 피드백과 같은 6개(약 세 번 주고받기). */
-const suggestHistoryLimit = 6;
 export const defaultSuggestTimeoutMs = 8_000;
 const uuidShape = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -124,7 +124,7 @@ export function createSuggestHandler(
         {
           p_user_id: caller.userId,
           p_character_id: body.character_id,
-          p_history_limit: suggestHistoryLimit,
+          p_history_limit: suggestionHistoryLimit,
           p_now: new Date(deps.nowMs()).toISOString(),
         },
       );
@@ -145,6 +145,9 @@ export function createSuggestHandler(
     const latest = context.latest;
     const none = (reason: SuggestReason) =>
       respond(200, answer("none", latest?.id ?? null, reason), reason);
+    const displayMax = context.suggestionDisplayMax ?? defaultSuggestionDisplayMax;
+    if (context.suggestionsEnabled === false || displayMax <= 0)
+      return none("suggestions_disabled");
     if (!context.replySuggestions) return none("suggestions_off");
     if (latest === null) return none("no_assistant_message");
     if (context.latestTurnBlocked) return none("latest_turn_blocked");
@@ -152,7 +155,12 @@ export function createSuggestHandler(
     if (latest.refusal) return none("latest_turn_refusal");
 
     const stored = latest.suggestions?.items;
-    if (body.refresh !== true && Array.isArray(stored) && stored.length === 3) {
+    if (
+      body.refresh !== true &&
+      latest.suggestions?.version === 2 &&
+      Array.isArray(stored) &&
+      stored.length > 0
+    ) {
       const response: CompanionSuggestResponse = {
         status: "ok",
         messageId: latest.id,
@@ -167,10 +175,13 @@ export function createSuggestHandler(
         character: { name: context.persona?.name ?? "", role: context.persona?.role ?? null },
         speechLevel: context.speechLevel,
         l1: context.l1,
-        history: recentFeedbackHistory(historyFrom(context)),
+        history: recentSuggestionHistory(historyFrom(context)),
+        summary: context.summary ?? null,
+        recentChoiceSets: context.recentChoiceSets ?? [],
       },
       ageBand: context.ageBand,
       timeoutMs: deps.suggestTimeoutMs ?? defaultSuggestTimeoutMs,
+      displayMax,
     });
     if (generated.status !== "ok") {
       const outcome = generated.outcome === "timeout" ? "generation_failed" : generated.outcome;
@@ -182,6 +193,8 @@ export function createSuggestHandler(
       userId: caller.userId,
       messageId: latest.id,
       items,
+      candidates: generated.candidates,
+      ms: generated.ms,
       model: llm.model,
       createdAt: new Date(deps.nowMs()).toISOString(),
       playground: caller.playground,

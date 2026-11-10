@@ -17,7 +17,6 @@ import {
   defaultLlmTimeoutMs,
   historyFrom,
   moderateInput,
-  sentFromSuggestion,
   skippedFeedback,
   startFeedback,
   startReply,
@@ -131,11 +130,11 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
     abort,
     branch.directive,
   );
-  // 추천 답변 칩을 그대로 보냈으면 피드백 모델을 부르지 않는다(칩은 이미 자연스러운 문장). 고쳐 보냈거나 직접 입력이면 보통처럼.
-  const fromSuggestion = sentFromSuggestion(body, context.status?.latestSuggestions);
-  const feedback = fromSuggestion
-    ? Promise.resolve(skippedFeedback(body.text))
-    : startFeedback(context, abort);
+  // 추천 답변 칩을 그대로 보냈으면 피드백 모델을 부르지 않는다(칩은 이미 자연스러운 문장). 고쳐 보냈거나 직접 입력 · 지난 칩이면 보통처럼.
+  const feedback =
+    context.choice.inputSource === "suggestion"
+      ? Promise.resolve(skippedFeedback(body.text))
+      : startFeedback(context, abort);
   let correctionSent = false;
   const sendCorrection = (value: Feedback) => {
     if (correctionSent) return;
@@ -243,11 +242,9 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
           branch: branch.action,
           turnState: result.state,
           feedbackMode: gate.feedbackMode,
-          ...(body.from_suggestion === true
-            ? { fromSuggestion: fromSuggestion ? "matched" : "edited" }
-            : {}),
+          inputSource: context.choice.inputSource,
           translation: translated.status,
-          suggestions: suggestionsMeta(suggested),
+          ...suggestionsMeta(suggested),
           trial: turn.trial,
           playground: context.playground,
         },

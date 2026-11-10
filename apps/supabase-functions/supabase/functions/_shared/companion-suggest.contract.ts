@@ -12,7 +12,14 @@ import type {
 import type { ReplySuggestion, SpeechLevel } from "./companion-contract/index.ts";
 import type { Outbound } from "./delete-account.contract.ts";
 
-/** 칩을 만드는 요청. 맥락은 피드백과 같은 모양(최근 6개 · 한 줄 500자 · 번역 없음)입니다. */
+/** 대화의 지난 칩 셋 하나(`companion.choice_sets`) — 반복을 피하는 맥락. `outcome`이 null이면 아직 다음 말이 없습니다. */
+export type ChoiceSet = {
+  readonly messageId: string;
+  readonly items: readonly { readonly text: string; readonly intent: string | null }[];
+  readonly outcome: "chosen" | "ignored" | null;
+};
+
+/** 칩을 만드는 요청. 맥락은 최근 대화(최대 8개 · 한 줄 500자 · 번역 없음) + 요약 + 지난 칩 셋(최대 5개)입니다. */
 export type SuggestRequest = {
   readonly character: { readonly name: string; readonly role: string | null };
   /** 지금 관계의 말투 단계. 모르면 null(해요체로 둡니다). */
@@ -21,10 +28,14 @@ export type SuggestRequest = {
   readonly l1: string | null;
   /** 최근 대화(오래된 것부터). 마지막이 캐릭터 말입니다. */
   readonly history: readonly FeedbackHistoryEntry[];
+  /** 대화 요약(오래된 대화). 없으면 null · 생략. */
+  readonly summary?: string | null;
+  /** 이 대화의 최근 칩 셋(오래된 것부터). */
+  readonly recentChoiceSets?: readonly ChoiceSet[];
   readonly signal: AbortSignal;
 };
 
-/** 모델이 낸 칩 하나. 검사(`suggestionsFrom`)를 지나야 응답에 실립니다. */
+/** 모델이 낸 후보 하나. 검증(`checkCandidates`)을 지나고 골라져야(`pickShown`) 응답에 실립니다. */
 export type SuggestionDraft = {
   readonly text: string;
   readonly meaning: string | null;
@@ -38,15 +49,24 @@ export type SuggestContext =
       readonly ageBand: AgeBand;
       readonly l1: string | null;
       readonly replySuggestions: boolean;
+      /** 운영의 전체 끄기(`settings.suggestions_enabled`, 20261122). 옛 DB에는 없습니다(켜짐으로 봅니다). */
+      readonly suggestionsEnabled?: boolean;
+      /** 보일 칩의 최대 수(`settings.suggestion_display_max`, 20261122). 옛 DB에는 없습니다(기본 2). */
+      readonly suggestionDisplayMax?: number;
       readonly persona: PersonaCard | null;
       readonly speechLevel: SpeechLevel;
+      readonly summary?: string | null;
+      readonly recentChoiceSets?: readonly ChoiceSet[];
       /** 마지막 캐릭터 메시지(숨김 제외). 저장된 칩이 있으면 `suggestions.items`. */
       readonly latest: {
         readonly id: string;
         readonly status: string;
         readonly origin: string;
         readonly refusal: boolean;
-        readonly suggestions: { readonly items?: readonly ReplySuggestion[] } | null;
+        readonly suggestions: {
+          readonly items?: readonly ReplySuggestion[];
+          readonly version?: number;
+        } | null;
       } | null;
       /** 마지막 캐릭터 메시지 뒤의 유저 메시지가 차단됐는가(차단된 턴은 캐릭터 답을 남기지 않습니다). */
       readonly latestTurnBlocked: boolean;
