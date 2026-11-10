@@ -123,7 +123,7 @@ test("[GE2] 「비회원으로 계속」은 네트워크 없이 표식만 남기
 
 // ------------------------------------------------------------------------- GE3
 
-test("[GE3] 첫 유닛을 끝내면 진행과 학습일이 기기에만 적히고 RPC가 0건이다", async () => {
+test("[GE3] 첫 유닛(표지)을 끝내면 진행이 기기에만 적히고 RPC가 0건이다 — 표지는 학습일이 아니다(ADR-0035 U2 개정 2026-11-09)", async () => {
   const host = installGuestHost();
   await renderGuestApp(host, { platform: "ios" });
   await walkGuestEntryToMap();
@@ -134,10 +134,10 @@ test("[GE3] 첫 유닛을 끝내면 진행과 학습일이 기기에만 적히�
     catalogProgress?: Record<string, string[]>;
   } | null;
   expect(progress?.catalogProgress).toEqual({ "u00-tutorial": ["intro"] });
-  expect(JSON.parse(host.store.get(guestDaysKey) ?? "null")).toEqual([today()]);
+  expect(JSON.parse(host.store.get(guestDaysKey) ?? "null")).toBeNull();
   expect(screen.getByTestId("top-bar-streak")).toHaveAttribute(
     "accessibility-label",
-    "1-day streak",
+    "0-day streak",
   );
   // 진행 · 학습일 · 프로필 · 피드백 어느 RPC도 나가지 않는다.
   expect(host.requests).toEqual([]);
@@ -145,7 +145,7 @@ test("[GE3] 첫 유닛을 끝내면 진행과 학습일이 기기에만 적히�
 
 // ------------------------------------------------------------------------- GE4
 
-test("[GE4] 비회원 기록이 있는 저장소로 다시 켜면 요청 없이 곧장 여정 맵이 서고 완료 유닛과 연속이 남아 있다", async () => {
+test("[GE4] 비회원 기록이 있는 저장소로 다시 켜면 요청 없이 곧장 여정 맵이 서고 완료 유닛이 남아 있다 — 표지만 끝낸 연속은 0(비회원 학습일 기록은 use-learning-days.guest GLD1)", async () => {
   const first = installGuestHost();
   await renderGuestApp(first, { platform: "ios" });
   await walkGuestEntryToMap();
@@ -173,7 +173,7 @@ test("[GE4] 비회원 기록이 있는 저장소로 다시 켜면 요청 없이 
   );
   expect(screen.getByTestId("top-bar-streak")).toHaveAttribute(
     "accessibility-label",
-    "1-day streak",
+    "0-day streak",
   );
   expect(second.events.filter((event) => event.name.startsWith("entry_"))).toEqual([]);
   expect(second.register).not.toHaveBeenCalled();

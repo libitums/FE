@@ -45,6 +45,8 @@ const navigatorItems = (): HTMLElement[] =>
 
 test("[GE7] 설정에서 google로 로그인하면 비회원 기록이 사용자 기록으로 올라가고 설정 루트로 돌아오며 알림을 묻는다", async () => {
   const host = installGuestHost({ userId: "u1" });
+  // 표지는 학습일이 아니므로(ADR-0035 U2 개정 2026-11-09) 레슨을 한 날이 기기에 있는 비회원으로 시작한다.
+  host.store.set(guestDaysKey, JSON.stringify([today()]));
   await bootGuestAfterFirstUnit(host);
   const guestProfile = guestProfileOf(host);
   openSettingsTab();

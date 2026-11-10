@@ -28,6 +28,7 @@ type ProgressApi = {
   readonly journeyProgressFrom: (raw: unknown) => ContractProgressState | null;
   readonly completedActivityCount: (state: ContractProgressState) => number;
   readonly catalogActivityCount: (progress: CatalogProgress) => number;
+  readonly learningDayActivityCount: (state: ContractProgressState) => number;
   readonly trophyCountFrom: (
     state: ContractProgressState,
     completionKeysOf: CatalogCompletionKeysOf,

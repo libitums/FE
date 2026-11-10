@@ -22,6 +22,7 @@ import { entrySplashDurationMs } from "../lib/entry-flow";
 import { bundledCatalogInput } from "../lib/episode-bundled";
 import { buildEpisodeCatalog } from "../lib/episode-catalog";
 import { isTypeableAnswer, isTypedAnswerCorrect, keystrokesFor } from "../lib/hangul-keyboard";
+import { localDayFrom } from "../lib/progress-api";
 import { learningItemGuideSeenStorageKey } from "../lib/learning-item-guide";
 import { allLearningItemGuidesSeenValue } from "../lib/learning-item-guide.test-support";
 import { fillPlaceholders } from "../lib/placeholder-fill";
@@ -107,6 +108,8 @@ type BootOptions = {
   readonly serve?: { readonly manifest: string; readonly episodes: Record<string, string> };
   readonly holdBodies?: boolean;
   readonly backHost?: { readonly respond: (token: string, outcome: string) => void };
+  /** 부팅 때 `learning_streak`이 돌려줄 일수(기본 1). `record_learning_days`는 늘 1을 돌려준다. */
+  readonly streak?: number;
 };
 
 type Booted = {
@@ -175,9 +178,11 @@ async function boot(options: BootOptions = {}): Promise<Booted> {
     const reply =
       name === "load_learning_progress"
         ? { status: 200, body: JSON.stringify(snapshot) }
-        : name === "learning_streak" || name === "record_learning_days"
-          ? { status: 200, body: "1" }
-          : { status: 204, body: "" };
+        : name === "learning_streak"
+          ? { status: 200, body: String(options.streak ?? 1) }
+          : name === "record_learning_days"
+            ? { status: 200, body: "1" }
+            : { status: 204, body: "" };
     return Promise.resolve({ status: reply.status, text: async () => reply.body });
   });
 
@@ -984,4 +989,43 @@ test("KL3. (자판 도킹) 3버튼 · 다학습형 S4: 받아쓰기 활동에서
 
   expect(keyRows).toEqual([null, null, "48px", null]);
   expect(bottoms).toEqual(["48px", "48px", "0px", "48px"]);
+});
+
+// ---------------------------------------------------------------- 연속 학습 (ADR-0035 U2 개정 2026-11-09)
+
+test("L-ST1. 표지만 끝낸 상태(연속 0일)에서 레슨 S1을 끝내고 맵으로 오면 오늘을 적고 「1 day streak」 모달이 뜬다", async () => {
+  const { rpcs } = await boot({ progress: upTo(), streak: 0 });
+  expect(screen.queryByTestId("journey-stat-modal-streak")).toBeNull();
+
+  tapNode(u01, "S1");
+  solveLesson(lessonPlan(u01, "S1"), true);
+  exitResult();
+  await flush();
+
+  await vi.waitFor(() =>
+    expect(rpcs.some((rpc) => rpc.name === "record_learning_days")).toBe(true),
+  );
+  const today = localDayFrom(new Date());
+  expect(rpcs.find((rpc) => rpc.name === "record_learning_days")?.body).toEqual({
+    p_days: [today],
+    p_today: today,
+  });
+  await flush();
+  expect(screen.getByTestId("journey-stat-modal-streak")).toBeInTheDocument();
+  expect(screen.getByTestId("journey-stat-modal-value")).toHaveTextContent("1");
+});
+
+test("L-ST2. 이미 오늘 한 날(일수가 그대로)이면 레슨을 끝내도 모달이 뜨지 않는다", async () => {
+  const { rpcs } = await boot({ progress: upTo(), streak: 1 });
+
+  tapNode(u01, "S1");
+  solveLesson(lessonPlan(u01, "S1"), true);
+  exitResult();
+  await flush();
+
+  await vi.waitFor(() =>
+    expect(rpcs.some((rpc) => rpc.name === "record_learning_days")).toBe(true),
+  );
+  await flush();
+  expect(screen.queryByTestId("journey-stat-modal-streak")).toBeNull();
 });
