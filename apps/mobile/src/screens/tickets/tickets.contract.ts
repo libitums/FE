@@ -1,5 +1,7 @@
 // 학습 티켓 화면들(머리 칩 모달 · 티켓 없음 대화상자 · 말풍선 태그 · 결과 줄)의 어휘입니다. 타입만 둡니다.
 
+import type { CalendarDate } from "../../lib/unlimited-pass";
+
 /** 「Get more tickets」를 누른 자리입니다. */
 export type TicketSurface = "ticket_modal" | "out_of_tickets";
 
@@ -9,9 +11,30 @@ export type TicketMoreResult = { readonly granted: boolean } | null;
 export type TicketsCopy = {
   /** 칩 · 결과 줄의 「N tickets left」입니다. */
   readonly ticketsLeft: (count: number) => string;
-  /** 시험 계정의 칩 이름 「Unlimited tickets」과 보이는 글자 「∞」입니다(ADR-0085). */
+  /** 무제한 칩 · 모달 제목 「Unlimited tickets」입니다(ADR-0085 · ADR-0115). */
   readonly unlimited: string;
-  readonly unlimitedValue: string;
+  /** 결과 화면 알약 「No ticket used · Unlimited」입니다(ADR-0115). */
+  readonly unlimitedLine: string;
+  /** 무제한일 때 「Next lesson」 버튼 태그의 낭독 「No ticket needed」입니다. */
+  readonly noTicketNeeded: string;
+  /** 무제한 모달(시험 계정 · 구독 갱신 · 갱신 꺼짐 · 곧 끝남)입니다. 날짜는 언어마다 쓰는 모양이 달라 함수입니다. */
+  readonly unlimitedModal: {
+    readonly guestPass: string;
+    readonly guestMessage: string;
+    readonly gotIt: string;
+    readonly renewsOn: string;
+    readonly endsOn: string;
+    readonly memberSince: (date: string) => string;
+    readonly endsDate: (date: string) => string;
+    readonly daysLeft: (days: number) => string;
+    readonly dayProgress: (left: number, total: number) => string;
+    readonly activeMessage: string;
+    readonly endingMessage: string;
+    readonly manage: string;
+    readonly keep: string;
+    readonly date: (date: CalendarDate) => string;
+    readonly shortDate: (date: CalendarDate) => string;
+  };
   readonly modal: {
     /** 큰 숫자 아래 제목 — 「tickets left」 · 「ticket left」. */
     readonly title: (count: number) => string;

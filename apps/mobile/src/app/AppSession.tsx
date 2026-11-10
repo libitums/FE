@@ -15,6 +15,7 @@ import { useSessionOptions } from "./use-session-options";
 import type { NotificationItem } from "../screens/notifications/notifications.contract";
 import { productPhoneSignIn } from "../screens/login/login";
 import { AppHeader } from "./AppHeader";
+import { guestUnlimitedPass } from "../lib/unlimited-pass";
 import { AppNavigator } from "./AppNavigator";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { currentScreen, navReducer, showsTabNavigator, tabRootActions } from "./nav-reducer";
@@ -255,7 +256,7 @@ export function AppSession({
                   onStreakCelebrated={progress.onStreakCelebrated}
                   statBump={progress.wiring}
                   tickets={tickets.header}
-                  ticketsUnlimited={testerAccess}
+                  unlimitedPass={testerAccess ? guestUnlimitedPass : undefined}
                   episodeSurvey={progress.episodeSurvey}
                   {...episodeSurveyWiring({
                     episodeIntroEventSink,

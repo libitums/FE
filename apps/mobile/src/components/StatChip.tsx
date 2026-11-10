@@ -90,8 +90,6 @@ export type StatChipProps = {
   readonly dropFrom?: number | null;
   /** 줄어듦 재생을 마쳤거나 굴릴 것이 없을 때 부릅니다. */
   readonly onDropped?: () => void;
-  /** 숫자 대신 보일 글자입니다(시험 계정의 티켓 「∞」 — ADR-0085). 움직임이 없을 때만 씁니다. */
-  readonly valueText?: string;
 };
 
 export function StatChip({
@@ -108,7 +106,6 @@ export function StatChip({
   onBumped,
   dropFrom = null,
   onDropped,
-  valueText,
 }: StatChipProps): ReactNode {
   const motion = useMotion();
   const start = statBumpStart(bumpFrom, value);
@@ -225,7 +222,7 @@ export function StatChip({
           </view>
         )
       ) : start === null ? (
-        <text className={valueClass}>{valueText ?? String(value)}</text>
+        <text className={valueClass}>{String(value)}</text>
       ) : !playing ? (
         <text className={valueClass}>{String(start)}</text>
       ) : motion === "reduced" ? (
