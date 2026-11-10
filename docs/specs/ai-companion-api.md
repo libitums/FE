@@ -214,6 +214,8 @@ Accept: text/event-stream
 
 ### 2.6 `POST /functions/v1/companion-suggest` — 추천 답변 [결정 2026-11-09]
 
+⟨2026-11-10⟩ 칩은 이제 `chat-send`가 턴마다 자동으로 만들고(SSE `suggestions`), 이 함수는 다시 만들기 · 자동 칩이 없던 턴용이다. 2판 규칙(숨은 의도 여섯 · 검증 · 0 ~ `suggestion_display_max`개 · 전체 끄기 · 칩 표시 `suggestion { message_id, index }`)은 PRD §3.4. 아래 표에서 「정확히 3개 · `continue` · `ask` · `react`」와 「최근 6메시지」는 1판 내용이다 — 정본은 계약 패키지 `suggest.ts`.
+
 | | |
 |---|---|
 | 인증 | 사용자 토큰 + 본문 `{ character_id, refresh? }`. 플레이그라운드는 서버 키 + 본문 `{ user_id, character_id, refresh? }` |
@@ -250,7 +252,7 @@ PRD §3.15 · §3.7의 짝. 아직 코드가 없다 — 모양은 구현 때 계
 |---|---|---|
 | 답변 평가 | 앱용 RPC `companion_rate_message(p_message_id uuid, p_rating text, p_reasons text[], p_note text)` | `p_rating` `up` · `down` · `null`(지움). `p_reasons`는 `down`일 때만 — `awkward_korean` · `out_of_character` · `too_hard` · `uncomfortable` · `other`. `p_note` 200자까지. 본인 대화의 캐릭터 메시지만(`P0002`). 저장 `companion.message_ratings`. `companion_list_messages`의 Message에 `rating { value, reasons }`를 더한다 |
 | 고쳐서 다시 보내기 | `chat-send` 본문 `replaces_message_id`(마지막 유저 메시지 id) | 서버가 그 메시지가 마지막 유저 메시지이고 그 뒤에 다른 유저 메시지가 없는지 확인한다. 아니면 409 `not_latest_message`. 맞으면 그 턴(유저 메시지 · 캐릭터 답 · 교정)을 `hidden` + `meta.replacedBy`로 숨기고 새 턴을 평소처럼 돈다(차감 · 검사 그대로). 숨긴 턴은 `companion_list_messages`와 기억 · 요약 원문에서 빠진다 |
-| 학습 연결 기록 | 서버용 RPC(턴 끝 `companion_finish_turn`에 합친다) | 쓴 표현 id(`@state` + 서버 확인) · 방식(`expose` · `elicit` · `chip`)을 `companion.user_expressions`에 센다. 유저 산출은 피드백 결과의 `learnedUsed: [expressionId]` — `correction` 이벤트에 `learnedUsed`(있을 때만)를 더해 카드가 「배운 표현을 썼어요」를 그린다 |
+| 학습 연결 기록 (주기 · 방식 셋 · 대상은 PRD §3.7 [결정 2026-11-10]) | 서버용 RPC(턴 끝 `companion_finish_turn`에 합친다) | 쓴 표현 id(`@state` + 서버 확인) · 방식(`expose` · `elicit` · `chip`)을 `companion.user_expressions`에 센다. 유저 산출은 피드백 결과의 `learnedUsed: [expressionId]` — `correction` 이벤트에 `learnedUsed`(있을 때만)를 더해 카드가 「배운 표현을 썼어요」를 그린다 |
 | 운영 조회 | `companion_inspect_learning(p_user_id)` · 평가 지표 RPC | 유저의 표현 기록 · 삽입 이력, 👍/👎 비율과 이유(캐릭터 · 모델 · 단계별) |
 
 ## 3. DB 함수(RPC)
