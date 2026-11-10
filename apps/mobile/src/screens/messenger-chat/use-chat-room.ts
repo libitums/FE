@@ -56,8 +56,8 @@ const originTestId: Readonly<Record<ChatFocusOrigin, string>> = {
   "voice-pill": ids.snapVoice,
   "sidebar-story-point": ids.sidebarStoryPoint,
   "sidebar-delete": ids.sidebarDelete,
-  // 젬 화면을 연 것은 사이드바의 「Get gems」 단추입니다(젬 상자 전체가 아니라 접근성 요소인 단추에 id가 있습니다).
-  "sidebar-gems": ids.sidebarGetGems,
+  // 엽전 상점을 연 것은 사이드바의 「Get coins」 단추입니다(엽전 상자 전체가 아니라 접근성 요소인 단추에 id가 있습니다).
+  "sidebar-coins": ids.sidebarGetCoins,
 };
 
 /** 뒤 화면의 accessibility-elements-hidden이 풀린 다음 프레임에 초점을 보냅니다(a11y C1). 한 프레임은 16 ms입니다. */

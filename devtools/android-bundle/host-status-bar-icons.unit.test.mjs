@@ -137,7 +137,7 @@ const FIXED_CSS = ".layer {\n  position: fixed;\n  inset: 0;\n}\n";
 const STAT_MODAL_CSS_PATH = "screens/journey-map/journey-stat-modal.css";
 const FIXED_CSS_PATHS = [
   STAT_MODAL_CSS_PATH,
-  "screens/gem-purchase/gem-purchase-screen.css",
+  "screens/coin-shop/coin-shop-screen.css",
   "components/first-unit-guide.css",
 ];
 
@@ -494,7 +494,7 @@ test("SM11: statusBarSurfaceRegistry matches the contract (six routes, seven CSS
     "components/first-unit-guide.css",
     "components/learning-item-guide.css",
     "screens/catalog-update/catalog-update-notice.css",
-    "screens/gem-purchase/gem-purchase-screen.css",
+    "screens/coin-shop/coin-shop-screen.css",
     "screens/journey-map/journey-stat-modal.css",
     // 메신저 채팅방 겹침(ADR-0113) — 밝은 아이콘 표지가 아니다.
     "screens/messenger-chat/chat-overlays.css",
@@ -509,7 +509,8 @@ test("SM11: statusBarSurfaceRegistry matches the contract (six routes, seven CSS
   assert.match(layerText("screens/catalog-update/catalog-update-notice.css"), /default-scrim/);
   assert.match(layerText("screens/journey-map/journey-stat-modal.css"), /light-icons/);
   assert.match(layerText("screens/journey-map/journey-stat-modal.css"), /JourneyStatModal/);
-  assert.match(layerText("screens/gem-purchase/gem-purchase-screen.css"), /unreachable/);
+  assert.match(layerText("screens/coin-shop/coin-shop-screen.css"), /light-icons/);
+  assert.match(layerText("screens/coin-shop/coin-shop-screen.css"), /CoinShopScreen/);
   const guide = layerText("components/first-unit-guide.css");
   assert.match(guide, /light-icons/);
   assert.doesNotMatch(guide, /dark-icons/);

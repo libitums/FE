@@ -63,7 +63,7 @@ export const assessmentJa: AssessmentCopy = {
 };
 
 export const lessonCompleteJa: LessonCompleteCopy = {
-  rewardDiamonds: (count) => `報酬、ダイヤ${count}個`,
+  rewardCoins: (count) => `報酬、コイン${count}枚`,
   grade: (grade) => `評価 ${grade}`,
   gradeName: (grade) => grade,
   outcome: { passed: "レッスン完了", failed: "レッスン不合格" },

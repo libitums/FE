@@ -5,6 +5,7 @@ import { TopBar } from "../components/TopBar";
 import type { FeedbackRating } from "../lib/feedback.contract";
 import { useUiCopy } from "../lib/ui-copy";
 import type { StatBumpWiring } from "./learning-progress";
+import { CoinShopScreen } from "../screens/coin-shop/CoinShopScreen";
 import { EpisodeSurveySheet } from "../screens/episode-survey/EpisodeSurveySheet";
 import { JourneyStatModal } from "../screens/journey-map/JourneyStatModal";
 import { TicketStatModal } from "../screens/tickets/TicketStatModal";
@@ -19,18 +20,20 @@ import {
 } from "../screens/journey-map/journey-stat";
 
 // 전역 레이아웃의 머리입니다 — 탭 루트 화면(여정 · 롤플레이 · 설정) 위에 바텀
-// 네비게이션과 짝으로 섭니다. 지표 칩 둘과 알림 버튼(`TopBar`), 연속 학습 · 트로피 모달을 집니다.
+// 네비게이션과 짝으로 섭니다. 지표 칩과 알림 버튼(`TopBar`), 칩이 여는 겹침 레이어(연속 학습 · 트로피 · 티켓 모달, 엽전 상점)를 집니다.
 //
 // 레이어 열림은 이 컴포넌트가 소유합니다 — 레이어는 화면 위에 겹칠 뿐 화면 전환이 아니라
 // `Nav`가 관여하지 않습니다(ADR-0007 D3). 전에는 여정 맵이 지표 모달을 소유했는데,
 // 머리가 셸로 올라오면서 모달도 함께 올라왔습니다.
 
-type AppHeaderLayer = JourneyStatKind | "survey" | "tickets" | "unlimited";
+type AppHeaderLayer = JourneyStatKind | "survey" | "tickets" | "unlimited" | "coins";
 
 export type AppHeaderProps = {
   readonly streakDays: number;
   /** `null`이면 아직 모르는 값입니다. */
   readonly trophyCount: number | null;
+  /** 보유 엽전입니다(ADR-0116) — 불러오는 동안은 `null`이라 칩이 서지 않습니다. 칩의 「+」가 엽전 상점을 엽니다. */
+  readonly coinCount?: number | null;
   readonly onOpenNotifications: () => void;
   /**
    * 화면 쪽 겹침 레이어(여정의 스텝 말풍선 · 롤플레이의 플러스 안내)가 떠 있는가입니다.
@@ -79,6 +82,7 @@ export function AppHeader({
   top = 12,
   streakDays,
   trophyCount,
+  coinCount = null,
   onOpenNotifications,
   obscured = false,
   todayWeekday,
@@ -153,12 +157,14 @@ export function AppHeader({
         <TopBar
           streakDays={streakDays}
           trophyCount={trophyCount}
+          coinCount={coinCount}
           onOpenNotifications={onOpenNotifications}
           onOpenStreak={() => setOpenLayer("streak")}
           onOpenTrophy={() => setOpenLayer("trophy")}
           ticketCount={tickets?.status.available ?? null}
           ticketsUnlimited={unlimitedPass !== undefined}
           onOpenTickets={() => setOpenLayer(unlimitedPass === undefined ? "tickets" : "unlimited")}
+          onOpenCoins={() => setOpenLayer("coins")}
           bumps={statBump?.statBumps}
           bumpHeld={layer !== null || obscured || celebrateStreak}
           onBumped={statBump?.onStatBumped}
@@ -192,6 +198,9 @@ export function AppHeader({
       ) : null}
       {unlimitedView !== null ? (
         <UnlimitedTicketModal view={unlimitedView} onClose={close} />
+      ) : null}
+      {openLayer === "coins" ? (
+        <CoinShopScreen coinBalance={coinCount ?? 0} onClose={close} />
       ) : null}
       {openLayer === "survey" && episodeSurvey !== null ? (
         <EpisodeSurveySheet

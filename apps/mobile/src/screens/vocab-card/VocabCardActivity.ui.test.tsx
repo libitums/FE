@@ -68,7 +68,6 @@ function mount(
   const element = (
     <VocabCardActivity
       questions={questions}
-      gemCount={0}
       onExit={onExit}
       onFinish={onFinish}
       lesson={options.lesson}

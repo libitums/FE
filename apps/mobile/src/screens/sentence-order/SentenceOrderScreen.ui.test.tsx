@@ -50,7 +50,6 @@ function SentenceOrderScreen({
   return (
     <SentenceOrderActivity
       questions={stepId === "ordering" ? ORDERING_QUESTIONS : []}
-      gemCount={0}
       onExit={onExit}
       onFinish={(results, skippedCount) => onFinish(stepId, results, skippedCount)}
     />

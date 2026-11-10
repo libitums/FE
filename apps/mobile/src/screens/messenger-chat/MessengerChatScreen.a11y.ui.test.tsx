@@ -48,9 +48,9 @@ test("MC-UI24. 기능 알약 둘은 button이고 이름에 가격이 든다", ()
   mountChatOpen();
 
   expect(traitsOf(ids.snapshot)).toContain("button");
-  expect(labelOf(ids.snapshot)).toBe("Snapshot, 30 gems");
+  expect(labelOf(ids.snapshot)).toBe("Snapshot, 30 coins");
   expect(traitsOf(ids.snapVoice)).toContain("button");
-  expect(labelOf(ids.snapVoice)).toBe("Snap voice, 10 gems");
+  expect(labelOf(ids.snapVoice)).toBe("Snap voice, 10 coins");
 });
 
 test("MC-UI24. 전구 · 「…」 · 보내기는 button이고 copy 라벨을 갖는다", () => {

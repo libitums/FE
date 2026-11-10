@@ -1,0 +1,297 @@
+/* 엽전 상점(ADR-0116 · 시안 「엽전 상점」). 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). 맞는 토큰이
+   없는 치수 · 색은 시안 값을 적고 그 자리에 이유를 남깁니다.
+
+   황동 계열(#FFFBF2 · #F3DDB3 · #FFF4E0 · #FFF8EC · #FFF1DC · #8A5A12)은 색 토큰 패키지에 없습니다 — 엽전 칩
+   숫자색(`stat-chip.css`의 `.stat-chip-value-coin`)과 같은 사정입니다. 고름 · 배지 · 사기 버튼은 앱 주황
+   (`brand-primary`) 그대로입니다. */
+
+/* 겹침 레이어입니다. 지표 · 티켓 모달과 같은 자리이고, 바탕은 시안의 짙은 자주 회색(#1E1A1F)입니다. */
+.coin-shop-screen {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: var(--libitum-elevation-z-dialog);
+  display: flex;
+  flex-direction: column;
+  background-color: #1e1a1f;
+}
+
+.coin-shop-screen-close {
+  display: flex;
+  flex-direction: row;
+  padding: var(--libitum-layout-screen-padding-top) var(--libitum-spacing-20) 0;
+  flex-shrink: 0;
+}
+
+.coin-shop-screen-scroll {
+  flex: 1;
+}
+
+.coin-shop-screen-body {
+  display: flex;
+  flex-direction: column;
+  padding: var(--libitum-spacing-16) var(--libitum-spacing-20) var(--libitum-spacing-24);
+}
+
+/* 머리 — 제목 둘(왼쪽)과 보유 카드(오른쪽)입니다. */
+.coin-shop-screen-head {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.coin-shop-screen-titles {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 1;
+  padding-right: var(--libitum-spacing-12);
+}
+
+.coin-shop-screen-title {
+  color: var(--libitum-color-gray-50);
+  font-family: var(--libitum-typography-accent-display-font-family);
+  font-size: var(--libitum-typography-accent-display-font-size);
+  font-weight: var(--libitum-typography-accent-display-font-weight);
+  line-height: var(--libitum-typography-accent-display-line-height);
+}
+
+.coin-shop-screen-subtitle {
+  margin-top: 2px;
+  color: var(--libitum-color-gray-500);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: var(--libitum-typography-body-m-font-size);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  line-height: var(--libitum-typography-body-m-line-height);
+}
+
+/* 보유 카드 — 시안: 황동 면 · 테두리 2 · 모서리 12. */
+.coin-shop-screen-balance {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-shrink: 0;
+  padding: var(--libitum-spacing-8) 14px var(--libitum-spacing-8) 10px;
+  border: 2px solid #f3ddb3;
+  border-radius: 12px;
+  background-color: #fffbf2;
+}
+
+.coin-shop-screen-balance-icon {
+  width: 30px;
+  height: 30px;
+}
+
+.coin-shop-screen-balance-text {
+  display: flex;
+  flex-direction: column;
+  margin-left: var(--libitum-spacing-8);
+}
+
+/* 머리말 #8A5A12는 황동 면 위 대비 6.0 : 1입니다. */
+.coin-shop-screen-balance-label {
+  color: #8a5a12;
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 14px;
+}
+
+.coin-shop-screen-balance-value {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 22px;
+}
+
+.coin-shop-screen-pick {
+  display: flex;
+  flex-direction: column;
+  padding-top: 26px;
+}
+
+.coin-shop-screen-pick-title {
+  color: var(--libitum-color-gray-50);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 24px;
+}
+
+.coin-shop-screen-pick-caption {
+  margin-top: var(--libitum-spacing-4);
+  color: var(--libitum-color-gray-500);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: var(--libitum-typography-body-m-font-size);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  line-height: var(--libitum-typography-body-m-line-height);
+}
+
+/* 카드 줄 — 배지가 카드 위로 12 걸치므로 첫 카드 위를 그만큼 띄웁니다. */
+.coin-shop-screen-packs {
+  display: flex;
+  flex-direction: column;
+  padding-top: 22px;
+}
+
+/* 팩 카드 — 시안: 흰 면 · 높이 100 이상 · 모서리 18 · 테두리 2(고르면 주황 + 주황 18% 고리 4). */
+.coin-shop-pack {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  min-height: 100px;
+  margin-bottom: var(--libitum-spacing-16);
+  padding: var(--libitum-spacing-16) 18px;
+  border: 2px solid var(--libitum-color-white);
+  border-radius: 18px;
+  background-color: var(--libitum-color-white);
+}
+
+.coin-shop-pack-selected {
+  border-color: var(--libitum-color-brand-primary);
+  box-shadow: 0 0 0 4px rgba(244, 107, 24, 0.18);
+}
+
+/* 그림 자리 76 × 76 · 모서리 16 — 고르면 면이 조금 짙어집니다. */
+.coin-shop-pack-art {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 76px;
+  height: 76px;
+  flex-shrink: 0;
+  border-radius: var(--libitum-spacing-16);
+  background-color: #fff8ec;
+}
+
+.coin-shop-pack-art-selected {
+  background-color: #fff1dc;
+}
+
+.coin-shop-pack-art-image {
+  width: 68px;
+  height: 68px;
+}
+
+.coin-shop-pack-main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  margin-left: 14px;
+}
+
+.coin-shop-pack-name {
+  color: var(--libitum-color-fg-neutral-subtle);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 16px;
+}
+
+.coin-shop-pack-amount {
+  line-height: 30px;
+}
+
+.coin-shop-pack-coins {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.coin-shop-pack-unit {
+  color: var(--libitum-color-fg-neutral-subtle);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* 보너스 알약 — 시안: #FFF4E0 면 · #8A5A12 글자(대비 6.3 : 1). */
+.coin-shop-pack-bonus {
+  align-self: flex-start;
+  margin-top: 2px;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background-color: #fff4e0;
+}
+
+.coin-shop-pack-bonus-label {
+  color: #8a5a12;
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 14px;
+}
+
+.coin-shop-pack-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  margin-left: var(--libitum-spacing-8);
+}
+
+.coin-shop-pack-price {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 20px;
+}
+
+/* 고름 표식 20 × 20 — 안 고르면 회색 테두리 2, 고르면 주황 테두리 6. */
+.coin-shop-pack-radio {
+  width: 20px;
+  height: 20px;
+  margin-top: var(--libitum-spacing-12);
+  border: 2px solid var(--libitum-color-gray-500);
+  border-radius: var(--libitum-radius-full);
+}
+
+.coin-shop-pack-radio-selected {
+  border-width: 6px;
+  border-color: var(--libitum-color-brand-primary);
+}
+
+/* 「BEST VALUE」 — 카드 위 가운데에 12 걸칩니다. */
+.coin-shop-pack-badge-anchor {
+  position: absolute;
+  top: -12px;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+
+.coin-shop-pack-badge {
+  padding: var(--libitum-spacing-4) 10px;
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-brand-primary);
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 14px;
+  letter-spacing: 0.5px;
+}
+
+/* 바닥 — 사기 버튼과 안내 한 줄. 홈 인디케이터 몫은 컴포넌트가 인라인으로 더합니다. */
+.coin-shop-screen-footer {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  padding: var(--libitum-spacing-16) var(--libitum-spacing-20) 0;
+}
+
+.coin-shop-screen-store-note {
+  margin-top: 10px;
+  color: var(--libitum-color-gray-500);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: 12px;
+  line-height: 16px;
+  text-align: center;
+}

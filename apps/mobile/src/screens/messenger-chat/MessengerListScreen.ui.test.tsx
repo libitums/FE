@@ -65,7 +65,7 @@ function mount(source: ChatSource = makeSource(seed())) {
     onGoToJourney: vi.fn<() => void>(),
     onLayerChange: vi.fn<(open: boolean) => void>(),
   };
-  render(<MessengerListScreen source={source} gemBalance={120} {...handlers} />);
+  render(<MessengerListScreen source={source} coinBalance={120} {...handlers} />);
   return { source, ...handlers };
 }
 

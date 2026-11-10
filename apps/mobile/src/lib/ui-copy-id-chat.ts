@@ -7,7 +7,7 @@ import { clockLabel, joinSpoken } from "./ui-copy-chat-parts";
 export const messengerChatId: MessengerChatCopy = {
   list: {
     title: "Obrolan",
-    gemsLabel: (count) => `${count} permata, dapatkan lagi`,
+    coinsLabel: (count) => `${count} koin, tambah koin`,
     emptyTitle: "Belum ada obrolan",
     emptyBody:
       "Selesaikan satu episode, lalu orang-orang yang kamu temui akan mengirim pesan di sini.",
@@ -55,7 +55,7 @@ export const messengerChatId: MessengerChatCopy = {
   features: {
     snapshot: "Foto kilat",
     snapVoice: "Suara kilat",
-    pillLabel: (name, price) => `${name}, ${price} permata`,
+    pillLabel: (name, price) => `${name}, ${price} koin`,
     more: "Lainnya",
     moreOpen: "Lainnya, terbuka",
   },
@@ -98,16 +98,16 @@ export const messengerChatId: MessengerChatCopy = {
       title: "Minta pesan suara?",
       description: (name) => `${name} akan mengucapkan balasan terakhirnya dengan suara.`,
     },
-    balance: (count) => `Kamu punya ${count} permata`,
+    balance: (count) => `Kamu punya ${count} koin`,
     cancel: "Batal",
-    confirmLabel: (price) => `Minta dengan ${price} permata`,
-    getGems: "Dapatkan permata",
+    confirmLabel: (price) => `Minta dengan ${price} koin`,
+    getCoins: "Tambah koin",
   },
   sidebar: {
     title: "Pengaturan obrolan",
     close: "Tutup",
-    myGems: "Permataku",
-    getGems: "Dapatkan permata",
+    myCoins: "Koinku",
+    getCoins: "Tambah koin",
     viewProfile: "Lihat profil",
     myProfile: "Profilku",
     calledBy: (friend, me) => `${friend} memanggilmu 「${me}」`,

@@ -28,7 +28,7 @@
 | `catalogUnitTicketCost` | 늘 0 — 맵 말풍선 · 결과 화면 「다음 레슨」의 티켓 태그가 없고, 시작이 티켓을 쓰지 않고 「티켓 없음」이 뜨지 않는다 |
 | `catalogUnitStatus` · `catalogCoverStatus` | 사슬에 있는 키 · 준비된 구획이 모두 `available`. 끝낸 유닛은 `completed` 그대로, 준비 안 된 구획은 잠김 그대로 |
 | `catalogRoleplaySectionsOf` | 모든 롤플레이 구획이 열림 |
-| 머리 칩(`TopBar` · `StatChip.valueText`) | 숫자 대신 「∞」, 이름 「Unlimited tickets」, 누를 수 없음(모달을 열지 않음) |
+| 머리 칩(`TopBar`) | ~~`StatChip.valueText` · 숫자 대신 「∞」 · 누를 수 없음(모달을 열지 않음)~~ → ⟨2026-11-09⟩ 무제한 칩(입체 주황 · 그린 무한 기호), 이름 「Unlimited tickets」, 누르면 무제한 모달([ADR-0115](0115-unlimited-ticket-presentation.md)) |
 | 결과 화면 「N tickets left」 줄 | 서지 않음 |
 
 - 진행 기록 · 티켓 원장의 모양과 서버 병합은 그대로다 — 시험 계정의 원장은 쓰이지 않아 가득으로 남는다.

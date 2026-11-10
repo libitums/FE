@@ -1,5 +1,5 @@
 // 자리 표시 상수 한 곳입니다(messenger-chat-ui spec §10). 정해진 값이 없어 전부 추론입니다.
-// 젬 잔액은 여기 없습니다 — 앱의 실제 gemCount를 화면 prop으로 받습니다.
+// 잔액은 여기 없습니다 — 앱의 보유 엽전(coinCount, ADR-0116)을 화면 prop으로 받습니다.
 
 import type { ChatReportReasonId } from "./chat-source.contract";
 

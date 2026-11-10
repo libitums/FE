@@ -70,7 +70,6 @@ const pairCase: Case = {
   mount: (lesson, onFinish) => (
     <PairMatchActivity
       questions={[pair, pair]}
-      gemCount={0}
       onExit={() => {}}
       onFinish={onFinish}
       lesson={lesson}
@@ -91,13 +90,7 @@ const cases: readonly Case[] = [pairCase];
 
 const mountCards = (lesson: LessonPosition, onFinish: Finish = () => {}) =>
   render(
-    <VocabCardActivity
-      questions={cards}
-      gemCount={0}
-      onExit={() => {}}
-      onFinish={onFinish}
-      lesson={lesson}
-    />,
+    <VocabCardActivity questions={cards} onExit={() => {}} onFinish={onFinish} lesson={lesson} />,
   );
 
 describe.each(cases)("$name — 레슨 안의 위치", (item) => {

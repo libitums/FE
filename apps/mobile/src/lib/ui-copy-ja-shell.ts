@@ -40,8 +40,7 @@ export const commonJa: CommonCopy = {
   count: {
     streakDays: (days) => `${days}日連続`,
     trophies: (count) => `トロフィー${count}個`,
-    gems: (count) => `ジェム${count}個`,
-    diamonds: (count) => `ダイヤ${count}個`,
+    coins: (count) => `コイン${count}枚`,
   },
 };
 

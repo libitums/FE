@@ -1,9 +1,9 @@
-// 영어 문구표 구획 — 계정 · 기타(notifications ~ gemPurchase).
+// 영어 문구표 구획 — 계정 · 기타(notifications ~ coinShop).
 
 import type { FeedbackCopy } from "./feedback.contract";
 import type {
   AppUpdateCopy,
-  GemPurchaseCopy,
+  CoinShopCopy,
   NotificationsCopy,
   ProfileCopy,
   SettingsCopy,
@@ -123,13 +123,24 @@ export const profileEn: ProfileCopy = {
   },
 };
 
-export const gemPurchaseEn: GemPurchaseCopy = {
-  packAmount: (count, display) => `${display} ${count === 1 ? "gem" : "gems"}`,
-  balance: (count, display) => `You have ${display} ${count === 1 ? "gem" : "gems"}`,
-  paymentMethod: "Payment method",
+export const coinShopEn: CoinShopCopy = {
+  title: "Yeopjeon",
+  subtitle: "Old Korean brass coins",
+  balanceLabel: "You have",
+  balance: (count, display) => `You have ${display} ${count === 1 ? "coin" : "coins"}`,
+  pickTitle: "Pick a pouch",
+  pickCaption: "Earn coins in lessons, or get more here.",
+  packName: { bundle: "Coin bundle", pouch: "Coin pouch", big: "Big pouch" },
+  coinsUnit: "COINS",
+  packAmount: (count, display) => `${display} ${count === 1 ? "coin" : "coins"}`,
+  bonus: (display) => `+${display} bonus`,
+  bestValue: "BEST VALUE",
+  buy: (price) => `Buy for ${price}`,
+  storeNote: "Charged to your app store account.",
+  openShop: (count) => `${count} ${count === 1 ? "coin" : "coins"}, get more`,
   notice: {
     title: "Payment coming soon",
-    description: "Gem payments aren't available yet. Please check back soon.",
+    description: "Coin purchases aren't available yet. Please check back soon.",
   },
 };
 

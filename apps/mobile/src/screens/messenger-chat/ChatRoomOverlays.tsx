@@ -7,7 +7,7 @@ import type { ChatRoomAction, ChatRoomState } from "./chat-room-state";
 import type { ChatSource, ChatThread } from "./chat-source.contract";
 import { DeleteChatDialog } from "./DeleteChatDialog";
 import { FixRequestDialog } from "./FixRequestDialog";
-import { GemShopLayer } from "./GemShopLayer";
+import { CoinShopLayer } from "./CoinShopLayer";
 import { RegenerateIdeasDialog } from "./RegenerateIdeasDialog";
 import { ReportSheet } from "./ReportSheet";
 import { StoryPointSheet } from "./StoryPointSheet";
@@ -20,7 +20,7 @@ export type ChatRoomOverlaysProps = {
   readonly thread: ChatThread;
   readonly source: ChatSource;
   readonly learnerName: string;
-  readonly gemBalance: number;
+  readonly coinBalance: number;
 };
 
 // `state.overlay.kind` → 겹침 하나(동시에 둘 없음). 「…」 메뉴는 독 쪽이 그리므로 여기서는 아무것도 그리지 않습니다.
@@ -31,7 +31,7 @@ export function ChatRoomOverlays({
   thread,
   source,
   learnerName,
-  gemBalance,
+  coinBalance,
 }: ChatRoomOverlaysProps): ReactNode {
   const { overlay } = state;
   const { roomId } = thread;
@@ -84,17 +84,17 @@ export function ChatRoomOverlays({
         <AskMediaDialog
           media={overlay.media}
           name={thread.counterpart.name}
-          balance={gemBalance}
+          balance={coinBalance}
           price={CHAT_PLACEHOLDERS.price[overlay.media]}
           onConfirm={() => {
             source.requestMedia(roomId, overlay.media);
             dispatch({ type: "close-overlay" });
           }}
-          onGetGems={() =>
+          onGetCoins={() =>
             dispatch({
               type: "open-overlay",
               overlay: {
-                kind: "gem-shop",
+                kind: "coin-shop",
                 from: overlay.media === "photo" ? "ask-photo" : "ask-voice",
               },
             })
@@ -107,9 +107,9 @@ export function ChatRoomOverlays({
         <ChatSettingsSidebar
           thread={thread}
           learnerName={learnerName}
-          gemBalance={gemBalance}
-          onGetGems={() =>
-            dispatch({ type: "open-overlay", overlay: { kind: "gem-shop", from: "sidebar" } })
+          coinBalance={coinBalance}
+          onGetCoins={() =>
+            dispatch({ type: "open-overlay", overlay: { kind: "coin-shop", from: "sidebar" } })
           }
           onStoryPoint={() =>
             dispatch({
@@ -146,8 +146,8 @@ export function ChatRoomOverlays({
           onCancel={close}
         />
       );
-    case "gem-shop":
-      return <GemShopLayer gemBalance={gemBalance} onClose={close} ownsBack={false} />;
+    case "coin-shop":
+      return <CoinShopLayer coinBalance={coinBalance} onClose={close} ownsBack={false} />;
     default: {
       const unreachable: never = overlay;
       return unreachable;

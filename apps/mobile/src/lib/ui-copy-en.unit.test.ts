@@ -26,19 +26,16 @@ const c = uiCopyEn;
 // 표본 인자는 영어(ASCII)로 줍니다 — 결과의 한글은 표가 낸 것입니다.
 const sampleArgs: readonly unknown[] = [0, 1, 5, "x", true, false];
 
-test("UE1. 복수형 — 젬 · 트로피 · 다이아 · 연속 일수", () => {
-  expect(c.common.count.gems(0)).toBe("0 gems");
-  expect(c.common.count.gems(1)).toBe("1 gem");
-  expect(c.common.count.gems(5)).toBe("5 gems");
+test("UE1. 복수형 — 트로피 · 엽전 · 연속 일수", () => {
   expect(c.common.count.trophies(1)).toBe("1 trophy");
   expect(c.common.count.trophies(3)).toBe("3 trophies");
-  expect(c.common.count.diamonds(1)).toBe("1 diamond");
-  expect(c.common.count.diamonds(12)).toBe("12 diamonds");
+  expect(c.common.count.coins(1)).toBe("1 coin");
+  expect(c.common.count.coins(12)).toBe("12 coins");
   expect(c.common.count.streakDays(1)).toBe("1-day streak");
   expect(c.common.count.streakDays(3)).toBe("3-day streak");
 });
 
-test("UE1. 복수형 — 활동 수 · 에피소드 · 젬 팩 · 잔액", () => {
+test("UE1. 복수형 — 활동 수 · 에피소드 · 엽전 팩 · 잔액", () => {
   expect(c.journeyMap.activityCount(1, 1)).toBe("1/1 activity");
   expect(c.journeyMap.activityCount(1, 4)).toBe("1/4 activities");
   expect(c.journeyMap.activityCount(0, 4)).toBe("0/4 activities");
@@ -46,8 +43,9 @@ test("UE1. 복수형 — 활동 수 · 에피소드 · 젬 팩 · 잔액", () =>
   expect(c.journeyMap.activityProgressLabel(1, 1)).toBe("1 of 1 activity done");
   expect(c.journeyMap.activityProgressLabel(1, 4)).toBe("1 of 4 activities done");
   expect(c.journeyMap.statModal.episodesClearedHero(1)).toBe("1 episode cleared");
-  expect(c.gemPurchase.packAmount(1200, "1,200")).toBe("1,200 gems");
-  expect(c.gemPurchase.balance(1, "1")).toBe("You have 1 gem");
+  expect(c.coinShop.packAmount(140, "140")).toBe("140 coins");
+  expect(c.coinShop.balance(1, "1")).toBe("You have 1 coin");
+  expect(c.coinShop.openShop(120)).toBe("120 coins, get more");
 });
 
 test("UE2. 조건부 문구 — 실수 · 건너뜀", () => {
@@ -257,7 +255,7 @@ test("MC-U28. en messengerChat 문구 표본(spec §8)", () => {
   const m = (uiCopyEn as unknown as { messengerChat: Record<string, any> }).messengerChat;
   expect(m).toBeDefined();
   expect(m.list.title).toBe("Chats");
-  expect(m.list.gemsLabel(5)).toBe("5 gems, get more");
+  expect(m.list.coinsLabel(5)).toBe("5 coins, get more");
   expect(m.list.mine("hi")).toBe("You: hi");
   expect(m.list.voice("0:04")).toBe("Voice message · 0:04");
   expect(m.list.typing("Mina")).toBe("Mina is typing…");
@@ -269,9 +267,9 @@ test("MC-U28. en messengerChat 문구 표본(spec §8)", () => {
   expect(m.time.date(11, 2)).toBe("11/2");
   expect(m.time.weekdays).toEqual(["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]);
   expect(m.toggle.selected("Hangul keys")).toBe("Hangul keys, selected");
-  expect(m.features.pillLabel("Snapshot", 30)).toBe("Snapshot, 30 gems");
-  expect(m.askMedia.confirmLabel(30)).toBe("Ask for 30 gems");
-  expect(m.askMedia.balance(2)).toBe("You have 2 gems");
+  expect(m.features.pillLabel("Snapshot", 30)).toBe("Snapshot, 30 coins");
+  expect(m.askMedia.confirmLabel(30)).toBe("Ask for 30 coins");
+  expect(m.askMedia.balance(2)).toBe("You have 2 coins");
   expect(m.sidebar.calledBy("Mina", "Duru")).toBe("Mina calls you 「Duru」");
   expect(m.deleteChat.description("Mina")).toBe("Your chat with Mina will be removed.");
   expect(Object.keys(m.report.reasons).sort()).toEqual([

@@ -1,9 +1,8 @@
 import type { ReactNode } from "@lynx-js/react";
 
-import { color } from "@libitums/design-tokens";
-import diamond from "@libitums/icons/lynx/diamond";
 import { Button } from "@libitums/ui-lynx/button";
 
+import { coinIcon } from "../../components/coin-icon";
 import { useUiCopy } from "../../lib/ui-copy";
 import { ChatModalFrame } from "./ChatModalFrame";
 import { askMediaPlan } from "./chat-rules";
@@ -18,25 +17,25 @@ export type AskMediaDialogProps = {
   readonly balance: number;
   readonly price: number;
   readonly onConfirm: () => void;
-  readonly onGetGems: () => void;
+  readonly onGetCoins: () => void;
   readonly onCancel: () => void;
 };
 
-type GemPriceButtonProps = {
+type CoinPriceButtonProps = {
   readonly price: number;
   readonly label: string;
   readonly onTap: () => void;
 };
 
-// 주 버튼: 흰 다이아몬드 아이콘 + 수. 아이콘만으로 뜻을 전하지 않도록 낭독은 「Ask for {n} gems」 한 문장입니다.
-function GemPriceButton({ price, label, onTap }: GemPriceButtonProps): ReactNode {
+// 주 버튼: 엽전 아이콘(ADR-0116) + 수. 아이콘만으로 뜻을 전하지 않도록 낭독은 「Ask for {n} coins」 한 문장입니다.
+function CoinPriceButton({ price, label, onTap }: CoinPriceButtonProps): ReactNode {
   const handleTap = () => {
     "background only";
     onTap();
   };
   return (
     <view
-      className="chat-modal-action chat-gem-button"
+      className="chat-modal-action chat-coin-button"
       data-testid={ids.askConfirm}
       data-plan="ask"
       accessibility-element={true}
@@ -45,8 +44,8 @@ function GemPriceButton({ price, label, onTap }: GemPriceButtonProps): ReactNode
       accessibility-enable-tap={true}
       bindtap={handleTap}
     >
-      <svg className="chat-gem-button-icon" content={diamond} current-color={color.white} />
-      <text className="chat-gem-button-label" accessibility-elements-hidden={true}>
+      <svg className="chat-coin-button-icon" content={coinIcon} />
+      <text className="chat-coin-button-label" accessibility-elements-hidden={true}>
         {price}
       </text>
     </view>
@@ -54,14 +53,14 @@ function GemPriceButton({ price, label, onTap }: GemPriceButtonProps): ReactNode
 }
 
 // 사진 · 음성 요청 대화상자(Z4 · Z6)입니다. 미리보기 · 가격 줄은 없고 가격은 주 버튼에만 있습니다.
-// 잔액이 모자라면(top-up) 주 버튼이 「Get gems」가 되어 젬 화면으로 갑니다.
+// 잔액이 모자라면(top-up) 주 버튼이 「Get coins」가 되어 엽전 상점으로 갑니다.
 export function AskMediaDialog({
   media,
   name,
   balance,
   price,
   onConfirm,
-  onGetGems,
+  onGetCoins,
   onCancel,
 }: AskMediaDialogProps): ReactNode {
   const copy = useUiCopy().messengerChat.askMedia;
@@ -85,7 +84,7 @@ export function AskMediaDialog({
               />
             </view>
             {plan.kind === "ask" ? (
-              <GemPriceButton
+              <CoinPriceButton
                 price={plan.price}
                 label={copy.confirmLabel(plan.price)}
                 onTap={onConfirm}
@@ -93,11 +92,11 @@ export function AskMediaDialog({
             ) : (
               <view className="chat-modal-action" data-testid={ids.askConfirm} data-plan="top-up">
                 <Button
-                  label={copy.getGems}
+                  label={copy.getCoins}
                   variant="brand"
                   size="xl"
                   width="fill"
-                  bindtap={onGetGems}
+                  bindtap={onGetCoins}
                 />
               </view>
             )}

@@ -1,10 +1,10 @@
-// 베트남어 문구표 구획 — 계정 · 기타(notifications ~ gemPurchase).
+// 베트남어 문구표 구획 — 계정 · 기타(notifications ~ coinShop).
 // 번역 초안 — 원어민 검수 필요(ADR-0091 D3).
 
 import type { FeedbackCopy } from "./feedback.contract";
 import type {
   AppUpdateCopy,
-  GemPurchaseCopy,
+  CoinShopCopy,
   NotificationsCopy,
   ProfileCopy,
   SettingsCopy,
@@ -124,13 +124,24 @@ export const profileVi: ProfileCopy = {
   },
 };
 
-export const gemPurchaseVi: GemPurchaseCopy = {
-  packAmount: (_count, display) => `${display} ngọc`,
-  balance: (_count, display) => `Bạn có ${display} ngọc`,
-  paymentMethod: "Phương thức thanh toán",
+export const coinShopVi: CoinShopCopy = {
+  title: "Yeopjeon",
+  subtitle: "Đồng xu đồng thau cổ của Hàn Quốc",
+  balanceLabel: "Bạn có",
+  balance: (_count, display) => `Bạn có ${display} xu`,
+  pickTitle: "Chọn một túi",
+  pickCaption: "Nhận xu khi học bài, hoặc mua thêm tại đây.",
+  packName: { bundle: "Xâu xu", pouch: "Túi xu", big: "Túi lớn" },
+  coinsUnit: "XU",
+  packAmount: (_count, display) => `${display} xu`,
+  bonus: (display) => `+${display} thưởng`,
+  bestValue: "LỢI NHẤT",
+  buy: (price) => `Mua với giá ${price}`,
+  storeNote: "Thanh toán qua tài khoản cửa hàng ứng dụng của bạn.",
+  openShop: (count) => `${count} xu, mua thêm`,
   notice: {
     title: "Sắp có thanh toán",
-    description: "Hiện chưa thể thanh toán ngọc. Vui lòng quay lại sau.",
+    description: "Hiện chưa thể mua xu. Vui lòng quay lại sau.",
   },
 };
 

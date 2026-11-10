@@ -57,7 +57,7 @@ test("LCR1. 다시 풀어 통과하면 LESSON COMPLETE! · YOU FIXED 2 OF 3 · �
       .map((dot) => dot.getAttribute("data-outcome")),
   ).toEqual(["fixed", "missed", "fixed"]);
   expect(screen.queryByTestId("lesson-complete-review-needed")).not.toBeInTheDocument();
-  expect(screen.getByTestId("lesson-complete-screen-reward-diamond")).toBeInTheDocument();
+  expect(screen.getByTestId("lesson-complete-screen-reward-grade")).toBeInTheDocument();
 });
 
 test("LCR2. 다 고쳐 실수가 없어도 만점(PERFECT) 제목은 아니다", () => {

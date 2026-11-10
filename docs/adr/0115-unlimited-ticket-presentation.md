@@ -11,7 +11,7 @@
 
 ### D1. 무제한 칩은 「입체 주황 면」이다 — 숫자 대신 그린 무한 기호
 
-- `components/UnlimitedTicketChip.tsx`. 크기 · 여백은 지표 칩(`stat-chip`)과 같고 면만 `#FFC07A → brand-secondary → #E2560A` 그라데이션, 위쪽 빛 · 아래 짙은 단 · 안쪽 흰 테. 흰 티켓 아이콘 + 흰 무한 기호(`components/infinity-icon.ts`, 선 그림). 글자 「∞」는 쓰지 않는다 — Jost에서 가늘고 작게 찍혔다.
+- `components/UnlimitedTicketChip.tsx`. 크기 · 여백은 지표 칩(`stat-chip`)과 같고(⟨2026-11-10⟩ 예외: 340pt 미만 폭의 촘촘한 모드에서는 무제한 칩만 좌우 여백 4 — 숫자 칩은 6, [ADR-0116](0116-yeopjeon-reward.md) 적용 기록) 면만 `#FFC07A → brand-secondary → #E2560A` 그라데이션, 위쪽 빛 · 아래 짙은 단 · 안쪽 흰 테. 흰 티켓 아이콘 + 흰 무한 기호(`components/infinity-icon.ts`, 선 그림). 글자 「∞」는 쓰지 않는다 — Jost에서 가늘고 작게 찍혔다.
 - 머리 바(높이 44, 그림자)와 결과 화면(높이 40, 그림자 없음)이 같은 컴포넌트를 쓴다. `StatChip.valueText`는 지웠다.
 - 빛 훑기: 4200 ms 주기 가운데 앞 약 600 ms 동안 흰 띠가 지나간다(`unlimited-ticket-chip-motion.css`, `lint:motion` allowlist). 움직임 줄이기에서는 띠 요소가 서지 않는다.
 
@@ -22,6 +22,7 @@
 
 ### D3. 칩을 누르면 무제한 모달 — 상태는 순수 함수가 정한다
 
+- 이 ADR의 `guest`는 **시험 계정의 무제한 이용권**(「GUEST PASS」)이다 — [ADR-0111](0111-guest-entry-without-account.md)의 비회원(`AccountState "guest"`)과 상관이 없고, 비회원은 무제한이 아니다.
 - 입력 `UnlimitedPass` = `{ kind: "guest" }` | `{ kind: "subscription", startedAtMs, endsAtMs, autoRenews, planLabel? }`. `unlimitedPassView(pass, now)`가 넷 가운데 하나로 바꾼다(`lib/unlimited-pass.ts`):
 
 | 모양 | 조건 | 모달 |

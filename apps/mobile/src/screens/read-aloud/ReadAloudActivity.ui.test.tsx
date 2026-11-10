@@ -43,7 +43,6 @@ function mount(questions: readonly ReadAloudQuestion[], lesson?: LessonPosition)
   render(
     <ReadAloudActivity
       questions={questions}
-      gemCount={0}
       onExit={() => {}}
       onFinish={onFinish}
       lesson={lesson}
@@ -289,7 +288,7 @@ test("URA11. 문구는 모두 문구표에서 온다", () => {
   stubSpeechHost({ result: () => recognized("아니요") });
   render(
     <UiCopyContext.Provider value={markedUiCopy}>
-      <ReadAloudActivity questions={[fine]} gemCount={0} onExit={() => {}} onFinish={() => {}} />
+      <ReadAloudActivity questions={[fine]} onExit={() => {}} onFinish={() => {}} />
     </UiCopyContext.Provider>,
   );
 

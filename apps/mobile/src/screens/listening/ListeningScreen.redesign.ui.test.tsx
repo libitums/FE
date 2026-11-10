@@ -31,7 +31,6 @@ function mount(onItemAnswered?: (report: ItemAnswerReport) => void) {
       onExit={() => {}}
       onFinish={() => {}}
       sessionOptions={initialSessionOptions}
-      gemCount={0}
       {...(onItemAnswered === undefined ? {} : { onItemAnswered })}
     />,
   );

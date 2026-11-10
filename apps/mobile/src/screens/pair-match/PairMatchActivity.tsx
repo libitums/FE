@@ -40,7 +40,6 @@ import "./pair-match-activity.css";
 // DOM 순서 = 낭독 순서입니다: 판정(또는 진행) → 낱말 열 → 뜻 열 → 정답 공개 → 버튼.
 export function PairMatchActivity({
   questions,
-  gemCount,
   onExit,
   onFinish,
   lesson,
@@ -142,7 +141,6 @@ export function PairMatchActivity({
   return (
     <LearningShell
       form="pair-match"
-      gemCount={gemCount}
       questionIndex={counter.questionIndex}
       questionCount={counter.questionCount}
       complete={complete}

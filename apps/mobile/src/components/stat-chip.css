@@ -62,11 +62,30 @@
   color: var(--libitum-color-feedback-warning);
 }
 
-/* 다이아 색은 맞는 토큰이 없어 디자인 값을 적습니다(`statChipDiamondColor`와 같은 값). */
-.stat-chip-value-diamond {
-  color: #00c3ff;
+/* 엽전 숫자 색은 황동 계열 토큰이 없어 디자인 값을 적습니다(`coin-icon.ts`의 `coinTextColor`와 같은 값, ADR-0116). */
+.stat-chip-value-coin {
+  color: #9a5e12;
 }
 
 .stat-chip-value-ticket {
   color: var(--libitum-color-brand-secondary);
+}
+
+/* 엽전 칩의 「+」 상자 18 × 18 · 모서리 6(시안 B). 시안의 #E8A848 면은 흰 칩 위 대비가 2 : 1 남짓이라, 한 단계 짙은
+   #C27A22(3.2 : 1)로 칠하고 아래 그림자를 #8E5414로 내립니다 — 엽전 아이콘의 두 색입니다. */
+.stat-chip-plus {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-left: var(--libitum-spacing-4);
+  border-radius: 6px;
+  background-color: #c27a22;
+  box-shadow: inset 0 -2px 0 #8e5414;
+}
+
+.stat-chip-plus-icon {
+  width: 10px;
+  height: 10px;
 }

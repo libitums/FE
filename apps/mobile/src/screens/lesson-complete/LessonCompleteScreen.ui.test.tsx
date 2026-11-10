@@ -58,13 +58,13 @@ test("[LCS2] 실수가 있으면 같은 틀에 제목 · 설명만 바뀐다", (
   expect(screen.getByTestId("lesson-complete-screen-subtitle")).toHaveTextContent(
     "YOU MADE 1 MISTAKE IN THIS LESSON",
   );
-  expect(screen.getByTestId("lesson-complete-screen-reward-diamond")).toBeInTheDocument();
+  expect(screen.getByTestId("lesson-complete-screen-reward-grade")).toBeInTheDocument();
 });
 
-test("[LA9-E][LCS3] 지표 칩 둘은 읽기 전용이고 젬 칩은 숨긴다", () => {
+test("[LA9-E][LCS3] 지표 칩 둘은 읽기 전용이고 엽전 수를 넘기지 않으면 엽전 칩이 없다", () => {
   render(<LessonCompleteScreen {...fixture({ streakDays: 3, trophyCount: 2 })} />);
 
-  expect(screen.queryByTestId("lesson-complete-screen-diamond")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("lesson-complete-screen-coins-chip")).not.toBeInTheDocument();
   const expected = [
     ["lesson-complete-screen-streak", "3-day streak"],
     ["lesson-complete-screen-trophy", "2 trophies"],
@@ -88,11 +88,11 @@ test("[LCS4] 연속 알약은 연속이 있을 때만 선다", () => {
 });
 
 test("[LA9-E][LCS5] 보상 카드 둘이 받은 보상을 그리고 이름을 단다", () => {
-  render(<LessonCompleteScreen {...fixture({ reward: { diamondAmount: 7, grade: "GREAT" } })} />);
+  render(<LessonCompleteScreen {...fixture({ reward: { coinAmount: 7, grade: "GREAT" } })} />);
 
-  const diamond = screen.getByTestId("lesson-complete-screen-reward-diamond");
-  expect(diamond).toHaveTextContent("+ 7 REWARD");
-  expect(diamond).toHaveAttribute("accessibility-label", "Reward, 7 diamonds");
+  const coins = screen.getByTestId("lesson-complete-screen-reward-coins");
+  expect(coins).toHaveTextContent("+ 7 REWARD");
+  expect(coins).toHaveAttribute("accessibility-label", "Reward, 7 coins");
   const grade = screen.getByTestId("lesson-complete-screen-reward-grade");
   expect(grade).toHaveTextContent("GREAT");
   expect(grade).toHaveAttribute("accessibility-label", "Grade GREAT");
@@ -132,7 +132,7 @@ test("[LCS6] 미통과는 같은 틀에 FAILED 제목이 서고 보상 카드가
   // 틀은 같습니다 — 지표 칩은 그대로 섭니다.
   expect(screen.getByTestId("lesson-complete-screen-streak")).toBeInTheDocument();
   // 얻지 않은 것을 그리지 않습니다. 빈 상자도 두지 않습니다.
-  expect(screen.queryByTestId("lesson-complete-screen-reward-diamond")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("lesson-complete-screen-reward-coins")).not.toBeInTheDocument();
   expect(screen.queryByTestId("lesson-complete-screen-reward-grade")).not.toBeInTheDocument();
 });
 
@@ -215,7 +215,7 @@ test("[UI-P2] 같은 화면의 표식은 통과(✓)다 — 만점이 아닌 것
     "passed",
   );
   // 통과했으므로 보상도 그대로 섭니다 — 얻은 것을 지우지 않습니다.
-  expect(screen.getByTestId("lesson-complete-screen-reward-diamond")).toBeInTheDocument();
+  expect(screen.getByTestId("lesson-complete-screen-reward-grade")).toBeInTheDocument();
 });
 
 // 표지의 스킵(가)은 **유닛**을 건너뛰고 서사에는 문항이 0개라 건너뛸 문항도 0개입니다
@@ -298,7 +298,7 @@ test("[LA9-M] 문구표를 주입하면 지표 칩 · 보상 카드의 이름이
         {...fixture({
           streakDays: 3,
           trophyCount: 2,
-          reward: { diamondAmount: 7, grade: "GREAT" },
+          reward: { coinAmount: 7, grade: "GREAT" },
         })}
       />
     </UiCopyContext.Provider>,
@@ -312,9 +312,9 @@ test("[LA9-M] 문구표를 주입하면 지표 칩 · 보상 카드의 이름이
     "accessibility-label",
     "⟦common.count.trophies⟧(2)",
   );
-  expect(screen.getByTestId("lesson-complete-screen-reward-diamond")).toHaveAttribute(
+  expect(screen.getByTestId("lesson-complete-screen-reward-coins")).toHaveAttribute(
     "accessibility-label",
-    "⟦lessonComplete.rewardDiamonds⟧(7)",
+    "⟦lessonComplete.rewardCoins⟧(7)",
   );
   expect(screen.getByTestId("lesson-complete-screen-reward-grade")).toHaveAttribute(
     "accessibility-label",
@@ -430,10 +430,10 @@ describe("보상 배지 모션 (3단계 LCR)", () => {
   });
 
   test("[LCR5] 통과 · 보상 카드 둘에는 data-reward도 모션 클래스도 없다(두 번째 expressive 없음)", () => {
-    render(<LessonCompleteScreen {...fixture()} />);
+    render(<LessonCompleteScreen {...fixture({ reward: { coinAmount: 10, grade: "AMAZING" } })} />);
 
     for (const id of [
-      "lesson-complete-screen-reward-diamond",
+      "lesson-complete-screen-reward-coins",
       "lesson-complete-screen-reward-grade",
     ]) {
       const card = screen.getByTestId(id);

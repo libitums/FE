@@ -1,0 +1,24 @@
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). */
+/* 엽전 날기 층(ADR-0116) — 화면 왼쪽 위 0 × 0 기준점입니다. 엽전은 이 점에서 잰 자리에 서므로 층이 자리를 차지하거나
+   아래 버튼의 탭을 막지 않습니다. 기본 잘림을 풀어 엽전이 점 밖으로 그려지게 합니다. */
+.lesson-complete-coin-flight {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  overflow: visible;
+}
+
+/* 엽전 하나 — 카드 아이콘 가운데에서 칩 아이콘 가운데로 옮겨 가며 작아집니다. 떠나는 간격은 인라인 지연이 집니다. */
+.lesson-complete-coin-flight-coin {
+  position: absolute;
+  width: var(--libitum-icon-size-md);
+  height: var(--libitum-icon-size-md);
+  transition: transform var(--libitum-motion-duration-d7) var(--libitum-motion-easing-enter);
+}
+
+.lesson-complete-coin-flight-icon {
+  width: var(--libitum-icon-size-md);
+  height: var(--libitum-icon-size-md);
+}

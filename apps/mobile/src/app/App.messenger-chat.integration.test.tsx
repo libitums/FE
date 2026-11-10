@@ -17,7 +17,7 @@ import {
   tapRound,
   textOf,
 } from "./test-helpers/messenger-chat-app";
-import { legacyPassedSeed } from "./test-helpers/progress-seed";
+import { legacyPassedSeed, legacyPassedSeedWithCoins } from "./test-helpers/progress-seed";
 import { renderSignedInApp } from "./test-helpers/signed-in-app";
 
 // `integration` 계층(MC-I3 · MC-I4 · MC-I5): 가짜 출처 싱글턴이 목록 ↔ 방 사이에 상태를 잇는지 봅니다 —
@@ -46,8 +46,8 @@ afterEach(() => {
 });
 
 /** 가짜 타이머로 부팅해 메신저 탭의 목록까지 갑니다. */
-async function bootToList(gems = 0): Promise<void> {
-  await renderSignedInApp(<App progressSeed={legacyPassedSeed} initialGemCount={gems} />, {
+async function bootToList(coins = 0): Promise<void> {
+  await renderSignedInApp(<App progressSeed={legacyPassedSeedWithCoins(coins)} />, {
     keepFakeTimers: true,
   });
   openTab("messenger");
@@ -183,26 +183,26 @@ test("MC-I4. 사진을 요청하고 곧바로 목록으로 나오면 그 줄이 
   expect(arrived.textContent).not.toContain("sending a picture");
 });
 
-test("MC-I4. 잔액이 0이면 사진 요청은 보내지 않고 「Get gems」 길로 간다 — 목록 줄은 변하지 않는다", async () => {
+test("MC-I4. 잔액이 0이면 사진 요청은 보내지 않고 「Get coins」 길로 간다 — 목록 줄은 변하지 않는다", async () => {
   await bootToList(0);
   openRoom("owner");
 
   tapId("messenger-chat-feature-snapshot");
 
   expect(screen.getByTestId("messenger-chat-ask").getAttribute("data-plan")).toBe("top-up");
-  expect(textOf("messenger-chat-ask-balance")).toBe("You have 0 gems");
+  expect(textOf("messenger-chat-ask-balance")).toBe("You have 0 coins");
   expect(present("messenger-chat-photo-pending")).toBe(false);
   leaveRoom();
   expect(screen.getByTestId(preview("owner")).getAttribute("data-tone")).not.toBe("activity");
 });
 
-test("MC-I4. 방의 사진 요청 대화상자의 잔액은 앱의 젬 잔액이다", async () => {
-  await bootToList(95);
+test("MC-I4. 방의 사진 요청 대화상자의 잔액은 앱의 엽전 잔액이다", async () => {
+  await bootToList(100);
   openRoom("owner");
 
   tapId("messenger-chat-feature-snapshot");
 
-  expect(textOf("messenger-chat-ask-balance")).toBe("You have 95 gems");
+  expect(textOf("messenger-chat-ask-balance")).toBe("You have 100 coins");
 });
 
 // ------------------------------------------------------------------ MC-I5 · 지우기 · 빈 목록

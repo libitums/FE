@@ -33,7 +33,6 @@ function mount() {
     <TypingActivity
       insets={zeroSafeAreaInsets}
       questions={[dictation]}
-      gemCount={0}
       onExit={() => {}}
       onFinish={() => {}}
     />,

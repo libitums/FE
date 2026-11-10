@@ -14,13 +14,13 @@ export type AppProgressSeed = {
   /** 옛 튜토리얼의 얼린 기록입니다. 옛 앱 사용자를 흉내 낼 때 씁니다. */
   readonly legacyTutorial?: LegacyTutorialRecord;
   readonly catalogProgress?: CatalogProgress;
+  /** 엽전을 받은 유닛입니다(ADR-0116) — 보유 엽전이 여기서 파생합니다. */
+  readonly coinUnits?: CatalogProgress;
 };
 
 export type AppSeedProps = {
   /** 부팅할 때의 진행입니다(integration · 개발 확인). 제품 진입점은 주지 않습니다. */
   readonly progressSeed?: AppProgressSeed;
-  /** 부팅할 때 가진 젬 수(기본 0)입니다. 결제가 없어 젬이 늘 길이 없으므로 integration만 씁니다. */
-  readonly initialGemCount?: number;
   /** 로그인의 전화번호 수단입니다. 없으면 제품 값(`productPhoneSignIn` — 지금은 숨김)입니다. */
   readonly phoneSignIn?: PhoneSignInVisibility;
 };

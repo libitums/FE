@@ -4,7 +4,7 @@ import { render, screen } from "@lynx-js/react/testing-library";
 import { noStatBumps } from "../../lib/stat-bump";
 import { LessonCompleteStats } from "./LessonCompleteStats";
 
-// `ui` 계층: 결과 화면 머리 — 맵 머리와 같은 칩 셋(연속 학습 · 트로피 · 티켓). 티켓 값이 없으면 티켓 칩이 없습니다.
+// `ui` 계층: 결과 화면 머리 — 연속 학습 · 트로피 · 티켓 · 엽전 칩(ADR-0116). 티켓 값이 없으면 티켓 칩이 없습니다(엽전 칩은 LessonCompleteScreen.coins.ui가 봅니다).
 
 function mount(ticketChip?: { count: number; unlimited: boolean }) {
   render(

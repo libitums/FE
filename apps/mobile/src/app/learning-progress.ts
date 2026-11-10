@@ -35,7 +35,7 @@ import {
 } from "./legacy-tutorial-progress";
 import type { LegacyTutorialRecord } from "./legacy-tutorial-progress";
 
-/** 저장하는 진행 전부입니다 — 얼린 옛 튜토리얼 기록 · 카탈로그 에피소드 진행 · 학습 티켓 원장 · 티켓으로 연 유닛입니다. */
+/** 저장하는 진행 전부입니다 — 얼린 옛 튜토리얼 기록 · 카탈로그 에피소드 진행 · 학습 티켓 원장 · 티켓으로 연 유닛 · 엽전을 받은 유닛입니다. */
 export type JourneyProgressState = {
   readonly legacyTutorial: LegacyTutorialRecord;
   /** 카탈로그 에피소드 진행(`lib/catalog-progress.ts`). 없으면 `{}`. */
@@ -47,6 +47,8 @@ export type JourneyProgressState = {
    * 섭니다. 없으면 `{}`입니다. 끝낸 수 · 연속 · 트로피에는 들지 않습니다.
    */
   readonly ticketUnits?: CatalogProgress;
+  /** 엽전을 받은 유닛입니다(카탈로그 진행과 같은 모양, ADR-0116). 보유 엽전은 여기서 파생합니다. 없으면 `{}`입니다. */
+  readonly coinUnits?: CatalogProgress;
 };
 
 export const emptyJourneyProgress: JourneyProgressState = {
@@ -76,6 +78,9 @@ export function learningProgressSnapshotFrom(
     ...(state.ticketUnits === undefined || Object.keys(state.ticketUnits).length === 0
       ? {}
       : { ticketUnits: state.ticketUnits }),
+    ...(state.coinUnits === undefined || Object.keys(state.coinUnits).length === 0
+      ? {}
+      : { coinUnits: state.coinUnits }),
   };
 }
 
@@ -94,6 +99,9 @@ export function journeyProgressFrom(raw: unknown): JourneyProgressState | null {
     ...(record["ticketUnits"] === undefined
       ? {}
       : { ticketUnits: catalogProgressFrom(record["ticketUnits"]) }),
+    ...(record["coinUnits"] === undefined
+      ? {}
+      : { coinUnits: catalogProgressFrom(record["coinUnits"]) }),
   };
 }
 
@@ -183,6 +191,10 @@ export function mergeJourneyProgress(
     ...(a.ticketUnits === undefined && b.ticketUnits === undefined
       ? {}
       : { ticketUnits: mergeCatalogProgress(a.ticketUnits ?? {}, b.ticketUnits ?? {}) }),
+    // 엽전을 받은 유닛도 키별 합집합입니다 — 두 기기에서 받은 엽전이 합쳐지고 줄지 않습니다.
+    ...(a.coinUnits === undefined && b.coinUnits === undefined
+      ? {}
+      : { coinUnits: mergeCatalogProgress(a.coinUnits ?? {}, b.coinUnits ?? {}) }),
   };
 }
 
@@ -196,6 +208,8 @@ export type JourneyStats = {
   readonly ticketChip?: { readonly count: number; readonly unlimited: boolean };
   /** 티켓을 쓰고 연 유닛입니다 — 맵이 진한 색으로 세우고 말풍선이 「무료」로 셉니다. 티켓 결선이 채웁니다. */
   readonly catalogTicketUnits?: CatalogProgress;
+  /** 보유 엽전입니다(ADR-0116) — 결과 화면 머리의 엽전 칩. */
+  readonly coinCount?: number;
 };
 
 /** 화면 결선이 받는 진행 쪽 값입니다 — 칩 둘, 로그인 뒤 서버 진행을 불러오는 함수, 맵이 받는 불러오기 상태. */
@@ -233,6 +247,7 @@ export function journeyProgressCovers(
     legacyTutorialRecordCovers(server.legacyTutorial, local.legacyTutorial) &&
     catalogCovers(server.catalogProgress, local.catalogProgress) &&
     ticketLedgerCovers(server.tickets ?? fullTicketLedger, local.tickets ?? fullTicketLedger) &&
-    catalogCovers(server.ticketUnits ?? {}, local.ticketUnits ?? {})
+    catalogCovers(server.ticketUnits ?? {}, local.ticketUnits ?? {}) &&
+    catalogCovers(server.coinUnits ?? {}, local.coinUnits ?? {})
   );
 }

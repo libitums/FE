@@ -40,15 +40,7 @@ afterEach(() => {
 });
 
 function mount(list: readonly TypingQuestion[] = [dictation, translation]) {
-  render(
-    <TypingActivity
-      insets={ios}
-      questions={list}
-      gemCount={0}
-      onExit={() => {}}
-      onFinish={() => {}}
-    />,
-  );
+  render(<TypingActivity insets={ios} questions={list} onExit={() => {}} onFinish={() => {}} />);
 }
 
 function typeText(text: string): void {

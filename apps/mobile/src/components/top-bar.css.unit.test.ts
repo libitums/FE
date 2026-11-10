@@ -132,3 +132,25 @@ describe("stat-chip.css", () => {
     expect(touchTarget).toBe(44);
   });
 });
+
+// 340 미만 폭의 촘촘한 모드(ADR-0116 적용 기록 2026-11-10) — 간격 4 · 숫자 칩 여백 6 · 무제한 칩 여백 4.
+describe("top-bar.css — 촘촘한 모드", () => {
+  const css = readCss("top-bar.css");
+  const ruleBody = (selector: RegExp): string => ruleBodyOf(css, selector);
+
+  it("[TBC6] 간격 4 · 숫자 칩 좌우 여백 6", () => {
+    expect(ruleBody(/\.top-bar-stats-dense/)).toMatch(/gap:\s*var\(--libitum-spacing-4\)/);
+    const chip = ruleBody(/\.top-bar-stats-dense \.stat-chip/);
+    expect(chip).toMatch(/padding-left:\s*var\(--libitum-spacing-6\)/);
+    expect(chip).toMatch(/padding-right:\s*var\(--libitum-spacing-6\)/);
+  });
+
+  it("[TBC7] 무제한 칩은 좌우 여백 4로 더 줄이고, 같은 특이도의 숫자 칩 규칙보다 뒤에 와서 이긴다", () => {
+    const unlimited = ruleBody(/\.top-bar-stats-dense \.unlimited-ticket-chip/);
+    expect(unlimited).toMatch(/padding-left:\s*var\(--libitum-spacing-4\)/);
+    expect(unlimited).toMatch(/padding-right:\s*var\(--libitum-spacing-4\)/);
+    expect(ruleIndexOf(css, /\.top-bar-stats-dense \.unlimited-ticket-chip/)).toBeGreaterThan(
+      ruleIndexOf(css, /\.top-bar-stats-dense \.stat-chip/),
+    );
+  });
+});

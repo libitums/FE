@@ -85,14 +85,14 @@ export function isPerfectLesson(mistakeCount: number, skippedCount: number): boo
 }
 
 export type LessonReward = {
-  /** 이번 학습으로 얻은 다이아 수입니다. */
-  readonly diamondAmount: number;
+  /** 이번 학습으로 얻은 엽전 수입니다(ADR-0116) — 처음 통과만 0보다 큽니다. 0이면 엽전 카드가 서지 않습니다. */
+  readonly coinAmount: number;
   /** 트로피 카드의 등급 문구입니다. */
   readonly grade: string;
 };
 
 /**
- * 레슨 완료 보상입니다. 출시 시 젬을 지급하지 않으므로 0으로 표시합니다.
- * 등급은 임시값이며, 보상 규칙이 생기면 이 상수 대신 계산 결과를 넘깁니다.
+ * 엽전을 주지 않는 결과 화면(롤플레이 이야기)의 보상입니다 — 엽전 카드가 서지 않습니다. 카탈로그 결과는 결선이
+ * `lessonCoinReward`로 엽전 수를 채웁니다. 등급은 임시값입니다.
  */
-export const lessonRewardPlaceholder: LessonReward = { diamondAmount: 0, grade: "AMAZING" };
+export const lessonRewardPlaceholder: LessonReward = { coinAmount: 0, grade: "AMAZING" };

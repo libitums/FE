@@ -36,7 +36,6 @@ function mount(questions: readonly SentenceOrderQuestion[], cast?: ConversationC
   return render(
     <SentenceOrderActivity
       questions={questions}
-      gemCount={0}
       onExit={() => {}}
       onFinish={() => {}}
       {...(cast === undefined ? {} : { cast })}

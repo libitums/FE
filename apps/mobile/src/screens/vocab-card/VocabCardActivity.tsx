@@ -32,7 +32,6 @@ import "./vocab-card-activity.css";
 // DOM 순서 = 낭독 순서입니다: 헤더 → 지시문 → 표식 → 표제어 → 로마자 → 뜻 → 버튼.
 export function VocabCardActivity({
   questions,
-  gemCount,
   onExit,
   onFinish,
   lesson,
@@ -65,7 +64,6 @@ export function VocabCardActivity({
   return (
     <LearningShell
       form="vocab-card"
-      gemCount={gemCount}
       // 껍데기는 이 순번으로 카드가 바뀐 것을 알아 스크롤을 되돌리고 넘김 전환을 겁니다. 세션 헤더가
       // 서지 않으므로 카운터로 읽히지는 않습니다.
       questionIndex={cardIndex}

@@ -47,7 +47,6 @@ import "./speak-word-activity.css";
 // 집니다. DOM 순서 = 낭독 순서입니다: 판정 → 그림 틀 → (뜻 줄 — 낭독 밖) → 정답 상자 → 마이크 → 안내 줄 → 버튼.
 export function SpeakWordActivity({
   questions,
-  gemCount,
   onExit,
   onFinish,
   lesson,
@@ -205,7 +204,6 @@ export function SpeakWordActivity({
   return (
     <LearningShell
       form="speak-word"
-      gemCount={gemCount}
       questionIndex={counter.questionIndex}
       questionCount={counter.questionCount}
       complete={complete}

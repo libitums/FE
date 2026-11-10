@@ -24,7 +24,7 @@ import { messengerChatTestIds as ids } from "./messenger-chat.contract";
 //
 // D1(원인): Lynx CSS의 속성 선택자는 `data-*`(dataset)를 맞추지 않아 `[data-selected="true"]` 같은 규칙이 기기에서 한 번도
 // 적용되지 않았다. 켜진 칸 · 꺼진 보내기 · 열린 전구 · 열린 「…」 · 초점 테두리 · 고른 보기가 모두 같은 원인이다. 레포 규칙은
-// 클래스 변형(GemPackCard의 `…-selected`)이다.
+// 클래스 변형(CoinPackCard의 `…-selected`)이다.
 
 vi.mock("./chat-input-focus", () => ({
   focusPhoneInput: vi.fn<() => void>(),

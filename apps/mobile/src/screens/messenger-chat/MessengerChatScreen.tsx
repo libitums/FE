@@ -114,7 +114,7 @@ export function MessengerChatScreen({
   keyboardHeightStore,
   edges,
   learnerName,
-  gemBalance,
+  coinBalance,
   onExit,
 }: MessengerChatScreenProps): ReactNode {
   const copy = useUiCopy().messengerChat;
@@ -235,7 +235,7 @@ export function MessengerChatScreen({
         thread={thread}
         source={source}
         learnerName={learnerName}
-        gemBalance={gemBalance}
+        coinBalance={coinBalance}
       />
     </view>
   );

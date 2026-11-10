@@ -47,7 +47,6 @@ function mount(
     wrap(
       <CultureCardActivity
         questions={questions}
-        gemCount={0}
         onExit={onExit}
         onFinish={onFinish}
         lesson={lesson}

@@ -39,8 +39,7 @@ export const commonId: CommonCopy = {
   count: {
     streakDays: (days) => `Beruntun ${days} hari`,
     trophies: (count) => `${count} trofi`,
-    gems: (count) => `${count} permata`,
-    diamonds: (count) => `${count} berlian`,
+    coins: (count) => `${count} koin`,
   },
 };
 

@@ -21,7 +21,7 @@ import {
 import {
   appUpdateJa,
   feedbackJa,
-  gemPurchaseJa,
+  coinShopJa,
   notificationsJa,
   profileJa,
   settingsJa,
@@ -88,7 +88,7 @@ export const uiCopyJa: UiCopy = {
   downloadSheet: downloadSheetJa,
   profile: profileJa,
   feedback: feedbackJa,
-  gemPurchase: gemPurchaseJa,
+  coinShop: coinShopJa,
   catalogMap: catalogMapJa,
   catalogUpdateNotice: catalogUpdateNoticeJa,
   catalogCover: catalogCoverJa,

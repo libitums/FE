@@ -16,7 +16,7 @@ import {
   tapRound,
   textOf,
 } from "./test-helpers/messenger-chat-app";
-import { legacyPassedSeed } from "./test-helpers/progress-seed";
+import { legacyPassedSeed, legacyPassedSeedWithCoins } from "./test-helpers/progress-seed";
 import { renderSignedInApp } from "./test-helpers/signed-in-app";
 import { expectJourneyMapHidden } from "./test-helpers/tab-keep-alive";
 
@@ -124,38 +124,37 @@ test("MC-I1. 메신저 루트에는 전역 머리(AppHeader · top-bar)가 없�
   expect(screen.queryByTestId("top-bar-trophy")).not.toBeInTheDocument();
   expect(screen.queryByTestId("top-bar-notifications")).not.toBeInTheDocument();
   expect(screen.getByTestId("ui-lynx-bottom-navigator")).toBeInTheDocument();
-  // 목록 자기 머리(제목 + 젬 칩)가 맨 위(안전 영역 아래)에 선다.
+  // 목록 자기 머리(제목 + 엽전 칩)가 맨 위(안전 영역 아래)에 선다.
   expect(screen.getByTestId("messenger-list-header")).toBeInTheDocument();
-  expect(present("top-bar-gem")).toBe(false);
 });
 
-test("MC-I1. 목록의 젬 칩 값은 앱의 젬 잔액(gemCount)이다", async () => {
-  await renderSignedInApp(<App progressSeed={legacyPassedSeed} initialGemCount={87} />);
+test("MC-I1. 목록의 엽전 칩 값은 앱의 보유 엽전(받은 유닛 × 10)이다", async () => {
+  await renderSignedInApp(<App progressSeed={legacyPassedSeedWithCoins(90)} />);
 
   openTab("messenger");
 
-  expect(textOf("messenger-list-gem")).toContain("87");
+  expect(textOf("messenger-list-coins")).toContain("90");
 });
 
-test("MC-I1. 잔액이 0이면 젬 칩도 0이다 — 자리 표시 상수를 쓰지 않는다", async () => {
+test("MC-I1. 잔액이 0이면 엽전 칩도 0이다 — 자리 표시 상수를 쓰지 않는다", async () => {
   await renderSignedInApp(<App progressSeed={legacyPassedSeed} />);
 
   openTab("messenger");
 
-  const chip = textOf("messenger-list-gem");
+  const chip = textOf("messenger-list-coins");
   expect(chip).toContain("0");
   expect(chip).not.toContain("120");
 });
 
-test("MC-I1. 목록의 젬 칩을 누르면 젬 화면이 서고 닫으면 목록으로 돌아온다", async () => {
-  await renderSignedInApp(<App progressSeed={legacyPassedSeed} initialGemCount={87} />);
+test("MC-I1. 목록의 엽전 칩을 누르면 엽전 상점이 서고 닫으면 목록으로 돌아온다", async () => {
+  await renderSignedInApp(<App progressSeed={legacyPassedSeedWithCoins(90)} />);
   openTab("messenger");
 
-  tapId("messenger-list-gem");
-  expect(screen.getByTestId("gem-purchase-screen")).toBeInTheDocument();
+  tapId("messenger-list-coins");
+  expect(screen.getByTestId("coin-shop-screen")).toBeInTheDocument();
 
-  tapRound("gem-purchase-screen-close");
-  expect(present("gem-purchase-screen")).toBe(false);
+  tapRound("coin-shop-screen-close");
+  expect(present("coin-shop-screen")).toBe(false);
   expect(screen.getByTestId(listScreen)).toBeInTheDocument();
 });
 

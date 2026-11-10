@@ -48,7 +48,6 @@ export type ListeningActivityProps = {
   readonly onExit: () => void;
   readonly onFinish: ActivityFinish;
   readonly sessionOptions: SessionOptions;
-  readonly gemCount: number;
   /** 카탈로그 레슨 안의 위치입니다. 활동 하나가 한 세션이면 주지 않습니다. */
   readonly lesson?: LessonPosition;
   /** 레슨의 소리 설정(속도 · 자동 재생 · 보고)입니다. 없으면 단독 활동의 기본값입니다. */
@@ -62,7 +61,6 @@ export function ListeningActivity({
   onExit,
   onFinish,
   sessionOptions,
-  gemCount,
   lesson,
   lessonAudio,
   onItemAnswered,
@@ -186,7 +184,6 @@ export function ListeningActivity({
       advance={advance}
       verdict={question !== null && answered ? answeredResultOf(state, question) : undefined}
       densityOverride={density === "compact" ? "compact" : undefined}
-      gemCount={gemCount}
       /* 보기는 무대 카드 **밖**입니다(Figma 53-14231) — 카드는 「무엇을 들었나」를
          말하고, 고르는 일은 그 아래 작업 영역에서 합니다. */
       workspace={

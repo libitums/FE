@@ -65,7 +65,6 @@ function mount(sessionOptions: SessionOptions, questions = [question]) {
       onExit={() => {}}
       onFinish={() => {}}
       sessionOptions={sessionOptions}
-      gemCount={0}
       lessonAudio={lesson}
     />,
   );

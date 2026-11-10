@@ -135,10 +135,10 @@ test.each([
     },
   ],
   [
-    "젬 상점(사이드바에서)",
+    "엽전 상점(사이드바에서)",
     () => {
       tapId(ids.settings);
-      tapId(ids.sidebarGetGems);
+      tapId(ids.sidebarGetCoins);
     },
   ],
   ["사진 요청", () => tapId(ids.snapshot)],
@@ -167,11 +167,11 @@ test.each([
   expect(count()).toBe(1);
 });
 
-test("#8. 젬 상점에서 뒤로가기는 사이드바로, 한 번 더는 사이드바를 닫는다", () => {
+test("#8. 엽전 상점에서 뒤로가기는 사이드바로, 한 번 더는 사이드바를 닫는다", () => {
   mountChatOpen({ probe: presenceProbe("absent") });
   tapLog();
   tapId(ids.settings);
-  tapId(ids.sidebarGetGems);
+  tapId(ids.sidebarGetCoins);
 
   systemBack();
   expect(screen.getByTestId(ids.sidebar)).toBeTruthy();

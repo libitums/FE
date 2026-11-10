@@ -58,7 +58,7 @@ test("M1. 내가 보낸 줄은 낭독하지 않고, 상대 답장이 오면 「�
 });
 
 test("M1. 사진이 도착하면 「Photo from 미나」를 한 번 낭독한다(요청 중 스켈레톤은 낭독하지 않는다)", () => {
-  mountChatOpen({ gemBalance: 100 });
+  mountChatOpen({ coinBalance: 100 });
   tapId(ids.snapshot);
   tapId(ids.askConfirm);
   expect(announce()).not.toHaveBeenCalled();

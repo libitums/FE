@@ -39,7 +39,6 @@ export type TypingSessionAction =
 
 export type TypingActivityProps = {
   readonly questions: readonly TypingQuestion[];
-  readonly gemCount: number;
   readonly onExit: () => void;
   readonly onFinish: ActivityFinish;
   /** 카탈로그 레슨 안의 위치입니다. 주지 않으면 이 활동이 한 세션입니다. */

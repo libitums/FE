@@ -63,7 +63,7 @@ export const assessmentVi: AssessmentCopy = {
 
 // 베트남어는 복수형이 없어 수를 그대로 붙입니다.
 export const lessonCompleteVi: LessonCompleteCopy = {
-  rewardDiamonds: (count) => `Phần thưởng, ${count} kim cương`,
+  rewardCoins: (count) => `Phần thưởng, ${count} xu`,
   grade: (grade) => `Hạng ${grade}`,
   gradeName: (grade) => (grade === "AMAZING" ? "TUYỆT VỜI" : grade),
   outcome: { passed: "Hoàn thành bài học", failed: "Chưa qua bài học" },

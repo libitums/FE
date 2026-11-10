@@ -19,12 +19,11 @@ function fixture() {
   };
 }
 
-test("[SH2-E][AH1] 연속 학습 → 트로피 순서로 표시하고 젬 구매 진입점은 숨긴다", () => {
+test("[SH2-E][AH1] 연속 학습 → 트로피 순서로 표시한다", () => {
   render(<AppHeader {...fixture()} />);
 
   const streak = screen.getByTestId("top-bar-streak");
   const trophy = screen.getByTestId("top-bar-trophy");
-  expect(screen.queryByTestId("top-bar-gem")).not.toBeInTheDocument();
   for (const chip of [streak, trophy]) {
     expect(chip).toHaveAttribute("accessibility-traits", "button");
   }
@@ -47,7 +46,7 @@ test("[AH3] 처음에는 레이어가 없고 머리는 낭독된다", () => {
 
   expect(screen.queryByTestId("journey-stat-modal-streak")).toBeNull();
   expect(screen.queryByTestId("journey-stat-modal-trophy")).toBeNull();
-  expect(screen.queryByTestId("gem-purchase-screen")).toBeNull();
+  expect(screen.queryByTestId("coin-shop-screen")).toBeNull();
   expect(screen.getByTestId("app-header")).toHaveAttribute(
     "accessibility-elements-hidden",
     "false",

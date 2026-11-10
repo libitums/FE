@@ -1,13 +1,14 @@
 import { useEffect, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
-import diamond from "@libitums/icons/lynx/diamond";
 import fire from "@libitums/icons/lynx/fire";
 import trophy from "@libitums/icons/lynx/trophy";
 import { color, motion as motionTokens } from "@libitums/design-tokens";
 import { motionDurationMs, useMotion } from "@libitums/ui-lynx/motion";
 
 import { statBumpStart, ticketDropStart } from "../lib/stat-bump";
+
+import { coinIcon, coinPlusIcon, coinTextColor } from "./coin-icon";
 
 import { statChipClassName } from "./stat-chip-class";
 import { ticketIcon } from "./ticket-icon";
@@ -32,22 +33,20 @@ import "./stat-chip-motion.css";
 
 export type { StatChipHeight, StatChipSurface } from "./stat-chip-class";
 
-export type StatChipTone = "streak" | "trophy" | "diamond" | "ticket";
-
-// 다이아 색은 디자인 값(#00C3FF, Figma 65-466)이고 맞는 색 토큰이 패키지에 없어 적어 둡니다.
-export const statChipDiamondColor = "#00C3FF";
+export type StatChipTone = "streak" | "trophy" | "coin" | "ticket";
 
 const iconByTone: Record<StatChipTone, string> = {
   streak: fire,
   trophy,
-  diamond,
+  // 엽전은 색이 그림에 들어 있는 다색 아이콘입니다(`coin-icon.ts`) — 아래 `current-color`는 쓰이지 않습니다.
+  coin: coinIcon,
   ticket: ticketIcon,
 };
 
 const iconColorByTone: Record<StatChipTone, string> = {
   streak: color.brand.secondary,
   trophy: color.feedback.warning,
-  diamond: statChipDiamondColor,
+  coin: coinTextColor,
   ticket: color.brand.primary,
 };
 
@@ -90,6 +89,20 @@ export type StatChipProps = {
   readonly dropFrom?: number | null;
   /** 줄어듦 재생을 마쳤거나 굴릴 것이 없을 때 부릅니다. */
   readonly onDropped?: () => void;
+  /** 수를 칩 글로 바꾸는 규칙입니다(기본 `String`). 오르기 · 내리기 움직임 중의 수에도 같이 씁니다 — 상단 바는 「999+」 규칙을 넘깁니다(ADR-0116 개정 2026-11-10). */
+  readonly formatValue?: (value: number) => string;
+  /**
+   * 0보다 크면 이 값이 바뀔 때마다 아이콘이 한 번 톡 튑니다(ADR-0116 — 마지막 엽전이 칩에 닿을 때). 숫자는 `value`가
+   * 그대로 보입니다(굴림 없음). 움직임 줄이기에서는 튀지 않습니다.
+   */
+  readonly pulseKey?: number;
+  /** 아이콘 상자의 `id`입니다 — 결과 화면이 엽전이 날아갈 자리를 잽니다. */
+  readonly iconId?: string;
+  /**
+   * 숫자 뒤에 작은 「+」를 붙입니다 — 눌러서 더 얻을 수 있다는 표시입니다(ADR-0116 엽전 칩 · 시안 B). 칩 전체가
+   * 한 버튼이라 「+」는 따로 누르는 자리가 아니고 낭독에서도 빠집니다 — 이름은 `accessibilityLabel`이 답니다.
+   */
+  readonly plus?: boolean;
 };
 
 export function StatChip({
@@ -106,6 +119,10 @@ export function StatChip({
   onBumped,
   dropFrom = null,
   onDropped,
+  formatValue = String,
+  pulseKey = 0,
+  iconId,
+  plus = false,
 }: StatChipProps): ReactNode {
   const motion = useMotion();
   const start = statBumpStart(bumpFrom, value);
@@ -187,7 +204,15 @@ export function StatChip({
       {bursting || droppingFull ? (
         <view className={`stat-chip-glow stat-chip-glow-${tone}`} />
       ) : null}
-      <view className={bursting ? "stat-chip-icon-box stat-chip-pop" : "stat-chip-icon-box"}>
+      <view
+        key={`icon-${pulseKey}`}
+        {...(iconId === undefined ? {} : { id: iconId })}
+        className={
+          bursting || (pulseKey > 0 && motion === "standard")
+            ? "stat-chip-icon-box stat-chip-pop"
+            : "stat-chip-icon-box"
+        }
+      >
         <svg
           className="stat-chip-icon"
           content={iconByTone[tone]}
@@ -210,31 +235,40 @@ export function StatChip({
       </view>
       {drop !== null && dropPhase !== "done" ? (
         !dropping ? (
-          <text className={valueClass}>{String(drop)}</text>
+          <text className={valueClass}>{formatValue(drop)}</text>
         ) : motion === "reduced" ? (
-          <text className={`${valueClass} stat-chip-value-fade`}>{String(value)}</text>
+          <text className={`${valueClass} stat-chip-value-fade`}>{formatValue(value)}</text>
         ) : (
           <view className="stat-chip-digits" data-testid={`${testId}-drop`}>
             <view className="stat-chip-roll">
-              <text className={valueClass}>{String(drop)}</text>
-              <text className={valueClass}>{String(value)}</text>
+              <text className={valueClass}>{formatValue(drop)}</text>
+              <text className={valueClass}>{formatValue(value)}</text>
             </view>
           </view>
         )
       ) : start === null ? (
-        <text className={valueClass}>{String(value)}</text>
+        <text className={valueClass}>{formatValue(value)}</text>
       ) : !playing ? (
-        <text className={valueClass}>{String(start)}</text>
+        <text className={valueClass}>{formatValue(start)}</text>
       ) : motion === "reduced" ? (
-        <text className={`${valueClass} stat-chip-value-fade`}>{String(value)}</text>
+        <text className={`${valueClass} stat-chip-value-fade`}>{formatValue(value)}</text>
       ) : (
         <view className="stat-chip-digits" data-testid={`${testId}-roll`}>
           <view className="stat-chip-roll">
-            <text className={valueClass}>{String(start)}</text>
-            <text className={valueClass}>{String(value)}</text>
+            <text className={valueClass}>{formatValue(start)}</text>
+            <text className={valueClass}>{formatValue(value)}</text>
           </view>
         </view>
       )}
+      {plus ? (
+        <view
+          className="stat-chip-plus"
+          data-testid={`${testId}-plus`}
+          accessibility-elements-hidden={true}
+        >
+          <svg className="stat-chip-plus-icon" content={coinPlusIcon} />
+        </view>
+      ) : null}
       {droppingFull ? (
         <text
           className="stat-chip-minus"

@@ -70,3 +70,17 @@ export function lessonCompleteChipBumpDelayMs(reward: RewardMotion): number {
   }
   return reward === "fade" ? motionDurationMs(motion.duration.d2) : 0;
 }
+
+/** 엽전 하나가 보상 카드에서 머리 칩까지 나는 시간입니다(ADR-0116). */
+export const coinFlightDurationMs = motionDurationMs(motion.duration.d7);
+
+/** 엽전이 하나씩 떠나는 간격입니다. */
+export const coinFlightStaggerMs = motionDurationMs(motion.duration.d1);
+
+/** 엽전이 날기 시작하기 전에 기다리는 시간입니다 — 보상 카드가 다 올라온 뒤입니다. 성취 모션에서만 납니다. */
+export function lessonCompleteCoinFlightDelayMs(reward: RewardMotion): number {
+  // 보상 카드는 `d7` 뒤에 `d6` 동안 올라옵니다(`.lesson-complete-screen-rise-rewards`).
+  return reward === "expressive"
+    ? motionDurationMs(motion.duration.d7) + motionDurationMs(motion.duration.d6)
+    : 0;
+}

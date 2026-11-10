@@ -59,7 +59,6 @@ const noProgressSeed: AppProgressSeed = {};
 // 루트 구성의 몸통입니다(`App`이 key로 세웁니다) — 화면 전환 · 에러 경계 · 프로바이더가 여기 모입니다(ADR-0003 D5).
 export function AppSession({
   progressSeed = noProgressSeed,
-  initialGemCount = 0,
   phoneSignIn = productPhoneSignIn,
   notificationEventSink = null,
   settingsEventSink = null,
@@ -116,9 +115,6 @@ export function AppSession({
   // 「천천히」는 레슨 하나 동안만 이어집니다 — 시작 · 나가기 · 끝에서 되돌립니다(저장하지 않음).
   const [listenPace, setListenPace] = useState<ListenPace>(initialListenPace);
   const finishGuard = useCatalogFinishGuard();
-  // 가진 젬 수입니다. 결제 서비스가 아직 없어 바뀌는 길이 없고, `Pay`는 「결제 준비 중」
-  // 안내만 띄웁니다. 결제가 붙으면 setter가 여기 생깁니다.
-  const [gemCount] = useState(initialGemCount);
   // 탭 루트 화면 안에 겹침 레이어가 떠 있는가입니다. 화면이 알려 오고(`onScreenLayerChange`) 전역 머리가 그 동안
   // 낭독에서 빠집니다. 화면이 내려가면 화면이 스스로 `false`를 알립니다.
   const [screenLayerOpen, setScreenLayerOpen] = useState(false);
@@ -139,7 +135,6 @@ export function AppSession({
   const screens = screenWiring({
     safeAreaInsets: insets,
     appVersion,
-    gemCount,
     phoneSignIn,
     setScreenLayerOpen,
     notificationEventSink,
@@ -252,6 +247,7 @@ export function AppSession({
                   top={shellHeaderTop(screenNow, insets)}
                   streakDays={progress.streakDays}
                   trophyCount={progress.headerTrophyCount}
+                  coinCount={progress.headerCoinCount}
                   celebrateStreak={progress.streakCelebration}
                   onStreakCelebrated={progress.onStreakCelebrated}
                   statBump={progress.wiring}

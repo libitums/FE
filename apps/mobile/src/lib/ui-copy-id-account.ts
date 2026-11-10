@@ -1,10 +1,10 @@
-// 인도네시아어 문구표 구획 — 계정 · 기타(notifications ~ gemPurchase).
+// 인도네시아어 문구표 구획 — 계정 · 기타(notifications ~ coinShop).
 // 번역 초안 — 원어민 검수 필요(ADR-0093).
 
 import type { FeedbackCopy } from "./feedback.contract";
 import type {
   AppUpdateCopy,
-  GemPurchaseCopy,
+  CoinShopCopy,
   NotificationsCopy,
   ProfileCopy,
   SettingsCopy,
@@ -133,13 +133,24 @@ export const profileId: ProfileCopy = {
   },
 };
 
-export const gemPurchaseId: GemPurchaseCopy = {
-  packAmount: (_count, display) => `${display} permata`,
-  balance: (_count, display) => `Kamu punya ${display} permata`,
-  paymentMethod: "Metode pembayaran",
+export const coinShopId: CoinShopCopy = {
+  title: "Yeopjeon",
+  subtitle: "Koin kuningan Korea kuno",
+  balanceLabel: "Kamu punya",
+  balance: (_count, display) => `Kamu punya ${display} koin`,
+  pickTitle: "Pilih kantong",
+  pickCaption: "Dapatkan koin dari pelajaran, atau tambah di sini.",
+  packName: { bundle: "Untaian koin", pouch: "Kantong koin", big: "Kantong besar" },
+  coinsUnit: "KOIN",
+  packAmount: (_count, display) => `${display} koin`,
+  bonus: (display) => `+${display} bonus`,
+  bestValue: "PALING HEMAT",
+  buy: (price) => `Beli seharga ${price}`,
+  storeNote: "Ditagihkan ke akun toko aplikasimu.",
+  openShop: (count) => `${count} koin, tambah koin`,
   notice: {
     title: "Pembayaran segera hadir",
-    description: "Pembayaran permata belum tersedia. Silakan cek kembali nanti.",
+    description: "Pembelian koin belum tersedia. Silakan cek kembali nanti.",
   },
 };
 

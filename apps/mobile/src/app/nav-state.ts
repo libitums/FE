@@ -65,6 +65,8 @@ export type Screen =
       questionCount: number;
       /** 틀린 문제를 다시 풀고 왔으면 그 요약입니다 — `results`는 이미 고친 수를 반영한 결과입니다. */
       review?: CatalogReviewSummary;
+      /** 이 세션 전에는 끝내지 않은 유닛인가입니다 — 통과면 엽전을 받습니다(ADR-0116). 없으면 거짓입니다. */
+      firstClear?: boolean;
     }
   // 최종 테스트 통과 뒤 컷입니다.
   | { name: "catalog-epilogue"; episodeId: string }

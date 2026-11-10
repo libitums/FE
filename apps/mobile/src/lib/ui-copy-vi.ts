@@ -21,7 +21,7 @@ import {
 import {
   appUpdateVi,
   feedbackVi,
-  gemPurchaseVi,
+  coinShopVi,
   notificationsVi,
   profileVi,
   settingsVi,
@@ -88,7 +88,7 @@ export const uiCopyVi: UiCopy = {
   downloadSheet: downloadSheetVi,
   profile: profileVi,
   feedback: feedbackVi,
-  gemPurchase: gemPurchaseVi,
+  coinShop: coinShopVi,
   catalogMap: catalogMapVi,
   catalogUpdateNotice: catalogUpdateNoticeVi,
   catalogCover: catalogCoverVi,

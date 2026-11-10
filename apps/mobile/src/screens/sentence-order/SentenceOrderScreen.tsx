@@ -58,7 +58,6 @@ import "./sentence-order-screen.css";
 // 같은 화자의 칸에만 들어가며, 놓은 말풍선을 누르면 그 뒤까지 되돌아갑니다. 칸이 다 차면 Check가 섭니다.
 export type SentenceOrderActivityProps = {
   readonly questions: readonly SentenceOrderQuestion[];
-  readonly gemCount: number;
   readonly onExit: () => void;
   readonly onFinish: ActivityFinish;
   /** 카탈로그 레슨 안의 위치입니다. 활동 하나가 한 세션이면 주지 않습니다. */
@@ -73,7 +72,6 @@ export type SentenceOrderActivityProps = {
 
 export function SentenceOrderActivity({
   questions,
-  gemCount,
   onExit,
   onFinish,
   lesson,
@@ -243,7 +241,6 @@ export function SentenceOrderActivity({
       <LearningShell
         form="sentence-order"
         obscured={guide.visible}
-        gemCount={gemCount}
         questionIndex={counter.questionIndex}
         questionCount={counter.questionCount}
         complete={complete}

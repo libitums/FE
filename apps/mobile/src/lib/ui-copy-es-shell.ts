@@ -43,8 +43,7 @@ export const commonEs: CommonCopy = {
   count: {
     streakDays: (days) => `Racha de ${n(days, "día", "días")}`,
     trophies: (count) => n(count, "trofeo", "trofeos"),
-    gems: (count) => n(count, "gema", "gemas"),
-    diamonds: (count) => n(count, "diamante", "diamantes"),
+    coins: (count) => n(count, "moneda", "monedas"),
   },
 };
 
