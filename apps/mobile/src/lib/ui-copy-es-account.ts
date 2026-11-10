@@ -70,7 +70,7 @@ export const settingsEs: SettingsCopy = {
   sessionOptionDescription: {
     "show-choice-romanization":
       "Muestra cómo se lee cada respuesta en coreano, en letra pequeña encima.",
-    vibration: "Vibra cuando tu respuesta es correcta o incorrecta.",
+    vibration: "Vibra con respuestas correctas o incorrectas y al tocar el teclado.",
   },
   optionState: { on: "activado", off: "desactivado" },
   action: {

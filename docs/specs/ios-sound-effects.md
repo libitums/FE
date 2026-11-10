@@ -67,7 +67,7 @@ Android 호스트에도 같은 이름의 `SoundEffectsModule`이 있다. JS(`lib
 | 메서드 | `play(id)` · `stopRing()` · `haptic(kind)` — 반환 · 콜백 없음 | 같음 |
 | 허용 id | `SoundEffectAsset` 8개 | `SoundEffectAsset` 8개 — 같은 문자열. 정확히 같을 때만 받는다 |
 | 모르는 id | 무시, 던지지 않음 | 같음(로그도 없음) |
-| `haptic(kind)` | `HapticFeedbackKind.of(kind)` → 모듈이 든 `UINotificationFeedbackGenerator` 하나(생성 때 · 매 진동 뒤 `prepare()`)의 `notificationOccurred(.success` · `.error)`, 메인 큐. 「시스템 햅틱」 설정은 UIKit이 따른다 | ⟨2판⟩ `HapticPattern.of(kind)` → `Vibrator.vibrate(createWaveform(…, -1), AudioAttributes USAGE_MEDIA)`, 메인 스레드. `VIBRATE` 권한 — 「터치 피드백」 설정과 **상관없이** 진동한다([ADR-0109](../adr/0109-haptic-feedback.md) D3 2판) |
+| `haptic(kind)` | `HapticFeedbackKind.of(kind)` → 모듈이 든 `UINotificationFeedbackGenerator` 하나(생성 때 · 매 진동 뒤 `prepare()`)의 `notificationOccurred(.success` · `.error)`, 메인 큐. ⟨2026-11-09⟩ `key`는 별도 `UIImpactFeedbackGenerator(.light)`의 `impactOccurred()`([ADR-0112](../adr/0112-keyboard-touch-input.md) D6). 「시스템 햅틱」 설정은 UIKit이 따른다 | ⟨2판⟩ `HapticPattern.of(kind)` → `Vibrator.vibrate(createWaveform(…, -1), AudioAttributes USAGE_MEDIA)`, 메인 스레드. `VIBRATE` 권한 — 「터치 피드백」 설정과 **상관없이** 진동한다([ADR-0109](../adr/0109-haptic-feedback.md) D3 2판). ⟨2026-11-09⟩ `key`는 `HapticKindRoute.of` → API 29+ `EFFECT_TICK` · 26 ~ 28 20ms를 **터치 용도**(33+ `USAGE_TOUCH`, 그 아래 `ASSISTANCE_SONIFICATION`)로 — 「터치 피드백」을 끄면 나지 않는다(ADR-0112 D6) |
 | 모르는 kind · null | 무시, 던지지 않음 | 같음(`NONE`, 로그 없음) |
 | 햅틱 없는 기기 | iPad · 시뮬레이터 — 무동작 | `hasVibrator()`가 거짓이면(에뮬레이터 등) 무동작 |
 | 음량 | 자산별 상수 | 같은 값(`button` 0.25 · 판정 0.5 · 레슨 결과 0.55 · `ring_bell` 0.35 · `accept_call` 0.4) |
@@ -117,8 +117,8 @@ Android 호스트에도 같은 이름의 `SoundEffectsModule`이 있다. JS(`lib
 
 결정 · 버린 대안 · 접근성 · 기기 확인 상태는 [ADR-0109](../adr/0109-haptic-feedback.md)가 진다. 여기는 계약 요약만 둔다.
 
-- **정책은 JS 하나다.** `lib/sound-effects.ts`의 `hapticFor(id)`가 효과음 id를 `"success"` · `"error"` · `null`로 가른다(위 계약표의 「진동」 열). 판정 넷만 진동하고 진행 · 조작은 하지 않는다. 호스트는 두 문자열만 안다.
+- **정책은 JS 하나다.** `lib/sound-effects.ts`의 `hapticFor(id)`가 효과음 id를 `"success"` · `"error"` · `null`로 가른다(위 계약표의 「진동」 열). 판정 넷만 진동하고 진행 · 조작은 하지 않는다. ⟨2026-11-09⟩ 셋째 값 `"key"`는 효과음과 무관하게 자판이 `createKeyHaptic()`으로 부른다([ADR-0112](../adr/0112-keyboard-touch-input.md) D6).
 - **결선.** `playSound(id)`는 `play(id)`를 먼저 보내고, 정책이 `null`이 아니고 모듈에 `haptic`이 함수로 있을 때만 `haptic(kind)`를 1회 보낸다. 두 호출은 독립 `try`라 한쪽 실패가 다른 쪽을 막지 않는다. `haptic`이 없는 옛 호스트 · 모듈 없는 환경(Explorer · 테스트)에서는 소리만 나거나 무동작이다. `stopRing()`은 진동과 무관하다.
-- **호스트.** 위 [iOS 대조표](#ios-대조표)의 `haptic(kind)` 행. 플랫폼 기본 상수만 쓰고 사용자 정의 파형 · `Vibrator` · `CoreHaptics`는 쓰지 않는다. 권한 없음 — `AndroidManifest.xml`에 `VIBRATE`를 더하지 않는다. 시스템 설정(iOS 「시스템 햅틱」 · Android 「터치 피드백」)을 플랫폼 API가 따르므로 앱이 따로 읽지 않고, 앱 안 토글도 없다.
+- **호스트.** 위 [iOS 대조표](#ios-대조표)의 `haptic(kind)` 행. 플랫폼 기본 상수만 쓰고 사용자 정의 파형 · `Vibrator` · `CoreHaptics`는 쓰지 않는다. 권한 없음 — `AndroidManifest.xml`에 `VIBRATE`를 더하지 않는다. 시스템 설정(iOS 「시스템 햅틱」 · Android 「터치 피드백」)을 플랫폼 API가 따르므로 앱이 따로 읽지 않고, 앱 안 토글도 없다. ⟨2026-11-09 정정⟩ 이 줄은 ADR-0109 1판 당시의 요약이다 — Android는 2판부터 `Vibrator` · `VIBRATE`를 쓰고 앱 설정 `Vibration` 토글이 있다(D3 2판 · D4). 자판 키 진동 `key`는 [ADR-0112](../adr/0112-keyboard-touch-input.md) D6 — 시스템 설정(iOS 「시스템 햅틱」 · Android 「터치 피드백」)을 따른다.
 - **알려진 한계.** Android 26 ~ 29의 `CONTEXT_CLICK` · `LONG_PRESS`는 성공 · 오류를 세기로만 가른다. 진동은 보조 채널(WCAG 1.3.3)이라 받아들인다.
 - **검증.** JS unit(`sound-effects.unit.test.ts` — 정책 표 8행 · 결선 순서 · 옛 호스트 · 던짐) · integration(문장 만들기 흐름에서 `haptic:success`가 판정 직후에 정확히 1개) · iOS HostTests(`HapticFeedbackKind` 분류 · `methodLookup` 키 셋 · 시뮬레이터에서 던지지 않음) · Android JUnit(위 「Android 검증」). 실제 진동 · 설정 끔 · 옛 빌드 덮어 설치는 [기기 확인](../e2e/haptic-feedback.md)이 잰다 — 2026-11-06 기준 실기 미실행.

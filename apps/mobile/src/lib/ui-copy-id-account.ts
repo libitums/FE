@@ -66,7 +66,7 @@ export const settingsId: SettingsCopy = {
   sessionOptionDescription: {
     "show-choice-romanization":
       "Tampilkan cara membaca tiap jawaban berbahasa Korea dalam teks kecil di atasnya.",
-    vibration: "Bergetar saat jawabanmu benar atau salah.",
+    vibration: "Bergetar saat jawabanmu benar atau salah dan saat mengetik di keyboard.",
   },
   optionState: { on: "aktif", off: "nonaktif" },
   action: {

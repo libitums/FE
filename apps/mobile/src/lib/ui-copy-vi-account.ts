@@ -64,7 +64,7 @@ export const settingsVi: SettingsCopy = {
   },
   sessionOptionDescription: {
     "show-choice-romanization": "Hiện cách đọc của từng đáp án tiếng Hàn bằng chữ nhỏ phía trên.",
-    vibration: "Rung khi câu trả lời của bạn đúng hoặc sai.",
+    vibration: "Rung khi câu trả lời đúng hoặc sai và khi gõ bàn phím.",
   },
   optionState: { on: "bật", off: "tắt" },
   action: {

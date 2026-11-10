@@ -1,6 +1,6 @@
-import { afterEach, expect, test, vi } from "vitest";
+import { afterEach, describe, expect, test, vi } from "vitest";
 
-import { hapticFor, playSound, stopRing } from "./sound-effects";
+import { createKeyHaptic, hapticFor, playSound, stopRing } from "./sound-effects";
 import type { HapticKind, SoundEffectId } from "./sound-effects";
 
 afterEach(() => vi.unstubAllGlobals());
@@ -211,4 +211,81 @@ test("VB2. 진동이 없는 효과음은 진동 설정을 읽지 않는다", () 
   playSound("button");
 
   expect(get).not.toHaveBeenCalled();
+});
+
+// KT-U17 ~ KT-U19: 키 입력 진동(ADR-0112).
+describe("createKeyHaptic", () => {
+  test("KT-U17. 켜져 있고 호스트가 haptic을 알면 부를 때마다 haptic(key) 한 번", () => {
+    const calls: string[] = [];
+    stubHost(calls, {}, "on");
+    const tap = createKeyHaptic();
+
+    tap();
+    tap();
+
+    expect(calls).toEqual(["haptic:key", "haptic:key"]);
+  });
+
+  test("KT-U17. 저장값이 없으면 켜진 것으로 본다", () => {
+    const calls: string[] = [];
+    stubHost(calls, {}, null);
+    createKeyHaptic()();
+
+    expect(calls).toEqual(["haptic:key"]);
+  });
+
+  test("KT-U18. 설정에서 끄면 무동작", () => {
+    const calls: string[] = [];
+    stubHost(calls, {}, "off");
+    createKeyHaptic()();
+
+    expect(calls).toEqual([]);
+  });
+
+  test("KT-U18. haptic을 모르는 옛 호스트 · 모듈 없음에서 무동작", () => {
+    const calls: string[] = [];
+    stubHost(calls, { haptic: undefined }, "on");
+    expect(() => createKeyHaptic()()).not.toThrow();
+    expect(calls).toEqual([]);
+
+    vi.stubGlobal("NativeModules", {});
+    expect(() => createKeyHaptic()()).not.toThrow();
+  });
+
+  test("KT-U18. 설정은 만들 때 한 번만 읽는다", () => {
+    const get = vi.fn<(key: string) => string | null>((key: string) =>
+      key === "libitum.session-option.vibration" ? "on" : null,
+    );
+    const haptic = vi.fn<(kind: string) => void>();
+    vi.stubGlobal("NativeModules", {
+      SoundEffectsModule: { play: vi.fn<() => void>(), stopRing: vi.fn<() => void>(), haptic },
+      StorageModule: { get, set: () => {}, remove: () => {} },
+    });
+    const tap = createKeyHaptic();
+    const readsAtCreate = get.mock.calls.length;
+
+    tap();
+    tap();
+    tap();
+
+    expect(readsAtCreate).toBeGreaterThan(0);
+    expect(get.mock.calls.length).toBe(readsAtCreate);
+    expect(haptic).toHaveBeenCalledTimes(3);
+  });
+
+  test("KT-U19. haptic이 던져도 밖으로 던지지 않는다 · 판정 표는 그대로", () => {
+    const calls: string[] = [];
+    stubHost(
+      calls,
+      {
+        haptic: () => {
+          throw new Error("boom");
+        },
+      },
+      "on",
+    );
+    expect(() => createKeyHaptic()()).not.toThrow();
+    expect(hapticFor("correct_answer")).toBe("success");
+    expect(hapticFor("button")).toBeNull();
+  });
 });
