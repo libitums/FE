@@ -96,6 +96,11 @@ export type ReplyRequest = {
   readonly system: string;
   readonly history: readonly HistoryEntry[];
   readonly userText: string;
+  /**
+   * 서버가 고른 이번 턴 지시(화제 전환 · 학습 표현 삽입). 시스템 프롬프트가 아니라 유저 말 뒤의 system 메시지로 실어
+   * 앞부분(시스템 · 지난 대화)의 캐시를 깨지 않는다. 없으면 null · 생략.
+   */
+  readonly directive?: string | null;
   readonly signal: AbortSignal;
 };
 
@@ -106,7 +111,10 @@ export type ModerationVerdict = { readonly category: string; readonly action: Mo
 export type ModerationRequest = {
   readonly layer: ModerationLayer;
   readonly text: string;
-  /** 출력 검사 때 앞선 유저 메시지 — 맥락 없이 답만 보면 위기 대응 답을 차단할 수 있습니다. */
+  /**
+   * 맥락 한 줄. 출력 검사는 앞선 유저 메시지(맥락 없이 답만 보면 위기 대응 답을 차단할 수 있다), 입력 검사는 바로 앞 캐릭터 말
+   * (「응 할게」처럼 앞 말을 봐야 뜻이 정해지는 글). 판정은 늘 `text`에만 한다.
+   */
   readonly context: string | null;
   readonly ageBand: AgeBand;
   readonly signal: AbortSignal;
@@ -172,8 +180,8 @@ export type MemoryItem = {
 };
 
 export type MemoryRequest = {
-  readonly userText: string;
-  readonly reply: string;
+  /** 아직 기억을 뽑지 않은 메시지들(유저 · 캐릭터, 오래된 것부터) — 턴마다가 아니라 몇 턴씩 묶어서 뽑는다. */
+  readonly messages: readonly HistoryEntry[];
   readonly existing: readonly string[];
   /** 미성년자 · 나이 모름이면 건강 · 심리 정보를 뺀다(뉴욕 Art.48). */
   readonly minor: boolean;
@@ -184,6 +192,27 @@ export type SummaryRequest = {
   readonly previous: string | null;
   readonly messages: readonly HistoryEntry[];
   readonly signal: AbortSignal;
+};
+
+/** LLM 호출 단계 — 사용량 기록의 이름. */
+export type LlmStep =
+  | "reply"
+  | "moderation_input"
+  | "moderation_output"
+  | "feedback"
+  | "translation"
+  | "memory"
+  | "summary"
+  | "suggestions";
+
+/** 호출 하나의 토큰 사용량(API 응답의 usage). 캐시 쓰기 · 읽기는 입력과 따로 센다. */
+export type LlmUsage = {
+  readonly step: LlmStep;
+  readonly model: string;
+  readonly inputTokens: number;
+  readonly cacheReadTokens: number;
+  readonly cacheWriteTokens: number;
+  readonly outputTokens: number;
 };
 
 /** 벤더 추상화 계층(PRD §5 M1). 메인 답변은 글자 조각의 흐름, 나머지는 구조화된 결과 하나입니다. */
@@ -197,6 +226,11 @@ export type CompanionLlm = {
   extractMemories(request: MemoryRequest): Promise<MemoryItem[]>;
   summarize(request: SummaryRequest): Promise<string>;
   suggest(request: SuggestRequest): Promise<SuggestionDraft[]>;
+  /**
+   * 호출마다 사용량을 `record`로 넘기는 같은 계층. 계층 하나를 모든 요청이 함께 쓰므로 턴마다 이것으로 감싸 모은다.
+   * 없으면(테스트 대역) 사용량을 모으지 않는다.
+   */
+  withUsage?(record: (usage: LlmUsage) => void): CompanionLlm;
 };
 
 /** 메인 답변 끝의 `@state` 줄(PRD §3.2 · §3.8). 모델이 빠뜨리면 null. */

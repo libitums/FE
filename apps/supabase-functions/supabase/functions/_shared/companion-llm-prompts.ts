@@ -47,9 +47,13 @@ function speechLevelRule(request: FeedbackRequest): string {
   return `The relationship's speech level is unknown: give no feedback on choosing 존댓말 or 반말 (mixing inside one message is still a mistake). ${elder}`;
 }
 
-export function feedbackSystem(request: FeedbackRequest): string {
+/**
+ * 피드백 시스템 글. 모든 요청에 같은 앞부분(규칙)과 요청마다 다른 뒷부분(학습자 언어 · 말투 단계 규칙)으로 나눈다 —
+ * 앞부분에만 캐시 표시를 달아 언어 · 말투가 달라도 모든 유저가 같은 캐시를 읽는다.
+ */
+export function feedbackSystemParts(request: FeedbackRequest): { stable: string; dynamic: string } {
   const language = request.l1 ?? "en";
-  return `You give feedback on one chat message a Korean learner sent to a chat character. Write reasons, explanations and meanings in the language with BCP 47 tag "${language}". Too much feedback tires learners: give only what clearly helps, and when unsure return status "none".
+  const stable = `You give feedback on one chat message a Korean learner sent to a chat character. Write reasons, explanations and meanings in the learner's language (given at the end). Too much feedback tires learners: give only what clearly helps, and when unsure return status "none".
 
 The recent conversation, if given, is context only: give feedback on the latest learner message only — never on earlier messages or on the character's lines.
 Text between asterisks (e.g. *웃으며*, *배고프다…*) is the learner's action or inner thought in the roleplay, not speech. Check the Korean inside it for mistakes too, but never judge its speech level (반말 is normal there), and keep the asterisks in "corrected".
@@ -63,13 +67,23 @@ The app shows one card in this order, so fill these fields:
 Decide in this order and use exactly one kind:
 1. Non-Korean parts. If any part of the message is not Korean (the whole message, or some words or a clause in another language), use kind "l1_to_ko": "corrected" is the whole message as natural Korean — keep the learner's Korean parts, put the rest into Korean, and silently fix any Korean mistakes in it — and "meaning" is its meaning. Leave "items" empty and "better" null. Never explain why it should be in Korean and never comment on the choice of language. Names, brands and acronyms usually written in Latin letters (BTS, iPhone, K-pop), numbers and emoji are not non-Korean parts.
 2. Mistakes. Use kind "correction" for grammar, particles, conjugation, spelling and typos, wrong words, and speech levels mixed inside one message (e.g. "안녕하세요! 뭐 해?" — make the whole message one level, matching the relationship). Spacing only when it changes the meaning or makes the sentence hard to read; ignore ordinary chat spacing slips.
-3. Speech level. ${speechLevelRule(request)}
+3. Speech level. Follow the speech-level rule given at the end.
 4. Profanity. If the message uses swear words or vulgar slang that are not aimed at anyone (e.g. "아 씨 시험 망했어", ㅅㅂ, 존나), use kind "better": "corrected" says the same thing without the vulgar word, and one item whose reason says plainly that the word is 비속어 (vulgar) and gives the neutral form. Recognize disguised spellings (ㅅㅂ, 시1발, ㅂㅅ, f*ck). Mild teasing words such as 바보, 멍청이 or 바보야 are not 비속어 — never flag them as profanity.
 5. Naturalness. Use kind "better" only when the sentence is clearly unnatural or translationese to a native speaker (e.g. pronoun overuse like "나는 너를 좋아해요", word-for-word calques): one suggestion as "corrected", with one item explaining it. Never suggest alternatives for a sentence that is already natural.
 6. Otherwise use status "none" with "corrected", "better" and "meaning" null and "items" empty.
 
 Never give feedback on chat conventions: ㅋㅋ, ㅎㅎ, ㅇㅇ, ~ endings, emoji, missing punctuation, or casual style natives use.
 Reasons and explanations state the rule plainly. No comments about the learner, the character or the conversation.`;
+  const dynamic = `# This message
+- Learner's language: the language with BCP 47 tag "${language}" — write reasons, explanations and meanings in it.
+- Speech-level rule: ${speechLevelRule(request)}`;
+  return { stable, dynamic };
+}
+
+/** 두 부분을 이은 글(문서 화면 · 테스트). */
+export function feedbackSystem(request: FeedbackRequest): string {
+  const { stable, dynamic } = feedbackSystemParts(request);
+  return `${stable}\n\n${dynamic}`;
 }
 
 export function feedbackContent(request: FeedbackRequest): string {
@@ -158,7 +172,7 @@ export function translationContent(segments: readonly Segment[]): string {
 }
 
 export function memorySystem(minor: boolean): string {
-  return `You maintain long-term memory for a chat character. From the latest exchange, extract at most 3 new, durable facts about the learner (preferences, plans, life events) worth remembering in later conversations. Write each in short Korean.
+  return `You maintain long-term memory for a chat character. From the recent messages (several exchanges, oldest first), extract at most 5 new, durable facts about the learner (preferences, plans, life events) worth remembering in later conversations. Only what the learner said or clearly confirmed counts. Write each in short Korean.
 - "shared": true if any character could know it (name, home country, hobbies, level), false if it only belongs to this conversation.
 - Skip anything already in the existing memory, small talk, and anything about the character.
 ${minor ? "- The learner may be a minor: never store health, mental health, or emotional-state information.\n" : ""}- If nothing is worth remembering, return an empty list.`;
