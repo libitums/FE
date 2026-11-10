@@ -67,6 +67,7 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
       pool,
       episodes: context.learning.episodes,
       settings: learningSettingsFrom(context.learning),
+      manualEmpty: context.learning.scope?.empty === true,
       chipsOn: gate.replySuggestions === true && suggestionSettings(context.status).enabled,
       today,
     },

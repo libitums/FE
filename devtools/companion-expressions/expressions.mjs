@@ -94,3 +94,18 @@ export function toSyncSql(snapshot) {
   const quote = (json) => `$${tag}$${json}$${tag}$::jsonb`;
   return `select companion.sync_expressions(\n  ${quote(expressions)},\n  ${quote(units)}\n);\n`;
 }
+
+/**
+ * 매니페스트의 에피소드 제목 · 순서를 `companion.sync_episodes`(20261126) 한 문장으로 씁니다 — 설정의 「배운 표현 범위」가
+ * 에피소드 id 대신 제목을 보입니다.
+ * @param {readonly { id: string, order: number, title?: string }[]} episodes
+ */
+export function toEpisodesSql(episodes) {
+  const rows = [...episodes]
+    .sort((a, b) => a.order - b.order || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))
+    .map(({ id, order, title }) => ({ id, order, title: text(title) }));
+  const json = JSON.stringify(rows);
+  let tag = "ep";
+  while (json.includes(`$${tag}$`)) tag += "x";
+  return `select companion.sync_episodes($${tag}$${json}$${tag}$::jsonb);\n`;
+}

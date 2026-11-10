@@ -62,10 +62,12 @@ describe("학습 표현 넣기 판정(PRD §3.7)", () => {
   });
 
   // LN2 — 넣지 않는 턴과 대상 유저.
-  test("LN2. 첫 턴 · 전환 원함 · 무거운 대화 · 화제 전환 · 하루 상한 · 튜토리얼만 · 끝낸 유닛 없음은 넣지 않는다", () => {
+  test("LN2. 첫 턴 · 전환 원함 · 무거운 대화 · 화제 전환 · 하루 상한 · 튜토리얼만 · 끝낸 유닛 없음 · 수동 범위 비어 있음은 넣지 않는다", () => {
     const ready = { ...topicStateFrom(null), turn: 10 };
-    const reason = (state: typeof ready, extra: Partial<typeof input> = {}) =>
-      decideLearning(state, { ...input, ...extra, random: at(0) }).reason;
+    const reason = (
+      state: typeof ready,
+      extra: Partial<typeof input> & { manualEmpty?: boolean } = {},
+    ) => decideLearning(state, { ...input, ...extra, random: at(0) }).reason;
     expect(reason({ ...ready, turn: 0 })).toBe("first_turn");
     expect(reason({ ...ready, wantsSwitch: true })).toBe("wants_switch");
     expect(reason({ ...ready, heavy: true })).toBe("heavy");
@@ -74,6 +76,8 @@ describe("학습 표현 넣기 판정(PRD §3.7)", () => {
     expect(reason({ ...ready, learnDay: "2026-11-09", learnToday: 6 })).toBe("ok");
     expect(reason(ready, { episodes: ["u00-tutorial"] })).toBe("tutorial_only");
     expect(reason(ready, { pool: [] })).toBe("no_pool");
+    // 수동 범위인데 고른 에피소드가 없으면(20261126) 따로 센다.
+    expect(reason(ready, { pool: [], manualEmpty: true })).toBe("manual_empty");
     expect(reason(ready, { settings: { ...defaultLearningSettings, enabled: false } })).toBe(
       "disabled",
     );

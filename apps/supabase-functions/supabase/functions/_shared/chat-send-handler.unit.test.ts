@@ -1645,7 +1645,7 @@ describe("학습 표현 넣기(PRD §3.7)", () => {
     });
   });
 
-  test("CS39. 튜토리얼만 끝낸 유저 · 무거운 대화는 넣지 않는다", async () => {
+  test("CS39. 튜토리얼만 끝낸 유저 · 무거운 대화 · 비어 있는 수동 범위는 넣지 않는다", async () => {
     const tutorial = setup({
       learning: { ...pool, episodes: ["u00-tutorial"] },
       begin: ready(),
@@ -1659,5 +1659,17 @@ describe("학습 표현 넣기(PRD §3.7)", () => {
     await (await heavy.handler(post())).text();
     await heavy.settle();
     expect(metaOf(heavy.finishArgs())).toMatchObject({ reason: "heavy" });
+    // 수동 범위인데 고른 에피소드가 없으면(20261126) 풀이 비고 까닭을 따로 남긴다.
+    const manual = setup({
+      learning: {
+        episodes: [],
+        expressions: [],
+        scope: { mode: "manual", units: [], empty: true },
+      },
+      begin: ready(),
+    });
+    await (await manual.handler(post())).text();
+    await manual.settle();
+    expect(metaOf(manual.finishArgs())).toMatchObject({ reason: "manual_empty" });
   });
 });

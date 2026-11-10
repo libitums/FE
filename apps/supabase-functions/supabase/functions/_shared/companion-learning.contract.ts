@@ -28,6 +28,12 @@ export type LearningContext = {
   readonly expressions: readonly LearningExpression[];
   /** 넣기 설정(20261125). 옛 DB면 없다 — 기본값을 쓴다. */
   readonly settings?: Partial<LearningSettings>;
+  /** 유저가 정한 범위(20261126). `manual`이면 고른 에피소드의 끝낸 유닛만 풀에 들어 있고, 고른 것이 없으면 `empty`. 옛 DB면 없다. */
+  readonly scope?: {
+    readonly mode: "auto" | "manual";
+    readonly units: readonly string[];
+    readonly empty: boolean;
+  };
 };
 
 /** 메인 답변 끝의 `@state` 줄(PRD §3.2 · §3.7 · §3.8). 모델이 빠뜨리면 null. 학습 칸은 참일 때만 싣는다. */

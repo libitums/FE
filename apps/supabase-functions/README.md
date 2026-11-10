@@ -229,6 +229,7 @@ Firebase 프로젝트에 Android 앱을 등록하고 FCM HTTP v1 API 권한이 �
 | `20261123120000_companion_quality.sql` | 품질 보완 — 답 없는 선톡(`settings.proactive_unanswered_limit` · `proactive_backoff` · `companion.proactive_conversation_skip_reason`) · 선톡 맥락 · 선톡 칩(`companion_save_proactive`의 `p_suggestions`), 기억 고치기 · 잊기(`companion_apply_memory_ops` · `memories.history` · `updated_at` · `deleted_reason`), 쉬는 대화의 기억(`settings.memory_flush_idle` · `companion_memory_flush_candidates` · `companion_memory_source(…, p_flush)`), 요약 원문의 `inputSource` |
 | `20261124120000_companion_ratings_resend.sql` | 답변 평가 — `companion.message_ratings` · `companion_rate_message`(앱) · `companion_operator_rate_message`(플레이그라운드) · 메시지 줄의 `rating` · `companion_rating_stats`, 고쳐서 다시 보내기 — `companion_begin_replacement`(이전 턴 숨기기 + 시작, 막히면 되돌림) · 메시지 목록에서 고쳐서 숨긴 턴 빼기 · 칩 지표에서도 빼기 |
 | `20261125120000_companion_learning.sql` | 학습 표현 넣기 — `settings.learning_*`(켜기 · 최소 간격 · 시작 확률 · 강제 턴 · 하루 상한) · `companion.user_expressions`(유저 × 표현: 노출 · 유도 · 칩 · 산출 횟수와 시각) · `companion_record_learning` · `companion_learning_context`가 유저 기록 · 낸 에피소드 · 넣기 설정을 더 줌 · 카드의 `learnedUsed` · `companion_learning_stats` |
+| `20261126120000_companion_learning_scope.sql` | 배운 표현 범위 — `profiles.learning_scope` · `learning_units`, `companion.episodes` · `companion.sync_episodes`, `companion_learning_scope` · `companion_set_learning_scope`(앱) · `companion_operator_learning_scope` · `companion_operator_set_learning_scope`(플레이그라운드), `companion_learning_context`가 범위를 따르고 `scope` 를 더 줌 |
 
 통합 테스트 CF1 ~ CF11 · CH1 ~ CH10 · TV1 ~ TV13 · ID1 ~ ID3 · PP1 ~ PP9 · RM1 ~ RM8 · RS1 ~ RS8 · AS1 ~ AS3 · TC1 ~ TC4 · SN1 ~ SN2 · GR1 ~ GR4 · SV1 ~ SV6 · QL1 ~ QL6 · RR1 ~ RR6 · LE1 ~ LE4, 함수 단위 테스트 CS1 ~ CS39 · SG · CE · BR · LL · EV · FB · SF · RF · SU · GT · PR · LN · LM.
 
@@ -497,6 +498,10 @@ ops-dashboard가 검사 · 피드백 프롬프트를 케이스 묶음으로 돌�
 - **방식** — 노출(캐릭터가 씀, 답 지시) · 유도(그 표현으로 답할 질문, 답 지시) · 칩(추천 답변 후보 하나에 넣음 — 검증을 지나면 먼저 보인다, 산출로 치지 않는다).
   처음 만나는 표현은 노출, 만난 적 있으면 유저가 안 썼을 때 유도 · 칩 비중이 높다. 칩 스위치가 꺼져 있으면 칩 대신 유도.
 - **대상 유저** — 끝낸 유닛 없음: 넣지 않는다. 튜토리얼만: 턴에는 넣지 않고 첫 인사 · 선톡에서만 노출(「안녕하세요」 · 「감사합니다」). `u01` 이상: 전부.
+- **범위 (20261126)** — 기본 자동(끝낸 유닛 전부). 설정에서 수동으로 바꾸면 고른 에피소드의 끝낸 유닛만 쓴다(`profiles.learning_scope` · `learning_units`, 최대 50).
+  고를 수 있는 것 = 유닛을 하나 이상 끝냈고 표현이 있는 에피소드. 수동인데 고른 것이 없거나 모두 콘텐츠에서 빠졌으면 넣지 않는다(까닭 `manual_empty` — 자동으로 되돌리지 않는다).
+  앱 `companion_learning_scope()` · `companion_set_learning_scope(p_scope, p_units)`(`p_units` null = 목록 그대로), 플레이그라운드는 `companion_operator_*`(시험 계정만).
+  에피소드 제목은 `companion.episodes`(`companion.sync_episodes` — 표현 동기화 SQL에 함께 실림). 튜토리얼 규칙은 고른 범위에 그대로 적용한다.
 - **확인과 기록** — 캐릭터 쪽은 `@state.learned`(모델 보고) + 노출이면 글자 확인(문형 · 자리 있는 표현은 보고만). 유저 쪽은 직접 입력한 글에서 배운 표현 전체를
   글자로 보고(한 글자 어휘 제외), 최근 지시한 문형은 피드백 모델이 `learned_used`로 판정한다 → `correction.learnedUsed`(앱 카드 「배운 표현을 썼어요」). 칩 전송은 세지 않는다.
   `companion_record_learning`이 `companion.user_expressions`를 센다(실패는 로그 `learning_record_failed`만). 저장 meta `learning {open, reason, mode?, expressionId?, surface?, done?, produced?}`.
@@ -569,6 +574,8 @@ supabase functions serve --no-verify-jwt                                        
    `20261125120000_companion_learning.sql`은 20261124 **뒤에**, 새 함수를 배포하기 전에 적용한다(같은 방식의 묶음). 옛 DB면 새 함수가 기록(`companion_record_learning`)을
    부를 때만 실패하고(로그만) 턴 · 인사 · 선톡은 그대로 돈다 — 넣기 설정이 없어 기본값을 쓴다. 적용 뒤 `chat-send` · `companion-greet` · `companion-proactive` ·
    `companion-eval` · `companion-suggest`를 다시 배포한다.
+   `20261126120000_companion_learning_scope.sql`은 20261125 **뒤에** 적용한다(같은 방식의 묶음). 함수는 다시 배포하지 않아도 범위가 적용된다(맥락 RPC가 거른다) —
+   `chat-send`를 다시 배포하면 비어 있는 수동 범위의 까닭이 `no_pool` 대신 `manual_empty`로 남는다. 적용 뒤 표현 동기화 SQL(6번)을 다시 돌리면 에피소드 제목이 찬다.
 3. 비밀: `supabase secrets set --env-file supabase/functions/.env`. 키가 아직 없으면 `COMPANION_LLM=fake`로 화면만 먼저 본다.
 4. `supabase functions deploy chat-send` · `supabase functions deploy companion-proactive` · `supabase functions deploy companion-eval`(`config.toml`의 `verify_jwt = false`를 따른다).
 5. 예약 작업: Vault에 서버 키(`companion_service_role_key`)를 넣고 `supabase/cron/companion.sql`을 SQL 편집기에서 한 번 실행한다.

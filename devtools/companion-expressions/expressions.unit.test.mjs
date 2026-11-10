@@ -4,7 +4,7 @@ import { join } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { buildExpressionSnapshot, toSyncSql } from "./expressions.mjs";
+import { buildExpressionSnapshot, toEpisodesSql, toSyncSql } from "./expressions.mjs";
 
 const contentDir = fileURLToPath(new URL("../../apps/mobile/content/", import.meta.url));
 
@@ -119,4 +119,17 @@ test("CE6. SQL의 달러 인용 태그가 본문과 겹치지 않는다", () => 
   const sql = toSyncSql({ expressions: [word("voca:aaaa0001", "$expr$")], units: [] });
   assert.match(sql, /\$exprx\$\[/);
   assert.ok(sql.startsWith("select companion.sync_expressions("));
+});
+
+test("CE7. 에피소드 제목 SQL은 순서대로, 빈 제목은 null로 싣는다", () => {
+  const sql = toEpisodesSql([
+    { id: "u01-water", order: 1, title: " 물 사기 " },
+    { id: "u00-tutorial", order: 0, title: "" },
+  ]);
+  assert.ok(sql.startsWith("select companion.sync_episodes($ep$"));
+  const json = JSON.parse(sql.slice(sql.indexOf("$ep$") + 4, sql.lastIndexOf("$ep$")));
+  assert.deepEqual(json, [
+    { id: "u00-tutorial", order: 0, title: null },
+    { id: "u01-water", order: 1, title: "물 사기" },
+  ]);
 });

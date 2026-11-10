@@ -70,6 +70,7 @@ export function chooseBranch(
       readonly pool: readonly LearningExpression[];
       readonly episodes: readonly string[];
       readonly settings: LearningSettings;
+      readonly manualEmpty?: boolean;
       readonly chipsOn: boolean;
       readonly today: string;
     };

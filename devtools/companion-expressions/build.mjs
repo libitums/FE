@@ -9,7 +9,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { parseArgs } from "node:util";
 
-import { buildExpressionSnapshot, toSyncSql } from "./expressions.mjs";
+import { buildExpressionSnapshot, toEpisodesSql, toSyncSql } from "./expressions.mjs";
 
 async function fromContentDir(dir) {
   const manifest = JSON.parse(await readFile(join(dir, "manifest.json"), "utf8"));
@@ -17,6 +17,7 @@ async function fromContentDir(dir) {
     manifest.episodes.map(async (entry) => ({
       id: entry.id,
       order: entry.order,
+      title: entry.title,
       episode: JSON.parse(await readFile(join(dir, entry.url), "utf8")),
     })),
   );
@@ -46,6 +47,7 @@ async function fromBucket(base) {
     [...entries.values()].map(async (entry) => ({
       id: entry.id,
       order: entry.order,
+      title: entry.title,
       episode: await fetchJson(new URL(entry.url, root)),
     })),
   );
@@ -65,7 +67,11 @@ const episodes =
     : await fromBucket(values.base);
 const snapshot = buildExpressionSnapshot(episodes);
 await mkdir(values.out, { recursive: true });
-await writeFile(join(values.out, "sync-expressions.sql"), toSyncSql(snapshot));
+// 에피소드 제목(20261126)은 같은 파일 뒤에 — `companion.sync_episodes`가 없는 옛 DB면 둘째 문장만 실패합니다.
+await writeFile(
+  join(values.out, "sync-expressions.sql"),
+  toSyncSql(snapshot) + toEpisodesSql(episodes),
+);
 await writeFile(join(values.out, "report.json"), `${JSON.stringify(snapshot.report, null, 2)}\n`);
 console.log(
   `episodes ${episodes.length} · expressions ${snapshot.expressions.length} · units ${snapshot.units.length} · ` +

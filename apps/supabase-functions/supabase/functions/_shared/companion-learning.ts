@@ -33,6 +33,7 @@ export type LearningReason =
   | "ok"
   | "disabled"
   | "no_pool"
+  | "manual_empty"
   | "tutorial_only"
   | "first_turn"
   | "wants_switch"
@@ -123,6 +124,8 @@ export function decideLearning(
     readonly pool: readonly LearningExpression[];
     readonly episodes: readonly string[];
     readonly settings: LearningSettings;
+    /** 수동 범위인데 고른 에피소드가 없다(20261126) — `no_pool`과 따로 센다. */
+    readonly manualEmpty?: boolean;
     readonly chipsOn: boolean;
     readonly switching: boolean;
     readonly today: string;
@@ -136,6 +139,7 @@ export function decideLearning(
   });
   const { settings } = input;
   if (!settings.enabled) return closed("disabled");
+  if (input.manualEmpty === true) return closed("manual_empty");
   if (input.pool.length === 0) return closed("no_pool");
   if (isTutorialOnly(input.episodes)) return closed("tutorial_only");
   if (state.turn === 0) return closed("first_turn");
