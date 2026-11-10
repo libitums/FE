@@ -215,7 +215,7 @@ export function createGreetHandler(deps: GreetDeps): (request: Request) => Promi
       startTranslation(
         llm,
         env,
-        { segments, l1: context.l1, timeoutMs: deps.translationTimeoutMs },
+        { segments, l1: context.l1, timeoutMs: deps.translationTimeoutMs, persona },
         AbortSignal.timeout(timeoutMs),
       ),
       chipsOn

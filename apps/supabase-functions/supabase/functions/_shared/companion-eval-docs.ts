@@ -9,12 +9,11 @@ import type { SpeechLevel } from "./companion-contract/index.ts";
 import type { Outbound } from "./delete-account.contract.ts";
 import {
   feedbackSystem,
-  memorySystem,
   refusalDirective,
   refusalUserText,
-  summarySystem,
   translationSystem,
 } from "./companion-llm-prompts.ts";
+import { memorySystem, summarySystem } from "./companion-memory-prompts.ts";
 import { suggestionSystem } from "./companion-suggest-prompts.ts";
 import {
   companionSystemPrompt,

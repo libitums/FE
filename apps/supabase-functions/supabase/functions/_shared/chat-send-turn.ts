@@ -22,7 +22,7 @@ import {
   startReply,
 } from "./chat-send-reply.ts";
 import { sendSuggestions, startSuggestions, suggestionsMeta } from "./chat-send-suggest.ts";
-import { applyTranslation, startTranslation } from "./chat-send-translate.ts";
+import { applyTranslation, startTranslation, translationContext } from "./chat-send-translate.ts";
 import { chooseBranch, nextTopicState, topicStateFrom } from "./companion-branching.ts";
 import {
   CONTRACT_VERSION,
@@ -193,7 +193,13 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
   const translation = startTranslation(
     llm,
     env,
-    { segments: result.segments, l1: gate.l1, timeoutMs: deps.translationTimeoutMs },
+    {
+      segments: result.segments,
+      l1: gate.l1,
+      timeoutMs: deps.translationTimeoutMs,
+      context: translationContext([...history, { role: "user", text: body.text }]),
+      persona,
+    },
     abort.signal,
   );
   const chips = startSuggestions(context, persona, result.segments, abort.signal);

@@ -94,7 +94,15 @@ function setup(options: Options = {}) {
       options.status === undefined
         ? { strikes: 0, strikeLimit: 3, memoryFull: false }
         : options.status,
-    companion_add_memories: { added: 1, evicted: 0, skipped: 0, full: false },
+    companion_apply_memory_ops: {
+      added: 1,
+      updated: 0,
+      forgotten: 0,
+      evicted: 0,
+      skipped: 0,
+      protected: 0,
+      full: false,
+    },
     companion_summary_source: options.summarySource ?? null,
     companion_memory_source: options.memorySource ?? null,
     companion_mark_memories: null,
@@ -424,9 +432,9 @@ describe("턴 스트림", () => {
       p_conversation_id: begun.conversationId,
     });
     // 묶음의 유저 메시지에서 뽑고, 멱등 키는 묶음의 마지막 유저 메시지다.
-    expect(rpcs.find((rpc) => rpc.fn === "companion_add_memories")?.args).toMatchObject({
+    expect(rpcs.find((rpc) => rpc.fn === "companion_apply_memory_ops")?.args).toMatchObject({
       p_source_message_id: memoryBatch.sourceMessageId,
-      p_items: [{ kind: "fact", content: "떡볶이를 좋아한다", shared: true }],
+      p_ops: [{ op: "add", kind: "fact", content: "떡볶이를 좋아한다", shared: true }],
     });
     expect(rpcs.find((rpc) => rpc.fn === "companion_mark_memories")?.args).toEqual({
       p_conversation_id: begun.conversationId,
@@ -465,6 +473,53 @@ describe("턴 스트림", () => {
     ]);
   });
 
+  test("CS9c. 기존 기억은 번호로 보이고, 고치기 · 잊기는 기억 id로 바꿔 적용한다", async () => {
+    const seen: unknown[] = [];
+    const base = fakeCompanionLlm();
+    const llm: CompanionLlm = {
+      ...base,
+      async extractMemories(request) {
+        seen.push(request.existing);
+        return base.extractMemories(request);
+      },
+    };
+    const home = "50000000-0000-4000-8000-000000000001";
+    const { handler, rpcs, settle, logs } = setup({
+      llm,
+      memorySource: {
+        ...memoryBatch,
+        messages: [{ role: "user", text: "저 부산으로 이사했어요", segments: [] }],
+        existing: [
+          { id: home, kind: "fact", content: "서울에 산다", shared: true, userEdited: false },
+          {
+            id: "50000000-0000-4000-8000-000000000002",
+            kind: "fact",
+            content: "이름은 마리아",
+            shared: true,
+            userEdited: true,
+          },
+        ],
+      },
+    });
+    await events(await handler(post()));
+    await settle();
+    expect(seen).toEqual([
+      [
+        { ref: "m1", content: "서울에 산다", shared: true, locked: false },
+        { ref: "m2", content: "이름은 마리아", shared: true, locked: true },
+      ],
+    ]);
+    expect(rpcs.find((rpc) => rpc.fn === "companion_apply_memory_ops")?.args).toMatchObject({
+      p_ops: [{ op: "update", id: home, content: "부산에 산다", reason: "fake" }],
+    });
+    expect(logs).toContainEqual(
+      expect.objectContaining({
+        event: "companion_after_turn",
+        outcome: expect.stringContaining("updated=0 forgotten=0 protected=0"),
+      }),
+    );
+  });
+
   test("CS10. 장기 메모리를 끈 판정이면 추출하지 않고 표시만 옮긴다(미국 12 ~ 15세)", async () => {
     const { handler, rpcs, settle } = setup({
       gate: { ...okGate, memoryEnabled: false },
@@ -472,7 +527,7 @@ describe("턴 스트림", () => {
     });
     await (await handler(post(body({ text: "저는 떡볶이를 좋아해요" })))).text();
     await settle();
-    expect(rpcs.some((rpc) => rpc.fn === "companion_add_memories")).toBe(false);
+    expect(rpcs.some((rpc) => rpc.fn === "companion_apply_memory_ops")).toBe(false);
     expect(rpcs.find((rpc) => rpc.fn === "companion_mark_memories")?.args).toMatchObject({
       p_until: memoryBatch.until,
     });
@@ -492,7 +547,7 @@ describe("턴 스트림", () => {
     await settle();
     expect(rpcs.some((rpc) => rpc.fn === "companion_memory_source")).toBe(true);
     expect(extracted).toBe(0);
-    expect(rpcs.some((rpc) => rpc.fn === "companion_add_memories")).toBe(false);
+    expect(rpcs.some((rpc) => rpc.fn === "companion_apply_memory_ops")).toBe(false);
     expect(rpcs.some((rpc) => rpc.fn === "companion_mark_memories")).toBe(false);
   });
 
@@ -708,6 +763,27 @@ describe("L1 번역", () => {
         error: status,
       });
     }
+  });
+
+  test("CS14b. 번역은 앞 대화(이번 유저 말까지)와 캐릭터 이름을 받고, 실패하면 시간이 남았을 때 한 번 다시 시도한다", async () => {
+    const requests: Parameters<CompanionLlm["translate"]>[0][] = [];
+    let calls = 0;
+    const base = fakeCompanionLlm();
+    const { handler, finishArgs, settle } = setup({
+      llm: translatingWith(async (request) => {
+        requests.push(request);
+        calls += 1;
+        if (calls === 1) throw new Error("overloaded");
+        return base.translate(request);
+      }),
+    });
+    const list = await events(await handler(post(body({ text: "숙제가 어려워요" }))));
+    await settle();
+    expect(calls).toBe(2);
+    expect(translationsOf(list).length).toBeGreaterThan(0);
+    expect(finishArgs()).toMatchObject({ p_assistant: { meta: { translation: "ok" } } });
+    expect(requests[0]?.context?.at(-1)).toEqual({ role: "user", text: "숙제가 어려워요" });
+    expect(requests[0]?.glossary?.characterName).toBeTruthy();
   });
 
   test("CS15. 미성년자 · 나이 모름 — 출력 검사에 걸린 답은 번역을 내보내지도 저장하지도 않는다", async () => {
@@ -927,7 +1003,7 @@ describe("성격대로 거절(회피 → 경고 → 일시 차단)", () => {
       },
     });
     // 차단 턴은 기억 추출 · 요약을 돌리지 않는다.
-    expect(rpcs.some((rpc) => rpc.fn === "companion_add_memories")).toBe(false);
+    expect(rpcs.some((rpc) => rpc.fn === "companion_apply_memory_ops")).toBe(false);
   });
 
   test("CS21. 걸린 글은 모델에 가지 않는다 — 분류와 단계만, 두 번째 위반은 경고, 상한이면 일시 차단", async () => {

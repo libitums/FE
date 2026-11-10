@@ -37,6 +37,56 @@ export const proactiveDirective =
 export const proactiveUserText =
   "(앱 안내: 학습자가 한동안 대화하지 않았다. 캐릭터가 먼저 짧게 말을 건다.)";
 
+/** 선톡 맥락(20261123) — 지난 대화 뒤 며칠 · 학습자 현지 시간대 · 마지막 화제 · 최근 선톡 글 · 답 없는 선톡 수. 모르면 null. */
+export type ProactiveDirectiveInput = {
+  readonly daysSince: number | null;
+  readonly timeOfDay: TimeOfDay | null;
+  readonly lastTopic: string | null;
+  readonly recentOpeners: readonly string[];
+  readonly unanswered: number;
+};
+
+export type TimeOfDay = "morning" | "afternoon" | "evening" | "late night";
+
+/** 현지 시각(0 ~ 23) → 때. 시간대를 모르면 null. */
+export const timeOfDay = (hour: number | null): TimeOfDay | null =>
+  hour === null
+    ? null
+    : hour < 5
+      ? "late night"
+      : hour < 11
+        ? "morning"
+        : hour < 17
+          ? "afternoon"
+          : hour < 22
+            ? "evening"
+            : "late night";
+
+/** 선톡의 이번 답 지시 — 기본 지시에 맥락 줄을 붙인다. 최근 선톡 글은 같은 말 · 같은 생각을 되풀이하지 않게 보여 준다. */
+export function proactiveDirectiveFor(input: ProactiveDirectiveInput): string {
+  const days = input.daysSince;
+  return [
+    proactiveDirective,
+    days === null
+      ? ""
+      : `It has been ${days < 1 ? "less than a day" : days < 2 ? "about a day" : `about ${Math.floor(days)} days`} since the learner last wrote.`,
+    input.timeOfDay === null
+      ? ""
+      : `It is ${input.timeOfDay} where the learner is: fit the opener to that time of day.`,
+    input.lastTopic === null
+      ? ""
+      : `The learner's last message was: "${input.lastTopic}". You may pick that topic up, or share something new from your own day.`,
+    input.recentOpeners.length === 0
+      ? ""
+      : `Your recent openers (do not repeat their wording, topic or idea):\n${list(input.recentOpeners)}`,
+    input.unanswered > 0
+      ? "The learner has not answered your last opener: keep this one extra light and easy to answer, and never mention that they did not reply."
+      : "",
+  ]
+    .filter((line) => line !== "")
+    .join("\n");
+}
+
 /** 첫 인사(`companion-greet`)의 이번 답 지시와, 유저 말 자리에 넣는 앱 안내. 대화가 비었을 때만 — 지난 대화가 없다. */
 export const greetingDirective =
   "This is the very first message of a new conversation: the learner just opened the chat and has not said anything yet. Greet them first, in character, the way you would on first meeting them in your scene (if you remember things about them, greet them as someone you know). 1–3 short bubbles, at most one action. Let your situation show who you are, and end with one easy question a beginner can answer. Keep the Korean very simple.";

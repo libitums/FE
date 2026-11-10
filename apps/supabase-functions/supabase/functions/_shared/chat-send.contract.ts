@@ -12,6 +12,12 @@ import type {
   FeedbackMode,
   FeedbackRequest,
 } from "./companion-feedback.contract.ts";
+import type {
+  MemoryOp,
+  MemoryRequest,
+  SummaryRequest,
+  TranslationRequest,
+} from "./companion-steps.contract.ts";
 import type { SuggestRequest, SuggestionDraft } from "./companion-suggest.contract.ts";
 
 // ------------------------------------------------------------------ 환경
@@ -96,6 +102,8 @@ export type PersonaCard = {
   readonly topics?: readonly string[];
   /** 존댓말 관계에서 학습자가 반말을 쓸 때 피드백 종류. 없으면 `better`(부드럽게). 덕수쌤(선생님)은 `correction`. */
   readonly banmalFeedback?: BanmalFeedback;
+  /** 번역 표기 메모(한국어 → 학습자 언어에서 쓸 표기, 예: 「쌤」 → "teacher (casual)"). 운영자가 채운다(20261123). */
+  readonly glossary?: Readonly<Record<string, string>>;
 };
 
 export type ReplyRequest = {
@@ -134,34 +142,14 @@ export type {
   FeedbackMode,
   FeedbackRequest,
 } from "./companion-feedback.contract.ts";
-export type TranslationRequest = {
-  /** 캐릭터 답의 말풍선들. 대사뿐 아니라 행동 · 서술도 번역합니다. */
-  readonly segments: readonly Segment[];
-  /** 번역할 언어(BCP 47). */
-  readonly l1: string;
-  readonly signal: AbortSignal;
-};
-
-export type MemoryItem = {
-  readonly kind: "fact" | "event";
-  readonly content: string;
-  readonly shared: boolean;
-};
-
-export type MemoryRequest = {
-  /** 아직 기억을 뽑지 않은 메시지들(유저 · 캐릭터, 오래된 것부터) — 턴마다가 아니라 몇 턴씩 묶어서 뽑는다. */
-  readonly messages: readonly HistoryEntry[];
-  readonly existing: readonly string[];
-  /** 미성년자 · 나이 모름이면 건강 · 심리 정보를 뺀다(뉴욕 Art.48). */
-  readonly minor: boolean;
-  readonly signal: AbortSignal;
-};
-
-export type SummaryRequest = {
-  readonly previous: string | null;
-  readonly messages: readonly HistoryEntry[];
-  readonly signal: AbortSignal;
-};
+export type {
+  ExistingMemory,
+  MemoryItem,
+  MemoryOp,
+  MemoryRequest,
+  SummaryRequest,
+  TranslationRequest,
+} from "./companion-steps.contract.ts";
 
 /** LLM 호출 단계 — 사용량 기록의 이름. */
 export type LlmStep =
@@ -192,7 +180,8 @@ export type CompanionLlm = {
   feedback(request: FeedbackRequest): Promise<Feedback>;
   /** 말풍선마다 번역 한 줄 — 같은 개수 · 같은 순서. */
   translate(request: TranslationRequest): Promise<string[]>;
-  extractMemories(request: MemoryRequest): Promise<MemoryItem[]>;
+  /** 묶음에서 기억 작업(더하기 · 고치기 · 잊기)을 고릅니다. */
+  extractMemories(request: MemoryRequest): Promise<MemoryOp[]>;
   summarize(request: SummaryRequest): Promise<string>;
   suggest(request: SuggestRequest): Promise<SuggestionDraft[]>;
   /** 호출마다 사용량을 `record`로 넘기는 같은 계층 — 턴마다 감싸 모은다. 없으면(테스트 대역) 모으지 않는다. */
@@ -268,7 +257,12 @@ export type LearningContext = {
 // ------------------------------------------------------------------ 의존성
 
 export type ChatSendLogEntry = {
-  readonly event: "chat_send" | "companion_after_turn" | "companion_proactive" | "companion_eval";
+  readonly event:
+    | "chat_send"
+    | "companion_after_turn"
+    | "companion_proactive"
+    | "companion_memory_flush"
+    | "companion_eval";
   readonly status: number | "stream";
   readonly outcome?: string;
   readonly error?: string;

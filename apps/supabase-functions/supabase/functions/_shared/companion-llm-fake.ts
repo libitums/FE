@@ -11,7 +11,7 @@
 //   「…요 … 뭐 해?」 → 말투 섞임 교정   존댓말 관계에서 「뭐 해?」 → 존댓말 제안(better, 페르소나 banmalFeedback=correction이면 교정)
 //   「나는 너를」 → 자연스러운 표현(better)   「[better]」 → 더 나은 표현   번역은 「[언어] 원문」
 //   「*…*」 → 학습자의 행동 · 속마음 — 답은 몸짓에 반응하고 속마음 글을 따라 말하지 않는다, 말투 판정에서 뺀다
-//   「저는 … 좋아해요」 → 기억(유저 메시지가 settings.memory_every개 모여 묶음으로 뽑힐 때)   「[slow]」 → 조각 사이를 늦춘다   「[warm]」 → 친밀도 +3
+//   「저는 … 좋아해요」 · 「…로 이사했어요」 · 「이제 … 안 좋아해요」 → 기억 더하기 · 고치기 · 잊기(묶음으로 뽑힐 때, `companion-llm-fake-memory.ts`)   「[slow]」 → 조각 사이를 늦춘다   「[warm]」 → 친밀도 +3
 //   추천 답변 칩: 최근 대화에 「[suggest-bad]」 → 후보가 둘뿐   「[unsafe-suggest]」 → 출력 검사에 걸리는 칩   「[suggest-dup]」 → 겹치는 후보
 //   「[suggest-none]」 → 통과 후보 0(다시 묻고도 `no_valid_candidates`)
 // 위 낱말이 없는 말은 정상 턴(조각 셋 · 친밀도 +1)입니다.
@@ -20,9 +20,9 @@ import type {
   CompanionLlm,
   Feedback,
   FeedbackItem,
-  MemoryItem,
   ModerationVerdict,
 } from "./chat-send.contract.ts";
+import { fakeMemoryOps } from "./companion-llm-fake-memory.ts";
 import { emptyFeedback } from "./companion-llm-prompts.ts";
 import { suggestionMeaningLanguage } from "./companion-suggest-prompts.ts";
 
@@ -250,12 +250,8 @@ export function fakeCompanionLlm(): CompanionLlm {
     async translate(request) {
       return request.segments.map((segment) => `[${request.l1}] ${segment.text}`);
     },
-    async extractMemories(request): Promise<MemoryItem[]> {
-      // 묶음의 유저 메시지마다 「저는 … 좋아해요」를 찾는다.
-      return request.messages.flatMap((entry): MemoryItem[] => {
-        const match = entry.role === "user" ? /저는 (.{1,20}) 좋아해요/.exec(entry.text) : null;
-        return match ? [{ kind: "fact", content: `${match[1]} 좋아한다`, shared: true }] : [];
-      });
+    async extractMemories(request) {
+      return fakeMemoryOps(request);
     },
     async summarize(request) {
       return `요약(가짜): 메시지 ${request.messages.length}개${request.previous ? " · 앞 요약 이어 씀" : ""}`;

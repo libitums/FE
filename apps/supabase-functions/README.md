@@ -226,8 +226,9 @@ Firebase 프로젝트에 Android 앱을 등록하고 FCM HTTP v1 API 권한이 �
 | `20261121110000_companion_suggestion_feedback.sql` | 칩을 그대로 보낸 메시지는 피드백 건너뛰기 — `corrections.status`에 `skipped` · `correction_json`의 `reason` · `companion_turn_status`의 `latestSuggestions` |
 | `20261121120000_companion_greeting.sql` | 첫 인사 — `messages.origin`에 `greeting` · 페르소나 `greetingLines` · `companion_greet_context` · `companion_save_greeting` |
 | `20261122120000_companion_suggestion_v2.sql` | 칩 2판 — `settings.suggestions_enabled` · `suggestion_display_max` · `companion.choice_sets` · `companion_turn_status` 칩 셋 · `companion_record_choice` · `companion_suggestion_stats` · 기억 원문의 `inputSource` · 1판 의도 이름 바꾸기, 첫 인사만 있는 대화의 선톡 제외 |
+| `20261123120000_companion_quality.sql` | 품질 보완 — 답 없는 선톡(`settings.proactive_unanswered_limit` · `proactive_backoff` · `companion.proactive_conversation_skip_reason`) · 선톡 맥락 · 선톡 칩(`companion_save_proactive`의 `p_suggestions`), 기억 고치기 · 잊기(`companion_apply_memory_ops` · `memories.history` · `updated_at` · `deleted_reason`), 쉬는 대화의 기억(`settings.memory_flush_idle` · `companion_memory_flush_candidates` · `companion_memory_source(…, p_flush)`), 요약 원문의 `inputSource` |
 
-통합 테스트 CF1 ~ CF11 · CH1 ~ CH10 · TV1 ~ TV13 · ID1 ~ ID3 · PP1 ~ PP9 · RM1 ~ RM8 · RS1 ~ RS8 · AS1 ~ AS3 · TC1 ~ TC4 · SN1 ~ SN2 · GR1 ~ GR4 · SV1 ~ SV6, 함수 단위 테스트 CS1 ~ CS34 · SG · CE · BR · LL · EV · FB · SF · RF · SU · GT.
+통합 테스트 CF1 ~ CF11 · CH1 ~ CH10 · TV1 ~ TV13 · ID1 ~ ID3 · PP1 ~ PP9 · RM1 ~ RM8 · RS1 ~ RS8 · AS1 ~ AS3 · TC1 ~ TC4 · SN1 ~ SN2 · GR1 ~ GR4 · SV1 ~ SV6 · QL1 ~ QL6, 함수 단위 테스트 CS1 ~ CS34 · SG · CE · BR · LL · EV · FB · SF · RF · SU · GT · PR.
 
 **턴 흐름** — 판정(시험 계정 · 티어 · 연령 · 일시 차단 · 이용 시간 · 멱등) → 시작(체험 · 크레딧 예약 + 유저 메시지 저장, 한 트랜잭션) →
 SSE → 입력 검사 · 메인 답변 · 피드백을 동시에 → 위기(`crisis`) · 입력 차단(단계에 따라 성격대로 거절 또는 `guardrail_blocked`, 아래) / 조각(`delta`, 미성년자 · 나이 모름은 출력 검사 뒤) ·
@@ -343,6 +344,19 @@ fake 모드에서 흐름을 일부러 일으키는 낱말은 `_shared/companion-
 **학습자의 `*…*`** — `*웃으며* 안녕하세요` · `*배고프다…*`처럼 별표 안은 학습자의 행동 · 속마음이다. 답 프롬프트: 행동에는 자연스럽게 반응하고,
 속마음은 장면에 맞으면 가볍게 받아도 되지만 엿들은 것처럼 그대로 되풀이하지 않는다. 검사는 별표 안까지 전체를 본다. 저장 글은 친 그대로다.
 
+**기억 고치기 · 쉬는 대화(20261123).** 턴 뒤 기억 묶음(아래 「턴 비용」)은 기존 기억을 번호(m1 …, 유저가 고친 것은 locked)로 보여 주고, 추출 모델이 더하기 ·
+고치기(이사 · 계획이 바뀜) · 잊기(더는 맞지 않음)를 고른다(`companion-memory.ts`). `companion_apply_memory_ops`가 잊기 · 고치기를 먼저, 더하기를 나중에 적용한다 —
+고치기는 옛 글을 `memories.history`에 남기고(`updated_at`), 잊기는 `deleted_reason` forgotten, 상한 밀어내기는 evicted. 유저가 고친 기억은 건드리지 않고 `protected`로
+센다. 같은 원본 메시지로 두 번 적용하지 않는다. 턴 뒤 로그 `memories= updated= forgotten= protected= evicted=`. 묶음이 차기 전에 대화가 멈추면 예약 작업
+(`companion-proactive`에 `{ mode: "memory_flush", batch }`, `supabase/cron/companion.sql`의 `companion-memory-flush` — 10분마다)이 `settings.memory_flush_idle`
+(기본 30분) 넘게 조용한 대화의 남은 메시지를 뽑는다(`companion_memory_flush_candidates` → `companion_memory_source(…, p_flush => true)`).
+
+**요약(20261123).** 네 칸 — [학습자] · [이어지는 이야기] · [캐릭터](캐릭터가 스스로 밝힌 사실 · 약속, 앞뒤가 맞게) · [약속], 합쳐 8문장 이하. 칩을 그대로 고른 유저 말은
+기억처럼 표시되고 사실로 적지 않는다.
+
+**번역 맥락(20261123).** 바로 앞 대화 세 줄(턴은 이번 유저 말까지, 거절은 걸린 말 빼고)을 「번역하지 않는 맥락」으로, 캐릭터 이름과 페르소나 `glossary`(운영자가 채우는
+표기 메모)를 `Names`로 넘긴다 — 시스템 글은 그대로라 캐시된다. 실패 · 개수 틀림이면 제한 시간의 1/3 이상 남았을 때 한 번 다시 시도한다.
+
 **선톡 빈도 — 유저 설정(20261115).** 프로필 `proactive_pref` off · daily1(기본) · daily2, `proactive_hour`(현지 0 ~ 23, null이면 아무 때나), `timezone`(IANA).
 판정은 `companion.proactive_skip_reason` 하나(이유 off · quiet_hours · hour · daily_cap · gap · spacing):
 
@@ -359,7 +373,12 @@ fake 모드에서 흐름을 일부러 일으키는 낱말은 `_shared/companion-
 - 한 회차에 유저마다 후보 하나(가장 오래 조용한 대화). 연령 · 지역 규칙은 그대로.
 - 예약 작업은 매시 30분 그대로 둔다 — 유저마다 현지 시각이 달라 매시간 봐야 선호 시각을 맞춘다. 유저마다 보내는 수는 위 규칙이 정한다.
 - 유저가 한 번도 말하지 않은 대화(첫 인사만 있음)는 후보가 아니다(20261122) — 맥락의 `hasUserMessage: false`면 함수가 `no_user_message`로 건너뛴다.
-- 플레이그라운드 `force`는 빈도 판정을 모두(off 포함) 건너뛴다. 연령 · 지역 규칙과 첫 인사만 있는 대화는 건너뛰지 않는다.
+- 플레이그라운드 `force`는 빈도 판정을 모두(off 포함) 건너뛴다. 연령 · 지역 규칙과 첫 인사만 있는 대화는 건너뛰지 않는다. 막혔을 까닭은 결과 · meta의 `wouldSkip`.
+- **답 없는 선톡(20261123)** — 유저가 그 대화에서 마지막으로 말한 뒤 쌓인 선톡 수(`unanswered`)가 `settings.proactive_unanswered_limit`(기본 2, 0이면 끔)에 닿으면
+  더 보내지 않는다(`unanswered_limit`). 그 전에는 공백이 `gap × proactive_backoff^unanswered`(기본 2배씩, 1이면 끔)로 늘어난다(`backoff`). 유저가 한 번 말하면 0.
+  판정은 `companion.proactive_conversation_skip_reason`(유저 판정 + 위 둘) — 후보와 맥락이 같이 쓴다.
+- **선톡 지시의 맥락(20261123)** — 유저의 마지막 말 뒤 며칠 · 현지 때(아침 · 오후 · 저녁 · 늦은 밤, 시간대를 알 때) · 마지막 유저 말(화제) · 최근 선톡 글 셋
+  (같은 말 · 화제 되풀이 금지) · 답 없는 선톡이 있으면 「더 가볍게, 답 안 한 것을 말하지 않기」. 칩 스위치가 켜져 있으면 선톡에도 칩을 붙여 저장하고 칩 지표에 센다.
 - 앱: `companion_save_profile(p_birth_year, p_age_source, p_l1, p_feedback_mode, p_proactive_pref = null, p_proactive_hour = null, p_timezone = null)` —
   null은 그대로, `p_proactive_hour = -1`은 지우기(아무 때나), `p_timezone = ''`은 지우기, 틀린 값(모르는 시간대 포함)은 22023. 옛 4인수 호출은 그대로 된다.
   `companion_load_profile()`이 `proactivePref` · `proactiveHour` · `timezone`을 더 돌려준다(계약 `companion-profile`).
@@ -511,6 +530,9 @@ supabase functions serve --no-verify-jwt                                        
    `latestSuggestions`가 없어 새 `chat-send`가 `skipped`를 만들지 않고 보통처럼 피드백할 뿐이다. 그다음 `chat-send`를 다시 배포한다.
    `20261121120000_companion_greeting.sql`은 20261121110000 **뒤에**, `companion-greet`를 처음 배포하기 전에 적용한다(같은 방식의 묶음). 옛 DB면 새 함수가
    맥락을 읽지 못해 500(`context_failed`)을 낸다. 다른 함수는 이 마이그레이션과 상관없다(`companion-eval`의 `?docs=1`에 인사 프롬프트가 더해질 뿐).
+   `20261123120000_companion_quality.sql`은 20261122 **뒤에**, **새 함수(chat-send · companion-proactive)를 배포하기 전에** 적용한다(같은 방식의 묶음). 새 함수는
+   `companion_apply_memory_ops` · `companion_save_proactive(…, p_suggestions)`를 불러서 옛 DB면 기억 작업 · 칩 붙은 선톡 저장이 실패한다. 적용 뒤 `chat-send` ·
+   `companion-proactive` · `companion-greet` · `companion-eval`을 다시 배포하고, 예약 `companion-memory-flush`를 `supabase/cron/companion.sql`에서 더한다.
 3. 비밀: `supabase secrets set --env-file supabase/functions/.env`. 키가 아직 없으면 `COMPANION_LLM=fake`로 화면만 먼저 본다.
 4. `supabase functions deploy chat-send` · `supabase functions deploy companion-proactive` · `supabase functions deploy companion-eval`(`config.toml`의 `verify_jwt = false`를 따른다).
 5. 예약 작업: Vault에 서버 키(`companion_service_role_key`)를 넣고 `supabase/cron/companion.sql`을 SQL 편집기에서 한 번 실행한다.

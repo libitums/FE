@@ -32,8 +32,16 @@ export const suggestionSchema = z.object({
   ),
 });
 
+// 기억 작업(더하기 · 고치기 · 잊기). 다듬기(`memoryOpsFrom`)가 빈 칸 · 모르는 번호를 버린다.
 export const memorySchema = z.object({
-  items: z.array(
-    z.object({ kind: z.enum(["fact", "event"]), content: z.string(), shared: z.boolean() }),
+  ops: z.array(
+    z.object({
+      op: z.enum(["add", "update", "forget"]),
+      ref: z.string().nullable(),
+      kind: z.enum(["fact", "event"]).nullable(),
+      content: z.string().nullable(),
+      shared: z.boolean().nullable(),
+      reason: z.string(),
+    }),
   ),
 });

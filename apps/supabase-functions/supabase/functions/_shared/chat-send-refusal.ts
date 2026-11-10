@@ -17,7 +17,7 @@ import type {
 } from "./chat-send.contract.ts";
 import type { ModerationRecord, TurnStatus } from "./chat-send-finish.ts";
 import type { Sink } from "./chat-send-http.ts";
-import { applyTranslation, startTranslation } from "./chat-send-translate.ts";
+import { applyTranslation, startTranslation, translationContext } from "./chat-send-translate.ts";
 import type { SpeechLevel } from "./companion-contract/index.ts";
 import {
   type RefusalStage,
@@ -207,7 +207,14 @@ export async function sendRefusal(
   const translated = await startTranslation(
     turn.llm,
     turn.env,
-    { segments: refusal.segments, l1: turn.l1, timeoutMs: deps.translationTimeoutMs },
+    {
+      segments: refusal.segments,
+      l1: turn.l1,
+      timeoutMs: deps.translationTimeoutMs,
+      // 걸린 유저 글은 넣지 않는다 — 앞 대화만.
+      context: translationContext(turn.history),
+      persona: turn.persona,
+    },
     new AbortController().signal,
   );
   try {

@@ -5,6 +5,8 @@ const calls = vi.hoisted(() => ({
   stream: [] as Record<string, unknown>[],
   parse: [] as Record<string, unknown>[],
 }));
+// 다음 구조화 호출이 돌려줄 기억 작업(한 번 쓰면 비운다).
+const parsedOps = vi.hoisted(() => [] as Record<string, unknown>[]);
 vi.mock("@anthropic-ai/sdk", () => ({
   default: class {
     beta = {
@@ -49,6 +51,7 @@ vi.mock("@anthropic-ai/sdk", () => ({
             action: "allow",
             items: [],
             lines: ["a", "b"],
+            ops: parsedOps.splice(0),
           },
         };
       },
@@ -58,6 +61,7 @@ vi.mock("@anthropic-ai/sdk", () => ({
 
 const { anthropicCompanionLlm, companionLlmWithModel, serverFallbackOptions } =
   await import("./companion-llm.ts");
+const { summaryContent, summarySystem } = await import("./companion-memory-prompts.ts");
 
 const config = {
   kind: "anthropic",
@@ -79,6 +83,7 @@ async function reply(llm: ReturnType<typeof anthropicCompanionLlm>) {
 beforeEach(() => {
   calls.stream.length = 0;
   calls.parse.length = 0;
+  parsedOps.length = 0;
 });
 
 test("LL1. 답변은 서버 쪽 대체 모델을 싣는다 — Haiku만 뺀다", async () => {
@@ -140,7 +145,54 @@ test("LL2b. 칩을 그대로 고른 유저 말은 기억 원문에 표시가 붙
   const content = (params["messages"] as { content: string }[])[0]!.content;
   expect(content).toContain("학습자(추천 답변을 그대로 고름): 저는 서울에 살아요");
   expect(content).toContain("학습자: 저는 떡볶이를 좋아해요");
-  expect(JSON.stringify(params["system"])).toContain("never store a fact");
+  expect(JSON.stringify(params["system"])).toContain("not evidence of the learner's facts");
+});
+
+test("LL2c. 기억 작업 — 기존 기억을 번호(잠김 표시)로 보이고, 모르는 번호 · 빈 글 · 같은 기억 두 번은 버린다", async () => {
+  parsedOps.push(
+    { op: "update", ref: "m1", kind: null, content: "부산에 산다", shared: null, reason: "moved" },
+    { op: "forget", ref: "m1", kind: null, content: null, shared: null, reason: "again" },
+    { op: "forget", ref: "m9", kind: null, content: null, shared: null, reason: "unknown" },
+    { op: "forget", ref: "m2", kind: null, content: null, shared: null, reason: "locked" },
+    { op: "add", ref: null, kind: "fact", content: " ", shared: true, reason: "empty" },
+    { op: "add", ref: null, kind: "event", content: "이사했다", shared: null, reason: "new" },
+  );
+  const ops = await anthropicCompanionLlm(config).extractMemories({
+    messages: [{ role: "user", text: "부산으로 이사했어요" }],
+    existing: [
+      { ref: "m1", content: "서울에 산다", shared: true, locked: false },
+      { ref: "m2", content: "이름은 마리아", shared: true, locked: true },
+    ],
+    minor: false,
+    signal,
+  });
+  // 잠긴 기억에 대한 작업은 남긴다 — 서버가 건드리지 않고 protected로 센다.
+  expect(ops).toEqual([
+    { op: "update", ref: "m1", content: "부산에 산다", reason: "moved" },
+    { op: "forget", ref: "m2", reason: "locked" },
+    { op: "add", kind: "event", content: "이사했다", shared: false, reason: "new" },
+  ]);
+  const content = (calls.parse.at(-1)!["messages"] as { content: string }[])[0]!.content;
+  expect(content).toContain("m1. [shared] 서울에 산다");
+  expect(content).toContain("m2. [shared] (locked) 이름은 마리아");
+});
+
+test("LL2d. 요약 — 네 칸(학습자 · 이어지는 이야기 · 캐릭터 · 약속), 칩을 그대로 고른 말은 표시하고 사실로 적지 않는다", () => {
+  for (const heading of ["[학습자]", "[이어지는 이야기]", "[캐릭터]", "[약속]"])
+    expect(summarySystem).toContain(heading);
+  expect(summarySystem).toContain("facts the character stated about itself");
+  expect(summarySystem).toContain("Do not record them as the learner's facts");
+  expect(
+    summaryContent({
+      previous: "앞 요약",
+      messages: [
+        { role: "user", text: "저는 서울에 살아요", picked: true },
+        { role: "assistant", segments: [{ kind: "speech", text: "나는 고양이를 키워요" }] },
+      ],
+    }),
+  ).toBe(
+    "Previous summary:\n앞 요약\n\nConversation:\n학습자(추천 답변을 그대로 고름): 저는 서울에 살아요\n캐릭터: 나는 고양이를 키워요",
+  );
 });
 
 test("LL3. 모델 바꿔 보기는 모든 단계를 그 모델로", async () => {
@@ -191,6 +243,30 @@ test("LL4. 번역은 번역 모델로 · 조각마다 한 줄", async () => {
   expect(calls.parse[0]?.["messages"]).toEqual([
     { role: "user", content: "1. [action] 손을 흔든다\n2. [speech] 안녕!" },
   ]);
+});
+
+test("LL4b. 번역 맥락 — 앞 대화는 번역하지 않는 맥락으로, 이름 표기는 Names로(시스템 글은 그대로)", async () => {
+  const llm = anthropicCompanionLlm(config);
+  await llm.translate({
+    segments: [{ kind: "speech", text: "쌤이 도와줄게요!" }],
+    l1: "en",
+    context: [
+      { role: "assistant", text: "숙제 했어요?" },
+      { role: "user", text: "아니요, 어려워요" },
+    ],
+    glossary: { characterName: "덕수쌤", terms: { 쌤: "teacher (friendly)" } },
+    signal,
+  });
+  expect(calls.parse[0]?.["messages"]).toEqual([
+    {
+      role: "user",
+      content:
+        "Context (earlier messages, do not translate):\nCharacter: 숙제 했어요?\nLearner: 아니요, 어려워요\n\nNames:\n- 덕수쌤: the character's name\n- 쌤: teacher (friendly)\n\nTranslate these lines:\n1. [speech] 쌤이 도와줄게요!",
+    },
+  ]);
+  const system = (calls.parse[0]?.["system"] as { text: string }[]).map((b) => b.text).join("");
+  expect(system).not.toContain("덕수쌤");
+  expect(system).toContain("never translate or include them");
 });
 
 test("LL5. 구조화 호출은 시스템 글에 캐시 표시 — 피드백은 바뀌지 않는 앞부분에만", async () => {

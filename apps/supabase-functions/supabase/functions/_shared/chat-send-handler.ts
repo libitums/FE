@@ -23,6 +23,7 @@ import {
 } from "./chat-send-http.ts";
 import { resolveChoice } from "./chat-send-choice.ts";
 import { runTurn, type TurnContext } from "./chat-send-turn.ts";
+import { memoryLine } from "./companion-memory.ts";
 import { runAfterTurn } from "./companion-after-turn.ts";
 import { saveSuggestions } from "./companion-suggest-generate.ts";
 import type { PreStreamErrorCode } from "./companion-contract/index.ts";
@@ -185,7 +186,7 @@ export function createChatSendHandler(deps: ChatSendDeps): (request: Request) =>
           deps.log({
             event: "companion_after_turn",
             status: "stream",
-            outcome: `memory_batch=${result.memoryBatch} memories=${result.memories} evicted=${result.evicted} memory_full=${result.memoryFull} summarized=${result.summarized}${line === "" ? "" : ` usage ${line}`}`,
+            outcome: `${memoryLine(result)} summarized=${result.summarized}${line === "" ? "" : ` usage ${line}`}`,
           });
         } catch {
           deps.log({ event: "companion_after_turn", status: "stream", outcome: "failed" });

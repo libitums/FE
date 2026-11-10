@@ -18,12 +18,17 @@ import {
   feedbackContent,
   feedbackFrom,
   feedbackSystemParts,
-  memorySystem,
-  summarySystem,
   translationContent,
   translationSystem,
 } from "./companion-llm-prompts.ts";
-import { segmentsToPlain, segmentsToTagged } from "./companion-segments.ts";
+import {
+  memoryContent,
+  memoryOpsFrom,
+  memorySystem,
+  summaryContent,
+  summarySystem,
+} from "./companion-memory-prompts.ts";
+import { segmentsToTagged } from "./companion-segments.ts";
 import { suggestionContent, suggestionSystem } from "./companion-suggest-prompts.ts";
 import {
   feedbackSchema,
@@ -33,9 +38,6 @@ import {
   verdictSchema,
 } from "./companion-llm-schemas.ts";
 import { moderationInstruction } from "./companion-safety.ts";
-
-/** 묶음 하나(몇 턴)에서 뽑는 기억 수의 상한. */
-export const memoryBatchLimit = 5;
 
 /** 시스템 프롬프트의 두 부분 사이 구분자. 핸들러가 앞(고정) · 뒤(유저별)를 이 줄로 잇습니다. */
 export const systemSplit = "\n\n<<<DYNAMIC>>>\n\n";
@@ -95,15 +97,6 @@ function usageOf(step: LlmStep, model: string, usage: ResponseUsage | undefined)
     outputTokens: usage.output_tokens,
   };
 }
-
-const transcript = (history: readonly HistoryEntry[]) =>
-  history
-    .map((entry) =>
-      entry.role === "user"
-        ? `${entry.picked ? "학습자(추천 답변을 그대로 고름)" : "학습자"}: ${entry.text}`
-        : `캐릭터: ${segmentsToPlain(entry.segments)}`,
-    )
-    .join("\n");
 
 export function anthropicCompanionLlm(
   config: Extract<ChatSendEnv["llm"], { kind: "anthropic" }>,
@@ -211,7 +204,7 @@ export function anthropicCompanionLlm(
         config.translationModel,
         translationSchema,
         translationSystem(request.l1, request.segments.length),
-        translationContent(request.segments),
+        translationContent(request),
         request.signal,
       );
       return result.lines;
@@ -222,10 +215,10 @@ export function anthropicCompanionLlm(
         config.moderationModel,
         memorySchema,
         memorySystem(request.minor),
-        `Existing memory:\n${request.existing.map((item) => `- ${item}`).join("\n") || "(none)"}\n\nRecent messages:\n${transcript(request.messages)}`,
+        memoryContent(request),
         request.signal,
       );
-      return result.items.slice(0, memoryBatchLimit).filter((item) => item.content.trim() !== "");
+      return memoryOpsFrom(result.ops, request.existing);
     },
     async summarize(request) {
       const response = await client.messages.create(
@@ -237,7 +230,7 @@ export function anthropicCompanionLlm(
           messages: [
             {
               role: "user",
-              content: `${request.previous ? `Previous summary:\n${request.previous}\n\n` : ""}Conversation:\n${transcript(request.messages)}`,
+              content: summaryContent(request),
             },
           ],
         },

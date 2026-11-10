@@ -7,7 +7,7 @@ import type {
   FeedbackItem,
   FeedbackRequest,
   HistoryEntry,
-  Segment,
+  TranslationRequest,
 } from "./chat-send.contract.ts";
 import { segmentsToPlain } from "./companion-segments.ts";
 
@@ -160,25 +160,34 @@ export function feedbackFrom(draft: FeedbackDraft, original: string): Feedback {
 
 /** `count`는 조각 수. 문서 화면은 자리 표시 글자를 넣는다. */
 export function translationSystem(l1: string, count: number | string): string {
-  return `Translate a Korean chat character's message into the language with BCP 47 tag "${l1}". The message is a numbered list of lines; each line is "speech" (what the character says) or "action" / "narration" (stage directions). Return "lines" with exactly ${count} strings, one per input line, in the same order. Translate naturally in the character's tone, keep names, and translate stage directions as short stage directions. No romanization, notes or quotes.`;
+  return `Translate a Korean chat character's message into the language with BCP 47 tag "${l1}". The lines to translate are a numbered list; each line is "speech" (what the character says) or "action" / "narration" (stage directions). Return "lines" with exactly ${count} strings, one per numbered line, in the same order. Translate naturally in the character's tone, and translate stage directions as short stage directions. No romanization, notes or quotes.
+The request may start with earlier messages under "Context": use them only to get pronouns, who is speaking to whom and the tone right — never translate or include them. It may list "Names": write each name the same way every time (keep the character's name as a name; transliterate it, do not translate its meaning) and follow any spelling notes given.`;
 }
 
-export function translationContent(segments: readonly Segment[]): string {
-  return segments
+export function translationContent(
+  request: Pick<TranslationRequest, "segments" | "context" | "glossary">,
+): string {
+  const context = (request.context ?? [])
+    .map((entry) => `${entry.role === "user" ? "Learner" : "Character"}: ${entry.text}`)
+    .join("\n");
+  const terms = Object.entries(request.glossary?.terms ?? {}).map(
+    ([term, note]) => `- ${term}: ${note}`,
+  );
+  const names =
+    request.glossary === undefined
+      ? ""
+      : `Names:\n- ${request.glossary.characterName}: the character's name\n${terms.join("\n")}`.trimEnd();
+  const lines = request.segments
     .map((segment, index) => `${index + 1}. [${segment.kind}] ${segment.text}`)
     .join("\n");
+  return [
+    context === "" ? "" : `Context (earlier messages, do not translate):\n${context}`,
+    names,
+    context === "" && names === "" ? lines : `Translate these lines:\n${lines}`,
+  ]
+    .filter((part) => part !== "")
+    .join("\n\n");
 }
-
-export function memorySystem(minor: boolean): string {
-  return `You maintain long-term memory for a chat character. From the recent messages (several exchanges, oldest first), extract at most 5 new, durable facts about the learner (preferences, plans, life events) worth remembering in later conversations. Only what the learner said or clearly confirmed counts. Write each in short Korean.
-- "shared": true if any character could know it (name, home country, hobbies, level), false if it only belongs to this conversation.
-- Skip anything already in the existing memory, small talk, and anything about the character.
-- Lines marked "학습자(추천 답변을 그대로 고름)" were tapped from reply suggestions the app offered: never store a fact, preference or plan based only on them. Role-play *actions* are fiction, not facts about the learner.
-${minor ? "- The learner may be a minor: never store health, mental health, or emotional-state information.\n" : ""}- If nothing is worth remembering, return an empty list.`;
-}
-
-export const summarySystem =
-  "Summarize this Korean-learning chat for the character's memory in at most 6 short Korean sentences: what the learner shared, ongoing topics, and anything promised. Merge with the previous summary. No preamble.";
 
 // ------------------------------------------------------------------ 성격대로 거절(PRD §3.11 5층 — 회피 → 경고 → 일시 차단)
 
