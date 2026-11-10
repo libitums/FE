@@ -1,5 +1,6 @@
 // 메인 답변과 피드백(M2) 받기: 조각으로 나누고, 검사가 끝날 때까지 모아 두었다가 내보냅니다. 조각을 내보내기 전 실패는 한 번 다시 시도합니다.
 
+import type { LearnedTarget } from "./companion-feedback.contract.ts";
 import type {
   AgeBand,
   BegunTurn,
@@ -148,7 +149,11 @@ export const skippedFeedback = (original: string): Feedback => ({
 });
 
 /** 피드백을 제한 시간 안에 받습니다. 실패 · 시간 초과는 `unavailable` — 턴을 실패시키지 않습니다(PRD §3.5). */
-export function startFeedback(context: FeedbackContext, abort: AbortController): Promise<Feedback> {
+export function startFeedback(
+  context: FeedbackContext,
+  abort: AbortController,
+  targets: readonly LearnedTarget[] = [],
+): Promise<Feedback> {
   const lastAssistant = [...context.turn.history]
     .reverse()
     .find((entry) => entry.role === "assistant");
@@ -174,6 +179,7 @@ export function startFeedback(context: FeedbackContext, abort: AbortController):
                 role: context.turn.persona.role ?? null,
                 banmalFeedback: context.turn.persona.banmalFeedback ?? "better",
               },
+        ...(targets.length > 0 ? { targets } : {}),
         signal,
       })
       .catch(() => unavailable),

@@ -29,7 +29,7 @@ export const feedbackModeRule: Record<FeedbackMode, string> = {
 };
 
 /** 답 끝의 앱용 줄(PRD §3.2 · §3.8). 학습자에게는 보이지 않는다. */
-export const stateLine = `@state {"intimacy_delta": <integer from -2 to 3: how much warmer this exchange made the relationship>, "topic": "<2-4 word Korean topic of this exchange>", "user_wants_switch": <true if the learner signals they want a new topic>}`;
+export const stateLine = `@state {"intimacy_delta": <integer from -2 to 3: how much warmer this exchange made the relationship>, "topic": "<2-4 word Korean topic of this exchange>", "user_wants_switch": <true if the learner signals they want a new topic>, "learned": <true only if "For this reply" names a learned expression and you did what it asked, otherwise false>, "heavy": <true if the learner seems sad, upset or in need of comfort>}`;
 
 /** 선톡(PRD §3.8)의 이번 답 지시와, 유저 말 자리에 넣는 앱 안내. */
 export const proactiveDirective =

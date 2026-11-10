@@ -101,5 +101,8 @@ export function suggestionContent(request: SuggestRequest): string {
   const conversation = request.history
     .map((entry) => `${entry.role === "user" ? "Learner" : "Character"}: ${entry.text}`)
     .join("\n");
-  return `${character}\n${level}\n${meaning}${summary}${past}\n\nRecent conversation (oldest first):\n${conversation}`;
+  const target = request.target
+    ? `\n\nLearned expression to practise: make exactly one of the 3 candidates use "${request.target.surface}"${request.target.gloss ? ` (${request.target.gloss})` : ""} naturally (you may conjugate it or fill its blank). It must still follow every rule; if it cannot fit naturally, leave it out.`
+    : "";
+  return `${character}\n${level}\n${meaning}${summary}${past}${target}\n\nRecent conversation (oldest first):\n${conversation}`;
 }

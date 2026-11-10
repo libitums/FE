@@ -32,6 +32,13 @@ export type SuggestRequest = {
   readonly summary?: string | null;
   /** 이 대화의 최근 칩 셋(오래된 것부터). */
   readonly recentChoiceSets?: readonly ChoiceSet[];
+  /** 학습 삽입의 칩 방식(PRD §3.7, 20261125) — 후보 하나에 이 배운 표현을 자연스럽게 넣는다. 없으면 null · 생략. */
+  readonly target?: {
+    readonly id: string;
+    readonly kind: string;
+    readonly surface: string;
+    readonly gloss: string | null;
+  } | null;
   readonly signal: AbortSignal;
 };
 

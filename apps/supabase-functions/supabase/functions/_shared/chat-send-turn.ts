@@ -12,7 +12,8 @@ import {
   type TurnOutcome,
   turnFinisher,
 } from "./chat-send-finish.ts";
-import { refusalStage, sendRefusal } from "./chat-send-refusal.ts";
+import { refusalStage } from "./chat-send-refusal.ts";
+import { turnRefuser } from "./chat-send-turn-refuse.ts";
 import {
   defaultLlmTimeoutMs,
   historyFrom,
@@ -21,7 +22,21 @@ import {
   startFeedback,
   startReply,
 } from "./chat-send-reply.ts";
-import { sendSuggestions, startSuggestions, suggestionsMeta } from "./chat-send-suggest.ts";
+import {
+  chipTarget,
+  learnedTargets,
+  learningDay,
+  learningOutcome,
+  learningSettingsFrom,
+  recordTurnLearning,
+  withLearnedUse,
+} from "./chat-send-learning.ts";
+import {
+  sendSuggestions,
+  startSuggestions,
+  suggestionSettings,
+  suggestionsMeta,
+} from "./chat-send-suggest.ts";
 import { applyTranslation, startTranslation, translationContext } from "./chat-send-translate.ts";
 import { chooseBranch, nextTopicState, topicStateFrom } from "./companion-branching.ts";
 import {
@@ -30,7 +45,6 @@ import {
   type StreamErrorCode,
 } from "./companion-contract/index.ts";
 import { systemSplit } from "./companion-llm.ts";
-import type { RefusalStage } from "./companion-llm-prompts.ts";
 import { companionSystemPrompt, type PromptInput } from "./companion-prompt.ts";
 import { crisisResourcesFor } from "./companion-safety.ts";
 import { segmentsToPlain, type SegmentDelta } from "./companion-segments.ts";
@@ -44,12 +58,21 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
   const moderation: ModerationRecord[] = [];
   const persona: PersonaCard = turn.persona ?? { name: body.character_id };
   const topicState = topicStateFrom(turn.topicState);
+  const pool = context.learning.expressions;
+  const today = learningDay(deps.nowMs());
   const branch = chooseBranch(topicState, {
     userText: body.text,
     persona,
-    expressions: context.learning.expressions,
+    learning: {
+      pool,
+      episodes: context.learning.episodes,
+      settings: learningSettingsFrom(context.learning),
+      chipsOn: gate.replySuggestions === true && suggestionSettings(context.status).enabled,
+      today,
+    },
     random: deps.random ?? Math.random,
   });
+  const target = branch.learning.target;
   const promptInput: PromptInput = {
     persona,
     speechLevel: turn.speechLevel,
@@ -64,7 +87,8 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
   };
   const prompt = companionSystemPrompt(promptInput);
   const withUsage = (assistant: Record<string, unknown>) => withUsageMeta(assistant, context.usage);
-  const { finish, sendState, done } = turnFinisher(context, moderation);
+  const finisher = turnFinisher(context, moderation);
+  const { finish, sendState, done } = finisher;
   const fail = async (code: StreamErrorCode, status: "blocked" | "failed") => {
     abort.abort();
     sink.send({ event: "error", data: { code, retryable: STREAM_ERRORS[code].retryable } });
@@ -75,39 +99,8 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
     }
     return { outcome: code, afterTurn: null };
   };
-  // 성격대로 거절 — 걸린 글 대신 분류와 단계만 준 답을 보통 답처럼 보내고 `blocked`로 저장한다(`chat-send-refusal.ts`).
-  const refuse = async (stage: RefusalStage, category: string) => {
-    const outcome = await sendRefusal(
-      {
-        deps,
-        env,
-        llm,
-        sink,
-        l1: gate.l1,
-        persona,
-        speechLevel: turn.speechLevel,
-        ageBand,
-        history: historyFrom(turn),
-        assistantMessageId: context.assistantMessageId,
-        meta: { model: llm.model, trial: turn.trial, playground: context.playground },
-      },
-      {
-        systemWith: (directive) => {
-          const system = companionSystemPrompt({ ...promptInput, directive });
-          return `${system.stable}${systemSplit}${system.dynamic}`;
-        },
-        record: (output) => moderation.push(output),
-        finish: async (assistant) => {
-          const finished = await finish("blocked", withUsage(assistant));
-          sendState(finished);
-          done(finished, stage);
-        },
-      },
-      stage,
-      category,
-    );
-    return { outcome, afterTurn: null };
-  };
+  // 성격대로 거절 — 걸린 글 대신 분류와 단계만 준 답을 보통 답처럼 보내고 `blocked`로 저장한다(`chat-send-turn-refuse.ts`).
+  const refuse = turnRefuser(context, { persona, promptInput, moderation, finisher, withUsage });
 
   sink.send({
     event: "start",
@@ -131,10 +124,11 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
     branch.directive,
   );
   // 추천 답변 칩을 그대로 보냈으면 피드백 모델을 부르지 않는다(칩은 이미 자연스러운 문장). 고쳐 보냈거나 직접 입력 · 지난 칩이면 보통처럼.
-  const feedback =
+  const feedback = (
     context.choice.inputSource === "suggestion"
       ? Promise.resolve(skippedFeedback(body.text))
-      : startFeedback(context, abort);
+      : startFeedback(context, abort, learnedTargets(pool, topicState))
+  ).then((card) => withLearnedUse(card, pool, body.text, context.choice));
   let correctionSent = false;
   const sendCorrection = (value: Feedback) => {
     if (correctionSent) return;
@@ -202,7 +196,13 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
     },
     abort.signal,
   );
-  const chips = startSuggestions(context, persona, result.segments, abort.signal);
+  const chips = startSuggestions(
+    context,
+    persona,
+    result.segments,
+    abort.signal,
+    chipTarget(target),
+  );
 
   if (ageBand !== "adult") {
     let output: ModerationVerdict;
@@ -230,6 +230,13 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
   sendCorrection(feedbackResult);
   const segments = applyTranslation(sink, deps.log, result.segments, translated);
   const saved = sendSuggestions(sink, deps.log, context.assistantMessageId, suggested);
+  const learned = learningOutcome({
+    decision: branch.learning,
+    state: result.state,
+    segments,
+    chipShown: suggested?.status === "ok" && suggested.targetShown === true,
+    feedback: feedbackResult,
+  });
 
   let finished: Finished;
   try {
@@ -244,8 +251,8 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
           ageBand,
           firstDeltaMs: result.firstDeltaMs,
           totalMs: result.totalMs,
-          expressions: context.learning.expressions.map((entry) => entry.id),
           branch: branch.action,
+          learning: learned.meta,
           turnState: result.state,
           feedbackMode: gate.feedbackMode,
           inputSource: context.choice.inputSource,
@@ -262,9 +269,12 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
           userText: body.text,
           turnState: result.state,
           action: branch.action,
+          learning: branch.learning,
+          today,
         }),
       },
     );
+    await recordTurnLearning(deps, env, context.userId, learned.events);
   } catch {
     sink.send({ event: "error", data: { code: "internal_error", retryable: true } });
     return { outcome: "internal_error", afterTurn: null };

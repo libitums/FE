@@ -18,6 +18,7 @@ import {
   feedbackContent,
   feedbackFrom,
   feedbackSystemParts,
+  learnedFrom,
   translationContent,
   translationSystem,
 } from "./companion-llm-prompts.ts";
@@ -196,7 +197,9 @@ export function anthropicCompanionLlm(
         feedbackContent(request),
         request.signal,
       );
-      return feedbackFrom(result, request.text);
+      const learned = learnedFrom(result.learned_used, request.targets);
+      const card = feedbackFrom(result, request.text);
+      return learned.length > 0 ? { ...card, learnedUsed: learned } : card;
     },
     async translate(request) {
       const result = await parse(

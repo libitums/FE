@@ -14,6 +14,7 @@
 //   「저는 … 좋아해요」 · 「…로 이사했어요」 · 「이제 … 안 좋아해요」 → 기억 더하기 · 고치기 · 잊기(묶음으로 뽑힐 때, `companion-llm-fake-memory.ts`)   「[slow]」 → 조각 사이를 늦춘다   「[warm]」 → 친밀도 +3
 //   추천 답변 칩: 최근 대화에 「[suggest-bad]」 → 후보가 둘뿐   「[unsafe-suggest]」 → 출력 검사에 걸리는 칩   「[suggest-dup]」 → 겹치는 후보
 //   「[suggest-none]」 → 통과 후보 0(다시 묻고도 `no_valid_candidates`)
+//   학습 표현: 지시에 배운 표현이 있으면 그 표현을 쓰고 `@state.learned`(`companion-llm-fake-learning.ts`)   「[sad]」 → `@state.heavy`
 // 위 낱말이 없는 말은 정상 턴(조각 셋 · 친밀도 +1)입니다.
 
 import type {
@@ -22,9 +23,14 @@ import type {
   FeedbackItem,
   ModerationVerdict,
 } from "./chat-send.contract.ts";
+import {
+  fakeLearningLines,
+  withFakeLearned,
+  withFakeTarget,
+} from "./companion-llm-fake-learning.ts";
 import { fakeMemoryOps } from "./companion-llm-fake-memory.ts";
+import { fakeSuggestions } from "./companion-llm-fake-suggest.ts";
 import { emptyFeedback } from "./companion-llm-prompts.ts";
-import { suggestionMeaningLanguage } from "./companion-suggest-prompts.ts";
 
 // 위기 · 욕 · 모욕 — 학습자 언어가 여럿이라(en · vi · id · ja · es · my · th · tl …) 언어마다 한두 개씩 둔다.
 const crisisWords = [
@@ -95,7 +101,7 @@ const swearIn = (text: string) =>
   casualSwear.test(text) ? "아 씨" : swearWords.find((word) => squash(text).includes(word));
 
 export function fakeCompanionLlm(): CompanionLlm {
-  return {
+  const llm: CompanionLlm = {
     model: "fake",
     async *reply(request) {
       const slow = request.userText.includes("[slow]");
@@ -108,8 +114,18 @@ export function fakeCompanionLlm(): CompanionLlm {
       const warn = request.system.includes("This has happened before");
       // 첫 인사(인사 지시가 붙은 답) — 유저 말 자리는 앱 안내라 따라 말하지 않는다.
       const greeting = request.system.includes("very first message of a new conversation");
+      const learning = refusal ? null : fakeLearningLines(request);
       const lines = greeting
-        ? ["@action 손을 흔든다", "@speech 어서 와요! 처음 보네요. 이름이 뭐예요?"]
+        ? [
+            "@action 손을 흔든다",
+            "@speech 어서 와요! 처음 보네요. 이름이 뭐예요?",
+            ...(learning === null
+              ? []
+              : [
+                  learning.line,
+                  `@state {"intimacy_delta": 0, "topic": "인사", "user_wants_switch": false, "learned": true}`,
+                ]),
+          ]
         : refusal
           ? [
               "@action 고개를 살짝 젓는다",
@@ -129,7 +145,8 @@ export function fakeCompanionLlm(): CompanionLlm {
                 : request.userText.includes("[swear-reply]")
                   ? "@speech 아 씨, 진짜요?"
                   : "@speech 그럼 퀴즈! 소 더하기 고기는?",
-              `@state {"intimacy_delta": ${request.userText.includes("[warm]") ? 3 : 1}, "topic": "인사", "user_wants_switch": false}`,
+              ...(learning === null ? [] : [learning.line]),
+              `@state {"intimacy_delta": ${request.userText.includes("[warm]") ? 3 : 1}, "topic": "인사", "user_wants_switch": false${learning?.learned ? ', "learned": true' : ""}${request.userText.includes("[sad]") ? ', "heavy": true' : ""}}`,
             ];
       for (const line of lines) {
         for (const piece of [line.slice(0, 8), `${line.slice(8)}\n`]) {
@@ -257,30 +274,12 @@ export function fakeCompanionLlm(): CompanionLlm {
       return `요약(가짜): 메시지 ${request.messages.length}개${request.previous ? " · 앞 요약 이어 씀" : ""}`;
     },
     async suggest(request) {
-      const recent = request.history.map((entry) => entry.text).join("\n");
-      const language = suggestionMeaningLanguage(request.l1);
-      const polite = (request.speechLevel ?? "polite") === "polite";
-      const lines: [string, string][] = polite
-        ? [
-            ["elaborate", "저도 오늘 한국어 공부를 조금 했어요."],
-            ["ask", `${request.character.name}은 오늘 뭐 했어요?`],
-            ["reflect", "와, 정말 재미있었겠어요!"],
-          ]
-        : [
-            ["elaborate", "나도 오늘 한국어 공부를 조금 했어."],
-            ["ask", "너는 오늘 뭐 했어?"],
-            ["reflect", "와, 진짜 재미있었겠다!"],
-          ];
-      if (recent.includes("[unsafe-suggest]")) lines[2] = ["reflect", "[unsafe] 위험한 칩이에요"];
-      // 「[suggest-dup]」 → 둘째 후보가 첫째와 거의 같다(검증에서 빠짐). 「[suggest-none]」 → 모두 서식 위반(통과 0).
-      if (recent.includes("[suggest-dup]")) lines[1] = ["ask", lines[0]![1].replace(".", "!")];
-      if (recent.includes("[suggest-none]")) for (const line of lines) line[1] = `*${line[1]}*`;
-      const items = lines.map(([intent, text]) => ({
-        intent,
-        text,
-        meaning: language === null ? null : `[${language}] ${text}`,
-      }));
-      return recent.includes("[suggest-bad]") ? items.slice(0, 2) : items;
+      return fakeSuggestions(request);
     },
+  };
+  return {
+    ...llm,
+    feedback: async (request) => withFakeLearned(request, await llm.feedback(request)),
+    suggest: async (request) => withFakeTarget(request, await llm.suggest(request)),
   };
 }

@@ -18,8 +18,14 @@ import {
 } from "./companion-contract/index.ts";
 import { systemSplit } from "./companion-llm.ts";
 import { companionSystemPrompt, greetingDirective, greetingUserText } from "./companion-prompt.ts";
+import {
+  generateOpener,
+  openerLearning,
+  openerOutcome,
+  recordOpener,
+  withOpenerLine,
+} from "./companion-opener.ts";
 import { callRpc } from "./companion-rpc.ts";
-import { collectSegments, createSegmentSplitter, segmentsToPlain } from "./companion-segments.ts";
 import {
   generateSuggestions,
   type SuggestOutcome,
@@ -158,53 +164,40 @@ export function createGreetHandler(deps: GreetDeps): (request: Request) => Promi
     const llm = baseLlm.withUsage?.(usage.record) ?? baseLlm;
     const persona: GreetingPersona = context.persona ?? { name: body.character_id };
     const timeoutMs = deps.greetTimeoutMs ?? defaultGreetTimeoutMs;
+    const learning = await openerLearning(
+      deps.outbound,
+      env,
+      caller.userId,
+      deps.random ?? Math.random,
+    );
     const prompt = companionSystemPrompt({
       persona,
       speechLevel: context.speechLevel,
       ageBand: context.ageBand,
       l1: context.l1,
-      expressions: [],
+      expressions: learning.pool,
       summary: null,
       feedbackMode: context.feedbackMode,
       memories: context.memories,
-      directive: greetingDirective,
+      directive: withOpenerLine(greetingDirective, learning.target),
     });
 
     // 인사 만들기 + 출력 검사. 어느 단계든 실패하면 정해진 인사(검사를 지나지 않은 글은 내보내지 않는다).
-    let segments: Segment[] = [];
-    let source: "model" | "canned" = "model";
-    let outcome = "model";
-    try {
-      const splitter = createSegmentSplitter();
-      const deltas = [];
-      for await (const chunk of llm.reply({
-        system: `${prompt.stable}${systemSplit}${prompt.dynamic}`,
-        history: [],
-        userText: greetingUserText,
-        signal: AbortSignal.timeout(timeoutMs),
-      })) {
-        deltas.push(...splitter.push(chunk));
-      }
-      deltas.push(...splitter.end());
-      segments = collectSegments(deltas);
-      if (segments.length === 0) outcome = "empty_reply";
-      else {
-        const verdict = await llm.moderate({
-          layer: "output_sync",
-          text: segmentsToPlain(segments),
-          context: null,
-          ageBand: context.ageBand,
-          signal: AbortSignal.timeout(timeoutMs),
-        });
-        if (verdict.action !== "allow") outcome = "blocked";
-      }
-    } catch {
-      outcome = "failed";
-    }
-    if (outcome !== "model") {
-      source = "canned";
-      segments = cannedGreeting(persona, context.speechLevel);
-    }
+    const made = await generateOpener(llm, {
+      system: `${prompt.stable}${systemSplit}${prompt.dynamic}`,
+      userText: greetingUserText,
+      ageBand: context.ageBand,
+      timeoutMs,
+    });
+    const { outcome } = made;
+    const source: "model" | "canned" = outcome === "model" ? "model" : "canned";
+    const segments: Segment[] =
+      source === "model" ? made.segments : cannedGreeting(persona, context.speechLevel);
+    const learned = openerOutcome(
+      source === "model" ? learning.target : null,
+      made.state,
+      segments,
+    );
 
     const messageId = deps.randomUuid();
     const budgetMs = deps.suggestionTimeoutMs ?? defaultSuggestionTimeoutMs;
@@ -256,6 +249,7 @@ export function createGreetHandler(deps: GreetDeps): (request: Request) => Promi
                 suggestionsMs: chips.ms,
               }),
           usage: usage.summary(),
+          ...(learned.meta === null ? {} : { learning: learned.meta }),
           ...(caller.playground ? { playground: true } : {}),
         },
         p_suggestions:
@@ -276,6 +270,7 @@ export function createGreetHandler(deps: GreetDeps): (request: Request) => Promi
     }
     // 만드는 사이 다른 호출이 인사를 저장했거나 유저가 먼저 말을 보냈다 — 이 인사는 버린다.
     if (!saved.saved) return respond(200, answer("none", "has_messages"), "raced");
+    await recordOpener(deps.outbound, env, caller.userId, learned.events, now());
 
     const line = usageLine(usage.summary());
     const response: CompanionGreetResponse = {

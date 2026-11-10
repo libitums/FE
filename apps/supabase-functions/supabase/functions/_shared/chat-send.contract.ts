@@ -12,6 +12,7 @@ import type {
   FeedbackMode,
   FeedbackRequest,
 } from "./companion-feedback.contract.ts";
+import type { TopicState } from "./companion-learning.contract.ts";
 import type {
   MemoryOp,
   MemoryRequest,
@@ -79,14 +80,6 @@ export type Segment = {
   readonly translation?: string;
 };
 
-export type LearningExpression = {
-  readonly id: string;
-  readonly kind: string;
-  readonly surface: string;
-  readonly roman: string | null;
-  readonly gloss: string | null;
-};
-
 export type PersonaCard = {
   readonly name: string;
   readonly age?: string;
@@ -143,6 +136,12 @@ export type {
   FeedbackRequest,
 } from "./companion-feedback.contract.ts";
 export type {
+  LearningContext,
+  LearningExpression,
+  TopicState,
+  TurnState,
+} from "./companion-learning.contract.ts";
+export type {
   ExistingMemory,
   MemoryItem,
   MemoryOp,
@@ -186,24 +185,6 @@ export type CompanionLlm = {
   suggest(request: SuggestRequest): Promise<SuggestionDraft[]>;
   /** 호출마다 사용량을 `record`로 넘기는 같은 계층 — 턴마다 감싸 모은다. 없으면(테스트 대역) 모으지 않는다. */
   withUsage?(record: (usage: LlmUsage) => void): CompanionLlm;
-};
-
-/** 메인 답변 끝의 `@state` 줄(PRD §3.2 · §3.8). 모델이 빠뜨리면 null. */
-export type TurnState = {
-  readonly intimacyDelta: number;
-  readonly topic: string | null;
-  readonly userWantsSwitch: boolean;
-};
-
-/** 대화의 화제 상태(conversations.topic_state). 서버가 분기를 고르는 데 쓴다. */
-export type TopicState = {
-  readonly turn: number;
-  readonly topic: string | null;
-  readonly topicTurns: number;
-  readonly shortStreak: number;
-  readonly wantsSwitch: boolean;
-  readonly lastInsertTurn: number | null;
-  readonly lastSwitchTurn: number | null;
 };
 
 // ------------------------------------------------------------------ DB 창구(서버용 함수)
@@ -253,11 +234,6 @@ export type BegunTurn = {
     text: string | null;
     segments: readonly Segment[];
   }[];
-};
-
-export type LearningContext = {
-  readonly episodes: readonly string[];
-  readonly expressions: readonly LearningExpression[];
 };
 
 // ------------------------------------------------------------------ 의존성

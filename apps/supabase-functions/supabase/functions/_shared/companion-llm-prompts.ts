@@ -9,6 +9,7 @@ import type {
   HistoryEntry,
   TranslationRequest,
 } from "./chat-send.contract.ts";
+import type { LearnedTarget, LearnedUse } from "./companion-feedback.contract.ts";
 import { segmentsToPlain } from "./companion-segments.ts";
 
 /** 피드백에 맥락으로 넣는 최근 메시지 수(유저 · 캐릭터 합쳐 — 약 세 번 주고받기). 설정이 아니라 상수다. */
@@ -70,6 +71,8 @@ Decide in this order and use exactly one kind:
 5. Naturalness. Use kind "better" only when the sentence is clearly unnatural or translationese to a native speaker (e.g. pronoun overuse like "나는 너를 좋아해요", word-for-word calques): one suggestion as "corrected", with one item explaining it. Never suggest alternatives for a sentence that is already natural.
 6. Otherwise use status "none" with "corrected", "better" and "meaning" null and "items" empty.
 
+Separately from the card, fill "learned_used": the refs (e.g. "t1") of the learned expressions listed in the request that the latest learner message really uses, in any conjugation or with its blank filled. Empty when none is used or none is listed. This never changes the card.
+
 Never give feedback on chat conventions: ㅋㅋ, ㅎㅎ, ㅇㅇ, ~ endings, emoji, missing punctuation, or casual style natives use.
 Reasons and explanations state the rule plainly. No comments about the learner, the character or the conversation.`;
   const dynamic = `# This message
@@ -100,7 +103,31 @@ export function feedbackContent(request: FeedbackRequest): string {
       : request.previous
         ? `The character just said: ${request.previous}\n`
         : "";
-  return `${character}${level}${context}Latest learner message (give feedback on this only): ${request.text}`;
+  const targets = request.targets ?? [];
+  const learned =
+    targets.length === 0
+      ? ""
+      : `Learned expressions to check for "learned_used":\n${targets
+          .map(
+            (target) =>
+              `${target.ref}. ${target.surface}${target.gloss ? ` (${target.gloss})` : ""}`,
+          )
+          .join("\n")}\n\n`;
+  return `${character}${level}${context}${learned}Latest learner message (give feedback on this only): ${request.text}`;
+}
+
+/** 모델이 낸 `learned_used`의 ref를 표현으로 — 모르는 ref는 버린다. */
+export function learnedFrom(
+  refs: readonly string[] | undefined,
+  targets: readonly LearnedTarget[] | undefined,
+): LearnedUse[] {
+  const known = new Map((targets ?? []).map((target) => [target.ref, target]));
+  const out = new Map<string, LearnedUse>();
+  for (const ref of refs ?? []) {
+    const target = known.get(ref.trim());
+    if (target !== undefined) out.set(target.id, { id: target.id, surface: target.surface });
+  }
+  return [...out.values()];
 }
 
 /** 고칠 것 없음 · 받지 못함 카드. */
@@ -122,6 +149,7 @@ export type FeedbackDraft = {
   items: FeedbackItem[];
   better: { text: string; meaning: string; explanation: string } | null;
   meaning: string | null;
+  learned_used?: string[];
 };
 
 /** 조각 고침을 원문에 차례로 적용 — 모델이 `corrected`를 빠뜨린 교정 카드를 살린다. */

@@ -565,3 +565,40 @@ test("EV13. 추천 칩 — text는 캐릭터의 마지막 말, 보인 칩과 후
     ],
   });
 });
+
+test("EV14. 학습 표현 — 노출 · 유도는 답 모델에 지시를 붙여 답과 판정을, 칩은 표현을 넣은 칩을 낸다(모델을 고르지 않으면 답 모델)", async () => {
+  const models: string[] = [];
+  const { call } = setup({
+    env: anthropicEnv,
+    llmFor: (model) => {
+      models.push(model);
+      return fakeCompanionLlm();
+    },
+  });
+  const { status, body } = await call("POST", {
+    kind: "learning",
+    cases: [
+      { id: "expose", text: "오늘 비가 와요", target: { surface: "괜찮아요.", mode: "expose" } },
+      { id: "elicit", text: "배고파요", target: { surface: "드릴까요?", mode: "elicit" } },
+      {
+        id: "chip",
+        text: "어떻게 계산할래요?",
+        target: { surface: "{수단}로 할게요.", kind: "patt", mode: "chip" },
+      },
+    ],
+  });
+  expect(status).toBe(200);
+  expect(models).toEqual([anthropicEnv.llm.kind === "anthropic" ? anthropicEnv.llm.model : ""]);
+  const results = body["results"] as { id: string; ok: boolean; output: Record<string, unknown> }[];
+  expect(results[0]).toMatchObject({
+    ok: true,
+    output: { mode: "expose", learned: true, done: true },
+  });
+  expect(JSON.stringify(results[0]!.output["segments"])).toContain("괜찮아요.");
+  expect(results[1]).toMatchObject({
+    ok: true,
+    output: { mode: "elicit", learned: true, done: true },
+  });
+  expect(results[2]).toMatchObject({ ok: true, output: { mode: "chip", done: true } });
+  expect((results[2]!.output["items"] as { text: string }[])[0]!.text).toContain("카드로 할게요");
+});

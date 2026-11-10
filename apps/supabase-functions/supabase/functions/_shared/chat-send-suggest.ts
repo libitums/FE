@@ -20,6 +20,7 @@ import type { TurnStatus } from "./chat-send-finish.ts";
 import type { Sink } from "./chat-send-http.ts";
 import { historyFrom } from "./chat-send-reply.ts";
 import { generateSuggestions, type SuggestOutcome } from "./companion-suggest-generate.ts";
+import type { SuggestRequest } from "./companion-suggest.contract.ts";
 import { recentSuggestionHistory } from "./companion-suggest-prompts.ts";
 import { defaultSuggestionDisplayMax } from "./companion-suggest-select.ts";
 
@@ -57,6 +58,7 @@ export function startSuggestions(
   persona: PersonaCard,
   segments: readonly Segment[],
   signal: AbortSignal,
+  target: SuggestRequest["target"] = null,
 ): Promise<SuggestOutcome> | null {
   const { deps, body, gate, turn } = context;
   const settings = suggestionSettings(context.status);
@@ -74,6 +76,7 @@ export function startSuggestions(
       ]),
       summary: turn.summary,
       recentChoiceSets: context.status?.recentChoiceSets ?? [],
+      ...(target ? { target } : {}),
     },
     ageBand: gate.ageBand,
     timeoutMs: budgetMs,

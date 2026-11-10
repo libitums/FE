@@ -2,7 +2,7 @@
 // 서버 키만 받는다(ops-dashboard). DB에 쓰지 않고 크레딧도 쓰지 않는다 — 케이스마다 실제 API 비용만 든다.
 //
 // GET  → 지금 설정된 모델 · 고를 수 있는 모델 · LLM 종류. `?docs=1`이면 프롬프트 · 캐릭터 · 설정 문서(`companion-eval-docs.ts`).
-// POST { kind, model?, cases[] } → 케이스마다 `moderate()` 판정 · `feedback()` 결과 · `translate()` 한 줄 · `suggest()` 칩 셋. 케이스 하나가 실패해도
+// POST { kind, model?, cases[] } → 케이스마다 `moderate()` 판정 · `feedback()` 결과 · `translate()` 한 줄 · `suggest()` 칩 셋 · 학습 표현을 넣은 답(`learning`). 케이스 하나가 실패해도
 // 나머지는 돈다. 요청 모양은 턴 경로(`chat-send-turn.ts` · `chat-send-reply.ts`)와 같고, 프롬프트는 `CompanionLlm` 구현 안에 있어 그대로 쓴다.
 
 import { z } from "zod";
@@ -20,6 +20,7 @@ import type { Outbound } from "./delete-account.contract.ts";
 import { companionDocs } from "./companion-eval-docs.ts";
 import { StructuredUnavailable } from "./companion-llm.ts";
 import { recentFeedbackHistory } from "./companion-llm-prompts.ts";
+import { evalLearning, type LearningEvalOutput } from "./companion-eval-learning.ts";
 import { evalSuggestions } from "./companion-eval-suggest.ts";
 import type { CandidateRecord } from "./companion-suggest-select.ts";
 import type { ReplySuggestion } from "./companion-contract/index.ts";
@@ -72,9 +73,18 @@ const caseSchema = z.object({
   // 칩만: 대화 요약 · 이 대화에서 앞서 보인 칩 글(반복 검사 · 프롬프트의 지난 칩).
   summary: z.string().max(2000).nullable().optional(),
   pastSuggestions: z.array(z.string().max(200)).max(15).optional(),
+  // 학습 표현만: 넣을 배운 표현과 방식(노출 · 유도 · 칩).
+  target: z
+    .object({
+      surface: z.string().min(1).max(200),
+      gloss: z.string().max(300).nullable().optional(),
+      kind: z.enum(["voca", "expr", "patt", "gram", "nume"]).optional(),
+      mode: z.enum(["expose", "elicit", "chip"]),
+    })
+    .optional(),
 });
 const bodySchema = z.object({
-  kind: z.enum(["moderation", "feedback", "translation", "suggestions"]),
+  kind: z.enum(["moderation", "feedback", "translation", "suggestions", "learning"]),
   model: z.enum(evalModels).optional(),
   cases: z.array(caseSchema).min(1).max(20),
 });
@@ -89,7 +99,8 @@ type CaseResult =
         | ModerationVerdict
         | Feedback
         | { text: string }
-        | { items: ReplySuggestion[]; candidates: CandidateRecord[] };
+        | { items: ReplySuggestion[]; candidates: CandidateRecord[] }
+        | LearningEvalOutput;
       ms: number;
     }
   | { id: string; ok: false; error: string; ms: number };
@@ -173,6 +184,10 @@ function runCase(deps: CompanionEvalDeps, llm: CompanionLlm, kind: EvalKind, ite
       return { text: lines[0]! };
     });
   }
+  if (kind === "learning")
+    return withTimeout(deps.llmTimeoutMs ?? defaultLlmTimeoutMs, (signal) =>
+      evalLearning(llm, item, signal),
+    );
   if (kind === "suggestions")
     return withTimeout(deps.feedbackTimeoutMs ?? defaultFeedbackTimeoutMs, (signal) =>
       evalSuggestions(llm, item, signal),
@@ -246,7 +261,8 @@ export function createCompanionEvalHandler(
     const parsed = bodySchema.safeParse(raw);
     if (!parsed.success) return json(400, { error: "invalid_request" });
     const { kind, cases } = parsed.data;
-    const model = parsed.data.model ?? models[kind === "suggestions" ? "suggest" : kind];
+    const step = kind === "suggestions" ? "suggest" : kind === "learning" ? "reply" : kind;
+    const model = parsed.data.model ?? models[step];
     const llm = deps.llmFor(model);
 
     const results = await mapLimited(

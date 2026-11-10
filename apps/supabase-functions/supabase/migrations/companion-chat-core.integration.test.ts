@@ -289,17 +289,19 @@ test("CH8. 학습 맥락 — catalogProgress의 끝낸 유닛에 걸린 표현�
   const result = await server.query("select public.companion_learning_context($1, 10) as context", [
     tester,
   ]);
-  expect(result.rows[0].context).toEqual({
+  // 유저 기록 칸 · 넣기 설정은 20261125(학습 연결)가 더한다 — 여기서는 고르는 규칙만 본다.
+  expect(result.rows[0].context).toMatchObject({
     episodes: ["u01-water"],
     expressions: [
       { id: "patt:juseyo", kind: "patt", surface: "주세요", roman: null, gloss: "please give" },
       { id: "voca:water", kind: "voca", surface: "물", roman: null, gloss: "water" },
     ],
   });
+  expect(result.rows[0].context.expressions).toHaveLength(2);
   const empty = await server.query("select public.companion_learning_context($1, 10) as context", [
     stranger,
   ]);
-  expect(empty.rows[0].context).toEqual({ episodes: [], expressions: [] });
+  expect(empty.rows[0].context).toMatchObject({ episodes: [], expressions: [] });
 });
 
 test("CH9. 운영 조회 — 시험 계정 목록 · 대화(내부 상태 · 판정 · 신고) · 판정 목록", async () => {

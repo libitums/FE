@@ -11,7 +11,8 @@ import {
   defaultSuggestionDisplayMax,
   pickShown,
 } from "./companion-suggest-select.ts";
-import type { ChoiceSet } from "./companion-suggest.contract.ts";
+import type { ChoiceSet, SuggestRequest } from "./companion-suggest.contract.ts";
+import { containsExpression } from "./companion-learning-match.ts";
 
 export type SuggestEvalCase = {
   readonly text: string;
@@ -22,6 +23,8 @@ export type SuggestEvalCase = {
   readonly summary?: string | null;
   /** 이 대화에서 앞서 보인 칩 글 — 반복 검사 · 프롬프트의 지난 칩. */
   readonly pastSuggestions?: readonly string[];
+  /** 학습 표현 평가(`companion-eval-learning.ts`)의 칩 방식 — 후보 하나에 넣을 배운 표현. */
+  readonly learnedTarget?: SuggestRequest["target"];
 };
 
 export async function evalSuggestions(
@@ -48,7 +51,16 @@ export async function evalSuggestions(
     ]),
     summary: item.summary ?? null,
     recentChoiceSets: past,
+    ...(item.learnedTarget ? { target: item.learnedTarget } : {}),
     signal,
   });
-  return pickShown(checkCandidates(drafts, item.l1 ?? null, past), defaultSuggestionDisplayMax);
+  const candidates = checkCandidates(drafts, item.l1 ?? null, past);
+  const target = item.learnedTarget ?? null;
+  const keep =
+    target === null
+      ? -1
+      : candidates.findIndex(
+          (candidate) => !candidate.reason && containsExpression(target, candidate.text),
+        );
+  return pickShown(candidates, defaultSuggestionDisplayMax, keep < 0 ? null : keep);
 }

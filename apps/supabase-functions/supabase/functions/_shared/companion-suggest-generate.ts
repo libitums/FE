@@ -6,6 +6,7 @@ import type { AgeBand, ChatSendEnv, CompanionLlm } from "./chat-send.contract.ts
 import type { ReplySuggestion } from "./companion-contract/index.ts";
 import type { SuggestRequest, SuggestionDraft } from "./companion-suggest.contract.ts";
 import type { Outbound } from "./delete-account.contract.ts";
+import { containsExpression } from "./companion-learning-match.ts";
 import { callRpc } from "./companion-rpc.ts";
 import { type CandidateRecord, checkCandidates, pickShown } from "./companion-suggest-select.ts";
 
@@ -21,7 +22,12 @@ type UnavailableOutcome =
  * `ok`면 보일 칩(1 ~ `displayMax`개). 아니면 응답의 이유(`reason`)와 로그 · meta에 남길 자세한 까닭(`outcome`). 둘 다 마지막으로 받은 후보와
  * 검사 결과(`candidates`, 모델이 아무것도 못 냈으면 빈 배열) · 걸린 시간(`ms`)을 싣는다.
  */
-export type SuggestOutcome = { readonly candidates: CandidateRecord[]; readonly ms: number } & (
+export type SuggestOutcome = {
+  readonly candidates: CandidateRecord[];
+  readonly ms: number;
+  /** 학습 표현을 넣은 칩이 보였는가(칩 방식일 때만 — 요청에 `target`이 있을 때). */
+  readonly targetShown?: boolean;
+} & (
   | { readonly status: "ok"; readonly items: ReplySuggestion[] }
   | {
       readonly status: "unavailable";
@@ -139,12 +145,20 @@ export async function generateSuggestions(
       return unavailable("blocked", "blocked");
     }
   }
-  const picked = pickShown(candidates, input.displayMax);
+  const target = input.request.target ?? null;
+  const keep =
+    target === null
+      ? -1
+      : candidates.findIndex(
+          (candidate) => !candidate.reason && containsExpression(target, candidate.text),
+        );
+  const picked = pickShown(candidates, input.displayMax, keep < 0 ? null : keep);
   return {
     status: "ok",
     items: picked.items,
     candidates: picked.candidates,
     ms: Date.now() - started,
+    ...(target === null ? {} : { targetShown: keep >= 0 && picked.candidates[keep]!.shown }),
   };
 }
 

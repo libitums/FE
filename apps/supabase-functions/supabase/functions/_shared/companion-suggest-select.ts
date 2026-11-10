@@ -126,13 +126,19 @@ export function checkCandidates(
 export function pickShown(
   records: readonly CandidateRecord[],
   displayMax: number,
+  keep: number | null = null,
 ): { readonly items: ReplySuggestion[]; readonly candidates: CandidateRecord[] } {
   const valid = records.map((record, index) => ({ record, index })).filter((x) => !x.record.reason);
   const chosen: number[] = [];
   const intents = new Set<string>();
+  // 학습 표현을 넣은 후보(칩 방식)는 검증을 지났으면 먼저 자리를 받는다 — 검증을 느슨하게 하지는 않는다.
+  if (keep !== null && displayMax > 0 && valid.some((x) => x.index === keep)) {
+    chosen.push(keep);
+    intents.add(records[keep]!.intent);
+  }
   for (const { record, index } of valid) {
     if (chosen.length >= displayMax) break;
-    if (intents.has(record.intent)) continue;
+    if (chosen.includes(index) || intents.has(record.intent)) continue;
     intents.add(record.intent);
     chosen.push(index);
   }

@@ -17,6 +17,7 @@ export const feedbackSchema = z.object({
   items: z.array(z.object({ original: z.string(), corrected: z.string(), reason: z.string() })),
   better: z.object({ text: z.string(), meaning: z.string(), explanation: z.string() }).nullable(),
   meaning: z.string().nullable(),
+  learned_used: z.array(z.string()),
 });
 
 export const translationSchema = z.object({ lines: z.array(z.string()) });

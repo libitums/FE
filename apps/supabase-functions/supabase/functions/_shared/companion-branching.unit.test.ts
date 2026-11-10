@@ -6,12 +6,17 @@ import {
   nextTopicState,
   topicStateFrom,
 } from "./companion-branching.ts";
+import { defaultLearningSettings } from "./companion-learning.ts";
 import { createSegmentSplitter } from "./companion-segments.ts";
 
 const persona = { name: "미나", topics: ["서울 맛집", "여행 계획표"] };
-const expressions = [
-  { id: "voca:water", kind: "voca", surface: "물", roman: null, gloss: "water" },
-];
+const learning = {
+  pool: [{ id: "voca:water", kind: "voca", surface: "물", roman: null, gloss: "water" }],
+  episodes: ["u01-water"],
+  settings: defaultLearningSettings,
+  chipsOn: false,
+  today: "2026-11-10",
+};
 const always = () => 0;
 const never = () => 0.99;
 
@@ -23,38 +28,43 @@ describe("대화 분기", () => {
       shortStreak: branchingConfig.shortStreakForSwitch - 1,
       topic: "서울 맛집",
     };
-    const switched = chooseBranch(state, { userText: "네", persona, expressions, random: always });
+    const switched = chooseBranch(state, { userText: "네", persona, learning, random: always });
     expect(switched.action).toEqual({ kind: "switch", seed: "여행 계획표" });
     expect(switched.directive).toContain("여행 계획표");
     expect(
-      chooseBranch(state, { userText: "네", persona, expressions, random: never }).action,
+      chooseBranch(state, { userText: "네", persona, learning, random: never }).action,
     ).toBeNull();
+    // 첫 턴이 아니고 짧은 답이 아니면 화제 전환 대신 학습 표현 삽입 후보가 열린다.
     expect(
-      chooseBranch(state, {
-        userText: "어제 경복궁에 다녀왔어요",
-        persona,
-        expressions,
-        random: always,
-      }).action,
+      chooseBranch(
+        { ...state, turn: 5 },
+        {
+          userText: "어제 경복궁에 다녀왔어요",
+          persona,
+          learning,
+          random: always,
+        },
+      ).action,
     ).toMatchObject({
       kind: "insert",
     });
   });
 
-  test("BR2. 학습 표현 삽입은 쿨다운이 지나야 한다", () => {
-    const state = { ...topicStateFrom(null), turn: 5, lastInsertTurn: 4 };
-    expect(
-      chooseBranch(state, { userText: "오늘 날씨가 좋네요", persona, expressions, random: always })
-        .action,
-    ).toBeNull();
-    const later = { ...state, turn: 4 + branchingConfig.insertCooldown };
-    expect(
-      chooseBranch(later, { userText: "오늘 날씨가 좋네요", persona, expressions, random: always })
-        .action,
-    ).toEqual({
-      kind: "insert",
-      expressionId: "voca:water",
+  test("BR2. 학습 표현 삽입은 직전 삽입 뒤 최소 간격이 지나야 열리고, 강제 턴에는 반드시 넣는다", () => {
+    const state = { ...topicStateFrom(null), turn: 5, lastInsertTurn: 5 };
+    const closed = chooseBranch(state, {
+      userText: "오늘 날씨가 좋네요",
+      persona,
+      learning,
+      random: always,
     });
+    expect(closed.action).toBeNull();
+    expect(closed.learning).toMatchObject({ open: false, reason: "cooldown" });
+    const forced = { ...state, turn: 5 + defaultLearningSettings.forceTurns - 1 };
+    expect(
+      chooseBranch(forced, { userText: "오늘 날씨가 좋네요", persona, learning, random: never })
+        .action,
+    ).toEqual({ kind: "insert", expressionId: "voca:water", mode: "expose" });
   });
 
   test("BR3. 다음 화제 상태 — 같은 화제는 이어 세고, 전환하면 1부터, 유저의 전환 신호를 기억한다", () => {

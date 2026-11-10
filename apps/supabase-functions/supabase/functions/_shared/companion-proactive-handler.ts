@@ -13,9 +13,15 @@ import type { ChatSendDeps, HistoryEntry, PersonaCard, Segment } from "./chat-se
 import { startTranslation, translationContext, withTranslations } from "./chat-send-translate.ts";
 import { defaultSuggestionTimeoutMs, suggestionsMeta } from "./chat-send-suggest.ts";
 import type { ReplySuggestion } from "./companion-contract/index.ts";
-import { collectSegments, createSegmentSplitter, segmentsToPlain } from "./companion-segments.ts";
 import { systemSplit } from "./companion-llm.ts";
 import { flushIdleMemories } from "./companion-memory-flush.ts";
+import {
+  generateOpener,
+  openerLearning,
+  openerOutcome,
+  recordOpener,
+  withOpenerLine,
+} from "./companion-opener.ts";
 import {
   companionSystemPrompt,
   proactiveDirectiveFor,
@@ -114,46 +120,43 @@ async function proactiveOne(deps: ChatSendDeps, target: Target, force: boolean):
   );
   const lastUser = [...history].reverse().find((entry) => entry.role === "user");
   const lastAt = context.lastUserMessageAt ? Date.parse(context.lastUserMessageAt) : NaN;
+  const learning = await openerLearning(
+    deps.outbound,
+    env,
+    target.userId,
+    deps.random ?? Math.random,
+  );
   const prompt = companionSystemPrompt({
     persona: context.persona,
     speechLevel: context.speechLevel,
     ageBand: context.ageBand,
     l1: context.l1,
-    expressions: [],
+    expressions: learning.pool,
     summary: context.summary,
     feedbackMode: "separate",
     memories: context.memories,
-    directive: proactiveDirectiveFor({
-      daysSince: Number.isNaN(lastAt) ? null : (nowMs - lastAt) / 86_400_000,
-      timeOfDay: timeOfDay(context.localHour ?? null),
-      lastTopic:
-        lastUser?.role === "user" ? lastUser.text.trim().slice(0, lastTopicLimit) || null : null,
-      recentOpeners: context.recentProactive ?? [],
-      unanswered: context.unanswered ?? 0,
-    }),
+    directive: withOpenerLine(
+      proactiveDirectiveFor({
+        daysSince: Number.isNaN(lastAt) ? null : (nowMs - lastAt) / 86_400_000,
+        timeOfDay: timeOfDay(context.localHour ?? null),
+        lastTopic:
+          lastUser?.role === "user" ? lastUser.text.trim().slice(0, lastTopicLimit) || null : null,
+        recentOpeners: context.recentProactive ?? [],
+        unanswered: context.unanswered ?? 0,
+      }),
+      learning.target,
+    ),
   });
-  const splitter = createSegmentSplitter();
-  const deltas = [];
-  for await (const chunk of llm.reply({
+  const made = await generateOpener(llm, {
     system: `${prompt.stable}${systemSplit}${prompt.dynamic}`,
     history,
     userText: proactiveUserText,
-    signal: AbortSignal.timeout(deps.llmTimeoutMs ?? 45_000),
-  })) {
-    deltas.push(...splitter.push(chunk));
-  }
-  deltas.push(...splitter.end());
-  const segments = collectSegments(deltas);
-  if (segments.length === 0) return { ...target, ...wouldSkip, result: "empty_reply" };
-
-  const verdict = await llm.moderate({
-    layer: "output_sync",
-    text: segmentsToPlain(segments),
-    context: null,
     ageBand: context.ageBand,
-    signal: AbortSignal.timeout(deps.llmTimeoutMs ?? 45_000),
+    timeoutMs: deps.llmTimeoutMs ?? 45_000,
   });
-  if (verdict.action !== "allow") return { ...target, ...wouldSkip, result: "blocked" };
+  if (made.outcome !== "model") return { ...target, ...wouldSkip, result: made.outcome };
+  const segments = made.segments;
+  const learned = openerOutcome(learning.target, made.state, segments);
   // 턴과 같이 L1 번역을 붙여 저장한다(이벤트가 없으니 메시지 목록으로만 보인다). 실패해도 번역 없이 보낸다.
   // 칩 스위치가 켜져 있으면 칩도 같이 만든다(첫 인사와 같은 길). 옛 DB(스위치 칸 없음)면 만들지 않는다.
   const displayMax = context.suggestionDisplayMax ?? 0;
@@ -206,6 +209,7 @@ async function proactiveOne(deps: ChatSendDeps, target: Target, force: boolean):
       translation: translated.status,
       ...suggestionsMeta(chips),
       usage: usage.summary(),
+      ...(learned.meta === null ? {} : { learning: learned.meta }),
     },
     p_now: now,
     ...(chips?.status === "ok"
@@ -221,6 +225,7 @@ async function proactiveOne(deps: ChatSendDeps, target: Target, force: boolean):
         }
       : {}),
   });
+  await recordOpener(deps.outbound, env, target.userId, learned.events, now);
   return {
     ...target,
     ...wouldSkip,

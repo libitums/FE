@@ -36,7 +36,13 @@ const context = (overrides: Record<string, unknown> = {}) => ({
 });
 
 type Rpc = { fn: string; args: Record<string, unknown> };
-type Options = { context?: unknown; llm?: CompanionLlm; saved?: boolean; authStatus?: number };
+type Options = {
+  context?: unknown;
+  llm?: CompanionLlm;
+  saved?: boolean;
+  authStatus?: number;
+  learning?: unknown;
+};
 
 function setup(options: Options = {}) {
   const rpcs: Rpc[] = [];
@@ -59,7 +65,9 @@ function setup(options: Options = {}) {
     const body =
       fn === "companion_greet_context"
         ? (options.context ?? context())
-        : { saved: options.saved ?? true, messageId };
+        : fn === "companion_learning_context"
+          ? (options.learning ?? { episodes: [], expressions: [] })
+          : { saved: options.saved ?? true, messageId };
     return { status: 200, text: async () => JSON.stringify(body) };
   };
   const handler = createGreetHandler({
@@ -235,4 +243,36 @@ test("GT6. 판정 · 호출자 · 요청 오류", async () => {
     p_suggestions: { playground: true },
   });
   expect((await setup({ authStatus: 401 }).call()).status).toBe(401);
+});
+
+test("GT7. 배운 표현이 있으면 첫 인사에 노출로 하나 — 지시 · meta.learning · 기록(튜토리얼만 끝낸 유저도)", async () => {
+  const systems: string[] = [];
+  const base = fakeCompanionLlm();
+  const llm: CompanionLlm = {
+    ...base,
+    reply(request) {
+      systems.push(request.system);
+      return base.reply(request);
+    },
+  };
+  const { call, rpcs, save } = setup({
+    llm,
+    learning: {
+      episodes: ["u00-tutorial"],
+      expressions: [
+        { id: "expr:hello", kind: "expr", surface: "안녕하세요", roman: null, gloss: "Hello" },
+      ],
+    },
+  });
+  expect((await call()).status).toBe(200);
+  expect(systems[0]).toContain('use the Korean expression "안녕하세요" (Hello) once');
+  expect((save()?.["p_meta"] as Record<string, unknown>)["learning"]).toEqual({
+    mode: "expose",
+    expressionId: "expr:hello",
+    surface: "안녕하세요",
+    done: true,
+  });
+  expect(rpcs.find((rpc) => rpc.fn === "companion_record_learning")?.args).toMatchObject({
+    p_events: [{ expression_id: "expr:hello", kind: "exposed" }],
+  });
 });

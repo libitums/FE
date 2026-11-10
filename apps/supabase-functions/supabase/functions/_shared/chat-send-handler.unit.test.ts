@@ -76,6 +76,7 @@ type Options = {
   suggestionTimeoutMs?: number;
   saveStatus?: number;
   random?: () => number;
+  learning?: unknown;
 };
 
 function setup(options: Options = {}) {
@@ -86,10 +87,11 @@ function setup(options: Options = {}) {
     companion_turn_gate: options.gate ?? okGate,
     companion_begin_turn: options.begin ?? begun,
     companion_begin_replacement: options.begin ?? begun,
-    companion_learning_context: {
+    companion_learning_context: options.learning ?? {
       episodes: ["u01-water"],
       expressions: [{ id: "voca:water", kind: "voca", surface: "물", roman: null, gloss: "water" }],
     },
+    companion_record_learning: 1,
     companion_finish_turn: options.finish ?? finished,
     companion_turn_status:
       options.status === undefined
@@ -1544,5 +1546,118 @@ describe("칩을 그대로 보낸 메시지는 피드백을 건너뛴다 — 입
     );
     expect(response.status).toBe(409);
     expect(await response.json()).toEqual({ error: "not_latest_message", retryable: false });
+  });
+});
+
+describe("학습 표현 넣기(PRD §3.7)", () => {
+  const pool = {
+    episodes: ["u01-water"],
+    expressions: [
+      { id: "expr:fine", kind: "expr", surface: "괜찮아요.", roman: null, gloss: "I'm fine" },
+      { id: "patt:means", kind: "patt", surface: "{수단}로 할게요.", roman: null, gloss: null },
+    ],
+    settings: { enabled: true, minGap: 3, baseProbability: 0.3, forceTurns: 6, dailyCap: 6 },
+  };
+  const ready = (extra: Record<string, unknown> = {}) => ({
+    ...begun,
+    topicState: {
+      turn: 9,
+      topic: "날씨",
+      topicTurns: 1,
+      shortStreak: 0,
+      wantsSwitch: false,
+      lastInsertTurn: 2,
+      lastSwitchTurn: null,
+      ...extra,
+    },
+  });
+
+  // CS37 — 강제 턴(직전 삽입 뒤 6턴 넘음)이면 노출 지시가 답 요청의 directive로 붙고, 모델이 쓰고 글에도 있으면 노출로 센다.
+  test("CS37. 노출 — 지시 · 저장 meta.learning · 화제 상태의 학습 칸 · 기록", async () => {
+    const directives: (string | null)[] = [];
+    const fake = fakeCompanionLlm();
+    const llm: CompanionLlm = {
+      ...fake,
+      reply(request) {
+        directives.push(request.directive ?? null);
+        return fake.reply(request);
+      },
+    };
+    const { handler, rpcs, finishArgs, settle } = setup({
+      llm,
+      learning: pool,
+      begin: ready(),
+      // 화제 씨앗 · 확률(강제 턴이라 늘 통과) · 표현 고르기(첫째 — 아직 만나지 않은 「괜찮아요.」).
+      random: (() => {
+        const rolls = [0.99, 0.99, 0];
+        return () => rolls.shift() ?? 0.99;
+      })(),
+    });
+    await (await handler(post(body({ text: "오늘은 비가 와요" })))).text();
+    await settle();
+    expect(directives[0]).toContain('"괜찮아요."');
+    const meta = (finishArgs()?.["p_assistant"] as { meta: Record<string, unknown> }).meta;
+    expect(meta["learning"]).toMatchObject({
+      open: true,
+      reason: "ok",
+      mode: "expose",
+      expressionId: "expr:fine",
+      done: true,
+    });
+    expect(finishArgs()?.["p_topic_state"]).toMatchObject({
+      lastInsertTurn: 10,
+      learnDay: "2026-11-09",
+      learnToday: 1,
+      lastExpressionId: "expr:fine",
+      recentTargets: ["expr:fine"],
+    });
+    expect(rpcs.find((rpc) => rpc.fn === "companion_record_learning")?.args).toMatchObject({
+      p_events: [{ expression_id: "expr:fine", kind: "exposed" }],
+    });
+  });
+
+  // CS38 — 간격 전이면 넣지 않고 까닭만 남긴다. 유저가 배운 표현을 직접 쓰면 카드에 learnedUsed · 산출로 센다(칩 전송은 세지 않는다).
+  test("CS38. 넣지 않은 턴 · 유저 산출(글자 판정 + 피드백 판정) · 칩 전송은 산출이 아니다", async () => {
+    const { handler, rpcs, finishArgs, settle } = setup({
+      learning: pool,
+      begin: ready({ lastInsertTurn: 9, recentTargets: ["patt:means"] }),
+    });
+    const list = await events(await handler(post(body({ text: "괜찮아요. 카드로 할게요" }))));
+    await settle();
+    const correction = list.find((event) => event.event === "correction");
+    expect(correction?.data).toMatchObject({
+      learnedUsed: [
+        { id: "expr:fine", surface: "괜찮아요." },
+        { id: "patt:means", surface: "{수단}로 할게요." },
+      ],
+    });
+    const meta = (finishArgs()?.["p_assistant"] as { meta: Record<string, unknown> }).meta;
+    expect(meta["learning"]).toEqual({
+      open: false,
+      reason: "cooldown",
+      produced: ["expr:fine", "patt:means"],
+    });
+    expect(rpcs.find((rpc) => rpc.fn === "companion_record_learning")?.args).toMatchObject({
+      p_events: [
+        { expression_id: "expr:fine", kind: "produced" },
+        { expression_id: "patt:means", kind: "produced" },
+      ],
+    });
+  });
+
+  test("CS39. 튜토리얼만 끝낸 유저 · 무거운 대화는 넣지 않는다", async () => {
+    const tutorial = setup({
+      learning: { ...pool, episodes: ["u00-tutorial"] },
+      begin: ready(),
+    });
+    await (await tutorial.handler(post())).text();
+    await tutorial.settle();
+    const metaOf = (args: Record<string, unknown> | undefined) =>
+      (args?.["p_assistant"] as { meta: Record<string, unknown> }).meta["learning"];
+    expect(metaOf(tutorial.finishArgs())).toMatchObject({ reason: "tutorial_only" });
+    const heavy = setup({ learning: pool, begin: ready({ heavy: true }) });
+    await (await heavy.handler(post())).text();
+    await heavy.settle();
+    expect(metaOf(heavy.finishArgs())).toMatchObject({ reason: "heavy" });
   });
 });

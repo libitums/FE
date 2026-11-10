@@ -228,8 +228,9 @@ Firebase 프로젝트에 Android 앱을 등록하고 FCM HTTP v1 API 권한이 �
 | `20261122120000_companion_suggestion_v2.sql` | 칩 2판 — `settings.suggestions_enabled` · `suggestion_display_max` · `companion.choice_sets` · `companion_turn_status` 칩 셋 · `companion_record_choice` · `companion_suggestion_stats` · 기억 원문의 `inputSource` · 1판 의도 이름 바꾸기, 첫 인사만 있는 대화의 선톡 제외 |
 | `20261123120000_companion_quality.sql` | 품질 보완 — 답 없는 선톡(`settings.proactive_unanswered_limit` · `proactive_backoff` · `companion.proactive_conversation_skip_reason`) · 선톡 맥락 · 선톡 칩(`companion_save_proactive`의 `p_suggestions`), 기억 고치기 · 잊기(`companion_apply_memory_ops` · `memories.history` · `updated_at` · `deleted_reason`), 쉬는 대화의 기억(`settings.memory_flush_idle` · `companion_memory_flush_candidates` · `companion_memory_source(…, p_flush)`), 요약 원문의 `inputSource` |
 | `20261124120000_companion_ratings_resend.sql` | 답변 평가 — `companion.message_ratings` · `companion_rate_message`(앱) · `companion_operator_rate_message`(플레이그라운드) · 메시지 줄의 `rating` · `companion_rating_stats`, 고쳐서 다시 보내기 — `companion_begin_replacement`(이전 턴 숨기기 + 시작, 막히면 되돌림) · 메시지 목록에서 고쳐서 숨긴 턴 빼기 · 칩 지표에서도 빼기 |
+| `20261125120000_companion_learning.sql` | 학습 표현 넣기 — `settings.learning_*`(켜기 · 최소 간격 · 시작 확률 · 강제 턴 · 하루 상한) · `companion.user_expressions`(유저 × 표현: 노출 · 유도 · 칩 · 산출 횟수와 시각) · `companion_record_learning` · `companion_learning_context`가 유저 기록 · 낸 에피소드 · 넣기 설정을 더 줌 · 카드의 `learnedUsed` · `companion_learning_stats` |
 
-통합 테스트 CF1 ~ CF11 · CH1 ~ CH10 · TV1 ~ TV13 · ID1 ~ ID3 · PP1 ~ PP9 · RM1 ~ RM8 · RS1 ~ RS8 · AS1 ~ AS3 · TC1 ~ TC4 · SN1 ~ SN2 · GR1 ~ GR4 · SV1 ~ SV6 · QL1 ~ QL6, 함수 단위 테스트 CS1 ~ CS34 · SG · CE · BR · LL · EV · FB · SF · RF · SU · GT · PR.
+통합 테스트 CF1 ~ CF11 · CH1 ~ CH10 · TV1 ~ TV13 · ID1 ~ ID3 · PP1 ~ PP9 · RM1 ~ RM8 · RS1 ~ RS8 · AS1 ~ AS3 · TC1 ~ TC4 · SN1 ~ SN2 · GR1 ~ GR4 · SV1 ~ SV6 · QL1 ~ QL6 · RR1 ~ RR6 · LE1 ~ LE4, 함수 단위 테스트 CS1 ~ CS39 · SG · CE · BR · LL · EV · FB · SF · RF · SU · GT · PR · LN · LM.
 
 **턴 흐름** — 판정(시험 계정 · 티어 · 연령 · 일시 차단 · 이용 시간 · 멱등) → 시작(체험 · 크레딧 예약 + 유저 메시지 저장, 한 트랜잭션) →
 SSE → 입력 검사 · 메인 답변 · 피드백을 동시에 → 위기(`crisis`) · 입력 차단(단계에 따라 성격대로 거절 또는 `guardrail_blocked`, 아래) / 조각(`delta`, 미성년자 · 나이 모름은 출력 검사 뒤) ·
@@ -484,6 +485,25 @@ ops-dashboard가 검사 · 피드백 프롬프트를 케이스 묶음으로 돌�
 **설계 문서에서 미룬 것** — A/B(자유 입력만 / 칩 + 자유 입력) · `choice_sets` · `choices` 별도 테이블(지금은 메시지의 `suggestions` JSON) · revision 기반 낙관적
 잠금과 작업 큐(지금은 `client_message_id` 멱등 + 마지막 캐릭터 메시지 id 비교) · 역할극 모드 · 학습 모드 연결(난이도별 표현 추천) · 칩 편집(쓰지 않기로 함).
 
+### 학습 표현 넣기 (20261125, PRD §3.7)
+
+앱에서 배운 단어 · 표현 · 문형(끝낸 유닛만 — `companion_learning_context`)을 대화에 자연스럽게 녹인다. 말풍선에 표시하지 않는다.
+판정은 `_shared/companion-learning.ts`(순수 함수), 글자 판정은 `companion-learning-match.ts`, 턴 연결은 `chat-send-learning.ts`, 첫 인사 · 선톡은 `companion-opener.ts`.
+
+- **주기** — 직전 삽입 뒤 유저 턴 `settings.learning_min_gap`(3)번이 지나야 후보가 열리고, 열린 뒤 `learning_base_probability`(0.3)에서 턴마다 올라
+  `learning_force_turns`(6)번째에는 반드시 넣는다. 대화당 하루 `learning_daily_cap`(6)번(UTC 날짜). 첫 턴 · 유저가 전환을 원한 턴 · 무거운 대화(앞 턴 `@state.heavy`) ·
+  화제 전환 턴은 넣지 않는다(화제 전환이 먼저). `learning_enabled = false`면 모두 끈다. 간격 · 하루 수 · 최근 지시한 표현은 `conversations.topic_state`.
+- **표현 고르기** — 아직 만난 적 없는 것(최근 에피소드부터) → 만난 것 가운데 유저가 아직 안 쓴 것 → 오래 안 본 것, 앞쪽 셋 가운데 랜덤 · 직전 표현 제외.
+- **방식** — 노출(캐릭터가 씀, 답 지시) · 유도(그 표현으로 답할 질문, 답 지시) · 칩(추천 답변 후보 하나에 넣음 — 검증을 지나면 먼저 보인다, 산출로 치지 않는다).
+  처음 만나는 표현은 노출, 만난 적 있으면 유저가 안 썼을 때 유도 · 칩 비중이 높다. 칩 스위치가 꺼져 있으면 칩 대신 유도.
+- **대상 유저** — 끝낸 유닛 없음: 넣지 않는다. 튜토리얼만: 턴에는 넣지 않고 첫 인사 · 선톡에서만 노출(「안녕하세요」 · 「감사합니다」). `u01` 이상: 전부.
+- **확인과 기록** — 캐릭터 쪽은 `@state.learned`(모델 보고) + 노출이면 글자 확인(문형 · 자리 있는 표현은 보고만). 유저 쪽은 직접 입력한 글에서 배운 표현 전체를
+  글자로 보고(한 글자 어휘 제외), 최근 지시한 문형은 피드백 모델이 `learned_used`로 판정한다 → `correction.learnedUsed`(앱 카드 「배운 표현을 썼어요」). 칩 전송은 세지 않는다.
+  `companion_record_learning`이 `companion.user_expressions`를 센다(실패는 로그 `learning_record_failed`만). 저장 meta `learning {open, reason, mode?, expressionId?, surface?, done?, produced?}`.
+- 지표: `companion_learning_stats(p_since, p_playground = null)`(service_role) — 턴 · 열린 턴 · 넣은 턴 · 방식별 넣음 · 따름 · 출처별 · 까닭 · 산출 턴 · 유도 뒤 3턴 안 산출 ·
+  다시 쓴 표현(산출 2번 이상, 하루 넘게 떨어져) · 많이 넣은 표현.
+- 평가: `companion-eval`의 `kind: "learning"`(케이스 `target {surface, gloss?, kind?, mode}`) — 답 · 모델 보고 · 서버 판정(칩이면 칩 셋).
+
 ### 첫 인사 — companion-greet
 
 대화가 비었을 때(새 대화 · 대화 초기화 뒤) 캐릭터가 먼저 말을 건다(Zeta의 첫 메시지처럼). 앱은 캐릭터 화면을 열 때 메시지가 하나도 없으면 부른다.
@@ -546,6 +566,9 @@ supabase functions serve --no-verify-jwt                                        
    `companion-proactive` · `companion-greet` · `companion-eval`을 다시 배포하고, 예약 `companion-memory-flush`를 `supabase/cron/companion.sql`에서 더한다.
    `20261124120000_companion_ratings_resend.sql`은 20261123 **뒤에**, 새 `chat-send`를 배포하기 전에 적용한다(같은 방식의 묶음). 옛 DB에서 새 `chat-send`는
    `replaces_message_id`가 온 턴만 시작이 실패한다(500 `begin_failed`) — 보통 턴은 그대로다. 평가 RPC는 함수 배포와 상관없다. 적용 뒤 `chat-send`를 다시 배포한다.
+   `20261125120000_companion_learning.sql`은 20261124 **뒤에**, 새 함수를 배포하기 전에 적용한다(같은 방식의 묶음). 옛 DB면 새 함수가 기록(`companion_record_learning`)을
+   부를 때만 실패하고(로그만) 턴 · 인사 · 선톡은 그대로 돈다 — 넣기 설정이 없어 기본값을 쓴다. 적용 뒤 `chat-send` · `companion-greet` · `companion-proactive` ·
+   `companion-eval` · `companion-suggest`를 다시 배포한다.
 3. 비밀: `supabase secrets set --env-file supabase/functions/.env`. 키가 아직 없으면 `COMPANION_LLM=fake`로 화면만 먼저 본다.
 4. `supabase functions deploy chat-send` · `supabase functions deploy companion-proactive` · `supabase functions deploy companion-eval`(`config.toml`의 `verify_jwt = false`를 따른다).
 5. 예약 작업: Vault에 서버 키(`companion_service_role_key`)를 넣고 `supabase/cron/companion.sql`을 SQL 편집기에서 한 번 실행한다.

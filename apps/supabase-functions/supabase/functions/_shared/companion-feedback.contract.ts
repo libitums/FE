@@ -28,6 +28,19 @@ export type Feedback = {
   readonly better: { text: string; meaning: string; explanation: string } | null;
   /** `corrected`의 뜻(학습자 언어). `l1_to_ko`면 늘 있다. */
   readonly meaning: string | null;
+  /** 학습자가 이 메시지에서 쓴 배운 표현(20261125) — 있을 때만. 카드에 「배운 표현을 썼어요」. */
+  readonly learnedUsed?: LearnedUse[];
+};
+
+/** 학습자가 쓴 배운 표현 하나. */
+export type LearnedUse = { readonly id: string; readonly surface: string };
+
+/** 피드백 모델이 산출을 판정할 배운 표현(최근 지시한 것 가운데 글자 판정이 어려운 문형). `ref`는 `t1` · `t2` …. */
+export type LearnedTarget = {
+  readonly ref: string;
+  readonly id: string;
+  readonly surface: string;
+  readonly gloss: string | null;
 };
 
 export type FeedbackRequest = {
@@ -46,5 +59,7 @@ export type FeedbackRequest = {
     readonly role: string | null;
     readonly banmalFeedback: BanmalFeedback;
   } | null;
+  /** 산출을 판정할 배운 표현. 없거나 비면 판정하지 않는다(`learned_used`는 빈 배열). */
+  readonly targets?: readonly LearnedTarget[];
   readonly signal: AbortSignal;
 };

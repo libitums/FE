@@ -40,6 +40,8 @@ export function parseTurnState(text: string): TurnState | null {
       topic:
         typeof raw["topic"] === "string" && raw["topic"] !== "" ? raw["topic"].slice(0, 60) : null,
       userWantsSwitch: raw["user_wants_switch"] === true,
+      ...(raw["learned"] === true ? { learned: true as const } : {}),
+      ...(raw["heavy"] === true ? { heavy: true as const } : {}),
     };
   } catch {
     return null;
