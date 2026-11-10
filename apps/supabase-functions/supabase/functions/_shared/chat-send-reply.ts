@@ -41,6 +41,7 @@ export function startReply(
   history: HistoryEntry[],
   system: string,
   abort: AbortController,
+  directive: string | null = null,
 ) {
   const deltas: SegmentDelta[] = [];
   let emitted = 0;
@@ -68,6 +69,7 @@ export function startReply(
       system,
       history,
       userText: context.body.text,
+      directive,
       signal,
     })) {
       push(splitter.push(chunk));

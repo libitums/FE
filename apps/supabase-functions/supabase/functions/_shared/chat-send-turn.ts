@@ -42,6 +42,7 @@ import type { RefusalStage } from "./companion-llm-prompts.ts";
 import { companionSystemPrompt, type PromptInput } from "./companion-prompt.ts";
 import { crisisResourcesFor } from "./companion-safety.ts";
 import { segmentsToPlain, type SegmentDelta } from "./companion-segments.ts";
+import type { UsageCollector } from "./companion-usage.ts";
 
 export type TurnContext = {
   deps: ChatSendDeps;
@@ -57,7 +58,10 @@ export type TurnContext = {
   status: TurnStatus | null;
   assistantMessageId: string;
   playground: boolean;
-  historyLimit: number;
+  /** 요약 뒤에도 남기는 최근 메시지 수(`companion_summary_source`의 p_keep). */
+  historyKeep: number;
+  /** 이 턴의 LLM 사용량 — `llm`이 기록하는 곳. 저장 meta의 `usage`가 된다. */
+  usage: UsageCollector;
 };
 
 export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
@@ -81,9 +85,14 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
     summary: turn.summary,
     feedbackMode: gate.feedbackMode,
     memories: turn.memories.map((memory) => memory.content),
-    directive: branch.directive,
+    // 이번 턴 지시는 시스템 프롬프트가 아니라 답 요청의 `directive`로 — 시스템 · 지난 대화의 캐시를 깨지 않는다.
+    directive: null,
   };
   const prompt = companionSystemPrompt(promptInput);
+  const withUsage = (assistant: Record<string, unknown>) => ({
+    ...assistant,
+    meta: { ...(assistant.meta as Record<string, unknown> | undefined), usage: context.usage.summary() },
+  });
   const { finish, sendState, done } = turnFinisher(context, moderation);
   const fail = async (code: StreamErrorCode, status: "blocked" | "failed") => {
     abort.abort();
@@ -118,7 +127,7 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
         },
         record: (output) => moderation.push(output),
         finish: async (assistant) => {
-          const finished = await finish("blocked", assistant);
+          const finished = await finish("blocked", withUsage(assistant));
           sendState(finished);
           done(finished, stage);
         },
@@ -142,11 +151,13 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
   for (const kind of gate.notices) sink.send({ event: "notice", data: { kind } });
 
   const abort = new AbortController();
+  const history = historyFrom(turn);
   const reply = startReply(
     context,
-    historyFrom(turn),
+    history,
     `${prompt.stable}${systemSplit}${prompt.dynamic}`,
     abort,
+    branch.directive,
   );
   const feedback = startFeedback(context, abort);
   let correctionSent = false;
@@ -158,10 +169,11 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
 
   let input: ModerationVerdict;
   try {
+    const previous = [...history].reverse().find((entry) => entry.role === "assistant");
     input = await llm.moderate({
       layer: "input",
       text: body.text,
-      context: null,
+      context: previous?.role === "assistant" ? segmentsToPlain(previous.segments) : null,
       ageBand,
       signal: abort.signal,
     });
@@ -176,12 +188,10 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
       event: "crisis",
       data: crisisResourcesFor(body.client_region ?? gate.region ?? null),
     });
-    const finished = await finish("crisis", {
-      id: context.assistantMessageId,
-      origin: "crisis",
-      segments: [],
-      meta: { ageBand },
-    });
+    const finished = await finish(
+      "crisis",
+      withUsage({ id: context.assistantMessageId, origin: "crisis", segments: [], meta: { ageBand } }),
+    );
     done(finished);
     return { outcome: "crisis", afterTurn: null };
   }
@@ -246,7 +256,7 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
   try {
     finished = await finish(
       "complete",
-      {
+      withUsage({
         id: context.assistantMessageId,
         origin: "turn",
         segments,
@@ -264,7 +274,7 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
           trial: turn.trial,
           playground: context.playground,
         },
-      },
+      }),
       {
         feedback: feedbackResult,
         intimacyDelta: result.state?.intimacyDelta ?? 0,
@@ -288,13 +298,10 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
       userId: context.userId,
       characterId: body.character_id,
       conversationId: turn.conversationId,
-      userMessageId: turn.userMessageId,
-      userText: body.text,
-      reply: segmentsToPlain(result.segments),
       memoryEnabled: gate.memoryEnabled,
       minor: ageBand !== "adult",
       existingMemories: turn.memories.map((memory) => memory.content),
-      historyLimit: context.historyLimit,
+      historyKeep: context.historyKeep,
     },
   };
 }

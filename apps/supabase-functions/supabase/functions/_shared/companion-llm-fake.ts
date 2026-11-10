@@ -11,7 +11,7 @@
 //   「…요 … 뭐 해?」 → 말투 섞임 교정   존댓말 관계에서 「뭐 해?」 → 존댓말 제안(better, 페르소나 banmalFeedback=correction이면 교정)
 //   「나는 너를」 → 자연스러운 표현(better)   「[better]」 → 더 나은 표현   번역은 「[언어] 원문」
 //   「*…*」 → 학습자의 행동 · 속마음 — 답은 몸짓에 반응하고 속마음 글을 따라 말하지 않는다, 말투 판정에서 뺀다
-//   「저는 … 좋아해요」 → 기억   「[slow]」 → 조각 사이를 늦춘다   「[warm]」 → 친밀도 +3
+//   「저는 … 좋아해요」 → 기억(유저 메시지가 settings.memory_every개 모여 묶음으로 뽑힐 때)   「[slow]」 → 조각 사이를 늦춘다   「[warm]」 → 친밀도 +3
 //   추천 답변 칩: 최근 대화에 「[suggest-bad]」 → 몫이 빠진 칩(다시 묻기 · 받지 못함)   「[unsafe-suggest]」 → 출력 검사에 걸리는 칩
 // 위 낱말이 없는 말은 정상 턴(조각 셋 · 친밀도 +1)입니다.
 
@@ -99,7 +99,8 @@ export function fakeCompanionLlm(): CompanionLlm {
       const slow = request.userText.includes("[slow]");
       // 속마음 · 행동(*…*)은 따라 말하지 않는다.
       const echo = request.userText.replace(tags, "").replace(asterisks, "").trim().slice(0, 40);
-      const directive = request.system.includes("# For this reply") ? " (지시 반영)" : "";
+      const directive =
+        request.directive || request.system.includes("# For this reply") ? " (지시 반영)" : "";
       // 성격대로 거절(거절 지시가 붙은 답) — 유저 말 자리는 앱 안내라 따라 말하지 않는다.
       const refusal = request.system.includes("broke the app's safety rules");
       const warn = request.system.includes("This has happened before");
@@ -242,8 +243,11 @@ export function fakeCompanionLlm(): CompanionLlm {
       return request.segments.map((segment) => `[${request.l1}] ${segment.text}`);
     },
     async extractMemories(request): Promise<MemoryItem[]> {
-      const match = /저는 (.{1,20}) 좋아해요/.exec(request.userText);
-      return match ? [{ kind: "fact", content: `${match[1]} 좋아한다`, shared: true }] : [];
+      // 묶음의 유저 메시지마다 「저는 … 좋아해요」를 찾는다.
+      return request.messages.flatMap((entry): MemoryItem[] => {
+        const match = entry.role === "user" ? /저는 (.{1,20}) 좋아해요/.exec(entry.text) : null;
+        return match ? [{ kind: "fact", content: `${match[1]} 좋아한다`, shared: true }] : [];
+      });
     },
     async summarize(request) {
       return `요약(가짜): 메시지 ${request.messages.length}개${request.previous ? " · 앞 요약 이어 씀" : ""}`;

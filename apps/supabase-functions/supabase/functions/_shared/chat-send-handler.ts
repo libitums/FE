@@ -26,8 +26,12 @@ import { runAfterTurn } from "./companion-after-turn.ts";
 import { saveSuggestions } from "./companion-suggest-generate.ts";
 import type { PreStreamErrorCode } from "./companion-contract/index.ts";
 import { callRpc } from "./companion-rpc.ts";
+import { createUsageCollector, usageLine } from "./companion-usage.ts";
 
-const historyLimit = 20;
+// 지난 대화는 마지막 요약 뒤 메시지 전부다(마이그레이션 20261120). 요약 뒤 남는 최근 메시지가 `historyKeep`개이고,
+// 그 밖이 `settings.summary_after`개 쌓이면 요약되어 빠진다(기본 20 ~ 49개). `historyCap`은 요약이 계속 실패할 때의 상한이다.
+const historyKeep = 20;
+const historyCap = 100;
 const expressionLimit = 40;
 const defaultPingIntervalMs = 15_000;
 const afterTurnTimeoutMs = 30_000;
@@ -93,7 +97,7 @@ export function createChatSendHandler(deps: ChatSendDeps): (request: Request) =>
           p_client_message_id: body.client_message_id,
           p_text: body.text,
           p_input_mode: body.input_mode,
-          p_history_limit: historyLimit,
+          p_history_limit: historyCap,
           p_region: body.client_region ?? null,
           p_now: new Date(deps.nowMs()).toISOString(),
         }),
@@ -112,10 +116,11 @@ export function createChatSendHandler(deps: ChatSendDeps): (request: Request) =>
     const turn = begun;
 
     const sink = createSink(deps.pingIntervalMs ?? defaultPingIntervalMs);
+    const usage = createUsageCollector();
     const context: TurnContext = {
       deps,
       env,
-      llm,
+      llm: llm.withUsage?.(usage.record) ?? llm,
       sink,
       body,
       userId: caller.userId,
@@ -125,7 +130,8 @@ export function createChatSendHandler(deps: ChatSendDeps): (request: Request) =>
       status: await status,
       assistantMessageId: deps.randomUuid(),
       playground: caller.playground,
-      historyLimit,
+      historyKeep,
+      usage,
     };
     const work = runTurn(context)
       .catch((): TurnOutcome => {
@@ -134,7 +140,12 @@ export function createChatSendHandler(deps: ChatSendDeps): (request: Request) =>
       })
       .then(async ({ outcome, afterTurn, suggestions }) => {
         sink.close();
-        deps.log({ event: "chat_send", status: "stream", outcome });
+        const turnUsage = usageLine(usage.summary());
+        deps.log({
+          event: "chat_send",
+          status: "stream",
+          outcome: turnUsage === "" ? outcome : `${outcome} usage ${turnUsage}`,
+        });
         // 칩은 끝(finish)이 캐릭터 메시지를 만든 뒤에야 붙일 수 있다 — `done`을 늦추지 않게 스트림을 닫고 저장한다.
         if (suggestions) {
           const saved = await saveSuggestions(deps.outbound, env, {
@@ -149,12 +160,20 @@ export function createChatSendHandler(deps: ChatSendDeps): (request: Request) =>
             deps.log({ event: "chat_send", status: "stream", outcome: "suggestions_save_failed" });
         }
         if (afterTurn === null) return;
+        const afterUsage = createUsageCollector();
         try {
-          const result = await runAfterTurn(deps.outbound, env, llm, afterTurn, afterTurnTimeoutMs);
+          const result = await runAfterTurn(
+            deps.outbound,
+            env,
+            llm.withUsage?.(afterUsage.record) ?? llm,
+            afterTurn,
+            afterTurnTimeoutMs,
+          );
+          const line = usageLine(afterUsage.summary());
           deps.log({
             event: "companion_after_turn",
             status: "stream",
-            outcome: `memories=${result.memories} evicted=${result.evicted} memory_full=${result.memoryFull} summarized=${result.summarized}`,
+            outcome: `memory_batch=${result.memoryBatch} memories=${result.memories} evicted=${result.evicted} memory_full=${result.memoryFull} summarized=${result.summarized}${line === "" ? "" : ` usage ${line}`}`,
           });
         } catch {
           deps.log({ event: "companion_after_turn", status: "stream", outcome: "failed" });

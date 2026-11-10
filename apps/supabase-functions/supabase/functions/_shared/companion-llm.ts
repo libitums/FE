@@ -9,13 +9,15 @@ import type {
   ChatSendEnv,
   CompanionLlm,
   HistoryEntry,
+  LlmStep,
+  LlmUsage,
   ReplyRequest,
 } from "./chat-send.contract.ts";
 import { fakeCompanionLlm } from "./companion-llm-fake.ts";
 import {
   feedbackContent,
   feedbackFrom,
-  feedbackSystem,
+  feedbackSystemParts,
   memorySystem,
   suggestionContent,
   suggestionSystem,
@@ -25,6 +27,9 @@ import {
 } from "./companion-llm-prompts.ts";
 import { segmentsToPlain, segmentsToTagged } from "./companion-segments.ts";
 import { moderationCategories, moderationInstruction } from "./companion-safety.ts";
+
+/** 묶음 하나(몇 턴)에서 뽑는 기억 수의 상한. */
+export const memoryBatchLimit = 5;
 
 /** 시스템 프롬프트의 두 부분 사이 구분자. 핸들러가 앞(고정) · 뒤(유저별)를 이 줄로 잇습니다. */
 export const systemSplit = "\n\n<<<DYNAMIC>>>\n\n";
@@ -76,17 +81,47 @@ const memorySchema = z.object({
   ),
 });
 
-function historyMessages(
+/**
+ * 지난 대화 + 이번 유저 말(+ 이번 턴 지시). 지난 대화의 마지막 메시지에 캐시 표시를 단다 — 지난 대화는 요약 사이에 뒤로 붙기만 하므로
+ * (`companion_begin_turn`이 마지막 요약 뒤 메시지를 준다) 다음 턴에는 여기까지가 캐시에서 읽힌다. 이번 턴 지시는 그 뒤의 system 메시지라
+ * 앞부분을 바꾸지 않는다.
+ */
+export function historyMessages(
   history: readonly HistoryEntry[],
   userText: string,
+  directive: string | null = null,
 ): Anthropic.Beta.BetaMessageParam[] {
-  const messages: Anthropic.Beta.BetaMessageParam[] = history.map((entry) =>
-    entry.role === "user"
-      ? { role: "user", content: entry.text }
-      : { role: "assistant", content: segmentsToTagged(entry.segments) },
-  );
+  const messages: Anthropic.Beta.BetaMessageParam[] = history.map((entry, index) => {
+    const text = entry.role === "user" ? entry.text : segmentsToTagged(entry.segments);
+    const content =
+      index === history.length - 1
+        ? [{ type: "text" as const, text, cache_control: { type: "ephemeral" as const } }]
+        : text;
+    return { role: entry.role, content };
+  });
   messages.push({ role: "user", content: userText });
+  if (directive !== null && directive !== "") messages.push({ role: "system", content: directive });
   return messages;
+}
+
+type ResponseUsage = {
+  input_tokens: number;
+  output_tokens: number;
+  cache_read_input_tokens: number | null;
+  cache_creation_input_tokens: number | null;
+};
+
+/** 응답의 usage → 기록 한 건. 캐시 칸은 null일 수 있고, usage가 없으면(대역) 기록하지 않는다. */
+function usageOf(step: LlmStep, model: string, usage: ResponseUsage | undefined): LlmUsage | null {
+  if (usage === undefined) return null;
+  return {
+    step,
+    model,
+    inputTokens: usage.input_tokens,
+    cacheReadTokens: usage.cache_read_input_tokens ?? 0,
+    cacheWriteTokens: usage.cache_creation_input_tokens ?? 0,
+    outputTokens: usage.output_tokens,
+  };
 }
 
 const transcript = (history: readonly HistoryEntry[]) =>
@@ -100,27 +135,41 @@ const transcript = (history: readonly HistoryEntry[]) =>
 
 export function anthropicCompanionLlm(
   config: Extract<ChatSendEnv["llm"], { kind: "anthropic" }>,
-): CompanionLlm {
+  onUsage: (usage: LlmUsage) => void = () => {},
   // 재시도는 핸들러가 정합니다(조각을 보내기 전에만 한 번 — API §2.1).
-  const client = new Anthropic({ apiKey: config.apiKey, maxRetries: 0 });
-
+  client: Anthropic = new Anthropic({ apiKey: config.apiKey, maxRetries: 0 }),
+): CompanionLlm {
+  const record = (usage: LlmUsage | null) => {
+    if (usage !== null) onUsage(usage);
+  };
+  // 시스템 글은 단계마다(검사는 층 · 연령대, 피드백은 언어 · 말투 단계마다) 같고 바뀌는 글은 user 쪽이라 캐시 표시를 단다.
+  // Claude 5 세대의 캐시 최소 길이(512토큰)보다 짧은 글은 표시가 있어도 그냥 캐시되지 않는다.
   async function parse<T>(
+    step: LlmStep,
     model: string,
     schema: z.ZodType<T>,
-    system: string,
+    system: string | { stable: string; dynamic: string },
     content: string,
     signal: AbortSignal,
   ): Promise<T> {
+    const blocks: Anthropic.TextBlockParam[] =
+      typeof system === "string"
+        ? [{ type: "text", text: system, cache_control: { type: "ephemeral" } }]
+        : [
+            { type: "text", text: system.stable, cache_control: { type: "ephemeral" } },
+            { type: "text", text: system.dynamic },
+          ];
     const response = await client.messages.parse(
       {
         model,
         max_tokens: 2000,
         output_config: { effort: "low", format: zodOutputFormat(schema) },
-        system,
+        system: blocks,
         messages: [{ role: "user", content }],
       },
       { signal },
     );
+    record(usageOf(step, model, response.usage));
     if (response.stop_reason === "refusal" || response.parsed_output === null) {
       throw new StructuredUnavailable(String(response.stop_reason));
     }
@@ -142,7 +191,7 @@ export function anthropicCompanionLlm(
             { type: "text", text: stable ?? "", cache_control: { type: "ephemeral" } },
             { type: "text", text: dynamic },
           ],
-          messages: historyMessages(request.history, request.userText),
+          messages: historyMessages(request.history, request.userText, request.directive ?? null),
         },
         { signal: request.signal },
       );
@@ -151,12 +200,17 @@ export function anthropicCompanionLlm(
           yield event.delta.text;
       }
       const final = await stream.finalMessage();
+      record(usageOf("reply", config.model, final.usage));
       if (final.stop_reason === "refusal") throw new Error("refusal");
     },
     async moderate(request) {
-      const context =
-        request.context === null ? "" : `Learner's message for context:\n${request.context}\n\n`;
+      const label =
+        request.layer === "input"
+          ? "The character's previous message, for context only"
+          : "Learner's message for context";
+      const context = request.context === null ? "" : `${label}:\n${request.context}\n\n`;
       const verdict = await parse(
+        request.layer === "input" ? "moderation_input" : "moderation_output",
         config.moderationModel,
         verdictSchema,
         moderationInstruction(request.layer, request.ageBand),
@@ -170,9 +224,10 @@ export function anthropicCompanionLlm(
     },
     async feedback(request) {
       const result = await parse(
+        "feedback",
         config.feedbackModel,
         feedbackSchema,
-        feedbackSystem(request),
+        feedbackSystemParts(request),
         feedbackContent(request),
         request.signal,
       );
@@ -180,6 +235,7 @@ export function anthropicCompanionLlm(
     },
     async translate(request) {
       const result = await parse(
+        "translation",
         config.translationModel,
         translationSchema,
         translationSystem(request.l1, request.segments.length),
@@ -190,13 +246,14 @@ export function anthropicCompanionLlm(
     },
     async extractMemories(request) {
       const result = await parse(
+        "memory",
         config.moderationModel,
         memorySchema,
         memorySystem(request.minor),
-        `Existing memory:\n${request.existing.map((item) => `- ${item}`).join("\n") || "(none)"}\n\nLearner: ${request.userText}\nCharacter: ${request.reply}`,
+        `Existing memory:\n${request.existing.map((item) => `- ${item}`).join("\n") || "(none)"}\n\nRecent messages:\n${transcript(request.messages)}`,
         request.signal,
       );
-      return result.items.slice(0, 3).filter((item) => item.content.trim() !== "");
+      return result.items.slice(0, memoryBatchLimit).filter((item) => item.content.trim() !== "");
     },
     async summarize(request) {
       const response = await client.messages.create(
@@ -214,6 +271,7 @@ export function anthropicCompanionLlm(
         },
         { signal: request.signal },
       );
+      record(usageOf("summary", config.moderationModel, response.usage));
       const text = response.content
         .flatMap((block) => (block.type === "text" ? [block.text] : []))
         .join("")
@@ -224,6 +282,7 @@ export function anthropicCompanionLlm(
     async suggest(request) {
       // Haiku에는 서버 쪽 대체 모델이 없지만 `parse`는 대체 옵션을 싣지 않으므로 모델과 상관없이 같은 호출이다.
       const result = await parse(
+        "suggestions",
         config.suggestModel ?? config.moderationModel,
         suggestionSchema,
         suggestionSystem,
@@ -232,6 +291,7 @@ export function anthropicCompanionLlm(
       );
       return result.items;
     },
+    withUsage: (next) => anthropicCompanionLlm(config, next, client),
   };
 }
 

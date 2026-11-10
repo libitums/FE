@@ -17,6 +17,7 @@ import {
 } from "./companion-prompt.ts";
 import { callRpc, isServiceKey } from "./companion-rpc.ts";
 import { bearerTokenFrom } from "./supabase-auth.ts";
+import { createUsageCollector } from "./companion-usage.ts";
 
 const historyLimit = 12;
 const uuidShape = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -50,7 +51,8 @@ const json = (status: number, body: unknown) =>
 
 async function proactiveOne(deps: ChatSendDeps, target: Target, force: boolean): Promise<Outcome> {
   const env = deps.env!;
-  const llm = deps.llm!;
+  const usage = createUsageCollector();
+  const llm = deps.llm!.withUsage?.(usage.record) ?? deps.llm!;
   const now = new Date(deps.nowMs()).toISOString();
   const context = await callRpc<ProactiveContext>(
     deps.outbound,
@@ -132,7 +134,12 @@ async function proactiveOne(deps: ChatSendDeps, target: Target, force: boolean):
     p_character_id: target.characterId,
     p_message_id: messageId,
     p_segments: stored,
-    p_meta: { model: llm.model, forced: force, translation: translated.status },
+    p_meta: {
+      model: llm.model,
+      forced: force,
+      translation: translated.status,
+      usage: usage.summary(),
+    },
     p_now: now,
   });
   return { ...target, result: "sent", messageId, segments: stored };

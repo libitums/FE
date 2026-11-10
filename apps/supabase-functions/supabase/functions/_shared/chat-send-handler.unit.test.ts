@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 
 import type {
+  LlmUsage,
   ChatSendEnv,
   ChatSendLogEntry,
   CompanionLlm,
@@ -66,6 +67,7 @@ type Options = {
   begin?: unknown;
   finish?: unknown;
   summarySource?: unknown;
+  memorySource?: unknown;
   status?: unknown;
   llm?: CompanionLlm | null;
   envOverride?: ChatSendEnv | null;
@@ -73,6 +75,7 @@ type Options = {
   translationTimeoutMs?: number;
   suggestionTimeoutMs?: number;
   saveStatus?: number;
+  random?: () => number;
 };
 
 function setup(options: Options = {}) {
@@ -93,6 +96,8 @@ function setup(options: Options = {}) {
         : options.status,
     companion_add_memories: { added: 1, evicted: 0, skipped: 0, full: false },
     companion_summary_source: options.summarySource ?? null,
+    companion_memory_source: options.memorySource ?? null,
+    companion_mark_memories: null,
     companion_save_summary: null,
     companion_save_suggestions: true,
   };
@@ -131,8 +136,8 @@ function setup(options: Options = {}) {
     llmTimeoutMs: 2_000,
     feedbackTimeoutMs: 200,
     refusalTimeoutMs: 300,
-    // 분기 확률을 넘기지 않게 고정 — 지시가 붙지 않는다.
-    random: () => 0.99,
+    // 분기 확률을 넘기지 않게 고정 — 지시가 붙지 않는다(바꾼 테스트만 지시가 붙는다).
+    random: options.random ?? (() => 0.99),
   });
   const finishArgs = () => rpcs.find((rpc) => rpc.fn === "companion_finish_turn")?.args;
   return { handler, rpcs, logs, finishArgs, settle: () => Promise.all(pending) };
@@ -390,33 +395,170 @@ describe("턴 스트림", () => {
     expect(twice.finishArgs()).toMatchObject({ p_status: "failed", p_notices: [] });
   });
 
-  test("CS9. 앱이 끊어도 턴과 뒤 작업(기억 · 요약)은 끝까지 돈다", async () => {
+  // 기억 묶음: 유저 메시지가 settings.memory_every개 모이면 `companion_memory_source`가 메시지들을 준다(마이그레이션 20261120).
+  const memoryBatch = {
+    until: "2026-11-09T08:30:00Z",
+    sourceMessageId: "40000000-0000-4000-8000-000000000009",
+    messages: [
+      { role: "user", text: "저는 떡볶이를 좋아해요", segments: [] },
+      { role: "assistant", text: null, segments: [{ kind: "speech", text: "맛있죠!" }] },
+    ],
+  };
+
+  test("CS9. 앱이 끊어도 턴과 뒤 작업(기억 묶음 · 요약)은 끝까지 돈다", async () => {
     const { handler, rpcs, settle } = setup({
       summarySource: {
         summary: null,
         until: "2026-11-09T08:00:00Z",
         messages: [{ role: "user", text: "옛말", segments: [] }],
       },
+      memorySource: memoryBatch,
     });
-    const response = await handler(post(body({ text: "저는 떡볶이를 좋아해요 [slow]" })));
+    const response = await handler(post(body({ text: "안녕하세요 [slow]" })));
     await response.body!.cancel();
     await settle();
     expect(rpcs.find((rpc) => rpc.fn === "companion_finish_turn")?.args).toMatchObject({
       p_status: "complete",
     });
+    expect(rpcs.find((rpc) => rpc.fn === "companion_memory_source")?.args).toMatchObject({
+      p_conversation_id: begun.conversationId,
+    });
+    // 묶음의 유저 메시지에서 뽑고, 멱등 키는 묶음의 마지막 유저 메시지다.
     expect(rpcs.find((rpc) => rpc.fn === "companion_add_memories")?.args).toMatchObject({
+      p_source_message_id: memoryBatch.sourceMessageId,
       p_items: [{ kind: "fact", content: "떡볶이를 좋아한다", shared: true }],
+    });
+    expect(rpcs.find((rpc) => rpc.fn === "companion_mark_memories")?.args).toEqual({
+      p_conversation_id: begun.conversationId,
+      p_until: memoryBatch.until,
     });
     expect(rpcs.find((rpc) => rpc.fn === "companion_save_summary")?.args).toMatchObject({
       p_until: "2026-11-09T08:00:00Z",
     });
   });
 
-  test("CS10. 장기 메모리를 끈 판정이면 추출하지 않는다(미국 12 ~ 15세)", async () => {
-    const { handler, rpcs, settle } = setup({ gate: { ...okGate, memoryEnabled: false } });
+  test("CS10. 장기 메모리를 끈 판정이면 추출하지 않고 표시만 옮긴다(미국 12 ~ 15세)", async () => {
+    const { handler, rpcs, settle } = setup({
+      gate: { ...okGate, memoryEnabled: false },
+      memorySource: memoryBatch,
+    });
     await (await handler(post(body({ text: "저는 떡볶이를 좋아해요" })))).text();
     await settle();
     expect(rpcs.some((rpc) => rpc.fn === "companion_add_memories")).toBe(false);
+    expect(rpcs.find((rpc) => rpc.fn === "companion_mark_memories")?.args).toMatchObject({
+      p_until: memoryBatch.until,
+    });
+  });
+
+  test("CS29. 묶음이 차지 않았으면 기억을 뽑지 않는다 — 턴마다 추출하지 않는다", async () => {
+    let extracted = 0;
+    const llm: CompanionLlm = {
+      ...fakeCompanionLlm(),
+      extractMemories: async () => {
+        extracted += 1;
+        return [];
+      },
+    };
+    const { handler, rpcs, settle } = setup({ llm });
+    await (await handler(post(body({ text: "저는 떡볶이를 좋아해요" })))).text();
+    await settle();
+    expect(rpcs.some((rpc) => rpc.fn === "companion_memory_source")).toBe(true);
+    expect(extracted).toBe(0);
+    expect(rpcs.some((rpc) => rpc.fn === "companion_add_memories")).toBe(false);
+    expect(rpcs.some((rpc) => rpc.fn === "companion_mark_memories")).toBe(false);
+  });
+
+  test("CS30. 지난 대화는 요약 뒤 전부(상한 100) — 요약 뒤 남기는 수는 20", async () => {
+    const { handler, rpcs, settle } = setup({
+      summarySource: { summary: null, until: "2026-11-09T08:00:00Z", messages: [] },
+    });
+    await (await handler(post(body()))).text();
+    await settle();
+    expect(rpcs.find((rpc) => rpc.fn === "companion_begin_turn")?.args).toMatchObject({
+      p_history_limit: 100,
+    });
+    expect(rpcs.find((rpc) => rpc.fn === "companion_summary_source")?.args).toMatchObject({
+      p_keep: 20,
+    });
+  });
+
+  test("CS31. 사용량을 단계별로 모아 저장 meta · 로그에 싣는다", async () => {
+    const fake = fakeCompanionLlm();
+    const usageOf = (step: LlmUsage["step"]): LlmUsage => ({
+      step,
+      model: "m",
+      inputTokens: 10,
+      cacheReadTokens: 5,
+      cacheWriteTokens: 1,
+      outputTokens: 2,
+    });
+    const recording = (record: (usage: LlmUsage) => void): CompanionLlm => ({
+      ...fake,
+      async *reply(request) {
+        yield* fake.reply(request);
+        record(usageOf("reply"));
+      },
+      async moderate(request) {
+        record(usageOf(request.layer === "input" ? "moderation_input" : "moderation_output"));
+        return fake.moderate(request);
+      },
+      async feedback(request) {
+        record(usageOf("feedback"));
+        return fake.feedback(request);
+      },
+    });
+    const { handler, rpcs, logs, settle } = setup({
+      gate: { ...okGate, ageBand: "adult", notices: [] },
+      llm: { ...fake, withUsage: recording },
+    });
+    await (await handler(post(body()))).text();
+    await settle();
+    const meta = (rpcs.find((rpc) => rpc.fn === "companion_finish_turn")?.args["p_assistant"] as {
+      meta: { usage: Record<string, unknown> };
+    }).meta;
+    expect(meta.usage).toEqual({
+      reply: { model: "m", calls: 1, inputTokens: 10, cacheReadTokens: 5, cacheWriteTokens: 1, outputTokens: 2 },
+      moderation_input: { model: "m", calls: 1, inputTokens: 10, cacheReadTokens: 5, cacheWriteTokens: 1, outputTokens: 2 },
+      feedback: { model: "m", calls: 1, inputTokens: 10, cacheReadTokens: 5, cacheWriteTokens: 1, outputTokens: 2 },
+    });
+    const line = logs.find((entry) => entry.event === "chat_send" && entry.status === "stream")?.outcome;
+    expect(line).toMatch(/^complete usage /);
+    expect(line).toContain("reply=10/5/1/2");
+  });
+
+  test("CS32. 이번 턴 지시는 시스템 프롬프트가 아니라 답 요청의 directive로 · 입력 검사는 직전 캐릭터 말을 맥락으로", async () => {
+    const fake = fakeCompanionLlm();
+    const replies: { system: string; directive?: string | null }[] = [];
+    const contexts: (string | null)[] = [];
+    const llm: CompanionLlm = {
+      ...fake,
+      reply(request) {
+        replies.push({ system: request.system, directive: request.directive ?? null });
+        return fake.reply(request);
+      },
+      async moderate(request) {
+        if (request.layer === "input") contexts.push(request.context);
+        return fake.moderate(request);
+      },
+    };
+    const { handler, settle } = setup({
+      llm,
+      random: () => 0,
+      begin: {
+        ...begun,
+        // 같은 화제가 오래 이어져 화제 전환 지시가 붙는 상태.
+        topicState: { turn: 9, topic: "날씨", topicTurns: 6, shortStreak: 3, wantsSwitch: true, lastInsertTurn: null, lastSwitchTurn: null },
+        history: [
+          { role: "user", text: "전에 한 말", segments: [] },
+          { role: "assistant", text: null, segments: [{ kind: "speech", text: "같이 갈래요?" }] },
+        ],
+      },
+    });
+    await (await handler(post(body({ text: "응 할게" })))).text();
+    await settle();
+    expect(contexts).toEqual(["같이 갈래요?"]);
+    expect(replies[0]?.system).not.toContain("# For this reply");
+    expect(replies[0]?.directive).toEqual(expect.any(String));
   });
 });
 
