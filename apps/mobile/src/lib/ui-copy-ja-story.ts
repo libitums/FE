@@ -29,7 +29,6 @@ export const messengerJa: MessengerCopy = {
     shift: "シフト",
     shiftOn: "シフト、オン",
     backspace: "削除",
-    comma: "コンマ",
     period: "ピリオド",
     space: "スペース",
     questionMark: "疑問符",

@@ -11,8 +11,11 @@ export type SoundEffectId =
   | "ring_bell"
   | "accept_call";
 
-/** 호스트에 보내는 진동 종류. 호스트는 이 두 문자열만 안다(ADR-0109). */
-export type HapticKind = "success" | "error";
+/**
+ * 호스트에 보내는 진동 종류. 판정 둘(ADR-0109)과 키 입력 하나(ADR-0112). `key`를 모르는 옛 호스트는
+ * 조용히 무시한다.
+ */
+export type HapticKind = "success" | "error" | "key";
 
 interface SoundEffectsModule {
   play(id: SoundEffectId): void;
@@ -73,4 +76,20 @@ export function stopRing(): void {
   } catch {
     // 화면 이탈은 벨 중지 실패와 무관하게 진행한다.
   }
+}
+
+/**
+ * 키 입력 진동을 만든다(ADR-0112). 설정과 모듈은 만들 때 한 번만 읽는다 — 키를 누를 때마다 저장소를
+ * 읽지 않는다. 꺼져 있거나 진동을 모르는 호스트면 무동작 함수다.
+ */
+export function createKeyHaptic(): () => void {
+  const module = nativeModule();
+  if (typeof module?.haptic !== "function" || !storedVibrationEnabled()) return () => {};
+  return () => {
+    try {
+      module.haptic?.("key");
+    } catch {
+      // 키 진동 실패가 입력을 막지 않는다.
+    }
+  };
 }

@@ -209,7 +209,6 @@ export type MessengerCopy = {
     readonly shift: string;
     readonly shiftOn: string;
     readonly backspace: string;
-    readonly comma: string;
     readonly period: string;
     readonly space: string;
     readonly questionMark: string;
