@@ -10,6 +10,7 @@ import {
   companionMessagesPageSchema,
   companionProfileSchema,
   companionWalletSchema,
+  learningScopeSchema,
 } from "./rpc";
 import { companionGreetRequestSchema, companionGreetResponseSchema } from "./greet";
 import { turnEventSchema } from "./sse-events";
@@ -25,6 +26,7 @@ const schemas = {
   "companion-memory": companionMemorySchema,
   "companion-memories": companionMemoryListSchema,
   "companion-wallet": companionWalletSchema,
+  "companion-learning-scope": learningScopeSchema,
   "companion-suggest-request": companionSuggestRequestSchema,
   "companion-suggest-response": companionSuggestResponseSchema,
   "companion-greet-request": companionGreetRequestSchema,

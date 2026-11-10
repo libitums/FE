@@ -4,12 +4,13 @@ import { preStreamErrorBodySchema } from "./chat-send";
 import { PRE_STREAM_ERRORS } from "./error-codes";
 import {
   errorFixtures,
+  learningScopeFixture,
   messagesPageFixture,
   turnFixtureEvents,
   turnFixtureText,
   type TurnFixtureName,
 } from "./fixtures";
-import { companionMessagesPageSchema } from "./rpc";
+import { companionMessagesPageSchema, learningScopeSchema } from "./rpc";
 import { decodeTurnEvent, parseSse } from "./sse-parse";
 import { checkTurnOrder } from "./turn-order";
 
@@ -51,5 +52,9 @@ describe("사전 오류 · 메시지 목록 fixture", () => {
 
   test("FX4. 메시지 목록은 창구 함수 반환 계약을 통과한다", () => {
     expect(companionMessagesPageSchema.parse(messagesPageFixture)).toEqual(messagesPageFixture);
+  });
+
+  test("FX5. 배운 표현 범위 설정은 창구 함수 반환 계약을 통과한다", () => {
+    expect(learningScopeSchema.parse(learningScopeFixture)).toEqual(learningScopeFixture);
   });
 });

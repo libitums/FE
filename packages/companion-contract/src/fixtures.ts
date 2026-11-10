@@ -2,7 +2,7 @@
 // 턴 스트림은 SSE 글자, 사전 오류는 HTTP 상태 + 본문, 메시지 목록은 창구 함수 반환입니다.
 import type { PreStreamErrorBody } from "./chat-send";
 import { PRE_STREAM_ERRORS, type PreStreamErrorCode } from "./error-codes";
-import type { CompanionMessage, CompanionMessagesPage } from "./rpc";
+import type { CompanionMessage, CompanionMessagesPage, LearningScope } from "./rpc";
 
 export { turnFixtureEvents, turnFixtureText, type TurnFixtureName } from "./fixtures-streams";
 
@@ -111,5 +111,22 @@ export const messagesPageFixture: CompanionMessagesPage = {
       notice: { kind: "ai_disclosure" },
       createdAt: "2026-11-08T10:59:59+09:00",
     },
+  ],
+};
+
+/** 배운 표현 범위 설정 화면(`companion_learning_scope()`) — 수동으로 u01만 고른 상태입니다. */
+export const learningScopeFixture: LearningScope = {
+  scope: "manual",
+  units: ["u01-water"],
+  empty: false,
+  options: [
+    {
+      episode: "u00-tutorial",
+      title: "튜토리얼",
+      completedUnits: 3,
+      expressions: 2,
+      selected: false,
+    },
+    { episode: "u01-water", title: "물 사기", completedUnits: 7, expressions: 12, selected: true },
   ],
 };

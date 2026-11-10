@@ -140,6 +140,28 @@ export const companionWalletSchema = z.object({
   trialRemaining: z.int().check(z.nonnegative()),
 });
 
+/** 고를 수 있는 에피소드 하나 — 유닛을 하나 이상 끝냈고 학습 표현이 있는 에피소드입니다. `title`이 없으면 앱이 id를 보입니다. */
+export const learningScopeOptionSchema = z.object({
+  episode: z.string(),
+  title: z.nullable(z.string()),
+  completedUnits: z.int().check(z.nonnegative()),
+  expressions: z.int().check(z.nonnegative()),
+  selected: z.boolean(),
+});
+
+/**
+ * 배운 표현을 고를 범위입니다(20261126). 읽기 `companion_learning_scope()`, 바꾸기
+ * `companion_set_learning_scope(p_scope, p_units)` — `p_units`를 null로 보내면 고른 목록은 그대로 두고 범위만 바꿉니다(최대 50개).
+ * `auto`(기본)는 끝낸 유닛 전부, `manual`은 고른 에피소드의 끝낸 유닛만 씁니다. `units`는 고른 것 가운데 지금 고를 수 있는 것만이고,
+ * `manual`인데 그것이 없으면 `empty`가 참 — 대화에 배운 표현을 넣지 않습니다(자동으로 되돌리지 않습니다).
+ */
+export const learningScopeSchema = z.object({
+  scope: z.enum(["auto", "manual"]),
+  units: z.array(z.string()),
+  empty: z.boolean(),
+  options: z.array(learningScopeOptionSchema),
+});
+
 export type FeedbackMode = z.infer<typeof feedbackModeSchema>;
 export type CompanionMemory = z.infer<typeof companionMemorySchema>;
 export type CompanionMemoryList = z.infer<typeof companionMemoryListSchema>;
@@ -151,3 +173,5 @@ export type RatingReason = z.infer<typeof ratingReasonSchema>;
 export type MessageRating = z.infer<typeof messageRatingSchema>;
 export type CompanionMessage = z.infer<typeof companionMessageSchema>;
 export type CompanionMessagesPage = z.infer<typeof companionMessagesPageSchema>;
+export type LearningScopeOption = z.infer<typeof learningScopeOptionSchema>;
+export type LearningScope = z.infer<typeof learningScopeSchema>;
