@@ -177,7 +177,9 @@ test("SV2. 입력 출처 기록 — 유저 메시지 meta와 앞 칩 셋의 결�
     null,
   ]);
 
-  await expect(record(typed.userMessageId, { inputSource: "edited" })).rejects.toThrow(/invalid choice/);
+  await expect(record(typed.userMessageId, { inputSource: "edited" })).rejects.toThrow(
+    /invalid choice/,
+  );
   expect(await record(crypto.randomUUID(), { inputSource: "manual" })).toBeNull();
 });
 

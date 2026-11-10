@@ -41,3 +41,22 @@ select cron.schedule(
   );
   $$
 );
+
+-- 쉬는 대화의 기억 마저 뽑기 — 10분마다, 대화 20개까지(마이그레이션 20261123). 기억은 유저 메시지 `memory_every`개마다 묶어 뽑으니, 묶음이 차기
+-- 전에 `settings.memory_flush_idle`(기본 30분) 넘게 조용한 대화의 남은 메시지를 뽑는다. 장기 메모리가 꺼진 판정이면 표시만 옮긴다.
+select cron.schedule(
+  'companion-memory-flush',
+  '*/10 * * * *',
+  $$
+  select net.http_post(
+    url := 'https://<project-ref>.supabase.co/functions/v1/companion-proactive',
+    headers := jsonb_build_object(
+      'Content-Type', 'application/json',
+      'Authorization', 'Bearer ' || (
+        select decrypted_secret from vault.decrypted_secrets where name = 'companion_service_role_key'
+      )
+    ),
+    body := jsonb_build_object('mode', 'memory_flush', 'batch', 20)
+  );
+  $$
+);
