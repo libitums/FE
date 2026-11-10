@@ -28,8 +28,9 @@ async function boot() {
     await progress.syncFromServer();
   });
 }
+/** 표지 뒤 학습 활동을 `count`개 끝낸 진행으로 바꿉니다 — 표지는 연속 학습의 하루가 아니라 하나를 더 얹습니다(ADR-0035 U2 개정 2026-11-09). */
 async function complete(count: number) {
-  act(() => progress.setCatalogProgress(keysFor(count)));
+  act(() => progress.setCatalogProgress(keysFor(count + 1)));
   await act(async () => {
     await vi.advanceTimersByTimeAsync(0);
   });

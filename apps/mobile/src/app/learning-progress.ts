@@ -5,6 +5,7 @@
 
 import type { StatBumpKind, StatBumps } from "../lib/stat-bump";
 import {
+  CATALOG_INTRO_KEY,
   catalogProgressFrom,
   completedCatalogEpisodeCount,
   isCatalogEpisodeComplete,
@@ -102,13 +103,25 @@ export function catalogActivityCount(progress: CatalogProgress): number {
 }
 
 /**
- * 끝낸 활동의 수입니다. 이 수가 늘면 「오늘 활동을 끝냈다」입니다(연속 학습의 하루). 옛 튜토리얼 몫은 고정이라
- * 늘어나는 것은 카탈로그 진행뿐입니다.
+ * 끝낸 활동의 수입니다(표지 포함). 이 수가 늘면 트로피 오름 · 에피소드 설문을 봅니다. 옛 튜토리얼 몫은 고정이라
+ * 늘어나는 것은 카탈로그 진행뿐입니다. 연속 학습의 하루는 표지를 뺀 {@link learningDayActivityCount}가 정합니다.
  */
 export function completedActivityCount(state: JourneyProgressState): number {
   return (
     legacyTutorialActivityCount(state.legacyTutorial) + catalogActivityCount(state.catalogProgress)
   );
+}
+
+/**
+ * 연속 학습의 하루로 세는 활동 수입니다 — {@link completedActivityCount}에서 카탈로그 표지 키
+ * (`CATALOG_INTRO_KEY`)를 뺀 값입니다. 이 수가 늘어야 오늘을 학습한 날로 적습니다(ADR-0035 U2 개정 2026-11-09).
+ */
+export function learningDayActivityCount(state: JourneyProgressState): number {
+  const catalog = Object.values(state.catalogProgress).reduce(
+    (sum, keys) => sum + keys.filter((key) => key !== CATALOG_INTRO_KEY).length,
+    0,
+  );
+  return legacyTutorialActivityCount(state.legacyTutorial) + catalog;
 }
 
 /** 항목을 모두 끝낸 에피소드입니다. 아직 유닛이 없는 에피소드는 들지 않습니다. */
