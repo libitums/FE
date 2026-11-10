@@ -6,12 +6,56 @@ import { vi } from "vitest";
 import { act, fireEvent, screen, within } from "@lynx-js/react/testing-library";
 
 import { systemBackEventName } from "../../lib/system-back";
+import {
+  deviceTurnRecordStore,
+  memoryUnlockStore,
+} from "../../screens/messenger-chat/chat-local-stores";
+import type { TurnRecord } from "../../screens/messenger-chat/free-turns";
 import type { ChatSource } from "../../screens/messenger-chat/chat-source.contract";
+import {
+  memoryTurnRecordStore,
+  type TurnRecordStore,
+} from "../../screens/messenger-chat/turn-ledger";
+import * as chatWiring from "../messenger-chat-wiring";
 import { messengerChatSource, resetMessengerChatSourceForTests } from "../messenger-chat-wiring";
 
-/** 케이스 사이에 가짜 출처 싱글턴을 처음 씨앗으로 되돌립니다. */
-export async function resetMessengerChatSource(): Promise<void> {
+export type MessengerStoresOptions = {
+  /** 하루 무료 수 원장의 처음 기록입니다(기본 비어 있음 = 오늘 3통). */
+  readonly turnRecord?: TurnRecord | null;
+  /** 이미 해금된 인물 id입니다(기본 없음 = 미나 잠김). */
+  readonly unlocked?: readonly string[];
+};
+
+const STALE_RECORD: TurnRecord = { day: "1970-01-01", used: 0, outPanel: "due" };
+
+type StoresHook = (stores: {
+  readonly unlock: ReturnType<typeof memoryUnlockStore>;
+  readonly turns: TurnRecordStore;
+  readonly now: () => number;
+}) => void;
+
+/**
+ * 케이스 사이에 가짜 출처 · 지갑 · 원장 · 해금 저장 싱글턴을 처음으로 되돌립니다(spec §7.2 —
+ * `resetMessengerChatSourceForTests` 뒤 `setMessengerChatStoresForTests`로 메모리 저장 · 시계를 끼웁니다).
+ * 시계는 늘 현재 `Date.now()`라 가짜 타이머의 `vi.setSystemTime`을 따릅니다. 돌려주는 `turns`는 원장이 읽고 쓰는 저장소입니다.
+ */
+export async function resetMessengerChatSource(
+  options: MessengerStoresOptions = {},
+): Promise<{ readonly turns: TurnRecordStore }> {
   resetMessengerChatSourceForTests();
+  const hook = (chatWiring as unknown as Record<string, unknown>)["setMessengerChatStoresForTests"];
+  const turns = memoryTurnRecordStore(options.turnRecord ?? null);
+  if (typeof hook === "function") {
+    (hook as StoresHook)({
+      unlock: memoryUnlockStore(options.unlocked ?? []),
+      turns,
+      now: () => Date.now(),
+    });
+    return { turns };
+  }
+  // 훅이 아직 없으면 기기 저장 원장을 옛 날 기록으로 비웁니다(해금 저장은 비울 길이 없다).
+  deviceTurnRecordStore.write(options.turnRecord ?? STALE_RECORD);
+  return { turns: deviceTurnRecordStore };
 }
 
 /** 앱이 쓰는 출처 싱글턴입니다(테스트가 씨앗을 비우는 데 씁니다). */

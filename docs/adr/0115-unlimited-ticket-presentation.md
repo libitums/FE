@@ -62,3 +62,7 @@
 - 요금제 · 결제가 붙을 때 — `subscription` 상태의 출처(스토어 영수증 · 서버)와 두 콜백의 행선지를 정하고, 설정 「내 요금제」 화면을 함께 연다.
 - 요금제 이름이 정해질 때 — 칩에 이름 라벨(O3)을 붙일지 다시 본다.
 - 기기에서 무한 기호 선 그림 · 그라데이션이 어긋나면 그림을 채운 모양으로 바꾼다.
+
+## 적용 기록
+
+- ⟨2026-11-10⟩ **무료 사용자용 「무제한 소개」 상태** — [ADR-0117](0117-messenger-chat-turns-coins-new-friend.md) D8(사용자 결정 Q1). D3의 넷(guest · renews · ends · ending-soon)은 가진 사람의 상태라 무료 사용자에게 보일 판이 없었다. `UnlimitedTicketModalProps.view`가 `UnlimitedPassView | { kind: "intro" }`가 되고 intro면 `UnlimitedIntroState`(같은 뼈대 · 「Go unlimited」 · 얻는 것 둘 · 「Coming soon」 + 판매 전 안내 · 「Got it」)를 그린다. `unlimitedPassView`는 바뀌지 않는다(intro는 그 함수의 결과가 아니다). 선택 prop `ownsBack`(기본 켬)은 채팅방 안처럼 시스템 뒤로 주인이 따로 있을 때 끈다. 문구 `tickets.unlimited.intro` 5개 언어. **결선은 메신저 「Go unlimited」(T2 띠 · T3 판) 하나**이고, 티켓 쪽 무료 사용자 진입은 아직 없다. D4 「결선은 시험 계정 하나」는 칩 → 상태 모달에 대해 그대로다.

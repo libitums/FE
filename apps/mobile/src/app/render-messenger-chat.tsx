@@ -21,7 +21,7 @@ export function renderMessengerList(wiring: ScreenWiring) {
   return (
     <MessengerListScreen
       source={chat.source}
-      coinBalance={wiring.coinCount ?? 0}
+      wallet={chat.wallet}
       onOpenRoom={chat.onOpenChatRoom}
       onGoToJourney={chat.onGoToJourney}
       onLayerChange={wiring.onScreenLayerChange}
@@ -39,7 +39,10 @@ export function renderMessengerChat(roomId: string, wiring: ScreenWiring) {
       keyboardHeightStore={emptyKeyboardHeightStore}
       edges={keyboardDockEdgesOf(wiring.safeAreaInsets)}
       learnerName={learnerNameOf(wiring)}
-      coinBalance={wiring.coinCount ?? 0}
+      wallet={chat.wallet}
+      turns={chat.turns}
+      tier={chat.tier}
+      now={chat.now}
       onExit={chat.onExitChatRoom}
     />
   );

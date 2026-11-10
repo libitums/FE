@@ -27,6 +27,7 @@ import {
   catalogPassCriterion,
 } from "./catalog-lesson-plan";
 import type { Screen } from "./nav-state";
+import { withNewFriendLayer } from "./render-new-friend";
 import type { ScreenWiring } from "./screen-wiring";
 
 type CatalogFlowScreen = Extract<
@@ -130,7 +131,8 @@ export function renderCatalogFlow(screen: CatalogFlowScreen, wiring: ScreenWirin
     case "catalog-unit-complete": {
       const { episodeId, unitKey } = screen;
       const verdict = judgeAssessment(screen.results, catalogPassCriterion(screen.questionCount));
-      return (
+      const exitResult = () => wiring.onExitCatalogUnitComplete(episodeId, unitKey, verdict);
+      const result = (
         <LessonCompleteScreen
           key={`${episodeId}:${unitKey}:complete`}
           results={screen.results}
@@ -148,12 +150,13 @@ export function renderCatalogFlow(screen: CatalogFlowScreen, wiring: ScreenWirin
           ticketsLeft={wiring.ticketsLeft}
           ticketChip={wiring.ticketChip}
           continuesStory={catalogUnitCompleteLeadsToEpilogue(wiring, episodeId, unitKey, verdict)}
-          onExit={() => wiring.onExitCatalogUnitComplete(episodeId, unitKey, verdict)}
+          onExit={exitResult}
           onRetry={() => wiring.onStartCatalogUnit(episodeId, unitKey)}
           {...catalogResultNextOf(wiring, episodeId, unitKey)}
           {...(screen.review === undefined ? {} : { review: screen.review })}
         />
       );
+      return withNewFriendLayer(result, screen.newFriend, wiring, exitResult);
     }
     case "catalog-epilogue": {
       const { episodeId } = screen;

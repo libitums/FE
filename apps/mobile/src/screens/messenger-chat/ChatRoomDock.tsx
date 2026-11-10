@@ -2,8 +2,9 @@ import type { ReactNode } from "@lynx-js/react";
 
 import { keyboardDockBodyStyle, type KeyboardDockEdges } from "../../lib/keyboard-dock";
 import { MessengerKeyboard } from "../messenger/MessengerKeyboard";
-import { CHAT_PLACEHOLDERS } from "./chat-placeholders";
+import { CHAT_COIN_PRICES } from "./chat-coins";
 import type { ChatRoomAction, ChatRoomState } from "./chat-room-state";
+import type { SendCost } from "./chat-turns.contract";
 import { canSend } from "./chat-rules";
 import type { ChatMessage, ChatThread } from "./chat-source.contract";
 import { ComposerRow } from "./ComposerRow";
@@ -25,6 +26,10 @@ export type ChatRoomDockProps = {
   readonly keyboardHeight: number;
   readonly dispatch: (action: ChatRoomAction) => void;
   readonly onSend: () => void;
+  /** 보내기 단추 종류(T4면 엽전 보내기)입니다. */
+  readonly sendCost: SendCost;
+  /** 입력 줄 바로 위 자리입니다(T2 마지막 무료 띠). 없으면 null. */
+  readonly aboveComposer: ReactNode | null;
 };
 
 /** 상대의 마지막 텍스트 글(한국어)입니다. 없으면 null — 보기 판의 인용이 됩니다. */
@@ -45,6 +50,8 @@ export function ChatRoomDock({
   keyboardHeight,
   dispatch,
   onSend,
+  sendCost,
+  aboveComposer,
 }: ChatRoomDockProps): ReactNode {
   const slotHeight = chatKeyboardSlotHeight({
     keyboard: state.keyboard,
@@ -68,8 +75,8 @@ export function ChatRoomDock({
       <view className="messenger-chat-dock-body" style={keyboardDockBodyStyle(edges, "keyboard")}>
         <view className="messenger-chat-features-wrap">
           <FeatureRow
-            photoPrice={CHAT_PLACEHOLDERS.price.photo}
-            voicePrice={CHAT_PLACEHOLDERS.price.voice}
+            photoPrice={CHAT_COIN_PRICES.photo}
+            voicePrice={CHAT_COIN_PRICES.voice}
             moreState={menuOpen ? "open" : "closed"}
             onSnapshot={() =>
               dispatch({ type: "open-overlay", overlay: { kind: "ask-media", media: "photo" } })
@@ -84,10 +91,12 @@ export function ChatRoomDock({
             }
           />
         </view>
+        {aboveComposer}
         <ComposerRow
           state={state}
           ideasDisabled={thread.ideas.length === 0}
           sendEnabled={canSend(state.text)}
+          sendCost={sendCost}
           onIdeas={() => dispatch({ type: ideasOpen ? "type-myself" : "open-ideas" })}
           onSend={onSend}
           onPhoneInput={(value) => dispatch({ type: "phone-input", value })}

@@ -15,3 +15,6 @@ export const SLOP_SMALL = { top: "6px", bottom: "6px", left: "0px", right: "0px"
 
 /** 토글 칸 30 → 터치 44, 위아래만(트랙 안쪽 여백 3 + 줄 여백 6 안에서). */
 export const SLOP_TOGGLE = { top: "7px", bottom: "7px", left: "0px", right: "0px" } as const;
+
+/** 띠 안 Go unlimited 28 → 터치 36, 위아래만. 띠 높이(36)를 넘기면 부모 밖이라 기기에서 안 눌립니다(ADR-0113 기기 교훈). */
+export const SLOP_STRIP = { top: "4px", bottom: "4px", left: "0px", right: "0px" } as const;

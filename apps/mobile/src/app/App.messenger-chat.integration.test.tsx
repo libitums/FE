@@ -23,13 +23,14 @@ import { renderSignedInApp } from "./test-helpers/signed-in-app";
 // `integration` 계층(MC-I3 · MC-I4 · MC-I5): 가짜 출처 싱글턴이 목록 ↔ 방 사이에 상태를 잇는지 봅니다 —
 // 방에서 보낸 글 · 답 · 사진 요청이 목록 줄의 순서 · 미리보기 · activity에 나타나고, 방 지우기가 목록에서 줄을
 // 빼며, 방이 하나도 없으면 빈 목록이 여정으로 이어진다. 실제 App · 두 화면 · 출처가 맞물리고 타이머는 가짜입니다.
-// 출처 씨앗(chat-fixture.ts): 미나(안 읽음 2) · 사장님 · 익선 게스트하우스(안 읽음 1) · 점원(잠김).
+// 출처 씨앗(chat-fixture.ts): 사장님 · 익선 게스트하우스(안 읽음 1)는 열려 있고 미나(에피소드 3 최종 통과 전) · 점원은 잠겨 있다.
+// 1.5단계: 미나가 잠겼으므로 열린 방 둘이 최근 먼저, 잠긴 둘이 입력 순서(미나 · 점원)로 맨 끝에 온다.
 // 사장님의 첫 정해 둔 답은 「네, 오후 세 시부터예요.」 / "Yes, from three in the afternoon."이다.
 
 const timing = CHAT_PLACEHOLDERS.timing;
 const OWNER_REPLY_KO = "네, 오후 세 시부터예요.";
 const OWNER_REPLY_EN = "Yes, from three in the afternoon.";
-const INITIAL_ORDER = ["mina", "guesthouse", "owner", "clerk"];
+const INITIAL_ORDER = ["guesthouse", "owner", "mina", "clerk"];
 
 const row = (id: string) => `messenger-list-row-${id}`;
 const preview = (id: string) => `messenger-list-row-${id}-preview`;
@@ -104,7 +105,7 @@ test("MC-I3. 답까지 받고 목록으로 돌아오면 그 줄이 맨 위이고
 
   leaveRoom();
 
-  expect(listRowOrder()).toEqual(["owner", "mina", "guesthouse", "clerk"]);
+  expect(listRowOrder()).toEqual(["owner", "guesthouse", "mina", "clerk"]);
   expect(textOf(preview("owner"))).toContain(OWNER_REPLY_KO);
   expect(screen.getByTestId(preview("owner")).getAttribute("data-tone")).toBe("muted");
   expect(present(unread("owner"))).toBe(false);
@@ -147,16 +148,21 @@ test("MC-I3. 목록으로 나갔다 같은 방을 다시 열면 보낸 글과 �
   expect(screen.getAllByTestId("messenger-chat-incoming")).toHaveLength(2);
 });
 
-test("MC-I3. 방을 열면 그 방의 안 읽은 알약이 사라진다(미나 2 → 0), 다른 방의 것은 그대로다", async () => {
+test("MC-I3. 방을 열면 그 방의 안 읽은 알약이 사라진다(게스트하우스 1 → 0), 다른 방의 것은 그대로다", async () => {
   await bootToList();
-  expect(textOf(unread("mina"))).toBe("2");
+  const source = await appChatSource();
+  // 미나는 잠겨 있어 안 읽음이 없다(1.5단계) — 해금해 두 번째 안 읽음(opening 1)을 만든다.
+  act(() => {
+    source?.unlockCharacter("mina");
+  });
   expect(textOf(unread("guesthouse"))).toBe("1");
+  expect(textOf(unread("mina"))).toBe("1");
 
-  openRoom("mina");
+  openRoom("guesthouse");
   leaveRoom();
 
-  expect(present(unread("mina"))).toBe(false);
-  expect(textOf(unread("guesthouse"))).toBe("1");
+  expect(present(unread("guesthouse"))).toBe(false);
+  expect(textOf(unread("mina"))).toBe("1");
 });
 
 // ------------------------------------------------------------------ MC-I4 · 사진 요청 → 목록
@@ -221,19 +227,19 @@ async function deleteOpenedRoom(id: string): Promise<void> {
 test("MC-I5. 사이드바 › Delete chat › 확인하면 목록으로 돌아오고 그 줄만 사라진다", async () => {
   await bootToList();
 
-  await deleteOpenedRoom("mina");
+  await deleteOpenedRoom("guesthouse");
 
   expect(screen.getByTestId("messenger-list-screen")).toBeInTheDocument();
   expect(present("messenger-chat-screen")).toBe(false);
-  expect(present(row("mina"))).toBe(false);
-  expect(listRowOrder()).toEqual(["guesthouse", "owner", "clerk"]);
+  expect(present(row("guesthouse"))).toBe(false);
+  expect(listRowOrder()).toEqual(["owner", "mina", "clerk"]);
   expect(screen.getByTestId("ui-lynx-bottom-navigator")).toBeInTheDocument();
   expect(isTabSelected("messenger")).toBe(true);
 });
 
 test("MC-I5. 지우기 확인을 Cancel하면 방도 줄도 그대로 남는다", async () => {
   await bootToList();
-  openRoom("mina");
+  openRoom("guesthouse");
   tapRound("messenger-chat-settings");
   tapId("messenger-chat-sidebar-delete");
 
@@ -244,12 +250,13 @@ test("MC-I5. 지우기 확인을 Cancel하면 방도 줄도 그대로 남는다"
   expect(listRowOrder()).toEqual(INITIAL_ORDER);
 });
 
-test("MC-I5. 열 수 있는 방을 모두 지우면 잠긴 줄만 남는다", async () => {
+test("MC-I5. 열 수 있는 방을 모두 지우면 잠긴 줄(미나 · 점원)만 남는다", async () => {
   await bootToList();
 
-  for (const id of ["mina", "guesthouse", "owner"]) await deleteOpenedRoom(id);
+  for (const id of ["guesthouse", "owner"]) await deleteOpenedRoom(id);
 
-  expect(listRowOrder()).toEqual(["clerk"]);
+  expect(listRowOrder()).toEqual(["mina", "clerk"]);
+  expect(screen.getByTestId(row("mina")).getAttribute("data-locked")).toBe("true");
   expect(screen.getByTestId(row("clerk")).getAttribute("data-locked")).toBe("true");
   expect(present("messenger-list-empty")).toBe(false);
 });

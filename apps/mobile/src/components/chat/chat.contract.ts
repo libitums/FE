@@ -10,6 +10,8 @@ export type ChatHeaderProps = {
   readonly testIds: { readonly root: string; readonly title: string };
   readonly start: ReactNode;
   readonly end: ReactNode | null;
+  /** 제목 아래 한 줄 자리입니다. 없으면 DOM이 바뀌지 않습니다(messenger-chat-1-5 spec §3.2). */
+  readonly subtitle?: ReactNode;
 };
 export type ChatHeaderSideProps = {
   readonly testId?: string;
@@ -26,6 +28,8 @@ export type ChatHeaderSideProps = {
 export type ChatLogProps = {
   readonly testId: string;
   readonly followKey?: number;
+  /** 바뀌면(내가 말을 보냄) 읽던 자리와 상관없이 늘 끝으로 내리고 다시 따라갑니다(기기 F2). */
+  readonly jumpKey?: number;
   /** 로그를 한 번 누르면 불립니다(예: 열린 키보드 접기). 스크롤은 누름이 아닙니다. */
   readonly onTap?: () => void;
   readonly children: ReactNode;

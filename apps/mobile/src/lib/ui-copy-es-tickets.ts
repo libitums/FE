@@ -40,6 +40,14 @@ export const ticketsEs: TicketsCopy = {
     keep: "Mantener ilimitado",
     date: (d) => `${String(d.day)} de ${monthsEs[d.month - 1] ?? ""} de ${String(d.year)}`,
     shortDate: (d) => `${String(d.day)} de ${monthsEs[d.month - 1] ?? ""}`,
+    intro: {
+      title: "Pasa a ilimitado",
+      benefitMessages: "Sin límite diario de mensajes de chat",
+      benefitLessons: "Empieza cualquier lección sin ticket",
+      comingSoon: "Próximamente",
+      comingSoonNote:
+        "Los planes ilimitados aún no están a la venta. Te avisaremos cuando lo estén.",
+    },
   },
   modal: {
     title: (count) => (count === 1 ? "boleto restante" : "boletos restantes"),

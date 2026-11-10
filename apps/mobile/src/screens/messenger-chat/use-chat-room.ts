@@ -13,6 +13,7 @@ import {
   restoreAccessibilityFocus,
 } from "./chat-input-focus";
 import { CHAT_PLACEHOLDERS } from "./chat-placeholders";
+import { chatTurnsTestIds as turnIds } from "./chat-turns.contract";
 import {
   chatRoomReducer,
   focusOriginOf,
@@ -38,6 +39,8 @@ export type UseChatRoomProps = {
   readonly keyboardHeightStore: KeyboardHeightStore;
   readonly edges: KeyboardDockEdges;
   readonly onExit: () => void;
+  /** 보내기 관문입니다(턴 · 엽전). 거짓이면 글을 그대로 두고 아무것도 보내지 않습니다. 기본은 늘 참. */
+  readonly authorizeSend?: () => boolean;
 };
 
 export type ChatRoomApi = {
@@ -58,6 +61,10 @@ const originTestId: Readonly<Record<ChatFocusOrigin, string>> = {
   "sidebar-delete": ids.sidebarDelete,
   // 엽전 상점을 연 것은 사이드바의 「Get coins」 단추입니다(엽전 상자 전체가 아니라 접근성 요소인 단추에 id가 있습니다).
   "sidebar-coins": ids.sidebarGetCoins,
+  // 1.5 초점 되돌림 자리 — 턴 표시 조각의 test-id입니다(spec §10).
+  send: turnIds.coinSend,
+  "strip-unlimited": turnIds.stripUnlimited,
+  "out-unlimited": turnIds.panelUnlimited,
 };
 
 /** 뒤 화면의 accessibility-elements-hidden이 풀린 다음 프레임에 초점을 보냅니다(a11y C1). 한 프레임은 16 ms입니다. */
@@ -74,6 +81,7 @@ export function useChatRoom({
   keyboardHeightStore,
   edges,
   onExit,
+  authorizeSend,
 }: UseChatRoomProps): ChatRoomApi {
   // 키보드 규칙은 마운트 때 한 번만 읽습니다(앞으로 나올 때 다시 읽기는 2단계).
   const [plan] = useState(() => keyboardPlanFor("chat", keyboardProbe.presence()));
@@ -86,6 +94,8 @@ export function useChatRoom({
   stateRef.current = state;
   const exitRef = useRef(onExit);
   exitRef.current = onExit;
+  const authorizeRef = useRef(authorizeSend);
+  authorizeRef.current = authorizeSend;
 
   // 방이 열리면 안 읽은 수가 0이 되고, 나가면 이 방을 「열린 방」에서 풉니다(리뷰 #1).
   useEffect(() => {
@@ -144,6 +154,7 @@ export function useChatRoom({
   const send = useCallback(() => {
     const current = stateRef.current;
     if (!canSend(current.text)) return;
+    if (authorizeRef.current !== undefined && !authorizeRef.current()) return;
     try {
       source.sendText(roomId, current.text);
     } catch {
@@ -151,6 +162,8 @@ export function useChatRoom({
       // 끊겨 보낸 글이 입력 칸에 남았습니다).
     }
     rawDispatch({ type: "sent" });
+    // `stateRef`는 렌더 때만 갱신되므로, 같은 렌더 안의 연속 탭이 같은 글을 다시 보내지 않게 비운 상태로 바로 맞춥니다(리뷰 P3-1).
+    stateRef.current = { ...current, text: "" };
     if (current.keyboard !== "phone") return;
     // 입력 칸을 비웁니다. 못 비우면 새로 마운트하고, 새 칸이 그려진 뒤 다시 초점을 줍니다(키보드가 열려 있었을 때만).
     clearPhoneInput(() => {

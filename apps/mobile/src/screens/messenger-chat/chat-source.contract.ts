@@ -44,6 +44,8 @@ export type ChatRoomSummary = {
   readonly unread: number;
   readonly activity: ChatRoomActivity;
   readonly updatedAt: number;
+  /** 방금 해금돼 아직 열어 보지 않은 방(목록 NEW 줄). */
+  readonly isNew: boolean;
 };
 
 export type ChatRelation = "just-met" | "getting-to-know" | "friends";
@@ -64,10 +66,51 @@ export type ChatThread = {
   readonly ideas: readonly ChatReplyIdea[];
   readonly settings: ChatRoomSettings;
   readonly storyPoints: readonly ChatStoryPoint[];
+  /** 내 텍스트 글 id만 키. 없는 키 = NO_NOTES. */
+  readonly notes: Readonly<Record<string, ChatMyNotes>>;
 };
 
 /** 잔액(보유 엽전)은 출처가 아니라 앱이 줍니다(§9 · ADR-0116). */
 export type ChatSnapshot = { readonly rooms: readonly ChatRoomSummary[] };
+
+// 내 글 노트(뜻 · 교정) — messenger-chat-1-5 spec §5.1. 뜻은 en 고정, 범위는 corrected 안 코드 포인트입니다.
+export type ChatMeaning = { readonly romanization: string; readonly meaning: string };
+export type ChatCorrectionChange = { readonly start: number; readonly end: number };
+export type ChatCorrection = {
+  readonly corrected: string;
+  readonly changes: readonly ChatCorrectionChange[];
+  readonly explanation: string;
+};
+export type ChatLoad<T> =
+  | { readonly status: "idle" }
+  | { readonly status: "loading" }
+  | { readonly status: "ready"; readonly value: T };
+export type ChatCorrectionNote =
+  | { readonly kind: "none" }
+  | {
+      readonly kind: "available";
+      readonly seen: boolean;
+      readonly detail: ChatLoad<ChatCorrection>;
+    };
+export type ChatMyNotes = {
+  readonly meaning: ChatLoad<ChatMeaning>;
+  readonly correction: ChatCorrectionNote;
+};
+export type ChatUnlockResult =
+  | { readonly kind: "unlocked"; readonly roomId: string }
+  | { readonly kind: "already-open"; readonly roomId: string }
+  | { readonly kind: "unknown" };
+
+/** 뜻 idle · 교정 none. */
+export const NO_NOTES: ChatMyNotes = {
+  meaning: { status: "idle" },
+  correction: { kind: "none" },
+};
+
+/** 없는 키 → NO_NOTES. */
+export function notesOf(thread: ChatThread, messageId: string): ChatMyNotes {
+  return thread.notes[messageId] ?? NO_NOTES;
+}
 
 export type ChatReportReasonId = "rude" | "sexual" | "hateful" | "wrong-korean" | "other";
 
@@ -92,6 +135,11 @@ export type ChatSource = {
   /** 1단계 무동작. */
   readonly requestFix: (roomId: string, text: string) => void;
   readonly deleteRoom: (roomId: string) => void;
+  /** 내 글 · 뜻 idle일 때만: loading → timing.meaningMs 뒤 ready. 그 밖 무동작. */
+  readonly requestMeaning: (roomId: string, messageId: string) => void;
+  /** 교정 available일 때만: seen = true(즉시), detail idle이면 loading → timing.correctionMs 뒤 ready. */
+  readonly openCorrection: (roomId: string, messageId: string) => void;
+  readonly unlockCharacter: (characterId: string) => ChatUnlockResult;
   /** 걸린 타이머 전부 해제 · 구독 해제. */
   readonly dispose: () => void;
 };
@@ -108,6 +156,8 @@ export type ChatFixtureMessage =
       readonly from: "me" | "them";
       readonly text: ChatText;
       readonly minutesAgo: number;
+      /** from "me"만 의미 있음. */
+      readonly correction?: ChatFixtureCorrection;
     }
   | { readonly kind: "photo"; readonly imagePath: string | null; readonly minutesAgo: number }
   | {
@@ -133,13 +183,25 @@ export type ChatFixtureRoom = {
   readonly cannedReplies: readonly ChatText[];
   readonly photoPath: string | null;
   readonly voiceLine: { readonly durationMs: number; readonly text: ChatText };
+  /** 해금될 때 로그에 놓이는 첫 말(없으면 빈 방). */
+  readonly opening?: ChatText;
 };
 
-export type ChatFixtureSeed = { readonly rooms: readonly ChatFixtureRoom[] };
+export type ChatFixtureMeaning = { readonly ko: string } & ChatMeaning;
+export type ChatFixtureCorrection = { readonly original: string } & ChatCorrection;
+
+export type ChatFixtureSeed = {
+  readonly rooms: readonly ChatFixtureRoom[];
+  readonly meanings?: readonly ChatFixtureMeaning[];
+  readonly corrections?: readonly ChatFixtureCorrection[];
+  readonly fallbackMeaning?: ChatMeaning;
+};
 
 export type FixtureChatSourceOptions = {
   readonly imageUrlOf: (relativePath: string) => string | null;
   readonly seed?: ChatFixtureSeed;
   readonly now?: () => number;
   readonly timers?: ChatTimers;
+  /** 처음부터 열린 채 시작할 인물 id(재시작 뒤 모습). */
+  readonly unlocked?: readonly string[];
 };

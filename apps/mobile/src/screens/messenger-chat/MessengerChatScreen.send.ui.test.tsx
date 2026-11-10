@@ -76,16 +76,15 @@ test("MC-UI11. 보내면 내 줄이 하나 서고 입력 칸이 비며 600 ms �
   expect(bubbles[1]?.textContent).toContain(CANNED.en);
 });
 
+// MC2-UI16(계약 변경 1.5): 내 줄은 ui-lynx ChatBubble이 아니라 앱 말풍선(`messenger-chat-my-bubble`)이고, 번역 줄이 없다.
 test("MC-UI11. 내 말풍선은 outgoing 줄 안에 보낸 글을 담는다", () => {
   mountChatOpen();
   tapKeys(...KEYS_AN);
   tapId(ids.send);
 
   const mine = screen.getByTestId(ids.outgoing);
-  expect(within(mine).getByTestId("ui-lynx-chat-bubble-message").textContent).toBe("안");
-  expect(within(mine).getByTestId("ui-lynx-chat-bubble").getAttribute("data-direction")).toBe(
-    "outgoing",
-  );
+  expect(within(mine).getByTestId("messenger-chat-my-bubble").textContent?.trim()).toBe("안");
+  expect(within(mine).queryByTestId("ui-lynx-chat-bubble")).toBeNull();
 });
 
 test("MC-UI11. 빈 글이면 보내기가 꺼져 있고 탭해도 아무것도 보내지 않는다", () => {

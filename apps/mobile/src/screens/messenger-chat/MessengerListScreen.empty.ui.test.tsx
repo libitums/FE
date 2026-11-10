@@ -2,6 +2,7 @@ import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
 import { clearBackHandlers, fixtureRoom, makeSource, seedOf } from "./chat-ui.test-support";
+import { createCoinWallet } from "./coin-wallet";
 import { messengerListTestIds as ids } from "./messenger-chat.contract";
 import { MessengerListScreen } from "./MessengerListScreen";
 
@@ -24,7 +25,10 @@ function mount(seed = seedOf()) {
     onGoToJourney: vi.fn<() => void>(),
     onLayerChange: vi.fn<(open: boolean) => void>(),
   };
-  render(<MessengerListScreen source={source} coinBalance={0} {...handlers} />);
+  // 잔액은 지갑에서 온다(spec §7.2 · 1.5 — 옛 coinBalance 대체).
+  render(
+    <MessengerListScreen source={source} wallet={createCoinWallet({ earned: 0 })} {...handlers} />,
+  );
   return { source, ...handlers };
 }
 

@@ -1,6 +1,12 @@
 import { describe, expect, test } from "vitest";
 
-import { chatRowPreview, chatTimeOf, orderChatRooms, unreadBadge } from "./chat-list";
+import {
+  chatRowPreview,
+  chatTimeOf,
+  newBadgeShown,
+  orderChatRooms,
+  unreadBadge,
+} from "./chat-list";
 import type { ChatMessage, ChatRoomActivity, ChatRoomSummary } from "./chat-source.contract";
 
 // `unit` 계층(MC-U16 ~ U18): 목록 정렬 · 미리보기 · 안 읽은 수 · 시간(spec §5.6).
@@ -13,6 +19,7 @@ const room = (id: string, over: Partial<ChatRoomSummary> = {}): ChatRoomSummary 
   unread: 0,
   activity: "idle",
   updatedAt: 0,
+  isNew: false,
   ...over,
 });
 const locked = (id: string, over: Partial<ChatRoomSummary> = {}): ChatRoomSummary =>
@@ -184,5 +191,31 @@ describe("chatTimeOf (MC-U18)", () => {
   test("MC-U18. 7일 전부터는 날짜(월 · 일)다", () => {
     expect(chatTimeOf(at(11, 2, 12), now)).toEqual({ kind: "date", month: 11, day: 2 });
     expect(chatTimeOf(at(1, 5, 12), now)).toEqual({ kind: "date", month: 1, day: 5 });
+  });
+});
+
+describe("newBadgeShown (MC2-U17)", () => {
+  test("MC2-U17. 방금 해금돼 열린 방(isNew + open)은 NEW 줄이다", () => {
+    expect(newBadgeShown(room("a", { isNew: true }))).toBe(true);
+  });
+
+  test("MC2-U17. 잠긴 방은 isNew 여도 NEW 줄이 아니다", () => {
+    expect(newBadgeShown(locked("a", { isNew: true }))).toBe(false);
+  });
+
+  test("MC2-U17. isNew 가 아니면 열린 방이어도 NEW 줄이 아니다", () => {
+    expect(newBadgeShown(room("a", { isNew: false }))).toBe(false);
+  });
+
+  test("MC2-U17. isNew 를 더해도 정렬 · 미리보기 표는 그대로다", () => {
+    const ordered = orderChatRooms([
+      locked("l1"),
+      room("a", { updatedAt: 10, isNew: false }),
+      room("b", { updatedAt: 30, isNew: true }),
+    ]);
+    expect(ordered.map((r) => r.roomId)).toEqual(["b", "a", "l1"]);
+    expect(
+      chatRowPreview(room("b", { isNew: true, lastMessage: text("them", "안녕", "Hi") })),
+    ).toEqual({ kind: "text", from: "them", text: { ko: "안녕", en: "Hi" } });
   });
 });

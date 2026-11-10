@@ -27,6 +27,7 @@ import { catalogLessonFinish } from "./catalog-lesson-finish";
 import type { CatalogLessonFinish } from "./catalog-lesson-finish";
 import type { CatalogReviewItem, CatalogReviewSummary } from "./catalog-review";
 import type { CatalogFinishGuard } from "./catalog-finish-guard";
+import { commitNewFriend } from "./new-friend-wiring";
 import type { NavAction } from "./nav-state";
 import type { CatalogStartSource } from "../lib/catalog-learning-event.contract";
 
@@ -131,6 +132,7 @@ export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLesso
     skippedCount: number,
     questionCount: number,
     review?: CatalogReviewSummary,
+    newFriend?: string,
   ): void => {
     dispatch({
       type: action,
@@ -143,6 +145,7 @@ export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLesso
         questionCount,
         firstClear: firstClearOf(episodeId, unitKey),
         ...(review === undefined ? {} : { review }),
+        ...(newFriend === undefined ? {} : { newFriend }),
       },
     });
   };
@@ -259,11 +262,14 @@ export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLesso
       if (!claimFinish(`${episodeId}|${unitKey}|final`)) return;
       const verdict = judgeAssessment(results, catalogPassCriterion(turnCount));
       sink?.(lessonFinishedEventOf(episodeId, unitKey, "final", results, turnCount, verdict, 0));
+      let newFriend: string | undefined;
       if (assessmentCompletesStep(verdict)) {
         sink?.(finalPassedEventOf(episodeId, results, turnCount));
         markDone(episodeId, unitKey);
+        // 해금은 통과 순간 확정입니다 — 결과 화면을 빨리 떠나도 목록의 NEW 줄이 남습니다(spec §7.1).
+        newFriend = commitNewFriend(episodeId) ?? undefined;
       }
-      showComplete("replace", episodeId, unitKey, results, 0, turnCount);
+      showComplete("replace", episodeId, unitKey, results, 0, turnCount, undefined, newFriend);
     },
     onExitCatalogUnitComplete: (episodeId, unitKey, verdict) => {
       releaseFinish();

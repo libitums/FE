@@ -31,6 +31,11 @@ export function orderChatRooms(rooms: readonly ChatRoomSummary[]): readonly Chat
   return [...open.sort((a, b) => b.updatedAt - a.updatedAt), ...lockedRooms];
 }
 
+/** NEW 줄: isNew이고 열린 방일 때만. */
+export function newBadgeShown(room: ChatRoomSummary): boolean {
+  return room.isNew && room.access.kind === "open";
+}
+
 /** 잠김 > 활동 > 마지막 메시지 > 비어 있음 순으로 한 줄 미리보기를 고릅니다. */
 export function chatRowPreview(room: ChatRoomSummary): ChatRowPreview {
   if (room.access.kind === "locked") {

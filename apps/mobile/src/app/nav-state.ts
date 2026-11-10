@@ -67,6 +67,8 @@ export type Screen =
       review?: CatalogReviewSummary;
       /** 이 세션 전에는 끝내지 않은 유닛인가입니다 — 통과면 엽전을 받습니다(ADR-0116). 없으면 거짓입니다. */
       firstClear?: boolean;
+      /** 이 최종 통과로 막 해금한 인물 id입니다 — 있으면 결과 화면 위에 새 친구 시트가 섭니다(messenger-chat-1-5 §7.1). */
+      newFriend?: string;
     }
   // 최종 테스트 통과 뒤 컷입니다.
   | { name: "catalog-epilogue"; episodeId: string }

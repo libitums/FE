@@ -3,6 +3,7 @@ import { act, cleanup, fireEvent, render, screen } from "@lynx-js/react/testing-
 
 import { clearBackHandlers, fixtureRoom, makeSource, seedOf } from "./chat-ui.test-support";
 import type { ChatSource } from "./chat-source.contract";
+import { createCoinWallet } from "./coin-wallet";
 import { messengerListTestIds as ids } from "./messenger-chat.contract";
 import { MessengerListScreen } from "./MessengerListScreen";
 
@@ -65,7 +66,14 @@ function mount(source: ChatSource = makeSource(seed())) {
     onGoToJourney: vi.fn<() => void>(),
     onLayerChange: vi.fn<(open: boolean) => void>(),
   };
-  render(<MessengerListScreen source={source} coinBalance={120} {...handlers} />);
+  // 잔액은 지갑에서 온다(spec §7.2 · 1.5 — 옛 coinBalance 대체).
+  render(
+    <MessengerListScreen
+      source={source}
+      wallet={createCoinWallet({ earned: 120 })}
+      {...handlers}
+    />,
+  );
   return { source, ...handlers };
 }
 

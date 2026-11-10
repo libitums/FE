@@ -1,5 +1,6 @@
 // 보내기 · 신고 · 고쳐 주세요 · 사진/음성 요청 판정과 음성 길이 표기입니다(messenger-chat-ui spec §5.5).
 
+import { coinPlanFor } from "./chat-coins";
 import type { ChatReportReasonId } from "./chat-source.contract";
 
 export type AskMediaPlan =
@@ -25,8 +26,8 @@ export function canSendReport(reasons: readonly ChatReportReasonId[]): boolean {
 }
 
 export function askMediaPlan(balance: number, price: number): AskMediaPlan {
-  if (balance >= price) return { kind: "ask", price };
-  return { kind: "top-up", price, shortBy: price - balance };
+  const plan = coinPlanFor(balance, price);
+  return plan.kind === "pay" ? { kind: "ask", price } : plan;
 }
 
 /** 올림 초를 "m:ss"로 적습니다. 음수 · NaN은 "0:00"입니다. */

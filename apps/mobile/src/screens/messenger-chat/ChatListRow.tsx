@@ -7,7 +7,8 @@ import { playSound } from "../../lib/sound-effects";
 import { useUiCopy } from "../../lib/ui-copy";
 import type { MessengerChatCopy } from "./messenger-chat.contract";
 import { messengerListTestIds as ids } from "./messenger-chat.contract";
-import { chatRowPreview, chatTimeOf, unreadBadge } from "./chat-list";
+import { chatRowPreview, chatTimeOf, newBadgeShown, unreadBadge } from "./chat-list";
+import { ChatListNewBadge } from "./ChatListNewBadge";
 import type { ChatRowPreview, ChatTime } from "./chat-list";
 import { voiceDurationLabel } from "./chat-rules";
 import type { ChatRoomSummary } from "./chat-source.contract";
@@ -79,7 +80,9 @@ export function ChatListRow({ room, now, onOpen }: ChatListRowProps): ReactNode 
   const time = locked || room.lastMessage === null ? null : chatTimeOf(room.updatedAt, now);
   const when = time === null ? null : timeText(time, copy);
 
-  const label = locked
+  const isNew = newBadgeShown(room);
+
+  const rowLabel = locked
     ? copy.list.lockedRowLabel(counterpart.name, text)
     : copy.list.rowLabel(
         counterpart.name,
@@ -87,6 +90,8 @@ export function ChatListRow({ room, now, onOpen }: ChatListRowProps): ReactNode 
         when ?? "",
         badge === null ? null : copy.list.unreadLabel(room.unread),
       );
+  // 새 친구 줄은 낭독이 「New friend」로 시작합니다(알약은 숨깁니다).
+  const label = isNew ? `${copy.list.newFriendLabel}, ${rowLabel}` : rowLabel;
 
   function handleTap() {
     "background only";
@@ -123,13 +128,22 @@ export function ChatListRow({ room, now, onOpen }: ChatListRowProps): ReactNode 
       </view>
       <view className="messenger-list-body">
         <view className="messenger-list-line">
-          <text
-            className={
-              locked ? "messenger-list-name messenger-list-name-locked" : "messenger-list-name"
-            }
-          >
-            {counterpart.name}
-          </text>
+          {isNew ? (
+            <view className="messenger-list-name-group">
+              <text className="messenger-list-name messenger-list-name-fit">
+                {counterpart.name}
+              </text>
+              <ChatListNewBadge roomId={room.roomId} />
+            </view>
+          ) : (
+            <text
+              className={
+                locked ? "messenger-list-name messenger-list-name-locked" : "messenger-list-name"
+              }
+            >
+              {counterpart.name}
+            </text>
+          )}
           {when === null ? null : (
             <text
               className={

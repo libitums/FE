@@ -1,4 +1,9 @@
-import { legacyPassedRecord, legacyPassedSeed, u01OpenSeed } from "./test-helpers/progress-seed";
+import {
+  legacyPassedRecord,
+  legacyPassedSeed,
+  legacyPassedSeedWithCoins,
+  u01OpenSeed,
+} from "./test-helpers/progress-seed";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
@@ -17,7 +22,7 @@ import { entrySplashDurationMs } from "../lib/entry-flow";
 import type { EntryEvent } from "../lib/entry-flow";
 import { uiCopyFor } from "../lib/ui-copy";
 import { uiLanguageStorageKey } from "../lib/ui-language";
-import { resetMessengerChatSource } from "./test-helpers/messenger-chat-app";
+import { appChatSource, resetMessengerChatSource, tapId } from "./test-helpers/messenger-chat-app";
 
 // UI 언어 문구표의 App 수준 협력을 봅니다(ADR-0006 D4). 이 파일이 재는 것은 두 갈래입니다.
 //
@@ -547,6 +552,58 @@ describe.each(["en", "vi", "id", "es", "ja"] as const)(
       expect(screen.getByTestId("messenger-list-screen")).toBeInTheDocument();
       expect(screen.getByTestId("messenger-list-title")).toHaveTextContent(
         copy.messengerChat.list.title,
+      );
+    });
+  },
+);
+
+// ------------------------------------------------------------ MC2-I9 · 메신저 1.5 문구(턴 줄 · 엽전 칩 · NEW)
+
+describe.each(["en", "vi", "id", "es", "ja"] as const)(
+  "[MC2-I9] 저장된 언어가 %s인 설치의 메신저 1.5 문구",
+  (language) => {
+    async function bootMessenger(coins: number): Promise<void> {
+      await resetMessengerChatSource();
+      const storage = sessionStorageWith({ [uiLanguageStorageKey]: language });
+      await renderSignedInApp(<App progressSeed={legacyPassedSeedWithCoins(coins)} />, {
+        storageModule: storage.module,
+      });
+      fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-messenger"), {});
+      expect(screen.getByTestId("messenger-list-screen")).toBeInTheDocument();
+    }
+
+    test("목록의 엽전 칩 낭독이 그 언어의 coinsLabel(잔액)이다", async () => {
+      const copy = uiCopyFor(language);
+      await bootMessenger(50);
+
+      expect(screen.getByTestId("messenger-list-coins")).toHaveAttribute(
+        "accessibility-label",
+        copy.messengerChat.list.coinsLabel(50),
+      );
+    });
+
+    test("방 머리의 하루 무료 수 줄이 그 언어의 freeLeft(3, 3)이다", async () => {
+      const copy = uiCopyFor(language);
+      await bootMessenger(0);
+
+      tapId("messenger-list-row-owner");
+
+      expect(screen.getByTestId("messenger-chat-turn-line")).toHaveTextContent(
+        copy.messengerChat.turns.freeLeft(3, 3),
+      );
+    });
+
+    test("해금된 미나 줄의 NEW 알약이 그 언어의 newBadge이다", async () => {
+      const copy = uiCopyFor(language);
+      await bootMessenger(0);
+      const source = await appChatSource();
+
+      act(() => {
+        source?.unlockCharacter("mina");
+      });
+
+      expect(screen.getByTestId("messenger-list-row-mina-new")).toHaveTextContent(
+        copy.messengerChat.list.newBadge,
       );
     });
   },

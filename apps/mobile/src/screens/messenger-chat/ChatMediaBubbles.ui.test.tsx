@@ -134,7 +134,7 @@ test("MC-UI21. 재생 버튼: idle → 누르면 playing(Pause) → durationMs �
   expect(play().getAttribute("data-playback")).toBe("idle");
   expect(label()).toBe("Play");
 
-  fireEvent.tap(play(), {});
+  fireEvent.tap(play(), { eventType: "catchEvent" });
   expect(play().getAttribute("data-playback")).toBe("playing");
   expect(label()).toBe("Pause");
 

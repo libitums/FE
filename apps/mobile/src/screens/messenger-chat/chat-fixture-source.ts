@@ -3,21 +3,26 @@
 
 import { chatFixtureSeed } from "./chat-fixture";
 import {
-  activityOf,
+  advanceIdeas,
   defaultTimers,
+  isOpenAccess,
   MINUTE_MS,
   newRoomState,
+  openLockedRoom,
+  replaceMessage,
+  summaryOf as roomSummaryOf,
+  threadOf as roomThreadOf,
   type RoomState,
 } from "./chat-fixture-room";
+import { createFixtureNotes } from "./chat-fixture-notes";
 import { CHAT_PLACEHOLDERS } from "./chat-placeholders";
 import type {
   ChatFixtureMessage,
   ChatMediaKind,
   ChatMessage,
-  ChatRoomSummary,
   ChatSnapshot,
   ChatSource,
-  ChatThread,
+  ChatUnlockResult,
   FixtureChatSourceOptions,
 } from "./chat-source.contract";
 
@@ -63,9 +68,7 @@ export function createFixtureChatSource(options: FixtureChatSourceOptions): Fixt
     }
   };
 
-  const rooms = new Map<string, RoomState>(
-    seed.rooms.map((room) => [room.roomId, newRoomState(room, room.messages.map(fromSeed))]),
-  );
+  const rooms = new Map<string, RoomState>();
 
   const notify = () => {
     for (const listener of [...listeners]) {
@@ -98,55 +101,8 @@ export function createFixtureChatSource(options: FixtureChatSourceOptions): Fixt
     }
   };
 
-  const isOpenAccess = (room: RoomState) => room.seed.access.kind === "open";
-  const ideasOf = (room: RoomState) => {
-    const sets = room.seed.ideaSets;
-    return sets[room.ideaIndex % Math.max(sets.length, 1)] ?? [];
-  };
-
-  const advanceIdeas = (room: RoomState) => {
-    const count = room.seed.ideaSets.length;
-    if (count > 0) room.ideaIndex = (room.ideaIndex + 1) % count;
-  };
-
-  const replaceMessage = (room: RoomState, id: string, next: ChatMessage) => {
-    room.messages = room.messages.map((message) => (message.id === id ? next : message));
-  };
-
-  const summaryOf = (room: RoomState): ChatRoomSummary => {
-    if (room.summaryCache === null) {
-      const last = room.messages[room.messages.length - 1] ?? null;
-      room.summaryCache = {
-        roomId: room.seed.roomId,
-        counterpart: {
-          id: room.seed.counterpart.id,
-          name: room.seed.counterpart.name,
-          avatarUrl: resolveUrl(room.seed.counterpart.avatarPath),
-        },
-        access: room.seed.access,
-        lastMessage: last,
-        unread: room.unread,
-        activity: activityOf(room),
-        updatedAt: last === null ? 0 : last.at,
-      };
-    }
-    return room.summaryCache;
-  };
-
-  const threadOf = (room: RoomState): ChatThread => {
-    if (room.threadCache === null) {
-      room.threadCache = {
-        roomId: room.seed.roomId,
-        counterpart: summaryOf(room).counterpart,
-        messages: room.messages,
-        typing: room.typing,
-        ideas: ideasOf(room),
-        settings: room.settings,
-        storyPoints: room.seed.storyPoints,
-      };
-    }
-    return room.threadCache;
-  };
+  const summaryOf = (room: RoomState) => roomSummaryOf(room, resolveUrl);
+  const threadOf = (room: RoomState) => roomThreadOf(room, resolveUrl);
 
   const live = (roomId: string): RoomState | null =>
     disposed ? null : (rooms.get(roomId) ?? null);
@@ -155,13 +111,45 @@ export function createFixtureChatSource(options: FixtureChatSourceOptions): Fixt
     room.handles.clear();
   };
 
+  const notes = createFixtureNotes({ seed, schedule, changed, live });
+  const openingOf = (room: RoomState): ChatMessage | null => {
+    const { opening } = room.seed;
+    return opening === undefined
+      ? null
+      : { id: messageId(), at: now(), kind: "text", from: "them", text: opening };
+  };
+
+  for (const roomSeed of seed.rooms) {
+    const messages = roomSeed.messages.map(fromSeed);
+    const room = newRoomState(roomSeed, messages);
+    room.notes = notes.seedNotes(roomSeed.messages, messages);
+    rooms.set(roomSeed.roomId, room);
+    // 재시작 뒤 모습: 이미 해금한 인물은 처음부터 열린 채 — opening 한 줄 · 안 읽음 0 · NEW 아님.
+    if (roomSeed.access.kind === "locked" && options.unlocked?.includes(roomSeed.counterpart.id)) {
+      openLockedRoom(room, openingOf(room), { isNew: false, unread: false });
+    }
+  }
+
+  const unlockCharacter = (characterId: string): ChatUnlockResult => {
+    const room = disposed
+      ? undefined
+      : [...rooms.values()].find((candidate) => candidate.seed.counterpart.id === characterId);
+    if (room === undefined) return { kind: "unknown" };
+    const roomId = room.seed.roomId;
+    if (room.access.kind === "open") return { kind: "already-open", roomId };
+    openLockedRoom(room, openingOf(room), { isNew: true, unread: openRoomId !== roomId });
+    changed(room);
+    return { kind: "unlocked", roomId };
+  };
+
   const sendText = (roomId: string, text: string) => {
     const room = live(roomId);
     const trimmed = text.trim();
     if (room === null || !isOpenAccess(room) || trimmed === "") return;
+    const sentId = messageId();
     room.messages = [
       ...room.messages,
-      { id: messageId(), at: now(), kind: "text", from: "me", text: { ko: trimmed, en: "" } },
+      { id: sentId, at: now(), kind: "text", from: "me", text: { ko: trimmed, en: "" } },
     ];
     room.pendingReplies += 1;
     changed(room);
@@ -181,6 +169,7 @@ export function createFixtureChatSource(options: FixtureChatSourceOptions): Fixt
               { id: messageId(), at: now(), kind: "text", from: "them", text: reply },
             ];
             if (openRoomId !== room.seed.roomId) room.unread += 1;
+            notes.onReplyArrived(room, sentId);
           }
         }
         advanceIdeas(room);
@@ -240,8 +229,9 @@ export function createFixtureChatSource(options: FixtureChatSourceOptions): Fixt
       const room = live(roomId);
       if (room === null) return;
       openRoomId = roomId;
-      if (room.unread === 0) return;
+      if (room.unread === 0 && !room.isNew) return;
       room.unread = 0;
+      room.isNew = false;
       changed(room);
     },
     closeRoom: (roomId) => {
@@ -268,6 +258,9 @@ export function createFixtureChatSource(options: FixtureChatSourceOptions): Fixt
       room.settings = { ...room.settings, storyPointId };
       changed(room);
     },
+    requestMeaning: notes.requestMeaning,
+    openCorrection: notes.openCorrection,
+    unlockCharacter,
     report: () => undefined,
     requestFix: () => undefined,
     deleteRoom: (roomId) => {

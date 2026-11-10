@@ -24,6 +24,13 @@ export const ticketsVi: TicketsCopy = {
     keep: "Tiếp tục không giới hạn",
     date: (d) => `${String(d.day)} tháng ${String(d.month)}, ${String(d.year)}`,
     shortDate: (d) => `${String(d.day)} tháng ${String(d.month)}`,
+    intro: {
+      title: "Chuyển sang không giới hạn",
+      benefitMessages: "Không giới hạn tin nhắn trò chuyện mỗi ngày",
+      benefitLessons: "Bắt đầu bất kỳ bài học nào mà không cần vé",
+      comingSoon: "Sắp ra mắt",
+      comingSoonNote: "Gói không giới hạn chưa được bán. Chúng tôi sẽ báo cho bạn khi có.",
+    },
   },
   modal: {
     title: () => "vé còn lại",

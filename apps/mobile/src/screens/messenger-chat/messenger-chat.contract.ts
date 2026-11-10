@@ -2,8 +2,17 @@
 // 문구표 타입(`MessengerChatCopy`)을 둡니다. 화면 props · test-id 객체는 UI 스캐폴드가 더했습니다.
 
 import type { KeyboardDockEdges } from "../../lib/keyboard-dock";
-import type { ChatRelation, ChatReportReasonId, ChatSource } from "./chat-source.contract";
+import type {
+  ChatRelation,
+  ChatReportReasonId,
+  ChatSource,
+  ChatTimers,
+} from "./chat-source.contract";
+import type { CoinWallet } from "./coin-wallet";
+import type { ChatTier } from "./free-turns";
+import type { TurnLedger } from "./turn-ledger";
 import type { ComposerKeyboard } from "./keyboard-plan";
+import type { MyMessageCopy, NewFriendCopy, TurnsCopy } from "./messenger-chat-copy-1-5.contract";
 import type { KeyboardHeightStore, KoreanKeyboardProbe } from "./keyboard-ports";
 
 /** 「…」 메뉴 항목(고정 순서: ideas · fix · report). */
@@ -17,6 +26,8 @@ export type MessengerChatCopy = {
   readonly list: {
     readonly title: string;
     readonly coinsLabel: (count: number) => string;
+    readonly newBadge: string;
+    readonly newFriendLabel: string;
     readonly emptyTitle: string;
     readonly emptyBody: string;
     readonly goToJourney: string;
@@ -142,14 +153,17 @@ export type MessengerChatCopy = {
     readonly cancel: string;
     readonly confirm: string;
   };
+  readonly myMessage: MyMessageCopy;
+  readonly turns: TurnsCopy;
+  readonly newFriend: NewFriendCopy;
 };
 
 // --- 화면 props (spec §6.1) ---
 
 export type MessengerListScreenProps = {
   readonly source: ChatSource;
-  /** 앱의 보유 엽전입니다(spec §9 · ADR-0116). */
-  readonly coinBalance: number;
+  /** 엽전 지갑입니다 — 잔액 = 앱의 보유 엽전(ADR-0116) − 이번 실행에서 쓴 양(spec §5.2 · §7.2). */
+  readonly wallet: CoinWallet;
   readonly onOpenRoom: (roomId: string) => void;
   readonly onGoToJourney: () => void;
   readonly onLayerChange: (open: boolean) => void;
@@ -162,8 +176,16 @@ export type MessengerChatScreenProps = {
   readonly keyboardHeightStore: KeyboardHeightStore;
   readonly edges: KeyboardDockEdges;
   readonly learnerName: string;
-  /** 앱의 보유 엽전입니다(spec §9 · ADR-0116). */
-  readonly coinBalance: number;
+  /** 엽전 지갑입니다(spec §5.2 · §7.2). */
+  readonly wallet: CoinWallet;
+  /** 하루 무료 수 원장입니다(모든 인물 합 — spec §5.3). */
+  readonly turns: TurnLedger;
+  /** unlimited면 턴 표시 · 관문이 모두 빠집니다. */
+  readonly tier: ChatTier;
+  /** 지역 시계입니다(남은 시간 · 자정 초기화). */
+  readonly now: () => number;
+  /** 분 단위 갱신 타이머 주입(기본은 전역 타이머). */
+  readonly timers?: ChatTimers;
   readonly onExit: () => void;
 };
 
@@ -182,6 +204,7 @@ export const messengerListTestIds = {
   rowPreview: (id: string): string => list(`row-${id}-preview`),
   rowTime: (id: string): string => list(`row-${id}-time`),
   rowUnread: (id: string): string => list(`row-${id}-unread`),
+  rowNew: (id: string): string => list(`row-${id}-new`),
   empty: list("empty"),
   emptyGoToJourney: list("empty-go"),
 } as const;

@@ -18,7 +18,11 @@ export type ChatOverlay =
   | { readonly kind: "sidebar" }
   | { readonly kind: "story-point"; readonly selected: string }
   | { readonly kind: "delete-confirm" }
-  | { readonly kind: "coin-shop"; readonly from: "sidebar" | "ask-photo" | "ask-voice" };
+  | {
+      readonly kind: "coin-shop";
+      readonly from: "sidebar" | "ask-photo" | "ask-voice" | "send";
+    }
+  | { readonly kind: "unlimited"; readonly from: "strip" | "out-panel" };
 
 export type ChatFocusOrigin =
   | "more"
@@ -27,7 +31,10 @@ export type ChatFocusOrigin =
   | "voice-pill"
   | "sidebar-story-point"
   | "sidebar-delete"
-  | "sidebar-coins";
+  | "sidebar-coins"
+  | "send"
+  | "strip-unlimited"
+  | "out-unlimited";
 
 export type ChatRoomState = {
   /** 정본입니다. */
@@ -241,7 +248,10 @@ export function focusOriginOf(closing: ChatOverlay): ChatFocusOrigin | null {
       return "sidebar-delete";
     case "coin-shop":
       if (closing.from === "sidebar") return "sidebar-coins";
+      if (closing.from === "send") return "send";
       return closing.from === "ask-photo" ? "snapshot-pill" : "voice-pill";
+    case "unlimited":
+      return closing.from === "strip" ? "strip-unlimited" : "out-unlimited";
     default: {
       const unreachable: never = closing;
       return unreachable;
