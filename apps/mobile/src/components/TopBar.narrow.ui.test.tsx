@@ -68,3 +68,19 @@ test("TB-N4. 오르는 움직임 중에도 999를 넘는 수는 999+로 보인�
 
   expect(screen.getByTestId("top-bar-streak").textContent ?? "").not.toMatch(/100\d/);
 });
+
+const statsClass = () => document.querySelector(".top-bar-stats")?.getAttribute("class");
+
+test("TB-N5. 340 미만 폭(320)에서는 칩 줄이 촘촘하다(top-bar-stats-dense)", () => {
+  scope.SystemInfo = { pixelWidth: 960, pixelRatio: 3, pixelHeight: 2079 };
+  mount({});
+
+  expect(statsClass()).toBe("top-bar-stats top-bar-stats-compact top-bar-stats-dense");
+});
+
+test("TB-N6. 340 폭에서는 촘촘하지 않다 — compact 그대로", () => {
+  scope.SystemInfo = { pixelWidth: 1020, pixelRatio: 3, pixelHeight: 2200 };
+  mount({});
+
+  expect(statsClass()).toBe("top-bar-stats top-bar-stats-compact");
+});

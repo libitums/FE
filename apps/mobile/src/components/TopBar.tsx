@@ -9,7 +9,7 @@ import type { StatBumpKind, StatBumps } from "../lib/stat-bump";
 import { useUiCopy } from "../lib/ui-copy";
 
 import { StatChip } from "./StatChip";
-import { coinPlusShownAt, screenWidthFrom, statChipText } from "./top-bar-layout";
+import { coinPlusShownAt, screenWidthFrom, statChipText, topBarDenseAt } from "./top-bar-layout";
 import { UnlimitedTicketChip } from "./UnlimitedTicketChip";
 import { hasTopBarNotificationsShade, topBarNotificationsClassName } from "./top-bar-press";
 
@@ -68,9 +68,15 @@ export function TopBar({
   const copy = useUiCopy();
   const motion = useMotion();
   // 좁은 폭(360 미만)에서는 엽전 칩의 「+」를 뺍니다 — 알림 버튼이 덮지 않게(ADR-0116 개정 2026-11-10).
-  const coinPlus = coinPlusShownAt(
-    screenWidthFrom(typeof SystemInfo === "undefined" ? undefined : SystemInfo),
-  );
+  const screenWidth = screenWidthFrom(typeof SystemInfo === "undefined" ? undefined : SystemInfo);
+  const coinPlus = coinPlusShownAt(screenWidth);
+  // 340 미만 폭에서는 칩 줄을 더 촘촘하게 합니다(사용자 결정 A, 2026-11-10). 엽전 칩이 선 줄(compact)에만 겁니다.
+  const statsClass =
+    coinCount === null
+      ? "top-bar-stats"
+      : topBarDenseAt(screenWidth)
+        ? "top-bar-stats top-bar-stats-compact top-bar-stats-dense"
+        : "top-bar-stats top-bar-stats-compact";
   // standard에서는 속성을 아예 넘기지 않습니다 — undefined로 넘기면 테스트 렌더러가 "null"로 남깁니다.
   const motionProps = motion === "reduced" ? { "data-motion": "reduced" } : {};
   const handleOpenNotifications = () => {
@@ -126,9 +132,7 @@ export function TopBar({
   return (
     <view className="top-bar">
       {/* 엽전 칩이 서면 칩이 넷이라 간격 · 칩 좌우 여백을 줄입니다 — 360 폭에서 알림 버튼과 겹치지 않게(ADR-0116). */}
-      <view
-        className={coinCount === null ? "top-bar-stats" : "top-bar-stats top-bar-stats-compact"}
-      >
+      <view className={statsClass}>
         {/* 칩은 누르면 지표 모달을 여는 버튼입니다. 숫자만 낭독되면 무엇의 3인지 알 수
             없으므로 칩마다 이름을 답니다 — 아이콘은 그 이름 안에 이미 들어 있습니다. */}
         <StatChip

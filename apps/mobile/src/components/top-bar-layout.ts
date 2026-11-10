@@ -29,6 +29,17 @@ export function screenWidthFrom(
   return pixelWidth / pixelRatio;
 }
 
+/**
+ * 이 폭(pt) 미만이면 칩 줄을 촘촘하게 합니다(사용자 결정 A, 2026-11-10) — 320 폭 iOS 시뮬레이터에서 「+」를 빼도 알림
+ * 버튼이 엽전 칩 끝을 약 18pt 덮었다. 간격 6 → 4 · 칩 좌우 여백 8 → 6으로 약 22pt를 번다.
+ */
+export const topBarDenseMaxWidth = 340;
+
+/** 칩 줄을 촘촘하게 하는가 — 340 미만만. 폭을 모르면 하지 않습니다. */
+export function topBarDenseAt(screenWidth: number): boolean {
+  return !Number.isNaN(screenWidth) && screenWidth < topBarDenseMaxWidth;
+}
+
 /** 엽전 칩의 「+」를 보이는가 — 360 미만이면 뺍니다. 폭을 모르면 둡니다(기기에는 늘 SystemInfo가 있다). */
 export function coinPlusShownAt(screenWidth: number): boolean {
   return Number.isNaN(screenWidth) || screenWidth >= coinPlusMinWidth;

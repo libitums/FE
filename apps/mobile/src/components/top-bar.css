@@ -31,6 +31,18 @@
   padding-right: var(--libitum-spacing-8);
 }
 
+/* 340 미만 폭(사용자 결정 A, 2026-11-10) — 간격 6 → 4, 칩 좌우 여백 8 → 6. 320 폭에서 「+」를 빼도 알림 버튼이 엽전
+   칩 끝을 약 18pt 덮어 약 22pt를 더 번다. 폭 판정은 `topBarDenseAt`이 하고 여기서는 클래스만 받는다(Lynx CSS는
+   data-* 선택자를 맞추지 않는다). */
+.top-bar-stats-dense {
+  gap: var(--libitum-spacing-4);
+}
+
+.top-bar-stats-dense .stat-chip {
+  padding-left: var(--libitum-spacing-6);
+  padding-right: var(--libitum-spacing-6);
+}
+
 /* 지표 칩 하나하나의 모양은 `components/stat-chip.css`가 집니다. */
 
 /* 알림 버튼 — 44pt 원형입니다(Apple HIG 터치 영역). 폭 · 높이를 적지 않고 내용으로 섭니다:
