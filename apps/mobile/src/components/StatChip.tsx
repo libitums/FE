@@ -91,6 +91,8 @@ export type StatChipProps = {
   readonly onDropped?: () => void;
   /** 숫자 대신 보일 글자입니다(시험 계정의 티켓 「∞」 — ADR-0085). 움직임이 없을 때만 씁니다. */
   readonly valueText?: string;
+  /** 수를 칩 글로 바꾸는 규칙입니다(기본 `String`). 오르기 · 내리기 움직임 중의 수에도 같이 씁니다 — 상단 바는 「999+」 규칙을 넘깁니다(ADR-0116 개정 2026-11-10). */
+  readonly formatValue?: (value: number) => string;
   /**
    * 0보다 크면 이 값이 바뀔 때마다 아이콘이 한 번 톡 튑니다(ADR-0116 — 마지막 엽전이 칩에 닿을 때). 숫자는 `value`가
    * 그대로 보입니다(굴림 없음). 움직임 줄이기에서는 튀지 않습니다.
@@ -120,6 +122,7 @@ export function StatChip({
   dropFrom = null,
   onDropped,
   valueText,
+  formatValue = String,
   pulseKey = 0,
   iconId,
   plus = false,
@@ -235,28 +238,28 @@ export function StatChip({
       </view>
       {drop !== null && dropPhase !== "done" ? (
         !dropping ? (
-          <text className={valueClass}>{String(drop)}</text>
+          <text className={valueClass}>{formatValue(drop)}</text>
         ) : motion === "reduced" ? (
-          <text className={`${valueClass} stat-chip-value-fade`}>{String(value)}</text>
+          <text className={`${valueClass} stat-chip-value-fade`}>{formatValue(value)}</text>
         ) : (
           <view className="stat-chip-digits" data-testid={`${testId}-drop`}>
             <view className="stat-chip-roll">
-              <text className={valueClass}>{String(drop)}</text>
-              <text className={valueClass}>{String(value)}</text>
+              <text className={valueClass}>{formatValue(drop)}</text>
+              <text className={valueClass}>{formatValue(value)}</text>
             </view>
           </view>
         )
       ) : start === null ? (
-        <text className={valueClass}>{valueText ?? String(value)}</text>
+        <text className={valueClass}>{valueText ?? formatValue(value)}</text>
       ) : !playing ? (
-        <text className={valueClass}>{String(start)}</text>
+        <text className={valueClass}>{formatValue(start)}</text>
       ) : motion === "reduced" ? (
-        <text className={`${valueClass} stat-chip-value-fade`}>{String(value)}</text>
+        <text className={`${valueClass} stat-chip-value-fade`}>{formatValue(value)}</text>
       ) : (
         <view className="stat-chip-digits" data-testid={`${testId}-roll`}>
           <view className="stat-chip-roll">
-            <text className={valueClass}>{String(start)}</text>
-            <text className={valueClass}>{String(value)}</text>
+            <text className={valueClass}>{formatValue(start)}</text>
+            <text className={valueClass}>{formatValue(value)}</text>
           </view>
         </view>
       )}

@@ -9,6 +9,7 @@ import type { StatBumpKind, StatBumps } from "../lib/stat-bump";
 import { useUiCopy } from "../lib/ui-copy";
 
 import { StatChip } from "./StatChip";
+import { coinPlusShownAt, screenWidthFrom, statChipText } from "./top-bar-layout";
 import { hasTopBarNotificationsShade, topBarNotificationsClassName } from "./top-bar-press";
 
 import "./top-bar.css";
@@ -65,6 +66,10 @@ export function TopBar({
 }: TopBarProps): ReactNode {
   const copy = useUiCopy();
   const motion = useMotion();
+  // 좁은 폭(360 미만)에서는 엽전 칩의 「+」를 뺍니다 — 알림 버튼이 덮지 않게(ADR-0116 개정 2026-11-10).
+  const coinPlus = coinPlusShownAt(
+    screenWidthFrom(typeof SystemInfo === "undefined" ? undefined : SystemInfo),
+  );
   // standard에서는 속성을 아예 넘기지 않습니다 — undefined로 넘기면 테스트 렌더러가 "null"로 남깁니다.
   const motionProps = motion === "reduced" ? { "data-motion": "reduced" } : {};
   const handleOpenNotifications = () => {
@@ -128,6 +133,7 @@ export function TopBar({
         <StatChip
           tone="streak"
           value={streakDays}
+          formatValue={statChipText}
           accessibilityLabel={copy.common.count.streakDays(streakDays)}
           testId="top-bar-streak"
           surface="white"
@@ -142,6 +148,7 @@ export function TopBar({
           <StatChip
             tone="trophy"
             value={trophyCount}
+            formatValue={statChipText}
             accessibilityLabel={copy.common.count.trophies(trophyCount)}
             testId="top-bar-trophy"
             surface="white"
@@ -158,6 +165,7 @@ export function TopBar({
             tone="ticket"
             value={ticketCount}
             {...(ticketsUnlimited ? { valueText: copy.tickets.unlimitedValue } : {})}
+            formatValue={statChipText}
             accessibilityLabel={
               ticketsUnlimited ? copy.tickets.unlimited : copy.tickets.ticketsLeft(ticketCount)
             }
@@ -174,6 +182,7 @@ export function TopBar({
           <StatChip
             tone="coin"
             value={coinCount}
+            formatValue={statChipText}
             accessibilityLabel={
               onOpenCoins === undefined
                 ? copy.common.count.coins(coinCount)
@@ -183,7 +192,7 @@ export function TopBar({
             surface="white"
             height="touch-target"
             onTap={onOpenCoins === undefined ? undefined : handleOpenCoins}
-            plus={onOpenCoins !== undefined}
+            plus={onOpenCoins !== undefined && coinPlus}
           />
         )}
       </view>
