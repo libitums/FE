@@ -7,8 +7,9 @@ import coinPouchArt from "./assets/coin-pouch.webp";
 // 엽전 상점의 도메인 값과 순수 계산입니다(ADR-0116 · 시안 「엽전 상점」). 화면은 여기서 만든 값을 그리기만 합니다 —
 // 엽전 수 · 금액이 갈리는 규칙은 전부 이 파일에 있고 `unit` 계층이 봅니다(ADR-0006 D4).
 //
-// 팩 셋과 가격은 시안 값(옛 젬 화면 값의 1/10)입니다. 결제 연동이 아직 없어 가격표의 출처가 없고, 이 상수가 그
-// 자리를 대신합니다 — 사기 버튼은 「결제 준비 중」 안내만 띄웁니다.
+// 팩 셋과 가격은 사용자 결정(2026-11-10)입니다 — 1엽전 ≈ 1센트. 레슨을 처음 통과하면 10엽전(에피소드 하나 ≈ 100)이라
+// 옛 값(50 · 140 · 360)은 버는 양에 비해 너무 비쌌다. 메신저 가격(메시지 10 · 음성 40 · 사진 60)과 같은 눈금입니다.
+// 결제 연동이 아직 없어 가격표의 출처가 없고, 이 상수가 그 자리를 대신합니다 — 사기 버튼은 「결제 준비 중」 안내만 띄웁니다.
 
 export type { CoinPackId } from "../../lib/ui-copy-sections.contract";
 
@@ -29,7 +30,7 @@ export type CoinPack = {
 const coinPacksById: Readonly<Record<CoinPackId, CoinPack>> = {
   bundle: {
     id: "bundle",
-    coins: 50,
+    coins: 500,
     bonusCoins: 0,
     priceCents: 499,
     bestValue: false,
@@ -37,16 +38,16 @@ const coinPacksById: Readonly<Record<CoinPackId, CoinPack>> = {
   },
   pouch: {
     id: "pouch",
-    coins: 120,
-    bonusCoins: 20,
+    coins: 1000,
+    bonusCoins: 200,
     priceCents: 999,
     bestValue: true,
     art: coinPouchArt,
   },
   big: {
     id: "big",
-    coins: 280,
-    bonusCoins: 80,
+    coins: 2000,
+    bonusCoins: 1000,
     priceCents: 1999,
     bestValue: false,
     art: bigPouchArt,
@@ -67,7 +68,7 @@ export function findCoinPack(id: CoinPackId): CoinPack {
   return coinPacksById[id];
 }
 
-/** 카드의 큰 숫자 · 낭독이 쓰는 받는 엽전 수입니다 — 보너스를 합합니다(시안: 140 + 「+20 bonus」). */
+/** 카드의 큰 숫자 · 낭독이 쓰는 받는 엽전 수입니다 — 보너스를 합합니다(예: 1,200 = 1,000 + 「+200 bonus」). */
 export function totalCoinsOf(pack: CoinPack): number {
   return pack.coins + pack.bonusCoins;
 }

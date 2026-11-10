@@ -18,9 +18,10 @@ describe("coinPacks", () => {
     expect(coinPacks.filter((pack) => pack.bestValue).map((pack) => pack.id)).toEqual(["pouch"]);
   });
 
-  test("[CS2] 받는 엽전은 보너스를 합한다 — 50 · 140 · 360", () => {
-    expect(coinPacks.map(totalCoinsOf)).toEqual([50, 140, 360]);
-    expect(findCoinPack("big").bonusCoins).toBe(80);
+  test("[CS2] 받는 엽전은 보너스를 합한다 — 500 · 1,200 · 3,000 (1엽전 ≈ 1센트, 사용자 결정 2026-11-10)", () => {
+    expect(coinPacks.map(totalCoinsOf)).toEqual([500, 1200, 3000]);
+    expect(findCoinPack("pouch").bonusCoins).toBe(200);
+    expect(findCoinPack("big").bonusCoins).toBe(1000);
   });
 });
 

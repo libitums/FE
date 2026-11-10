@@ -39,11 +39,11 @@ test("[CS-U2] 팩은 엮음 · 주머니 · 큰 주머니 순이고 처음에는
   expect(screen.getByTestId("coin-shop-pack-pouch")).toHaveAttribute("data-selected", "true");
   expect(screen.getByTestId("coin-shop-pack-pouch")).toHaveAttribute(
     "accessibility-label",
-    "Coin pouch, 140 coins, +20 bonus, $9.99, BEST VALUE, selected",
+    "Coin pouch, 1,200 coins, +200 bonus, $9.99, BEST VALUE, selected",
   );
   expect(screen.getByTestId("coin-shop-pack-bundle")).toHaveAttribute(
     "accessibility-label",
-    "Coin bundle, 50 coins, $4.99",
+    "Coin bundle, 500 coins, $4.99",
   );
   expect(buyButton()).toHaveTextContent("Buy for $9.99");
 });
