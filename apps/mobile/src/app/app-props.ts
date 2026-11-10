@@ -21,8 +21,6 @@ export type AppProgressSeed = {
 export type AppSeedProps = {
   /** 부팅할 때의 진행입니다(integration · 개발 확인). 제품 진입점은 주지 않습니다. */
   readonly progressSeed?: AppProgressSeed;
-  /** 부팅할 때 가진 젬 수(기본 0)입니다. 결제가 없어 젬이 늘 길이 없으므로 integration만 씁니다. */
-  readonly initialGemCount?: number;
   /** 로그인의 전화번호 수단입니다. 없으면 제품 값(`productPhoneSignIn` — 지금은 숨김)입니다. */
   readonly phoneSignIn?: PhoneSignInVisibility;
 };

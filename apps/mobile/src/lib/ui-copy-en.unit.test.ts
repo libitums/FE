@@ -26,10 +26,7 @@ const c = uiCopyEn;
 // 표본 인자는 영어(ASCII)로 줍니다 — 결과의 한글은 표가 낸 것입니다.
 const sampleArgs: readonly unknown[] = [0, 1, 5, "x", true, false];
 
-test("UE1. 복수형 — 젬 · 트로피 · 다이아 · 연속 일수", () => {
-  expect(c.common.count.gems(0)).toBe("0 gems");
-  expect(c.common.count.gems(1)).toBe("1 gem");
-  expect(c.common.count.gems(5)).toBe("5 gems");
+test("UE1. 복수형 — 트로피 · 엽전 · 연속 일수", () => {
   expect(c.common.count.trophies(1)).toBe("1 trophy");
   expect(c.common.count.trophies(3)).toBe("3 trophies");
   expect(c.common.count.coins(1)).toBe("1 coin");
@@ -38,7 +35,7 @@ test("UE1. 복수형 — 젬 · 트로피 · 다이아 · 연속 일수", () => 
   expect(c.common.count.streakDays(3)).toBe("3-day streak");
 });
 
-test("UE1. 복수형 — 활동 수 · 에피소드 · 젬 팩 · 잔액", () => {
+test("UE1. 복수형 — 활동 수 · 에피소드 · 엽전 팩 · 잔액", () => {
   expect(c.journeyMap.activityCount(1, 1)).toBe("1/1 activity");
   expect(c.journeyMap.activityCount(1, 4)).toBe("1/4 activities");
   expect(c.journeyMap.activityCount(0, 4)).toBe("0/4 activities");

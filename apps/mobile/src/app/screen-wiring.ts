@@ -93,9 +93,6 @@ export type ScreenWiring = {
   // 호스트가 넘긴 가장자리 여백입니다. 셸이 여백을 잡지 않는 화면(서사 표지)이 자기
   // 안에서 잡을 때 씁니다 — 콜백이 아니라 값이지만 `sessionOptions`와 같이 내려갑니다.
   safeAreaInsets: SafeAreaInsets;
-  // 가진 젬 수입니다. 전역 머리가 아닌 자리(학습 화면의 상단 바 · 학습 완료의 지표 칩)도
-  // 같은 값을 그리도록 값으로 내려갑니다.
-  gemCount: number;
   // 로그인에 전화번호 수단을 그릴지입니다(`productPhoneSignIn` — 지금은 숨깁니다).
   phoneSignIn: PhoneSignInVisibility;
   // 탭 루트 화면이 자기 안에 겹침 레이어(여정의 스텝 말풍선 · 롤플레이의 플러스 안내)를
@@ -161,7 +158,6 @@ export type ScreenWiringArgs = {
   readonly setSessionOption: SessionOptionsWiring["setSessionOption"];
   readonly safeAreaInsets: SafeAreaInsets;
   readonly appVersion: AppVersion | null;
-  readonly gemCount: number;
   readonly phoneSignIn: PhoneSignInVisibility;
   readonly setScreenLayerOpen: Dispatch<SetStateAction<boolean>>;
   readonly roleplaySections: readonly RoleplaySection[];
@@ -190,7 +186,6 @@ export function screenWiring(args: ScreenWiringArgs): ScreenWiring {
       visibleSocialLoginMethodsFor(args.appVersion?.platform ?? null, loadStoredAppPolicy()),
     unavailableSocialMethods: () =>
       unavailableSocialLoginMethodsFor(args.appVersion?.platform ?? null, loadStoredAppPolicy()),
-    gemCount: args.gemCount,
     streakDays: args.streakDays,
     trophyCount: args.trophyCount,
     ...(args.coinCount === undefined ? {} : { coinCount: args.coinCount }),

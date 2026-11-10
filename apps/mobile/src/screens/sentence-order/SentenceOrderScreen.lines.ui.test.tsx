@@ -78,7 +78,6 @@ function mount(
   return render(
     <SentenceOrderActivity
       questions={questions}
-      gemCount={0}
       onExit={() => {}}
       onFinish={() => {}}
       lessonAudio={lesson}

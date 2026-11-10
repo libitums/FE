@@ -39,7 +39,6 @@ function mount(questions: readonly SyllableBuildQuestion[], lesson?: LessonPosit
   render(
     <SyllableBuildActivity
       questions={questions}
-      gemCount={0}
       onExit={() => {}}
       onFinish={onFinish}
       lesson={lesson}
@@ -363,12 +362,7 @@ describe("SyllableBuildActivity 칸 상태 · 쓴 타일 · 판정 자리", () =
 
   test("SB2. 채점 뒤에는 지금 칸이 없고 칸이 정답 · 오답 판정 클래스를 진다", () => {
     const first = render(
-      <SyllableBuildActivity
-        questions={[card]}
-        gemCount={0}
-        onExit={() => {}}
-        onFinish={() => {}}
-      />,
+      <SyllableBuildActivity questions={[card]} onExit={() => {}} onFinish={() => {}} />,
     );
     tapTile(2);
     tapTile(1);
@@ -380,14 +374,7 @@ describe("SyllableBuildActivity 칸 상태 · 쓴 타일 · 판정 자리", () =
     }
     first.unmount();
 
-    render(
-      <SyllableBuildActivity
-        questions={[card]}
-        gemCount={0}
-        onExit={() => {}}
-        onFinish={() => {}}
-      />,
-    );
+    render(<SyllableBuildActivity questions={[card]} onExit={() => {}} onFinish={() => {}} />);
     tapTile(1);
     tapTile(2);
     tapAction("Check");
@@ -428,7 +415,6 @@ describe("SyllableBuildActivity 칸 상태 · 쓴 타일 · 판정 자리", () =
     render(
       <SyllableBuildActivity
         questions={[card, week]}
-        gemCount={0}
         onExit={() => {}}
         onFinish={() => {}}
         onItemAnswered={onItemAnswered}

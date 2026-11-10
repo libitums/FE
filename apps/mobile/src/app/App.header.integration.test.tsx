@@ -28,7 +28,6 @@ test("[AH-I1] 탭 루트 넷 중 메신저를 뺀 셋에는 머리와 바텀 네
     } else {
       expect(screen.getByTestId("app-header")).toBeInTheDocument();
     }
-    expect(screen.queryByTestId("top-bar-gem")).not.toBeInTheDocument();
     expect(screen.queryByTestId("coin-shop-screen")).not.toBeInTheDocument();
   }
 });
@@ -73,17 +72,6 @@ test("[AH-I6] 말풍선이 열린 채 탭을 옮겨도 머리의 가림이 남�
   fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-settings"), {});
 
   expect(header()).toHaveAttribute("accessibility-elements-hidden", "false");
-});
-
-test("[AH-I7] 젬 잔액이 있어도 탭과 학습 화면의 상단 젬 칩은 숨긴다", async () => {
-  await renderSignedInApp(<App progressSeed={u01OpenSeed} initialGemCount={1240} />);
-  expect(screen.queryByTestId("top-bar-gem")).not.toBeInTheDocument();
-
-  fireEvent.tap(screen.getByTestId(catalogNodeTestId("u01-water", "S1")), {});
-  fireEvent.tap(screen.getByTestId("step-sheet-start"), {});
-
-  expect(screen.getByTestId("learning-shell")).toBeInTheDocument();
-  expect(screen.queryByTestId("top-bar-gem")).not.toBeInTheDocument();
 });
 
 function expectTopBarShape(): void {

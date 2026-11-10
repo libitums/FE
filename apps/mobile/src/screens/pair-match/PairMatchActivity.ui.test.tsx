@@ -48,9 +48,7 @@ function mount(options: { readonly motion?: "reduced" } = {}) {
   const spoken = stubAnnounce();
   const onFinish = vi.fn<Finish>();
   const onExit = vi.fn<() => void>();
-  const element = (
-    <PairMatchActivity questions={questions} gemCount={0} onExit={onExit} onFinish={onFinish} />
-  );
+  const element = <PairMatchActivity questions={questions} onExit={onExit} onFinish={onFinish} />;
   const view = render(
     options.motion === undefined ? (
       element

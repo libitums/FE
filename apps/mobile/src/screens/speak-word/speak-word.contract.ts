@@ -46,7 +46,6 @@ export type SpeakWordSessionAction =
 
 export type SpeakWordActivityProps = {
   readonly questions: readonly SpeakWordQuestion[];
-  readonly gemCount: number;
   readonly onExit: () => void;
   readonly onFinish: ActivityFinish;
   readonly lesson?: LessonPosition;

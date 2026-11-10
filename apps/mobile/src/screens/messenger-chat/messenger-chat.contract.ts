@@ -148,8 +148,8 @@ export type MessengerChatCopy = {
 
 export type MessengerListScreenProps = {
   readonly source: ChatSource;
-  /** 앱의 실제 젬 잔액입니다(spec §9). */
-  readonly gemBalance: number;
+  /** 앱의 보유 엽전입니다(spec §9 · ADR-0116). */
+  readonly coinBalance: number;
   readonly onOpenRoom: (roomId: string) => void;
   readonly onGoToJourney: () => void;
   readonly onLayerChange: (open: boolean) => void;
@@ -162,8 +162,8 @@ export type MessengerChatScreenProps = {
   readonly keyboardHeightStore: KeyboardHeightStore;
   readonly edges: KeyboardDockEdges;
   readonly learnerName: string;
-  /** 앱의 실제 젬 잔액입니다(spec §9). */
-  readonly gemBalance: number;
+  /** 앱의 보유 엽전입니다(spec §9 · ADR-0116). */
+  readonly coinBalance: number;
   readonly onExit: () => void;
 };
 
@@ -176,7 +176,7 @@ export const messengerListTestIds = {
   screen: list("screen"),
   header: list("header"),
   title: list("title"),
-  gem: list("gem"),
+  coins: list("coins"),
   list: list("list"),
   row: (id: string): string => list(`row-${id}`),
   rowPreview: (id: string): string => list(`row-${id}-preview`),
@@ -234,8 +234,8 @@ export const messengerChatTestIds = {
   askCancel: room("ask-cancel"),
   sidebar: room("sidebar"),
   sidebarClose: room("sidebar-close"),
-  sidebarGems: room("sidebar-gems"),
-  sidebarGetGems: room("sidebar-get-gems"),
+  sidebarCoins: room("sidebar-coins"),
+  sidebarGetCoins: room("sidebar-get-coins"),
   sidebarProfile: room("sidebar-profile"),
   sidebarMyProfile: room("sidebar-my-profile"),
   sidebarStoryPoint: room("sidebar-story-point"),

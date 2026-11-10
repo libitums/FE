@@ -40,7 +40,6 @@ export const commonVi: CommonCopy = {
   count: {
     streakDays: (days) => `Chuỗi ${days} ngày`,
     trophies: (count) => `${count} cúp`,
-    gems: (count) => `${count} ngọc`,
     coins: (count) => `${count} xu`,
   },
 };

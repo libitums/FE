@@ -51,7 +51,6 @@ test("ST6. DICTATION: 자동 재생 중 Stop, 탭하면 stopAudio 후 Play again
     <TypingActivity
       insets={zeroSafeAreaInsets}
       questions={[dictation]}
-      gemCount={0}
       onExit={() => {}}
       onFinish={() => {}}
       lessonAudio={lesson}

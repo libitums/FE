@@ -97,7 +97,6 @@ function activityScreenOf(
           onExit={onExit}
           onFinish={onFinish}
           sessionOptions={wiring.sessionOptions}
-          gemCount={wiring.gemCount}
           lesson={lesson}
           lessonAudio={lessonAudio}
           onItemAnswered={onItemAnswered}
@@ -108,7 +107,6 @@ function activityScreenOf(
         <SentenceOrderActivity
           key={key}
           questions={activity.questions}
-          gemCount={wiring.gemCount}
           onExit={onExit}
           onFinish={onFinish}
           lesson={lesson}
@@ -136,7 +134,6 @@ function activityScreenOf(
         <TypingActivity
           key={key}
           questions={activity.questions}
-          gemCount={wiring.gemCount}
           onExit={onExit}
           onFinish={onFinish}
           lesson={lesson}
@@ -149,7 +146,6 @@ function activityScreenOf(
         <VocabCardActivity
           key={key}
           questions={activity.questions}
-          gemCount={wiring.gemCount}
           onExit={onExit}
           onFinish={onFinish}
           lesson={lesson}
@@ -160,7 +156,6 @@ function activityScreenOf(
         <PairMatchActivity
           key={key}
           questions={activity.questions}
-          gemCount={wiring.gemCount}
           onExit={onExit}
           onFinish={onFinish}
           lesson={lesson}
@@ -171,7 +166,6 @@ function activityScreenOf(
         <CultureCardActivity
           key={key}
           questions={activity.questions}
-          gemCount={wiring.gemCount}
           onExit={onExit}
           onFinish={onFinish}
           lesson={lesson}
@@ -182,7 +176,6 @@ function activityScreenOf(
         <SyllableBuildActivity
           key={key}
           questions={activity.questions}
-          gemCount={wiring.gemCount}
           onExit={onExit}
           onFinish={onFinish}
           lesson={lesson}
@@ -195,7 +188,6 @@ function activityScreenOf(
         <ReadAloudActivity
           key={key}
           questions={activity.questions}
-          gemCount={wiring.gemCount}
           onExit={onExit}
           onFinish={onFinish}
           lesson={lesson}
@@ -207,7 +199,6 @@ function activityScreenOf(
         <SpeakWordActivity
           key={key}
           questions={activity.questions}
-          gemCount={wiring.gemCount}
           onExit={onExit}
           onFinish={onFinish}
           lesson={lesson}

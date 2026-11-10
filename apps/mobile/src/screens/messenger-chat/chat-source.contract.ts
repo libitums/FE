@@ -66,7 +66,7 @@ export type ChatThread = {
   readonly storyPoints: readonly ChatStoryPoint[];
 };
 
-/** 젬 잔액은 출처가 아니라 앱이 줍니다(§9). */
+/** 잔액(보유 엽전)은 출처가 아니라 앱이 줍니다(§9 · ADR-0116). */
 export type ChatSnapshot = { readonly rooms: readonly ChatRoomSummary[] };
 
 export type ChatReportReasonId = "rude" | "sexual" | "hateful" | "wrong-korean" | "other";

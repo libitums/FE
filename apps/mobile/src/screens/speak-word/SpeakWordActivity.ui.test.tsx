@@ -49,7 +49,6 @@ function mount(questions: readonly SpeakWordQuestion[], lesson?: LessonPosition)
   render(
     <SpeakWordActivity
       questions={questions}
-      gemCount={0}
       onExit={() => {}}
       onFinish={onFinish}
       lesson={lesson}
@@ -318,12 +317,7 @@ test("USW9. 문구는 모두 문구표에서 온다", () => {
   stubSpeechHost({ result: () => recognized("카드") });
   render(
     <UiCopyContext.Provider value={markedUiCopy}>
-      <SpeakWordActivity
-        questions={[cardQuestion]}
-        gemCount={0}
-        onExit={() => {}}
-        onFinish={() => {}}
-      />
+      <SpeakWordActivity questions={[cardQuestion]} onExit={() => {}} onFinish={() => {}} />
     </UiCopyContext.Provider>,
   );
 
@@ -407,7 +401,6 @@ test("EV5. 판정은 문항당 한 번 보고되고 outcome · density가 실린
   render(
     <SpeakWordActivity
       questions={[cardQuestion, passport]}
-      gemCount={0}
       onExit={() => {}}
       onFinish={() => {}}
       onItemAnswered={onItemAnswered}
@@ -431,7 +424,6 @@ test("EV5. Skip은 skipped로 보고된다", () => {
   render(
     <SpeakWordActivity
       questions={[cardQuestion, passport]}
-      gemCount={0}
       onExit={() => {}}
       onFinish={() => {}}
       onItemAnswered={onItemAnswered}

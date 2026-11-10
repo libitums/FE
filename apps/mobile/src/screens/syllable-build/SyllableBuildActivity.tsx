@@ -39,7 +39,6 @@ import "./syllable-build-screen.css";
 // 상자 → 창고 · 버튼.
 export function SyllableBuildActivity({
   questions,
-  gemCount,
   onExit,
   onFinish,
   lesson,
@@ -132,7 +131,6 @@ export function SyllableBuildActivity({
   return (
     <LearningShell
       form="syllable-build"
-      gemCount={gemCount}
       questionIndex={counter.questionIndex}
       questionCount={counter.questionCount}
       complete={complete}

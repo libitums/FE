@@ -42,7 +42,6 @@ import "./typing-activity.css";
 // 그리기만 합니다. DOM 순서 = 낭독 순서입니다: 판정 → 단서 → 답 칸 → 정답 공개 → 버튼 → 자판.
 export function TypingActivity({
   questions,
-  gemCount,
   onExit,
   onFinish,
   lesson,
@@ -125,7 +124,6 @@ export function TypingActivity({
       >
         <LearningShell
           form="typing"
-          gemCount={gemCount}
           questionIndex={counter.questionIndex}
           questionCount={counter.questionCount}
           complete={complete}

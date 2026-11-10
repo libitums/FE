@@ -30,7 +30,6 @@ import "./culture-card-activity.css";
 // 않고 넘어가지 않게 하려는 것입니다. 덱의 뒤 두 장 · 점은 장식이고 위치는 셸의 `Lesson n / N`이 말합니다.
 export function CultureCardActivity({
   questions,
-  gemCount,
   onExit,
   onFinish,
   lesson,
@@ -78,7 +77,6 @@ export function CultureCardActivity({
   return (
     <LearningShell
       form="culture-card"
-      gemCount={gemCount}
       questionIndex={counter.questionIndex}
       questionCount={counter.questionCount}
       instruction={copy.cultureCard.instruction}

@@ -9,7 +9,6 @@ import type { SentenceOrderStepId } from "./sentence-order-steps.test-support";
 
 export type StepSentenceOrderProps = {
   readonly stepId: SentenceOrderStepId;
-  readonly gemCount?: number;
   readonly onExit: () => void;
   readonly onFinish: (
     id: SentenceOrderStepId,
@@ -19,16 +18,10 @@ export type StepSentenceOrderProps = {
 };
 
 /** 스텝 이름으로 고정 문항을 골라 활동에 넘깁니다 — 활동의 끝 콜백에 스텝 이름을 덧붙입니다. */
-export function StepSentenceOrder({
-  stepId,
-  gemCount = 0,
-  onExit,
-  onFinish,
-}: StepSentenceOrderProps): ReactNode {
+export function StepSentenceOrder({ stepId, onExit, onFinish }: StepSentenceOrderProps): ReactNode {
   return (
     <SentenceOrderActivity
       questions={stepQuestions[stepId]}
-      gemCount={gemCount}
       onExit={onExit}
       onFinish={(results, skippedCount) => onFinish(stepId, results, skippedCount)}
     />

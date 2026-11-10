@@ -17,7 +17,7 @@
   padding-top: var(--libitum-layout-screen-padding-top);
 }
 
-/* [고정] 머리 — 제목과 젬 칩입니다. */
+/* [고정] 머리 — 제목과 엽전 칩입니다. */
 .messenger-list-header {
   display: flex;
   flex-direction: row;

@@ -97,7 +97,7 @@ test("XF3. 레슨으로 번 엽전이 메신저 목록 칩에도 같은 수로 �
   expect(screen.getByTestId("top-bar-coins")).toHaveTextContent("10");
 
   act(() => openTab("messenger"));
-  const chip = screen.getByTestId("messenger-list-gem");
+  const chip = screen.getByTestId("messenger-list-coins");
   expect(chip).toHaveTextContent("10");
   expect(chip).toHaveAttribute("accessibility-label", "10 coins, get more");
 

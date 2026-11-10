@@ -41,13 +41,7 @@ const fine: ReadAloudQuestion = withAudio(fineBase, listenAudioOf("SHADOW", "S8-
 function mount(questions: readonly ReadAloudQuestion[], lesson?: LessonAudio) {
   const extra = lesson === undefined ? {} : { lessonAudio: lesson };
   return render(
-    <ReadAloudActivity
-      questions={questions}
-      gemCount={0}
-      onExit={() => {}}
-      onFinish={() => {}}
-      {...extra}
-    />,
+    <ReadAloudActivity questions={questions} onExit={() => {}} onFinish={() => {}} {...extra} />,
   );
 }
 

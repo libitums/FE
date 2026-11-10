@@ -18,7 +18,6 @@ import { topBarNotificationsClassName } from "./top-bar-press";
 test("[TB1] 칩 둘은 흰 면 · 상단 줄 높이로 선다", () => {
   render(<TopBar streakDays={3} trophyCount={1} onOpenNotifications={vi.fn()} />);
 
-  expect(screen.queryByTestId("top-bar-gem")).not.toBeInTheDocument();
   // 함수 결과가 아니라 실제 클래스 문자열을 고정합니다 — 함수가 틀려도 같이 틀리지 않게.
   for (const id of ["top-bar-streak", "top-bar-trophy"]) {
     expect(screen.getByTestId(id).getAttribute("class")).toBe(

@@ -35,7 +35,7 @@ function threadOf(): ChatThread {
 
 function handlers() {
   return {
-    onGetGems: vi.fn<() => void>(),
+    onGetCoins: vi.fn<() => void>(),
     onStoryPoint: vi.fn<() => void>(),
     onAutoIdeas: vi.fn<(on: boolean) => void>(),
     onDelete: vi.fn<() => void>(),
@@ -46,14 +46,14 @@ function handlers() {
 function mountSidebar(thread: ChatThread = threadOf(), reduced = false) {
   const h = handlers();
   const sidebar = (
-    <ChatSettingsSidebar thread={thread} learnerName="Hana" gemBalance={120} {...h} />
+    <ChatSettingsSidebar thread={thread} learnerName="Hana" coinBalance={120} {...h} />
   );
   render(reduced ? <MotionProvider motion="reduced">{sidebar}</MotionProvider> : sidebar);
   return h;
 }
 
 const orderIds = [
-  ids.sidebarGems,
+  ids.sidebarCoins,
   ids.sidebarProfile,
   ids.sidebarMyProfile,
   ids.sidebarStoryPoint,
@@ -70,14 +70,14 @@ test("MC-UI22. 여섯 줄이 data-order 1~6으로 정해진 순서에 선다(DOM
   expect(screen.getByTestId(ids.sidebar).textContent).toContain("Chat settings");
 });
 
-test("MC-UI22. 젬 상자는 잔액을 보이고 Get coins가 onGetGems를 부른다", () => {
-  const { onGetGems } = mountSidebar();
+test("MC-UI22. 엽전 상자는 잔액을 보이고 Get coins가 onGetCoins를 부른다", () => {
+  const { onGetCoins } = mountSidebar();
 
-  expect(screen.getByTestId(ids.sidebarGems).textContent).toContain("120");
-  expect(screen.getByTestId(ids.sidebarGems).textContent).toContain("My coins");
-  tapId(ids.sidebarGetGems);
+  expect(screen.getByTestId(ids.sidebarCoins).textContent).toContain("120");
+  expect(screen.getByTestId(ids.sidebarCoins).textContent).toContain("My coins");
+  tapId(ids.sidebarGetCoins);
 
-  expect(onGetGems).toHaveBeenCalledTimes(1);
+  expect(onGetCoins).toHaveBeenCalledTimes(1);
 });
 
 test("MC-UI22. 상대 프로필 줄에는 이름 · View profile이, My profile 줄에는 「{상대} calls you 「{내 이름}」」이 든다", () => {
@@ -173,7 +173,7 @@ test("MC-UI22. 움직임 줄이기에서는 미는 움직임 클래스가 빠진
 // ----------------------------------------------------------------------- 화면 결선
 
 function openSidebar() {
-  const mounted = mountChat({ gemBalance: 120 });
+  const mounted = mountChat({ coinBalance: 120 });
   tapId(ids.settings);
   return mounted;
 }
@@ -193,7 +193,7 @@ test("MC-UI22. 화면: ☰가 사이드바를 열고 닫기 · 시스템 뒤로 
 test("MC-UI22. 화면: Get coins는 엽전 상점을 열고 그것을 닫으면 사이드바로 돌아온다", () => {
   openSidebar();
 
-  tapId(ids.sidebarGetGems);
+  tapId(ids.sidebarGetCoins);
   expect(screen.getByTestId("coin-shop-screen")).toBeTruthy();
   expect(screen.queryByTestId(ids.sidebar)).toBeNull();
   fireEvent.tap(

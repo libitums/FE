@@ -36,7 +36,6 @@ import "./read-aloud-activity.css";
 // DOM 순서 = 낭독 순서입니다: 문장 → 로마자 → (구분선) 영어 → 간이 듣기 줄 → 마이크 → 안내 줄 → 버튼.
 export function ReadAloudActivity({
   questions,
-  gemCount,
   onExit,
   onFinish,
   lesson,
@@ -166,7 +165,6 @@ export function ReadAloudActivity({
   return (
     <LearningShell
       form="read-aloud"
-      gemCount={gemCount}
       questionIndex={counter.questionIndex}
       questionCount={counter.questionCount}
       instruction={readAloudInstructionOf(phase, copy)}

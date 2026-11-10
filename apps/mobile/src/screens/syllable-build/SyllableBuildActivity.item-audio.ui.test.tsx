@@ -37,7 +37,6 @@ function mount(questions: readonly SyllableBuildQuestion[], lesson?: LessonAudio
   return render(
     <SyllableBuildActivity
       questions={questions}
-      gemCount={0}
       onExit={() => {}}
       onFinish={() => {}}
       {...extra}

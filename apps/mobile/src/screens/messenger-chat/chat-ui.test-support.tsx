@@ -70,7 +70,7 @@ export type MountChatOptions = {
   readonly probe?: KoreanKeyboardProbe;
   readonly store?: KeyboardHeightStore;
   readonly edges?: KeyboardDockEdges;
-  readonly gemBalance?: number;
+  readonly coinBalance?: number;
   readonly learnerName?: string;
 };
 
@@ -89,7 +89,7 @@ export function mountChat(options: MountChatOptions = {}) {
       keyboardHeightStore={options.store ?? emptyKeyboardHeightStore}
       edges={options.edges ?? zeroKeyboardDockEdges}
       learnerName={options.learnerName ?? "Hana"}
-      gemBalance={options.gemBalance ?? 0}
+      coinBalance={options.coinBalance ?? 0}
       onExit={onExit}
     />,
   );

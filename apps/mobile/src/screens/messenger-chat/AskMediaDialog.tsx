@@ -17,25 +17,25 @@ export type AskMediaDialogProps = {
   readonly balance: number;
   readonly price: number;
   readonly onConfirm: () => void;
-  readonly onGetGems: () => void;
+  readonly onGetCoins: () => void;
   readonly onCancel: () => void;
 };
 
-type GemPriceButtonProps = {
+type CoinPriceButtonProps = {
   readonly price: number;
   readonly label: string;
   readonly onTap: () => void;
 };
 
 // 주 버튼: 엽전 아이콘(ADR-0116) + 수. 아이콘만으로 뜻을 전하지 않도록 낭독은 「Ask for {n} coins」 한 문장입니다.
-function GemPriceButton({ price, label, onTap }: GemPriceButtonProps): ReactNode {
+function CoinPriceButton({ price, label, onTap }: CoinPriceButtonProps): ReactNode {
   const handleTap = () => {
     "background only";
     onTap();
   };
   return (
     <view
-      className="chat-modal-action chat-gem-button"
+      className="chat-modal-action chat-coin-button"
       data-testid={ids.askConfirm}
       data-plan="ask"
       accessibility-element={true}
@@ -44,8 +44,8 @@ function GemPriceButton({ price, label, onTap }: GemPriceButtonProps): ReactNode
       accessibility-enable-tap={true}
       bindtap={handleTap}
     >
-      <svg className="chat-gem-button-icon" content={coinIcon} />
-      <text className="chat-gem-button-label" accessibility-elements-hidden={true}>
+      <svg className="chat-coin-button-icon" content={coinIcon} />
+      <text className="chat-coin-button-label" accessibility-elements-hidden={true}>
         {price}
       </text>
     </view>
@@ -60,7 +60,7 @@ export function AskMediaDialog({
   balance,
   price,
   onConfirm,
-  onGetGems,
+  onGetCoins,
   onCancel,
 }: AskMediaDialogProps): ReactNode {
   const copy = useUiCopy().messengerChat.askMedia;
@@ -84,7 +84,7 @@ export function AskMediaDialog({
               />
             </view>
             {plan.kind === "ask" ? (
-              <GemPriceButton
+              <CoinPriceButton
                 price={plan.price}
                 label={copy.confirmLabel(plan.price)}
                 onTap={onConfirm}
@@ -96,7 +96,7 @@ export function AskMediaDialog({
                   variant="brand"
                   size="xl"
                   width="fill"
-                  bindtap={onGetGems}
+                  bindtap={onGetCoins}
                 />
               </view>
             )}

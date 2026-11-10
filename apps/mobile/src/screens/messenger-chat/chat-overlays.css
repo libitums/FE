@@ -105,7 +105,7 @@
 }
 
 /* 주 버튼: 흰 다이아몬드 + 수. ui-lynx Button xl brand와 같은 크기 · 색입니다. */
-.chat-gem-button {
+.chat-coin-button {
   min-height: var(--libitum-spacing-48);
   padding: var(--libitum-spacing-12) var(--libitum-spacing-16);
   display: flex;
@@ -117,17 +117,17 @@
   border-radius: var(--libitum-radius-lg);
 }
 
-.chat-gem-button:active {
+.chat-coin-button:active {
   background-color: var(--libitum-color-brand-primary-pressed);
 }
 
-.chat-gem-button-icon {
+.chat-coin-button-icon {
   width: var(--libitum-icon-size-xs);
   height: var(--libitum-icon-size-xs);
   flex-shrink: 0;
 }
 
-.chat-gem-button-label {
+.chat-coin-button-label {
   color: var(--libitum-color-white);
   font-family: var(--libitum-typography-button-xl-font-family);
   font-size: var(--libitum-typography-button-xl-font-size);
@@ -393,7 +393,7 @@
   padding-bottom: var(--libitum-spacing-16);
 }
 
-.chat-sidebar-gems {
+.chat-sidebar-coins {
   padding: var(--libitum-spacing-12) var(--libitum-spacing-16);
   display: flex;
   flex-direction: row;
@@ -404,13 +404,13 @@
   background-color: var(--libitum-color-background-elevated);
 }
 
-.chat-sidebar-gems-text {
+.chat-sidebar-coins-text {
   display: flex;
   flex-direction: column;
   min-width: 0;
 }
 
-.chat-sidebar-gems-label {
+.chat-sidebar-coins-label {
   color: var(--libitum-color-brand-strong);
   font-family: var(--libitum-typography-body-s-font-family);
   font-size: var(--libitum-typography-body-s-font-size);
@@ -419,7 +419,7 @@
   letter-spacing: var(--libitum-typography-body-s-letter-spacing);
 }
 
-.chat-sidebar-gems-count {
+.chat-sidebar-coins-count {
   color: var(--libitum-color-fg-neutral);
   font-family: var(--libitum-typography-heading-s-font-family);
   font-size: var(--libitum-typography-heading-s-font-size);

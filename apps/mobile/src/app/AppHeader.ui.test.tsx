@@ -19,12 +19,11 @@ function fixture() {
   };
 }
 
-test("[SH2-E][AH1] 연속 학습 → 트로피 순서로 표시하고 젬 구매 진입점은 숨긴다", () => {
+test("[SH2-E][AH1] 연속 학습 → 트로피 순서로 표시한다", () => {
   render(<AppHeader {...fixture()} />);
 
   const streak = screen.getByTestId("top-bar-streak");
   const trophy = screen.getByTestId("top-bar-trophy");
-  expect(screen.queryByTestId("top-bar-gem")).not.toBeInTheDocument();
   for (const chip of [streak, trophy]) {
     expect(chip).toHaveAttribute("accessibility-traits", "button");
   }

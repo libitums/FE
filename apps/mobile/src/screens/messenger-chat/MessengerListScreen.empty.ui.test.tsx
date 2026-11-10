@@ -24,7 +24,7 @@ function mount(seed = seedOf()) {
     onGoToJourney: vi.fn<() => void>(),
     onLayerChange: vi.fn<(open: boolean) => void>(),
   };
-  render(<MessengerListScreen source={source} gemBalance={0} {...handlers} />);
+  render(<MessengerListScreen source={source} coinBalance={0} {...handlers} />);
   return { source, ...handlers };
 }
 

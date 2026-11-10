@@ -18,8 +18,8 @@ import "./chat-overlays.css";
 export type ChatSettingsSidebarProps = {
   readonly thread: ChatThread;
   readonly learnerName: string;
-  readonly gemBalance: number;
-  readonly onGetGems: () => void;
+  readonly coinBalance: number;
+  readonly onGetCoins: () => void;
   readonly onStoryPoint: () => void;
   readonly onAutoIdeas: (on: boolean) => void;
   readonly onDelete: () => void;
@@ -29,13 +29,13 @@ export type ChatSettingsSidebarProps = {
 // 탭이 아무 동작도 하지 않는 줄(상대 프로필 · 내 프로필)의 눌림 처리입니다 — 1단계에는 프로필 화면이 없습니다.
 const noop = (): void => undefined;
 
-// 채팅 설정 사이드바(O4)입니다. 줄 순서가 고정입니다: ①젬 ②상대 프로필 ③내 프로필 ④이야기 시점 ⑤따로 띄운 자동 보기
+// 채팅 설정 사이드바(O4)입니다. 줄 순서가 고정입니다: ①엽전 ②상대 프로필 ③내 프로필 ④이야기 시점 ⑤따로 띄운 자동 보기
 // 토글 상자 ⑥대화 지우기. 오른쪽에서 밀려 들어오며, 움직임 줄이기면 미는 움직임 클래스를 달지 않아 즉시 서습니다.
 export function ChatSettingsSidebar({
   thread,
   learnerName,
-  gemBalance,
-  onGetGems,
+  coinBalance,
+  onGetCoins,
   onStoryPoint,
   onAutoIdeas,
   onDelete,
@@ -61,9 +61,9 @@ export function ChatSettingsSidebar({
     "background only";
     onStoryPoint();
   };
-  const handleGetGems = () => {
+  const handleGetCoins = () => {
     "background only";
-    onGetGems();
+    onGetCoins();
   };
   const handleDelete = () => {
     "background only";
@@ -104,21 +104,21 @@ export function ChatSettingsSidebar({
           scroll-bar-enable={false}
         >
           <view className="chat-sidebar-content">
-            <view className="chat-sidebar-gems" data-testid={ids.sidebarGems} data-order="1">
-              <view className="chat-sidebar-gems-text">
-                <text className="chat-sidebar-gems-label">{copy.myCoins}</text>
-                <text className="chat-sidebar-gems-count">{gemBalance}</text>
+            <view className="chat-sidebar-coins" data-testid={ids.sidebarCoins} data-order="1">
+              <view className="chat-sidebar-coins-text">
+                <text className="chat-sidebar-coins-label">{copy.myCoins}</text>
+                <text className="chat-sidebar-coins-count">{coinBalance}</text>
               </view>
               {/* 접근성 요소는 이 감싸개 하나입니다(`id`로 초점을 돌려받습니다 — a11y C1). 탭은 안쪽 단추에서 올라와 여기서
                   처리하고, 안쪽 단추는 모양만 맡아 낭독에서 숨습니다. */}
               <view
-                id={ids.sidebarGetGems}
-                data-testid={ids.sidebarGetGems}
+                id={ids.sidebarGetCoins}
+                data-testid={ids.sidebarGetCoins}
                 accessibility-element={true}
                 accessibility-traits="button"
                 accessibility-label={copy.getCoins}
                 accessibility-enable-tap={true}
-                bindtap={handleGetGems}
+                bindtap={handleGetCoins}
               >
                 <view accessibility-elements-hidden={true}>
                   <Button label={copy.getCoins} variant="brand" size="s" />

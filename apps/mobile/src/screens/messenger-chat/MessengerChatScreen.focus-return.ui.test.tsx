@@ -84,10 +84,10 @@ const flows: readonly Flow[] = [
     },
   },
   {
-    origin: "sidebar-gems",
+    origin: "sidebar-coins",
     open: () => {
       tapId(ids.settings);
-      tapId(ids.sidebarGetGems);
+      tapId(ids.sidebarGetCoins);
     },
     close: () => {
       systemBack();

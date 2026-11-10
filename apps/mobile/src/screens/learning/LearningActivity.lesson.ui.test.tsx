@@ -93,7 +93,6 @@ const cases: readonly Case[] = [
         onExit={() => {}}
         onFinish={onFinish}
         sessionOptions={initialSessionOptions}
-        gemCount={0}
         lesson={lesson}
       />
     ),
@@ -134,7 +133,6 @@ const cases: readonly Case[] = [
     mount: (lesson, onFinish) => (
       <SentenceOrderActivity
         questions={[orderQuestion("하나"), orderQuestion("둘")]}
-        gemCount={0}
         onExit={() => {}}
         onFinish={onFinish}
         lesson={lesson}
@@ -161,7 +159,6 @@ const cases: readonly Case[] = [
       <TypingActivity
         insets={zeroSafeAreaInsets}
         questions={[typingQuestion("T1"), typingQuestion("T2")]}
-        gemCount={0}
         onExit={() => {}}
         onFinish={onFinish}
         lesson={lesson}

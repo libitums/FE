@@ -47,7 +47,6 @@ function mount(question: ListeningQuestion, sessionOptions: SessionOptions) {
       onExit={() => {}}
       onFinish={() => {}}
       sessionOptions={sessionOptions}
-      gemCount={0}
     />,
   );
 }

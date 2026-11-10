@@ -18,7 +18,7 @@ export type ChatOverlay =
   | { readonly kind: "sidebar" }
   | { readonly kind: "story-point"; readonly selected: string }
   | { readonly kind: "delete-confirm" }
-  | { readonly kind: "gem-shop"; readonly from: "sidebar" | "ask-photo" | "ask-voice" };
+  | { readonly kind: "coin-shop"; readonly from: "sidebar" | "ask-photo" | "ask-voice" };
 
 export type ChatFocusOrigin =
   | "more"
@@ -27,7 +27,7 @@ export type ChatFocusOrigin =
   | "voice-pill"
   | "sidebar-story-point"
   | "sidebar-delete"
-  | "sidebar-gems";
+  | "sidebar-coins";
 
 export type ChatRoomState = {
   /** 정본입니다. */
@@ -214,7 +214,7 @@ export function overlayParent(overlay: ChatOverlay): ChatOverlay {
     case "story-point":
     case "delete-confirm":
       return SIDEBAR;
-    case "gem-shop":
+    case "coin-shop":
       return overlay.from === "sidebar" ? SIDEBAR : NO_OVERLAY;
     default:
       return NO_OVERLAY;
@@ -239,8 +239,8 @@ export function focusOriginOf(closing: ChatOverlay): ChatFocusOrigin | null {
       return "sidebar-story-point";
     case "delete-confirm":
       return "sidebar-delete";
-    case "gem-shop":
-      if (closing.from === "sidebar") return "sidebar-gems";
+    case "coin-shop":
+      if (closing.from === "sidebar") return "sidebar-coins";
       return closing.from === "ask-photo" ? "snapshot-pill" : "voice-pill";
     default: {
       const unreachable: never = closing;

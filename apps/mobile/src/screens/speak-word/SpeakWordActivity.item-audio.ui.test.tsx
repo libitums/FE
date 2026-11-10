@@ -37,13 +37,7 @@ const card: SpeakWordQuestion = withAudio(cardBase, echoAudioOf());
 function mount(questions: readonly SpeakWordQuestion[], lesson?: LessonAudio) {
   const extra = lesson === undefined ? {} : { lessonAudio: lesson };
   return render(
-    <SpeakWordActivity
-      questions={questions}
-      gemCount={0}
-      onExit={() => {}}
-      onFinish={() => {}}
-      {...extra}
-    />,
+    <SpeakWordActivity questions={questions} onExit={() => {}} onFinish={() => {}} {...extra} />,
   );
 }
 

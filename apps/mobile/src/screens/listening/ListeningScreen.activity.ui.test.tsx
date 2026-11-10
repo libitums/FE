@@ -73,7 +73,6 @@ function mount(
       onExit={() => {}}
       onFinish={options.onFinish ?? (() => {})}
       sessionOptions={options.sessionOptions ?? initialSessionOptions}
-      gemCount={0}
     />,
   );
 }

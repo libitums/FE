@@ -29,7 +29,7 @@ test("UM1. markUiCopy의 문자열 잎이 전부 ⟦경로⟧ 모양이다", () 
 
 test("UM1. markUiCopy의 함수 잎이 ⟦경로⟧(인자)를 낸다", () => {
   const marked = markUiCopy(uiCopyEn);
-  expect(marked.common.count.gems(5)).toBe("⟦common.count.gems⟧(5)");
+  expect(marked.common.count.coins(5)).toBe("⟦common.count.coins⟧(5)");
   expect(marked.journeyMap.activityCount(1, 4)).toMatch(/^⟦journeyMap\.activityCount⟧\(1,\s?4\)$/);
 });
 

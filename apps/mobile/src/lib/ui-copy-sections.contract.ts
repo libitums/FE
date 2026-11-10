@@ -60,7 +60,6 @@ export type CommonCopy = {
     /** 문장 · 접근성 이름 — 영어 `3-day streak` */
     readonly streakDays: (days: number) => string;
     readonly trophies: (count: number) => string;
-    readonly gems: (count: number) => string;
     readonly coins: (count: number) => string;
   };
 };

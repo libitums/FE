@@ -18,7 +18,6 @@ export type StepListeningProps = {
     skippedCount: number,
   ) => void;
   readonly sessionOptions: SessionOptions;
-  readonly gemCount?: number;
 };
 
 /** 스텝 이름으로 고정 문항을 골라 활동에 넘깁니다 — 활동의 끝 콜백에 스텝 이름을 덧붙입니다. */
@@ -27,7 +26,6 @@ export function StepListening({
   onExit,
   onFinish,
   sessionOptions,
-  gemCount = 0,
 }: StepListeningProps): ReactNode {
   return (
     <ListeningActivity
@@ -35,7 +33,6 @@ export function StepListening({
       onExit={onExit}
       onFinish={(results, skippedCount) => onFinish(stepId, results, skippedCount)}
       sessionOptions={sessionOptions}
-      gemCount={gemCount}
     />
   );
 }

@@ -60,7 +60,7 @@ ui-lynx `TextField`는 값을 밖에서 넣을 수 없고(`defaultValue`만) foc
 
 ### D7. 잔액은 앱의 실제 값 (사용자 결정 ③) — ⟨2026-11-10 개정⟩ 재화는 엽전
 
-⟨2026-11-10, 사용자 결정 「엽전으로 전부」⟩ PR #405([ADR-0116](0116-yeopjeon-reward.md) D7)가 젬 화면 · 다이아 칩을 지워, 메신저의 재화를 엽전으로 바꿨다 — 잔액은 보유 엽전(`wiring.coinCount`), 칩 · 요청 버튼은 엽전 아이콘, 「Get coins」는 엽전 상점(`CoinShopScreen`, 방 안에서는 `ownsBack={false}`), 문구 gems → coins 5개 언어. 가격 숫자는 그대로. 아래 원문의 젬 표현은 옛 기록이고, 코드 식별자(`gemBalance` · `GemShopLayer` · `messenger-list-gem` · `.chat-sidebar-gems-label`)에만 젬 이름이 남았다.
+⟨2026-11-10, 사용자 결정 「엽전으로 전부」⟩ PR #405([ADR-0116](0116-yeopjeon-reward.md) D7)가 젬 화면 · 다이아 칩을 지워, 메신저의 재화를 엽전으로 바꿨다 — 잔액은 보유 엽전(`wiring.coinCount`), 칩 · 요청 버튼은 엽전 아이콘, 「Get coins」는 엽전 상점(`CoinShopScreen`, 방 안에서는 `ownsBack={false}`), 문구 gems → coins 5개 언어. 가격 숫자는 그대로. 아래 원문의 젬 표현은 옛 기록이다. 같은 날 코드 식별자도 엽전으로 바꿨다 — `gemBalance` → `coinBalance`, `GemShopLayer` → `CoinShopLayer`, 겹침 `gem-shop` → `coin-shop`, testid `messenger-list-gem` → `messenger-list-coins` · `sidebar-gems` → `sidebar-coins`, 클래스 `.chat-sidebar-gems-*` → `.chat-sidebar-coins-*` · `.chat-gem-button*` → `.chat-coin-button*`.
 
 원문(옛 기록):
 
@@ -68,7 +68,7 @@ ui-lynx `TextField`는 값을 밖에서 넣을 수 없고(`defaultValue`만) foc
 
 ### D8. 대비 — 주황 면은 `brand-primary`(사용자 결정, 2026-11-09 안 A 번복)
 
-흰 글/`brand-primary`는 3.02:1로 4.5에 못 미친다. 키보드 선례(ADR-0112의 윗글쇠 켜짐)대로 **이 변경이 새로 만든 작은 글 면**(Snapshot 알약 · 안 읽은 수 · 토글 켜짐 쪽 · 입력 줄 초점 테두리)은 처음에 `brand-strong`(5.46:1)으로 두었으나, **사용자가 `brand-primary`로 정했다**(흰 글 3.02:1은 다른 `brand-primary` 단추와 같은 앱 전체 예외로 받아들임). 글자색(`.chat-sidebar-gems-label`)은 대비를 위해 `brand-strong` 그대로다. 공용 · ui-lynx 부품(내 말풍선 · 답장 보기 · 요청 모달 주 버튼)은 바꾸지 않고 예외로 기록한다(아래 「알려진 한계」). 상대 말풍선 번역 줄 3.22는 ui-lynx `ChatBubble` 안이라 범위 밖이고, 새 음성 말풍선 번역은 `fg-neutral-muted`(6.22)를 쓴다. 새 디자인 토큰은 0개다.
+흰 글/`brand-primary`는 3.02:1로 4.5에 못 미친다. 키보드 선례(ADR-0112의 윗글쇠 켜짐)대로 **이 변경이 새로 만든 작은 글 면**(Snapshot 알약 · 안 읽은 수 · 토글 켜짐 쪽 · 입력 줄 초점 테두리)은 처음에 `brand-strong`(5.46:1)으로 두었으나, **사용자가 `brand-primary`로 정했다**(흰 글 3.02:1은 다른 `brand-primary` 단추와 같은 앱 전체 예외로 받아들임). 글자색(`.chat-sidebar-coins-label`)은 대비를 위해 `brand-strong` 그대로다. 공용 · ui-lynx 부품(내 말풍선 · 답장 보기 · 요청 모달 주 버튼)은 바꾸지 않고 예외로 기록한다(아래 「알려진 한계」). 상대 말풍선 번역 줄 3.22는 ui-lynx `ChatBubble` 안이라 범위 밖이고, 새 음성 말풍선 번역은 `fg-neutral-muted`(6.22)를 쓴다. 새 디자인 토큰은 0개다.
 
 ### D9. 번들 상한 4,060,000 → 4,490,000 bytes
 
@@ -99,7 +99,7 @@ ui-lynx `TextField`는 값을 밖에서 넣을 수 없고(`defaultValue`만) foc
 3. **가짜 데이터가 스토어 빌드에 보인다**(대가 첫째).
 4. **번역 문구는 원어민 검토가 필요하다.**
 5. 대비 예외(D8): 답장 보기 흰/`brand-primary` 3.02 · 아래 줄 `gray-200` 2.74 — 자유 대화에서는 로마자 줄이 이 면에 새로 들어왔다. 학습자가 읽는 글이라 후속에서 다시 본다.
-6. ~~**메신저의 재화는 젬이고, 엽전으로 바꿀 예정이다**~~ → ⟨2026-11-10⟩ **바꿨다**(D7 개정 — #405 머지). 남은 것: 실제 차감 · 결제 없음, 코드 식별자의 gem 이름. 옛 기록: — 목록 젬 칩 · 사이드바 「Get gems」 · 요청 모달 「◆ [N]」 · 젬 부족 → 젬 화면은 1단계에서 실제 구매를 하지 않는다. 공통 머리 젬 숨김(스토어 심사 대응, [탭 e2e 「상단 젬 칩 숨김」](../e2e/tab-navigation.md#상단-젬-칩-숨김))과 겹치지만, **사용자 결정(2026-11-09): 재화는 PR #405(ADR-0116, 젬 → 엽전 · 엽전 상점을 모두에게 노출)로 바뀐다** — #405가 합쳐지면 이 화면들의 재화를 엽전으로 바꾼다(StatChip tone · 젬 화면 → 엽전 상점 · 「gems」 문구 5개 언어 · 모달 주 버튼 아이콘). 그때까지 젬 진입은 그대로 둔다.
+6. ~~**메신저의 재화는 젬이고, 엽전으로 바꿀 예정이다**~~ → ⟨2026-11-10⟩ **바꿨다**(D7 개정 — #405 머지). 남은 것: 실제 차감 · 결제 없음. 옛 기록: — 목록 젬 칩 · 사이드바 「Get gems」 · 요청 모달 「◆ [N]」 · 젬 부족 → 젬 화면은 1단계에서 실제 구매를 하지 않는다. 공통 머리 젬 숨김(스토어 심사 대응, [탭 e2e 「상단 젬 칩 숨김」](../e2e/tab-navigation.md#상단-젬-칩-숨김))과 겹치지만, **사용자 결정(2026-11-09): 재화는 PR #405(ADR-0116, 젬 → 엽전 · 엽전 상점을 모두에게 노출)로 바뀐다** — #405가 합쳐지면 이 화면들의 재화를 엽전으로 바꾼다(StatChip tone · 젬 화면 → 엽전 상점 · 「gems」 문구 5개 언어 · 모달 주 버튼 아이콘). 그때까지 젬 진입은 그대로 둔다.
 7. 상대 · 내 프로필 줄은 화살표가 있는데 눌러도 아무 일이 없다(접근성 N12 — 1단계 [추론]).
 
 ## 기기에서 드러난 Lynx와 테스트 환경의 차이 (2026-11-09)

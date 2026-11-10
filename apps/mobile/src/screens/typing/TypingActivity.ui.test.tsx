@@ -62,7 +62,6 @@ function mount(
     <TypingActivity
       insets={zeroSafeAreaInsets}
       questions={list}
-      gemCount={0}
       onExit={() => {}}
       onFinish={onFinish}
     />

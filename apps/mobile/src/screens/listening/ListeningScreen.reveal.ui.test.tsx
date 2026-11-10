@@ -37,7 +37,6 @@ function renderScreen(
       onExit={() => {}}
       onFinish={() => {}}
       sessionOptions={sessionOptions}
-      gemCount={0}
     />,
   );
 }

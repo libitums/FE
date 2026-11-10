@@ -64,7 +64,6 @@ function mount(questions: readonly TypingQuestion[], lesson?: LessonAudio) {
     <TypingActivity
       insets={zeroSafeAreaInsets}
       questions={questions}
-      gemCount={0}
       onExit={() => {}}
       onFinish={() => {}}
       {...extra}

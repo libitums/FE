@@ -100,9 +100,9 @@ test("UC3. 문자열 덮어쓰기는 그 키만 바꾸고 나머지는 영어다
 });
 
 test("UC3. 함수 덮어쓰기는 그 함수만 바꾼다", () => {
-  const overrides: UiCopyOverrides = { common: { count: { gems: (n) => `g${n}` } } };
+  const overrides: UiCopyOverrides = { common: { count: { coins: (n) => `g${n}` } } };
   const result = uiCopyWithOverrides(uiCopyEn, overrides);
-  expect(result.common.count.gems(2)).toBe("g2");
+  expect(result.common.count.coins(2)).toBe("g2");
   expect(result.common.count.trophies).toBe(uiCopyEn.common.count.trophies);
 });
 
@@ -116,18 +116,18 @@ test("UC3. 덮어쓰기 {}는 영어와 문자열 잎이 전부 같다", () => {
 });
 
 test("UC3. 입력 둘을 바꾸지 않고 던지지 않는다", () => {
-  const gems = (n: number) => `g${n}`;
-  const overrides: UiCopyOverrides = { common: { next: "N", count: { gems } } };
+  const coins = (n: number) => `g${n}`;
+  const overrides: UiCopyOverrides = { common: { next: "N", count: { coins } } };
   const baseStrings = stringLeaves(uiCopyEn);
-  const baseGems = uiCopyEn.common.count.gems;
+  const baseCoins = uiCopyEn.common.count.coins;
   const overrideStrings = stringLeaves(overrides);
 
   expect(() => uiCopyWithOverrides(uiCopyEn, overrides)).not.toThrow();
 
   expect(stringLeaves(uiCopyEn)).toEqual(baseStrings);
-  expect(uiCopyEn.common.count.gems).toBe(baseGems);
+  expect(uiCopyEn.common.count.coins).toBe(baseCoins);
   expect(stringLeaves(overrides)).toEqual(overrideStrings);
-  expect(overrides.common?.count?.gems).toBe(gems);
+  expect(overrides.common?.count?.coins).toBe(coins);
 });
 
 test("UC4. uiCopyCatalog의 키 집합이 정확히 en · es · id · ja · vi이고 en이 uiCopyEn이다", () => {

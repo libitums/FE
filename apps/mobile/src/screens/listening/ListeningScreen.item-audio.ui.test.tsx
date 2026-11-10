@@ -46,7 +46,6 @@ function mount(questions: readonly ListeningQuestion[], lesson?: LessonAudio) {
       onExit={() => {}}
       onFinish={() => {}}
       sessionOptions={initialSessionOptions}
-      gemCount={0}
       {...extra}
     />,
   );
