@@ -19,8 +19,13 @@ import type { KeyboardPlan } from "./keyboard-plan";
 const learningPlan: KeyboardPlan = { initial: "learning", toggle: "shown" };
 const phonePlan: KeyboardPlan = { initial: "phone", toggle: "hidden" };
 
-const learning = (): ChatRoomState => initialChatRoomState(learningPlan);
-const phone = (): ChatRoomState => initialChatRoomState(phonePlan);
+// 방은 키보드가 닫힌 채 열립니다(사용자 결정 2026-11-09). 기존 시험은 키보드가 열린 상태를 출발로 하므로 열어 둔 상태를 씁니다.
+const closedLearning = (): ChatRoomState => initialChatRoomState(learningPlan);
+const closedPhone = (): ChatRoomState => initialChatRoomState(phonePlan);
+const open = (state: ChatRoomState): ChatRoomState =>
+  chatRoomReducer(state, { type: "open-keyboard" });
+const learning = (): ChatRoomState => open(closedLearning());
+const phone = (): ChatRoomState => open(closedPhone());
 
 const run = (state: ChatRoomState, ...actions: readonly ChatRoomAction[]): ChatRoomState =>
   actions.reduce(chatRoomReducer, state);
@@ -28,14 +33,14 @@ const keys = (...list: readonly string[]): readonly ChatRoomAction[] =>
   list.map((key) => ({ type: "learning-key", key }));
 
 describe("initialChatRoomState (MC-U6)", () => {
-  test("MC-U6. 학습 계획 — 학습 키보드, 나머지는 비어 있다", () => {
-    expect(learning()).toEqual({
+  test("MC-U6. 학습 계획 — 키보드 자리는 닫혀 있고 학습 키보드가 다음에 열린다, 나머지는 비어 있다", () => {
+    expect(closedLearning()).toEqual({
       text: "",
       keys: [],
       shifted: false,
       keyboard: "learning",
       underlay: "none",
-      slot: { kind: "keyboard" },
+      slot: { kind: "closed" },
       phoneFocus: "blurred",
       inputEpoch: 0,
       overlay: { kind: "none" },
@@ -43,16 +48,63 @@ describe("initialChatRoomState (MC-U6)", () => {
   });
 
   test("MC-U6. 휴대폰 계획 — 키보드만 phone이다", () => {
-    expect(phone()).toEqual({ ...learning(), keyboard: "phone" });
+    expect(closedPhone()).toEqual({ ...closedLearning(), keyboard: "phone" });
+  });
+});
+
+describe("키보드 열기 · 닫기 (사용자 결정: 방은 키보드가 닫힌 채 열린다)", () => {
+  test("open-keyboard 는 닫힌 자리를 키보드로 연다 — 키보드 종류는 계획 그대로", () => {
+    expect(open(closedLearning()).slot).toEqual({ kind: "keyboard" });
+    expect(open(closedLearning()).keyboard).toBe("learning");
+    expect(open(closedPhone()).keyboard).toBe("phone");
+  });
+
+  test("open-keyboard 는 이미 열려 있거나 보기 패널이 열려 있으면 아무것도 바꾸지 않는다", () => {
+    const opened = learning();
+    expect(run(opened, { type: "open-keyboard" })).toBe(opened);
+    const ideas = run(closedLearning(), { type: "open-ideas" });
+    expect(run(ideas, { type: "open-keyboard" })).toBe(ideas);
+  });
+
+  test("close-keyboard 는 자리를 닫고 쓰던 글 · 키 열은 그대로 둔다", () => {
+    const typed = run(learning(), ...keys("ㅇ", "ㅏ", "ㄴ"));
+    const closed = run(typed, { type: "close-keyboard" });
+    expect(closed.slot).toEqual({ kind: "closed" });
+    expect(closed.text).toBe("안");
+    expect(closed.keys).toEqual(["ㅇ", "ㅏ", "ㄴ"]);
+    expect(run(closed, { type: "open-keyboard" }).text).toBe("안");
+  });
+
+  test("close-keyboard 는 보기 패널도 닫고, 휴대폰 초점 · 깔개 표시를 지운다", () => {
+    const ideas = run(closedLearning(), { type: "open-ideas" });
+    expect(run(ideas, { type: "close-keyboard" }).slot).toEqual({ kind: "closed" });
+    const settling = run(
+      learning(),
+      { type: "switch-keyboard", to: "phone" },
+      { type: "phone-focus", focus: "focused" },
+      { type: "close-keyboard" },
+    );
+    expect(settling.underlay).toBe("none");
+    expect(settling.phoneFocus).toBe("blurred");
+  });
+
+  test("닫힌 채로 open-ideas 는 보기 패널을 열고, 보낸 뒤에도 닫힌 채면 닫힌 채로 남는다", () => {
+    expect(run(closedLearning(), { type: "open-ideas" }).slot).toEqual({
+      kind: "ideas",
+      picked: null,
+    });
+    const typed = run(learning(), ...keys("ㅇ", "ㅏ"), { type: "close-keyboard" });
+    expect(run(typed, { type: "sent" }).slot).toEqual({ kind: "closed" });
+    expect(run(learning(), ...keys("ㅇ"), { type: "sent" }).slot).toEqual({ kind: "keyboard" });
   });
 });
 
 describe("학습 키 (MC-U6)", () => {
-  test("MC-U6. ㅇ ㅏ ㄴ 을 치면 text가 「안」이고 키 열이 쌓이며 epoch가 키마다 1씩 오른다", () => {
+  test("MC-U6. ㅇ ㅏ ㄴ 을 치면 text가 「안」이고 키 열이 쌓이며 epoch는 그대로다(리뷰 #6 — 입력 칸을 키마다 다시 만들지 않는다)", () => {
     const state = run(learning(), ...keys("ㅇ", "ㅏ", "ㄴ"));
     expect(state.text).toBe("안");
     expect(state.keys).toEqual(["ㅇ", "ㅏ", "ㄴ"]);
-    expect(state.inputEpoch).toBe(3);
+    expect(state.inputEpoch).toBe(0);
   });
 
   test("MC-U6. 윗글쇠 뒤 키는 쌍자음으로 한 번 적용되고 풀린다", () => {
@@ -74,12 +126,12 @@ describe("학습 키 (MC-U6)", () => {
     );
   });
 
-  test("MC-U6. 지우개는 키 열 끝 하나를 지우고 글을 다시 조합하며 epoch가 오른다", () => {
+  test("MC-U6. 지우개는 키 열 끝 하나를 지우고 글을 다시 조합하며 epoch는 그대로다", () => {
     const typed = run(learning(), ...keys("ㅇ", "ㅏ", "ㄴ"));
     const back = run(typed, { type: "learning-backspace" });
     expect(back.keys).toEqual(["ㅇ", "ㅏ"]);
     expect(back.text).toBe("아");
-    expect(back.inputEpoch).toBe(typed.inputEpoch + 1);
+    expect(back.inputEpoch).toBe(typed.inputEpoch);
     expect(run(back, { type: "learning-backspace" }, { type: "learning-backspace" }).text).toBe("");
   });
 
@@ -139,7 +191,7 @@ describe("키보드 바꾸기 (MC-U7)", () => {
     expect(run(onPhone, { type: "switch-keyboard", to: "phone" })).toEqual(onPhone);
   });
 
-  test("MC-U7. 휴대폰 → 학습: 키 열이 글에서 되감기고 깔개가 없고 epoch가 오른다", () => {
+  test("MC-U7. 휴대폰 → 학습: 키 열이 글에서 되감기고 깔개가 없고 epoch는 그대로다", () => {
     const onPhone = run(phone(), { type: "phone-input", value: "안녕하" });
     const state = run(onPhone, { type: "switch-keyboard", to: "learning" });
     expect(state.keyboard).toBe("learning");
@@ -147,7 +199,7 @@ describe("키보드 바꾸기 (MC-U7)", () => {
     expect(state.keys).toEqual(keysFromText("안녕하"));
     expect(state.shifted).toBe(false);
     expect(state.text).toBe("안녕하");
-    expect(state.inputEpoch).toBe(onPhone.inputEpoch + 1);
+    expect(state.inputEpoch).toBe(onPhone.inputEpoch);
   });
 
   test("MC-U7. 조합 중이던 자모가 보존된다 — 「안녕하ㅅ」 → 학습 → ㅔ → 「안녕하세」", () => {
@@ -158,6 +210,14 @@ describe("키보드 바꾸기 (MC-U7)", () => {
       ...keys("ㅔ"),
     );
     expect(state.text).toBe("안녕하세");
+  });
+});
+
+describe("휴대폰으로 바꿀 때 epoch (리뷰 #6)", () => {
+  test("학습에서 쓴 글을 휴대폰 입력 칸에 default-value로 넣도록 휴대폰으로 바꿀 때만 epoch가 오른다", () => {
+    const typed = run(learning(), ...keys("ㅇ", "ㅏ", "ㄴ"));
+    const state = run(typed, { type: "switch-keyboard", to: "phone" });
+    expect(state.inputEpoch).toBe(typed.inputEpoch + 1);
   });
 });
 

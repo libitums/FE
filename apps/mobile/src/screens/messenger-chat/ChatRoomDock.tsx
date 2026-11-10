@@ -49,10 +49,10 @@ export function ChatRoomDock({
   onSend,
 }: ChatRoomDockProps): ReactNode {
   const slotHeight = chatKeyboardSlotHeight({
-    plan,
     keyboard: state.keyboard,
     slot: state.slot,
     phoneFocus: state.phoneFocus,
+    underlay: state.underlay,
     height: keyboardHeight,
     bottomInset: edges.bottom,
   });
@@ -116,8 +116,9 @@ export function ChatRoomDock({
           onPhoneInput={(value) => dispatch({ type: "phone-input", value })}
           onPhoneFocus={(focus) => dispatch({ type: "phone-focus", focus })}
           onConfirm={onSend}
+          onOpenKeyboard={() => dispatch({ type: "open-keyboard" })}
         />
-        {plan.toggle === "shown" ? (
+        {plan.toggle === "shown" && state.slot.kind !== "closed" ? (
           <KeyboardToggleRow
             mode={state.keyboard}
             onSelect={(to) => dispatch({ type: "switch-keyboard", to })}

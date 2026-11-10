@@ -10,6 +10,7 @@ import type { CatalogActivityForm } from "./catalog-lesson-types";
 import type { EpisodeContent } from "./episode-content";
 import type { Screen } from "./nav-state";
 import {
+  appHeaderVisibleOn,
   catalogActivityFormOf,
   shellEdgeModeFor,
   shellInsetsFor,
@@ -109,6 +110,21 @@ describe("메신저 route (MC-U26)", () => {
     expect(shellInsetsOf(chatRoom, ios, source)).toEqual(topOnly(59));
     expect(shellInsetsOf(chatRoom, threeButton, source)).toEqual(topOnly(24));
     expect(shellInsetsOf(asScreen({ name: "messenger-list" }), ios, source)).toEqual(ios);
+  });
+});
+
+describe("appHeaderVisibleOn (사용자 결정 2026-11-09: 메신저 목록에는 전역 머리가 없다)", () => {
+  test("메신저 목록에서만 전역 머리(AppHeader)가 숨는다", () => {
+    expect(appHeaderVisibleOn(asScreen({ name: "messenger-list" }))).toBe(false);
+  });
+
+  test.each([
+    asScreen({ name: "journey-map" }),
+    asScreen({ name: "roleplay-list" }),
+    asScreen({ name: "settings" }),
+    asScreen({ name: "messenger-chat", roomId: "mina" }),
+  ])("그 밖의 화면($name)은 그대로 보인다", (screen) => {
+    expect(appHeaderVisibleOn(screen)).toBe(true);
   });
 });
 

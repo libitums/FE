@@ -8,7 +8,7 @@ import {
   CANNED,
   clearBackHandlers,
   KEYS_AN,
-  mountChat,
+  mountChatOpen,
   tapId,
   tapKeys,
 } from "./chat-ui.test-support";
@@ -37,14 +37,14 @@ afterEach(() => {
 });
 
 test("M1. 방이 처음 설 때는 이미 있던 줄을 낭독하지 않는다", () => {
-  mountChat();
+  mountChatOpen();
   advance(100);
 
   expect(announce()).not.toHaveBeenCalled();
 });
 
 test("M1. 내가 보낸 줄은 낭독하지 않고, 상대 답장이 오면 「이름: 한국어, 영어」를 한 번 낭독한다", () => {
-  mountChat();
+  mountChatOpen();
   tapKeys(...KEYS_AN);
   tapId(ids.send);
   expect(announce()).not.toHaveBeenCalled();
@@ -58,7 +58,7 @@ test("M1. 내가 보낸 줄은 낭독하지 않고, 상대 답장이 오면 「�
 });
 
 test("M1. 사진이 도착하면 「Photo from 미나」를 한 번 낭독한다(요청 중 스켈레톤은 낭독하지 않는다)", () => {
-  mountChat({ gemBalance: 100 });
+  mountChatOpen({ gemBalance: 100 });
   tapId(ids.snapshot);
   tapId(ids.askConfirm);
   expect(announce()).not.toHaveBeenCalled();

@@ -4,7 +4,7 @@ import { cleanup, screen } from "@lynx-js/react/testing-library";
 import {
   clearBackHandlers,
   KEYS_AN,
-  mountChat,
+  mountChatOpen,
   presenceProbe,
   tapId,
   tapKeys,
@@ -45,7 +45,7 @@ function hiddenFromReader(el: Element | null): boolean {
 }
 
 test("MC-UI24. 기능 알약 둘은 button이고 이름에 가격이 든다", () => {
-  mountChat();
+  mountChatOpen();
 
   expect(traitsOf(ids.snapshot)).toContain("button");
   expect(labelOf(ids.snapshot)).toBe("Snapshot, 30 gems");
@@ -54,7 +54,7 @@ test("MC-UI24. 기능 알약 둘은 button이고 이름에 가격이 든다", ()
 });
 
 test("MC-UI24. 전구 · 「…」 · 보내기는 button이고 copy 라벨을 갖는다", () => {
-  mountChat();
+  mountChatOpen();
 
   expect(traitsOf(ids.ideasButton)).toContain("button");
   expect(labelOf(ids.ideasButton)).toBe("Reply ideas");
@@ -64,7 +64,7 @@ test("MC-UI24. 전구 · 「…」 · 보내기는 button이고 copy 라벨을 �
 });
 
 test("MC-UI24. 보내기는 빈 글일 때 disabled trait이고 글이 생기면 button만 남는다", () => {
-  mountChat();
+  mountChatOpen();
   expect(traitsOf(ids.send)).toContain("disabled");
 
   tapKeys(...KEYS_AN);
@@ -74,7 +74,7 @@ test("MC-UI24. 보내기는 빈 글일 때 disabled trait이고 글이 생기면
 });
 
 test("MC-UI24. 토글 두 칸은 button이고 켜진 칸만 selected가 낭독에 든다", () => {
-  mountChat({ probe: presenceProbe("absent") });
+  mountChatOpen({ probe: presenceProbe("absent") });
 
   expect(traitsOf(ids.toggle("learning"))).toContain("button");
   expect(labelOf(ids.toggle("learning"))).toBe("Hangul keys, selected");
@@ -87,7 +87,7 @@ test("MC-UI24. 토글 두 칸은 button이고 켜진 칸만 selected가 낭독�
 });
 
 test("MC-UI24. 머리 제목은 header trait이고 뒤로 · 설정 단추에 이름이 있다", () => {
-  mountChat();
+  mountChatOpen();
 
   expect(screen.getByTestId(ids.title).getAttribute("accessibility-traits")).toBe("header");
   expect(labelOf(ids.back)).toBe("Back to chats");
@@ -95,7 +95,7 @@ test("MC-UI24. 머리 제목은 header trait이고 뒤로 · 설정 단추에 �
 });
 
 test("MC-UI24. 겹침이 없을 때는 머리 · 로그 · 독이 낭독에서 숨지 않는다", () => {
-  mountChat();
+  mountChatOpen();
 
   expect(screen.getByTestId(ids.header)).toBeTruthy();
   expect(hiddenFromReader(screen.getByTestId(ids.header))).toBe(false);
@@ -105,7 +105,7 @@ test("MC-UI24. 겹침이 없을 때는 머리 · 로그 · 독이 낭독에서 �
 });
 
 test("MC-UI24. 겹침이 열린 동안 머리 · 로그 · 독이 낭독에서 숨는다", () => {
-  mountChat();
+  mountChatOpen();
   tapId(ids.more);
   tapId(ids.moreItem("fix"));
 
@@ -118,7 +118,7 @@ test("MC-UI24. 겹침이 열린 동안 머리 · 로그 · 독이 낭독에서 �
 });
 
 test("MC-UI24. 고쳐 주세요 대화상자 상자는 dialog 역할이다", () => {
-  mountChat();
+  mountChatOpen();
   const hasDialogRole = (testId: string) => {
     const el = screen.getByTestId(testId);
     return (
@@ -133,7 +133,7 @@ test("MC-UI24. 고쳐 주세요 대화상자 상자는 dialog 역할이다", () 
 });
 
 test("MC-UI24. 사이드바 상자도 dialog 역할이다", () => {
-  mountChat();
+  mountChatOpen();
   tapId(ids.settings);
   const sidebar = screen.getByTestId(ids.sidebar);
   expect(

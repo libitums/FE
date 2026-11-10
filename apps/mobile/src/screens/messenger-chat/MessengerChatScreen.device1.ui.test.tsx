@@ -8,7 +8,7 @@ import {
   clearBackHandlers,
   KEYS_AN,
   makeSource,
-  mountChat,
+  mountChatOpen,
   nativeInput,
   presenceProbe,
   slotHeight,
@@ -31,7 +31,6 @@ vi.mock("./chat-input-focus", () => ({
   blurPhoneInput: vi.fn<() => void>(),
   clearPhoneInput: vi.fn<() => void>(),
   restoreAccessibilityFocus: vi.fn<(testId: string) => void>(),
-  requestAccessibilityFocusOn: vi.fn<(testId: string) => void>(),
 }));
 
 beforeEach(() => {
@@ -50,7 +49,7 @@ const classOf = (testId: string): string => screen.getByTestId(testId).className
 // ---------------------------------------------------------------- D1
 
 test("D1. 켜진 토글 칸에는 클래스 변형 …-toggle-selected가 달린다(속성 선택자에 기대지 않는다)", () => {
-  mountChat();
+  mountChatOpen();
 
   expect(classOf(ids.toggle("learning"))).toContain("messenger-chat-toggle-selected");
   expect(classOf(ids.toggle("phone"))).not.toContain("messenger-chat-toggle-selected");
@@ -62,7 +61,7 @@ test("D1. 켜진 토글 칸에는 클래스 변형 …-toggle-selected가 달린
 });
 
 test("D1. 꺼진 보내기에는 …-send-disabled가 달리고 글이 생기면 사라진다", () => {
-  mountChat();
+  mountChatOpen();
   expect(classOf(ids.send)).toContain("messenger-chat-send-disabled");
 
   tapKeys(...KEYS_AN);
@@ -71,7 +70,7 @@ test("D1. 꺼진 보내기에는 …-send-disabled가 달리고 글이 생기면
 });
 
 test("D1. 열린 「…」에는 …-more-open, 열린 전구에는 …-bulb-open이 달린다", () => {
-  mountChat({ probe: presenceProbe("absent") });
+  mountChatOpen({ probe: presenceProbe("absent") });
   expect(classOf(ids.more)).not.toContain("messenger-chat-more-open");
   expect(classOf(ids.ideasButton)).not.toContain("messenger-chat-bulb-open");
 
@@ -84,7 +83,7 @@ test("D1. 열린 「…」에는 …-more-open, 열린 전구에는 …-bulb-ope
 });
 
 test("D1. 휴대폰 입력에 초점이 가면 입력 칸에 …-composer-pill-focused가 달린다", () => {
-  mountChat({ probe: presenceProbe("present") });
+  mountChatOpen({ probe: presenceProbe("present") });
   const pill = () =>
     screen.getByTestId(ids.composer).querySelector(".messenger-chat-composer-pill");
   expect(pill()?.className).not.toContain("messenger-chat-composer-pill-focused");
@@ -95,7 +94,7 @@ test("D1. 휴대폰 입력에 초점이 가면 입력 칸에 …-composer-pill-f
 });
 
 test("D1. 고른 답장 보기에는 chat-reply-option-picked가 달린다(학습 메신저와 공용 면)", () => {
-  mountChat();
+  mountChatOpen();
   tapId(ids.ideasButton);
   expect(classOf(ids.idea(0))).not.toContain("chat-reply-option-picked");
 
@@ -107,7 +106,7 @@ test("D1. 고른 답장 보기에는 chat-reply-option-picked가 달린다(학�
 // ---------------------------------------------------------------- D2
 
 test("D2. 「…」 단추 그림은 로딩 점 고리가 아니라 가로 점 셋이다(circle 셋)", () => {
-  mountChat();
+  mountChatOpen();
 
   const icons = Array.from(screen.getByTestId(ids.more).querySelectorAll("svg"));
 
@@ -125,7 +124,7 @@ test("D5. 출처가 던져도 보낸 뒤 입력 칸은 비워진다(비우기가
   vi.spyOn(source, "sendText").mockImplementation(() => {
     throw new Error("source failed");
   });
-  mountChat({ source });
+  mountChatOpen({ source });
   tapKeys(...KEYS_AN);
   expect(textOf(ids.display)).toBe("안");
 
@@ -142,7 +141,7 @@ test("D5. 출처가 던져도 보낸 뒤 입력 칸은 비워진다(비우기가
 // ---------------------------------------------------------------- D7
 
 test("D7. 보기 판은 슬롯 높이를 px로 직접 받는다(퍼센트 · 부모 flex에 기대지 않는다)", () => {
-  mountChat({ probe: presenceProbe("absent") });
+  mountChatOpen({ probe: presenceProbe("absent") });
   const slot = slotHeight();
   tapId(ids.ideasButton);
 
@@ -154,7 +153,7 @@ test("D7. 보기 판은 슬롯 높이를 px로 직접 받는다(퍼센트 · 부
 // 기기 점검 2회차(2026-11-09): 판 높이를 px로 준 뒤에도 SE에서 셋째 보기가 화면 밖으로 잘리고 스크롤도 안 됐다 —
 // Lynx scroll-view는 flex 기준(1 1 0px)만으로 높이가 정해지지 않아 내용 높이로 자란다. 스크롤 칸에도 px 높이를 준다.
 test("D7b. 보기 스크롤 칸은 판 높이에서 위 12 · 머리 32 · 사이 8 · 아래(inset + 8)를 뺀 px 높이를 받는다", () => {
-  mountChat({ probe: presenceProbe("absent") });
+  mountChatOpen({ probe: presenceProbe("absent") });
   const slot = slotHeight();
   tapId(ids.ideasButton);
 
@@ -169,7 +168,7 @@ test("D7b. 보기 스크롤 칸은 판 높이에서 위 12 · 머리 32 · 사�
 // ---------------------------------------------------------------- M2
 
 test("M2. 작은 단추는 hit-slop으로 터치 영역을 44 가까이 넓힌다", () => {
-  mountChat();
+  mountChatOpen();
   tapId(ids.ideasButton);
   const withSlop = [
     ids.snapshot,
@@ -190,7 +189,7 @@ test("M2. 작은 단추는 hit-slop으로 터치 영역을 44 가까이 넓힌�
 // ---------------------------------------------------------------- M4
 
 test("M4. 학습 키보드 입력 칸의 낭독 이름은 늘 「Message」이고 글은 value로 읽힌다", () => {
-  mountChat();
+  mountChatOpen();
   const display = () => screen.getByTestId(ids.display);
   expect(display().getAttribute("accessibility-label")).toBe("Message");
   expect(display().getAttribute("accessibility-value")).toBeNull();
@@ -204,7 +203,7 @@ test("M4. 학습 키보드 입력 칸의 낭독 이름은 늘 「Message」이�
 // ---------------------------------------------------------------- M5 · M7
 
 test("M5. 전구가 열리면 낭독 라벨이 「Reply ideas, open」으로 바뀐다", () => {
-  mountChat({ probe: presenceProbe("absent") });
+  mountChatOpen({ probe: presenceProbe("absent") });
   expect(screen.getByTestId(ids.ideasButton).getAttribute("accessibility-label")).toBe(
     "Reply ideas",
   );
@@ -217,7 +216,7 @@ test("M5. 전구가 열리면 낭독 라벨이 「Reply ideas, open」으로 바
 });
 
 test("M5. 「…」 메뉴가 열리면 낭독 라벨이 「More, expanded」로 바뀐다", () => {
-  mountChat();
+  mountChatOpen();
   expect(screen.getByTestId(ids.more).getAttribute("accessibility-label")).toBe("More");
 
   tapId(ids.more);
@@ -227,13 +226,13 @@ test("M5. 「…」 메뉴가 열리면 낭독 라벨이 「More, expanded」로
 
 test("M7. 「…」 메뉴가 열리면 다음 프레임에 첫 항목으로 접근성 초점을 보낸다", async () => {
   const focus = await import("./chat-input-focus");
-  mountChat();
+  mountChatOpen();
 
   tapId(ids.more);
-  expect(focus.requestAccessibilityFocusOn).not.toHaveBeenCalled();
+  expect(focus.restoreAccessibilityFocus).not.toHaveBeenCalled();
   advance(16);
 
-  expect(focus.requestAccessibilityFocusOn).toHaveBeenCalledTimes(1);
-  expect(focus.requestAccessibilityFocusOn).toHaveBeenCalledWith(ids.moreItem("ideas"));
+  expect(focus.restoreAccessibilityFocus).toHaveBeenCalledTimes(1);
+  expect(focus.restoreAccessibilityFocus).toHaveBeenCalledWith(ids.moreItem("ideas"));
   expect(screen.getByTestId(ids.moreItem("ideas")).getAttribute("id")).toBe(ids.moreItem("ideas"));
 });

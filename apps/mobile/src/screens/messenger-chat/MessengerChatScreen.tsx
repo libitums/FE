@@ -140,10 +140,10 @@ export function MessengerChatScreen({
   if (thread === null) return <view className="messenger-chat-screen" data-testid={ids.screen} />;
 
   const slotHeight = chatKeyboardSlotHeight({
-    plan,
     keyboard: state.keyboard,
     slot: state.slot,
     phoneFocus: state.phoneFocus,
+    underlay: state.underlay,
     height: keyboardHeight,
     bottomInset: edges.bottom,
   });
@@ -186,7 +186,13 @@ export function MessengerChatScreen({
               </ChatHeaderSide>
             }
           />
-          <ChatLog testId={ids.log} followKey={slotHeight}>
+          <ChatLog
+            testId={ids.log}
+            followKey={slotHeight}
+            onTap={
+              state.slot.kind === "closed" ? undefined : () => dispatch({ type: "close-keyboard" })
+            }
+          >
             {thread.messages.map((message) => (
               <MessageRow
                 key={message.id}

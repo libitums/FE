@@ -1,6 +1,5 @@
 import type { ReactNode } from "@lynx-js/react";
 
-import { useLayerBack } from "../../lib/use-back-handler";
 import { AskMediaDialog } from "./AskMediaDialog";
 import { ChatSettingsSidebar } from "./ChatSettingsSidebar";
 import { CHAT_PLACEHOLDERS } from "./chat-placeholders";
@@ -25,8 +24,7 @@ export type ChatRoomOverlaysProps = {
 };
 
 // `state.overlay.kind` → 겹침 하나(동시에 둘 없음). 「…」 메뉴는 독 쪽이 그리므로 여기서는 아무것도 그리지 않습니다.
-// ui-lynx 시트 · 대화상자 · 사이드바에는 닫기와 같은 함수를 시스템 뒤로가기에 올립니다(`ChatModalFrame` · `GemShopLayer`는
-// 스스로 올립니다).
+// 시스템 뒤로가기는 여기도 겹침 화면들도 등록하지 않습니다 — `useChatRoom`이 단 하나의 주인입니다(리뷰 #8).
 export function ChatRoomOverlays({
   state,
   dispatch,
@@ -41,14 +39,6 @@ export function ChatRoomOverlays({
     "background only";
     dispatch({ type: "close-overlay" });
   };
-  const ownsBack =
-    overlay.kind === "report" ||
-    overlay.kind === "regen" ||
-    overlay.kind === "sidebar" ||
-    overlay.kind === "story-point" ||
-    overlay.kind === "delete-confirm";
-  useLayerBack(ownsBack ? close : null);
-
   switch (overlay.kind) {
     case "none":
     case "more-menu":
@@ -157,7 +147,7 @@ export function ChatRoomOverlays({
         />
       );
     case "gem-shop":
-      return <GemShopLayer gemBalance={gemBalance} onClose={close} />;
+      return <GemShopLayer gemBalance={gemBalance} onClose={close} ownsBack={false} />;
     default: {
       const unreachable: never = overlay;
       return unreachable;

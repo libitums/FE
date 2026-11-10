@@ -67,6 +67,8 @@ function leaveRoom(): void {
 
 /** 학습 키보드로 「안」을 쓰고 보냅니다. */
 function sendAn(): void {
+  // 방은 키보드가 닫힌 채 열리므로(사용자 결정 2026-11-09) 입력 칸을 눌러 학습 키보드를 먼저 엽니다.
+  tapId("messenger-chat-field");
   tapKeys("ㅇ", "ㅏ", "ㄴ");
   tapRound("messenger-chat-send");
 }

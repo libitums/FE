@@ -8,7 +8,7 @@ import {
   clearBackHandlers,
   incomingCount,
   KEYS_AN,
-  mountChat,
+  mountChatOpen,
   outgoingCount,
   tapId,
   tapKeys,
@@ -32,7 +32,7 @@ afterEach(() => {
 });
 
 test("MC-UI11. 방이 서면 머리에 상대 이름이 있고 상대의 첫 글이 로그에 있다", () => {
-  mountChat();
+  mountChatOpen();
 
   expect(textOf(ids.title)).toBe("미나");
   expect(textOf(ids.screen)).toContain("오늘 뭐 해요?");
@@ -41,7 +41,7 @@ test("MC-UI11. 방이 서면 머리에 상대 이름이 있고 상대의 첫 글
 });
 
 test("MC-UI11. 학습 키 ㅇ ㅏ ㄴ을 누르면 입력 칸에 「안」이 서고 보내기가 켜진다", () => {
-  mountChat();
+  mountChatOpen();
   expect(screen.getByTestId(ids.send).getAttribute("data-enabled")).toBe("false");
 
   tapKeys(...KEYS_AN);
@@ -51,7 +51,7 @@ test("MC-UI11. 학습 키 ㅇ ㅏ ㄴ을 누르면 입력 칸에 「안」이 �
 });
 
 test("MC-UI11. 보내면 내 줄이 하나 서고 입력 칸이 비며 600 ms 뒤 입력 중, 1800 ms 뒤 정해 둔 답이 온다", () => {
-  const { source } = mountChat();
+  const { source } = mountChatOpen();
   const sendText = vi.spyOn(source, "sendText");
   tapKeys(...KEYS_AN);
 
@@ -77,7 +77,7 @@ test("MC-UI11. 보내면 내 줄이 하나 서고 입력 칸이 비며 600 ms �
 });
 
 test("MC-UI11. 내 말풍선은 outgoing 줄 안에 보낸 글을 담는다", () => {
-  mountChat();
+  mountChatOpen();
   tapKeys(...KEYS_AN);
   tapId(ids.send);
 
@@ -89,7 +89,7 @@ test("MC-UI11. 내 말풍선은 outgoing 줄 안에 보낸 글을 담는다", ()
 });
 
 test("MC-UI11. 빈 글이면 보내기가 꺼져 있고 탭해도 아무것도 보내지 않는다", () => {
-  const { source } = mountChat();
+  const { source } = mountChatOpen();
   const sendText = vi.spyOn(source, "sendText");
 
   const send = screen.getByTestId(ids.send);
@@ -101,7 +101,7 @@ test("MC-UI11. 빈 글이면 보내기가 꺼져 있고 탭해도 아무것도 �
 });
 
 test("MC-UI11. 공백만 있는 글도 보낼 수 없다", () => {
-  const { source } = mountChat();
+  const { source } = mountChatOpen();
   const sendText = vi.spyOn(source, "sendText");
   tapKeys("space");
 
@@ -113,7 +113,7 @@ test("MC-UI11. 공백만 있는 글도 보낼 수 없다", () => {
 });
 
 test("MC-UI11. 지우기 키로 글을 모두 지우면 보내기가 다시 꺼진다", () => {
-  mountChat();
+  mountChatOpen();
   tapKeys(...KEYS_AN);
   expect(screen.getByTestId(ids.send).getAttribute("data-enabled")).toBe("true");
 
@@ -123,7 +123,7 @@ test("MC-UI11. 지우기 키로 글을 모두 지우면 보내기가 다시 꺼�
 });
 
 test("MC-UI11. 머리 뒤로 단추가 onExit을 한 번 부른다", () => {
-  const { onExit } = mountChat();
+  const { onExit } = mountChatOpen();
 
   fireEvent.tap(within(screen.getByTestId(ids.back)).getByTestId("ui-lynx-round-button"), {});
 

@@ -39,6 +39,7 @@ export function createFixtureChatSource(options: FixtureChatSourceOptions): Fixt
   let snapshotCache: ChatSnapshot | null = null;
 
   const messageId = () => `fx-${nextMessageNumber++}`;
+  const photoPaths = new Map<string, string | null>(); // 사진 줄마다 자기 경로(계약 밖) — 다시 풀 때 씁니다.
 
   const resolveUrl = (path: string | null): string | null => {
     try {
@@ -55,16 +56,16 @@ export function createFixtureChatSource(options: FixtureChatSourceOptions): Fixt
       case "text":
         return { id, at, kind: "text", from: message.from, text: message.text };
       case "photo":
+        photoPaths.set(id, message.imagePath);
         return { id, at, kind: "photo", imageUrl: resolveUrl(message.imagePath) };
       case "voice":
         return { id, at, kind: "voice", durationMs: message.durationMs, text: message.text };
     }
   };
 
-  const rooms = new Map<string, RoomState>();
-  for (const room of seed.rooms) {
-    rooms.set(room.roomId, newRoomState(room, room.messages.map(fromSeed)));
-  }
+  const rooms = new Map<string, RoomState>(
+    seed.rooms.map((room) => [room.roomId, newRoomState(room, room.messages.map(fromSeed))]),
+  );
 
   const notify = () => {
     for (const listener of [...listeners]) {
@@ -98,7 +99,6 @@ export function createFixtureChatSource(options: FixtureChatSourceOptions): Fixt
   };
 
   const isOpenAccess = (room: RoomState) => room.seed.access.kind === "open";
-
   const ideasOf = (room: RoomState) => {
     const sets = room.seed.ideaSets;
     return sets[room.ideaIndex % Math.max(sets.length, 1)] ?? [];
@@ -204,6 +204,7 @@ export function createFixtureChatSource(options: FixtureChatSourceOptions): Fixt
     schedule(room, photo ? timing.photoArrivalMs : timing.voiceArrivalMs, () => {
       const at = now();
       const { voiceLine, photoPath } = room.seed;
+      if (photo) photoPaths.set(id, photoPath);
       if (photo) room.pendingPhotos -= 1;
       else room.pendingVoices -= 1;
       replaceMessage(
@@ -243,6 +244,9 @@ export function createFixtureChatSource(options: FixtureChatSourceOptions): Fixt
       room.unread = 0;
       changed(room);
     },
+    closeRoom: (roomId) => {
+      if (openRoomId === roomId) openRoomId = null;
+    },
     sendText,
     requestMedia,
     regenerateIdeas: (roomId) => {
@@ -280,10 +284,9 @@ export function createFixtureChatSource(options: FixtureChatSourceOptions): Fixt
       for (const room of rooms.values()) {
         room.summaryCache = null;
         room.threadCache = null;
-        // 해석 못 해 null이던 도착 사진은 방의 사진 경로로 다시 풉니다(도착 사진은 모두 그 경로에서 옵니다).
         room.messages = room.messages.map((message) =>
           message.kind === "photo" && message.imageUrl === null
-            ? { ...message, imageUrl: resolveUrl(room.seed.photoPath) }
+            ? { ...message, imageUrl: resolveUrl(photoPaths.get(message.id) ?? null) }
             : message,
         );
       }

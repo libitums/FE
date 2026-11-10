@@ -114,17 +114,17 @@ test("MC-I1. 목록 루트에서 시스템 뒤로를 누르면 다른 탭 루트
   expect(isTabSelected("journey")).toBe(true);
 });
 
-test("MC-I1. 메신저 루트에도 전역 머리(AppHeader · top-bar)가 서고 바텀 네비게이션도 함께 선다(사용자 결정 2026-11-09)", async () => {
+test("MC-I1. 메신저 루트에는 전역 머리(AppHeader · top-bar)가 없고 바텀 네비게이션만 선다(사용자 결정 2026-11-09 — 앞선 결정 ④를 뒤집음)", async () => {
   await renderSignedInApp(<App progressSeed={legacyPassedSeed} />);
 
   openTab("messenger");
 
-  expect(screen.getByTestId("app-header")).toBeInTheDocument();
-  expect(screen.getByTestId("top-bar-streak")).toBeInTheDocument();
-  expect(screen.getByTestId("top-bar-trophy")).toBeInTheDocument();
-  expect(screen.getByTestId("top-bar-notifications")).toBeInTheDocument();
+  expect(screen.queryByTestId("app-header")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("top-bar-streak")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("top-bar-trophy")).not.toBeInTheDocument();
+  expect(screen.queryByTestId("top-bar-notifications")).not.toBeInTheDocument();
   expect(screen.getByTestId("ui-lynx-bottom-navigator")).toBeInTheDocument();
-  // 목록 자기 머리(제목 + 젬 칩)는 전역 머리 아래에 따로 있다.
+  // 목록 자기 머리(제목 + 젬 칩)가 맨 위(안전 영역 아래)에 선다.
   expect(screen.getByTestId("messenger-list-header")).toBeInTheDocument();
   expect(present("top-bar-gem")).toBe(false);
 });
@@ -196,7 +196,8 @@ test("MC-I2. 방의 머리 뒤로를 누르면 목록과 바가 다시 서고 �
   expect(screen.getByTestId(listScreen)).toBeInTheDocument();
   expect(present(roomScreen)).toBe(false);
   expect(screen.getByTestId("ui-lynx-bottom-navigator")).toBeInTheDocument();
-  expect(screen.getByTestId("app-header")).toBeInTheDocument();
+  // 메신저 목록에는 전역 머리가 없다(사용자 결정 2026-11-09).
+  expect(present("app-header")).toBe(false);
   expect(isTabSelected("messenger")).toBe(true);
 });
 
@@ -276,6 +277,8 @@ test("MC-I6. 방의 학습 키보드 키 줄 묶음은 호스트 인셋의 아�
   await renderSignedInApp(<App progressSeed={legacyPassedSeed} />);
   openTab("messenger");
   tapId(row("mina"));
+  // 방은 키보드가 닫힌 채 열리므로 입력 칸을 눌러 학습 키보드를 엽니다.
+  tapId("messenger-chat-field");
 
   const rows = screen.getByTestId("messenger-keyboard-rows");
   expect({

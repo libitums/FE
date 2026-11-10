@@ -73,7 +73,6 @@ export function AskMediaDialog({
         testId={`${ids.askDialog}-frame`}
         title={text.title}
         description={text.description(name)}
-        onClose={onCancel}
         actions={
           <>
             <view className="chat-modal-action" data-testid={ids.askCancel}>

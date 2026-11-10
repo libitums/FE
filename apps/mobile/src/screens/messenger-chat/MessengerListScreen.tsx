@@ -57,11 +57,8 @@ export function MessengerListScreen({
   }
 
   const ordered = orderChatRooms(rooms);
-  // 시각 표기의 기준은 목록이 바뀔 때 한 번 잡습니다(그리는 중에 시계를 읽지 않습니다).
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    setNow(Date.now());
-  }, [rooms]);
+  // 시각 표기의 기준은 그릴 때마다 읽습니다(상태로 두면 목록이 바뀔 때마다 두 번 그려집니다 — 리뷰 #10).
+  const now = Date.now();
 
   return (
     <view className="messenger-list-screen" data-testid={ids.screen}>

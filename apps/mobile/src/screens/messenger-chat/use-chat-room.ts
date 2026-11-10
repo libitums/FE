@@ -10,7 +10,6 @@ import {
   blurPhoneInput,
   clearPhoneInput,
   focusPhoneInput,
-  requestAccessibilityFocusOn,
   restoreAccessibilityFocus,
 } from "./chat-input-focus";
 import { CHAT_PLACEHOLDERS } from "./chat-placeholders";
@@ -88,10 +87,22 @@ export function useChatRoom({
   const exitRef = useRef(onExit);
   exitRef.current = onExit;
 
-  // 방이 열리면 안 읽은 수가 0이 됩니다.
+  // 방이 열리면 안 읽은 수가 0이 되고, 나가면 이 방을 「열린 방」에서 풉니다(리뷰 #1).
   useEffect(() => {
     source.openRoom(roomId);
+    return () => source.closeRoom(roomId);
   }, [source, roomId]);
+
+  // 휴대폰 입력 초점은 입력 칸이 켜진 상태(user-interaction-enabled)가 그려진 **뒤** 다음 프레임에 보냅니다(리뷰 #2 · #3).
+  // 그리기 전에 부르면 아직 꺼진 입력 칸이라 무시되고, 다시 마운트 직전 칸에는 초점이 가 버립니다.
+  const focusWanted = useRef(false);
+  const focusTimer = useRef<unknown>(null);
+  useEffect(
+    () => () => {
+      if (focusTimer.current !== null) clearTimeout(focusTimer.current as number);
+    },
+    [],
+  );
 
   // 열려 있던 방이 출처에서 사라지면(다른 곳에서 지움) 한 번만 나갑니다.
   const exited = useRef(false);
@@ -108,17 +119,21 @@ export function useChatRoom({
     switch (action.type) {
       case "switch-keyboard":
         if (action.to !== current.keyboard) {
-          if (action.to === "phone") focusPhoneInput();
+          if (action.to === "phone") focusWanted.current = true;
           else blurPhoneInput();
         }
         break;
+      case "open-keyboard":
+        if (phone && current.slot.kind === "closed") focusWanted.current = true;
+        break;
+      case "close-keyboard":
       case "open-ideas":
       case "open-overlay":
-        // 휴대폰 키보드가 보기 패널 · 모달을 덮지 않게 먼저 내립니다.
+        // 휴대폰 키보드가 보기 패널 · 모달을 덮지 않게 먼저 내립니다(키보드를 접을 때도 내립니다).
         if (phone) blurPhoneInput();
         break;
       case "type-myself":
-        if (phone) focusPhoneInput();
+        if (phone && current.slot.kind === "ideas") focusWanted.current = true;
         break;
       default:
         break;
@@ -137,12 +152,24 @@ export function useChatRoom({
     }
     rawDispatch({ type: "sent" });
     if (current.keyboard !== "phone") return;
-    // 입력 칸을 비웁니다. 못 비우면 새로 마운트하고 다시 초점을 줍니다.
+    // 입력 칸을 비웁니다. 못 비우면 새로 마운트하고, 새 칸이 그려진 뒤 다시 초점을 줍니다(키보드가 열려 있었을 때만).
     clearPhoneInput(() => {
+      if (current.slot.kind !== "closed") focusWanted.current = true;
       setRemount((count) => count + 1);
-      focusPhoneInput();
     });
   }, [source, roomId]);
+
+  const phoneReady = state.keyboard === "phone" && state.slot.kind === "keyboard";
+  useEffect(() => {
+    if (!focusWanted.current) return;
+    focusWanted.current = false;
+    if (!phoneReady) return;
+    if (focusTimer.current !== null) clearTimeout(focusTimer.current as number);
+    focusTimer.current = setTimeout(() => {
+      focusTimer.current = null;
+      focusPhoneInput();
+    }, NEXT_FRAME_MS);
+  }, [phoneReady, state.inputEpoch, remount]);
 
   // 학습 키보드를 깔아 둔 채 휴대폰 키보드가 올라오면 자리를 비웁니다 — focus 뒤 정착 시간만큼 기다립니다.
   const settling = state.underlay === "learning" && state.phoneFocus === "focused";
@@ -167,22 +194,29 @@ export function useChatRoom({
       const origin = focusOriginOf(previous);
       if (origin !== null) call = () => restoreAccessibilityFocus(originTestId[origin]);
     } else if (previous.kind === "none" && state.overlay.kind === "more-menu") {
-      call = () => requestAccessibilityFocusOn(ids.moreItem("ideas"));
+      call = () => restoreAccessibilityFocus(ids.moreItem("ideas"));
     }
     if (call === null) return;
     const handle = setTimeout(call, NEXT_FRAME_MS);
     return () => clearTimeout(handle);
   }, [state.overlay]);
 
-  // 시스템 뒤로가기는 겹침부터 닫습니다.
+  // 시스템 뒤로가기의 단 하나뿐인 주인입니다(리뷰 #8 — 겹침 화면들은 등록하지 않습니다).
+  // 순서: 겹침 → 열린 키보드 · 보기 패널 → (화면의 뒤로가기) 방 나가기.
   const overlayOpen = state.overlay.kind !== "none";
+  const slotOpen = state.slot.kind !== "closed";
   useLayerBack(
     overlayOpen
       ? () => {
           "background only";
           rawDispatch({ type: "close-overlay" });
         }
-      : null,
+      : slotOpen
+        ? () => {
+            "background only";
+            dispatch({ type: "close-keyboard" });
+          }
+        : null,
   );
 
   const keyboardHeight = resolveChatKeyboardHeight({

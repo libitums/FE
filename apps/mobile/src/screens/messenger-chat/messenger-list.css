@@ -13,12 +13,8 @@
   display: flex;
   flex-direction: column;
   flex: 1;
-  /* 위 여백은 화면 여백에 전역 머리 몫을 더한 것입니다 — 롤플레이 목록과 같은 계산식입니다.
-     shorthand에 calc를 쓰면 Lynx가 선언 전체를 버려 longhand로 적습니다. */
-  padding-top: calc(
-    var(--libitum-layout-screen-padding-top) + var(--libitum-spacing-32) +
-      var(--libitum-spacing-8) + var(--libitum-layout-gap-block)
-  );
+  /* 전역 머리가 없습니다(사용자 결정 2026-11-09) — 목록 머리가 셸이 비운 안전 영역 바로 아래, 화면 위 여백만큼 떨어져 섭니다. */
+  padding-top: var(--libitum-layout-screen-padding-top);
 }
 
 /* [고정] 머리 — 제목과 젬 칩입니다. */

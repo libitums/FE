@@ -8,7 +8,7 @@ import {
   fixtureRoom,
   ideaSetA,
   LAST_THEM,
-  mountChat,
+  mountChatOpen,
   nativeInput,
   outgoingCount,
   presenceProbe,
@@ -29,7 +29,6 @@ vi.mock("./chat-input-focus", () => ({
   blurPhoneInput: vi.fn<() => void>(),
   clearPhoneInput: vi.fn<() => void>(),
   restoreAccessibilityFocus: vi.fn<(testId: string) => void>(),
-  requestAccessibilityFocusOn: vi.fn<(testId: string) => void>(),
 }));
 
 beforeEach(() => {
@@ -43,7 +42,7 @@ afterEach(() => {
 });
 
 test("MC-UI15. 전구를 누르면 보기 패널이 키보드와 같은 높이의 자리에 선다", () => {
-  mountChat({ probe: presenceProbe("absent") });
+  mountChatOpen({ probe: presenceProbe("absent") });
   const before = slotHeight();
   expect(slotContent()).toBe("learning-keyboard");
 
@@ -56,7 +55,7 @@ test("MC-UI15. 전구를 누르면 보기 패널이 키보드와 같은 높이�
 });
 
 test("MC-UI15. 인용은 상대의 마지막 글이고 보기 셋은 한국어 · 로마자 · 영어를 보인다", () => {
-  mountChat();
+  mountChatOpen();
   tapId(ids.ideasButton);
 
   expect(textOf(ids.ideasQuote)).toBe(`「${LAST_THEM.ko}」`);
@@ -71,7 +70,7 @@ test("MC-UI15. 인용은 상대의 마지막 글이고 보기 셋은 한국어 �
 });
 
 test("MC-UI15. 상대 글이 아직 없으면 인용 줄이 없다", () => {
-  mountChat({ seed: seedOf(fixtureRoom("mina", { messages: [] })) });
+  mountChatOpen({ seed: seedOf(fixtureRoom("mina", { messages: [] })) });
   tapId(ids.ideasButton);
 
   expect(screen.queryByTestId(ids.ideasQuote)).toBeNull();
@@ -79,7 +78,7 @@ test("MC-UI15. 상대 글이 아직 없으면 인용 줄이 없다", () => {
 });
 
 test("MC-UI15. 보기를 탭하면 입력 칸이 그 글로 차고 보내지 않으며 그 보기만 picked다", () => {
-  const { source } = mountChat();
+  const { source } = mountChatOpen();
   const sendText = vi.spyOn(source, "sendText");
   tapId(ids.ideasButton);
 
@@ -96,7 +95,7 @@ test("MC-UI15. 보기를 탭하면 입력 칸이 그 글로 차고 보내지 않
 });
 
 test("MC-UI15. Type myself는 직전 키보드(학습)로 돌아가고 고른 글이 남는다", () => {
-  mountChat({ probe: presenceProbe("absent") });
+  mountChatOpen({ probe: presenceProbe("absent") });
   tapId(ids.ideasButton);
   tapId(ids.idea(0));
 
@@ -108,7 +107,9 @@ test("MC-UI15. Type myself는 직전 키보드(학습)로 돌아가고 고른 �
 });
 
 test("MC-UI15. 휴대폰 모드에서는 전구가 입력 초점을 내리고 Type myself가 다시 올린다", () => {
-  mountChat({ probe: presenceProbe("present") });
+  mountChatOpen({ probe: presenceProbe("present") });
+  advance(16);
+  vi.mocked(inputFocus.focusPhoneInput).mockClear();
   expect(slotContent()).toBe("phone-spacer");
 
   tapId(ids.ideasButton);
@@ -116,12 +117,13 @@ test("MC-UI15. 휴대폰 모드에서는 전구가 입력 초점을 내리고 Ty
   expect(slotContent()).toBe("ideas");
 
   tapId(ids.ideasTypeMyself);
+  advance(16);
   expect(inputFocus.focusPhoneInput).toHaveBeenCalledTimes(1);
   expect(slotContent()).toBe("phone-spacer");
 });
 
 test("MC-UI15. 휴대폰으로 쓰던 글은 보기를 고르면 보기 글로 바뀌어 입력 칸에 default-value로 다시 들어간다", () => {
-  mountChat({ probe: presenceProbe("present") });
+  mountChatOpen({ probe: presenceProbe("present") });
   nativeInput("focus", "");
   advance(CHAT_PLACEHOLDERS.timing.underlaySettleMs);
   nativeInput("input", "안");
@@ -134,7 +136,7 @@ test("MC-UI15. 휴대폰으로 쓰던 글은 보기를 고르면 보기 글로 �
 });
 
 test("MC-UI15. 보기가 없는 방은 전구가 꺼져 있고 눌러도 패널이 서지 않는다", () => {
-  mountChat({ seed: seedOf(fixtureRoom("mina", { ideaSets: [] })) });
+  mountChatOpen({ seed: seedOf(fixtureRoom("mina", { ideaSets: [] })) });
 
   const bulb = screen.getByTestId(ids.ideasButton);
   const node = bulb.hasAttribute("accessibility-traits")

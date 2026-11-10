@@ -3,8 +3,6 @@ import type { ReactNode } from "@lynx-js/react";
 import { useMotion } from "@libitums/ui-lynx/motion";
 import { Overlay } from "@libitums/ui-lynx/overlay";
 
-import { useLayerBack } from "../../lib/use-back-handler";
-
 import "./chat-overlays.css";
 
 export type ChatModalFrameProps = {
@@ -14,8 +12,6 @@ export type ChatModalFrameProps = {
   readonly children?: ReactNode;
   /** 버튼 줄입니다(Cancel · 주 버튼). 칸마다 `chat-modal-action` 감싸개를 둡니다. */
   readonly actions: ReactNode;
-  /** 시스템 뒤로가기가 부르는 닫기입니다. 바깥(딤)을 눌러도 닫히지 않습니다(dismiss none). */
-  readonly onClose: () => void;
   /** 글 정렬입니다. 기본은 가운데(확인 대화상자), 입력이 든 대화상자는 `start`. */
   readonly align?: "center" | "start";
 };
@@ -28,16 +24,9 @@ export function ChatModalFrame({
   description,
   children,
   actions,
-  onClose,
   align = "center",
 }: ChatModalFrameProps): ReactNode {
   const reduced = useMotion() === "reduced";
-  const handleClose = () => {
-    "background only";
-    onClose();
-  };
-  useLayerBack(handleClose);
-
   return (
     <view
       className={`chat-modal chat-modal-align-${align}${reduced ? " chat-modal-motion-reduced" : ""}`}

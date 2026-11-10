@@ -26,6 +26,8 @@ export type ChatHeaderSideProps = {
 export type ChatLogProps = {
   readonly testId: string;
   readonly followKey?: number;
+  /** 로그를 한 번 누르면 불립니다(예: 열린 키보드 접기). 스크롤은 누름이 아닙니다. */
+  readonly onTap?: () => void;
   readonly children: ReactNode;
 };
 export type ChatIncomingRowProps = {

@@ -52,6 +52,8 @@ export type ChatRoomAction =
   | { readonly type: "phone-input"; readonly value: string }
   | { readonly type: "phone-focus"; readonly focus: PhoneFocus }
   | { readonly type: "switch-keyboard"; readonly to: ComposerKeyboard }
+  | { readonly type: "open-keyboard" }
+  | { readonly type: "close-keyboard" }
   | { readonly type: "underlay-settled" }
   | { readonly type: "open-ideas" }
   | { readonly type: "pick-idea"; readonly index: number; readonly text: string }
@@ -73,7 +75,7 @@ export function initialChatRoomState(plan: KeyboardPlan): ChatRoomState {
     shifted: false,
     keyboard: plan.initial,
     underlay: "none",
-    slot: { kind: "keyboard" },
+    slot: { kind: "closed" },
     phoneFocus: "blurred",
     inputEpoch: 0,
     overlay: NO_OVERLAY,
@@ -86,7 +88,6 @@ function withKeys(state: ChatRoomState, keys: readonly string[]): ChatRoomState 
     keys,
     text: composeHangul(keys),
     shifted: false,
-    inputEpoch: state.inputEpoch + 1,
   };
 }
 
@@ -100,7 +101,14 @@ function learningKey(state: ChatRoomState, key: string): ChatRoomState {
 function switchKeyboard(state: ChatRoomState, to: ComposerKeyboard): ChatRoomState {
   if (state.keyboard === to) return state;
   if (to === "phone") {
-    return { ...state, keyboard: "phone", underlay: "learning", slot: { kind: "keyboard" } };
+    // 학습에서 쓴 글을 휴대폰 입력 칸의 default-value로 넣도록 이때만 입력 칸을 다시 만듭니다(리뷰 #6).
+    return {
+      ...state,
+      keyboard: "phone",
+      underlay: "learning",
+      slot: { kind: "keyboard" },
+      inputEpoch: state.inputEpoch + 1,
+    };
   }
   return {
     ...state,
@@ -108,7 +116,6 @@ function switchKeyboard(state: ChatRoomState, to: ComposerKeyboard): ChatRoomSta
     underlay: "none",
     keys: keysFromText(state.text),
     shifted: false,
-    inputEpoch: state.inputEpoch + 1,
   };
 }
 
@@ -130,7 +137,8 @@ function sent(state: ChatRoomState): ChatRoomState {
     text: "",
     keys: [],
     shifted: false,
-    slot: { kind: "keyboard" },
+    // 닫힌 채 보냈으면 닫힌 채로 둡니다(열려 있으면 키보드가 그대로 열려 있습니다).
+    slot: state.slot.kind === "closed" ? state.slot : { kind: "keyboard" },
     inputEpoch: state.keyboard === "learning" ? state.inputEpoch + 1 : state.inputEpoch,
   };
 }
@@ -160,6 +168,12 @@ export function chatRoomReducer(state: ChatRoomState, action: ChatRoomAction): C
       return { ...state, phoneFocus: action.focus };
     case "switch-keyboard":
       return switchKeyboard(state, action.to);
+    case "open-keyboard":
+      return state.slot.kind === "closed" ? { ...state, slot: { kind: "keyboard" } } : state;
+    case "close-keyboard":
+      return state.slot.kind === "closed"
+        ? state
+        : { ...state, slot: { kind: "closed" }, underlay: "none", phoneFocus: "blurred" };
     case "underlay-settled":
       return { ...state, underlay: "none" };
     case "open-ideas":

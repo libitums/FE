@@ -6,6 +6,19 @@ import type { ChatSource } from "./chat-source.contract";
 import { messengerListTestIds as ids } from "./messenger-chat.contract";
 import { MessengerListScreen } from "./MessengerListScreen";
 
+// 리뷰 #10: 줄이 그려진 횟수를 셉니다(그리는 중 시계를 읽는 한 번이면 충분해야 한다).
+const rowRenders = vi.hoisted(() => ({ count: 0 }));
+vi.mock("./ChatListRow", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("./ChatListRow")>();
+  return {
+    ...actual,
+    ChatListRow: (props: Parameters<typeof actual.ChatListRow>[0]) => {
+      if (props.room.roomId === "mina") rowRenders.count += 1;
+      return actual.ChatListRow(props);
+    },
+  };
+});
+
 // `ui` 계층(MC-UI8): 채팅 목록 — 줄 순서(최근 먼저 · 잠김 끝) · 안 읽은 알약 · 미리보기 tone ·
 // 잠김 줄 data-locked · 탭 무동작 · 열린 줄 탭 → onOpenRoom(id) · 줄 낭독. 계산은 unit(chat-list)이 진다.
 
@@ -181,4 +194,22 @@ test("MC-UI8. 출처가 바뀌면 목록이 따라간다 — 방을 열면 안 �
 
   expect(screen.queryByTestId(ids.rowUnread("mina"))).toBeNull();
   expect(screen.getByTestId(ids.rowPreview("mina")).getAttribute("data-tone")).toBe("muted");
+});
+
+test("#10. 출처가 한 번 바뀌면 줄은 한 번만 다시 그려지고, 다시 그릴 때 시각 기준이 새로 잡힌다", () => {
+  const { source } = mount();
+  rowRenders.count = 0;
+
+  // 시계가 움직인 뒤의 변경 — 시각을 상태로 두고 효과로 갱신하면 같은 변경에 두 번 그려진다.
+  vi.setSystemTime(new Date(2026, 10, 9, 12, 10, 0));
+  act(() => {
+    source.openRoom("mina");
+  });
+  expect(rowRenders.count).toBe(1);
+
+  vi.setSystemTime(new Date(2026, 10, 9, 12, 30, 0));
+  act(() => {
+    source.sendText("mina", "안녕");
+  });
+  expect(screen.getByTestId(ids.rowPreview("mina")).textContent).toContain("안녕");
 });

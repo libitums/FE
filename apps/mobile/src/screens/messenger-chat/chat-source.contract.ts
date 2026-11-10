@@ -77,8 +77,10 @@ export type ChatSource = {
   /** 없는(지운) 방 = null. */
   readonly thread: (roomId: string) => ChatThread | null;
   readonly subscribe: (listener: () => void) => () => void;
-  /** unread → 0. */
+  /** unread → 0. 이 방이 「열린 방」이 되어, 이후 온 답은 안 읽음으로 쌓이지 않습니다. */
   readonly openRoom: (roomId: string) => void;
+  /** 방을 나갑니다(리뷰 #1). 이후 온 답은 다시 안 읽음으로 쌓입니다. 열려 있지 않은 방이면 무동작. */
+  readonly closeRoom: (roomId: string) => void;
   readonly sendText: (roomId: string, text: string) => void;
   /** 잔액은 줄지 않습니다(결제 없음). */
   readonly requestMedia: (roomId: string, media: ChatMediaKind) => void;

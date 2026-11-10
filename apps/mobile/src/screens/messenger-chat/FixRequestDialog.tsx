@@ -34,7 +34,6 @@ export function FixRequestDialog({
       title={copy.title}
       description={copy.description}
       align="start"
-      onClose={onCancel}
       actions={
         <>
           <view className="chat-modal-action" data-testid={ids.fixCancel}>

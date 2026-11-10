@@ -306,6 +306,24 @@ describe("방 열기 · 지우기 · 설정 (MC-U21)", () => {
     expect(summaryOf(source, "r1").unread).toBe(0);
   });
 
+  test("MC-U21. closeRoom 한 방에 온 답장은 안 읽음으로 쌓인다(리뷰 #1 — 나간 뒤 답이 와도 읽은 것으로 남지 않는다)", () => {
+    const { source, timers } = setup();
+    source.openRoom("r1");
+    source.sendText("r1", "안녕");
+    source.closeRoom("r1");
+    timers.advance(t.typingDelayMs + t.replyDelayMs);
+    expect(summaryOf(source, "r1").unread).toBe(1);
+  });
+
+  test("MC-U21. closeRoom 은 열려 있지 않은 다른 방 닫기로는 열린 방을 닫지 않는다", () => {
+    const { source, timers } = setup();
+    source.openRoom("r1");
+    source.closeRoom("r2");
+    source.sendText("r1", "안녕");
+    timers.advance(t.typingDelayMs + t.replyDelayMs);
+    expect(summaryOf(source, "r1").unread).toBe(0);
+  });
+
   test("MC-U21. 다른 방을 열면 이전 방은 다시 안 읽음이 쌓인다", () => {
     const { source, timers } = setup();
     source.openRoom("r1");
@@ -411,5 +429,50 @@ describe("해제 · 구독 · 참조 (MC-U22)", () => {
     expect(source.snapshot()).toBe(first);
     source.sendText("r1", "안녕");
     expect(source.snapshot()).not.toBe(first);
+  });
+});
+
+describe("사진 경로 다시 풀기 (리뷰 #7)", () => {
+  test("refreshImages 는 사진마다 자기 imagePath로 풀고, 일부러 null인 사진은 null로 둔다", () => {
+    let ready = false;
+    const imageUrlOf = (path: string): string | null => (ready ? `https://cdn/${path}` : null);
+    const source = createFixtureChatSource({
+      imageUrlOf,
+      now: () => NOW,
+      timers: fakeTimers(),
+      seed: seedOf(
+        roomSeed("r1", {
+          photoPath: "room-photo.webp",
+          messages: [
+            { kind: "photo", imagePath: "own.webp", minutesAgo: 9 },
+            { kind: "photo", imagePath: null, minutesAgo: 8 },
+          ],
+        }),
+      ),
+    });
+    ready = true;
+    source.refreshImages();
+    const photos = threadOf(source, "r1").messages.filter((m) => m.kind === "photo");
+    expect(photos.map((m) => (m.kind === "photo" ? m.imageUrl : "x"))).toEqual([
+      "https://cdn/own.webp",
+      null,
+    ]);
+  });
+
+  test("도착한 사진은 방의 photoPath로 다시 풀린다", () => {
+    let ready = false;
+    const timers = fakeTimers();
+    const source = createFixtureChatSource({
+      imageUrlOf: (path) => (ready ? `https://cdn/${path}` : null),
+      now: () => NOW,
+      timers,
+      seed: seedOf(roomSeed("r1", { photoPath: "room-photo.webp" })),
+    });
+    source.requestMedia("r1", "photo");
+    timers.advance(t.photoArrivalMs);
+    ready = true;
+    source.refreshImages();
+    const photo = threadOf(source, "r1").messages.find((m) => m.kind === "photo");
+    expect(photo?.kind === "photo" ? photo.imageUrl : "x").toBe("https://cdn/room-photo.webp");
   });
 });

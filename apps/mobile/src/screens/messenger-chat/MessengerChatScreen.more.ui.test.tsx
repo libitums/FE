@@ -22,7 +22,6 @@ vi.mock("./chat-input-focus", () => ({
   blurPhoneInput: vi.fn<() => void>(),
   clearPhoneInput: vi.fn<() => void>(),
   restoreAccessibilityFocus: vi.fn<(testId: string) => void>(),
-  requestAccessibilityFocusOn: vi.fn<(testId: string) => void>(),
 }));
 
 beforeEach(() => {

@@ -26,6 +26,8 @@ export type ComposerFieldProps = {
   readonly onPhoneInput: (value: string) => void;
   readonly onPhoneFocus: (focus: PhoneFocus) => void;
   readonly onConfirm: () => void;
+  /** 키보드가 닫혀 있을 때 입력 칸을 누르면 키보드를 엽니다. */
+  readonly onOpenKeyboard: () => void;
 };
 export type ComposerRowProps = ComposerFieldProps & {
   readonly ideasDisabled: boolean;
@@ -46,6 +48,7 @@ export function ComposerRow({
   onPhoneInput,
   onPhoneFocus,
   onConfirm,
+  onOpenKeyboard,
 }: ComposerRowProps): ReactNode {
   const phoneFocused = state.keyboard === "phone" && state.phoneFocus === "focused";
   return (
@@ -68,6 +71,7 @@ export function ComposerRow({
           onPhoneInput={onPhoneInput}
           onPhoneFocus={onPhoneFocus}
           onConfirm={onConfirm}
+          onOpenKeyboard={onOpenKeyboard}
         />
       </view>
       <SendButton enabled={sendEnabled} onTap={onSend} />
@@ -117,13 +121,26 @@ export function ComposerField({
   onPhoneInput,
   onPhoneFocus,
   onConfirm,
+  onOpenKeyboard,
 }: ComposerFieldProps): ReactNode {
   const copy = useUiCopy().messengerChat.composer;
   const phoneActive = state.keyboard === "phone" && state.slot.kind === "keyboard";
   const empty = state.text === "";
   const caret = <view className="messenger-chat-caret" accessibility-elements-hidden={true} />;
   return (
-    <view className="messenger-chat-field" data-testid={ids.field} data-keyboard={state.keyboard}>
+    <view
+      className="messenger-chat-field"
+      data-testid={ids.field}
+      data-keyboard={state.keyboard}
+      bindtap={
+        state.slot.kind === "closed"
+          ? () => {
+              "background only";
+              onOpenKeyboard();
+            }
+          : undefined
+      }
+    >
       <view
         className={`messenger-chat-display${phoneActive ? " messenger-chat-display-off" : ""}`}
         data-testid={ids.display}

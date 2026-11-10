@@ -96,6 +96,18 @@ export function mountChat(options: MountChatOptions = {}) {
   return { source, onExit, view };
 }
 
+/**
+ * 방을 마운트한 뒤 입력 칸을 눌러 키보드를 엽니다. 방은 키보드가 닫힌 채 열리므로(사용자 결정 2026-11-09),
+ * 키보드가 열려 있다고 보는 시험이 출발점으로 씁니다.
+ */
+export function mountChatOpen(options: MountChatOptions = {}) {
+  const mounted = mountChat(options);
+  act(() => {
+    fireEvent.tap(screen.getByTestId(ids.field), {});
+  });
+  return mounted;
+}
+
 // ---------------------------------------------------------------- 이벤트 도우미
 
 /**
@@ -141,6 +153,24 @@ export function nativeInput(
     new EventConstructor(`bindEvent:${name}`, { detail: { value } }),
   );
 }
+
+/** scroll-view처럼 요소 객체로는 이벤트를 못 받는 노드에 selector 참조로 이벤트를 보냅니다. */
+export function fireOnRef(
+  testId: string,
+  name: string,
+  detail: Record<string, unknown> = {},
+): void {
+  const target = screen.getByTestId(testId);
+  const EventConstructor = target.ownerDocument.defaultView?.CustomEvent;
+  if (EventConstructor === undefined) throw new Error("CustomEvent is unavailable");
+  const ref = lynx.createSelectorQuery().select(`[data-testid="${testId}"]`);
+  act(() => {
+    fireEvent(ref as unknown as Element, new EventConstructor(`bindEvent:${name}`, { detail }));
+  });
+}
+
+/** 대화 로그(scroll-view)를 한 번 누릅니다. */
+export const tapLog = (): void => fireOnRef(ids.log, "tap");
 
 export const advance = (ms: number): void => {
   act(() => {

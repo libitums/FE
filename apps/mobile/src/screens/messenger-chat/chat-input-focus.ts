@@ -49,18 +49,13 @@ export function clearPhoneInput(onFail?: InvokeFailure): void {
 }
 
 /**
- * 겹침이 닫힌 뒤 접근성 초점을 연 단추로 돌려 줍니다(AC10). 요소는 test-id를 `id`로도 갖는 **접근성 요소**여야 합니다 —
+ * 접근성 초점을 test-id 요소로 보냅니다 — 겹침이 닫힌 뒤 연 단추로 돌려 줄 때(AC10)와 「…」 메뉴가 열릴 때 첫 항목으로 보낼 때(a11y M7)
+ * 같은 함수를 씁니다. 요소는 test-id를 `id`로도 갖는 **접근성 요소**여야 합니다 —
  * 접근성 요소가 아닌 감싸개에는 Android `ACTION_ACCESSIBILITY_FOCUS`가 듣지 않을 수 있습니다(a11y C1).
  * 메서드 이름은 `@lynx-js/types` 4.1.0에 있습니다(`requestAccessibilityFocus`, Android · iOS). 기기에서 실제로 옮겨지는지는
  * e2e 수동 절차(MC-E7)로만 확인합니다 — 요소가 없거나 모르는 메서드면 조용히 무동작입니다.
  */
 export function restoreAccessibilityFocus(testId: string): void {
-  "background only";
-  invokeOn(`#${testId}`, "requestAccessibilityFocus", undefined);
-}
-
-/** 「…」 메뉴가 열릴 때 첫 항목으로 접근성 초점을 보냅니다(a11y M7). 같은 호출이지만 「돌려주기」와 구별해 따로 이름을 둡니다. */
-export function requestAccessibilityFocusOn(testId: string): void {
   "background only";
   invokeOn(`#${testId}`, "requestAccessibilityFocus", undefined);
 }
