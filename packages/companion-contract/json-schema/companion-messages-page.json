@@ -205,6 +205,40 @@
               }
             ]
           },
+          "rating": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "value": {
+                    "type": "string",
+                    "enum": ["up", "down"]
+                  },
+                  "reasons": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "awkward_korean",
+                        "out_of_character",
+                        "too_hard",
+                        "uncomfortable",
+                        "other"
+                      ]
+                    }
+                  },
+                  "note": {
+                    "type": ["string", "null"]
+                  }
+                },
+                "required": ["value", "reasons", "note"],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "createdAt": {
             "type": "string",
             "format": "date-time",

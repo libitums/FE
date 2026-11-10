@@ -41,6 +41,12 @@ export const chatSendRequestSchema = z.object({
   ),
   /** 옛 표시(`suggestion` 앞). 참이면 마지막 캐릭터 메시지의 칩 어느 하나와 글이 같을 때 피드백을 건너뜁니다. */
   from_suggestion: z.optional(z.boolean()),
+  /**
+   * 고쳐서 다시 보내기(PRD §3.15): 고칠 유저 메시지의 id. 그 대화의 마지막 유저 메시지여야 하고(그 뒤에 그 답이 아닌 캐릭터
+   * 메시지도 없어야), 아니면 409 `not_latest_message`. 서버가 이전 턴(유저 메시지 · 캐릭터 답)을 숨기고 이 글로 새 턴을 돕니다 —
+   * 차감 · 검사는 보통 턴과 같습니다. 이 칸이 있으면 `suggestion` · `from_suggestion`은 보지 않습니다(직접 입력).
+   */
+  replaces_message_id: z.optional(z.uuid()),
 });
 
 export type ChatSendRequest = z.infer<typeof chatSendRequestSchema>;

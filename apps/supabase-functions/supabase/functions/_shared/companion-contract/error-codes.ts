@@ -17,6 +17,7 @@ export const PRE_STREAM_ERRORS = {
   usage_time_limit: { status: 403, retryable: false },
   duplicate_message: { status: 409, retryable: false },
   turn_in_progress: { status: 409, retryable: true },
+  not_latest_message: { status: 409, retryable: false },
   trial_exhausted: { status: 402, retryable: false },
   insufficient_credits: { status: 402, retryable: false },
   rate_limited: { status: 429, retryable: true },

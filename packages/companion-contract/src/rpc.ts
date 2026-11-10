@@ -57,6 +57,25 @@ export const segmentSchema = z.object({
   translation: z.optional(z.string()),
 });
 
+/** 👎 이유(PRD §3.15) — 한국어가 어색함 · 캐릭터답지 않음 · 너무 어려움 · 불편함 · 기타. */
+export const ratingReasonSchema = z.enum([
+  "awkward_korean",
+  "out_of_character",
+  "too_hard",
+  "uncomfortable",
+  "other",
+]);
+
+/**
+ * 캐릭터 메시지에 유저가 남긴 평가입니다. 저장 · 바꾸기 · 지우기는 `companion_rate_message(p_message_id, p_rating, p_reasons,
+ * p_note)` — `p_rating` `up` · `down` · null(지움), 이유 · 글(200자)은 `down`에만.
+ */
+export const messageRatingSchema = z.object({
+  value: z.enum(["up", "down"]),
+  reasons: z.array(ratingReasonSchema),
+  note: z.nullable(z.string()),
+});
+
 /**
  * 메시지 목록의 한 줄입니다. `feedback`은 유저 메시지에 붙은 SSE `correction`의 본문과 같은 모양이고, 끊긴 스트림의
  * 피드백을 여기서 다시 받습니다. 사후 출력 검사에 걸리면 `hidden`이 참이고 `segments`는 비어 옵니다.
@@ -75,6 +94,8 @@ export const companionMessageSchema = z.object({
   feedback: z.nullable(correctionDataSchema),
   /** 캐릭터 메시지에 저장된 추천 답변 칩(SSE `suggestions` · `companion-suggest`와 같은 셋). 없으면 null, 옛 서버는 칸이 없습니다. */
   suggestions: z.optional(z.nullable(z.array(replySuggestionSchema))),
+  /** 캐릭터 메시지의 👍/👎(20261124). 평가가 없거나 유저 메시지면 null, 옛 서버는 칸이 없습니다. 고쳐서 숨긴 턴은 목록에 오지 않습니다. */
+  rating: z.optional(z.nullable(messageRatingSchema)),
   createdAt: z.iso.datetime({ offset: true }),
 });
 
@@ -126,5 +147,7 @@ export type CompanionWallet = z.infer<typeof companionWalletSchema>;
 export type CompanionProfile = z.infer<typeof companionProfileSchema>;
 export type ProactivePref = z.infer<typeof proactivePrefSchema>;
 export type CompanionCharacter = z.infer<typeof companionCharacterSchema>;
+export type RatingReason = z.infer<typeof ratingReasonSchema>;
+export type MessageRating = z.infer<typeof messageRatingSchema>;
 export type CompanionMessage = z.infer<typeof companionMessageSchema>;
 export type CompanionMessagesPage = z.infer<typeof companionMessagesPageSchema>;

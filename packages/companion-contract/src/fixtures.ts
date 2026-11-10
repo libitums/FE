@@ -60,6 +60,7 @@ export const messagesPageFixture: CompanionMessagesPage = {
         },
         { text: "쌤은 오늘 뭐 했어요?", meaning: "What did you do today?", intent: "ask" },
       ],
+      rating: { value: "down", reasons: ["too_hard"], note: null },
       createdAt: "2026-11-08T12:00:00+09:00",
     },
     {

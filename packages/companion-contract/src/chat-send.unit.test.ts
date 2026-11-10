@@ -47,6 +47,17 @@ describe("chat-send 요청", () => {
     );
   });
 
+  test("CS3d. replaces_message_id는 있으면 UUID(고쳐서 다시 보내기)", () => {
+    const replaces_message_id = "3a7b8c90-4d5e-4f60-b172-8d9e0f1a2b34";
+    expect(chatSendRequestSchema.parse({ ...valid, replaces_message_id })).toEqual({
+      ...valid,
+      replaces_message_id,
+    });
+    expect(chatSendRequestSchema.safeParse({ ...valid, replaces_message_id: "x" }).success).toBe(
+      false,
+    );
+  });
+
   test("CS3c. suggestion은 칩이 묶인 메시지 id와 자리(0 ~ 2)", () => {
     const suggestion = { message_id: "0d4e5f60-1a2b-4c3d-8e4f-5a6b7c8d9e01", index: 1 };
     expect(chatSendRequestSchema.parse({ ...valid, suggestion })).toEqual({ ...valid, suggestion });

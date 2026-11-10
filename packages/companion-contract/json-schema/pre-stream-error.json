@@ -16,6 +16,7 @@
         "usage_time_limit",
         "duplicate_message",
         "turn_in_progress",
+        "not_latest_message",
         "trial_exhausted",
         "insufficient_credits",
         "rate_limited",

@@ -62,7 +62,9 @@ export {
   companionProfileSchema,
   companionWalletSchema,
   feedbackModeSchema,
+  messageRatingSchema,
   proactivePrefSchema,
+  ratingReasonSchema,
   segmentSchema,
   type CompanionCharacter,
   type CompanionMemory,
@@ -72,7 +74,9 @@ export {
   type CompanionProfile,
   type CompanionWallet,
   type FeedbackMode,
+  type MessageRating,
   type ProactivePref,
+  type RatingReason,
 } from "./rpc.ts";
 export {
   companionSuggestRequestSchema,
