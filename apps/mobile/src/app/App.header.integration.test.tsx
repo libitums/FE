@@ -24,7 +24,7 @@ test("[AH-I1] 탭 루트 셋 모두에 머리와 바텀 네비게이션이 함�
     expect(screen.getByTestId("ui-lynx-bottom-navigator")).toBeInTheDocument();
     expect(screen.getByTestId("app-header")).toBeInTheDocument();
     expect(screen.queryByTestId("top-bar-gem")).not.toBeInTheDocument();
-    expect(screen.queryByTestId("gem-purchase-screen")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("coin-shop-screen")).not.toBeInTheDocument();
   }
 });
 

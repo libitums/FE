@@ -47,7 +47,7 @@ test("[AH3] 처음에는 레이어가 없고 머리는 낭독된다", () => {
 
   expect(screen.queryByTestId("journey-stat-modal-streak")).toBeNull();
   expect(screen.queryByTestId("journey-stat-modal-trophy")).toBeNull();
-  expect(screen.queryByTestId("gem-purchase-screen")).toBeNull();
+  expect(screen.queryByTestId("coin-shop-screen")).toBeNull();
   expect(screen.getByTestId("app-header")).toHaveAttribute(
     "accessibility-elements-hidden",
     "false",

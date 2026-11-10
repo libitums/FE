@@ -87,6 +87,8 @@ export function LessonCompleteScreen({
   // 엽전(ADR-0116) — 받은 엽전이 있으면 성취 모션에서는 하나씩 날아 칩이 1씩 오르고, 줄이기에서는 칩이 한 번 바뀝니다.
   const coinReward = verdict === "failed" ? 0 : reward.coinAmount;
   const coinsFly = coinCount !== undefined && coinReward > 0 && rewardMotion === "expressive";
+  // 받기 전 엽전 수입니다. 보유가 아직 이번 보상을 담지 못했어도 칩이 음수에서 오르지 않게 0에서 멈춥니다.
+  const coinStart = Math.max(0, (coinCount ?? 0) - coinReward);
   const [coinsLanded, setCoinsLanded] = useState(0);
   const [coinBumped, setCoinBumped] = useState(false);
 
@@ -122,13 +124,9 @@ export function LessonCompleteScreen({
             ? undefined
             : {
                 count: coinCount,
-                shown: coinsFly
-                  ? coinFlightValueAt(coinCount - coinReward, coinsLanded, coinReward)
-                  : coinCount,
+                shown: coinsFly ? coinFlightValueAt(coinStart, coinsLanded, coinReward) : coinCount,
                 bumpFrom:
-                  rewardMotion === "fade" && coinReward > 0 && !coinBumped
-                    ? coinCount - coinReward
-                    : null,
+                  rewardMotion === "fade" && coinReward > 0 && !coinBumped ? coinStart : null,
                 onBumped: () => setCoinBumped(true),
                 // 아이콘은 마지막 엽전이 닿을 때 한 번만 튑니다 — 닿을 때마다(50 ms 간격) 다시 튀면 떨림으로 보입니다.
                 pulseKey: coinsFly && coinsLanded >= coinReward ? 1 : 0,

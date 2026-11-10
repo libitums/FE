@@ -81,9 +81,10 @@ export const statusBarSurfaceRegistry = {
       classification: "default-scrim",
       carriers: [],
     },
-    "screens/gem-purchase/gem-purchase-screen.css": {
-      classification: "unreachable",
-      carriers: [],
+    // 엽전 상점(ADR-0116) — 지표 모달처럼 짙은 바탕(#1E1A1F)을 띠 밑까지 덮어 밝은 아이콘을 단다.
+    "screens/coin-shop/coin-shop-screen.css": {
+      classification: "light-icons",
+      carriers: [{ component: "CoinShopScreen", file: "screens/coin-shop/CoinShopScreen.tsx" }],
     },
     "components/first-unit-guide.css": {
       classification: "light-icons",

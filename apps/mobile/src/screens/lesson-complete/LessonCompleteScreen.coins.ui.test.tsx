@@ -188,3 +188,11 @@ test("LC-C7. 날던 중에 화면이 닫혀도 타이머를 하나씩 지운다 
 
   expect(() => unmount()).not.toThrow();
 });
+
+test("LC-C8. 보유가 아직 이번 보상을 담지 못했어도(보유 < 보상) 칩은 음수가 아니라 0에서 오른다", () => {
+  stubRects(placed);
+  render(screenWith({ coinCount: 4 }));
+
+  expect(chip()).toHaveTextContent("0");
+  expect(chip()).not.toHaveTextContent("-");
+});
