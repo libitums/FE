@@ -144,6 +144,9 @@ test("[IPG2] 표지만 끝내면 진행은 저장하지만 오늘을 적지 않�
   expect((save?.body["p_progress"] as Record<string, unknown>)["catalogProgress"]).toEqual({
     "u00-tutorial": ["intro"],
   });
+  // 표지는 엽전도 주지 않는다(ADR-0116 — 처음 통과 10은 레슨 · 최종 테스트만).
+  expect((save?.body["p_progress"] as Record<string, unknown>)["coinUnits"]).toBeUndefined();
+  expect(screen.getByTestId("top-bar-coins")).toHaveTextContent("0");
   // 표지는 연속 학습의 하루가 아니다 — 일반 학습(레슨 · 문화 · 최종 테스트)을 끝내야 적는다(레슨 쪽은 App.catalog-lessons L-ST1).
   expect(rpcs.some((rpc) => rpc.name === "record_learning_days")).toBe(false);
   expect(screen.getByTestId("top-bar-streak")).toHaveAttribute(

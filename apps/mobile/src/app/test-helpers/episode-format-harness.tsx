@@ -30,13 +30,16 @@ const supabaseUrl = "https://test.supabase.co";
 
 export type Rpc = { readonly name: string; readonly body: Record<string, unknown> };
 
-const refreshedBody = JSON.stringify({
-  access_token: `e30.${btoa(JSON.stringify({ sub: "u" })).replace(/=+$/, "")}.sig`,
-  refresh_token: "refreshed-refresh",
-  expires_in: 3600,
-  token_type: "bearer",
-  user: { id: "u" },
-});
+const defaultRefreshedToken = `e30.${btoa(JSON.stringify({ sub: "u" })).replace(/=+$/, "")}.sig`;
+
+const refreshedBodyOf = (accessToken: string): string =>
+  JSON.stringify({
+    access_token: accessToken,
+    refresh_token: "refreshed-refresh",
+    expires_in: 3600,
+    token_type: "bearer",
+    user: { id: "u" },
+  });
 
 const tutorialDoneSeed = legacyPassedSeed;
 
@@ -87,7 +90,14 @@ export type SpeechOption = {
   readonly granted: boolean;
   readonly heard: (attempt: number) => string | null;
 };
-export type BootOptions = { readonly speech?: SpeechOption };
+export type BootOptions = {
+  readonly speech?: SpeechOption;
+  /**
+   * 저장된 세션과 세션 갱신 응답의 접근 토큰입니다(없으면 지금까지의 값). 시험 계정(ADR-0085)은
+   * `app_metadata.duru_tester`가 든 JWT를 넘깁니다 — 갱신 응답도 같은 토큰이라 부팅 뒤에도 시험 계정입니다.
+   */
+  readonly accessToken?: string;
+};
 
 function speechModuleOf(speech: SpeechOption) {
   let attempts = 0;
@@ -116,7 +126,11 @@ export async function boot(
   const store = new Map<string, string>();
   store.set(
     authSessionStorageKey,
-    serializeAuthSession({ accessToken: "a", refreshToken: "r", expiresAt: 4_102_444_800_000 }),
+    serializeAuthSession({
+      accessToken: options.accessToken ?? "a",
+      refreshToken: "r",
+      expiresAt: 4_102_444_800_000,
+    }),
   );
   store.set(learningItemGuideSeenStorageKey, allLearningItemGuidesSeenValue);
   vi.stubGlobal("NativeModules", {
@@ -144,7 +158,8 @@ export async function boot(
   };
   vi.stubGlobal("fetch", (url: string, init?: { body?: string }) => {
     if (url.includes("grant_type=refresh_token")) {
-      return Promise.resolve({ status: 200, text: async () => refreshedBody });
+      const refreshed = refreshedBodyOf(options.accessToken ?? defaultRefreshedToken);
+      return Promise.resolve({ status: 200, text: async () => refreshed });
     }
     if (isContentRequest(url)) return Promise.resolve(contentNotFoundResponse());
     const name = url.split("/rest/v1/rpc/")[1] ?? url;
