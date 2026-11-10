@@ -130,7 +130,7 @@ test("PO3. 전환 목록에 없는 깨끗한 파일은 위반 0이다", () => {
 });
 
 // 학습 콘텐츠와 자모 표에 튜토리얼 혼합 대본 선언을 더합니다. 파일 전체를 허용하지 않습니다.
-test("PO4. 학습 콘텐츠 선언 표가 허용한 14항목과 같다 — 지운 튜토리얼 대본 · 문항 선언이 없다", () => {
+test("PO4. 학습 콘텐츠 선언 표가 허용한 15항목과 같다 — 지운 튜토리얼 대본 · 문항 선언이 없다", () => {
   const expected = [
     "OnboardingQuizCards.tsx#quizSyllables",
     "OnboardingStoryCards.tsx#onboardingStoryMessages",
@@ -146,13 +146,41 @@ test("PO4. 학습 콘텐츠 선언 표가 허용한 14항목과 같다 — 지�
     "placeholder-fill.ts#PARTICLE_RULES",
     "catalog-cover.ts#CATALOG_SELF_SPEAKER",
     "LanguageSelectScreen.tsx#languagePreviewSample",
+    "chat-fixture.ts#chatFixtureSeed",
   ];
 
-  assert.equal(expected.length, 14);
+  assert.equal(expected.length, 15);
   assert.deepEqual(
     [...uiCopyLiteralPolicy.learningContentDeclarations].sort(),
     [...expected].sort(),
   );
+});
+
+// MC-U30 — 자유 대화 가짜 씨앗 한 선언만 허용한다. 같은 파일의 다른 선언은 위반이다.
+const chatFixtureFile = "apps/mobile/src/screens/messenger-chat/chat-fixture.ts";
+
+test("MC-U30. chat-fixture.ts#chatFixtureSeed 의 한글은 위반이 아니다", () => {
+  const found = violationsFrom(
+    [literal({ declaration: "chatFixtureSeed" })],
+    chatFixtureFile,
+    uiCopyLiteralPolicy,
+  );
+
+  assert.deepEqual(found, []);
+});
+
+test("MC-U30. 같은 파일의 다른 선언은 위반이다", () => {
+  const found = violationsFrom(
+    [
+      literal({ declaration: "chatFixtureSeed" }),
+      literal({ line: 40, declaration: "somethingElse" }),
+    ],
+    chatFixtureFile,
+    uiCopyLiteralPolicy,
+  );
+
+  assert.equal(found.length, 1);
+  assert.equal(found[0].line, 40);
 });
 
 // DP1 — 목록의 파일은 모두 소스 트리에 있어야 한다(지운 파일이 목록에 남지 않게).

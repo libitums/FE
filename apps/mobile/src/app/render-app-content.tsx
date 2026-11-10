@@ -9,6 +9,7 @@ import { TabRootsLayout } from "./TabRootsLayout";
 const TAB_ROOTS: ReadonlySet<Screen["name"]> = new Set([
   "journey-map",
   "roleplay-list",
+  "messenger-list",
   "settings",
 ]);
 

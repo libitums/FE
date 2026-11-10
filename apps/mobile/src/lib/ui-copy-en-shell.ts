@@ -45,7 +45,7 @@ export const commonEn: CommonCopy = {
 };
 
 export const shellEn: ShellCopy = {
-  tabs: { journey: "Journey", roleplay: "Roleplay", settings: "Settings" },
+  tabs: { journey: "Journey", roleplay: "Roleplay", messenger: "Chats", settings: "Settings" },
   notifications: "Notifications",
   errorBoundary: { title: "Something went wrong", retry: "Try again" },
 };

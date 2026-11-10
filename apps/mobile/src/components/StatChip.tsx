@@ -89,8 +89,6 @@ export type StatChipProps = {
   readonly dropFrom?: number | null;
   /** 줄어듦 재생을 마쳤거나 굴릴 것이 없을 때 부릅니다. */
   readonly onDropped?: () => void;
-  /** 숫자 대신 보일 글자입니다(시험 계정의 티켓 「∞」 — ADR-0085). 움직임이 없을 때만 씁니다. */
-  readonly valueText?: string;
   /** 수를 칩 글로 바꾸는 규칙입니다(기본 `String`). 오르기 · 내리기 움직임 중의 수에도 같이 씁니다 — 상단 바는 「999+」 규칙을 넘깁니다(ADR-0116 개정 2026-11-10). */
   readonly formatValue?: (value: number) => string;
   /**
@@ -121,7 +119,6 @@ export function StatChip({
   onBumped,
   dropFrom = null,
   onDropped,
-  valueText,
   formatValue = String,
   pulseKey = 0,
   iconId,
@@ -250,7 +247,7 @@ export function StatChip({
           </view>
         )
       ) : start === null ? (
-        <text className={valueClass}>{valueText ?? formatValue(value)}</text>
+        <text className={valueClass}>{formatValue(value)}</text>
       ) : !playing ? (
         <text className={valueClass}>{formatValue(start)}</text>
       ) : motion === "reduced" ? (

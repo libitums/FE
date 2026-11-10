@@ -65,7 +65,7 @@ export const settingsJa: SettingsCopy = {
   },
   sessionOptionDescription: {
     "show-choice-romanization": "韓国語の各選択肢の読み方を、上に小さく表示します。",
-    vibration: "答えが正解か不正解のときに振動します。",
+    vibration: "答えの正誤とキーボード入力のときに振動します。",
   },
   optionState: { on: "オン", off: "オフ" },
   action: {

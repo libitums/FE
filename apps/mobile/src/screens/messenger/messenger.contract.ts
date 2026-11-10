@@ -10,4 +10,6 @@ export type MessengerKeyboardProps = {
   readonly onShift: () => void;
   /** 셸이 맡긴 아래 · 좌 · 우입니다. 키 줄 묶음의 바깥 여백이 됩니다. 0이면 지금과 같습니다. */
   readonly edges: KeyboardDockEdges;
+  /** 자유 대화 방이 정하는 면 높이입니다. 없으면 지금과 같습니다(messenger-chat-ui spec §6.3). */
+  readonly height?: number;
 };

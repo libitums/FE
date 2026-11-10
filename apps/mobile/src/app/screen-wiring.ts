@@ -56,6 +56,7 @@ import { entryWiring, type LearnerSignupWiring } from "./entry-wiring";
 import { guestWiring, type GuestWiring } from "./guest-wiring";
 import type { AccountState } from "../lib/guest-session";
 import { journeyWiring } from "./journey-wiring";
+import { messengerChatWiring, type MessengerChatWiring } from "./messenger-chat-wiring";
 
 // 화면 결선이 `renderScreen`에 넘기는 것입니다. 셸이 소유한 값 하나와 콜백 셋입니다.
 //
@@ -136,6 +137,8 @@ export type ScreenWiring = {
   onEnterJourney: () => void;
   /** 설정이 행 구성을 고르는 값(ADR-0111). */
   accountState: AccountState;
+  /** 메신저 탭 — 대화 출처와 이동 콜백(messenger-chat-ui spec §7.1). */
+  messengerChat: MessengerChatWiring;
 } & GuestWiring &
   AccountWiring &
   JourneyStats &
@@ -204,6 +207,10 @@ export function screenWiring(args: ScreenWiringArgs): ScreenWiring {
       args.dispatch({ type: "back" });
     },
     ...entry,
+    ...messengerChatWiring({
+      dispatch: args.dispatch,
+      imageUrlOf: args.episodeContent.imageUrlOf,
+    }),
     ...guestWiring(args),
     accountState: args.accountState,
     ...accountWiring({

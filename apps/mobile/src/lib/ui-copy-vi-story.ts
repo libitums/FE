@@ -29,7 +29,6 @@ export const messengerVi: MessengerCopy = {
     shift: "Shift",
     shiftOn: "Shift, đang bật",
     backspace: "Xóa",
-    comma: "Dấu phẩy",
     period: "Dấu chấm",
     space: "Dấu cách",
     questionMark: "Dấu hỏi",

@@ -44,6 +44,7 @@ import {
   verificationCodeEs,
   authFailureEs,
 } from "./ui-copy-es-entry";
+import { messengerChatEs } from "./ui-copy-es-chat";
 import { learnerProfileEs } from "./ui-copy-es-profile";
 import { ticketsEs } from "./ui-copy-es-tickets";
 import { roleplayStoryEs } from "./ui-copy-es-roleplay-story";
@@ -110,6 +111,7 @@ export const uiCopyEs: UiCopy = {
   roleplayStory: roleplayStoryEs,
   appUpdate: appUpdateEs,
   storyMessenger: storyMessengerEs,
+  messengerChat: messengerChatEs,
   storyIntro: storyIntroEs,
   storyCall: storyCallEs,
   onboarding: onboardingEs,

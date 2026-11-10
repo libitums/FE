@@ -39,7 +39,14 @@ final class SoundEffectsModuleTests: XCTestCase {
   func testHapticKindsMapToNotificationFeedbackTypes() {
     XCTAssertEqual(HapticFeedbackKind.of("success")?.feedbackType, .success)
     XCTAssertEqual(HapticFeedbackKind.of("error")?.feedbackType, .error)
-    XCTAssertEqual(HapticFeedbackKind.allCases.count, 2)
+    XCTAssertEqual(HapticFeedbackKind.allCases.count, 3)
+  }
+
+  // KT-H1: 키 입력 진동은 notification이 아니라 impact 생성기로 간다(ADR-0112).
+  func testKeyHapticKindHasNoNotificationType() {
+    XCTAssertEqual(HapticFeedbackKind.of("key"), .key)
+    XCTAssertNil(HapticFeedbackKind.of("key")?.feedbackType)
+    XCTAssertNil(HapticFeedbackKind.of("KEY"))
   }
 
   func testUnknownHapticKindsAreNil() {
@@ -59,5 +66,6 @@ final class SoundEffectsModuleTests: XCTestCase {
     module.haptic("bogus")
     module.haptic(nil)
     module.haptic("success")
+    module.haptic("key")
   }
 }

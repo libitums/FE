@@ -81,7 +81,7 @@ describe("settingsSessionOptionRows", () => {
       {
         key: "vibration",
         title: "Vibration",
-        description: "Vibrate when your answer is right or wrong.",
+        description: "Vibrate for right or wrong answers and keyboard taps.",
         checked: true,
       },
     ]);

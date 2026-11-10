@@ -33,9 +33,18 @@ export type CoinShopScreenProps = {
   /** 지금 가진 엽전 수입니다. */
   readonly coinBalance: number;
   readonly onClose: () => void;
+  /**
+   * 시스템 뒤로가기를 이 화면이 직접 올릴지입니다(기본 켬). 채팅방 안처럼 뒤로가기 주인이 따로 있으면 끕니다 —
+   * 한 겹침에 층이 둘 올라가지 않게 합니다.
+   */
+  readonly ownsBack?: boolean;
 };
 
-export function CoinShopScreen({ coinBalance, onClose }: CoinShopScreenProps): ReactNode {
+export function CoinShopScreen({
+  coinBalance,
+  onClose,
+  ownsBack = true,
+}: CoinShopScreenProps): ReactNode {
   const copy = useUiCopy();
   const shop = copy.coinShop;
   const noticeActions = [{ id: "close", label: copy.common.ok }] as const;
@@ -59,7 +68,7 @@ export function CoinShopScreen({ coinBalance, onClose }: CoinShopScreenProps): R
     setNoticeOpen(false);
   };
   // 시스템 뒤로가기 — 안내가 떠 있으면 안내만 닫고, 아니면 상점을 닫습니다.
-  useLayerBack(noticeOpen ? closeNotice : handleClose);
+  useLayerBack(ownsBack ? (noticeOpen ? closeNotice : handleClose) : null);
 
   return (
     <view

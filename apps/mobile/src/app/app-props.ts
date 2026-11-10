@@ -14,6 +14,8 @@ export type AppProgressSeed = {
   /** 옛 튜토리얼의 얼린 기록입니다. 옛 앱 사용자를 흉내 낼 때 씁니다. */
   readonly legacyTutorial?: LegacyTutorialRecord;
   readonly catalogProgress?: CatalogProgress;
+  /** 엽전을 받은 유닛입니다(ADR-0116) — 보유 엽전이 여기서 파생합니다. */
+  readonly coinUnits?: CatalogProgress;
 };
 
 export type AppSeedProps = {

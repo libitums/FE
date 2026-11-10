@@ -16,13 +16,16 @@ import type { RoleplayEpisodeId } from "../screens/roleplay-list/roleplay-list.c
 
 // 탭 목록과 1:1입니다. 순서가 곧 바텀 네비게이션의 좌→우 순서입니다
 // (bottom-navigator.contract.ts).
-export type Tab = "journey" | "roleplay" | "settings";
+export type Tab = "journey" | "roleplay" | "messenger" | "settings";
 
 // **route 목록과 1:1입니다.** route가 늘면 이 union에 멤버를 더하고, `render-screen.tsx` switch의 exhaustiveness 검사가
 // 빠진 화면을 컴파일 타임에 잡습니다. 이름은 최종 화면 이름으로 고정합니다.
 export type Screen =
   | { name: "journey-map" }
   | { name: "roleplay-list" }
+  // 메신저 탭의 화면입니다(messenger-chat-ui spec §7). 목록이 탭 루트이고 방은 그 위에 쌓입니다.
+  | { name: "messenger-list" }
+  | { name: "messenger-chat"; roomId: string }
   | { name: "settings" }
   // 설정 탭의 화면입니다. 필드가 없습니다 — 프로필에 진행도 파라미터가 없고, 내용은 App이
   // 넘깁니다. 방침 · 약관은 route가 아니라 앱 위 브라우저입니다(ADR-0033).
@@ -138,6 +141,7 @@ export const initialNav: Nav = {
   stacks: {
     journey: [{ name: "journey-map" }],
     roleplay: [{ name: "roleplay-list" }],
+    messenger: [{ name: "messenger-list" }],
     settings: [{ name: "settings" }],
   },
 };

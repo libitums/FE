@@ -25,9 +25,18 @@ export const legacyPassedRecord: LegacyTutorialRecord = {
 export type ProgressSeedShape = {
   readonly legacyTutorial?: LegacyTutorialRecord;
   readonly catalogProgress?: CatalogProgress;
+  readonly coinUnits?: CatalogProgress;
 };
 
 export const legacyPassedSeed: ProgressSeedShape = { legacyTutorial: legacyPassedRecord };
+
+/** 옛 튜토리얼을 마치고 엽전 `coins`개(10의 배수)를 가진 씨앗입니다 — 받은 유닛 `coins / 10`개로 만듭니다(ADR-0116). */
+export function legacyPassedSeedWithCoins(coins: number): ProgressSeedShape {
+  const keys = Array.from({ length: Math.floor(coins / 10) }, (_, index) => `S${index + 1}`);
+  return keys.length === 0
+    ? legacyPassedSeed
+    : { ...legacyPassedSeed, coinUnits: { "u01-water": keys } };
+}
 
 /** 옛 튜토리얼을 마치고 u01 표지까지 끝낸 씨앗입니다 — u01의 첫 유닛(S1)이 열려 있습니다. */
 export const u01OpenSeed: ProgressSeedShape = {

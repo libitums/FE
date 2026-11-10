@@ -94,7 +94,9 @@ test("VB3. 진동 줄은 제목 · 설명 · 켬 상태로 서고, 탭하면 (vi
   mount(initialSessionOptions, onToggle);
 
   expect(screen.getByText("Vibration")).toBeInTheDocument();
-  expect(screen.getByText("Vibrate when your answer is right or wrong.")).toBeInTheDocument();
+  expect(
+    screen.getByText("Vibrate for right or wrong answers and keyboard taps."),
+  ).toBeInTheDocument();
   expect(vibrationCell()).toHaveAttribute("data-trailing", "toggle");
   expect(vibrationCell()).toHaveAttribute("data-checked", "true");
 

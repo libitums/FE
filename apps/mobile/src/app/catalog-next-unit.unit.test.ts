@@ -2,6 +2,7 @@ import { describe, expect, test, vi } from "vitest";
 
 import { bundledCatalogInput } from "../lib/episode-bundled";
 import { buildEpisodeCatalog } from "../lib/episode-catalog";
+import { setTesterAccessActive } from "../lib/tester-access";
 import { catalogMapSectionsOf } from "../screens/journey-map/catalog-map";
 import { catalogNextUnitOf, catalogResultNextOf } from "./catalog-next-unit";
 
@@ -53,6 +54,19 @@ describe("catalogResultNextOf", () => {
       lessons[0] ?? "",
     );
     expect(opened.next?.ticketCost).toBe(0);
+  });
+
+  test("CN-U1. 시험 계정이면 다음 유닛의 티켓 수는 unlimited다(ADR-0115)", () => {
+    const input = { catalogSections: sections, catalogProgress: {}, onStartCatalogUnit: vi.fn() };
+    setTesterAccessActive(true);
+    try {
+      expect(catalogResultNextOf(input, "u01-water", lessons[0] ?? "").next?.ticketCost).toBe(
+        "unlimited",
+      );
+    } finally {
+      setTesterAccessActive(false);
+    }
+    expect(catalogResultNextOf(input, "u01-water", lessons[0] ?? "").next?.ticketCost).toBe(1);
   });
 
   test("NX2. 최종 테스트 결과에는 다음이 없다", () => {

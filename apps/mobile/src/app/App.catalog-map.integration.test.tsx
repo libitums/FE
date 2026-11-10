@@ -464,9 +464,9 @@ test("I2. (AC1 · 2 · 3) 튜토리얼 완료 씨앗: 첫 표지만 열리고 �
   expect(presentId("episode-banner-screen")).toBe(false);
   expect(screen.getByTestId("journey-map-screen")).toBeInTheDocument();
   expect(cover("u01-water")).toHaveAttribute("data-status", "clear");
-  await vi.waitFor(() =>
-    expect(rpcs.some((rpc) => rpc.name === "record_learning_days")).toBe(true),
-  );
+  // 표지는 연속 학습의 하루가 아니다 — 날짜를 적지 않는다(ADR-0035 U2 개정 2026-11-09).
+  await flush();
+  expect(rpcs.some((rpc) => rpc.name === "record_learning_days")).toBe(false);
 });
 
 test("I3. (AC2 유지) 저장된 스냅숏으로 새 앱을 부팅하면 첫 표지는 완료, 둘째 표지는 잠김이다", async () => {

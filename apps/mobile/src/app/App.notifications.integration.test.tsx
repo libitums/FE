@@ -72,7 +72,7 @@ test("[IN1] 여정 맵 알림 버튼을 tap하면 알림 화면이 서고 바가
     "data-selected",
     "true",
   );
-  expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(3);
+  expect(screen.queryAllByTestId(/^ui-lynx-bottom-navigator-item-/)).toHaveLength(4);
 });
 
 test("[IN2] 알림 화면의 맵으로를 tap하면 여정 맵으로 돌아가고 알림 화면이 사라진다", async () => {

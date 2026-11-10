@@ -1,0 +1,39 @@
+/* 무제한 티켓 칩(ADR-0115 · 시안 O1). 크기 · 여백은 `.stat-chip` 규칙을 그대로 받고 면 · 테만 바꿉니다.
+   토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). 밝은 주황(#ffc07a) · 짙은 주황(#e2560a)은 패키지에 맞는 단계가
+   없어 디자인 값을 적고, 알파가 붙은 색은 알파 토큰이 없어 rgba로 적습니다(stat-chip-motion.css와 같은 처리). */
+
+.unlimited-ticket-chip {
+  border-color: rgba(255, 255, 255, 0.45);
+  background-image: linear-gradient(
+    160deg,
+    #ffc07a 0%,
+    var(--libitum-color-brand-secondary) 45%,
+    #e2560a 100%
+  );
+  overflow: hidden;
+}
+
+/* 머리 바만 — 스크롤되는 내용 위에 떠 있어 살짝 띄웁니다. 결과 화면은 바탕 위에 바로 놓입니다. */
+.unlimited-ticket-chip-raised {
+  box-shadow: 0 3px 8px rgba(226, 86, 10, 0.28);
+}
+
+/* 위쪽 빛 — 칩 위 45%에 흰빛이 아래로 옅어집니다. */
+.unlimited-ticket-chip-gloss {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 45%;
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0));
+}
+
+/* 아래 짙은 단 — 칩이 도톰해 보이게 바닥 2px를 brand-strong(#b94208) 알파 0.45로 칠합니다. */
+.unlimited-ticket-chip-base {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background-color: rgba(185, 66, 8, 0.45);
+}

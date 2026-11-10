@@ -43,6 +43,7 @@ import {
   onboardingEn,
   verificationCodeEn,
 } from "./ui-copy-en-entry";
+import { messengerChatEn } from "./ui-copy-en-chat";
 import { learnerProfileEn } from "./ui-copy-en-profile";
 import { ticketsEn } from "./ui-copy-en-tickets";
 import { roleplayStoryEn } from "./ui-copy-en-roleplay-story";
@@ -109,6 +110,7 @@ export const uiCopyEn: UiCopy = {
   roleplayStory: roleplayStoryEn,
   appUpdate: appUpdateEn,
   storyMessenger: storyMessengerEn,
+  messengerChat: messengerChatEn,
   storyIntro: storyIntroEn,
   storyCall: storyCallEn,
   onboarding: onboardingEn,

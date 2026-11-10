@@ -44,6 +44,7 @@ import {
   verificationCodeId,
   authFailureId,
 } from "./ui-copy-id-entry";
+import { messengerChatId } from "./ui-copy-id-chat";
 import { learnerProfileId } from "./ui-copy-id-profile";
 import { ticketsId } from "./ui-copy-id-tickets";
 import { roleplayStoryId } from "./ui-copy-id-roleplay-story";
@@ -110,6 +111,7 @@ export const uiCopyId: UiCopy = {
   roleplayStory: roleplayStoryId,
   appUpdate: appUpdateId,
   storyMessenger: storyMessengerId,
+  messengerChat: messengerChatId,
   storyIntro: storyIntroId,
   storyCall: storyCallId,
   onboarding: onboardingId,

@@ -1,0 +1,138 @@
+// 인도네시아어 문구표 구획 — 메신저 채팅(목록 · 방 · 겹침).
+// 번역 초안 — 원어민 검수 필요.
+
+import type { MessengerChatCopy } from "../screens/messenger-chat/messenger-chat.contract";
+import { clockLabel, joinSpoken } from "./ui-copy-chat-parts";
+
+export const messengerChatId: MessengerChatCopy = {
+  list: {
+    title: "Obrolan",
+    coinsLabel: (count) => `${count} koin, tambah koin`,
+    emptyTitle: "Belum ada obrolan",
+    emptyBody:
+      "Selesaikan satu episode, lalu orang-orang yang kamu temui akan mengirim pesan di sini.",
+    goToJourney: "Ke Perjalanan",
+    mine: (text) => `Kamu: ${text}`,
+    photo: "Foto",
+    voice: (duration) => `Pesan suara · ${duration}`,
+    typing: (name) => `${name} sedang mengetik…`,
+    sendingPhoto: (name) => `${name} sedang mengirim foto…`,
+    recordingVoice: (name) => `${name} sedang merekam pesan suara…`,
+    lockedCondition: (episode) => `Selesaikan Episode ${episode} untuk mulai mengobrol`,
+    lockedRowLabel: (name, condition) => `${name}, terkunci, ${condition}`,
+    unreadLabel: (count) => `${count} belum dibaca`,
+    rowLabel: (name, preview, time, unread) => joinSpoken([name, preview, time, unread]),
+  },
+  time: {
+    now: "baru saja",
+    yesterday: "Kemarin",
+    weekdays: ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"],
+    today: clockLabel,
+    date: (month, day) => `${day}/${month}`,
+  },
+  room: {
+    back: "Kembali ke obrolan",
+    settings: "Pengaturan obrolan",
+    typing: (name) => `${name} sedang mengetik`,
+    sendingPhoto: (name) => `${name} sedang mengirim foto…`,
+    recordingVoice: (name) => `${name} sedang merekam pesan suara…`,
+    photoLabel: (name) => `Foto dari ${name}`,
+    voiceLabel: (name, duration, ko, en) => `${name}: pesan suara ${duration}, ${ko}, ${en}`,
+    play: "Putar",
+    pause: "Jeda",
+  },
+  composer: {
+    placeholder: "Pesan",
+    send: "Kirim",
+    ideas: "Ide balasan",
+    ideasOpen: "Ide balasan, terbuka",
+  },
+  toggle: {
+    learning: "Tombol Hangul",
+    phone: "Keyboard ponsel",
+    selected: (label) => `${label}, dipilih`,
+  },
+  features: {
+    snapshot: "Foto kilat",
+    snapVoice: "Suara kilat",
+    pillLabel: (name, price) => `${name}, ${price} koin`,
+    more: "Lainnya",
+    moreOpen: "Lainnya, terbuka",
+  },
+  more: { ideas: "Ide balasan baru", fix: "Minta perbaikan", report: "Laporkan" },
+  ideas: { typeMyself: "Ketik sendiri", quote: (text) => `「${text}」` },
+  report: {
+    title: "Laporkan obrolan ini",
+    description: "Pilih apa yang salah. Kamu bisa memilih lebih dari satu.",
+    reasons: {
+      rude: "Kasar atau melecehkan",
+      sexual: "Konten seksual",
+      hateful: "Kebencian atau kekerasan",
+      "wrong-korean": "Bahasa Korea salah atau ada kesalahan",
+      other: "Alasan lain",
+    },
+    send: "Kirim laporan",
+    cancel: "Batal",
+    close: "Tutup",
+    checked: (label, on) => `${label}, ${on ? "dicentang" : "tidak dicentang"}`,
+  },
+  fix: {
+    title: "Minta perbaikan",
+    description: "Ceritakan apa yang terasa salah di obrolan ini.",
+    placeholder: "Apa yang terasa salah?",
+    cancel: "Batal",
+    send: "Kirim",
+  },
+  regen: {
+    title: "Buat ide balasan baru?",
+    description: "Ide yang kamu lihat sekarang akan diganti.",
+    cancel: "Batal",
+    confirm: "Buat baru",
+  },
+  askMedia: {
+    photo: {
+      title: "Minta foto kilat?",
+      description: (name) => `${name} akan mengirimimu foto momen ini.`,
+    },
+    voice: {
+      title: "Minta pesan suara?",
+      description: (name) => `${name} akan mengucapkan balasan terakhirnya dengan suara.`,
+    },
+    balance: (count) => `Kamu punya ${count} koin`,
+    cancel: "Batal",
+    confirmLabel: (price) => `Minta dengan ${price} koin`,
+    getCoins: "Tambah koin",
+  },
+  sidebar: {
+    title: "Pengaturan obrolan",
+    close: "Tutup",
+    myCoins: "Koinku",
+    getCoins: "Tambah koin",
+    viewProfile: "Lihat profil",
+    myProfile: "Profilku",
+    calledBy: (friend, me) => `${friend} memanggilmu 「${me}」`,
+    storyPoint: "Titik cerita",
+    autoIdeas: "Tampilkan ide balasan otomatis",
+    autoIdeasDescription: "Buka ide balasan saat giliranmu membalas",
+    deleteChat: "Hapus obrolan",
+  },
+  storyPoint: {
+    title: "Titik cerita",
+    description: (name) => `${name} berbicara denganmu sesuai episode yang kamu pilih.`,
+    episodeTitle: (episode, title) => `Episode ${episode} · ${title}`,
+    relation: {
+      "just-met": "Baru bertemu",
+      "getting-to-know": "Mulai saling mengenal",
+      friends: "Sudah berteman",
+    },
+    lockedCondition: (episode) => `Selesaikan Episode ${episode} untuk membuka`,
+    change: "Ubah",
+    close: "Tutup",
+  },
+  deleteChat: {
+    title: "Hapus obrolan ini?",
+    description: (name) => `Obrolanmu dengan ${name} akan dihapus.`,
+    cancel: "Batal",
+    confirm: "Hapus",
+  },
+};

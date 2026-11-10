@@ -46,7 +46,12 @@ export const commonJa: CommonCopy = {
 };
 
 export const shellJa: ShellCopy = {
-  tabs: { journey: "ジャーニー", roleplay: "ロールプレイ", settings: "設定" },
+  tabs: {
+    journey: "ジャーニー",
+    roleplay: "ロールプレイ",
+    messenger: "チャット",
+    settings: "設定",
+  },
   notifications: "お知らせ",
   errorBoundary: { title: "問題が発生しました", retry: "再試行" },
 };

@@ -161,6 +161,36 @@ describe("합치기 · 덮음 · 활동 수", () => {
   });
 });
 
+describe("연속 학습의 하루로 세는 활동 (ADR-0035 U2 개정 2026-11-09)", () => {
+  const { learningDayActivityCount } = progressApi;
+  const withCatalog = (catalogProgress: Record<string, string[]>) => ({
+    ...empty,
+    catalogProgress,
+  });
+
+  test("LD1. 표지 키만 있으면 0이다 — 표지만 끝낸 날은 연속에 들지 않는다", () => {
+    expect(learningDayActivityCount(withCatalog({ "u00-tutorial": ["intro"] }))).toBe(0);
+    expect(learningDayActivityCount(withCatalog({ a: ["intro"], b: ["intro"] }))).toBe(0);
+  });
+
+  test("LD2. 표지 뒤 레슨 하나를 끝내면 1이다", () => {
+    expect(learningDayActivityCount(withCatalog({ "u00-tutorial": ["intro", "S1"] }))).toBe(1);
+  });
+
+  test("LD3. 문화 · 막간 · 최종 테스트 키는 지금처럼 센다", () => {
+    expect(
+      learningDayActivityCount(withCatalog({ a: ["intro", "CULT", "INT", "RP"], b: ["S2"] })),
+    ).toBe(4);
+  });
+
+  test("LD4. 옛 튜토리얼 고정 몫은 그대로 더한다", () => {
+    expect(learningDayActivityCount(passed)).toBe(13);
+    expect(learningDayActivityCount({ ...passed, catalogProgress: { a: ["intro", "S1"] } })).toBe(
+      14,
+    );
+  });
+});
+
 describe("티켓으로 연 유닛", () => {
   const ticketUnits = { "u01-water": ["S1"] };
 

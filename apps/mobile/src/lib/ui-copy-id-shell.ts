@@ -45,7 +45,12 @@ export const commonId: CommonCopy = {
 };
 
 export const shellId: ShellCopy = {
-  tabs: { journey: "Perjalanan", roleplay: "Bermain peran", settings: "Pengaturan" },
+  tabs: {
+    journey: "Perjalanan",
+    roleplay: "Bermain peran",
+    messenger: "Obrolan",
+    settings: "Pengaturan",
+  },
   notifications: "Notifikasi",
   errorBoundary: { title: "Terjadi kesalahan", retry: "Coba lagi" },
 };

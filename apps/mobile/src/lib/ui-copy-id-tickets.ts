@@ -3,10 +3,43 @@
 
 import type { TicketsCopy } from "../screens/tickets/tickets.contract";
 
+const monthsId = [
+  "Januari",
+  "Februari",
+  "Maret",
+  "April",
+  "Mei",
+  "Juni",
+  "Juli",
+  "Agustus",
+  "September",
+  "Oktober",
+  "November",
+  "Desember",
+] as const;
+
 export const ticketsId: TicketsCopy = {
   ticketsLeft: (count) => `${String(count)} tiket tersisa`,
   unlimited: "Tiket tanpa batas",
-  unlimitedValue: "∞",
+  unlimitedLine: "Tanpa tiket · Tanpa batas",
+  noTicketNeeded: "Tidak perlu tiket",
+  unlimitedModal: {
+    guestPass: "PASS TAMU",
+    guestMessage: "Semua pelajaran dan roleplay terbuka\ndi akun ini.",
+    gotIt: "Mengerti",
+    renewsOn: "Diperpanjang pada",
+    endsOn: "Berakhir pada",
+    memberSince: (date) => `Anggota sejak ${date}`,
+    endsDate: (date) => `Berakhir ${date}`,
+    daysLeft: (days) => `${String(days)} hari lagi`,
+    dayProgress: (left, total) => `${String(left)} dari ${String(total)} hari`,
+    activeMessage: "Mulai pelajaran apa pun tanpa tiket.",
+    endingMessage: "Setelah itu, pelajaran memakai tiket lagi.\nSemua progresmu tetap tersimpan.",
+    manage: "Kelola langganan",
+    keep: "Tetap tanpa batas",
+    date: (d) => `${String(d.day)} ${monthsId[d.month - 1] ?? ""} ${String(d.year)}`,
+    shortDate: (d) => `${String(d.day)} ${monthsId[d.month - 1] ?? ""}`,
+  },
   modal: {
     title: () => "tiket tersisa",
     nextTicketIn: "Tiket berikutnya dalam",

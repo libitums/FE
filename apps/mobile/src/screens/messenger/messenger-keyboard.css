@@ -1,102 +1,198 @@
-/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). 값은 디자인(Figma 80-7082)의
-   자판입니다 — 흰 판에 그림자, 키는 30×40 · 모서리 8 · gray-100 면입니다. */
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). 배치는 ADR-0112 — 한 줄 10칸 격자, 칸끼리 맞닿아
+   틈이 없고(칸 전체가 터치 대상), 보이는 키는 칸 안에 3px 안쪽 여백을 두고 그립니다.
+   토큰에 없는 키보드 전용 값 둘: K-INSET 3px(판 좌우 · 칸 안쪽), K-ROWS-MAX 480px(키 줄 폭 상한 —
+   세로 폰은 가장 넓은 기종까지 폭을 채우고, 가로 · 폴더블 · 태블릿에서는 칸이 48에서 멈춰 가운데로).
+   판 높이(안전 영역 제외)는 8 + 54 × 4 + 8 = 232로 예전(24 + 40 × 4 + 8 × 3 + 24)과 같습니다.
+   첫 줄 말풍선이 판 위로 넘치므로 키 면 → 칸 → 줄 → 키 줄 묶음 → 판 모두 overflow: visible입니다
+   (Lynx 기본값은 잘림). z-index는 쓰지 않습니다 — 아래 줄이 나중에 그려져 위를 덮고, z-index는
+   TalkBack 읽는 순서를 갈라놓습니다(ADR-0022). */
 .messenger-keyboard {
   flex-shrink: 0;
   align-self: stretch;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: var(--libitum-spacing-24);
-  padding-bottom: var(--libitum-spacing-24);
-  /* 좌우는 4 — 16이면 375pt 화면에서 키가 디자인 폭보다 줄어듭니다(시스템 자판처럼 가장자리 가까이). */
-  padding-left: var(--libitum-spacing-4);
-  padding-right: var(--libitum-spacing-4);
+  overflow: visible;
+  padding-top: var(--libitum-spacing-8);
+  padding-bottom: var(--libitum-spacing-8);
+  padding-left: 3px;
+  padding-right: 3px;
   border-top-left-radius: var(--libitum-radius-xl);
   border-top-right-radius: var(--libitum-radius-xl);
   background: var(--libitum-color-white);
   box-shadow: var(--libitum-elevation-shadow-s3);
 }
 
-/* 키 줄 묶음 — 인셋은 이 상자의 인라인 바깥 여백으로 면 여백에 더해집니다. 폭은 면 안쪽을 채우되
-   디자인 폭 366을 넘지 않습니다 — 그보다 좁은 화면(360dp)에서는 키가 비율대로 줄어 좌우 여백을
-   지킵니다(iPhone 13 mini 실기 확인 2026-10-19). */
+/* 방이 면 높이를 정하면(height prop, messenger-chat-ui spec §6.3) 키 높이가 거기에 맞고 남는 높이는 판 위쪽 여백입니다. */
+.messenger-keyboard-sized {
+  justify-content: flex-end;
+}
+
+/* 키 줄 묶음 — 인셋은 이 상자의 인라인 바깥 여백으로 면 여백에 더해집니다. */
 .messenger-keyboard-rows {
   width: 100%;
-  max-width: 366px;
+  max-width: 480px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: var(--libitum-spacing-8);
+  overflow: visible;
 }
 
 .messenger-keyboard-row {
   display: flex;
   flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  gap: var(--libitum-spacing-4);
   width: 100%;
+  overflow: visible;
 }
 
-/* 셋째 · 넷째 줄은 양 끝에 붙고 가운데가 벌어집니다(디자인의 space-between). */
-.messenger-keyboard-row-spread {
-  justify-content: space-between;
-}
-
-.messenger-keyboard-cluster {
+/* 칸 = 터치 대상. 줄 합이 10이라 1칸 = 줄 폭의 10%입니다. */
+.messenger-keyboard-cell {
+  flex: 1 1 0;
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
-  width: 63.9344%;
+  justify-content: center;
+  padding: 3px;
+  overflow: visible;
 }
 
-/* 묶음 안 자모 키는 묶음 폭(디자인 234)에 대한 비율입니다. */
-.messenger-keyboard-cluster .messenger-keyboard-key {
-  width: 12.8205%;
+.messenger-keyboard-cell-wide {
+  flex: 1.5 1 0;
 }
 
-/* 키 폭은 디자인 px를 키 줄 디자인 폭 366에 대한 비율로 옮긴 값입니다. */
+.messenger-keyboard-cell-space {
+  flex: 7 1 0;
+}
+
+/* 둘째 줄 양 끝 칸 — 반 칸은 터치 영역이고 보이는 키는 안쪽으로 붙습니다. */
+.messenger-keyboard-cell-end {
+  justify-content: flex-end;
+}
+
+.messenger-keyboard-cell-start {
+  justify-content: flex-start;
+}
+
 .messenger-keyboard-key {
-  width: 8.1967%;
-  height: var(--libitum-spacing-40);
+  position: relative;
+  width: 100%;
+  height: var(--libitum-spacing-48);
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--libitum-radius-sm);
+  overflow: visible;
+  border-radius: var(--libitum-radius-md);
   background: var(--libitum-color-gray-100);
 }
 
-/* 켜진 윗글쇠 — 한 번 누르면 다음 키 하나에만 먹습니다. */
+/* 라벨 · 힌트를 담는 잘리는 면 — 큰 글꼴(ADR-0020)에서 라벨 · 힌트가 이웃 키로 번지지 않게 여기서 자릅니다.
+   말풍선은 이 면의 형제라 키 밖으로 넘칠 수 있습니다(a11y M2). */
+.messenger-keyboard-key-face {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: var(--libitum-radius-md);
+}
+
+/* 보이는 키 폭 = 칸 안쪽 × 1/1.5 — 다른 자모 키와 같은 폭입니다. */
+.messenger-keyboard-key-edge {
+  width: 66.6667%;
+}
+
+.messenger-keyboard-key-function {
+  background: var(--libitum-color-gray-400);
+}
+
+/* 켜진 윗글쇠 — 한 번 누르면 다음 키 하나에만 먹습니다. 흰 아이콘 5.46:1. */
 .messenger-keyboard-key-on {
-  background: var(--libitum-color-gray-300);
+  background: var(--libitum-color-brand-strong);
 }
 
-.messenger-keyboard-key-wide {
-  width: 13.388%;
-}
-
-.messenger-keyboard-key-space {
-  width: 56.2842%;
-}
-
-.messenger-keyboard-key-trailing {
-  width: 21.8579%;
+/* 눌림은 즉시(transition 없음) — reduced motion과 같은 모습입니다. */
+.messenger-keyboard-key-pressed {
+  background: var(--libitum-color-gray-600);
 }
 
 .messenger-keyboard-key-label {
   color: var(--libitum-color-gray-900);
+  font-family: var(--libitum-typography-heading-m-font-family);
+  font-weight: var(--libitum-typography-heading-m-font-weight);
+  font-size: var(--libitum-typography-heading-m-font-size);
+  line-height: var(--libitum-typography-heading-m-line-height);
+  text-align: center;
+}
+
+/* 자모는 모서리 힌트와 겹치지 않게 조금 내립니다(320pt 확인). */
+.messenger-keyboard-key-label-jamo {
+  padding-top: var(--libitum-spacing-6);
+}
+
+.messenger-keyboard-key-label-muted {
+  color: var(--libitum-color-fg-neutral-muted);
   font-family: var(--libitum-typography-label-l-font-family);
   font-weight: var(--libitum-typography-label-l-font-weight);
   font-size: var(--libitum-typography-label-l-font-size);
   line-height: var(--libitum-typography-label-l-line-height);
-  text-align: center;
 }
 
-.messenger-keyboard-key-label-muted {
-  color: var(--libitum-color-gray-700);
+.messenger-keyboard-key-hint {
+  position: absolute;
+  top: var(--libitum-spacing-2);
+  right: var(--libitum-spacing-4);
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-label-s-font-family);
+  font-weight: var(--libitum-typography-label-s-font-weight);
+  font-size: var(--libitum-typography-label-s-font-size);
+  line-height: var(--libitum-typography-label-s-line-height);
+}
+
+/* 눌린 면(gray-600) 위에서는 muted 글자가 3.15:1로 떨어져 gray-900(6.34:1)으로 바꿉니다. */
+.messenger-keyboard-key-pressed .messenger-keyboard-key-hint,
+.messenger-keyboard-key-pressed .messenger-keyboard-key-label-muted {
+  color: var(--libitum-color-gray-900);
 }
 
 .messenger-keyboard-key-icon {
-  width: var(--libitum-icon-size-sm);
-  height: var(--libitum-icon-size-sm);
+  width: var(--libitum-icon-size-md);
+  height: var(--libitum-icon-size-md);
+}
+
+/* 미리보기 말풍선 — 눌린 키 위로 4 띄웁니다(48 + 4). 폭은 키와 같되 최소 48, 가운데. */
+.messenger-keyboard-preview {
+  position: absolute;
+  bottom: 52px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  min-width: var(--libitum-spacing-48);
+  height: var(--libitum-spacing-48);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--libitum-radius-md);
+  background: var(--libitum-color-white);
+  box-shadow: var(--libitum-elevation-shadow-s2);
+}
+
+/* 첫 줄 양 끝(ㅂ · ㅔ)은 가운데 정렬이면 좁은 화면에서 화면 밖으로 나가 가장자리에 맞춥니다. */
+.messenger-keyboard-preview-left {
+  left: 0;
+  transform: none;
+}
+
+.messenger-keyboard-preview-right {
+  left: auto;
+  right: 0;
+  transform: none;
+}
+
+.messenger-keyboard-preview-label {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-display-font-family);
+  font-weight: var(--libitum-typography-display-font-weight);
+  font-size: var(--libitum-typography-display-font-size);
+  line-height: var(--libitum-typography-display-line-height);
+  text-align: center;
 }

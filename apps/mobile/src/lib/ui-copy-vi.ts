@@ -44,6 +44,7 @@ import {
   verificationCodeVi,
   authFailureVi,
 } from "./ui-copy-vi-entry";
+import { messengerChatVi } from "./ui-copy-vi-chat";
 import { learnerProfileVi } from "./ui-copy-vi-profile";
 import { ticketsVi } from "./ui-copy-vi-tickets";
 import { roleplayStoryVi } from "./ui-copy-vi-roleplay-story";
@@ -110,6 +111,7 @@ export const uiCopyVi: UiCopy = {
   roleplayStory: roleplayStoryVi,
   appUpdate: appUpdateVi,
   storyMessenger: storyMessengerVi,
+  messengerChat: messengerChatVi,
   storyIntro: storyIntroVi,
   storyCall: storyCallVi,
   onboarding: onboardingVi,

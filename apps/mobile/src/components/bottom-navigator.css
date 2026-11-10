@@ -1,0 +1,11 @@
+/* 탭이 넷이면 ui-lynx 바(항목 64 · 간격 32 · 좌우 여백 24)가 400pt라 375 · 390 화면을 넘습니다.
+   ui-lynx는 건드리지 않고 앱 쪽에서 간격 24 · 좌우 여백 16으로 덮어 4×64 + 3×24 + 2×16 = 360pt로
+   줄입니다(messenger-chat-ui design.md 10절 N-GAP). 세로 여백은 그대로 두려고 좌우만 longhand로 적습니다. */
+.app-navigator .ui-lynx-bottom-navigator {
+  padding-left: var(--libitum-spacing-16);
+  padding-right: var(--libitum-spacing-16);
+}
+
+.app-navigator .ui-lynx-bottom-navigator-items {
+  gap: var(--libitum-spacing-24);
+}

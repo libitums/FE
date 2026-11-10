@@ -17,6 +17,7 @@ import { loadEpisodeSurveyDone } from "../lib/feedback-api";
 import {
   completedActivityCount,
   completedSurveyEpisodesFrom,
+  learningDayActivityCount,
   trophyCountFrom,
 } from "./learning-progress";
 import type { CompletedEpisode, JourneyProgressState } from "./learning-progress";
@@ -49,7 +50,7 @@ export function useJourneyProgress(
   // 티켓을 쓰고 연 유닛 — 다시 열 때 티켓을 또 쓰지 않습니다. 원장과 같은 저장 · 병합 경로를 탑니다.
   const [ticketUnits, setTicketUnits] = useState<CatalogProgress>({});
   // 엽전을 받은 유닛(ADR-0116) — 보유 엽전은 여기서 파생합니다. 티켓 유닛과 같은 저장 · 병합 경로를 탑니다.
-  const [coinUnits, setCoinUnits] = useState<CatalogProgress>({});
+  const [coinUnits, setCoinUnits] = useState<CatalogProgress>(seed.coinUnits ?? {});
   const [streakDays, setStreakDays] = useState(0);
   // 빈 초기값은 신규 사용자라는 뜻이 아닙니다. 유효한 서버 기록을 합친 뒤에만 안내를 판단합니다.
   // 기기 저장본을 적용한 것만으로는 참이 아닙니다.
@@ -60,7 +61,7 @@ export function useJourneyProgress(
   const [streakCelebration, setStreakCelebration] = useState(false);
   const streakRef = useRef(0);
   streakRef.current = streakDays;
-  // 지표 칩이 굴릴 「오르기 전 값」입니다(ADR-0064). 연속 모달과 같은 조건(활동으로 늘었을 때)에서만 남깁니다.
+  // 지표 칩이 굴릴 「오르기 전 값」입니다(ADR-0064). 트로피는 활동이 늘었을 때, 연속은 학습한 날 기록이 일수를 올렸을 때 남깁니다.
   const [statBumps, setStatBumps] = useState<StatBumps>(noStatBumps);
   // 활동으로 끝낸 에피소드의 설문입니다(ADR-0036). 머리가 연속 모달 다음에 띄웁니다. 에피소드마다 한 번만 묻습니다.
   const [episodeSurvey, setEpisodeSurvey] = useState<CompletedEpisode | null>(null);
@@ -90,6 +91,8 @@ export function useJourneyProgress(
     [],
   );
   const activityCount = useRef(completedActivityCount(state));
+  // 연속 학습의 하루로 세는 활동 수의 직전 값입니다 — 표지는 세지 않습니다(ADR-0035 U2 개정 2026-11-09).
+  const dayActivityCount = useRef(learningDayActivityCount(state));
   const completedEpisodeIds = useRef(
     completedSurveyEpisodesFrom(catalogSections, catalogProgress).map((e) => e.id),
   );
@@ -99,6 +102,7 @@ export function useJourneyProgress(
   const apply = (next: JourneyProgressState): void => {
     latest.current = next;
     activityCount.current = completedActivityCount(next);
+    dayActivityCount.current = learningDayActivityCount(next);
     completedEpisodeIds.current = completedSurveyEpisodesFrom(
       catalogSections,
       next.catalogProgress,
@@ -167,6 +171,9 @@ export function useJourneyProgress(
     const count = completedActivityCount(state);
     const grew = count > activityCount.current;
     activityCount.current = count;
+    const dayCount = learningDayActivityCount(state);
+    const learnedToday = dayCount > dayActivityCount.current;
+    dayActivityCount.current = dayCount;
     const episodes = completedSurveyEpisodesFrom(catalogSections, catalogProgress);
     const newlyCompleted = episodes.filter((e) => !completedEpisodeIds.current.includes(e.id));
     completedEpisodeIds.current = episodes.map((e) => e.id);
@@ -179,7 +186,7 @@ export function useJourneyProgress(
       const next = newlyCompleted.find((e) => !done.includes(e.id));
       if (next !== undefined) setEpisodeSurvey(next);
     }
-    if (grew) {
+    if (learnedToday) {
       setRecordingDay(true);
       void (renderedDays?.record(localDayFrom(new Date())) ?? Promise.resolve())
         .catch(() => undefined)

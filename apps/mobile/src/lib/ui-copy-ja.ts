@@ -44,6 +44,7 @@ import {
   verificationCodeJa,
   authFailureJa,
 } from "./ui-copy-ja-entry";
+import { messengerChatJa } from "./ui-copy-ja-chat";
 import { learnerProfileJa } from "./ui-copy-ja-profile";
 import { ticketsJa } from "./ui-copy-ja-tickets";
 import { roleplayStoryJa } from "./ui-copy-ja-roleplay-story";
@@ -110,6 +111,7 @@ export const uiCopyJa: UiCopy = {
   roleplayStory: roleplayStoryJa,
   appUpdate: appUpdateJa,
   storyMessenger: storyMessengerJa,
+  messengerChat: messengerChatJa,
   storyIntro: storyIntroJa,
   storyCall: storyCallJa,
   onboarding: onboardingJa,
