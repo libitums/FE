@@ -61,6 +61,11 @@ export const correctionDataSchema = z.object({
   items: z.array(correctionItemSchema),
   better: z.nullable(z.object({ text: z.string(), meaning: z.string(), explanation: z.string() })),
   meaning: z.nullable(z.string()),
+  /**
+   * 학습자가 이 메시지에서 쓴 앱에서 배운 표현(PRD §3.7) — 있을 때만. 앱은 카드에 「배운 표현을 썼어요」를 붙인다(칭찬만, 점수 없음).
+   * 칩을 그대로 보낸 메시지(`skipped`)에는 없다.
+   */
+  learnedUsed: z.optional(z.array(z.object({ id: z.string(), surface: z.string() }))),
 });
 
 export const translationDataSchema = z.object({ segment: nonNegativeInt, text: z.string() });

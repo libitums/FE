@@ -205,6 +205,22 @@
             },
             "meaning": {
               "type": ["string", "null"]
+            },
+            "learnedUsed": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "surface": {
+                    "type": "string"
+                  }
+                },
+                "required": ["id", "surface"],
+                "additionalProperties": false
+              }
             }
           },
           "required": [
