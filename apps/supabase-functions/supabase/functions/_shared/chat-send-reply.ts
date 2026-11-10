@@ -140,6 +140,26 @@ export function historyFrom(turn: Pick<BegunTurn, "history">): HistoryEntry[] {
   });
 }
 
+/**
+ * 추천 답변 칩을 그대로 보낸 메시지인가 — 앱의 표시(`from_suggestion`)가 있고 글이 마지막 캐릭터 메시지에 저장된 칩 하나와 (앞뒤 공백을
+ * 걷고) 똑같을 때만. 칩을 고쳤거나 직접 입력했으면, 또 칩을 읽지 못했으면(옛 DB) 거짓 — 보통처럼 피드백한다.
+ */
+export function sentFromSuggestion(
+  body: { readonly text: string; readonly from_suggestion?: boolean },
+  latestSuggestions: readonly string[] | undefined,
+): boolean {
+  if (body.from_suggestion !== true || latestSuggestions === undefined) return false;
+  const text = body.text.trim();
+  return latestSuggestions.some((item) => item.trim() === text);
+}
+
+/** 칩을 그대로 보낸 메시지의 피드백 — 모델을 부르지 않는다. */
+export const skippedFeedback = (original: string): Feedback => ({
+  ...emptyFeedback("none", original),
+  status: "skipped",
+  reason: "suggestion",
+});
+
 /** 피드백을 제한 시간 안에 받습니다. 실패 · 시간 초과는 `unavailable` — 턴을 실패시키지 않습니다(PRD §3.5). */
 export function startFeedback(context: FeedbackContext, abort: AbortController): Promise<Feedback> {
   const lastAssistant = [...context.turn.history]

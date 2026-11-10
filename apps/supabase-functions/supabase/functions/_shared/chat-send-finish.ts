@@ -12,6 +12,8 @@ export type TurnStatus = {
   readonly strikes: number;
   readonly strikeLimit: number;
   readonly memoryFull: boolean;
+  /** 마지막 캐릭터 메시지에 저장된 칩의 글(마이그레이션 20261121) — `from_suggestion` 확인용. 옛 DB에는 없다. */
+  readonly latestSuggestions?: readonly string[];
 };
 
 export type ModerationRecord = {

@@ -29,6 +29,12 @@ export const chatSendRequestSchema = z.object({
   ),
   input_mode: inputModeSchema,
   client_region: z.optional(z.string().check(z.regex(/^[A-Z]{2}$/))),
+  /**
+   * 추천 답변 칩을 탭해 그대로 보냈으면 참입니다. 서버는 `text`가 마지막 캐릭터 메시지에 저장된 칩 하나와 (앞뒤 공백을 걷고) 똑같을 때만
+   * 피드백을 건너뜁니다(`correction`의 `status: "skipped"`). 칩을 고쳐 보냈거나 직접 입력했으면 보내지 않습니다 — 보내도 글이 다르면
+   * 보통처럼 피드백합니다.
+   */
+  from_suggestion: z.optional(z.boolean()),
 });
 
 export type ChatSendRequest = z.infer<typeof chatSendRequestSchema>;

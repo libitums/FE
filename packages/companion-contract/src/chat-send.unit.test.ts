@@ -37,6 +37,16 @@ describe("chat-send 요청", () => {
     expect(chatSendRequestSchema.safeParse({ ...valid, client_region: "PH" }).success).toBe(true);
   });
 
+  test("CS3b. from_suggestion은 있으면 불리언", () => {
+    expect(chatSendRequestSchema.parse({ ...valid, from_suggestion: true })).toEqual({
+      ...valid,
+      from_suggestion: true,
+    });
+    expect(chatSendRequestSchema.safeParse({ ...valid, from_suggestion: "yes" }).success).toBe(
+      false,
+    );
+  });
+
   // CS4 — 모르는 판은 모양 오류가 아니라 `unsupported_contract_version`으로 갈라야 하므로, 스키마는 정수면 통과시킵니다.
   test("CS4. contract_version은 정수면 통과한다(판 지원 여부는 서버가 가린다)", () => {
     expect(chatSendRequestSchema.safeParse({ ...valid, contract_version: 99 }).success).toBe(true);

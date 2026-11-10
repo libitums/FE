@@ -183,14 +183,24 @@ test("RM4. 상한은 설정에서 읽는다 — 공유 기억은 따로, 상한�
 });
 
 test("RM5. 턴 상태 — 창 안의 반복 위반 수 · 상한, 창이 지나면 0", async () => {
-  expect(await status()).toEqual({ strikes: 0, strikeLimit: 3, memoryFull: false });
+  expect(await status()).toEqual({
+    strikes: 0,
+    strikeLimit: 3,
+    memoryFull: false,
+    latestSuggestions: [],
+  });
   await db.admin.query(
     "insert into companion.moderation_state (user_id, strikes, window_started_at) values ($1, 2, $2)",
     [tester, hoursAgo(1)],
   );
   expect(await status()).toMatchObject({ strikes: 2 });
   await settings("strike_limit = 5, strike_window = interval '30 minutes'");
-  expect(await status()).toEqual({ strikes: 0, strikeLimit: 5, memoryFull: false });
+  expect(await status()).toEqual({
+    strikes: 0,
+    strikeLimit: 5,
+    memoryFull: false,
+    latestSuggestions: [],
+  });
 });
 
 test("RM6. 거절 답 — 차단 턴에 보통 assistant 메시지로(meta.refusal) 저장, 차감 없음 · 반복 위반으로 센다", async () => {

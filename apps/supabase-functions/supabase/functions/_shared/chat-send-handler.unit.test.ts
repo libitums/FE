@@ -1211,3 +1211,75 @@ describe("추천 답변 칩(스위치가 켜져 있으면 매 턴)", () => {
     });
   });
 });
+
+describe("칩을 그대로 보낸 메시지는 피드백을 건너뛴다", () => {
+  const chips = ["저도 오늘 한국어 공부했어요.", "덕수쌤은 오늘 뭐 했어요?", "와, 진짜요?"];
+  const status = { strikes: 0, strikeLimit: 3, memoryFull: false, latestSuggestions: chips };
+  const counting = () => {
+    let calls = 0;
+    const llm = llmWith({
+      feedback: async () => {
+        calls += 1;
+        return fakeCompanionLlm().feedback({
+          text: "x",
+          l1: null,
+          previous: null,
+          history: [],
+          speechLevel: null,
+          character: null,
+          signal: new AbortController().signal,
+        });
+      },
+    });
+    return { llm, calls: () => calls };
+  };
+  const correctionOf = (list: TurnEvent[]) =>
+    list.flatMap((event) => (event.event === "correction" ? [event.data] : []));
+
+  test("CS33. 표시 + 저장된 칩과 같은 글(앞뒤 공백 무시)이면 모델 없이 skipped를 보내고 저장 · meta에 남긴다", async () => {
+    const { llm, calls } = counting();
+    const { handler, finishArgs, settle } = setup({ status, llm });
+    const text = `  ${chips[1]} `;
+    const list = await events(await handler(post(body({ text, from_suggestion: true }))));
+    await settle();
+    expect(checkTurnOrder(list)).toEqual({ ok: true });
+    expect(calls()).toBe(0);
+    const skipped = {
+      status: "skipped",
+      reason: "suggestion",
+      kind: null,
+      original: text,
+      corrected: null,
+      items: [],
+      better: null,
+      meaning: null,
+    };
+    expect(correctionOf(list)).toEqual([{ userMessageId: begun.userMessageId, ...skipped }]);
+    expect(finishArgs()).toMatchObject({
+      p_feedback: skipped,
+      p_assistant: { meta: { fromSuggestion: "matched" } },
+    });
+  });
+
+  test("CS34. 칩을 고쳤거나 · 표시가 없거나 · 칩을 읽지 못했으면(옛 DB) 보통처럼 피드백한다", async () => {
+    const cases: { overrides: Record<string, unknown>; status: unknown; meta?: string }[] = [
+      {
+        overrides: { text: "덕수쌤은 어제 뭐 했어요?", from_suggestion: true },
+        status,
+        meta: "edited",
+      },
+      { overrides: { text: chips[0] }, status },
+      { overrides: { text: chips[0], from_suggestion: true }, status: undefined, meta: "edited" },
+    ];
+    for (const entry of cases) {
+      const { llm, calls } = counting();
+      const { handler, finishArgs, settle } = setup({ status: entry.status, llm });
+      const list = await events(await handler(post(body(entry.overrides))));
+      await settle();
+      expect(calls()).toBe(1);
+      expect(correctionOf(list)[0]!.status).not.toBe("skipped");
+      const meta = (finishArgs()!.p_assistant as { meta: Record<string, unknown> }).meta;
+      expect(meta.fromSuggestion).toBe(entry.meta);
+    }
+  });
+});

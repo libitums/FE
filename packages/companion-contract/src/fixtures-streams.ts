@@ -122,6 +122,23 @@ export const turnFixtureEvents = {
     state("casual", true),
     done(),
   ]),
+  // 추천 답변 칩을 그대로 보낸 턴(`from_suggestion`) — 피드백을 만들지 않고 `skipped`를 한 번 보낸다.
+  "turn-from-suggestion": numbered([
+    start(),
+    delta(0, "speech", "떡볶이 좋죠! 매운 거 잘 먹어요?"),
+    {
+      event: "correction",
+      data: {
+        userMessageId: ids.user,
+        status: "skipped",
+        reason: "suggestion",
+        original: "저는 떡볶이를 샀어요!",
+        ...emptyCard,
+      },
+    },
+    state("polite"),
+    done(),
+  ]),
   "turn-correction-unavailable": numbered([
     start(),
     delta(0, "speech", "좋아요. 내일 또 얘기해요!"),

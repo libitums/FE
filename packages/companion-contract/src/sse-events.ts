@@ -47,11 +47,14 @@ export const feedbackKindSchema = z.enum(["correction", "better", "l1_to_ko"]);
  * - `better`: 덧붙이는 다른 자연스러운 표현 — 분명히 도움이 될 때만. `meaning` · `explanation`은 학습자 언어.
  * - `meaning`: `corrected`의 뜻(학습자 언어). `l1_to_ko`면 늘 있다.
  * `none`(고칠 것 없음)과 `unavailable`(생성 실패 · 시간 초과)도 한 번 와서, 받는 쪽이 기다림을 끝낼 수 있게 합니다.
+ * `skipped`는 피드백을 만들지 않았다는 뜻입니다 — `reason: "suggestion"`이면 추천 답변 칩을 그대로 보낸 메시지입니다(앱: 「피드백 생략(추천 답변)」).
+ * `reason`은 `skipped`일 때만 있습니다.
  * 2026-11-09 이전 판(kind마다 다른 모양 · `l1ToKo`)은 앱이 피드백을 쓰기 전이라 같은 계약 판(1)에서 바꿨습니다.
  */
 export const correctionDataSchema = z.object({
   userMessageId: z.uuid(),
-  status: z.enum(["ok", "none", "unavailable"]),
+  status: z.enum(["ok", "none", "unavailable", "skipped"]),
+  reason: z.optional(z.enum(["suggestion"])),
   kind: z.nullable(feedbackKindSchema),
   original: z.string(),
   corrected: z.nullable(z.string()),

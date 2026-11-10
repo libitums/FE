@@ -14,7 +14,9 @@ export type FeedbackItem = { original: string; corrected: string; reason: string
  * 앱 순서: 올바른 문장(`corrected`) → 고칠 점(`items` — 원문 표현 · 고친 표현 · 이유) → 더 나은 표현(`better` — 표현 · 뜻 · 설명).
  */
 export type Feedback = {
-  readonly status: "ok" | "none" | "unavailable";
+  /** `skipped` — 만들지 않음(`reason: "suggestion"`: 추천 답변 칩을 그대로 보낸 메시지). */
+  readonly status: "ok" | "none" | "unavailable" | "skipped";
+  readonly reason?: "suggestion";
   readonly kind: "correction" | "better" | "l1_to_ko" | null;
   /** 학습자 메시지 그대로. */
   readonly original: string;

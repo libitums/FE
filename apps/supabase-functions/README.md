@@ -223,8 +223,9 @@ Firebase 프로젝트에 Android 앱을 등록하고 FCM HTTP v1 API 권한이 �
 | `20261118120000_companion_reply_suggestions.sql` | 추천 답변 칩 — `messages.suggestions` · `profiles.reply_suggestions` 열, `companion_suggest_context` · `companion_save_suggestions`, 앱 프로필 · 운영자 함수 확장 |
 | `20261119120000_companion_auto_suggestions.sql` | 추천 답변 칩 자동 — `companion_turn_gate`가 `replySuggestions`를 돌려준다 · 메시지 목록(`message_json`)에 `suggestions` |
 | `20261120120000_companion_turn_cost.sql` | 턴 비용 · 지난 대화 — `companion_begin_turn`의 지난 대화를 마지막 요약 뒤 메시지로, 기억 묶음 `settings.memory_every` · `conversations.memory_extracted_until` · `companion_memory_source` · `companion_mark_memories` |
+| `20261121110000_companion_suggestion_feedback.sql` | 칩을 그대로 보낸 메시지는 피드백 건너뛰기 — `corrections.status`에 `skipped` · `correction_json`의 `reason` · `companion_turn_status`의 `latestSuggestions` |
 
-통합 테스트 CF1 ~ CF11 · CH1 ~ CH10 · TV1 ~ TV13 · ID1 ~ ID3 · PP1 ~ PP9 · RM1 ~ RM8 · RS1 ~ RS8 · AS1 ~ AS3 · TC1 ~ TC4, 함수 단위 테스트 CS1 ~ CS32 · SG · CE · BR · LL · EV · FB · SF · RF · SU.
+통합 테스트 CF1 ~ CF11 · CH1 ~ CH10 · TV1 ~ TV13 · ID1 ~ ID3 · PP1 ~ PP9 · RM1 ~ RM8 · RS1 ~ RS8 · AS1 ~ AS3 · TC1 ~ TC4 · SN1 ~ SN2, 함수 단위 테스트 CS1 ~ CS34 · SG · CE · BR · LL · EV · FB · SF · RF · SU.
 
 **턴 흐름** — 판정(시험 계정 · 티어 · 연령 · 일시 차단 · 이용 시간 · 멱등) → 시작(체험 · 크레딧 예약 + 유저 메시지 저장, 한 트랜잭션) →
 SSE → 입력 검사 · 메인 답변 · 피드백을 동시에 → 위기(`crisis`) · 입력 차단(단계에 따라 성격대로 거절 또는 `guardrail_blocked`, 아래) / 조각(`delta`, 미성년자 · 나이 모름은 출력 검사 뒤) ·
@@ -406,6 +407,10 @@ ops-dashboard가 검사 · 피드백 프롬프트를 케이스 묶음으로 돌�
 - 저장: `ok`면 스트림을 닫은 뒤 `companion_save_suggestions`로 그 캐릭터 메시지의 `messages.suggestions`에(`companion-suggest`의 캐시와 같은 `{items, model,
   createdAt, playground?}`). 끝(finish) 트랜잭션이 메시지를 만든 뒤에야 붙일 수 있어 `done`을 늦추지 않게 닫은 뒤 한다 — 저장 실패는 로그(`suggestions_save_failed`)만.
   메시지 목록(`companion_list_messages`)의 캐릭터 메시지에 `suggestions`(칩 셋, 없으면 null)로 다시 온다.
+- 칩을 그대로 보낸 메시지: 앱이 칩을 탭해 고치지 않고 보내면 요청에 `from_suggestion: true`를 싣는다. 서버는 글이 마지막 캐릭터 메시지에 저장된 칩 하나와
+  (앞뒤 공백을 걷고) 똑같을 때만(`companion_turn_status`의 `latestSuggestions`, 마이그레이션 20261121) 피드백 모델을 부르지 않고
+  `correction {"status":"skipped","reason":"suggestion",…}`을 보내고 그 카드를 저장한다(앱: 「피드백 생략(추천 답변)」). 칩을 고쳤거나 직접 입력했으면,
+  또 옛 DB라 칩을 읽지 못했으면 보통처럼 피드백한다. 캐릭터 메시지 `meta.fromSuggestion`: `matched`(건너뜀) · `edited`(표시는 왔지만 글이 다름).
 - 늘어나는 지연: 번역과 겹쳐 돌아 `state` · `done`이 늦어지는 것은 둘 중 긴 쪽만큼 — 칩이 번역보다 늦으면 그 차이, 최악 6초(칩 제한 시간)다.
 
 **companion-suggest** — 「다시 만들기」(`refresh: true`)와 자동 칩이 `unavailable`이었거나 오지 않은 턴의 대체 경로. 같은 메시지에 저장된 칩(자동으로 만든 것 포함)이
@@ -460,6 +465,8 @@ supabase functions serve --no-verify-jwt                                        
    `20261120120000_companion_turn_cost.sql`은 20261119 **뒤에**, **새 함수(chat-send · companion-proactive)를 배포하기 전에** 적용한다(같은 방식의 묶음).
    새 `chat-send`는 턴 뒤에 `companion_memory_source`를 먼저 불러서, 옛 DB면 그 호출이 실패해 기억 · 요약이 모두 돌지 않는다(턴 자체는 된다). 옛 `chat-send`는 새 DB에서도
    그대로 돈다(지난 대화가 요약 뒤로 줄 뿐). 적용 뒤 `chat-send` · `companion-proactive` · `companion-eval`을 다시 배포한다.
+   `20261121110000_companion_suggestion_feedback.sql`은 20261120 **뒤에** 적용한다(같은 방식의 묶음). 함수보다 먼저든 나중이든 깨지지 않는다 — 옛 DB면
+   `latestSuggestions`가 없어 새 `chat-send`가 `skipped`를 만들지 않고 보통처럼 피드백할 뿐이다. 그다음 `chat-send`를 다시 배포한다.
 3. 비밀: `supabase secrets set --env-file supabase/functions/.env`. 키가 아직 없으면 `COMPANION_LLM=fake`로 화면만 먼저 본다.
 4. `supabase functions deploy chat-send` · `supabase functions deploy companion-proactive` · `supabase functions deploy companion-eval`(`config.toml`의 `verify_jwt = false`를 따른다).
 5. 예약 작업: Vault에 서버 키(`companion_service_role_key`)를 넣고 `supabase/cron/companion.sql`을 SQL 편집기에서 한 번 실행한다.

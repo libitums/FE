@@ -91,7 +91,11 @@
                   },
                   "status": {
                     "type": "string",
-                    "enum": ["ok", "none", "unavailable"]
+                    "enum": ["ok", "none", "unavailable", "skipped"]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "enum": ["suggestion"]
                   },
                   "kind": {
                     "anyOf": [
