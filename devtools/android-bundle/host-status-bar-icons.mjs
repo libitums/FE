@@ -68,6 +68,8 @@ export const statusBarSurfaceRegistry = {
         { component: "JourneyStatModal", file: "screens/journey-map/JourneyStatModal.tsx" },
         // 학습 티켓 모달(ADR-0075 E1)이 같은 뼈대 · 같은 짙은 바탕을 씁니다.
         { component: "TicketStatModal", file: "screens/tickets/TicketStatModal.tsx" },
+        // 무제한 티켓 모달(ADR-0115)도 같은 뼈대 · 같은 짙은 바탕입니다.
+        { component: "UnlimitedTicketModal", file: "screens/tickets/UnlimitedTicketModal.tsx" },
       ],
     },
     // 티켓 없음 대화상자(ADR-0075 E6m) — 띠를 덮는 것은 ui-lynx 기본 스크림(0.45)이라 다른 확인 대화상자처럼

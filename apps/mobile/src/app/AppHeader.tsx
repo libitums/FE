@@ -1,4 +1,4 @@
-import { useEffect, useState } from "@lynx-js/react";
+import { useEffect, useMemo, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import { TopBar } from "../components/TopBar";
@@ -8,6 +8,9 @@ import type { StatBumpWiring } from "./learning-progress";
 import { EpisodeSurveySheet } from "../screens/episode-survey/EpisodeSurveySheet";
 import { JourneyStatModal } from "../screens/journey-map/JourneyStatModal";
 import { TicketStatModal } from "../screens/tickets/TicketStatModal";
+import { UnlimitedTicketModal } from "../screens/tickets/UnlimitedTicketModal";
+import { unlimitedPassView } from "../lib/unlimited-pass";
+import type { UnlimitedPass } from "../lib/unlimited-pass";
 import type { TicketHeaderWiring } from "./use-learning-tickets";
 import {
   streakTrack,
@@ -22,7 +25,7 @@ import {
 // `Nav`가 관여하지 않습니다(ADR-0007 D3). 전에는 여정 맵이 지표 모달을 소유했는데,
 // 머리가 셸로 올라오면서 모달도 함께 올라왔습니다.
 
-type AppHeaderLayer = JourneyStatKind | "survey" | "tickets";
+type AppHeaderLayer = JourneyStatKind | "survey" | "tickets" | "unlimited";
 
 export type AppHeaderProps = {
   readonly streakDays: number;
@@ -65,8 +68,11 @@ export type AppHeaderProps = {
   readonly statBump?: StatBumpWiring;
   /** 학습 티켓 칩과 그 모달(시안 E1)입니다. 없으면 칩을 그리지 않습니다. */
   readonly tickets?: TicketHeaderWiring;
-  /** 시험 계정입니다(ADR-0085) — 티켓 칩이 「∞」이고 모달을 열지 않습니다. */
-  readonly ticketsUnlimited?: boolean;
+  /**
+   * 무제한 상태입니다(ADR-0115) — 있으면 티켓 칩이 무제한 칩이고, 누르면 무제한 모달을 엽니다. 지금은 시험 계정
+   * (ADR-0085)만 `{ kind: "guest" }`로 넘어옵니다.
+   */
+  readonly unlimitedPass?: UnlimitedPass;
 };
 
 export function AppHeader({
@@ -83,11 +89,24 @@ export function AppHeader({
   onSkipEpisodeSurvey,
   statBump,
   tickets,
-  ticketsUnlimited = false,
+  unlimitedPass,
 }: AppHeaderProps): ReactNode {
   const [openLayer, setOpenLayer] = useState<AppHeaderLayer | null>(null);
   const copy = useUiCopy();
   const close = () => setOpenLayer(null);
+  // 무제한 레이어가 열린 채 무제한 상태가 사라지면(로그아웃 · 표시 해제) 열린 레이어가 없는 것으로 봅니다 — 아무것도 그리지
+  // 않으면서 머리만 낭독에서 가려진 채 남지 않게 합니다.
+  const layer = openLayer === "unlimited" && unlimitedPass === undefined ? null : openLayer;
+  const unlimitedOpen = layer === "unlimited";
+  // 모달의 모양은 열릴 때(그리고 무제한 상태가 바뀔 때) 한 번 셉니다 — 렌더마다 `Date.now()`로 새 객체를 만들면 머리가
+  // 다시 그려질 때마다 모달도 다시 그려집니다. 남은 날은 하루 단위라 모달이 떠 있는 동안 다시 셀 필요가 없습니다.
+  const unlimitedView = useMemo(
+    () =>
+      unlimitedOpen && unlimitedPass !== undefined
+        ? unlimitedPassView(unlimitedPass, Date.now())
+        : null,
+    [unlimitedOpen, unlimitedPass],
+  );
   const ticketModalOpen = openLayer === "tickets";
   // 티켓 모달이 떠 있는 동안 1초마다 다시 그리도록 알립니다(카운트다운). 닫히거나 머리가 내려가면 거둡니다.
   useEffect(() => {
@@ -96,6 +115,12 @@ export function AppHeader({
     return () => tickets?.onModalChange(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ticketModalOpen]);
+
+  // 무제한 상태가 사라진 채 열린 무제한 레이어는 닫아 둡니다 — 남겨 두면 아래 두 effect가 막히고, 상태가 다시
+  // 들어오면 모달이 저절로 다시 뜹니다. 같은 렌더 안에서는 위 `layer`가 이미 닫힌 것으로 봅니다.
+  useEffect(() => {
+    if (openLayer === "unlimited" && unlimitedPass === undefined) setOpenLayer(null);
+  }, [openLayer, unlimitedPass]);
 
   // 다른 레이어가 떠 있거나 화면 쪽 레이어가 덮고 있으면 기다립니다 — 겹쳐 띄우지 않습니다.
   useEffect(() => {
@@ -123,7 +148,7 @@ export function AppHeader({
         }
         data-testid="app-header"
         style={{ top: `${top}px` }}
-        accessibility-elements-hidden={openLayer !== null || obscured}
+        accessibility-elements-hidden={layer !== null || obscured}
       >
         <TopBar
           streakDays={streakDays}
@@ -132,10 +157,10 @@ export function AppHeader({
           onOpenStreak={() => setOpenLayer("streak")}
           onOpenTrophy={() => setOpenLayer("trophy")}
           ticketCount={tickets?.status.available ?? null}
-          ticketsUnlimited={ticketsUnlimited}
-          onOpenTickets={() => setOpenLayer("tickets")}
+          ticketsUnlimited={unlimitedPass !== undefined}
+          onOpenTickets={() => setOpenLayer(unlimitedPass === undefined ? "tickets" : "unlimited")}
           bumps={statBump?.statBumps}
-          bumpHeld={openLayer !== null || obscured || celebrateStreak}
+          bumpHeld={layer !== null || obscured || celebrateStreak}
           onBumped={statBump?.onStatBumped}
           ticketDropFrom={tickets?.dropFrom ?? null}
           onTicketDropped={tickets?.onDropped}
@@ -164,6 +189,9 @@ export function AppHeader({
           onGetMore={tickets.onGetMore}
           onClose={close}
         />
+      ) : null}
+      {unlimitedView !== null ? (
+        <UnlimitedTicketModal view={unlimitedView} onClose={close} />
       ) : null}
       {openLayer === "survey" && episodeSurvey !== null ? (
         <EpisodeSurveySheet

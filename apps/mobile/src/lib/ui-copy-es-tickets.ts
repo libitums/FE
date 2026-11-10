@@ -3,11 +3,44 @@
 
 import type { TicketsCopy } from "../screens/tickets/tickets.contract";
 
+const monthsEs = [
+  "enero",
+  "febrero",
+  "marzo",
+  "abril",
+  "mayo",
+  "junio",
+  "julio",
+  "agosto",
+  "septiembre",
+  "octubre",
+  "noviembre",
+  "diciembre",
+] as const;
+
 export const ticketsEs: TicketsCopy = {
   ticketsLeft: (count) =>
     count === 1 ? "Te queda 1 boleto" : `Te quedan ${String(count)} boletos`,
   unlimited: "Boletos ilimitados",
-  unlimitedValue: "∞",
+  unlimitedLine: "Sin usar boleto · Ilimitado",
+  noTicketNeeded: "No se necesita boleto",
+  unlimitedModal: {
+    guestPass: "PASE DE INVITADO",
+    guestMessage: "Todas las lecciones y los roleplays\nestán abiertos en esta cuenta.",
+    gotIt: "Entendido",
+    renewsOn: "Se renueva el",
+    endsOn: "Termina el",
+    memberSince: (date) => `Miembro desde el ${date}`,
+    endsDate: (date) => `Termina el ${date}`,
+    daysLeft: (days) => (days === 1 ? "Queda 1 día" : `Quedan ${String(days)} días`),
+    dayProgress: (left, total) => `${String(left)} de ${String(total)} días`,
+    activeMessage: "Empieza cualquier lección sin boleto.",
+    endingMessage: "Después, las lecciones vuelven a usar boletos.\nConservas todo tu progreso.",
+    manage: "Gestionar suscripción",
+    keep: "Mantener ilimitado",
+    date: (d) => `${String(d.day)} de ${monthsEs[d.month - 1] ?? ""} de ${String(d.year)}`,
+    shortDate: (d) => `${String(d.day)} de ${monthsEs[d.month - 1] ?? ""}`,
+  },
   modal: {
     title: (count) => (count === 1 ? "boleto restante" : "boletos restantes"),
     nextTicketIn: "Siguiente boleto en",

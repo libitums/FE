@@ -1,7 +1,9 @@
 // 결과 화면의 「다음 학습」이 열 유닛입니다 — 같은 에피소드 사슬(레슨들 → 최종)에서 방금 끝낸 유닛의 바로 다음입니다.
-// 최종 테스트 다음은 없습니다(에필로그로 갑니다). 순수 함수만 있습니다.
+// 최종 테스트 다음은 없습니다(에필로그로 갑니다). 순수 함수만 있습니다 — 단, 티켓 비용은 시험 계정 표시(모듈 값,
+// ADR-0085 대가 1)를 읽어 무제한이면 `"unlimited"`입니다(ADR-0115).
 
 import { catalogUnitTicketCost } from "../lib/catalog-ticket-cost";
+import { isTesterAccessActive } from "../lib/tester-access";
 import type { CatalogProgress, CatalogUnitKey } from "../lib/catalog-progress";
 import type { CatalogStartSource } from "../lib/catalog-learning-event.contract";
 import type { LessonCompleteNext } from "../screens/lesson-complete/LessonCompleteNextActions";
@@ -54,13 +56,16 @@ export function catalogResultNextOf(
   return {
     next: {
       kind: next.kind,
-      ticketCost: catalogUnitTicketCost(
-        input.catalogProgress,
-        episodeId,
-        next.unitKey,
-        input.catalogTicketUnits ?? {},
-        catalogIsStoryUnit(input.catalogSections, episodeId, next.unitKey),
-      ),
+      // 시험 계정은 무제한이라 숫자 대신 무한 기호 태그입니다(ADR-0115).
+      ticketCost: isTesterAccessActive()
+        ? "unlimited"
+        : catalogUnitTicketCost(
+            input.catalogProgress,
+            episodeId,
+            next.unitKey,
+            input.catalogTicketUnits ?? {},
+            catalogIsStoryUnit(input.catalogSections, episodeId, next.unitKey),
+          ),
       onStart: () => input.onStartCatalogUnit(episodeId, next.unitKey, "result"),
     },
   };

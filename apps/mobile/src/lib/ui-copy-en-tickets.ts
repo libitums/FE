@@ -3,10 +3,43 @@
 import type { TicketsCopy } from "../screens/tickets/tickets.contract";
 import { n } from "./ui-copy-en-plural";
 
+const monthsEn = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+] as const;
+
 export const ticketsEn: TicketsCopy = {
   ticketsLeft: (count) => `${n(count, "ticket", "tickets")} left`,
   unlimited: "Unlimited tickets",
-  unlimitedValue: "∞",
+  unlimitedLine: "No ticket used · Unlimited",
+  noTicketNeeded: "No ticket needed",
+  unlimitedModal: {
+    guestPass: "GUEST PASS",
+    guestMessage: "Every lesson and roleplay is open\non this account.",
+    gotIt: "Got it",
+    renewsOn: "Renews on",
+    endsOn: "Ends on",
+    memberSince: (date) => `Member since ${date}`,
+    endsDate: (date) => `Ends ${date}`,
+    daysLeft: (days) => (days === 1 ? "1 day left" : `${String(days)} days left`),
+    dayProgress: (left, total) => `${String(left)} of ${String(total)} days`,
+    activeMessage: "Start any lesson without a ticket.",
+    endingMessage: "After that, lessons use tickets again.\nYou keep all your progress.",
+    manage: "Manage subscription",
+    keep: "Keep unlimited",
+    date: (d) => `${monthsEn[d.month - 1] ?? ""} ${String(d.day)}, ${String(d.year)}`,
+    shortDate: (d) => `${monthsEn[d.month - 1] ?? ""} ${String(d.day)}`,
+  },
   modal: {
     title: (count) => (count === 1 ? "ticket left" : "tickets left"),
     nextTicketIn: "Next ticket in",

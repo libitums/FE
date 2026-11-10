@@ -9,6 +9,7 @@ import type { StatBumpKind, StatBumps } from "../lib/stat-bump";
 import { useUiCopy } from "../lib/ui-copy";
 
 import { StatChip } from "./StatChip";
+import { UnlimitedTicketChip } from "./UnlimitedTicketChip";
 import { hasTopBarNotificationsShade, topBarNotificationsClassName } from "./top-bar-press";
 
 import "./top-bar.css";
@@ -30,7 +31,7 @@ export type TopBarProps = {
   /** 남은 학습 티켓 수입니다. 넘기지 않거나 `null`이면 칩을 그리지 않습니다. */
   readonly ticketCount?: number | null;
   readonly onOpenTickets?: () => void;
-  /** 시험 계정입니다(ADR-0085) — 티켓 칩이 숫자 대신 「∞」이고 누를 수 없습니다. */
+  /** 무제한입니다(시험 계정 — ADR-0085) — 티켓 칩이 무제한 칩(ADR-0115)이고, 누르면 `onOpenTickets`입니다. */
   readonly ticketsUnlimited?: boolean;
   /** 활동으로 오르기 전 값입니다(ADR-0064). 칩이 그 값에서 지금 값으로 한 번 굴립니다. */
   readonly bumps?: StatBumps;
@@ -139,19 +140,24 @@ export function TopBar({
             onBumped={() => onBumped?.("trophy")}
           />
         )}
-        {/* 학습 티켓은 숫자만 섭니다(시안 E1). 오르지는 않고, 새 레슨에 한 장을 쓴 순간 한 번 줄어듭니다(시안 E4). */}
-        {ticketCount === null ? null : (
+        {/* 학습 티켓은 숫자만 섭니다(시안 E1). 오르지는 않고, 새 레슨에 한 장을 쓴 순간 한 번 줄어듭니다(시안 E4).
+            무제한(ADR-0115)이면 숫자 대신 무제한 칩이 서고, 누르면 무제한 모달을 엽니다(ADR-0085 D3 개정). */}
+        {ticketCount === null ? null : ticketsUnlimited ? (
+          <UnlimitedTicketChip
+            testId="top-bar-tickets"
+            accessibilityLabel={copy.tickets.unlimited}
+            height="touch-target"
+            onTap={onOpenTickets === undefined ? undefined : handleOpenTickets}
+          />
+        ) : (
           <StatChip
             tone="ticket"
             value={ticketCount}
-            {...(ticketsUnlimited ? { valueText: copy.tickets.unlimitedValue } : {})}
-            accessibilityLabel={
-              ticketsUnlimited ? copy.tickets.unlimited : copy.tickets.ticketsLeft(ticketCount)
-            }
+            accessibilityLabel={copy.tickets.ticketsLeft(ticketCount)}
             testId="top-bar-tickets"
             surface="white"
             height="touch-target"
-            onTap={ticketsUnlimited || onOpenTickets === undefined ? undefined : handleOpenTickets}
+            onTap={onOpenTickets === undefined ? undefined : handleOpenTickets}
             dropFrom={ticketDropFrom}
             onDropped={onTicketDropped}
           />

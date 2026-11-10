@@ -34,6 +34,7 @@ import {
 } from "./LessonCompleteReviewSummary";
 import { LessonCompleteNextActions } from "./LessonCompleteNextActions";
 import { LessonCompleteStats } from "./LessonCompleteStats";
+import { LessonCompleteUnlimitedLine } from "./LessonCompleteUnlimitedLine";
 import { noStatBumps } from "../../lib/stat-bump";
 
 import type { LessonCompleteScreenProps } from "./lesson-complete-screen-props";
@@ -213,6 +214,8 @@ export function LessonCompleteScreen({
         </view>
       )}
 
+      {/* 무제한이면 남은 장수 줄 자리에 「No ticket used · Unlimited」 알약입니다(ADR-0115). */}
+      {ticketChip?.unlimited === true ? <LessonCompleteUnlimitedLine /> : null}
       {ticketsLeft === undefined ? null : (
         <view
           className="ticket-left-line"

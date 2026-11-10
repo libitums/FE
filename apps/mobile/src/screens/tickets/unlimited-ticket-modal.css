@@ -1,0 +1,165 @@
+/* 무제한 티켓 모달(ADR-0115). 뼈대는 티켓 모달(`journey-stat-modal` · `ticket-modal-*`)을 그대로 쓰고, 무한 기호 · 뒤 빛 ·
+   요금제 알약 · 기간 카드 · 버튼 셋만 여기 둡니다. 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). 알파가 붙은
+   색은 알파 토큰이 없어 rgba로 적고(주황 = brand-secondary #ff8d28, 노랑 = feedback-warning #ffc500), 유료 요금제 알약은 단색
+   fg-brand입니다(아래). */
+
+/* 뒤 빛 — 무한 기호 뒤에 주황이 둥글게 번집니다. 움직이지 않습니다. */
+.unlimited-ticket-modal-glow {
+  position: absolute;
+  top: 96px;
+  left: 50%;
+  width: 280px;
+  height: 280px;
+  margin-left: -140px;
+  border-radius: 140px;
+  background-image: radial-gradient(
+    circle,
+    rgba(255, 141, 40, 0.38) 0%,
+    rgba(244, 107, 24, 0.12) 40%,
+    rgba(244, 107, 24, 0) 70%
+  );
+}
+
+/* 큰 무한 기호 — 숫자 120 자리에 가로로 긴 그림(128 × 64)을 세웁니다. */
+.unlimited-ticket-modal-infinity {
+  width: 128px;
+  height: 64px;
+  margin-top: var(--libitum-spacing-24);
+  margin-bottom: var(--libitum-spacing-24);
+}
+
+/* 티켓은 무한 기호 오른쪽 위에 작게 기울여 붙입니다(티켓 모달은 56, 여기는 40). */
+.unlimited-ticket-modal-ticket {
+  top: 0;
+  right: -30px;
+  width: 40px;
+  height: 40px;
+}
+
+.unlimited-ticket-modal-ticket-art {
+  width: 40px;
+  height: 40px;
+}
+
+.unlimited-ticket-modal-plan {
+  margin-top: var(--libitum-spacing-12);
+  padding: var(--libitum-spacing-2) var(--libitum-spacing-12);
+  border-radius: var(--libitum-radius-full);
+}
+
+/* 유료 요금제 알약은 단색 fg-brand(#b94208) 면 — 흰 글자 대비 5.46:1(AA). 그라데이션 면은 밝은 쪽에서 흰 작은 글자가
+   4.5:1에 못 미쳐 쓰지 않습니다(접근성 지적 M3, 2026-11-09). */
+.unlimited-ticket-modal-plan-paid {
+  background-color: var(--libitum-color-fg-brand);
+}
+
+.unlimited-ticket-modal-plan-guest {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.unlimited-ticket-modal-plan-label {
+  font-family: var(--libitum-typography-label-s-font-family);
+  font-size: var(--libitum-typography-label-s-font-size);
+  font-weight: var(--libitum-typography-label-s-font-weight);
+  line-height: var(--libitum-typography-label-s-line-height);
+  letter-spacing: 1.5px;
+  color: var(--libitum-color-white);
+}
+
+/* ---------------------------------------------------------------- 기간 카드 */
+
+.unlimited-pass-period {
+  align-self: stretch;
+  margin: 0 var(--libitum-spacing-24);
+  padding: var(--libitum-spacing-12) var(--libitum-spacing-16);
+  border-radius: 14px;
+  border-width: 1px;
+  border-style: solid;
+  border-color: rgba(255, 141, 40, 0.35);
+  background-color: rgba(255, 141, 40, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-8);
+  flex-shrink: 0;
+}
+
+.unlimited-pass-period-warn {
+  border-color: rgba(255, 197, 0, 0.5);
+  background-color: rgba(255, 197, 0, 0.08);
+}
+
+.unlimited-pass-period-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--libitum-spacing-8);
+}
+
+.unlimited-pass-period-small {
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  font-weight: var(--libitum-typography-body-s-font-weight);
+  line-height: var(--libitum-typography-body-s-line-height);
+  color: var(--libitum-color-gray-600);
+}
+
+.unlimited-pass-period-main {
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-size: var(--libitum-typography-label-l-font-size);
+  font-weight: var(--libitum-typography-label-l-font-weight);
+  line-height: var(--libitum-typography-label-l-line-height);
+  color: var(--libitum-color-brand-secondary);
+}
+
+.unlimited-pass-period-main-warn {
+  color: var(--libitum-color-feedback-warning);
+}
+
+.unlimited-pass-period-track {
+  height: 6px;
+  border-radius: var(--libitum-radius-full);
+  background-color: rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+}
+
+.unlimited-pass-period-fill {
+  height: 6px;
+  border-radius: var(--libitum-radius-full);
+  background-image: linear-gradient(
+    90deg,
+    var(--libitum-color-brand-secondary),
+    var(--libitum-color-feedback-warning)
+  );
+}
+
+/* ---------------------------------------------------------------- 버튼 */
+
+.unlimited-ticket-modal-footer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-8);
+}
+
+.unlimited-ticket-button-brand {
+  background-color: var(--libitum-color-brand-primary);
+}
+
+.unlimited-ticket-button-dark {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.unlimited-ticket-button-link {
+  min-height: var(--libitum-spacing-48);
+  padding-top: var(--libitum-spacing-8);
+  padding-bottom: var(--libitum-spacing-8);
+}
+
+.unlimited-ticket-button-label-brand,
+.unlimited-ticket-button-label-dark {
+  color: var(--libitum-color-white);
+}
+
+.unlimited-ticket-button-label-link {
+  color: var(--libitum-color-gray-500);
+}

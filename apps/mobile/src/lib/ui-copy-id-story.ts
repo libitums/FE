@@ -29,7 +29,6 @@ export const messengerId: MessengerCopy = {
     shift: "Shift",
     shiftOn: "Shift, aktif",
     backspace: "Hapus",
-    comma: "Koma",
     period: "Titik",
     space: "Spasi",
     questionMark: "Tanda tanya",
