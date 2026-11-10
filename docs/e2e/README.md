@@ -177,3 +177,5 @@ Airbridge 앱 이벤트 SDK(값이 없는 빌드의 무동작 · 가짜 값 빌�
 끝낸 에피소드가 업데이트됐을 때의 지도 안내(ADR-0089)의 수동 흐름은 [업데이트 안내 e2e](catalog-update-notice.md)(CU1 ~ CU8)에 있다.
 
 비회원으로 계속(로그인 화면의 Facebook 버튼 숨김 — 정책이 열어 두면 탭 → 「사용 불가 안내」 대화상자 · Android Apple은 웹 OAuth 그대로 · 「Continue without an account」 → 이름 · 나라 · 언어 · 여정 입장 · 맵까지 서버 요청 0건 · 알림 권한 미요청 · 기기 전용 진행 · 재실행 때 바로 맵 · 설정의 「Sign in」 한 행 · 설정에서 Google 로그인 → 기기 기록이 계정으로 올라감 · 기존 계정과 합치기)의 수동 흐름은 [비회원 진입 e2e](guest-entry.md)에 있다(GE-E1 ~ GE-E8, Android는 E2 ~ E4를 반복). 결정은 [ADR-0111](../adr/0111-guest-entry-without-account.md)(임시)이 진다. 아직 실행된 회차가 없다.
+
+무제한 티켓 표시(시험 계정의 주황 무제한 칩 · 빛 훑기 · 칩을 누르면 무제한 모달 「GUEST PASS」 · 결과 화면 「No ticket used · Unlimited」 알약 · 「Next lesson」 무한 태그 · 일반 계정 회귀)의 수동 흐름은 [무제한 티켓 e2e](unlimited-ticket.md)에 있다(UT-E1 ~ UT-E5 · UT-A1 ~ A9). 결정은 [ADR-0115](../adr/0115-unlimited-ticket-presentation.md)가 진다. 아직 실행된 회차가 없다.

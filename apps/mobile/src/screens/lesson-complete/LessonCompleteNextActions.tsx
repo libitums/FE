@@ -4,6 +4,7 @@ import map from "@libitums/icons/lynx/map";
 import fivePointedStar from "@libitums/icons/lynx/five-pointed-star";
 import { color } from "@libitums/design-tokens";
 
+import { infinityIcon } from "../../components/infinity-icon";
 import { ticketIcon } from "../../components/ticket-icon";
 import { useUiCopy } from "../../lib/ui-copy";
 
@@ -14,8 +15,11 @@ import "../tickets/tickets.css";
 export type LessonCompleteNext = {
   /** 다음이 레슨 · 문화면 `lesson`(「Next lesson」), 최종 테스트면 `final`(별 + 「Final test」). */
   readonly kind: "lesson" | "final";
-  /** 시작하면 쓰는 티켓 수 — 1이면 버튼에 티켓 태그가 섭니다. 이미 연 · 끝낸 유닛은 0. */
-  readonly ticketCost: 0 | 1;
+  /**
+   * 시작하면 쓰는 티켓 수 — 1이면 버튼에 티켓 태그가 섭니다. 이미 연 · 끝낸 유닛은 0. 무제한(ADR-0115)이면
+   * `"unlimited"` — 숫자 대신 무한 기호 태그가 섭니다.
+   */
+  readonly ticketCost: 0 | 1 | "unlimited";
   readonly onStart: () => void;
 };
 
@@ -64,7 +68,13 @@ export function LessonCompleteNextActions({
         className="lesson-complete-next-start"
         data-testid="lesson-complete-screen-next"
         accessibility-element={true}
-        accessibility-label={next.ticketCost === 1 ? `${label}. ${copy.tickets.startCost}` : label}
+        accessibility-label={
+          next.ticketCost === 1
+            ? `${label}. ${copy.tickets.startCost}`
+            : next.ticketCost === "unlimited"
+              ? `${label}. ${copy.tickets.noTicketNeeded}`
+              : label
+        }
         accessibility-traits="button"
         bindtap={handleStart}
       >
@@ -80,6 +90,10 @@ export function LessonCompleteNextActions({
           <view className="ticket-cost-tag" data-testid="lesson-complete-screen-next-ticket">
             <svg className="ticket-cost-icon" content={ticketIcon} current-color={color.white} />
             <text className="ticket-cost-label">1</text>
+          </view>
+        ) : next.ticketCost === "unlimited" ? (
+          <view className="ticket-cost-tag" data-testid="lesson-complete-screen-next-unlimited">
+            <svg className="ticket-cost-icon" content={infinityIcon} current-color={color.white} />
           </view>
         ) : null}
       </view>

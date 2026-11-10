@@ -369,3 +369,21 @@
   line-height: var(--libitum-typography-label-l-line-height);
   color: var(--libitum-color-fg-brand);
 }
+
+/* 결과 화면의 무제한 알약(ADR-0115) — 「N tickets left」 줄과 같은 자리 · 글자이고, 연주황 면(background-elevated)에
+   주황 무한 기호를 앞에 둡니다. 글자 fg-brand on elevated 대비 약 5.0:1(AA). */
+.ticket-unlimited-pill {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-4);
+  padding: var(--libitum-spacing-4) var(--libitum-spacing-12) var(--libitum-spacing-4)
+    var(--libitum-spacing-8);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-background-elevated);
+}
+
+.ticket-unlimited-pill-icon {
+  width: 18px;
+  height: 18px;
+}

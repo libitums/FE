@@ -1,0 +1,42 @@
+/* 무제한 티켓 칩의 빛 훑기(ADR-0115 · 사용자 결정 2026-11-09 「몇 초마다 반복」). 4200ms 한 주기 가운데 앞 14%(약 600ms)
+   동안 흰 띠가 칩을 왼쪽에서 오른쪽으로 지나고, 나머지는 칩 밖에서 쉽니다. 주기 4200ms는 가장 긴 UI 토큰(d9 1000ms)으로
+   표현할 수 없어 이 파일이 `lint:motion` allowlist에 있습니다. 가속은 토큰입니다. 움직임 줄이기에서는 띠 요소가 서지
+   않습니다(UnlimitedTicketChip). */
+
+.unlimited-ticket-chip-shine {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+}
+
+/* 띠 색은 흰색에 알파를 얹은 값입니다 — 알파가 붙은 색 토큰이 없어 rgba로 적습니다. */
+.unlimited-ticket-chip-shine-band {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 40%;
+  background-image: linear-gradient(
+    100deg,
+    rgba(255, 255, 255, 0),
+    rgba(255, 255, 255, 0.7),
+    rgba(255, 255, 255, 0)
+  );
+  transform: translateX(-100%);
+  animation: unlimited-ticket-chip-shine 4200ms var(--libitum-motion-easing-linear) infinite;
+}
+
+@keyframes unlimited-ticket-chip-shine {
+  0% {
+    transform: translateX(-100%);
+  }
+  14% {
+    transform: translateX(250%);
+  }
+  100% {
+    transform: translateX(250%);
+  }
+}
