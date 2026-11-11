@@ -66,6 +66,9 @@ final class ViewController: UIViewController {
       // 분석 이벤트에 싣는 연결 종류(ADR-0096). 감지기는 첫 이벤트 전에 첫 경로를 받도록 여기서 먼저 띄운다.
       NetworkStatusMonitor.shared.start()
       config.register(NetworkStatusModule.self)
+      // 자유 대화 답을 SSE 블록 단위로 받는다(ADR-0124). `lynx.fetch`의 스트리밍은 iOS에서 본문을 잃는다.
+      // 결과는 전역 이벤트 셋으로만 올라간다 — 출구는 아래 `startChatStreamEvents`가 잇는다.
+      config.register(ChatStreamModule.self)
       // Airbridge 이벤트 전달(ADR-0063). **설정이 있어 SDK가 시작된 빌드에서만** 등록한다 —
       // 없으면 JS의 `NativeModules`에 이 이름이 없고, 그것이 「보낼 곳 없음」의 신호다.
       if AirbridgeEvents.isStarted {
@@ -100,6 +103,14 @@ final class ViewController: UIViewController {
     observeOpenedDeeplink()
     observeReduceMotion()
     startContentSyncSignal()
+    startChatStreamEvents()
+  }
+
+  /// `ChatStreamModule`이 올리는 `chatStreamOpen` · `chatStreamEvent` · `chatStreamEnd`를 JS로 보낸다(메인 큐).
+  private func startChatStreamEvents() {
+    ChatStreamEvents.sink = { [weak self] name, args in
+      self?.lynxView?.sendGlobalEvent(name, withParams: args)
+    }
   }
 
   private var contentSyncSignal: ContentSyncSignalSource?
