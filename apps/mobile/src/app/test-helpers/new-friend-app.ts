@@ -110,6 +110,12 @@ export async function bootBeforeInterlude(): Promise<void> {
   await boot({ [u01]: done, [u02]: done, [u03]: BEFORE_INTERLUDE });
 }
 
+/** 막간(INT)까지 이미 끝낸 진도로 부팅합니다 — 해금 기록 없이 진도만 있는 설치(이 규칙 전 · 다른 기기 · 새 설치). */
+export async function bootAfterInterlude(): Promise<void> {
+  const done = [...BEFORE_FINAL, "RP"];
+  await boot({ [u01]: done, [u02]: done, [u03]: [...BEFORE_INTERLUDE, "INT"] });
+}
+
 const tapStoryButton = (id: string): void =>
   void fireEvent.tap(within(screen.getByTestId(id)).getByTestId("ui-lynx-button"), {});
 

@@ -16,6 +16,7 @@ import {
   textOf,
 } from "./test-helpers/messenger-chat-app";
 import {
+  bootAfterInterlude,
   bootBeforeFinal,
   bootBeforeInterlude,
   exitInterludeIntro,
@@ -316,4 +317,36 @@ test("MC2-I4. Later 뒤 목록에서 미나 방을 열면 opening은 로그에 �
   tapId("messenger-list-row-mina");
 
   expect(screen.getAllByTestId("messenger-chat-incoming")).toHaveLength(1);
+});
+
+// ------------------------------------------------------------------ MC2-I5 · 이미 끝낸 막간의 보정
+
+test("MC2-I5. 막간을 이미 끝낸 진도로 켜면 시트 없이 미나가 열려 있고 첫 메시지가 NEW · 안 읽음으로 와 있다", async () => {
+  await bootAfterInterlude();
+  vi.useFakeTimers();
+
+  advance(SHEET_APPEAR_MS + SHEET_TYPING_MS + 5000);
+  expect(present(SHEET)).toBe(false);
+
+  openTab("messenger");
+  expect(minaUnlocked()).toBe(true);
+  expect(present("messenger-list-row-mina-new")).toBe(true);
+  expect(listRowOrder()[0]).toBe("mina");
+  expect(textOf("messenger-list-row-mina")).toContain(OPENING_KO);
+});
+
+test("MC2-I5. 이미 해금한 설치는 보정이 아무것도 바꾸지 않는다 — NEW가 다시 붙지 않는다", async () => {
+  await resetMessengerChatSource({ unlocked: ["mina"] });
+  await bootAfterInterlude();
+
+  openTab("messenger");
+  expect(minaUnlocked()).toBe(true);
+  expect(present("messenger-list-row-mina-new")).toBe(false);
+});
+
+test("MC2-I5. 막간 전 진도로 켜면 보정이 없고 미나는 잠긴 채다", async () => {
+  await bootBeforeInterlude();
+
+  openTab("messenger");
+  expect(minaUnlocked()).toBe(false);
 });
