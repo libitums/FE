@@ -153,9 +153,7 @@ export function LessonCompleteScreen({
       >
         <text
           className="lesson-complete-screen-title"
-          id="lesson-complete-screen-title"
           data-testid="lesson-complete-screen-title"
-          accessibility-element={true}
           accessibility-traits="header"
         >
           {review === undefined

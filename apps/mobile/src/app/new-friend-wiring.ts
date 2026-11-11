@@ -7,9 +7,9 @@ import { currentMessengerChatSource, messengerUnlockStore } from "./messenger-ch
 import type { ScreenWiring } from "./screen-wiring";
 
 /**
- * 최종 테스트를 통과한 순간 부릅니다. 이 에피소드가 새 인물을 해금하면 기록(영속)과 대화 출처에 **바로** 알리고 그 id를
- * 돌려줍니다 — 결과 화면을 시트가 뜨기 전에 떠나도 목록에 NEW 줄이 남고, 다시 끝내도 시트는 다시 안 뜹니다.
- * 해금할 인물이 없거나 이미 열었으면 null.
+ * 에피소드의 막간(중간 스페셜 유닛 — 이야기 유닛, ADR-0088)을 끝낸 순간 부릅니다(`catalog-story-wiring.ts`). 이 에피소드가
+ * 새 인물을 해금하면 기록(영속)과 대화 출처에 **바로** 알리고 그 id를 돌려줍니다 — 맵의 시트를 보기 전에 앱을 떠나도 목록에
+ * NEW 줄이 남고, 다시 끝내도 시트는 다시 안 뜹니다. 해금할 인물이 없거나 이미 열었으면 null.
  */
 export function commitNewFriend(episodeId: string): string | null {
   const store = messengerUnlockStore();

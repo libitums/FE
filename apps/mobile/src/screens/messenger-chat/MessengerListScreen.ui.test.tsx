@@ -148,7 +148,7 @@ test("MC-UI8. 잠긴 줄은 data-locked이고 조건을 보이며 시간 · 안 
   expect(screen.getByTestId(ids.row("clerk")).getAttribute("data-locked")).toBe("true");
   expect(screen.getByTestId(ids.row("mina")).getAttribute("data-locked")).not.toBe("true");
   expect(screen.getByTestId(ids.rowPreview("clerk")).textContent).toBe(
-    "Finish Episode 4 to start chatting",
+    "Play Episode 4 to start chatting",
   );
   expect(screen.queryByTestId(ids.rowTime("clerk"))).toBeNull();
 });
@@ -189,7 +189,7 @@ test("MC-UI8. 줄은 한 요소로 읽힌다 — 이름, 미리보기, 시간, �
   expect(label).toContain("2 unread");
   expect(screen.getByTestId(ids.row("mina")).getAttribute("accessibility-element")).toBe("true");
   expect(screen.getByTestId(ids.row("clerk")).getAttribute("accessibility-label")).toBe(
-    "점원, locked, Finish Episode 4 to start chatting",
+    "점원, locked, Play Episode 4 to start chatting",
   );
 });
 

@@ -161,10 +161,10 @@ ADR-0102 6판(자유 대화 서버 설계)은 브랜치 `docs/adr-0102-messenger
 ## 적용 기록
 
 - ⟨2026-11-10⟩ **1.5단계 — [ADR-0117](0117-messenger-chat-turns-coins-new-friend.md).** 이 ADR의 결정 문장은 그대로이고 아래가 바뀌었다.
-  - D3 출처 포트: `ChatSource` += `requestMeaning` · `openCorrection` · `unlockCharacter`, `ChatThread` += `notes`, `ChatRoomSummary` += `isNew`(구독 모델 — 0117 D1). 픽스처의 **미나 방은 에피소드 3 최종 통과 전까지 잠긴다**(0117 D3) — 목록 순서 · 안 읽음 수가 바뀌었다. D3 「저장 키는 없다」는 1.5에서 기기 범위 키 둘이 생겼다(0117 D7).
+  - D3 출처 포트: `ChatSource` += `requestMeaning` · `openCorrection` · `unlockCharacter`, `ChatThread` += `notes`, `ChatRoomSummary` += `isNew`(구독 모델 — 0117 D1). 픽스처의 **미나 방은 에피소드 3 중간 이야기 유닛(막간)을 끝내기 전까지 잠긴다**(0117 D3) — 목록 순서 · 안 읽음 수가 바뀌었다. D3 「저장 키는 없다」는 1.5에서 기기 범위 키 둘이 생겼다(0117 D7).
   - D3 자리 가격: `CHAT_PLACEHOLDERS.price`(사진 30 · 음성 10)를 지우고 `CHAT_COIN_PRICES` **사진 60 · 음성 40 · 메시지 10** 엽전으로(사용자 결정, 0117 D5).
   - D2 공용 부품: `ChatHeader`에 선택 prop `subtitle`(턴 줄 자리 — 없으면 DOM 동일, 학습 메신저 불변). 내 말풍선은 이제 ui-lynx `ChatBubble`이 아니라 앱 상자 `MyMessage.*`이고 `ChatOutgoingRow`의 children으로 들어간다(공용 줄 불변 — 0117 D1). `ChatLog`는 내가 보낸 글이 늘면 읽던 자리와 상관없이 끝으로 내린다(기기 F2).
-  - D7 겹침: `coin-shop`의 `from`에 `send`가 더해졌고, 새 겹침 `unlimited`(무제한 모달의 소개 상태 — 0117 D8).
+  - D7 겹침: `coin-shop`의 `from`에 `send`가 더해졌다(무제한 겹침은 없다 — 무제한 티켓은 학습 전용, 0117 D8).
   - D8 대비 예외를 내 말풍선 안 뜻 글(흰 글/`brand-primary` 3.02)과 연필 점(2.97)까지 넓혔다(사용자 결정 DM · DD — 0117 D2).
   - 알려진 한계 6의 「남은 것: 실제 차감 · 결제 없음」 — 1.5는 엽전을 **지갑 포트의 메모리**에서만 쓴다(0117 D6). 실제 차감은 여전히 없다.
   - **공용 `ChatLog` 끝 판정 재작성(학습 메신저 포함)**: `getScrollInfo` 대신 `layoutchange` 뷰포트 높이와 `scroll`/`scrollend`의 `scrollTop` · `scrollHeight`로 끝 근처를 정하고, 선택 prop `jumpKey`(바뀌면 끝으로)를 더했다. 같은 부품을 쓰는 학습 메신저(`StoryMessengerScreen`)의 끝 따라가기 판정에도 적용된다 — 상세와 기기 확인 책임은 [ADR-0117](0117-messenger-chat-turns-coins-new-friend.md) 「공용 `ChatLog` 변경이 학습 메신저에 미치는 영향」.

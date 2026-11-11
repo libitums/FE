@@ -2,7 +2,6 @@ import { useEffect, useGlobalProps } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import clock from "@libitums/icons/lynx/clock";
-import infinity from "@libitums/icons/lynx/infinity";
 import { color } from "@libitums/design-tokens";
 import { Button } from "@libitums/ui-lynx/button";
 
@@ -32,8 +31,9 @@ export const KEEP_STACK_FONT_SCALE = 2.6;
 /**
  * 오늘의 무료 메시지를 다 쓴 판(T3)입니다 — 독(기능 줄 · 입력 · 토글 · 키보드 자리) 전체를 대신합니다.
  * 판은 모달입니다 — 열리면 제목(dialog 역할 설명)에 접근성 초점이 가고, 뒤 화면(머리 · 로그)은 화면에서 숨깁니다(호출 쪽).
- * 큰 글자에서 넘치지 않게 px 최대 높이를 걸고 아이콘 · 제목 · 본문만 스크롤하며 단추 셋 · 잔액 줄은 스크롤 밖에 고정합니다(접근성 M1). 단추 셋은 Keep chatting(주) · Go unlimited · Back to chats입니다.
- * 잔액이 가격보다 모자라도 셋은 그대로입니다 — Keep chatting 뒤 엽전 보내기에서 상점으로 이어집니다.
+ * 큰 글자에서 넘치지 않게 px 최대 높이를 걸고 아이콘 · 제목 · 본문만 스크롤하며 단추 둘 · 잔액 줄은 스크롤 밖에 고정합니다(접근성 M1). 단추 둘은 Keep chatting(주) · Back to chats입니다.
+ * 무제한 티켓은 학습 전용이라 이 판에 Go unlimited는 없습니다(2026-11-10 결정).
+ * 잔액이 가격보다 모자라도 둘은 그대로입니다 — Keep chatting 뒤 엽전 보내기에서 상점으로 이어집니다.
  */
 export function OutOfFreePanel({
   total,
@@ -41,7 +41,6 @@ export function OutOfFreePanel({
   balance,
   reset,
   onKeepChatting,
-  onGoUnlimited,
   onBackToChats,
   bottomInset = 0,
 }: OutOfFreePanelProps): ReactNode {
@@ -140,30 +139,6 @@ export function OutOfFreePanel({
           <text className="chat-out-keep-price" accessibility-elements-hidden={true}>
             {copy.perMessage(price)}
           </text>
-        </view>
-        <view
-          className="chat-out-action"
-          id={ids.panelUnlimited}
-          data-testid={ids.panelUnlimited}
-          accessibility-element={true}
-          accessibility-traits="button"
-          accessibility-label={copy.goUnlimited}
-          accessibility-enable-tap={true}
-          bindtap={() => {
-            "background only";
-            onGoUnlimited();
-          }}
-        >
-          <view accessibility-elements-hidden={true}>
-            <Button
-              label={copy.goUnlimited}
-              variant="outline"
-              size="l"
-              width="fill"
-              icon={infinity}
-              iconPosition="leading"
-            />
-          </view>
         </view>
         <view
           className="chat-out-action chat-out-action-text"

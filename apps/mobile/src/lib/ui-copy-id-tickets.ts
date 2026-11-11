@@ -39,14 +39,6 @@ export const ticketsId: TicketsCopy = {
     keep: "Tetap tanpa batas",
     date: (d) => `${String(d.day)} ${monthsId[d.month - 1] ?? ""} ${String(d.year)}`,
     shortDate: (d) => `${String(d.day)} ${monthsId[d.month - 1] ?? ""}`,
-    intro: {
-      title: "Beralih ke tanpa batas",
-      benefitMessages: "Tanpa batas harian untuk pesan obrolan",
-      benefitLessons: "Mulai pelajaran apa pun tanpa tiket",
-      comingSoon: "Segera hadir",
-      comingSoonNote:
-        "Paket tanpa batas belum dijual. Kami akan memberi tahu kamu saat sudah tersedia.",
-    },
   },
   modal: {
     title: () => "tiket tersisa",

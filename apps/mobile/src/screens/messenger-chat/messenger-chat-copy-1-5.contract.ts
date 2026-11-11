@@ -21,7 +21,6 @@ export type TurnsCopy = {
   readonly coinEach: (price: number, reset: string) => string;
   readonly reset: (hours: number, minutes: number) => string;
   readonly strip: (price: number) => string;
-  readonly goUnlimited: string;
   readonly outTitle: (total: number) => string;
   readonly outBody: (reset: string) => string;
   readonly keepChatting: string;

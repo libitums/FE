@@ -24,13 +24,6 @@ export const ticketsJa: TicketsCopy = {
     keep: "無制限を続ける",
     date: (d) => `${String(d.year)}年${String(d.month)}月${String(d.day)}日`,
     shortDate: (d) => `${String(d.month)}月${String(d.day)}日`,
-    intro: {
-      title: "無制限にする",
-      benefitMessages: "チャットのメッセージに1日の上限なし",
-      benefitLessons: "チケットなしでどのレッスンも始められる",
-      comingSoon: "近日公開",
-      comingSoonNote: "無制限プランはまだ販売していません。始まったらお知らせします。",
-    },
   },
   modal: {
     title: (_count) => "残りのチケット",

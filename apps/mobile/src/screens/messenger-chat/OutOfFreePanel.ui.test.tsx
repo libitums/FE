@@ -5,7 +5,7 @@ import * as inputFocus from "./chat-input-focus";
 import { chatTurnsTestIds as ids } from "./chat-turns.contract";
 import { OutOfFreePanel } from "./OutOfFreePanel";
 
-// `ui` 계층(MC2-UI6): T3 판 — 제목 · 본문(시계) · 단추 셋 순서 · 잔액 줄 · dialog 역할 · 콜백 · 제목 초점 요청(다음 프레임).
+// `ui` 계층(MC2-UI6): T3 판 — 제목 · 본문(시계) · 단추 둘 순서 · 잔액 줄 · dialog 역할 · 콜백 · 제목 초점 요청(다음 프레임).
 // 가정(구현자가 따를 것): 초점 요청은 `chat-input-focus.restoreAccessibilityFocus(id)`이고, id를 가진 접근성 요소(제목)가 판 안에 있다.
 
 vi.mock("./chat-input-focus", () => ({
@@ -27,7 +27,6 @@ afterEach(() => {
 function mount(over: Partial<{ balance: number; price: number }> = {}) {
   const handlers = {
     onKeepChatting: vi.fn<() => void>(),
-    onGoUnlimited: vi.fn<() => void>(),
     onBackToChats: vi.fn<() => void>(),
   };
   render(
@@ -64,18 +63,29 @@ test("MC2-UI6. 제목 · 본문(5h 12m) · 잔액 줄이 서고 판은 dialog �
   expect(dialog?.getAttribute("accessibility-role-description")).toBe("dialog");
 });
 
-test("MC2-UI6. 단추 셋이 Keep chatting → Go unlimited → Back to chats 순서로 선다", () => {
+test("MC2-UI6. 단추 둘이 Keep chatting → Back to chats 순서로 선다", () => {
   mount();
 
   const keep = screen.getByTestId(ids.panelKeep);
-  const unlimited = screen.getByTestId(ids.panelUnlimited);
   const back = screen.getByTestId(ids.panelBack);
-  expect(before(keep, unlimited)).toBe(true);
-  expect(before(unlimited, back)).toBe(true);
+  expect(before(keep, back)).toBe(true);
   expect(keep.textContent).toContain("Keep chatting");
   expect(keep.textContent).toContain("10 / message");
-  expect(unlimited.textContent).toContain("Go unlimited");
   expect(back.textContent).toContain("Back to chats");
+});
+
+test("MC2-UI6. 판에는 Go unlimited 단추가 없다 — 무제한 티켓은 학습 전용(2026-11-10 결정)", () => {
+  mount();
+
+  const panel = screen.getByTestId(ids.panel);
+  expect(panel.textContent).not.toContain("Go unlimited");
+  expect(document.querySelector('[data-testid="messenger-chat-out-unlimited"]')).toBeNull();
+  const buttons = Array.from(
+    screen
+      .getByTestId(ids.panelActions)
+      .querySelectorAll(':scope > [accessibility-traits="button"]'),
+  ).map((el) => el.getAttribute("data-testid"));
+  expect(buttons).toEqual([ids.panelKeep, ids.panelBack]);
 });
 
 test("MC2-UI6. Keep chatting은 엽전 아이콘이 있고 낭독은 가격을 읽는다", () => {
@@ -90,20 +100,17 @@ test("MC2-UI6. Keep chatting은 엽전 아이콘이 있고 낭독은 가격을 �
 });
 
 test("MC2-UI6. 단추마다 자기 콜백만 한 번 부른다", () => {
-  const { onKeepChatting, onGoUnlimited, onBackToChats } = mount();
+  const { onKeepChatting, onBackToChats } = mount();
 
   tap(ids.panelKeep);
   expect(onKeepChatting).toHaveBeenCalledTimes(1);
-  expect(onGoUnlimited).not.toHaveBeenCalled();
   expect(onBackToChats).not.toHaveBeenCalled();
-  tap(ids.panelUnlimited);
-  expect(onGoUnlimited).toHaveBeenCalledTimes(1);
   tap(ids.panelBack);
   expect(onBackToChats).toHaveBeenCalledTimes(1);
   expect(onKeepChatting).toHaveBeenCalledTimes(1);
 });
 
-test("MC2-UI6. 잔액이 가격보다 적어도 판은 같은 단추 셋과 잔액 줄을 보인다", () => {
+test("MC2-UI6. 잔액이 가격보다 적어도 판은 같은 단추 둘과 잔액 줄을 보인다", () => {
   mount({ balance: 2 });
 
   expect(screen.getByTestId(ids.panelBalance).textContent).toContain("2");

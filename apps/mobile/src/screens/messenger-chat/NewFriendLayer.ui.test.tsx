@@ -10,7 +10,7 @@ import { fakeTimers, type FakeTimers } from "./chat-fixture-timers.test-support"
 import { newFriendTestIds as ids, type NewFriendModel } from "./new-friend.contract";
 import { NewFriendLayer } from "./NewFriendLayer";
 
-// `ui` 계층(MC2-UI15): 결과 화면 위 층 — 마운트 후 2000 ms 뒤 typing, +1200 ms 뒤 message(진동 1회 · 낭독) · 움직임 줄이기 600 / 600 ·
+// `ui` 계층(MC2-UI15 · NF-M1 · NF-M2): 아래 화면(여정 맵 — 테스트에선 「결과 화면」 자리 표시) 위 층 — 마운트 후 2000 ms 뒤 typing, +1200 ms 뒤 message(진동 1회 · 낭독) · 움직임 줄이기 600 / 600 ·
 // 시트가 보이는 동안 아래 결과 화면은 낭독에서 숨김 · Later / scrim / 시스템 뒤로 → 시트만 닫힘 · 언마운트하면 타이머 0 · 효과음 없음.
 // 가정(구현자가 따를 것): 타이머는 `timers` prop으로 주입(기본 맨 식별자 setTimeout), 진동은 `createKeyHaptic()()` 한 번,
 // 낭독은 lib/accessibility의 announce, 아래 결과 화면은 `children`을 감싼 view 어딘가의 `accessibility-elements-hidden`.
@@ -217,13 +217,121 @@ test("MC2-UI15. 시스템 뒤로: 시트가 보이는 동안만 처리해 시트
   expect(systemBack()).toBe(false);
 });
 
-test("MC2-UI15. Reply 탭 → onReply 한 번", () => {
+test("MC2-UI15. Reply 탭 → 시트가 먼저 닫히고 onReply 한 번 — 맵 층이 숨은 탭에 남아도 돌아왔을 때 시트가 없다", () => {
   const { onReply } = mount();
   advance(3200);
 
   tap(ids.reply);
 
   expect(onReply).toHaveBeenCalledTimes(1);
+  expect(sheet()).toBeNull();
+  expect(resultHidden()).toBe(false);
+  advance(5000);
+  expect(sheet()).toBeNull();
+  expect(systemBack()).toBe(false);
+});
+
+// ------------------------------------------------------------------ 맵 위 층: 보임 알림 · 숨은 탭
+
+function mountOnMap(active: boolean) {
+  const onVisibleChange = vi.fn<(visible: boolean) => void>();
+  const onReply = vi.fn<() => void>();
+  const layerOf = (isActive: boolean) => (
+    <NewFriendLayer
+      model={MODEL}
+      onReply={onReply}
+      timers={timers}
+      active={isActive}
+      onVisibleChange={onVisibleChange}
+    >
+      <view data-testid="result-screen" />
+    </NewFriendLayer>
+  );
+  const view = render(layerOf(active));
+  return {
+    onVisibleChange,
+    onReply,
+    view,
+    setActive: (next: boolean) => view.rerender(layerOf(next)),
+  };
+}
+
+test("NF-M1. onVisibleChange: 마운트에는 알리지 않고, 시트가 서면 true, Later로 닫히면 false를 한 번씩 알린다", () => {
+  const { onVisibleChange } = mountOnMap(true);
+  expect(onVisibleChange).not.toHaveBeenCalled();
+
+  advance(2000);
+  expect(onVisibleChange.mock.calls).toEqual([[true]]);
+  advance(1200);
+  expect(onVisibleChange).toHaveBeenCalledTimes(1);
+
+  tap(ids.later);
+  expect(onVisibleChange.mock.calls).toEqual([[true], [false]]);
+});
+
+test("NF-M1. onVisibleChange: Reply로 닫혀도 false를 알린다", () => {
+  const { onVisibleChange, onReply } = mountOnMap(true);
+  advance(3200);
+
+  tap(ids.reply);
+
+  expect(onReply).toHaveBeenCalledTimes(1);
+  expect(onVisibleChange.mock.calls).toEqual([[true], [false]]);
+});
+
+test("NF-M1. onVisibleChange: 시트가 선 채 언마운트하면 false를, 서기 전 언마운트면 아무것도 알리지 않는다", () => {
+  const first = mountOnMap(true);
+  advance(2000);
+  first.view.unmount();
+  expect(first.onVisibleChange.mock.calls).toEqual([[true], [false]]);
+
+  const second = mountOnMap(true);
+  advance(500);
+  second.view.unmount();
+  expect(second.onVisibleChange).not.toHaveBeenCalled();
+});
+
+test("NF-M1. resultFocusId가 없으면 닫혀도 초점을 옮기지 않는다", () => {
+  mountOnMap(true);
+  advance(3200);
+  focusCalls().mockClear();
+
+  tap(ids.later);
+  advance(16);
+
+  expect(focusCalls()).not.toHaveBeenCalled();
+});
+
+test("NF-M2. 숨은 탭(active 거짓)에서는 기다림이 멈춰 시트가 서지 않고, 돌아오면 그때부터 2000 ms 뒤 선다", () => {
+  const { setActive, onVisibleChange } = mountOnMap(true);
+  advance(1500);
+  setActive(false);
+
+  advance(10_000);
+  expect(sheet()).toBeNull();
+  expect(onVisibleChange).not.toHaveBeenCalled();
+
+  setActive(true);
+  advance(1999);
+  expect(sheet()).toBeNull();
+  advance(1);
+  expect(sheet()?.getAttribute("data-phase")).toBe("typing");
+});
+
+test("NF-M2. 시트가 선 뒤 탭이 숨으면 시트를 그리지 않고 false를 알리며 뒤로가기도 받지 않는다 — 돌아오면 다시 보인다", () => {
+  const { setActive, onVisibleChange } = mountOnMap(true);
+  advance(2000);
+  advance(1200);
+
+  setActive(false);
+  expect(sheet()).toBeNull();
+  expect(resultHidden()).toBe(false);
+  expect(systemBack()).toBe(false);
+  expect(onVisibleChange.mock.calls).toEqual([[true], [false]]);
+
+  setActive(true);
+  expect(sheet()?.getAttribute("data-phase")).toBe("message");
+  expect(onVisibleChange.mock.calls).toEqual([[true], [false], [true]]);
 });
 
 test("MC2-UI15. 언마운트하면 걸린 타이머가 하나도 남지 않고 시트도 나오지 않는다", () => {

@@ -63,8 +63,6 @@ const originTestId: Readonly<Record<ChatFocusOrigin, string>> = {
   "sidebar-coins": ids.sidebarGetCoins,
   // 1.5 초점 되돌림 자리 — 턴 표시 조각의 test-id입니다(spec §10).
   send: turnIds.coinSend,
-  "strip-unlimited": turnIds.stripUnlimited,
-  "out-unlimited": turnIds.panelUnlimited,
 };
 
 /** 뒤 화면의 accessibility-elements-hidden이 풀린 다음 프레임에 초점을 보냅니다(a11y C1). 한 프레임은 16 ms입니다. */

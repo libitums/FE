@@ -19,7 +19,7 @@ export const messengerChatVi: MessengerChatCopy = {
     typing: (name) => `${name} đang nhập…`,
     sendingPhoto: (name) => `${name} đang gửi ảnh…`,
     recordingVoice: (name) => `${name} đang ghi âm tin nhắn thoại…`,
-    lockedCondition: (episode) => `Hoàn thành Tập ${episode} để bắt đầu trò chuyện`,
+    lockedCondition: (episode) => `Học Tập ${episode} để bắt đầu trò chuyện`,
     lockedRowLabel: (name, condition) => `${name}, đã khóa, ${condition}`,
     unreadLabel: (count) => `${count} chưa đọc`,
     rowLabel: (name, preview, time, unread) => joinSpoken([name, preview, time, unread]),
@@ -154,7 +154,6 @@ export const messengerChatVi: MessengerChatCopy = {
     coinEach: (price, reset) => `Mỗi tin ${price} xu · miễn phí lại sau ${reset}`,
     reset: (hours, minutes) => `${hours} giờ ${minutes} phút`,
     strip: (price) => `Sau đó, ${price} xu mỗi tin`,
-    goUnlimited: "Dùng không giới hạn",
     outTitle: (total) => `Đã dùng hết ${total} tin nhắn miễn phí hôm nay`,
     outBody: (reset) =>
       `Tiếp tục trò chuyện bằng xu, hoặc quay lại sau ${reset} để có tin miễn phí.`,

@@ -12,7 +12,6 @@ import { CoinShopLayer } from "./CoinShopLayer";
 import { RegenerateIdeasDialog } from "./RegenerateIdeasDialog";
 import { ReportSheet } from "./ReportSheet";
 import { StoryPointSheet } from "./StoryPointSheet";
-import { UnlimitedTicketModal } from "../tickets/UnlimitedTicketModal";
 
 import "./chat-overlays.css";
 
@@ -157,9 +156,6 @@ export function ChatRoomOverlays({
       );
     case "coin-shop":
       return <CoinShopLayer coinBalance={coinBalance} onClose={close} ownsBack={false} />;
-    case "unlimited":
-      // 무료 사용자용 「무제한 소개」 상태(#404 무제한 모달, spec §17 Q1). 뒤로가기 주인은 useChatRoom입니다.
-      return <UnlimitedTicketModal view={{ kind: "intro" }} onClose={close} ownsBack={false} />;
     default: {
       const unreachable: never = overlay;
       return unreachable;

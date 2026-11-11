@@ -20,7 +20,7 @@ export const messengerChatId: MessengerChatCopy = {
     typing: (name) => `${name} sedang mengetik…`,
     sendingPhoto: (name) => `${name} sedang mengirim foto…`,
     recordingVoice: (name) => `${name} sedang merekam pesan suara…`,
-    lockedCondition: (episode) => `Selesaikan Episode ${episode} untuk mulai mengobrol`,
+    lockedCondition: (episode) => `Mainkan Episode ${episode} untuk mulai mengobrol`,
     lockedRowLabel: (name, condition) => `${name}, terkunci, ${condition}`,
     unreadLabel: (count) => `${count} belum dibaca`,
     rowLabel: (name, preview, time, unread) => joinSpoken([name, preview, time, unread]),
@@ -155,7 +155,6 @@ export const messengerChatId: MessengerChatCopy = {
     coinEach: (price, reset) => `Tiap pesan ${price} koin · gratis lagi dalam ${reset}`,
     reset: (hours, minutes) => `${hours} j ${minutes} m`,
     strip: (price) => `Setelah ini, ${price} koin per pesan`,
-    goUnlimited: "Pakai tanpa batas",
     outTitle: (total) => `${total} pesan gratis hari ini sudah terpakai`,
     outBody: (reset) =>
       `Lanjut ngobrol dengan koin, atau kembali dalam ${reset} untuk pesan gratis.`,

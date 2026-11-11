@@ -13,7 +13,6 @@ import { safeAreaInsetsFrom } from "../../lib/safe-area";
 import { lightStatusBarIcons } from "../../lib/status-bar-icons";
 import { useLayerBack } from "../../lib/use-back-handler";
 import { useUiCopy } from "../../lib/ui-copy";
-import { UnlimitedIntroState } from "./UnlimitedIntroState";
 import { UnlimitedPassPeriod } from "./UnlimitedPassPeriod";
 
 import "../journey-map/journey-stat-modal.css";
@@ -29,26 +28,15 @@ import "./unlimited-ticket-modal.css";
 // - renews · ends(구독): 요금제 이름 알약(있을 때) · 기간 카드 · 「Manage subscription」.
 // - ending-soon(갱신 꺼짐 · 7일 이하): 노랑 기간 카드 · 「Keep unlimited」 + 「Manage subscription」 링크.
 //
-// - intro(무료 사용자): 얻는 것 둘 + 「Coming soon」(아직 결제 없음) + 「Got it」 — `UnlimitedIntroState`(messenger-chat-1-5 §17 Q1).
-//
 // 지금은 시험 계정만 결선합니다 — 구독 판의 두 콜백은 결제가 붙을 때 이어집니다.
 
-/** 무료 사용자에게 무제한을 소개하는 상태입니다(가진 사람의 상태가 아니라서 `UnlimitedPassView`에 넣지 않습니다). */
-export type UnlimitedIntroView = { readonly kind: "intro" };
-
-type UnlimitedPassModalProps = {
+export type UnlimitedTicketModalProps = {
   readonly view: UnlimitedPassView;
   readonly onClose: () => void;
   /** 스토어 구독 관리로 보냅니다. 구독 판에서만 씁니다(아직 결선 없음). */
   readonly onManageSubscription?: () => void;
   /** 곧 끝남 판의 주 버튼입니다(아직 결선 없음). */
   readonly onKeepUnlimited?: () => void;
-};
-
-export type UnlimitedTicketModalProps = Omit<UnlimitedPassModalProps, "view"> & {
-  readonly view: UnlimitedPassView | UnlimitedIntroView;
-  /** intro에서만 씁니다 — 시스템 뒤로가기를 직접 올릴지(기본 켬). 채팅방 안처럼 주인이 따로 있으면 끕니다. */
-  readonly ownsBack?: boolean;
 };
 
 type ModalButtonProps = {
@@ -79,20 +67,10 @@ function ModalButton({ testId, label, tone, onTap }: ModalButtonProps): ReactNod
 
 export function UnlimitedTicketModal({
   view,
-  ownsBack,
-  ...rest
-}: UnlimitedTicketModalProps): ReactNode {
-  if (view.kind === "intro")
-    return <UnlimitedIntroState onClose={rest.onClose} ownsBack={ownsBack} />;
-  return <UnlimitedPassModal view={view} {...rest} />;
-}
-
-function UnlimitedPassModal({
-  view,
   onClose,
   onManageSubscription,
   onKeepUnlimited,
-}: UnlimitedPassModalProps): ReactNode {
+}: UnlimitedTicketModalProps): ReactNode {
   const insets = safeAreaInsetsFrom(useGlobalProps());
   const alive = useMotion() === "standard";
   const copy = useUiCopy();

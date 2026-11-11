@@ -13,7 +13,7 @@ import type { UiCopy } from "./ui-copy.contract";
 
 // `unit` 계층(MC2-U25): 메신저 1.5 단계 문구 — 새 구획 셋 · 젬 → 엽전 이름 바꿈 · 다섯 언어의 키 집합
 // (messenger-chat-1-5 spec §9). 다섯 언어를 한 파일에서 본다(언어별 unit 파일의 기존 키 집합 점검은 그대로).
-// 「Go unlimited」 목적지 문구(unlimited intro)는 §17 Q1 로 tickets 구획에 속해 여기서 보지 않는다.
+// 무제한 티켓은 학습 전용이라(2026-11-10 결정) 메신저 문구에는 「Go unlimited」가 없다.
 
 const languages: readonly (readonly [string, UiCopy])[] = [
   ["en", uiCopyEn],
@@ -42,7 +42,6 @@ const REQUIRED_KEYS: readonly string[] = [
   "turns.coinEach",
   "turns.reset",
   "turns.strip",
-  "turns.goUnlimited",
   "turns.outTitle",
   "turns.outBody",
   "turns.keepChatting",
@@ -150,7 +149,8 @@ describe("en messengerChat 영어 문구 표본 (MC2-U25)", () => {
     );
     expect(fn("turns", "reset")?.(5, 12)).toBe("5h 12m");
     expect(fn("turns", "strip")?.(10)).toBe("After this, 10 coins per message");
-    expect(m.turns?.goUnlimited).toBe("Go unlimited");
+    // 무제한 티켓은 학습 전용입니다 — 메신저 문구에 Go unlimited가 없습니다(2026-11-10 결정).
+    expect(m.turns).not.toHaveProperty("goUnlimited");
     expect(fn("turns", "outTitle")?.(3)).toBe("Today's 3 free messages are used");
     expect(fn("turns", "outBody")?.("5h 12m")).toBe(
       "Keep chatting with coins, or come back in 5h 12m for free ones.",

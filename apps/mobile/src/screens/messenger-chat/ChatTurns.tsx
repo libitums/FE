@@ -1,7 +1,6 @@
 import type { ReactNode } from "@lynx-js/react";
 
 import arrowUp from "@libitums/icons/lynx/arrow-up";
-import infinity from "@libitums/icons/lynx/infinity";
 import { color } from "@libitums/design-tokens";
 
 import { coinIcon, coinTextColor } from "../../components/coin-icon";
@@ -13,7 +12,7 @@ import {
   type TurnLineProps,
 } from "./chat-turns.contract";
 import type { ResetClock, TurnPlan } from "./free-turns";
-import { SLOP_ROUND, SLOP_STRIP } from "./hit-slop";
+import { SLOP_ROUND } from "./hit-slop";
 import type { TurnsCopy } from "./messenger-chat-copy-1-5.contract";
 
 import "./chat-turns.css";
@@ -72,8 +71,11 @@ export function TurnLine({ plan, reset }: TurnLineProps): ReactNode {
   );
 }
 
-/** 마지막 무료 한 통일 때 입력 줄 위에 서는 띠입니다(T2). */
-export function LastFreeStrip({ price, onGoUnlimited }: LastFreeStripProps): ReactNode {
+/**
+ * 마지막 무료 한 통일 때 입력 줄 위에 서는 띠입니다(T2). 글 한 줄뿐입니다 — 무제한 티켓은 학습 전용이라 메신저에는
+ * Go unlimited 단추가 없습니다(2026-11-10 결정).
+ */
+export function LastFreeStrip({ price }: LastFreeStripProps): ReactNode {
   const copy = useUiCopy().messengerChat.turns;
   const text = copy.strip(price);
   return (
@@ -85,24 +87,6 @@ export function LastFreeStrip({ price, onGoUnlimited }: LastFreeStripProps): Rea
       >
         {text}
       </text>
-      <view
-        className="chat-turn-strip-button"
-        id={ids.stripUnlimited}
-        data-testid={ids.stripUnlimited}
-        hit-slop={SLOP_STRIP}
-        accessibility-element={true}
-        accessibility-traits="button"
-        accessibility-label={copy.goUnlimited}
-        bindtap={() => {
-          "background only";
-          onGoUnlimited();
-        }}
-      >
-        <svg className="chat-turn-icon-xs" content={infinity} current-color={color.white} />
-        <text className="chat-turn-strip-button-label" accessibility-elements-hidden={true}>
-          {copy.goUnlimited}
-        </text>
-      </view>
     </view>
   );
 }

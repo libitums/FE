@@ -204,12 +204,6 @@ export function MessengerChatScreen({
               reset={turn.reset}
               bottomInset={edges.bottom}
               onKeepChatting={turn.keepChatting}
-              onGoUnlimited={() =>
-                dispatch({
-                  type: "open-overlay",
-                  overlay: { kind: "unlimited", from: "out-panel" },
-                })
-              }
               onBackToChats={exit}
             />
           </view>
@@ -224,17 +218,7 @@ export function MessengerChatScreen({
             onSend={send}
             sendCost={turn.sendCost}
             aboveComposer={
-              turn.plan.kind === "last-free" ? (
-                <LastFreeStrip
-                  price={turn.plan.price}
-                  onGoUnlimited={() =>
-                    dispatch({
-                      type: "open-overlay",
-                      overlay: { kind: "unlimited", from: "strip" },
-                    })
-                  }
-                />
-              ) : null
+              turn.plan.kind === "last-free" ? <LastFreeStrip price={turn.plan.price} /> : null
             }
           />
         )}

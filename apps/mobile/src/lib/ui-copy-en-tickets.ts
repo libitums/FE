@@ -39,13 +39,6 @@ export const ticketsEn: TicketsCopy = {
     keep: "Keep unlimited",
     date: (d) => `${monthsEn[d.month - 1] ?? ""} ${String(d.day)}, ${String(d.year)}`,
     shortDate: (d) => `${monthsEn[d.month - 1] ?? ""} ${String(d.day)}`,
-    intro: {
-      title: "Go unlimited",
-      benefitMessages: "No daily limit on chat messages",
-      benefitLessons: "Start any lesson without a ticket",
-      comingSoon: "Coming soon",
-      comingSoonNote: "Unlimited plans are not on sale yet. We will let you know when they are.",
-    },
   },
   modal: {
     title: (count) => (count === 1 ? "ticket left" : "tickets left"),

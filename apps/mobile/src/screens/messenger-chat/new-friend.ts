@@ -16,6 +16,10 @@ export type NewFriendTimeline = {
   readonly dots: "blink" | "still";
 };
 
+/**
+ * 에피소드 → 해금 인물 표입니다. 그 에피소드의 막간(중간 스페셜 유닛 — 이야기 유닛 `INT`, ADR-0088)을 처음 끝내면 열립니다
+ * (2026-11-10 결정 — 전에는 최종 테스트 통과였습니다). 열쇠는 에피소드 id입니다.
+ */
 export const CHARACTER_UNLOCKS: readonly CharacterUnlockEntry[] = [
   {
     episodeId: "u03-mina",
@@ -26,7 +30,7 @@ export const CHARACTER_UNLOCKS: readonly CharacterUnlockEntry[] = [
   },
 ];
 
-/** 보상 움직임이 끝난 뒤(표준 2000 ms) · 움직임 줄이기 0.6 s. */
+/** 맵으로 돌아와 끝낸 유닛의 발자국 움직임이 끝난 뒤(표준 2000 ms) · 움직임 줄이기 0.6 s. */
 export const NEW_FRIEND_TIMING = {
   standard: { appearAfterMs: 2000, typingMs: 1200 },
   reduced: { appearAfterMs: 600, typingMs: 600 },

@@ -7,7 +7,7 @@ export type SendCost =
   | { readonly kind: "coin"; readonly price: number; readonly short: boolean };
 /** unlimited면 아무것도 그리지 않습니다. */
 export type TurnLineProps = { readonly plan: TurnPlan; readonly reset: ResetClock };
-export type LastFreeStripProps = { readonly price: number; readonly onGoUnlimited: () => void };
+export type LastFreeStripProps = { readonly price: number };
 export type CoinSendButtonProps = {
   readonly price: number;
   readonly enabled: boolean;
@@ -21,7 +21,6 @@ export type OutOfFreePanelProps = {
   readonly balance: number;
   readonly reset: ResetClock;
   readonly onKeepChatting: () => void;
-  readonly onGoUnlimited: () => void;
   readonly onBackToChats: () => void;
   /** 아래 안전 영역(px)입니다. 기본 0. */
   readonly bottomInset?: number;
@@ -32,11 +31,9 @@ const turns = (suffix: string): string => `messenger-chat-${suffix}`;
 export const chatTurnsTestIds = {
   line: turns("turn-line"),
   strip: turns("turn-strip"),
-  stripUnlimited: turns("turn-strip-unlimited"),
   panel: turns("out-panel"),
   panelTitle: turns("out-title"),
   panelKeep: turns("out-keep"),
-  panelUnlimited: turns("out-unlimited"),
   panelBack: turns("out-back"),
   panelBalance: turns("out-balance"),
   panelScroll: turns("out-scroll"),

@@ -19,7 +19,7 @@ export const messengerChatEs: MessengerChatCopy = {
     typing: (name) => `${name} está escribiendo…`,
     sendingPhoto: (name) => `${name} está enviando una foto…`,
     recordingVoice: (name) => `${name} está grabando un mensaje de voz…`,
-    lockedCondition: (episode) => `Termina el episodio ${episode} para empezar a chatear`,
+    lockedCondition: (episode) => `Juega el episodio ${episode} para empezar a chatear`,
     lockedRowLabel: (name, condition) => `${name}, bloqueado, ${condition}`,
     unreadLabel: (count) => `${count} sin leer`,
     rowLabel: (name, preview, time, unread) => joinSpoken([name, preview, time, unread]),
@@ -154,7 +154,6 @@ export const messengerChatEs: MessengerChatCopy = {
     coinEach: (price, reset) => `Cada mensaje ${price} monedas · gratis otra vez en ${reset}`,
     reset: (hours, minutes) => `${hours} h ${minutes} min`,
     strip: (price) => `Después, ${price} monedas por mensaje`,
-    goUnlimited: "Pasar a ilimitado",
     outTitle: (total) => `Ya usaste los ${total} mensajes gratis de hoy`,
     outBody: (reset) =>
       `Sigue chateando con monedas o vuelve en ${reset} para tener mensajes gratis.`,

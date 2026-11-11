@@ -34,14 +34,6 @@ export type TicketsCopy = {
     readonly keep: string;
     readonly date: (date: CalendarDate) => string;
     readonly shortDate: (date: CalendarDate) => string;
-    /** 무료 사용자용 「무제한 소개」 상태(messenger-chat-1-5 §17 Q1) — 얻는 것 둘과 아직 결제가 없다는 안내. */
-    readonly intro: {
-      readonly title: string;
-      readonly benefitMessages: string;
-      readonly benefitLessons: string;
-      readonly comingSoon: string;
-      readonly comingSoonNote: string;
-    };
   };
   readonly modal: {
     /** 큰 숫자 아래 제목 — 「tickets left」 · 「ticket left」. */

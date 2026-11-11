@@ -1,7 +1,6 @@
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { act, cleanup, fireEvent, screen, within } from "@lynx-js/react/testing-library";
 
-import { unlimitedIntroTestIds } from "../tickets/UnlimitedIntroState";
 import * as inputFocus from "./chat-input-focus";
 import { CHAT_PLACEHOLDERS } from "./chat-placeholders";
 import { chatTurnsTestIds as turnIds } from "./chat-turns.contract";
@@ -29,8 +28,8 @@ import type { TurnRecord } from "./free-turns";
 // `ui` 계층(MC2-UI7 · UI8 · UI9): 방 화면의 턴 — 무료 3통(T1) → 마지막 무료(T2) → 다 씀 판(T3, 하루 한 번) → 엽전 보내기(T4),
 // 관문(차감 · 상점 · 글 유지) · 겹침 초점 되돌림 · 무제한은 아무것도 없음. 메모리 원장 · 가짜 시계(시각은 지역 정오).
 // 계산은 unit(free-turns · turn-ledger)이 지고 여기서는 결선만 본다.
-// 가정(구현자가 따를 것): 화면 props = { wallet, turns, tier, now, timers? }(spec §7.2). Go unlimited 목적지는 §17 Q1에 따라
-// 무료 사용자용 소개 판(`unlimitedIntroTestIds.root`)이고 닫기는 `gotIt`이다.
+// 가정(구현자가 따를 것): 화면 props = { wallet, turns, tier, now, timers? }(spec §7.2).
+// 무제한 티켓은 학습 전용이라(2026-11-10 결정) 띠 · 판 어디에도 Go unlimited가 없고 무제한 모달도 열리지 않는다.
 
 vi.mock("./chat-input-focus", () => ({
   focusPhoneInput: vi.fn<() => void>(),
@@ -121,7 +120,6 @@ test("MC2-UI7. T2: 두 통 뒤 머리가 주황 「Last free message today」이
   expect(screen.getByTestId(turnIds.strip).textContent).toContain(
     "After this, 10 coins per message",
   );
-  expect(screen.getByTestId(turnIds.stripUnlimited)).toBeTruthy();
   // 아직 무료 보내기 단추다.
   expect(screen.getByTestId(ids.send)).toBeTruthy();
 });
@@ -332,33 +330,29 @@ test("MC2-UI8. 잔액이 딱 10이면 보내고 0이 된다(경계)", () => {
   expect(screen.queryByTestId("coin-shop-screen")).toBeNull();
 });
 
-test("MC2-UI8. T2 띠의 Go unlimited는 무제한 소개 판을 열고 닫으면 띠 단추로 초점이 돌아온다", () => {
+test("MC2-UI8. T2 띠에는 Go unlimited가 없다 — 무제한 티켓은 학습 전용(2026-11-10 결정)", () => {
   const room = freeRoom({ record: { day: TODAY, used: 2, outPanel: "due" } });
   mountChat(room);
 
-  tapId(turnIds.stripUnlimited);
-
-  expect(screen.getByTestId(unlimitedIntroTestIds.root)).toBeTruthy();
-  expect(screen.getByTestId(unlimitedIntroTestIds.comingSoon)).toBeTruthy();
-  tapId(unlimitedIntroTestIds.gotIt);
-  flushFrame();
-  expect(screen.queryByTestId(unlimitedIntroTestIds.root)).toBeNull();
-  expect(restore()).toHaveBeenCalledWith("messenger-chat-turn-strip-unlimited");
+  const strip = screen.getByTestId(turnIds.strip);
+  expect(strip.textContent).not.toContain("Go unlimited");
+  expect(screen.queryByTestId("messenger-chat-turn-strip-unlimited")).toBeNull();
+  expect(screen.queryByText("Go unlimited")).toBeNull();
+  expect(screen.queryByTestId("unlimited-ticket-modal")).toBeNull();
 });
 
-test("MC2-UI8. 판의 Go unlimited도 소개 판을 열고 닫으면 판 단추로 초점이 돌아온다", () => {
+test("MC2-UI8. T3 판에는 Go unlimited가 없다 — Keep chatting · Back to chats · 잔액 줄뿐이다", () => {
   const room = freeRoom({ record: { day: TODAY, used: 3, outPanel: "due" } });
   mountChat(room);
   flushFrame();
-  restore().mockClear();
 
-  tapId(turnIds.panelUnlimited);
-  expect(screen.getByTestId(unlimitedIntroTestIds.root)).toBeTruthy();
-  tapId(unlimitedIntroTestIds.gotIt);
-  flushFrame();
-
-  expect(restore()).toHaveBeenCalledWith("messenger-chat-out-unlimited");
-  expect(screen.getByTestId(turnIds.panel)).toBeTruthy();
+  const panel = screen.getByTestId(turnIds.panel);
+  expect(panel.textContent).not.toContain("Go unlimited");
+  expect(screen.queryByTestId("messenger-chat-out-unlimited")).toBeNull();
+  expect(screen.getByTestId(turnIds.panelKeep)).toBeTruthy();
+  expect(screen.getByTestId(turnIds.panelBack)).toBeTruthy();
+  expect(screen.getByTestId(turnIds.panelBalance)).toBeTruthy();
+  expect(screen.queryByTestId("unlimited-ticket-modal")).toBeNull();
 });
 
 test("MC2-UI8. 판의 Back to chats는 방을 나간다", () => {

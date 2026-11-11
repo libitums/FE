@@ -70,7 +70,7 @@ test("MC2-UI12. 해금 전: 미나 줄은 잠겨 있고 해금 조건을 보이�
 
   expect(screen.getByTestId(ids.row("mina")).getAttribute("data-locked")).toBe("true");
   expect(screen.getByTestId(ids.rowPreview("mina")).textContent).toBe(
-    "Finish Episode 3 to start chatting",
+    "Play Episode 3 to start chatting",
   );
   expect(screen.queryByTestId(ids.rowNew("mina"))).toBeNull();
   expect(rowOrder()).toEqual([

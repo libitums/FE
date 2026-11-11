@@ -356,18 +356,6 @@ const overlayRows: readonly OverlayRow[] = [
     parent: { kind: "none" },
     origin: "send",
   },
-  {
-    label: "unlimited from strip",
-    overlay: { kind: "unlimited", from: "strip" },
-    parent: { kind: "none" },
-    origin: "strip-unlimited",
-  },
-  {
-    label: "unlimited from out-panel",
-    overlay: { kind: "unlimited", from: "out-panel" },
-    parent: { kind: "none" },
-    origin: "out-unlimited",
-  },
 ];
 
 describe("겹침 열기 · 닫기 (MC-U11)", () => {

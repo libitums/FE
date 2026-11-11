@@ -87,21 +87,24 @@ test("MC2-UI5. 머리 줄은 접근성 요소이고 낭독은 보이는 글과 �
 
 // ------------------------------------------------------------------ 마지막 무료 띠
 
-test("MC2-UI5. 띠: 「After this, 10 coins per message」와 Go unlimited가 있다", () => {
-  render(<LastFreeStrip price={10} onGoUnlimited={vi.fn<() => void>()} />);
+test("MC2-UI5. 띠: 「After this, 10 coins per message」 글 한 줄이고 낭독도 같다", () => {
+  render(<LastFreeStrip price={10} />);
 
-  expect(screen.getByTestId(ids.strip).textContent).toContain("After this, 10 coins per message");
-  expect(screen.getByTestId(ids.stripUnlimited).textContent).toContain("Go unlimited");
+  const strip = screen.getByTestId(ids.strip);
+  expect(strip.textContent?.trim()).toBe("After this, 10 coins per message");
+  expect(strip.querySelector("[accessibility-label]")?.getAttribute("accessibility-label")).toBe(
+    "After this, 10 coins per message",
+  );
 });
 
-test("MC2-UI5. 띠: Go unlimited 탭 → onGoUnlimited 한 번", () => {
-  const onGoUnlimited = vi.fn<() => void>();
-  render(<LastFreeStrip price={10} onGoUnlimited={onGoUnlimited} />);
+test("MC2-UI5. 띠에는 Go unlimited 단추가 없다 — 무제한 티켓은 학습 전용(2026-11-10 결정)", () => {
+  render(<LastFreeStrip price={10} />);
 
-  const target = screen.getByTestId(ids.stripUnlimited);
-  fireEvent.tap(target.querySelector('[data-testid="ui-lynx-button"]') ?? target, {});
-
-  expect(onGoUnlimited).toHaveBeenCalledTimes(1);
+  const strip = screen.getByTestId(ids.strip);
+  expect(strip.textContent).not.toContain("Go unlimited");
+  expect(strip.querySelector('[accessibility-traits="button"]')).toBeNull();
+  expect(strip.querySelector("[bindtap]")).toBeNull();
+  expect(document.querySelector('[data-testid="messenger-chat-turn-strip-unlimited"]')).toBeNull();
 });
 
 // ------------------------------------------------------------------ 엽전 보내기 단추

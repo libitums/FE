@@ -34,18 +34,15 @@
 
 /* ---------------------------------------------------------------- T2 띠 */
 
-/* 로그 scroll-view의 형제로 입력 줄 바로 위에 놓입니다(스크롤 밖, 문서 순서). */
+/* 로그 scroll-view의 형제로 입력 줄 바로 위에 놓입니다(스크롤 밖, 문서 순서). 글 한 줄뿐입니다(무제한 티켓은 학습 전용 — 단추 없음). */
 .chat-turn-strip {
   align-self: stretch;
   min-height: 36px;
   margin: var(--libitum-spacing-0) var(--libitum-layout-screen-padding-x) var(--libitum-spacing-8);
-  padding: var(--libitum-spacing-4) var(--libitum-spacing-4) var(--libitum-spacing-4)
-    var(--libitum-spacing-12);
+  padding: var(--libitum-spacing-4) var(--libitum-spacing-12);
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: space-between;
-  column-gap: var(--libitum-spacing-8);
   border-radius: var(--libitum-radius-full);
   background-color: var(--libitum-color-background-elevated);
   box-shadow: var(--libitum-elevation-shadow-s1);
@@ -56,33 +53,6 @@
   min-width: 0;
   white-space: normal;
   color: var(--libitum-color-fg-brand);
-  font-family: var(--libitum-typography-label-m-font-family);
-  font-size: var(--libitum-typography-label-m-font-size);
-  font-weight: var(--libitum-typography-label-m-font-weight);
-  line-height: var(--libitum-typography-label-m-line-height);
-  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
-}
-
-/* Go unlimited — fg-brand 면 + 흰 글(5.46). 터치는 hit-slop으로 위아래 4를 넓혀 36(띠 높이 안 — 부모 밖 터치는 기기에서 막힙니다). */
-.chat-turn-strip-button {
-  flex-shrink: 0;
-  min-height: 28px;
-  padding: var(--libitum-spacing-0) var(--libitum-spacing-12);
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  column-gap: var(--libitum-spacing-4);
-  border-radius: var(--libitum-radius-full);
-  background-color: var(--libitum-color-fg-brand);
-}
-
-.chat-turn-strip-button:active {
-  opacity: var(--libitum-opacity-90);
-}
-
-.chat-turn-strip-button-label {
-  color: var(--libitum-color-white);
   font-family: var(--libitum-typography-label-m-font-family);
   font-size: var(--libitum-typography-label-m-font-size);
   font-weight: var(--libitum-typography-label-m-font-weight);
@@ -278,7 +248,7 @@
   letter-spacing: var(--libitum-typography-button-m-letter-spacing);
 }
 
-/* Go unlimited · Back to chats — 접근성 요소는 이 감싸개 하나이고 안쪽 ui-lynx 단추는 모양만 맡습니다. */
+/* Back to chats — 접근성 요소는 이 감싸개 하나이고 안쪽 ui-lynx 단추는 모양만 맡습니다. */
 .chat-out-action {
   flex-shrink: 0;
   align-self: stretch;

@@ -364,7 +364,8 @@
   display: flex;
 }
 
-/* 결과 화면 감싸개 — 아래 결과 화면이 화면을 채우도록 늘입니다. */
+/* 아래 화면(여정 맵) 감싸개 — 맵 탭 칸(`.app-tab-map`, 세로 flex)을 채우도록 늘입니다. 시트(`.new-friend`)는 fixed라
+   이 감싸개가 아니라 화면 전체(전역 머리 · 탭 바 위, z-sheet)를 덮습니다 — 맵 첫 유닛 안내의 막과 같은 자리입니다. */
 .new-friend-layer {
   display: flex;
   flex-direction: column;

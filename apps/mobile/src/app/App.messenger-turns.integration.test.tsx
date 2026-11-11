@@ -198,7 +198,7 @@ test("MC2-I5. 판의 「Keep chatting」은 판을 닫고 엽전 보내기 단�
   expect(screen.getByTestId("messenger-chat-coin-send")).toBeInTheDocument();
 });
 
-// ------------------------------------------------------------------ 잔액 부족 · Go unlimited
+// ------------------------------------------------------------------ 잔액 부족 · Go unlimited 없음
 
 test("MC2-I5. 잔액이 모자라면 엽전 보내기는 보내지 않고 엽전 상점이 서며 글은 입력 칸에 남고, 닫으면 단추로 돌아온다", async () => {
   await bootToList(0, used(3, "shown"));
@@ -217,29 +217,27 @@ test("MC2-I5. 잔액이 모자라면 엽전 보내기는 보내지 않고 엽전
   expect(screen.getByTestId("messenger-chat-coin-send")).toBeInTheDocument();
 });
 
-test("MC2-I5. 마지막 무료 띠의 「Go unlimited」는 무제한 소개를 열고 Got it이 닫는다 — 띠는 그대로다", async () => {
+// 무제한 티켓은 학습 전용입니다(2026-11-10 결정) — 메신저의 띠 · 판에는 Go unlimited가 없고 무제한 소개도 열리지 않습니다.
+test("MC2-I5. 마지막 무료 띠에는 「Go unlimited」가 없다 — 글 한 줄뿐이다", async () => {
   await bootToList(100, used(2, "due"));
   openRoom("owner");
+
   expect(present("messenger-chat-turn-strip")).toBe(true);
-
-  tapId("messenger-chat-turn-strip-unlimited");
-  expect(screen.getByTestId(UNLIMITED_INTRO)).toBeInTheDocument();
-
-  tapId(`${UNLIMITED_INTRO}-got-it`);
+  expect(present("messenger-chat-turn-strip-unlimited")).toBe(false);
+  expect(screen.getByTestId("messenger-chat-turn-strip").textContent).not.toContain("Go unlimited");
   expect(present(UNLIMITED_INTRO)).toBe(false);
-  expect(present("messenger-chat-turn-strip")).toBe(true);
 });
 
-test("MC2-I5. 다 쓴 판의 「Go unlimited」도 무제한 소개를 열고, 닫으면 판이 그대로 남는다", async () => {
+test("MC2-I5. 다 쓴 판에도 「Go unlimited」가 없다 — Keep chatting · Back to chats · 잔액 줄", async () => {
   await bootToList(100, used(3, "due"));
   openRoom("owner");
 
-  tapId("messenger-chat-out-unlimited");
-  expect(screen.getByTestId(UNLIMITED_INTRO)).toBeInTheDocument();
-
-  tapId(`${UNLIMITED_INTRO}-got-it`);
-  expect(present(UNLIMITED_INTRO)).toBe(false);
   expect(screen.getByTestId("messenger-chat-out-panel")).toBeInTheDocument();
+  expect(present("messenger-chat-out-unlimited")).toBe(false);
+  expect(screen.getByTestId("messenger-chat-out-panel").textContent).not.toContain("Go unlimited");
+  expect(present("messenger-chat-out-keep")).toBe(true);
+  expect(present("messenger-chat-out-back")).toBe(true);
+  expect(present(UNLIMITED_INTRO)).toBe(false);
 });
 
 // ------------------------------------------------------------------ MC2-I6 · 시험 계정(무제한)
