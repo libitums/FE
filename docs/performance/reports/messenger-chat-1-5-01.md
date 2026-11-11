@@ -18,7 +18,7 @@
 
 ## 이 변경이 무엇을 건드렸나
 
-- 새 모듈(`screens/messenger-chat/`): 순수 모듈(무료 수 · 가격 · 내 말풍선 상태 · 교정 조각 · 해금 · 스크롤 예산) · 포트와 가짜(지갑 · 원장 · 해금 저장 · 가짜 뜻/교정) · UI(내 말풍선 · 턴 줄 · 띠 · T3 판 · 엽전 보내기 · 새 친구 시트 · 층) · CSS 셋. `screens/tickets/UnlimitedIntroState.tsx`. 결선 `app/new-friend-wiring.ts` · `render-new-friend.tsx` · `use-messenger-wallet-sync.ts`.
+- 새 모듈(`screens/messenger-chat/`): 순수 모듈(무료 수 · 가격 · 내 말풍선 상태 · 교정 조각 · 해금 · 스크롤 예산) · 포트와 가짜(지갑 · 원장 · 해금 저장 · 가짜 뜻/교정) · UI(내 말풍선 · 턴 줄 · 띠 · T3 판 · 엽전 보내기 · 새 친구 시트 · 층) · CSS 셋. 결선 `app/new-friend-wiring.ts` · `render-new-friend.tsx` · `use-messenger-wallet-sync.ts`.
 - 바뀐 것: `ChatSource` 포트 · 픽스처(미나 잠김) · 공용 `ChatHeader`(선택 부제 slot) · `ChatLog`(내가 보낸 글이 늘면 끝으로) · nav `catalog-unit-complete`(`newFriend`) · 5개 언어 chat · tickets 문구.
 - 의존성 · 이미지 · 음원 · ui-lynx · 호스트 · 권한 변경 없음. 시트의 장면 · 얼굴은 이미 있는 그림의 경로를 쓴다.
 

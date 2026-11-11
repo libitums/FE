@@ -507,7 +507,6 @@ test("SM11: statusBarSurfaceRegistry matches the contract (six routes, eight CSS
   assert.match(layerText("screens/journey-map/journey-stat-modal.css"), /TicketStatModal/);
   // 무제한 티켓 모달(ADR-0115)도 같은 표지를 단다.
   assert.match(layerText("screens/journey-map/journey-stat-modal.css"), /UnlimitedTicketModal/);
-  assert.match(layerText("screens/journey-map/journey-stat-modal.css"), /UnlimitedIntroState/);
   assert.match(layerText("screens/tickets/tickets.css"), /default-scrim/);
   assert.match(layerText("screens/catalog-update/catalog-update-notice.css"), /default-scrim/);
   assert.match(layerText("screens/journey-map/journey-stat-modal.css"), /light-icons/);
