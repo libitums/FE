@@ -29,6 +29,7 @@ import {
   learningOutcome,
   learningSettingsFrom,
   recordTurnLearning,
+  resolveLearning,
   withLearnedUse,
 } from "./chat-send-learning.ts";
 import {
@@ -60,13 +61,14 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
   const topicState = topicStateFrom(turn.topicState);
   const pool = context.learning.expressions;
   const today = learningDay(deps.nowMs());
+  const learningSettings = learningSettingsFrom(context.learning);
   const branch = chooseBranch(topicState, {
     userText: body.text,
     persona,
     learning: {
       pool,
       episodes: context.learning.episodes,
-      settings: learningSettingsFrom(context.learning),
+      settings: learningSettings,
       manualEmpty: context.learning.scope?.empty === true,
       chipsOn: gate.replySuggestions === true && suggestionSettings(context.status).enabled,
       today,
@@ -231,11 +233,15 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
   sendCorrection(feedbackResult);
   const segments = applyTranslation(sink, deps.log, result.segments, translated);
   const saved = sendSuggestions(sink, deps.log, context.assistantMessageId, suggested);
+  const learningResult = resolveLearning(
+    branch.learning,
+    result.state,
+    segments,
+    suggested?.status === "ok" && suggested.targetShown === true,
+  );
   const learned = learningOutcome({
     decision: branch.learning,
-    state: result.state,
-    segments,
-    chipShown: suggested?.status === "ok" && suggested.targetShown === true,
+    result: learningResult,
     feedback: feedbackResult,
   });
 
@@ -270,8 +276,9 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
           userText: body.text,
           turnState: result.state,
           action: branch.action,
-          learning: branch.learning,
+          learning: learningResult,
           today,
+          maxSkipStreak: learningSettings.maxSkipStreak,
         }),
       },
     );

@@ -1,6 +1,7 @@
 // 대화 분기(PRD §3.8): 신호가 임계값을 넘으면 후보를 열고, 그 안에서 랜덤으로 고른다. 순수 함수입니다.
 //   화제 전환 — 짧은 답이 k번 이어짐 · 같은 화제가 M턴 넘음 · 유저가 전환을 원함(앞 턴의 @state) → 확률로 화제 뱅크 씨앗.
-//   학습 표현 삽입 — 주기 · 표현 · 방식은 `companion-learning.ts`(PRD §3.7)가 정한다. 화제 전환이 열린 턴이면 넣지 않는다.
+//   학습 표현 — 기회 · 후보 · 칩은 `companion-learning.ts`(PRD §3.7)가 정하고, 답 방식이면 후보를 답 모델에 주어 고르게 한다(맞는 게
+//   없으면 넘김). 화제 전환이 열린 턴이면 넣지 않는다.
 // 화제 전환 값은 PRD §8 C(만들면서 깎을 것)의 초안, 학습 삽입 값은 운영 설정(`settings.learning_*`)입니다.
 
 import type {
@@ -11,11 +12,13 @@ import type {
 } from "./chat-send.contract.ts";
 import {
   decideLearning,
+  defaultLearningSettings,
   type LearningDecision,
-  learningDirective,
-  type LearningMode,
+  type LearningResult,
   type LearningSettings,
   nextLearningState,
+  noLearningResult,
+  offerDirective,
 } from "./companion-learning.ts";
 
 export const branchingConfig = {
@@ -27,7 +30,10 @@ export const branchingConfig = {
 
 export type BranchAction =
   | { readonly kind: "switch"; readonly seed: string }
-  | { readonly kind: "insert"; readonly expressionId: string; readonly mode: LearningMode };
+  /** 칩 방식 — 코드가 고른 표현을 칩 요청에 싣는다. */
+  | { readonly kind: "insert"; readonly expressionId: string; readonly mode: "chip" }
+  /** 답 방식 — 후보를 답 모델에 주고 고르게 한다. */
+  | { readonly kind: "offer"; readonly expressionIds: readonly string[] };
 
 const isShort = (text: string) =>
   [...text.replace(/\s+/g, "")].length <= branchingConfig.shortLength;
@@ -52,6 +58,15 @@ export function topicStateFrom(raw: Partial<TopicState> | null | undefined): Top
     recentTargets: Array.isArray(raw?.recentTargets)
       ? raw.recentTargets.filter((id): id is string => typeof id === "string").slice(-5)
       : [],
+    learnSkipStreak: num(raw?.learnSkipStreak, 0),
+    learnSkips:
+      raw?.learnSkips !== null && typeof raw?.learnSkips === "object" && !Array.isArray(raw.learnSkips)
+        ? Object.fromEntries(
+            Object.entries(raw.learnSkips).filter(
+              (entry): entry is [string, number] => typeof entry[1] === "number" && Number.isFinite(entry[1]),
+            ),
+          )
+        : {},
   };
 }
 
@@ -100,13 +115,22 @@ export function chooseBranch(
       learning,
     };
   }
-  const target = learning.target;
-  if (target === null) return { action: null, directive: null, learning };
-  return {
-    action: { kind: "insert", expressionId: target.expressionId, mode: target.mode },
-    directive: learningDirective(target),
-    learning,
-  };
+  if (learning.target !== null)
+    return {
+      action: { kind: "insert", expressionId: learning.target.expressionId, mode: "chip" },
+      directive: null,
+      learning,
+    };
+  if (learning.offer !== null)
+    return {
+      action: {
+        kind: "offer",
+        expressionIds: learning.offer.candidates.map((candidate) => candidate.expressionId),
+      },
+      directive: offerDirective(learning.offer),
+      learning,
+    };
+  return { action: null, directive: null, learning };
 }
 
 export function nextTopicState(
@@ -115,22 +139,29 @@ export function nextTopicState(
     readonly userText: string;
     readonly turnState: TurnState | null;
     readonly action: BranchAction | null;
-    readonly learning?: LearningDecision;
+    /** 턴 결과의 학습(넣음 · 건너뜀) — `resolveLearning`. */
+    readonly learning?: LearningResult;
     readonly today?: string;
+    readonly maxSkipStreak?: number;
   },
 ): TopicState {
   const topic = input.turnState?.topic ?? state.topic;
   const switched = input.action?.kind === "switch";
-  const inserted = input.action?.kind === "insert";
+  const { inserted, restartGap, ...learning } = nextLearningState(
+    state,
+    input.learning ?? noLearningResult,
+    input.today ?? "",
+    input.maxSkipStreak ?? defaultLearningSettings.maxSkipStreak,
+  );
   return {
     turn: state.turn + 1,
     topic,
     topicTurns: switched || topic !== state.topic ? 1 : state.topicTurns + 1,
     shortStreak: isShort(input.userText) ? state.shortStreak + 1 : 0,
     wantsSwitch: input.turnState?.userWantsSwitch === true,
-    lastInsertTurn: inserted ? state.turn + 1 : state.lastInsertTurn,
+    lastInsertTurn: inserted || restartGap ? state.turn + 1 : state.lastInsertTurn,
     lastSwitchTurn: switched ? state.turn + 1 : state.lastSwitchTurn,
     heavy: input.turnState?.heavy === true,
-    ...nextLearningState(state, input.learning?.target ?? null, input.today ?? ""),
+    ...learning,
   };
 }

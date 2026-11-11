@@ -3,11 +3,17 @@
 // (앞 대화) 뒤에 붙인다. 답 · 모델 보고(`learned`) · 서버 판정(`done`)을 낸다 — 자연스러움 채점은 대시보드가 한다.
 
 import type { CompanionLlm, FeedbackHistoryEntry, HistoryEntry } from "./chat-send.contract.ts";
-import { targetDone } from "./chat-send-learning.ts";
+import { pickedCandidate, targetDone } from "./chat-send-learning.ts";
 import type { ReplySuggestion, SpeechLevel } from "./companion-contract/index.ts";
 import { evalSuggestions } from "./companion-eval-suggest.ts";
 import { systemSplit } from "./companion-llm.ts";
-import { type LearningMode, type LearningTarget, learningDirective } from "./companion-learning.ts";
+import {
+  candidateOf,
+  type LearningMode,
+  type LearningOffer,
+  type LearningTarget,
+  offerDirective,
+} from "./companion-learning.ts";
 import { containsExpression } from "./companion-learning-match.ts";
 import { companionSystemPrompt } from "./companion-prompt.ts";
 import { collectSegments, createSegmentSplitter, type SegmentDelta } from "./companion-segments.ts";
@@ -82,6 +88,17 @@ export async function evalLearning(
     memories: [],
     directive: null,
   });
+  // 운영과 같은 후보 지시 — 케이스의 표현 하나를 그 방식만 허용해서.
+  const offer: LearningOffer = {
+    candidates: [
+      candidateOf(
+        { id: "eval", kind: target.kind, surface: target.surface, gloss: target.gloss },
+        [target.mode === "elicit" ? "elicit" : "expose"],
+        0,
+      ),
+    ],
+    nudge: false,
+  };
   const history = (item.history ?? []).map((entry): HistoryEntry =>
     entry.role === "user"
       ? { role: "user", text: entry.text }
@@ -93,7 +110,7 @@ export async function evalLearning(
     system: `${prompt.stable}${systemSplit}${prompt.dynamic}`,
     history,
     userText: item.text,
-    directive: learningDirective(target),
+    directive: offerDirective(offer),
     signal,
   })) {
     deltas.push(...splitter.push(chunk));
@@ -101,10 +118,11 @@ export async function evalLearning(
   deltas.push(...splitter.end());
   const segments = collectSegments(deltas);
   const state = splitter.state();
+  const learned = pickedCandidate(offer, state) !== null;
   return {
     mode: target.mode,
     segments: segments.map(({ kind, text }) => ({ kind, text })),
-    learned: state?.learned === true,
-    done: targetDone(target, state, segments, false),
+    learned,
+    done: targetDone(target, learned, segments, false),
   };
 }

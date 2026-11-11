@@ -491,23 +491,30 @@ ops-dashboard가 검사 · 피드백 프롬프트를 케이스 묶음으로 돌�
 앱에서 배운 단어 · 표현 · 문형(끝낸 유닛만 — `companion_learning_context`)을 대화에 자연스럽게 녹인다. 말풍선에 표시하지 않는다.
 판정은 `_shared/companion-learning.ts`(순수 함수), 글자 판정은 `companion-learning-match.ts`, 턴 연결은 `chat-send-learning.ts`, 첫 인사 · 선톡은 `companion-opener.ts`.
 
-- **주기** — 직전 삽입 뒤 유저 턴 `settings.learning_min_gap`(3)번이 지나야 후보가 열리고, 열린 뒤 `learning_base_probability`(0.3)에서 턴마다 올라
-  `learning_force_turns`(6)번째에는 반드시 넣는다. 대화당 하루 `learning_daily_cap`(6)번(UTC 날짜). 첫 턴 · 유저가 전환을 원한 턴 · 무거운 대화(앞 턴 `@state.heavy`) ·
+- **주기** — 직전 삽입 뒤 유저 턴 `settings.learning_min_gap`(3)번이 지나야 기회가 열리고, 열린 뒤 `learning_base_probability`(0.3)에서 턴마다 올라
+  `learning_force_turns`(6)번째부터는 매 턴 연다(「오래됐으니 웬만하면 넣어 보라」는 한 줄 — 강제는 아니다). 대화당 하루 `learning_daily_cap`(6)번(UTC 날짜). 첫 턴 · 유저가 전환을 원한 턴 · 무거운 대화(앞 턴 `@state.heavy`) ·
   화제 전환 턴은 넣지 않는다(화제 전환이 먼저). `learning_enabled = false`면 모두 끈다. 간격 · 하루 수 · 최근 지시한 표현은 `conversations.topic_state`.
-- **표현 고르기** — 아직 만난 적 없는 것(최근 에피소드부터) → 만난 것 가운데 유저가 아직 안 쓴 것 → 오래 안 본 것, 앞쪽 셋 가운데 랜덤 · 직전 표현 제외.
-- **방식** — 노출(캐릭터가 씀, 답 지시) · 유도(그 표현으로 답할 질문, 답 지시) · 칩(추천 답변 후보 하나에 넣음 — 검증을 지나면 먼저 보인다, 산출로 치지 않는다).
-  처음 만나는 표현은 노출, 만난 적 있으면 유저가 안 썼을 때 유도 · 칩 비중이 높다. 칩 스위치가 꺼져 있으면 칩 대신 유도.
+- **고르기는 답 모델이 (2026-11-12)** — 기회가 열리면 후보 `offerSize`(4)개를 답 요청의 `directive`로 주고, 답 모델이 지금 대화에 맞는 것 하나를
+  말하거나(노출) 그 표현으로 답할 질문을 하거나(유도), 맞는 게 없으면 넣지 않는다. 맥락 판단을 맥락을 아는 답 모델에 맡겨 따로 판정 호출(지연 · 비용)을 두지 않는다.
+  고른 것은 `@state`의 `learned`(후보 id `e1` …) · `learned_how`(say · ask)로 보고한다(옛 모양 `true`는 후보가 하나일 때만 읽는다).
+- **건너뜀** — 넘기면 간격 · 하루 수를 쓰지 않고 다음 턴에 다시 연다(meta `reason: "skipped"`). `maxSkipStreak`(3)번 이어 넘기면 그때 간격을 새로 센다.
+  넘긴 후보는 표현마다 센다(`topic_state.learnSkips`, 최대 40개, 고르면 지움) — 두 번 넘게 넘긴 표현은 후보 뒤로. `offerSize` · `maxSkipStreak`는 코드 기본값(설정 칸 없음).
+- **후보 순서** — 아직 만난 적 없는 것(최근 에피소드부터) → 만난 것 가운데 유저가 아직 안 쓴 것 → 오래 안 본 것, 직전 표현 제외, 많이 넘긴 표현은 맨 뒤.
+- **방식** — 노출(캐릭터가 씀) · 유도(그 표현으로 답할 질문) · 칩(추천 답변 후보 하나에 넣음 — 검증을 지나면 먼저 보인다, 산출로 치지 않는다).
+  후보마다 권하는 방식을 적는다: 처음 만나는 표현은 노출만, 아직 안 썼으면 유도 먼저, 써 봤으면 노출 먼저. 칩은 답 뒤 단계라 코드가 정한다 — 앞쪽 셋 가운데
+  랜덤으로 고른 표현의 칩 비중(아직 안 씀 30% · 써 봄 20%)에 걸리면 그 표현 하나를 칩으로. 칩 스위치가 꺼져 있으면 칩은 없다.
 - **대상 유저** — 끝낸 유닛 없음: 넣지 않는다. 튜토리얼만: 턴에는 넣지 않고 첫 인사 · 선톡에서만 노출(「안녕하세요」 · 「감사합니다」). `u01` 이상: 전부.
 - **범위 (20261126)** — 기본 자동(끝낸 유닛 전부). 설정에서 수동으로 바꾸면 고른 에피소드의 끝낸 유닛만 쓴다(`profiles.learning_scope` · `learning_units`, 최대 50).
   고를 수 있는 것 = 유닛을 하나 이상 끝냈고 표현이 있는 에피소드. 수동인데 고른 것이 없거나 모두 콘텐츠에서 빠졌으면 넣지 않는다(까닭 `manual_empty` — 자동으로 되돌리지 않는다).
   앱 `companion_learning_scope()` · `companion_set_learning_scope(p_scope, p_units)`(`p_units` null = 목록 그대로), 플레이그라운드는 `companion_operator_*`(시험 계정만).
   에피소드 제목은 `companion.episodes`(`companion.sync_episodes` — 표현 동기화 SQL에 함께 실림). 튜토리얼 규칙은 고른 범위에 그대로 적용한다.
-- **확인과 기록** — 캐릭터 쪽은 `@state.learned`(모델 보고) + 노출이면 글자 확인(문형 · 자리 있는 표현은 보고만). 유저 쪽은 직접 입력한 글에서 배운 표현 전체를
+- **확인과 기록** — 캐릭터 쪽은 `@state.learned`(모델이 고른 후보) + 노출이면 글자 확인(문형 · 자리 있는 표현은 보고만). 유저 쪽은 직접 입력한 글에서 배운 표현 전체를
   글자로 보고(한 글자 어휘 제외), 최근 지시한 문형은 피드백 모델이 `learned_used`로 판정한다 → `correction.learnedUsed`(앱 카드 「배운 표현을 썼어요」). 칩 전송은 세지 않는다.
-  `companion_record_learning`이 `companion.user_expressions`를 센다(실패는 로그 `learning_record_failed`만). 저장 meta `learning {open, reason, mode?, expressionId?, surface?, done?, produced?}`.
-- 지표: `companion_learning_stats(p_since, p_playground = null)`(service_role) — 턴 · 열린 턴 · 넣은 턴 · 방식별 넣음 · 따름 · 출처별 · 까닭 · 산출 턴 · 유도 뒤 3턴 안 산출 ·
+  `companion_record_learning`이 `companion.user_expressions`를 센다(실패는 로그 `learning_record_failed`만). 저장 meta `learning {open, reason, offered?, mode?, expressionId?, surface?, done?, produced?}`(`offered` = 준 후보의 글, 넘기면 `reason: "skipped"`이고 mode 없음).
+- 지표: `companion_learning_stats(p_since, p_playground = null)`(service_role) — 턴 · 열린 턴 · 넣은 턴 · 방식별 넣음 · 따름 · 출처별 · 까닭(넘김 `skipped` 포함) · 산출 턴 · 유도 뒤 3턴 안 산출 ·
   다시 쓴 표현(산출 2번 이상, 하루 넘게 떨어져) · 많이 넣은 표현.
-- 평가: `companion-eval`의 `kind: "learning"`(케이스 `target {surface, gloss?, kind?, mode}`) — 답 · 모델 보고 · 서버 판정(칩이면 칩 셋).
+- 평가: `companion-eval`의 `kind: "learning"`(케이스 `target {surface, gloss?, kind?, mode}`) — 운영과 같은 후보 지시(후보 하나 · 그 방식만) · 답 · 모델 보고 · 서버 판정(칩이면 칩 셋).
+  첫 인사 · 선톡의 노출 하나도 같은 후보 지시(후보 하나 · 노출만)다.
 
 ### 첫 인사 — companion-greet
 

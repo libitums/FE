@@ -46,11 +46,11 @@ describe("대화 분기", () => {
         },
       ).action,
     ).toMatchObject({
-      kind: "insert",
+      kind: "offer",
     });
   });
 
-  test("BR2. 학습 표현 삽입은 직전 삽입 뒤 최소 간격이 지나야 열리고, 강제 턴에는 반드시 넣는다", () => {
+  test("BR2. 학습 표현은 직전 삽입 뒤 최소 간격이 지나야 열리고, forceTurns 부터는 매 턴 후보를 준다", () => {
     const state = { ...topicStateFrom(null), turn: 5, lastInsertTurn: 5 };
     const closed = chooseBranch(state, {
       userText: "오늘 날씨가 좋네요",
@@ -64,7 +64,7 @@ describe("대화 분기", () => {
     expect(
       chooseBranch(forced, { userText: "오늘 날씨가 좋네요", persona, learning, random: never })
         .action,
-    ).toEqual({ kind: "insert", expressionId: "voca:water", mode: "expose" });
+    ).toEqual({ kind: "offer", expressionIds: ["voca:water"] });
   });
 
   test("BR3. 다음 화제 상태 — 같은 화제는 이어 세고, 전환하면 1부터, 유저의 전환 신호를 기억한다", () => {

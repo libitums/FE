@@ -1,26 +1,28 @@
-// 가짜 LLM 계층(`companion-llm-fake.ts`)의 학습 표현 흉내(PRD §3.7). 답 지시 · 첫 인사 · 선톡 줄에 배운 표현이 있으면 그 표현을 쓰고
-// `@state.learned`를 켠다. 피드백은 판정 후보 가운데 글에 든 것을 `learnedUsed`로, 칩은 첫 후보에 그 표현을 넣는다.
+// 가짜 LLM 계층(`companion-llm-fake.ts`)의 학습 표현 흉내(PRD §3.7). 답 · 첫 인사 · 선톡 지시에 배운 표현 후보가 있으면 첫 후보를
+// 쓰고(「ask only」면 질문) `@state.learned`에 그 id를 적는다. 유저 말에 「[skip-learn]」이 있으면 넘긴다. 피드백은 판정 후보 가운데 글에 든 것을 `learnedUsed`로, 칩은 첫 후보에 그 표현을 넣는다.
 
 import type { Feedback, FeedbackRequest, ReplyRequest } from "./chat-send.contract.ts";
 import { containsExpression } from "./companion-learning-match.ts";
 import type { SuggestRequest, SuggestionDraft } from "./companion-suggest.contract.ts";
 
-const exposeLine =
-  /Learned expression for this reply: "([^"]+)"|use the Korean expression "([^"]+)"/;
-const elicitLine = /Learned expression to practise: "([^"]+)"/;
+const candidateLine = /^- (e\d+): "([^"]+)"[^\n]* — ([^\n]+)$/m;
 
-/** 답에 덧붙일 줄과 `@state`에 켤 칸. 지시가 없으면 null. */
+/** 답에 덧붙일 줄과 `@state`에 적을 후보 id · 방식. 후보가 없거나 넘기면 null. */
 export function fakeLearningLines(
   request: ReplyRequest,
-): { line: string; learned: boolean } | null {
+): { line: string; learned: string; how: "say" | "ask" } | null {
+  if (request.userText.includes("[skip-learn]")) return null;
   const text = `${request.directive ?? ""}\n${request.system}`;
-  const expose = exposeLine.exec(text);
-  if (expose)
-    return { line: `@speech 저는 오늘 '${expose[1] ?? expose[2]}'라고 말했어요.`, learned: true };
-  const elicit = elicitLine.exec(text);
-  if (elicit) return { line: "@speech 그럼 이건 어떻게 말해요?", learned: true };
-  return null;
+  const candidate = candidateLine.exec(text);
+  if (!candidate) return null;
+  const [, ref, surface, hint] = candidate;
+  if (hint === "ask only") return { line: "@speech 그럼 이건 어떻게 말해요?", learned: ref!, how: "ask" };
+  return { line: `@speech 저는 오늘 '${surface}'라고 말했어요.`, learned: ref!, how: "say" };
 }
+
+/** `@state` 줄에 붙일 학습 칸. */
+export const fakeLearnedState = (learning: { learned: string; how: string } | null) =>
+  learning === null ? "" : `, "learned": "${learning.learned}", "learned_how": "${learning.how}"`;
 
 export function withFakeLearned(request: FeedbackRequest, card: Feedback): Feedback {
   const used = (request.targets ?? []).filter((target) =>

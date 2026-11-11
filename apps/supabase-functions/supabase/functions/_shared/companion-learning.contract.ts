@@ -41,8 +41,10 @@ export type TurnState = {
   readonly intimacyDelta: number;
   readonly topic: string | null;
   readonly userWantsSwitch: boolean;
-  /** 이번 턴 지시의 학습 표현을 썼다(노출) · 그 표현으로 답할 질문을 했다(유도). */
-  readonly learned?: true;
+  /** 이번 턴 지시의 후보 가운데 쓴 것의 id(`e1` …) — 말했거나(노출) 그 표현으로 답할 질문을 했다(유도). 옛 모양의 `true`도 읽는다. */
+  readonly learned?: string | true;
+  /** `learned`를 어떻게 썼는가: say = 직접 말함 · ask = 그 표현으로 답할 질문. */
+  readonly learnedHow?: "say" | "ask";
   /** 학습자가 슬프거나 속상해 위로가 필요해 보인다 — 다음 턴에 학습 표현을 넣지 않는다. */
   readonly heavy?: true;
 };
@@ -65,4 +67,8 @@ export type TopicState = {
   readonly lastExpressionId?: string | null;
   /** 최근 지시한 표현 id(오래된 것부터, 최대 5) — 피드백이 유저 산출을 판정할 후보. */
   readonly recentTargets?: readonly string[];
+  /** 후보를 주고 이어 건너뛴 턴 수 — `maxSkipStreak`에 닿으면 간격을 새로 센다. */
+  readonly learnSkipStreak?: number;
+  /** 표현 id → 후보로 줬는데 건너뛴 횟수(고르면 지운다, 최대 40개). 많이 건너뛴 표현은 후보 뒤로. */
+  readonly learnSkips?: Readonly<Record<string, number>>;
 };

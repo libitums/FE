@@ -1572,7 +1572,7 @@ describe("학습 표현 넣기(PRD §3.7)", () => {
     },
   });
 
-  // CS37 — 강제 턴(직전 삽입 뒤 6턴 넘음)이면 노출 지시가 답 요청의 directive로 붙고, 모델이 쓰고 글에도 있으면 노출로 센다.
+  // CS37 — 직전 삽입 뒤 6턴이 넘으면 후보 지시가 답 요청의 directive로 붙고, 모델이 고른 후보를 쓰고 글에도 있으면 노출로 센다.
   test("CS37. 노출 — 지시 · 저장 meta.learning · 화제 상태의 학습 칸 · 기록", async () => {
     const directives: (string | null)[] = [];
     const fake = fakeCompanionLlm();
@@ -1614,6 +1614,30 @@ describe("학습 표현 넣기(PRD §3.7)", () => {
     expect(rpcs.find((rpc) => rpc.fn === "companion_record_learning")?.args).toMatchObject({
       p_events: [{ expression_id: "expr:fine", kind: "exposed" }],
     });
+  });
+
+  // CS37b — 답 모델이 후보 가운데 맞는 게 없다고 넘기면(가짜: 「[skip-learn]」) 건너뜀 — 간격 · 하루 수를 쓰지 않고 후보마다 건너뜀을 센다.
+  test("CS37b. 건너뜀 — meta.learning.reason skipped · 간격 그대로 · 기록 없음", async () => {
+    const { handler, rpcs, finishArgs, settle } = setup({
+      learning: pool,
+      begin: ready(),
+      random: (() => {
+        const rolls = [0.99, 0.99, 0];
+        return () => rolls.shift() ?? 0.99;
+      })(),
+    });
+    await (await handler(post(body({ text: "오늘은 비가 와요 [skip-learn]" })))).text();
+    await settle();
+    const meta = (finishArgs()?.["p_assistant"] as { meta: Record<string, unknown> }).meta;
+    expect(meta["learning"]).toMatchObject({ open: true, reason: "skipped" });
+    expect(meta["learning"]).not.toHaveProperty("mode");
+    expect(finishArgs()?.["p_topic_state"]).toMatchObject({
+      lastInsertTurn: 2,
+      learnToday: 0,
+      learnSkipStreak: 1,
+      learnSkips: expect.objectContaining({ "expr:fine": 1 }),
+    });
+    expect(rpcs.find((rpc) => rpc.fn === "companion_record_learning")).toBeUndefined();
   });
 
   // CS38 — 간격 전이면 넣지 않고 까닭만 남긴다. 유저가 배운 표현을 직접 쓰면 카드에 learnedUsed · 산출로 센다(칩 전송은 세지 않는다).

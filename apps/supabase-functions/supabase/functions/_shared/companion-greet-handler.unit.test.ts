@@ -265,7 +265,7 @@ test("GT7. 배운 표현이 있으면 첫 인사에 노출로 하나 — 지시 
     },
   });
   expect((await call()).status).toBe(200);
-  expect(systems[0]).toContain('use the Korean expression "안녕하세요" (Hello) once');
+  expect(systems[0]).toContain('- e1: "안녕하세요" (Hello) — say it only');
   expect((save()?.["p_meta"] as Record<string, unknown>)["learning"]).toEqual({
     mode: "expose",
     expressionId: "expr:hello",

@@ -31,6 +31,14 @@ export type SegmentSplitter = {
   state(): TurnState | null;
 };
 
+/** `learned`: 후보 id(`e1` …) 또는 옛 모양의 true. null · false · 빈 글은 쓰지 않음. */
+function learnedFrom(learned: unknown, how: unknown): Pick<TurnState, "learned" | "learnedHow"> {
+  const value =
+    learned === true ? true : typeof learned === "string" && /^e\d{1,2}$/.test(learned.trim()) ? learned.trim() : null;
+  if (value === null) return {};
+  return { learned: value, ...(how === "say" || how === "ask" ? { learnedHow: how } : {}) };
+}
+
 export function parseTurnState(text: string): TurnState | null {
   try {
     const raw = JSON.parse(text) as Record<string, unknown>;
@@ -40,7 +48,7 @@ export function parseTurnState(text: string): TurnState | null {
       topic:
         typeof raw["topic"] === "string" && raw["topic"] !== "" ? raw["topic"].slice(0, 60) : null,
       userWantsSwitch: raw["user_wants_switch"] === true,
-      ...(raw["learned"] === true ? { learned: true as const } : {}),
+      ...learnedFrom(raw["learned"], raw["learned_how"]),
       ...(raw["heavy"] === true ? { heavy: true as const } : {}),
     };
   } catch {

@@ -1,10 +1,16 @@
 // 학습 표현 넣기(PRD §3.7 결정 2026-11-10): 언제(주기) · 무엇을(표현 고르기) · 어떻게(노출 · 유도 · 칩). 순수 함수입니다.
 //
-// 주기 — 직전 삽입 뒤 유저 턴 `minGap`번이 지나야 후보가 열리고, 열린 뒤 `baseProbability`에서 턴마다 올라 `forceTurns`번째에는 반드시
-// 넣는다. 대화당 하루 `dailyCap`번. 첫 턴 · 유저가 화제 전환을 원한 턴 · 무거운 대화(앞 턴 `@state.heavy`) · 화제 전환 턴은 넣지 않는다.
-// 표현 — 아직 만난 적 없는 것(최근 에피소드부터) → 만난 것 가운데 유저가 아직 안 쓴 것 → 오래 안 본 것. 앞쪽 셋 가운데 랜덤, 직전
-// 표현은 다시 고르지 않는다.
-// 방식 — 처음 만나는 표현은 노출. 만난 적 있으면 유저가 아직 안 썼을 때 유도 · 칩 쪽 비중을 올린다. 칩 스위치가 꺼져 있으면 칩 대신 유도.
+// 주기 — 직전 삽입 뒤 유저 턴 `minGap`번이 지나야 기회가 열리고, 열린 뒤 `baseProbability`에서 턴마다 올라 `forceTurns`번째부터는
+// 매 턴 연다(「오래됐으니 웬만하면 넣어 보라」는 한 줄이 붙지만 넣으라고 강제하지는 않는다). 대화당 하루 `dailyCap`번. 첫 턴 · 유저가
+// 화제 전환을 원한 턴 · 무거운 대화(앞 턴 `@state.heavy`) · 화제 전환 턴은 열지 않는다.
+// 무엇을 · 어떻게 — 기회가 열리면 칩 방식(코드가 표현 하나를 고른다)이 아닌 한 후보 `offerSize`개를 답 모델에 주고, 모델이 지금 대화에
+// 맞는 것 하나를 골라 말하거나(노출) 그 표현으로 답할 질문을 하거나(유도), 맞는 게 없으면 넣지 않는다(맥락 판단은 맥락을 아는 답 모델이 —
+// 따로 판정 호출을 두지 않는다). 고른 것은 `@state.learned`(후보 id) · `learned_how`로 보고한다.
+// 건너뛰면 — 간격 · 하루 수를 쓰지 않고 다음 턴에 다시 연다. `maxSkipStreak`번 이어 건너뛰면 그때 간격을 새로 센다. 건너뛴 후보는
+// 표현마다 세어(`learnSkips`) 두 번 넘게 건너뛴 표현은 후보 뒤로 미룬다 — 고르면 지운다.
+// 후보 순서 — 아직 만난 적 없는 것(최근 에피소드부터) → 만난 것 가운데 유저가 아직 안 쓴 것 → 오래 안 본 것, 직전 표현은 뺀다.
+// 방식 — 처음 만나는 표현은 노출만. 만난 적 있으면 유저가 아직 안 썼을 때 유도를, 써 봤으면 노출을 권한다. 칩은 앞쪽 셋 가운데 랜덤으로
+// 고른 표현의 비중(아직 안 씀 30% · 써 봄 20%)으로 정하고, 칩 스위치가 꺼져 있으면 칩은 없다.
 // 튜토리얼만 끝낸 유저(「안녕하세요」 · 「감사합니다」)는 턴에 넣지 않고 첫 인사 · 선톡에서만 노출한다(`pickOpenerExpression`).
 
 import type { LearningExpression, TopicState } from "./chat-send.contract.ts";
@@ -18,6 +24,10 @@ export type LearningSettings = {
   readonly baseProbability: number;
   readonly forceTurns: number;
   readonly dailyCap: number;
+  /** 답 모델에 주는 후보 수. */
+  readonly offerSize: number;
+  /** 이만큼 이어 건너뛰면 간격을 새로 센다. */
+  readonly maxSkipStreak: number;
 };
 
 export const defaultLearningSettings: LearningSettings = {
@@ -26,6 +36,8 @@ export const defaultLearningSettings: LearningSettings = {
   baseProbability: 0.3,
   forceTurns: 6,
   dailyCap: 6,
+  offerSize: 4,
+  maxSkipStreak: 3,
 };
 
 /** 넣지 않은 까닭 — 지표(`meta.learning.reason`). `ok`면 넣었다. */
@@ -41,7 +53,9 @@ export type LearningReason =
   | "switch"
   | "cooldown"
   | "daily_cap"
-  | "chance";
+  | "chance"
+  /** 후보를 줬는데 답 모델이 지금 대화에 맞는 것이 없다고 넘겼다(턴 결과에서만). */
+  | "skipped";
 
 export type LearningTarget = {
   readonly expressionId: string;
@@ -51,11 +65,31 @@ export type LearningTarget = {
   readonly mode: LearningMode;
 };
 
+/** 답 모델에 주는 후보 하나. `modes[0]`이 권하는 방식(처음 만나는 표현은 노출만). */
+export type LearningCandidate = {
+  /** 지시 · `@state.learned`에 쓰는 짧은 id(`e1` …). */
+  readonly ref: string;
+  readonly expressionId: string;
+  readonly kind: string;
+  readonly surface: string;
+  readonly gloss: string | null;
+  readonly modes: readonly ("expose" | "elicit")[];
+};
+
+export type LearningOffer = {
+  readonly candidates: readonly LearningCandidate[];
+  /** `forceTurns`가 지났다 — 웬만하면 넣어 보라는 한 줄. */
+  readonly nudge: boolean;
+};
+
 export type LearningDecision = {
-  /** 주기 · 상한을 지나 후보가 열렸는가(삽입률의 분모). */
+  /** 주기 · 상한을 지나 기회가 열렸는가(삽입률의 분모). */
   readonly open: boolean;
   readonly reason: LearningReason;
+  /** 칩 방식 — 코드가 고른 표현 하나(칩 요청에 싣는다). */
   readonly target: LearningTarget | null;
+  /** 답 방식 — 답 모델이 고를 후보. */
+  readonly offer: LearningOffer | null;
 };
 
 const tutorialEpisode = "u00-tutorial";
@@ -67,10 +101,14 @@ export const isTutorialOnly = (episodes: readonly string[]) =>
 const seenCount = (entry: LearningExpression) =>
   (entry.exposed ?? 0) + (entry.elicited ?? 0) + (entry.chipShown ?? 0);
 
-/** 고를 차례(앞일수록 먼저). 풀은 RPC가 최근 에피소드부터 준다. */
+/** 이만큼 넘게 건너뛴 표현은 후보 뒤로 미룬다. */
+const skipDemoteAfter = 2;
+
+/** 고를 차례(앞일수록 먼저). 풀은 RPC가 최근 에피소드부터 준다. 자주 건너뛴 표현은 맨 뒤로. */
 export function rankExpressions(
   pool: readonly LearningExpression[],
   lastExpressionId: string | null,
+  skips: Readonly<Record<string, number>> = {},
 ): LearningExpression[] {
   const usable =
     pool.length > 1 ? pool.filter((entry) => entry.id !== lastExpressionId) : [...pool];
@@ -82,8 +120,31 @@ export function rankExpressions(
       if (produced !== 0) return produced;
       return (a.lastSeenAt ?? "").localeCompare(b.lastSeenAt ?? "");
     });
-  return [...unseen, ...seen];
+  const ordered = [...unseen, ...seen];
+  const demoted = (entry: LearningExpression) => (skips[entry.id] ?? 0) > skipDemoteAfter;
+  return [...ordered.filter((entry) => !demoted(entry)), ...ordered.filter(demoted)];
 }
+
+/** 표현의 후보 방식: 처음이면 노출만, 아직 안 썼으면 유도 먼저, 써 봤으면 노출 먼저. */
+const candidateModes = (entry: LearningExpression): LearningCandidate["modes"] =>
+  seenCount(entry) === 0
+    ? ["expose"]
+    : (entry.produced ?? 0) === 0
+      ? ["elicit", "expose"]
+      : ["expose", "elicit"];
+
+export const candidateOf = (
+  entry: Pick<LearningExpression, "id" | "kind" | "surface" | "gloss">,
+  modes: LearningCandidate["modes"],
+  index: number,
+): LearningCandidate => ({
+  ref: `e${index + 1}`,
+  expressionId: entry.id,
+  kind: entry.kind,
+  surface: entry.surface,
+  gloss: entry.gloss,
+  modes,
+});
 
 function pickMode(entry: LearningExpression, chipsOn: boolean, random: () => number): LearningMode {
   if (seenCount(entry) === 0) return "expose";
@@ -136,6 +197,7 @@ export function decideLearning(
     open: false,
     reason,
     target: null,
+    offer: null,
   });
   const { settings } = input;
   if (!settings.enabled) return closed("disabled");
@@ -156,14 +218,27 @@ export function decideLearning(
       ? 1
       : settings.baseProbability +
         ((1 - settings.baseProbability) * (gap - settings.minGap)) / span;
-  if (input.random() >= chance) return { open: true, reason: "chance", target: null };
-  const ranked = rankExpressions(input.pool, state.lastExpressionId ?? null);
+  if (input.random() >= chance) return { open: true, reason: "chance", target: null, offer: null };
+  const ranked = rankExpressions(
+    input.pool,
+    state.lastExpressionId ?? null,
+    state.learnSkips ?? {},
+  );
+  // 칩은 답 뒤 단계라 코드가 표현 하나를 정한다(앞쪽 셋 가운데 랜덤, 그 표현의 방식 비중으로).
   const top = ranked.slice(0, 3);
   const entry = top[Math.min(top.length - 1, Math.floor(input.random() * top.length))]!;
+  if (pickMode(entry, input.chipsOn, input.random) === "chip")
+    return { open: true, reason: "ok", target: toTarget(entry, "chip"), offer: null };
   return {
     open: true,
     reason: "ok",
-    target: toTarget(entry, pickMode(entry, input.chipsOn, input.random)),
+    target: null,
+    offer: {
+      candidates: ranked
+        .slice(0, Math.max(1, settings.offerSize))
+        .map((candidate, index) => candidateOf(candidate, candidateModes(candidate), index)),
+      nudge: gap >= settings.forceTurns,
+    },
   };
 }
 
@@ -179,39 +254,99 @@ export function pickOpenerExpression(
   return toTarget(entry, "expose");
 }
 
-const quoted = (target: LearningTarget) =>
+const quoted = (target: Pick<LearningCandidate, "surface" | "gloss">) =>
   `"${target.surface}"${target.gloss ? ` (${target.gloss})` : ""}`;
 
-/** 답 모델에 주는 이번 턴 지시. 칩 방식은 답이 아니라 칩 쪽이라 지시가 없다. */
-export function learningDirective(target: LearningTarget): string | null {
-  if (target.mode === "expose")
-    return `Learned expression for this reply: ${quoted(target)}. If it fits naturally, use it once in your own line (you may conjugate it or fill its blank). If it would feel forced, skip it: never bend the conversation just to use it. In @state set "learned" to true only if you used it.`;
-  if (target.mode === "elicit")
-    return `Learned expression to practise: ${quoted(target)}. If it fits the conversation, end with one easy question the learner can naturally answer using it. Do not use it yourself, do not mention it, and never quiz or test them. If it would feel forced, skip it. In @state set "learned" to true only if you asked such a question.`;
-  return null;
+const modeHint = (modes: LearningCandidate["modes"]) => {
+  const [first, second] = modes;
+  if (second === undefined) return first === "elicit" ? "ask only" : "say it only";
+  return first === "elicit" ? "they have not used it yet: asking is best, saying it is fine" : "say it or ask";
+};
+
+/**
+ * 답 모델에 주는 이번 턴 지시(답 방식 · 첫 인사 · 선톡). 후보 가운데 지금 대화에 맞는 것 하나만, 맞는 게 없으면 넣지 않는다.
+ * 고른 것은 `@state`의 `learned`(후보 id) · `learned_how`(say · ask)로 보고한다.
+ */
+export function offerDirective(offer: LearningOffer): string {
+  const lines = offer.candidates.map(
+    (candidate) => `- ${candidate.ref}: ${quoted(candidate)} — ${modeHint(candidate.modes)}`,
+  );
+  return [
+    "Learned expressions you may weave into this reply (optional, at most one):",
+    ...lines,
+    "Pick one only if it fits what you are already talking about. If none fits naturally, use none: skipping is fine, and never bend the conversation or change the topic just to use one.",
+    "To say it: use it once in your own line (you may conjugate it or fill its blank). To ask: end with one easy question the learner can naturally answer using it; do not use it yourself, do not mention it, and never quiz or test them.",
+    ...(offer.nudge ? ["It has been a while since the last one: if one fits even reasonably, use it."] : []),
+    'In @state set "learned" to the id you used (e.g. "e1") and "learned_how" to "say" or "ask"; if you used none, set "learned" to null.',
+  ].join("\n");
 }
 
-/** 첫 인사 · 선톡 지시에 붙이는 한 줄. */
-export const openerLearningLine = (target: LearningTarget) =>
-  `If it fits naturally, use the Korean expression ${quoted(target)} once. If it would feel forced, skip it.`;
+/** 첫 인사 · 선톡의 노출 하나를 후보 하나짜리 지시로. */
+export const openerOffer = (target: LearningTarget): LearningOffer => ({
+  candidates: [
+    candidateOf(
+      { id: target.expressionId, kind: target.kind, surface: target.surface, gloss: target.gloss },
+      ["expose"],
+      0,
+    ),
+  ],
+  nudge: false,
+});
 
 /** 최근 지시한 표현(피드백이 유저 산출을 판정할 후보) — 최대 5개. */
 const recentLimit = 5;
 
-/** 삽입 뒤 화제 상태의 학습 칸. 지시를 냈으면(모델이 넘겼어도) 간격 · 하루 수를 센다. */
+/** 건너뛴 횟수를 기억하는 표현 수의 상한(오래된 것부터 버린다). */
+const skipMemoryLimit = 40;
+
+/** 턴 결과에서 화제 상태로 가는 학습 결과: 넣은 표현(칩 · 고른 후보 — 모델이 따르지 못했어도) · 건너뜀 · 준 후보. */
+export type LearningResult = {
+  readonly target: LearningTarget | null;
+  readonly skipped: boolean;
+  readonly offered: readonly string[];
+};
+
+export const noLearningResult: LearningResult = { target: null, skipped: false, offered: [] };
+
+/**
+ * 턴 뒤 화제 상태의 학습 칸. 넣었으면 간격 · 하루 수를 세고 그 표현의 건너뜀을 지운다. 건너뛰었으면 준 후보마다 건너뜀을 하나씩 올리고,
+ * `maxSkipStreak`번 이어지면 간격을 새로 센다(`restartGap`).
+ */
 export function nextLearningState(
   state: TopicState,
-  target: LearningTarget | null,
+  result: LearningResult,
   today: string,
-): Pick<TopicState, "learnDay" | "learnToday" | "lastExpressionId" | "recentTargets"> {
-  if (target === null)
+  maxSkipStreak: number = defaultLearningSettings.maxSkipStreak,
+): Pick<
+  TopicState,
+  "learnDay" | "learnToday" | "lastExpressionId" | "recentTargets" | "learnSkipStreak" | "learnSkips"
+> & { readonly inserted: boolean; readonly restartGap: boolean } {
+  const skips = { ...(state.learnSkips ?? {}) };
+  const target = result.target;
+  if (target === null) {
+    const streak = result.skipped ? (state.learnSkipStreak ?? 0) + 1 : (state.learnSkipStreak ?? 0);
+    if (result.skipped)
+      for (const id of result.offered) {
+        const count = (skips[id] ?? 0) + 1;
+        delete skips[id];
+        skips[id] = count; // 맨 뒤로 — 오래된 것부터 버린다
+      }
+    const restartGap = result.skipped && streak >= maxSkipStreak;
     return {
+      inserted: false,
+      restartGap,
       learnDay: state.learnDay ?? null,
       learnToday: state.learnToday ?? 0,
       lastExpressionId: state.lastExpressionId ?? null,
       recentTargets: state.recentTargets ?? [],
+      learnSkipStreak: restartGap ? 0 : streak,
+      learnSkips: Object.fromEntries(Object.entries(skips).slice(-skipMemoryLimit)),
     };
+  }
+  delete skips[target.expressionId];
   return {
+    inserted: true,
+    restartGap: false,
     learnDay: today,
     learnToday: state.learnDay === today ? (state.learnToday ?? 0) + 1 : 1,
     lastExpressionId: target.expressionId,
@@ -219,5 +354,7 @@ export function nextLearningState(
       ...(state.recentTargets ?? []).filter((id) => id !== target.expressionId),
       target.expressionId,
     ].slice(-recentLimit),
+    learnSkipStreak: 0,
+    learnSkips: skips,
   };
 }

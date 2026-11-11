@@ -1,4 +1,5 @@
-// 턴의 학습 표현(PRD §3.7): 판정 입력 만들기 · 피드백이 산출을 판정할 후보 · 유저가 쓴 표현 붙이기 · 턴 결과(meta · 기록) · 기록 저장.
+// 턴의 학습 표현(PRD §3.7): 판정 입력 만들기 · 피드백이 산출을 판정할 후보 · 유저가 쓴 표현 붙이기 · 답 모델이 고른 후보 읽기
+// (`resolveLearning`) · 턴 결과(meta · 기록) · 기록 저장.
 // 판정 규칙은 `companion-learning.ts`, 글자 판정은 `companion-learning-match.ts`. 기록은 `companion_record_learning`(20261125)이 센다 —
 // 노출(캐릭터가 실제로 썼다: `@state.learned` + 글자 확인, 문형은 보고만) · 유도(`@state.learned`) · 칩(표현을 넣은 칩이 보였다) ·
 // 산출(유저가 직접 입력해 썼다 — 칩 전송은 세지 않는다).
@@ -18,6 +19,8 @@ import type { LearnedTarget, LearnedUse } from "./companion-feedback.contract.ts
 import {
   defaultLearningSettings,
   type LearningDecision,
+  type LearningOffer,
+  type LearningResult,
   type LearningSettings,
   type LearningTarget,
 } from "./companion-learning.ts";
@@ -91,32 +94,73 @@ export function withLearnedUse(
   return used.size === 0 ? feedback : { ...feedback, learnedUsed: [...used.values()] };
 }
 
-/** 캐릭터가 지시를 실제로 따랐는가. 노출은 글자 확인까지(문형은 보고만), 유도는 보고만, 칩은 표현을 넣은 칩이 보였는가. */
+/** 캐릭터가 지시를 실제로 따랐는가. 노출은 보고 + 글자 확인(문형은 보고만), 유도는 보고만, 칩은 표현을 넣은 칩이 보였는가. */
 export function targetDone(
   target: LearningTarget,
-  state: TurnState | null,
+  reported: boolean,
   segments: readonly Segment[],
   chipShown: boolean,
 ): boolean {
   if (target.mode === "chip") return chipShown;
-  if (state?.learned !== true) return false;
+  if (!reported) return false;
   if (target.mode === "elicit") return true;
   const expression = { id: target.expressionId, kind: target.kind, surface: target.surface };
   return isPatternLike(expression) || containsExpression(expression, segmentsToPlain(segments));
 }
 
+/** 답 모델이 `@state`에 보고한 후보와 방식. 고른 게 없으면 null(넘김). 옛 모양 `true`는 후보가 하나일 때만 그것으로. */
+export function pickedCandidate(
+  offer: LearningOffer,
+  state: TurnState | null,
+): LearningTarget | null {
+  const learned = state?.learned;
+  const candidate =
+    typeof learned === "string"
+      ? offer.candidates.find((entry) => entry.ref === learned)
+      : learned === true && offer.candidates.length === 1
+        ? offer.candidates[0]
+        : undefined;
+  if (candidate === undefined) return null;
+  const mode =
+    state?.learnedHow === "ask" ? "elicit" : state?.learnedHow === "say" ? "expose" : candidate.modes[0]!;
+  return {
+    expressionId: candidate.expressionId,
+    kind: candidate.kind,
+    surface: candidate.surface,
+    gloss: candidate.gloss,
+    mode,
+  };
+}
+
+/** 턴 결과의 학습: 칩이면 그 표현, 후보를 줬으면 답 모델이 고른 것(없으면 건너뜀), 따랐는가. */
+export function resolveLearning(
+  decision: LearningDecision,
+  state: TurnState | null,
+  segments: readonly Segment[],
+  chipShown: boolean,
+): LearningResult & { readonly done: boolean } {
+  if (decision.target !== null)
+    return {
+      target: decision.target,
+      skipped: false,
+      offered: [],
+      done: targetDone(decision.target, false, segments, chipShown),
+    };
+  if (decision.offer === null) return { target: null, skipped: false, offered: [], done: false };
+  const offered = decision.offer.candidates.map((candidate) => candidate.expressionId);
+  const target = pickedCandidate(decision.offer, state);
+  if (target === null) return { target: null, skipped: true, offered, done: false };
+  return { target, skipped: false, offered, done: targetDone(target, true, segments, false) };
+}
+
 /** 턴 결과 — 저장 meta의 `learning`과 기록할 사건들. */
 export function learningOutcome(input: {
   readonly decision: LearningDecision;
-  readonly state: TurnState | null;
-  readonly segments: readonly Segment[];
-  readonly chipShown: boolean;
+  readonly result: LearningResult & { readonly done: boolean };
   readonly feedback: Feedback;
 }): { meta: Record<string, unknown>; events: LearningEvent[] } {
-  const { decision } = input;
-  const target = decision.target;
-  const done =
-    target === null ? false : targetDone(target, input.state, input.segments, input.chipShown);
+  const { decision, result } = input;
+  const { target, done } = result;
   const events: LearningEvent[] = [];
   if (target !== null && done) {
     const kind =
@@ -127,7 +171,10 @@ export function learningOutcome(input: {
     events.push({ expressionId: used.id, kind: "produced" });
   const meta: Record<string, unknown> = {
     open: decision.open,
-    reason: decision.reason,
+    reason: result.skipped ? "skipped" : decision.reason,
+    ...(decision.offer === null
+      ? {}
+      : { offered: decision.offer.candidates.map((candidate) => candidate.surface) }),
     ...(target === null
       ? {}
       : { mode: target.mode, expressionId: target.expressionId, surface: target.surface, done }),

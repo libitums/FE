@@ -24,6 +24,7 @@ import type {
   ModerationVerdict,
 } from "./chat-send.contract.ts";
 import {
+  fakeLearnedState,
   fakeLearningLines,
   withFakeLearned,
   withFakeTarget,
@@ -123,7 +124,7 @@ export function fakeCompanionLlm(): CompanionLlm {
               ? []
               : [
                   learning.line,
-                  `@state {"intimacy_delta": 0, "topic": "인사", "user_wants_switch": false, "learned": true}`,
+                  `@state {"intimacy_delta": 0, "topic": "인사", "user_wants_switch": false${fakeLearnedState(learning)}}`,
                 ]),
           ]
         : refusal
@@ -146,7 +147,7 @@ export function fakeCompanionLlm(): CompanionLlm {
                   ? "@speech 아 씨, 진짜요?"
                   : "@speech 그럼 퀴즈! 소 더하기 고기는?",
               ...(learning === null ? [] : [learning.line]),
-              `@state {"intimacy_delta": ${request.userText.includes("[warm]") ? 3 : 1}, "topic": "인사", "user_wants_switch": false${learning?.learned ? ', "learned": true' : ""}${request.userText.includes("[sad]") ? ', "heavy": true' : ""}}`,
+              `@state {"intimacy_delta": ${request.userText.includes("[warm]") ? 3 : 1}, "topic": "인사", "user_wants_switch": false${fakeLearnedState(learning)}${request.userText.includes("[sad]") ? ', "heavy": true' : ""}}`,
             ];
       for (const line of lines) {
         for (const piece of [line.slice(0, 8), `${line.slice(8)}\n`]) {

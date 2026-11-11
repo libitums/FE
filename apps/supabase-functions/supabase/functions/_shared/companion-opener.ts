@@ -14,12 +14,14 @@ import type {
 import {
   type LearningEvent,
   learningSettingsFrom,
+  pickedCandidate,
   recordLearning,
   targetDone,
 } from "./chat-send-learning.ts";
 import {
   type LearningTarget,
-  openerLearningLine,
+  offerDirective,
+  openerOffer,
   pickOpenerExpression,
 } from "./companion-learning.ts";
 import { callRpc } from "./companion-rpc.ts";
@@ -53,9 +55,9 @@ export async function openerLearning(
   }
 }
 
-/** 이번 말 지시에 노출 줄을 붙인다. */
+/** 이번 말 지시에 노출 후보 하나짜리 지시를 붙인다. */
 export const withOpenerLine = (directive: string, target: LearningTarget | null) =>
-  target === null ? directive : `${directive}\n${openerLearningLine(target)}`;
+  target === null ? directive : `${directive}\n${offerDirective(openerOffer(target))}`;
 
 /** 저장 meta의 `learning`과 기록할 사건 — 정해진 줄(생성 실패)이면 넣지 않은 것으로 센다. */
 export function openerOutcome(
@@ -64,7 +66,7 @@ export function openerOutcome(
   segments: readonly Segment[],
 ): { meta: Record<string, unknown> | null; events: LearningEvent[] } {
   if (target === null) return { meta: null, events: [] };
-  const done = targetDone(target, state, segments, false);
+  const done = targetDone(target, pickedCandidate(openerOffer(target), state) !== null, segments, false);
   return {
     meta: { mode: "expose", expressionId: target.expressionId, surface: target.surface, done },
     events: done ? [{ expressionId: target.expressionId, kind: "exposed" }] : [],
