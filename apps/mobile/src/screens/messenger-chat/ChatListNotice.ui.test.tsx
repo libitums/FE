@@ -50,3 +50,29 @@ test("CP-UI3 안내가 없으면 아무것도 그리지 않고 부르지 않는�
   expect(screen.queryByTestId(NOTICE) === null).toBe(true);
   expect(onNoticeShown).not.toHaveBeenCalled();
 });
+
+test("CP-UI4 떠 있는 동안 안내가 또 오면 3초를 새로 센다(PR #414 리뷰)", () => {
+  const onNoticeShown = vi.fn<() => void>();
+  const view = render(<ChatListNotice notice="chat-unavailable" onNoticeShown={onNoticeShown} />);
+  view.rerender(<ChatListNotice notice={null} onNoticeShown={onNoticeShown} />);
+  act(() => {
+    vi.advanceTimersByTime(2000);
+  });
+  view.rerender(<ChatListNotice notice="chat-unavailable" onNoticeShown={onNoticeShown} />);
+  act(() => {
+    vi.advanceTimersByTime(2999);
+  });
+  expect(screen.queryByTestId(NOTICE) !== null).toBe(true);
+  act(() => {
+    vi.advanceTimersByTime(1);
+  });
+  expect(screen.queryByTestId(NOTICE) === null).toBe(true);
+  expect(onNoticeShown).toHaveBeenCalledTimes(2);
+});
+
+test("CP-UI5 안내 줄은 터치를 막지 않고(아래 목록 줄이 받는다) 접근성 이름은 문구다", () => {
+  render(<ChatListNotice notice="chat-unavailable" onNoticeShown={() => undefined} />);
+  const notice = screen.getByTestId(NOTICE);
+  expect(notice.getAttribute("user-interaction-enabled")).toBe("false");
+  expect(notice.getAttribute("accessibility-label")).toBe("This chat isn't available right now.");
+});

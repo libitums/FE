@@ -14,19 +14,27 @@ export function ChatListNotice({ notice, onNoticeShown }: ChatListNoticeProps): 
   const [shown, setShown] = useState(notice !== null);
   const shownRef = useRef(onNoticeShown);
   shownRef.current = onNoticeShown;
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // 안내가 올 때마다 3초를 새로 셉니다 — 떠 있는 동안 또 와도 온전히 3초(PR #414 리뷰).
   useEffect(() => {
     if (notice === null) return;
     setShown(true);
     shownRef.current();
     announce(text);
+    if (timer.current !== null) clearTimeout(timer.current);
+    timer.current = setTimeout(() => {
+      timer.current = null;
+      setShown(false);
+    }, LIST_NOTICE_MS);
   }, [notice, text]);
 
-  useEffect(() => {
-    if (!shown) return;
-    const handle = setTimeout(() => setShown(false), LIST_NOTICE_MS);
-    return () => clearTimeout(handle);
-  }, [shown]);
+  useEffect(
+    () => () => {
+      if (timer.current !== null) clearTimeout(timer.current);
+    },
+    [],
+  );
 
   if (!shown) return null;
   return (
@@ -35,6 +43,7 @@ export function ChatListNotice({ notice, onNoticeShown }: ChatListNoticeProps): 
       className="messenger-list-notice"
       data-testid="chat-list-notice"
       flatten={false}
+      user-interaction-enabled={false}
       accessibility-element={true}
       accessibility-label={text}
     >
