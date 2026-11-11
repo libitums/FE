@@ -8,7 +8,7 @@ import {
   type FixtureChatSource,
 } from "../screens/messenger-chat/chat-fixture-source";
 import { isTesterAccessActive } from "../lib/tester-access";
-import type { ChatSource } from "../screens/messenger-chat/chat-source.contract";
+import type { ChatFixtureSeed, ChatSource } from "../screens/messenger-chat/chat-source.contract";
 import {
   deviceTurnRecordStore,
   deviceUnlockStore,
@@ -100,6 +100,9 @@ function messengerChatLedger(): TurnLedger {
   return ledgerSingleton;
 }
 
+/** 테스트만 씁니다 — 다음에 만들 출처의 씨앗입니다(없으면 앱 기본 씨앗). */
+let testSeed: ChatFixtureSeed | undefined;
+
 /**
  * 앱이 쓰는 대화 출처입니다. 처음 부를 때 만들고 이후 같은 것을 돌려줍니다.
  *
@@ -113,6 +116,7 @@ export function messengerChatSource(imageUrlOf: ImageUrlOf): ChatSource {
     singleton = createFixtureChatSource({
       imageUrlOf: (relativePath) => latestImageUrlOf?.(relativePath) ?? null,
       unlocked: [...messengerUnlockStore().read()],
+      ...(testSeed === undefined ? {} : { seed: testSeed }),
     });
   } else if (replaced) {
     singleton.refreshImages();
@@ -120,14 +124,15 @@ export function messengerChatSource(imageUrlOf: ImageUrlOf): ChatSource {
   return singleton;
 }
 
-/** 테스트가 케이스 사이에 출처를 처음 씨앗으로 되돌립니다. */
-export function resetMessengerChatSourceForTests(): void {
+/** 테스트가 케이스 사이에 출처를 처음 씨앗으로 되돌립니다. `seed`를 주면 다음 출처가 그 씨앗에서 시작합니다. */
+export function resetMessengerChatSourceForTests(seed?: ChatFixtureSeed): void {
   singleton?.dispose();
   singleton = null;
   latestImageUrlOf = null;
   walletSingleton = null;
   ledgerSingleton = null;
   storeOverride = null;
+  testSeed = seed;
 }
 
 export type MessengerChatWiringArgs = {

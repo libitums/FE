@@ -16,6 +16,7 @@ import {
   memoryTurnRecordStore,
   type TurnRecordStore,
 } from "../../screens/messenger-chat/turn-ledger";
+import { chatFixtureSeed } from "../../screens/messenger-chat/chat-fixture";
 import * as chatWiring from "../messenger-chat-wiring";
 import { messengerChatSource, resetMessengerChatSourceForTests } from "../messenger-chat-wiring";
 
@@ -24,6 +25,8 @@ export type MessengerStoresOptions = {
   readonly turnRecord?: TurnRecord | null;
   /** 이미 해금된 인물 id입니다(기본 없음 = 미나 잠김). */
   readonly unlocked?: readonly string[];
+  /** 생년(ADR-0125)은 기본으로 이미 답한 것으로 둡니다 — 방을 열 때 생년 시트가 다른 흐름을 가리지 않게요. 시트를 보는 케이스만 `unasked`. */
+  readonly birthYear?: "answered" | "unasked";
 };
 
 const STALE_RECORD: TurnRecord = { day: "1970-01-01", used: 0, outPanel: "due" };
@@ -42,7 +45,11 @@ type StoresHook = (stores: {
 export async function resetMessengerChatSource(
   options: MessengerStoresOptions = {},
 ): Promise<{ readonly turns: TurnRecordStore }> {
-  resetMessengerChatSourceForTests();
+  resetMessengerChatSourceForTests(
+    options.birthYear === "unasked"
+      ? chatFixtureSeed
+      : { ...chatFixtureSeed, birthYear: { kind: "set", year: 2000 } },
+  );
   const hook = (chatWiring as unknown as Record<string, unknown>)["setMessengerChatStoresForTests"];
   const turns = memoryTurnRecordStore(options.turnRecord ?? null);
   if (typeof hook === "function") {

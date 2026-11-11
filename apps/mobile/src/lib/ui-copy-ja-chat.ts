@@ -41,6 +41,7 @@ export const messengerChatJa: MessengerChatCopy = {
     voiceLabel: (name, duration, ko, en) => `${name}: ボイスメッセージ ${duration}、${ko}、${en}`,
     play: "再生",
     pause: "一時停止",
+    crisisArrived: "相談窓口",
   },
   composer: {
     placeholder: "メッセージ",
@@ -171,5 +172,40 @@ export const messengerChatJa: MessengerChatCopy = {
     reply: "返信する",
     later: "あとで",
     sheetLabel: (name) => `新しい友だち：${name}`,
+  },
+  safety: {
+    time: (hour, minute) => `${hour}:${String(minute).padStart(2, "0")}`,
+    notice: {
+      aiDisclosure: (name) => `${name}はAIのキャラクターです。返信はAIが書いています。`,
+      minorNotice: "このチャットは、18歳未満のすべての方に適しているとは限りません。",
+      breakReminder: (name) => `3時間チャットしています。少し休憩しませんか？ ${name}はAIです。`,
+    },
+    crisis: {
+      title: "ひとりで抱え込まなくて大丈夫です",
+      body: "今、誰かに話すことが助けになります。以下の窓口は無料で、秘密は守られます。",
+      call: (phone) => `${phone}に電話`,
+      callLabel: (name) => `${name}に電話`,
+      website: "ウェブサイト",
+      websiteLabel: (name) => `${name}のウェブサイトを開く`,
+      emergency: "今すぐ危険がある場合は、地域の緊急番号に電話してください。",
+    },
+    blocked: {
+      pausedTitle: (time) => `${time}までチャットを一時停止中`,
+      pausedBody: "チャットのルールに反するメッセージがありました。",
+      timeUpTitle: "今日のチャット時間は終わりました",
+      timeUpBody: (time) => `${time}からまたチャットできます。レッスンはそのまま使えます。`,
+      ageTitle: "この年齢ではまだチャットを使えません",
+      ageBody: "生まれた年が違いますか？変更できます。",
+      changeBirthYear: "生まれた年を変更",
+    },
+    birthYear: {
+      title: "何年生まれですか？",
+      body: "年齢に合ったチャットにするために使います。誰にも表示されず、あとでチャット設定から変更できます。",
+      continue: "続ける",
+      skip: "今はスキップ",
+      skipNote: "スキップすると、18歳未満向けの設定でチャットします。",
+      sidebar: "生まれた年",
+      notSet: "未設定",
+    },
   },
 };

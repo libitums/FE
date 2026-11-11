@@ -2,6 +2,7 @@
 // 주입한 타이머로 흉내 냅니다. 어떤 호출도 던지지 않습니다.
 
 import { chatFixtureSeed } from "./chat-fixture";
+import { inputBlockOf, nextBirthYear, seedMessageReader, UNASKED } from "./chat-fixture-safety";
 import {
   advanceIdeas,
   defaultTimers,
@@ -39,6 +40,7 @@ export function createFixtureChatSource(options: FixtureChatSourceOptions): Fixt
 
   const listeners = new Set<() => void>();
   let disposed = false;
+  let birthYear = seed.birthYear ?? UNASKED;
   let openRoomId: string | null = null;
   let nextMessageNumber = 1;
   let snapshotCache: ChatSnapshot | null = null;
@@ -54,19 +56,7 @@ export function createFixtureChatSource(options: FixtureChatSourceOptions): Fixt
     }
   };
 
-  const fromSeed = (message: ChatFixtureMessage): ChatMessage => {
-    const at = now() - message.minutesAgo * MINUTE_MS;
-    const id = messageId();
-    switch (message.kind) {
-      case "text":
-        return { id, at, kind: "text", from: message.from, text: message.text };
-      case "photo":
-        photoPaths.set(id, message.imagePath);
-        return { id, at, kind: "photo", imageUrl: resolveUrl(message.imagePath) };
-      case "voice":
-        return { id, at, kind: "voice", durationMs: message.durationMs, text: message.text };
-    }
-  };
+  const fromSeed = seedMessageReader({ now, messageId, photoPaths, resolveUrl });
 
   const rooms = new Map<string, RoomState>();
 
@@ -121,7 +111,7 @@ export function createFixtureChatSource(options: FixtureChatSourceOptions): Fixt
 
   for (const roomSeed of seed.rooms) {
     const messages = roomSeed.messages.map(fromSeed);
-    const room = newRoomState(roomSeed, messages);
+    const room = newRoomState(roomSeed, messages, inputBlockOf(roomSeed, now()));
     room.notes = notes.seedNotes(roomSeed.messages, messages);
     rooms.set(roomSeed.roomId, room);
     // 재시작 뒤 모습: 이미 해금한 인물은 처음부터 열린 채 — opening 한 줄 · 안 읽음 0 · NEW 아님.
@@ -210,7 +200,7 @@ export function createFixtureChatSource(options: FixtureChatSourceOptions): Fixt
   return {
     snapshot: () => {
       if (snapshotCache === null) {
-        snapshotCache = { rooms: [...rooms.values()].map(summaryOf) };
+        snapshotCache = { rooms: [...rooms.values()].map(summaryOf), birthYear };
       }
       return snapshotCache;
     },
@@ -244,6 +234,13 @@ export function createFixtureChatSource(options: FixtureChatSourceOptions): Fixt
       if (room === null) return;
       advanceIdeas(room);
       changed(room);
+    },
+    setBirthYear: (year) => {
+      const next = nextBirthYear(birthYear, year);
+      if (disposed || next === birthYear) return;
+      birthYear = next;
+      snapshotCache = null;
+      notify();
     },
     setAutoIdeas: (roomId, on) => {
       const room = live(roomId);

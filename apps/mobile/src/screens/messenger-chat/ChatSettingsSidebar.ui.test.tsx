@@ -40,13 +40,20 @@ function handlers() {
     onAutoIdeas: vi.fn<(on: boolean) => void>(),
     onDelete: vi.fn<() => void>(),
     onClose: vi.fn<() => void>(),
+    onBirthYear: vi.fn<() => void>(),
   };
 }
 
 function mountSidebar(thread: ChatThread = threadOf(), reduced = false) {
   const h = handlers();
   const sidebar = (
-    <ChatSettingsSidebar thread={thread} learnerName="Hana" coinBalance={120} {...h} />
+    <ChatSettingsSidebar
+      thread={thread}
+      learnerName="Hana"
+      coinBalance={120}
+      birthYear={{ kind: "set", year: 2001 }}
+      {...h}
+    />
   );
   render(reduced ? <MotionProvider motion="reduced">{sidebar}</MotionProvider> : sidebar);
   return h;
@@ -57,15 +64,25 @@ const orderIds = [
   ids.sidebarProfile,
   ids.sidebarMyProfile,
   ids.sidebarStoryPoint,
+  ids.sidebarBirthYear,
   ids.sidebarAutoIdeas,
   ids.sidebarDelete,
 ] as const;
 
-test("MC-UI22. 여섯 줄이 data-order 1~6으로 정해진 순서에 선다(DOM 순서도 같다)", () => {
+// ⟨ADR-0125⟩ 생년 줄이 이야기 시점 다음 다섯째로 들어와 일곱 줄이 됐다.
+test("MC-UI22. 일곱 줄이 data-order 1~7로 정해진 순서에 선다(DOM 순서도 같다)", () => {
   mountSidebar();
 
   const rows = orderIds.map((id) => screen.getByTestId(id));
-  expect(rows.map((row) => row.getAttribute("data-order"))).toEqual(["1", "2", "3", "4", "5", "6"]);
+  expect(rows.map((row) => row.getAttribute("data-order"))).toEqual([
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+  ]);
   expect(isInDocumentOrder(rows)).toBe(true);
   expect(screen.getByTestId(ids.sidebar).textContent).toContain("Chat settings");
 });

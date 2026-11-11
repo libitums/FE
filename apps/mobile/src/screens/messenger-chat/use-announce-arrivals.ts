@@ -31,7 +31,11 @@ export function arrivalAnnouncement(
       );
     case "photo-pending":
     case "voice-pending":
+    // 고지 줄은 로그를 훑을 때 읽힙니다. 위기 안내는 놓치면 안 되어 도착을 알립니다(ADR-0125).
+    case "notice":
       return null;
+    case "crisis":
+      return copy.crisisArrived;
     default: {
       const unreachable: never = message;
       return unreachable;

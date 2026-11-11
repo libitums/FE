@@ -25,12 +25,12 @@ import {
   type ChatRoomState,
 } from "./chat-room-state";
 import { canSend } from "./chat-rules";
-import type { ChatSource, ChatThread } from "./chat-source.contract";
+import type { ChatBirthYear, ChatSource, ChatThread } from "./chat-source.contract";
 import { resolveChatKeyboardHeight } from "./keyboard-height";
 import { keyboardPlanFor, type KeyboardPlan } from "./keyboard-plan";
 import type { KeyboardHeightStore, KoreanKeyboardProbe } from "./keyboard-ports";
 import { messengerChatTestIds as ids } from "./messenger-chat.contract";
-import { useChatThread } from "./use-chat-source";
+import { useChatSnapshot, useChatThread } from "./use-chat-source";
 
 export type UseChatRoomProps = {
   readonly roomId: string;
@@ -47,6 +47,7 @@ export type ChatRoomApi = {
   readonly state: ChatRoomState;
   readonly plan: KeyboardPlan;
   readonly thread: ChatThread | null;
+  readonly birthYear: ChatBirthYear;
   readonly keyboardHeight: number;
   readonly dispatch: (action: ChatRoomAction) => void;
   readonly send: () => void;
@@ -63,6 +64,8 @@ const originTestId: Readonly<Record<ChatFocusOrigin, string>> = {
   "sidebar-coins": ids.sidebarGetCoins,
   // 1.5 초점 되돌림 자리 — 턴 표시 조각의 test-id입니다(spec §10).
   send: turnIds.coinSend,
+  "sidebar-birth-year": ids.sidebarBirthYear,
+  "blocked-change-year": ids.blockedChangeYear,
 };
 
 /** 뒤 화면의 accessibility-elements-hidden이 풀린 다음 프레임에 초점을 보냅니다(a11y C1). 한 프레임은 16 ms입니다. */
@@ -87,6 +90,9 @@ export function useChatRoom({
   // 휴대폰 입력을 비우지 못했을 때 입력 칸을 다시 마운트하기 위한 덧셈입니다(리듀서의 epoch과 더해 key가 됩니다).
   const [remount, setRemount] = useState(0);
   const thread = useChatThread(source, roomId);
+  const { birthYear } = useChatSnapshot(source);
+  // 서버가 방 도중에 입력을 막을 수 있습니다(ADR-0125).
+  const blocked = thread !== null && thread.inputBlock !== null;
 
   const stateRef = useRef(state);
   stateRef.current = state;
@@ -99,6 +105,15 @@ export function useChatRoom({
   useEffect(() => {
     source.openRoom(roomId);
     return () => source.closeRoom(roomId);
+  }, [source, roomId]);
+
+  // 생년을 아직 묻지 않았으면 첫 대화 전에 묻습니다(ADR-0125). 방을 열 때 한 번만 봅니다.
+  useEffect(() => {
+    if (source.snapshot().birthYear.kind !== "unasked") return;
+    rawDispatch({
+      type: "open-overlay",
+      overlay: { kind: "birth-year", selected: null, from: "room" },
+    });
   }, [source, roomId]);
 
   // 휴대폰 입력 초점은 입력 칸이 켜진 상태(user-interaction-enabled)가 그려진 **뒤** 다음 프레임에 보냅니다(리뷰 #2 · #3).
@@ -200,6 +215,12 @@ export function useChatRoom({
     const previous = previousOverlay.current;
     previousOverlay.current = state.overlay;
     if (previous === state.overlay) return;
+    // Android는 누른 시트 단추가 사라지면 다음 초점 후보인 숨은 <input>으로 초점을 옮겨 휴대폰 키보드를 띄웠습니다(생년 시트
+    // Skip — ADR-0125 기기 확인). 휴대폰 키보드 모드가 아니면 겹침이 닫힌 다음 프레임에 그 초점을 내립니다.
+    const blurOnClose =
+      previous.kind !== "none" &&
+      state.overlay.kind === "none" &&
+      stateRef.current.keyboard !== "phone";
     let call: (() => void) | null = null;
     if (previous.kind !== "none" && state.overlay.kind === overlayParent(previous).kind) {
       const origin = focusOriginOf(previous);
@@ -207,27 +228,47 @@ export function useChatRoom({
     } else if (previous.kind === "none" && state.overlay.kind === "more-menu") {
       call = () => restoreAccessibilityFocus(ids.moreItem("ideas"));
     }
-    if (call === null) return;
-    const handle = setTimeout(call, NEXT_FRAME_MS);
+    const restore = call;
+    if (restore === null && !blurOnClose) return;
+    const handle = setTimeout(() => {
+      if (blurOnClose) blurPhoneInput();
+      restore?.();
+    }, NEXT_FRAME_MS);
     return () => clearTimeout(handle);
   }, [state.overlay]);
 
   // 시스템 뒤로가기의 단 하나뿐인 주인입니다(리뷰 #8 — 겹침 화면들은 등록하지 않습니다).
   // 순서: 겹침 → 열린 키보드 · 보기 패널 → (화면의 뒤로가기) 방 나가기.
   const overlayOpen = state.overlay.kind !== "none";
-  const slotOpen = state.slot.kind !== "closed";
+  const slotOpen = state.slot.kind !== "closed" && !blocked;
+  // 입력이 막히면(서버가 방 도중에 막을 수 있다) 열려 있던 키보드 · 보기 판 · 「…」 메뉴를 접습니다 — 독은 상태 줄만 남아
+  // 보이지 않는 자리가 뒤로가기를 먹거나 막힌 방 위에 메뉴가 떠 있지 않게요(ADR-0125, 리뷰 W1).
+  useEffect(() => {
+    if (!blocked) return;
+    if (stateRef.current.overlay.kind === "more-menu") rawDispatch({ type: "close-overlay" });
+    if (stateRef.current.slot.kind !== "closed") dispatch({ type: "close-keyboard" });
+  }, [blocked, dispatch]);
+
+  // 방을 열자마자 뜬 생년 시트는 뒤로가면 답하지 않은 채 방을 나갑니다 — 다음에 다시 묻습니다.
+  const askingOnEntry = state.overlay.kind === "birth-year" && state.overlay.from === "room";
   useLayerBack(
-    overlayOpen
+    askingOnEntry
       ? () => {
           "background only";
           rawDispatch({ type: "close-overlay" });
+          exitRef.current();
         }
-      : slotOpen
+      : overlayOpen
         ? () => {
             "background only";
-            dispatch({ type: "close-keyboard" });
+            rawDispatch({ type: "close-overlay" });
           }
-        : null,
+        : slotOpen
+          ? () => {
+              "background only";
+              dispatch({ type: "close-keyboard" });
+            }
+          : null,
   );
 
   const keyboardHeight = resolveChatKeyboardHeight({
@@ -240,6 +281,7 @@ export function useChatRoom({
     state: remount === 0 ? state : { ...state, inputEpoch: state.inputEpoch + remount },
     plan,
     thread,
+    birthYear,
     keyboardHeight,
     dispatch,
     send,

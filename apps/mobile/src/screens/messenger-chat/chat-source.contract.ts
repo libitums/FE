@@ -29,7 +29,35 @@ export type ChatMessage =
       readonly kind: "voice";
       readonly durationMs: number;
       readonly text: ChatText;
+    })
+  | (ChatMessageBase & { readonly kind: "notice"; readonly notice: ChatNoticeKind })
+  | (ChatMessageBase & {
+      readonly kind: "crisis";
+      readonly resources: readonly ChatCrisisResource[];
     });
+
+/** 로그 가운데 회색 줄로 서는 고지입니다(ADR-0125). 문구는 앱이 가집니다. */
+export type ChatNoticeKind = "ai-disclosure" | "minor-notice" | "break-reminder";
+
+/** 위기 안내 카드의 기관 하나입니다. 지역에 맞춘 목록은 서버가 줍니다 — 없는 칸은 null. */
+export type ChatCrisisResource = {
+  readonly name: string;
+  readonly phone: string | null;
+  readonly url: string | null;
+  readonly hours: string | null;
+};
+
+/** 입력 줄 자리를 대신하는 막힘입니다. 시각은 ms(epoch). */
+export type ChatInputBlock =
+  | { readonly kind: "temporarily-blocked"; readonly until: number }
+  | { readonly kind: "usage-time-limit"; readonly resetsAt: number }
+  | { readonly kind: "age-restricted" };
+
+/** 첫 대화 전에 묻는 생년입니다. 건너뛰면 18세 미만 기본값이 적용됩니다(서버 몫). */
+export type ChatBirthYear =
+  | { readonly kind: "unasked" }
+  | { readonly kind: "skipped" }
+  | { readonly kind: "set"; readonly year: number };
 
 export type ChatRoomAccess =
   | { readonly kind: "open" }
@@ -68,10 +96,15 @@ export type ChatThread = {
   readonly storyPoints: readonly ChatStoryPoint[];
   /** 내 텍스트 글 id만 키. 없는 키 = NO_NOTES. */
   readonly notes: Readonly<Record<string, ChatMyNotes>>;
+  /** null이면 보통 입력 줄입니다. */
+  readonly inputBlock: ChatInputBlock | null;
 };
 
 /** 잔액(보유 엽전)은 출처가 아니라 앱이 줍니다(§9 · ADR-0116). */
-export type ChatSnapshot = { readonly rooms: readonly ChatRoomSummary[] };
+export type ChatSnapshot = {
+  readonly rooms: readonly ChatRoomSummary[];
+  readonly birthYear: ChatBirthYear;
+};
 
 // 내 글 노트(뜻 · 교정) — messenger-chat-1-5 spec §5.1. 뜻은 en 고정, 범위는 corrected 안 코드 포인트입니다.
 export type ChatMeaning = { readonly romanization: string; readonly meaning: string };
@@ -140,6 +173,8 @@ export type ChatSource = {
   /** 교정 available일 때만: seen = true(즉시), detail idle이면 loading → timing.correctionMs 뒤 ready. */
   readonly openCorrection: (roomId: string, messageId: string) => void;
   readonly unlockCharacter: (characterId: string) => ChatUnlockResult;
+  /** null = 건너뜀. 바뀌면 구독자에게 알립니다. */
+  readonly setBirthYear: (year: number | null) => void;
   /** 걸린 타이머 전부 해제 · 구독 해제. */
   readonly dispose: () => void;
 };
@@ -165,6 +200,12 @@ export type ChatFixtureMessage =
       readonly durationMs: number;
       readonly text: ChatText;
       readonly minutesAgo: number;
+    }
+  | { readonly kind: "notice"; readonly notice: ChatNoticeKind; readonly minutesAgo: number }
+  | {
+      readonly kind: "crisis";
+      readonly resources: readonly ChatCrisisResource[];
+      readonly minutesAgo: number;
     };
 
 export type ChatFixtureRoom = {
@@ -185,6 +226,10 @@ export type ChatFixtureRoom = {
   readonly voiceLine: { readonly durationMs: number; readonly text: ChatText };
   /** 해금될 때 로그에 놓이는 첫 말(없으면 빈 방). */
   readonly opening?: ChatText;
+  /** 확인용 씨앗만 씁니다. 시각은 지금부터 몇 분 뒤입니다. */
+  readonly inputBlock?:
+    | { readonly kind: "temporarily-blocked" | "usage-time-limit"; readonly inMinutes: number }
+    | { readonly kind: "age-restricted" };
 };
 
 export type ChatFixtureMeaning = { readonly ko: string } & ChatMeaning;
@@ -195,6 +240,8 @@ export type ChatFixtureSeed = {
   readonly meanings?: readonly ChatFixtureMeaning[];
   readonly corrections?: readonly ChatFixtureCorrection[];
   readonly fallbackMeaning?: ChatMeaning;
+  /** 없으면 unasked입니다. */
+  readonly birthYear?: ChatBirthYear;
 };
 
 export type FixtureChatSourceOptions = {

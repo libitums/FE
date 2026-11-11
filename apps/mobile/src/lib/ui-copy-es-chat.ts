@@ -41,6 +41,7 @@ export const messengerChatEs: MessengerChatCopy = {
     voiceLabel: (name, duration, ko, en) => `${name}: mensaje de voz ${duration}, ${ko}, ${en}`,
     play: "Reproducir",
     pause: "Pausar",
+    crisisArrived: "Recursos de apoyo",
   },
   composer: {
     placeholder: "Mensaje",
@@ -172,5 +173,42 @@ export const messengerChatEs: MessengerChatCopy = {
     reply: "Responder",
     later: "Más tarde",
     sheetLabel: (name) => `Nuevo amigo: ${name}`,
+  },
+  safety: {
+    time: (hour, minute) => `${hour}:${String(minute).padStart(2, "0")}`,
+    notice: {
+      aiDisclosure: (name) => `${name} es un personaje de IA. Las respuestas las escribe una IA.`,
+      minorNotice:
+        "Es posible que este chat no sea adecuado para todas las personas menores de 18 años.",
+      breakReminder: (name) =>
+        `Llevas 3 horas chateando. ¿Tomas un descanso? Recuerda: ${name} es una IA.`,
+    },
+    crisis: {
+      title: "No tienes que enfrentar esto en soledad",
+      body: "Hablar con alguien puede ayudarte ahora. Estos servicios son gratuitos y confidenciales.",
+      call: (phone) => `Llamar al ${phone}`,
+      callLabel: (name) => `Llamar a ${name}`,
+      website: "Sitio web",
+      websiteLabel: (name) => `Abrir el sitio web de ${name}`,
+      emergency: "Si estás en peligro inmediato, llama al número de emergencias de tu zona.",
+    },
+    blocked: {
+      pausedTitle: (time) => `Chat en pausa hasta ${time}`,
+      pausedBody: "Algunos mensajes no respetaron las normas del chat.",
+      timeUpTitle: "Se acabó el tiempo de chat de hoy",
+      timeUpBody: (time) => `Podrás volver a chatear desde ${time}. Tus lecciones siguen abiertas.`,
+      ageTitle: "El chat aún no está disponible para tu edad",
+      ageBody: "¿Año de nacimiento incorrecto? Puedes cambiarlo.",
+      changeBirthYear: "Cambiar año de nacimiento",
+    },
+    birthYear: {
+      title: "¿En qué año naciste?",
+      body: "Lo usamos para adaptar los chats a tu edad. Nunca se muestra a nadie y puedes cambiarlo luego en los ajustes del chat.",
+      continue: "Continuar",
+      skip: "Omitir por ahora",
+      skipNote: "Si lo omites, los chats usan la configuración para menores de 18.",
+      sidebar: "Año de nacimiento",
+      notSet: "Sin indicar",
+    },
   },
 };

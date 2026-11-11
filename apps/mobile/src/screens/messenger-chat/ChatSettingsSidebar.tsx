@@ -10,7 +10,7 @@ import { SettingsCell } from "@libitums/ui-lynx/settings-cell";
 
 import { safeAreaInsetsFrom } from "../../lib/safe-area";
 import { useUiCopy } from "../../lib/ui-copy";
-import type { ChatThread } from "./chat-source.contract";
+import type { ChatBirthYear, ChatThread } from "./chat-source.contract";
 import { messengerChatTestIds as ids } from "./messenger-chat.contract";
 
 import "./chat-overlays.css";
@@ -21,6 +21,9 @@ export type ChatSettingsSidebarProps = {
   readonly coinBalance: number;
   readonly onGetCoins: () => void;
   readonly onStoryPoint: () => void;
+  /** 생년 줄의 값입니다(ADR-0125) — 연도 또는 「Not set」. */
+  readonly birthYear: ChatBirthYear;
+  readonly onBirthYear: () => void;
   readonly onAutoIdeas: (on: boolean) => void;
   readonly onDelete: () => void;
   readonly onClose: () => void;
@@ -37,6 +40,8 @@ export function ChatSettingsSidebar({
   coinBalance,
   onGetCoins,
   onStoryPoint,
+  birthYear,
+  onBirthYear,
   onAutoIdeas,
   onDelete,
   onClose,
@@ -61,6 +66,12 @@ export function ChatSettingsSidebar({
     "background only";
     onStoryPoint();
   };
+  const handleBirthYear = () => {
+    "background only";
+    onBirthYear();
+  };
+  const yearCopy = useUiCopy().messengerChat.safety.birthYear;
+  const yearValue = birthYear.kind === "set" ? String(birthYear.year) : yearCopy.notSet;
   const handleGetCoins = () => {
     "background only";
     onGetCoins();
@@ -169,9 +180,30 @@ export function ChatSettingsSidebar({
               </view>
             </view>
             <view
+              className="chat-sidebar-row"
+              id={ids.sidebarBirthYear}
+              data-testid={ids.sidebarBirthYear}
+              flatten={false}
+              data-order="5"
+              accessibility-element={true}
+              accessibility-traits="button"
+              accessibility-label={`${yearCopy.sidebar}, ${yearValue}`}
+              accessibility-enable-tap={true}
+              bindtap={handleBirthYear}
+            >
+              <view accessibility-elements-hidden={true}>
+                <SettingsCell
+                  trailing="navigation"
+                  title={yearCopy.sidebar}
+                  description={yearValue}
+                  onNavigate={noop}
+                />
+              </view>
+            </view>
+            <view
               className="chat-sidebar-toggle-box"
               data-testid={ids.sidebarAutoIdeas}
-              data-order="5"
+              data-order="6"
             >
               <SettingsCell
                 trailing="toggle"
@@ -188,7 +220,7 @@ export function ChatSettingsSidebar({
             id={ids.sidebarDelete}
             className="chat-sidebar-delete-button"
             data-testid={ids.sidebarDelete}
-            data-order="6"
+            data-order="7"
             accessibility-element={true}
             accessibility-traits="button"
             accessibility-label={copy.deleteChat}
