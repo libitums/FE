@@ -13,10 +13,13 @@ export type UnlockStore = {
   readonly add: (characterId: string) => void;
 };
 
-/** 문자열 배열이 아니면 [], 중복 · 빈 문자열 제거. */
+/**
+ * 배열이 아니면 []. 배열이면 문자열만 남기고(중복 · 빈 문자열 제거) — 값 하나가 어긋났다고 해금한 인물을 모두 잠그지 않습니다.
+ */
 export function parseUnlocked(raw: unknown): readonly string[] {
-  if (!Array.isArray(raw) || !raw.every((item) => typeof item === "string")) return [];
-  return [...new Set((raw as string[]).filter((id) => id !== ""))];
+  if (!Array.isArray(raw)) return [];
+  const ids = raw.filter((item): item is string => typeof item === "string" && item !== "");
+  return [...new Set(ids)];
 }
 
 function readJson(key: string): unknown {

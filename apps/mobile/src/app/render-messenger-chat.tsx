@@ -32,7 +32,9 @@ export function renderMessengerList(wiring: ScreenWiring) {
 export function renderMessengerChat(roomId: string, wiring: ScreenWiring) {
   const chat = wiring.messengerChat;
   return (
+    // 방마다 새로 섭니다 — 같은 자리에서 다른 방으로 바뀌어도 앞 방의 말풍선 도구 · 입력 · 턴 상태가 남지 않습니다.
     <MessengerChatScreen
+      key={roomId}
       roomId={roomId}
       source={chat.source}
       keyboardProbe={unknownKoreanKeyboardProbe}

@@ -53,13 +53,9 @@ describe("parseUnlocked (MC2-U24)", () => {
     expect(parseUnlocked(["", "mina", ""])).toEqual(["mina"]);
   });
 
-  test("MC2-U24. 숫자가 섞인 배열에서 문자열이 아닌 값은 결과에 들어가지 않는다", () => {
-    const result = parseUnlocked(["mina", 3, null]);
-    for (const id of result) {
-      expect(typeof id).toBe("string");
-      expect(id).not.toBe("");
-    }
-    expect(result).not.toContain(3 as unknown as string);
+  test("MC2-U24. 숫자가 섞인 배열은 문자열만 남긴다 — 값 하나 때문에 해금한 인물을 모두 잃지 않는다", () => {
+    expect(parseUnlocked(["mina", 3, null])).toEqual(["mina"]);
+    expect(parseUnlocked([{}, "clerk", "", "mina", "clerk"])).toEqual(["clerk", "mina"]);
   });
 
   test.each([
