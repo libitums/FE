@@ -208,6 +208,7 @@ export const messengerChatJa: MessengerChatCopy = {
       notSet: "未設定",
     },
   },
+  pushNotice: { chatUnavailable: "このチャットは今は開けません。" },
   chatSettings: {
     entryTitle: "チャット",
     entryDescription: "返信のヒント・キャラクターからのメッセージ・記憶",

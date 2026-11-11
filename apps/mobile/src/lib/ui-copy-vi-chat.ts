@@ -210,6 +210,7 @@ export const messengerChatVi: MessengerChatCopy = {
       notSet: "Chưa đặt",
     },
   },
+  pushNotice: { chatUnavailable: "Cuộc trò chuyện này hiện không khả dụng." },
   chatSettings: {
     entryTitle: "Trò chuyện",
     entryDescription: "Gợi ý trả lời, tin nhắn từ nhân vật, ghi nhớ",

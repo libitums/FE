@@ -10,6 +10,7 @@ import { ChatMemoriesScreen } from "../screens/messenger-chat/ChatMemoriesScreen
 import { ChatSettingsScreen } from "../screens/messenger-chat/ChatSettingsScreen";
 import { MessengerChatScreen } from "../screens/messenger-chat/MessengerChatScreen";
 import { MessengerListScreen } from "../screens/messenger-chat/MessengerListScreen";
+import type { MessengerListNotice } from "../screens/messenger-chat/messenger-list-notice";
 import type { ScreenWiring } from "./screen-wiring";
 
 /** 가입 직후 이름을 아직 모르면(빈 문자열 포함) 학습 메신저와 같이 「나」 문구를 씁니다 — 말풍선 화자는 비면 안 됩니다. */
@@ -18,7 +19,7 @@ function learnerNameOf(wiring: ScreenWiring): string {
   return name === "" ? uiCopyFor(wiring.entryLanguage).common.me : name;
 }
 
-export function renderMessengerList(wiring: ScreenWiring) {
+export function renderMessengerList(wiring: ScreenWiring, notice: MessengerListNotice | null) {
   const chat = wiring.messengerChat;
   return (
     <MessengerListScreen
@@ -27,6 +28,8 @@ export function renderMessengerList(wiring: ScreenWiring) {
       onOpenRoom={chat.onOpenChatRoom}
       onGoToJourney={chat.onGoToJourney}
       onLayerChange={wiring.onScreenLayerChange}
+      notice={notice}
+      onNoticeShown={chat.onListNoticeShown}
     />
   );
 }

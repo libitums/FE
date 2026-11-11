@@ -55,6 +55,8 @@ function mount() {
     onOpenRoom: vi.fn<(id: string) => void>(),
     onGoToJourney: vi.fn<() => void>(),
     onLayerChange: vi.fn<(open: boolean) => void>(),
+    notice: null,
+    onNoticeShown: vi.fn<() => void>(),
   };
   render(<MessengerListScreen {...props} />);
   return source;
@@ -154,6 +156,8 @@ test("MC2-UI12. 해금된 줄을 탭하면 그 roomId로 열린다", () => {
     onOpenRoom,
     onGoToJourney: vi.fn<() => void>(),
     onLayerChange: vi.fn<(open: boolean) => void>(),
+    notice: null,
+    onNoticeShown: vi.fn<() => void>(),
   };
   render(<MessengerListScreen {...props} />);
   act(() => {

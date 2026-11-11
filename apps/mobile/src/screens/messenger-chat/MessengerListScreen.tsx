@@ -5,6 +5,7 @@ import { StatChip } from "../../components/StatChip";
 import { playSound } from "../../lib/sound-effects";
 import { useUiCopy } from "../../lib/ui-copy";
 import { ChatListEmpty } from "./ChatListEmpty";
+import { ChatListNotice } from "./ChatListNotice";
 import { ChatListRow } from "./ChatListRow";
 import { CoinShopLayer } from "./CoinShopLayer";
 import { orderChatRooms } from "./chat-list";
@@ -25,6 +26,8 @@ export function MessengerListScreen({
   onOpenRoom,
   onGoToJourney,
   onLayerChange,
+  notice,
+  onNoticeShown,
 }: MessengerListScreenProps): ReactNode {
   const copy = useUiCopy().messengerChat.list;
   const { rooms } = useChatSnapshot(source);
@@ -101,6 +104,7 @@ export function MessengerListScreen({
           </scroll-view>
         )}
       </view>
+      <ChatListNotice notice={notice} onNoticeShown={onNoticeShown} />
       {coinShopOpen ? <CoinShopLayer coinBalance={coinBalance} onClose={closeCoinShop} /> : null}
     </view>
   );

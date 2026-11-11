@@ -45,7 +45,7 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
         />
       );
     case "messenger-list":
-      return renderMessengerList(wiring);
+      return renderMessengerList(wiring, screen.notice ?? null);
     case "messenger-chat":
       return renderMessengerChat(screen.roomId, wiring);
     case "chat-settings":

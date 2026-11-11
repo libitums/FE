@@ -15,7 +15,8 @@ import type { ComposerKeyboard } from "./keyboard-plan";
 import type { MyMessageCopy, NewFriendCopy, TurnsCopy } from "./messenger-chat-copy-1-5.contract";
 import type { SafetyCopy } from "./safety-copy.contract";
 import type { KeyboardHeightStore, KoreanKeyboardProbe } from "./keyboard-ports";
-import type { ChatSettingsCopy } from "./chat-settings.contract";
+import type { MessengerChatExtraCopy } from "./chat-settings.contract";
+import type { ChatListNoticeProps } from "./messenger-list-notice";
 
 /** 「…」 메뉴 항목(고정 순서: ideas · fix · report). */
 export type ChatMoreAction = "ideas" | "fix" | "report";
@@ -162,9 +163,7 @@ export type MessengerChatCopy = {
   readonly newFriend: NewFriendCopy;
   /** 법 · 안전 UI(ADR-0125). 시각은 `time(hour, minute)`이 언어별로 씁니다. */
   readonly safety: SafetyCopy;
-  /** 대화 설정(ADR-0126) — 설정 탭 Chats 화면 · 먼저 보내는 메시지 · 기억 · 교정 방식. */
-  readonly chatSettings: ChatSettingsCopy;
-};
+} & MessengerChatExtraCopy;
 
 // --- 화면 props (spec §6.1) ---
 
@@ -175,7 +174,7 @@ export type MessengerListScreenProps = {
   readonly onOpenRoom: (roomId: string) => void;
   readonly onGoToJourney: () => void;
   readonly onLayerChange: (open: boolean) => void;
-};
+} & ChatListNoticeProps;
 
 export type MessengerChatScreenProps = {
   readonly roomId: string;

@@ -136,3 +136,8 @@ Android의 FCM 전송은 [ADR-0041](0041-android-push-transport.md), 수신 호�
 - **D3 — 특별 유닛 목적지 셋(`messenger` · `phone-call` · `visual-novel`)은 그 화면이 지워져 앱이 `{ kind: "journey-map" }`으로 읽는다** — `unitId`를 보지 않는다. 서버가 같은 모양을 계속 보내도 맵이 열린다. 「이 앱에 있는 유닛 ID만 받는다」의 표는 지워졌다.
 - 알림 목록 항목의 목적지(`NotificationTarget`)는 `roleplay-list`만 남았고, 앱이 여는 곳은 `journey-map` · `notifications` · `roleplay-list` 셋이다(`push-routing`). 위 표의 「닫힌 목록 여섯」은 그때의 수다.
 - `push_notification_opened.target`은 지금처럼 **받은 종류**다(`messenger` 등이 그대로 찍힌다).
+
+## 적용 기록 ⟨2026-11-11 — 선톡 푸시 목적지⟩
+
+- [ADR-0127](0127-companion-push-target.md): 닫힌 목적지 목록에 `companion-chat { characterId, variant? }` 하나를 더했다. 여전히 URL이 아니라 이름이고, 인물 id 형식이 틀리면 목적지 없음이다(D4 딥링크 금지 그대로). `push_notification_opened`에 선택 속성 `variant`가 생겼다. Android 호스트는 목적지의 `characterId` · `variant` 문자열도 JS로 옮긴다. 누름 처리 결선이 `journey-wiring`에서 `screen-wiring`으로 옮겨졌다.
+

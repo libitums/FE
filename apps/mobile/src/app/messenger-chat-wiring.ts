@@ -42,6 +42,8 @@ export type MessengerChatWiring = {
   readonly onOpenChatSettings: () => void;
   readonly onOpenMemories: (characterId: string | null, name: string | null) => void;
   readonly onExitChatSettingsStack: () => void;
+  /** 목록이 선톡 안내를 받았습니다 — route에서 지웁니다(ADR-0127). */
+  readonly onListNoticeShown: () => void;
 };
 
 type ImageUrlOf = (relativePath: string) => string | null;
@@ -180,6 +182,9 @@ export function messengerChatWiring(args: MessengerChatWiringArgs): {
       },
       onExitChatSettingsStack: () => {
         args.dispatch({ type: "back" });
+      },
+      onListNoticeShown: () => {
+        args.dispatch({ type: "setListNotice", notice: null });
       },
     },
   };

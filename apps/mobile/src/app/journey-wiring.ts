@@ -6,7 +6,6 @@ import type { EpisodeIntroEventSink } from "../screens/episode-intro/episode-int
 import type {
   NotificationEventSink,
   NotificationItem,
-  PushNotificationTarget,
 } from "../screens/notifications/notifications.contract";
 import {
   notificationDeletedEvent,
@@ -23,7 +22,6 @@ import { roleplayScreenFor } from "./screen-routing";
 import { tabRootActions } from "./nav-reducer";
 import { submitFeedback } from "../lib/feedback-api";
 import type { FeedbackRating } from "../lib/feedback.contract";
-import { pushTargetOpener } from "./push-routing";
 import { openNotificationSettings } from "./push-wiring";
 import type { NavAction } from "./nav-state";
 
@@ -72,9 +70,6 @@ export function journeyWiring(args: JourneyWiringArgs) {
         }
       }
     },
-    // 누른 서버 푸시의 목적지입니다(ADR-0034) — 이동 규칙은 `push-routing.ts`입니다.
-    onOpenPushTarget: (target: PushNotificationTarget) =>
-      pushTargetOpener({ dispatch, notificationEventSink })(target),
     // 알림 삭제입니다. 이벤트를 먼저 올리고 목록에서 뺍니다. 화면을 옮기지 않습니다 —
     // 마지막 알림을 지워도 알림 화면에 남아 빈 상태를 봅니다.
     notifications,
