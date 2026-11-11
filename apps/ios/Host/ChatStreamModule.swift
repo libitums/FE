@@ -126,7 +126,9 @@ final class ChatStreamSessions: NSObject, URLSessionDataDelegate {
       let timer = DispatchWorkItem { [weak self] in
         self?.queue.addOperation {
           // 이미 실행 중인 타이머는 `cancel()`로 못 멈춘다 — 그 사이 머리가 왔으면 끝내지 않는다.
-          guard let self, self.streams[task.taskIdentifier]?.status == nil else { return }
+          guard let self, let stream = self.streams[task.taskIdentifier], !stream.ended,
+            stream.status == nil
+          else { return }
           self.finish(task, "timeout-connect", nil, cancel: true)
         }
       }

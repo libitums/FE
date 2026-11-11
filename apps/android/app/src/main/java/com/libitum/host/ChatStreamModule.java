@@ -15,8 +15,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import okhttp3.Call;
@@ -53,7 +53,12 @@ public final class ChatStreamModule extends LynxModule {
           .build();
   private static final Map<String, Stream> STREAMS = new ConcurrentHashMap<>();
   /** 머리 대기 10초를 잰다. OkHttp connectTimeout은 TCP · TLS까지만 재고, 머리 대기는 readTimeout(30초)이 정한다. */
-  private static final ScheduledExecutorService TIMERS = Executors.newSingleThreadScheduledExecutor();
+  private static final ScheduledThreadPoolExecutor TIMERS = new ScheduledThreadPoolExecutor(1);
+
+  static {
+    // 머리가 오거나 끝나 취소한 타이머는 10초를 기다리지 않고 큐에서 바로 빠진다.
+    TIMERS.setRemoveOnCancelPolicy(true);
+  }
 
   /**
    * 스트림 하나. 「끝났는가 확인 → 보내기」는 이 객체를 잠근 채 한 번에 한다 — 취소(JS 스레드)와 읽기(OkHttp 스레드)가
@@ -64,6 +69,8 @@ public final class ChatStreamModule extends LynxModule {
     final Call call;
     final AtomicBoolean ended = new AtomicBoolean(false);
     final AtomicBoolean opened = new AtomicBoolean(false);
+    /** 머리 대기 타이머. 머리가 오거나 스트림이 끝나면 취소한다(이 객체를 잠근 채). */
+    ScheduledFuture<?> connectTimer;
 
     Stream(String id, Call call) {
       this.id = id;
@@ -80,6 +87,8 @@ public final class ChatStreamModule extends LynxModule {
   }
 
   @LynxMethod public void open(String streamId, String url, ReadableMap headers, String body) {
+    // id가 없으면 결과를 돌려줄 곳이 없다 — JS 어댑터는 늘 id를 만들어 넘긴다.
+    if (streamId == null || streamId.isEmpty()) return;
     Request request;
     try {
       Request.Builder builder =
@@ -105,7 +114,7 @@ public final class ChatStreamModule extends LynxModule {
     }
     Stream stream = new Stream(streamId, CLIENT.newCall(request));
     STREAMS.put(streamId, stream);
-    TIMERS.schedule(
+    ScheduledFuture<?> timer = TIMERS.schedule(
         () -> {
           if (stream.opened.get()) return;
           finish(stream, "timeout-connect", null);
@@ -113,6 +122,10 @@ public final class ChatStreamModule extends LynxModule {
         },
         ChatStreamLimits.CONNECT_TIMEOUT_MS,
         TimeUnit.MILLISECONDS);
+    synchronized (stream) {
+      if (stream.ended.get()) timer.cancel(false);
+      else stream.connectTimer = timer;
+    }
     stream.call.enqueue(
         new Callback() {
           @Override public void onFailure(Call call, IOException error) {
@@ -127,6 +140,7 @@ public final class ChatStreamModule extends LynxModule {
   }
 
   @LynxMethod public void cancel(String streamId) {
+    if (streamId == null) return;
     Stream stream = STREAMS.get(streamId);
     if (stream == null) return;
     finish(stream, "cancelled", null);
@@ -137,6 +151,7 @@ public final class ChatStreamModule extends LynxModule {
     int status = response.code();
     synchronized (stream) {
       stream.opened.set(true);
+      cancelConnectTimer(stream);
       if (stream.ended.get()) {
         response.close();
         return;
@@ -174,6 +189,9 @@ public final class ChatStreamModule extends LynxModule {
       finish(stream, "timeout-idle", null);
     } catch (IOException broken) {
       finish(stream, "network", null);
+    } catch (RuntimeException unexpected) {
+      // 예상 못 한 실패도 스트림을 남기지 않고 end 한 번으로 정리한다.
+      finish(stream, "network", null);
     } finally {
       response.close();
     }
@@ -198,9 +216,17 @@ public final class ChatStreamModule extends LynxModule {
   private static void finish(Stream stream, String reason, String detail) {
     synchronized (stream) {
       if (!stream.ended.compareAndSet(false, true)) return;
+      cancelConnectTimer(stream);
       STREAMS.remove(stream.id, stream);
       end(stream.id, reason, detail);
     }
+  }
+
+  /** 잠근 채 부른다. */
+  private static void cancelConnectTimer(Stream stream) {
+    if (stream.connectTimer == null) return;
+    stream.connectTimer.cancel(false);
+    stream.connectTimer = null;
   }
 
   private static void end(String streamId, String reason, String detail) {
