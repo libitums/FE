@@ -18,6 +18,7 @@ function mount(
   const element = (options: SessionOptions) => (
     <SettingsScreen
       onSelectNavTarget={() => undefined}
+      onOpenChatSettings={() => undefined}
       learnerProfileSummary="Not set"
       languageSummary="Intermediate English"
       appVersion={null}
@@ -48,7 +49,8 @@ test("SU16. 첫 묶음이 Learning이고 그 안에 로마자 · 진동 토글 �
   const items = Array.from(
     first?.querySelectorAll('[data-testid^="ui-lynx-settings-group-item-"]') ?? [],
   ).map((el) => el.getAttribute("data-testid"));
-  expect(items).toEqual([itemId, vibrationItemId]);
+  // ⟨ADR-0126⟩ 대화 설정 「Chats」 줄이 학습 묶음 끝에 선다.
+  expect(items).toEqual([itemId, vibrationItemId, "ui-lynx-settings-group-item-chats"]);
 
   expect(screen.getByText("Romanization on choices")).toBeInTheDocument();
   expect(

@@ -4,7 +4,7 @@ import { composeHangul, shiftedKeys } from "../../lib/hangul-keyboard";
 import { clampText } from "./chat-rules";
 import { CHAT_PLACEHOLDERS } from "./chat-placeholders";
 import { keysFromText } from "./composer-keys";
-import type { ChatMediaKind, ChatReportReasonId } from "./chat-source.contract";
+import type { ChatFeedbackMode, ChatMediaKind, ChatReportReasonId } from "./chat-source.contract";
 import type { ChatSlot, PhoneFocus } from "./keyboard-height";
 import type { ComposerKeyboard, KeyboardPlan } from "./keyboard-plan";
 
@@ -22,6 +22,7 @@ export type ChatOverlay =
       readonly kind: "coin-shop";
       readonly from: "sidebar" | "ask-photo" | "ask-voice" | "send";
     }
+  | { readonly kind: "feedback-mode"; readonly selected: ChatFeedbackMode }
   | {
       readonly kind: "birth-year";
       readonly selected: number | null;
@@ -38,7 +39,8 @@ export type ChatFocusOrigin =
   | "sidebar-coins"
   | "send"
   | "sidebar-birth-year"
-  | "blocked-change-year";
+  | "blocked-change-year"
+  | "sidebar-feedback-mode";
 
 export type ChatRoomState = {
   /** 정본입니다. */
@@ -75,7 +77,8 @@ export type ChatRoomAction =
   | { readonly type: "toggle-report-reason"; readonly id: ChatReportReasonId }
   | { readonly type: "fix-input"; readonly value: string }
   | { readonly type: "select-story-point"; readonly id: string }
-  | { readonly type: "select-birth-year"; readonly year: number };
+  | { readonly type: "select-birth-year"; readonly year: number }
+  | { readonly type: "select-feedback-mode"; readonly mode: ChatFeedbackMode };
 
 const NO_OVERLAY: ChatOverlay = { kind: "none" };
 const SIDEBAR: ChatOverlay = { kind: "sidebar" };
@@ -213,6 +216,10 @@ export function chatRoomReducer(state: ChatRoomState, action: ChatRoomAction): C
       return state.overlay.kind === "story-point"
         ? { ...state, overlay: { kind: "story-point", selected: action.id } }
         : state;
+    case "select-feedback-mode":
+      return state.overlay.kind === "feedback-mode"
+        ? { ...state, overlay: { kind: "feedback-mode", selected: action.mode } }
+        : state;
     case "select-birth-year":
       return state.overlay.kind === "birth-year"
         ? { ...state, overlay: { ...state.overlay, selected: action.year } }
@@ -234,6 +241,8 @@ export function overlayParent(overlay: ChatOverlay): ChatOverlay {
       return overlay.from === "sidebar" ? SIDEBAR : NO_OVERLAY;
     case "birth-year":
       return overlay.from === "sidebar" ? SIDEBAR : NO_OVERLAY;
+    case "feedback-mode":
+      return SIDEBAR;
     default:
       return NO_OVERLAY;
   }
@@ -261,6 +270,8 @@ export function focusOriginOf(closing: ChatOverlay): ChatFocusOrigin | null {
       if (closing.from === "sidebar") return "sidebar-coins";
       if (closing.from === "send") return "send";
       return closing.from === "ask-photo" ? "snapshot-pill" : "voice-pill";
+    case "feedback-mode":
+      return "sidebar-feedback-mode";
     case "birth-year":
       if (closing.from === "sidebar") return "sidebar-birth-year";
       return closing.from === "blocked" ? "blocked-change-year" : null;

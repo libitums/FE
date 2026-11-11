@@ -32,6 +32,7 @@ export function SettingsScreen({
   onLayerChange,
   sessionOptions,
   onToggleSessionOption,
+  onOpenChatSettings,
 }: SettingsScreenProps): ReactNode {
   const copy = useUiCopy();
   // 학습 묶음은 목록 맨 위입니다 — 켬/끔 줄은 셀 전체가 탭 대상이고 바뀐 뒤 값을 알립니다.
@@ -46,6 +47,17 @@ export function SettingsScreen({
     checked: row.checked,
     onChange: (checked: boolean) => onToggleSessionOption(row.key, checked),
   }));
+  // 학습 묶음 끝의 「Chats」 줄입니다(ADR-0126) — 대화 설정 화면을 엽니다. 분석 이벤트가 없어 내비 대상과 따로 둡니다.
+  const chatCopy = copy.messengerChat.chatSettings;
+  const chatItems: readonly SettingsGroupItem[] = [
+    {
+      id: "chats",
+      trailing: "navigation",
+      title: chatCopy.entryTitle,
+      description: chatCopy.entryDescription,
+      onNavigate: onOpenChatSettings,
+    },
+  ];
   const account = useAccountActions({ onSignIn, onSignOut, onDeleteAccount, onLayerChange });
   const { state } = account;
   const layerOpen = accountActionsLayerOpen(state);
@@ -97,7 +109,10 @@ export function SettingsScreen({
         {/* `<scroll-view>`의 직계 자식은 이 상자 하나입니다(ADR-0022 D4) — 간격은
             이 상자가 집니다(`<scroll-view>` 안은 강제 linear라 `gap`이 무동작입니다). */}
         <view className="settings-screen-list" data-testid="settings-screen-list">
-          <SettingsGroup accessibilityLabel={copy.settings.group.learning} items={learningItems} />
+          <SettingsGroup
+            accessibilityLabel={copy.settings.group.learning}
+            items={[...learningItems, ...chatItems]}
+          />
           <SettingsGroup accessibilityLabel={copy.settings.group.account} items={accountItems} />
           <SettingsGroup
             accessibilityLabel={copy.settings.group.accountActions}

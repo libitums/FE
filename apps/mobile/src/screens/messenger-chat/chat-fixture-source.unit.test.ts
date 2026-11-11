@@ -126,7 +126,8 @@ describe("씨앗과 첫 상태 (MC-U19)", () => {
     const { source } = setup();
     const snapshot = source.snapshot();
     expect(snapshot.rooms.map((r) => r.roomId)).toEqual(["r1", "r2"]);
-    expect(Object.keys(snapshot)).toEqual(["rooms", "birthYear"]); // 잔액 키는 없다(ADR-0125가 생년만 더했다)
+    // 잔액 키는 없다(ADR-0125가 생년을, ADR-0126이 설정을 더했다).
+    expect(Object.keys(snapshot)).toEqual(["rooms", "birthYear", "preferences"]);
   });
 
   test("MC-U19. 씨앗의 minutesAgo 가 시계 기준 at 으로 풀린다", () => {

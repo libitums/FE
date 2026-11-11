@@ -10,7 +10,13 @@ import { SettingsCell } from "@libitums/ui-lynx/settings-cell";
 
 import { safeAreaInsetsFrom } from "../../lib/safe-area";
 import { useUiCopy } from "../../lib/ui-copy";
-import type { ChatBirthYear, ChatThread } from "./chat-source.contract";
+import type {
+  ChatBirthYear,
+  ChatFeedbackMode,
+  ChatMemoryList,
+  ChatThread,
+} from "./chat-source.contract";
+import { chatSettingsTestIds } from "./chat-settings.contract";
 import { messengerChatTestIds as ids } from "./messenger-chat.contract";
 
 import "./chat-overlays.css";
@@ -24,7 +30,11 @@ export type ChatSettingsSidebarProps = {
   /** 생년 줄의 값입니다(ADR-0125) — 연도 또는 「Not set」. */
   readonly birthYear: ChatBirthYear;
   readonly onBirthYear: () => void;
-  readonly onAutoIdeas: (on: boolean) => void;
+  /** 이 인물 기억의 개수 · 상한 · 가득 참(ADR-0126). */
+  readonly memories: ChatMemoryList;
+  readonly onMemories: () => void;
+  readonly feedbackMode: ChatFeedbackMode;
+  readonly onFeedbackMode: () => void;
   readonly onDelete: () => void;
   readonly onClose: () => void;
 };
@@ -42,7 +52,10 @@ export function ChatSettingsSidebar({
   onStoryPoint,
   birthYear,
   onBirthYear,
-  onAutoIdeas,
+  memories,
+  onMemories,
+  feedbackMode,
+  onFeedbackMode,
   onDelete,
   onClose,
 }: ChatSettingsSidebarProps): ReactNode {
@@ -70,6 +83,23 @@ export function ChatSettingsSidebar({
     "background only";
     onBirthYear();
   };
+  const handleMemories = () => {
+    "background only";
+    onMemories();
+  };
+  const handleFeedbackMode = () => {
+    "background only";
+    onFeedbackMode();
+  };
+  const settingsCopy = useUiCopy().messengerChat.chatSettings;
+  const feedbackCopy = settingsCopy.feedback;
+  const memoryTitle = settingsCopy.memories.sidebar(counterpart.name);
+  const memoryValue = settingsCopy.memories.sidebarSummary(
+    memories.count,
+    memories.cap,
+    memories.full,
+  );
+  const feedbackValue = feedbackCopy.modes[feedbackMode].title;
   const yearCopy = useUiCopy().messengerChat.safety.birthYear;
   const yearValue = birthYear.kind === "set" ? String(birthYear.year) : yearCopy.notSet;
   const handleGetCoins = () => {
@@ -125,6 +155,7 @@ export function ChatSettingsSidebar({
               <view
                 id={ids.sidebarGetCoins}
                 data-testid={ids.sidebarGetCoins}
+                flatten={false}
                 accessibility-element={true}
                 accessibility-traits="button"
                 accessibility-label={copy.getCoins}
@@ -162,6 +193,7 @@ export function ChatSettingsSidebar({
               id={ids.sidebarStoryPoint}
               data-testid={ids.sidebarStoryPoint}
               data-order="4"
+              flatten={false}
               accessibility-element={true}
               accessibility-traits="button"
               accessibility-label={
@@ -201,17 +233,46 @@ export function ChatSettingsSidebar({
               </view>
             </view>
             <view
-              className="chat-sidebar-toggle-box"
-              data-testid={ids.sidebarAutoIdeas}
+              className="chat-sidebar-row"
+              id={chatSettingsTestIds.sidebarMemories}
+              data-testid={chatSettingsTestIds.sidebarMemories}
               data-order="6"
+              flatten={false}
+              accessibility-element={true}
+              accessibility-traits="button"
+              accessibility-label={`${memoryTitle}, ${memoryValue}`}
+              accessibility-enable-tap={true}
+              bindtap={handleMemories}
             >
-              <SettingsCell
-                trailing="toggle"
-                title={copy.autoIdeas}
-                description={copy.autoIdeasDescription}
-                checked={settings.autoIdeas}
-                onChange={onAutoIdeas}
-              />
+              <view accessibility-elements-hidden={true}>
+                <SettingsCell
+                  trailing="navigation"
+                  title={memoryTitle}
+                  description={memoryValue}
+                  onNavigate={noop}
+                />
+              </view>
+            </view>
+            <view
+              className="chat-sidebar-row"
+              id={chatSettingsTestIds.sidebarFeedback}
+              data-testid={chatSettingsTestIds.sidebarFeedback}
+              data-order="7"
+              flatten={false}
+              accessibility-element={true}
+              accessibility-traits="button"
+              accessibility-label={`${feedbackCopy.sidebar}, ${feedbackValue}`}
+              accessibility-enable-tap={true}
+              bindtap={handleFeedbackMode}
+            >
+              <view accessibility-elements-hidden={true}>
+                <SettingsCell
+                  trailing="navigation"
+                  title={feedbackCopy.sidebar}
+                  description={feedbackValue}
+                  onNavigate={noop}
+                />
+              </view>
             </view>
           </view>
         </scroll-view>
@@ -220,7 +281,7 @@ export function ChatSettingsSidebar({
             id={ids.sidebarDelete}
             className="chat-sidebar-delete-button"
             data-testid={ids.sidebarDelete}
-            data-order="7"
+            data-order="8"
             accessibility-element={true}
             accessibility-traits="button"
             accessibility-label={copy.deleteChat}

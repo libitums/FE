@@ -1,0 +1,305 @@
+/* 대화 설정(ADR-0126) — Chats 화면 · 기억 화면 · 시트 안 선택 줄. 상태는 클래스 변형으로만 칠한다(Lynx는 data-* 선택자를 무시한다). */
+
+.chat-settings-screen {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  background-color: var(--libitum-color-gray-100);
+}
+
+.chat-settings-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.chat-settings-scroll {
+  flex: 1;
+}
+
+.chat-settings-content {
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--libitum-spacing-8);
+  padding: var(--libitum-spacing-16);
+}
+
+.chat-settings-section {
+  margin: var(--libitum-spacing-12) var(--libitum-spacing-4) 0;
+  font-family: var(--libitum-typography-caption-font-family);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 18px;
+  color: var(--libitum-color-fg-neutral-muted);
+}
+
+.chat-settings-card {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--libitum-radius-lg);
+  background-color: var(--libitum-color-white);
+  overflow: hidden;
+}
+
+.chat-settings-row {
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-settings-footnote {
+  margin: var(--libitum-spacing-4) var(--libitum-spacing-4) 0;
+  font-family: var(--libitum-typography-caption-font-family);
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--libitum-color-fg-neutral-muted);
+}
+
+/* 시트 안 */
+.chat-settings-sheet {
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--libitum-spacing-8);
+  margin-top: var(--libitum-spacing-8);
+}
+
+.chat-settings-sheet-body {
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: var(--libitum-typography-body-m-font-size);
+  line-height: var(--libitum-typography-body-m-line-height);
+  color: var(--libitum-color-fg-neutral-muted);
+}
+
+.chat-settings-sheet-label {
+  margin-top: var(--libitum-spacing-8);
+  font-family: var(--libitum-typography-caption-font-family);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--libitum-color-fg-neutral-muted);
+}
+
+.chat-settings-sheet-note {
+  font-family: var(--libitum-typography-caption-font-family);
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--libitum-color-fg-neutral-muted);
+}
+
+.chat-settings-choices {
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--libitum-spacing-8);
+}
+
+.chat-choice {
+  display: flex;
+  flex-direction: row;
+  column-gap: var(--libitum-spacing-12);
+  padding: var(--libitum-spacing-12) var(--libitum-spacing-16);
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--libitum-color-gray-400);
+  border-radius: var(--libitum-radius-md);
+  background-color: var(--libitum-color-white);
+}
+
+.chat-choice-on {
+  border-width: 2px;
+  border-color: var(--libitum-color-brand-primary);
+  background-color: var(--libitum-elevation-surface-floating);
+}
+
+.chat-choice-off {
+  opacity: 0.5;
+}
+
+.chat-choice-radio {
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-width: 2px;
+  border-style: solid;
+  border-color: var(--libitum-color-gray-600);
+  border-radius: var(--libitum-radius-full);
+}
+
+.chat-choice-radio-on {
+  border-color: var(--libitum-color-brand-primary);
+}
+
+.chat-choice-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-brand-primary);
+}
+
+.chat-choice-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--libitum-spacing-4);
+}
+
+.chat-choice-title {
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 20px;
+  color: var(--libitum-color-fg-neutral);
+}
+
+.chat-choice-tag {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--libitum-color-fg-neutral-muted);
+}
+
+.chat-choice-body {
+  font-family: var(--libitum-typography-caption-font-family);
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--libitum-color-fg-neutral-muted);
+}
+
+.chat-settings-hours {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: var(--libitum-spacing-8);
+}
+
+.chat-hour {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  padding: 0 var(--libitum-spacing-12);
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--libitum-color-gray-400);
+  border-radius: var(--libitum-radius-full);
+}
+
+.chat-hour-on {
+  border-color: var(--libitum-color-gray-900);
+  background-color: var(--libitum-color-gray-900);
+}
+
+.chat-hour-off {
+  opacity: 0.4;
+}
+
+.chat-hour-text {
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: 14px;
+  color: var(--libitum-color-fg-neutral);
+}
+
+.chat-hour-text-on {
+  font-weight: 600;
+  color: var(--libitum-color-fg-neutral-inverted);
+}
+
+/* 기억 화면 */
+.chat-memory-count {
+  font-family: var(--libitum-typography-caption-font-family);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--libitum-color-fg-neutral-muted);
+}
+
+.chat-memory-full {
+  display: flex;
+  flex-direction: row;
+  column-gap: var(--libitum-spacing-8);
+  padding: var(--libitum-spacing-12) var(--libitum-spacing-12);
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--libitum-color-brand-reward-border);
+  border-radius: var(--libitum-radius-md);
+  background-color: var(--libitum-elevation-surface-floating);
+}
+
+.chat-memory-full-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.chat-memory-full-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--libitum-spacing-2);
+}
+
+.chat-memory-full-title {
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--libitum-color-brand-strong);
+}
+
+.chat-memory-full-body {
+  font-family: var(--libitum-typography-caption-font-family);
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--libitum-color-fg-neutral);
+}
+
+.chat-memory-empty {
+  margin-top: var(--libitum-spacing-16);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--libitum-color-fg-neutral-muted);
+  text-align: center;
+}
+
+.chat-memory-row {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  column-gap: var(--libitum-spacing-4);
+  padding: var(--libitum-spacing-12) var(--libitum-spacing-8) var(--libitum-spacing-12)
+    var(--libitum-spacing-16);
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+  border-bottom-color: var(--libitum-color-gray-300);
+}
+
+.chat-memory-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--libitum-spacing-4);
+}
+
+.chat-memory-content {
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: 15px;
+  line-height: 21px;
+  color: var(--libitum-color-fg-neutral);
+}
+
+.chat-memory-meta {
+  font-family: var(--libitum-typography-caption-font-family);
+  font-size: 12px;
+  color: var(--libitum-color-fg-neutral-muted);
+}
+
+.chat-memory-icon-button {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chat-memory-icon {
+  width: 18px;
+  height: 18px;
+}

@@ -6,6 +6,8 @@ import {
   emptyKeyboardHeightStore,
   unknownKoreanKeyboardProbe,
 } from "../screens/messenger-chat/keyboard-ports";
+import { ChatMemoriesScreen } from "../screens/messenger-chat/ChatMemoriesScreen";
+import { ChatSettingsScreen } from "../screens/messenger-chat/ChatSettingsScreen";
 import { MessengerChatScreen } from "../screens/messenger-chat/MessengerChatScreen";
 import { MessengerListScreen } from "../screens/messenger-chat/MessengerListScreen";
 import type { ScreenWiring } from "./screen-wiring";
@@ -46,6 +48,34 @@ export function renderMessengerChat(roomId: string, wiring: ScreenWiring) {
       tier={chat.tier}
       now={chat.now}
       onExit={chat.onExitChatRoom}
+      onOpenMemories={chat.onOpenMemories}
+    />
+  );
+}
+
+export function renderChatSettings(wiring: ScreenWiring) {
+  const chat = wiring.messengerChat;
+  return (
+    <ChatSettingsScreen
+      source={chat.source}
+      onOpenSharedMemories={() => chat.onOpenMemories(null, null)}
+      onBack={chat.onExitChatSettingsStack}
+    />
+  );
+}
+
+export function renderChatMemories(
+  characterId: string | null,
+  characterName: string | null,
+  wiring: ScreenWiring,
+) {
+  const chat = wiring.messengerChat;
+  return (
+    <ChatMemoriesScreen
+      source={chat.source}
+      scope={characterId === null ? { kind: "shared" } : { kind: "character", characterId }}
+      name={characterId === null ? null : characterName}
+      onBack={chat.onExitChatSettingsStack}
     />
   );
 }

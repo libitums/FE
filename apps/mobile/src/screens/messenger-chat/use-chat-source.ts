@@ -3,7 +3,13 @@
 
 import { useEffect, useRef, useState } from "@lynx-js/react";
 
-import type { ChatSnapshot, ChatSource, ChatThread } from "./chat-source.contract";
+import type {
+  ChatMemoryList,
+  ChatMemoryScope,
+  ChatSnapshot,
+  ChatSource,
+  ChatThread,
+} from "./chat-source.contract";
 
 // 렌더 때마다 출처에서 읽어 늘 최신입니다(알림 없이 그림 주소만 바뀐 경우도 다시 그리면 반영됩니다 — D3). 구독은 참조가
 // 바뀔 때만 다시 그리게 합니다.
@@ -38,6 +44,27 @@ export function useChatThread(source: ChatSource, roomId: string): ChatThread | 
     check();
     return source.subscribe(check);
   }, [source, roomId]);
+
+  return current;
+}
+
+// 한 층의 기억입니다(ADR-0126). 기억이 바뀌어도 목록 스냅숏은 그대로라, 그 층의 참조가 바뀔 때 다시 그립니다.
+export function useChatMemories(source: ChatSource, scope: ChatMemoryScope): ChatMemoryList {
+  const current = source.memories(scope);
+  const seen = useRef(current);
+  seen.current = current;
+  const [, setVersion] = useState(0);
+  const characterId = scope.kind === "character" ? scope.characterId : null;
+
+  useEffect(() => {
+    const layer: ChatMemoryScope =
+      characterId === null ? { kind: "shared" } : { kind: "character", characterId };
+    const check = () => {
+      if (source.memories(layer) !== seen.current) setVersion((version) => version + 1);
+    };
+    check();
+    return source.subscribe(check);
+  }, [source, characterId]);
 
   return current;
 }

@@ -14,6 +14,7 @@ function renderSettings() {
   render(
     <SettingsScreen
       onSelectNavTarget={() => undefined}
+      onOpenChatSettings={() => undefined}
       learnerProfileSummary="Not set"
       languageSummary="Intermediate English"
       appVersion={null}

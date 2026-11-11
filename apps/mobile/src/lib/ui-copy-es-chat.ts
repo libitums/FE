@@ -178,8 +178,7 @@ export const messengerChatEs: MessengerChatCopy = {
     time: (hour, minute) => `${hour}:${String(minute).padStart(2, "0")}`,
     notice: {
       aiDisclosure: (name) => `${name} es un personaje de IA. Las respuestas las escribe una IA.`,
-      minorNotice:
-        "Es posible que este chat no sea adecuado para todas las personas menores de 18 años.",
+      minorNotice: "Este chat puede no ser adecuado para menores de 18 años.",
       breakReminder: (name) =>
         `Llevas 3 horas chateando. ¿Tomas un descanso? Recuerda: ${name} es una IA.`,
     },
@@ -209,6 +208,93 @@ export const messengerChatEs: MessengerChatCopy = {
       skipNote: "Si lo omites, los chats usan la configuración para menores de 18.",
       sidebar: "Año de nacimiento",
       notSet: "Sin indicar",
+    },
+  },
+  chatSettings: {
+    entryTitle: "Chats",
+    entryDescription: "Ideas de respuesta, mensajes de personajes, recuerdos",
+    title: "Chats",
+    back: "Atrás",
+    sectionWhile: "Mientras chateas",
+    replyIdeas: "Ideas de respuesta",
+    replyIdeasBody: "Muestra 1–2 respuestas sugeridas después de cada mensaje",
+    sectionProactive: "Mensajes de personajes",
+    proactive: "Te escriben primero",
+    sectionAbout: "Sobre ti",
+    sharedMemories: "Lo que todos saben de ti",
+    sharedMemoriesSummary: (count) =>
+      count === 1
+        ? "1 recuerdo · compartido por todos los personajes"
+        : `${count} recuerdos · compartidos por todos los personajes`,
+    footnote:
+      "Cada personaje también recuerda cosas de sus chats contigo. Abre un chat y toca ☰ para verlas.",
+    proactiveSheet: {
+      title: "Te escriben primero",
+      body: "Si llevas un tiempo sin escribir, un personaje puede empezar la conversación. Nunca cuesta monedas.",
+      howOften: "Frecuencia",
+      prefs: { off: "Desactivado", daily1: "Una vez al día", daily2: "Dos veces al día" },
+      preferredTime: "Hora preferida",
+      anyTime: "Cualquier hora",
+      hour: (hour) => `${hour}:00`,
+      quietNote:
+        "No hay mensajes entre las 22:00 y las 8:00 de tu hora. Con dos veces al día, el segundo llega unas 10 horas después.",
+      save: "Guardar",
+      close: "Cerrar",
+    },
+    memories: {
+      titleShared: "Lo que todos saben de ti",
+      titleCharacter: (name) => `Lo que recuerda ${name}`,
+      count: (count, cap) => `${count} / ${cap}`,
+      fullTitle: "La memoria está llena",
+      // Con nombre el verbo va en singular; sin nombre, en plural («Los personajes»).
+      fullBody: (name) =>
+        `${name === null ? "Los personajes no pueden" : `${name} no puede`} recordar cosas nuevas hasta que borres algunas. Los recuerdos que editaste se conservan.`,
+      intro: (name) =>
+        `${name === null ? "Todos los personajes los usan" : `${name} los usa`} para que tus chats sean personales. Solo tú ves esta lista. Editar o borrar es gratis.`,
+      empty: (name) =>
+        `Aún no hay nada. ${name === null ? "Los personajes recordarán" : `${name} recordará`} lo que compartas al chatear.`,
+      edited: "Editado",
+      edit: "Editar recuerdo",
+      delete: "Borrar recuerdo",
+      editTitle: "Editar recuerdo",
+      editHint: (name) =>
+        `${name === null ? "Los personajes lo recordarán" : `${name} lo recordará`} tal como lo escribas.`,
+      length: (count, max) => `${count} / ${max}`,
+      cancel: "Cancelar",
+      save: "Guardar",
+      deleteTitle: "¿Borrar este recuerdo?",
+      deleteBody: (name) =>
+        `${name === null ? "Los personajes dejarán" : `${name} dejará`} de usarlo desde tu próximo mensaje.`,
+      deleteConfirm: "Borrar",
+      sidebar: (name) => `Lo que recuerda ${name}`,
+      sidebarSummary: (count, cap, full) =>
+        full ? `${count} / ${cap} · llena` : `${count} / ${cap}`,
+    },
+    feedback: {
+      sidebar: "Estilo de corrección",
+      title: "Estilo de corrección",
+      body: (name) =>
+        `Cómo te ayuda ${name} cuando tu coreano tiene un error. Siempre recibes la tarjeta de corrección; esto cambia cómo responde ${name}.`,
+      modes: {
+        separate: {
+          title: "Solo la tarjeta",
+          body: (name) =>
+            `${name} sigue conversando. La corrección aparece en ✎ debajo de tu mensaje.`,
+        },
+        natural: {
+          title: "De forma natural en la respuesta",
+          body: (name) =>
+            `${name} usa la expresión correcta en su respuesta, como lo haría un amigo.`,
+        },
+        prefix: {
+          title: "Señalarlo primero",
+          body: (name) => `${name} te corrige brevemente y luego sigue la conversación.`,
+        },
+      },
+      defaultTag: "predeterminado",
+      note: "Se aplica a todos los personajes desde tu próximo mensaje.",
+      save: "Guardar",
+      close: "Cerrar",
     },
   },
 };

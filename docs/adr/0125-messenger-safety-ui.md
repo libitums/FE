@@ -60,3 +60,7 @@ FAIL → 반영: **C1** 새 탭 요소 네 곳에 `accessibility-enable-tap`이 
 1. 서버(컴패니언)가 붙을 때 → notice · crisis 이벤트 · `companion_save_profile` · 연령 제한 판정을 결선하고 가짜 출처의 생년을 걷는다.
 2. 대화 설정(결정 8)을 만들 때 → 생년을 설정 탭으로도 옮긴다.
 3. ui-lynx BottomSheet description이 고쳐지면 → D2의 우회를 걷는다.
+
+## 적용 기록
+
+- ⟨2026-11-11, [ADR-0126](0126-messenger-chat-settings.md)⟩ 생년 고치기가 설정 탭 Chats 화면에도 생겼다(같은 `BirthYearSheet`, 닫을 수 있음). 시트가 닫힌 뒤 숨은 `<input>` 초점을 내리는 처방(D3 · 결함 3)은 겹침이 **다 닫힐 때만** 돌았다 — 사이드바에서 연 시트를 닫아 사이드바로 돌아오는 경우에도 Gboard가 떠, 「부모로 닫힘」이면 모두 내리도록 넓혔다. 사이드바 Story point · Get coins 줄(ADR-0113)에도 `flatten={false}`를 줬다.

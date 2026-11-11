@@ -8,14 +8,16 @@ import {
   makeSource,
   mountChat,
   systemBack,
+  tapButtonIn,
   tapId,
 } from "./chat-ui.test-support";
 import type { ChatThread } from "./chat-source.contract";
 import { isInDocumentOrder } from "../../lib/dom.test-support";
+import { chatSettingsTestIds } from "./chat-settings.contract";
 import { messengerChatTestIds as ids } from "./messenger-chat.contract";
 
 // `ui` 계층(MC-UI22): 채팅 설정 사이드바(O4) — 줄 순서 고정(data-order 1~6) · 잔액 · Get coins → 엽전 상점 →
-// 닫으면 사이드바 · 자동 보기 토글(setAutoIdeas 뒤집은 값 · data-checked) · My profile 문장 · 프로필 줄 탭 무동작 ·
+// 닫으면 사이드바 · 기억 · 교정 방식 줄(CS-UI1 · UI2, ADR-0126) · My profile 문장 · 프로필 줄 탭 무동작 ·
 // 움직임 줄이기에서 미는 움직임 없음.
 
 beforeEach(() => {
@@ -37,7 +39,8 @@ function handlers() {
   return {
     onGetCoins: vi.fn<() => void>(),
     onStoryPoint: vi.fn<() => void>(),
-    onAutoIdeas: vi.fn<(on: boolean) => void>(),
+    onMemories: vi.fn<() => void>(),
+    onFeedbackMode: vi.fn<() => void>(),
     onDelete: vi.fn<() => void>(),
     onClose: vi.fn<() => void>(),
     onBirthYear: vi.fn<() => void>(),
@@ -52,6 +55,8 @@ function mountSidebar(thread: ChatThread = threadOf(), reduced = false) {
       learnerName="Hana"
       coinBalance={120}
       birthYear={{ kind: "set", year: 2001 }}
+      memories={{ memories: [], count: 50, cap: 50, full: true }}
+      feedbackMode="natural"
       {...h}
     />
   );
@@ -65,12 +70,13 @@ const orderIds = [
   ids.sidebarMyProfile,
   ids.sidebarStoryPoint,
   ids.sidebarBirthYear,
-  ids.sidebarAutoIdeas,
+  chatSettingsTestIds.sidebarMemories,
+  chatSettingsTestIds.sidebarFeedback,
   ids.sidebarDelete,
 ] as const;
 
-// ⟨ADR-0125⟩ 생년 줄이 이야기 시점 다음 다섯째로 들어와 일곱 줄이 됐다.
-test("MC-UI22. 일곱 줄이 data-order 1~7로 정해진 순서에 선다(DOM 순서도 같다)", () => {
+// ⟨ADR-0125⟩ 생년 줄이 이야기 시점 다음 다섯째로 들어왔고, ⟨ADR-0126⟩ 자동 보기 토글 자리에 기억 · 교정 방식 두 줄이 섰다.
+test("MC-UI22. 여덟 줄이 data-order 1~8로 정해진 순서에 선다(DOM 순서도 같다)", () => {
   mountSidebar();
 
   const rows = orderIds.map((id) => screen.getByTestId(id));
@@ -82,6 +88,7 @@ test("MC-UI22. 일곱 줄이 data-order 1~7로 정해진 순서에 선다(DOM �
     "5",
     "6",
     "7",
+    "8",
   ]);
   expect(isInDocumentOrder(rows)).toBe(true);
   expect(screen.getByTestId(ids.sidebar).textContent).toContain("Chat settings");
@@ -133,24 +140,40 @@ test("MC-UI22. 이야기 시점 줄은 지금 시점 제목을 값으로 보이�
   expect(onStoryPoint).toHaveBeenCalled();
 });
 
-test("MC-UI22. 자동 보기 토글은 settings.autoIdeas를 data-checked로 보이고 탭하면 뒤집은 값을 부른다", () => {
-  const { onAutoIdeas } = mountSidebar();
-  const toggle = () => {
-    const row = screen.getByTestId(ids.sidebarAutoIdeas);
-    return row.hasAttribute("data-checked") ? row : row.querySelector("[data-checked]");
-  };
-  expect(toggle()?.getAttribute("data-checked")).toBe("true");
-  expect(screen.getByTestId(ids.sidebarAutoIdeas).textContent).toContain(
-    "Show reply ideas automatically",
-  );
+test("CS-UI1. 기억 줄은 「What {이름} remembers」 · 개수 · full을, 교정 방식 줄은 지금 방식을 보이고 탭하면 부른다", () => {
+  const { onMemories, onFeedbackMode } = mountSidebar();
 
-  const cell = within(screen.getByTestId(ids.sidebarAutoIdeas)).getByTestId(
-    "ui-lynx-settings-cell",
-  );
-  fireEvent.tap(cell, {});
+  const memories = screen.getByTestId(chatSettingsTestIds.sidebarMemories);
+  expect(memories.textContent).toContain("What 미나 remembers");
+  expect(memories.textContent).toContain("50 / 50 · full");
+  expect(memories.getAttribute("accessibility-enable-tap")).toBe("true");
+  const feedback = screen.getByTestId(chatSettingsTestIds.sidebarFeedback);
+  expect(feedback.textContent).toContain("Correction style");
+  expect(feedback.textContent).toContain("Naturally in the reply");
 
-  expect(onAutoIdeas).toHaveBeenCalledTimes(1);
-  expect(onAutoIdeas).toHaveBeenCalledWith(false);
+  // Android는 펴진 접근성 요소를 트리에서 지웠다(ADR-0126 기기 확인 — Story point · Get coins가 낭독에 없었다).
+  for (const id of [
+    ids.sidebarGetCoins,
+    ids.sidebarStoryPoint,
+    ids.sidebarBirthYear,
+    chatSettingsTestIds.sidebarMemories,
+    chatSettingsTestIds.sidebarFeedback,
+  ]) {
+    expect(screen.getByTestId(id).getAttribute("flatten")).toBe("false");
+  }
+
+  tapId(chatSettingsTestIds.sidebarMemories);
+  tapId(chatSettingsTestIds.sidebarFeedback);
+  expect(onMemories).toHaveBeenCalledTimes(1);
+  expect(onFeedbackMode).toHaveBeenCalledTimes(1);
+});
+
+test("CS-UI2. 자동 보기 토글은 사이드바에 없다(설정 탭 Chats의 Reply ideas 하나로 옮겼다)", () => {
+  mountSidebar();
+  expect(screen.queryByTestId(ids.sidebarAutoIdeas) === null).toBe(true);
+  expect(
+    screen.getByTestId(ids.sidebar).textContent?.includes("Show reply ideas automatically"),
+  ).toBe(false);
 });
 
 test("MC-UI22. Delete chat은 onDelete, 닫기 단추와 바깥(scrim)은 onClose를 부른다", () => {
@@ -222,20 +245,37 @@ test("MC-UI22. 화면: Get coins는 엽전 상점을 열고 그것을 닫으면 
   expect(screen.getByTestId(ids.sidebar)).toBeTruthy();
 });
 
-test("MC-UI22. 화면: 자동 보기 토글을 누르면 출처가 바뀌고 data-checked가 뒤집힌다", () => {
+test("CS-UI3. 화면: 교정 방식 줄 → 시트에서 고르고 Save하면 설정이 바뀌고 사이드바로, 뒤로는 저장 없이 사이드바로", () => {
   const { source } = openSidebar();
-  const setAutoIdeas = vi.spyOn(source, "setAutoIdeas");
 
-  const cell = within(screen.getByTestId(ids.sidebarAutoIdeas)).getByTestId(
-    "ui-lynx-settings-cell",
-  );
-  fireEvent.tap(cell, {});
+  tapId(chatSettingsTestIds.sidebarFeedback);
+  expect(screen.getByTestId(chatSettingsTestIds.feedbackSheet)).toBeTruthy();
+  expect(
+    screen.getByTestId(chatSettingsTestIds.feedbackMode("separate")).getAttribute("data-selected"),
+  ).toBe("true");
+  tapId(chatSettingsTestIds.feedbackMode("natural"));
+  expect(
+    screen.getByTestId(chatSettingsTestIds.feedbackMode("natural")).getAttribute("data-selected"),
+  ).toBe("true");
+  expect(source.snapshot().preferences.feedbackMode).toBe("separate"); // 고르기만으로는 저장되지 않는다
+  tapButtonIn("ui-lynx-bottom-sheet-action-save");
+  expect(source.snapshot().preferences.feedbackMode).toBe("natural");
+  expect(screen.queryByTestId(chatSettingsTestIds.feedbackSheet) === null).toBe(true);
+  expect(screen.getByTestId(ids.sidebar)).toBeTruthy();
 
-  expect(setAutoIdeas).toHaveBeenCalledWith("mina", false);
-  expect(source.thread("mina")?.settings.autoIdeas).toBe(false);
-  const row = screen.getByTestId(ids.sidebarAutoIdeas);
-  const checked = row.hasAttribute("data-checked") ? row : row.querySelector("[data-checked]");
-  expect(checked?.getAttribute("data-checked")).toBe("false");
+  tapId(chatSettingsTestIds.sidebarFeedback);
+  tapId(chatSettingsTestIds.feedbackMode("prefix"));
+  expect(systemBack()).toBe(true);
+  expect(source.snapshot().preferences.feedbackMode).toBe("natural");
+  expect(screen.getByTestId(ids.sidebar)).toBeTruthy();
+});
+
+test("CS-UI4. 화면: 기억 줄을 누르면 사이드바가 닫히고 onOpenMemories(인물 id, 이름)", () => {
+  const { onOpenMemories } = openSidebar();
+
+  tapId(chatSettingsTestIds.sidebarMemories);
+  expect(onOpenMemories).toHaveBeenCalledWith("mina", "미나");
+  expect(screen.queryByTestId(ids.sidebar) === null).toBe(true);
 });
 
 test("MC2-UI11. 화면: 사이드바의 My coins는 지갑 잔액이고 쓰면 열려 있는 동안에도 따라 줄어든다", () => {

@@ -14,6 +14,7 @@ const rowTitle = "Name and country in lessons";
 function renderSettings(summary: string, onSelect: (target: string) => void = () => undefined) {
   const props = {
     onSelectNavTarget: onSelect,
+    onOpenChatSettings: () => undefined,
     learnerProfileSummary: summary,
     languageSummary: "Intermediate English",
     appVersion: null,
@@ -64,6 +65,7 @@ test("[US-1b] 요약이 바뀌면 설명이 따라 바뀐다(기기에만 저장
   view.rerender(
     <SettingsScreen
       onSelectNavTarget={() => undefined}
+      onOpenChatSettings={() => undefined}
       learnerProfileSummary={pending}
       languageSummary="Intermediate English"
       appVersion={null}
