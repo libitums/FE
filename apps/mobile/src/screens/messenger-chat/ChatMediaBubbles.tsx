@@ -152,7 +152,7 @@ export function VoiceBubble({ durationMs, text, name, testId }: VoiceBubbleProps
         accessibility-element={true}
         accessibility-traits="button"
         accessibility-label={playing ? copy.pause : copy.play}
-        bindtap={() => {
+        catchtap={() => {
           "background only";
           setPlaying((current) => !current);
         }}

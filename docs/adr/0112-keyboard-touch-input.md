@@ -136,3 +136,4 @@ CSS(`messenger-keyboard.css`): 칸 = `flex: <비율> 1 0` · 안쪽 3px · 틈 0
 ## 적용 기록
 
 - ⟨2026-11-09⟩ **`MessengerKeyboardProps`에 선택 prop `height`** — [ADR-0113](0113-messenger-chat-ui.md) D5. 자유 대화 방이 정한 판 높이(아래 안전 영역 포함 — 화면 높이 표 260 / 300 / 320)를 받으면 줄 넷 · 칸 배치(D1)는 그대로 두고 **키 높이(40 ~ 56)로 차이를 흡수**한다(`screens/messenger/keyboard-fit.ts` `fittedKeyHeight`). prop이 없으면 지금과 같다(판 232) — 받아쓰기 · 번역 · 패턴 타자 활동은 바뀌지 않는다. 터치 게이트 · 반복 · 진동(D2 ~ D6)도 그대로다. 테스트: `MessengerKeyboard.ui.test.tsx` MC-UI25 · `TypingActivity.keyboard-port.integration.test.tsx` MC-I7(타자 활동은 한국어 키보드 감지 포트를 읽지 않는다).
+- ⟨2026-11-10⟩ **`createKeyHaptic` 재사용 — 새 친구 첫 메시지** — [ADR-0117](0117-messenger-chat-turns-coins-new-friend.md) D3. 메신저 해금 시트가 자판 밖에서 D6의 `key` 진동을 한 번 부른다. 함수 · 호스트 · 설정은 바뀌지 않는다.

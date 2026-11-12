@@ -205,6 +205,7 @@ export function screenWiring(args: ScreenWiringArgs): ScreenWiring {
     ...messengerChatWiring({
       dispatch: args.dispatch,
       imageUrlOf: args.episodeContent.imageUrlOf,
+      ...(args.coinCount === undefined ? {} : { coinCount: args.coinCount }),
     }),
     ...guestWiring(args),
     accountState: args.accountState,

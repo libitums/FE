@@ -1,0 +1,291 @@
+/* 내 말풍선 · 뜻 줄 · BETTER 카드 · 아이콘 줄(messenger-chat-1-5 spec §6.1, design 1절). 토큰만 쓰고 속성 선택자는 없습니다 —
+   상태는 클래스 변형(`-on`)으로 나타냅니다(ADR-0113 기기 D1). 화면 지역 상수는 아래 주석에 둡니다. */
+
+/* MB-W 280: 내 말풍선 최대 폭(ui-lynx ChatBubble 내장값과 같음). FIX-W 260: BETTER 카드 · 스켈레톤 공통 폭. */
+.my-message-stack {
+  align-self: flex-end;
+  max-width: 280px;
+  flex-shrink: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--libitum-spacing-6);
+}
+
+/* 상자 선언(배경 · 모서리 · 안 여백 · 글꼴 m)은 ui-lynx `.ui-lynx-chat-bubble-outgoing` · `-m`과 같은 값입니다. 흰 글 / brand-primary는
+   ADR-0113 D8의 앱 전체 예외이고, 로마자 · 뜻도 같은 예외입니다(사용자 결정 DM). */
+.my-message-bubble {
+  width: max-content;
+  max-width: 280px;
+  flex-shrink: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-2);
+  border-radius: var(--libitum-radius-md);
+  border-end-end-radius: var(--libitum-spacing-0);
+  background-color: var(--libitum-color-brand-primary);
+  padding: var(--libitum-spacing-12) var(--libitum-spacing-16);
+}
+
+.my-message-ko {
+  white-space: normal;
+  word-break: break-all;
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: var(--libitum-typography-body-m-font-size);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  line-height: var(--libitum-typography-body-m-line-height);
+  letter-spacing: var(--libitum-typography-body-m-letter-spacing);
+}
+
+/* 해석 펼침 — 구분선 → 로마자 → 뜻. 구분선은 장식입니다. */
+.my-message-meaning {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-2);
+}
+
+.my-message-divider {
+  align-self: stretch;
+  height: var(--libitum-stroke-width-thin);
+  margin: var(--libitum-spacing-4) var(--libitum-spacing-0);
+  background-color: var(--libitum-color-white);
+  opacity: var(--libitum-opacity-35);
+}
+
+.my-message-roman {
+  white-space: normal;
+  font-style: italic;
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  font-weight: var(--libitum-typography-body-s-font-weight);
+  line-height: var(--libitum-typography-body-s-line-height);
+  letter-spacing: var(--libitum-typography-body-s-letter-spacing);
+}
+
+.my-message-meaning-text {
+  white-space: normal;
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: var(--libitum-typography-body-m-font-size);
+  font-weight: var(--libitum-font-weight-semi-bold);
+  line-height: var(--libitum-typography-body-m-line-height);
+  letter-spacing: var(--libitum-typography-body-m-letter-spacing);
+}
+
+/* 해석 스켈레톤 — 줄 자리 둘의 높이가 도착할 글의 line-height와 같아 높이가 튀지 않습니다. 막대 폭 144 · 192. */
+.my-message-skeleton {
+  position: relative;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.my-message-skeleton-slot-s {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: var(--libitum-typography-body-s-line-height);
+}
+
+.my-message-skeleton-slot-m {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: var(--libitum-typography-body-m-line-height);
+}
+
+.my-message-bar {
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-white);
+}
+
+.my-message-bar-roman {
+  width: 144px;
+  height: var(--libitum-spacing-8);
+  opacity: var(--libitum-opacity-35);
+}
+
+.my-message-bar-meaning {
+  width: 192px;
+  max-width: 100%;
+  height: var(--libitum-spacing-12);
+  opacity: var(--libitum-opacity-45);
+}
+
+/* BETTER 카드 — 말풍선 아래 별도 상자. 바뀐 글자는 색에 굵기를 더해 색만으로 뜻을 전하지 않습니다. */
+.my-message-fix-card {
+  position: relative;
+  width: 260px;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-4);
+  padding: var(--libitum-spacing-12);
+  overflow: hidden;
+  border-radius: var(--libitum-radius-md);
+  background-color: var(--libitum-color-background-elevated);
+}
+
+.my-message-better {
+  color: var(--libitum-color-fg-brand);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: var(--libitum-typography-label-m-font-size);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  line-height: var(--libitum-typography-label-m-line-height);
+  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
+}
+
+.my-message-fix-text {
+  white-space: normal;
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: var(--libitum-typography-body-m-font-size);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  line-height: var(--libitum-typography-body-m-line-height);
+  letter-spacing: var(--libitum-typography-body-m-letter-spacing);
+}
+
+.my-message-seg-changed {
+  color: var(--libitum-color-fg-brand);
+  font-weight: var(--libitum-font-weight-bold);
+}
+
+.my-message-fix-explanation {
+  white-space: normal;
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  font-weight: var(--libitum-typography-body-s-font-weight);
+  line-height: var(--libitum-typography-body-s-line-height);
+  letter-spacing: var(--libitum-typography-body-s-letter-spacing);
+}
+
+/* 카드 스켈레톤 줄 자리 셋: 20 · 18 · 18. 막대 폭 72% · 90% · 55%. */
+.my-message-card-slot-m {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: var(--libitum-typography-body-m-line-height);
+}
+
+.my-message-card-slot-s {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: var(--libitum-typography-body-s-line-height);
+}
+
+.my-message-card-bar {
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-brand-primary);
+}
+
+.my-message-card-bar-1 {
+  width: 72%;
+  height: var(--libitum-spacing-12);
+  opacity: var(--libitum-opacity-16);
+}
+
+.my-message-card-bar-2 {
+  width: 90%;
+  height: var(--libitum-spacing-8);
+  opacity: var(--libitum-opacity-8);
+}
+
+.my-message-card-bar-3 {
+  width: 55%;
+  height: var(--libitum-spacing-8);
+  opacity: var(--libitum-opacity-8);
+}
+
+/* 반짝임 — 상자 안을 빛 띠가 지나갑니다. 움직임 줄이기에서는 띠가 멈춥니다. */
+.my-message-shimmer {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 60%;
+  opacity: var(--libitum-opacity-35);
+  background-image: linear-gradient(
+    90deg,
+    transparent,
+    var(--libitum-color-white) 50%,
+    transparent
+  );
+  animation: my-message-shimmer-sweep var(--libitum-motion-duration-d9)
+    var(--libitum-motion-easing-linear) infinite;
+}
+
+.my-message-shimmer-card {
+  opacity: var(--libitum-opacity-45);
+}
+
+/* 움직임 줄이기 — 띠 없이 정지한 면만 남습니다. */
+.messenger-chat-skeleton-still .my-message-shimmer {
+  animation: none;
+  display: none;
+}
+
+@keyframes my-message-shimmer-sweep {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(260%);
+  }
+}
+
+/* 아이콘 줄 — 해석 · 고친 문장. 단추는 32 원이고 터치는 hit-slop으로 40 × 44입니다. */
+.my-message-tools {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  gap: var(--libitum-spacing-8);
+}
+
+.my-message-tool {
+  position: relative;
+  width: var(--libitum-spacing-32);
+  height: var(--libitum-spacing-32);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--libitum-radius-full);
+  border-width: var(--libitum-stroke-width-thin);
+  border-style: solid;
+  border-color: var(--libitum-color-gray-400);
+  background-color: var(--libitum-color-white);
+}
+
+.my-message-tool-meaning-on {
+  border-color: var(--libitum-color-fg-neutral-muted);
+  background-color: var(--libitum-color-fg-neutral-muted);
+}
+
+.my-message-tool-fix-on {
+  border-color: var(--libitum-color-brand-primary);
+  background-color: var(--libitum-color-brand-primary);
+}
+
+.my-message-icon {
+  width: var(--libitum-icon-size-sm);
+  height: var(--libitum-icon-size-sm);
+}
+
+/* 미확인 점 — 단추 안 오른쪽 위. 바탕과 갈라 보이는 고리를 두르고, 색은 시안 brand-primary(사용자 결정 DD). */
+.my-message-dot {
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  width: var(--libitum-spacing-8);
+  height: var(--libitum-spacing-8);
+  border-radius: var(--libitum-radius-full);
+  border-width: var(--libitum-stroke-width-regular);
+  border-style: solid;
+  border-color: var(--libitum-color-background-primary);
+  background-color: var(--libitum-color-brand-primary);
+}

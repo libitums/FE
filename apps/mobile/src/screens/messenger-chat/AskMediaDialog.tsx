@@ -10,6 +10,7 @@ import type { ChatMediaKind } from "./chat-source.contract";
 import { messengerChatTestIds as ids } from "./messenger-chat.contract";
 
 import "./chat-overlays.css";
+import "./chat-turns.css";
 
 export type AskMediaDialogProps = {
   readonly media: ChatMediaKind;
@@ -27,7 +28,7 @@ type CoinPriceButtonProps = {
   readonly onTap: () => void;
 };
 
-// 주 버튼: 엽전 아이콘(ADR-0116) + 수. 아이콘만으로 뜻을 전하지 않도록 낭독은 「Ask for {n} coins」 한 문장입니다.
+// 주 버튼: 엽전 아이콘(ADR-0116, 주황 면 위라 흰 원판에 얹음 — 접근성 M8) + 수. 아이콘만으로 뜻을 전하지 않도록 낭독은 「Ask for {n} coins」 한 문장입니다.
 function CoinPriceButton({ price, label, onTap }: CoinPriceButtonProps): ReactNode {
   const handleTap = () => {
     "background only";
@@ -44,7 +45,9 @@ function CoinPriceButton({ price, label, onTap }: CoinPriceButtonProps): ReactNo
       accessibility-enable-tap={true}
       bindtap={handleTap}
     >
-      <svg className="chat-coin-button-icon" content={coinIcon} />
+      <view className="chat-coin-disc" accessibility-elements-hidden={true}>
+        <svg className="chat-coin-button-icon" content={coinIcon} />
+      </view>
       <text className="chat-coin-button-label" accessibility-elements-hidden={true}>
         {price}
       </text>

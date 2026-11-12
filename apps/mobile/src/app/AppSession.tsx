@@ -29,6 +29,8 @@ import { shellHeaderTop } from "./full-bleed-screens";
 import { appHeaderVisibleOn, shellInsetsOf } from "./shell-edges";
 import { renderAppContent } from "./render-app-content";
 import { screenWiring } from "./screen-wiring";
+import { useMessengerWalletSync } from "./use-messenger-wallet-sync";
+import { useNewFriendBackfill } from "./use-new-friend-backfill";
 import { useTrackingAuthorizationPrompt } from "./use-tracking-authorization-prompt";
 import { useOpenedDeeplink } from "./use-opened-deeplink";
 import { useOpenedPush } from "./use-opened-push";
@@ -169,6 +171,8 @@ export function AppSession({
     accountState,
     setAccountState,
   });
+  useMessengerWalletSync(screens.coinCount);
+  useNewFriendBackfill(progress.hasLoadedProgress, catalogSections, catalogProgress);
   const screenNow = currentScreen(nav);
   // 앱 사용 중 받아진 바뀐 판은 여정맵 루트(열린 에피소드 화면 · 겹침 없음)에서 바로 바꿔 끼웁니다(ADR-0078 D4 정정).
   const atMapRoot = nav.entry.length === 0 && screenNow.name === "journey-map" && !screenLayerOpen;

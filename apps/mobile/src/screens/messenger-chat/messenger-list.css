@@ -255,3 +255,38 @@
   display: flex;
   margin-top: var(--libitum-spacing-8);
 }
+
+/* NEW 줄 — 이름 뒤 spacing-6에 알약이 섭니다(design 3절). 이름은 말줄임으로 줄고 알약은 줄지 않습니다. */
+.messenger-list-name-group {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-6);
+}
+
+.messenger-list-name-fit {
+  flex: 0 1 auto;
+}
+
+/* 면은 brand-primary입니다 — 안 읽은 수 알약과 같은 앱 전체 예외(ADR-0113 D8, 흰 글 3.02). */
+.messenger-list-new {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  min-height: var(--libitum-spacing-20);
+  padding: 0 var(--libitum-spacing-6);
+  border-radius: var(--libitum-radius-full);
+  background: var(--libitum-color-brand-primary);
+}
+
+.messenger-list-new-text {
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-caption-font-family);
+  font-weight: var(--libitum-font-weight-bold);
+  font-size: var(--libitum-typography-caption-font-size);
+  line-height: var(--libitum-typography-caption-line-height);
+  letter-spacing: var(--libitum-typography-caption-letter-spacing);
+}

@@ -33,6 +33,22 @@
   line-height: var(--libitum-typography-heading-s-line-height);
 }
 
+/* 제목 + 부제 묶음(messenger-chat-1-5 spec §3.2) — 제목 한 칸이 차지하던 가운데 자리를 그대로 쓰고 세로로 쌓습니다. */
+.chat-title-stack {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* 묶음 안 제목 — `.chat-title`의 `flex: 1`(basis 0)은 세로 묶음에서 높이를 0으로 접어 부제와 겹쳤습니다(기기 F1). 내용 높이를 쓰고 폭만 넘치지 않게 합니다. */
+.chat-title-stacked {
+  flex: 0 1 auto;
+  max-width: 100%;
+  text-overflow: ellipsis;
+}
+
 .chat-log {
   flex: 1;
 }

@@ -2,9 +2,10 @@ import type { ReactNode } from "@lynx-js/react";
 
 import { AskMediaDialog } from "./AskMediaDialog";
 import { ChatSettingsSidebar } from "./ChatSettingsSidebar";
-import { CHAT_PLACEHOLDERS } from "./chat-placeholders";
-import type { ChatRoomAction, ChatRoomState } from "./chat-room-state";
-import type { ChatSource, ChatThread } from "./chat-source.contract";
+import { CHAT_COIN_PRICES } from "./chat-coins";
+import type { ChatOverlay, ChatRoomAction, ChatRoomState } from "./chat-room-state";
+import type { ChatMediaKind, ChatSource, ChatThread } from "./chat-source.contract";
+import type { CoinWallet } from "./coin-wallet";
 import { DeleteChatDialog } from "./DeleteChatDialog";
 import { FixRequestDialog } from "./FixRequestDialog";
 import { CoinShopLayer } from "./CoinShopLayer";
@@ -20,8 +21,16 @@ export type ChatRoomOverlaysProps = {
   readonly thread: ChatThread;
   readonly source: ChatSource;
   readonly learnerName: string;
+  /** 지갑입니다 — 요청 모달이 확정할 때 여기서 엽전을 씁니다(spec §6.3). */
+  readonly wallet: CoinWallet;
+  /** 지금 잔액입니다(지갑 구독 값 — 사이드바 · 모달 · 상점이 같은 수를 봅니다). */
   readonly coinBalance: number;
 };
+
+const askShop = (media: ChatMediaKind): Extract<ChatOverlay, { kind: "coin-shop" }> => ({
+  kind: "coin-shop",
+  from: media === "photo" ? "ask-photo" : "ask-voice",
+});
 
 // `state.overlay.kind` → 겹침 하나(동시에 둘 없음). 「…」 메뉴는 독 쪽이 그리므로 여기서는 아무것도 그리지 않습니다.
 // 시스템 뒤로가기는 여기도 겹침 화면들도 등록하지 않습니다 — `useChatRoom`이 단 하나의 주인입니다(리뷰 #8).
@@ -31,6 +40,7 @@ export function ChatRoomOverlays({
   thread,
   source,
   learnerName,
+  wallet,
   coinBalance,
 }: ChatRoomOverlaysProps): ReactNode {
   const { overlay } = state;
@@ -85,20 +95,18 @@ export function ChatRoomOverlays({
           media={overlay.media}
           name={thread.counterpart.name}
           balance={coinBalance}
-          price={CHAT_PLACEHOLDERS.price[overlay.media]}
+          price={CHAT_COIN_PRICES[overlay.media]}
           onConfirm={() => {
+            // 무제한이어도 요청은 엽전을 냅니다(턴과 별개). 모자라면(그 사이 잔액이 줄었으면) 요청 없이 상점으로 갑니다.
+            const spent = wallet.spend(CHAT_COIN_PRICES[overlay.media], overlay.media);
+            if (spent.kind === "short") {
+              dispatch({ type: "open-overlay", overlay: askShop(overlay.media) });
+              return;
+            }
             source.requestMedia(roomId, overlay.media);
             dispatch({ type: "close-overlay" });
           }}
-          onGetCoins={() =>
-            dispatch({
-              type: "open-overlay",
-              overlay: {
-                kind: "coin-shop",
-                from: overlay.media === "photo" ? "ask-photo" : "ask-voice",
-              },
-            })
-          }
+          onGetCoins={() => dispatch({ type: "open-overlay", overlay: askShop(overlay.media) })}
           onCancel={close}
         />
       );

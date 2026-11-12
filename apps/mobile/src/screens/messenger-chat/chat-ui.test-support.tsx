@@ -7,7 +7,15 @@ import { act, fireEvent, render, screen, within } from "@lynx-js/react/testing-l
 import { backHandlers } from "../../lib/back-handler";
 import { zeroKeyboardDockEdges, type KeyboardDockEdges } from "../../lib/keyboard-dock";
 import { createFixtureChatSource } from "./chat-fixture-source";
-import type { ChatFixtureRoom, ChatFixtureSeed, ChatSource } from "./chat-source.contract";
+import type {
+  ChatFixtureRoom,
+  ChatFixtureSeed,
+  ChatSource,
+  ChatTimers,
+} from "./chat-source.contract";
+import { createCoinWallet, type SyncedCoinWallet } from "./coin-wallet";
+import type { ChatTier } from "./free-turns";
+import { createTurnLedger, memoryTurnRecordStore, type TurnLedger } from "./turn-ledger";
 import { MessengerChatScreen } from "./MessengerChatScreen";
 import { messengerChatTestIds as ids } from "./messenger-chat.contract";
 import type { KeyboardHeightStore, KoreanKeyboardProbe } from "./keyboard-ports";
@@ -70,8 +78,15 @@ export type MountChatOptions = {
   readonly probe?: KoreanKeyboardProbe;
   readonly store?: KeyboardHeightStore;
   readonly edges?: KeyboardDockEdges;
+  /** 지갑을 직접 만들지 않을 때 쓰는 번 엽전입니다(기본 0). */
   readonly coinBalance?: number;
   readonly learnerName?: string;
+  /** 1.5: 지갑 · 원장 · 등급 · 시계 · 타이머. 등급 기본은 unlimited(1단계 테스트가 턴에 막히지 않게 — spec §15). */
+  readonly wallet?: SyncedCoinWallet;
+  readonly ledger?: TurnLedger;
+  readonly tier?: ChatTier;
+  readonly now?: () => number;
+  readonly timers?: ChatTimers;
 };
 
 export function presenceProbe(presence: "present" | "absent" | "unknown"): KoreanKeyboardProbe {
@@ -81,19 +96,27 @@ export function presenceProbe(presence: "present" | "absent" | "unknown"): Korea
 export function mountChat(options: MountChatOptions = {}) {
   const source = options.source ?? makeSource(options.seed);
   const onExit = vi.fn<() => void>();
-  const view = render(
-    <MessengerChatScreen
-      roomId={options.roomId ?? "mina"}
-      source={source}
-      keyboardProbe={options.probe ?? unknownKoreanKeyboardProbe}
-      keyboardHeightStore={options.store ?? emptyKeyboardHeightStore}
-      edges={options.edges ?? zeroKeyboardDockEdges}
-      learnerName={options.learnerName ?? "Hana"}
-      coinBalance={options.coinBalance ?? 0}
-      onExit={onExit}
-    />,
-  );
-  return { source, onExit, view };
+  const now = options.now ?? (() => Date.now());
+  const wallet = options.wallet ?? createCoinWallet({ earned: options.coinBalance ?? 0 });
+  const ledger = options.ledger ?? createTurnLedger({ store: memoryTurnRecordStore(), now });
+  // 화면 props는 spec §7.2 모양(wallet · turns · tier · now)입니다. 스프레드로 넘겨 옛 coinBalance와 새 props가 한 객체에 함께 든다.
+  const screenProps = {
+    roomId: options.roomId ?? "mina",
+    source,
+    keyboardProbe: options.probe ?? unknownKoreanKeyboardProbe,
+    keyboardHeightStore: options.store ?? emptyKeyboardHeightStore,
+    edges: options.edges ?? zeroKeyboardDockEdges,
+    learnerName: options.learnerName ?? "Hana",
+    coinBalance: wallet.balance(),
+    wallet,
+    turns: ledger,
+    tier: options.tier ?? "unlimited",
+    now,
+    timers: options.timers,
+    onExit,
+  };
+  const view = render(<MessengerChatScreen {...screenProps} />);
+  return { source, onExit, view, wallet, ledger };
 }
 
 /**
@@ -125,6 +148,15 @@ export const tapId = (testId: string): void => {
 /** ui-lynx 버튼은 감싸개가 test-id를 갖고 탭은 안쪽 `ui-lynx-button`이 받습니다. */
 export const tapButtonIn = (wrapperTestId: string): void => {
   fireEvent.tap(within(screen.getByTestId(wrapperTestId)).getByTestId("ui-lynx-button"), {});
+};
+
+/** 요소 안 가장 가까운 ui-lynx 단추(없으면 요소 자신)를 누릅니다. 같은 test-id가 여러 줄에 있을 때 `within(줄)`과 함께 씁니다. */
+export const tapWithin = (scope: HTMLElement, testId: string): void => {
+  const el = within(scope).getByTestId(testId);
+  const inner = el.querySelector(
+    '[data-testid="ui-lynx-round-button"], [data-testid="ui-lynx-button"]',
+  );
+  fireEvent.tap(inner ?? el, {});
 };
 
 export const tapKeys = (...keys: string[]): void => {

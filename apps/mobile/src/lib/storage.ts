@@ -18,7 +18,7 @@
 // 비회원 진입(ADR-0111)의 셋: 표식 `libitum.auth.guest`(로그인 성공 · 로그아웃 · 계정 삭제에 지웁니다)과
 // 비회원 미전송 칸 `libitum.progress.pending.guest` · `libitum.learning-days.pending.guest`(위 사용자별 칸의 id 자리에
 // `guest` — 로그인 때 그 사용자의 미전송 칸으로 옮기며 지웁니다). 서버로는 로그인 뒤에만 갑니다.
-// 기기 범위로 남는 예외는 일곱입니다. 서버로 가지 않고 로그아웃·계정 삭제에서도 지우지 않습니다.
+// 기기 범위로 남는 예외는 아홉입니다. 서버로 가지 않고 로그아웃·계정 삭제에서도 지우지 않습니다.
 // - `libitum.ui.language` — UI 언어(ADR-0031 D4, 지우지 않는 근거는 ADR-0032)
 // - `libitum.episode-survey.done` — 설문을 답했거나 건너뛴 에피소드 목록(ADR-0036)
 // - `libitum.app-review.requested` — 스토어 평점 창을 요청한 기록, 설치당 한 번(ADR-0036 D4)
@@ -26,6 +26,8 @@
 // - `libitum.catalog-update-notice` — 끝낸 에피소드 업데이트 안내의 마지막으로 본 에피소드 버전 · 「다시 보지 않기」(ADR-0089)
 // - `libitum.session-option.show-choice-romanization` — 보기 로마자 표시 설정, `"on"` | `"off"`(ADR-0108 D3)
 // - `libitum.session-option.vibration` — 판정 진동 설정, `"on"` | `"off"`(ADR-0109 D4)
+// - `libitum.messenger.free-turns` — 그날 쓴 무료 메시지 수 · T3 판 표시 기록(ADR-0117 D7)
+// - `libitum.messenger.unlocked` — 해금한 메신저 인물 id 목록(ADR-0117 D7)
 
 /** 호스트가 `StorageModule`이라는 이름으로 등록합니다. */
 interface StorageModule {

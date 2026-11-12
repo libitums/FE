@@ -11,6 +11,8 @@ import type { ChatRoomState } from "./chat-room-state";
 import { SLOP_BULB, SLOP_ROUND } from "./hit-slop";
 import type { PhoneFocus } from "./keyboard-height";
 import { messengerChatTestIds as ids } from "./messenger-chat.contract";
+import { CoinSendButton } from "./ChatTurns";
+import type { SendCost } from "./chat-turns.contract";
 
 import "./messenger-chat.css";
 
@@ -32,6 +34,8 @@ export type ComposerFieldProps = {
 export type ComposerRowProps = ComposerFieldProps & {
   readonly ideasDisabled: boolean;
   readonly sendEnabled: boolean;
+  /** free면 화살표 보내기, coin이면 엽전 가격이 붙은 보내기(T4). */
+  readonly sendCost: SendCost;
   readonly onIdeas: () => void;
   readonly onSend: () => void;
 };
@@ -43,6 +47,7 @@ export function ComposerRow({
   state,
   ideasDisabled,
   sendEnabled,
+  sendCost,
   onIdeas,
   onSend,
   onPhoneInput,
@@ -74,7 +79,16 @@ export function ComposerRow({
           onOpenKeyboard={onOpenKeyboard}
         />
       </view>
-      <SendButton enabled={sendEnabled} onTap={onSend} />
+      {sendCost.kind === "coin" ? (
+        <CoinSendButton
+          price={sendCost.price}
+          enabled={sendEnabled}
+          short={sendCost.short}
+          onTap={onSend}
+        />
+      ) : (
+        <SendButton enabled={sendEnabled} onTap={onSend} />
+      )}
     </view>
   );
 }

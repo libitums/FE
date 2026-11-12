@@ -21,6 +21,12 @@ const bodyOf = (css: string, selector: string): string =>
     .join(" ");
 
 describe("chat.css — 옮긴 선언 (MC-U29)", () => {
+  test("F3. 묶음 안 제목은 말줄임이 걸리고 묶음은 줄어들 수 있다(min-width: 0)", () => {
+    expect(bodyOf(chatCss, ".chat-title-stacked")).toContain("text-overflow: ellipsis");
+    expect(bodyOf(chatCss, ".chat-title-stacked")).toContain("max-width: 100%");
+    expect(bodyOf(chatCss, ".chat-title-stack")).toContain("min-width: 0");
+  });
+
   test("MC-U29. chat.css 가 있다", () => {
     expect(chatCss).not.toBe("");
   });

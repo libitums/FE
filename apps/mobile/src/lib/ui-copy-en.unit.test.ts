@@ -261,7 +261,7 @@ test("MC-U28. en messengerChat 문구 표본(spec §8)", () => {
   expect(m.list.typing("Mina")).toBe("Mina is typing…");
   expect(m.list.sendingPhoto("Mina")).toBe("Mina is sending a picture…");
   expect(m.list.recordingVoice("Mina")).toBe("Mina is recording a voice message…");
-  expect(m.list.lockedCondition(4)).toBe("Finish Episode 4 to start chatting");
+  expect(m.list.lockedCondition(4)).toBe("Play Episode 4 to start chatting");
   expect(m.list.unreadLabel(3)).toBe("3 unread");
   expect(m.time.today(10, 24)).toBe("10:24");
   expect(m.time.date(11, 2)).toBe("11/2");

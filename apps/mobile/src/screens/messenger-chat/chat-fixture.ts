@@ -1,7 +1,13 @@
 // 가짜 대화 씨앗(한국어 학습 내용)입니다. 한글은 이 한 선언에만 둡니다(ui-copy 정책 허용 대상).
 // 사람 · 그림은 기존 에피소드 콘텐츠가 이미 쓰는 것만 씁니다(spec §5.1). 영어 시점 제목은 1단계 자리 표시입니다.
 
-import type { ChatFixtureSeed, ChatStoryPoint } from "./chat-source.contract";
+import type {
+  ChatFixtureCorrection,
+  ChatFixtureMeaning,
+  ChatFixtureRoom,
+  ChatFixtureSeed,
+  ChatStoryPoint,
+} from "./chat-source.contract";
 
 const profileImage = (name: string) => `content/images/profiles/${name}.webp`;
 
@@ -29,8 +35,27 @@ const storyPointsFor = (prefix: string, unlockedUpTo: number): readonly ChatStor
   },
 ];
 
-export const chatFixtureSeed: ChatFixtureSeed = {
-  rooms: [
+export const chatFixtureSeed: ChatFixtureSeed = (() => {
+  // 교정 표 — 범위는 corrected 안 코드 포인트입니다. 첫째는 씨앗 내 글에 붙고, 둘째는 보낸 글에 답이 올 때 생깁니다.
+  const questionFix: ChatFixtureCorrection = {
+    original: "저 체크아웃 몇 시예요?",
+    corrected: "저는 체크아웃이 몇 시예요?",
+    changes: [
+      { start: 1, end: 2 },
+      { start: 7, end: 8 },
+    ],
+    explanation: "Add 는 after 저 to mark the topic, and 이 after 체크아웃 to mark the subject.",
+  };
+  const coffeeFix: ChatFixtureCorrection = {
+    original: "저 커피 좋아해요.",
+    corrected: "저는 커피를 좋아해요.",
+    changes: [
+      { start: 1, end: 2 },
+      { start: 5, end: 6 },
+    ],
+    explanation: "Add 는 after 저 and 를 after 커피 to mark the topic and the object.",
+  };
+  const rooms: readonly ChatFixtureRoom[] = [
     {
       roomId: "mina",
       counterpart: {
@@ -38,34 +63,13 @@ export const chatFixtureSeed: ChatFixtureSeed = {
         name: "미나",
         avatarPath: profileImage("mina-casual"),
       },
-      access: { kind: "open" },
-      unread: 2,
-      messages: [
-        {
-          kind: "text",
-          from: "them",
-          text: { ko: "안녕하세요! 오늘 뭐 했어요?", en: "Hi! What did you do today?" },
-          minutesAgo: 42,
-        },
-        {
-          kind: "text",
-          from: "me",
-          text: { ko: "카페에 갔어요.", en: "I went to a cafe." },
-          minutesAgo: 40,
-        },
-        {
-          kind: "text",
-          from: "them",
-          text: { ko: "와, 저도 커피 좋아해요!", en: "Wow, I like coffee too!" },
-          minutesAgo: 38,
-        },
-        {
-          kind: "text",
-          from: "them",
-          text: { ko: "다음에 같이 가요.", en: "Let's go together next time." },
-          minutesAgo: 37,
-        },
-      ],
+      access: { kind: "locked", unlockEpisode: 3 },
+      unread: 0,
+      messages: [],
+      opening: {
+        ko: "안녕하세요! 저는 미나예요. 만나서 반가워요.",
+        en: "Hi! I'm Mina. Nice to meet you.",
+      },
       storyPoints: storyPointsFor("mina", 3),
       settings: { autoIdeas: true, storyPointId: "mina-sp-3" },
       ideaSets: [
@@ -178,6 +182,13 @@ export const chatFixtureSeed: ChatFixtureSeed = {
       messages: [
         {
           kind: "text",
+          from: "me",
+          text: { ko: questionFix.original, en: "What time is check-out?" },
+          minutesAgo: 360,
+          correction: questionFix,
+        },
+        {
+          kind: "text",
           from: "them",
           text: { ko: "내일 체크아웃은 열한 시예요.", en: "Tomorrow's check-out is at eleven." },
           minutesAgo: 300,
@@ -242,5 +253,29 @@ export const chatFixtureSeed: ChatFixtureSeed = {
       photoPath: null,
       voiceLine: { durationMs: 2000, text: { ko: "어서 오세요.", en: "Welcome." } },
     },
-  ],
-};
+  ];
+  // 뜻 표 — 보기 세트 문장은 그 로마자 · 영어를 그대로 쓰고, 씨앗 내 글 · 교정 표 글을 더합니다.
+  const meanings: readonly ChatFixtureMeaning[] = [
+    ...rooms.flatMap((room) =>
+      room.ideaSets.flatMap((set) =>
+        set.map((idea) => ({ ko: idea.ko, romanization: idea.roman, meaning: idea.en })),
+      ),
+    ),
+    {
+      ko: questionFix.original,
+      romanization: "jeo chekeuaut myeot siyeyo?",
+      meaning: "What time is check-out?",
+    },
+    {
+      ko: coffeeFix.original,
+      romanization: "jeo keopi joahaeyo.",
+      meaning: "I like coffee.",
+    },
+  ];
+  return {
+    rooms,
+    meanings,
+    corrections: [questionFix, coffeeFix],
+    fallbackMeaning: { romanization: "…", meaning: "Meaning coming soon" },
+  };
+})();

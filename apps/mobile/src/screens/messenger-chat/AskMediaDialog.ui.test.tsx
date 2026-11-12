@@ -85,6 +85,16 @@ test("MC-UI20. 잔액이 충분하면 주 버튼은 엽전 아이콘 + 수 30이
   expect(labelOf(ids.askConfirm)).toBe("Ask for 30 coins");
 });
 
+// 접근성 M8: 주황 면 위의 엽전은 흰 원판에 얹는다(design 5절) — 원판 없이는 엽전 테두리 대 주황 대비가 1.14다.
+test("M8. 주 버튼의 엽전은 낭독에서 숨은 흰 원판(chat-coin-disc) 안에 있다", () => {
+  mountDialog("photo", 120, 30);
+
+  const icon = screen.getByTestId(ids.askConfirm).querySelector("svg");
+  const disc = icon?.parentElement ?? null;
+  expect(disc?.className).toContain("chat-coin-disc");
+  expect(disc?.getAttribute("accessibility-elements-hidden")).toBe("true");
+});
+
 test("MC-UI20. 잔액이 가격과 같아도 요청할 수 있다(경계)", () => {
   mountDialog("voice", 10, 10);
 
@@ -153,14 +163,82 @@ test("MC-UI20. 화면: Snap voice 알약 → 요청 → 음성 pending이 서고
   expect(screen.getByTestId(ids.voice)).toBeTruthy();
 });
 
-test("MC-UI20. 화면: 요청해도 잔액은 줄지 않는다(대화상자를 다시 열면 같은 잔액)", () => {
-  mountChat({ coinBalance: 120 });
+test("MC2-UI10. 화면: 사진 요청을 확정하면 지갑에서 60이 나간다 — 대화상자를 다시 열면 줄어든 잔액이 보인다", () => {
+  const { wallet } = mountChat({ coinBalance: 120 });
   tapId(ids.snapshot);
   tapId(ids.askConfirm);
 
+  expect(wallet.balance()).toBe(60);
   tapId(ids.snapshot);
 
-  expect(screen.getByTestId(ids.askBalance).textContent).toBe("You have 120 coins");
+  expect(screen.getByTestId(ids.askBalance).textContent).toBe("You have 60 coins");
+});
+
+test("MC2-UI10. 화면: 사진 60 · 음성 40이 주 버튼 수와 낭독에 선다(엽전 아이콘 + 수)", () => {
+  mountChat({ coinBalance: 100 });
+
+  tapId(ids.snapshot);
+  expect(screen.getByTestId(ids.askBalance).textContent).toBe("You have 100 coins");
+  const photo = screen.getByTestId(ids.askConfirm);
+  expect(photo.textContent?.trim()).toBe("60");
+  expect(photo.querySelector("svg")).not.toBeNull();
+  expect(labelOf(ids.askConfirm)).toBe("Ask for 60 coins");
+  tapId(ids.askCancel);
+
+  tapId(ids.snapVoice);
+  expect(screen.getByTestId(ids.askConfirm).textContent?.trim()).toBe("40");
+  expect(labelOf(ids.askConfirm)).toBe("Ask for 40 coins");
+});
+
+test("MC2-UI10. 화면: 기능 알약의 가격이 60 · 40이다", () => {
+  mountChat({ coinBalance: 100 });
+
+  expect(screen.getByTestId(ids.snapshot).textContent).toContain("60");
+  expect(screen.getByTestId(ids.snapVoice).textContent).toContain("40");
+});
+
+test("MC2-UI10. 화면: 사진 60 뒤 음성 40까지 쓰면 잔액 0에서 다음 요청은 top-up이고 상점으로 간다", () => {
+  const { wallet, source } = mountChat({ coinBalance: 100 });
+  const requestMedia = vi.spyOn(source, "requestMedia");
+  tapId(ids.snapshot);
+  tapId(ids.askConfirm);
+  expect(wallet.balance()).toBe(40);
+
+  tapId(ids.snapVoice);
+  expect(screen.getByTestId(ids.askDialog).getAttribute("data-plan")).toBe("ask");
+  tapId(ids.askConfirm);
+  expect(wallet.balance()).toBe(0);
+  tapId(ids.snapshot);
+
+  expect(screen.getByTestId(ids.askDialog).getAttribute("data-plan")).toBe("top-up");
+  expect(screen.getByTestId(ids.askBalance).textContent).toBe("You have 0 coins");
+  tapId(ids.askConfirm);
+  expect(screen.getByTestId("coin-shop-screen")).toBeTruthy();
+  expect(wallet.balance()).toBe(0);
+  expect(requestMedia).toHaveBeenCalledTimes(2);
+});
+
+test("MC2-UI10. 화면: 잔액 30이면 사진(60)은 top-up이다", () => {
+  const { wallet, source } = mountChat({ coinBalance: 30 });
+  const requestMedia = vi.spyOn(source, "requestMedia");
+
+  tapId(ids.snapshot);
+
+  expect(screen.getByTestId(ids.askDialog).getAttribute("data-plan")).toBe("top-up");
+  tapId(ids.askConfirm);
+  expect(screen.getByTestId("coin-shop-screen")).toBeTruthy();
+  expect(requestMedia).not.toHaveBeenCalled();
+  expect(wallet.balance()).toBe(30);
+});
+
+test("MC2-UI10. 화면: 무제한 등급에서도 요청은 같은 엽전을 낸다", () => {
+  const { wallet } = mountChat({ coinBalance: 100, tier: "unlimited" });
+
+  tapId(ids.snapshot);
+  expect(labelOf(ids.askConfirm)).toBe("Ask for 60 coins");
+  tapId(ids.askConfirm);
+
+  expect(wallet.balance()).toBe(40);
 });
 
 test("MC-UI20. 화면: Cancel과 시스템 뒤로는 요청 없이 닫는다", () => {

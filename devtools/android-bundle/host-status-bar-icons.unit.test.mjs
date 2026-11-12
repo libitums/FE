@@ -444,7 +444,7 @@ test("SM10: the layoutEdgeToEdge defaults must stay and never turn the navigatio
   );
 });
 
-test("SM11: statusBarSurfaceRegistry matches the contract (six routes, seven CSS layers)", () => {
+test("SM11: statusBarSurfaceRegistry matches the contract (six routes, eight CSS layers)", () => {
   const { fullBleedRoutes, fixedLayers } = statusBarSurfaceRegistry;
   assert.deepEqual(Object.keys(fullBleedRoutes).sort(), [
     "catalog-cover",
@@ -498,6 +498,8 @@ test("SM11: statusBarSurfaceRegistry matches the contract (six routes, seven CSS
     "screens/journey-map/journey-stat-modal.css",
     // 메신저 채팅방 겹침(ADR-0113) — 밝은 아이콘 표지가 아니다.
     "screens/messenger-chat/chat-overlays.css",
+    // 메신저 새 친구 시트(ADR-0117) — 기본 스크림, 표지 없음.
+    "screens/messenger-chat/new-friend.css",
     "screens/tickets/tickets.css",
   ]);
   const layerText = (path) => JSON.stringify(fixedLayers[path]);

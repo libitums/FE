@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
-import { cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
+import { act, cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 import { MotionProvider } from "@libitums/ui-lynx/motion";
 
 import { ChatSettingsSidebar } from "./ChatSettingsSidebar";
@@ -219,4 +219,20 @@ test("MC-UI22. 화면: 자동 보기 토글을 누르면 출처가 바뀌고 dat
   const row = screen.getByTestId(ids.sidebarAutoIdeas);
   const checked = row.hasAttribute("data-checked") ? row : row.querySelector("[data-checked]");
   expect(checked?.getAttribute("data-checked")).toBe("false");
+});
+
+test("MC2-UI11. 화면: 사이드바의 My coins는 지갑 잔액이고 쓰면 열려 있는 동안에도 따라 줄어든다", () => {
+  const { wallet } = mountChat({ coinBalance: 100 });
+  act(() => {
+    wallet.spend(60, "photo");
+  });
+
+  tapId(ids.settings);
+  expect(screen.getByTestId(ids.sidebarCoins).textContent).toContain("40");
+  expect(screen.getByTestId(ids.sidebarCoins).textContent).not.toContain("100");
+  act(() => {
+    wallet.spend(10, "message");
+  });
+
+  expect(screen.getByTestId(ids.sidebarCoins).textContent).toContain("30");
 });

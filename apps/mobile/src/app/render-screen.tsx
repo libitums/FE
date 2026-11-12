@@ -22,6 +22,7 @@ import { LanguageSelectScreen } from "../screens/language-select/LanguageSelectS
 import { entryLanguageLabel } from "../lib/entry-language";
 import { learnerSettingsSummary, renderLearnerProfileSettings } from "./render-learner-profile";
 import { renderMessengerChat, renderMessengerList } from "./render-messenger-chat";
+import { NewFriendMapHost } from "./render-new-friend";
 import { renderRoleplayStory } from "./render-roleplay-story";
 import type { ScreenWiring } from "./screen-wiring";
 
@@ -146,29 +147,36 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
   }
 }
 
-/** 여정맵 화면 — 탭 루트 사이에서는 셸이 숨겨 둔 채 `active={false}`로도 그립니다(ADR-0106). */
+/**
+ * 여정맵 화면 — 탭 루트 사이에서는 셸이 숨겨 둔 채 `active={false}`로도 그립니다(ADR-0106). 막간을 끝내고 돌아온 맵이면
+ * 새 친구 시트가 맵 위에 섭니다(`NewFriendMapHost` — 마운트 때 한 번 정함).
+ */
 export function renderJourneyMap(wiring: ScreenWiring, active: boolean) {
   return (
-    <JourneyMapScreen
-      active={active}
-      statusBarInset={wiring.safeAreaInsets.top}
-      onLayerChange={wiring.onScreenLayerChange}
-      progressLoad={wiring.journeyMapProgressLoad}
-      catalog={{
-        sections: wiring.catalogSections,
-        progress: wiring.catalogProgress,
-        ...(wiring.catalogTicketUnits === undefined
-          ? {}
-          : { ticketUnits: wiring.catalogTicketUnits }),
-        legacyTutorialPassed: wiring.legacyTutorialPassed,
-        onStartCover: wiring.onStartCatalogCover,
-        onStartUnit: wiring.onStartCatalogUnit,
-        unitItemCountOf: wiring.catalogUnitItemCountOf,
-        onTapPending: wiring.onTapPendingEpisode,
-        ...(wiring.catalogFreshness === undefined ? {} : { freshness: wiring.catalogFreshness }),
-        ...(wiring.onCheckNewStories === undefined ? {} : { onCheckNew: wiring.onCheckNewStories }),
-        coverImageUrlOf: wiring.episodeContent.imageUrlOf,
-      }}
-    />
+    <NewFriendMapHost wiring={wiring} active={active}>
+      <JourneyMapScreen
+        active={active}
+        statusBarInset={wiring.safeAreaInsets.top}
+        onLayerChange={wiring.onScreenLayerChange}
+        progressLoad={wiring.journeyMapProgressLoad}
+        catalog={{
+          sections: wiring.catalogSections,
+          progress: wiring.catalogProgress,
+          ...(wiring.catalogTicketUnits === undefined
+            ? {}
+            : { ticketUnits: wiring.catalogTicketUnits }),
+          legacyTutorialPassed: wiring.legacyTutorialPassed,
+          onStartCover: wiring.onStartCatalogCover,
+          onStartUnit: wiring.onStartCatalogUnit,
+          unitItemCountOf: wiring.catalogUnitItemCountOf,
+          onTapPending: wiring.onTapPendingEpisode,
+          ...(wiring.catalogFreshness === undefined ? {} : { freshness: wiring.catalogFreshness }),
+          ...(wiring.onCheckNewStories === undefined
+            ? {}
+            : { onCheckNew: wiring.onCheckNewStories }),
+          coverImageUrlOf: wiring.episodeContent.imageUrlOf,
+        }}
+      />
+    </NewFriendMapHost>
   );
 }

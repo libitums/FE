@@ -350,6 +350,12 @@ const overlayRows: readonly OverlayRow[] = [
     parent: { kind: "none" },
     origin: "voice-pill",
   },
+  {
+    label: "coin-shop from send",
+    overlay: { kind: "coin-shop", from: "send" },
+    parent: { kind: "none" },
+    origin: "send",
+  },
 ];
 
 describe("겹침 열기 · 닫기 (MC-U11)", () => {

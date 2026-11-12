@@ -23,7 +23,7 @@ import { expectJourneyMapHidden } from "./test-helpers/tab-keep-alive";
 // `integration` 계층(MC-I1 · MC-I2 · MC-I6): 메신저 탭의 결선 — 바 항목 넷 · 목록 ↔ 방 이동 · 바 · 시스템 뒤로 ·
 // 셸 모드(방 = keyboard-dock, 목록 = padded). 실제 App · navReducer · BottomNavigator · AppHeader · 메신저 두 화면 ·
 // 가짜 출처 싱글턴이 맞물립니다. 목킹은 호스트 경계(NativeModules)뿐입니다.
-// 출처 씨앗(chat-fixture.ts): 미나(안 읽음 2) · 사장님 · 익선 게스트하우스(안 읽음 1) · 점원(잠김).
+// 출처 씨앗(chat-fixture.ts): 사장님 · 익선 게스트하우스(안 읽음 1)는 열려 있고 미나(에피소드 3 최종 통과 전) · 점원은 잠겨 있다(messenger-chat-1-5).
 
 const listScreen = "messenger-list-screen";
 const roomScreen = "messenger-chat-screen";
@@ -60,14 +60,16 @@ test("MC-I1. 메신저 탭을 누르면 채팅 목록이 서고 탭 표시가 �
   expect(isTabSelected("journey")).toBe(false);
 });
 
-test("MC-I1. 목록은 씨앗의 방을 최근 먼저로 놓고 잠긴 방을 맨 끝에 둔다", async () => {
+test("MC-I1. 목록은 열린 방(게스트하우스 · 사장님)을 최근 먼저로 놓고 잠긴 방(미나 · 점원)을 입력 순서로 맨 끝에 둔다", async () => {
   await renderSignedInApp(<App progressSeed={legacyPassedSeed} />);
 
   openTab("messenger");
 
-  expect(listRowOrder()).toEqual(["mina", "guesthouse", "owner", "clerk"]);
+  expect(listRowOrder()).toEqual(["guesthouse", "owner", "mina", "clerk"]);
   expect(screen.getByTestId(row("clerk")).getAttribute("data-locked")).toBe("true");
-  expect(screen.getByTestId(row("mina")).getAttribute("data-locked")).not.toBe("true");
+  expect(screen.getByTestId(row("mina")).getAttribute("data-locked")).toBe("true");
+  expect(screen.getByTestId(row("guesthouse")).getAttribute("data-locked")).not.toBe("true");
+  expect(screen.getByTestId(row("owner")).getAttribute("data-locked")).not.toBe("true");
 });
 
 test("MC-I1. 다른 탭에 갔다 메신저 탭으로 돌아오면 목록이 다시 서고 그 탭의 화면은 사라진다", async () => {
@@ -81,7 +83,7 @@ test("MC-I1. 다른 탭에 갔다 메신저 탭으로 돌아오면 목록이 다
   openTab("messenger");
   expect(screen.getByTestId(listScreen)).toBeInTheDocument();
   expect(present("settings-screen-title")).toBe(false);
-  expect(listRowOrder()).toEqual(["mina", "guesthouse", "owner", "clerk"]);
+  expect(listRowOrder()).toEqual(["guesthouse", "owner", "mina", "clerk"]);
 });
 
 test("MC-I1. 메신저 탭에 있는 동안에도 여정 맵은 숨김 상자에 그대로 남는다(keep-alive)", async () => {
@@ -165,19 +167,21 @@ test("MC-I2. 열린 줄을 누르면 방이 서고 바텀 네비게이션과 전
   openTab("messenger");
   expect(screen.getByTestId("ui-lynx-bottom-navigator")).toBeInTheDocument();
 
-  tapId(row("mina"));
+  tapId(row("owner"));
 
   expect(screen.getByTestId(roomScreen)).toBeInTheDocument();
-  expect(textOf("messenger-chat-title")).toBe("미나");
+  expect(textOf("messenger-chat-title")).toBe("사장님");
   expect(present(listScreen)).toBe(false);
   expect(present("ui-lynx-bottom-navigator")).toBe(false);
   expect(present("app-header")).toBe(false);
 });
 
-test("MC-I2. 잠긴 줄을 눌러도 방은 열리지 않는다", async () => {
+test("MC-I2. 잠긴 줄(미나 · 점원)을 눌러도 방은 열리지 않는다", async () => {
   await renderSignedInApp(<App progressSeed={legacyPassedSeed} />);
   openTab("messenger");
 
+  tapId(row("mina"));
+  expect(present(roomScreen)).toBe(false);
   tapId(row("clerk"));
 
   expect(present(roomScreen)).toBe(false);
@@ -187,7 +191,7 @@ test("MC-I2. 잠긴 줄을 눌러도 방은 열리지 않는다", async () => {
 test("MC-I2. 방의 머리 뒤로를 누르면 목록과 바가 다시 서고 탭 표시는 메신저다", async () => {
   await renderSignedInApp(<App progressSeed={legacyPassedSeed} />);
   openTab("messenger");
-  tapId(row("mina"));
+  tapId(row("owner"));
   expect(screen.getByTestId(roomScreen)).toBeInTheDocument();
 
   tapRound("messenger-chat-back");
@@ -221,7 +225,7 @@ test("MC-I2. 방에서 겹침(사이드바)이 열려 있으면 시스템 뒤로
   const host = stubBackHost();
   await renderSignedInApp(<App progressSeed={legacyPassedSeed} />);
   openTab("messenger");
-  tapId(row("mina"));
+  tapId(row("owner"));
   tapRound("messenger-chat-settings");
   expect(screen.getByTestId("messenger-chat-sidebar")).toBeInTheDocument();
 
@@ -238,7 +242,7 @@ test("MC-I2. 방에서 겹침(사이드바)이 열려 있으면 시스템 뒤로
 test("MC-I2. 방에서 돌아와 다른 탭을 눌렀다 메신저로 오면 방이 아니라 목록이 선다", async () => {
   await renderSignedInApp(<App progressSeed={legacyPassedSeed} />);
   openTab("messenger");
-  tapId(row("mina"));
+  tapId(row("owner"));
   tapRound("messenger-chat-back");
 
   openTab("roleplay");
@@ -262,7 +266,7 @@ test("MC-I6. 방에서는 셸이 위 인셋만 잡고 아래 · 좌 · 우는 0�
   setHostInsets(ios);
   await renderSignedInApp(<App progressSeed={legacyPassedSeed} />);
   openTab("messenger");
-  tapId(row("mina"));
+  tapId(row("owner"));
   expect(screen.getByTestId(roomScreen)).toBeInTheDocument();
 
   expect(shellStyle().paddingTop).toBe("59px");
@@ -275,7 +279,7 @@ test("MC-I6. 방의 학습 키보드 키 줄 묶음은 호스트 인셋의 아�
   setHostInsets(ios);
   await renderSignedInApp(<App progressSeed={legacyPassedSeed} />);
   openTab("messenger");
-  tapId(row("mina"));
+  tapId(row("owner"));
   // 방은 키보드가 닫힌 채 열리므로 입력 칸을 눌러 학습 키보드를 엽니다.
   tapId("messenger-chat-field");
 
@@ -305,7 +309,7 @@ test("MC-I6. 방에서 목록으로 돌아오면 셸 좌 · 우 인셋이 다시
   setHostInsets(ios);
   await renderSignedInApp(<App progressSeed={legacyPassedSeed} />);
   openTab("messenger");
-  tapId(row("mina"));
+  tapId(row("owner"));
   expect(shellStyle().paddingLeft).toBe("0px");
 
   tapRound("messenger-chat-back");

@@ -1,0 +1,379 @@
+/* 새 친구 시트(E2) — 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1).
+   화면 지역 상수(토큰 없음): E-BAND 160 · E-BAND-S 128 = 띠 높이(design.md 2절). 퍼센트 높이는 쓰지 않습니다(기기 교훈).
+   속성 선택자 없음 — 상태는 클래스 변형으로 표시합니다(ADR-0113 기기 D1). 겹침은 문서 순서로 합니다. */
+
+.new-friend {
+  position: fixed;
+  top: var(--libitum-spacing-0);
+  right: var(--libitum-spacing-0);
+  bottom: var(--libitum-spacing-0);
+  left: var(--libitum-spacing-0);
+  z-index: var(--libitum-elevation-z-sheet);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+/* 막은 absolute입니다 — fixed 안의 fixed는 Lynx에서 화면 일부만 덮습니다(ChatModalFrame과 같은 이유). */
+.new-friend .ui-lynx-overlay {
+  position: absolute;
+  top: var(--libitum-spacing-0);
+  right: var(--libitum-spacing-0);
+  bottom: var(--libitum-spacing-0);
+  left: var(--libitum-spacing-0);
+  z-index: 0;
+}
+
+/* 판 — 흰 면, 위 모서리 xl, 그림자는 BottomSheet 값. 넘치는 것은 자릅니다. 최대 높이는 컴포넌트가 px로 인라인으로 줍니다(퍼센트 아님 —
+   화면 − 상태 바 − 24, 접근성 C1). 띠 · 얼굴(top)과 단추 줄(actions)은 고정이고 본문(scroll)만 스크롤됩니다. */
+.new-friend-panel {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: var(--libitum-color-white);
+  border-top-left-radius: var(--libitum-radius-xl);
+  border-top-right-radius: var(--libitum-radius-xl);
+  box-shadow: 0 -10px 14px rgba(26, 28, 32, 0.2);
+  animation: new-friend-panel-enter var(--libitum-motion-duration-sheet)
+    var(--libitum-motion-easing-enter) both;
+}
+
+.new-friend-panel-still {
+  animation: none;
+}
+
+@keyframes new-friend-panel-enter {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* 고정 위쪽 — 띠 + 얼굴 고리. 높이를 재서 스크롤 칸 예산에서 뺍니다. */
+.new-friend-top {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+
+/* 본문 스크롤 칸 — 높이는 컴포넌트가 잰 px로 인라인으로 줍니다(flex만으로는 높이가 정해지지 않습니다 — ADR-0113 기기 교훈 3). */
+.new-friend-scroll {
+  flex-shrink: 0;
+  width: 100%;
+}
+
+/* NEW FRIEND + 이름 — 접근성 요소 하나(머리)입니다. */
+.new-friend-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 100%;
+}
+
+/* 단추 줄 — 스크롤 밖 고정. 아래 여백이 판 아래 안쪽 여백(16 + 홈 인디케이터)을 맡습니다. */
+.new-friend-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  padding: var(--libitum-spacing-0) var(--libitum-spacing-24)
+    calc(var(--libitum-spacing-16) + env(safe-area-inset-bottom));
+}
+
+/* 띠 — 높이는 px입니다. 위 모서리를 띠에도 직접 줍니다(iOS 자르기). */
+.new-friend-band {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  width: 100%;
+  height: 160px;
+  overflow: hidden;
+  background-color: var(--libitum-color-gray-100);
+  border-top-left-radius: var(--libitum-radius-xl);
+  border-top-right-radius: var(--libitum-radius-xl);
+}
+
+.new-friend-compact .new-friend-band {
+  height: 128px;
+}
+
+/* 그림은 9:16입니다. 폭 100%로 크게 그리고 위로 40% 끌어올려 창 · 침대 · 커튼이 띠에 오게 합니다(aspectFill은 가운데 기준뿐). */
+.new-friend-band-image {
+  width: 100%;
+  aspect-ratio: 9 / 16;
+  margin-top: -40%;
+  flex-shrink: 0;
+}
+
+.new-friend-band-shade {
+  position: absolute;
+  top: var(--libitum-spacing-0);
+  right: var(--libitum-spacing-0);
+  bottom: var(--libitum-spacing-0);
+  left: var(--libitum-spacing-0);
+  background: linear-gradient(180deg, var(--libitum-color-gray-950), transparent 45%);
+  opacity: var(--libitum-opacity-16);
+}
+
+.new-friend-band-fade {
+  position: absolute;
+  top: var(--libitum-spacing-0);
+  right: var(--libitum-spacing-0);
+  bottom: var(--libitum-spacing-0);
+  left: var(--libitum-spacing-0);
+  background: linear-gradient(180deg, transparent 45%, var(--libitum-color-white));
+  opacity: var(--libitum-opacity-90);
+}
+
+.new-friend-handle {
+  position: absolute;
+  top: var(--libitum-spacing-8);
+  left: 50%;
+  width: var(--libitum-spacing-40);
+  height: var(--libitum-spacing-6);
+  margin-left: calc(var(--libitum-spacing-20) * -1);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-white);
+  opacity: var(--libitum-opacity-90);
+}
+
+/* 장면 칩 — 면은 안쪽 absolute 층(흰 90%), 글은 fg-neutral(최악 13.67). 판 안에 있어 탭을 막지 않습니다. */
+.new-friend-chip {
+  position: absolute;
+  top: var(--libitum-spacing-24);
+  left: var(--libitum-spacing-16);
+  max-width: calc(100% - var(--libitum-spacing-32));
+  min-height: var(--libitum-spacing-24);
+  padding: var(--libitum-spacing-2) var(--libitum-spacing-12);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.new-friend-chip-surface {
+  position: absolute;
+  top: var(--libitum-spacing-0);
+  right: var(--libitum-spacing-0);
+  bottom: var(--libitum-spacing-0);
+  left: var(--libitum-spacing-0);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-white);
+  opacity: var(--libitum-opacity-90);
+}
+
+.new-friend-chip-text {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
+  text-overflow: ellipsis;
+  lines: 1;
+}
+
+/* 얼굴 고리 — 띠 아래 경계에 걸칩니다(위로 64 · 아래로 56). 띠 다음 문서 순서라 띠 위에 그려집니다. */
+.new-friend-face-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: calc(var(--libitum-spacing-64) * -1);
+}
+
+.new-friend-compact .new-friend-face-row {
+  margin-top: calc(var(--libitum-spacing-48) * -1 - var(--libitum-spacing-8));
+}
+
+.new-friend-face {
+  width: calc(var(--libitum-spacing-96) + var(--libitum-spacing-24));
+  height: calc(var(--libitum-spacing-96) + var(--libitum-spacing-24));
+  padding: var(--libitum-spacing-4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-white);
+}
+
+.new-friend-compact .new-friend-face {
+  width: calc(var(--libitum-spacing-96) + var(--libitum-spacing-8));
+  height: calc(var(--libitum-spacing-96) + var(--libitum-spacing-8));
+}
+
+.new-friend-face-bounce {
+  animation: new-friend-face-bounce var(--libitum-motion-duration-reward)
+    var(--libitum-motion-easing-enter-expressive) both;
+}
+
+.new-friend-face-still {
+  animation: none;
+}
+
+@keyframes new-friend-face-bounce {
+  from {
+    transform: scale(var(--libitum-motion-scale-reward));
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+.new-friend-face-image {
+  width: calc(var(--libitum-spacing-96) + var(--libitum-spacing-16));
+  height: calc(var(--libitum-spacing-96) + var(--libitum-spacing-16));
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-gray-100);
+}
+
+.new-friend-compact .new-friend-face-image {
+  width: var(--libitum-spacing-96);
+  height: var(--libitum-spacing-96);
+}
+
+/* 이니셜 Avatar(96)는 그림 원 안 가운데에 섭니다. */
+.new-friend-face-initial {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 본문 — 가운데 세로 묶음. 얼굴 아래 8만 띄웁니다(고리가 이미 띠 아래로 56 내려와 있어 합이 64입니다). */
+.new-friend-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  padding: var(--libitum-spacing-8) var(--libitum-spacing-24) var(--libitum-spacing-0);
+}
+
+.new-friend-eyebrow {
+  color: var(--libitum-color-fg-brand);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+  letter-spacing: var(--libitum-typography-label-s-letter-spacing);
+}
+
+.new-friend-name {
+  margin-top: var(--libitum-spacing-8);
+  max-width: 100%;
+  color: var(--libitum-color-fg-neutral);
+  text-align: center;
+  font-family: var(--libitum-typography-heading-l-font-family);
+  font-weight: var(--libitum-typography-heading-l-font-weight);
+  font-size: var(--libitum-typography-heading-l-font-size);
+  line-height: var(--libitum-typography-heading-l-line-height);
+  letter-spacing: var(--libitum-typography-heading-l-letter-spacing);
+  text-overflow: ellipsis;
+  lines: 1;
+}
+
+.new-friend-met {
+  margin-top: var(--libitum-spacing-4);
+  color: var(--libitum-color-fg-neutral-muted);
+  text-align: center;
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  font-size: var(--libitum-typography-body-m-font-size);
+  line-height: var(--libitum-typography-body-m-line-height);
+  letter-spacing: var(--libitum-typography-body-m-letter-spacing);
+}
+
+/* 말풍선 자리 한 칸 — 입력 중(62)과 한 줄 메시지(64)가 같은 자리 같은 높이라 안 튑니다. */
+.new-friend-slot {
+  margin-top: var(--libitum-spacing-16);
+  min-height: var(--libitum-spacing-64);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.new-friend-typing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-6);
+}
+
+.new-friend-typing-label {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-weight: var(--libitum-typography-body-s-font-weight);
+  font-size: var(--libitum-typography-body-s-font-size);
+  line-height: var(--libitum-typography-body-s-line-height);
+  letter-spacing: var(--libitum-typography-body-s-letter-spacing);
+}
+
+.new-friend-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 100%;
+  animation: new-friend-message-in var(--libitum-motion-duration-d5)
+    var(--libitum-motion-easing-enter) both;
+}
+
+.new-friend-message-still {
+  animation: none;
+}
+
+@keyframes new-friend-message-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--libitum-spacing-4));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.new-friend-reply {
+  margin-top: var(--libitum-spacing-16);
+  width: 100%;
+  display: flex;
+}
+
+/* 기다림 — 면 background-elevated + 글 fg-brand(5.01). 눌림은 됩니다. 도착하면 brand-primary로 색이 바뀝니다. */
+.new-friend-reply-waiting .ui-lynx-button-brand .ui-lynx-button-surface {
+  background-color: var(--libitum-color-background-elevated);
+}
+
+.new-friend-reply-waiting .ui-lynx-button-brand .ui-lynx-button-label {
+  color: var(--libitum-color-fg-brand);
+}
+
+.new-friend-reply .ui-lynx-button-brand .ui-lynx-button-surface {
+  transition: background-color var(--libitum-motion-duration-color);
+}
+
+.new-friend-later {
+  margin-top: var(--libitum-spacing-4);
+  width: 100%;
+  display: flex;
+}
+
+/* 아래 화면(여정 맵) 감싸개 — 맵 탭 칸(`.app-tab-map`, 세로 flex)을 채우도록 늘입니다. 시트(`.new-friend`)는 fixed라
+   이 감싸개가 아니라 화면 전체(전역 머리 · 탭 바 위, z-sheet)를 덮습니다 — 맵 첫 유닛 안내의 막과 같은 자리입니다. */
+.new-friend-layer {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.new-friend-result {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}

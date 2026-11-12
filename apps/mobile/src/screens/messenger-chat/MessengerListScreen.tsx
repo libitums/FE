@@ -11,6 +11,7 @@ import { orderChatRooms } from "./chat-list";
 import { messengerListTestIds as ids } from "./messenger-chat.contract";
 import type { MessengerListScreenProps } from "./messenger-chat.contract";
 import { useChatSnapshot } from "./use-chat-source";
+import { useCoinBalance } from "./use-coin-balance";
 
 import "./messenger-list.css";
 
@@ -20,13 +21,15 @@ import "./messenger-list.css";
  */
 export function MessengerListScreen({
   source,
-  coinBalance,
+  wallet,
   onOpenRoom,
   onGoToJourney,
   onLayerChange,
 }: MessengerListScreenProps): ReactNode {
   const copy = useUiCopy().messengerChat.list;
   const { rooms } = useChatSnapshot(source);
+  // 잔액 = 앱의 보유 엽전 − 이번 실행에서 쓴 양. 방에서 엽전을 쓰고 돌아오면 칩이 따라갑니다.
+  const coinBalance = useCoinBalance(wallet);
   const [coinShopOpen, setCoinShopOpen] = useState(false);
 
   // 겹침 열림은 바뀔 때만 바깥에 알립니다. 열린 채 화면이 내려가면 닫힘을 한 번 더 알립니다

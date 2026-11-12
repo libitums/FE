@@ -1,0 +1,272 @@
+/* 턴 표시 — 머리 줄 · 마지막 무료 띠 · 다 쓴 판 · 엽전 보내기 단추(messenger-chat-1-5 spec §6.2, design 4절). 토큰만 쓰고 속성 선택자는
+   없습니다 — 상태는 클래스 변형(`-disabled` …)입니다(ADR-0113 기기 D1). 높이는 px · min-height뿐이고 퍼센트 높이는 쓰지 않습니다.
+   화면 지역 상수: STRIP-H 36(1단계 T-H와 같은 값) · COIN-DISC `spacing-20` 흰 원(주황 면 위 엽전 받침 — 엽전 테두리/주황 1.14 →
+   흰 원판 위 3.44). 주황 면 위 흰 글 3.02는 ADR-0113 D8의 앱 전체 예외입니다. */
+
+/* ---------------------------------------------------------------- 머리 줄(T1~T4) */
+
+.chat-turn-line {
+  max-width: 100%;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: normal;
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  font-weight: var(--libitum-font-weight-semi-bold);
+  line-height: var(--libitum-typography-body-s-line-height);
+  letter-spacing: var(--libitum-typography-body-s-letter-spacing);
+}
+
+/* T1 — 회색(대비 6.53). */
+.chat-turn-line-muted {
+  color: var(--libitum-color-fg-neutral-muted);
+}
+
+/* T2 · T3 — 주황(대비 5.38). 실패가 아니라 상태 표시라서 incorrect 색을 쓰지 않습니다. */
+.chat-turn-line-brand {
+  color: var(--libitum-color-fg-brand);
+}
+
+/* T4 — 황동은 앱 상수 `coinTextColor`를 컴포넌트가 인라인으로 칠합니다(색 토큰에 황동 계열이 없습니다). */
+.chat-turn-line-coin {
+  color: var(--libitum-color-fg-neutral-muted);
+}
+
+/* ---------------------------------------------------------------- T2 띠 */
+
+/* 로그 scroll-view의 형제로 입력 줄 바로 위에 놓입니다(스크롤 밖, 문서 순서). 글 한 줄뿐입니다(무제한 티켓은 학습 전용 — 단추 없음). */
+.chat-turn-strip {
+  align-self: stretch;
+  min-height: 36px;
+  margin: var(--libitum-spacing-0) var(--libitum-layout-screen-padding-x) var(--libitum-spacing-8);
+  padding: var(--libitum-spacing-4) var(--libitum-spacing-12);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-background-elevated);
+  box-shadow: var(--libitum-elevation-shadow-s1);
+}
+
+.chat-turn-strip-text {
+  flex: 1;
+  min-width: 0;
+  white-space: normal;
+  color: var(--libitum-color-fg-brand);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: var(--libitum-typography-label-m-font-size);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  line-height: var(--libitum-typography-label-m-line-height);
+  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
+}
+
+.chat-turn-icon-xs {
+  flex-shrink: 0;
+  width: var(--libitum-icon-size-xs);
+  height: var(--libitum-icon-size-xs);
+}
+
+.chat-turn-icon-md {
+  flex-shrink: 0;
+  width: var(--libitum-icon-size-md);
+  height: var(--libitum-icon-size-md);
+}
+
+/* ---------------------------------------------------------------- 엽전 원판 · T4 보내기 알약 */
+
+.chat-coin-disc {
+  flex-shrink: 0;
+  width: var(--libitum-spacing-20);
+  height: var(--libitum-spacing-20);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-white);
+}
+
+/* 보내기 자리의 알약 — 높이 40, 흰 원판 엽전 + 가격 + 화살표. 꺼진(빈 글) 면은 gray-400이고 원판은 유지합니다. */
+.chat-coin-send {
+  flex-shrink: 0;
+  height: var(--libitum-spacing-40);
+  padding: var(--libitum-spacing-0) var(--libitum-spacing-12) var(--libitum-spacing-0)
+    var(--libitum-spacing-8);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  column-gap: var(--libitum-spacing-4);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-brand-primary);
+}
+
+.chat-coin-send:active {
+  background-color: var(--libitum-color-brand-primary-pressed);
+}
+
+.chat-coin-send-disabled {
+  background-color: var(--libitum-color-gray-400);
+}
+
+.chat-coin-send-disabled:active {
+  background-color: var(--libitum-color-gray-400);
+}
+
+.chat-coin-send-price {
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-size: var(--libitum-typography-label-l-font-size);
+  font-weight: var(--libitum-typography-label-l-font-weight);
+  line-height: var(--libitum-typography-label-l-line-height);
+  letter-spacing: var(--libitum-typography-label-l-letter-spacing);
+}
+
+.chat-coin-send-price-disabled {
+  color: var(--libitum-color-fg-neutral-subtlest);
+}
+
+/* ---------------------------------------------------------------- T3 판(독 전체 자리) */
+
+/* 최대 높이는 컴포넌트가 px로 인라인으로 줍니다(화면 − 상태 바 − 머리 − 96, 접근성 M1). 위 아이콘 · 제목 · 본문(scroll)만 스크롤되고 단추 줄(actions)은 고정입니다. */
+.chat-out-panel {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  overflow: hidden;
+  border-top: var(--libitum-stroke-width-thin) solid var(--libitum-color-gray-300);
+  background-color: var(--libitum-color-background-primary);
+}
+
+/* 스크롤 칸 높이는 잰 px로 인라인으로 줍니다(flex만으로는 높이가 정해지지 않습니다 — ADR-0113 기기 교훈 3). */
+.chat-out-scroll {
+  flex-shrink: 0;
+  width: 100%;
+}
+
+.chat-out-scroll-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--libitum-spacing-20) var(--libitum-spacing-20) var(--libitum-spacing-0);
+}
+
+.chat-out-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  flex-shrink: 0;
+  padding: var(--libitum-spacing-0) var(--libitum-spacing-20) var(--libitum-spacing-16);
+}
+
+.chat-out-clock {
+  width: 56px;
+  height: 56px;
+  margin-bottom: var(--libitum-spacing-12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-background-elevated);
+}
+
+.chat-out-title {
+  text-align: center;
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  line-height: var(--libitum-typography-heading-s-line-height);
+  letter-spacing: var(--libitum-typography-heading-s-letter-spacing);
+}
+
+.chat-out-body {
+  margin-top: var(--libitum-spacing-4);
+  text-align: center;
+  white-space: normal;
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: var(--libitum-typography-body-m-font-size);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  line-height: var(--libitum-typography-body-m-line-height);
+  letter-spacing: var(--libitum-typography-body-m-letter-spacing);
+}
+
+/* 시간 조각만 진하게 굵게(본문 muted 위에서 시간이 눈에 들어오게). */
+.chat-out-body-time {
+  color: var(--libitum-color-fg-neutral);
+  font-weight: var(--libitum-font-weight-bold);
+}
+
+/* Keep chatting — ui-lynx Button xl brand와 같은 높이 · 색(56)이고, 가격 칸이 원판 엽전을 품습니다. */
+.chat-out-keep {
+  flex-shrink: 0;
+  align-self: stretch;
+  min-height: 56px;
+  margin-top: var(--libitum-spacing-16);
+  padding: var(--libitum-spacing-8) var(--libitum-spacing-16);
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  column-gap: var(--libitum-spacing-6);
+  row-gap: var(--libitum-spacing-4);
+  border-radius: var(--libitum-radius-lg);
+  background-color: var(--libitum-color-brand-primary);
+}
+
+/* 가장 큰 접근성 글자(F3): 줄바꿈에 기대지 않고 세로로 쌓아 높이가 내용을 따르게 합니다. */
+.chat-out-keep-stacked {
+  flex-direction: column;
+  flex-wrap: nowrap;
+}
+
+.chat-out-keep:active {
+  background-color: var(--libitum-color-brand-primary-pressed);
+}
+
+/* 판 높이에 상한(maxHeight)이 걸리면 Lynx는 자동 최소 크기가 없어 flex 아이템이 글줄 높이 밑으로 줄어듭니다 — 글 상자가 줄어도
+   글자는 그대로 커서 아래 칸을 덮고 가격 줄이 밖으로 샙니다(기기 F3 AX5). 아래 칸 모두 줄지 않게 못 박습니다. */
+.chat-out-keep-label {
+  flex-shrink: 0;
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-button-xl-font-family);
+  font-size: var(--libitum-typography-button-xl-font-size);
+  font-weight: var(--libitum-typography-button-xl-font-weight);
+  line-height: var(--libitum-typography-button-xl-line-height);
+  letter-spacing: var(--libitum-typography-button-xl-letter-spacing);
+}
+
+.chat-out-keep-price {
+  flex-shrink: 0;
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-button-m-font-family);
+  font-size: var(--libitum-typography-button-m-font-size);
+  font-weight: var(--libitum-typography-button-m-font-weight);
+  line-height: var(--libitum-typography-button-m-line-height);
+  letter-spacing: var(--libitum-typography-button-m-letter-spacing);
+}
+
+/* Back to chats — 접근성 요소는 이 감싸개 하나이고 안쪽 ui-lynx 단추는 모양만 맡습니다. */
+.chat-out-action {
+  flex-shrink: 0;
+  align-self: stretch;
+  margin-top: var(--libitum-spacing-8);
+}
+
+.chat-out-action-text {
+  margin-top: var(--libitum-spacing-4);
+}
+
+.chat-out-balance {
+  flex-shrink: 0;
+  margin-top: var(--libitum-spacing-4);
+  text-align: center;
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  font-weight: var(--libitum-typography-body-s-font-weight);
+  line-height: var(--libitum-typography-body-s-line-height);
+  letter-spacing: var(--libitum-typography-body-s-letter-spacing);
+}
