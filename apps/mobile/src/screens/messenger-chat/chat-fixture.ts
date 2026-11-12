@@ -277,5 +277,19 @@ export const chatFixtureSeed: ChatFixtureSeed = (() => {
     meanings,
     corrections: [questionFix, coffeeFix],
     fallbackMeaning: { romanization: "…", meaning: "Meaning coming soon" },
+    // 대화 설정(ADR-0126)의 기억 화면 1단계 가짜 데이터입니다 — 서버가 들어오면 서버 기억으로 바뀝니다.
+    memories: {
+      shared: [
+        "You're from Manila and moved to Seoul in October.",
+        "You're preparing for TOPIK II.",
+      ],
+      byCharacter: {
+        mina: [
+          "You like iced americano and want to try a hanok café.",
+          "Your Korean test is on December 14.",
+        ],
+        owner: ["You're staying near Ikseon-dong this week."],
+      },
+    },
   };
 })();

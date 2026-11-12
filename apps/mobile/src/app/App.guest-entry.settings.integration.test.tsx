@@ -54,6 +54,7 @@ const openFacebookPolicy = {
 const guestRows = [
   "show-choice-romanization",
   "vibration",
+  "chats",
   "profile",
   "learner-profile",
   "language",
@@ -85,6 +86,7 @@ test("[GE5b] 로그인 사용자의 설정은 그대로 여덟 항목과 계정 
     [
       "show-choice-romanization",
       "vibration",
+      "chats",
       "profile",
       "learner-profile",
       "language",

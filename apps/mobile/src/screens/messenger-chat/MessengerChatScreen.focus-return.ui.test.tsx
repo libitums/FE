@@ -3,6 +3,7 @@ import { cleanup } from "@lynx-js/react/testing-library";
 
 import * as inputFocus from "./chat-input-focus";
 import { advance, clearBackHandlers, mountChat, systemBack, tapId } from "./chat-ui.test-support";
+import { chatSettingsTestIds } from "./chat-settings.contract";
 import { messengerChatTestIds as ids } from "./messenger-chat.contract";
 
 // `ui` 계층(접근성 C1, a11y-findings): 겹침이 닫힌 뒤 접근성 초점이 돌아갈 일곱 origin 모두 — 복원 호출의 대상 id를 가진
@@ -84,6 +85,16 @@ const flows: readonly Flow[] = [
     },
   },
   {
+    origin: "sidebar-feedback-mode",
+    open: () => {
+      tapId(ids.settings);
+      tapId(chatSettingsTestIds.sidebarFeedback);
+    },
+    close: () => {
+      systemBack();
+    },
+  },
+  {
     origin: "sidebar-coins",
     open: () => {
       tapId(ids.settings);
@@ -109,3 +120,18 @@ for (const flow of flows) {
     expectAccessibleTarget(target);
   });
 }
+
+// ⟨ADR-0126 기기 확인⟩ 사이드바 위 시트(교정 방식)를 닫아 사이드바로 돌아와도, 누른 단추가 사라지며 숨은 <input>이 받은 초점을
+// 다음 프레임에 내린다 — Android에서 휴대폰 키보드가 떴다.
+test("CS-UI13. 교정 방식 시트를 닫아 사이드바로 돌아오면 다음 프레임에 숨은 입력의 초점을 내린다", () => {
+  mountChat();
+  tapId(ids.settings);
+  tapId(chatSettingsTestIds.sidebarFeedback);
+  vi.mocked(inputFocus.blurPhoneInput).mockClear();
+  systemBack();
+  expect(inputFocus.blurPhoneInput).not.toHaveBeenCalled();
+
+  advance(16);
+
+  expect(inputFocus.blurPhoneInput).toHaveBeenCalledTimes(1);
+});

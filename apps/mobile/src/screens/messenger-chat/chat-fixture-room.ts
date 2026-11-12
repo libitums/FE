@@ -141,6 +141,8 @@ export function summaryOf(
 export function threadOf(
   room: RoomState,
   resolveUrl: (path: string | null) => string | null,
+  /** 계정의 추천 답변 설정(ADR-0126) — 꺼지면 보기가 빈다. */
+  replyIdeas = true,
 ): ChatThread {
   if (room.threadCache === null) {
     room.threadCache = {
@@ -148,7 +150,7 @@ export function threadOf(
       counterpart: summaryOf(room, resolveUrl).counterpart,
       messages: room.messages,
       typing: room.typing,
-      ideas: ideasOf(room),
+      ideas: replyIdeas ? ideasOf(room) : [],
       settings: room.settings,
       storyPoints: room.seed.storyPoints,
       notes: room.notes,

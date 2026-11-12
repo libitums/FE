@@ -209,4 +209,84 @@ export const messengerChatEn: MessengerChatCopy = {
       notSet: "Not set",
     },
   },
+  chatSettings: {
+    entryTitle: "Chats",
+    entryDescription: "Reply ideas, messages from characters, memories",
+    title: "Chats",
+    back: "Back",
+    sectionWhile: "While chatting",
+    replyIdeas: "Reply ideas",
+    replyIdeasBody: "Show 1–2 suggested replies after each message",
+    sectionProactive: "Messages from characters",
+    proactive: "They message you first",
+    sectionAbout: "About you",
+    sharedMemories: "What everyone knows about you",
+    sharedMemoriesSummary: (count) =>
+      `${count} ${count === 1 ? "memory" : "memories"} · shared by all characters`,
+    footnote:
+      "Each character also remembers things from your chats with them. Open a chat and tap ☰ to see them.",
+    proactiveSheet: {
+      title: "They message you first",
+      body: "When you've been quiet for a while, a character may start the chat. It never costs coins.",
+      howOften: "How often",
+      prefs: { off: "Off", daily1: "Once a day", daily2: "Twice a day" },
+      preferredTime: "Preferred time",
+      anyTime: "Any time",
+      hour: (hour) => `${hour % 12 === 0 ? 12 : hour % 12} ${hour < 12 ? "AM" : "PM"}`,
+      quietNote:
+        "No messages between 10 PM and 8 AM your time. With twice a day, the second comes about 10 hours later.",
+      save: "Save",
+      close: "Close",
+    },
+    memories: {
+      titleShared: "What everyone knows about you",
+      titleCharacter: (name) => `What ${name} remembers`,
+      count: (count, cap) => `${count} / ${cap}`,
+      fullTitle: "Memory is full",
+      fullBody: (name) =>
+        `${name ?? "Characters"} can't remember new things until you delete some. Memories you edited are kept.`,
+      intro: (name) =>
+        `${name ?? "Every character"} uses these to keep your chats personal. Only you see this list. Editing or deleting is free.`,
+      empty: (name) =>
+        `Nothing yet. ${name ?? "Characters"} will remember things you share as you chat.`,
+      edited: "Edited",
+      edit: "Edit memory",
+      delete: "Delete memory",
+      editTitle: "Edit memory",
+      editHint: (name) => `${name ?? "Characters"} will remember it exactly as you write it.`,
+      length: (count, max) => `${count} / ${max}`,
+      cancel: "Cancel",
+      save: "Save",
+      deleteTitle: "Delete this memory?",
+      deleteBody: (name) => `${name ?? "Characters"} won't use it from your next message.`,
+      deleteConfirm: "Delete",
+      sidebar: (name) => `What ${name} remembers`,
+      sidebarSummary: (count, cap, full) =>
+        full ? `${count} / ${cap} · full` : `${count} / ${cap}`,
+    },
+    feedback: {
+      sidebar: "Correction style",
+      title: "Correction style",
+      body: (name) =>
+        `How ${name} helps when your Korean has a mistake. You always get the correction card — this changes how ${name} replies.`,
+      modes: {
+        separate: {
+          title: "Card only",
+          body: (name) => `${name} just keeps chatting. The fix shows on the ✎ under your message.`,
+        },
+        natural: {
+          title: "Naturally in the reply",
+          body: (name) => `${name} uses the right expression in the answer, like a friend would.`,
+        },
+        prefix: {
+          title: "Point it out first",
+          body: (name) => `${name} briefly corrects you, then continues the chat.`,
+        },
+      },
+      defaultTag: "default",
+      note: "Applies to all characters from your next message.",
+      save: "Save",
+      close: "Close",
+    },
+  },
 };

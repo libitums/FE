@@ -14,6 +14,8 @@ import "./messenger-chat.css";
 export type MoreMenuProps = {
   readonly onSelect: (action: ChatMoreAction) => void;
   readonly onDismiss: () => void;
+  /** 추천 답변이 꺼졌으면(설정 탭 Chats — ADR-0126) 「New reply ideas」 항목을 그리지 않습니다. */
+  readonly showIdeas?: boolean;
 };
 
 // 「…」 메뉴 — 항목 셋이 고정 순서(ideas · fix · 구분선 · report)로 섭니다. 메뉴 밖 투명 면을 탭하면 닫힙니다.
@@ -36,7 +38,7 @@ export function overlayForMore(
   }
 }
 
-export function MoreMenu({ onSelect, onDismiss }: MoreMenuProps): ReactNode {
+export function MoreMenu({ onSelect, onDismiss, showIdeas = true }: MoreMenuProps): ReactNode {
   const copy = useUiCopy().messengerChat.more;
   return (
     <>
@@ -53,13 +55,15 @@ export function MoreMenu({ onSelect, onDismiss }: MoreMenuProps): ReactNode {
         data-testid={ids.moreMenu}
         accessibility-role-description="menu"
       >
-        <MenuItem
-          action="ideas"
-          label={copy.ideas}
-          icon={refresh}
-          iconColor={color.fg.neutral}
-          onSelect={onSelect}
-        />
+        {showIdeas ? (
+          <MenuItem
+            action="ideas"
+            label={copy.ideas}
+            icon={refresh}
+            iconColor={color.fg.neutral}
+            onSelect={onSelect}
+          />
+        ) : null}
         <MenuItem
           action="fix"
           label={copy.fix}

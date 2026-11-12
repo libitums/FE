@@ -5,9 +5,16 @@ import { BirthYearSheet } from "./BirthYearSheet";
 import { ChatSettingsSidebar } from "./ChatSettingsSidebar";
 import { CHAT_COIN_PRICES } from "./chat-coins";
 import type { ChatOverlay, ChatRoomAction, ChatRoomState } from "./chat-room-state";
-import type { ChatBirthYear, ChatMediaKind, ChatSource, ChatThread } from "./chat-source.contract";
+import type {
+  ChatBirthYear,
+  ChatMediaKind,
+  ChatPreferences,
+  ChatSource,
+  ChatThread,
+} from "./chat-source.contract";
 import type { CoinWallet } from "./coin-wallet";
 import { DeleteChatDialog } from "./DeleteChatDialog";
+import { FeedbackModeSheet } from "./FeedbackModeSheet";
 import { FixRequestDialog } from "./FixRequestDialog";
 import { CoinShopLayer } from "./CoinShopLayer";
 import { RegenerateIdeasDialog } from "./RegenerateIdeasDialog";
@@ -28,6 +35,9 @@ export type ChatRoomOverlaysProps = {
   /** 지금 잔액입니다(지갑 구독 값 — 사이드바 · 모달 · 상점이 같은 수를 봅니다). */
   readonly coinBalance: number;
   readonly birthYear: ChatBirthYear;
+  readonly preferences: ChatPreferences;
+  /** 인물 기억 화면을 메신저 스택에 쌓습니다(ADR-0126). */
+  readonly onOpenMemories: (characterId: string, name: string) => void;
 };
 
 const askShop = (media: ChatMediaKind): Extract<ChatOverlay, { kind: "coin-shop" }> => ({
@@ -46,6 +56,8 @@ export function ChatRoomOverlays({
   wallet,
   coinBalance,
   birthYear,
+  preferences,
+  onOpenMemories,
 }: ChatRoomOverlaysProps): ReactNode {
   const { overlay } = state;
   const { roomId } = thread;
@@ -140,7 +152,18 @@ export function ChatRoomOverlays({
               },
             })
           }
-          onAutoIdeas={(on) => source.setAutoIdeas(roomId, on)}
+          memories={source.memories({ kind: "character", characterId: thread.counterpart.id })}
+          onMemories={() => {
+            dispatch({ type: "close-overlay" });
+            onOpenMemories(thread.counterpart.id, thread.counterpart.name);
+          }}
+          feedbackMode={preferences.feedbackMode}
+          onFeedbackMode={() =>
+            dispatch({
+              type: "open-overlay",
+              overlay: { kind: "feedback-mode", selected: preferences.feedbackMode },
+            })
+          }
           onDelete={() => dispatch({ type: "open-overlay", overlay: { kind: "delete-confirm" } })}
           onClose={close}
         />
@@ -185,6 +208,19 @@ export function ChatRoomOverlays({
           }}
           onSkip={() => {
             source.setBirthYear(null);
+            dispatch({ type: "close-overlay" });
+          }}
+          onClose={close}
+        />
+      );
+    case "feedback-mode":
+      return (
+        <FeedbackModeSheet
+          name={thread.counterpart.name}
+          selected={overlay.selected}
+          onSelect={(mode) => dispatch({ type: "select-feedback-mode", mode })}
+          onSave={() => {
+            source.setPreferences({ feedbackMode: overlay.selected });
             dispatch({ type: "close-overlay" });
           }}
           onClose={close}

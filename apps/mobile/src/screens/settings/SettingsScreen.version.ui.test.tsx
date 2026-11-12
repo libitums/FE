@@ -13,6 +13,7 @@ import { markedUiCopy } from "../../lib/ui-copy.test-support";
 
 const baseProps = {
   onSelectNavTarget: () => undefined,
+  onOpenChatSettings: () => undefined,
   sessionOptions: initialSessionOptions,
   onToggleSessionOption: () => undefined,
   learnerProfileSummary: "Not set",

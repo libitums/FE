@@ -25,10 +25,16 @@ import {
   type ChatRoomState,
 } from "./chat-room-state";
 import { canSend } from "./chat-rules";
-import type { ChatBirthYear, ChatSource, ChatThread } from "./chat-source.contract";
+import type {
+  ChatBirthYear,
+  ChatPreferences,
+  ChatSource,
+  ChatThread,
+} from "./chat-source.contract";
 import { resolveChatKeyboardHeight } from "./keyboard-height";
 import { keyboardPlanFor, type KeyboardPlan } from "./keyboard-plan";
 import type { KeyboardHeightStore, KoreanKeyboardProbe } from "./keyboard-ports";
+import { chatSettingsTestIds } from "./chat-settings.contract";
 import { messengerChatTestIds as ids } from "./messenger-chat.contract";
 import { useChatSnapshot, useChatThread } from "./use-chat-source";
 
@@ -48,6 +54,7 @@ export type ChatRoomApi = {
   readonly plan: KeyboardPlan;
   readonly thread: ChatThread | null;
   readonly birthYear: ChatBirthYear;
+  readonly preferences: ChatPreferences;
   readonly keyboardHeight: number;
   readonly dispatch: (action: ChatRoomAction) => void;
   readonly send: () => void;
@@ -66,6 +73,7 @@ const originTestId: Readonly<Record<ChatFocusOrigin, string>> = {
   send: turnIds.coinSend,
   "sidebar-birth-year": ids.sidebarBirthYear,
   "blocked-change-year": ids.blockedChangeYear,
+  "sidebar-feedback-mode": chatSettingsTestIds.sidebarFeedback,
 };
 
 /** 뒤 화면의 accessibility-elements-hidden이 풀린 다음 프레임에 초점을 보냅니다(a11y C1). 한 프레임은 16 ms입니다. */
@@ -90,7 +98,7 @@ export function useChatRoom({
   // 휴대폰 입력을 비우지 못했을 때 입력 칸을 다시 마운트하기 위한 덧셈입니다(리듀서의 epoch과 더해 key가 됩니다).
   const [remount, setRemount] = useState(0);
   const thread = useChatThread(source, roomId);
-  const { birthYear } = useChatSnapshot(source);
+  const { birthYear, preferences } = useChatSnapshot(source);
   // 서버가 방 도중에 입력을 막을 수 있습니다(ADR-0125).
   const blocked = thread !== null && thread.inputBlock !== null;
 
@@ -216,17 +224,18 @@ export function useChatRoom({
     previousOverlay.current = state.overlay;
     if (previous === state.overlay) return;
     // Android는 누른 시트 단추가 사라지면 다음 초점 후보인 숨은 <input>으로 초점을 옮겨 휴대폰 키보드를 띄웠습니다(생년 시트
-    // Skip — ADR-0125 기기 확인). 휴대폰 키보드 모드가 아니면 겹침이 닫힌 다음 프레임에 그 초점을 내립니다.
-    const blurOnClose =
-      previous.kind !== "none" &&
-      state.overlay.kind === "none" &&
-      stateRef.current.keyboard !== "phone";
+    // Skip — ADR-0125 기기 확인). 휴대폰 키보드 모드가 아니면 겹침이 부모로 닫힌 다음 프레임에 그 초점을 내립니다 — 부모가
+    // 사이드바인 시트(교정 방식 Save — ADR-0126 기기 확인)도 같습니다.
+    const closed = previous.kind !== "none" && state.overlay.kind === overlayParent(previous).kind;
+    const blurOnClose = closed && stateRef.current.keyboard !== "phone";
     let call: (() => void) | null = null;
-    if (previous.kind !== "none" && state.overlay.kind === overlayParent(previous).kind) {
+    if (closed) {
       const origin = focusOriginOf(previous);
       if (origin !== null) call = () => restoreAccessibilityFocus(originTestId[origin]);
     } else if (previous.kind === "none" && state.overlay.kind === "more-menu") {
-      call = () => restoreAccessibilityFocus(ids.moreItem("ideas"));
+      // 추천 답변이 꺼졌으면 첫 항목은 Fix입니다(ADR-0126).
+      const first = source.snapshot().preferences.replyIdeas ? "ideas" : "fix";
+      call = () => restoreAccessibilityFocus(ids.moreItem(first));
     }
     const restore = call;
     if (restore === null && !blurOnClose) return;
@@ -282,6 +291,7 @@ export function useChatRoom({
     plan,
     thread,
     birthYear,
+    preferences,
     keyboardHeight,
     dispatch,
     send,

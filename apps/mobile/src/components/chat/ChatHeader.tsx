@@ -20,6 +20,9 @@ export function ChatHeader({
     <text
       className={titleClass}
       data-testid={testIds.title}
+      // Android는 접근성 요소로 세우지 않은 글을 납작하게 펴 트리에서 지웁니다 — 화면 제목이 읽히게 세웁니다(ADR-0126 기기 확인).
+      flatten={false}
+      accessibility-element={true}
       accessibility-traits="header"
       text-maxline={subtitle === undefined ? undefined : "1"}
     >

@@ -100,6 +100,7 @@ export function presenceProbe(presence: "present" | "absent" | "unknown"): Korea
 export function mountChat(options: MountChatOptions = {}) {
   const source = options.source ?? makeSource(options.seed);
   const onExit = vi.fn<() => void>();
+  const onOpenMemories = vi.fn<(characterId: string, name: string) => void>();
   const now = options.now ?? (() => Date.now());
   const wallet = options.wallet ?? createCoinWallet({ earned: options.coinBalance ?? 0 });
   const ledger = options.ledger ?? createTurnLedger({ store: memoryTurnRecordStore(), now });
@@ -118,9 +119,10 @@ export function mountChat(options: MountChatOptions = {}) {
     now,
     timers: options.timers,
     onExit,
+    onOpenMemories,
   };
   const view = render(<MessengerChatScreen {...screenProps} />);
-  return { source, onExit, view, wallet, ledger };
+  return { source, onExit, onOpenMemories, view, wallet, ledger };
 }
 
 /**

@@ -2,6 +2,7 @@
 // 주입한 타이머로 흉내 냅니다. 어떤 호출도 던지지 않습니다.
 
 import { chatFixtureSeed } from "./chat-fixture";
+import { createFixtureSettings, settingsMethods } from "./chat-fixture-settings";
 import { inputBlockOf, nextBirthYear, seedMessageReader, UNASKED } from "./chat-fixture-safety";
 import {
   advanceIdeas,
@@ -59,6 +60,7 @@ export function createFixtureChatSource(options: FixtureChatSourceOptions): Fixt
   const fromSeed = seedMessageReader({ now, messageId, photoPaths, resolveUrl });
 
   const rooms = new Map<string, RoomState>();
+  const settings = createFixtureSettings(seed, now);
 
   const notify = () => {
     for (const listener of [...listeners]) {
@@ -92,7 +94,9 @@ export function createFixtureChatSource(options: FixtureChatSourceOptions): Fixt
   };
 
   const summaryOf = (room: RoomState) => roomSummaryOf(room, resolveUrl);
-  const threadOf = (room: RoomState) => roomThreadOf(room, resolveUrl);
+  // 추천 답변을 끄면(ADR-0126) 모든 방의 보기가 빈다.
+  const threadOf = (room: RoomState) =>
+    roomThreadOf(room, resolveUrl, settings.preferences().replyIdeas);
 
   const live = (roomId: string): RoomState | null =>
     disposed ? null : (rooms.get(roomId) ?? null);
@@ -199,8 +203,12 @@ export function createFixtureChatSource(options: FixtureChatSourceOptions): Fixt
 
   return {
     snapshot: () => {
-      if (snapshotCache === null) {
-        snapshotCache = { rooms: [...rooms.values()].map(summaryOf), birthYear };
+      if (snapshotCache === null || snapshotCache.preferences !== settings.preferences()) {
+        snapshotCache = {
+          rooms: [...rooms.values()].map(summaryOf),
+          birthYear,
+          preferences: settings.preferences(),
+        };
       }
       return snapshotCache;
     },
@@ -258,6 +266,7 @@ export function createFixtureChatSource(options: FixtureChatSourceOptions): Fixt
     requestMeaning: notes.requestMeaning,
     openCorrection: notes.openCorrection,
     unlockCharacter,
+    ...settingsMethods(settings, { disposed: () => disposed, rooms, notify }),
     report: () => undefined,
     requestFix: () => undefined,
     deleteRoom: (roomId) => {

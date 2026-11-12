@@ -38,6 +38,10 @@ export type MessengerChatWiring = {
   /** 새 친구 시트의 Reply — 메신저 탭 루트로 옮겨 그 방을 엽니다(키보드 닫힘 — 방의 1단계 규칙 그대로). */
   readonly onOpenChatRoomFromNewFriend: (roomId: string) => void;
   readonly onGoToJourney: () => void;
+  /** 대화 설정(ADR-0126) — 설정 탭 Chats 화면 · 기억 화면을 쌓고 내립니다. */
+  readonly onOpenChatSettings: () => void;
+  readonly onOpenMemories: (characterId: string | null, name: string | null) => void;
+  readonly onExitChatSettingsStack: () => void;
 };
 
 type ImageUrlOf = (relativePath: string) => string | null;
@@ -164,6 +168,18 @@ export function messengerChatWiring(args: MessengerChatWiringArgs): {
       },
       onGoToJourney: () => {
         for (const action of tabRootActions("journey")) args.dispatch(action);
+      },
+      onOpenChatSettings: () => {
+        args.dispatch({ type: "push", screen: { name: "chat-settings" } });
+      },
+      onOpenMemories: (characterId, name) => {
+        args.dispatch({
+          type: "push",
+          screen: { name: "chat-memories", characterId, characterName: name },
+        });
+      },
+      onExitChatSettingsStack: () => {
+        args.dispatch({ type: "back" });
       },
     },
   };

@@ -59,6 +59,25 @@ export type ChatBirthYear =
   | { readonly kind: "skipped" }
   | { readonly kind: "set"; readonly year: number };
 
+// 대화 설정 · 기억 타입(ADR-0126)은 대화 설정 계약에 둡니다 — 이 파일은 그 이름을 그대로 다시 내보냅니다.
+import type {
+  ChatFeedbackMode,
+  ChatMemory,
+  ChatMemoryList,
+  ChatMemoryScope,
+  ChatPreferences,
+  ChatProactivePref,
+} from "./chat-settings.contract";
+
+export type {
+  ChatFeedbackMode,
+  ChatMemory,
+  ChatMemoryList,
+  ChatMemoryScope,
+  ChatPreferences,
+  ChatProactivePref,
+};
+
 export type ChatRoomAccess =
   | { readonly kind: "open" }
   | { readonly kind: "locked"; readonly unlockEpisode: number };
@@ -104,6 +123,7 @@ export type ChatThread = {
 export type ChatSnapshot = {
   readonly rooms: readonly ChatRoomSummary[];
   readonly birthYear: ChatBirthYear;
+  readonly preferences: ChatPreferences;
 };
 
 // 내 글 노트(뜻 · 교정) — messenger-chat-1-5 spec §5.1. 뜻은 en 고정, 범위는 corrected 안 코드 포인트입니다.
@@ -175,6 +195,14 @@ export type ChatSource = {
   readonly unlockCharacter: (characterId: string) => ChatUnlockResult;
   /** null = 건너뜀. 바뀌면 구독자에게 알립니다. */
   readonly setBirthYear: (year: number | null) => void;
+  /** 바뀐 칸만 넘깁니다. 바뀌면 구독자에게 알립니다. */
+  readonly setPreferences: (patch: Partial<ChatPreferences>) => void;
+  /** 같은 상태면 같은 참조입니다. */
+  readonly memories: (scope: ChatMemoryScope) => ChatMemoryList;
+  /** 1~500자(앞뒤 공백 걷음)가 아니면 무동작. 고친 기억은 `edited`가 됩니다. */
+  readonly updateMemory: (id: string, content: string) => void;
+  readonly deleteMemory: (id: string) => void;
+
   /** 걸린 타이머 전부 해제 · 구독 해제. */
   readonly dispose: () => void;
 };
@@ -240,6 +268,13 @@ export type ChatFixtureSeed = {
   readonly meanings?: readonly ChatFixtureMeaning[];
   readonly corrections?: readonly ChatFixtureCorrection[];
   readonly fallbackMeaning?: ChatMeaning;
+  /** 없으면 추천 답변 켬 · 하루 한 번 · 아무 때나 · 카드만. */
+  readonly preferences?: ChatPreferences;
+  /** 기억 씨앗(글만). 인물은 상대 id로 찾습니다. */
+  readonly memories?: {
+    readonly shared: readonly string[];
+    readonly byCharacter: Readonly<Record<string, readonly string[]>>;
+  };
   /** 없으면 unasked입니다. */
   readonly birthYear?: ChatBirthYear;
 };
