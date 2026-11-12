@@ -15,6 +15,20 @@ export const feedbackRatings: readonly FeedbackRating[] = [1, 2, 3, 4, 5];
 /** 설정 피드백의 글 상한입니다(서버는 1000자까지 받습니다). */
 export const feedbackMessageMaxLength = 500;
 
+/** 에피소드 설문이 글 칸을 여는 가장 높은 별점입니다(1~3점). */
+export const surveyMessageMaxRating: FeedbackRating = 3;
+
+/** 이 별점이면 에피소드 설문이 바로 끝나지 않고 글 단계로 넘어갑니다. */
+export function surveyAsksMessage(rating: FeedbackRating): boolean {
+  return rating <= surveyMessageMaxRating;
+}
+
+/** 보낼 글입니다 — 앞뒤 공백을 지우고, 비면 `null`, 상한을 넘으면 자릅니다. */
+export function feedbackMessageOf(text: string): string | null {
+  const trimmed = text.trim();
+  return trimmed === "" ? null : trimmed.slice(0, feedbackMessageMaxLength);
+}
+
 /** 서버에 한 건을 남깁니다. 성공이면 `true`. 로그인이 없거나 실패하면 `false`. */
 export async function submitFeedback(submission: FeedbackSubmission): Promise<boolean> {
   const message = submission.message?.trim() ?? "";

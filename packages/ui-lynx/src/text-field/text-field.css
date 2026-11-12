@@ -49,6 +49,12 @@
   border-style: solid;
   border-color: var(--libitum-color-border-default);
   border-radius: var(--libitum-radius-lg);
+  /* 포커스 링의 그림자 층을 처음부터 투명하게 둡니다. Android Lynx는 포커스 순간 box-shadow가 새로 생기면 그림자 층을
+     만들며 입력을 다시 붙여, 첫 탭의 초점이 곧바로 풀리고 글자가 들어가지 않았습니다(2026-11-12 에뮬레이터 확인).
+     포커스 상태는 색만 바꿉니다. */
+  box-shadow:
+    0 0 0 var(--libitum-stroke-width-strong) transparent,
+    0 0 0 var(--libitum-spacing-4) transparent;
   transition:
     background-color var(--libitum-motion-duration-color) var(--libitum-motion-easing-easing),
     border-color var(--libitum-motion-duration-color) var(--libitum-motion-easing-easing);

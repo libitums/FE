@@ -48,7 +48,7 @@ const events: readonly AnalyticsEvent[] = [
   { name: "episode_intro_skipped", episodeId: "tutorial" },
   { name: "episode_intro_continued", episodeId: "tutorial", hasPrologue: true },
   { name: "episode_intro_exited", episodeId: "tutorial", stage: "prologue" },
-  { name: "episode_survey_answered", episodeId: "tutorial", rating: "4" },
+  { name: "episode_survey_answered", episodeId: "tutorial", rating: "4", hasMessage: false },
   { name: "episode_survey_skipped", episodeId: "tutorial" },
   { name: "episode_prologue_completed", episodeId: "tutorial", prologueKind: "cuts" },
 ];

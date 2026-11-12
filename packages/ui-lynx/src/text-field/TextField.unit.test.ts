@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 
 import { describe, expect, test } from "vitest";
 
-import { getTextFieldContract } from "./text-field.contract";
+import { getTextFieldContract, keyboardHeightInLayoutUnits } from "./text-field.contract";
 
 describe("getTextFieldContract", () => {
   test("기본 상태는 Empty + Unfocused + None + Enabled다", () => {
@@ -115,4 +115,36 @@ describe("text-field.css", () => {
       /\.ui-lynx-text-field-disabled\s+\.ui-lynx-text-field-trailing-action:active\s+\.ui-lynx-text-field-trailing-action-icon-pressed\s*\{[^}]*opacity:\s*0/,
     );
   });
+});
+
+// Android `keyboardheightchange`의 `height`는 물리 픽셀이고(에뮬레이터 실측 882 = 336dp × 2.625), iOS는 pt다.
+// 소비자가 레이아웃 px로 바로 쓰도록 맞춥니다(2026-11-12 에피소드 설문 e2e).
+
+test("[TF-K3] Android는 물리 픽셀을 밀도로 나눈다", () => {
+  expect(keyboardHeightInLayoutUnits(882, { platform: "Android", pixelRatio: 2.625 })).toBe(336);
+});
+
+test("[TF-K4] iOS는 그대로", () => {
+  expect(keyboardHeightInLayoutUnits(336, { platform: "iOS", pixelRatio: 3 })).toBe(336);
+});
+
+test("[TF-K5] 유한한 양수가 아니거나 정보가 없으면 안전하게", () => {
+  expect(keyboardHeightInLayoutUnits(Number.NaN, { platform: "Android", pixelRatio: 2 })).toBe(0);
+  expect(keyboardHeightInLayoutUnits(-5, undefined)).toBe(0);
+  expect(keyboardHeightInLayoutUnits(300, undefined)).toBe(300);
+  expect(keyboardHeightInLayoutUnits(600, { platform: "Android", pixelRatio: 0 })).toBe(600);
+});
+
+test("[TF-K6] 포커스 링의 그림자 층은 처음부터 있다 — 포커스 때 box-shadow가 새로 생기면 Android 첫 탭 초점이 풀린다", () => {
+  const styles = readFileSync(resolve(process.cwd(), "src/text-field/text-field.css"), "utf8");
+  const base = /\.ui-lynx-text-field-surface\s*\{([^}]*)\}/.exec(styles)?.[1] ?? "";
+  const focused =
+    /\.ui-lynx-text-field-focused \.ui-lynx-text-field-surface\s*\{([^}]*)\}/.exec(styles)?.[1] ??
+    "";
+  const layers = (rule: string) =>
+    (/box-shadow:([^;]*);/.exec(rule)?.[1] ?? "").split(",").filter((l) => l.trim() !== "").length;
+
+  expect(layers(base)).toBe(2);
+  expect(base).toMatch(/box-shadow:[^;]*transparent[^;]*transparent/);
+  expect(layers(focused)).toBe(layers(base));
 });
