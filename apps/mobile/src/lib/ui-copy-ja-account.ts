@@ -114,6 +114,7 @@ export const feedbackJa: FeedbackCopy = {
   failed: "フィードバックを送信できませんでした。もう一度お試しください。",
   survey: {
     title: "このエピソードはいかがでしたか？",
+    messageLabel: "どこを良くすればいいですか？（任意）",
     description: (episodeTitle) => `${episodeTitle}を終えました。感想を聞かせてください。`,
     skip: "あとで",
   },

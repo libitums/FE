@@ -106,6 +106,7 @@ export const feedbackVi: FeedbackCopy = {
   failed: "Không thể gửi góp ý. Vui lòng thử lại.",
   survey: {
     title: "Bạn thấy tập này thế nào?",
+    messageLabel: "Chúng tôi nên cải thiện điều gì? (không bắt buộc)",
     description: (episodeTitle) =>
       `Bạn đã hoàn thành ${episodeTitle}. Hãy cho chúng tôi biết cảm nhận của bạn.`,
     skip: "Để sau",

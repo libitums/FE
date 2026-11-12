@@ -400,10 +400,77 @@ describe("TU10 설문", () => {
     fireEvent.tap(screen.getByTestId("ui-lynx-option-selector-item-5"), {});
     await flushAsync();
 
-    expect(events).toContainEqual({ name: "episode_survey_answered", episodeId: U00, rating: "5" });
+    expect(events).toContainEqual({
+      name: "episode_survey_answered",
+      episodeId: U00,
+      rating: "5",
+      hasMessage: false,
+    });
     const submitted = rpcs.filter((rpc) => rpc.name === "submit_feedback");
     expect(submitted).toHaveLength(1);
     expect((submitted[0]?.body["p_context"] as Record<string, string>)["episodeId"]).toBe(U00);
+  });
+});
+
+describe("TU11 낮은 별점 글", () => {
+  test("TU11. u00을 끝내고 2점 → 글 → Send면 서버에 별점 · 글이 가고 이벤트는 글 유무만, 평점 창은 없다", async () => {
+    const { events, rpcs, requestReview } = await bootTutorialApp({
+      progressSeed: { catalogProgress: { [U00]: keysWithout("RP") } },
+    });
+    const plan = finalPlanOf(U00, 0);
+
+    tapNode(U00, "RP");
+    solveFinalTurns(plan.turns);
+    useBannerClock();
+    exitResult();
+    readAllCuts(4);
+    await settleFake();
+    passBanner();
+    await flushAsync();
+
+    await vi.waitFor(() => {
+      const back = screen.queryByTestId("journey-stat-modal-back");
+      if (back !== null) {
+        act(() => {
+          fireEvent.tap(back.querySelector('[data-testid="ui-lynx-round-button"]') as Element, {});
+        });
+      }
+      expect(screen.getByTestId("episode-survey-options")).toBeInTheDocument();
+    });
+
+    fireEvent.tap(screen.getByTestId("ui-lynx-option-selector-item-2"), {});
+    await flushAsync();
+    expect(rpcs.filter((rpc) => rpc.name === "submit_feedback")).toHaveLength(0);
+
+    const input = screen.getByTestId("ui-lynx-text-field-input");
+    const EventConstructor = input.ownerDocument.defaultView!.CustomEvent;
+    const ref = lynx.createSelectorQuery().select('[data-testid="ui-lynx-text-field-input"]');
+    fireEvent(
+      ref as unknown as Element,
+      new EventConstructor("bindEvent:input", { detail: { value: " Too many words at once. " } }),
+    );
+    fireEvent.tap(
+      within(screen.getByTestId("episode-survey-send")).getByTestId("ui-lynx-button"),
+      {},
+    );
+    await flushAsync();
+
+    expect(screen.queryByTestId("episode-survey-message")).toBeNull();
+    expect(events).toContainEqual({
+      name: "episode_survey_answered",
+      episodeId: U00,
+      rating: "2",
+      hasMessage: true,
+    });
+    const submitted = rpcs.filter((rpc) => rpc.name === "submit_feedback");
+    expect(submitted).toHaveLength(1);
+    expect(submitted[0]?.body).toMatchObject({
+      p_kind: "episode",
+      p_rating: 2,
+      p_message: "Too many words at once.",
+      p_context: { episodeId: U00 },
+    });
+    expect(requestReview).not.toHaveBeenCalled();
   });
 });
 

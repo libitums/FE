@@ -62,7 +62,11 @@ export type AppHeaderProps = {
    * 건너뛰면 `onEpisodeSurveyClosed`가 불립니다.
    */
   readonly episodeSurvey?: { readonly id: string; readonly title: string } | null;
-  readonly onAnswerEpisodeSurvey?: (episodeId: string, rating: FeedbackRating) => void;
+  readonly onAnswerEpisodeSurvey?: (
+    episodeId: string,
+    rating: FeedbackRating,
+    message: string | null,
+  ) => void;
   readonly onSkipEpisodeSurvey?: (episodeId: string) => void;
   /**
    * 활동으로 오르기 전 값입니다(ADR-0064). 칩은 레이어가 모두 닫힌 뒤 한 번 굴립니다 — 연속 모달이 곧 열릴 참이면
@@ -205,9 +209,9 @@ export function AppHeader({
       {openLayer === "survey" && episodeSurvey !== null ? (
         <EpisodeSurveySheet
           episodeTitle={episodeSurvey.title}
-          onAnswer={(rating) => {
+          onAnswer={(rating, message) => {
             close();
-            onAnswerEpisodeSurvey?.(episodeSurvey.id, rating);
+            onAnswerEpisodeSurvey?.(episodeSurvey.id, rating, message);
           }}
           onSkip={() => {
             close();

@@ -8,7 +8,11 @@ import type {
 import { useState } from "@lynx-js/react";
 import { color } from "@libitums/design-tokens";
 
-import { getTextFieldContract, type TextFieldProps } from "./text-field.contract";
+import {
+  getTextFieldContract,
+  keyboardHeightInLayoutUnits,
+  type TextFieldProps,
+} from "./text-field.contract";
 
 function renderIcon(icon: string, testId: string, currentColor: string, className?: string) {
   return (
@@ -54,6 +58,20 @@ export function TextField(props: TextFieldProps) {
     "background only";
     props.bindconfirm?.(event.detail.value);
   }
+
+  // `keyboardheightchange`(iOS · Android)는 @lynx-js/types의 input 속성에 없어 펼침으로 겁니다. 받는 쪽이 있을 때만 겁니다.
+  const keyboardProps = props.bindkeyboardheightchange
+    ? {
+        bindkeyboardheightchange: (event: { detail: { height?: number } }) => {
+          "background only";
+          const height = event.detail.height;
+          const info = typeof SystemInfo === "undefined" ? undefined : SystemInfo;
+          props.bindkeyboardheightchange?.(
+            keyboardHeightInLayoutUnits(typeof height === "number" ? height : 0, info),
+          );
+        },
+      }
+    : {};
 
   function handleTrailingActionTap() {
     "background only";
@@ -116,6 +134,7 @@ export function TextField(props: TextFieldProps) {
         ) : null}
 
         <input
+          id={props.id}
           className="ui-lynx-text-field-input"
           data-testid="ui-lynx-text-field-input"
           accessibility-element={true}
@@ -132,6 +151,7 @@ export function TextField(props: TextFieldProps) {
           bindfocus={handleFocus}
           bindblur={handleBlur}
           bindconfirm={handleConfirm}
+          {...keyboardProps}
         />
 
         {props.trailing ? (

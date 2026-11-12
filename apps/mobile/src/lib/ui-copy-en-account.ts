@@ -106,6 +106,7 @@ export const feedbackEn: FeedbackCopy = {
   failed: "Couldn't send your feedback. Please try again.",
   survey: {
     title: "How was this episode?",
+    messageLabel: "What could be better? (optional)",
     description: (episodeTitle) => `You finished ${episodeTitle}. Tell us what you thought.`,
     skip: "Not now",
   },

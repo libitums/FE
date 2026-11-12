@@ -43,6 +43,8 @@ export type FeedbackCopy = {
   /** 에피소드 끝 설문입니다. */
   readonly survey: {
     readonly title: string;
+    /** 1~3점을 고른 뒤 여는 선택 글 칸의 라벨입니다. */
+    readonly messageLabel: string;
     readonly description: (episodeTitle: string) => string;
     readonly skip: string;
   };

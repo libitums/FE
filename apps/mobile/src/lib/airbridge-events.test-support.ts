@@ -86,7 +86,7 @@ export const unmappedEvents = [
     episodeCount: "1",
     replacedCount: "1",
   },
-  { name: "episode_survey_answered", episodeId: "tutorial", rating: "4" },
+  { name: "episode_survey_answered", episodeId: "tutorial", rating: "4", hasMessage: false },
   { name: "episode_survey_skipped", episodeId: "tutorial" },
   {
     name: "episode_lesson_started",

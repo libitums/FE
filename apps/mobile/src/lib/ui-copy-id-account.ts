@@ -115,6 +115,7 @@ export const feedbackId: FeedbackCopy = {
   failed: "Masukan kamu tidak dapat dikirim. Silakan coba lagi.",
   survey: {
     title: "Bagaimana episode ini?",
+    messageLabel: "Apa yang bisa kami perbaiki? (opsional)",
     description: (episodeTitle) =>
       `Kamu telah menyelesaikan ${episodeTitle}. Ceritakan pendapat kamu.`,
     skip: "Nanti saja",

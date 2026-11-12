@@ -33,6 +33,8 @@ export type TextFieldCounter = {
 };
 
 export type TextFieldProps = {
+  /** native `<input>`의 `id`입니다 — 소비자가 접근성 초점을 이 칸으로 보낼 때 씁니다. */
+  id?: string;
   accessibilityLabel?: string;
   label?: string;
   qualifier?: string;
@@ -48,6 +50,8 @@ export type TextFieldProps = {
   bindfocus?: (value: string) => void;
   bindblur?: (value: string) => void;
   bindconfirm?: (value: string) => void;
+  /** 이 칸이 띄운 시스템 키보드의 높이가 바뀔 때(내려가면 0)입니다. 단위는 레이아웃 px(iOS pt · Android dp — Android 물리 픽셀은 밀도로 나눔). 아래에 붙은 시트가 키보드 위로 올라갈 때 씁니다. */
+  bindkeyboardheightchange?: (height: number) => void;
 };
 
 export type TextFieldRuntimeState = {
@@ -171,4 +175,20 @@ export function getTextFieldContract(
     validation,
     visualState,
   };
+}
+
+/** `keyboardheightchange`를 레이아웃 단위로 맞출 때 보는 기기 정보입니다(`SystemInfo`의 부분). */
+export type KeyboardUnitInfo = { readonly platform: string; readonly pixelRatio: number };
+
+/**
+ * 키보드 높이를 레이아웃 px(pt/dp)로 바꿉니다. Android의 `height`는 물리 픽셀이라 `pixelRatio`로 나누고, iOS는 pt
+ * 그대로입니다. 유한한 양수가 아니면 0, 기기 정보가 없거나 밀도가 이상하면 받은 값 그대로입니다.
+ */
+export function keyboardHeightInLayoutUnits(
+  height: number,
+  info: KeyboardUnitInfo | undefined,
+): number {
+  if (!Number.isFinite(height) || height <= 0) return 0;
+  if (info?.platform !== "Android" || !(info.pixelRatio > 0)) return height;
+  return Math.round(height / info.pixelRatio);
 }

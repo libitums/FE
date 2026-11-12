@@ -1,4 +1,5 @@
-/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). 보기 목록과 건너뛰기 사이를 띄웁니다. */
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). 보기 목록 · 글 칸과 버튼 사이를 띄웁니다. */
+.episode-survey-send,
 .episode-survey-skip {
   margin-top: var(--libitum-spacing-16);
 }

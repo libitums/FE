@@ -16,15 +16,21 @@ export function episodeSurveyWiring({
   readonly onClosed: () => void;
 }) {
   return {
-    onAnswerEpisodeSurvey: (episodeId: string, rating: FeedbackRating): void => {
+    /** `message`는 1~3점의 글 단계에서 보낸 글입니다(비었거나 4 · 5점이면 `null`). 이벤트에는 유무만 싣습니다. */
+    onAnswerEpisodeSurvey: (
+      episodeId: string,
+      rating: FeedbackRating,
+      message: string | null,
+    ): void => {
       markEpisodeSurveyDone(episodeId);
       onClosed();
       episodeIntroEventSink?.({
         name: "episode_survey_answered",
         episodeId,
         rating: String(rating),
+        hasMessage: message !== null,
       });
-      void submitFeedback({ kind: "episode", rating, message: null, context: { episodeId } }).catch(
+      void submitFeedback({ kind: "episode", rating, message, context: { episodeId } }).catch(
         () => undefined,
       );
       if (rating >= appReviewMinimumRating) requestAppReviewOnce();

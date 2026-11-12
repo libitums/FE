@@ -394,6 +394,13 @@ import "@libitums/ui-lynx/text-field/styles.css";
 />;
 ```
 
+2026-11-12: `bindkeyboardheightchange(height)`를 더했다. 이 칸이 띄운 시스템 키보드 높이(내려가면 0)를 `<input>`의
+`keyboardheightchange`(iOS · Android)에서 받아 넘긴다. 호스트가 키보드에 화면을 줄이지 않으므로, 화면 아래에 붙은 시트처럼
+가려질 수 있는 소비자가 그 높이만큼 비우는 데 쓴다(앱의 에피소드 설문 글 단계, ADR-0036 ⟨2026-11-12⟩).
+높이는 레이아웃 px다 — Android의 물리 픽셀은 `SystemInfo.pixelRatio`로 나눈다(`keyboardHeightInLayoutUnits`). 같은 날 `id`(native
+`<input>`의 id — 접근성 초점 대상)를 더했고, 포커스 링의 `box-shadow` 층을 처음부터 투명하게 두도록 바꿨다 — 포커스 순간 그림자가 새로
+생기면 Android Lynx가 입력을 다시 붙여 첫 탭 초점이 풀렸다.
+
 `Tooltip`은 Message와 배치 표현만 소유한다. 트리거와 pointer/focus/press/programmatic 열기,
 ESC·뒤로가기·outside tap dismiss, Auto timer는 제품 host가 소유한다. host가 trigger, bubble,
 boundary의 측정을 모두 완료한 뒤 geometry를 `resolveTooltipLayout`에 넘기면 Flip·Shift와 Arrow

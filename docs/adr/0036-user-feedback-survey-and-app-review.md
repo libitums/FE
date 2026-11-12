@@ -76,3 +76,28 @@
 - **D3 — 설문 대상은 튜토리얼 하나 그대로이고, 그 튜토리얼이 `u00-tutorial`이다**(`SURVEY_EPISODE_IDS`, 제목 `Tutorial`). u00의 완료 키를 모두 끝낸 순간 대기된다. 카탈로그 다른 에피소드로 넓히지 않았다.
 - 이벤트 `episode_survey_answered` · `_skipped`의 `episodeId`가 `tutorial` → `u00-tutorial`이다. 옛 설문 기억(`libitum.episode-survey.done`의 `tutorial`)은 id가 달라 이어지지 않는다 — 옛 튜토리얼 설문에 답한 사람도 u00을 끝내면 한 번 더 묻는다(ADR-0081 대가 4).
 - D4(평점 요청 — 설문 5점 뒤)는 그대로다.
+
+## 적용 기록 ⟨2026-11-12 — 낮은 별점 글 단계⟩
+
+사용자 결정(2026-11-12): 에피소드 끝 설문에 글 칸이 없어 아쉬운 점을 받지 못한다 → 낮은 점수일 때만 묻는다. 근거: 운영
+`feedback` 표에 설문 769건 · 글 0건, 1~3점 228건(29.6 %).
+
+- **D3 개정 — 「보기 다섯 중 하나를 누르면 끝난다」는 4 · 5점에만 남는다.** 1 · 2 · 3점(`surveyMessageMaxRating = 3`)을 누르면
+  같은 시트에서 선택 글 칸(「What could be better? (optional)」, 500자 — 설정 피드백과 같은 상한) · 「Send」 · 「Not now」로
+  바뀐다. Send = 그 별점 + 글(앞뒤 공백 제거, 비면 `null`).
+- **글 단계의 닫는 길(Not now · 닫기 · 바깥 · 끌어내림 · 시스템 뒤로)은 건너뛰기가 아니라 「그 별점 + 글 없음」의 답이다** —
+  고른 별점을 버리지 않아 별점 건수가 이전 집계와 이어진다. 별점 단계의 닫는 길은 그대로 건너뛰기다.
+- 이벤트 `episode_survey_answered`에 `hasMessage: boolean`을 더한다(글 본문은 싣지 않는다 — `feedback_submitted`와 같은 규칙).
+  서버 · RPC는 바뀌지 않는다(`p_message`는 처음부터 받았다).
+- 호스트가 시스템 키보드에 화면을 줄이지 않아(iOS 확인) 아래에 붙은 시트의 글 칸이 키보드에 가렸다. `TextField`가
+  `<input>`의 `keyboardheightchange`(iOS · Android)를 `bindkeyboardheightchange`로 넘기고, 시트는 글 단계에서 그 높이만큼
+  아래를 비워 키보드 위로 올라간다.
+- `bindkeyboardheightchange`의 높이는 **Android에서 물리 픽셀**이다(에뮬레이터 실측 882 = 336dp × 2.625). `TextField`가
+  `SystemInfo.pixelRatio`로 나눠 레이아웃 단위로 넘긴다(iOS pt는 그대로).
+- **Android에서 `TextField`의 첫 탭 초점이 곧바로 풀렸다** — 이 변경 전부터 있던 결함으로, 설정 「Send feedback」 칸도 첫 탭에
+  키보드만 뜨고 글자가 들어가지 않았다(두 번째 탭부터 정상). 원인은 포커스 순간 새로 생기는 포커스 링 `box-shadow`(Lynx Android가
+  그림자 층을 만들며 입력을 다시 붙임). 그림자 층을 처음부터 투명하게 두고 포커스 때 색만 바꿔 고쳤다. 설정 피드백 글이 0건인 것과
+  관계가 있을 수 있으나 확인하지 않았다.
+- 1~3점을 고르면 다음 프레임에 글 칸으로 접근성 초점을 옮기고 고른 별점(「2 · Could be better」)을 낭독한다(접근성 점검 M1).
+- D4(평점 요청 — 4점 이상 뒤)는 그대로다. 게스트 제외 · 튜토리얼에서만 묻기도 그대로다.
+- 수동 절차: [설문 글 단계 e2e](../e2e/episode-survey-low-rating-message.md).
