@@ -93,6 +93,9 @@ public final class MainActivity extends Activity {
     builder.registerModule("ContentFileModule", ContentFileModule.class);
     // 분석 이벤트에 싣는 연결 종류(ADR-0096). 이미 있는 ACCESS_NETWORK_STATE만 쓴다.
     builder.registerModule("NetworkStatusModule", NetworkStatusModule.class);
+    // 자유 대화 답을 SSE 블록 단위로 받는다(ADR-0124). 결과는 전역 이벤트 셋으로만 — 출구는 sendChatStreamEvent.
+    builder.registerModule("ChatStreamModule", ChatStreamModule.class);
+    ChatStreamModule.setSink(this::sendChatStreamEvent);
     // 측정 빌드의 성능 기록(ADR-0105 D2). JS가 PUBLIC_PERF_PROBE=1일 때만 부른다.
     builder.registerModule("PerfLogModule", PerfLogModule.class);
     builder.registerModule("AppReviewModule", AppReviewModule.class, this);
@@ -173,6 +176,14 @@ public final class MainActivity extends Activity {
     mainHandler.post(() -> {
       if (lynxView == null || isFinishing() || isDestroyed()) return;
       lynxView.sendGlobalEvent("contentSyncOpportunity", new JavaOnlyArray());
+    });
+  }
+
+  // OkHttp 스레드에서 불리므로 UI 스레드로 옮겨 보낸다. 순서는 mainHandler가 지킨다.
+  private void sendChatStreamEvent(String name, JavaOnlyArray args) {
+    mainHandler.post(() -> {
+      if (lynxView == null || isFinishing() || isDestroyed()) return;
+      lynxView.sendGlobalEvent(name, args);
     });
   }
 
@@ -360,6 +371,7 @@ public final class MainActivity extends Activity {
   }
 
   @Override protected void onDestroy() {
+    ChatStreamModule.setSink(null);
     reducedMotionWatcher.stop();
     if (networkCallback != null) {
       ConnectivityManager connectivity = getSystemService(ConnectivityManager.class);

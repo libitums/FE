@@ -115,16 +115,16 @@ test("HS1 (r03 band-decor): the real streak-modal CSS gives meteor c no top, and
   );
 });
 
-// 12번째는 ADR-0071의 `ContentFileModule`, 13번째는 ADR-0086의 `AppUpdateModule`, 14번째는 ADR-0096의 `NetworkStatusModule`, 15번째는 ADR-0105의 `PerfLogModule`이다 — 넷 다 상태바 모듈이 아니다. 새 모듈은 이 수를 함께 올린다.
-test("HS2: guard — MainActivity registers 15 modules and none is a status-bar module", () => {
+// 12번째는 ADR-0071의 `ContentFileModule`, 13번째는 ADR-0086의 `AppUpdateModule`, 14번째는 ADR-0096의 `NetworkStatusModule`, 15번째는 ADR-0105의 `PerfLogModule`, 16번째는 ADR-0124의 `ChatStreamModule`이다 — 다섯 다 상태바 모듈이 아니다. 새 모듈은 이 수를 함께 올린다.
+test("HS2: guard — MainActivity registers 16 modules and none is a status-bar module", () => {
   const activity = stripJavaComments(readFileSync(mainActivityPath, "utf8"));
   const registered = [...activity.matchAll(/registerModule\s*\(\s*"([^"]*)"/g)].map((m) => m[1]);
   assert.equal(
     (activity.match(/registerModule\s*\(/g) ?? []).length,
-    15,
-    "the number of registerModule( calls must stay 15 (no new native module)",
+    16,
+    "the number of registerModule( calls must stay 16 (no new native module)",
   );
-  assert.equal(registered.length, 15, "every registerModule( call names its module by a literal");
+  assert.equal(registered.length, 16, "every registerModule( call names its module by a literal");
   assert.deepEqual(
     registered.filter((name) => /StatusBar/i.test(name)),
     [],
