@@ -65,7 +65,7 @@ export function EpisodeSurveySheet({
       announce(spoken);
     }, NEXT_FRAME_MS);
     return () => clearTimeout(handle);
-  }, [pending]);
+  }, [pending, copy]);
   // 시스템 뒤로가기 = 보이는 닫는 길과 같은 결과입니다. 설문이 서 있는 동안만 등록됩니다.
   useLayerBack(close);
   return (
