@@ -90,7 +90,8 @@ describe("BottomSheet contract", () => {
     expect(styles).toContain("var(--libitum-radius-lg)");
     expect(styles).toContain("var(--libitum-spacing-16)");
     expect(styles).toContain("env(safe-area-inset-bottom)");
-    expect(styles).toMatch(/ui-lynx-bottom-sheet-body[\s\S]*flex:\s*1/);
+    // 설명 body는 내용 높이로 선다 — flex: 1(기준 0)이면 아래 내용 칸이 있을 때 Android에서 0으로 접혀 설명이 빈칸으로 보였다.
+    expect(styles).toMatch(/\.ui-lynx-bottom-sheet-body\s*\{[^}]*flex:\s*0 1 auto/);
     expect(styles).toMatch(/ui-lynx-bottom-sheet-actions[\s\S]*flex-shrink:\s*0/);
     expect(styles).toContain("var(--libitum-motion-duration-sheet)");
     expect(styles).toContain("var(--libitum-motion-easing-enter)");

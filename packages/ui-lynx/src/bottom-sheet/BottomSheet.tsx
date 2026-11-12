@@ -90,6 +90,8 @@ export function BottomSheet(props: BottomSheetProps) {
               <text
                 className="ui-lynx-bottom-sheet-overline"
                 data-testid="ui-lynx-bottom-sheet-overline"
+                flatten={false}
+                accessibility-element={true}
               >
                 {contract.overline}
               </text>
@@ -97,6 +99,9 @@ export function BottomSheet(props: BottomSheetProps) {
             <text
               className="ui-lynx-bottom-sheet-title"
               data-testid="ui-lynx-bottom-sheet-title"
+              // Android는 접근성 요소로 세우지 않은 글을 펴서 트리에서 지웁니다(기기 확인) — 머리글 · 설명도 같습니다.
+              flatten={false}
+              accessibility-element={true}
               accessibility-traits="header"
             >
               {contract.title}
@@ -106,6 +111,7 @@ export function BottomSheet(props: BottomSheetProps) {
             <view
               className="ui-lynx-bottom-sheet-close"
               data-testid="ui-lynx-bottom-sheet-close"
+              flatten={false}
               accessibility-element={true}
               accessibility-label={contract.closeAccessibilityLabel}
               accessibility-traits="button"
@@ -138,6 +144,8 @@ export function BottomSheet(props: BottomSheetProps) {
               <text
                 className="ui-lynx-bottom-sheet-description"
                 data-testid="ui-lynx-bottom-sheet-description"
+                flatten={false}
+                accessibility-element={true}
               >
                 {contract.description}
               </text>

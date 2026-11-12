@@ -39,6 +39,23 @@ describe("BottomSheet", () => {
     );
   });
 
+  test("머리글 · 제목 · 설명 · 닫기는 펴지지 않는 접근성 요소다(Android가 접근성 요소가 아닌 글을 트리에서 지웠다)", () => {
+    render(
+      <BottomSheet
+        overline="학습 도구"
+        title="잠깐 쉬어 갈까요?"
+        description="오디오를 다시 듣고 이어서 학습할 수 있어요"
+        closeAccessibilityLabel="닫기"
+        ondismiss={() => undefined}
+      />,
+    );
+    for (const id of ["overline", "title", "description", "close"]) {
+      const el = screen.getByTestId(`ui-lynx-bottom-sheet-${id}`);
+      expect(el).toHaveAttribute("accessibility-element", "true");
+      expect(el).toHaveAttribute("flatten", "false");
+    }
+  });
+
   test("scrim과 닫기 버튼이 dismiss reason을 전달한다", () => {
     const ondismiss = vi.fn<(reason: "scrim" | "close-button" | "drag") => void>();
     render(
