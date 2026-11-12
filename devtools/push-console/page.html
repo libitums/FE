@@ -1417,12 +1417,18 @@
       // ---------------------------------------------------------------- 결과
       let currentCampaign = null;
       const segmentLabel = (id) => state.segments.find((segment) => segment.id === id)?.label ?? id;
-      const campaignStatus = (campaign) =>
-        campaign.status === "sent"
-          ? (campaign.totals?.failedCalls ?? 0) > 0
-            ? '<span class="status retry t-label-m">일부 실패</span>'
-            : '<span class="status completed t-label-m">보냄</span>'
-          : '<span class="status progress t-label-m">보내는 중</span>';
+      // 「scheduled」 — 컴퓨터가 꺼져 있을 때를 위해 Supabase pg_cron에 넘긴 발송(README). 전달 수는 기록에 없어요.
+      const campaignStatus = (campaign) => {
+        if (campaign.status === "scheduled")
+          return campaign.sentAtMs > Date.now()
+            ? `<span class="status progress t-label-m">예약 · ${new Date(campaign.sentAtMs).getHours()}시</span>`
+            : '<span class="status completed t-label-m">예약 발송</span>';
+        if (campaign.status !== "sent")
+          return '<span class="status progress t-label-m">보내는 중</span>';
+        return (campaign.totals?.failedCalls ?? 0) > 0
+          ? '<span class="status retry t-label-m">일부 실패</span>'
+          : '<span class="status completed t-label-m">보냄</span>';
+      };
 
       let currentSeries = null;
       function renderSeries() {
@@ -1619,7 +1625,7 @@
             <div class="kpis">
               <div class="kpi"><span class="t-label-m muted">보낸 그룹</span><span class="t-metric sent-color">${results.counts.sent}</span></div>
               <div class="kpi"><span class="t-label-m muted">대조군</span><span class="t-metric control-color">${results.counts.control}</span></div>
-              <div class="kpi"><span class="t-label-m muted">기기 전달 성공</span><span class="t-metric">${totals.sent ?? 0}</span></div>
+              <div class="kpi"><span class="t-label-m muted">기기 전달 성공</span><span class="t-metric">${campaign.status === "scheduled" ? "—" : (totals.sent ?? 0)}</span></div>
               <div class="kpi"><span class="t-label-m muted">전달 실패</span><span class="t-metric">${(totals.failed ?? 0) + (totals.failedCalls ?? 0)}</span></div>
             </div>
             <div>
