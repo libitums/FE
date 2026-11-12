@@ -1,0 +1,1880 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>푸시 콘솔</title>
+    <!-- 디자인 시스템(libitums/design-system) — 토큰 · 폰트는 서버가 설치된 패키지에서 내줍니다. 값을 여기에 적지 않습니다. -->
+    <link rel="stylesheet" href="/ds/variables.css" />
+    <link rel="stylesheet" href="/ds/typography.css" />
+    <link rel="stylesheet" href="/fonts/pretendard/pretendardvariable-dynamic-subset.css" />
+    <link rel="stylesheet" href="/fonts/jost/index.css" />
+    <style>
+      /* 타이포 — typography.* 토큰 묶음 */
+      .t-heading-m {
+        font: var(--libitum-typography-heading-m-font-weight)
+          var(--libitum-typography-heading-m-font-size) /
+          var(--libitum-typography-heading-m-line-height) var(--libitum-font-family-default);
+        letter-spacing: var(--libitum-typography-heading-m-letter-spacing);
+      }
+      .t-heading-s {
+        font: var(--libitum-typography-heading-s-font-weight)
+          var(--libitum-typography-heading-s-font-size) /
+          var(--libitum-typography-heading-s-line-height) var(--libitum-font-family-default);
+      }
+      .t-body-m {
+        font: var(--libitum-typography-body-m-font-weight)
+          var(--libitum-typography-body-m-font-size) / var(--libitum-typography-body-m-line-height)
+          var(--libitum-font-family-default);
+      }
+      .t-body-s {
+        font: var(--libitum-typography-body-s-font-weight)
+          var(--libitum-typography-body-s-font-size) / var(--libitum-typography-body-s-line-height)
+          var(--libitum-font-family-default);
+      }
+      .t-label-l {
+        font: var(--libitum-typography-label-l-font-weight)
+          var(--libitum-typography-label-l-font-size) /
+          var(--libitum-typography-label-l-line-height) var(--libitum-font-family-default);
+      }
+      .t-label-m {
+        font: var(--libitum-typography-label-m-font-weight)
+          var(--libitum-typography-label-m-font-size) /
+          var(--libitum-typography-label-m-line-height) var(--libitum-font-family-default);
+        letter-spacing: var(--libitum-typography-label-m-letter-spacing);
+      }
+      .t-caption {
+        font: var(--libitum-typography-caption-font-weight)
+          var(--libitum-typography-caption-font-size) /
+          var(--libitum-typography-caption-line-height) var(--libitum-font-family-default);
+        letter-spacing: var(--libitum-typography-caption-letter-spacing);
+      }
+      .t-metric {
+        font: var(--libitum-typography-accent-chapter-font-weight)
+          var(--libitum-typography-accent-chapter-font-size) /
+          var(--libitum-typography-accent-chapter-line-height) var(--libitum-font-family-accent);
+        letter-spacing: var(--libitum-typography-accent-chapter-letter-spacing);
+        font-variant-numeric: tabular-nums;
+      }
+      .muted {
+        color: var(--libitum-color-fg-neutral-muted);
+      }
+      .subtle {
+        color: var(--libitum-color-fg-neutral-subtle);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--libitum-elevation-surface-basement);
+        color: var(--libitum-color-fg-neutral);
+        font: var(--libitum-typography-body-m-font-weight)
+          var(--libitum-typography-body-m-font-size) / var(--libitum-typography-body-m-line-height)
+          var(--libitum-font-family-default);
+      }
+      :focus-visible {
+        outline: none;
+        box-shadow:
+          0 0 0 var(--libitum-stroke-width-strong) var(--libitum-color-white),
+          0 0 0 var(--libitum-spacing-4) var(--libitum-color-border-strong);
+      }
+
+      /* 헤더 — 고정 표면 */
+      header {
+        position: sticky;
+        top: 0;
+        z-index: var(--libitum-elevation-z-sticky);
+        display: flex;
+        align-items: center;
+        gap: var(--libitum-spacing-12);
+        padding: var(--libitum-spacing-12) var(--libitum-spacing-24);
+        background: var(--libitum-elevation-surface-default);
+        box-shadow: var(--libitum-elevation-shadow-s1);
+      }
+      header h1 {
+        margin: 0;
+      }
+      header .meta {
+        flex: 1;
+      }
+      nav {
+        display: flex;
+        gap: var(--libitum-spacing-8);
+      }
+
+      main {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: var(--libitum-spacing-24) var(--libitum-spacing-24) var(--libitum-spacing-64);
+        display: grid;
+        gap: var(--libitum-layout-gap-block);
+      }
+      section[hidden] {
+        display: none !important;
+      }
+      section {
+        display: grid;
+        gap: var(--libitum-layout-gap-block);
+      }
+
+      /* Card — components/card.md */
+      .card {
+        background: var(--libitum-elevation-surface-default);
+        border-radius: var(--libitum-radius-md);
+        box-shadow: var(--libitum-elevation-shadow-s1);
+        padding: var(--libitum-spacing-24);
+        min-width: 0;
+      }
+      .card-head {
+        display: flex;
+        align-items: flex-start;
+        gap: var(--libitum-spacing-8);
+        margin-bottom: var(--libitum-spacing-12);
+      }
+      .card-head .title-block {
+        flex: 1;
+      }
+      .overline {
+        color: var(--libitum-color-fg-brand);
+        margin-bottom: var(--libitum-spacing-4);
+      }
+      .card h2 {
+        margin: 0;
+      }
+      .grid2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--libitum-layout-gap-block);
+      }
+      .layout {
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        gap: var(--libitum-layout-gap-block);
+        align-items: start;
+      }
+      @media (max-width: 900px) {
+        .grid2,
+        .layout {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* Button — components/button.md (S · M, Neutral · Brand · Outline · Subtle · Text) */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--libitum-spacing-8);
+        border: 0;
+        cursor: pointer;
+        white-space: nowrap;
+        font: var(--libitum-typography-button-m-font-weight)
+          var(--libitum-typography-button-m-font-size) /
+          var(--libitum-typography-button-m-line-height) var(--libitum-font-family-default);
+        padding: var(--libitum-spacing-8) var(--libitum-spacing-16);
+        border-radius: var(--libitum-radius-md);
+        transition: background-color var(--libitum-motion-duration-pressed)
+          var(--libitum-motion-easing-easing);
+      }
+      .btn.s {
+        font: var(--libitum-typography-button-s-font-weight)
+          var(--libitum-typography-button-s-font-size) /
+          var(--libitum-typography-button-s-line-height) var(--libitum-font-family-default);
+        letter-spacing: var(--libitum-typography-button-s-letter-spacing);
+        padding: var(--libitum-spacing-6) var(--libitum-spacing-12);
+      }
+      .btn.fill {
+        width: 100%;
+      }
+      .btn.neutral {
+        background: var(--libitum-color-gray-800);
+        color: var(--libitum-color-gray-50);
+      }
+      .btn.neutral:active {
+        background: var(--libitum-color-gray-900);
+      }
+      .btn.brand {
+        background: var(--libitum-color-brand-primary);
+        color: var(--libitum-color-white);
+      }
+      .btn.brand:active {
+        background: var(--libitum-color-brand-primary-pressed);
+      }
+      .btn.outline {
+        background: var(--libitum-color-white);
+        color: var(--libitum-color-fg-neutral-muted);
+        border: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
+      }
+      .btn.outline:active {
+        background: var(--libitum-color-gray-100);
+      }
+      .btn.subtle {
+        background: var(--libitum-color-gray-100);
+        color: var(--libitum-color-fg-neutral-muted);
+      }
+      .btn.subtle:active,
+      .btn.subtle[aria-selected="true"] {
+        background: var(--libitum-color-gray-300);
+        color: var(--libitum-color-gray-900);
+      }
+      .btn.text {
+        background: none;
+        color: var(--libitum-color-fg-brand);
+      }
+      .btn:disabled,
+      .btn.outline:disabled {
+        background: var(--libitum-color-gray-50);
+        color: var(--libitum-color-fg-disabled);
+        border-color: var(--libitum-color-border-disabled);
+        cursor: default;
+      }
+
+      /* Text Field — components/text-field.md */
+      .field {
+        display: grid;
+        gap: var(--libitum-spacing-8);
+        min-width: 0;
+      }
+      .field > label {
+        color: var(--libitum-color-fg-neutral);
+      }
+      .field-box {
+        display: flex;
+        align-items: center;
+        gap: var(--libitum-spacing-8);
+        min-height: 56px;
+        padding: 0 var(--libitum-spacing-16);
+        background: var(--libitum-color-white);
+        border: var(--libitum-stroke-width-thin) solid var(--libitum-color-border-default);
+        border-radius: var(--libitum-radius-lg);
+      }
+      .field-box:has(input:not(:placeholder-shown)),
+      .field-box:has(select),
+      .field-box:has(textarea:not(:placeholder-shown)) {
+        border-color: var(--libitum-color-gray-900);
+      }
+      .field-box:focus-within {
+        border-color: var(--libitum-color-brand-primary);
+      }
+      /* 공통 focus ring은 입력 요소가 아니라 Field 바깥 윤곽에 — text-field.md Focus indicator */
+      .field-box :focus-visible {
+        box-shadow: none;
+      }
+      .field-box:has(:focus-visible) {
+        box-shadow:
+          0 0 0 var(--libitum-stroke-width-strong) var(--libitum-color-white),
+          0 0 0 var(--libitum-spacing-4) var(--libitum-color-border-strong);
+      }
+      .field-box.error {
+        background: var(--libitum-color-feedback-incorrect-surface);
+        border-color: var(--libitum-color-feedback-incorrect);
+      }
+      .field-box input,
+      .field-box select,
+      .field-box textarea {
+        flex: 1;
+        min-width: 0;
+        border: 0;
+        background: transparent;
+        color: var(--libitum-color-fg-neutral);
+        font: inherit;
+        padding: var(--libitum-spacing-16) 0;
+        outline: none;
+      }
+      .field-box textarea {
+        resize: vertical;
+        min-height: 56px;
+      }
+      .field-box ::placeholder {
+        color: var(--libitum-color-fg-neutral-muted);
+      }
+      .field-box .suffix {
+        color: var(--libitum-color-fg-neutral);
+      }
+      .field .support {
+        display: flex;
+        gap: var(--libitum-spacing-8);
+        color: var(--libitum-color-fg-neutral-muted);
+      }
+      .field .support span:first-child {
+        flex: 1;
+      }
+      .field .support.error {
+        color: var(--libitum-color-feedback-incorrect-text);
+      }
+      .row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--libitum-layout-gap-block);
+      }
+      .stack {
+        display: grid;
+        gap: var(--libitum-layout-gap-block);
+        align-content: start;
+      }
+      .field {
+        align-content: start;
+      }
+
+      /* Toggle sm — components/toggle.md */
+      .toggle-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--libitum-spacing-12);
+        min-height: var(--libitum-spacing-48);
+      }
+      .toggle {
+        appearance: none;
+        position: relative;
+        flex: none;
+        width: 32px;
+        height: 20px;
+        margin: 0;
+        border-radius: var(--libitum-radius-full);
+        background: var(--libitum-color-gray-700);
+        cursor: pointer;
+        transition: background-color var(--libitum-motion-duration-color)
+          var(--libitum-motion-easing-easing);
+      }
+      .toggle::after {
+        content: "";
+        position: absolute;
+        top: var(--libitum-spacing-4);
+        left: var(--libitum-spacing-4);
+        width: var(--libitum-spacing-12);
+        height: var(--libitum-spacing-12);
+        border-radius: var(--libitum-radius-full);
+        background: var(--libitum-color-white);
+        box-shadow: var(--libitum-elevation-shadow-s1);
+        transition: transform var(--libitum-motion-duration-d4) var(--libitum-motion-easing-easing);
+      }
+      .toggle:checked {
+        background: var(--libitum-color-brand-primary);
+      }
+      .toggle:checked::after {
+        transform: translateX(var(--libitum-spacing-12));
+      }
+
+      /* Option Selector S · Outlined · Grid — components/option-selector.md */
+      .options {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--libitum-spacing-8);
+      }
+      .option {
+        min-height: var(--libitum-spacing-48);
+        padding: var(--libitum-spacing-12);
+        border-radius: var(--libitum-radius-md);
+        border: var(--libitum-stroke-width-thin) solid var(--libitum-color-gray-400);
+        background: var(--libitum-color-white);
+        color: var(--libitum-color-fg-neutral);
+        font: var(--libitum-typography-button-m-font-weight)
+          var(--libitum-typography-button-m-font-size) /
+          var(--libitum-typography-button-m-line-height) var(--libitum-font-family-default);
+        cursor: pointer;
+      }
+      .option:active {
+        background: var(--libitum-color-gray-100);
+      }
+      .option[aria-checked="true"] {
+        border-color: var(--libitum-color-brand-primary);
+        background: var(--libitum-color-white);
+      }
+      .option[aria-checked="true"]::after {
+        content: " ✓";
+        color: var(--libitum-color-brand-primary);
+      }
+
+      /* Status Indicator — components/indicator/status-indicator.md */
+      .status {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--libitum-spacing-8);
+        padding: var(--libitum-spacing-8) var(--libitum-spacing-12);
+        border-radius: var(--libitum-radius-full);
+        white-space: nowrap;
+      }
+      .status::before {
+        content: "";
+        width: var(--libitum-spacing-8);
+        height: var(--libitum-spacing-8);
+        border-radius: var(--libitum-radius-full);
+        background: currentColor;
+      }
+      .status.completed {
+        background: var(--libitum-color-feedback-correct-surface);
+        color: var(--libitum-color-feedback-correct-text);
+      }
+      .status.completed::before {
+        background: var(--libitum-color-feedback-correct);
+      }
+      .status.progress {
+        background: var(--libitum-color-feedback-warning-surface);
+        color: var(--libitum-color-feedback-warning-text);
+      }
+      .status.progress::before {
+        background: var(--libitum-color-feedback-warning);
+      }
+      .status.retry {
+        background: var(--libitum-color-feedback-incorrect-surface);
+        color: var(--libitum-color-feedback-incorrect-text);
+      }
+      .status.retry::before {
+        background: var(--libitum-color-feedback-incorrect);
+      }
+      .status.locked {
+        background: var(--libitum-color-gray-200);
+        color: var(--libitum-color-fg-neutral-muted);
+      }
+      .status.locked::before {
+        background: var(--libitum-color-gray-500);
+      }
+
+      /* 표 · 태그 · 막대 */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: var(--libitum-spacing-12) var(--libitum-spacing-8);
+        border-bottom: var(--libitum-stroke-width-thin) solid var(--libitum-color-gray-300);
+        vertical-align: middle;
+      }
+      th {
+        color: var(--libitum-color-fg-neutral-muted);
+      }
+      .num {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+      .tag {
+        display: inline-block;
+        padding: var(--libitum-spacing-2) var(--libitum-spacing-8);
+        margin: 0 var(--libitum-spacing-4) var(--libitum-spacing-4) 0;
+        border-radius: var(--libitum-radius-full);
+        background: var(--libitum-color-gray-200);
+        color: var(--libitum-color-fg-neutral-muted);
+      }
+      .bar-stack {
+        display: flex;
+        height: var(--libitum-spacing-8);
+        border-radius: var(--libitum-radius-full);
+        overflow: hidden;
+        background: var(--libitum-color-gray-200);
+        min-width: 160px;
+        margin-bottom: var(--libitum-spacing-4);
+      }
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--libitum-spacing-4) var(--libitum-spacing-16);
+        color: var(--libitum-color-fg-neutral-muted);
+      }
+      .legend span {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--libitum-spacing-6);
+      }
+      .legend i {
+        width: var(--libitum-spacing-8);
+        height: var(--libitum-spacing-8);
+        border-radius: var(--libitum-radius-full);
+      }
+      .idle-0 {
+        background: var(--libitum-color-feedback-correct);
+      }
+      .idle-1 {
+        background: var(--libitum-color-feedback-warning);
+      }
+      .idle-2 {
+        background: var(--libitum-color-brand-secondary);
+      }
+      .idle-3 {
+        background: var(--libitum-color-gray-600);
+      }
+
+      /* 지표 · 미리보기 */
+      .kpis {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: var(--libitum-spacing-8);
+      }
+      .kpi {
+        background: var(--libitum-elevation-surface-basement);
+        border-radius: var(--libitum-radius-md);
+        padding: var(--libitum-spacing-12) var(--libitum-spacing-16);
+      }
+      .kpi .t-metric {
+        display: block;
+        margin-top: var(--libitum-spacing-4);
+      }
+      .sent-color {
+        color: var(--libitum-color-brand-strong);
+      }
+      .control-color {
+        color: var(--libitum-color-gray-800);
+      }
+      .notices {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: var(--libitum-spacing-12);
+      }
+      .notice {
+        background: var(--libitum-color-white);
+        border-radius: var(--libitum-radius-lg);
+        box-shadow: var(--libitum-elevation-shadow-s2);
+        padding: var(--libitum-spacing-12) var(--libitum-spacing-16);
+      }
+      .notice .app {
+        display: flex;
+        justify-content: space-between;
+        gap: var(--libitum-spacing-8);
+        margin-bottom: var(--libitum-spacing-4);
+      }
+      .notice .app b {
+        color: var(--libitum-color-fg-brand);
+      }
+      .forecast {
+        display: grid;
+        grid-template-columns: repeat(24, 1fr);
+        gap: var(--libitum-spacing-2);
+        align-items: end;
+        height: 72px;
+        margin-top: var(--libitum-spacing-8);
+      }
+      .forecast div {
+        background: var(--libitum-color-brand-secondary);
+        border-radius: var(--libitum-radius-sm) var(--libitum-radius-sm) 0 0;
+        min-height: 1px;
+      }
+      .forecast div.best {
+        background: var(--libitum-color-brand-primary);
+      }
+      .forecast-axis {
+        display: grid;
+        grid-template-columns: repeat(24, 1fr);
+        gap: var(--libitum-spacing-2);
+        text-align: center;
+        color: var(--libitum-color-fg-neutral-subtle);
+      }
+      .error-text {
+        color: var(--libitum-color-feedback-incorrect-text);
+        white-space: pre-wrap;
+      }
+      .divider {
+        height: var(--libitum-stroke-width-thin);
+        background: var(--libitum-color-gray-300);
+        margin: var(--libitum-spacing-16) 0;
+      }
+
+      /* 결과 */
+      .campaign {
+        display: grid;
+        gap: var(--libitum-spacing-4);
+        width: 100%;
+        text-align: left;
+        padding: var(--libitum-spacing-12);
+        border-radius: var(--libitum-radius-md);
+        border: var(--libitum-stroke-width-thin) solid transparent;
+        background: none;
+        color: inherit;
+        font: inherit;
+        cursor: pointer;
+      }
+      .campaign:hover {
+        background: var(--libitum-color-gray-100);
+      }
+      .campaign[aria-current="true"] {
+        border-color: var(--libitum-color-brand-primary);
+        background: var(--libitum-color-white);
+      }
+      .metric {
+        display: grid;
+        grid-template-columns: 180px 1fr 220px;
+        gap: var(--libitum-spacing-16);
+        align-items: center;
+        padding: var(--libitum-spacing-12) 0;
+        border-bottom: var(--libitum-stroke-width-thin) solid var(--libitum-color-gray-300);
+      }
+      .bars {
+        display: grid;
+        gap: var(--libitum-spacing-4);
+      }
+      .bars div {
+        display: flex;
+        align-items: center;
+        gap: var(--libitum-spacing-8);
+        font-variant-numeric: tabular-nums;
+      }
+      .bars i {
+        display: block;
+        height: var(--libitum-spacing-12);
+        border-radius: var(--libitum-radius-sm);
+        min-width: var(--libitum-spacing-2);
+      }
+      .bar-sent {
+        background: var(--libitum-color-brand-primary);
+      }
+      .bar-control {
+        background: var(--libitum-color-gray-700);
+      }
+      .verdict {
+        display: grid;
+        gap: var(--libitum-spacing-4);
+        justify-items: start;
+      }
+      .up {
+        color: var(--libitum-color-feedback-correct-text);
+      }
+      .down {
+        color: var(--libitum-color-feedback-incorrect-text);
+      }
+      svg text {
+        fill: var(--libitum-color-fg-neutral-subtle);
+        font: var(--libitum-typography-caption-font-weight)
+          var(--libitum-typography-caption-font-size) var(--libitum-font-family-default);
+      }
+      details summary {
+        cursor: pointer;
+        min-height: var(--libitum-spacing-48);
+        display: flex;
+        align-items: center;
+      }
+
+      /* Dialog — components/dialog.md */
+      .scrim {
+        position: fixed;
+        inset: 0;
+        z-index: var(--libitum-elevation-z-dialog);
+        display: grid;
+        place-items: center;
+        padding: var(--libitum-spacing-32);
+        background: color-mix(
+          in srgb,
+          var(--libitum-color-gray-950) calc(var(--libitum-opacity-scrim) * 100%),
+          transparent
+        );
+        animation: fade var(--libitum-motion-duration-dialog) var(--libitum-motion-easing-enter);
+      }
+      .dialog {
+        width: 100%;
+        max-width: 320px;
+        display: grid;
+        gap: var(--libitum-spacing-16);
+        padding: var(--libitum-spacing-20);
+        border-radius: var(--libitum-radius-lg);
+        background: var(--libitum-elevation-surface-floating);
+        box-shadow: var(--libitum-elevation-shadow-s3);
+        animation: pop var(--libitum-motion-duration-dialog) var(--libitum-motion-easing-enter);
+      }
+      .dialog h2,
+      .dialog p {
+        margin: 0;
+      }
+      .dialog .actions {
+        display: grid;
+        gap: var(--libitum-spacing-8);
+      }
+      @keyframes fade {
+        from {
+          opacity: 0;
+        }
+      }
+      @keyframes pop {
+        from {
+          opacity: 0;
+          transform: scale(var(--libitum-motion-scale-enter));
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          animation: none !important;
+          transition: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1 class="t-heading-s">푸시 콘솔</h1>
+      <span class="meta t-body-s muted" id="meta">불러오는 중…</span>
+      <nav role="tablist" aria-label="화면">
+        <button class="btn s subtle" role="tab" data-tab="segments" aria-selected="true">
+          세그먼트
+        </button>
+        <button class="btn s subtle" role="tab" data-tab="recommend" aria-selected="false">
+          추천
+        </button>
+        <button class="btn s subtle" role="tab" data-tab="compose" aria-selected="false">
+          새 캠페인
+        </button>
+        <button class="btn s subtle" role="tab" data-tab="results" aria-selected="false">
+          결과
+        </button>
+      </nav>
+      <button class="btn s outline" id="refresh">데이터 다시 읽기</button>
+    </header>
+
+    <main>
+      <section id="tab-segments">
+        <div class="card">
+          <div class="card-head">
+            <div class="title-block">
+              <div class="overline t-label-m">세그먼트</div>
+              <h2 class="t-heading-s">푸시를 받을 수 있는 학습자</h2>
+            </div>
+          </div>
+          <p class="t-body-m muted" id="segments-note"></p>
+          <div class="legend t-body-s">
+            <span><i class="idle-0"></i>1일 안</span><span><i class="idle-1"></i>1~3일</span
+            ><span><i class="idle-2"></i>3~7일</span><span><i class="idle-3"></i>7일 넘음</span>
+            <span>— 마지막으로 앱을 연 뒤</span>
+          </div>
+          <table>
+            <thead>
+              <tr class="t-label-m">
+                <th>세그먼트</th>
+                <th class="num">사람</th>
+                <th>쉰 기간</th>
+                <th>문구 언어</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="segments-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="tab-recommend" hidden>
+        <div class="card stack">
+          <div class="card-head" style="margin: 0">
+            <div class="title-block">
+              <div class="overline t-label-m">Claude 추천</div>
+              <h2 class="t-heading-s">다음에 보낼 캠페인</h2>
+            </div>
+            <button class="btn neutral" id="recommend-run">추천 받기</button>
+          </div>
+          <p class="t-body-m muted" style="margin: 0">
+            이 컴퓨터에 로그인된 Claude Code에게 세그먼트 수 · 쉰 기간 · 언어 분포 · 시간별 도달 수
+            · 지난 캠페인 결과를 보내고 추천을 받아요. 이름이나 사용자 id는 보내지 않아요. 1 ~ 2분
+            걸려요. 추천은 캠페인 양식만 채우고, 보내기는 직접 해요.
+          </p>
+          <div id="recommend-meta" class="t-body-s subtle"></div>
+        </div>
+        <div id="recommend-out" class="grid2"></div>
+      </section>
+
+      <section id="tab-compose" hidden>
+        <div class="grid2">
+          <div class="card stack">
+            <div class="card-head">
+              <div class="title-block">
+                <div class="overline t-label-m">1단계</div>
+                <h2 class="t-heading-s">누구에게 보낼까요</h2>
+              </div>
+            </div>
+            <div class="field">
+              <label class="t-label-l" for="f-name">캠페인 이름</label>
+              <div class="field-box">
+                <input id="f-name" placeholder="예: 레슨 1 미시작 저녁 1차" />
+              </div>
+            </div>
+            <div class="field">
+              <label class="t-label-l" for="f-series"
+                >묶음 이름 <span class="t-body-m muted">선택</span></label
+              >
+              <div class="field-box">
+                <input id="f-series" placeholder="비우면 캠페인 이름에서 「N차」를 뗀 이름" />
+              </div>
+              <div class="support t-body-s">
+                <span
+                  >같은 실험을 며칠 반복하면 같은 묶음으로 보내 주세요. 대조군이 회차마다 같은
+                  사람으로 유지되고, 결과 탭에서 합쳐 봐요.</span
+                >
+              </div>
+            </div>
+            <div class="field">
+              <label class="t-label-l" for="f-segment">세그먼트</label>
+              <div class="field-box"><select id="f-segment"></select></div>
+            </div>
+            <div class="row">
+              <div class="field">
+                <label class="t-label-l" for="f-min">쉰 시간 최소</label>
+                <div class="field-box">
+                  <input id="f-min" type="number" min="0" placeholder="0" /><span class="suffix"
+                    >시간</span
+                  >
+                </div>
+              </div>
+              <div class="field">
+                <label class="t-label-l" for="f-max">쉰 시간 최대</label>
+                <div class="field-box">
+                  <input id="f-max" type="number" min="0" placeholder="제한 없음" /><span
+                    class="suffix"
+                    >시간</span
+                  >
+                </div>
+              </div>
+            </div>
+            <div class="toggle-row">
+              <label class="t-label-l" for="f-hours-on">학습자 현지 시각으로 거르기</label>
+              <input class="toggle" type="checkbox" role="switch" id="f-hours-on" />
+            </div>
+            <div class="row" id="hours-row">
+              <div class="field">
+                <label class="t-label-l" for="f-from">시작</label>
+                <div class="field-box">
+                  <input id="f-from" type="number" min="0" max="23" /><span class="suffix"
+                    >시부터</span
+                  >
+                </div>
+              </div>
+              <div class="field">
+                <label class="t-label-l" for="f-to">끝</label>
+                <div class="field-box">
+                  <input id="f-to" type="number" min="0" max="24" /><span class="suffix"
+                    >시 전까지</span
+                  >
+                </div>
+              </div>
+            </div>
+            <div class="field">
+              <label class="t-label-l" for="f-cooldown">이 콘솔로 받은 사람은 쉬게 하기</label>
+              <div class="field-box">
+                <input id="f-cooldown" type="number" min="0" value="24" /><span class="suffix"
+                  >시간</span
+                >
+              </div>
+            </div>
+            <div class="toggle-row">
+              <label class="t-label-l" for="f-reeng"
+                >자동 「다시 돌아오기」(3일 · 7일)와 겹치는 사람 빼기</label
+              >
+              <input class="toggle" type="checkbox" role="switch" id="f-reeng" checked />
+            </div>
+            <div class="field">
+              <span class="t-label-l" id="holdout-label"
+                >대조군 — 보내지 않고 비교만 하는 비율</span
+              >
+              <div class="options" role="radiogroup" aria-labelledby="holdout-label" id="f-holdout">
+                <button class="option" role="radio" data-value="10" aria-checked="false">
+                  10%
+                </button>
+                <button class="option" role="radio" data-value="20" aria-checked="true">20%</button>
+                <button class="option" role="radio" data-value="30" aria-checked="false">
+                  30%
+                </button>
+                <button class="option" role="radio" data-value="50" aria-checked="false">
+                  50%
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card stack">
+            <div class="card-head">
+              <div class="title-block">
+                <div class="overline t-label-m">2단계</div>
+                <h2 class="t-heading-s">어떤 말로 보낼까요</h2>
+              </div>
+              <button class="btn s outline" id="copy-reset">기본 문구로 되돌리기</button>
+            </div>
+            <div class="toggle-row">
+              <label class="t-label-l" for="f-ab">문구 A/B로 나눠 보내기</label>
+              <input class="toggle" type="checkbox" role="switch" id="f-ab" checked />
+            </div>
+            <p class="t-body-s muted" style="margin: 0" id="ab-help">
+              받는 사람을 무작위로 반씩 나눠 A(기본 톤) · B(캐릭터 톤)를 보내요. 결과 탭에서 어느
+              톤이 더 돌아오게 했는지 비교해요.
+            </p>
+            <nav class="toolbar" role="tablist" aria-label="문구 변형" id="variant-tabs"></nav>
+            <p class="t-body-s muted" style="margin: 0">
+              {name} 이름 · {episode} 에피소드 · {character} 그 에피소드의 인물(한국어) · {streak}
+              연속 일수 · {steps} 남은 단계를 넣을 수 있어요. 비워 둔 언어는 영어로 가요.
+            </p>
+            <div id="copy-editor" class="stack"></div>
+          </div>
+        </div>
+
+        <div class="card stack">
+          <div class="card-head">
+            <div class="title-block">
+              <div class="overline t-label-m">3단계</div>
+              <h2 class="t-heading-s">미리 보고 보내기</h2>
+            </div>
+            <button class="btn outline" id="preview">대상 계산하기</button>
+            <button class="btn brand" id="send" disabled aria-describedby="send-reason">
+              보내기
+            </button>
+          </div>
+          <p class="t-body-s muted" id="send-reason" style="margin: 0">
+            대상을 계산하면 보낼 수 있어요.
+          </p>
+          <div id="preview-out" class="t-body-m muted">
+            조건과 문구를 정한 뒤 대상을 계산해 주세요.
+          </div>
+          <div class="divider"></div>
+          <div class="stack" style="gap: var(--libitum-spacing-8)">
+            <div class="t-label-l">내 기기로 먼저 보기</div>
+            <p class="t-body-s muted" style="margin: 0">
+              시험 계정 기기에만 지금 문구로 한 통 보내요. 캠페인 기록 · 대조군 · 쉬는 시간에는
+              들어가지 않아요.
+            </p>
+            <div class="row">
+              <div class="field">
+                <label class="t-label-l" for="t-user">받을 시험 계정</label>
+                <div class="field-box"><select id="t-user"></select></div>
+              </div>
+              <div class="field">
+                <label class="t-label-l" for="t-lang">문구 언어</label>
+                <div class="field-box"><select id="t-lang"></select></div>
+              </div>
+            </div>
+            <div class="toolbar">
+              <button class="btn outline" id="test-send">테스트 보내기</button>
+              <span class="t-body-s" id="test-result" role="status"></span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="tab-results" hidden>
+        <div class="layout">
+          <div class="card">
+            <div class="card-head">
+              <div class="title-block">
+                <div class="overline t-label-m">결과</div>
+                <h2 class="t-heading-s">보낸 알림</h2>
+              </div>
+            </div>
+            <div class="t-label-l" style="margin-bottom: var(--libitum-spacing-8)">
+              같은 실험 묶음
+            </div>
+            <div id="series-list" class="stack" style="gap: var(--libitum-spacing-4)"></div>
+            <div class="divider"></div>
+            <div class="t-label-l" style="margin-bottom: var(--libitum-spacing-8)">
+              캠페인 하나씩
+            </div>
+            <div id="campaigns" class="stack" style="gap: var(--libitum-spacing-4)"></div>
+          </div>
+          <div class="card" id="result-out">
+            <p class="t-body-m muted">왼쪽에서 캠페인을 골라 주세요.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div id="dialog-root"></div>
+
+    <script>
+      const $ = (selector) => document.querySelector(selector);
+      const esc = (value) =>
+        String(value ?? "").replace(
+          /[&<>"']/g,
+          (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char],
+        );
+      const pct = (value, digits = 1) =>
+        value === null || value === undefined ? "—" : `${(value * 100).toFixed(digits)}%`;
+      const when = (ms) =>
+        new Date(ms).toLocaleString("ko-KR", {
+          month: "numeric",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+      const TITLE_LIMIT = 80;
+      const BODY_LIMIT = 460;
+
+      async function api(path, body) {
+        const response = await fetch(path, {
+          method: body === undefined ? "GET" : "POST",
+          headers:
+            body === undefined ? {} : { "Content-Type": "application/json", "X-Push-Console": "1" },
+          body: body === undefined ? undefined : JSON.stringify(body),
+        });
+        // 서버가 JSON이 아닌 오류(HTML · 빈 본문)를 내도 파싱 오류 대신 상태를 보여 줍니다.
+        let data = {};
+        try {
+          data = await response.json();
+        } catch {
+          data = {};
+        }
+        if (!response.ok)
+          throw new Error(data.error || `${response.status} ${response.statusText}`);
+        return data;
+      }
+
+      let state = null;
+      let copy = {};
+      // 문구 변형 — copy는 지금 고른 변형의 문구를 가리킵니다.
+      let variants = [];
+      let currentVariant = 0;
+      const abOn = () => $("#f-ab").checked;
+
+      function renderVariantTabs() {
+        const shown = abOn() ? variants : variants.slice(0, 1);
+        if (currentVariant >= shown.length) currentVariant = 0;
+        copy = variants[currentVariant].copy;
+        $("#variant-tabs").hidden = !abOn();
+        $("#ab-help").hidden = !abOn();
+        $("#variant-tabs").innerHTML = shown
+          .map(
+            (variant, index) =>
+              `<button class="btn s subtle" role="tab" data-variant="${index}" aria-selected="${index === currentVariant}">문구 ${variant.id.toUpperCase()} · ${esc(variant.label)}</button>`,
+          )
+          .join("");
+        for (const button of document.querySelectorAll("#variant-tabs [data-variant]")) {
+          button.onclick = () => {
+            currentVariant = Number(button.dataset.variant);
+            renderVariantTabs();
+            renderCopyEditor();
+          };
+        }
+      }
+      let holdout = 20;
+
+      // ---------------------------------------------------------------- 탭
+      function showTab(name) {
+        for (const button of document.querySelectorAll("nav button")) {
+          button.setAttribute("aria-selected", String(button.dataset.tab === name));
+        }
+        for (const id of ["segments", "recommend", "compose", "results"])
+          $(`#tab-${id}`).hidden = id !== name;
+        if (name === "results") renderCampaigns();
+        if (name === "recommend") loadRecommendations();
+      }
+      for (const button of document.querySelectorAll("nav button"))
+        button.onclick = () => showTab(button.dataset.tab);
+
+      // ---------------------------------------------------------------- 세그먼트
+      function renderSegments() {
+        $("#meta").textContent =
+          `${when(state.loadedAtMs)}에 읽음 · 학습자 ${state.learners.toLocaleString()}명 · 시험 계정 ${state.testersExcluded}명 뺌 · ` +
+          (state.posthog
+            ? "PostHog 연결됨"
+            : "PostHog 키 없음 — 앱 열기 · 알림 누름은 재지 않아요");
+        $("#segments-note").textContent =
+          "알림을 허용해 기기가 등록된 회원만 셉니다. 비회원은 받을 수 없어요. 진행 단계는 사람마다 하나이고, 「스트릭이 끊기기 직전」은 겹쳐서 붙어요.";
+        $("#segments-body").innerHTML = state.segments
+          .map((segment) => {
+            const idle = Object.values(segment.byIdle);
+            const bar = idle
+              .map((n, index) =>
+                segment.total === 0
+                  ? ""
+                  : `<span class="idle-${index}" style="width:${(n / segment.total) * 100}%" title="${n}명"></span>`,
+              )
+              .join("");
+            const langs = Object.entries(segment.byLang)
+              .sort((a, b) => b[1] - a[1])
+              .map(([lang, n]) => `<span class="tag t-label-m">${esc(lang)} ${n}</span>`)
+              .join("");
+            return `<tr>
+              <td><div class="t-label-l">${esc(segment.label)}</div><div class="t-body-s muted">${esc(segment.hint)}</div></td>
+              <td class="num t-label-l">${segment.total.toLocaleString()}</td>
+              <td><div class="bar-stack">${bar}</div><div class="t-caption subtle">${idle.join(" · ")}</div></td>
+              <td>${langs || '<span class="t-body-s subtle">—</span>'}</td>
+              <td class="num"><button class="btn s outline" data-compose="${esc(segment.id)}" ${segment.total === 0 ? "disabled" : ""}>캠페인 만들기</button></td>
+            </tr>`;
+          })
+          .join("");
+        for (const button of document.querySelectorAll("[data-compose]")) {
+          button.onclick = () => {
+            $("#f-segment").value = button.dataset.compose;
+            applySegmentDefaults();
+            showTab("compose");
+          };
+        }
+      }
+
+      // ---------------------------------------------------------------- 새 캠페인
+      const LANGUAGE_NAMES = {
+        en: "영어",
+        vi: "베트남어",
+        id: "인도네시아어",
+        ms: "말레이어",
+        es: "스페인어",
+        ja: "일본어",
+      };
+
+      function setHoldout(value) {
+        holdout = value;
+        for (const option of document.querySelectorAll("#f-holdout .option")) {
+          option.setAttribute("aria-checked", String(Number(option.dataset.value) === value));
+        }
+        resetPreview();
+      }
+      for (const option of document.querySelectorAll("#f-holdout .option")) {
+        option.onclick = () => setHoldout(Number(option.dataset.value));
+      }
+
+      function syncHoursRow() {
+        for (const input of document.querySelectorAll("#hours-row input"))
+          input.disabled = !$("#f-hours-on").checked;
+        $("#hours-row").style.opacity = $("#f-hours-on").checked
+          ? "1"
+          : "var(--libitum-opacity-disabled)";
+      }
+
+      function applySegmentDefaults() {
+        const segment = $("#f-segment").value;
+        const filter = state.defaults.filters[segment] ?? {};
+        $("#f-min").value = filter.minIdleHours ?? 0;
+        $("#f-max").value = filter.maxIdleHours ?? "";
+        $("#f-hours-on").checked = Array.isArray(filter.localHours);
+        $("#f-from").value = filter.localHours?.[0] ?? 18;
+        $("#f-to").value = filter.localHours?.[1] ?? 21;
+        syncHoursRow();
+        setHoldout(filter.holdoutPercent ?? 30);
+        variants = [
+          {
+            id: "a",
+            label: "기본 톤",
+            copy: structuredClone(state.defaults.copy[segment] ?? { en: { title: "", body: "" } }),
+          },
+          {
+            id: "b",
+            label: "캐릭터 톤",
+            copy: structuredClone(state.defaults.copyB[segment] ?? { en: { title: "", body: "" } }),
+          },
+        ];
+        currentVariant = 0;
+        renderVariantTabs();
+        renderCopyEditor();
+        resetPreview();
+      }
+
+      function counterText(lang, field) {
+        const length = (copy[lang]?.[field] ?? "").length;
+        return `${length}/${field === "title" ? TITLE_LIMIT : BODY_LIMIT}`;
+      }
+
+      function renderCopyEditor() {
+        $("#copy-editor").innerHTML = state.languages
+          .map(
+            (lang) => `<div class="field">
+              <label class="t-label-l" for="c-${lang}-title">${LANGUAGE_NAMES[lang] ?? lang} <span class="t-body-m muted">${lang === "en" ? "필수" : "선택"}</span></label>
+              <div class="field-box"><input id="c-${lang}-title" data-lang="${lang}" data-field="title" placeholder="제목" value="${esc(copy[lang]?.title ?? "")}" /></div>
+              <div class="field-box"><textarea rows="2" data-lang="${lang}" data-field="body" aria-label="${LANGUAGE_NAMES[lang] ?? lang} 본문" placeholder="본문">${esc(copy[lang]?.body ?? "")}</textarea></div>
+              <div class="support t-body-s"><span></span><span data-counter="${lang}">${counterText(lang, "title")} · ${counterText(lang, "body")}</span></div>
+            </div>`,
+          )
+          .join("");
+        for (const field of document.querySelectorAll("#copy-editor [data-lang]")) {
+          field.oninput = () => {
+            const entry = (copy[field.dataset.lang] ??= { title: "", body: "" });
+            entry[field.dataset.field] = field.value;
+            const lang = field.dataset.lang;
+            $(`[data-counter="${lang}"]`).textContent =
+              `${counterText(lang, "title")} · ${counterText(lang, "body")}`;
+            resetPreview();
+          };
+        }
+      }
+
+      const cleanCopy = (source) => {
+        const out = {};
+        for (const [lang, entry] of Object.entries(source)) {
+          if (entry.title?.trim() || entry.body?.trim())
+            out[lang] = { title: entry.title.trim(), body: entry.body.trim() };
+        }
+        return out;
+      };
+
+      function campaignInput() {
+        const copyOut = cleanCopy(copy);
+        return {
+          name: $("#f-name").value.trim(),
+          series: $("#f-series").value.trim(),
+          segment: $("#f-segment").value,
+          minIdleHours: Number($("#f-min").value || 0),
+          maxIdleHours: $("#f-max").value === "" ? null : Number($("#f-max").value),
+          localHours: $("#f-hours-on").checked
+            ? [Number($("#f-from").value), Number($("#f-to").value)]
+            : null,
+          cooldownHours: Number($("#f-cooldown").value || 0),
+          excludeReengagement: $("#f-reeng").checked,
+          holdoutPercent: holdout,
+          copy: copyOut,
+          variants: (abOn() ? variants : variants.slice(0, 1)).map((variant) => ({
+            label: variant.label,
+            copy: cleanCopy(variant.copy),
+          })),
+        };
+      }
+
+      let lastPreview = null;
+      function resetPreview() {
+        lastPreview = null;
+        $("#send").disabled = true;
+        $("#send-reason").textContent = "대상을 계산하면 보낼 수 있어요.";
+      }
+
+      const EXCLUDE_LABELS = {
+        idle: "쉰 시간 조건 밖",
+        "no-time-zone": "나라 시간대를 모름",
+        "local-hour": "지금 현지 시각이 창 밖",
+        reengagement: "자동 「다시 돌아오기」와 겹침",
+        "recent-console": "이 콘솔로 최근에 받음",
+      };
+
+      // 현지 시각 창을 켰을 때 — 앞으로 24시간, 이 컴퓨터 시각 정시마다 창에 드는 사람 수.
+      function forecastHtml(forecast) {
+        if (!forecast || forecast.length === 0) return "";
+        const max = Math.max(1, ...forecast.map((slot) => slot.count));
+        const best = forecast.reduce((a, b) => (b.count > a.count ? b : a));
+        const hourOf = (ms) => new Date(ms).getHours();
+        const bars = forecast
+          .map(
+            (slot) =>
+              `<div class="${slot === best ? "best" : ""}" style="height:${(slot.count / max) * 100}%" title="${hourOf(slot.atMs)}시 ${slot.count}명"></div>`,
+          )
+          .join("");
+        const axis = forecast
+          .map(
+            (slot) => `<span>${hourOf(slot.atMs) % 3 === 0 ? `${hourOf(slot.atMs)}시` : ""}</span>`,
+          )
+          .join("");
+        return `<div>
+          <div class="t-label-l">언제 보내면 좋을까요</div>
+          <div class="t-body-s muted">이 컴퓨터 시각으로 정시마다 현지 시각 창에 드는 사람이에요. 겹침 · 쉬는 시간을 빼기 전 어림이에요.
+            가장 많은 때는 <b class="sent-color">${hourOf(best.atMs)}시 · ${best.count}명</b>이에요.</div>
+          <div class="forecast">${bars}</div><div class="forecast-axis t-caption">${axis}</div>
+        </div>`;
+      }
+
+      async function preview() {
+        $("#preview-out").innerHTML = '<span class="t-body-m muted">계산하고 있어요…</span>';
+        resetPreview();
+        try {
+          const result = await api("/api/audience", campaignInput());
+          lastPreview = result;
+          const excluded = Object.entries(result.excluded)
+            .filter(([, n]) => n > 0)
+            .map(
+              ([key, n]) =>
+                `<span class="tag t-label-m">${esc(EXCLUDE_LABELS[key] ?? key)} ${n}</span>`,
+            )
+            .join("");
+          const langs = Object.entries(result.byLang)
+            .map(([lang, n]) => `<span class="tag t-label-m">${esc(lang)} ${n}</span>`)
+            .join("");
+          const cards = result.samples
+            .map(
+              (sample) => `<div class="notice">
+                <div class="app t-caption"><b>DURU</b><span class="subtle">${sample.variant ? `${sample.variant.toUpperCase()} · ` : ""}${esc(sample.lang)} · ${esc(sample.country ?? "?")} 현지 ${sample.localHour ?? "?"}시 · ${sample.idleHours}시간 쉼</span></div>
+                <div class="t-label-l">${esc(sample.title)}</div><div class="t-body-m muted">${esc(sample.body)}</div>
+              </div>`,
+            )
+            .join("");
+          $("#preview-out").innerHTML = `<div class="stack">
+            <div class="kpis">
+              <div class="kpi"><span class="t-label-m muted">세그먼트</span><span class="t-metric">${result.inSegment.toLocaleString()}</span></div>
+              <div class="kpi"><span class="t-label-m muted">조건 통과</span><span class="t-metric">${result.eligible.toLocaleString()}</span></div>
+              <div class="kpi"><span class="t-label-m muted">보낼 사람</span><span class="t-metric sent-color">${result.sent.toLocaleString()}</span></div>
+              <div class="kpi"><span class="t-label-m muted">대조군</span><span class="t-metric control-color">${result.control.toLocaleString()}</span></div>
+            </div>
+            <div><span class="t-label-m muted">빠진 사람</span><div style="margin-top:var(--libitum-spacing-4)">${excluded || '<span class="t-body-s subtle">없음</span>'}</div></div>
+            <div><span class="t-label-m muted">문구 언어</span><div style="margin-top:var(--libitum-spacing-4)">${langs || '<span class="t-body-s subtle">—</span>'}</div></div>
+            ${
+              result.variants.length > 1
+                ? `<div><span class="t-label-m muted">문구 변형</span><div style="margin-top:var(--libitum-spacing-4)">${result.variants
+                    .map(
+                      (variant) =>
+                        `<span class="tag t-label-m">${variant.id.toUpperCase()} ${esc(variant.label)} ${result.byVariant[variant.id] ?? 0}</span>`,
+                    )
+                    .join("")}</div></div>`
+                : ""
+            }
+            ${forecastHtml(result.forecast)}
+            ${result.problems.length ? `<p class="t-body-s error-text">${esc(result.problems.join("\n"))}</p>` : ""}
+            ${cards ? `<div class="notices">${cards}</div>` : '<p class="t-body-m muted">지금 조건으로는 보낼 사람이 없어요. 위 그래프에서 사람이 많은 시각에 다시 계산해 보세요.</p>'}
+          </div>`;
+          $("#send").disabled = result.sent === 0 || result.problems.length > 0;
+          $("#send-reason").textContent =
+            result.problems.length > 0
+              ? "문구를 고치면 보낼 수 있어요."
+              : result.sent === 0
+                ? "지금 조건에 드는 사람이 없어요."
+                : `${result.sent.toLocaleString()}명에게 보낼 수 있어요. 조건이나 문구를 바꾸면 다시 계산해 주세요.`;
+        } catch (error) {
+          $("#preview-out").innerHTML = `<p class="t-body-m error-text">${esc(error.message)}</p>`;
+        }
+      }
+
+      // ---------------------------------------------------------------- 보내기 확인 (Dialog)
+      let dialogReturnFocus = null;
+      function closeDialog() {
+        $("#dialog-root").innerHTML = "";
+        document.removeEventListener("keydown", onDialogKey);
+        dialogReturnFocus?.focus();
+      }
+      function onDialogKey(event) {
+        if (event.key === "Escape") closeDialog();
+        if (event.key === "Tab") {
+          const focusables = [
+            ...document.querySelectorAll(".dialog input, .dialog button:not(:disabled)"),
+          ];
+          const first = focusables[0];
+          const last = focusables.at(-1);
+          if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault();
+            last.focus();
+          } else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault();
+            first.focus();
+          }
+        }
+      }
+
+      function askConfirm() {
+        if (!lastPreview) return;
+        dialogReturnFocus = document.activeElement;
+        $("#dialog-root").innerHTML = `<div class="scrim">
+          <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialog-title" aria-describedby="dialog-desc">
+            <h2 class="t-heading-s" id="dialog-title">${lastPreview.sent.toLocaleString()}명에게 보낼까요</h2>
+            <p class="t-body-m muted" id="dialog-desc">대조군 ${lastPreview.control.toLocaleString()}명은 받지 않아요. 보낸 알림은 되돌릴 수 없어요. 확인하려면 보낼 사람 수 ${lastPreview.sent}명을 적어 주세요.</p>
+            <div class="field"><div class="field-box"><input id="confirm-text" inputmode="numeric" placeholder="${lastPreview.sent}" aria-label="보낼 사람 수" autocomplete="off" /><span class="suffix">명</span></div></div>
+            <p class="t-body-s error-text" id="dialog-error" hidden></p>
+            <div class="actions">
+              <button class="btn neutral fill" id="confirm-go" disabled>보내기</button>
+              <button class="btn subtle fill" id="confirm-cancel">취소</button>
+            </div>
+          </div>
+        </div>`;
+        document.addEventListener("keydown", onDialogKey);
+        $("#confirm-text").focus();
+        // 한글 자판에서도 막히지 않게 숫자로 확인합니다(SEND는 「ㄴ둗」으로 들어갔다).
+        const expected = String(lastPreview.sent);
+        const check = () =>
+          ($("#confirm-go").disabled =
+            $("#confirm-text").value.replace(/[^0-9]/g, "") !== expected);
+        $("#confirm-text").addEventListener("input", check);
+        $("#confirm-text").addEventListener("compositionend", check);
+        $("#confirm-text").addEventListener("keydown", (event) => {
+          if (event.key === "Enter" && !$("#confirm-go").disabled) $("#confirm-go").click();
+        });
+        $("#confirm-cancel").onclick = closeDialog;
+        $("#confirm-go").onclick = async () => {
+          $("#confirm-go").disabled = true;
+          $("#confirm-go").textContent = "보내고 있어요…";
+          try {
+            const summary = await api("/api/send", {
+              ...campaignInput(),
+              expectedSent: lastPreview.sent,
+              confirm: "SEND",
+            });
+            dialogReturnFocus = null;
+            closeDialog();
+            await loadState();
+            showTab("results");
+            selectCampaign(summary.id);
+          } catch (error) {
+            $("#dialog-error").hidden = false;
+            $("#dialog-error").textContent = error.message;
+            $("#confirm-go").textContent = "보내기";
+          }
+        };
+      }
+
+      // ---------------------------------------------------------------- Claude 추천
+      let recommendations = null;
+
+      async function loadRecommendations() {
+        if (recommendations !== null) return;
+        try {
+          const { latest, running } = await api("/api/recommendations");
+          recommendations = latest;
+          renderRecommendations(running);
+        } catch (error) {
+          $("#recommend-meta").innerHTML = `<span class="error-text">${esc(error.message)}</span>`;
+        }
+      }
+
+      async function runRecommendations() {
+        $("#recommend-run").disabled = true;
+        $("#recommend-run").textContent = "Claude가 보고 있어요…";
+        $("#recommend-meta").textContent = "1 ~ 2분 걸려요. 이 탭을 떠나도 돼요.";
+        try {
+          const { latest } = await api("/api/recommendations", {});
+          recommendations = latest;
+          renderRecommendations(false);
+        } catch (error) {
+          $("#recommend-meta").innerHTML = `<span class="error-text">${esc(error.message)}</span>`;
+        } finally {
+          $("#recommend-run").disabled = false;
+          $("#recommend-run").textContent = "추천 다시 받기";
+        }
+      }
+
+      function renderRecommendations(running) {
+        if (running) $("#recommend-meta").textContent = "Claude가 추천을 만드는 중이에요.";
+        if (!recommendations) {
+          $("#recommend-out").innerHTML =
+            '<p class="t-body-m muted">아직 받은 추천이 없어요. 「추천 받기」를 눌러 주세요.</p>';
+          return;
+        }
+        $("#recommend-run").textContent = "추천 다시 받기";
+        const cost =
+          recommendations.costUsd === null ? "" : ` · 비용 $${recommendations.costUsd.toFixed(3)}`;
+        $("#recommend-meta").innerHTML =
+          `${when(recommendations.createdAtMs)}에 받음${recommendations.model ? ` · ${esc(recommendations.model)}` : ""}${cost}` +
+          (recommendations.notes
+            ? `<p class="t-body-m muted">${esc(recommendations.notes)}</p>`
+            : "") +
+          (recommendations.problems.length
+            ? `<p class="t-body-s error-text">${esc(recommendations.problems.join("\n"))}</p>`
+            : "");
+        $("#recommend-out").innerHTML = recommendations.items
+          .map((item, index) => {
+            const hours = item.localHours
+              ? `현지 ${item.localHours[0]} ~ ${item.localHours[1]}시`
+              : "현지 시각 거르지 않음";
+            const idle = `${item.minIdleHours}시간 ~ ${item.maxIdleHours === null ? "제한 없음" : `${item.maxIdleHours}시간`} 쉼`;
+            const langs = Object.keys(item.copy)
+              .map((lang) => `<span class="tag t-label-m">${esc(lang)}</span>`)
+              .join("");
+            return `<div class="card stack">
+              <div class="card-head" style="margin:0">
+                <div class="title-block">
+                  <div class="overline t-label-m">우선 ${item.priority} · ${esc(segmentLabel(item.segment))}</div>
+                  <h2 class="t-heading-s">${esc(item.name)}</h2>
+                </div>
+                <span class="status progress t-label-m">${item.sendAtComputerHour}시에 보내기</span>
+              </div>
+              <p class="t-body-m muted" style="margin:0">${esc(item.rationale)}</p>
+              <div class="t-body-s">${esc(hours)} · ${esc(idle)} · 대조군 ${item.holdoutPercent}%</div>
+              <div class="t-body-s"><span class="t-label-m">재는 것</span> ${esc(item.expectedEffect)}</div>
+              <div class="notice">
+                <div class="app t-caption"><b>DURU</b><span class="subtle">A 기본 톤 · en</span></div>
+                <div class="t-label-l">${esc(item.copy.en.title)}</div><div class="t-body-m muted">${esc(item.copy.en.body)}</div>
+              </div>
+              ${
+                item.variants?.[1]
+                  ? `<div class="notice">
+                <div class="app t-caption"><b>DURU</b><span class="subtle">B 캐릭터 톤 · en</span></div>
+                <div class="t-label-l">${esc(item.variants[1].copy.en.title)}</div><div class="t-body-m muted">${esc(item.variants[1].copy.en.body)}</div>
+              </div>`
+                  : ""
+              }
+              <div>${langs}</div>
+              <button class="btn outline fill" data-use="${index}">이 추천으로 캠페인 만들기</button>
+            </div>`;
+          })
+          .join("");
+        for (const button of document.querySelectorAll("[data-use]")) {
+          button.onclick = () =>
+            useRecommendation(recommendations.items[Number(button.dataset.use)]);
+        }
+      }
+
+      function useRecommendation(item) {
+        $("#f-segment").value = item.segment;
+        applySegmentDefaults();
+        $("#f-name").value = item.name;
+        $("#f-min").value = item.minIdleHours;
+        $("#f-max").value = item.maxIdleHours ?? "";
+        $("#f-hours-on").checked = item.localHours !== null;
+        if (item.localHours) {
+          $("#f-from").value = item.localHours[0];
+          $("#f-to").value = item.localHours[1];
+        }
+        syncHoursRow();
+        setHoldout(item.holdoutPercent);
+        const given = item.variants?.length
+          ? item.variants
+          : [{ id: "a", label: "기본 톤", copy: item.copy }];
+        variants = [
+          { id: "a", label: given[0].label, copy: structuredClone(given[0].copy) },
+          given[1]
+            ? { id: "b", label: given[1].label, copy: structuredClone(given[1].copy) }
+            : {
+                id: "b",
+                label: "캐릭터 톤",
+                copy: structuredClone(
+                  state.defaults.copyB[item.segment] ?? { en: { title: "", body: "" } },
+                ),
+              },
+        ];
+        $("#f-ab").checked = given.length > 1;
+        currentVariant = 0;
+        renderVariantTabs();
+        renderCopyEditor();
+        resetPreview();
+        showTab("compose");
+        window.scrollTo(0, 0);
+      }
+
+      $("#recommend-run").onclick = runRecommendations;
+
+      // ---------------------------------------------------------------- 결과
+      let currentCampaign = null;
+      const segmentLabel = (id) => state.segments.find((segment) => segment.id === id)?.label ?? id;
+      // 「scheduled」 — 컴퓨터가 꺼져 있을 때를 위해 Supabase pg_cron에 넘긴 발송(README). 전달 수는 기록에 없어요.
+      const campaignStatus = (campaign) => {
+        if (campaign.status === "scheduled")
+          return campaign.sentAtMs > Date.now()
+            ? `<span class="status progress t-label-m">예약 · ${new Date(campaign.sentAtMs).getHours()}시</span>`
+            : '<span class="status completed t-label-m">예약 발송</span>';
+        if (campaign.status !== "sent")
+          return '<span class="status progress t-label-m">보내는 중</span>';
+        return (campaign.totals?.failedCalls ?? 0) > 0
+          ? '<span class="status retry t-label-m">일부 실패</span>'
+          : '<span class="status completed t-label-m">보냄</span>';
+      };
+
+      let currentSeries = null;
+      function renderSeries() {
+        if (state.series.length === 0) {
+          $("#series-list").innerHTML = '<p class="t-body-s muted">아직 없어요.</p>';
+          return;
+        }
+        $("#series-list").innerHTML = state.series
+          .map(
+            (
+              group,
+            ) => `<button class="campaign" data-series="${esc(group.key)}" aria-current="${group.key === currentSeries}">
+              <span class="t-label-l">${esc(group.key)}</span>
+              <span class="t-body-s muted">${group.campaigns}회 · 마지막 ${when(group.lastSentAtMs)}</span>
+            </button>`,
+          )
+          .join("");
+        for (const element of document.querySelectorAll(".campaign[data-series]"))
+          element.onclick = () => selectSeries(element.dataset.series);
+      }
+
+      function renderCampaigns() {
+        renderSeries();
+        if (state.campaigns.length === 0) {
+          $("#campaigns").innerHTML = '<p class="t-body-m muted">아직 보낸 캠페인이 없어요.</p>';
+          return;
+        }
+        $("#campaigns").innerHTML = state.campaigns
+          .map(
+            (
+              campaign,
+            ) => `<button class="campaign" data-id="${esc(campaign.id)}" aria-current="${campaign.id === currentCampaign}">
+              <span class="t-label-l">${esc(campaign.name)}</span>
+              <span class="t-body-s muted">${when(campaign.sentAtMs)} · ${esc(segmentLabel(campaign.segment))}</span>
+              <span class="t-body-s">보냄 ${campaign.counts.sent} · 대조 ${campaign.counts.control}</span>
+              <span>${campaignStatus(campaign)}</span>
+            </button>`,
+          )
+          .join("");
+        for (const element of document.querySelectorAll(".campaign[data-id]"))
+          element.onclick = () => selectCampaign(element.dataset.id);
+      }
+
+      const METRIC_LABELS = {
+        opened: "앱 열기",
+        tapped: "알림 누름",
+        studied: "학습한 날",
+        since: "지금까지 앱을 연 적",
+      };
+
+      function verdictHtml(metric) {
+        const compare = metric.compare;
+        if (!compare) return '<span class="status locked t-label-m">대조군 없음</span>';
+        const sign = compare.diff >= 0 ? "+" : "";
+        const diff = `<span class="t-label-l ${compare.low > 0 ? "up" : compare.high < 0 ? "down" : ""}">${sign}${(compare.diff * 100).toFixed(1)}%p</span>`;
+        const range = `<span class="t-caption subtle">95% ${(compare.low * 100).toFixed(1)} ~ ${(compare.high * 100).toFixed(1)} · p ${compare.pValue.toFixed(3)}</span>`;
+        let status = '<span class="status locked t-label-m">차이 불분명</span>';
+        if (!metric.complete) status = '<span class="status progress t-label-m">집계 중</span>';
+        else if (compare.low > 0)
+          status = '<span class="status completed t-label-m">효과 있음</span>';
+        else if (compare.high < 0) status = '<span class="status retry t-label-m">역효과</span>';
+        return `${status}${diff}${range}`;
+      }
+
+      function metricRow(metric) {
+        const sentRate = metric.sent.n ? metric.sent.hits / metric.sent.n : null;
+        const controlRate = metric.control.n ? metric.control.hits / metric.control.n : null;
+        const max = Math.max(sentRate ?? 0, controlRate ?? 0, 0.05);
+        const bar = (rate, cls, counts) =>
+          `<div class="t-body-s"><i class="${cls}" style="width:${((rate ?? 0) / max) * 100}%"></i>${pct(rate)} <span class="subtle">${counts.hits}/${counts.n}</span></div>`;
+        const label =
+          metric.labelOverride ??
+          `${METRIC_LABELS[metric.metric]}${metric.hours ? ` · ${metric.hours}시간` : ""}`;
+        return `<div class="metric">
+          <div class="t-label-l">${esc(label)}</div>
+          <div class="bars">${bar(sentRate, "bar-sent", metric.sent)}${bar(controlRate, "bar-control", metric.control)}</div>
+          <div class="verdict">${verdictHtml(metric)}</div>
+        </div>`;
+      }
+
+      // 문구 변형 — 변형마다 대조군과(핵심 지표만), 그리고 B를 A와 바로 비교합니다.
+      function variantSection(result) {
+        if (!result.variants?.length) return "";
+        const key = (metric) =>
+          (metric.metric === "studied" && metric.hours === 72) ||
+          (metric.metric === "opened" && metric.hours === 24);
+        const label = (prefix, metric) => ({
+          ...metric,
+          labelOverride: `${prefix} · ${METRIC_LABELS[metric.metric]}${metric.hours ? ` ${metric.hours}시간` : ""}`,
+        });
+        const vsControl = result.variants
+          .flatMap((variant) =>
+            variant.metrics
+              .filter(key)
+              .map((metric) => label(`${variant.id.toUpperCase()} ${variant.label}`, metric)),
+          )
+          .map(metricRow)
+          .join("");
+        const h2h = (result.headToHead ?? [])
+          .flatMap((entry) =>
+            entry.metrics
+              .filter((metric) => metric.metric !== "since")
+              .map((metric) =>
+                label(`${entry.id.toUpperCase()} − ${entry.baseline.toUpperCase()}`, metric),
+              ),
+          )
+          .map(metricRow)
+          .join("");
+        return `<div>
+          <div class="t-label-l">문구 변형 — 대조군과 비교</div>
+          ${vsControl}
+        </div>
+        <div>
+          <div class="t-label-l">어느 톤이 더 나은가 — B를 A와 바로 비교</div>
+          <div class="t-body-s muted">막대 위가 B, 아래가 A예요. 대조군 대신 A가 기준이라 사람이 많아 차이를 더 잘 봐요.</div>
+          ${h2h}
+        </div>`;
+      }
+
+      function curveSvg(curve) {
+        const points = curve.points;
+        if (points.length < 2)
+          return '<p class="t-body-s muted">시간이 조금 더 지나면 곡선이 그려져요.</p>';
+        const width = 680;
+        const height = 220;
+        const pad = { left: 44, right: 12, top: 12, bottom: 28 };
+        const maxX = curve.unit === "hour" ? 72 : 3;
+        const maxY =
+          Math.max(0.05, ...points.flatMap((point) => [point.sent ?? 0, point.control ?? 0])) *
+          1.15;
+        const x = (value) => pad.left + (value / maxX) * (width - pad.left - pad.right);
+        const y = (value) => height - pad.bottom - (value / maxY) * (height - pad.top - pad.bottom);
+        const line = (key, color) =>
+          `<polyline fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round" points="${points
+            .filter((point) => point[key] != null)
+            .map((point) => `${x(point.x).toFixed(1)},${y(point[key]).toFixed(1)}`)
+            .join(" ")}" />`;
+        const ticksX = (curve.unit === "hour" ? [0, 12, 24, 36, 48, 60, 72] : [0, 1, 2, 3])
+          .map(
+            (tick) =>
+              `<text x="${x(tick)}" y="${height - 8}" text-anchor="middle">${tick}${curve.unit === "hour" ? "시간" : "일"}</text>`,
+          )
+          .join("");
+        const ticksY = [0, maxY / 2, maxY]
+          .map(
+            (tick) =>
+              `<text x="${pad.left - 8}" y="${y(tick) + 4}" text-anchor="end">${(tick * 100).toFixed(0)}%</text>` +
+              `<line x1="${pad.left}" x2="${width - pad.right}" y1="${y(tick)}" y2="${y(tick)}" stroke="var(--libitum-color-gray-300)" />`,
+          )
+          .join("");
+        return `<svg viewBox="0 0 ${width} ${height}" width="100%" role="img" aria-label="누적 복귀 곡선 — 보낸 그룹과 대조군">${ticksY}${ticksX}${line("control", "var(--libitum-color-gray-700)")}${line("sent", "var(--libitum-color-brand-primary)")}</svg>`;
+      }
+
+      async function selectSeries(key) {
+        currentSeries = key;
+        currentCampaign = null;
+        renderCampaigns();
+        $("#result-out").innerHTML = '<p class="t-body-m muted">묶음 결과를 모으고 있어요…</p>';
+        try {
+          const { pooled, campaigns } = await api(`/api/series/${encodeURIComponent(key)}/results`);
+          const rows = campaigns
+            .map((campaign) => {
+              const studied = campaign.studied72;
+              const diff = studied?.compare
+                ? `${studied.compare.diff >= 0 ? "+" : ""}${(studied.compare.diff * 100).toFixed(1)}%p`
+                : "—";
+              return `<tr><td><div class="t-label-l">${esc(campaign.name)}</div><div class="t-body-s muted">${when(campaign.sentAtMs)} · ${esc(segmentLabel(campaign.segment))}</div></td>
+                <td class="num">${campaign.counts.sent} / ${campaign.counts.control}</td>
+                <td class="num">${diff}${studied && !studied.complete ? ' <span class="t-caption subtle">집계 중</span>' : ""}</td></tr>`;
+            })
+            .join("");
+          $("#result-out").innerHTML = `<div class="stack">
+            <div class="card-head" style="margin:0">
+              <div class="title-block">
+                <div class="overline t-label-m">같은 실험 묶음 · ${pooled.campaigns}회</div>
+                <h2 class="t-heading-m">${esc(key)}</h2>
+                <div class="t-body-s muted">같은 묶음은 회차가 바뀌어도 같은 사람이 대조군에 남아요. 그래서 「반복해서 받은 사람 vs 한 번도 안 받은 사람」의 누적 효과예요. 같은 사람이 여러 회차에 세어져 실제보다 조금 더 확실해 보일 수 있어요.</div>
+              </div>
+            </div>
+            <div class="kpis">
+              <div class="kpi"><span class="t-label-m muted">보낸 그룹 합계</span><span class="t-metric sent-color">${pooled.counts.sent}</span></div>
+              <div class="kpi"><span class="t-label-m muted">대조군 합계</span><span class="t-metric control-color">${pooled.counts.control}</span></div>
+              <div class="kpi"><span class="t-label-m muted">회차</span><span class="t-metric">${pooled.campaigns}</span></div>
+              <div class="kpi"><span class="t-label-m muted">PostHog 지표</span><span class="t-metric">${pooled.hasPosthog ? "있음" : "없음"}</span></div>
+            </div>
+            <div>
+              <div class="legend t-body-s"><span><i class="bar-sent"></i>보낸 그룹</span><span><i class="bar-control"></i>대조군 — 보내지 않음</span></div>
+              ${pooled.metrics.map(metricRow).join("")}
+            </div>
+            ${variantSection(pooled)}
+            ${
+              pooled.curve
+                ? `<div><div class="t-label-l">누적 복귀 — ${pooled.curve.unit === "hour" ? "앱 열기, 시간별" : "학습한 날, 날별"}</div>${curveSvg(pooled.curve)}</div>`
+                : '<p class="t-body-s muted">회차마다 곡선 단위가 달라(PostHog 키 전 · 후) 곡선은 합치지 않았어요.</p>'
+            }
+            <div>
+              <div class="t-label-l">회차별 — 학습한 날 72시간 차이</div>
+              <table><thead><tr class="t-label-m"><th>회차</th><th class="num">보냄 / 대조</th><th class="num">차이</th></tr></thead><tbody>${rows}</tbody></table>
+            </div>
+          </div>`;
+        } catch (error) {
+          $("#result-out").innerHTML = `<p class="t-body-m error-text">${esc(error.message)}</p>`;
+        }
+      }
+
+      async function selectCampaign(id) {
+        currentSeries = null;
+        currentCampaign = id;
+        renderCampaigns();
+        $("#result-out").innerHTML = '<p class="t-body-m muted">결과를 모으고 있어요…</p>';
+        try {
+          const { campaign, results } = await api(
+            `/api/campaigns/${encodeURIComponent(id)}/results`,
+          );
+          const totals = campaign.totals ?? {};
+          const batches = (campaign.batches ?? [])
+            .slice(0, 30)
+            .map(
+              (batch) =>
+                `<tr><td><div class="t-label-l">${esc(batch.title)}</div><div class="t-body-s muted">${esc(batch.body)}</div></td><td class="num">${batch.users}</td><td class="t-body-s">${
+                  batch.result?.ok
+                    ? `기기 ${batch.result.summary?.devices ?? 0} · 성공 ${batch.result.summary?.sent ?? 0} · 실패 ${batch.result.summary?.failed ?? 0}`
+                    : `<span class="error-text">${esc(batch.result?.error ?? batch.result?.status)}</span>`
+                }</td></tr>`,
+            )
+            .join("");
+          $("#result-out").innerHTML = `<div class="stack">
+            <div class="card-head" style="margin:0">
+              <div class="title-block">
+                <div class="overline t-label-m">${esc(segmentLabel(campaign.segment))}</div>
+                <h2 class="t-heading-m">${esc(campaign.name)}</h2>
+                <div class="t-body-s muted">${when(campaign.sentAtMs)}에 보냄 · ${results.elapsedHours.toFixed(1)}시간 지남 · 대조군 ${campaign.holdoutPercent}%</div>
+              </div>
+              ${campaignStatus(campaign)}
+            </div>
+            <div class="kpis">
+              <div class="kpi"><span class="t-label-m muted">보낸 그룹</span><span class="t-metric sent-color">${results.counts.sent}</span></div>
+              <div class="kpi"><span class="t-label-m muted">대조군</span><span class="t-metric control-color">${results.counts.control}</span></div>
+              <div class="kpi"><span class="t-label-m muted">기기 전달 성공</span><span class="t-metric">${campaign.status === "scheduled" ? "—" : (totals.sent ?? 0)}</span></div>
+              <div class="kpi"><span class="t-label-m muted">전달 실패</span><span class="t-metric">${(totals.failed ?? 0) + (totals.failedCalls ?? 0)}</span></div>
+            </div>
+            <div>
+              <div class="legend t-body-s"><span><i class="bar-sent"></i>보낸 그룹</span><span><i class="bar-control"></i>대조군 — 보내지 않음</span></div>
+              ${results.metrics.map(metricRow).join("")}
+            </div>
+            ${variantSection(results)}
+            <div>
+              <div class="t-label-l">누적 복귀 — ${results.curve.unit === "hour" ? "앱 열기, 시간별" : "학습한 날, 날별"}</div>
+              ${curveSvg(results.curve)}
+              ${results.hasPosthog ? "" : '<p class="t-body-s muted">PostHog 키를 넣으면 앱 열기와 알림 누름을 시간 단위로 볼 수 있어요. 방법은 README에 있어요.</p>'}
+            </div>
+            <details><summary class="t-label-l">보낸 문구 묶음 ${campaign.batches?.length ?? 0}개</summary>
+              <table><thead><tr class="t-label-m"><th>문구</th><th class="num">사람</th><th>send-push 응답</th></tr></thead><tbody>${batches}</tbody></table>
+            </details>
+          </div>`;
+        } catch (error) {
+          $("#result-out").innerHTML = `<p class="t-body-m error-text">${esc(error.message)}</p>`;
+        }
+      }
+
+      // ---------------------------------------------------------------- 시작
+      async function loadState() {
+        state = await api("/api/state");
+        renderSegments();
+        $("#t-user").innerHTML = state.testers.length
+          ? state.testers
+              .map(
+                (tester) =>
+                  `<option value="${esc(tester.userId)}">${esc(tester.name || "이름 없음")} · ${esc(tester.country ?? "?")}</option>`,
+              )
+              .join("")
+          : '<option value="">기기가 등록된 시험 계정이 없어요</option>';
+        $("#test-send").disabled = state.testers.length === 0;
+        if ($("#t-lang").options.length === 0) {
+          $("#t-lang").innerHTML =
+            '<option value="">그 계정의 나라 언어</option>' +
+            state.languages
+              .map((lang) => `<option value="${lang}">${LANGUAGE_NAMES[lang] ?? lang}</option>`)
+              .join("");
+        }
+        if ($("#f-segment").options.length === 0) {
+          $("#f-segment").innerHTML = state.segments
+            .map(
+              (segment) =>
+                `<option value="${esc(segment.id)}">${esc(segment.label)} · ${segment.total}명</option>`,
+            )
+            .join("");
+          applySegmentDefaults();
+        }
+        if (!$("#tab-results").hidden) renderCampaigns();
+      }
+
+      $("#test-send").onclick = async () => {
+        $("#test-send").disabled = true;
+        $("#test-result").className = "t-body-s muted";
+        $("#test-result").textContent = "보내고 있어요…";
+        try {
+          const { message, result } = await api("/api/test-send", {
+            userId: $("#t-user").value,
+            lang: $("#t-lang").value,
+            copy: campaignInput().copy,
+          });
+          if (!result.ok) throw new Error(result.error ?? `응답 ${result.status}`);
+          $("#test-result").className = "t-body-s";
+          $("#test-result").textContent =
+            `보냈어요 — 기기 ${result.summary.devices}대 중 ${result.summary.sent}대 성공 · 「${message.title}」`;
+        } catch (error) {
+          $("#test-result").className = "t-body-s error-text";
+          $("#test-result").textContent = error.message;
+        } finally {
+          $("#test-send").disabled = state.testers.length === 0;
+        }
+      };
+      $("#f-ab").addEventListener("change", () => {
+        renderVariantTabs();
+        renderCopyEditor();
+        resetPreview();
+      });
+      $("#f-segment").onchange = applySegmentDefaults;
+      $("#copy-reset").onclick = applySegmentDefaults;
+      $("#preview").onclick = preview;
+      $("#send").onclick = askConfirm;
+      $("#f-hours-on").addEventListener("change", syncHoursRow);
+      for (const id of [
+        "#f-min",
+        "#f-max",
+        "#f-hours-on",
+        "#f-from",
+        "#f-to",
+        "#f-cooldown",
+        "#f-reeng",
+        "#f-name",
+        "#f-series",
+      ]) {
+        $(id).addEventListener("input", resetPreview);
+      }
+      $("#refresh").onclick = async () => {
+        $("#refresh").disabled = true;
+        $("#refresh").textContent = "읽고 있어요…";
+        try {
+          await api("/api/refresh", {});
+          await loadState();
+        } finally {
+          $("#refresh").disabled = false;
+          $("#refresh").textContent = "데이터 다시 읽기";
+        }
+      };
+      loadState().catch((error) => ($("#meta").textContent = error.message));
+    </script>
+  </body>
+</html>
