@@ -16,6 +16,7 @@ import {
   tapLog,
   tapKeys,
 } from "./chat-ui.test-support";
+import { chatFeedbackTestIds } from "./chat-feedback.contract";
 import { messengerChatTestIds as ids } from "./messenger-chat.contract";
 
 // `ui` 계층(PR #406 코드 리뷰 #2 · #3 · #6 · #8): 초점은 입력 칸이 켜진 모습이 그려진 뒤에 가고, 다시 마운트한 칸에 가며,
@@ -143,10 +144,9 @@ test.each([
   ],
   ["사진 요청", () => tapId(ids.snapshot)],
   [
-    "고치기 요청",
+    "👎 이유 시트",
     () => {
-      tapId(ids.more);
-      tapId(ids.moreItem("fix"));
+      tapId(chatFeedbackTestIds.ratingBad);
     },
   ],
   [

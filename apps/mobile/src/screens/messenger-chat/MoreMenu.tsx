@@ -1,7 +1,6 @@
 import type { ReactNode } from "@lynx-js/react";
 
 import flag from "@libitums/icons/lynx/flag";
-import pen from "@libitums/icons/lynx/pen";
 import refresh from "@libitums/icons/lynx/refresh";
 import { color } from "@libitums/design-tokens";
 
@@ -18,7 +17,7 @@ export type MoreMenuProps = {
   readonly showIdeas?: boolean;
 };
 
-// 「…」 메뉴 — 항목 셋이 고정 순서(ideas · fix · 구분선 · report)로 섭니다. 메뉴 밖 투명 면을 탭하면 닫힙니다.
+// 「…」 메뉴 — 항목이 고정 순서(ideas · 구분선 · report)로 섭니다. 메뉴 밖 투명 면을 탭하면 닫힙니다.
 // 메뉴 항목 → 여는 겹침. 메뉴는 대화 영역(MessengerChatScreen의 머리 + 로그 상자) 안 맨 아래에 그려진다 — 기능 줄 상자 밖으로
 // 튀어나오게 그리면 기기(Lynx)에서 탭이 항목에 닿지 않았다(사용자 기기 확인 2026-11-10).
 export function overlayForMore(
@@ -27,8 +26,6 @@ export function overlayForMore(
   switch (action) {
     case "ideas":
       return { kind: "regen" };
-    case "fix":
-      return { kind: "fix", text: "" };
     case "report":
       return { kind: "report", reasons: [] };
     default: {
@@ -51,27 +48,22 @@ export function MoreMenu({ onSelect, onDismiss, showIdeas = true }: MoreMenuProp
         }}
       />
       <view
-        className="messenger-chat-more-menu"
+        className={`messenger-chat-more-menu${showIdeas ? "" : " messenger-chat-more-menu-single"}`}
         data-testid={ids.moreMenu}
         accessibility-role-description="menu"
       >
         {showIdeas ? (
-          <MenuItem
-            action="ideas"
-            label={copy.ideas}
-            icon={refresh}
-            iconColor={color.fg.neutral}
-            onSelect={onSelect}
-          />
+          <>
+            <MenuItem
+              action="ideas"
+              label={copy.ideas}
+              icon={refresh}
+              iconColor={color.fg.neutral}
+              onSelect={onSelect}
+            />
+            <view className="messenger-chat-more-divider" accessibility-elements-hidden={true} />
+          </>
         ) : null}
-        <MenuItem
-          action="fix"
-          label={copy.fix}
-          icon={pen}
-          iconColor={color.fg.neutral}
-          onSelect={onSelect}
-        />
-        <view className="messenger-chat-more-divider" accessibility-elements-hidden={true} />
         <MenuItem
           action="report"
           label={copy.report}

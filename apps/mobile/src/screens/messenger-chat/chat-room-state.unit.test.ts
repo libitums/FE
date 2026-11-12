@@ -1,12 +1,12 @@
 import { describe, expect, test } from "vitest";
 
+import { RATING_NOTE_MAX } from "./chat-feedback-rules";
 import { keysFromText } from "./composer-keys";
+import { focusOriginOf, type ChatFocusOrigin } from "./chat-overlay-focus";
 import {
   chatRoomReducer,
-  focusOriginOf,
   initialChatRoomState,
   overlayParent,
-  type ChatFocusOrigin,
   type ChatOverlay,
   type ChatRoomAction,
   type ChatRoomState,
@@ -305,7 +305,12 @@ const overlayRows: readonly OverlayRow[] = [
     parent: { kind: "none" },
     origin: "more",
   },
-  { label: "fix", overlay: { kind: "fix", text: "" }, parent: { kind: "none" }, origin: "more" },
+  {
+    label: "rate-down",
+    overlay: { kind: "rate-down", messageId: "t1", reasons: [], note: "" },
+    parent: { kind: "none" },
+    origin: "rating",
+  },
   { label: "regen", overlay: { kind: "regen" }, parent: { kind: "none" }, origin: "more" },
   {
     label: "ask-media photo",
@@ -379,13 +384,16 @@ describe("겹침 열기 · 닫기 (MC-U11)", () => {
     expect(state.overlay).toEqual({ kind: "delete-confirm" });
   });
 
-  test("MC-U11. 신고는 사유 없이, 고쳐 주세요는 빈 글로 열린다", () => {
+  test("MC-U11. 신고는 사유 없이, 👎 시트는 이유 · 메모 없이 열린다(ADR-0129)", () => {
     expect(
       run(learning(), { type: "open-overlay", overlay: { kind: "report", reasons: [] } }).overlay,
     ).toEqual({ kind: "report", reasons: [] });
     expect(
-      run(learning(), { type: "open-overlay", overlay: { kind: "fix", text: "" } }).overlay,
-    ).toEqual({ kind: "fix", text: "" });
+      run(learning(), {
+        type: "open-overlay",
+        overlay: { kind: "rate-down", messageId: "t1", reasons: [], note: "" },
+      }).overlay,
+    ).toEqual({ kind: "rate-down", messageId: "t1", reasons: [], note: "" });
   });
 
   test("MC-U11. 겹침이 없을 때: 부모는 none이고 초점 자리는 null이다", () => {
@@ -434,17 +442,37 @@ describe("신고 · 고쳐 주세요 · 이야기 시점 (MC-U12)", () => {
     expect(state.overlay).toEqual({ kind: "report", reasons: [] });
   });
 
-  test("MC-U12. fix-input 은 글을 채우고 200자(코드 포인트)를 넘으면 자른다", () => {
-    const opened = run(learning(), { type: "open-overlay", overlay: { kind: "fix", text: "" } });
-    expect(run(opened, { type: "fix-input", value: "어색해요" }).overlay).toEqual({
-      kind: "fix",
-      text: "어색해요",
+  test("CR-U10. rate-note 는 메모를 채우고 200자(코드 포인트)를 넘으면 자른다", () => {
+    const opened = run(learning(), {
+      type: "open-overlay",
+      overlay: { kind: "rate-down", messageId: "t1", reasons: [], note: "" },
     });
-    const long = run(opened, { type: "fix-input", value: "😀".repeat(260) });
-    expect(long.overlay.kind).toBe("fix");
-    expect([...(long.overlay as { text: string }).text]).toHaveLength(
-      CHAT_PLACEHOLDERS.fixMaxLength,
-    );
+    expect(run(opened, { type: "rate-note", value: "어색해요" }).overlay).toMatchObject({
+      note: "어색해요",
+    });
+    const long = run(opened, { type: "rate-note", value: "😀".repeat(260) });
+    expect([...(long.overlay as { note: string }).note]).toHaveLength(RATING_NOTE_MAX);
+  });
+
+  test("CR-U11. toggle-rate-reason 은 이유를 켜고 끄며 시트 순서를 지킨다", () => {
+    const opened = run(learning(), {
+      type: "open-overlay",
+      overlay: { kind: "rate-down", messageId: "t1", reasons: [], note: "" },
+    });
+    const two = run(run(opened, { type: "toggle-rate-reason", reason: "other" }), {
+      type: "toggle-rate-reason",
+      reason: "awkward_korean",
+    });
+    expect(two.overlay).toMatchObject({ reasons: ["awkward_korean", "other"] });
+    expect(run(two, { type: "toggle-rate-reason", reason: "other" }).overlay).toMatchObject({
+      reasons: ["awkward_korean"],
+    });
+    // 다른 겹침에서는 무동작
+    const report = run(learning(), {
+      type: "open-overlay",
+      overlay: { kind: "report", reasons: [] },
+    });
+    expect(run(report, { type: "toggle-rate-reason", reason: "other" })).toBe(report);
   });
 
   test("MC-U12. select-story-point 는 고른 시점 id를 갱신한다", () => {

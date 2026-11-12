@@ -10,7 +10,6 @@ export type MyMessageCopy = {
   readonly loadingMeaning: string;
   readonly loadingFix: string;
   readonly better: string;
-  readonly fixLabel: (corrected: string, explanation: string) => string;
 };
 
 /** 하루 무료 수 · 엽전 보내기 · 다 쓴 판. */

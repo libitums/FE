@@ -108,17 +108,17 @@ test("MC-UI24. 겹침이 없을 때는 머리 · 로그 · 독이 낭독에서 �
 test("MC-UI24. 겹침이 열린 동안 머리 · 로그 · 독이 낭독에서 숨는다", () => {
   mountChatOpen();
   tapId(ids.more);
-  tapId(ids.moreItem("fix"));
+  tapId(ids.moreItem("ideas"));
 
-  expect(screen.getByTestId(ids.fixDialog)).toBeTruthy();
+  expect(screen.getByTestId(ids.regenDialog)).toBeTruthy();
   expect(hiddenFromReader(screen.getByTestId(ids.header))).toBe(true);
   expect(hiddenFromReader(screen.getByTestId(ids.log))).toBe(true);
   expect(hiddenFromReader(screen.getByTestId(ids.featureRow))).toBe(true);
   expect(hiddenFromReader(screen.getByTestId(ids.composer))).toBe(true);
-  expect(hiddenFromReader(screen.getByTestId(ids.fixDialog))).toBe(false);
+  expect(hiddenFromReader(screen.getByTestId(ids.regenDialog))).toBe(false);
 });
 
-test("MC-UI24. 고쳐 주세요 대화상자 상자는 dialog 역할이다", () => {
+test("MC-UI24. 다시 만들기 확인 상자는 dialog 역할이다", () => {
   mountChatOpen();
   const hasDialogRole = (testId: string) => {
     const el = screen.getByTestId(testId);
@@ -129,8 +129,8 @@ test("MC-UI24. 고쳐 주세요 대화상자 상자는 dialog 역할이다", () 
   };
 
   tapId(ids.more);
-  tapId(ids.moreItem("fix"));
-  expect(hasDialogRole(ids.fixDialog)).toBe(true);
+  tapId(ids.moreItem("ideas"));
+  expect(hasDialogRole(ids.regenDialog)).toBe(true);
 });
 
 test("MC-UI24. 사이드바 상자도 dialog 역할이다", () => {

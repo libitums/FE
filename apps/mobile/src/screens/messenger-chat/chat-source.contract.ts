@@ -110,11 +110,15 @@ export type ChatThread = {
   readonly counterpart: ChatCounterpart;
   readonly messages: readonly ChatMessage[];
   readonly typing: boolean;
+  /** 보낸 글의 답을 기다리는 중(입력 중 점 전 포함) — 다시 보내기 판정(ADR-0129). */
+  readonly awaitingReply: boolean;
   readonly ideas: readonly ChatReplyIdea[];
   readonly settings: ChatRoomSettings;
   readonly storyPoints: readonly ChatStoryPoint[];
   /** 내 텍스트 글 id만 키. 없는 키 = NO_NOTES. */
   readonly notes: Readonly<Record<string, ChatMyNotes>>;
+  /** 캐릭터 글 id만 키 — 내가 남긴 평가(ADR-0129). */
+  readonly ratings: Readonly<Record<string, ChatRating>>;
   /** null이면 보통 입력 줄입니다. */
   readonly inputBlock: ChatInputBlock | null;
 };
@@ -128,12 +132,9 @@ export type ChatSnapshot = {
 
 // 내 글 노트(뜻 · 교정) — messenger-chat-1-5 spec §5.1. 뜻은 en 고정, 범위는 corrected 안 코드 포인트입니다.
 export type ChatMeaning = { readonly romanization: string; readonly meaning: string };
-export type ChatCorrectionChange = { readonly start: number; readonly end: number };
-export type ChatCorrection = {
-  readonly corrected: string;
-  readonly changes: readonly ChatCorrectionChange[];
-  readonly explanation: string;
-};
+// 교정 카드 · 평가 타입(ADR-0129)은 `chat-feedback.contract.ts`에 둡니다.
+import type { ChatCorrection, ChatCorrectionChange, ChatRating } from "./chat-feedback.contract";
+export type { ChatCorrection, ChatCorrectionChange, ChatRating };
 export type ChatLoad<T> =
   | { readonly status: "idle" }
   | { readonly status: "loading" }
@@ -185,8 +186,10 @@ export type ChatSource = {
   readonly setStoryPoint: (roomId: string, storyPointId: string) => void;
   /** 1단계 무동작. */
   readonly report: (roomId: string, reasons: readonly ChatReportReasonId[]) => void;
-  /** 1단계 무동작. */
-  readonly requestFix: (roomId: string, text: string) => void;
+  /** 평가를 남기거나(null이면) 지웁니다. 같은 값이면 무동작(ADR-0129). */
+  readonly rateMessage: (roomId: string, messageId: string, rating: ChatRating | null) => void;
+  /** 마지막 내 글을 고친 문장으로 다시 보냅니다 — 옛 턴은 로그에서 빠집니다. 규칙을 어기면 무동작(ADR-0129). */
+  readonly resendCorrected: (roomId: string, messageId: string) => void;
   readonly deleteRoom: (roomId: string) => void;
   /** 내 글 · 뜻 idle일 때만: loading → timing.meaningMs 뒤 ready. 그 밖 무동작. */
   readonly requestMeaning: (roomId: string, messageId: string) => void;

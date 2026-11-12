@@ -16,6 +16,7 @@ import {
 import type { ChatFixtureSeed } from "./chat-source.contract";
 import { messengerChatTestIds as roomIds } from "./messenger-chat.contract";
 import { myMessageTestIds as ids } from "./my-message.contract";
+import { chatFeedbackTestIds as fb } from "./chat-feedback.contract";
 
 // `ui` 계층(MC2-UI4): 방 화면에서 내 말풍선 도구 — 씨앗 · 가짜 타이머. 아이콘 줄이 누구에게 있는지 · 열고 닫기 ·
 // 한 말풍선에 하나만 열림 · 말풍선끼리 독립 · 낭독 순서 · 보낸 글에 답이 오면 생기는 교정.
@@ -48,13 +49,19 @@ const FIX = {
     { start: 1, end: 2 },
     { start: 5, end: 6 },
   ],
-  explanation: "Add 는 after 저 and 를 after 커피.",
+  kind: "correction",
+  items: [{ original: "저", corrected: "저는", reason: "Add 는 to mark the topic." }],
+  better: null,
+  meaning: null,
 } as const;
 const REPLY_FIX = {
   original: "안",
   corrected: "안녕",
   changes: [{ start: 1, end: 2 }],
-  explanation: "Say 안녕 for hello.",
+  kind: "correction",
+  items: [{ original: "안", corrected: "안녕", reason: "Say 안녕 for hello." }],
+  better: null,
+  meaning: null,
 } as const;
 
 // 내 글 둘: 첫째는 교정 없음, 둘째는 씨앗 교정(점이 처음부터 보임). 뒤에 상대 글 하나.
@@ -167,17 +174,17 @@ test("MC2-UI4. 연필: 카드 스켈레톤이 서고 점이 바로 사라지며 
   expect(rowTool(1, ids.fixSkeleton)).not.toBeNull();
   expect(rowTool(1, ids.toolFix)?.getAttribute("data-dot")).toBe("hidden");
   advance(timing.correctionMs - 1);
-  expect(rowTool(1, ids.fixCard)).toBeNull();
+  expect(rowTool(1, fb.card)).toBeNull();
   advance(1);
 
   expect(viewOf(1)).toBe("fix");
   expect(rowTool(1, ids.fixSkeleton)).toBeNull();
-  expect(rowTool(1, ids.fixCard)).not.toBeNull();
-  expect(rowTool(1, ids.fixSegment(0))?.textContent).toBe("저");
-  expect(rowTool(1, ids.fixSegment(0))?.getAttribute("data-kind")).toBe("same");
-  expect(rowTool(1, ids.fixSegment(1))?.textContent).toBe("는");
-  expect(rowTool(1, ids.fixSegment(1))?.getAttribute("data-kind")).toBe("changed");
-  expect(rowTool(1, ids.fixExplanation)?.textContent?.trim()).toBe(FIX.explanation);
+  expect(rowTool(1, fb.card)).not.toBeNull();
+  expect(rowTool(1, fb.cardSegment(0))?.textContent).toBe("저");
+  expect(rowTool(1, fb.cardSegment(0))?.getAttribute("data-kind")).toBe("same");
+  expect(rowTool(1, fb.cardSegment(1))?.textContent).toBe("는");
+  expect(rowTool(1, fb.cardSegment(1))?.getAttribute("data-kind")).toBe("changed");
+  expect(rowTool(1, fb.cardItem(0))?.textContent).toContain("Add 는 to mark the topic.");
   expect(rowTool(1, ids.toolFix)?.getAttribute("data-state")).toBe("on");
 });
 
@@ -196,16 +203,16 @@ test("MC2-UI4. 한 말풍선에는 도구 하나만 열린다 — 연필이 열�
   mountChat({ seed: seed() });
   tapTool(1, ids.toolFix);
   advance(timing.correctionMs);
-  expect(rowTool(1, ids.fixCard)).not.toBeNull();
+  expect(rowTool(1, fb.card)).not.toBeNull();
 
   tapTool(1, ids.toolMeaning);
 
-  expect(rowTool(1, ids.fixCard)).toBeNull();
+  expect(rowTool(1, fb.card)).toBeNull();
   expect(viewOf(1)).toBe("meaning-loading");
   expect(rowTool(1, ids.toolFix)?.getAttribute("data-state")).toBe("off");
   advance(timing.meaningMs);
   expect(viewOf(1)).toBe("meaning");
-  expect(rowTool(1, ids.fixCard)).toBeNull();
+  expect(rowTool(1, fb.card)).toBeNull();
 });
 
 test("MC2-UI4. 다른 말풍선은 독립이다 — 한쪽을 열어도 다른 쪽은 그대로 열려 있다", () => {
@@ -239,7 +246,10 @@ test("MC2-UI4. 낭독: 불러오는 중 → 내용 순서로 한 번씩 알린�
   expect(announce()).toHaveBeenNthCalledWith(3, "Loading a better way…");
   advance(timing.correctionMs);
   expect(announce()).toHaveBeenCalledTimes(4);
-  expect(announce()).toHaveBeenNthCalledWith(4, `Better: ${FIX.corrected}. ${FIX.explanation}`);
+  expect(announce()).toHaveBeenNthCalledWith(
+    4,
+    `FIX: ${FIX.corrected} 저 → 저는, Add 는 to mark the topic.`,
+  );
 });
 
 test("MC2-UI4. 보내고 상대 답이 오면 그 글에 고친 문장 단추와 점이 생기고 열면 카드가 선다", () => {
@@ -257,8 +267,8 @@ test("MC2-UI4. 보내고 상대 답이 오면 그 글에 고친 문장 단추와
   expect(rowTool(2, ids.toolFix)?.getAttribute("data-dot")).toBe("shown");
   tapTool(2, ids.toolFix);
   advance(timing.correctionMs);
-  expect(rowTool(2, ids.fixCard)).not.toBeNull();
-  expect(rowTool(2, ids.fixSegment(1))?.textContent).toBe("녕");
+  expect(rowTool(2, fb.card)).not.toBeNull();
+  expect(rowTool(2, fb.cardSegment(1))?.textContent).toBe("녕");
 });
 
 test("MC2-UI4. 표에 없는 글의 뜻은 대체 문장으로 서고 단추는 계속 동작한다", () => {

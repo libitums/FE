@@ -27,13 +27,19 @@ const FIX: ChatFixtureCorrection = {
     { start: 1, end: 2 },
     { start: 9, end: 10 },
   ],
-  explanation: "Add 는 after 저 and 에 after 카페.",
+  kind: "correction",
+  items: [{ original: "저", corrected: "저는", reason: "Add 는 after 저 and 에 after 카페." }],
+  better: null,
+  meaning: null,
 };
 const ARRIVAL_FIX: ChatFixtureCorrection = {
   original: "어제 영화 봤어요.",
   corrected: "어제 영화를 봤어요.",
   changes: [{ start: 6, end: 7 }],
-  explanation: "Add 를 after the object.",
+  kind: "correction",
+  items: [{ original: "저", corrected: "저는", reason: "Add 를 after the object." }],
+  better: null,
+  meaning: null,
 };
 const MEANINGS: readonly ChatFixtureMeaning[] = [
   { ko: "카페에 갔어요.", romanization: "kape-e gasseoyo.", meaning: "I went to a cafe." },
@@ -148,7 +154,10 @@ describe("씨앗 교정과 openCorrection (MC2-U18)", () => {
     expect(correction.detail.value).toMatchObject({
       corrected: FIX.corrected,
       changes: FIX.changes,
-      explanation: FIX.explanation,
+      kind: FIX.kind,
+      items: FIX.items,
+      better: FIX.better,
+      meaning: FIX.meaning,
     });
   });
 

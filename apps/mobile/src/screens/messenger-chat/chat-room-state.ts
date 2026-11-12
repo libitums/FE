@@ -1,7 +1,9 @@
 // 방 UI 상태 리듀서입니다(messenger-chat-ui spec §5.4). DOM · 네트워크를 만지지 않습니다.
 
 import { composeHangul, shiftedKeys } from "../../lib/hangul-keyboard";
-import { clampText } from "./chat-rules";
+import type { ChatRatingReason } from "./chat-feedback.contract";
+import { RATING_NOTE_MAX, toggledReason } from "./chat-feedback-rules";
+import { clampText, toggledReportReason } from "./chat-rules";
 import { CHAT_PLACEHOLDERS } from "./chat-placeholders";
 import { keysFromText } from "./composer-keys";
 import type { ChatFeedbackMode, ChatMediaKind, ChatReportReasonId } from "./chat-source.contract";
@@ -11,8 +13,18 @@ import type { ComposerKeyboard, KeyboardPlan } from "./keyboard-plan";
 export type ChatOverlay =
   | { readonly kind: "none" }
   | { readonly kind: "more-menu" }
-  | { readonly kind: "report"; readonly reasons: readonly ChatReportReasonId[] }
-  | { readonly kind: "fix"; readonly text: string }
+  | {
+      readonly kind: "report";
+      readonly reasons: readonly ChatReportReasonId[];
+      /** 👎 시트에서 왔으면 닫힐 때 초점이 👎로 돌아갑니다(ADR-0129). */
+      readonly from?: "rating";
+    }
+  | {
+      readonly kind: "rate-down";
+      readonly messageId: string;
+      readonly reasons: readonly ChatRatingReason[];
+      readonly note: string;
+    }
   | { readonly kind: "regen" }
   | { readonly kind: "ask-media"; readonly media: ChatMediaKind }
   | { readonly kind: "sidebar" }
@@ -28,19 +40,6 @@ export type ChatOverlay =
       readonly selected: number | null;
       readonly from: "room" | "sidebar" | "blocked";
     };
-
-export type ChatFocusOrigin =
-  | "more"
-  | "settings"
-  | "snapshot-pill"
-  | "voice-pill"
-  | "sidebar-story-point"
-  | "sidebar-delete"
-  | "sidebar-coins"
-  | "send"
-  | "sidebar-birth-year"
-  | "blocked-change-year"
-  | "sidebar-feedback-mode";
 
 export type ChatRoomState = {
   /** 정본입니다. */
@@ -75,7 +74,8 @@ export type ChatRoomAction =
   | { readonly type: "open-overlay"; readonly overlay: Exclude<ChatOverlay, { kind: "none" }> }
   | { readonly type: "close-overlay" }
   | { readonly type: "toggle-report-reason"; readonly id: ChatReportReasonId }
-  | { readonly type: "fix-input"; readonly value: string }
+  | { readonly type: "toggle-rate-reason"; readonly reason: ChatRatingReason }
+  | { readonly type: "rate-note"; readonly value: string }
   | { readonly type: "select-story-point"; readonly id: string }
   | { readonly type: "select-birth-year"; readonly year: number }
   | { readonly type: "select-feedback-mode"; readonly mode: ChatFeedbackMode };
@@ -158,16 +158,17 @@ function sent(state: ChatRoomState): ChatRoomState {
   };
 }
 
-function toggleReason(state: ChatRoomState, id: ChatReportReasonId): ChatRoomState {
-  const { overlay } = state;
-  if (overlay.kind !== "report") return state;
-  const reasons = overlay.reasons.includes(id)
-    ? overlay.reasons.filter((reason) => reason !== id)
-    : CHAT_PLACEHOLDERS.reportReasons.filter(
-        (reason) => reason === id || overlay.reasons.includes(reason),
-      );
-  return { ...state, overlay: { kind: "report", reasons } };
-}
+const toggleReason = (state: ChatRoomState, id: ChatReportReasonId): ChatRoomState =>
+  state.overlay.kind === "report"
+    ? {
+        ...state,
+        overlay: { ...state.overlay, reasons: toggledReportReason(state.overlay.reasons, id) },
+      }
+    : state;
+
+type RateDown = Extract<ChatOverlay, { kind: "rate-down" }>;
+const withRateDown = (state: ChatRoomState, change: (sheet: RateDown) => RateDown) =>
+  state.overlay.kind === "rate-down" ? { ...state, overlay: change(state.overlay) } : state;
 
 export function chatRoomReducer(state: ChatRoomState, action: ChatRoomAction): ChatRoomState {
   switch (action.type) {
@@ -205,13 +206,16 @@ export function chatRoomReducer(state: ChatRoomState, action: ChatRoomAction): C
       return { ...state, overlay: overlayParent(state.overlay) };
     case "toggle-report-reason":
       return toggleReason(state, action.id);
-    case "fix-input":
-      return state.overlay.kind === "fix"
-        ? {
-            ...state,
-            overlay: { kind: "fix", text: clampText(action.value, CHAT_PLACEHOLDERS.fixMaxLength) },
-          }
-        : state;
+    case "toggle-rate-reason":
+      return withRateDown(state, (sheet) => ({
+        ...sheet,
+        reasons: toggledReason(sheet.reasons, action.reason),
+      }));
+    case "rate-note":
+      return withRateDown(state, (sheet) => ({
+        ...sheet,
+        note: clampText(action.value, RATING_NOTE_MAX),
+      }));
     case "select-story-point":
       return state.overlay.kind === "story-point"
         ? { ...state, overlay: { kind: "story-point", selected: action.id } }
@@ -245,39 +249,5 @@ export function overlayParent(overlay: ChatOverlay): ChatOverlay {
       return SIDEBAR;
     default:
       return NO_OVERLAY;
-  }
-}
-
-/** 겹침이 닫힌 뒤 접근성 초점이 돌아갈 자리입니다. */
-export function focusOriginOf(closing: ChatOverlay): ChatFocusOrigin | null {
-  switch (closing.kind) {
-    case "none":
-      return null;
-    case "more-menu":
-    case "report":
-    case "fix":
-    case "regen":
-      return "more";
-    case "ask-media":
-      return closing.media === "photo" ? "snapshot-pill" : "voice-pill";
-    case "sidebar":
-      return "settings";
-    case "story-point":
-      return "sidebar-story-point";
-    case "delete-confirm":
-      return "sidebar-delete";
-    case "coin-shop":
-      if (closing.from === "sidebar") return "sidebar-coins";
-      if (closing.from === "send") return "send";
-      return closing.from === "ask-photo" ? "snapshot-pill" : "voice-pill";
-    case "feedback-mode":
-      return "sidebar-feedback-mode";
-    case "birth-year":
-      if (closing.from === "sidebar") return "sidebar-birth-year";
-      return closing.from === "blocked" ? "blocked-change-year" : null;
-    default: {
-      const unreachable: never = closing;
-      return unreachable;
-    }
   }
 }

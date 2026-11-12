@@ -29,7 +29,10 @@ const CORRECTION: ChatCorrection = {
     { start: 1, end: 2 },
     { start: 9, end: 10 },
   ],
-  explanation: "Add 는 after 저.",
+  kind: "correction",
+  items: [{ original: "저", corrected: "저는", reason: "Add 는 after 저." }],
+  better: null,
+  meaning: null,
 };
 
 const idle = { status: "idle" } as const;

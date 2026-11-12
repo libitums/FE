@@ -35,7 +35,6 @@ const REQUIRED_KEYS: readonly string[] = [
   "myMessage.loadingMeaning",
   "myMessage.loadingFix",
   "myMessage.better",
-  "myMessage.fixLabel",
   "turns.freeLeft",
   "turns.lastFree",
   "turns.used",
@@ -115,7 +114,6 @@ describe.each(languages)("%s messengerChat (MC2-U25)", (_code, copy) => {
     has(call("newFriend", "episodeChip", 3), "3");
     has(call("newFriend", "metIn", 3, "Guesthouse"), "3", "Guesthouse");
     has(call("newFriend", "sheetLabel", "Mina"), "Mina");
-    has(call("myMessage", "fixLabel", "Better text", "Because"), "Better text", "Because");
     has(call("list", "coinsLabel", 5), "5");
     has(call("askMedia", "balance", 100), "100");
     has(call("askMedia", "confirmLabel", 60), "60");
@@ -173,7 +171,6 @@ describe("en messengerChat 영어 문구 표본 (MC2-U25)", () => {
     expect(m.myMessage?.loadingMeaning).toBe("Loading the meaning…");
     expect(m.myMessage?.loadingFix).toBe("Loading a better way…");
     expect(m.myMessage?.better).toBe("BETTER");
-    expect(fn("myMessage", "fixLabel")?.("Hi", "Why")).toBe("Better: Hi. Why");
     expect(m.newFriend?.newFriend).toBe("NEW FRIEND");
     expect(fn("newFriend", "episodeChip")?.(3)).toBe("Episode 3");
     expect(fn("newFriend", "metIn")?.(3, "Mina")).toBe("Met in Episode 3 · Mina");

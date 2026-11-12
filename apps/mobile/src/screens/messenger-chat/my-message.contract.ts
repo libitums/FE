@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "@lynx-js/react";
 
-import type { ChatCorrection, ChatMeaning } from "./chat-source.contract";
+import type { ChatMeaning } from "./chat-source.contract";
 import type { BubbleTool, BubbleToolRow, MyBubbleView } from "./my-message-state";
 
 export type MyMotion = "standard" | "reduced";
@@ -15,6 +15,8 @@ export type MyMessageRowProps = {
   readonly tools: BubbleToolRow;
   readonly motion: MyMotion;
   readonly onToggle: (tool: BubbleTool) => void;
+  /** 고친 문장으로 다시 보내기 — 마지막 내 글이 아니면 null(ADR-0129). */
+  readonly onResend: (() => void) | null;
 };
 export type MyMessageStackProps = { readonly children: ReactNode };
 export type MyMessageBubbleProps = {
@@ -26,7 +28,6 @@ export type MyMessageBubbleProps = {
 };
 export type MyMessageMeaningLinesProps = { readonly meaning: ChatMeaning };
 export type MyMessageSkeletonProps = { readonly motion: MyMotion };
-export type MyMessageFixCardProps = { readonly correction: ChatCorrection };
 export type MyMessageToolsProps = { readonly children: ReactNode };
 export type MeaningToolButtonProps = {
   readonly state: "on" | "off";
@@ -47,9 +48,6 @@ export const myMessageTestIds = {
   meaningRoman: my("my-meaning-roman"),
   meaningText: my("my-meaning-text"),
   meaningSkeleton: my("my-meaning-skeleton"),
-  fixCard: my("fix-card"),
-  fixSegment: (index: number): string => my(`fix-card-seg-${index}`),
-  fixExplanation: my("fix-card-explanation"),
   fixSkeleton: my("fix-card-skeleton"),
   tools: my("my-tools"),
   toolMeaning: my("tool-meaning"),

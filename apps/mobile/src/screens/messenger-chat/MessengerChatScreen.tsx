@@ -17,6 +17,7 @@ import { CHAT_COIN_PRICES } from "./chat-coins";
 import { ChatMessageRow } from "./ChatMessageRows";
 import { ChatRoomDock } from "./ChatRoomDock";
 import { ChatRoomOverlays } from "./ChatRoomOverlays";
+import { useChatFeedback } from "./use-chat-feedback";
 import { LastFreeStrip, TurnLine } from "./ChatTurns";
 import { MoreMenu, overlayForMore } from "./MoreMenu";
 import { OutOfFreePanel } from "./OutOfFreePanel";
@@ -80,6 +81,13 @@ export function MessengerChatScreen({
   });
   gate.current = turn.authorizeSend;
   const tools = useBubbleTools({ roomId, source, thread, announce });
+  const feedback = useChatFeedback({
+    roomId,
+    source,
+    thread,
+    dispatch,
+    authorizeSend: turn.authorizeSend,
+  });
   const motion = resolveReducedMotion(undefined, useMotion()) ? "reduced" : "standard";
 
   const exit = () => {
@@ -109,9 +117,11 @@ export function MessengerChatScreen({
   });
 
   // 내가 보낸 말이 늘 때마다 읽던 자리와 상관없이 끝으로 내립니다(기기 F2).
-  const ownMessageCount = thread.messages.filter(
-    (message) => message.kind === "text" && message.from === "me",
-  ).length;
+  // 내가 보낸 마지막 글 id — 고친 문장 다시 보내기는 글 수가 같아도 id가 바뀌어 끝으로 내려갑니다(ADR-0129).
+  const lastOwnId =
+    [...thread.messages]
+      .reverse()
+      .find((message) => message.kind === "text" && message.from === "me")?.id ?? "";
 
   return (
     <view className="messenger-chat-screen" data-testid={ids.screen}>
@@ -163,7 +173,7 @@ export function MessengerChatScreen({
           <ChatLog
             testId={ids.log}
             followKey={slotHeight}
-            jumpKey={ownMessageCount}
+            jumpKey={lastOwnId}
             onTap={
               state.slot.kind === "closed" ? undefined : () => dispatch({ type: "close-keyboard" })
             }
@@ -177,6 +187,7 @@ export function MessengerChatScreen({
                 openTools={tools.open}
                 motion={motion}
                 onToggleTool={tools.toggle}
+                feedback={feedback}
               />
             ))}
             {thread.typing ? (

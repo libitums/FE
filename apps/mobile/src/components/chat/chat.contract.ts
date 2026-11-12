@@ -29,7 +29,7 @@ export type ChatLogProps = {
   readonly testId: string;
   readonly followKey?: number;
   /** 바뀌면(내가 말을 보냄) 읽던 자리와 상관없이 늘 끝으로 내리고 다시 따라갑니다(기기 F2). */
-  readonly jumpKey?: number;
+  readonly jumpKey?: number | string;
   /** 로그를 한 번 누르면 불립니다(예: 열린 키보드 접기). 스크롤은 누름이 아닙니다. */
   readonly onTap?: () => void;
   readonly children: ReactNode;

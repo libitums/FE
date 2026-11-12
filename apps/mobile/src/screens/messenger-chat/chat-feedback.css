@@ -1,0 +1,114 @@
+/* 교정 카드 · 답 평가(ADR-0129). 카드 상자 · 제목 · 고친 문장은 my-message.css의 FIX 카드 규칙을 함께 씁니다. */
+
+.chat-fix-items {
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--libitum-spacing-4);
+}
+
+.chat-fix-item {
+  white-space: normal;
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  font-weight: var(--libitum-typography-body-s-font-weight);
+  line-height: var(--libitum-typography-body-s-line-height);
+  letter-spacing: var(--libitum-typography-body-s-letter-spacing);
+}
+
+.chat-fix-item-from {
+  color: var(--libitum-color-fg-neutral-muted);
+  text-decoration: line-through;
+}
+
+.chat-fix-item-to {
+  font-weight: var(--libitum-font-weight-bold);
+}
+
+.chat-fix-section {
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--libitum-spacing-2);
+  padding-top: var(--libitum-spacing-8);
+  border-top-width: var(--libitum-stroke-width-thin);
+  border-top-style: solid;
+  border-top-color: var(--libitum-color-gray-300);
+}
+
+.chat-fix-subtitle {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-label-s-font-family);
+  font-size: var(--libitum-typography-label-s-font-size);
+  font-weight: var(--libitum-typography-label-s-font-weight);
+  line-height: var(--libitum-typography-label-s-line-height);
+  letter-spacing: var(--libitum-typography-label-s-letter-spacing);
+}
+
+.chat-fix-resend {
+  margin-top: var(--libitum-spacing-4);
+}
+
+/* 👍 👎 — 최근 캐릭터 글 아래 작은 아이콘 둘. 터치 영역 44 × 44(토큰 없음 — 최소 터치 크기 실측값). */
+.chat-rating-row {
+  display: flex;
+  flex-direction: row;
+  column-gap: var(--libitum-spacing-4);
+}
+
+.chat-rating-button {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--libitum-radius-full);
+}
+
+.chat-rating-button-on {
+  background-color: var(--libitum-color-background-secondary);
+}
+
+.chat-rating-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.chat-rating-result {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  column-gap: var(--libitum-spacing-4);
+}
+
+.chat-rating-result-text {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-label-s-font-family);
+  font-size: var(--libitum-typography-label-s-font-size);
+  font-weight: var(--libitum-typography-label-s-font-weight);
+  line-height: var(--libitum-typography-label-s-line-height);
+}
+
+.chat-rating-report {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  column-gap: var(--libitum-spacing-12);
+  margin-top: var(--libitum-spacing-12);
+  padding: var(--libitum-spacing-12);
+  border-radius: var(--libitum-radius-md);
+  background-color: var(--libitum-color-background-elevated);
+}
+
+.chat-rating-report-text {
+  flex: 1;
+  white-space: normal;
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  line-height: var(--libitum-typography-body-s-line-height);
+}
+
+.chat-rating-note {
+  margin-top: var(--libitum-spacing-12);
+}

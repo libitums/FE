@@ -1,11 +1,7 @@
 import { describe, expect, test, vi } from "vitest";
 
-import {
-  chatRoomReducer,
-  focusOriginOf,
-  initialChatRoomState,
-  overlayParent,
-} from "./chat-room-state";
+import { focusOriginOf } from "./chat-overlay-focus";
+import { chatRoomReducer, initialChatRoomState, overlayParent } from "./chat-room-state";
 import { createFixtureChatSource } from "./chat-fixture-source";
 import {
   CHARACTER_MEMORY_CAP,

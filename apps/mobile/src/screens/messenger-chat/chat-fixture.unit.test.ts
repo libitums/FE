@@ -30,7 +30,6 @@ describe("CHAT_PLACEHOLDERS (MC-U24)", () => {
   });
 
   test("MC-U24. 글자 수 상한 · 보기 수", () => {
-    expect(CHAT_PLACEHOLDERS.fixMaxLength).toBe(200);
     expect(CHAT_PLACEHOLDERS.messageMaxLength).toBe(200);
     expect(CHAT_PLACEHOLDERS.replyIdeaCount).toBe(3);
   });
@@ -131,14 +130,18 @@ describe("chatFixtureSeed 1.5 단계 (MC2-U21)", () => {
     expect(mina?.opening?.en.trim()).toBeTruthy();
   });
 
-  test("MC2-U21. 교정 표: 둘 이상이고, 각 changes 는 corrected 길이 안의 올바른 범위다", () => {
+  test("MC2-U21. 교정 표: 둘 이상이고, 각 changes 는 corrected 길이 안의 올바른 범위다(종류별 내용은 ADR-0129)", () => {
     const corrections = chatFixtureSeed.corrections ?? [];
     expect(corrections.length).toBeGreaterThanOrEqual(2);
     for (const correction of corrections) {
       expect(correction.original.trim()).not.toBe("");
       expect(correction.corrected.trim()).not.toBe("");
-      expect(correction.explanation.trim()).not.toBe("");
-      expect(correction.changes.length).toBeGreaterThan(0);
+      if (correction.kind === "correction") {
+        expect(correction.items.length).toBeGreaterThan(0);
+        expect(correction.changes.length).toBeGreaterThan(0);
+      }
+      if (correction.kind === "better") expect(correction.better?.text.trim()).not.toBe("");
+      if (correction.kind === "l1_to_ko") expect(correction.meaning?.trim()).not.toBe("");
       for (const { start, end } of correction.changes) {
         expect(Number.isInteger(start) && Number.isInteger(end)).toBe(true);
         expect(start).toBeGreaterThanOrEqual(0);

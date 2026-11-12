@@ -12,6 +12,7 @@ import {
   tapId,
 } from "./chat-ui.test-support";
 import { isInDocumentOrder } from "../../lib/dom.test-support";
+import { chatFeedbackTestIds } from "./chat-feedback.contract";
 import { messengerChatTestIds as ids } from "./messenger-chat.contract";
 
 // `ui` 계층(MC-UI16): 「…」 메뉴 — 항목 셋 고정 순서 · 항목 → 신고 · 고쳐 주세요 · 다시 만들기 겹침 ·
@@ -48,14 +49,15 @@ test("MC-UI16. 「…」를 누르면 메뉴가 열려 항목 셋이 ideas · fi
 
   expect(screen.getByTestId(ids.more).getAttribute("data-state")).toBe("open");
   const menu = screen.getByTestId(ids.moreMenu);
-  const items = (["ideas", "fix", "report"] as const).map((action) =>
+  const items = (["ideas", "report"] as const).map((action) =>
     screen.getByTestId(ids.moreItem(action)),
   );
   for (const item of items) expect(menu.contains(item)).toBe(true);
-  const [ideas, fix, report] = items;
+  const [ideas, report] = items;
   expect(isInDocumentOrder(items)).toBe(true);
   expect(ideas?.textContent).toContain("New reply ideas");
-  expect(fix?.textContent).toContain("Ask for a fix");
+  // 「Ask for a fix」는 👎 이유가 대신합니다(ADR-0129).
+  expect(screen.queryByTestId("messenger-chat-more-fix")).toBeNull();
   expect(report?.textContent).toContain("Report");
 });
 
@@ -89,16 +91,6 @@ test("MC-UI16. Report 항목은 메뉴를 닫고 신고 시트를 연다", () =>
   expect(screen.getByTestId(ids.reportSheet)).toBeTruthy();
 });
 
-test("MC-UI16. Ask for a fix 항목은 고쳐 주세요 대화상자를 연다", () => {
-  mountChat();
-  tapId(ids.more);
-
-  tapId(ids.moreItem("fix"));
-
-  expect(screen.queryByTestId(ids.moreMenu)).toBeNull();
-  expect(screen.getByTestId(ids.fixDialog)).toBeTruthy();
-});
-
 test("MC-UI16. New reply ideas 항목은 다시 만들기 확인을 연다", () => {
   mountChat();
   tapId(ids.more);
@@ -114,7 +106,7 @@ test("MC-UI16. 겹침은 늘 하나다 — 신고 시트가 열린 동안 다른
   tapId(ids.more);
   tapId(ids.moreItem("report"));
 
-  expect(screen.queryByTestId(ids.fixDialog)).toBeNull();
+  expect(screen.queryByTestId(chatFeedbackTestIds.sheet)).toBeNull();
   expect(screen.queryByTestId(ids.regenDialog)).toBeNull();
   expect(screen.queryByTestId(ids.sidebar)).toBeNull();
 });

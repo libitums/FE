@@ -62,7 +62,7 @@ export const messengerChatEs: MessengerChatCopy = {
     more: "Más",
     moreOpen: "Más, desplegado",
   },
-  more: { ideas: "Nuevas ideas de respuesta", fix: "Pedir una corrección", report: "Denunciar" },
+  more: { ideas: "Nuevas ideas de respuesta", report: "Denunciar" },
   ideas: { typeMyself: "Escribir yo mismo", quote: (text) => `「${text}」` },
   report: {
     title: "Denunciar este chat",
@@ -78,13 +78,6 @@ export const messengerChatEs: MessengerChatCopy = {
     cancel: "Cancelar",
     close: "Cerrar",
     checked: (label, on) => `${label}, ${on ? "marcado" : "sin marcar"}`,
-  },
-  fix: {
-    title: "Pedir una corrección",
-    description: "Cuéntanos qué te pareció mal en este chat.",
-    placeholder: "¿Qué te pareció mal?",
-    cancel: "Cancelar",
-    send: "Enviar",
   },
   regen: {
     title: "¿Crear nuevas ideas de respuesta?",
@@ -147,7 +140,6 @@ export const messengerChatEs: MessengerChatCopy = {
     loadingMeaning: "Cargando el significado…",
     loadingFix: "Cargando una forma mejor…",
     better: "MEJOR",
-    fixLabel: (corrected, explanation) => `Mejor: ${corrected}. ${explanation}`,
   },
   turns: {
     freeLeft: (left, total) => `Te quedan ${left} de ${total} mensajes gratis hoy`,

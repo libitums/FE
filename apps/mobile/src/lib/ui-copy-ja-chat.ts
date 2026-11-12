@@ -62,7 +62,7 @@ export const messengerChatJa: MessengerChatCopy = {
     more: "その他",
     moreOpen: "その他、展開中",
   },
-  more: { ideas: "新しい返信のヒント", fix: "修正をリクエスト", report: "通報" },
+  more: { ideas: "新しい返信のヒント", report: "通報" },
   ideas: { typeMyself: "自分で入力", quote: (text) => `「${text}」` },
   report: {
     title: "このチャットを通報",
@@ -78,13 +78,6 @@ export const messengerChatJa: MessengerChatCopy = {
     cancel: "キャンセル",
     close: "閉じる",
     checked: (label, on) => `${label}、${on ? "チェック済み" : "未チェック"}`,
-  },
-  fix: {
-    title: "修正をリクエスト",
-    description: "このチャットで気になった点を教えてください。",
-    placeholder: "どこが気になりましたか？",
-    cancel: "キャンセル",
-    send: "送信",
   },
   regen: {
     title: "返信のヒントを作り直しますか？",
@@ -147,7 +140,6 @@ export const messengerChatJa: MessengerChatCopy = {
     loadingMeaning: "意味を読み込み中…",
     loadingFix: "もっと良い言い方を読み込み中…",
     better: "BETTER",
-    fixLabel: (corrected, explanation) => `もっと良い言い方：${corrected}。${explanation}`,
   },
   turns: {
     freeLeft: (left, total) => `今日の無料メッセージ、残り${left}/${total}通`,

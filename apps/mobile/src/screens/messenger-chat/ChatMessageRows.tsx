@@ -13,6 +13,7 @@ import {
   VoiceBubble,
   VoicePendingBubble,
 } from "./ChatMediaBubbles";
+import { RatingButtons, RatingResult } from "./RatingRow";
 import { MyMessageRow } from "./MyMessage";
 import { ChatCrisisCard, ChatNoticeRow } from "./SafetyParts";
 import { notesOf } from "./chat-source.contract";
@@ -32,6 +33,16 @@ export type ChatMessageRowProps = {
   readonly openTools: BubbleToolsState;
   readonly motion: "standard" | "reduced";
   readonly onToggleTool: (messageId: string, tool: BubbleTool) => void;
+  readonly feedback: ChatRowFeedback;
+};
+
+/** 다시 보내기 · 👍 👎 자리와 동작입니다(ADR-0129). 자리는 방에 하나씩 — 마지막 내 글 · 가장 최근 캐릭터 글. */
+export type ChatRowFeedback = {
+  readonly resendableId: string | null;
+  readonly latestReplyId: string | null;
+  readonly onResend: (messageId: string) => void;
+  readonly onGood: (messageId: string) => void;
+  readonly onBad: (messageId: string) => void;
 };
 
 /** 메시지 하나 → 줄(1단계 `MessageRow` 이전 + 내 글 분기)입니다. 같은 id의 pending → 도착은 같은 key 자리에서 바뀝니다. */
@@ -48,6 +59,7 @@ export function ChatMessageRow({
   openTools,
   motion,
   onToggleTool,
+  feedback,
 }: ChatMessageRowProps): ReactNode {
   const { counterpart } = thread;
   const avatar = { name: counterpart.name, imageUrl: counterpart.avatarUrl };
@@ -66,10 +78,14 @@ export function ChatMessageRow({
               tools={bubbleToolRowOf(open, notes)}
               motion={motion}
               onToggle={(tool) => onToggleTool(message.id, tool)}
+              onResend={
+                feedback.resendableId === message.id ? () => feedback.onResend(message.id) : null
+              }
             />
           </ChatOutgoingRow>
         );
       }
+      const rating = thread.ratings[message.id];
       return (
         <ChatIncomingRow avatar={avatar} testId={ids.incoming}>
           <ChatTextBubble
@@ -78,6 +94,15 @@ export function ChatMessageRow({
             message={message.text.ko}
             translation={message.text.en}
           />
+          {feedback.latestReplyId === message.id ? (
+            <RatingButtons
+              rating={rating}
+              onGood={() => feedback.onGood(message.id)}
+              onBad={() => feedback.onBad(message.id)}
+            />
+          ) : rating === undefined ? null : (
+            <RatingResult rating={rating} />
+          )}
         </ChatIncomingRow>
       );
     case "photo-pending":

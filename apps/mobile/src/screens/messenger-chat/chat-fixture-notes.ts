@@ -136,9 +136,12 @@ export function createFixtureNotes(deps: FixtureNotesDeps): FixtureNotes {
             detail: {
               status: "ready",
               value: {
+                kind: value.kind,
                 corrected: value.corrected,
                 changes: value.changes,
-                explanation: value.explanation,
+                items: value.items,
+                better: value.better,
+                meaning: value.meaning,
               },
             },
           },

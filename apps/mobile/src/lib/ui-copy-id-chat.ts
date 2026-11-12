@@ -63,7 +63,7 @@ export const messengerChatId: MessengerChatCopy = {
     more: "Lainnya",
     moreOpen: "Lainnya, terbuka",
   },
-  more: { ideas: "Ide balasan baru", fix: "Minta perbaikan", report: "Laporkan" },
+  more: { ideas: "Ide balasan baru", report: "Laporkan" },
   ideas: { typeMyself: "Ketik sendiri", quote: (text) => `「${text}」` },
   report: {
     title: "Laporkan obrolan ini",
@@ -79,13 +79,6 @@ export const messengerChatId: MessengerChatCopy = {
     cancel: "Batal",
     close: "Tutup",
     checked: (label, on) => `${label}, ${on ? "dicentang" : "tidak dicentang"}`,
-  },
-  fix: {
-    title: "Minta perbaikan",
-    description: "Ceritakan apa yang terasa salah di obrolan ini.",
-    placeholder: "Apa yang terasa salah?",
-    cancel: "Batal",
-    send: "Kirim",
   },
   regen: {
     title: "Buat ide balasan baru?",
@@ -148,7 +141,6 @@ export const messengerChatId: MessengerChatCopy = {
     loadingMeaning: "Memuat artinya…",
     loadingFix: "Memuat cara yang lebih baik…",
     better: "LEBIH BAIK",
-    fixLabel: (corrected, explanation) => `Lebih baik: ${corrected}. ${explanation}`,
   },
   turns: {
     freeLeft: (left, total) => `Sisa ${left} dari ${total} pesan gratis hari ini`,

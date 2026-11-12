@@ -2,6 +2,7 @@
 // 주입한 타이머로 흉내 냅니다. 어떤 호출도 던지지 않습니다.
 
 import { chatFixtureSeed } from "./chat-fixture";
+import { feedbackMethods } from "./chat-fixture-feedback";
 import { createFixtureSettings, settingsMethods } from "./chat-fixture-settings";
 import { inputBlockOf, nextBirthYear, seedMessageReader, UNASKED } from "./chat-fixture-safety";
 import {
@@ -268,7 +269,7 @@ export function createFixtureChatSource(options: FixtureChatSourceOptions): Fixt
     unlockCharacter,
     ...settingsMethods(settings, { disposed: () => disposed, rooms, notify }),
     report: () => undefined,
-    requestFix: () => undefined,
+    ...feedbackMethods({ live, changed, sendText }),
     deleteRoom: (roomId) => {
       const room = live(roomId);
       if (room === null) return;

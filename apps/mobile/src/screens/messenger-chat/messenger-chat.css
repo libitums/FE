@@ -186,14 +186,15 @@
 }
 
 /* 높이는 자동 계산에 맡기지 않습니다 — 기기(Lynx)에서 `bottom: 100%` 절대 배치 상자의 자동 높이가 0으로 접혀 상자가 얇은
-   막대가 되고 항목이 기능 줄 위에 겹쳤습니다(device-findings-1 D8). 항목 셋(48 × 3) + 구분선(1 + 위아래 4) + 안쪽 여백 6 × 2
-   + 테두리 1 × 2 = 167 → 최소 높이 168(화면 지역 상수 MENU-H). 큰 글자에서는 항목이 min-height라 이보다 커집니다. */
+   막대가 되고 항목이 기능 줄 위에 겹쳤습니다(device-findings-1 D8). 항목 둘(48 × 2) + 구분선(1 + 위아래 4) + 안쪽 여백 6 × 2
+   + 테두리 1 × 2 = 119 → 최소 높이 120. 「Ask for a fix」를 지워(ADR-0129) 셋(168)에서 줄었습니다. 추천 답변이 꺼져
+   Report 하나면 구분선도 없어 48 + 12 + 2 = 62 → 64(`-single`). 큰 글자에서는 항목이 min-height라 이보다 커집니다. */
 .messenger-chat-more-menu {
   position: absolute;
   right: var(--libitum-spacing-12);
   bottom: var(--libitum-spacing-4);
   width: 208px;
-  min-height: 168px;
+  min-height: 120px;
   display: flex;
   flex-direction: column;
   padding: var(--libitum-spacing-6);
@@ -203,6 +204,10 @@
   border-color: var(--libitum-color-gray-300);
   background-color: var(--libitum-color-white);
   box-shadow: var(--libitum-elevation-shadow-s3);
+}
+
+.messenger-chat-more-menu-single {
+  min-height: 64px;
 }
 
 .messenger-chat-more-item {
