@@ -1,0 +1,37 @@
+{
+  "name": "@libitums/companion-contract",
+  "version": "0.0.0",
+  "private": true,
+  "description": "AI companion API contract — chat-send request, SSE events, error codes, RPC shapes and replayable fixtures shared by the app and the Edge Functions",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./fixtures": {
+      "types": "./src/fixtures.ts",
+      "default": "./src/fixtures.ts"
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "pnpm test:unit",
+    "test:unit": "vitest run unit.test",
+    "json-schema": "UPDATE_COMPANION_JSON_SCHEMA=1 vitest run json-schema.unit.test",
+    "sync:functions": "node ../../devtools/companion-contract/sync.mjs"
+  },
+  "dependencies": {
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.0",
+    "typescript": "6.0.3",
+    "vitest": "4.1.12"
+  },
+  "engines": {
+    "node": ">=22.12 <23"
+  }
+}

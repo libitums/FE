@@ -5,3 +5,6 @@ declare const Deno: {
   serve(handler: (request: Request) => Response | Promise<Response>): unknown;
   readonly env: { get(name: string): string | undefined };
 };
+
+// `chat-send/index.ts`가 쓰는 Supabase Edge 런타임 전역입니다. 응답이 끝나도 작업을 끝까지 돌게 합니다.
+declare const EdgeRuntime: { waitUntil(work: Promise<unknown>): void };

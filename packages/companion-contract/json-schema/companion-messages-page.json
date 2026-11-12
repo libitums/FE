@@ -1,0 +1,286 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "messages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "role": {
+            "type": "string",
+            "enum": ["user", "assistant", "notice"]
+          },
+          "origin": {
+            "type": "string",
+            "enum": ["turn", "proactive", "crisis", "greeting"]
+          },
+          "status": {
+            "type": "string",
+            "enum": ["complete", "blocked", "crisis", "failed"]
+          },
+          "hidden": {
+            "type": "boolean"
+          },
+          "text": {
+            "type": ["string", "null"]
+          },
+          "inputMode": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": ["text", "voice"]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "segments": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "type": "string",
+                  "enum": ["speech", "action", "narration"]
+                },
+                "text": {
+                  "type": "string"
+                },
+                "translation": {
+                  "type": "string"
+                }
+              },
+              "required": ["kind", "text"],
+              "additionalProperties": false
+            }
+          },
+          "notice": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": ["ai_disclosure", "minor_notice", "break_reminder"]
+                  }
+                },
+                "required": ["kind"],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "feedback": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "userMessageId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": ["ok", "none", "unavailable", "skipped"]
+                  },
+                  "reason": {
+                    "type": "string",
+                    "enum": ["suggestion"]
+                  },
+                  "kind": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "enum": ["correction", "better", "l1_to_ko"]
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "original": {
+                    "type": "string"
+                  },
+                  "corrected": {
+                    "type": ["string", "null"]
+                  },
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "original": {
+                          "type": "string"
+                        },
+                        "corrected": {
+                          "type": "string"
+                        },
+                        "reason": {
+                          "type": "string"
+                        }
+                      },
+                      "required": ["original", "corrected", "reason"],
+                      "additionalProperties": false
+                    }
+                  },
+                  "better": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "text": {
+                            "type": "string"
+                          },
+                          "meaning": {
+                            "type": "string"
+                          },
+                          "explanation": {
+                            "type": "string"
+                          }
+                        },
+                        "required": ["text", "meaning", "explanation"],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "meaning": {
+                    "type": ["string", "null"]
+                  },
+                  "learnedUsed": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "surface": {
+                          "type": "string"
+                        }
+                      },
+                      "required": ["id", "surface"],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "userMessageId",
+                  "status",
+                  "kind",
+                  "original",
+                  "corrected",
+                  "items",
+                  "better",
+                  "meaning"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "suggestions": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "text": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "meaning": {
+                      "type": ["string", "null"]
+                    },
+                    "intent": {
+                      "type": "string",
+                      "enum": ["elaborate", "ask", "reflect", "redirect", "boundary", "progress"]
+                    }
+                  },
+                  "required": ["text", "meaning", "intent"],
+                  "additionalProperties": false
+                }
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "rating": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "value": {
+                    "type": "string",
+                    "enum": ["up", "down"]
+                  },
+                  "reasons": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "awkward_korean",
+                        "out_of_character",
+                        "too_hard",
+                        "uncomfortable",
+                        "other"
+                      ]
+                    }
+                  },
+                  "note": {
+                    "type": ["string", "null"]
+                  }
+                },
+                "required": ["value", "reasons", "note"],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+          }
+        },
+        "required": [
+          "id",
+          "role",
+          "origin",
+          "status",
+          "hidden",
+          "text",
+          "inputMode",
+          "segments",
+          "notice",
+          "feedback",
+          "createdAt"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "hasMore": {
+      "type": "boolean"
+    }
+  },
+  "required": ["messages", "hasMore"],
+  "additionalProperties": false
+}
