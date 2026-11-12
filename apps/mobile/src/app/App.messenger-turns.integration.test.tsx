@@ -14,9 +14,9 @@ import {
   tapKeys,
   tapRound,
   textOf,
+  renderTesterApp,
 } from "./test-helpers/messenger-chat-app";
 import { legacyPassedSeedWithCoins } from "./test-helpers/progress-seed";
-import { renderSignedInApp } from "./test-helpers/signed-in-app";
 
 // `integration` 계층(MC2-I5 · MC2-I6): 하루 무료 3통(모든 인물 합 · 기기 원장) → 마지막 무료 띠 → 다 쓴 판(하루 한 번) →
 // 엽전 보내기 → 지역 자정이 지나면 다시 무료, 그리고 시험 계정(무제한)에서는 줄 · 띠 · 판 · 엽전 단추가 없다는 것을
@@ -64,9 +64,13 @@ async function bootToList(
   record: TurnRecord | null = null,
   tester = false,
 ): Promise<TurnRecordStore> {
-  const { turns } = await resetMessengerChatSource({ turnRecord: record });
+  // 메신저는 시험 계정에게만 열리고(ADR-0128) 시험 계정은 무제한이라, 일반 계정의 무료 흐름은 등급을 free로 고정해 봅니다.
+  const { turns } = await resetMessengerChatSource({
+    turnRecord: record,
+    ...(tester ? {} : { tier: "free" as const }),
+  });
   if (tester) setTesterAccessActive(true);
-  await renderSignedInApp(<App progressSeed={legacyPassedSeedWithCoins(coins)} />, {
+  await renderTesterApp(<App progressSeed={legacyPassedSeedWithCoins(coins)} />, {
     keepFakeTimers: true,
     ...(tester ? { refreshedAccessToken: testerToken } : {}),
   });

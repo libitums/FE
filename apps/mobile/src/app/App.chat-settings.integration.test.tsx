@@ -5,8 +5,9 @@ import { App } from "./App";
 import {
   appChatSource,
   openTab,
-  pressSystemBack,
   present,
+  pressSystemBack,
+  renderTesterApp,
   resetMessengerChatSource,
   stubBackHost,
   tapId,
@@ -19,7 +20,6 @@ import {
   sentEventNames,
 } from "./test-helpers/airbridge-events-harness";
 import { legacyPassedSeed } from "./test-helpers/progress-seed";
-import { renderSignedInApp } from "./test-helpers/signed-in-app";
 
 // `integration` 계층(CS-I1 ~ I3): 앱 결선에서 대화 설정(ADR-0126) — 설정 탭 Chats 줄 → Chats 화면 → 공유 기억 화면이
 // 설정 스택에 쌓이고 뒤로 내려오며, 방 사이드바의 기억 줄이 그 인물의 기억 화면을 쌓는다. 추천 답변 스위치가 방의 보기를 끈다.
@@ -39,7 +39,7 @@ const tapCell = (testId: string): void => {
 };
 
 async function bootToChats(): Promise<void> {
-  await renderSignedInApp(<App progressSeed={legacyPassedSeed} />, { keepFakeTimers: true });
+  await renderTesterApp(<App progressSeed={legacyPassedSeed} />, { keepFakeTimers: true });
   openTab("settings");
   tapCell("ui-lynx-settings-group-item-chats");
   expect(present("chat-settings-screen")).toBe(true);
@@ -78,7 +78,7 @@ test("CS-I2 Chats의 추천 답변을 끄면 방의 보기가 비어 전구가 �
 });
 
 test("CS-I3 방 사이드바 「What 미나 remembers」 → 미나의 기억 화면, 뒤로 단추면 방으로", async () => {
-  await renderSignedInApp(<App progressSeed={legacyPassedSeed} />, { keepFakeTimers: true });
+  await renderTesterApp(<App progressSeed={legacyPassedSeed} />, { keepFakeTimers: true });
   openTab("messenger");
   tapId("messenger-list-row-mina");
   tapId("messenger-chat-settings");
@@ -108,7 +108,7 @@ test("CS-I3 방 사이드바 「What 미나 remembers」 → 미나의 기억 �
 
 test("CS-I4 Chats 화면 · 기억 화면을 오가도 분석 이벤트가 생기지 않는다(AC3 · AC8)", async () => {
   const { transport, calls: sent } = fakeTransport();
-  await renderSignedInApp(<App progressSeed={legacyPassedSeed} {...assembleSinks(transport)} />);
+  await renderTesterApp(<App progressSeed={legacyPassedSeed} {...assembleSinks(transport)} />);
   openTab("settings");
   await vi.waitFor(() => expect(sentEventNames(sent)).toContain("settings_opened"));
   const before = new Set(sentEventNames(sent));

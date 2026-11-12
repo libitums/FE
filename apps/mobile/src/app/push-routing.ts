@@ -18,12 +18,15 @@ export type PushTargetOpenerArgs = {
   readonly notificationEventSink: NotificationEventSink;
   /** 선톡 푸시의 방을 찾는 대화 출처입니다(ADR-0127). */
   readonly chatSource: ChatSource;
+  /** 지금 계정이 메신저를 쓸 수 있는가(ADR-0128) — 누르는 순간에 읽습니다. */
+  readonly canOpenChats: () => boolean;
 };
 
 export function pushTargetOpener({
   dispatch,
   notificationEventSink,
   chatSource,
+  canOpenChats,
 }: PushTargetOpenerArgs): (target: PushNotificationTarget) => void {
   return (target) => {
     if (target.kind === "companion-chat") {
@@ -33,7 +36,8 @@ export function pushTargetOpener({
         target: target.kind,
         ...(target.variant === null ? {} : { variant: target.variant }),
       });
-      for (const action of companionPushActions(chatSource, target.characterId)) dispatch(action);
+      for (const action of companionPushActions(chatSource, target.characterId, canOpenChats()))
+        dispatch(action);
       return;
     }
     notificationEventSink?.({ name: "push_notification_opened", target: target.kind });

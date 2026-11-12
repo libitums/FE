@@ -26,6 +26,8 @@ function mount(seed = seedOf()) {
     onLayerChange: vi.fn<(open: boolean) => void>(),
     notice: null,
     onNoticeShown: vi.fn<() => void>(),
+    access: "open" as const,
+    onSignIn: vi.fn<() => void>(),
   };
   // 잔액은 지갑에서 온다(spec §7.2 · 1.5 — 옛 coinBalance 대체).
   render(

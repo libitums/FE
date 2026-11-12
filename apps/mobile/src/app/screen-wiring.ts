@@ -57,6 +57,8 @@ import { guestWiring, type GuestWiring } from "./guest-wiring";
 import type { AccountState } from "../lib/guest-session";
 import { journeyWiring } from "./journey-wiring";
 import { messengerChatWiring, type MessengerChatWiring } from "./messenger-chat-wiring";
+import { isTesterAccessActive } from "../lib/tester-access";
+import { messengerAccessOf } from "../screens/messenger-chat/messenger-access";
 import { pushTargetOpener } from "./push-routing";
 
 // 화면 결선이 `renderScreen`에 넘기는 것입니다. 셸이 소유한 값 하나와 콜백 셋입니다.
@@ -188,6 +190,7 @@ export function screenWiring(args: ScreenWiringArgs): ScreenWiring {
       dispatch: args.dispatch,
       notificationEventSink: args.notificationEventSink,
       chatSource: messenger.messengerChat.source,
+      canOpenChats: () => messengerAccessOf(args.accountState, isTesterAccessActive()) === "open",
     }),
     downloadSettings: downloadSettingsWiring(args.downloadControls, args.downloadCatalog),
     onTapPendingEpisode: () => {},

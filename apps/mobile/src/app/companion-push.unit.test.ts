@@ -52,12 +52,12 @@ describe("companionRoomFor", () => {
 });
 
 test("CP-U6 이동 — 메신저 탭 루트 → 방, 열 수 없으면 메신저 루트에만 안내를 붙인다", () => {
-  expect(companionPushActions(source, "mina")).toEqual([
+  expect(companionPushActions(source, "mina", true)).toEqual([
     { type: "switchTab", tab: "messenger" },
     { type: "backToRoot" },
     { type: "push", screen: { name: "messenger-chat", roomId: "room-mina" } },
   ]);
-  expect(companionPushActions(source, "clerk")).toEqual([
+  expect(companionPushActions(source, "clerk", true)).toEqual([
     { type: "switchTab", tab: "messenger" },
     { type: "backToRoot" },
     { type: "setListNotice", notice: "chat-unavailable" },
@@ -91,4 +91,11 @@ test("CP-U7 setListNotice는 메신저 루트만 바꾼다 — 활성 탭 · 진
   const entry = navReducer(entryInitialNav, { type: "setListNotice", notice: "chat-unavailable" });
   expect(entry.entry).toEqual(entryInitialNav.entry);
   expect(navReducer(initialNav, { type: "setListNotice", notice: null })).toBe(initialNav);
+});
+
+test("CP-U8 메신저를 쓸 수 없는 계정이면 메신저 탭 루트에서 멈춘다 — 방도 안내도 없다(ADR-0128 리뷰 W1)", () => {
+  expect(companionPushActions(source, "mina", false)).toEqual([
+    { type: "switchTab", tab: "messenger" },
+    { type: "backToRoot" },
+  ]);
 });

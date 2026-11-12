@@ -22,7 +22,12 @@ import { entrySplashDurationMs } from "../lib/entry-flow";
 import type { EntryEvent } from "../lib/entry-flow";
 import { uiCopyFor } from "../lib/ui-copy";
 import { uiLanguageStorageKey } from "../lib/ui-language";
-import { appChatSource, resetMessengerChatSource, tapId } from "./test-helpers/messenger-chat-app";
+import {
+  appChatSource,
+  renderTesterApp,
+  resetMessengerChatSource,
+  tapId,
+} from "./test-helpers/messenger-chat-app";
 
 // UI 언어 문구표의 App 수준 협력을 봅니다(ADR-0006 D4). 이 파일이 재는 것은 두 갈래입니다.
 //
@@ -563,9 +568,9 @@ describe.each(["en", "vi", "id", "es", "ja"] as const)(
   "[MC2-I9] 저장된 언어가 %s인 설치의 메신저 1.5 문구",
   (language) => {
     async function bootMessenger(coins: number): Promise<void> {
-      await resetMessengerChatSource();
+      await resetMessengerChatSource({ tier: "free" });
       const storage = sessionStorageWith({ [uiLanguageStorageKey]: language });
-      await renderSignedInApp(<App progressSeed={legacyPassedSeedWithCoins(coins)} />, {
+      await renderTesterApp(<App progressSeed={legacyPassedSeedWithCoins(coins)} />, {
         storageModule: storage.module,
       });
       fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-messenger"), {});

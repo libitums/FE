@@ -26,6 +26,7 @@ import {
   renderChatSettings,
   renderMessengerChat,
   renderMessengerList,
+  messengerAccessFor,
 } from "./render-messenger-chat";
 import { NewFriendMapHost } from "./render-new-friend";
 import { renderRoleplayStory } from "./render-roleplay-story";
@@ -46,12 +47,16 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
       );
     case "messenger-list":
       return renderMessengerList(wiring, screen.notice ?? null);
+    // 방 · 대화 설정 · 기억은 메신저를 쓸 수 있는 계정에만 그립니다 — 아니면 목록 자리의 안내로 대신합니다(ADR-0128 리뷰
+    // W1: 남은 선톡 알림 · 시험 표시가 꺼진 뒤 열려 있던 화면).
     case "messenger-chat":
-      return renderMessengerChat(screen.roomId, wiring);
     case "chat-settings":
-      return renderChatSettings(wiring);
-    case "chat-memories":
+    case "chat-memories": {
+      if (messengerAccessFor(wiring) !== "open") return renderMessengerList(wiring, null);
+      if (screen.name === "messenger-chat") return renderMessengerChat(screen.roomId, wiring);
+      if (screen.name === "chat-settings") return renderChatSettings(wiring);
       return renderChatMemories(screen.characterId, screen.characterName, wiring);
+    }
     case "roleplay-episode": {
       // 없는 에피소드는 데이터 오류라 숨기지 않고 던집니다 — 이 route를 여는 자리는
       // 구획 머리 하나뿐이고, 거기서 온 id는 구획에 반드시 있습니다.
@@ -81,7 +86,9 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
           onSignOut={wiring.onSignOut}
           onDeleteAccount={wiring.onDeleteAccount}
           onLayerChange={wiring.onScreenLayerChange}
-          onOpenChatSettings={wiring.messengerChat.onOpenChatSettings}
+          onOpenChatSettings={
+            messengerAccessFor(wiring) === "open" ? wiring.messengerChat.onOpenChatSettings : null
+          }
         />
       );
     case "profile":

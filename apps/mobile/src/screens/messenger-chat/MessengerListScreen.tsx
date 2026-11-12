@@ -4,6 +4,7 @@ import type { ReactNode } from "@lynx-js/react";
 import { StatChip } from "../../components/StatChip";
 import { playSound } from "../../lib/sound-effects";
 import { useUiCopy } from "../../lib/ui-copy";
+import { ChatAccessGate } from "./ChatAccessGate";
 import { ChatListEmpty } from "./ChatListEmpty";
 import { ChatListNotice } from "./ChatListNotice";
 import { ChatListRow } from "./ChatListRow";
@@ -28,6 +29,8 @@ export function MessengerListScreen({
   onLayerChange,
   notice,
   onNoticeShown,
+  access,
+  onSignIn,
 }: MessengerListScreenProps): ReactNode {
   const copy = useUiCopy().messengerChat.list;
   const { rooms } = useChatSnapshot(source);
@@ -78,17 +81,30 @@ export function MessengerListScreen({
           >
             {copy.title}
           </text>
-          <StatChip
-            tone="coin"
-            value={coinBalance}
-            accessibilityLabel={copy.coinsLabel(coinBalance)}
-            testId={ids.coins}
-            surface="white"
-            height="touch-target"
-            onTap={openCoinShop}
-          />
+          {/* 손님은 엽전이 없어 칩을 두지 않습니다(ADR-0128). */}
+          {access === "sign-in" ? null : (
+            <StatChip
+              tone="coin"
+              value={coinBalance}
+              accessibilityLabel={copy.coinsLabel(coinBalance)}
+              testId={ids.coins}
+              surface="white"
+              height="touch-target"
+              onTap={openCoinShop}
+            />
+          )}
         </view>
-        {ordered.length === 0 ? (
+        {access !== "open" ? (
+          <ChatAccessGate
+            access={access}
+            onSignIn={onSignIn}
+            onGoToJourney={onGoToJourney}
+            faces={ordered
+              .filter((room) => room.access.kind === "open")
+              .slice(0, 3)
+              .map((room) => [...room.counterpart.name][0] ?? "")}
+          />
+        ) : ordered.length === 0 ? (
           <ChatListEmpty onGoToJourney={onGoToJourney} />
         ) : (
           <scroll-view

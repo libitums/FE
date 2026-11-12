@@ -16,6 +16,7 @@ import {
   resetMessengerChatSource,
   tapId,
   textOf,
+  testerAccessToken,
 } from "./test-helpers/messenger-chat-app";
 
 // `integration` 계층(MC2-I5 지갑 경계): 메신저 지갑의 잔액은 앱의 실제 엽전(coinCount = 받은 유닛 × 10)을 따라간다 —
@@ -23,12 +24,13 @@ import {
 // (번 엽전은 effect로 지갑에 동기화되고 쓴 양은 로컬 원장에 남는다 — spec §17 Q2).
 
 beforeEach(async () => {
-  await resetMessengerChatSource();
+  // 시험 계정(무제한)으로 부팅하므로 일반 계정의 엽전 흐름은 등급을 free로 고정해 봅니다(ADR-0128).
+  await resetMessengerChatSource({ tier: "free" });
 });
 afterEach(resetApp);
 
 test("MC2-I5. 레슨을 처음 통과해 번 엽전 10은 메신저 목록 칩과 방의 요청 대화상자 잔액에 곧바로 보인다", async () => {
-  await boot({ [u01]: ["intro"] });
+  await boot({ [u01]: ["intro"] }, { accessToken: testerAccessToken });
   openTab("messenger");
   expect(textOf("messenger-list-coins")).toContain("0");
   expect(textOf("messenger-list-coins")).not.toContain("10");

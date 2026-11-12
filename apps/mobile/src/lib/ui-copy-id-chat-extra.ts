@@ -1,0 +1,95 @@
+// 메신저 문구 표의 덧붙는 칸(id) — 대화 설정(ADR-0126) · 선톡 푸시 안내(ADR-0127) · 메신저 탭 접근(ADR-0128).
+
+import type { MessengerChatExtraCopy } from "../screens/messenger-chat/chat-settings.contract";
+
+export const messengerChatExtraId: MessengerChatExtraCopy = {
+  access: {
+    signInTitle: "Kirim pesan ke orang yang kamu temui",
+    signInBody:
+      "Buat akun gratis untuk mengobrol dalam bahasa Korea dengan orang-orang dari ceritamu. Progresmu tetap tersimpan.",
+    signIn: "Daftar atau masuk",
+    comingSoonTitle: "Obrolan segera hadir",
+    comingSoonBody:
+      "Kami membuka obrolan untuk kelompok kecil dulu. Terus belajar — orang yang kamu temui akan segera bisa mengirim pesan kepadamu.",
+  },
+  pushNotice: { chatUnavailable: "Obrolan ini sedang tidak tersedia." },
+  chatSettings: {
+    entryTitle: "Obrolan",
+    entryDescription: "Ide balasan, pesan dari karakter, ingatan",
+    title: "Obrolan",
+    back: "Kembali",
+    sectionWhile: "Saat mengobrol",
+    replyIdeas: "Ide balasan",
+    replyIdeasBody: "Tampilkan 1–2 saran balasan setelah setiap pesan",
+    sectionProactive: "Pesan dari karakter",
+    proactive: "Mereka mengirim pesan lebih dulu",
+    sectionAbout: "Tentang kamu",
+    sharedMemories: "Yang diketahui semua karakter tentangmu",
+    sharedMemoriesSummary: (count) => `${count} ingatan · dibagikan ke semua karakter`,
+    footnote:
+      "Setiap karakter juga mengingat hal dari obrolan denganmu. Buka obrolan dan ketuk ☰ untuk melihatnya.",
+    proactiveSheet: {
+      title: "Mereka mengirim pesan lebih dulu",
+      body: "Kalau kamu lama tidak mengobrol, karakter bisa memulai obrolan. Tidak pernah memakai koin.",
+      howOften: "Seberapa sering",
+      prefs: { off: "Mati", daily1: "Sekali sehari", daily2: "Dua kali sehari" },
+      preferredTime: "Waktu pilihan",
+      anyTime: "Kapan saja",
+      hour: (hour) => `${String(hour).padStart(2, "0")}.00`,
+      quietNote:
+        "Tidak ada pesan antara pukul 22.00 dan 08.00 waktumu. Jika dua kali sehari, pesan kedua datang sekitar 10 jam kemudian.",
+      save: "Simpan",
+      close: "Tutup",
+    },
+    memories: {
+      titleShared: "Yang diketahui semua karakter tentangmu",
+      titleCharacter: (name) => `Yang diingat ${name}`,
+      count: (count, cap) => `${count} / ${cap}`,
+      fullTitle: "Ingatan penuh",
+      fullBody: (name) =>
+        `${name ?? "Karakter"} tidak bisa mengingat hal baru sampai kamu menghapus beberapa. Ingatan yang kamu ubah tetap disimpan.`,
+      intro: (name) =>
+        `${name ?? "Semua karakter"} memakainya agar obrolanmu lebih personal. Hanya kamu yang melihat daftar ini. Mengubah atau menghapus gratis.`,
+      empty: (name) =>
+        `Belum ada. ${name ?? "Karakter"} akan mengingat hal yang kamu ceritakan saat mengobrol.`,
+      edited: "Diubah",
+      edit: "Ubah ingatan",
+      delete: "Hapus ingatan",
+      editTitle: "Ubah ingatan",
+      editHint: (name) => `${name ?? "Karakter"} akan mengingatnya persis seperti yang kamu tulis.`,
+      length: (count, max) => `${count} / ${max}`,
+      cancel: "Batal",
+      save: "Simpan",
+      deleteTitle: "Hapus ingatan ini?",
+      deleteBody: (name) => `${name ?? "Karakter"} tidak akan memakainya mulai pesan berikutnya.`,
+      deleteConfirm: "Hapus",
+      sidebar: (name) => `Yang diingat ${name}`,
+      sidebarSummary: (count, cap, full) =>
+        full ? `${count} / ${cap} · penuh` : `${count} / ${cap}`,
+    },
+    feedback: {
+      sidebar: "Gaya koreksi",
+      title: "Gaya koreksi",
+      body: (name) =>
+        `Cara ${name} membantu saat bahasa Koreamu ada yang salah. Kartu koreksi selalu muncul — ini mengubah cara ${name} membalas.`,
+      modes: {
+        separate: {
+          title: "Kartu saja",
+          body: (name) => `${name} tetap mengobrol. Perbaikannya ada di ✎ di bawah pesanmu.`,
+        },
+        natural: {
+          title: "Alami di dalam balasan",
+          body: (name) => `${name} memakai ungkapan yang benar dalam jawabannya, seperti teman.`,
+        },
+        prefix: {
+          title: "Tunjukkan dulu",
+          body: (name) => `${name} mengoreksi singkat, lalu melanjutkan obrolan.`,
+        },
+      },
+      defaultTag: "bawaan",
+      note: "Berlaku untuk semua karakter mulai pesan berikutnya.",
+      save: "Simpan",
+      close: "Tutup",
+    },
+  },
+};

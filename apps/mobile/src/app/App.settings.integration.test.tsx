@@ -44,7 +44,6 @@ test("[IT1] 설정 탭을 열면 학습 토글 둘(로마자 · 진동)과 계�
   expect(itemTestIds).toEqual([
     "ui-lynx-settings-group-item-show-choice-romanization",
     "ui-lynx-settings-group-item-vibration",
-    "ui-lynx-settings-group-item-chats",
     "ui-lynx-settings-group-item-profile",
     "ui-lynx-settings-group-item-learner-profile",
     "ui-lynx-settings-group-item-language",
