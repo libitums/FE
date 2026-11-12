@@ -260,7 +260,9 @@ const quoted = (target: Pick<LearningCandidate, "surface" | "gloss">) =>
 const modeHint = (modes: LearningCandidate["modes"]) => {
   const [first, second] = modes;
   if (second === undefined) return first === "elicit" ? "ask only" : "say it only";
-  return first === "elicit" ? "they have not used it yet: asking is best, saying it is fine" : "say it or ask";
+  return first === "elicit"
+    ? "they have not used it yet: asking is best, saying it is fine"
+    : "say it or ask";
 };
 
 /**
@@ -276,7 +278,9 @@ export function offerDirective(offer: LearningOffer): string {
     ...lines,
     "Pick one only if it fits what you are already talking about. If none fits naturally, use none: skipping is fine, and never bend the conversation or change the topic just to use one.",
     "To say it: use it once in your own line (you may conjugate it or fill its blank). To ask: end with one easy question the learner can naturally answer using it; do not use it yourself, do not mention it, and never quiz or test them.",
-    ...(offer.nudge ? ["It has been a while since the last one: if one fits even reasonably, use it."] : []),
+    ...(offer.nudge
+      ? ["It has been a while since the last one: if one fits even reasonably, use it."]
+      : []),
     'In @state set "learned" to the id you used (e.g. "e1") and "learned_how" to "say" or "ask"; if you used none, set "learned" to null.',
   ].join("\n");
 }
@@ -292,69 +296,3 @@ export const openerOffer = (target: LearningTarget): LearningOffer => ({
   ],
   nudge: false,
 });
-
-/** 최근 지시한 표현(피드백이 유저 산출을 판정할 후보) — 최대 5개. */
-const recentLimit = 5;
-
-/** 건너뛴 횟수를 기억하는 표현 수의 상한(오래된 것부터 버린다). */
-const skipMemoryLimit = 40;
-
-/** 턴 결과에서 화제 상태로 가는 학습 결과: 넣은 표현(칩 · 고른 후보 — 모델이 따르지 못했어도) · 건너뜀 · 준 후보. */
-export type LearningResult = {
-  readonly target: LearningTarget | null;
-  readonly skipped: boolean;
-  readonly offered: readonly string[];
-};
-
-export const noLearningResult: LearningResult = { target: null, skipped: false, offered: [] };
-
-/**
- * 턴 뒤 화제 상태의 학습 칸. 넣었으면 간격 · 하루 수를 세고 그 표현의 건너뜀을 지운다. 건너뛰었으면 준 후보마다 건너뜀을 하나씩 올리고,
- * `maxSkipStreak`번 이어지면 간격을 새로 센다(`restartGap`).
- */
-export function nextLearningState(
-  state: TopicState,
-  result: LearningResult,
-  today: string,
-  maxSkipStreak: number = defaultLearningSettings.maxSkipStreak,
-): Pick<
-  TopicState,
-  "learnDay" | "learnToday" | "lastExpressionId" | "recentTargets" | "learnSkipStreak" | "learnSkips"
-> & { readonly inserted: boolean; readonly restartGap: boolean } {
-  const skips = { ...(state.learnSkips ?? {}) };
-  const target = result.target;
-  if (target === null) {
-    const streak = result.skipped ? (state.learnSkipStreak ?? 0) + 1 : (state.learnSkipStreak ?? 0);
-    if (result.skipped)
-      for (const id of result.offered) {
-        const count = (skips[id] ?? 0) + 1;
-        delete skips[id];
-        skips[id] = count; // 맨 뒤로 — 오래된 것부터 버린다
-      }
-    const restartGap = result.skipped && streak >= maxSkipStreak;
-    return {
-      inserted: false,
-      restartGap,
-      learnDay: state.learnDay ?? null,
-      learnToday: state.learnToday ?? 0,
-      lastExpressionId: state.lastExpressionId ?? null,
-      recentTargets: state.recentTargets ?? [],
-      learnSkipStreak: restartGap ? 0 : streak,
-      learnSkips: Object.fromEntries(Object.entries(skips).slice(-skipMemoryLimit)),
-    };
-  }
-  delete skips[target.expressionId];
-  return {
-    inserted: true,
-    restartGap: false,
-    learnDay: today,
-    learnToday: state.learnDay === today ? (state.learnToday ?? 0) + 1 : 1,
-    lastExpressionId: target.expressionId,
-    recentTargets: [
-      ...(state.recentTargets ?? []).filter((id) => id !== target.expressionId),
-      target.expressionId,
-    ].slice(-recentLimit),
-    learnSkipStreak: 0,
-    learnSkips: skips,
-  };
-}

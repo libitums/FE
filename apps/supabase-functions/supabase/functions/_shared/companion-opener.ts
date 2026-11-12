@@ -66,7 +66,12 @@ export function openerOutcome(
   segments: readonly Segment[],
 ): { meta: Record<string, unknown> | null; events: LearningEvent[] } {
   if (target === null) return { meta: null, events: [] };
-  const done = targetDone(target, pickedCandidate(openerOffer(target), state) !== null, segments, false);
+  const done = targetDone(
+    target,
+    pickedCandidate(openerOffer(target), state) !== null,
+    segments,
+    false,
+  );
   return {
     meta: { mode: "expose", expressionId: target.expressionId, surface: target.surface, done },
     events: done ? [{ expressionId: target.expressionId, kind: "exposed" }] : [],

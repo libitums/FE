@@ -14,12 +14,14 @@ import {
   decideLearning,
   defaultLearningSettings,
   type LearningDecision,
-  type LearningResult,
   type LearningSettings,
-  nextLearningState,
-  noLearningResult,
   offerDirective,
 } from "./companion-learning.ts";
+import {
+  type LearningResult,
+  nextLearningState,
+  noLearningResult,
+} from "./companion-learning-state.ts";
 
 export const branchingConfig = {
   shortLength: 6,
@@ -60,10 +62,13 @@ export function topicStateFrom(raw: Partial<TopicState> | null | undefined): Top
       : [],
     learnSkipStreak: num(raw?.learnSkipStreak, 0),
     learnSkips:
-      raw?.learnSkips !== null && typeof raw?.learnSkips === "object" && !Array.isArray(raw.learnSkips)
+      raw?.learnSkips !== null &&
+      typeof raw?.learnSkips === "object" &&
+      !Array.isArray(raw.learnSkips)
         ? Object.fromEntries(
             Object.entries(raw.learnSkips).filter(
-              (entry): entry is [string, number] => typeof entry[1] === "number" && Number.isFinite(entry[1]),
+              (entry): entry is [string, number] =>
+                typeof entry[1] === "number" && Number.isFinite(entry[1]),
             ),
           )
         : {},

@@ -16,7 +16,8 @@ export function fakeLearningLines(
   const candidate = candidateLine.exec(text);
   if (!candidate) return null;
   const [, ref, surface, hint] = candidate;
-  if (hint === "ask only") return { line: "@speech 그럼 이건 어떻게 말해요?", learned: ref!, how: "ask" };
+  if (hint === "ask only")
+    return { line: "@speech 그럼 이건 어떻게 말해요?", learned: ref!, how: "ask" };
   return { line: `@speech 저는 오늘 '${surface}'라고 말했어요.`, learned: ref!, how: "say" };
 }
 

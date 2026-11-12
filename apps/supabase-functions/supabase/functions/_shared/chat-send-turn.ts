@@ -13,6 +13,7 @@ import {
   turnFinisher,
 } from "./chat-send-finish.ts";
 import { refusalStage } from "./chat-send-refusal.ts";
+import { sendTurnStart } from "./chat-send-turn-start.ts";
 import { turnRefuser } from "./chat-send-turn-refuse.ts";
 import {
   defaultLlmTimeoutMs,
@@ -40,11 +41,7 @@ import {
 } from "./chat-send-suggest.ts";
 import { applyTranslation, startTranslation, translationContext } from "./chat-send-translate.ts";
 import { chooseBranch, nextTopicState, topicStateFrom } from "./companion-branching.ts";
-import {
-  CONTRACT_VERSION,
-  STREAM_ERRORS,
-  type StreamErrorCode,
-} from "./companion-contract/index.ts";
+import { STREAM_ERRORS, type StreamErrorCode } from "./companion-contract/index.ts";
 import { systemSplit } from "./companion-llm.ts";
 import { companionSystemPrompt, type PromptInput } from "./companion-prompt.ts";
 import { crisisResourcesFor } from "./companion-safety.ts";
@@ -105,17 +102,7 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
   // 성격대로 거절 — 걸린 글 대신 분류와 단계만 준 답을 보통 답처럼 보내고 `blocked`로 저장한다(`chat-send-turn-refuse.ts`).
   const refuse = turnRefuser(context, { persona, promptInput, moderation, finisher, withUsage });
 
-  sink.send({
-    event: "start",
-    data: {
-      contractVersion: CONTRACT_VERSION,
-      conversationId: turn.conversationId,
-      userMessageId: turn.userMessageId,
-      assistantMessageId: context.assistantMessageId,
-      speechLevel: turn.speechLevel,
-    },
-  });
-  for (const kind of gate.notices) sink.send({ event: "notice", data: { kind } });
+  sendTurnStart(context);
 
   const abort = new AbortController();
   const history = historyFrom(turn);

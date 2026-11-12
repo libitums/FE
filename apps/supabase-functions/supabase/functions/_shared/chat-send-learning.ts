@@ -20,10 +20,10 @@ import {
   defaultLearningSettings,
   type LearningDecision,
   type LearningOffer,
-  type LearningResult,
   type LearningSettings,
   type LearningTarget,
 } from "./companion-learning.ts";
+import type { LearningResult } from "./companion-learning-state.ts";
 import {
   containsExpression,
   isPatternLike,
@@ -122,7 +122,11 @@ export function pickedCandidate(
         : undefined;
   if (candidate === undefined) return null;
   const mode =
-    state?.learnedHow === "ask" ? "elicit" : state?.learnedHow === "say" ? "expose" : candidate.modes[0]!;
+    state?.learnedHow === "ask"
+      ? "elicit"
+      : state?.learnedHow === "say"
+        ? "expose"
+        : candidate.modes[0]!;
   return {
     expressionId: candidate.expressionId,
     kind: candidate.kind,

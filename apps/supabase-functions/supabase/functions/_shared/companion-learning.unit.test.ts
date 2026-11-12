@@ -12,12 +12,12 @@ import {
   decideLearning,
   defaultLearningSettings,
   type LearningDecision,
-  nextLearningState,
   offerDirective,
   openerOffer,
   pickOpenerExpression,
   rankExpressions,
 } from "./companion-learning.ts";
+import { nextLearningState } from "./companion-learning-state.ts";
 import { containsExpression, matchedExpressions } from "./companion-learning-match.ts";
 import { emptyFeedback } from "./companion-llm-prompts.ts";
 
@@ -109,8 +109,16 @@ describe("학습 표현 넣기 판정(PRD §3.7)", () => {
     const offered = decideLearning(state, { ...input, random: at(0) });
     expect(offered.target).toBeNull();
     expect(offered.offer?.candidates).toEqual([
-      expect.objectContaining({ ref: "e1", expressionId: "expr:offer", modes: ["elicit", "expose"] }),
-      expect.objectContaining({ ref: "e2", expressionId: "patt:means", modes: ["expose", "elicit"] }),
+      expect.objectContaining({
+        ref: "e1",
+        expressionId: "expr:offer",
+        modes: ["elicit", "expose"],
+      }),
+      expect.objectContaining({
+        ref: "e2",
+        expressionId: "patt:means",
+        modes: ["expose", "elicit"],
+      }),
     ]);
     // 처음 만나는 표현은 노출만.
     const fresh = { ...state, lastExpressionId: null };
@@ -119,13 +127,18 @@ describe("학습 표현 넣기 판정(PRD §3.7)", () => {
       modes: ["expose"],
     });
     // 칩 — 앞쪽 셋에서 고른 표현의 칩 비중에 걸리면 그 표현 하나를 칩으로(확률 0 · 첫 칸 · 방식 0.6).
-    const rolls = (...values: number[]) => () => values.shift() ?? 0;
+    const rolls =
+      (...values: number[]) =>
+      () =>
+        values.shift() ?? 0;
     expect(decideLearning(state, { ...input, random: rolls(0, 0, 0.6) })).toMatchObject({
       target: { expressionId: "expr:offer", mode: "chip" },
       offer: null,
     });
     // 칩 스위치가 꺼져 있으면 칩은 없다.
-    expect(decideLearning(state, { ...input, chipsOn: false, random: rolls(0, 0, 0.6) }).target).toBeNull();
+    expect(
+      decideLearning(state, { ...input, chipsOn: false, random: rolls(0, 0, 0.6) }).target,
+    ).toBeNull();
   });
 
   test("LN4. 후보 지시 글 · 첫 인사 표현 · 화제 상태의 학습 칸", () => {
@@ -148,23 +161,50 @@ describe("학습 표현 넣기 판정(PRD §3.7)", () => {
     const opener = pickOpenerExpression(pool, defaultLearningSettings, at(0))!;
     expect(opener.mode).toBe("expose");
     expect(offerDirective(openerOffer(opener))).toContain('- e1: "괜찮아요." — say it only');
-    const target = { expressionId: "expr:fine", kind: "expr", surface: "괜찮아요.", gloss: null, mode: "elicit" as const };
-    const state = { ...topicStateFrom(null), learnDay: "2026-11-10", learnToday: 2, learnSkips: { "expr:fine": 2 } };
-    expect(nextLearningState(state, { target, skipped: false, offered: [] }, "2026-11-10")).toMatchObject({
+    const target = {
+      expressionId: "expr:fine",
+      kind: "expr",
+      surface: "괜찮아요.",
+      gloss: null,
+      mode: "elicit" as const,
+    };
+    const state = {
+      ...topicStateFrom(null),
+      learnDay: "2026-11-10",
+      learnToday: 2,
+      learnSkips: { "expr:fine": 2 },
+    };
+    expect(
+      nextLearningState(state, { target, skipped: false, offered: [] }, "2026-11-10"),
+    ).toMatchObject({
       inserted: true,
       learnToday: 3,
       lastExpressionId: "expr:fine",
       recentTargets: ["expr:fine"],
       learnSkips: {},
     });
-    expect(nextLearningState(state, { target, skipped: false, offered: [] }, "2026-11-11").learnToday).toBe(1);
+    expect(
+      nextLearningState(state, { target, skipped: false, offered: [] }, "2026-11-11").learnToday,
+    ).toBe(1);
   });
 
   // LN5 — 넘기면 간격 · 하루 수를 쓰지 않고 다음 턴에 다시 연다. 이어 넘기면 그때 간격을 새로 센다.
   test("LN5. 건너뜀 — 간격 · 하루 수 그대로, 후보마다 건너뜀, 이어 넘기면 간격을 새로", () => {
-    const state = { ...topicStateFrom(null), turn: 6, lastInsertTurn: 3, learnDay: "2026-11-10", learnToday: 1 };
+    const state = {
+      ...topicStateFrom(null),
+      turn: 6,
+      lastInsertTurn: 3,
+      learnDay: "2026-11-10",
+      learnToday: 1,
+    };
     const skip = { target: null, skipped: true, offered: ["expr:fine", "expr:offer"] };
-    const after = nextTopicState(state, { userText: "오늘 날씨가 좋네요", turnState: null, action: null, learning: skip, today: "2026-11-10" });
+    const after = nextTopicState(state, {
+      userText: "오늘 날씨가 좋네요",
+      turnState: null,
+      action: null,
+      learning: skip,
+      today: "2026-11-10",
+    });
     expect(after).toMatchObject({
       lastInsertTurn: 3,
       learnToday: 1,
@@ -177,7 +217,11 @@ describe("학습 표현 넣기 판정(PRD §3.7)", () => {
       { ...after, learnSkipStreak: defaultLearningSettings.maxSkipStreak - 1 },
       { userText: "음", turnState: null, action: null, learning: skip, today: "2026-11-10" },
     );
-    expect(third).toMatchObject({ lastInsertTurn: after.turn + 1, learnSkipStreak: 0, learnToday: 1 });
+    expect(third).toMatchObject({
+      lastInsertTurn: after.turn + 1,
+      learnSkipStreak: 0,
+      learnToday: 1,
+    });
     expect(decideLearning(third, { ...input, random: at(0) }).reason).toBe("cooldown");
     // 옛 상태(칸 없음)도 읽는다.
     expect(topicStateFrom({ turn: 2, learnSkips: { a: 1, b: "x" } as never })).toMatchObject({
@@ -219,7 +263,13 @@ describe("학습 표현 글자 판정", () => {
     const said = (learned: unknown, text: string, how?: string) =>
       resolveLearning(
         decision,
-        { intimacyDelta: 1, topic: null, userWantsSwitch: false, ...(learned === undefined ? {} : { learned: learned as string }), ...(how ? { learnedHow: how as "say" } : {}) },
+        {
+          intimacyDelta: 1,
+          topic: null,
+          userWantsSwitch: false,
+          ...(learned === undefined ? {} : { learned: learned as string }),
+          ...(how ? { learnedHow: how as "say" } : {}),
+        },
         [{ kind: "speech", text }],
         false,
       );
@@ -240,9 +290,16 @@ describe("학습 표현 글자 판정", () => {
       produced: ["patt:means"],
     });
     // 질문으로 썼으면 유도(보고만).
-    expect(said("e2", "물 드릴까요?", "ask")).toMatchObject({ target: { expressionId: "expr:offer", mode: "elicit" }, done: true });
+    expect(said("e2", "물 드릴까요?", "ask")).toMatchObject({
+      target: { expressionId: "expr:offer", mode: "elicit" },
+      done: true,
+    });
     // 넘기면(learned 없음 · 없는 id) 건너뜀 — meta.reason skipped, 방식 없음.
-    const skipped = learningOutcome({ decision, result: said(undefined, "안녕!"), feedback: emptyFeedback("none", "x") });
+    const skipped = learningOutcome({
+      decision,
+      result: said(undefined, "안녕!"),
+      feedback: emptyFeedback("none", "x"),
+    });
     expect(skipped.meta).toMatchObject({ open: true, reason: "skipped" });
     expect(skipped.meta).not.toHaveProperty("mode");
     expect(said("e9", "안녕!")).toMatchObject({ skipped: true, target: null });
@@ -250,12 +307,22 @@ describe("학습 표현 글자 판정", () => {
     const chip: LearningDecision = {
       open: true,
       reason: "ok",
-      target: { expressionId: "expr:offer", kind: "expr", surface: "드릴까요?", gloss: null, mode: "chip" },
+      target: {
+        expressionId: "expr:offer",
+        kind: "expr",
+        surface: "드릴까요?",
+        gloss: null,
+        mode: "chip",
+      },
       offer: null,
     };
     expect(resolveLearning(chip, null, [], true)).toMatchObject({ done: true, skipped: false });
     // 모델이 썼다고 했어도 글에 없으면 노출로 세지 않는다.
-    const missed = learningOutcome({ decision, result: said("e1", "안녕!", "say"), feedback: emptyFeedback("none", "x") });
+    const missed = learningOutcome({
+      decision,
+      result: said("e1", "안녕!", "say"),
+      feedback: emptyFeedback("none", "x"),
+    });
     expect(missed.events).toEqual([]);
   });
 });
