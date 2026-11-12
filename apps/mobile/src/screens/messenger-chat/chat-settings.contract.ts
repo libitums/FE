@@ -35,6 +35,14 @@ export type ChatMemoryList = {
   readonly full: boolean;
 };
 
+import type { MessengerListNoticeCopy } from "./messenger-list-notice";
+
+/** 메신저 문구 표에 덧붙는 칸입니다 — 대화 설정(ADR-0126) · 선톡 푸시 안내(ADR-0127). */
+export type MessengerChatExtraCopy = {
+  readonly chatSettings: ChatSettingsCopy;
+  readonly pushNotice: MessengerListNoticeCopy;
+};
+
 export type ChatSettingsCopy = {
   readonly entryTitle: string;
   readonly entryDescription: string;

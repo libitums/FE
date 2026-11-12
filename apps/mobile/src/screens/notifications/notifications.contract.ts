@@ -69,7 +69,17 @@ export type NotificationItemDeletedEvent = {
 export type PushNotificationTarget =
   | NotificationTarget
   | { readonly kind: "journey-map" }
-  | { readonly kind: "notifications" };
+  | { readonly kind: "notifications" }
+  // 캐릭터가 먼저 보낸 메시지(선톡)의 방입니다(ADR-0127). `variant`는 잠금 화면 미리보기 A/B의 칸 — 서버가 PostHog
+  // 플래그로 고르고, 앱은 연 이벤트에 싣기만 합니다.
+  | {
+      readonly kind: "companion-chat";
+      readonly characterId: string;
+      readonly variant: PushPreviewVariant | null;
+    };
+
+/** 선톡 푸시 미리보기 A/B(ADR-0127): a = 한국어 한 줄, b = 「{이름} sent you a message」. */
+export type PushPreviewVariant = "a" | "b";
 
 export type PushNotificationTargetKind = PushNotificationTarget["kind"];
 
@@ -77,6 +87,8 @@ export type PushNotificationTargetKind = PushNotificationTarget["kind"];
 export type PushNotificationOpenedEvent = {
   readonly name: "push_notification_opened";
   readonly target: PushNotificationTargetKind;
+  /** companion-chat 목적지에 variant가 있을 때만 싣습니다(ADR-0127). */
+  readonly variant?: PushPreviewVariant;
 };
 
 export type NotificationEvent =

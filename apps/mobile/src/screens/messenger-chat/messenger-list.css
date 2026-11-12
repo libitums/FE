@@ -290,3 +290,22 @@
   line-height: var(--libitum-typography-caption-line-height);
   letter-spacing: var(--libitum-typography-caption-letter-spacing);
 }
+
+/* 선톡 푸시로 온 방을 열 수 없을 때의 3초 안내(ADR-0127). 목록 위에 떠 있고 탭을 막지 않는다. */
+.messenger-list-notice {
+  position: absolute;
+  left: var(--libitum-spacing-16);
+  right: var(--libitum-spacing-16);
+  /* 바텀 네비게이션이 목록 위에 겹치는 높이(64 + 4)만큼 띄운다 — 처음엔 24px라 바에 가려졌다(기기 확인). */
+  bottom: calc(var(--libitum-spacing-64) + var(--libitum-spacing-4) + var(--libitum-spacing-12));
+  padding: var(--libitum-spacing-12) var(--libitum-spacing-16);
+  border-radius: var(--libitum-radius-lg);
+  background-color: var(--libitum-color-gray-900);
+}
+
+.messenger-list-notice-text {
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  line-height: var(--libitum-typography-body-s-line-height);
+  color: var(--libitum-color-fg-neutral-inverted);
+}

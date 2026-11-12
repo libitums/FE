@@ -211,6 +211,7 @@ export const messengerChatId: MessengerChatCopy = {
       notSet: "Belum diisi",
     },
   },
+  pushNotice: { chatUnavailable: "Obrolan ini sedang tidak tersedia." },
   chatSettings: {
     entryTitle: "Obrolan",
     entryDescription: "Ide balasan, pesan dari karakter, ingatan",

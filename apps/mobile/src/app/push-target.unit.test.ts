@@ -35,3 +35,36 @@ describe("PT1 pushTargetFrom", () => {
     expect(pushTargetFrom([])).toBeNull();
   });
 });
+
+describe("CP-U1 ~ U3 companion-chat 목적지(ADR-0127)", () => {
+  test("CP-U1 인물 id · variant를 읽는다", () => {
+    expect(pushTargetFrom({ kind: "companion-chat", characterId: "mina", variant: "a" })).toEqual({
+      kind: "companion-chat",
+      characterId: "mina",
+      variant: "a",
+    });
+    expect(pushTargetFrom({ kind: "companion-chat", characterId: "duksu-ssam-2" })).toEqual({
+      kind: "companion-chat",
+      characterId: "duksu-ssam-2",
+      variant: null,
+    });
+  });
+
+  test("CP-U2 인물 id가 1~64자 [a-z0-9-]가 아니면 목적지 없음", () => {
+    for (const characterId of ["", "Mina", "mi na", "../x", "a".repeat(65), 7, null]) {
+      expect(pushTargetFrom({ kind: "companion-chat", characterId })).toBeNull();
+    }
+    expect(pushTargetFrom({ kind: "companion-chat" })).toBeNull();
+    expect(pushTargetFrom({ kind: "companion-chat", characterId: "a".repeat(64) })).not.toBeNull();
+  });
+
+  test("CP-U3 variant는 a · b만, 그 밖은 null", () => {
+    for (const variant of ["c", "A", 1, "", null]) {
+      expect(pushTargetFrom({ kind: "companion-chat", characterId: "mina", variant })).toEqual({
+        kind: "companion-chat",
+        characterId: "mina",
+        variant: null,
+      });
+    }
+  });
+});

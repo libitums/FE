@@ -209,6 +209,7 @@ export const messengerChatEn: MessengerChatCopy = {
       notSet: "Not set",
     },
   },
+  pushNotice: { chatUnavailable: "This chat isn't available right now." },
   chatSettings: {
     entryTitle: "Chats",
     entryDescription: "Reply ideas, messages from characters, memories",

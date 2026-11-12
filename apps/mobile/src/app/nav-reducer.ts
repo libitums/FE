@@ -103,6 +103,15 @@ export function navReducer(nav: Nav, action: NavAction): Nav {
       }
       return { ...nav, stacks: { ...nav.stacks, [nav.tab]: stack.slice(0, 1) } };
     }
+    case "setListNotice": {
+      const [root, ...rest] = nav.stacks.messenger;
+      if (root?.name !== "messenger-list" || (root.notice ?? null) === action.notice) return nav;
+      const next: Screen =
+        action.notice === null
+          ? { name: "messenger-list" }
+          : { name: "messenger-list", notice: action.notice };
+      return { ...nav, stacks: { ...nav.stacks, messenger: [next, ...rest] } };
+    }
     case "switchTab": {
       if (nav.tab === action.tab) {
         return nav;

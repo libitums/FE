@@ -21,6 +21,8 @@ export function useOpenedPush(
   const openPending = useCallback((): void => {
     if (!latest.current.inApp) return;
     void takeOpenedPushTarget().then((raw) => {
+      // 꺼내는 사이 앱 구간을 벗어났으면(로그아웃 등) 열지 않습니다 — 진입 구간 스택을 건드리지 않게요(ADR-0127 리뷰 W5).
+      if (!latest.current.inApp) return;
       const target = pushTargetFrom(raw);
       if (target !== null) latest.current.onOpenPushTarget(target);
     });

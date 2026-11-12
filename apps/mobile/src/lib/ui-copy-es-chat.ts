@@ -210,6 +210,7 @@ export const messengerChatEs: MessengerChatCopy = {
       notSet: "Sin indicar",
     },
   },
+  pushNotice: { chatUnavailable: "Este chat no está disponible ahora." },
   chatSettings: {
     entryTitle: "Chats",
     entryDescription: "Ideas de respuesta, mensajes de personajes, recuerdos",
@@ -226,8 +227,7 @@ export const messengerChatEs: MessengerChatCopy = {
       count === 1
         ? "1 recuerdo · compartido por todos los personajes"
         : `${count} recuerdos · compartidos por todos los personajes`,
-    footnote:
-      "Cada personaje también recuerda cosas de sus chats contigo. Abre un chat y toca ☰ para verlas.",
+    footnote: "Cada personaje recuerda sus chats contigo. Abre un chat y toca ☰ para verlo.",
     proactiveSheet: {
       title: "Te escriben primero",
       body: "Si llevas un tiempo sin escribir, un personaje puede empezar la conversación. Nunca cuesta monedas.",

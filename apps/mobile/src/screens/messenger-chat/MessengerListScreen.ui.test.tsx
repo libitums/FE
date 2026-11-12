@@ -65,6 +65,8 @@ function mount(source: ChatSource = makeSource(seed())) {
     onOpenRoom: vi.fn<(id: string) => void>(),
     onGoToJourney: vi.fn<() => void>(),
     onLayerChange: vi.fn<(open: boolean) => void>(),
+    notice: null,
+    onNoticeShown: vi.fn<() => void>(),
   };
   // 잔액은 지갑에서 온다(spec §7.2 · 1.5 — 옛 coinBalance 대체).
   render(

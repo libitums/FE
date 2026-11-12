@@ -236,8 +236,14 @@ public final class SignedInScreenFixtureTest {
         if (STOP_ACTION.equals(intent.getAction())) stop.countDown();
         if (ROTATE_ACTION.equals(intent.getAction())) rotateFcmToken();
         if (PUSH_ACTION.equals(intent.getAction())) {
+          // 목적지 · 문구를 방송 extra로 바꿀 수 있다(선톡 companion-chat 확인 — ADR-0127). 없으면 알림 목록.
+          String target = intent.getStringExtra("target");
+          String title = intent.getStringExtra("title");
+          String body = intent.getStringExtra("body");
           DuruFirebaseMessagingService.postForegroundNotification(context,
-              "Duru test", "Open notifications", "{\"kind\":\"notifications\"}");
+              title != null ? title : "Duru test",
+              body != null ? body : "Open notifications",
+              target != null ? target : "{\"kind\":\"notifications\"}");
         }
       }
     };

@@ -6,6 +6,7 @@
 // 어떤 화면도 `navigation.ts`를 import하지 않으므로 순환이 생기지 않습니다(import/no-cycle이 그것을 지킵니다).
 // 판정 어휘는 `lib/answer-result.ts`에서 옵니다 — 화면 폴더가 아니라 `lib/`에서
 // 가져옵니다.
+import type { MessengerListNotice } from "../screens/messenger-chat/messenger-list-notice";
 import type { AnswerResult } from "../lib/answer-result";
 import type { CatalogUnitKey } from "../lib/catalog-progress";
 import type { CatalogReview, CatalogReviewSummary } from "./catalog-review";
@@ -24,7 +25,8 @@ export type Screen =
   | { name: "journey-map" }
   | { name: "roleplay-list" }
   // 메신저 탭의 화면입니다(messenger-chat-ui spec §7). 목록이 탭 루트이고 방은 그 위에 쌓입니다.
-  | { name: "messenger-list" }
+  // 메신저 탭 루트입니다. `notice`는 선톡 푸시로 온 방을 열 수 없을 때 한 번 보일 안내입니다(ADR-0127).
+  | { name: "messenger-list"; notice?: MessengerListNotice }
   | { name: "messenger-chat"; roomId: string }
   | { name: "settings" }
   // 설정 탭의 화면입니다. 필드가 없습니다 — 프로필에 진행도 파라미터가 없고, 내용은 App이
@@ -128,6 +130,8 @@ export type NavAction =
   | { type: "replace"; screen: Screen }
   | { type: "backToRoot" }
   | { type: "switchTab"; tab: Tab }
+  // 메신저 탭 루트(목록)의 안내만 붙이거나 지웁니다(ADR-0127) — 활성 스택 · 진입 구간과 무관하게 그 루트 하나만 바꿉니다.
+  | { type: "setListNotice"; notice: MessengerListNotice | null }
   | { type: "enterApp" };
 
 // 계약이 고정한 리터럴입니다. 각 탭 스택은 자기 루트 화면 하나로 시작하고,

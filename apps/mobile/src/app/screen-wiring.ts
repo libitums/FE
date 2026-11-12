@@ -57,6 +57,7 @@ import { guestWiring, type GuestWiring } from "./guest-wiring";
 import type { AccountState } from "../lib/guest-session";
 import { journeyWiring } from "./journey-wiring";
 import { messengerChatWiring, type MessengerChatWiring } from "./messenger-chat-wiring";
+import { pushTargetOpener } from "./push-routing";
 
 // 화면 결선이 `renderScreen`에 넘기는 것입니다. 셸이 소유한 값 하나와 콜백 셋입니다.
 //
@@ -174,9 +175,20 @@ export type ScreenWiringArgs = {
 export function screenWiring(args: ScreenWiringArgs): ScreenWiring {
   const journey = journeyWiring(args);
   const entry = entryWiring(args);
+  const messenger = messengerChatWiring({
+    dispatch: args.dispatch,
+    imageUrlOf: args.episodeContent.imageUrlOf,
+    ...(args.coinCount === undefined ? {} : { coinCount: args.coinCount }),
+  });
 
   return {
     ...journey,
+    // 누른 서버 푸시의 목적지입니다(ADR-0034) — 이동 규칙은 `push-routing.ts`, 선톡 방은 대화 출처로 찾습니다(ADR-0127).
+    onOpenPushTarget: pushTargetOpener({
+      dispatch: args.dispatch,
+      notificationEventSink: args.notificationEventSink,
+      chatSource: messenger.messengerChat.source,
+    }),
     downloadSettings: downloadSettingsWiring(args.downloadControls, args.downloadCatalog),
     onTapPendingEpisode: () => {},
     legacyTutorialPassed: args.legacyTutorialPassed,
@@ -202,11 +214,7 @@ export function screenWiring(args: ScreenWiringArgs): ScreenWiring {
       args.dispatch({ type: "back" });
     },
     ...entry,
-    ...messengerChatWiring({
-      dispatch: args.dispatch,
-      imageUrlOf: args.episodeContent.imageUrlOf,
-      ...(args.coinCount === undefined ? {} : { coinCount: args.coinCount }),
-    }),
+    ...messenger,
     ...guestWiring(args),
     accountState: args.accountState,
     ...accountWiring({
