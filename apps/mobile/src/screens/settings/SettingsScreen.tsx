@@ -49,15 +49,18 @@ export function SettingsScreen({
   }));
   // 학습 묶음 끝의 「Chats」 줄입니다(ADR-0126) — 대화 설정 화면을 엽니다. 분석 이벤트가 없어 내비 대상과 따로 둡니다.
   const chatCopy = copy.messengerChat.chatSettings;
-  const chatItems: readonly SettingsGroupItem[] = [
-    {
-      id: "chats",
-      trailing: "navigation",
-      title: chatCopy.entryTitle,
-      description: chatCopy.entryDescription,
-      onNavigate: onOpenChatSettings,
-    },
-  ];
+  const chatItems: readonly SettingsGroupItem[] =
+    onOpenChatSettings === null
+      ? []
+      : [
+          {
+            id: "chats",
+            trailing: "navigation",
+            title: chatCopy.entryTitle,
+            description: chatCopy.entryDescription,
+            onNavigate: onOpenChatSettings,
+          },
+        ];
   const account = useAccountActions({ onSignIn, onSignOut, onDeleteAccount, onLayerChange });
   const { state } = account;
   const layerOpen = accountActionsLayerOpen(state);

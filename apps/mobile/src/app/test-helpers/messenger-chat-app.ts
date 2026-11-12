@@ -10,7 +10,7 @@ import {
   deviceTurnRecordStore,
   memoryUnlockStore,
 } from "../../screens/messenger-chat/chat-local-stores";
-import type { TurnRecord } from "../../screens/messenger-chat/free-turns";
+import type { ChatTier, TurnRecord } from "../../screens/messenger-chat/free-turns";
 import type { ChatSource } from "../../screens/messenger-chat/chat-source.contract";
 import {
   memoryTurnRecordStore,
@@ -19,6 +19,7 @@ import {
 import { chatFixtureSeed } from "../../screens/messenger-chat/chat-fixture";
 import * as chatWiring from "../messenger-chat-wiring";
 import { messengerChatSource, resetMessengerChatSourceForTests } from "../messenger-chat-wiring";
+import { renderSignedInApp } from "./signed-in-app";
 
 export type MessengerStoresOptions = {
   /** 하루 무료 수 원장의 처음 기록입니다(기본 비어 있음 = 오늘 3통). */
@@ -27,6 +28,8 @@ export type MessengerStoresOptions = {
   readonly unlocked?: readonly string[];
   /** 생년(ADR-0125)은 기본으로 이미 답한 것으로 둡니다 — 방을 열 때 생년 시트가 다른 흐름을 가리지 않게요. 시트를 보는 케이스만 `unasked`. */
   readonly birthYear?: "answered" | "unasked";
+  /** 대화 등급 고정(ADR-0128 — 메신저는 시험 계정에게만 열리고 시험 계정은 무제한). 무료 흐름을 보는 테스트는 `free`. */
+  readonly tier?: ChatTier;
 };
 
 const STALE_RECORD: TurnRecord = { day: "1970-01-01", used: 0, outPanel: "due" };
@@ -35,6 +38,7 @@ type StoresHook = (stores: {
   readonly unlock: ReturnType<typeof memoryUnlockStore>;
   readonly turns: TurnRecordStore;
   readonly now: () => number;
+  readonly tier?: ChatTier;
 }) => void;
 
 /**
@@ -57,6 +61,7 @@ export async function resetMessengerChatSource(
       unlock: memoryUnlockStore(options.unlocked ?? []),
       turns,
       now: () => Date.now(),
+      ...(options.tier === undefined ? {} : { tier: options.tier }),
     });
     return { turns };
   }
@@ -137,7 +142,9 @@ export function stubBackHost(): BackHost {
     ready: vi.fn<() => void>(),
     respond: vi.fn<(token: string, outcome: string) => void>(),
   };
-  vi.stubGlobal("NativeModules", { SystemBackModule: host });
+  // 다른 모듈(세션 저장소 등)을 지우지 않고 뒤로가기 모듈만 얹습니다 — 지우면 세션 토큰을 잃어 시험 계정 판정이 꺼졌다(ADR-0128).
+  const existing = (globalThis as { NativeModules?: Record<string, unknown> }).NativeModules ?? {};
+  vi.stubGlobal("NativeModules", { ...existing, SystemBackModule: host });
   return host;
 }
 
@@ -149,4 +156,21 @@ export function pressSystemBack(): string {
     lynx.getJSModule("GlobalEventEmitter").emit(systemBackEventName, [token]);
   });
   return token;
+}
+
+const base64Url = (value: unknown): string =>
+  btoa(JSON.stringify(value)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+
+/** 시험 계정 표시(`app_metadata.duru_tester`)가 켜진 액세스 토큰입니다 — 메신저 탭이 열리는 계정(ADR-0085 · ADR-0128). */
+export const testerAccessToken = `${base64Url({ alg: "none" })}.${base64Url({
+  sub: "tester-1",
+  app_metadata: { duru_tester: true },
+})}.sig`;
+
+/** 시험 계정으로 로그인된 설치를 부팅합니다. 메신저 탭은 시험 계정에게만 목록을 보입니다(ADR-0128). */
+export function renderTesterApp(
+  ui: Parameters<typeof renderSignedInApp>[0],
+  options: Parameters<typeof renderSignedInApp>[1] = {},
+): ReturnType<typeof renderSignedInApp> {
+  return renderSignedInApp(ui, { ...options, refreshedAccessToken: testerAccessToken });
 }

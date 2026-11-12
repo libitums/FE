@@ -7,13 +7,13 @@ import { resetMessengerChatSourceForTests } from "./messenger-chat-wiring";
 import {
   appChatSource,
   openTab,
+  renderTesterApp,
   resetMessengerChatSource,
   tapButtonIn,
   tapId,
   tapRound,
 } from "./test-helpers/messenger-chat-app";
 import { legacyPassedSeed } from "./test-helpers/progress-seed";
-import { renderSignedInApp } from "./test-helpers/signed-in-app";
 
 // `integration` 계층(SU-I1 ~ I3): 앱 결선에서 법 · 안전 UI(ADR-0125) — 첫 방에서 생년을 한 번만 묻고, 위기 카드의 단추가
 // 호스트 `ExternalLinkModule`에 닿는다. 호스트 모듈만 대역입니다.
@@ -25,7 +25,7 @@ afterEach(() => {
 });
 
 async function bootToList(): Promise<void> {
-  await renderSignedInApp(<App progressSeed={legacyPassedSeed} />, { keepFakeTimers: true });
+  await renderTesterApp(<App progressSeed={legacyPassedSeed} />, { keepFakeTimers: true });
   openTab("messenger");
   expect(screen.getByTestId("messenger-list-screen")).toBeInTheDocument();
 }

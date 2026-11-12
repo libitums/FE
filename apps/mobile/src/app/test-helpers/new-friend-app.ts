@@ -6,6 +6,7 @@
 import { expect, vi } from "vitest";
 import { act, fireEvent, screen, within } from "@lynx-js/react/testing-library";
 
+import { testerAccessToken } from "./messenger-chat-app";
 import { catalogFinalPlanOf, type CatalogRoleplayTurn } from "../catalog-final-model";
 import { bundledCatalogInput } from "../../lib/episode-bundled";
 import { buildEpisodeCatalog } from "../../lib/episode-catalog";
@@ -67,13 +68,19 @@ function correctPlacement(turn: CatalogRoleplayTurn): number[] {
 }
 
 /** u01 · u02를 모두 끝내고 `episodeId`의 최종만 남긴 설치로 부팅합니다(맵이 서고 RP 노드가 열려 있음). */
+/** 메신저 탭은 시험 계정에게만 열린다(ADR-0128) — 새 친구 흐름은 시험 계정으로 부팅합니다. */
+const TESTER = { accessToken: testerAccessToken };
+
 export async function bootBeforeFinal(episodeId: string): Promise<void> {
   const done = [...BEFORE_FINAL, "RP"];
-  await boot({
-    [u01]: episodeId === u01 ? BEFORE_FINAL : done,
-    [u02]: episodeId === u02 ? BEFORE_FINAL : episodeId === u01 ? ["intro"] : done,
-    ...(episodeId === u03 ? { [u03]: BEFORE_FINAL } : {}),
-  });
+  await boot(
+    {
+      [u01]: episodeId === u01 ? BEFORE_FINAL : done,
+      [u02]: episodeId === u02 ? BEFORE_FINAL : episodeId === u01 ? ["intro"] : done,
+      ...(episodeId === u03 ? { [u03]: BEFORE_FINAL } : {}),
+    },
+    TESTER,
+  );
 }
 
 /**
@@ -107,13 +114,13 @@ export async function exitToMap(): Promise<void> {
 /** u01 · u02를 모두 끝내고 u03은 막간(INT) 앞까지 끝낸 설치로 부팅합니다(맵의 INT 「Story」 노드가 열려 있음). */
 export async function bootBeforeInterlude(): Promise<void> {
   const done = [...BEFORE_FINAL, "RP"];
-  await boot({ [u01]: done, [u02]: done, [u03]: BEFORE_INTERLUDE });
+  await boot({ [u01]: done, [u02]: done, [u03]: BEFORE_INTERLUDE }, TESTER);
 }
 
 /** 막간(INT)까지 이미 끝낸 진도로 부팅합니다 — 해금 기록 없이 진도만 있는 설치(이 규칙 전 · 다른 기기 · 새 설치). */
 export async function bootAfterInterlude(): Promise<void> {
   const done = [...BEFORE_FINAL, "RP"];
-  await boot({ [u01]: done, [u02]: done, [u03]: [...BEFORE_INTERLUDE, "INT"] });
+  await boot({ [u01]: done, [u02]: done, [u03]: [...BEFORE_INTERLUDE, "INT"] }, TESTER);
 }
 
 const tapStoryButton = (id: string): void =>

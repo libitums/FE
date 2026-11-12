@@ -309,3 +309,35 @@
   line-height: var(--libitum-typography-body-s-line-height);
   color: var(--libitum-color-fg-neutral-inverted);
 }
+
+/* 손님 안내의 아바타 셋(ADR-0128) — 겹쳐 놓은 원. 테두리 3px는 뒤 원과 가르는 선이라 맞는 토큰이 없다(시안 실측). */
+.messenger-access-faces {
+  display: flex;
+  flex-direction: row;
+}
+
+.messenger-access-face {
+  width: var(--libitum-spacing-64);
+  height: var(--libitum-spacing-64);
+  margin-left: calc(-1 * var(--libitum-spacing-12));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-width: 3px;
+  border-style: solid;
+  border-color: var(--libitum-color-white);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-gray-200);
+}
+
+.messenger-access-face-first {
+  margin-left: 0;
+  background-color: var(--libitum-elevation-surface-floating);
+}
+
+.messenger-access-face-text {
+  font-family: var(--libitum-typography-heading-m-font-family);
+  font-size: var(--libitum-typography-heading-m-font-size);
+  font-weight: var(--libitum-typography-heading-m-font-weight);
+  color: var(--libitum-color-fg-neutral-muted);
+}

@@ -10,6 +10,7 @@ import {
   openTab,
   present,
   pressSystemBack,
+  renderTesterApp,
   resetMessengerChatSource,
   stubBackHost,
   tapId,
@@ -17,7 +18,6 @@ import {
   textOf,
 } from "./test-helpers/messenger-chat-app";
 import { legacyPassedSeed, legacyPassedSeedWithCoins } from "./test-helpers/progress-seed";
-import { renderSignedInApp } from "./test-helpers/signed-in-app";
 import { expectJourneyMapHidden } from "./test-helpers/tab-keep-alive";
 
 // `integration` 계층(MC-I1 · MC-I2 · MC-I6): 메신저 탭의 결선 — 바 항목 넷 · 목록 ↔ 방 이동 · 바 · 시스템 뒤로 ·
@@ -43,13 +43,13 @@ afterEach(() => {
 // ------------------------------------------------------------------ MC-I1 · 탭
 
 test("MC-I1. 로그인 뒤 바 항목은 여정 · 롤플레이 · 메신저 · 설정 넷이 이 순서로 선다", async () => {
-  await renderSignedInApp(<App progressSeed={legacyPassedSeed} />);
+  await renderTesterApp(<App progressSeed={legacyPassedSeed} />);
 
   expect(navigatorItemIds()).toEqual(["journey", "roleplay", "messenger", "settings"]);
 });
 
 test("MC-I1. 메신저 탭을 누르면 채팅 목록이 서고 탭 표시가 메신저로 옮겨 간다", async () => {
-  await renderSignedInApp(<App progressSeed={legacyPassedSeed} />);
+  await renderTesterApp(<App progressSeed={legacyPassedSeed} />);
   expect(present(listScreen)).toBe(false);
 
   openTab("messenger");
@@ -61,7 +61,7 @@ test("MC-I1. 메신저 탭을 누르면 채팅 목록이 서고 탭 표시가 �
 });
 
 test("MC-I1. 목록은 열린 방(게스트하우스 · 사장님)을 최근 먼저로 놓고 잠긴 방(미나 · 점원)을 입력 순서로 맨 끝에 둔다", async () => {
-  await renderSignedInApp(<App progressSeed={legacyPassedSeed} />);
+  await renderTesterApp(<App progressSeed={legacyPassedSeed} />);
 
   openTab("messenger");
 
@@ -73,7 +73,7 @@ test("MC-I1. 목록은 열린 방(게스트하우스 · 사장님)을 최근 먼
 });
 
 test("MC-I1. 다른 탭에 갔다 메신저 탭으로 돌아오면 목록이 다시 서고 그 탭의 화면은 사라진다", async () => {
-  await renderSignedInApp(<App progressSeed={legacyPassedSeed} />);
+  await renderTesterApp(<App progressSeed={legacyPassedSeed} />);
   openTab("messenger");
 
   openTab("settings");
@@ -87,7 +87,7 @@ test("MC-I1. 다른 탭에 갔다 메신저 탭으로 돌아오면 목록이 다
 });
 
 test("MC-I1. 메신저 탭에 있는 동안에도 여정 맵은 숨김 상자에 그대로 남는다(keep-alive)", async () => {
-  await renderSignedInApp(<App progressSeed={legacyPassedSeed} />);
+  await renderTesterApp(<App progressSeed={legacyPassedSeed} />);
   const map = screen.getByTestId("journey-map-screen");
 
   openTab("messenger");
@@ -103,7 +103,7 @@ test("MC-I1. 메신저 탭에 있는 동안에도 여정 맵은 숨김 상자에
 
 test("MC-I1. 목록 루트에서 시스템 뒤로를 누르면 다른 탭 루트와 같이 여정 맵이 서고 처리됨으로 응답한다", async () => {
   const host = stubBackHost();
-  await renderSignedInApp(<App progressSeed={legacyPassedSeed} />);
+  await renderTesterApp(<App progressSeed={legacyPassedSeed} />);
   openTab("messenger");
   expect(screen.getByTestId(listScreen)).toBeInTheDocument();
 
@@ -117,7 +117,7 @@ test("MC-I1. 목록 루트에서 시스템 뒤로를 누르면 다른 탭 루트
 });
 
 test("MC-I1. 메신저 루트에는 전역 머리(AppHeader · top-bar)가 없고 바텀 네비게이션만 선다(사용자 결정 2026-11-09 — 앞선 결정 ④를 뒤집음)", async () => {
-  await renderSignedInApp(<App progressSeed={legacyPassedSeed} />);
+  await renderTesterApp(<App progressSeed={legacyPassedSeed} />);
 
   openTab("messenger");
 
@@ -131,7 +131,7 @@ test("MC-I1. 메신저 루트에는 전역 머리(AppHeader · top-bar)가 없�
 });
 
 test("MC-I1. 목록의 엽전 칩 값은 앱의 보유 엽전(받은 유닛 × 10)이다", async () => {
-  await renderSignedInApp(<App progressSeed={legacyPassedSeedWithCoins(90)} />);
+  await renderTesterApp(<App progressSeed={legacyPassedSeedWithCoins(90)} />);
 
   openTab("messenger");
 
@@ -139,7 +139,7 @@ test("MC-I1. 목록의 엽전 칩 값은 앱의 보유 엽전(받은 유닛 × 1
 });
 
 test("MC-I1. 잔액이 0이면 엽전 칩도 0이다 — 자리 표시 상수를 쓰지 않는다", async () => {
-  await renderSignedInApp(<App progressSeed={legacyPassedSeed} />);
+  await renderTesterApp(<App progressSeed={legacyPassedSeed} />);
 
   openTab("messenger");
 
@@ -149,7 +149,7 @@ test("MC-I1. 잔액이 0이면 엽전 칩도 0이다 — 자리 표시 상수를
 });
 
 test("MC-I1. 목록의 엽전 칩을 누르면 엽전 상점이 서고 닫으면 목록으로 돌아온다", async () => {
-  await renderSignedInApp(<App progressSeed={legacyPassedSeedWithCoins(90)} />);
+  await renderTesterApp(<App progressSeed={legacyPassedSeedWithCoins(90)} />);
   openTab("messenger");
 
   tapId("messenger-list-coins");
@@ -163,7 +163,7 @@ test("MC-I1. 목록의 엽전 칩을 누르면 엽전 상점이 서고 닫으면
 // ------------------------------------------------------------------ MC-I2 · 목록 ↔ 방
 
 test("MC-I2. 열린 줄을 누르면 방이 서고 바텀 네비게이션과 전역 머리는 내려간다", async () => {
-  await renderSignedInApp(<App progressSeed={legacyPassedSeed} />);
+  await renderTesterApp(<App progressSeed={legacyPassedSeed} />);
   openTab("messenger");
   expect(screen.getByTestId("ui-lynx-bottom-navigator")).toBeInTheDocument();
 
@@ -177,7 +177,7 @@ test("MC-I2. 열린 줄을 누르면 방이 서고 바텀 네비게이션과 전
 });
 
 test("MC-I2. 잠긴 줄(미나 · 점원)을 눌러도 방은 열리지 않는다", async () => {
-  await renderSignedInApp(<App progressSeed={legacyPassedSeed} />);
+  await renderTesterApp(<App progressSeed={legacyPassedSeed} />);
   openTab("messenger");
 
   tapId(row("mina"));
@@ -189,7 +189,7 @@ test("MC-I2. 잠긴 줄(미나 · 점원)을 눌러도 방은 열리지 않는�
 });
 
 test("MC-I2. 방의 머리 뒤로를 누르면 목록과 바가 다시 서고 탭 표시는 메신저다", async () => {
-  await renderSignedInApp(<App progressSeed={legacyPassedSeed} />);
+  await renderTesterApp(<App progressSeed={legacyPassedSeed} />);
   openTab("messenger");
   tapId(row("owner"));
   expect(screen.getByTestId(roomScreen)).toBeInTheDocument();
@@ -206,7 +206,7 @@ test("MC-I2. 방의 머리 뒤로를 누르면 목록과 바가 다시 서고 �
 
 test("MC-I2. 다시 방을 열고 시스템 뒤로를 누르면 목록이 서고 처리됨으로 응답하며 바가 다시 선다", async () => {
   const host = stubBackHost();
-  await renderSignedInApp(<App progressSeed={legacyPassedSeed} />);
+  await renderTesterApp(<App progressSeed={legacyPassedSeed} />);
   openTab("messenger");
   tapId(row("owner"));
   expect(screen.getByTestId(roomScreen)).toBeInTheDocument();
@@ -223,7 +223,7 @@ test("MC-I2. 다시 방을 열고 시스템 뒤로를 누르면 목록이 서고
 
 test("MC-I2. 방에서 겹침(사이드바)이 열려 있으면 시스템 뒤로는 그 겹침만 닫고 방은 남는다", async () => {
   const host = stubBackHost();
-  await renderSignedInApp(<App progressSeed={legacyPassedSeed} />);
+  await renderTesterApp(<App progressSeed={legacyPassedSeed} />);
   openTab("messenger");
   tapId(row("owner"));
   tapRound("messenger-chat-settings");
@@ -240,7 +240,7 @@ test("MC-I2. 방에서 겹침(사이드바)이 열려 있으면 시스템 뒤로
 });
 
 test("MC-I2. 방에서 돌아와 다른 탭을 눌렀다 메신저로 오면 방이 아니라 목록이 선다", async () => {
-  await renderSignedInApp(<App progressSeed={legacyPassedSeed} />);
+  await renderTesterApp(<App progressSeed={legacyPassedSeed} />);
   openTab("messenger");
   tapId(row("owner"));
   tapRound("messenger-chat-back");
@@ -264,7 +264,7 @@ const shellStyle = () => screen.getByTestId("app-shell").style;
 
 test("MC-I6. 방에서는 셸이 위 인셋만 잡고 아래 · 좌 · 우는 0이다(keyboard-dock)", async () => {
   setHostInsets(ios);
-  await renderSignedInApp(<App progressSeed={legacyPassedSeed} />);
+  await renderTesterApp(<App progressSeed={legacyPassedSeed} />);
   openTab("messenger");
   tapId(row("owner"));
   expect(screen.getByTestId(roomScreen)).toBeInTheDocument();
@@ -277,7 +277,7 @@ test("MC-I6. 방에서는 셸이 위 인셋만 잡고 아래 · 좌 · 우는 0�
 
 test("MC-I6. 방의 학습 키보드 키 줄 묶음은 호스트 인셋의 아래 · 좌 · 우를 이어받는다", async () => {
   setHostInsets(ios);
-  await renderSignedInApp(<App progressSeed={legacyPassedSeed} />);
+  await renderTesterApp(<App progressSeed={legacyPassedSeed} />);
   openTab("messenger");
   tapId(row("owner"));
   // 방은 키보드가 닫힌 채 열리므로 입력 칸을 눌러 학습 키보드를 엽니다.
@@ -294,7 +294,7 @@ test("MC-I6. 방의 학습 키보드 키 줄 묶음은 호스트 인셋의 아�
 
 test("MC-I6. 목록은 padded다 — 셸이 위 · 좌 · 우 인셋을 잡고 바텀 네비게이션이 선다", async () => {
   setHostInsets(ios);
-  await renderSignedInApp(<App progressSeed={legacyPassedSeed} />);
+  await renderTesterApp(<App progressSeed={legacyPassedSeed} />);
 
   openTab("messenger");
 
@@ -307,7 +307,7 @@ test("MC-I6. 목록은 padded다 — 셸이 위 · 좌 · 우 인셋을 잡고 �
 
 test("MC-I6. 방에서 목록으로 돌아오면 셸 좌 · 우 인셋이 다시 잡힌다", async () => {
   setHostInsets(ios);
-  await renderSignedInApp(<App progressSeed={legacyPassedSeed} />);
+  await renderTesterApp(<App progressSeed={legacyPassedSeed} />);
   openTab("messenger");
   tapId(row("owner"));
   expect(shellStyle().paddingLeft).toBe("0px");

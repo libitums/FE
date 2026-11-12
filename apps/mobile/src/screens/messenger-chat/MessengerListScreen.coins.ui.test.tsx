@@ -31,6 +31,8 @@ function mount(coinBalance = 120) {
     onLayerChange: vi.fn<(open: boolean) => void>(),
     notice: null,
     onNoticeShown: vi.fn<() => void>(),
+    access: "open" as const,
+    onSignIn: vi.fn<() => void>(),
   };
   const wallet = createCoinWallet({ earned: coinBalance });
   // 옛 coinBalance와 새 wallet이 한 객체에 함께 든다(스프레드라 어느 쪽 props 모양이든 받는다).

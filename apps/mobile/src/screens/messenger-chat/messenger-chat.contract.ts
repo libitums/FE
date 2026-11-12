@@ -16,6 +16,7 @@ import type { MyMessageCopy, NewFriendCopy, TurnsCopy } from "./messenger-chat-c
 import type { SafetyCopy } from "./safety-copy.contract";
 import type { KeyboardHeightStore, KoreanKeyboardProbe } from "./keyboard-ports";
 import type { MessengerChatExtraCopy } from "./chat-settings.contract";
+import type { MessengerAccessProps } from "./messenger-access";
 import type { ChatListNoticeProps } from "./messenger-list-notice";
 
 /** 「…」 메뉴 항목(고정 순서: ideas · fix · report). */
@@ -174,7 +175,8 @@ export type MessengerListScreenProps = {
   readonly onOpenRoom: (roomId: string) => void;
   readonly onGoToJourney: () => void;
   readonly onLayerChange: (open: boolean) => void;
-} & ChatListNoticeProps;
+} & ChatListNoticeProps &
+  MessengerAccessProps;
 
 export type MessengerChatScreenProps = {
   readonly roomId: string;

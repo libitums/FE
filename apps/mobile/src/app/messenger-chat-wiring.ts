@@ -59,6 +59,11 @@ export type TestStores = {
   readonly unlock: UnlockStore;
   readonly turns: TurnRecordStore;
   readonly now: () => number;
+  /**
+   * 대화 등급을 고정합니다. 메신저는 시험 계정에게만 열리고(ADR-0128) 시험 계정은 무제한이라, 무료 3통 · 엽전 흐름을 앱 단에서
+   * 보는 테스트는 `free`를 넘깁니다. 없으면 시험 계정 표시로 정합니다.
+   */
+  readonly tier?: ChatTier;
 };
 
 /** 해금 기록 저장입니다 — 앱은 기기 저장, 테스트는 메모리(spec §7.2). */
@@ -156,7 +161,7 @@ export function messengerChatWiring(args: MessengerChatWiringArgs): {
       source: messengerChatSource(args.imageUrlOf),
       wallet: messengerChatWallet(args.coinCount ?? 0),
       turns: messengerChatLedger(),
-      tier: isTesterAccessActive() ? "unlimited" : "free",
+      tier: storeOverride?.tier ?? (isTesterAccessActive() ? "unlimited" : "free"),
       now: clockNow,
       onOpenChatRoom: (roomId) => {
         args.dispatch({ type: "push", screen: { name: "messenger-chat", roomId } });

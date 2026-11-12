@@ -50,8 +50,8 @@ export type SettingsScreenProps = {
   readonly onToggleSessionOption: (key: SessionOptionKey, value: boolean) => void;
   /** 행 구성을 고릅니다 — 계정 묶음은 `settingsNavTargetsFor`, 계정 동작은 `accountActionsFor`. */
   readonly account: SettingsAccountState;
-  /** 「Chats」 줄 — 대화 설정 화면을 엽니다(ADR-0126). 분석 이벤트가 없어 내비 대상 목록과 따로 둡니다. */
-  readonly onOpenChatSettings: () => void;
+  /** 「Chats」 줄 — 대화 설정 화면을 엽니다(ADR-0126). 분석 이벤트가 없어 내비 대상 목록과 따로 둡니다. 메신저를 쓸 수 없는 계정(ADR-0128)이면 null — 줄이 없습니다. */
+  readonly onOpenChatSettings: (() => void) | null;
 } & AccountActionsProps;
 
 export type SettingsOpenedEvent = { readonly name: "settings_opened" };

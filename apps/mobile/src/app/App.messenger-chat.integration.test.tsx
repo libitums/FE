@@ -10,6 +10,7 @@ import {
   listRowOrder,
   openTab,
   present,
+  renderTesterApp,
   resetMessengerChatSource,
   tapButtonIn,
   tapId,
@@ -18,7 +19,6 @@ import {
   textOf,
 } from "./test-helpers/messenger-chat-app";
 import { legacyPassedSeed, legacyPassedSeedWithCoins } from "./test-helpers/progress-seed";
-import { renderSignedInApp } from "./test-helpers/signed-in-app";
 
 // `integration` 계층(MC-I3 · MC-I4 · MC-I5): 가짜 출처 싱글턴이 목록 ↔ 방 사이에 상태를 잇는지 봅니다 —
 // 방에서 보낸 글 · 답 · 사진 요청이 목록 줄의 순서 · 미리보기 · activity에 나타나고, 방 지우기가 목록에서 줄을
@@ -48,7 +48,7 @@ afterEach(() => {
 
 /** 가짜 타이머로 부팅해 메신저 탭의 목록까지 갑니다. */
 async function bootToList(coins = 0): Promise<void> {
-  await renderSignedInApp(<App progressSeed={legacyPassedSeedWithCoins(coins)} />, {
+  await renderTesterApp(<App progressSeed={legacyPassedSeedWithCoins(coins)} />, {
     keepFakeTimers: true,
   });
   openTab("messenger");

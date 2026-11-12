@@ -19,7 +19,10 @@ export function companionRoomFor(source: ChatSource, characterId: string): strin
 export function companionPushActions(
   source: ChatSource,
   characterId: string,
+  canOpenChats: boolean,
 ): readonly NavAction[] {
+  // 메신저를 쓸 수 없는 계정(ADR-0128)이면 메신저 탭 루트(그 계정의 안내)에서 멈춥니다 — 방 · 「열 수 없음」 안내를 띄우지 않는다.
+  if (!canOpenChats) return tabRootActions("messenger");
   const roomId = companionRoomFor(source, characterId);
   const next: NavAction =
     roomId === null

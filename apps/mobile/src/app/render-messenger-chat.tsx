@@ -11,7 +11,17 @@ import { ChatSettingsScreen } from "../screens/messenger-chat/ChatSettingsScreen
 import { MessengerChatScreen } from "../screens/messenger-chat/MessengerChatScreen";
 import { MessengerListScreen } from "../screens/messenger-chat/MessengerListScreen";
 import type { MessengerListNotice } from "../screens/messenger-chat/messenger-list-notice";
+import { isTesterAccessActive } from "../lib/tester-access";
+import {
+  messengerAccessOf,
+  type MessengerAccess,
+} from "../screens/messenger-chat/messenger-access";
 import type { ScreenWiring } from "./screen-wiring";
+
+/** 메신저 탭 접근(ADR-0128) — 계정 상태와 시험 계정 표시(ADR-0085, 렌더마다 세션 훅이 맞춘 값)로 정합니다. */
+export function messengerAccessFor(wiring: ScreenWiring): MessengerAccess {
+  return messengerAccessOf(wiring.accountState, isTesterAccessActive());
+}
 
 /** 가입 직후 이름을 아직 모르면(빈 문자열 포함) 학습 메신저와 같이 「나」 문구를 씁니다 — 말풍선 화자는 비면 안 됩니다. */
 function learnerNameOf(wiring: ScreenWiring): string {
@@ -30,6 +40,8 @@ export function renderMessengerList(wiring: ScreenWiring, notice: MessengerListN
       onLayerChange={wiring.onScreenLayerChange}
       notice={notice}
       onNoticeShown={chat.onListNoticeShown}
+      access={messengerAccessFor(wiring)}
+      onSignIn={wiring.onSignIn}
     />
   );
 }

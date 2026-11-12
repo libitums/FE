@@ -113,3 +113,24 @@ test("VB3. 진동이 꺼져 있으면 진동 줄만 꺼짐이고 로마자 줄�
   expect(vibrationCell()).toHaveAttribute("data-checked", "false");
   expect(cell()).toHaveAttribute("data-checked", "true");
 });
+
+test("MA-UI5 메신저를 쓸 수 없는 계정(onOpenChatSettings = null)이면 Chats 줄이 없다(ADR-0128)", () => {
+  render(
+    <SettingsScreen
+      onSelectNavTarget={() => undefined}
+      onOpenChatSettings={null}
+      learnerProfileSummary="Not set"
+      languageSummary="Intermediate English"
+      appVersion={null}
+      sessionOptions={initialSessionOptions}
+      onToggleSessionOption={() => undefined}
+      account="signed-in"
+      onSignIn={() => undefined}
+      onSignOut={() => undefined}
+      onDeleteAccount={() => new Promise<AccountDeletionResult>(() => undefined)}
+      onLayerChange={() => undefined}
+    />,
+  );
+  expect(screen.queryByTestId("ui-lynx-settings-group-item-chats") === null).toBe(true);
+  expect(screen.getByTestId(vibrationItemId)).toBeTruthy();
+});
