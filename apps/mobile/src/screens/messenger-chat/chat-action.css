@@ -1,0 +1,28 @@
+/* 상대의 행동 · 서술 지문(ADR-0137) — 말풍선 없는 회색 기울임 줄. 왼쪽은 상대 말풍선이 시작하는 자리
+   (아바타 sm 32 + 사이 8)에 맞춥니다. */
+.chat-action {
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--libitum-spacing-2);
+  padding-left: calc(var(--libitum-spacing-32) + var(--libitum-spacing-8));
+  padding-right: var(--libitum-spacing-24);
+}
+
+.chat-action-text {
+  white-space: normal;
+  font-style: italic;
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  font-weight: var(--libitum-typography-body-s-font-weight);
+  line-height: var(--libitum-typography-body-s-line-height);
+}
+
+.chat-action-translation {
+  white-space: normal;
+  font-style: italic;
+  color: var(--libitum-color-fg-neutral-subtlest);
+  font-family: var(--libitum-typography-label-s-font-family);
+  font-size: var(--libitum-typography-label-s-font-size);
+  line-height: var(--libitum-typography-label-s-line-height);
+}

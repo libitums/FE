@@ -7,7 +7,11 @@ import {
   createFixtureChatSource,
   type FixtureChatSource,
 } from "../screens/messenger-chat/chat-fixture-source";
+import { loadAuthSession } from "../lib/auth-session";
+import { authUserIdFrom } from "../lib/auth-user-id";
 import { isTesterAccessActive } from "../lib/tester-access";
+import type { ChatRemote } from "../screens/messenger-chat/chat-remote.contract";
+import { companionSeed } from "../screens/messenger-chat/companion-roster";
 import type { ChatFixtureSeed, ChatSource } from "../screens/messenger-chat/chat-source.contract";
 import {
   deviceTurnRecordStore,
@@ -49,6 +53,10 @@ export type MessengerChatWiring = {
 type ImageUrlOf = (relativePath: string) => string | null;
 
 let singleton: FixtureChatSource | null = null;
+/** 지금 출처의 모드 — 「fixture」 또는 「server:<사용자 id>」. 바뀌면 출처를 새로 만듭니다(계정 전환 · 시험 표시). */
+let singletonKey = "";
+/** 서버 모드의 원격 포트입니다(ADR-0137). 앱 진입점이 끼우고, 테스트는 끼우지 않아 늘 가짜 출처입니다. */
+let remoteFactory: (() => ChatRemote) | null = null;
 let latestImageUrlOf: ImageUrlOf | null = null;
 let walletSingleton: SyncedCoinWallet | null = null;
 let ledgerSingleton: TurnLedger | null = null;
@@ -114,6 +122,19 @@ function messengerChatLedger(): TurnLedger {
 /** 테스트만 씁니다 — 다음에 만들 출처의 씨앗입니다(없으면 앱 기본 씨앗). */
 let testSeed: ChatFixtureSeed | undefined;
 
+/** 앱 진입점이 서버 포트를 끼웁니다(ADR-0137). null이면 가짜 출처만 씁니다. */
+export function setMessengerChatRemote(factory: (() => ChatRemote) | null): void {
+  remoteFactory = factory;
+}
+
+/** 로그인한 시험 계정이면 서버 모드(사용자마다), 아니면 가짜 — 메신저는 시험 계정에게만 열립니다(ADR-0128). */
+function sourceKey(): string {
+  if (remoteFactory === null || testSeed !== undefined || !isTesterAccessActive()) return "fixture";
+  const token = loadAuthSession()?.accessToken;
+  const userId = token === undefined ? null : authUserIdFrom(token);
+  return userId === null ? "fixture" : `server:${userId}`;
+}
+
 /**
  * 앱이 쓰는 대화 출처입니다. 처음 부를 때 만들고 이후 같은 것을 돌려줍니다.
  *
@@ -123,11 +144,22 @@ let testSeed: ChatFixtureSeed | undefined;
 export function messengerChatSource(imageUrlOf: ImageUrlOf): ChatSource {
   const replaced = latestImageUrlOf !== null && latestImageUrlOf !== imageUrlOf;
   latestImageUrlOf = imageUrlOf;
+  const key = sourceKey();
+  if (singleton !== null && key !== singletonKey) {
+    singleton.dispose();
+    singleton = null;
+  }
   if (singleton === null) {
+    singletonKey = key;
+    const remote = key === "fixture" || remoteFactory === null ? null : remoteFactory();
     singleton = createFixtureChatSource({
       imageUrlOf: (relativePath) => latestImageUrlOf?.(relativePath) ?? null,
       unlocked: [...messengerUnlockStore().read()],
-      ...(testSeed === undefined ? {} : { seed: testSeed }),
+      ...(remote === null
+        ? testSeed === undefined
+          ? {}
+          : { seed: testSeed }
+        : { seed: companionSeed(), remote }),
     });
   } else if (replaced) {
     singleton.refreshImages();
@@ -139,6 +171,7 @@ export function messengerChatSource(imageUrlOf: ImageUrlOf): ChatSource {
 export function resetMessengerChatSourceForTests(seed?: ChatFixtureSeed): void {
   singleton?.dispose();
   singleton = null;
+  singletonKey = "";
   latestImageUrlOf = null;
   walletSingleton = null;
   ledgerSingleton = null;

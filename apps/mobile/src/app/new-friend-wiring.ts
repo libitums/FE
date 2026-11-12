@@ -1,6 +1,7 @@
 // 새 친구(인물 해금) 결선입니다(messenger-chat-1-5 spec §7.1). 해금 확정과 시트 모델만 다룹니다 — 순수 판정은
 // `screens/messenger-chat/new-friend.ts`, 저장·출처 싱글턴은 `messenger-chat-wiring.ts`가 쥡니다.
 
+import { COMPANION_CHARACTERS } from "../screens/messenger-chat/companion-roster";
 import { CHARACTER_UNLOCKS, characterUnlockFor } from "../screens/messenger-chat/new-friend";
 import type { NewFriendModel } from "../screens/messenger-chat/new-friend.contract";
 import { currentMessengerChatSource, messengerUnlockStore } from "./messenger-chat-wiring";
@@ -27,9 +28,13 @@ export function newFriendModelOf(characterId: string, wiring: ModelWiring): NewF
   const entry = CHARACTER_UNLOCKS.find((candidate) => candidate.characterId === characterId);
   if (entry === undefined) return null;
   const thread = wiring.messengerChat.source.thread(entry.roomId);
-  const opening = thread?.messages.find(
-    (message) => message.kind === "text" && message.from === "them",
-  );
+  // 서버 방(ADR-0137)은 열기 전엔 비어 있어 인물 표의 첫 말로 시트를 세웁니다.
+  const fromRoster = COMPANION_CHARACTERS.find((c) => c.id === characterId)?.sheetOpening ?? null;
+  const opening =
+    thread?.messages.find((message) => message.kind === "text" && message.from === "them") ??
+    (fromRoster === null
+      ? undefined
+      : ({ id: "sheet", at: 0, kind: "text", from: "them", text: fromRoster } as const));
   const section = wiring.catalogSections.find(
     (candidate) => candidate.kind === "catalog-ready" && candidate.episodeId === entry.episodeId,
   );

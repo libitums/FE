@@ -26,8 +26,12 @@ export type RoomState = {
   /** 캐릭터 글 id만 키 — 내가 남긴 평가(ADR-0129). */
   ratings: Readonly<Record<string, ChatRating>>;
   messages: ChatMessage[];
-  /** 씨앗이 정한 입력 막힘입니다(시각은 만들 때 풀어 둡니다). */
-  readonly inputBlock: ChatInputBlock | null;
+  /** 입력 막힘 — 씨앗이 정하거나(시각은 만들 때 풀어 둡니다) 서버가 보내기를 막았을 때(ADR-0137). */
+  inputBlock: ChatInputBlock | null;
+  /** 서버 모드(ADR-0137): 기록을 읽었는지 · 서버 추천 답변(있으면 씨앗 보기 대신). */
+  remoteHistory: "idle" | "loading" | "loaded";
+  remoteIdeas: readonly ChatReplyIdea[] | null;
+  origin: "local" | "server";
   unread: number;
   settings: ChatRoomSettings;
   ideaIndex: number;
@@ -70,6 +74,9 @@ export function newRoomState(
     ratings: {},
     messages,
     inputBlock,
+    remoteHistory: "idle",
+    remoteIdeas: null,
+    origin: "local",
     unread: seed.unread,
     settings: { ...seed.settings },
     ideaIndex: 0,
@@ -87,6 +94,7 @@ export function newRoomState(
 export const isOpenAccess = (room: RoomState): boolean => room.access.kind === "open";
 
 export function ideasOf(room: RoomState): readonly ChatReplyIdea[] {
+  if (room.remoteIdeas !== null) return room.remoteIdeas;
   const sets = room.seed.ideaSets;
   return sets[room.ideaIndex % Math.max(sets.length, 1)] ?? [];
 }
@@ -154,6 +162,7 @@ export function threadOf(
       counterpart: summaryOf(room, resolveUrl).counterpart,
       messages: room.messages,
       typing: room.typing,
+      origin: room.origin,
       awaitingReply: room.pendingReplies > 0,
       ideas: replyIdeas ? ideasOf(room) : [],
       settings: room.settings,

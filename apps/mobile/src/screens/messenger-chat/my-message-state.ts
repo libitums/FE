@@ -12,7 +12,8 @@ export type MyBubbleView =
   | { readonly kind: "fix-loading" }
   | { readonly kind: "fix"; readonly correction: ChatCorrection };
 export type BubbleToolRow = {
-  readonly meaning: "on" | "off";
+  /** hidden = 서버 모드(ADR-0137) — 내 글 뜻(🌐)을 서버가 주지 않아 버튼을 두지 않습니다(사용자 결정 2026-11-12). */
+  readonly meaning: "on" | "off" | "hidden";
   readonly fix:
     | { readonly kind: "hidden" }
     | {
@@ -55,10 +56,14 @@ export function myBubbleViewOf(open: BubbleTool | undefined, notes: ChatMyNotes)
   return { kind: "closed" };
 }
 
-export function bubbleToolRowOf(open: BubbleTool | undefined, notes: ChatMyNotes): BubbleToolRow {
+export function bubbleToolRowOf(
+  open: BubbleTool | undefined,
+  notes: ChatMyNotes,
+  meaningTool: "shown" | "hidden" = "shown",
+): BubbleToolRow {
   const { correction } = notes;
   return {
-    meaning: open === "meaning" ? "on" : "off",
+    meaning: meaningTool === "hidden" ? "hidden" : open === "meaning" ? "on" : "off",
     fix:
       correction.kind === "available"
         ? {

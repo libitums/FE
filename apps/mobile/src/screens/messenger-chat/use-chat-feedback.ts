@@ -31,7 +31,11 @@ export function resendIfReady({ roomId, source, authorizeSend }: ResendInput, me
 export function useChatFeedback(input: UseChatFeedbackInput): ChatRowFeedback {
   const { roomId, source, thread, dispatch } = input;
   return {
-    resendableId: thread === null ? null : resendableMessageId(thread, thread.awaitingReply),
+    // 서버 모드는 아직 다시 보내기를 서버(replaces_message_id)에 잇지 않아 단추를 두지 않습니다(리뷰 W6, 3단계).
+    resendableId:
+      thread === null || thread.origin === "server"
+        ? null
+        : resendableMessageId(thread, thread.awaitingReply),
     latestReplyId: thread === null ? null : latestReplyId(thread),
     onResend: (messageId) => {
       "background only";

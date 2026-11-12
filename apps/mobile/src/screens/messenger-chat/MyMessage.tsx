@@ -203,7 +203,9 @@ export function MyMessageRow({
   const label = myBubbleLabelOf(speaker, ko, view, copy.loadingMeaning);
   const toolRow = (
     <Tools>
-      <MeaningToolButton state={tools.meaning} onTap={() => onToggle("meaning")} />
+      {tools.meaning === "hidden" ? null : (
+        <MeaningToolButton state={tools.meaning} onTap={() => onToggle("meaning")} />
+      )}
       {tools.fix.kind === "shown" ? (
         <FixToolButton state={tools.fix.state} dot={tools.fix.dot} onTap={() => onToggle("fix")} />
       ) : null}

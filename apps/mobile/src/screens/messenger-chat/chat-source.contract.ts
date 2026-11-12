@@ -22,6 +22,7 @@ export type ChatMessage =
       readonly from: "me" | "them";
       readonly text: ChatText;
     })
+  | (ChatMessageBase & { readonly kind: "action"; readonly text: ChatText })
   | (ChatMessageBase & { readonly kind: "photo-pending" })
   | (ChatMessageBase & { readonly kind: "photo"; readonly imageUrl: string | null })
   | (ChatMessageBase & { readonly kind: "voice-pending" })
@@ -37,7 +38,11 @@ export type ChatMessage =
     });
 
 /** 로그 가운데 회색 줄로 서는 고지입니다(ADR-0125). 문구는 앱이 가집니다. */
-export type ChatNoticeKind = "ai-disclosure" | "minor-notice" | "break-reminder";
+export type ChatNoticeKind =
+  | "ai-disclosure"
+  | "minor-notice"
+  | "break-reminder"
+  | ChatSendFailureNotice;
 
 /** 위기 안내 카드의 기관 하나입니다. 지역에 맞춘 목록은 서버가 줍니다 — 없는 칸은 null. */
 export type ChatCrisisResource = {
@@ -110,6 +115,7 @@ export type ChatThread = {
   readonly counterpart: ChatCounterpart;
   readonly messages: readonly ChatMessage[];
   readonly typing: boolean;
+  readonly origin: "local" | "server"; // 서버 모드(ADR-0137): 내 글 뜻(🌐) 없음 · 새 추천 답변은 판이 저절로 열림.
   /** 보낸 글의 답을 기다리는 중(입력 중 점 전 포함) — 다시 보내기 판정(ADR-0129). */
   readonly awaitingReply: boolean;
   readonly ideas: readonly ChatReplyIdea[];
@@ -134,6 +140,7 @@ export type ChatSnapshot = {
 export type ChatMeaning = { readonly romanization: string; readonly meaning: string };
 // 교정 카드 · 평가 타입(ADR-0129)은 `chat-feedback.contract.ts`에 둡니다.
 import type { ChatCorrection, ChatCorrectionChange, ChatRating } from "./chat-feedback.contract";
+import type { ChatRemote, ChatSendFailureNotice } from "./chat-remote.contract";
 export type { ChatCorrection, ChatCorrectionChange, ChatRating };
 export type ChatLoad<T> =
   | { readonly status: "idle" }
@@ -289,4 +296,5 @@ export type FixtureChatSourceOptions = {
   readonly timers?: ChatTimers;
   /** 처음부터 열린 채 시작할 인물 id(재시작 뒤 모습). */
   readonly unlocked?: readonly string[];
+  readonly remote?: ChatRemote; // 서버 모드(ADR-0137) — 방 기록 · 첫 인사 · 보내기를 서버에서.
 };

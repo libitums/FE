@@ -13,6 +13,7 @@ import {
   VoiceBubble,
   VoicePendingBubble,
 } from "./ChatMediaBubbles";
+import { ChatActionRow } from "./ChatActionRow";
 import { RatingButtons, RatingResult } from "./RatingRow";
 import { MyMessageRow } from "./MyMessage";
 import { ChatCrisisCard, ChatNoticeRow } from "./SafetyParts";
@@ -75,7 +76,7 @@ export function ChatMessageRow({
               ko={message.text.ko}
               speaker={learnerName}
               view={myBubbleViewOf(open, notes)}
-              tools={bubbleToolRowOf(open, notes)}
+              tools={bubbleToolRowOf(open, notes, thread.origin === "server" ? "hidden" : "shown")}
               motion={motion}
               onToggle={(tool) => onToggleTool(message.id, tool)}
               onResend={
@@ -105,6 +106,8 @@ export function ChatMessageRow({
           )}
         </ChatIncomingRow>
       );
+    case "action":
+      return <ChatActionRow text={message.text} name={counterpart.name} />;
     case "photo-pending":
       return (
         <ChatIncomingRow avatar={avatar} testId={ids.incoming}>

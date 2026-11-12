@@ -44,7 +44,12 @@ import { productEventSinks } from "../lib/airbridge-events-module";
 import { productAnalyticsSession } from "../lib/posthog-client";
 import { isTesterAccessActive } from "../lib/tester-access";
 import { withoutTesterEvents, withoutTesterIdentify } from "../lib/tester-tracking";
+import { companionRemote } from "../lib/companion-api";
 import { App } from "./App";
+import { setMessengerChatRemote } from "./messenger-chat-wiring";
+
+// 메신저 서버 모드(ADR-0137) — 로그인한 시험 계정의 대화는 컴패니언 서버로. 테스트는 이 진입점을 지나지 않아 가짜 출처입니다.
+setMessengerChatRemote(companionRemote);
 
 // 메인 스레드에서는 SDK 모듈이 번들에서 빠집니다(ADR-0029). 두 스레드의 첫 렌더가
 // 다른 sink를 받지만 sink는 이벤트 핸들러(background)에서만 불리므로 그려지는 것은 같습니다.

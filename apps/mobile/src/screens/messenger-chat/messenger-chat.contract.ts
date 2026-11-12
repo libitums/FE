@@ -266,6 +266,7 @@ export const messengerChatTestIds = {
   storyPointSheet: room("story-point"),
   storyPointOption: (id: string): string => room(`story-point-${id}`),
   notice: room("notice"),
+  action: room("action"),
   crisis: room("crisis"),
   crisisCall: room("crisis-call"),
   crisisWeb: room("crisis-web"),

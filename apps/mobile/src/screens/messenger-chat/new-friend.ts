@@ -28,6 +28,28 @@ export const CHARACTER_UNLOCKS: readonly CharacterUnlockEntry[] = [
     sceneImagePath: "content/images/u03-mina/pre-1.webp",
     faceImagePath: "content/images/profiles/mina-casual.webp",
   },
+  // 서버 인물(ADR-0137, 통합 결정 4) — 그 인물이 처음 상대역인 에피소드의 막간.
+  {
+    episodeId: "u02-checkin",
+    characterId: "yoonkyung",
+    roomId: "yoonkyung",
+    sceneImagePath: "content/images/u02-checkin/pre-1.webp",
+    faceImagePath: "content/images/profiles/yoonkyung-casual.webp",
+  },
+  {
+    episodeId: "u04-directions",
+    characterId: "doyun",
+    roomId: "doyun",
+    sceneImagePath: "content/images/u04-directions/pre-1.webp",
+    faceImagePath: "content/images/profiles/doyun-casual.webp",
+  },
+  {
+    episodeId: "u07-jaemin",
+    characterId: "jaemin",
+    roomId: "jaemin",
+    sceneImagePath: "content/images/u07-jaemin/pre-1.webp",
+    faceImagePath: "content/images/profiles/jaemin-casual.webp",
+  },
 ];
 
 /** 맵으로 돌아와 끝낸 유닛의 발자국 움직임이 끝난 뒤(표준 2000 ms) · 움직임 줄이기 0.6 s. */

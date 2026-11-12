@@ -22,15 +22,37 @@ const muted = color.fg["neutral-muted"];
 
 type ChatNoticeRowProps = { readonly notice: ChatNoticeKind; readonly name: string };
 
+function noticeText(
+  notice: ChatNoticeKind,
+  name: string,
+  copy: ReturnType<typeof useUiCopy>["messengerChat"]["safety"]["notice"],
+  remote: ReturnType<typeof useUiCopy>["messengerChat"]["remote"],
+): string {
+  switch (notice) {
+    case "ai-disclosure":
+      return copy.aiDisclosure(name);
+    case "minor-notice":
+      return copy.minorNotice;
+    case "break-reminder":
+      return copy.breakReminder(name);
+    case "no-credits":
+      return remote.noCredits(name);
+    case "not-available":
+      return remote.notAvailable(name);
+    case "send-failed":
+      return remote.sendFailed;
+    default: {
+      const unreachable: never = notice;
+      return unreachable;
+    }
+  }
+}
+
 // 로그 가운데 회색 줄입니다(ADR-0125) — AI 고지 · 미성년자 고지 · 휴식 알림. 문장 하나로 읽힙니다.
 export function ChatNoticeRow({ notice, name }: ChatNoticeRowProps): ReactNode {
-  const copy = useUiCopy().messengerChat.safety.notice;
-  const text =
-    notice === "ai-disclosure"
-      ? copy.aiDisclosure(name)
-      : notice === "minor-notice"
-        ? copy.minorNotice
-        : copy.breakReminder(name);
+  const chatCopy = useUiCopy().messengerChat;
+  const copy = chatCopy.safety.notice;
+  const text = noticeText(notice, name, copy, chatCopy.remote);
   const icon = notice === "ai-disclosure" ? info : notice === "break-reminder" ? clock : null;
   return (
     <view

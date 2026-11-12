@@ -123,4 +123,9 @@ export const messengerChatExtraEn: MessengerChatExtraCopy = {
       close: "Close",
     },
   },
+  remote: {
+    noCredits: (name) => `You're out of credits to chat with ${name}.`,
+    notAvailable: (name) => `You can't chat with ${name} yet.`,
+    sendFailed: "Message not sent. Please try again.",
+  },
 };

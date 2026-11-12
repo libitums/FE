@@ -122,4 +122,9 @@ export const messengerChatExtraId: MessengerChatExtraCopy = {
       close: "Tutup",
     },
   },
+  remote: {
+    noCredits: (name) => `Kredit untuk mengobrol dengan ${name} sudah habis.`,
+    notAvailable: (name) => `Kamu belum bisa mengobrol dengan ${name}.`,
+    sendFailed: "Pesan tidak terkirim. Coba lagi.",
+  },
 };
