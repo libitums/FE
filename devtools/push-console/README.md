@@ -1,6 +1,6 @@
 # 푸시 콘솔 (로컬)
 
-학습자를 진행 단계로 나눠 맞춤 알림을 보내고, **대조군과 비교해 알림마다 복귀를 재는** 로컬 도구입니다([ADR-0129](../../docs/adr/0129-push-console-segment-campaigns.md)).
+학습자를 진행 단계로 나눠 맞춤 알림을 보내고, **대조군과 비교해 알림마다 복귀를 재는** 로컬 도구입니다([ADR-0130](../../docs/adr/0130-push-console-segment-campaigns.md)).
 서버에 올리지 않습니다 — 이 기기에서 `pnpm push:console`로 띄우고, 발송은 기존 Edge Function `send-push`의 `announcement`(사용자 id 목록)를 부릅니다.
 
 ```sh

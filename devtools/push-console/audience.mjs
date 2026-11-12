@@ -159,7 +159,7 @@ export const copyFor = (copy, lang) =>
 
 /** 한 사람에게 갈 제목 · 본문입니다. */
 export function messageFor(learner, copy) {
-  const chosen = copyFor(copy, learner.lang);
+  const chosen = copyFor(copy ?? {}, learner.lang);
   const vars = {
     name: learner.name,
     episode: learner.episodeTitle ?? "",
@@ -168,9 +168,9 @@ export function messageFor(learner, copy) {
     steps: learner.remainingSteps,
   };
   return {
-    lang: copy[learner.lang]?.title ? learner.lang : "en",
-    title: renderCopy(chosen.title, vars),
-    body: renderCopy(chosen.body, vars),
+    lang: copy?.[learner.lang]?.title ? learner.lang : "en",
+    title: renderCopy(chosen?.title ?? "", vars),
+    body: renderCopy(chosen?.body ?? "", vars),
   };
 }
 

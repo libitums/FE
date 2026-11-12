@@ -247,7 +247,7 @@ async function send(input) {
       });
       if (result.ok) {
         for (const key of ["devices", "sent", "failed", "removed"])
-          campaign.totals[key] += result.summary[key] ?? 0;
+          campaign.totals[key] += result.summary?.[key] ?? 0;
       } else campaign.totals.failedCalls += 1;
     }
   }

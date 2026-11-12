@@ -229,7 +229,9 @@ export function validateRecommendations(output) {
       maxIdleHours:
         raw.maxIdleHours === null || raw.maxIdleHours === undefined
           ? null
-          : Math.max(0, Math.round(Number(raw.maxIdleHours))),
+          : Number.isFinite(Number(raw.maxIdleHours))
+            ? Math.max(0, Math.round(Number(raw.maxIdleHours)))
+            : null, // 숫자가 아니면 「제한 없음」 — 0으로 두면 아무도 받지 않는다
       localHours: hours && hours.every((hour) => hour >= 0 && hour <= 24) ? hours : null,
       holdoutPercent: HOLDOUT_CHOICES.includes(raw.holdoutPercent) ? raw.holdoutPercent : 20,
       copy,

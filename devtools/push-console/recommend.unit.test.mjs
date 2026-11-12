@@ -152,3 +152,11 @@ test("PC-RC6. 문구 B(캐릭터 톤)가 있으면 변형 둘, 없으면 A 하�
     /캐릭터 톤/,
   );
 });
+
+test("PC-RC7. 숫자가 아닌 최대 쉰 시간은 0이 아니라 「제한 없음」이다(리뷰 지적)", () => {
+  const [item] = validateRecommendations({
+    recommendations: [{ ...good, maxIdleHours: "a lot" }],
+    notes: "",
+  }).items;
+  assert.equal(item.maxIdleHours, null);
+});

@@ -178,7 +178,8 @@ export async function posthogReturns(config, userIds, sentAtMs, { fetchImpl = fe
       },
     );
     if (!response.ok) throw new Error(`PostHog 질의 실패 ${response.status}`);
-    const { results = [] } = await response.json();
+    const data = await response.json();
+    const results = Array.isArray(data?.results) ? data.results : [];
     for (const [id, first, tap] of results) {
       const tapMs = hogqlTimeMs(tap);
       result.set(id, {

@@ -100,3 +100,16 @@ test("PC-IO5. PostHog 키가 없으면 null, 있으면 사람마다 첫 이벤�
   );
   assert.ok(!sentQuery.includes("DROP"));
 });
+
+test("PC-IO6. PostHog 응답에 results가 없거나 배열이 아니면 빈 결과다(리뷰 지적)", async () => {
+  const id = "00000000-0000-4000-8000-000000000001";
+  for (const body of [{}, { results: null }, { results: "x" }]) {
+    const result = await posthogReturns(
+      { posthogPersonalApiKey: "p", posthogProjectId: "1", posthogHost: "https://ph" },
+      [id],
+      0,
+      { fetchImpl: async () => ({ ok: true, json: async () => body }) },
+    );
+    assert.equal(result.size, 0);
+  }
+});

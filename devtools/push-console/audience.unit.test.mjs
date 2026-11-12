@@ -258,3 +258,9 @@ test("PC-A9. 문구 변형 — 받는 사람만 A · B로 나뉘고, 대조군�
     /^문구 B:/,
   );
 });
+
+test("PC-A10. 문구가 비어 있어도 messageFor는 던지지 않는다(리뷰 지적)", () => {
+  const learner = fixture()[0];
+  assert.deepEqual(messageFor(learner, undefined), { lang: "en", title: "", body: "" });
+  assert.deepEqual(messageFor(learner, {}), { lang: "en", title: "", body: "" });
+});

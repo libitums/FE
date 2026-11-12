@@ -1,4 +1,4 @@
-# ADR-0129 — 로컬 푸시 콘솔: 진행 단계별 맞춤 알림 · 대조군으로 알림마다 복귀 측정
+# ADR-0130 — 로컬 푸시 콘솔: 진행 단계별 맞춤 알림 · 대조군으로 알림마다 복귀 측정
 
 - 상태: **채택 — 도구.** 첫 실제 발송 전이다.
 - 날짜: 2026-11-12
@@ -82,7 +82,7 @@
 - 영어 외 기본 문구는 원어민 확인 전 초안이다.
 
 ## 테스트
-- unit PC-S1 ~ S11(`segments.unit.test.mjs`) · PC-A1 ~ A9(`audience.unit.test.mjs`) · PC-RC1 ~ RC6(`recommend.unit.test.mjs`) · PC-R1 ~ R6(`results.unit.test.mjs`) · PC-IO1 ~ IO5(`sources.unit.test.mjs`) — `pnpm test:push-console`(`test:rest`에 포함).
+- unit PC-S1 ~ S11(`segments.unit.test.mjs`) · PC-A1 ~ A10(`audience.unit.test.mjs`) · PC-RC1 ~ RC7(`recommend.unit.test.mjs`) · PC-R1 ~ R6(`results.unit.test.mjs`) · PC-IO1 ~ IO6(`sources.unit.test.mjs`) — `pnpm test:push-console`(`test:rest`에 포함).
 - 운영 데이터 읽기 확인: 콘솔을 띄워 세그먼트 수 · 대상 계산 · 미리보기를 봤다(발송 없음).
 
 ## 재검토 조건

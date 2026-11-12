@@ -997,8 +997,15 @@
             body === undefined ? {} : { "Content-Type": "application/json", "X-Push-Console": "1" },
           body: body === undefined ? undefined : JSON.stringify(body),
         });
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error || response.statusText);
+        // 서버가 JSON이 아닌 오류(HTML · 빈 본문)를 내도 파싱 오류 대신 상태를 보여 줍니다.
+        let data = {};
+        try {
+          data = await response.json();
+        } catch {
+          data = {};
+        }
+        if (!response.ok)
+          throw new Error(data.error || `${response.status} ${response.statusText}`);
         return data;
       }
 
@@ -1654,7 +1661,7 @@
         const y = (value) => height - pad.bottom - (value / maxY) * (height - pad.top - pad.bottom);
         const line = (key, color) =>
           `<polyline fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round" points="${points
-            .filter((point) => point[key] !== null)
+            .filter((point) => point[key] != null)
             .map((point) => `${x(point.x).toFixed(1)},${y(point[key]).toFixed(1)}`)
             .join(" ")}" />`;
         const ticksX = (curve.unit === "hour" ? [0, 12, 24, 36, 48, 60, 72] : [0, 1, 2, 3])
@@ -1741,7 +1748,7 @@
               (batch) =>
                 `<tr><td><div class="t-label-l">${esc(batch.title)}</div><div class="t-body-s muted">${esc(batch.body)}</div></td><td class="num">${batch.users}</td><td class="t-body-s">${
                   batch.result?.ok
-                    ? `기기 ${batch.result.summary.devices} · 성공 ${batch.result.summary.sent} · 실패 ${batch.result.summary.failed}`
+                    ? `기기 ${batch.result.summary?.devices ?? 0} · 성공 ${batch.result.summary?.sent ?? 0} · 실패 ${batch.result.summary?.failed ?? 0}`
                     : `<span class="error-text">${esc(batch.result?.error ?? batch.result?.status)}</span>`
                 }</td></tr>`,
             )
