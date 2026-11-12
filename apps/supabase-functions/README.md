@@ -1,7 +1,7 @@
 # @libitums/supabase-functions
 
-Supabase Edge Function 앱이다. 함수는 둘 — `delete-account`와 `send-push`(서버 푸시, 아래 「send-push」 ·
-[ADR-0034](../../docs/adr/0034-server-push-notifications.md)). 먼저 `delete-account` — 로그인한 사용자가 자기 계정을 지운다
+Supabase Edge Function 앱이다. 함수는 넷 — `delete-account`, `send-push`(서버 푸시, 아래 「send-push」 ·
+[ADR-0034](../../docs/adr/0034-server-push-notifications.md)), `chat-send` · `companion-proactive`(AI 컴패니언 턴 · 선톡, 아래 「AI 컴패니언」). 먼저 `delete-account` — 로그인한 사용자가 자기 계정을 지운다
 (Apple 사용자는 Apple 토큰 철회까지). 결정과 HTTP 계약(판정 순서 · 상태 코드)은
 [ADR-0032](../../docs/adr/0032-account-sign-out-and-deletion.md) D1~D3, 타입은
 `supabase/functions/_shared/delete-account.contract.ts`가 정본이다.
@@ -201,3 +201,393 @@ Firebase 프로젝트에 Android 앱을 등록하고 FCM HTTP v1 API 권한이 �
   ② `create extension if not exists pg_cron;` 뒤 예약 SQL 1회 ③ 랜딩 배포. ①이 없으면 수집 요청이 404로 조용히 버려진다(체험은 그대로).
 - 개인정보처리방침에 붙일 문구 초안: [`docs/specs/web-trial-speech-samples-privacy.md`](../../docs/specs/web-trial-speech-samples-privacy.md)(사용자가 Notion에 반영).
 - 남은 위험: 사전 등록 표와 같이 빈도 제한 · 봇 막기가 없다. 사용자가 말로 개인정보를 말하면 글자로 남는다(90일 뒤 삭제).
+
+## AI 컴패니언 — chat-send · companion-proactive (M1 ~ M4)
+
+턴 하나를 SSE로 돌려주는 `chat-send`, 선톡을 만드는 `companion-proactive`, 그 밑의 DB 함수다(LLM 한 단계 평가 창구 `companion-eval`은 아래 따로). 계약은 `packages/companion-contract`
+(사본 `_shared/companion-contract/`), 결정은 [ADR-0131](../../docs/adr/0131-companion-schema.md) · [0132](../../docs/adr/0132-companion-contract-package.md) ·
+[0133](../../docs/adr/0133-companion-public-function-access.md), 명세는 `docs/specs/ai-companion-api.md`.
+
+| 마이그레이션 | 내용 |
+|---|---|
+| `20261108120000_companion_foundation.sql` (M0) | `companion` 스키마 · 학습 표현 · 컴패니언 프로필 |
+| `20261109130000_companion_chat_core.sql` (M1) | 캐릭터 · 대화 · 메시지 · 고지 · 이용 시간 · 판정 · 신고, 앱용 · 운영 조회 함수 |
+| `20261110120000_companion_feedback.sql` (M2) | 피드백 표 `corrections` · 메시지 목록에 피드백 |
+| `20261111120000_companion_cast_memory.sql` (M3) | 설정 한 행 `companion.settings` · 페르소나 다섯 · 장기 메모리 · 반복 위반 · 선톡 · 요약 · 운영자 함수 |
+| `20261112120000_companion_credits.sql` (M4) | 지갑 · 원장 · 예약 · 체험 사용량 · 티어, 지급 · 소멸 · 정리 · 조회 |
+| `20261113120000_companion_turn_v2.sql` | 판정 · 시작 · 끝을 M2 ~ M4까지 합친 판 |
+| `20261114120000_companion_inspect_docs.sql` | 운영 조회 `companion_inspect_characters()` · `companion_inspect_settings()`(문서 화면) · 덕수쌤 `banmalFeedback: correction` |
+| `20261115120000_companion_proactive_prefs.sql` | 선톡 빈도 유저 설정(off · daily1 · daily2) · 선호 시각 · 시간대 · 조용한 시간, 앱 프로필 · 운영자 함수 확장 |
+| `20261116120000_companion_feedback_card.sql` | 피드백 고정 카드 — `corrections.card` 열 · `correction_json`(옛 행은 읽을 때 카드로) · `companion_finish_turn` 피드백 저장 |
+| `20261117120000_companion_refusal_memory_cap.sql` | 성격대로 거절 — `companion_turn_status` · 페르소나 `refusalLines`, 기억 상한 — `settings.memory_cap` · `shared_memory_cap` · `memories.user_edited` · `companion_add_memories` 지우기 · `companion_list_memories` `{ memories, count, cap, full }` |
+| `20261118120000_companion_reply_suggestions.sql` | 추천 답변 칩 — `messages.suggestions` · `profiles.reply_suggestions` 열, `companion_suggest_context` · `companion_save_suggestions`, 앱 프로필 · 운영자 함수 확장 |
+| `20261119120000_companion_auto_suggestions.sql` | 추천 답변 칩 자동 — `companion_turn_gate`가 `replySuggestions`를 돌려준다 · 메시지 목록(`message_json`)에 `suggestions` |
+| `20261120120000_companion_turn_cost.sql` | 턴 비용 · 지난 대화 — `companion_begin_turn`의 지난 대화를 마지막 요약 뒤 메시지로, 기억 묶음 `settings.memory_every` · `conversations.memory_extracted_until` · `companion_memory_source` · `companion_mark_memories` |
+| `20261121110000_companion_suggestion_feedback.sql` | 칩을 그대로 보낸 메시지는 피드백 건너뛰기 — `corrections.status`에 `skipped` · `correction_json`의 `reason` · `companion_turn_status`의 `latestSuggestions` |
+| `20261121120000_companion_greeting.sql` | 첫 인사 — `messages.origin`에 `greeting` · 페르소나 `greetingLines` · `companion_greet_context` · `companion_save_greeting` |
+| `20261122120000_companion_suggestion_v2.sql` | 칩 2판 — `settings.suggestions_enabled` · `suggestion_display_max` · `companion.choice_sets` · `companion_turn_status` 칩 셋 · `companion_record_choice` · `companion_suggestion_stats` · 기억 원문의 `inputSource` · 1판 의도 이름 바꾸기, 첫 인사만 있는 대화의 선톡 제외 |
+| `20261123120000_companion_quality.sql` | 품질 보완 — 답 없는 선톡(`settings.proactive_unanswered_limit` · `proactive_backoff` · `companion.proactive_conversation_skip_reason`) · 선톡 맥락 · 선톡 칩(`companion_save_proactive`의 `p_suggestions`), 기억 고치기 · 잊기(`companion_apply_memory_ops` · `memories.history` · `updated_at` · `deleted_reason`), 쉬는 대화의 기억(`settings.memory_flush_idle` · `companion_memory_flush_candidates` · `companion_memory_source(…, p_flush)`), 요약 원문의 `inputSource` |
+| `20261124120000_companion_ratings_resend.sql` | 답변 평가 — `companion.message_ratings` · `companion_rate_message`(앱) · `companion_operator_rate_message`(플레이그라운드) · 메시지 줄의 `rating` · `companion_rating_stats`, 고쳐서 다시 보내기 — `companion_begin_replacement`(이전 턴 숨기기 + 시작, 막히면 되돌림) · 메시지 목록에서 고쳐서 숨긴 턴 빼기 · 칩 지표에서도 빼기 |
+| `20261125120000_companion_learning.sql` | 학습 표현 넣기 — `settings.learning_*`(켜기 · 최소 간격 · 시작 확률 · 강제 턴 · 하루 상한) · `companion.user_expressions`(유저 × 표현: 노출 · 유도 · 칩 · 산출 횟수와 시각) · `companion_record_learning` · `companion_learning_context`가 유저 기록 · 낸 에피소드 · 넣기 설정을 더 줌 · 카드의 `learnedUsed` · `companion_learning_stats` |
+| `20261126120000_companion_learning_scope.sql` | 배운 표현 범위 — `profiles.learning_scope` · `learning_units`, `companion.episodes` · `companion.sync_episodes`, `companion_learning_scope` · `companion_set_learning_scope`(앱) · `companion_operator_learning_scope` · `companion_operator_set_learning_scope`(플레이그라운드), `companion_learning_context`가 범위를 따르고 `scope` 를 더 줌 |
+
+통합 테스트 CF1 ~ CF11 · CH1 ~ CH10 · TV1 ~ TV13 · ID1 ~ ID3 · PP1 ~ PP9 · RM1 ~ RM8 · RS1 ~ RS8 · AS1 ~ AS3 · TC1 ~ TC4 · SN1 ~ SN2 · GR1 ~ GR4 · SV1 ~ SV6 · QL1 ~ QL6 · RR1 ~ RR6 · LE1 ~ LE4, 함수 단위 테스트 CS1 ~ CS39 · SG · CE · BR · LL · EV · FB · SF · RF · SU · GT · PR · LN · LM.
+
+**턴 흐름** — 판정(시험 계정 · 티어 · 연령 · 일시 차단 · 이용 시간 · 멱등) → 시작(체험 · 크레딧 예약 + 유저 메시지 저장, 한 트랜잭션) →
+SSE → 입력 검사 · 메인 답변 · 피드백을 동시에 → 위기(`crisis`) · 입력 차단(단계에 따라 성격대로 거절 또는 `guardrail_blocked`, 아래) / 조각(`delta`, 미성년자 · 나이 모름은 출력 검사 뒤) ·
+교정(`correction`) → 답 조각이 다 모이면 L1 번역(`translation`)과 칩 스위치가 켜졌으면 추천 답변 칩(`suggestions`)을 남은 기다림과 동시에 → 끝(피드백 · 친밀도 → 말투 · 화제 · 제재 · 예약 확정/해제, 한 트랜잭션) → `state` · `done` → 스트림을 닫고 칩 저장 · 기억 묶음(유저 메시지가 `memory_every`개 모였을 때) · 요약(아래 「턴 비용 · 지난 대화」).
+
+**값을 바꾸는 곳** — 단가 · 체험 수 · 말투 문턱 · 선톡 공백 · 제재 횟수 같은 값(PRD §8 C · O1 ~ O4 초안)은 `companion.settings` 한 행이다.
+**피드백 방식 기본값 — 결정: separate (2026-11-09, PRD O5).** 프로필 `feedback_mode`가 비면 `separate`(교정은 따로 오고 답은 고치지 않는다).
+SQL 편집기에서 `update companion.settings set trial_limit = 30;`처럼 바꾸면 배포 없이 다음 턴부터 적용된다. `testers_only`가 참이면(기본)
+`duru_tester` 계정만 쓴다.
+
+**아직 없는 것** — 선톡 푸시(`send-push`에 컴패니언 목적지 필요 — 메시지는 저장된다) · 성인 턴의 사후 출력 검사 작업 · 의미 검색(pgvector — 임베딩 모델 미정이라 최근 기억을 넣는다) ·
+결제(영수증 검증 · 웹 결제 — 결제 작업이 `companion_grant_credits` · `companion_set_entitlement`를 부른다) · 스포일러 게이트(해금 에피소드 밖 서사 차단은 프롬프트 지시만).
+
+**턴 비용 · 지난 대화(20261120).**
+
+- **지난 대화 = 마지막 요약 뒤 메시지 전부**(`companion_begin_turn`, 상한 `p_history_limit` 100 — 요약이 계속 실패할 때만 닿는다). 요약은 그대로
+  `companion_summary_source(p_keep 20)` + `settings.summary_after`(30)라, 지난 대화는 20개에서 49개까지 **뒤로 붙기만 하다가** 50개에 닿으면 오래된 30개가
+  요약되어 빠진다. 전에는 최근 20개 고정 창이라 창 밖 ~ 요약 사이(최대 29개 — 약 15턴)가 원문에도 요약에도 없었고, 창이 매 턴 밀려 지난 대화의 캐시가 맞지 않았다.
+- **답 모델 캐시** — 시스템 앞부분(규칙 · 페르소나)과 **지난 대화의 마지막 메시지**에 캐시 표시. 이번 턴 지시(화제 전환 · 학습 표현 삽입, `companion-branching.ts`)는
+  시스템 프롬프트가 아니라 유저 말 뒤의 `role: "system"` 메시지(`ReplyRequest.directive`)라 앞부분을 바꾸지 않는다. 거절 지시 · 선톡 지시는 그대로 시스템에 있다(드물다).
+- **구조화 호출 캐시** — 검사 · 피드백 · 번역 · 기억 · 칩의 시스템 글에 캐시 표시. Claude 5 세대의 캐시 최소 길이(512토큰)보다 짧은 글(번역 등)은 표시가 있어도
+  캐시되지 않을 뿐 오류는 없다.
+- **기억 묶음** — 기억 추출은 턴마다가 아니라 `conversations.memory_extracted_until` 뒤의 정상 유저 메시지가 `settings.memory_every`(기본 5)개 모이면 한 번
+  (`companion_memory_source` → 추출(최대 5개) → `companion_add_memories`(멱등 키 = 묶음의 마지막 유저 메시지) → `companion_mark_memories`). 최근 메시지는 어차피
+  지난 대화로 답 모델에 들어가므로 이 캐릭터와의 대화에는 잃는 것이 없고, 다른 캐릭터가 공유 기억을 받는 것만 몇 턴 늦어진다. 기억이 꺼진 판정(미국 12 ~ 15세 ·
+  나이 모름)은 추출하지 않고 표시만 옮긴다. 표시 없는 오래된 대화는 최근 40개만 본다. 턴 뒤 로그 `memory_batch=`.
+- **입력 검사의 맥락** — 바로 앞 캐릭터 말 한 줄을 「맥락일 뿐」으로 함께 준다(「응 할게」처럼 앞 말을 봐야 뜻이 정해지는 글). 판정은 늘 유저 글에만.
+- **사용량 기록** — 호출마다 API usage(입력 · 캐시 읽기 · 캐시 쓰기 · 출력 토큰)를 단계별(`reply` · `moderation_input` · `moderation_output` · `feedback` · `translation` ·
+  `suggestions` · `memory` · `summary`)로 더해 캐릭터 메시지 `meta.usage`(턴 · 거절 · 위기 · 선톡)에 저장하고, 로그 끝에 `usage reply=입력/캐시읽기/캐시쓰기/출력 …`로
+  남긴다. 턴 뒤 작업(기억 · 요약)은 메시지가 이미 저장된 뒤라 로그(`companion_after_turn`)에만. `meta`는 앱에 돌려주지 않고 운영 조회에 보인다.
+
+### 환경 · 비밀
+
+비밀 값은 `supabase/functions/.env`(견본 `env.example`, `.env`는 커밋되지 않는다 — 루트 .gitignore가 `.env` · `.env.*`를 막는다)에 넣는다. 로컬 `supabase functions serve`가 이 파일을 읽고,
+운영은 `supabase secrets set --env-file supabase/functions/.env`로 올린다.
+
+| 이름 | 필수 | 뜻 |
+|---|---|---|
+| `SUPABASE_URL` · `SUPABASE_ANON_KEY` · `SUPABASE_SERVICE_ROLE_KEY` | 예 | Edge 런타임이 넣어 준다 — 파일에 적지 않는다 |
+| `ANTHROPIC_API_KEY` | `COMPANION_LLM=anthropic`일 때 | 컴패니언 전용 키(원가 분리 — 위키 05) |
+| `COMPANION_LLM` | 아니오 | `anthropic`(기본) 또는 `fake`(키 없이 정해진 답 — 화면 확인용). 키가 없다고 fake로 넘어가지 않는다 |
+| `COMPANION_MODEL` | 아니오 | 답변 모델. 기본 `claude-opus-5-5`. `effort: low`, 정책 거절 때 서버 쪽 대체 모델(`fallbacks: "default"`) — `claude-haiku`로 시작하는 모델은 대체 모델이 없어 이 옵션을 빼고 보낸다 |
+| `COMPANION_MODERATION_MODEL` | 아니오 | 입력 · 출력 검사 · 기억 추출 · 요약(· 피드백 · 번역 · 칩의 기본값). 기본은 `COMPANION_MODEL` |
+| `COMPANION_FEEDBACK_MODEL` | 아니오 | 피드백(교정). 기본은 `COMPANION_MODERATION_MODEL` — 운영(답변 Sonnet · 검사 Haiku)에서는 피드백이 Haiku로 돈다(2026-11-10, 전에는 `COMPANION_MODEL`을 따라 Sonnet). 되돌리려면 이 값을 `claude-sonnet-5-5`로 |
+| `COMPANION_TRANSLATION` | 아니오 | 캐릭터 답의 L1 번역. `every`(기본, 턴마다) 또는 `off`. 모르는 값이면 설정 오류(500). PRD O9(매 메시지 · 탭할 때)가 정해지면 바꾼다 |
+| `COMPANION_TRANSLATION_MODEL` | 아니오 | L1 번역 모델. 기본은 `COMPANION_MODERATION_MODEL`(운영 Haiku) |
+| `COMPANION_SUGGEST_MODEL` | 아니오 | 추천 답변 칩 모델(`chat-send`의 매 턴 칩 · `companion-suggest`). 기본은 `COMPANION_MODERATION_MODEL`(운영 Haiku) |
+
+fake 모드에서 흐름을 일부러 일으키는 낱말은 `_shared/companion-llm-fake.ts` 머리 주석에 있다(위기 · 차단 · 교정 · 섞인 언어 · 말투 · 맞춤법 · 기억 · 친밀도). fake 번역은 `[언어] 원문`이다.
+
+**L1 번역** — 답 조각이 다 모이면(미성년자 · 나이 모름은 출력 검사와 동시에) 번역을 한 번 부르고, 피드백 기다림과 함께 기다린다. 조각 delta 뒤 ·
+`state` 앞에 조각마다 `translation {segment, text}`을 보내고, 저장 조각에 `translation`을 붙인다(메시지 목록 · 운영 조회에 보인다 — 계약
+`companion-messages-page`의 segment에 선택 칸). 저장 번역은 답 모델의 history에 다시 넣지 않는다. 학습자 언어가 `ko…`면 건너뛰고, 모르면 영어.
+제한 시간 6초 — 실패 · 시간 초과 · 줄 수가 다르면 번역 없이 턴을 끝내고 로그(`translation_unavailable`)와 meta(`translation`)에 남긴다. 차단 · 위기 답은
+번역을 내보내지도 저장하지도 않는다. 선톡도 같은 번역을 붙여 저장한다(이벤트 없음). 로마자 표기는 앱이 규칙으로 만든다.
+늘어나는 지연: 성인은 답이 끝난 뒤 번역만큼(피드백이 더 늦으면 0), 미성년자는 출력 검사와 겹쳐 둘 중 긴 쪽만큼 `state` · `done`이 늦어진다.
+
+**피드백 카드(20261116)** — 피드백은 한 모양이다. 칸은 늘 모두 있고 앱은 이 순서로 그린다(Moly 형식) — 올바른 문장(`corrected`) →
+고칠 점 목록(`items` — 원문 표현 · 고친 표현 · 이유, 한 메시지에 여럿일 수 있다) → 분명히 도움이 될 때만 더 나은 표현(`better` — 표현 · 뜻 · 설명).
+
+```jsonc
+{ "userMessageId": "…", "status": "ok",            // ok · none · unavailable
+  "kind": "correction",                            // correction · better · l1_to_ko — ok가 아니면 null
+  "original": "저는 마리아 이에요",                   // 학습자 메시지 그대로
+  "corrected": "저는 마리아예요",                     // 모든 고침을 적용한 올바른 문장 전체 — ok면 늘 있다(better는 더 나은 문장 전체)
+  "items": [{ "original": "마리아 이에요", "corrected": "마리아예요", "reason": "Use 예요 after a vowel." }], // 고칠 점마다 하나 · l1_to_ko면 []
+  "better": { "text": "저는 마리아라고 해요.", "meaning": "My name is Maria.",
+              "explanation": "A natural way to introduce yourself." },  // 분명히 도움이 될 때만, 아니면 null — 뜻 · 설명은 학습자 언어
+  "meaning": "I'm Maria." }                        // corrected의 뜻 — l1_to_ko면 늘 있다, 아니면 null일 수 있다
+```
+
+`none` · `unavailable`은 `kind` · `corrected` · `better` · `meaning`이 null이고 `items`가 `[]`이다. 서버는 모델 결과를 이 모양으로 다듬는다(교정에
+고친 문장이 빠지면 조각을 적용해 채우고, 본문이 없으면 `none`). 저장은 `corrections.card`, 카드 이전에 저장된 행은 읽을 때 카드로 바뀐다(옛 교정 행은
+고친 문장 전체가 없어 `corrected`가 null). 앱이 피드백을 쓰기 전이라 계약 판(1)은 올리지 않았다. 프롬프트는 고칠 점을 합치거나 빼지 말고 하나씩
+따로 적고 `corrected`에는 모두 적용하라고 한다.
+
+**피드백 규칙** — `_shared/companion-llm-prompts.ts`. 한국어가 아닌 부분이 있으면(전부 · 일부) `l1_to_ko`로 메시지 전체를 자연스러운 한국어
+(`corrected` — 앱이 「자연스러운 한국어 표현은 …」으로 보인다)와 뜻(`meaning`)으로 돌려주고, 한국어로 써야 하는 이유는 말하지 않는다. 한 메시지 안의
+말투 섞임 · 맞춤법 · 문법은 `correction`, 존댓말 관계(또는 선생님 · 어른 캐릭터)에 반말은 `better`(존댓말 제안), 반말 관계의 존댓말은 피드백 없음.
+페르소나 칸 `banmalFeedback: "correction"`인 캐릭터(지금은 덕수쌤 — 마이그레이션 20261114)는 존댓말 관계의 반말을 `correction`으로 고친다.
+띄어쓰기는 뜻이 바뀌거나 읽기 어려울 때만, ㅋㅋ · ㅎㅎ · ㅇㅇ · ~ · 이모지는 피드백 없음. `better`는 원어민에게 분명히 어색할 때 하나만, 애매하면 `none`.
+상대를 겨냥하지 않은 혼잣말 욕(「아 씨 시험 망했어」 · ㅅㅂ · 존나)은 `better`로 순화한 문장과 「비속어」라는 이유를 준다. `*…*` 안(행동 · 속마음)의
+한국어도 고치지만 말투는 판정하지 않는다.
+피드백 요청에는 관계 말투 단계와 캐릭터(이름 · 역할)가 들어간다. 최근 대화 6개(유저 · 캐릭터 합쳐 약 세 번 주고받기, 상수 `feedbackHistoryLimit` —
+글자만, 번역 · 숨김 · 차단 메시지 없음)를 「맥락일 뿐 — 마지막 학습자 메시지만 피드백」이라는 틀로 user 메시지에 싣는다. 시스템 글은 (언어 · 말투 단계 ·
+반말 규칙)마다 같다 — 규칙 본문(앞)은 모든 요청에 같고 학습자 언어 · 말투 단계 규칙만 끝의 「# This message」에 둬서, 앞부분에만 `cache_control`을 달아
+언어 · 말투가 달라도 같은 캐시를 읽는다(`feedbackSystemParts`, 아래 「턴 비용 · 지난 대화」). 피드백 제한 시간(8초)은 그대로다.
+
+**비속어 가드레일** — 검사 분류에 `profanity`. 모든 연령에서 캐릭터를 겨냥한 **심한** 욕(병신 · 씨발놈 · 개새끼 · fuck you · putang ina mo · đụ má mày) ·
+혐오 표현 · 성희롱 · 비하 · 위협만 입력 차단(다른 차단처럼 반복 위반으로 센다). 가벼운 놀림(바보 · 멍청이 · idiot · dummy · tonto · bobo)은 통과(`safe`)이고
+피드백도 비속어로 고치지 않는다(2026-11-09 결정). 혼잣말 욕은 통과(피드백이 순화). 언어를 가리지 않는다 — 검사 지시는 「어떤 언어든」이라고 하고 한국어 · 영어 · 타갈로그어 · 베트남어 · 인도네시아어 ·
+일본어 · 스페인어 · 타이어 예(가린 꼴 포함)를 든다. 위기 판정도 「어떤 언어든」이고 미얀마어까지 예를 든다(미얀마어 욕설 예는 확인할 수 있는 것이 없어 넣지 않았다). 캐릭터 답의 욕은 가벼워도 출력 차단 — 출력 동기 검사는 미성년자 · 나이 모름 턴에만 돌아서, 성인 턴은 답
+프롬프트의 금지 규칙(가장 편한 말투 slang도 욕이 아니라 친근한 말)에 기댄다. 띄어 쓰거나 줄이거나 로마자로 쓰거나 가린 꼴(ㅅㅂ · 시1발 · ㅂㅅ · f*ck · đ.m · k*so)까지. 피드백 · 번역은 학습자 언어(BCP 47)를 그대로 받고, 기본값 en 말고 언어를 박아 둔 곳은 없다.
+
+**성격대로 거절 — 단계 제재(20261117, PRD §3.11 5층).** 입력 검사 차단(위기 아님)은 턴 시작 때 읽은 반복 위반 수(`companion_turn_status` — 지금
+`strike_window` 안의 수 · `strike_limit`)에 이번 차단을 더해 단계를 고른다. 기본값(상한 3 · 창 24시간 · 차단 30분)이면 첫째 **회피**(캐릭터가 성격 · 말투대로 가볍게
+피하고 다른 화제를 묻는다), 둘째 **경고**(그런 말은 안 된다고 분명히 말하고 다른 얘기를 권한다), 셋째 **일시 차단**(지금처럼 `start` → `error guardrail_blocked`,
+다음 턴부터 403 `temporarily_blocked`). 일반식: 상한 번째 = 차단, 그 하나 앞 = 경고, 그 앞 = 회피. 세는 일은 그대로 `companion_finish_turn`이 한다.
+거절 답은 답 모델이 페르소나 시스템 프롬프트에 거절 지시(`refusalDirective` — `_shared/companion-llm-prompts.ts`, `?docs=1`의 `prompts.refusal`)를 넣어 만든다.
+**학습자의 걸린 글은 모델에 주지 않는다** — 유저 말 자리는 분류만 적은 앱 안내(`refusalUserText`), 지난 대화는 그대로. 대사 둘 · 행동 하나까지, 미성년자 · 나이 모름은
+보통 답과 같은 출력 검사. 생성 실패 · 시간 초과(10초) · 출력 검사 차단이면 페르소나 `refusalLines[단계][말투]`(없으면 존댓말 줄, 그것도 없으면 코드 기본 줄)로 끝낸다.
+스트림: `start` → `notice` → `delta` → `translation` → `state` → `done { refusal: { stage } }` — `correction` 없음(차단 턴의 피드백은 그대로 없다).
+저장: 유저 메시지 `blocked`, 거절은 보통 assistant 메시지(`complete`, 차감 0)에 meta `refusal: true` · `refusalStage` · `refusalCategory` · `refusalSource`(model · canned).
+예약은 풀리고(차감 없음) 반복 위반으로 센다. 기억 추출 · 요약은 돌리지 않는다. 출력 검사 차단(캐릭터 답이 걸린 것)은 거절하지 않고 지금처럼 `guardrail_blocked`.
+`companion_turn_status`를 읽지 못하면 입력 차단은 지금처럼 `guardrail_blocked`다.
+
+**기억 상한(20261117).** 의미 검색 전까지 기억 수만 막는다. `settings.memory_cap`(유저 · 캐릭터마다, 기본 50) · `settings.shared_memory_cap`(공유 기억, 기본 30).
+턴 뒤 추출이 상한에 닿으면 유저가 고치지 않은 가장 오래된 기억부터 지운다(`deleted_at`, 운영 조회에 `deleted`). `companion_update_memory`로 고친 기억(`user_edited`)은
+지우지 않고, 지울 것이 없으면 새 기억을 넣지 않는다 — **가득 참**(그 층이 상한 이상이고 모두 고친 것). 따로 저장하지 않고 늘 계산하므로 하나 지우거나 상한을 올리면 풀린다.
+`companion_add_memories` → `{ added, evicted, skipped, full }`(턴 뒤 로그 `memories= evicted= memory_full=`), `companion_list_memories(p)` → `{ memories[{…, userEdited}], count, cap, full }`
+(계약 `companion-memories`), SSE `state.memoryFull`(이 캐릭터 또는 공유 층이 가득 참 — 턴 시작 때 값), 운영 `companion_inspect_memory`에 `capacity { character, shared }` · `userEdited`.
+
+**학습자의 `*…*`** — `*웃으며* 안녕하세요` · `*배고프다…*`처럼 별표 안은 학습자의 행동 · 속마음이다. 답 프롬프트: 행동에는 자연스럽게 반응하고,
+속마음은 장면에 맞으면 가볍게 받아도 되지만 엿들은 것처럼 그대로 되풀이하지 않는다. 검사는 별표 안까지 전체를 본다. 저장 글은 친 그대로다.
+
+**기억 고치기 · 쉬는 대화(20261123).** 턴 뒤 기억 묶음(아래 「턴 비용」)은 기존 기억을 번호(m1 …, 유저가 고친 것은 locked)로 보여 주고, 추출 모델이 더하기 ·
+고치기(이사 · 계획이 바뀜) · 잊기(더는 맞지 않음)를 고른다(`companion-memory.ts`). `companion_apply_memory_ops`가 잊기 · 고치기를 먼저, 더하기를 나중에 적용한다 —
+고치기는 옛 글을 `memories.history`에 남기고(`updated_at`), 잊기는 `deleted_reason` forgotten, 상한 밀어내기는 evicted. 유저가 고친 기억은 건드리지 않고 `protected`로
+센다. 같은 원본 메시지로 두 번 적용하지 않는다. 턴 뒤 로그 `memories= updated= forgotten= protected= evicted=`. 묶음이 차기 전에 대화가 멈추면 예약 작업
+(`companion-proactive`에 `{ mode: "memory_flush", batch }`, `supabase/cron/companion.sql`의 `companion-memory-flush` — 10분마다)이 `settings.memory_flush_idle`
+(기본 30분) 넘게 조용한 대화의 남은 메시지를 뽑는다(`companion_memory_flush_candidates` → `companion_memory_source(…, p_flush => true)`).
+
+**요약(20261123).** 네 칸 — [학습자] · [이어지는 이야기] · [캐릭터](캐릭터가 스스로 밝힌 사실 · 약속, 앞뒤가 맞게) · [약속], 합쳐 8문장 이하. 칩을 그대로 고른 유저 말은
+기억처럼 표시되고 사실로 적지 않는다.
+
+**번역 맥락(20261123).** 바로 앞 대화 세 줄(턴은 이번 유저 말까지, 거절은 걸린 말 빼고)을 「번역하지 않는 맥락」으로, 캐릭터 이름과 페르소나 `glossary`(운영자가 채우는
+표기 메모)를 `Names`로 넘긴다 — 시스템 글은 그대로라 캐시된다. 실패 · 개수 틀림이면 제한 시간의 1/3 이상 남았을 때 한 번 다시 시도한다.
+
+**선톡 빈도 — 유저 설정(20261115).** 프로필 `proactive_pref` off · daily1(기본) · daily2, `proactive_hour`(현지 0 ~ 23, null이면 아무 때나), `timezone`(IANA).
+판정은 `companion.proactive_skip_reason` 하나(이유 off · quiet_hours · hour · daily_cap · gap · spacing):
+
+| | 하루 횟수 | 마지막 메시지 뒤 | 직전 선톡 뒤 | 선호 시각 |
+|---|---|---|---|---|
+| off | 0 | — | — | — |
+| daily1 | 1 | `proactive_gap`(24시간) | `proactive_spacing`(8시간) | 그 시각 |
+| daily2 | 2 | `proactive_gap_daily2`(10시간) | `proactive_spacing`(8시간) | 그 시각과 10시간 뒤 |
+
+- 하루 횟수는 `settings.proactive_daily_cap`(전체 상한, 이 마이그레이션이 기본 1 → 2로)을 넘지 않는다. 선톡도 메시지라 마지막 메시지 시각을 바꾼다 — daily2의
+  두 번째가 첫 번째 10시간 뒤 이후인 까닭이다.
+- 시간대를 알면(프로필 `timezone`, 없으면 지역 대표 시간대 — KR · JP · PH · IN · VN · TH · ID · MY · SG · TW · HK · CN) 현지 22:00 ~ 08:00에는 보내지 않고 「하루」는
+  현지 자정부터다. 선호 시각의 10시간 뒤가 조용한 시간이면 그날은 한 번. 시간대를 모르면(미국처럼 여럿인 나라 포함) 시각 맞추기 · 조용한 시간을 건너뛰고 하루는 UTC.
+- 한 회차에 유저마다 후보 하나(가장 오래 조용한 대화). 연령 · 지역 규칙은 그대로.
+- 예약 작업은 매시 30분 그대로 둔다 — 유저마다 현지 시각이 달라 매시간 봐야 선호 시각을 맞춘다. 유저마다 보내는 수는 위 규칙이 정한다.
+- 유저가 한 번도 말하지 않은 대화(첫 인사만 있음)는 후보가 아니다(20261122) — 맥락의 `hasUserMessage: false`면 함수가 `no_user_message`로 건너뛴다.
+- 플레이그라운드 `force`는 빈도 판정을 모두(off 포함) 건너뛴다. 연령 · 지역 규칙과 첫 인사만 있는 대화는 건너뛰지 않는다. 막혔을 까닭은 결과 · meta의 `wouldSkip`.
+- **답 없는 선톡(20261123)** — 유저가 그 대화에서 마지막으로 말한 뒤 쌓인 선톡 수(`unanswered`)가 `settings.proactive_unanswered_limit`(기본 2, 0이면 끔)에 닿으면
+  더 보내지 않는다(`unanswered_limit`). 그 전에는 공백이 `gap × proactive_backoff^unanswered`(기본 2배씩, 1이면 끔)로 늘어난다(`backoff`). 유저가 한 번 말하면 0.
+  판정은 `companion.proactive_conversation_skip_reason`(유저 판정 + 위 둘) — 후보와 맥락이 같이 쓴다.
+- **선톡 지시의 맥락(20261123)** — 유저의 마지막 말 뒤 며칠 · 현지 때(아침 · 오후 · 저녁 · 늦은 밤, 시간대를 알 때) · 마지막 유저 말(화제) · 최근 선톡 글 셋
+  (같은 말 · 화제 되풀이 금지) · 답 없는 선톡이 있으면 「더 가볍게, 답 안 한 것을 말하지 않기」. 칩 스위치가 켜져 있으면 선톡에도 칩을 붙여 저장하고 칩 지표에 센다.
+- 앱: `companion_save_profile(p_birth_year, p_age_source, p_l1, p_feedback_mode, p_proactive_pref = null, p_proactive_hour = null, p_timezone = null)` —
+  null은 그대로, `p_proactive_hour = -1`은 지우기(아무 때나), `p_timezone = ''`은 지우기, 틀린 값(모르는 시간대 포함)은 22023. 옛 4인수 호출은 그대로 된다.
+  `companion_load_profile()`이 `proactivePref` · `proactiveHour` · `timezone`을 더 돌려준다(계약 `companion-profile`).
+- 운영: `companion_operator_set_profile(p_user_id, p_birth_year, p_clear_age, p_l1, p_feedback_mode, p_region, p_proactive_pref = null, p_proactive_hour = null,
+  p_timezone = null)` — 지우기 규칙은 앱과 같다. 옛 6인수 호출은 그대로 된다. `companion_inspect_testers()`가 세 값을 보여 준다.
+
+### companion-eval — LLM 한 단계 평가
+
+ops-dashboard가 검사 · 피드백 프롬프트를 케이스 묶음으로 돌려 보는 창구다. 운영과 같은 `moderate()` · `feedback()`(같은 프롬프트 · 요청 모양)을
+부르고, **DB에 쓰지 않고 크레딧도 쓰지 않는다.** 대신 케이스 하나마다 실제 Claude API 호출이라 **API 비용이 든다**(`COMPANION_LLM=fake`면 들지 않는다).
+서버 키(`Authorization: Bearer <서버 키>`, `isServiceKey` 규칙)만 받고, 아니면 401 `{"error":"invalid_session"}`.
+
+- `GET` → `{"models":{"reply","feedback","moderation"},"allowed":["claude-haiku-5-5","claude-sonnet-5-5","claude-opus-5-5"],"llm":"anthropic"|"fake"}`
+- `POST {"kind":"moderation"|"feedback"|"translation"|"suggestions","model"?,"cases":[{"id","text","ageBand"?,"layer"?,"l1"?,"context"?,"speechLevel"?,"character"?}]}` — 케이스 1 ~ 20개, `text` ≤ 2000자,
+  `id` ≤ 64자. `model`은 `allowed` 안에서만(생략하면 그 단계에 설정된 모델). 기본값 `ageBand` adult · `layer` input · `l1` null. `context`는
+  검사에서는 앞선 유저 메시지(출력 검사), 피드백에서는 바로 앞 캐릭터 말이다. 피드백 케이스는 `speechLevel`(polite · casual · slang, 생략하면 모름 —
+  말투 선택 규칙을 건너뛴다)과 `character`(`{"name","role"?}`)를 더 받는다. `translation` 케이스는 한국어 한 줄 `text`와 `l1`(생략하면 en)을 받아
+  `output: {"text"}`를 돌려준다(운영은 말풍선 묶음을 한 번에 번역한다).
+  평가 때 볼 것: 한국어 · 영어가 섞인 입력은 `l1_to_ko` 하나(이유 설명 없음)로, 존댓말 관계의 반말은 `better`로, 반말 관계의 존댓말과 자연스러운 문장은 `none`으로 나와야 한다.
+- 피드백 케이스는 `history`(`[{"role":"user"|"assistant","text"}]`, 오래된 것부터, 최대 20 — 운영처럼 마지막 6개만 쓴다)도 받는다. `context`는 계속
+  앞 캐릭터 말 한 줄이고, `history`가 있으면 그쪽이 맥락이다.
+- 응답 `{"kind","model","results":[{"id","ok":true,"output","ms"} | {"id","ok":false,"error","ms"}]}` — `output`은 판정 `{category, action}` 또는
+  피드백 카드(위 「피드백 카드」) 또는 `{text}`. 동시에 4개씩, 케이스마다 턴 경로와 같은 제한 시간(검사 45초 · 피드백 8초 · 번역 6초 — 넘으면 `error: "timeout"`).
+  케이스 하나의 실패는 그 케이스만 `ok: false`(`timeout` · `structured_unavailable` · `mismatch` · `upstream_<상태>` · `upstream_error`). 본문이 틀리면 400 `invalid_request`.
+- `GET ?docs=1` → ops-dashboard 「문서」 화면: `{"models"(번역 모델 포함),"characters","settings","inspectAvailable","prompts"}`. `characters`는 페르소나 카드 칸 전부 ·
+  `id` · `active` · `sortOrder` · `maxSpeechLevel` · `systemPrompt`(말투 상한까지 단계마다), `settings`는 `companion.settings` 한 행. `prompts`는
+  `feedback` · `moderation.{input,output_sync}.{adult,minor,unknown}` · `translation` · `memory.{adult,minor}` · `summary` · `proactiveDirective` ·
+  `feedbackModes.{separate,natural,prefix}` · `stateLine` — 실제 호출과 같은 함수로 그린 글이다(사본 없음, `_shared/companion-eval-docs.ts`). 대표 입력은
+  학습자 언어 en · 성인 · 기억 · 학습 표현 · 요약 없음 · 피드백 방식 separate, 피드백은 존댓말 관계 · 부드러운 반말 규칙으로 그리고, 호출마다 바뀌는 자리는
+  `{{l1}}`처럼 표시한다. 마이그레이션 20261114를 적용하기 전에는 `characters` · `settings`가 null이고 `inspectAvailable: false`다. API 비용은 들지 않는다.
+- 배포: `supabase functions deploy companion-eval`(`config.toml`의 `verify_jwt = false`를 따른다). 비밀은 `chat-send`와 같다.
+
+### 추천 답변 칩 — chat-send 매 턴 자동 · companion-suggest 다시 만들기
+
+학습자가 탭해서 그대로 보낼 다음 말 1 ~ 2개(설계 문서 「AI 컴패니언 선택지 기능 설계」 §04 ~ §10을 따른 2판, 20261122). **Zeta처럼 유저가 켜고 끄는
+스위치**(프로필 `reply_suggestions`, 기본 참)이고, 켜져 있으면 캐릭터 답마다 탭 없이 칩을 만든다. 호출 한 번(`COMPANION_SUGGEST_MODEL`, 기본 검사 모델)이
+턴마다 들고, **크레딧을 차감하지 않는다**(차감 · 하루 상한은 열린 질문). **칩 수정은 없다 — 입력 길은 탭 전송 · 직접 입력 둘뿐이다(사용자 결정 2026-11-10).**
+
+**후보 → 검증 → 고르기** — 모델은 숨은 의도를 단 후보 셋을 낸다(`elaborate` 더 말하기 · `ask` 되묻기 · `reflect` 반응 · `redirect` 방향 바꾸기 · `boundary` 경계 ·
+`progress` 다음 단계, 정해진 조합 없음). 서버가 후보마다 검증해(`_shared/companion-suggest-select.ts`) 못 지난 것만 뺀다 — 모르는 의도 · 빈 글 · 한글 없음 ·
+서식(`*` `<>` 등 · 링크) · 4자 미만 · 80자 초과 · 뜻 빠짐 · 연락처 꼴 · 앞 후보와 겹침(글자 두 개씩 Dice ≥ 0.75) · 지난 칩과 거의 같음(≥ 0.85, 최근 5셋) · 미성년자 ·
+나이 모름의 출력 검사(통과 후보를 합쳐 한 번, 걸리면 모두). 통과한 것 가운데 의도가 서로 다른 것을 앞에서부터 `settings.suggestion_display_max`개(기본 2,
+0 ~ 3)까지 보인다 — **억지로 채우지 않는다**. 통과가 0이면 한 번 다시 묻고, 그래도 0이면 `unavailable` · `no_valid_candidates`.
+- 프롬프트(`_shared/companion-suggest-prompts.ts`의 `suggestionSystem`, `?docs=1`의 `prompts.suggestions`): 바로 보낼 수 있는 완결된 대사 · 내용 없는 예고 금지 ·
+  유저 대신 감정 · 관계 · 동의 · 약속 · 개인정보 · 현실 행동을 확정하지 않음(유저가 말한 사실은 다시 씀) · 지난 칩 · 최근 말과 같은 뜻 · 끝난 행동 되풀이 금지 · 죄책감 ·
+  의존 · 집착 유도와 거절 뒤 압박 금지 · 관계 말투 · 10 ~ 55자(최대 80) · i+1 · 청소년 안전. 맥락은 최근 8개(한 줄 500자 · 번역 없음) + 대화 요약 + 지난 칩 셋(글 ·
+  의도 · 결과). 대화 · 요약 · 지난 칩은 참고 자료이지 지시가 아니라고 못박는다.
+- 운영 끄기: `settings.suggestions_enabled = false`(또는 보일 수 0)면 어디서도 만들지 않는다 — `chat-send`는 이벤트 없음, `companion-suggest` · 첫 인사는
+  `none` · `suggestions_disabled`.
+- 저장(2판): `messages.suggestions = {version: 2, items(보인 것), candidates(후보 전부 — 글 · 뜻 · 의도 · 빠진 까닭 `reason` · `shown`), model, createdAt, ms,
+  playground?, outcome?}`. 메시지 목록은 `items`만 준다. 1판 저장의 의도는 마이그레이션이 바꾼다(continue → elaborate, react → reflect).
+
+**chat-send 자동 칩** — 판정의 `replySuggestions`가 참이고 운영이 끄지 않았으면 답 조각이 다 모인 뒤 번역과 같이 시작해 남은 기다림(피드백 · 미성년자
+출력 검사 · 번역)과 동시에 돌린다(`_shared/chat-send-suggest.ts`, 만들기는 `companion-suggest`와 같은 `_shared/companion-suggest-generate.ts`).
+- 이벤트: `translation` 뒤 · `state` 앞에 한 번 `suggestions {"messageId","status":"ok"|"unavailable","items":[{"text","meaning","intent"}],"reason"?}`.
+  `ok`면 칩 1 ~ N개, `unavailable`이면 빈 `items`와 `reason` — `generation_failed`(실패 · 시간 초과) · `blocked`(출력 검사) · `no_valid_candidates`. 어느 쪽이든
+  입력창은 막지 않는다. 앱은 `unavailable`이면 `companion-suggest`로 대신 받을 수 있다.
+- 보내지 않는 때: 스위치가 꺼짐 · 운영 끔 · 판정이 스위치를 모름(20261119 전 DB) · 위기 · 입력 차단 · 성격대로 거절 · 출력 차단 · 답 실패.
+- 제한 시간 6초(다시 묻기 · 출력 검사 포함 — 다시 묻기는 2초 이상 남았을 때만). 결과와 걸린 시간은 meta `suggestions` · `suggestionsMs`에 남는다.
+- 저장은 스트림을 닫은 뒤 `companion_save_suggestions`(끝 트랜잭션이 메시지를 만든 뒤라야 붙일 수 있다 — 실패는 로그 `suggestions_save_failed`만).
+- **입력 출처** — 앱이 칩을 탭해 보내면 `suggestion: {"message_id","index"}`(옛 `from_suggestion: true`도 받는다). 서버는 턴 시작 때 읽은 마지막 캐릭터
+  메시지의 칩(`companion_turn_status.latestSuggestionSet`)과 맞춘다(`_shared/chat-send-choice.ts`).
+  - `suggestion` — 지금 칩을 글 그대로(앞뒤 공백 무시). 피드백 모델을 부르지 않고 `correction {"status":"skipped","reason":"suggestion",…}`(앱: 「피드백 생략(추천 답변)」).
+  - `stale` — 그 사이 새 답이 와 지난 칩이 됨. `manual` — 직접 입력, 또는 표시가 왔는데 글이 칩과 다르거나 칩을 확인할 수 없음(방어). 둘 다 보통처럼 피드백한다.
+  - 캐릭터 메시지 `meta.inputSource`, 스트림을 닫은 뒤 `companion_record_choice`가 유저 메시지 meta(`inputSource` · `suggestionMessageId` · `suggestionIndex` ·
+    `suggestionIntent`)와 앞 캐릭터 메시지 칩 셋의 결과(`outcome` chosen · ignored, 한 번만)를 적는다 — 칩 저장 · 기억 묶음보다 먼저.
+- **기억** — 칩을 그대로 고른 유저 말(`inputSource: suggestion`)은 기억 원문에 「학습자(추천 답변을 그대로 고름)」로 표시되고, 기억 프롬프트가 그것만으로는 사실 ·
+  선호 · 계획을 저장하지 말라고 한다. 역할극 `*행동*`도 학습자의 사실이 아니다.
+- 늘어나는 지연: 번역과 겹쳐 돌아 `state` · `done`이 늦어지는 것은 둘 중 긴 쪽만큼 — 최악 6초(칩 제한 시간)다.
+
+**답변 평가 · 고쳐서 다시 보내기(20261124, PRD §3.15).**
+
+- 👍/👎: 앱이 `companion_rate_message(p_message_id, p_rating, p_reasons, p_note)`를 부른다 — `p_rating` `up` · `down` · null(지움). 👎만 이유(`awkward_korean` ·
+  `out_of_character` · `too_hard` · `uncomfortable` · `other`, 여럿)와 글(200자). 본인 대화의 보이는 캐릭터 메시지(첫 인사 · 선톡 · 거절 포함, 위기 안내 제외)만 — 아니면 `P0002`.
+  메시지 목록 줄에 `rating {value, reasons, note}`. 운영 지표는 `companion_rating_stats(p_since, p_playground, p_limit)`(캐릭터 · 모델 · 출처 · 이유별, 최근 👎 원문).
+- 고쳐서 다시 보내기: `chat-send` 본문 `replaces_message_id`(마지막 유저 메시지). `companion_begin_replacement`가 시작 대신 돈다 — 그 대화의 마지막 유저 메시지이고 그 뒤에
+  그 답이 아닌 캐릭터 메시지(선톡 등)가 없을 때만 이전 턴(유저 메시지 · 캐릭터 답)을 `hidden`으로 숨기고(`meta.replacedBy` ↔ 새 유저 메시지 `meta.replaces`) 보통 턴을 시작한다.
+  아니면 409 `not_latest_message`, 그 턴이 도는 중이면 `turn_in_progress`. 시작이 막히면(402) 숨기기도 되돌린다. 같은 `client_message_id` 재시도는 멱등.
+  차감 · 입력 검사 · 위반 횟수는 새 턴에 그대로. 칩 표시는 보지 않는다(`inputSource: manual`). 숨긴 턴은 지난 대화 · 기억 · 요약 원문 · 칩 이력 · 메시지 목록 · 칩 지표에서 빠진다.
+
+**companion-suggest** — 「다시 만들기」(`refresh: true`)와 자동 칩이 `unavailable`이었거나 오지 않은 턴의 대체 경로. 같은 메시지에 저장된 2판 칩이 있으면
+모델을 부르지 않고 돌려준다(1판 저장은 새로 만든다).
+
+- 호출자: 앱은 `Authorization: Bearer <JWT>` + `{"character_id","refresh"?}`. ops-dashboard 플레이그라운드는 `Bearer <서버 키>`(`isServiceKey` 규칙) +
+  `{"user_id","character_id","refresh"?}` — 앱 토큰으로 `user_id`를 보내면 401. 계약은 `companion-suggest-request` · `companion-suggest-response`(JSON Schema).
+- 응답(200) `{"status":"ok"|"none"|"unavailable","messageId","items":[{"text","meaning","intent"}],"cached","reason"?}` — `ok`면 칩 1 ~ N개, `meaning`은 학습자
+  언어(한국어면 null). `messageId`는 칩이 묶인 마지막 캐릭터 메시지다.
+  - `none`(모델 안 부름): `no_assistant_message` · `latest_turn_blocked` · `latest_turn_crisis` · `latest_turn_refusal` · `suggestions_off`(프로필) · `suggestions_disabled`(운영).
+  - `unavailable`: `chat-send`와 같은 판정에 걸림 — `not_available` · `age_restricted` · `temporarily_blocked` · `usage_time_limit` · `turn_in_progress`, 또는
+    `generation_failed`(시간 초과 8초 포함) · `blocked` · `no_valid_candidates`.
+  - HTTP 오류: 400 `invalid_request` · 401 `invalid_session` · 404 `character_not_found` · 405 · 500 `server_misconfigured` · `internal_error`.
+- 맥락: 자동 칩과 같다(최근 8개 + 요약 + 지난 칩 셋 — 다시 만들기는 지금 칩 셋도 지난 칩으로 보아 다른 것을 낸다).
+- 설정: 프로필 `reply_suggestions`(기본 참). 앱 `companion_save_profile(…, p_reply_suggestions = null)` · `companion_load_profile().replySuggestions`, 운영
+  `companion_operator_set_profile(…, p_reply_suggestions = null)` · `companion_inspect_testers().replySuggestions`.
+- 평가: `companion-eval`의 `kind: "suggestions"` — 케이스 `text`는 캐릭터의 마지막 말(`history` 뒤), `summary` · `pastSuggestions`(지난 칩 글)를 더 받는다.
+  `output: {"items","candidates"}` — 보인 칩(0개일 수 있다)과 후보 전부 · 빠진 까닭. 채점(맥락 적합 · 완결성, 의미 다양성 · 반복, 사용자 의도 보존, 안전 · 표현
+  품질)은 ops-dashboard가 한다.
+- 지표: `companion_suggestion_stats(p_since, p_playground = null)`(service_role) — 대상 턴 · 노출(1 · 2 · 3 · 통과 0 · 실패) · 다음 말이 온 턴 · 고름 · 무시 ·
+  보인 의도 · 고른 의도 · 빠진 까닭 · 생성 시간 p50/p95 · 칩 단계 토큰 합(비용은 대시보드가 단가로 계산).
+- 배포: `supabase functions deploy companion-suggest`(`verify_jwt = false`).
+
+**설계 문서에서 미룬 것** — A/B(자유 입력만 / 칩 + 자유 입력) · `choice_sets` · `choices` 별도 테이블(지금은 메시지의 `suggestions` JSON) · revision 기반 낙관적
+잠금과 작업 큐(지금은 `client_message_id` 멱등 + 마지막 캐릭터 메시지 id 비교) · 역할극 모드 · 학습 모드 연결(난이도별 표현 추천) · 칩 편집(쓰지 않기로 함).
+
+### 학습 표현 넣기 (20261125, PRD §3.7)
+
+앱에서 배운 단어 · 표현 · 문형(끝낸 유닛만 — `companion_learning_context`)을 대화에 자연스럽게 녹인다. 말풍선에 표시하지 않는다.
+판정은 `_shared/companion-learning.ts`(순수 함수), 글자 판정은 `companion-learning-match.ts`, 턴 연결은 `chat-send-learning.ts`, 첫 인사 · 선톡은 `companion-opener.ts`.
+
+- **주기** — 직전 삽입 뒤 유저 턴 `settings.learning_min_gap`(3)번이 지나야 기회가 열리고, 열린 뒤 `learning_base_probability`(0.3)에서 턴마다 올라
+  `learning_force_turns`(6)번째부터는 매 턴 연다(「오래됐으니 웬만하면 넣어 보라」는 한 줄 — 강제는 아니다). 대화당 하루 `learning_daily_cap`(6)번(UTC 날짜). 첫 턴 · 유저가 전환을 원한 턴 · 무거운 대화(앞 턴 `@state.heavy`) ·
+  화제 전환 턴은 넣지 않는다(화제 전환이 먼저). `learning_enabled = false`면 모두 끈다. 간격 · 하루 수 · 최근 지시한 표현은 `conversations.topic_state`.
+- **고르기는 답 모델이 (2026-11-12)** — 기회가 열리면 후보 `offerSize`(4)개를 답 요청의 `directive`로 주고, 답 모델이 지금 대화에 맞는 것 하나를
+  말하거나(노출) 그 표현으로 답할 질문을 하거나(유도), 맞는 게 없으면 넣지 않는다. 맥락 판단을 맥락을 아는 답 모델에 맡겨 따로 판정 호출(지연 · 비용)을 두지 않는다.
+  고른 것은 `@state`의 `learned`(후보 id `e1` …) · `learned_how`(say · ask)로 보고한다(옛 모양 `true`는 후보가 하나일 때만 읽는다).
+- **건너뜀** — 넘기면 간격 · 하루 수를 쓰지 않고 다음 턴에 다시 연다(meta `reason: "skipped"`). `maxSkipStreak`(3)번 이어 넘기면 그때 간격을 새로 센다.
+  넘긴 후보는 표현마다 센다(`topic_state.learnSkips`, 최대 40개, 고르면 지움) — 두 번 넘게 넘긴 표현은 후보 뒤로. `offerSize` · `maxSkipStreak`는 코드 기본값(설정 칸 없음).
+- **후보 순서** — 아직 만난 적 없는 것(최근 에피소드부터) → 만난 것 가운데 유저가 아직 안 쓴 것 → 오래 안 본 것, 직전 표현 제외, 많이 넘긴 표현은 맨 뒤.
+- **방식** — 노출(캐릭터가 씀) · 유도(그 표현으로 답할 질문) · 칩(추천 답변 후보 하나에 넣음 — 검증을 지나면 먼저 보인다, 산출로 치지 않는다).
+  후보마다 권하는 방식을 적는다: 처음 만나는 표현은 노출만, 아직 안 썼으면 유도 먼저, 써 봤으면 노출 먼저. 칩은 답 뒤 단계라 코드가 정한다 — 앞쪽 셋 가운데
+  랜덤으로 고른 표현의 칩 비중(아직 안 씀 30% · 써 봄 20%)에 걸리면 그 표현 하나를 칩으로. 칩 스위치가 꺼져 있으면 칩은 없다.
+- **대상 유저** — 끝낸 유닛 없음: 넣지 않는다. 튜토리얼만: 턴에는 넣지 않고 첫 인사 · 선톡에서만 노출(「안녕하세요」 · 「감사합니다」). `u01` 이상: 전부.
+- **범위 (20261126)** — 기본 자동(끝낸 유닛 전부). 설정에서 수동으로 바꾸면 고른 에피소드의 끝낸 유닛만 쓴다(`profiles.learning_scope` · `learning_units`, 최대 50).
+  고를 수 있는 것 = 유닛을 하나 이상 끝냈고 표현이 있는 에피소드. 수동인데 고른 것이 없거나 모두 콘텐츠에서 빠졌으면 넣지 않는다(까닭 `manual_empty` — 자동으로 되돌리지 않는다).
+  앱 `companion_learning_scope()` · `companion_set_learning_scope(p_scope, p_units)`(`p_units` null = 목록 그대로), 플레이그라운드는 `companion_operator_*`(시험 계정만).
+  에피소드 제목은 `companion.episodes`(`companion.sync_episodes` — 표현 동기화 SQL에 함께 실림). 튜토리얼 규칙은 고른 범위에 그대로 적용한다.
+- **확인과 기록** — 캐릭터 쪽은 `@state.learned`(모델이 고른 후보) + 노출이면 글자 확인(문형 · 자리 있는 표현은 보고만). 유저 쪽은 직접 입력한 글에서 배운 표현 전체를
+  글자로 보고(한 글자 어휘 제외), 최근 지시한 문형은 피드백 모델이 `learned_used`로 판정한다 → `correction.learnedUsed`(앱 카드 「배운 표현을 썼어요」). 칩 전송은 세지 않는다.
+  `companion_record_learning`이 `companion.user_expressions`를 센다(실패는 로그 `learning_record_failed`만). 저장 meta `learning {open, reason, offered?, mode?, expressionId?, surface?, done?, produced?}`(`offered` = 준 후보의 글, 넘기면 `reason: "skipped"`이고 mode 없음).
+- 지표: `companion_learning_stats(p_since, p_playground = null)`(service_role) — 턴 · 열린 턴 · 넣은 턴 · 방식별 넣음 · 따름 · 출처별 · 까닭(넘김 `skipped` 포함) · 산출 턴 · 유도 뒤 3턴 안 산출 ·
+  다시 쓴 표현(산출 2번 이상, 하루 넘게 떨어져) · 많이 넣은 표현.
+- 평가: `companion-eval`의 `kind: "learning"`(케이스 `target {surface, gloss?, kind?, mode}`) — 운영과 같은 후보 지시(후보 하나 · 그 방식만) · 답 · 모델 보고 · 서버 판정(칩이면 칩 셋).
+  첫 인사 · 선톡의 노출 하나도 같은 후보 지시(후보 하나 · 노출만)다.
+
+### 첫 인사 — companion-greet
+
+대화가 비었을 때(새 대화 · 대화 초기화 뒤) 캐릭터가 먼저 말을 건다(Zeta의 첫 메시지처럼). 앱은 캐릭터 화면을 열 때 메시지가 하나도 없으면 부른다.
+무료다(크레딧 · 체험 횟수를 쓰지 않는다). `_shared/companion-greet-handler.ts`.
+
+- 요청: 앱은 JWT + `{"character_id"}`, ops-dashboard 플레이그라운드는 서버 키 + `{"user_id","character_id"}`(`companion-suggest`와 같은 규칙 — 앱 토큰으로
+  `user_id`를 보내면 401). 계약은 `companion-greet-request` · `companion-greet-response`(JSON Schema).
+- 응답(HTTP 200): `{"status":"ok"|"none"|"unavailable","messageId","segments":[{kind,text,translation?}],"source"?:"model"|"canned","suggestions","reason"?}`.
+  - `none` · `has_messages`: 메시지가 이미 있다(모델 안 부름) — 만드는 사이 다른 호출이 저장했거나 유저가 먼저 보낸 경우 포함. 두 번 불려도 인사는 하나다.
+  - `unavailable`: `chat-send`와 같은 판정 이유(`not_available` · `age_restricted` · `temporarily_blocked` · `usage_time_limit` · `turn_in_progress`).
+  - `suggestions`: 칩 스위치가 켜져 있으면 SSE `suggestions`와 같은 모양(인사 메시지에 저장 — `companion-suggest` 캐시 · 메시지 목록에도 그대로), 꺼져 있으면 null.
+- 흐름: `companion_greet_context`(판정 + 페르소나 · 말투 · 학습자 언어 · 연령대 · 칩 설정 · 기억 · 메시지 있음) → 답 모델(선톡과 같은 페르소나 시스템 프롬프트 +
+  `greetingDirective`, 지난 대화 없이 유저 말 자리에 `greetingUserText`) → **연령과 상관없이 출력 검사**(유저 말 없이 나가는 글이라 선톡과 같다) → L1 번역 · 칩을
+  동시에 → `companion_save_greeting`(대화가 없으면 만들고 그 행을 잠근 뒤 메시지가 없을 때만 `origin: 'greeting'`으로 저장).
+- 생성 실패 · 시간 초과(15초) · 빈 답 · 출력 검사 차단 · 검사 실패면 페르소나의 정해진 인사(`persona.greetingLines[말투]`, 없으면 존댓말 줄, 그것도 없으면
+  코드의 기본 줄) — 인사는 늘 나간다(`source: "canned"`, meta `greetingFallback`).
+- 저장 meta: `model` · `ageBand` · `greeting`(model · canned) · `translation` · `suggestions` · `usage` · `playground`.
+- 인사 뒤 첫 턴: 인사는 보통 캐릭터 메시지라 `chat-send`의 지난 대화 · 입력 검사 맥락 · 칩 건너뛰기(`latestSuggestions`)에 그대로 들어간다. AI 고지(`ai_disclosure`)
+  같은 안내는 지금처럼 첫 턴의 `notice`로 온다(인사에는 붙이지 않는다).
+- 배포: `supabase functions deploy companion-greet`(`verify_jwt = false`). 마이그레이션 20261121120000을 먼저 적용한다.
+
+### 로컬에서 끝까지 돌리기 (운영 DB를 건드리지 않는다)
+
+```sh
+cd apps/supabase-functions
+supabase start -x studio,imgproxy,mailpit,logflare,vector,supavisor,realtime,storage-api   # 마이그레이션 전부 적용
+cp supabase/functions/env.example supabase/functions/.env                                  # 처음 한 번 — 값은 직접
+supabase functions serve --no-verify-jwt                                                   # chat-send · companion-proactive · companion-eval
+```
+
+시험 계정은 Auth admin API로 `app_metadata: { duru_tester: true }`를 붙여 만든다. 앱 경로는 그 계정의 액세스 토큰,
+플레이그라운드 경로는 `Authorization: Bearer <서버 키>` + `x-companion-user-id: <계정 id>`다(서버 키를 가진 ops-dashboard만).
+마이그레이션을 고친 뒤에는 `supabase db reset --local`(로컬 DB만 지운다).
+
+### 운영 적용 (사람이 한다)
+
+운영 프로젝트 `duru`에서 개발한다(위키 05). 새로 생기는 것은 `companion` 스키마 · `public.companion_*` 함수 · Edge Function 셋뿐이고,
+앱은 아직 컴패니언을 부르지 않는다.
+
+1. `supabase db push --dry-run`으로 **컴패니언 마이그레이션 아홉(20261108 ~ 20261116)만** 올라가는지 본다. `main`의 다른 미배포 마이그레이션이 같이 올라가면 멈추고 담당자와 확인한다(위키 05).
+2. `supabase db push`(또는 일곱 SQL을 SQL 편집기에서 차례로). 여섯(20261108 ~ 20261113)을 이미 적용했으면 `20261114120000_companion_inspect_docs.sql`
+   하나만 SQL 편집기에서 실행한다 — 반드시 여섯 **뒤에**(`companion.characters` · `companion.settings`가 있어야 한다).
+   `20261115120000_companion_proactive_prefs.sql`은 20261114 **뒤에** 적용한다. SQL 편집기로 올릴 때는 파일 본문을 `begin; … commit;`으로 감싸고 앞에
+   「20261114가 있는가 · 이미 적용했는가」 검사(`to_regprocedure`)를 둔 묶음을 쓴다 — 이미 적용했으면 아무것도 바꾸지 않고 멈추고,
+   `supabase_migrations.schema_migrations`가 있으면 판을 기록해 뒤의 `supabase db push`가 다시 올리지 않는다.
+   `20261116120000_companion_feedback_card.sql`은 20261115 **뒤에** 적용한다(같은 방식의 묶음 — 이 묶음은 `schema_migrations`에 쓰지 않는다).
+   **새 함수(chat-send)를 배포하기 전에** 적용한다 — 옛 DB의 `companion_finish_turn`은 카드의 `original` · `corrected` · `meaning`을 버린다.
+   `20261118120000_companion_reply_suggestions.sql`은 20261116 **뒤에**, `companion-suggest`를 배포하기 전에 적용한다(같은 방식의 묶음 — `schema_migrations`에 쓰지 않는다).
+   `20261119120000_companion_auto_suggestions.sql`은 20261118 **뒤에** 적용한다(같은 방식의 묶음). 함수보다 먼저든 나중이든 깨지지 않는다 — 옛 DB면 새 `chat-send`가
+   칩을 만들지 않을 뿐이고, 옛 `chat-send`는 판정의 새 칸을 모른 채 그대로 돈다. 그다음 `chat-send` · `companion-suggest`를 다시 배포한다.
+   `20261120120000_companion_turn_cost.sql`은 20261119 **뒤에**, **새 함수(chat-send · companion-proactive)를 배포하기 전에** 적용한다(같은 방식의 묶음).
+   새 `chat-send`는 턴 뒤에 `companion_memory_source`를 먼저 불러서, 옛 DB면 그 호출이 실패해 기억 · 요약이 모두 돌지 않는다(턴 자체는 된다). 옛 `chat-send`는 새 DB에서도
+   그대로 돈다(지난 대화가 요약 뒤로 줄 뿐). 적용 뒤 `chat-send` · `companion-proactive` · `companion-eval`을 다시 배포한다.
+   `20261121110000_companion_suggestion_feedback.sql`은 20261120 **뒤에** 적용한다(같은 방식의 묶음). 함수보다 먼저든 나중이든 깨지지 않는다 — 옛 DB면
+   `latestSuggestions`가 없어 새 `chat-send`가 `skipped`를 만들지 않고 보통처럼 피드백할 뿐이다. 그다음 `chat-send`를 다시 배포한다.
+   `20261121120000_companion_greeting.sql`은 20261121110000 **뒤에**, `companion-greet`를 처음 배포하기 전에 적용한다(같은 방식의 묶음). 옛 DB면 새 함수가
+   맥락을 읽지 못해 500(`context_failed`)을 낸다. 다른 함수는 이 마이그레이션과 상관없다(`companion-eval`의 `?docs=1`에 인사 프롬프트가 더해질 뿐).
+   `20261123120000_companion_quality.sql`은 20261122 **뒤에**, **새 함수(chat-send · companion-proactive)를 배포하기 전에** 적용한다(같은 방식의 묶음). 새 함수는
+   `companion_apply_memory_ops` · `companion_save_proactive(…, p_suggestions)`를 불러서 옛 DB면 기억 작업 · 칩 붙은 선톡 저장이 실패한다. 적용 뒤 `chat-send` ·
+   `companion-proactive` · `companion-greet` · `companion-eval`을 다시 배포하고, 예약 `companion-memory-flush`를 `supabase/cron/companion.sql`에서 더한다.
+   `20261124120000_companion_ratings_resend.sql`은 20261123 **뒤에**, 새 `chat-send`를 배포하기 전에 적용한다(같은 방식의 묶음). 옛 DB에서 새 `chat-send`는
+   `replaces_message_id`가 온 턴만 시작이 실패한다(500 `begin_failed`) — 보통 턴은 그대로다. 평가 RPC는 함수 배포와 상관없다. 적용 뒤 `chat-send`를 다시 배포한다.
+   `20261125120000_companion_learning.sql`은 20261124 **뒤에**, 새 함수를 배포하기 전에 적용한다(같은 방식의 묶음). 옛 DB면 새 함수가 기록(`companion_record_learning`)을
+   부를 때만 실패하고(로그만) 턴 · 인사 · 선톡은 그대로 돈다 — 넣기 설정이 없어 기본값을 쓴다. 적용 뒤 `chat-send` · `companion-greet` · `companion-proactive` ·
+   `companion-eval` · `companion-suggest`를 다시 배포한다.
+   `20261126120000_companion_learning_scope.sql`은 20261125 **뒤에** 적용한다(같은 방식의 묶음). 함수는 다시 배포하지 않아도 범위가 적용된다(맥락 RPC가 거른다) —
+   `chat-send`를 다시 배포하면 비어 있는 수동 범위의 까닭이 `no_pool` 대신 `manual_empty`로 남는다. 적용 뒤 표현 동기화 SQL(6번)을 다시 돌리면 에피소드 제목이 찬다.
+3. 비밀: `supabase secrets set --env-file supabase/functions/.env`. 키가 아직 없으면 `COMPANION_LLM=fake`로 화면만 먼저 본다.
+4. `supabase functions deploy chat-send` · `supabase functions deploy companion-proactive` · `supabase functions deploy companion-eval`(`config.toml`의 `verify_jwt = false`를 따른다).
+5. 예약 작업: Vault에 서버 키(`companion_service_role_key`)를 넣고 `supabase/cron/companion.sql`을 SQL 편집기에서 한 번 실행한다.
+6. 학습 표현: `node devtools/companion-expressions/build.mjs --base <버킷 주소> --out /tmp/expr`로 만든 `sync-expressions.sql`을 SQL 편집기에서 한 번 실행한다.
+7. 시험 계정에 `duru_tester`를 켜고 플레이그라운드에서 정상 · 위기 · 차단 · 크레딧 턴을 한 번씩 돌린다.
+
+되돌리기: 함수는 `supabase functions delete chat-send` · `companion-proactive` · `companion-eval`, 예약은 `select cron.unschedule('companion-…')`.
+표 · 함수는 `drop schema companion cascade` 뒤 `public.companion_*` 함수를 지운다(다른 기능이 쓰지 않는다).

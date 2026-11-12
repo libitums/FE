@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "status": {
+      "type": "string",
+      "enum": ["ok", "none", "unavailable"]
+    },
+    "messageId": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "items": {
+      "maxItems": 3,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 1
+          },
+          "meaning": {
+            "type": ["string", "null"]
+          },
+          "intent": {
+            "type": "string",
+            "enum": ["elaborate", "ask", "reflect", "redirect", "boundary", "progress"]
+          }
+        },
+        "required": ["text", "meaning", "intent"],
+        "additionalProperties": false
+      }
+    },
+    "cached": {
+      "type": "boolean"
+    },
+    "reason": {
+      "type": "string",
+      "enum": [
+        "no_assistant_message",
+        "latest_turn_blocked",
+        "latest_turn_crisis",
+        "latest_turn_refusal",
+        "suggestions_off",
+        "not_available",
+        "age_restricted",
+        "temporarily_blocked",
+        "usage_time_limit",
+        "turn_in_progress",
+        "suggestions_disabled",
+        "generation_failed",
+        "blocked",
+        "no_valid_candidates"
+      ]
+    }
+  },
+  "required": ["status", "messageId", "items", "cached"],
+  "additionalProperties": false
+}

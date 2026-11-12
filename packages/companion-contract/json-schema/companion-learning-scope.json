@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "scope": {
+      "type": "string",
+      "enum": ["auto", "manual"]
+    },
+    "units": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "empty": {
+      "type": "boolean"
+    },
+    "options": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "episode": {
+            "type": "string"
+          },
+          "title": {
+            "type": ["string", "null"]
+          },
+          "completedUnits": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "expressions": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "selected": {
+            "type": "boolean"
+          }
+        },
+        "required": ["episode", "title", "completedUnits", "expressions", "selected"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": ["scope", "units", "empty", "options"],
+  "additionalProperties": false
+}

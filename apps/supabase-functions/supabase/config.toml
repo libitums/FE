@@ -4,5 +4,20 @@ project_id = "duru"
 [functions.delete-account]
 verify_jwt = false
 
+[functions.chat-send]
+verify_jwt = false
+
+[functions.companion-proactive]
+verify_jwt = false
+
+[functions.companion-eval]
+verify_jwt = false
+
+[functions.companion-suggest]
+verify_jwt = false
+
+[functions.companion-greet]
+verify_jwt = false
+
 [functions.send-push]
 verify_jwt = false

@@ -1,0 +1,1699 @@
+import { describe, expect, test } from "vitest";
+
+import type {
+  LlmUsage,
+  ChatSendEnv,
+  ChatSendLogEntry,
+  CompanionLlm,
+  Feedback,
+  ModerationVerdict,
+} from "./chat-send.contract.ts";
+import { createChatSendHandler } from "./chat-send-handler.ts";
+import { fakeCompanionLlm } from "./companion-llm-fake.ts";
+import { emptyFeedback } from "./companion-llm-prompts.ts";
+import {
+  checkTurnOrder,
+  decodeTurnEvent,
+  parseSse,
+  type TurnEvent,
+} from "./companion-contract/index.ts";
+import type { SuggestRequest } from "./companion-suggest.contract.ts";
+import type { OutboundRequest } from "./delete-account.contract.ts";
+
+const userId = "00000000-0000-4000-8000-000000000001";
+const env: ChatSendEnv = {
+  supabaseUrl: "https://ref.supabase.co",
+  supabaseAnonKey: "anon",
+  supabaseServiceRoleKey: "service-secret",
+  llm: { kind: "fake" },
+  translation: "every",
+};
+const okGate = {
+  result: "ok",
+  ageBand: "unknown",
+  l1: "en",
+  region: null,
+  tier: "free",
+  feedbackMode: "separate",
+  memoryEnabled: true,
+  notices: ["ai_disclosure", "minor_notice"],
+};
+const begun = {
+  result: "ok",
+  holdId: "70000000-0000-4000-8000-000000000001",
+  creditsReserved: 0,
+  trial: true,
+  topicState: null,
+  memories: [{ kind: "fact", content: "고양이를 키운다", shared: true }],
+  conversationId: "30000000-0000-4000-8000-000000000001",
+  userMessageId: "40000000-0000-4000-8000-000000000001",
+  speechLevel: "polite",
+  persona: { name: "덕수쌤", topics: ["퀴즈"] },
+  summary: null,
+  history: [{ role: "user", text: "전에 한 말", segments: [] }],
+};
+const finished = {
+  speechLevel: "polite",
+  speechLevelChanged: false,
+  creditsSpent: 0,
+  balance: null,
+};
+const assistantId = "50000000-0000-4000-8000-000000000001";
+const legacyKey = "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoic2VydmljZV9yb2xlIn0.c2lnbmF0dXJl";
+
+type Rpc = { fn: string; args: Record<string, unknown> };
+type Options = {
+  gate?: unknown;
+  begin?: unknown;
+  finish?: unknown;
+  summarySource?: unknown;
+  memorySource?: unknown;
+  status?: unknown;
+  llm?: CompanionLlm | null;
+  envOverride?: ChatSendEnv | null;
+  authStatus?: number;
+  translationTimeoutMs?: number;
+  suggestionTimeoutMs?: number;
+  saveStatus?: number;
+  random?: () => number;
+  learning?: unknown;
+};
+
+function setup(options: Options = {}) {
+  const rpcs: Rpc[] = [];
+  const logs: ChatSendLogEntry[] = [];
+  const pending: Promise<unknown>[] = [];
+  const responses: Record<string, unknown> = {
+    companion_turn_gate: options.gate ?? okGate,
+    companion_begin_turn: options.begin ?? begun,
+    companion_begin_replacement: options.begin ?? begun,
+    companion_learning_context: options.learning ?? {
+      episodes: ["u01-water"],
+      expressions: [{ id: "voca:water", kind: "voca", surface: "물", roman: null, gloss: "water" }],
+    },
+    companion_record_learning: 1,
+    companion_finish_turn: options.finish ?? finished,
+    companion_turn_status:
+      options.status === undefined
+        ? { strikes: 0, strikeLimit: 3, memoryFull: false }
+        : options.status,
+    companion_apply_memory_ops: {
+      added: 1,
+      updated: 0,
+      forgotten: 0,
+      evicted: 0,
+      skipped: 0,
+      protected: 0,
+      full: false,
+    },
+    companion_summary_source: options.summarySource ?? null,
+    companion_memory_source: options.memorySource ?? null,
+    companion_mark_memories: null,
+    companion_save_summary: null,
+    companion_save_suggestions: true,
+  };
+  const outbound = async (request: OutboundRequest) => {
+    // 서버 키 확인: 런타임 키와 다른 레거시 키를 Auth 관리 API가 받아 준다.
+    if (request.url.includes("/auth/v1/admin/users")) {
+      return {
+        status: request.headers["apikey"] === legacyKey ? 200 : 401,
+        text: async () => "{}",
+      };
+    }
+    if (request.url.endsWith("/auth/v1/user")) {
+      return {
+        status: options.authStatus ?? 200,
+        text: async () => JSON.stringify({ id: userId }),
+      };
+    }
+    const fn = request.url.split("/rpc/")[1]!;
+    rpcs.push({ fn, args: JSON.parse(request.body ?? "{}") as Record<string, unknown> });
+    if (fn === "companion_save_suggestions" && options.saveStatus !== undefined)
+      return { status: options.saveStatus, text: async () => "" };
+    const body = responses[fn] ?? null;
+    return { status: 200, text: async () => (body === null ? "" : JSON.stringify(body)) };
+  };
+  const handler = createChatSendHandler({
+    env: options.envOverride === undefined ? env : options.envOverride,
+    outbound,
+    llm: options.llm === undefined ? fakeCompanionLlm() : options.llm,
+    nowMs: () => Date.parse("2026-11-09T09:00:00Z"),
+    randomUuid: () => assistantId,
+    waitUntil: (work) => pending.push(work),
+    log: (entry) => logs.push(entry),
+    pingIntervalMs: 60_000,
+    translationTimeoutMs: options.translationTimeoutMs ?? 500,
+    suggestionTimeoutMs: options.suggestionTimeoutMs ?? 500,
+    llmTimeoutMs: 2_000,
+    feedbackTimeoutMs: 200,
+    refusalTimeoutMs: 300,
+    // 분기 확률을 넘기지 않게 고정 — 지시가 붙지 않는다(바꾼 테스트만 지시가 붙는다).
+    random: options.random ?? (() => 0.99),
+  });
+  const finishArgs = () => rpcs.find((rpc) => rpc.fn === "companion_finish_turn")?.args;
+  return { handler, rpcs, logs, finishArgs, settle: () => Promise.all(pending) };
+}
+
+const body = (overrides: Record<string, unknown> = {}) =>
+  JSON.stringify({
+    contract_version: 1,
+    character_id: "duksu",
+    client_message_id: "6f1c3a2e-8d4b-4c1a-9f2e-1a2b3c4d5e6f",
+    text: "안녕하세요 저는 마리아 이에요",
+    input_mode: "text",
+    ...overrides,
+  });
+const post = (
+  payload: string = body(),
+  headers: Record<string, string> = { Authorization: "Bearer user-token" },
+) =>
+  new Request("https://ref.supabase.co/functions/v1/chat-send", {
+    method: "POST",
+    headers,
+    body: payload,
+  });
+
+async function events(response: Response): Promise<TurnEvent[]> {
+  return parseSse(await response.text()).map((raw) => {
+    const decoded = decodeTurnEvent(raw);
+    if (!decoded.ok) throw new Error(`invalid event ${raw.event}: ${raw.data}`);
+    return decoded.event;
+  });
+}
+const names = (list: TurnEvent[]) => list.map((event) => event.event);
+
+const llmWith = (
+  overrides: Partial<{
+    input: ModerationVerdict;
+    output: ModerationVerdict;
+    failures: number;
+    feedback: () => Promise<Feedback>;
+  }>,
+): CompanionLlm => {
+  const base = fakeCompanionLlm();
+  let failures = overrides.failures ?? 0;
+  return {
+    ...base,
+    model: "test",
+    async *reply(request) {
+      if (failures > 0) {
+        failures -= 1;
+        throw new Error("upstream down");
+      }
+      yield* base.reply(request);
+    },
+    async moderate(request) {
+      if (request.layer === "input")
+        return overrides.input ?? { category: "safe", action: "allow" };
+      return overrides.output ?? { category: "safe", action: "allow" };
+    },
+    feedback: overrides.feedback ?? base.feedback,
+  };
+};
+
+describe("스트림 전 판정", () => {
+  test("CS1. 메서드 · 설정 · 토큰 · 본문", async () => {
+    const { handler } = setup();
+    expect((await handler(new Request("https://x/chat-send", { method: "GET" }))).status).toBe(405);
+    expect((await setup({ envOverride: null }).handler(post())).status).toBe(500);
+    expect((await handler(post(body(), {}))).status).toBe(401);
+    expect((await setup({ authStatus: 401 }).handler(post())).status).toBe(401);
+    const invalid = await handler(post(body({ text: "   " })));
+    expect(await invalid.json()).toEqual({
+      error: "invalid_request",
+      retryable: false,
+      detail: { field: "text" },
+    });
+    const version = await handler(post(body({ contract_version: 9 })));
+    expect(await version.json()).toEqual({
+      error: "unsupported_contract_version",
+      retryable: false,
+      detail: { supported: [1] },
+    });
+  });
+
+  test("CS2. 판정 · 예약 결과가 정해진 HTTP 오류로 나간다", async () => {
+    const closed = await setup({
+      gate: { result: "temporarily_blocked", detail: { until: "2026-11-09T09:30:00Z" } },
+    }).handler(post());
+    expect(closed.status).toBe(403);
+    expect(await closed.json()).toEqual({
+      error: "temporarily_blocked",
+      retryable: false,
+      detail: { until: "2026-11-09T09:30:00Z" },
+    });
+    const trial = await setup({
+      begin: { result: "trial_exhausted", detail: { characterId: "duksu" } },
+    }).handler(post());
+    expect(trial.status).toBe(402);
+    expect(await trial.json()).toMatchObject({ error: "trial_exhausted" });
+    const credits = await setup({
+      begin: { result: "insufficient_credits", detail: { required: 1, balance: 0 } },
+    }).handler(post());
+    expect(await credits.json()).toEqual({
+      error: "insufficient_credits",
+      retryable: false,
+      detail: { required: 1, balance: 0 },
+    });
+  });
+
+  test("CS3. 플레이그라운드 경로 — 서버 키 + 유저 헤더, 지역은 판정 · 시작에 넘긴다", async () => {
+    const { handler, rpcs, finishArgs, settle } = setup();
+    const playground = "00000000-0000-4000-8000-0000000000aa";
+    const response = await handler(
+      post(body({ client_region: "US" }), {
+        Authorization: "Bearer service-secret",
+        "x-companion-user-id": playground,
+      }),
+    );
+    await response.text();
+    await settle();
+    expect(rpcs[0]).toMatchObject({
+      fn: "companion_turn_gate",
+      args: { p_user_id: playground, p_region: "US" },
+    });
+    expect(rpcs.find((rpc) => rpc.fn === "companion_begin_turn")?.args).toMatchObject({
+      p_region: "US",
+    });
+    expect(finishArgs()).toMatchObject({ p_assistant: { meta: { playground: true } } });
+    const asPlayground = (key: string, user: string = playground) =>
+      handler(post(body(), { Authorization: `Bearer ${key}`, "x-companion-user-id": user }));
+    expect((await asPlayground("service-secret", "not-a-uuid")).status).toBe(401);
+    // 운영(2026-11-09): 런타임은 새 비밀 키, 대시보드는 레거시 service_role 키 — Auth가 받아 주면 통과한다.
+    const legacy = await asPlayground(legacyKey);
+    expect(legacy.status).toBe(200);
+    await legacy.text();
+    expect((await asPlayground("eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiYW5vbiJ9.Zm9yZ2Vk")).status).toBe(
+      401,
+    );
+    await settle();
+  });
+});
+
+describe("턴 스트림", () => {
+  test("CS4. 정상 턴 — 출력 검사 뒤 조각, 교정 한 번, state · done은 저장 결과로", async () => {
+    const { handler, finishArgs, settle } = setup({
+      finish: { speechLevel: "casual", speechLevelChanged: true, creditsSpent: 1, balance: 4 },
+    });
+    const list = await events(await handler(post()));
+    await settle();
+    expect(checkTurnOrder(list)).toEqual({ ok: true });
+    expect(names(list).slice(0, 3)).toEqual(["start", "notice", "notice"]);
+    expect(list.filter((event) => event.event === "correction")).toEqual([
+      {
+        event: "correction",
+        id: expect.any(Number),
+        data: {
+          userMessageId: begun.userMessageId,
+          status: "ok",
+          kind: "correction",
+          original: "안녕하세요 저는 마리아 이에요",
+          corrected: "안녕하세요 저는 마리아이에요",
+          items: [
+            { original: "마리아 이에요", corrected: "마리아이에요", reason: expect.any(String) },
+          ],
+          better: null,
+          meaning: null,
+        },
+      },
+    ]);
+    expect(list.at(-2)).toMatchObject({
+      event: "state",
+      data: { speechLevel: "casual", speechLevelChanged: true },
+    });
+    expect(list.at(-1)).toMatchObject({ event: "done", data: { creditsSpent: 1, balance: 4 } });
+    // @state 줄은 말풍선으로 나가지 않고 친밀도 · 화제로 저장된다.
+    expect(
+      list.some((event) => event.event === "delta" && event.data.text.includes("@state")),
+    ).toBe(false);
+    expect(finishArgs()).toMatchObject({
+      p_status: "complete",
+      p_hold_id: begun.holdId,
+      p_intimacy_delta: 1,
+      p_topic_state: { turn: 1, topic: "인사", topicTurns: 1 },
+      p_feedback: { status: "ok", kind: "correction" },
+      p_moderation: [
+        { layer: "input", category: "safe", action: "allow" },
+        { layer: "output_sync", category: "safe", action: "allow" },
+      ],
+    });
+  });
+
+  test("CS5. 위기 — 답 · 교정 없이 crisis와 done, 위기로 저장(예약 해제는 finish가 한다)", async () => {
+    const { handler, finishArgs, settle } = setup();
+    const list = await events(
+      await handler(post(body({ text: "요즘 죽고 싶어요", client_region: "PH" }))),
+    );
+    await settle();
+    expect(checkTurnOrder(list)).toEqual({ ok: true });
+    expect(names(list)).toEqual(["start", "notice", "notice", "crisis", "done"]);
+    expect(list[3]).toMatchObject({ data: { region: "PH", resources: [{ phone: "1553" }] } });
+    expect(finishArgs()).toMatchObject({
+      p_status: "crisis",
+      p_hold_id: begun.holdId,
+      p_feedback: null,
+    });
+  });
+
+  test("CS6. 일시 차단에 닿는 입력 차단 · 출력 차단 — 조각 · 교정 없이 guardrail_blocked", async () => {
+    for (const text of ["사랑해 [block]", "괜찮아요 [unsafe-reply]"]) {
+      const { handler, finishArgs, settle } = setup({
+        status: { strikes: 2, strikeLimit: 3, memoryFull: false },
+      });
+      const list = await events(await handler(post(body({ text }))));
+      await settle();
+      expect(checkTurnOrder(list)).toEqual({ ok: true });
+      expect(names(list).filter((name) => name === "delta" || name === "correction")).toEqual([]);
+      expect(list.at(-1)).toMatchObject({
+        event: "error",
+        data: { code: "guardrail_blocked", retryable: false },
+      });
+      expect(finishArgs()).toMatchObject({ p_status: "blocked", p_assistant: null });
+    }
+  });
+
+  test("CS7. 성인은 받는 대로 보내고, 피드백이 늦으면 unavailable로 끝낸다", async () => {
+    const slow = llmWith({
+      feedback: () =>
+        new Promise((resolve) =>
+          setTimeout(() => resolve(emptyFeedback("none", "느린 답")), 5_000),
+        ),
+    });
+    const { handler, finishArgs, settle } = setup({
+      gate: { ...okGate, ageBand: "adult", notices: [] },
+      llm: slow,
+    });
+    const list = await events(await handler(post()));
+    await settle();
+    expect(checkTurnOrder(list)).toEqual({ ok: true });
+    expect(list.find((event) => event.event === "correction")).toMatchObject({
+      data: { status: "unavailable" },
+    });
+    expect((finishArgs()!["p_moderation"] as unknown[]).length).toBe(1);
+  });
+
+  test("CS8. LLM 실패 — 한 번 다시 시도, 그래도 실패면 upstream_unavailable · failed 저장", async () => {
+    const once = setup({ llm: llmWith({ failures: 1 }) });
+    expect(names(await events(await once.handler(post()))).at(-1)).toBe("done");
+    await once.settle();
+    const twice = setup({ llm: llmWith({ failures: 2 }) });
+    const failed = await events(await twice.handler(post()));
+    await twice.settle();
+    expect(failed.at(-1)).toMatchObject({
+      event: "error",
+      data: { code: "upstream_unavailable", retryable: true },
+    });
+    expect(twice.finishArgs()).toMatchObject({ p_status: "failed", p_notices: [] });
+  });
+
+  // 기억 묶음: 유저 메시지가 settings.memory_every개 모이면 `companion_memory_source`가 메시지들을 준다(마이그레이션 20261120).
+  const memoryBatch = {
+    until: "2026-11-09T08:30:00Z",
+    sourceMessageId: "40000000-0000-4000-8000-000000000009",
+    messages: [
+      { role: "user", text: "저는 떡볶이를 좋아해요", segments: [] },
+      { role: "assistant", text: null, segments: [{ kind: "speech", text: "맛있죠!" }] },
+    ],
+  };
+
+  test("CS9. 앱이 끊어도 턴과 뒤 작업(기억 묶음 · 요약)은 끝까지 돈다", async () => {
+    const { handler, rpcs, settle } = setup({
+      summarySource: {
+        summary: null,
+        until: "2026-11-09T08:00:00Z",
+        messages: [{ role: "user", text: "옛말", segments: [] }],
+      },
+      memorySource: memoryBatch,
+    });
+    const response = await handler(post(body({ text: "안녕하세요 [slow]" })));
+    await response.body!.cancel();
+    await settle();
+    expect(rpcs.find((rpc) => rpc.fn === "companion_finish_turn")?.args).toMatchObject({
+      p_status: "complete",
+    });
+    expect(rpcs.find((rpc) => rpc.fn === "companion_memory_source")?.args).toMatchObject({
+      p_conversation_id: begun.conversationId,
+    });
+    // 묶음의 유저 메시지에서 뽑고, 멱등 키는 묶음의 마지막 유저 메시지다.
+    expect(rpcs.find((rpc) => rpc.fn === "companion_apply_memory_ops")?.args).toMatchObject({
+      p_source_message_id: memoryBatch.sourceMessageId,
+      p_ops: [{ op: "add", kind: "fact", content: "떡볶이를 좋아한다", shared: true }],
+    });
+    expect(rpcs.find((rpc) => rpc.fn === "companion_mark_memories")?.args).toEqual({
+      p_conversation_id: begun.conversationId,
+      p_until: memoryBatch.until,
+    });
+    expect(rpcs.find((rpc) => rpc.fn === "companion_save_summary")?.args).toMatchObject({
+      p_until: "2026-11-09T08:00:00Z",
+    });
+  });
+
+  test("CS9b. 칩을 그대로 고른 유저 말(inputSource suggestion)은 기억 추출에 표시가 붙는다", async () => {
+    const seen: unknown[] = [];
+    const base = fakeCompanionLlm();
+    const llm: CompanionLlm = {
+      ...base,
+      async extractMemories(request) {
+        seen.push(...request.messages);
+        return base.extractMemories(request);
+      },
+    };
+    const { handler, settle } = setup({
+      llm,
+      memorySource: {
+        ...memoryBatch,
+        messages: [
+          { role: "user", text: "저는 서울에 살아요", segments: [], inputSource: "suggestion" },
+          { role: "user", text: "저는 떡볶이를 좋아해요", segments: [], inputSource: "manual" },
+        ],
+      },
+    });
+    await events(await handler(post()));
+    await settle();
+    expect(seen).toEqual([
+      { role: "user", text: "저는 서울에 살아요", picked: true },
+      { role: "user", text: "저는 떡볶이를 좋아해요" },
+    ]);
+  });
+
+  test("CS9c. 기존 기억은 번호로 보이고, 고치기 · 잊기는 기억 id로 바꿔 적용한다", async () => {
+    const seen: unknown[] = [];
+    const base = fakeCompanionLlm();
+    const llm: CompanionLlm = {
+      ...base,
+      async extractMemories(request) {
+        seen.push(request.existing);
+        return base.extractMemories(request);
+      },
+    };
+    const home = "50000000-0000-4000-8000-000000000001";
+    const { handler, rpcs, settle, logs } = setup({
+      llm,
+      memorySource: {
+        ...memoryBatch,
+        messages: [{ role: "user", text: "저 부산으로 이사했어요", segments: [] }],
+        existing: [
+          { id: home, kind: "fact", content: "서울에 산다", shared: true, userEdited: false },
+          {
+            id: "50000000-0000-4000-8000-000000000002",
+            kind: "fact",
+            content: "이름은 마리아",
+            shared: true,
+            userEdited: true,
+          },
+        ],
+      },
+    });
+    await events(await handler(post()));
+    await settle();
+    expect(seen).toEqual([
+      [
+        { ref: "m1", content: "서울에 산다", shared: true, locked: false },
+        { ref: "m2", content: "이름은 마리아", shared: true, locked: true },
+      ],
+    ]);
+    expect(rpcs.find((rpc) => rpc.fn === "companion_apply_memory_ops")?.args).toMatchObject({
+      p_ops: [{ op: "update", id: home, content: "부산에 산다", reason: "fake" }],
+    });
+    expect(logs).toContainEqual(
+      expect.objectContaining({
+        event: "companion_after_turn",
+        outcome: expect.stringContaining("updated=0 forgotten=0 protected=0"),
+      }),
+    );
+  });
+
+  test("CS10. 장기 메모리를 끈 판정이면 추출하지 않고 표시만 옮긴다(미국 12 ~ 15세)", async () => {
+    const { handler, rpcs, settle } = setup({
+      gate: { ...okGate, memoryEnabled: false },
+      memorySource: memoryBatch,
+    });
+    await (await handler(post(body({ text: "저는 떡볶이를 좋아해요" })))).text();
+    await settle();
+    expect(rpcs.some((rpc) => rpc.fn === "companion_apply_memory_ops")).toBe(false);
+    expect(rpcs.find((rpc) => rpc.fn === "companion_mark_memories")?.args).toMatchObject({
+      p_until: memoryBatch.until,
+    });
+  });
+
+  test("CS29. 묶음이 차지 않았으면 기억을 뽑지 않는다 — 턴마다 추출하지 않는다", async () => {
+    let extracted = 0;
+    const llm: CompanionLlm = {
+      ...fakeCompanionLlm(),
+      extractMemories: async () => {
+        extracted += 1;
+        return [];
+      },
+    };
+    const { handler, rpcs, settle } = setup({ llm });
+    await (await handler(post(body({ text: "저는 떡볶이를 좋아해요" })))).text();
+    await settle();
+    expect(rpcs.some((rpc) => rpc.fn === "companion_memory_source")).toBe(true);
+    expect(extracted).toBe(0);
+    expect(rpcs.some((rpc) => rpc.fn === "companion_apply_memory_ops")).toBe(false);
+    expect(rpcs.some((rpc) => rpc.fn === "companion_mark_memories")).toBe(false);
+  });
+
+  test("CS30. 지난 대화는 요약 뒤 전부(상한 100) — 요약 뒤 남기는 수는 20", async () => {
+    const { handler, rpcs, settle } = setup({
+      summarySource: { summary: null, until: "2026-11-09T08:00:00Z", messages: [] },
+    });
+    await (await handler(post(body()))).text();
+    await settle();
+    expect(rpcs.find((rpc) => rpc.fn === "companion_begin_turn")?.args).toMatchObject({
+      p_history_limit: 100,
+    });
+    expect(rpcs.find((rpc) => rpc.fn === "companion_summary_source")?.args).toMatchObject({
+      p_keep: 20,
+    });
+  });
+
+  test("CS31. 사용량을 단계별로 모아 저장 meta · 로그에 싣는다", async () => {
+    const fake = fakeCompanionLlm();
+    const usageOf = (step: LlmUsage["step"]): LlmUsage => ({
+      step,
+      model: "m",
+      inputTokens: 10,
+      cacheReadTokens: 5,
+      cacheWriteTokens: 1,
+      outputTokens: 2,
+    });
+    const recording = (record: (usage: LlmUsage) => void): CompanionLlm => ({
+      ...fake,
+      async *reply(request) {
+        yield* fake.reply(request);
+        record(usageOf("reply"));
+      },
+      async moderate(request) {
+        record(usageOf(request.layer === "input" ? "moderation_input" : "moderation_output"));
+        return fake.moderate(request);
+      },
+      async feedback(request) {
+        record(usageOf("feedback"));
+        return fake.feedback(request);
+      },
+    });
+    const { handler, rpcs, logs, settle } = setup({
+      gate: { ...okGate, ageBand: "adult", notices: [] },
+      llm: { ...fake, withUsage: recording },
+    });
+    await (await handler(post(body()))).text();
+    await settle();
+    const meta = (
+      rpcs.find((rpc) => rpc.fn === "companion_finish_turn")?.args["p_assistant"] as {
+        meta: { usage: Record<string, unknown> };
+      }
+    ).meta;
+    expect(meta.usage).toEqual({
+      reply: {
+        model: "m",
+        calls: 1,
+        inputTokens: 10,
+        cacheReadTokens: 5,
+        cacheWriteTokens: 1,
+        outputTokens: 2,
+      },
+      moderation_input: {
+        model: "m",
+        calls: 1,
+        inputTokens: 10,
+        cacheReadTokens: 5,
+        cacheWriteTokens: 1,
+        outputTokens: 2,
+      },
+      feedback: {
+        model: "m",
+        calls: 1,
+        inputTokens: 10,
+        cacheReadTokens: 5,
+        cacheWriteTokens: 1,
+        outputTokens: 2,
+      },
+    });
+    const line = logs.find(
+      (entry) => entry.event === "chat_send" && entry.status === "stream",
+    )?.outcome;
+    expect(line).toMatch(/^complete usage /);
+    expect(line).toContain("reply=10/5/1/2");
+  });
+
+  test("CS32. 이번 턴 지시는 시스템 프롬프트가 아니라 답 요청의 directive로 · 입력 검사는 직전 캐릭터 말을 맥락으로", async () => {
+    const fake = fakeCompanionLlm();
+    const replies: { system: string; directive?: string | null }[] = [];
+    const contexts: (string | null)[] = [];
+    const llm: CompanionLlm = {
+      ...fake,
+      reply(request) {
+        replies.push({ system: request.system, directive: request.directive ?? null });
+        return fake.reply(request);
+      },
+      async moderate(request) {
+        if (request.layer === "input") contexts.push(request.context);
+        return fake.moderate(request);
+      },
+    };
+    const { handler, settle } = setup({
+      llm,
+      random: () => 0,
+      begin: {
+        ...begun,
+        // 같은 화제가 오래 이어져 화제 전환 지시가 붙는 상태.
+        topicState: {
+          turn: 9,
+          topic: "날씨",
+          topicTurns: 6,
+          shortStreak: 3,
+          wantsSwitch: true,
+          lastInsertTurn: null,
+          lastSwitchTurn: null,
+        },
+        history: [
+          { role: "user", text: "전에 한 말", segments: [] },
+          { role: "assistant", text: null, segments: [{ kind: "speech", text: "같이 갈래요?" }] },
+        ],
+      },
+    });
+    await (await handler(post(body({ text: "응 할게" })))).text();
+    await settle();
+    expect(contexts).toEqual(["같이 갈래요?"]);
+    expect(replies[0]?.system).not.toContain("# For this reply");
+    expect(replies[0]?.directive).toEqual(expect.any(String));
+  });
+});
+
+describe("L1 번역", () => {
+  const adult = { ...okGate, ageBand: "adult", notices: [] };
+  const translationsOf = (list: TurnEvent[]) =>
+    list.flatMap((event) => (event.event === "translation" ? [event.data] : []));
+  const storedSegments = (args: Record<string, unknown> | undefined) =>
+    (args?.["p_assistant"] as { segments: { kind: string; text: string; translation?: string }[] })
+      .segments;
+  const translatingWith = (translate: CompanionLlm["translate"]): CompanionLlm => ({
+    ...fakeCompanionLlm(),
+    translate,
+  });
+
+  test("CS11. 조각 delta 뒤 · state 앞에 조각마다 translation, 저장 조각에도 번역", async () => {
+    for (const gate of [okGate, adult]) {
+      const { handler, finishArgs, settle } = setup({ gate });
+      const list = await events(await handler(post()));
+      await settle();
+      expect(checkTurnOrder(list)).toEqual({ ok: true });
+      const kinds = names(list);
+      const firstTranslation = kinds.indexOf("translation");
+      expect(kinds.lastIndexOf("delta")).toBeLessThan(firstTranslation);
+      expect(kinds.lastIndexOf("translation")).toBeLessThan(kinds.indexOf("state"));
+      const segments = storedSegments(finishArgs());
+      expect(translationsOf(list)).toEqual(
+        segments.map((segment, index) => ({ segment: index, text: `[en] ${segment.text}` })),
+      );
+      expect(segments.length).toBe(3);
+      expect(segments[0]).toEqual({
+        kind: "action",
+        text: "이동식 칠판을 끌고 온다",
+        translation: "[en] 이동식 칠판을 끌고 온다",
+      });
+      expect(finishArgs()).toMatchObject({ p_assistant: { meta: { translation: "ok" } } });
+    }
+  });
+
+  test("CS12. COMPANION_TRANSLATION=off면 번역 이벤트 · 저장 번역이 없다", async () => {
+    const { handler, finishArgs, settle } = setup({ envOverride: { ...env, translation: "off" } });
+    const list = await events(await handler(post()));
+    await settle();
+    expect(translationsOf(list)).toEqual([]);
+    expect(storedSegments(finishArgs()).some((segment) => "translation" in segment)).toBe(false);
+    expect(finishArgs()).toMatchObject({ p_assistant: { meta: { translation: "off" } } });
+  });
+
+  test("CS13. 학습자 언어가 한국어면 건너뛰고, 모르면 영어", async () => {
+    const korean = setup({ gate: { ...okGate, l1: "ko-KR" } });
+    expect(translationsOf(await events(await korean.handler(post())))).toEqual([]);
+    await korean.settle();
+    expect(korean.finishArgs()).toMatchObject({
+      p_assistant: { meta: { translation: "skipped_ko" } },
+    });
+    const unknown = setup({ gate: { ...okGate, l1: null } });
+    const list = await events(await unknown.handler(post()));
+    await unknown.settle();
+    expect(translationsOf(list)[0]?.text.startsWith("[en] ")).toBe(true);
+  });
+
+  test("CS14. 번역 실패 · 시간 초과 · 개수 틀림은 턴을 실패시키지 않는다 — 번역만 없고 로그에 남는다", async () => {
+    const cases: [CompanionLlm["translate"], string][] = [
+      [async () => Promise.reject(new Error("overloaded")), "failed"],
+      [() => new Promise(() => undefined), "timeout"],
+      [async () => ["하나뿐"], "mismatch"],
+    ];
+    for (const [translate, status] of cases) {
+      const { handler, finishArgs, logs, settle } = setup({
+        llm: translatingWith(translate),
+        translationTimeoutMs: 50,
+      });
+      const list = await events(await handler(post()));
+      await settle();
+      expect(checkTurnOrder(list)).toEqual({ ok: true });
+      expect(list.at(-1)?.event).toBe("done");
+      expect(translationsOf(list)).toEqual([]);
+      expect(finishArgs()).toMatchObject({
+        p_status: "complete",
+        p_assistant: { meta: { translation: status } },
+      });
+      expect(logs).toContainEqual({
+        event: "chat_send",
+        status: "stream",
+        outcome: "translation_unavailable",
+        error: status,
+      });
+    }
+  });
+
+  test("CS14b. 번역은 앞 대화(이번 유저 말까지)와 캐릭터 이름을 받고, 실패하면 시간이 남았을 때 한 번 다시 시도한다", async () => {
+    const requests: Parameters<CompanionLlm["translate"]>[0][] = [];
+    let calls = 0;
+    const base = fakeCompanionLlm();
+    const { handler, finishArgs, settle } = setup({
+      llm: translatingWith(async (request) => {
+        requests.push(request);
+        calls += 1;
+        if (calls === 1) throw new Error("overloaded");
+        return base.translate(request);
+      }),
+    });
+    const list = await events(await handler(post(body({ text: "숙제가 어려워요" }))));
+    await settle();
+    expect(calls).toBe(2);
+    expect(translationsOf(list).length).toBeGreaterThan(0);
+    expect(finishArgs()).toMatchObject({ p_assistant: { meta: { translation: "ok" } } });
+    expect(requests[0]?.context?.at(-1)).toEqual({ role: "user", text: "숙제가 어려워요" });
+    expect(requests[0]?.glossary?.characterName).toBeTruthy();
+  });
+
+  test("CS15. 미성년자 · 나이 모름 — 출력 검사에 걸린 답은 번역을 내보내지도 저장하지도 않는다", async () => {
+    const seen: AbortSignal[] = [];
+    const llm: CompanionLlm = {
+      ...llmWith({ output: { category: "other_harm", action: "block" } }),
+      translate: (request) => {
+        seen.push(request.signal);
+        return new Promise(() => undefined);
+      },
+    };
+    const { handler, finishArgs, settle } = setup({ llm });
+    const list = await events(await handler(post()));
+    await settle();
+    expect(names(list).filter((name) => name === "delta" || name === "translation")).toEqual([]);
+    expect(list.at(-1)).toMatchObject({ event: "error", data: { code: "guardrail_blocked" } });
+    expect(finishArgs()).toMatchObject({ p_status: "blocked", p_assistant: null });
+    // 검사와 동시에 시작했어도 차단되면 끊는다.
+    expect(seen.length).toBe(1);
+    expect(seen[0]?.aborted).toBe(true);
+  });
+
+  test("CS16. 저장된 번역은 답 모델의 history로 다시 들어가지 않는다 · 피드백은 말투 · 캐릭터를 받는다", async () => {
+    const histories: unknown[] = [];
+    const feedbackRequests: unknown[] = [];
+    const base = fakeCompanionLlm();
+    const llm: CompanionLlm = {
+      ...base,
+      reply: (request) => {
+        histories.push(request.history);
+        return base.reply(request);
+      },
+      feedback: (request) => {
+        feedbackRequests.push(request);
+        return base.feedback(request);
+      },
+    };
+    const history = [
+      { role: "user", text: "안녕", segments: [] },
+      {
+        role: "assistant",
+        text: null,
+        segments: [{ kind: "speech", text: "반가워요", translation: "Nice to meet you" }],
+      },
+    ];
+    const { handler, settle } = setup({ llm, begin: { ...begun, history } });
+    await (await handler(post())).text();
+    await settle();
+    expect(histories[0]).toEqual([
+      { role: "user", text: "안녕" },
+      { role: "assistant", segments: [{ kind: "speech", text: "반가워요" }] },
+    ]);
+    expect(feedbackRequests[0]).toMatchObject({
+      previous: "반가워요",
+      // 최근 대화 맥락 — 글자만, 번역 없이.
+      history: [
+        { role: "user", text: "안녕" },
+        { role: "assistant", text: "반가워요" },
+      ],
+      speechLevel: "polite",
+      character: { name: "덕수쌤", role: null, banmalFeedback: "better" },
+    });
+    // 페르소나가 정하면 그대로 넘어간다(덕수쌤은 마이그레이션 20261114가 correction으로 둔다).
+    const strict = setup({
+      llm,
+      begin: { ...begun, persona: { name: "덕수쌤", banmalFeedback: "correction" } },
+    });
+    await (await strict.handler(post())).text();
+    await strict.settle();
+    expect(feedbackRequests[1]).toMatchObject({ character: { banmalFeedback: "correction" } });
+  });
+});
+
+describe("비속어 · *행동*", () => {
+  const adult = { ...okGate, ageBand: "adult", notices: [] };
+
+  test("CS17. 상대를 겨냥한 심한 욕은 입력 차단(제재로 센다 — 캐릭터가 거절), 가벼운 놀림 · 혼잣말 욕은 답이 간다", async () => {
+    const blocked = setup({ gate: adult });
+    const list = await events(await blocked.handler(post(body({ text: "너 병신이야" }))));
+    await blocked.settle();
+    expect(list.at(-1)).toMatchObject({ event: "done", data: { refusal: { stage: "deflect" } } });
+    expect(blocked.finishArgs()).toMatchObject({
+      p_status: "blocked",
+      p_moderation: [{ layer: "input", category: "profanity", action: "block" }],
+      p_assistant: {
+        meta: { refusal: true, refusalStage: "deflect", refusalCategory: "profanity" },
+      },
+    });
+    const teasing = setup({ gate: adult });
+    const teased = await events(await teasing.handler(post(body({ text: "덕수쌤 바보" }))));
+    await teasing.settle();
+    expect(teased.at(-1)).toMatchObject({ event: "done" });
+    expect(teased.at(-1)).not.toHaveProperty("data.refusal");
+    expect(teasing.finishArgs()).toMatchObject({ p_status: "complete" });
+    const casual = setup({ gate: adult });
+    const ok = await events(await casual.handler(post(body({ text: "아 씨 시험 망했어" }))));
+    await casual.settle();
+    expect(ok.at(-1)?.event).toBe("done");
+    expect(ok.find((event) => event.event === "correction")).toMatchObject({
+      data: { kind: "better", corrected: "아이고 시험 망했어" },
+    });
+  });
+
+  test("CS18. 미성년자 · 나이 모름 — 캐릭터 답에 욕이 있으면 출력 차단", async () => {
+    const { handler, finishArgs, settle } = setup();
+    const list = await events(await handler(post(body({ text: "안녕 [swear-reply]" }))));
+    await settle();
+    expect(names(list).filter((name) => name === "delta")).toEqual([]);
+    expect(finishArgs()).toMatchObject({
+      p_status: "blocked",
+      p_moderation: [
+        { layer: "input", action: "allow" },
+        { layer: "output_sync", category: "profanity", action: "block" },
+      ],
+    });
+  });
+
+  test("CS19. *행동 · 속마음* — 글은 그대로 저장, 답은 몸짓에 반응하고 속마음을 따라 말하지 않는다", async () => {
+    const systems: string[] = [];
+    const base = fakeCompanionLlm();
+    const llm: CompanionLlm = {
+      ...base,
+      reply: (request) => {
+        systems.push(request.system);
+        return base.reply(request);
+      },
+    };
+    const { handler, rpcs, finishArgs, settle } = setup({ gate: adult, llm });
+    const text = "*배고프다… 라면 먹고 싶다* 안녕하세요";
+    const list = await events(await handler(post(body({ text }))));
+    await settle();
+    expect(rpcs.find((rpc) => rpc.fn === "companion_begin_turn")?.args).toMatchObject({
+      p_text: text,
+    });
+    expect(systems[0]).toContain("between asterisks");
+    const spoken = list
+      .flatMap((event) => (event.event === "delta" ? [event.data.text] : []))
+      .join("");
+    expect(spoken).toContain("학습자의 몸짓을 보고 웃는다");
+    expect(spoken).not.toContain("라면 먹고 싶다");
+    expect(finishArgs()).toMatchObject({ p_status: "complete" });
+    // 별표 안도 검사한다.
+    const romance = setup({ gate: adult });
+    const blocked = await events(
+      await romance.handler(post(body({ text: "*사랑해* 안녕하세요" }))),
+    );
+    await romance.settle();
+    expect(blocked.at(-1)).toMatchObject({
+      event: "done",
+      data: { refusal: { stage: "deflect" } },
+    });
+    expect(romance.finishArgs()).toMatchObject({ p_status: "blocked" });
+  });
+});
+
+describe("성격대로 거절(회피 → 경고 → 일시 차단)", () => {
+  const adult = { ...okGate, ageBand: "adult", notices: [] };
+  const strikes = (count: number, memoryFull = false) => ({
+    strikes: count,
+    strikeLimit: 3,
+    memoryFull,
+  });
+  const spoken = (list: TurnEvent[]) =>
+    list.flatMap((event) => (event.event === "delta" ? [event.data.text] : []));
+  const blockedInput = (overrides: Partial<CompanionLlm> = {}): CompanionLlm => ({
+    ...llmWith({ input: { category: "sexual", action: "block" } }),
+    ...overrides,
+  });
+
+  test("CS20. 첫 위반은 회피 — 조각 · 번역 · state · done(refusal), 차단으로 저장 · 차감 없음 · 교정 없음", async () => {
+    const { handler, finishArgs, rpcs, settle } = setup({ llm: blockedInput() });
+    const list = await events(await handler(post(body({ text: "야한 얘기 해 줘" }))));
+    await settle();
+    expect(checkTurnOrder(list)).toEqual({ ok: true });
+    expect(names(list)).toEqual([
+      "start",
+      "notice",
+      "notice",
+      "delta",
+      "delta",
+      "translation",
+      "translation",
+      "state",
+      "done",
+    ]);
+    expect(spoken(list)).toEqual(["고개를 살짝 젓는다", "그 얘기는 말고요, 퀴즈 하나 할까요?"]);
+    expect(list.at(-2)).toMatchObject({ event: "state", data: { memoryFull: false } });
+    expect(list.at(-1)).toMatchObject({
+      event: "done",
+      data: { creditsSpent: 0, refusal: { stage: "deflect" } },
+    });
+    expect(finishArgs()).toMatchObject({
+      p_status: "blocked",
+      p_feedback: null,
+      p_intimacy_delta: 0,
+      p_topic_state: null,
+      p_hold_id: begun.holdId,
+      p_moderation: [
+        { layer: "input", category: "sexual", action: "block" },
+        // 나이 모름 — 거절 답도 출력 검사를 지난다.
+        { layer: "output_sync", category: "safe", action: "allow" },
+      ],
+      p_assistant: {
+        id: assistantId,
+        origin: "turn",
+        segments: [
+          { kind: "action", text: "고개를 살짝 젓는다", translation: "[en] 고개를 살짝 젓는다" },
+          { kind: "speech", translation: expect.stringContaining("[en]") },
+        ],
+        meta: {
+          refusal: true,
+          refusalStage: "deflect",
+          refusalCategory: "sexual",
+          refusalSource: "model",
+          translation: "ok",
+        },
+      },
+    });
+    // 차단 턴은 기억 추출 · 요약을 돌리지 않는다.
+    expect(rpcs.some((rpc) => rpc.fn === "companion_apply_memory_ops")).toBe(false);
+  });
+
+  test("CS21. 걸린 글은 모델에 가지 않는다 — 분류와 단계만, 두 번째 위반은 경고, 상한이면 일시 차단", async () => {
+    const requests: { system: string; userText: string; history: unknown }[] = [];
+    const base = blockedInput();
+    const llm = blockedInput({
+      reply: (request) => {
+        requests.push(request);
+        return base.reply(request);
+      },
+    });
+    const secret = "비밀스러운 야한 문장";
+    const first = setup({ llm, gate: adult });
+    await events(await first.handler(post(body({ text: secret }))));
+    await first.settle();
+    // 첫 호출은 메인 답(입력 검사와 동시에 시작해 끊긴다), 둘째가 거절 답.
+    const refusal = requests.at(-1)!;
+    expect(refusal.userText).not.toContain(secret);
+    expect(refusal.userText).toContain("sexual content");
+    expect(refusal.system).toContain("broke the app's safety rules (it was about sexual content)");
+    expect(refusal.system).not.toContain(secret);
+    expect(JSON.stringify(refusal.history)).not.toContain(secret);
+    expect(refusal.system).not.toContain("This has happened before");
+
+    const second = setup({ llm, gate: adult, status: strikes(1) });
+    const warned = await events(await second.handler(post(body({ text: secret }))));
+    await second.settle();
+    expect(requests.at(-1)!.system).toContain("This has happened before");
+    expect(warned.at(-1)).toMatchObject({ event: "done", data: { refusal: { stage: "warn" } } });
+    expect(spoken(warned)).toContain("그런 말은 안 돼요. 다른 얘기 해요.");
+
+    const third = setup({ llm, gate: adult, status: strikes(2) });
+    const blocked = await events(await third.handler(post(body({ text: secret }))));
+    await third.settle();
+    expect(names(blocked)).toEqual(["start", "error"]);
+    expect(third.finishArgs()).toMatchObject({ p_status: "blocked", p_assistant: null });
+
+    // 상한이 설정이면 단계도 따라간다(상한 5 → 셋째까지 회피, 넷째 경고).
+    const longer = setup({
+      llm,
+      gate: adult,
+      status: { strikes: 2, strikeLimit: 5, memoryFull: false },
+    });
+    const deflected = await events(await longer.handler(post(body({ text: secret }))));
+    await longer.settle();
+    expect(deflected.at(-1)).toMatchObject({ data: { refusal: { stage: "deflect" } } });
+
+    // 반복 위반 수를 읽지 못하면 지금처럼 차단 오류로 끝낸다.
+    const unknown = setup({ llm, gate: adult, status: null });
+    expect(names(await events(await unknown.handler(post(body({ text: secret })))))).toEqual([
+      "start",
+      "error",
+    ]);
+    await unknown.settle();
+  });
+
+  test("CS22. 거절 답 생성 실패 · 시간 초과 · 출력 검사 차단이면 페르소나의 정해진 줄로 턴을 끝낸다", async () => {
+    const persona = {
+      name: "미나",
+      refusalLines: {
+        deflect: { polite: "음, 그 얘기는 넘어가요!", casual: "음, 그 얘기는 넘어가자!" },
+        warn: { polite: "그런 말은 좀 불편해요." },
+      },
+    };
+    const failing = blockedInput({
+      reply: async function* () {
+        throw new Error("overloaded");
+      },
+    });
+    const hanging = blockedInput({
+      reply: async function* () {
+        await new Promise(() => undefined);
+        yield "";
+      },
+    });
+    for (const [llm, level, line] of [
+      [failing, "casual", "음, 그 얘기는 넘어가자!"],
+      [hanging, "slang", "음, 그 얘기는 넘어가요!"],
+    ] as const) {
+      const { handler, finishArgs, settle } = setup({
+        llm,
+        gate: adult,
+        begin: { ...begun, persona, speechLevel: level },
+      });
+      const list = await events(await handler(post(body({ text: "나쁜 말" }))));
+      await settle();
+      expect(checkTurnOrder(list)).toEqual({ ok: true });
+      expect(spoken(list)).toEqual([line]);
+      expect(finishArgs()).toMatchObject({
+        p_status: "blocked",
+        p_assistant: {
+          segments: [{ kind: "speech", text: line }],
+          meta: { refusal: true, refusalStage: "deflect", refusalSource: "canned" },
+        },
+      });
+    }
+
+    // 나이 모름 — 거절 답이 출력 검사에 걸리면 정해진 줄(페르소나 줄이 없으면 기본 줄), 검사 결과는 기록한다.
+    const unsafe = blockedInput({
+      moderate: async (request) =>
+        request.layer === "input"
+          ? { category: "profanity", action: "block" }
+          : { category: "other_harm", action: "block" },
+    });
+    const { handler, finishArgs, settle } = setup({ llm: unsafe, status: strikes(1) });
+    const list = await events(await handler(post(body({ text: "나쁜 말" }))));
+    await settle();
+    expect(spoken(list)).toEqual([
+      "그런 말은 듣기 힘들어요. 그런 얘기는 하지 말아요. 다른 얘기 해요.",
+    ]);
+    expect(finishArgs()).toMatchObject({
+      p_moderation: [
+        { layer: "input", category: "profanity", action: "block" },
+        { layer: "output_sync", category: "other_harm", action: "block" },
+      ],
+      p_assistant: { meta: { refusal: true, refusalStage: "warn", refusalSource: "canned" } },
+    });
+  });
+
+  test("CS23. state의 memoryFull — 턴 시작 때 기억이 가득 찼으면 참, 읽지 못하면 싣지 않는다", async () => {
+    const full = setup({ status: strikes(0, true) });
+    const list = await events(await full.handler(post()));
+    await full.settle();
+    expect(list.at(-2)).toMatchObject({ event: "state", data: { memoryFull: true } });
+    const unknown = setup({ status: null });
+    const quiet = await events(await unknown.handler(post()));
+    await unknown.settle();
+    expect(quiet.at(-2)).toMatchObject({ event: "state" });
+    expect(quiet.at(-2)).not.toHaveProperty("data.memoryFull");
+  });
+});
+
+describe("추천 답변 칩(스위치가 켜져 있으면 매 턴)", () => {
+  const on = { ...okGate, replySuggestions: true };
+  const chipsOf = (list: TurnEvent[]) =>
+    list.flatMap((event) => (event.event === "suggestions" ? [event.data] : []));
+  const watching = (base: CompanionLlm, suggest?: CompanionLlm["suggest"]) => {
+    const requests: SuggestRequest[] = [];
+    const llm: CompanionLlm = {
+      ...base,
+      async suggest(request) {
+        requests.push(request);
+        return (suggest ?? base.suggest)(request);
+      },
+    };
+    return { llm, requests };
+  };
+  const saves = (rpcs: Rpc[]) => rpcs.filter((rpc) => rpc.fn === "companion_save_suggestions");
+
+  test("CS24. 켜져 있으면 translation 뒤 · state 앞에 칩 셋, 끝 뒤에 그 캐릭터 메시지에 저장한다", async () => {
+    for (const gate of [on, { ...on, ageBand: "adult", notices: [] }]) {
+      const { llm, requests } = watching(fakeCompanionLlm());
+      const { handler, rpcs, finishArgs, settle } = setup({ gate, llm });
+      const list = await events(await handler(post()));
+      await settle();
+      expect(checkTurnOrder(list)).toEqual({ ok: true });
+      const kinds = names(list);
+      const at = kinds.indexOf("suggestions");
+      expect(kinds.lastIndexOf("translation")).toBeLessThan(at);
+      expect(kinds.slice(at)).toEqual(["suggestions", "state", "done"]);
+      const [chips] = chipsOf(list);
+      expect(chips).toEqual({
+        messageId: assistantId,
+        status: "ok",
+        items: [
+          {
+            text: "저도 오늘 한국어 공부를 조금 했어요.",
+            meaning: expect.any(String),
+            intent: "elaborate",
+          },
+          { text: "덕수쌤은 오늘 뭐 했어요?", meaning: expect.any(String), intent: "ask" },
+        ],
+      });
+      // 맥락: 턴이 읽은 대화 + 이번 유저 말 + 새 답(번역 없이 글자만, 마지막이 캐릭터 말).
+      expect(requests).toHaveLength(1);
+      expect(requests[0]).toMatchObject({
+        character: { name: "덕수쌤", role: null },
+        speechLevel: "polite",
+        l1: "en",
+      });
+      const history = requests[0]!.history;
+      expect(history.slice(0, 2)).toEqual([
+        { role: "user", text: "전에 한 말" },
+        { role: "user", text: "안녕하세요 저는 마리아 이에요" },
+      ]);
+      expect(history.at(-1)).toMatchObject({ role: "assistant" });
+      expect(history.at(-1)!.text).toContain("이동식 칠판을 끌고 온다");
+      expect(history.at(-1)!.text).not.toContain("[en]");
+      expect(finishArgs()).toMatchObject({
+        p_assistant: { meta: { suggestions: "ok", suggestionsMs: expect.any(Number) } },
+      });
+      const saved = saves(rpcs);
+      expect(saved).toHaveLength(1);
+      expect(rpcs.indexOf(saved[0]!)).toBeGreaterThan(
+        rpcs.findIndex((rpc) => rpc.fn === "companion_finish_turn"),
+      );
+      expect(saved[0]!.args).toEqual({
+        p_user_id: userId,
+        p_message_id: assistantId,
+        p_suggestions: {
+          version: 2,
+          items: chips!.items,
+          candidates: expect.any(Array),
+          model: "fake",
+          createdAt: "2026-11-09T09:00:00.000Z",
+          ms: expect.any(Number),
+        },
+      });
+    }
+  });
+
+  test("CS24b. 운영이 칩을 껐거나(suggestions_enabled) 보일 수가 0이면 만들지 않는다 · 지난 칩 셋 · 요약 · 보일 수를 넘긴다", async () => {
+    for (const status of [
+      { strikes: 0, strikeLimit: 3, memoryFull: false, suggestionsEnabled: false },
+      { strikes: 0, strikeLimit: 3, memoryFull: false, suggestionDisplayMax: 0 },
+    ]) {
+      const { llm, requests } = watching(fakeCompanionLlm());
+      const { handler, rpcs, settle } = setup({ gate: on, llm, status });
+      const list = await events(await handler(post()));
+      await settle();
+      expect(names(list)).not.toContain("suggestions");
+      expect(requests).toHaveLength(0);
+      expect(saves(rpcs)).toHaveLength(0);
+    }
+    const recentChoiceSets = [
+      {
+        messageId: assistantId,
+        items: [{ text: "네, 좋아요!", intent: "reflect" }],
+        outcome: "ignored",
+      },
+    ];
+    const { llm, requests } = watching(fakeCompanionLlm());
+    const { handler, settle } = setup({
+      gate: on,
+      llm,
+      status: {
+        strikes: 0,
+        strikeLimit: 3,
+        memoryFull: false,
+        recentChoiceSets,
+        suggestionDisplayMax: 3,
+      },
+    });
+    const list = await events(await handler(post()));
+    await settle();
+    expect(requests[0]).toMatchObject({ recentChoiceSets });
+    expect(chipsOf(list)[0]!.items).toHaveLength(3);
+  });
+
+  test("CS25. 꺼져 있거나 판정이 스위치를 모르면(옛 DB) 이벤트 · 모델 호출 · 저장이 없다", async () => {
+    for (const gate of [{ ...okGate, replySuggestions: false }, okGate]) {
+      const { llm, requests } = watching(fakeCompanionLlm());
+      const { handler, rpcs, finishArgs, settle } = setup({ gate, llm });
+      const list = await events(await handler(post()));
+      await settle();
+      expect(names(list)).not.toContain("suggestions");
+      expect(names(list).slice(-2)).toEqual(["state", "done"]);
+      expect(requests).toHaveLength(0);
+      expect(saves(rpcs)).toHaveLength(0);
+      expect(
+        (finishArgs()?.["p_assistant"] as { meta: Record<string, unknown> }).meta,
+      ).not.toHaveProperty("suggestions");
+    }
+  });
+
+  test("CS26. 위기 · 거절 · 차단 턴에는 칩이 없다", async () => {
+    const crisis = watching(fakeCompanionLlm());
+    const crisisRun = setup({ gate: on, llm: crisis.llm });
+    const crisisList = await events(await crisisRun.handler(post(body({ text: "죽고 싶어요" }))));
+    await crisisRun.settle();
+    expect(names(crisisList)).toContain("crisis");
+
+    const refusal = watching(llmWith({ input: { category: "sexual", action: "block" } }));
+    const refusalRun = setup({ gate: on, llm: refusal.llm });
+    const refusalList = await events(await refusalRun.handler(post(body({ text: "야한 얘기" }))));
+    await refusalRun.settle();
+    expect(refusalList.at(-1)).toMatchObject({ data: { refusal: { stage: "deflect" } } });
+
+    // 나이 모름 — 출력 검사에 걸린 답(칩은 이미 만들기 시작했어도 내보내지 않는다).
+    const blocked = watching(llmWith({ output: { category: "sexual", action: "block" } }));
+    const blockedRun = setup({ gate: on, llm: blocked.llm });
+    const blockedList = await events(await blockedRun.handler(post()));
+    await blockedRun.settle();
+    expect(blockedList.at(-1)).toMatchObject({
+      event: "error",
+      data: { code: "guardrail_blocked" },
+    });
+
+    for (const [list, run, watched] of [
+      [crisisList, crisisRun, crisis],
+      [refusalList, refusalRun, refusal],
+      [blockedList, blockedRun, blocked],
+    ] as const) {
+      expect(names(list)).not.toContain("suggestions");
+      expect(saves(run.rpcs)).toHaveLength(0);
+      if (watched !== blocked) expect(watched.requests).toHaveLength(0);
+    }
+  });
+
+  test("CS27. 실패 · 시간 초과 · 칩 출력 차단은 unavailable로 보내고 턴은 끝난다 — 저장 없음 · 로그", async () => {
+    const cases: [CompanionLlm["suggest"] | null, string, string, string?][] = [
+      [async () => Promise.reject(new Error("down")), "generation_failed", "generation_failed"],
+      [() => new Promise(() => undefined), "generation_failed", "timeout"],
+      // 나이 모름 — 출력 검사에 걸리는 칩.
+      [null, "blocked", "blocked", "[unsafe-suggest] 안녕하세요"],
+    ];
+    for (const [suggest, reason, logged, text] of cases) {
+      const { llm, requests } = watching(fakeCompanionLlm(), suggest ?? undefined);
+      const { handler, rpcs, logs, finishArgs, settle } = setup({
+        gate: on,
+        llm,
+        suggestionTimeoutMs: 100,
+      });
+      const list = await events(await handler(post(body(text === undefined ? {} : { text }))));
+      await settle();
+      expect(checkTurnOrder(list)).toEqual({ ok: true });
+      expect(names(list).slice(-3)).toEqual(["suggestions", "state", "done"]);
+      expect(chipsOf(list)).toEqual([
+        { messageId: assistantId, status: "unavailable", items: [], reason },
+      ]);
+      expect(finishArgs()).toMatchObject({
+        p_status: "complete",
+        p_assistant: { meta: { suggestions: logged } },
+      });
+      expect(logs).toContainEqual({
+        event: "chat_send",
+        status: "stream",
+        outcome: "suggestions_unavailable",
+        error: logged,
+      });
+      expect(saves(rpcs)).toHaveLength(0);
+      // 실패는 한 번 다시 묻고, 시간 초과는 다시 묻지 않는다.
+      expect(requests).toHaveLength(logged === "generation_failed" ? 2 : 1);
+    }
+    // 통과 후보가 하나도 없으면(다시 묻고도) no_valid_candidates.
+    {
+      const { llm, requests } = watching(fakeCompanionLlm());
+      const { handler, finishArgs, settle } = setup({ gate: on, llm });
+      const list = await events(await handler(post(body({ text: "[suggest-none] 안녕하세요" }))));
+      await settle();
+      expect(chipsOf(list)).toEqual([
+        { messageId: assistantId, status: "unavailable", items: [], reason: "no_valid_candidates" },
+      ]);
+      expect(finishArgs()).toMatchObject({
+        p_assistant: { meta: { suggestions: "no_valid_candidates" } },
+      });
+      expect(requests).toHaveLength(2);
+    }
+  });
+
+  test("CS28. 한 번 실패하면 다시 묻는다 · 저장 실패는 칩 · 턴을 막지 않고 로그에 남는다", async () => {
+    let failures = 1;
+    const base = fakeCompanionLlm();
+    const { llm, requests } = watching(base, async (request) => {
+      if (failures-- > 0) throw new Error("bad shape");
+      return base.suggest(request);
+    });
+    const { handler, rpcs, logs, settle } = setup({ gate: on, llm, saveStatus: 500 });
+    const list = await events(await handler(post()));
+    await settle();
+    expect(requests).toHaveLength(2);
+    expect(chipsOf(list)[0]).toMatchObject({ status: "ok" });
+    expect(list.at(-1)).toMatchObject({ event: "done" });
+    expect(saves(rpcs)).toHaveLength(1);
+    expect(logs).toContainEqual({
+      event: "chat_send",
+      status: "stream",
+      outcome: "suggestions_save_failed",
+    });
+  });
+});
+
+describe("칩을 그대로 보낸 메시지는 피드백을 건너뛴다 — 입력 길은 탭 전송 · 직접 입력 둘뿐", () => {
+  const chipMessageId = "50000000-0000-4000-8000-0000000000c1";
+  const chips = ["저도 오늘 한국어 공부했어요.", "덕수쌤은 오늘 뭐 했어요?"];
+  const status = {
+    strikes: 0,
+    strikeLimit: 3,
+    memoryFull: false,
+    latestSuggestions: chips,
+    latestSuggestionSet: {
+      messageId: chipMessageId,
+      items: [
+        { text: chips[0], intent: "elaborate" },
+        { text: chips[1], intent: "ask" },
+      ],
+    },
+  };
+  const counting = () => {
+    let calls = 0;
+    const llm = llmWith({
+      feedback: async () => {
+        calls += 1;
+        return fakeCompanionLlm().feedback({
+          text: "x",
+          l1: null,
+          previous: null,
+          history: [],
+          speechLevel: null,
+          character: null,
+          signal: new AbortController().signal,
+        });
+      },
+    });
+    return { llm, calls: () => calls };
+  };
+  const correctionOf = (list: TurnEvent[]) =>
+    list.flatMap((event) => (event.event === "correction" ? [event.data] : []));
+  const choiceOf = (rpcs: Rpc[]) => rpcs.find((rpc) => rpc.fn === "companion_record_choice")?.args;
+
+  test("CS33. 지금 칩을 글 그대로(앞뒤 공백 무시) 보내면 모델 없이 skipped · 입력 출처를 적는다", async () => {
+    const skipped = (text: string) => ({
+      status: "skipped",
+      reason: "suggestion",
+      kind: null,
+      original: text,
+      corrected: null,
+      items: [],
+      better: null,
+      meaning: null,
+    });
+    const text = `  ${chips[1]} `;
+    for (const marker of [
+      { suggestion: { message_id: chipMessageId, index: 1 } },
+      { from_suggestion: true },
+    ]) {
+      const { llm, calls } = counting();
+      const { handler, rpcs, finishArgs, settle } = setup({ status, llm });
+      const list = await events(await handler(post(body({ text, ...marker }))));
+      await settle();
+      expect(checkTurnOrder(list)).toEqual({ ok: true });
+      expect(calls()).toBe(0);
+      expect(correctionOf(list)).toEqual([
+        { userMessageId: begun.userMessageId, ...skipped(text) },
+      ]);
+      expect(finishArgs()).toMatchObject({
+        p_feedback: skipped(text),
+        p_assistant: { meta: { inputSource: "suggestion" } },
+      });
+      // 스트림을 닫은 뒤 유저 메시지 meta와 앞 칩 셋의 결과를 적는다 — 칩 저장 · 기억보다 먼저.
+      expect(choiceOf(rpcs)).toEqual({
+        p_user_message_id: begun.userMessageId,
+        p_choice: {
+          inputSource: "suggestion",
+          suggestionMessageId: chipMessageId,
+          suggestionIndex: 1,
+          suggestionIntent: "ask",
+        },
+      });
+    }
+  });
+
+  test("CS34. 직접 입력 · 글이 다른 표시(방어) · 지난 칩(stale) · 칩을 읽지 못함(옛 DB)은 보통처럼 피드백한다", async () => {
+    const cases: { overrides: Record<string, unknown>; status: unknown; choice: unknown }[] = [
+      { overrides: { text: chips[0] }, status, choice: { inputSource: "manual" } },
+      {
+        overrides: {
+          text: "덕수쌤은 어제 뭐 했어요?",
+          suggestion: { message_id: chipMessageId, index: 1 },
+        },
+        status,
+        choice: { inputSource: "manual" },
+      },
+      {
+        overrides: { text: "덕수쌤은 어제 뭐 했어요?", from_suggestion: true },
+        status,
+        choice: { inputSource: "manual" },
+      },
+      {
+        overrides: {
+          text: chips[0],
+          suggestion: { message_id: "50000000-0000-4000-8000-0000000000c0", index: 0 },
+        },
+        status,
+        choice: {
+          inputSource: "stale",
+          suggestionMessageId: "50000000-0000-4000-8000-0000000000c0",
+          suggestionIndex: 0,
+        },
+      },
+      {
+        overrides: { text: chips[0], suggestion: { message_id: chipMessageId, index: 0 } },
+        status: undefined,
+        choice: { inputSource: "manual" },
+      },
+    ];
+    for (const entry of cases) {
+      const { llm, calls } = counting();
+      const { handler, rpcs, finishArgs, settle } = setup({ status: entry.status, llm });
+      const list = await events(await handler(post(body(entry.overrides))));
+      await settle();
+      expect(calls()).toBe(1);
+      expect(correctionOf(list)[0]!.status).not.toBe("skipped");
+      const meta = (finishArgs()!.p_assistant as { meta: Record<string, unknown> }).meta;
+      expect(meta.inputSource).toBe((entry.choice as { inputSource: string }).inputSource);
+      expect(choiceOf(rpcs)).toEqual({
+        p_user_message_id: begun.userMessageId,
+        p_choice: entry.choice,
+      });
+    }
+  });
+
+  test("CS35. 고쳐서 다시 보내기 — 시작 대신 companion_begin_replacement, 칩 표시는 보지 않고 직접 입력처럼 피드백한다", async () => {
+    const replaces = "40000000-0000-4000-8000-0000000000ee";
+    const { llm, calls } = counting();
+    const { handler, rpcs, settle } = setup({ status, llm });
+    const list = await events(
+      await handler(
+        post(
+          body({
+            text: chips[1],
+            suggestion: { message_id: chipMessageId, index: 1 },
+            replaces_message_id: replaces,
+          }),
+        ),
+      ),
+    );
+    await settle();
+    expect(checkTurnOrder(list)).toEqual({ ok: true });
+    expect(rpcs.some((rpc) => rpc.fn === "companion_begin_turn")).toBe(false);
+    expect(rpcs.find((rpc) => rpc.fn === "companion_begin_replacement")?.args).toMatchObject({
+      p_user_id: userId,
+      p_character_id: "duksu",
+      p_text: chips[1],
+      p_replaces_message_id: replaces,
+    });
+    expect(calls()).toBe(1);
+    expect(choiceOf(rpcs)).toEqual({
+      p_user_message_id: begun.userMessageId,
+      p_choice: { inputSource: "manual" },
+    });
+  });
+
+  test("CS36. 고칠 메시지가 마지막이 아니면 409 not_latest_message — 스트림 없이", async () => {
+    const response = await setup({ begin: { result: "not_latest_message" } }).handler(
+      post(body({ replaces_message_id: "40000000-0000-4000-8000-0000000000ee" })),
+    );
+    expect(response.status).toBe(409);
+    expect(await response.json()).toEqual({ error: "not_latest_message", retryable: false });
+  });
+});
+
+describe("학습 표현 넣기(PRD §3.7)", () => {
+  const pool = {
+    episodes: ["u01-water"],
+    expressions: [
+      { id: "expr:fine", kind: "expr", surface: "괜찮아요.", roman: null, gloss: "I'm fine" },
+      { id: "patt:means", kind: "patt", surface: "{수단}로 할게요.", roman: null, gloss: null },
+    ],
+    settings: { enabled: true, minGap: 3, baseProbability: 0.3, forceTurns: 6, dailyCap: 6 },
+  };
+  const ready = (extra: Record<string, unknown> = {}) => ({
+    ...begun,
+    topicState: {
+      turn: 9,
+      topic: "날씨",
+      topicTurns: 1,
+      shortStreak: 0,
+      wantsSwitch: false,
+      lastInsertTurn: 2,
+      lastSwitchTurn: null,
+      ...extra,
+    },
+  });
+
+  // CS37 — 직전 삽입 뒤 6턴이 넘으면 후보 지시가 답 요청의 directive로 붙고, 모델이 고른 후보를 쓰고 글에도 있으면 노출로 센다.
+  test("CS37. 노출 — 지시 · 저장 meta.learning · 화제 상태의 학습 칸 · 기록", async () => {
+    const directives: (string | null)[] = [];
+    const fake = fakeCompanionLlm();
+    const llm: CompanionLlm = {
+      ...fake,
+      reply(request) {
+        directives.push(request.directive ?? null);
+        return fake.reply(request);
+      },
+    };
+    const { handler, rpcs, finishArgs, settle } = setup({
+      llm,
+      learning: pool,
+      begin: ready(),
+      // 화제 씨앗 · 확률(강제 턴이라 늘 통과) · 표현 고르기(첫째 — 아직 만나지 않은 「괜찮아요.」).
+      random: (() => {
+        const rolls = [0.99, 0.99, 0];
+        return () => rolls.shift() ?? 0.99;
+      })(),
+    });
+    await (await handler(post(body({ text: "오늘은 비가 와요" })))).text();
+    await settle();
+    expect(directives[0]).toContain('"괜찮아요."');
+    const meta = (finishArgs()?.["p_assistant"] as { meta: Record<string, unknown> }).meta;
+    expect(meta["learning"]).toMatchObject({
+      open: true,
+      reason: "ok",
+      mode: "expose",
+      expressionId: "expr:fine",
+      done: true,
+    });
+    expect(finishArgs()?.["p_topic_state"]).toMatchObject({
+      lastInsertTurn: 10,
+      learnDay: "2026-11-09",
+      learnToday: 1,
+      lastExpressionId: "expr:fine",
+      recentTargets: ["expr:fine"],
+    });
+    expect(rpcs.find((rpc) => rpc.fn === "companion_record_learning")?.args).toMatchObject({
+      p_events: [{ expression_id: "expr:fine", kind: "exposed" }],
+    });
+  });
+
+  // CS37b — 답 모델이 후보 가운데 맞는 게 없다고 넘기면(가짜: 「[skip-learn]」) 건너뜀 — 간격 · 하루 수를 쓰지 않고 후보마다 건너뜀을 센다.
+  test("CS37b. 건너뜀 — meta.learning.reason skipped · 간격 그대로 · 기록 없음", async () => {
+    const { handler, rpcs, finishArgs, settle } = setup({
+      learning: pool,
+      begin: ready(),
+      random: (() => {
+        const rolls = [0.99, 0.99, 0];
+        return () => rolls.shift() ?? 0.99;
+      })(),
+    });
+    await (await handler(post(body({ text: "오늘은 비가 와요 [skip-learn]" })))).text();
+    await settle();
+    const meta = (finishArgs()?.["p_assistant"] as { meta: Record<string, unknown> }).meta;
+    expect(meta["learning"]).toMatchObject({ open: true, reason: "skipped" });
+    expect(meta["learning"]).not.toHaveProperty("mode");
+    expect(finishArgs()?.["p_topic_state"]).toMatchObject({
+      lastInsertTurn: 2,
+      learnToday: 0,
+      learnSkipStreak: 1,
+      learnSkips: expect.objectContaining({ "expr:fine": 1 }),
+    });
+    expect(rpcs.find((rpc) => rpc.fn === "companion_record_learning")).toBeUndefined();
+  });
+
+  // CS38 — 간격 전이면 넣지 않고 까닭만 남긴다. 유저가 배운 표현을 직접 쓰면 카드에 learnedUsed · 산출로 센다(칩 전송은 세지 않는다).
+  test("CS38. 넣지 않은 턴 · 유저 산출(글자 판정 + 피드백 판정) · 칩 전송은 산출이 아니다", async () => {
+    const { handler, rpcs, finishArgs, settle } = setup({
+      learning: pool,
+      begin: ready({ lastInsertTurn: 9, recentTargets: ["patt:means"] }),
+    });
+    const list = await events(await handler(post(body({ text: "괜찮아요. 카드로 할게요" }))));
+    await settle();
+    const correction = list.find((event) => event.event === "correction");
+    expect(correction?.data).toMatchObject({
+      learnedUsed: [
+        { id: "expr:fine", surface: "괜찮아요." },
+        { id: "patt:means", surface: "{수단}로 할게요." },
+      ],
+    });
+    const meta = (finishArgs()?.["p_assistant"] as { meta: Record<string, unknown> }).meta;
+    expect(meta["learning"]).toEqual({
+      open: false,
+      reason: "cooldown",
+      produced: ["expr:fine", "patt:means"],
+    });
+    expect(rpcs.find((rpc) => rpc.fn === "companion_record_learning")?.args).toMatchObject({
+      p_events: [
+        { expression_id: "expr:fine", kind: "produced" },
+        { expression_id: "patt:means", kind: "produced" },
+      ],
+    });
+  });
+
+  test("CS39. 튜토리얼만 끝낸 유저 · 무거운 대화 · 비어 있는 수동 범위는 넣지 않는다", async () => {
+    const tutorial = setup({
+      learning: { ...pool, episodes: ["u00-tutorial"] },
+      begin: ready(),
+    });
+    await (await tutorial.handler(post())).text();
+    await tutorial.settle();
+    const metaOf = (args: Record<string, unknown> | undefined) =>
+      (args?.["p_assistant"] as { meta: Record<string, unknown> }).meta["learning"];
+    expect(metaOf(tutorial.finishArgs())).toMatchObject({ reason: "tutorial_only" });
+    const heavy = setup({ learning: pool, begin: ready({ heavy: true }) });
+    await (await heavy.handler(post())).text();
+    await heavy.settle();
+    expect(metaOf(heavy.finishArgs())).toMatchObject({ reason: "heavy" });
+    // 수동 범위인데 고른 에피소드가 없으면(20261126) 풀이 비고 까닭을 따로 남긴다.
+    const manual = setup({
+      learning: {
+        episodes: [],
+        expressions: [],
+        scope: { mode: "manual", units: [], empty: true },
+      },
+      begin: ready(),
+    });
+    await (await manual.handler(post())).text();
+    await manual.settle();
+    expect(metaOf(manual.finishArgs())).toMatchObject({ reason: "manual_empty" });
+  });
+});
