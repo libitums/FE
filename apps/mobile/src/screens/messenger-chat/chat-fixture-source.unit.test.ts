@@ -377,14 +377,13 @@ describe("방 열기 · 지우기 · 설정 (MC-U21)", () => {
     expect(after).not.toEqual(before);
   });
 
-  test("MC-U21. report · requestFix 는 상태를 바꾸지 않는다", () => {
+  test("MC-U21. report 는 상태를 바꾸지 않는다(「Ask for a fix」는 ADR-0129에서 없앴다)", () => {
     const { source } = setup();
     const snapshot = source.snapshot();
     const thread = threadOf(source, "r1");
     const listener = vi.fn();
     source.subscribe(listener);
     source.report("r1", ["rude", "other"]);
-    source.requestFix("r1", "어색해요");
     expect(source.snapshot()).toBe(snapshot);
     expect(threadOf(source, "r1")).toEqual(thread);
     expect(listener).not.toHaveBeenCalled();

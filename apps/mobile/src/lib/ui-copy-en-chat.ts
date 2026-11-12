@@ -61,7 +61,7 @@ export const messengerChatEn: MessengerChatCopy = {
     more: "More",
     moreOpen: "More, expanded",
   },
-  more: { ideas: "New reply ideas", fix: "Ask for a fix", report: "Report" },
+  more: { ideas: "New reply ideas", report: "Report" },
   ideas: { typeMyself: "Type myself", quote: (text) => `「${text}」` },
   report: {
     title: "Report this chat",
@@ -77,13 +77,6 @@ export const messengerChatEn: MessengerChatCopy = {
     cancel: "Cancel",
     close: "Close",
     checked: (label, on) => `${label}, ${on ? "checked" : "not checked"}`,
-  },
-  fix: {
-    title: "Ask for a fix",
-    description: "Tell us what felt wrong in this chat.",
-    placeholder: "What felt wrong?",
-    cancel: "Cancel",
-    send: "Send",
   },
   regen: {
     title: "Make new reply ideas?",
@@ -146,7 +139,6 @@ export const messengerChatEn: MessengerChatCopy = {
     loadingMeaning: "Loading the meaning…",
     loadingFix: "Loading a better way…",
     better: "BETTER",
-    fixLabel: (corrected, explanation) => `Better: ${corrected}. ${explanation}`,
   },
   turns: {
     freeLeft: (left, total) => `${left} of ${total} free messages left today`,

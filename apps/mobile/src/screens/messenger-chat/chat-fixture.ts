@@ -1,8 +1,8 @@
 // 가짜 대화 씨앗(한국어 학습 내용)입니다. 한글은 이 한 선언에만 둡니다(ui-copy 정책 허용 대상).
 // 사람 · 그림은 기존 에피소드 콘텐츠가 이미 쓰는 것만 씁니다(spec §5.1). 영어 시점 제목은 1단계 자리 표시입니다.
 
+import { chatFixtureCorrections } from "./chat-fixture-corrections";
 import type {
-  ChatFixtureCorrection,
   ChatFixtureMeaning,
   ChatFixtureRoom,
   ChatFixtureSeed,
@@ -36,25 +36,7 @@ const storyPointsFor = (prefix: string, unlockedUpTo: number): readonly ChatStor
 ];
 
 export const chatFixtureSeed: ChatFixtureSeed = (() => {
-  // 교정 표 — 범위는 corrected 안 코드 포인트입니다. 첫째는 씨앗 내 글에 붙고, 둘째는 보낸 글에 답이 올 때 생깁니다.
-  const questionFix: ChatFixtureCorrection = {
-    original: "저 체크아웃 몇 시예요?",
-    corrected: "저는 체크아웃이 몇 시예요?",
-    changes: [
-      { start: 1, end: 2 },
-      { start: 7, end: 8 },
-    ],
-    explanation: "Add 는 after 저 to mark the topic, and 이 after 체크아웃 to mark the subject.",
-  };
-  const coffeeFix: ChatFixtureCorrection = {
-    original: "저 커피 좋아해요.",
-    corrected: "저는 커피를 좋아해요.",
-    changes: [
-      { start: 1, end: 2 },
-      { start: 5, end: 6 },
-    ],
-    explanation: "Add 는 after 저 and 를 after 커피 to mark the topic and the object.",
-  };
+  const { questionFix, coffeeFix, politeFix, englishFix } = chatFixtureCorrections;
   const rooms: readonly ChatFixtureRoom[] = [
     {
       roomId: "mina",
@@ -275,7 +257,7 @@ export const chatFixtureSeed: ChatFixtureSeed = (() => {
   return {
     rooms,
     meanings,
-    corrections: [questionFix, coffeeFix],
+    corrections: [questionFix, coffeeFix, politeFix, englishFix],
     fallbackMeaning: { romanization: "…", meaning: "Meaning coming soon" },
     // 대화 설정(ADR-0126)의 기억 화면 1단계 가짜 데이터입니다 — 서버가 들어오면 서버 기억으로 바뀝니다.
     memories: {

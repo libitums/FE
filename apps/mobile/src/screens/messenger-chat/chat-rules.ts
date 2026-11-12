@@ -1,6 +1,7 @@
 // 보내기 · 신고 · 고쳐 주세요 · 사진/음성 요청 판정과 음성 길이 표기입니다(messenger-chat-ui spec §5.5).
 
 import { coinPlanFor } from "./chat-coins";
+import { CHAT_PLACEHOLDERS } from "./chat-placeholders";
 import type { ChatReportReasonId } from "./chat-source.contract";
 
 export type AskMediaPlan =
@@ -17,8 +18,14 @@ export function clampText(value: string, max: number): string {
   return points.length <= max ? value : points.slice(0, max).join("");
 }
 
-export function canSendFix(text: string): boolean {
-  return text.trim() !== "";
+/** 신고 사유 하나를 켜거나 끕니다 — 켜진 사유는 시트의 고정 순서로 둡니다. */
+export function toggledReportReason(
+  reasons: readonly ChatReportReasonId[],
+  id: ChatReportReasonId,
+): readonly ChatReportReasonId[] {
+  return reasons.includes(id)
+    ? reasons.filter((reason) => reason !== id)
+    : CHAT_PLACEHOLDERS.reportReasons.filter((reason) => reason === id || reasons.includes(reason));
 }
 
 export function canSendReport(reasons: readonly ChatReportReasonId[]): boolean {

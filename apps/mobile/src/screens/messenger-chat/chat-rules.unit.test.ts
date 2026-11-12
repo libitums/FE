@@ -1,13 +1,6 @@
 import { describe, expect, test } from "vitest";
 
-import {
-  askMediaPlan,
-  canSend,
-  canSendFix,
-  canSendReport,
-  clampText,
-  voiceDurationLabel,
-} from "./chat-rules";
+import { askMediaPlan, canSend, canSendReport, clampText, voiceDurationLabel } from "./chat-rules";
 
 // `unit` 계층(MC-U13 ~ U15): 보내기 · 신고 · 고쳐 주세요 · 사진/음성 요청 판정, 음성 길이 표기(spec §5.5).
 
@@ -41,13 +34,7 @@ describe("clampText (MC-U13)", () => {
   });
 });
 
-describe("canSendFix · canSendReport (MC-U13)", () => {
-  test("MC-U13. 고쳐 주세요는 공백뿐이면 보낼 수 없다", () => {
-    expect(canSendFix("")).toBe(false);
-    expect(canSendFix("   \n")).toBe(false);
-    expect(canSendFix("번역이 이상해요")).toBe(true);
-  });
-
+describe("canSendReport (MC-U13)", () => {
   test("MC-U13. 신고는 사유가 하나 이상이어야 한다", () => {
     expect(canSendReport([])).toBe(false);
     expect(canSendReport(["rude"])).toBe(true);

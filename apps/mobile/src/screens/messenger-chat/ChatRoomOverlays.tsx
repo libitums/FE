@@ -15,8 +15,8 @@ import type {
 import type { CoinWallet } from "./coin-wallet";
 import { DeleteChatDialog } from "./DeleteChatDialog";
 import { FeedbackModeSheet } from "./FeedbackModeSheet";
-import { FixRequestDialog } from "./FixRequestDialog";
 import { CoinShopLayer } from "./CoinShopLayer";
+import { RatingSheet } from "./RatingSheet";
 import { RegenerateIdeasDialog } from "./RegenerateIdeasDialog";
 import { ReportSheet } from "./ReportSheet";
 import { birthYearOptions } from "./safety-rules";
@@ -81,18 +81,36 @@ export function ChatRoomOverlays({
           onClose={close}
         />
       );
-    case "fix":
+    case "rate-down": {
+      const save = () =>
+        source.rateMessage(roomId, overlay.messageId, {
+          value: "down",
+          reasons: overlay.reasons,
+          note: overlay.note.trim() === "" ? null : overlay.note.trim(),
+        });
       return (
-        <FixRequestDialog
-          text={overlay.text}
-          onInput={(value) => dispatch({ type: "fix-input", value })}
+        <RatingSheet
+          name={thread.counterpart.name}
+          reasons={overlay.reasons}
+          note={overlay.note}
+          onToggle={(reason) => dispatch({ type: "toggle-rate-reason", reason })}
+          onNote={(value) => dispatch({ type: "rate-note", value })}
           onSend={() => {
-            source.requestFix(roomId, overlay.text);
+            save();
             dispatch({ type: "close-overlay" });
           }}
-          onCancel={close}
+          onReport={() => {
+            // 평가를 남기고 신고 시트로 넘어갑니다 — 신고 사유는 새로 고릅니다.
+            save();
+            dispatch({
+              type: "open-overlay",
+              overlay: { kind: "report", reasons: [], from: "rating" },
+            });
+          }}
+          onClose={close}
         />
       );
+    }
     case "regen":
       return (
         <RegenerateIdeasDialog

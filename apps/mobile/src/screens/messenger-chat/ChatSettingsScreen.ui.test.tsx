@@ -173,7 +173,7 @@ test("CS-UI11 고치기 — 시트에서 글을 바꿔 Save하면 바뀌고 Edit
   const sheet = screen.getByTestId(ids.memoryEditSheet);
   nativeInput("input", "   ", "ui-lynx-text-field-input");
   expect(sheet.querySelector('[data-enabled="false"]') !== null).toBe(true);
-  // 버튼 상태는 감싸개 data-enabled로 본다(FixRequestDialog 선례).
+  // 버튼 상태는 감싸개 data-enabled로 본다.
   nativeInput("input", "You like iced americano.", "ui-lynx-text-field-input");
   const buttons = within(sheet).getAllByTestId("ui-lynx-button");
   fireEvent.tap(buttons[buttons.length - 1] as Element, {});
@@ -229,7 +229,11 @@ test("CS-UI16 추천 답변이 꺼지면 「…」 메뉴에 New reply ideas가 
   mountChat({ source });
   tapId(room.more);
   expect(screen.queryByTestId(room.moreItem("ideas")) === null).toBe(true);
-  expect(screen.getByTestId(room.moreItem("fix"))).toBeTruthy();
+  expect(screen.getByTestId(room.moreItem("report"))).toBeTruthy();
+  // Report 하나면 구분선이 없고 상자가 한 항목 높이다(ADR-0129 기기 확인 — 빈 칸이 남았다).
+  const menu = screen.getByTestId(room.moreMenu);
+  expect(menu.getAttribute("class")).toContain("messenger-chat-more-menu-single");
+  expect(menu.querySelector(".messenger-chat-more-divider")).toBeNull();
 });
 
 test("CS-UI17 교정 방식 기본값 꼬리표(default)도 낭독 이름에 든다", () => {

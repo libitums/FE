@@ -11,7 +11,6 @@ import {
   type FixToolButtonProps,
   type MeaningToolButtonProps,
   type MyMessageBubbleProps,
-  type MyMessageFixCardProps,
   type MyMessageMeaningLinesProps,
   type MyMessageRowProps,
   type MyMessageSkeletonProps,
@@ -19,6 +18,7 @@ import {
   type MyMessageToolsProps,
   type MyMotion,
 } from "./my-message.contract";
+import { CorrectionCard } from "./CorrectionCard";
 import { myBubbleLabelOf } from "./my-message-state";
 
 import "./my-message.css";
@@ -85,36 +85,6 @@ function MeaningSkeleton({ motion }: MyMessageSkeletonProps): ReactNode {
         <view className="my-message-bar my-message-bar-meaning" />
       </view>
       <view className="my-message-shimmer" />
-    </view>
-  );
-}
-
-function FixCard({ correction }: MyMessageFixCardProps): ReactNode {
-  const copy = useUiCopy().messengerChat.myMessage;
-  const segments = correctionSegmentsOf(correction.corrected, correction.changes);
-  return (
-    <view
-      className="my-message-fix-card"
-      data-testid={ids.fixCard}
-      accessibility-element={true}
-      accessibility-label={copy.fixLabel(correction.corrected, correction.explanation)}
-    >
-      <text className="my-message-better">{copy.better}</text>
-      <text className="my-message-fix-text">
-        {segments.map((segment, index) => (
-          <text
-            key={index}
-            className={segment.kind === "changed" ? "my-message-seg-changed" : undefined}
-            data-testid={ids.fixSegment(index)}
-            data-kind={segment.kind}
-          >
-            {segment.text}
-          </text>
-        ))}
-      </text>
-      <text className="my-message-fix-explanation" data-testid={ids.fixExplanation}>
-        {correction.explanation}
-      </text>
     </view>
   );
 }
@@ -213,7 +183,6 @@ export const MyMessage = {
   Bubble,
   MeaningLines,
   MeaningSkeleton,
-  FixCard,
   FixCardSkeleton,
   Tools,
   MeaningToolButton,
@@ -228,6 +197,7 @@ export function MyMessageRow({
   tools,
   motion,
   onToggle,
+  onResend,
 }: MyMessageRowProps): ReactNode {
   const copy = useUiCopy().messengerChat.myMessage;
   const label = myBubbleLabelOf(speaker, ko, view, copy.loadingMeaning);
@@ -277,7 +247,7 @@ export function MyMessageRow({
       return (
         <Stack>
           <Bubble ko={ko} label={label} view={view.kind} />
-          <FixCard correction={view.correction} />
+          <CorrectionCard correction={view.correction} onResend={onResend} />
           {toolRow}
         </Stack>
       );

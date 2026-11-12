@@ -7,6 +7,7 @@ import type {
   ChatMyNotes,
   ChatRoomAccess,
   ChatReplyIdea,
+  ChatRating,
   ChatRoomActivity,
   ChatRoomSettings,
   ChatRoomSummary,
@@ -22,6 +23,8 @@ export type RoomState = {
   isNew: boolean;
   /** 내 텍스트 글 id만 키. */
   notes: Readonly<Record<string, ChatMyNotes>>;
+  /** 캐릭터 글 id만 키 — 내가 남긴 평가(ADR-0129). */
+  ratings: Readonly<Record<string, ChatRating>>;
   messages: ChatMessage[];
   /** 씨앗이 정한 입력 막힘입니다(시각은 만들 때 풀어 둡니다). */
   readonly inputBlock: ChatInputBlock | null;
@@ -64,6 +67,7 @@ export function newRoomState(
     access: seed.access,
     isNew: false,
     notes: {},
+    ratings: {},
     messages,
     inputBlock,
     unread: seed.unread,
@@ -150,10 +154,12 @@ export function threadOf(
       counterpart: summaryOf(room, resolveUrl).counterpart,
       messages: room.messages,
       typing: room.typing,
+      awaitingReply: room.pendingReplies > 0,
       ideas: replyIdeas ? ideasOf(room) : [],
       settings: room.settings,
       storyPoints: room.seed.storyPoints,
       notes: room.notes,
+      ratings: room.ratings,
       inputBlock: room.inputBlock,
     };
   }

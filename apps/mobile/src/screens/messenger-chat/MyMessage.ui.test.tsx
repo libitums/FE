@@ -6,6 +6,7 @@ import { correctionSegmentsOf } from "./correction-segments";
 import { MyMessageRow } from "./MyMessage";
 import type { MyMessageRowProps } from "./my-message.contract";
 import { myMessageTestIds as ids } from "./my-message.contract";
+import { chatFeedbackTestIds as fb } from "./chat-feedback.contract";
 import type { MyBubbleView, BubbleToolRow } from "./my-message-state";
 
 // `ui` 계층(MC2-UI1 · UI2 · UI3): 내 말풍선 compound — 보기 다섯 각각이 무엇으로 그려지는지 · 아이콘 줄 ·
@@ -29,7 +30,13 @@ const CORRECTION = {
     { start: 1, end: 2 },
     { start: 9, end: 10 },
   ],
-  explanation: "Add 는 after 저 and 에 after 카페.",
+  kind: "correction",
+  items: [
+    { original: "저", corrected: "저는", reason: "Add 는 to mark the topic." },
+    { original: "카페", corrected: "카페에", reason: "Add 에 for where you went." },
+  ],
+  better: null,
+  meaning: null,
 } as const;
 const MEANING = { romanization: "annyeonghaseyo", meaning: "Hello" } as const;
 
@@ -45,6 +52,7 @@ function mount(over: Partial<MyMessageRowProps> = {}) {
     tools: NO_FIX,
     motion: "standard",
     onToggle,
+    onResend: null,
     ...over,
   };
   render(<MyMessageRow {...props} />);
@@ -77,7 +85,7 @@ test("MC2-UI1. closed: 말풍선에 한국어만 있다 — 번역 줄 · 뜻 ·
   expect(bubble.textContent?.trim()).toBe("안녕하세요");
   expect(hasId(ids.meaningSkeleton)).toBe(false);
   expect(hasId(ids.meaning)).toBe(false);
-  expect(hasId(ids.fixCard)).toBe(false);
+  expect(hasId(fb.card)).toBe(false);
   expect(hasId(ids.fixSkeleton)).toBe(false);
   expect(screen.queryByTestId("ui-lynx-chat-bubble")).toBeNull();
   expect(hasId(ids.stack)).toBe(true);
@@ -120,7 +128,7 @@ test("MC2-UI1. fix-loading: 카드 스켈레톤이 말풍선 다음 · 아이콘
   expect(before(bubble, skeleton)).toBe(true);
   expect(before(skeleton, byId(ids.tools))).toBe(true);
   expect(skeleton.textContent).toContain("BETTER");
-  expect(hasId(ids.fixCard)).toBe(false);
+  expect(hasId(fb.card)).toBe(false);
   expect(hasId(ids.meaningSkeleton)).toBe(false);
 });
 
@@ -131,18 +139,19 @@ test("MC2-UI1. fix: 카드 조각 수 · 바뀐 조각 수 · 설명이 그려�
   });
 
   const segments = correctionSegmentsOf(CORRECTION.corrected, CORRECTION.changes);
-  const card = byId(ids.fixCard);
+  const card = byId(fb.card);
   segments.forEach((segment, index) => {
-    const el = byId(ids.fixSegment(index));
+    const el = byId(fb.cardSegment(index));
     expect(el.textContent).toBe(segment.text);
     expect(el.getAttribute("data-kind")).toBe(segment.kind);
   });
-  expect(hasId(ids.fixSegment(segments.length))).toBe(false);
+  expect(hasId(fb.cardSegment(segments.length))).toBe(false);
   const changed = segments.filter((segment) => segment.kind === "changed").length;
   expect(changed).toBe(2);
   expect(card.querySelectorAll('[data-kind="changed"]')).toHaveLength(changed);
-  expect(byId(ids.fixExplanation).textContent?.trim()).toBe(CORRECTION.explanation);
-  expect(card.textContent).toContain("BETTER");
+  expect(byId(fb.cardItem(0)).textContent).toContain("Add 는 to mark the topic.");
+  expect(byId(fb.cardItem(1)).textContent).toContain("Add 에 for where you went.");
+  expect(byId(fb.cardTitle).textContent).toBe("FIX");
   expect(card.textContent).toContain(CORRECTION.corrected);
 
   const bubble = byId(ids.bubble);
@@ -276,10 +285,10 @@ test("MC2-UI3. 말풍선은 한 요소로 읽히고 라벨은 「이름: 글」(
   expect(attrOf(ids.bubble, "accessibility-label")).toBe("Hana: 안녕하세요, annyeonghaseyo, Hello");
 });
 
-test("MC2-UI3. 교정 카드는 한 요소로 「Better: 고친 문장. 설명」을, 스켈레톤은 불러오는 중 문장을 읽는다", () => {
+test("MC2-UI3. 교정 카드는 한 요소로 「FIX: 고친 문장. 고친 곳들」을, 스켈레톤은 불러오는 중 문장을 읽는다", () => {
   mount({ view: { kind: "fix", correction: CORRECTION } });
-  expect(attrOf(ids.fixCard, "accessibility-label")).toBe(
-    `Better: ${CORRECTION.corrected}. ${CORRECTION.explanation}`,
+  expect(attrOf(fb.cardContent, "accessibility-label")).toBe(
+    `FIX: ${CORRECTION.corrected} 저 → 저는, Add 는 to mark the topic. 카페 → 카페에, Add 에 for where you went.`,
   );
   cleanup();
 

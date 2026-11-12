@@ -14,7 +14,6 @@ const reportReasons: readonly ChatReportReasonId[] = [
 export const CHAT_PLACEHOLDERS = {
   coinSeed: 100,
   reportReasons,
-  fixMaxLength: 200,
   messageMaxLength: 200,
   replyIdeaCount: 3,
   timing: {

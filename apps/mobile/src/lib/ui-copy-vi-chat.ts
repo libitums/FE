@@ -62,7 +62,7 @@ export const messengerChatVi: MessengerChatCopy = {
     more: "Thêm",
     moreOpen: "Thêm, đang mở rộng",
   },
-  more: { ideas: "Gợi ý trả lời mới", fix: "Yêu cầu sửa", report: "Báo cáo" },
+  more: { ideas: "Gợi ý trả lời mới", report: "Báo cáo" },
   ideas: { typeMyself: "Tự nhập", quote: (text) => `「${text}」` },
   report: {
     title: "Báo cáo cuộc trò chuyện này",
@@ -78,13 +78,6 @@ export const messengerChatVi: MessengerChatCopy = {
     cancel: "Hủy",
     close: "Đóng",
     checked: (label, on) => `${label}, ${on ? "đã chọn" : "chưa chọn"}`,
-  },
-  fix: {
-    title: "Yêu cầu sửa",
-    description: "Hãy cho chúng tôi biết điều gì chưa ổn trong cuộc trò chuyện này.",
-    placeholder: "Điều gì chưa ổn?",
-    cancel: "Hủy",
-    send: "Gửi",
   },
   regen: {
     title: "Tạo gợi ý trả lời mới?",
@@ -147,7 +140,6 @@ export const messengerChatVi: MessengerChatCopy = {
     loadingMeaning: "Đang tải nghĩa…",
     loadingFix: "Đang tải cách nói hay hơn…",
     better: "HAY HƠN",
-    fixLabel: (corrected, explanation) => `Hay hơn: ${corrected}. ${explanation}`,
   },
   turns: {
     freeLeft: (left, total) => `Hôm nay còn ${left}/${total} tin nhắn miễn phí`,

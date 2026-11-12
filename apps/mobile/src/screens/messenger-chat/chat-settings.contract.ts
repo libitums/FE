@@ -1,5 +1,6 @@
 // 대화 설정(ADR-0126)의 문구 · test-id 계약입니다 — 설정 탭 Chats 화면 · 먼저 보내는 메시지 · 기억 · 교정 방식.
 
+import type { FeedbackCopy } from "./chat-feedback.contract";
 import type { MessengerAccessCopy } from "./messenger-access";
 /** 캐릭터가 먼저 보내는 메시지의 빈도입니다(ADR-0126). */
 export type ChatProactivePref = "off" | "daily1" | "daily2";
@@ -43,6 +44,8 @@ export type MessengerChatExtraCopy = {
   readonly chatSettings: ChatSettingsCopy;
   readonly pushNotice: MessengerListNoticeCopy;
   readonly access: MessengerAccessCopy;
+  /** 교정 카드 · 다시 보내기 · 답 평가(ADR-0129). */
+  readonly feedback: FeedbackCopy;
 };
 
 export type ChatSettingsCopy = {

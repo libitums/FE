@@ -4,6 +4,8 @@
 import { useCallback, useEffect, useRef, useState } from "@lynx-js/react";
 
 import { useUiCopy } from "../../lib/ui-copy";
+import type { FeedbackCopy } from "./chat-feedback.contract";
+import { correctionSpoken } from "./chat-feedback-rules";
 import type { MyMessageCopy } from "./messenger-chat-copy-1-5.contract";
 import { notesOf } from "./chat-source.contract";
 import type { ChatSource, ChatThread } from "./chat-source.contract";
@@ -31,7 +33,11 @@ export type UseBubbleTools = {
 
 const CLOSED: MyBubbleView = { kind: "closed" };
 
-function announcementText(announcement: BubbleAnnouncement, copy: MyMessageCopy): string {
+function announcementText(
+  announcement: BubbleAnnouncement,
+  copy: MyMessageCopy,
+  feedback: FeedbackCopy,
+): string {
   switch (announcement.kind) {
     case "loading-meaning":
       return copy.loadingMeaning;
@@ -40,7 +46,7 @@ function announcementText(announcement: BubbleAnnouncement, copy: MyMessageCopy)
     case "meaning":
       return `${announcement.meaning.romanization}, ${announcement.meaning.meaning}`;
     case "fix":
-      return copy.fixLabel(announcement.correction.corrected, announcement.correction.explanation);
+      return correctionSpoken(announcement.correction, feedback);
     default: {
       const unreachable: never = announcement;
       return unreachable;
@@ -54,7 +60,9 @@ export function useBubbleTools({
   thread,
   announce,
 }: UseBubbleToolsInput): UseBubbleTools {
-  const copy = useUiCopy().messengerChat.myMessage;
+  const chatCopy = useUiCopy().messengerChat;
+  const copy = chatCopy.myMessage;
+  const feedback = chatCopy.feedback;
   const [open, setOpen] = useState<BubbleToolsState>({});
   const views = useRef<ReadonlyMap<string, MyBubbleView>>(new Map());
 
@@ -80,10 +88,10 @@ export function useBubbleTools({
       const view = myBubbleViewOf(open[message.id], notesOf(thread, message.id));
       next.set(message.id, view);
       const announcement = bubbleAnnouncementOf(views.current.get(message.id) ?? CLOSED, view);
-      if (announcement !== null) announce(announcementText(announcement, copy));
+      if (announcement !== null) announce(announcementText(announcement, copy, feedback));
     }
     views.current = next;
-  }, [open, thread, copy, announce]);
+  }, [open, thread, copy, feedback, announce]);
 
   return { open, toggle };
 }

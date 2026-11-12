@@ -136,7 +136,7 @@
   letter-spacing: var(--libitum-typography-button-xl-letter-spacing);
 }
 
-/* 고쳐 주세요 입력 칸 감싸개(ui-lynx TextField 그대로). */
+/* 입력 칸 감싸개(ui-lynx TextField 그대로) — 기억 고치기가 씁니다. */
 .chat-fix-field {
   width: 100%;
 }

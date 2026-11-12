@@ -14,12 +14,11 @@ import {
 } from "./chat-input-focus";
 import { CHAT_PLACEHOLDERS } from "./chat-placeholders";
 import { chatTurnsTestIds as turnIds } from "./chat-turns.contract";
+import { focusOriginOf, type ChatFocusOrigin } from "./chat-overlay-focus";
 import {
   chatRoomReducer,
-  focusOriginOf,
   initialChatRoomState,
   overlayParent,
-  type ChatFocusOrigin,
   type ChatOverlay,
   type ChatRoomAction,
   type ChatRoomState,
@@ -34,6 +33,7 @@ import type {
 import { resolveChatKeyboardHeight } from "./keyboard-height";
 import { keyboardPlanFor, type KeyboardPlan } from "./keyboard-plan";
 import type { KeyboardHeightStore, KoreanKeyboardProbe } from "./keyboard-ports";
+import { chatFeedbackTestIds } from "./chat-feedback.contract";
 import { chatSettingsTestIds } from "./chat-settings.contract";
 import { messengerChatTestIds as ids } from "./messenger-chat.contract";
 import { useChatSnapshot, useChatThread } from "./use-chat-source";
@@ -74,6 +74,7 @@ const originTestId: Readonly<Record<ChatFocusOrigin, string>> = {
   "sidebar-birth-year": ids.sidebarBirthYear,
   "blocked-change-year": ids.blockedChangeYear,
   "sidebar-feedback-mode": chatSettingsTestIds.sidebarFeedback,
+  rating: chatFeedbackTestIds.ratingBad,
 };
 
 /** 뒤 화면의 accessibility-elements-hidden이 풀린 다음 프레임에 초점을 보냅니다(a11y C1). 한 프레임은 16 ms입니다. */
@@ -223,9 +224,8 @@ export function useChatRoom({
     const previous = previousOverlay.current;
     previousOverlay.current = state.overlay;
     if (previous === state.overlay) return;
-    // Android는 누른 시트 단추가 사라지면 다음 초점 후보인 숨은 <input>으로 초점을 옮겨 휴대폰 키보드를 띄웠습니다(생년 시트
-    // Skip — ADR-0125 기기 확인). 휴대폰 키보드 모드가 아니면 겹침이 부모로 닫힌 다음 프레임에 그 초점을 내립니다 — 부모가
-    // 사이드바인 시트(교정 방식 Save — ADR-0126 기기 확인)도 같습니다.
+    // Android는 누른 시트 단추가 사라지면 초점을 숨은 <input>으로 옮겨 휴대폰 키보드를 띄웠습니다(ADR-0125 · 0126 기기 확인).
+    // 휴대폰 키보드 모드가 아니면 겹침이 부모로 닫힌 다음 프레임에 그 초점을 내립니다(부모가 사이드바인 시트도 같습니다).
     const closed = previous.kind !== "none" && state.overlay.kind === overlayParent(previous).kind;
     const blurOnClose = closed && stateRef.current.keyboard !== "phone";
     let call: (() => void) | null = null;
@@ -233,8 +233,8 @@ export function useChatRoom({
       const origin = focusOriginOf(previous);
       if (origin !== null) call = () => restoreAccessibilityFocus(originTestId[origin]);
     } else if (previous.kind === "none" && state.overlay.kind === "more-menu") {
-      // 추천 답변이 꺼졌으면 첫 항목은 Fix입니다(ADR-0126).
-      const first = source.snapshot().preferences.replyIdeas ? "ideas" : "fix";
+      // 추천 답변이 꺼졌으면 첫 항목은 Report입니다(ADR-0126 · 0129).
+      const first = source.snapshot().preferences.replyIdeas ? "ideas" : "report";
       call = () => restoreAccessibilityFocus(ids.moreItem(first));
     }
     const restore = call;

@@ -1,8 +1,8 @@
 import { describe, expect, test } from "vitest";
 
+import { focusOriginOf } from "./chat-overlay-focus";
 import {
   chatRoomReducer,
-  focusOriginOf,
   initialChatRoomState as initialFor,
   overlayParent,
 } from "./chat-room-state";

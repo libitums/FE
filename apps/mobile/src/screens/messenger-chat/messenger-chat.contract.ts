@@ -19,8 +19,8 @@ import type { MessengerChatExtraCopy } from "./chat-settings.contract";
 import type { MessengerAccessProps } from "./messenger-access";
 import type { ChatListNoticeProps } from "./messenger-list-notice";
 
-/** 「…」 메뉴 항목(고정 순서: ideas · fix · report). */
-export type ChatMoreAction = "ideas" | "fix" | "report";
+/** 「…」 메뉴 항목(고정 순서: ideas · report). 「Ask for a fix」는 👎 이유가 대신합니다(ADR-0129). */
+export type ChatMoreAction = "ideas" | "report";
 
 /** 일~토 일곱 칸입니다. */
 export type ChatWeekdayNames = readonly [string, string, string, string, string, string, string];
@@ -94,7 +94,6 @@ export type MessengerChatCopy = {
   };
   readonly more: {
     readonly ideas: string;
-    readonly fix: string;
     readonly report: string;
   };
   readonly ideas: {
@@ -109,13 +108,6 @@ export type MessengerChatCopy = {
     readonly cancel: string;
     readonly close: string;
     readonly checked: (label: string, on: boolean) => string;
-  };
-  readonly fix: {
-    readonly title: string;
-    readonly description: string;
-    readonly placeholder: string;
-    readonly cancel: string;
-    readonly send: string;
   };
   readonly regen: {
     readonly title: string;
@@ -256,10 +248,6 @@ export const messengerChatTestIds = {
   idea: (index: number): string => room(`idea-${index}`),
   reportSheet: room("report"),
   reportReason: (id: ChatReportReasonId): string => room(`report-${id}`),
-  fixDialog: room("fix"),
-  fixField: room("fix-field"),
-  fixCancel: room("fix-cancel"),
-  fixSend: room("fix-send"),
   regenDialog: room("regen"),
   deleteDialog: room("delete"),
   askDialog: room("ask"),
