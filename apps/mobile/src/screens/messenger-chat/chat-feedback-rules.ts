@@ -77,8 +77,10 @@ export function canSendRating(reasons: readonly ChatRatingReason[]): boolean {
 }
 
 // 낭독 문장 끝에 마침표를 붙이되, 이미 문장 부호로 끝나면 그대로 둡니다(기기 확인 — 「시예요?.」 · 「topic..」).
-const sentence = (text: string): string =>
-  /[.!?。？！…]$/u.test(text.trim()) ? text.trim() : `${text.trim()}.`;
+const sentence = (text: string): string => {
+  const trimmed = text.trim();
+  return /[.!?。？！…]$/u.test(trimmed) ? trimmed : `${trimmed}.`;
+};
 
 /** 연필 카드의 낭독 문장 — 제목 · 보일 글 · 고친 곳들(또는 뜻 · 설명). */
 export function correctionSpoken(correction: ChatCorrection, copy: FeedbackCopy): string {

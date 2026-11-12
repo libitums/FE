@@ -44,6 +44,7 @@ export function feedbackMethods({
       if (correction === null) return;
       // 옛 턴(내 글 · 그 뒤 답)을 빼고 그 노트 · 평가도 함께 지운 뒤 고친 글을 보낸다 — 서버 companion_begin_replacement.
       const at = room.messages.findIndex((message) => message.id === messageId);
+      if (at === -1) return;
       const removed = new Set(room.messages.slice(at).map((message) => message.id));
       room.messages = room.messages.slice(0, at);
       room.notes = without(room.notes, removed);
