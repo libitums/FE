@@ -69,52 +69,80 @@ export function campaignResults(campaign, observations, nowMs) {
   const ph = (row) =>
     observations.posthog?.get(row.userId) ?? { firstEventMs: null, firstTapMs: null };
 
-  const metrics = [];
-  for (const hours of WINDOWS) {
-    const to = sentAt + hours * HOUR_MS;
-    const complete = nowMs >= to;
-    const tests = {
-      opened: hasPosthog ? (row) => within(ph(row).firstEventMs, sentAt, to) : null,
-      tapped: hasPosthog ? (row) => within(ph(row).firstTapMs, sentAt, to) : null,
-      studied: (row) =>
-        studiedBetween(
-          observations.learningDays.get(row.userId),
-          startDay(row),
-          endDay(row, hours),
-        ),
-    };
-    for (const [metric, test] of Object.entries(tests)) {
-      if (test === null) continue;
-      const sent = rateOf(groups.sent, test);
-      const control = rateOf(groups.control, test);
-      metrics.push({
-        metric,
-        hours,
-        complete,
-        sent,
-        control,
-        compare: compareRates(sent, control),
-      });
+  /** 두 묶음(보통 보낸 그룹 · 대조군)을 지표마다 비교합니다. */
+  function metricsBetween(sentRows, controlRows) {
+    const metrics = [];
+    for (const hours of WINDOWS) {
+      const to = sentAt + hours * HOUR_MS;
+      const complete = nowMs >= to;
+      const tests = {
+        opened: hasPosthog ? (row) => within(ph(row).firstEventMs, sentAt, to) : null,
+        tapped: hasPosthog ? (row) => within(ph(row).firstTapMs, sentAt, to) : null,
+        studied: (row) =>
+          studiedBetween(
+            observations.learningDays.get(row.userId),
+            startDay(row),
+            endDay(row, hours),
+          ),
+      };
+      for (const [metric, test] of Object.entries(tests)) {
+        if (test === null) continue;
+        const sent = rateOf(sentRows, test);
+        const control = rateOf(controlRows, test);
+        metrics.push({
+          metric,
+          hours,
+          complete,
+          sent,
+          control,
+          compare: compareRates(sent, control),
+        });
+      }
     }
+    const sinceTest = (row) => (observations.lastActiveNow.get(row.userId) ?? 0) > sentAt;
+    const sent = rateOf(sentRows, sinceTest);
+    const control = rateOf(controlRows, sinceTest);
+    metrics.push({
+      metric: "since",
+      hours: null,
+      complete: true,
+      sent,
+      control,
+      compare: compareRates(sent, control),
+    });
+    return metrics;
   }
-  const sinceTest = (row) => (observations.lastActiveNow.get(row.userId) ?? 0) > sentAt;
-  const sinceSent = rateOf(groups.sent, sinceTest);
-  const sinceControl = rateOf(groups.control, sinceTest);
-  metrics.push({
-    metric: "since",
-    hours: null,
-    complete: true,
-    sent: sinceSent,
-    control: sinceControl,
-    compare: compareRates(sinceSent, sinceControl),
-  });
+
+  // 문구 변형 — 변형마다 대조군과, 그리고 B · C를 A와 바로 비교합니다(대조군보다 사람이 많아 차이를 더 잘 봄).
+  const labels = Object.fromEntries(
+    (campaign.variants ?? []).map((variant) => [variant.id, variant.label]),
+  );
+  const ids = [...new Set(groups.sent.map((row) => row.variant ?? "a"))].sort();
+  const rowsOf = (id) => groups.sent.filter((row) => (row.variant ?? "a") === id);
+  const variants =
+    ids.length < 2
+      ? []
+      : ids.map((id) => ({
+          id,
+          label: labels[id] ?? `문구 ${id.toUpperCase()}`,
+          counts: { sent: rowsOf(id).length, control: groups.control.length },
+          metrics: metricsBetween(rowsOf(id), groups.control),
+        }));
+  const headToHead = ids.slice(1).map((id) => ({
+    id,
+    baseline: ids[0],
+    counts: { sent: rowsOf(id).length, control: rowsOf(ids[0]).length },
+    metrics: metricsBetween(rowsOf(id), rowsOf(ids[0])),
+  }));
 
   return {
     campaignId: campaign.id,
     elapsedHours: Math.max(0, (nowMs - sentAt) / HOUR_MS),
     hasPosthog,
     counts: { sent: groups.sent.length, control: groups.control.length },
-    metrics,
+    metrics: metricsBetween(groups.sent, groups.control),
+    variants,
+    headToHead,
     curve: returnCurve(groups, observations, sentAt, nowMs),
   };
 }
@@ -173,10 +201,11 @@ export function seriesOf(campaign) {
  * 같은 묶음의 캠페인 결과를 합칩니다. 캠페인마다 무작위로 나눈 대조군이라 사람 수를 더해 비율을 다시 계산합니다.
  * 창이 하나라도 덜 끝났으면 그 지표는 `complete: false`입니다. 곡선은 단위가 같을 때만 사람 수로 가중 평균합니다.
  */
-export function poolResults(list) {
+/** 여러 결과의 같은 지표(metric · hours)를 사람 수로 더합니다. 모두에 있는 지표만 남깁니다. */
+function poolMetrics(metricLists) {
   const byKey = new Map();
-  for (const result of list) {
-    for (const metric of result.metrics) {
+  for (const metrics of metricLists) {
+    for (const metric of metrics) {
       const key = `${metric.metric}:${metric.hours}`;
       const pooled = byKey.get(key) ?? {
         metric: metric.metric,
@@ -193,13 +222,36 @@ export function poolResults(list) {
       byKey.set(key, pooled);
     }
   }
-  const metrics = [...byKey.values()]
+  return [...byKey.values()]
     .filter((metric) =>
-      list.every((result) =>
-        result.metrics.some((row) => row.metric === metric.metric && row.hours === metric.hours),
+      metricLists.every((metrics) =>
+        metrics.some((row) => row.metric === metric.metric && row.hours === metric.hours),
       ),
     )
     .map((metric) => ({ ...metric, compare: compareRates(metric.sent, metric.control) }));
+}
+
+/** 같은 id의 변형(또는 맞대결)끼리 합칩니다. 모든 회차에 있는 id만 남깁니다. */
+function poolById(entryLists) {
+  if (entryLists.length === 0) return [];
+  const ids = entryLists[0]
+    .map((entry) => entry.id)
+    .filter((id) => entryLists.every((entries) => entries.some((entry) => entry.id === id)));
+  return ids.map((id) => {
+    const entries = entryLists.map((list) => list.find((entry) => entry.id === id));
+    return {
+      ...entries[0],
+      counts: {
+        sent: entries.reduce((sum, entry) => sum + entry.counts.sent, 0),
+        control: entries.reduce((sum, entry) => sum + entry.counts.control, 0),
+      },
+      metrics: poolMetrics(entries.map((entry) => entry.metrics)),
+    };
+  });
+}
+
+export function poolResults(list) {
+  const metrics = poolMetrics(list.map((result) => result.metrics));
 
   const units = new Set(list.map((result) => result.curve?.unit));
   let curve = null;
@@ -245,6 +297,8 @@ export function poolResults(list) {
       control: list.reduce((sum, result) => sum + result.counts.control, 0),
     },
     metrics,
+    variants: poolById(list.map((result) => result.variants ?? [])),
+    headToHead: poolById(list.map((result) => result.headToHead ?? [])),
     curve,
   };
 }

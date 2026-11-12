@@ -14,7 +14,14 @@ const copyEntry = {
   additionalProperties: false,
 };
 
-/** `claude -p --json-schema`에 넘기는 응답 모양입니다. */
+const copyByLanguage = {
+  type: "object",
+  properties: Object.fromEntries(LANGUAGES.map((lang) => [lang, copyEntry])),
+  required: ["en"],
+  additionalProperties: false,
+};
+
+/** `claude -p --json-schema`에 넘기는 응답 모양입니다. 문구는 A(기본 톤) · B(캐릭터 톤) 둘입니다. */
 export const RECOMMENDATION_SCHEMA = {
   type: "object",
   properties: {
@@ -40,12 +47,8 @@ export const RECOMMENDATION_SCHEMA = {
             maxItems: 2,
           },
           holdoutPercent: { type: "integer", enum: HOLDOUT_CHOICES },
-          copy: {
-            type: "object",
-            properties: Object.fromEntries(LANGUAGES.map((lang) => [lang, copyEntry])),
-            required: ["en"],
-            additionalProperties: false,
-          },
+          copy: copyByLanguage,
+          copyB: copyByLanguage,
         },
         required: [
           "segment",
@@ -59,6 +62,7 @@ export const RECOMMENDATION_SCHEMA = {
           "localHours",
           "holdoutPercent",
           "copy",
+          "copyB",
         ],
         additionalProperties: false,
       },
@@ -148,7 +152,8 @@ export function recommendationPrompt(context) {
     "- 같은 사람이 두 캠페인에 겹치지 않게 하라(진행 단계 세그먼트는 서로 겹치지 않고, streak-at-risk만 다른 것과 겹친다).",
     "- localHours는 학습자 현지 시각 [시작, 끝) — 저녁(18 ~ 22시)을 기본으로 하되 근거가 있으면 바꿔라. sendAtComputerHour는 이 컴퓨터 시각(computerTimeZone)으로 콘솔을 돌릴 시각이며, reachableByComputerHour에서 사람이 많은 때를 골라라.",
     "- holdoutPercent는 10 · 20 · 30 · 50 중 하나. 한 번에 150 ~ 400명이라 20%로는 신뢰구간이 ±15%p쯤이다 — 처음 재는 세그먼트는 50, 이미 효과를 본 세그먼트도 30 이상. 같은 실험은 며칠 반복해 묶음으로 합쳐 본다.",
-    "- 문구: en은 필수, 학습자가 있는 언어(copyLanguages)만 추가. 자리표시는 {name} {episode} {streak} {steps}만 쓴다({episode}는 영어 에피소드 제목). 제목 60자 · 본문 200자 이내.",
+    "- 문구: en은 필수, 학습자가 있는 언어(copyLanguages)만 추가. 자리표시는 {name} {episode} {character} {streak} {steps}만 쓴다({episode}는 영어 에피소드 제목, {character}는 그 사람이 하던 에피소드의 상대 인물 한국어 이름 — 튜토리얼은 「승무원」). 제목 60자 · 본문 200자 이내.",
+    "- copy(문구 A)는 차분한 기본 톤, copyB(문구 B)는 **캐릭터 톤**이다: 제목은 「{character}: 짧은 한국어 한 마디 + 이모지 하나」, 본문은 {name}으로 시작해 그 한국어의 뜻과 다음 행동을 학습자 언어로 짧게. 귀엽고 다정하게 — 죄책감 · 압박 · 슬퍼하는 척은 금지, 다른 앱 마스코트의 말투 · 문구를 흉내 내지 마라. 두 문구는 같은 사람들에게 무작위로 나눠 보내 어느 톤이 더 돌아오게 하는지 비교한다.",
     "- 문구 톤: 친근하고 짧게, 죄책감 · 압박 없이, 느낌표는 꼭 필요할 때만, 수는 아라비아 숫자. 레슨 2 막힘에는 「어려운 게 정상이다 · 다시 하면 된다」처럼 안심시키는 말. 사실이 아닌 기능(다시 듣기 횟수 · 힌트 등)을 약속하지 마라.",
     "- pastCampaigns 결과가 있으면 반드시 참고해 무엇을 바꾸는지 rationale에 적어라. 차이의 95% 구간이 0을 포함하면 효과가 불분명한 것이다.",
     "- rationale · expectedEffect · notes는 한국어로 2 ~ 3문장. expectedEffect에는 무엇을 재면 성공인지(예: 72시간 학습한 날 +5%p) 적어라.",
@@ -174,26 +179,38 @@ export function validateRecommendations(output) {
       problems.push(`${where}: 모르는 세그먼트라 뺐어요.`);
       continue;
     }
-    const copy = {};
-    for (const lang of LANGUAGES) {
-      const entry = raw.copy?.[lang];
-      if (entry?.title?.trim() && entry?.body?.trim())
-        copy[lang] = { title: entry.title.trim(), body: entry.body.trim() };
+    const variantCopies = [];
+    let rejected = false;
+    for (const [field, label] of [
+      ["copy", "문구 A"],
+      ["copyB", "문구 B"],
+    ]) {
+      const copy = {};
+      for (const lang of LANGUAGES) {
+        const entry = raw[field]?.[lang];
+        if (entry?.title?.trim() && entry?.body?.trim())
+          copy[lang] = { title: entry.title.trim(), body: entry.body.trim() };
+      }
+      if (field === "copyB" && Object.keys(copy).length === 0) continue; // B가 없으면 A 하나로
+      const copyIssues = copyProblems(copy);
+      const unknownPlaceholders = Object.values(copy)
+        .flatMap((entry) => [entry.title, entry.body])
+        .flatMap(
+          (text) => text.match(/\{(?!(?:name|episode|character|streak|steps)\})[^{}]*\}/g) ?? [],
+        );
+      if (copyIssues.length > 0 || unknownPlaceholders.length > 0) {
+        const unknown =
+          unknownPlaceholders.length > 0
+            ? ` 모르는 자리표시 ${[...new Set(unknownPlaceholders)].join(" ")}.`
+            : "";
+        problems.push(`${where} ${label}: ${copyIssues.join(" ")}${unknown} 그래서 뺐어요.`);
+        rejected = true;
+        break;
+      }
+      variantCopies.push(copy);
     }
-    const copyIssues = copyProblems(copy);
-    if (copyIssues.length > 0) {
-      problems.push(`${where}: ${copyIssues.join(" ")}`);
-      continue;
-    }
-    const unknownPlaceholders = Object.values(copy)
-      .flatMap((entry) => [entry.title, entry.body])
-      .flatMap((text) => text.match(/\{(?!(?:name|episode|streak|steps)\})[^{}]*\}/g) ?? []);
-    if (unknownPlaceholders.length > 0) {
-      problems.push(
-        `${where}: 모르는 자리표시 ${[...new Set(unknownPlaceholders)].join(" ")}라 뺐어요.`,
-      );
-      continue;
-    }
+    if (rejected) continue;
+    const copy = variantCopies[0];
     const hours =
       Array.isArray(raw.localHours) && raw.localHours.length === 2
         ? raw.localHours.map(Number)
@@ -216,6 +233,11 @@ export function validateRecommendations(output) {
       localHours: hours && hours.every((hour) => hour >= 0 && hour <= 24) ? hours : null,
       holdoutPercent: HOLDOUT_CHOICES.includes(raw.holdoutPercent) ? raw.holdoutPercent : 20,
       copy,
+      variants: variantCopies.map((variantCopy, variantIndex) => ({
+        id: variantIndex === 0 ? "a" : "b",
+        label: variantIndex === 0 ? "기본 톤" : "캐릭터 톤",
+        copy: variantCopy,
+      })),
     });
   }
   items.sort((a, b) => a.priority - b.priority);

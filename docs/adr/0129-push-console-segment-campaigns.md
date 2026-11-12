@@ -63,6 +63,12 @@
 - Claude Code 클라우드 예약은 service_role 키를 클라우드 환경에 넣어야 해서 버렸다. 대신 그 시각 기준으로 대상을 미리 계산해 기록하고, 캠페인마다 한 번만 도는 pg_cron 작업이 Vault 키로 `send-push`를 부른다(ADR-0034 D5의 cron과 같은 경로). 작업은 실행 뒤 `cron.unschedule`로 스스로 지운다.
 - 대가: 대상이 계산한 때의 데이터로 고정된다. 기록에 전달 수가 없다 — 함수 로그 요약으로 본다(캠페인마다 1분씩 띄움).
 
+### D10. 문구 A/B — 캐릭터 톤을 기본 톤과 비교한다 (사용자 요청 2026-11-12)
+- 「듀오링고처럼 귀엽게」에서 가져올 것은 **누군가 말을 거는 느낌**이고, 가져오지 않을 것은 죄책감 · 슬퍼하는 척 · 다른 앱 마스코트의 말투다. DURU는 이야기 속 인물이 있어 그 인물이 한국어 한 마디로 말을 건다(`{character}` — 그 사람이 하던 에피소드의 상대 인물).
+- 한 캠페인 안에서 받는 사람을 변형 A · B(최대 C)로 무작위로 나눈다(`variant:${묶음}:${사용자}` — 대조군 배정과 다른 키). 대조군은 변형이 없다.
+- 결과는 변형마다 대조군과, 그리고 B를 A와 바로 비교한다. 시간대 · 날짜를 달리해 보내면 나라 · 요일이 섞여 톤만 가를 수 없어서다.
+- 추천 스키마에 `copyB`(캐릭터 톤)를 더했다.
+
 ## 버린 대안
 1. **관리 웹을 서버(Vercel · Edge Function)에 띄우기** — 로그인 · 권한 · 비밀 보관이 더 필요하다(U2).
 2. **PostHog 기능 플래그 · 실험으로 배정** — 발송이 서버 밖이라 배정을 콘솔이 하는 편이 단순하다. 플래그 노출 이벤트도 필요 없다.
@@ -76,7 +82,7 @@
 - 영어 외 기본 문구는 원어민 확인 전 초안이다.
 
 ## 테스트
-- unit PC-S1 ~ S10(`segments.unit.test.mjs`) · PC-A1 ~ A8(`audience.unit.test.mjs`) · PC-RC1 ~ RC5(`recommend.unit.test.mjs`) · PC-R1 ~ R5(`results.unit.test.mjs`) · PC-IO1 ~ IO5(`sources.unit.test.mjs`) — `pnpm test:push-console`(`test:rest`에 포함).
+- unit PC-S1 ~ S11(`segments.unit.test.mjs`) · PC-A1 ~ A9(`audience.unit.test.mjs`) · PC-RC1 ~ RC6(`recommend.unit.test.mjs`) · PC-R1 ~ R6(`results.unit.test.mjs`) · PC-IO1 ~ IO5(`sources.unit.test.mjs`) — `pnpm test:push-console`(`test:rest`에 포함).
 - 운영 데이터 읽기 확인: 콘솔을 띄워 세그먼트 수 · 대상 계산 · 미리보기를 봤다(발송 없음).
 
 ## 재검토 조건

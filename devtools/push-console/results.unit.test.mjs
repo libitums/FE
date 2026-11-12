@@ -171,3 +171,79 @@ test("PC-R5. 같은 묶음은 사람 수를 더해 다시 비교하고, 덜 끝�
   assert.equal(mixed.hasPosthog, false);
   assert.deepEqual(poolResults([]).metrics, []);
 });
+
+test("PC-R6. 변형마다 대조군과 비교하고, B는 A와 바로 비교한다 · 묶음에서도 변형끼리 합친다", () => {
+  const recipients = [
+    ...["a1", "a2", "a3", "a4"].map((userId) => ({
+      userId,
+      group: "sent",
+      variant: "a",
+      timeZone: "UTC",
+    })),
+    ...["b1", "b2", "b3", "b4"].map((userId) => ({
+      userId,
+      group: "sent",
+      variant: "b",
+      timeZone: "UTC",
+    })),
+    ...["c1", "c2"].map((userId) => ({ userId, group: "control", variant: null, timeZone: "UTC" })),
+  ];
+  const campaign = {
+    id: "v",
+    sentAtMs: SENT_AT,
+    recipients,
+    variants: [
+      { id: "a", label: "기본 톤" },
+      { id: "b", label: "캐릭터 톤" },
+    ],
+  };
+  const learningDays = new Map([
+    ["a1", new Set(["2026-11-12"])],
+    ["b1", new Set(["2026-11-12"])],
+    ["b2", new Set(["2026-11-12"])],
+    ["b3", new Set(["2026-11-13"])],
+  ]);
+  const result = campaignResults(
+    campaign,
+    { posthog: null, learningDays, lastActiveNow: new Map() },
+    SENT_AT + 80 * HOUR,
+  );
+  const studied72 = (metrics) =>
+    metrics.find((row) => row.metric === "studied" && row.hours === 72);
+  assert.deepEqual(studied72(result.metrics).sent, { hits: 4, n: 8 });
+  assert.deepEqual(
+    result.variants.map((variant) => [
+      variant.id,
+      variant.label,
+      studied72(variant.metrics).sent.hits,
+      variant.counts.control,
+    ]),
+    [
+      ["a", "기본 톤", 1, 2],
+      ["b", "캐릭터 톤", 3, 2],
+    ],
+  );
+  assert.equal(result.headToHead.length, 1);
+  const h2h = studied72(result.headToHead[0].metrics);
+  assert.deepEqual(
+    [h2h.sent, h2h.control],
+    [
+      { hits: 3, n: 4 },
+      { hits: 1, n: 4 },
+    ],
+  );
+  assert.ok(Math.abs(h2h.compare.diff - 0.5) < 1e-9);
+
+  const single = campaignResults(
+    { ...campaign, recipients: recipients.filter((row) => row.variant !== "b") },
+    { posthog: null, learningDays, lastActiveNow: new Map() },
+    SENT_AT + 80 * HOUR,
+  );
+  assert.deepEqual(single.variants, []);
+  assert.deepEqual(single.headToHead, []);
+
+  const pooled = poolResults([result, result]);
+  assert.deepEqual(studied72(pooled.variants[1].metrics).sent, { hits: 6, n: 8 });
+  assert.deepEqual(pooled.headToHead[0].counts, { sent: 8, control: 8 });
+  assert.deepEqual(poolResults([result, single]).variants, []);
+});

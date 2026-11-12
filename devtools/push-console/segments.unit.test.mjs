@@ -15,6 +15,7 @@ import {
   shiftDay,
   streakFrom,
   timeZoneFor,
+  variantIndexOf,
 } from "./segments.mjs";
 
 const steps = (...ids) => ids.map((id) => ({ id }));
@@ -28,7 +29,11 @@ const catalog = episodeCatalog(
   },
   {
     "u00-tutorial": { title_en: "Tutorial", steps: steps("S1", "S2", "S3", "RP") },
-    "u01-water": { title_en: "Buying Water", steps: steps("S1", "S2", "RP") },
+    "u01-water": {
+      title_en: "Buying Water",
+      counterpart: "편의점 점원",
+      steps: steps("S1", "S2", "RP"),
+    },
     "u02-checkin": { title_en: "Check-in", steps: steps("S1", "RP") },
   },
 );
@@ -60,6 +65,7 @@ test("PC-S3. 튜토리얼 뒤에는 처음으로 끝나지 않은 에피소드�
     segment: "episode-next",
     episodeId: "u01-water",
     episodeTitle: "Buying Water",
+    character: "편의점 점원",
     remainingSteps: 3,
   });
   assert.deepEqual(
@@ -68,6 +74,7 @@ test("PC-S3. 튜토리얼 뒤에는 처음으로 끝나지 않은 에피소드�
       segment: "episode-mid",
       episodeId: "u01-water",
       episodeTitle: "Buying Water",
+      character: "편의점 점원",
       remainingSteps: 2,
     },
   );
@@ -174,4 +181,18 @@ test("PC-S10. 같은 문구끼리 묶고 1,000명씩 자른다", () => {
       ["T2", 1],
     ],
   );
+});
+
+test("PC-S11. {character} — 인물 이름을 넣고, 없으면 「{character}: 」 머리말째 지운다 · 변형 칸은 결정적", () => {
+  assert.equal(
+    renderCopy("{character}: 아직이에요? 👀", { character: "미나" }),
+    "미나: 아직이에요? 👀",
+  );
+  assert.equal(renderCopy("{character}: 또 만나요 🙂", { character: "" }), "또 만나요 🙂");
+  assert.equal(renderCopy("{character}：hi", {}), "hi");
+  const ids = Array.from({ length: 2000 }, (_, index) => `u${index}`);
+  const b = ids.filter((id) => variantIndexOf("series:x", id, 2) === 1).length;
+  assert.ok(b > 900 && b < 1100, `B ${b}`);
+  assert.equal(variantIndexOf("series:x", "u7", 2), variantIndexOf("series:x", "u7", 2));
+  assert.equal(variantIndexOf("series:x", "u7", 1), 0);
 });

@@ -6,9 +6,11 @@ import {
   copyProblems,
   hourForecast,
   messageFor,
+  normalizeVariants,
   planRecipients,
   selectAudience,
   summarize,
+  variantsProblems,
 } from "./audience.mjs";
 import { DEFAULT_COPY, DEFAULT_FILTERS } from "./copy.mjs";
 import { episodeCatalog, LANGUAGES, SEGMENTS } from "./segments.mjs";
@@ -206,4 +208,53 @@ test("PC-A7. 요약은 세그먼트마다 쉰 시간 구간 · 언어를 센다"
   assert.equal(lesson1.total, 2);
   assert.deepEqual(lesson1.byIdle, { "<1d": 0, "1-3d": 2, "3-7d": 0, "7d+": 0 });
   assert.deepEqual(lesson1.byLang, { en: 2 });
+});
+
+test("PC-A9. 문구 변형 — 받는 사람만 A · B로 나뉘고, 대조군은 변형 없이 A 문구로 기록된다", () => {
+  const variants = [
+    { label: "기본 톤", copy: { en: { title: "Calm", body: "{name}, come back." } } },
+    {
+      label: "캐릭터 톤",
+      copy: { en: { title: "{character}: 아직이에요? 👀", body: "{name}, back?" } },
+    },
+  ];
+  const learners = Array.from({ length: 400 }, (_, index) => ({
+    ...fixture()[0],
+    userId: id(1000 + index),
+    character: "미나",
+  }));
+  const plan = planRecipients({
+    campaignId: "series:x",
+    eligible: learners,
+    holdoutPercent: 20,
+    variants,
+  });
+  const control = plan.filter((row) => row.group === "control");
+  const a = plan.filter((row) => row.variant === "a");
+  const b = plan.filter((row) => row.variant === "b");
+  assert.ok(control.every((row) => row.variant === null && row.title === "Calm"));
+  assert.equal(a.length + b.length + control.length, 400);
+  assert.ok(a.length > 120 && b.length > 120, `${a.length} / ${b.length}`);
+  assert.ok(b.every((row) => row.title === "미나: 아직이에요? 👀"));
+
+  assert.deepEqual(
+    normalizeVariants({ copy: { en: { title: "t", body: "b" } } }).map((variant) => [
+      variant.id,
+      variant.label,
+    ]),
+    [["a", "기본 톤"]],
+  );
+  assert.deepEqual(
+    normalizeVariants({
+      variants: [{ copy: {} }, { label: " ", copy: {} }, { copy: {} }, { copy: {} }],
+    }).map((variant) => variant.id),
+    ["a", "b", "c"],
+  );
+  assert.deepEqual(variantsProblems(normalizeVariants({ variants })), []);
+  assert.match(
+    variantsProblems(
+      normalizeVariants({ variants: [variants[0], { copy: { vi: { title: "t", body: "b" } } }] }),
+    )[0],
+    /^문구 B:/,
+  );
 });

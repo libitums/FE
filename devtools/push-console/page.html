@@ -884,9 +884,18 @@
               </div>
               <button class="btn s outline" id="copy-reset">기본 문구로 되돌리기</button>
             </div>
+            <div class="toggle-row">
+              <label class="t-label-l" for="f-ab">문구 A/B로 나눠 보내기</label>
+              <input class="toggle" type="checkbox" role="switch" id="f-ab" checked />
+            </div>
+            <p class="t-body-s muted" style="margin: 0" id="ab-help">
+              받는 사람을 무작위로 반씩 나눠 A(기본 톤) · B(캐릭터 톤)를 보내요. 결과 탭에서 어느
+              톤이 더 돌아오게 했는지 비교해요.
+            </p>
+            <nav class="toolbar" role="tablist" aria-label="문구 변형" id="variant-tabs"></nav>
             <p class="t-body-s muted" style="margin: 0">
-              {name} 이름 · {episode} 에피소드 · {streak} 연속 일수 · {steps} 남은 단계를 넣을 수
-              있어요. 비워 둔 언어는 영어로 가요.
+              {name} 이름 · {episode} 에피소드 · {character} 그 에피소드의 인물(한국어) · {streak}
+              연속 일수 · {steps} 남은 단계를 넣을 수 있어요. 비워 둔 언어는 영어로 가요.
             </p>
             <div id="copy-editor" class="stack"></div>
           </div>
@@ -995,6 +1004,31 @@
 
       let state = null;
       let copy = {};
+      // 문구 변형 — copy는 지금 고른 변형의 문구를 가리킵니다.
+      let variants = [];
+      let currentVariant = 0;
+      const abOn = () => $("#f-ab").checked;
+
+      function renderVariantTabs() {
+        const shown = abOn() ? variants : variants.slice(0, 1);
+        if (currentVariant >= shown.length) currentVariant = 0;
+        copy = variants[currentVariant].copy;
+        $("#variant-tabs").hidden = !abOn();
+        $("#ab-help").hidden = !abOn();
+        $("#variant-tabs").innerHTML = shown
+          .map(
+            (variant, index) =>
+              `<button class="btn s subtle" role="tab" data-variant="${index}" aria-selected="${index === currentVariant}">문구 ${variant.id.toUpperCase()} · ${esc(variant.label)}</button>`,
+          )
+          .join("");
+        for (const button of document.querySelectorAll("#variant-tabs [data-variant]")) {
+          button.onclick = () => {
+            currentVariant = Number(button.dataset.variant);
+            renderVariantTabs();
+            renderCopyEditor();
+          };
+        }
+      }
       let holdout = 20;
 
       // ---------------------------------------------------------------- 탭
@@ -1090,7 +1124,20 @@
         $("#f-to").value = filter.localHours?.[1] ?? 21;
         syncHoursRow();
         setHoldout(filter.holdoutPercent ?? 30);
-        copy = structuredClone(state.defaults.copy[segment] ?? { en: { title: "", body: "" } });
+        variants = [
+          {
+            id: "a",
+            label: "기본 톤",
+            copy: structuredClone(state.defaults.copy[segment] ?? { en: { title: "", body: "" } }),
+          },
+          {
+            id: "b",
+            label: "캐릭터 톤",
+            copy: structuredClone(state.defaults.copyB[segment] ?? { en: { title: "", body: "" } }),
+          },
+        ];
+        currentVariant = 0;
+        renderVariantTabs();
         renderCopyEditor();
         resetPreview();
       }
@@ -1123,12 +1170,17 @@
         }
       }
 
-      function campaignInput() {
-        const copyOut = {};
-        for (const [lang, entry] of Object.entries(copy)) {
+      const cleanCopy = (source) => {
+        const out = {};
+        for (const [lang, entry] of Object.entries(source)) {
           if (entry.title?.trim() || entry.body?.trim())
-            copyOut[lang] = { title: entry.title.trim(), body: entry.body.trim() };
+            out[lang] = { title: entry.title.trim(), body: entry.body.trim() };
         }
+        return out;
+      };
+
+      function campaignInput() {
+        const copyOut = cleanCopy(copy);
         return {
           name: $("#f-name").value.trim(),
           series: $("#f-series").value.trim(),
@@ -1142,6 +1194,10 @@
           excludeReengagement: $("#f-reeng").checked,
           holdoutPercent: holdout,
           copy: copyOut,
+          variants: (abOn() ? variants : variants.slice(0, 1)).map((variant) => ({
+            label: variant.label,
+            copy: cleanCopy(variant.copy),
+          })),
         };
       }
 
@@ -1204,7 +1260,7 @@
           const cards = result.samples
             .map(
               (sample) => `<div class="notice">
-                <div class="app t-caption"><b>DURU</b><span class="subtle">${esc(sample.lang)} · ${esc(sample.country ?? "?")} 현지 ${sample.localHour ?? "?"}시 · ${sample.idleHours}시간 쉼</span></div>
+                <div class="app t-caption"><b>DURU</b><span class="subtle">${sample.variant ? `${sample.variant.toUpperCase()} · ` : ""}${esc(sample.lang)} · ${esc(sample.country ?? "?")} 현지 ${sample.localHour ?? "?"}시 · ${sample.idleHours}시간 쉼</span></div>
                 <div class="t-label-l">${esc(sample.title)}</div><div class="t-body-m muted">${esc(sample.body)}</div>
               </div>`,
             )
@@ -1218,6 +1274,16 @@
             </div>
             <div><span class="t-label-m muted">빠진 사람</span><div style="margin-top:var(--libitum-spacing-4)">${excluded || '<span class="t-body-s subtle">없음</span>'}</div></div>
             <div><span class="t-label-m muted">문구 언어</span><div style="margin-top:var(--libitum-spacing-4)">${langs || '<span class="t-body-s subtle">—</span>'}</div></div>
+            ${
+              result.variants.length > 1
+                ? `<div><span class="t-label-m muted">문구 변형</span><div style="margin-top:var(--libitum-spacing-4)">${result.variants
+                    .map(
+                      (variant) =>
+                        `<span class="tag t-label-m">${variant.id.toUpperCase()} ${esc(variant.label)} ${result.byVariant[variant.id] ?? 0}</span>`,
+                    )
+                    .join("")}</div></div>`
+                : ""
+            }
             ${forecastHtml(result.forecast)}
             ${result.problems.length ? `<p class="t-body-s error-text">${esc(result.problems.join("\n"))}</p>` : ""}
             ${cards ? `<div class="notices">${cards}</div>` : '<p class="t-body-m muted">지금 조건으로는 보낼 사람이 없어요. 위 그래프에서 사람이 많은 시각에 다시 계산해 보세요.</p>'}
@@ -1378,9 +1444,17 @@
               <div class="t-body-s">${esc(hours)} · ${esc(idle)} · 대조군 ${item.holdoutPercent}%</div>
               <div class="t-body-s"><span class="t-label-m">재는 것</span> ${esc(item.expectedEffect)}</div>
               <div class="notice">
-                <div class="app t-caption"><b>DURU</b><span class="subtle">en</span></div>
+                <div class="app t-caption"><b>DURU</b><span class="subtle">A 기본 톤 · en</span></div>
                 <div class="t-label-l">${esc(item.copy.en.title)}</div><div class="t-body-m muted">${esc(item.copy.en.body)}</div>
               </div>
+              ${
+                item.variants?.[1]
+                  ? `<div class="notice">
+                <div class="app t-caption"><b>DURU</b><span class="subtle">B 캐릭터 톤 · en</span></div>
+                <div class="t-label-l">${esc(item.variants[1].copy.en.title)}</div><div class="t-body-m muted">${esc(item.variants[1].copy.en.body)}</div>
+              </div>`
+                  : ""
+              }
               <div>${langs}</div>
               <button class="btn outline fill" data-use="${index}">이 추천으로 캠페인 만들기</button>
             </div>`;
@@ -1405,7 +1479,24 @@
         }
         syncHoursRow();
         setHoldout(item.holdoutPercent);
-        copy = structuredClone(item.copy);
+        const given = item.variants?.length
+          ? item.variants
+          : [{ id: "a", label: "기본 톤", copy: item.copy }];
+        variants = [
+          { id: "a", label: given[0].label, copy: structuredClone(given[0].copy) },
+          given[1]
+            ? { id: "b", label: given[1].label, copy: structuredClone(given[1].copy) }
+            : {
+                id: "b",
+                label: "캐릭터 톤",
+                copy: structuredClone(
+                  state.defaults.copyB[item.segment] ?? { en: { title: "", body: "" } },
+                ),
+              },
+        ];
+        $("#f-ab").checked = given.length > 1;
+        currentVariant = 0;
+        renderVariantTabs();
         renderCopyEditor();
         resetPreview();
         showTab("compose");
@@ -1499,11 +1590,52 @@
         const max = Math.max(sentRate ?? 0, controlRate ?? 0, 0.05);
         const bar = (rate, cls, counts) =>
           `<div class="t-body-s"><i class="${cls}" style="width:${((rate ?? 0) / max) * 100}%"></i>${pct(rate)} <span class="subtle">${counts.hits}/${counts.n}</span></div>`;
-        const label = `${METRIC_LABELS[metric.metric]}${metric.hours ? ` · ${metric.hours}시간` : ""}`;
+        const label =
+          metric.labelOverride ??
+          `${METRIC_LABELS[metric.metric]}${metric.hours ? ` · ${metric.hours}시간` : ""}`;
         return `<div class="metric">
           <div class="t-label-l">${esc(label)}</div>
           <div class="bars">${bar(sentRate, "bar-sent", metric.sent)}${bar(controlRate, "bar-control", metric.control)}</div>
           <div class="verdict">${verdictHtml(metric)}</div>
+        </div>`;
+      }
+
+      // 문구 변형 — 변형마다 대조군과(핵심 지표만), 그리고 B를 A와 바로 비교합니다.
+      function variantSection(result) {
+        if (!result.variants?.length) return "";
+        const key = (metric) =>
+          (metric.metric === "studied" && metric.hours === 72) ||
+          (metric.metric === "opened" && metric.hours === 24);
+        const label = (prefix, metric) => ({
+          ...metric,
+          labelOverride: `${prefix} · ${METRIC_LABELS[metric.metric]}${metric.hours ? ` ${metric.hours}시간` : ""}`,
+        });
+        const vsControl = result.variants
+          .flatMap((variant) =>
+            variant.metrics
+              .filter(key)
+              .map((metric) => label(`${variant.id.toUpperCase()} ${variant.label}`, metric)),
+          )
+          .map(metricRow)
+          .join("");
+        const h2h = (result.headToHead ?? [])
+          .flatMap((entry) =>
+            entry.metrics
+              .filter((metric) => metric.metric !== "since")
+              .map((metric) =>
+                label(`${entry.id.toUpperCase()} − ${entry.baseline.toUpperCase()}`, metric),
+              ),
+          )
+          .map(metricRow)
+          .join("");
+        return `<div>
+          <div class="t-label-l">문구 변형 — 대조군과 비교</div>
+          ${vsControl}
+        </div>
+        <div>
+          <div class="t-label-l">어느 톤이 더 나은가 — B를 A와 바로 비교</div>
+          <div class="t-body-s muted">막대 위가 B, 아래가 A예요. 대조군 대신 A가 기준이라 사람이 많아 차이를 더 잘 봐요.</div>
+          ${h2h}
         </div>`;
       }
 
@@ -1577,6 +1709,7 @@
               <div class="legend t-body-s"><span><i class="bar-sent"></i>보낸 그룹</span><span><i class="bar-control"></i>대조군 — 보내지 않음</span></div>
               ${pooled.metrics.map(metricRow).join("")}
             </div>
+            ${variantSection(pooled)}
             ${
               pooled.curve
                 ? `<div><div class="t-label-l">누적 복귀 — ${pooled.curve.unit === "hour" ? "앱 열기, 시간별" : "학습한 날, 날별"}</div>${curveSvg(pooled.curve)}</div>`
@@ -1632,6 +1765,7 @@
               <div class="legend t-body-s"><span><i class="bar-sent"></i>보낸 그룹</span><span><i class="bar-control"></i>대조군 — 보내지 않음</span></div>
               ${results.metrics.map(metricRow).join("")}
             </div>
+            ${variantSection(results)}
             <div>
               <div class="t-label-l">누적 복귀 — ${results.curve.unit === "hour" ? "앱 열기, 시간별" : "학습한 날, 날별"}</div>
               ${curveSvg(results.curve)}
@@ -1699,6 +1833,11 @@
           $("#test-send").disabled = state.testers.length === 0;
         }
       };
+      $("#f-ab").addEventListener("change", () => {
+        renderVariantTabs();
+        renderCopyEditor();
+        resetPreview();
+      });
       $("#f-segment").onchange = applySegmentDefaults;
       $("#copy-reset").onclick = applySegmentDefaults;
       $("#preview").onclick = preview;

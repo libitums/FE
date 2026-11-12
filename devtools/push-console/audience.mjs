@@ -11,6 +11,7 @@ import {
   renderCopy,
   streakFrom,
   timeZoneFor,
+  variantIndexOf,
 } from "./segments.mjs";
 
 const HOUR_MS = 60 * 60 * 1000;
@@ -162,6 +163,7 @@ export function messageFor(learner, copy) {
   const vars = {
     name: learner.name,
     episode: learner.episodeTitle ?? "",
+    character: learner.character ?? "",
     streak: learner.streak,
     steps: learner.remainingSteps,
   };
@@ -188,17 +190,52 @@ export function copyProblems(copy) {
   return problems;
 }
 
+export const VARIANT_IDS = ["a", "b", "c"];
+
 /**
- * 대상 → 발송 · 대조군 나누기 + 사람마다 문구입니다. 대조군도 같은 문구를 기록합니다(받지 않을 뿐).
- * @returns {{ userId: string, group: "sent" | "control", segment: string, lang: string, timeZone: string | null,
- *   localDate: string, lastActiveMs: number, title: string, body: string }[]}
+ * 문구 변형 목록입니다. `variants`(1 ~ 3개)가 있으면 그것, 없으면 `copy` 하나를 변형 A로 둡니다.
+ * @returns {{ id: string, label: string, copy: Record<string, { title: string, body: string }> }[]}
  */
-export function planRecipients({ campaignId, eligible, holdoutPercent, copy }) {
+export function normalizeVariants({ copy, variants }) {
+  if (Array.isArray(variants) && variants.length > 0) {
+    return variants.slice(0, VARIANT_IDS.length).map((variant, index) => ({
+      id: VARIANT_IDS[index],
+      label:
+        String(variant?.label ?? "")
+          .trim()
+          .slice(0, 30) || `문구 ${VARIANT_IDS[index].toUpperCase()}`,
+      copy: variant?.copy ?? {},
+    }));
+  }
+  return [{ id: "a", label: "기본 톤", copy: copy ?? {} }];
+}
+
+/** 변형마다 문구 문제를 모읍니다. 변형이 둘 이상이면 앞에 「문구 A:」를 붙입니다. */
+export function variantsProblems(variants) {
+  return variants.flatMap((variant) =>
+    copyProblems(variant.copy).map((problem) =>
+      variants.length > 1 ? `문구 ${variant.id.toUpperCase()}: ${problem}` : problem,
+    ),
+  );
+}
+
+/**
+ * 대상 → 발송 · 대조군 나누기 + 문구 변형 나누기 + 사람마다 문구입니다.
+ * 대조군은 받지 않으니 변형이 없고(`variant: null`), 받았을 문구는 변형 A로 기록합니다.
+ * @returns {{ userId: string, group: "sent" | "control", variant: string | null, segment: string, lang: string,
+ *   timeZone: string | null, localDate: string, lastActiveMs: number, title: string, body: string }[]}
+ */
+export function planRecipients({ campaignId, eligible, holdoutPercent, copy, variants }) {
+  const list = normalizeVariants({ copy, variants });
   return eligible.map((learner) => {
-    const message = messageFor(learner, copy);
+    const group = inHoldout(campaignId, learner.userId, holdoutPercent) ? "control" : "sent";
+    const variant =
+      group === "sent" ? list[variantIndexOf(campaignId, learner.userId, list.length)] : null;
+    const message = messageFor(learner, (variant ?? list[0]).copy);
     return {
       userId: learner.userId,
-      group: inHoldout(campaignId, learner.userId, holdoutPercent) ? "control" : "sent",
+      group,
+      variant: variant?.id ?? null,
       segment: learner.segment,
       episodeId: learner.episodeId,
       streak: learner.streak,

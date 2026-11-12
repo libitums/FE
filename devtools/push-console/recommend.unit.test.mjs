@@ -116,3 +116,39 @@ test("PC-RC5. claude 실행 인자 — 출력 모양 고정, 도구 · MCP · �
     SEGMENTS.map((segment) => segment.id),
   );
 });
+
+test("PC-RC6. 문구 B(캐릭터 톤)가 있으면 변형 둘, 없으면 A 하나, B가 틀리면 추천째 뺀다", () => {
+  const copyB = { en: { title: "{character}: 괜찮아요 🙂", body: "{name}, one more try?" } };
+  const [two] = validateRecommendations({ recommendations: [{ ...good, copyB }], notes: "" }).items;
+  assert.deepEqual(
+    two.variants.map((variant) => [variant.id, variant.label, variant.copy.en.title]),
+    [
+      ["a", "기본 톤", "Lesson 2 is tricky"],
+      ["b", "캐릭터 톤", "{character}: 괜찮아요 🙂"],
+    ],
+  );
+  const [one] = validateRecommendations({
+    recommendations: [{ ...good, copyB: {} }],
+    notes: "",
+  }).items;
+  assert.equal(one.variants.length, 1);
+  const bad = validateRecommendations({
+    recommendations: [{ ...good, copyB: { en: { title: "{mascot} hi", body: "b" } } }],
+    notes: "",
+  });
+  assert.equal(bad.items.length, 0);
+  assert.match(bad.problems[0], /문구 B/);
+  assert.match(
+    recommendationPrompt(
+      recommendationContext({
+        nowMs: 0,
+        computerTimeZone: "UTC",
+        segments: [],
+        forecasts: {},
+        campaigns: [],
+        defaultCopy: {},
+      }),
+    ),
+    /캐릭터 톤/,
+  );
+});

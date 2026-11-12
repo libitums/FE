@@ -186,3 +186,59 @@ export const DEFAULT_FILTERS = {
     holdoutPercent: 30,
   },
 };
+
+/**
+ * 문구 B — 캐릭터 톤. 그 사람이 하던 에피소드의 인물이 한국어 한 마디로 말을 걸고, 본문이 뜻을 풀어 줍니다.
+ * `{character}`는 인물의 한국어 이름(튜토리얼은 「승무원」)입니다. 죄책감 · 압박 없이, 이모지는 하나까지.
+ * 다른 앱 마스코트의 문구를 흉내 내지 않습니다 — 우리 이야기 속 인물의 목소리입니다(ADR-0129 D10).
+ */
+export const DEFAULT_COPY_B = {
+  "tutorial-cover": {
+    en: {
+      title: "{character}: 안녕하세요! 👋",
+      body: "{name}, your Korean story starts with one hello. Say it back?",
+    },
+  },
+  "tutorial-lesson1": {
+    en: {
+      title: "{character}: 곧 출발해요 ✈️",
+      body: "{name}, your first Korean words are boarding now.",
+    },
+  },
+  "tutorial-lesson2": {
+    en: {
+      title: "{character}: 괜찮아요, 다시 해 봐요 🙂",
+      body: "{name}, lesson 2 trips everyone up at first. One more try?",
+    },
+  },
+  "tutorial-rest": {
+    en: {
+      title: "{character}: 거의 다 왔어요 🎉",
+      body: "{name}, just a few steps left in the tutorial.",
+    },
+  },
+  "episode-next": {
+    en: {
+      title: "{character}: 다음 이야기 시작해요 👀",
+      body: "{name}, {episode} is ready for you.",
+    },
+  },
+  "episode-mid": {
+    en: {
+      title: "{character}: 아직이에요? 👀",
+      body: "{name}, our story is paused at {episode}. Back for one lesson?",
+    },
+  },
+  "all-done": {
+    en: {
+      title: "{character}: 또 만나요 🙂",
+      body: "{name}, replay a favorite episode in a few minutes.",
+    },
+  },
+  "streak-at-risk": {
+    en: {
+      title: "{character}: {streak}일째 함께해요 🔥",
+      body: "{name}, one short lesson keeps your {streak}-day streak going.",
+    },
+  },
+};

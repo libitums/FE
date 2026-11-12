@@ -14,13 +14,15 @@ import { fileURLToPath } from "node:url";
 import {
   buildLearners,
   copyProblems,
+  normalizeVariants,
+  variantsProblems,
   hourForecast,
   messageFor,
   planRecipients,
   selectAudience,
   summarize,
 } from "./audience.mjs";
-import { DEFAULT_COPY, DEFAULT_FILTERS } from "./copy.mjs";
+import { DEFAULT_COPY, DEFAULT_COPY_B, DEFAULT_FILTERS } from "./copy.mjs";
 import {
   claudeArgs,
   RECOMMENDATION_SCHEMA,
@@ -182,7 +184,8 @@ const holdoutKeyOf = (input) =>
 
 async function send(input) {
   if (input.confirm !== "SEND") throw new Error("확인 문구가 없습니다.");
-  const problems = copyProblems(input.copy);
+  const variants = normalizeVariants(input);
+  const problems = variantsProblems(variants);
   if (problems.length > 0) throw new Error(problems.join(" "));
   const { nowMs, filter, holdoutPercent, selection } = audienceFor(input);
   if (selection.eligible.length === 0) throw new Error("보낼 사람이 없습니다.");
@@ -194,7 +197,7 @@ async function send(input) {
     campaignId: seed,
     eligible: selection.eligible,
     holdoutPercent,
-    copy: input.copy,
+    variants,
   });
   const sentCount = recipients.filter((row) => row.group === "sent").length;
   if (input.expectedSent !== undefined && Number(input.expectedSent) !== sentCount) {
@@ -212,7 +215,8 @@ async function send(input) {
     filter,
     holdoutPercent,
     holdoutSeed: seed,
-    copy: input.copy,
+    copy: variants[0].copy,
+    variants,
     sentAtMs: nowMs,
     status: "sending",
     inSegment: selection.inSegment,
@@ -426,6 +430,23 @@ async function recommend() {
       sentAtMs: campaign.sentAtMs,
       holdoutPercent: campaign.holdoutPercent,
       copyEn: campaign.copy?.en ?? null,
+      variants: (campaign.variants ?? []).map((variant) => ({
+        id: variant.id,
+        label: variant.label,
+        titleEn: variant.copy?.en?.title ?? null,
+      })),
+      variantVsBaseline: (results.headToHead ?? []).map((entry) => ({
+        variant: entry.id,
+        baseline: entry.baseline,
+        metrics: entry.metrics.map((metric) => ({
+          metric: metric.metric,
+          hours: metric.hours,
+          complete: metric.complete,
+          diff: metric.compare?.diff ?? null,
+          low: metric.compare?.low ?? null,
+          high: metric.compare?.high ?? null,
+        })),
+      })),
       counts: results.counts,
       metrics: results.metrics.map((metric) => ({
         metric: metric.metric,
@@ -510,7 +531,7 @@ const server = createServer(async (request, response) => {
         testersExcluded: snapshot.testers,
         posthog: Boolean(config.posthogPersonalApiKey && config.posthogProjectId),
         segments: summarize(snapshot.learners, SEGMENTS),
-        defaults: { copy: DEFAULT_COPY, filters: DEFAULT_FILTERS },
+        defaults: { copy: DEFAULT_COPY, copyB: DEFAULT_COPY_B, filters: DEFAULT_FILTERS },
         languages: LANGUAGES,
         campaigns: loadCampaigns().map(summaryOf),
         series: seriesList(),
@@ -547,29 +568,40 @@ const server = createServer(async (request, response) => {
     if (request.method === "POST" && url.pathname === "/api/audience") {
       const input = await readBody(request);
       const { nowMs, filter, holdoutPercent, selection } = audienceFor(input);
-      const copy = input.copy ?? DEFAULT_COPY[input.segment];
+      const variants = normalizeVariants({
+        copy: input.copy ?? DEFAULT_COPY[input.segment],
+        variants: input.variants,
+      });
       const seed = holdoutKeyOf(input);
       const recipients = planRecipients({
         campaignId: seed,
         eligible: selection.eligible,
         holdoutPercent,
-        copy,
+        variants,
       });
       const byLang = {};
-      for (const row of recipients) byLang[row.lang] = (byLang[row.lang] ?? 0) + 1;
+      const byVariant = {};
+      for (const row of recipients) {
+        byLang[row.lang] = (byLang[row.lang] ?? 0) + 1;
+        if (row.variant) byVariant[row.variant] = (byVariant[row.variant] ?? 0) + 1;
+      }
       const learnerOf = new Map(selection.eligible.map((row) => [row.userId, row]));
-      // 언어마다 한 명씩 먼저, 남는 자리는 앞에서부터 — 12명까지.
+      // 변형 × 언어마다 한 명씩 먼저(받는 사람만), 남는 자리는 앞에서부터 — 12명까지.
       const firstOfLang = new Map();
-      for (const row of recipients) if (!firstOfLang.has(row.lang)) firstOfLang.set(row.lang, row);
+      for (const row of recipients) {
+        const key = `${row.variant}:${row.lang}`;
+        if (row.group === "sent" && !firstOfLang.has(key)) firstOfLang.set(key, row);
+      }
       const picked = [...firstOfLang.values()];
       for (const row of recipients) {
         if (picked.length >= 12) break;
-        if (!picked.includes(row)) picked.push(row);
+        if (row.group === "sent" && !picked.includes(row)) picked.push(row);
       }
       const samples = [];
       for (const row of picked.slice(0, 12)) {
         const learner = learnerOf.get(row.userId);
         samples.push({
+          variant: row.variant,
           lang: row.lang,
           country: learner.country,
           localHour: learner.localHour,
@@ -587,8 +619,10 @@ const server = createServer(async (request, response) => {
         control: recipients.filter((row) => row.group === "control").length,
         excluded: selection.excluded,
         byLang,
+        byVariant,
+        variants: variants.map((variant) => ({ id: variant.id, label: variant.label })),
         seed,
-        problems: copyProblems(copy),
+        problems: variantsProblems(variants),
         forecast: hourForecast(selection.hourCandidates, filter.localHours, nowMs),
         samples,
       });

@@ -72,6 +72,7 @@ export function episodeCatalog(manifest, episodesById) {
         order: entry.order,
         title: episode.title_en || episode.title || entry.id,
         steps: (episode.steps ?? []).map((step) => step.id),
+        character: typeof episode.counterpart === "string" ? episode.counterpart : "",
       };
     });
 }
@@ -91,6 +92,7 @@ export function classifyLearner(catalogProgress, catalog) {
     segment,
     episodeId: episode.id,
     episodeTitle: episode.title,
+    character: episode.character ?? "",
     remainingSteps: remainingOf(episode, keys),
   });
 
@@ -101,7 +103,13 @@ export function classifyLearner(catalogProgress, catalog) {
 
   const current = episodes.find((episode) => !hasKey(progress[episode.id], "RP"));
   if (current === undefined)
-    return { segment: "all-done", episodeId: null, episodeTitle: null, remainingSteps: 0 };
+    return {
+      segment: "all-done",
+      episodeId: null,
+      episodeTitle: null,
+      character: "",
+      remainingSteps: 0,
+    };
   const keys = progress[current.id] ?? [];
   return at(keys.length === 0 ? "episode-next" : "episode-mid", current, keys);
 }
@@ -260,6 +268,10 @@ function hash32(text) {
 }
 
 /** 대조군(보내지 않음)이면 `true`입니다. `percent`는 0~90. */
+/** 문구 변형 칸(0 ~ n-1)입니다. 대조군 배정과 다른 키를 써서 서로 섞이지 않습니다. */
+export const variantIndexOf = (campaignId, userId, count) =>
+  count <= 1 ? 0 : hash32(`variant:${campaignId}:${userId}`) % count;
+
 export const inHoldout = (campaignId, userId, percent) =>
   hash32(`${campaignId}:${userId}`) % 10000 < Math.round(percent * 100);
 
@@ -274,7 +286,7 @@ export function cleanName(name) {
 }
 
 /**
- * 문구 자리표시를 채웁니다 — `{name}` `{episode}` `{streak}` `{steps}`.
+ * 문구 자리표시를 채웁니다 — `{name}` `{episode}` `{character}` `{streak}` `{steps}`.
  * 이름이 없으면 `{name}`과 붙은 쉼표 · 「さん」을 함께 지우고 첫 글자를 대문자로 올립니다.
  */
 export function renderCopy(template, vars) {
@@ -287,6 +299,13 @@ export function renderCopy(template, vars) {
     text = text.charAt(0).toUpperCase() + text.slice(1);
   } else {
     text = text.replaceAll("{name}", name);
+  }
+  // 인물 이름이 없으면(다 끝낸 사람) 「{character}: 」 머리말째 지웁니다.
+  const character = String(vars.character ?? "").trim();
+  if (character === "") {
+    text = text.replace(/\{character\}\s*[:：]\s*/gu, "").replaceAll("{character}", "");
+  } else {
+    text = text.replaceAll("{character}", character);
   }
   return text
     .replaceAll("{episode}", String(vars.episode ?? ""))
