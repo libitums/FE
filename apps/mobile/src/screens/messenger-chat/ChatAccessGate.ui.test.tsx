@@ -98,3 +98,27 @@ test("MA-UI4 open이면 안내 없이 지금 목록", () => {
   expect(screen.queryByTestId(GATE) === null).toBe(true);
   expect(screen.getByTestId("messenger-list-list")).toBeTruthy();
 });
+
+test("MA-UI6 이름이 빈 인물은 아바타에서 빼고 다음 인물로 셋을 채운다(PR #415 리뷰)", () => {
+  const source = makeSource({
+    rooms: ["", "a", "b", "c"].map((name, index) => ({
+      roomId: `r${index}`,
+      counterpart: { id: `p${index}`, name, avatarPath: null },
+      access: { kind: "open" as const },
+      unread: 0,
+      messages: [],
+      storyPoints: [],
+      settings: { autoIdeas: true, storyPointId: "" },
+      ideaSets: [],
+      cannedReplies: [],
+      photoPath: null,
+      voiceLine: { durationMs: 1000, text: { ko: "네", en: "Yes" } },
+    })),
+  });
+  render(<MessengerListScreen {...listProps("sign-in")} source={source} />);
+  const faces = [...screen.getByTestId(GATE).querySelectorAll(".messenger-access-face-text")].map(
+    (face) => face.textContent,
+  );
+  expect(faces).toHaveLength(3);
+  expect(faces.includes("")).toBe(false);
+});

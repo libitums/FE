@@ -101,8 +101,9 @@ export function MessengerListScreen({
             onGoToJourney={onGoToJourney}
             faces={ordered
               .filter((room) => room.access.kind === "open")
-              .slice(0, 3)
-              .map((room) => [...room.counterpart.name][0] ?? "")}
+              .map((room) => [...room.counterpart.name][0] ?? "")
+              .filter((face) => face !== "")
+              .slice(0, 3)}
           />
         ) : ordered.length === 0 ? (
           <ChatListEmpty onGoToJourney={onGoToJourney} />
