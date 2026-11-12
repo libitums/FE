@@ -1,0 +1,294 @@
+/* 법 · 안전 UI(ADR-0125) — 고지 줄 · 위기 카드 · 막힌 입력 줄 · 생년 시트. 상태는 클래스 변형으로만 칠한다(Lynx는 data-* 선택자를 무시한다). */
+
+/* 고지 줄: 가운데 회색 글 + 양옆 가는 선 */
+.chat-notice {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  column-gap: var(--libitum-spacing-8);
+  padding: var(--libitum-spacing-4) var(--libitum-spacing-12);
+}
+
+.chat-notice-rule {
+  flex: 1;
+  height: 1px;
+  background-color: var(--libitum-color-gray-300);
+}
+
+.chat-notice-body {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  column-gap: var(--libitum-spacing-6);
+  max-width: 280px;
+}
+
+.chat-notice-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.chat-notice-text {
+  font-family: var(--libitum-typography-caption-font-family);
+  font-size: 12px;
+  line-height: 17px;
+  color: var(--libitum-color-fg-neutral-muted);
+  text-align: center;
+}
+
+/* 위기 카드: 아바타 없는 연회색 카드 */
+.chat-crisis {
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--libitum-spacing-12);
+  margin-top: var(--libitum-spacing-4);
+  padding: var(--libitum-spacing-16);
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--libitum-color-gray-400);
+  border-radius: var(--libitum-radius-lg);
+  background-color: var(--libitum-color-gray-50);
+}
+
+.chat-crisis-head {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  column-gap: var(--libitum-spacing-8);
+}
+
+.chat-crisis-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.chat-crisis-title {
+  flex: 1;
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 22px;
+  color: var(--libitum-color-fg-neutral);
+}
+
+.chat-crisis-body,
+.chat-crisis-emergency {
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  line-height: var(--libitum-typography-body-s-line-height);
+  color: var(--libitum-color-fg-neutral-muted);
+}
+
+.chat-crisis-emergency {
+  font-size: 12px;
+  line-height: 17px;
+}
+
+.chat-crisis-resource {
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--libitum-spacing-8);
+  padding: var(--libitum-spacing-12);
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--libitum-color-gray-300);
+  border-radius: var(--libitum-radius-md);
+  background-color: var(--libitum-color-white);
+}
+
+.chat-crisis-name-block {
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--libitum-spacing-2);
+}
+
+.chat-crisis-name {
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 20px;
+  color: var(--libitum-color-fg-neutral);
+}
+
+.chat-crisis-hours {
+  font-family: var(--libitum-typography-caption-font-family);
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--libitum-color-fg-neutral-muted);
+}
+
+.chat-crisis-actions {
+  display: flex;
+  flex-direction: row;
+  column-gap: var(--libitum-spacing-8);
+}
+
+.chat-crisis-call {
+  flex: 1;
+  min-height: 44px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  column-gap: var(--libitum-spacing-6);
+  padding: 0 var(--libitum-spacing-12);
+  border-radius: var(--libitum-radius-md);
+  background-color: var(--libitum-color-gray-900);
+}
+
+.chat-crisis-call-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.chat-crisis-call-text {
+  font-family: var(--libitum-typography-button-m-font-family);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--libitum-color-fg-neutral-inverted);
+}
+
+.chat-crisis-web {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--libitum-spacing-12);
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--libitum-color-gray-400);
+  border-radius: var(--libitum-radius-md);
+}
+
+.chat-crisis-web-text {
+  font-family: var(--libitum-typography-button-m-font-family);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--libitum-color-fg-neutral);
+}
+
+/* 막힌 입력 줄: 입력 칸 · 기능 줄 · 토글 · 키보드 자리 대신 */
+.chat-blocked {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  column-gap: var(--libitum-spacing-12);
+  padding: var(--libitum-spacing-12) var(--libitum-spacing-16);
+  border-top-width: 1px;
+  border-top-style: solid;
+  border-top-color: var(--libitum-color-gray-300);
+  background-color: var(--libitum-color-white);
+}
+
+.chat-blocked-icon-wrap {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-gray-200);
+}
+
+.chat-blocked-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.chat-blocked-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--libitum-spacing-2);
+}
+
+.chat-blocked-title {
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 20px;
+  color: var(--libitum-color-fg-neutral);
+}
+
+.chat-blocked-body {
+  font-family: var(--libitum-typography-caption-font-family);
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--libitum-color-fg-neutral-muted);
+}
+
+.chat-blocked-change {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  padding: 0 var(--libitum-spacing-12);
+  border-radius: var(--libitum-radius-md);
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--libitum-color-gray-400);
+}
+
+.chat-blocked-change-text {
+  font-family: var(--libitum-typography-button-m-font-family);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--libitum-color-brand-strong);
+}
+
+/* 생년 시트: 연도 목록(스크롤 칸은 px 높이 — Lynx scroll-view는 flex로 높이가 정해지지 않는다) */
+.chat-birth-year {
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--libitum-spacing-8);
+  margin-top: var(--libitum-spacing-12);
+}
+
+.chat-birth-year-list {
+  height: 240px;
+  border-radius: var(--libitum-radius-md);
+  background-color: var(--libitum-color-gray-100);
+}
+
+.chat-birth-year-row {
+  height: 48px;
+  margin: 0 var(--libitum-spacing-12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--libitum-radius-md);
+}
+
+.chat-birth-year-row-on {
+  background-color: var(--libitum-elevation-surface-floating);
+}
+
+.chat-birth-year-text {
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: 17px;
+  line-height: 22px;
+  color: var(--libitum-color-fg-neutral-muted);
+}
+
+.chat-birth-year-text-on {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--libitum-color-brand-strong);
+}
+
+.chat-birth-year-body {
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: var(--libitum-typography-body-m-font-size);
+  line-height: var(--libitum-typography-body-m-line-height);
+  color: var(--libitum-color-fg-neutral-muted);
+}
+
+.chat-birth-year-note {
+  font-family: var(--libitum-typography-caption-font-family);
+  font-size: 12px;
+  line-height: 17px;
+  color: var(--libitum-color-fg-neutral-muted);
+  text-align: center;
+}

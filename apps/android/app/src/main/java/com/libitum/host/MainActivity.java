@@ -96,6 +96,8 @@ public final class MainActivity extends Activity {
     // 자유 대화 답을 SSE 블록 단위로 받는다(ADR-0124). 결과는 전역 이벤트 셋으로만 — 출구는 sendChatStreamEvent.
     builder.registerModule("ChatStreamModule", ChatStreamModule.class);
     ChatStreamModule.setSink(this::sendChatStreamEvent);
+    // 위기 안내의 전화 · 웹 주소를 시스템에 넘긴다(ADR-0125). tel: 번호 · https만.
+    builder.registerModule("ExternalLinkModule", ExternalLinkModule.class, this);
     // 측정 빌드의 성능 기록(ADR-0105 D2). JS가 PUBLIC_PERF_PROBE=1일 때만 부른다.
     builder.registerModule("PerfLogModule", PerfLogModule.class);
     builder.registerModule("AppReviewModule", AppReviewModule.class, this);

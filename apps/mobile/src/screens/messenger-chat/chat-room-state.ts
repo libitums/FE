@@ -21,6 +21,11 @@ export type ChatOverlay =
   | {
       readonly kind: "coin-shop";
       readonly from: "sidebar" | "ask-photo" | "ask-voice" | "send";
+    }
+  | {
+      readonly kind: "birth-year";
+      readonly selected: number | null;
+      readonly from: "room" | "sidebar" | "blocked";
     };
 
 export type ChatFocusOrigin =
@@ -31,7 +36,9 @@ export type ChatFocusOrigin =
   | "sidebar-story-point"
   | "sidebar-delete"
   | "sidebar-coins"
-  | "send";
+  | "send"
+  | "sidebar-birth-year"
+  | "blocked-change-year";
 
 export type ChatRoomState = {
   /** 정본입니다. */
@@ -67,7 +74,8 @@ export type ChatRoomAction =
   | { readonly type: "close-overlay" }
   | { readonly type: "toggle-report-reason"; readonly id: ChatReportReasonId }
   | { readonly type: "fix-input"; readonly value: string }
-  | { readonly type: "select-story-point"; readonly id: string };
+  | { readonly type: "select-story-point"; readonly id: string }
+  | { readonly type: "select-birth-year"; readonly year: number };
 
 const NO_OVERLAY: ChatOverlay = { kind: "none" };
 const SIDEBAR: ChatOverlay = { kind: "sidebar" };
@@ -205,6 +213,10 @@ export function chatRoomReducer(state: ChatRoomState, action: ChatRoomAction): C
       return state.overlay.kind === "story-point"
         ? { ...state, overlay: { kind: "story-point", selected: action.id } }
         : state;
+    case "select-birth-year":
+      return state.overlay.kind === "birth-year"
+        ? { ...state, overlay: { ...state.overlay, selected: action.year } }
+        : state;
     default: {
       const unreachable: never = action;
       return unreachable;
@@ -219,6 +231,8 @@ export function overlayParent(overlay: ChatOverlay): ChatOverlay {
     case "delete-confirm":
       return SIDEBAR;
     case "coin-shop":
+      return overlay.from === "sidebar" ? SIDEBAR : NO_OVERLAY;
+    case "birth-year":
       return overlay.from === "sidebar" ? SIDEBAR : NO_OVERLAY;
     default:
       return NO_OVERLAY;
@@ -247,6 +261,9 @@ export function focusOriginOf(closing: ChatOverlay): ChatFocusOrigin | null {
       if (closing.from === "sidebar") return "sidebar-coins";
       if (closing.from === "send") return "send";
       return closing.from === "ask-photo" ? "snapshot-pill" : "voice-pill";
+    case "birth-year":
+      if (closing.from === "sidebar") return "sidebar-birth-year";
+      return closing.from === "blocked" ? "blocked-change-year" : null;
     default: {
       const unreachable: never = closing;
       return unreachable;

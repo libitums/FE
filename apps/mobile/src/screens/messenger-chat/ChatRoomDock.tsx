@@ -6,7 +6,7 @@ import { CHAT_COIN_PRICES } from "./chat-coins";
 import type { ChatRoomAction, ChatRoomState } from "./chat-room-state";
 import type { SendCost } from "./chat-turns.contract";
 import { canSend } from "./chat-rules";
-import type { ChatMessage, ChatThread } from "./chat-source.contract";
+import type { ChatBirthYear, ChatMessage, ChatThread } from "./chat-source.contract";
 import { ComposerRow } from "./ComposerRow";
 import { FeatureRow } from "./FeatureRow";
 import { chatKeyboardSlotHeight, chatSlotContent } from "./keyboard-height";
@@ -14,6 +14,7 @@ import type { KeyboardPlan } from "./keyboard-plan";
 import { KeyboardSlot, PhoneKeyboardSpacer } from "./KeyboardSlot";
 import { KeyboardToggleRow } from "./KeyboardToggleRow";
 import { ReplyIdeasPanel } from "./ReplyIdeasPanel";
+import { BlockedComposer } from "./SafetyParts";
 
 import "./messenger-chat.css";
 
@@ -30,6 +31,8 @@ export type ChatRoomDockProps = {
   readonly sendCost: SendCost;
   /** 입력 줄 바로 위 자리입니다(T2 마지막 무료 띠). 없으면 null. */
   readonly aboveComposer: ReactNode | null;
+  /** 막힌 줄에서 연 생년 시트가 지금 값을 골라 둔 채 열리게 합니다. */
+  readonly birthYear: ChatBirthYear;
 };
 
 /** 상대의 마지막 텍스트 글(한국어)입니다. 없으면 null — 보기 판의 인용이 됩니다. */
@@ -52,6 +55,7 @@ export function ChatRoomDock({
   onSend,
   sendCost,
   aboveComposer,
+  birthYear,
 }: ChatRoomDockProps): ReactNode {
   const slotHeight = chatKeyboardSlotHeight({
     keyboard: state.keyboard,
@@ -64,6 +68,30 @@ export function ChatRoomDock({
   const content = chatSlotContent(state);
   const menuOpen = state.overlay.kind === "more-menu";
   const ideasOpen = state.slot.kind === "ideas";
+
+  // 입력이 막힌 방은 기능 줄 · 입력 줄 · 토글 · 키보드 자리 대신 상태 줄 하나만 둡니다(ADR-0125).
+  if (thread.inputBlock !== null) {
+    return (
+      <view className="messenger-chat-dock">
+        <view className="messenger-chat-dock-body" style={keyboardDockBodyStyle(edges, "keyboard")}>
+          <BlockedComposer
+            block={thread.inputBlock}
+            bottomInset={edges.bottom}
+            onChangeBirthYear={() =>
+              dispatch({
+                type: "open-overlay",
+                overlay: {
+                  kind: "birth-year",
+                  selected: birthYear.kind === "set" ? birthYear.year : null,
+                  from: "blocked",
+                },
+              })
+            }
+          />
+        </view>
+      </view>
+    );
+  }
 
   // 휴대폰 모드에서 깔아 둔 학습 키보드(밑판)는 보이기만 하고 입력은 받지 않습니다.
   const typeOnLearning = (action: ChatRoomAction) => {

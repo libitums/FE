@@ -42,6 +42,7 @@ export const messengerChatId: MessengerChatCopy = {
     voiceLabel: (name, duration, ko, en) => `${name}: pesan suara ${duration}, ${ko}, ${en}`,
     play: "Putar",
     pause: "Jeda",
+    crisisArrived: "Sumber bantuan",
   },
   composer: {
     placeholder: "Pesan",
@@ -173,5 +174,41 @@ export const messengerChatId: MessengerChatCopy = {
     reply: "Balas",
     later: "Nanti",
     sheetLabel: (name) => `Teman baru: ${name}`,
+  },
+  safety: {
+    time: (hour, minute) => `${String(hour).padStart(2, "0")}.${String(minute).padStart(2, "0")}`,
+    notice: {
+      aiDisclosure: (name) => `${name} adalah karakter AI. Balasan ditulis oleh AI.`,
+      minorNotice: "Obrolan ini mungkin tidak cocok untuk semua pengguna di bawah 18 tahun.",
+      breakReminder: (name) =>
+        `Kamu sudah mengobrol selama 3 jam. Istirahat sebentar? Ingat: ${name} adalah AI.`,
+    },
+    crisis: {
+      title: "Kamu tidak harus menghadapi ini sendirian",
+      body: "Bicara dengan seseorang bisa membantu sekarang. Layanan ini gratis dan rahasia.",
+      call: (phone) => `Telepon ${phone}`,
+      callLabel: (name) => `Telepon ${name}`,
+      website: "Situs web",
+      websiteLabel: (name) => `Buka situs web ${name}`,
+      emergency: "Jika kamu dalam bahaya, hubungi nomor darurat setempat.",
+    },
+    blocked: {
+      pausedTitle: (time) => `Obrolan dijeda hingga ${time}`,
+      pausedBody: "Beberapa pesan melanggar aturan obrolan.",
+      timeUpTitle: "Waktu mengobrol hari ini sudah habis",
+      timeUpBody: (time) => `Kamu bisa mengobrol lagi pukul ${time}. Pelajaranmu tetap terbuka.`,
+      ageTitle: "Obrolan belum tersedia untuk usiamu",
+      ageBody: "Tahun lahir salah? Kamu bisa mengubahnya.",
+      changeBirthYear: "Ubah tahun lahir",
+    },
+    birthYear: {
+      title: "Kamu lahir tahun berapa?",
+      body: "Kami memakainya agar obrolan sesuai usiamu. Tidak pernah ditampilkan ke siapa pun, dan bisa diubah nanti di pengaturan obrolan.",
+      continue: "Lanjut",
+      skip: "Lewati dulu",
+      skipNote: "Jika dilewati, obrolan memakai pengaturan untuk di bawah 18 tahun.",
+      sidebar: "Tahun lahir",
+      notSet: "Belum diisi",
+    },
   },
 };

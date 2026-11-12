@@ -13,6 +13,7 @@ import type { ChatTier } from "./free-turns";
 import type { TurnLedger } from "./turn-ledger";
 import type { ComposerKeyboard } from "./keyboard-plan";
 import type { MyMessageCopy, NewFriendCopy, TurnsCopy } from "./messenger-chat-copy-1-5.contract";
+import type { SafetyCopy } from "./safety-copy.contract";
 import type { KeyboardHeightStore, KoreanKeyboardProbe } from "./keyboard-ports";
 
 /** 「…」 메뉴 항목(고정 순서: ideas · fix · report). */
@@ -65,6 +66,8 @@ export type MessengerChatCopy = {
     readonly voiceLabel: (name: string, duration: string, ko: string, en: string) => string;
     readonly play: string;
     readonly pause: string;
+    /** 위기 안내 카드가 도착했을 때 낭독합니다. */
+    readonly crisisArrived: string;
   };
   readonly composer: {
     readonly placeholder: string;
@@ -156,6 +159,8 @@ export type MessengerChatCopy = {
   readonly myMessage: MyMessageCopy;
   readonly turns: TurnsCopy;
   readonly newFriend: NewFriendCopy;
+  /** 법 · 안전 UI(ADR-0125). 시각은 `time(hour, minute)`이 언어별로 씁니다. */
+  readonly safety: SafetyCopy;
 };
 
 // --- 화면 props (spec §6.1) ---
@@ -266,4 +271,13 @@ export const messengerChatTestIds = {
   sidebarDelete: room("sidebar-delete"),
   storyPointSheet: room("story-point"),
   storyPointOption: (id: string): string => room(`story-point-${id}`),
+  notice: room("notice"),
+  crisis: room("crisis"),
+  crisisCall: room("crisis-call"),
+  crisisWeb: room("crisis-web"),
+  blocked: room("blocked"),
+  blockedChangeYear: room("blocked-change-year"),
+  birthYearSheet: room("birth-year-sheet"),
+  birthYearOption: (year: number): string => room(`birth-year-${year}`),
+  sidebarBirthYear: room("sidebar-birth-year"),
 } as const;

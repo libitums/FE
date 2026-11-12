@@ -2,6 +2,7 @@
 
 import type {
   ChatFixtureRoom,
+  ChatInputBlock,
   ChatMessage,
   ChatMyNotes,
   ChatRoomAccess,
@@ -22,6 +23,8 @@ export type RoomState = {
   /** 내 텍스트 글 id만 키. */
   notes: Readonly<Record<string, ChatMyNotes>>;
   messages: ChatMessage[];
+  /** 씨앗이 정한 입력 막힘입니다(시각은 만들 때 풀어 둡니다). */
+  readonly inputBlock: ChatInputBlock | null;
   unread: number;
   settings: ChatRoomSettings;
   ideaIndex: number;
@@ -51,13 +54,18 @@ export function activityOf(room: RoomState): ChatRoomActivity {
   return "idle";
 }
 
-export function newRoomState(seed: ChatFixtureRoom, messages: ChatMessage[]): RoomState {
+export function newRoomState(
+  seed: ChatFixtureRoom,
+  messages: ChatMessage[],
+  inputBlock: ChatInputBlock | null = null,
+): RoomState {
   return {
     seed,
     access: seed.access,
     isNew: false,
     notes: {},
     messages,
+    inputBlock,
     unread: seed.unread,
     settings: { ...seed.settings },
     ideaIndex: 0,
@@ -86,6 +94,12 @@ export function advanceIdeas(room: RoomState): void {
 
 export function replaceMessage(room: RoomState, id: string, next: ChatMessage): void {
   room.messages = room.messages.map((message) => (message.id === id ? next : message));
+}
+
+/** 그 방에 걸린 타이머를 모두 풉니다. */
+export function clearRoomHandles(room: RoomState, timers: ChatTimers): void {
+  for (const handle of room.handles) timers.clearTimeout(handle);
+  room.handles.clear();
 }
 
 /** 잠긴 방을 연다. opening이 있으면 로그에 놓고(새 해금이고 닫힌 방이면 안 읽음 1), 새 해금이면 NEW 표시를 단다. */
@@ -138,6 +152,7 @@ export function threadOf(
       settings: room.settings,
       storyPoints: room.seed.storyPoints,
       notes: room.notes,
+      inputBlock: room.inputBlock,
     };
   }
   return room.threadCache;

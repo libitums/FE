@@ -41,6 +41,7 @@ export const messengerChatVi: MessengerChatCopy = {
     voiceLabel: (name, duration, ko, en) => `${name}: tin nhắn thoại ${duration}, ${ko}, ${en}`,
     play: "Phát",
     pause: "Tạm dừng",
+    crisisArrived: "Nơi hỗ trợ",
   },
   composer: {
     placeholder: "Tin nhắn",
@@ -172,5 +173,41 @@ export const messengerChatVi: MessengerChatCopy = {
     reply: "Trả lời",
     later: "Để sau",
     sheetLabel: (name) => `Bạn mới: ${name}`,
+  },
+  safety: {
+    time: (hour, minute) => `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`,
+    notice: {
+      aiDisclosure: (name) => `${name} là nhân vật AI. Câu trả lời do AI viết.`,
+      minorNotice: "Cuộc trò chuyện này có thể không phù hợp với mọi người dưới 18 tuổi.",
+      breakReminder: (name) =>
+        `Bạn đã trò chuyện 3 giờ rồi. Nghỉ một chút nhé? Nhắc lại: ${name} là AI.`,
+    },
+    crisis: {
+      title: "Bạn không phải một mình đối mặt với điều này",
+      body: "Nói chuyện với ai đó có thể giúp bạn ngay bây giờ. Các dịch vụ này miễn phí và bảo mật.",
+      call: (phone) => `Gọi ${phone}`,
+      callLabel: (name) => `Gọi ${name}`,
+      website: "Trang web",
+      websiteLabel: (name) => `Mở trang web ${name}`,
+      emergency: "Nếu bạn đang gặp nguy hiểm, hãy gọi số khẩn cấp tại nơi bạn ở.",
+    },
+    blocked: {
+      pausedTitle: (time) => `Trò chuyện tạm dừng đến ${time}`,
+      pausedBody: "Một số tin nhắn đã vi phạm quy tắc trò chuyện.",
+      timeUpTitle: "Hôm nay đã hết thời gian trò chuyện",
+      timeUpBody: (time) => `Bạn có thể trò chuyện lại lúc ${time}. Bài học vẫn mở.`,
+      ageTitle: "Trò chuyện chưa dành cho độ tuổi của bạn",
+      ageBody: "Sai năm sinh? Bạn có thể đổi lại.",
+      changeBirthYear: "Đổi năm sinh",
+    },
+    birthYear: {
+      title: "Bạn sinh năm nào?",
+      body: "Chúng tôi dùng thông tin này để cuộc trò chuyện phù hợp với độ tuổi của bạn. Không ai thấy được, và bạn có thể đổi sau trong cài đặt trò chuyện.",
+      continue: "Tiếp tục",
+      skip: "Để sau",
+      skipNote: "Nếu bỏ qua, trò chuyện sẽ dùng cài đặt cho người dưới 18 tuổi.",
+      sidebar: "Năm sinh",
+      notSet: "Chưa đặt",
+    },
   },
 };

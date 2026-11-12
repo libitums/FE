@@ -69,6 +69,8 @@ final class ViewController: UIViewController {
       // 자유 대화 답을 SSE 블록 단위로 받는다(ADR-0124). `lynx.fetch`의 스트리밍은 iOS에서 본문을 잃는다.
       // 결과는 전역 이벤트 셋으로만 올라간다 — 출구는 아래 `startChatStreamEvents`가 잇는다.
       config.register(ChatStreamModule.self)
+      // 위기 안내의 전화 · 웹 주소를 시스템에 넘긴다(ADR-0125). tel: 번호 · https만.
+      config.register(ExternalLinkModule.self)
       // Airbridge 이벤트 전달(ADR-0063). **설정이 있어 SDK가 시작된 빌드에서만** 등록한다 —
       // 없으면 JS의 `NativeModules`에 이 이름이 없고, 그것이 「보낼 곳 없음」의 신호다.
       if AirbridgeEvents.isStarted {

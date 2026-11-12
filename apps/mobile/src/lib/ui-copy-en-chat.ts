@@ -40,6 +40,7 @@ export const messengerChatEn: MessengerChatCopy = {
     voiceLabel: (name, duration, ko, en) => `${name}: voice message ${duration}, ${ko}, ${en}`,
     play: "Play",
     pause: "Pause",
+    crisisArrived: "Support resources",
   },
   composer: {
     placeholder: "Message",
@@ -170,5 +171,42 @@ export const messengerChatEn: MessengerChatCopy = {
     reply: "Reply",
     later: "Later",
     sheetLabel: (name) => `New friend: ${name}`,
+  },
+  safety: {
+    time: (hour, minute) =>
+      `${hour % 12 === 0 ? 12 : hour % 12}:${String(minute).padStart(2, "0")} ${hour < 12 ? "AM" : "PM"}`,
+    notice: {
+      aiDisclosure: (name) => `${name} is an AI character. Replies are written by AI.`,
+      minorNotice: "This chat may not be suitable for everyone under 18.",
+      breakReminder: (name) =>
+        `You've been chatting for 3 hours. Time for a short break? Reminder: ${name} is AI.`,
+    },
+    crisis: {
+      title: "You don't have to go through this alone",
+      body: "Talking to someone can help right now. These services are free and confidential.",
+      call: (phone) => `Call ${phone}`,
+      callLabel: (name) => `Call ${name}`,
+      website: "Website",
+      websiteLabel: (name) => `Open ${name} website`,
+      emergency: "If you are in immediate danger, call your local emergency number.",
+    },
+    blocked: {
+      pausedTitle: (time) => `Chat paused until ${time}`,
+      pausedBody: "Some messages broke our chat rules.",
+      timeUpTitle: "Today's chat time is up",
+      timeUpBody: (time) => `You can chat again at ${time}. Your lessons are still open.`,
+      ageTitle: "Chat isn't available for your age yet",
+      ageBody: "Wrong birth year? You can change it.",
+      changeBirthYear: "Change birth year",
+    },
+    birthYear: {
+      title: "What year were you born?",
+      body: "We use it to keep chats right for your age. It is never shown to anyone, and you can change it later in chat settings.",
+      continue: "Continue",
+      skip: "Skip for now",
+      skipNote: "If you skip, chats use our under-18 settings.",
+      sidebar: "Birth year",
+      notSet: "Not set",
+    },
   },
 };

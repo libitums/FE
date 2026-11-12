@@ -64,7 +64,7 @@ export function MessengerChatScreen({
     onExit,
     authorizeSend: () => gate.current(),
   });
-  const { state, plan, thread, keyboardHeight, dispatch, send } = room;
+  const { state, plan, thread, birthYear, keyboardHeight, dispatch, send } = room;
   // 겹침이 열린 동안 뒤 화면(머리 · 로그 · 독)은 낭독에서 숨습니다. 「…」 메뉴는 독 안의 가벼운 팝업이라 제외합니다.
   const overlayOpen = state.overlay.kind !== "none" && state.overlay.kind !== "more-menu";
   const turn = useChatTurns({
@@ -217,6 +217,7 @@ export function MessengerChatScreen({
             dispatch={dispatch}
             onSend={send}
             sendCost={turn.sendCost}
+            birthYear={birthYear}
             aboveComposer={
               turn.plan.kind === "last-free" ? <LastFreeStrip price={turn.plan.price} /> : null
             }
@@ -231,6 +232,7 @@ export function MessengerChatScreen({
         learnerName={learnerName}
         wallet={wallet}
         coinBalance={coinBalance}
+        birthYear={birthYear}
       />
     </view>
   );

@@ -1,16 +1,18 @@
 import type { ReactNode } from "@lynx-js/react";
 
 import { AskMediaDialog } from "./AskMediaDialog";
+import { BirthYearSheet } from "./BirthYearSheet";
 import { ChatSettingsSidebar } from "./ChatSettingsSidebar";
 import { CHAT_COIN_PRICES } from "./chat-coins";
 import type { ChatOverlay, ChatRoomAction, ChatRoomState } from "./chat-room-state";
-import type { ChatMediaKind, ChatSource, ChatThread } from "./chat-source.contract";
+import type { ChatBirthYear, ChatMediaKind, ChatSource, ChatThread } from "./chat-source.contract";
 import type { CoinWallet } from "./coin-wallet";
 import { DeleteChatDialog } from "./DeleteChatDialog";
 import { FixRequestDialog } from "./FixRequestDialog";
 import { CoinShopLayer } from "./CoinShopLayer";
 import { RegenerateIdeasDialog } from "./RegenerateIdeasDialog";
 import { ReportSheet } from "./ReportSheet";
+import { birthYearOptions } from "./safety-rules";
 import { StoryPointSheet } from "./StoryPointSheet";
 
 import "./chat-overlays.css";
@@ -25,6 +27,7 @@ export type ChatRoomOverlaysProps = {
   readonly wallet: CoinWallet;
   /** 지금 잔액입니다(지갑 구독 값 — 사이드바 · 모달 · 상점이 같은 수를 봅니다). */
   readonly coinBalance: number;
+  readonly birthYear: ChatBirthYear;
 };
 
 const askShop = (media: ChatMediaKind): Extract<ChatOverlay, { kind: "coin-shop" }> => ({
@@ -42,6 +45,7 @@ export function ChatRoomOverlays({
   learnerName,
   wallet,
   coinBalance,
+  birthYear,
 }: ChatRoomOverlaysProps): ReactNode {
   const { overlay } = state;
   const { roomId } = thread;
@@ -125,6 +129,17 @@ export function ChatRoomOverlays({
               overlay: { kind: "story-point", selected: thread.settings.storyPointId },
             })
           }
+          birthYear={birthYear}
+          onBirthYear={() =>
+            dispatch({
+              type: "open-overlay",
+              overlay: {
+                kind: "birth-year",
+                selected: birthYear.kind === "set" ? birthYear.year : null,
+                from: "sidebar",
+              },
+            })
+          }
           onAutoIdeas={(on) => source.setAutoIdeas(roomId, on)}
           onDelete={() => dispatch({ type: "open-overlay", overlay: { kind: "delete-confirm" } })}
           onClose={close}
@@ -156,6 +171,25 @@ export function ChatRoomOverlays({
       );
     case "coin-shop":
       return <CoinShopLayer coinBalance={coinBalance} onClose={close} ownsBack={false} />;
+    case "birth-year":
+      return (
+        <BirthYearSheet
+          years={birthYearOptions(Date.now())}
+          selected={overlay.selected}
+          dismissible={overlay.from !== "room"}
+          onSelect={(year) => dispatch({ type: "select-birth-year", year })}
+          onContinue={() => {
+            if (overlay.selected === null) return;
+            source.setBirthYear(overlay.selected);
+            dispatch({ type: "close-overlay" });
+          }}
+          onSkip={() => {
+            source.setBirthYear(null);
+            dispatch({ type: "close-overlay" });
+          }}
+          onClose={close}
+        />
+      );
     default: {
       const unreachable: never = overlay;
       return unreachable;

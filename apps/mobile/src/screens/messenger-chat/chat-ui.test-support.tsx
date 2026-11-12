@@ -65,7 +65,11 @@ export function fixtureRoom(id: string, over: Partial<ChatFixtureRoom> = {}): Ch
   };
 }
 
-export const seedOf = (...rooms: ChatFixtureRoom[]): ChatFixtureSeed => ({ rooms });
+// 생년은 이미 답한 것으로 둡니다 — 방을 열 때 뜨는 생년 시트(ADR-0125)가 다른 흐름을 가리지 않게요.
+export const seedOf = (...rooms: ChatFixtureRoom[]): ChatFixtureSeed => ({
+  rooms,
+  birthYear: { kind: "set", year: 2000 },
+});
 
 export function makeSource(seed: ChatFixtureSeed = seedOf(fixtureRoom("mina"))): ChatSource {
   return createFixtureChatSource({ imageUrlOf, seed, now: () => Date.now() });
