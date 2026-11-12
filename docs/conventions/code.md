@@ -46,7 +46,7 @@ apps/mobile/src/
   앱(`apps/mobile`)과 코드를 나누지 않는다 — 같은 모양이 필요하면 양쪽 계약 파일에 따로 적는다.
   **예외 하나 — AI 컴패니언.** 계약의 정본은 `packages/companion-contract`이고, `_shared/companion-contract/`는
   `sync:functions`가 만드는 **생성 사본**이다 — 손으로 고치지 않는다. 사본이 정본과 다르면 테스트가 실패한다
-  ([ADR-0113](../adr/0113-companion-contract-package.md)). 다른 함수는 위 규칙 그대로다.
+  ([ADR-0132](../adr/0132-companion-contract-package.md)). 다른 함수는 위 규칙 그대로다.
 
 ## 네이밍
 

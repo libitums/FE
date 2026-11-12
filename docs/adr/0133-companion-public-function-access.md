@@ -1,8 +1,8 @@
-# ADR-0114 — 컴패니언 DB에는 `public.companion_*` 함수로만 닿는다 (앱용은 `authenticated`, 서버용은 `service_role`)
+# ADR-0133 — 컴패니언 DB에는 `public.companion_*` 함수로만 닿는다 (앱용은 `authenticated`, 서버용은 `service_role`)
 
 - 상태: **제안** — FE 팀 리뷰 대기. M0의 `public.companion_load_profile` · `public.companion_save_profile`이 이 결정대로 쓰였다.
 - 날짜: (채택일에 적는다)
-- 다루는 축: 앱과 서버(Edge Function)가 `companion` 스키마([ADR-0112](0112-companion-schema.md))의 데이터를 **어떤 길로** 읽고 쓰는가, 그 길의 **권한**을 어떻게 나누는가.
+- 다루는 축: 앱과 서버(Edge Function)가 `companion` 스키마([ADR-0131](0131-companion-schema.md))의 데이터를 **어떤 길로** 읽고 쓰는가, 그 길의 **권한**을 어떻게 나누는가.
   **다루지 않는 것**: 함수 하나하나의 인자 · 반환(→ [API 명세 §3](../specs/ai-companion-api.md)) · 크레딧 계산 규칙(→ API 명세 §6).
 - 이어받는 결정: 기존 RPC 관행 — 표는 RLS + 권한 회수, 앱은 `security definer` 함수로만([ADR-0059](0059-learner-profile.md) 등) · 서버 전용 함수를 `service_role`에게만 여는 선례(`public.reengagement_devices` — `send-push`가 부른다).
 
@@ -10,7 +10,7 @@
 
 ## 맥락
 
-1. **`companion` 스키마는 PostgREST에 노출하지 않는다** [ADR-0112 D1]. 앱이 `/rest/v1/rpc/…`로 부를 수 있는 함수는 노출된 스키마(`public`)에 있어야 한다.
+1. **`companion` 스키마는 PostgREST에 노출하지 않는다** [ADR-0131 D1]. 앱이 `/rest/v1/rpc/…`로 부를 수 있는 함수는 노출된 스키마(`public`)에 있어야 한다.
 2. **기존 앱도 이미 함수로만 DB에 닿는다** [코드 — `learner_profiles` 등]. 표 권한은 걷혀 있고 `security definer` + `set search_path = ''` 함수가 `auth.uid()`로 자기 행만 다룬다.
 3. **크레딧은 「예약 → 확정/반환」이 한 트랜잭션이어야 한다** [API 명세 §6]. 잔액 확인과 차감 사이에 다른 요청이 끼면 두 번 쓰인다. DB 함수 하나 안에서 행을 잠그면 Edge Function 쪽에 트랜잭션 코드가 없어도 된다.
 4. **Edge Function이 DB에 직접 연결하면** 연결 문자열 비밀이 하나 더 생기고, 함수 인스턴스마다 연결이 열린다 [추론]. HTTP RPC는 기존 `send-push`와 같은 길이다.

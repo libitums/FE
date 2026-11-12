@@ -375,7 +375,7 @@ duru-curation 정렬이 끝난 뒤 붙인다(위키 06 「curation 정렬」).
 
 - 단기 메모리는 M1, 장기 메모리는 M3다.
 - 장기 메모리는 턴 뒤 비동기 작업이 추출 · 요약한다. **[결정 2026-11-09] 의미 검색(pgvector)은 미룬다** — 지금은 최근 기억
-  N개(`settings.memory_prompt_limit`)를 프롬프트에 넣는다. 임베딩 모델을 고르면 다시 본다([ADR-0117](../adr/0117-companion-memory-in-postgres.md)).
+  N개(`settings.memory_prompt_limit`)를 프롬프트에 넣는다. 임베딩 모델을 고르면 다시 본다([ADR-0136](../adr/0136-companion-memory-in-postgres.md)).
 - **유저는 기억을 보고 · 고치고 · 지울 수 있고, 무료다.** 지운 기억은 다음 턴부터 프롬프트에 들어가지 않는다.
 - **[결정 2026-11-09] 기억 용량 상한** — 캐릭터 층 `settings.memory_cap`(초안 50, 유저 × 캐릭터마다) · 공유 층
   `settings.shared_memory_cap`(초안 30, 유저마다). 값은 §8 O22. 새 기억이 상한을 넘기면 유저가 고치지 않은 기억 중 가장 오래된
@@ -387,7 +387,7 @@ duru-curation 정렬이 끝난 뒤 붙인다(위키 06 「curation 정렬」).
 - 미국 12 ~ 15세는 장기 메모리를 끈다(16세 이상 예외, SB 1119 기본값). 끈 동안에는 추출 작업도 돌지 않는다.
 - **미성년자의 건강 · 심리 정보는 메모리에 저장하지 않는다**(뉴욕 Art.48). 추출 단계에서 걸러 낸다.
 - 외부 메모리 서비스(mem0 등)는 쓰지 않는다. 대화 원문이 제3자 서버에 쌓이고, 캐릭터별 격리 · 스포일러 게이트가 특수해서다
-  ([ADR-0117](../adr/0117-companion-memory-in-postgres.md) 초안, §9).
+  ([ADR-0136](../adr/0136-companion-memory-in-postgres.md) 초안, §9).
 
 ### 3.10 크레딧
 
@@ -499,7 +499,7 @@ th 예시와 변형 표기 — ㅅㅂ · 시1발 · f*ck 등).
 ### 3.14 LLM 단계별 모델 [결정 2026-11-09]
 
 단계마다 모델을 환경 변수로 따로 고른다. 운영 값이 Sonnet · Haiku다(코드 기본값이 아니다). 계층은
-[ADR-0116](../adr/0116-companion-llm-vendor-layer.md) 초안.
+[ADR-0135](../adr/0135-companion-llm-vendor-layer.md) 초안.
 
 | 단계 | 환경 변수 | 비우면 | 운영 |
 |---|---|---|---|
@@ -667,7 +667,7 @@ API §2.8. 공지(AI 고지 등)는 숨기지 않고 두며, 고쳐서 숨긴 �
 
 1. **Lynx 앱에서 SSE를 읽을 수 있는지 확인되지 않았다.** 2026-11-08 기준 앱 코드에 스트리밍 응답을 읽는 자리가 없다
    (`getReader` · `EventSource` 0건). 안 되면 호스트 네이티브 모듈이 스트림을 받아 JS로 넘기는 경로가 필요하다. M1 전에 FE가
-   확인한다. 결과에 따라 ADR-0115 초안(SSE)을 다시 본다.
+   확인한다. 결과에 따라 ADR-0134 초안(SSE)을 다시 본다.
 2. **운영 DB에서 개발한다**(위키 05, 2026-11-08). `db push` 전에 `main`의 다른 미배포 마이그레이션이 같이 올라가지 않는지
    확인한다. 컴패니언 표는 `companion` 스키마라 기존 표와 이름이 섞이지 않는다.
 3. **Deno가 계약 패키지를 불러오는 방식이 검증되지 않았다.** M0에서 생성 사본 + import map으로 실제 배포까지 확인한다
@@ -731,18 +731,18 @@ API §2.8. 공지(AI 고지 등)는 숨기지 않고 두며, 고쳐서 숨긴 �
 
 ## 9. ADR 후보
 
-후보 4 · 5 · 6은 M0 PR(`feat/companion-m0`)에 **ADR-0112 · 0113 · 0114 초안(상태 「제안」)**으로 만들었다(2026-11-09). 1 · 2 · 3은 이
-PR(`feat/companion-spec`)에 **ADR-0115 · 0116 · 0117 초안(상태 「제안」)**으로 만들었다(2026-11-09) — M1 ~ M4 구현을 보고 쓴 것이다.
+후보 4 · 5 · 6은 M0 PR(`feat/companion-m0`)에 **ADR-0131 · 0132 · 0133 초안(상태 「제안」)**으로 만들었다(2026-11-09). 1 · 2 · 3은 이
+PR(`feat/companion-spec`)에 **ADR-0134 · 0135 · 0136 초안(상태 「제안」)**으로 만들었다(2026-11-09) — M1 ~ M4 구현을 보고 쓴 것이다.
 번호는 `main`(0111까지) 다음을 m0 초안 뒤로 이었다. 다른 PR이 그 번호를 먼저 쓰면 초안 번호를 옮긴다.
 
 | # | 후보 | 정할 것 | 언제까지 |
 |---|---|---|---|
-| 1 → [0115](../adr/0115-companion-sse-streaming.md) 초안 | 답변 스트리밍은 SSE, v1은 Realtime 없음 | 교정 · 번역을 같은 스트림에 끼우는 방식 · Realtime을 다시 볼 조건(앱 안 실시간 선톡 · 여러 기기 동기화) · Lynx 스트림 읽기 확인 결과(아직 — §7 위험 1) | M1 시작 전 |
-| 2 → [0116](../adr/0116-companion-llm-vendor-layer.md) 초안 | LLM 벤더 추상화 | 얇은 계층 하나 — 후보였던 Vercel AI SDK가 아니라 **Anthropic 공식 SDK 위의 자체 인터페이스 `CompanionLlm`** · 오케스트레이션 프레임워크를 쓰지 않는 이유 · 단계별 모델 · 벤더 교체 기준 | M1 시작 전 |
-| 3 → [0117](../adr/0117-companion-memory-in-postgres.md) 초안 | 메모리 자체 구축 | Postgres(pgvector는 미룸) · 외부 메모리 서비스를 쓰지 않는 이유 · 캐릭터 격리 · 스포일러 게이트 · 용량 상한 | M3 시작 전 |
-| 4 → 0112 초안 | `companion` 스키마 분리 | 운영 DB에서 개발하는 동안의 격리 · RLS를 켜고 정책 없이 두는 방식 · 기존 `public` 표와의 경계 | M0 시작 전 |
-| 5 → 0113 초안 | 계약 패키지 공유와 규약 예외 | `docs/conventions/code.md`의 「Edge Function은 앱과 코드를 나누지 않는다」에 컴패니언 계약 한정 예외 · 생성 사본과 동기화 테스트 | M0 시작 전 |
-| 6 → 0114 초안 | DB 접근은 `public.companion_*` 함수로만 | `companion` 스키마를 PostgREST에 노출하지 않는다. 앱용 함수는 `authenticated`, 서버용 함수는 `service_role`에게만 연다. Edge Function도 DB에 직접 연결하지 않고 HTTP RPC로 부른다(2026-11-09 결정) | M0 시작 전 |
+| 1 → [0134](../adr/0134-companion-sse-streaming.md) 초안 | 답변 스트리밍은 SSE, v1은 Realtime 없음 | 교정 · 번역을 같은 스트림에 끼우는 방식 · Realtime을 다시 볼 조건(앱 안 실시간 선톡 · 여러 기기 동기화) · Lynx 스트림 읽기 확인 결과(아직 — §7 위험 1) | M1 시작 전 |
+| 2 → [0135](../adr/0135-companion-llm-vendor-layer.md) 초안 | LLM 벤더 추상화 | 얇은 계층 하나 — 후보였던 Vercel AI SDK가 아니라 **Anthropic 공식 SDK 위의 자체 인터페이스 `CompanionLlm`** · 오케스트레이션 프레임워크를 쓰지 않는 이유 · 단계별 모델 · 벤더 교체 기준 | M1 시작 전 |
+| 3 → [0136](../adr/0136-companion-memory-in-postgres.md) 초안 | 메모리 자체 구축 | Postgres(pgvector는 미룸) · 외부 메모리 서비스를 쓰지 않는 이유 · 캐릭터 격리 · 스포일러 게이트 · 용량 상한 | M3 시작 전 |
+| 4 → 0131 초안 | `companion` 스키마 분리 | 운영 DB에서 개발하는 동안의 격리 · RLS를 켜고 정책 없이 두는 방식 · 기존 `public` 표와의 경계 | M0 시작 전 |
+| 5 → 0132 초안 | 계약 패키지 공유와 규약 예외 | `docs/conventions/code.md`의 「Edge Function은 앱과 코드를 나누지 않는다」에 컴패니언 계약 한정 예외 · 생성 사본과 동기화 테스트 | M0 시작 전 |
+| 6 → 0133 초안 | DB 접근은 `public.companion_*` 함수로만 | `companion` 스키마를 PostgREST에 노출하지 않는다. 앱용 함수는 `authenticated`, 서버용 함수는 `service_role`에게만 연다. Edge Function도 DB에 직접 연결하지 않고 HTTP RPC로 부른다(2026-11-09 결정) | M0 시작 전 |
 
 ## 비고 — 위키와 저장소가 어긋나는 점 (2026-11-08)
 
@@ -750,7 +750,7 @@ PR(`feat/companion-spec`)에 **ADR-0115 · 0116 · 0117 초안(상태 「제안�
 
 | # | 어긋남 | 이 문서의 안 |
 |---|---|---|
-| 1 | 위키 05는 기술 결정을 `docs/adr/0107-`부터라고 했지만 저장소에 0107 ~ 0111이 이미 있다 | 번호를 미리 박지 않는다. 지금 기준 다음은 0112(§9) |
+| 1 | 위키 05는 기술 결정을 `docs/adr/0107-`부터라고 했지만 저장소에 0107 ~ 0111이 이미 있다 | 번호를 미리 박지 않는다. 지금 기준 다음은 0131(§9) |
 | 2 | `docs/conventions/code.md`는 「Edge Function은 `apps/mobile`과 코드를 나누지 않는다 — 같은 모양이 필요하면 양쪽 계약 파일에 따로 적는다」고 정한다. `packages/companion-contract` 공유와 부딪힌다. `apps/supabase-functions`에는 zod가 없고 Deno가 워크스페이스 패키지를 불러오는 방식도 없다 | 계약 패키지를 정본으로, Edge Function에는 생성 사본 + 동기화 테스트. 규약에 컴패니언 계약 한정 예외를 ADR과 함께 넣는다(ADR 후보 5) |
 | 3 | 위키 05는 `learner_profiles`에 `birth_year` · `age_band` · `l1` · `level` · `translation_pref` · `feedback_mode`를 더하자고 한다. 실제 표는 `public.learner_profiles`(`name` · `country_code`)이고 「컴패니언은 전부 `companion` 스키마」와 맞지 않는다. `l1` · `level`에 해당하는 서버 필드도 없다 | 기존 표를 고치지 않고 `companion.profiles`를 둔다. `level`은 저장하지 않고 진도에서 계산한다. 번역 표시 설정은 화면 설정이라 FE 몫이다(§3.12) |
 | 4 | 위키는 「완료 유닛의 단어 · 문형」이라고 하지만 `words[]` · `patterns[]`는 에피소드 단위이고, 유닛과 잇는 문항 `ref`는 선택 필드다(`RP` · `CULT`에 없음). 에피소드 3은 에피소드 2의 단어 id를 가리킨다 | 빌드 스크립트가 `items[].ref`로 `expression_units`를 만든다. 위키 초안의 `episodes[]` 열을 대신한다(§3.7) |

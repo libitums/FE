@@ -1,4 +1,4 @@
-# ADR-0113 — 컴패니언의 앱 ↔ 서버 계약은 `packages/companion-contract` 하나에서 정의하고, Edge Function에는 생성 사본을 둔다
+# ADR-0132 — 컴패니언의 앱 ↔ 서버 계약은 `packages/companion-contract` 하나에서 정의하고, Edge Function에는 생성 사본을 둔다
 
 - 상태: **제안** — FE 팀 리뷰 대기. M0 브랜치에 패키지 · 사본 · 동기화 테스트가 이미 있다.
 - 날짜: (채택일에 적는다)

@@ -205,13 +205,13 @@ Firebase 프로젝트에 Android 앱을 등록하고 FCM HTTP v1 API 권한이 �
 ## AI 컴패니언 — chat-send · companion-proactive (M1 ~ M4)
 
 턴 하나를 SSE로 돌려주는 `chat-send`, 선톡을 만드는 `companion-proactive`, 그 밑의 DB 함수다(LLM 한 단계 평가 창구 `companion-eval`은 아래 따로). 계약은 `packages/companion-contract`
-(사본 `_shared/companion-contract/`), 결정은 [ADR-0112](../../docs/adr/0112-companion-schema.md) · [0113](../../docs/adr/0113-companion-contract-package.md) ·
-[0114](../../docs/adr/0114-companion-public-function-access.md), 명세는 `docs/specs/ai-companion-api.md`.
+(사본 `_shared/companion-contract/`), 결정은 [ADR-0131](../../docs/adr/0131-companion-schema.md) · [0132](../../docs/adr/0132-companion-contract-package.md) ·
+[0133](../../docs/adr/0133-companion-public-function-access.md), 명세는 `docs/specs/ai-companion-api.md`.
 
 | 마이그레이션 | 내용 |
 |---|---|
 | `20261108120000_companion_foundation.sql` (M0) | `companion` 스키마 · 학습 표현 · 컴패니언 프로필 |
-| `20261109120000_companion_chat_core.sql` (M1) | 캐릭터 · 대화 · 메시지 · 고지 · 이용 시간 · 판정 · 신고, 앱용 · 운영 조회 함수 |
+| `20261109130000_companion_chat_core.sql` (M1) | 캐릭터 · 대화 · 메시지 · 고지 · 이용 시간 · 판정 · 신고, 앱용 · 운영 조회 함수 |
 | `20261110120000_companion_feedback.sql` (M2) | 피드백 표 `corrections` · 메시지 목록에 피드백 |
 | `20261111120000_companion_cast_memory.sql` (M3) | 설정 한 행 `companion.settings` · 페르소나 다섯 · 장기 메모리 · 반복 위반 · 선톡 · 요약 · 운영자 함수 |
 | `20261112120000_companion_credits.sql` (M4) | 지갑 · 원장 · 예약 · 체험 사용량 · 티어, 지급 · 소멸 · 정리 · 조회 |

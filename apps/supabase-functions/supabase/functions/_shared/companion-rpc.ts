@@ -1,4 +1,4 @@
-// `chat-send`가 DB에 닿는 길: 서버 키로 `public.companion_*` 서버용 함수를 HTTP RPC로 부릅니다(ADR-0114).
+// `chat-send`가 DB에 닿는 길: 서버 키로 `public.companion_*` 서버용 함수를 HTTP RPC로 부릅니다(ADR-0133).
 // DB에 직접 연결하지 않습니다.
 
 import type { ChatSendEnv } from "./chat-send.contract.ts";

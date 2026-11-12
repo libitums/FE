@@ -2,7 +2,7 @@
 // (`./companion-contract/`)이 지고, 여기는 환경 · 의존성 · LLM 계층의 타입만 둡니다. 로직은 런타임 중립 TypeScript라
 // Deno(배포)와 Node(vitest)에서 같은 코드가 돕니다. `Deno`는 진입 파일 `chat-send/index.ts`만 씁니다.
 //
-// 결정: docs/specs/ai-companion-api.md §2.1 · §4, ADR-0113 · 0114.
+// 결정: docs/specs/ai-companion-api.md §2.1 · §4, ADR-0132 · 0133.
 
 import type { Outbound } from "./delete-account.contract.ts";
 import type { NoticeKind, SegmentKind, SpeechLevel } from "./companion-contract/index.ts";

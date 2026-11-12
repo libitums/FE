@@ -1,10 +1,10 @@
-# ADR-0117 — 컴패니언 기억은 우리 Postgres(`companion` 스키마)에 직접 만든다 — 외부 메모리 서비스 없음, 의미 검색(pgvector)은 미룸
+# ADR-0136 — 컴패니언 기억은 우리 Postgres(`companion` 스키마)에 직접 만든다 — 외부 메모리 서비스 없음, 의미 검색(pgvector)은 미룸
 
 - 상태: **제안** — FE 팀 리뷰 대기. `feat/companion-m1`의 M3 마이그레이션(`20261111120000_companion_cast_memory.sql`)과 턴 뒤 작업(`_shared/companion-after-turn.ts`)이 이 결정대로 쓰였다. 용량 상한(D4)은 `20261117120000_companion_refusal_memory_cap.sql`이다.
 - 날짜: (채택일에 적는다)
 - 다루는 축: 캐릭터가 유저를 **무엇을 · 어디에 · 어떻게 기억하는가**, 캐릭터 사이 · 해금 에피소드 밖으로 **어떻게 새지 않게 하는가**, 기억이 **얼마나 쌓이는가**.
-  **다루지 않는 것**: 표의 칸 하나하나(→ [API 명세 §7](../specs/ai-companion-api.md)) · 표가 사는 스키마(→ [ADR-0112](0112-companion-schema.md) 초안) · 기억 용량 과금(→ PRD O8).
-- 이어받는 결정: [ADR-0112](0112-companion-schema.md) · [ADR-0114](0114-companion-public-function-access.md) 초안(표는 `companion` 스키마, 닿는 길은 `public.companion_*` 함수).
+  **다루지 않는 것**: 표의 칸 하나하나(→ [API 명세 §7](../specs/ai-companion-api.md)) · 표가 사는 스키마(→ [ADR-0131](0131-companion-schema.md) 초안) · 기억 용량 과금(→ PRD O8).
+- 이어받는 결정: [ADR-0131](0131-companion-schema.md) · [ADR-0133](0133-companion-public-function-access.md) 초안(표는 `companion` 스키마, 닿는 길은 `public.companion_*` 함수).
 
 근거 표시: **[코드]** 저장소 코드 · **[사용자]** 사용자 결정 · **[추론]** 관찰 없이 이어 붙인 것.
 
@@ -21,7 +21,7 @@
 
 - 행: `user_id` · `character_id`(`null` = 공유 프로필 층) · `kind`(`fact` · `event` · `summary`) · `content`(1 ~ 500자) · `source_message_id` · `deleted_at`.
 - 단기 기억 요약은 `conversations.rolling_summary`에 덮어쓴다.
-- 추출 · 요약은 턴이 끝난 뒤 같은 요청의 `waitUntil`로 돈다(Haiku — [ADR-0116](0116-companion-llm-vendor-layer.md) 초안 D3). 턴당 새 기억 3개까지. 같은 원본 메시지로 두 번 돌아도, 같은 층에 같은 글이 이미 있어도 다시 넣지 않는다(`companion_add_memories`).
+- 추출 · 요약은 턴이 끝난 뒤 같은 요청의 `waitUntil`로 돈다(Haiku — [ADR-0135](0135-companion-llm-vendor-layer.md) 초안 D3). 턴당 새 기억 3개까지. 같은 원본 메시지로 두 번 돌아도, 같은 층에 같은 글이 이미 있어도 다시 넣지 않는다(`companion_add_memories`).
 
 ### D2. 캐릭터 격리 — 읽는 함수가 층을 고른다
 

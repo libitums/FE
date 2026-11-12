@@ -1,9 +1,9 @@
-# ADR-0112 — AI 컴패니언의 표는 `companion` 스키마에 둔다 (기존 `public` 표는 건드리지 않는다)
+# ADR-0131 — AI 컴패니언의 표는 `companion` 스키마에 둔다 (기존 `public` 표는 건드리지 않는다)
 
-- 상태: **제안** — FE 팀 리뷰 대기. M0 마이그레이션(`20261108120000_companion_foundation.sql`)이 이미 이 결정대로 쓰였고, 운영 DB에는 아직 적용하지 않았다(`db push` 0).
+- 상태: **제안** — FE 팀 리뷰 대기. M0 마이그레이션(`20261108120000_companion_foundation.sql`)이 이미 이 결정대로 쓰였고, 운영 DB에는 SQL 편집기로 적용돼 있다(2026-11-12 확인 — `companion` 표 23 · `public.companion_*` 함수 55, `schema_migrations` 미기록. 기록 맞추기는 통합 PR 뒤).
 - 날짜: (채택일에 적는다)
 - 다루는 축: 컴패니언 기능의 DB 표가 **어느 스키마에 사는가**, 기존 표(`learner_profiles` 등)와 **어떻게 잇는가**.
-  **다루지 않는 것**: 표에 닿는 길(→ [ADR-0114](0114-companion-public-function-access.md)) · 표의 칸 하나하나(→ [API 명세 §7](../specs/ai-companion-api.md)) · 학습 데이터 자체의 정본(콘텐츠 버킷 그대로).
+  **다루지 않는 것**: 표에 닿는 길(→ [ADR-0133](0133-companion-public-function-access.md)) · 표의 칸 하나하나(→ [API 명세 §7](../specs/ai-companion-api.md)) · 학습 데이터 자체의 정본(콘텐츠 버킷 그대로).
 - 이어받는 결정: [ADR-0059](0059-learner-profile.md)(학습자 프로필은 그대로 — 컴패니언은 읽지도 고치지도 않는다).
 
 근거 표시: **[코드]** 저장소 코드 · **[사용자]** 사용자 결정 · **[추론]** 관찰 없이 이어 붙인 것.

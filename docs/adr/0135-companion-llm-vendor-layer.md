@@ -1,4 +1,4 @@
-# ADR-0116 — 컴패니언의 LLM 호출은 자체 인터페이스 `CompanionLlm` 하나 뒤에 두고, 구현은 Anthropic 공식 SDK를 바로 쓴다
+# ADR-0135 — 컴패니언의 LLM 호출은 자체 인터페이스 `CompanionLlm` 하나 뒤에 두고, 구현은 Anthropic 공식 SDK를 바로 쓴다
 
 - 상태: **제안** — FE 팀 리뷰 대기. `feat/companion-m1`이 이미 이 결정대로 쓰였다(`_shared/companion-llm.ts` · `companion-llm-fake.ts`).
 - 날짜: (채택일에 적는다)

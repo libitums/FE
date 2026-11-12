@@ -1,7 +1,7 @@
 -- AI 컴패니언 M1 대화 코어: 캐릭터 · 관계(말투) · 대화 · 메시지 · 고지 · 이용 시간 · 가드레일 판정 · 신고.
--- 결정 · 계약은 docs/specs/ai-companion.md · ai-companion-api.md(§3 · §7)와 ADR-0112 · 0114가 진다.
+-- 결정 · 계약은 docs/specs/ai-companion.md · ai-companion-api.md(§3 · §7)와 ADR-0131 · 0133가 진다.
 --
--- 길은 셋이다(ADR-0114).
+-- 길은 셋이다(ADR-0133).
 --   앱용     `public.companion_*`          — `authenticated`, `auth.uid()`의 행만.
 --   서버용   `public.companion_*`          — `service_role`만. `chat-send`가 사용자 id를 인자로 넘긴다(토큰은 함수가 먼저 검증).
 --   운영 조회 `public.companion_inspect_*` — `service_role`만, 읽기만. ops-dashboard가 부른다.

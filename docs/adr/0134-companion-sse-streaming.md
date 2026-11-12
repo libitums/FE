@@ -1,9 +1,9 @@
-# ADR-0115 — 컴패니언 답변은 SSE 하나로 흘리고, v1은 Supabase Realtime을 쓰지 않는다
+# ADR-0134 — 컴패니언 답변은 SSE 하나로 흘리고, v1은 Supabase Realtime을 쓰지 않는다
 
 - 상태: **제안** — FE 팀 리뷰 대기. `feat/companion-m1`의 `chat-send`가 이미 이 결정대로 쓰였다. **Lynx 앱에서 스트림을 읽을 수 있는지는 아직 확인하지 않았다**(PRD §7 위험 1).
 - 날짜: (채택일에 적는다)
 - 다루는 축: 한 턴의 답변 · 피드백 · 번역 · 상태가 **어떤 길로** 앱에 오는가, 끊기면 **어떻게 회복하는가**.
-  **다루지 않는 것**: 이벤트 하나하나의 필드(→ [API 명세 §4](../specs/ai-companion-api.md)) · 계약을 어디에 적는가(→ [ADR-0113](0113-companion-contract-package.md) 초안) · 선톡 푸시(→ API 명세 §2.3.1).
+  **다루지 않는 것**: 이벤트 하나하나의 필드(→ [API 명세 §4](../specs/ai-companion-api.md)) · 계약을 어디에 적는가(→ [ADR-0132](0132-companion-contract-package.md) 초안) · 선톡 푸시(→ API 명세 §2.3.1).
 - 이어받는 결정: [ADR-0007](0007-app-internals-state-routing-data-errors.md)(앱의 데이터 · 오류 처리 — 적용 기록만).
 
 근거 표시: **[코드]** 저장소 코드 · **[사용자]** 사용자 결정 · **[추론]** 관찰 없이 이어 붙인 것.
@@ -12,7 +12,7 @@
 
 1. **답이 길고 느리다** [코드 — `chat-send-turn.ts`]. 메인 답변은 토큰 단위로 나오고, 피드백 · 번역은 다른 호출이다. 다 끝난 뒤 한 번에 주면 첫 글자가 몇 초 늦다.
 2. **한 턴의 정보가 여러 갈래다** [코드]. 답 조각(`delta`) · 피드백(`correction`, 메인과 병렬) · L1 번역(`translation`, 답 뒤 따로 호출 — 2026-11-09) · 말투 단계(`state`) · 차감(`done`) · 고지 · 위기 안내.
-3. **Realtime은 채널 · 구독 · RLS 정책을 새로 들인다** [추론]. 컴패니언 표는 PostgREST에 노출하지 않고 정책도 두지 않는다([ADR-0112](0112-companion-schema.md) 초안). Realtime의 Postgres 변경 구독은 그 방침과 맞지 않는다.
+3. **Realtime은 채널 · 구독 · RLS 정책을 새로 들인다** [추론]. 컴패니언 표는 PostgREST에 노출하지 않고 정책도 두지 않는다([ADR-0131](0131-companion-schema.md) 초안). Realtime의 Postgres 변경 구독은 그 방침과 맞지 않는다.
 4. **앱은 Lynx다** [코드 — 2026-11-08 기준 `getReader` · `EventSource` 0건]. 응답 본문을 스트림으로 읽는 자리가 아직 없다.
 
 ## 결정
