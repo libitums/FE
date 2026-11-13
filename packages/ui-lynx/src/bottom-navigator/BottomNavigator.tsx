@@ -62,7 +62,7 @@ function BottomNavigatorCell({ item, contract, onSelect }: BottomNavigatorCellPr
               accessibility-elements-hidden={true}
             >
               <view
-                className={`ui-lynx-bottom-navigator-badge ui-lynx-bottom-navigator-badge-${item.badge.kind}`}
+                className={`ui-lynx-bottom-navigator-badge ui-lynx-bottom-navigator-badge-${contract.badge?.kind ?? item.badge.kind}`}
                 data-testid={`ui-lynx-bottom-navigator-badge-${contract.id}`}
               >
                 {contract.badge?.kind === "count" ? (

@@ -133,6 +133,20 @@ describe("BottomNavigator", () => {
     expect(count.parentElement).toHaveAttribute("accessibility-elements-hidden", "true");
   });
 
+  test("label badge는 count 모양 클래스로 그린다 — 클래스가 label이면 면 · 자리 스타일이 없어 흰 글자만 남는다(기기 확인 2026-11-13)", () => {
+    const labelled = items.map((item, index) =>
+      index === 1
+        ? { ...item, badge: { kind: "label" as const, text: "NEW", accessibilityLabel: "new" } }
+        : item,
+    );
+    render(<BottomNavigator items={labelled} selectedId="home" />);
+
+    const badge = screen.getByTestId(`ui-lynx-bottom-navigator-badge-${labelled[1]!.id}`);
+    expect(badge).toHaveClass("ui-lynx-bottom-navigator-badge-count");
+    expect(badge).not.toHaveClass("ui-lynx-bottom-navigator-badge-label");
+    expect(badge).toHaveTextContent("NEW");
+  });
+
   test("enabled 항목 tap은 id를 전달하고 disabled 항목은 차단한다", () => {
     const bindselect = vi.fn<(id: string) => void>();
     render(<BottomNavigator items={items} selectedId="home" bindselect={bindselect} />);
