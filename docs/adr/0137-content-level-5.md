@@ -58,7 +58,13 @@ staging 18편(2026-11-10, 콘텐츠 담당자)을 level-4 모양으로 바꿔 ma
 ## 적용 기록
 
 - 2026-11-13: 디코더, 수준 상수, 단위 테스트(`episode-content.level5.unit.test.ts` L1 ~ L8), 통합 테스트(`App.content-level-5.integration.test.tsx` CI1 ~ CI3)를 넣었다. CI3은 저장된 새 모양 본문이 내장판으로 물러나지 않고 화면에 서는지를 본다. staging 11-10판 18편(u15 `aside` 보충본)과 운영 level-4판 18편이 새 디코더를 모두 통과한다.
+- 2026-11-13: 수준 5 콘텐츠를 운영 버킷에 올렸다. level-4 파일은 바꾸지 않았다(공개 주소 sha 대조).
+  - `manifests/level-5.json`(`min_client_level` 5)
+  - 본문 18편: `episodes/level-5/`. 버전은 2026-11-10.3 ~ 2026-11-11.1이다.
+  - 번역 72개: `translations/level-5/`
+  - 새 음성 132개와 그림 5개
+  - `audio/manifest.json`에 항목 132개 추가
+  - 확인: 앱 디코더로 매니페스트, 본문, 번역을 모두 통과시켰다. 올린 228개 파일을 공개 주소 sha로 대조했다.
 - 남은 일:
-  - 콘텐츠를 level-5로 변환하고 업로드한다. 대상: 본문 `episodes/level-5/`, 번역 `translations/level-5/`, 새 음성·그림, 음성 정보. 각 항목의 `version`은 내장판보다 높아야 원격이 이긴다.
   - 새 앱을 출시한다.
   - 기기 확인을 한다(`docs/e2e/content-level-5.md`).
