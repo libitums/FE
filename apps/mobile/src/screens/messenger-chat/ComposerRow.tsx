@@ -1,8 +1,10 @@
 import type { ReactNode } from "@lynx-js/react";
+import { useState } from "@lynx-js/react";
 
 import arrowUp from "@libitums/icons/lynx/arrow-up";
 import light from "@libitums/icons/lynx/light";
 import { color } from "@libitums/design-tokens";
+import { resolveReducedMotion, useMotion } from "@libitums/ui-lynx/motion";
 
 import { useUiCopy } from "../../lib/ui-copy";
 import { PHONE_INPUT_ELEMENT_ID } from "./chat-input-id";
@@ -208,10 +210,15 @@ export function ComposerField({
 
 export function SendButton({ enabled, onTap }: SendButtonProps): ReactNode {
   const copy = useUiCopy().messengerChat.composer;
+  const reduced = resolveReducedMotion(undefined, useMotion());
+  // 누를 때마다 바뀌는 수 — 홀짝으로 같은 움직임의 두 클래스를 번갈아 붙여 연달아 눌러도 다시 돕니다.
+  const [bumps, setBumps] = useState(0);
+  const bump = bumps === 0 || reduced ? "" : ` messenger-chat-send-bump-${bumps % 2}`;
   return (
     <view
       className={
-        enabled ? "messenger-chat-send" : "messenger-chat-send messenger-chat-send-disabled"
+        (enabled ? "messenger-chat-send" : "messenger-chat-send messenger-chat-send-disabled") +
+        bump
       }
       id={ids.send}
       data-testid={ids.send}
@@ -224,6 +231,7 @@ export function SendButton({ enabled, onTap }: SendButtonProps): ReactNode {
         enabled
           ? () => {
               "background only";
+              setBumps((n) => n + 1);
               onTap();
             }
           : undefined
