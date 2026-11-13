@@ -48,6 +48,14 @@ export const SEGMENTS = [
     hint: "모든 에피소드에 RP가 있다",
   },
   {
+    id: "story-next",
+    kind: "overlay",
+    // 문구를 콘솔이 아니라 단계별 예고 파일이 정합니다(D11) — 기본 문구 · 추천 대상이 아닙니다.
+    copySource: "story",
+    label: "이야기 다음 장면 예고",
+    hint: "끝낸 단계 뒤 예고 문구가 있다(튜토리얼 레슨 1부터) · 문구는 단계별 예고 파일",
+  },
+  {
     id: "streak-at-risk",
     kind: "overlay",
     label: "스트릭이 끊기기 직전",
@@ -56,6 +64,9 @@ export const SEGMENTS = [
 ];
 
 export const SEGMENT_IDS = new Set(SEGMENTS.map((segment) => segment.id));
+
+/** 콘솔 문구(기본 문구 · 추천)를 쓰는 세그먼트입니다. */
+export const COPY_SEGMENTS = SEGMENTS.filter((segment) => segment.copySource !== "story");
 
 /**
  * 매니페스트 + 에피소드 JSON → 순서대로 놓인 카탈로그입니다.

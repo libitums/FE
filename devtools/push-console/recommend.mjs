@@ -3,7 +3,7 @@
 // 추천은 「새 캠페인」 양식을 채울 뿐이고, 보내기는 사람이 확인창에서 합니다.
 
 import { copyProblems } from "./audience.mjs";
-import { LANGUAGES, SEGMENTS, SEGMENT_IDS } from "./segments.mjs";
+import { COPY_SEGMENTS, LANGUAGES, SEGMENTS, SEGMENT_IDS } from "./segments.mjs";
 
 export const HOLDOUT_CHOICES = [10, 20, 30, 50];
 
@@ -32,7 +32,8 @@ export const RECOMMENDATION_SCHEMA = {
       items: {
         type: "object",
         properties: {
-          segment: { type: "string", enum: SEGMENTS.map((segment) => segment.id) },
+          // 단계별 예고(D11)는 문구를 예고 파일이 정해 추천 대상이 아닙니다.
+          segment: { type: "string", enum: COPY_SEGMENTS.map((segment) => segment.id) },
           name: { type: "string" },
           priority: { type: "integer", minimum: 1, maximum: 5 },
           rationale: { type: "string" },
@@ -119,17 +120,19 @@ export function recommendationContext({
     now: new Date(nowMs).toISOString(),
     computerTimeZone,
     computerHourNow: hourIn(nowMs),
-    segments: segments.map((segment) => ({
-      id: segment.id,
-      label: segment.label,
-      rule: segment.hint,
-      people: segment.total,
-      idleSinceLastOpen: segment.byIdle,
-      copyLanguages: segment.byLang,
-      reachableByComputerHour: (forecasts[segment.id] ?? [])
-        .filter((slot) => slot.count > 0)
-        .map((slot) => ({ hour: hourIn(slot.atMs), people: slot.count })),
-    })),
+    segments: segments
+      .filter((segment) => segment.copySource !== "story")
+      .map((segment) => ({
+        id: segment.id,
+        label: segment.label,
+        rule: segment.hint,
+        people: segment.total,
+        idleSinceLastOpen: segment.byIdle,
+        copyLanguages: segment.byLang,
+        reachableByComputerHour: (forecasts[segment.id] ?? [])
+          .filter((slot) => slot.count > 0)
+          .map((slot) => ({ hour: hourIn(slot.atMs), people: slot.count })),
+      })),
     pastCampaigns: campaigns.map((campaign) => ({
       ...campaign,
       segmentLabel: segmentLabel[campaign.segment] ?? campaign.segment,
