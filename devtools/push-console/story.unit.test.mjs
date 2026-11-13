@@ -168,3 +168,33 @@ test("PC-ST7 예고 파일 문제 — 모르는 단계 · 영어 없음 · 파�
   ]);
   assert.deepEqual(storyContentProblems(units, pack.catalog), []);
 });
+
+test("PC-ST8 모양이 틀린 예고 파일 — 배열 아님 · 빈 칸 · unit 없는 index에도 던지지 않음", () => {
+  const broken = {
+    "u00-tutorial": {
+      title_en: "T",
+      after: { S1: { not: "array" }, S2: [null, option("dare", "ok")] },
+    },
+  };
+  const packed = storyPack(
+    { units: [null, { url: "x.json" }, { unit: "u00-tutorial", steps: ["S1", "S2"] }] },
+    broken,
+  );
+  assert.deepEqual(
+    packed.catalog.map((episode) => episode.id),
+    ["u00-tutorial"],
+  );
+  const at = (stepId) => ({ unitId: "u00-tutorial", stepId, nextEpisodeId: null });
+  assert.equal(
+    storyMessage({ content: broken, titles: {}, place: at("S1"), lang: "en", hookIndex: 0 }),
+    null,
+  );
+  assert.equal(
+    storyMessage({ content: broken, titles: {}, place: at("S2"), lang: "en", hookIndex: 0 }).body,
+    "ok",
+  );
+  assert.deepEqual(storyContentProblems(broken, [{ id: "u00-tutorial", steps: ["S1", "S2"] }]), [
+    "u00-tutorial S1: 훅 목록이 배열이 아닙니다.",
+    "u00-tutorial S2: 영어 본문이 없습니다.",
+  ]);
+});

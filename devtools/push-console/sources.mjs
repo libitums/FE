@@ -153,6 +153,7 @@ export async function loadStoryFiles(projectRef, { fetchImpl = fetch } = {}) {
   const index = await read("index.json");
   const units = {};
   for (const entry of index?.units ?? []) {
+    if (!entry?.unit) continue;
     // index의 url은 `push/<파일>` — 파일은 level-5 폴더에 있습니다.
     const file = path.posix.basename(String(entry.url ?? `${entry.unit}.json`));
     if (!/^[\w.-]+\.json$/.test(file)) continue;

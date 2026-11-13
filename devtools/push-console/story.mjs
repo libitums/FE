@@ -45,8 +45,13 @@ export function storyStepOf(catalogProgress, catalog) {
 }
 
 /** 그 자리의 훅 목록입니다. 없으면 빈 배열입니다. */
-export const storyOptions = (content, place) =>
-  place ? (content?.[place.unitId]?.after?.[place.stepId] ?? []) : [];
+export function storyOptions(content, place) {
+  if (!place) return [];
+  const options = content?.[place.unitId]?.after?.[place.stepId];
+  return Array.isArray(options)
+    ? options.filter((option) => option && typeof option === "object")
+    : [];
+}
 
 /**
  * 한 사람에게 갈 예고입니다. 제목은 에피소드 영어 이름 — 파이널 뒤면 다음 에피소드 이름입니다(사용자 결정 2026-11-13).
@@ -58,6 +63,7 @@ export function storyMessage({ content, place, titles, lang, seed, userId, hookI
   if (options.length === 0) return null;
   const index = hookIndex ?? variantIndexOf(seed, userId, options.length);
   const option = options[index % options.length];
+  if (!option) return null;
   const text = option.text ?? {};
   const chosen = text[lang] ? lang : "en";
   const titleId = place.stepId === "RP" && place.nextEpisodeId ? place.nextEpisodeId : place.unitId;
@@ -77,7 +83,7 @@ export function storyMessage({ content, place, titles, lang, seed, userId, hookI
  */
 export function storyPack(index, units) {
   const catalog = (index?.units ?? [])
-    .filter((entry) => units[entry.unit])
+    .filter((entry) => entry?.unit && units[entry.unit])
     .map((entry) => ({
       id: entry.unit,
       steps: Array.isArray(entry.steps) ? entry.steps : [],
@@ -101,6 +107,10 @@ export function storyContentProblems(content, catalog) {
     }
     for (const [stepId, options] of Object.entries(unit.after ?? {})) {
       if (!episode.steps.includes(stepId)) problems.push(`${episode.id}: 모르는 단계 ${stepId}`);
+      if (!Array.isArray(options)) {
+        problems.push(`${episode.id} ${stepId}: 훅 목록이 배열이 아닙니다.`);
+        continue;
+      }
       for (const option of options) {
         if (!option?.text?.en) problems.push(`${episode.id} ${stepId}: 영어 본문이 없습니다.`);
       }

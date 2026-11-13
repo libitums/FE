@@ -90,7 +90,7 @@
 - 영어 외 기본 문구는 원어민 확인 전 초안이다.
 
 ## 테스트
-- unit PC-S1 ~ S11(`segments.unit.test.mjs`) · PC-A1 ~ A10(`audience.unit.test.mjs`) · PC-RC1 ~ RC7(`recommend.unit.test.mjs`) · PC-R1 ~ R6(`results.unit.test.mjs`) · PC-IO1 ~ IO6(`sources.unit.test.mjs`) · PC-ST1 ~ ST7(`story.unit.test.mjs`) — `pnpm test:push-console`(`test:rest`에 포함).
+- unit PC-S1 ~ S11(`segments.unit.test.mjs`) · PC-A1 ~ A10(`audience.unit.test.mjs`) · PC-RC1 ~ RC7(`recommend.unit.test.mjs`) · PC-R1 ~ R6(`results.unit.test.mjs`) · PC-IO1 ~ IO6(`sources.unit.test.mjs`) · PC-ST1 ~ ST8(`story.unit.test.mjs`) — `pnpm test:push-console`(`test:rest`에 포함).
 - 운영 데이터 읽기 확인: 콘솔을 띄워 세그먼트 수 · 대상 계산 · 미리보기를 봤다(발송 없음).
 
 ## 재검토 조건
