@@ -184,13 +184,13 @@ describe("서버 턴", () => {
     expect(thread(source)?.awaitingReply).toBe(false);
   });
 
-  test("SS-I6 끊김 · 네트워크 실패 → 「보내지 못함」 줄 하나, 보낸 글은 남는다", () => {
+  test("SS-I6 서버가 받기 전 끊기면 회색 줄 없이 보낸 글이 Not sent로 남는다(ADR-0138로 바뀜)", () => {
     const { source, turns } = fakeRemote();
     source.sendText("duksu", "안녕");
     turns[0]?.handlers.onEnd("network", null);
     const messages = thread(source)?.messages ?? [];
-    expect(messages.map((m) => m.kind)).toEqual(["text", "notice"]);
-    expect(messages[1]).toMatchObject({ notice: "send-failed" });
+    expect(messages.map((m) => m.kind)).toEqual(["text"]);
+    expect(thread(source)?.server?.unsent).toEqual([messages[0]?.id]);
   });
 
   test("SS-I7 연 방의 답은 안 읽음을 늘리지 않고, 닫힌 방의 답은 첫 조각에 하나 늘린다 · uuid는 v4 꼴", () => {

@@ -275,4 +275,12 @@ export const messengerChatTestIds = {
   birthYearSheet: room("birth-year-sheet"),
   birthYearOption: (year: number): string => room(`birth-year-${year}`),
   sidebarBirthYear: room("sidebar-birth-year"),
+  // 배달 실패(ADR-0138)
+  unsent: room("unsent"),
+  unsentRetry: room("unsent-retry"),
+  unsentDialog: room("unsent-dialog"),
+  recovery: room("recovery"),
+  recoveryRefresh: room("recovery-refresh"),
+  historyFailed: room("history-failed"),
+  historyRetry: room("history-retry"),
 } as const;

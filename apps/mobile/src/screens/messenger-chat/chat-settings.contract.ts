@@ -51,6 +51,26 @@ export type MessengerChatExtraCopy = {
     readonly noCredits: (name: string) => string;
     readonly notAvailable: (name: string) => string;
     readonly sendFailed: string;
+    // 배달 실패(ADR-0138) — 회색 줄 · Not sent · 끊긴 답 채우기 · 기록 실패.
+    readonly replyFailed: (name: string) => string;
+    readonly cantReply: (name: string) => string;
+    readonly rateLimited: string;
+    readonly updateRequired: string;
+    readonly serverError: string;
+    readonly signedOut: string;
+    readonly notSent: string;
+    readonly sendAgain: string;
+    readonly unsentTitle: string;
+    readonly unsentDescription: string;
+    readonly deleteUnsent: string;
+    readonly cancel: string;
+    readonly recovering: string;
+    readonly stalled: string;
+    readonly refresh: string;
+    readonly loadFailedTitle: string;
+    readonly loadFailedBody: string;
+    readonly loadFailedNew: string;
+    readonly tryAgain: string;
   };
 };
 

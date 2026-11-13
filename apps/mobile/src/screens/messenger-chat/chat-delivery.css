@@ -1,0 +1,117 @@
+/* 서버 모드 배달 실패(ADR-0138). 빨강 없음(ADR-0062 D7) — 보내지 못한 말풍선은 옅은 주황 면 · 진한 주황 글(대비 4.5 이상),
+   상태 줄은 회색 글 + 주황 글 단추. 크기는 내 말풍선 도구 단추(32, 터치 44)와 같습니다. */
+.chat-unsent-bubble {
+  background-color: var(--libitum-color-brand-reward-disabled-surface);
+  border-width: var(--libitum-stroke-width-thin);
+  border-style: dashed;
+  border-color: var(--libitum-color-brand-reward-disabled-text);
+}
+
+.chat-unsent-ko {
+  color: var(--libitum-color-brand-primary-pressed);
+}
+
+.chat-unsent-line {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  column-gap: var(--libitum-spacing-8);
+}
+
+.chat-unsent-label,
+.chat-delivery-text {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-label-s-font-family);
+  font-size: var(--libitum-typography-label-s-font-size);
+  line-height: var(--libitum-typography-label-s-line-height);
+}
+
+.chat-unsent-retry {
+  width: var(--libitum-spacing-32);
+  height: var(--libitum-spacing-32);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--libitum-radius-full);
+  border-width: var(--libitum-stroke-width-thin);
+  border-style: solid;
+  border-color: var(--libitum-color-gray-400);
+  background-color: var(--libitum-color-white);
+}
+
+.chat-unsent-icon {
+  width: var(--libitum-spacing-16);
+  height: var(--libitum-spacing-16);
+}
+
+.chat-delivery-row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  column-gap: var(--libitum-spacing-8);
+  row-gap: var(--libitum-spacing-4);
+  padding: var(--libitum-spacing-8) var(--libitum-spacing-16);
+}
+
+/* 글 단추 — 보이는 높이 40(위아래 12 + 줄 16), hit-slop 6씩 더해 터치 52. */
+.chat-delivery-action {
+  padding: var(--libitum-spacing-12) var(--libitum-spacing-8);
+}
+
+.chat-delivery-action-text {
+  color: var(--libitum-color-brand-primary-pressed);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: var(--libitum-typography-label-m-font-size);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  line-height: var(--libitum-typography-label-m-line-height);
+}
+
+.chat-history-failed {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  row-gap: var(--libitum-spacing-8);
+  padding: var(--libitum-spacing-48) var(--libitum-spacing-24);
+}
+
+.chat-history-failed-icon {
+  width: var(--libitum-spacing-48);
+  height: var(--libitum-spacing-48);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-gray-100);
+}
+
+.chat-history-failed-title {
+  color: var(--libitum-color-fg-neutral);
+  text-align: center;
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  line-height: var(--libitum-typography-heading-s-line-height);
+}
+
+.chat-history-failed-body {
+  color: var(--libitum-color-fg-neutral-muted);
+  text-align: center;
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  line-height: var(--libitum-typography-body-s-line-height);
+}
+
+/* 다시 보내기 대화상자 — 버튼 셋을 세로로(앱 상자 `chat-modal-actions`의 가로 줄을 바꿈). */
+.chat-unsent-dialog .chat-modal-actions {
+  flex-direction: column;
+  row-gap: var(--libitum-spacing-8);
+}
+
+.chat-history-failed-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  row-gap: var(--libitum-spacing-4);
+}

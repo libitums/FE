@@ -30,6 +30,7 @@ export type ChatOverlay =
   | { readonly kind: "sidebar" }
   | { readonly kind: "story-point"; readonly selected: string }
   | { readonly kind: "delete-confirm" }
+  | { readonly kind: "unsent"; readonly messageId: string }
   | {
       readonly kind: "coin-shop";
       readonly from: "sidebar" | "ask-photo" | "ask-voice" | "send";

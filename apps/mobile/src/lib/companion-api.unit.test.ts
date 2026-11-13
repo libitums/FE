@@ -141,4 +141,27 @@ describe("턴", () => {
     expect(onEnd2).toHaveBeenCalledWith("cancelled", null);
     expect(cancel).not.toHaveBeenCalled();
   });
+
+  test("ES-U10 오프라인이면 스트림을 열지 않고 network로 한 번 끝난다(ADR-0138)", async () => {
+    const onEnd = vi.fn<(reason: string, detail: string | null) => void>();
+    const opened = vi.fn<() => void>();
+    const { remote } = setup({
+      isOffline: () => true,
+      stream: () => ({
+        open: () => {
+          opened();
+          return { streamId: "s", cancel: () => undefined };
+        },
+        dispose: () => undefined,
+      }),
+    });
+    remote.openTurn(
+      { characterId: "duksu", text: "x", clientMessageId: "c" },
+      { onOpen: () => undefined, onEvent: () => undefined, onEnd },
+    );
+    await flush();
+    expect(opened).not.toHaveBeenCalled();
+    expect(onEnd).toHaveBeenCalledTimes(1);
+    expect(onEnd).toHaveBeenCalledWith("network", null);
+  });
 });

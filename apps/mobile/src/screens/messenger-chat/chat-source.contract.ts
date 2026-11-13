@@ -115,7 +115,7 @@ export type ChatThread = {
   readonly counterpart: ChatCounterpart;
   readonly messages: readonly ChatMessage[];
   readonly typing: boolean;
-  readonly origin: "local" | "server"; // 서버 모드(ADR-0137): 내 글 뜻(🌐) 없음 · 새 추천 답변은 판이 저절로 열림.
+  readonly server: ChatServerRoom | null; // 서버 모드(ADR-0137 · 0138) — null이면 가짜 출처.
   /** 보낸 글의 답을 기다리는 중(입력 중 점 전 포함) — 다시 보내기 판정(ADR-0129). */
   readonly awaitingReply: boolean;
   readonly ideas: readonly ChatReplyIdea[];
@@ -138,9 +138,9 @@ export type ChatSnapshot = {
 
 // 내 글 노트(뜻 · 교정) — messenger-chat-1-5 spec §5.1. 뜻은 en 고정, 범위는 corrected 안 코드 포인트입니다.
 export type ChatMeaning = { readonly romanization: string; readonly meaning: string };
-// 교정 카드 · 평가 타입(ADR-0129)은 `chat-feedback.contract.ts`에 둡니다.
-import type { ChatCorrection, ChatCorrectionChange, ChatRating } from "./chat-feedback.contract";
+import type { ChatCorrection, ChatCorrectionChange, ChatRating } from "./chat-feedback.contract"; // 교정 · 평가(ADR-0129)
 import type { ChatRemote, ChatSendFailureNotice } from "./chat-remote.contract";
+import type { ChatServerControls, ChatServerRoom } from "./chat-delivery.contract";
 export type { ChatCorrection, ChatCorrectionChange, ChatRating };
 export type ChatLoad<T> =
   | { readonly status: "idle" }
@@ -213,8 +213,8 @@ export type ChatSource = {
   readonly updateMemory: (id: string, content: string) => void;
   readonly deleteMemory: (id: string) => void;
 
-  /** 걸린 타이머 전부 해제 · 구독 해제. */
-  readonly dispose: () => void;
+  readonly server: ChatServerControls | null; // 서버 모드의 배달 조작(ADR-0138) — 가짜 출처는 null.
+  readonly dispose: () => void; // 걸린 타이머 전부 해제 · 구독 해제.
 };
 
 export type ChatTimers = {

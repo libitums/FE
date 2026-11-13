@@ -14,6 +14,7 @@ import {
   VoicePendingBubble,
 } from "./ChatMediaBubbles";
 import { ChatActionRow } from "./ChatActionRow";
+import { UnsentMessage } from "./ChatDelivery";
 import { RatingButtons, RatingResult } from "./RatingRow";
 import { MyMessageRow } from "./MyMessage";
 import { ChatCrisisCard, ChatNoticeRow } from "./SafetyParts";
@@ -44,6 +45,8 @@ export type ChatRowFeedback = {
   readonly onResend: (messageId: string) => void;
   readonly onGood: (messageId: string) => void;
   readonly onBad: (messageId: string) => void;
+  /** 서버가 받지 못한 내 글(ADR-0138) — 다시 보내기 · 지우기 대화상자를 엽니다. */
+  readonly onUnsent: (messageId: string) => void;
 };
 
 /** 메시지 하나 → 줄(1단계 `MessageRow` 이전 + 내 글 분기)입니다. 같은 id의 pending → 도착은 같은 key 자리에서 바뀝니다. */
@@ -67,6 +70,16 @@ export function ChatMessageRow({
   switch (message.kind) {
     case "text":
       if (message.from === "me") {
+        if (thread.server?.unsent.includes(message.id) === true)
+          return (
+            <ChatOutgoingRow testId={ids.outgoing}>
+              <UnsentMessage
+                ko={message.text.ko}
+                speaker={learnerName}
+                onOpen={() => feedback.onUnsent(message.id)}
+              />
+            </ChatOutgoingRow>
+          );
         const notes = notesOf(thread, message.id);
         const open = openTools[message.id];
         return (
@@ -76,7 +89,7 @@ export function ChatMessageRow({
               ko={message.text.ko}
               speaker={learnerName}
               view={myBubbleViewOf(open, notes)}
-              tools={bubbleToolRowOf(open, notes, thread.origin === "server" ? "hidden" : "shown")}
+              tools={bubbleToolRowOf(open, notes, thread.server === null ? "shown" : "hidden")}
               motion={motion}
               onToggle={(tool) => onToggleTool(message.id, tool)}
               onResend={

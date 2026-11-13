@@ -107,7 +107,7 @@ describe("턴 리듀서", () => {
     ]);
     expect(state.bubbles).toEqual([]);
     expect(state.finished).toBe(true);
-    expect(state.failure).toEqual({ kind: "failed" });
+    expect(state.failure).toEqual({ kind: "stream-error", code: "upstream_unavailable" });
   });
 
   test("ST-U5 done 없이 끝나면 넘긴 실패로 닫고, done 뒤 끝은 그대로", () => {

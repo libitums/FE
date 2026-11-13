@@ -8,6 +8,7 @@ import type { AppProps } from "./app-props";
 import { initialAppStart, nextAppStart } from "./app-start";
 import type { AppStart } from "./leave-app.contract";
 import { useEpisodeContentRefresh } from "./use-episode-content-refresh";
+import { useMessengerRefresh } from "./use-messenger-refresh";
 import { perfProbe } from "../lib/perf-probe";
 
 // 바깥 App입니다 — `AppStart`(key · 첫 `Nav`) 하나만 쥡니다. `onLeaveApp`이 오면 key가 올라 `AppSession`이
@@ -26,6 +27,7 @@ export function App(props: AppProps = {}) {
     applyStaged,
     downloads,
   } = useEpisodeContentRefresh(props.episodeIntroEventSink ?? null);
+  useMessengerRefresh();
   return (
     <MotionProvider motion={motion}>
       <SplashUpdateContext.Provider value={splash}>
