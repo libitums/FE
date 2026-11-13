@@ -240,8 +240,8 @@ test("TV4. 체험 — 한도까지 무료, 다 쓰면 trial_exhausted, 크레딧
 
   await grant(3);
   expect(await turn()).toMatchObject({ creditsSpent: 1, balance: 2 });
-  // 무료 티어는 다른 캐릭터에 닿지 못한다.
-  expect(await gate("mina")).toEqual({ result: "not_available" });
+  // 무료 티어도 엽전이 한 턴 값 이상이면 다른 캐릭터와 대화한다(2026-11-13 엽전 출시 — 전에는 not_available).
+  expect((await gate("mina")).result).not.toBe("not_available");
   await ledgerMatchesWallet();
 });
 
