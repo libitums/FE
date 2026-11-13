@@ -19,6 +19,9 @@ final class AudioPlaybackController {
   private final Context context;
   private final Handler mainHandler = new Handler(Looper.getMainLooper());
   private final AudioPlaybackSession session = new AudioPlaybackSession();
+  private final AudioPlayerReleaser releaser = new AudioPlayerReleaser(
+      AudioPlayerReleaser.backgroundExecutor(),
+      error -> Log.w(TAG, "Cannot release audio player", error));
   private final AudioManager audioManager;
   private final AudioAttributes audioAttributes;
   private final AudioFocusRequest focusRequest;
@@ -229,6 +232,7 @@ final class AudioPlaybackController {
 
   private void releasePlayer() {
     MediaPlayer previous = player;
+    boolean wasPrepared = prepared;
     player = null;
     prepared = false;
     paused = false;
@@ -239,13 +243,25 @@ final class AudioPlaybackController {
       previous.setOnPreparedListener(null);
       previous.setOnCompletionListener(null);
       previous.setOnErrorListener(null);
-      previous.release();
+      // 해제 차례를 기다리는 동안 소리가 나지 않게, 메인 스레드에서 먼저 조용히 시킨다(막히지 않는 호출).
+      silence(previous, wasPrepared);
+      // 스트리밍 소스의 release()는 HTTP 연결을 끊을 때까지 돌아오지 않는다 — 메인 스레드에서 부르면 ANR.
+      releaser.release(previous::release);
     }
     boolean requested = focusRequested;
     focusRequested = false;
     focusHeld = false;
     if (requested && audioManager != null) {
       audioManager.abandonAudioFocusRequest(focusRequest);
+    }
+  }
+
+  private static void silence(MediaPlayer previous, boolean wasPrepared) {
+    try {
+      previous.setVolume(0f, 0f);
+      if (wasPrepared && previous.isPlaying()) previous.pause();
+    } catch (RuntimeException error) {
+      // Error state: nothing is audible, release() still runs.
     }
   }
 

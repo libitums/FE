@@ -503,6 +503,10 @@ Play는 64비트 네이티브 라이브러리가 16 KB 페이지를 지원하기
 `LegalDocumentModuleTest`는 법률 문서 이름을 두 고정 HTTPS 주소로만 연결하는지 확인한다.
 `AudioPlaybackModuleTest`는 공통 `.m4a` 자산 3개(호스트 테스트 고정물 `greeting-1` · `ordering-2` · `tutorial-cabin-announcement` — 2026-10-21 옛 튜토리얼 · 전화 음성 18을 지웠다, ADR-0081), 실제 재생 완료, 대체, 일시정지·재개,
 중단·백그라운드 전환·오디오 포커스 손실과 복귀, 자산을 열지 못했을 때의 경고 로그를 확인한다.
+대사 플레이어의 `release()`는 메인 스레드가 아니라 데몬 스레드 `AudioRelease` 하나에서 넘긴 순서대로 부른다 — 스트리밍(https)
+소스의 해제가 HTTP 연결을 끊을 때까지 메인 스레드를 막아 ANR이 났다(Sentry DURU-ANDROID-H · M, 2026-11). 리스너 해제 · 상태 초기화 ·
+포커스 반납은 그대로 메인 스레드에서 즉시 하고, 해제 차례를 기다리는 플레이어는 넘기기 전에 볼륨 0 · 일시정지로 소리를 끈다. 해제 실패는 `AudioPlayback` 태그의 `W`로 남고, `AudioPlayerReleaserTest`(JUnit)가
+호출 스레드 밖 실행 · 순서 · 실패 격리 · 막힌 해제 뒤 호출 즉시 반환을 확인한다.
 `SoundEffectAssetTest`·`SoundEffectsSessionTest`(JUnit)는 효과음 id 8개와 `apps/ios/Host/sfx`의 1:1 대응, 로드 전 요청·벨
 상태를, 계측 `SoundEffectsModuleTest`는 8개 자산 열기·벨 반복과 `stopRing`·`stopAll`을 확인한다.
 오디오 자산(`apps/ios/Host/audio/*.m4a` 대사, `apps/ios/Host/sfx/*.mp3` 효과음)은 Android에 복사본을 두지 않는다. Gradle이 변형마다
