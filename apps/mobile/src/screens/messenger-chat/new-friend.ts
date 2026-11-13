@@ -17,10 +17,18 @@ export type NewFriendTimeline = {
 };
 
 /**
- * 에피소드 → 해금 인물 표입니다. 그 에피소드의 막간(중간 스페셜 유닛 — 이야기 유닛 `INT`, ADR-0088)을 처음 끝내면 열립니다
- * (2026-11-10 결정 — 전에는 최종 테스트 통과였습니다). 열쇠는 에피소드 id입니다.
+ * 에피소드 → 해금 인물 표입니다. 정본은 기획 해금 JSON(`docs/content/companion-unlocks.json`, ADR-0141 — 2026-11-13 「해금 json
+ * 기준으로」): 그 에피소드를 끝내고(completion 전부 · 최종 테스트 통과) 뒤 컷까지 본 뒤 열립니다 — 연락처 교환이 모두 뒤 컷에
+ * 있습니다(전에는 막간 INT). 열쇠는 에피소드 id이고, 표가 JSON과 어긋나면 CU-U1이 실패합니다.
  */
 export const CHARACTER_UNLOCKS: readonly CharacterUnlockEntry[] = [
+  {
+    episodeId: "u01-water",
+    characterId: "yoonkyung",
+    roomId: "yoonkyung",
+    sceneImagePath: "content/images/u01-water/pre-1.webp",
+    faceImagePath: "content/images/profiles/yoonkyung-casual.webp",
+  },
   {
     episodeId: "u03-mina",
     characterId: "mina",
@@ -28,26 +36,18 @@ export const CHARACTER_UNLOCKS: readonly CharacterUnlockEntry[] = [
     sceneImagePath: "content/images/u03-mina/pre-1.webp",
     faceImagePath: "content/images/profiles/mina-casual.webp",
   },
-  // 서버 인물(ADR-0137, 통합 결정 4) — 그 인물이 처음 상대역인 에피소드의 막간.
   {
-    episodeId: "u02-checkin",
-    characterId: "yoonkyung",
-    roomId: "yoonkyung",
-    sceneImagePath: "content/images/u02-checkin/pre-1.webp",
-    faceImagePath: "content/images/profiles/yoonkyung-casual.webp",
-  },
-  {
-    episodeId: "u04-directions",
+    episodeId: "u12-cafe-missed",
     characterId: "doyun",
     roomId: "doyun",
-    sceneImagePath: "content/images/u04-directions/pre-1.webp",
+    sceneImagePath: "content/images/u12-cafe-missed/pre-1.webp",
     faceImagePath: "content/images/profiles/doyun-casual.webp",
   },
   {
-    episodeId: "u07-jaemin",
+    episodeId: "u17-samgyeopsal",
     characterId: "jaemin",
     roomId: "jaemin",
-    sceneImagePath: "content/images/u07-jaemin/pre-1.webp",
+    sceneImagePath: "content/images/u17-samgyeopsal/pre-1.webp",
     faceImagePath: "content/images/profiles/jaemin-casual.webp",
   },
 ];

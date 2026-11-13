@@ -1,0 +1,63 @@
+{
+  "$comment": "컴패니언 캐릭터 해금 지점. 기획은 docs/specs/ai-companion-unlock.md. 근거는 duru-curation audio/story/timeline.yaml · specs/67-interlude.md · 에피소드 post_cuts (origin/main 674cd495, 2026-11-12).",
+  "version": "2026-11-13",
+  "trigger": "episode_complete = 에피소드의 completion.requires(S1~S4 · INT · S5~S8 · CULT · RP)를 모두 끝내 최종 테스트를 통과하고 뒤 컷(post_cuts)까지 본 뒤. 연락처 교환이 모두 뒤 컷에 있어 유닛 중간에는 열지 않는다.",
+  "characters": [
+    {
+      "id": "duksu",
+      "name": "덕수쌤",
+      "unlock": {
+        "kind": "default"
+      },
+      "basis": "기본 캐릭터. 무료 · 저가 티어 체험용(PRD §3.1)."
+    },
+    {
+      "id": "yoonkyung",
+      "name": "정윤경(사장님)",
+      "unlock": {
+        "kind": "episode_complete",
+        "episode": "u01-water",
+        "afterCut": "post-3"
+      },
+      "contentStatus": "deployed",
+      "basis": "숙소 예약 연락처로 이미 닿는 사이(curation specs/67). u01 막간 4에 목소리로 처음 등장, 얼굴은 u02 체크인.",
+      "scene": "u01 뒤 컷 3 — 게스트하우스 문을 열고 들어감"
+    },
+    {
+      "id": "mina",
+      "name": "미나",
+      "unlock": {
+        "kind": "episode_complete",
+        "episode": "u03-mina",
+        "afterCut": "post-3"
+      },
+      "contentStatus": "deployed",
+      "basis": "u03 continuity_writes 「미나와 메신저 친구를 맺었다」(2026-10-26 결정, 뒤 컷 1 메모지를 건넬 때).",
+      "scene": "u03 뒤 컷 1 메모지 → 뒤 컷 3 「맛있었는지 내일 얘기해 줘요!」"
+    },
+    {
+      "id": "doyun",
+      "name": "한도윤",
+      "unlock": {
+        "kind": "episode_complete",
+        "episode": "u12-cafe-missed",
+        "afterCut": "post-6"
+      },
+      "contentStatus": "staging",
+      "basis": "u12 뒤 컷 3 「저기... 전화번호 주세요. 우리 친구 해요!」 · 뒤 컷 4 번호를 찍어 돌려줌.",
+      "scene": "u12 뒤 컷 3~4 — 카페 끌림 카운터"
+    },
+    {
+      "id": "jaemin",
+      "name": "서재민",
+      "unlock": {
+        "kind": "episode_complete",
+        "episode": "u17-samgyeopsal",
+        "afterCut": "post-8"
+      },
+      "contentStatus": "staging",
+      "basis": "u17 뒤 컷 7 「그럼 일요일에 한강 가요. 생각 있으면 연락 줘요.」(휴대폰을 내밀며).",
+      "scene": "u17 뒤 컷 7 — 숙소 골목 입구"
+    }
+  ]
+}

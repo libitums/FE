@@ -172,8 +172,8 @@ export function renderCatalogFlow(screen: CatalogFlowScreen, wiring: ScreenWirin
           insets={wiring.safeAreaInsets}
           ordinal={model.ordinal}
           cuts={model.cuts}
-          onExit={wiring.onLeaveCatalogEpilogue}
-          onClose={wiring.onLeaveCatalogEpilogue}
+          onExit={() => wiring.onLeaveCatalogEpilogue(episodeId)}
+          onClose={() => wiring.onLeaveCatalogEpilogue(episodeId)}
         />
       );
     }

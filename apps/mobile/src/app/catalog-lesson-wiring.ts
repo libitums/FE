@@ -28,6 +28,7 @@ import type { CatalogLessonFinish } from "./catalog-lesson-finish";
 import type { CatalogReviewItem, CatalogReviewSummary } from "./catalog-review";
 import type { CatalogFinishGuard } from "./catalog-finish-guard";
 import type { NavAction } from "./nav-state";
+import { unlockFriendAfterEpisode } from "./new-friend-wiring";
 import type { CatalogStartSource } from "../lib/catalog-learning-event.contract";
 
 export type CatalogLessonWiring = CatalogLessonFinish & {
@@ -46,7 +47,7 @@ export type CatalogLessonWiring = CatalogLessonFinish & {
     unitKey: CatalogUnitKey,
     verdict: AssessmentVerdict,
   ) => void;
-  readonly onLeaveCatalogEpilogue: () => void;
+  readonly onLeaveCatalogEpilogue: (episodeId: string) => void;
 };
 
 export type CatalogLessonWiringArgs = CatalogWiringValues & {
@@ -90,6 +91,10 @@ export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLesso
     markCoinUnit,
     coinUnits = {},
   } = args;
+
+  // 인물 해금(ADR-0141) — 에피소드를 끝내고 뒤 컷을 지나면.
+  const unlockFriend = (episodeId: string) =>
+    unlockFriendAfterEpisode(episodeId, catalogSections, catalogProgress);
 
   // 같은 활동 · 같은 최종 테스트의 두 번째 finish를 거릅니다 — 처음 오면 표식을 남기고 true.
   // 시작 · 나가기 · 결과 나가기가 표식을 지워 재시도와 다음 세션은 다시 끝낼 수 있습니다.
@@ -278,8 +283,13 @@ export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLesso
         dispatch({ type: "replace", screen: { name: "catalog-epilogue", episodeId } });
         return;
       }
+      // 뒤 컷이 없는 에피소드는 최종 통과 결과 화면을 나가는 때가 끝입니다.
+      if (assessmentCompletesStep(verdict)) unlockFriend(episodeId);
       dispatch({ type: "backToRoot" });
     },
-    onLeaveCatalogEpilogue: () => dispatch({ type: "backToRoot" }),
+    onLeaveCatalogEpilogue: (episodeId) => {
+      unlockFriend(episodeId);
+      dispatch({ type: "backToRoot" });
+    },
   };
 }

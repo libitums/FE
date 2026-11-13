@@ -817,7 +817,7 @@ describe("결과 뒤 이동", () => {
   test("LW11. 통과 뒤 컷에서 나가면 맵으로 가며 기록 · 이벤트는 없다", () => {
     const { wiring, log } = harness();
 
-    wiring.onLeaveCatalogEpilogue();
+    wiring.onLeaveCatalogEpilogue("u01-water");
 
     expect(dispatches(log)).toEqual([{ type: "backToRoot" }]);
     expect(kinds(log, "progress")).toEqual([]);
@@ -847,7 +847,7 @@ describe("튜토리얼 진행과 sink 없음", () => {
       ),
       run(allLessonsDone, (h) => h.wiring.onExitCatalogUnitComplete("u01-water", "RP", "passed")),
       run({}, (h) => h.wiring.onExitCatalogSession()),
-      run({}, (h) => h.wiring.onLeaveCatalogEpilogue()),
+      run({}, (h) => h.wiring.onLeaveCatalogEpilogue("u01-water")),
     ];
 
     for (const h of harnesses) {
@@ -870,7 +870,7 @@ describe("튜토리얼 진행과 sink 없음", () => {
     ).not.toThrow();
     expect(() => wiring.onExitCatalogUnitComplete("u01-water", "RP", "passed")).not.toThrow();
     expect(() => wiring.onExitCatalogSession()).not.toThrow();
-    expect(() => wiring.onLeaveCatalogEpilogue()).not.toThrow();
+    expect(() => wiring.onLeaveCatalogEpilogue("u01-water")).not.toThrow();
     expect(events(log)).toEqual([]);
     expect(dispatches(log).length).toBeGreaterThan(0);
   });
