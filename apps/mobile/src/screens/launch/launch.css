@@ -181,14 +181,10 @@
   margin-top: var(--libitum-spacing-4);
 }
 
-.launch-actions-pair {
+.launch-actions-stack {
   display: flex;
-  flex-direction: row;
-  column-gap: var(--libitum-spacing-8);
-}
-
-.launch-action {
-  flex: 1 1 0;
+  flex-direction: column;
+  row-gap: var(--libitum-spacing-4);
 }
 
 /* ---- 날아가는 엽전: 상자 쪽에서 오른쪽 위 칩 자리로 ---- */

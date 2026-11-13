@@ -216,12 +216,13 @@ export function ChatIntroModal({ cast, onLater, onStart }: ChatIntroModalProps):
           <svg className="launch-total-icon" content={coinIcon} />
           <text className="launch-prices-text">{copy.prices}</text>
         </view>
-        <view className="launch-actions launch-actions-pair">
-          <view className="launch-action" data-testid={ids.later}>
-            <Button label={copy.later} variant="outline" size="xl" width="fill" bindtap={later} />
-          </view>
-          <view className="launch-action" data-testid={ids.start}>
+        {/* 위아래로 쌓습니다 — 나란히 두면 「Start chatting」이 두 줄로 접혀 「Later」와 높이가 어긋났습니다(기기 확인 2026-11-14). */}
+        <view className="launch-actions launch-actions-stack">
+          <view data-testid={ids.start}>
             <Button label={copy.start} variant="brand" size="xl" width="fill" bindtap={onStart} />
+          </view>
+          <view data-testid={ids.later}>
+            <Button label={copy.later} variant="text" size="xl" width="fill" bindtap={later} />
           </view>
         </view>
       </view>
