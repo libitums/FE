@@ -18,7 +18,11 @@ export type LaunchCoinsModalProps = {
   readonly bonus: number;
   /** 서버 지갑 잔액. */
   readonly balance: number;
-  /** 엽전이 칩으로 날아간 뒤(움직임 줄이기면 곧바로) — 닫기와 칩 갱신. */
+  /** 날아갈 곳 — 지도 머리 엽전 칩 아이콘의 id. */
+  readonly coinTargetId: string;
+  /** 엽전이 하나 닿을 때마다(닿은 수 · 전체 수) — 칩 숫자를 그만큼 올립니다. */
+  readonly onCoinLanded?: (landed: number, of: number) => void;
+  /** 마지막 엽전이 칩에 닿은 뒤(움직임 줄이기면 곧바로) — 닫기. */
   readonly onDone: () => void;
 };
 

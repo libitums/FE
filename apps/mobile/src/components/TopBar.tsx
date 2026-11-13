@@ -20,6 +20,9 @@ import "./top-bar.css";
 // 에피소드 헤더 카드가, 학습 화면에서는 세션 헤더가 「지금 어디인가」를 이미 말하므로
 // 제목 줄을 따로 두면 같은 말이 두 번 섭니다.
 
+/** 머리 엽전 칩 아이콘의 id — 엽전 출시 모달의 엽전이 여기로 날아옵니다(ADR-0140). */
+export const topBarCoinIconId = "top-bar-coins-icon";
+
 export type TopBarProps = {
   /** 연속으로 학습한 날 수입니다. */
   readonly streakDays: number;
@@ -199,6 +202,7 @@ export function TopBar({
                 : copy.coinShop.openShop(coinCount)
             }
             testId="top-bar-coins"
+            iconId={topBarCoinIconId}
             surface="white"
             height="touch-target"
             onTap={onOpenCoins === undefined ? undefined : handleOpenCoins}

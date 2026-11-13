@@ -187,44 +187,42 @@
   row-gap: var(--libitum-spacing-4);
 }
 
-/* ---- 날아가는 엽전: 상자 쪽에서 오른쪽 위 칩 자리로 ---- */
-.launch-flyer {
+/* ---- 「Got it」: 막 · 상자가 걷히고 엽전이 실제 자리(잔액 엽전 → 머리 칩)로 날아감(LaunchCoinFlight) ---- */
+.launch-scrim {
   position: absolute;
-  top: 64px;
-  right: 28px;
-  width: var(--libitum-spacing-24);
-  height: var(--libitum-spacing-24);
-  z-index: 2;
+  top: var(--libitum-spacing-0);
+  right: var(--libitum-spacing-0);
+  bottom: var(--libitum-spacing-0);
+  left: var(--libitum-spacing-0);
+  z-index: 0;
 }
 
-.launch-fly {
+.launch-scrim-out {
+  animation: launch-fade-out var(--libitum-motion-duration-d5) var(--libitum-motion-easing-exit)
+    both;
+}
+
+/* 화면 왼쪽 위 0 × 0 기준점 — 엽전은 이 점에서 잰 자리에 섭니다(결과 화면 엽전 날기와 같은 꼴). */
+.launch-flight {
   position: absolute;
   top: var(--libitum-spacing-0);
   left: var(--libitum-spacing-0);
-  width: var(--libitum-spacing-24);
-  height: var(--libitum-spacing-24);
-  opacity: 0;
-  animation: launch-fly var(--libitum-motion-duration-d8)
-    var(--libitum-motion-easing-exit-expressive) both;
+  width: var(--libitum-spacing-0);
+  height: var(--libitum-spacing-0);
+  overflow: visible;
+  z-index: 2;
 }
 
-.launch-fly-0 {
-  animation-delay: calc(var(--libitum-motion-duration-d1) * 0);
+.launch-flight-coin {
+  position: absolute;
+  width: var(--libitum-icon-size-md);
+  height: var(--libitum-icon-size-md);
+  transition: transform var(--libitum-motion-duration-d7) var(--libitum-motion-easing-enter);
 }
-.launch-fly-1 {
-  animation-delay: calc(var(--libitum-motion-duration-d1) * 1);
-}
-.launch-fly-2 {
-  animation-delay: calc(var(--libitum-motion-duration-d1) * 2);
-}
-.launch-fly-3 {
-  animation-delay: calc(var(--libitum-motion-duration-d1) * 3);
-}
-.launch-fly-4 {
-  animation-delay: calc(var(--libitum-motion-duration-d1) * 4);
-}
-.launch-fly-5 {
-  animation-delay: calc(var(--libitum-motion-duration-d1) * 5);
+
+.launch-flight-icon {
+  width: var(--libitum-icon-size-md);
+  height: var(--libitum-icon-size-md);
 }
 
 /* ---- 채팅 모달: 인물 줄 · 진행 막대 ---- */
@@ -435,16 +433,8 @@
   }
 }
 
-@keyframes launch-fly {
-  0% {
-    opacity: 1;
-    transform: translate(-150px, 320px);
-  }
-  85% {
-    opacity: 1;
-  }
-  100% {
+@keyframes launch-fade-out {
+  to {
     opacity: 0;
-    transform: translate(0, 0) scale(var(--libitum-motion-scale-reward));
   }
 }

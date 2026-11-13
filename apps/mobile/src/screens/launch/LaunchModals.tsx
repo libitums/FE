@@ -10,6 +10,7 @@ import { Overlay } from "@libitums/ui-lynx/overlay";
 import { coinIcon } from "../../components/coin-icon";
 import { useUiCopy } from "../../lib/ui-copy";
 import { useLayerBack } from "../../lib/use-back-handler";
+import { LAUNCH_FLYING_COINS, LaunchCoinFlight, launchCoinSourceId } from "./LaunchCoinFlight";
 import { launchTestIds as ids } from "./launch.contract";
 import type { ChatIntroModalProps, LaunchCoinsModalProps } from "./launch.contract";
 
@@ -52,24 +53,29 @@ function Row(props: {
   );
 }
 
-const FLYING_COINS = 6;
-
 /** 받은 엽전 — 깬 에피소드 소급 · 출시 보너스 · 잔액. 「Got it」이면 엽전이 오른쪽 위 칩으로 날아간 뒤 닫힙니다. */
 export function LaunchCoinsModal({
   learning,
   bonus,
   balance,
+  coinTargetId,
+  onCoinLanded,
   onDone,
 }: LaunchCoinsModalProps): ReactNode {
   const copy = useUiCopy().messengerChat.launch;
   const reduced = useMotion() === "reduced";
   const [flying, setFlying] = useState(false);
   const total = useCountUp(balance, learning > 0 ? 700 : 500, reduced);
+  // 움직임 줄이기면 날지 않고 곧바로 닫습니다(칩은 한 번에 오름). 아니면 마지막 엽전이 닿은 뒤 닫습니다.
   useEffect(() => {
-    if (!flying) return undefined;
-    const handle = setTimeout(() => onDone(), reduced ? 0 : 900);
+    if (!flying || !reduced) return undefined;
+    const handle = setTimeout(() => onDone(), 0);
     return () => clearTimeout(handle);
   }, [flying, reduced, onDone]);
+  const landed = (n: number) => {
+    onCoinLanded?.(n, LAUNCH_FLYING_COINS);
+    if (n >= LAUNCH_FLYING_COINS) onDone();
+  };
   const done = () => {
     "background only";
     setFlying(true);
@@ -81,7 +87,10 @@ export function LaunchCoinsModal({
   ];
   return (
     <view className="launch" data-testid={ids.coins} event-through={false}>
-      <Overlay scope="screen" surface="dialog" dismiss="none" />
+      {/* 「Got it」이면 막과 상자가 먼저 걷혀 머리 엽전 칩이 드러나고, 그 위로 엽전이 날아갑니다. */}
+      <view className={`launch-scrim${flying ? " launch-scrim-out" : ""}`}>
+        <Overlay scope="screen" surface="dialog" dismiss="none" />
+      </view>
       <view
         className={`launch-box${reduced ? " launch-still" : ""}${flying ? " launch-box-out" : ""}`}
         accessibility-role-description="dialog"
@@ -115,7 +124,7 @@ export function LaunchCoinsModal({
           <view className={`launch-row launch-total launch-row-${rows.length}`}>
             <text className="launch-total-label">{copy.balance}</text>
             <view className="launch-total-value">
-              <svg className="launch-total-icon" content={coinIcon} />
+              <svg id={launchCoinSourceId} className="launch-total-icon" content={coinIcon} />
               <text className="launch-total-amount" data-testid={ids.balance}>
                 {String(total)}
               </text>
@@ -127,13 +136,7 @@ export function LaunchCoinsModal({
           <Button label={copy.gotIt} variant="brand" size="xl" width="fill" bindtap={done} />
         </view>
       </view>
-      {flying && !reduced ? (
-        <view className="launch-flyer" accessibility-elements-hidden={true}>
-          {Array.from({ length: FLYING_COINS }, (_, index) => (
-            <svg key={index} className={`launch-fly launch-fly-${index}`} content={coinIcon} />
-          ))}
-        </view>
-      ) : null}
+      {flying && !reduced ? <LaunchCoinFlight targetId={coinTargetId} onLanded={landed} /> : null}
     </view>
   );
 }

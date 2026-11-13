@@ -5,6 +5,7 @@
 import type { ReactNode } from "@lynx-js/react";
 import { useEffect, useRef, useState } from "@lynx-js/react";
 
+import { topBarCoinIconId } from "../components/TopBar";
 import type { CatalogProgress } from "../lib/catalog-progress";
 import { coinClient, type CoinClaim } from "../lib/coin-wallet-api";
 import { COMPANION_CHARACTERS } from "../screens/messenger-chat/companion-roster";
@@ -53,6 +54,8 @@ export function useLaunchCoins(input: LaunchCoinsInput): LaunchCoins {
   const snapshot = useChatSnapshot(wiring.messengerChat.source);
   const [record, setRecord] = useState<LaunchRecord | null>(() => store.read());
   const [balance, setBalance] = useState<number | null>(null);
+  /** 엽전 모달에서 칩에 닿은 엽전의 몫(0 ~ 1) — 칩이 기기 값에서 서버 잔액으로 그만큼 오릅니다. */
+  const [landedShare, setLandedShare] = useState(0);
   const claimedFor = useRef<number | null>(null);
   const eligible = signedIn && tutorialDone(catalogProgress, wiring.legacyTutorialPassed);
   const units = unitCount(catalogProgress);
@@ -85,6 +88,8 @@ export function useLaunchCoins(input: LaunchCoinsInput): LaunchCoins {
   };
   const step = launchStep({ record, chatOpen: access === "open", idle: idle && signedIn });
   const coinsPending = record !== null && !record.coinsShown;
+  const target = balance ?? (record === null ? 0 : record.learning + record.bonus);
+  const start = localCoins ?? 0;
 
   const cast: readonly LaunchCastMember[] = COMPANION_CHARACTERS.map((character) => {
     const room = snapshot.rooms.find((r) => r.roomId === character.id);
@@ -102,7 +107,9 @@ export function useLaunchCoins(input: LaunchCoinsInput): LaunchCoins {
       <LaunchCoinsModal
         learning={record.learning}
         bonus={record.bonus}
-        balance={balance ?? record.learning + record.bonus}
+        balance={target}
+        coinTargetId={topBarCoinIconId}
+        onCoinLanded={(landed, of) => setLandedShare(landed / of)}
         onDone={() => save({ ...record, coinsShown: true })}
       />
     ) : step === "chat" && record !== null ? (
@@ -117,7 +124,12 @@ export function useLaunchCoins(input: LaunchCoinsInput): LaunchCoins {
     ) : null;
 
   return {
-    coinCount: coinsPending || balance === null ? localCoins : balance,
+    // 엽전 모달이 떠 있는 동안은 기기 값에서, 엽전이 닿는 만큼 서버 잔액 쪽으로 오릅니다.
+    coinCount: coinsPending
+      ? start + Math.round((target - start) * landedShare)
+      : balance === null
+        ? localCoins
+        : balance,
     open: step !== null,
     layer,
   };
