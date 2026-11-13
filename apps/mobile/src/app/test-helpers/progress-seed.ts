@@ -1,6 +1,7 @@
 // 진행 씨앗 테스트 지원입니다 — 옛 튜토리얼을 다 끝낸 기록 · u00 완료 진행. 제품 코드가 import하지 않습니다.
 
 import type { CatalogProgress } from "../../lib/catalog-progress";
+import { COINS_PER_LESSON } from "../../lib/coins";
 import { TUTORIAL_EPISODE_ID } from "../../lib/tutorial-episode";
 import { LEGACY_TUTORIAL_FINAL_ID } from "../legacy-tutorial-progress";
 import type { LegacyTutorialRecord } from "../legacy-tutorial-progress";
@@ -30,9 +31,12 @@ export type ProgressSeedShape = {
 
 export const legacyPassedSeed: ProgressSeedShape = { legacyTutorial: legacyPassedRecord };
 
-/** 옛 튜토리얼을 마치고 엽전 `coins`개(10의 배수)를 가진 씨앗입니다 — 받은 유닛 `coins / 10`개로 만듭니다(ADR-0116). */
+/** 옛 튜토리얼을 마치고 엽전 `coins`개(`COINS_PER_LESSON`의 배수)를 가진 씨앗입니다 — 받은 유닛 `coins / COINS_PER_LESSON`개로 만듭니다(ADR-0116). */
 export function legacyPassedSeedWithCoins(coins: number): ProgressSeedShape {
-  const keys = Array.from({ length: Math.floor(coins / 10) }, (_, index) => `S${index + 1}`);
+  const keys = Array.from(
+    { length: Math.floor(coins / COINS_PER_LESSON) },
+    (_, index) => `S${index + 1}`,
+  );
   return keys.length === 0
     ? legacyPassedSeed
     : { ...legacyPassedSeed, coinUnits: { "u01-water": keys } };

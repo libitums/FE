@@ -144,7 +144,7 @@ export const messengerChatExtraId: MessengerChatExtraCopy = {
     fromEpisodes: "Dari episode yang sudah kamu selesaikan",
     launchBonus: "Bonus peluncuran",
     balance: "Saldomu",
-    perLesson: "Setiap pelajaran yang pertama kali kamu selesaikan menambah 10.",
+    perLesson: "Setiap pelajaran yang pertama kali kamu selesaikan menambah 5.",
     gotIt: "Mengerti",
     chatTitle: "Kirim pesan ke teman yang kamu temui",
     chatBody:
@@ -153,7 +153,7 @@ export const messengerChatExtraId: MessengerChatExtraCopy = {
     now: "Sekarang",
     episode: (order) => `Ep ${order}`,
     metCount: (met, total) => `${met} dari ${total} teman sudah kamu temui`,
-    prices: "Pesan 10 · suara 40 · foto 60",
+    prices: "Pesan 3 · suara 15 · foto 35",
     later: "Nanti",
     start: "Mulai mengobrol",
   },

@@ -127,7 +127,7 @@ test("M3. 보내서 「3 → 2」가 되면 새 턴 줄을 한 번, 마지막 �
   sendFree();
   expect(turnAnnouncements()).toEqual([
     "2 of 3 free messages left today",
-    "Last free message today, After this, 10 coins per message",
+    "Last free message today, After this, 3 coins per message",
   ]);
 });
 
@@ -182,7 +182,7 @@ test("M4. T3 판이 열린 동안 머리 · 로그는 낭독에서 숨고, 판�
 
 // ------------------------------------------------------------------ M9: 모자라면 상점 이름
 
-test("M9. 잔액이 가격보다 모자라면 엽전 보내기 단추 이름이 「Get coins to send」이고, 충분하면 「Send for 10 coins」다", () => {
+test("M9. 잔액이 가격보다 모자라면 엽전 보내기 단추 이름이 「Get coins to send」이고, 충분하면 「Send for 3 coins」다", () => {
   mountChatOpen(freeRoom(2));
   sendFree();
   sendFree();
@@ -200,7 +200,7 @@ test("M9. 잔액이 가격보다 모자라면 엽전 보내기 단추 이름이 
   tapId(turnIds.panelKeep);
 
   expect(screen.getByTestId(turnIds.coinSend).getAttribute("accessibility-label")).toBe(
-    "Send for 10 coins",
+    "Send for 3 coins",
   );
 });
 

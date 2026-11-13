@@ -6,8 +6,8 @@ import { askMediaPlan } from "./chat-rules";
 // `unit` 계층(MC2-U8): 엽전 가격표 · 낼 수 있나 판정 · 요청 모달 판정의 위임(messenger-chat-1-5 spec §4.2).
 
 describe("CHAT_COIN_PRICES (MC2-U8)", () => {
-  test("MC2-U8. 가격표는 메시지 10 · 음성 40 · 사진 60 이다(사용자 결정)", () => {
-    expect(CHAT_COIN_PRICES).toEqual({ message: 10, voice: 40, photo: 60 });
+  test("MC2-U8. 가격표는 메시지 3 · 음성 15 · 사진 35 다(사용자 결정 2026-11-14)", () => {
+    expect(CHAT_COIN_PRICES).toEqual({ message: 3, voice: 15, photo: 35 });
   });
 });
 

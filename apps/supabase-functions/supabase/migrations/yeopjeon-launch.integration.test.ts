@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, beforeEach, expect, test } from "vitest";
 import { signIn, startTestDatabase } from "./postgres.test-support";
 
-// 엽전 출시(20261127, ADR-0140): 학습 보상 · 출시 보너스 한 번 지급(`companion_claim_coins`) · 단가 10 ·
+// 엽전 출시(20261127, ADR-0140): 학습 보상 · 출시 보너스 한 번 지급(`companion_claim_coins`) · 단가 3 ·
 // 무료 티어도 엽전이 있으면 체험 캐릭터 밖과 대화.
 const user = "00000000-0000-4000-8000-0000000000e1";
 const other = "00000000-0000-4000-8000-0000000000e2";
@@ -43,7 +43,7 @@ afterAll(async () => {
 beforeEach(async () => {
   await db.admin.query("truncate auth.users cascade");
   await db.admin.query(
-    "update companion.settings set message_cost = 10, testers_only = false, minor_daily_limit_seconds = null",
+    "update companion.settings set message_cost = 3, testers_only = false, minor_daily_limit_seconds = null",
   );
   await db.admin.query(
     `insert into auth.users (id, email, raw_app_meta_data) values ($1, 'a@libitum.test', '{}'), ($2, 'b@libitum.test', '{}')`,
@@ -52,25 +52,25 @@ beforeEach(async () => {
   await signIn(app, user);
 });
 
-test("YL1. 끝낸 유닛마다 10 — 표지 · 막간 제외, 진행 · 엽전 유닛 합집합, 출시 보너스 100. 잔액 = 합", async () => {
+test("YL1. 끝낸 유닛마다 5 — 표지 · 막간 제외, 진행 · 엽전 유닛 합집합, 출시 보너스 100. 잔액 = 합", async () => {
   await progress(
     user,
     { "u01-water": ["intro", "S1", "S2", "INT", "RP"] },
     { "u01-water": ["S1"], "u02-checkin": ["S1"] },
   );
   expect(await claim()).toMatchObject({
-    learning: 40,
+    learning: 20,
     bonus: 100,
-    wallet: { balance: 140, grant: 140 },
+    wallet: { balance: 120, grant: 120 },
   });
 });
 
 test("YL2. 다시 불러도 두 번 주지 않고, 새로 깬 유닛만 더한다", async () => {
   await progress(user, { "u01-water": ["S1"] });
   await claim();
-  expect(await claim()).toMatchObject({ learning: 0, bonus: 0, wallet: { balance: 110 } });
+  expect(await claim()).toMatchObject({ learning: 0, bonus: 0, wallet: { balance: 105 } });
   await progress(user, { "u01-water": ["S1", "S2"] });
-  expect(await claim()).toMatchObject({ learning: 10, bonus: 0, wallet: { balance: 120 } });
+  expect(await claim()).toMatchObject({ learning: 5, bonus: 0, wallet: { balance: 110 } });
 });
 
 test("YL3. 사용자마다 따로 — 다른 사용자의 같은 유닛 · 보너스는 이 사용자를 막지 않는다", async () => {
@@ -79,7 +79,7 @@ test("YL3. 사용자마다 따로 — 다른 사용자의 같은 유닛 · 보�
   const b = await db.connect();
   await signIn(b, other);
   await progress(other, { "u01-water": ["S1"] });
-  expect(await claim(b)).toMatchObject({ learning: 10, bonus: 100, wallet: { balance: 110 } });
+  expect(await claim(b)).toMatchObject({ learning: 5, bonus: 100, wallet: { balance: 105 } });
 });
 
 test("YL4. 진행 기록이 없어도 보너스는 받는다. 로그인 없으면 거절", async () => {
@@ -89,7 +89,7 @@ test("YL4. 진행 기록이 없어도 보너스는 받는다. 로그인 없으�
   await expect(anon.query("select public.companion_claim_coins()")).rejects.toBeTruthy();
 });
 
-test("YL5. 무료 티어 — 체험 캐릭터 밖은 잔액이 한 턴 값(10) 미만이면 insufficient_credits, 이상이면 열리고 10을 쓴다", async () => {
+test("YL5. 무료 티어 — 체험 캐릭터 밖은 잔액이 한 턴 값(3) 미만이면 insufficient_credits, 이상이면 열리고 3을 쓴다", async () => {
   const gate = async () =>
     (
       await server.query(
@@ -99,7 +99,7 @@ test("YL5. 무료 티어 — 체험 캐릭터 밖은 잔액이 한 턴 값(10) �
     ).rows[0].g as { result: string; detail?: unknown };
   expect(await gate()).toEqual({
     result: "insufficient_credits",
-    detail: { required: 10, balance: 0 },
+    detail: { required: 3, balance: 0 },
   });
   await claim();
   expect((await gate()).result).not.toBe("insufficient_credits");
@@ -109,7 +109,7 @@ test("YL5. 무료 티어 — 체험 캐릭터 밖은 잔액이 한 턴 값(10) �
       [user, now],
     )
   ).rows[0].t as { result: string; creditsReserved: number };
-  expect(begun).toMatchObject({ result: "ok", creditsReserved: 10 });
+  expect(begun).toMatchObject({ result: "ok", creditsReserved: 3 });
 });
 
 test("YL6. 지급은 원장과 지갑이 맞는다", async () => {
@@ -120,5 +120,5 @@ test("YL6. 지급은 원장과 지갑이 맞는다", async () => {
             (select grant_balance from companion.credit_wallets where user_id = $1) as wallet`,
     [user],
   );
-  expect(sums.rows[0]).toEqual({ ledger: 120, wallet: 120 });
+  expect(sums.rows[0]).toEqual({ ledger: 110, wallet: 110 });
 });

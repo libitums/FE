@@ -1,17 +1,17 @@
 -- 엽전 출시(2026-11-13, ADR-0140 — 사용자 결정): 앱의 엽전을 서버 지갑(credit_wallets)으로 일원화하는 첫 단계.
 --
--- 1. 단가: 메시지 한 턴 = 10 엽전(앱 표기와 1:1). 음성 40 · 사진 60은 서버에 아직 없어 앱 표기만.
+-- 1. 단가: 메시지 한 턴 = 3 엽전(앱 표기와 1:1, 2026-11-14 사용자 결정). 음성 15 · 사진 35는 서버에 아직 없어 앱 표기만.
 -- 2. 무료 티어도 엽전이 있으면 체험 캐릭터 밖의 캐릭터와 대화한다(잔액 < 한 턴 값이면 insufficient_credits). 덕수쌤 체험 수는 그대로.
 -- 3. 학습 보상 · 출시 보너스 지급 `companion_claim_coins()`(앱이 부름, 로그인 필수, 사용자별 멱등):
---    · 진행 스냅숏(catalogProgress ∪ coinUnits)의 끝낸 유닛마다 learning_reward(10) — 에피소드 표지(intro) · 막간(INT) 제외,
+--    · 진행 스냅숏(catalogProgress ∪ coinUnits)의 끝낸 유닛마다 learning_reward(5) — 에피소드 표지(intro) · 막간(INT) 제외,
 --      (사용자, 에피소드, 유닛)마다 한 번. 엽전 제도 전에 깬 유닛도 소급된다. 새 레슨을 깨고 다시 부르면 그 유닛만 더해진다.
 --    · 출시 보너스 launch_bonus(100) — 사용자마다 한 번.
 --    돌려주는 값: 이번 호출에서 더한 학습 보상 · 보너스와 지갑(잔액 포함).
 
 alter table companion.settings
-  add column learning_reward integer not null default 10 check (learning_reward between 0 and 1000),
+  add column learning_reward integer not null default 5 check (learning_reward between 0 and 1000),
   add column launch_bonus integer not null default 100 check (launch_bonus between 0 and 100000);
-update companion.settings set message_cost = 10;
+update companion.settings set message_cost = 3;
 
 create or replace function public.companion_turn_gate(
   p_user_id uuid,

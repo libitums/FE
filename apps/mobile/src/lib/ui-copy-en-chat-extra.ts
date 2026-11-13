@@ -146,7 +146,7 @@ export const messengerChatExtraEn: MessengerChatExtraCopy = {
     fromEpisodes: "From the episodes you've cleared",
     launchBonus: "Launch bonus",
     balance: "Your balance",
-    perLesson: "Each lesson you clear for the first time adds 10.",
+    perLesson: "Each lesson you clear for the first time adds 5.",
     gotIt: "Got it",
     chatTitle: "Text the friends you meet",
     chatBody:
@@ -155,7 +155,7 @@ export const messengerChatExtraEn: MessengerChatExtraCopy = {
     now: "Now",
     episode: (order) => `Ep ${order}`,
     metCount: (met, total) => `${met} of ${total} friends met`,
-    prices: "A message is 10 · voice 40 · photo 60",
+    prices: "A message is 3 · voice 15 · photo 35",
     later: "Later",
     start: "Start chatting",
   },

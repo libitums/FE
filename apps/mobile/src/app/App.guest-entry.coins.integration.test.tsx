@@ -39,7 +39,7 @@ const lastSaved = (host: GuestHost): Record<string, unknown> => {
   >;
 };
 
-test("[GE-C1] 비회원이 레슨을 처음 통과하면 엽전 10 — 기기 칸에 실리고, 로그인하면 서버로 올라간다", async () => {
+test("[GE-C1] 비회원이 레슨을 처음 통과하면 엽전 5 — 기기 칸에 실리고, 로그인하면 서버로 올라간다", async () => {
   const host = installGuestHost({ userId: "u1" });
   await bootGuestAfterFirstUnit(host);
   expect(screen.getByTestId("top-bar-coins")).toHaveTextContent("0");
@@ -47,11 +47,11 @@ test("[GE-C1] 비회원이 레슨을 처음 통과하면 엽전 10 — 기기 �
   tapNode(U00, "S1");
   solveAll(lessonPlan(U00, "S1"));
   await flush();
-  expect(screen.getByTestId("lesson-complete-screen-reward-coins")).toHaveTextContent("+ 10");
+  expect(screen.getByTestId("lesson-complete-screen-reward-coins")).toHaveTextContent("+ 5");
   exitResult();
   await flush();
 
-  expect(screen.getByTestId("top-bar-coins")).toHaveTextContent("10");
+  expect(screen.getByTestId("top-bar-coins")).toHaveTextContent("5");
   const guestCell = JSON.parse(host.store.get(guestProgressKey) ?? "null") as {
     coinUnits?: unknown;
   } | null;

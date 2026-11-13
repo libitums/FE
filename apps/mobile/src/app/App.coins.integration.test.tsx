@@ -30,7 +30,7 @@ function solveAll(plan: CatalogLessonPlan): void {
 const coinUnitsSaved = (rpcs: Parameters<typeof savedProgress>[0]) =>
   savedProgress(rpcs).at(-1)?.["coinUnits"];
 
-test("IC1. 처음 통과하면 엽전 10 — 결과 화면 카드 · 머리 칩, 저장에 받은 유닛, 지도 칩 10", async () => {
+test("IC1. 처음 통과하면 엽전 5 — 결과 화면 카드 · 머리 칩, 저장에 받은 유닛, 지도 칩 5", async () => {
   const { rpcs } = await boot({ [u01]: ["intro"] });
   expect(screen.getByTestId("top-bar-coins")).toHaveTextContent("0");
 
@@ -39,16 +39,16 @@ test("IC1. 처음 통과하면 엽전 10 — 결과 화면 카드 · 머리 칩,
   await flush();
 
   const card = screen.getByTestId("lesson-complete-screen-reward-coins");
-  expect(card).toHaveTextContent("+ 10 REWARD");
+  expect(card).toHaveTextContent("+ 5 REWARD");
   expect(screen.getByTestId("lesson-complete-screen-coins-chip")).toHaveAttribute(
     "accessibility-label",
-    "10 coins",
+    "5 coins",
   );
   expect(coinUnitsSaved(rpcs)).toEqual({ [u01]: ["S1"] });
 
   exitResult();
   await flush();
-  expect(screen.getByTestId("top-bar-coins")).toHaveTextContent("10");
+  expect(screen.getByTestId("top-bar-coins")).toHaveTextContent("5");
 });
 
 test("IC2. 이미 끝낸 레슨을 다시 통과하면 엽전이 없다 — 카드 없음, 칩 그대로, 저장에 받은 유닛 없음", async () => {

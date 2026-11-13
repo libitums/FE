@@ -144,7 +144,7 @@ export const messengerChatExtraJa: MessengerChatExtraCopy = {
     fromEpisodes: "クリアしたエピソードから",
     launchBonus: "リリースボーナス",
     balance: "残高",
-    perLesson: "レッスンを初めてクリアするたびに10増えます。",
+    perLesson: "レッスンを初めてクリアするたびに5増えます。",
     gotIt: "わかりました",
     chatTitle: "出会った友だちとメッセージ",
     chatBody:
@@ -153,7 +153,7 @@ export const messengerChatExtraJa: MessengerChatExtraCopy = {
     now: "今すぐ",
     episode: (order) => `Ep ${order}`,
     metCount: (met, total) => `${total}人中${met}人と出会いました`,
-    prices: "メッセージ10 · ボイス40 · 写真60",
+    prices: "メッセージ3 · ボイス15 · 写真35",
     later: "あとで",
     start: "チャットを始める",
   },

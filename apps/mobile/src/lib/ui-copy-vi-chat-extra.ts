@@ -144,7 +144,7 @@ export const messengerChatExtraVi: MessengerChatExtraCopy = {
     fromEpisodes: "Từ các tập bạn đã hoàn thành",
     launchBonus: "Thưởng ra mắt",
     balance: "Số dư của bạn",
-    perLesson: "Mỗi bài học bạn hoàn thành lần đầu được thêm 10.",
+    perLesson: "Mỗi bài học bạn hoàn thành lần đầu được thêm 5.",
     gotIt: "Đã hiểu",
     chatTitle: "Nhắn tin với những người bạn đã gặp",
     chatBody:
@@ -153,7 +153,7 @@ export const messengerChatExtraVi: MessengerChatExtraCopy = {
     now: "Ngay",
     episode: (order) => `Tập ${order}`,
     metCount: (met, total) => `Đã gặp ${met}/${total} người bạn`,
-    prices: "Tin nhắn 10 · thoại 40 · ảnh 60",
+    prices: "Tin nhắn 3 · thoại 15 · ảnh 35",
     later: "Để sau",
     start: "Bắt đầu trò chuyện",
   },

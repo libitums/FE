@@ -1,6 +1,6 @@
 // 엽전 가격표 · 낼 수 있나 판정입니다(messenger-chat-1-5 spec §4.2).
 
-export const CHAT_COIN_PRICES = { message: 10, voice: 40, photo: 60 } as const;
+export const CHAT_COIN_PRICES = { message: 3, voice: 15, photo: 35 } as const;
 export type CoinSpendReason = keyof typeof CHAT_COIN_PRICES;
 export type CoinPlan =
   | { readonly kind: "pay"; readonly price: number }
