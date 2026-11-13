@@ -18,12 +18,13 @@ alter table companion.settings
   add column photo_cost integer not null default 35 check (photo_cost >= 0),
   add column voice_cost integer not null default 15 check (voice_cost >= 0),
   add column photo_redraw_cost integer not null default 25 check (photo_redraw_cost >= 0),
-  -- 스냅샷 하루 상한(UTC 날짜, 다시 그리기 포함, pending · complete를 센다).
-  add column snapshot_daily_limit integer not null default 20 check (snapshot_daily_limit >= 0),
+  -- 스냅샷 하루 상한(UTC 날짜, 다시 그리기 포함, pending · complete를 센다). null = 상한 없음(기본 — 엽전이 곧 한도다,
+  -- 사용자 2026-11-14). 오류 폭주 · 남용 때 운영자가 숫자를 넣는 비상 스위치다.
+  add column snapshot_daily_limit integer check (snapshot_daily_limit is null or snapshot_daily_limit >= 0),
   -- 이미지 엔진(OpenAI 이미지 편집 모델 이름) · 품질 · 비율. auto면 프롬프트 노드가 3:2 · 1:1 중 고른다.
   add column snapshot_engine text not null default 'gpt-image-2.5-flare' check (snapshot_engine ~ '^[A-Za-z0-9][A-Za-z0-9._:-]{0,59}$'),
   add column snapshot_quality text not null default 'medium' check (snapshot_quality in ('low', 'medium', 'high')),
-  add column snapshot_aspect text not null default '3:2' check (snapshot_aspect in ('3:2', '1:1', 'auto')),
+  add column snapshot_aspect text not null default 'auto' check (snapshot_aspect in ('3:2', '1:1', 'auto')),
   add column voice_model text not null default 'eleven_v3' check (voice_model ~ '^[a-z0-9_]{1,40}$'),
   -- pending이 이 분을 넘으면 실패로 닫고 예약을 푼다(Edge Function이 도중에 죽은 경우).
   add column media_pending_minutes integer not null default 10 check (media_pending_minutes between 1 and 120);
@@ -349,7 +350,7 @@ begin
     select count(*) into v_count from companion.media
     where user_id = p_user_id and kind = 'snapshot' and status in ('pending', 'complete')
       and created_at >= ((p_now at time zone 'utc')::date)::timestamp at time zone 'utc';
-    if v_count >= s.snapshot_daily_limit then
+    if s.snapshot_daily_limit is not null and v_count >= s.snapshot_daily_limit then
       return jsonb_build_object('result', 'daily_limit', 'detail', jsonb_build_object('limit', s.snapshot_daily_limit));
     end if;
     -- 기준 이미지: refSlugs 순서대로 `<slug>-ref.png`가 있는 첫 slug, 있으면 `<slug>-expressions.png`도.

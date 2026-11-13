@@ -37,8 +37,8 @@
    - `safety: block`이면 엔진을 부르지 않고 blocked(`prompt_blocked`).
    - 노드 호출이 실패하면 다시 하지 않고 failed(`prompt_failed`).
 3. **이미지 엔진**(1회): OpenAI 이미지 편집(`/v1/images/edits`) + 기준 이미지.
-   - 엔진 · 품질 · 비율은 설정 `snapshot_engine`(기본 `gpt-image-2.5-flare`) · `snapshot_quality`(`medium`) · `snapshot_aspect`(`3:2`).
-   - `snapshot_aspect`가 `auto`면 프롬프트 노드가 3:2 · 1:1 중 고른다.
+   - 엔진 · 품질 · 비율은 설정 `snapshot_engine`(기본 `gpt-image-2.5-flare`) · `snapshot_quality`(`medium`) · `snapshot_aspect`(`auto`).
+   - `snapshot_aspect`가 `auto`(기본, 사용자 2026-11-14)면 프롬프트 노드가 장면에 맞춰 3:2 · 1:1 중 고른다. `3:2` · `1:1`로 고정할 수도 있다.
    - **엔진 오류일 때만 한 번 다시 한다**: 연결 실패 · 시간 초과 · 408 · 409 · 429 · 5xx · 이미지 없음.
    - 안전 거절(`moderation_blocked` 등)은 다시 하지 않고 blocked(`engine_refused`). 다른 4xx는 failed(`engine_failed`).
 4. **검사 노드**(Haiku 비전 1회): 기준 이미지 첫 장 + 결과 → 안전 · 얼굴 일치(1~5) · 깨진 글자 · 학습자 얼굴.
@@ -90,7 +90,7 @@
   - 음성: 같은 메시지는 저장본(무료). 「다시」(`again: true`)는 새로 만들고 15.
   - 만드는 중인 것이 있으면 그것을 돌려준다(두 번 눌러도 하나).
 - **동시 1**: 스냅샷은 유저당 동시에 하나(409 `snapshot_in_progress`). 음성은 같은 메시지에 동시에 하나. 스냅샷과 음성은 서로 막지 않는다.
-- **하루 상한**: 스냅샷 `snapshot_daily_limit`(기본 20, UTC 날짜). 다시 그리기를 포함하고 pending · complete를 센다. 넘으면 429 `daily_limit`. 음성은 상한이 없다.
+- **하루 상한 없음**: 엽전이 곧 한도다(사용자 2026-11-14). `snapshot_daily_limit`는 기본 `null`이고, 오류 폭주 · 남용 때 운영자가 숫자를 넣는 비상 스위치다(UTC 날짜, 다시 그리기 포함, pending · complete를 센다, 넘으면 429 `daily_limit`). 음성도 상한이 없다. 동시에 만드는 스냅샷은 유저당 하나다.
 
 ## 7. 앨범
 
@@ -127,7 +127,6 @@
 
 ## 11. 정하지 않은 것
 
-- 비율 기본값 3:2는 확정이 아니다. `snapshot_aspect = 'auto'`로 바꾸면 프롬프트 노드가 고른다(lab 실험실과 같다).
 - 화면용 WebP 미리보기는 만들지 않는다. lab은 `cwebp`로 만들었지만 Edge 런타임에는 없다. 앱이 원본 PNG를 줄여 보인다.
 - 음성 하루 상한 · 무료 횟수는 없다. 단가(15)가 남용을 막는다고 본다.
 - 하루 상한의 날짜는 UTC다(다른 컴패니언 상한과 같다). 기기 지역 자정이 필요하면 바꾼다.

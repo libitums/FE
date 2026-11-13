@@ -298,7 +298,7 @@ PRD §3.15 · §3.7의 짝. 답변 평가 · 고쳐서 다시 보내기는 FE `f
 | 405 | `method_not_allowed` |
 | 409 | `snapshot_in_progress`(`detail.mediaId`) |
 | 422 | `not_eligible`(통과한 캐릭터 메시지가 아님) · `no_speech` · `too_long`(음성 600자) |
-| 429 | `daily_limit`(`detail.limit`, 스냅샷 하루 상한) |
+| 429 | `daily_limit`(`detail.limit`, 스냅샷 하루 상한 — 기본은 상한 없음, 운영자가 켤 때만) |
 | 500 | `server_misconfigured` · `internal_error` |
 | 503 | `not_configured`(`detail.missing` — 키 이름 배열 · `voice_id` · `refs`) |
 

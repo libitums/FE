@@ -187,8 +187,8 @@ test("SV1. 설정 기본값 · 버킷 · 캐릭터 설정 · 학습자 뒷모습
   ).toEqual({
     photo_cost: "35",
     photo_redraw_cost: "25",
-    snapshot_aspect: "'3:2'::text",
-    snapshot_daily_limit: "20",
+    snapshot_aspect: "'auto'::text",
+    snapshot_daily_limit: null,
     snapshot_engine: "'gpt-image-2.5-flare'::text",
     snapshot_quality: "'medium'::text",
     voice_cost: "15",
@@ -262,7 +262,7 @@ test("SV2. 스냅샷 요청 — pending · 35엽전 예약(체험 안 씀) · �
     refs: ["deoksu-ref.png", "deoksu-expressions.png"],
     engine: "gpt-image-2.5-flare",
     quality: "medium",
-    aspect: "3:2",
+    aspect: "auto",
   });
   // 앞줄은 숨긴 것을 빼고 오래된 것부터.
   expect((begun.job!.context as { role: string }[]).map((line) => line.role)).toEqual(["user"]);
