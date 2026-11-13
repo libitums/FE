@@ -498,6 +498,8 @@ test("SM11: statusBarSurfaceRegistry matches the contract (six routes, eight CSS
     "screens/journey-map/journey-stat-modal.css",
     // 메신저 채팅방 겹침(ADR-0113) — 밝은 아이콘 표지가 아니다.
     "screens/messenger-chat/chat-overlays.css",
+    // 메신저 첫 입장 목록 안내(ADR-0139) — 기본 스크림, 표지 없음.
+    "screens/messenger-chat/messenger-guide.css",
     // 메신저 새 친구 시트(ADR-0117) — 기본 스크림, 표지 없음.
     "screens/messenger-chat/new-friend.css",
     "screens/tickets/tickets.css",

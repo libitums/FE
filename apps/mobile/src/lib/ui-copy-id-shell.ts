@@ -50,6 +50,7 @@ export const shellId: ShellCopy = {
     messenger: "Obrolan",
     settings: "Pengaturan",
   },
+  tabNew: { badge: "BARU", spoken: "baru" },
   notifications: "Notifikasi",
   errorBoundary: { title: "Terjadi kesalahan", retry: "Coba lagi" },
 };

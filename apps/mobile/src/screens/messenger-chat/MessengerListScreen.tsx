@@ -9,6 +9,8 @@ import { ChatListEmpty } from "./ChatListEmpty";
 import { ChatListNotice } from "./ChatListNotice";
 import { ChatListRow } from "./ChatListRow";
 import { CoinShopLayer } from "./CoinShopLayer";
+import { MessengerListGuide } from "./MessengerGuide";
+import { deviceGuideStore, GUIDE_ROOM_ID } from "./messenger-guide";
 import { orderChatRooms } from "./chat-list";
 import { messengerListTestIds as ids } from "./messenger-chat.contract";
 import type { MessengerListScreenProps } from "./messenger-chat.contract";
@@ -31,12 +33,21 @@ export function MessengerListScreen({
   onNoticeShown,
   access,
   onSignIn,
+  guideStore = deviceGuideStore,
 }: MessengerListScreenProps): ReactNode {
   const copy = useUiCopy().messengerChat.list;
   const { rooms } = useChatSnapshot(source);
   // 잔액 = 앱의 보유 엽전 − 이번 실행에서 쓴 양. 방에서 엽전을 쓰고 돌아오면 칩이 따라갑니다.
   const coinBalance = useCoinBalance(wallet);
   const [coinShopOpen, setCoinShopOpen] = useState(false);
+  // 첫 입장 안내(덕수쌤 줄만 떠 있는 오버레이) — 덕수쌤 방이 있는 메신저(서버 모드)에서 한 번.
+  const [guideUnseen, setGuideUnseen] = useState(() => guideStore.unseen("list"));
+  const guideRoom = rooms.find((r) => r.roomId === GUIDE_ROOM_ID && r.access.kind === "open");
+  const guideShown = access === "open" && guideUnseen && guideRoom !== undefined;
+  const endGuide = () => {
+    guideStore.markSeen("list");
+    setGuideUnseen(false);
+  };
 
   // 겹침 열림은 바뀔 때만 바깥에 알립니다. 열린 채 화면이 내려가면 닫힘을 한 번 더 알립니다
   // (전역 머리가 가려진 채 남지 않게 — `useScreenLayer`와 같은 목적이지만, 마운트 때의 첫 false는 보내지 않습니다).
@@ -52,6 +63,11 @@ export function MessengerListScreen({
     },
     [],
   );
+  useEffect(() => {
+    if (!guideShown) return undefined;
+    onLayerChangeRef.current(true);
+    return () => onLayerChangeRef.current(false);
+  }, [guideShown]);
 
   function openCoinShop() {
     "background only";
@@ -72,7 +88,10 @@ export function MessengerListScreen({
   return (
     <view className="messenger-list-screen" data-testid={ids.screen}>
       {/* 겹침이 떠 있는 동안 뒤 화면을 낭독에서 숨깁니다(ADR-0016 D9). */}
-      <view className="messenger-list-content" accessibility-elements-hidden={coinShopOpen}>
+      <view
+        className="messenger-list-content"
+        accessibility-elements-hidden={coinShopOpen || guideShown}
+      >
         <view className="messenger-list-header" data-testid={ids.header}>
           <text
             className="messenger-list-title"
@@ -123,6 +142,17 @@ export function MessengerListScreen({
       </view>
       <ChatListNotice notice={notice} onNoticeShown={onNoticeShown} />
       {coinShopOpen ? <CoinShopLayer coinBalance={coinBalance} onClose={closeCoinShop} /> : null}
+      {guideShown && guideRoom !== undefined ? (
+        <MessengerListGuide
+          room={guideRoom}
+          now={now}
+          onOpen={() => {
+            endGuide();
+            onOpenRoom(GUIDE_ROOM_ID);
+          }}
+          onSkip={endGuide}
+        />
+      ) : null}
     </view>
   );
 }

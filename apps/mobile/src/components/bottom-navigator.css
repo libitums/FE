@@ -9,3 +9,10 @@
 .app-navigator .ui-lynx-bottom-navigator-items {
   gap: var(--libitum-spacing-24);
 }
+
+/* 탭 NEW 배지(2026-11-13) — 목록의 NEW 알약과 같은 brand-primary(ADR-0113 D8 앱 전체 예외, 흰 글 3.02). ui-lynx 글자 배지의
+   빨강(알림 수)은 이 앱에서 쓰지 않습니다. 「NEW」가 들어가게 오른쪽으로 조금 더 내밉니다. */
+.app-navigator .ui-lynx-bottom-navigator-badge-count {
+  background-color: var(--libitum-color-brand-primary);
+  right: -18px;
+}

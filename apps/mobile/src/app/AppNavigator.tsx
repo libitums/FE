@@ -15,6 +15,8 @@ export type AppNavigatorProps = {
   readonly obscured: boolean;
   /** 탭 바 밑에 덧대는 바닥 면의 높이입니다. 0이면 덧대지 않습니다. */
   readonly floorHeight: number;
+  /** 탭 NEW 배지(메신저 첫 입장 · 새 친구). 없으면 배지 없음. */
+  readonly badges?: Partial<Record<Tab, "new">>;
 };
 
 export function AppNavigator({
@@ -22,6 +24,7 @@ export function AppNavigator({
   onSelectTab,
   obscured,
   floorHeight,
+  badges,
 }: AppNavigatorProps): ReactNode {
   return (
     <view
@@ -29,7 +32,7 @@ export function AppNavigator({
       data-testid="app-navigator"
       accessibility-elements-hidden={obscured}
     >
-      <BottomNavigator tab={tab} onSelectTab={onSelectTab} />
+      <BottomNavigator tab={tab} onSelectTab={onSelectTab} badges={badges} />
       {floorHeight > 0 ? (
         <view
           className="app-navigator-floor"

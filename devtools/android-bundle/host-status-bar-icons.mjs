@@ -93,6 +93,11 @@ export const statusBarSurfaceRegistry = {
       classification: "default-scrim",
       carriers: [],
     },
+    // 메신저 첫 입장 목록 안내(ADR-0139) — ui-lynx 대화상자 기본 스크림이라 표지가 없다.
+    "screens/messenger-chat/messenger-guide.css": {
+      classification: "default-scrim",
+      carriers: [],
+    },
     // 엽전 상점(ADR-0116) — 지표 모달처럼 짙은 바탕(#1E1A1F)을 띠 밑까지 덮어 밝은 아이콘을 단다.
     "screens/coin-shop/coin-shop-screen.css": {
       classification: "light-icons",

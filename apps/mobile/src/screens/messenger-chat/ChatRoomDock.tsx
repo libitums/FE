@@ -33,6 +33,8 @@ export type ChatRoomDockProps = {
   readonly aboveComposer: ReactNode | null;
   /** 막힌 줄에서 연 생년 시트가 지금 값을 골라 둔 채 열리게 합니다. */
   readonly birthYear: ChatBirthYear;
+  /** 첫 입장 코치마크가 가리키는 부품(2026-11-13) — 바깥 상자 클래스로 고리를 겁니다. */
+  readonly guideClass?: string;
 };
 
 /** 상대의 마지막 텍스트 글(한국어)입니다. 없으면 null — 보기 판의 인용이 됩니다. */
@@ -56,6 +58,7 @@ export function ChatRoomDock({
   sendCost,
   aboveComposer,
   birthYear,
+  guideClass = "",
 }: ChatRoomDockProps): ReactNode {
   const slotHeight = chatKeyboardSlotHeight({
     keyboard: state.keyboard,
@@ -99,7 +102,7 @@ export function ChatRoomDock({
   };
 
   return (
-    <view className="messenger-chat-dock">
+    <view className={`messenger-chat-dock${guideClass}`}>
       <view className="messenger-chat-dock-body" style={keyboardDockBodyStyle(edges, "keyboard")}>
         <view className="messenger-chat-features-wrap">
           <FeatureRow

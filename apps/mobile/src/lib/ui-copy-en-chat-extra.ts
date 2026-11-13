@@ -123,6 +123,21 @@ export const messengerChatExtraEn: MessengerChatExtraCopy = {
       close: "Close",
     },
   },
+  guide: {
+    cardTitle: (name) => `Hi! I'm ${name}.`,
+    cardBody: "Here you text with Korean friends. Start with me — I'll help you along.",
+    cardButton: (name) => `Chat with ${name}`,
+    steps: {
+      chat: "Write in Korean and send it. I'll reply, and the pencil under your message shows a better way to say it.",
+      ideas: "Not sure what to say? Tap the bulb next to the message box for reply ideas.",
+      media:
+        "You can also ask me for a photo or a voice message with the buttons above the keyboard.",
+    },
+    next: "Next",
+    done: "Got it",
+    skip: "Skip",
+    stepOf: (step, total) => `${step} of ${total}`,
+  },
   remote: {
     noCredits: (name) => `You're out of credits to chat with ${name}.`,
     notAvailable: (name) => `You can't chat with ${name} yet.`,
