@@ -60,6 +60,10 @@
     },
     "replySuggestions": {
       "type": "boolean"
+    },
+    "snapshotSelf": {
+      "type": "string",
+      "enum": ["female", "male", "hidden"]
     }
   },
   "required": [
@@ -70,7 +74,8 @@
     "proactivePref",
     "proactiveHour",
     "timezone",
-    "replySuggestions"
+    "replySuggestions",
+    "snapshotSelf"
   ],
   "additionalProperties": false
 }

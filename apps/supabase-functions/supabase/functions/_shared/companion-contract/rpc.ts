@@ -11,6 +11,7 @@ import {
   segmentKindSchema,
   speechLevelSchema,
 } from "./sse-events.ts";
+import { snapshotSelfSchema } from "./media.ts";
 import { replySuggestionSchema } from "./suggest.ts";
 
 export const feedbackModeSchema = z.enum(["separate", "natural", "prefix"]);
@@ -35,6 +36,8 @@ export const companionProfileSchema = z.object({
    * 꺼져 있으면 칩이 없다(`companion-suggest`도 `suggestions_off`). 저장은 `companion_save_profile`의 `p_reply_suggestions`.
    */
   replySuggestions: z.boolean(),
+  /** 스냅샷에 그릴 학습자 뒷모습(20261128) — 기본 `female`, `hidden`이면 손 · 어깨만. 저장은 `companion_save_profile`의 `p_snapshot_self`. */
+  snapshotSelf: snapshotSelfSchema,
 });
 
 export const characterAvailabilitySchema = z.enum([

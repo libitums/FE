@@ -18,6 +18,12 @@ export function base64UrlFromBytes(bytes: Uint8Array): string {
   return out;
 }
 
+/** 패딩 있는 표준 base64입니다(Anthropic 이미지 블록). */
+export function base64FromBytes(bytes: Uint8Array): string {
+  const url = base64UrlFromBytes(bytes).replace(/-/g, "+").replace(/_/g, "/");
+  return url + "=".repeat((4 - (url.length % 4)) % 4);
+}
+
 function decode(text: string, alphabet: string): Uint8Array | null {
   const values: number[] = [];
   for (const char of text) {

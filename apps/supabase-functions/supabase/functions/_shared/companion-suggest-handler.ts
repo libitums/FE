@@ -23,7 +23,7 @@ import type { CompanionSuggestDeps, SuggestContext } from "./companion-suggest.c
 import { generateSuggestions, saveSuggestions } from "./companion-suggest-generate.ts";
 import { recentSuggestionHistory, suggestionHistoryLimit } from "./companion-suggest-prompts.ts";
 import { defaultSuggestionDisplayMax } from "./companion-suggest-select.ts";
-import { authUserIdRequest, callRpc, isServiceKey } from "./companion-rpc.ts";
+import { authUserIdRequest, callRpc, isServiceKey, type RpcEnv } from "./companion-rpc.ts";
 import { bearerTokenFrom } from "./supabase-auth.ts";
 
 export const defaultSuggestTimeoutMs = 8_000;
@@ -64,7 +64,7 @@ export type Caller = { userId: string; playground: boolean };
 /** 서버 키 + 본문 `user_id`면 플레이그라운드, 아니면 앱 JWT. 앱 토큰으로 `user_id`를 보내면 거절합니다. `companion-greet`도 씁니다. */
 export async function callerFor(
   deps: Pick<CompanionSuggestDeps, "outbound">,
-  env: ChatSendEnv,
+  env: RpcEnv,
   token: string,
   bodyUserId: string | undefined,
 ): Promise<Caller | null> {

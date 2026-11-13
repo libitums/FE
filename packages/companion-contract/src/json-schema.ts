@@ -13,6 +13,12 @@ import {
   learningScopeSchema,
 } from "./rpc";
 import { companionGreetRequestSchema, companionGreetResponseSchema } from "./greet";
+import {
+  companionMediaErrorSchema,
+  companionMediaPageSchema,
+  companionMediaRequestSchema,
+  companionMediaResponseSchema,
+} from "./media";
 import { turnEventSchema } from "./sse-events";
 import { companionSuggestRequestSchema, companionSuggestResponseSchema } from "./suggest";
 
@@ -31,6 +37,10 @@ const schemas = {
   "companion-suggest-response": companionSuggestResponseSchema,
   "companion-greet-request": companionGreetRequestSchema,
   "companion-greet-response": companionGreetResponseSchema,
+  "companion-media-request": companionMediaRequestSchema,
+  "companion-media-response": companionMediaResponseSchema,
+  "companion-media-error": companionMediaErrorSchema,
+  "companion-media-page": companionMediaPageSchema,
 } as const;
 
 /** 산출 파일 이름(확장자 없음) → JSON Schema(draft 2020-12)입니다. 이름 순으로 돌려줍니다. */
