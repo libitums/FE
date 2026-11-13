@@ -23,12 +23,15 @@ export type ChatTime =
 const MINUTE_MS = 60_000;
 const DAY_MS = 86_400_000;
 
-/** 열린 방은 최근 갱신 순, 잠긴 방은 그 뒤(입력 순서). 같은 값은 입력 순서(안정)입니다. */
+/**
+ * 목록에 서는 방 — 열린 방만, 최근 갱신 순. 잠긴 방은 미리 보이지 않고 해금되면 생깁니다(사용자 결정 2026-11-13). 같은 값은
+ * 입력 순서(안정)입니다.
+ */
 export function orderChatRooms(rooms: readonly ChatRoomSummary[]): readonly ChatRoomSummary[] {
-  const open = rooms.filter((room) => room.access.kind === "open");
-  const lockedRooms = rooms.filter((room) => room.access.kind !== "open");
   // Array.prototype.sort는 안정 정렬입니다.
-  return [...open.sort((a, b) => b.updatedAt - a.updatedAt), ...lockedRooms];
+  return rooms
+    .filter((room) => room.access.kind === "open")
+    .sort((a, b) => b.updatedAt - a.updatedAt);
 }
 
 /** NEW 줄: isNew이고 열린 방일 때만. */

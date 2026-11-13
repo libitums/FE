@@ -20,8 +20,8 @@ vi.mock("./ChatListRow", async (importOriginal) => {
   };
 });
 
-// `ui` 계층(MC-UI8): 채팅 목록 — 줄 순서(최근 먼저 · 잠김 끝) · 안 읽은 알약 · 미리보기 tone ·
-// 잠김 줄 data-locked · 탭 무동작 · 열린 줄 탭 → onOpenRoom(id) · 줄 낭독. 계산은 unit(chat-list)이 진다.
+// `ui` 계층(MC-UI8): 채팅 목록 — 줄 순서(최근 먼저) · 잠긴 방은 줄이 없음(HL, 2026-11-13) · 안 읽은 알약 · 미리보기 tone ·
+// 열린 줄 탭 → onOpenRoom(id) · 줄 낭독. 계산은 unit(chat-list)이 진다.
 
 beforeEach(() => {
   vi.useFakeTimers();
@@ -86,14 +86,11 @@ const rowOrder = (): string[] =>
     .map((el) => el.getAttribute("data-testid") ?? "")
     .filter((id) => /^messenger-list-row-[^-]+$/.test(id));
 
-test("MC-UI8. 줄 순서는 최근 대화 먼저, 잠긴 방은 맨 끝이다", () => {
+test("MC-UI8. 줄 순서는 최근 대화 먼저이고, 잠긴 방은 줄이 없다(HL-UI1)", () => {
   mount();
 
-  expect(rowOrder()).toEqual([
-    "messenger-list-row-mina",
-    "messenger-list-row-boss",
-    "messenger-list-row-clerk",
-  ]);
+  expect(rowOrder()).toEqual(["messenger-list-row-mina", "messenger-list-row-boss"]);
+  expect(screen.queryByTestId(ids.row("clerk"))).toBeNull();
 });
 
 test("MC-UI8. 목록 머리 제목은 Chats이고 화면 test-id가 선다", () => {
@@ -146,17 +143,6 @@ test("MC-UI8. 사진을 보내는 중이면 미리보기가 그 문구이고 act
   expect(preview.textContent).toBe("사장님 is sending a picture…");
 });
 
-test("MC-UI8. 잠긴 줄은 data-locked이고 조건을 보이며 시간 · 안 읽은 알약이 없다", () => {
-  mount();
-
-  expect(screen.getByTestId(ids.row("clerk")).getAttribute("data-locked")).toBe("true");
-  expect(screen.getByTestId(ids.row("mina")).getAttribute("data-locked")).not.toBe("true");
-  expect(screen.getByTestId(ids.rowPreview("clerk")).textContent).toBe(
-    "Play Episode 4 to start chatting",
-  );
-  expect(screen.queryByTestId(ids.rowTime("clerk"))).toBeNull();
-});
-
 test("MC-UI8. 열린 줄의 시간은 지역 시각 h:mm이다", () => {
   mount();
 
@@ -172,18 +158,15 @@ test("MC-UI8. 열린 줄을 탭하면 그 roomId로 onOpenRoom이 한 번 불린
   expect(onOpenRoom).toHaveBeenCalledWith("boss");
 });
 
-test("MC-UI8. 잠긴 줄 탭은 무동작이고 버튼 trait도 없다", () => {
-  const { onOpenRoom } = mount();
+test("MC-UI8. 열린 줄은 버튼 trait이고 잠긴 줄은 아예 없다", () => {
+  mount();
 
-  const locked = screen.getByTestId(ids.row("clerk"));
-  fireEvent.tap(locked, {});
-
-  expect(onOpenRoom).not.toHaveBeenCalled();
-  expect(locked.getAttribute("accessibility-traits") ?? "").not.toContain("button");
   expect(screen.getByTestId(ids.row("mina")).getAttribute("accessibility-traits")).toBe("button");
+  expect(screen.getByTestId(ids.row("mina")).getAttribute("data-locked")).not.toBe("true");
+  expect(screen.queryByTestId(ids.rowPreview("clerk"))).toBeNull();
 });
 
-test("MC-UI8. 줄은 한 요소로 읽힌다 — 이름, 미리보기, 시간, 안 읽은 수 / 잠김은 조건", () => {
+test("MC-UI8. 줄은 한 요소로 읽힌다 — 이름, 미리보기, 시간, 안 읽은 수", () => {
   mount();
 
   const label = screen.getByTestId(ids.row("mina")).getAttribute("accessibility-label") ?? "";
@@ -192,9 +175,6 @@ test("MC-UI8. 줄은 한 요소로 읽힌다 — 이름, 미리보기, 시간, �
   expect(label).toContain("11:58");
   expect(label).toContain("2 unread");
   expect(screen.getByTestId(ids.row("mina")).getAttribute("accessibility-element")).toBe("true");
-  expect(screen.getByTestId(ids.row("clerk")).getAttribute("accessibility-label")).toBe(
-    "점원, locked, Play Episode 4 to start chatting",
-  );
 });
 
 test("MC-UI8. 출처가 바뀌면 목록이 따라간다 — 방을 열면 안 읽은 알약이 사라진다", () => {
