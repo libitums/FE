@@ -9,6 +9,8 @@ export type Option = {
   en?: string;
   correct: boolean;
   whyWrong?: string;
+  /** 와이어 `why_wrong`이 `{ko, en}` 객체로 올 때의 영어 설명(콘텐츠 수준 5 · ADR-0137). 화면에는 아직 쓰지 않습니다. */
+  whyWrongEn?: string;
 };
 export type Stimulus = {
   audio?: Text;
