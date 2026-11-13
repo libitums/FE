@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 
 import {
+  actionSpoken,
   correctionOf,
   greetingFrom,
   historyFrom,
@@ -106,6 +107,17 @@ describe("말풍선 · 고지 · 교정 · 칩", () => {
       ko: "*비가 온다*",
       en: "",
     });
+  });
+
+  test("SS-U12 지문 낭독은 앞뒤 별표만 뗀다 — 여러 줄 · 별표 하나 · 가운데 별표(정규식 없이, 기기 엔진)", () => {
+    expect(actionSpoken({ ko: "*웃는다*", en: "*smiles*" }, "덕수쌤")).toBe(
+      "덕수쌤: 웃는다, smiles",
+    );
+    expect(actionSpoken({ ko: "*고개를\n끄덕인다*", en: "" }, "덕수쌤")).toBe(
+      "덕수쌤: 고개를\n끄덕인다",
+    );
+    expect(actionSpoken({ ko: "*", en: "" }, "덕수쌤")).toBe("덕수쌤: *");
+    expect(actionSpoken({ ko: "a*b", en: "" }, "덕수쌤")).toBe("덕수쌤: a*b");
   });
 
   test("SS-U2 고지 kind 대응, 모르면 null", () => {

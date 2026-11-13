@@ -47,7 +47,9 @@ export function actionSpoken(
   text: { readonly ko: string; readonly en: string },
   name: string,
 ): string {
-  const plain = (value: string) => value.replace(/^\*(.*)\*$/su, "$1");
+  // 정규식 플래그(s · u)는 빌드가 변환하지 않아 기기 엔진(Android PrimJS)이 그대로 받습니다 — 문자열 함수로 뗍니다.
+  const plain = (value: string) =>
+    value.length >= 2 && value.startsWith("*") && value.endsWith("*") ? value.slice(1, -1) : value;
   return text.en === ""
     ? `${name}: ${plain(text.ko)}`
     : `${name}: ${plain(text.ko)}, ${plain(text.en)}`;
