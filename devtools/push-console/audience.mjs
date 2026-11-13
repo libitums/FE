@@ -13,6 +13,7 @@ import {
   timeZoneFor,
   variantIndexOf,
 } from "./segments.mjs";
+import { storyLanguageFor, storyMessage, storyOptions, storyStepOf } from "./story.mjs";
 
 const HOUR_MS = 60 * 60 * 1000;
 
@@ -26,9 +27,19 @@ const HOUR_MS = 60 * 60 * 1000;
  *   testers: ReadonlySet<string>,
  *   catalog: ReturnType<typeof import("./segments.mjs").episodeCatalog>,
  *   nowMs: number,
+ *   story?: ReturnType<typeof import("./story.mjs").storyPack> | null,
  * }} input
  */
-export function buildLearners({ devices, profiles, progress, days, testers, catalog, nowMs }) {
+export function buildLearners({
+  devices,
+  profiles,
+  progress,
+  days,
+  testers,
+  catalog,
+  nowMs,
+  story = null,
+}) {
   const lastActive = new Map();
   for (const device of devices) {
     const at = Date.parse(device.last_active_at);
@@ -53,6 +64,7 @@ export function buildLearners({ devices, profiles, progress, days, testers, cata
     const clock = localClock(nowMs, timeZone ?? "UTC");
     const streak = streakFrom(daysOf.get(userId) ?? [], clock.date);
     const place = classifyLearner(progressOf.get(userId), catalog);
+    const storyPlace = story ? storyStepOf(progressOf.get(userId), story.catalog) : null;
     learners.push({
       userId,
       name: profile.name ?? "",
@@ -67,6 +79,9 @@ export function buildLearners({ devices, profiles, progress, days, testers, cata
       streak: streak.current,
       studiedToday: streak.studiedToday,
       atRisk: isStreakAtRisk(streak),
+      // 단계별 예고 — 예고 파일에 그 자리 문구가 있을 때만입니다.
+      story: storyOptions(story?.units, storyPlace).length > 0 ? storyPlace : null,
+      storyLang: storyLanguageFor(country),
     });
   }
   return learners;
@@ -74,7 +89,11 @@ export function buildLearners({ devices, profiles, progress, days, testers, cata
 
 /** 세그먼트에 드는지만 봅니다(필터 전). */
 export const inSegment = (learner, segment) =>
-  segment === "streak-at-risk" ? learner.atRisk : learner.segment === segment;
+  segment === "streak-at-risk"
+    ? learner.atRisk
+    : segment === "story-next"
+      ? learner.story !== null && learner.story !== undefined
+      : learner.segment === segment;
 
 /**
  * 캠페인 조건으로 대상을 고릅니다. 빠진 이유를 셉니다.
@@ -222,32 +241,69 @@ export function variantsProblems(variants) {
 /**
  * 대상 → 발송 · 대조군 나누기 + 문구 변형 나누기 + 사람마다 문구입니다.
  * 대조군은 받지 않으니 변형이 없고(`variant: null`), 받았을 문구는 변형 A로 기록합니다.
+ * `story`(예고 파일 · 에피소드 이름)가 있으면 문구 대신 사람마다 예고를 고르고, 변형은 훅 이름입니다(D11).
  * @returns {{ userId: string, group: "sent" | "control", variant: string | null, segment: string, lang: string,
  *   timeZone: string | null, localDate: string, lastActiveMs: number, title: string, body: string }[]}
  */
-export function planRecipients({ campaignId, eligible, holdoutPercent, copy, variants }) {
+export function planRecipients({ campaignId, eligible, holdoutPercent, copy, variants, story }) {
   const list = normalizeVariants({ copy, variants });
-  return eligible.map((learner) => {
+  return eligible.flatMap((learner) => {
     const group = inHoldout(campaignId, learner.userId, holdoutPercent) ? "control" : "sent";
+    if (story) {
+      const message = storyMessage({
+        content: story.units,
+        titles: story.titles,
+        place: learner.story,
+        lang: learner.storyLang,
+        seed: campaignId,
+        userId: learner.userId,
+      });
+      if (message === null) return [];
+      return [
+        {
+          userId: learner.userId,
+          group,
+          variant: group === "sent" ? message.hook : null,
+          segment: learner.segment,
+          episodeId: learner.episodeId,
+          storyStep: `${learner.story.unitId}:${learner.story.stepId}`,
+          streak: learner.streak,
+          lang: message.lang,
+          timeZone: learner.timeZone,
+          localDate: learner.localDate,
+          lastActiveMs: learner.lastActiveMs,
+          title: message.title,
+          body: message.body,
+        },
+      ];
+    }
     const variant =
       group === "sent" ? list[variantIndexOf(campaignId, learner.userId, list.length)] : null;
     const message = messageFor(learner, (variant ?? list[0]).copy);
-    return {
-      userId: learner.userId,
-      group,
-      variant: variant?.id ?? null,
-      segment: learner.segment,
-      episodeId: learner.episodeId,
-      streak: learner.streak,
-      lang: message.lang,
-      timeZone: learner.timeZone,
-      localDate: learner.localDate,
-      lastActiveMs: learner.lastActiveMs,
-      title: message.title,
-      body: message.body,
-    };
+    return [
+      {
+        userId: learner.userId,
+        group,
+        variant: variant?.id ?? null,
+        segment: learner.segment,
+        episodeId: learner.episodeId,
+        streak: learner.streak,
+        lang: message.lang,
+        timeZone: learner.timeZone,
+        localDate: learner.localDate,
+        lastActiveMs: learner.lastActiveMs,
+        title: message.title,
+        body: message.body,
+      },
+    ];
   });
 }
+
+/** 예고 캠페인의 변형 목록 — 받은 사람에게 실제로 간 훅 이름들입니다(결과 탭 이름표). */
+export const storyVariants = (recipients) =>
+  [...new Set(recipients.filter((row) => row.variant).map((row) => row.variant))]
+    .sort()
+    .map((hook) => ({ id: hook, label: hook }));
 
 /** 세그먼트 × 언어 · 쉰 시간 구간 요약입니다(첫 화면 표). */
 export function summarize(learners, segments) {

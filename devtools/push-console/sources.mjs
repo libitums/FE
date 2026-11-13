@@ -139,6 +139,28 @@ export function supabaseClient({ projectRef, key, fetchImpl = fetch }) {
   };
 }
 
+/**
+ * 단계별 예고 파일(공개 버킷 `content/push/level-5/`) — `index.json`과 단위 파일들입니다(ADR-0130 D11).
+ * 읽지 못하면 던집니다(서버가 잡아 예고 세그먼트만 비웁니다).
+ */
+export async function loadStoryFiles(projectRef, { fetchImpl = fetch } = {}) {
+  const base = `https://${projectRef}.supabase.co/storage/v1/object/public/content/push/level-5/`;
+  const read = async (file) => {
+    const response = await fetchImpl(`${base}${file}`);
+    if (!response.ok) throw new Error(`예고 파일 ${file} 읽기 실패 ${response.status}`);
+    return response.json();
+  };
+  const index = await read("index.json");
+  const units = {};
+  for (const entry of index?.units ?? []) {
+    // index의 url은 `push/<파일>` — 파일은 level-5 폴더에 있습니다.
+    const file = path.posix.basename(String(entry.url ?? `${entry.unit}.json`));
+    if (!/^[\w.-]+\.json$/.test(file)) continue;
+    units[entry.unit] = await read(file);
+  }
+  return { index, units };
+}
+
 /** HogQL 시각 문자열 → ms. 시간대 표시가 없으면 UTC로 읽습니다. */
 export function hogqlTimeMs(value) {
   if (value === null || value === undefined || value === "") return null;

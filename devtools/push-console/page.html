@@ -884,7 +884,13 @@
               </div>
               <button class="btn s outline" id="copy-reset">기본 문구로 되돌리기</button>
             </div>
-            <div class="toggle-row">
+            <p class="t-body-m" style="margin: 0" id="story-note" hidden>
+              이 세그먼트는 문구를 직접 쓰지 않아요. 사람마다 마지막으로 끝낸 단계의
+              <b>단계별 예고 파일</b>(버킷 push/level-5) 문구를 보내요. 제목은 에피소드 이름이에요.
+              단계마다 훅 3개 중 하나를 무작위로 골라, 결과 탭에서 훅끼리 비교해요.
+              <span class="muted" id="story-status"></span>
+            </p>
+            <div class="toggle-row" data-copy-only>
               <label class="t-label-l" for="f-ab">문구 A/B로 나눠 보내기</label>
               <input class="toggle" type="checkbox" role="switch" id="f-ab" checked />
             </div>
@@ -893,11 +899,11 @@
               톤이 더 돌아오게 했는지 비교해요.
             </p>
             <nav class="toolbar" role="tablist" aria-label="문구 변형" id="variant-tabs"></nav>
-            <p class="t-body-s muted" style="margin: 0">
+            <p class="t-body-s muted" style="margin: 0" data-copy-only>
               {name} 이름 · {episode} 에피소드 · {character} 그 에피소드의 인물(한국어) · {streak}
               연속 일수 · {steps} 남은 단계를 넣을 수 있어요. 비워 둔 언어는 영어로 가요.
             </p>
-            <div id="copy-editor" class="stack"></div>
+            <div id="copy-editor" class="stack" data-copy-only></div>
           </div>
         </div>
 
@@ -1146,7 +1152,25 @@
         currentVariant = 0;
         renderVariantTabs();
         renderCopyEditor();
+        syncStoryMode();
         resetPreview();
+      }
+
+      // 단계별 예고(D11) — 문구 편집 대신 예고 파일 안내만 보여 줍니다.
+      const storyMode = () => $("#f-segment").value === "story-next";
+      function syncStoryMode() {
+        const on = storyMode();
+        $("#story-note").hidden = !on;
+        $("#copy-reset").hidden = on;
+        for (const element of document.querySelectorAll("[data-copy-only]")) element.hidden = on;
+        if (on) {
+          $("#variant-tabs").hidden = true;
+          $("#ab-help").hidden = true;
+        } else renderVariantTabs();
+        const status = state.story ?? {};
+        $("#story-status").textContent = status.loaded
+          ? `에피소드 ${status.units}개를 읽었어요${status.problems?.length ? ` · 문제 ${status.problems.length}건` : ""}.`
+          : "예고 파일을 읽지 못했어요 — 서버 로그를 확인해 주세요.";
       }
 
       function counterText(lang, field) {
@@ -1267,7 +1291,7 @@
           const cards = result.samples
             .map(
               (sample) => `<div class="notice">
-                <div class="app t-caption"><b>DURU</b><span class="subtle">${sample.variant ? `${sample.variant.toUpperCase()} · ` : ""}${esc(sample.lang)} · ${esc(sample.country ?? "?")} 현지 ${sample.localHour ?? "?"}시 · ${sample.idleHours}시간 쉼</span></div>
+                <div class="app t-caption"><b>DURU</b><span class="subtle">${sample.variant ? `${esc(sample.variant.toUpperCase())} · ` : ""}${sample.storyStep ? `${esc(sample.storyStep)} 뒤 · ` : ""}${esc(sample.lang)} · ${esc(sample.country ?? "?")} 현지 ${sample.localHour ?? "?"}시 · ${sample.idleHours}시간 쉼</span></div>
                 <div class="t-label-l">${esc(sample.title)}</div><div class="t-body-m muted">${esc(sample.body)}</div>
               </div>`,
             )
@@ -1284,9 +1308,10 @@
             ${
               result.variants.length > 1
                 ? `<div><span class="t-label-m muted">문구 변형</span><div style="margin-top:var(--libitum-spacing-4)">${result.variants
-                    .map(
-                      (variant) =>
-                        `<span class="tag t-label-m">${variant.id.toUpperCase()} ${esc(variant.label)} ${result.byVariant[variant.id] ?? 0}</span>`,
+                    .map((variant) =>
+                      result.story
+                        ? `<span class="tag t-label-m">${esc(variant.label)} ${result.byVariant[variant.id] ?? 0}</span>`
+                        : `<span class="tag t-label-m">${variant.id.toUpperCase()} ${esc(variant.label)} ${result.byVariant[variant.id] ?? 0}</span>`,
                     )
                     .join("")}</div></div>`
                 : ""
@@ -1610,6 +1635,10 @@
       // 문구 변형 — 변형마다 대조군과(핵심 지표만), 그리고 B를 A와 바로 비교합니다.
       function variantSection(result) {
         if (!result.variants?.length) return "";
+        // 예고 캠페인(D11)은 변형이 훅 이름이라 a/b 머리글자가 없습니다.
+        const hooks = result.variants.some((variant) => variant.id === variant.label);
+        const nameOf = (variant) =>
+          hooks ? variant.label : `${variant.id.toUpperCase()} ${variant.label}`;
         const key = (metric) =>
           (metric.metric === "studied" && metric.hours === 72) ||
           (metric.metric === "opened" && metric.hours === 24);
@@ -1619,9 +1648,7 @@
         });
         const vsControl = result.variants
           .flatMap((variant) =>
-            variant.metrics
-              .filter(key)
-              .map((metric) => label(`${variant.id.toUpperCase()} ${variant.label}`, metric)),
+            variant.metrics.filter(key).map((metric) => label(nameOf(variant), metric)),
           )
           .map(metricRow)
           .join("");
@@ -1630,7 +1657,12 @@
             entry.metrics
               .filter((metric) => metric.metric !== "since")
               .map((metric) =>
-                label(`${entry.id.toUpperCase()} − ${entry.baseline.toUpperCase()}`, metric),
+                label(
+                  hooks
+                    ? `${entry.id} − ${entry.baseline}`
+                    : `${entry.id.toUpperCase()} − ${entry.baseline.toUpperCase()}`,
+                  metric,
+                ),
               ),
           )
           .map(metricRow)
@@ -1640,8 +1672,13 @@
           ${vsControl}
         </div>
         <div>
-          <div class="t-label-l">어느 톤이 더 나은가 — B를 A와 바로 비교</div>
-          <div class="t-body-s muted">막대 위가 B, 아래가 A예요. 대조군 대신 A가 기준이라 사람이 많아 차이를 더 잘 봐요.</div>
+          ${
+            hooks
+              ? `<div class="t-label-l">어느 훅이 더 나은가 — 훅마다 ${esc(result.variants[0].label)}와 바로 비교</div>
+          <div class="t-body-s muted">이름순 첫 훅이 기준이에요. 대조군 대신 그 훅이 기준이라 사람이 많아 차이를 더 잘 봐요.</div>`
+              : `<div class="t-label-l">어느 톤이 더 나은가 — B를 A와 바로 비교</div>
+          <div class="t-body-s muted">막대 위가 B, 아래가 A예요. 대조군 대신 A가 기준이라 사람이 많아 차이를 더 잘 봐요.</div>`
+          }
           ${h2h}
         </div>`;
       }
@@ -1819,6 +1856,7 @@
         if (!$("#tab-results").hidden) renderCampaigns();
       }
 
+      let testHook = 0;
       $("#test-send").onclick = async () => {
         $("#test-send").disabled = true;
         $("#test-result").className = "t-body-s muted";
@@ -1828,6 +1866,9 @@
             userId: $("#t-user").value,
             lang: $("#t-lang").value,
             copy: campaignInput().copy,
+            segment: $("#f-segment").value,
+            // 예고는 누를 때마다 다음 훅을 보냅니다.
+            hookIndex: storyMode() ? testHook++ : undefined,
           });
           if (!result.ok) throw new Error(result.error ?? `응답 ${result.status}`);
           $("#test-result").className = "t-body-s";

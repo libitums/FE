@@ -20,6 +20,7 @@ import {
   messageFor,
   planRecipients,
   selectAudience,
+  storyVariants,
   summarize,
 } from "./audience.mjs";
 import { DEFAULT_COPY, DEFAULT_COPY_B, DEFAULT_FILTERS } from "./copy.mjs";
@@ -31,6 +32,7 @@ import {
   validateRecommendations,
 } from "./recommend.mjs";
 import { campaignResults, poolResults, seriesOf } from "./results.mjs";
+import { storyContentProblems, storyMessage, storyPack } from "./story.mjs";
 import {
   batchesByMessage,
   episodeCatalog,
@@ -43,6 +45,7 @@ import {
   lastConsoleSends,
   loadCampaigns,
   loadConfig,
+  loadStoryFiles,
   posthogReturns,
   saveCampaign,
   serviceRoleKey,
@@ -111,8 +114,36 @@ function loadCatalog() {
 }
 const catalog = loadCatalog();
 
+// 단계별 예고(D11) — 새로 고칠 때마다 버킷에서 다시 읽고, 못 읽으면 예고 세그먼트만 비웁니다.
+let story = null;
+let storyStatus = { loaded: false, units: 0, problems: [] };
+async function loadStory() {
+  try {
+    const { index, units } = await loadStoryFiles(config.supabaseProjectRef);
+    story = storyPack(index, units);
+    storyStatus = {
+      loaded: true,
+      units: story.catalog.length,
+      problems: storyContentProblems(units, catalog),
+    };
+    if (storyStatus.problems.length > 0)
+      console.error(`예고 파일 문제: ${storyStatus.problems.join(" / ")}`);
+  } catch (error) {
+    story = null;
+    storyStatus = { loaded: false, units: 0, problems: [String(error)] };
+    console.error(String(error));
+  }
+}
+const isStory = (input) => input.segment === "story-next";
+function storyOrThrow() {
+  if (story === null)
+    throw new Error("단계별 예고 파일을 읽지 못했어요 — 새로 고침 후 다시 해 주세요.");
+  return story;
+}
+
 let snapshot = null;
 async function refresh() {
+  await loadStory();
   const nowMs = Date.now();
   const sinceDay = shiftDay(new Date(nowMs).toISOString().slice(0, 10), -40);
   const [devices, profiles, progress, days, testers] = await Promise.all([
@@ -130,6 +161,7 @@ async function refresh() {
     testers: new Set(),
     catalog,
     nowMs,
+    story,
   });
   snapshot = {
     loadedAtMs: nowMs,
@@ -184,8 +216,9 @@ const holdoutKeyOf = (input) =>
 
 async function send(input) {
   if (input.confirm !== "SEND") throw new Error("확인 문구가 없습니다.");
+  const storyInput = isStory(input) ? storyOrThrow() : undefined;
   const variants = normalizeVariants(input);
-  const problems = variantsProblems(variants);
+  const problems = storyInput ? [] : variantsProblems(variants);
   if (problems.length > 0) throw new Error(problems.join(" "));
   const { nowMs, filter, holdoutPercent, selection } = audienceFor(input);
   if (selection.eligible.length === 0) throw new Error("보낼 사람이 없습니다.");
@@ -198,6 +231,7 @@ async function send(input) {
     eligible: selection.eligible,
     holdoutPercent,
     variants,
+    story: storyInput,
   });
   const sentCount = recipients.filter((row) => row.group === "sent").length;
   if (input.expectedSent !== undefined && Number(input.expectedSent) !== sentCount) {
@@ -215,8 +249,9 @@ async function send(input) {
     filter,
     holdoutPercent,
     holdoutSeed: seed,
-    copy: variants[0].copy,
-    variants,
+    copy: storyInput ? null : variants[0].copy,
+    variants: storyInput ? storyVariants(recipients) : variants,
+    ...(storyInput ? { story: "push/level-5" } : {}),
     sentAtMs: nowMs,
     status: "sending",
     inSegment: selection.inSegment,
@@ -340,10 +375,24 @@ async function seriesResults(key) {
 async function testSend(input) {
   const tester = snapshot.testerLearners.find((row) => row.userId === input.userId);
   if (!tester) throw new Error("시험 계정에게만 테스트로 보낼 수 있어요.");
-  const problems = copyProblems(input.copy);
-  if (problems.length > 0) throw new Error(problems.join(" "));
-  const lang = LANGUAGES.includes(input.lang) ? input.lang : tester.lang;
-  const message = messageFor({ ...tester, lang }, input.copy);
+  let message;
+  if (isStory(input)) {
+    // 그 시험 계정의 진행 자리 예고 — 훅은 매번 다음 것으로 돌려 셋을 다 볼 수 있게 합니다.
+    const pack = storyOrThrow();
+    if (!tester.story) throw new Error("이 시험 계정은 예고할 단계가 없어요(튜토리얼 레슨 1 전).");
+    message = storyMessage({
+      content: pack.units,
+      titles: pack.titles,
+      place: tester.story,
+      lang: input.lang || tester.storyLang,
+      hookIndex: Number(input.hookIndex ?? 0),
+    });
+  } else {
+    const problems = copyProblems(input.copy);
+    if (problems.length > 0) throw new Error(problems.join(" "));
+    const lang = LANGUAGES.includes(input.lang) ? input.lang : tester.lang;
+    message = messageFor({ ...tester, lang }, input.copy);
+  }
   const result = await supabase.sendAnnouncement({
     userIds: [tester.userId],
     title: message.title,
@@ -533,6 +582,7 @@ const server = createServer(async (request, response) => {
         segments: summarize(snapshot.learners, SEGMENTS),
         defaults: { copy: DEFAULT_COPY, copyB: DEFAULT_COPY_B, filters: DEFAULT_FILTERS },
         languages: LANGUAGES,
+        story: storyStatus,
         campaigns: loadCampaigns().map(summaryOf),
         series: seriesList(),
         testers: snapshot.testerLearners.map((row) => ({
@@ -573,11 +623,13 @@ const server = createServer(async (request, response) => {
         variants: input.variants,
       });
       const seed = holdoutKeyOf(input);
+      const storyInput = isStory(input) ? storyOrThrow() : undefined;
       const recipients = planRecipients({
         campaignId: seed,
         eligible: selection.eligible,
         holdoutPercent,
         variants,
+        story: storyInput,
       });
       const byLang = {};
       const byVariant = {};
@@ -586,7 +638,7 @@ const server = createServer(async (request, response) => {
         if (row.variant) byVariant[row.variant] = (byVariant[row.variant] ?? 0) + 1;
       }
       const learnerOf = new Map(selection.eligible.map((row) => [row.userId, row]));
-      // 변형 × 언어마다 한 명씩 먼저(받는 사람만), 남는 자리는 앞에서부터 — 12명까지.
+      // 변형 × 언어마다 한 명씩 먼저(받는 사람만), 남는 자리는 앞에서부터 — 12명까지(예고는 변형이 훅).
       const firstOfLang = new Map();
       for (const row of recipients) {
         const key = `${row.variant}:${row.lang}`;
@@ -607,6 +659,7 @@ const server = createServer(async (request, response) => {
           localHour: learner.localHour,
           idleHours: Math.round(learner.idleHours),
           episode: learner.episodeTitle,
+          storyStep: row.storyStep ?? null,
           streak: learner.streak,
           title: row.title,
           body: row.body,
@@ -620,9 +673,12 @@ const server = createServer(async (request, response) => {
         excluded: selection.excluded,
         byLang,
         byVariant,
-        variants: variants.map((variant) => ({ id: variant.id, label: variant.label })),
+        variants: storyInput
+          ? storyVariants(recipients)
+          : variants.map((variant) => ({ id: variant.id, label: variant.label })),
         seed,
-        problems: variantsProblems(variants),
+        story: Boolean(storyInput),
+        problems: storyInput ? [] : variantsProblems(variants),
         forecast: hourForecast(selection.hourCandidates, filter.localHours, nowMs),
         samples,
       });
