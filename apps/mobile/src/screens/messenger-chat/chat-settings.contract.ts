@@ -48,6 +48,8 @@ export type MessengerChatExtraCopy = {
   readonly feedback: FeedbackCopy;
   /** 덕수쌤 첫 입장 안내 — 목록 카드 · 방 코치마크(2026-11-13). */
   readonly guide: MessengerGuideCopy;
+  /** 엽전 출시 · 채팅 새 기능 모달(ADR-0140). */
+  readonly launch: LaunchCopy;
   /** 서버 보내기 실패 줄(ADR-0137). */
   readonly remote: {
     readonly noCredits: (name: string) => string;
@@ -74,6 +76,26 @@ export type MessengerChatExtraCopy = {
     readonly loadFailedNew: string;
     readonly tryAgain: string;
   };
+};
+
+export type LaunchCopy = {
+  readonly newTag: string;
+  readonly coinsTitle: string;
+  readonly coinsBody: string;
+  readonly fromEpisodes: string;
+  readonly launchBonus: string;
+  readonly balance: string;
+  readonly perLesson: string;
+  readonly gotIt: string;
+  readonly chatTitle: string;
+  readonly chatBody: string;
+  readonly met: string;
+  readonly now: string;
+  readonly episode: (order: number) => string;
+  readonly metCount: (met: number, total: number) => string;
+  readonly prices: string;
+  readonly later: string;
+  readonly start: string;
 };
 
 export type MessengerGuideCopy = {

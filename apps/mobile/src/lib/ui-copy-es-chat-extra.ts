@@ -145,6 +145,27 @@ export const messengerChatExtraEs: MessengerChatExtraCopy = {
     skip: "Omitir",
     stepOf: (step, total) => `${step} de ${total}`,
   },
+  launch: {
+    newTag: "NUEVO",
+    coinsTitle: "Conoce los Yeopjeon, tus monedas de chat",
+    coinsBody:
+      "Los Yeopjeon son monedas para chatear con tus amigos coreanos. Esto es lo que has ganado hasta ahora.",
+    fromEpisodes: "Por los episodios que completaste",
+    launchBonus: "Bono de lanzamiento",
+    balance: "Tu saldo",
+    perLesson: "Cada lección que completes por primera vez suma 10.",
+    gotIt: "Entendido",
+    chatTitle: "Escribe a los amigos que conoces",
+    chatBody:
+      "Cualquiera que conozcas en tus episodios puede ser tu amigo de chat. Completa más episodios para conocer a más gente.",
+    met: "Conocido",
+    now: "Ahora",
+    episode: (order) => `Ep ${order}`,
+    metCount: (met, total) => `${met} de ${total} amigos conocidos`,
+    prices: "Un mensaje 10 · voz 40 · foto 60",
+    later: "Más tarde",
+    start: "Empezar a chatear",
+  },
   remote: {
     noCredits: (name) => `No te quedan créditos para chatear con ${name}.`,
     notAvailable: (name) => `Todavía no puedes chatear con ${name}.`,

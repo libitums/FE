@@ -93,6 +93,11 @@ export const statusBarSurfaceRegistry = {
       classification: "default-scrim",
       carriers: [],
     },
+    // 엽전 출시 · 채팅 새 기능 모달(ADR-0140) — ui-lynx 대화상자 기본 스크림이라 표지가 없다.
+    "screens/launch/launch.css": {
+      classification: "default-scrim",
+      carriers: [],
+    },
     // 메신저 첫 입장 목록 안내(ADR-0139) — ui-lynx 대화상자 기본 스크림이라 표지가 없다.
     "screens/messenger-chat/messenger-guide.css": {
       classification: "default-scrim",
