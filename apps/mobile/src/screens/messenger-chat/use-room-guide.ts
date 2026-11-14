@@ -4,6 +4,7 @@
 
 import { useState } from "@lynx-js/react";
 
+import { useChatEvents } from "./chat-events";
 import type { ChatThread } from "./chat-source.contract";
 import {
   GUIDE_ROOM_ID,
@@ -31,6 +32,7 @@ export function useRoomGuide(
   mediaReady: boolean = MESSENGER_MEDIA_READY,
 ): RoomGuide {
   const steps = guideSteps({ mediaReady });
+  const { emit } = useChatEvents();
   const [unseen, setUnseen] = useState(() => roomId === GUIDE_ROOM_ID && store.unseen("room"));
   const [index, setIndex] = useState(0);
   const greeted =
@@ -38,7 +40,8 @@ export function useRoomGuide(
     !thread.typing &&
     thread.messages.some((m) => m.kind === "text" && m.from === "them");
   const shown = unseen && !covered && thread !== null && thread.server !== null && greeted;
-  const end = () => {
+  const end = (outcome: "done" | "skipped") => {
+    emit({ name: "messenger_guide_finished", surface: "chat", part: "room", outcome });
     store.markSeen("room");
     // 푸시 · 새 친구 시트로 덕수쌤 방에 먼저 온 사용자가 목록에서 「Chat with 덕수쌤」을 또 보지 않게.
     store.markSeen("list");
@@ -49,9 +52,9 @@ export function useRoomGuide(
     index,
     step: shown ? (steps[index] ?? null) : null,
     next: () => {
-      if (index >= steps.length - 1) end();
+      if (index >= steps.length - 1) end("done");
       else setIndex(index + 1);
     },
-    skip: end,
+    skip: () => end("skipped"),
   };
 }

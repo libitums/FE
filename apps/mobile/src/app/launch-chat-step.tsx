@@ -2,6 +2,9 @@
 // 구독하면 답이 스트리밍되는 동안 조각마다 루트 전체가 다시 그려집니다(2026-11-14 안정성 리뷰 2).
 
 import type { ReactNode } from "@lynx-js/react";
+import { useEffect } from "@lynx-js/react";
+
+import { emitCompanionEvent } from "../lib/companion-events";
 
 import { COMPANION_CHARACTERS } from "../screens/messenger-chat/companion-roster";
 import { useChatSnapshot } from "../screens/messenger-chat/use-chat-source";
@@ -12,10 +15,12 @@ import type { ScreenWiring } from "./screen-wiring";
 export function LaunchChatStep({
   wiring,
   onLater,
+  onBack,
   onStart,
 }: {
   readonly wiring: ScreenWiring;
   readonly onLater: () => void;
+  readonly onBack: () => void;
   readonly onStart: () => void;
 }): ReactNode {
   const snapshot = useChatSnapshot(wiring.messengerChat.source);
@@ -33,5 +38,15 @@ export function LaunchChatStep({
       episode: character.unlockEpisode,
     };
   });
-  return <ChatIntroModal cast={cast} onLater={onLater} onStart={onStart} />;
+  const met = cast.filter((person) => person.met).length;
+  // 모달이 설 때 한 번(제품 이벤트 — 효과에서 보냄).
+  useEffect(() => {
+    emitCompanionEvent(wiring.messengerChat.eventSink, {
+      name: "launch_chat_shown",
+      surface: "learning",
+      met: String(met),
+      total: String(cast.length),
+    });
+  }, []);
+  return <ChatIntroModal cast={cast} onLater={onLater} onBack={onBack} onStart={onStart} />;
 }

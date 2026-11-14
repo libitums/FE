@@ -2,6 +2,7 @@ import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { cleanup, screen } from "@lynx-js/react/testing-library";
 
 import { keyboardRowsInsetStyle } from "../lib/keyboard-dock";
+import type { EpisodeIntroEvent } from "../screens/episode-intro/episode-intro.contract";
 import { App } from "./App";
 import {
   isTabSelected,
@@ -316,4 +317,36 @@ test("MC-I6. 방에서 목록으로 돌아오면 셸 좌 · 우 인셋이 다시
 
   expect(shellStyle().paddingLeft).toBe("6px");
   expect(shellStyle().paddingRight).toBe("8px");
+});
+
+test("EV-I7. 학습 ↔ 채팅 영역을 옮길 때마다 머문 초로 surface_session_ended가 나고, 다시 들어온 메신저 탭은 배지 없음이다", async () => {
+  const events: EpisodeIntroEvent[] = [];
+  await renderTesterApp(
+    <App progressSeed={legacyPassedSeed} episodeIntroEventSink={(event) => events.push(event)} />,
+    { keepFakeTimers: true },
+  );
+  const start = Date.now();
+  vi.setSystemTime(start + 95_400);
+  openTab("messenger");
+  vi.setSystemTime(start + 95_400 + 30_000);
+  openTab("settings");
+  openTab("messenger");
+
+  const ended = events.filter((event) => event.name === "surface_session_ended");
+  expect(ended).toEqual([
+    {
+      name: "surface_session_ended",
+      surface: "learning",
+      daysSinceFirstOpen: "0",
+      seconds: expect.any(String),
+    },
+    { name: "surface_session_ended", surface: "chat", daysSinceFirstOpen: "0", seconds: "30" },
+  ]);
+  expect(Number((ended[0] as { seconds: string }).seconds)).toBeGreaterThanOrEqual(95);
+  expect(
+    events
+      .filter((event) => event.name === "messenger_tab_opened")
+      .map((event) => (event as { badge: string }).badge),
+  ).toEqual(["first", "none"]);
+  vi.useRealTimers();
 });

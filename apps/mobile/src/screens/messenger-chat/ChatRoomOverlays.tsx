@@ -4,6 +4,7 @@ import { AskMediaDialog } from "./AskMediaDialog";
 import { BirthYearSheet } from "./BirthYearSheet";
 import { ChatSettingsSidebar } from "./ChatSettingsSidebar";
 import { CHAT_COIN_PRICES } from "./chat-coins";
+import { useChatEvents } from "./chat-events";
 import type { ChatOverlay, ChatRoomAction, ChatRoomState } from "./chat-room-state";
 import type {
   ChatBirthYear,
@@ -62,6 +63,7 @@ export function ChatRoomOverlays({
 }: ChatRoomOverlaysProps): ReactNode {
   const { overlay } = state;
   const { roomId } = thread;
+  const { emit } = useChatEvents();
   const close = () => {
     "background only";
     dispatch({ type: "close-overlay" });
@@ -133,15 +135,38 @@ export function ChatRoomOverlays({
           price={CHAT_COIN_PRICES[overlay.media]}
           onConfirm={() => {
             // 무제한이어도 요청은 엽전을 냅니다(턴과 별개). 모자라면(그 사이 잔액이 줄었으면) 요청 없이 상점으로 갑니다.
-            const spent = wallet.spend(CHAT_COIN_PRICES[overlay.media], overlay.media);
+            const price = CHAT_COIN_PRICES[overlay.media];
+            const spent = wallet.spend(price, overlay.media);
             if (spent.kind === "short") {
+              emit({
+                name: "chat_coins_short",
+                surface: "chat",
+                reason: overlay.media,
+                shortBy: String(spent.shortBy),
+              });
               dispatch({ type: "open-overlay", overlay: askShop(overlay.media) });
               return;
             }
+            emit({
+              name: "chat_media_requested",
+              surface: "chat",
+              characterId: roomId,
+              media: overlay.media,
+              price: String(price),
+            });
             source.requestMedia(roomId, overlay.media);
             dispatch({ type: "close-overlay" });
           }}
-          onGetCoins={() => dispatch({ type: "open-overlay", overlay: askShop(overlay.media) })}
+          onGetCoins={() => {
+            const shortBy = Math.max(0, CHAT_COIN_PRICES[overlay.media] - coinBalance);
+            emit({
+              name: "chat_coins_short",
+              surface: "chat",
+              reason: overlay.media,
+              shortBy: String(shortBy),
+            });
+            dispatch({ type: "open-overlay", overlay: askShop(overlay.media) });
+          }}
           onCancel={close}
         />
       );

@@ -62,7 +62,7 @@ export type AnalyticsConfigFrom = (
 
 // ------------------------------------------------------------------ 이벤트 → capture
 
-/** sink 넷이 내는 이벤트 전부입니다(이름 36개). */
+/** sink 넷이 내는 이벤트 전부입니다(이름은 `AnalyticsEventName`). */
 export type AnalyticsEvent = EntryEvent | NotificationEvent | SettingsEvent | EpisodeIntroEvent;
 
 /**

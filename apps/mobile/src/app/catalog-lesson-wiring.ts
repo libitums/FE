@@ -94,7 +94,7 @@ export function catalogLessonWiring(args: CatalogLessonWiringArgs): CatalogLesso
 
   // 인물 해금(ADR-0141) — 에피소드를 끝내고 뒤 컷을 지나면.
   const unlockFriend = (episodeId: string) =>
-    unlockFriendAfterEpisode(episodeId, catalogSections, catalogProgress);
+    unlockFriendAfterEpisode(episodeId, catalogSections, catalogProgress, sink);
 
   // 같은 활동 · 같은 최종 테스트의 두 번째 finish를 거릅니다 — 처음 오면 표식을 남기고 true.
   // 시작 · 나가기 · 결과 나가기가 표식을 지워 재시도와 다음 세션은 다시 끝낼 수 있습니다.

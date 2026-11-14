@@ -19,6 +19,8 @@ export type NewFriendLayerProps = {
   readonly model: NewFriendModel;
   /** Reply — 층이 먼저 시트를 닫고 부릅니다(맵은 숨은 탭으로 남아 있어, 돌아왔을 때 시트가 서 있지 않게). */
   readonly onReply: () => void;
+  /** Later · 막 · 뒤로가기 · 끌어내림으로 시트만 닫았을 때(제품 사용 이벤트). */
+  readonly onLater?: () => void;
   readonly timers?: ChatTimers;
   /** 시트가 닫힌 뒤 접근성 초점을 돌려 줄 아래 화면 요소의 `id`(없으면 돌리지 않음). */
   readonly resultFocusId?: string;

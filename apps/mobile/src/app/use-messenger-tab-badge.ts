@@ -2,7 +2,9 @@
 // 메신저 탭에 들어가면 기기에 「들어감」을 남깁니다. 손님 · 시험 계정 아님은 방을 못 열어 새 친구로는 달지 않습니다.
 // 출처는 답 조각마다 바뀌므로 「새 친구가 있나」 불값만 골라 그 값이 바뀔 때만 다시 그립니다(세션 루트 전체가 다시 그려지지 않게).
 
-import { useEffect, useState } from "@lynx-js/react";
+import { useEffect, useRef, useState } from "@lynx-js/react";
+
+import { emitCompanionEvent } from "../lib/companion-events";
 
 import {
   hasNewFriend,
@@ -24,6 +26,20 @@ export function useMessengerTabBadge(wiring: ScreenWiring, tab: Tab): Partial<Re
     return source.subscribe(read);
   }, [source, access]);
   const [visited, setVisited] = useState(messengerTabVisited);
+  // 메신저 탭으로 들어올 때 한 번 — 들어가기 직전 배지를 싣습니다(D3 목적 구분).
+  const lastTab = useRef<Tab | null>(null);
+  useEffect(() => {
+    const entered = tab === "messenger" && lastTab.current !== "messenger";
+    lastTab.current = tab;
+    if (!entered) return;
+    const badge = !visited ? "first" : newFriend ? "new_friend" : "none";
+    emitCompanionEvent(wiring.messengerChat.eventSink, {
+      name: "messenger_tab_opened",
+      surface: "chat",
+      badge,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab]);
   useEffect(() => {
     if (tab !== "messenger" || visited) return;
     markMessengerTabVisited();

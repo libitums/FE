@@ -8,6 +8,7 @@
 import { useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
+import { emitCompanionEvent } from "../lib/companion-events";
 import { NewFriendLayer } from "../screens/messenger-chat/NewFriendLayer";
 import type { NewFriendModel } from "../screens/messenger-chat/new-friend.contract";
 import { takeNewFriend } from "./new-friend-pending";
@@ -28,12 +29,23 @@ export function NewFriendMapHost({ wiring, active, children }: NewFriendMapHostP
     return characterId === null ? null : newFriendModelOf(characterId, wiring);
   });
   if (model === null) return children;
+  const closed = (choice: "reply" | "later") =>
+    emitCompanionEvent(wiring.messengerChat.eventSink, {
+      name: "new_friend_sheet_closed",
+      surface: "learning",
+      characterId: model.characterId,
+      choice,
+    });
   return (
     <NewFriendLayer
       model={model}
       active={active}
       onVisibleChange={wiring.onScreenLayerChange}
-      onReply={() => wiring.messengerChat.onOpenChatRoomFromNewFriend(model.roomId)}
+      onReply={() => {
+        closed("reply");
+        wiring.messengerChat.onOpenChatRoomFromNewFriend(model.roomId);
+      }}
+      onLater={() => closed("later")}
     >
       {children}
     </NewFriendLayer>

@@ -199,10 +199,12 @@ describe("AN1 분석 계약의 크기", () => {
   ];
 
   // ⟨ADR-0086⟩ `app_update_required_shown`, ⟨ADR-0088 D6⟩ 막간 이야기 다섯이 더해져 44이다.
-  test("AN1. 이벤트 이름은 46개이고 지운 여덟이 없다", () => {
+  // ⟨ADR-0029 「D3 목적 구분」⟩ 엽전 출시 · 메신저 · 새 친구 · 영역 · 마일스톤 열넷이 더해져 60이다.
+  test("AN1. 이벤트 이름은 60개이고 지운 여덟이 없다", () => {
     const source = readFileSync(resolve(process.cwd(), "src/lib/analytics-event-names.ts"), "utf8");
     const names = [...source.matchAll(/^\s+\| "([a-z_]+)"/gm)].map((match) => match[1]);
-    expect(names).toHaveLength(46);
+    expect(names).toHaveLength(60);
+    expect(names).toContain("surface_session_ended");
     expect(names).toContain("download_settings_opened");
     expect(names).toContain("episode_story_skipped");
     expect(names).toContain("episode_listen_item_answered");

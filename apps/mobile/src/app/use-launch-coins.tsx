@@ -12,6 +12,7 @@ import { useEffect, useRef, useState } from "@lynx-js/react";
 import { topBarCoinIconId } from "../components/TopBar";
 import type { CatalogProgress } from "../lib/catalog-progress";
 import { coinClient, type CoinClaim } from "../lib/coin-wallet-api";
+import { emitCompanionEvent } from "../lib/companion-events";
 import { LaunchCoinsModal } from "../screens/launch/LaunchModals";
 import {
   deviceLaunchStore,
@@ -120,6 +121,27 @@ export function useLaunchCoins(input: LaunchCoinsInput): LaunchCoins {
   const settled = server === null ? null : server.balance + (local - server.localAt);
   const target = settled ?? (record === null ? 0 : record.learning + record.bonus);
 
+  // 제품 이벤트(ADR-0029 · D3 목적 구분) — 엽전 모달이 설 때 한 번, 닫을 때 한 번. 채팅 모달 이벤트는 그 결선이 냅니다.
+  const sink = wiring.messengerChat.eventSink;
+  const shownStep = useRef<string | null>(null);
+  const coinsClosed = useRef(false);
+  useEffect(() => {
+    if (step === shownStep.current) return;
+    shownStep.current = step;
+    if (step === "coins" && record !== null)
+      emitCompanionEvent(sink, {
+        name: "launch_coins_shown",
+        surface: "learning",
+        learning: String(record.learning),
+        bonus: String(record.bonus),
+        balance: String(target),
+      });
+  }, [step]);
+  const closeChat = (choice: "start" | "later" | "back") => {
+    emitCompanionEvent(sink, { name: "launch_chat_closed", surface: "learning", choice });
+    if (record !== null) save({ ...record, chatShown: true });
+  };
+
   const layer =
     step === "coins" && record !== null ? (
       <LaunchCoinsModal
@@ -128,14 +150,20 @@ export function useLaunchCoins(input: LaunchCoinsInput): LaunchCoins {
         balance={target}
         coinTargetId={topBarCoinIconId}
         onCoinLanded={(landed, of) => setLandedShare(landed / of)}
-        onDone={() => save({ ...record, coinsShown: true })}
+        onDone={() => {
+          if (!coinsClosed.current)
+            emitCompanionEvent(sink, { name: "launch_coins_closed", surface: "learning" });
+          coinsClosed.current = true;
+          save({ ...record, coinsShown: true });
+        }}
       />
     ) : step === "chat" && record !== null ? (
       <LaunchChatStep
         wiring={wiring}
-        onLater={() => save({ ...record, chatShown: true })}
+        onLater={() => closeChat("later")}
+        onBack={() => closeChat("back")}
         onStart={() => {
-          save({ ...record, chatShown: true });
+          closeChat("start");
           onStartChatting();
         }}
       />

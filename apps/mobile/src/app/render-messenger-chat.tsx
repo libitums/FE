@@ -6,6 +6,7 @@ import {
   emptyKeyboardHeightStore,
   unknownKoreanKeyboardProbe,
 } from "../screens/messenger-chat/keyboard-ports";
+import { ChatEventsContext } from "../screens/messenger-chat/chat-events";
 import { ChatMemoriesScreen } from "../screens/messenger-chat/ChatMemoriesScreen";
 import { ChatSettingsScreen } from "../screens/messenger-chat/ChatSettingsScreen";
 import { MessengerChatScreen } from "../screens/messenger-chat/MessengerChatScreen";
@@ -32,39 +33,43 @@ function learnerNameOf(wiring: ScreenWiring): string {
 export function renderMessengerList(wiring: ScreenWiring, notice: MessengerListNotice | null) {
   const chat = wiring.messengerChat;
   return (
-    <MessengerListScreen
-      source={chat.source}
-      wallet={chat.wallet}
-      onOpenRoom={chat.onOpenChatRoom}
-      onGoToJourney={chat.onGoToJourney}
-      onLayerChange={wiring.onScreenLayerChange}
-      notice={notice}
-      onNoticeShown={chat.onListNoticeShown}
-      access={messengerAccessFor(wiring)}
-      onSignIn={wiring.onSignIn}
-    />
+    <ChatEventsContext.Provider value={{ sink: chat.eventSink, roomId: null }}>
+      <MessengerListScreen
+        source={chat.source}
+        wallet={chat.wallet}
+        onOpenRoom={chat.onOpenChatRoom}
+        onGoToJourney={chat.onGoToJourney}
+        onLayerChange={wiring.onScreenLayerChange}
+        notice={notice}
+        onNoticeShown={chat.onListNoticeShown}
+        access={messengerAccessFor(wiring)}
+        onSignIn={wiring.onSignIn}
+      />
+    </ChatEventsContext.Provider>
   );
 }
 
 export function renderMessengerChat(roomId: string, wiring: ScreenWiring) {
   const chat = wiring.messengerChat;
   return (
-    // 방마다 새로 섭니다 — 같은 자리에서 다른 방으로 바뀌어도 앞 방의 말풍선 도구 · 입력 · 턴 상태가 남지 않습니다.
-    <MessengerChatScreen
-      key={roomId}
-      roomId={roomId}
-      source={chat.source}
-      keyboardProbe={unknownKoreanKeyboardProbe}
-      keyboardHeightStore={emptyKeyboardHeightStore}
-      edges={keyboardDockEdgesOf(wiring.safeAreaInsets)}
-      learnerName={learnerNameOf(wiring)}
-      wallet={chat.wallet}
-      turns={chat.turns}
-      tier={chat.tier}
-      now={chat.now}
-      onExit={chat.onExitChatRoom}
-      onOpenMemories={chat.onOpenMemories}
-    />
+    <ChatEventsContext.Provider value={{ sink: chat.eventSink, roomId }}>
+      {/* 방마다 새로 섭니다 — 같은 자리에서 다른 방으로 바뀌어도 앞 방의 말풍선 도구 · 입력 · 턴 상태가 남지 않습니다. */}
+      <MessengerChatScreen
+        key={roomId}
+        roomId={roomId}
+        source={chat.source}
+        keyboardProbe={unknownKoreanKeyboardProbe}
+        keyboardHeightStore={emptyKeyboardHeightStore}
+        edges={keyboardDockEdgesOf(wiring.safeAreaInsets)}
+        learnerName={learnerNameOf(wiring)}
+        wallet={chat.wallet}
+        turns={chat.turns}
+        tier={chat.tier}
+        now={chat.now}
+        onExit={chat.onExitChatRoom}
+        onOpenMemories={chat.onOpenMemories}
+      />
+    </ChatEventsContext.Provider>
   );
 }
 

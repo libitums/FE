@@ -30,6 +30,7 @@ import { appHeaderVisibleOn, shellInsetsOf } from "./shell-edges";
 import { renderAppContent } from "./render-app-content";
 import { screenWiring } from "./screen-wiring";
 import { useMessengerWalletSync } from "./use-messenger-wallet-sync";
+import { useSurfaceSessions } from "./use-surface-sessions";
 import { useNewFriendBackfill } from "./use-new-friend-backfill";
 import { useTrackingAuthorizationPrompt } from "./use-tracking-authorization-prompt";
 import { useOpenedDeeplink } from "./use-opened-deeplink";
@@ -171,7 +172,7 @@ export function AppSession({
     setAccountState,
   });
   useMessengerWalletSync(screens.coinCount);
-  useNewFriendBackfill(progress.hasLoadedProgress, catalogSections, catalogProgress);
+  useNewFriendBackfill(progress.hasLoadedProgress, catalog, episodeIntroEventSink);
   const screenNow = currentScreen(nav);
   // 앱 사용 중 받아진 바뀐 판은 여정맵 루트(열린 에피소드 화면 · 겹침 없음)에서 바로 바꿔 끼웁니다(ADR-0078 D4 정정).
   const atMapRoot = nav.entry.length === 0 && screenNow.name === "journey-map" && !screenLayerOpen;
@@ -182,6 +183,7 @@ export function AppSession({
     downloadGate,
   );
   const messengerTabBadge = useMessengerTabBadge(wiring, nav.tab); // 하단 탭 NEW(2026-11-13)
+  useSurfaceSessions(nav.entry.length === 0 ? nav.tab : null, episodeIntroEventSink); // D3 목적 구분
 
   // 셸이 가장자리 여백을 잡고 배경을 칠합니다(자판 화면은 위만 — shell-edges.ts). 스플래시만 브랜드색.
   // 아래쪽만 예외입니다 — 바가 서면 셸은 터치를 가로채는 시스템 바만큼(`tappableBottomInset`,

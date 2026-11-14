@@ -8,6 +8,7 @@ import { useEffect, useRef } from "@lynx-js/react";
 import type { CatalogProgress } from "../lib/catalog-progress";
 import { isCatalogEpisodeComplete } from "../lib/catalog-progress";
 import type { CatalogMapSection } from "../screens/journey-map/catalog-map.contract";
+import type { EpisodeIntroEventSink } from "../screens/episode-intro/episode-intro.contract";
 import { commitNewFriend } from "./new-friend-wiring";
 
 /** 완료 조건을 모두 끝낸 에피소드 id입니다. 순서는 구획 순서입니다. */
@@ -30,16 +31,23 @@ export function completedEpisodes(
 /** 진도를 다 읽은 그때의 진도로(구획이 늦게 준비되면 그때 다시) 끝낸 에피소드의 인물을 조용히 해금합니다. */
 export function useNewFriendBackfill(
   loaded: boolean,
-  sections: readonly CatalogMapSection[],
-  progress: CatalogProgress,
+  catalog: {
+    readonly catalogSections: readonly CatalogMapSection[];
+    readonly catalogProgress: CatalogProgress;
+  },
+  eventSink: EpisodeIntroEventSink,
 ): void {
+  const sections = catalog.catalogSections;
   const atLoad = useRef<CatalogProgress | null>(null);
   // 진도를 다 읽은 그때의 진도를 효과에서 잡습니다(그림 단계에서 ref를 바꾸지 않음 — 리뷰 #430). 아래 효과보다 먼저 돕니다.
   useEffect(() => {
-    if (loaded && atLoad.current === null) atLoad.current = progress;
-  }, [loaded, progress]);
+    if (loaded && atLoad.current === null) atLoad.current = catalog.catalogProgress;
+  }, [loaded, catalog.catalogProgress]);
   useEffect(() => {
     if (atLoad.current === null) return;
-    for (const episodeId of completedEpisodes(sections, atLoad.current)) commitNewFriend(episodeId);
+    for (const episodeId of completedEpisodes(sections, atLoad.current))
+      commitNewFriend(episodeId, "backfill", eventSink);
+    // 해금 이벤트는 처음 열 때만 나므로 sink가 바뀌어도 다시 돌지 않습니다.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loaded, sections]);
 }

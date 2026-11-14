@@ -147,14 +147,18 @@ export function LaunchCoinsModal({
 }
 
 /** 채팅 새 기능 — 에피소드에서 만난 인물이 채팅 친구가 됨, 만난 · 못 만난 인물 줄과 진행 막대. 「Start chatting」 = 메신저 탭. */
-export function ChatIntroModal({ cast, onLater, onStart }: ChatIntroModalProps): ReactNode {
+export function ChatIntroModal({ cast, onLater, onStart, onBack }: ChatIntroModalProps): ReactNode {
   const copy = useUiCopy().messengerChat.launch;
   const reduced = useMotion() === "reduced";
   const later = () => {
     "background only";
     onLater();
   };
-  useLayerBack(later);
+  const back = () => {
+    "background only";
+    (onBack ?? onLater)();
+  };
+  useLayerBack(back);
   const met = cast.filter((person) => person.met).length;
   return (
     <view className="launch" data-testid={ids.chat} event-through={false}>

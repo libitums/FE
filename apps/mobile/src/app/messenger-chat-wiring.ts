@@ -25,6 +25,7 @@ import {
   type TurnLedger,
   type TurnRecordStore,
 } from "../screens/messenger-chat/turn-ledger";
+import type { EpisodeIntroEventSink } from "../screens/episode-intro/episode-intro.contract";
 import { tabRootActions } from "./nav-reducer";
 import type { NavAction } from "./nav-state";
 
@@ -37,6 +38,8 @@ export type MessengerChatWiring = {
   /** 시험 계정(무제한)이면 unlimited. */
   readonly tier: ChatTier;
   readonly now: () => number;
+  /** 제품 사용 이벤트(ADR-0029 「D3 목적 구분」) — 수집하지 않으면 null. */
+  readonly eventSink: EpisodeIntroEventSink;
   readonly onOpenChatRoom: (roomId: string) => void;
   readonly onExitChatRoom: () => void;
   /** 새 친구 시트의 Reply — 메신저 탭 루트로 옮겨 그 방을 엽니다(키보드 닫힘 — 방의 1단계 규칙 그대로). */
@@ -184,6 +187,7 @@ export type MessengerChatWiringArgs = {
   readonly imageUrlOf: (relativePath: string) => string | null;
   /** 앱의 보유 엽전입니다(ADR-0116). 아직 모르면 생략합니다. */
   readonly coinCount?: number;
+  readonly eventSink?: EpisodeIntroEventSink;
 };
 
 export function messengerChatWiring(args: MessengerChatWiringArgs): {
@@ -196,6 +200,7 @@ export function messengerChatWiring(args: MessengerChatWiringArgs): {
       turns: messengerChatLedger(),
       tier: storeOverride?.tier ?? (isTesterAccessActive() ? "unlimited" : "free"),
       now: clockNow,
+      eventSink: args.eventSink ?? null,
       onOpenChatRoom: (roomId) => {
         args.dispatch({ type: "push", screen: { name: "messenger-chat", roomId } });
       },

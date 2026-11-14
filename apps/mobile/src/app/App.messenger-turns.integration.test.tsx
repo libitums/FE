@@ -4,6 +4,7 @@ import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { setTesterAccessActive } from "../lib/tester-access";
 import type { TurnRecord } from "../screens/messenger-chat/free-turns";
 import type { TurnRecordStore } from "../screens/messenger-chat/turn-ledger";
+import type { EpisodeIntroEvent } from "../screens/episode-intro/episode-intro.contract";
 import { App } from "./App";
 import {
   advance,
@@ -58,6 +59,10 @@ function base64Url(value: unknown): string {
 }
 const testerToken = `${base64Url({ alg: "none" })}.${base64Url({ sub: "tester-1", app_metadata: { duru_tester: true } })}.sig`;
 
+/** 앱이 낸 제품 사용 이벤트입니다 — 부팅마다 비웁니다. */
+let events: EpisodeIntroEvent[] = [];
+const named = (name: string) => events.filter((event) => event.name === name);
+
 /** 가짜 시계 2026-11-10 18:48로 부팅해 메신저 목록까지 갑니다. 돌려주는 저장소가 원장의 기록입니다. */
 async function bootToList(
   coins: number,
@@ -70,10 +75,15 @@ async function bootToList(
     ...(tester ? {} : { tier: "free" as const }),
   });
   if (tester) setTesterAccessActive(true);
-  await renderTesterApp(<App progressSeed={legacyPassedSeedWithCoins(coins)} />, {
-    keepFakeTimers: true,
-    ...(tester ? { refreshedAccessToken: testerToken } : {}),
-  });
+  events = [];
+  const sink = (event: EpisodeIntroEvent) => events.push(event);
+  await renderTesterApp(
+    <App progressSeed={legacyPassedSeedWithCoins(coins)} episodeIntroEventSink={sink} />,
+    {
+      keepFakeTimers: true,
+      ...(tester ? { refreshedAccessToken: testerToken } : {}),
+    },
+  );
   vi.setSystemTime(NOW);
   openTab("messenger");
   expect(screen.getByTestId("messenger-list-screen")).toBeInTheDocument();
@@ -161,6 +171,17 @@ test("MC2-I5. 엽전 보내기는 글을 보내고 지갑에서 3을 쓰며(목�
 
   expect(screen.getAllByTestId(OUTGOING)).toHaveLength(1);
   expect(turns.read()?.used).toBe(3);
+  // EV-I3 엽전으로 보낸 한 통은 chat_message_sent(낸 값 3)와 첫 메시지 마일스톤 없이(마일스톤은 PostHog sink가 냅니다) 납니다.
+  expect(named("chat_message_sent")).toEqual([
+    {
+      name: "chat_message_sent",
+      surface: "chat",
+      daysSinceFirstOpen: "0",
+      characterId: "owner",
+      paid: true,
+      cost: "3",
+    },
+  ]);
   leaveRoom();
   expect(textOf("messenger-list-coins")).toContain("97");
 });
@@ -214,6 +235,17 @@ test("MC2-I5. 잔액이 모자라면 엽전 보내기는 보내지 않고 엽전
   expect(screen.getByTestId(COIN_SHOP)).toBeInTheDocument();
   expect(present(OUTGOING)).toBe(false);
   expect(textOf("messenger-chat-display")).toContain("안");
+  // EV-I4 모자란 엽전은 chat_coins_short(메시지 · 3 모자람)이고, 보낸 메시지는 없습니다.
+  expect(named("chat_coins_short")).toEqual([
+    {
+      name: "chat_coins_short",
+      surface: "chat",
+      daysSinceFirstOpen: "0",
+      reason: "message",
+      shortBy: "3",
+    },
+  ]);
+  expect(named("chat_message_sent")).toEqual([]);
 
   tapRound(`${COIN_SHOP}-close`);
   expect(present(COIN_SHOP)).toBe(false);
@@ -289,6 +321,37 @@ test("MC2-I6. 일반 계정의 사진 요청도 엽전 35를 낸다 — 무료 3
 
   expect(present("messenger-chat-photo-pending")).toBe(true);
   expect(usedToday(turns)).toBe(0);
+  // EV-I5 사진 요청은 chat_media_requested(가격 35)입니다.
+  expect(named("chat_media_requested")).toEqual([
+    {
+      name: "chat_media_requested",
+      surface: "chat",
+      daysSinceFirstOpen: "0",
+      characterId: "owner",
+      media: "photo",
+      price: "35",
+    },
+  ]);
   leaveRoom();
   expect(textOf("messenger-list-coins")).toContain("85");
+});
+
+test("EV-I6. 무료로 보낸 한 통은 chat_message_sent(낸 값 0 · 무료)이고 메신저 탭 열기는 처음 배지를 싣는다", async () => {
+  await bootToList(0);
+  openRoom("owner");
+  sendAn();
+
+  expect(named("chat_message_sent")).toEqual([
+    {
+      name: "chat_message_sent",
+      surface: "chat",
+      daysSinceFirstOpen: "0",
+      characterId: "owner",
+      paid: false,
+      cost: "0",
+    },
+  ]);
+  expect(named("messenger_tab_opened")).toEqual([
+    { name: "messenger_tab_opened", surface: "chat", daysSinceFirstOpen: "0", badge: "first" },
+  ]);
 });

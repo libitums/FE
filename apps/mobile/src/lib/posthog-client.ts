@@ -18,6 +18,7 @@ import type {
 import { analyticsConfig } from "./analytics-config";
 import { getItem, removeItem, setItem } from "./storage";
 import { analyticsEventSinksFrom, noAnalyticsSession } from "./analytics-events";
+import { deviceMilestoneStore, personOnceFor, withFirstMilestones } from "./companion-events";
 import { readNetworkProperties } from "./network-status";
 import { readAppVersionProperties } from "./app-version-properties";
 
@@ -239,17 +240,21 @@ export const createAnalyticsSession: CreateAnalyticsSession = (config, transport
       },
     });
   };
+  // 첫 경험 마일스톤은 첫 날 수를 사람 속성으로도 한 번 씁니다(`$set_once` — ADR-0029 「D3 목적 구분」).
   const capturing: AnalyticsCaptureClient = {
-    capture: (event, properties) =>
+    capture: (event, properties) => {
+      const once = personOnceFor(event, properties);
       client.capture(event, {
         ...readAppVersionProperties(),
         ...readNetworkProperties(),
         ...properties,
-      }),
+        ...(once === null ? {} : { $set_once: once }),
+      });
+    },
     identify: identifyWithAppVersion,
   };
   return {
-    sinks: analyticsEventSinksFrom(capturing),
+    sinks: withFirstMilestones(analyticsEventSinksFrom(capturing), deviceMilestoneStore()),
     user: {
       identify: (userId) => {
         try {
