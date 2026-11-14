@@ -499,6 +499,8 @@ u01 · u02는 전부 해결, u03은 18문항이 같은 세 id(에피소드 2의 
 
 10. ⟨2026-10-27⟩ **버킷 루트의 `app-policy.json`은 에피소드가 아니라 앱 정책이다**(플랫폼별 최소 빌드 — [앱 정책 파일 스펙](app-update-policy.md) · [ADR-0086](../adr/0086-app-version-and-forced-update.md)). 매니페스트에 넣지 않고, cacheControl은 에피소드 JSON과 같은 60초다. `min_build`를 스토어의 최신 빌드보다 높게 두면 **모두가 막힌다** — 올리기 전에 빌드 번호를 확인한다.
 
+11. ⟨2026-11-14⟩ **새 에피소드 · 새 유닛(스텝 id)을 올리면 학습 보상 유닛 표를 갱신한다** — 서버는 `companion.content_units`에 있는 (에피소드 id, 유닛 키)에만 엽전을 준다([ADR-0146](../adr/0146-coin-claim-valid-units.md)). 매니페스트를 올린 뒤 `node devtools/content/content-units-sql.mjs --base https://<ref>.supabase.co/storage/v1/object/public/content/ > content-units.sql`을 돌려 나온 SQL(멱등 `insert … on conflict do nothing`)을 검토하고 운영 DB SQL 편집기에서 적용한다. 이미 있는 유닛만 고친 판(본문 · 그림 · 음성)은 할 필요가 없지만 돌려도 무해하다. 빠뜨리면 그 유닛의 엽전이 적용 때까지 미뤄진다(기록은 남아 다음 지급 호출 때 소급된다). 유닛 id를 바꾸거나 지우지 않는다 — 옛 id도 표에 남는다(이미 깬 사용자의 보상).
+
 ### 사건 기록 ⟨2026-10-20 ~ 21⟩ — 같은 이름 재업로드 · 매니페스트 미갱신
 
 - **무엇이 있었나** — 2026-10-20 버킷의 `episodes/u01` ~ `u04` JSON과 그림이 **같은 이름으로 다시 올라갔고 `manifest.json`은 고쳐지지 않았다**(2026-10-19판 그대로). 예: `episodes/u04-directions.json`은 150,222 B · sha `c4780d55…`인데 매니페스트 항목은 141,519 B · `29e72d1e…`였다(규칙 1 · 3 위반).

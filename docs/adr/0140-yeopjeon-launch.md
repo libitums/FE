@@ -18,6 +18,7 @@
 - 무료 티어도 엽전(크레딧)이 한 턴 값 이상이면 체험 캐릭터 밖과 대화한다. 모자라면 `insufficient_credits`(전에는 엽전과 상관없이 `not_available`). 덕수쌤 체험 20통은 그대로.
 - `companion_claim_coins()`(로그인 사용자, 사용자별 멱등):
   - 진행 스냅숏(`catalogProgress` ∪ `coinUnits`)의 끝낸 유닛마다 `learning_reward`(5 — 앱 `COINS_PER_LESSON`도 10 → 5). 에피소드 표지(intro) · 막간(INT)은 제외. (사용자, 에피소드, 유닛)마다 한 번 — 엽전 제도 전에 깬 유닛도 소급되고, 새 레슨을 깨고 다시 부르면 그 유닛만 더해진다.
+  - ⟨2026-11-14⟩ 지급 대상은 서버 표 `companion.content_units`(배포 콘텐츠에 있는 유닛)에 있는 쌍으로 좁혀졌다 — 임의 키 위조 차단([ADR-0146](0146-coin-claim-valid-units.md)).
   - 출시 보너스 `launch_bonus`(100), 사용자마다 한 번.
   - 돌려주는 값: 이번 호출에서 더한 학습 보상 · 보너스 · 지갑.
 
