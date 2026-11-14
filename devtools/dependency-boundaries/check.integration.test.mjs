@@ -68,6 +68,7 @@ test("DB-I2 규칙마다 위반 하나씩 — 모두 잡고 종료 1", () => {
       'import { Button } from "@libitums/ui-lynx/button";\nexport { Button };\n',
     "packages/episode-core/src/browser.ts": "export const lang = () => navigator.language;\n",
     "packages/episode-core/src/host.ts": "export const ping = () => fetch('/x');\n",
+    "packages/episode-core/src/clock.ts": "export const now = () => Date.now();\n",
     "apps/landing/src/e.ts": 'import { x } from "../../mobile/src/c";\nexport { x };\n',
     "packages/ui-lynx/src/f.ts": 'import "@libitums/mobile";\n',
   });
@@ -81,7 +82,8 @@ test("DB-I2 규칙마다 위반 하나씩 — 모두 잡고 종료 1", () => {
     assert.match(out, /packages\/episode-core\/src\/host\.ts:1 D4 .*fetch/);
     assert.match(out, /apps\/landing\/src\/e\.ts:1 D2 .*apps\/mobile/);
     assert.match(out, /packages\/ui-lynx\/src\/f\.ts:1 D2 .*@libitums\/mobile/);
-    assert.match(out, /위반 6건/);
+    assert.match(out, /packages\/episode-core\/src\/clock\.ts:1 D5 .*Date\.now/);
+    assert.match(out, /위반 7건/);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

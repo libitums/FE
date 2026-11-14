@@ -1,9 +1,13 @@
 // 소스 한 파일에서 import 이름과 전역 식별자 참조를 뽑습니다(TypeScript 구문 트리 — 주석 · 문자열 속 글자는 세지 않음).
 // `.astro`는 구문 트리 없이 import 문만 글자로 읽습니다(랜딩은 app 층이라 방향 규칙 D2만 봅니다).
 
+/** 시간 · 난수 멤버 — `crypto.*`는 따로 통째로 봅니다. */
+const NONDETERMINISTIC_MEMBERS = new Set(["Date.now", "Math.random", "performance.now"]);
+
 /** @param {typeof import("typescript")} ts */
 export function scanSource(ts, fileName, text) {
-  if (fileName.endsWith(".astro")) return { imports: astroImports(text), globals: [] };
+  if (fileName.endsWith(".astro"))
+    return { imports: astroImports(text), globals: [], nondeterministic: [] };
   const kind = fileName.endsWith(".tsx")
     ? ts.ScriptKind.TSX
     : fileName.endsWith(".ts") || fileName.endsWith(".mts")
@@ -13,6 +17,8 @@ export function scanSource(ts, fileName, text) {
   const lineOf = (node) => source.getLineAndCharacterOfPosition(node.getStart(source)).line + 1;
   const imports = [];
   const references = [];
+  // 결과가 실행마다 달라지는 호출(시간 · 난수) — core는 이것을 인자로 받습니다(D5).
+  const nondeterministic = [];
   const declared = new Set();
 
   const visit = (node) => {
@@ -40,6 +46,18 @@ export function scanSource(ts, fileName, text) {
     ) {
       imports.push({ name: node.argument.literal.text, line: lineOf(node) });
     }
+    if (ts.isPropertyAccessExpression(node) && ts.isIdentifier(node.expression)) {
+      const call = `${node.expression.text}.${node.name.text}`;
+      if (NONDETERMINISTIC_MEMBERS.has(call) || node.expression.text === "crypto")
+        nondeterministic.push({ name: call, line: lineOf(node) });
+    } else if (
+      ts.isNewExpression(node) &&
+      ts.isIdentifier(node.expression) &&
+      node.expression.text === "Date" &&
+      (node.arguments?.length ?? 0) === 0
+    ) {
+      nondeterministic.push({ name: "new Date()", line: lineOf(node) });
+    }
     if (ts.isIdentifier(node)) {
       if (isDeclarationName(ts, node)) declared.add(node.text);
       else if (isValueReference(ts, node)) references.push({ name: node.text, line: lineOf(node) });
@@ -48,7 +66,11 @@ export function scanSource(ts, fileName, text) {
   };
   visit(source);
   // 파일 안에서 같은 이름을 선언했으면(매개변수 · 지역 변수) 전역이 아닙니다.
-  return { imports, globals: references.filter(({ name }) => !declared.has(name)) };
+  return {
+    imports,
+    globals: references.filter(({ name }) => !declared.has(name)),
+    nondeterministic: nondeterministic.filter(({ name }) => !declared.has(name.split(".")[0])),
+  };
 }
 
 function isDeclarationName(ts, node) {

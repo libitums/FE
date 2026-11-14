@@ -19,11 +19,18 @@ core 패키지(`episode-core` · `companion-contract`)의 금지 import는 패�
 | **D2** import 방향 | 모든 workspace 소스(테스트 포함) | 다른 workspace를 상대 경로로 import, 앱 패키지 import |
 | **D3** core import | core 비테스트 소스 | `@lynx-js/*` · `@libitums/ui-lynx` · `@libitums/icons` · `@libitums/design-tokens` · `react` · `react-dom` · `astro` · `@supabase/*` · `node:*` |
 | **D4** core 전역 | core 비테스트 소스 | `window` · `document` · `navigator` · `localStorage` · `sessionStorage` · `location` · `history` · `fetch` · `XMLHttpRequest` · `WebSocket` · `EventSource` · `indexedDB` · `requestAnimationFrame` · `cancelAnimationFrame` · `lynx` · `NativeModules` · `SystemInfo` |
+| **D5** core 시간 · 난수 | core 비테스트 소스 | `Date.now()` · 인자 없는 `new Date()` · `Math.random()` · `performance.now()` · `crypto.*` — 실행마다 결과가 달라 테스트가 흔들림(2026-11-14 추가, 현재 사용 0) |
 
 - 층: core = `packages/episode-core` · `packages/companion-contract`, ui = `packages/ui-lynx`, app = `apps/*`(package.json이 있는 것). 새 패키지는 기본 ui 층 — core로 둘 때 `policy.mjs`의 `LAYERS`에 적는다.
 - 소스는 TypeScript 구문 트리로 읽는다(주석 · 문자열 · 속성 이름 · 지역 선언은 세지 않음). `.astro`는 import 문만 글자로.
 - 테스트 · 테스트 지원 파일은 D3 · D4에서 빠진다(node:fs 등). D2(방향)는 테스트도 지킨다.
 - core에 전역 · 어댑터가 필요하면 **인자로 주입**한다(예: 앱 · 랜딩이 fetch를 넘김).
+
+### 포트와 어댑터 — core가 플랫폼 기능을 필요로 할 때(사용자 질문 「adapter를 따로 추가하는 게 나으려나」, 2026-11-14)
+- **포트(타입)는 core에** 둔다 — 무엇이 필요한지만(예: `type HttpGet = (url: string) => Promise<string | null>`, `type Clock = () => number`, `type Random = () => number`).
+- **어댑터(구현)는 각 앱 안에** 둔다 — 모바일 `apps/mobile/src/lib/`, 랜딩 `apps/landing/src/`. core 함수는 어댑터를 인자로 받고, 테스트는 가짜를 넘긴다.
+- **어댑터 패키지는 미리 만들지 않는다**(ADR-0004 D2). 두 앱의 구현이 실제로 같아지면 그때 공유 패키지로 올린다.
+- 2026-11-14 기준 core에는 플랫폼 전역 · 시간 · 난수 사용이 없다 — 콘텐츠 받기(`fetch`)는 앱(`lib/episode-remote.ts`)과 랜딩이 하고 core는 받은 글자를 해석만 한다. 그래서 지금 만들 어댑터는 없다.
 
 ## 버린 대안
 1. **oxlint `no-restricted-imports` · `no-restricted-globals`(overrides)** — 쓰는 oxlint 1.80에서 두 규칙 설정을 확인하지 못했고, package.json 방향(D1) · workspace 사이 상대 경로(D2)는 어차피 따로 봐야 한다. 한 도구로 모은다.

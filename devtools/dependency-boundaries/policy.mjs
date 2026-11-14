@@ -133,3 +133,13 @@ export function isTestPath(file) {
     /\.(test|test-support)\.(ts|tsx|mts|mjs|js)$/.test(file) || /(^|\/)test-helpers\//.test(file)
   );
 }
+
+/** core의 시간 · 난수 판정(D5) — `Date.now` · `new Date()` · `Math.random` · `performance.now` · `crypto.*`. 인자로 주입합니다. */
+export function nondeterminismViolations({ workspaceDir, isTest, nondeterministic }) {
+  if (layerOf(workspaceDir) !== "core" || isTest) return [];
+  return nondeterministic.map(({ name, line }) => ({
+    rule: "D5",
+    line,
+    message: `core가 ${name}을 부릅니다 — 시간 · 난수는 인자로 받습니다(테스트가 흔들리지 않게)`,
+  }));
+}

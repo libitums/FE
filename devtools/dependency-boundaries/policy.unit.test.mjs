@@ -8,6 +8,7 @@ import test from "node:test";
 
 import {
   globalViolations,
+  nondeterminismViolations,
   importViolations,
   isTestPath,
   layerOf,
@@ -159,4 +160,44 @@ test("DB-U7 테스트 경로 · astro import", () => {
     ).map((i) => i.name),
     ["../../mobile/src/a", "@libitums/mobile"],
   );
+});
+
+test("DB-U8 core 시간 · 난수 — Date.now · new Date() · Math.random · performance.now · crypto.*는 D5, 인자 있는 new Date(x) · 지역 Math는 통과", () => {
+  const text = [
+    "Date.now();",
+    "new Date();",
+    "new Date(0);",
+    "Math.random();",
+    "Math.max(1, 2);",
+    "performance.now();",
+    "crypto.randomUUID();",
+  ].join("\n");
+  const { nondeterministic } = scanSource(ts, "g.ts", text);
+  assert.deepEqual(
+    nondeterministic.map((n) => n.name),
+    ["Date.now", "new Date()", "Math.random", "performance.now", "crypto.randomUUID"],
+  );
+  const v = nondeterminismViolations({
+    workspaceDir: "packages/episode-core",
+    isTest: false,
+    nondeterministic,
+  });
+  assert.deepEqual(
+    v.map((x) => x.rule),
+    ["D5", "D5", "D5", "D5", "D5"],
+  );
+  assert.deepEqual(
+    nondeterminismViolations({
+      workspaceDir: "packages/episode-core",
+      isTest: true,
+      nondeterministic,
+    }),
+    [],
+  );
+  assert.deepEqual(
+    nondeterminismViolations({ workspaceDir: "apps/mobile", isTest: false, nondeterministic }),
+    [],
+  );
+  const local = scanSource(ts, "h.ts", "const Math = { random: () => 0.5 };\nMath.random();");
+  assert.deepEqual(local.nondeterministic, []);
 });

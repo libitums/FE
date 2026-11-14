@@ -8,7 +8,13 @@ import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { globalViolations, importViolations, isTestPath, manifestViolations } from "./policy.mjs";
+import {
+  globalViolations,
+  importViolations,
+  isTestPath,
+  manifestViolations,
+  nondeterminismViolations,
+} from "./policy.mjs";
 import { scanSource } from "./scan-source.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -91,7 +97,7 @@ export function run() {
 
     for (const abs of sourceFiles(dir)) {
       const rel = toPosix(abs);
-      const { imports, globals } = scanSource(ts, abs, readFileSync(abs, "utf8"));
+      const { imports, globals, nondeterministic } = scanSource(ts, abs, readFileSync(abs, "utf8"));
       const isTest = isTestPath(rel);
       const resolveRelative = (name) => owner(path.resolve(path.dirname(abs), name));
       for (const v of importViolations({
@@ -103,6 +109,8 @@ export function run() {
       }))
         problems.push(`${rel}:${v.line} ${v.rule} ${v.message}`);
       for (const v of globalViolations({ workspaceDir: dir, isTest, globals }))
+        problems.push(`${rel}:${v.line} ${v.rule} ${v.message}`);
+      for (const v of nondeterminismViolations({ workspaceDir: dir, isTest, nondeterministic }))
         problems.push(`${rel}:${v.line} ${v.rule} ${v.message}`);
     }
   }
