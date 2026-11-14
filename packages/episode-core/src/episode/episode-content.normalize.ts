@@ -115,7 +115,7 @@ export const toTexts = (wires: WireText[]): Text[] => wires.map(toText);
 export const optText = (wire: WireText | undefined): Text | undefined =>
   wire === undefined ? undefined : toText(wire);
 
-/** 문자열이면 한국어 설명 하나, `{ko, en}` 객체(수준 5 · ADR-0137)면 한국어와 영어로 나눕니다. */
+/** 문자열이면 한국어 설명 하나, `{ko, en}` 객체(수준 5 · ADR-0145)면 한국어와 영어로 나눕니다. */
 function whyWrongOf(wire: DeliveryOption["why_wrong"]): Pick<Option, "whyWrong" | "whyWrongEn"> {
   if (wire === undefined || typeof wire === "string") return maybe("whyWrong", wire);
   return { ...maybe("whyWrong", wire.ko), ...maybe("whyWrongEn", nonEmpty(wire.en)) };

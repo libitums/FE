@@ -25,7 +25,7 @@ test("ML3. 지금 앱의 경로 목록은 manifest.json으로 끝난다", () => 
   expect(paths[paths.length - 1]).toBe("manifest.json");
 });
 
-test("ML4. 지금 앱은 수준 5라 manifests/level-5.json을 맨 먼저 시도한다(ADR-0137)", () => {
+test("ML4. 지금 앱은 수준 5라 manifests/level-5.json을 맨 먼저 시도한다(ADR-0145)", () => {
   expect(CONTENT_CLIENT_LEVEL).toBe(5);
   expect(contentManifestPathsFor(CONTENT_CLIENT_LEVEL)[0]).toBe("manifests/level-5.json");
 });

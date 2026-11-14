@@ -13,7 +13,7 @@ export const optionSchema = z.object({
   roman: z.string(),
   en: optionalString,
   correct: z.boolean(),
-  // 콘텐츠 수준 5(ADR-0137)부터 `{ko, en}` 객체로도 옵니다. 옛 문자열도 그대로 받습니다.
+  // 콘텐츠 수준 5(ADR-0145)부터 `{ko, en}` 객체로도 옵니다. 옛 문자열도 그대로 받습니다.
   why_wrong: z.optional(z.union([z.string(), z.object({ ko: z.string(), en: optionalString })])),
 });
 

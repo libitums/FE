@@ -3,7 +3,7 @@ import { expect, test } from "vitest";
 import { decodeEpisode, type Episode } from "./index";
 import { item, minimalEpisode, roleplayTurnWire } from "./episode-wire.test-support";
 
-// `unit` 계층: 콘텐츠 수준 5(ADR-0137) — staging 2026-11-10판이 새로 싣는 모양.
+// `unit` 계층: 콘텐츠 수준 5(ADR-0145) — staging 2026-11-10판이 새로 싣는 모양.
 // `why_wrong` 객체 · TURN_ORDER의 빈 `context` · 음절 조각 RP의 빠진 `tiles_gloss`.
 
 function decoded(items: Record<string, unknown>[]): Episode {

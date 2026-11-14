@@ -128,7 +128,7 @@ const itemSchema = z.discriminatedUnion("type", [
     ...itemCommon,
     type: z.literal("TURN_ORDER"),
     prompt: promptSchema,
-    // 수준 5(ADR-0137) 콘텐츠는 `null`을 싣습니다 — 디코더가 `prompt`의 글로 채웁니다.
+    // 수준 5(ADR-0145) 콘텐츠는 `null`을 싣습니다 — 디코더가 `prompt`의 글로 채웁니다.
     context: z.optional(z.nullable(textSchema)),
     tiles: z.array(turnTileSchema),
     answers: z.array(textSchema),
@@ -193,7 +193,7 @@ const itemSchema = z.discriminatedUnion("type", [
     feedback: correctFeedbackSchema,
     roleplay: z.object({
       line_id: z.string(),
-      // 음절 조각 RP(수준 5 · ADR-0137)는 키가 없습니다 — 빈 배열로 읽습니다.
+      // 음절 조각 RP(수준 5 · ADR-0145)는 키가 없습니다 — 빈 배열로 읽습니다.
       tiles_gloss: z.optional(z.array(z.object({ tile: z.string(), en: optionalString }))),
     }),
   }),

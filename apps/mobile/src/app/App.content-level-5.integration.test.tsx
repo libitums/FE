@@ -10,7 +10,7 @@ import { resetApp } from "./test-helpers/episode-format-harness";
 import { tutorialDoneProgress } from "./test-helpers/progress-seed";
 import { bootTutorialApp, flushAsync } from "./test-helpers/tutorial-boot";
 
-// `integration` 계층: 콘텐츠 수준 5(ADR-0137) — 앱이 `manifests/level-5.json`을 먼저 받고, staging 2026-11-10판
+// `integration` 계층: 콘텐츠 수준 5(ADR-0145) — 앱이 `manifests/level-5.json`을 먼저 받고, staging 2026-11-10판
 // 모양(`why_wrong` 객체 · 빈 TURN_ORDER `context` · `tiles_gloss` 없는 RP)의 본문을 검증 · 저장한다.
 // 디코드에 실패한 본문은 저장되지 않고 잠깁니다. 대역은 경계뿐입니다(저장소 · fetch).
 

@@ -136,7 +136,7 @@ describe("이야기 유닛의 맵 파생", () => {
     expect(catalogStoryModelOf(content, sections, EP, "S5", {})).toBeNull();
   });
 
-  test("ST7. 앱은 콘텐츠 수준 5다 — 수준 5 매니페스트부터 읽는다(ADR-0087 · ADR-0102 · ADR-0137)", () => {
+  test("ST7. 앱은 콘텐츠 수준 5다 — 수준 5 매니페스트부터 읽는다(ADR-0087 · ADR-0102 · ADR-0145)", () => {
     expect(CONTENT_CLIENT_LEVEL).toBe(5);
   });
 });

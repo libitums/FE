@@ -128,7 +128,7 @@ export function toItem(item: DeliveryItem): LearningItem {
         ...base,
         type: item.type,
         prompt: toText(item.prompt),
-        // 빈 `context`(수준 5 · ADR-0137)는 지시문으로 채웁니다 — 운영판에서 두 글이 같았습니다.
+        // 빈 `context`(수준 5 · ADR-0145)는 지시문으로 채웁니다 — 운영판에서 두 글이 같았습니다.
         context: item.context == null ? toText(item.prompt) : toText(item.context),
         tiles: item.tiles.map(toTurnTile),
         answer: resolveTurnOrder(item.tiles, item.answers[0]?.ko) ?? [],

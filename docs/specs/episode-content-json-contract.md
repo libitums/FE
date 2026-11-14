@@ -170,7 +170,7 @@ FE 제안: 단일 `Text = { ko, roman, en? }`로 통일한다. `en`은 어디서
 | `IMG_MATCH` | 10 | choice | R | | ● `{image_brief, image_url:"", audio_url:""}` | | | ● 4개 (en 필수) | |
 | `WORD_ORDER` | 3 | tiles | R | | | ● 3개 | ● 1개 (en 2/3) | | |
 | `LISTEN_SELECT` | 37 | choice | E 3 / R 34 | ○ 3/37 (E일 때만) | ● `{audio: Text, audio_url:"", image_url:""}` | | | **○ 34/37 (R일 때만)** 4개 | |
-| `TURN_ORDER` | 23 | tiles | R | ● `{ko,roman}` (prompt와 같은 문장 — ⟨2026-11-13⟩ staging 11-10판은 `null`, 수준 5 앱은 `prompt`로 채운다 · ADR-0137) | | ● 4개 (en 81/92) | ● 1개 **`" \| "` 연결 문자열** | | |
+| `TURN_ORDER` | 23 | tiles | R | ● `{ko,roman}` (prompt와 같은 문장 — ⟨2026-11-13⟩ staging 11-10판은 `null`, 수준 5 앱은 `prompt`로 채운다 · ADR-0145) | | ● 4개 (en 81/92) | ● 1개 **`" \| "` 연결 문자열** | | |
 | `ROLE_LINE` | 37 | choice | R | ● Text | | | | ● 3개 | `feedback: {correct: Text-ish, wrong?, wrong_option?}` (wrong 1/37) |
 | `TRANSLATE_TO_KO` | 29 | typing | R | | | | ● 2개 (마침표 유무 변형) | | |
 | `TRANSLATE_TO_EN` | 10 | choice | R | | ● `{text: {ko,roman}, audio_url:"", image_url:""}` | | | ● 4개 **ko · roman 자리에 영어** | |
@@ -221,7 +221,7 @@ FE 제안: 단일 `Text = { ko, roman, en? }`로 통일한다. `en`은 어디서
   - `SPEAK_WORD` — 읽음: 정답 `answers[].ko`(치환 · trim, 빈 값 제외 — 0개면 `malformed`) · **그림 `stimulus.image_url`이 필수**(없거나 주소로 풀리지 않으면 건너뜀 `image-missing` — `IMG_MATCH`와 같다, 지금 6/6 있음) ·
     뜻 `answers[0].en`(없으면 낱말 목록 — 그래도 없으면 `no-gloss`, 지금 6/6 있음) · 로마자 `answers[0].roman`(정답 상자 `Answer: 낱말 · 로마자`) · 지시문 `prompt.en`(「Say the word for the picture.」). **읽지 않음**: `image_brief` · `audio_url`.
     판정은 들은 글자의 앞 낱말이 정답 낱말과 같은가다(띄어쓰기 · 어미는 너그럽지 않다 — 「비밀 번호」 · 「카드요」는 오답).
-- ⟨2026-11-13 — 수준 5⟩ staging 11-10판부터 `why_wrong`이 **`{ko, en}` 객체**로 온다(1,887곳). 수준 5 앱은 문자열 · 객체 둘 다 받아 `whyWrong`(한국어) · `whyWrongEn`(영어)으로 둔다 — 화면에는 여전히 쓰지 않는다([ADR-0137](../adr/0137-content-level-5.md)). 수준 4 이하 앱은 객체를 받지 못한다(에피소드 잠김) — 수준 5 매니페스트로만 내보낸다.
+- ⟨2026-11-13 — 수준 5⟩ staging 11-10판부터 `why_wrong`이 **`{ko, en}` 객체**로 온다(1,887곳). 수준 5 앱은 문자열 · 객체 둘 다 받아 `whyWrong`(한국어) · `whyWrongEn`(영어)으로 둔다 — 화면에는 여전히 쓰지 않는다([ADR-0145](../adr/0145-content-level-5.md)). 수준 4 이하 앱은 객체를 받지 못한다(에피소드 잠김) — 수준 5 매니페스트로만 내보낸다.
 - `options[].why_wrong`은 새 파일에서도 **오답 보기마다** 있다(355/355). 값은 337개가 `"이 자리에 맞는 말이 아니다"`, 18개가 `"카드에 적힌 사실과 다르다"`(`CULTURE_CHECK`). 앱은 디코드만 하고 보이지 않는다(Q8).
 - 새 문항의 `stimulus.audio_url`은 **전부 빈 값**이다. `stimulus.image_url`은 `IMG_MATCH` 7 · `SPEAK_WORD` 6 · `ROLEPLAY_TURN` 13에만 값이 있다(`images/items/*.jpg` 등 버킷 기준 상대 경로).
 
@@ -270,7 +270,7 @@ FE 제안: 단일 `Text = { ko, roman, en? }`로 통일한다. `en`은 어디서
 | `counterpart_line` | string | `context.ko`와 **13/13 동일** |
 | `player_line` | string | `stimulus.text.ko`와 **13/13 동일** |
 | `tiles` | string[] | `tiles[].ko`와 **13/13 동일** |
-| `tiles_gloss` | `{tile, en?}[]` | 타일별 영어 주석. 상위에 없음. ⟨2026-11-13⟩ 음절 조각 RP(`tiles_kind: "syllable"`)에는 키가 없다 — 수준 5 앱은 빈 배열로 읽는다(ADR-0137) |
+| `tiles_gloss` | `{tile, en?}[]` | 타일별 영어 주석. 상위에 없음. ⟨2026-11-13⟩ 음절 조각 RP(`tiles_kind: "syllable"`)에는 키가 없다 — 수준 5 앱은 빈 배열로 읽는다(ADR-0145) |
 | `accepted_answers` | `{text}[]` | `answers[].ko`와 **12/13 동일**, u03 RP-02만 1개 vs 2개로 어긋남 |
 | `modes` | `["speech","tiles"]` | 13/13 같은 값. 상위 `mode: "either"`와 중복 |
 
