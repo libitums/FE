@@ -3,7 +3,7 @@ import { beforeEach, expect, test } from "vitest";
 import { base64FromBytes } from "./base64.ts";
 import { createMediaHandler, type MediaDeps, type MediaKind } from "./companion-media-handler.ts";
 import { type MediaEnv, missingKeys as missingFor } from "./companion-media-env.ts";
-import { purgeUserMedia } from "./companion-media-engines.ts";
+import { purgeUserMedia } from "./companion-media-purge.ts";
 import { createDeleteAccountHandler } from "./delete-account-handler.ts";
 import {
   imagePrompt,

@@ -6,11 +6,11 @@ import Anthropic from "@anthropic-ai/sdk";
 
 import { base64FromBytes, bytesFromBase64 } from "./base64.ts";
 import type { MediaEnv } from "./companion-media-env.ts";
+import { MEDIA_BUCKET } from "./companion-media-purge.ts";
 import { serviceKeyHeaders } from "./service-key.ts";
 
 export const OPENAI_URL = "https://api.openai.com/v1";
 export const ELEVEN_URL = "https://api.elevenlabs.io/v1";
-export const MEDIA_BUCKET = "companion-media";
 export const REFS_BUCKET = "companion-refs";
 
 export type Fetch = typeof fetch;
@@ -239,45 +239,4 @@ export async function uploadMedia(
       `upload ${response.status}: ${(await response.text().catch(() => "")).slice(0, 200)}`,
     );
   }
-}
-
-/**
- * 한 유저의 결과 파일을 모두 지운다(계정 삭제). 폴더 `<user_id>/`를 1000개씩 나열해 지운다. 지운 수.
- * 실패하면 던진다 — 부르는 쪽이 계정 삭제를 막을지 정한다.
- */
-export async function purgeUserMedia(
-  fetchImpl: Fetch,
-  env: { readonly supabaseUrl: string; readonly supabaseServiceRoleKey: string },
-  userId: string,
-  timeoutMs: number,
-): Promise<number> {
-  const headers = {
-    ...serviceKeyHeaders(env.supabaseServiceRoleKey),
-    "Content-Type": "application/json",
-  };
-  let removed = 0;
-  for (let round = 0; round < 20; round += 1) {
-    const list = await fetchImpl(`${env.supabaseUrl}/storage/v1/object/list/${MEDIA_BUCKET}`, {
-      method: "POST",
-      headers,
-      body: JSON.stringify({ prefix: `${userId}/`, limit: 1000, offset: 0 }),
-      signal: AbortSignal.timeout(timeoutMs),
-    });
-    // 버킷이 아직 없으면(마이그레이션 전) 지울 것도 없다.
-    if (list.status === 400 || list.status === 404) return removed;
-    if (list.status !== 200) throw new Error(`list ${list.status}`);
-    const names = ((await list.json()) as { name?: unknown }[])
-      .map((item) => item.name)
-      .filter((name): name is string => typeof name === "string" && name !== "");
-    if (names.length === 0) return removed;
-    const remove = await fetchImpl(`${env.supabaseUrl}/storage/v1/object/${MEDIA_BUCKET}`, {
-      method: "DELETE",
-      headers,
-      body: JSON.stringify({ prefixes: names.map((name) => `${userId}/${name}`) }),
-      signal: AbortSignal.timeout(timeoutMs),
-    });
-    if (remove.status !== 200) throw new Error(`remove ${remove.status}`);
-    removed += names.length;
-  }
-  return removed;
 }

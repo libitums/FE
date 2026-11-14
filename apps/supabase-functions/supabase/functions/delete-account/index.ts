@@ -1,5 +1,5 @@
 import { signEs256 } from "../_shared/apple-client-secret.ts";
-import { purgeUserMedia } from "../_shared/companion-media-engines.ts";
+import { purgeUserMedia } from "../_shared/companion-media-purge.ts";
 import { createDeleteAccountHandler } from "../_shared/delete-account-handler.ts";
 import { deleteAccountEnvFrom } from "../_shared/delete-account-env.ts";
 import { outboundTimeoutMs, timedOutbound } from "../_shared/outbound.ts";
