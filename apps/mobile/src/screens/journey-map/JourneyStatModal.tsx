@@ -16,6 +16,16 @@ import { lightStatusBarIcons } from "../../lib/status-bar-icons";
 import { useLayerBack } from "../../lib/use-back-handler";
 import { useUiCopy } from "../../lib/ui-copy";
 import { journeyStatSlotCount, type JourneyStatKind, type JourneyStatTrack } from "./journey-stat";
+import type { StreakRewardWiring } from "./streak-reward.contract";
+import { streakRewardView } from "./streak-rewards";
+import {
+  StreakGoal,
+  StreakRewardCard,
+  StreakRewardFlight,
+  StreakRewardMessage,
+  StreakTagRow,
+} from "./StreakRewardParts";
+import { useStreakCollect } from "./use-streak-collect";
 
 import "./journey-stat-modal.css";
 import "./journey-stat-modal-motion.css";
@@ -30,6 +40,8 @@ export type JourneyStatModalProps = {
   readonly value: number;
   readonly track: JourneyStatTrack;
   readonly onClose: () => void;
+  /** 연속 학습 엽전 보상(ADR-0143) — 연속 학습 모달 · 로그인 사용자만. 없으면 보상 없이 지금 그대로입니다. */
+  readonly reward?: StreakRewardWiring;
 };
 
 // 칸 번호 0 … 6입니다. 칸 수가 고정이라 렌더마다 만들지 않습니다.
@@ -40,6 +52,7 @@ export function JourneyStatModal({
   value,
   track,
   onClose,
+  reward: rewardProp,
 }: JourneyStatModalProps): ReactNode {
   // 이 레이어는 셸 밖(`position: fixed`)이라 셸의 safe area 여백을 받지 못합니다 —
   // 같은 값을 스스로 읽어 안쪽 여백으로 잡습니다(lib/safe-area.ts).
@@ -63,181 +76,207 @@ export function JourneyStatModal({
   };
   // 시스템 뒤로가기 = 보이는 닫기와 같은 함수입니다. 모달이 서 있는 동안만 등록됩니다.
   useLayerBack(handleClose);
+  // 연속 학습 엽전 보상(ADR-0143) — 결선이 있는 연속 학습 모달에서만 꼬리표 · 목표 줄 · 카드가 섭니다.
+  const reward = kind === "streak" ? rewardProp : undefined;
+  const view = reward === undefined ? null : streakRewardView(value, reward.collected(value));
+  const collect = useStreakCollect({ reward, days: value, reduced: !alive, onClose });
 
   return (
-    <view
-      className={`journey-stat-modal journey-stat-modal-${kind}`}
-      data-testid={`journey-stat-modal-${kind}`}
-      data-statusbar={lightStatusBarIcons}
-      // 맵으로 가는 탭을 가로챕니다 — 뒤쪽 맵은 모달이 떠 있는 동안 조작 대상이 아닙니다.
-      event-through={false}
-      style={{
-        paddingTop: `${insets.top}px`,
-        paddingBottom: `${insets.bottom}px`,
-        paddingLeft: `${insets.left}px`,
-        paddingRight: `${insets.right}px`,
-      }}
-    >
-      {/* 장식 운석 셋 — 연속 학습에만 있습니다. 낭독하지 않습니다. */}
-      {kind === "streak" ? (
-        <view className="journey-stat-modal-decor" accessibility-elements-hidden={true}>
-          {(["a", "b", "c"] as const).map((slot) => (
-            <view
-              key={slot}
-              className={`journey-stat-modal-meteor journey-stat-modal-meteor-${slot}`}
-              style={slot === "c" ? { top: `${insets.top}px` } : undefined}
-            >
-              <view className={alive ? `journey-stat-modal-meteor-in-${slot}` : undefined}>
-                <view className={alive ? `journey-stat-modal-meteor-bob-${slot}` : undefined}>
-                  <svg
-                    className="journey-stat-modal-meteor-icon"
-                    content={meteor}
-                    current-color={color.brand.primary}
-                  />
-                </view>
-              </view>
-            </view>
-          ))}
-        </view>
-      ) : null}
-
-      <view className="journey-stat-modal-header">
-        <view data-testid="journey-stat-modal-back">
-          <RoundButton
-            icon={arrowLeft}
-            size="xl"
-            accessibilityLabel={copy.common.exitTo.journey}
-            bindtap={handleClose}
-          />
-        </view>
-      </view>
-
+    <>
       <view
-        className={`journey-stat-modal-hero ${alive ? "journey-stat-modal-hero-enter" : "journey-stat-modal-hero-fade"}`}
-        data-testid="journey-stat-modal-hero"
-        accessibility-element={true}
-        accessibility-traits="header"
-        accessibility-label={heroLabel}
+        className={`journey-stat-modal journey-stat-modal-${kind}${collect.flying ? " journey-stat-modal-out" : ""}`}
+        data-testid={`journey-stat-modal-${kind}`}
+        data-statusbar={lightStatusBarIcons}
+        // 맵으로 가는 탭을 가로챕니다 — 뒤쪽 맵은 모달이 떠 있는 동안 조작 대상이 아닙니다.
+        event-through={false}
+        style={{
+          paddingTop: `${insets.top}px`,
+          paddingBottom: `${insets.bottom}px`,
+          paddingLeft: `${insets.left}px`,
+          paddingRight: `${insets.right}px`,
+        }}
       >
-        <view className="journey-stat-modal-value-box">
-          <text className="journey-stat-modal-value" data-testid="journey-stat-modal-value">
-            {String(value)}
-          </text>
-          {/* 트로피는 숫자 바로 위 가운데에 얹힙니다. */}
-          {kind === "trophy" ? (
-            <view className="journey-stat-modal-trophy-anchor">
+        {/* 장식 운석 셋 — 연속 학습에만 있습니다. 낭독하지 않습니다. */}
+        {kind === "streak" ? (
+          <view className="journey-stat-modal-decor" accessibility-elements-hidden={true}>
+            {(["a", "b", "c"] as const).map((slot) => (
               <view
-                className={
-                  alive
-                    ? "journey-stat-modal-trophy-icon journey-stat-modal-trophy-wobble"
-                    : "journey-stat-modal-trophy-icon"
-                }
+                key={slot}
+                className={`journey-stat-modal-meteor journey-stat-modal-meteor-${slot}`}
+                style={slot === "c" ? { top: `${insets.top}px` } : undefined}
               >
-                <svg
-                  className="journey-stat-modal-trophy-art"
-                  content={trophy}
-                  current-color={color.feedback.warning}
-                />
-                {/* 빛 — 같은 모양의 흰 트로피를 겹쳐 잠깐 밝혔다가 걷습니다. */}
-                {alive ? (
-                  <svg
-                    className="journey-stat-modal-trophy-art journey-stat-modal-trophy-glint"
-                    content={trophy}
-                    current-color={color.white}
-                  />
-                ) : null}
-              </view>
-            </view>
-          ) : null}
-          {/* 불꽃은 숫자의 오른쪽 위 끝에 걸칩니다 — 숫자 폭이 달라져도 끝을 따라갑니다. */}
-          {kind === "streak" ? (
-            <view className="journey-stat-modal-fire">
-              <view className={alive ? "journey-stat-modal-fire-flicker" : undefined}>
-                <view className={alive ? "journey-stat-modal-fire-breathe" : undefined}>
-                  <svg
-                    className="journey-stat-modal-fire-art"
-                    content={fire}
-                    current-color={color.brand.primary}
-                  />
+                <view className={alive ? `journey-stat-modal-meteor-in-${slot}` : undefined}>
+                  <view className={alive ? `journey-stat-modal-meteor-bob-${slot}` : undefined}>
+                    <svg
+                      className="journey-stat-modal-meteor-icon"
+                      content={meteor}
+                      current-color={color.brand.primary}
+                    />
+                  </view>
                 </view>
-              </view>
-            </view>
-          ) : null}
-        </view>
-        <text className="journey-stat-modal-title" data-testid="journey-stat-modal-title">
-          {title}
-        </text>
-      </view>
-
-      <view className="journey-stat-modal-spacer" />
-
-      {/* 진행 줄 — 찬 칸은 한 알약으로 묶이고 남은 칸은 빈 원입니다. 요일 줄과 칸이
-          같은 폭 · 같은 간격이라 요일 아래 칸이 정확히 섭니다. */}
-      <view
-        className="journey-stat-modal-track"
-        data-testid="journey-stat-modal-track"
-        accessibility-element={true}
-        accessibility-label={copy.journeyMap.statModal.slotProgress(
-          track.completedCount,
-          journeyStatSlotCount,
-        )}
-      >
-        {track.dayLabels ? (
-          <view className="journey-stat-modal-days" data-testid="journey-stat-modal-days">
-            {track.dayLabels.map((label, index) => (
-              <view className="journey-stat-modal-slot" key={index}>
-                <text className="journey-stat-modal-day">{label}</text>
               </view>
             ))}
           </view>
         ) : null}
-        <view className="journey-stat-modal-slots">
-          {done.length > 0 ? (
-            <view className="journey-stat-modal-done" data-testid="journey-stat-modal-done">
-              {done.map((index) => (
-                <view className="journey-stat-modal-slot" key={index}>
-                  {/* 가장 최근 칸(오늘 · 이번 에피소드)의 체크는 등장 뒤에 톡 찍힙니다. */}
-                  <view
-                    className={
-                      alive && index === done.length - 1
-                        ? "journey-stat-modal-tick-box journey-stat-modal-tick-latest"
-                        : "journey-stat-modal-tick-box"
-                    }
-                  >
+
+        <view className="journey-stat-modal-header">
+          <view data-testid="journey-stat-modal-back">
+            <RoundButton
+              icon={arrowLeft}
+              size="xl"
+              accessibilityLabel={copy.common.exitTo.journey}
+              bindtap={handleClose}
+            />
+          </view>
+        </view>
+
+        <view
+          className={`journey-stat-modal-hero ${alive ? "journey-stat-modal-hero-enter" : "journey-stat-modal-hero-fade"}`}
+          data-testid="journey-stat-modal-hero"
+          accessibility-element={true}
+          accessibility-traits="header"
+          accessibility-label={heroLabel}
+        >
+          <view className="journey-stat-modal-value-box">
+            <text className="journey-stat-modal-value" data-testid="journey-stat-modal-value">
+              {String(value)}
+            </text>
+            {/* 트로피는 숫자 바로 위 가운데에 얹힙니다. */}
+            {kind === "trophy" ? (
+              <view className="journey-stat-modal-trophy-anchor">
+                <view
+                  className={
+                    alive
+                      ? "journey-stat-modal-trophy-icon journey-stat-modal-trophy-wobble"
+                      : "journey-stat-modal-trophy-icon"
+                  }
+                >
+                  <svg
+                    className="journey-stat-modal-trophy-art"
+                    content={trophy}
+                    current-color={color.feedback.warning}
+                  />
+                  {/* 빛 — 같은 모양의 흰 트로피를 겹쳐 잠깐 밝혔다가 걷습니다. */}
+                  {alive ? (
                     <svg
-                      className="journey-stat-modal-tick"
-                      content={tick}
+                      className="journey-stat-modal-trophy-art journey-stat-modal-trophy-glint"
+                      content={trophy}
                       current-color={color.white}
                     />
+                  ) : null}
+                </view>
+              </view>
+            ) : null}
+            {/* 불꽃은 숫자의 오른쪽 위 끝에 걸칩니다 — 숫자 폭이 달라져도 끝을 따라갑니다. */}
+            {kind === "streak" ? (
+              <view className="journey-stat-modal-fire">
+                <view className={alive ? "journey-stat-modal-fire-flicker" : undefined}>
+                  <view className={alive ? "journey-stat-modal-fire-breathe" : undefined}>
+                    <svg
+                      className="journey-stat-modal-fire-art"
+                      content={fire}
+                      current-color={color.brand.primary}
+                    />
                   </view>
+                </view>
+              </view>
+            ) : null}
+          </view>
+          <text className="journey-stat-modal-title" data-testid="journey-stat-modal-title">
+            {title}
+          </text>
+        </view>
+
+        <view className="journey-stat-modal-spacer" />
+
+        {/* 진행 줄 — 찬 칸은 한 알약으로 묶이고 남은 칸은 빈 원입니다. 요일 줄과 칸이
+          같은 폭 · 같은 간격이라 요일 아래 칸이 정확히 섭니다. */}
+        <view
+          className="journey-stat-modal-track"
+          data-testid="journey-stat-modal-track"
+          accessibility-element={true}
+          accessibility-label={copy.journeyMap.statModal.slotProgress(
+            track.completedCount,
+            journeyStatSlotCount,
+          )}
+        >
+          {track.dayLabels ? (
+            <view className="journey-stat-modal-days" data-testid="journey-stat-modal-days">
+              {track.dayLabels.map((label, index) => (
+                <view className="journey-stat-modal-slot" key={index}>
+                  <text className="journey-stat-modal-day">{label}</text>
                 </view>
               ))}
             </view>
           ) : null}
-          {rest.map((index) => (
-            <view
-              className="journey-stat-modal-slot journey-stat-modal-empty"
-              data-testid="journey-stat-modal-empty"
-              key={index}
-            />
-          ))}
+          {view === null ? null : <StreakTagRow tags={view.tags} animate={alive} />}
+          <view className="journey-stat-modal-slots">
+            {done.length > 0 ? (
+              <view className="journey-stat-modal-done" data-testid="journey-stat-modal-done">
+                {done.map((index) => (
+                  <view className="journey-stat-modal-slot" key={index}>
+                    {/* 가장 최근 칸(오늘 · 이번 에피소드)의 체크는 등장 뒤에 톡 찍힙니다. */}
+                    <view
+                      className={
+                        alive && index === done.length - 1
+                          ? "journey-stat-modal-tick-box journey-stat-modal-tick-latest"
+                          : "journey-stat-modal-tick-box"
+                      }
+                    >
+                      <svg
+                        className="journey-stat-modal-tick"
+                        content={tick}
+                        current-color={color.white}
+                      />
+                    </view>
+                  </view>
+                ))}
+              </view>
+            ) : null}
+            {rest.map((index) => (
+              <view
+                className="journey-stat-modal-slot journey-stat-modal-empty"
+                data-testid="journey-stat-modal-empty"
+                key={index}
+              />
+            ))}
+          </view>
         </view>
-      </view>
 
-      <text className="journey-stat-modal-message" data-testid="journey-stat-modal-message">
-        {message}
-      </text>
+        {view === null ? (
+          <text className="journey-stat-modal-message" data-testid="journey-stat-modal-message">
+            {message}
+          </text>
+        ) : view.reward > 0 ? (
+          <StreakRewardCard
+            days={value}
+            amount={view.reward}
+            animate={alive}
+            onCollect={collect.collect}
+          />
+        ) : (
+          <>
+            <StreakGoal goal={view.goal} animate={alive} />
+            <StreakRewardMessage next={view.next} animate={alive} />
+          </>
+        )}
 
-      <view className="journey-stat-modal-footer" data-testid="journey-stat-modal-continue">
-        {/* 화살표는 디자인 표기대로 라벨 글자(→)입니다 — 아이콘 패키지의 arrow-right는
+        {view !== null && view.reward > 0 ? null : (
+          <view className="journey-stat-modal-footer" data-testid="journey-stat-modal-continue">
+            {/* 화살표는 디자인 표기대로 라벨 글자(→)입니다 — 아이콘 패키지의 arrow-right는
             모양이 달라 쓰지 않습니다. */}
-        <Button
-          label={copy.journeyMap.statModal.continue}
-          variant="outline"
-          size="xl"
-          bindtap={handleClose}
-        />
+            <Button
+              label={copy.journeyMap.statModal.continue}
+              variant="outline"
+              size="xl"
+              bindtap={handleClose}
+            />
+          </view>
+        )}
       </view>
-    </view>
+      {collect.flying && reward !== undefined ? (
+        <StreakRewardFlight targetId={reward.coinTargetId} onLanded={collect.landed} />
+      ) : null}
+    </>
   );
 }

@@ -79,8 +79,16 @@ export type SurfaceUsageEvent =
   | (Common & { readonly name: "first_lesson_completed" })
   | (Common & { readonly name: "first_chat_message_sent"; readonly characterId: string });
 
+/** 연속 학습 엽전 보상(ADR-0143) — 서버가 이번에 지급한 이정표(연속 일수 · 액수). */
+export type StreakRewardEvent = Common & {
+  readonly name: "streak_reward_collected";
+  readonly days: string;
+  readonly amount: string;
+};
+
 export type CompanionEvent =
   | LaunchEvent
+  | StreakRewardEvent
   | MessengerGuideEvent
   | CompanionUnlockEvent
   | ChatCoinEvent

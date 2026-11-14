@@ -65,4 +65,5 @@ export type AnalyticsEventName =
   | "chat_coins_short"
   | "surface_session_ended"
   | "first_lesson_completed"
-  | "first_chat_message_sent";
+  | "first_chat_message_sent"
+  | "streak_reward_collected";

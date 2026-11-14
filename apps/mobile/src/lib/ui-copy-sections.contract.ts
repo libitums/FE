@@ -8,6 +8,7 @@
 // `copy.x[key]`로 색인하므로 소유자 쪽 union이 늘면 그 자리에서 TS 오류로 섭니다. 설정 이동 항목
 // (`SettingsNavTarget`)만 타입으로 import합니다(`ui-copy-settings.contract.ts`) — 항목이 늘면 문구 행이 따라오게 하려는 것입니다.
 
+import type { StreakRewardCopy } from "./ui-copy-streak-reward";
 import type { LearningActivityForm } from "./learning-form";
 import type { LearningReviewCopy, LessonCompleteReviewCopy } from "./ui-copy-review.contract";
 import type { AnswerResult } from "./answer-result";
@@ -93,6 +94,8 @@ export type JourneyMapCopy = {
     readonly continue: string;
     /** 요일 약칭 일곱 — 인덱스는 `Date#getDay()`와 같습니다(0 = 일). */
     readonly weekdays: readonly [string, string, string, string, string, string, string];
+    /** 연속 학습 엽전 보상(ADR-0143) — 꼬리표 · 큰 목표 줄 · 문구 · 보상 카드 · Collect. */
+    readonly reward: StreakRewardCopy;
   };
 };
 

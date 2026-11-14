@@ -43,6 +43,8 @@ export type LaunchCoins = {
   /** 모달이 떠 있음 — 다른 지도 안내(업데이트 안내 등)를 미룹니다. */
   readonly open: boolean;
   readonly layer: ReactNode;
+  /** 다른 지급(연속 학습 보상, ADR-0143)이 받은 지갑 잔액 — 칩의 서버 잔액을 그 값으로 바꿉니다. */
+  readonly acceptServerBalance: (balance: number) => void;
 };
 
 const unitCount = (progress: CatalogProgress): number =>
@@ -176,5 +178,6 @@ export function useLaunchCoins(input: LaunchCoinsInput): LaunchCoins {
       : (settled ?? localCoins),
     open: step !== null,
     layer,
+    acceptServerBalance: (balance) => setServer({ balance, localAt: localRef.current }),
   };
 }

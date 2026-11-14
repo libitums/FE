@@ -1,5 +1,6 @@
 // 영어 문구표 구획 — common · shell · journeyMap · learningShell.
 
+import { streakRewardCopy } from "./ui-copy-streak-reward";
 import type {
   CommonCopy,
   JourneyMapCopy,
@@ -78,6 +79,7 @@ export const journeyMapEn: JourneyMapCopy = {
     continue: "Continue →",
     // 요일 약칭은 디자인 표기 그대로입니다.
     weekdays: ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"],
+    reward: streakRewardCopy.en,
   },
 };
 

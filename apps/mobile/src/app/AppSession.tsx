@@ -53,7 +53,6 @@ import { useTesterAccess } from "./use-tester-access";
 import type { AppProgressSeed, AppProps } from "./app-props";
 import type { AppSessionControl } from "./leave-app.contract";
 import type { CatalogReviewItem } from "./catalog-review";
-
 import "./app.css";
 
 const noProgressSeed: AppProgressSeed = {};
@@ -255,6 +254,7 @@ export function AppSession({
                   streakDays={progress.streakDays}
                   trophyCount={progress.headerTrophyCount}
                   coinCount={notices.coinCount}
+                  streakReward={notices.streakReward}
                   celebrateStreak={progress.streakCelebration}
                   onStreakCelebrated={progress.onStreakCelebrated}
                   statBump={progress.wiring}

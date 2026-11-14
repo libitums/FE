@@ -1,0 +1,246 @@
+/* 연속 학습 모달의 엽전 보상(ADR-0143, 시안 3판 「스트릭」 탭). 토큰은 CSS 커스텀 프로퍼티로만 소비합니다. 엽전 황동색
+   (#9a5e12 · #fff4e0)은 색 토큰 패키지에 황동 계열이 없어 디자인 값을 적습니다 — 머리 엽전 칩(`stat-chip.css`) · 엽전 아이콘
+   (`coin-icon.ts`)과 같은 값입니다. 움직임은 모두 토큰입니다(체크가 찍힌 뒤 `d9`에 차례로). */
+
+/* 꼬리표가 칸 밖으로 넘쳐도 잘리지 않게 진행 줄을 펴 둡니다(넘치는 것은 꼬리표뿐). */
+.journey-stat-modal-track {
+  overflow: visible;
+}
+
+/* 꼬리표 줄 — 요일 줄과 칸 줄 사이 간격(24)에 겹쳐 섭니다. 높이 22를 음수 여백으로 되돌려 칸 자리가 움직이지 않고, 꼬리표
+   아래 끝이 칸 위 8에 옵니다(시안 실측: 칸 아래에서 40). 칸 폭 · 간격은 칸 줄과 같아 칸 위에 정확히 섭니다. */
+.journey-stat-modal-tags {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-20);
+  height: 22px;
+  margin-top: -30px;
+  margin-bottom: -16px;
+  overflow: visible;
+}
+
+.journey-stat-modal-tag-cell {
+  position: relative;
+  width: 32px;
+  height: 22px;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+/* 칸보다 넓은 꼬리표를 칸 가운데에 세우는 틀 — 좌우로 20씩 넓혀 가운데 맞춤합니다. */
+.journey-stat-modal-tag-anchor {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -20px;
+  right: -20px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  overflow: visible;
+}
+
+.journey-stat-modal-tag {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  column-gap: var(--libitum-spacing-2);
+  height: 22px;
+  padding: 0 var(--libitum-spacing-6) 0 var(--libitum-spacing-4);
+  border-radius: var(--libitum-radius-full);
+}
+
+.journey-stat-modal-tag-upcoming {
+  background-color: #fff4e0;
+}
+
+/* 받은 꼬리표는 짙은 초록(`feedback-correct-text`) — 흰 글자 7 : 1. 시안의 밝은 초록(#1F9D55 · 토큰 `feedback-correct`)은
+   흰 12px 글자가 3 : 1이라 한 단계 짙게 칠합니다. */
+.journey-stat-modal-tag-earned {
+  background-color: var(--libitum-color-feedback-correct-text);
+}
+
+.journey-stat-modal-tag-icon {
+  width: var(--libitum-icon-size-sm);
+  height: var(--libitum-icon-size-sm);
+}
+
+.journey-stat-modal-tag-text {
+  font-family: var(--libitum-typography-label-s-font-family);
+  font-size: var(--libitum-typography-label-s-font-size);
+  font-weight: var(--libitum-typography-label-s-font-weight);
+  line-height: var(--libitum-typography-label-s-line-height);
+}
+
+.journey-stat-modal-tag-upcoming .journey-stat-modal-tag-text {
+  color: #9a5e12;
+}
+
+.journey-stat-modal-tag-earned .journey-stat-modal-tag-text {
+  color: var(--libitum-color-white);
+}
+
+/* 큰 목표 줄 — 칸 줄 아래 48. 폭 262는 시안 실측값입니다(칸 줄 344보다 좁게 가운데). */
+.journey-stat-modal-goal {
+  margin-top: var(--libitum-spacing-48);
+  width: 262px;
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--libitum-spacing-6);
+  flex-shrink: 0;
+}
+
+.journey-stat-modal-goal-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.journey-stat-modal-goal-label,
+.journey-stat-modal-goal-amount {
+  font-family: var(--libitum-typography-caption-font-family);
+  font-size: var(--libitum-typography-caption-font-size);
+  font-weight: var(--libitum-typography-label-s-font-weight);
+  line-height: var(--libitum-typography-caption-line-height);
+}
+
+.journey-stat-modal-goal-label {
+  color: var(--libitum-color-gray-500);
+}
+
+.journey-stat-modal-goal-amount {
+  color: var(--libitum-color-white);
+}
+
+.journey-stat-modal-goal-value {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  column-gap: var(--libitum-spacing-2);
+}
+
+.journey-stat-modal-goal-coin {
+  width: var(--libitum-icon-size-sm);
+  height: var(--libitum-icon-size-sm);
+}
+
+/* 막대 바탕은 흰색 14% — 알파가 붙은 색 토큰이 없어 rgba로 적습니다(모달 배경과 같은 처리). */
+.journey-stat-modal-goal-bar {
+  height: 6px;
+  border-radius: var(--libitum-radius-full);
+  background-color: rgba(255, 255, 255, 0.14);
+  overflow: hidden;
+}
+
+.journey-stat-modal-goal-fill {
+  height: 6px;
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-brand-primary);
+}
+
+/* 목표 줄 아래 문구는 기존 자리(칸 줄 아래 76)보다 가깝게 붙입니다 — 목표 줄이 그 사이를 채웁니다. */
+.journey-stat-modal-message-tight {
+  margin-top: var(--libitum-spacing-24);
+}
+
+.journey-stat-modal-message-em {
+  color: #ffd98a;
+}
+
+/* 보상 카드 — 칸 줄 아래 40, 좌우 24(버튼 폭과 같음). */
+.journey-stat-modal-card {
+  align-self: stretch;
+  margin: var(--libitum-spacing-40) var(--libitum-spacing-24) 0;
+  padding: var(--libitum-spacing-16);
+  border-radius: var(--libitum-radius-lg);
+  background-color: #fff4e0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  row-gap: var(--libitum-spacing-2);
+  flex-shrink: 0;
+}
+
+.journey-stat-modal-card-amount {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  column-gap: var(--libitum-spacing-6);
+}
+
+.journey-stat-modal-card-coin {
+  width: var(--libitum-icon-size-xl);
+  height: var(--libitum-icon-size-xl);
+}
+
+.journey-stat-modal-card-value {
+  font-family: var(--libitum-typography-accent-display-font-family);
+  font-size: var(--libitum-typography-accent-display-font-size);
+  font-weight: var(--libitum-typography-accent-display-font-weight);
+  line-height: var(--libitum-typography-accent-display-line-height);
+  color: #9a5e12;
+}
+
+.journey-stat-modal-card-title {
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  font-weight: var(--libitum-typography-body-s-font-weight);
+  line-height: var(--libitum-typography-body-s-line-height);
+  color: var(--libitum-color-fg-neutral-muted);
+}
+
+/* Collect는 카드와 같은 폭으로 펼칩니다. */
+.journey-stat-modal-footer-fill {
+  align-self: stretch;
+  margin-left: var(--libitum-spacing-24);
+  margin-right: var(--libitum-spacing-24);
+}
+
+/* Collect 뒤: 모달이 걷히고(엽전 출시 모달과 같은 값) 그 위 날기 층에서 엽전이 머리 칩으로 납니다(LaunchCoinFlight). */
+.journey-stat-modal-out {
+  animation: journey-stat-modal-out var(--libitum-motion-duration-d5)
+    var(--libitum-motion-easing-exit) both;
+}
+
+@keyframes journey-stat-modal-out {
+  to {
+    opacity: 0;
+  }
+}
+
+/* 날기 층 — 모달 바로 위 화면 왼쪽 위 0 × 0 기준점(엽전 출시 모달의 날기 층과 같은 꼴). */
+.journey-stat-modal-flight {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  overflow: visible;
+  z-index: var(--libitum-elevation-z-dialog);
+}
+
+/* 등장 — 마지막 칸 체크(`d8` 지연 + `reward`) 뒤에 차례로. */
+.journey-stat-modal-tag-enter,
+.journey-stat-modal-card-enter {
+  animation: journey-stat-modal-enter var(--libitum-motion-duration-reward)
+    var(--libitum-motion-easing-enter-expressive) var(--libitum-motion-duration-d9) both;
+}
+
+.journey-stat-modal-goal-fill-enter {
+  animation: journey-stat-modal-goal-fill var(--libitum-motion-duration-d9)
+    var(--libitum-motion-easing-enter) var(--libitum-motion-duration-d9) both;
+}
+
+@keyframes journey-stat-modal-goal-fill {
+  from {
+    width: 0;
+  }
+}
+
+.journey-stat-modal-message-enter {
+  animation: journey-stat-modal-fade var(--libitum-motion-duration-d5)
+    var(--libitum-motion-easing-linear) var(--libitum-motion-duration-d9) both;
+}
