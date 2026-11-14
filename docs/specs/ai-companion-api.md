@@ -254,7 +254,8 @@ state 앞). 첫 인사(`companion-greet`) · 선톡(20261123)에도 붙는다. �
 서버 키만. DB에 쓰지 않고 크레딧도 쓰지 않는다(케이스마다 실제 API 비용).
 
 - `GET` → 지금 모델 · 고를 수 있는 모델(`allowed`) · LLM 종류. `GET ?docs=1` → 캐릭터 · 설정 · 프롬프트 문서(ops-dashboard 문서 화면).
-- `POST { kind: "moderation" | "feedback" | "translation" | "suggestions", model?, cases }`(케이스 1 ~ 20) → 운영과 같은 프롬프트로 케이스마다 결과.
+- `POST { kind: "moderation" | "feedback" | "translation" | "suggestions" | "learning" | "reply", model?, judgeModel?, cases }`(케이스 1 ~ 20) → 운영과 같은 프롬프트로 케이스마다 결과.
+- `reply`(2026-11-14): 운영 페르소나 카드로 만든 답장 + 채점 노드의 축 판정(페르소나 · 말투 · 스포일러 · 학습자 수준 · 자연스러움 · 안전 · 지시가 있으면 학습 표현). 채점 모델 기본 `claude-opus-5-5`, 스포일러 메모는 채점자에게만. 모양은 함수 README 「companion-eval」.
 - `?docs=1`의 `prompts`에 `refusal { deflect, warn, userText }` · `suggestions`, `models`에 `suggest`가 있다.
 
 ### 2.8 답변 평가 · 고쳐서 다시 보내기 · 학습 연결 [구현 2026-11-10 — 학습 연결은 `feat/companion-learning`]

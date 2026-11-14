@@ -14,6 +14,7 @@
 //   「저는 … 좋아해요」 · 「…로 이사했어요」 · 「이제 … 안 좋아해요」 → 기억 더하기 · 고치기 · 잊기(묶음으로 뽑힐 때, `companion-llm-fake-memory.ts`)   「[slow]」 → 조각 사이를 늦춘다   「[warm]」 → 친밀도 +3
 //   추천 답변 칩: 최근 대화에 「[suggest-bad]」 → 후보가 둘뿐   「[unsafe-suggest]」 → 출력 검사에 걸리는 칩   「[suggest-dup]」 → 겹치는 후보
 //   「[suggest-none]」 → 통과 후보 0(다시 묻고도 `no_valid_candidates`)
+//   답장 채점(평가 전용): 모두 통과, 학습자 말에 「[spoil]」 → 스포일러 실패
 //   학습 표현: 지시에 배운 표현이 있으면 그 표현을 쓰고 `@state.learned`(`companion-llm-fake-learning.ts`)   「[sad]」 → `@state.heavy`
 // 위 낱말이 없는 말은 정상 턴(조각 셋 · 친밀도 +1)입니다.
 
@@ -287,6 +288,28 @@ export function fakeCompanionLlm(): CompanionLlm {
     },
     async suggest(request) {
       return fakeSuggestions(request);
+    },
+    async judgeReply(request) {
+      // 모두 통과. 학습자 말에 「[spoil]」이 있으면 스포일러 실패, 지시가 있으면 답장에 그 표현이 있는지로 학습 표현 축.
+      const ok = { pass: true, reason: "가짜 채점" };
+      const said = request.reply.map((segment) => segment.text).join(" ");
+      return {
+        axes: {
+          persona: ok,
+          speech: ok,
+          spoiler: request.userText.includes("[spoil]")
+            ? { pass: false, reason: "가짜 채점 — [spoil]" }
+            : ok,
+          level: ok,
+          natural: ok,
+          safety: ok,
+          learning:
+            request.target === null
+              ? null
+              : { pass: said.includes(request.target.surface), reason: "가짜 채점" },
+        },
+        summary: "가짜 채점",
+      };
     },
   };
   return {

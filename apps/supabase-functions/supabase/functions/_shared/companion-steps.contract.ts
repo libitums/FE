@@ -1,7 +1,8 @@
-// 번역 · 기억 · 요약 단계의 LLM 요청 · 결과 타입. `chat-send.contract.ts`가 다시 내보냅니다(`CompanionLlm`이 씁니다).
+// 번역 · 기억 · 요약 · 답장 채점(평가 전용) 단계의 LLM 요청 · 결과 타입. `chat-send.contract.ts`가 다시 내보냅니다(`CompanionLlm`이 씁니다).
 
 import type { FeedbackHistoryEntry } from "./companion-feedback.contract.ts";
-import type { HistoryEntry, Segment } from "./chat-send.contract.ts";
+import type { HistoryEntry, PersonaCard, Segment } from "./chat-send.contract.ts";
+import type { SpeechLevel } from "./companion-contract/index.ts";
 
 export type TranslationRequest = {
   /** 캐릭터 답의 말풍선들. 대사뿐 아니라 행동 · 서술도 번역합니다. */
@@ -57,4 +58,40 @@ export type SummaryRequest = {
   readonly previous: string | null;
   readonly messages: readonly HistoryEntry[];
   readonly signal: AbortSignal;
+};
+
+/** 답장 채점 축(`companion-eval` reply). 학습 표현은 이번 턴 지시가 있을 때만 본다. */
+export const replyJudgeAxes = [
+  "persona",
+  "speech",
+  "spoiler",
+  "level",
+  "natural",
+  "safety",
+  "learning",
+] as const;
+export type ReplyJudgeAxis = (typeof replyJudgeAxes)[number];
+
+export type ReplyJudgeRequest = {
+  readonly persona: PersonaCard;
+  readonly speechLevel: SpeechLevel;
+  readonly ageBand: "adult" | "minor" | "unknown";
+  /** 학습자가 아는 이야기 범위 · 아직 모르는 것(채점자에게만 보인다 — 답장 프롬프트에는 없다). */
+  readonly spoilerNote: string | null;
+  /** 학습자가 앱에서 배운 표현(답장 프롬프트에 실은 것과 같다). */
+  readonly expressions: readonly string[];
+  /** 이번 턴의 학습 표현 지시. 없으면 learning 축은 null. */
+  readonly target: { readonly surface: string; readonly mode: "expose" | "elicit" } | null;
+  readonly history: readonly FeedbackHistoryEntry[];
+  readonly userText: string;
+  readonly reply: readonly Segment[];
+  readonly signal: AbortSignal;
+};
+
+export type ReplyJudgement = {
+  readonly axes: Readonly<
+    Record<ReplyJudgeAxis, { readonly pass: boolean; readonly reason: string } | null>
+  >;
+  /** 한 줄 총평. */
+  readonly summary: string;
 };

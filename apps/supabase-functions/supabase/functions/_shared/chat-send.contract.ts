@@ -16,6 +16,8 @@ import type { TopicState } from "./companion-learning.contract.ts";
 import type {
   MemoryOp,
   MemoryRequest,
+  ReplyJudgement,
+  ReplyJudgeRequest,
   SummaryRequest,
   TranslationRequest,
 } from "./companion-steps.contract.ts";
@@ -148,6 +150,9 @@ export type {
   MemoryItem,
   MemoryOp,
   MemoryRequest,
+  ReplyJudgeAxis,
+  ReplyJudgement,
+  ReplyJudgeRequest,
   SummaryRequest,
   TranslationRequest,
 } from "./companion-steps.contract.ts";
@@ -161,7 +166,8 @@ export type LlmStep =
   | "translation"
   | "memory"
   | "summary"
-  | "suggestions";
+  | "suggestions"
+  | "judge";
 
 /** 호출 하나의 토큰 사용량(API 응답의 usage). 캐시 쓰기 · 읽기는 입력과 따로 센다. */
 export type LlmUsage = {
@@ -185,6 +191,8 @@ export type CompanionLlm = {
   extractMemories(request: MemoryRequest): Promise<MemoryOp[]>;
   summarize(request: SummaryRequest): Promise<string>;
   suggest(request: SuggestRequest): Promise<SuggestionDraft[]>;
+  /** 평가 전용 — 캐릭터 답장 하나를 축마다 채점합니다(`companion-eval` reply). 없으면(테스트 대역) 채점하지 않습니다. */
+  judgeReply?(request: ReplyJudgeRequest): Promise<ReplyJudgement>;
   /** 호출마다 사용량을 `record`로 넘기는 같은 계층 — 턴마다 감싸 모은다. 없으면(테스트 대역) 모으지 않는다. */
   withUsage?(record: (usage: LlmUsage) => void): CompanionLlm;
 };

@@ -398,7 +398,7 @@ ops-dashboard가 검사 · 피드백 프롬프트를 케이스 묶음으로 돌�
 서버 키(`Authorization: Bearer <서버 키>`, `isServiceKey` 규칙)만 받고, 아니면 401 `{"error":"invalid_session"}`.
 
 - `GET` → `{"models":{"reply","feedback","moderation"},"allowed":["claude-haiku-5-5","claude-sonnet-5-5","claude-opus-5-5"],"llm":"anthropic"|"fake"}`
-- `POST {"kind":"moderation"|"feedback"|"translation"|"suggestions","model"?,"cases":[{"id","text","ageBand"?,"layer"?,"l1"?,"context"?,"speechLevel"?,"character"?}]}` — 케이스 1 ~ 20개, `text` ≤ 2000자,
+- `POST {"kind":"moderation"|"feedback"|"translation"|"suggestions"|"learning"|"reply","model"?,"cases":[{"id","text","ageBand"?,"layer"?,"l1"?,"context"?,"speechLevel"?,"character"?}]}` — 케이스 1 ~ 20개, `text` ≤ 2000자,
   `id` ≤ 64자. `model`은 `allowed` 안에서만(생략하면 그 단계에 설정된 모델). 기본값 `ageBand` adult · `layer` input · `l1` null. `context`는
   검사에서는 앞선 유저 메시지(출력 검사), 피드백에서는 바로 앞 캐릭터 말이다. 피드백 케이스는 `speechLevel`(polite · casual · slang, 생략하면 모름 —
   말투 선택 규칙을 건너뛴다)과 `character`(`{"name","role"?}`)를 더 받는다. `translation` 케이스는 한국어 한 줄 `text`와 `l1`(생략하면 en)을 받아
@@ -409,6 +409,14 @@ ops-dashboard가 검사 · 피드백 프롬프트를 케이스 묶음으로 돌�
 - 응답 `{"kind","model","results":[{"id","ok":true,"output","ms"} | {"id","ok":false,"error","ms"}]}` — `output`은 판정 `{category, action}` 또는
   피드백 카드(위 「피드백 카드」) 또는 `{text}`. 동시에 4개씩, 케이스마다 턴 경로와 같은 제한 시간(검사 45초 · 피드백 8초 · 번역 6초 — 넘으면 `error: "timeout"`).
   케이스 하나의 실패는 그 케이스만 `ok: false`(`timeout` · `structured_unavailable` · `mismatch` · `upstream_<상태>` · `upstream_error`). 본문이 틀리면 400 `invalid_request`.
+- **답장(`kind: "reply"`, 2026-11-14)** — 운영 턴과 같은 시스템 프롬프트로 캐릭터 답장을 만들고 채점 노드가 축마다 채점한다(`_shared/companion-eval-reply.ts` ·
+  `companion-eval-judge.ts`). 케이스: `characterId`(DB 카드 `companion_inspect_characters` — 없거나 모르면 `character.name`만, 결과 `persona: "case"`) ·
+  `speechLevel` · `ageBand` · `l1` · `expressions`(`[{"surface","gloss"?}]` ≤ 40, 배운 표현) · `memories`(≤ 20) · `summary` · `history` · `text`(학습자의 새 말) ·
+  `spoilerNote`(≤ 1000자, **채점자에게만** — 답장 프롬프트에는 없다) · `target`(`{"surface","mode":"expose"|"elicit"}`, 칩은 `unsupported_case`).
+  본문 `judgeModel`(`allowed` 안, 생략하면 `claude-opus-5-5` — 실행끼리 견주려면 바꾸지 않는다). 응답에 `judgeModel`이 더 있고, `output`은
+  `{"segments","persona","learned","done","judge":{"axes":{persona,speech,spoiler,level,natural,safety,learning},"summary"} | null,"judgeError"}` —
+  축마다 `{"pass","reason"}`(한국어 한 문장), `learning`은 지시가 없으면 null. 채점이 실패해도 답은 돌려준다(`judge: null` · `judgeError`). 답장 + 채점을 합쳐
+  케이스마다 90초. 채점은 생각 깊이 medium이라 대시보드는 묶음을 작게(4개) 보낸다.
 - `GET ?docs=1` → ops-dashboard 「문서」 화면: `{"models"(번역 모델 포함),"characters","settings","inspectAvailable","prompts"}`. `characters`는 페르소나 카드 칸 전부 ·
   `id` · `active` · `sortOrder` · `maxSpeechLevel` · `systemPrompt`(말투 상한까지 단계마다), `settings`는 `companion.settings` 한 행. `prompts`는
   `feedback` · `moderation.{input,output_sync}.{adult,minor,unknown}` · `translation` · `memory.{adult,minor}` · `summary` · `proactiveDirective` ·

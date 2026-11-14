@@ -1,6 +1,7 @@
 import { expect, test } from "vitest";
 
-import type { ChatSendEnv, CompanionLlm } from "./chat-send.contract.ts";
+import type { ChatSendEnv, CompanionLlm, ReplyJudgeRequest } from "./chat-send.contract.ts";
+import { judgementFrom, replyJudgeContent, replyJudgeSystem } from "./companion-eval-judge.ts";
 import { createCompanionEvalHandler, evalModels } from "./companion-eval-handler.ts";
 import { companionLlmWithModel, StructuredUnavailable } from "./companion-llm.ts";
 import { feedbackSystem, refusalDirective, refusalUserText } from "./companion-llm-prompts.ts";
@@ -226,7 +227,9 @@ test("EV6. 본문이 틀리면 400 invalid_request", async () => {
   const one = { id: "a", text: "안녕" };
   for (const body of [
     "{not json",
-    { kind: "reply", cases: [one] },
+    { kind: "memory", cases: [one] },
+    { kind: "reply", judgeModel: "gpt-6", cases: [one] },
+    { kind: "reply", cases: [{ ...one, spoilerNote: "가".repeat(1001) }] },
     { kind: "moderation", cases: [] },
     { kind: "moderation", cases: Array.from({ length: 21 }, (_, i) => ({ ...one, id: `c${i}` })) },
     { kind: "moderation", cases: [{ ...one, text: "가".repeat(2001) }] },
@@ -601,4 +604,192 @@ test("EV14. 학습 표현 — 노출 · 유도는 답 모델에 지시를 붙여
   });
   expect(results[2]).toMatchObject({ ok: true, output: { mode: "chip", done: true } });
   expect((results[2]!.output["items"] as { text: string }[])[0]!.text).toContain("카드로 할게요");
+});
+
+test("EV15. 답장 — DB 페르소나 카드로 운영과 같은 프롬프트를 만들고, 채점자(기본 opus)가 축마다 채점한다", async () => {
+  const models: string[] = [];
+  const systems: string[] = [];
+  const judged: ReplyJudgeRequest[] = [];
+  const { call } = setup({
+    env: anthropicEnv,
+    rpc: {
+      companion_inspect_characters: [
+        { id: "mina", persona: { name: "미나", job: "배낭여행자", samples: ["일단 가보자!"] } },
+      ],
+    },
+    llmFor: (model) => {
+      models.push(model);
+      const fake = fakeCompanionLlm();
+      return {
+        ...fake,
+        reply: (request) => {
+          systems.push(request.system);
+          return fake.reply(request);
+        },
+        judgeReply: (request) => {
+          judged.push(request);
+          return fake.judgeReply!(request);
+        },
+      };
+    },
+  });
+  const { status, body } = await call("POST", {
+    kind: "reply",
+    cases: [
+      {
+        id: "card",
+        text: "오늘 뭐 했어요?",
+        characterId: "mina",
+        speechLevel: "polite",
+        expressions: [{ surface: "맛있어요", gloss: "tasty" }],
+        spoilerNote: "u03까지 — 도윤은 아직 모른다",
+        history: [{ role: "assistant", text: "안녕하세요!" }],
+      },
+      {
+        id: "spoil",
+        text: "[spoil] 누구 만났어요?",
+        characterId: "nobody",
+        character: { name: "재민" },
+      },
+      {
+        id: "learn",
+        text: "배고파요",
+        characterId: "mina",
+        target: { surface: "괜찮아요.", mode: "expose" },
+      },
+      {
+        id: "chip",
+        text: "뭐 먹을래요?",
+        characterId: "mina",
+        target: { surface: "괜찮아요.", mode: "chip" },
+      },
+    ],
+  });
+  expect(status).toBe(200);
+  expect(body).toMatchObject({
+    kind: "reply",
+    model: "claude-sonnet-5-5",
+    judgeModel: "claude-opus-5-5",
+  });
+  expect(models).toEqual(["claude-sonnet-5-5", "claude-opus-5-5"]);
+  expect(systems[0]).toContain("You are 미나");
+  expect(systems[0]).toContain("Job: 배낭여행자");
+  expect(systems[0]).toContain("맛있어요 (tasty)");
+  expect(systems[0]).not.toContain("도윤");
+  expect(judged[0]).toMatchObject({
+    spoilerNote: "u03까지 — 도윤은 아직 모른다",
+    expressions: ["맛있어요"],
+    target: null,
+    userText: "오늘 뭐 했어요?",
+  });
+  const results = body["results"] as {
+    id: string;
+    ok: boolean;
+    output?: Record<string, unknown>;
+    error?: string;
+  }[];
+  expect(results[0]).toMatchObject({
+    ok: true,
+    output: {
+      persona: "card",
+      learned: null,
+      done: null,
+      judgeError: null,
+      judge: { axes: { spoiler: { pass: true }, learning: null } },
+    },
+  });
+  expect(results[1]).toMatchObject({
+    ok: true,
+    output: { persona: "case", judge: { axes: { spoiler: { pass: false } } } },
+  });
+  expect(systems[1]).toContain("You are 재민");
+  expect(results[2]).toMatchObject({
+    ok: true,
+    output: { learned: true, done: true, judge: { axes: { learning: { pass: true } } } },
+  });
+  expect(results[3]).toMatchObject({ ok: false, error: "unsupported_case" });
+});
+
+test("EV16. 답장 — 채점이 실패해도 답은 돌려준다 · 채점 모델을 고를 수 있다 · DB를 못 읽으면 케이스 이름", async () => {
+  const models: string[] = [];
+  const { call } = setup({
+    env: anthropicEnv,
+    llmFor: (model) => {
+      models.push(model);
+      const fake = fakeCompanionLlm();
+      return model === "claude-haiku-5-5"
+        ? {
+            ...fake,
+            judgeReply: async () => {
+              throw new StructuredUnavailable("refusal");
+            },
+          }
+        : fake;
+    },
+  });
+  const { body } = await call("POST", {
+    kind: "reply",
+    judgeModel: "claude-haiku-5-5",
+    cases: [{ id: "a", text: "안녕하세요", characterId: "mina" }],
+  });
+  expect(models).toEqual(["claude-sonnet-5-5", "claude-haiku-5-5"]);
+  expect(body["judgeModel"]).toBe("claude-haiku-5-5");
+  const result = (body["results"] as { output: Record<string, unknown> }[])[0]!;
+  expect(result.output).toMatchObject({
+    persona: "case",
+    judge: null,
+    judgeError: "structured_unavailable",
+  });
+  expect((result.output["segments"] as unknown[]).length).toBeGreaterThan(0);
+});
+
+test("EV17. 채점 글 — 카드 · 말투 규칙 · 스포일러 메모 · 지시 · 답장 조각, 지시가 없으면 learning을 버린다", () => {
+  const request: ReplyJudgeRequest = {
+    persona: { name: "도윤", job: "카페 아르바이트", doNot: ["무례함"] },
+    speechLevel: "casual",
+    ageBand: "minor",
+    spoilerNote: "u12 전 — 오디션 얘기는 모른다",
+    expressions: ["괜찮아요"],
+    target: null,
+    history: [{ role: "user", text: "안녕" }],
+    userText: "뭐 해?",
+    reply: [
+      { kind: "speech", text: "나 지금 연습 중!" },
+      { kind: "action", text: "웃는다" },
+    ],
+    signal: new AbortController().signal,
+  };
+  const content = replyJudgeContent(request);
+  expect(content).toContain("Name: 도윤");
+  expect(content).toContain("Never be:\n- 무례함");
+  expect(content).toContain("Speech level: casual");
+  expect(content).toContain("u12 전 — 오디션 얘기는 모른다");
+  expect(content).toContain("(none — set learning to null)");
+  expect(content).toContain("Learner: 안녕");
+  expect(content).toContain("@speech 나 지금 연습 중!\n@action 웃는다");
+  for (const axis of [
+    "persona:",
+    "speech:",
+    "spoiler:",
+    "level:",
+    "natural:",
+    "safety:",
+    "learning:",
+  ])
+    expect(replyJudgeSystem).toContain(axis);
+  const ok = { pass: true, reason: "좋음" };
+  const parsed = {
+    persona: ok,
+    speech: ok,
+    spoiler: ok,
+    level: ok,
+    natural: ok,
+    safety: ok,
+    learning: ok,
+    summary: "괜찮다",
+  };
+  expect(judgementFrom(parsed, { target: null }).axes.learning).toBeNull();
+  expect(
+    judgementFrom(parsed, { target: { surface: "괜찮아요", mode: "expose" } }).axes.learning,
+  ).toEqual(ok);
 });

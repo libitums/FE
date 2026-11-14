@@ -46,3 +46,16 @@ export const memorySchema = z.object({
     }),
   ),
 });
+
+// 답장 채점(평가 전용, `companion-eval-judge.ts`). 축마다 통과 여부와 까닭, 학습 표현 축은 이번 턴 지시가 없으면 null.
+const axisVerdict = z.object({ pass: z.boolean(), reason: z.string() });
+export const replyJudgeSchema = z.object({
+  persona: axisVerdict,
+  speech: axisVerdict,
+  spoiler: axisVerdict,
+  level: axisVerdict,
+  natural: axisVerdict,
+  safety: axisVerdict,
+  learning: axisVerdict.nullable(),
+  summary: z.string(),
+});

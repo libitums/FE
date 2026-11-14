@@ -12,7 +12,7 @@ import type {
 import type { SpeechLevel } from "./companion-contract/index.ts";
 import { romanceAllowed } from "./companion-safety.ts";
 
-const speechLevelRule: Record<SpeechLevel, string> = {
+export const speechLevelRule: Record<SpeechLevel, string> = {
   polite: "Speak in polite 해요체 (존댓말). Never use 반말.",
   casual: "Speak in friendly 반말 (casual), the way close friends talk.",
   slang:
