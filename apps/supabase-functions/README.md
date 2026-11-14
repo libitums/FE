@@ -542,7 +542,7 @@ ops-dashboard가 검사 · 피드백 프롬프트를 케이스 묶음으로 돌�
 
 ### 스냅샷 · 음성 — companion-snapshot · companion-voice
 
-캐릭터 메시지 한 장면 → 이미지 한 장, 메시지의 한국어 대사 → mp3 한 개. 규칙은 [명세](../../docs/specs/ai-companion-snapshot.md), 결정은 ADR-0138.
+캐릭터 메시지 한 장면 → 이미지 한 장, 메시지의 한국어 대사 → mp3 한 개. 규칙은 [명세](../../docs/specs/ai-companion-snapshot.md), 결정은 ADR-0146.
 
 - 요청: 앱은 JWT + `{"message_id","again"?}`, 플레이그라운드는 서버 키 + `{"user_id","message_id","again"?}`. 계약은 `companion-media-*`(JSON Schema).
 - 응답: 202 `{media, cached:false}`(pending · 예약) 또는 200 `{media, cached:true}`(저장본, 무료). 오류 코드 · 상태는 계약 `MEDIA_ERRORS`.
@@ -601,7 +601,7 @@ supabase functions serve --no-verify-jwt                                        
    `companion-eval` · `companion-suggest`를 다시 배포한다.
    `20261126120000_companion_learning_scope.sql`은 20261125 **뒤에** 적용한다(같은 방식의 묶음). 함수는 다시 배포하지 않아도 범위가 적용된다(맥락 RPC가 거른다) —
    `chat-send`를 다시 배포하면 비어 있는 수동 범위의 까닭이 `no_pool` 대신 `manual_empty`로 남는다. 적용 뒤 표현 동기화 SQL(6번)을 다시 돌리면 에피소드 제목이 찬다.
-   `20261128120000_companion_snapshot_voice.sql`은 20261127(엽전) **뒤에**, `companion-snapshot` · `companion-voice`를 처음 배포하기 전에 적용한다(같은 방식의 묶음).
+   `20261130120000_companion_snapshot_voice.sql`은 20261129(구독) **뒤에**, `companion-snapshot` · `companion-voice`를 처음 배포하기 전에 적용한다(같은 방식의 묶음).
    `companion_save_profile` · `companion_operator_set_profile`의 인수가 하나 늘어(끝에 기본값 null) 옛 호출은 그대로 돈다. Storage 버킷 둘과 읽기 정책도 만든다.
    적용 뒤 기준 이미지를 `companion-refs`에 올리고(`deoksu-ref.png` · `deoksu-expressions.png` · `mina-ref.png` …), 비밀 `OPENAI_API_KEY` · `ELEVENLABS_API_KEY`를 넣고,
    `companion-snapshot` · `companion-voice` · `delete-account`를 배포한다.

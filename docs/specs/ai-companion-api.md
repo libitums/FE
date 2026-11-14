@@ -213,7 +213,7 @@ Accept: text/event-stream
 
 ### 2.5 TTS
 
-탭 재생 음성은 §2.9 `companion-voice`로 만들었다(2026-11-13, ADR-0138).
+탭 재생 음성은 §2.9 `companion-voice`로 만들었다(2026-11-13, ADR-0146).
 
 ### 2.6 `POST /functions/v1/companion-suggest` — 추천 답변 [결정 2026-11-09 · 2판 2026-11-10]
 
@@ -273,9 +273,9 @@ PRD §3.15 · §3.7의 짝. 답변 평가 · 고쳐서 다시 보내기는 FE `f
 | 운영 조회 | 평가 지표 `companion_rating_stats(p_since, p_playground, p_limit)` [구현] · 학습 지표 `companion_learning_stats(p_since, p_playground)` [구현] | 👍/👎 수 · 캐릭터 · 모델 · 출처(origin)별 · 이유별 · 최근 👎 원문(ops-dashboard 평가 후보로). 학습: 열린 턴 · 넣은 턴 · 방식별 따름 · 까닭 · 유도 뒤 산출 · 다시 쓴 표현 · 많이 넣은 표현. 유저 한 명의 풀은 `companion_learning_context`(읽기) — 따로 inspect 함수를 두지 않았다 |
 | 평가 [구현] | `companion-eval` `kind: "learning"` | 케이스 `target {surface, gloss?, kind?, mode: expose · elicit · chip}`, `text`는 학습자의 마지막 말(칩이면 캐릭터의 마지막 말). 결과 `{mode, segments, items?, learned, done}` — 모델을 고르지 않으면 답 모델 |
 
-### 2.9 `POST /functions/v1/companion-snapshot` · `companion-voice` — 스냅샷 · 음성 [구현 2026-11-13 — `feat/companion-snapshot`]
+### 2.9 `POST /functions/v1/companion-snapshot` · `companion-voice` — 스냅샷 · 음성 [구현 2026-11-13 — `feat/companion-media`]
 
-규칙의 정본은 [스냅샷 · 음성 명세](ai-companion-snapshot.md), 모양의 정본은 계약 패키지 `media.ts`, 결정은 ADR-0138.
+규칙의 정본은 [스냅샷 · 음성 명세](ai-companion-snapshot.md), 모양의 정본은 계약 패키지 `media.ts`, 결정은 ADR-0146.
 
 | | |
 |---|---|
@@ -304,7 +304,7 @@ PRD §3.15 · §3.7의 짝. 답변 평가 · 고쳐서 다시 보내기는 FE `f
 
 - blocked · failed의 `failure`: `prompt_blocked` · `engine_refused` · `check_failed`(blocked), `engine_failed` · `prompt_failed` · `check_error` · `refs_missing` ·
   `storage_failed` · `expired`(failed).
-- 배포: `supabase functions deploy companion-snapshot` · `companion-voice`(`verify_jwt = false`). 마이그레이션 20261128120000을 먼저 적용한다.
+- 배포: `supabase functions deploy companion-snapshot` · `companion-voice`(`verify_jwt = false`). 마이그레이션 20261130120000을 먼저 적용한다.
 
 ## 3. DB 함수(RPC)
 
@@ -566,11 +566,11 @@ chat-send 판정 11  reserve_credits(user, client_message_id, amount)   → hold
 - 구독 크레딧은 `p_expires_at`에 소멸한다(`expire_sub_credits`). 구매분은 1년 유지(위키 01) — 만료 시각을 지급 행에 적는다.
 - 시험 계정의 크레딧은 운영자가 `operator`로 지급한다.
 
-### 6.6 사진 · 음성 — 20261128
+### 6.5 사진 · 음성 — 20261130
 
 - 예약에 사유가 생겼다: `credit_holds.reason` `message`(기본) · `photo` · `voice` · `photo_redraw`. 사진 · 음성은 `companion.reserve_hold`로 예약하고
   `client_message_id` 자리에 media id를 넣는다. 원장 reserve 줄의 `reason` · `ref_id`가 사유 · media id다.
-- 단가: `settings.photo_cost` 35 · `voice_cost` 15 · `photo_redraw_cost` 25(ADR-0137 D5). 차감 순서는 메시지와 같다.
+- 단가: `settings.photo_cost` 35 · `voice_cost` 15 · `photo_redraw_cost` 25(ADR-0140 D1). 차감 순서는 메시지와 같다.
 - 덕수쌤 체험은 쓰지 않는다. 시험 계정도 낸다(ADR-0117 D4).
 - complete면 `settle_hold`, blocked · failed · 시간 초과면 `release_hold`. `companion_release_stale_holds`는 사진 · 음성 예약을 `media_pending_minutes` 전에는 건드리지 않는다.
 

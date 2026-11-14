@@ -1,13 +1,13 @@
-# ADR-0138 — 컴패니언 스냅샷 · 음성은 Supabase가 만든다 — 표 하나 `companion.media`, 요청은 바로 pending, 생성은 Edge 백그라운드
+# ADR-0146 — 컴패니언 스냅샷 · 음성은 Supabase가 만든다 — 표 하나 `companion.media`, 요청은 바로 pending, 생성은 Edge 백그라운드
 
-- 상태: **제안** — 사용자 결정(2026-11-10 ~ 13)을 마이그레이션 `20261128120000_companion_snapshot_voice.sql`과 Edge Function
+- 상태: **제안** — 사용자 결정(2026-11-10 ~ 13)을 마이그레이션 `20261130120000_companion_snapshot_voice.sql`과 Edge Function
   `companion-snapshot` · `companion-voice`로 옮겼다. ⚠ 운영에는 **적용 전**이다(SQL · 비밀 · 버킷 업로드 · 배포는 사용자가 한다).
 - 날짜: (채택일에 적는다)
 - 다루는 축: 스냅샷 · 음성을 어디서 만들고, 어떻게 저장 · 과금 · 재사용하는가.
   **다루지 않는 것**: 앱 화면(Lynx) · 대시보드 · 출석 보상 · 엔진 고르기 실험(→ ops-dashboard 스냅샷 실험실).
 - 이어받는 결정: [ADR-0117](0117-messenger-chat-turns-coins-new-friend.md) D4(무제한도 사진 · 음성은 엽전) ·
   [ADR-0131](0131-companion-schema.md) · [ADR-0133](0133-companion-public-function-access.md)(표는 `companion`, 닿는 길은 `public.companion_*`) ·
-  [ADR-0137](0137-companion-credit-is-yeopjeon.md) D5(음성 15 · 사진 35 · 다시 그리기 25).
+  [ADR-0140](0140-yeopjeon-launch.md) D1(음성 15 · 사진 35 · 다시 그리기 25).
 - 명세: [스냅샷 · 음성](../specs/ai-companion-snapshot.md) · [API §2.9](../specs/ai-companion-api.md).
 
 근거 표시: **[코드]** 저장소 코드 · **[사용자]** 사용자 결정 · **[추론]** 관찰 없이 이어 붙인 것.

@@ -1,4 +1,4 @@
--- AI 컴패니언 스냅샷 · 음성(ADR-0138). 운영 대시보드 플레이그라운드(companion_snap.py)의 파이프라인을 앱이 부르는 서버 기능으로 옮긴다.
+-- AI 컴패니언 스냅샷 · 음성(ADR-0146). 운영 대시보드 플레이그라운드(companion_snap.py)의 파이프라인을 앱이 부르는 서버 기능으로 옮긴다.
 --
 -- 1. 스냅샷 = 캐릭터 메시지 한 장면 → 이미지 한 장. 음성 = 캐릭터 메시지의 한국어 대사 → mp3 한 개. 서로 독립된 단건이고 유저가 누를 때만 만든다.
 -- 2. 표 하나 `companion.media`(kind snapshot · voice). 요청하면 바로 pending 행을 만들고(엽전 예약) Edge Function이 백그라운드에서 만든 뒤
@@ -144,6 +144,7 @@ create function companion.reserve_hold(p_user_id uuid, p_reason text, p_ref_id u
 returns jsonb language plpgsql as $$
 declare
   s companion.settings;
+  v_wallet companion.credit_wallets;
   v_balance integer;
   v_left integer;
   v_take integer;
@@ -155,17 +156,19 @@ begin
     raise exception 'invalid hold' using errcode = '22023';
   end if;
   select * into s from companion.settings;
-  perform companion.lock_wallet(p_user_id);
-  v_balance := (companion.wallet_balances(p_user_id)->>'balance')::integer;
+  v_wallet := companion.lock_wallet(p_user_id);
+  v_balance := v_wallet.sub_balance + v_wallet.grant_balance + v_wallet.paid_balance;
   if v_balance < p_amount then
     return jsonb_build_object('result', 'insufficient_credits', 'detail', jsonb_build_object('required', p_amount, 'balance', v_balance));
   end if;
   v_left := p_amount;
   foreach v_bucket in array s.bucket_order loop
     exit when v_left = 0;
-    v_take := least(companion.bucket_balance(p_user_id, v_bucket), v_left);
+    execute format('select %I from companion.credit_wallets where user_id = $1', v_bucket || '_balance') into v_take using p_user_id;
+    v_take := least(v_take, v_left);
     if v_take > 0 then
-      perform companion.move_bucket(p_user_id, v_bucket, -v_take);
+      execute format('update companion.credit_wallets set %I = %I - $1, updated_at = now() where user_id = $2',
+        v_bucket || '_balance', v_bucket || '_balance') using v_take, p_user_id;
       v_buckets := v_buckets || jsonb_build_object(v_bucket, v_take);
       v_left := v_left - v_take;
     end if;
@@ -464,7 +467,7 @@ begin
     end if;
   end if;
   return jsonb_build_object('result', 'ok', 'media', companion.media_json(v),
-    'balance', (companion.wallet_balances(v.user_id)->>'balance')::integer);
+    'balance', (select sub_balance + grant_balance + paid_balance from companion.credit_wallets where user_id = v.user_id));
 end;
 $$;
 

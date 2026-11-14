@@ -1,8 +1,8 @@
 # AI 컴패니언 — 스냅샷 · 음성
 
-- 상태: **구현(작업 중)** — 브랜치 `feat/companion-snapshot`. 마이그레이션 `20261128120000_companion_snapshot_voice.sql`, Edge Function `companion-snapshot` · `companion-voice`.
+- 상태: **구현(작업 중)** — 브랜치 `feat/companion-media`. 마이그레이션 `20261130120000_companion_snapshot_voice.sql`, Edge Function `companion-snapshot` · `companion-voice`.
   ⚠ 운영에는 **적용 전**이다.
-- 결정: [ADR-0138](../adr/0138-companion-snapshot-voice.md). 단가는 [ADR-0137](../adr/0137-companion-credit-is-yeopjeon.md) D5.
+- 결정: [ADR-0146](../adr/0146-companion-snapshot-voice.md). 단가는 [ADR-0140](../adr/0140-yeopjeon-launch.md) D1.
 - 원본: 운영 대시보드 플레이그라운드(ops-dashboard `companion_snap.py` · `companion_lab.py`, origin/main 6f082ff). 프롬프트 글은 그대로 옮겼다.
 - 엔드포인트 · RPC 모양: [API 명세 §2.9 · §3](ai-companion-api.md). 계약 정본은 `packages/companion-contract/src/media.ts`.
 
@@ -82,7 +82,7 @@
 | 음성(처음 · 「다시」) | `voice` | `voice_cost` | 15 |
 
 - 요청 때 예약하고 complete면 확정, blocked · failed면 해제한다(`companion.reserve_hold` → `settle_hold` · `release_hold`).
-- 차감 순서는 메시지와 같다(`bucket_order`, 기본 sub → earned → grant → paid).
+- 차감 순서는 메시지와 같다(`bucket_order`, 기본 sub → grant → paid).
 - 덕수쌤 체험(`trial_limit`)은 메시지에만 쓴다. 사진 · 음성은 체험 횟수를 쓰지 않고 체험 중에도 엽전을 낸다.
 - 시험 계정도 엽전을 낸다(ADR-0117 D4). 서버 메시지에도 시험 계정 무제한 규칙은 없다.
 - **저장본 재사용**:

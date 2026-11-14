@@ -234,7 +234,7 @@ export type DeleteAccountDeps = {
   readonly signEs256: SignEs256;
   readonly log: (entry: DeleteAccountLogEntry) => void;
   /**
-   * 계정의 Storage 파일(컴패니언 스냅샷 · 음성, ADR-0138)을 지운다. admin 삭제 직전에 부르고, 실패해도 계정 삭제를 막지 않는다 —
+   * 계정의 Storage 파일(컴패니언 스냅샷 · 음성, ADR-0146)을 지운다. admin 삭제 직전에 부르고, 실패해도 계정 삭제를 막지 않는다 —
    * Apple 철회가 이미 끝났을 수 있다. 남은 파일은 운영 조회 `companion_media_orphans()`로 찾는다. 없으면 건너뛴다.
    */
   readonly purgeUserFiles?: (userId: string) => Promise<unknown>;

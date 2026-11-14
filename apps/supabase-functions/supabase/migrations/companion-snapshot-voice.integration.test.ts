@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, beforeEach, expect, test } from "vitest";
 import { signIn, startTestDatabase } from "./postgres.test-support";
 
-// 스냅샷 · 음성(20261128, ADR-0138): 요청 → pending + 엽전 예약 → 백그라운드 결과로 확정 · 해제. 앨범은 대화 초기화에도 남는다.
+// 스냅샷 · 음성(20261130, ADR-0146): 요청 → pending + 엽전 예약 → 백그라운드 결과로 확정 · 해제. 앨범은 대화 초기화에도 남는다.
 const tester = "00000000-0000-4000-8000-000000000001";
 const other = "00000000-0000-4000-8000-000000000002";
 const now = new Date(Math.floor(Date.now() / 1000) * 1000).toISOString();
@@ -123,7 +123,10 @@ const grant = (amount: number, userId = tester) =>
   ]);
 async function balance(userId = tester) {
   return (
-    await db.admin.query("select (companion.wallet_balances($1)->>'balance')::int as b", [userId])
+    await db.admin.query(
+      "select coalesce((select sub_balance + grant_balance + paid_balance from companion.credit_wallets where user_id = $1), 0)::int as b",
+      [userId],
+    )
   ).rows[0].b as number;
 }
 async function hold(holdId: string) {
@@ -134,11 +137,11 @@ async function hold(holdId: string) {
     )
   ).rows[0] as { status: string; reason: string; amount: number; trial: boolean };
 }
-/** 불변식: sub + grant + paid − earned_spent = 원장 delta의 합. */
+/** 불변식: sub + grant + paid = 원장 delta의 합. */
 async function ledgerMatchesWallet() {
   const result = await db.admin.query(
     `select coalesce((select sum(delta) from companion.credit_ledger where user_id = $1), 0)::int as ledger,
-            coalesce((select sub_balance + grant_balance + paid_balance - earned_spent
+            coalesce((select sub_balance + grant_balance + paid_balance
                       from companion.credit_wallets where user_id = $1), 0)::int as wallet`,
     [tester],
   );

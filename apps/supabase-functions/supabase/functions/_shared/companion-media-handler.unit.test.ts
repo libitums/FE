@@ -13,7 +13,7 @@ import {
   verdictFrom,
 } from "./companion-snapshot-prompts.ts";
 
-// 스냅샷 · 음성(ADR-0138): 가짜 fetch 하나로 Supabase(Auth · RPC · Storage) · Claude · OpenAI · ElevenLabs를 모두 받는다 — 실제 유료 호출 없음.
+// 스냅샷 · 음성(ADR-0146): 가짜 fetch 하나로 Supabase(Auth · RPC · Storage) · Claude · OpenAI · ElevenLabs를 모두 받는다 — 실제 유료 호출 없음.
 const SUPA = "https://example.supabase.co";
 const USER = "11111111-1111-4111-8111-111111111111";
 const PLAY = "22222222-2222-4222-8222-222222222222";

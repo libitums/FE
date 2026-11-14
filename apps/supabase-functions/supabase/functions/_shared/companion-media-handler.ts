@@ -1,4 +1,4 @@
-// `POST /functions/v1/companion-snapshot` · `POST /functions/v1/companion-voice` — 캐릭터 메시지 하나의 스냅샷 · 음성(ADR-0138).
+// `POST /functions/v1/companion-snapshot` · `POST /functions/v1/companion-voice` — 캐릭터 메시지 하나의 스냅샷 · 음성(ADR-0146).
 //
 // 흐름: 호출자 확인 → 엔진 키(없으면 503 `not_configured`) → `companion_media_begin`(서버가 메시지를 직접 읽는다 — 앱이 보낸 글은 믿지 않는다.
 // 남의 메시지 403 · 자격 · 판정 · 동시 1 · 하루 상한 · 엽전 예약 · pending 행) → 202로 바로 돌려주고 백그라운드(`waitUntil`)에서 만든다.

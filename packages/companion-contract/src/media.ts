@@ -1,4 +1,4 @@
-// 스냅샷 · 음성의 요청 · 응답 · 앨범 모양입니다(ADR-0138).
+// 스냅샷 · 음성의 요청 · 응답 · 앨범 모양입니다(ADR-0146).
 // - `POST /functions/v1/companion-snapshot` — 캐릭터 메시지 한 장면 → 이미지 한 장.
 // - `POST /functions/v1/companion-voice` — 캐릭터 메시지의 한국어 대사 → mp3 한 개.
 // 둘 다 바로 pending 행을 돌려주고(202) 백그라운드에서 만듭니다. 앱은 자리표시자를 보이고 `companion_get_media`로 상태를 다시 읽습니다.
