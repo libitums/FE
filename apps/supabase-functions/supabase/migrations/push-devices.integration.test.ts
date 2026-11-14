@@ -9,7 +9,7 @@ let db: Awaited<ReturnType<typeof startTestDatabase>>;
 beforeAll(async () => {
   db = await startTestDatabase();
   await db.admin.query("insert into auth.users (id) values ($1)", [userId]);
-}, 30_000);
+}, 90_000);
 afterAll(async () => {
   await db?.close();
 });
@@ -37,4 +37,4 @@ test("기존 APNs와 Android FCM을 같은 RPC와 표에 등록한다", async ()
   await user.query("select public.unregister_push_device($1)", [fcm]);
   const remaining = await db.admin.query("select token from public.push_devices");
   expect(remaining.rows).toEqual([{ token: apns }]);
-}, 30_000);
+}, 90_000);

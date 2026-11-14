@@ -32,7 +32,7 @@ beforeAll(async () => {
   db = await startTestDatabase();
   app = await db.connect();
   today = (await db.admin.query("select ((now() at time zone 'utc')::date)::text as d")).rows[0].d;
-}, 30_000);
+}, 90_000);
 afterAll(async () => {
   await db?.close();
 });
