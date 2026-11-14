@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "error": {
+      "type": "string",
+      "enum": [
+        "method_not_allowed",
+        "invalid_request",
+        "invalid_session",
+        "forbidden",
+        "not_available",
+        "age_restricted",
+        "temporarily_blocked",
+        "usage_time_limit",
+        "message_not_found",
+        "not_eligible",
+        "no_speech",
+        "too_long",
+        "insufficient_credits",
+        "snapshot_in_progress",
+        "daily_limit",
+        "server_misconfigured",
+        "internal_error",
+        "not_configured"
+      ]
+    },
+    "detail": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {}
+    }
+  },
+  "required": ["error"],
+  "additionalProperties": false
+}

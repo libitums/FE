@@ -213,7 +213,7 @@ Accept: text/event-stream
 
 ### 2.5 TTS
 
-1단계에 없다. M4 뒤 이미지 생성과 함께 다시 정한다(PRD §0).
+탭 재생 음성은 §2.9 `companion-voice`로 만들었다(2026-11-13, ADR-0146).
 
 ### 2.6 `POST /functions/v1/companion-suggest` — 추천 답변 [결정 2026-11-09 · 2판 2026-11-10]
 
@@ -273,6 +273,39 @@ PRD §3.15 · §3.7의 짝. 답변 평가 · 고쳐서 다시 보내기는 FE `f
 | 운영 조회 | 평가 지표 `companion_rating_stats(p_since, p_playground, p_limit)` [구현] · 학습 지표 `companion_learning_stats(p_since, p_playground)` [구현] | 👍/👎 수 · 캐릭터 · 모델 · 출처(origin)별 · 이유별 · 최근 👎 원문(ops-dashboard 평가 후보로). 학습: 열린 턴 · 넣은 턴 · 방식별 따름 · 까닭 · 유도 뒤 산출 · 다시 쓴 표현 · 많이 넣은 표현. 유저 한 명의 풀은 `companion_learning_context`(읽기) — 따로 inspect 함수를 두지 않았다 |
 | 평가 [구현] | `companion-eval` `kind: "learning"` | 케이스 `target {surface, gloss?, kind?, mode: expose · elicit · chip}`, `text`는 학습자의 마지막 말(칩이면 캐릭터의 마지막 말). 결과 `{mode, segments, items?, learned, done}` — 모델을 고르지 않으면 답 모델 |
 
+### 2.9 `POST /functions/v1/companion-snapshot` · `companion-voice` — 스냅샷 · 음성 [구현 2026-11-13 — `feat/companion-media`]
+
+규칙의 정본은 [스냅샷 · 음성 명세](ai-companion-snapshot.md), 모양의 정본은 계약 패키지 `media.ts`, 결정은 ADR-0146.
+
+| | |
+|---|---|
+| 인증 | 사용자 토큰 + 본문 `{ message_id, again? }`. 플레이그라운드는 서버 키 + `{ user_id, message_id, again? }`(앱 토큰으로 `user_id`를 보내면 401) |
+| `again` | 스냅샷은 「다시 그리기」(앞 그림이 있으면 25, 없으면 35), 음성은 「다시」(15). 없거나 false면 저장본을 돌려준다 |
+| 응답 | 202 `{ media, cached: false }` — pending 행을 만들고 엽전을 예약했다. 200 `{ media, cached: true }` — 이 메시지의 저장본(또는 만드는 중인 것), 차감 없음 |
+| `media` | `{ id, characterId, messageId, kind, status, charge, cost, path, mime, aspect, failure, aiGenerated, engine, model, createdAt, finishedAt }` — `status` `pending` · `complete` · `blocked` · `failed`, `charge` `photo` · `photo_redraw` · `voice`, `cost`는 blocked · failed면 0 |
+| 파일 | complete면 `path`(`<user_id>/<id>.png` · `.mp3`, 비공개 버킷 `companion-media`). 앱이 자기 토큰으로 `POST /storage/v1/object/sign/companion-media/<path>`해 서명 URL을 받는다 |
+| 상태 다시 읽기 | `companion_get_media(p_ids, p_message_ids)`(§3.2) |
+| 생성 | 응답 뒤 `EdgeRuntime.waitUntil`. 스냅샷 = 프롬프트 노드(Haiku) → OpenAI 이미지 편집 1회 → 검사 노드(Haiku 비전). 음성 = ElevenLabs `eleven_v3` 1회. 엔진 오류만 한 번 다시 |
+| 비밀 | `OPENAI_API_KEY` · `ANTHROPIC_API_KEY`(스냅샷), `ELEVENLABS_API_KEY`(음성). `COMPANION_SNAPSHOT_MODEL`(기본 `claude-haiku-5-5`) |
+
+| HTTP | `error` |
+|---|---|
+| 400 | `invalid_request` |
+| 401 | `invalid_session` |
+| 402 | `insufficient_credits`(`detail.required` · `balance`) |
+| 403 | `forbidden`(남의 대화 메시지) · `not_available` · `age_restricted` · `temporarily_blocked` · `usage_time_limit` |
+| 404 | `message_not_found` |
+| 405 | `method_not_allowed` |
+| 409 | `snapshot_in_progress`(`detail.mediaId`) |
+| 422 | `not_eligible`(통과한 캐릭터 메시지가 아님) · `no_speech` · `too_long`(음성 600자) |
+| 429 | `daily_limit`(`detail.limit`, 스냅샷 하루 상한 — 기본은 상한 없음, 운영자가 켤 때만) |
+| 500 | `server_misconfigured` · `internal_error` |
+| 503 | `not_configured`(`detail.missing` — 키 이름 배열 · `voice_id` · `refs`) |
+
+- blocked · failed의 `failure`: `prompt_blocked` · `engine_refused` · `check_failed`(blocked), `engine_failed` · `prompt_failed` · `check_error` · `refs_missing` ·
+  `storage_failed` · `expired`(failed).
+- 배포: `supabase functions deploy companion-snapshot` · `companion-voice`(`verify_jwt = false`). 마이그레이션 20261130120000을 먼저 적용한다.
+
 ## 3. DB 함수(RPC)
 
 ### 3.1 왜 `public`의 창구 함수인가 [제안 — ADR 후보 6]
@@ -307,6 +340,8 @@ PostgREST(Supabase가 DB 함수를 `/rest/v1/rpc/<이름>` URL로 열어 주는 
 | `companion_update_memory(p_memory_id uuid, p_content text)` | M3 | 1 ~ 500자 [제안] | `void` | `28000` · `22023` · `P0002` |
 | `companion_delete_memory(p_memory_id uuid)` | M3 | — | `void`(지운 표시 `deleted_at`) | `28000` · `P0002` |
 | `companion_get_wallet()` | M4 | — | `{ sub, subExpiresAt, grant, paid, trialRemaining }` | `28000` |
+| `companion_list_media(p_character_id text, p_kind text, p_before timestamptz, p_limit int)` | 2026-11-13 | 앨범 — complete만, 최신부터. null이면 전부, `p_limit` 1 ~ 50 | `{ items: Media[], hasMore }` | `28000` · `22023` |
+| `companion_get_media(p_ids uuid[], p_message_ids uuid[])` | 2026-11-13 | 내 media id 또는 메시지 id로, 모든 상태, 합 100개까지 | `Media[]`(최신부터) | `28000` · `22023` |
 
 - ⟨2026-11-09⟩ 프로필 확장: `companion_save_profile`에 `p_proactive_pref`(`off` · `daily1` · `daily2`) · `p_proactive_hour`(0 ~ 23,
   `-1`이면 지움) · `p_timezone`(IANA, `''`이면 지움)을 더했다(기본값 `null` — 옛 호출은 그대로). `companion_load_profile`이
@@ -315,6 +350,8 @@ PostgREST(Supabase가 DB 함수를 `/rest/v1/rpc/<이름>` URL로 열어 주는 
 - ⟨2026-11-09⟩ **`companion_list_memories`의 반환이 바뀌었다**(배열 → 객체, 앱이 아직 부르지 않아 계약 판은 그대로):
   `{ memories: [{ id, characterId, kind, content, userEdited, createdAt }], count, cap, full }` — 한 층(캐릭터 · 공유)의 기억과 용량
   (PRD §3.9). 계약 `companionMemoryListSchema` · `json-schema/companion-memories.json`. `companion_update_memory`가 `user_edited`를 켠다.
+- ⟨2026-11-13⟩ 학습자 모습: `companion_save_profile`에 `p_snapshot_self`(`female` · `male` · `hidden`, 기본값 `null` — 옛 호출은 그대로).
+  `companion_load_profile`이 `snapshotSelf`(기본 `female`)를 더 돌려준다. 운영자 `companion_operator_set_profile`도 같은 인수, `companion_inspect_testers`가 보여 준다.
 - 친밀도 수치는 어느 함수도 돌려주지 않는다.
 - `unavailableReason`: `trial_exhausted` · `not_available`(M4 전 비시험 계정 · 아직 열리지 않은 캐릭터) · `age_restricted`.
 - `l1`은 앱의 언어 선택 값을 앱이 넣는다(BCP 47 언어 태그, 예 `en` · `tl` · `hi`). `feedback_mode`: `separate` · `natural` · `prefix`.
@@ -354,6 +391,8 @@ PostgREST(Supabase가 DB 함수를 `/rest/v1/rpc/<이름>` URL로 열어 주는 
 | `companion_reserve_credits` · `companion_settle_credits` · `companion_release_credits` | M4 | §6 |
 | `companion_grant_credits` | M4 | §6.4 · §2.4 |
 | `companion_expire_sub_credits(p_now)` | M4 | 구독 크레딧 소멸(pg_cron) |
+| `companion_media_begin(p_user_id, p_message_id, p_kind, p_again, p_now)` | 2026-11-13 | 스냅샷 · 음성 요청 — 자격 · 판정 · 저장본 · 동시 1 · 하루 상한 · 예약 · pending 행 · 작업 입력(§2.9) |
+| `companion_media_finish(p_media_id, p_status, p_result, p_now)` | 2026-11-13 | 백그라운드 작업의 끝 — complete면 확정, blocked · failed면 해제. 이미 닫힌 행이면 `closed` |
 
 - `learning_progress`는 RLS를 켜고 정책이 없어 본인 RPC로만 읽힌다. `companion_learning_context`는 `security definer`로 그 표를 읽는다.
 - §6에서 접두사 없이 부른 이름(`reserve_credits` 등)은 이 표의 `public.companion_*` 함수다.
@@ -372,6 +411,8 @@ ops-dashboard 컴패니언 탭이 부른다. ops-dashboard는 서버에서 돌�
 | `companion_inspect_reports(p_since, p_limit)` | M1 | 메시지 신고와 신고된 메시지 앞뒤 턴 |
 | `companion_inspect_memory(p_user_id, p_character_id)` | M3 | 장기 메모리 항목(지운 항목 제외)과 요약 · 용량 `capacity { character, shared }`(2026-11-09) |
 | `companion_inspect_wallet(p_user_id, p_limit)` | M4 | 지갑 잔액 · 최근 원장 · 열린 예약 |
+| `companion_inspect_media(p_user_id, p_limit)` | 2026-11-13 | 스냅샷 · 음성 행 전부(프롬프트 · 판정 · 메타 · 오류 · 예약 상태) · 오늘 수 · 설정. `p_user_id` null이면 모든 유저 |
+| `companion_media_orphans(p_limit)` | 2026-11-13 | 행이 없는 `companion-media` 파일 이름(계정 삭제의 Storage 지우기가 실패한 경우 등) |
 
 - 미성년자 대화도 보인다. 조회 기록을 남길지(누가 언제 어느 유저를 봤나)는 M1 구현 때 정한다 — [제안] `companion.inspect_log`에 남긴다.
 - 반환 모양은 계약 패키지의 `json-schema/`에 함께 싣는다(§8.2).
@@ -524,6 +565,14 @@ chat-send 판정 11  reserve_credits(user, client_message_id, amount)   → hold
   않는다.
 - 구독 크레딧은 `p_expires_at`에 소멸한다(`expire_sub_credits`). 구매분은 1년 유지(위키 01) — 만료 시각을 지급 행에 적는다.
 - 시험 계정의 크레딧은 운영자가 `operator`로 지급한다.
+
+### 6.5 사진 · 음성 — 20261130
+
+- 예약에 사유가 생겼다: `credit_holds.reason` `message`(기본) · `photo` · `voice` · `photo_redraw`. 사진 · 음성은 `companion.reserve_hold`로 예약하고
+  `client_message_id` 자리에 media id를 넣는다. 원장 reserve 줄의 `reason` · `ref_id`가 사유 · media id다.
+- 단가: `settings.photo_cost` 35 · `voice_cost` 15 · `photo_redraw_cost` 25(ADR-0140 D1). 차감 순서는 메시지와 같다.
+- 덕수쌤 체험은 쓰지 않는다. 시험 계정도 낸다(ADR-0117 D4).
+- complete면 `settle_hold`, blocked · failed · 시간 초과면 `release_hold`. `companion_release_stale_holds`는 사진 · 음성 예약을 `media_pending_minutes` 전에는 건드리지 않는다.
 
 ## 7. DB — `companion` 스키마 (1단계)
 

@@ -279,6 +279,9 @@ SQL 편집기에서 `update companion.settings set trial_limit = 30;`처럼 바�
 | `COMPANION_TRANSLATION` | 아니오 | 캐릭터 답의 L1 번역. `every`(기본, 턴마다) 또는 `off`. 모르는 값이면 설정 오류(500). PRD O9(매 메시지 · 탭할 때)가 정해지면 바꾼다 |
 | `COMPANION_TRANSLATION_MODEL` | 아니오 | L1 번역 모델. 기본은 `COMPANION_MODERATION_MODEL`(운영 Haiku) |
 | `COMPANION_SUGGEST_MODEL` | 아니오 | 추천 답변 칩 모델(`chat-send`의 매 턴 칩 · `companion-suggest`). 기본은 `COMPANION_MODERATION_MODEL`(운영 Haiku) |
+| `OPENAI_API_KEY` | 스냅샷에 | `companion-snapshot`의 이미지 편집. 없으면 스냅샷이 503 `not_configured` |
+| `ELEVENLABS_API_KEY` | 음성에 | `companion-voice`의 TTS. 없으면 음성이 503 `not_configured` |
+| `COMPANION_SNAPSHOT_MODEL` | 아니오 | 스냅샷 프롬프트 · 검사 노드 모델. 기본 `claude-haiku-5-5`(lab과 같다). 키는 `ANTHROPIC_API_KEY` |
 
 fake 모드에서 흐름을 일부러 일으키는 낱말은 `_shared/companion-llm-fake.ts` 머리 주석에 있다(위기 · 차단 · 교정 · 섞인 언어 · 말투 · 맞춤법 · 기억 · 친밀도). fake 번역은 `[언어] 원문`이다.
 
@@ -537,6 +540,21 @@ ops-dashboard가 검사 · 피드백 프롬프트를 케이스 묶음으로 돌�
   같은 안내는 지금처럼 첫 턴의 `notice`로 온다(인사에는 붙이지 않는다).
 - 배포: `supabase functions deploy companion-greet`(`verify_jwt = false`). 마이그레이션 20261121120000을 먼저 적용한다.
 
+### 스냅샷 · 음성 — companion-snapshot · companion-voice
+
+캐릭터 메시지 한 장면 → 이미지 한 장, 메시지의 한국어 대사 → mp3 한 개. 규칙은 [명세](../../docs/specs/ai-companion-snapshot.md), 결정은 ADR-0146.
+
+- 요청: 앱은 JWT + `{"message_id","again"?}`, 플레이그라운드는 서버 키 + `{"user_id","message_id","again"?}`. 계약은 `companion-media-*`(JSON Schema).
+- 응답: 202 `{media, cached:false}`(pending · 예약) 또는 200 `{media, cached:true}`(저장본, 무료). 오류 코드 · 상태는 계약 `MEDIA_ERRORS`.
+- 흐름: `companion_media_begin`(서버가 메시지를 직접 읽고 자격 · 판정 · 동시 1 · 하루 상한 · 예약) → 응답 → `waitUntil`에서
+  `_shared/companion-media-run.ts`(스냅샷) · `_shared/companion-media-voice.ts`(음성) → `companion_media_finish`(확정 · 해제).
+- 프롬프트 글: `_shared/companion-snapshot-prompts.ts` — ops-dashboard `companion_lab.py`(6f082ff)를 글자 그대로. 고칠 때 lab과 같이 고친다.
+- 바깥 호출은 주입한 `fetch` 하나(`_shared/companion-media-engines.ts`). 단위 테스트는 가짜 fetch다 — 실제 유료 호출이 없다.
+- Storage: 비공개 버킷 `companion-media`(결과 `<user_id>/<media_id>.png|mp3`) · `companion-refs`(기준 이미지 `<slug>-ref.png` · `-expressions.png`).
+  앱은 자기 폴더만 읽는다(정책 `companion_media_owner_read`) — 서명 URL은 앱이 자기 토큰으로 만든다.
+- 계정 삭제: `delete-account`가 admin 삭제 직전에 `companion-media/<user_id>/`를 지운다(실패해도 계속). 남은 파일은 `companion_media_orphans(100)`.
+- 배포: `supabase functions deploy companion-snapshot` · `supabase functions deploy companion-voice`(`verify_jwt = false`), 그리고 `delete-account`를 다시 배포한다.
+
 ### 로컬에서 끝까지 돌리기 (운영 DB를 건드리지 않는다)
 
 ```sh
@@ -583,6 +601,10 @@ supabase functions serve --no-verify-jwt                                        
    `companion-eval` · `companion-suggest`를 다시 배포한다.
    `20261126120000_companion_learning_scope.sql`은 20261125 **뒤에** 적용한다(같은 방식의 묶음). 함수는 다시 배포하지 않아도 범위가 적용된다(맥락 RPC가 거른다) —
    `chat-send`를 다시 배포하면 비어 있는 수동 범위의 까닭이 `no_pool` 대신 `manual_empty`로 남는다. 적용 뒤 표현 동기화 SQL(6번)을 다시 돌리면 에피소드 제목이 찬다.
+   `20261130120000_companion_snapshot_voice.sql`은 20261129(구독) **뒤에**, `companion-snapshot` · `companion-voice`를 처음 배포하기 전에 적용한다(같은 방식의 묶음).
+   `companion_save_profile` · `companion_operator_set_profile`의 인수가 하나 늘어(끝에 기본값 null) 옛 호출은 그대로 돈다. Storage 버킷 둘과 읽기 정책도 만든다.
+   적용 뒤 기준 이미지를 `companion-refs`에 올리고(`deoksu-ref.png` · `deoksu-expressions.png` · `mina-ref.png` …), 비밀 `OPENAI_API_KEY` · `ELEVENLABS_API_KEY`를 넣고,
+   `companion-snapshot` · `companion-voice` · `delete-account`를 배포한다.
 3. 비밀: `supabase secrets set --env-file supabase/functions/.env`. 키가 아직 없으면 `COMPANION_LLM=fake`로 화면만 먼저 본다.
 4. `supabase functions deploy chat-send` · `supabase functions deploy companion-proactive` · `supabase functions deploy companion-eval`(`config.toml`의 `verify_jwt = false`를 따른다).
 5. 예약 작업: Vault에 서버 키(`companion_service_role_key`)를 넣고 `supabase/cron/companion.sql`을 SQL 편집기에서 한 번 실행한다.
