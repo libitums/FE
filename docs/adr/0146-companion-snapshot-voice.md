@@ -1,7 +1,9 @@
 # ADR-0146 — 컴패니언 스냅샷 · 음성은 Supabase가 만든다 — 표 하나 `companion.media`, 요청은 바로 pending, 생성은 Edge 백그라운드
 
 - 상태: **제안** — 사용자 결정(2026-11-10 ~ 13)을 마이그레이션 `20261130120000_companion_snapshot_voice.sql`과 Edge Function
-  `companion-snapshot` · `companion-voice`로 옮겼다. ⚠ 운영에는 **적용 전**이다(SQL · 비밀 · 버킷 업로드 · 배포는 사용자가 한다).
+  `companion-snapshot` · `companion-voice`로 옮겼다. 운영 적용 2026-11-14 — SQL(SQL 편집기, 기록 미정리) · 비밀 `OPENAI_API_KEY` ·
+  `ELEVENLABS_API_KEY`(실험실과 다른 키) · `companion-refs` 기준 그림 열 장 · 함수 `companion-snapshot` · `companion-voice` · `delete-account` 배포.
+  앱 화면은 아직 없다.
 - 날짜: (채택일에 적는다)
 - 다루는 축: 스냅샷 · 음성을 어디서 만들고, 어떻게 저장 · 과금 · 재사용하는가.
   **다루지 않는 것**: 앱 화면(Lynx) · 대시보드 · 출석 보상 · 엔진 고르기 실험(→ ops-dashboard 스냅샷 실험실).

@@ -1,7 +1,7 @@
 # AI 컴패니언 — 스냅샷 · 음성
 
 - 상태: **구현(작업 중)** — 브랜치 `feat/companion-media`. 마이그레이션 `20261130120000_companion_snapshot_voice.sql`, Edge Function `companion-snapshot` · `companion-voice`.
-  ⚠ 운영에는 **적용 전**이다.
+  운영 적용 2026-11-14(SQL · 비밀 · 기준 그림 · 함수 배포). 앱 화면은 아직 없다.
 - 결정: [ADR-0146](../adr/0146-companion-snapshot-voice.md). 단가는 [ADR-0140](../adr/0140-yeopjeon-launch.md) D1.
 - 원본: 운영 대시보드 플레이그라운드(ops-dashboard `companion_snap.py` · `companion_lab.py`, origin/main 6f082ff). 프롬프트 글은 그대로 옮겼다.
 - 엔드포인트 · RPC 모양: [API 명세 §2.9 · §3](ai-companion-api.md). 계약 정본은 `packages/companion-contract/src/media.ts`.
