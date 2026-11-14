@@ -88,8 +88,13 @@ export const MEDIA_ERRORS = {
   insufficient_credits: 402,
   /** 스냅샷은 유저당 동시에 하나 — `detail.mediaId`가 만드는 중인 것. */
   snapshot_in_progress: 409,
-  /** 스냅샷 하루 상한(UTC 날짜) — `detail.limit`. */
+  /** 하루 상한(UTC 날짜) — `detail.limit`. 스냅샷 `snapshot_daily_limit` · 음성 `voice_daily_limit`(0이면 음성 꺼짐). 기본은 둘 다 없음. */
   daily_limit: 429,
+  /**
+   * 그날(UTC) 시도 상한 — 엔진까지 간 시도는 결과(blocked · failed 포함)와 상관없이 센다. `detail { kind, reason, limit, resetsAt }`:
+   * `reason: "attempts"`(스냅샷 30 · 음성 60번) · `"failures"`(그날 마지막 완료 뒤 연속 실패 5번). `resetsAt`은 다음 UTC 자정. 엽전 예약 없음.
+   */
+  attempt_limit: 429,
   server_misconfigured: 500,
   internal_error: 500,
   /** 엔진 키(`OPENAI_API_KEY` · `ELEVENLABS_API_KEY` · `ANTHROPIC_API_KEY`) · 캐릭터 voice id · 기준 이미지가 없음 — `detail.missing`. */

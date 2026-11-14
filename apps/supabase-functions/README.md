@@ -553,6 +553,9 @@ ops-dashboard가 검사 · 피드백 프롬프트를 케이스 묶음으로 돌�
 - Storage: 비공개 버킷 `companion-media`(결과 `<user_id>/<media_id>.png|mp3`) · `companion-refs`(기준 이미지 `<slug>-ref.png` · `-expressions.png`).
   앱은 자기 폴더만 읽는다(정책 `companion_media_owner_read`) — 서명 URL은 앱이 자기 토큰으로 만든다.
 - 계정 삭제: `delete-account`가 admin 삭제 직전에 `companion-media/<user_id>/`를 지운다(실패해도 계속). 남은 파일은 `companion_media_orphans(100)`.
+- 상한(20261202): 그날 시도 상한(`snapshot_daily_attempts` 30 · `voice_daily_attempts` 60, blocked · failed 포함) · 연속 실패 가드(`media_failure_streak_limit` 5) →
+  429 `attempt_limit`. 음성 비상 스위치 `voice_daily_limit`(0 = 끔). 운영 조회 `companion_inspect_media`의 `today.snapshotAttempts` · `voiceAttempts`.
+- 시간 예산: 요청부터 140초 안에 닫기까지(`_shared/companion-media-budget.ts`, Edge 상한 150초). 단계마다 남은 예산만큼만 기다리고, 모자라면 재시도하지 않는다.
 - 배포: `supabase functions deploy companion-snapshot` · `supabase functions deploy companion-voice`(`verify_jwt = false`), 그리고 `delete-account`를 다시 배포한다.
 
 ### 로컬에서 끝까지 돌리기 (운영 DB를 건드리지 않는다)
@@ -605,6 +608,13 @@ supabase functions serve --no-verify-jwt                                        
    `companion_save_profile` · `companion_operator_set_profile`의 인수가 하나 늘어(끝에 기본값 null) 옛 호출은 그대로 돈다. Storage 버킷 둘과 읽기 정책도 만든다.
    적용 뒤 기준 이미지를 `companion-refs`에 올리고(`deoksu-ref.png` · `deoksu-expressions.png` · `mina-ref.png` …), 비밀 `OPENAI_API_KEY` · `ELEVENLABS_API_KEY`를 넣고,
    `companion-snapshot` · `companion-voice` · `delete-account`를 배포한다.
+   **운영은 2026-11-14에 SQL 편집기로 적용했고 기록이 없다** — `supabase migration repair --status applied 20261130120000`으로 기록한다.
+   `20261202120000_companion_media_limits.sql`은 20261130 **뒤에**(열린 PR의 20261201 다음 번호), 새 `companion-snapshot` · `companion-voice`를 배포하기 **전에**
+   적용한다(같은 방식의 묶음). 시도 상한(스냅샷 30 · 음성 60) · 연속 실패 가드(5) · 음성 스위치 `voice_daily_limit` · `media_pending_minutes` 하한 5분 ·
+   `plan_turns_today`가 메시지 예약만 센다. 옛 함수는 새 DB에서도 그대로 돈다(새 오류 코드 `attempt_limit`은 옛 함수가 `not_available` 403으로 바꿔 보일 뿐) —
+   그래도 시간 예산(140초)이 들어간 새 함수를 곧 배포한다. 적용 뒤 `supabase migration repair --status applied 20261202120000`으로 기록하고
+   `companion-snapshot` · `companion-voice`를 다시 배포한다. 운영 `media_pending_minutes`가 5보다 작으면 적용이 실패한다(지금 기본 10). 20261201이
+   20261202보다 늦게 적용되면 `db push`에 `--include-all`이 필요하다(번호가 앞이라).
 3. 비밀: `supabase secrets set --env-file supabase/functions/.env`. 키가 아직 없으면 `COMPANION_LLM=fake`로 화면만 먼저 본다.
 4. `supabase functions deploy chat-send` · `supabase functions deploy companion-proactive` · `supabase functions deploy companion-eval`(`config.toml`의 `verify_jwt = false`를 따른다).
 5. 예약 작업: Vault에 서버 키(`companion_service_role_key`)를 넣고 `supabase/cron/companion.sql`을 SQL 편집기에서 한 번 실행한다.

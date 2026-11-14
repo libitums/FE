@@ -285,7 +285,7 @@ PRD §3.15 · §3.7의 짝. 답변 평가 · 고쳐서 다시 보내기는 FE `f
 | `media` | `{ id, characterId, messageId, kind, status, charge, cost, path, mime, aspect, failure, aiGenerated, engine, model, createdAt, finishedAt }` — `status` `pending` · `complete` · `blocked` · `failed`, `charge` `photo` · `photo_redraw` · `voice`, `cost`는 blocked · failed면 0 |
 | 파일 | complete면 `path`(`<user_id>/<id>.png` · `.mp3`, 비공개 버킷 `companion-media`). 앱이 자기 토큰으로 `POST /storage/v1/object/sign/companion-media/<path>`해 서명 URL을 받는다 |
 | 상태 다시 읽기 | `companion_get_media(p_ids, p_message_ids)`(§3.2) |
-| 생성 | 응답 뒤 `EdgeRuntime.waitUntil`. 스냅샷 = 프롬프트 노드(Haiku) → OpenAI 이미지 편집 1회 → 검사 노드(Haiku 비전). 음성 = ElevenLabs `eleven_v3` 1회. 엔진 오류만 한 번 다시 |
+| 생성 | 응답 뒤 `EdgeRuntime.waitUntil`. 스냅샷 = 프롬프트 노드(Haiku) → OpenAI 이미지 편집 1회 → 검사 노드(Haiku 비전). 음성 = ElevenLabs `eleven_v3` 1회. 엔진 오류만 한 번 다시. 작업 전체는 요청부터 140초 예산 안(단계마다 남은 예산만큼, 모자라면 재시도 없음) |
 | 비밀 | `OPENAI_API_KEY` · `ANTHROPIC_API_KEY`(스냅샷), `ELEVENLABS_API_KEY`(음성). `COMPANION_SNAPSHOT_MODEL`(기본 `claude-haiku-5-5`) |
 
 | HTTP | `error` |
@@ -298,13 +298,13 @@ PRD §3.15 · §3.7의 짝. 답변 평가 · 고쳐서 다시 보내기는 FE `f
 | 405 | `method_not_allowed` |
 | 409 | `snapshot_in_progress`(`detail.mediaId`) |
 | 422 | `not_eligible`(통과한 캐릭터 메시지가 아님) · `no_speech` · `too_long`(음성 600자) |
-| 429 | `daily_limit`(`detail.limit`, 스냅샷 하루 상한 — 기본은 상한 없음, 운영자가 켤 때만) |
+| 429 | `daily_limit`(`detail.limit`, 스냅샷 `snapshot_daily_limit` · 음성 `voice_daily_limit` — 기본은 상한 없음, 운영자가 켤 때만, 음성 0 = 끔) · `attempt_limit`(`detail.kind` · `reason` `attempts` · `failures` · `limit` · `resetsAt` — 그날 시도 상한 스냅샷 30 · 음성 60, 연속 실패 5, 20261202) |
 | 500 | `server_misconfigured` · `internal_error` |
 | 503 | `not_configured`(`detail.missing` — 키 이름 배열 · `voice_id` · `refs`) |
 
 - blocked · failed의 `failure`: `prompt_blocked` · `engine_refused` · `check_failed`(blocked), `engine_failed` · `prompt_failed` · `check_error` · `refs_missing` ·
   `storage_failed` · `expired`(failed).
-- 배포: `supabase functions deploy companion-snapshot` · `companion-voice`(`verify_jwt = false`). 마이그레이션 20261130120000을 먼저 적용한다.
+- 배포: `supabase functions deploy companion-snapshot` · `companion-voice`(`verify_jwt = false`). 마이그레이션 20261130120000 · 20261202120000을 먼저 적용한다.
 
 ## 3. DB 함수(RPC)
 
@@ -573,6 +573,7 @@ chat-send 판정 11  reserve_credits(user, client_message_id, amount)   → hold
 - 단가: `settings.photo_cost` 35 · `voice_cost` 15 · `photo_redraw_cost` 25(ADR-0140 D1). 차감 순서는 메시지와 같다.
 - 덕수쌤 체험은 쓰지 않는다. 시험 계정도 낸다(ADR-0117 D4).
 - complete면 `settle_hold`, blocked · failed · 시간 초과면 `release_hold`. `companion_release_stale_holds`는 사진 · 음성 예약을 `media_pending_minutes` 전에는 건드리지 않는다.
+- 20261202: 사진 · 음성 예약은 구독 하루 무료 · 공정 사용 수(`plan_turns_today`)에 들어가지 않는다 — 메시지 예약(`reason = 'message'`)만 센다.
 
 ## 7. DB — `companion` 스키마 (1단계)
 

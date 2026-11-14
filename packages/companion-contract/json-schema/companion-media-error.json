@@ -20,6 +20,7 @@
         "insufficient_credits",
         "snapshot_in_progress",
         "daily_limit",
+        "attempt_limit",
         "server_misconfigured",
         "internal_error",
         "not_configured"

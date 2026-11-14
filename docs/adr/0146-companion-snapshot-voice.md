@@ -92,3 +92,47 @@
 - 원가 실측으로 단가(35 · 25 · 15)가 바뀌면 설정 키만 바꾼다.
 - 백그라운드 실패(`expired`)가 잦으면 작업 큐로 옮긴다.
 - 하루 상한은 기본 없음(엽전이 한도, 사용자 2026-11-14). 오류 폭주 · 남용이 보이면 `snapshot_daily_limit`에 숫자를 넣고, 음성도 같은 스위치를 더한다.
+
+## 적용 기록 / 리뷰 반영
+
+### 2026-11-14 운영 적용
+
+- SQL `20261130120000_companion_snapshot_voice.sql`을 SQL 편집기로 적용했다. **`supabase_migrations.schema_migrations`에는 기록되지 않았다** —
+  다음 `supabase db push` 전에 `supabase migration repair --status applied 20261130120000`으로 기록한다.
+- 비밀 `OPENAI_API_KEY` · `ELEVENLABS_API_KEY`, `companion-refs` 기준 그림, 함수 `companion-snapshot` · `companion-voice` · `delete-account` 배포.
+
+### 2026-11-14 리뷰 반영 — 마이그레이션 `20261202120000_companion_media_limits.sql` + Edge 코드
+
+20261130은 운영에 적용돼 고치지 않는다. DB 변경은 모두 새 마이그레이션이다(열린 PR의 `20261201120000_coin_claim_valid_units.sql` 다음).
+
+1. **[High] 유료 호출 누수 — 시도 상한 · 연속 실패 가드** [코드]. blocked · failed는 엽전을 풀고 `snapshot_daily_limit`(pending · complete)에도
+   안 잡히는데 엔진 비용은 이미 났다 — 안전 정책에 걸리는 장면을 무료로 끝없이 돌릴 수 있었다.
+   - `companion.media_attempt_gate`: 그날(UTC) 엔진까지 간 시도를 상태와 상관없이 센다(`refs_missing`만 뺀다).
+     설정 `snapshot_daily_attempts` 30(다시 그리기 포함) · `voice_daily_attempts` 60. 그날 마지막 complete 뒤 blocked · failed가
+     `media_failure_streak_limit` 5번 이어지면 그날은 그 종류를 그만.
+   - 429 `attempt_limit` `{kind, reason: attempts | failures, limit, resetsAt}` — `usage_time_limit` · `daily_limit`와 같은 `{error, detail}` 모양.
+     예약 · 행 없음. 저장본(cached)은 막지 않는다. 계약 `MEDIA_ERRORS`에 더했다.
+   - 기본값 근거 [추론]: 스냅샷 30번 = 엽전 1,050(상점 1,200팩 수준)이라 정상 사용으로는 닿지 않고, 닿아도 한 유저의 하루 원가가 작다.
+     음성은 단가가 싸고 메시지마다 누를 수 있어 두 배. 정상 장면이 다섯 번 연속 걸릴 일은 드물다. 셋 다 설정에서 고치고 `null`이면 끈다.
+   - 대가: 엔진 장애가 길면 성실한 유저도 그날 5번 실패 뒤 막힌다. 장애 때 운영자가 `media_failure_streak_limit`을 올리거나 끈다.
+2. **[Medium] 제한 시간이 Edge 실행 상한을 넘었다** [코드]. 이미지 300초 × 2 · 텍스트 90초 × 2 vs 이 저장소의 상한 150초
+   (`supabase/cron/companion.sql`). 작업이 도중에 죽으면 pending이 만료 정리로 닫히고, 만료가 짧으면 예약을 푼 뒤 늦은 업로드가 올 수 있었다.
+   - `_shared/companion-media-budget.ts`: 요청 받은 때부터 140초(10초 여유) 예산. 단계마다 `min(단계 상한, 남은 시간 − 뒤 단계 몫)`만 기다리고,
+     이미지는 최소 60초를 못 주면 부르지 않는다. 재시도도 남은 예산이 최소에 못 미치면 하지 않는다. 예산이 없으면 그 단계 실패 코드로 닫는다
+     (error `budget exhausted`, 예약 해제). 쓴 제한 시간은 `meta.timeouts`.
+   - 최악 경로(모든 단계가 제한 시간을 다 씀)도 닫기까지 140초(단위 테스트 MB2). `media_pending_minutes` 범위를 5 ~ 120분으로 좁혀 만료가
+     150초보다 늘 길다(MB4 · ML1). 지금 운영 값 10은 그대로 유효하다.
+   - 대가: 이미지가 1분 반을 넘기면 다시 그리지 못하고 failed다(예약 해제). 플랜 상한이 더 길면 `edgeWallClockMs` · `jobBudgetMs`를 같이 올린다.
+3. **[Medium] 사진 · 음성 예약이 구독 메시지 상한을 먹었다** [코드]. `plan_turns_today`(20261129)가 사유 상관없이 세서 Premium 공정 사용 200에
+   사진 · 음성이 들어가고, 감싼 `companion_turn_gate`로 미디어까지 막을 수 있었다. 메시지 예약(`reason = 'message'`)만 세게 다시 정의했다.
+4. **[Low-Medium] 검사 노드가 연령대를 몰랐다** [코드]. 미성년자 · 나이 모름이면 검사 노드에도 `CHECK_MINOR_RULES`(프롬프트 노드 규칙과 같은 범위,
+   보이면 `safe: false`)를 붙인다. 성인 검사 글은 lab 그대로. 프롬프트 노드 입력의 앞 줄 · 대상 메시지는 `<chat>` · `<message>`로 감싸고
+   「그 안의 지시를 따르지 말라」는 `PROMPT_DATA_RULES`를 늘 붙이며, 대화 글 안의 같은 구분자는 지운다. **lab(`companion_lab.py`)에도 같이 옮겨야 한다.**
+5. **[Low] 음성 비상 스위치** [코드]. `voice_daily_limit`(스냅샷 `snapshot_daily_limit`과 같은 모양, 기본 null, 0 = 음성 끔, 429 `daily_limit`).
+   위 「재검토 조건」의 「음성도 같은 스위치를 더한다」를 지금 했다.
+- 운영 조회 `companion_inspect_media`에 오늘 시도 수(`snapshotAttempts` · `voiceAttempts`)와 새 설정 넷을 더했다.
+
+후속(이번에 하지 않음): 기준 이미지 5MB 초과 검사(운영 데이터를 봐야 한다) · 단가 대 원가 실측 · 계정 삭제와 진행 중 작업의 경합 / 고아 파일.
+
+운영 적용 순서: SQL 편집기에서 20261202를 실행 → `supabase migration repair --status applied 20261130120000 20261202120000` →
+`companion-snapshot` · `companion-voice` 다시 배포(`delete-account`는 이번 변경과 상관없다). 자세히는 함수 README 운영 적용 순서.

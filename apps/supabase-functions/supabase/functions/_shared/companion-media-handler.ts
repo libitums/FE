@@ -1,7 +1,7 @@
 // `POST /functions/v1/companion-snapshot` · `POST /functions/v1/companion-voice` — 캐릭터 메시지 하나의 스냅샷 · 음성(ADR-0146).
 //
 // 흐름: 호출자 확인 → 엔진 키(없으면 503 `not_configured`) → `companion_media_begin`(서버가 메시지를 직접 읽는다 — 앱이 보낸 글은 믿지 않는다.
-// 남의 메시지 403 · 자격 · 판정 · 동시 1 · 하루 상한 · 엽전 예약 · pending 행) → 202로 바로 돌려주고 백그라운드(`waitUntil`)에서 만든다.
+// 남의 메시지 403 · 자격 · 판정 · 동시 1 · 하루 상한 · 시도 상한 · 엽전 예약 · pending 행) → 202로 바로 돌려주고 백그라운드(`waitUntil`)에서 만든다.
 // 저장본이 있으면(스냅샷은 「다시 그리기」가 아니면, 음성은 「다시」가 아니면) 200 · `cached: true`, 차감 없음.
 //
 // 호출자: 앱은 JWT + `{ message_id, again? }`. ops-dashboard 플레이그라운드는 서버 키 + `{ user_id, message_id, again? }`(companion-suggest와 같은 규칙).
@@ -13,6 +13,7 @@ import {
   MEDIA_ERRORS,
   type MediaErrorCode,
 } from "./companion-contract/index.ts";
+import { jobBudgetMs } from "./companion-media-budget.ts";
 import type { Fetch } from "./companion-media-engines.ts";
 import { type MediaEnv, missingKeys } from "./companion-media-env.ts";
 import type { MediaRunDeps } from "./companion-media-job.ts";
@@ -40,6 +41,7 @@ export type MediaDeps = {
   /** 응답 뒤에도 작업을 끝까지 돌게 런타임에 알린다(`EdgeRuntime.waitUntil`). 없으면 그냥 띄운다. */
   readonly waitUntil?: (work: Promise<unknown>) => void;
   readonly log: (entry: MediaLogEntry) => void;
+  /** 단계 상한 덮어쓰기(이미지 · 텍스트 노드와 음성 · Storage). 실제 제한 시간은 남은 예산이 더 줄인다. */
   readonly imageTimeoutMs?: number;
   readonly textTimeoutMs?: number;
   readonly storageTimeoutMs?: number;
@@ -70,6 +72,8 @@ export function createMediaHandler(
 ): (request: Request) => Promise<Response> {
   const outbound = timedOutbound(deps.fetch, outboundTimeoutMs);
   return async (request) => {
+    // 작업 예산은 요청을 받은 때부터 센다 — Edge 실행 상한은 요청 처리 시간까지 포함한다.
+    const deadlineMs = deps.nowMs() + jobBudgetMs;
     const fail = (code: MediaErrorCode, detail?: Record<string, unknown>, outcome?: string) => {
       const status = MEDIA_ERRORS[code];
       deps.log({ event: "companion_media", kind, status, outcome: outcome ?? code });
@@ -132,6 +136,7 @@ export function createMediaHandler(
       outbound,
       nowMs: deps.nowMs,
       log: (entry) => deps.log(entry),
+      deadlineMs,
       ...(deps.imageTimeoutMs === undefined ? {} : { imageTimeoutMs: deps.imageTimeoutMs }),
       ...(deps.textTimeoutMs === undefined ? {} : { textTimeoutMs: deps.textTimeoutMs }),
       ...(deps.storageTimeoutMs === undefined ? {} : { storageTimeoutMs: deps.storageTimeoutMs }),

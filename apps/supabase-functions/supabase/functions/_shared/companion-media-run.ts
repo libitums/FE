@@ -6,6 +6,9 @@
 //   검사에 떨어진 그림은 올리지 않는다(유저에게 보이지 않을 그림을 남기지 않는다).
 // 음성은 `companion-media-voice.ts`, 같이 쓰는 닫기 · 재시도는 `companion-media-job.ts`.
 //
+// 시간 예산(`companion-media-budget.ts`): 단계마다 남은 예산에서 뒤 단계 몫을 남긴 만큼만 기다리고, 모자라면 시도하지 않고 그 단계 실패로 닫는다.
+// 쓴 제한 시간은 `meta.timeouts`에 남는다(운영 진단).
+//
 // 던지지 않는다. 예상 못 한 오류도 failed로 닫는다. 닫기(RPC)마저 실패하면 행은 pending으로 남고 시간 초과 정리가 예약을 푼다.
 
 import type { Segment } from "./chat-send.contract.ts";
@@ -20,10 +23,11 @@ import {
   uploadMedia,
 } from "./companion-media-engines.ts";
 import type { MediaEnv } from "./companion-media-env.ts";
+import { SNAPSHOT_PHASES } from "./companion-media-budget.ts";
 import {
   type Aspect,
-  CHECK_SYSTEM,
   CHECK_TOOL,
+  checkSystem,
   type ContextLine,
   imagePrompt,
   PROMPT_TOOL,
@@ -37,9 +41,8 @@ import {
   verdictFrom,
 } from "./companion-snapshot-prompts.ts";
 import {
-  defaultImageTimeoutMs,
-  defaultStorageTimeoutMs,
-  defaultTextTimeoutMs,
+  budgetExhausted,
+  budgetFor,
   finish,
   type MediaRunDeps,
   type Result,
@@ -72,8 +75,14 @@ export async function runSnapshot(
 ): Promise<void> {
   const kind = "snapshot";
   const started = deps.nowMs();
-  const textTimeout = deps.textTimeoutMs ?? defaultTextTimeoutMs;
-  const storageTimeout = deps.storageTimeoutMs ?? defaultStorageTimeoutMs;
+  const budget = budgetFor(deps);
+  const timeouts: Record<string, number | number[]> = {};
+  const phase = (name: keyof typeof SNAPSHOT_PHASES, capMs?: number) => {
+    const timeout = budget.timeoutFor(SNAPSHOT_PHASES[name], capMs);
+    if (timeout === null) throw budgetExhausted();
+    timeouts[name] = timeout;
+    return timeout;
+  };
   const usage: Record<string, unknown> = {};
   const meta: Record<string, unknown> = {
     aiGenerated: true,
@@ -83,6 +92,7 @@ export async function runSnapshot(
     nodeModel: env.snapshotModel,
     snapshotSelf: job.snapshotSelf,
     usage,
+    timeouts,
   };
   const done = (status: Status, result: Result) =>
     finish(deps, env, kind, job.mediaId, status, {
@@ -96,8 +106,9 @@ export async function runSnapshot(
     }
     let refs: Image[];
     try {
+      const timeout = phase("refs", deps.storageTimeoutMs);
       refs = await Promise.all(
-        job.refs.slice(0, 4).map((name) => downloadRef(deps.fetch, env, name, storageTimeout)),
+        job.refs.slice(0, 4).map((name) => downloadRef(deps.fetch, env, name, timeout)),
       );
     } catch (error) {
       return await done("failed", { failure: "refs_missing", error: short(error) });
@@ -106,6 +117,7 @@ export async function runSnapshot(
     // 1. 프롬프트 노드
     let prompt: SnapshotPrompt | null;
     try {
+      const timeout = phase("prompt", deps.textTimeoutMs);
       const call = await claudeTool(
         deps.fetch,
         env.anthropicKey,
@@ -116,7 +128,7 @@ export async function runSnapshot(
           content: promptContent(job),
           maxTokens: 1024,
         },
-        textTimeout,
+        timeout,
       );
       usage["prompt"] = call.usage;
       prompt = snapshotPromptFrom(call.input);
@@ -139,16 +151,22 @@ export async function runSnapshot(
       });
     }
 
-    // 2. 이미지 엔진 — 한 번. 엔진 오류만 한 번 다시.
+    // 2. 이미지 엔진 — 한 번. 엔진 오류만, 예산이 남으면 한 번 다시.
     let png: Uint8Array;
+    const imageTimeouts: number[] = [];
+    timeouts["image"] = imageTimeouts;
     try {
-      const drawn = await withRetry(() =>
-        openaiImageEdit(
-          deps.fetch,
-          env.openaiKey!,
-          { model: job.engine, refs, prompt: text, size, quality: job.quality },
-          deps.imageTimeoutMs ?? defaultImageTimeoutMs,
-        ),
+      const drawn = await withRetry(
+        (timeout) => {
+          imageTimeouts.push(timeout);
+          return openaiImageEdit(
+            deps.fetch,
+            env.openaiKey!,
+            { model: job.engine, refs, prompt: text, size, quality: job.quality },
+            timeout,
+          );
+        },
+        () => budget.timeoutFor(SNAPSHOT_PHASES.image, deps.imageTimeoutMs),
       );
       png = drawn.value.png;
       usage["image"] = drawn.value.usage;
@@ -174,12 +192,13 @@ export async function runSnapshot(
     // 3. 검사 노드 — 기준 이미지 첫 장과 나란히.
     let verdict: SnapshotVerdict | null;
     try {
+      const timeout = phase("check", deps.textTimeoutMs);
       const call = await claudeTool(
         deps.fetch,
         env.anthropicKey,
         env.snapshotModel,
         {
-          system: CHECK_SYSTEM,
+          system: checkSystem(job.ageBand),
           tool: CHECK_TOOL,
           content: [
             imageBlock(refs[0]!),
@@ -188,7 +207,7 @@ export async function runSnapshot(
           ],
           maxTokens: 600,
         },
-        textTimeout,
+        timeout,
       );
       usage["check"] = call.usage;
       verdict = verdictFrom(call.input);
@@ -208,7 +227,8 @@ export async function runSnapshot(
     // 4. 저장(PNG 그대로 — C2PA 보존)
     const path = `${job.userId}/${job.mediaId}.png`;
     try {
-      await uploadMedia(deps.fetch, env, path, png, "image/png", storageTimeout);
+      const timeout = phase("upload", deps.storageTimeoutMs);
+      await uploadMedia(deps.fetch, env, path, png, "image/png", timeout);
     } catch (error) {
       return await done("failed", {
         failure: "storage_failed",
