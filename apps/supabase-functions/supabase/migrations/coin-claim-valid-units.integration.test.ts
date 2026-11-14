@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, beforeEach, expect, test } from "vitest";
 import { signIn, startTestDatabase } from "./postgres.test-support";
 
-// 학습 보상은 배포 콘텐츠에 있는 유닛에만(20261130, ADR-0146) — 진행 스냅숏에 임의 키를 저장해 엽전을 받는 길(보안 리뷰 H4)을 막는다.
+// 학습 보상은 배포 콘텐츠에 있는 유닛에만(20261201, ADR-0148) — 진행 스냅숏에 임의 키를 저장해 엽전을 받는 길(보안 리뷰 H4)을 막는다.
 const user = "00000000-0000-4000-8000-0000000000f1";
 
 let db: Awaited<ReturnType<typeof startTestDatabase>>;
@@ -158,7 +158,7 @@ test("CV-S7. 위조 키 2,000개(진행 표 상한 근처)도 문장 제한 안�
   expect(await learningRows()).toBe(0);
 });
 
-// ADR-0146 「이미 위조 키로 받은 엽전」의 감사 질의가 위조 지급만 골라내는지 — 문서의 문장 그대로.
+// ADR-0148 「이미 위조 키로 받은 엽전」의 감사 질의가 위조 지급만 골라내는지 — 문서의 문장 그대로.
 test("CV-S8. 감사 질의는 표에 없는 유닛의 learning 지급만 센다", async () => {
   await progress({ "u01-water": ["S1"] });
   await claim();

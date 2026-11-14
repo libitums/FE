@@ -10,7 +10,7 @@ const root = fileURLToPath(new URL("../../", import.meta.url));
 const contentDir = join(root, "apps/mobile/content");
 const migration = join(
   root,
-  "apps/supabase-functions/supabase/migrations/20261130120000_coin_claim_valid_units.sql",
+  "apps/supabase-functions/supabase/migrations/20261201120000_coin_claim_valid_units.sql",
 );
 
 const steps = (...ids) => ({ steps: ids.map((id) => (typeof id === "string" ? { id } : id)) });

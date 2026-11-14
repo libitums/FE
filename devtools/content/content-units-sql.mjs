@@ -1,4 +1,4 @@
-// 배포 콘텐츠에서 학습 보상 유닛 표(`companion.content_units`, ADR-0146)에 넣을 멱등 SQL을 stdout으로 씁니다. DB에는 쓰지 않습니다 —
+// 배포 콘텐츠에서 학습 보상 유닛 표(`companion.content_units`, ADR-0148)에 넣을 멱등 SQL을 stdout으로 씁니다. DB에는 쓰지 않습니다 —
 // 나온 SQL을 검토한 뒤 사람이 SQL 편집기(또는 psql)에서 실행합니다. 새 에피소드 · 유닛을 올릴 때마다 돌립니다(docs/specs/episode-content-json-contract.md 13절 규칙 11).
 //
 //   node devtools/content/content-units-sql.mjs --base https://<ref>.supabase.co/storage/v1/object/public/content/ > content-units.sql

@@ -1,7 +1,7 @@
-// 학습 보상(엽전)을 받을 수 있는 유닛 표 `companion.content_units`(ADR-0146)에 넣을 행을 배포 에피소드 JSON에서 만드는 순수 함수입니다.
+// 학습 보상(엽전)을 받을 수 있는 유닛 표 `companion.content_units`(ADR-0148)에 넣을 행을 배포 에피소드 JSON에서 만드는 순수 함수입니다.
 // IO가 없어 같은 입력이면 같은 결과입니다. 행은 추가만 합니다 — 콘텐츠에서 빠진 유닛도 이미 깬 사용자가 있어 지우지 않습니다.
 
-// 표의 check와 같은 규칙입니다(20261130120000_coin_claim_valid_units.sql). 생성 SQL에 따옴표가 들어갈 수 없게 여기서 막습니다.
+// 표의 check와 같은 규칙입니다(20261201120000_coin_claim_valid_units.sql). 생성 SQL에 따옴표가 들어갈 수 없게 여기서 막습니다.
 const EPISODE_ID = /^[a-z0-9][a-z0-9-]{0,63}$/;
 const UNIT_KEY = /^[A-Za-z0-9_-]{1,16}$/;
 // 에피소드 표지(앱의 `CATALOG_INTRO_KEY`)와 막간은 보상이 없습니다 — 지급 함수의 제외 규칙과 같습니다.

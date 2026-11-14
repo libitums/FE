@@ -1,4 +1,4 @@
--- 학습 보상은 배포 콘텐츠에 있는 유닛에만(2026-11-14, ADR-0146 — 보안 리뷰 H4).
+-- 학습 보상은 배포 콘텐츠에 있는 유닛에만(2026-11-14, ADR-0148 — 보안 리뷰 H4).
 --
 -- 문제: `companion_claim_coins()`(20261127)는 사용자 자신의 진행 스냅숏(catalogProgress ∪ coinUnits)에 있는 (에피소드, 유닛) 문자열마다
 -- 학습 보상을 줬고, 확인은 길이뿐이었다. `save_learning_progress`는 JSON 모양만 보므로 로그인한 누구나 임의 키를 저장해 엽전을
@@ -245,7 +245,7 @@ begin
       from jsonb_each(coalesce(v_progress -> 'coinUnits', '{}'::jsonb)) e
       cross join lateral jsonb_array_elements_text(case when jsonb_typeof(e.value) = 'array' then e.value else '[]'::jsonb end) u
     ) src
-    -- 배포 콘텐츠에 있는 유닛만(ADR-0146). 표의 check가 intro · INT · 길이를 이미 막지만 제외 규칙은 여기도 적어 둔다.
+    -- 배포 콘텐츠에 있는 유닛만(ADR-0148). 표의 check가 intro · INT · 길이를 이미 막지만 제외 규칙은 여기도 적어 둔다.
     join companion.content_units cu on cu.episode_id = src.episode and cu.unit_key = src.unit
     where src.unit not in ('intro', 'INT')
   loop

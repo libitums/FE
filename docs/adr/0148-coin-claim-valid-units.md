@@ -1,4 +1,4 @@
-# ADR-0146 — 학습 보상은 배포 콘텐츠에 있는 유닛에만 (엽전 지급 검증)
+# ADR-0148 — 학습 보상은 배포 콘텐츠에 있는 유닛에만 (엽전 지급 검증)
 
 - 상태: **채택 — 서버 마이그레이션 운영 적용 전.**
 - 날짜: 2026-11-14.
@@ -21,7 +21,7 @@
 - **추가만 한다.** 콘텐츠에서 유닛이 빠져도 이미 깬 사용자가 있어 지우지 않는다(지우면 소급 지급에서 사라진다).
 - `companion` 스키마(PostgREST 비노출), RLS 켜고 정책 없음, `public · anon · authenticated` 권한 걷음, `service_role`만. 앱은 이 표를 읽지 않는다.
 
-### D2. 시드(마이그레이션 `20261130120000_coin_claim_valid_units.sql`) — 187행
+### D2. 시드(마이그레이션 `20261201120000_coin_claim_valid_units.sql`) — 187행
 - 버킷의 모든 매니페스트(`manifest.json` · `manifests/level-2 ~ 5.json`, 2026-11-14) 본문 74개에서 `steps[].id` 중 막간(`kind: "interlude"`)을 뺀 것 — **174행**.
   지금 배포본 level-5(generated_at 2026-11-13T04:00:00Z) 18편과 같은 집합이다(옛 수준은 그 부분집합).
 
@@ -88,7 +88,7 @@ order by forged_coins desc;
 
 ## 운영 적용 (사용자)
 
-1. 마이그레이션 `apps/supabase-functions/supabase/migrations/20261130120000_coin_claim_valid_units.sql`을 적용한다(20261127 엽전 출시가 먼저 적용돼 있어야 한다).
+1. 마이그레이션 `apps/supabase-functions/supabase/migrations/20261201120000_coin_claim_valid_units.sql`을 적용한다(20261127 엽전 출시가 먼저 적용돼 있어야 한다).
 2. 확인: `select count(*) from companion.content_units;` → 187.
 3. 위 감사 질의를 돌려 결과를 본다.
 
