@@ -14,8 +14,6 @@ import type { CatalogWiringValues } from "./catalog-cover-wiring";
 import type { CatalogLessonWiring } from "./catalog-lesson-wiring";
 import { catalogStoryFormOf, catalogStoryModelOf } from "./catalog-story";
 import type { NavAction } from "./nav-state";
-import { commitNewFriend } from "./new-friend-wiring";
-import { rememberNewFriend } from "./new-friend-pending";
 
 type StoryHandler = (episodeId: string, unitKey: CatalogUnitKey) => void;
 
@@ -51,13 +49,6 @@ export function withCatalogStory(
   const markDone: StoryHandler = (episodeId, unitKey) => {
     setCatalogProgress((progress) => markCatalogUnitDone(progress, episodeId, unitKey));
     rememberMapCleared(episodeId, unitKey);
-  };
-  // 에피소드 중간 이야기 유닛(막간)을 끝내면 그 에피소드의 인물이 해금됩니다(messenger-chat-1-5 spec §7.1 · 2026-11-10 결정).
-  // 해금은 지금 확정(저장 · 출처 알림)하고, 시트는 돌아온 맵이 마운트 때 꺼내 띄우도록 기억만 해 둡니다. 이미 열었거나
-  // 표에 없는 에피소드면 아무것도 하지 않습니다 — 그래서 다시 끝내도 시트는 다시 안 뜹니다.
-  const unlockFriend: StoryHandler = (episodeId) => {
-    const characterId = commitNewFriend(episodeId);
-    if (characterId !== null) rememberNewFriend(characterId);
   };
   // 이벤트 공통 속성 — 형식을 모르면(닿지 않는 경우) 빈 문자열입니다.
   const base = (episodeId: string, unitKey: CatalogUnitKey) => ({
@@ -97,16 +88,12 @@ export function withCatalogStory(
       if (!isCatalogUnitDone(catalogProgress, episodeId, unitKey)) {
         sink?.({ name: "episode_story_skipped", ...base(episodeId, unitKey) });
         markDone(episodeId, unitKey);
-        // 건너뛰기도 클리어로 셉니다 — 진행이 끝낸 것으로 적으므로 다음 유닛이 열리는 것과 같은 기준입니다.
-        unlockFriend(episodeId, unitKey);
       }
       dispatch({ type: "backToRoot" });
     },
     onFinishCatalogStory: (episodeId, unitKey) => {
       sink?.({ name: "episode_story_completed", ...base(episodeId, unitKey) });
       markDone(episodeId, unitKey);
-      // 다시 본 이야기여도 해금을 시도합니다 — 이 규칙 전에 막간을 끝낸 설치도 끝까지 보면 인물을 얻습니다(이미 열었으면 무동작).
-      unlockFriend(episodeId, unitKey);
       dispatch({ type: "backToRoot" });
     },
     onExitCatalogStory: (episodeId, unitKey, stage) => {

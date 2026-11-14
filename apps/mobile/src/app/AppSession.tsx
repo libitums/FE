@@ -43,8 +43,7 @@ import { useCatalogFinishGuard } from "./catalog-finish-guard";
 import { episodeSurveyWiring } from "./episode-survey-wiring";
 import { firstUnitGuideEnabled } from "./first-unit-guide-enabled";
 import { OutOfTicketsDialog } from "../screens/tickets/OutOfTicketsDialog";
-import { CatalogUpdateNoticeDialog } from "../screens/catalog-update/CatalogUpdateNoticeDialog";
-import { useCatalogUpdateNotice } from "./use-catalog-update-notice";
+import { useMapNotices } from "./use-map-notices";
 import { withLearningTickets } from "./ticket-wiring";
 import { downloadCatalogOf, downloadSettingsNav } from "./download-settings-nav";
 import { useDownloadGate, withDownloadGate } from "./use-download-gate";
@@ -202,19 +201,20 @@ export function AppSession({
   useEffect(() => {
     if (atMapRoot && stagedContentReady > 0) applyStagedContent?.();
   }, [atMapRoot, stagedContentReady, applyStagedContent]);
-  // 끝낸 에피소드가 업데이트됐으면 지도 루트에서 다른 겹침이 없을 때 한 번 알립니다(시안 G-A).
-  const updateNotice = useCatalogUpdateNotice({
+  // 지도 루트의 일회성 안내 — 엽전 출시 · 채팅 모달(ADR-0140) 다음 끝낸 에피소드 업데이트 안내(시안 G-A).
+  const notices = useMapNotices({
+    wiring,
     catalog: episodeContent.catalog,
     sections: catalogSections,
     progress: catalogProgress,
-    ready:
+    localCoins: progress.headerCoinCount,
+    idle:
       progress.hasLoadedProgress &&
-      nav.entry.length === 0 &&
-      screenNow.name === "journey-map" &&
-      !screenLayerOpen &&
+      atMapRoot &&
       tickets.outOfTickets === null &&
       progress.episodeSurvey === null &&
       !progress.streakCelebration,
+    onStartChatting: () => dispatch({ type: "switchTab", tab: "messenger" }),
   });
   // 셸 여백: 그림 화면 0 · 여정 맵 위 0 · 자판 화면 위만 — 비운 쪽은 화면이 잡습니다(`shell-edges`).
   const shellInsets = shellInsetsOf(screenNow, insets, wiring);
@@ -252,7 +252,7 @@ export function AppSession({
                   top={shellHeaderTop(screenNow, insets)}
                   streakDays={progress.streakDays}
                   trophyCount={progress.headerTrophyCount}
-                  coinCount={progress.headerCoinCount}
+                  coinCount={notices.coinCount}
                   celebrateStreak={progress.streakCelebration}
                   onStreakCelebrated={progress.onStreakCelebrated}
                   statBump={progress.wiring}
@@ -289,9 +289,7 @@ export function AppSession({
               <OutOfTicketsDialog {...tickets.outOfTickets} />
             )}
             {downloadGate.layer}
-            {updateNotice.open ? (
-              <CatalogUpdateNoticeDialog onClose={updateNotice.onClose} />
-            ) : null}
+            {notices.layer}
           </view>
         </ErrorBoundary>
       </FirstUnitGuideProvider>

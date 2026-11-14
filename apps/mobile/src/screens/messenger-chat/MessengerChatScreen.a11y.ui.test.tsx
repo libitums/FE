@@ -48,10 +48,10 @@ test("MC-UI24. 기능 알약 둘은 button이고 이름에 가격이 든다", ()
   mountChatOpen();
 
   expect(traitsOf(ids.snapshot)).toContain("button");
-  // 사진 요청은 60엽전(사용자 결정 2026-11-10, CHAT_COIN_PRICES).
-  expect(labelOf(ids.snapshot)).toBe("Snapshot, 60 coins");
+  // 사진 요청은 35엽전(사용자 결정 2026-11-14, CHAT_COIN_PRICES).
+  expect(labelOf(ids.snapshot)).toBe("Snapshot, 35 coins");
   expect(traitsOf(ids.snapVoice)).toContain("button");
-  expect(labelOf(ids.snapVoice)).toBe("Snap voice, 40 coins");
+  expect(labelOf(ids.snapVoice)).toBe("Snap voice, 15 coins");
 });
 
 test("MC-UI24. 전구 · 「…」 · 보내기는 button이고 copy 라벨을 갖는다", () => {

@@ -64,13 +64,13 @@ describe("characterUnlockFor (MC2-U15)", () => {
     ).toBeNull();
   });
 
-  test("MC2-U15. CHARACTER_UNLOCKS 는 미나와 서버 인물 셋(정윤경 · 한도윤 · 서재민 — ADR-0137)이다", () => {
-    expect(CHARACTER_UNLOCKS[0]).toEqual(MINA);
+  test("MC2-U15. CHARACTER_UNLOCKS 는 해금 JSON의 네 인물(정윤경 u01 · 미나 u03 · 한도윤 u12 · 서재민 u17 — ADR-0141)이다", () => {
+    expect(CHARACTER_UNLOCKS[1]).toEqual(MINA);
     expect(CHARACTER_UNLOCKS.map((entry) => [entry.episodeId, entry.characterId])).toEqual([
+      ["u01-water", "yoonkyung"],
       ["u03-mina", "mina"],
-      ["u02-checkin", "yoonkyung"],
-      ["u04-directions", "doyun"],
-      ["u07-jaemin", "jaemin"],
+      ["u12-cafe-missed", "doyun"],
+      ["u17-samgyeopsal", "jaemin"],
     ]);
   });
 

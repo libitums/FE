@@ -52,12 +52,10 @@ test("XF1. 시험 계정이 레슨을 처음 통과하면 결과 화면에 무�
 
   // 무제한은 티켓을 쓰지 않을 뿐 보상은 그대로다 — 두 줄이 서로의 자리를 빼앗지 않는다.
   expect(screen.getByTestId("lesson-complete-unlimited")).toBeInTheDocument();
-  expect(screen.getByTestId("lesson-complete-screen-reward-coins")).toHaveTextContent(
-    "+ 10 REWARD",
-  );
+  expect(screen.getByTestId("lesson-complete-screen-reward-coins")).toHaveTextContent("+ 5 REWARD");
   expect(screen.getByTestId("lesson-complete-screen-coins-chip")).toHaveAttribute(
     "accessibility-label",
-    "10 coins",
+    "5 coins",
   );
   expect(screen.getByTestId("lesson-complete-screen-tickets-chip")).toBeInTheDocument();
   expect(savedProgress(rpcs).at(-1)?.["coinUnits"]).toEqual({ [u01]: ["S1"] });
@@ -65,7 +63,7 @@ test("XF1. 시험 계정이 레슨을 처음 통과하면 결과 화면에 무�
   exitResult();
   await flush();
   expect(screen.getByTestId("top-bar-tickets-infinity")).toBeInTheDocument();
-  expect(screen.getByTestId("top-bar-coins")).toHaveTextContent("10");
+  expect(screen.getByTestId("top-bar-coins")).toHaveTextContent("5");
 });
 
 test("XF2. 머리의 무제한 칩과 엽전 칩은 각자 제 겹침을 열고, 한 번에 하나만 선다", async () => {
@@ -94,15 +92,15 @@ test("XF3. 레슨으로 번 엽전이 메신저 목록 칩에도 같은 수로 �
   await flush();
   exitResult();
   await flush();
-  expect(screen.getByTestId("top-bar-coins")).toHaveTextContent("10");
+  expect(screen.getByTestId("top-bar-coins")).toHaveTextContent("5");
 
   act(() => openTab("messenger"));
   const chip = screen.getByTestId("messenger-list-coins");
-  expect(chip).toHaveTextContent("10");
-  expect(chip).toHaveAttribute("accessibility-label", "10 coins, get more");
+  expect(chip).toHaveTextContent("5");
+  expect(chip).toHaveAttribute("accessibility-label", "5 coins, get more");
 
   act(() => {
     fireEvent.tap(chip, {});
   });
-  expect(screen.getByTestId("coin-shop-screen-balance-value")).toHaveTextContent("10");
+  expect(screen.getByTestId("coin-shop-screen-balance-value")).toHaveTextContent("5");
 });

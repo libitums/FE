@@ -15,15 +15,15 @@ describe("coinBalanceOf", () => {
     expect(coinBalanceOf({})).toBe(0);
   });
 
-  test("[C2] 에피소드를 가로질러 유닛 하나에 10씩 센다", () => {
+  test("[C2] 에피소드를 가로질러 유닛 하나에 5씩 센다(2026-11-14 10 → 5)", () => {
     expect(coinBalanceOf({ u01: ["L1", "L2"], u02: ["L1"] })).toBe(3 * COINS_PER_LESSON);
-    expect(COINS_PER_LESSON).toBe(10);
+    expect(COINS_PER_LESSON).toBe(5);
   });
 });
 
 describe("lessonCoinReward", () => {
-  test("[C3] 처음 통과만 10, 다시 하기 · 미통과는 0", () => {
-    expect(lessonCoinReward("passed", true)).toBe(10);
+  test("[C3] 처음 통과만 5, 다시 하기 · 미통과는 0", () => {
+    expect(lessonCoinReward("passed", true)).toBe(5);
     expect(lessonCoinReward("passed", false)).toBe(0);
     expect(lessonCoinReward("failed", true)).toBe(0);
     expect(lessonCoinReward("failed", false)).toBe(0);

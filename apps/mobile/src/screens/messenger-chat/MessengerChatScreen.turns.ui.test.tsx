@@ -118,7 +118,7 @@ test("MC2-UI7. T2: 두 통 뒤 머리가 주황 「Last free message today」이
 
   expect(lineText()).toBe("Last free message today");
   expect(screen.getByTestId(turnIds.strip).textContent).toContain(
-    "After this, 10 coins per message",
+    "After this, 3 coins per message",
   );
   // 아직 무료 보내기 단추다.
   expect(screen.getByTestId(ids.send)).toBeTruthy();
@@ -176,13 +176,13 @@ test("MC2-UI7. Keep chatting → T4: 머리가 가격 · 다시 무료까지 시
 
   expect(screen.queryByTestId(turnIds.panel)).toBeNull();
   expect(screen.getByTestId(ids.composer)).toBeTruthy();
-  expect(lineText()).toMatch(/^Each message 10 coins · free again in 1[12]h \d+m$/);
+  expect(lineText()).toMatch(/^Each message 3 coins · free again in 1[12]h \d+m$/);
   expect(screen.getByTestId(turnIds.coinSend)).toBeTruthy();
   expect(screen.queryByTestId(ids.send)).toBeNull();
   expect(slotContent()).toBe("closed");
 });
 
-test("MC2-UI7. T4 보내기: 지갑 −10 · 내 글 +1 · 원장 used는 그대로 · 판은 다시 뜨지 않는다", () => {
+test("MC2-UI7. T4 보내기: 지갑 −3 · 내 글 +1 · 원장 used는 그대로 · 판은 다시 뜨지 않는다", () => {
   const room = freeRoom();
   mountChatOpen(room);
   sendFree();
@@ -196,7 +196,7 @@ test("MC2-UI7. T4 보내기: 지갑 −10 · 내 글 +1 · 원장 used는 그대
 
   sendCoin();
 
-  expect(room.wallet.balance()).toBe(90);
+  expect(room.wallet.balance()).toBe(97);
   expect(outgoingCount()).toBe(4);
   expect(room.ledger.usage().used).toBe(3);
   expect(screen.queryByTestId(turnIds.panel)).toBeNull();
@@ -215,7 +215,7 @@ test("MC2-UI7. 하루 한 번: 방을 다시 마운트해도 판 없이 바로 T
 
   expect(screen.queryByTestId(turnIds.panel)).toBeNull();
   expect(screen.getByTestId(turnIds.coinSend)).toBeTruthy();
-  expect(lineText()).toContain("Each message 10 coins");
+  expect(lineText()).toContain("Each message 3 coins");
 });
 
 test("MC2-UI7. 이미 다 쓴 날 처음 들어오면(판 아직 안 봄) 들어올 때 판이 뜨고 원장에 본 것으로 남는다", () => {
@@ -275,7 +275,7 @@ test("MC2-UI8. 전구로 보기를 골라 보내도 한 통으로 센다", () =>
   expect(lineText()).toBe("2 of 3 free messages left today");
 });
 
-test("MC2-UI8. 사진 요청은 원장을 건드리지 않고 지갑에서 60을 쓴다", () => {
+test("MC2-UI8. 사진 요청은 원장을 건드리지 않고 지갑에서 35를 쓴다", () => {
   const room = freeRoom();
   const { source } = mountChat(room);
   const requestMedia = vi.spyOn(source, "requestMedia");
@@ -285,11 +285,11 @@ test("MC2-UI8. 사진 요청은 원장을 건드리지 않고 지갑에서 60을
 
   expect(requestMedia).toHaveBeenCalledWith("mina", "photo");
   expect(room.ledger.usage().used).toBe(0);
-  expect(room.wallet.balance()).toBe(40);
+  expect(room.wallet.balance()).toBe(65);
 });
 
 test("MC2-UI8. T4에서 잔액이 모자라면 보내지 않고 엽전 상점이 열리며 글은 남는다", () => {
-  const room = freeRoom({ earned: 5, record: { day: TODAY, used: 3, outPanel: "shown" } });
+  const room = freeRoom({ earned: 2, record: { day: TODAY, used: 3, outPanel: "shown" } });
   mountChatOpen(room);
   tapKeys(...KEYS_AN);
 
@@ -297,12 +297,12 @@ test("MC2-UI8. T4에서 잔액이 모자라면 보내지 않고 엽전 상점이
 
   expect(screen.getByTestId("coin-shop-screen")).toBeTruthy();
   expect(outgoingCount()).toBe(0);
-  expect(room.wallet.balance()).toBe(5);
+  expect(room.wallet.balance()).toBe(2);
   expect(textOf(ids.display)).toBe("안");
 });
 
 test("MC2-UI8. 상점을 닫으면 방으로 돌아오고 접근성 초점이 엽전 보내기 단추로 간다", () => {
-  const room = freeRoom({ earned: 5, record: { day: TODAY, used: 3, outPanel: "shown" } });
+  const room = freeRoom({ earned: 2, record: { day: TODAY, used: 3, outPanel: "shown" } });
   mountChatOpen(room);
   tapKeys(...KEYS_AN);
   tapId(turnIds.coinSend);
@@ -319,8 +319,8 @@ test("MC2-UI8. 상점을 닫으면 방으로 돌아오고 접근성 초점이 �
   expect(outgoingCount()).toBe(0);
 });
 
-test("MC2-UI8. 잔액이 딱 10이면 보내고 0이 된다(경계)", () => {
-  const room = freeRoom({ earned: 10, record: { day: TODAY, used: 3, outPanel: "shown" } });
+test("MC2-UI8. 잔액이 딱 3이면 보내고 0이 된다(경계)", () => {
+  const room = freeRoom({ earned: 3, record: { day: TODAY, used: 3, outPanel: "shown" } });
   mountChatOpen(room);
 
   sendCoin();

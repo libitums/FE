@@ -212,12 +212,20 @@ export function historyFrom(bodyText: string | null): RemoteHistory | null {
 export function greetingFrom(bodyText: string | null, now: number): RemoteGreeting | null {
   const raw = recordOf(parse(bodyText));
   const messageId = stringOf(raw?.messageId);
-  // 이 계정은 그 인물과 대화할 수 없음 — 빈 방 대신 그 까닭을 회색 줄로(ADR-0137).
-  if (raw?.status === "unavailable" && raw.reason === "not_available")
+  // 서버가 인사를 안 함(이미 대화가 있음 · 거절) — 실패가 아니라 인사 없음. 까닭이 대화 불가 · 엽전 부족이면 빈 방 대신
+  // 그 까닭을 회색 줄로(ADR-0137 · 0140). 연령 · 일시 차단 등은 보내기 때 입력 줄이 알립니다.
+  if (raw?.status === "unavailable" || raw?.status === "none") {
+    const notice =
+      raw.reason === "not_available"
+        ? "not-available"
+        : raw.reason === "insufficient_credits" || raw.reason === "trial_exhausted"
+          ? "no-credits"
+          : null;
     return {
-      messages: [{ id: "greet~not-available", at: now, kind: "notice", notice: "not-available" }],
+      messages: notice === null ? [] : [{ id: `greet~${notice}`, at: now, kind: "notice", notice }],
       ideas: null,
     };
+  }
   if (raw?.status !== "ok" || messageId === null) return null;
   const messages = bubblesOf(messageId, now, segmentsOf(raw.segments));
   if (messages.length === 0) return null;

@@ -1,0 +1,440 @@
+/* 엽전 출시 · 채팅 새 기능 모달(ADR-0140, 시안 5판). 움직임은 토큰만 — 길이 d1 · d7 · d8 · reward, 가속 enter-expressive · exit.
+   차례 지연은 d1(50)의 배수. 움직임 줄이기(`launch-still`)면 처음부터 최종 상태. 화면 지역 상수: 날아가는 엽전의 끝 자리
+   (오른쪽 위 엽전 칩 — 위 64 · 오른쪽 28)와 출발 거리(-150 · 320)는 실측(토큰 없음). */
+
+.launch {
+  position: fixed;
+  top: var(--libitum-spacing-0);
+  right: var(--libitum-spacing-0);
+  bottom: var(--libitum-spacing-0);
+  left: var(--libitum-spacing-0);
+  z-index: var(--libitum-elevation-z-dialog);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 막은 상자 아래 — fixed 안의 fixed는 Lynx에서 위 내용을 덮습니다(새 친구 시트와 같은 처리). */
+.launch .ui-lynx-overlay {
+  position: absolute;
+  top: var(--libitum-spacing-0);
+  right: var(--libitum-spacing-0);
+  bottom: var(--libitum-spacing-0);
+  left: var(--libitum-spacing-0);
+  z-index: 0;
+}
+
+.launch-box {
+  position: relative;
+  z-index: 1;
+  width: calc(100% - var(--libitum-spacing-40));
+  max-width: 360px;
+  padding: var(--libitum-spacing-24) var(--libitum-spacing-20) var(--libitum-spacing-20);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  row-gap: var(--libitum-spacing-12);
+  border-radius: var(--libitum-radius-lg);
+  background-color: var(--libitum-color-white);
+  animation: launch-pop var(--libitum-motion-duration-d7)
+    var(--libitum-motion-easing-enter-expressive) both;
+}
+
+.launch-box-out {
+  animation: launch-out var(--libitum-motion-duration-d5) var(--libitum-motion-easing-exit) both;
+}
+
+.launch-tag {
+  position: absolute;
+  top: calc(var(--libitum-spacing-12) * -1);
+  align-self: center;
+  padding: var(--libitum-spacing-2) var(--libitum-spacing-12);
+  border-radius: var(--libitum-radius-full);
+  border-width: var(--libitum-stroke-width-strong);
+  border-style: solid;
+  border-color: var(--libitum-color-white);
+  background-color: var(--libitum-color-brand-primary);
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-caption-font-family);
+  font-size: var(--libitum-typography-caption-font-size);
+  font-weight: var(--libitum-font-weight-bold);
+  line-height: var(--libitum-typography-caption-line-height);
+  animation: launch-tag var(--libitum-motion-duration-d7)
+    var(--libitum-motion-easing-enter-expressive) both;
+  animation-delay: calc(var(--libitum-motion-duration-d1) * 8);
+}
+
+.launch-coin {
+  align-self: center;
+  width: var(--libitum-spacing-80);
+  height: var(--libitum-spacing-80);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-brand-reward-disabled-surface);
+}
+
+.launch-coin-icon {
+  width: var(--libitum-spacing-64);
+  height: var(--libitum-spacing-64);
+  animation: launch-spin var(--libitum-motion-duration-d8)
+    var(--libitum-motion-easing-enter-expressive) both;
+  animation-delay: calc(var(--libitum-motion-duration-d1) * 6);
+}
+
+.launch-title {
+  text-align: center;
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  line-height: var(--libitum-typography-heading-s-line-height);
+}
+
+.launch-body,
+.launch-note {
+  text-align: center;
+  white-space: normal;
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  line-height: var(--libitum-typography-body-s-line-height);
+}
+
+.launch-note {
+  color: var(--libitum-color-fg-neutral-subtle);
+}
+
+.launch-list {
+  display: flex;
+  flex-direction: column;
+  padding: var(--libitum-spacing-4) var(--libitum-spacing-16);
+  border-radius: var(--libitum-radius-md);
+  background-color: var(--libitum-color-gray-100);
+}
+
+.launch-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--libitum-spacing-8) var(--libitum-spacing-0);
+  animation: launch-row var(--libitum-motion-duration-d6) var(--libitum-motion-easing-enter) both;
+}
+
+.launch-row-0 {
+  animation-delay: calc(var(--libitum-motion-duration-d1) * 12);
+}
+
+.launch-row-1 {
+  animation-delay: calc(var(--libitum-motion-duration-d1) * 16);
+}
+
+.launch-row-2 {
+  animation-delay: calc(var(--libitum-motion-duration-d1) * 20);
+}
+
+.launch-row-label,
+.launch-total-label {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  line-height: var(--libitum-typography-body-s-line-height);
+}
+
+.launch-total-label {
+  color: var(--libitum-color-fg-neutral);
+  font-weight: var(--libitum-font-weight-bold);
+}
+
+.launch-row-amount {
+  color: var(--libitum-color-brand-reward-disabled-text);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-size: var(--libitum-typography-label-l-font-size);
+  font-weight: var(--libitum-font-weight-bold);
+  line-height: var(--libitum-typography-label-l-line-height);
+}
+
+.launch-total-value {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  column-gap: var(--libitum-spacing-4);
+}
+
+.launch-total-icon {
+  width: var(--libitum-spacing-20);
+  height: var(--libitum-spacing-20);
+}
+
+.launch-total-amount {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  font-weight: var(--libitum-font-weight-bold);
+  line-height: var(--libitum-typography-heading-s-line-height);
+}
+
+.launch-actions {
+  margin-top: var(--libitum-spacing-4);
+}
+
+.launch-actions-stack {
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--libitum-spacing-4);
+}
+
+/* ---- 「Got it」: 막 · 상자가 걷히고 엽전이 실제 자리(잔액 엽전 → 머리 칩)로 날아감(LaunchCoinFlight) ---- */
+.launch-scrim {
+  position: absolute;
+  top: var(--libitum-spacing-0);
+  right: var(--libitum-spacing-0);
+  bottom: var(--libitum-spacing-0);
+  left: var(--libitum-spacing-0);
+  z-index: 0;
+}
+
+.launch-scrim-out {
+  animation: launch-fade-out var(--libitum-motion-duration-d5) var(--libitum-motion-easing-exit)
+    both;
+}
+
+/* 화면 왼쪽 위 0 × 0 기준점 — 엽전은 이 점에서 잰 자리에 섭니다(결과 화면 엽전 날기와 같은 꼴). */
+.launch-flight {
+  position: absolute;
+  top: var(--libitum-spacing-0);
+  left: var(--libitum-spacing-0);
+  width: var(--libitum-spacing-0);
+  height: var(--libitum-spacing-0);
+  overflow: visible;
+  z-index: 2;
+}
+
+.launch-flight-coin {
+  position: absolute;
+  width: var(--libitum-icon-size-md);
+  height: var(--libitum-icon-size-md);
+  transition: transform var(--libitum-motion-duration-d7) var(--libitum-motion-easing-enter);
+}
+
+.launch-flight-icon {
+  width: var(--libitum-icon-size-md);
+  height: var(--libitum-icon-size-md);
+}
+
+/* ---- 채팅 모달: 인물 줄 · 진행 막대 ---- */
+.launch-cast {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.launch-person {
+  width: calc(var(--libitum-spacing-48) + var(--libitum-spacing-8));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  row-gap: var(--libitum-spacing-4);
+  animation: launch-pop var(--libitum-motion-duration-d7)
+    var(--libitum-motion-easing-enter-expressive) both;
+}
+
+.launch-person-0 {
+  animation-delay: calc(var(--libitum-motion-duration-d1) * 7);
+}
+.launch-person-1 {
+  animation-delay: calc(var(--libitum-motion-duration-d1) * 9);
+}
+.launch-person-2 {
+  animation-delay: calc(var(--libitum-motion-duration-d1) * 11);
+}
+.launch-person-3 {
+  animation-delay: calc(var(--libitum-motion-duration-d1) * 13);
+}
+.launch-person-4 {
+  animation-delay: calc(var(--libitum-motion-duration-d1) * 15);
+}
+
+.launch-face {
+  position: relative;
+  width: var(--libitum-spacing-48);
+  height: var(--libitum-spacing-48);
+}
+
+.launch-face-image {
+  width: var(--libitum-spacing-48);
+  height: var(--libitum-spacing-48);
+  border-radius: var(--libitum-radius-full);
+  border-width: var(--libitum-stroke-width-strong);
+  border-style: solid;
+  border-color: var(--libitum-color-gray-200);
+}
+
+.launch-person-met .launch-face-image {
+  border-color: var(--libitum-color-brand-primary);
+}
+
+.launch-person-locked .launch-face-image {
+  opacity: var(--libitum-opacity-45);
+}
+
+.launch-face-blank {
+  background-color: var(--libitum-color-gray-100);
+}
+
+.launch-lock {
+  position: absolute;
+  right: calc(var(--libitum-spacing-2) * -1);
+  bottom: calc(var(--libitum-spacing-2) * -1);
+  width: var(--libitum-spacing-20);
+  height: var(--libitum-spacing-20);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--libitum-radius-full);
+  border-width: var(--libitum-stroke-width-strong);
+  border-style: solid;
+  border-color: var(--libitum-color-white);
+  background-color: var(--libitum-color-fg-neutral-subtle);
+}
+
+.launch-lock-icon {
+  width: var(--libitum-spacing-12);
+  height: var(--libitum-spacing-12);
+}
+
+.launch-person-name {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-caption-font-family);
+  font-size: var(--libitum-typography-caption-font-size);
+  font-weight: var(--libitum-font-weight-bold);
+  line-height: var(--libitum-typography-caption-line-height);
+}
+
+.launch-person-tag {
+  color: var(--libitum-color-fg-neutral-subtle);
+  font-family: var(--libitum-typography-caption-font-family);
+  font-size: var(--libitum-typography-caption-font-size);
+  line-height: var(--libitum-typography-caption-line-height);
+}
+
+.launch-person-tag-met {
+  color: var(--libitum-color-brand-primary-pressed);
+}
+
+.launch-meter {
+  height: var(--libitum-spacing-6);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-gray-100);
+  overflow: hidden;
+}
+
+.launch-meter-fill {
+  height: var(--libitum-spacing-6);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-brand-primary);
+  animation: launch-fill var(--libitum-motion-duration-d9) var(--libitum-motion-easing-enter) both;
+  animation-delay: calc(var(--libitum-motion-duration-d1) * 20);
+}
+
+.launch-meta {
+  text-align: center;
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-caption-font-family);
+  font-size: var(--libitum-typography-caption-font-size);
+  line-height: var(--libitum-typography-caption-line-height);
+}
+
+.launch-prices {
+  align-self: center;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  column-gap: var(--libitum-spacing-6);
+  padding: var(--libitum-spacing-6) var(--libitum-spacing-12);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-brand-reward-disabled-surface);
+}
+
+.launch-prices-text {
+  color: var(--libitum-color-brand-primary-pressed);
+  font-family: var(--libitum-typography-caption-font-family);
+  font-size: var(--libitum-typography-caption-font-size);
+  line-height: var(--libitum-typography-caption-line-height);
+}
+
+/* ---- 움직임 줄이기 ---- */
+.launch-still,
+.launch-still .launch-tag,
+.launch-still .launch-coin-icon,
+.launch-still .launch-row,
+.launch-still .launch-person,
+.launch-still .launch-meter-fill {
+  animation: none;
+}
+
+@keyframes launch-pop {
+  from {
+    opacity: 0;
+    transform: scale(var(--libitum-motion-scale-reward));
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes launch-out {
+  to {
+    opacity: 0;
+    transform: scale(var(--libitum-motion-scale-enter));
+  }
+}
+
+@keyframes launch-tag {
+  from {
+    opacity: 0;
+    transform: scale(var(--libitum-motion-scale-reward));
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes launch-spin {
+  from {
+    opacity: 0;
+    transform: scale(var(--libitum-motion-scale-reward));
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes launch-row {
+  from {
+    opacity: 0;
+    transform: translateX(-14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes launch-fill {
+  from {
+    width: 0;
+  }
+}
+
+@keyframes launch-fade-out {
+  to {
+    opacity: 0;
+  }
+}

@@ -197,8 +197,8 @@ test("RS3. 차단된 마지막 턴 · 위기 답 · 거절 표시 · 선톡", as
 test("RS4. chat-send와 같은 판정 — 시험 계정 · 캐릭터 · 티어 · 연령 · 진행 중인 턴", async () => {
   expect(await context("duksu", other)).toEqual({ result: "not_available" });
   expect(await context("nobody")).toEqual({ result: "character_not_found" });
-  // 무료 티어는 체험 캐릭터만.
-  expect(await context("yoonkyung")).toEqual({ result: "not_available" });
+  // 무료 티어는 엽전이 한 턴 값 미만이면 체험 캐릭터만(2026-11-13 엽전 출시 — 전에는 엽전과 상관없이 not_available).
+  expect(await context("yoonkyung")).toEqual({ result: "insufficient_credits" });
   expect(await context("duksu", "00000000-0000-4000-8000-0000000000ff")).toEqual({
     result: "invalid_session",
   });

@@ -7,7 +7,7 @@ export type CompanionCharacter = {
   readonly id: string;
   readonly name: string;
   readonly avatarPath: string | null;
-  /** 이 에피소드의 막간(INT)을 끝내면 열립니다. null = 처음부터. */
+  /** 이 에피소드를 끝내고 뒤 컷까지 보면 열립니다(해금 JSON, ADR-0141). null = 처음부터. */
   readonly unlockEpisodeId: string | null;
   readonly unlockEpisode: number | null;
   /** 새 친구 시트의 첫 말(ADR-0137) — 서버 방은 열기 전엔 비어 있어 시트가 쓸 말이 없습니다. 방을 열면 서버 인사가 옵니다. */
@@ -29,8 +29,8 @@ export const COMPANION_CHARACTERS: readonly CompanionCharacter[] = [
     id: "yoonkyung",
     name: "정윤경",
     avatarPath: profile("yoonkyung-casual"),
-    unlockEpisodeId: "u02-checkin",
-    unlockEpisode: 2,
+    unlockEpisodeId: "u01-water",
+    unlockEpisode: 1,
     sheetOpening: { ko: "어서 와요. 오늘도 수고했어요.", en: "Welcome back. You did well today." },
   },
   {
@@ -45,8 +45,8 @@ export const COMPANION_CHARACTERS: readonly CompanionCharacter[] = [
     id: "doyun",
     name: "한도윤",
     avatarPath: profile("doyun-casual"),
-    unlockEpisodeId: "u04-directions",
-    unlockEpisode: 4,
+    unlockEpisodeId: "u12-cafe-missed",
+    unlockEpisode: 12,
     sheetOpening: {
       ko: "안녕하세요! 저 도윤이에요. 반가워요!",
       en: "Hi! I'm Doyun. Nice to meet you!",
@@ -56,8 +56,8 @@ export const COMPANION_CHARACTERS: readonly CompanionCharacter[] = [
     id: "jaemin",
     name: "서재민",
     avatarPath: profile("jaemin-casual"),
-    unlockEpisodeId: "u07-jaemin",
-    unlockEpisode: 7,
+    unlockEpisodeId: "u17-samgyeopsal",
+    unlockEpisode: 17,
     sheetOpening: {
       ko: "안녕하세요, 서재민입니다. 반갑습니다.",
       en: "Hello, this is Jaemin. Nice to meet you.",

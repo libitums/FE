@@ -163,46 +163,46 @@ test("MC-UI20. 화면: Snap voice 알약 → 요청 → 음성 pending이 서고
   expect(screen.getByTestId(ids.voice)).toBeTruthy();
 });
 
-test("MC2-UI10. 화면: 사진 요청을 확정하면 지갑에서 60이 나간다 — 대화상자를 다시 열면 줄어든 잔액이 보인다", () => {
+test("MC2-UI10. 화면: 사진 요청을 확정하면 지갑에서 35가 나간다 — 대화상자를 다시 열면 줄어든 잔액이 보인다", () => {
   const { wallet } = mountChat({ coinBalance: 120 });
   tapId(ids.snapshot);
   tapId(ids.askConfirm);
 
-  expect(wallet.balance()).toBe(60);
+  expect(wallet.balance()).toBe(85);
   tapId(ids.snapshot);
 
-  expect(screen.getByTestId(ids.askBalance).textContent).toBe("You have 60 coins");
+  expect(screen.getByTestId(ids.askBalance).textContent).toBe("You have 85 coins");
 });
 
-test("MC2-UI10. 화면: 사진 60 · 음성 40이 주 버튼 수와 낭독에 선다(엽전 아이콘 + 수)", () => {
+test("MC2-UI10. 화면: 사진 35 · 음성 15가 주 버튼 수와 낭독에 선다(엽전 아이콘 + 수)", () => {
   mountChat({ coinBalance: 100 });
 
   tapId(ids.snapshot);
   expect(screen.getByTestId(ids.askBalance).textContent).toBe("You have 100 coins");
   const photo = screen.getByTestId(ids.askConfirm);
-  expect(photo.textContent?.trim()).toBe("60");
+  expect(photo.textContent?.trim()).toBe("35");
   expect(photo.querySelector("svg")).not.toBeNull();
-  expect(labelOf(ids.askConfirm)).toBe("Ask for 60 coins");
+  expect(labelOf(ids.askConfirm)).toBe("Ask for 35 coins");
   tapId(ids.askCancel);
 
   tapId(ids.snapVoice);
-  expect(screen.getByTestId(ids.askConfirm).textContent?.trim()).toBe("40");
-  expect(labelOf(ids.askConfirm)).toBe("Ask for 40 coins");
+  expect(screen.getByTestId(ids.askConfirm).textContent?.trim()).toBe("15");
+  expect(labelOf(ids.askConfirm)).toBe("Ask for 15 coins");
 });
 
-test("MC2-UI10. 화면: 기능 알약의 가격이 60 · 40이다", () => {
+test("MC2-UI10. 화면: 기능 알약의 가격이 35 · 15다", () => {
   mountChat({ coinBalance: 100 });
 
-  expect(screen.getByTestId(ids.snapshot).textContent).toContain("60");
-  expect(screen.getByTestId(ids.snapVoice).textContent).toContain("40");
+  expect(screen.getByTestId(ids.snapshot).textContent).toContain("35");
+  expect(screen.getByTestId(ids.snapVoice).textContent).toContain("15");
 });
 
-test("MC2-UI10. 화면: 사진 60 뒤 음성 40까지 쓰면 잔액 0에서 다음 요청은 top-up이고 상점으로 간다", () => {
-  const { wallet, source } = mountChat({ coinBalance: 100 });
+test("MC2-UI10. 화면: 사진 35 뒤 음성 15까지 쓰면 잔액 0에서 다음 요청은 top-up이고 상점으로 간다", () => {
+  const { wallet, source } = mountChat({ coinBalance: 50 });
   const requestMedia = vi.spyOn(source, "requestMedia");
   tapId(ids.snapshot);
   tapId(ids.askConfirm);
-  expect(wallet.balance()).toBe(40);
+  expect(wallet.balance()).toBe(15);
 
   tapId(ids.snapVoice);
   expect(screen.getByTestId(ids.askDialog).getAttribute("data-plan")).toBe("ask");
@@ -218,7 +218,7 @@ test("MC2-UI10. 화면: 사진 60 뒤 음성 40까지 쓰면 잔액 0에서 다�
   expect(requestMedia).toHaveBeenCalledTimes(2);
 });
 
-test("MC2-UI10. 화면: 잔액 30이면 사진(60)은 top-up이다", () => {
+test("MC2-UI10. 화면: 잔액 30이면 사진(35)은 top-up이다", () => {
   const { wallet, source } = mountChat({ coinBalance: 30 });
   const requestMedia = vi.spyOn(source, "requestMedia");
 
@@ -235,10 +235,10 @@ test("MC2-UI10. 화면: 무제한 등급에서도 요청은 같은 엽전을 낸
   const { wallet } = mountChat({ coinBalance: 100, tier: "unlimited" });
 
   tapId(ids.snapshot);
-  expect(labelOf(ids.askConfirm)).toBe("Ask for 60 coins");
+  expect(labelOf(ids.askConfirm)).toBe("Ask for 35 coins");
   tapId(ids.askConfirm);
 
-  expect(wallet.balance()).toBe(40);
+  expect(wallet.balance()).toBe(65);
 });
 
 test("MC-UI20. 화면: Cancel과 시스템 뒤로는 요청 없이 닫는다", () => {

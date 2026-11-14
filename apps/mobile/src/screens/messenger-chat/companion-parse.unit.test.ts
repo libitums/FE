@@ -204,6 +204,23 @@ describe("기록 · 인사", () => {
     expect(history?.messages).toHaveLength(4);
   });
 
+  test("YL-U6 인사 거절: 크레딧 부족 · 체험 소진은 「엽전 없음」 줄, 연령 · 차단 등은 실패가 아니라 인사 없음(엽전 출시 뒤)", () => {
+    const unavailable = (reason: string) =>
+      greetingFrom(JSON.stringify({ status: "unavailable", reason }), 5);
+    expect(unavailable("insufficient_credits")).toEqual({
+      messages: [{ id: "greet~no-credits", at: 5, kind: "notice", notice: "no-credits" }],
+      ideas: null,
+    });
+    expect(unavailable("trial_exhausted")?.messages[0]).toMatchObject({ notice: "no-credits" });
+    expect(unavailable("age_restricted")).toEqual({ messages: [], ideas: null });
+    expect(unavailable("temporarily_blocked")).toEqual({ messages: [], ideas: null });
+    expect(greetingFrom(JSON.stringify({ status: "none" }), 5)).toEqual({
+      messages: [],
+      ideas: null,
+    });
+    expect(greetingFrom("<html>", 5)).toBeNull();
+  });
+
   test("SS-U6 기록: 본문이 틀리면 null, 빈 목록이면 빈 기록", () => {
     expect(historyFrom(null)).toBeNull();
     expect(historyFrom("not json")).toBeNull();
@@ -239,9 +256,10 @@ describe("기록 · 인사", () => {
       },
     ]);
     expect(ok?.ideas).toEqual([{ ko: "안녕하세요", roman: "", en: "Hello" }]);
+    // 인사 없음(이미 대화가 있음)은 실패가 아니다 — 빈 인사(ADR-0140에서 바뀜, 전에는 null = 기록 실패 안내).
     expect(
       greetingFrom(JSON.stringify({ status: "none", messageId: null, segments: [] }), 1),
-    ).toBeNull();
+    ).toEqual({ messages: [], ideas: null });
     expect(greetingFrom("x", 1)).toBeNull();
     // 무료 계정이 체험 인물이 아닌 방을 열면 — 빈 방 대신 까닭 줄(기기 확인 2026-11-12).
     expect(
@@ -307,7 +325,7 @@ describe("보내기 실패", () => {
 });
 
 describe("인물 표", () => {
-  test("SS-U9 서버 인물 다섯 — 덕수쌤만 처음부터 열림, 나머지는 막간 해금 · 방 id = 인물 id", () => {
+  test("SS-U9 서버 인물 다섯 — 덕수쌤만 처음부터 열림, 나머지는 에피소드 완료 해금(해금 JSON) · 방 id = 인물 id", () => {
     expect(COMPANION_CHARACTERS.map((c) => c.id)).toEqual([
       "duksu",
       "yoonkyung",
@@ -318,10 +336,10 @@ describe("인물 표", () => {
     const seed = companionSeed();
     expect(seed.rooms.map((r) => [r.roomId, r.counterpart.id, r.access])).toEqual([
       ["duksu", "duksu", { kind: "open" }],
-      ["yoonkyung", "yoonkyung", { kind: "locked", unlockEpisode: 2 }],
+      ["yoonkyung", "yoonkyung", { kind: "locked", unlockEpisode: 1 }],
       ["mina", "mina", { kind: "locked", unlockEpisode: 3 }],
-      ["doyun", "doyun", { kind: "locked", unlockEpisode: 4 }],
-      ["jaemin", "jaemin", { kind: "locked", unlockEpisode: 7 }],
+      ["doyun", "doyun", { kind: "locked", unlockEpisode: 12 }],
+      ["jaemin", "jaemin", { kind: "locked", unlockEpisode: 17 }],
     ]);
     for (const room of seed.rooms) {
       expect(room.messages).toEqual([]);

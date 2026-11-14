@@ -130,7 +130,7 @@ test("MC-I1. 메신저 루트에는 전역 머리(AppHeader · top-bar)가 없�
   expect(screen.getByTestId("messenger-list-header")).toBeInTheDocument();
 });
 
-test("MC-I1. 목록의 엽전 칩 값은 앱의 보유 엽전(받은 유닛 × 10)이다", async () => {
+test("MC-I1. 목록의 엽전 칩 값은 앱의 보유 엽전(받은 유닛 × 5)이다", async () => {
   await renderTesterApp(<App progressSeed={legacyPassedSeedWithCoins(90)} />);
 
   openTab("messenger");

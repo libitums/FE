@@ -4,8 +4,8 @@
 import type { CatalogProgress } from "./catalog-progress";
 import type { AssessmentVerdict } from "../screens/assessment/assessment";
 
-/** 카탈로그 레슨 · 최종 테스트를 처음 통과하면 받는 엽전 수입니다(사용자 결정 2026-11-09). */
-export const COINS_PER_LESSON = 10;
+/** 카탈로그 레슨 · 최종 테스트를 처음 통과하면 받는 엽전 수입니다(사용자 결정 2026-11-09 → 2026-11-14 10에서 5). */
+export const COINS_PER_LESSON = 5;
 
 /** 보유 엽전 = 유닛 하나에 `COINS_PER_LESSON`씩입니다. 던지지 않습니다. */
 export function coinBalanceOf(coinUnits: CatalogProgress): number {

@@ -136,6 +136,27 @@ export const messengerChatExtraJa: MessengerChatExtraCopy = {
     skip: "スキップ",
     stepOf: (step, total) => `${step} / ${total}`,
   },
+  launch: {
+    newTag: "NEW",
+    coinsTitle: "チャット用コイン「Yeopjeon」が登場",
+    coinsBody:
+      "Yeopjeonは韓国の友だちとチャットするためのコインです。これまでに獲得した分はこちらです。",
+    fromEpisodes: "クリアしたエピソードから",
+    launchBonus: "リリースボーナス",
+    balance: "残高",
+    perLesson: "レッスンを初めてクリアするたびに5増えます。",
+    gotIt: "わかりました",
+    chatTitle: "出会った友だちとメッセージ",
+    chatBody:
+      "エピソードで出会った人はチャット友だちになれます。エピソードを進めるともっと多くの人に出会えます。",
+    met: "出会った",
+    now: "今すぐ",
+    episode: (order) => `Ep ${order}`,
+    metCount: (met, total) => `${total}人中${met}人と出会いました`,
+    prices: "メッセージ3 · ボイス15 · 写真35",
+    later: "あとで",
+    start: "チャットを始める",
+  },
   remote: {
     noCredits: (name) => `${name}とチャットするクレジットがありません。`,
     notAvailable: (name) => `${name}とはまだチャットできません。`,

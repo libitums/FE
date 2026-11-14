@@ -1,14 +1,34 @@
 // 새 친구(인물 해금) 결선입니다(messenger-chat-1-5 spec §7.1). 해금 확정과 시트 모델만 다룹니다 — 순수 판정은
 // `screens/messenger-chat/new-friend.ts`, 저장·출처 싱글턴은 `messenger-chat-wiring.ts`가 쥡니다.
 
+import type { CatalogProgress } from "../lib/catalog-progress";
+import { isCatalogEpisodeComplete } from "../lib/catalog-progress";
+import type { CatalogMapSection } from "../screens/journey-map/catalog-map.contract";
 import { COMPANION_CHARACTERS } from "../screens/messenger-chat/companion-roster";
 import { CHARACTER_UNLOCKS, characterUnlockFor } from "../screens/messenger-chat/new-friend";
 import type { NewFriendModel } from "../screens/messenger-chat/new-friend.contract";
 import { currentMessengerChatSource, messengerUnlockStore } from "./messenger-chat-wiring";
+import { rememberNewFriend } from "./new-friend-pending";
 import type { ScreenWiring } from "./screen-wiring";
 
 /**
- * 에피소드의 막간(중간 스페셜 유닛 — 이야기 유닛, ADR-0088)을 끝낸 순간 부릅니다(`catalog-story-wiring.ts`). 이 에피소드가
+ * 인물 해금(해금 JSON, ADR-0141): 에피소드를 끝냈으면(완료 조건 전부) 그 에피소드의 인물을 확정하고, 시트는 돌아온 맵이
+ * 꺼내 띄우도록 기억만 합니다. 결과 화면 → 뒤 컷을 지나 맵으로 돌아올 때 부릅니다(`catalog-lesson-wiring.ts`).
+ */
+export function unlockFriendAfterEpisode(
+  episodeId: string,
+  sections: readonly CatalogMapSection[],
+  progress: CatalogProgress,
+): void {
+  const section = sections.find((candidate) => candidate.episodeId === episodeId);
+  if (section?.kind !== "catalog-ready") return;
+  if (!isCatalogEpisodeComplete(progress, episodeId, section.completionKeys)) return;
+  const characterId = commitNewFriend(episodeId);
+  if (characterId !== null) rememberNewFriend(characterId);
+}
+
+/**
+ * 에피소드를 끝내고 뒤 컷을 지난 순간(`unlockFriendAfterEpisode`) · 진도 보정(`use-new-friend-backfill`)이 부릅니다. 이 에피소드가
  * 새 인물을 해금하면 기록(영속)과 대화 출처에 **바로** 알리고 그 id를 돌려줍니다 — 맵의 시트를 보기 전에 앱을 떠나도 목록에
  * NEW 줄이 남고, 다시 끝내도 시트는 다시 안 뜹니다. 해금할 인물이 없거나 이미 열었으면 null.
  */

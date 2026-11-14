@@ -123,7 +123,7 @@ test("MC2-I5. 무료 수는 방을 가로질러 합산된다 — 사장님 방 2
   expect(lineText()).toBe("Last free message today");
   expect(linePlan()).toBe("last-free");
   expect(present("messenger-chat-turn-strip")).toBe(true);
-  expect(textOf("messenger-chat-turn-strip")).toContain("10 coins");
+  expect(textOf("messenger-chat-turn-strip")).toContain("3 coins");
 });
 
 test("MC2-I5. 셋째 통을 보내면 다 쓴 판이 독 자리에 서고(로그는 남고 키보드는 접힘), 판을 닫고 나가 다른 방에 들어오면 판 없이 엽전 보내기다", async () => {
@@ -147,12 +147,12 @@ test("MC2-I5. 셋째 통을 보내면 다 쓴 판이 독 자리에 서고(로그
   openRoom("guesthouse");
   expect(present("messenger-chat-out-panel")).toBe(false);
   expect(linePlan()).toBe("coin");
-  expect(lineText()).toBe("Each message 10 coins · free again in 5h 12m");
+  expect(lineText()).toBe("Each message 3 coins · free again in 5h 12m");
   expect(screen.getByTestId("messenger-chat-coin-send")).toBeInTheDocument();
   expect(present("messenger-chat-send")).toBe(false);
 });
 
-test("MC2-I5. 엽전 보내기는 글을 보내고 지갑에서 10을 쓰며(목록 칩 100 → 90) 원장의 무료 수는 그대로다", async () => {
+test("MC2-I5. 엽전 보내기는 글을 보내고 지갑에서 3을 쓰며(목록 칩 100 → 97) 원장의 무료 수는 그대로다", async () => {
   const turns = await bootToList(100, used(3, "shown"));
   openRoom("owner");
   typeAn();
@@ -162,7 +162,7 @@ test("MC2-I5. 엽전 보내기는 글을 보내고 지갑에서 10을 쓰며(목
   expect(screen.getAllByTestId(OUTGOING)).toHaveLength(1);
   expect(turns.read()?.used).toBe(3);
   leaveRoom();
-  expect(textOf("messenger-list-coins")).toContain("90");
+  expect(textOf("messenger-list-coins")).toContain("97");
 });
 
 test("MC2-I5. 지역 자정이 지나 분 단위 갱신이 돌면 방에 머문 채로 다시 무료 3통(T1)이 된다", async () => {
@@ -267,7 +267,7 @@ test("MC2-I6. 시험 계정(무제한)은 턴 줄 · 띠 · 판 · 엽전 단추
   expect(textOf("messenger-list-coins")).toContain("120");
 });
 
-test("MC2-I6. 무제한이어도 사진 요청은 엽전 60을 낸다 — 지갑 120 → 60", async () => {
+test("MC2-I6. 무제한이어도 사진 요청은 엽전 35를 낸다 — 지갑 120 → 85", async () => {
   await bootToList(120, null, true);
   openRoom("owner");
 
@@ -277,10 +277,10 @@ test("MC2-I6. 무제한이어도 사진 요청은 엽전 60을 낸다 — 지갑
   expect(present("messenger-chat-photo-pending")).toBe(true);
 
   leaveRoom();
-  expect(textOf("messenger-list-coins")).toContain("60");
+  expect(textOf("messenger-list-coins")).toContain("85");
 });
 
-test("MC2-I6. 일반 계정의 사진 요청도 엽전 60을 낸다 — 무료 3통과는 별개라 원장은 그대로다", async () => {
+test("MC2-I6. 일반 계정의 사진 요청도 엽전 35를 낸다 — 무료 3통과는 별개라 원장은 그대로다", async () => {
   const turns = await bootToList(120);
   openRoom("owner");
 
@@ -290,5 +290,5 @@ test("MC2-I6. 일반 계정의 사진 요청도 엽전 60을 낸다 — 무료 3
   expect(present("messenger-chat-photo-pending")).toBe(true);
   expect(usedToday(turns)).toBe(0);
   leaveRoom();
-  expect(textOf("messenger-list-coins")).toContain("60");
+  expect(textOf("messenger-list-coins")).toContain("85");
 });

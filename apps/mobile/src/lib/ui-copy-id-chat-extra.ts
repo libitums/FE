@@ -136,6 +136,27 @@ export const messengerChatExtraId: MessengerChatExtraCopy = {
     skip: "Lewati",
     stepOf: (step, total) => `${step} dari ${total}`,
   },
+  launch: {
+    newTag: "BARU",
+    coinsTitle: "Kenalan dengan Yeopjeon, koin obrolanmu",
+    coinsBody:
+      "Yeopjeon adalah koin untuk mengobrol dengan teman Korea-mu. Ini yang sudah kamu kumpulkan.",
+    fromEpisodes: "Dari episode yang sudah kamu selesaikan",
+    launchBonus: "Bonus peluncuran",
+    balance: "Saldomu",
+    perLesson: "Setiap pelajaran yang pertama kali kamu selesaikan menambah 5.",
+    gotIt: "Mengerti",
+    chatTitle: "Kirim pesan ke teman yang kamu temui",
+    chatBody:
+      "Siapa pun yang kamu temui di episode bisa jadi teman ngobrol. Selesaikan lebih banyak episode untuk bertemu lebih banyak orang.",
+    met: "Sudah kenal",
+    now: "Sekarang",
+    episode: (order) => `Ep ${order}`,
+    metCount: (met, total) => `${met} dari ${total} teman sudah kamu temui`,
+    prices: "Pesan 3 · suara 15 · foto 35",
+    later: "Nanti",
+    start: "Mulai mengobrol",
+  },
   remote: {
     noCredits: (name) => `Kredit untuk mengobrol dengan ${name} sudah habis.`,
     notAvailable: (name) => `Kamu belum bisa mengobrol dengan ${name}.`,
