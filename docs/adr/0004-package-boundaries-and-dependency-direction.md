@@ -69,6 +69,8 @@ tooling/*  ──devDependency만──▶  모든 패키지
 | `packages/*` → `apps/*` | **X** | 라이브러리가 앱을 알면 그 라이브러리는 재사용될 수 없다 |
 | `apps/*` → `apps/*` | **X** | 공유가 필요하면 `packages/`로 올린다. 앱끼리 직접 참조하면 두 앱이 한 앱이 된다 |
 
+> ⟨2026-11-14 — [ADR-0147](0147-dependency-boundaries-lint.md)⟩ **방향 전체(앱은 잎 · packages → apps 금지 · workspace 사이 상대 경로 금지)와 core의 UI · 어댑터 import · 브라우저 전역 금지를 `pnpm lint:boundaries`가 강제한다**(CI).
+>
 > **이 규칙에는 강제 수단이 있다.** `import/no-cycle`을 `error`로 켜두었으므로
 > `pnpm lint`가 순환 참조를 잡는다 (ADR-0006 D1). 이 ADR의 결정 중 문서 밖에서
 > 지켜지는 것은 이것 하나다.
