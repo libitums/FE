@@ -98,6 +98,12 @@ export const statusBarSurfaceRegistry = {
       classification: "default-scrim",
       carriers: [],
     },
+    // 연속 학습 보상 날기 층(ADR-0143) — 0 × 0 투명한 기준점이라 띠를 칠하지 않는다(엽전만 지나간다). 표지가 없다 —
+    // 아래 연속 학습 모달이 걷히면 맵의 명암으로 돌아간다.
+    "screens/journey-map/streak-reward.css": {
+      classification: "default-scrim",
+      carriers: [],
+    },
     // 메신저 첫 입장 목록 안내(ADR-0139) — ui-lynx 대화상자 기본 스크림이라 표지가 없다.
     "screens/messenger-chat/messenger-guide.css": {
       classification: "default-scrim",

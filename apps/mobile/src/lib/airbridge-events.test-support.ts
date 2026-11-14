@@ -58,6 +58,7 @@ export const allEventNames = [
   "surface_session_ended",
   "first_lesson_completed",
   "first_chat_message_sent",
+  "streak_reward_collected",
 ] as const satisfies readonly AnalyticsEventName[];
 
 /** 매핑되는 둘(`entry_completed` · `episode_final_passed`)을 뺀 이름마다 최소 이벤트 하나입니다. */
@@ -214,6 +215,13 @@ export const unmappedEvents = [
     surface: "chat",
     daysSinceFirstOpen: "1",
     characterId: "duksu",
+  },
+  {
+    name: "streak_reward_collected",
+    surface: "learning",
+    daysSinceFirstOpen: "6",
+    days: "7",
+    amount: "40",
   },
 ] as const satisfies readonly AnalyticsEvent[];
 

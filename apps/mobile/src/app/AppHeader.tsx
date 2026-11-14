@@ -8,6 +8,7 @@ import type { StatBumpWiring } from "./learning-progress";
 import { CoinShopScreen } from "../screens/coin-shop/CoinShopScreen";
 import { EpisodeSurveySheet } from "../screens/episode-survey/EpisodeSurveySheet";
 import { JourneyStatModal } from "../screens/journey-map/JourneyStatModal";
+import type { StreakRewardWiring } from "../screens/journey-map/streak-reward.contract";
 import { TicketStatModal } from "../screens/tickets/TicketStatModal";
 import { UnlimitedTicketModal } from "../screens/tickets/UnlimitedTicketModal";
 import { unlimitedPassView } from "../lib/unlimited-pass";
@@ -80,6 +81,8 @@ export type AppHeaderProps = {
    * (ADR-0085)만 `{ kind: "guest" }`로 넘어옵니다.
    */
   readonly unlimitedPass?: UnlimitedPass;
+  /** 연속 학습 엽전 보상(ADR-0143) — 로그인 사용자만. 연속 학습 모달에만 넘깁니다. */
+  readonly streakReward?: StreakRewardWiring;
 };
 
 export function AppHeader({
@@ -98,6 +101,7 @@ export function AppHeader({
   statBump,
   tickets,
   unlimitedPass,
+  streakReward,
 }: AppHeaderProps): ReactNode {
   const [openLayer, setOpenLayer] = useState<AppHeaderLayer | null>(null);
   const copy = useUiCopy();
@@ -189,6 +193,9 @@ export function AppHeader({
                 )
               : trophyTrack(trophyCount ?? 0)
           }
+          {...(openLayer === "streak" && streakReward !== undefined
+            ? { reward: streakReward }
+            : {})}
           onClose={close}
         />
       ) : null}

@@ -1,6 +1,7 @@
 // 베트남어 문구표 구획 — common · shell · journeyMap · learningShell.
 // 번역 초안 — 원어민 검수 필요(ADR-0091 D3).
 
+import { streakRewardCopy } from "./ui-copy-streak-reward";
 import type {
   CommonCopy,
   JourneyMapCopy,
@@ -80,6 +81,7 @@ export const journeyMapVi: JourneyMapCopy = {
     continue: "Tiếp tục →",
     // 요일 약칭 — 일요일은 CN(Chủ nhật), 월~토는 T2~T7(Thứ hai ~ Thứ bảy)입니다.
     weekdays: ["CN", "T2", "T3", "T4", "T5", "T6", "T7"],
+    reward: streakRewardCopy.vi,
   },
 };
 

@@ -1,6 +1,7 @@
 // 일본어 문구표 구획 — common · shell · journeyMap · learningShell.
 // 번역 초안 — 원어민 검수 필요(ADR-0098).
 
+import { streakRewardCopy } from "./ui-copy-streak-reward";
 import type {
   CommonCopy,
   JourneyMapCopy,
@@ -82,6 +83,7 @@ export const journeyMapJa: JourneyMapCopy = {
     continue: "続ける →",
     // 요일 약칭은 디자인 표기 그대로입니다.
     weekdays: ["日", "月", "火", "水", "木", "金", "土"],
+    reward: streakRewardCopy.ja,
   },
 };
 

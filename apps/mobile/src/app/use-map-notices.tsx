@@ -11,6 +11,8 @@ import { CatalogUpdateNoticeDialog } from "../screens/catalog-update/CatalogUpda
 import type { ScreenWiring } from "./screen-wiring";
 import { useCatalogUpdateNotice } from "./use-catalog-update-notice";
 import { useLaunchCoins } from "./use-launch-coins";
+import { useStreakReward } from "./use-streak-reward";
+import type { StreakRewardWiring } from "../screens/journey-map/streak-reward.contract";
 
 export type MapNoticesInput = {
   readonly wiring: ScreenWiring;
@@ -25,6 +27,8 @@ export type MapNoticesInput = {
 export function useMapNotices(input: MapNoticesInput): {
   readonly coinCount: number | null;
   readonly layer: ReactNode;
+  /** 연속 학습 엽전 보상(ADR-0143) — 로그인 사용자만. 머리가 연속 학습 모달에 넘깁니다. */
+  readonly streakReward: StreakRewardWiring | undefined;
 } {
   // 업데이트 안내가 이미 떠 있으면 엽전 모달이 그 위로 끼어들지 않습니다 — 안내가 닫힘 처리 없이 사라졌다가 다시 뜨면
   // 누르던 손가락이 엉뚱한 단추를 누릅니다(안정성 리뷰 9). 지난 그림의 값을 씁니다(둘이 서로를 기다리므로).
@@ -45,8 +49,15 @@ export function useMapNotices(input: MapNoticesInput): {
   useEffect(() => {
     updateOpen.current = updateNotice.open;
   }, [updateNotice.open]);
+  // 연속 학습 보상의 지급 잔액은 엽전 출시 결선의 서버 잔액으로 들어가고, 날아가는 동안 닿지 않은 몫은 칩에서 잠시 뺍니다.
+  const streak = useStreakReward({
+    signedIn: input.wiring.accountState === "signed-in",
+    eventSink: input.wiring.messengerChat.eventSink,
+    acceptBalance: launch.acceptServerBalance,
+  });
   return {
-    coinCount: launch.coinCount,
+    coinCount: launch.coinCount === null ? null : Math.max(0, launch.coinCount - streak.held),
+    streakReward: streak.wiring,
     layer: (
       <>
         {launch.layer}

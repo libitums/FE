@@ -48,10 +48,10 @@ describe("airbridgeEventFrom", () => {
     expect(Object.keys(mapped?.semanticAttributes ?? { x: 1 })).toHaveLength(0);
   });
 
-  test("AB3. 이름 55개는 표의 53개와 매핑되는 둘로 나뉜다", () => {
+  test("AB3. 이름 56개는 표의 54개와 매핑되는 둘로 나뉜다", () => {
     const tableNames = new Set<string>(unmappedEvents.map((e) => e.name));
-    expect(tableNames.size).toBe(53);
-    expect(allEventNames).toHaveLength(55);
+    expect(tableNames.size).toBe(54);
+    expect(allEventNames).toHaveLength(56);
     expect([...tableNames, "entry_completed", "episode_final_passed"].sort()).toEqual(
       [...allEventNames].sort(),
     );

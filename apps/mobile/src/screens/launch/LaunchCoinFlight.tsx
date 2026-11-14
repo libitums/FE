@@ -33,9 +33,14 @@ type FlightPath = {
 export function LaunchCoinFlight({
   targetId,
   onLanded,
+  sourceId = launchCoinSourceId,
+  layerId = launchCoinLayerId,
 }: {
   readonly targetId: string;
   readonly onLanded: (landed: number) => void;
+  /** 출발점 — 기본은 엽전 출시 모달의 잔액 엽전. 연속 학습 보상(ADR-0143)은 보상 카드의 엽전을 넘깁니다. */
+  readonly sourceId?: string;
+  readonly layerId?: string;
 }): ReactNode {
   const [path, setPath] = useState<FlightPath | null>(null);
   const [launched, setLaunched] = useState(false);
@@ -59,7 +64,7 @@ export function LaunchCoinFlight({
       LAUNCH_FLYING_COINS * coinFlightStaggerMs + coinFlightDurationMs + FLIGHT_GRACE_MS,
     );
     timers.push(giveUp);
-    measureRects([launchCoinLayerId, launchCoinSourceId, targetId], (rects) => {
+    measureRects([layerId, sourceId, targetId], (rects) => {
       if (!alive) return;
       const [layer, source, target] = rects ?? [];
       if (layer?.left == null || source?.centerX == null || target?.centerX == null) {
@@ -87,12 +92,12 @@ export function LaunchCoinFlight({
     };
     // 한 번 시작한 비행을 다시 시작하지 않습니다 — `onLanded`는 부모가 매번 새로 만듭니다.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [targetId]);
+  }, [targetId, sourceId, layerId]);
 
   const flying =
     path === null ? [] : Array.from({ length: LAUNCH_FLYING_COINS }, (_, i) => i).slice(landed);
   return (
-    <view id={launchCoinLayerId} className="launch-flight" accessibility-elements-hidden={true}>
+    <view id={layerId} className="launch-flight" accessibility-elements-hidden={true}>
       {path === null
         ? null
         : flying.map((index) => (
