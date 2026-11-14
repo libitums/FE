@@ -570,7 +570,8 @@ test("SV9. 앱 RPC — 앨범은 내 complete만 · 상태 조회는 id · 메�
   const inspect = (
     await server.query("select public.companion_inspect_media($1, 10) as i", [tester])
   ).rows[0].i;
-  expect(inspect.today).toEqual({ snapshot: 1, voice: 1 });
+  // 20261202가 시도 수(snapshotAttempts · voiceAttempts)를 더했다 — 여기서는 pending · complete 수만 본다.
+  expect(inspect.today).toMatchObject({ snapshot: 1, voice: 1 });
   expect(inspect.settings).toMatchObject({ photoCost: 35, snapshotEngine: "gpt-image-2.5-flare" });
   expect(inspect.items[1]).toMatchObject({
     kind: "snapshot",
