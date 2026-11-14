@@ -408,11 +408,11 @@
 @keyframes launch-spin {
   from {
     opacity: 0;
-    transform: rotateY(540deg) scale(var(--libitum-motion-scale-reward));
+    transform: scale(var(--libitum-motion-scale-reward));
   }
   to {
     opacity: 1;
-    transform: rotateY(0deg) scale(1);
+    transform: scale(1);
   }
 }
 

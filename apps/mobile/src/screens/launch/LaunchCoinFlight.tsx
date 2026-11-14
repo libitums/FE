@@ -19,6 +19,8 @@ export const launchCoinSourceId = "launch-coin-source";
 /** 날아가는 엽전 수입니다 — 액수와 상관없이 같은 길이로 보이게 고정합니다. */
 export const LAUNCH_FLYING_COINS = 6;
 const coinSize = 24;
+/** 측정이 늦거나 오지 않을 때 기다리는 여유입니다. */
+const FLIGHT_GRACE_MS = 600;
 const landingScale = 0.7;
 
 type FlightPath = {
@@ -42,10 +44,21 @@ export function LaunchCoinFlight({
   useEffect(() => {
     const timers: ReturnType<typeof setTimeout>[] = [];
     let alive = true;
+    let reported = 0;
+    // 이미 알린 수 이하는 다시 알리지 않습니다 — 안전 타이머가 실제 착지 뒤에 와도 무동작.
     const land = (n: number) => {
+      if (n <= reported) return;
+      reported = n;
       setLanded(n);
       onLanded(n);
     };
+    // 측정이 성공도 실패도 알리지 않는 기기가 있습니다(Android selector query) — 날기 길이를 넘기면 다 닿은 것으로 칩니다.
+    // 이 모달은 마지막 엽전이 닿아야 닫히므로, 이 안전 타이머가 없으면 막이 화면을 덮은 채 멈춥니다(안정성 리뷰 1).
+    const giveUp = setTimeout(
+      () => land(LAUNCH_FLYING_COINS),
+      LAUNCH_FLYING_COINS * coinFlightStaggerMs + coinFlightDurationMs + FLIGHT_GRACE_MS,
+    );
+    timers.push(giveUp);
     measureRects([launchCoinLayerId, launchCoinSourceId, targetId], (rects) => {
       if (!alive) return;
       const [layer, source, target] = rects ?? [];

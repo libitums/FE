@@ -2,6 +2,7 @@
 // 안내(시안 G-A). 둘 다 지도가 한가할 때만(진행을 읽었고 · 지도 루트 · 겹침 · 티켓 대화상자 · 설문 · 연속 학습 축하 없음).
 
 import type { ReactNode } from "@lynx-js/react";
+import { useRef } from "@lynx-js/react";
 
 import type { CatalogProgress } from "../lib/catalog-progress";
 import type { CatalogEntry } from "../lib/episode-catalog";
@@ -25,11 +26,14 @@ export function useMapNotices(input: MapNoticesInput): {
   readonly coinCount: number | null;
   readonly layer: ReactNode;
 } {
+  // 업데이트 안내가 이미 떠 있으면 엽전 모달이 그 위로 끼어들지 않습니다 — 안내가 닫힘 처리 없이 사라졌다가 다시 뜨면
+  // 누르던 손가락이 엉뚱한 단추를 누릅니다(안정성 리뷰 9). 지난 그림의 값을 씁니다(둘이 서로를 기다리므로).
+  const updateOpen = useRef(false);
   const launch = useLaunchCoins({
     wiring: input.wiring,
     catalogProgress: input.progress,
     localCoins: input.localCoins,
-    idle: input.idle,
+    idle: input.idle && !updateOpen.current,
     onStartChatting: input.onStartChatting,
   });
   const updateNotice = useCatalogUpdateNotice({
@@ -38,6 +42,7 @@ export function useMapNotices(input: MapNoticesInput): {
     progress: input.progress,
     ready: input.idle && !launch.open,
   });
+  updateOpen.current = updateNotice.open;
   return {
     coinCount: launch.coinCount,
     layer: (

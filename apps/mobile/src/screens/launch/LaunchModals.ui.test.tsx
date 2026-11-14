@@ -138,6 +138,31 @@ describe("엽전 모달", () => {
     expect(onDone).toHaveBeenCalledTimes(1);
   });
 
+  test("YL-UI2 측정이 성공도 실패도 알리지 않아도(Android) 안전 타이머가 다 닿은 것으로 쳐 한 번만 닫는다", () => {
+    vi.spyOn(lynx, "createSelectorQuery").mockImplementation(
+      () =>
+        ({
+          select: () => ({ invoke: () => ({ exec: () => undefined }) }),
+        }) as unknown as ReturnType<typeof lynx.createSelectorQuery>,
+    );
+    const onDone = vi.fn<() => void>();
+    render(
+      <LaunchCoinsModal
+        learning={0}
+        bonus={100}
+        balance={100}
+        coinTargetId="chip-icon"
+        onDone={onDone}
+      />,
+    );
+    tapButton(ids.gotIt);
+    expect(onDone).not.toHaveBeenCalled();
+    act(() => {
+      vi.advanceTimersByTime(5_000);
+    });
+    expect(onDone).toHaveBeenCalledTimes(1);
+  });
+
   test("YL-UI2 움직임 줄이기면 처음부터 최종 값이고, Got it이면 날지 않고 곧바로 닫는다", () => {
     const reducedDone = vi.fn<() => void>();
     render(

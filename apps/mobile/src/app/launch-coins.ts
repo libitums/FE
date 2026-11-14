@@ -3,8 +3,10 @@
 
 import type { CatalogProgress } from "../lib/catalog-progress";
 import { getItem, isStorageAvailable, setItem } from "../lib/storage";
+import { progressUserId } from "./pending-learning-progress";
 
-export const launchCoinsStorageKey = "libitum.launch-coins";
+/** 계정마다 따로 — 한 기기에서 계정을 바꿔도 다른 계정의 모달 기록 · 숫자가 섞이지 않습니다(안정성 리뷰 5). */
+export const launchCoinsStorageKey = (userId: string): string => `libitum.launch-coins.${userId}`;
 const TUTORIAL = "u00-tutorial";
 const TUTORIAL_FINAL = "RP";
 
@@ -61,17 +63,24 @@ export type LaunchStore = {
   readonly write: (record: LaunchRecord) => void;
 };
 
+/** 지금 로그인한 계정의 기록 — background(효과 · 핸들러)에서만 부릅니다. 로그인이 없으면 읽지도 쓰지도 않습니다. */
 export const deviceLaunchStore: LaunchStore = {
   read: () => {
+    "background only";
     try {
-      return isStorageAvailable() ? launchRecordFrom(getItem(launchCoinsStorageKey)) : null;
+      const userId = progressUserId();
+      return userId !== null && isStorageAvailable()
+        ? launchRecordFrom(getItem(launchCoinsStorageKey(userId)))
+        : null;
     } catch {
       return null;
     }
   },
   write: (record) => {
+    "background only";
     try {
-      setItem(launchCoinsStorageKey, JSON.stringify(record));
+      const userId = progressUserId();
+      if (userId !== null) setItem(launchCoinsStorageKey(userId), JSON.stringify(record));
     } catch {
       // 저장 실패가 화면을 막지 않습니다 — 다음 실행에 다시 볼 수 있습니다.
     }

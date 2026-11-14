@@ -1,5 +1,5 @@
 import type { ReactNode } from "@lynx-js/react";
-import { useEffect, useState } from "@lynx-js/react";
+import { useEffect, useRef, useState } from "@lynx-js/react";
 
 import lock from "@libitums/icons/lynx/lock";
 import { color } from "@libitums/design-tokens";
@@ -72,9 +72,14 @@ export function LaunchCoinsModal({
     const handle = setTimeout(() => onDone(), 0);
     return () => clearTimeout(handle);
   }, [flying, reduced, onDone]);
+  // 마지막 엽전이 닿으면 한 번만 닫습니다 — 안전 타이머와 실제 착지가 겹쳐도 두 번 부르지 않습니다.
+  const closed = useRef(false);
   const landed = (n: number) => {
     onCoinLanded?.(n, LAUNCH_FLYING_COINS);
-    if (n >= LAUNCH_FLYING_COINS) onDone();
+    if (n >= LAUNCH_FLYING_COINS && !closed.current) {
+      closed.current = true;
+      onDone();
+    }
   };
   const done = () => {
     "background only";
