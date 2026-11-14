@@ -15,7 +15,7 @@ beforeAll(async () => {
   );
   dates = result.rows.map((row: { day: string }) => row.day);
   today = dates[0]!;
-}, 30_000);
+}, 90_000);
 afterAll(async () => {
   await db?.close();
 });

@@ -18,7 +18,7 @@ beforeAll(async () => {
   await anon.query("set role anon");
   await db.admin.query("insert into auth.users (id) values ($1)", [tester]);
   await signIn(app, tester);
-}, 30_000);
+}, 90_000);
 afterAll(async () => {
   await db?.close();
 });

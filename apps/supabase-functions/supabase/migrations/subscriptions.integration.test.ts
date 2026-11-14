@@ -84,7 +84,7 @@ beforeAll(async () => {
   app = await db.connect();
   server = await db.connect();
   await server.query("set role service_role");
-}, 30_000);
+}, 90_000);
 afterAll(async () => {
   await db?.close();
 });

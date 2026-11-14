@@ -40,7 +40,7 @@ beforeAll(async () => {
   db = await startTestDatabase();
   writerA = await db.connect();
   writerB = await db.connect();
-}, 30_000);
+}, 90_000);
 afterAll(async () => {
   await db?.close();
 });

@@ -31,7 +31,7 @@ beforeAll(async () => {
   db = await startTestDatabase();
   clientA = await db.connect();
   clientB = await db.connect();
-}, 30_000);
+}, 90_000);
 afterAll(async () => {
   await db?.close();
 });

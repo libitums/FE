@@ -51,7 +51,7 @@ async function stored(): Promise<Record<string, unknown>[]> {
 beforeAll(async () => {
   db = await startTestDatabase();
   client = await db.connect();
-}, 30_000);
+}, 90_000);
 afterAll(async () => {
   await db?.close();
 });

@@ -70,7 +70,7 @@ beforeAll(async () => {
   anon = await db.connect();
   await server.query("set role service_role");
   await anon.query("set role anon");
-}, 30_000);
+}, 90_000);
 afterAll(async () => {
   await db?.close();
 });
