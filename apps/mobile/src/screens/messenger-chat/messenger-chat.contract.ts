@@ -19,6 +19,7 @@ import type { KeyboardHeightStore, KoreanKeyboardProbe } from "./keyboard-ports"
 import type { MessengerChatExtraCopy } from "./chat-settings.contract";
 import type { MessengerAccessProps } from "./messenger-access";
 import type { ChatListNoticeProps } from "./messenger-list-notice";
+import type { PlanOfferWiring } from "../plans/plans.contract";
 
 /** 「…」 메뉴 항목(고정 순서: ideas · report). 「Ask for a fix」는 👎 이유가 대신합니다(ADR-0129). */
 export type ChatMoreAction = "ideas" | "report";
@@ -186,6 +187,7 @@ export type MessengerChatScreenProps = {
   readonly turns: TurnLedger;
   /** unlimited면 턴 표시 · 관문이 모두 빠집니다. */
   readonly tier: ChatTier;
+  readonly planOffer?: PlanOfferWiring | undefined; // 무료 다 씀 판의 요금제 카드(ADR-0144) — 플래그가 꺼졌으면 없음.
   /** 지역 시계입니다(남은 시간 · 자정 초기화). */
   readonly now: () => number;
   /** 분 단위 갱신 타이머 주입(기본은 전역 타이머). */

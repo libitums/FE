@@ -1,5 +1,6 @@
 // 하루 무료 수 표시 · 마지막 무료 띠 · 다 쓴 판 · 엽전 보내기 단추 계약입니다(messenger-chat-1-5 spec §6.2 · §10).
 
+import type { PlanOfferWiring } from "../plans/plans.contract";
 import type { ResetClock, TurnPlan } from "./free-turns";
 
 export type SendCost =
@@ -24,6 +25,8 @@ export type OutOfFreePanelProps = {
   readonly onBackToChats: () => void;
   /** 아래 안전 영역(px)입니다. 기본 0. */
   readonly bottomInset?: number;
+  /** 요금제 카드(Chat Plus · Premium, ADR-0144) — 기능 플래그가 꺼졌으면 없음, 판은 지금 그대로. */
+  readonly offer?: PlanOfferWiring;
 };
 
 const turns = (suffix: string): string => `messenger-chat-${suffix}`;

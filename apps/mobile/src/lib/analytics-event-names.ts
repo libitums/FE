@@ -66,4 +66,6 @@ export type AnalyticsEventName =
   | "surface_session_ended"
   | "first_lesson_completed"
   | "first_chat_message_sent"
-  | "streak_reward_collected";
+  | "streak_reward_collected"
+  | "plans_viewed"
+  | "plan_selected";

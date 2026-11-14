@@ -65,6 +65,7 @@ export function renderMessengerChat(roomId: string, wiring: ScreenWiring) {
         wallet={chat.wallet}
         turns={chat.turns}
         tier={chat.tier}
+        planOffer={wiring.plans?.messengerOffer}
         now={chat.now}
         onExit={chat.onExitChatRoom}
         onOpenMemories={chat.onOpenMemories}

@@ -60,6 +60,7 @@ import { messengerChatWiring, type MessengerChatWiring } from "./messenger-chat-
 import { isTesterAccessActive } from "../lib/tester-access";
 import { messengerAccessOf } from "../screens/messenger-chat/messenger-access";
 import { pushTargetOpener } from "./push-routing";
+import type { PlansWiring } from "./use-plans";
 
 // 화면 결선이 `renderScreen`에 넘기는 것입니다. 셸이 소유한 값 하나와 콜백 셋입니다.
 //
@@ -67,6 +68,8 @@ import { pushTargetOpener } from "./push-routing";
 // 모릅니다(ADR-0007 D3). 화면이 받는 것은 "무엇이 일어났다"는 콜백뿐이고,
 // 그것을 무슨 네비게이션 동작으로 옮길지는 `App`이 정합니다.
 export type ScreenWiring = {
+  /** 요금제(ADR-0144) — 기능 플래그가 꺼졌거나 로그인 전이면 없음. `withPlans`가 채웁니다. */
+  plans?: PlansWiring;
   /** 설정 › 다운로드(ADR-0095 D8). */
   downloadSettings: DownloadSettingsWiring;
   /** 받는 중인 편의 「준비 중」 카드를 눌렀을 때(ADR-0095 D6 · D7) — 받기 문지기가 덮어씁니다. 기본은 아무것도 안 함. */

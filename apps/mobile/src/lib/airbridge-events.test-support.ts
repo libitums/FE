@@ -59,6 +59,8 @@ export const allEventNames = [
   "first_lesson_completed",
   "first_chat_message_sent",
   "streak_reward_collected",
+  "plans_viewed",
+  "plan_selected",
 ] as const satisfies readonly AnalyticsEventName[];
 
 /** 매핑되는 둘(`entry_completed` · `episode_final_passed`)을 뺀 이름마다 최소 이벤트 하나입니다. */
@@ -222,6 +224,21 @@ export const unmappedEvents = [
     daysSinceFirstOpen: "6",
     days: "7",
     amount: "40",
+  },
+  {
+    name: "plans_viewed",
+    surface: "learning",
+    daysSinceFirstOpen: "6",
+    placement: "settings",
+    view: "compare",
+  },
+  {
+    name: "plan_selected",
+    surface: "chat",
+    daysSinceFirstOpen: "6",
+    placement: "messenger",
+    plan: "premium",
+    period: "monthly",
   },
 ] as const satisfies readonly AnalyticsEvent[];
 
