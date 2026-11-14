@@ -10,6 +10,7 @@ import type { EntryLanguage } from "./entry-language";
 import type { AudioUnavailableCopy } from "../components/audio-unavailable.contract";
 import type { LearnerProfileCopy } from "../components/learner-profile.contract";
 import type { TicketsCopy } from "../screens/tickets/tickets.contract";
+import type { PlansCopy } from "./ui-copy-plans";
 import type { RoleplayStoryCopy } from "../screens/roleplay-story/roleplay-story.contract";
 import type { StoryCallCopy } from "../screens/story-call/story-call.contract";
 import type { StoryIntroCopy } from "../screens/story-intro/story-intro.contract";
@@ -109,6 +110,8 @@ export type UiCopy = {
   readonly splash: SplashCopy;
   readonly specialUnitMap: SpecialUnitMapCopy;
   readonly tickets: TicketsCopy;
+  /** 요금제(ADR-0144) — 설정 → Plans · 맥락 카드. */
+  readonly plans: PlansCopy;
   readonly roleplayStory: RoleplayStoryCopy;
   readonly appUpdate: AppUpdateCopy;
   readonly storyMessenger: StoryMessengerCopy;

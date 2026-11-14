@@ -14,6 +14,7 @@ import { restoreAccessibilityFocus } from "./chat-input-focus";
 import { chatTurnsTestIds as ids, type OutOfFreePanelProps } from "./chat-turns.contract";
 import { outPanelMaxHeightOf } from "./scroll-budget";
 import { useScrollBudget } from "./use-scroll-budget";
+import { ChatPlanOffer } from "../plans/PlanOffer";
 
 import "./chat-turns.css";
 
@@ -32,7 +33,7 @@ export const KEEP_STACK_FONT_SCALE = 2.6;
  * 오늘의 무료 메시지를 다 쓴 판(T3)입니다 — 독(기능 줄 · 입력 · 토글 · 키보드 자리) 전체를 대신합니다.
  * 판은 모달입니다 — 열리면 제목(dialog 역할 설명)에 접근성 초점이 가고, 뒤 화면(머리 · 로그)은 화면에서 숨깁니다(호출 쪽).
  * 큰 글자에서 넘치지 않게 px 최대 높이를 걸고 아이콘 · 제목 · 본문만 스크롤하며 단추 둘 · 잔액 줄은 스크롤 밖에 고정합니다(접근성 M1). 단추 둘은 Keep chatting(주) · Back to chats입니다.
- * 무제한 티켓은 학습 전용이라 이 판에 Go unlimited는 없습니다(2026-11-10 결정).
+ * 무제한 티켓은 학습 전용이라 이 판에 Go unlimited는 없습니다(2026-11-10 결정). 요금제 결선이 있으면 대화 요금제 카드 둘이 섭니다(ADR-0144).
  * 잔액이 가격보다 모자라도 둘은 그대로입니다 — Keep chatting 뒤 엽전 보내기에서 상점으로 이어집니다.
  */
 export function OutOfFreePanel({
@@ -43,6 +44,7 @@ export function OutOfFreePanel({
   onKeepChatting,
   onBackToChats,
   bottomInset = 0,
+  offer,
 }: OutOfFreePanelProps): ReactNode {
   const copy = useUiCopy().messengerChat.turns;
   const globalProps = useGlobalProps();
@@ -110,6 +112,8 @@ export function OutOfFreePanel({
             {pieces[1] === "" ? null : <text className="chat-out-body-time">{pieces[1]}</text>}
             {pieces[2]}
           </text>
+          {/* Chat Plus · Premium 카드(ADR-0144, 시안 ②) — 스크롤 안에 두어 작은 화면 · 큰 글자에서도 단추 둘은 고정입니다. */}
+          {offer === undefined ? null : <ChatPlanOffer offer={offer} />}
         </view>
       </scroll-view>
       <view

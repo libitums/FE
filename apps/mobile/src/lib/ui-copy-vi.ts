@@ -47,6 +47,7 @@ import {
 import { messengerChatVi } from "./ui-copy-vi-chat";
 import { learnerProfileVi } from "./ui-copy-vi-profile";
 import { ticketsVi } from "./ui-copy-vi-tickets";
+import { plansCopy } from "./ui-copy-plans";
 import { roleplayStoryVi } from "./ui-copy-vi-roleplay-story";
 import {
   commonVi,
@@ -108,6 +109,7 @@ export const uiCopyVi: UiCopy = {
   splash: splashVi,
   specialUnitMap: specialUnitMapVi,
   tickets: ticketsVi,
+  plans: plansCopy.vi,
   roleplayStory: roleplayStoryVi,
   appUpdate: appUpdateVi,
   storyMessenger: storyMessengerVi,

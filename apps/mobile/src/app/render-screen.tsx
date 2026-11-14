@@ -30,6 +30,7 @@ import {
 } from "./render-messenger-chat";
 import { NewFriendMapHost } from "./render-new-friend";
 import { renderRoleplayStory } from "./render-roleplay-story";
+import { renderPlans } from "./render-plans";
 import type { ScreenWiring } from "./screen-wiring";
 
 export function renderScreen(screen: Screen, wiring: ScreenWiring) {
@@ -89,8 +90,13 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
           onOpenChatSettings={
             messengerAccessFor(wiring) === "open" ? wiring.messengerChat.onOpenChatSettings : null
           }
+          onOpenPlans={
+            wiring.plans === undefined ? null : () => wiring.plans?.openPlans("settings", null)
+          }
         />
       );
+    case "plans":
+      return renderPlans(screen, wiring);
     case "profile":
       return <AccountProfileScreen onExit={wiring.onExitSettingsStack} />;
     case "learner-profile":

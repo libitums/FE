@@ -46,6 +46,7 @@ import {
 import { messengerChatEn } from "./ui-copy-en-chat";
 import { learnerProfileEn } from "./ui-copy-en-profile";
 import { ticketsEn } from "./ui-copy-en-tickets";
+import { plansCopy } from "./ui-copy-plans";
 import { roleplayStoryEn } from "./ui-copy-en-roleplay-story";
 import {
   commonEn,
@@ -107,6 +108,7 @@ export const uiCopyEn: UiCopy = {
   splash: splashEn,
   specialUnitMap: specialUnitMapEn,
   tickets: ticketsEn,
+  plans: plansCopy.en,
   roleplayStory: roleplayStoryEn,
   appUpdate: appUpdateEn,
   storyMessenger: storyMessengerEn,

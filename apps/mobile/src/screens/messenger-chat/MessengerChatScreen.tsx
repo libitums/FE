@@ -41,8 +41,7 @@ import { useCoinBalance } from "./use-coin-balance";
 
 import "./messenger-chat.css";
 
-// 자유 대화 방입니다 — 머리 · 대화 로그 · 입력 독(기능 줄 · 입력 줄 · 토글 · 키보드 자리) · 겹침 하나.
-// 방 UI 상태와 출처 호출은 useChatRoom이 지고, 이 화면은 조립만 합니다.
+// 자유 대화 방 — 머리 · 로그 · 입력 독(기능 줄 · 입력 줄 · 토글 · 키보드 자리) · 겹침 하나. 상태 · 출처 호출은 useChatRoom, 화면은 조립만.
 export function MessengerChatScreen({
   roomId,
   source,
@@ -53,6 +52,7 @@ export function MessengerChatScreen({
   wallet,
   turns,
   tier,
+  planOffer,
   now,
   timers,
   onExit,
@@ -61,8 +61,7 @@ export function MessengerChatScreen({
 }: MessengerChatScreenProps): ReactNode {
   const copy = useUiCopy().messengerChat;
   const coinBalance = useCoinBalance(wallet);
-  // 보내기 관문(턴 · 엽전)은 useChatTurns가 지는데, 그 훅은 방의 dispatch(키보드 접기 · 상점 열기)가 필요합니다 —
-  // 서로를 기다리지 않게 방이 관문을 참조로 부릅니다.
+  // 보내기 관문(턴 · 엽전)은 useChatTurns가 지고 방의 dispatch가 필요해 — 서로를 기다리지 않게 방이 관문을 참조로 부릅니다.
   const gate = useRef<() => boolean>(() => true);
   // 서버 모드는 답을 기다리는 동안 다시 보내지 않습니다 — 서버가 409 turn_in_progress로 거절해 로그 순서가 섞였습니다(리뷰 W3).
   const serverBusy = useRef(false);
@@ -263,6 +262,7 @@ export function MessengerChatScreen({
               bottomInset={edges.bottom}
               onKeepChatting={turn.keepChatting}
               onBackToChats={exit}
+              offer={planOffer}
             />
           </view>
         ) : (

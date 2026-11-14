@@ -14,6 +14,8 @@ import type { CatalogReview, CatalogReviewSummary } from "./catalog-review";
 // 나릅니다.
 import type { PhoneNumber } from "../lib/auth-session.contract";
 import type { RoleplayEpisodeId } from "../screens/roleplay-list/roleplay-list.contract";
+import type { PlanId } from "../lib/plans-api";
+import type { PlanPlacement } from "../screens/plans/plans-model";
 
 // 탭 목록과 1:1입니다. 순서가 곧 바텀 네비게이션의 좌→우 순서입니다
 // (bottom-navigator.contract.ts).
@@ -41,6 +43,8 @@ export type Screen =
   | { name: "download-settings" }
   // 설정 탭의 「Chats」 화면입니다(ADR-0126).
   | { name: "chat-settings" }
+  // 요금제 비교(ADR-0144) — 연 자리(설정 · 티켓 · 메신저)의 스택에 쌓입니다. `focus`는 처음 고를 요금제(없으면 BEST)입니다.
+  | { name: "plans"; placement: PlanPlacement; focus: PlanId | null }
   // 기억 화면입니다(ADR-0126). 인물 id · 이름이 없으면 공유 층(설정 탭에서), 있으면 그 인물 층(방 사이드바에서)입니다.
   | { name: "chat-memories"; characterId: string | null; characterName: string | null }
   // 필드가 없습니다 — 목록은 App이 넘기고 알림 화면에는 진행이 없습니다.

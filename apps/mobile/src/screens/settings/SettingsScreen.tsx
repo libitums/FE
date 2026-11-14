@@ -33,6 +33,7 @@ export function SettingsScreen({
   sessionOptions,
   onToggleSessionOption,
   onOpenChatSettings,
+  onOpenPlans,
 }: SettingsScreenProps): ReactNode {
   const copy = useUiCopy();
   // 학습 묶음은 목록 맨 위입니다 — 켬/끔 줄은 셀 전체가 탭 대상이고 바뀐 뒤 값을 알립니다.
@@ -59,6 +60,19 @@ export function SettingsScreen({
             title: chatCopy.entryTitle,
             description: chatCopy.entryDescription,
             onNavigate: onOpenChatSettings,
+          },
+        ];
+  // 「Plans」 줄(ADR-0144) — 요금제 비교 화면. 기능 플래그가 꺼졌거나 비회원이면 결선이 없어 줄도 없습니다.
+  const planItems: readonly SettingsGroupItem[] =
+    onOpenPlans === undefined || onOpenPlans === null
+      ? []
+      : [
+          {
+            id: "plans",
+            trailing: "navigation",
+            title: copy.plans.settingsRow,
+            description: copy.plans.settingsRowDescription,
+            onNavigate: onOpenPlans,
           },
         ];
   const account = useAccountActions({ onSignIn, onSignOut, onDeleteAccount, onLayerChange });
@@ -114,7 +128,7 @@ export function SettingsScreen({
         <view className="settings-screen-list" data-testid="settings-screen-list">
           <SettingsGroup
             accessibilityLabel={copy.settings.group.learning}
-            items={[...learningItems, ...chatItems]}
+            items={[...learningItems, ...chatItems, ...planItems]}
           />
           <SettingsGroup accessibilityLabel={copy.settings.group.account} items={accountItems} />
           <SettingsGroup

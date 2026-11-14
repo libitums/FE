@@ -43,13 +43,14 @@ import { useLearnerProfile } from "./use-learner-profile";
 import { useCatalogFinishGuard } from "./catalog-finish-guard";
 import { episodeSurveyWiring } from "./episode-survey-wiring";
 import { firstUnitGuideEnabled } from "./first-unit-guide-enabled";
-import { OutOfTicketsDialog } from "../screens/tickets/OutOfTicketsDialog";
+import { OutOfTicketsLayer } from "./out-of-tickets-layer";
 import { useMapNotices } from "./use-map-notices";
 import { withLearningTickets } from "./ticket-wiring";
 import { downloadCatalogOf, downloadSettingsNav } from "./download-settings-nav";
 import { useDownloadGate, withDownloadGate } from "./use-download-gate";
 import { useLearningTickets } from "./use-learning-tickets";
 import { useTesterAccess } from "./use-tester-access";
+import { usePlans } from "./use-plans";
 import type { AppProgressSeed, AppProps } from "./app-props";
 import type { AppSessionControl } from "./leave-app.contract";
 import type { CatalogReviewItem } from "./catalog-review";
@@ -177,8 +178,9 @@ export function AppSession({
   const atMapRoot = nav.entry.length === 0 && screenNow.name === "journey-map" && !screenLayerOpen;
   const gateNav = downloadSettingsNav(dispatch);
   const downloadGate = useDownloadGate(downloadControls, catalog, atMapRoot, progress, gateNav);
+  const plans = usePlans(accountState === "signed-in", dispatch, episodeIntroEventSink); // ADR-0144
   const wiring = withDownloadGate(
-    withLearningTickets(screens, tickets, progress, catalogSections),
+    withLearningTickets({ ...screens, plans }, tickets, progress, catalogSections),
     downloadGate,
   );
   const messengerTabBadge = useMessengerTabBadge(wiring, nav.tab); // 하단 탭 NEW(2026-11-13)
@@ -286,10 +288,8 @@ export function AppSession({
                 }}
               />
             ) : null}
-            {/* 티켓 없이 새 레슨을 열려 하면 어느 화면 위에서든 가운데 대화상자가 뜹니다(시안 E6m). */}
-            {tickets.outOfTickets === null ? null : (
-              <OutOfTicketsDialog {...tickets.outOfTickets} />
-            )}
+            {/* 티켓 없이 새 레슨을 열려 하면 어느 화면 위에서든 가운데 대화상자가 뜹니다(시안 E6m · 요금제 카드 ADR-0144). */}
+            <OutOfTicketsLayer dialog={tickets.outOfTickets} offerFor={plans?.ticketsOffer} />
             {downloadGate.layer}
             {notices.layer}
           </view>

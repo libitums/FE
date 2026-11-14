@@ -47,6 +47,7 @@ import {
 import { messengerChatJa } from "./ui-copy-ja-chat";
 import { learnerProfileJa } from "./ui-copy-ja-profile";
 import { ticketsJa } from "./ui-copy-ja-tickets";
+import { plansCopy } from "./ui-copy-plans";
 import { roleplayStoryJa } from "./ui-copy-ja-roleplay-story";
 import {
   commonJa,
@@ -108,6 +109,7 @@ export const uiCopyJa: UiCopy = {
   splash: splashJa,
   specialUnitMap: specialUnitMapJa,
   tickets: ticketsJa,
+  plans: plansCopy.ja,
   roleplayStory: roleplayStoryJa,
   appUpdate: appUpdateJa,
   storyMessenger: storyMessengerJa,

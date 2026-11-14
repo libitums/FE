@@ -86,9 +86,27 @@ export type StreakRewardEvent = Common & {
   readonly amount: string;
 };
 
+/**
+ * 요금제(ADR-0144). `placement`는 요금제가 보인 자리 — `surface`(학습 · 대화, D3 공통 속성)와 따로 둡니다.
+ * `view`: `offer` = 맥락 카드(티켓 대화상자 · 메신저 판), `compare` = 설정 → Plans 화면. 구매 이벤트는 2단계.
+ */
+export type PlanEvent =
+  | (Common & {
+      readonly name: "plans_viewed";
+      readonly placement: "settings" | "tickets" | "messenger";
+      readonly view: "offer" | "compare";
+    })
+  | (Common & {
+      readonly name: "plan_selected";
+      readonly placement: "settings" | "tickets" | "messenger";
+      readonly plan: "unlimited_tickets" | "chat_plus" | "premium";
+      readonly period: "monthly" | "yearly";
+    });
+
 export type CompanionEvent =
   | LaunchEvent
   | StreakRewardEvent
+  | PlanEvent
   | MessengerGuideEvent
   | CompanionUnlockEvent
   | ChatCoinEvent

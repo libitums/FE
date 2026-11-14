@@ -1,7 +1,7 @@
 # @libitums/supabase-functions
 
-Supabase Edge Function 앱이다. 함수는 넷 — `delete-account`, `send-push`(서버 푸시, 아래 「send-push」 ·
-[ADR-0034](../../docs/adr/0034-server-push-notifications.md)), `chat-send` · `companion-proactive`(AI 컴패니언 턴 · 선톡, 아래 「AI 컴패니언」). 먼저 `delete-account` — 로그인한 사용자가 자기 계정을 지운다
+Supabase Edge Function 앱이다. 함수는 `delete-account`, `send-push`(서버 푸시, 아래 「send-push」 ·
+[ADR-0034](../../docs/adr/0034-server-push-notifications.md)), `chat-send` · `companion-proactive`(AI 컴패니언 턴 · 선톡, 아래 「AI 컴패니언」) · `revenuecat-webhook`(구독, 맨 아래). 먼저 `delete-account` — 로그인한 사용자가 자기 계정을 지운다
 (Apple 사용자는 Apple 토큰 철회까지). 결정과 HTTP 계약(판정 순서 · 상태 코드)은
 [ADR-0032](../../docs/adr/0032-account-sign-out-and-deletion.md) D1~D3, 타입은
 `supabase/functions/_shared/delete-account.contract.ts`가 정본이다.
@@ -591,3 +591,14 @@ supabase functions serve --no-verify-jwt                                        
 
 되돌리기: 함수는 `supabase functions delete chat-send` · `companion-proactive` · `companion-eval`, 예약은 `select cron.unschedule('companion-…')`.
 표 · 함수는 `drop schema companion cascade` 뒤 `public.companion_*` 함수를 지운다(다른 기능이 쓰지 않는다).
+
+## revenuecat-webhook — 구독 · 엽전 팩(ADR-0144)
+
+RevenueCat이 보내는 구독 · 구매 이벤트를 받아 우리 DB(정본)에 반영한다. 인증은 Supabase JWT가 아니라 RevenueCat이 싣는 `Authorization`
+헤더 값(`REVENUECAT_WEBHOOK_AUTH`)이다(`config.toml` `verify_jwt = false`). 본문은 `_shared/revenuecat-event.ts`가 정규화하고
+`public.companion_apply_store_event(p_event)` 한 번으로 넘긴다 — 상품 → 요금제 매핑 · 멱등(이벤트 id) · 순서(stale) · 엽전 지급 · 회수는 DB가 한다
+(`migrations/20261129120000_subscriptions.sql`). 샌드박스는 `REVENUECAT_ACCEPT_SANDBOX=true`인 프로젝트만 반영한다.
+
+- 계약: `_shared/revenuecat-webhook.contract.ts`. 처리기 `_shared/revenuecat-webhook-handler.ts`(401 · 405 · 400 · 500 재시도 · 200 outcome).
+- 배포: `supabase functions deploy revenuecat-webhook` → 비밀 두 개 → RevenueCat 대시보드 Webhook URL · 헤더 값 → 「Send test event」로 `recorded` 확인.
+- 연간 구독의 매달 엽전: `cron/subscriptions.sql`(하루 한 번). 준비 목록 전체는 [스토어 준비](../../docs/subscriptions-store-setup.md).

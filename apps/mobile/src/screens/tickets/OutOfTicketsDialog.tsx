@@ -12,6 +12,8 @@ import { useUiCopy } from "../../lib/ui-copy";
 import { TicketMoreAction } from "./TicketMoreAction";
 import { ticketRingSvg } from "./ticket-ring";
 import type { TicketMoreResult } from "./tickets.contract";
+import type { PlanOfferWiring } from "../plans/plans.contract";
+import { TicketsPlanOffer } from "../plans/PlanOffer";
 
 import "./tickets.css";
 
@@ -25,6 +27,8 @@ export type OutOfTicketsDialogProps = {
   readonly onGetMore: () => void;
   readonly onStartLesson: () => void;
   readonly onClose: () => void;
+  /** 무제한 티켓 카드(ADR-0144) — 기능 플래그가 꺼졌으면 없음, 대화상자는 지금 그대로. */
+  readonly offer?: PlanOfferWiring;
 };
 
 export function OutOfTicketsDialog({
@@ -33,6 +37,7 @@ export function OutOfTicketsDialog({
   onGetMore,
   onStartLesson,
   onClose,
+  offer,
 }: OutOfTicketsDialogProps): ReactNode {
   const copy = useUiCopy().tickets;
   const canStart = status.available > 0;
@@ -85,6 +90,8 @@ export function OutOfTicketsDialog({
           </view>
         </view>
         <text className="ticket-dialog-message">{copy.outOfTickets.message}</text>
+        {/* 무제한 티켓 카드(ADR-0144, 시안 ①) — 결선이 있으면 「Go unlimited」가 첫 동작입니다. */}
+        {offer === undefined ? null : <TicketsPlanOffer offer={offer} />}
         <view className="ticket-dialog-actions">
           {canStart ? (
             <view

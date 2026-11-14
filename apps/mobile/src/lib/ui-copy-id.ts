@@ -47,6 +47,7 @@ import {
 import { messengerChatId } from "./ui-copy-id-chat";
 import { learnerProfileId } from "./ui-copy-id-profile";
 import { ticketsId } from "./ui-copy-id-tickets";
+import { plansCopy } from "./ui-copy-plans";
 import { roleplayStoryId } from "./ui-copy-id-roleplay-story";
 import {
   commonId,
@@ -108,6 +109,7 @@ export const uiCopyId: UiCopy = {
   splash: splashId,
   specialUnitMap: specialUnitMapId,
   tickets: ticketsId,
+  plans: plansCopy.id,
   roleplayStory: roleplayStoryId,
   appUpdate: appUpdateId,
   storyMessenger: storyMessengerId,
