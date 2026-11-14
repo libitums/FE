@@ -46,6 +46,12 @@ export type MessengerChatExtraCopy = {
   readonly access: MessengerAccessCopy;
   /** 교정 카드 · 다시 보내기 · 답 평가(ADR-0129). */
   readonly feedback: FeedbackCopy;
+  /** 서버 보내기 실패 줄(ADR-0137). */
+  readonly remote: {
+    readonly noCredits: (name: string) => string;
+    readonly notAvailable: (name: string) => string;
+    readonly sendFailed: string;
+  };
 };
 
 export type ChatSettingsCopy = {

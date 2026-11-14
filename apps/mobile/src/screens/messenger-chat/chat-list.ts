@@ -47,6 +47,8 @@ export function chatRowPreview(room: ChatRoomSummary): ChatRowPreview {
   switch (last.kind) {
     case "text":
       return { kind: "text", from: last.from, text: last.text };
+    case "action":
+      return { kind: "text", from: "them", text: last.text };
     case "photo":
       return { kind: "photo" };
     case "voice":

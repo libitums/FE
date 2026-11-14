@@ -148,9 +148,10 @@ test("PO4. 학습 콘텐츠 선언 표가 허용한 15항목과 같다 — 지�
     "LanguageSelectScreen.tsx#languagePreviewSample",
     "chat-fixture.ts#chatFixtureSeed",
     "chat-fixture-corrections.ts#chatFixtureCorrections",
+    "companion-roster.ts#COMPANION_CHARACTERS",
   ];
 
-  assert.equal(expected.length, 16);
+  assert.equal(expected.length, 17);
   assert.deepEqual(
     [...uiCopyLiteralPolicy.learningContentDeclarations].sort(),
     [...expected].sort(),

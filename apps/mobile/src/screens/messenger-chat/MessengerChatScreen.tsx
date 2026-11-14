@@ -17,6 +17,7 @@ import { CHAT_COIN_PRICES } from "./chat-coins";
 import { ChatMessageRow } from "./ChatMessageRows";
 import { ChatRoomDock } from "./ChatRoomDock";
 import { ChatRoomOverlays } from "./ChatRoomOverlays";
+import { useAutoIdeas } from "./use-auto-ideas";
 import { useChatFeedback } from "./use-chat-feedback";
 import { LastFreeStrip, TurnLine } from "./ChatTurns";
 import { MoreMenu, overlayForMore } from "./MoreMenu";
@@ -57,6 +58,8 @@ export function MessengerChatScreen({
   // 보내기 관문(턴 · 엽전)은 useChatTurns가 지는데, 그 훅은 방의 dispatch(키보드 접기 · 상점 열기)가 필요합니다 —
   // 서로를 기다리지 않게 방이 관문을 참조로 부릅니다.
   const gate = useRef<() => boolean>(() => true);
+  // 서버 모드는 답을 기다리는 동안 다시 보내지 않습니다 — 서버가 409 turn_in_progress로 거절해 로그 순서가 섞였습니다(리뷰 W3).
+  const serverBusy = useRef(false);
   const room = useChatRoom({
     roomId,
     source,
@@ -64,7 +67,7 @@ export function MessengerChatScreen({
     keyboardHeightStore,
     edges,
     onExit,
-    authorizeSend: () => gate.current(),
+    authorizeSend: () => !serverBusy.current && gate.current(),
   });
   const { state, plan, thread, birthYear, preferences, keyboardHeight, dispatch, send } = room;
   // 겹침이 열린 동안 뒤 화면(머리 · 로그 · 독)은 낭독에서 숨습니다. 「…」 메뉴는 독 안의 가벼운 팝업이라 제외합니다.
@@ -80,7 +83,19 @@ export function MessengerChatScreen({
     muted: overlayOpen,
   });
   gate.current = turn.authorizeSend;
+  const server = thread?.origin === "server";
+  // 답 · 첫 인사를 기다리는 중 — 이때 온 말만 「새로 도착」으로 봅니다(방을 열며 읽은 기록은 아님, 리뷰 W2 · W4).
+  const busy = thread !== null && (thread.typing || thread.awaitingReply);
+  serverBusy.current = server && busy;
   const tools = useBubbleTools({ roomId, source, thread, announce });
+  useAutoIdeas({
+    // 서버 모드만(가짜 출처는 답마다 보기 묶음을 돌립니다) · 방 설정 「보기 자동」을 따릅니다(리뷰 W1).
+    ideas: server && thread.settings.autoIdeas ? thread.ideas : null,
+    busy,
+    text: state.text,
+    ideasOpen: state.slot.kind === "ideas",
+    dispatch,
+  });
   const feedback = useChatFeedback({
     roomId,
     source,
@@ -102,6 +117,7 @@ export function MessengerChatScreen({
     thread === null ? "" : thread.counterpart.name,
     copy.room,
     overlayOpen,
+    server ? { busy } : null,
   );
 
   // 방이 사라지는 순간(지운 직후)에는 onExit이 곧 화면을 걷어 가므로 빈 상자만 남깁니다.

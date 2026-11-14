@@ -122,4 +122,9 @@ export const messengerChatExtraVi: MessengerChatExtraCopy = {
       close: "Đóng",
     },
   },
+  remote: {
+    noCredits: (name) => `Bạn đã hết lượt để trò chuyện với ${name}.`,
+    notAvailable: (name) => `Bạn chưa thể trò chuyện với ${name}.`,
+    sendFailed: "Chưa gửi được tin nhắn. Vui lòng thử lại.",
+  },
 };

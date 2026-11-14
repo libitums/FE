@@ -17,7 +17,9 @@ import {
   threadOf as roomThreadOf,
   type RoomState,
 } from "./chat-fixture-room";
+import { mediaRequester } from "./chat-fixture-media";
 import { createFixtureNotes } from "./chat-fixture-notes";
+import { remoteRoomMethods, uuidV4 } from "./chat-fixture-remote";
 import { CHAT_PLACEHOLDERS } from "./chat-placeholders";
 import type {
   ChatFixtureMessage,
@@ -118,6 +120,7 @@ export function createFixtureChatSource(options: FixtureChatSourceOptions): Fixt
     const messages = roomSeed.messages.map(fromSeed);
     const room = newRoomState(roomSeed, messages, inputBlockOf(roomSeed, now()));
     room.notes = notes.seedNotes(roomSeed.messages, messages);
+    if (options.remote !== undefined) room.origin = "server";
     rooms.set(roomSeed.roomId, room);
     // 재시작 뒤 모습: 이미 해금한 인물은 처음부터 열린 채 — opening 한 줄 · 안 읽음 0 · NEW 아님.
     if (roomSeed.access.kind === "locked" && options.unlocked?.includes(roomSeed.counterpart.id)) {
@@ -137,7 +140,7 @@ export function createFixtureChatSource(options: FixtureChatSourceOptions): Fixt
     return { kind: "unlocked", roomId };
   };
 
-  const sendText = (roomId: string, text: string) => {
+  const localSendText = (roomId: string, text: string) => {
     const room = live(roomId);
     const trimmed = text.trim();
     if (room === null || !isOpenAccess(room) || trimmed === "") return;
@@ -173,34 +176,29 @@ export function createFixtureChatSource(options: FixtureChatSourceOptions): Fixt
     });
   };
 
-  const requestMedia = (roomId: string, media: ChatMediaKind) => {
-    const room = live(roomId);
-    if (room === null || !isOpenAccess(room)) return;
-    const id = messageId();
-    const photo = media === "photo";
-    room.messages = [
-      ...room.messages,
-      { id, at: now(), kind: photo ? "photo-pending" : "voice-pending" },
-    ];
-    if (photo) room.pendingPhotos += 1;
-    else room.pendingVoices += 1;
-    changed(room);
-    schedule(room, photo ? timing.photoArrivalMs : timing.voiceArrivalMs, () => {
-      const at = now();
-      const { voiceLine, photoPath } = room.seed;
-      if (photo) photoPaths.set(id, photoPath);
-      if (photo) room.pendingPhotos -= 1;
-      else room.pendingVoices -= 1;
-      replaceMessage(
-        room,
-        id,
-        photo
-          ? { id, at, kind: "photo", imageUrl: resolveUrl(photoPath) }
-          : { id, at, kind: "voice", durationMs: voiceLine.durationMs, text: voiceLine.text },
-      );
-      changed(room);
-    });
-  };
+  // 서버 모드(ADR-0137): 방을 열면 기록 · 첫 인사, 보내기는 서버 턴. 없으면 정해 둔 답.
+  const remoteRoom =
+    options.remote === undefined
+      ? null
+      : remoteRoomMethods({
+          remote: options.remote,
+          live,
+          changed,
+          now,
+          isOpenRoom: (roomId) => openRoomId === roomId,
+          uuid: () => uuidV4(),
+        });
+  const sendText = remoteRoom?.sendText ?? localSendText;
+
+  const requestMedia = mediaRequester({
+    live,
+    changed,
+    schedule,
+    now,
+    messageId,
+    photoPaths,
+    resolveUrl,
+  });
 
   return {
     snapshot: () => {
@@ -228,6 +226,7 @@ export function createFixtureChatSource(options: FixtureChatSourceOptions): Fixt
       const room = live(roomId);
       if (room === null) return;
       openRoomId = roomId;
+      remoteRoom?.loadRoom(roomId);
       if (room.unread === 0 && !room.isNew) return;
       room.unread = 0;
       room.isNew = false;

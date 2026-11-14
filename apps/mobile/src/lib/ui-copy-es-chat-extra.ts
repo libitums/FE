@@ -129,4 +129,9 @@ export const messengerChatExtraEs: MessengerChatExtraCopy = {
       close: "Cerrar",
     },
   },
+  remote: {
+    noCredits: (name) => `No te quedan créditos para chatear con ${name}.`,
+    notAvailable: (name) => `Todavía no puedes chatear con ${name}.`,
+    sendFailed: "No se envió el mensaje. Inténtalo de nuevo.",
+  },
 };

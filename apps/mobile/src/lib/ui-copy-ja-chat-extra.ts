@@ -122,4 +122,9 @@ export const messengerChatExtraJa: MessengerChatExtraCopy = {
       close: "閉じる",
     },
   },
+  remote: {
+    noCredits: (name) => `${name}とチャットするクレジットがありません。`,
+    notAvailable: (name) => `${name}とはまだチャットできません。`,
+    sendFailed: "送信できませんでした。もう一度お試しください。",
+  },
 };

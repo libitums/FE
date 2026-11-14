@@ -99,7 +99,8 @@ export function ReplyIdeasPanel({
             <ChatReplyOption
               key={`${index}:${idea.ko}`}
               primary={idea.ko}
-              lines={[idea.roman, idea.en]}
+              // 서버 추천 답변은 로마자가 없습니다(ADR-0137) — 빈 줄은 그리지 않습니다.
+              lines={[idea.roman, idea.en].filter((line) => line !== "")}
               state={picked === index ? "picked" : "idle"}
               testId={ids.idea(index)}
               onPick={() => onPick(index)}
