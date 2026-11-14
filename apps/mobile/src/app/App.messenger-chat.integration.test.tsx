@@ -30,7 +30,8 @@ import { legacyPassedSeed, legacyPassedSeedWithCoins } from "./test-helpers/prog
 const timing = CHAT_PLACEHOLDERS.timing;
 const OWNER_REPLY_KO = "네, 오후 세 시부터예요.";
 const OWNER_REPLY_EN = "Yes, from three in the afternoon.";
-const INITIAL_ORDER = ["guesthouse", "owner", "mina", "clerk"];
+// 잠긴 방(미나 · 점원)은 목록에 없다 — 해금되면 생긴다(HL, 2026-11-13).
+const INITIAL_ORDER = ["guesthouse", "owner"];
 
 const row = (id: string) => `messenger-list-row-${id}`;
 const preview = (id: string) => `messenger-list-row-${id}-preview`;
@@ -105,7 +106,7 @@ test("MC-I3. 답까지 받고 목록으로 돌아오면 그 줄이 맨 위이고
 
   leaveRoom();
 
-  expect(listRowOrder()).toEqual(["owner", "guesthouse", "mina", "clerk"]);
+  expect(listRowOrder()).toEqual(["owner", "guesthouse"]);
   expect(textOf(preview("owner"))).toContain(OWNER_REPLY_KO);
   expect(screen.getByTestId(preview("owner")).getAttribute("data-tone")).toBe("muted");
   expect(present(unread("owner"))).toBe(false);
@@ -232,7 +233,7 @@ test("MC-I5. 사이드바 › Delete chat › 확인하면 목록으로 돌아�
   expect(screen.getByTestId("messenger-list-screen")).toBeInTheDocument();
   expect(present("messenger-chat-screen")).toBe(false);
   expect(present(row("guesthouse"))).toBe(false);
-  expect(listRowOrder()).toEqual(["owner", "mina", "clerk"]);
+  expect(listRowOrder()).toEqual(["owner"]);
   expect(screen.getByTestId("ui-lynx-bottom-navigator")).toBeInTheDocument();
   expect(isTabSelected("messenger")).toBe(true);
 });
@@ -250,15 +251,14 @@ test("MC-I5. 지우기 확인을 Cancel하면 방도 줄도 그대로 남는다"
   expect(listRowOrder()).toEqual(INITIAL_ORDER);
 });
 
-test("MC-I5. 열 수 있는 방을 모두 지우면 잠긴 줄(미나 · 점원)만 남는다", async () => {
+test("MC-I5. 열 수 있는 방을 모두 지우면 잠긴 방만 남아 빈 목록이 선다(HL-I1 — 잠긴 방은 줄이 없다)", async () => {
   await bootToList();
 
   for (const id of ["guesthouse", "owner"]) await deleteOpenedRoom(id);
 
-  expect(listRowOrder()).toEqual(["mina", "clerk"]);
-  expect(screen.getByTestId(row("mina")).getAttribute("data-locked")).toBe("true");
-  expect(screen.getByTestId(row("clerk")).getAttribute("data-locked")).toBe("true");
-  expect(present("messenger-list-empty")).toBe(false);
+  expect(screen.getByTestId("messenger-list-empty")).toBeInTheDocument();
+  expect(present(row("mina"))).toBe(false);
+  expect(present(row("clerk"))).toBe(false);
 });
 
 test("MC-I5. 출처가 비면 빈 목록이 서고, 「Go to Journey」를 누르면 여정 탭의 맵이 선다", async () => {

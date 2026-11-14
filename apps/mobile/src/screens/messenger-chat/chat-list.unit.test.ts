@@ -43,14 +43,15 @@ describe("orderChatRooms (MC-U16)", () => {
     expect(ordered.map((r) => r.roomId)).toEqual(["b", "c", "a"]);
   });
 
-  test("MC-U16. 잠긴 방은 맨 뒤이고 입력 순서를 지킨다 — 갱신 시각이 더 최근이어도", () => {
+  test("HL-U1. 잠긴 방은 목록에 없다 — 해금되면 생긴다(사용자 결정 2026-11-13)", () => {
     const ordered = orderChatRooms([
       locked("l1", { updatedAt: 999 }),
       room("a", { updatedAt: 10 }),
       locked("l2", { updatedAt: 5 }),
       room("b", { updatedAt: 30 }),
     ]);
-    expect(ordered.map((r) => r.roomId)).toEqual(["b", "a", "l1", "l2"]);
+    expect(ordered.map((r) => r.roomId)).toEqual(["b", "a"]);
+    expect(orderChatRooms([locked("l1"), locked("l2")])).toEqual([]);
   });
 
   test("MC-U16. 같은 시각은 입력 순서를 지킨다(안정)", () => {
@@ -213,7 +214,7 @@ describe("newBadgeShown (MC2-U17)", () => {
       room("a", { updatedAt: 10, isNew: false }),
       room("b", { updatedAt: 30, isNew: true }),
     ]);
-    expect(ordered.map((r) => r.roomId)).toEqual(["b", "a", "l1"]);
+    expect(ordered.map((r) => r.roomId)).toEqual(["b", "a"]);
     expect(
       chatRowPreview(room("b", { isNew: true, lastMessage: text("them", "안녕", "Hi") })),
     ).toEqual({ kind: "text", from: "them", text: { ko: "안녕", en: "Hi" } });

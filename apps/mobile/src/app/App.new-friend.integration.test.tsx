@@ -92,8 +92,11 @@ function showSheetMessage(): void {
 }
 
 /** 메신저 목록의 미나 줄이 열려 있는가. */
-const minaUnlocked = (): boolean =>
-  screen.getByTestId("messenger-list-row-mina").getAttribute("data-locked") !== "true";
+// 잠긴 방은 목록에 줄이 없다 — 해금되면 생긴다(HL, 2026-11-13).
+const minaUnlocked = (): boolean => {
+  const element = screen.queryByTestId("messenger-list-row-mina");
+  return element !== null && element.getAttribute("data-locked") !== "true";
+};
 
 // ------------------------------------------------------------------ MC2-I1 · 시트가 서는 시점
 

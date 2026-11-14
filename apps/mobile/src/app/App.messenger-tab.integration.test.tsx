@@ -61,14 +61,14 @@ test("MC-I1. 메신저 탭을 누르면 채팅 목록이 서고 탭 표시가 �
   expect(isTabSelected("journey")).toBe(false);
 });
 
-test("MC-I1. 목록은 열린 방(게스트하우스 · 사장님)을 최근 먼저로 놓고 잠긴 방(미나 · 점원)을 입력 순서로 맨 끝에 둔다", async () => {
+test("MC-I1. 목록은 열린 방(게스트하우스 · 사장님)을 최근 먼저로 놓고, 잠긴 방(미나 · 점원)은 줄이 없다(HL-I2)", async () => {
   await renderTesterApp(<App progressSeed={legacyPassedSeed} />);
 
   openTab("messenger");
 
-  expect(listRowOrder()).toEqual(["guesthouse", "owner", "mina", "clerk"]);
-  expect(screen.getByTestId(row("clerk")).getAttribute("data-locked")).toBe("true");
-  expect(screen.getByTestId(row("mina")).getAttribute("data-locked")).toBe("true");
+  expect(listRowOrder()).toEqual(["guesthouse", "owner"]);
+  expect(present(row("clerk"))).toBe(false);
+  expect(present(row("mina"))).toBe(false);
   expect(screen.getByTestId(row("guesthouse")).getAttribute("data-locked")).not.toBe("true");
   expect(screen.getByTestId(row("owner")).getAttribute("data-locked")).not.toBe("true");
 });
@@ -84,7 +84,7 @@ test("MC-I1. 다른 탭에 갔다 메신저 탭으로 돌아오면 목록이 다
   openTab("messenger");
   expect(screen.getByTestId(listScreen)).toBeInTheDocument();
   expect(present("settings-screen-title")).toBe(false);
-  expect(listRowOrder()).toEqual(["guesthouse", "owner", "mina", "clerk"]);
+  expect(listRowOrder()).toEqual(["guesthouse", "owner"]);
 });
 
 test("MC-I1. 메신저 탭에 있는 동안에도 여정 맵은 숨김 상자에 그대로 남는다(keep-alive)", async () => {
@@ -175,18 +175,6 @@ test("MC-I2. 열린 줄을 누르면 방이 서고 바텀 네비게이션과 전
   expect(present(listScreen)).toBe(false);
   expect(present("ui-lynx-bottom-navigator")).toBe(false);
   expect(present("app-header")).toBe(false);
-});
-
-test("MC-I2. 잠긴 줄(미나 · 점원)을 눌러도 방은 열리지 않는다", async () => {
-  await renderTesterApp(<App progressSeed={legacyPassedSeed} />);
-  openTab("messenger");
-
-  tapId(row("mina"));
-  expect(present(roomScreen)).toBe(false);
-  tapId(row("clerk"));
-
-  expect(present(roomScreen)).toBe(false);
-  expect(screen.getByTestId(listScreen)).toBeInTheDocument();
 });
 
 test("MC-I2. 방의 머리 뒤로를 누르면 목록과 바가 다시 서고 탭 표시는 메신저다", async () => {

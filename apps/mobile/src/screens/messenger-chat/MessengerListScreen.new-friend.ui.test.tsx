@@ -69,19 +69,12 @@ const rowOrder = (): string[] =>
     .map((el) => el.getAttribute("data-testid") ?? "")
     .filter((id) => /^messenger-list-row-[^-]+$/.test(id));
 
-test("MC2-UI12. 해금 전: 미나 줄은 잠겨 있고 해금 조건을 보이며 NEW가 없다", () => {
+test("MC2-UI12. 해금 전: 미나 줄은 목록에 없다(HL-UI2 — 해금되면 생긴다)", () => {
   mount();
 
-  expect(screen.getByTestId(ids.row("mina")).getAttribute("data-locked")).toBe("true");
-  expect(screen.getByTestId(ids.rowPreview("mina")).textContent).toBe(
-    "Play Episode 3 to start chatting",
-  );
+  expect(screen.queryByTestId(ids.row("mina"))).toBeNull();
   expect(screen.queryByTestId(ids.rowNew("mina"))).toBeNull();
-  expect(rowOrder()).toEqual([
-    "messenger-list-row-boss",
-    "messenger-list-row-clerk",
-    "messenger-list-row-mina",
-  ]);
+  expect(rowOrder()).toEqual(["messenger-list-row-boss"]);
 });
 
 test("MC2-UI12. 해금되면 미나 줄이 맨 위로 오고 NEW 알약 · 안 읽은 1 · 첫 메시지 미리보기가 선다", () => {
