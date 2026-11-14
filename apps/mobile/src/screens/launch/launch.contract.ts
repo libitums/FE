@@ -38,4 +38,6 @@ export type ChatIntroModalProps = {
   readonly cast: readonly LaunchCastMember[];
   readonly onLater: () => void;
   readonly onStart: () => void;
+  /** 시스템 뒤로가기로 닫을 때 — 없으면 `onLater`와 같습니다. */
+  readonly onBack?: () => void;
 };

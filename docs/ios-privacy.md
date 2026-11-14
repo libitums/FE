@@ -206,6 +206,8 @@ Section 3의 Supabase 행에 「learner profile (name and country you enter)」�
 새 저장 키는 없고 위 표의 두 키(저장본 · 미전송)와 서버 `learning_progress.progress` 안에 산다 — 보존 · 삭제도 그대로다. 식별 정보가 아니고 App Store 신고 항목은 바뀌지 않는다.
 새 PostHog 이벤트 둘(`tickets_ran_out` · `ticket_more_tapped`)은 화면 자리와 불리언만 싣는다.
 
+⟨2026-11-14 — 엽전 출시 · 메신저 · 새 친구 이벤트([ADR-0029](adr/0029-product-analytics-posthog.md) 「D3 목적 구분」)⟩ 새 PostHog 이벤트 열넷은 영역 · 화면 선택 · 인물 · 에피소드 id · 엽전 수 · 머문 초 · 첫 실행 뒤 날 수만 싣고 메시지 본문 · 개인정보는 싣지 않는다. 마일스톤 둘은 사람 속성 `first_lesson_day` · `first_chat_day`(날 수)를 한 번 쓴다. 새 기기 키 둘(`libitum.analytics.first-open-day` · `libitum.analytics.milestones`)은 기기 밖으로 나가지 않는다. 제품 상호작용 신고 항목 안이라 App Store 신고는 바뀌지 않는다.
+
 ## 비회원 진입 — 기기 전용 표식 · 진행 (2026-11-06)
 
 > **App Store 신고 항목은 바뀌지 않는다** — 새로 모으는 데이터가 아니라 이미 기기에 두는 미전송 학습 진행 · 학습일(위 「학습 진행 저장본」)과 손님 프로필 칸(위 「학습자 프로필」)을 **계정 없이** 쓰는 것이고, 서버로 가는 값은 로그인 전까지 0이다.

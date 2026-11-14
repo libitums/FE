@@ -30,6 +30,7 @@ const NEXT_FRAME_MS = 16;
 export function NewFriendLayer({
   model,
   onReply,
+  onLater,
   timers,
   resultFocusId,
   active = true,
@@ -130,6 +131,7 @@ export function NewFriendLayer({
   const handleLater = (): void => {
     "background only";
     send("dismiss");
+    onLater?.();
   };
   // 맵에서는 Reply가 메신저 탭으로 옮겨도 이 층이 숨은 탭에 남습니다 — 먼저 닫아야 돌아왔을 때 시트가 서 있지 않습니다.
   const handleReply = (): void => {

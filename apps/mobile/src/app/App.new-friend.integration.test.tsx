@@ -357,3 +357,54 @@ test("MC2-I5. 막간만 끝낸 진도로 켜면 보정이 없고 미나는 잠�
   openTab("messenger");
   expect(minaUnlocked()).toBe(false);
 });
+
+// ------------------------------------------------------------------ EV-I8 · 해금 · 시트 이벤트(ADR-0029 「D3 목적 구분」)
+
+test("EV-I8. 보정 · 뒤 컷 해금이 companion_unlocked(backfill · episode)로, Later로 닫으면 new_friend_sheet_closed(later)가 난다", async () => {
+  const events = await bootBeforeFinal(u03);
+  playFinal(u03, 3, true);
+  await finishEpilogue();
+  showSheetMessage();
+  tapId("new-friend-later");
+
+  // 부팅 때 이미 끝낸 u01의 윤경은 진도 보정(backfill)으로, 이번에 끝낸 u03의 미나는 뒤 컷(episode)으로 열립니다.
+  const unlocked = events.filter((event) => event.name === "companion_unlocked");
+  expect(unlocked).toEqual([
+    {
+      name: "companion_unlocked",
+      surface: "learning",
+      daysSinceFirstOpen: "0",
+      characterId: "yoonkyung",
+      episodeId: "u01-water",
+      source: "backfill",
+    },
+    {
+      name: "companion_unlocked",
+      surface: "learning",
+      daysSinceFirstOpen: "0",
+      characterId: "mina",
+      episodeId: u03,
+      source: "episode",
+    },
+  ]);
+  expect(events.filter((event) => event.name === "new_friend_sheet_closed")).toEqual([
+    {
+      name: "new_friend_sheet_closed",
+      surface: "learning",
+      daysSinceFirstOpen: "0",
+      characterId: "mina",
+      choice: "later",
+    },
+  ]);
+});
+
+test("EV-I8. Reply로 닫으면 new_friend_sheet_closed(reply)다", async () => {
+  const events = await bootBeforeFinal(u03);
+  playFinal(u03, 3, true);
+  await finishEpilogue();
+  showSheetMessage();
+  tapId("new-friend-reply");
+  expect(events.filter((event) => event.name === "new_friend_sheet_closed")).toMatchObject([
+    { choice: "reply" },
+  ]);
+});

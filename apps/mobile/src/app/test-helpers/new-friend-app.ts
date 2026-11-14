@@ -3,6 +3,7 @@
 // 제품 코드는 import하지 않습니다. 정답은 계약 함수(`catalogFinalPlanOf`)가 내는 계획에서 읽어 탭합니다.
 // 부팅은 내장 콘텐츠 그대로(`episode-format-harness.boot`)이고, 결과 화면 이후의 시간을 `vi.useFakeTimers()`로 직접 흘립니다.
 
+import type { EpisodeIntroEvent } from "../../screens/episode-intro/episode-intro.contract";
 import { expect, vi } from "vitest";
 import { act, fireEvent, screen, within } from "@lynx-js/react/testing-library";
 
@@ -71,9 +72,9 @@ function correctPlacement(turn: CatalogRoleplayTurn): number[] {
 /** 메신저 탭은 시험 계정에게만 열린다(ADR-0128) — 새 친구 흐름은 시험 계정으로 부팅합니다. */
 const TESTER = { accessToken: testerAccessToken };
 
-export async function bootBeforeFinal(episodeId: string): Promise<void> {
+export async function bootBeforeFinal(episodeId: string): Promise<readonly EpisodeIntroEvent[]> {
   const done = [...BEFORE_FINAL, "RP"];
-  await boot(
+  const booted = await boot(
     {
       [u01]: episodeId === u01 ? BEFORE_FINAL : done,
       [u02]: episodeId === u02 ? BEFORE_FINAL : episodeId === u01 ? ["intro"] : done,
@@ -82,6 +83,7 @@ export async function bootBeforeFinal(episodeId: string): Promise<void> {
     },
     TESTER,
   );
+  return booted.events;
 }
 
 /**

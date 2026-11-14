@@ -1,6 +1,8 @@
 // ui 테스트 지원 — 자유 대화 화면 테스트가 함께 쓰는 씨앗 · 출처 · 마운트 · 이벤트 도우미입니다.
 // 제품 코드는 이 파일을 import하지 않습니다. 한국어 대화 내용은 테스트 데이터입니다.
 
+import type { EpisodeIntroEventSink } from "../episode-intro/episode-intro.contract";
+import { ChatEventsContext } from "./chat-events";
 import type { GuideStore } from "./messenger-guide";
 import { vi } from "vitest";
 import { act, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
@@ -94,6 +96,8 @@ export type MountChatOptions = {
   readonly timers?: ChatTimers;
   /** 첫 입장 안내 기록(2026-11-13) — 기본은 기기 저장소(테스트에서는 저장소가 없어 안내가 뜨지 않음). */
   readonly guideStore?: GuideStore;
+  /** 제품 사용 이벤트를 받을 sink — 주면 결선처럼 이벤트 자리(`ChatEventsContext`)로 감쌉니다. */
+  readonly eventSink?: EpisodeIntroEventSink;
 };
 
 export function presenceProbe(presence: "present" | "absent" | "unknown"): KoreanKeyboardProbe {
@@ -125,7 +129,16 @@ export function mountChat(options: MountChatOptions = {}) {
     onOpenMemories,
     ...(options.guideStore === undefined ? {} : { guideStore: options.guideStore }),
   };
-  const view = render(<MessengerChatScreen {...screenProps} />);
+  const room = <MessengerChatScreen {...screenProps} />;
+  const view = render(
+    options.eventSink === undefined ? (
+      room
+    ) : (
+      <ChatEventsContext.Provider value={{ sink: options.eventSink, roomId: screenProps.roomId }}>
+        {room}
+      </ChatEventsContext.Provider>
+    ),
+  );
   return { source, onExit, onOpenMemories, view, wallet, ledger };
 }
 

@@ -1,3 +1,4 @@
+import type { EpisodeIntroEvent } from "../screens/episode-intro/episode-intro.contract";
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { act, cleanup, fireEvent, screen, within } from "@lynx-js/react/testing-library";
 
@@ -72,10 +73,15 @@ afterEach(() => {
 });
 
 test("YL-I1 시험 계정: 지급 → 엽전 모달 → 날아간 뒤 채팅 모달 → Start chatting이면 메신저 탭", async () => {
-  await renderTesterApp(<App progressSeed={legacyPassedSeed} />, boot());
+  const events: EpisodeIntroEvent[] = [];
+  await renderTesterApp(
+    <App progressSeed={legacyPassedSeed} episodeIntroEventSink={(event) => events.push(event)} />,
+    boot(),
+  );
   await flush();
   expect(claim.calls).toBe(1);
   expect(screen.getByTestId(ids.coins).textContent).toContain("Launch bonus");
+  const launch = () => events.filter((e) => e.name.startsWith("launch_"));
   vi.useFakeTimers();
   tapButton(ids.gotIt);
   act(() => {
@@ -87,6 +93,17 @@ test("YL-I1 시험 계정: 지급 → 엽전 모달 → 날아간 뒤 채팅 모
   tapButton(ids.start);
   expect(present(ids.chat)).toBe(false);
   expect(present("messenger-list-screen")).toBe(true);
+  // EV-I1 엽전 · 채팅 모달의 보임 · 닫힘이 순서대로 한 번씩, 공통 속성(영역 · 첫 실행 뒤 날 수)과 함께 납니다.
+  expect(launch().map((e) => e.name)).toEqual([
+    "launch_coins_shown",
+    "launch_coins_closed",
+    "launch_chat_shown",
+    "launch_chat_closed",
+  ]);
+  expect(launch()[0]).toMatchObject({ surface: "learning", daysSinceFirstOpen: "0" });
+  expect(launch()[3]).toMatchObject({ choice: "start" });
+  // EV-I2 「Start chatting」으로 메신저 탭에 들어가면 탭 열기(처음)와 학습 영역 끝이 납니다.
+  expect(events.find((e) => e.name === "messenger_tab_opened")).toMatchObject({ badge: "first" });
 });
 
 test("YL-I2 시험 계정이 아닌 회원은 엽전 모달만, 이미 받은 보너스(두 번째 지급)는 모달 없음", async () => {

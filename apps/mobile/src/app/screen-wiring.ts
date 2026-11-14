@@ -180,6 +180,7 @@ export function screenWiring(args: ScreenWiringArgs): ScreenWiring {
   const messenger = messengerChatWiring({
     dispatch: args.dispatch,
     imageUrlOf: args.episodeContent.imageUrlOf,
+    eventSink: args.episodeIntroEventSink,
     ...(args.coinCount === undefined ? {} : { coinCount: args.coinCount }),
   });
 

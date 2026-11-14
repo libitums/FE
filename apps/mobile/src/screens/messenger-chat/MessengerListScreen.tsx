@@ -10,6 +10,7 @@ import { ChatListNotice } from "./ChatListNotice";
 import { ChatListRow } from "./ChatListRow";
 import { CoinShopLayer } from "./CoinShopLayer";
 import { MessengerListGuide } from "./MessengerGuide";
+import { useChatEvents } from "./chat-events";
 import { deviceGuideStore, GUIDE_ROOM_ID } from "./messenger-guide";
 import { orderChatRooms } from "./chat-list";
 import { messengerListTestIds as ids } from "./messenger-chat.contract";
@@ -44,7 +45,9 @@ export function MessengerListScreen({
   const [guideUnseen, setGuideUnseen] = useState(() => guideStore.unseen("list"));
   const guideRoom = rooms.find((r) => r.roomId === GUIDE_ROOM_ID && r.access.kind === "open");
   const guideShown = access === "open" && guideUnseen && guideRoom !== undefined;
-  const endGuide = () => {
+  const { emit } = useChatEvents();
+  const endGuide = (outcome: "done" | "skipped") => {
+    emit({ name: "messenger_guide_finished", surface: "chat", part: "list", outcome });
     guideStore.markSeen("list");
     setGuideUnseen(false);
   };
@@ -147,10 +150,10 @@ export function MessengerListScreen({
           room={guideRoom}
           now={now}
           onOpen={() => {
-            endGuide();
+            endGuide("done");
             onOpenRoom(GUIDE_ROOM_ID);
           }}
-          onSkip={endGuide}
+          onSkip={() => endGuide("skipped")}
         />
       ) : null}
     </view>

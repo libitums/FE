@@ -2,6 +2,7 @@
 
 import type { EpisodeUpdateSplashClosedEvent } from "../../lib/episode-update-event.contract";
 import type { CatalogLearningEvent } from "../../lib/catalog-learning-event.contract";
+import type { CompanionEvent } from "../../lib/companion-event.contract";
 import type { ProgressLoadEvent } from "../../lib/progress-load-event.contract";
 import type { SafeAreaInsets } from "../../lib/safe-area";
 import type { TicketEvent } from "../tickets/tickets.contract";
@@ -86,7 +87,8 @@ export type EpisodeIntroEvent =
   | ProgressLoadEvent
   | TicketEvent
   | RoleplayStoryEvent
-  | StoryEvent;
+  | StoryEvent
+  | CompanionEvent;
 /** 보내지 않을 때는 `null`입니다 — no-op 함수로 수집을 가장하지 않습니다(`MessengerEventSink`와 같은 규약). */
 export type EpisodeIntroEventSink = ((event: EpisodeIntroEvent) => void) | null;
 export type EpisodeIntroAppProps = { readonly episodeIntroEventSink?: EpisodeIntroEventSink };

@@ -3,6 +3,8 @@
 
 import type { CatalogProgress } from "../lib/catalog-progress";
 import { isCatalogEpisodeComplete } from "../lib/catalog-progress";
+import { emitCompanionEvent } from "../lib/companion-events";
+import type { EpisodeIntroEventSink } from "../screens/episode-intro/episode-intro.contract";
 import type { CatalogMapSection } from "../screens/journey-map/catalog-map.contract";
 import { COMPANION_CHARACTERS } from "../screens/messenger-chat/companion-roster";
 import { CHARACTER_UNLOCKS, characterUnlockFor } from "../screens/messenger-chat/new-friend";
@@ -19,11 +21,12 @@ export function unlockFriendAfterEpisode(
   episodeId: string,
   sections: readonly CatalogMapSection[],
   progress: CatalogProgress,
+  eventSink: EpisodeIntroEventSink = null,
 ): void {
   const section = sections.find((candidate) => candidate.episodeId === episodeId);
   if (section?.kind !== "catalog-ready") return;
   if (!isCatalogEpisodeComplete(progress, episodeId, section.completionKeys)) return;
-  const characterId = commitNewFriend(episodeId);
+  const characterId = commitNewFriend(episodeId, "episode", eventSink);
   if (characterId !== null) rememberNewFriend(characterId);
 }
 
@@ -32,12 +35,24 @@ export function unlockFriendAfterEpisode(
  * 새 인물을 해금하면 기록(영속)과 대화 출처에 **바로** 알리고 그 id를 돌려줍니다 — 맵의 시트를 보기 전에 앱을 떠나도 목록에
  * NEW 줄이 남고, 다시 끝내도 시트는 다시 안 뜹니다. 해금할 인물이 없거나 이미 열었으면 null.
  */
-export function commitNewFriend(episodeId: string): string | null {
+export function commitNewFriend(
+  episodeId: string,
+  source: "episode" | "backfill" = "episode",
+  eventSink: EpisodeIntroEventSink = null,
+): string | null {
   const store = messengerUnlockStore();
   const entry = characterUnlockFor({ episodeId, unlocked: store.read() });
   if (entry === null) return null;
   store.add(entry.characterId);
   currentMessengerChatSource()?.unlockCharacter(entry.characterId);
+  const characterId = entry.characterId;
+  emitCompanionEvent(eventSink, {
+    name: "companion_unlocked",
+    surface: "learning",
+    characterId,
+    episodeId,
+    source,
+  });
   return entry.characterId;
 }
 

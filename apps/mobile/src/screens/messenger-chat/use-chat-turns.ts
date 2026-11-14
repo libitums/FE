@@ -1,6 +1,6 @@
 // 턴 계획 + 보내기 관문 + T3 판 + 분 단위 갱신 훅입니다(messenger-chat-1-5 spec §6.2 · §12). 원장 · 지갑 호출은 이 훅만 합니다.
 
-import { useCallback, useEffect, useRef, useState } from "@lynx-js/react";
+import { useCallback, useContext, useEffect, useRef, useState } from "@lynx-js/react";
 
 import { announce } from "../../lib/accessibility";
 import { useUiCopy } from "../../lib/ui-copy";
@@ -8,6 +8,8 @@ import { restoreAccessibilityFocus } from "./chat-input-focus";
 import { turnLineTextOf } from "./ChatTurns";
 
 import type { CoinWallet } from "./coin-wallet";
+import { emitCompanionEvent } from "../../lib/companion-events";
+import { ChatEventsContext } from "./chat-events";
 import { CHAT_COIN_PRICES } from "./chat-coins";
 import { CHAT_PLACEHOLDERS } from "./chat-placeholders";
 import { chatTurnsTestIds, type SendCost } from "./chat-turns.contract";
@@ -82,6 +84,7 @@ export function useChatTurns({
   muted = false,
 }: UseChatTurnsInput): UseChatTurns {
   const turnsCopy = useUiCopy().messengerChat.turns;
+  const { sink, roomId } = useContext(ChatEventsContext);
   useLedgerVersion(ledger);
 
   // 분 단위 갱신 — 남은 시간이 줄고, 날이 바뀌면 원장이 새 날 기록을 돌려줘 T1로 돌아갑니다(AC7). 주입 타이머로 돕니다.
@@ -164,17 +167,40 @@ export function useChatTurns({
     // 한 통마다 최신 원장 · 잔액으로 다시 판정합니다(같은 커밋 안의 연속 보내기에도 어긋나지 않게).
     const latest = turnPlanFor({ tier, usage: ledger.usage(), price: PRICE });
     const gate = sendGateFor(latest, wallet.balance());
+    const characterId = roomId ?? "";
+    const sent = (cost: number) =>
+      emitCompanionEvent(sink, {
+        name: "chat_message_sent",
+        surface: "chat",
+        characterId,
+        paid: cost > 0,
+        cost: String(cost),
+      });
+    const short = () =>
+      emitCompanionEvent(sink, {
+        name: "chat_coins_short",
+        surface: "chat",
+        reason: "message",
+        shortBy: String(Math.max(0, PRICE - wallet.balance())),
+      });
     switch (gate.kind) {
       case "open":
+        sent(0);
         return true;
       case "free":
         ledger.recordFreeSend();
+        sent(0);
         return true;
       case "pay":
-        if (wallet.spend(gate.price, "message").kind === "spent") return true;
+        if (wallet.spend(gate.price, "message").kind === "spent") {
+          sent(gate.price);
+          return true;
+        }
+        short();
         onTopUp();
         return false;
       case "top-up":
+        short();
         onTopUp();
         return false;
       default: {
@@ -182,7 +208,7 @@ export function useChatTurns({
         return unreachable;
       }
     }
-  }, [tier, ledger, wallet, onTopUp]);
+  }, [tier, ledger, wallet, onTopUp, sink, roomId]);
 
   const keepChatting = useCallback((): void => {
     "background only";
