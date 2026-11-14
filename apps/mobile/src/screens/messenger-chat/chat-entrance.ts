@@ -13,8 +13,13 @@ export type ChatEntrance = "me" | "them" | null;
 const BATCH_LIMIT = 3;
 
 export type EntranceTracker = {
-  /** 이번 판의 메시지 전부를 받아 id별 등장 값을 돌려줍니다. 같은 판을 두 번 넘겨도 결과가 같습니다. */
-  readonly entrancesOf: (messages: readonly ChatMessage[]) => ReadonlyMap<string, ChatEntrance>;
+  /**
+   * 이번 판의 메시지 전부를 받아 id별 등장 값을 돌려줍니다. 같은 판을 두 번 넘겨도 결과가 같습니다.
+   * `null`(방이 아직 안 읽힘)은 첫 판으로 치지 않습니다 — 읽힌 뒤의 기존 글이 새 글처럼 움직이지 않게(리뷰 #431).
+   */
+  readonly entrancesOf: (
+    messages: readonly ChatMessage[] | null,
+  ) => ReadonlyMap<string, ChatEntrance>;
 };
 
 const isMine = (message: ChatMessage): boolean => message.kind === "text" && message.from === "me";
@@ -25,6 +30,7 @@ export function createEntranceTracker(): EntranceTracker {
   let first = true;
   return {
     entrancesOf: (messages) => {
+      if (messages === null) return decided;
       const fresh = messages.filter((message) => !decided.has(message.id));
       const still = first || fresh.length >= BATCH_LIMIT;
       first = false;

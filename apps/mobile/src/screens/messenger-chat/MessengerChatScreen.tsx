@@ -111,7 +111,7 @@ export function MessengerChatScreen({
     authorizeSend: turn.authorizeSend,
   });
   const motion = resolveReducedMotion(undefined, useMotion()) ? "reduced" : "standard";
-  const entrances = useChatEntrances(thread?.messages ?? [], motion);
+  const entrances = useChatEntrances(thread?.messages ?? null, motion);
 
   const exit = () => {
     "background only";

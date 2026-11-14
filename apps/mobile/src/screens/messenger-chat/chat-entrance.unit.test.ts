@@ -43,6 +43,13 @@ describe("createEntranceTracker", () => {
     expect(t.entrancesOf([me("server-9", 50)]).get("server-9")).toBeNull();
   });
 
+  test("MM-U5 방이 아직 안 읽혔을 때(null)는 첫 판으로 치지 않는다 — 읽힌 뒤의 기존 글은 움직이지 않는다", () => {
+    const t = createEntranceTracker();
+    expect(t.entrancesOf(null).size).toBe(0);
+    expect(t.entrancesOf([them("a"), me("m", 5)]).get("a")).toBeNull();
+    expect(t.entrancesOf([them("a"), me("m", 5), them("b", 6)]).get("b")).toBe("them");
+  });
+
   test("MM-U4 한 번 정한 값은 다시 넘겨도 그대로다", () => {
     const t = createEntranceTracker();
     t.entrancesOf([]);
