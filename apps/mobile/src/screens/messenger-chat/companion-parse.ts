@@ -185,6 +185,8 @@ function messagesOf(raw: Json): {
     const at = timeOf(record?.createdAt);
     if (record === null || id === null || at === null || record.hidden === true) continue;
     if (record.role === "user") {
+      // 서버에서 턴이 실패한 글은 보낸 글이 아닙니다 — 앱의 Not sent 글이 그대로 남아 다시 보냅니다(ADR-0138).
+      if (record.status === "failed") continue;
       const text = stringOf(record.text);
       if (text === null) continue;
       messages.push({ id, at, kind: "text", from: "me", text: { ko: text, en: "" } });

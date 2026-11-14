@@ -33,7 +33,7 @@ export function useChatFeedback(input: UseChatFeedbackInput): ChatRowFeedback {
   return {
     // 서버 모드는 아직 다시 보내기를 서버(replaces_message_id)에 잇지 않아 단추를 두지 않습니다(리뷰 W6, 3단계).
     resendableId:
-      thread === null || thread.origin === "server"
+      thread === null || thread.server !== null
         ? null
         : resendableMessageId(thread, thread.awaitingReply),
     latestReplyId: thread === null ? null : latestReplyId(thread),
@@ -45,6 +45,10 @@ export function useChatFeedback(input: UseChatFeedbackInput): ChatRowFeedback {
       "background only";
       const up = source.thread(roomId)?.ratings[messageId]?.value === "up";
       source.rateMessage(roomId, messageId, up ? null : { value: "up" });
+    },
+    onUnsent: (messageId) => {
+      "background only";
+      dispatch({ type: "open-overlay", overlay: { kind: "unsent", messageId } });
     },
     onBad: (messageId) => {
       "background only";

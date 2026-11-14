@@ -49,7 +49,18 @@ export type RemoteSendFailure =
   | { readonly kind: "no-credits" }
   /** 이 계정 등급으로는 그 인물과 대화할 수 없음(무료는 체험 인물만 — 서버 판정). */
   | { readonly kind: "not-available" }
+  /** 서버가 받은 뒤 SSE `error` — 코드는 서버 표(`STREAM_ERRORS`) 그대로. */
+  | { readonly kind: "stream-error"; readonly code: string }
   | { readonly kind: "failed" };
 
-/** 서버 보내기 실패 줄(로그 가운데 회색 줄) — 크레딧 부족 · 그 인물과 대화 불가 · 그 밖 실패. */
-export type ChatSendFailureNotice = "no-credits" | "not-available" | "send-failed";
+/** 서버 보내기 실패 줄(로그 가운데 회색 줄) — 오류 코드마다 무엇이 났고 무엇을 하면 되는지(ADR-0137 · 0138). */
+export type ChatSendFailureNotice =
+  | "no-credits"
+  | "not-available"
+  | "send-failed"
+  | "reply-failed"
+  | "cant-reply"
+  | "rate-limited"
+  | "update-required"
+  | "server-error"
+  | "signed-out";

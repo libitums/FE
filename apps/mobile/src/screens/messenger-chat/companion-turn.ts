@@ -114,8 +114,10 @@ export function applyTurnEvent(state: TurnState, event: string, data: string): T
       const crisis = crisisOf(payload);
       return crisis === null ? state : { ...state, crisis };
     }
-    case "error":
-      return { ...state, finished: true, failure: { kind: "failed" } };
+    case "error": {
+      const code = typeof payload.code === "string" ? payload.code : "internal_error";
+      return { ...state, finished: true, failure: { kind: "stream-error", code } };
+    }
     case "done":
       return { ...state, finished: true };
     default:

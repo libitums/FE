@@ -5,6 +5,7 @@ import type { HttpRequestInit, SupabaseConfig } from "./auth-session.contract";
 import { bearerHeaders } from "./auth-request";
 import type { ChatStreamClient } from "./chat-stream.contract";
 import { chatStreamClient } from "./chat-stream";
+import { readNetworkProperties } from "./network-status";
 import { currentAccessToken } from "./progress-api";
 import { supabaseConfig } from "./supabase-config";
 import { isSuccessStatus, send, type AuthRequestOutcome } from "./supabase-transport";
@@ -24,6 +25,8 @@ export type CompanionRemoteDeps = {
   ) => Promise<AuthRequestOutcome>;
   readonly stream: () => ChatStreamClient;
   readonly now: () => number;
+  /** 기기가 오프라인인지(ADR-0138) — 참이면 스트림을 열지 않고 network로 끝냅니다. 없으면 늘 연결된 것으로. */
+  readonly isOffline?: () => boolean;
 };
 
 const postJson =
@@ -73,6 +76,7 @@ export function createCompanionRemote(deps: CompanionRemoteDeps): ChatRemote {
           const token = await deps.token();
           const config = deps.config();
           if (cancelled) return end("cancelled", null);
+          if (deps.isOffline?.() === true) return end("network", null);
           if (token === null || config === null)
             return end("http-error", JSON.stringify({ error: "invalid_session" }));
           const handle = deps.stream().open(
@@ -117,5 +121,6 @@ export function companionRemote(): ChatRemote {
     post: (build) => send(build, true),
     stream: chatStreamClient,
     now: Date.now,
+    isOffline: () => readNetworkProperties().network === "offline",
   });
 }

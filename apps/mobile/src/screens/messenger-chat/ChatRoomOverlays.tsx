@@ -14,6 +14,7 @@ import type {
 } from "./chat-source.contract";
 import type { CoinWallet } from "./coin-wallet";
 import { DeleteChatDialog } from "./DeleteChatDialog";
+import { UnsentDialog } from "./ChatDelivery";
 import { FeedbackModeSheet } from "./FeedbackModeSheet";
 import { CoinShopLayer } from "./CoinShopLayer";
 import { RatingSheet } from "./RatingSheet";
@@ -207,6 +208,20 @@ export function ChatRoomOverlays({
           name={thread.counterpart.name}
           // 지우면 방이 사라져 화면이 `onExit`로 나갑니다 — 여기서 겹침을 따로 닫지 않습니다.
           onConfirm={() => source.deleteRoom(roomId)}
+          onCancel={close}
+        />
+      );
+    case "unsent":
+      return (
+        <UnsentDialog
+          onSendAgain={() => {
+            source.server?.resend(roomId, overlay.messageId);
+            close();
+          }}
+          onDelete={() => {
+            source.server?.discard(roomId, overlay.messageId);
+            close();
+          }}
           onCancel={close}
         />
       );

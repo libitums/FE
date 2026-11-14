@@ -181,11 +181,8 @@ export function createFixtureChatSource(options: FixtureChatSourceOptions): Fixt
     options.remote === undefined
       ? null
       : remoteRoomMethods({
-          remote: options.remote,
-          live,
-          changed,
-          now,
-          isOpenRoom: (roomId) => openRoomId === roomId,
+          ...{ remote: options.remote, live, changed, now, schedule },
+          openRoomId: () => openRoomId,
           uuid: () => uuidV4(),
         });
   const sendText = remoteRoom?.sendText ?? localSendText;
@@ -290,6 +287,7 @@ export function createFixtureChatSource(options: FixtureChatSourceOptions): Fixt
         );
       }
     },
+    server: remoteRoom?.controls ?? null,
     dispose: () => {
       disposed = true;
       for (const room of rooms.values()) clearHandles(room);

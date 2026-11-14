@@ -18,6 +18,7 @@ import { ChatMessageRow } from "./ChatMessageRows";
 import { ChatRoomDock } from "./ChatRoomDock";
 import { ChatRoomOverlays } from "./ChatRoomOverlays";
 import { useAutoIdeas } from "./use-auto-ideas";
+import { ChatHistoryFailed, ChatRecoveryRow } from "./ChatDelivery";
 import { useChatFeedback } from "./use-chat-feedback";
 import { LastFreeStrip, TurnLine } from "./ChatTurns";
 import { MoreMenu, overlayForMore } from "./MoreMenu";
@@ -83,7 +84,7 @@ export function MessengerChatScreen({
     muted: overlayOpen,
   });
   gate.current = turn.authorizeSend;
-  const server = thread?.origin === "server";
+  const server = thread !== null && thread.server !== null;
   // 답 · 첫 인사를 기다리는 중 — 이때 온 말만 「새로 도착」으로 봅니다(방을 열며 읽은 기록은 아님, 리뷰 W2 · W4).
   const busy = thread !== null && (thread.typing || thread.awaitingReply);
   serverBusy.current = server && busy;
@@ -194,6 +195,12 @@ export function MessengerChatScreen({
               state.slot.kind === "closed" ? undefined : () => dispatch({ type: "close-keyboard" })
             }
           >
+            {thread.server?.history === "failed" ? (
+              <ChatHistoryFailed
+                empty={thread.messages.length === 0}
+                onRetry={() => source.server?.reload(roomId)}
+              />
+            ) : null}
             {thread.messages.map((message) => (
               <ChatMessageRow
                 key={message.id}
@@ -213,6 +220,10 @@ export function MessengerChatScreen({
                 testId={ids.typing}
               />
             ) : null}
+            <ChatRecoveryRow
+              recovery={thread.server?.recovery ?? "none"}
+              onRefresh={() => source.server?.reload(roomId)}
+            />
           </ChatLog>
           {state.overlay.kind === "more-menu" ? (
             <MoreMenu

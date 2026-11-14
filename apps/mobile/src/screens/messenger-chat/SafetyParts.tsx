@@ -41,6 +41,18 @@ function noticeText(
       return remote.notAvailable(name);
     case "send-failed":
       return remote.sendFailed;
+    case "reply-failed":
+      return remote.replyFailed(name);
+    case "cant-reply":
+      return remote.cantReply(name);
+    case "rate-limited":
+      return remote.rateLimited;
+    case "update-required":
+      return remote.updateRequired;
+    case "server-error":
+      return remote.serverError;
+    case "signed-out":
+      return remote.signedOut;
     default: {
       const unreachable: never = notice;
       return unreachable;

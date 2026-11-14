@@ -36,6 +36,8 @@ export function focusOriginOf(closing: ChatOverlay): ChatFocusOrigin | null {
       return "sidebar-story-point";
     case "delete-confirm":
       return "sidebar-delete";
+    case "unsent":
+      return "send";
     case "coin-shop":
       if (closing.from === "sidebar") return "sidebar-coins";
       if (closing.from === "send") return "send";

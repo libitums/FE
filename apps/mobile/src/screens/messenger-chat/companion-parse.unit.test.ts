@@ -181,6 +181,29 @@ describe("기록 · 인사", () => {
     expect(history?.ideas).toEqual([{ ko: "뭐 마셔요?", roman: "", en: "What do you drink?" }]);
   });
 
+  test("ES-U15 서버에서 턴이 실패한 내 글(status failed)은 기록에서 뺀다 — 보낸 글로 보이지 않게(리뷰 W4)", () => {
+    const failed = {
+      id: "99999999-9999-4999-8999-999999999999",
+      role: "user",
+      origin: "turn",
+      status: "failed",
+      hidden: false,
+      text: "실패한 글",
+      inputMode: "text",
+      segments: [],
+      notice: null,
+      feedback: null,
+      createdAt: "2026-11-12T10:00:09.000Z",
+    };
+    const history = historyFrom(
+      JSON.stringify({ messages: [failed, ...page.messages], hasMore: false }),
+    );
+    expect(history?.messages.some((m) => m.kind === "text" && m.text.ko === "실패한 글")).toBe(
+      false,
+    );
+    expect(history?.messages).toHaveLength(4);
+  });
+
   test("SS-U6 기록: 본문이 틀리면 null, 빈 목록이면 빈 기록", () => {
     expect(historyFrom(null)).toBeNull();
     expect(historyFrom("not json")).toBeNull();

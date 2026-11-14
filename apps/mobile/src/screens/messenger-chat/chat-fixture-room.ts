@@ -29,9 +29,12 @@ export type RoomState = {
   /** 입력 막힘 — 씨앗이 정하거나(시각은 만들 때 풀어 둡니다) 서버가 보내기를 막았을 때(ADR-0137). */
   inputBlock: ChatInputBlock | null;
   /** 서버 모드(ADR-0137): 기록을 읽었는지 · 서버 추천 답변(있으면 씨앗 보기 대신). */
-  remoteHistory: "idle" | "loading" | "loaded";
+  remoteHistory: "idle" | "loading" | "loaded" | "failed";
   remoteIdeas: readonly ChatReplyIdea[] | null;
   origin: "local" | "server";
+  /** 서버 모드 배달(ADR-0138): 서버가 받지 못한 내 글 id(보낸 순서) · 끊긴 답 채우기. */
+  unsent: string[];
+  recovery: "none" | "fetching" | "stalled";
   unread: number;
   settings: ChatRoomSettings;
   ideaIndex: number;
@@ -77,6 +80,8 @@ export function newRoomState(
     remoteHistory: "idle",
     remoteIdeas: null,
     origin: "local",
+    unsent: [],
+    recovery: "none",
     unread: seed.unread,
     settings: { ...seed.settings },
     ideaIndex: 0,
@@ -162,8 +167,19 @@ export function threadOf(
       counterpart: summaryOf(room, resolveUrl).counterpart,
       messages: room.messages,
       typing: room.typing,
-      origin: room.origin,
-      awaitingReply: room.pendingReplies > 0,
+      server:
+        room.origin === "local"
+          ? null
+          : {
+              history:
+                room.remoteHistory === "failed" || room.remoteHistory === "loaded"
+                  ? room.remoteHistory
+                  : "loading",
+              unsent: room.unsent,
+              recovery: room.recovery,
+            },
+      // 끊긴 답을 채우는 동안도 답을 기다리는 중이다(보내기 막힘 · 판 자동 열림, ADR-0138).
+      awaitingReply: room.pendingReplies > 0 || room.recovery === "fetching",
       ideas: replyIdeas ? ideasOf(room) : [],
       settings: room.settings,
       storyPoints: room.seed.storyPoints,
