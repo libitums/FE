@@ -69,6 +69,14 @@
 - 결과는 변형마다 대조군과, 그리고 B를 A와 바로 비교한다. 시간대 · 날짜를 달리해 보내면 나라 · 요일이 섞여 톤만 가를 수 없어서다.
 - 추천 스키마에 `copyB`(캐릭터 톤)를 더했다.
 
+### D11. 단계별 예고 — 끝낸 단계 뒤 장면을 예고 파일 문구로 보낸다 (사용자 요청 2026-11-13)
+- 문구 원본은 공개 버킷 `content/push/level-5/`(`index.json` + `u00-tutorial.json` … `u17-samgyeopsal.json`, 스키마 push-1)이다. 단계마다 `after[단계]`에 훅 3개 · 8개 언어가 있다. 콘솔은 새로 고칠 때마다 다시 읽고, 못 읽으면 이 세그먼트만 비운다.
+- 세그먼트 `story-next`(겹침형): 지금 에피소드(파이널이 없는 첫 에피소드)에서 단계 순서상 마지막으로 끝낸 단계, 아직 시작 안 했으면 앞 에피소드의 파이널. 표지(intro)는 단계가 아니라 튜토리얼 레슨 1 전이면 대상이 아니다. 단계 순서는 앱 묶음 카탈로그가 아니라 `index.json`의 `steps`를 따른다(예고 파일 쪽 에피소드가 더 많다).
+- 보내는 방식은 우선 콘솔 캠페인이다 — 대조군으로 효과를 먼저 재고, 효과가 보이면 서버 자동 발송을 따로 정한다(사용자 결정).
+- 훅은 사람마다 무작위(`variant:${묶음}:${사용자}`)로 골라 변형 이름으로 남기고, 결과 탭에서 훅끼리 비교한다(사용자 결정). 단계마다 훅 조합이 달라 훅 비교에는 단계 차이가 섞인다 — 여러 회차를 합쳐 본다.
+- 제목은 에피소드 영어 이름, 파이널 뒤면 다음 에피소드 이름이다(사용자 결정). 본문 언어는 나라로 고르고 말레이시아는 말레이어가 없어 인도네시아어다(사용자 결정). `my`는 미얀마어다. 없는 언어는 영어.
+- 콘솔 문구 · 추천 대상이 아니다(`copySource: "story"`). 시험 발송은 그 시험 계정의 자리 예고를 누를 때마다 다음 훅으로 보낸다.
+
 ## 버린 대안
 1. **관리 웹을 서버(Vercel · Edge Function)에 띄우기** — 로그인 · 권한 · 비밀 보관이 더 필요하다(U2).
 2. **PostHog 기능 플래그 · 실험으로 배정** — 발송이 서버 밖이라 배정을 콘솔이 하는 편이 단순하다. 플래그 노출 이벤트도 필요 없다.
@@ -82,7 +90,7 @@
 - 영어 외 기본 문구는 원어민 확인 전 초안이다.
 
 ## 테스트
-- unit PC-S1 ~ S11(`segments.unit.test.mjs`) · PC-A1 ~ A10(`audience.unit.test.mjs`) · PC-RC1 ~ RC7(`recommend.unit.test.mjs`) · PC-R1 ~ R6(`results.unit.test.mjs`) · PC-IO1 ~ IO6(`sources.unit.test.mjs`) — `pnpm test:push-console`(`test:rest`에 포함).
+- unit PC-S1 ~ S11(`segments.unit.test.mjs`) · PC-A1 ~ A10(`audience.unit.test.mjs`) · PC-RC1 ~ RC7(`recommend.unit.test.mjs`) · PC-R1 ~ R6(`results.unit.test.mjs`) · PC-IO1 ~ IO6(`sources.unit.test.mjs`) · PC-ST1 ~ ST8(`story.unit.test.mjs`) — `pnpm test:push-console`(`test:rest`에 포함).
 - 운영 데이터 읽기 확인: 콘솔을 띄워 세그먼트 수 · 대상 계산 · 미리보기를 봤다(발송 없음).
 
 ## 재검토 조건

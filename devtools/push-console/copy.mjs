@@ -179,6 +179,13 @@ export const DEFAULT_FILTERS = {
     holdoutPercent: 30,
   },
   "all-done": { minIdleHours: 72, maxIdleHours: 24 * 30, localHours: [18, 21], holdoutPercent: 30 },
+  // 단계별 예고(D11) — 문구는 예고 파일이 정하고, 훅 비교를 위해 대조군을 30%로 둡니다.
+  "story-next": {
+    minIdleHours: 20,
+    maxIdleHours: 24 * 21,
+    localHours: [18, 22],
+    holdoutPercent: 30,
+  },
   "streak-at-risk": {
     minIdleHours: 0,
     maxIdleHours: null,

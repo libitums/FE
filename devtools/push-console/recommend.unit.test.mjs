@@ -104,7 +104,7 @@ test("PC-RC4. 맥락에는 집계만 — 이름 · id가 들어갈 자리가 없
   assert.ok(prompt.endsWith(JSON.stringify(context)));
 });
 
-test("PC-RC5. claude 실행 인자 — 출력 모양 고정, 도구 · MCP · 세션 기록 끔, 스키마는 세그먼트 id를 안다", () => {
+test("PC-RC5. claude 실행 인자 — 출력 모양 고정, 도구 · MCP · 세션 기록 끔, 스키마는 문구 세그먼트 id를 안다", () => {
   const args = claudeArgs(RECOMMENDATION_SCHEMA);
   assert.equal(args[0], "-p");
   assert.equal(args[args.indexOf("--tools") + 1], "");
@@ -113,7 +113,7 @@ test("PC-RC5. claude 실행 인자 — 출력 모양 고정, 도구 · MCP · �
   const schema = JSON.parse(args[args.indexOf("--json-schema") + 1]);
   assert.deepEqual(
     schema.properties.recommendations.items.properties.segment.enum,
-    SEGMENTS.map((segment) => segment.id),
+    SEGMENTS.filter((segment) => segment.id !== "story-next").map((segment) => segment.id),
   );
 });
 

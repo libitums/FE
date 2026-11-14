@@ -166,10 +166,11 @@ test("PC-A5. 문구 검사 — 영어는 필수, 한 언어에 제목 · 본문 
   assert.equal(copyProblems({ en: { title: "x".repeat(90), body: "b" } }).length, 1);
 });
 
-test("PC-A6. 기본 문구 · 조건은 모든 세그먼트에 있고, 영어는 언제나 있다", () => {
+test("PC-A6. 기본 문구 · 조건은 모든 세그먼트에 있고, 영어는 언제나 있다(예고 세그먼트는 조건만)", () => {
   for (const segment of SEGMENTS) {
-    assert.ok(DEFAULT_COPY[segment.id]?.en, segment.id);
     assert.ok(DEFAULT_FILTERS[segment.id], segment.id);
+    if (segment.copySource === "story") continue;
+    assert.ok(DEFAULT_COPY[segment.id]?.en, segment.id);
     assert.deepEqual(copyProblems(DEFAULT_COPY[segment.id]), [], segment.id);
     for (const lang of Object.keys(DEFAULT_COPY[segment.id])) assert.ok(LANGUAGES.includes(lang));
   }
