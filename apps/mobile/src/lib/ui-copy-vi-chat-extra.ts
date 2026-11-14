@@ -122,6 +122,21 @@ export const messengerChatExtraVi: MessengerChatExtraCopy = {
       close: "Đóng",
     },
   },
+  guide: {
+    cardTitle: (name) => `Chào bạn! Mình là ${name}.`,
+    cardBody: "Ở đây bạn nhắn tin với bạn bè Hàn Quốc. Hãy bắt đầu với mình — mình sẽ giúp bạn.",
+    cardButton: (name) => `Trò chuyện với ${name}`,
+    steps: {
+      chat: "Viết bằng tiếng Hàn rồi gửi. Mình sẽ trả lời, và cây bút dưới tin nhắn của bạn cho thấy cách nói hay hơn.",
+      ideas: "Không biết nói gì? Chạm vào bóng đèn cạnh ô nhập để xem gợi ý trả lời.",
+      media:
+        "Bạn cũng có thể nhờ mình gửi ảnh hoặc tin nhắn thoại bằng các nút phía trên bàn phím.",
+    },
+    next: "Tiếp",
+    done: "Đã hiểu",
+    skip: "Bỏ qua",
+    stepOf: (step, total) => `${step}/${total}`,
+  },
   remote: {
     noCredits: (name) => `Bạn đã hết lượt để trò chuyện với ${name}.`,
     notAvailable: (name) => `Bạn chưa thể trò chuyện với ${name}.`,

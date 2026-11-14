@@ -129,6 +129,22 @@ export const messengerChatExtraEs: MessengerChatExtraCopy = {
       close: "Cerrar",
     },
   },
+  guide: {
+    cardTitle: (name) => `¡Hola! Soy ${name}.`,
+    cardBody: "Aquí chateas con amigos coreanos. Empieza conmigo: te ayudo.",
+    cardButton: (name) => `Chatear con ${name}`,
+    steps: {
+      chat: "Escribe en coreano y envíalo. Te responderé, y el lápiz bajo tu mensaje te muestra una forma mejor de decirlo.",
+      ideas:
+        "¿No sabes qué decir? Toca la bombilla junto al cuadro de mensaje para ver ideas de respuesta.",
+      media:
+        "También puedes pedirme una foto o un mensaje de voz con los botones sobre el teclado.",
+    },
+    next: "Siguiente",
+    done: "Entendido",
+    skip: "Omitir",
+    stepOf: (step, total) => `${step} de ${total}`,
+  },
   remote: {
     noCredits: (name) => `No te quedan créditos para chatear con ${name}.`,
     notAvailable: (name) => `Todavía no puedes chatear con ${name}.`,

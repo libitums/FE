@@ -8,7 +8,17 @@ export type BottomNavigatorCountBadge = {
   readonly count: number;
 };
 
-export type BottomNavigatorBadge = BottomNavigatorDotBadge | BottomNavigatorCountBadge;
+/** 짧은 글자 배지(예: NEW) — 글자 배지 모양으로 그리고 낭독은 `accessibilityLabel`. */
+export type BottomNavigatorLabelBadge = {
+  readonly kind: "label";
+  readonly text: string;
+  readonly accessibilityLabel: string;
+};
+
+export type BottomNavigatorBadge =
+  | BottomNavigatorDotBadge
+  | BottomNavigatorCountBadge
+  | BottomNavigatorLabelBadge;
 
 type BottomNavigatorItemBase = {
   readonly id: string;
@@ -91,7 +101,15 @@ function getBadgeContract(badge: BottomNavigatorBadge | undefined): {
       render: { kind: "count", text: badge.count > 99 ? "99+" : String(badge.count) },
     };
   }
-  throw new Error("BottomNavigator badge kind must be dot or count");
+  if (badge.kind === "label") {
+    if (!badge.text.trim() || !badge.accessibilityLabel.trim())
+      throw new Error("BottomNavigator label badge text and accessibilityLabel must not be empty");
+    return {
+      accessibilityText: badge.accessibilityLabel.trim(),
+      render: { kind: "count", text: badge.text.trim() },
+    };
+  }
+  throw new Error("BottomNavigator badge kind must be dot, count or label");
 }
 
 function validateItems(items: readonly BottomNavigatorItem[], selectedId: string): void {

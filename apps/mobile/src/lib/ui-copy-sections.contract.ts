@@ -67,6 +67,8 @@ export type CommonCopy = {
 /** 탭 루트의 머리 · 바텀 네비게이션 · 루트 에러 경계입니다. */
 export type ShellCopy = {
   readonly tabs: Readonly<Record<"journey" | "roleplay" | "messenger" | "settings", string>>;
+  /** 하단 탭 NEW 배지(메신저 첫 입장 · 새 친구, 2026-11-13) — 배지 글자와 탭 낭독. */
+  readonly tabNew: { readonly badge: string; readonly spoken: string };
   readonly notifications: string;
   readonly errorBoundary: { readonly title: string; readonly retry: string };
 };

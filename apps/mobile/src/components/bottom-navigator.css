@@ -9,3 +9,30 @@
 .app-navigator .ui-lynx-bottom-navigator-items {
   gap: var(--libitum-spacing-24);
 }
+
+/* 탭 NEW 배지(2026-11-13, 기기 확인 뒤 다시 — 사용자 결정 「단추 안 NEW 알약」). 아이콘 상자(32, 단추 64 × 48 가운데)의
+   오른쪽 위 모서리 기준으로 단추 안쪽에 완전히 들어가게 둡니다 — 단추 밖으로 나가면 둥근 단추 모서리에서 잘려 보이지
+   않았습니다. 알약(약 30 × 18)은 단추 x 32 ~ 62 · y 2 ~ 20, 아이콘 오른쪽 위를 살짝 덮습니다. 면은 목록 NEW 알약과
+   같은 brand-primary(ADR-0113 D8, 흰 글 3.02), 흰 테두리 2로 선택된 주황 단추 위에서도 갈라 보입니다. 값은 실측(토큰 없음). */
+/* 감싸개 폭 — Lynx는 absolute 자식의 폭을 부모 폭에 맞춰 줄여, 폭 0 감싸개 안의 알약이 최소 폭 16으로 줄고 「N」만
+   남았습니다(기기 확인 2026-11-13). 단추 폭(64)을 주어 「NUEVO」까지 한 줄로 들어가게 합니다. */
+.app-navigator .ui-lynx-bottom-navigator-badge-anchor {
+  width: var(--libitum-spacing-64);
+}
+
+.app-navigator .ui-lynx-bottom-navigator-badge-count {
+  top: -6px;
+  right: -14px;
+  height: auto;
+  min-height: 18px;
+  padding-left: var(--libitum-spacing-6);
+  padding-right: var(--libitum-spacing-6);
+  border-width: var(--libitum-stroke-width-strong);
+  border-style: solid;
+  border-color: var(--libitum-color-white);
+  background-color: var(--libitum-color-brand-primary);
+}
+
+.app-navigator .ui-lynx-bottom-navigator-badge-label {
+  white-space: nowrap;
+}

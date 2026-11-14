@@ -9,14 +9,14 @@ import type { EntryLanguage } from "../lib/entry-language";
 import { appVersionFrom } from "../lib/app-version";
 import { safeAreaInsetsFrom, tappableBottomInsetFrom } from "../lib/safe-area";
 import { UiCopyContext, uiCopyFor } from "../lib/ui-copy";
-import { initialListenPace } from "../lib/listen-pace";
-import type { ListenPace } from "../lib/listen-pace";
+import { initialListenPace, type ListenPace } from "../lib/listen-pace";
 import { useSessionOptions } from "./use-session-options";
 import type { NotificationItem } from "../screens/notifications/notifications.contract";
 import { productPhoneSignIn } from "../screens/login/login";
 import { AppHeader } from "./AppHeader";
 import { guestUnlimitedPass } from "../lib/unlimited-pass";
 import { AppNavigator } from "./AppNavigator";
+import { useMessengerTabBadge } from "./use-messenger-tab-badge";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { currentScreen, navReducer, showsTabNavigator, tabRootActions } from "./nav-reducer";
 import { shellBottomLayout } from "./shell-bottom-layout";
@@ -182,6 +182,7 @@ export function AppSession({
     withLearningTickets(screens, tickets, progress, catalogSections),
     downloadGate,
   );
+  const messengerTabBadge = useMessengerTabBadge(wiring, nav.tab); // 하단 탭 NEW(2026-11-13)
 
   // 셸이 가장자리 여백을 잡고 배경을 칠합니다(자판 화면은 위만 — shell-edges.ts). 스플래시만 브랜드색.
   // 아래쪽만 예외입니다 — 바가 서면 셸은 터치를 가로채는 시스템 바만큼(`tappableBottomInset`,
@@ -271,6 +272,7 @@ export function AppSession({
             {showsNavigator ? (
               <AppNavigator
                 tab={nav.tab}
+                badges={messengerTabBadge}
                 obscured={screenLayerOpen}
                 floorHeight={bottomLayout.navigatorFloorHeight}
                 onSelectTab={(tab) => {

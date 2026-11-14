@@ -122,6 +122,20 @@ export const messengerChatExtraId: MessengerChatExtraCopy = {
       close: "Tutup",
     },
   },
+  guide: {
+    cardTitle: (name) => `Halo! Aku ${name}.`,
+    cardBody: "Di sini kamu mengobrol dengan teman Korea. Mulai denganku — aku bantu.",
+    cardButton: (name) => `Ngobrol dengan ${name}`,
+    steps: {
+      chat: "Tulis dalam bahasa Korea lalu kirim. Aku akan membalas, dan pensil di bawah pesanmu menunjukkan cara mengatakannya dengan lebih baik.",
+      ideas: "Bingung mau bilang apa? Ketuk lampu di samping kotak pesan untuk ide balasan.",
+      media: "Kamu juga bisa minta foto atau pesan suara lewat tombol di atas keyboard.",
+    },
+    next: "Berikutnya",
+    done: "Mengerti",
+    skip: "Lewati",
+    stepOf: (step, total) => `${step} dari ${total}`,
+  },
   remote: {
     noCredits: (name) => `Kredit untuk mengobrol dengan ${name} sudah habis.`,
     notAvailable: (name) => `Kamu belum bisa mengobrol dengan ${name}.`,

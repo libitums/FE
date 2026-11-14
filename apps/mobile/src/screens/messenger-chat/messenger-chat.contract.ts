@@ -1,6 +1,7 @@
 // 자유 대화 화면 계약입니다(messenger-chat-ui spec §3.2 · §6.1 · §8). 이 단계는 순수 모듈이 쓰는 타입과
 // 문구표 타입(`MessengerChatCopy`)을 둡니다. 화면 props · test-id 객체는 UI 스캐폴드가 더했습니다.
 
+import type { GuideStore } from "./messenger-guide";
 import type { KeyboardDockEdges } from "../../lib/keyboard-dock";
 import type {
   ChatRelation,
@@ -167,6 +168,8 @@ export type MessengerListScreenProps = {
   readonly onOpenRoom: (roomId: string) => void;
   readonly onGoToJourney: () => void;
   readonly onLayerChange: (open: boolean) => void;
+  /** 본 첫 입장 안내 기록(2026-11-13) — 기본은 기기 저장소. */
+  readonly guideStore?: GuideStore;
 } & ChatListNoticeProps &
   MessengerAccessProps;
 
@@ -190,6 +193,8 @@ export type MessengerChatScreenProps = {
   readonly onExit: () => void;
   /** 사이드바의 「What {name} remembers」 — 인물 기억 화면을 쌓습니다(ADR-0126). */
   readonly onOpenMemories: (characterId: string, name: string) => void;
+  /** 본 첫 입장 안내 기록(2026-11-13) — 기본은 기기 저장소. */
+  readonly guideStore?: GuideStore;
 };
 
 // --- test-id (spec §9) ---
@@ -275,6 +280,13 @@ export const messengerChatTestIds = {
   birthYearSheet: room("birth-year-sheet"),
   birthYearOption: (year: number): string => room(`birth-year-${year}`),
   sidebarBirthYear: room("sidebar-birth-year"),
+  // 첫 입장 안내(2026-11-13)
+  guideList: room("guide-list"),
+  guideListOpen: room("guide-list-open"),
+  guideListSkip: room("guide-list-skip"),
+  guideCoach: room("guide-coach"),
+  guideCoachNext: room("guide-coach-next"),
+  guideCoachSkip: room("guide-coach-skip"),
   // 배달 실패(ADR-0138)
   unsent: room("unsent"),
   unsentRetry: room("unsent-retry"),

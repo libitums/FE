@@ -51,6 +51,7 @@ export const shellVi: ShellCopy = {
     messenger: "Trò chuyện",
     settings: "Cài đặt",
   },
+  tabNew: { badge: "MỚI", spoken: "mới" },
   notifications: "Thông báo",
   errorBoundary: { title: "Đã xảy ra lỗi", retry: "Thử lại" },
 };

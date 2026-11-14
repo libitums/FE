@@ -8,6 +8,7 @@ export type {
   BottomNavigatorContract,
   BottomNavigatorCountBadge,
   BottomNavigatorDotBadge,
+  BottomNavigatorLabelBadge,
   BottomNavigatorDisabledItem,
   BottomNavigatorEnabledItem,
   BottomNavigatorItem,

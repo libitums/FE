@@ -46,6 +46,8 @@ export type MessengerChatExtraCopy = {
   readonly access: MessengerAccessCopy;
   /** 교정 카드 · 다시 보내기 · 답 평가(ADR-0129). */
   readonly feedback: FeedbackCopy;
+  /** 덕수쌤 첫 입장 안내 — 목록 카드 · 방 코치마크(2026-11-13). */
+  readonly guide: MessengerGuideCopy;
   /** 서버 보내기 실패 줄(ADR-0137). */
   readonly remote: {
     readonly noCredits: (name: string) => string;
@@ -72,6 +74,17 @@ export type MessengerChatExtraCopy = {
     readonly loadFailedNew: string;
     readonly tryAgain: string;
   };
+};
+
+export type MessengerGuideCopy = {
+  readonly cardTitle: (name: string) => string;
+  readonly cardBody: string;
+  readonly cardButton: (name: string) => string;
+  readonly steps: { readonly chat: string; readonly ideas: string; readonly media: string };
+  readonly next: string;
+  readonly done: string;
+  readonly skip: string;
+  readonly stepOf: (step: number, total: number) => string;
 };
 
 export type ChatSettingsCopy = {

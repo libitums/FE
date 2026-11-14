@@ -273,3 +273,15 @@ test("[MC-UI1] 메신저 탭을 누르면 버튼 소리 뒤에 화면을 바꾼�
 
   expect(calls).toEqual(["sound:button", "tab:messenger"]);
 });
+
+test("MG-UI1 badges로 NEW를 받으면 그 탭에 글자 배지가 서고 낭독에 「new」가 붙는다(2026-11-13)", () => {
+  render(<BottomNavigator tab="journey" onSelectTab={() => {}} badges={{ messenger: "new" }} />);
+
+  expect(screen.getByTestId("ui-lynx-bottom-navigator-badge-messenger").textContent).toBe("NEW");
+  expect(screen.queryByTestId("ui-lynx-bottom-navigator-badge-journey")).toBeNull();
+  expect(
+    screen
+      .getByTestId("ui-lynx-bottom-navigator-item-messenger")
+      .getAttribute("accessibility-label"),
+  ).toBe("Chats, new");
+});

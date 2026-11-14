@@ -26,6 +26,8 @@ import "./bottom-navigator.css";
 export type BottomNavigatorProps = {
   tab: Tab;
   onSelectTab: (tab: Tab) => void;
+  /** 탭 NEW 배지(2026-11-13) — 글자 배지, 낭독은 탭 이름 뒤 「, new」. */
+  badges?: Partial<Record<Tab, "new">>;
 };
 
 // 항목은 모듈 내부 상수입니다. export하지 않고 props로도 받지 않습니다 — 네 탭은
@@ -42,13 +44,26 @@ const tabs: readonly { readonly id: Tab; readonly icon: string }[] = [
 ];
 
 // 탭 이름은 문구표에서 옵니다 — 언어가 바뀌면 항목을 다시 짓습니다.
-function itemsFor(labels: Readonly<Record<Tab, string>>): readonly (BottomNavigatorItem & {
+function itemsFor(
+  labels: Readonly<Record<Tab, string>>,
+  badges: Partial<Record<Tab, "new">>,
+  newCopy: { readonly badge: string; readonly spoken: string },
+): readonly (BottomNavigatorItem & {
   readonly id: Tab;
 })[] {
   return tabs.map((tab) => ({
     ...tab,
     accessibilityLabel: labels[tab.id],
     timingFlag: `libitum:navigation:${tab.id}`,
+    ...(badges[tab.id] === "new"
+      ? {
+          badge: {
+            kind: "label" as const,
+            text: newCopy.badge,
+            accessibilityLabel: newCopy.spoken,
+          },
+        }
+      : {}),
   }));
 }
 
@@ -58,11 +73,15 @@ function toTab(id: string): Tab | undefined {
   return tabs.find((tab) => tab.id === id)?.id;
 }
 
-export function BottomNavigator({ tab, onSelectTab }: BottomNavigatorProps): ReactNode {
+export function BottomNavigator({
+  tab,
+  onSelectTab,
+  badges = {},
+}: BottomNavigatorProps): ReactNode {
   const copy = useUiCopy();
   return (
     <UiBottomNavigator
-      items={itemsFor(copy.shell.tabs)}
+      items={itemsFor(copy.shell.tabs, badges, copy.shell.tabNew)}
       selectedId={tab}
       bindselect={(id) => {
         const next = toTab(id);

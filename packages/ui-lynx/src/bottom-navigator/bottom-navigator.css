@@ -109,6 +109,24 @@
   box-shadow: none;
 }
 
+/* 배지 자리 — 아이콘 상자의 오른쪽 위 모서리. Lynx는 absolute를 바로 위 부모 기준으로 두므로 감싸개를 모서리에
+   붙이고, 항목 · 면 · 아이콘 상자가 넘치는 배지를 자르지 않게 합니다(기기 확인 2026-11-13 — 전에는 배지가 아이콘 아래로
+   밀리고 잘려 보이지 않았다). */
+.ui-lynx-bottom-navigator-item,
+.ui-lynx-bottom-navigator-surface,
+.ui-lynx-bottom-navigator-icon-area {
+  overflow: visible;
+}
+
+.ui-lynx-bottom-navigator-badge-anchor {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  overflow: visible;
+}
+
 .ui-lynx-bottom-navigator-badge {
   position: absolute;
   top: -4px;

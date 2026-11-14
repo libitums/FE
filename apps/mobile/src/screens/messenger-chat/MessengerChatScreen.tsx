@@ -18,6 +18,9 @@ import { ChatMessageRow } from "./ChatMessageRows";
 import { ChatRoomDock } from "./ChatRoomDock";
 import { ChatRoomOverlays } from "./ChatRoomOverlays";
 import { useAutoIdeas } from "./use-auto-ideas";
+import { guideTargetClass, MessengerRoomGuide } from "./MessengerGuide";
+import { deviceGuideStore } from "./messenger-guide";
+import { useRoomGuide } from "./use-room-guide";
 import { ChatHistoryFailed, ChatRecoveryRow } from "./ChatDelivery";
 import { useChatFeedback } from "./use-chat-feedback";
 import { LastFreeStrip, TurnLine } from "./ChatTurns";
@@ -53,6 +56,7 @@ export function MessengerChatScreen({
   timers,
   onExit,
   onOpenMemories,
+  guideStore = deviceGuideStore,
 }: MessengerChatScreenProps): ReactNode {
   const copy = useUiCopy().messengerChat;
   const coinBalance = useCoinBalance(wallet);
@@ -89,6 +93,7 @@ export function MessengerChatScreen({
   const busy = thread !== null && (thread.typing || thread.awaitingReply);
   serverBusy.current = server && busy;
   const tools = useBubbleTools({ roomId, source, thread, announce });
+  const guide = useRoomGuide(roomId, thread, guideStore, state.overlay.kind !== "none");
   useAutoIdeas({
     // 서버 모드만(가짜 출처는 답마다 보기 묶음을 돌립니다) · 방 설정 「보기 자동」을 따릅니다(리뷰 W1).
     ideas: server && thread.settings.autoIdeas ? thread.ideas : null,
@@ -225,6 +230,16 @@ export function MessengerChatScreen({
               onRefresh={() => source.server?.reload(roomId)}
             />
           </ChatLog>
+          {guide.step === null || thread.server === null ? null : (
+            <MessengerRoomGuide
+              steps={guide.steps}
+              index={guide.index}
+              name={thread.counterpart.name}
+              avatarUrl={thread.counterpart.avatarUrl}
+              onNext={guide.next}
+              onSkip={guide.skip}
+            />
+          )}
           {state.overlay.kind === "more-menu" ? (
             <MoreMenu
               showIdeas={preferences.replyIdeas}
@@ -258,6 +273,7 @@ export function MessengerChatScreen({
             onSend={send}
             sendCost={turn.sendCost}
             birthYear={birthYear}
+            guideClass={guideTargetClass(guide.step)}
             aboveComposer={
               turn.plan.kind === "last-free" ? <LastFreeStrip price={turn.plan.price} /> : null
             }

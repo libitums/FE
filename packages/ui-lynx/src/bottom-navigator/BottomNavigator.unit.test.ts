@@ -143,6 +143,31 @@ describe("getBottomNavigatorContracts", () => {
     expect(contracts[1]).not.toHaveProperty("timingFlag");
   });
 
+  test("label badge는 짧은 글자(NEW 등)를 count 모양으로 그리고 접근성 이름에 그 낭독을 붙인다", () => {
+    const contracts = getBottomNavigatorContracts({
+      items: [
+        items[0]!,
+        items[1]!,
+        { ...items[2]!, badge: { kind: "label", text: "NEW", accessibilityLabel: "new" } },
+      ],
+      selectedId: "home",
+    });
+    expect(contracts[2]).toMatchObject({
+      badge: { kind: "count", text: "NEW" },
+      accessibilityLabel: "롤플레이, new",
+    });
+    expect(() =>
+      getBottomNavigatorContracts({
+        items: [
+          items[0]!,
+          items[1]!,
+          { ...items[2]!, badge: { kind: "label", text: " ", accessibilityLabel: "new" } },
+        ],
+        selectedId: "home",
+      }),
+    ).toThrow("BottomNavigator label badge text and accessibilityLabel must not be empty");
+  });
+
   test("count badge는 99+로 제한하되 접근성 이름에는 실제 개수를 보존한다", () => {
     const contracts = getBottomNavigatorContracts({ items, selectedId: "home" });
     expect(contracts[2]).toMatchObject({
@@ -202,7 +227,7 @@ describe("getBottomNavigatorContracts", () => {
         items: [items[0]!, { ...items[1]!, badge: { kind: "unknown" } as never }, items[2]!],
         selectedId: "home",
       }),
-    ).toThrow("badge kind must be dot or count");
+    ).toThrow("badge kind must be dot, count or label");
   });
 
   test("disabled 항목은 사용할 수 없는 이유를 별도 계약으로 요구하고 접근성 이름에 합친다", () => {

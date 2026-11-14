@@ -122,6 +122,20 @@ export const messengerChatExtraJa: MessengerChatExtraCopy = {
       close: "閉じる",
     },
   },
+  guide: {
+    cardTitle: (name) => `こんにちは！${name}です。`,
+    cardBody: "ここでは韓国の友だちとメッセージで話します。まずは私と話してみましょう。",
+    cardButton: (name) => `${name}と話す`,
+    steps: {
+      chat: "韓国語で書いて送ってください。私が返信し、メッセージの下の鉛筆でより良い言い方がわかります。",
+      ideas: "何を言えばいいか迷ったら、入力欄の横の電球をタップすると返信のヒントが出ます。",
+      media: "キーボードの上のボタンで、写真やボイスメッセージもお願いできます。",
+    },
+    next: "次へ",
+    done: "わかりました",
+    skip: "スキップ",
+    stepOf: (step, total) => `${step} / ${total}`,
+  },
   remote: {
     noCredits: (name) => `${name}とチャットするクレジットがありません。`,
     notAvailable: (name) => `${name}とはまだチャットできません。`,

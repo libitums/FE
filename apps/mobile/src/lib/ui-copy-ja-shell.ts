@@ -51,6 +51,7 @@ export const shellJa: ShellCopy = {
     messenger: "チャット",
     settings: "設定",
   },
+  tabNew: { badge: "NEW", spoken: "新着" },
   notifications: "お知らせ",
   errorBoundary: { title: "問題が発生しました", retry: "再試行" },
 };

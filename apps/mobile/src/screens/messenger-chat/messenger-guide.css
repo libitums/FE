@@ -1,0 +1,201 @@
+/* 덕수쌤 첫 입장 안내(2026-11-13, 시안 2판). 덕수쌤 면은 흰 말풍선 · 주황 단추, 떠 있는 줄은 흰 면 + brand-primary 고리.
+   빨강 없음. 방 코치마크는 머리 · 로그 위만 덮고(Overlay area), 가리키는 입력 줄 부품에는 독 바깥 상자 클래스로 고리를 겁니다. */
+.messenger-guide-list {
+  position: fixed;
+  top: var(--libitum-spacing-0);
+  right: var(--libitum-spacing-0);
+  bottom: var(--libitum-spacing-0);
+  left: var(--libitum-spacing-0);
+  z-index: var(--libitum-elevation-z-dialog);
+  display: flex;
+  flex-direction: column;
+}
+
+/* 막은 absolute입니다 — fixed 안의 fixed는 Lynx에서 위 내용보다 위에 그려져 떠 있는 줄을 덮었습니다(기기 확인 2026-11-13,
+   새 친구 시트 · ChatModalFrame과 같은 처리). */
+.messenger-guide-list .ui-lynx-overlay {
+  position: absolute;
+  top: var(--libitum-spacing-0);
+  right: var(--libitum-spacing-0);
+  bottom: var(--libitum-spacing-0);
+  left: var(--libitum-spacing-0);
+  z-index: 0;
+}
+
+/* 목록 머리(위 12 + 칩 44) + 목록 위 여백 8 = 원본 첫 줄 자리. */
+.messenger-guide-list-body {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  padding: var(--libitum-spacing-64) var(--libitum-spacing-12) var(--libitum-spacing-0);
+}
+
+.messenger-guide-float {
+  border-radius: var(--libitum-radius-lg);
+  border-width: var(--libitum-stroke-width-strong);
+  border-style: solid;
+  border-color: var(--libitum-color-brand-primary);
+  background-color: var(--libitum-color-white);
+  overflow: hidden;
+}
+
+/* z-index 없음 — 방 안 겹침은 문서 순서로 쌓습니다(ADR-0022). 「…」 메뉴는 코치마크 뒤에 그려져 위에 섭니다. */
+.messenger-guide-room {
+  position: absolute;
+  top: var(--libitum-spacing-0);
+  right: var(--libitum-spacing-0);
+  bottom: var(--libitum-spacing-0);
+  left: var(--libitum-spacing-0);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.messenger-guide-room-body {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  padding: var(--libitum-spacing-0) var(--libitum-spacing-12) var(--libitum-spacing-12);
+}
+
+.messenger-guide-bubble {
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--libitum-spacing-8);
+  padding: var(--libitum-spacing-16) var(--libitum-spacing-16) var(--libitum-spacing-12);
+  border-radius: var(--libitum-radius-lg);
+  background-color: var(--libitum-color-white);
+}
+
+.messenger-guide-copy {
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--libitum-spacing-8);
+}
+
+.messenger-guide-top {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  column-gap: var(--libitum-spacing-8);
+}
+
+.messenger-guide-avatar {
+  width: var(--libitum-spacing-40);
+  height: var(--libitum-spacing-40);
+  border-radius: var(--libitum-radius-full);
+  border-width: var(--libitum-stroke-width-strong);
+  border-style: solid;
+  border-color: var(--libitum-color-brand-primary);
+}
+
+.messenger-guide-avatar-blank {
+  background-color: var(--libitum-color-gray-100);
+}
+
+.messenger-guide-title {
+  flex: 1;
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-size: var(--libitum-typography-label-l-font-size);
+  font-weight: var(--libitum-font-weight-bold);
+  line-height: var(--libitum-typography-label-l-line-height);
+}
+
+.messenger-guide-step {
+  color: var(--libitum-color-fg-neutral-subtle);
+  font-family: var(--libitum-typography-label-s-font-family);
+  font-size: var(--libitum-typography-label-s-font-size);
+  line-height: var(--libitum-typography-label-s-line-height);
+}
+
+.messenger-guide-body {
+  white-space: normal;
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: var(--libitum-typography-body-m-font-size);
+  line-height: var(--libitum-typography-body-m-line-height);
+}
+
+.messenger-guide-actions {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  column-gap: var(--libitum-spacing-8);
+}
+
+/* 단추 터치 높이 44(위아래 12 + 줄 20). */
+.messenger-guide-button {
+  padding: var(--libitum-spacing-12) var(--libitum-spacing-16);
+  border-radius: var(--libitum-radius-full);
+}
+
+.messenger-guide-button-primary {
+  background-color: var(--libitum-color-brand-primary);
+}
+
+.messenger-guide-button-text {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: var(--libitum-typography-label-m-font-size);
+  font-weight: var(--libitum-font-weight-bold);
+  line-height: var(--libitum-typography-label-m-line-height);
+}
+
+.messenger-guide-button-text-primary {
+  color: var(--libitum-color-white);
+}
+
+/* 말풍선 꼬리 — 위(떠 있는 줄 쪽) · 아래(입력 줄 쪽). 가로 자리는 가리키는 부품 쪽. */
+.messenger-guide-tail {
+  width: var(--libitum-spacing-16);
+  height: var(--libitum-spacing-16);
+  background-color: var(--libitum-color-white);
+  transform: rotate(45deg);
+}
+
+.messenger-guide-tail-up {
+  margin: var(--libitum-spacing-8) var(--libitum-spacing-0) calc(var(--libitum-spacing-8) * -1)
+    var(--libitum-spacing-32);
+}
+
+.messenger-guide-tail-down {
+  margin-top: calc(var(--libitum-spacing-8) * -1);
+}
+
+.messenger-guide-tail-chat {
+  margin-left: var(--libitum-spacing-96);
+}
+
+.messenger-guide-tail-ideas {
+  margin-left: var(--libitum-spacing-24);
+}
+
+.messenger-guide-tail-media {
+  margin-left: var(--libitum-spacing-48);
+}
+
+/* 가리키는 입력 줄 부품의 고리. */
+.messenger-guide-target-chat .messenger-chat-composer-pill {
+  border-width: var(--libitum-stroke-width-strong);
+  border-color: var(--libitum-color-brand-primary);
+}
+
+.messenger-guide-target-ideas .messenger-chat-bulb {
+  border-width: var(--libitum-stroke-width-strong);
+  border-style: solid;
+  border-color: var(--libitum-color-brand-primary);
+}
+
+.messenger-guide-target-media .messenger-chat-pill {
+  border-width: var(--libitum-stroke-width-strong);
+  border-style: solid;
+  border-color: var(--libitum-color-brand-primary);
+}
+
+/* 방 코치마크의 막은 말풍선 아래(문서 순서). */
+.messenger-guide-room .ui-lynx-overlay {
+  z-index: 0;
+}
