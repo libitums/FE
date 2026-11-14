@@ -4,6 +4,8 @@ import {
   branchingConfig,
   chooseBranch,
   nextTopicState,
+  sameTopic,
+  shortLimit,
   topicStateFrom,
 } from "./companion-branching.ts";
 import { defaultLearningSettings } from "./companion-learning.ts";
@@ -89,8 +91,69 @@ describe("대화 분기", () => {
     ).toMatchObject({
       topicTurns: 1,
       lastSwitchTurn: 4,
-      shortStreak: 1,
+      shortStreak: 0,
     });
+  });
+
+  test("BR4. 전환 뒤 쿨다운 · 무거운 대화에서는 신호만으로 바꾸지 않는다 — 유저가 원하면 예외", () => {
+    const short = {
+      ...topicStateFrom(null),
+      turn: 6,
+      topic: "서울 맛집",
+      shortStreak: branchingConfig.shortStreakForSwitch,
+    };
+    const args = { userText: "네", persona, learning, random: always };
+    expect(chooseBranch(short, args).action?.kind).toBe("switch");
+    const cooling = { ...short, lastSwitchTurn: 6 - branchingConfig.cooldownTurns + 1 };
+    expect(chooseBranch(cooling, args).action?.kind).not.toBe("switch");
+    expect(chooseBranch({ ...cooling, wantsSwitch: true }, args).action?.kind).toBe("switch");
+    expect(chooseBranch({ ...short, heavy: true }, args).action?.kind).not.toBe("switch");
+    expect(chooseBranch({ ...short, heavy: true, wantsSwitch: true }, args).action?.kind).toBe(
+      "switch",
+    );
+  });
+
+  test("BR5. 짧은 답은 유저의 평소 길이에 비춘다 — 평균을 알기 전에는 6자, 뒤에는 그 절반(2 ~ 6)", () => {
+    expect(shortLimit({ turn: 1, lenAvg: 4 })).toBe(branchingConfig.shortLength);
+    expect(shortLimit({ turn: 5, lenAvg: 4 })).toBe(2);
+    expect(shortLimit({ turn: 5, lenAvg: 8 })).toBe(4);
+    expect(shortLimit({ turn: 5, lenAvg: 40 })).toBe(branchingConfig.shortLength);
+    // 평소 4자로 쓰는 초급자의 「배고파요」(4자)는 짧은 답이 아니다.
+    const beginner = {
+      ...topicStateFrom(null),
+      turn: 5,
+      lenAvg: 4,
+      shortStreak: 1,
+      topic: "서울 맛집",
+    };
+    expect(
+      chooseBranch(beginner, { userText: "배고파요", persona, learning, random: always }).action
+        ?.kind,
+    ).not.toBe("switch");
+    let state = topicStateFrom(null);
+    for (const text of ["안녕하세요", "네", "저는 학생이에요"])
+      state = nextTopicState(state, { userText: text, turnState: null, action: null });
+    expect(state.lenAvg).toBeCloseTo(5 * 0.7 * 0.7 + 1 * 0.3 * 0.7 + 7 * 0.3, 0);
+  });
+
+  test("BR6. 같은 화제 — 띄어쓰기 없이 한쪽이 품으면 같다 · 처음 글을 지킨다 · 이미 바꾼 답이면 전환 신호를 지운다", () => {
+    expect(sameTopic("점심 메뉴", "점심메뉴 고민")).toBe(true);
+    expect(sameTopic("점심 메뉴", "주말 계획")).toBe(false);
+    const start = topicStateFrom({ turn: 3, topic: "점심 메뉴", topicTurns: 2 });
+    expect(
+      nextTopicState(start, {
+        userText: "김밥이요",
+        turnState: { intimacyDelta: 1, topic: "점심 메뉴 고민", userWantsSwitch: false },
+        action: null,
+      }),
+    ).toMatchObject({ topic: "점심 메뉴", topicTurns: 3 });
+    expect(
+      nextTopicState(start, {
+        userText: "다른 얘기 해요",
+        turnState: { intimacyDelta: 0, topic: "주말 계획", userWantsSwitch: true },
+        action: null,
+      }),
+    ).toMatchObject({ topic: "주말 계획", topicTurns: 1, wantsSwitch: false });
   });
 });
 
