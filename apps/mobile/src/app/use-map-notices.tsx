@@ -2,7 +2,7 @@
 // 안내(시안 G-A). 둘 다 지도가 한가할 때만(진행을 읽었고 · 지도 루트 · 겹침 · 티켓 대화상자 · 설문 · 연속 학습 축하 없음).
 
 import type { ReactNode } from "@lynx-js/react";
-import { useRef } from "@lynx-js/react";
+import { useEffect, useRef } from "@lynx-js/react";
 
 import type { CatalogProgress } from "../lib/catalog-progress";
 import type { CatalogEntry } from "../lib/episode-catalog";
@@ -42,7 +42,9 @@ export function useMapNotices(input: MapNoticesInput): {
     progress: input.progress,
     ready: input.idle && !launch.open,
   });
-  updateOpen.current = updateNotice.open;
+  useEffect(() => {
+    updateOpen.current = updateNotice.open;
+  }, [updateNotice.open]);
   return {
     coinCount: launch.coinCount,
     layer: (

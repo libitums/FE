@@ -42,8 +42,9 @@ export function launchStep(input: {
 }
 
 export function launchRecordFrom(raw: string | null): LaunchRecord | null {
+  if (raw === null || raw.trim() === "") return null;
   try {
-    const value = JSON.parse(raw ?? "") as Record<string, unknown> | null;
+    const value = JSON.parse(raw) as Record<string, unknown> | null;
     const learning = value?.learning;
     const bonus = value?.bonus;
     if (typeof learning !== "number" || typeof bonus !== "number") return null;

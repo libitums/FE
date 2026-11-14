@@ -23,8 +23,12 @@ export function LaunchChatStep({
     const room = snapshot.rooms.find((r) => r.roomId === character.id);
     return {
       name: character.name,
+      // 그림이 없으면 빈 얼굴(launch-face-blank) — 빈 경로를 해석기에 넘기지 않습니다(리뷰 #430).
       avatarUrl:
-        room?.counterpart.avatarUrl ?? wiring.episodeContent.imageUrlOf(character.avatarPath ?? ""),
+        room?.counterpart.avatarUrl ??
+        (character.avatarPath === null
+          ? null
+          : wiring.episodeContent.imageUrlOf(character.avatarPath)),
       met: room === undefined ? character.unlockEpisode === null : room.access.kind === "open",
       episode: character.unlockEpisode,
     };

@@ -24,8 +24,9 @@ const count = (value: unknown): number | null =>
   typeof value === "number" && Number.isInteger(value) && value >= 0 ? value : null;
 
 export function coinClaimFrom(bodyText: string | null): CoinClaim | null {
+  if (bodyText === null || bodyText.trim() === "") return null;
   try {
-    const raw = JSON.parse(bodyText ?? "") as Record<string, unknown> | null;
+    const raw = JSON.parse(bodyText) as Record<string, unknown> | null;
     const wallet = raw?.wallet as Record<string, unknown> | null | undefined;
     const learning = count(raw?.learning);
     const bonus = count(raw?.bonus);

@@ -34,7 +34,10 @@ export function useNewFriendBackfill(
   progress: CatalogProgress,
 ): void {
   const atLoad = useRef<CatalogProgress | null>(null);
-  if (loaded && atLoad.current === null) atLoad.current = progress;
+  // 진도를 다 읽은 그때의 진도를 효과에서 잡습니다(그림 단계에서 ref를 바꾸지 않음 — 리뷰 #430). 아래 효과보다 먼저 돕니다.
+  useEffect(() => {
+    if (loaded && atLoad.current === null) atLoad.current = progress;
+  }, [loaded, progress]);
   useEffect(() => {
     if (atLoad.current === null) return;
     for (const episodeId of completedEpisodes(sections, atLoad.current)) commitNewFriend(episodeId);
