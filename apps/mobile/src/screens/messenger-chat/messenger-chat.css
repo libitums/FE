@@ -751,15 +751,16 @@
 }
 
 /* ---- 말풍선 등장(메신저 움직임 1순위, chat-entrance.ts) — 처음 나타나는 글만. 상대는 왼쪽 아래, 내 글은 오른쪽 아래에서
-   살짝 올라오며 나타납니다. 움직임 줄이기면 감싸개 자체가 없습니다. ---- */
+   살짝 올라오며 나타납니다. 움직임 줄이기면 감싸개 자체가 없습니다. 채움은 backwards — 끝난 뒤 transform을 붙들지 않아
+   긴 대화에서 레이어가 쌓이지 않습니다(안정성 리뷰 7). ---- */
 .messenger-chat-enter-them {
   animation: messenger-chat-enter-them var(--libitum-motion-duration-d6)
-    var(--libitum-motion-easing-enter-expressive) both;
+    var(--libitum-motion-easing-enter-expressive) backwards;
 }
 
 .messenger-chat-enter-me {
   animation: messenger-chat-enter-me var(--libitum-motion-duration-d6)
-    var(--libitum-motion-easing-enter-expressive) both;
+    var(--libitum-motion-easing-enter-expressive) backwards;
 }
 
 @keyframes messenger-chat-enter-them {
