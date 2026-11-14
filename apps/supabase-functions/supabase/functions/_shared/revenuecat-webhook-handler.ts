@@ -12,11 +12,20 @@ import { serviceKeyHeaders } from "./service-key.ts";
 const json = (status: number, body: Record<string, unknown>) =>
   new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
 
-/** 길이가 같을 때 모든 글자를 견줘 시간으로 값이 새지 않게 합니다. */
-function sameSecret(given: string, expected: string): boolean {
-  if (given.length !== expected.length) return false;
+/**
+ * 두 값을 SHA-256으로 줄인 뒤 32바이트를 모두 견줍니다 — 길이가 달라도 먼저 끝나지 않아 시간으로 값도 길이도 새지 않습니다
+ * (리뷰 #434).
+ */
+async function sameSecret(given: string, expected: string): Promise<boolean> {
+  const encoder = new TextEncoder();
+  const [a, b] = await Promise.all([
+    crypto.subtle.digest("SHA-256", encoder.encode(given)),
+    crypto.subtle.digest("SHA-256", encoder.encode(expected)),
+  ]);
+  const left = new Uint8Array(a);
+  const right = new Uint8Array(b);
   let diff = 0;
-  for (let i = 0; i < expected.length; i += 1) diff |= given.charCodeAt(i) ^ expected.charCodeAt(i);
+  for (let i = 0; i < right.length; i += 1) diff |= (left[i] ?? 0) ^ (right[i] ?? 0);
   return diff === 0;
 }
 
@@ -35,7 +44,7 @@ export const createRevenuecatWebhookHandler: CreateRevenuecatWebhookHandler =
     };
     if (env === null) return done(500, "misconfigured");
     if (request.method !== "POST") return done(405, "method_not_allowed");
-    if (!sameSecret(request.headers.get("Authorization") ?? "", env.webhookAuth)) {
+    if (!(await sameSecret(request.headers.get("Authorization") ?? "", env.webhookAuth))) {
       return done(401, "unauthorized");
     }
     let body: unknown;

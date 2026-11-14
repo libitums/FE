@@ -376,7 +376,12 @@ begin
     else
       for v_row in
         select * from companion.plan_entitlements
-        where user_id::text in (select jsonb_array_elements_text(coalesce(p_event->'transferredFrom', '[]'::jsonb)))
+        -- uuid 꼴만 골라 uuid로 견줍니다 — 열을 text로 바꾸면 기본 키 색인을 못 탑니다(리뷰 #434).
+        where user_id in (
+          select element::uuid
+          from jsonb_array_elements_text(coalesce(p_event->'transferredFrom', '[]'::jsonb)) as element
+          where element ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+        )
           and user_id <> v_to
       loop
         insert into companion.plan_entitlements as t (user_id, entitlement, product_id, store, environment, status, will_renew,
