@@ -20,6 +20,7 @@ import {
   offerDirective,
 } from "./companion-learning.ts";
 import { companionSystemPrompt } from "./companion-prompt.ts";
+import { storyCardFor } from "./companion-story.ts";
 import { collectSegments, createSegmentSplitter, type SegmentDelta } from "./companion-segments.ts";
 
 export type ReplyEvalCase = {
@@ -34,6 +35,8 @@ export type ReplyEvalCase = {
   readonly expressions?: readonly { readonly surface: string; readonly gloss?: string | null }[];
   readonly memories?: readonly string[];
   readonly spoilerNote?: string | null;
+  /** 끝낸 에피소드 — 운영처럼 「지금까지 이야기」 카드를 대화 처음 모양으로 싣는다(`characterId`가 있을 때). */
+  readonly episodes?: readonly string[];
   readonly target?: {
     readonly surface: string;
     readonly gloss?: string | null;
@@ -46,6 +49,8 @@ export type ReplyEvalOutput = {
   readonly segments: { kind: string; text: string }[];
   /** 페르소나를 어디서 가져왔나 — DB 카드(`card`) · 케이스의 이름만(`case`). */
   readonly persona: "card" | "case";
+  /** 이야기 카드를 실었나. */
+  readonly story: boolean;
   /** 학습 표현 지시가 있을 때만: 모델 보고 · 서버 판정. */
   readonly learned: boolean | null;
   readonly done: boolean | null;
@@ -98,6 +103,10 @@ export async function evalReply(input: {
       roman: null,
       gloss: target.gloss,
     });
+  const story =
+    item.characterId === undefined || item.episodes === undefined
+      ? null
+      : storyCardFor(item.characterId, item.episodes);
   const prompt = companionSystemPrompt({
     persona,
     speechLevel,
@@ -108,6 +117,7 @@ export async function evalReply(input: {
     feedbackMode: "separate",
     memories: item.memories ?? [],
     directive: null,
+    story,
   });
   const offer: LearningOffer | null = target
     ? {
@@ -152,6 +162,7 @@ export async function evalReply(input: {
         speechLevel,
         ageBand,
         spoilerNote: item.spoilerNote ?? null,
+        story,
         expressions: expressions
           .filter((entry) => entry.id !== "eval")
           .map((entry) => entry.surface),
@@ -171,6 +182,7 @@ export async function evalReply(input: {
   return {
     segments: segments.map(({ kind, text }) => ({ kind, text })),
     persona: card ? "card" : "case",
+    story: story !== null,
     learned,
     done,
     judge: judgement,

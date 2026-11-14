@@ -33,6 +33,7 @@ import {
   withOpenerLine,
 } from "./companion-opener.ts";
 import { callRpc } from "./companion-rpc.ts";
+import { storyCardFor } from "./companion-story.ts";
 import {
   generateSuggestions,
   type SuggestOutcome,
@@ -155,14 +156,14 @@ export function createGreetHandler(deps: GreetDeps): (request: Request) => Promi
     const scripted =
       body.trigger === "unlock" || (persona.unlockLines ?? []).some((line) => line.trim() !== "");
     const learning = scripted
-      ? { pool: [], target: null }
+      ? { pool: [], target: null, episodes: [] }
       : await openerLearning(deps.outbound, env, caller.userId, deps.random ?? Math.random);
 
     // 인사 만들기 + 출력 검사. 어느 단계든 실패하면 정해진 인사(검사를 지나지 않은 글은 내보내지 않는다). 해금 선톡은 만들지 않는다.
     const made = scripted
       ? { segments: [], state: null, outcome: "scripted" }
       : await generateOpener(llm, {
-          system: greetingSystem(persona, context, learning),
+          system: greetingSystem(body.character_id, persona, context, learning),
           userText: greetingUserText,
           ageBand: context.ageBand,
           timeoutMs,
@@ -271,6 +272,7 @@ export function createGreetHandler(deps: GreetDeps): (request: Request) => Promi
 }
 
 function greetingSystem(
+  characterId: string,
   persona: GreetingPersona,
   context: Extract<GreetContext, { result: "ok" }>,
   learning: OpenerLearning,
@@ -285,6 +287,8 @@ function greetingSystem(
     feedbackMode: context.feedbackMode,
     memories: context.memories,
     directive: withOpenerLine(greetingDirective, learning.target),
+    // 첫 인사는 대화의 처음 — 본편에서 같이 겪은 일을 다 싣는다(「처음 만났을 때」처럼 인사하게).
+    story: storyCardFor(characterId, learning.episodes),
   });
   return `${prompt.stable}${systemSplit}${prompt.dynamic}`;
 }

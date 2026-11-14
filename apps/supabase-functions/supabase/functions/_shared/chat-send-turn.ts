@@ -39,6 +39,7 @@ import { chooseBranch, nextTopicState, topicStateFrom } from "./companion-branch
 import { STREAM_ERRORS, type StreamErrorCode } from "./companion-contract/index.ts";
 import { systemSplit } from "./companion-llm.ts";
 import { companionSystemPrompt, type PromptInput } from "./companion-prompt.ts";
+import { eligibleBeats, pickStory } from "./companion-story.ts";
 import { crisisResourcesFor } from "./companion-safety.ts";
 import type { SegmentDelta } from "./companion-segments.ts";
 import { withUsageMeta } from "./companion-usage.ts";
@@ -54,6 +55,7 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
   const pool = context.learning.expressions;
   const today = learningDay(deps.nowMs());
   const learningSettings = learningSettingsFrom(context.learning);
+  const story = pickStory(body.character_id, context.learning.episodes, topicState);
   const branch = chooseBranch(topicState, {
     userText: body.text,
     persona,
@@ -66,6 +68,7 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
       today,
     },
     random: deps.random ?? Math.random,
+    beats: eligibleBeats(body.character_id, context.learning.episodes, topicState.beatsUsed),
   });
   const target = branch.learning.target;
   const promptInput: PromptInput = {
@@ -79,6 +82,7 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
     memories: turn.memories.map((memory) => memory.content),
     // 이번 턴 지시는 시스템 프롬프트가 아니라 답 요청의 `directive`로 — 시스템 · 지난 대화의 캐시를 깨지 않는다.
     directive: null,
+    story: story.text,
   };
   const prompt = companionSystemPrompt(promptInput);
   const withUsage = (assistant: Record<string, unknown>) => withUsageMeta(assistant, context.usage);
@@ -246,6 +250,7 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
           learning: learningResult,
           today,
           maxSkipStreak: learningSettings.maxSkipStreak,
+          story,
         }),
       },
     );

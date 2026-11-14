@@ -663,6 +663,12 @@ test("EV15. 답장 — DB 페르소나 카드로 운영과 같은 프롬프트�
         characterId: "mina",
         target: { surface: "괜찮아요.", mode: "chip" },
       },
+      {
+        id: "story",
+        text: "안녕하세요",
+        characterId: "mina",
+        episodes: ["u01-water", "u02-checkin", "u03-mina"],
+      },
     ],
   });
   expect(status).toBe(200);
@@ -708,6 +714,14 @@ test("EV15. 답장 — DB 페르소나 카드로 운영과 같은 프롬프트�
     output: { learned: true, done: true, judge: { axes: { learning: { pass: true } } } },
   });
   expect(results[3]).toMatchObject({ ok: false, error: "unsupported_case" });
+  // 끝낸 에피소드를 주면 운영처럼 이야기 카드를 싣고 채점자가 canon 축을 본다.
+  expect(results[0]!.output).toMatchObject({ story: false, judge: { axes: { canon: null } } });
+  expect(results[4]).toMatchObject({
+    ok: true,
+    output: { story: true, judge: { axes: { canon: { pass: true } } } },
+  });
+  expect(systems[systems.length - 1]).toContain("유진식당");
+  expect(judged[judged.length - 1]!.story).toContain("# Still open between you");
 });
 
 test("EV16. 답장 — 채점이 실패해도 답은 돌려준다 · 채점 모델을 고를 수 있다 · DB를 못 읽으면 케이스 이름", async () => {
@@ -749,6 +763,7 @@ test("EV17. 채점 글 — 카드 · 말투 규칙 · 스포일러 메모 · 지
     speechLevel: "casual",
     ageBand: "minor",
     spoilerNote: "u12 전 — 오디션 얘기는 모른다",
+    story: null,
     expressions: ["괜찮아요"],
     target: null,
     history: [{ role: "user", text: "안녕" }],
@@ -775,6 +790,7 @@ test("EV17. 채점 글 — 카드 · 말투 규칙 · 스포일러 메모 · 지
     "natural:",
     "safety:",
     "learning:",
+    "canon:",
   ])
     expect(replyJudgeSystem).toContain(axis);
   const ok = { pass: true, reason: "좋음" };
@@ -786,10 +802,18 @@ test("EV17. 채점 글 — 카드 · 말투 규칙 · 스포일러 메모 · 지
     natural: ok,
     safety: ok,
     learning: ok,
+    canon: ok,
     summary: "괜찮다",
   };
-  expect(judgementFrom(parsed, { target: null }).axes.learning).toBeNull();
+  expect(judgementFrom(parsed, { target: null, story: null }).axes).toMatchObject({
+    learning: null,
+    canon: null,
+  });
   expect(
-    judgementFrom(parsed, { target: { surface: "괜찮아요", mode: "expose" } }).axes.learning,
-  ).toEqual(ok);
+    judgementFrom(parsed, { target: { surface: "괜찮아요", mode: "expose" }, story: "카드" }).axes,
+  ).toMatchObject({ learning: ok, canon: ok });
+  expect(content).toContain("(none — set canon to null)");
+  expect(replyJudgeContent({ ...request, story: "# What happened\n- 길을 알려 줬다" })).toContain(
+    "- 길을 알려 줬다",
+  );
 });

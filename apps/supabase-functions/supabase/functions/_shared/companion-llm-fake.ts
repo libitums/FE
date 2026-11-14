@@ -307,6 +307,7 @@ export function fakeCompanionLlm(): CompanionLlm {
             request.target === null
               ? null
               : { pass: said.includes(request.target.surface), reason: "가짜 채점" },
+          canon: request.story === null ? null : ok,
         },
         summary: "가짜 채점",
       };

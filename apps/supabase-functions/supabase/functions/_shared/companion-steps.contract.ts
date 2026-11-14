@@ -60,7 +60,7 @@ export type SummaryRequest = {
   readonly signal: AbortSignal;
 };
 
-/** 답장 채점 축(`companion-eval` reply). 학습 표현은 이번 턴 지시가 있을 때만 본다. */
+/** 답장 채점 축(`companion-eval` reply). 학습 표현은 이번 턴 지시가, 본편 일치(canon)는 이야기 카드가 있을 때만 본다. */
 export const replyJudgeAxes = [
   "persona",
   "speech",
@@ -69,6 +69,7 @@ export const replyJudgeAxes = [
   "natural",
   "safety",
   "learning",
+  "canon",
 ] as const;
 export type ReplyJudgeAxis = (typeof replyJudgeAxes)[number];
 
@@ -80,6 +81,8 @@ export type ReplyJudgeRequest = {
   readonly spoilerNote: string | null;
   /** 학습자가 앱에서 배운 표현(답장 프롬프트에 실은 것과 같다). */
   readonly expressions: readonly string[];
+  /** 답장 프롬프트에 실은 「지금까지 이야기」 카드. 없으면 canon 축은 null. */
+  readonly story: string | null;
   /** 이번 턴의 학습 표현 지시. 없으면 learning 축은 null. */
   readonly target: { readonly surface: string; readonly mode: "expose" | "elicit" } | null;
   readonly history: readonly FeedbackHistoryEntry[];

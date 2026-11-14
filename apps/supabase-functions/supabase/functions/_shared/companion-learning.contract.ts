@@ -63,6 +63,12 @@ export type TopicState = {
   readonly heavy?: boolean;
   /** 유저 메시지 길이(공백 뺀 글자)의 이동 평균 — 짧은 답 문턱(`shortLimit`). 옛 상태에는 없다. */
   readonly lenAvg?: number | null;
+  /** 「지금까지 이야기」 카드에 실은 적 있는 에피소드 · 지금 싣는 창(`companion-story.ts`). 옛 상태에는 없다. */
+  readonly storySeen?: readonly string[];
+  readonly storyShow?: readonly string[];
+  readonly storyShowUntil?: number | null;
+  /** 이 대화에서 화제 씨앗으로 쓴 메신저 비트 id. */
+  readonly beatsUsed?: readonly string[];
   /** 학습 지시를 센 날(UTC `YYYY-MM-DD`)과 그날의 수 — 대화당 하루 상한. */
   readonly learnDay?: string | null;
   readonly learnToday?: number;

@@ -45,6 +45,8 @@ export type ProactiveDirectiveInput = {
   readonly lastTopic: string | null;
   readonly recentOpeners: readonly string[];
   readonly unanswered: number;
+  /** 진도에 맞는 메신저 비트 화제(`openerBeat`). 없으면 null · 생략. */
+  readonly beat?: string | null;
 };
 
 export type TimeOfDay = "morning" | "afternoon" | "evening" | "late night";
@@ -77,6 +79,9 @@ export function proactiveDirectiveFor(input: ProactiveDirectiveInput): string {
     input.lastTopic === null
       ? ""
       : `The learner's last message was: "${input.lastTopic}". You may pick that topic up, or share something new from your own day.`,
+    input.beat
+      ? `Something from your time together you could bring up (skip it if your recent openers already did): ${input.beat}`
+      : "",
     input.recentOpeners.length === 0
       ? ""
       : `Your recent openers (do not repeat their wording, topic or idea):\n${list(input.recentOpeners)}`,
@@ -106,6 +111,8 @@ export type PromptInput = {
   readonly memories: readonly string[];
   /** 서버가 고른 이번 턴 지시(화제 전환 · 학습 표현 삽입). 없으면 null. */
   readonly directive: string | null;
+  /** 「지금까지 이야기」 카드(`companion-story.ts`) — 대화 처음 · 새 에피소드 직후에만. 없으면 생략. */
+  readonly story?: string | null;
 };
 
 // 로맨스 줄은 연령대에 따라 달라 캐시되는 앞부분(규칙 · 페르소나)이 아니라 유저마다 다른 뒷부분에 둡니다. 앞부분의 수위선(성적 내용
@@ -160,6 +167,7 @@ ${stateLine}`;
 - Age: ${input.ageBand === "adult" ? "adult" : "may be a minor — keep everything appropriate for a 13-year-old"}
 - Romance: ${romanceRule(input.ageBand, persona)}
 ${input.l1 ? `- Their language: ${input.l1}\n` : ""}- Mistakes: ${feedbackModeRule[input.feedbackMode]}`,
+    input.story ?? "",
     input.memories.length > 0
       ? `# What you remember about them (use only when relevant, never list it)\n${list(input.memories)}`
       : "",

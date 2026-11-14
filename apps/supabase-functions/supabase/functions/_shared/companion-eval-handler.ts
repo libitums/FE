@@ -95,6 +95,8 @@ const caseSchema = z.object({
     .optional(),
   memories: z.array(z.string().min(1).max(300)).max(20).optional(),
   spoilerNote: z.string().max(1000).nullable().optional(),
+  // 답장만: 끝낸 에피소드 — 운영처럼 「지금까지 이야기」 카드를 싣고 채점자가 canon 축을 본다.
+  episodes: z.array(z.string().min(1).max(64)).max(80).optional(),
   // 학습 표현 · 답장: 넣을 배운 표현과 방식(노출 · 유도 · 칩 — 답장은 노출 · 유도만).
   target: z
     .object({

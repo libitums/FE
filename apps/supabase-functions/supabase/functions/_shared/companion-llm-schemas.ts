@@ -47,7 +47,7 @@ export const memorySchema = z.object({
   ),
 });
 
-// 답장 채점(평가 전용, `companion-eval-judge.ts`). 축마다 통과 여부와 까닭, 학습 표현 축은 이번 턴 지시가 없으면 null.
+// 답장 채점(평가 전용, `companion-eval-judge.ts`). 축마다 통과 여부와 까닭, 학습 표현 축은 지시가, canon 축은 이야기 카드가 없으면 null.
 const axisVerdict = z.object({ pass: z.boolean(), reason: z.string() });
 export const replyJudgeSchema = z.object({
   persona: axisVerdict,
@@ -57,5 +57,6 @@ export const replyJudgeSchema = z.object({
   natural: axisVerdict,
   safety: axisVerdict,
   learning: axisVerdict.nullable(),
+  canon: axisVerdict.nullable(),
   summary: z.string(),
 });

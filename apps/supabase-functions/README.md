@@ -412,10 +412,11 @@ ops-dashboard가 검사 · 피드백 프롬프트를 케이스 묶음으로 돌�
 - **답장(`kind: "reply"`, 2026-11-14)** — 운영 턴과 같은 시스템 프롬프트로 캐릭터 답장을 만들고 채점 노드가 축마다 채점한다(`_shared/companion-eval-reply.ts` ·
   `companion-eval-judge.ts`). 케이스: `characterId`(DB 카드 `companion_inspect_characters` — 없거나 모르면 `character.name`만, 결과 `persona: "case"`) ·
   `speechLevel` · `ageBand` · `l1` · `expressions`(`[{"surface","gloss"?}]` ≤ 40, 배운 표현) · `memories`(≤ 20) · `summary` · `history` · `text`(학습자의 새 말) ·
-  `spoilerNote`(≤ 1000자, **채점자에게만** — 답장 프롬프트에는 없다) · `target`(`{"surface","mode":"expose"|"elicit"}`, 칩은 `unsupported_case`).
+  `spoilerNote`(≤ 1000자, **채점자에게만** — 답장 프롬프트에는 없다) · `target`(`{"surface","mode":"expose"|"elicit"}`, 칩은 `unsupported_case`) ·
+  `episodes`(끝낸 에피소드 — 운영처럼 「지금까지 이야기」 카드를 대화 처음 모양으로 싣고 채점자가 `canon` 축을 본다, `docs/specs/ai-companion-story.md`).
   본문 `judgeModel`(`allowed` 안, 생략하면 `claude-opus-5-5` — 실행끼리 견주려면 바꾸지 않는다). 응답에 `judgeModel`이 더 있고, `output`은
-  `{"segments","persona","learned","done","judge":{"axes":{persona,speech,spoiler,level,natural,safety,learning},"summary"} | null,"judgeError"}` —
-  축마다 `{"pass","reason"}`(한국어 한 문장), `learning`은 지시가 없으면 null. 채점이 실패해도 답은 돌려준다(`judge: null` · `judgeError`). 답장 + 채점을 합쳐
+  `{"segments","persona","story","learned","done","judge":{"axes":{persona,speech,spoiler,level,natural,safety,learning,canon},"summary"} | null,"judgeError"}` —
+  축마다 `{"pass","reason"}`(한국어 한 문장), `learning`은 지시가, `canon`은 카드가 없으면 null. 채점이 실패해도 답은 돌려준다(`judge: null` · `judgeError`). 답장 + 채점을 합쳐
   케이스마다 90초. 채점은 생각 깊이 medium이라 대시보드는 묶음을 작게(4개) 보낸다.
 - `GET ?docs=1` → ops-dashboard 「문서」 화면: `{"models"(번역 모델 포함),"characters","settings","inspectAvailable","prompts"}`. `characters`는 페르소나 카드 칸 전부 ·
   `id` · `active` · `sortOrder` · `maxSpeechLevel` · `systemPrompt`(말투 상한까지 단계마다), `settings`는 `companion.settings` 한 행. `prompts`는

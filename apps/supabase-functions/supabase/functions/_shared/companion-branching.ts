@@ -20,6 +20,8 @@ import {
   type LearningSettings,
   offerDirective,
 } from "./companion-learning.ts";
+import type { Beat } from "./companion-story-data.ts";
+import { nextStoryState, type StoryPick } from "./companion-story.ts";
 import {
   type LearningResult,
   nextLearningState,
@@ -42,7 +44,7 @@ export const branchingConfig = {
 } as const;
 
 export type BranchAction =
-  | { readonly kind: "switch"; readonly seed: string }
+  | { readonly kind: "switch"; readonly seed: string; readonly beatId?: string }
   /** 칩 방식 — 코드가 고른 표현을 칩 요청에 싣는다. */
   | { readonly kind: "insert"; readonly expressionId: string; readonly mode: "chip" }
   /** 답 방식 — 후보를 답 모델에 주고 고르게 한다. */
@@ -86,6 +88,10 @@ export function topicStateFrom(raw: Partial<TopicState> | null | undefined): Top
     lastSwitchTurn: nullableNum(raw?.lastSwitchTurn),
     heavy: raw?.heavy === true,
     lenAvg: nullableNum(raw?.lenAvg),
+    storySeen: strings(raw?.storySeen, 60),
+    storyShow: strings(raw?.storyShow, 10),
+    storyShowUntil: nullableNum(raw?.storyShowUntil),
+    beatsUsed: strings(raw?.beatsUsed, 60),
     learnDay: typeof raw?.learnDay === "string" ? raw.learnDay : null,
     learnToday: num(raw?.learnToday, 0),
     lastExpressionId: typeof raw?.lastExpressionId === "string" ? raw.lastExpressionId : null,
@@ -105,6 +111,12 @@ export function topicStateFrom(raw: Partial<TopicState> | null | undefined): Top
           )
         : {},
   };
+}
+
+function strings(value: unknown, max: number): string[] {
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === "string").slice(-max)
+    : [];
 }
 
 function pick<T>(items: readonly T[], random: () => number): T | undefined {
@@ -127,6 +139,8 @@ export function chooseBranch(
       readonly today: string;
     };
     readonly random: () => number;
+    /** 진도가 맞고 이 대화에서 안 쓴 메신저 비트(`eligibleBeats`). 있으면 페르소나 화제보다 먼저. */
+    readonly beats?: readonly Beat[];
   },
 ): { action: BranchAction | null; directive: string | null; learning: LearningDecision } {
   const shortStreak = isShort(input.userText, state) ? state.shortStreak + 1 : 0;
@@ -139,10 +153,13 @@ export function chooseBranch(
       state.heavy !== true &&
       (shortStreak >= branchingConfig.shortStreakForSwitch ||
         state.topicTurns >= branchingConfig.sameTopicTurns));
-  const seed = pick(
-    (input.persona.topics ?? []).filter((topic) => topic !== state.topic),
-    input.random,
-  );
+  const beat = pick(input.beats ?? [], input.random);
+  const seed =
+    beat?.seed ??
+    pick(
+      (input.persona.topics ?? []).filter((topic) => topic !== state.topic),
+      input.random,
+    );
   const switching =
     switchSignal && seed !== undefined && input.random() < branchingConfig.switchProbability;
   const learning = decideLearning(state, {
@@ -152,7 +169,9 @@ export function chooseBranch(
   });
   if (switching) {
     return {
-      action: { kind: "switch", seed: seed! },
+      action: beat
+        ? { kind: "switch", seed: seed!, beatId: beat.id }
+        : { kind: "switch", seed: seed! },
       directive: `The conversation is slowing down. After answering briefly, smoothly bring up a new topic in character: "${seed}".`,
       learning,
     };
@@ -185,6 +204,8 @@ export function nextTopicState(
     readonly learning?: LearningResult;
     readonly today?: string;
     readonly maxSkipStreak?: number;
+    /** 이번 턴에 실은 「지금까지 이야기」 카드(`pickStory`). */
+    readonly story?: StoryPick;
   },
 ): TopicState {
   const topic = input.turnState?.topic ?? state.topic;
@@ -206,6 +227,17 @@ export function nextTopicState(
     shortStreak: switched ? 0 : isShort(input.userText, state) ? state.shortStreak + 1 : 0,
     // 유저가 원했어도 이번 답이 이미 화제를 바꿨으면 다음 턴에 또 바꾸지 않는다.
     wantsSwitch: input.turnState?.userWantsSwitch === true && kept,
+    ...(input.story === undefined
+      ? {
+          storySeen: state.storySeen ?? [],
+          storyShow: state.storyShow ?? [],
+          storyShowUntil: state.storyShowUntil ?? null,
+        }
+      : nextStoryState(state, input.story)),
+    beatsUsed:
+      input.action?.kind === "switch" && input.action.beatId !== undefined
+        ? [...(state.beatsUsed ?? []), input.action.beatId].slice(-60)
+        : (state.beatsUsed ?? []),
     lenAvg:
       state.lenAvg == null
         ? length
