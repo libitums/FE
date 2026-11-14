@@ -201,3 +201,41 @@ test("DB-U8 core 시간 · 난수 — Date.now · new Date() · Math.random · p
   const local = scanSource(ts, "h.ts", "const Math = { random: () => 0.5 };\nMath.random();");
   assert.deepEqual(local.nondeterministic, []);
 });
+
+test("DB-U9 구조 분해의 속성 이름은 선언이 아니다 — `const { window: w } = o` 뒤의 전역 window는 잡힌다(리뷰 #439)", () => {
+  const { globals } = scanSource(ts, "k.ts", "const { window: w } = o;\nwindow.alert(w);\n");
+  assert.deepEqual(
+    globals.filter((g) => g.name === "window").map((g) => g.line),
+    [2],
+  );
+  const renamed = scanSource(ts, "l.ts", "const { location } = props;\nlocation;\n");
+  assert.deepEqual(
+    renamed.globals.filter((g) => g.name === "location"),
+    [],
+  );
+});
+
+test("DB-U10 astro 여러 줄 import도 읽고 줄 번호는 import가 시작한 줄(리뷰 #439)", () => {
+  const text = '---\nimport {\n  a,\n  b,\n} from "../../mobile/src/a";\n---\n';
+  assert.deepEqual(astroImports(text), [{ name: "../../mobile/src/a", line: 2 }]);
+});
+
+test("DB-U11 core — 접두사 없는 node 내장(fs · path)과 react-dom 하위 경로도 금지(리뷰 #439)", () => {
+  const imports = [
+    { name: "fs", line: 1 },
+    { name: "path", line: 2 },
+    { name: "react-dom/client", line: 3 },
+    { name: "zod", line: 4 },
+  ];
+  const v = importViolations({
+    workspaceDir: "packages/episode-core",
+    isTest: false,
+    imports,
+    workspaces,
+    resolveRelative: () => null,
+  });
+  assert.deepEqual(
+    v.map((x) => x.line),
+    [1, 2, 3],
+  );
+});

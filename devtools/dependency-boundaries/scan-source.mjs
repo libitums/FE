@@ -76,7 +76,7 @@ export function scanSource(ts, fileName, text) {
 function isDeclarationName(ts, node) {
   const parent = node.parent;
   return (
-    ((ts.isVariableDeclaration(parent) ||
+    (ts.isVariableDeclaration(parent) ||
       ts.isParameter(parent) ||
       ts.isFunctionDeclaration(parent) ||
       ts.isClassDeclaration(parent) ||
@@ -84,8 +84,7 @@ function isDeclarationName(ts, node) {
       ts.isImportSpecifier(parent) ||
       ts.isImportClause(parent) ||
       ts.isNamespaceImport(parent)) &&
-      parent.name === node) ||
-    (ts.isBindingElement(parent) && parent.propertyName === node)
+    parent.name === node
   );
 }
 
@@ -94,6 +93,8 @@ function isValueReference(ts, node) {
   const parent = node.parent;
   if (ts.isPropertyAccessExpression(parent) && parent.name === node) return false;
   if (ts.isQualifiedName(parent) && parent.right === node) return false;
+  // `const { window: w } = o`의 `window`는 가져올 속성 이름 — 선언도 전역 참조도 아닙니다(리뷰 #439).
+  if (ts.isBindingElement(parent) && parent.propertyName === node) return false;
   if (
     (ts.isPropertyAssignment(parent) ||
       ts.isPropertySignature(parent) ||
@@ -123,14 +124,14 @@ function isValueReference(ts, node) {
 /** `.astro` — 프런트매터와 `<script>`의 import 문만(정규식). */
 export function astroImports(text) {
   const out = [];
-  const lines = text.split("\n");
-  lines.forEach((line, index) => {
-    for (const match of line.matchAll(
-      /(?:^|[\s>;])(?:import|export)\b[^"'`]*?from\s*["']([^"']+)["']|(?:^|[\s>;])import\s*\(?\s*["']([^"']+)["']/g,
-    )) {
-      const name = match[1] ?? match[2];
-      if (name !== undefined) out.push({ name, line: index + 1 });
-    }
-  });
+  // 여러 줄 import(포매터가 펼친 것)도 잡도록 글 전체에서 찾고, 줄 번호는 import · export 키워드가 시작한 줄입니다(리뷰 #439).
+  const pattern =
+    /(?:^|[\s>;])((?:import|export)\b[^"'`]*?from\s*["']([^"']+)["']|import\s*\(?\s*["']([^"']+)["'])/g;
+  for (const match of text.matchAll(pattern)) {
+    const name = match[2] ?? match[3];
+    if (name === undefined) continue;
+    const start = match.index + match[0].indexOf(match[1]);
+    out.push({ name, line: text.slice(0, start).split("\n").length });
+  }
   return out;
 }

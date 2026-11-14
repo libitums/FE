@@ -1,6 +1,8 @@
 // 모노레포 의존 방향 규칙(ADR-0004 D1 · D4 · ADR-0147)의 순수 판정입니다. 파일 시스템을 읽지 않습니다 —
 // 워크스페이스 목록 · package.json · 파일 글자를 받아 위반 목록을 돌려줍니다. 실행은 check.mjs가 합니다.
 
+import { isBuiltin } from "node:module";
+
 /** 층입니다. core는 웹 · 앱 · 서버가 함께 읽는 순수 패키지, ui는 Lynx UI 패키지, app은 산출물을 내는 잎입니다. */
 export const LAYERS = /** @type {const} */ ({
   "packages/episode-core": "core",
@@ -14,7 +16,7 @@ export function layerOf(workspaceDir) {
   return workspaceDir.startsWith("apps/") ? "app" : "ui";
 }
 
-/** core가 import하면 안 되는 모듈 — UI · 어댑터(Lynx · 웹 프레임워크 · 서버 SDK) · node 내장. */
+/** core가 import하면 안 되는 모듈 — UI · 어댑터(Lynx · 웹 프레임워크 · 서버 SDK) · node 내장(접두사 없는 `fs`도, 리뷰 #439). */
 export function forbiddenCoreImport(name) {
   return (
     name.startsWith("@lynx-js/") ||
@@ -27,10 +29,12 @@ export function forbiddenCoreImport(name) {
     name === "react" ||
     name.startsWith("react/") ||
     name === "react-dom" ||
+    name.startsWith("react-dom/") ||
     name === "astro" ||
     name.startsWith("astro/") ||
     name.startsWith("@supabase/") ||
-    name.startsWith("node:")
+    name.startsWith("node:") ||
+    isBuiltin(name)
   );
 }
 
