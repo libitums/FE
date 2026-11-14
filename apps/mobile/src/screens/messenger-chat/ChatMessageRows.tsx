@@ -18,6 +18,7 @@ import { UnsentMessage } from "./ChatDelivery";
 import { RatingButtons, RatingResult } from "./RatingRow";
 import { MyMessageRow } from "./MyMessage";
 import { ChatCrisisCard, ChatNoticeRow } from "./SafetyParts";
+import type { ChatEntrance } from "./chat-entrance";
 import { notesOf } from "./chat-source.contract";
 import type { ChatMessage, ChatThread } from "./chat-source.contract";
 import { messengerChatTestIds as ids } from "./messenger-chat.contract";
@@ -30,6 +31,8 @@ import {
 
 export type ChatMessageRowProps = {
   readonly message: ChatMessage;
+  /** 처음 나타나는 글이면 그 쪽(`chat-entrance.ts`) — 움직임 줄이기 · 이미 있던 글은 null. */
+  readonly entrance?: ChatEntrance;
   readonly thread: ChatThread;
   readonly learnerName: string;
   readonly openTools: BubbleToolsState;
@@ -56,7 +59,18 @@ const openLink = (url: string): void => {
   openExternalLink(url);
 };
 
-export function ChatMessageRow({
+/** 줄 하나 — 처음 나타나는 글이면 감싸개가 등장 움직임을 집니다(상대는 왼쪽 아래, 내 글은 오른쪽 아래에서). */
+export function ChatMessageRow({ entrance = null, ...props }: ChatMessageRowProps): ReactNode {
+  return entrance === null ? (
+    <RowBody {...props} />
+  ) : (
+    <view className={`messenger-chat-enter messenger-chat-enter-${entrance}`}>
+      <RowBody {...props} />
+    </view>
+  );
+}
+
+function RowBody({
   message,
   thread,
   learnerName,
@@ -64,7 +78,7 @@ export function ChatMessageRow({
   motion,
   onToggleTool,
   feedback,
-}: ChatMessageRowProps): ReactNode {
+}: Omit<ChatMessageRowProps, "entrance">): ReactNode {
   const { counterpart } = thread;
   const avatar = { name: counterpart.name, imageUrl: counterpart.avatarUrl };
   switch (message.kind) {

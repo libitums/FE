@@ -35,6 +35,7 @@ import {
 import { useAnnounceArrivals } from "./use-announce-arrivals";
 import { useBubbleTools } from "./use-bubble-tools";
 import { useChatRoom } from "./use-chat-room";
+import { useChatEntrances } from "./use-chat-entrance";
 import { useChatTurns } from "./use-chat-turns";
 import { useCoinBalance } from "./use-coin-balance";
 
@@ -110,6 +111,7 @@ export function MessengerChatScreen({
     authorizeSend: turn.authorizeSend,
   });
   const motion = resolveReducedMotion(undefined, useMotion()) ? "reduced" : "standard";
+  const entrances = useChatEntrances(thread?.messages ?? null, motion);
 
   const exit = () => {
     "background only";
@@ -209,6 +211,7 @@ export function MessengerChatScreen({
             {thread.messages.map((message) => (
               <ChatMessageRow
                 key={message.id}
+                entrance={entrances.get(message.id) ?? null}
                 message={message}
                 thread={thread}
                 learnerName={learnerName}
