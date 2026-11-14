@@ -12,10 +12,10 @@ import { measureTask } from "./perf-probe";
 /**
  * 이 앱이 이해하는 콘텐츠 수준. 매니페스트 `min_client_level`이 이보다 크면 원격 항목을 잠급니다. 2는 막간 이야기
  * 유닛을 그리는 수준(ADR-0087 · ADR-0088), 3은 이야기 파이널(S8 `story` · 따라 쓰기 · 최상위 막간)을 그리는
- * 수준(ADR-0058 적용 기록 ⟨2026-11-02⟩), 4는 언어별 번역 파일을 읽는 수준이고(ADR-0102), `manifests/level-4.json`부터
- * 읽습니다.
+ * 수준(ADR-0058 적용 기록 ⟨2026-11-02⟩), 4는 언어별 번역 파일을 읽는 수준(ADR-0102), 5는 `why_wrong` 객체 · 빈
+ * TURN_ORDER `context` · `tiles_gloss` 없는 RP를 읽는 수준이고(ADR-0145), `manifests/level-5.json`부터 읽습니다.
  */
-export const CONTENT_CLIENT_LEVEL = 4;
+export const CONTENT_CLIENT_LEVEL = 5;
 export const SUPPORTED_EPISODE_SCHEMAS: readonly string[] = ["delivery-2"];
 
 export type LockReason =
