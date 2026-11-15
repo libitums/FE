@@ -28,3 +28,8 @@ overrides:
   "fast-uri@>=3.0.0 <3.1.8": "3.1.8"
   "brace-expansion@>=5.0.0 <5.0.12": "5.0.12"
   "engine.io@>=6.6.0 <6.6.10": "6.6.10"
+  # rolldown의 wasm 대체 바이너리(맥 · 리눅스 x64에서는 쓰지 않음)가 @emnapi 베타를 직접 요구해
+  # pnpm이 그 베타로 다른 패키지의 피어까지 채우고, 베타에서는 `astro check`가 깨집니다(#428).
+  # 정식 2.0이 나오면 두 줄을 지웁니다.
+  "@rolldown/binding-wasm32-wasi>@emnapi/core": "1.11.3"
+  "@rolldown/binding-wasm32-wasi>@emnapi/runtime": "1.11.3"
