@@ -2,7 +2,20 @@
 
 import type { ChatAlbumCopy } from "../screens/messenger-chat/chat-album.contract";
 
-const MONTHS = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sept", "oct", "nov", "dic"];
+const MONTHS = [
+  "ene",
+  "feb",
+  "mar",
+  "abr",
+  "may",
+  "jun",
+  "jul",
+  "ago",
+  "sept",
+  "oct",
+  "nov",
+  "dic",
+];
 
 export const messengerChatAlbumEs: ChatAlbumCopy = {
   sidebarRow: "Álbum",
@@ -37,7 +50,8 @@ export const messengerChatAlbumEs: ChatAlbumCopy = {
   play: "Reproducir",
   pause: "Pausar",
   redrawTitle: "¿Redibujar esta foto?",
-  redrawBody: (name) => `${name} volverá a dibujar este momento. Conservarás las dos fotos en tu álbum.`,
+  redrawBody: (name) =>
+    `${name} volverá a dibujar este momento. Conservarás las dos fotos en tu álbum.`,
   recordTitle: "¿Grabar de nuevo?",
   recordBody: (name) => `${name} volverá a decir esta frase en una nueva toma.`,
   confirmRedraw: (price) => `Redibujar por ${price} Yeopjeon`,
@@ -57,7 +71,9 @@ export const messengerChatAlbumEs: ChatAlbumCopy = {
       case "limit":
         return "Llegaste al límite de hoy. Inténtalo más tarde.";
       case "not-eligible":
-        return photo ? "Esta foto no se puede redibujar." : "Este mensaje de voz no se puede volver a grabar.";
+        return photo
+          ? "Esta foto no se puede redibujar."
+          : "Este mensaje de voz no se puede volver a grabar.";
       default:
         return "No se pudo enviar tu solicitud. Inténtalo de nuevo.";
     }
@@ -65,7 +81,8 @@ export const messengerChatAlbumEs: ChatAlbumCopy = {
   selfSection: "Sobre ti",
   selfRow: "Tú en las fotos",
   selfTitle: "Tú en las fotos",
-  selfBody: "Cuando un personaje te envía una foto, puedes aparecer en ella. Nunca dibujamos tu cara.",
+  selfBody:
+    "Cuando un personaje te envía una foto, puedes aparecer en ella. Nunca dibujamos tu cara.",
   selfAsk: "¿Cómo quieres aparecer?",
   selfAskNote: "Siempre de espaldas, nunca tu cara. Puedes cambiarlo en Ajustes › Chats.",
   selfOptions: {

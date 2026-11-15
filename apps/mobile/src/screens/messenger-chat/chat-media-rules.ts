@@ -158,5 +158,22 @@ export function nextUtcMidnight(now: number): number {
 
 /** 같은 대상 · 같은 종류의 결과(사진 · 음성) 줄은 가장 최근 하나만 — 옛 결과의 자리에 섭니다(ADR-0150 M7). */
 export function collapseMediaResults(messages: readonly ChatMessage[]): ChatMessage[] {
-  return [...messages];
+  const latest = new Map<string, ChatMessage>(); // `<대상>~<종류>` → 가장 최근 결과 줄
+  const keyOf = (message: ChatMessage) => {
+    const key = mediaLineKey(message.id);
+    return key !== null && isResult(message, key.media) ? `${key.targetId}~${key.media}` : null;
+  };
+  for (const message of messages) {
+    const key = keyOf(message);
+    const known = key === null ? undefined : latest.get(key);
+    if (key !== null && (known === undefined || message.at >= known.at)) latest.set(key, message);
+  }
+  const placed = new Set<string>();
+  return messages.flatMap((message) => {
+    const key = keyOf(message);
+    if (key === null) return [message];
+    if (placed.has(key)) return [];
+    placed.add(key);
+    return [latest.get(key) ?? message];
+  });
 }

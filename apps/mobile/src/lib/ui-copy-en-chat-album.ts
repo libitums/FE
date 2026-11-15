@@ -26,7 +26,8 @@ export const messengerChatAlbumEn: ChatAlbumCopy = {
   loadFailed: "Couldn't load the album.",
   tryAgain: "Try again",
   more: "Show more",
-  photoLabel: (name, line) => (line === "" ? `Picture from ${name}` : `Picture from ${name}, ${line}`),
+  photoLabel: (name, line) =>
+    line === "" ? `Picture from ${name}` : `Picture from ${name}, ${line}`,
   voiceLabel: (name, line) =>
     line === "" ? `Voice message from ${name}` : `Voice message from ${name}, ${line}`,
   viewerTitle: (name, day) => `${name} · ${day}`,
@@ -37,7 +38,8 @@ export const messengerChatAlbumEn: ChatAlbumCopy = {
   play: "Play",
   pause: "Pause",
   redrawTitle: "Redraw this snapshot?",
-  redrawBody: (name) => `${name} will draw this moment again. You'll keep both pictures in your album.`,
+  redrawBody: (name) =>
+    `${name} will draw this moment again. You'll keep both pictures in your album.`,
   recordTitle: "Record again?",
   recordBody: (name) => `${name} will say this line again in a new take.`,
   confirmRedraw: (price) => `Redraw for ${price} Yeopjeon`,
@@ -57,7 +59,9 @@ export const messengerChatAlbumEn: ChatAlbumCopy = {
       case "limit":
         return "You've reached today's limit. Try again later.";
       case "not-eligible":
-        return photo ? "This picture can't be redrawn." : "This voice message can't be recorded again.";
+        return photo
+          ? "This picture can't be redrawn."
+          : "This voice message can't be recorded again.";
       default:
         return "Couldn't send your request. Try again.";
     }

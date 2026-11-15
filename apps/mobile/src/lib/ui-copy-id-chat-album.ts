@@ -57,7 +57,9 @@ export const messengerChatAlbumId: ChatAlbumCopy = {
       case "limit":
         return "Kamu sudah mencapai batas hari ini. Coba lagi nanti.";
       case "not-eligible":
-        return photo ? "Foto ini tidak bisa digambar ulang." : "Pesan suara ini tidak bisa direkam ulang.";
+        return photo
+          ? "Foto ini tidak bisa digambar ulang."
+          : "Pesan suara ini tidak bisa direkam ulang.";
       default:
         return "Permintaanmu tidak terkirim. Coba lagi.";
     }
@@ -65,7 +67,8 @@ export const messengerChatAlbumId: ChatAlbumCopy = {
   selfSection: "Tentang kamu",
   selfRow: "Kamu di foto",
   selfTitle: "Kamu di foto",
-  selfBody: "Saat karakter mengirim foto, kamu bisa muncul di dalamnya. Wajahmu tidak pernah digambar.",
+  selfBody:
+    "Saat karakter mengirim foto, kamu bisa muncul di dalamnya. Wajahmu tidak pernah digambar.",
   selfAsk: "Kamu mau tampil seperti apa?",
   selfAskNote: "Selalu dari belakang, tanpa wajah. Ubah nanti di Pengaturan › Chats.",
   selfOptions: {

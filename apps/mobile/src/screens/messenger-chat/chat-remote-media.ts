@@ -13,7 +13,10 @@ import type {
   ChatMediaTarget,
   RemoteMedia,
 } from "./chat-media.contract";
+import type { ChatRemakeResult } from "./chat-album.contract";
+import { mediaSender } from "./chat-remote-send";
 import {
+  collapseMediaResults,
   MEDIA_POLL_LIMIT_MS,
   mediaAvailabilityOf,
   mediaLineId,
@@ -56,6 +59,11 @@ const kindOf = (media: RemoteMedia): ChatMediaKind =>
 
 export function remoteMediaMethods(deps: RemoteMediaDeps): {
   readonly request: (roomId: string, media: ChatMediaKind) => void;
+  readonly remake: (
+    roomId: string,
+    target: ChatMediaTarget,
+    media: ChatMediaKind,
+  ) => Promise<ChatRemakeResult>;
   readonly resume: (room: RoomState) => void;
 } {
   const { live, changed, now, isOpen, schedule, hooks } = deps;
@@ -78,7 +86,7 @@ export function remoteMediaMethods(deps: RemoteMediaDeps): {
     room.pendingVoices = room.messages.filter((m) => m.kind === "voice-pending").length;
   };
   const put = (room: RoomState, line: ChatMessage) => {
-    room.messages = placeMediaLine(room.messages, line);
+    room.messages = collapseMediaResults(placeMediaLine(room.messages, line));
     recount(room);
   };
   /** 자리표시자(`~req`)를 서버 줄로 — 같은 서버 줄이 이미 섰으면(resume) 자리표시자를 뺍니다. */
@@ -201,6 +209,19 @@ export function remoteMediaMethods(deps: RemoteMediaDeps): {
     if (!result.cached) readBalance();
   };
 
+  const send = mediaSender({
+    port,
+    now,
+    alive,
+    put,
+    replace,
+    changed,
+    noticeLine,
+    accept,
+    emit,
+    readBalance,
+  });
+
   const request = (roomId: string, media: ChatMediaKind) => {
     const room = live(roomId);
     if (room === null || room.access.kind !== "open") return;
@@ -208,42 +229,15 @@ export function remoteMediaMethods(deps: RemoteMediaDeps): {
     if (mediaAvailabilityOf({ messages: room.messages, busy, server: true }, media) !== "ready")
       return;
     const target = mediaTargetOf(room.messages, media);
-    if (target === null) return;
-    if (port === undefined) {
-      put(room, noticeLine(room, target, media, "unavailable"));
-      changed(room);
-      return;
-    }
-    const reqId = mediaLineId(target.messageId, media, "req");
-    put(room, {
-      id: reqId,
-      at: now(),
-      kind: media === "photo" ? "photo-pending" : "voice-pending",
-    });
-    changed(room);
-    void (async () => {
-      const result = await port.request(remoteKindOf(media), target.messageId);
-      if (!alive(room)) return;
-      if (result.kind === "accepted") return accept(room, reqId, target, media, result);
-      if (result.kind === "refused") {
-        replace(room, reqId, noticeLine(room, target, media, result.notice, result.until));
-        changed(room);
-        emit(room, media, "refused");
-        if (result.notice === "no-coins") readBalance();
-        return;
-      }
-      // 연결 실패 · 5xx — 서버가 받았는지 모릅니다. 메시지 id로 한 번 물어 만드는 중 · 결과가 있으면 그대로 이어 갑니다.
-      const rows = await port.load({ messageIds: [target.messageId] });
-      if (!alive(room)) return;
-      const found = (rows ?? [])
-        .filter((row) => row.kind === remoteKindOf(media) && row.status !== "blocked")
-        .filter((row) => row.status !== "failed")
-        .sort((a, b) => b.createdAt - a.createdAt)[0];
-      if (found !== undefined)
-        return accept(room, reqId, target, media, { media: found, cached: false });
-      replace(room, reqId, noticeLine(room, target, media, "request-failed"));
-      changed(room);
-    })();
+    if (target !== null) void send(room, target, media, false);
+  };
+
+  /** 앨범의 다시 만들기 — 방 로그에 그 메시지가 없어도(옛 기록) 서버에 보내고, 결과 줄은 대상이 로그에 있을 때만 섭니다. */
+  const remake = (roomId: string, target: ChatMediaTarget, media: ChatMediaKind) => {
+    const room = live(roomId);
+    if (room === null || room.access.kind !== "open")
+      return Promise.resolve<ChatRemakeResult>({ kind: "failed" });
+    return send(room, target, media, true);
   };
 
   /** 방을 열 때 — 로그의 캐릭터 메시지 id로 서버에 물어 결과 · 자리표시자 · 회색 줄을 다시 놓고, 만드는 중이면 다시 읽기를 잇습니다. */
@@ -293,5 +287,5 @@ export function remoteMediaMethods(deps: RemoteMediaDeps): {
     })();
   };
 
-  return { request, resume };
+  return { request, remake, resume };
 }

@@ -58,7 +58,10 @@ export type ChatAlbumTile = {
   readonly remaking: boolean;
 };
 
-export type ChatAlbumSection = { readonly day: ChatAlbumDay; readonly tiles: readonly ChatAlbumTile[] };
+export type ChatAlbumSection = {
+  readonly day: ChatAlbumDay;
+  readonly tiles: readonly ChatAlbumTile[];
+};
 
 export type ChatAlbumCopy = {
   readonly sidebarRow: string;

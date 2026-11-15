@@ -55,7 +55,9 @@ describe("AL-U1 앨범 묶음", () => {
   });
 
   test("AL-U1c 다시 만드는 중인 메시지의 칸은 remaking(같은 종류만)", () => {
-    const tiles = albumSections(items, "all", NOW, 0, new Set([`${A}~photo`])).flatMap((s) => s.tiles);
+    const tiles = albumSections(items, "all", NOW, 0, new Set([`${A}~photo`])).flatMap(
+      (s) => s.tiles,
+    );
     expect(tiles.map((t) => [t.item.id, t.remaking])).toEqual([
       ["p2", true],
       ["v1", false],
@@ -99,16 +101,64 @@ describe("AL-U4 가짜 앨범 — 방 로그의 결과 줄", () => {
   test("결과 줄만(자리표시자 · 회색 줄 제외), 최신부터, 서버 줄은 대상 메시지와 그 말", () => {
     const log: ChatMessage[] = [
       { id: `${A}#0`, at: 1, kind: "text", from: "them", text: { ko: "안녕", en: "Hi" } },
-      { id: `${A}~snapshot~m1`, at: 2, kind: "photo", imageUrl: "u1", aspect: "1:1", aiGenerated: true },
-      { id: `${A}~voice~m2`, at: 3, kind: "voice", durationMs: 0, text: { ko: "안녕", en: "Hi" }, audioUrl: "u2" },
+      {
+        id: `${A}~snapshot~m1`,
+        at: 2,
+        kind: "photo",
+        imageUrl: "u1",
+        aspect: "1:1",
+        aiGenerated: true,
+      },
+      {
+        id: `${A}~voice~m2`,
+        at: 3,
+        kind: "voice",
+        durationMs: 0,
+        text: { ko: "안녕", en: "Hi" },
+        audioUrl: "u2",
+      },
       { id: `${A}~voice~req`, at: 4, kind: "voice-pending" },
-      { id: `${A}~snapshot~x1`, at: 5, kind: "media-notice", media: "photo", notice: "failed", until: null },
+      {
+        id: `${A}~snapshot~x1`,
+        at: 5,
+        kind: "media-notice",
+        media: "photo",
+        notice: "failed",
+        until: null,
+      },
       { id: "fx-9", at: 6, kind: "photo", imageUrl: "u3" },
     ];
     expect(albumItemsFromLog(log)).toEqual([
-      { id: "fx-9", messageId: "fx-9", kind: "photo", url: "u3", aspect: null, line: { ko: "", en: "" }, createdAt: 6, fromPastChat: false },
-      { id: "m2", messageId: A, kind: "voice", url: "u2", aspect: null, line: { ko: "안녕", en: "Hi" }, createdAt: 3, fromPastChat: false },
-      { id: "m1", messageId: A, kind: "photo", url: "u1", aspect: "1:1", line: { ko: "안녕", en: "Hi" }, createdAt: 2, fromPastChat: false },
+      {
+        id: "fx-9",
+        messageId: "fx-9",
+        kind: "photo",
+        url: "u3",
+        aspect: null,
+        line: { ko: "", en: "" },
+        createdAt: 6,
+        fromPastChat: false,
+      },
+      {
+        id: "m2",
+        messageId: A,
+        kind: "voice",
+        url: "u2",
+        aspect: null,
+        line: { ko: "안녕", en: "Hi" },
+        createdAt: 3,
+        fromPastChat: false,
+      },
+      {
+        id: "m1",
+        messageId: A,
+        kind: "photo",
+        url: "u1",
+        aspect: "1:1",
+        line: { ko: "안녕", en: "Hi" },
+        createdAt: 2,
+        fromPastChat: false,
+      },
     ]);
   });
 
@@ -116,7 +166,11 @@ describe("AL-U4 가짜 앨범 — 방 로그의 결과 줄", () => {
     const log: ChatMessage[] = [
       { id: "fx-1", at: 1, kind: "voice", durationMs: 3000, text: { ko: "네", en: "Yes" } },
     ];
-    expect(albumItemsFromLog(log)[0]).toMatchObject({ id: "fx-1", url: null, line: { ko: "네", en: "Yes" } });
+    expect(albumItemsFromLog(log)[0]).toMatchObject({
+      id: "fx-1",
+      url: null,
+      line: { ko: "네", en: "Yes" },
+    });
   });
 });
 

@@ -7,6 +7,7 @@ import { isSuccessStatus, type AuthRequestOutcome } from "./supabase-transport";
 import type { ChatMediaRemote } from "../screens/messenger-chat/chat-media.contract";
 import {
   mediaListFrom,
+  mediaPageFrom,
   mediaRequestFrom,
   signedUrlFrom,
   walletBalanceFrom,
@@ -46,8 +47,11 @@ export function createCompanionMediaRemote(deps: CompanionMediaDeps): ChatMediaR
     outcome !== null && outcome.ok && isSuccessStatus(outcome.status) ? outcome.bodyText : null;
 
   return {
-    request: async (kind, messageId) => {
-      const outcome = await post(`/functions/v1/companion-${kind}`, { message_id: messageId });
+    request: async (kind, messageId, again) => {
+      const outcome = await post(`/functions/v1/companion-${kind}`, {
+        message_id: messageId,
+        ...(again === true ? { again: true } : {}),
+      });
       if (outcome === null || !outcome.ok) return { kind: "failed" };
       return mediaRequestFrom(outcome.status, outcome.bodyText, deps.now());
     },
@@ -69,6 +73,28 @@ export function createCompanionMediaRemote(deps: CompanionMediaDeps): ChatMediaR
       const config = deps.config();
       return config === null ? null : signedUrlFrom(body, `${config.url}/storage/v1`);
     },
+    list: async ({ characterId, before, limit }) =>
+      mediaPageFrom(
+        bodyOf(
+          await post("/rest/v1/rpc/companion_list_media", {
+            p_character_id: characterId,
+            p_kind: null,
+            p_before: before === null ? null : new Date(before).toISOString(),
+            p_limit: limit,
+          }),
+        ),
+      ),
+    // 나머지 칸은 null — 그 열을 바꾸지 않습니다(생년 · 출처는 함께 null이어야 함).
+    saveSelf: async (self) =>
+      bodyOf(
+        await post("/rest/v1/rpc/companion_save_profile", {
+          p_birth_year: null,
+          p_age_source: null,
+          p_l1: null,
+          p_feedback_mode: null,
+          p_snapshot_self: self,
+        }),
+      ) !== null,
     balance: async () =>
       walletBalanceFrom(bodyOf(await post("/rest/v1/rpc/companion_get_wallet", {}))),
   };

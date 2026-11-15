@@ -49,7 +49,9 @@ export const messengerChatAlbumJa: ChatAlbumCopy = {
       case "no-coins":
         return "Yeopjeonが足りません。";
       case "busy":
-        return photo ? `${name}は別の写真を描いています。` : `${name}は別のボイスメッセージを録音しています。`;
+        return photo
+          ? `${name}は別の写真を描いています。`
+          : `${name}は別のボイスメッセージを録音しています。`;
       case "limit":
         return "今日の上限に達しました。あとでもう一度お試しください。";
       case "not-eligible":

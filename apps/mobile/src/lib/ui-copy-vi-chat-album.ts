@@ -49,7 +49,9 @@ export const messengerChatAlbumVi: ChatAlbumCopy = {
       case "no-coins":
         return "Bạn không đủ Yeopjeon.";
       case "busy":
-        return photo ? `${name} vẫn đang vẽ một ảnh khác.` : `${name} vẫn đang ghi âm một tin nhắn khác.`;
+        return photo
+          ? `${name} vẫn đang vẽ một ảnh khác.`
+          : `${name} vẫn đang ghi âm một tin nhắn khác.`;
       case "limit":
         return "Bạn đã đạt giới hạn hôm nay. Hãy thử lại sau.";
       case "not-eligible":
@@ -61,7 +63,8 @@ export const messengerChatAlbumVi: ChatAlbumCopy = {
   selfSection: "Về bạn",
   selfRow: "Bạn trong ảnh",
   selfTitle: "Bạn trong ảnh",
-  selfBody: "Khi nhân vật gửi ảnh, bạn có thể xuất hiện trong đó. Chúng tôi không bao giờ vẽ khuôn mặt bạn.",
+  selfBody:
+    "Khi nhân vật gửi ảnh, bạn có thể xuất hiện trong đó. Chúng tôi không bao giờ vẽ khuôn mặt bạn.",
   selfAsk: "Bạn muốn xuất hiện thế nào?",
   selfAskNote: "Luôn nhìn từ phía sau, không bao giờ có khuôn mặt. Đổi sau trong Cài đặt › Chats.",
   selfOptions: {

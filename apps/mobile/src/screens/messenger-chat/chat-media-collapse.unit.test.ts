@@ -37,7 +37,14 @@ describe("AL-U6 결과 줄 접기", () => {
       photo(A, "m1", 2),
       { id: `${A}~voice~v1`, at: 3, kind: "voice", durationMs: 0, text: { ko: "말", en: "" } },
       { id: `${A}~snapshot~req`, at: 4, kind: "photo-pending" },
-      { id: `${A}~snapshot~x1`, at: 5, kind: "media-notice", media: "photo", notice: "failed", until: null },
+      {
+        id: `${A}~snapshot~x1`,
+        at: 5,
+        kind: "media-notice",
+        media: "photo",
+        notice: "failed",
+        until: null,
+      },
       photo(B, "m3", 6),
     ];
     expect(collapseMediaResults(log)).toEqual(log);

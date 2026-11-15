@@ -128,13 +128,29 @@ export function walletBalanceFrom(bodyText: string | null): number | null {
 }
 
 /** 앨범 한 건 — 결과 칸 + 인물 · 그때의 말(`line {ko, en}`) · 지난 대화. 옛 서버(칸 없음)는 빈 줄 · false. */
-export function albumMediaOf(_raw: unknown): RemoteAlbumMedia | null {
-  return null;
+export function albumMediaOf(raw: unknown): RemoteAlbumMedia | null {
+  const media = remoteMediaOf(raw);
+  const record = recordOf(raw);
+  const characterId = stringOf(record?.characterId);
+  if (media === null || characterId === null) return null;
+  const line = recordOf(record?.line);
+  return {
+    ...media,
+    characterId,
+    line: { ko: stringOf(line?.ko) ?? "", en: stringOf(line?.en) ?? "" },
+    fromPastChat: record?.fromPastChat === true,
+  };
 }
 
 /** `companion_list_media` 본문(`{items, hasMore}`) — 틀린 줄은 버립니다. */
 export function mediaPageFrom(
-  _bodyText: string | null,
+  bodyText: string | null,
 ): { readonly items: readonly RemoteAlbumMedia[]; readonly hasMore: boolean } | null {
-  return null;
+  const raw = recordOf(parse(bodyText));
+  if (raw === null || !Array.isArray(raw.items) || typeof raw.hasMore !== "boolean") return null;
+  const items = raw.items.flatMap((item) => {
+    const media = albumMediaOf(item);
+    return media === null ? [] : [media];
+  });
+  return { items, hasMore: raw.hasMore };
 }
