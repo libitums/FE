@@ -4,6 +4,8 @@
 
 import type { RoomState } from "./chat-fixture-room";
 import type { ChatServerControls } from "./chat-delivery.contract";
+import type { ChatMediaHooks } from "./chat-media.contract";
+import { remoteMediaMethods } from "./chat-remote-media";
 import type { ChatRemote, RemoteHistory } from "./chat-remote.contract";
 import type { ChatMessage } from "./chat-source.contract";
 import { renderTurn, withCorrection } from "./chat-remote-notes";
@@ -22,6 +24,7 @@ export type RemoteRoomDeps = {
   readonly openRoomId: () => string | null;
   readonly schedule: (room: RoomState, ms: number, fn: () => void) => void;
   readonly uuid: () => string;
+  readonly mediaHooks?: ChatMediaHooks; // 사진 · 음성(ADR-0146)
 };
 
 export { uuidV4 } from "./chat-remote-notes";
@@ -34,6 +37,10 @@ export function remoteRoomMethods(deps: RemoteRoomDeps) {
   // 채우기가 끝났는지 — stalled에서 다시 시작하거나 다른 다시 읽기가 채웠는지 볼 때도 씁니다.
   const recoveryTargets = new WeakMap<RoomState, (log: readonly ChatMessage[]) => boolean>();
   const isOpen = (roomId: string) => deps.openRoomId() === roomId;
+  const media = remoteMediaMethods({
+    ...{ remote, live, changed, now, schedule, isOpen },
+    hooks: deps.mediaHooks,
+  });
   const busy = (room: RoomState) =>
     room.pendingReplies > 0 || room.recovery === "fetching" || room.remoteHistory === "loading";
 
@@ -81,7 +88,7 @@ export function remoteRoomMethods(deps: RemoteRoomDeps) {
   const loadRoom = (roomId: string) => {
     const room = live(roomId);
     if (room === null || room.access.kind !== "open") return;
-    if (room.remoteHistory !== "idle" && room.remoteHistory !== "failed") return;
+    if (room.remoteHistory !== "idle" && room.remoteHistory !== "failed") return media.resume(room);
     room.remoteHistory = "loading";
     changed(room);
     void (async () => {
@@ -92,6 +99,7 @@ export function remoteRoomMethods(deps: RemoteRoomDeps) {
       if (live(roomId) !== room) return;
       room.remoteHistory = ok ? "loaded" : "failed";
       changed(room);
+      if (ok) media.resume(room); // 기록 뒤 사진 · 음성 줄을 서버에 물어 다시 놓습니다
     })();
   };
 
@@ -287,5 +295,5 @@ export function remoteRoomMethods(deps: RemoteRoomDeps) {
     },
   };
 
-  return { loadRoom, sendText, controls };
+  return { loadRoom, sendText, controls, requestMedia: media.request };
 }

@@ -18,6 +18,7 @@ import { UnsentMessage } from "./ChatDelivery";
 import { RatingButtons, RatingResult } from "./RatingRow";
 import { MyMessageRow } from "./MyMessage";
 import { ChatCrisisCard, ChatNoticeRow } from "./SafetyParts";
+import { ChatMediaNoticeRow } from "./ChatMediaNotice";
 import type { ChatEntrance } from "./chat-entrance";
 import { notesOf } from "./chat-source.contract";
 import type { ChatMessage, ChatThread } from "./chat-source.contract";
@@ -144,7 +145,13 @@ function RowBody({
     case "photo":
       return (
         <ChatIncomingRow avatar={avatar} testId={ids.incoming}>
-          <PhotoBubble src={message.imageUrl} name={counterpart.name} testId={ids.photo} />
+          <PhotoBubble
+            src={message.imageUrl}
+            {...(message.aspect === undefined ? {} : { aspect: message.aspect })}
+            {...(message.aiGenerated === undefined ? {} : { aiGenerated: message.aiGenerated })}
+            name={counterpart.name}
+            testId={ids.photo}
+          />
         </ChatIncomingRow>
       );
     case "voice-pending":
@@ -158,6 +165,7 @@ function RowBody({
         <ChatIncomingRow avatar={avatar} testId={ids.incoming}>
           <VoiceBubble
             durationMs={message.durationMs}
+            {...(message.audioUrl === undefined ? {} : { audioUrl: message.audioUrl })}
             text={message.text}
             name={counterpart.name}
             testId={ids.voice}
@@ -166,6 +174,15 @@ function RowBody({
       );
     case "notice":
       return <ChatNoticeRow notice={message.notice} name={counterpart.name} />;
+    case "media-notice":
+      return (
+        <ChatMediaNoticeRow
+          notice={message.notice}
+          media={message.media}
+          until={message.until}
+          name={counterpart.name}
+        />
+      );
     case "crisis":
       return <ChatCrisisCard resources={message.resources} onOpen={openLink} />;
     default: {

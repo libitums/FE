@@ -1,5 +1,6 @@
 // 대화 설정(ADR-0126)의 문구 · test-id 계약입니다 — 설정 탭 Chats 화면 · 먼저 보내는 메시지 · 기억 · 교정 방식.
 
+import type { ChatMediaCopy } from "./chat-media.contract";
 import type { FeedbackCopy } from "./chat-feedback.contract";
 import type { MessengerAccessCopy } from "./messenger-access";
 /** 캐릭터가 먼저 보내는 메시지의 빈도입니다(ADR-0126). */
@@ -41,6 +42,8 @@ import type { MessengerListNoticeCopy } from "./messenger-list-notice";
 
 /** 메신저 문구 표에 덧붙는 칸입니다 — 대화 설정(ADR-0126) · 선톡 푸시 안내(ADR-0127). */
 export type MessengerChatExtraCopy = {
+  /** 서버 사진 · 음성(ADR-0146 「앱 연결」). */
+  readonly media: ChatMediaCopy;
   readonly chatSettings: ChatSettingsCopy;
   readonly pushNotice: MessengerListNoticeCopy;
   readonly access: MessengerAccessCopy;

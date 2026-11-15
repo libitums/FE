@@ -8,12 +8,18 @@ import { announce } from "../../lib/accessibility";
 import type { MessengerChatCopy } from "./messenger-chat.contract";
 import { voiceDurationLabel } from "./chat-rules";
 import type { ChatMessage } from "./chat-source.contract";
+import { clockLabel } from "../../lib/ui-copy-chat-parts";
+import { useUiCopy } from "../../lib/ui-copy";
+import type { ChatMediaCopy } from "./chat-media.contract";
+import { mediaLineKey } from "./chat-media-rules";
+import { clockOf } from "./safety-rules";
 
 /** 말풍선 낭독과 같은 문장입니다. 낭독할 것이 없으면 null. */
 export function arrivalAnnouncement(
   message: ChatMessage,
   name: string,
   copy: MessengerChatCopy["room"],
+  media: ChatMediaCopy | null = null,
 ): string | null {
   switch (message.kind) {
     case "text":
@@ -26,6 +32,9 @@ export function arrivalAnnouncement(
     case "photo":
       return copy.photoLabel(name);
     case "voice":
+      // 서버 음성은 길이를 모릅니다(0) — 길이 없는 문장(ADR-0146 「앱 연결」).
+      if (message.durationMs <= 0 && media !== null)
+        return media.voiceLabel(name, message.text.ko, message.text.en);
       return copy.voiceLabel(
         name,
         voiceDurationLabel(message.durationMs),
@@ -37,6 +46,13 @@ export function arrivalAnnouncement(
     // 고지 줄은 로그를 훑을 때 읽힙니다. 위기 안내는 놓치면 안 되어 도착을 알립니다(ADR-0125).
     case "notice":
       return null;
+    // 사진 · 음성 대신 선 회색 줄은 기다리던 결과라 알립니다.
+    case "media-notice": {
+      if (media === null) return null;
+      const until = message.until === null ? null : clockOf(message.until);
+      const clock = until === null ? null : clockLabel(until.hour, until.minute);
+      return media.notice(message.notice, message.media, name, clock);
+    }
     case "crisis":
       return copy.crisisArrived;
     default: {
@@ -64,6 +80,7 @@ export function useAnnounceArrivals(
   const mutedRef = useRef(muted);
   mutedRef.current = muted;
   const busy = server?.busy ?? false;
+  const media = useUiCopy().messengerChat.media;
 
   useEffect(() => {
     if (messages === null) return;
@@ -72,6 +89,18 @@ export function useAnnounceArrivals(
     if (known === null) return;
     const fresh = messages.filter((message) => known.get(message.id) !== message.kind);
     let toAnnounce = fresh;
+    // 서버 사진 · 음성 결과 · 회색 줄은 답을 기다리지 않아도 섭니다 — 선 순간 알립니다(자리표시자는 빼고).
+    const mediaResults = fresh.filter(
+      (message) =>
+        mediaLineKey(message.id) !== null &&
+        message.kind !== "photo-pending" &&
+        message.kind !== "voice-pending",
+    );
+    if (server !== null && mediaResults.length > 0 && !mutedRef.current)
+      for (const message of mediaResults) {
+        const content = arrivalAnnouncement(message, name, copy, media);
+        if (content !== null) announce(content);
+      }
     if (server !== null) {
       for (const message of fresh)
         if (!pending.current.includes(message.id)) pending.current.push(message.id);
@@ -86,8 +115,8 @@ export function useAnnounceArrivals(
     }
     if (mutedRef.current) return;
     for (const message of toAnnounce) {
-      const content = arrivalAnnouncement(message, name, copy);
+      const content = arrivalAnnouncement(message, name, copy, media);
       if (content !== null) announce(content);
     }
-  }, [messages, name, copy, busy]);
+  }, [messages, name, copy, busy, media]);
 }

@@ -8,6 +8,7 @@ import type { SendCost } from "./chat-turns.contract";
 import { canSend } from "./chat-rules";
 import type { ChatBirthYear, ChatMessage, ChatThread } from "./chat-source.contract";
 import { ComposerRow } from "./ComposerRow";
+import { mediaAvailabilityOf } from "./chat-media-rules";
 import { FeatureRow } from "./FeatureRow";
 import { chatKeyboardSlotHeight, chatSlotContent } from "./keyboard-height";
 import type { KeyboardPlan } from "./keyboard-plan";
@@ -71,6 +72,12 @@ export function ChatRoomDock({
   const content = chatSlotContent(state);
   const menuOpen = state.overlay.kind === "more-menu";
   const ideasOpen = state.slot.kind === "ideas";
+  // 서버 방의 사진 · 음성 알약 상태(ADR-0146 「앱 연결」) — 대상 메시지 · 답 기다림 · 만드는 중 · 이미 있음.
+  const mediaRoom = {
+    messages: thread.messages,
+    busy: thread.typing || thread.awaitingReply,
+    server: thread.server !== null,
+  };
 
   // 입력이 막힌 방은 기능 줄 · 입력 줄 · 토글 · 키보드 자리 대신 상태 줄 하나만 둡니다(ADR-0125).
   if (thread.inputBlock !== null) {
@@ -108,6 +115,9 @@ export function ChatRoomDock({
           <FeatureRow
             photoPrice={CHAT_COIN_PRICES.photo}
             voicePrice={CHAT_COIN_PRICES.voice}
+            photoAvailability={mediaAvailabilityOf(mediaRoom, "photo")}
+            voiceAvailability={mediaAvailabilityOf(mediaRoom, "voice")}
+            name={thread.counterpart.name}
             moreState={menuOpen ? "open" : "closed"}
             onSnapshot={() =>
               dispatch({ type: "open-overlay", overlay: { kind: "ask-media", media: "photo" } })

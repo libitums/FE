@@ -5,6 +5,7 @@ import type { HttpRequestInit, SupabaseConfig } from "./auth-session.contract";
 import { bearerHeaders } from "./auth-request";
 import type { ChatStreamClient } from "./chat-stream.contract";
 import { chatStreamClient } from "./chat-stream";
+import { createCompanionMediaRemote } from "./companion-media-api";
 import { readNetworkProperties } from "./network-status";
 import { currentAccessToken } from "./progress-api";
 import { supabaseConfig } from "./supabase-config";
@@ -37,6 +38,8 @@ const postJson =
   });
 
 export function createCompanionRemote(deps: CompanionRemoteDeps): ChatRemote {
+  // 사진 · 음성(ADR-0146 「앱 연결」)은 같은 토큰 · 설정 · 전송을 씁니다.
+  const media = createCompanionMediaRemote(deps);
   const call = async (path: string, body: unknown): Promise<string | null> => {
     try {
       const token = await deps.token();
@@ -49,6 +52,7 @@ export function createCompanionRemote(deps: CompanionRemoteDeps): ChatRemote {
   };
 
   return {
+    media,
     loadHistory: async (characterId) =>
       historyFrom(
         await call("/rest/v1/rpc/companion_list_messages", {

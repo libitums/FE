@@ -3,7 +3,7 @@
 - 상태: **제안** — 사용자 결정(2026-11-10 ~ 13)을 마이그레이션 `20261130120000_companion_snapshot_voice.sql`과 Edge Function
   `companion-snapshot` · `companion-voice`로 옮겼다. 운영 적용 2026-11-14 — SQL(SQL 편집기, 기록 미정리) · 비밀 `OPENAI_API_KEY` ·
   `ELEVENLABS_API_KEY`(실험실과 다른 키) · `companion-refs` 기준 그림 열 장 · 함수 `companion-snapshot` · `companion-voice` · `delete-account` 배포.
-  앱 화면은 아직 없다.
+  앱 화면은 아직 없다. ⟨2026-11-15⟩ 앱 연결 1단계 — 메신저 서버 모드의 기존 Snapshot · Snap voice가 이 서버를 부른다(아래 「앱 연결」).
 - 날짜: (채택일에 적는다)
 - 다루는 축: 스냅샷 · 음성을 어디서 만들고, 어떻게 저장 · 과금 · 재사용하는가.
   **다루지 않는 것**: 앱 화면(Lynx) · 대시보드 · 출석 보상 · 엔진 고르기 실험(→ ops-dashboard 스냅샷 실험실).
@@ -136,3 +136,32 @@
 
 운영 적용 순서: SQL 편집기에서 20261202를 실행 → `supabase migration repair --status applied 20261130120000 20261202120000` →
 `companion-snapshot` · `companion-voice` 다시 배포(`delete-account`는 이번 변경과 상관없다). 자세히는 함수 README 운영 적용 순서.
+
+### 2026-11-15 앱 연결 — 메신저 서버 모드(1단계, 브랜치 `feat/companion-media-app`)
+
+메신저의 **기존** Snapshot · Snap voice UI(알약 → 확인 모달 → 자리표시자 → 말풍선)를 서버 모드(로그인한 시험 계정, ADR-0137)에서 이 서버에 이었다.
+가짜 출처(테스트 · 데모)는 그대로다. 새 화면은 없다 — 앨범 · 학습자 모습 설정은 2단계(시안 먼저), 다시 그리기(25) UI도 없다. 작업 산출물은
+`.agent-harness/work/companion-media-app/`(요구사항 · 스펙 · 테스트 계획 · 리뷰).
+
+1. **대상 메시지** [사용자 — 브리프]: 방 로그의 가장 최근 캐릭터 메시지(서버 id `<uuid>#<자리>`의 말 · 지문 말풍선 묶음). 음성은 그 메시지에
+   말(speech) 조각이 있어야 한다(지문만이면 서버도 422 `no_speech`). 대상이 없거나 답을 기다리는 중이면 알약이 꺼지고(흐림 · 낭독에 까닭),
+   같은 종류가 만드는 중이면(사진은 방 안 어디든 — 서버가 유저당 하나만 그림) · 그 메시지에 이미 결과가 있으면 꺼진다. 거절 · 숨김 · 위기는 앱이
+   모른다 — 서버 422가 회색 줄로 온다 [코드].
+2. **흐름** [코드]: 누르면 곧바로 자리표시자 → `POST companion-snapshot|companion-voice {message_id}` → 202면 pending 추적, 200 cached면 곧바로 결과.
+   상태는 `companion_get_media(p_ids)`를 2 · 3 · 5 · 5 · 10 · 10 · 15초, 뒤로 30초마다(방이 열려 있을 때만, 방마다 한 줄). 방을 나가면 멈추고,
+   다시 열면 `companion_get_media(p_message_ids)`로 로그의 캐릭터 메시지 결과를 다시 놓는다(앱을 껐다 켜도 같다). 앱 쪽 상한 11분(서버 만료 10분 + 1분).
+   연결 실패 · 5xx면 메시지 id로 한 번 물어 서버가 받았으면 그대로 이어 간다(두 번 내지 않음).
+3. **결과 · 파일** [코드]: 사진은 `POST /storage/v1/object/sign/companion-media/<path> {expiresIn: 86400}`의 서명 URL(하루 — 방을 다시 열면 새로),
+   3:2(240 × 160) · 1:1(200 × 200) 상자와 「AI-generated」 캡션(§8의 `aiGenerated`를 화면에 보임). 음성은 대상 메시지의 한국어 · 번역을 그대로 싣고
+   호스트 `AudioPlaybackModule`로 0.85배 재생한다(두 호스트 모두 https 원격 재생을 이미 받는다 — 호스트 변경 없음). 길이를 모르므로 길이 글자를 그리지 않는다.
+4. **오류 → 회색 줄** [코드]: 402 엽전 부족 · 409 만드는 중 · 429 상한(`resetsAt` 또는 다음 UTC 자정을 기기 시각으로) · 422/404/403 forbidden 대상 아님 ·
+   403/503/400/401/405 지금 못 씀 · blocked · failed(엽전 돌아옴) · 요청 실패. 5개 언어.
+5. **엽전** [코드]: 서버 모드에서는 앱 지갑에서 빼지 않는다. 202 · 결과 뒤 `companion_get_wallet`(sub + grant + paid)을 읽어 엽전 출시 결선의
+   `acceptServerBalance`로 머리 칩에 넣고, 메신저 지갑은 머리 칩 값을 따른다(`AppSession` 동기화를 `notices.coinCount`로 — 방 · 모달 · 목록이 같은 수).
+6. **이벤트** [코드]: `chat_media_completed {characterId, media, outcome: complete | blocked | failed | refused}`(surface chat) — 앱이 pending을 본 결과 ·
+   요청 거절마다 한 번. `chat_media_requested`는 그대로.
+7. **`MESSENGER_MEDIA_READY`는 false 그대로** [추론]: 흐름은 unit · ui · App 통합 테스트로 끝까지 돌지만, 실서버 · 기기 확인(사진 1분 생성, 실제 재생,
+   Android 원격 mp3)을 아직 못 봤다. 켜면 방 코치마크에 사진 · 음성 단계가 선다 — e2e `docs/e2e/companion-media-app.md`를 본 뒤 한 줄 바꾼다.
+
+대가: 길이 표시가 없는 음성 · 하루짜리 서명 URL(방을 하루 넘게 열어 두면 그림이 풀리지 않을 수 있음 — 다시 열면 새로) · 기록 첫 쪽(30) 밖 메시지의
+결과는 방에 다시 놓지 않는다(앨범 2단계).

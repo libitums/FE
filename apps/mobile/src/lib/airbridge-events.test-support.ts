@@ -54,6 +54,7 @@ export const allEventNames = [
   "new_friend_sheet_closed",
   "chat_message_sent",
   "chat_media_requested",
+  "chat_media_completed",
   "chat_coins_short",
   "surface_session_ended",
   "first_lesson_completed",
@@ -202,6 +203,14 @@ export const unmappedEvents = [
     characterId: "duksu",
     media: "photo",
     price: "35",
+  },
+  {
+    name: "chat_media_completed",
+    surface: "chat",
+    daysSinceFirstOpen: "3",
+    characterId: "duksu",
+    media: "voice",
+    outcome: "complete",
   },
   {
     name: "chat_coins_short",
