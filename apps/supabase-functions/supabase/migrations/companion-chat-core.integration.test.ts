@@ -319,6 +319,7 @@ test("CH9. 운영 조회 — 시험 계정 목록 · 대화(내부 상태 · 판
       proactiveHour: null,
       timezone: null,
       replySuggestions: true,
+      snapshotSelf: "female",
     },
   ]);
 

@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "media": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "characterId": {
+          "type": "string"
+        },
+        "messageId": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "kind": {
+          "type": "string",
+          "enum": ["snapshot", "voice"]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "complete", "blocked", "failed"]
+        },
+        "charge": {
+          "type": "string",
+          "enum": ["photo", "photo_redraw", "voice"]
+        },
+        "cost": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "path": {
+          "type": ["string", "null"]
+        },
+        "mime": {
+          "type": ["string", "null"]
+        },
+        "aspect": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": ["3:2", "1:1"]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "failure": {
+          "type": ["string", "null"]
+        },
+        "aiGenerated": {
+          "type": "boolean"
+        },
+        "engine": {
+          "type": ["string", "null"]
+        },
+        "model": {
+          "type": ["string", "null"]
+        },
+        "createdAt": {
+          "type": "string"
+        },
+        "finishedAt": {
+          "type": ["string", "null"]
+        }
+      },
+      "required": [
+        "id",
+        "characterId",
+        "messageId",
+        "kind",
+        "status",
+        "charge",
+        "cost",
+        "path",
+        "mime",
+        "aspect",
+        "failure",
+        "aiGenerated",
+        "engine",
+        "model",
+        "createdAt",
+        "finishedAt"
+      ],
+      "additionalProperties": false
+    },
+    "cached": {
+      "type": "boolean"
+    }
+  },
+  "required": ["media", "cached"],
+  "additionalProperties": false
+}

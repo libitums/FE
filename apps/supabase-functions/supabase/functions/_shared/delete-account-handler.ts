@@ -138,6 +138,13 @@ async function decide(
     }
   }
 
+  if (deps.purgeUserFiles !== undefined) {
+    try {
+      await deps.purgeUserFiles(user.id);
+    } catch {
+      // 계정 삭제를 막지 않는다(계약 주석).
+    }
+  }
   const deleted = await send(deps, adminDeleteUserRequest(env, user.id));
   if (
     deleted === null ||

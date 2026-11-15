@@ -24,3 +24,9 @@ verify_jwt = false
 
 [functions.revenuecat-webhook]
 verify_jwt = false
+
+[functions.companion-snapshot]
+verify_jwt = false
+
+[functions.companion-voice]
+verify_jwt = false
