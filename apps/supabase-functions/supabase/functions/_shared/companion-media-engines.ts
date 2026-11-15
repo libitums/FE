@@ -147,6 +147,9 @@ export async function openaiImageEdit(
   } catch {
     throw new EngineError("OpenAI: invalid JSON", true);
   }
+  // 본문이 JSON이어도 객체가 아니면(`null` · 숫자) 잘못된 응답과 같게 다룹니다 — TypeError로 새지 않게(리뷰 #441).
+  if (body === null || typeof body !== "object")
+    throw new EngineError("OpenAI: invalid JSON", true);
   const b64 = body.data?.[0]?.b64_json;
   if (typeof b64 !== "string" || b64 === "") throw new EngineError("OpenAI: no image", true);
   const png = bytesFromBase64(b64);
