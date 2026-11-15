@@ -10,7 +10,7 @@ import type {
 } from "./chat-send.contract.ts";
 import { createChatSendHandler } from "./chat-send-handler.ts";
 import { fakeCompanionLlm } from "./companion-llm-fake.ts";
-import { emptyFeedback } from "./companion-llm-prompts.ts";
+import { emptyFeedback, recoveryDirective } from "./companion-llm-prompts.ts";
 import {
   checkTurnOrder,
   decodeTurnEvent,
@@ -356,9 +356,15 @@ describe("턴 스트림", () => {
   });
 
   test("CS6. 일시 차단에 닿는 입력 차단 · 출력 차단 — 조각 · 교정 없이 guardrail_blocked", async () => {
-    for (const text of ["사랑해 [block]", "괜찮아요 [unsafe-reply]"]) {
+    // 출력 차단은 한 번 다시 만든다(ADR-0151) — 다시 만든 답도 걸리는 경우로 본다.
+    const cases: [string, CompanionLlm][] = [
+      ["사랑해 [block]", fakeCompanionLlm()],
+      ["괜찮아요", llmWith({ output: { category: "other_harm", action: "block" } })],
+    ];
+    for (const [text, llm] of cases) {
       const { handler, finishArgs, settle } = setup({
         status: { strikes: 2, strikeLimit: 3, memoryFull: false },
+        llm,
       });
       const list = await events(await handler(post(body({ text }))));
       await settle();
@@ -899,6 +905,8 @@ describe("비속어 · *행동*", () => {
       p_status: "blocked",
       p_moderation: [
         { layer: "input", action: "allow" },
+        { layer: "output_sync", category: "profanity", action: "block" },
+        // 화제를 돌려 다시 만든 답(ADR-0151)도 가짜 모델이 또 욕을 해 걸린다.
         { layer: "output_sync", category: "profanity", action: "block" },
       ],
     });
@@ -1695,5 +1703,108 @@ describe("학습 표현 넣기(PRD §3.7)", () => {
     await (await manual.handler(post())).text();
     await manual.settle();
     expect(metaOf(manual.finishArgs())).toMatchObject({ reason: "manual_empty" });
+  });
+});
+
+describe("출력 차단 되살리기(ADR-0151)", () => {
+  const recording = (base: CompanionLlm = fakeCompanionLlm()) => {
+    const replies: { directive: string | null | undefined; userText: string }[] = [];
+    const translations: string[] = [];
+    const llm: CompanionLlm = {
+      ...base,
+      reply: (request) => {
+        replies.push({ directive: request.directive, userText: request.userText });
+        return base.reply(request);
+      },
+      translate: (request) => {
+        translations.push(JSON.stringify(request.segments));
+        return base.translate(request);
+      },
+    };
+    return { llm, replies, translations };
+  };
+  const deltaText = (list: TurnEvent[]) =>
+    list
+      .filter((event) => event.event === "delta")
+      .map((event) => JSON.stringify(event.data))
+      .join("");
+
+  test("GR1. 지시는 분류 말만 담고, 걸린 글 · 규칙 언급을 하지 말라고 한다", () => {
+    const text = recoveryDirective("romance or flirting with you");
+    expect(text).toContain("romance or flirting with you");
+    expect(text).toMatch(/withheld/);
+    expect(text).toMatch(/Never mention rules/);
+    expect(text).toMatch(/different everyday topic/);
+  });
+
+  test("GR2. 나이 모름 — 출력 검사에 걸린 답을 한 번 다시 만들어 보통 답으로 보내고 complete로 저장한다", async () => {
+    const watched = recording();
+    const { handler, finishArgs, settle } = setup({ llm: watched.llm });
+    const list = await events(await handler(post(body({ text: "괜찮아요 [unsafe-reply]" }))));
+    await settle();
+    expect(checkTurnOrder(list)).toEqual({ ok: true });
+    expect(list.at(-1)).toMatchObject({ event: "done" });
+    expect(deltaText(list)).not.toContain("[unsafe]");
+    expect(deltaText(list).length).toBeGreaterThan(0);
+    expect(watched.replies).toHaveLength(2);
+    expect(watched.replies[1]?.directive).toBe(recoveryDirective("something unsafe"));
+    // 다시 만든 답의 번역만 남는다(걸린 답의 번역은 끊긴다).
+    expect(watched.translations.at(-1)).not.toContain("[unsafe]");
+    expect(finishArgs()).toMatchObject({
+      p_status: "complete",
+      p_assistant: { meta: { guardrailRecovered: { category: "other_harm" } } },
+      p_moderation: [
+        { layer: "input", category: "safe", action: "allow" },
+        { layer: "output_sync", category: "other_harm", action: "block" },
+        { layer: "output_sync", category: "safe", action: "allow" },
+      ],
+    });
+  });
+
+  test("GR3. 다시 만든 답도 걸리면 지금처럼 guardrail_blocked · blocked — 조각 · 교정 없음", async () => {
+    const watched = recording(llmWith({ output: { category: "sexual", action: "block" } }));
+    const { handler, finishArgs, settle } = setup({ llm: watched.llm });
+    const list = await events(await handler(post()));
+    await settle();
+    expect(checkTurnOrder(list)).toEqual({ ok: true });
+    expect(names(list).filter((name) => name === "delta" || name === "correction")).toEqual([]);
+    expect(list.at(-1)).toMatchObject({ event: "error", data: { code: "guardrail_blocked" } });
+    expect(watched.replies).toHaveLength(2);
+    expect(watched.replies[1]?.directive).toBe(recoveryDirective("sexual content"));
+    expect(finishArgs()).toMatchObject({ p_status: "blocked", p_assistant: null });
+    expect(
+      (finishArgs()!["p_moderation"] as { layer: string; action: string }[]).filter(
+        (record) => record.layer === "output_sync" && record.action === "block",
+      ),
+    ).toHaveLength(2);
+  });
+
+  test("GR4. 다시 만들기가 실패해도 guardrail_blocked · blocked로 끝낸다", async () => {
+    const base = fakeCompanionLlm();
+    let calls = 0;
+    const llm: CompanionLlm = {
+      ...base,
+      async *reply(request) {
+        calls += 1;
+        if (calls > 1) throw new Error("upstream down");
+        yield* base.reply(request);
+      },
+    };
+    const { handler, finishArgs, settle } = setup({ llm });
+    const list = await events(await handler(post(body({ text: "괜찮아요 [unsafe-reply]" }))));
+    await settle();
+    expect(list.at(-1)).toMatchObject({ event: "error", data: { code: "guardrail_blocked" } });
+    expect(finishArgs()).toMatchObject({ p_status: "blocked", p_assistant: null });
+  });
+
+  test("GR5. 성인은 출력 동기 검사가 없어 다시 만들지 않는다", async () => {
+    const watched = recording();
+    const { handler, settle } = setup({
+      gate: { ...okGate, ageBand: "adult", notices: [] },
+      llm: watched.llm,
+    });
+    await events(await handler(post()));
+    await settle();
+    expect(watched.replies).toHaveLength(1);
   });
 });

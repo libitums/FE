@@ -2,7 +2,8 @@
 // 입력 검사 · 메인 답변 · 피드백을 동시에 시작해, 피드백은 답이 나가도 되는 것이 확인된 뒤 `correction`으로 `done` 전에 한 번 보내고, 답 조각이 다
 // 모이면 L1 번역(`chat-send-translate.ts`) · 추천 답변 칩(`chat-send-suggest.ts`, 스위치 켬)을 남은 기다림과 동시에 돌려 `state` 앞에 보냅니다.
 // 저장(finish)이 친밀도 → 말투 · 크레딧 확정/해제를 한 트랜잭션으로 하고 그 결과로 `state` · `done`을 씁니다. 입력 검사에 걸리면 반복 위반
-// 단계에 따라 성격대로 거절하거나(`chat-send-refusal.ts`) `guardrail_blocked`로 끝냅니다.
+// 단계에 따라 성격대로 거절하거나(`chat-send-refusal.ts`) `guardrail_blocked`로 끝냅니다. 출력 검사에 걸린 답은 화제를 돌려 한 번 다시
+// 만들고(`chat-send-turn-recover.ts`, ADR-0151), 그것도 걸리면 `guardrail_blocked`로 끝냅니다.
 
 import type { AgeBand, Feedback, ModerationVerdict, PersonaCard } from "./chat-send.contract.ts";
 import type { TurnContext } from "./chat-send-context.ts";
@@ -16,7 +17,6 @@ import { refusalStage } from "./chat-send-refusal.ts";
 import { sendTurnStart } from "./chat-send-turn-start.ts";
 import { turnRefuser } from "./chat-send-turn-refuse.ts";
 import {
-  defaultLlmTimeoutMs,
   historyFrom,
   moderateInput,
   skippedFeedback,
@@ -24,7 +24,6 @@ import {
   startReply,
 } from "./chat-send-reply.ts";
 import {
-  chipTarget,
   learnedTargets,
   learningDay,
   learningOutcome,
@@ -33,19 +32,15 @@ import {
   resolveLearning,
   withLearnedUse,
 } from "./chat-send-learning.ts";
-import {
-  sendSuggestions,
-  startSuggestions,
-  suggestionSettings,
-  suggestionsMeta,
-} from "./chat-send-suggest.ts";
-import { applyTranslation, startTranslation, translationContext } from "./chat-send-translate.ts";
+import { sendSuggestions, suggestionSettings, suggestionsMeta } from "./chat-send-suggest.ts";
+import { applyTranslation } from "./chat-send-translate.ts";
+import { outputChecker, recoverReply, startFollowUps } from "./chat-send-turn-recover.ts";
 import { chooseBranch, nextTopicState, topicStateFrom } from "./companion-branching.ts";
 import { STREAM_ERRORS, type StreamErrorCode } from "./companion-contract/index.ts";
 import { systemSplit } from "./companion-llm.ts";
 import { companionSystemPrompt, type PromptInput } from "./companion-prompt.ts";
 import { crisisResourcesFor } from "./companion-safety.ts";
-import { segmentsToPlain, type SegmentDelta } from "./companion-segments.ts";
+import type { SegmentDelta } from "./companion-segments.ts";
 import { withUsageMeta } from "./companion-usage.ts";
 
 export type { TurnContext };
@@ -106,13 +101,8 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
 
   const abort = new AbortController();
   const history = historyFrom(turn);
-  const reply = startReply(
-    context,
-    history,
-    `${prompt.stable}${systemSplit}${prompt.dynamic}`,
-    abort,
-    branch.directive,
-  );
+  const system = `${prompt.stable}${systemSplit}${prompt.dynamic}`;
+  let reply = startReply(context, history, system, abort, branch.directive);
   // 추천 답변 칩을 그대로 보냈으면 피드백 모델을 부르지 않는다(칩은 이미 자연스러운 문장). 고쳐 보냈거나 직접 입력 · 지난 칩이면 보통처럼.
   const feedback = (
     context.choice.inputSource === "suggestion"
@@ -173,50 +163,41 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
     return fail("upstream_unavailable", "failed");
   }
   if (result.segments.length === 0) return fail("upstream_unavailable", "failed");
-  // 번역은 남은 기다림(출력 검사 · 피드백)과 동시에. 검사에 걸리면 `fail`의 abort가 끊고, 걸린 답의 번역은 내보내지 않는다.
-  const translation = startTranslation(
-    llm,
-    env,
-    {
-      segments: result.segments,
-      l1: gate.l1,
-      timeoutMs: deps.translationTimeoutMs,
-      context: translationContext([...history, { role: "user", text: body.text }]),
-      persona,
-    },
-    abort.signal,
-  );
-  const chips = startSuggestions(
-    context,
-    persona,
-    result.segments,
-    abort.signal,
-    chipTarget(target),
-  );
+  // 번역 · 칩은 남은 기다림(출력 검사 · 피드백)과 동시에. 검사에 걸리면 끊고, 걸린 답의 번역 · 칩은 내보내지 않는다.
+  const followInput = { persona, history, target, signal: abort.signal };
+  let follow = startFollowUps(context, followInput, result.segments);
+  let recovered: string | null = null;
 
   if (ageBand !== "adult") {
+    const check = outputChecker(context, moderation);
     let output: ModerationVerdict;
     try {
-      output = await llm.moderate({
-        layer: "output_sync",
-        text: segmentsToPlain(result.segments),
-        context: body.text,
-        ageBand,
-        signal: AbortSignal.timeout(deps.llmTimeoutMs ?? defaultLlmTimeoutMs),
-      });
+      output = await check(result.segments);
     } catch {
       return fail("upstream_unavailable", "failed");
     }
-    moderation.push({
-      layer: "output_sync",
-      category: output.category,
-      action: output.action === "allow" ? "allow" : "block",
-    });
-    if (output.action !== "allow") return fail("guardrail_blocked", "blocked");
+    if (output.action !== "allow") {
+      follow.stop();
+      const again = await recoverReply(context, {
+        history,
+        system,
+        abort,
+        check,
+        category: output.category,
+      });
+      if (again === null) return fail("guardrail_blocked", "blocked");
+      ({ reply, result } = again);
+      recovered = output.category;
+      follow = startFollowUps(context, followInput, result.segments);
+    }
     reply.goLive(sendDelta);
   }
 
-  const [feedbackResult, translated, suggested] = await Promise.all([feedback, translation, chips]);
+  const [feedbackResult, translated, suggested] = await Promise.all([
+    feedback,
+    follow.translation,
+    follow.chips,
+  ]);
   sendCorrection(feedbackResult);
   const segments = applyTranslation(sink, deps.log, result.segments, translated);
   const saved = sendSuggestions(sink, deps.log, context.assistantMessageId, suggested);
@@ -254,6 +235,7 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
           ...suggestionsMeta(suggested),
           trial: turn.trial,
           playground: context.playground,
+          ...(recovered === null ? {} : { guardrailRecovered: { category: recovered } }),
         },
       }),
       {

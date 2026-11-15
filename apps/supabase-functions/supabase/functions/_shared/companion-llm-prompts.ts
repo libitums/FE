@@ -251,3 +251,11 @@ export function refusalDirective(stage: RefusalStage, topic: string): string {
 /** 거절 답을 만들 때 유저 말 자리에 넣는 앱 안내(학습자의 글 대신). */
 export const refusalUserText = (topic: string): string =>
   `(앱 안내: 학습자의 마지막 메시지는 안전 규칙에 걸려 보이지 않는다 — ${topic}. 캐릭터가 성격대로 짧게 거절한다.)`;
+
+/**
+ * 출력 검사(미성년자 · 나이 모름)에 걸린 답을 한 번 다시 만들 때의 이번 답 지시(ADR-0151). 걸린 답의 글은 주지 않고 분류(`topic`)만 준다 —
+ * 글을 주면 모델이 그 내용을 다시 이어 받을 수 있다. 학습자의 글은 입력 검사를 통과했으니 보통처럼 답한다.
+ */
+export function recoveryDirective(topic: string): string {
+  return `Your first draft of this reply was withheld because it drifted into ${topic}, which this conversation must stay away from. Write a new reply to the learner's last message that does not continue, describe or hint at that thread. Answer briefly in character, then steer to a different everyday topic with one easy question. Stay fully in character and keep your current speech level. Never mention rules, the app, AI, filters, moderation or a withheld draft, and do not lecture.`;
+}
