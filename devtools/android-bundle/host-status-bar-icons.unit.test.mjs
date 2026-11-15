@@ -500,6 +500,8 @@ test("SM11: statusBarSurfaceRegistry matches the contract (six routes, eight CSS
     "screens/journey-map/streak-reward.css",
     // 엽전 출시 · 채팅 새 기능 모달(ADR-0140) — 기본 스크림, 표지 없음.
     "screens/launch/launch.css",
+    // 앨범 사진 보기(ADR-0150) — 짙은 바탕이라 밝은 아이콘 표지.
+    "screens/messenger-chat/chat-album.css",
     // 메신저 채팅방 겹침(ADR-0113) — 밝은 아이콘 표지가 아니다.
     "screens/messenger-chat/chat-overlays.css",
     // 메신저 첫 입장 목록 안내(ADR-0139) — 기본 스크림, 표지 없음.
@@ -518,6 +520,7 @@ test("SM11: statusBarSurfaceRegistry matches the contract (six routes, eight CSS
   assert.match(layerText("screens/journey-map/journey-stat-modal.css"), /light-icons/);
   assert.match(layerText("screens/journey-map/journey-stat-modal.css"), /JourneyStatModal/);
   assert.match(layerText("screens/coin-shop/coin-shop-screen.css"), /light-icons/);
+  assert.match(layerText("screens/messenger-chat/chat-album.css"), /AlbumPhotoViewer/);
   assert.match(layerText("screens/coin-shop/coin-shop-screen.css"), /CoinShopScreen/);
   const guide = layerText("components/first-unit-guide.css");
   assert.match(guide, /light-icons/);
