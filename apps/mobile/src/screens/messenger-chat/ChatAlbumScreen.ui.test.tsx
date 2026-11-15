@@ -83,7 +83,9 @@ test("AL-UI1 앨범은 제목 · 날짜 묶음 · 칸(판은 최신 하나) · �
   expect(textOf(ids.screen)).toContain("미나's album");
   expect(textOf(ids.screen)).toContain("Today");
   expect(textOf(ids.screen)).toContain("Yesterday");
-  expect(textOf(ids.screen)).toContain("Pictures and voice messages stay here even if you delete the chat.");
+  expect(textOf(ids.screen)).toContain(
+    "Pictures and voice messages stay here even if you delete the chat.",
+  );
   expect(screen.queryByTestId(ids.tile("p2"))).not.toBeNull();
   expect(screen.queryByTestId(ids.tile("p1"))).toBeNull();
   expect(textOf(ids.tile("p2"))).toContain("2 versions");
@@ -112,7 +114,10 @@ test("AL-UI2 빈 앨범은 안내, 못 읽으면 Try again이 다시 읽는다",
 test("AL-UI3 더 있으면 Show more가 가장 오래된 칸의 시각으로 다음 쪽을 읽어 덧붙인다", async () => {
   const older = item({ id: "p9", messageId: B, createdAt: NOW - 50 * HOUR });
   const { album } = mount({
-    pages: [{ items: ITEMS.slice(0, 3), hasMore: true }, { items: [older], hasMore: false }],
+    pages: [
+      { items: ITEMS.slice(0, 3), hasMore: true },
+      { items: [older], hasMore: false },
+    ],
   });
   await flush();
   tapId(ids.more);

@@ -10,6 +10,8 @@ import type { ChatMediaKind, ChatText } from "./chat-source.contract";
 export type ChatSnapshotSelf = "female" | "male" | "hidden";
 /** 고른 적 없으면 서버 기본값입니다. */
 export const DEFAULT_SNAPSHOT_SELF: ChatSnapshotSelf = "female";
+/** 고르는 순서(시트 · 첫 질문). */
+export const SNAPSHOT_SELVES: readonly ChatSnapshotSelf[] = ["female", "male", "hidden"];
 
 export type ChatAlbumTab = "all" | "photos" | "voice";
 
@@ -127,7 +129,8 @@ export const chatAlbumTestIds = {
   redraw: "chat-album-redraw",
   voiceSheet: "chat-album-voice-sheet",
   voicePlay: "chat-album-voice-play",
-  recordAgain: "chat-album-record-again",
+  /** 음성 시트의 Record again도 ui-lynx `BottomSheet` action id로 붙습니다. */
+  recordAgain: "ui-lynx-bottom-sheet-action-record-again",
   confirm: "chat-album-remake-dialog",
   confirmGo: "chat-album-remake-go",
   confirmCancel: "chat-album-remake-cancel",
@@ -135,6 +138,7 @@ export const chatAlbumTestIds = {
   selfRow: "chat-settings-snapshot-self",
   selfSheet: "chat-settings-snapshot-self-sheet",
   selfOption: (self: ChatSnapshotSelf) => `chat-snapshot-self-${self}`,
-  selfSave: "chat-settings-snapshot-self-save",
+  /** 시트의 Save는 ui-lynx `BottomSheet`가 action id로 test-id를 붙입니다. */
+  selfSave: "ui-lynx-bottom-sheet-action-save",
   selfAsk: "messenger-chat-ask-self",
 } as const;

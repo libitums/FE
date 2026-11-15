@@ -13,6 +13,7 @@ import {
 } from "./chat-ui.test-support";
 import type { ChatThread } from "./chat-source.contract";
 import { isInDocumentOrder } from "../../lib/dom.test-support";
+import { chatAlbumTestIds } from "./chat-album.contract";
 import { chatSettingsTestIds } from "./chat-settings.contract";
 import { messengerChatTestIds as ids } from "./messenger-chat.contract";
 
@@ -41,6 +42,7 @@ function handlers() {
     onStoryPoint: vi.fn<() => void>(),
     onMemories: vi.fn<() => void>(),
     onFeedbackMode: vi.fn<() => void>(),
+    onAlbum: vi.fn<() => void>(),
     onDelete: vi.fn<() => void>(),
     onClose: vi.fn<() => void>(),
     onBirthYear: vi.fn<() => void>(),
@@ -69,6 +71,7 @@ const orderIds = [
   ids.sidebarProfile,
   ids.sidebarMyProfile,
   ids.sidebarStoryPoint,
+  chatAlbumTestIds.sidebarRow,
   ids.sidebarBirthYear,
   chatSettingsTestIds.sidebarMemories,
   chatSettingsTestIds.sidebarFeedback,
@@ -76,7 +79,8 @@ const orderIds = [
 ] as const;
 
 // ⟨ADR-0125⟩ 생년 줄이 이야기 시점 다음 다섯째로 들어왔고, ⟨ADR-0126⟩ 자동 보기 토글 자리에 기억 · 교정 방식 두 줄이 섰다.
-test("MC-UI22. 여덟 줄이 data-order 1~8로 정해진 순서에 선다(DOM 순서도 같다)", () => {
+// ⟨ADR-0150⟩ 앨범 줄이 이야기 시점 다음 다섯째로 들어와 뒤 줄이 하나씩 밀렸다.
+test("MC-UI22. 아홉 줄이 data-order 1~9로 정해진 순서에 선다(DOM 순서도 같다)", () => {
   mountSidebar();
 
   const rows = orderIds.map((id) => screen.getByTestId(id));
@@ -89,6 +93,7 @@ test("MC-UI22. 여덟 줄이 data-order 1~8로 정해진 순서에 선다(DOM �
     "6",
     "7",
     "8",
+    "9",
   ]);
   expect(isInDocumentOrder(rows)).toBe(true);
   expect(screen.getByTestId(ids.sidebar).textContent).toContain("Chat settings");

@@ -195,6 +195,8 @@ export type MessengerChatScreenProps = {
   readonly onExit: () => void;
   /** 사이드바의 「What {name} remembers」 — 인물 기억 화면을 쌓습니다(ADR-0126). */
   readonly onOpenMemories: (characterId: string, name: string) => void;
+  /** 인물 앨범 화면(ADR-0150) — 없으면 사이드바 Album 줄이 아무것도 열지 않습니다. */
+  readonly onOpenAlbum?: (roomId: string, name: string) => void;
   /** 본 첫 입장 안내 기록(2026-11-13) — 기본은 기기 저장소. */
   readonly guideStore?: GuideStore;
 };

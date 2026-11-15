@@ -16,8 +16,10 @@ import type {
   ChatMemoryList,
   ChatThread,
 } from "./chat-source.contract";
+import { chatAlbumTestIds } from "./chat-album.contract";
 import { chatSettingsTestIds } from "./chat-settings.contract";
 import { messengerChatTestIds as ids } from "./messenger-chat.contract";
+import { NavRow } from "./NavRow";
 
 import "./chat-overlays.css";
 
@@ -44,8 +46,8 @@ export type ChatSettingsSidebarProps = {
 // 탭이 아무 동작도 하지 않는 줄(상대 프로필 · 내 프로필)의 눌림 처리입니다 — 1단계에는 프로필 화면이 없습니다.
 const noop = (): void => undefined;
 
-// 채팅 설정 사이드바(O4)입니다. 줄 순서가 고정입니다: ①엽전 ②상대 프로필 ③내 프로필 ④이야기 시점 ⑤따로 띄운 자동 보기
-// 토글 상자 ⑥대화 지우기. 오른쪽에서 밀려 들어오며, 움직임 줄이기면 미는 움직임 클래스를 달지 않아 즉시 서습니다.
+// 채팅 설정 사이드바(O4)입니다. 줄 순서가 고정입니다: ①엽전 ②상대 프로필 ③내 프로필 ④이야기 시점 ⑤앨범(ADR-0150)
+// ⑥생년 ⑦기억 ⑧교정 방식 ⑨대화 지우기. 오른쪽에서 밀려 들어오며, 움직임 줄이기면 미는 움직임 클래스를 달지 않아 즉시 서습니다.
 export function ChatSettingsSidebar({
   thread,
   learnerName,
@@ -58,6 +60,7 @@ export function ChatSettingsSidebar({
   onMemories,
   feedbackMode,
   onFeedbackMode,
+  onAlbum,
   onDelete,
   onClose,
 }: ChatSettingsSidebarProps): ReactNode {
@@ -77,23 +80,8 @@ export function ChatSettingsSidebar({
     "background only";
     onClose();
   };
-  const handleStoryPoint = () => {
-    "background only";
-    onStoryPoint();
-  };
-  const handleBirthYear = () => {
-    "background only";
-    onBirthYear();
-  };
-  const handleMemories = () => {
-    "background only";
-    onMemories();
-  };
-  const handleFeedbackMode = () => {
-    "background only";
-    onFeedbackMode();
-  };
   const settingsCopy = useUiCopy().messengerChat.chatSettings;
+  const albumCopy = useUiCopy().messengerChat.album;
   const feedbackCopy = settingsCopy.feedback;
   const memoryTitle = settingsCopy.memories.sidebar(counterpart.name);
   const memoryValue = settingsCopy.memories.sidebarSummary(
@@ -190,92 +178,46 @@ export function ChatSettingsSidebar({
                 onNavigate={noop}
               />
             </view>
-            <view
+            <NavRow
               className="chat-sidebar-row"
-              id={ids.sidebarStoryPoint}
-              data-testid={ids.sidebarStoryPoint}
-              data-order="4"
-              flatten={false}
-              accessibility-element={true}
-              accessibility-traits="button"
-              accessibility-label={
-                storyValue === undefined ? copy.storyPoint : `${copy.storyPoint}, ${storyValue}`
-              }
-              accessibility-enable-tap={true}
-              bindtap={handleStoryPoint}
-            >
-              <view accessibility-elements-hidden={true}>
-                <SettingsCell
-                  trailing="navigation"
-                  title={copy.storyPoint}
-                  description={storyValue}
-                  onNavigate={noop}
-                />
-              </view>
-            </view>
-            <view
+              testId={ids.sidebarStoryPoint}
+              order={4}
+              title={copy.storyPoint}
+              value={storyValue}
+              onTap={onStoryPoint}
+            />
+            <NavRow
               className="chat-sidebar-row"
-              id={ids.sidebarBirthYear}
-              data-testid={ids.sidebarBirthYear}
-              flatten={false}
-              data-order="5"
-              accessibility-element={true}
-              accessibility-traits="button"
-              accessibility-label={`${yearCopy.sidebar}, ${yearValue}`}
-              accessibility-enable-tap={true}
-              bindtap={handleBirthYear}
-            >
-              <view accessibility-elements-hidden={true}>
-                <SettingsCell
-                  trailing="navigation"
-                  title={yearCopy.sidebar}
-                  description={yearValue}
-                  onNavigate={noop}
-                />
-              </view>
-            </view>
-            <view
+              testId={chatAlbumTestIds.sidebarRow}
+              order={5}
+              title={albumCopy.sidebarRow}
+              value={albumCopy.sidebarDescription}
+              onTap={onAlbum}
+            />
+            <NavRow
               className="chat-sidebar-row"
-              id={chatSettingsTestIds.sidebarMemories}
-              data-testid={chatSettingsTestIds.sidebarMemories}
-              data-order="6"
-              flatten={false}
-              accessibility-element={true}
-              accessibility-traits="button"
-              accessibility-label={`${memoryTitle}, ${memoryValue}`}
-              accessibility-enable-tap={true}
-              bindtap={handleMemories}
-            >
-              <view accessibility-elements-hidden={true}>
-                <SettingsCell
-                  trailing="navigation"
-                  title={memoryTitle}
-                  description={memoryValue}
-                  onNavigate={noop}
-                />
-              </view>
-            </view>
-            <view
+              testId={ids.sidebarBirthYear}
+              order={6}
+              title={yearCopy.sidebar}
+              value={yearValue}
+              onTap={onBirthYear}
+            />
+            <NavRow
               className="chat-sidebar-row"
-              id={chatSettingsTestIds.sidebarFeedback}
-              data-testid={chatSettingsTestIds.sidebarFeedback}
-              data-order="7"
-              flatten={false}
-              accessibility-element={true}
-              accessibility-traits="button"
-              accessibility-label={`${feedbackCopy.sidebar}, ${feedbackValue}`}
-              accessibility-enable-tap={true}
-              bindtap={handleFeedbackMode}
-            >
-              <view accessibility-elements-hidden={true}>
-                <SettingsCell
-                  trailing="navigation"
-                  title={feedbackCopy.sidebar}
-                  description={feedbackValue}
-                  onNavigate={noop}
-                />
-              </view>
-            </view>
+              testId={chatSettingsTestIds.sidebarMemories}
+              order={7}
+              title={memoryTitle}
+              value={memoryValue}
+              onTap={onMemories}
+            />
+            <NavRow
+              className="chat-sidebar-row"
+              testId={chatSettingsTestIds.sidebarFeedback}
+              order={8}
+              title={feedbackCopy.sidebar}
+              value={feedbackValue}
+              onTap={onFeedbackMode}
+            />
           </view>
         </scroll-view>
         <view className="chat-sidebar-delete">
@@ -283,7 +225,7 @@ export function ChatSettingsSidebar({
             id={ids.sidebarDelete}
             className="chat-sidebar-delete-button"
             data-testid={ids.sidebarDelete}
-            data-order="8"
+            data-order="9"
             accessibility-element={true}
             accessibility-traits="button"
             accessibility-label={copy.deleteChat}
