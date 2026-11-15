@@ -46,8 +46,9 @@ export function formatSizeReport(rows, { baseRef }) {
     REPORT_MARKER,
     "### 번들 크기",
     "",
-    baseRef
-      ? `main(\`${baseRef}\`) 대비 이 PR의 증감입니다. 막는 것은 천장뿐입니다 — 천장은 저사양 기기 첫 실행 시간으로 정합니다(ADR-0149).`
+    // 비교했는지는 main 크기가 한 줄이라도 있는가로 정합니다 — 기준 커밋은 알 때만 덧붙입니다(리뷰 #443).
+    rows.some((row) => row.baseBytes !== null)
+      ? `main${baseRef ? `(\`${baseRef}\`)` : ""} 대비 이 PR의 증감입니다. 막는 것은 천장뿐입니다 — 천장은 저사양 기기 첫 실행 시간으로 정합니다(ADR-0149).`
       : "main 크기 기록을 찾지 못해 증감 없이 크기만 보입니다. 막는 것은 천장뿐입니다(ADR-0149).",
     "",
     "| 대상 | main | 이 PR | 증감 | 천장까지 |",

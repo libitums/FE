@@ -88,3 +88,15 @@ test("BR5. 천장을 넘은 대상은 표에서 바로 보이게 표시한다", 
   );
   assert.match(text, /천장 초과/);
 });
+
+test("BR6. 비교 기준 커밋을 몰라도 main 크기가 있으면 증감 보고라 적고, 커밋은 알 때만 붙인다(리뷰 #443)", () => {
+  const rows = compareSizes({
+    targets: [targets[1]],
+    base: { "packages/ui-lynx/dist": 560_000 },
+    head: { "packages/ui-lynx/dist": 561_000 },
+  });
+  const text = formatSizeReport(rows, { baseRef: null });
+  assert.match(text, /main 대비 이 PR의 증감입니다/);
+  assert.doesNotMatch(text, /main 크기 기록을 찾지 못해/);
+  assert.match(formatSizeReport(rows, { baseRef: "abc1234" }), /main\(`abc1234`\) 대비/);
+});
