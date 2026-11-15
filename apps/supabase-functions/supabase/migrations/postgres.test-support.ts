@@ -82,6 +82,24 @@ export async function startTestDatabase() {
         select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid;
       $$;
       grant usage on schema public, auth to anon, authenticated, service_role;
+      -- Storage(20261128 스냅샷 · 음성): 버킷 · 객체 표와 폴더 함수만. 파일은 Storage API가 다루고 DB는 이름만 본다.
+      create schema storage;
+      create table storage.buckets (
+        id text primary key,
+        name text not null,
+        public boolean not null default false,
+        file_size_limit bigint,
+        allowed_mime_types text[]
+      );
+      create table storage.objects (
+        id uuid primary key default gen_random_uuid(),
+        bucket_id text references storage.buckets (id),
+        name text not null
+      );
+      create function storage.foldername(name text) returns text[] language sql immutable as $$
+        select (string_to_array(name, '/'))[1:greatest(cardinality(string_to_array(name, '/')) - 1, 0)];
+      $$;
+      grant usage on schema storage to anon, authenticated, service_role;
     `);
     const directory = new URL("./", import.meta.url);
     for (const file of (await readdir(directory)).filter((name) => name.endsWith(".sql")).sort()) {

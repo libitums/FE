@@ -24,13 +24,17 @@ export type ChatMessage =
     })
   | (ChatMessageBase & { readonly kind: "action"; readonly text: ChatText })
   | (ChatMessageBase & { readonly kind: "photo-pending" })
-  | (ChatMessageBase & { readonly kind: "photo"; readonly imageUrl: string | null })
+  | (ChatMessageBase & { readonly kind: "photo" } & ChatPhotoBody)
   | (ChatMessageBase & { readonly kind: "voice-pending" })
   | (ChatMessageBase & {
       readonly kind: "voice";
+      /** 0이면 모름(서버 음성) — 길이를 그리지 않습니다. */
       readonly durationMs: number;
       readonly text: ChatText;
+      /** 서버 음성만: 서명 URL(null = 못 받음, 재생 꺼짐). 없으면 가짜 재생입니다. */
+      readonly audioUrl?: string | null;
     })
+  | (ChatMessageBase & ChatMediaNoticeLine)
   | (ChatMessageBase & { readonly kind: "notice"; readonly notice: ChatNoticeKind })
   | (ChatMessageBase & {
       readonly kind: "crisis";
@@ -139,8 +143,9 @@ export type ChatSnapshot = {
 // 내 글 노트(뜻 · 교정) — messenger-chat-1-5 spec §5.1. 뜻은 en 고정, 범위는 corrected 안 코드 포인트입니다.
 export type ChatMeaning = { readonly romanization: string; readonly meaning: string };
 import type { ChatCorrection, ChatCorrectionChange, ChatRating } from "./chat-feedback.contract"; // 교정 · 평가(ADR-0129)
-import type { ChatRemote, ChatSendFailureNotice } from "./chat-remote.contract";
+import type { ChatSendFailureNotice } from "./chat-remote.contract";
 import type { ChatServerControls, ChatServerRoom } from "./chat-delivery.contract";
+import type { ChatMediaNoticeLine, ChatPhotoBody } from "./chat-media.contract"; // 서버 사진 · 음성(ADR-0146)
 export type { ChatCorrection, ChatCorrectionChange, ChatRating };
 export type ChatLoad<T> =
   | { readonly status: "idle" }
@@ -222,79 +227,12 @@ export type ChatTimers = {
   clearTimeout(handle: unknown): void;
 };
 
-// 픽스처 씨앗: 메시지의 `at` 대신 minutesAgo, 그림은 상대 경로(imageUrlOf가 풉니다).
-export type ChatFixtureMessage =
-  | {
-      readonly kind: "text";
-      readonly from: "me" | "them";
-      readonly text: ChatText;
-      readonly minutesAgo: number;
-      /** from "me"만 의미 있음. */
-      readonly correction?: ChatFixtureCorrection;
-    }
-  | { readonly kind: "photo"; readonly imagePath: string | null; readonly minutesAgo: number }
-  | {
-      readonly kind: "voice";
-      readonly durationMs: number;
-      readonly text: ChatText;
-      readonly minutesAgo: number;
-    }
-  | { readonly kind: "notice"; readonly notice: ChatNoticeKind; readonly minutesAgo: number }
-  | {
-      readonly kind: "crisis";
-      readonly resources: readonly ChatCrisisResource[];
-      readonly minutesAgo: number;
-    };
-
-export type ChatFixtureRoom = {
-  readonly roomId: string;
-  readonly counterpart: {
-    readonly id: string;
-    readonly name: string;
-    readonly avatarPath: string | null;
-  };
-  readonly access: ChatRoomAccess;
-  readonly unread: number;
-  readonly messages: readonly ChatFixtureMessage[];
-  readonly storyPoints: readonly ChatStoryPoint[];
-  readonly settings: ChatRoomSettings;
-  readonly ideaSets: readonly (readonly ChatReplyIdea[])[];
-  readonly cannedReplies: readonly ChatText[];
-  readonly photoPath: string | null;
-  readonly voiceLine: { readonly durationMs: number; readonly text: ChatText };
-  /** 해금될 때 로그에 놓이는 첫 말(없으면 빈 방). */
-  readonly opening?: ChatText;
-  /** 확인용 씨앗만 씁니다. 시각은 지금부터 몇 분 뒤입니다. */
-  readonly inputBlock?:
-    | { readonly kind: "temporarily-blocked" | "usage-time-limit"; readonly inMinutes: number }
-    | { readonly kind: "age-restricted" };
-};
-
-export type ChatFixtureMeaning = { readonly ko: string } & ChatMeaning;
-export type ChatFixtureCorrection = { readonly original: string } & ChatCorrection;
-
-export type ChatFixtureSeed = {
-  readonly rooms: readonly ChatFixtureRoom[];
-  readonly meanings?: readonly ChatFixtureMeaning[];
-  readonly corrections?: readonly ChatFixtureCorrection[];
-  readonly fallbackMeaning?: ChatMeaning;
-  /** 없으면 추천 답변 켬 · 하루 한 번 · 아무 때나 · 카드만. */
-  readonly preferences?: ChatPreferences;
-  /** 기억 씨앗(글만). 인물은 상대 id로 찾습니다. */
-  readonly memories?: {
-    readonly shared: readonly string[];
-    readonly byCharacter: Readonly<Record<string, readonly string[]>>;
-  };
-  /** 없으면 unasked입니다. */
-  readonly birthYear?: ChatBirthYear;
-};
-
-export type FixtureChatSourceOptions = {
-  readonly imageUrlOf: (relativePath: string) => string | null;
-  readonly seed?: ChatFixtureSeed;
-  readonly now?: () => number;
-  readonly timers?: ChatTimers;
-  /** 처음부터 열린 채 시작할 인물 id(재시작 뒤 모습). */
-  readonly unlocked?: readonly string[];
-  readonly remote?: ChatRemote; // 서버 모드(ADR-0137) — 방 기록 · 첫 인사 · 보내기를 서버에서.
-};
+// 가짜 출처 씨앗 · 출처 옵션은 `chat-fixture.contract.ts`로 옮겼습니다 — 이름은 그대로 여기서도 내보냅니다.
+export type {
+  ChatFixtureCorrection,
+  ChatFixtureMeaning,
+  ChatFixtureMessage,
+  ChatFixtureRoom,
+  ChatFixtureSeed,
+  FixtureChatSourceOptions,
+} from "./chat-fixture.contract";

@@ -60,6 +60,7 @@ export function chatRowPreview(room: ChatRoomSummary): ChatRowPreview {
     case "voice-pending":
     // 고지 · 위기 안내는 상대가 한 말이 아니라 목록 미리보기에 싣지 않습니다(ADR-0125).
     case "notice":
+    case "media-notice":
     case "crisis":
       return { kind: "empty" };
     default: {

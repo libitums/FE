@@ -2,6 +2,7 @@
 // 출처(`chat-fixture-remote.ts`)는 이 포트만 압니다. 어떤 호출도 던지지 않습니다 — 실패는 null · onEnd로 옵니다.
 
 import type { ChatCorrection } from "./chat-feedback.contract";
+import type { ChatMediaRemote } from "./chat-media.contract";
 import type { ChatMessage, ChatReplyIdea } from "./chat-source.contract";
 
 /** 서버 기록 한 쪽을 앱 모양으로 푼 값입니다. 오래된 것부터, 숨김 메시지는 빠져 있습니다. */
@@ -39,6 +40,8 @@ export type ChatRemote = {
     },
     handlers: RemoteTurnHandlers,
   ) => { readonly cancel: () => void };
+  /** 사진 · 음성(ADR-0146). 없으면(옛 테스트 원격) 서버 방의 요청은 「unavailable」 줄입니다. */
+  readonly media?: ChatMediaRemote;
 };
 
 /** 서버가 보내기를 막은 까닭입니다 — 입력 줄 자리 안내(입력 막힘)와 로그 회색 줄(실패) 둘로 나뉩니다. */

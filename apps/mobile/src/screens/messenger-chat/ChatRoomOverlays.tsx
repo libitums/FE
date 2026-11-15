@@ -13,7 +13,7 @@ import type {
   ChatSource,
   ChatThread,
 } from "./chat-source.contract";
-import type { CoinWallet } from "./coin-wallet";
+import type { CoinSpendResult, CoinWallet } from "./coin-wallet";
 import { DeleteChatDialog } from "./DeleteChatDialog";
 import { UnsentDialog } from "./ChatDelivery";
 import { FeedbackModeSheet } from "./FeedbackModeSheet";
@@ -41,6 +41,9 @@ export type ChatRoomOverlaysProps = {
   /** 인물 기억 화면을 메신저 스택에 쌓습니다(ADR-0126). */
   readonly onOpenMemories: (characterId: string, name: string) => void;
 };
+
+/** 앱 지갑 차감의 모자란 수(쓴 경우 0). */
+const spentShort = (spent: CoinSpendResult): number => (spent.kind === "short" ? spent.shortBy : 0);
 
 const askShop = (media: ChatMediaKind): Extract<ChatOverlay, { kind: "coin-shop" }> => ({
   kind: "coin-shop",
@@ -135,14 +138,18 @@ export function ChatRoomOverlays({
           price={CHAT_COIN_PRICES[overlay.media]}
           onConfirm={() => {
             // 무제한이어도 요청은 엽전을 냅니다(턴과 별개). 모자라면(그 사이 잔액이 줄었으면) 요청 없이 상점으로 갑니다.
+            // 서버 방은 서버가 예약 · 확정합니다(ADR-0146 「앱 연결」) — 앱 지갑에서 빼지 않고 잔액만 봅니다.
             const price = CHAT_COIN_PRICES[overlay.media];
-            const spent = wallet.spend(price, overlay.media);
-            if (spent.kind === "short") {
+            const shortBy =
+              thread.server !== null
+                ? Math.max(0, price - coinBalance)
+                : spentShort(wallet.spend(price, overlay.media));
+            if (shortBy > 0) {
               emit({
                 name: "chat_coins_short",
                 surface: "chat",
                 reason: overlay.media,
-                shortBy: String(spent.shortBy),
+                shortBy: String(shortBy),
               });
               dispatch({ type: "open-overlay", overlay: askShop(overlay.media) });
               return;

@@ -1,8 +1,10 @@
 // 메신저 문구 표의 덧붙는 칸(vi) — 대화 설정(ADR-0126) · 선톡 푸시 안내(ADR-0127) · 메신저 탭 접근(ADR-0128).
 
 import type { MessengerChatExtraCopy } from "../screens/messenger-chat/chat-settings.contract";
+import { messengerChatMediaVi } from "./ui-copy-vi-chat-media";
 
 export const messengerChatExtraVi: MessengerChatExtraCopy = {
+  media: messengerChatMediaVi,
   access: {
     signInTitle: "Nhắn tin với những người bạn gặp",
     signInBody:

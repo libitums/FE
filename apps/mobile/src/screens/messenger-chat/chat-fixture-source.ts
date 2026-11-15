@@ -182,20 +182,15 @@ export function createFixtureChatSource(options: FixtureChatSourceOptions): Fixt
       ? null
       : remoteRoomMethods({
           ...{ remote: options.remote, live, changed, now, schedule },
+          mediaHooks: options.mediaHooks,
           openRoomId: () => openRoomId,
           uuid: () => uuidV4(),
         });
   const sendText = remoteRoom?.sendText ?? localSendText;
 
-  const requestMedia = mediaRequester({
-    live,
-    changed,
-    schedule,
-    now,
-    messageId,
-    photoPaths,
-    resolveUrl,
-  });
+  // 서버 방은 서버 사진 · 음성(ADR-0146 「앱 연결」), 아니면 정해 둔 시간 뒤 픽스처.
+  const fixtureMedia = { live, changed, schedule, now, messageId, photoPaths, resolveUrl };
+  const requestMedia = remoteRoom?.requestMedia ?? mediaRequester(fixtureMedia);
 
   return {
     snapshot: () => {

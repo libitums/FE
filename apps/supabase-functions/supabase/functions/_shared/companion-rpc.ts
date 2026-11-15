@@ -5,6 +5,12 @@ import type { ChatSendEnv } from "./chat-send.contract.ts";
 import type { Outbound, OutboundRequest } from "./delete-account.contract.ts";
 import { isJwtShaped, serviceKeyHeaders } from "./service-key.ts";
 
+/** RPC · 인증 조회에 필요한 환경 칸만. `ChatSendEnv`도 이 모양을 품는다(스냅샷 · 음성의 `MediaEnv`도). */
+export type RpcEnv = Pick<
+  ChatSendEnv,
+  "supabaseUrl" | "supabaseAnonKey" | "supabaseServiceRoleKey"
+>;
+
 export class RpcFailed extends Error {
   constructor(
     readonly fn: string,
@@ -15,7 +21,7 @@ export class RpcFailed extends Error {
 }
 
 export function rpcRequest(
-  env: ChatSendEnv,
+  env: RpcEnv,
   fn: string,
   args: Record<string, unknown>,
 ): OutboundRequest {
@@ -33,7 +39,7 @@ export function rpcRequest(
 /** 2xx면 본문 JSON(빈 본문은 null), 아니면 `RpcFailed`. */
 export async function callRpc<T>(
   outbound: Outbound,
-  env: ChatSendEnv,
+  env: RpcEnv,
   fn: string,
   args: Record<string, unknown>,
 ): Promise<T> {
@@ -49,7 +55,7 @@ export async function callRpc<T>(
 }
 
 /** `GET {url}/auth/v1/user` — 사용자 토큰이 유효하면 사용자 id. */
-export function authUserIdRequest(env: ChatSendEnv, accessToken: string): OutboundRequest {
+export function authUserIdRequest(env: RpcEnv, accessToken: string): OutboundRequest {
   return {
     url: `${env.supabaseUrl}/auth/v1/user`,
     method: "GET",
@@ -73,7 +79,7 @@ export function sameSecret(a: string, b: string): boolean {
  */
 export async function isServiceKey(
   outbound: Outbound,
-  env: ChatSendEnv,
+  env: RpcEnv,
   presented: string,
 ): Promise<boolean> {
   if (sameSecret(presented, env.supabaseServiceRoleKey)) return true;

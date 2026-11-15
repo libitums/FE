@@ -233,12 +233,17 @@ export type DeleteAccountDeps = {
   readonly nowMs: () => number;
   readonly signEs256: SignEs256;
   readonly log: (entry: DeleteAccountLogEntry) => void;
+  /**
+   * 계정의 Storage 파일(컴패니언 스냅샷 · 음성, ADR-0146)을 지운다. admin 삭제 직전에 부르고, 실패해도 계정 삭제를 막지 않는다 —
+   * Apple 철회가 이미 끝났을 수 있다. 남은 파일은 운영 조회 `companion_media_orphans()`로 찾는다. 없으면 건너뛴다.
+   */
+  readonly purgeUserFiles?: (userId: string) => Promise<unknown>;
 };
 
 /**
  * 순서: 메서드(405) → 환경(500) → Bearer(401) → 사용자 조회(401 · 502) → 본문(400) →
  * [Apple 사용자: Apple 환경(500) → 코드 있음(400) → client secret(500) → 교환(502) → 계정 대조(403) →
- * 철회(502)] → admin 삭제(500) → 204. Apple 사용자가 아니면 코드가 와도 Apple을 부르지 않습니다.
+ * 철회(502)] → [Storage 파일 지우기 — 실패해도 계속] → admin 삭제(500) → 204. Apple 사용자가 아니면 코드가 와도 Apple을 부르지 않습니다.
  * 거부하지 않습니다 — 예상 밖 예외도 500 `delete_failed`로 끝냅니다.
  */
 export type HandleDeleteAccount = (request: Request) => Promise<Response>;
