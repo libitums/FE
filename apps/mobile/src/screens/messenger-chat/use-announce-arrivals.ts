@@ -102,8 +102,10 @@ export function useAnnounceArrivals(
         if (content !== null) announce(content);
       }
     if (server !== null) {
+      // 위에서 선 순간 읽은 사진 · 음성 결과 · 회색 줄은 턴이 끝날 때 다시 읽지 않습니다(리뷰 #442 — 두 번 낭독).
       for (const message of fresh)
-        if (!pending.current.includes(message.id)) pending.current.push(message.id);
+        if (!mediaResults.includes(message) && !pending.current.includes(message.id))
+          pending.current.push(message.id);
       if (busy) {
         wasBusy.current = true;
         return;

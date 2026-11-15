@@ -52,6 +52,8 @@ function setup(
     request?: MediaRequestResult;
     loads?: (readonly RemoteMedia[] | null)[];
     noMedia?: boolean;
+    history?: typeof history;
+    sign?: ChatMediaRemote["sign"];
   } = {},
 ) {
   const timers = fakeTimers();
@@ -63,11 +65,11 @@ function setup(
         over.request ?? { kind: "accepted", media: media(), cached: false },
     ),
     load: vi.fn(async () => (loads.length > 0 ? (loads.shift() ?? null) : [])),
-    sign: vi.fn(async (path: string) => `https://signed/${path}`),
+    sign: vi.fn(over.sign ?? (async (path: string) => `https://signed/${path}`)),
     balance: vi.fn(async () => 465),
   };
   const remote: ChatRemote = {
-    loadHistory: async () => history,
+    loadHistory: async () => over.history ?? history,
     greet: async () => null,
     openTurn: () => ({ cancel: () => undefined }),
     ...(over.noMedia === true ? {} : { media: port }),
@@ -248,5 +250,63 @@ describe("방을 나가고 다시 열기 · 상한", () => {
     env.source.requestMedia("duksu", "photo"); // 아직 기록 없음 — 대상 없음
     await flush();
     expect(env.port.request).not.toHaveBeenCalled();
+  });
+});
+
+describe("늦게 끝난 옛 다시 읽기(리뷰 #442)", () => {
+  test("CM-U12 다시 열기로 새 세대가 결과를 놓은 뒤, 옛 세대가 늦게 끝나도 결과를 「준비 중」으로 되돌리지 않는다", async () => {
+    const A2 = "44444444-4444-4444-8444-444444444444";
+    const M2 = "55555555-5555-4555-8555-555555555555";
+    const twoMessages = {
+      ...history,
+      messages: [
+        ...history.messages,
+        {
+          id: `${A2}#0`,
+          at: 2,
+          kind: "text",
+          from: "them",
+          text: { ko: "또 봐요", en: "See you" },
+        } as ChatMessage,
+      ],
+    };
+    let release: (url: string) => void = () => undefined;
+    let first = true;
+    const sign = async (path: string) => {
+      if (!first) return `https://signed/${path}`;
+      first = false;
+      return new Promise<string>((resolve) => (release = resolve));
+    };
+    const p1 = media({ status: "complete", path: "u/1.png", createdAt: 1_000 });
+    const p2Pending = media({ id: M2, messageId: A2, status: "pending", createdAt: 2_000 });
+    const p2Done = media({
+      id: M2,
+      messageId: A2,
+      status: "complete",
+      path: "u/2.png",
+      createdAt: 2_000,
+    });
+    const env = setup({
+      history: twoMessages,
+      sign,
+      loads: [
+        [p1, p2Pending],
+        [p1, p2Done],
+      ],
+    });
+    env.source.openRoom("duksu"); // 옛 세대: p1 서명을 기다리는 중
+    await flush();
+    env.source.closeRoom("duksu");
+    env.source.openRoom("duksu"); // 새 세대: 둘 다 끝난 결과를 놓는다
+    await flush();
+    const photoOf = (messageId: string) =>
+      env
+        .lines()
+        .filter((m) => m.id.startsWith(`${messageId}~`))
+        .map((m) => m.kind);
+    expect(photoOf(A2)).toEqual(["photo"]);
+    release("https://signed/u/1.png"); // 옛 세대가 늦게 끝남
+    await flush();
+    expect(photoOf(A2)).toEqual(["photo"]);
   });
 });
