@@ -15,8 +15,10 @@ import type { ChatRemote } from "../screens/messenger-chat/chat-remote.contract"
 import { companionSeed } from "../screens/messenger-chat/companion-roster";
 import type { ChatFixtureSeed, ChatSource } from "../screens/messenger-chat/chat-source.contract";
 import {
+  deviceSnapshotSelfStore,
   deviceTurnRecordStore,
   deviceUnlockStore,
+  memorySnapshotSelfStore,
   type UnlockStore,
 } from "../screens/messenger-chat/chat-local-stores";
 import { createCoinWallet, type SyncedCoinWallet } from "../screens/messenger-chat/coin-wallet";
@@ -49,6 +51,8 @@ export type MessengerChatWiring = {
   /** 대화 설정(ADR-0126) — 설정 탭 Chats 화면 · 기억 화면을 쌓고 내립니다. */
   readonly onOpenChatSettings: () => void;
   readonly onOpenMemories: (characterId: string | null, name: string | null) => void;
+  /** 인물 앨범(ADR-0150). */
+  readonly onOpenAlbum: (roomId: string, name: string) => void;
   readonly onExitChatSettingsStack: () => void;
   /** 목록이 선톡 안내를 받았습니다 — route에서 지웁니다(ADR-0127). */
   readonly onListNoticeShown: () => void;
@@ -172,6 +176,8 @@ export function messengerChatSource(imageUrlOf: ImageUrlOf): ChatSource {
     singleton = createFixtureChatSource({
       imageUrlOf: (relativePath) => latestImageUrlOf?.(relativePath) ?? null,
       unlocked: [...messengerUnlockStore().read()],
+      // 사진 속 내 모습(ADR-0150) — 계정마다 기기에 적습니다. 테스트는 메모리.
+      selfStore: storeOverride === null ? deviceSnapshotSelfStore(key) : memorySnapshotSelfStore(),
       ...(remote === null
         ? testSeed === undefined
           ? {}
@@ -235,6 +241,12 @@ export function messengerChatWiring(args: MessengerChatWiringArgs): {
         args.dispatch({
           type: "push",
           screen: { name: "chat-memories", characterId, characterName: name },
+        });
+      },
+      onOpenAlbum: (roomId, name) => {
+        args.dispatch({
+          type: "push",
+          screen: { name: "chat-album", roomId, characterName: name },
         });
       },
       onExitChatSettingsStack: () => {

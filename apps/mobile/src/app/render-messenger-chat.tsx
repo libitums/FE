@@ -7,6 +7,7 @@ import {
   unknownKoreanKeyboardProbe,
 } from "../screens/messenger-chat/keyboard-ports";
 import { ChatEventsContext } from "../screens/messenger-chat/chat-events";
+import { ChatAlbumScreen } from "../screens/messenger-chat/ChatAlbumScreen";
 import { ChatMemoriesScreen } from "../screens/messenger-chat/ChatMemoriesScreen";
 import { ChatSettingsScreen } from "../screens/messenger-chat/ChatSettingsScreen";
 import { MessengerChatScreen } from "../screens/messenger-chat/MessengerChatScreen";
@@ -69,6 +70,7 @@ export function renderMessengerChat(roomId: string, wiring: ScreenWiring) {
         now={chat.now}
         onExit={chat.onExitChatRoom}
         onOpenMemories={chat.onOpenMemories}
+        onOpenAlbum={chat.onOpenAlbum}
       />
     </ChatEventsContext.Provider>
   );
@@ -98,5 +100,22 @@ export function renderChatMemories(
       name={characterId === null ? null : characterName}
       onBack={chat.onExitChatSettingsStack}
     />
+  );
+}
+
+/** 인물 앨범(ADR-0150) — 방 사이드바에서 쌓이고 뒤로 방으로 돌아갑니다. */
+export function renderChatAlbum(roomId: string, characterName: string, wiring: ScreenWiring) {
+  const chat = wiring.messengerChat;
+  return (
+    <ChatEventsContext.Provider value={{ sink: chat.eventSink, roomId }}>
+      <ChatAlbumScreen
+        source={chat.source}
+        roomId={roomId}
+        name={characterName}
+        wallet={chat.wallet}
+        now={chat.now}
+        onBack={chat.onExitChatSettingsStack}
+      />
+    </ChatEventsContext.Provider>
   );
 }
