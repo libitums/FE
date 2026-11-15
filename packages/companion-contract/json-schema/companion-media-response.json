@@ -69,6 +69,22 @@
         },
         "finishedAt": {
           "type": ["string", "null"]
+        },
+        "line": {
+          "type": "object",
+          "properties": {
+            "ko": {
+              "type": "string"
+            },
+            "en": {
+              "type": "string"
+            }
+          },
+          "required": ["ko", "en"],
+          "additionalProperties": false
+        },
+        "fromPastChat": {
+          "type": "boolean"
         }
       },
       "required": [
