@@ -21,6 +21,7 @@ export const DEFAULT_PREFERENCES: ChatPreferences = {
   proactive: "daily1",
   proactiveHour: null,
   feedbackMode: "separate",
+  snapshotSelf: null,
 };
 
 export type FixtureSettings = {

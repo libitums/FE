@@ -1,5 +1,6 @@
 // 대화 설정(ADR-0126)의 문구 · test-id 계약입니다 — 설정 탭 Chats 화면 · 먼저 보내는 메시지 · 기억 · 교정 방식.
 
+import type { ChatAlbumCopy, ChatSnapshotSelf } from "./chat-album.contract";
 import type { ChatMediaCopy } from "./chat-media.contract";
 import type { FeedbackCopy } from "./chat-feedback.contract";
 import type { MessengerAccessCopy } from "./messenger-access";
@@ -15,6 +16,8 @@ export type ChatPreferences = {
   /** 현지 0~23시, null이면 아무 때나. */
   readonly proactiveHour: number | null;
   readonly feedbackMode: ChatFeedbackMode;
+  /** 사진 속 내 모습(ADR-0150). null = 아직 고른 적 없음(서버 기본 female) — 첫 Snapshot에서 한 번 묻습니다. */
+  readonly snapshotSelf: ChatSnapshotSelf | null;
 };
 
 /** 기억의 층입니다 — 모든 캐릭터가 함께 쓰는 것 · 한 캐릭터만 쓰는 것. */
@@ -44,6 +47,8 @@ import type { MessengerListNoticeCopy } from "./messenger-list-notice";
 export type MessengerChatExtraCopy = {
   /** 서버 사진 · 음성(ADR-0146 「앱 연결」). */
   readonly media: ChatMediaCopy;
+  /** 앨범 · 내 모습 · 다시 만들기(ADR-0150). */
+  readonly album: ChatAlbumCopy;
   readonly chatSettings: ChatSettingsCopy;
   readonly pushNotice: MessengerListNoticeCopy;
   readonly access: MessengerAccessCopy;

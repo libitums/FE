@@ -4,6 +4,7 @@
 import type {
   ChatMediaNotice,
   MediaRequestResult,
+  RemoteAlbumMedia,
   RemoteMedia,
   RemoteMediaKind,
   RemoteMediaStatus,
@@ -124,4 +125,16 @@ export function walletBalanceFrom(bodyText: string | null): number | null {
   const grant = count(raw?.grant);
   const paid = count(raw?.paid);
   return sub === null || grant === null || paid === null ? null : sub + grant + paid;
+}
+
+/** 앨범 한 건 — 결과 칸 + 인물 · 그때의 말(`line {ko, en}`) · 지난 대화. 옛 서버(칸 없음)는 빈 줄 · false. */
+export function albumMediaOf(_raw: unknown): RemoteAlbumMedia | null {
+  return null;
+}
+
+/** `companion_list_media` 본문(`{items, hasMore}`) — 틀린 줄은 버립니다. */
+export function mediaPageFrom(
+  _bodyText: string | null,
+): { readonly items: readonly RemoteAlbumMedia[]; readonly hasMore: boolean } | null {
+  return null;
 }

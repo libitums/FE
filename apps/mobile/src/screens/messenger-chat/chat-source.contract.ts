@@ -146,6 +146,7 @@ import type { ChatCorrection, ChatCorrectionChange, ChatRating } from "./chat-fe
 import type { ChatSendFailureNotice } from "./chat-remote.contract";
 import type { ChatServerControls, ChatServerRoom } from "./chat-delivery.contract";
 import type { ChatMediaNoticeLine, ChatPhotoBody } from "./chat-media.contract"; // 서버 사진 · 음성(ADR-0146)
+import type { ChatAlbumPort } from "./chat-album.contract"; // 앨범(ADR-0150)
 export type { ChatCorrection, ChatCorrectionChange, ChatRating };
 export type ChatLoad<T> =
   | { readonly status: "idle" }
@@ -218,6 +219,8 @@ export type ChatSource = {
   readonly updateMemory: (id: string, content: string) => void;
   readonly deleteMemory: (id: string) => void;
 
+  /** 앨범 · 다시 만들기(ADR-0150). */
+  readonly album: ChatAlbumPort;
   readonly server: ChatServerControls | null; // 서버 모드의 배달 조작(ADR-0138) — 가짜 출처는 null.
   readonly dispose: () => void; // 걸린 타이머 전부 해제 · 구독 해제.
 };

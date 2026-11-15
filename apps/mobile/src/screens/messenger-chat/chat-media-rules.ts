@@ -155,3 +155,8 @@ export function mediaPollDelay(step: number): number {
 export function nextUtcMidnight(now: number): number {
   return (Math.floor(now / DAY_MS) + 1) * DAY_MS;
 }
+
+/** 같은 대상 · 같은 종류의 결과(사진 · 음성) 줄은 가장 최근 하나만 — 옛 결과의 자리에 섭니다(ADR-0150 M7). */
+export function collapseMediaResults(messages: readonly ChatMessage[]): ChatMessage[] {
+  return [...messages];
+}

@@ -282,6 +282,10 @@ export function createFixtureChatSource(options: FixtureChatSourceOptions): Fixt
         );
       }
     },
+    album: {
+      load: () => Promise.resolve(null),
+      remake: () => Promise.resolve({ kind: "failed" }),
+    },
     server: remoteRoom?.controls ?? null,
     dispose: () => {
       disposed = true;
