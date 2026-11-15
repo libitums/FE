@@ -43,14 +43,16 @@
 | `pnpm performance:reports:gate`                              | **지금 이 브랜치가 CI의 보고서 정책을 통과하나.** 범위를 스스로 구한다                 | 임의 범위 감사 (아래가 따로)      |
 | `pnpm performance:reports:check --base <base> --head <head>` | **임의의 두 commit을 감사한다.** 소급 확인용                                           | 범위 자동 산출 (위가 따로)        |
 | `pnpm --filter @libitums/mobile performance:capture:smoke`   | iOS Host 준비부터 수집·분석·cleanup까지 native 연결 확인                               | 실기 baseline·수치 threshold      |
-| `pnpm size:check`                                            | 빌드 산출물 크기를 `devtools/bundle-size/budget.json`의 예산과 대조                    | 빌드 (먼저 `pnpm build`)          |
+| `pnpm size:check`                                            | 빌드 산출물 크기를 `devtools/bundle-size/budget.json`의 천장과 대조                    | 빌드 (먼저 `pnpm build`)          |
 | `pnpm test:coverage`                                         | 커버리지 측정 (숫자만 남긴다). CI는 따로 돌지 않고 테스트 잡이 `VITEST_COVERAGE=1`로 센다 | 게이트 — 퍼센트로 막지 않는다     |
 | `pnpm verify`                                                | format:check → typecheck → lint → test → build → size:check → performance:reports:gate | 네이티브 빌드                     |
 
 - **한 명령은 한 가지 이유로만 실패한다.** 명령이 두 가지 일을 겸하게 만들지 않는다.
   이 규칙은 **잎 명령**에 걸린다 — `verify`는 잎이 아니라 순서기라서 단계가 여럿이다.
-- **번들이 커지면 `size:check`가 막는다.** 커진 것이 맞는 변경이면 `budget.json`의 `maxBytes`를
-  올리고 **왜 올렸는지 같은 PR에 적는다** — 예산이 조용히 따라 오르지 않게 하려는 것이다.
+- **번들 크기는 PR마다 증감을 보고하고, 천장만 막는다**([ADR-0149](../adr/0149-bundle-size-ceiling-and-report.md)).
+  CI가 main 대비 증감 표를 PR 댓글 하나에 고쳐 쓴다. `size:check`는 **천장**(`budget.json`의 `maxBytes`)을 넘을
+  때만 실패한다. 천장은 실측에 맞춰 올리지 않는다 — 넘으면 먼저 줄이고, 바꾸려면 저사양 기기 첫 실행 시간 근거와
+  사용자 결정이 필요하다([절차](../performance/startup-ceiling.md)).
 - **커버리지는 게이트가 아니다.** 무엇을 덮을지는 계층별 테스트 계획이 정하고, 퍼센트는 CI
   작업 요약에 숫자로만 남는다.
 - **`pnpm verify`가 게이트의 단일 출처다.** CI는 그 안의 잎 명령을 **잡 여럿으로 나눠 병렬로**

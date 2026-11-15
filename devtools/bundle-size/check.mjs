@@ -3,7 +3,7 @@
 // 빌드 산출물의 크기를 예산과 대조합니다. `pnpm build` 뒤에 돌립니다 — 산출물이 없으면
 // 위반으로 답니다.
 
-import { readdirSync, readFileSync, statSync } from "node:fs";
+import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -41,7 +41,15 @@ for (const target of targets) {
 
 const { ok, results, violations } = evaluateBundleBudget({ targets, sizes });
 
-console.log("번들 크기 예산");
+// PR 증감 보고(ADR-0149)가 쓸 실측입니다. `BUNDLE_SIZES_OUT`을 주면 `{경로: 바이트}`로 남깁니다.
+if (process.env.BUNDLE_SIZES_OUT) {
+  writeFileSync(
+    process.env.BUNDLE_SIZES_OUT,
+    `${JSON.stringify(Object.fromEntries(sizes), null, 2)}\n`,
+  );
+}
+
+console.log("번들 크기 천장");
 for (const result of results) {
   const mark = result.status === "ok" ? "통과" : result.status === "over" ? "초과" : "산출물 없음";
   console.log(
@@ -53,7 +61,7 @@ if (ok) {
   process.exit(0);
 }
 
-console.error(`\n번들 크기 예산 실패: ${violations.length}개 위반.`);
+console.error(`\n번들 크기 천장 초과: ${violations.length}개 위반.`);
 for (const violation of violations) {
   if (violation.status === "missing") {
     console.error(`- ${violation.path}: 산출물이 없습니다. \`pnpm build\`를 먼저 돌리십시오.`);
@@ -61,11 +69,13 @@ for (const violation of violations) {
   }
   const over = violation.actualBytes - violation.maxBytes;
   console.error(
-    `- ${violation.path}: ${formatBytes(violation.actualBytes)}로 예산을 ${formatBytes(over)} 넘었습니다.`,
+    `- ${violation.path}: ${formatBytes(violation.actualBytes)}로 천장을 ${formatBytes(over)} 넘었습니다.`,
   );
 }
 console.error(
-  "\n무엇이 커졌는지 PR에 적으십시오. 커진 것이 맞는 변경이면 devtools/bundle-size/budget.json의",
+  "\n천장은 저사양 기기 첫 실행 시간으로 정한 선입니다(ADR-0149). 실측에 맞춰 올리지 말고 먼저 줄이십시오.",
 );
-console.error("maxBytes를 올리고, 왜 올렸는지 같은 PR에 남기십시오.");
+console.error(
+  "줄일 수 없으면 docs/performance/startup-ceiling.md 절차로 첫 실행 시간을 재고, 사용자 결정으로 천장을 바꾸십시오.",
+);
 process.exit(1);

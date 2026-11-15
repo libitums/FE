@@ -145,6 +145,12 @@ jobs:
     name: Build and bundle size
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    # 크기 증감 보고(ADR-0149)가 main 실측 아티팩트를 읽고 PR 댓글을 고쳐 씁니다.
+    permissions:
+      contents: read
+      packages: read
+      actions: read
+      pull-requests: write
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup
@@ -152,9 +158,42 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Build
         run: pnpm build
-      # 예산 검사는 산출물이 있어야 뜻이 있으므로 같은 잡에서 빌드 뒤에 돕니다.
+      # 천장 검사는 산출물이 있어야 뜻이 있으므로 같은 잡에서 빌드 뒤에 돕니다. 실측은 보고용으로 남깁니다.
       - name: Check bundle size
         run: pnpm size:check
+        env:
+          BUNDLE_SIZES_OUT: bundle-sizes.json
+      # main의 실측은 다음 PR들의 비교 기준입니다.
+      - name: Keep main bundle sizes
+        if: ${{ github.event_name == 'push' && !cancelled() && hashFiles('bundle-sizes.json') != '' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: bundle-sizes
+          path: bundle-sizes.json
+          retention-days: 90
+      # 감지기입니다 — 실패로 끝나지 않습니다. 최근 main push 실행의 실측과 비교해 PR 댓글 하나를 고쳐 씁니다.
+      - name: Report bundle size change
+        if: ${{ github.event_name == 'pull_request' && !cancelled() && hashFiles('bundle-sizes.json') != '' }}
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          base_sha=""
+          for row in $(gh run list --repo "$GITHUB_REPOSITORY" --workflow verify.yml --branch main --event push --limit 10 --json databaseId,headSha -q '.[] | "\(.databaseId):\(.headSha)"'); do
+            if gh run download "${row%%:*}" --repo "$GITHUB_REPOSITORY" -n bundle-sizes -D base-sizes 2>/dev/null; then
+              base_sha="${row##*:}"
+              break
+            fi
+          done
+          node devtools/bundle-size/report-cli.mjs bundle-sizes.json base-sizes/bundle-sizes.json "${base_sha:0:8}" > bundle-size-report.md
+          cat bundle-size-report.md >> "$GITHUB_STEP_SUMMARY"
+          comment_id=$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" --paginate -q '.[] | select(.body | startswith("<!-- bundle-size-report -->")) | .id' | head -n 1)
+          if [ -n "$comment_id" ]; then
+            gh api -X PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$comment_id" -F body=@bundle-size-report.md > /dev/null
+          else
+            gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --body-file bundle-size-report.md
+          fi
 
   # Kotlin · Gradle · 번들 동기화가 깨지면 여기서 잡힙니다. 경로 조건은 워크플로가 아니라 이 잡 안에서
   # 겁니다 — 해당 없는 PR에서도 잡이 「건너뜀」으로 성공해야 필수 검사가 대기에 갇히지 않습니다. 판정은
