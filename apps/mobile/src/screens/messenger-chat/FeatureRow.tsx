@@ -6,19 +6,28 @@ import mic from "@libitums/icons/lynx/mic";
 import { color } from "@libitums/design-tokens";
 
 import { useUiCopy } from "../../lib/ui-copy";
+import type { ChatMediaAvailability } from "./chat-media.contract";
 import { SLOP_PILL, SLOP_ROUND } from "./hit-slop";
 import { messengerChatTestIds as ids } from "./messenger-chat.contract";
 
 import "./messenger-chat.css";
+import "./chat-media.css";
 
 export type MoreButtonState = "closed" | "open";
 
-export type SnapshotPillProps = { readonly price: number; readonly onTap: () => void };
-export type SnapVoicePillProps = { readonly price: number; readonly onTap: () => void };
+/** 꺼진 알약(서버 방의 wait · pending · done)은 흐리고 탭을 받지 않으며, 낭독에 까닭을 붙입니다. */
+type PillState = { readonly availability?: ChatMediaAvailability; readonly name?: string };
+export type SnapshotPillProps = PillState & { readonly price: number; readonly onTap: () => void };
+export type SnapVoicePillProps = PillState & { readonly price: number; readonly onTap: () => void };
 export type MoreButtonProps = { readonly state: MoreButtonState; readonly onTap: () => void };
 export type FeatureRowProps = {
   readonly photoPrice: number;
   readonly voicePrice: number;
+  /** 서버 방의 알약 상태(ADR-0146 「앱 연결」) — 없으면 ready(가짜 출처). */
+  readonly photoAvailability?: ChatMediaAvailability;
+  readonly voiceAvailability?: ChatMediaAvailability;
+  /** 꺼진 알약 낭독의 상대 이름. */
+  readonly name?: string;
   readonly moreState: MoreButtonState;
   readonly onSnapshot: () => void;
   readonly onSnapVoice: () => void;
@@ -29,6 +38,9 @@ export type FeatureRowProps = {
 export function FeatureRow({
   photoPrice,
   voicePrice,
+  photoAvailability = "ready",
+  voiceAvailability = "ready",
+  name = "",
   moreState,
   onSnapshot,
   onSnapVoice,
@@ -42,8 +54,18 @@ export function FeatureRow({
         scroll-bar-enable={false}
       >
         <view className="messenger-chat-features-pills">
-          <SnapshotPill price={photoPrice} onTap={onSnapshot} />
-          <SnapVoicePill price={voicePrice} onTap={onSnapVoice} />
+          <SnapshotPill
+            price={photoPrice}
+            availability={photoAvailability}
+            name={name}
+            onTap={onSnapshot}
+          />
+          <SnapVoicePill
+            price={voicePrice}
+            availability={voiceAvailability}
+            name={name}
+            onTap={onSnapVoice}
+          />
         </view>
       </scroll-view>
       <MoreButton state={moreState} onTap={onMore} />
@@ -51,20 +73,31 @@ export function FeatureRow({
   );
 }
 
-export function SnapshotPill({ price, onTap }: SnapshotPillProps): ReactNode {
-  const copy = useUiCopy().messengerChat.features;
+export function SnapshotPill({
+  price,
+  availability = "ready",
+  name = "",
+  onTap,
+}: SnapshotPillProps): ReactNode {
+  const chat = useUiCopy().messengerChat;
+  const copy = chat.features;
+  const off = availability !== "ready";
+  const label = copy.pillLabel(copy.snapshot, price);
   return (
     <view
-      className="messenger-chat-pill messenger-chat-pill-snapshot"
+      className={`messenger-chat-pill messenger-chat-pill-snapshot${off ? " messenger-chat-pill-off" : ""}`}
       id={ids.snapshot}
       data-testid={ids.snapshot}
+      data-state={off ? "off" : "on"}
       hit-slop={SLOP_PILL}
       accessibility-element={true}
-      accessibility-traits="button"
-      accessibility-label={copy.pillLabel(copy.snapshot, price)}
+      accessibility-traits={off ? "disabled" : "button"}
+      accessibility-label={
+        off ? `${label}, ${chat.media.hint(availability, "photo", name)}` : label
+      }
       bindtap={() => {
         "background only";
-        onTap();
+        if (!off) onTap();
       }}
     >
       <svg className="messenger-chat-icon-xs" content={camera} current-color={color.white} />
@@ -74,20 +107,31 @@ export function SnapshotPill({ price, onTap }: SnapshotPillProps): ReactNode {
   );
 }
 
-export function SnapVoicePill({ price, onTap }: SnapVoicePillProps): ReactNode {
-  const copy = useUiCopy().messengerChat.features;
+export function SnapVoicePill({
+  price,
+  availability = "ready",
+  name = "",
+  onTap,
+}: SnapVoicePillProps): ReactNode {
+  const chat = useUiCopy().messengerChat;
+  const copy = chat.features;
+  const off = availability !== "ready";
+  const label = copy.pillLabel(copy.snapVoice, price);
   return (
     <view
-      className="messenger-chat-pill messenger-chat-pill-voice"
+      className={`messenger-chat-pill messenger-chat-pill-voice${off ? " messenger-chat-pill-off" : ""}`}
       id={ids.snapVoice}
       data-testid={ids.snapVoice}
+      data-state={off ? "off" : "on"}
       hit-slop={SLOP_PILL}
       accessibility-element={true}
-      accessibility-traits="button"
-      accessibility-label={copy.pillLabel(copy.snapVoice, price)}
+      accessibility-traits={off ? "disabled" : "button"}
+      accessibility-label={
+        off ? `${label}, ${chat.media.hint(availability, "voice", name)}` : label
+      }
       bindtap={() => {
         "background only";
-        onTap();
+        if (!off) onTap();
       }}
     >
       <svg className="messenger-chat-icon-xs" content={mic} current-color={color.fg.brand} />

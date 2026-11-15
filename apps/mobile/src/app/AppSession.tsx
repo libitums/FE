@@ -171,7 +171,6 @@ export function AppSession({
     accountState,
     setAccountState,
   });
-  useMessengerWalletSync(screens.coinCount);
   useNewFriendBackfill(progress.hasLoadedProgress, catalog, episodeIntroEventSink);
   const screenNow = currentScreen(nav);
   // 앱 사용 중 받아진 바뀐 판은 여정맵 루트(열린 에피소드 화면 · 겹침 없음)에서 바로 바꿔 끼웁니다(ADR-0078 D4 정정).
@@ -219,6 +218,7 @@ export function AppSession({
       !progress.streakCelebration,
     onStartChatting: () => dispatch({ type: "switchTab", tab: "messenger" }),
   });
+  useMessengerWalletSync(notices.coinCount ?? screens.coinCount); // 메신저 지갑 = 머리 칩(ADR-0146)
   // 셸 여백: 그림 화면 0 · 여정 맵 위 0 · 자판 화면 위만 — 비운 쪽은 화면이 잡습니다(`shell-edges`).
   const shellInsets = shellInsetsOf(screenNow, insets, wiring);
   const bottomLayout = shellBottomLayout({

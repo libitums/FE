@@ -62,6 +62,7 @@ export type AnalyticsEventName =
   | "new_friend_sheet_closed"
   | "chat_message_sent"
   | "chat_media_requested"
+  | "chat_media_completed"
   | "chat_coins_short"
   | "surface_session_ended"
   | "first_lesson_completed"

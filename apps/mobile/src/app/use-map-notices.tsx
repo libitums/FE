@@ -11,6 +11,7 @@ import { CatalogUpdateNoticeDialog } from "../screens/catalog-update/CatalogUpda
 import type { ScreenWiring } from "./screen-wiring";
 import { useCatalogUpdateNotice } from "./use-catalog-update-notice";
 import { useLaunchCoins } from "./use-launch-coins";
+import { useMessengerMediaHooks } from "./use-messenger-media-hooks";
 import { useStreakReward } from "./use-streak-reward";
 import type { StreakRewardWiring } from "../screens/journey-map/streak-reward.contract";
 
@@ -55,6 +56,8 @@ export function useMapNotices(input: MapNoticesInput): {
     eventSink: input.wiring.messengerChat.eventSink,
     acceptBalance: launch.acceptServerBalance,
   });
+  // 서버 사진 · 음성의 예약 · 확정 잔액도 같은 서버 잔액으로(ADR-0146 「앱 연결」).
+  useMessengerMediaHooks(launch.acceptServerBalance, input.wiring.messengerChat.eventSink);
   return {
     coinCount: launch.coinCount === null ? null : Math.max(0, launch.coinCount - streak.held),
     streakReward: streak.wiring,

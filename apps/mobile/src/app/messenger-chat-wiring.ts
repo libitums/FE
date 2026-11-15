@@ -10,6 +10,7 @@ import {
 import { loadAuthSession } from "../lib/auth-session";
 import { authUserIdFrom } from "../lib/auth-user-id";
 import { isTesterAccessActive } from "../lib/tester-access";
+import type { ChatMediaHooks } from "../screens/messenger-chat/chat-media.contract";
 import type { ChatRemote } from "../screens/messenger-chat/chat-remote.contract";
 import { companionSeed } from "../screens/messenger-chat/companion-roster";
 import type { ChatFixtureSeed, ChatSource } from "../screens/messenger-chat/chat-source.contract";
@@ -58,6 +59,8 @@ type ImageUrlOf = (relativePath: string) => string | null;
 let singleton: FixtureChatSource | null = null;
 /** 지금 출처의 모드 — 「fixture」 또는 「server:<사용자 id>」. 바뀌면 출처를 새로 만듭니다(계정 전환 · 시험 표시). */
 let singletonKey = "";
+/** 서버 사진 · 음성의 바깥 알림(ADR-0146 「앱 연결」) — 앱 세션이 등록합니다(머리 엽전 칩 · 제품 이벤트). 출처는 이 등록부를 부릅니다. */
+let mediaHooks: ChatMediaHooks | null = null;
 /** 서버 모드의 원격 포트입니다(ADR-0137). 앱 진입점이 끼우고, 테스트는 끼우지 않아 늘 가짜 출처입니다. */
 let remoteFactory: (() => ChatRemote) | null = null;
 let latestImageUrlOf: ImageUrlOf | null = null;
@@ -125,6 +128,17 @@ function messengerChatLedger(): TurnLedger {
 /** 테스트만 씁니다 — 다음에 만들 출처의 씨앗입니다(없으면 앱 기본 씨앗). */
 let testSeed: ChatFixtureSeed | undefined;
 
+/** 앱 세션이 서버 사진 · 음성 알림을 등록합니다(null = 해제). 출처를 새로 만들지 않습니다. */
+export function setMessengerMediaHooks(hooks: ChatMediaHooks | null): void {
+  mediaHooks = hooks;
+}
+
+/** 출처에 넘기는 알림 — 부를 때마다 지금 등록된 것을 봅니다(출처는 앱 프로세스 싱글턴, 세션은 바뀜). */
+const forwardedMediaHooks: ChatMediaHooks = {
+  onBalance: (balance) => mediaHooks?.onBalance?.(balance),
+  onSettled: (settled) => mediaHooks?.onSettled?.(settled),
+};
+
 /** 앱 진입점이 서버 포트를 끼웁니다(ADR-0137). null이면 가짜 출처만 씁니다. */
 export function setMessengerChatRemote(factory: (() => ChatRemote) | null): void {
   remoteFactory = factory;
@@ -162,7 +176,7 @@ export function messengerChatSource(imageUrlOf: ImageUrlOf): ChatSource {
         ? testSeed === undefined
           ? {}
           : { seed: testSeed }
-        : { seed: companionSeed(), remote }),
+        : { seed: companionSeed(), remote, mediaHooks: forwardedMediaHooks }),
     });
   } else if (replaced) {
     singleton.refreshImages();

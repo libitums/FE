@@ -67,6 +67,13 @@ export type ChatCoinEvent =
       readonly media: "photo" | "voice";
       readonly price: string;
     })
+  /** 서버 사진 · 음성(ADR-0146)이 끝났거나 거절됐습니다 — 요청한 뒤 한 번. */
+  | (Common & {
+      readonly name: "chat_media_completed";
+      readonly characterId: string;
+      readonly media: "photo" | "voice";
+      readonly outcome: "complete" | "blocked" | "failed" | "refused";
+    })
   | (Common & {
       readonly name: "chat_coins_short";
       readonly reason: "message" | "photo" | "voice";

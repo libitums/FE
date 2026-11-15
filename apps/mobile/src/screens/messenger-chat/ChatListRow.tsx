@@ -38,7 +38,10 @@ function previewText(preview: ChatRowPreview, name: string, copy: MessengerChatC
     case "photo":
       return copy.list.photo;
     case "voice":
-      return copy.list.voice(voiceDurationLabel(preview.durationMs));
+      // 서버 음성은 길이를 모릅니다(0) — 「Voice message」만(ADR-0146 「앱 연결」).
+      return preview.durationMs > 0
+        ? copy.list.voice(voiceDurationLabel(preview.durationMs))
+        : copy.media.listVoice;
     case "empty":
       return "";
     default: {
