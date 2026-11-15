@@ -114,6 +114,13 @@ export const statusBarSurfaceRegistry = {
       classification: "light-icons",
       carriers: [{ component: "CoinShopScreen", file: "screens/coin-shop/CoinShopScreen.tsx" }],
     },
+    // 앨범 사진 보기(ADR-0150) — 짙은 바탕(gray-950)을 띠 밑까지 덮어 밝은 아이콘을 단다.
+    "screens/messenger-chat/chat-album.css": {
+      classification: "light-icons",
+      carriers: [
+        { component: "AlbumPhotoViewer", file: "screens/messenger-chat/AlbumPhotoViewer.tsx" },
+      ],
+    },
     "components/first-unit-guide.css": {
       classification: "light-icons",
       carriers: [

@@ -5,9 +5,11 @@ import { color } from "@libitums/design-tokens";
 import cross from "@libitums/icons/lynx/cross";
 import { Button } from "@libitums/ui-lynx/button";
 
+import { lightStatusBarIcons } from "../../lib/status-bar-icons";
 import { useUiCopy } from "../../lib/ui-copy";
 import { chatAlbumTestIds as ids, type ChatAlbumTile } from "./chat-album.contract";
 import { remakePrice } from "./chat-album-rules";
+import { SLOP_SMALL } from "./hit-slop";
 
 import "./chat-album.css";
 
@@ -39,6 +41,7 @@ export function AlbumPhotoViewer({
   return (
     <view
       className="chat-album-viewer"
+      data-statusbar={lightStatusBarIcons}
       data-testid={ids.viewer}
       accessibility-role-description="dialog"
     >
@@ -88,6 +91,7 @@ export function AlbumPhotoViewer({
                   className={`chat-album-version${on ? " chat-album-version-on" : ""}`}
                   data-testid={ids.viewerVersion(at + 1)}
                   data-selected={on ? "true" : "false"}
+                  hit-slop={SLOP_SMALL}
                   accessibility-element={true}
                   accessibility-traits="button"
                   accessibility-label={on ? chat.toggle.selected(label) : label}
