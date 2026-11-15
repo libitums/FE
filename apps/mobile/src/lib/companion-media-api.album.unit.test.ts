@@ -70,3 +70,45 @@ describe("AL-U8 앨범 · 다시 만들기 · 내 모습", () => {
     expect(await setup(ok(400, "{}")).media.saveSelf?.("male")).toBe(false);
   });
 });
+
+describe("AL-U12 내 모습 저장이 끝난 뒤에 사진을 요청한다(리뷰 #446)", () => {
+  test("AL-U12 저장 응답이 늦어도 요청은 저장이 끝난 다음에 나간다", async () => {
+    const order: string[] = [];
+    let finishSave: (outcome: AuthRequestOutcome) => void = () => undefined;
+    const deps: CompanionMediaDeps = {
+      token: async () => "tok",
+      config: () => config,
+      post: (build) => {
+        const { url } = build(config);
+        const name = url.endsWith("companion_save_profile") ? "save" : "request";
+        order.push(`${name}:sent`);
+        if (name === "request") return Promise.resolve(ok(202, ""));
+        return new Promise((resolve) => {
+          finishSave = (outcome) => {
+            order.push("save:done");
+            resolve(outcome);
+          };
+        });
+      },
+      now: () => NOW,
+    };
+    const media = createCompanionMediaRemote(deps);
+    const saving = media.saveSelf?.("male");
+    const requesting = media.request("snapshot", A1, false);
+    await new Promise((r) => setTimeout(r, 0));
+    expect(order).toEqual(["save:sent"]);
+    finishSave(ok(200, "{}"));
+    await Promise.all([saving, requesting]);
+    expect(order).toEqual(["save:sent", "save:done", "request:sent"]);
+  });
+
+  test("AL-U12b 저장이 실패해도 요청은 나간다", async () => {
+    const { media, bodies } = setup({ ok: false, reason: "network" });
+    await media.saveSelf?.("hidden");
+    await media.request("snapshot", A1, false);
+    expect(bodies.map((b) => b.url.split("/").pop())).toEqual([
+      "companion_save_profile",
+      "companion-snapshot",
+    ]);
+  });
+});
