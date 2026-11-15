@@ -35,6 +35,8 @@ export type ChatSettingsSidebarProps = {
   readonly onMemories: () => void;
   readonly feedbackMode: ChatFeedbackMode;
   readonly onFeedbackMode: () => void;
+  /** 이 인물 앨범(ADR-0150 M1). */
+  readonly onAlbum: () => void;
   readonly onDelete: () => void;
   readonly onClose: () => void;
 };

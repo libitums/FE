@@ -4,6 +4,7 @@ import { Button } from "@libitums/ui-lynx/button";
 
 import { coinIcon } from "../../components/coin-icon";
 import { useUiCopy } from "../../lib/ui-copy";
+import type { ChatSnapshotSelf } from "./chat-album.contract";
 import { ChatModalFrame } from "./ChatModalFrame";
 import { askMediaPlan } from "./chat-rules";
 import type { ChatMediaKind } from "./chat-source.contract";
@@ -17,7 +18,9 @@ export type AskMediaDialogProps = {
   readonly name: string;
   readonly balance: number;
   readonly price: number;
-  readonly onConfirm: () => void;
+  /** 첫 Snapshot이면 내 모습을 함께 묻습니다(ADR-0150 M5). 확정은 고른 값(묻지 않았으면 null)과 함께. */
+  readonly selfAsk?: boolean;
+  readonly onConfirm: (self: ChatSnapshotSelf | null) => void;
   readonly onGetCoins: () => void;
   readonly onCancel: () => void;
 };
