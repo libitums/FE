@@ -16,6 +16,8 @@ overrides:
   fast-uri@>=3.0.0 <3.1.8: 3.1.8
   brace-expansion@>=5.0.0 <5.0.12: 5.0.12
   engine.io@>=6.6.0 <6.6.10: 6.6.10
+  '@rolldown/binding-wasm32-wasi>@emnapi/core': 1.11.3
+  '@rolldown/binding-wasm32-wasi>@emnapi/runtime': 1.11.3
 
 importers:
 
@@ -78,7 +80,7 @@ importers:
     devDependencies:
       '@astrojs/check':
         specifier: 0.9.10
-        version: 0.9.10(@emnapi/runtime@2.0.0-beta.2)(prettier@3.9.9)(typescript@6.0.3)
+        version: 0.9.10(@emnapi/runtime@1.11.3)(prettier@3.9.9)(typescript@6.0.3)
       '@axe-core/playwright':
         specifier: 4.13.0
         version: 4.13.0(playwright-core@1.63.0)
@@ -130,13 +132,13 @@ importers:
     devDependencies:
       '@lynx-js/qrcode-rsbuild-plugin':
         specifier: 0.6.0
-        version: 0.6.0(@lynx-js/rspeedy@0.16.5(@emnapi/core@2.0.0-beta.2)(@emnapi/runtime@2.0.0-beta.2)(@rspack/core@2.1.10(@swc/helpers@0.5.23))(esbuild@0.28.2)(typescript@6.0.3)(webpack@5.109.2(esbuild@0.28.2)(postcss@8.5.26)))
+        version: 0.6.0(@lynx-js/rspeedy@0.16.5(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@rspack/core@2.1.10(@swc/helpers@0.5.23))(esbuild@0.28.2)(typescript@6.0.3)(webpack@5.109.2(esbuild@0.28.2)(postcss@8.5.26)))
       '@lynx-js/react-rsbuild-plugin':
         specifier: 0.19.1
         version: 0.19.1(@lynx-js/lynx-core@0.1.4)(@lynx-js/react@0.125.0(@lynx-js/types@4.1.0)(@types/react@19.2.18))(@rsbuild/core@2.1.10)(esbuild@0.28.2)(tslib@2.8.1)(webpack@5.109.2(esbuild@0.28.2)(postcss@8.5.26))
       '@lynx-js/rspeedy':
         specifier: 0.16.5
-        version: 0.16.5(@emnapi/core@2.0.0-beta.2)(@emnapi/runtime@2.0.0-beta.2)(@rspack/core@2.1.10(@swc/helpers@0.5.23))(esbuild@0.28.2)(typescript@6.0.3)(webpack@5.109.2(esbuild@0.28.2)(postcss@8.5.26))
+        version: 0.16.5(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@rspack/core@2.1.10(@swc/helpers@0.5.23))(esbuild@0.28.2)(typescript@6.0.3)(webpack@5.109.2(esbuild@0.28.2)(postcss@8.5.26))
       '@lynx-js/testing-environment':
         specifier: 0.3.3
         version: 0.3.3
@@ -179,7 +181,7 @@ importers:
         version: 0.18.0(@lynx-js/lynx-core@0.1.4)(@lynx-js/react@0.123.0(@lynx-js/types@4.1.0)(@types/react@18.3.31))(tslib@2.8.1)
       '@lynx-js/rspeedy':
         specifier: 0.16.0
-        version: 0.16.0(@emnapi/core@2.0.0-beta.2)(@emnapi/runtime@2.0.0-beta.2)(@rspack/core@2.1.10(@swc/helpers@0.5.23))(esbuild@0.28.2)(typescript@5.9.3)(webpack@5.109.2(esbuild@0.28.2)(postcss@8.5.26))
+        version: 0.16.0(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@rspack/core@2.1.10(@swc/helpers@0.5.23))(esbuild@0.28.2)(typescript@5.9.3)(webpack@5.109.2(esbuild@0.28.2)(postcss@8.5.26))
       '@lynx-js/types':
         specifier: 4.1.0
         version: 4.1.0
@@ -680,9 +682,6 @@ packages:
   '@emnapi/core@1.9.2':
     resolution: {integrity: sha512-UC+ZhH3XtczQYfOlu3lNEkdW/p4dsJ1r/bP7H8+rhao3TTTMO1ATq/4DdIi23XuGoFY+Cz0JmCbdVl0hz9jZcA==}
 
-  '@emnapi/core@2.0.0-beta.2':
-    resolution: {integrity: sha512-MzCVoWtcg4Pm2B3je5mMvYMvj3MmBKw+fU7vbsJc9/iT8ip6/eYIHo/Dsm/mr+wsHB6SEyJDuxB09Yy6r/8+4A==}
-
   '@emnapi/runtime@1.11.0':
     resolution: {integrity: sha512-55coeOFKHv1ywEcUXJtWU5f+Jr/W5tZDvZig8DLKSwUN1JpROQ4rk/SNOQiFWmaR/VKF4zuFyW1B8JduOSv6Pg==}
 
@@ -695,9 +694,6 @@ packages:
   '@emnapi/runtime@1.9.2':
     resolution: {integrity: sha512-3U4+MIWHImeyu1wnmVygh5WlgfYDtyf0k8AbLhMFxOipihf6nrWC4syIm/SwEeec0mNSafiiNnMJwbza/Is6Lw==}
 
-  '@emnapi/runtime@2.0.0-beta.2':
-    resolution: {integrity: sha512-JcrSPzPvZuNZvJqPTF9Fw25LbOJ8avzFVlaf2grmH4Cku0oGP47tRgqPZadcfj3YoZMHkFVnCYFbQM8I+i5QEw==}
-
   '@emnapi/wasi-threads@1.2.1':
     resolution: {integrity: sha512-uTII7OYF+/Mes/MrcIOYp5yOtSMLBWSIoLPpcgwipoiKbli6k322tcoFsxoIIxPDqW01SQGAgko4EzZi2BNv2w==}
 
@@ -706,9 +702,6 @@ packages:
 
   '@emnapi/wasi-threads@1.2.3':
     resolution: {integrity: sha512-ELEBe8PsLvvJ6QMr0zLt8ffvOHW/dc1m3CEzNMg7aJUv3bMaoDtw2TXyDAwkYBuroxxuHEwhRTLJSe5sya547g==}
-
-  '@emnapi/wasi-threads@2.2.0':
-    resolution: {integrity: sha512-JP7OYH38Q7+pyTAe14raZHLQIK7BDKbdwji+Xi3pcd/6QkJYQH3SX4wu6EplGrGJWRepoNzedfm0G3B9Z4e9Rw==}
 
   '@esbuild/aix-ppc64@0.28.2':
     resolution: {integrity: sha512-XExcO+dvLKvVtNTibSTBej1NCAbaGhWn9Ww1ZPx80qsahhPFe/8jgWP0IchNe0F3HwkU7n8ejhH8bjonqht8mQ==}
@@ -6074,16 +6067,16 @@ snapshots:
 
   '@asamuzakjp/nwsapi@2.3.9': {}
 
-  '@astrojs/astro2tsx@0.1.2(@emnapi/runtime@2.0.0-beta.2)':
+  '@astrojs/astro2tsx@0.1.2(@emnapi/runtime@1.11.3)':
     dependencies:
       '@emnapi/core': 1.11.3
-      '@napi-rs/wasm-runtime': 1.2.4(@emnapi/core@1.11.3)(@emnapi/runtime@2.0.0-beta.2)
+      '@napi-rs/wasm-runtime': 1.2.4(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)
     transitivePeerDependencies:
       - '@emnapi/runtime'
 
-  '@astrojs/check@0.9.10(@emnapi/runtime@2.0.0-beta.2)(prettier@3.9.9)(typescript@6.0.3)':
+  '@astrojs/check@0.9.10(@emnapi/runtime@1.11.3)(prettier@3.9.9)(typescript@6.0.3)':
     dependencies:
-      '@astrojs/language-server': 2.17.1(@emnapi/runtime@2.0.0-beta.2)(prettier@3.9.9)(typescript@6.0.3)
+      '@astrojs/language-server': 2.17.1(@emnapi/runtime@1.11.3)(prettier@3.9.9)(typescript@6.0.3)
       chokidar: 4.0.3
       kleur: 4.1.5
       typescript: 6.0.3
@@ -6155,9 +6148,9 @@ snapshots:
       unified: 11.0.5
       yaml: 2.9.1
 
-  '@astrojs/language-server@2.17.1(@emnapi/runtime@2.0.0-beta.2)(prettier@3.9.9)(typescript@6.0.3)':
+  '@astrojs/language-server@2.17.1(@emnapi/runtime@1.11.3)(prettier@3.9.9)(typescript@6.0.3)':
     dependencies:
-      '@astrojs/astro2tsx': 0.1.2(@emnapi/runtime@2.0.0-beta.2)
+      '@astrojs/astro2tsx': 0.1.2(@emnapi/runtime@1.11.3)
       '@astrojs/yaml2ts': 0.2.4
       '@volar/kit': 2.4.28(typescript@6.0.3)
       '@volar/language-core': 2.4.28
@@ -6391,12 +6384,6 @@ snapshots:
       tslib: 2.8.1
     optional: true
 
-  '@emnapi/core@2.0.0-beta.2':
-    dependencies:
-      '@emnapi/wasi-threads': 2.2.0
-      tslib: 2.8.1
-    optional: true
-
   '@emnapi/runtime@1.11.0':
     dependencies:
       tslib: 2.8.1
@@ -6410,16 +6397,11 @@ snapshots:
   '@emnapi/runtime@1.11.3':
     dependencies:
       tslib: 2.8.1
-    optional: true
 
   '@emnapi/runtime@1.9.2':
     dependencies:
       tslib: 2.8.1
     optional: true
-
-  '@emnapi/runtime@2.0.0-beta.2':
-    dependencies:
-      tslib: 2.8.1
 
   '@emnapi/wasi-threads@1.2.1':
     dependencies:
@@ -6434,11 +6416,6 @@ snapshots:
   '@emnapi/wasi-threads@1.2.3':
     dependencies:
       tslib: 2.8.1
-
-  '@emnapi/wasi-threads@2.2.0':
-    dependencies:
-      tslib: 2.8.1
-    optional: true
 
   '@esbuild/aix-ppc64@0.28.2':
     optional: true
@@ -6841,9 +6818,9 @@ snapshots:
 
   '@lynx-js/lynx-core@0.1.4': {}
 
-  '@lynx-js/qrcode-rsbuild-plugin@0.6.0(@lynx-js/rspeedy@0.16.5(@emnapi/core@2.0.0-beta.2)(@emnapi/runtime@2.0.0-beta.2)(@rspack/core@2.1.10(@swc/helpers@0.5.23))(esbuild@0.28.2)(typescript@6.0.3)(webpack@5.109.2(esbuild@0.28.2)(postcss@8.5.26)))':
+  '@lynx-js/qrcode-rsbuild-plugin@0.6.0(@lynx-js/rspeedy@0.16.5(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@rspack/core@2.1.10(@swc/helpers@0.5.23))(esbuild@0.28.2)(typescript@6.0.3)(webpack@5.109.2(esbuild@0.28.2)(postcss@8.5.26)))':
     dependencies:
-      '@lynx-js/rspeedy': 0.16.5(@emnapi/core@2.0.0-beta.2)(@emnapi/runtime@2.0.0-beta.2)(@rspack/core@2.1.10(@swc/helpers@0.5.23))(esbuild@0.28.2)(typescript@6.0.3)(webpack@5.109.2(esbuild@0.28.2)(postcss@8.5.26))
+      '@lynx-js/rspeedy': 0.16.5(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@rspack/core@2.1.10(@swc/helpers@0.5.23))(esbuild@0.28.2)(typescript@6.0.3)(webpack@5.109.2(esbuild@0.28.2)(postcss@8.5.26))
 
   '@lynx-js/react-alias-rsbuild-plugin@0.18.0': {}
 
@@ -6951,7 +6928,7 @@ snapshots:
       - lightningcss
       - webpack
 
-  '@lynx-js/rspeedy@0.16.0(@emnapi/core@2.0.0-beta.2)(@emnapi/runtime@2.0.0-beta.2)(@rspack/core@2.1.10(@swc/helpers@0.5.23))(esbuild@0.28.2)(typescript@5.9.3)(webpack@5.109.2(esbuild@0.28.2)(postcss@8.5.26))':
+  '@lynx-js/rspeedy@0.16.0(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@rspack/core@2.1.10(@swc/helpers@0.5.23))(esbuild@0.28.2)(typescript@5.9.3)(webpack@5.109.2(esbuild@0.28.2)(postcss@8.5.26))':
     dependencies:
       '@lynx-js/cache-events-webpack-plugin': 0.2.0
       '@lynx-js/chunk-loading-webpack-plugin': 0.4.1
@@ -6961,7 +6938,7 @@ snapshots:
       '@lynx-js/websocket': 0.0.4
       '@rsbuild/core': 2.1.4
       '@rsbuild/plugin-css-minimizer': 2.0.0(@rsbuild/core@2.1.4)(esbuild@0.28.2)(webpack@5.109.2(esbuild@0.28.2)(postcss@8.5.26))
-      '@rsdoctor/rspack-plugin': 1.5.18(@emnapi/core@2.0.0-beta.2)(@emnapi/runtime@2.0.0-beta.2)(@rsbuild/core@2.1.4)(@rspack/core@2.1.10(@swc/helpers@0.5.23))(webpack@5.109.2(esbuild@0.28.2)(postcss@8.5.26))
+      '@rsdoctor/rspack-plugin': 1.5.18(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@rsbuild/core@2.1.4)(@rspack/core@2.1.10(@swc/helpers@0.5.23))(webpack@5.109.2(esbuild@0.28.2)(postcss@8.5.26))
     optionalDependencies:
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -6981,11 +6958,11 @@ snapshots:
       - utf-8-validate
       - webpack
 
-  '@lynx-js/rspeedy@0.16.5(@emnapi/core@2.0.0-beta.2)(@emnapi/runtime@2.0.0-beta.2)(@rspack/core@2.1.10(@swc/helpers@0.5.23))(esbuild@0.28.2)(typescript@6.0.3)(webpack@5.109.2(esbuild@0.28.2)(postcss@8.5.26))':
+  '@lynx-js/rspeedy@0.16.5(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@rspack/core@2.1.10(@swc/helpers@0.5.23))(esbuild@0.28.2)(typescript@6.0.3)(webpack@5.109.2(esbuild@0.28.2)(postcss@8.5.26))':
     dependencies:
       '@lynx-js/rsbuild-plugin': 0.0.3(@rsbuild/core@2.1.10)(esbuild@0.28.2)(webpack@5.109.2(esbuild@0.28.2)(postcss@8.5.26))
       '@rsbuild/core': 2.1.10
-      '@rsdoctor/rspack-plugin': 1.6.3(@emnapi/core@2.0.0-beta.2)(@emnapi/runtime@2.0.0-beta.2)(@rsbuild/core@2.1.10)(@rspack/core@2.1.10(@swc/helpers@0.5.23))(webpack@5.109.2(esbuild@0.28.2)(postcss@8.5.26))
+      '@rsdoctor/rspack-plugin': 1.6.3(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@rsbuild/core@2.1.10)(@rspack/core@2.1.10(@swc/helpers@0.5.23))(webpack@5.109.2(esbuild@0.28.2)(postcss@8.5.26))
     optionalDependencies:
       typescript: 6.0.3
     transitivePeerDependencies:
@@ -7118,10 +7095,10 @@ snapshots:
       '@tybys/wasm-util': 0.10.3
     optional: true
 
-  '@napi-rs/wasm-runtime@1.2.3(@emnapi/core@2.0.0-beta.2)(@emnapi/runtime@2.0.0-beta.2)':
+  '@napi-rs/wasm-runtime@1.2.3(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)':
     dependencies:
-      '@emnapi/core': 2.0.0-beta.2
-      '@emnapi/runtime': 2.0.0-beta.2
+      '@emnapi/core': 1.11.3
+      '@emnapi/runtime': 1.11.3
       '@tybys/wasm-util': 0.10.3
     optional: true
 
@@ -7132,10 +7109,10 @@ snapshots:
       '@tybys/wasm-util': 0.10.3
     optional: true
 
-  '@napi-rs/wasm-runtime@1.2.4(@emnapi/core@1.11.3)(@emnapi/runtime@2.0.0-beta.2)':
+  '@napi-rs/wasm-runtime@1.2.4(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)':
     dependencies:
       '@emnapi/core': 1.11.3
-      '@emnapi/runtime': 2.0.0-beta.2
+      '@emnapi/runtime': 1.11.3
       '@tybys/wasm-util': 0.10.3
 
   '@napi-rs/wasm-runtime@1.2.4(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)':
@@ -7145,10 +7122,10 @@ snapshots:
       '@tybys/wasm-util': 0.10.3
     optional: true
 
-  '@napi-rs/wasm-runtime@1.2.6(@emnapi/core@2.0.0-beta.2)(@emnapi/runtime@2.0.0-beta.2)':
+  '@napi-rs/wasm-runtime@1.2.6(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)':
     dependencies:
-      '@emnapi/core': 2.0.0-beta.2
-      '@emnapi/runtime': 2.0.0-beta.2
+      '@emnapi/core': 1.11.3
+      '@emnapi/runtime': 1.11.3
       '@tybys/wasm-util': 0.10.3
     optional: true
 
@@ -7507,16 +7484,16 @@ snapshots:
 
   '@rolldown/binding-wasm32-wasi@1.2.19':
     dependencies:
-      '@emnapi/core': 2.0.0-beta.2
-      '@emnapi/runtime': 2.0.0-beta.2
-      '@napi-rs/wasm-runtime': 1.2.6(@emnapi/core@2.0.0-beta.2)(@emnapi/runtime@2.0.0-beta.2)
+      '@emnapi/core': 1.11.3
+      '@emnapi/runtime': 1.11.3
+      '@napi-rs/wasm-runtime': 1.2.6(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)
     optional: true
 
   '@rolldown/binding-wasm32-wasi@1.3.2':
     dependencies:
-      '@emnapi/core': 2.0.0-beta.2
-      '@emnapi/runtime': 2.0.0-beta.2
-      '@napi-rs/wasm-runtime': 1.2.6(@emnapi/core@2.0.0-beta.2)(@emnapi/runtime@2.0.0-beta.2)
+      '@emnapi/core': 1.11.3
+      '@emnapi/runtime': 1.11.3
+      '@napi-rs/wasm-runtime': 1.2.6(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)
     optional: true
 
   '@rolldown/binding-win32-arm64-msvc@1.2.19':
@@ -7620,14 +7597,14 @@ snapshots:
 
   '@rsdoctor/client@1.6.3': {}
 
-  '@rsdoctor/core@1.5.18(@emnapi/core@2.0.0-beta.2)(@emnapi/runtime@2.0.0-beta.2)(@rsbuild/core@2.1.4)(@rspack/core@2.1.10(@swc/helpers@0.5.23))(webpack@5.109.2(esbuild@0.28.2)(postcss@8.5.26))':
+  '@rsdoctor/core@1.5.18(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@rsbuild/core@2.1.4)(@rspack/core@2.1.10(@swc/helpers@0.5.23))(webpack@5.109.2(esbuild@0.28.2)(postcss@8.5.26))':
     dependencies:
       '@rsbuild/plugin-check-syntax': 1.6.1(@rsbuild/core@2.1.4)
       '@rsdoctor/graph': 1.5.18(@rspack/core@2.1.10(@swc/helpers@0.5.23))(webpack@5.109.2(esbuild@0.28.2)(postcss@8.5.26))
       '@rsdoctor/sdk': 1.5.18(@rspack/core@2.1.10(@swc/helpers@0.5.23))(webpack@5.109.2(esbuild@0.28.2)(postcss@8.5.26))
       '@rsdoctor/types': 1.5.18(@rspack/core@2.1.10(@swc/helpers@0.5.23))(webpack@5.109.2(esbuild@0.28.2)(postcss@8.5.26))
       '@rsdoctor/utils': 1.5.18(@rspack/core@2.1.10(@swc/helpers@0.5.23))(webpack@5.109.2(esbuild@0.28.2)(postcss@8.5.26))
-      '@rspack/resolver': 0.2.8(@emnapi/core@2.0.0-beta.2)(@emnapi/runtime@2.0.0-beta.2)
+      '@rspack/resolver': 0.2.8(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)
       browserslist-load-config: 1.0.3
       es-toolkit: 1.51.0
       filesize: 11.0.22
@@ -7644,14 +7621,14 @@ snapshots:
       - utf-8-validate
       - webpack
 
-  '@rsdoctor/core@1.6.3(@emnapi/core@2.0.0-beta.2)(@emnapi/runtime@2.0.0-beta.2)(@rsbuild/core@2.1.10)(@rspack/core@2.1.10(@swc/helpers@0.5.23))(webpack@5.109.2(esbuild@0.28.2)(postcss@8.5.26))':
+  '@rsdoctor/core@1.6.3(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@rsbuild/core@2.1.10)(@rspack/core@2.1.10(@swc/helpers@0.5.23))(webpack@5.109.2(esbuild@0.28.2)(postcss@8.5.26))':
     dependencies:
       '@rsbuild/plugin-check-syntax': 1.6.1(@rsbuild/core@2.1.10)
       '@rsdoctor/graph': 1.6.3(@rspack/core@2.1.10(@swc/helpers@0.5.23))(webpack@5.109.2(esbuild@0.28.2)(postcss@8.5.26))
       '@rsdoctor/sdk': 1.6.3(@rspack/core@2.1.10(@swc/helpers@0.5.23))(webpack@5.109.2(esbuild@0.28.2)(postcss@8.5.26))
       '@rsdoctor/types': 1.6.3(@rspack/core@2.1.10(@swc/helpers@0.5.23))(webpack@5.109.2(esbuild@0.28.2)(postcss@8.5.26))
       '@rsdoctor/utils': 1.6.3(@rspack/core@2.1.10(@swc/helpers@0.5.23))(webpack@5.109.2(esbuild@0.28.2)(postcss@8.5.26))
-      '@rspack/resolver': 0.2.8(@emnapi/core@2.0.0-beta.2)(@emnapi/runtime@2.0.0-beta.2)
+      '@rspack/resolver': 0.2.8(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)
       browserslist-load-config: 1.0.3
       es-toolkit: 1.51.0
       filesize: 11.0.22
@@ -7690,9 +7667,9 @@ snapshots:
       - '@rspack/core'
       - webpack
 
-  '@rsdoctor/rspack-plugin@1.5.18(@emnapi/core@2.0.0-beta.2)(@emnapi/runtime@2.0.0-beta.2)(@rsbuild/core@2.1.4)(@rspack/core@2.1.10(@swc/helpers@0.5.23))(webpack@5.109.2(esbuild@0.28.2)(postcss@8.5.26))':
+  '@rsdoctor/rspack-plugin@1.5.18(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@rsbuild/core@2.1.4)(@rspack/core@2.1.10(@swc/helpers@0.5.23))(webpack@5.109.2(esbuild@0.28.2)(postcss@8.5.26))':
     dependencies:
-      '@rsdoctor/core': 1.5.18(@emnapi/core@2.0.0-beta.2)(@emnapi/runtime@2.0.0-beta.2)(@rsbuild/core@2.1.4)(@rspack/core@2.1.10(@swc/helpers@0.5.23))(webpack@5.109.2(esbuild@0.28.2)(postcss@8.5.26))
+      '@rsdoctor/core': 1.5.18(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@rsbuild/core@2.1.4)(@rspack/core@2.1.10(@swc/helpers@0.5.23))(webpack@5.109.2(esbuild@0.28.2)(postcss@8.5.26))
       '@rsdoctor/graph': 1.5.18(@rspack/core@2.1.10(@swc/helpers@0.5.23))(webpack@5.109.2(esbuild@0.28.2)(postcss@8.5.26))
       '@rsdoctor/sdk': 1.5.18(@rspack/core@2.1.10(@swc/helpers@0.5.23))(webpack@5.109.2(esbuild@0.28.2)(postcss@8.5.26))
       '@rsdoctor/types': 1.5.18(@rspack/core@2.1.10(@swc/helpers@0.5.23))(webpack@5.109.2(esbuild@0.28.2)(postcss@8.5.26))
@@ -7708,9 +7685,9 @@ snapshots:
       - utf-8-validate
       - webpack
 
-  '@rsdoctor/rspack-plugin@1.6.3(@emnapi/core@2.0.0-beta.2)(@emnapi/runtime@2.0.0-beta.2)(@rsbuild/core@2.1.10)(@rspack/core@2.1.10(@swc/helpers@0.5.23))(webpack@5.109.2(esbuild@0.28.2)(postcss@8.5.26))':
+  '@rsdoctor/rspack-plugin@1.6.3(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@rsbuild/core@2.1.10)(@rspack/core@2.1.10(@swc/helpers@0.5.23))(webpack@5.109.2(esbuild@0.28.2)(postcss@8.5.26))':
     dependencies:
-      '@rsdoctor/core': 1.6.3(@emnapi/core@2.0.0-beta.2)(@emnapi/runtime@2.0.0-beta.2)(@rsbuild/core@2.1.10)(@rspack/core@2.1.10(@swc/helpers@0.5.23))(webpack@5.109.2(esbuild@0.28.2)(postcss@8.5.26))
+      '@rsdoctor/core': 1.6.3(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@rsbuild/core@2.1.10)(@rspack/core@2.1.10(@swc/helpers@0.5.23))(webpack@5.109.2(esbuild@0.28.2)(postcss@8.5.26))
       '@rsdoctor/graph': 1.6.3(@rspack/core@2.1.10(@swc/helpers@0.5.23))(webpack@5.109.2(esbuild@0.28.2)(postcss@8.5.26))
       '@rsdoctor/sdk': 1.6.3(@rspack/core@2.1.10(@swc/helpers@0.5.23))(webpack@5.109.2(esbuild@0.28.2)(postcss@8.5.26))
       '@rsdoctor/types': 1.6.3(@rspack/core@2.1.10(@swc/helpers@0.5.23))(webpack@5.109.2(esbuild@0.28.2)(postcss@8.5.26))
@@ -7913,9 +7890,9 @@ snapshots:
   '@rspack/resolver-binding-linux-x64-musl@0.2.8':
     optional: true
 
-  '@rspack/resolver-binding-wasm32-wasi@0.2.8(@emnapi/core@2.0.0-beta.2)(@emnapi/runtime@2.0.0-beta.2)':
+  '@rspack/resolver-binding-wasm32-wasi@0.2.8(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)':
     dependencies:
-      '@napi-rs/wasm-runtime': 1.2.3(@emnapi/core@2.0.0-beta.2)(@emnapi/runtime@2.0.0-beta.2)
+      '@napi-rs/wasm-runtime': 1.2.3(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)
     transitivePeerDependencies:
       - '@emnapi/core'
       - '@emnapi/runtime'
@@ -7930,7 +7907,7 @@ snapshots:
   '@rspack/resolver-binding-win32-x64-msvc@0.2.8':
     optional: true
 
-  '@rspack/resolver@0.2.8(@emnapi/core@2.0.0-beta.2)(@emnapi/runtime@2.0.0-beta.2)':
+  '@rspack/resolver@0.2.8(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)':
     optionalDependencies:
       '@rspack/resolver-binding-darwin-arm64': 0.2.8
       '@rspack/resolver-binding-darwin-x64': 0.2.8
@@ -7938,7 +7915,7 @@ snapshots:
       '@rspack/resolver-binding-linux-arm64-musl': 0.2.8
       '@rspack/resolver-binding-linux-x64-gnu': 0.2.8
       '@rspack/resolver-binding-linux-x64-musl': 0.2.8
-      '@rspack/resolver-binding-wasm32-wasi': 0.2.8(@emnapi/core@2.0.0-beta.2)(@emnapi/runtime@2.0.0-beta.2)
+      '@rspack/resolver-binding-wasm32-wasi': 0.2.8(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)
       '@rspack/resolver-binding-win32-arm64-msvc': 0.2.8
       '@rspack/resolver-binding-win32-ia32-msvc': 0.2.8
       '@rspack/resolver-binding-win32-x64-msvc': 0.2.8
