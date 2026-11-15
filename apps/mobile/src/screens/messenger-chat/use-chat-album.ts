@@ -58,6 +58,8 @@ export function useChatAlbum(source: ChatSource, roomId: string): ChatAlbumApi {
     return () => {
       mounted.current = false;
     };
+    // `reload`는 매 그림 새로 서지만 출처 · 방이 같으면 같은 일을 합니다 — 그 둘이 바뀔 때만 다시 읽습니다.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [source, roomId]);
 
   // 다시 만들기가 끝나면(방 로그에 자리표시자가 남지 않으면) 표시를 걷고 다시 읽습니다 — 새 판이 앨범에 섭니다.
@@ -68,6 +70,7 @@ export function useChatAlbum(source: ChatSource, roomId: string): ChatAlbumApi {
         setRemaking(new Set());
         reload();
       }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- 위와 같음(출처 · 방이 같으면 같은 구독).
     [source, roomId],
   );
 

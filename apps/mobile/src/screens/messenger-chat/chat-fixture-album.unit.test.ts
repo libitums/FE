@@ -57,19 +57,19 @@ function server(over: { loads?: (readonly RemoteMedia[])[]; store?: SnapshotSelf
   let clock = 2_000;
   const loads = [...(over.loads ?? [])];
   const port: ChatMediaRemote = {
-    request: vi.fn(async () => ({
+    request: vi.fn<ChatMediaRemote["request"]>(async () => ({
       kind: "accepted" as const,
       media: media({ id: M2, status: "pending", path: null, createdAt: 2_000 }),
       cached: false,
     })),
-    load: vi.fn(async () => loads.shift() ?? []),
-    sign: vi.fn(async (path: string) => `https://signed/${path}`),
-    balance: vi.fn(async () => 100),
-    list: vi.fn(async () => ({
+    load: vi.fn<ChatMediaRemote["load"]>(async () => loads.shift() ?? []),
+    sign: vi.fn<ChatMediaRemote["sign"]>(async (path: string) => `https://signed/${path}`),
+    balance: vi.fn<ChatMediaRemote["balance"]>(async () => 100),
+    list: vi.fn<NonNullable<ChatMediaRemote["list"]>>(async () => ({
       items: [albumRow(), albumRow({ id: M2, status: "pending", path: null })],
       hasMore: true,
     })),
-    saveSelf: vi.fn(async () => true),
+    saveSelf: vi.fn<NonNullable<ChatMediaRemote["saveSelf"]>>(async () => true),
   };
   const remote: ChatRemote = {
     loadHistory: async () => ({ messages: [bubble], corrections: {}, ideas: null }),

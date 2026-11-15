@@ -20,7 +20,13 @@ const labelOf = (testId: string) => screen.getByTestId(testId).getAttribute("acc
 
 test("AL-UI10 Chats 설정 About you의 「You in snapshots」 → 시트에서 고르고 Save하면 바뀐다(고른 적 없으면 Woman)", () => {
   const source = makeSource();
-  render(<ChatSettingsScreen source={source} onOpenSharedMemories={vi.fn()} onBack={vi.fn()} />);
+  render(
+    <ChatSettingsScreen
+      source={source}
+      onOpenSharedMemories={vi.fn<() => void>()}
+      onBack={vi.fn<() => void>()}
+    />,
+  );
   expect(labelOf(ids.selfRow)).toBe("You in snapshots, Woman");
   tapId(ids.selfRow);
   expect(textOf(ids.selfSheet)).toContain("We never draw your face.");
@@ -49,14 +55,14 @@ test("AL-UI11 사이드바의 Album 줄은 이야기 시점 다음(5번째)이�
       birthYear={{ kind: "set", year: 2001 }}
       memories={{ memories: [], count: 0, cap: 50, full: false }}
       feedbackMode="separate"
-      onGetCoins={vi.fn()}
-      onStoryPoint={vi.fn()}
-      onBirthYear={vi.fn()}
-      onMemories={vi.fn()}
-      onFeedbackMode={vi.fn()}
+      onGetCoins={vi.fn<() => void>()}
+      onStoryPoint={vi.fn<() => void>()}
+      onBirthYear={vi.fn<() => void>()}
+      onMemories={vi.fn<() => void>()}
+      onFeedbackMode={vi.fn<() => void>()}
       onAlbum={onAlbum}
-      onDelete={vi.fn()}
-      onClose={vi.fn()}
+      onDelete={vi.fn<() => void>()}
+      onClose={vi.fn<() => void>()}
     />,
   );
   const row = screen.getByTestId(ids.sidebarRow);
@@ -76,8 +82,8 @@ function mountAsk(selfAsk: boolean) {
       price={35}
       selfAsk={selfAsk}
       onConfirm={onConfirm}
-      onGetCoins={vi.fn()}
-      onCancel={vi.fn()}
+      onGetCoins={vi.fn<() => void>()}
+      onCancel={vi.fn<() => void>()}
     />,
   );
   return onConfirm;

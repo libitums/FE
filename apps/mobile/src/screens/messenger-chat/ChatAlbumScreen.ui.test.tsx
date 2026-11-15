@@ -50,8 +50,10 @@ function mount(
 ) {
   const pages = [...(over.pages ?? [{ items: ITEMS, hasMore: false }])];
   const album: ChatAlbumPort = {
-    load: vi.fn(async () => (pages.length > 1 ? (pages.shift() ?? null) : (pages[0] ?? null))),
-    remake: vi.fn(async () => over.remake ?? { kind: "started" as const }),
+    load: vi.fn<ChatAlbumPort["load"]>(async () =>
+      pages.length > 1 ? (pages.shift() ?? null) : (pages[0] ?? null),
+    ),
+    remake: vi.fn<ChatAlbumPort["remake"]>(async () => over.remake ?? { kind: "started" as const }),
   };
   const source: ChatSource = { ...makeSource(), album };
   const onBack = vi.fn<() => void>();
