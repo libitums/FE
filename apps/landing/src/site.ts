@@ -19,7 +19,8 @@ export const webManifestPath = "/site.webmanifest";
 
 /** 스토어 주소입니다. 비어 있으면 그 카드는 링크가 아니라 "Coming soon"으로 섭니다. */
 export const storeLinks = {
-  ios: "",
+  // ⟨2026-11-15⟩ App Store 출시. 나라 코드(`/us/`) 없는 주소라 방문자 나라의 스토어로 열립니다.
+  ios: "https://apps.apple.com/app/duru-learn-korean-in-stories/id6817760965",
   android: "https://play.google.com/store/apps/details?id=libitum.duru.android",
 };
 
