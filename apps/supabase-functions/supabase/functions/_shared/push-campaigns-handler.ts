@@ -162,7 +162,8 @@ export function createPushCampaignsHandler(deps: PushCampaignsDeps) {
 
       // 배정을 먼저 남깁니다 — 기록 없이 나간 알림은 결과에서 셀 수 없어 보내지 않습니다.
       const runAt = new Date(nowMs).toISOString();
-      for (let start = 0; start < rows.length; start += 500) {
+      // 한 요청으로 넣습니다 — PostgREST 한 번의 삽입은 원자적이라, 실패하면 일부만 남아 쉬는 시간에 걸리는 일이 없습니다.
+      {
         const response = await call(deps.outbound, {
           url: `${env.supabaseUrl}/rest/v1/push_campaign_sends`,
           method: "POST",
@@ -172,7 +173,7 @@ export function createPushCampaignsHandler(deps: PushCampaignsDeps) {
             Prefer: "return=minimal",
           },
           body: JSON.stringify(
-            rows.slice(start, start + 500).map((row) => ({
+            rows.map((row) => ({
               run_at: runAt,
               series: row.series,
               segment: row.segment,
@@ -187,8 +188,8 @@ export function createPushCampaignsHandler(deps: PushCampaignsDeps) {
           ),
         });
         if (!ok(response)) {
-          log.error = `record_failed_at_${start}`;
-          return finish(502, { error: "record_failed", recordedBefore: start });
+          log.error = "record_failed";
+          return finish(502, { error: "record_failed" });
         }
       }
 

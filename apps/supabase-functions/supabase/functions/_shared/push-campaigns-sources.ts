@@ -108,39 +108,44 @@ export async function loadContent(
     ? (manifest.episodes as Record<string, unknown>[])
     : [];
   if (entries.length === 0) return null;
-  const catalog: CatalogEpisode[] = [];
-  for (const entry of [...entries].sort((a, b) => Number(a.order) - Number(b.order))) {
-    const url = String(entry.url ?? "");
-    if (!safe(url)) return null;
-    const episode = await read(url);
-    if (episode === null) return null;
-    const steps = Array.isArray(episode.steps)
-      ? (episode.steps as { id?: unknown }[]).map((step) => String(step?.id ?? "")).filter(Boolean)
-      : [];
-    catalog.push({
+  // 에피소드 · 예고 파일은 함께 읽습니다(순서는 매니페스트 · index 순서 그대로).
+  const sorted = [...entries].sort((a, b) => Number(a.order) - Number(b.order));
+  if (sorted.some((entry) => !safe(String(entry.url ?? "")))) return null;
+  const episodes = await Promise.all(sorted.map((entry) => read(String(entry.url))));
+  if (episodes.some((episode) => episode === null)) return null;
+  const catalog: CatalogEpisode[] = sorted.map((entry, index) => {
+    const episode = episodes[index]!;
+    return {
       id: String(entry.id),
-      steps,
+      steps: Array.isArray(episode.steps)
+        ? (episode.steps as { id?: unknown }[])
+            .map((step) => String(step?.id ?? ""))
+            .filter(Boolean)
+        : [],
       title: String(episode.title_en ?? entry.id),
       character: typeof episode.counterpart === "string" ? episode.counterpart : "",
-    });
-  }
+    };
+  });
 
   const index = await read("push/level-5/index.json");
   const units = Array.isArray(index?.units) ? (index.units as Record<string, unknown>[]) : [];
   const storyUnits: StoryUnits = {};
   const storyCatalog: CatalogEpisode[] = [];
-  for (const unit of units) {
-    if (typeof unit?.unit !== "string") continue;
+  const wanted = units.flatMap((unit) => {
+    if (typeof unit?.unit !== "string") return [];
     const file =
       String(unit.url ?? `${unit.unit}.json`)
         .split("/")
         .pop() ?? "";
-    if (!safe(file)) continue;
-    const body = await read(`push/level-5/${file}`);
-    if (body === null) return null;
-    storyUnits[unit.unit] = body as StoryUnits[string];
+    return safe(file) ? [{ unit, id: unit.unit, file }] : [];
+  });
+  const bodies = await Promise.all(wanted.map(({ file }) => read(`push/level-5/${file}`)));
+  if (bodies.some((body) => body === null)) return null;
+  for (const [index, { unit, id }] of wanted.entries()) {
+    const body = bodies[index]!;
+    storyUnits[id] = body as StoryUnits[string];
     storyCatalog.push({
-      id: unit.unit,
+      id,
       steps: Array.isArray(unit.steps) ? unit.steps.map(String) : [],
       title: String(body.title_en ?? unit.unit),
       character: "",

@@ -158,7 +158,7 @@ async function refresh() {
     supabase.progress(),
     supabase.days(sinceDay),
     supabase.testerIds(),
-    supabase.autoSends(),
+    supabase.autoSends(sinceDay),
   ]);
   const everyone = buildLearners({
     devices,
