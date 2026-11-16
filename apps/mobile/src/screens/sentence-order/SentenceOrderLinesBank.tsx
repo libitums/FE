@@ -10,6 +10,8 @@ export type SentenceOrderLinesBankProps = {
   readonly placedChipIndexes: readonly number[];
   /** 칸이 다 찼거나 채점 뒤면 `locked`입니다 — 조각 전부가 같은 상태입니다. */
   readonly interaction: SentenceOrderInteraction;
+  /** 조각마다 로마자입니다(`chips`와 같은 길이). 없으면 한 줄 조각입니다(ADR-0153). */
+  readonly romanizations?: readonly string[] | null;
   readonly onTap: (index: number) => void;
 };
 
@@ -18,13 +20,19 @@ export function SentenceOrderLinesBank({
   chips,
   placedChipIndexes,
   interaction,
+  romanizations,
   onTap,
 }: SentenceOrderLinesBankProps): ReactNode {
   return (
     <view className="sentence-order-screen-bank" data-testid="sentence-order-screen-bank">
       {chips.map((text, chipIndex) =>
         placedChipIndexes.includes(chipIndex) ? (
-          <SentenceOrderChipPlaceholder key={chipIndex} index={chipIndex} text={text} />
+          <SentenceOrderChipPlaceholder
+            key={chipIndex}
+            index={chipIndex}
+            text={text}
+            romanization={romanizations?.[chipIndex]}
+          />
         ) : (
           <SentenceOrderChip
             key={chipIndex}
@@ -32,6 +40,7 @@ export function SentenceOrderLinesBank({
             text={text}
             placedOrdinal={null}
             disabled={interaction === "locked"}
+            romanization={romanizations?.[chipIndex]}
             onTap={onTap}
           />
         ),

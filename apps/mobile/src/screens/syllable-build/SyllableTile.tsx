@@ -17,6 +17,7 @@ export function SyllableTile({
   placedOrdinal,
   slotCount,
   interaction,
+  romanization,
   onTap,
 }: SyllableTileProps): ReactNode {
   const copy = useUiCopy();
@@ -27,7 +28,8 @@ export function SyllableTile({
     onTap(index);
   };
   const variant = placedOrdinal === null ? "bank" : "placed";
-  const base = `syllable-tile syllable-tile-${variant}`;
+  const reading = romanization === undefined ? "" : " syllable-tile-with-reading";
+  const base = `syllable-tile syllable-tile-${variant}${reading}`;
   // standard에서는 data-motion 속성을 아예 넘기지 않습니다.
   const motionProps = motion === "reduced" ? { "data-motion": "reduced" } : {};
 
@@ -49,6 +51,11 @@ export function SyllableTile({
       bindtap={interaction === "locked" ? undefined : handleTap}
     >
       {/* 보이는 이름을 지는 요소는 가리지 않습니다 — 글자에는 접근성 속성이 없습니다. */}
+      {romanization === undefined ? null : (
+        <text className="tile-romanization" data-testid={`syllable-build-tile-${index}-roman`}>
+          {romanization}
+        </text>
+      )}
       <text className="syllable-tile-label">{text}</text>
     </view>
   );
@@ -56,16 +63,27 @@ export function SyllableTile({
 
 // 창고에서 타일이 빠져나간 자리입니다. 같은 크기의 칸이 글자를 남긴 채 비활성 색으로 서서 「이 글자는 이미 썼다」를 보이고
 // 창고의 배치가 흔들리지 않습니다. 이름은 `글자, used`이고 비활성으로 읽힙니다.
-export function SyllableTilePlaceholder({ index, text }: SyllableTilePlaceholderProps): ReactNode {
+export function SyllableTilePlaceholder({
+  index,
+  text,
+  romanization,
+}: SyllableTilePlaceholderProps): ReactNode {
   const copy = useUiCopy();
   return (
     <view
-      className="syllable-tile syllable-tile-placeholder"
+      className={
+        romanization === undefined
+          ? "syllable-tile syllable-tile-placeholder"
+          : "syllable-tile syllable-tile-placeholder syllable-tile-with-reading"
+      }
       data-testid={`syllable-build-bank-slot-${index}`}
       accessibility-element={true}
       accessibility-label={copy.syllableBuild.usedTile(text)}
       accessibility-traits="disabled"
     >
+      {romanization === undefined ? null : (
+        <text className="tile-romanization syllable-tile-romanization-used">{romanization}</text>
+      )}
       <text className="syllable-tile-label">{text}</text>
     </view>
   );

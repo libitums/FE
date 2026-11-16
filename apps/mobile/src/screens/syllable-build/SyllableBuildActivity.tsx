@@ -3,6 +3,11 @@ import { selectedField, selectedTilesText } from "../../lib/item-answer";
 import type { ReactNode } from "@lynx-js/react";
 
 import { AnswerReveal } from "../../components/AnswerReveal";
+import {
+  AssembledHintButton,
+  AssembledHintSheet,
+  useAssembledHint,
+} from "../../components/assembled-hint/AssembledHint";
 import { announce, announceCompletion } from "../../lib/accessibility";
 import { answerEchoCueOf, standaloneLessonAudio } from "../../lib/question-audio";
 import { initialSessionOptions } from "../../lib/session-options";
@@ -53,6 +58,7 @@ export function SyllableBuildActivity({
     initialSyllableBuildSessionState,
   );
 
+  const hint = useAssembledHint(String(state.questionIndex));
   const complete = isSyllableBuildSessionComplete(state, questions.length);
   const question = complete ? null : questions[state.questionIndex];
   const result = question == null ? null : syllableBuildResultAt(question, state);
@@ -120,6 +126,7 @@ export function SyllableBuildActivity({
                   outcome: judgeSyllableBuild(question, state.placedTileIndexes),
                   density,
                   ...selectedField(selectedTilesText(question.tiles, state.placedTileIndexes, "")),
+                  ...(hint.used === null ? {} : { hintUsed: hint.used }),
                 });
                 dispatch({ type: "check" });
               },
@@ -131,96 +138,116 @@ export function SyllableBuildActivity({
     question != null && canPlaceSyllableTile(question, state) ? "tappable" : "locked";
 
   return (
-    <LearningShell
-      form="syllable-build"
-      questionIndex={counter.questionIndex}
-      questionCount={counter.questionCount}
-      complete={complete}
-      instruction={question?.instruction ?? copy.syllableBuild.instruction}
-      onExit={onExit}
-      actionLabel={action?.label}
-      onAction={action?.run}
-      actionSound={action?.sound ?? "button"}
-      verdict={result ?? undefined}
-      workspace={
-        question == null ? undefined : (
-          // 창고 — 타일이 빠져나가도 그 자리에 회색 칸이 남아 배치가 흔들리지 않습니다.
-          <view className="syllable-build-screen-bank" data-testid="syllable-build-bank">
-            {question.tiles.map((text, tileIndex) =>
-              state.placedTileIndexes.includes(tileIndex) ? (
-                <SyllableTilePlaceholder key={tileIndex} index={tileIndex} text={text} />
-              ) : (
-                <SyllableTile
-                  key={tileIndex}
-                  index={tileIndex}
-                  text={text}
-                  placedOrdinal={null}
-                  interaction={bankInteraction}
-                  onTap={(index) =>
+    <>
+      <LearningShell
+        form="syllable-build"
+        questionIndex={counter.questionIndex}
+        questionCount={counter.questionCount}
+        complete={complete}
+        instruction={question?.instruction ?? copy.syllableBuild.instruction}
+        onExit={onExit}
+        actionLabel={action?.label}
+        onAction={action?.run}
+        actionSound={action?.sound ?? "button"}
+        verdict={result ?? undefined}
+        workspace={
+          question == null ? undefined : (
+            <view className="syllable-build-screen-workspace">
+              {/* 힌트는 창고 위 오른쪽입니다(ADR-0153). 채점 뒤에는 서지 않습니다. */}
+              {question.hint !== undefined && state.phase !== "checked" ? (
+                <AssembledHintButton onOpen={hint.openSheet} />
+              ) : null}
+              {/* 창고 — 타일이 빠져나가도 그 자리에 회색 칸이 남아 배치가 흔들리지 않습니다. */}
+              <view className="syllable-build-screen-bank" data-testid="syllable-build-bank">
+                {question.tiles.map((text, tileIndex) =>
+                  state.placedTileIndexes.includes(tileIndex) ? (
+                    <SyllableTilePlaceholder
+                      key={tileIndex}
+                      index={tileIndex}
+                      text={text}
+                      romanization={question.tileReading?.values[tileIndex]}
+                    />
+                  ) : (
+                    <SyllableTile
+                      key={tileIndex}
+                      index={tileIndex}
+                      text={text}
+                      placedOrdinal={null}
+                      interaction={bankInteraction}
+                      romanization={question.tileReading?.values[tileIndex]}
+                      onTap={(index) =>
+                        dispatch({
+                          type: "toggleTile",
+                          tileIndex: index,
+                          slotCount: question.slotCount,
+                        })
+                      }
+                    />
+                  ),
+                )}
+              </view>
+            </view>
+          )
+        }
+        card={
+          <view className="syllable-build-screen-content" data-testid="syllable-build-content">
+            {question == null ? (
+              <LearningActivityComplete
+                questionCount={questions.length}
+                lesson={lesson}
+                testId="syllable-build-complete"
+              />
+            ) : (
+              <>
+                {/* 단서입니다 — 만들 낱말의 영어 뜻이고, 한국어 정답은 채점 뒤에만 공개됩니다. */}
+                <text
+                  className="syllable-build-screen-meaning"
+                  data-testid="syllable-build-meaning"
+                  accessibility-label={copy.syllableBuild.meaning(question.meaning)}
+                >
+                  {question.meaning}
+                </text>
+
+                {/* 답 칸 줄입니다. 칸이 판정을 따라 색이 바뀌고, 낭독 이름은 칸 줄이 집니다. */}
+                <SyllableBuildWord
+                  tiles={question.tiles}
+                  slotCount={question.slotCount}
+                  placedTileIndexes={state.placedTileIndexes}
+                  interaction={state.phase === "checked" ? "locked" : "tappable"}
+                  phase={state.phase}
+                  result={result}
+                  {...(hint.used === "show" && question.hint !== undefined
+                    ? { ghost: question.hint.ghost }
+                    : {})}
+                  accessibility={syllableBuildWordAccessibilityOf(
+                    question,
+                    state,
+                    copy.syllableBuild,
+                  )}
+                  onReturn={(tileIndex) =>
                     dispatch({
                       type: "toggleTile",
-                      tileIndex: index,
+                      tileIndex,
                       slotCount: question.slotCount,
                     })
                   }
                 />
-              ),
+
+                {/* 맞아도 보입니다 — 타자 입력과 같은 규칙입니다. */}
+                {state.phase === "checked" ? (
+                  <AnswerReveal
+                    testId="syllable-build-reveal"
+                    text={copy.typing.answerReveal(question.answers[0])}
+                  />
+                ) : null}
+              </>
             )}
           </view>
-        )
-      }
-      card={
-        <view className="syllable-build-screen-content" data-testid="syllable-build-content">
-          {question == null ? (
-            <LearningActivityComplete
-              questionCount={questions.length}
-              lesson={lesson}
-              testId="syllable-build-complete"
-            />
-          ) : (
-            <>
-              {/* 단서입니다 — 만들 낱말의 영어 뜻이고, 한국어 정답은 채점 뒤에만 공개됩니다. */}
-              <text
-                className="syllable-build-screen-meaning"
-                data-testid="syllable-build-meaning"
-                accessibility-label={copy.syllableBuild.meaning(question.meaning)}
-              >
-                {question.meaning}
-              </text>
-
-              {/* 답 칸 줄입니다. 칸이 판정을 따라 색이 바뀌고, 낭독 이름은 칸 줄이 집니다. */}
-              <SyllableBuildWord
-                tiles={question.tiles}
-                slotCount={question.slotCount}
-                placedTileIndexes={state.placedTileIndexes}
-                interaction={state.phase === "checked" ? "locked" : "tappable"}
-                phase={state.phase}
-                result={result}
-                accessibility={syllableBuildWordAccessibilityOf(
-                  question,
-                  state,
-                  copy.syllableBuild,
-                )}
-                onReturn={(tileIndex) =>
-                  dispatch({
-                    type: "toggleTile",
-                    tileIndex,
-                    slotCount: question.slotCount,
-                  })
-                }
-              />
-
-              {/* 맞아도 보입니다 — 타자 입력과 같은 규칙입니다. */}
-              {state.phase === "checked" ? (
-                <AnswerReveal
-                  testId="syllable-build-reveal"
-                  text={copy.typing.answerReveal(question.answers[0])}
-                />
-              ) : null}
-            </>
-          )}
-        </view>
-      }
-    />
+        }
+      />
+      {question?.hint === undefined ? null : (
+        <AssembledHintSheet hint={question.hint} state={hint} />
+      )}
+    </>
   );
 }

@@ -1,6 +1,7 @@
 // 일본어 문구표입니다(ADR-0098). 값은 구획 파일에서 모읍니다(파일마다 300줄 아래).
 // 번역 초안 — 원어민 검수 필요.
 
+import { assembledHintJa } from "./ui-copy-assembled-hint";
 import type { UiCopy } from "./ui-copy.contract";
 import {
   audioUnavailableJa,
@@ -76,6 +77,7 @@ export const uiCopyJa: UiCopy = {
   listening: listeningJa,
   wordChoice: wordChoiceJa,
   sentenceOrder: sentenceOrderJa,
+  assembledHint: assembledHintJa,
   speaking: speakingJa,
   learningItemGuide: learningItemGuideJa,
   assessment: assessmentJa,

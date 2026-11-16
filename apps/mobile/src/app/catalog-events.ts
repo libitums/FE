@@ -128,5 +128,6 @@ export function itemAnsweredEventOf(
     ...(report.outcome === "skipped" && report.skipReason !== undefined
       ? { skipReason: report.skipReason }
       : {}),
+    ...(report.hintUsed === undefined ? {} : { hintUsed: report.hintUsed }),
   };
 }

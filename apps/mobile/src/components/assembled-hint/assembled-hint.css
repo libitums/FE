@@ -1,0 +1,50 @@
+/* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). 조립 문항 힌트(ADR-0153).
+   창고 위 오른쪽에 서는 알약 버튼 — 높이 32(아이콘 16 + 글자 label-m), 회색 면 · 연한 테두리입니다. */
+.assembled-hint-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  padding-bottom: var(--libitum-spacing-8);
+}
+
+.assembled-hint-button {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-4);
+  min-height: var(--libitum-spacing-32);
+  padding: 0 var(--libitum-spacing-12);
+  border: var(--libitum-stroke-width-thin) solid var(--libitum-color-gray-300);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-gray-50);
+}
+
+.assembled-hint-button:active {
+  background-color: var(--libitum-color-gray-100);
+}
+
+.assembled-hint-icon {
+  width: var(--libitum-icon-size-xs);
+  height: var(--libitum-icon-size-xs);
+}
+
+.assembled-hint-label {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+  letter-spacing: var(--libitum-typography-label-m-letter-spacing);
+}
+
+/* 타일 로마자 줄 — 타일 글자 위 한 줄, 보기 로마자(ADR-0108 D4)와 같은 기울임 · 흐린 색 · caption 크기입니다.
+   글꼴은 앱의 로마자 글꼴(`.app .tile-romanization`, app.css)이 정합니다. */
+.tile-romanization {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-style: italic;
+  font-size: var(--libitum-typography-caption-font-size);
+  line-height: var(--libitum-typography-caption-line-height);
+  letter-spacing: var(--libitum-typography-caption-letter-spacing);
+  font-weight: var(--libitum-font-weight-medium);
+  text-align: center;
+}

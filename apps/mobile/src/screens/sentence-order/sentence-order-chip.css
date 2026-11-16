@@ -128,3 +128,11 @@
 .sentence-order-lines .sentence-order-chip-incorrect .sentence-order-chip-label {
   color: var(--libitum-color-feedback-incorrect-text);
 }
+
+/* 로마자 줄이 있는 창고 조각(ADR-0153) — 로마자가 글자 위에 서는 세로 묶음입니다. 폭은 더 긴 줄 + 같은 좌우 패딩(16)이
+   정하고, 위아래 여백은 줄이 둘이라 8 + 1로 줄여 조각이 한 줄보다 caption 한 줄만큼만 커지게 합니다. */
+.sentence-order-chip-with-reading {
+  flex-direction: column;
+  padding-top: calc(var(--libitum-spacing-8) + var(--libitum-stroke-width-thin));
+  padding-bottom: calc(var(--libitum-spacing-8) + var(--libitum-stroke-width-thin));
+}

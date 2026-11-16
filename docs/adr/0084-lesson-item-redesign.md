@@ -187,6 +187,7 @@
 | `contentLevel` ⟨2026-11-16⟩ | 원격 판을 받은 매니페스트의 `min_client_level`(10진 문자열, 예 `"5"`). 내장판은 없음 |
 | `selectedAnswer` ⟨2026-11-16⟩ | 처음 판정 때 고른 글자. 보기형은 고른 보기, 문장·듣고 조립은 놓은 타일을 공백으로, 대화 조립은 `" \| "`로, 음절 조립은 이음 없이. **직접 입력 · 말하기 결과는 싣지 않는다**(사용자가 쓴 글) |
 | `skipReason` ⟨2026-11-16⟩ | `result: skipped`일 때만. `user`(말할 수 있는데 Skip) · `unavailable:<reason>`(`dictation-off` · `blocked` · `failed`) |
+| `hintUsed` ⟨2026-11-17⟩ | 판정 전에 쓴 힌트 — `listen`(정답 듣기) · `show`(정답 보기, 앞섬). 음절 조립 · 문장 조립만. 안 썼으면 없음([ADR-0153](0153-assembled-item-romanization-hint.md)) |
 
 - 발생: 채점 문항이 **처음 판정되는 순간 문항당 한 번**. 따라 읽기 · 단어 카드 · 문화 카드 · 짝 맞추기 · 타자 입력은 내지 않는다(채점 밖이거나 이번에 화면이 바뀌지 않음 — 비교 대상 아님). 듣기 여섯 유형은 `episode_listen_item_answered`와 **둘 다** 낸다(묻는 것이 다르다).
 - 읽는 법: 유형별 정답률 = `itemType`별 correct ÷ (correct + incorrect) · 줄 배치 Check 뒤 오답률 = `itemType ∈ {LISTEN_BUILD, WORD_ORDER}`의 incorrect 비율 · 대화 조립 정답률 = `TURN_ORDER`. 모두 `density`로 갈라 작은 화면 효과를 본다.

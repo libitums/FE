@@ -113,6 +113,8 @@ function activityScreenOf(
           lessonAudio={lessonAudio}
           cast={cast}
           onItemAnswered={onItemAnswered}
+          // 레슨 끝 다시 풀기에서만 듣고 조립의 조각 로마자가 섭니다(ADR-0153).
+          inReview={review !== undefined}
         />
       );
     case "word-choice":

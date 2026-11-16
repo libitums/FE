@@ -1,5 +1,7 @@
 import type { ReactNode } from "@lynx-js/react";
 
+import { useUiCopy } from "../../lib/ui-copy";
+
 import type { AnswerResult } from "../../lib/answer-result";
 import { SentenceOrderChip } from "./SentenceOrderChip";
 import type { SentenceOrderInteraction } from "./sentence-order-layout";
@@ -12,6 +14,10 @@ export type SentenceOrderLinesProps = {
   readonly results: readonly (AnswerResult | null)[] | null;
   readonly interaction: SentenceOrderInteraction;
   readonly onReturn: (chipIndex: number) => void;
+  /** 힌트 「정답 보기」로 답 줄에 흐리게 까는 정답 문장입니다(ADR-0153). */
+  readonly ghost?: string;
+  /** 작은 화면에서 창고가 커지면 답 줄을 하나로 줄입니다 — 버튼이 밀리기 전에 답 줄 영역부터 줄입니다(#448 기준). */
+  readonly compact?: boolean;
   /** 답 줄 위에 서는 윗줄(읽기 · 듣기 조작)입니다. */
   readonly children: ReactNode;
 };
@@ -25,20 +31,41 @@ export function SentenceOrderLines({
   results,
   interaction,
   onReturn,
+  ghost,
+  compact = false,
   children,
 }: SentenceOrderLinesProps): ReactNode {
+  const copy = useUiCopy();
   return (
     <view className="sentence-order-lines-block">
       {children}
-      <view className="sentence-order-lines" data-testid="sentence-order-lines">
+      <view
+        className={
+          compact ? "sentence-order-lines sentence-order-lines-compact" : "sentence-order-lines"
+        }
+        data-testid="sentence-order-lines"
+        data-compact={compact ? "true" : "false"}
+      >
         <view
           className="sentence-order-line sentence-order-line-0"
           data-testid="sentence-order-line-0"
         />
-        <view
-          className="sentence-order-line sentence-order-line-1"
-          data-testid="sentence-order-line-1"
-        />
+        {compact ? null : (
+          <view
+            className="sentence-order-line sentence-order-line-1"
+            data-testid="sentence-order-line-1"
+          />
+        )}
+        {ghost === undefined ? null : (
+          <text
+            className="sentence-order-lines-ghost"
+            data-testid="sentence-order-lines-ghost"
+            accessibility-element={true}
+            accessibility-label={copy.assembledHint.shown(ghost)}
+          >
+            {ghost}
+          </text>
+        )}
         <view className="sentence-order-lines-chips">
           {placedChipIndexes.map((chipIndex, position) => (
             <SentenceOrderChip

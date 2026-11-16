@@ -81,6 +81,8 @@ export type EpisodeItemAnsweredEvent = {
   readonly selectedAnswer?: string;
   /** 건너뛴 까닭입니다(`result: skipped`일 때만). */
   readonly skipReason?: string;
+  /** 판정 전에 쓴 힌트입니다 — `listen`(정답 듣기) · `show`(정답 보기). 안 썼으면 없습니다(ADR-0153). */
+  readonly hintUsed?: "listen" | "show";
 };
 
 export type CatalogLearningEvent =

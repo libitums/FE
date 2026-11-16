@@ -2,15 +2,12 @@ import { useUiCopy } from "../../lib/ui-copy";
 import { useEffect, useReducer } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
-import { Button } from "@libitums/ui-lynx/button";
-
 import { LearningItemGuide } from "../../components/LearningItemGuide";
 import { useListenAudio } from "../../components/use-listen-audio";
 import { useLearningItemGuide } from "../../components/use-learning-item-guide";
 import { announce, announceCompletion } from "../../lib/accessibility";
 import type { ConversationCast } from "../../lib/conversation-cast";
 import type { ItemAnswerReporter } from "../../lib/item-answer";
-import { selectedField, selectedTilesText } from "../../lib/item-answer";
 import { answerEchoCueOf, listenCueOf, standaloneLessonAudio } from "../../lib/question-audio";
 import type { LessonAudio } from "../../lib/question-audio";
 import { initialSessionOptions } from "../../lib/session-options";
@@ -19,9 +16,15 @@ import { LearningShell } from "../learning/LearningShell";
 import { LearningActivityComplete } from "../learning/LearningActivityComplete";
 import { useLearningDensity } from "../learning/use-learning-density";
 import { SentenceOrderDialogue } from "./SentenceOrderDialogue";
-import { SentenceOrderDialogueBank } from "./SentenceOrderDialogueBank";
 import { SentenceOrderLines } from "./SentenceOrderLines";
-import { SentenceOrderLinesBank } from "./SentenceOrderLinesBank";
+import { SentenceOrderWorkspace } from "./SentenceOrderWorkspace";
+import { SentenceOrderAction } from "./SentenceOrderAction";
+import { sentenceOrderReportOf } from "./sentence-order-report";
+import {
+  AssembledHintSheet,
+  useAssembledHint,
+} from "../../components/assembled-hint/AssembledHint";
+import { tileRomanizationsShown } from "../../components/assembled-hint/assembled-hint.contract";
 import { SentenceOrderListenHeader } from "./SentenceOrderListenHeader";
 import { SentenceOrderTextHeader } from "./SentenceOrderTextHeader";
 import {
@@ -69,6 +72,8 @@ export type SentenceOrderActivityProps = {
   readonly onItemAnswered?: ItemAnswerReporter;
   /** 레슨의 소리 설정(속도 · 자동 재생 · 보고)입니다. 없으면 단독 활동의 기본값입니다. */
   readonly lessonAudio?: LessonAudio;
+  /** 레슨 끝 다시 풀기 화면입니다 — 듣고 조립의 조각 로마자가 여기서만 섭니다(ADR-0153). */
+  readonly inReview?: boolean;
 };
 
 export function SentenceOrderActivity({
@@ -79,6 +84,7 @@ export function SentenceOrderActivity({
   cast,
   onItemAnswered,
   lessonAudio,
+  inReview = false,
 }: SentenceOrderActivityProps): ReactNode {
   const copy = useUiCopy();
   const density = useLearningDensity();
@@ -92,6 +98,7 @@ export function SentenceOrderActivity({
     firstQuestion === undefined ? null : { form: "sentence-order", chips: firstQuestion.chips },
   );
 
+  const hint = useAssembledHint(String(state.questionIndex));
   const complete = isSentenceOrderSessionComplete(state, questions.length);
   const question = complete ? null : questions[state.questionIndex];
   const result = question == null ? null : sentenceOrderResultAt(question, state);
@@ -149,19 +156,14 @@ export function SentenceOrderActivity({
   const check = () => {
     if (question == null) return;
     const judged = judgeSentenceOrder(question, state.placedChipIndexes);
-    onItemAnswered?.({
-      questionIndex: state.questionIndex,
-      outcome: judged,
-      density,
-      // 대화 순서는 턴을 「 | 」로, 낱말은 공백으로 잇습니다(콘텐츠 정답 표기와 같게).
-      ...selectedField(
-        selectedTilesText(
-          question.chips,
-          state.placedChipIndexes,
-          question.dialogue === undefined ? " " : " | ",
-        ),
+    onItemAnswered?.(
+      sentenceOrderReportOf(
+        question,
+        state.placedChipIndexes,
+        { questionIndex: state.questionIndex, outcome: judged, density },
+        hint.used,
       ),
-    });
+    );
     dispatch({ type: "check" });
     listen.answered(judged);
   };
@@ -184,19 +186,12 @@ export function SentenceOrderActivity({
           : undefined;
   const renderAction = (press: () => void): ReactNode =>
     action === undefined ? undefined : (
-      <view
-        className="sentence-order-check"
-        data-testid={bottom.kind === "check" ? "sentence-order-check" : "sentence-order-action"}
-      >
-        <Button
-          label={action.label}
-          variant="brand"
-          size="xl"
-          width="fill"
-          disabled={bottom.kind === "check" && bottom.availability === "disabled"}
-          bindtap={bottom.kind === "check" ? action.run : press}
-        />
-      </view>
+      <SentenceOrderAction
+        label={action.label}
+        check={bottom.kind === "check"}
+        disabled={bottom.kind === "check" && bottom.availability === "disabled"}
+        onTap={bottom.kind === "check" ? action.run : press}
+      />
     );
 
   const counter = lessonCounter(
@@ -211,6 +206,8 @@ export function SentenceOrderActivity({
       ? sentenceOrderPlacedResultsOf(question, state.placedChipIndexes)
       : null;
 
+  const romanizations =
+    question == null ? null : tileRomanizationsShown(question.chipReading, inReview);
   const linesBody =
     question == null ? null : (
       <SentenceOrderLines
@@ -219,6 +216,11 @@ export function SentenceOrderActivity({
         results={placedResults}
         interaction={interaction}
         onReturn={toggle}
+        // 작은 화면에서 로마자로 창고가 커지면 답 줄을 하나로 줄여 Check가 화면 안에 섭니다(#448 기준).
+        compact={density === "compact" && romanizations !== null}
+        {...(hint.used === "show" && question.hint !== undefined
+          ? { ghost: question.hint.ghost[0] }
+          : {})}
       >
         {question.audio?.kind === "listen" ? (
           <SentenceOrderListenHeader control={listen} romanization={reading} />
@@ -229,23 +231,16 @@ export function SentenceOrderActivity({
     );
 
   const bank =
-    question == null ? undefined : layout === "dialogue" ? (
-      state.phase === "checked" ? undefined : (
-        <SentenceOrderDialogueBank
-          chips={question.chips}
-          meanings={question.chipMeanings}
-          speakers={question.dialogue?.chipSpeakers ?? []}
-          placedChipIndexes={state.placedChipIndexes}
-          interactionOf={(chipIndex) => dialogueChipInteractionOf(question, state, chipIndex)}
-          onTap={placeDialogueChip}
-        />
-      )
-    ) : (
-      <SentenceOrderLinesBank
-        chips={question.chips}
-        placedChipIndexes={state.placedChipIndexes}
-        interaction={bankInteraction}
-        onTap={toggle}
+    question == null ? undefined : (
+      <SentenceOrderWorkspace
+        question={question}
+        state={state}
+        layout={layout}
+        bankInteraction={bankInteraction}
+        romanizations={romanizations}
+        onHint={question.hint !== undefined && state.phase !== "checked" ? hint.openSheet : null}
+        onToggle={toggle}
+        onPlaceDialogueChip={placeDialogueChip}
       />
     );
 
@@ -295,6 +290,9 @@ export function SentenceOrderActivity({
         }
       />
       {guide.visible ? <LearningItemGuide kind={guide.kind} onDismiss={guide.dismiss} /> : null}
+      {question?.hint === undefined ? null : (
+        <AssembledHintSheet hint={question.hint} state={hint} />
+      )}
     </>
   );
 }

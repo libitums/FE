@@ -18,6 +18,7 @@ export function SyllableBuildWord({
   phase = "building",
   result = null,
   accessibility,
+  ghost,
   onReturn,
 }: SyllableBuildWordProps): ReactNode {
   const isRow = accessibility.kind === "row";
@@ -42,6 +43,14 @@ export function SyllableBuildWord({
             data-filled={tileIndex === undefined ? "false" : "true"}
             data-state={state}
           >
+            {tileIndex === undefined && ghost?.[position] !== undefined ? (
+              <text
+                className="syllable-build-slot-ghost"
+                data-testid={`syllable-build-slot-${position}-ghost`}
+              >
+                {ghost[position]}
+              </text>
+            ) : null}
             {tileIndex === undefined ? null : (
               <SyllableTile
                 index={tileIndex}

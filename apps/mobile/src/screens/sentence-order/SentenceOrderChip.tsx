@@ -30,6 +30,8 @@ export type SentenceOrderChipProps = {
   surface?: SurfaceTone;
   /** 채점 뒤 줄 위 조각의 판정 색입니다. */
   result?: AnswerResult | null;
+  /** 창고 조각의 로마자 줄입니다(글자 위). 없으면 한 줄 조각입니다(ADR-0153). */
+  romanization?: string;
   onTap: (index: number) => void;
 };
 
@@ -40,6 +42,7 @@ export function SentenceOrderChip({
   disabled = false,
   surface = "light",
   result = null,
+  romanization,
   onTap,
 }: SentenceOrderChipProps): ReactNode {
   const copy = useUiCopy();
@@ -53,13 +56,14 @@ export function SentenceOrderChip({
   const judged = placedOrdinal === null ? null : result;
   // standard에서는 data-motion 속성을 아예 넘기지 않습니다. undefined로 넘기면 테스트 렌더러가 "null" 문자열로 남깁니다.
   const motionProps = motion === "reduced" ? { "data-motion": "reduced" } : {};
+  const reading = romanization === undefined ? "" : " sentence-order-chip-with-reading";
 
   return (
     <view
       className={
         judged === null
-          ? sentenceOrderChipClassName(variant, motion, surface)
-          : `${sentenceOrderChipClassName(variant, motion, surface)} sentence-order-chip-${judged}`
+          ? `${sentenceOrderChipClassName(variant, motion, surface)}${reading}`
+          : `${sentenceOrderChipClassName(variant, motion, surface)}${reading} sentence-order-chip-${judged}`
       }
       data-testid={`sentence-order-chip-${index}`}
       {...motionProps}
@@ -72,6 +76,11 @@ export function SentenceOrderChip({
       bindtap={disabled ? undefined : handleTap}
     >
       {/* 보이는 이름을 지는 요소는 가리지 않습니다(ADR-0016 D5) — 접근성 속성이 없습니다. */}
+      {romanization === undefined ? null : (
+        <text className="tile-romanization" data-testid={`sentence-order-chip-${index}-roman`}>
+          {romanization}
+        </text>
+      )}
       <text className="sentence-order-chip-label">{text}</text>
       {judged === null ? null : (
         <SentenceOrderResultMark
@@ -89,6 +98,8 @@ export type SentenceOrderChipPlaceholderProps = {
   readonly text: string;
   /** 놓이는 면입니다. 기본 `light`. */
   readonly surface?: SurfaceTone;
+  /** 빠져나간 조각의 로마자 — 보이지 않게 두어 자리 폭 · 높이를 원래 조각과 같게 지킵니다. */
+  readonly romanization?: string;
 };
 
 /**
@@ -99,15 +110,20 @@ export function SentenceOrderChipPlaceholder({
   index,
   text,
   surface = "light",
+  romanization,
 }: SentenceOrderChipPlaceholderProps): ReactNode {
+  const reading = romanization === undefined ? "" : " sentence-order-chip-with-reading";
   return (
     <view
-      className={sentenceOrderChipPlaceholderClassName(surface)}
+      className={`${sentenceOrderChipPlaceholderClassName(surface)}${reading}`}
       data-testid={`sentence-order-bank-slot-${index}`}
       data-surface={surface}
       accessibility-elements-hidden={true}
     >
       {/* 자리 폭을 조각 글자로 잡되 보이지 않게 둡니다 — 빈칸이 원래 조각과 같은 폭입니다. */}
+      {romanization === undefined ? null : (
+        <text className="tile-romanization sentence-order-chip-label-hidden">{romanization}</text>
+      )}
       <text className="sentence-order-chip-label sentence-order-chip-label-hidden">{text}</text>
     </view>
   );
