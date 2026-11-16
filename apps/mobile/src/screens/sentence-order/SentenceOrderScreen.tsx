@@ -218,7 +218,7 @@ export function SentenceOrderActivity({
         onReturn={toggle}
         // 작은 화면에서 로마자로 창고가 커지면 답 줄을 하나로 줄여 Check가 화면 안에 섭니다(#448 기준).
         compact={density === "compact" && romanizations !== null}
-        {...(hint.used === "show" && question.hint !== undefined
+        {...(hint.used === "show" && question.hint !== undefined && state.phase !== "checked"
           ? { ghost: question.hint.ghost[0] }
           : {})}
       >

@@ -140,3 +140,27 @@ describe("작은 화면 (SH5)", () => {
     expect(id("sentence-order-line-1")).toBeTruthy();
   });
 });
+
+describe("흐린 정답의 낭독 · 채점 뒤 (SH6 · SH7)", () => {
+  test("SH6. 조각을 놓기 시작하면 흐린 정답은 낭독에서 빠진다", () => {
+    mount([wordOrder]);
+    fireEvent.tap(id("assembled-hint-button"), {});
+    tapSheetAction("show");
+    expect(id("sentence-order-lines-ghost").getAttribute("accessibility-label")).toContain(
+      "Answer shown",
+    );
+    fireEvent.tap(id("sentence-order-chip-2"), {});
+    const ghost = id("sentence-order-lines-ghost");
+    expect(ghost.getAttribute("accessibility-label")).toBeNull();
+    expect(ghost.getAttribute("accessibility-elements-hidden")).toBe("true");
+  });
+
+  test("SH7. 채점 뒤에는 흐린 정답이 사라진다", () => {
+    mount([wordOrder]);
+    fireEvent.tap(id("assembled-hint-button"), {});
+    tapSheetAction("show");
+    fireEvent.tap(id("sentence-order-chip-2"), {});
+    tapCheck();
+    expect(screen.queryByTestId("sentence-order-lines-ghost")).toBeNull();
+  });
+});

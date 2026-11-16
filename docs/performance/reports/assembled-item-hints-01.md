@@ -4,8 +4,8 @@
 
 - 측정 일시: 2026-11-17T12:00:00+09:00
 - 상태: 미측정 — 런타임 성능(Rendering · Memory · Trace)은 수집하지 않았다. 창고 타일에 글자 한 줄 · 힌트 버튼 · 시트가 더해지는 변경의 영향 범위와 레이아웃 추정 점검을 적은 기록이다
-- 기능 PR: 없음 — 로컬 브랜치 `feat/assembled-item-hints`(커밋 전 작업 트리)
-- 대상 commit: `830d824e` 위의 커밋하지 않은 변경
+- 기능 PR: [#453](https://github.com/libitums/FE/pull/453) — 브랜치 `feat/assembled-item-hints`
+- 대상 commit: `12302e10`(첫 커밋) + 리뷰 반영 커밋
 - 기기: 없음(vitest · Node 22) + 추정 점검 스크립트(Android 360×640 · iPhone SE · 13 mini 높이)
 - OS: 해당 없음
 - Lynx SDK: 4.0.1
@@ -29,7 +29,9 @@
 521문항 (LISTEN_BUILD 259 · SYLLABLE_BUILD 181 · WORD_ORDER 81)
 작업 영역이 창고보다 작아지는 문항   0 (세 화면 모두)
 껍데기가 합친 흐름으로 가는 문항      0
-가장 빠듯한 문항  Android 360×640 u03 S2-10 — 여유 18dp, 창고 3줄
+가장 빠듯한 문항  Android 360×640 u03 S2-10 듣고 조립 첫 시도 — 여유 18dp, 창고 3줄
+다시 풀기 상태    최소 여유 52dp (u00 S2-02)
+스크립트          devtools/assembled-item-sweep/sweep.py (가정은 머리 주석)
 ```
 
 ## 해석

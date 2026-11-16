@@ -76,7 +76,8 @@ function wordOrderItemOf(
     chips: order.map((index) => tiles[index] ?? ""),
     answerOrder: tiles.map((_, tile) => order.indexOf(tile)),
     ...(chipReading === undefined ? {} : { chipReading }),
-    hint: assembledHintOf([tiles.join(" ")], echo),
+    // 흐린 정답은 콘텐츠의 첫 정답 문장입니다(조각을 이은 문자열이 아니라 — 문장부호 · 띄어쓰기를 그대로).
+    hint: assembledHintOf([answers[0] ?? tiles.join(" ")], echo),
     // 정답 로마자는 Check 뒤에야 보입니다(답을 미리 알려 주지 않습니다).
     ...(romanization === undefined
       ? {}

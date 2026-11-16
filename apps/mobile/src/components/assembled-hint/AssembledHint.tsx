@@ -1,11 +1,12 @@
-import { useState } from "@lynx-js/react";
+import { useEffect, useRef, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import { color } from "@libitums/design-tokens";
 import light from "@libitums/icons/lynx/light";
 import { BottomSheet } from "@libitums/ui-lynx/bottom-sheet";
 
-import { playAudio } from "../../lib/audio";
+import { announce } from "../../lib/accessibility";
+import { playAudio, stopAudio } from "../../lib/audio";
 import { playSound } from "../../lib/sound-effects";
 import { useUiCopy } from "../../lib/ui-copy";
 import { strongerHint } from "./assembled-hint.contract";
@@ -24,6 +25,8 @@ export type AssembledHintState = {
   readonly openSheet: () => void;
   readonly closeSheet: () => void;
   readonly use: (kind: HintUse) => void;
+  /** 정답 소리를 한 번 냅니다 — 재생을 시작했을 때만 `listen`을 기록합니다. 문항이 바뀌거나 활동을 떠나면 멈춥니다. */
+  readonly listen: (source: string) => void;
 };
 
 /**
@@ -38,6 +41,15 @@ export function useAssembledHint(questionKey: string): AssembledHintState {
   }>({ key: questionKey, used: null, open: false });
   const current =
     record.key === questionKey ? record : { key: questionKey, used: null, open: false };
+  // 힌트로 튼 소리만 멈춥니다 — 다른 재생(정답 뒤 재생 등)을 건드리지 않습니다.
+  const playing = useRef(false);
+  useEffect(
+    () => () => {
+      if (playing.current) stopAudio();
+      playing.current = false;
+    },
+    [questionKey],
+  );
   const update = (next: Partial<{ used: HintUse | null; open: boolean }>) =>
     setRecord((previous) => {
       const base =
@@ -50,6 +62,14 @@ export function useAssembledHint(questionKey: string): AssembledHintState {
     openSheet: () => update({ open: true }),
     closeSheet: () => update({ open: false }),
     use: (kind) => update({ used: strongerHint(current.used, kind) }),
+    listen: (source) => {
+      const outcome = playAudio(source, () => {
+        playing.current = false;
+      });
+      if (outcome === "unavailable") return;
+      playing.current = true;
+      update({ used: strongerHint(current.used, "listen") });
+    },
   };
 }
 
@@ -97,8 +117,7 @@ export function AssembledHintSheet({ hint, state }: AssembledHintSheetProps): Re
             id: "listen",
             label: copy.listen,
             bindtap: () => {
-              playAudio(listenSource, () => {});
-              state.use("listen");
+              state.listen(listenSource);
               state.closeSheet();
             },
           },
@@ -109,6 +128,8 @@ export function AssembledHintSheet({ hint, state }: AssembledHintSheetProps): Re
       bindtap: () => {
         state.use("show");
         state.closeSheet();
+        // 흐린 정답은 화면에만 깔리므로 고른 순간 정답을 한 번 읽어 줍니다.
+        announce(copy.shown(hint.ghost.join("")));
       },
     },
   ];

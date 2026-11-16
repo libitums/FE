@@ -128,3 +128,37 @@ describe("문항이 바뀌면 (UH6)", () => {
     expect(report.mock.calls[1]?.[0]).not.toHaveProperty("hintUsed");
   });
 });
+
+describe("낭독 · 소리 (UH7 · UH8 · UH9)", () => {
+  test("UH7. 정답 보기를 고르면 칸 줄의 낭독 이름에 정답이 실린다", () => {
+    mount([card]);
+    fireEvent.tap(id("assembled-hint-button"), {});
+    tapSheetAction("show");
+    expect(id("syllable-build-word").getAttribute("accessibility-label")).toContain(
+      "Answer shown: 카드",
+    );
+  });
+
+  test("UH8. 정답 소리를 낼 수 없으면(unavailable) hintUsed listen을 기록하지 않는다", () => {
+    audio.playAudio.mockReturnValue("unavailable");
+    const report = mount([card]);
+    fireEvent.tap(id("assembled-hint-button"), {});
+    tapSheetAction("listen");
+    fireEvent.tap(id("syllable-build-tile-2"), {});
+    fireEvent.tap(id("syllable-build-tile-1"), {});
+    fireEvent.tap(id("learning-shell-action"), {});
+    expect(report.mock.calls[0]?.[0]).not.toHaveProperty("hintUsed");
+  });
+
+  test("UH9. 힌트로 튼 정답 소리는 다음 문항으로 넘어가면 멈춘다", () => {
+    mount([card, { ...card, answers: ["드카"], hint: { ghost: ["드", "카"] } }]);
+    fireEvent.tap(id("assembled-hint-button"), {});
+    tapSheetAction("listen");
+    audio.stopAudio.mockClear();
+    fireEvent.tap(id("syllable-build-tile-2"), {});
+    fireEvent.tap(id("syllable-build-tile-1"), {});
+    fireEvent.tap(id("learning-shell-action"), {});
+    fireEvent.tap(id("learning-shell-action"), {});
+    expect(audio.stopAudio).toHaveBeenCalled();
+  });
+});

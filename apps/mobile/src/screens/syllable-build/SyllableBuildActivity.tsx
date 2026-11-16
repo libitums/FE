@@ -8,6 +8,7 @@ import {
   AssembledHintSheet,
   useAssembledHint,
 } from "../../components/assembled-hint/AssembledHint";
+import { tileRomanizationsShown } from "../../components/assembled-hint/assembled-hint.contract";
 import { announce, announceCompletion } from "../../lib/accessibility";
 import { answerEchoCueOf, standaloneLessonAudio } from "../../lib/question-audio";
 import { initialSessionOptions } from "../../lib/session-options";
@@ -62,6 +63,8 @@ export function SyllableBuildActivity({
   const complete = isSyllableBuildSessionComplete(state, questions.length);
   const question = complete ? null : questions[state.questionIndex];
   const result = question == null ? null : syllableBuildResultAt(question, state);
+  // 음절 조립은 늘(다시 풀기 구분 없음) — 보일지는 듣고 조립과 같은 규칙 하나가 정합니다.
+  const tileRomans = question == null ? null : tileRomanizationsShown(question.tileReading, false);
   const counter = lessonCounter(
     lesson,
     question == null ? Math.max(0, questions.length - 1) : state.questionIndex,
@@ -165,7 +168,7 @@ export function SyllableBuildActivity({
                       key={tileIndex}
                       index={tileIndex}
                       text={text}
-                      romanization={question.tileReading?.values[tileIndex]}
+                      romanization={tileRomans?.[tileIndex]}
                     />
                   ) : (
                     <SyllableTile
@@ -174,7 +177,7 @@ export function SyllableBuildActivity({
                       text={text}
                       placedOrdinal={null}
                       interaction={bankInteraction}
-                      romanization={question.tileReading?.values[tileIndex]}
+                      romanization={tileRomans?.[tileIndex]}
                       onTap={(index) =>
                         dispatch({
                           type: "toggleTile",

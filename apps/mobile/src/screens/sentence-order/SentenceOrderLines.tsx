@@ -60,8 +60,11 @@ export function SentenceOrderLines({
           <text
             className="sentence-order-lines-ghost"
             data-testid="sentence-order-lines-ghost"
-            accessibility-element={true}
-            accessibility-label={copy.assembledHint.shown(ghost)}
+            // 조각을 놓기 시작하면 흐린 정답은 조각 밑에 깔린 그림일 뿐이라 낭독하지 않습니다(놓인 조각이 읽힙니다).
+            accessibility-element={placedChipIndexes.length === 0}
+            {...(placedChipIndexes.length === 0
+              ? { "accessibility-label": copy.assembledHint.shown(ghost) }
+              : { "accessibility-elements-hidden": true })}
           >
             {ghost}
           </text>
