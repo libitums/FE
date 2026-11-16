@@ -17,6 +17,7 @@ import {
   threadOf as roomThreadOf,
   type RoomState,
 } from "./chat-fixture-room";
+import { albumSourceMethods } from "./chat-fixture-album";
 import { mediaRequester } from "./chat-fixture-media";
 import { createFixtureNotes } from "./chat-fixture-notes";
 import { remoteRoomMethods, uuidV4 } from "./chat-fixture-remote";
@@ -74,6 +75,8 @@ export function createFixtureChatSource(options: FixtureChatSourceOptions): Fixt
       }
     }
   };
+
+  const settingsApi = settingsMethods(settings, { disposed: () => disposed, rooms, notify });
 
   const changed = (room: RoomState) => {
     room.summaryCache = null;
@@ -258,7 +261,8 @@ export function createFixtureChatSource(options: FixtureChatSourceOptions): Fixt
     requestMeaning: notes.requestMeaning,
     openCorrection: notes.openCorrection,
     unlockCharacter,
-    ...settingsMethods(settings, { disposed: () => disposed, rooms, notify }),
+    ...settingsApi,
+    ...albumSourceMethods({ ...fixtureMedia, settings, settingsApi, options, remoteRoom }),
     report: () => undefined,
     ...feedbackMethods({ live, changed, sendText }),
     deleteRoom: (roomId) => {

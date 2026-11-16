@@ -9,9 +9,16 @@ import { ChatHeader, ChatHeaderSide } from "../../components/chat/ChatHeader";
 import { useUiCopy } from "../../lib/ui-copy";
 import { useScreenBack } from "../../lib/use-back-handler";
 import { BirthYearSheet } from "./BirthYearSheet";
+import {
+  chatAlbumTestIds as albumIds,
+  DEFAULT_SNAPSHOT_SELF,
+  type ChatSnapshotSelf,
+} from "./chat-album.contract";
 import type { ChatMemoryScope, ChatSource } from "./chat-source.contract";
 import { chatSettingsTestIds as ids } from "./chat-settings.contract";
+import { NavRow } from "./NavRow";
 import { ProactiveSheet } from "./ProactiveSheet";
+import { SnapshotSelfSheet } from "./SnapshotSelfSheet";
 import { birthYearOptions } from "./safety-rules";
 import { useChatMemories, useChatSnapshot } from "./use-chat-source";
 
@@ -26,47 +33,13 @@ export type ChatSettingsScreenProps = {
 type Sheet =
   | { readonly kind: "none" }
   | { readonly kind: "proactive" }
+  | { readonly kind: "snapshot-self"; readonly selected: ChatSnapshotSelf }
   | { readonly kind: "birth-year"; readonly selected: number | null };
 
 const SHARED: ChatMemoryScope = { kind: "shared" };
 
-type NavRowProps = {
-  readonly testId: string;
-  readonly title: string;
-  readonly value: string;
-  readonly onTap: () => void;
-};
-
-// 누르면 시트 · 화면이 열리는 줄입니다. 낭독은 「제목, 값」 하나이고 Android 접근성 트리에 남깁니다(ADR-0125).
-function NavRow({ testId, title, value, onTap }: NavRowProps): ReactNode {
-  return (
-    <view
-      className="chat-settings-row"
-      id={testId}
-      data-testid={testId}
-      flatten={false}
-      accessibility-element={true}
-      accessibility-traits="button"
-      accessibility-label={`${title}, ${value}`}
-      accessibility-enable-tap={true}
-      bindtap={() => {
-        "background only";
-        onTap();
-      }}
-    >
-      <view accessibility-elements-hidden={true}>
-        <SettingsCell
-          trailing="navigation"
-          title={title}
-          description={value}
-          onNavigate={() => {}}
-        />
-      </view>
-    </view>
-  );
-}
-
-// 설정 탭 > Chats 화면입니다(ADR-0126). 추천 답변 · 먼저 보내는 메시지 · 공유 기억 · 생년 — 모두 계정 하나의 값입니다.
+// 설정 탭 > Chats 화면입니다(ADR-0126). 추천 답변 · 먼저 보내는 메시지 · 공유 기억 · 생년 · 사진 속 내 모습(ADR-0150) —
+// 모두 계정 하나의 값입니다.
 export function ChatSettingsScreen({
   source,
   onOpenSharedMemories,
@@ -92,6 +65,8 @@ export function ChatSettingsScreen({
             ? copy.proactiveSheet.anyTime
             : copy.proactiveSheet.hour(preferences.proactiveHour)
         }`;
+  // 고른 적 없으면 서버 기본값(Woman)을 보입니다 — 저장은 시트에서 Save할 때만(ADR-0150 M4).
+  const snapshotSelf = preferences.snapshotSelf ?? DEFAULT_SNAPSHOT_SELF;
   const yearValue =
     birthYear.kind === "set" ? String(birthYear.year) : chat.safety.birthYear.notSet;
 
@@ -184,6 +159,12 @@ export function ChatSettingsScreen({
                   })
                 }
               />
+              <NavRow
+                testId={albumIds.selfRow}
+                title={chat.album.selfRow}
+                value={chat.album.selfOptions[snapshotSelf].title}
+                onTap={() => setSheet({ kind: "snapshot-self", selected: snapshotSelf })}
+              />
             </view>
             <text className="chat-settings-footnote" flatten={false} accessibility-element={true}>
               {copy.footnote}
@@ -197,6 +178,17 @@ export function ChatSettingsScreen({
           hour={preferences.proactiveHour}
           onSave={(pref, hour) => {
             source.setPreferences({ proactive: pref, proactiveHour: hour });
+            close();
+          }}
+          onClose={close}
+        />
+      ) : null}
+      {sheet.kind === "snapshot-self" ? (
+        <SnapshotSelfSheet
+          selected={sheet.selected}
+          onSelect={(self) => setSheet({ kind: "snapshot-self", selected: self })}
+          onSave={() => {
+            source.setPreferences({ snapshotSelf: sheet.selected });
             close();
           }}
           onClose={close}

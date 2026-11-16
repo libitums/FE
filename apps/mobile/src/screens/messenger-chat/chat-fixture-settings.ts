@@ -5,6 +5,7 @@ import {
   normalizeMemoryText,
   SHARED_MEMORY_CAP,
 } from "./chat-settings-rules";
+import type { ChatSnapshotSelf } from "./chat-album.contract";
 import type {
   ChatFeedbackMode,
   ChatFixtureSeed,
@@ -21,6 +22,7 @@ export const DEFAULT_PREFERENCES: ChatPreferences = {
   proactive: "daily1",
   proactiveHour: null,
   feedbackMode: "separate",
+  snapshotSelf: null,
 };
 
 export type FixtureSettings = {
@@ -34,6 +36,7 @@ export type FixtureSettings = {
 
 const proactivePrefs: readonly ChatProactivePref[] = ["off", "daily1", "daily2"];
 const feedbackModes: readonly ChatFeedbackMode[] = ["separate", "natural", "prefix"];
+const snapshotSelves: readonly ChatSnapshotSelf[] = ["female", "male", "hidden"];
 
 /** 틀린 칸은 버리고 맞는 칸만 남깁니다. */
 function validPatch(patch: Partial<ChatPreferences>): Partial<ChatPreferences> {
@@ -51,6 +54,10 @@ function validPatch(patch: Partial<ChatPreferences>): Partial<ChatPreferences> {
   }
   if (patch.feedbackMode !== undefined && feedbackModes.includes(patch.feedbackMode)) {
     next.feedbackMode = patch.feedbackMode;
+  }
+  // 내 모습은 한 번 고르면 「고른 적 없음」(null)으로 되돌리지 않습니다(ADR-0150).
+  if (patch.snapshotSelf !== undefined && patch.snapshotSelf !== null) {
+    if (snapshotSelves.includes(patch.snapshotSelf)) next.snapshotSelf = patch.snapshotSelf;
   }
   return next;
 }

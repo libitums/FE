@@ -22,6 +22,7 @@ import { LanguageSelectScreen } from "../screens/language-select/LanguageSelectS
 import { entryLanguageLabel } from "../lib/entry-language";
 import { learnerSettingsSummary, renderLearnerProfileSettings } from "./render-learner-profile";
 import {
+  renderChatAlbum,
   renderChatMemories,
   renderChatSettings,
   renderMessengerChat,
@@ -52,10 +53,13 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
     // W1: 남은 선톡 알림 · 시험 표시가 꺼진 뒤 열려 있던 화면).
     case "messenger-chat":
     case "chat-settings":
-    case "chat-memories": {
+    case "chat-memories":
+    case "chat-album": {
       if (messengerAccessFor(wiring) !== "open") return renderMessengerList(wiring, null);
       if (screen.name === "messenger-chat") return renderMessengerChat(screen.roomId, wiring);
       if (screen.name === "chat-settings") return renderChatSettings(wiring);
+      if (screen.name === "chat-album")
+        return renderChatAlbum(screen.roomId, screen.characterName, wiring);
       return renderChatMemories(screen.characterId, screen.characterName, wiring);
     }
     case "roleplay-episode": {

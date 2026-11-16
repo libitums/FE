@@ -190,11 +190,11 @@ export type MessengerChatScreenProps = {
   readonly planOffer?: PlanOfferWiring | undefined; // 무료 다 씀 판의 요금제 카드(ADR-0144) — 플래그가 꺼졌으면 없음.
   /** 지역 시계입니다(남은 시간 · 자정 초기화). */
   readonly now: () => number;
-  /** 분 단위 갱신 타이머 주입(기본은 전역 타이머). */
-  readonly timers?: ChatTimers;
+  readonly timers?: ChatTimers; // 분 단위 갱신 타이머 주입(기본은 전역 타이머)
   readonly onExit: () => void;
-  /** 사이드바의 「What {name} remembers」 — 인물 기억 화면을 쌓습니다(ADR-0126). */
+  /** 사이드바 줄이 쌓는 화면 — 「What {name} remembers」 인물 기억(ADR-0126) · Album 인물 앨범(ADR-0150, 없으면 무동작). */
   readonly onOpenMemories: (characterId: string, name: string) => void;
+  readonly onOpenAlbum?: (roomId: string, name: string) => void;
   /** 본 첫 입장 안내 기록(2026-11-13) — 기본은 기기 저장소. */
   readonly guideStore?: GuideStore;
 };

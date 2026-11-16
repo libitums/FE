@@ -54,6 +54,10 @@ export const companionMediaSchema = z.object({
   model: z.nullable(z.string()),
   createdAt: z.string(),
   finishedAt: z.nullable(z.string()),
+  /** 그때의 말(20261203, ADR-0150) — 말 조각의 한국어 · 번역(없으면 지문). 옛 서버에는 없습니다. */
+  line: z.optional(z.object({ ko: z.string(), en: z.string() })),
+  /** 그 메시지가 지워짐(대화 초기화) — 앨범의 「From a past chat」, 다시 만들 수 없음(20261203). */
+  fromPastChat: z.optional(z.boolean()),
 });
 
 /**

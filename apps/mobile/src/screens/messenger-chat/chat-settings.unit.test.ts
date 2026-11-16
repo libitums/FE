@@ -78,12 +78,13 @@ describe("교정 방식 시트 리듀서", () => {
 });
 
 describe("가짜 출처 — 설정", () => {
-  test("CS-U4 기본 설정은 추천 답변 켬 · 하루 한 번 · 아무 때나 · 카드만", () => {
+  test("CS-U4 기본 설정은 추천 답변 켬 · 하루 한 번 · 아무 때나 · 카드만 · 사진 속 내 모습은 아직 안 고름", () => {
     expect(make().snapshot().preferences).toEqual({
       replyIdeas: true,
       proactive: "daily1",
       proactiveHour: null,
       feedbackMode: "separate",
+      snapshotSelf: null,
     });
   });
 

@@ -1,5 +1,6 @@
 // 가짜 출처의 씨앗과 출처 옵션입니다(messenger-chat-ui spec §5.1) — `chat-source.contract.ts`에서 옮겼습니다(파일 300줄 상한).
 
+import type { SnapshotSelfStore } from "./chat-fixture-album";
 import type { ChatMediaHooks } from "./chat-media.contract";
 import type { ChatRemote } from "./chat-remote.contract";
 import type {
@@ -94,4 +95,6 @@ export type FixtureChatSourceOptions = {
   readonly remote?: ChatRemote; // 서버 모드(ADR-0137) — 방 기록 · 첫 인사 · 보내기를 서버에서.
   /** 서버 모드 사진 · 음성(ADR-0146)의 바깥 알림 — 서버 잔액 · 결과 이벤트. */
   readonly mediaHooks?: ChatMediaHooks;
+  /** 사진 속 내 모습의 기기 저장(ADR-0150) — 없으면 메모리만(테스트 · 데모). */
+  readonly selfStore?: SnapshotSelfStore;
 };

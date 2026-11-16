@@ -1,9 +1,16 @@
+import { useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import { Button } from "@libitums/ui-lynx/button";
 
 import { coinIcon } from "../../components/coin-icon";
 import { useUiCopy } from "../../lib/ui-copy";
+import {
+  chatAlbumTestIds as albumIds,
+  DEFAULT_SNAPSHOT_SELF,
+  SNAPSHOT_SELVES,
+  type ChatSnapshotSelf,
+} from "./chat-album.contract";
 import { ChatModalFrame } from "./ChatModalFrame";
 import { askMediaPlan } from "./chat-rules";
 import type { ChatMediaKind } from "./chat-source.contract";
@@ -11,13 +18,16 @@ import { messengerChatTestIds as ids } from "./messenger-chat.contract";
 
 import "./chat-overlays.css";
 import "./chat-turns.css";
+import "./chat-album.css";
 
 export type AskMediaDialogProps = {
   readonly media: ChatMediaKind;
   readonly name: string;
   readonly balance: number;
   readonly price: number;
-  readonly onConfirm: () => void;
+  /** 첫 Snapshot이면 내 모습을 함께 묻습니다(ADR-0150 M5). 확정은 고른 값(묻지 않았으면 null)과 함께. */
+  readonly selfAsk?: boolean;
+  readonly onConfirm: (self: ChatSnapshotSelf | null) => void;
   readonly onGetCoins: () => void;
   readonly onCancel: () => void;
 };
@@ -55,6 +65,54 @@ function CoinPriceButton({ price, label, onTap }: CoinPriceButtonProps): ReactNo
   );
 }
 
+type SelfAskProps = {
+  readonly selected: ChatSnapshotSelf;
+  readonly onSelect: (self: ChatSnapshotSelf) => void;
+};
+
+// 첫 Snapshot의 「How should you appear?」 — 칩 셋(기본 Woman). 낭독은 칩마다 「이름, 선택됨」(ChoiceRow와 같은 규칙).
+function SelfAsk({ selected, onSelect }: SelfAskProps): ReactNode {
+  const chat = useUiCopy().messengerChat;
+  const copy = chat.album;
+  return (
+    <view className="chat-self-ask" data-testid={albumIds.selfAsk}>
+      <text className="chat-self-ask-title" flatten={false} accessibility-element={true}>
+        {copy.selfAsk}
+      </text>
+      <view className="chat-self-chips">
+        {SNAPSHOT_SELVES.map((self) => {
+          const on = self === selected;
+          const title = copy.selfOptions[self].title;
+          return (
+            <view
+              key={self}
+              className={`chat-self-chip${on ? " chat-self-chip-on" : ""}`}
+              data-testid={albumIds.selfOption(self)}
+              data-selected={on ? "true" : "false"}
+              flatten={false}
+              accessibility-element={true}
+              accessibility-traits="button"
+              accessibility-label={on ? chat.toggle.selected(title) : title}
+              accessibility-enable-tap={true}
+              bindtap={() => {
+                "background only";
+                onSelect(self);
+              }}
+            >
+              <text className="chat-self-chip-label" accessibility-elements-hidden={true}>
+                {title}
+              </text>
+            </view>
+          );
+        })}
+      </view>
+      <text className="chat-self-ask-note" flatten={false} accessibility-element={true}>
+        {copy.selfAskNote}
+      </text>
+    </view>
+  );
+}
+
 // 사진 · 음성 요청 대화상자(Z4 · Z6)입니다. 미리보기 · 가격 줄은 없고 가격은 주 버튼에만 있습니다.
 // 잔액이 모자라면(top-up) 주 버튼이 「Get coins」가 되어 엽전 상점으로 갑니다.
 export function AskMediaDialog({
@@ -62,11 +120,13 @@ export function AskMediaDialog({
   name,
   balance,
   price,
+  selfAsk = false,
   onConfirm,
   onGetCoins,
   onCancel,
 }: AskMediaDialogProps): ReactNode {
   const copy = useUiCopy().messengerChat.askMedia;
+  const [self, setSelf] = useState<ChatSnapshotSelf>(DEFAULT_SNAPSHOT_SELF);
   const plan = askMediaPlan(balance, price);
   const text = copy[media];
   return (
@@ -90,7 +150,7 @@ export function AskMediaDialog({
               <CoinPriceButton
                 price={plan.price}
                 label={copy.confirmLabel(plan.price)}
-                onTap={onConfirm}
+                onTap={() => onConfirm(selfAsk ? self : null)}
               />
             ) : (
               <view className="chat-modal-action" data-testid={ids.askConfirm} data-plan="top-up">
@@ -106,6 +166,7 @@ export function AskMediaDialog({
           </>
         }
       >
+        {selfAsk ? <SelfAsk selected={self} onSelect={setSelf} /> : null}
         <text className="chat-ask-balance" data-testid={ids.askBalance}>
           {copy.balance(balance)}
         </text>

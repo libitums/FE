@@ -295,5 +295,5 @@ export function remoteRoomMethods(deps: RemoteRoomDeps) {
     },
   };
 
-  return { loadRoom, sendText, controls, requestMedia: media.request };
+  return { loadRoom, sendText, controls, requestMedia: media.request, remake: media.remake };
 }

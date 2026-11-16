@@ -1,6 +1,7 @@
 // 서버 모드 사진(Snapshot) · 음성(Snap voice)의 앱 계약입니다(ADR-0146 「앱 연결」). 서버 모양의 정본은 계약 패키지 `media.ts`이고,
 // 앱은 zod를 번들에 넣지 않아(번들 상한) 같은 모양을 손으로 봅니다(`companion-media-parse.ts`).
 
+import type { ChatSnapshotSelf } from "./chat-album.contract";
 import type { ChatMediaKind, ChatText } from "./chat-source.contract";
 
 /** 회색 안내 줄의 까닭입니다 — 결과(blocked · failed)와 요청 거절 · 실패. */
@@ -44,6 +45,13 @@ export type RemoteMedia = {
   readonly createdAt: number;
 };
 
+/** 앨범 RPC(`companion_list_media`)의 한 건 — 그때의 말 · 지난 대화 표시가 더 붙습니다(ADR-0150). */
+export type RemoteAlbumMedia = RemoteMedia & {
+  readonly characterId: string;
+  readonly line: ChatText;
+  readonly fromPastChat: boolean;
+};
+
 /** 요청 한 번의 결과입니다. failed = 연결 실패 · 5xx · 본문 깨짐(서버가 받았는지 모름). */
 export type MediaRequestResult =
   | { readonly kind: "accepted"; readonly media: RemoteMedia; readonly cached: boolean }
@@ -52,7 +60,12 @@ export type MediaRequestResult =
 
 /** 출처가 서버 사진 · 음성에 닿는 포트입니다. 어떤 호출도 던지지 않습니다. */
 export type ChatMediaRemote = {
-  readonly request: (kind: RemoteMediaKind, messageId: string) => Promise<MediaRequestResult>;
+  /** `again` = 저장본을 두고 새로 만들기(ADR-0150 — 사진 25 · 35, 음성 15). */
+  readonly request: (
+    kind: RemoteMediaKind,
+    messageId: string,
+    again?: boolean,
+  ) => Promise<MediaRequestResult>;
   /** `companion_get_media` — 못 읽으면 null. */
   readonly load: (query: {
     readonly ids?: readonly string[];
@@ -60,6 +73,14 @@ export type ChatMediaRemote = {
   }) => Promise<readonly RemoteMedia[] | null>;
   /** 비공개 버킷 파일의 서명 URL — 못 받으면 null. */
   readonly sign: (path: string) => Promise<string | null>;
+  /** `companion_list_media` — 그 인물의 다 만든 것(최신부터). 없으면(옛 테스트 원격) 앨범은 빈 쪽입니다. */
+  readonly list?: (query: {
+    readonly characterId: string;
+    readonly before: number | null;
+    readonly limit: number;
+  }) => Promise<{ readonly items: readonly RemoteAlbumMedia[]; readonly hasMore: boolean } | null>;
+  /** `companion_save_profile(p_snapshot_self)` — 성공하면 true. */
+  readonly saveSelf?: (self: ChatSnapshotSelf) => Promise<boolean>;
   /** 서버 지갑 잔액(sub + grant + paid) — 못 읽으면 null. */
   readonly balance: () => Promise<number | null>;
 };

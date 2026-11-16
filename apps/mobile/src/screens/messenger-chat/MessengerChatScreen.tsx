@@ -57,6 +57,7 @@ export function MessengerChatScreen({
   timers,
   onExit,
   onOpenMemories,
+  onOpenAlbum,
   guideStore = deviceGuideStore,
 }: MessengerChatScreenProps): ReactNode {
   const copy = useUiCopy().messengerChat;
@@ -127,8 +128,7 @@ export function MessengerChatScreen({
     server ? { busy } : null,
   );
 
-  // 방이 사라지는 순간(지운 직후)에는 onExit이 곧 화면을 걷어 가므로 빈 상자만 남깁니다.
-  if (thread === null) return <view className="messenger-chat-screen" data-testid={ids.screen} />;
+  if (thread === null) return <view className="messenger-chat-screen" data-testid={ids.screen} />; // 지운 직후 — onExit이 곧 걷음
 
   const slotHeight = chatKeyboardSlotHeight({
     keyboard: state.keyboard,
@@ -139,8 +139,7 @@ export function MessengerChatScreen({
     bottomInset: edges.bottom,
   });
 
-  // 내가 보낸 말이 늘 때마다 읽던 자리와 상관없이 끝으로 내립니다(기기 F2).
-  // 내가 보낸 마지막 글 id — 고친 문장 다시 보내기는 글 수가 같아도 id가 바뀌어 끝으로 내려갑니다(ADR-0129).
+  // 내가 보낸 말이 늘거나 마지막 글 id가 바뀌면(고친 문장 다시 보내기, ADR-0129) 읽던 자리와 상관없이 끝으로 내립니다(기기 F2).
   const lastOwnId =
     [...thread.messages]
       .reverse()
@@ -294,6 +293,7 @@ export function MessengerChatScreen({
         birthYear={birthYear}
         preferences={preferences}
         onOpenMemories={onOpenMemories}
+        onOpenAlbum={onOpenAlbum}
       />
     </view>
   );

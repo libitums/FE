@@ -1,19 +1,16 @@
 import type { ReactNode } from "@lynx-js/react";
 
-import { AskMediaDialog } from "./AskMediaDialog";
+import { AskMediaOverlay } from "./AskMediaOverlay";
 import { BirthYearSheet } from "./BirthYearSheet";
 import { ChatSettingsSidebar } from "./ChatSettingsSidebar";
-import { CHAT_COIN_PRICES } from "./chat-coins";
-import { useChatEvents } from "./chat-events";
-import type { ChatOverlay, ChatRoomAction, ChatRoomState } from "./chat-room-state";
+import type { ChatRoomAction, ChatRoomState } from "./chat-room-state";
 import type {
   ChatBirthYear,
-  ChatMediaKind,
   ChatPreferences,
   ChatSource,
   ChatThread,
 } from "./chat-source.contract";
-import type { CoinSpendResult, CoinWallet } from "./coin-wallet";
+import type { CoinWallet } from "./coin-wallet";
 import { DeleteChatDialog } from "./DeleteChatDialog";
 import { UnsentDialog } from "./ChatDelivery";
 import { FeedbackModeSheet } from "./FeedbackModeSheet";
@@ -40,15 +37,9 @@ export type ChatRoomOverlaysProps = {
   readonly preferences: ChatPreferences;
   /** 인물 기억 화면을 메신저 스택에 쌓습니다(ADR-0126). */
   readonly onOpenMemories: (characterId: string, name: string) => void;
+  /** 인물 앨범 화면을 메신저 스택에 쌓습니다(ADR-0150). */
+  readonly onOpenAlbum?: (roomId: string, name: string) => void;
 };
-
-/** 앱 지갑 차감의 모자란 수(쓴 경우 0). */
-const spentShort = (spent: CoinSpendResult): number => (spent.kind === "short" ? spent.shortBy : 0);
-
-const askShop = (media: ChatMediaKind): Extract<ChatOverlay, { kind: "coin-shop" }> => ({
-  kind: "coin-shop",
-  from: media === "photo" ? "ask-photo" : "ask-voice",
-});
 
 // `state.overlay.kind` → 겹침 하나(동시에 둘 없음). 「…」 메뉴는 독 쪽이 그리므로 여기서는 아무것도 그리지 않습니다.
 // 시스템 뒤로가기는 여기도 겹침 화면들도 등록하지 않습니다 — `useChatRoom`이 단 하나의 주인입니다(리뷰 #8).
@@ -63,10 +54,10 @@ export function ChatRoomOverlays({
   birthYear,
   preferences,
   onOpenMemories,
+  onOpenAlbum,
 }: ChatRoomOverlaysProps): ReactNode {
   const { overlay } = state;
   const { roomId } = thread;
-  const { emit } = useChatEvents();
   const close = () => {
     "background only";
     dispatch({ type: "close-overlay" });
@@ -131,50 +122,9 @@ export function ChatRoomOverlays({
       );
     case "ask-media":
       return (
-        <AskMediaDialog
+        <AskMediaOverlay
           media={overlay.media}
-          name={thread.counterpart.name}
-          balance={coinBalance}
-          price={CHAT_COIN_PRICES[overlay.media]}
-          onConfirm={() => {
-            // 무제한이어도 요청은 엽전을 냅니다(턴과 별개). 모자라면(그 사이 잔액이 줄었으면) 요청 없이 상점으로 갑니다.
-            // 서버 방은 서버가 예약 · 확정합니다(ADR-0146 「앱 연결」) — 앱 지갑에서 빼지 않고 잔액만 봅니다.
-            const price = CHAT_COIN_PRICES[overlay.media];
-            const shortBy =
-              thread.server !== null
-                ? Math.max(0, price - coinBalance)
-                : spentShort(wallet.spend(price, overlay.media));
-            if (shortBy > 0) {
-              emit({
-                name: "chat_coins_short",
-                surface: "chat",
-                reason: overlay.media,
-                shortBy: String(shortBy),
-              });
-              dispatch({ type: "open-overlay", overlay: askShop(overlay.media) });
-              return;
-            }
-            emit({
-              name: "chat_media_requested",
-              surface: "chat",
-              characterId: roomId,
-              media: overlay.media,
-              price: String(price),
-            });
-            source.requestMedia(roomId, overlay.media);
-            dispatch({ type: "close-overlay" });
-          }}
-          onGetCoins={() => {
-            const shortBy = Math.max(0, CHAT_COIN_PRICES[overlay.media] - coinBalance);
-            emit({
-              name: "chat_coins_short",
-              surface: "chat",
-              reason: overlay.media,
-              shortBy: String(shortBy),
-            });
-            dispatch({ type: "open-overlay", overlay: askShop(overlay.media) });
-          }}
-          onCancel={close}
+          {...{ dispatch, thread, source, wallet, coinBalance, preferences }}
         />
       );
     case "sidebar":
@@ -207,6 +157,10 @@ export function ChatRoomOverlays({
           onMemories={() => {
             dispatch({ type: "close-overlay" });
             onOpenMemories(thread.counterpart.id, thread.counterpart.name);
+          }}
+          onAlbum={() => {
+            dispatch({ type: "close-overlay" });
+            onOpenAlbum?.(roomId, thread.counterpart.name);
           }}
           feedbackMode={preferences.feedbackMode}
           onFeedbackMode={() =>

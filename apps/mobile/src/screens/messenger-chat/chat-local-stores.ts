@@ -4,9 +4,13 @@
 import { getItem, setItem } from "../../lib/storage";
 import { parseTurnRecord, type TurnRecord } from "./free-turns";
 import type { TurnRecordStore } from "./turn-ledger";
+import { SNAPSHOT_SELVES, type ChatSnapshotSelf } from "./chat-album.contract";
+import type { SnapshotSelfStore } from "./chat-fixture-album";
 
 export const TURN_RECORD_KEY = "libitum.messenger.free-turns";
 export const UNLOCKED_KEY = "libitum.messenger.unlocked";
+/** 사진 속 내 모습(ADR-0150) — `{ <출처 키>: female | male | hidden }`(계정마다). */
+export const SNAPSHOT_SELF_KEY = "libitum.messenger.snapshot-self";
 
 export type UnlockStore = {
   readonly read: () => ReadonlySet<string>;
@@ -84,6 +88,35 @@ export function memoryUnlockStore(initial: readonly string[] = []): UnlockStore 
     read: () => new Set(ids),
     add: (characterId) => {
       if (characterId !== "") ids.add(characterId);
+    },
+  };
+}
+
+const selfOf = (value: unknown): ChatSnapshotSelf | null =>
+  SNAPSHOT_SELVES.find((self) => self === value) ?? null;
+
+/** 기기의 내 모습 저장 — 계정(출처 키 「fixture」 · 「server:<id>」)마다 따로. 틀린 값은 고른 적 없음으로 읽습니다. */
+export function deviceSnapshotSelfStore(accountKey: string): SnapshotSelfStore {
+  const all = (): Record<string, unknown> => {
+    const raw = readJson(SNAPSHOT_SELF_KEY);
+    return typeof raw === "object" && raw !== null && !Array.isArray(raw)
+      ? (raw as Record<string, unknown>)
+      : {};
+  };
+  return {
+    read: () => selfOf(all()[accountKey]),
+    write: (self) => writeJson(SNAPSHOT_SELF_KEY, { ...all(), [accountKey]: self }),
+  };
+}
+
+export function memorySnapshotSelfStore(
+  initial: ChatSnapshotSelf | null = null,
+): SnapshotSelfStore {
+  let value = initial;
+  return {
+    read: () => value,
+    write: (self) => {
+      value = self;
     },
   };
 }
