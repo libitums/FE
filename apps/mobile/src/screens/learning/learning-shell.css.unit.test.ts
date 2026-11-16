@@ -116,3 +116,11 @@ describe("완료 장면 무대 규칙 (LS-CSS3 ~ 8)", () => {
     expect(at(".learning-shell-flow-fill-scroll {")).toBeGreaterThan(flow);
   });
 });
+
+describe("세션 머리 — 큰 글자에서 학습형 이름과 다시 풀기 칩", () => {
+  test("LS-CSS-FIT1. 학습형 줄이 넘치면 칩이 다음 줄로 내려간다(이름이 좁은 칸에서 쪼개지지 않는다)", () => {
+    expect(bodyOf(readCss("learning-shell.css"), ".learning-shell-form-row")).toContain(
+      "flex-wrap: wrap;",
+    );
+  });
+});

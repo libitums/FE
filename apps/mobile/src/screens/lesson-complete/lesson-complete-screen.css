@@ -32,6 +32,22 @@
 /* 세로 여백 둘은 남는 높이를 나눠 가집니다 — 디자인(874pt)에서 표식 위 114 · `Check` 위
    165라 2 : 3으로 나눕니다. 고정값으로 두면 바텀 네비게이션이 서는 실제 화면에서 높이가
    모자라 `Check`가 카드에 붙습니다. 모자라도 24는 지킵니다. */
+/* 머리 칩과 아래 버튼 사이의 스크롤입니다(ADR-0022 D2 규약의 `-scroll`). 남는 세로를 받고 0까지 줄어, 넘치는 묶음은
+   스크롤하고 아래 버튼은 늘 화면 안에 섭니다. `display`를 적지 않습니다 — `<scroll-view>`는 늘 `linear`입니다. */
+.lesson-complete-screen-scroll {
+  flex: 1;
+  min-height: 0;
+  align-self: stretch;
+}
+
+/* 스크롤 안 묶음 — 하한 100%로 스크롤 높이를 채워 두 여백이 예전처럼 세로 가운데를 잡습니다. */
+.lesson-complete-screen-scroll-content {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 .lesson-complete-screen-spacer-top,
 .lesson-complete-screen-spacer {
   min-height: var(--libitum-spacing-24);

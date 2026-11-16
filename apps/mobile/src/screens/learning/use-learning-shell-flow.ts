@@ -13,12 +13,20 @@ export type LearningShellFlowState = {
  * `learningShellFlow`가 하며 이 훅은 결과가 달라질 때만 상태를 바꿉니다. 껍데기가 새로
  * 서면 `split`에서 다시 잽니다.
  */
-export function useLearningShellFlow(workspaceMode: LearningWorkspaceMode): LearningShellFlowState {
+export function useLearningShellFlow(
+  workspaceMode: LearningWorkspaceMode,
+  cardScroll = false,
+): LearningShellFlowState {
   const [flow, setFlow] = useState<LearningShellFlow>("split");
 
   const reportViewportHeight = (height: number): void => {
     "background only";
-    const next = learningShellFlow({ current: flow, workspaceMode, viewportHeight: height });
+    const next = learningShellFlow({
+      current: flow,
+      workspaceMode,
+      viewportHeight: height,
+      cardScroll,
+    });
     if (next !== flow) {
       setFlow(next);
     }

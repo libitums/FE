@@ -253,19 +253,17 @@ test("[MG6] workspaceScrolls가 거짓이면 높이 0이어도 합치지 않는�
 });
 
 // 가드: 말하기(scrollCard)는 이미 카드 스크롤이라 흐름 상자가 없습니다.
-test("[MG7] scrollCard는 높이 0이어도 흐름 상자 없이 무대 · 작업 영역이 스크롤의 직계다", () => {
+test("[MG7] scrollCard는 보고가 없거나 168 이상이면 흐름 상자 없이 무대 · 작업 영역이 스크롤의 직계다", () => {
   renderShell({ scrollCard: true });
   const cardScroll = scroll();
-
-  expect(cardScroll).not.toHaveAttribute("id");
-  // `id`가 없어 id 선택자로는 닿지 못하므로 testid 속성 선택자로 NodesRef를 만듭니다.
-  const cardScrollRef = lynx.createSelectorQuery().select('[data-testid="learning-shell-scroll"]');
-  reportHeight(cardScrollRef, 0);
-
   expect(flow()).toBeNull();
   expect(testIdsOf(cardScroll)).toEqual(["learning-shell-stage", "fixture-workspace"]);
   expectStageInsideScroll();
   expect(classesOf(cardScroll)).not.toContain("learning-shell-body-scroll");
+
+  reportHeight(scrollRef(), 200);
+  expect(flow()).toBeNull();
+  expect(testIdsOf(scroll())).toEqual(["learning-shell-stage", "fixture-workspace"]);
 });
 
 // ---------------------------------------------------------------- MG8 끝 상자 · fog
@@ -492,12 +490,12 @@ test("[MG19] 측정 없음(split)에서는 답해도 아래 버튼을 눌러도 
 });
 
 // 가드: 말하기(scrollCard)는 높이 0이어도 카드 스크롤이라 보내지 않는다.
-test("[MG20] scrollCard는 높이 0이어도 답해도 아래 버튼을 눌러도 맨 위로 보내지 않는다", () => {
+test("[MG20] 카드 스크롤(합치지 않은 높이)은 답해도 아래 버튼을 눌러도 맨 위로 보내지 않는다", () => {
   const onAction = vi.fn<() => void>();
   const { again } = renderShell({ scrollCard: true });
-  const cardScrollRef = lynx.createSelectorQuery().select('[data-testid="learning-shell-scroll"]');
+  const cardScrollRef = scrollRef();
   const invocations = stubSelectorQuery();
-  reportHeight(cardScrollRef, 0);
+  reportHeight(cardScrollRef, 200);
   const advance = newAdvance();
 
   again({ advance });
@@ -568,4 +566,25 @@ test("[MG23] 같은 걸음이 새 객체로 다시 오거나 관계없는 프롭
 
   again({ advance: newAdvance(), actionSound: "none" });
   expect(scrollToCalls(invocations)).toHaveLength(1);
+});
+
+// 최대 글자 · 작은 화면에서 카드 스크롤(짝 맞추기 · 문화 카드 · 말하기)이 지시문 아래 한 줄로 줄어 풀 수 없던 것.
+test("[MG24] 카드 스크롤도 낮은 높이(168 미만)를 보고하면 지시문 · 무대 · 작업 영역이 한 스크롤로 합쳐진다", () => {
+  renderMeasured(120, { scrollCard: true });
+
+  const flowBox = flow();
+  expect(flowBox).not.toBeNull();
+  expect(within(scroll()).getByTestId("learning-shell-flow")).toBe(flowBox);
+  expect(testIdsOf(flowBox as HTMLElement)).toEqual([
+    "learning-shell-prompt",
+    "learning-shell-stage",
+    "fixture-workspace",
+  ]);
+});
+
+test("[MG25] 카드 스크롤이 168 이상이면 카드 스크롤 그대로다 — 지시문은 스크롤 밖", () => {
+  renderMeasured(168, { scrollCard: true });
+
+  expect(flow()).toBeNull();
+  expect(scroll().contains(byId("learning-shell-instruction"))).toBe(false);
 });

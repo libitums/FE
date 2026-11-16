@@ -6,12 +6,14 @@ import type { AnswerResult } from "../../lib/answer-result";
 import { LearningShellPrompt } from "./LearningShellPrompt";
 import { LearningShellWorkspace } from "./LearningShellWorkspace";
 import {
+  layoutHeightFrom,
   learningShellSceneClasses,
   type LearningShellArrangement,
   type LearningShellScene,
   type LearningWorkspaceMode,
 } from "./learning-shell.contract";
 import type { LearningShellActionPlacement, LearningShellStage } from "./learning-shell-props";
+import { learningShellScrollId } from "./learning-shell-scroll";
 import {
   questionTransitionAttributes,
   questionTransitionClassName,
@@ -106,6 +108,12 @@ export function LearningShellBody({
     );
 
   if (arrangement === "card-scroll") {
+    // 카드 스크롤도 제 높이를 보고합니다 — 풀 수 없을 만큼 낮으면 껍데기가 지시문까지 한 스크롤로 합칩니다.
+    const handleCardScrollLayout = (event: unknown): void => {
+      "background only";
+      const height = layoutHeightFrom(event);
+      if (height !== undefined) onViewportHeight(height);
+    };
     return (
       <>
         {instructionNode}
@@ -117,9 +125,11 @@ export function LearningShellBody({
             transition.phase,
             transition.motion,
           )}
+          id={learningShellScrollId}
           data-testid="learning-shell-scroll"
           scroll-orientation="vertical"
           scroll-bar-enable={false}
+          bindlayoutchange={handleCardScrollLayout}
         >
           {stage}
           {workspace}
