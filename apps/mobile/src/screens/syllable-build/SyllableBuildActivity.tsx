@@ -119,7 +119,9 @@ export function SyllableBuildActivity({
                   questionIndex: state.questionIndex,
                   outcome: judgeSyllableBuild(question, state.placedTileIndexes),
                   density,
-                  ...selectedField(selectedTilesText(question.tiles, state.placedTileIndexes, "")),
+                  ...selectedField(
+                    selectedTilesText(question.tilesSource ?? [], state.placedTileIndexes, ""),
+                  ),
                 });
                 dispatch({ type: "check" });
               },

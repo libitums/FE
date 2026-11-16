@@ -442,3 +442,22 @@ test("EV5. Skip은 skipped로 보고된다", () => {
     skipReason: "user",
   });
 });
+
+test("EV5. 쓸 수 없는 국면(권한 거부)에서 Skip은 unavailable:<reason>으로 보고된다", () => {
+  host({ microphone: "denied", speechRecognition: "denied" });
+  const onItemAnswered = vi.fn<(report: ItemAnswerReport) => void>();
+  render(
+    <SpeakWordActivity
+      questions={[cardQuestion, passport]}
+      onExit={() => {}}
+      onFinish={() => {}}
+      onItemAnswered={onItemAnswered}
+    />,
+  );
+  loadPicture();
+  tapAction("Speak");
+  tapAction("Skip");
+  expect(onItemAnswered).toHaveBeenCalledWith(
+    expect.objectContaining({ outcome: "skipped", skipReason: "unavailable:blocked" }),
+  );
+});

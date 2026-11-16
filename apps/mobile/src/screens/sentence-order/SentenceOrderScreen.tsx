@@ -153,10 +153,10 @@ export function SentenceOrderActivity({
       questionIndex: state.questionIndex,
       outcome: judged,
       density,
-      // 대화 순서는 턴을 「 | 」로, 낱말은 공백으로 잇습니다(콘텐츠 정답 표기와 같게).
+      // 치환 전 원문으로 — 대화 순서는 놓은 턴만(고정 첫 턴 제외) 「 | 」, 낱말은 공백(ADR-0084 측정).
       ...selectedField(
         selectedTilesText(
-          question.chips,
+          question.chipsSource ?? [],
           state.placedChipIndexes,
           question.dialogue === undefined ? " " : " | ",
         ),

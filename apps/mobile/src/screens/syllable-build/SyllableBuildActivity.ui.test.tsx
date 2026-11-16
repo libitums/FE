@@ -16,6 +16,7 @@ import { expectCompleteScene, expectQuestionScene } from "../learning/complete-s
 const card: SyllableBuildQuestion = {
   meaning: "card",
   tiles: ["현", "드", "카", "찮"],
+  tilesSource: ["현", "드", "카", "찮"],
   slotCount: 2,
   answers: ["카드"],
 };

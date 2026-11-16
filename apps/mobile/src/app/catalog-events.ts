@@ -95,7 +95,6 @@ export function listenItemAnsweredEventOf(
   };
 }
 
-/** 채점 문항의 첫 판정 이벤트입니다. 채점 유형이 아니면 `null`입니다. */
 /** 문항을 낸 판의 정보입니다. */
 export type ItemAnswerContent = {
   readonly version: string;
@@ -103,6 +102,7 @@ export type ItemAnswerContent = {
   readonly level?: number;
 };
 
+/** 채점 문항의 첫 판정 이벤트입니다. 채점 유형이 아니면 `null`입니다. */
 export function itemAnsweredEventOf(
   episodeId: string,
   unitKey: CatalogUnitKey,

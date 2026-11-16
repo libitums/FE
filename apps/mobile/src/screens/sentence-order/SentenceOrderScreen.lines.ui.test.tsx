@@ -37,6 +37,7 @@ const listenBuild: SentenceOrderQuestion = withAudio(
   {
     prompt: "Hello! Is this your first time in Korea?",
     chips: ["안녕하세요!", "한국은", "처음이세요?", "잘하시네요!", "감사합니다!"],
+    chipsSource: ["안녕하세요!", "한국은", "처음이세요?", "잘하시네요!", "감사합니다!"],
     answerOrder: [0, 1, 2],
     instruction: "Listen and build the sentence.",
     reading: { romanization: "annyeonghaseyo! hangugeun cheoeumiseyo?", shown: "always" },

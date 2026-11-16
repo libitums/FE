@@ -204,7 +204,7 @@ export function WordChoiceActivity({
     if (question === null || !answerable) return;
     const judged = index === question.answerIndex ? "correct" : "incorrect";
     if (!hasAnswered(state)) {
-      onItemAnswered?.(choiceReport(state.questionIndex, judged, density, question.choices, index));
+      onItemAnswered?.(choiceReport(question, state.questionIndex, judged, density, index));
       const entering = cultureFeedbackOf(question, judged, copy);
       if (entering !== undefined) announce(cultureFeedbackAnnouncement(entering));
     }

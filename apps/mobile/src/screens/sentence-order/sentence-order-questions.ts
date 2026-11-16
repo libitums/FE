@@ -59,4 +59,6 @@ export type SentenceOrderQuestion = {
   readonly chipMeanings?: readonly string[];
   /** 문항 음성입니다 — 듣기 조립은 듣기 갈래, 문장 순서는 판정 뒤 재생 갈래. 없으면 키가 없습니다. */
   readonly audio?: QuestionAudio;
+  /** 조각마다 자리표시자를 치환하기 전 콘텐츠 원문입니다(`chips`와 같은 순서). 측정 `selectedAnswer`만 이 값을 씁니다. */
+  readonly chipsSource?: readonly string[];
 };

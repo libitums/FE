@@ -62,6 +62,7 @@ export function listeningItemOf(
     prompt,
     romanization,
     audio,
+    choicesSource: options.map((option) => option.ko),
     ...optionalField("instruction", instructionOf(port, item.prompt)),
     ...(choiceRoms === undefined ? {} : { choiceRomanizations: choiceRoms }),
     // 답하기 전에는 대본을 보이지 않습니다 — 최소 대립쌍은 로마자가 곧 정답(소리 차이)이고, 듣고 고르기도 로마자가
@@ -96,6 +97,7 @@ type WordChoiceParts = {
   readonly instruction?: string | undefined;
   /** 문화 확인이면 장면 · 해설입니다. */
   readonly culture?: WordChoiceCulture | undefined;
+  readonly choicesSource?: readonly string[] | undefined; // 치환 전 원문(측정용, ADR-0084)
 };
 
 export function wordChoiceItem(
@@ -125,6 +127,9 @@ export function wordChoiceItem(
       ? { choiceRomanizations: parts.choiceRomanizations }
       : {}),
     ...(parts.culture === undefined ? {} : { culture: parts.culture }),
+    ...(parts.choicesSource !== undefined && parts.choicesSource.length === choices.length
+      ? { choicesSource: parts.choicesSource }
+      : {}),
     ...(parts.choiceTranslations !== undefined && parts.choiceTranslations.length === choices.length
       ? { choiceTranslations: parts.choiceTranslations }
       : {}),
@@ -145,6 +150,7 @@ export function roleLineItemOf(
     romanization: latinOf(port, item.context.roman),
     translation: englishOf(port, item.context.en),
     choices: item.options.map((option) => koOf(port, option.ko)),
+    choicesSource: item.options.map((option) => option.ko),
     choiceRomanizations: choiceRomanizationsOf(
       port,
       item.options.map((option) => option.roman),
@@ -163,6 +169,7 @@ export function translateToEnItemOf(
     prompt: text === undefined ? "" : koOf(port, text.ko),
     romanization: latinOf(port, text?.roman),
     choices: item.options.map((option) => latinOf(port, option.ko) ?? ""),
+    choicesSource: item.options.map((option) => option.ko),
     answerIndex: correctIndex(item.options),
     audio: catalogAnswerEchoOf(item, port),
   });
@@ -185,6 +192,7 @@ export function clozeItemOf(item: ItemOf<"CLOZE">, port: CatalogItemPort): Catal
     romanizationEmphasis: filled?.emphasis,
     translation: englishOf(port, item.context.en),
     choices,
+    choicesSource: order.map((index) => item.tiles[index]?.ko ?? ""),
     choiceRomanizations: choiceRomanizationsOf(
       port,
       order.map((index) => item.tiles[index]?.roman),
@@ -203,6 +211,7 @@ export function clozeChoiceItemOf(
     romanization: latinOf(port, item.context.roman),
     translation: englishOf(port, item.context.en),
     choices: item.options.map((option) => koOf(port, option.ko)),
+    choicesSource: item.options.map((option) => option.ko),
     choiceRomanizations: choiceRomanizationsOf(
       port,
       item.options.map((option) => option.roman),
@@ -223,6 +232,7 @@ export function replySelectItemOf(
     romanization: latinOf(port, line.roman),
     translation: englishOf(port, line.en),
     choices: item.options.map((option) => koOf(port, option.ko)),
+    choicesSource: item.options.map((option) => option.ko),
     choiceRomanizations: choiceRomanizationsOf(
       port,
       item.options.map((option) => option.roman),
@@ -244,6 +254,7 @@ export function particleItemOf(
     romanization: latinOf(port, text.roman),
     translation: englishOf(port, text.en),
     choices: item.options.map((option) => koOf(port, option.ko)),
+    choicesSource: item.options.map((option) => option.ko),
     choiceRomanizations: choiceRomanizationsOf(
       port,
       item.options.map((option) => option.roman),
@@ -278,6 +289,7 @@ export function pictureChoiceItemOf(
   const question: WordChoiceQuestion = {
     prompt,
     choices,
+    choicesSource: item.options.map((option) => option.ko),
     answerIndex,
     ...optionalField("instruction", instructionOf(port, item.prompt)),
     ...audioField(catalogAnswerEchoOf(item, port)),

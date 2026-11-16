@@ -22,6 +22,8 @@ export type ListeningQuestion = {
   readonly instruction?: string;
   /** 보기마다 라벨 위 로마자입니다. 있으면 길이 = `choices.length`(표시 순서), 빈 자리는 null입니다. */
   readonly choiceRomanizations?: readonly (string | null)[];
+  /** 보기마다 자리표시자를 치환하기 전 콘텐츠 원문입니다(표시 순서). 측정 `selectedAnswer`만 이 값을 씁니다 — 학습자 이름 · 나라가 분석 도구로 가지 않게. */
+  readonly choicesSource?: readonly string[];
 } & (
   | {
       readonly choices: readonly [string, string];

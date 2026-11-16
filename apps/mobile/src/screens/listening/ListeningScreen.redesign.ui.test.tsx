@@ -24,10 +24,16 @@ afterEach(() => {
   while (restores.length > 0) restores.pop()?.();
 });
 
+// 측정 `selectedAnswer`는 치환 전 원문 배열에서 옵니다 — 화면 글자와 같은 원문을 실어 둡니다(#449 C1).
+const withSource = questionsForStep("ordering").map((question) => ({
+  ...question,
+  choicesSource: [...question.choices],
+}));
+
 function mount(onItemAnswered?: (report: ItemAnswerReport) => void) {
   return render(
     <ListeningActivity
-      questions={questionsForStep("ordering")}
+      questions={withSource}
       onExit={() => {}}
       onFinish={() => {}}
       sessionOptions={initialSessionOptions}
