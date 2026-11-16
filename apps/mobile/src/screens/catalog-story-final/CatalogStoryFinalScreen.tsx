@@ -264,7 +264,9 @@ export function CatalogStoryFinalScreen({
             </view>
           </scroll-view>
 
-          {turn.kind === "write" ? (
+          {/* 판정 뒤에는 더 쓸 것이 없어 쓰기 칸을 내립니다 — 작은 화면에서 판정 · 대답 줄 · 해설이 판 스크롤에
+              자리를 얻습니다(쓰기 칸이 서 있으면 판 스크롤이 거의 0으로 줄어 판정이 가려졌습니다). */}
+          {turn.kind === "write" && !checked ? (
             <StoryWritePad
               syllable={syllable}
               trace={trace}

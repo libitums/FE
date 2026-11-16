@@ -92,10 +92,12 @@
 }
 
 /* 답안 판 — 어두운 반투명 면이고 위 두 모서리만 둥글게 둡니다. 면은 gray-950 × opacity-surface이고 알파 색
-   토큰이 없어 rgba로 적습니다(ADR-0014). 그림자는 없습니다. 판 안쪽은 스크롤하고 버튼은 그 밖에 붙어
-   큰 글꼴에서도 밀려나지 않습니다. */
+   토큰이 없어 rgba로 적습니다(ADR-0014). 그림자는 없습니다. 판 안쪽은 스크롤하고 버튼은 그 밖에 붙습니다.
+   머리 · 대사 · 판이 화면보다 길면 판이 줄고, 판 안에서는 스크롤만 줄어 버튼 자리 · 쓰기 칸은 늘 화면 안에
+   섭니다(Ep3 이야기 파이널 5/6 — 쓰기 칸 아래 버튼이 화면 밖으로 밀리던 것). */
 .catalog-final-screen-panel {
-  flex-shrink: 0;
+  flex-shrink: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: var(--libitum-spacing-12);
@@ -110,6 +112,8 @@
 
 .catalog-final-screen-panel-scroll {
   max-height: 50vh;
+  flex-shrink: 1;
+  min-height: 0;
   width: 100%;
 }
 
