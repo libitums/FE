@@ -72,7 +72,11 @@ function correctPlacement(turn: CatalogRoleplayTurn): number[] {
 /** 메신저 탭은 시험 계정에게만 열린다(ADR-0128) — 새 친구 흐름은 시험 계정으로 부팅합니다. */
 const TESTER = { accessToken: testerAccessToken };
 
-export async function bootBeforeFinal(episodeId: string): Promise<readonly EpisodeIntroEvent[]> {
+export async function bootBeforeFinal(
+  episodeId: string,
+  /** `member` — 시험 계정이 아닌 회원(메신저 「곧 열림」). */
+  account: "tester" | "member" = "tester",
+): Promise<readonly EpisodeIntroEvent[]> {
   const done = [...BEFORE_FINAL, "RP"];
   const booted = await boot(
     {
@@ -81,7 +85,7 @@ export async function bootBeforeFinal(episodeId: string): Promise<readonly Episo
       // 이 파일을 쓰는 테스트는 u03에 막간을 끼워 완료 키에도 넣습니다 — 최종만 남기려면 막간도 끝낸 상태여야 합니다.
       ...(episodeId === u03 ? { [u03]: [...BEFORE_FINAL, "INT"] } : {}),
     },
-    TESTER,
+    account === "tester" ? TESTER : {},
   );
   return booted.events;
 }

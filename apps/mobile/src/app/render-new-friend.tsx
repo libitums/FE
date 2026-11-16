@@ -12,6 +12,7 @@ import { emitCompanionEvent } from "../lib/companion-events";
 import { NewFriendLayer } from "../screens/messenger-chat/NewFriendLayer";
 import type { NewFriendModel } from "../screens/messenger-chat/new-friend.contract";
 import { takeNewFriend } from "./new-friend-pending";
+import { messengerAccessFor } from "./render-messenger-chat";
 import { newFriendModelOf } from "./new-friend-wiring";
 import type { ScreenWiring } from "./screen-wiring";
 
@@ -26,7 +27,9 @@ export function NewFriendMapHost({ wiring, active, children }: NewFriendMapHostP
   // 모델을 못 만들면(이름 · 얼굴 · 첫 메시지 등이 없음) 시트 없이 맵만 둡니다 — 해금은 이미 됐고 목록에 NEW 줄이 남습니다.
   const [model] = useState<NewFriendModel | null>(() => {
     const characterId = takeNewFriend();
-    return characterId === null ? null : newFriendModelOf(characterId, wiring);
+    return characterId === null
+      ? null
+      : newFriendModelOf(characterId, wiring, messengerAccessFor(wiring));
   });
   if (model === null) return children;
   const closed = (choice: "reply" | "later") =>

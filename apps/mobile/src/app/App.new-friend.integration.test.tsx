@@ -205,6 +205,26 @@ test("MC2-I2. Reply로 연 방에서 뒤로 가면 미나가 목록 맨 위이�
   expect(present(SHEET)).toBe(false);
 });
 
+// ------------------------------------------------------------------ MC2-I6 · 메신저를 쓸 수 없는 계정
+
+// 시험 계정이 아닌 회원(ADR-0128 「곧 열림」)은 에피소드를 끝내도 시트가 서지 않는다 — 서면 Reply가 탭 바 없는 안내 화면에
+// 가두었다(2026-11-17 UX 점검). 메신저 탭은 안내(탭 바 있음)로 그대로 선다.
+test("MC2-I6. 시험 계정이 아닌 회원은 에피소드 3을 끝내도 시트가 없고, 메신저 탭은 탭 바가 있는 「곧 열림」 안내다", async () => {
+  await bootBeforeFinal(u03, "member");
+  playFinal(u03, 3, true);
+  await finishEpilogue();
+
+  advance(SHEET_APPEAR_MS + SHEET_TYPING_MS + 10_000);
+  expect(present(SHEET)).toBe(false);
+  expect(screen.getByTestId(MAP)).toBeInTheDocument();
+
+  openTab("messenger");
+  expect(screen.getByTestId("messenger-access-gate").getAttribute("data-access")).toBe(
+    "coming-soon",
+  );
+  expect(isTabSelected("messenger")).toBe(true);
+});
+
 // ------------------------------------------------------------------ MC2-I3 · Later
 
 test("MC2-I3. Later: 시트만 닫히고 맵이 그대로이며, 메신저 탭의 미나 줄은 NEW · 1 · opening 미리보기다", async () => {

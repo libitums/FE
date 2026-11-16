@@ -8,6 +8,7 @@ import type { EpisodeIntroEventSink } from "../screens/episode-intro/episode-int
 import type { CatalogMapSection } from "../screens/journey-map/catalog-map.contract";
 import { COMPANION_CHARACTERS } from "../screens/messenger-chat/companion-roster";
 import { CHARACTER_UNLOCKS, characterUnlockFor } from "../screens/messenger-chat/new-friend";
+import type { MessengerAccess } from "../screens/messenger-chat/messenger-access";
 import type { NewFriendModel } from "../screens/messenger-chat/new-friend.contract";
 import { currentMessengerChatSource, messengerUnlockStore } from "./messenger-chat-wiring";
 import { rememberNewFriend } from "./new-friend-pending";
@@ -58,8 +59,17 @@ export function commitNewFriend(
 
 type ModelWiring = Pick<ScreenWiring, "messengerChat" | "catalogSections" | "episodeContent">;
 
-/** 시트 모델입니다. 이름 · 얼굴 · 첫 메시지 · 회차 · 제목 중 하나라도 없으면 null(시트 없음 — 해금은 이미 됨). */
-export function newFriendModelOf(characterId: string, wiring: ModelWiring): NewFriendModel | null {
+/**
+ * 시트 모델입니다. 이름 · 얼굴 · 첫 메시지 · 회차 · 제목 중 하나라도 없으면 null(시트 없음 — 해금은 이미 됨).
+ * 메신저를 쓸 수 없는 계정(`access`가 open이 아님 — 손님 · 시험 계정이 아닌 회원, ADR-0128)도 null입니다 — Reply가 열 방이 없고
+ * 안내 화면만 탭 바 없이 쌓였습니다. 해금 기록은 그대로라 메신저가 열리면 목록에 NEW 줄로 섭니다.
+ */
+export function newFriendModelOf(
+  characterId: string,
+  wiring: ModelWiring,
+  access: MessengerAccess,
+): NewFriendModel | null {
+  if (access !== "open") return null;
   const entry = CHARACTER_UNLOCKS.find((candidate) => candidate.characterId === characterId);
   if (entry === undefined) return null;
   const thread = wiring.messengerChat.source.thread(entry.roomId);
