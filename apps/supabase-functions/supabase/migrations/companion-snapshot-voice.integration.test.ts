@@ -644,3 +644,34 @@ test("SV11. 앨범은 대화 초기화에 남고 계정 삭제에 지워진다",
     /permission denied/,
   );
 });
+
+test("SV12. 중간 그림 미리보기 — 서버가 만드는 중인 행에만 적고, 앱은 pending 결과의 previewPath로 보며, 끝나면 사라진다", async () => {
+  const mine = await message();
+  const begun = await begin(mine);
+  const media = begun.media!;
+  const path = `${tester}/${media.id}.preview.png`;
+  const preview = (p: string, id = media.id) =>
+    server.query("select public.companion_media_preview($1, $2) as p", [id, p]);
+
+  expect((await preview(path)).rows[0].p).toEqual({ result: "ok" });
+  const pending = (
+    await app.query("select public.companion_get_media($1, null) as m", [[media.id]])
+  ).rows[0].m;
+  expect(pending[0]).toMatchObject({ status: "pending", previewPath: path });
+
+  // 다른 유저 폴더 · 모양이 다른 경로는 받지 않는다.
+  expect((await preview(`${other}/${media.id}.preview.png`)).rows[0].p).toEqual({
+    result: "not_pending",
+  });
+  await expect(preview(`${tester}/${media.id}.png`)).rejects.toThrow(/invalid preview path/);
+  // 앱은 부를 수 없다.
+  await expect(
+    app.query("select public.companion_media_preview($1, $2)", [media.id, path]),
+  ).rejects.toThrow(/permission denied/);
+
+  await complete(media);
+  const done = (await app.query("select public.companion_get_media($1, null) as m", [[media.id]]))
+    .rows[0].m;
+  expect(done[0]).toMatchObject({ status: "complete", previewPath: null });
+  expect((await preview(path)).rows[0].p).toEqual({ result: "not_pending" });
+});

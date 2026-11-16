@@ -22,10 +22,11 @@ import {
   EngineError,
   type Image,
   imageBlock,
-  openaiImageEdit,
   uploadMedia,
 } from "./companion-media-engines.ts";
 import type { MediaEnv } from "./companion-media-env.ts";
+import { openaiImageEdit } from "./companion-media-openai.ts";
+import { snapshotPreview } from "./companion-media-preview.ts";
 import { SNAPSHOT_PHASES } from "./companion-media-budget.ts";
 import {
   type Aspect,
@@ -103,15 +104,20 @@ export async function runSnapshot(
     quality: job.quality,
     nodeModel: env.snapshotModel,
     snapshotSelf: job.snapshotSelf,
+    refsMode: env.snapshotRefs,
+    partialImages: env.snapshotPartialImages,
     usage,
     timeouts,
     timings,
   };
-  const done = (status: Status, result: Result) =>
-    finish(deps, env, kind, job.mediaId, status, {
+  const preview = snapshotPreview(deps, env, job, timings);
+  const done = async (status: Status, result: Result) => {
+    await preview.clear();
+    return finish(deps, env, kind, job.mediaId, status, {
       ...result,
       meta: { ...meta, ms: deps.nowMs() - started },
     });
+  };
 
   try {
     if (env.anthropicKey === null || env.openaiKey === null) {
@@ -121,11 +127,14 @@ export async function runSnapshot(
     // 제한 시간은 둘 다 시작 전에 정합니다 — 프롬프트 노드 몫은 기준 이미지 단계가 끝난 뒤가 아니라 지금 남은 예산에서 나옵니다.
     const refsTimeout = phase("refs", deps.storageTimeoutMs);
     const promptTimeout = phase("prompt", deps.textTimeoutMs);
+    // `sheet`면 표정 시트를 빼고 시트 한 장만(입력 토큰 — 사진 원가의 약 2/3 — 를 줄인다).
+    const refNames =
+      env.snapshotRefs === "sheet"
+        ? job.refs.filter((name) => !name.endsWith("-expressions.png")).slice(0, 1)
+        : job.refs.slice(0, 4);
     const [loaded, noded] = await Promise.allSettled([
       timed("refs", () =>
-        Promise.all(
-          job.refs.slice(0, 4).map((name) => downloadRef(deps.fetch, env, name, refsTimeout)),
-        ),
+        Promise.all(refNames.map((name) => downloadRef(deps.fetch, env, name, refsTimeout))),
       ),
       timed("prompt", () =>
         claudeTool(
@@ -167,8 +176,9 @@ export async function runSnapshot(
       });
     }
 
-    // 2. 이미지 엔진 — 한 번. 엔진 오류만, 예산이 남으면 한 번 다시.
+    // 2. 이미지 엔진 — 한 번. 엔진 오류만, 예산이 남으면 한 번 다시. 중간 그림은 미리보기로 올린다(덤 — 실패해도 계속).
     let png: Uint8Array;
+    preview.start();
     const imageTimeouts: number[] = [];
     timeouts["image"] = imageTimeouts;
     try {
@@ -179,7 +189,15 @@ export async function runSnapshot(
             return openaiImageEdit(
               deps.fetch,
               env.openaiKey!,
-              { model: job.engine, refs, prompt: text, size, quality: job.quality },
+              {
+                model: job.engine,
+                refs,
+                prompt: text,
+                size,
+                quality: job.quality,
+                partialImages: env.snapshotPartialImages,
+                onPartial: preview.onPartial,
+              },
               timeout,
             );
           },
@@ -188,6 +206,7 @@ export async function runSnapshot(
       );
       png = drawn.value.png;
       usage["image"] = drawn.value.usage;
+      meta["partials"] = drawn.value.partials;
       meta["retries"] = drawn.retries;
     } catch (error) {
       meta["retries"] = (error as { retries?: number }).retries ?? 0;

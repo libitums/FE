@@ -138,6 +138,13 @@
   - 없으면 503 `not_configured` — 빠진 **이름**만 알린다. 예약하지 않는다.
   - `COMPANION_SNAPSHOT_MODEL`: 노드 모델. 기본 `claude-haiku-5-5`(lab과 같다).
   - `COMPANION_SNAPSHOT_CHECK`: `on`이면 검사 노드를 돌린다. 없거나 다른 값이면 끔(기본, ADR-0152).
+  - ⟨2026-11-16⟩ `COMPANION_SNAPSHOT_PARTIAL_IMAGES`(0 ~ 3, 기본 1): 이미지 엔진을 스트리밍(`stream` · `partial_images`)으로 불러 중간 그림을
+    `companion-media/<user>/<media>.preview.png`로 올리고 `companion_media_preview`로 행에 적는다(마이그레이션 20261207). 앱은 pending 결과의
+    `previewPath`가 생기면 흐리게 먼저 보이고, 완성되면 `path`로 바꾼다. 끝나면(성공 · 차단 · 실패) 미리보기 파일을 지우고 `previewPath`는 null.
+    한 장마다 이미지 출력 토큰 100개(약 $0.003). 첫 중간 그림까지의 시간은 `meta.timings.firstPartial`.
+  - ⟨2026-11-16⟩ `COMPANION_SNAPSHOT_REFS`: `sheet`면 표정 시트를 빼고 시트 한 장만 넣는다(기본 `all`). 실측 입력 이미지 토큰 2,600 ~ 3,072가
+    사진 원가(약 $0.035 ~ 0.04)의 약 2/3라, 얼굴 일관성을 실험실에서 견준 뒤 정한다.
+  - ⟨2026-11-16⟩ 엔진 기본 `gpt-image-2.6-flare`(마이그레이션 20261206, 같은 단가 · 더 빠르다는 보고).
 - DB 설정(`companion.settings`): §6의 단가 · 상한(`snapshot_daily_limit` · `voice_daily_limit` · `snapshot_daily_attempts` · `voice_daily_attempts` ·
   `media_failure_streak_limit`), `snapshot_engine` · `snapshot_quality` · `snapshot_aspect` · `voice_model` · `media_pending_minutes`.
 - 캐릭터 설정(`companion.characters.media`): `voiceId` · `refSlugs` · `look`(프롬프트 노드의 외모 메모, lab CHARACTERS에서 옮김).

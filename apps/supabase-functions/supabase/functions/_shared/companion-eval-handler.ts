@@ -6,8 +6,6 @@
 // 운영 페르소나로 만든 답장과 그 채점(`reply`, `companion-eval-reply.ts`). 케이스 하나가 실패해도
 // 나머지는 돈다. 요청 모양은 턴 경로(`chat-send-turn.ts` · `chat-send-reply.ts`)와 같고, 프롬프트는 `CompanionLlm` 구현 안에 있어 그대로 쓴다.
 
-import { z } from "zod";
-
 import type {
   ChatSendEnv,
   ChatSendLogEntry,
@@ -29,10 +27,11 @@ import { evalSuggestions } from "./companion-eval-suggest.ts";
 import type { CandidateRecord } from "./companion-suggest-select.ts";
 import type { ReplySuggestion } from "./companion-contract/index.ts";
 import { callRpc, isServiceKey } from "./companion-rpc.ts";
+import { bodySchema, type EvalCase, type EvalKind, evalModels } from "./companion-eval-schema.ts";
+
+export { evalModels };
 import { bearerTokenFrom } from "./supabase-auth.ts";
 
-/** 고를 수 있는 모델. 대시보드가 이 목록으로 선택지를 그린다. */
-export const evalModels = ["claude-haiku-5-5", "claude-sonnet-5-5", "claude-opus-5-5"] as const;
 const defaultConcurrency = 4;
 
 export type CompanionEvalDeps = {
@@ -55,67 +54,6 @@ export type CompanionEvalDeps = {
 
 /** 답장(45초 안팎)과 채점(더 큰 모델, 생각 깊이 medium)을 합친 한 케이스의 제한 시간. */
 export const defaultReplyEvalTimeoutMs = 90_000;
-
-const caseSchema = z.object({
-  id: z.string().min(1).max(64),
-  text: z.string().min(1).max(2000),
-  ageBand: z.enum(["adult", "minor", "unknown"]).optional(),
-  layer: z.enum(["input", "output_sync"]).optional(),
-  l1: z.string().min(1).max(35).nullable().optional(),
-  // 검사: 출력 검사 때 앞선 유저 메시지. 피드백: 바로 앞 캐릭터 말.
-  context: z.string().max(2000).nullable().optional(),
-  // 피드백만: 최근 대화(맥락, 오래된 것부터 — 운영처럼 마지막 6개만 쓴다).
-  history: z
-    .array(z.object({ role: z.enum(["user", "assistant"]), text: z.string().max(2000) }))
-    .max(20)
-    .optional(),
-  // 피드백만: 관계 말투 단계 · 상대 캐릭터. 생략하면 모름(말투 규칙은 한 메시지 안 섞임만 본다).
-  speechLevel: z.enum(["polite", "casual", "slang"]).nullable().optional(),
-  character: z
-    .object({
-      name: z.string().min(1).max(64),
-      role: z.string().max(200).nullable().optional(),
-      banmalFeedback: z.enum(["correction", "better"]).optional(),
-    })
-    .nullable()
-    .optional(),
-  // 칩만: 대화 요약 · 이 대화에서 앞서 보인 칩 글(반복 검사 · 프롬프트의 지난 칩).
-  summary: z.string().max(2000).nullable().optional(),
-  pastSuggestions: z.array(z.string().max(200)).max(15).optional(),
-  // 답장만: DB 캐릭터 카드 id(없거나 모르면 `character`의 이름만) · 배운 표현 · 기억 · 채점자에게만 주는 스포일러 메모.
-  characterId: z.string().min(1).max(32).optional(),
-  expressions: z
-    .array(
-      z.object({
-        surface: z.string().min(1).max(200),
-        gloss: z.string().max(300).nullable().optional(),
-      }),
-    )
-    .max(40)
-    .optional(),
-  memories: z.array(z.string().min(1).max(300)).max(20).optional(),
-  spoilerNote: z.string().max(1000).nullable().optional(),
-  // 답장만: 끝낸 에피소드 — 운영처럼 「지금까지 이야기」 카드를 싣고 채점자가 canon 축을 본다.
-  episodes: z.array(z.string().min(1).max(64)).max(80).optional(),
-  // 학습 표현 · 답장: 넣을 배운 표현과 방식(노출 · 유도 · 칩 — 답장은 노출 · 유도만).
-  target: z
-    .object({
-      surface: z.string().min(1).max(200),
-      gloss: z.string().max(300).nullable().optional(),
-      kind: z.enum(["voca", "expr", "patt", "gram", "nume"]).optional(),
-      mode: z.enum(["expose", "elicit", "chip"]),
-    })
-    .optional(),
-});
-const bodySchema = z.object({
-  kind: z.enum(["moderation", "feedback", "translation", "suggestions", "learning", "reply"]),
-  model: z.enum(evalModels).optional(),
-  // 답장만: 채점 모델. 생략하면 `defaultJudgeModel` — 실행끼리 견주려면 바꾸지 않는다.
-  judgeModel: z.enum(evalModels).optional(),
-  cases: z.array(caseSchema).min(1).max(20),
-});
-type EvalCase = z.infer<typeof caseSchema>;
-type EvalKind = z.infer<typeof bodySchema>["kind"];
 
 type CaseResult =
   | {

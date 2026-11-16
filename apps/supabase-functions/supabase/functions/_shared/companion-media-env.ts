@@ -8,6 +8,8 @@ export type MediaEnvName =
   | "ANTHROPIC_API_KEY"
   | "COMPANION_SNAPSHOT_MODEL"
   | "COMPANION_SNAPSHOT_CHECK"
+  | "COMPANION_SNAPSHOT_PARTIAL_IMAGES"
+  | "COMPANION_SNAPSHOT_REFS"
   | "OPENAI_API_KEY"
   | "ELEVENLABS_API_KEY";
 
@@ -24,8 +26,22 @@ export type MediaEnv = {
    * 프롬프트 노드의 판단과 이미지 엔진 자체의 거절이 맡습니다(ADR-0152). `COMPANION_SNAPSHOT_CHECK=on`으로 다시 켭니다.
    */
   readonly snapshotCheck: boolean;
+  /**
+   * 이미지 엔진에서 받을 중간 그림 수(0 ~ 3, 기본 1). 0이면 스트리밍 없이 완성본만. 중간 그림은 `<user>/<media>.preview.png`로 올려
+   * 앱이 만드는 중에 흐리게 먼저 보인다(`media.previewPath`). 한 장마다 이미지 출력 토큰 100개(약 $0.003)가 더 든다.
+   */
+  readonly snapshotPartialImages: number;
+  /** 기준 그림 — `all`(시트 + 표정 시트, 기본) · `sheet`(시트 한 장만, 입력 토큰을 줄인다). */
+  readonly snapshotRefs: "all" | "sheet";
   readonly openaiKey: string | null;
   readonly elevenKey: string | null;
+};
+
+/** 기본 중간 그림 수. 빈 값 · 숫자 아님은 기본, 범위 밖은 0 ~ 3으로 자른다. */
+export const defaultPartialImages = 1;
+const partialImagesFrom = (raw: string | null) => {
+  const n = raw === null ? Number.NaN : Number(raw);
+  return Number.isFinite(n) ? Math.max(0, Math.min(3, Math.trunc(n))) : defaultPartialImages;
 };
 
 /** lab `TEXT_MODEL`과 같다. */
@@ -53,6 +69,8 @@ export function mediaEnvFrom(read: (name: MediaEnvName) => string | undefined): 
     anthropicKey: value("ANTHROPIC_API_KEY"),
     snapshotModel: value("COMPANION_SNAPSHOT_MODEL") ?? defaultSnapshotModel,
     snapshotCheck: value("COMPANION_SNAPSHOT_CHECK")?.toLowerCase() === "on",
+    snapshotPartialImages: partialImagesFrom(value("COMPANION_SNAPSHOT_PARTIAL_IMAGES")),
+    snapshotRefs: value("COMPANION_SNAPSHOT_REFS")?.toLowerCase() === "sheet" ? "sheet" : "all",
     openaiKey: value("OPENAI_API_KEY"),
     elevenKey: value("ELEVENLABS_API_KEY"),
   };

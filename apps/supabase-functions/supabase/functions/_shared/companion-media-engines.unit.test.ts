@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 
-import { EngineError, openaiImageEdit } from "./companion-media-engines.ts";
+import { EngineError } from "./companion-media-engines.ts";
+import { openaiImageEdit } from "./companion-media-openai.ts";
 
 // `unit` 계층(ME1): OpenAI 이미지 편집 응답이 JSON이어도 객체가 아니면(`null` · 숫자) 잘못된 응답으로 — TypeError로 새지 않고
 // 다시 시도할 수 있는 EngineError(리뷰 #441).

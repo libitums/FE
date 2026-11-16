@@ -2,7 +2,12 @@ import { beforeEach, expect, test } from "vitest";
 
 import { base64FromBytes } from "./base64.ts";
 import { createMediaHandler, type MediaDeps, type MediaKind } from "./companion-media-handler.ts";
-import { type MediaEnv, mediaEnvFrom, missingKeys as missingFor } from "./companion-media-env.ts";
+import {
+  type MediaEnv,
+  type MediaEnvName,
+  mediaEnvFrom,
+  missingKeys as missingFor,
+} from "./companion-media-env.ts";
 import { purgeUserMedia } from "./companion-media-purge.ts";
 import { createDeleteAccountHandler } from "./delete-account-handler.ts";
 import {
@@ -38,12 +43,14 @@ const env: MediaEnv = {
   anthropicKey: "sk-ant-test",
   snapshotModel: "claude-haiku-5-5",
   snapshotCheck: false,
+  snapshotPartialImages: 0,
+  snapshotRefs: "all",
   openaiKey: "sk-openai-test",
   elevenKey: "eleven-test",
 };
 
 type Call = { url: string; method: string; body: unknown; headers: Record<string, string> };
-type Reply = { status: number; body?: unknown; bytes?: Uint8Array };
+type Reply = { status: number; body?: unknown; bytes?: Uint8Array; sse?: string };
 
 let calls: Call[];
 let begin: Reply;
@@ -56,6 +63,8 @@ let uploadStatus: number;
 let work: Promise<unknown>[];
 /** 검사 노드 스위치(`COMPANION_SNAPSHOT_CHECK`) — 기본은 끔(ADR-0152). 검사 노드를 보는 테스트만 켠다. */
 let snapshotCheck: boolean;
+/** 스트리밍 · 기준 그림 스위치 등 이 테스트만의 환경. */
+let envOverrides: Partial<MediaEnv>;
 
 const pendingMedia = (kind: MediaKind, charge = kind === "voice" ? "voice" : "photo") => ({
   id: MEDIA,
@@ -108,12 +117,17 @@ const okBegin = (kind: MediaKind, job: unknown): Reply => ({
 });
 
 const respond = (reply: Reply) =>
-  reply.bytes !== undefined
-    ? new Response(reply.bytes as BodyInit, { status: reply.status })
-    : new Response(reply.body === undefined ? "" : JSON.stringify(reply.body), {
+  reply.sse !== undefined
+    ? new Response(reply.sse, {
         status: reply.status,
-        headers: { "content-type": "application/json" },
-      });
+        headers: { "content-type": "text/event-stream" },
+      })
+    : reply.bytes !== undefined
+      ? new Response(reply.bytes as BodyInit, { status: reply.status })
+      : new Response(reply.body === undefined ? "" : JSON.stringify(reply.body), {
+          status: reply.status,
+          headers: { "content-type": "application/json" },
+        });
 
 const fakeFetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
   const url = input instanceof Request ? input.url : String(input);
@@ -140,6 +154,10 @@ const fakeFetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
   if (url === `${SUPA}/rest/v1/rpc/companion_media_begin`) return respond(begin);
   if (url === `${SUPA}/rest/v1/rpc/companion_media_finish`)
     return respond({ status: 200, body: { result: "ok" } });
+  if (url === `${SUPA}/rest/v1/rpc/companion_media_preview`)
+    return respond({ status: 200, body: { result: "ok" } });
+  if (url === `${SUPA}/storage/v1/object/companion-media` && method === "DELETE")
+    return respond({ status: 200, body: [] });
   if (url.startsWith(`${SUPA}/storage/v1/object/companion-refs/`))
     return respond({ status: 200, bytes: PNG });
   if (url.startsWith(`${SUPA}/storage/v1/object/companion-media/`))
@@ -182,7 +200,7 @@ const fakeFetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
 
 function handler(kind: MediaKind, overrides: Partial<MediaDeps> = {}) {
   return createMediaHandler(kind, {
-    env: { ...env, snapshotCheck },
+    env: { ...env, snapshotCheck, ...envOverrides },
     fetch: fakeFetch,
     nowMs: () => Date.parse("2026-11-13T00:00:00Z"),
     waitUntil: (promise) => work.push(promise),
@@ -218,6 +236,7 @@ beforeEach(() => {
   calls = [];
   work = [];
   snapshotCheck = false;
+  envOverrides = {};
   begin = okBegin("snapshot", snapshotJob());
   promptInput = {
     scene: "A cheerful teacher holds a sketchbook in a palace courtyard on a sunny day.",
@@ -937,4 +956,104 @@ test("MH19. 시도 상한 → 429 attempt_limit(detail 그대로) · 엔진 호�
   });
   expect(callsTo("https://api.")).toHaveLength(0);
   expect(work).toHaveLength(0);
+});
+
+test("MH20. 중간 그림 스트리밍 — stream · partial_images를 보내고, 중간 그림은 미리보기로 올려 적은 뒤 완성본을 올리고 미리보기를 지운다", async () => {
+  envOverrides = { snapshotPartialImages: 1 };
+  const b64 = base64FromBytes(PNG);
+  const usage = { input_tokens: 2865, output_tokens: 443 };
+  openai = [
+    {
+      status: 200,
+      sse:
+        `event: image_edit.partial_image\ndata: ${JSON.stringify({ type: "image_edit.partial_image", b64_json: b64, partial_image_index: 0 })}\n\n` +
+        `event: image_edit.completed\ndata: ${JSON.stringify({ type: "image_edit.completed", b64_json: b64, usage })}\n\n`,
+    },
+  ];
+  expect((await run("snapshot")).status).toBe(202);
+  const form = formOf(openaiCalls()[0]!);
+  expect(form.get("stream")).toBe("true");
+  expect(form.get("partial_images")).toBe("1");
+  const preview = `${USER}/${MEDIA}.preview.png`;
+  const urls = calls.map((call) => `${call.method} ${call.url.replace(SUPA, "")}`);
+  const at = (needle: string) => urls.findIndex((url) => url.includes(needle));
+  expect(at(`POST /storage/v1/object/companion-media/${preview}`)).toBeGreaterThan(-1);
+  expect(callsTo(`${SUPA}/rest/v1/rpc/companion_media_preview`)[0]!.body).toEqual({
+    p_media_id: MEDIA,
+    p_path: preview,
+  });
+  // 완성본 올리기 → 미리보기 지우기 → 닫기 순서.
+  expect(at(`/companion-media/${USER}/${MEDIA}.png`)).toBeLessThan(
+    at("DELETE /storage/v1/object/companion-media"),
+  );
+  expect(at("DELETE /storage/v1/object/companion-media")).toBeLessThan(
+    at("companion_media_finish"),
+  );
+  expect(
+    callsTo(`${SUPA}/storage/v1/object/companion-media`).find((call) => call.method === "DELETE")!
+      .body,
+  ).toEqual({
+    prefixes: [preview],
+  });
+  const done = finished();
+  expect(done.p_status).toBe("complete");
+  expect(done.p_result["meta"]).toMatchObject({
+    partialImages: 1,
+    partials: 1,
+    usage: { image: usage },
+  });
+  expect((done.p_result["meta"] as { timings: Record<string, number> }).timings).toHaveProperty(
+    "firstPartial",
+  );
+});
+
+test("MH21. 스트림 오류 · 거절 — 미리보기를 지우고 닫는다 · 안전 거절은 다시 하지 않고 blocked", async () => {
+  envOverrides = { snapshotPartialImages: 1 };
+  const b64 = base64FromBytes(PNG);
+  openai = [
+    {
+      status: 200,
+      sse:
+        `data: ${JSON.stringify({ type: "image_edit.partial_image", b64_json: b64, partial_image_index: 0 })}\n\n` +
+        `data: ${JSON.stringify({ type: "error", error: { message: "Your request was rejected by the safety system." } })}\n\n`,
+    },
+  ];
+  await run("snapshot");
+  expect(openaiCalls()).toHaveLength(1);
+  expect(
+    callsTo(`${SUPA}/storage/v1/object/companion-media`).some((call) => call.method === "DELETE"),
+  ).toBe(true);
+  expect(finished()).toMatchObject({
+    p_status: "blocked",
+    p_result: { failure: "engine_refused" },
+  });
+});
+
+test("MH22. 기준 그림 — COMPANION_SNAPSHOT_REFS=sheet면 표정 시트를 빼고 시트 한 장만 · 환경 읽기(스트리밍 수는 0 ~ 3, 기본 1)", async () => {
+  envOverrides = { snapshotRefs: "sheet" };
+  await run("snapshot");
+  expect(
+    callsTo(`${SUPA}/storage/v1/object/companion-refs/`).map((call) => call.url.split("/").pop()),
+  ).toEqual(["deoksu-ref.png"]);
+  expect(formOf(openaiCalls()[0]!).getAll("image[]")).toHaveLength(1);
+  expect(formOf(openaiCalls()[0]!).get("stream")).toBeNull();
+  expect(finished().p_result["meta"]).toMatchObject({ refsMode: "sheet" });
+  const read = (values: Partial<Record<MediaEnvName, string>>) => {
+    const all: Partial<Record<MediaEnvName, string>> = {
+      SUPABASE_URL: SUPA,
+      SUPABASE_ANON_KEY: "a",
+      SUPABASE_SERVICE_ROLE_KEY: "s",
+      ...values,
+    };
+    return mediaEnvFrom((name) => all[name]);
+  };
+  expect(read({})).toMatchObject({ snapshotPartialImages: 1, snapshotRefs: "all" });
+  expect(
+    read({ COMPANION_SNAPSHOT_PARTIAL_IMAGES: "0", COMPANION_SNAPSHOT_REFS: "SHEET" }),
+  ).toMatchObject({
+    snapshotPartialImages: 0,
+    snapshotRefs: "sheet",
+  });
+  expect(read({ COMPANION_SNAPSHOT_PARTIAL_IMAGES: "9" })!.snapshotPartialImages).toBe(3);
+  expect(read({ COMPANION_SNAPSHOT_PARTIAL_IMAGES: "two" })!.snapshotPartialImages).toBe(1);
 });

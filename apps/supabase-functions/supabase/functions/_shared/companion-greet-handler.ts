@@ -22,18 +22,10 @@ import {
   type SpeechLevel,
 } from "./companion-contract/index.ts";
 import { cannedGreeting, type GreetingPersona, unlockGreeting } from "./companion-greet-lines.ts";
-import { systemSplit } from "./companion-llm.ts";
-import { companionSystemPrompt, greetingDirective, greetingUserText } from "./companion-prompt.ts";
-import {
-  generateOpener,
-  type OpenerLearning,
-  openerLearning,
-  openerOutcome,
-  recordOpener,
-  withOpenerLine,
-} from "./companion-opener.ts";
+import { greetingUserText } from "./companion-prompt.ts";
+import { greetingSystem } from "./companion-greet-system.ts";
+import { generateOpener, openerLearning, openerOutcome, recordOpener } from "./companion-opener.ts";
 import { callRpc } from "./companion-rpc.ts";
-import { storyCardFor } from "./companion-story.ts";
 import {
   generateSuggestions,
   type SuggestOutcome,
@@ -269,28 +261,6 @@ export function createGreetHandler(deps: GreetDeps): (request: Request) => Promi
     };
     return respond(200, response, `${outcome}${line === "" ? "" : ` usage ${line}`}`);
   };
-}
-
-function greetingSystem(
-  characterId: string,
-  persona: GreetingPersona,
-  context: Extract<GreetContext, { result: "ok" }>,
-  learning: OpenerLearning,
-): string {
-  const prompt = companionSystemPrompt({
-    persona,
-    speechLevel: context.speechLevel,
-    ageBand: context.ageBand,
-    l1: context.l1,
-    expressions: learning.pool,
-    summary: null,
-    feedbackMode: context.feedbackMode,
-    memories: context.memories,
-    directive: withOpenerLine(greetingDirective, learning.target),
-    // 첫 인사는 대화의 처음 — 본편에서 같이 겪은 일을 다 싣는다(「처음 만났을 때」처럼 인사하게).
-    story: storyCardFor(characterId, learning.episodes),
-  });
-  return `${prompt.stable}${systemSplit}${prompt.dynamic}`;
 }
 
 /** 응답의 칩 — 스위치가 꺼져 있으면 null, 실패면 `unavailable`(앱은 `companion-suggest`로 다시 받을 수 있다). */

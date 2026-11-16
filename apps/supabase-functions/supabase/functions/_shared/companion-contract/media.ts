@@ -60,6 +60,8 @@ export const companionMediaSchema = z.object({
   line: z.optional(z.object({ ko: z.string(), en: z.string() })),
   /** 그 메시지가 지워짐(대화 초기화) — 앨범의 「From a past chat」, 다시 만들 수 없음(20261203). */
   fromPastChat: z.optional(z.boolean()),
+  /** 만드는 중(pending) 스냅샷의 흐릿한 중간 그림(`<user>/<media>.preview.png`, 같은 버킷). 끝나면 null — 서버가 지운다(20261207). 옛 서버에는 없습니다. */
+  previewPath: z.optional(z.nullable(z.string())),
 });
 
 /**
