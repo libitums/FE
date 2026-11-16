@@ -10,6 +10,7 @@ import { useLearningItemGuide } from "../../components/use-learning-item-guide";
 import { announce, announceCompletion } from "../../lib/accessibility";
 import type { ConversationCast } from "../../lib/conversation-cast";
 import type { ItemAnswerReporter } from "../../lib/item-answer";
+import { selectedField, selectedTilesText } from "../../lib/item-answer";
 import { answerEchoCueOf, listenCueOf, standaloneLessonAudio } from "../../lib/question-audio";
 import type { LessonAudio } from "../../lib/question-audio";
 import { initialSessionOptions } from "../../lib/session-options";
@@ -148,7 +149,19 @@ export function SentenceOrderActivity({
   const check = () => {
     if (question == null) return;
     const judged = judgeSentenceOrder(question, state.placedChipIndexes);
-    onItemAnswered?.({ questionIndex: state.questionIndex, outcome: judged, density });
+    onItemAnswered?.({
+      questionIndex: state.questionIndex,
+      outcome: judged,
+      density,
+      // 치환 전 원문으로 — 대화 순서는 놓은 턴만(고정 첫 턴 제외) 「 | 」, 낱말은 공백(ADR-0084 측정).
+      ...selectedField(
+        selectedTilesText(
+          question.chipsSource ?? [],
+          state.placedChipIndexes,
+          question.dialogue === undefined ? " " : " | ",
+        ),
+      ),
+    });
     dispatch({ type: "check" });
     listen.answered(judged);
   };

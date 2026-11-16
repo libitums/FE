@@ -438,5 +438,26 @@ test("EV5. Skip은 skipped로 보고된다", () => {
     questionIndex: 0,
     outcome: "skipped",
     density: "regular",
+    // 말할 수 있는 국면에서 직접 누른 건너뜀입니다(UA3). 말하기 결과 글자는 싣지 않습니다.
+    skipReason: "user",
   });
+});
+
+test("EV5. 쓸 수 없는 국면(권한 거부)에서 Skip은 unavailable:<reason>으로 보고된다", () => {
+  host({ microphone: "denied", speechRecognition: "denied" });
+  const onItemAnswered = vi.fn<(report: ItemAnswerReport) => void>();
+  render(
+    <SpeakWordActivity
+      questions={[cardQuestion, passport]}
+      onExit={() => {}}
+      onFinish={() => {}}
+      onItemAnswered={onItemAnswered}
+    />,
+  );
+  loadPicture();
+  tapAction("Speak");
+  tapAction("Skip");
+  expect(onItemAnswered).toHaveBeenCalledWith(
+    expect.objectContaining({ outcome: "skipped", skipReason: "unavailable:blocked" }),
+  );
 });

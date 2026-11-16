@@ -60,3 +60,61 @@ describe("itemAnsweredEventOf (EV2)", () => {
     );
   });
 });
+
+describe("itemAnsweredEventOf — 판 정보 · 고른 글자 · 건너뛴 까닭 (2026-11-16)", () => {
+  const ref = { itemId: "S2-02", itemType: "LISTEN_BUILD" } as const;
+
+  test("IE5. 원격 판이면 버전 · 출처 · 수준(10진 문자열)을 싣는다", () => {
+    expect(
+      itemAnsweredEventOf("u00-tutorial", "S2", ref, report, {
+        version: "2026-11-10.3",
+        source: "remote",
+        level: 5,
+      }),
+    ).toMatchObject({ contentVersion: "2026-11-10.3", contentSource: "remote", contentLevel: "5" });
+  });
+
+  test("IE6. 내장판은 수준 키를 싣지 않고, 판 정보가 없으면 판 키를 하나도 싣지 않는다", () => {
+    const bundled = itemAnsweredEventOf("u00-tutorial", "S2", ref, report, {
+      version: "2026-11-04.2",
+      source: "bundled",
+    });
+    expect(bundled).toMatchObject({ contentVersion: "2026-11-04.2", contentSource: "bundled" });
+    expect(bundled).not.toHaveProperty("contentLevel");
+    const none = itemAnsweredEventOf("u00-tutorial", "S2", ref, report);
+    expect(none).not.toHaveProperty("contentVersion");
+    expect(none).not.toHaveProperty("contentSource");
+  });
+
+  test("IE7. 고른 글자를 싣고, 없으면 키가 없다", () => {
+    expect(
+      itemAnsweredEventOf("u00-tutorial", "S2", ref, {
+        ...report,
+        selectedAnswer: "안녕하세요! 처음이에요!",
+      }),
+    ).toMatchObject({ selectedAnswer: "안녕하세요! 처음이에요!" });
+    expect(itemAnsweredEventOf("u00-tutorial", "S2", ref, report)).not.toHaveProperty(
+      "selectedAnswer",
+    );
+  });
+
+  test("IE8. 건너뛴 까닭은 skipped일 때만 싣는다", () => {
+    const speak = { itemId: "S6-06", itemType: "SPEAK_WORD" } as const;
+    expect(
+      itemAnsweredEventOf("u01-water", "S6", speak, {
+        questionIndex: 0,
+        outcome: "skipped",
+        density: "regular",
+        skipReason: "unavailable:dictation-off",
+      }),
+    ).toMatchObject({ result: "skipped", skipReason: "unavailable:dictation-off" });
+    expect(
+      itemAnsweredEventOf("u01-water", "S6", speak, {
+        questionIndex: 0,
+        outcome: "incorrect",
+        density: "regular",
+        skipReason: "user",
+      }),
+    ).not.toHaveProperty("skipReason");
+  });
+});

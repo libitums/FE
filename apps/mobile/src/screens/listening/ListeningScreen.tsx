@@ -26,6 +26,7 @@ import {
 import { listenCueOf, standaloneLessonAudio } from "../../lib/question-audio";
 import type { LessonAudio } from "../../lib/question-audio";
 import type { ItemAnswerReporter } from "../../lib/item-answer";
+import { choiceReport } from "../../lib/item-answer";
 import { choiceRomanizationOf, type SessionOptions } from "../../lib/session-options";
 import { questionOptionsOf } from "../../components/question-options";
 import { handsOffAfter, lessonCounter } from "../learning/activity-finish";
@@ -217,7 +218,9 @@ export function ListeningActivity({
                 );
               }
               if (!hasAnswered(state)) {
-                onItemAnswered?.({ questionIndex: state.questionIndex, outcome: result, density });
+                onItemAnswered?.(
+                  choiceReport(question, state.questionIndex, result, density, index),
+                );
               }
               dispatch({ type: "selectChoice", choiceIndex: index });
               playback.answered(result);

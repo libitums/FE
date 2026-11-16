@@ -37,6 +37,7 @@ const listenBuild: SentenceOrderQuestion = withAudio(
   {
     prompt: "Hello! Is this your first time in Korea?",
     chips: ["안녕하세요!", "한국은", "처음이세요?", "잘하시네요!", "감사합니다!"],
+    chipsSource: ["안녕하세요!", "한국은", "처음이세요?", "잘하시네요!", "감사합니다!"],
     answerOrder: [0, 1, 2],
     instruction: "Listen and build the sentence.",
     reading: { romanization: "annyeonghaseyo! hangugeun cheoeumiseyo?", shown: "always" },
@@ -231,6 +232,8 @@ describe("LISTEN_BUILD — 줄 배치", () => {
       questionIndex: 0,
       outcome: "correct",
       density: "regular",
+      // 놓은 타일을 놓은 순서대로 공백으로 이은 글자입니다(UA2).
+      selectedAnswer: "안녕하세요! 한국은 처음이세요?",
     });
   });
 });

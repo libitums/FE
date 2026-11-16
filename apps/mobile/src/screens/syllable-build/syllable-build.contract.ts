@@ -19,6 +19,8 @@ export type SyllableBuildQuestion = {
   readonly instruction?: string;
   /** 판정 뒤 한 번 들려 주는 정답 음성입니다. 없으면 키가 없습니다. */
   readonly audio?: AnswerEchoAudio;
+  /** 타일마다 자리표시자를 치환하기 전 콘텐츠 원문입니다(`tiles`와 같은 순서). 측정 `selectedAnswer`만 이 값을 씁니다. */
+  readonly tilesSource?: readonly string[];
 };
 
 export type SyllableBuildPhase = "building" | "checked";

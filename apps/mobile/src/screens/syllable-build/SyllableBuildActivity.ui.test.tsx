@@ -16,6 +16,7 @@ import { expectCompleteScene, expectQuestionScene } from "../learning/complete-s
 const card: SyllableBuildQuestion = {
   meaning: "card",
   tiles: ["현", "드", "카", "찮"],
+  tilesSource: ["현", "드", "카", "찮"],
   slotCount: 2,
   answers: ["카드"],
 };
@@ -431,6 +432,8 @@ describe("SyllableBuildActivity 칸 상태 · 쓴 타일 · 판정 자리", () =
       questionIndex: 0,
       outcome: "correct",
       density: "regular",
+      // 놓은 음절을 이음 없이 이은 글자입니다(UA4).
+      selectedAnswer: "카드",
     });
   });
 });

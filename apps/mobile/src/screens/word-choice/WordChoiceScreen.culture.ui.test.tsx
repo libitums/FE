@@ -20,6 +20,7 @@ import type { WordChoiceQuestion } from "./word-choice-questions";
 const sceneQuestion: WordChoiceQuestion = {
   prompt: "한국어 잘하시네요!",
   choices: ["잘 먹겠습니다!", "안녕하세요!", "감사합니다!"],
+  choicesSource: ["잘 먹겠습니다!", "안녕하세요!", "감사합니다!"],
   choiceTranslations: ["Thanks for the meal!", "Hello!", "Thank you!"],
   answerIndex: 2,
   instruction: "What do you say?",
@@ -366,6 +367,8 @@ describe("문화 확인 장면 — 답한 뒤", () => {
       questionIndex: 0,
       outcome: "incorrect",
       density: "regular",
+      // 처음 고른 보기의 글자입니다(UA5).
+      selectedAnswer: "잘 먹겠습니다!",
     });
   });
 });

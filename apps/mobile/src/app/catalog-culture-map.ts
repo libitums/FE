@@ -138,6 +138,7 @@ export function cultureCheckItemOf(
     translation: englishOf(port, item.context.en),
     instruction: scene === null ? undefined : wordChoiceEn.culture.sceneInstruction,
     choices: item.options.map((option) => koOf(port, option.ko)),
+    choicesSource: item.options.map((option) => option.ko),
     answerIndex: item.options.findIndex((option) => option.correct),
     choiceTranslations: choiceTranslationsOf(port, item.options),
     choiceRomanizations: choiceRomanizationsOf(

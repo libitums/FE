@@ -68,6 +68,7 @@ function wordOrderItemOf(
   return sentenceOrder(item.id, {
     prompt: english ?? koOf(port, item.prompt.ko),
     chips: order.map((index) => tiles[index] ?? ""),
+    chipsSource: order.map((index) => item.tiles[index]?.ko ?? ""),
     answerOrder: tiles.map((_, tile) => order.indexOf(tile)),
     // 정답 로마자는 Check 뒤에야 보입니다(답을 미리 알려 주지 않습니다).
     ...(romanization === undefined
@@ -137,6 +138,7 @@ function turnOrderItemOf(item: ItemOf<"TURN_ORDER">, port: CatalogItemPort): Cat
   return sentenceOrder(item.id, {
     prompt,
     chips: chipTiles.map((tile) => tiles[tile] ?? ""),
+    chipsSource: chipTiles.map((tile) => item.tiles[tile]?.ko ?? ""),
     answerOrder: restAnswer.map((tile) => chipTiles.indexOf(tile)),
     dialogue: {
       opening: { speaker: openingSpeaker, text: tiles[openingTile] ?? "" },

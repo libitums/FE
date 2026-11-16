@@ -311,7 +311,7 @@ describe("문항 판정 측정", () => {
     tapChoice(1);
 
     expect(answeredEvents(booted.events)).toEqual([
-      {
+      expect.objectContaining({
         name: "episode_item_answered",
         episodeId: u00,
         unitKey: "S2",
@@ -319,8 +319,20 @@ describe("문항 판정 측정", () => {
         itemType: "LISTEN_SELECT",
         result: "correct",
         density: "regular",
-      },
+      }),
     ]);
+    // II1 (2026-11-16): 판 정보는 카탈로그 항목에서, 고른 보기 원문은 매핑에서 화면을 거쳐 실린다. 내장판이라 수준 키는 없다.
+    const [answered] = answeredEvents(booted.events) as unknown as Record<string, unknown>[];
+    // 하네스의 내장 카탈로그 판(앱 내장본과 다를 수 있음)이 그대로 실린다.
+    expect(answered).toMatchObject({ contentSource: "bundled" });
+    expect(String(answered?.contentVersion)).toMatch(/^\d{4}-\d{2}-\d{2}\.\d+$/);
+    expect(answered).not.toHaveProperty("contentLevel");
+    // 탭한 보기(두째)의 치환 전 원문과 같다 — 화면 글자가 아니라 콘텐츠 원문(#449 C1).
+    const activity = lessonPlanWith(u00, "S2").activities[0];
+    const source =
+      activity?.form === "listening" ? activity.questions[0]?.choicesSource?.[1] : undefined;
+    expect(source).toBeDefined();
+    expect(answered?.selectedAnswer).toBe(source);
     expect(
       booted.events.filter((event) => event.name === "episode_listen_item_answered"),
     ).toHaveLength(1);

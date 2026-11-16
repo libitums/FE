@@ -182,6 +182,11 @@
 | `itemType` | 채점 유형 16 가운데 하나(듣기 · 그림 · 빈칸 · 대답 · 역할 대사 · 번역 · 조사 둘 · 문화 확인 · 듣고 조립 · 문장 조립 · 대화 조립 · 음절 조립 · 낱말 말하기) |
 | `result` | `correct` · `incorrect` · `skipped`(낱말 말하기 `Skip`) |
 | `density` | `regular` · `compact`(그 문항의 밀도) |
+| `contentVersion` ⟨2026-11-16⟩ | 그 에피소드 판의 버전(카탈로그 항목 `version`). 판이 준비되지 않았으면 없음 |
+| `contentSource` ⟨2026-11-16⟩ | `bundled`(앱 내장) · `remote`(버킷에서 받은 판) |
+| `contentLevel` ⟨2026-11-16⟩ | 원격 판을 받은 매니페스트의 `min_client_level`(10진 문자열, 예 `"5"`). 내장판은 없음 |
+| `selectedAnswer` ⟨2026-11-16 · 개정 11-17⟩ | 처음 판정 때 고른 보기 · 타일의 **자리표시자를 치환하기 전 콘텐츠 원문**(예 「{이름}(으)로 예약했어요.」 — 화면 글자는 학습자 이름 · 나라로 바뀌어 있어 쓰지 않는다). 보기형은 고른 보기, 문장 · 듣고 조립은 놓은 타일을 공백으로, 대화 조립은 **놓은 턴만(고정된 첫 턴 제외)** `" \| "`로, 음절 조립은 이음 없이. 원문 배열이 없는 문항은 싣지 않는다. **직접 입력 · 말하기 결과는 싣지 않는다** |
+| `skipReason` ⟨2026-11-16⟩ | `result: skipped`일 때만(타입 `"user"` 또는 `unavailable:<SpeechUnavailableReason>`). `user`(말할 수 있는데 Skip) · `unavailable:<reason>`(`dictation-off` · `blocked` · `failed`) |
 
 - 발생: 채점 문항이 **처음 판정되는 순간 문항당 한 번**. 따라 읽기 · 단어 카드 · 문화 카드 · 짝 맞추기 · 타자 입력은 내지 않는다(채점 밖이거나 이번에 화면이 바뀌지 않음 — 비교 대상 아님). 듣기 여섯 유형은 `episode_listen_item_answered`와 **둘 다** 낸다(묻는 것이 다르다).
 - 읽는 법: 유형별 정답률 = `itemType`별 correct ÷ (correct + incorrect) · 줄 배치 Check 뒤 오답률 = `itemType ∈ {LISTEN_BUILD, WORD_ORDER}`의 incorrect 비율 · 대화 조립 정답률 = `TURN_ORDER`. 모두 `density`로 갈라 작은 화면 효과를 본다.
@@ -252,3 +257,11 @@
 ### 적용 기록 ⟨2026-11-06⟩ — 재검토 조건 1이 왔다: 로마자는 Duru Roman
 
 [ADR-0107](0107-app-body-font-duru-sans.md)이 본문 글꼴(Duru Sans = Pretendard JP 서브셋)을 앱에 넣었다. 로마자 기울임이 합성이 되지 않도록 `.text-role-romanization`(과 언어 선택 미리보기 · ChatBubble 로마자)의 글꼴을 **Duru Roman(Inter 4.1 Italic 500 서브셋)**으로 바꿨다. 기울임 · medium · muted 규칙은 그대로다. 「버린 대안 4」의 Jost 대신 Inter Italic을 고른 이유는 본문과 결이 같아서다.
+
+## 적용 기록 ⟨2026-11-16⟩ — 답 이벤트 필드 다섯
+
+팀 요청(대시보드가 판 · 고른 답 · 건너뛴 까닭을 추측만 하던 것)과 사용자 결정 「추천대로」로 `episode_item_answered`에 `contentVersion` · `contentSource` · `contentLevel` · `selectedAnswer` · `skipReason`을 더했다(위 표). 값을 모르면 키를 싣지 않는다. 직접 입력 · 말하기 결과는 사용자가 쓴 글이라 분석 도구로 보내지 않는다. 같은 문항 id라도 판(수준 5, [ADR-0137](0137-content-level-5.md))마다 내용이 달라, 정답률은 `contentVersion`으로 갈라 읽는다.
+
+### 적용 기록 ⟨2026-11-17⟩ — `selectedAnswer`는 치환 전 원문(리뷰 C1)
+
+화면 글자로 `selectedAnswer`를 실으면 `{이름}` · `{나라}`가 학습자 입력값으로 바뀐 채 PostHog로 나갔다(u02 checkin 「{이름}(으)로 예약했어요.」 · 타일 「{이름}(으)로」, u03 S8-01 · S8-03). 사용자 결정으로 계약을 바꿨다 — 매핑이 보기 · 타일의 치환 전 원문 배열(`choicesSource` · `chipsSource` · `tilesSource`, 표시 순서)을 질문에 함께 싣고, 화면 보고는 그것만 쓴다. 원문이 없으면 싣지 않는다. 이 표가 `episode_item_answered`의 정본 속성표다(위키 Analytics-Events는 이 표를 옮긴 것).

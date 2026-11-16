@@ -24,10 +24,16 @@ afterEach(() => {
   while (restores.length > 0) restores.pop()?.();
 });
 
+// 측정 `selectedAnswer`는 치환 전 원문 배열에서 옵니다 — 화면 글자와 같은 원문을 실어 둡니다(#449 C1).
+const withSource = questionsForStep("ordering").map((question) => ({
+  ...question,
+  choicesSource: [...question.choices],
+}));
+
 function mount(onItemAnswered?: (report: ItemAnswerReport) => void) {
   return render(
     <ListeningActivity
-      questions={questionsForStep("ordering")}
+      questions={withSource}
       onExit={() => {}}
       onFinish={() => {}}
       sessionOptions={initialSessionOptions}
@@ -116,6 +122,8 @@ test("EV5. 문항 판정은 첫 탭에서 한 번만 보고되고 outcome · den
     questionIndex: 0,
     outcome: "incorrect",
     density: "regular",
+    // 처음 고른 보기의 글자입니다(UA1 — 측정 필드 추가 2026-11-16).
+    selectedAnswer: first.choices[wrongIndex],
   });
 });
 
@@ -131,6 +139,7 @@ test("EV5. 13 mini 창에서는 density가 compact로 실린다", () => {
     questionIndex: 0,
     outcome: "correct",
     density: "compact",
+    selectedAnswer: first.choices[answerIndex],
   });
 });
 
