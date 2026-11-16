@@ -30,8 +30,8 @@ test("SW-U5 서버 방이 비어 있어도 미나 시트는 인물 표의 첫 �
   });
   expect(source.thread("mina")?.messages).toEqual([]);
   expect(model?.opening).toEqual({
-    ko: "안녕! 나 미나야. 우리 문자하자!",
-    en: "Hi! It's Mina. Let's text!",
+    ko: "안녕하세요! 같은 방 미나예요.",
+    en: "Hi! It's Mina, your roommate.",
   });
   expect(model?.name).toBe("미나");
 });

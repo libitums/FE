@@ -217,14 +217,14 @@ export function translationContent(
     .join("\n\n");
 }
 
-// ------------------------------------------------------------------ 성격대로 거절(PRD §3.11 5층 — 회피 → 경고 → 일시 차단)
+// ------------------------------------------------------------------ 성격대로 거절(PRD §3.11 5층 — 회피 → 경고 + 엽전 차감)
 
-/** 거절 단계. 일시 차단은 답 없이 `guardrail_blocked`라 여기 없다. */
+/** 거절 단계. 일시 차단은 없다 — 상한을 넘은 위반은 매번 경고하고 그 턴의 엽전을 차감한다(ADR-0152). */
 export type RefusalStage = "deflect" | "warn";
 
 const refusalTopics: Record<string, string> = {
   sexual: "sexual content",
-  romance: "romance or flirting with you",
+  romance: "physical intimacy beyond holding hands or a hug",
   profanity: "abusive language aimed at you",
   violence: "graphic violence",
   hate: "hateful content",
@@ -245,7 +245,7 @@ export function refusalDirective(stage: RefusalStage, topic: string): string {
     "Stay fully in character and keep your current speech level. Keep it short: 1–2 speech bubbles, optionally one short @action. Never mention rules, the app, AI, filters or moderation, and do not lecture.";
   return stage === "deflect"
     ? `${common} Lightly decline in your own personality, without making a big deal of it, then steer the conversation to a different everyday topic with one easy question. ${shape}`
-    : `${common} This has happened before. Decline clearly in your own personality and say plainly that this kind of talk is not okay with you, without insulting or shaming the learner, then offer to talk about something else. ${shape}`;
+    : `${common} This keeps happening. Decline clearly in your own personality and say plainly that this kind of talk is not okay with you, without insulting or shaming the learner, then offer to talk about something else. ${shape}`;
 }
 
 /** 거절 답을 만들 때 유저 말 자리에 넣는 앱 안내(학습자의 글 대신). */

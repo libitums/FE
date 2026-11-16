@@ -199,6 +199,52 @@
   color: var(--libitum-color-gray-800);
 }
 
+/* 작은 화면의 칸 단계(`story-pad-size.ts`) — 칸 · 안내 그림 · 그리기 표면이 같은 수입니다. 위의 220 규칙이 기준(l)이고
+   아래가 덮어씁니다. 안내 글자는 칸의 0.8입니다. */
+.catalog-story-final-pad-l {
+  width: 220px;
+  height: 220px;
+}
+
+.catalog-story-final-pad-box-l {
+  width: 220px;
+  height: 220px;
+}
+
+.catalog-story-final-pad-m {
+  width: 176px;
+  height: 176px;
+}
+
+.catalog-story-final-pad-box-m {
+  width: 176px;
+  height: 176px;
+}
+
+.catalog-story-final-pad-glyph-m {
+  width: 176px;
+  height: 176px;
+  line-height: 176px;
+  font-size: 141px;
+}
+
+.catalog-story-final-pad-s {
+  width: 144px;
+  height: 144px;
+}
+
+.catalog-story-final-pad-box-s {
+  width: 144px;
+  height: 144px;
+}
+
+.catalog-story-final-pad-glyph-s {
+  width: 144px;
+  height: 144px;
+  line-height: 144px;
+  font-size: 115px;
+}
+
 .catalog-story-final-tools {
   display: flex;
   flex-direction: column;
@@ -228,6 +274,11 @@
    않습니다(실기에서 4pt 밀렸던 자리). */
 .catalog-story-final-verdict-slot {
   min-height: var(--libitum-spacing-40);
+}
+
+/* 따라 쓰는 동안의 판정 자리 — 접습니다(판정 뒤에는 쓰기 칸이 내려가 배지 자리가 생깁니다). */
+.catalog-story-final-verdict-slot.catalog-story-final-verdict-slot-collapsed {
+  min-height: 0;
 }
 
 /* 이야기 파이널의 판 안 간격 — RP 판(12)보다 좁혀, 배지 · 해설 자리를 미리 잡고도 보기가 한 화면에 섭니다. */

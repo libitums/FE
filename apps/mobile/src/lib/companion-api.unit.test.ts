@@ -73,6 +73,12 @@ describe("기록 · 인사", () => {
     await remote.greet("mina");
     expect(requests[0]?.url).toBe("https://example.supabase.co/functions/v1/companion-greet");
     expect(JSON.parse(requests[0]?.init.body ?? "")).toEqual({ character_id: "mina" });
+    // 해금 선톡은 같은 주소에 trigger를 더해 보낸다.
+    await remote.greet("mina", "unlock");
+    expect(JSON.parse(requests[1]?.init.body ?? "")).toEqual({
+      character_id: "mina",
+      trigger: "unlock",
+    });
   });
 
   test("SA-U3 로그인이 없거나 실패 응답이면 null, 던지지 않는다", async () => {

@@ -1,7 +1,8 @@
-// 입력 검사에 걸린 턴의 성격대로 거절(PRD §3.11 5층 — 회피 → 경고 → 일시 차단). 위기는 여기 오지 않습니다(역할극 없는 안전 안내).
+// 입력 검사에 걸린 턴의 성격대로 거절(PRD §3.11 5층 — 회피 → 경고 + 엽전 차감). 위기는 여기 오지 않습니다(역할극 없는 안전 안내).
 //
-// 단계는 턴 시작 때 읽은 반복 위반 수(`companion_turn_status`)에 이번 차단을 더해 고릅니다 — 상한(`settings.strike_limit`)에 닿으면
-// 일시 차단(답 없이 `guardrail_blocked`, 세는 일과 `blocked_until`은 `companion_finish_turn`), 그 하나 앞이면 경고, 그보다 앞이면 회피.
+// 단계는 턴 시작 때 읽은 반복 위반 수(`companion_turn_status`)에 이번 차단을 더해 고릅니다 — 상한(`settings.strike_limit`)까지는
+// 회피, 그 뒤로는 매번 경고입니다. 일시 차단은 없습니다(ADR-0152): 막아 버리면 무엇을 얼마나 원하는지 볼 수 없어, 대신 경고 턴의
+// 엽전을 차감합니다. 세는 일과 차감은 `companion_finish_turn`이 합니다 — 여기서는 단계만 고릅니다.
 // 거절 답은 답 모델이 페르소나 시스템 프롬프트 + 거절 지시로 만듭니다. 학습자의 걸린 글은 모델에 주지 않고 분류와 단계만 줍니다 —
 // 글을 주면 모델이 거절하면서도 그 내용을 이어 받을 수 있습니다. 생성 실패 · 시간 초과 · 출력 검사 차단이면 페르소나의 정해진
 // 거절 줄(`persona.refusalLines`, 없으면 아래 기본 줄)로 턴을 끝냅니다 — 거절 턴은 늘 끝까지 갑니다.
@@ -39,11 +40,10 @@ export type RefusalPersona = PersonaCard & {
   readonly refusalLines?: Partial<Record<RefusalStage, Partial<Record<SpeechLevel, string>>>>;
 };
 
-/** 이번 차단을 더한 반복 위반 수로 고른 단계. `block`은 일시 차단(답 없음). */
-export function refusalStage(status: TurnStatus): RefusalStage | "block" {
-  const next = status.strikes + 1;
-  if (next >= status.strikeLimit) return "block";
-  return next === status.strikeLimit - 1 ? "warn" : "deflect";
+/** 이번 차단을 더한 반복 위반 수로 고른 단계 — 상한까지 회피, 넘으면 경고(그 턴은 차감). 수를 읽지 못했으면 회피입니다. */
+export function refusalStage(status: TurnStatus | null): RefusalStage {
+  if (status === null) return "deflect";
+  return status.strikes + 1 > status.strikeLimit ? "warn" : "deflect";
 }
 
 const defaultLines: Record<RefusalStage, Record<SpeechLevel, string>> = {

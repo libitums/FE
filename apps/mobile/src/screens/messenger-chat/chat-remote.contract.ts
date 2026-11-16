@@ -30,7 +30,11 @@ export type RemoteTurnHandlers = {
 
 export type ChatRemote = {
   readonly loadHistory: (characterId: string) => Promise<RemoteHistory | null>;
-  readonly greet: (characterId: string) => Promise<RemoteGreeting | null>;
+  /**
+   * 첫 인사. `unlock`이면 해금 선톡입니다 — 서버가 모델로 만들지 않고 그 인물의 정해진 말(해금 장면에 이어지는 말)을 저장합니다.
+   * 어느 쪽이든 대화에 메시지가 이미 있으면 서버는 아무것도 만들지 않습니다.
+   */
+  readonly greet: (characterId: string, trigger?: "unlock") => Promise<RemoteGreeting | null>;
   /** 보낸 글 하나의 턴을 엽니다. `clientMessageId`는 UUID v4(서버 멱등). */
   readonly openTurn: (
     request: {

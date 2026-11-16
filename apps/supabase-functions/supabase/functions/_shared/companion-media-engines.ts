@@ -4,7 +4,7 @@
 
 import Anthropic from "@anthropic-ai/sdk";
 
-import { base64FromBytes, bytesFromBase64 } from "./base64.ts";
+import { base64FromBytes } from "./base64.ts";
 import type { MediaEnv } from "./companion-media-env.ts";
 import { MEDIA_BUCKET } from "./companion-media-purge.ts";
 import { serviceKeyHeaders } from "./service-key.ts";
@@ -37,10 +37,10 @@ const mimeOf = (name: string): string | null => {
   return null;
 };
 
-const retryableStatus = (status: number) =>
+export const retryableStatus = (status: number) =>
   status === 408 || status === 409 || status === 429 || status >= 500;
 // lab: 오류 글에 refus · safety가 있으면 거절로 보고 다시 하지 않는다. OpenAI의 안전 거절 코드는 moderation_blocked.
-const refusalText = /refus|safety|moderation_blocked|content_policy/i;
+export const refusalText = /refus|safety|moderation_blocked|content_policy/i;
 
 // ------------------------------------------------------------------ Claude (프롬프트 · 검사 노드)
 
@@ -95,66 +95,6 @@ export async function claudeTool(
       output_tokens: response.usage.output_tokens,
     },
   };
-}
-
-// ------------------------------------------------------------------ OpenAI 이미지 편집
-
-/** `POST /v1/images/edits` — 기준 이미지(최대 4장) + 프롬프트 → PNG 바이트(그대로, C2PA 보존). */
-export async function openaiImageEdit(
-  fetchImpl: Fetch,
-  apiKey: string,
-  input: {
-    readonly model: string;
-    readonly refs: readonly Image[];
-    readonly prompt: string;
-    readonly size: string;
-    readonly quality: string;
-  },
-  timeoutMs: number,
-): Promise<{ png: Uint8Array; usage: unknown }> {
-  const form = new FormData();
-  for (const ref of input.refs.slice(0, 4)) {
-    form.append("image[]", new Blob([ref.bytes as BlobPart], { type: ref.mime }), ref.name);
-  }
-  form.append("model", input.model);
-  form.append("prompt", input.prompt);
-  form.append("size", input.size);
-  form.append("quality", input.quality);
-  form.append("n", "1");
-  let response: Response;
-  try {
-    response = await fetchImpl(`${OPENAI_URL}/images/edits`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}` },
-      body: form,
-      signal: AbortSignal.timeout(timeoutMs),
-    });
-  } catch (error) {
-    throw new EngineError(`OpenAI connection failed: ${(error as Error).name}`, true);
-  }
-  if (response.status !== 200) {
-    const body = (await response.text().catch(() => "")).slice(0, 300);
-    const refused = response.status === 400 && refusalText.test(body);
-    throw new EngineError(
-      `OpenAI ${response.status}: ${body}`,
-      !refused && retryableStatus(response.status),
-      refused,
-    );
-  }
-  let body: { data?: { b64_json?: string }[]; usage?: unknown };
-  try {
-    body = (await response.json()) as typeof body;
-  } catch {
-    throw new EngineError("OpenAI: invalid JSON", true);
-  }
-  // 본문이 JSON이어도 객체가 아니면(`null` · 숫자) 잘못된 응답과 같게 다룹니다 — TypeError로 새지 않게(리뷰 #441).
-  if (body === null || typeof body !== "object")
-    throw new EngineError("OpenAI: invalid JSON", true);
-  const b64 = body.data?.[0]?.b64_json;
-  if (typeof b64 !== "string" || b64 === "") throw new EngineError("OpenAI: no image", true);
-  const png = bytesFromBase64(b64);
-  if (png === null) throw new EngineError("OpenAI: bad base64", true);
-  return { png, usage: body.usage ?? null };
 }
 
 // ------------------------------------------------------------------ ElevenLabs
@@ -242,4 +182,22 @@ export async function uploadMedia(
       `upload ${response.status}: ${(await response.text().catch(() => "")).slice(0, 200)}`,
     );
   }
+}
+
+/** 결과 파일 하나 지우기(미리보기 정리). 없어도 괜찮다 — 실패는 던지지 않는다. */
+export async function removeMedia(
+  fetchImpl: Fetch,
+  env: MediaEnv,
+  path: string,
+  timeoutMs: number,
+): Promise<void> {
+  await fetchImpl(`${env.supabaseUrl}/storage/v1/object/${MEDIA_BUCKET}`, {
+    method: "DELETE",
+    headers: {
+      ...serviceKeyHeaders(env.supabaseServiceRoleKey),
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ prefixes: [path] }),
+    signal: AbortSignal.timeout(timeoutMs),
+  }).catch(() => undefined);
 }

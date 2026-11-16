@@ -81,7 +81,7 @@ export function createChatSendHandler(deps: ChatSendDeps): (request: Request) =>
       return respond(errorResponse(code, "detail" in gate ? gate.detail : undefined), code);
     }
 
-    // 반복 위반 수 · 기억 가득 참(마이그레이션 20261117). 읽지 못해도 턴은 돈다 — 입력 차단이 지금처럼 `guardrail_blocked`로 끝날 뿐이다.
+    // 반복 위반 수 · 기억 가득 참(마이그레이션 20261117). 읽지 못해도 턴은 돈다 — 입력 차단은 회피(`deflect`)로 답한다(ADR-0152 D2).
     const status = callRpc<TurnStatus | null>(deps.outbound, env, "companion_turn_status", {
       p_user_id: caller.userId,
       p_character_id: body.character_id,

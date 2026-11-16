@@ -11,7 +11,7 @@ import type {
 } from "./chat-remote.contract";
 import { companionSeed } from "./companion-roster";
 
-// `integration` 계층(SS-I1 ~ I7): 가짜 원격을 끼운 출처 — 기록 · 첫 인사 · 서버 턴 · 실패(ADR-0137).
+// `integration` 계층(SS-I1 ~ I13): 가짜 원격을 끼운 출처 — 기록 · 첫 인사 · 서버 턴 · 실패(ADR-0137).
 
 const U1 = "11111111-1111-4111-8111-111111111111";
 const A1 = "22222222-2222-4222-8222-222222222222";
@@ -308,5 +308,131 @@ describe("서버 턴", () => {
       "them",
       "me",
     ]);
+  });
+});
+
+// 해금 선톡(ADR-0152): 인물이 해금된 순간 방을 열지 않아도 그 인물의 정해진 첫 말을 받아 목록에 안 읽은 메시지로 세운다.
+describe("해금 선톡", () => {
+  const scripted: RemoteGreeting = {
+    messages: [
+      {
+        id: `${A1}#0`,
+        at: 1,
+        kind: "text",
+        from: "them",
+        text: { ko: "안녕하세요! 같은 방 미나예요.", en: "Hi! It's Mina, your roommate." },
+      },
+      {
+        id: `${A1}#1`,
+        at: 1,
+        kind: "text",
+        from: "them",
+        text: { ko: "유진식당은 가 봤어요? 맛있었어요?", en: "Did you try Yujin Restaurant?" },
+      },
+    ],
+    ideas: null,
+  };
+  const mina = (source: ReturnType<typeof fakeRemote>["source"]) =>
+    source.snapshot().rooms.find((room) => room.roomId === "mina");
+
+  test("SS-I10 해금하면 방을 열지 않아도 해금 선톡을 받아 마지막 메시지 · 안 읽음 1 · NEW로 선다", async () => {
+    const { source, remote } = fakeRemote({ greeting: scripted });
+    expect(source.unlockCharacter("mina")).toEqual({ kind: "unlocked", roomId: "mina" });
+    expect(remote.greet).toHaveBeenCalledWith("mina", "unlock");
+    expect(remote.loadHistory).not.toHaveBeenCalled();
+    expect(mina(source)).toMatchObject({ unread: 0, isNew: true });
+    await flush();
+    expect(source.thread("mina")?.messages.map((m) => m.id)).toEqual([`${A1}#0`, `${A1}#1`]);
+    expect(mina(source)).toMatchObject({ unread: 1, isNew: true });
+    expect(mina(source)?.lastMessage).toMatchObject({ id: `${A1}#1` });
+
+    // 방을 열면 서버 기록을 읽고(같은 id라 겹치지 않는다) 첫 인사를 다시 청하지 않는다.
+    source.openRoom("mina");
+    await flush();
+    await flush();
+    expect(remote.greet).toHaveBeenCalledTimes(1);
+    expect(source.thread("mina")?.messages).toHaveLength(2);
+    expect(mina(source)).toMatchObject({ unread: 0, isNew: false });
+    // 이미 열린 인물을 다시 해금해도 청하지 않는다.
+    expect(source.unlockCharacter("mina").kind).toBe("already-open");
+    expect(remote.greet).toHaveBeenCalledTimes(1);
+  });
+
+  test("SS-I11 해금 선톡을 못 받았으면 방을 열 때의 첫 인사를 해금 선톡으로 다시 청한다", async () => {
+    const greetings: (RemoteGreeting | null)[] = [null, scripted];
+    const greet = vi.fn<ChatRemote["greet"]>(async () => greetings.shift() ?? null);
+    const remote: ChatRemote = {
+      loadHistory: async () => ({ messages: [], corrections: {}, ideas: null }),
+      greet,
+      openTurn: () => ({ cancel: () => undefined }),
+    };
+    const source = createFixtureChatSource({
+      imageUrlOf: () => null,
+      seed: companionSeed(),
+      remote,
+    });
+    source.unlockCharacter("mina");
+    await flush();
+    expect(source.thread("mina")?.messages).toEqual([]);
+    source.openRoom("mina");
+    await flush();
+    await flush();
+    expect(greet.mock.calls).toEqual([
+      ["mina", "unlock"],
+      ["mina", "unlock"],
+    ]);
+    expect(source.thread("mina")?.messages).toHaveLength(2);
+    // 처음부터 열린 방은 보통 첫 인사다.
+    source.openRoom("duksu");
+    await flush();
+    await flush();
+    expect(greet.mock.calls.at(-1)).toEqual(["duksu"]);
+  });
+
+  test("SS-I12 해금 선톡을 청하는 중에 방을 열면 그 답을 기다린 뒤 기록을 읽는다 — 보통 첫 인사를 겹쳐 청하지 않는다", async () => {
+    let resolveGreet: (value: RemoteGreeting | null) => void = () => undefined;
+    const greet = vi.fn<ChatRemote["greet"]>(
+      () => new Promise<RemoteGreeting | null>((resolve) => (resolveGreet = resolve)),
+    );
+    const loadHistory = vi.fn<ChatRemote["loadHistory"]>(async () => ({
+      messages: scripted.messages,
+      corrections: {},
+      ideas: null,
+    }));
+    const remote: ChatRemote = {
+      loadHistory,
+      greet,
+      openTurn: () => ({ cancel: () => undefined }),
+    };
+    const source = createFixtureChatSource({
+      imageUrlOf: () => null,
+      seed: companionSeed(),
+      remote,
+    });
+    source.unlockCharacter("mina");
+    source.openRoom("mina");
+    await flush();
+    expect(loadHistory).not.toHaveBeenCalled();
+    resolveGreet(scripted);
+    await flush();
+    await flush();
+    expect(loadHistory).toHaveBeenCalledTimes(1);
+    expect(greet).toHaveBeenCalledTimes(1);
+    expect(source.thread("mina")?.messages.map((m) => m.id)).toEqual([`${A1}#0`, `${A1}#1`]);
+    // 열려 있던 방이라 안 읽음으로 세지 않는다.
+    expect(source.snapshot().rooms.find((room) => room.roomId === "mina")?.unread).toBe(0);
+  });
+
+  test("SS-I13 서버가 인사를 만들지 않았거나 안내 줄만 주면 열지 않은 방에는 아무것도 세우지 않는다", async () => {
+    const { source } = fakeRemote({
+      greeting: {
+        messages: [{ id: "greet~not-available", at: 1, kind: "notice", notice: "not-available" }],
+        ideas: null,
+      },
+    });
+    source.unlockCharacter("mina");
+    await flush();
+    expect(source.thread("mina")?.messages).toEqual([]);
+    expect(mina(source)).toMatchObject({ unread: 0, isNew: true });
   });
 });

@@ -44,7 +44,9 @@
    - `snapshot_aspect`가 `auto`(기본, 사용자 2026-11-14)면 프롬프트 노드가 장면에 맞춰 3:2 · 1:1 중 고른다. `3:2` · `1:1`로 고정할 수도 있다.
    - **엔진 오류일 때만 한 번 다시 한다**: 연결 실패 · 시간 초과 · 408 · 409 · 429 · 5xx · 이미지 없음.
    - 안전 거절(`moderation_blocked` 등)은 다시 하지 않고 blocked(`engine_refused`). 다른 4xx는 failed(`engine_failed`).
-4. **검사 노드**(Haiku 비전 1회): 기준 이미지 첫 장 + 결과 → 안전 · 얼굴 일치(1~5) · 깨진 글자 · 학습자 얼굴.
+4. **검사 노드**(Haiku 비전 1회) — ⟨2026-11-16⟩ **기본은 끔**(ADR-0152, 한 장 약 25초를 줄이려고). `COMPANION_SNAPSHOT_CHECK=on`일 때만 돈다.
+   끄면 2 → 3 → 5로 바로 가고 `meta.check = "skipped"`를 남긴다. 안전은 프롬프트 노드의 판단과 이미지 엔진 자체의 거절이 맡고,
+   얼굴 일치 · 깨진 글자 · 학습자 얼굴은 보지 않는다. 켰을 때: 기준 이미지 첫 장 + 결과 → 안전 · 얼굴 일치(1~5) · 깨진 글자 · 학습자 얼굴.
    - 통과는 모델에게 묻지 않고 계산한다(lab `with_pass`): 안전 · 일치 3 이상 · 글자 깨짐 없음 · 학습자 얼굴 없음.
    - 미성년자 · 나이 모름이면 검사 노드에도 엄격한 규칙(`CHECK_MINOR_RULES`)을 붙인다 — 프롬프트 노드와 같은 범위(술 · 담배 · 도박 · 유흥 · 침실 ·
      목욕 · 수영복 · 부상 · 무서운 장면 · 물건 건네기를 넘는 접촉)가 그림에 보이면 `safe: false`. 성인은 lab 글 그대로다.
@@ -81,7 +83,7 @@
   닫기까지 끝낸다(`_shared/companion-media-budget.ts`).
   - 단계마다 `min(단계 상한, 남은 시간 − 뒤 단계 몫)`만 기다린다. 단계 상한: 기준 이미지 · 올리기 30초, 노드 · 음성 90초, 이미지 300초.
   - 이미지는 최소 60초를 줄 수 없으면 부르지 않는다(중간에 끊어도 비용이 든다). 재시도도 남은 예산이 그 최소에 못 미치면 하지 않는다.
-  - 예산이 없는 단계는 그 단계의 실패 코드로 닫는다(error `budget exhausted`, 예약 해제). 쓴 제한 시간은 운영 메타 `timeouts`.
+  - 예산이 없는 단계는 그 단계의 실패 코드로 닫는다(error `budget exhausted`, 예약 해제). 쓴 제한 시간은 운영 메타 `timeouts`, 단계마다 실제로 걸린 시간은 `timings`(ms — `refs` · `prompt` · `image` · `check` · `upload`, 돈 단계만. `refs` · `prompt`는 동시에 돈다).
   - 만료 하한 5분 > 150초라, 예약을 푼 뒤에 늦은 업로드 · 확정이 오지 않는다.
 
 ## 6. 과금 · 상한
@@ -135,6 +137,18 @@
 - Edge Function 비밀: `OPENAI_API_KEY`(스냅샷) · `ELEVENLABS_API_KEY`(음성) · `ANTHROPIC_API_KEY`(스냅샷 노드, 메시지와 같은 키).
   - 없으면 503 `not_configured` — 빠진 **이름**만 알린다. 예약하지 않는다.
   - `COMPANION_SNAPSHOT_MODEL`: 노드 모델. 기본 `claude-haiku-5-5`(lab과 같다).
+  - `COMPANION_SNAPSHOT_CHECK`: `on`이면 검사 노드를 돌린다. 없거나 다른 값이면 끔(기본, ADR-0152).
+  - ⟨2026-11-16⟩ `COMPANION_SNAPSHOT_PARTIAL_IMAGES`(0 ~ 3, 기본 0 — 운영 실측에서 편집 · Flare 조합은 중간 그림 0장이라 끔): 이미지 엔진을 스트리밍(`stream` · `partial_images`)으로 불러 중간 그림을
+    `companion-media/<user>/<media>.preview.png`로 올리고 `companion_media_preview`로 행에 적는다(마이그레이션 20261207). 앱은 pending 결과의
+    `previewPath`가 생기면 흐리게 먼저 보이고, 완성되면 `path`로 바꾼다. 끝나면(성공 · 차단 · 실패) 미리보기 파일을 지우고 `previewPath`는 null.
+    한 장마다 이미지 출력 토큰 100개(약 $0.003). 첫 중간 그림까지의 시간은 `meta.timings.firstPartial`.
+  - ⟨2026-11-16⟩ `COMPANION_SNAPSHOT_REFS`: `sheet`면 표정 시트를 빼고 시트 한 장만 넣는다(기본 `all`). 실측 입력 이미지 토큰 2,600 ~ 3,072가
+    사진 원가(약 $0.035 ~ 0.04)의 약 2/3라, 얼굴 일관성을 실험실에서 견준 뒤 정한다.
+  - ⟨2026-11-16⟩ 엔진: 20261206에서 `gpt-image-2.6-flare`로 바꿨다가 20261208에서 `gpt-image-2.5-flare`로 되돌렸다 — 운영 실측에서 이미지
+    단계가 14.5 ~ 15.5초로 빨라지지 않았고 이미지 출력 토큰이 343 → 1,132로 늘었다(장당 원가 약 $0.035 → $0.06). 중간 그림도 0장(편집 ·
+    Flare에서 스트리밍이 오는지 문서에 없음).
+  - ⟨2026-11-16⟩ `COMPANION_SNAPSHOT_COMPLEXITY`(low · medium · high, 기본 medium, `off`면 보내지 않음 — 엔진 기본 high): 그리기 전 계획 정도.
+    OpenAI 문서 「높을수록 지연이 늘 수 있다 · 별도 요금 없음」.
 - DB 설정(`companion.settings`): §6의 단가 · 상한(`snapshot_daily_limit` · `voice_daily_limit` · `snapshot_daily_attempts` · `voice_daily_attempts` ·
   `media_failure_streak_limit`), `snapshot_engine` · `snapshot_quality` · `snapshot_aspect` · `voice_model` · `media_pending_minutes`.
 - 캐릭터 설정(`companion.characters.media`): `voiceId` · `refSlugs` · `look`(프롬프트 노드의 외모 메모, lab CHARACTERS에서 옮김).

@@ -355,27 +355,21 @@ describe("턴 스트림", () => {
     });
   });
 
-  test("CS6. 일시 차단에 닿는 입력 차단 · 출력 차단 — 조각 · 교정 없이 guardrail_blocked", async () => {
-    // 출력 차단은 한 번 다시 만든다(ADR-0151) — 다시 만든 답도 걸리는 경우로 본다.
-    const cases: [string, CompanionLlm][] = [
-      ["사랑해 [block]", fakeCompanionLlm()],
-      ["괜찮아요", llmWith({ output: { category: "other_harm", action: "block" } })],
-    ];
-    for (const [text, llm] of cases) {
-      const { handler, finishArgs, settle } = setup({
-        status: { strikes: 2, strikeLimit: 3, memoryFull: false },
-        llm,
-      });
-      const list = await events(await handler(post(body({ text }))));
-      await settle();
-      expect(checkTurnOrder(list)).toEqual({ ok: true });
-      expect(names(list).filter((name) => name === "delta" || name === "correction")).toEqual([]);
-      expect(list.at(-1)).toMatchObject({
-        event: "error",
-        data: { code: "guardrail_blocked", retryable: false },
-      });
-      expect(finishArgs()).toMatchObject({ p_status: "blocked", p_assistant: null });
-    }
+  test("CS6. 다시 만든 답도 출력 검사에 걸리면 조각 · 교정 없이 guardrail_blocked", async () => {
+    // 출력 차단은 한 번 다시 만든다(ADR-0151) — 다시 만든 답도 걸리는 경우로 본다. 입력 차단은 늘 거절 답으로 끝난다(CS20 ~ CS22).
+    const { handler, finishArgs, settle } = setup({
+      status: { strikes: 2, strikeLimit: 3, memoryFull: false },
+      llm: llmWith({ output: { category: "other_harm", action: "block" } }),
+    });
+    const list = await events(await handler(post(body({ text: "괜찮아요" }))));
+    await settle();
+    expect(checkTurnOrder(list)).toEqual({ ok: true });
+    expect(names(list).filter((name) => name === "delta" || name === "correction")).toEqual([]);
+    expect(list.at(-1)).toMatchObject({
+      event: "error",
+      data: { code: "guardrail_blocked", retryable: false },
+    });
+    expect(finishArgs()).toMatchObject({ p_status: "blocked", p_assistant: null });
   });
 
   test("CS7. 성인은 받는 대로 보내고, 피드백이 늦으면 unavailable로 끝낸다", async () => {
@@ -939,7 +933,7 @@ describe("비속어 · *행동*", () => {
     // 별표 안도 검사한다.
     const romance = setup({ gate: adult });
     const blocked = await events(
-      await romance.handler(post(body({ text: "*사랑해* 안녕하세요" }))),
+      await romance.handler(post(body({ text: "*키스한다* 안녕하세요" }))),
     );
     await romance.settle();
     expect(blocked.at(-1)).toMatchObject({
@@ -950,7 +944,7 @@ describe("비속어 · *행동*", () => {
   });
 });
 
-describe("성격대로 거절(회피 → 경고 → 일시 차단)", () => {
+describe("성격대로 거절(회피 → 상한을 넘으면 경고)", () => {
   const adult = { ...okGate, ageBand: "adult", notices: [] };
   const strikes = (count: number, memoryFull = false) => ({
     strikes: count,
@@ -1017,7 +1011,7 @@ describe("성격대로 거절(회피 → 경고 → 일시 차단)", () => {
     expect(rpcs.some((rpc) => rpc.fn === "companion_apply_memory_ops")).toBe(false);
   });
 
-  test("CS21. 걸린 글은 모델에 가지 않는다 — 분류와 단계만, 두 번째 위반은 경고, 상한이면 일시 차단", async () => {
+  test("CS21. 걸린 글은 모델에 가지 않는다 — 분류와 단계만, 상한까지 회피, 넘으면 매번 경고(일시 차단 없음)", async () => {
     const requests: { system: string; userText: string; history: unknown }[] = [];
     const base = blockedInput();
     const llm = blockedInput({
@@ -1037,38 +1031,44 @@ describe("성격대로 거절(회피 → 경고 → 일시 차단)", () => {
     expect(refusal.system).toContain("broke the app's safety rules (it was about sexual content)");
     expect(refusal.system).not.toContain(secret);
     expect(JSON.stringify(refusal.history)).not.toContain(secret);
-    expect(refusal.system).not.toContain("This has happened before");
+    expect(refusal.system).not.toContain("This keeps happening");
 
-    const second = setup({ llm, gate: adult, status: strikes(1) });
-    const warned = await events(await second.handler(post(body({ text: secret }))));
-    await second.settle();
-    expect(requests.at(-1)!.system).toContain("This has happened before");
-    expect(warned.at(-1)).toMatchObject({ event: "done", data: { refusal: { stage: "warn" } } });
-    expect(spoken(warned)).toContain("그런 말은 안 돼요. 다른 얘기 해요.");
-
+    // 상한(3)까지는 회피다.
     const third = setup({ llm, gate: adult, status: strikes(2) });
-    const blocked = await events(await third.handler(post(body({ text: secret }))));
+    const deflected = await events(await third.handler(post(body({ text: secret }))));
     await third.settle();
-    expect(names(blocked)).toEqual(["start", "error"]);
-    expect(third.finishArgs()).toMatchObject({ p_status: "blocked", p_assistant: null });
+    expect(requests.at(-1)!.system).not.toContain("This keeps happening");
+    expect(deflected.at(-1)).toMatchObject({ data: { refusal: { stage: "deflect" } } });
 
-    // 상한이 설정이면 단계도 따라간다(상한 5 → 셋째까지 회피, 넷째 경고).
+    // 상한을 넘으면 경고 — 그 뒤로도 일시 차단 없이 매번 경고 답이 간다.
+    for (const count of [3, 4, 12]) {
+      const over = setup({ llm, gate: adult, status: strikes(count) });
+      const warned = await events(await over.handler(post(body({ text: secret }))));
+      await over.settle();
+      expect(requests.at(-1)!.system).toContain("This keeps happening");
+      expect(warned.at(-1)).toMatchObject({ event: "done", data: { refusal: { stage: "warn" } } });
+      expect(spoken(warned)).toContain("그런 말은 안 돼요. 다른 얘기 해요.");
+      expect(over.finishArgs()).toMatchObject({
+        p_status: "blocked",
+        p_assistant: { meta: { refusal: true, refusalStage: "warn" } },
+      });
+    }
+
+    // 상한이 설정이면 단계도 따라간다(상한 5 → 다섯째까지 회피).
     const longer = setup({
       llm,
       gate: adult,
-      status: { strikes: 2, strikeLimit: 5, memoryFull: false },
+      status: { strikes: 4, strikeLimit: 5, memoryFull: false },
     });
-    const deflected = await events(await longer.handler(post(body({ text: secret }))));
+    const still = await events(await longer.handler(post(body({ text: secret }))));
     await longer.settle();
-    expect(deflected.at(-1)).toMatchObject({ data: { refusal: { stage: "deflect" } } });
+    expect(still.at(-1)).toMatchObject({ data: { refusal: { stage: "deflect" } } });
 
-    // 반복 위반 수를 읽지 못하면 지금처럼 차단 오류로 끝낸다.
+    // 반복 위반 수를 읽지 못해도 거절 답은 간다(회피).
     const unknown = setup({ llm, gate: adult, status: null });
-    expect(names(await events(await unknown.handler(post(body({ text: secret })))))).toEqual([
-      "start",
-      "error",
-    ]);
+    const answered = await events(await unknown.handler(post(body({ text: secret }))));
     await unknown.settle();
+    expect(answered.at(-1)).toMatchObject({ data: { refusal: { stage: "deflect" } } });
   });
 
   test("CS22. 거절 답 생성 실패 · 시간 초과 · 출력 검사 차단이면 페르소나의 정해진 줄로 턴을 끝낸다", async () => {
@@ -1119,7 +1119,7 @@ describe("성격대로 거절(회피 → 경고 → 일시 차단)", () => {
           ? { category: "profanity", action: "block" }
           : { category: "other_harm", action: "block" },
     });
-    const { handler, finishArgs, settle } = setup({ llm: unsafe, status: strikes(1) });
+    const { handler, finishArgs, settle } = setup({ llm: unsafe, status: strikes(3) });
     const list = await events(await handler(post(body({ text: "나쁜 말" }))));
     await settle();
     expect(spoken(list)).toEqual([

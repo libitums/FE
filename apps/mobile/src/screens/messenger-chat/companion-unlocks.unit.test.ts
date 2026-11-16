@@ -4,11 +4,14 @@ import unlocks from "../../../../../docs/content/companion-unlocks.json";
 import { COMPANION_CHARACTERS } from "./companion-roster";
 import { CHARACTER_UNLOCKS } from "./new-friend";
 
-// `unit` 계층(CU-U1 ~ U2): 인물 해금 지점의 정본은 기획 해금 JSON(docs/content/companion-unlocks.json, 2026-11-13 사용자 결정
+// `unit` 계층(CU-U1 ~ U2 · U4): 인물 해금 지점의 정본은 기획 해금 JSON(docs/content/companion-unlocks.json, 2026-11-13 사용자 결정
 // 「해금 json 기준으로」)입니다 — 앱 표(해금 표 · 인물 표)가 그와 어긋나면 실패합니다.
 
 type Unlock = { kind: "default" } | { kind: "episode_complete"; episode: string; afterCut: string };
-const characters = (unlocks as { characters: { id: string; unlock: Unlock }[] }).characters;
+type FirstMessage = { ko: string[]; en: string[] };
+const characters = (
+  unlocks as { characters: { id: string; unlock: Unlock; firstMessage?: FirstMessage }[] }
+).characters;
 const ordinalOf = (episodeId: string) => Number(/^u(\d+)-/.exec(episodeId)?.[1]);
 
 describe("해금 JSON ↔ 앱 표", () => {
@@ -36,6 +39,22 @@ describe("해금 JSON ↔ 앱 표", () => {
         expect(roster?.unlockEpisodeId).toBe(c.unlock.episode);
         expect(roster?.unlockEpisode).toBe(ordinalOf(c.unlock.episode));
       }
+    }
+  });
+
+  test("CU-U4 새 친구 시트의 첫 말은 해금 선톡의 첫 말풍선과 같다 — 기본 인물은 시트가 없다", () => {
+    for (const c of characters) {
+      const roster = COMPANION_CHARACTERS.find((r) => r.id === c.id);
+      if (c.unlock.kind === "default") {
+        expect(c.firstMessage?.ko.length, c.id).toBeGreaterThan(0);
+        expect(roster?.sheetOpening).toBeNull();
+        continue;
+      }
+      expect(c.firstMessage?.ko.length, c.id).toBeGreaterThan(0);
+      expect(roster?.sheetOpening, c.id).toEqual({
+        ko: c.firstMessage?.ko[0],
+        en: c.firstMessage?.en[0],
+      });
     }
   });
 });

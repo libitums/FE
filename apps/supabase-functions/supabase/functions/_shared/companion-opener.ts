@@ -34,6 +34,8 @@ const openerExpressionLimit = 30;
 export type OpenerLearning = {
   readonly pool: readonly LearningExpression[];
   readonly target: LearningTarget | null;
+  /** 학습자가 끝낸 에피소드 — 「지금까지 이야기」 카드 · 비트(`companion-story.ts`). */
+  readonly episodes: readonly string[];
 };
 
 /** 학습 맥락을 읽고 노출할 표현 하나를 고른다. 읽지 못하면(옛 DB · 오류) 넣지 않는다. */
@@ -49,9 +51,13 @@ export async function openerLearning(
       p_limit: openerExpressionLimit,
     });
     const pool = learning?.expressions ?? [];
-    return { pool, target: pickOpenerExpression(pool, learningSettingsFrom(learning), random) };
+    return {
+      pool,
+      target: pickOpenerExpression(pool, learningSettingsFrom(learning), random),
+      episodes: learning?.episodes ?? [],
+    };
   } catch {
-    return { pool: [], target: null };
+    return { pool: [], target: null, episodes: [] };
   }
 }
 

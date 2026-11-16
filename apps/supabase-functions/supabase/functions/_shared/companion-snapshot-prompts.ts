@@ -3,7 +3,9 @@
 // 글자 그대로 옮겼다(2026-11-13, origin/main 6f082ff — 학습자 모습 설정 `self` 포함).
 // 앱 기능에서 더한 것: 미성년자 · 나이 모름에 더 엄격한 규칙 줄(프롬프트 노드 `PROMPT_MINOR_RULES` · 검사 노드 `CHECK_MINOR_RULES`)과
 // 대화 글을 신뢰하지 않는 데이터로 감싸는 규칙(`PROMPT_DATA_RULES` · `<chat>` · `<message>`, 리뷰 반영 2026-11-14).
-// 성인 검사 노드 글은 lab 그대로다. 고칠 때는 lab과 같이 고친다(실험실에서 잰 결과가 앱과 같은 글이어야 한다).
+// 고칠 때는 lab과 같이 고친다(실험실에서 잰 결과가 앱과 같은 글이어야 한다).
+// 로맨스 완화(ADR-0152): 생년으로 확인된 성인만 「로맨스 없음」 줄을 「손잡기 · 포옹까지」 줄로 바꿔 쓴다(`promptSystem` · `checkSystem`).
+// 미성년자 · 나이 모름은 lab 글 그대로 + 엄격한 규칙이다(나이 모름에 실제 미성년자가 섞인다). 이 바꿔 쓰기는 아직 lab에 없다 — lab을 고치기 전까지 실험실 결과는 미성년자 글 기준이다.
 
 import type { Segment } from "./chat-send.contract.ts";
 import type { SnapshotSelf } from "./companion-contract/index.ts";
@@ -23,13 +25,21 @@ Rules:
 - aspect: "3:2" for scenes with a setting or two people, "1:1" for a close single-person moment.
 - safety: "block" if the moment cannot be drawn within these rules (say why), else "allow".`;
 
-/** 미성년자 · 나이 모름에 더하는 규칙(앱 기능에서 더함). 나이 모름은 미성년자 기본값으로 다룬다(PRD §3.12). */
-export const PROMPT_MINOR_RULES = `
+const NO_ROMANCE_LINE =
+  "- No romance or flirting, no kissing, no suggestive pose, no body emphasis, nothing unsafe for a teenager.";
+/** 성인 · 나이 모름의 수위선 — 글 가드레일과 같다(손잡기 · 포옹까지, 그 뒤 스킨십 없음). */
+export const PROMPT_ROMANCE_LINE =
+  "- Affection between the character and the learner may go as far as holding hands or a hug, drawn modestly and only when the message shows it. No kissing or anything more intimate, no suggestive pose, no body emphasis, nothing unsafe for a teenager.";
+
+const minorRules = (contact: string) => `
 Extra rules — the learner is a minor or their age is unknown, so be stricter:
 - Keep the scene everyday and wholesome (a lesson, a shop, a street, food, a hobby). Nothing a parent would find inappropriate.
 - No alcohol, smoking, gambling, nightlife, bedrooms, bathing, swimwear, injuries or scary scenes.
-- No physical contact between the character and the learner beyond handing over an object.
+- No physical contact between the character and the learner beyond ${contact}.
 - If the moment cannot be drawn under these rules, set safety to "block".`;
+
+/** 미성년자에 더하는 규칙(앱 기능에서 더함). */
+export const PROMPT_MINOR_RULES = minorRules("handing over an object");
 
 /**
  * 대화 글은 유저가 쓴 것(또는 유저가 이끈 캐릭터 답)이라 신뢰하지 않는다(앱 기능에서 더함). 프롬프트 노드 입력은 `<chat>` · `<message>`로
@@ -59,13 +69,19 @@ export const PROMPT_TOOL = {
 export const CHECK_SYSTEM = `You check a generated "snapshot" illustration for a Korean-learning chat app. Image 1 is the character reference, image 2 the generated snapshot.
 Judge: safety (no sexual content, suggestive pose, body emphasis, romance, violence; safe for a teenager), identity (does the main character match the reference face, hair, outfit: 1 = different person, 5 = same), garbled text (broken letters, fake glyphs, speech bubbles or dialogue text), learner face (a second person whose eyes, nose or mouth are visible — the back of a head, hair, a shoulder, hands, or tiny faceless background passers-by do NOT count; a mirror reflection of the main character does not count). Write the reasons first, then the fields.`;
 
-/** 미성년자 · 나이 모름이면 검사 노드에도 더하는 규칙(앱 기능에서 더함). 프롬프트 노드의 `PROMPT_MINOR_RULES`와 같은 범위다. */
-export const CHECK_MINOR_RULES = `
-Extra rules — the learner is a minor or their age is unknown, so judge safety more strictly: set safe to false if the snapshot shows alcohol, smoking, gambling, nightlife, a bedroom, bathing, swimwear, injuries or a scary scene, or physical contact between the character and the learner beyond handing over an object.`;
+const checkMinorRules = (contact: string) => `
+Extra rules — the learner is a minor or their age is unknown, so judge safety more strictly: set safe to false if the snapshot shows alcohol, smoking, gambling, nightlife, a bedroom, bathing, swimwear, injuries or a scary scene, or physical contact between the character and the learner beyond ${contact}.`;
 
-/** 검사 노드 시스템 글: 성인은 lab 그대로, 미성년자 · 나이 모름은 + 엄격한 규칙. */
+/** 미성년자 · 나이 모름이면 검사 노드에도 더하는 규칙(앱 기능에서 더함). 프롬프트 노드의 `PROMPT_MINOR_RULES`와 같은 범위다. */
+export const CHECK_MINOR_RULES = checkMinorRules("handing over an object");
+
+const CHECK_NO_ROMANCE = "romance, violence";
+const CHECK_ROMANCE = "kissing or anything more intimate than holding hands or a hug, violence";
+
+/** 검사 노드 시스템 글: 미성년자 · 나이 모름은 lab 그대로 + 엄격한 규칙, 성인만 손잡기 · 포옹을 안전으로 본다. */
 export function checkSystem(ageBand: "adult" | "minor" | "unknown"): string {
-  return ageBand === "adult" ? CHECK_SYSTEM : CHECK_SYSTEM + CHECK_MINOR_RULES;
+  if (ageBand !== "adult") return CHECK_SYSTEM + CHECK_MINOR_RULES;
+  return CHECK_SYSTEM.replace(CHECK_NO_ROMANCE, CHECK_ROMANCE);
 }
 
 export const CHECK_TOOL = {
@@ -167,9 +183,10 @@ export function learnerLine(self: SnapshotSelf): string {
   }
 }
 
-/** 프롬프트 노드 시스템 글: lab 그대로 + 입력 데이터 규칙 + 미성년자 · 나이 모름이면 더 엄격한 규칙. */
+/** 프롬프트 노드 시스템 글: lab 글(성인만 수위선 줄을 바꿈) + 입력 데이터 규칙 + 미성년자 · 나이 모름이면 더 엄격한 규칙. */
 export function promptSystem(ageBand: "adult" | "minor" | "unknown"): string {
-  return PROMPT_SYSTEM + PROMPT_DATA_RULES + (ageBand === "adult" ? "" : PROMPT_MINOR_RULES);
+  if (ageBand !== "adult") return PROMPT_SYSTEM + PROMPT_DATA_RULES + PROMPT_MINOR_RULES;
+  return PROMPT_SYSTEM.replace(NO_ROMANCE_LINE, PROMPT_ROMANCE_LINE) + PROMPT_DATA_RULES;
 }
 
 /** 대화 글 안의 구분자 위조(`<chat>` · `</chat>` · `<message>` · `</message>`)를 지운다. */

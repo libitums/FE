@@ -1,4 +1,5 @@
 // 출처의 서버 모드입니다(ADR-0137) — 방을 열면 서버 기록을 읽고(비면 첫 인사), 보내기는 서버 턴(SSE)으로 답을 받습니다.
+// 인물이 해금되면 방을 열기 전에 해금 선톡을 받아 둡니다(ADR-0152).
 // 배달 실패(ADR-0138): 서버가 받지 못한 글은 Not sent로 남아 다시 보내고, 받은 뒤 끊긴 답은 기록을 다시 읽어 채웁니다.
 // 기억 · 대화 설정 · 평가 · 사진 · 음성 · 이야기 시점 · 방 지우기는 아직 앱 안에서만 돕니다(2026-11-12 결정). 던지지 않습니다.
 
@@ -6,6 +7,7 @@ import type { RoomState } from "./chat-fixture-room";
 import type { ChatServerControls } from "./chat-delivery.contract";
 import type { ChatMediaHooks } from "./chat-media.contract";
 import { remoteMediaMethods } from "./chat-remote-media";
+import { remoteGreetingMethods } from "./chat-remote-greeting";
 import type { ChatRemote, RemoteHistory } from "./chat-remote.contract";
 import type { ChatMessage } from "./chat-source.contract";
 import { renderTurn, withCorrection } from "./chat-remote-notes";
@@ -69,20 +71,7 @@ export function remoteRoomMethods(deps: RemoteRoomDeps) {
     return confirmed;
   };
 
-  /** 첫 인사 — 받았으면(인사가 없다는 답 포함) true, 못 받았으면 false. */
-  const greet = async (room: RoomState): Promise<boolean> => {
-    room.typing = true;
-    changed(room);
-    const greeting = await remote.greet(characterOf(room));
-    if (live(roomIdOf(room)) !== room) return true;
-    // 인사를 기다리는 사이 보낸 턴이 있으면 그 입력 중 점을 끄지 않고, 인사는 내 글 앞에 둡니다(ADR-0137).
-    room.typing = room.pendingReplies > 0;
-    if (greeting === null) return false;
-    const known = new Set(room.messages.map((message) => message.id));
-    room.messages = [...greeting.messages.filter((m) => !known.has(m.id)), ...room.messages];
-    if (room.pendingReplies === 0) room.remoteIdeas = greeting.ideas;
-    return true;
-  };
+  const greeting = remoteGreetingMethods({ remote, live, changed, isOpen });
 
   /** 방을 열 때 — 서버 기록을 읽고, 비어 있으면 첫 인사를 받습니다. 못 받으면 failed(다시 시도 안내). */
   const loadRoom = (roomId: string) => {
@@ -92,10 +81,12 @@ export function remoteRoomMethods(deps: RemoteRoomDeps) {
     room.remoteHistory = "loading";
     changed(room);
     void (async () => {
+      await greeting.settled(room);
+      if (live(roomId) !== room) return;
       const history = await remote.loadHistory(characterOf(room));
       if (live(roomId) !== room) return;
       if (history !== null) applyHistory(room, history);
-      const ok = history !== null && (room.messages.length > 0 || (await greet(room)));
+      const ok = history !== null && (room.messages.length > 0 || (await greeting.greet(room)));
       if (live(roomId) !== room) return;
       room.remoteHistory = ok ? "loaded" : "failed";
       changed(room);
@@ -295,5 +286,12 @@ export function remoteRoomMethods(deps: RemoteRoomDeps) {
     },
   };
 
-  return { loadRoom, sendText, controls, requestMedia: media.request, remake: media.remake };
+  return {
+    loadRoom,
+    greetUnlocked: greeting.greetUnlocked,
+    sendText,
+    controls,
+    requestMedia: media.request,
+    remake: media.remake,
+  };
 }

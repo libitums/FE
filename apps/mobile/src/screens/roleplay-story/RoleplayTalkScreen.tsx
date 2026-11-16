@@ -171,58 +171,65 @@ export function RoleplayTalkScreen({
 
         <view className="roleplay-story-screen-spacer" />
 
-        <view className="roleplay-story-screen-bottom">
-          {heard ? (
-            <view data-testid="roleplay-talk-reply" data-verdict={state.verdict ?? ""}>
-              <text
-                className={`roleplay-story-verdict roleplay-story-verdict-${correct ? "correct" : "incorrect"}`}
-                data-testid="roleplay-talk-verdict"
-              >
-                {correct ? copy.roleplayStory.great : copy.roleplayStory.notQuite}
-              </text>
-              <VisualNovelDialog
-                variant="thought"
-                speakerName={copy.roleplayStory.me}
-                line={correct ? turn.accepted[0] : state.heard || copy.roleplayStory.heardNothing}
-                translation={
-                  correct
-                    ? (turn.replyTranslation ?? undefined)
-                    : copy.catalogFinal.correctAnswer(turn.accepted[0])
-                }
-                reveal="instant"
-                continueIndicator="off"
-                surface="opaque"
-                contentLanguage="learning"
-                languageTag="ko"
-                reducedMotion={reducedMotion}
-              />
-            </view>
-          ) : (
-            <view className="roleplay-story-line" data-testid="roleplay-talk-line">
-              <VisualNovelDialog
-                speakerName={counterpartName}
-                line={turn.line.ko}
-                translation={turn.line.en ?? turn.line.roman ?? undefined}
-                reveal="instant"
-                continueIndicator="off"
-                surface="opaque"
-                contentLanguage="learning"
-                languageTag="ko"
-                reducedMotion={reducedMotion}
-              />
-              {turn.counterpartAudioSource === undefined ? null : (
-                <view className="roleplay-story-replay" data-testid="roleplay-talk-replay">
-                  <RoundButton
-                    accessibilityLabel={copy.roleplayStory.playAgain}
-                    icon={volume}
-                    variant="neutral"
-                    size="m"
-                    bindtap={() => setReplays((count) => count + 1)}
-                  />
-                </view>
-              )}
-            </view>
-          )}
+        {/* 아래 묶음은 화면보다 길면 줄고, 줄 때는 대사 스크롤만 줄어 말하기 묶음 · 버튼은 늘 화면 안에 섭니다. */}
+        <view className="roleplay-story-screen-bottom roleplay-story-screen-bottom-fit">
+          <scroll-view
+            className="roleplay-story-bottom-scroll"
+            scroll-orientation="vertical"
+            scroll-bar-enable={false}
+          >
+            {heard ? (
+              <view data-testid="roleplay-talk-reply" data-verdict={state.verdict ?? ""}>
+                <text
+                  className={`roleplay-story-verdict roleplay-story-verdict-${correct ? "correct" : "incorrect"}`}
+                  data-testid="roleplay-talk-verdict"
+                >
+                  {correct ? copy.roleplayStory.great : copy.roleplayStory.notQuite}
+                </text>
+                <VisualNovelDialog
+                  variant="thought"
+                  speakerName={copy.roleplayStory.me}
+                  line={correct ? turn.accepted[0] : state.heard || copy.roleplayStory.heardNothing}
+                  translation={
+                    correct
+                      ? (turn.replyTranslation ?? undefined)
+                      : copy.catalogFinal.correctAnswer(turn.accepted[0])
+                  }
+                  reveal="instant"
+                  continueIndicator="off"
+                  surface="opaque"
+                  contentLanguage="learning"
+                  languageTag="ko"
+                  reducedMotion={reducedMotion}
+                />
+              </view>
+            ) : (
+              <view className="roleplay-story-line" data-testid="roleplay-talk-line">
+                <VisualNovelDialog
+                  speakerName={counterpartName}
+                  line={turn.line.ko}
+                  translation={turn.line.en ?? turn.line.roman ?? undefined}
+                  reveal="instant"
+                  continueIndicator="off"
+                  surface="opaque"
+                  contentLanguage="learning"
+                  languageTag="ko"
+                  reducedMotion={reducedMotion}
+                />
+                {turn.counterpartAudioSource === undefined ? null : (
+                  <view className="roleplay-story-replay" data-testid="roleplay-talk-replay">
+                    <RoundButton
+                      accessibilityLabel={copy.roleplayStory.playAgain}
+                      icon={volume}
+                      variant="neutral"
+                      size="m"
+                      bindtap={() => setReplays((count) => count + 1)}
+                    />
+                  </view>
+                )}
+              </view>
+            )}
+          </scroll-view>
 
           {heard ? (
             <view className="roleplay-story-actions" data-testid="roleplay-talk-actions">
