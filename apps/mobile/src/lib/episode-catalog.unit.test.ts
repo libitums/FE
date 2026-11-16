@@ -173,6 +173,18 @@ describe("buildEpisodeCatalog", () => {
     expect(find(catalog, "u00-tutorial")).not.toHaveProperty("level");
   });
 
+  test("CL3. 원격이 져서 내장판으로 물러나면(bundledFallback) level 키가 없다", () => {
+    const catalog = buildEpisodeCatalog(
+      input(
+        cacheOf([remote("u01-water", 1, { version: "2099-01-01.1" })], false, {
+          min_client_level: 4,
+        }),
+      ),
+    );
+    expect(find(catalog, "u01-water")).toMatchObject({ status: "ready", source: "bundled" });
+    expect(find(catalog, "u01-water")).not.toHaveProperty("level");
+  });
+
   test("C3. 본문 원문이 해시 · 바이트와 맞고 디코드되면 ready/cache", () => {
     const catalog = buildEpisodeCatalog(input(cacheOf([remote("u04-x", 4)])));
     const entry = find(catalog, "u04-x");

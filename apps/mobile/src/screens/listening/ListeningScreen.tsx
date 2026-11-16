@@ -219,7 +219,7 @@ export function ListeningActivity({
               }
               if (!hasAnswered(state)) {
                 onItemAnswered?.(
-                  choiceReport(state.questionIndex, result, density, question.choices, index),
+                  choiceReport(question, state.questionIndex, result, density, index),
                 );
               }
               dispatch({ type: "selectChoice", choiceIndex: index });

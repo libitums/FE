@@ -74,6 +74,7 @@ function wordOrderItemOf(
   return sentenceOrder(item.id, {
     prompt: english ?? koOf(port, item.prompt.ko),
     chips: order.map((index) => tiles[index] ?? ""),
+    chipsSource: order.map((index) => item.tiles[index]?.ko ?? ""),
     answerOrder: tiles.map((_, tile) => order.indexOf(tile)),
     ...(chipReading === undefined ? {} : { chipReading }),
     // 흐린 정답은 콘텐츠의 첫 정답 문장입니다(조각을 이은 문자열이 아니라 — 문장부호 · 띄어쓰기를 그대로).
@@ -146,6 +147,7 @@ function turnOrderItemOf(item: ItemOf<"TURN_ORDER">, port: CatalogItemPort): Cat
   return sentenceOrder(item.id, {
     prompt,
     chips: chipTiles.map((tile) => tiles[tile] ?? ""),
+    chipsSource: chipTiles.map((tile) => item.tiles[tile]?.ko ?? ""),
     answerOrder: restAnswer.map((tile) => chipTiles.indexOf(tile)),
     dialogue: {
       opening: { speaker: openingSpeaker, text: tiles[openingTile] ?? "" },

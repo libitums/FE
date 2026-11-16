@@ -2,6 +2,7 @@ import { afterEach, expect, test, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import type { AnswerResult } from "../../lib/answer-result";
+import type { ItemAnswerReport } from "../../lib/item-answer";
 import { uiCopyEn } from "../../lib/ui-copy-en";
 import { SentenceOrderActivity } from "./SentenceOrderScreen";
 import { tapBottom } from "./sentence-order-check.test-support";
@@ -435,4 +436,24 @@ test("SO11. 틀린 순서로 채점하면 어긋난 칸이 incorrect 클래스�
     /(^|\s)\S*-incorrect(\s|$)/.test(classOf(`sentence-order-dialogue-slot-${position}`)),
   );
   expect(incorrect).toEqual([1, 3]);
+});
+
+test("UD-EV. 대화 조립 보고의 selectedAnswer는 놓은 턴(고정 첫 턴 제외)의 원문을 「 | 」로 잇는다", () => {
+  const onItemAnswered = vi.fn<(report: ItemAnswerReport) => void>();
+  render(
+    <SentenceOrderActivity
+      questions={[{ ...turns, chipsSource: [...turns.chips] }]}
+      onExit={() => {}}
+      onFinish={() => {}}
+      onItemAnswered={onItemAnswered}
+    />,
+  );
+  for (const index of [2, 0, 1]) tapChip(index);
+  tapAction();
+  expect(onItemAnswered).toHaveBeenCalledWith(
+    expect.objectContaining({
+      selectedAnswer: "여권 여기 있어요. | 며칠 묵으시죠? | 일주일 묵어요.",
+    }),
+  );
+  expect(onItemAnswered.mock.calls[0]?.[0].selectedAnswer).not.toContain("네, 여권 좀 보여주세요.");
 });

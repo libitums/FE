@@ -3,18 +3,24 @@
 import type { AnswerResult } from "./answer-result";
 import type { LearningItem } from "./episode-content";
 import type { LearningDensity } from "./learning-density";
-import type { SpeechAttemptPhase } from "./speech-attempt";
+import type { SpeechAttemptPhase, SpeechUnavailableReason } from "./speech-attempt";
 
 export type ItemAnswerOutcome = AnswerResult | "skipped";
+
+/** 건너뛴 까닭 — 직접 누른 Skip(`user`) 또는 말하기를 쓸 수 없던 까닭입니다. */
+export type ItemSkipReason = "user" | `unavailable:${SpeechUnavailableReason}`;
 
 export type ItemAnswerReport = {
   readonly questionIndex: number;
   readonly outcome: ItemAnswerOutcome;
   readonly density: LearningDensity;
-  /** 처음 판정 때 고른 글자 — 보기형 · 타일형만. 직접 입력 · 말하기는 싣지 않습니다(사용자 입력 글). */
+  /**
+   * 처음 판정 때 고른 보기 · 타일의 **자리표시자 치환 전 콘텐츠 원문**(예 「{이름}(으)로 예약했어요.」) — 보기형 · 타일형만.
+   * 화면 글자는 학습자 이름 · 나라로 치환돼 있어 쓰지 않습니다. 직접 입력 · 말하기는 싣지 않습니다(사용자 입력 글).
+   */
   readonly selectedAnswer?: string;
   /** 건너뛴 까닭 — `"user"` 또는 `"unavailable:<reason>"`. 건너뛸 때만. */
-  readonly skipReason?: string;
+  readonly skipReason?: ItemSkipReason;
   /** 판정 전에 쓴 힌트 — 정답 보기가 정답 듣기보다 앞섭니다(ADR-0153). 안 썼으면 없습니다. */
   readonly hintUsed?: "listen" | "show";
 };
@@ -24,15 +30,17 @@ export function selectedField(text: string | undefined): { readonly selectedAnsw
   return text === undefined ? {} : { selectedAnswer: text };
 }
 
-/** 보기형 문항의 보고 — 고른 보기의 글자를 함께 싣습니다. */
+/** 보기형 문항의 보고 — 고른 보기의 **치환 전 원문**을 함께 싣습니다. 원문이 없으면 `selectedAnswer`가 없습니다. */
 export function choiceReport(
+  question: { readonly choicesSource?: readonly string[] },
   questionIndex: number,
   outcome: ItemAnswerOutcome,
   density: LearningDensity,
-  choices: readonly string[],
   index: number,
 ): ItemAnswerReport {
-  return { questionIndex, outcome, density, ...selectedField(selectedChoiceText(choices, index)) };
+  const source = question.choicesSource;
+  const selected = source === undefined ? undefined : selectedChoiceText(source, index);
+  return { questionIndex, outcome, density, ...selectedField(selected) };
 }
 
 /** 고른 보기의 글자입니다. 범위 밖이면 `undefined`. */
@@ -53,7 +61,7 @@ export function selectedTilesText(
 }
 
 /** 말하기 건너뜀의 까닭입니다 — 쓸 수 없는 국면이면 `unavailable:<reason>`, 아니면 `user`. */
-export function speechSkipReasonOf(phase: SpeechAttemptPhase): string {
+export function speechSkipReasonOf(phase: SpeechAttemptPhase): ItemSkipReason {
   return phase.kind === "unavailable" ? `unavailable:${phase.reason}` : "user";
 }
 

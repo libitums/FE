@@ -20,6 +20,7 @@ import type { WordChoiceQuestion } from "./word-choice-questions";
 const sceneQuestion: WordChoiceQuestion = {
   prompt: "한국어 잘하시네요!",
   choices: ["잘 먹겠습니다!", "안녕하세요!", "감사합니다!"],
+  choicesSource: ["잘 먹겠습니다!", "안녕하세요!", "감사합니다!"],
   choiceTranslations: ["Thanks for the meal!", "Hello!", "Thank you!"],
   answerIndex: 2,
   instruction: "What do you say?",

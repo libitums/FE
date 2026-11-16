@@ -27,6 +27,8 @@ export type SyllableBuildQuestion = {
   readonly tileReading?: TileReading;
   /** 힌트 — 흐린 글자는 칸마다 정답 조각입니다(ADR-0153). */
   readonly hint?: AssembledHint;
+  /** 타일마다 자리표시자를 치환하기 전 콘텐츠 원문입니다(`tiles`와 같은 순서). 측정 `selectedAnswer`만 이 값을 씁니다. */
+  readonly tilesSource?: readonly string[];
 };
 
 export type SyllableBuildPhase = "building" | "checked";

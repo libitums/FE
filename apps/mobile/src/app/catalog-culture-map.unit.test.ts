@@ -170,6 +170,7 @@ describe("문화 확인 매핑 (CKM)", () => {
       romanization: "hanguk pyeonuijeomeseo bongtuneun eotteolkkayo?",
       translation: "What about bags at Korean convenience stores?",
       choices: ["봉투는 공짜예요.", "봉투는 보통 따로 돈을 내요.", "봉투가 없어요."],
+      choicesSource: ["봉투는 공짜예요.", "봉투는 보통 따로 돈을 내요.", "봉투가 없어요."],
       answerIndex: 1,
       instruction: "Pick the right one.",
       choiceTranslations: ["Bags are free.", "Bags usually cost extra.", "There are no bags."],

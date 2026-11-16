@@ -98,6 +98,7 @@ export function listenBuildItemOf(
   const question: SentenceOrderQuestion = {
     prompt: english ?? koOf(port, item.prompt.ko),
     chips: order.map((index) => tiles[index] ?? ""),
+    chipsSource: order.map((index) => item.tiles[index]?.ko ?? ""),
     answerOrder: picked.map((tile) => order.indexOf(tile)),
     audio,
     // 정답 문장의 로마자라 확인 뒤에만 보입니다 — 답 전에 보이면 로마자 순서대로 놓으면 끝납니다(2026-11-02 문항 분석).
@@ -144,6 +145,7 @@ export function syllableBuildItemOf(
   const question: SyllableBuildQuestion = {
     meaning,
     tiles: order.map((index) => tiles[index] ?? ""),
+    tilesSource: order.map((index) => item.tiles[index]?.ko ?? ""),
     slotCount: spelling.length,
     answers,
     ...optionalField("instruction", instructionOf(port, item.prompt)),

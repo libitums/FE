@@ -61,4 +61,6 @@ export type WordChoiceQuestion = {
   readonly romanizationEmphasis?: TextSpan;
   /** 있으면 문화 확인입니다 — 답한 뒤 자동으로 넘기지 않고 해설 판을 세웁니다. */
   readonly culture?: WordChoiceCulture;
+  /** 보기마다 자리표시자를 치환하기 전 콘텐츠 원문입니다(표시 순서). 측정 `selectedAnswer`만 이 값을 씁니다 — 학습자 이름 · 나라가 분석 도구로 가지 않게. */
+  readonly choicesSource?: readonly string[];
 };

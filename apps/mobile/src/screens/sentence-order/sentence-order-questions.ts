@@ -67,4 +67,6 @@ export type SentenceOrderQuestion = {
   readonly chipReading?: TileReading;
   /** 문장 조립의 힌트 — 흐린 글자는 정답 문장 하나입니다(ADR-0153). 듣고 조립 · 대화 조립에는 없습니다. */
   readonly hint?: AssembledHint;
+  /** 조각마다 자리표시자를 치환하기 전 콘텐츠 원문입니다(`chips`와 같은 순서). 측정 `selectedAnswer`만 이 값을 씁니다. */
+  readonly chipsSource?: readonly string[];
 };

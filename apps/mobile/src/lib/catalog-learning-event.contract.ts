@@ -2,7 +2,7 @@
 // 이벤트는 `EpisodeIntroEventSink`로 나갑니다 — 수는 10진 문자열입니다(ADR-0029).
 
 import type { AssessmentVerdict } from "../screens/assessment/assessment";
-import type { ItemAnswerOutcome, ScoredItemType } from "./item-answer";
+import type { ItemAnswerOutcome, ItemSkipReason, ScoredItemType } from "./item-answer";
 import type { LearningDensity } from "./learning-density";
 import type { ListenPace } from "./listen-pace";
 import type { ListenItemResult, ListenItemType } from "./question-audio";
@@ -80,7 +80,7 @@ export type EpisodeItemAnsweredEvent = {
   /** 처음 판정 때 고른 글자입니다(보기형 · 타일형만). */
   readonly selectedAnswer?: string;
   /** 건너뛴 까닭입니다(`result: skipped`일 때만). */
-  readonly skipReason?: string;
+  readonly skipReason?: ItemSkipReason;
   /** 판정 전에 쓴 힌트입니다 — `listen`(정답 듣기) · `show`(정답 보기). 안 썼으면 없습니다(ADR-0153). */
   readonly hintUsed?: "listen" | "show";
 };
