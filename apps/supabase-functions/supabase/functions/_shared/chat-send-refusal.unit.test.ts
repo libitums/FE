@@ -5,19 +5,19 @@ import { cannedRefusal, refusalStage, trimRefusal } from "./chat-send-refusal.ts
 const at = (strikes: number, strikeLimit: number) =>
   refusalStage({ strikes, strikeLimit, memoryFull: false });
 
-test("RF1. 단계 — 이번 차단을 더한 수가 상한이면 일시 차단, 하나 앞이면 경고, 그 앞은 회피", () => {
-  expect([0, 1, 2].map((strikes) => at(strikes, 3))).toEqual(["deflect", "warn", "block"]);
-  expect([0, 1, 2, 3, 4].map((strikes) => at(strikes, 5))).toEqual([
+test("RF1. 단계 — 이번 차단을 더한 수가 상한까지는 회피, 넘으면 매번 경고(일시 차단 없음)", () => {
+  expect([0, 1, 2, 3, 4, 9].map((strikes) => at(strikes, 3))).toEqual([
     "deflect",
     "deflect",
     "deflect",
     "warn",
-    "block",
+    "warn",
+    "warn",
   ]);
-  expect([0, 1].map((strikes) => at(strikes, 2))).toEqual(["warn", "block"]);
-  expect(at(0, 1)).toBe("block");
-  // 상한을 낮춰 이미 넘은 수도 일시 차단.
-  expect(at(7, 3)).toBe("block");
+  expect([0, 4, 5].map((strikes) => at(strikes, 5))).toEqual(["deflect", "deflect", "warn"]);
+  expect([0, 1].map((strikes) => at(strikes, 1))).toEqual(["deflect", "warn"]);
+  // 반복 위반 수를 읽지 못하면 회피 — 차감은 저장이 센 수로 따로 정한다.
+  expect(refusalStage(null)).toBe("deflect");
 });
 
 test("RF2. 모델 답은 대사 둘 · 행동 하나까지, 서술은 버린다", () => {

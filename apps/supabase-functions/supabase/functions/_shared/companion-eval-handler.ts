@@ -2,10 +2,9 @@
 // 서버 키만 받는다(ops-dashboard). DB에 쓰지 않고 크레딧도 쓰지 않는다 — 케이스마다 실제 API 비용만 든다.
 //
 // GET  → 지금 설정된 모델 · 고를 수 있는 모델 · LLM 종류. `?docs=1`이면 프롬프트 · 캐릭터 · 설정 문서(`companion-eval-docs.ts`).
-// POST { kind, model?, cases[] } → 케이스마다 `moderate()` 판정 · `feedback()` 결과 · `translate()` 한 줄 · `suggest()` 칩 셋 · 학습 표현을 넣은 답(`learning`). 케이스 하나가 실패해도
+// POST { kind, model?, judgeModel?, cases[] } → 케이스마다 `moderate()` 판정 · `feedback()` 결과 · `translate()` 한 줄 · `suggest()` 칩 셋 · 학습 표현을 넣은 답(`learning`) ·
+// 운영 페르소나로 만든 답장과 그 채점(`reply`, `companion-eval-reply.ts`). 케이스 하나가 실패해도
 // 나머지는 돈다. 요청 모양은 턴 경로(`chat-send-turn.ts` · `chat-send-reply.ts`)와 같고, 프롬프트는 `CompanionLlm` 구현 안에 있어 그대로 쓴다.
-
-import { z } from "zod";
 
 import type {
   ChatSendEnv,
@@ -13,6 +12,7 @@ import type {
   CompanionLlm,
   Feedback,
   ModerationVerdict,
+  PersonaCard,
 } from "./chat-send.contract.ts";
 import { defaultFeedbackTimeoutMs, defaultLlmTimeoutMs } from "./chat-send-reply.ts";
 import { defaultTranslationTimeoutMs } from "./chat-send-translate.ts";
@@ -21,14 +21,17 @@ import { companionDocs } from "./companion-eval-docs.ts";
 import { StructuredUnavailable } from "./companion-llm.ts";
 import { recentFeedbackHistory } from "./companion-llm-prompts.ts";
 import { evalLearning, type LearningEvalOutput } from "./companion-eval-learning.ts";
+import { defaultJudgeModel } from "./companion-eval-judge.ts";
+import { evalReply, type ReplyEvalOutput, UnsupportedCase } from "./companion-eval-reply.ts";
 import { evalSuggestions } from "./companion-eval-suggest.ts";
 import type { CandidateRecord } from "./companion-suggest-select.ts";
 import type { ReplySuggestion } from "./companion-contract/index.ts";
-import { isServiceKey } from "./companion-rpc.ts";
+import { callRpc, isServiceKey } from "./companion-rpc.ts";
+import { bodySchema, type EvalCase, type EvalKind, evalModels } from "./companion-eval-schema.ts";
+
+export { evalModels };
 import { bearerTokenFrom } from "./supabase-auth.ts";
 
-/** 고를 수 있는 모델. 대시보드가 이 목록으로 선택지를 그린다. */
-export const evalModels = ["claude-haiku-5-5", "claude-sonnet-5-5", "claude-opus-5-5"] as const;
 const defaultConcurrency = 4;
 
 export type CompanionEvalDeps = {
@@ -44,52 +47,13 @@ export type CompanionEvalDeps = {
   readonly feedbackTimeoutMs?: number;
   /** 번역 한 번의 제한 시간. 기본은 턴 경로와 같다(넘으면 운영에서는 번역 없이 끝난다). */
   readonly translationTimeoutMs?: number;
+  /** 답장 + 채점 한 케이스의 제한 시간(reply). */
+  readonly replyEvalTimeoutMs?: number;
   readonly concurrency?: number;
 };
 
-const caseSchema = z.object({
-  id: z.string().min(1).max(64),
-  text: z.string().min(1).max(2000),
-  ageBand: z.enum(["adult", "minor", "unknown"]).optional(),
-  layer: z.enum(["input", "output_sync"]).optional(),
-  l1: z.string().min(1).max(35).nullable().optional(),
-  // 검사: 출력 검사 때 앞선 유저 메시지. 피드백: 바로 앞 캐릭터 말.
-  context: z.string().max(2000).nullable().optional(),
-  // 피드백만: 최근 대화(맥락, 오래된 것부터 — 운영처럼 마지막 6개만 쓴다).
-  history: z
-    .array(z.object({ role: z.enum(["user", "assistant"]), text: z.string().max(2000) }))
-    .max(20)
-    .optional(),
-  // 피드백만: 관계 말투 단계 · 상대 캐릭터. 생략하면 모름(말투 규칙은 한 메시지 안 섞임만 본다).
-  speechLevel: z.enum(["polite", "casual", "slang"]).nullable().optional(),
-  character: z
-    .object({
-      name: z.string().min(1).max(64),
-      role: z.string().max(200).nullable().optional(),
-      banmalFeedback: z.enum(["correction", "better"]).optional(),
-    })
-    .nullable()
-    .optional(),
-  // 칩만: 대화 요약 · 이 대화에서 앞서 보인 칩 글(반복 검사 · 프롬프트의 지난 칩).
-  summary: z.string().max(2000).nullable().optional(),
-  pastSuggestions: z.array(z.string().max(200)).max(15).optional(),
-  // 학습 표현만: 넣을 배운 표현과 방식(노출 · 유도 · 칩).
-  target: z
-    .object({
-      surface: z.string().min(1).max(200),
-      gloss: z.string().max(300).nullable().optional(),
-      kind: z.enum(["voca", "expr", "patt", "gram", "nume"]).optional(),
-      mode: z.enum(["expose", "elicit", "chip"]),
-    })
-    .optional(),
-});
-const bodySchema = z.object({
-  kind: z.enum(["moderation", "feedback", "translation", "suggestions", "learning"]),
-  model: z.enum(evalModels).optional(),
-  cases: z.array(caseSchema).min(1).max(20),
-});
-type EvalCase = z.infer<typeof caseSchema>;
-type EvalKind = z.infer<typeof bodySchema>["kind"];
+/** 답장(45초 안팎)과 채점(더 큰 모델, 생각 깊이 medium)을 합친 한 케이스의 제한 시간. */
+export const defaultReplyEvalTimeoutMs = 90_000;
 
 type CaseResult =
   | {
@@ -100,7 +64,8 @@ type CaseResult =
         | Feedback
         | { text: string }
         | { items: ReplySuggestion[]; candidates: CandidateRecord[] }
-        | LearningEvalOutput;
+        | LearningEvalOutput
+        | ReplyEvalOutput;
       ms: number;
     }
   | { id: string; ok: false; error: string; ms: number };
@@ -156,11 +121,34 @@ function errorCode(error: unknown): string {
   if (error instanceof Timeout) return "timeout";
   if (error instanceof StructuredUnavailable) return "structured_unavailable";
   if (error instanceof Mismatch) return "mismatch";
+  if (error instanceof UnsupportedCase) return "unsupported_case";
   const status = (error as { status?: unknown } | null)?.status;
   return typeof status === "number" ? `upstream_${status}` : "upstream_error";
 }
 
-function runCase(deps: CompanionEvalDeps, llm: CompanionLlm, kind: EvalKind, item: EvalCase) {
+type ReplyContext = {
+  readonly judge: CompanionLlm;
+  readonly personas: ReadonlyMap<string, PersonaCard>;
+};
+
+function runCase(
+  deps: CompanionEvalDeps,
+  llm: CompanionLlm,
+  kind: EvalKind,
+  item: EvalCase,
+  reply: ReplyContext | null,
+) {
+  if (kind === "reply" && reply !== null)
+    return withTimeout(deps.replyEvalTimeoutMs ?? defaultReplyEvalTimeoutMs, (signal) =>
+      evalReply({
+        llm,
+        judge: reply.judge,
+        item,
+        personas: reply.personas,
+        signal,
+        judgeErrorCode: errorCode,
+      }),
+    );
   if (kind === "moderation") {
     return withTimeout(deps.llmTimeoutMs ?? defaultLlmTimeoutMs, (signal) =>
       llm.moderate({
@@ -261,9 +249,28 @@ export function createCompanionEvalHandler(
     const parsed = bodySchema.safeParse(raw);
     if (!parsed.success) return json(400, { error: "invalid_request" });
     const { kind, cases } = parsed.data;
-    const step = kind === "suggestions" ? "suggest" : kind === "learning" ? "reply" : kind;
+    const step =
+      kind === "suggestions" ? "suggest" : kind === "learning" || kind === "reply" ? "reply" : kind;
     const model = parsed.data.model ?? models[step];
     const llm = deps.llmFor(model);
+    const judgeModel = kind === "reply" ? (parsed.data.judgeModel ?? defaultJudgeModel) : null;
+    // 답장은 운영과 같은 페르소나 카드로 — DB를 못 읽으면(적용 전 · 오류) 케이스의 이름만 쓴다(결과의 `persona: "case"`).
+    const reply: ReplyContext | null =
+      judgeModel === null
+        ? null
+        : {
+            judge: deps.llmFor(judgeModel),
+            personas: new Map(
+              (
+                (await callRpc<{ id: string; persona: PersonaCard }[]>(
+                  deps.outbound,
+                  env,
+                  "companion_inspect_characters",
+                  {},
+                ).catch(() => null)) ?? []
+              ).map((character) => [character.id, character.persona]),
+            ),
+          };
 
     const results = await mapLimited(
       cases,
@@ -271,7 +278,7 @@ export function createCompanionEvalHandler(
       async (item): Promise<CaseResult> => {
         const started = deps.nowMs();
         try {
-          const output = await runCase(deps, llm, kind, item);
+          const output = await runCase(deps, llm, kind, item, reply);
           return { id: item.id, ok: true, output, ms: deps.nowMs() - started };
         } catch (error) {
           return { id: item.id, ok: false, error: errorCode(error), ms: deps.nowMs() - started };
@@ -281,8 +288,8 @@ export function createCompanionEvalHandler(
     deps.log({
       event: "companion_eval",
       status: 200,
-      outcome: `${kind} ${model} ok=${results.filter((result) => result.ok).length}/${results.length}`,
+      outcome: `${kind} ${model}${judgeModel ? ` judge=${judgeModel}` : ""} ok=${results.filter((result) => result.ok).length}/${results.length}`,
     });
-    return json(200, { kind, model, results });
+    return json(200, judgeModel ? { kind, model, judgeModel, results } : { kind, model, results });
   };
 }

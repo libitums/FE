@@ -85,6 +85,9 @@
         },
         "fromPastChat": {
           "type": "boolean"
+        },
+        "previewPath": {
+          "type": ["string", "null"]
         }
       },
       "required": [

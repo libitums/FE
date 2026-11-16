@@ -61,9 +61,12 @@ export function createCompanionRemote(deps: CompanionRemoteDeps): ChatRemote {
           p_limit: HISTORY_PAGE,
         }),
       ),
-    greet: async (characterId) =>
+    greet: async (characterId, trigger) =>
       greetingFrom(
-        await call("/functions/v1/companion-greet", { character_id: characterId }),
+        await call("/functions/v1/companion-greet", {
+          character_id: characterId,
+          ...(trigger === undefined ? {} : { trigger }),
+        }),
         deps.now(),
       ),
     openTurn: (request, handlers) => {

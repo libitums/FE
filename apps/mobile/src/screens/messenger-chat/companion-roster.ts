@@ -10,7 +10,10 @@ export type CompanionCharacter = {
   /** 이 에피소드를 끝내고 뒤 컷까지 보면 열립니다(해금 JSON, ADR-0141). null = 처음부터. */
   readonly unlockEpisodeId: string | null;
   readonly unlockEpisode: number | null;
-  /** 새 친구 시트의 첫 말(ADR-0137) — 서버 방은 열기 전엔 비어 있어 시트가 쓸 말이 없습니다. 방을 열면 서버 인사가 옵니다. */
+  /**
+   * 새 친구 시트의 첫 말(ADR-0137) — 해금 선톡이 서버에서 오기 전에도 시트가 서야 해서 앱이 그 첫 말풍선을 가집니다.
+   * 정본은 해금 JSON의 `firstMessage` 첫 줄이고 서버가 저장하는 말과 같습니다(ADR-0152) — 시트와 대화방이 다른 말을 하지 않습니다.
+   */
   readonly sheetOpening: { readonly ko: string; readonly en: string } | null;
 };
 
@@ -31,7 +34,10 @@ export const COMPANION_CHARACTERS: readonly CompanionCharacter[] = [
     avatarPath: profile("yoonkyung-casual"),
     unlockEpisodeId: "u01-water",
     unlockEpisode: 1,
-    sheetOpening: { ko: "어서 와요. 오늘도 수고했어요.", en: "Welcome back. You did well today." },
+    sheetOpening: {
+      ko: "잘 도착했어요? 익선 게스트하우스 정윤경이에요.",
+      en: "Did you get here okay? This is Jung Yoonkyung from Ikseon Guesthouse.",
+    },
   },
   {
     id: "mina",
@@ -39,7 +45,7 @@ export const COMPANION_CHARACTERS: readonly CompanionCharacter[] = [
     avatarPath: profile("mina-casual"),
     unlockEpisodeId: "u03-mina",
     unlockEpisode: 3,
-    sheetOpening: { ko: "안녕! 나 미나야. 우리 문자하자!", en: "Hi! It's Mina. Let's text!" },
+    sheetOpening: { ko: "안녕하세요! 같은 방 미나예요.", en: "Hi! It's Mina, your roommate." },
   },
   {
     id: "doyun",
@@ -48,8 +54,8 @@ export const COMPANION_CHARACTERS: readonly CompanionCharacter[] = [
     unlockEpisodeId: "u12-cafe-missed",
     unlockEpisode: 12,
     sheetOpening: {
-      ko: "안녕하세요! 저 도윤이에요. 반가워요!",
-      en: "Hi! I'm Doyun. Nice to meet you!",
+      ko: "안녕하세요! 카페 끌림 도윤이에요.",
+      en: "Hi! It's Doyun from Cafe Kkeullim.",
     },
   },
   {
@@ -59,8 +65,8 @@ export const COMPANION_CHARACTERS: readonly CompanionCharacter[] = [
     unlockEpisodeId: "u17-samgyeopsal",
     unlockEpisode: 17,
     sheetOpening: {
-      ko: "안녕하세요, 서재민입니다. 반갑습니다.",
-      en: "Hello, this is Jaemin. Nice to meet you.",
+      ko: "서재민이에요.",
+      en: "It's Seo Jaemin.",
     },
   },
 ];

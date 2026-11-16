@@ -13,6 +13,7 @@ import type {
   LlmUsage,
   ReplyRequest,
 } from "./chat-send.contract.ts";
+import { judgementFrom, replyJudgeContent, replyJudgeSystem } from "./companion-eval-judge.ts";
 import { fakeCompanionLlm } from "./companion-llm-fake.ts";
 import {
   feedbackContent,
@@ -34,6 +35,7 @@ import { suggestionContent, suggestionSystem } from "./companion-suggest-prompts
 import {
   feedbackSchema,
   memorySchema,
+  replyJudgeSchema,
   suggestionSchema,
   translationSchema,
   verdictSchema,
@@ -117,6 +119,7 @@ export function anthropicCompanionLlm(
     system: string | { stable: string; dynamic: string },
     content: string,
     signal: AbortSignal,
+    effort: "low" | "medium" = "low",
   ): Promise<T> {
     const blocks: Anthropic.TextBlockParam[] =
       typeof system === "string"
@@ -129,7 +132,7 @@ export function anthropicCompanionLlm(
       {
         model,
         max_tokens: 2000,
-        output_config: { effort: "low", format: zodOutputFormat(schema) },
+        output_config: { effort, format: zodOutputFormat(schema) },
         system: blocks,
         messages: [{ role: "user", content }],
       },
@@ -258,6 +261,19 @@ export function anthropicCompanionLlm(
         request.signal,
       );
       return result.items;
+    },
+    async judgeReply(request) {
+      // 평가 전용 채점자 — `companionLlmWithModel(env, judgeModel)`로 만든 계층이라 답장 모델(`config.model`)이 곧 채점 모델이다.
+      const result = await parse(
+        "judge",
+        config.model,
+        replyJudgeSchema,
+        replyJudgeSystem,
+        replyJudgeContent(request),
+        request.signal,
+        "medium",
+      );
+      return judgementFrom(result, request);
     },
     withUsage: (next) => anthropicCompanionLlm(config, next, client),
   };

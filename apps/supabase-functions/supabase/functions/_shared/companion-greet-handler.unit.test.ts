@@ -3,6 +3,7 @@ import { expect, test } from "vitest";
 import type { ChatSendEnv, CompanionLlm } from "./chat-send.contract.ts";
 import { companionGreetResponseSchema } from "./companion-contract/index.ts";
 import { createGreetHandler, type GreetLogEntry } from "./companion-greet-handler.ts";
+import { unlockGreeting } from "./companion-greet-lines.ts";
 import { fakeCompanionLlm } from "./companion-llm-fake.ts";
 import type { OutboundRequest } from "./delete-account.contract.ts";
 
@@ -275,4 +276,92 @@ test("GT7. 배운 표현이 있으면 첫 인사에 노출로 하나 — 지시 
   expect(rpcs.find((rpc) => rpc.fn === "companion_record_learning")?.args).toMatchObject({
     p_events: [{ expression_id: "expr:hello", kind: "exposed" }],
   });
+});
+
+// 해금 선톡(ADR-0152): 인물이 해금된 순간 앱이 `trigger: "unlock"`으로 부른다 — 정해진 말을 그대로 저장한다.
+test("GT8. 해금 선톡 — 모델 · 출력 검사 · 학습 표현 없이 페르소나의 정해진 말풍선들을 번역 · 칩과 함께 저장한다", async () => {
+  const { llm, calls } = watching();
+  const unlockLines = ["안녕하세요! 카페 끌림 도윤이에요.", " 아, 그런데 이름이 뭐예요? "];
+  const { call, rpcs, save } = setup({
+    llm,
+    context: context({
+      persona: {
+        name: "미나",
+        greetingLines: { polite: "안녕하세요! 저는 미나예요." },
+        unlockLines,
+      },
+    }),
+    learning: {
+      episodes: ["u00-tutorial"],
+      expressions: [
+        { id: "expr:hello", kind: "expr", surface: "안녕하세요", roman: null, gloss: "Hello" },
+      ],
+    },
+  });
+  const { status, body } = await call({ character_id: "mina", trigger: "unlock" });
+  expect(status).toBe(200);
+  expect(companionGreetResponseSchema.parse(body)).toEqual(body);
+  expect(body).toMatchObject({
+    status: "ok",
+    source: "scripted",
+    segments: [
+      { kind: "speech", text: "안녕하세요! 카페 끌림 도윤이에요." },
+      { kind: "speech", text: "아, 그런데 이름이 뭐예요?" },
+    ],
+  });
+  expect(calls).not.toContain("reply");
+  expect(calls.filter((name) => name.startsWith("moderate"))).toEqual([]);
+  expect(calls).toEqual(expect.arrayContaining(["translate", "suggest"]));
+  expect(rpcs.map((rpc) => rpc.fn)).not.toContain("companion_learning_context");
+  expect(rpcs.map((rpc) => rpc.fn)).not.toContain("companion_record_learning");
+  expect(save()).toMatchObject({
+    p_segments: body.segments,
+    p_meta: { greeting: "scripted", translation: "ok" },
+  });
+  expect(save()?.["p_meta"]).not.toHaveProperty("greetingFallback");
+  expect(save()?.["p_meta"]).not.toHaveProperty("learning");
+});
+
+test("GT9. 해금 선톡 — 정해진 말이 없으면 정해진 첫 인사 · 메시지가 이미 있으면 none · trigger open은 모델 인사", async () => {
+  const bare = setup();
+  expect((await bare.call({ character_id: "mina", trigger: "unlock" })).body).toMatchObject({
+    status: "ok",
+    source: "scripted",
+    segments: [{ kind: "speech", text: "안녕하세요! 저는 미나예요." }],
+  });
+  expect(unlockGreeting({ name: "누구", unlockLines: ["", "  "] }, "polite")[0]?.text).toContain(
+    "만나서 반가워요",
+  );
+
+  const existing = setup({ context: context({ hasMessages: true }) });
+  const again = await existing.call({ character_id: "mina", trigger: "unlock" });
+  expect(again.body).toMatchObject({ status: "none", reason: "has_messages" });
+  expect(existing.save()).toBeUndefined();
+
+  const opened = setup();
+  expect((await opened.call({ character_id: "mina", trigger: "open" })).body).toMatchObject({
+    source: "model",
+  });
+  expect((await setup().call({ character_id: "mina", trigger: "later" })).status).toBe(400);
+});
+
+test("GT10. 정해진 첫 말이 있는 인물은 방을 열 때의 첫 인사도 그 말이다 — 덕수쌤 · 해금 순간에 못 받은 인물", async () => {
+  const { llm, calls } = watching();
+  const lines = [
+    "안녕하세요! 덕수쌤이에요.",
+    "한국어나 한국 문화에 대해 궁금한 게 있으면 언제든지 물어봐요.",
+  ];
+  const { call, save } = setup({
+    llm,
+    context: context({ persona: { name: "덕수쌤", unlockLines: lines } }),
+  });
+  for (const request of [{ character_id: "duksu" }, { character_id: "duksu", trigger: "open" }]) {
+    expect((await call(request)).body).toMatchObject({
+      status: "ok",
+      source: "scripted",
+      segments: lines.map((text) => ({ kind: "speech", text })),
+    });
+  }
+  expect(calls).not.toContain("reply");
+  expect(save()).toMatchObject({ p_meta: { greeting: "scripted" } });
 });

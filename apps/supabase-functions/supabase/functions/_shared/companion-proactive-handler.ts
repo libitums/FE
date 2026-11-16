@@ -29,6 +29,7 @@ import {
   timeOfDay,
 } from "./companion-prompt.ts";
 import { callRpc, isServiceKey } from "./companion-rpc.ts";
+import { openerBeat } from "./companion-story.ts";
 import { generateSuggestions, suggestionRecord } from "./companion-suggest-generate.ts";
 import type { ChoiceSet } from "./companion-suggest.contract.ts";
 import { recentSuggestionHistory } from "./companion-suggest-prompts.ts";
@@ -143,6 +144,9 @@ async function proactiveOne(deps: ChatSendDeps, target: Target, force: boolean):
           lastUser?.role === "user" ? lastUser.text.trim().slice(0, lastTopicLimit) || null : null,
         recentOpeners: context.recentProactive ?? [],
         unanswered: context.unanswered ?? 0,
+        beat:
+          openerBeat(target.characterId, learning.episodes, deps.random ?? Math.random)?.seed ??
+          null,
       }),
       learning.target,
     ),

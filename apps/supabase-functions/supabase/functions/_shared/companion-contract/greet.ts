@@ -15,6 +15,11 @@ import { suggestionsDataSchema } from "./sse-events.ts";
 export const companionGreetRequestSchema = z.object({
   character_id: z.string().check(z.minLength(1), z.maxLength(64)),
   user_id: z.optional(z.uuid()),
+  /**
+   * `unlock`은 인물이 해금된 순간의 선톡입니다 — 모델로 만들지 않고 그 인물의 정해진 말(해금 장면에 이어지는 말)을 저장합니다.
+   * 없거나 `open`이면 방을 열었는데 비어 있을 때의 첫 인사(모델)입니다.
+   */
+  trigger: z.optional(z.enum(["open", "unlock"])),
 });
 
 /**
@@ -33,14 +38,14 @@ export const greetReasonSchema = z.enum([
 
 /**
  * 응답 본문(HTTP 200)입니다. `ok`면 저장된 인사 메시지(`messageId`, 메시지 목록에서는 `origin: "greeting"`)의 말풍선(L1 번역 포함)과
- * 출처(`model` — 모델이 만듦, `canned` — 생성 실패 · 출력 검사 차단이라 페르소나의 정해진 인사)입니다. `suggestions`는 칩 스위치가 켜져
+ * 출처(`model` — 모델이 만듦, `canned` — 생성 실패 · 출력 검사 차단이라 페르소나의 정해진 인사, `scripted` — 해금 선톡의 정해진 말)입니다. `suggestions`는 칩 스위치가 켜져
  * 있을 때 그 인사에 붙은 추천 답변 칩(SSE `suggestions`와 같은 모양)이고, 꺼져 있으면 null입니다.
  */
 export const companionGreetResponseSchema = z.object({
   status: z.enum(["ok", "none", "unavailable"]),
   messageId: z.nullable(z.uuid()),
   segments: z.array(segmentSchema),
-  source: z.optional(z.enum(["model", "canned"])),
+  source: z.optional(z.enum(["model", "canned", "scripted"])),
   suggestions: z.nullable(suggestionsDataSchema),
   reason: z.optional(greetReasonSchema),
 });

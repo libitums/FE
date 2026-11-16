@@ -16,6 +16,8 @@ import type { TopicState } from "./companion-learning.contract.ts";
 import type {
   MemoryOp,
   MemoryRequest,
+  ReplyJudgement,
+  ReplyJudgeRequest,
   SummaryRequest,
   TranslationRequest,
 } from "./companion-steps.contract.ts";
@@ -95,6 +97,8 @@ export type PersonaCard = {
   readonly topics?: readonly string[];
   /** 존댓말 관계에서 학습자가 반말을 쓸 때 피드백 종류. 없으면 `better`(부드럽게). 덕수쌤(선생님)은 `correction`. */
   readonly banmalFeedback?: BanmalFeedback;
+  /** 로맨스 완화 대상 학습자에게 이 캐릭터가 로맨스 말을 받는 태도(영어 한두 문장, 시스템 프롬프트의 Romance 줄 끝에 붙는다). */
+  readonly romance?: string;
   /** 번역 표기 메모(한국어 → 학습자 언어에서 쓸 표기, 예: 「쌤」 → "teacher (casual)"). 운영자가 채운다(20261123). */
   readonly glossary?: Readonly<Record<string, string>>;
 };
@@ -146,6 +150,9 @@ export type {
   MemoryItem,
   MemoryOp,
   MemoryRequest,
+  ReplyJudgeAxis,
+  ReplyJudgement,
+  ReplyJudgeRequest,
   SummaryRequest,
   TranslationRequest,
 } from "./companion-steps.contract.ts";
@@ -159,7 +166,8 @@ export type LlmStep =
   | "translation"
   | "memory"
   | "summary"
-  | "suggestions";
+  | "suggestions"
+  | "judge";
 
 /** 호출 하나의 토큰 사용량(API 응답의 usage). 캐시 쓰기 · 읽기는 입력과 따로 센다. */
 export type LlmUsage = {
@@ -183,6 +191,8 @@ export type CompanionLlm = {
   extractMemories(request: MemoryRequest): Promise<MemoryOp[]>;
   summarize(request: SummaryRequest): Promise<string>;
   suggest(request: SuggestRequest): Promise<SuggestionDraft[]>;
+  /** 평가 전용 — 캐릭터 답장 하나를 축마다 채점합니다(`companion-eval` reply). 없으면(테스트 대역) 채점하지 않습니다. */
+  judgeReply?(request: ReplyJudgeRequest): Promise<ReplyJudgement>;
   /** 호출마다 사용량을 `record`로 넘기는 같은 계층 — 턴마다 감싸 모은다. 없으면(테스트 대역) 모으지 않는다. */
   withUsage?(record: (usage: LlmUsage) => void): CompanionLlm;
 };

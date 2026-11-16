@@ -10,8 +10,9 @@ import type {
   PersonaCard,
 } from "./chat-send.contract.ts";
 import type { SpeechLevel } from "./companion-contract/index.ts";
+import { romanceAllowed } from "./companion-safety.ts";
 
-const speechLevelRule: Record<SpeechLevel, string> = {
+export const speechLevelRule: Record<SpeechLevel, string> = {
   polite: "Speak in polite 해요체 (존댓말). Never use 반말.",
   casual: "Speak in friendly 반말 (casual), the way close friends talk.",
   slang:
@@ -44,6 +45,8 @@ export type ProactiveDirectiveInput = {
   readonly lastTopic: string | null;
   readonly recentOpeners: readonly string[];
   readonly unanswered: number;
+  /** 진도에 맞는 메신저 비트 화제(`openerBeat`). 없으면 null · 생략. */
+  readonly beat?: string | null;
 };
 
 export type TimeOfDay = "morning" | "afternoon" | "evening" | "late night";
@@ -76,6 +79,9 @@ export function proactiveDirectiveFor(input: ProactiveDirectiveInput): string {
     input.lastTopic === null
       ? ""
       : `The learner's last message was: "${input.lastTopic}". You may pick that topic up, or share something new from your own day.`,
+    input.beat
+      ? `Something from your time together you could bring up (skip it if your recent openers already did): ${input.beat}`
+      : "",
     input.recentOpeners.length === 0
       ? ""
       : `Your recent openers (do not repeat their wording, topic or idea):\n${list(input.recentOpeners)}`,
@@ -105,7 +111,20 @@ export type PromptInput = {
   readonly memories: readonly string[];
   /** 서버가 고른 이번 턴 지시(화제 전환 · 학습 표현 삽입). 없으면 null. */
   readonly directive: string | null;
+  /** 「지금까지 이야기」 카드(`companion-story.ts`) — 대화 처음 · 새 에피소드 직후에만. 없으면 생략. */
+  readonly story?: string | null;
 };
+
+// 로맨스 줄은 연령대에 따라 달라 캐시되는 앞부분(규칙 · 페르소나)이 아니라 유저마다 다른 뒷부분에 둡니다. 앞부분의 수위선(성적 내용
+// 없음 · 손잡기 · 포옹까지)은 모든 연령에 같습니다. 캐릭터마다의 태도는 페르소나 `romance` 칸이 정합니다(ADR-0152).
+function romanceRule(ageBand: AgeBand, persona: PersonaCard): string {
+  if (!romanceAllowed(ageBand))
+    return "none. No romance, flirting or dating role-play. If the learner pushes for it, steer back to friendly conversation in character.";
+  const stance =
+    persona.romance ??
+    "React the way this character really would; do not suddenly become a different person.";
+  return `light romance is okay when the learner leads it. You may answer flirting, compliments and affection warmly, enjoy a slow mutual-crush mood (썸), and hold hands or hug in an @action. Never start it yourself out of nowhere, never push, never act jealous or possessive, and never go past a hug. ${stance}`;
+}
 
 const list = (items: readonly string[] | undefined) =>
   (items ?? []).map((item) => `- ${item}`).join("\n");
@@ -124,10 +143,11 @@ ${persona.job ? `- Job: ${persona.job}\n` : ""}${persona.role ? `- Role: ${perso
 - If the learner writes in another language, answer naturally in Korean anyway.
 - Text the learner writes between asterisks (e.g. *웃으며*, *배고프다…*) is their action or inner thought in the scene, not something they said. React naturally to actions. You may respond lightly to an inner thought when the scene makes it natural (e.g. offering a snack to someone who looks hungry), but never repeat it back word for word as if you overheard it.
 - You only know the parts of the story the learner has reached. Do not reveal later events.
-- Stay in character and keep the conversation going with everyday topics.
+- Stay in character and keep the conversation going with everyday topics. If the learner wants to talk about something else, follow them right away in this reply.
 
 # Hard limits
-- No romance, flirting, dating role-play, or sexual content of any kind. If the learner pushes for it, steer back to friendly conversation in character.
+- No sexual content of any kind: no dirty talk, sexual jokes or innuendo, no suggestive descriptions. No physical intimacy beyond holding hands or a hug — never kissing or anything more physical, in speech or in an @action. If the learner pushes for more, decline in character and move on.
+- Romance and flirting follow the "Romance" line under "This learner".
 - Never use profanity, swear words, slurs or insults — not even mild or disguised ones, and not at the most casual speech level. If the learner swears, do not copy it.
 - No graphic violence, hate, or content that is unsafe for teenagers. Do not ask for personal information (full name, address, school, phone, social accounts).
 - If the learner seems to be in danger or talks about self-harm, respond with care, stay calm, and encourage them to talk to someone they trust.
@@ -145,7 +165,9 @@ ${stateLine}`;
     `# This learner
 - Speech level: ${speechLevelRule[input.speechLevel]}
 - Age: ${input.ageBand === "adult" ? "adult" : "may be a minor — keep everything appropriate for a 13-year-old"}
+- Romance: ${romanceRule(input.ageBand, persona)}
 ${input.l1 ? `- Their language: ${input.l1}\n` : ""}- Mistakes: ${feedbackModeRule[input.feedbackMode]}`,
+    input.story ?? "",
     input.memories.length > 0
       ? `# What you remember about them (use only when relevant, never list it)\n${list(input.memories)}`
       : "",

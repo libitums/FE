@@ -7,6 +7,10 @@ export type MediaEnvName =
   | "SUPABASE_SERVICE_ROLE_KEY"
   | "ANTHROPIC_API_KEY"
   | "COMPANION_SNAPSHOT_MODEL"
+  | "COMPANION_SNAPSHOT_CHECK"
+  | "COMPANION_SNAPSHOT_PARTIAL_IMAGES"
+  | "COMPANION_SNAPSHOT_REFS"
+  | "COMPANION_SNAPSHOT_COMPLEXITY"
   | "OPENAI_API_KEY"
   | "ELEVENLABS_API_KEY";
 
@@ -18,8 +22,40 @@ export type MediaEnv = {
   readonly anthropicKey: string | null;
   /** 프롬프트 · 검사 노드 모델. 기본 Haiku(lab TEXT_MODEL). */
   readonly snapshotModel: string;
+  /**
+   * 검사 노드(그린 그림을 Claude 비전으로 한 번 더 보기)를 돌릴지. 기본은 끔입니다 — 한 장에 약 25초가 걸려 단계를 줄였고, 안전은
+   * 프롬프트 노드의 판단과 이미지 엔진 자체의 거절이 맡습니다(ADR-0152). `COMPANION_SNAPSHOT_CHECK=on`으로 다시 켭니다.
+   */
+  readonly snapshotCheck: boolean;
+  /**
+   * 이미지 엔진에서 받을 중간 그림 수(0 ~ 3, 기본 0 — 편집 · Flare에서 중간 그림이 오지 않아 끔). 중간 그림은 `<user>/<media>.preview.png`로 올려
+   * 앱이 만드는 중에 흐리게 먼저 보인다(`media.previewPath`). 한 장마다 이미지 출력 토큰 100개(약 $0.003)가 더 든다.
+   */
+  readonly snapshotPartialImages: number;
+  /** 기준 그림 — `all`(시트 + 표정 시트, 기본) · `sheet`(시트 한 장만, 입력 토큰을 줄인다). */
+  readonly snapshotRefs: "all" | "sheet";
+  /**
+   * 이미지 엔진의 `complexity`(그리기 전 계획 정도 — low · medium · high, 기본 medium). OpenAI는 생략하면 high이고 「높을수록 지연이 늘 수
+   * 있다 · 별도 요금 없음」이라 medium으로 보낸다(사용자 결정 2026-11-16). `off`면 보내지 않는다(엔진 기본값).
+   */
+  readonly snapshotComplexity: "low" | "medium" | "high" | null;
   readonly openaiKey: string | null;
   readonly elevenKey: string | null;
+};
+
+/** 기본 중간 그림 수. 빈 값 · 숫자 아님은 기본, 범위 밖은 0 ~ 3으로 자른다. */
+export const defaultPartialImages = 0;
+const partialImagesFrom = (raw: string | null) => {
+  const n = raw === null ? Number.NaN : Number(raw);
+  return Number.isFinite(n) ? Math.max(0, Math.min(3, Math.trunc(n))) : defaultPartialImages;
+};
+
+/** 기본 `complexity`. 빈 값 · 모르는 값은 기본, `off`는 보내지 않음. */
+export const defaultComplexity = "medium";
+const complexityFrom = (raw: string | null): "low" | "medium" | "high" | null => {
+  const v = raw?.toLowerCase() ?? null;
+  if (v === "off") return null;
+  return v === "low" || v === "medium" || v === "high" ? v : defaultComplexity;
 };
 
 /** lab `TEXT_MODEL`과 같다. */
@@ -46,6 +82,10 @@ export function mediaEnvFrom(read: (name: MediaEnvName) => string | undefined): 
     supabaseServiceRoleKey,
     anthropicKey: value("ANTHROPIC_API_KEY"),
     snapshotModel: value("COMPANION_SNAPSHOT_MODEL") ?? defaultSnapshotModel,
+    snapshotCheck: value("COMPANION_SNAPSHOT_CHECK")?.toLowerCase() === "on",
+    snapshotPartialImages: partialImagesFrom(value("COMPANION_SNAPSHOT_PARTIAL_IMAGES")),
+    snapshotRefs: value("COMPANION_SNAPSHOT_REFS")?.toLowerCase() === "sheet" ? "sheet" : "all",
+    snapshotComplexity: complexityFrom(value("COMPANION_SNAPSHOT_COMPLEXITY")),
     openaiKey: value("OPENAI_API_KEY"),
     elevenKey: value("ELEVENLABS_API_KEY"),
   };

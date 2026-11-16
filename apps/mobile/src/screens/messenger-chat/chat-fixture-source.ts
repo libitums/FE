@@ -140,6 +140,7 @@ export function createFixtureChatSource(options: FixtureChatSourceOptions): Fixt
     if (room.access.kind === "open") return { kind: "already-open", roomId };
     openLockedRoom(room, openingOf(room), { isNew: true, unread: openRoomId !== roomId });
     changed(room);
+    remoteRoom?.greetUnlocked(roomId);
     return { kind: "unlocked", roomId };
   };
 
