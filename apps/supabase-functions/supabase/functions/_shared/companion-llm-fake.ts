@@ -141,7 +141,9 @@ export function fakeCompanionLlm(): CompanionLlm {
                 ? ["@action 학습자의 몸짓을 보고 웃는다"]
                 : []),
               `@speech 오, '${echo}'! 좋아요, 좋아요!${directive}`,
-              request.userText.includes("[unsafe-reply]")
+              // 출력 차단 뒤 다시 만들 때(ADR-0151)는 지시를 따라 화제를 돌린다.
+              request.userText.includes("[unsafe-reply]") &&
+              !request.directive?.includes("withheld")
                 ? "@speech [unsafe] 위험한 답"
                 : request.userText.includes("[swear-reply]")
                   ? "@speech 아 씨, 진짜요?"
