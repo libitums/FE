@@ -232,6 +232,9 @@ export function messengerChatWiring(args: MessengerChatWiringArgs): {
         args.dispatch({ type: "push", screen: { name: "messenger-chat", roomId } });
       },
       onGoToJourney: () => {
+        // 메신저 스택부터 루트로 접습니다 — 쌓인 방 자리에 접근 안내가 대신 서 있었다면(ADR-0128 리뷰 W1) 접지 않을 때 메신저 탭을
+        // 다시 누를 때마다 탭 바 없는 같은 안내가 섭니다. 목록(루트)에서 부르면 아무것도 바꾸지 않습니다.
+        args.dispatch({ type: "backToRoot" });
         for (const action of tabRootActions("journey")) args.dispatch(action);
       },
       onOpenChatSettings: () => {

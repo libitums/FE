@@ -47,9 +47,13 @@
 - 메신저 통합 테스트는 시험 계정 토큰으로 부팅한다(`renderTesterApp`).
 - 쓰는 중에 시험 표시가 꺼지면 다음 렌더부터 「곧 열림」이다(열려 있던 방 · 대화 설정 · 기억 화면 자리도). 방 안에서 서버 `not_available`을 받는 처리는 서버 출처 결선 때.
 - 앱을 켠 직후 세션 토큰을 읽기 전 첫 렌더는 시험 계정에게도 「곧 열림」이다. 메신저 탭은 시작 탭이 아니라 보이지 않는다(리뷰 S2).
+- **버그 수정(2026-11-17)** — 인물 해금은 접근과 무관하게 기록되는데, 맵의 「새 친구」 시트도 접근을 보지 않고 섰다. 손님 · 비시험 회원이
+  Reply를 누르면 방 자리에 이 안내가 탭 바 없이 쌓여, iOS 손님은 가입 말고 나갈 길이 없었고 회원은 「Go to Journey」 뒤에도 메신저
+  탭이 같은 화면이었다. 이제 시트는 메신저가 열린 계정에게만 선다(`newFriendModelOf`의 `access`, 해금 기록은 그대로라 열리면 목록에
+  NEW로 선다). 「Go to Journey」는 메신저 스택부터 루트로 접는다(위 「시험 표시가 꺼진」 경우에도 빠져나갈 수 있게).
 
 ## 테스트
-- unit MA-U1(`messenger-access.unit.test.ts`) · CP-U8, ui MA-UI1 ~ UI5(`ChatAccessGate.ui.test.tsx` · 설정 줄), integration MA-I1 ~ I3(`App.messenger-access.integration.test.tsx`) · CP-I7(비시험 회원의 선톡 푸시).
+- unit MA-U1(`messenger-access.unit.test.ts`) · CP-U8 · SW-U7(`new-friend-wiring.server.unit.test.ts`) · MW-U1(`messenger-chat-wiring.go-to-journey.unit.test.ts`), integration MC2-I6(`App.new-friend.integration.test.tsx`), ui MA-UI1 ~ UI5(`ChatAccessGate.ui.test.tsx` · 설정 줄), integration MA-I1 ~ I3(`App.messenger-access.integration.test.tsx`) · CP-I7(비시험 회원의 선톡 푸시).
 - e2e: [수동 기록](../e2e/messenger-access.md).
 
 ## 재검토 조건
