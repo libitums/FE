@@ -83,6 +83,23 @@
   flex-shrink: 0;
 }
 
+/* 대화 화면의 아래 묶음 — 대사가 길거나 화면이 작으면 묶음이 줄고, 그 안에서는 대사 스크롤만 줄어 말하기 묶음 ·
+   버튼이 화면 밖으로 밀리지 않습니다(최종 테스트 판과 같은 규칙). */
+.roleplay-story-screen-bottom-fit {
+  flex-shrink: 1;
+  min-height: 0;
+}
+
+/* 대화창(VisualNovelDialog)이 z-index를 가져 overflow만으로는 스크롤 경계 밖에 그려집니다 — 스크롤을 독립 레이어로
+   만듭니다(학습 껍데기 `-card-scroll`과 같은 규칙, SE 최대 글자 크기에서 대화창이 마이크를 덮던 것). */
+.roleplay-story-bottom-scroll {
+  flex-shrink: 1;
+  min-height: 0;
+  width: 100%;
+  overflow: hidden;
+  z-index: var(--libitum-elevation-z-default);
+}
+
 /* 미리보기의 알약 — 장면 위에서 읽히도록 짙은 반투명 면(72%)입니다. 맞는 면 토큰이 없어 값으로 적습니다. */
 .roleplay-story-chips {
   display: flex;
@@ -138,6 +155,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--libitum-spacing-8);
+  flex-shrink: 0;
 }
 
 /* 말하기 묶음 — 바탕 면 없이 장면 위에 바로 섭니다(시안 「진행 1」). */
@@ -147,6 +165,7 @@
   align-items: center;
   gap: var(--libitum-spacing-8);
   padding-top: var(--libitum-spacing-12);
+  flex-shrink: 0;
 }
 
 .roleplay-story-hint {

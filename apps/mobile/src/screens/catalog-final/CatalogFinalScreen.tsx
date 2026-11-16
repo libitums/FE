@@ -5,7 +5,6 @@ import arrowLeft03 from "@libitums/icons/lynx/arrow-left-03";
 import { Button } from "@libitums/ui-lynx/button";
 import { resolveReducedMotion, useMotion } from "@libitums/ui-lynx/motion";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
-import { VisualNovelDialog } from "@libitums/ui-lynx/visual-novel-dialog";
 
 import { AnswerReveal } from "../../components/AnswerReveal";
 import { AnswerVerdict } from "../../components/AnswerVerdict";
@@ -29,6 +28,7 @@ import {
   judgeRoleplayTurn,
 } from "./catalog-final";
 import type { CatalogFinalScreenProps } from "./catalog-final.contract";
+import { FinalCounterpartLine } from "./FinalCounterpartLine";
 
 import "./catalog-final-screen.css";
 
@@ -153,6 +153,8 @@ export function CatalogFinalScreen({
             <text
               className="catalog-final-screen-title"
               data-testid="catalog-final-screen-title"
+              // 최대 글자에서 제목이 세 줄을 넘으면 답안 판 · 버튼 자리를 먹어 두 줄로 자릅니다(낭독은 온전한 글).
+              text-maxline="2"
               accessibility-traits="header"
             >
               {`${copy.catalogMap.episodeLabel(ordinal)} ${copy.catalogMap.finalTitle}`}
@@ -168,28 +170,13 @@ export function CatalogFinalScreen({
 
         <view className="catalog-final-screen-spacer" />
 
-        {/* 상대 대사입니다 — 접근성 요소 하나로 읽히고 안쪽 패널은 가려 이름이 겹치지 않게 합니다. */}
-        <view
-          className="catalog-final-screen-line"
-          data-testid="catalog-final-screen-line"
-          accessibility-element={true}
-          accessibility-traits="text"
-          accessibility-label={catalogFinalLineAccessibilityLabel(turn, counterpartName)}
-        >
-          <view accessibility-elements-hidden={true}>
-            <VisualNovelDialog
-              speakerName={counterpartName}
-              line={turn.line.ko}
-              translation={turn.line.en ?? turn.line.roman ?? undefined}
-              reveal="instant"
-              continueIndicator="off"
-              surface="translucent"
-              contentLanguage="learning"
-              languageTag="ko"
-              reducedMotion={reducedMotion}
-            />
-          </view>
-        </view>
+        <FinalCounterpartLine
+          testId="catalog-final-screen-line"
+          accessibilityLabel={catalogFinalLineAccessibilityLabel(turn, counterpartName)}
+          speakerName={counterpartName}
+          line={turn.line}
+          reducedMotion={reducedMotion}
+        />
 
         {/* 답안 판입니다 — 어두운 반투명 면이라 칩은 dark 면을 받고, 판정 배지는 또렷하게 불투명(light)입니다.
             안쪽이 스크롤해서 큰 글꼴에서도 버튼이 밀려나지 않습니다. */}

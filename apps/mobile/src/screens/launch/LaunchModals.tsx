@@ -103,40 +103,48 @@ export function LaunchCoinsModal({
         <text className="launch-tag" accessibility-elements-hidden={true}>
           {copy.newTag}
         </text>
-        <view className="launch-coin" accessibility-elements-hidden={true}>
-          <svg className="launch-coin-icon" content={coinIcon} />
-        </view>
-        <text className="launch-title" accessibility-traits="header">
-          {copy.coinsTitle}
-        </text>
-        <text className="launch-body">{copy.coinsBody}</text>
-        <view
-          className="launch-list"
-          flatten={false}
-          accessibility-element={true}
-          accessibility-label={`${rows.map((r) => `${r.label} +${r.amount}`).join(", ")}, ${copy.balance} ${balance}`}
+        <scroll-view
+          className="launch-scroll"
+          scroll-orientation="vertical"
+          scroll-bar-enable={false}
         >
-          {rows.map((row, index) => (
-            <Row
-              key={row.label}
-              label={row.label}
-              amount={row.amount}
-              delay={600 + index * 180}
-              reduced={reduced}
-              index={index}
-            />
-          ))}
-          <view className={`launch-row launch-total launch-row-${rows.length}`}>
-            <text className="launch-total-label">{copy.balance}</text>
-            <view className="launch-total-value">
-              <svg id={launchCoinSourceId} className="launch-total-icon" content={coinIcon} />
-              <text className="launch-total-amount" data-testid={ids.balance}>
-                {String(total)}
-              </text>
+          <view className="launch-scroll-body">
+            <view className="launch-coin" accessibility-elements-hidden={true}>
+              <svg className="launch-coin-icon" content={coinIcon} />
             </view>
+            <text className="launch-title" accessibility-traits="header">
+              {copy.coinsTitle}
+            </text>
+            <text className="launch-body">{copy.coinsBody}</text>
+            <view
+              className="launch-list"
+              flatten={false}
+              accessibility-element={true}
+              accessibility-label={`${rows.map((r) => `${r.label} +${r.amount}`).join(", ")}, ${copy.balance} ${balance}`}
+            >
+              {rows.map((row, index) => (
+                <Row
+                  key={row.label}
+                  label={row.label}
+                  amount={row.amount}
+                  delay={600 + index * 180}
+                  reduced={reduced}
+                  index={index}
+                />
+              ))}
+              <view className={`launch-row launch-total launch-row-${rows.length}`}>
+                <text className="launch-total-label">{copy.balance}</text>
+                <view className="launch-total-value">
+                  <svg id={launchCoinSourceId} className="launch-total-icon" content={coinIcon} />
+                  <text className="launch-total-amount" data-testid={ids.balance}>
+                    {String(total)}
+                  </text>
+                </view>
+              </view>
+            </view>
+            <text className="launch-note">{copy.perLesson}</text>
           </view>
-        </view>
-        <text className="launch-note">{copy.perLesson}</text>
+        </scroll-view>
         <view className="launch-actions" data-testid={ids.gotIt}>
           <Button label={copy.gotIt} variant="brand" size="xl" width="fill" bindtap={done} />
         </view>
@@ -170,65 +178,83 @@ export function ChatIntroModal({ cast, onLater, onStart, onBack }: ChatIntroModa
         <text className="launch-tag" accessibility-elements-hidden={true}>
           {copy.newTag}
         </text>
-        <text className="launch-title" accessibility-traits="header">
-          {copy.chatTitle}
-        </text>
-        <text className="launch-body">{copy.chatBody}</text>
-        <view
-          className="launch-cast"
-          flatten={false}
-          accessibility-element={true}
-          accessibility-label={`${copy.metCount(met, cast.length)}: ${cast
-            .map(
-              (p) =>
-                `${p.name}, ${p.met ? copy.met : p.episode === null ? copy.now : copy.episode(p.episode)}`,
-            )
-            .join("; ")}`}
+        <scroll-view
+          className="launch-scroll"
+          scroll-orientation="vertical"
+          scroll-bar-enable={false}
         >
-          {cast.map((person, index) => (
+          <view className="launch-scroll-body">
+            <text className="launch-title" accessibility-traits="header">
+              {copy.chatTitle}
+            </text>
+            <text className="launch-body">{copy.chatBody}</text>
             <view
-              key={person.name}
-              className={`launch-person launch-person-${index}${person.met ? " launch-person-met" : " launch-person-locked"}`}
-              data-testid={ids.person(index)}
-              data-met={person.met ? "true" : "false"}
+              className="launch-cast"
+              flatten={false}
+              accessibility-element={true}
+              accessibility-label={`${copy.metCount(met, cast.length)}: ${cast
+                .map(
+                  (p) =>
+                    `${p.name}, ${p.met ? copy.met : p.episode === null ? copy.now : copy.episode(p.episode)}`,
+                )
+                .join("; ")}`}
             >
-              <view className="launch-face">
-                {person.avatarUrl === null ? (
-                  <view className="launch-face-image launch-face-blank" />
-                ) : (
-                  <image className="launch-face-image" src={person.avatarUrl} mode="aspectFill" />
-                )}
-                {person.met ? null : (
-                  <view className="launch-lock">
-                    <svg className="launch-lock-icon" content={lock} current-color={color.white} />
+              {cast.map((person, index) => (
+                <view
+                  key={person.name}
+                  className={`launch-person launch-person-${index}${person.met ? " launch-person-met" : " launch-person-locked"}`}
+                  data-testid={ids.person(index)}
+                  data-met={person.met ? "true" : "false"}
+                >
+                  <view className="launch-face">
+                    {person.avatarUrl === null ? (
+                      <view className="launch-face-image launch-face-blank" />
+                    ) : (
+                      <image
+                        className="launch-face-image"
+                        src={person.avatarUrl}
+                        mode="aspectFill"
+                      />
+                    )}
+                    {person.met ? null : (
+                      <view className="launch-lock">
+                        <svg
+                          className="launch-lock-icon"
+                          content={lock}
+                          current-color={color.white}
+                        />
+                      </view>
+                    )}
                   </view>
-                )}
-              </view>
-              <text className="launch-person-name">{person.name}</text>
-              <text className={`launch-person-tag${person.met ? " launch-person-tag-met" : ""}`}>
-                {person.met
-                  ? copy.met
-                  : person.episode === null
-                    ? copy.now
-                    : copy.episode(person.episode)}
-              </text>
+                  <text className="launch-person-name">{person.name}</text>
+                  <text
+                    className={`launch-person-tag${person.met ? " launch-person-tag-met" : ""}`}
+                  >
+                    {person.met
+                      ? copy.met
+                      : person.episode === null
+                        ? copy.now
+                        : copy.episode(person.episode)}
+                  </text>
+                </view>
+              ))}
             </view>
-          ))}
-        </view>
-        <view className="launch-meter" accessibility-elements-hidden={true}>
-          <view
-            className="launch-meter-fill"
-            style={{ width: `${Math.round((met / Math.max(1, cast.length)) * 100)}%` }}
-          />
-        </view>
-        <text className="launch-meta" accessibility-elements-hidden={true}>
-          {copy.metCount(met, cast.length)}
-        </text>
-        <view className="launch-prices">
-          <svg className="launch-total-icon" content={coinIcon} />
-          <text className="launch-prices-text">{copy.prices}</text>
-        </view>
-        {/* 위아래로 쌓습니다 — 나란히 두면 「Start chatting」이 두 줄로 접혀 「Later」와 높이가 어긋났습니다(기기 확인 2026-11-14). */}
+            <view className="launch-meter" accessibility-elements-hidden={true}>
+              <view
+                className="launch-meter-fill"
+                style={{ width: `${Math.round((met / Math.max(1, cast.length)) * 100)}%` }}
+              />
+            </view>
+            <text className="launch-meta" accessibility-elements-hidden={true}>
+              {copy.metCount(met, cast.length)}
+            </text>
+            <view className="launch-prices">
+              <svg className="launch-total-icon" content={coinIcon} />
+              <text className="launch-prices-text">{copy.prices}</text>
+            </view>
+            {/* 위아래로 쌓습니다 — 나란히 두면 「Start chatting」이 두 줄로 접혀 「Later」와 높이가 어긋났습니다(기기 확인 2026-11-14). */}
+          </view>
+        </scroll-view>
         <view className="launch-actions launch-actions-stack">
           <view data-testid={ids.start}>
             <Button label={copy.start} variant="brand" size="xl" width="fill" bindtap={onStart} />

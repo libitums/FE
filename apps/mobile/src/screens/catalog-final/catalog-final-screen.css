@@ -64,6 +64,7 @@
   font-weight: var(--libitum-typography-heading-m-font-weight);
   line-height: var(--libitum-typography-heading-m-line-height);
   letter-spacing: var(--libitum-typography-heading-m-letter-spacing);
+  text-overflow: ellipsis;
 }
 
 .catalog-final-screen-progress {
@@ -81,8 +82,24 @@
 
 /* 상대 대사 — 패널과 답안 판 사이가 12입니다. */
 .catalog-final-screen-line {
-  flex-shrink: 0;
+  /* 판보다 먼저 줍니다 — Lynx는 판의 최소 높이를 안쪽 고정 칸(쓰기 칸 · 버튼)으로 지키지 않아, 같은 비율로 줄면 판이
+     고정 칸보다 작아져 버튼이 밀립니다(SE 최대 글자). 대사는 제 스크롤에서 끝까지 읽힙니다. */
+  flex-shrink: 8;
+  /* 다 줄어도 대사 첫 줄은 보여 스크롤로 이어 읽을 수 있게 둡니다. */
+  min-height: calc(var(--libitum-spacing-48) + var(--libitum-spacing-8));
+  display: flex;
+  flex-direction: column;
   padding: 0 var(--libitum-layout-screen-padding-x) var(--libitum-spacing-12);
+}
+
+/* 큰 글자에서 대사가 화면을 다 차지하면 대사도 줄고 이 스크롤 안에서 잘립니다. 대화창이 z-index를 가져 overflow만으로는
+   경계 밖에 그려지므로 독립 레이어로 만듭니다(롤플레이 대화 화면 · 학습 껍데기 `-card-scroll`과 같은 규칙). */
+.catalog-final-screen-line-scroll {
+  flex-shrink: 1;
+  min-height: 0;
+  width: 100%;
+  overflow: hidden;
+  z-index: var(--libitum-elevation-z-default);
 }
 
 /* 번역 줄은 밝은 그림 위 반투명 패널에서 기본 gray-700이 모자라 한 단 밝힙니다(비주얼 노벨 대사와 같은

@@ -244,6 +244,37 @@ describe("CatalogStoryFinalScreen", () => {
     expect(actionText()).toHaveTextContent("See results");
   });
 
+  test("SU11. SE 크기 창(667 − 위 20)에서는 쓰기 칸이 가장 작은 단계다(s · 144)", () => {
+    const scope = globalThis as unknown as {
+      SystemInfo: { pixelHeight: number; pixelRatio: number };
+    };
+    const lynxScope = lynx as unknown as { __globalProps: unknown };
+    const previous = { info: scope.SystemInfo, props: lynxScope.__globalProps };
+    scope.SystemInfo = { ...previous.info, pixelHeight: 2001, pixelRatio: 3 };
+    lynxScope.__globalProps = { safeAreaInsets: { top: 20, bottom: 0, left: 0, right: 0 } };
+    try {
+      mount([write]);
+      expect(screen.getByTestId("catalog-story-final-pad")).toHaveAttribute("data-size", "s");
+    } finally {
+      scope.SystemInfo = previous.info;
+      lynxScope.__globalProps = previous.props;
+    }
+  });
+
+  test("SU12. 따라 쓰는 동안은 빈 판정 자리를 접어 대답 줄에 자리를 주고, 판정 뒤에는 배지가 그 자리에 선다", () => {
+    mount([write]);
+    const slot = () => screen.getByTestId("catalog-story-final-verdict-slot");
+    expect(slot().getAttribute("class") ?? "").toContain(
+      "catalog-story-final-verdict-slot-collapsed",
+    );
+    tap(action() as Element);
+    tap(action() as Element);
+    expect(slot().getAttribute("class") ?? "").not.toContain(
+      "catalog-story-final-verdict-slot-collapsed",
+    );
+    expect(within(slot()).getByTestId("answer-verdict")).toBeInTheDocument();
+  });
+
   test("SU6. 마지막 턴 뒤 See results가 결과를 한 번만 올린다", () => {
     const { onFinish } = mount([choice]);
     tap(option(1));

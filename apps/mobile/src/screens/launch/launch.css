@@ -13,6 +13,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  /* 큰 글자에서 상자가 화면 끝에 붙지 않게 위아래로 비웁니다(상태 표시줄 · 홈 표시줄 몫). */
+  padding: var(--libitum-spacing-48) var(--libitum-spacing-0);
 }
 
 /* 막은 상자 아래 — fixed 안의 fixed는 Lynx에서 위 내용을 덮습니다(새 친구 시트와 같은 처리). */
@@ -37,8 +39,29 @@
   row-gap: var(--libitum-spacing-12);
   border-radius: var(--libitum-radius-lg);
   background-color: var(--libitum-color-white);
+  /* 큰 글자에서 상자는 화면을 넘지 않고 줄고, 줄 때는 내용 스크롤만 줄어 버튼이 늘 상자 안에 섭니다. */
+  max-height: 100%;
+  min-height: 0;
+  flex-shrink: 1;
   animation: launch-pop var(--libitum-motion-duration-d7)
     var(--libitum-motion-easing-enter-expressive) both;
+}
+
+/* 상자 내용(엽전 · 제목 · 본문 · 표 · 안내) — 상자가 줄면 이 스크롤만 줍니다. `<scroll-view>`는 linear라 간격은 안쪽
+   상자가 집니다. 독립 레이어로 만들어 내용이 경계 밖에 그려지지 않게 합니다. */
+.launch-scroll {
+  flex-shrink: 1;
+  min-height: 0;
+  width: 100%;
+  overflow: hidden;
+  z-index: var(--libitum-elevation-z-default);
+}
+
+.launch-scroll-body {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  row-gap: var(--libitum-spacing-12);
 }
 
 .launch-box-out {
@@ -179,6 +202,7 @@
 
 .launch-actions {
   margin-top: var(--libitum-spacing-4);
+  flex-shrink: 0;
 }
 
 .launch-actions-stack {

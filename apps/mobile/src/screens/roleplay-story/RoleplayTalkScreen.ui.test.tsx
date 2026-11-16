@@ -223,3 +223,14 @@ test("[RP2] 권한이 거부되면 미리보기에 「Open Settings」 · 「Not
   fireEvent.tap(within(id("ui-lynx-dialog-action-settings")).getByTestId("ui-lynx-button"), {});
   expect(onAction).toHaveBeenCalledWith("settings");
 });
+
+test("[RT-FIT] 긴 대사 · 판정 뒤에도 대사는 아래 묶음의 스크롤 안, 말하기 묶음 · 버튼은 스크롤 밖이다", () => {
+  stubSpeechHost({ result: () => recognized("다른 말") });
+  mount();
+  const scrollOf = (el: Element) => el.closest("scroll-view");
+  expect(scrollOf(id("roleplay-talk-line"))).not.toBeNull();
+  expect(scrollOf(id("roleplay-talk-mic"))).toBeNull();
+  fireEvent.tap(id("roleplay-talk-mic"), {});
+  expect(scrollOf(id("roleplay-talk-reply"))).not.toBeNull();
+  expect(scrollOf(id("roleplay-talk-actions"))).toBeNull();
+});
