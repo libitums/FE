@@ -67,6 +67,8 @@ export type TopicState = {
   readonly storySeen?: readonly string[];
   readonly storyShow?: readonly string[];
   readonly storyShowUntil?: number | null;
+  /** 마지막 턴 시각(epoch ms) — 새 대화 세션 판정(`companion-story.ts`). 옛 상태에는 없다. */
+  readonly lastAt?: number | null;
   /** 이 대화에서 화제 씨앗으로 쓴 메신저 비트 id. */
   readonly beatsUsed?: readonly string[];
   /** 학습 지시를 센 날(UTC `YYYY-MM-DD`)과 그날의 수 — 대화당 하루 상한. */

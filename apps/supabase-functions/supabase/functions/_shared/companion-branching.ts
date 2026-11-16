@@ -91,6 +91,7 @@ export function topicStateFrom(raw: Partial<TopicState> | null | undefined): Top
     storySeen: strings(raw?.storySeen, 60),
     storyShow: strings(raw?.storyShow, 10),
     storyShowUntil: nullableNum(raw?.storyShowUntil),
+    lastAt: nullableNum(raw?.lastAt),
     beatsUsed: strings(raw?.beatsUsed, 60),
     learnDay: typeof raw?.learnDay === "string" ? raw.learnDay : null,
     learnToday: num(raw?.learnToday, 0),
@@ -206,6 +207,8 @@ export function nextTopicState(
     readonly maxSkipStreak?: number;
     /** 이번 턴에 실은 「지금까지 이야기」 카드(`pickStory`). */
     readonly story?: StoryPick;
+    /** 이번 턴 시각(epoch ms) — 다음 턴의 새 세션 판정. 없으면 그대로. */
+    readonly nowMs?: number;
   },
 ): TopicState {
   const topic = input.turnState?.topic ?? state.topic;
@@ -234,6 +237,7 @@ export function nextTopicState(
           storyShowUntil: state.storyShowUntil ?? null,
         }
       : nextStoryState(state, input.story)),
+    lastAt: input.nowMs ?? state.lastAt ?? null,
     beatsUsed:
       input.action?.kind === "switch" && input.action.beatId !== undefined
         ? [...(state.beatsUsed ?? []), input.action.beatId].slice(-60)

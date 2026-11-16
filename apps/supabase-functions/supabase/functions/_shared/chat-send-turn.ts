@@ -55,7 +55,7 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
   const pool = context.learning.expressions;
   const today = learningDay(deps.nowMs());
   const learningSettings = learningSettingsFrom(context.learning);
-  const story = pickStory(body.character_id, context.learning.episodes, topicState);
+  const story = pickStory(body.character_id, context.learning.episodes, topicState, deps.nowMs());
   const branch = chooseBranch(topicState, {
     userText: body.text,
     persona,
@@ -251,6 +251,7 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
           today,
           maxSkipStreak: learningSettings.maxSkipStreak,
           story,
+          nowMs: deps.nowMs(),
         }),
       },
     );

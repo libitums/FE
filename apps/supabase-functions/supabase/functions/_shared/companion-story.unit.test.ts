@@ -9,39 +9,62 @@ import {
   nextStoryState,
   openerBeat,
   pickStory,
+  sessionStart,
   storyCardFor,
   storyConfig,
 } from "./companion-story.ts";
 
+const T0 = Date.UTC(2026, 10, 16, 9);
+const MINUTE = 60_000;
+const HOUR = 60 * MINUTE;
 const minaDone = ["u00-tutorial", "u01-water", "u02-checkin", "u03-mina"];
 
 test("ST1. 카드는 끝낸 에피소드만 · 대화 처음에 모두 싣고 열린 약속을 붙인다", () => {
-  const pick = pickStory("mina", minaDone, topicStateFrom(null));
+  const pick = pickStory("mina", minaDone, topicStateFrom(null), T0);
   expect(pick.shown).toEqual(["u01-water", "u02-checkin", "u03-mina"]);
   expect(pick.fresh).toEqual(pick.shown);
   expect(pick.text).toContain("어, 새로 오셨나 봐요?");
   expect(pick.text).toContain("# Still open between you");
   expect(pick.text).toContain("유진식당 맛있었는지");
   expect(pick.text).not.toContain("파전");
-  expect(pickStory("mina", ["u00-tutorial"], topicStateFrom(null)).text).toBeNull();
-  expect(pickStory("duksu", minaDone, topicStateFrom(null)).text).toBeNull();
+  expect(pickStory("mina", ["u00-tutorial"], topicStateFrom(null), T0).text).toBeNull();
+  expect(pickStory("duksu", minaDone, topicStateFrom(null), T0).text).toBeNull();
 });
 
-test("ST2. 처음 실은 뒤 showTurns 턴까지만 싣고, 새 에피소드를 끝내면 그것만 새 창으로", () => {
+test("ST2. 처음 실은 뒤 showTurns 턴까지만 싣고, 새 에피소드는 새 세션의 첫 턴에 그것만 새 창으로", () => {
   let state = topicStateFrom(null);
+  let now = T0;
   const shownTurns: number[] = [];
   for (let turn = 0; turn < 6; turn += 1) {
-    const pick = pickStory("mina", minaDone, state);
+    const pick = pickStory("mina", minaDone, state, now);
     if (pick.text !== null) shownTurns.push(state.turn);
     state = nextTopicState(state, {
       userText: "네 좋아요",
       turnState: null,
       action: null,
       story: pick,
+      nowMs: now,
     });
+    now += MINUTE;
   }
   expect(shownTurns).toEqual(Array.from({ length: storyConfig.showTurns }, (_, i) => i));
-  const later = pickStory("mina", [...minaDone, "u13-pajeon"], state);
+  const progressed = [...minaDone, "u13-pajeon"];
+  // 같은 세션 안(몇 분 뒤)에 에피소드를 끝냈으면 아직 싣지 않고, 「안 본 것」으로 남긴다.
+  const midSession = pickStory("mina", progressed, state, now);
+  expect(midSession.text).toBeNull();
+  expect(
+    nextTopicState(state, {
+      userText: "네",
+      turnState: null,
+      action: null,
+      story: midSession,
+      nowMs: now,
+    }).storySeen,
+  ).not.toContain("u13-pajeon");
+  // 세션 간격이 지나 다시 온 첫 턴에 새로 나간 진도만 싣는다.
+  const nextSession = now + storyConfig.sessionGapHours * HOUR;
+  expect(sessionStart(state, nextSession)).toBe(true);
+  const later = pickStory("mina", progressed, state, nextSession);
   expect(later.fresh).toEqual(["u13-pajeon"]);
   expect(later.shown).toEqual(["u13-pajeon"]);
   expect(later.text).toContain("파전");
@@ -50,6 +73,8 @@ test("ST2. 처음 실은 뒤 showTurns 턴까지만 싣고, 새 에피소드를 
     storyShow: ["u13-pajeon"],
     storyShowUntil: state.turn + storyConfig.showTurns - 1,
   });
+  // 진도가 그대로면 새 세션이어도 싣지 않는다.
+  expect(pickStory("mina", minaDone, state, nextSession).text).toBeNull();
 });
 
 test("ST3. 카드는 시스템 프롬프트 뒤 부분(유저별)에 실린다 — 앞 부분 캐시를 깨지 않는다", () => {
