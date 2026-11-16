@@ -130,6 +130,8 @@ export function JourneyStatModal({
           </view>
         </view>
 
+        {/* 큰 숫자 위 여백 — 화면이 작거나 글자가 크면 이 여백이 먼저 줄고, 그다음에 큰 숫자 영역이 줄어 버튼이 늘 화면 안에 섭니다. */}
+        <view className="journey-stat-modal-hero-gap" />
         <view
           className={`journey-stat-modal-hero ${alive ? "journey-stat-modal-hero-enter" : "journey-stat-modal-hero-fade"}`}
           data-testid="journey-stat-modal-hero"

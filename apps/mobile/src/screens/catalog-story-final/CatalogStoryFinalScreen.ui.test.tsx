@@ -205,6 +205,76 @@ describe("CatalogStoryFinalScreen", () => {
     expect(screen.getByTestId("answer-verdict")).toHaveAttribute("data-result", "correct");
   });
 
+  test("SU9. 긴 대사 · 틀 · 힌트에서도 버튼 자리는 판 스크롤 밖, 쓰기 칸 다음 판의 직속 자식이다(Ep3 파이널 5/6)", () => {
+    const long = "저는 스위스에서 한국어 배우러 왔어요. 여기서 며칠 묵어요? ".repeat(4);
+    mount([
+      {
+        ...write,
+        line: { ko: long, roman: null, en: long },
+        template: `${long}___. ${long}`,
+        replyTranslation: "I'm from Australia. How many days are you staying here? ".repeat(4),
+        correctNote: "Trace the strokes in order. ".repeat(6),
+        syllables: ["왔", "어", "요"],
+      },
+    ]);
+    // 마지막 음절 앞(쓰기 칸이 선 채 Check)에서 봅니다 — 판정 뒤에는 쓰기 칸이 내려갑니다(SU10).
+    for (let i = 0; i < 2; i += 1) tap(action() as Element);
+    expect(actionText()).toHaveTextContent("Check");
+    const slot = screen.getByTestId("catalog-story-final-action");
+    const panel = slot.parentElement;
+    expect(panel?.getAttribute("class") ?? "").toContain("catalog-final-screen-panel");
+    expect(slot.closest("scroll-view")).toBeNull();
+    // 판 안 순서: 스크롤(줄어드는 칸) → 쓰기 칸 → 버튼 자리 — 버튼 앞에서 늘어나는 것은 스크롤뿐입니다.
+    const children = Array.from(panel?.children ?? []);
+    const scrollAt = children.findIndex((child) => child.tagName.toLowerCase() === "scroll-view");
+    const pad = screen.getByTestId("catalog-story-final-write");
+    const padAt = children.findIndex((child) => child === pad || child.contains(pad));
+    expect(scrollAt).toBe(0);
+    expect(padAt).toBeGreaterThan(scrollAt);
+    expect(children.indexOf(slot)).toBe(padAt + 1);
+  });
+
+  test("SU10. 따라 쓰기를 판정한 뒤에는 쓰기 칸이 내려가 판정 · 대답 줄이 판 스크롤에 자리를 얻는다(작은 화면)", () => {
+    mount([write]);
+    expect(screen.getByTestId("catalog-story-final-write")).toBeInTheDocument();
+    tap(action() as Element);
+    tap(action() as Element);
+    expect(screen.getByTestId("answer-verdict")).toBeInTheDocument();
+    expect(screen.queryByTestId("catalog-story-final-write")).not.toBeInTheDocument();
+    expect(actionText()).toHaveTextContent("See results");
+  });
+
+  test("SU11. SE 크기 창(667 − 위 20)에서는 쓰기 칸이 가장 작은 단계다(s · 144)", () => {
+    const scope = globalThis as unknown as {
+      SystemInfo: { pixelHeight: number; pixelRatio: number };
+    };
+    const lynxScope = lynx as unknown as { __globalProps: unknown };
+    const previous = { info: scope.SystemInfo, props: lynxScope.__globalProps };
+    scope.SystemInfo = { ...previous.info, pixelHeight: 2001, pixelRatio: 3 };
+    lynxScope.__globalProps = { safeAreaInsets: { top: 20, bottom: 0, left: 0, right: 0 } };
+    try {
+      mount([write]);
+      expect(screen.getByTestId("catalog-story-final-pad")).toHaveAttribute("data-size", "s");
+    } finally {
+      scope.SystemInfo = previous.info;
+      lynxScope.__globalProps = previous.props;
+    }
+  });
+
+  test("SU12. 따라 쓰는 동안은 빈 판정 자리를 접어 대답 줄에 자리를 주고, 판정 뒤에는 배지가 그 자리에 선다", () => {
+    mount([write]);
+    const slot = () => screen.getByTestId("catalog-story-final-verdict-slot");
+    expect(slot().getAttribute("class") ?? "").toContain(
+      "catalog-story-final-verdict-slot-collapsed",
+    );
+    tap(action() as Element);
+    tap(action() as Element);
+    expect(slot().getAttribute("class") ?? "").not.toContain(
+      "catalog-story-final-verdict-slot-collapsed",
+    );
+    expect(within(slot()).getByTestId("answer-verdict")).toBeInTheDocument();
+  });
+
   test("SU6. 마지막 턴 뒤 See results가 결과를 한 번만 올린다", () => {
     const { onFinish } = mount([choice]);
     tap(option(1));

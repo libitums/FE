@@ -82,6 +82,31 @@ describe("catalog-final-screen.css", () => {
     );
   });
 
+  it("[CFC7] 판이 화면보다 길어지면 판 스크롤이 줄고 버튼 자리 · 대사 · 머리는 줄지 않는다(Ep3 파이널 5/6 버튼이 화면 밖으로 밀리던 것)", () => {
+    // 판과 판 스크롤은 줄 수 있어야 합니다 — 줄지 않으면 화면 밑이 잘려 버튼이 사라집니다.
+    expect(declaration(panel, "flex-shrink")).toBe("1");
+    expect(declaration(panel, "min-height")).toBe("0");
+    expect(declaration(/\.catalog-final-screen-panel-scroll/, "flex-shrink")).toBe("1");
+    expect(declaration(/\.catalog-final-screen-panel-scroll/, "min-height")).toBe("0");
+    // 버튼 자리 · 머리는 늘 제 높이를 지킵니다.
+    expect(declaration(/\.catalog-final-screen-action/, "flex-shrink")).toBe("0");
+    expect(declaration(/\.catalog-final-screen-header/, "flex-shrink")).toBe("0");
+  });
+
+  it("[CFC8] 큰 글자에서 상대 대사도 줄고 제 스크롤 안에서 잘린다(대화창 z-index — 스크롤을 독립 레이어로)", () => {
+    expect(Number(declaration(/\.catalog-final-screen-line/, "flex-shrink"))).toBeGreaterThan(
+      Number(declaration(panel, "flex-shrink")),
+    );
+    expect(declaration(/\.catalog-final-screen-line/, "min-height")).toBe(
+      "calc(var(--libitum-spacing-48) + var(--libitum-spacing-8))",
+    );
+    const scroll = /\.catalog-final-screen-line-scroll/;
+    expect(declaration(scroll, "flex-shrink")).toBe("1");
+    expect(declaration(scroll, "min-height")).toBe("0");
+    expect(declaration(scroll, "overflow")).toBe("hidden");
+    expect(declaration(scroll, "z-index")).toBe("var(--libitum-elevation-z-default)");
+  });
+
   it("[FDK4] 판 면은 흰 위에서 W와 같고, 지시문 · 힌트 · 번역 줄은 W에서 4.5:1 이상이다", () => {
     const face = rgbaInValue(declaration(panel, "background-color")) ?? {
       rgb: [255, 255, 255],

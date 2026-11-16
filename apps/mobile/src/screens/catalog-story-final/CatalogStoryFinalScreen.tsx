@@ -4,7 +4,6 @@ import arrowLeft03 from "@libitums/icons/lynx/arrow-left-03";
 import { Button } from "@libitums/ui-lynx/button";
 import { resolveReducedMotion, useMotion } from "@libitums/ui-lynx/motion";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
-import { VisualNovelDialog } from "@libitums/ui-lynx/visual-novel-dialog";
 
 import { AnswerVerdict } from "../../components/AnswerVerdict";
 import { playSound } from "../../lib/sound-effects";
@@ -23,7 +22,9 @@ import {
 } from "./catalog-story-final";
 import type { CatalogStoryFinalScreenProps } from "./catalog-story-final.contract";
 import { StoryChoiceOptions, StoryReplyLine, StoryTilesBank } from "./StoryFinalAnswer";
+import { FinalCounterpartLine } from "../catalog-final/FinalCounterpartLine";
 import { StoryWritePad } from "./StoryWritePad";
+import { useStoryPadSize } from "./story-pad-size";
 import { useStoryTrace } from "./use-story-trace";
 
 import "../catalog-final/catalog-final-screen.css";
@@ -55,7 +56,8 @@ export function CatalogStoryFinalScreen({
     turn.kind === "write"
       ? (turn.syllables[Math.min(syllableIndex, turn.syllables.length - 1)] ?? "")
       : "";
-  const trace = useStoryTrace(syllable, `${state.turnIndex}:${syllableIndex}`);
+  const padSize = useStoryPadSize();
+  const trace = useStoryTrace(syllable, `${state.turnIndex}:${syllableIndex}`, padSize);
   const listenSource = turn.kind === "write" ? turn.replyAudioSource : undefined;
   const audio = useAudioCue(
     listens > 0 && listenSource !== undefined
@@ -174,6 +176,8 @@ export function CatalogStoryFinalScreen({
             <text
               className="catalog-final-screen-title"
               data-testid="catalog-story-final-title"
+              // 최대 글자에서 제목이 세 줄을 넘으면 답안 판 · 버튼 자리를 먹어 두 줄로 자릅니다(낭독은 온전한 글).
+              text-maxline="2"
               accessibility-traits="header"
             >
               {`${copy.catalogMap.episodeLabel(ordinal)} ${copy.catalogMap.finalTitle}`}
@@ -189,27 +193,13 @@ export function CatalogStoryFinalScreen({
 
         <view className="catalog-final-screen-spacer" />
 
-        <view
-          className="catalog-final-screen-line"
-          data-testid="catalog-story-final-line"
-          accessibility-element={true}
-          accessibility-traits="text"
-          accessibility-label={storyFinalLineAccessibilityLabel(turn)}
-        >
-          <view accessibility-elements-hidden={true}>
-            <VisualNovelDialog
-              speakerName={turn.speakerName}
-              line={turn.line.ko}
-              translation={turn.line.en ?? turn.line.roman ?? undefined}
-              reveal="instant"
-              continueIndicator="off"
-              surface="translucent"
-              contentLanguage="learning"
-              languageTag="ko"
-              reducedMotion={reducedMotion}
-            />
-          </view>
-        </view>
+        <FinalCounterpartLine
+          testId="catalog-story-final-line"
+          accessibilityLabel={storyFinalLineAccessibilityLabel(turn)}
+          speakerName={turn.speakerName}
+          line={turn.line}
+          reducedMotion={reducedMotion}
+        />
 
         <view className="catalog-final-screen-panel">
           <scroll-view
@@ -224,9 +214,14 @@ export function CatalogStoryFinalScreen({
               >
                 {turn.instruction}
               </text>
-              {/* 판정 자리 — 안내 바로 아래 가운데, 불투명 배지(사용자 결정 2026-11-02). 비어 있어도 높이를 지킵니다. */}
+              {/* 판정 자리 — 안내 바로 아래 가운데, 불투명 배지(사용자 결정 2026-11-02). 비어 있어도 높이를 지킵니다.
+                  따라 쓰는 동안만 접습니다 — 판정 뒤 쓰기 칸이 내려가 어차피 판이 바뀌고, 작은 화면에서 대답 줄 자리가 됩니다. */}
               <view
-                className="catalog-final-screen-verdict-slot catalog-story-final-verdict-slot"
+                className={`catalog-final-screen-verdict-slot catalog-story-final-verdict-slot${
+                  turn.kind === "write" && !checked
+                    ? " catalog-story-final-verdict-slot-collapsed"
+                    : ""
+                }`}
                 data-testid="catalog-story-final-verdict-slot"
               >
                 {result === null ? null : <AnswerVerdict result={result} />}
@@ -264,9 +259,12 @@ export function CatalogStoryFinalScreen({
             </view>
           </scroll-view>
 
-          {turn.kind === "write" ? (
+          {/* 판정 뒤에는 더 쓸 것이 없어 쓰기 칸을 내립니다 — 작은 화면에서 판정 · 대답 줄 · 해설이 판 스크롤에
+              자리를 얻습니다(쓰기 칸이 서 있으면 판 스크롤이 거의 0으로 줄어 판정이 가려졌습니다). */}
+          {turn.kind === "write" && !checked ? (
             <StoryWritePad
               syllable={syllable}
+              size={padSize}
               trace={trace}
               onListen={listenSource === undefined ? null : () => setListens((count) => count + 1)}
             />
