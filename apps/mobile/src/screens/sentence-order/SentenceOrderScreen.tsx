@@ -10,6 +10,7 @@ import { useLearningItemGuide } from "../../components/use-learning-item-guide";
 import { announce, announceCompletion } from "../../lib/accessibility";
 import type { ConversationCast } from "../../lib/conversation-cast";
 import type { ItemAnswerReporter } from "../../lib/item-answer";
+import { selectedField, selectedTilesText } from "../../lib/item-answer";
 import { answerEchoCueOf, listenCueOf, standaloneLessonAudio } from "../../lib/question-audio";
 import type { LessonAudio } from "../../lib/question-audio";
 import { initialSessionOptions } from "../../lib/session-options";
@@ -148,7 +149,19 @@ export function SentenceOrderActivity({
   const check = () => {
     if (question == null) return;
     const judged = judgeSentenceOrder(question, state.placedChipIndexes);
-    onItemAnswered?.({ questionIndex: state.questionIndex, outcome: judged, density });
+    onItemAnswered?.({
+      questionIndex: state.questionIndex,
+      outcome: judged,
+      density,
+      // 대화 순서는 턴을 「 | 」로, 낱말은 공백으로 잇습니다(콘텐츠 정답 표기와 같게).
+      ...selectedField(
+        selectedTilesText(
+          question.chips,
+          state.placedChipIndexes,
+          question.dialogue === undefined ? " " : " | ",
+        ),
+      ),
+    });
     dispatch({ type: "check" });
     listen.answered(judged);
   };

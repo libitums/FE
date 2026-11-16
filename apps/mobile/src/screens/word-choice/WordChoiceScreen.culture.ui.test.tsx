@@ -366,6 +366,8 @@ describe("문화 확인 장면 — 답한 뒤", () => {
       questionIndex: 0,
       outcome: "incorrect",
       density: "regular",
+      // 처음 고른 보기의 글자입니다(UA5).
+      selectedAnswer: "잘 먹겠습니다!",
     });
   });
 });

@@ -31,6 +31,7 @@ import {
 import type { AnswerResult } from "../../lib/answer-result";
 import type { ConversationCast } from "../../lib/conversation-cast";
 import type { ItemAnswerReporter } from "../../lib/item-answer";
+import { choiceReport } from "../../lib/item-answer";
 import { answerEchoCueOf, listenCueOf, standaloneLessonAudio } from "../../lib/question-audio";
 import type { LessonAudio } from "../../lib/question-audio";
 import {
@@ -203,7 +204,7 @@ export function WordChoiceActivity({
     if (question === null || !answerable) return;
     const judged = index === question.answerIndex ? "correct" : "incorrect";
     if (!hasAnswered(state)) {
-      onItemAnswered?.({ questionIndex: state.questionIndex, outcome: judged, density });
+      onItemAnswered?.(choiceReport(state.questionIndex, judged, density, question.choices, index));
       const entering = cultureFeedbackOf(question, judged, copy);
       if (entering !== undefined) announce(cultureFeedbackAnnouncement(entering));
     }

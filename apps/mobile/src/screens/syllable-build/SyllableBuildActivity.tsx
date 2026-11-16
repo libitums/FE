@@ -1,4 +1,5 @@
 import { useEffect, useReducer } from "@lynx-js/react";
+import { selectedField, selectedTilesText } from "../../lib/item-answer";
 import type { ReactNode } from "@lynx-js/react";
 
 import { AnswerReveal } from "../../components/AnswerReveal";
@@ -118,6 +119,7 @@ export function SyllableBuildActivity({
                   questionIndex: state.questionIndex,
                   outcome: judgeSyllableBuild(question, state.placedTileIndexes),
                   density,
+                  ...selectedField(selectedTilesText(question.tiles, state.placedTileIndexes, "")),
                 });
                 dispatch({ type: "check" });
               },

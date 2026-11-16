@@ -116,6 +116,8 @@ test("EV5. 문항 판정은 첫 탭에서 한 번만 보고되고 outcome · den
     questionIndex: 0,
     outcome: "incorrect",
     density: "regular",
+    // 처음 고른 보기의 글자입니다(UA1 — 측정 필드 추가 2026-11-16).
+    selectedAnswer: first.choices[wrongIndex],
   });
 });
 
@@ -131,6 +133,7 @@ test("EV5. 13 mini 창에서는 density가 compact로 실린다", () => {
     questionIndex: 0,
     outcome: "correct",
     density: "compact",
+    selectedAnswer: first.choices[answerIndex],
   });
 });
 

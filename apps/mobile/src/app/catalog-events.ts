@@ -96,11 +96,19 @@ export function listenItemAnsweredEventOf(
 }
 
 /** 채점 문항의 첫 판정 이벤트입니다. 채점 유형이 아니면 `null`입니다. */
+/** 문항을 낸 판의 정보입니다. */
+export type ItemAnswerContent = {
+  readonly version: string;
+  readonly source: "bundled" | "remote";
+  readonly level?: number;
+};
+
 export function itemAnsweredEventOf(
   episodeId: string,
   unitKey: CatalogUnitKey,
   ref: CatalogItemRef,
   report: ItemAnswerReport,
+  content?: ItemAnswerContent,
 ): EpisodeItemAnsweredEvent | null {
   const itemType = scoredItemTypeOf(ref.itemType);
   if (itemType === null) return null;
@@ -112,5 +120,13 @@ export function itemAnsweredEventOf(
     itemType,
     result: report.outcome,
     density: report.density,
+    ...(content === undefined
+      ? {}
+      : { contentVersion: content.version, contentSource: content.source }),
+    ...(content?.level === undefined ? {} : { contentLevel: String(content.level) }),
+    ...(report.selectedAnswer === undefined ? {} : { selectedAnswer: report.selectedAnswer }),
+    ...(report.outcome === "skipped" && report.skipReason !== undefined
+      ? { skipReason: report.skipReason }
+      : {}),
   };
 }

@@ -71,6 +71,16 @@ export type EpisodeItemAnsweredEvent = {
   readonly itemType: ScoredItemType;
   readonly result: ItemAnswerOutcome;
   readonly density: LearningDensity;
+  /** 그 에피소드 판의 버전입니다(카탈로그 항목의 `version`). */
+  readonly contentVersion?: string;
+  /** 판의 출처 — 앱 내장 또는 버킷에서 받은 판입니다. */
+  readonly contentSource?: "bundled" | "remote";
+  /** 원격 판을 받은 매니페스트의 `min_client_level`(10진 문자열)입니다. 내장판은 싣지 않습니다. */
+  readonly contentLevel?: string;
+  /** 처음 판정 때 고른 글자입니다(보기형 · 타일형만). */
+  readonly selectedAnswer?: string;
+  /** 건너뛴 까닭입니다(`result: skipped`일 때만). */
+  readonly skipReason?: string;
 };
 
 export type CatalogLearningEvent =

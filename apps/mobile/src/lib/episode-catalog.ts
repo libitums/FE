@@ -37,6 +37,8 @@ export type CatalogEntry =
       warnings: DecodeIssue[];
       /** 표지 일러스트 경로 — 이긴 항목의 `cover`, 없으면 같은 id 내장 항목의 값. */
       cover?: string;
+      /** 원격 판을 받은 매니페스트의 `min_client_level`입니다. 내장판 · 값 없는 매니페스트는 없습니다(측정용). */
+      level?: number;
     }
   | { status: "pending"; id: string; order: number; title: string; version: string }
   | {
@@ -164,6 +166,7 @@ function readyEntry(
   episode: Episode,
   warnings: DecodeIssue[],
   cover?: string,
+  level?: number,
 ): CatalogEntry {
   return {
     status: "ready",
@@ -175,6 +178,7 @@ function readyEntry(
     episode,
     warnings,
     ...(cover === undefined ? {} : { cover }),
+    ...(level === undefined ? {} : { level }),
   };
 }
 
@@ -216,6 +220,7 @@ export function buildEpisodeCatalog(input: CatalogInput): CatalogEntry[] {
         fromRemote,
         clientTooOld,
         coverOf(entry, bundledEntry),
+        remote?.minClientLevel,
       );
       if (fromRemote && resolved.status !== "ready") {
         return bundledFallback(input, bundledById.get(entry.id)) ?? resolved;
@@ -253,6 +258,7 @@ function resolveEntry(
   fromRemote: boolean,
   clientTooOld: boolean,
   cover: string | undefined,
+  remoteLevel?: number,
 ): CatalogEntry {
   if (fromRemote && clientTooOld) {
     return lockedEntry(entry, "client-too-old");
@@ -274,5 +280,5 @@ function resolveEntry(
   if (!checked.ok) return lockedEntry(entry, checked.reason);
   // 이긴 원격 항목이 적은 언어의 저장 번역 파일로 그 언어 표를 바꿉니다(ADR-0102 D3).
   const episode = translationTablesOf(entry, checked.episode, input.cache.translations?.[entry.id]);
-  return readyEntry(entry, "cache", episode, checked.warnings, cover);
+  return readyEntry(entry, "cache", episode, checked.warnings, cover, remoteLevel);
 }
