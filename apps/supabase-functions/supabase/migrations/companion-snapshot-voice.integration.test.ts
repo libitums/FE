@@ -192,7 +192,7 @@ test("SV1. 설정 기본값 · 버킷 · 캐릭터 설정 · 학습자 뒷모습
     photo_redraw_cost: "25",
     snapshot_aspect: "'auto'::text",
     snapshot_daily_limit: null,
-    snapshot_engine: "'gpt-image-2.5-flare'::text",
+    snapshot_engine: "'gpt-image-2.6-flare'::text",
     snapshot_quality: "'medium'::text",
     voice_cost: "15",
     voice_model: "'eleven_v3'::text",
@@ -263,7 +263,7 @@ test("SV2. 스냅샷 요청 — pending · 35엽전 예약(체험 안 씀) · �
     ageBand: "unknown",
     snapshotSelf: "female",
     refs: ["deoksu-ref.png", "deoksu-expressions.png"],
-    engine: "gpt-image-2.5-flare",
+    engine: "gpt-image-2.6-flare",
     quality: "medium",
     aspect: "auto",
   });
@@ -572,7 +572,7 @@ test("SV9. 앱 RPC — 앨범은 내 complete만 · 상태 조회는 id · 메�
   ).rows[0].i;
   // 20261202가 시도 수(snapshotAttempts · voiceAttempts)를 더했다 — 여기서는 pending · complete 수만 본다.
   expect(inspect.today).toMatchObject({ snapshot: 1, voice: 1 });
-  expect(inspect.settings).toMatchObject({ photoCost: 35, snapshotEngine: "gpt-image-2.5-flare" });
+  expect(inspect.settings).toMatchObject({ photoCost: 35, snapshotEngine: "gpt-image-2.6-flare" });
   expect(inspect.items[1]).toMatchObject({
     kind: "snapshot",
     holdStatus: "settled",
