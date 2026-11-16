@@ -93,3 +93,23 @@
   display: flex;
   flex-direction: column;
 }
+
+/* 작은 화면 · 로마자 창고(ADR-0153): 답 줄을 하나로 줄여 창고와 Check가 화면 안에 서게 합니다(#448 기준 — 버튼보다
+   위쪽 영역을 먼저 줄입니다). 조각이 두 줄이 되면 상자가 늘어납니다. */
+.sentence-order-lines-compact {
+  min-height: var(--libitum-spacing-64);
+}
+
+/* 힌트 「정답 보기」 — 첫 답 줄에 정답 문장을 흐리게 깝니다. 놓인 조각이 그 위를 덮습니다. */
+.sentence-order-lines-ghost {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: var(--libitum-spacing-16);
+  color: var(--libitum-color-fg-neutral-subtlest);
+  text-align: center;
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-weight: var(--libitum-typography-label-l-font-weight);
+  font-size: var(--libitum-typography-label-l-font-size);
+  line-height: var(--libitum-typography-label-l-line-height);
+}

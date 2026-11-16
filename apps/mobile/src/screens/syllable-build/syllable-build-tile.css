@@ -81,3 +81,13 @@
 .syllable-tile-placeholder .syllable-tile-label {
   color: var(--libitum-color-fg-disabled);
 }
+
+/* 로마자 줄이 있는 창고 타일(ADR-0153) — 로마자가 글자 위에 서는 세로 묶음입니다. 정사각 56은 하한이라 caption 한 줄만큼
+   자랍니다. 로마자가 길면 좌우 패딩(8)을 지킨 채 폭이 늘어납니다. */
+.syllable-tile-with-reading {
+  flex-direction: column;
+}
+
+.syllable-tile-romanization-used {
+  color: var(--libitum-color-fg-disabled);
+}

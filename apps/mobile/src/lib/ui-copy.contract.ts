@@ -4,6 +4,7 @@
 // **학습 콘텐츠는 여기 없습니다.** 이 앱은 한국어를 배우는 앱이라 대사 · 예문 · 보기 ·
 // 받아쓰기 대상은 늘 한국어이고, 문구표는 그 둘레의 UI 문구만 집니다.
 
+import type { AssembledHintCopy } from "./ui-copy-assembled-hint";
 import type { DownloadSheetCopy } from "./ui-copy-settings.contract";
 import type { AuthFailureCopy } from "./auth-failure";
 import type { EntryLanguage } from "./entry-language";
@@ -77,6 +78,7 @@ export type UiCopy = {
   readonly listening: ListeningCopy;
   readonly wordChoice: WordChoiceCopy;
   readonly sentenceOrder: SentenceOrderCopy;
+  readonly assembledHint: AssembledHintCopy;
   readonly speaking: SpeakingCopy;
   readonly learningItemGuide: LearningItemGuideCopy;
   readonly assessment: AssessmentCopy;

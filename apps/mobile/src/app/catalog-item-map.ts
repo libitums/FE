@@ -8,7 +8,8 @@ import type {
   DialogueSpeaker,
   SentenceOrderQuestion,
 } from "../screens/sentence-order/sentence-order-questions";
-import { listenBuildItemOf, syllableBuildItemOf } from "./catalog-build-map";
+import { assembledHintOf, listenBuildItemOf, syllableBuildItemOf } from "./catalog-build-map";
+import { tileReadingOf } from "../components/assembled-hint/assembled-hint.contract";
 import { audioField, catalogAnswerEchoOf } from "./catalog-item-audio";
 import { cultureCardItemOf, vocabCardItemOf } from "./catalog-card-map";
 import { cultureCheckItemOf } from "./catalog-culture-map";
@@ -65,16 +66,24 @@ function wordOrderItemOf(
   const order = shuffledOrder(`${port.episodeId}/${item.id}`, tiles.length);
   const english = englishOf(port, item.stimulus?.en) ?? englishOf(port, item.answers[0]?.en);
   const romanization = latinOf(port, item.answers[0]?.roman);
+  const echo = catalogAnswerEchoOf(item, port);
+  const chipReading = tileReadingOf(
+    order.map((index) => latinOf(port, item.tiles[index]?.roman)),
+    "always",
+  );
   return sentenceOrder(item.id, {
     prompt: english ?? koOf(port, item.prompt.ko),
     chips: order.map((index) => tiles[index] ?? ""),
     chipsSource: order.map((index) => item.tiles[index]?.ko ?? ""),
     answerOrder: tiles.map((_, tile) => order.indexOf(tile)),
+    ...(chipReading === undefined ? {} : { chipReading }),
+    // 흐린 정답은 콘텐츠의 첫 정답 문장입니다(조각을 이은 문자열이 아니라 — 문장부호 · 띄어쓰기를 그대로).
+    hint: assembledHintOf([answers[0] ?? tiles.join(" ")], echo),
     // 정답 로마자는 Check 뒤에야 보입니다(답을 미리 알려 주지 않습니다).
     ...(romanization === undefined
       ? {}
       : { reading: { romanization, shown: "after-check" as const } }),
-    ...audioField(catalogAnswerEchoOf(item, port)),
+    ...audioField(echo),
     ...optionalField("instruction", instructionOf(port, item.prompt)),
   });
 }

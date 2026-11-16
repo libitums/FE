@@ -1,3 +1,7 @@
+import type {
+  AssembledHint,
+  TileReading,
+} from "../../components/assembled-hint/assembled-hint.contract";
 import type { QuestionAudio } from "../../lib/question-audio";
 
 export type DialogueSpeaker = "counterpart" | "me";
@@ -59,6 +63,10 @@ export type SentenceOrderQuestion = {
   readonly chipMeanings?: readonly string[];
   /** 문항 음성입니다 — 듣기 조립은 듣기 갈래, 문장 순서는 판정 뒤 재생 갈래. 없으면 키가 없습니다. */
   readonly audio?: QuestionAudio;
+  /** 창고 조각의 로마자(`chips`와 같은 순서)입니다 — 문장 조립은 늘, 듣고 조립은 다시 풀기에서만(ADR-0153). */
+  readonly chipReading?: TileReading;
+  /** 문장 조립의 힌트 — 흐린 글자는 정답 문장 하나입니다(ADR-0153). 듣고 조립 · 대화 조립에는 없습니다. */
+  readonly hint?: AssembledHint;
   /** 조각마다 자리표시자를 치환하기 전 콘텐츠 원문입니다(`chips`와 같은 순서). 측정 `selectedAnswer`만 이 값을 씁니다. */
   readonly chipsSource?: readonly string[];
 };

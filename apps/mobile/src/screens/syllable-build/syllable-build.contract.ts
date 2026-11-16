@@ -5,6 +5,10 @@ import type { AnswerEchoAudio, LessonAudio } from "../../lib/question-audio";
 import type { ItemAnswerReporter } from "../../lib/item-answer";
 import type { NonEmpty } from "../../lib/non-empty";
 import type { ActivityFinish, LessonPosition } from "../learning/activity-finish";
+import type {
+  AssembledHint,
+  TileReading,
+} from "../../components/assembled-hint/assembled-hint.contract";
 
 export type SyllableBuildQuestion = {
   /** 만들 낱말의 영어 뜻 — 카드의 제시입니다. */
@@ -19,6 +23,10 @@ export type SyllableBuildQuestion = {
   readonly instruction?: string;
   /** 판정 뒤 한 번 들려 주는 정답 음성입니다. 없으면 키가 없습니다. */
   readonly audio?: AnswerEchoAudio;
+  /** 창고 타일의 로마자(`tiles`와 같은 순서)입니다. 콘텐츠의 모든 타일에 로마자가 있을 때만 있습니다(ADR-0153). */
+  readonly tileReading?: TileReading;
+  /** 힌트 — 흐린 글자는 칸마다 정답 조각입니다(ADR-0153). */
+  readonly hint?: AssembledHint;
   /** 타일마다 자리표시자를 치환하기 전 콘텐츠 원문입니다(`tiles`와 같은 순서). 측정 `selectedAnswer`만 이 값을 씁니다. */
   readonly tilesSource?: readonly string[];
 };
@@ -69,11 +77,17 @@ export type SyllableTileProps = {
   /** 낱말의 전체 칸 수입니다 — 놓인 타일의 낭독(`position 1 of 2`)에만 쓰고 창고 타일은 주지 않습니다. */
   readonly slotCount?: number;
   readonly interaction: SyllableTileInteraction;
+  /** 창고 타일의 로마자 줄(글자 위)입니다(ADR-0153). */
+  readonly romanization?: string;
   readonly onTap: (index: number) => void;
 };
 
 /** 창고에서 빠진 자리 — 같은 폭의 빈 자리입니다. testid `syllable-build-bank-slot-<index>`, 낭독하지 않습니다. */
-export type SyllableTilePlaceholderProps = { readonly index: number; readonly text: string };
+export type SyllableTilePlaceholderProps = {
+  readonly index: number;
+  readonly text: string;
+  readonly romanization?: string;
+};
 
 /** 칸 줄 — `slotCount`개의 칸이 띄어쓰기 없이 붙어 섭니다. testid `syllable-build-word` · `syllable-build-slot-<position>`(`data-filled`). */
 export type SyllableBuildWordProps = {
@@ -86,6 +100,8 @@ export type SyllableBuildWordProps = {
   /** 채점 뒤 칸 판정 색입니다. 채점 전이면 `null`(없어도 됩니다). */
   readonly result?: AnswerResult | null;
   readonly accessibility: SyllableBuildWordAccessibility;
+  /** 힌트 「정답 보기」 — 빈 칸마다 흐리게 까는 정답 조각입니다(ADR-0153). */
+  readonly ghost?: readonly string[];
   readonly onReturn: (tileIndex: number) => void;
 };
 

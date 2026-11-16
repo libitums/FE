@@ -118,3 +118,15 @@ describe("itemAnsweredEventOf — 판 정보 · 고른 글자 · 건너뛴 까�
     ).not.toHaveProperty("skipReason");
   });
 });
+
+describe("itemAnsweredEventOf — 힌트 (ADR-0153)", () => {
+  test("IE9. 힌트를 쓴 문항은 hintUsed를 싣고, 안 쓰면 키가 없다", () => {
+    const ref = { itemId: "S1-05", itemType: "SYLLABLE_BUILD" } as const;
+    expect(
+      itemAnsweredEventOf("u00-tutorial", "S1", ref, { ...report, hintUsed: "show" }),
+    ).toMatchObject({
+      hintUsed: "show",
+    });
+    expect(itemAnsweredEventOf("u00-tutorial", "S1", ref, report)).not.toHaveProperty("hintUsed");
+  });
+});

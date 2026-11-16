@@ -1,6 +1,7 @@
 // 영어 문구표입니다. 값은 구획 파일에서 모읍니다(파일마다 300줄 아래).
 
 import { authFailureEn } from "./auth-failure";
+import { assembledHintEn } from "./ui-copy-assembled-hint";
 import type { UiCopy } from "./ui-copy.contract";
 import {
   audioUnavailableEn,
@@ -75,6 +76,7 @@ export const uiCopyEn: UiCopy = {
   listening: listeningEn,
   wordChoice: wordChoiceEn,
   sentenceOrder: sentenceOrderEn,
+  assembledHint: assembledHintEn,
   speaking: speakingEn,
   learningItemGuide: learningItemGuideEn,
   assessment: assessmentEn,

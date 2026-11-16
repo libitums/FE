@@ -21,6 +21,8 @@ export type ItemAnswerReport = {
   readonly selectedAnswer?: string;
   /** 건너뛴 까닭 — `"user"` 또는 `"unavailable:<reason>"`. 건너뛸 때만. */
   readonly skipReason?: ItemSkipReason;
+  /** 판정 전에 쓴 힌트 — 정답 보기가 정답 듣기보다 앞섭니다(ADR-0153). 안 썼으면 없습니다. */
+  readonly hintUsed?: "listen" | "show";
 };
 
 /** 고른 글자가 있을 때만 `selectedAnswer` 키를 싣습니다. */

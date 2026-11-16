@@ -50,3 +50,12 @@
 .syllable-build-slot-incorrect .syllable-tile-label {
   color: var(--libitum-color-feedback-incorrect-text);
 }
+
+/* 힌트 「정답 보기」(ADR-0153) — 빈 칸에 정답 조각을 흐리게 깝니다. 놓인 타일이 차면 사라집니다. */
+.syllable-build-slot-ghost {
+  color: var(--libitum-color-fg-neutral-subtlest);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  line-height: var(--libitum-typography-heading-s-line-height);
+}

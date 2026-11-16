@@ -1,5 +1,6 @@
 import type { ReactNode } from "@lynx-js/react";
 
+import { useUiCopy } from "../../lib/ui-copy";
 import { SyllableTile } from "./SyllableTile";
 import { syllableSlotStateOf } from "./syllable-build";
 import type { SyllableBuildWordProps } from "./syllable-build.contract";
@@ -18,9 +19,18 @@ export function SyllableBuildWord({
   phase = "building",
   result = null,
   accessibility,
+  ghost,
   onReturn,
 }: SyllableBuildWordProps): ReactNode {
+  const copy = useUiCopy();
   const isRow = accessibility.kind === "row";
+  // 흐린 정답이 깔렸으면 줄의 낭독 이름에도 정답을 싣습니다(힌트 「정답 보기」, ADR-0153).
+  const rowLabel =
+    accessibility.kind !== "row"
+      ? undefined
+      : ghost === undefined
+        ? accessibility.label
+        : `${accessibility.label}, ${copy.assembledHint.shown(ghost.join(""))}`;
   const positions = Array.from({ length: slotCount }, (_, position) => position);
 
   return (
@@ -28,7 +38,7 @@ export function SyllableBuildWord({
       className="syllable-build-word"
       data-testid="syllable-build-word"
       accessibility-element={isRow}
-      accessibility-label={accessibility.kind === "row" ? accessibility.label : undefined}
+      accessibility-label={rowLabel}
     >
       {positions.map((position) => {
         const tileIndex = placedTileIndexes[position];
@@ -42,6 +52,14 @@ export function SyllableBuildWord({
             data-filled={tileIndex === undefined ? "false" : "true"}
             data-state={state}
           >
+            {tileIndex === undefined && ghost?.[position] !== undefined ? (
+              <text
+                className="syllable-build-slot-ghost"
+                data-testid={`syllable-build-slot-${position}-ghost`}
+              >
+                {ghost[position]}
+              </text>
+            ) : null}
             {tileIndex === undefined ? null : (
               <SyllableTile
                 index={tileIndex}

@@ -1,6 +1,7 @@
 // 스페인어 문구표입니다(ADR-0097). 값은 구획 파일에서 모읍니다(파일마다 300줄 아래).
 // 번역 초안 — 원어민 검수 필요.
 
+import { assembledHintEs } from "./ui-copy-assembled-hint";
 import type { UiCopy } from "./ui-copy.contract";
 import {
   audioUnavailableEs,
@@ -76,6 +77,7 @@ export const uiCopyEs: UiCopy = {
   listening: listeningEs,
   wordChoice: wordChoiceEs,
   sentenceOrder: sentenceOrderEs,
+  assembledHint: assembledHintEs,
   speaking: speakingEs,
   learningItemGuide: learningItemGuideEs,
   assessment: assessmentEs,

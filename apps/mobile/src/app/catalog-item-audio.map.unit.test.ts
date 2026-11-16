@@ -251,7 +251,16 @@ describe("MP6. 정답 뒤 재생 유형", () => {
       const withAudio = mapped(build());
 
       expect(withAudio.kind).toBe(kind);
-      expect(withAudio).toEqual({ ...without, question: { ...without.question, audio: echo } });
+      // 힌트가 있는 유형은 같은 소리를 「정답 듣기」 주소로도 싣습니다(ADR-0153).
+      const hint = (without.question as { hint?: Record<string, unknown> }).hint;
+      expect(withAudio).toEqual({
+        ...without,
+        question: {
+          ...without.question,
+          audio: echo,
+          ...(hint === undefined ? {} : { hint: { ...hint, listenSource: echo.source } }),
+        },
+      });
       expect("audio" in without.question).toBe(false);
     },
   );

@@ -31,3 +31,9 @@
   gap: var(--libitum-spacing-8);
   padding-top: var(--libitum-spacing-16);
 }
+
+/* 작업 영역 — 힌트 줄(있으면) 아래 창고입니다(ADR-0153). */
+.syllable-build-screen-workspace {
+  display: flex;
+  flex-direction: column;
+}
