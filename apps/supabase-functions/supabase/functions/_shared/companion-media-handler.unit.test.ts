@@ -1048,7 +1048,7 @@ test("MH22. 기준 그림 — COMPANION_SNAPSHOT_REFS=sheet면 표정 시트를 
     };
     return mediaEnvFrom((name) => all[name]);
   };
-  expect(read({})).toMatchObject({ snapshotPartialImages: 1, snapshotRefs: "all" });
+  expect(read({})).toMatchObject({ snapshotPartialImages: 0, snapshotRefs: "all" });
   expect(
     read({ COMPANION_SNAPSHOT_PARTIAL_IMAGES: "0", COMPANION_SNAPSHOT_REFS: "SHEET" }),
   ).toMatchObject({
@@ -1056,7 +1056,7 @@ test("MH22. 기준 그림 — COMPANION_SNAPSHOT_REFS=sheet면 표정 시트를 
     snapshotRefs: "sheet",
   });
   expect(read({ COMPANION_SNAPSHOT_PARTIAL_IMAGES: "9" })!.snapshotPartialImages).toBe(3);
-  expect(read({ COMPANION_SNAPSHOT_PARTIAL_IMAGES: "two" })!.snapshotPartialImages).toBe(1);
+  expect(read({ COMPANION_SNAPSHOT_PARTIAL_IMAGES: "two" })!.snapshotPartialImages).toBe(0);
   // complexity — 기본 medium, off면 보내지 않음, 모르는 값은 기본.
   expect(read({})!.snapshotComplexity).toBe("medium");
   expect(read({ COMPANION_SNAPSHOT_COMPLEXITY: "LOW" })!.snapshotComplexity).toBe("low");

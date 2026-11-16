@@ -28,7 +28,7 @@ export type MediaEnv = {
    */
   readonly snapshotCheck: boolean;
   /**
-   * 이미지 엔진에서 받을 중간 그림 수(0 ~ 3, 기본 1). 0이면 스트리밍 없이 완성본만. 중간 그림은 `<user>/<media>.preview.png`로 올려
+   * 이미지 엔진에서 받을 중간 그림 수(0 ~ 3, 기본 0 — 편집 · Flare에서 중간 그림이 오지 않아 끔). 중간 그림은 `<user>/<media>.preview.png`로 올려
    * 앱이 만드는 중에 흐리게 먼저 보인다(`media.previewPath`). 한 장마다 이미지 출력 토큰 100개(약 $0.003)가 더 든다.
    */
   readonly snapshotPartialImages: number;
@@ -44,7 +44,7 @@ export type MediaEnv = {
 };
 
 /** 기본 중간 그림 수. 빈 값 · 숫자 아님은 기본, 범위 밖은 0 ~ 3으로 자른다. */
-export const defaultPartialImages = 1;
+export const defaultPartialImages = 0;
 const partialImagesFrom = (raw: string | null) => {
   const n = raw === null ? Number.NaN : Number(raw);
   return Number.isFinite(n) ? Math.max(0, Math.min(3, Math.trunc(n))) : defaultPartialImages;
