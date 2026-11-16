@@ -25,6 +25,8 @@ export async function openaiImageEdit(
     readonly prompt: string;
     readonly size: string;
     readonly quality: string;
+    /** `complexity`(low · medium · high). 없으면 보내지 않는다(엔진 기본 high). */
+    readonly complexity?: string | null;
     readonly partialImages?: number;
     readonly onPartial?: (png: Uint8Array, index: number) => Promise<void>;
   },
@@ -40,6 +42,7 @@ export async function openaiImageEdit(
   form.append("size", input.size);
   form.append("quality", input.quality);
   form.append("n", "1");
+  if (input.complexity) form.append("complexity", input.complexity);
   if (partialImages > 0) {
     form.append("stream", "true");
     form.append("partial_images", String(partialImages));

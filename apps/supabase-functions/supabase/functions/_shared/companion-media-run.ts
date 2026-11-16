@@ -3,10 +3,9 @@
 // 스냅샷(lab `run_snapshot` · `run_one`과 같은 순서):
 //   기준 이미지 읽기 + 프롬프트 노드(Haiku, 안전 판단 포함)를 동시에 → 이미지 엔진 1회(엔진 오류만 한 번 다시, 거절은 다시 하지 않는다)
 //   → (검사 노드를 켰을 때만) 검사 노드(Haiku 비전) → Storage에 올리고 complete. 차단 · 검사 탈락은 blocked, 오류는 failed — 둘 다 예약 해제.
-//   검사에 떨어진 그림은 올리지 않는다(유저에게 보이지 않을 그림을 남기지 않는다).
-//   검사 노드는 기본으로 끈다(`env.snapshotCheck`, ADR-0152) — 끄면 안전은 프롬프트 노드의 판단과 이미지 엔진 자체의 거절이 맡고,
-//   캐릭터 동일성 · 깨진 글자 · 학습자 얼굴은 보지 않는다. 건너뛴 작업은 `meta.check = "skipped"`를 남긴다.
-// 음성은 `companion-media-voice.ts`, 같이 쓰는 닫기 · 재시도는 `companion-media-job.ts`.
+//   검사에 떨어진 그림은 올리지 않는다. 검사 노드는 기본으로 끈다(`env.snapshotCheck`, ADR-0152) — 끄면 안전은 프롬프트 노드의 판단과
+//   이미지 엔진 자체의 거절이 맡고, 동일성 · 깨진 글자 · 학습자 얼굴은 보지 않는다(`meta.check = "skipped"`).
+// 음성은 `companion-media-voice.ts`, 같이 쓰는 닫기 · 재시도는 `companion-media-job.ts`. 엔진 스위치(complexity · 중간 그림 · 기준 그림)는 env.
 //
 // 시간 예산(`companion-media-budget.ts`): 단계마다 남은 예산에서 뒤 단계 몫을 남긴 만큼만 기다리고, 모자라면 시도하지 않고 그 단계 실패로 닫는다.
 // 쓴 제한 시간은 `meta.timeouts`에, 단계마다 실제로 걸린 시간은 `meta.timings`(ms)에 남는다(운영 진단). `refs` · `prompt`는 동시에 돌아
@@ -105,6 +104,7 @@ export async function runSnapshot(
     nodeModel: env.snapshotModel,
     snapshotSelf: job.snapshotSelf,
     refsMode: env.snapshotRefs,
+    complexity: env.snapshotComplexity,
     partialImages: env.snapshotPartialImages,
     usage,
     timeouts,
@@ -156,7 +156,6 @@ export async function runSnapshot(
       return await done("failed", { failure: "refs_missing", error: short(loaded.reason) });
     const refs: Image[] = loaded.value;
 
-    // 1. 프롬프트 노드
     if (noded.status === "rejected")
       return await done("failed", { failure: "prompt_failed", error: short(noded.reason) });
     const prompt: SnapshotPrompt | null = snapshotPromptFrom(noded.value.input);
@@ -195,6 +194,7 @@ export async function runSnapshot(
                 prompt: text,
                 size,
                 quality: job.quality,
+                complexity: env.snapshotComplexity,
                 partialImages: env.snapshotPartialImages,
                 onPartial: preview.onPartial,
               },

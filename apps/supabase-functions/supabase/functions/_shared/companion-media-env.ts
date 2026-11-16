@@ -10,6 +10,7 @@ export type MediaEnvName =
   | "COMPANION_SNAPSHOT_CHECK"
   | "COMPANION_SNAPSHOT_PARTIAL_IMAGES"
   | "COMPANION_SNAPSHOT_REFS"
+  | "COMPANION_SNAPSHOT_COMPLEXITY"
   | "OPENAI_API_KEY"
   | "ELEVENLABS_API_KEY";
 
@@ -33,6 +34,11 @@ export type MediaEnv = {
   readonly snapshotPartialImages: number;
   /** 기준 그림 — `all`(시트 + 표정 시트, 기본) · `sheet`(시트 한 장만, 입력 토큰을 줄인다). */
   readonly snapshotRefs: "all" | "sheet";
+  /**
+   * 이미지 엔진의 `complexity`(그리기 전 계획 정도 — low · medium · high, 기본 medium). OpenAI는 생략하면 high이고 「높을수록 지연이 늘 수
+   * 있다 · 별도 요금 없음」이라 medium으로 보낸다(사용자 결정 2026-11-16). `off`면 보내지 않는다(엔진 기본값).
+   */
+  readonly snapshotComplexity: "low" | "medium" | "high" | null;
   readonly openaiKey: string | null;
   readonly elevenKey: string | null;
 };
@@ -42,6 +48,14 @@ export const defaultPartialImages = 1;
 const partialImagesFrom = (raw: string | null) => {
   const n = raw === null ? Number.NaN : Number(raw);
   return Number.isFinite(n) ? Math.max(0, Math.min(3, Math.trunc(n))) : defaultPartialImages;
+};
+
+/** 기본 `complexity`. 빈 값 · 모르는 값은 기본, `off`는 보내지 않음. */
+export const defaultComplexity = "medium";
+const complexityFrom = (raw: string | null): "low" | "medium" | "high" | null => {
+  const v = raw?.toLowerCase() ?? null;
+  if (v === "off") return null;
+  return v === "low" || v === "medium" || v === "high" ? v : defaultComplexity;
 };
 
 /** lab `TEXT_MODEL`과 같다. */
@@ -71,6 +85,7 @@ export function mediaEnvFrom(read: (name: MediaEnvName) => string | undefined): 
     snapshotCheck: value("COMPANION_SNAPSHOT_CHECK")?.toLowerCase() === "on",
     snapshotPartialImages: partialImagesFrom(value("COMPANION_SNAPSHOT_PARTIAL_IMAGES")),
     snapshotRefs: value("COMPANION_SNAPSHOT_REFS")?.toLowerCase() === "sheet" ? "sheet" : "all",
+    snapshotComplexity: complexityFrom(value("COMPANION_SNAPSHOT_COMPLEXITY")),
     openaiKey: value("OPENAI_API_KEY"),
     elevenKey: value("ELEVENLABS_API_KEY"),
   };

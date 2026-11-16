@@ -45,6 +45,7 @@ const env: MediaEnv = {
   snapshotCheck: false,
   snapshotPartialImages: 0,
   snapshotRefs: "all",
+  snapshotComplexity: "medium",
   openaiKey: "sk-openai-test",
   elevenKey: "eleven-test",
 };
@@ -1056,4 +1057,10 @@ test("MH22. 기준 그림 — COMPANION_SNAPSHOT_REFS=sheet면 표정 시트를 
   });
   expect(read({ COMPANION_SNAPSHOT_PARTIAL_IMAGES: "9" })!.snapshotPartialImages).toBe(3);
   expect(read({ COMPANION_SNAPSHOT_PARTIAL_IMAGES: "two" })!.snapshotPartialImages).toBe(1);
+  // complexity — 기본 medium, off면 보내지 않음, 모르는 값은 기본.
+  expect(read({})!.snapshotComplexity).toBe("medium");
+  expect(read({ COMPANION_SNAPSHOT_COMPLEXITY: "LOW" })!.snapshotComplexity).toBe("low");
+  expect(read({ COMPANION_SNAPSHOT_COMPLEXITY: "off" })!.snapshotComplexity).toBeNull();
+  expect(read({ COMPANION_SNAPSHOT_COMPLEXITY: "max" })!.snapshotComplexity).toBe("medium");
+  expect(formOf(openaiCalls()[0]!).get("complexity")).toBe("medium");
 });
