@@ -186,7 +186,7 @@
 | `contentSource` ⟨2026-11-16⟩ | `bundled`(앱 내장) · `remote`(버킷에서 받은 판) |
 | `contentLevel` ⟨2026-11-16⟩ | 원격 판을 받은 매니페스트의 `min_client_level`(10진 문자열, 예 `"5"`). 내장판은 없음 |
 | `selectedAnswer` ⟨2026-11-16 · 개정 11-17⟩ | 처음 판정 때 고른 보기 · 타일의 **자리표시자를 치환하기 전 콘텐츠 원문**(예 「{이름}(으)로 예약했어요.」 — 화면 글자는 학습자 이름 · 나라로 바뀌어 있어 쓰지 않는다). 보기형은 고른 보기, 문장 · 듣고 조립은 놓은 타일을 공백으로, 대화 조립은 **놓은 턴만(고정된 첫 턴 제외)** `" \| "`로, 음절 조립은 이음 없이. 원문 배열이 없는 문항은 싣지 않는다. **직접 입력 · 말하기 결과는 싣지 않는다** |
-| `skipReason` ⟨2026-11-16⟩ | `result: skipped`일 때만(타입 `"user" | unavailable:<SpeechUnavailableReason>`). `user`(말할 수 있는데 Skip) · `unavailable:<reason>`(`dictation-off` · `blocked` · `failed`) |
+| `skipReason` ⟨2026-11-16⟩ | `result: skipped`일 때만(타입 `"user"` 또는 `unavailable:<SpeechUnavailableReason>`). `user`(말할 수 있는데 Skip) · `unavailable:<reason>`(`dictation-off` · `blocked` · `failed`) |
 
 - 발생: 채점 문항이 **처음 판정되는 순간 문항당 한 번**. 따라 읽기 · 단어 카드 · 문화 카드 · 짝 맞추기 · 타자 입력은 내지 않는다(채점 밖이거나 이번에 화면이 바뀌지 않음 — 비교 대상 아님). 듣기 여섯 유형은 `episode_listen_item_answered`와 **둘 다** 낸다(묻는 것이 다르다).
 - 읽는 법: 유형별 정답률 = `itemType`별 correct ÷ (correct + incorrect) · 줄 배치 Check 뒤 오답률 = `itemType ∈ {LISTEN_BUILD, WORD_ORDER}`의 incorrect 비율 · 대화 조립 정답률 = `TURN_ORDER`. 모두 `density`로 갈라 작은 화면 효과를 본다.
