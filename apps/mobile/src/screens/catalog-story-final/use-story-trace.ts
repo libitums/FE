@@ -80,7 +80,8 @@ export function useStoryTrace(glyph: string, slot: string, size: StoryPadSize): 
     return () => {
       generation.current += 1;
     };
-  }, [glyph, slot]);
+    // 칸 크기가 바뀌면 안내도 그 크기로 다시 굽고, 옛 크기로 그은 획은 비웁니다.
+  }, [glyph, slot, size]);
 
   const grade = (onGraded: (passed: boolean) => void) => {
     if (grading) return;

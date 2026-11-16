@@ -17,6 +17,8 @@ describe("journey-stat-modal.css — 큰 글자", () => {
     expect(declaration(/\.journey-stat-modal-hero/, "flex-shrink")).toBe("1");
     expect(declaration(/\.journey-stat-modal-hero/, "min-height")).toBe("0");
     expect(declaration(/\.journey-stat-modal-hero/, "overflow")).toBe("hidden");
+    // 잘라도 위로 올라간 불꽃(-69) · 트로피(-52.5)는 영역 안에 둡니다.
+    expect(declaration(/\.journey-stat-modal-hero/, "padding-top")).toBe("69px");
     expect(declaration(/\.journey-stat-modal-track/, "flex-shrink")).toBe("0");
     // 큰 숫자 위 여백이 큰 숫자보다 먼저 줍니다.
     expect(declaration(/\.journey-stat-modal-hero-gap/, "min-height")).toBe("0");
