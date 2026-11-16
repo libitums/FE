@@ -203,6 +203,16 @@ function messagesOf(raw: Json): {
   return { messages, corrections, ideas };
 }
 
+/** `companion_load_profile` 본문 → 생년. 행이 없으면 JSON null(생년 없음), 못 읽거나 틀린 본문이면 null. */
+export function profileFrom(bodyText: string | null): { readonly birthYear: number | null } | null {
+  const raw = parse(bodyText);
+  if (raw === null) return bodyText?.trim() === "null" ? { birthYear: null } : null;
+  const record = recordOf(raw);
+  if (record === null) return null;
+  const year = record["birthYear"];
+  return { birthYear: typeof year === "number" && Number.isInteger(year) ? year : null };
+}
+
 export function historyFrom(bodyText: string | null): RemoteHistory | null {
   const raw = recordOf(parse(bodyText));
   if (raw === null || !Array.isArray(raw.messages)) return null;

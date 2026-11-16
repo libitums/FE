@@ -24,6 +24,8 @@ export type CompanionMediaDeps = {
     build: (config: SupabaseConfig) => { url: string; init: HttpRequestInit },
   ) => Promise<AuthRequestOutcome>;
   readonly now: () => number;
+  /** 진행 중인 생년 저장(ADR-0125) — 요청 전에 끝나기를 기다립니다. 없으면 기다리지 않습니다. */
+  readonly profileSaved?: () => Promise<unknown>;
 };
 
 /** 경로 조각마다 인코딩합니다(`<user id>/<media id>.png` — 빗금은 그대로). */
@@ -51,6 +53,7 @@ export function createCompanionMediaRemote(deps: CompanionMediaDeps): ChatMediaR
   return {
     request: async (kind, messageId, again) => {
       await saving;
+      await deps.profileSaved?.();
       const outcome = await post(`/functions/v1/companion-${kind}`, {
         message_id: messageId,
         ...(again === true ? { again: true } : {}),

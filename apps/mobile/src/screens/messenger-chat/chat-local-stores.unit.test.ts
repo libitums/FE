@@ -210,3 +210,35 @@ describe("deviceUnlockStore (MC2-U24)", () => {
     expect(deviceUnlockStore.read().has("mina")).toBe(true);
   });
 });
+
+// `unit` 계층(BY-U9): 생년의 기기 저장(ADR-0125) — 계정마다 따로, 틀린 값은 적힌 것 없음.
+describe("생년 (BY-U9)", () => {
+  test("BY-U9. 키 libitum.messenger.birth-year에 계정마다 적고, 다른 계정 값은 지우지 않는다", async () => {
+    const { BIRTH_YEAR_KEY, deviceBirthYearStore } = await freshStores();
+    expect(BIRTH_YEAR_KEY).toBe("libitum.messenger.birth-year");
+    storage.getItem.mockReturnValue(JSON.stringify({ "server:b": { kind: "skipped" } }));
+    deviceBirthYearStore("server:a").write({ kind: "set", year: 1995 });
+    expect(storage.setItem).toHaveBeenCalledWith(
+      "libitum.messenger.birth-year",
+      JSON.stringify({ "server:b": { kind: "skipped" }, "server:a": { kind: "set", year: 1995 } }),
+    );
+    storage.getItem.mockReturnValue(
+      JSON.stringify({ "server:a": { kind: "set", year: 1995 }, "server:b": { kind: "skipped" } }),
+    );
+    expect(deviceBirthYearStore("server:a").read()).toEqual({ kind: "set", year: 1995 });
+    expect(deviceBirthYearStore("server:b").read()).toEqual({ kind: "skipped" });
+    expect(deviceBirthYearStore("fixture").read()).toBeNull();
+  });
+
+  test("BY-U9. 틀린 값 · 읽기 실패는 null, unasked도 적힌 것 없음", async () => {
+    const { deviceBirthYearStore, parseBirthYear } = await freshStores();
+    expect(parseBirthYear({ kind: "set", year: 1995.5 })).toBeNull();
+    expect(parseBirthYear({ kind: "set", year: "1995" })).toBeNull();
+    expect(parseBirthYear({ kind: "unasked" })).toBeNull();
+    expect(parseBirthYear("1995")).toBeNull();
+    storage.getItem.mockImplementation(() => {
+      throw new Error("native module failed");
+    });
+    expect(deviceBirthYearStore("server:a").read()).toBeNull();
+  });
+});

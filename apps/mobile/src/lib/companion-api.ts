@@ -11,7 +11,7 @@ import { currentAccessToken } from "./progress-api";
 import { supabaseConfig } from "./supabase-config";
 import { isSuccessStatus, send, type AuthRequestOutcome } from "./supabase-transport";
 import type { ChatRemote } from "../screens/messenger-chat/chat-remote.contract";
-import { greetingFrom, historyFrom } from "../screens/messenger-chat/companion-parse";
+import { greetingFrom, historyFrom, profileFrom } from "../screens/messenger-chat/companion-parse";
 
 /** 서버 계약 판(`@libitums/companion-contract`의 CONTRACT_VERSION). 값을 가져오면 zod가 번들에 들어가 숫자만 둡니다. */
 export const COMPANION_CONTRACT_VERSION = 1;
@@ -38,8 +38,10 @@ const postJson =
   });
 
 export function createCompanionRemote(deps: CompanionRemoteDeps): ChatRemote {
+  // 서버는 턴 · 사진 요청을 받는 순간 프로필의 생년으로 나이를 판정합니다 — 생년 저장 중이면 끝난 뒤에 보냅니다(ADR-0125).
+  let profileSaving: Promise<unknown> = Promise.resolve();
   // 사진 · 음성(ADR-0146 「앱 연결」)은 같은 토큰 · 설정 · 전송을 씁니다.
-  const media = createCompanionMediaRemote(deps);
+  const media = createCompanionMediaRemote({ ...deps, profileSaved: () => profileSaving });
   const call = async (path: string, body: unknown): Promise<string | null> => {
     try {
       const token = await deps.token();
@@ -53,6 +55,20 @@ export function createCompanionRemote(deps: CompanionRemoteDeps): ChatRemote {
 
   return {
     media,
+    profile: {
+      load: async () => profileFrom(await call("/rest/v1/rpc/companion_load_profile", {})),
+      // 나머지 칸은 null — 그 열을 바꾸지 않습니다. 출처는 학습자가 직접 고른 값(`self`).
+      saveBirthYear: (year) => {
+        const saved = call("/rest/v1/rpc/companion_save_profile", {
+          p_birth_year: year,
+          p_age_source: "self",
+          p_l1: null,
+          p_feedback_mode: null,
+        }).then((body) => body !== null);
+        profileSaving = saved;
+        return saved;
+      },
+    },
     loadHistory: async (characterId) =>
       historyFrom(
         await call("/rest/v1/rpc/companion_list_messages", {
@@ -80,6 +96,7 @@ export function createCompanionRemote(deps: CompanionRemoteDeps): ChatRemote {
       };
       void (async () => {
         try {
+          await profileSaving;
           const token = await deps.token();
           const config = deps.config();
           if (cancelled) return end("cancelled", null);

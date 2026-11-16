@@ -171,3 +171,75 @@ describe("턴", () => {
     expect(onEnd).toHaveBeenCalledWith("network", null);
   });
 });
+
+// `unit` 계층(SA-U6 ~ U8): 학습자 프로필의 생년(ADR-0125 「서버 결선」) — 저장 · 읽기 · 턴과 사진 요청이 저장을 기다림.
+describe("프로필 생년", () => {
+  test("SA-U6 생년 저장은 companion_save_profile에 생년 · 출처 self만(다른 칸은 null = 그대로)", async () => {
+    const { remote, requests } = setup();
+    expect(await remote.profile?.saveBirthYear(1995)).toBe(true);
+    expect(requests[0]?.url).toBe("https://example.supabase.co/rest/v1/rpc/companion_save_profile");
+    expect(requests[0]?.init.headers.Authorization).toBe("Bearer tok");
+    expect(JSON.parse(requests[0]?.init.body ?? "")).toEqual({
+      p_birth_year: 1995,
+      p_age_source: "self",
+      p_l1: null,
+      p_feedback_mode: null,
+    });
+    // 함수가 void라 본문이 비어도(204) 성공, 실패 상태 · 토큰 없음은 false.
+    const empty = setup({ post: async () => ({ ok: true, status: 204, bodyText: "" }) });
+    expect(await empty.remote.profile?.saveBirthYear(1995)).toBe(true);
+    const failed = setup({ post: async () => ({ ok: true, status: 400, bodyText: "{}" }) });
+    expect(await failed.remote.profile?.saveBirthYear(1995)).toBe(false);
+    const signedOut = setup({ token: async () => null });
+    expect(await signedOut.remote.profile?.saveBirthYear(1995)).toBe(false);
+  });
+
+  test("SA-U7 읽기는 companion_load_profile의 birthYear — 행이 없으면 null, 못 읽으면 null 결과", async () => {
+    const reply = (bodyText: string, status = 200) =>
+      setup({ post: async () => ({ ok: true, status, bodyText }) }).remote.profile?.load();
+    const { remote, requests } = setup({
+      post: async (build) => {
+        requests.push(build(config) as never);
+        return { ok: true, status: 200, bodyText: JSON.stringify({ birthYear: 1990, l1: "en" }) };
+      },
+    });
+    expect(await remote.profile?.load()).toEqual({ birthYear: 1990 });
+    expect(requests[0]?.url).toBe("https://example.supabase.co/rest/v1/rpc/companion_load_profile");
+    expect(await reply(JSON.stringify({ birthYear: null }))).toEqual({ birthYear: null });
+    expect(await reply("null")).toEqual({ birthYear: null });
+    expect(await reply(JSON.stringify({ birthYear: "1990" }))).toEqual({ birthYear: null });
+    expect(await reply("not json")).toBeNull();
+    expect(await reply("{}", 500)).toBeNull();
+  });
+
+  test("SA-U8 생년 저장 중에 연 턴 · 사진 요청은 저장이 끝난 뒤 나간다(서버가 그 순간의 나이로 판정)", async () => {
+    let finishSave: (() => void) | null = null;
+    const order: string[] = [];
+    const { remote, stream } = setup({
+      post: async (build) => {
+        const { url } = build(config);
+        if (url.endsWith("companion_save_profile")) {
+          await new Promise<void>((resolve) => {
+            finishSave = resolve;
+          });
+        }
+        order.push(url.slice(url.lastIndexOf("/") + 1));
+        return { ok: true, status: 200, bodyText: "{}" };
+      },
+    });
+    void remote.profile?.saveBirthYear(1995);
+    remote.openTurn(
+      { characterId: "duksu", text: "x", clientMessageId: "c" },
+      { onOpen: () => undefined, onEvent: () => undefined, onEnd: () => undefined },
+    );
+    void remote.media?.request("snapshot", "m1");
+    await flush();
+    expect(stream().request).toBeNull();
+    expect(order).toEqual([]);
+    finishSave!();
+    await flush();
+    await flush();
+    expect(stream().request).not.toBeNull();
+    expect(order).toEqual(["companion_save_profile", "companion-snapshot"]);
+  });
+});

@@ -31,6 +31,7 @@ import {
   recommendationPrompt,
   validateRecommendations,
 } from "./recommend.mjs";
+import { autoCampaignsFrom } from "./auto.mjs";
 import { campaignResults, poolResults, seriesOf } from "./results.mjs";
 import { storyContentProblems, storyMessage, storyPack } from "./story.mjs";
 import {
@@ -141,17 +142,23 @@ function storyOrThrow() {
   return story;
 }
 
+// 서버 자동 캠페인(D12) — 새로 고칠 때 배정 기록을 읽어 로컬 캠페인과 함께 다룹니다(쉬는 시간 · 결과 · 묶음).
+let autoCampaigns = [];
+const allCampaigns = () =>
+  [...loadCampaigns(), ...autoCampaigns].sort((a, b) => b.sentAtMs - a.sentAtMs);
+
 let snapshot = null;
 async function refresh() {
   await loadStory();
   const nowMs = Date.now();
   const sinceDay = shiftDay(new Date(nowMs).toISOString().slice(0, 10), -40);
-  const [devices, profiles, progress, days, testers] = await Promise.all([
+  const [devices, profiles, progress, days, testers, autoRows] = await Promise.all([
     supabase.devices(),
     supabase.profiles(),
     supabase.progress(),
     supabase.days(sinceDay),
     supabase.testerIds(),
+    supabase.autoSends(sinceDay),
   ]);
   const everyone = buildLearners({
     devices,
@@ -163,6 +170,8 @@ async function refresh() {
     nowMs,
     story,
   });
+  const timeZoneOf = new Map(everyone.map((row) => [row.userId, row.timeZone]));
+  autoCampaigns = autoCampaignsFrom(autoRows, (userId) => timeZoneOf.get(userId) ?? null);
   snapshot = {
     loadedAtMs: nowMs,
     learners: everyone.filter((row) => !testers.has(row.userId)),
@@ -187,7 +196,7 @@ function audienceFor(input) {
   const holdoutPercent = Math.min(90, Math.max(0, Number(input.holdoutPercent ?? 20)));
   const selection = selectAudience(snapshot.learners, filter, {
     nowMs,
-    lastConsoleSendMs: lastConsoleSends(loadCampaigns()),
+    lastConsoleSendMs: lastConsoleSends(allCampaigns()),
   });
   return { nowMs, filter, holdoutPercent, selection };
 }
@@ -294,7 +303,7 @@ async function send(input) {
 
 const resultCache = new Map();
 async function resultsFor(id) {
-  const campaign = loadCampaigns().find((entry) => entry.id === id);
+  const campaign = allCampaigns().find((entry) => entry.id === id);
   if (!campaign) throw new Error("캠페인이 없습니다.");
   const cached = resultCache.get(id);
   if (cached && Date.now() - cached.atMs < 5 * 60 * 1000) return cached.value;
@@ -342,7 +351,7 @@ async function resultsFor(id) {
 /** 묶음마다 캠페인 수 · 세그먼트 · 마지막 발송입니다. */
 function seriesList() {
   const groups = new Map();
-  for (const campaign of loadCampaigns().filter((entry) => !entry.dryRun)) {
+  for (const campaign of allCampaigns().filter((entry) => !entry.dryRun)) {
     const key = seriesOf(campaign);
     const group = groups.get(key) ?? { key, campaigns: 0, segments: new Set(), lastSentAtMs: 0 };
     group.campaigns += 1;
@@ -356,7 +365,7 @@ function seriesList() {
 }
 
 async function seriesResults(key) {
-  const campaigns = loadCampaigns().filter((entry) => !entry.dryRun && seriesOf(entry) === key);
+  const campaigns = allCampaigns().filter((entry) => !entry.dryRun && seriesOf(entry) === key);
   if (campaigns.length === 0) throw new Error("묶음이 없습니다.");
   const each = [];
   for (const campaign of campaigns) each.push(await resultsFor(campaign.id));
@@ -457,7 +466,7 @@ function runClaude(prompt) {
 let recommending = null;
 async function recommend() {
   const nowMs = Date.now();
-  const lastConsoleSendMs = lastConsoleSends(loadCampaigns());
+  const lastConsoleSendMs = lastConsoleSends(allCampaigns());
   const forecasts = {};
   for (const segment of SEGMENTS) {
     const defaults = DEFAULT_FILTERS[segment.id];
@@ -469,7 +478,7 @@ async function recommend() {
     forecasts[segment.id] = hourForecast(hourCandidates, defaults.localHours ?? [18, 21], nowMs);
   }
   const campaigns = [];
-  for (const campaign of loadCampaigns()
+  for (const campaign of allCampaigns()
     .filter((entry) => !entry.dryRun)
     .slice(0, 8)) {
     const { results } = await resultsFor(campaign.id);
@@ -583,7 +592,7 @@ const server = createServer(async (request, response) => {
         defaults: { copy: DEFAULT_COPY, copyB: DEFAULT_COPY_B, filters: DEFAULT_FILTERS },
         languages: LANGUAGES,
         story: storyStatus,
-        campaigns: loadCampaigns().map(summaryOf),
+        campaigns: allCampaigns().map(summaryOf),
         series: seriesList(),
         testers: snapshot.testerLearners.map((row) => ({
           userId: row.userId,

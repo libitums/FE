@@ -1,6 +1,7 @@
 // 가짜 출처의 씨앗과 출처 옵션입니다(messenger-chat-ui spec §5.1) — `chat-source.contract.ts`에서 옮겼습니다(파일 300줄 상한).
 
 import type { SnapshotSelfStore } from "./chat-fixture-album";
+import type { BirthYearStore } from "./chat-fixture-birth-year";
 import type { ChatMediaHooks } from "./chat-media.contract";
 import type { ChatRemote } from "./chat-remote.contract";
 import type {
@@ -97,4 +98,6 @@ export type FixtureChatSourceOptions = {
   readonly mediaHooks?: ChatMediaHooks;
   /** 사진 속 내 모습의 기기 저장(ADR-0150) — 없으면 메모리만(테스트 · 데모). */
   readonly selfStore?: SnapshotSelfStore;
+  /** 생년의 기기 저장(ADR-0125) — 없으면 메모리만(테스트 · 데모). */
+  readonly birthYearStore?: BirthYearStore;
 };

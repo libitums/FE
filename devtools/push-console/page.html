@@ -1795,15 +1795,15 @@
               <div class="title-block">
                 <div class="overline t-label-m">${esc(segmentLabel(campaign.segment))}</div>
                 <h2 class="t-heading-m">${esc(campaign.name)}</h2>
-                <div class="t-body-s muted">${when(campaign.sentAtMs)}에 보냄 · ${results.elapsedHours.toFixed(1)}시간 지남 · 대조군 ${campaign.holdoutPercent}%</div>
+                <div class="t-body-s muted">${when(campaign.sentAtMs)}에 보냄 · ${results.elapsedHours.toFixed(1)}시간 지남 · ${campaign.holdoutPercent === null ? "서버 자동 발송" : `대조군 ${campaign.holdoutPercent}%`}</div>
               </div>
               ${campaignStatus(campaign)}
             </div>
             <div class="kpis">
               <div class="kpi"><span class="t-label-m muted">보낸 그룹</span><span class="t-metric sent-color">${results.counts.sent}</span></div>
               <div class="kpi"><span class="t-label-m muted">대조군</span><span class="t-metric control-color">${results.counts.control}</span></div>
-              <div class="kpi"><span class="t-label-m muted">기기 전달 성공</span><span class="t-metric">${campaign.status === "scheduled" ? "—" : (totals.sent ?? 0)}</span></div>
-              <div class="kpi"><span class="t-label-m muted">전달 실패</span><span class="t-metric">${(totals.failed ?? 0) + (totals.failedCalls ?? 0)}</span></div>
+              <div class="kpi"><span class="t-label-m muted">기기 전달 성공</span><span class="t-metric">${campaign.status === "scheduled" || campaign.totals === null ? "—" : (totals.sent ?? 0)}</span></div>
+              <div class="kpi"><span class="t-label-m muted">전달 실패</span><span class="t-metric">${campaign.totals === null ? "—" : (totals.failed ?? 0) + (totals.failedCalls ?? 0)}</span></div>
             </div>
             <div>
               <div class="legend t-body-s"><span><i class="bar-sent"></i>보낸 그룹</span><span><i class="bar-control"></i>대조군 — 보내지 않음</span></div>

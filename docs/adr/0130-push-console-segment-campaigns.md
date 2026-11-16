@@ -77,6 +77,16 @@
 - 제목은 에피소드 영어 이름, 파이널 뒤면 다음 에피소드 이름이다(사용자 결정). 본문 언어는 나라로 고르고 말레이시아는 말레이어가 없어 인도네시아어다(사용자 결정). `my`는 미얀마어다. 없는 언어는 영어.
 - 콘솔 문구 · 추천 대상이 아니다(`copySource: "story"`). 시험 발송은 그 시험 계정의 자리 예고를 누를 때마다 다음 훅으로 보낸다.
 
+### D12. 서버 자동 캠페인 — 승자(캐릭터 톤)를 매일 보내고, 다음 A/B는 캐릭터 톤 vs 단계별 예고 (사용자 결정 2026-11-16)
+- 근거: 11-14 2차에서 캐릭터 톤(B)이 진 세그먼트가 없었다(에피소드 이어하기 학습 24시간 +5.5%p, 레슨 1 +4.0%p, 레슨 2 · 다음 에피소드 ±0). 넷 다 구간 안이라 확정은 아니고, 대조군을 남겨 계속 잰다.
+- 어디서: 서버. Edge Function `push-campaigns`를 pg_cron이 **매시 5분** 부른다(`supabase/cron/push-campaigns.sql`). 현지 **20시**에 든 사람만 고르므로 시간대마다 하루 한 번 저녁에 닿는다. 컴퓨터가 꺼져 있어도 돈다(D9의 한 번짜리 예약을 대신한다).
+- 누구에게: 콘솔과 같은 진행 단계 규칙(카탈로그는 버킷 level-5 매니페스트) — 튜토리얼 표지 · 레슨 1 · 레슨 2 · 튜토리얼 중간 · 다음 에피소드 · 에피소드 진행 중. 쉰 시간 20시간 이상(14 · 21일 이하), 다시 돌아오기(3 · 7일)와 겹치는 사람 빼기, 시험 계정 빼기, **같은 사람은 72시간에 한 번**(대조군 배정 포함).
+- 대조군: 묶음 `자동 · <세그먼트>`마다 사람별 고정(레슨 1 · 2는 50%, 나머지 30%). 콘솔과 같은 해시라 결과 탭이 같은 잣대로 읽는다.
+- 문구: A = 승자 캐릭터 톤(11-13 추천의 B, 없는 세그먼트는 `DEFAULT_COPY_B`) — `_shared/push-campaign-config.ts`. B = 단계별 예고(D11, 훅은 다시 무작위). 예고할 자리가 있는 세그먼트(레슨 2 이후)만 A/B로 반씩 나누고, 레슨 1 이전은 A만.
+- 기록: 보내기 **전에** 배정(보냄 · 대조군 · 변형 · 문구)을 `push_campaign_sends`에 남기고, 기록이 실패하면 보내지 않는다. 표 · 후보 RPC(`push_campaign_learners`)는 service role만 닿는다. 콘솔은 새로 고칠 때 이 표를 읽어 회차 × 세그먼트를 캠페인으로, 묶음으로 합쳐 결과를 보이고 쉬는 시간에도 넣는다.
+- 미리보기: `{"dryRun": true}`(선택 `atMs`)로 부르면 기록 · 발송 없이 수와 예시만 준다.
+- 끄기: `select cron.unschedule('push-campaigns-hourly');`
+
 ## 버린 대안
 1. **관리 웹을 서버(Vercel · Edge Function)에 띄우기** — 로그인 · 권한 · 비밀 보관이 더 필요하다(U2).
 2. **PostHog 기능 플래그 · 실험으로 배정** — 발송이 서버 밖이라 배정을 콘솔이 하는 편이 단순하다. 플래그 노출 이벤트도 필요 없다.
@@ -90,7 +100,7 @@
 - 영어 외 기본 문구는 원어민 확인 전 초안이다.
 
 ## 테스트
-- unit PC-S1 ~ S11(`segments.unit.test.mjs`) · PC-A1 ~ A10(`audience.unit.test.mjs`) · PC-RC1 ~ RC7(`recommend.unit.test.mjs`) · PC-R1 ~ R6(`results.unit.test.mjs`) · PC-IO1 ~ IO6(`sources.unit.test.mjs`) · PC-ST1 ~ ST8(`story.unit.test.mjs`) — `pnpm test:push-console`(`test:rest`에 포함).
+- unit PC-S1 ~ S11(`segments.unit.test.mjs`) · PC-A1 ~ A10(`audience.unit.test.mjs`) · PC-RC1 ~ RC7(`recommend.unit.test.mjs`) · PC-R1 ~ R6(`results.unit.test.mjs`) · PC-IO1 ~ IO6(`sources.unit.test.mjs`) · PC-ST1 ~ ST8(`story.unit.test.mjs`) · PC-AU1(`auto.unit.test.mjs`); 서버 자동(D12) PCA1 ~ PCA3(`push-campaign-plan.unit.test.ts`) · PCH1 ~ PCH2(`push-campaigns-handler.unit.test.ts`) · PCM1 ~ PCM3(`push-campaigns.integration.test.ts`) — `pnpm test:push-console`(`test:rest`에 포함).
 - 운영 데이터 읽기 확인: 콘솔을 띄워 세그먼트 수 · 대상 계산 · 미리보기를 봤다(발송 없음).
 
 ## 재검토 조건

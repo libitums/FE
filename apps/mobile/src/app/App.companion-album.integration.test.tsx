@@ -75,6 +75,14 @@ const fetchDouble = async (url: string, init?: { body?: string }) => {
   return { status: reply.status, text: async () => JSON.stringify(reply.body) };
 };
 const bodiesOf = (key: string) => calls.filter((call) => call.key === key).map((call) => call.body);
+/** 프로필 저장 중 내 모습 몫 — 방에 들어갈 때 고른 생년도 같은 RPC로 간다(ADR-0125). */
+const selfSaves = () =>
+  bodiesOf("profile").filter((body) => (body as { p_snapshot_self?: unknown }).p_snapshot_self);
+const selfSaveIndex = () =>
+  calls.findIndex(
+    (call) =>
+      call.key === "profile" && (call.body as { p_snapshot_self?: unknown }).p_snapshot_self,
+  );
 
 const history = {
   messages: [
@@ -178,11 +186,13 @@ test("AL-I2 첫 Snapshot은 내 모습을 묻고, 고른 값을 서버 프로필
   tapId("chat-snapshot-self-hidden");
   tapRound("messenger-chat-ask-confirm");
   await flush();
-  expect(bodiesOf("profile")).toEqual([
+  expect(selfSaves()).toEqual([
     expect.objectContaining({ p_snapshot_self: "hidden", p_birth_year: null }),
   ]);
-  expect(calls.findIndex((c) => c.key === "profile")).toBeLessThan(
-    calls.findIndex((c) => c.key === "snapshot"),
+  expect(selfSaveIndex()).toBeLessThan(calls.findIndex((c) => c.key === "snapshot"));
+  // 방에 들어갈 때 고른 생년도 서버 프로필에 갔다(ADR-0125).
+  expect(bodiesOf("profile")).toContainEqual(
+    expect.objectContaining({ p_birth_year: 2000, p_age_source: "self" }),
   );
   expect(messengerChatSource((path) => path).snapshot().preferences.snapshotSelf).toBe("hidden");
 }, 15_000);
@@ -202,6 +212,6 @@ test("AL-I3 설정 탭 Chats → You in snapshots → Man → Save면 서버 프
   tapId("chat-snapshot-self-male");
   tapId("ui-lynx-bottom-sheet-action-save");
   await flush();
-  expect(bodiesOf("profile")).toEqual([expect.objectContaining({ p_snapshot_self: "male" })]);
+  expect(selfSaves()).toEqual([expect.objectContaining({ p_snapshot_self: "male" })]);
   expect(textOf("chat-settings-snapshot-self")).toContain("Man");
 }, 15_000);

@@ -1,7 +1,7 @@
 # @libitums/supabase-functions
 
 Supabase Edge Function 앱이다. 함수는 `delete-account`, `send-push`(서버 푸시, 아래 「send-push」 ·
-[ADR-0034](../../docs/adr/0034-server-push-notifications.md)), `chat-send` · `companion-proactive`(AI 컴패니언 턴 · 선톡, 아래 「AI 컴패니언」) · `revenuecat-webhook`(구독, 맨 아래). 먼저 `delete-account` — 로그인한 사용자가 자기 계정을 지운다
+[ADR-0034](../../docs/adr/0034-server-push-notifications.md)) · `push-campaigns`(자동 캠페인, 아래), `chat-send` · `companion-proactive`(AI 컴패니언 턴 · 선톡, 아래 「AI 컴패니언」) · `revenuecat-webhook`(구독, 맨 아래). 먼저 `delete-account` — 로그인한 사용자가 자기 계정을 지운다
 (Apple 사용자는 Apple 토큰 철회까지). 결정과 HTTP 계약(판정 순서 · 상태 코드)은
 [ADR-0032](../../docs/adr/0032-account-sign-out-and-deletion.md) D1~D3, 타입은
 `supabase/functions/_shared/delete-account.contract.ts`가 정본이다.
@@ -149,6 +149,16 @@ curl -X POST "https://<ref>.supabase.co/functions/v1/send-push" \
 추가 마이그레이션 `20261002120000_push_devices_fcm.sql`을 먼저 적용한 뒤 `send-push`를 배포한다. 기존 APNs 행과 RPC 인수는 그대로다. Android 행은 `environment=fcm`, `token=fcm.<base64url(UTF-8 등록 토큰)>`으로 저장한다. 한 표에서 환경에 따라 APNs 또는 FCM HTTP v1으로 보낸다.
 
 Firebase 프로젝트에 Android 앱을 등록하고 FCM HTTP v1 API 권한이 있는 서비스 계정 JSON을 준비한다. JSON 전체를 Supabase Edge Function 시크릿 `FIREBASE_SERVICE_ACCOUNT_JSON`으로 설정한다. 저장소에 JSON 또는 키를 넣지 않는다. 시크릿이 없으면 APNs는 계속 발송되고 FCM 기기만 실패 수에 든다. JSON 형식이 잘못되면 함수는 500 `server_misconfigured`를 반환한다. FCM이 `UNREGISTERED`라고 확인한 토큰만 표에서 제거한다. 실제 Android 수신 검증에는 앱의 Firebase 클라이언트 설정과 Google Play 서비스가 있는 기기가 필요하다.
+
+## push-campaigns (자동 푸시 캠페인 — ADR-0130 D12)
+
+매시 예약 작업이 서버 키로 부르는 함수다. 진행 단계마다 현지 20시에 쉰 사람을 골라 대조군을 남기고 A(캐릭터 톤) ·
+B(단계별 예고)로 나눠 `send-push`로 보낸다. 배정은 보내기 전에 `push_campaign_sends`에 남긴다(실패하면 보내지 않음).
+규칙 · 문구는 `_shared/push-campaign-config.ts`, 판정은 `_shared/push-campaign-plan.ts`(콘솔과 같은 해시 · 규칙).
+
+배포 순서: ① 마이그레이션 `20261210120000_push_campaigns.sql` ② `supabase functions deploy push-campaigns`
+③ 미리보기 — 서버 키로 `{"dryRun": true}` POST(기록 · 발송 없음) ④ `supabase/cron/push-campaigns.sql`을 SQL 편집기에서 한 번.
+끄기: `select cron.unschedule('push-campaigns-hourly');`
 
 ## 학습 진행 저장 RPC 배포
 
