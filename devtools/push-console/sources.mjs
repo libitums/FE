@@ -119,6 +119,19 @@ export function supabaseClient({ projectRef, key, fetchImpl = fetch }) {
       selectAll("learning_days", `select=user_id,day&day=gte.${sinceDay}&order=user_id,day`),
     testerIds,
 
+    /** 서버 자동 캠페인의 배정 기록(D12)입니다. 표가 아직 없으면(마이그레이션 전) 빈 배열입니다. */
+    async autoSends() {
+      try {
+        return await selectAll(
+          "push_campaign_sends",
+          "select=run_at,series,segment,user_id,group,variant,lang,story_step&order=id",
+        );
+      } catch (error) {
+        if (/ 404| 400|PGRST205|42P01/.test(String(error))) return [];
+        throw error;
+      }
+    },
+
     /** `send-push` announcement 한 번(같은 문구 · 최대 1,000명)입니다. */
     async sendAnnouncement({ userIds, title, body }) {
       const response = await fetchImpl(`${base}/functions/v1/send-push`, {

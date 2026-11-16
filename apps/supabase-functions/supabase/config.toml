@@ -30,3 +30,6 @@ verify_jwt = false
 
 [functions.companion-voice]
 verify_jwt = false
+
+[functions.push-campaigns]
+verify_jwt = false
