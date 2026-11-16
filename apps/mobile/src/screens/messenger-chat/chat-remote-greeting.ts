@@ -53,7 +53,8 @@ export function remoteGreetingMethods(deps: RemoteGreetingDeps) {
       if (room === null || room.access.kind !== "open" || inFlight.has(room)) return;
       owed.add(room);
       const pending = (async () => {
-        const greeting = await remote.greet(characterOf(room), "unlock");
+        // 던져도 못 받은 것으로 칩니다 — 청하는 중으로 남으면 방을 열 때 `settled`가 실패한 답을 기다립니다.
+        const greeting = await remote.greet(characterOf(room), "unlock").catch(() => null);
         inFlight.delete(room);
         if (live(roomId) !== room || greeting === null) return;
         owed.delete(room);

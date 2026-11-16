@@ -20,7 +20,6 @@ import {
   PROMPT_MINOR_RULES,
   PROMPT_ROMANCE_LINE,
   PROMPT_SYSTEM,
-  PROMPT_UNKNOWN_RULES,
   promptContent,
   promptSystem,
   verdictFrom,
@@ -573,19 +572,17 @@ test("MH8. 프롬프트 노드 차단 → 엔진을 부르지 않고 blocked · 
 });
 
 test("MH9. 나이 모름 · 미성년자는 더 엄격한 규칙(닿는 선만 다르다) · 학습자 뒷모습 설정을 그대로 · auto면 노드가 비율을 고른다", async () => {
-  // 로맨스 수위선(ADR-0152): 미성년자는 lab 글 그대로(로맨스 없음 · 물건 건네기까지), 성인 · 나이 모름은 손잡기 · 포옹까지.
-  expect(promptSystem("minor")).toBe(PROMPT_SYSTEM + PROMPT_DATA_RULES + PROMPT_MINOR_RULES);
+  // 로맨스 수위선(ADR-0152): 미성년자 · 나이 모름은 lab 글 그대로(로맨스 없음 · 물건 건네기까지), 생년으로 확인된 성인만 손잡기 · 포옹까지.
+  for (const ageBand of ["minor", "unknown"] as const) {
+    expect(promptSystem(ageBand)).toBe(PROMPT_SYSTEM + PROMPT_DATA_RULES + PROMPT_MINOR_RULES);
+  }
   expect(PROMPT_SYSTEM).toContain("- No romance or flirting, no kissing");
   expect(PROMPT_MINOR_RULES).toContain("beyond handing over an object");
-  for (const ageBand of ["adult", "unknown"] as const) {
-    expect(promptSystem(ageBand)).toContain(PROMPT_ROMANCE_LINE);
-    expect(promptSystem(ageBand)).not.toContain("No romance or flirting");
-    expect(promptSystem(ageBand)).toContain("No kissing or anything more intimate");
-  }
+  expect(PROMPT_MINOR_RULES).toContain("No alcohol, smoking, gambling");
+  expect(promptSystem("adult")).toContain(PROMPT_ROMANCE_LINE);
+  expect(promptSystem("adult")).not.toContain("No romance or flirting");
+  expect(promptSystem("adult")).toContain("No kissing or anything more intimate");
   expect(promptSystem("adult")).not.toContain("Extra rules");
-  expect(promptSystem("unknown").endsWith(PROMPT_UNKNOWN_RULES)).toBe(true);
-  expect(PROMPT_UNKNOWN_RULES).toContain("beyond holding hands or a hug");
-  expect(PROMPT_UNKNOWN_RULES).toContain("No alcohol, smoking, gambling");
 
   begin = okBegin(
     "snapshot",
@@ -599,6 +596,14 @@ test("MH9. 나이 모름 · 미성년자는 더 엄격한 규칙(닿는 선만 �
   expect(String(form.get("prompt"))).toContain("is only hands and a shoulder at the frame edge");
   expect(String(form.get("prompt"))).not.toContain("young woman");
   expect(finished().p_result).toMatchObject({ aspect: "1:1", meta: { snapshotSelf: "hidden" } });
+  // 검사 노드를 끈 환경이라도 나이 모름이면 검사 노드가 돈다(성인에게만 기본 꺼짐).
+  expect(snapshotCheck).toBe(false);
+  expect(
+    callsTo("https://api.anthropic.com/").map(
+      (call) => (call.body as { tool_choice: { name: string } }).tool_choice.name,
+    ),
+  ).toContain("snapshot_check");
+  expect(finished().p_result["meta"]).not.toMatchObject({ check: "skipped" });
 
   calls = [];
   work = [];
@@ -859,19 +864,18 @@ test("MH16. 예산 — 음성 첫 5xx가 100초면 남은 15초로 한 번 더 �
   expect(finished()).toMatchObject({ p_status: "failed", p_result: { failure: "engine_failed" } });
 });
 
-test("MH17. (검사 노드 켬) 검사 노드도 연령대를 안다 — 미성년자는 lab 글 + 엄격한 규칙, 성인 · 나이 모름은 손잡기 · 포옹까지 안전", async () => {
+test("MH17. (검사 노드 켬) 검사 노드도 연령대를 안다 — 미성년자 · 나이 모름은 lab 글 + 엄격한 규칙, 성인만 손잡기 · 포옹까지 안전", async () => {
   expect(CHECK_MINOR_RULES).toMatch(/alcohol/);
   expect(CHECK_MINOR_RULES).toMatch(/safe.*false/);
-  expect(checkSystem("minor")).toBe(CHECK_SYSTEM + CHECK_MINOR_RULES);
-  expect(CHECK_SYSTEM).toContain("body emphasis, romance, violence");
-  for (const ageBand of ["adult", "unknown"] as const) {
-    expect(checkSystem(ageBand)).toContain(
-      "kissing or anything more intimate than holding hands or a hug, violence",
-    );
-    expect(checkSystem(ageBand)).not.toContain("body emphasis, romance, violence");
+  for (const ageBand of ["minor", "unknown"] as const) {
+    expect(checkSystem(ageBand)).toBe(CHECK_SYSTEM + CHECK_MINOR_RULES);
   }
+  expect(CHECK_SYSTEM).toContain("body emphasis, romance, violence");
+  expect(checkSystem("adult")).toContain(
+    "kissing or anything more intimate than holding hands or a hug, violence",
+  );
+  expect(checkSystem("adult")).not.toContain("body emphasis, romance, violence");
   expect(checkSystem("adult")).not.toContain("Extra rules");
-  expect(checkSystem("unknown")).toContain("beyond holding hands or a hug");
 
   snapshotCheck = true;
   const checkSystemSent = () =>

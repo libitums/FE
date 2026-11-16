@@ -45,8 +45,8 @@ export const moderationCategories = [
   "other_harm",
 ] as const;
 
-/** 로맨스 완화 대상 — 성인과 나이 모름. 생년으로 18세 미만이 확인된 학습자는 로맨스 없음 그대로입니다(ADR-0152). */
-export const romanceAllowed = (ageBand: AgeBand): boolean => ageBand !== "minor";
+/** 로맨스 완화 대상 — 생년으로 확인된 성인만. 미성년자 · 나이 모름은 로맨스 없음 그대로입니다(ADR-0152 — 나이 모름에 실제 미성년자가 섞인다). */
+export const romanceAllowed = (ageBand: AgeBand): boolean => ageBand === "adult";
 
 // 로맨스 수위선(ADR-0152): 로맨스 말 · 썸 · 손잡기 · 포옹까지 통과, 그 뒤 스킨십과 음담패설은 차단입니다. 차단 분류는 스킨십이
 // `romance`, 성적인 말이 `sexual`입니다 — 거절 지시(`refusalTopic`)가 분류를 사람 말로 바꿔 캐릭터에게 줍니다.
