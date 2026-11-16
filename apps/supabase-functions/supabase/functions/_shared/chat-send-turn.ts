@@ -2,7 +2,7 @@
 // 입력 검사 · 메인 답변 · 피드백을 동시에 시작해, 피드백은 답이 나가도 되는 것이 확인된 뒤 `correction`으로 `done` 전에 한 번 보내고, 답 조각이 다
 // 모이면 L1 번역(`chat-send-translate.ts`) · 추천 답변 칩(`chat-send-suggest.ts`, 스위치 켬)을 남은 기다림과 동시에 돌려 `state` 앞에 보냅니다.
 // 저장(finish)이 친밀도 → 말투 · 크레딧 확정/해제를 한 트랜잭션으로 하고 그 결과로 `state` · `done`을 씁니다. 입력 검사에 걸리면 반복 위반
-// 단계에 따라 성격대로 거절하거나(`chat-send-refusal.ts`) `guardrail_blocked`로 끝냅니다. 출력 검사에 걸린 답은 화제를 돌려 한 번 다시
+// 단계에 따라 성격대로 거절합니다(`chat-send-refusal.ts` — 회피, 상한을 넘으면 경고 + 엽전 차감). 출력 검사에 걸린 답은 화제를 돌려 한 번 다시
 // 만들고(`chat-send-turn-recover.ts`, ADR-0151), 그것도 걸리면 `guardrail_blocked`로 끝냅니다.
 
 import type { AgeBand, Feedback, ModerationVerdict, PersonaCard } from "./chat-send.contract.ts";
@@ -143,10 +143,8 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
     return { outcome: "crisis", afterTurn: null };
   }
   if (input.action === "block") {
-    const stage = context.status === null ? "block" : refusalStage(context.status);
-    if (stage === "block") return fail("guardrail_blocked", "blocked");
     abort.abort();
-    return refuse(stage, input.category);
+    return refuse(refusalStage(context.status), input.category);
   }
 
   const sendDelta = (delta: SegmentDelta) => sink.send({ event: "delta", data: delta });

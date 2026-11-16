@@ -127,14 +127,14 @@ Accept: text/event-stream
   `l1`이 `ko` · `COMPANION_TRANSLATION=off`면 부르지 않는다. 출력 검사에 걸린 답은 번역을 내보내지도 저장하지도 않는다. 실패 ·
   시간 초과 · 줄 수 불일치는 턴을 실패시키지 않고 `meta.translation`에 이유만 남는다.
 - **차단 턴의 페르소나 거절 [결정 2026-11-09]**(`chat-send-refusal.ts` · `chat-send-finish.ts`): 입력 검사가 막으면(위기 제외)
-  단계를 정한다 — 턴 시작 때 `companion_turn_status`가 읽은 창 안 위반 수 + 이번 차단이 `strike_limit`(기본 3)이면 일시 차단(지금처럼
-  `error`(`guardrail_blocked`), `blocked_until` = 지금 + `block_duration` 30분 — 다음 요청은 403 `temporarily_blocked`), 그 하나 앞이면
-  `warn`, 그보다 앞이면 `deflect`. `deflect` · `warn`이면 캐릭터가 거절하는 답을 만든다(PRD §3.11).
+  단계를 정한다 — 턴 시작 때 `companion_turn_status`가 읽은 창 안 위반 수 + 이번 차단이 `strike_limit`(기본 3) 이하면 `deflect`, 넘으면
+  매번 `warn`. 어느 쪽이든 캐릭터가 거절하는 답을 만든다(PRD §3.11). ⟨2026-11-16⟩ 일시 차단은 없다(ADR-0152) — `warn` 턴은
+  `companion_finish_turn`이 그 턴의 예약을 확정해 메시지 요금을 차감한다(`done.creditsSpent`). 위반 수를 읽지 못하면 `deflect`.
   - 답 모델(`COMPANION_MODEL`)에 페르소나 시스템 프롬프트 + `refusalDirective(stage, topic)`, 유저 자리에는 `refusalUserText(topic)`.
     **막힌 글은 보내지 않는다.** 대사 2개 + 지문 1개까지.
   - 미성년자 · 나이 모름은 출력 검사를 지난다. 생성 실패 · 시간 초과(10초) · 출력 검사 차단이면 `persona.refusalLines[stage][speechLevel]`
     → 존댓말 줄 → 코드 기본 줄.
-  - 저장: 유저 메시지 `blocked`, 캐릭터 메시지 `complete` · 차감 0 · `meta.refusal: true` · `refusalStage` · `refusalCategory` ·
+  - 저장: 유저 메시지 `blocked`, 캐릭터 메시지 `complete` · 차감 0(`deflect`) 또는 메시지 요금(`warn`) · `meta.refusal: true` · `refusalStage` · `refusalCategory` ·
     `refusalSource`(`model` · `canned`). 위반 수는 센다. 기억 추출 · 요약은 돌지 않는다.
   - 캐릭터 자신의 답이 출력 검사에 걸린 정상 턴은 거절로 바꾸지 않는다 — 그대로 `error`(`guardrail_blocked`).
 - 유저가 연결을 끊어도 서버는 턴을 끝까지 처리해 저장한다. 앱은 다시 열 때 메시지 목록으로 결과를 받는다.
@@ -491,7 +491,8 @@ data: {"segment":0,"kind":"speech","text":"안녕하세요, "}
    (서버는 턴을 끝까지 처리한다, §2.1).
 7. 위기 턴: `start` → (`notice`) → `crisis` → `done`(`creditsSpent: 0`). `delta`가 없다.
 8. 입력 검사 차단 턴(2026-11-09): 문턱 전이면 거절 턴 — `start` → (`notice`) → `delta` × n → `translation` → `state` → `done`
-   (`creditsSpent: 0`, `refusal: { stage: "deflect" | "warn" }`). `correction`은 없다. 문턱이면 `start` → `error`(`guardrail_blocked`).
+   (`refusal: { stage: "deflect" | "warn" }`, `creditsSpent`는 `deflect`면 0 · `warn`이면 메시지 요금). `correction`은 없다.
+   ⟨2026-11-16⟩ 입력 차단은 더는 `guardrail_blocked` · 일시 차단으로 끝나지 않는다(ADR-0152).
 9. 동기 출력 검사에 걸린 턴: `delta` 없이 `error`(`guardrail_blocked`). 비동기 검사는 스트림에 영향이 없다(§2.1).
 
 ## 5. 에러 코드
@@ -505,7 +506,7 @@ data: {"segment":0,"kind":"speech","text":"안녕하세요, "}
 | `not_available` | 사전 | 403 | 아니오 | — | M4 전 비시험 계정 · 열리지 않은 캐릭터 |
 | `character_not_found` | 사전 | 404 | 아니오 | — | |
 | `age_restricted` | 사전 | 403 | 아니오 | `{ reason }` — `guardian_consent_required` | 연령 제한 [제안] |
-| `temporarily_blocked` | 사전 | 403 | 아니오 | `{ until }` | 반복 위반 일시 차단(M3) |
+| `temporarily_blocked` | 사전 | 403 | 아니오 | `{ until }` | 반복 위반 일시 차단(M3). ⟨2026-11-16⟩ 입력 차단으로는 더 걸지 않는다(ADR-0152) — 코드와 판정은 남아 있다 |
 | `usage_time_limit` | 사전 | 403 | 아니오 | `{ limit: "daily" \| "continuous", resetsAt }` | 이용 시간 상한 |
 | `duplicate_message` | 사전 | 409 | 아니오 | `{ messageId, messageStatus }` | 이미 처리된 메시지 |
 | `turn_in_progress` | 사전 | 409 | 예(잠시 뒤) | — | 같은 대화에 진행 중인 턴 |
@@ -515,7 +516,7 @@ data: {"segment":0,"kind":"speech","text":"안녕하세요, "}
 | `rate_limited` | 사전 | 429 | 예 | `{ retryAfterSeconds }` | 짧은 시간에 너무 많은 요청 [제안 — 값은 설정] |
 | `server_misconfigured` | 사전 | 500 | 아니오 | — | 서버 설정 누락 |
 | `internal_error` | 사전 · 스트림 | 500 · — | 예 | — | 예상하지 못한 서버 오류. 예약 해제 |
-| `guardrail_blocked` | 스트림 | — | 아니오 | — | 입력 검사 · 동기 출력 검사 차단. 차감 없음 [제안] |
+| `guardrail_blocked` | 스트림 | — | 아니오 | — | 동기 출력 검사 차단(다시 만든 답도 걸림). 차감 없음. ⟨2026-11-16⟩ 입력 검사 차단은 거절 턴(`done.refusal`)으로 끝난다 |
 | `upstream_unavailable` | 스트림 | — | 예 | — | LLM 실패 · 시간 초과. 차감 없음 |
 
 - **위기 프로토콜은 에러가 아니다** — `crisis` 이벤트로 오고 `done`으로 끝난다(§4). 입력 검사가 위기를 잡으면 메인 LLM을 부르지

@@ -45,8 +45,30 @@ export const moderationCategories = [
   "other_harm",
 ] as const;
 
+/** 로맨스 완화 대상 — 성인과 나이 모름. 생년으로 18세 미만이 확인된 학습자는 로맨스 없음 그대로입니다(ADR-0152). */
+export const romanceAllowed = (ageBand: AgeBand): boolean => ageBand !== "minor";
+
+// 로맨스 수위선(ADR-0152): 로맨스 말 · 썸 · 손잡기 · 포옹까지 통과, 그 뒤 스킨십과 음담패설은 차단입니다. 차단 분류는 스킨십이
+// `romance`, 성적인 말이 `sexual`입니다 — 거절 지시(`refusalTopic`)가 분류를 사람 말로 바꿔 캐릭터에게 줍니다.
+function romanceRule(layer: ModerationLayer, ageBand: AgeBand): string {
+  if (!romanceAllowed(ageBand)) {
+    return layer === "input"
+      ? `- Romance: romance or flirting directed at the character → "block" with category "romance".`
+      : `- Romance: the character must not flirt or act romantically with the learner → "block" with category "romance".`;
+  }
+  const who = layer === "input" ? "the learner and the character" : "the character and the learner";
+  return `- Romance: light romance between ${who} is allowed. Romantic or flirty words, compliments, confessions of liking, a crush or mutual-crush mood (썸), asking for a date, pet names, and holding hands or hugging — spoken or as an *action* — are fine (e.g. "보고 싶었어요", "나 너 좋아해", "우리 사귈래요?", "*손을 잡는다*", "*꼭 안아 준다*", "I like you", "can I hold your hand?") → "allow" with category "safe".
+- Physical intimacy beyond holding hands or a hug — kissing of any kind (뽀뽀, 키스, a peck), caressing or touching the body, sitting on a lap, lying or sleeping together, undressing — spoken, requested or as an *action* → "block" with category "romance".
+- Sexual talk — dirty talk, sexual jokes or innuendo (음담패설), comments on the body in a sexual way, sexual requests or anything erotic → "block" with category "sexual".`;
+}
+
 export function moderationInstruction(layer: ModerationLayer, ageBand: AgeBand): string {
-  const who = ageBand === "adult" ? "an adult" : "possibly a minor (treat as 13–17)";
+  const who =
+    ageBand === "adult"
+      ? "an adult"
+      : ageBand === "minor"
+        ? "a minor (treat as 13–17)"
+        : "of unknown age (possibly a minor)";
   const subject =
     layer === "input"
       ? "a message the learner sent to an AI character"
@@ -61,7 +83,8 @@ export function moderationInstruction(layer: ModerationLayer, ageBand: AgeBand):
   return `You review ${subject} in a Korean-learning chat app. The learner is ${who}.
 Classify the text and choose an action.
 - "crisis": the learner expresses intent or risk of self-harm or suicide, or says they are in immediate danger — in any language (e.g. "죽고 싶어", "I want to die", "gusto ko nang mamatay", "tôi muốn chết", "aku ingin bunuh diri", "死にたい", "quiero morir", "อยากตาย", "သေချင်တယ်"). (Only for learner messages.)
-- "block": sexual content, romance or flirting directed at the character, graphic violence, hate, requests or sharing of personal contact details, or anything unsafe for the learner's age.
+- "block": sexual content, graphic violence, hate, requests or sharing of personal contact details, or anything else unsafe for the learner's age. Romance follows its own rule below.
+${romanceRule(layer, ageBand)}
 ${profanity}
 - "allow": everything else, including mild everyday topics, mistakes, other languages, and sad feelings without risk.
 The learner may write in any language or mix languages (Korean, English, Tagalog, Vietnamese, Indonesian, Japanese, Spanish, Thai, Burmese and others). Judge every language the same way, including spaced, abbreviated, romanized or disguised spellings (ㅅㅂ, 시1발, ㅂㅅ, f*ck, p*tang ina, đ.m, a*jing, k*so, m!erda). Text between asterisks (*…*) is the learner's action or inner thought in the roleplay — review it like the rest.

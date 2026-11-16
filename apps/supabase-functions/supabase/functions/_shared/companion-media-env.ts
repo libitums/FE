@@ -7,6 +7,7 @@ export type MediaEnvName =
   | "SUPABASE_SERVICE_ROLE_KEY"
   | "ANTHROPIC_API_KEY"
   | "COMPANION_SNAPSHOT_MODEL"
+  | "COMPANION_SNAPSHOT_CHECK"
   | "OPENAI_API_KEY"
   | "ELEVENLABS_API_KEY";
 
@@ -18,6 +19,11 @@ export type MediaEnv = {
   readonly anthropicKey: string | null;
   /** 프롬프트 · 검사 노드 모델. 기본 Haiku(lab TEXT_MODEL). */
   readonly snapshotModel: string;
+  /**
+   * 검사 노드(그린 그림을 Claude 비전으로 한 번 더 보기)를 돌릴지. 기본은 끔입니다 — 한 장에 약 25초가 걸려 단계를 줄였고, 안전은
+   * 프롬프트 노드의 판단과 이미지 엔진 자체의 거절이 맡습니다(ADR-0152). `COMPANION_SNAPSHOT_CHECK=on`으로 다시 켭니다.
+   */
+  readonly snapshotCheck: boolean;
   readonly openaiKey: string | null;
   readonly elevenKey: string | null;
 };
@@ -46,6 +52,7 @@ export function mediaEnvFrom(read: (name: MediaEnvName) => string | undefined): 
     supabaseServiceRoleKey,
     anthropicKey: value("ANTHROPIC_API_KEY"),
     snapshotModel: value("COMPANION_SNAPSHOT_MODEL") ?? defaultSnapshotModel,
+    snapshotCheck: value("COMPANION_SNAPSHOT_CHECK")?.toLowerCase() === "on",
     openaiKey: value("OPENAI_API_KEY"),
     elevenKey: value("ELEVENLABS_API_KEY"),
   };

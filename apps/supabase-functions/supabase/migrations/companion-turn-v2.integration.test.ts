@@ -207,7 +207,8 @@ test("TV2. 친밀도 — 범위로 잘리고, 문턱에서 말투가 한 번 바
   expect(down).toMatchObject({ speechLevel: "casual", speechLevelChanged: false });
 });
 
-test("TV3. 반복 위반 — 입력 차단 세 번이면 일시 차단, 출력 차단은 세지 않는다", async () => {
+// 일시 차단은 20261204에서 없앴다(ADR-0152) — 세기만 하고, 상한 뒤 거절 턴의 차감은 `companion-romance-refusal-charge` 테스트가 본다.
+test("TV3. 반복 위반 — 입력 차단만 세고 출력 차단은 세지 않는다, 여러 번이어도 일시 차단은 없다", async () => {
   const inputBlock = [{ layer: "input", category: "sexual", action: "block" }];
   const outputBlock = [
     { layer: "input", category: "safe", action: "allow" },
@@ -215,15 +216,14 @@ test("TV3. 반복 위반 — 입력 차단 세 번이면 일시 차단, 출력 �
   ];
   await turn("duksu", { moderation: outputBlock }, "blocked");
   await turn("duksu", { moderation: outputBlock }, "blocked");
+  const counted = () =>
+    db.admin.query("select strikes, blocked_until from companion.moderation_state");
+  expect((await counted()).rows).toEqual([]);
+  for (let index = 0; index < 4; index += 1) {
+    await turn("duksu", { moderation: inputBlock }, "blocked");
+  }
+  expect((await counted()).rows).toEqual([{ strikes: 4, blocked_until: null }]);
   expect(await gate()).toMatchObject({ result: "ok" });
-  await turn("duksu", { moderation: inputBlock }, "blocked");
-  await turn("duksu", { moderation: inputBlock }, "blocked");
-  expect(await gate()).toMatchObject({ result: "ok" });
-  await turn("duksu", { moderation: inputBlock }, "blocked");
-  expect(await gate()).toMatchObject({
-    result: "temporarily_blocked",
-    detail: { until: expect.any(String) },
-  });
 });
 
 // TV4 — 체험은 무료 티어의 덕수쌤에만, 다 쓰면 크레딧이 있을 때만 이어진다(PRD §3.1 · §3.10).

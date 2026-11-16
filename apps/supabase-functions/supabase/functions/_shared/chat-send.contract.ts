@@ -95,6 +95,8 @@ export type PersonaCard = {
   readonly topics?: readonly string[];
   /** 존댓말 관계에서 학습자가 반말을 쓸 때 피드백 종류. 없으면 `better`(부드럽게). 덕수쌤(선생님)은 `correction`. */
   readonly banmalFeedback?: BanmalFeedback;
+  /** 로맨스 완화 대상 학습자에게 이 캐릭터가 로맨스 말을 받는 태도(영어 한두 문장, 시스템 프롬프트의 Romance 줄 끝에 붙는다). */
+  readonly romance?: string;
   /** 번역 표기 메모(한국어 → 학습자 언어에서 쓸 표기, 예: 「쌤」 → "teacher (casual)"). 운영자가 채운다(20261123). */
   readonly glossary?: Readonly<Record<string, string>>;
 };

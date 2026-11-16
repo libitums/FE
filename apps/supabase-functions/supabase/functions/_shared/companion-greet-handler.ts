@@ -1,9 +1,14 @@
 // `POST /functions/v1/companion-greet` — 대화가 비었을 때 캐릭터가 먼저 거는 첫 인사(새 대화 · 대화 초기화 뒤, Zeta의 첫 메시지처럼).
 //
-// 흐름: 판정(`companion_greet_context` — chat-send와 같은 판정) → 메시지가 이미 있으면 `none` → 답 모델로 인사(선톡과 같은 페르소나 시스템
-// 프롬프트 + 인사 지시, 지난 대화 없음) → 출력 검사(연령과 상관없이 — 유저 말 없이 나가는 글) → L1 번역과 칩(스위치 켬)을 동시에 → 저장
-// (`companion_save_greeting` — 대화 행을 잠그고 메시지가 없을 때만, 두 번 불려도 하나). 생성 실패 · 시간 초과 · 출력 검사 차단 · 검사 실패면
-// 페르소나의 정해진 인사(`persona.greetingLines`, 없으면 아래 기본 줄) — 인사는 늘 나간다. 무료다(크레딧 · 체험 횟수를 쓰지 않는다).
+// 흐름: 판정(`companion_greet_context` — chat-send와 같은 판정) → 메시지가 이미 있으면 `none` → 인사 만들기 → L1 번역과 칩(스위치 켬)을
+// 동시에 → 저장(`companion_save_greeting` — 대화 행을 잠그고 메시지가 없을 때만, 두 번 불려도 하나). 무료다(크레딧 · 체험 횟수를 쓰지 않는다).
+// 인사 만들기는 둘이다.
+// - 정해진 첫 말(ADR-0152): 인물이 해금된 순간 앱이 부르거나(`trigger: "unlock"`), 페르소나에 정해진 줄(`persona.unlockLines`)이 있다
+//   (방을 열었는데 비어 있다 — 덕수쌤 · 해금 순간에 못 받은 인물). 그 줄을 그대로 쓴다. 답 모델 · 출력 검사를 부르지 않는다 — 글이
+//   정해져 있어 검사할 것이 없다.
+// - 그 밖(정해진 줄이 없는 인물의 빈 방): 답 모델로 인사(선톡과 같은 페르소나 시스템 프롬프트 + 인사 지시, 지난 대화 없음) → 출력 검사(연령과
+//   상관없이 — 유저 말 없이 나가는 글). 생성 실패 · 시간 초과 · 출력 검사 차단 · 검사 실패면 페르소나의 정해진 인사
+//   (`persona.greetingLines`, 없으면 아래 기본 줄) — 인사는 늘 나간다.
 //
 // 호출자: 앱은 JWT + `{ character_id }`. ops-dashboard 플레이그라운드는 서버 키 + `{ user_id, character_id }`(`companion-suggest`와 같은 규칙).
 
@@ -16,10 +21,12 @@ import {
   type GreetReason,
   type SpeechLevel,
 } from "./companion-contract/index.ts";
+import { cannedGreeting, type GreetingPersona, unlockGreeting } from "./companion-greet-lines.ts";
 import { systemSplit } from "./companion-llm.ts";
 import { companionSystemPrompt, greetingDirective, greetingUserText } from "./companion-prompt.ts";
 import {
   generateOpener,
+  type OpenerLearning,
   openerLearning,
   openerOutcome,
   recordOpener,
@@ -51,11 +58,6 @@ export type GreetDeps = Omit<ChatSendDeps, "log"> & {
   readonly greetTimeoutMs?: number;
 };
 
-/** 페르소나 칸 `greetingLines`(마이그레이션 20261121) — 말투 단계별 정해진 첫 인사. 없는 칸은 아래 기본 줄. */
-export type GreetingPersona = PersonaCard & {
-  readonly greetingLines?: Partial<Record<SpeechLevel, string>>;
-};
-
 type GreetContext =
   | {
       readonly result: "ok";
@@ -72,20 +74,6 @@ type GreetContext =
       readonly memories: readonly string[];
     }
   | { readonly result: string };
-
-const defaultLines: Record<SpeechLevel, string> = {
-  polite: "안녕하세요! 만나서 반가워요. 오늘 하루는 어땠어요?",
-  casual: "안녕! 만나서 반가워. 오늘 하루는 어땠어?",
-  slang: "안녕! 반가워~ 오늘 어땠어?",
-};
-
-/** 정해진 첫 인사 — 페르소나의 그 말투 줄, 없으면 페르소나의 존댓말 줄, 그것도 없으면 기본 줄. */
-export function cannedGreeting(persona: GreetingPersona, speechLevel: SpeechLevel): Segment[] {
-  const lines = persona.greetingLines;
-  return [
-    { kind: "speech", text: lines?.[speechLevel] ?? lines?.polite ?? defaultLines[speechLevel] },
-  ];
-}
 
 // 판정 결과 중 응답 이유로 그대로 쓰는 것. 나머지(모르는 새 코드)는 `not_available`로 접는다.
 const gateReasons = new Set<string>([
@@ -164,35 +152,33 @@ export function createGreetHandler(deps: GreetDeps): (request: Request) => Promi
     const llm = baseLlm.withUsage?.(usage.record) ?? baseLlm;
     const persona: GreetingPersona = context.persona ?? { name: body.character_id };
     const timeoutMs = deps.greetTimeoutMs ?? defaultGreetTimeoutMs;
-    const learning = await openerLearning(
-      deps.outbound,
-      env,
-      caller.userId,
-      deps.random ?? Math.random,
-    );
-    const prompt = companionSystemPrompt({
-      persona,
-      speechLevel: context.speechLevel,
-      ageBand: context.ageBand,
-      l1: context.l1,
-      expressions: learning.pool,
-      summary: null,
-      feedbackMode: context.feedbackMode,
-      memories: context.memories,
-      directive: withOpenerLine(greetingDirective, learning.target),
-    });
+    const scripted =
+      body.trigger === "unlock" || (persona.unlockLines ?? []).some((line) => line.trim() !== "");
+    const learning = scripted
+      ? { pool: [], target: null }
+      : await openerLearning(deps.outbound, env, caller.userId, deps.random ?? Math.random);
 
-    // 인사 만들기 + 출력 검사. 어느 단계든 실패하면 정해진 인사(검사를 지나지 않은 글은 내보내지 않는다).
-    const made = await generateOpener(llm, {
-      system: `${prompt.stable}${systemSplit}${prompt.dynamic}`,
-      userText: greetingUserText,
-      ageBand: context.ageBand,
-      timeoutMs,
-    });
+    // 인사 만들기 + 출력 검사. 어느 단계든 실패하면 정해진 인사(검사를 지나지 않은 글은 내보내지 않는다). 해금 선톡은 만들지 않는다.
+    const made = scripted
+      ? { segments: [], state: null, outcome: "scripted" }
+      : await generateOpener(llm, {
+          system: greetingSystem(persona, context, learning),
+          userText: greetingUserText,
+          ageBand: context.ageBand,
+          timeoutMs,
+        });
     const { outcome } = made;
-    const source: "model" | "canned" = outcome === "model" ? "model" : "canned";
+    const source: "model" | "canned" | "scripted" = scripted
+      ? "scripted"
+      : outcome === "model"
+        ? "model"
+        : "canned";
     const segments: Segment[] =
-      source === "model" ? made.segments : cannedGreeting(persona, context.speechLevel);
+      source === "model"
+        ? made.segments
+        : source === "scripted"
+          ? unlockGreeting(persona, context.speechLevel)
+          : cannedGreeting(persona, context.speechLevel);
     const learned = openerOutcome(
       source === "model" ? learning.target : null,
       made.state,
@@ -282,6 +268,25 @@ export function createGreetHandler(deps: GreetDeps): (request: Request) => Promi
     };
     return respond(200, response, `${outcome}${line === "" ? "" : ` usage ${line}`}`);
   };
+}
+
+function greetingSystem(
+  persona: GreetingPersona,
+  context: Extract<GreetContext, { result: "ok" }>,
+  learning: OpenerLearning,
+): string {
+  const prompt = companionSystemPrompt({
+    persona,
+    speechLevel: context.speechLevel,
+    ageBand: context.ageBand,
+    l1: context.l1,
+    expressions: learning.pool,
+    summary: null,
+    feedbackMode: context.feedbackMode,
+    memories: context.memories,
+    directive: withOpenerLine(greetingDirective, learning.target),
+  });
+  return `${prompt.stable}${systemSplit}${prompt.dynamic}`;
 }
 
 /** 응답의 칩 — 스위치가 꺼져 있으면 null, 실패면 `unavailable`(앱은 `companion-suggest`로 다시 받을 수 있다). */

@@ -40,7 +40,7 @@
     },
     "source": {
       "type": "string",
-      "enum": ["model", "canned"]
+      "enum": ["model", "canned", "scripted"]
     },
     "suggestions": {
       "anyOf": [

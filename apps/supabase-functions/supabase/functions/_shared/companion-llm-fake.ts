@@ -1,10 +1,10 @@
 // 키 없이 도는 결정적 LLM 계층(`COMPANION_LLM=fake`). 로컬 · 플레이그라운드 화면 확인과 테스트용입니다 — 실제 품질과 무관합니다.
 //
 // 플레이그라운드에서 흐름을 일부러 일으키는 낱말:
-//   「죽고 싶」 · 「자살」 → 위기   「[block]」 · 「사랑해」 → 입력 차단   「[unsafe-reply]」 · 「[swear-reply]」 → 출력 차단
+//   「죽고 싶」 · 「자살」 → 위기   「[block]」 · 「섹스」 · 「키스」 → 입력 차단(미성년자는 「사랑해」도)   「[unsafe-reply]」 · 「[swear-reply]」 → 출력 차단
 //   심한 욕 · 모욕(「병신」 · 「ㅂㅅ」 · 「개새끼」 · 욕 + 「너」 · 「you」 — 「fuck you」 · 「putang ina mo」) → 입력 차단(profanity)
 //   가벼운 놀림(「바보」 · 「멍청이」 · 「idiot」 · 「bobo」) → 통과 · 피드백 없음
-//   입력 차단은 그 턴의 반복 위반 수로 단계가 갈린다 — 캐릭터가 성격대로 피함 → 경고 → 일시 차단(`chat-send-refusal.ts`)
+//   입력 차단은 그 턴의 반복 위반 수로 단계가 갈린다 — 캐릭터가 성격대로 피함 → 상한을 넘으면 경고 + 차감(`chat-send-refusal.ts`)
 //   혼잣말 욕(「아 씨」 · 「ㅅㅂ」 · 「시1발」 · 「존나」) → 통과 · 피드백은 순화(better). 위기 · 욕 · 모욕은 여러 언어 낱말(아래 목록)
 //   한 메시지에 「 이에요」 · 「하새요」가 함께 있으면 고칠 점 둘(교정 하나에 items 여럿)
 //   한글 없는 문장 · 한글과 영어가 섞인 문장 → l1_to_ko   「 이에요」 · 「 예요」 → 띄어쓰기 교정   「하새요」 → 맞춤법 교정
@@ -32,6 +32,7 @@ import {
 import { fakeMemoryOps } from "./companion-llm-fake-memory.ts";
 import { fakeSuggestions } from "./companion-llm-fake-suggest.ts";
 import { emptyFeedback } from "./companion-llm-prompts.ts";
+import { romanceAllowed } from "./companion-safety.ts";
 
 // 위기 · 욕 · 모욕 — 학습자 언어가 여럿이라(en · vi · id · ja · es · my · th · tl …) 언어마다 한두 개씩 둔다.
 const crisisWords = [
@@ -50,7 +51,10 @@ const crisisWords = [
   "อยากตาย",
   "သေချင်",
 ];
-const blockWords = ["[block]", "사랑해", "섹스", "sex"];
+// 로맨스 수위선(ADR-0152): 성적인 말과 포옹을 넘는 스킨십은 모든 연령에서 차단, 로맨스 말은 미성년자만 차단.
+const sexualWords = ["[block]", "섹스", "sex"];
+const intimacyWords = ["키스", "뽀뽀", "kiss"];
+const romanceWords = ["사랑해"];
 // 심한 욕 · 모욕(상대를 겨냥). 띄어 쓰거나 숫자 · 별표를 끼운 꼴도 잡게 비교 전에 지운다.
 // 가벼운 놀림(바보 · 멍청이 · idiot · dummy · bobo · tonto · バカ)은 여기 없다 — 통과하고 피드백도 비속어로 치지 않는다.
 const insultWords = [
@@ -112,7 +116,7 @@ export function fakeCompanionLlm(): CompanionLlm {
         request.directive || request.system.includes("# For this reply") ? " (지시 반영)" : "";
       // 성격대로 거절(거절 지시가 붙은 답) — 유저 말 자리는 앱 안내라 따라 말하지 않는다.
       const refusal = request.system.includes("broke the app's safety rules");
-      const warn = request.system.includes("This has happened before");
+      const warn = request.system.includes("This keeps happening");
       // 첫 인사(인사 지시가 붙은 답) — 유저 말 자리는 앱 안내라 따라 말하지 않는다.
       const greeting = request.system.includes("very first message of a new conversation");
       const learning = refusal ? null : fakeLearningLines(request);
@@ -171,7 +175,12 @@ export function fakeCompanionLlm(): CompanionLlm {
           return { category: "profanity", action: "block" };
         return { category: "safe", action: "allow" };
       }
-      if (blockWords.some((word) => text.includes(word)))
+      if (sexualWords.some((word) => text.includes(word)))
+        return { category: "sexual", action: "block" };
+      if (
+        intimacyWords.some((word) => text.includes(word)) ||
+        (!romanceAllowed(request.ageBand) && romanceWords.some((word) => text.includes(word)))
+      )
         return { category: "romance", action: "block" };
       if (hasInsult(text) || (swearIn(request.text) !== undefined && aimed.test(request.text)))
         return { category: "profanity", action: "block" };
