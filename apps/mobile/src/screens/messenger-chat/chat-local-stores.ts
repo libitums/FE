@@ -6,11 +6,15 @@ import { parseTurnRecord, type TurnRecord } from "./free-turns";
 import type { TurnRecordStore } from "./turn-ledger";
 import { SNAPSHOT_SELVES, type ChatSnapshotSelf } from "./chat-album.contract";
 import type { SnapshotSelfStore } from "./chat-fixture-album";
+import type { BirthYearStore } from "./chat-fixture-birth-year";
+import type { ChatBirthYear } from "./chat-source.contract";
 
 export const TURN_RECORD_KEY = "libitum.messenger.free-turns";
 export const UNLOCKED_KEY = "libitum.messenger.unlocked";
 /** 사진 속 내 모습(ADR-0150) — `{ <출처 키>: female | male | hidden }`(계정마다). */
 export const SNAPSHOT_SELF_KEY = "libitum.messenger.snapshot-self";
+/** 생년(ADR-0125) — `{ <출처 키>: { kind: "set", year } | { kind: "skipped" } }`(계정마다). */
+export const BIRTH_YEAR_KEY = "libitum.messenger.birth-year";
 
 export type UnlockStore = {
   readonly read: () => ReadonlySet<string>;
@@ -106,6 +110,40 @@ export function deviceSnapshotSelfStore(accountKey: string): SnapshotSelfStore {
   return {
     read: () => selfOf(all()[accountKey]),
     write: (self) => writeJson(SNAPSHOT_SELF_KEY, { ...all(), [accountKey]: self }),
+  };
+}
+
+/** 기기에 적힌 생년 하나 — set(정수 연도) · skipped만 읽고, 틀린 값은 적힌 것 없음(null)으로. */
+export function parseBirthYear(raw: unknown): ChatBirthYear | null {
+  if (typeof raw !== "object" || raw === null) return null;
+  const value = raw as { kind?: unknown; year?: unknown };
+  if (value.kind === "skipped") return { kind: "skipped" };
+  return value.kind === "set" && typeof value.year === "number" && Number.isInteger(value.year)
+    ? { kind: "set", year: value.year }
+    : null;
+}
+
+/** 기기의 생년 저장(ADR-0125) — 계정(출처 키 「fixture」 · 「server:<id>」)마다 따로. */
+export function deviceBirthYearStore(accountKey: string): BirthYearStore {
+  const all = (): Record<string, unknown> => {
+    const raw = readJson(BIRTH_YEAR_KEY);
+    return typeof raw === "object" && raw !== null && !Array.isArray(raw)
+      ? (raw as Record<string, unknown>)
+      : {};
+  };
+  return {
+    read: () => parseBirthYear(all()[accountKey]),
+    write: (value) => writeJson(BIRTH_YEAR_KEY, { ...all(), [accountKey]: value }),
+  };
+}
+
+export function memoryBirthYearStore(initial: ChatBirthYear | null = null): BirthYearStore {
+  let value = initial;
+  return {
+    read: () => value,
+    write: (next) => {
+      value = next;
+    },
   };
 }
 

@@ -4,7 +4,8 @@
 import { chatFixtureSeed } from "./chat-fixture";
 import { feedbackMethods } from "./chat-fixture-feedback";
 import { createFixtureSettings, settingsMethods } from "./chat-fixture-settings";
-import { inputBlockOf, nextBirthYear, seedMessageReader, UNASKED } from "./chat-fixture-safety";
+import { inputBlockOf, seedMessageReader } from "./chat-fixture-safety";
+import { sourceBirthYear } from "./chat-fixture-birth-year";
 import {
   advanceIdeas,
   defaultTimers,
@@ -45,7 +46,6 @@ export function createFixtureChatSource(options: FixtureChatSourceOptions): Fixt
 
   const listeners = new Set<() => void>();
   let disposed = false;
-  let birthYear = seed.birthYear ?? UNASKED;
   let openRoomId: string | null = null;
   let nextMessageNumber = 1;
   let snapshotCache: ChatSnapshot | null = null;
@@ -77,6 +77,15 @@ export function createFixtureChatSource(options: FixtureChatSourceOptions): Fixt
   };
 
   const settingsApi = settingsMethods(settings, { disposed: () => disposed, rooms, notify });
+  const birthYear = sourceBirthYear(
+    seed.birthYear,
+    options,
+    () => disposed,
+    () => {
+      snapshotCache = null;
+      notify();
+    },
+  );
 
   const changed = (room: RoomState) => {
     room.summaryCache = null;
@@ -201,7 +210,7 @@ export function createFixtureChatSource(options: FixtureChatSourceOptions): Fixt
       if (snapshotCache === null || snapshotCache.preferences !== settings.preferences()) {
         snapshotCache = {
           rooms: [...rooms.values()].map(summaryOf),
-          birthYear,
+          birthYear: birthYear.current(),
           preferences: settings.preferences(),
         };
       }
@@ -239,13 +248,7 @@ export function createFixtureChatSource(options: FixtureChatSourceOptions): Fixt
       advanceIdeas(room);
       changed(room);
     },
-    setBirthYear: (year) => {
-      const next = nextBirthYear(birthYear, year);
-      if (disposed || next === birthYear) return;
-      birthYear = next;
-      snapshotCache = null;
-      notify();
-    },
+    setBirthYear: birthYear.set,
     setAutoIdeas: (roomId, on) => {
       const room = live(roomId);
       if (room === null || room.settings.autoIdeas === on) return;

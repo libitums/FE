@@ -46,6 +46,16 @@ export type ChatRemote = {
   ) => { readonly cancel: () => void };
   /** 사진 · 음성(ADR-0146). 없으면(옛 테스트 원격) 서버 방의 요청은 「unavailable」 줄입니다. */
   readonly media?: ChatMediaRemote;
+  /** 학습자 프로필의 생년(ADR-0125 「서버 결선」). 없으면(옛 테스트 원격) 생년은 기기에만 둡니다. */
+  readonly profile?: ChatProfileRemote;
+};
+
+/** 서버 프로필 중 앱이 쓰는 칸 — 생년만. 서버는 생년이 없으면 나이 모름(미성년자와 같은 엄격 규칙)으로 봅니다. */
+export type ChatProfileRemote = {
+  /** `companion_load_profile` — 프로필 행이 없거나 생년이 비면 `birthYear: null`, 못 읽으면 null. */
+  readonly load: () => Promise<{ readonly birthYear: number | null } | null>;
+  /** `companion_save_profile(p_birth_year, p_age_source = "self")` — 성공하면 true. 건너뜀은 서버에 적을 칸이 없습니다. */
+  readonly saveBirthYear: (year: number) => Promise<boolean>;
 };
 
 /** 서버가 보내기를 막은 까닭입니다 — 입력 줄 자리 안내(입력 막힘)와 로그 회색 줄(실패) 둘로 나뉩니다. */

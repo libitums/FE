@@ -15,9 +15,11 @@ import type { ChatRemote } from "../screens/messenger-chat/chat-remote.contract"
 import { companionSeed } from "../screens/messenger-chat/companion-roster";
 import type { ChatFixtureSeed, ChatSource } from "../screens/messenger-chat/chat-source.contract";
 import {
+  deviceBirthYearStore,
   deviceSnapshotSelfStore,
   deviceTurnRecordStore,
   deviceUnlockStore,
+  memoryBirthYearStore,
   memorySnapshotSelfStore,
   type UnlockStore,
 } from "../screens/messenger-chat/chat-local-stores";
@@ -178,6 +180,11 @@ export function messengerChatSource(imageUrlOf: ImageUrlOf): ChatSource {
       unlocked: [...messengerUnlockStore().read()],
       // 사진 속 내 모습(ADR-0150) — 계정마다 기기에 적습니다. 테스트는 메모리.
       selfStore: storeOverride === null ? deviceSnapshotSelfStore(key) : memorySnapshotSelfStore(),
+      // 생년(ADR-0125) — 계정마다 기기에 적고 서버 방이면 서버 프로필과 맞춥니다. 테스트 씨앗은 씨앗의 생년 그대로.
+      birthYearStore:
+        storeOverride === null && testSeed === undefined
+          ? deviceBirthYearStore(key)
+          : memoryBirthYearStore(),
       ...(remote === null
         ? testSeed === undefined
           ? {}

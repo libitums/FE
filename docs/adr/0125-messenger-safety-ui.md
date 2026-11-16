@@ -40,7 +40,7 @@
 
 ## 대가
 - 호스트 모듈이 하나 늘었다([호스트 모듈 표](README.md#호스트-모듈-표)). Android `registerModule` 가드 15 → 16(PR #411 `ChatStreamModule`과 함께 들어가면 17).
-- 생년은 가짜 출처 안에만 있어 앱을 다시 켜면 다시 묻는다(서버 결선 때 `companion_save_profile`).
+- ~~생년은 가짜 출처 안에만 있어 앱을 다시 켜면 다시 묻는다(서버 결선 때 `companion_save_profile`).~~ → 2026-11-17 기기 · 서버 저장으로 해소(아래 적용 기록).
 - 연도 목록이 올해부터라 성인은 아래로 스크롤해야 한다. 목록이 처음에 고른 연도로 스크롤하지 않는다(사이드바에서 열 때).
 - es · id · ja · vi 문구는 에이전트 번역이다 — 원어민 검토 전.
 
@@ -64,3 +64,9 @@ FAIL → 반영: **C1** 새 탭 요소 네 곳에 `accessibility-enable-tap`이 
 ## 적용 기록
 
 - ⟨2026-11-11, [ADR-0126](0126-messenger-chat-settings.md)⟩ 생년 고치기가 설정 탭 Chats 화면에도 생겼다(같은 `BirthYearSheet`, 닫을 수 있음). 시트가 닫힌 뒤 숨은 `<input>` 초점을 내리는 처방(D3 · 결함 3)은 겹침이 **다 닫힐 때만** 돌았다 — 사이드바에서 연 시트를 닫아 사이드바로 돌아오는 경우에도 Gboard가 떠, 「부모로 닫힘」이면 모두 내리도록 넓혔다. 사이드바 Story point · Get coins 줄(ADR-0113)에도 `flatten={false}`를 줬다.
+- ⟨2026-11-17, fix/birth-year-server-save⟩ **생년 서버 결선**(재검토 조건 1의 생년 몫). 서버 모드(ADR-0137)가 붙은 뒤에도 생년은 출처 메모리에만 있어 앱을 다시 켤 때마다 시트가 다시 떴고, `companion_save_profile`은 내 모습 저장(ADR-0150)으로만 불려 생년이 늘 null이었다 — 운영의 모든 학습자가 「나이 모름」이라 ADR-0152의 「확인된 성인만」 완화가 아무에게도 걸리지 않았다.
+  - 기기: 계정(출처 키)마다 `libitum.messenger.birth-year`에 set · skipped를 적고, 시작할 때 씨앗보다 먼저 읽는다(`chat-fixture-birth-year.ts`, `deviceBirthYearStore`).
+  - 서버: 고르면 `companion_save_profile(p_birth_year, p_age_source = "self")`(나머지 칸 null = 그대로). 출처를 만들 때 `companion_load_profile`을 읽어 서버 생년이 있으면 그 값으로(다른 기기 · 재설치), 서버가 비었는데 기기에 생년이 있으면 다시 보낸다. 읽는 동안 고른 값이 이긴다.
+  - 건너뜀은 서버에 적을 칸이 없어(생년 · 출처는 함께 null이어야 하고 null은 「그대로」) 기기에만 둔다 — 서버는 생년이 없으면 나이 모름(엄격)이라 뜻이 같다.
+  - 턴(`chat-send`) · 사진 · 음성 요청은 진행 중인 생년 저장이 끝난 뒤 보낸다 — 서버가 받는 순간의 나이로 판정한다.
+  - 마이그레이션 · 서버 함수 변경 없음. 테스트: BY-U1 ~ U9 · SA-U6 ~ U8 · BY-I1 ~ I2.
