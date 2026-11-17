@@ -301,6 +301,40 @@ describe("프로필 생년", () => {
     expect(stream().request).not.toBeNull();
   });
 
+  test("SA-U12 프로필 저장은 차례대로 — 언어 맞추기 중의 생년 저장은 그 뒤에 나가고, 턴은 둘 다 끝난 뒤 나간다", async () => {
+    const finishers: (() => void)[] = [];
+    const saves: string[] = [];
+    const { remote, stream } = setup({
+      post: async (build) => {
+        const { url, init } = build(config);
+        if (url.endsWith("companion_save_profile")) {
+          saves.push((init.body ?? "").includes('"p_l1":"vi"') ? "l1" : "birth");
+          await new Promise<void>((resolve) => finishers.push(resolve));
+        }
+        const text = url.endsWith("companion_load_profile") ? "null" : "{}";
+        return { ok: true, status: 200, bodyText: text };
+      },
+    });
+    void remote.profile?.syncL1?.("vi");
+    void remote.profile?.saveBirthYear(1995);
+    remote.openTurn(
+      { characterId: "duksu", text: "x", clientMessageId: "c" },
+      { onOpen: () => undefined, onEvent: () => undefined, onEnd: () => undefined },
+    );
+    await flush();
+    await flush();
+    expect(saves).toEqual(["l1"]);
+    finishers.shift()!();
+    await flush();
+    await flush();
+    expect(saves).toEqual(["l1", "birth"]);
+    expect(stream().request).toBeNull();
+    finishers.shift()!();
+    await flush();
+    await flush();
+    expect(stream().request).not.toBeNull();
+  });
+
   test("SA-U8생년 저장 중에 연 턴 · 사진 요청은 저장이 끝난 뒤 나간다(서버가 그 순간의 나이로 판정)", async () => {
     let finishSave: (() => void) | null = null;
     const order: string[] = [];
