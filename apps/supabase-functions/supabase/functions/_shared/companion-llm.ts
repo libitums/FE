@@ -283,10 +283,7 @@ export function companionLlmFor(env: ChatSendEnv): CompanionLlm {
   return env.llm.kind === "fake" ? fakeCompanionLlm() : anthropicCompanionLlm(env.llm);
 }
 
-/**
- * 모든 단계를 한 모델로 돌리는 계층(`companion-eval`의 모델 바꿔 보기). fake는 모델과 상관없이 가짜입니다.
- * `claude-haiku-5-5@medium`처럼 `@생각 깊이`가 붙으면 답변만 그 깊이로 돌립니다(없으면 설정값).
- */
+/** 모든 단계를 한 모델로(`companion-eval`). `…@medium`이면 답변만 그 생각 깊이로. fake는 모델과 상관없이 가짜입니다. */
 export function companionLlmWithModel(env: ChatSendEnv, choice: string): CompanionLlm {
   if (env.llm.kind === "fake") return fakeCompanionLlm();
   const [model = choice, effort] = choice.split("@");
