@@ -182,12 +182,10 @@ export type MessengerChatScreenProps = {
   readonly keyboardHeightStore: KeyboardHeightStore;
   readonly edges: KeyboardDockEdges;
   readonly learnerName: string;
-  /** 엽전 지갑입니다(spec §5.2 · §7.2). */
-  readonly wallet: CoinWallet;
+  readonly wallet: CoinWallet; // 엽전 지갑(spec §5.2 · §7.2)
   /** 체험 인물의 체험 남은 수입니다(ADR-0155 — 정본은 서버 지갑). */
   readonly trial: TrialStore;
-  /** unlimited면 턴 표시 · 관문이 모두 빠집니다. */
-  readonly tier: ChatTier;
+  readonly tier: ChatTier; // unlimited면 턴 표시 · 관문이 모두 빠집니다
   readonly planOffer?: PlanOfferWiring | undefined; // 무료 다 씀 판의 요금제 카드(ADR-0144) — 플래그가 꺼졌으면 없음.
   readonly onExit: () => void;
   /** 사이드바 줄이 쌓는 화면 — 「What {name} remembers」 인물 기억(ADR-0126) · Album 인물 앨범(ADR-0150, 없으면 무동작). */
