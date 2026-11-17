@@ -22,7 +22,7 @@ export type ChatListRowProps = {
   readonly onOpen: (roomId: string) => void;
 };
 
-type PreviewTone = "activity" | "unread" | "muted";
+type PreviewTone = "activity" | "unread" | "muted" | "greeting";
 
 // 미리보기 한 줄의 글입니다. 대화 내용은 한국어 원문을 보입니다(번역은 방 안에서 봅니다).
 function previewText(preview: ChatRowPreview, name: string, copy: MessengerChatCopy): string {
@@ -42,6 +42,8 @@ function previewText(preview: ChatRowPreview, name: string, copy: MessengerChatC
       return preview.durationMs > 0
         ? copy.list.voice(voiceDurationLabel(preview.durationMs))
         : copy.media.listVoice;
+    case "greeting":
+      return preview.text;
     case "empty":
       return "";
     default: {
@@ -78,12 +80,18 @@ export function ChatListRow({ room, now, onOpen }: ChatListRowProps): ReactNode 
   const preview = chatRowPreview(room);
   const text = previewText(preview, counterpart.name, copy);
   const tone: PreviewTone =
-    preview.kind === "activity" ? "activity" : room.unread > 0 && !locked ? "unread" : "muted";
+    preview.kind === "activity"
+      ? "activity"
+      : preview.kind === "greeting"
+        ? "greeting"
+        : room.unread > 0 && !locked
+          ? "unread"
+          : "muted";
   const badge = locked ? null : unreadBadge(room.unread);
   const time = locked || room.lastMessage === null ? null : chatTimeOf(room.updatedAt, now);
   const when = time === null ? null : timeText(time, copy);
 
-  const isNew = newBadgeShown(room);
+  const isNew = newBadgeShown(room, preview);
 
   const rowLabel = locked
     ? copy.list.lockedRowLabel(counterpart.name, text)
@@ -93,8 +101,12 @@ export function ChatListRow({ room, now, onOpen }: ChatListRowProps): ReactNode 
         when ?? "",
         badge === null ? null : copy.list.unreadLabel(room.unread),
       );
-  // 새 친구 줄은 낭독이 「New friend」로 시작합니다(알약은 숨깁니다).
-  const label = isNew ? `${copy.list.newFriendLabel}, ${rowLabel}` : rowLabel;
+  // 새 친구 줄은 낭독이 「New friend」로, 첫 인사 줄은 「New greeting」으로 시작합니다(알약은 숨깁니다).
+  const label = room.isNew
+    ? `${copy.list.newFriendLabel}, ${rowLabel}`
+    : isNew
+      ? `${copy.list.greetingLabel}, ${rowLabel}`
+      : rowLabel;
 
   function handleTap() {
     "background only";

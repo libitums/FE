@@ -29,6 +29,8 @@ export type MessengerChatCopy = {
     readonly coinsLabel: (count: number) => string;
     readonly newBadge: string;
     readonly newFriendLabel: string;
+    /** 아직 메시지가 없는 방 줄(첫 인사 미리보기) 낭독의 앞말입니다. */
+    readonly greetingLabel: string;
     readonly emptyTitle: string;
     readonly emptyBody: string;
     readonly goToJourney: string;

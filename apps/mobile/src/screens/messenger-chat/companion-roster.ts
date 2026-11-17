@@ -15,6 +15,11 @@ export type CompanionCharacter = {
    * 정본은 해금 JSON의 `firstMessage` 첫 줄이고 서버가 저장하는 말과 같습니다(ADR-0152) — 시트와 대화방이 다른 말을 하지 않습니다.
    */
   readonly sheetOpening: { readonly ko: string; readonly en: string } | null;
+  /**
+   * 첫 인사 첫 줄(한국어) — 아직 메시지가 없는 방의 목록 미리보기입니다(ADR-0113 추가 2026-11-17). 정본은 해금 JSON의 `firstMessage`
+   * 첫 줄이고, 방을 처음 열면 서버가 그 말을 저장합니다(ADR-0152 D3). 기본 인물(덕수쌤)도 있습니다(시트는 없음).
+   */
+  readonly firstLine: string | null;
 };
 
 const profile = (name: string) => `content/images/profiles/${name}.webp`;
@@ -27,6 +32,7 @@ export const COMPANION_CHARACTERS: readonly CompanionCharacter[] = [
     unlockEpisodeId: null,
     unlockEpisode: null,
     sheetOpening: null,
+    firstLine: "안녕하세요! 덕수쌤이에요.",
   },
   {
     id: "yoonkyung",
@@ -38,6 +44,7 @@ export const COMPANION_CHARACTERS: readonly CompanionCharacter[] = [
       ko: "잘 도착했어요? 익선 게스트하우스 정윤경이에요.",
       en: "Did you get here okay? This is Jung Yoonkyung from Ikseon Guesthouse.",
     },
+    firstLine: "잘 도착했어요? 익선 게스트하우스 정윤경이에요.",
   },
   {
     id: "mina",
@@ -46,6 +53,7 @@ export const COMPANION_CHARACTERS: readonly CompanionCharacter[] = [
     unlockEpisodeId: "u03-mina",
     unlockEpisode: 3,
     sheetOpening: { ko: "안녕하세요! 같은 방 미나예요.", en: "Hi! It's Mina, your roommate." },
+    firstLine: "안녕하세요! 같은 방 미나예요.",
   },
   {
     id: "doyun",
@@ -57,6 +65,7 @@ export const COMPANION_CHARACTERS: readonly CompanionCharacter[] = [
       ko: "안녕하세요! 카페 끌림 도윤이에요.",
       en: "Hi! It's Doyun from Cafe Kkeullim.",
     },
+    firstLine: "안녕하세요! 카페 끌림 도윤이에요.",
   },
   {
     id: "jaemin",
@@ -68,6 +77,7 @@ export const COMPANION_CHARACTERS: readonly CompanionCharacter[] = [
       ko: "서재민이에요.",
       en: "It's Seo Jaemin.",
     },
+    firstLine: "서재민이에요.",
   },
 ];
 
