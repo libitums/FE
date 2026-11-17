@@ -10,11 +10,15 @@ import { TRIAL_CHARACTER_ID } from "./free-turns";
 export function remoteWalletSync(remote: ChatRemote, hooks: ChatMediaHooks | undefined) {
   const read = () => {
     if (remote.wallet === undefined || hooks === undefined) return;
-    void remote.wallet().then((wallet) => {
-      if (wallet === null) return;
-      hooks.onBalance?.(wallet.balance);
-      if (wallet.trialRemaining !== null) hooks.onTrialRemaining?.(wallet.trialRemaining);
-    });
+    // 못 읽으면 지금 칩 · 체험 수를 그대로 둡니다 — 다음 턴 뒤에 다시 읽습니다.
+    void remote
+      .wallet()
+      .then((wallet) => {
+        if (wallet === null) return;
+        hooks.onBalance?.(wallet.balance);
+        if (wallet.trialRemaining !== null) hooks.onTrialRemaining?.(wallet.trialRemaining);
+      })
+      .catch(() => undefined);
   };
   read();
   return {

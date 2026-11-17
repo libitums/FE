@@ -2,7 +2,7 @@
 // 체험 인물은 체험 수, 그 밖의 인물은 첫 통부터 메시지 요금. 서버 방은 앱 지갑에서 빼지 않고(서버가 내고 `done` 잔액이 칩으로 옵니다),
 // 앱 안 방(가짜 출처)만 앱 지갑에서 뺍니다. 체험 · 지갑 호출은 이 훅만 합니다.
 
-import { useCallback, useContext, useEffect, useRef, useState } from "@lynx-js/react";
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "@lynx-js/react";
 
 import { announce } from "../../lib/accessibility";
 import { useUiCopy } from "../../lib/ui-copy";
@@ -66,7 +66,11 @@ export function useChatTurns({
   const turnsCopy = useUiCopy().messengerChat.turns;
   const { sink, roomId } = useContext(ChatEventsContext);
   const remaining = useTrialRemaining(trial);
-  const plan = turnPlanFor({ tier, characterId, trialRemaining: remaining, price: PRICE });
+  // 같은 값이면 같은 계획 — 아래 낭독 이펙트가 렌더마다 돌지 않습니다.
+  const plan = useMemo(
+    () => turnPlanFor({ tier, characterId, trialRemaining: remaining, price: PRICE }),
+    [tier, characterId, remaining],
+  );
 
   // 다 쓴 판은 마지막 무료를 보낸 순간(last-free → coin) 한 번 열립니다 — 다 쓴 채 들어온 방은 판 없이 엽전 보내기입니다.
   const [panelState, setPanelState] = useState(false);
