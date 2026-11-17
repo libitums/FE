@@ -14,8 +14,8 @@ import "./messenger-chat.css";
 export type ReplyIdeasPanelProps = {
   readonly quote: string | null;
   readonly ideas: readonly ChatReplyIdea[];
-  readonly picked: number | null;
-  readonly onPick: (index: number) => void;
+  /** 보기를 누르면 그 글을 바로 보냅니다(2026-11-17 — 입력 칸을 채우지 않습니다). */
+  readonly onSend: (index: number) => void;
   readonly onTypeMyself: () => void;
   /** 판 아래에 더할 안전 영역입니다(슬롯 높이가 이 인셋을 포함합니다). 없으면 0. */
   readonly bottomInset?: number;
@@ -34,12 +34,11 @@ export function ideasScrollHeight(panelHeight: number, bottomInset: number): num
   return Math.max(0, panelHeight - 12 - 32 - 8 - (bottomInset + 8));
 }
 
-// 보기를 탭하면 입력 칸을 채울 뿐 보내지 않습니다. 슬롯 높이 안에서 세로로 스크롤됩니다.
+// 보기를 탭하면 그 글을 바로 보냅니다(2026-11-17 — 예전에는 입력 칸만 채웠습니다). 슬롯 높이 안에서 세로로 스크롤됩니다.
 export function ReplyIdeasPanel({
   quote,
   ideas,
-  picked,
-  onPick,
+  onSend,
   onTypeMyself,
   bottomInset,
   height,
@@ -101,9 +100,10 @@ export function ReplyIdeasPanel({
               primary={idea.ko}
               // 서버 추천 답변은 로마자가 없습니다(ADR-0137) — 빈 줄은 그리지 않습니다.
               lines={[idea.roman, idea.en].filter((line) => line !== "")}
-              state={picked === index ? "picked" : "idle"}
+              state="idle"
+              action={copy.send}
               testId={ids.idea(index)}
-              onPick={() => onPick(index)}
+              onPick={() => onSend(index)}
             />
           ))}
         </view>

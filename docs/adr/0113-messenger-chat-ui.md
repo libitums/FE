@@ -190,3 +190,13 @@ ADR-0102 6판(자유 대화 서버 설계)은 브랜치 `docs/adr-0102-messenger
   - NEW: 줄의 NEW 알약은 `isNew`(해금 직후, 0117) **또는** 첫 인사 줄이다(`newBadgeShown`). 안 읽은 수 · 탭 NEW(ADR-0139 `messenger-guide`)는 `isNew`만 보고 첫 인사 줄을 세지 않는다. 방을 열어 첫 인사가 저장되면 평소 미리보기로 바뀌고 NEW도 사라진다.
   - 낭독: 해금 직후 줄은 「New friend」, 첫 인사 줄은 「New greeting」(5개 언어 `list.greetingLabel`)으로 시작하고 이름 · 첫 인사를 읽는다.
   - 테스트: unit CL-G1 ~ G5 · CU-U5(인물 표 `firstLine` = 해금 JSON 첫 줄), ui CL-UI1 ~ UI3.
+
+
+## 추가 (2026-11-17) — 답장 보기를 누르면 바로 보낸다 [사용자]
+
+- 결정: 「채팅 선택지 주는 내용은 input에 뜨지말고 누르면 바로 보내지게」. 보기 판의 보기를 누르면 그 글(`idea.ko`)을 **입력 칸을 거치지 않고** 보내기 단추와 같은 길(`useChatRoom.send(idea)`)로 보낸다. 예전에는 입력 칸을 채우고(`pick-idea`) 학습자가 보내기를 눌렀다.
+- 관문은 보내기 단추와 같다 — 요금 계획(`authorizeSend`)이 막으면(엽전 부족) 보내지 않고 엽전 상점이 열린다. 답을 기다리는 중의 규칙도 단추와 같다(글만 보면 보낸다).
+- 보낸 뒤 판을 접는다(`idea-sent` — 슬롯 closed · 휴대폰 초점 내림). 입력 칸에 쓰던 글 · 키보드 값은 그대로 두고, 휴대폰 키보드를 다시 올리지 않는다.
+- 「고른 보기」 표시(`ChatSlot` ideas의 `picked`)는 쓰는 곳이 없어 지웠다. 공용 면의 `picked` 상태는 학습 메신저가 계속 쓴다.
+- 낭독: 보기 끝에 동작을 붙인다(「…, Send」 — `chatReplyOptionLabel`의 `action`, 문구 `ideas.send` 5개 언어).
+- 테스트: unit IS-U1, ui IS-UI1 ~ UI5. 옛 동작을 지키던 MC-U9 pick-idea 셋 · MC-UI15 두 개 · D1 picked 클래스를 지우거나 고쳤고, CP-UI9 · MC-UI19는 새 동작으로 맞췄다.

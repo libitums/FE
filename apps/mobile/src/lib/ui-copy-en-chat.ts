@@ -63,7 +63,7 @@ export const messengerChatEn: MessengerChatCopy = {
     moreOpen: "More, expanded",
   },
   more: { ideas: "New reply ideas", report: "Report" },
-  ideas: { typeMyself: "Type myself", quote: (text) => `「${text}」` },
+  ideas: { typeMyself: "Type myself", send: "Send", quote: (text) => `「${text}」` },
   report: {
     title: "Report this chat",
     description: "Choose what's wrong. You can pick more than one.",

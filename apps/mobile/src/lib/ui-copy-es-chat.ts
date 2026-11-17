@@ -64,7 +64,7 @@ export const messengerChatEs: MessengerChatCopy = {
     moreOpen: "Más, desplegado",
   },
   more: { ideas: "Nuevas ideas de respuesta", report: "Denunciar" },
-  ideas: { typeMyself: "Escribir yo mismo", quote: (text) => `「${text}」` },
+  ideas: { typeMyself: "Escribir yo mismo", send: "Enviar", quote: (text) => `「${text}」` },
   report: {
     title: "Denunciar este chat",
     description: "Elige qué ocurre. Puedes marcar más de una opción.",

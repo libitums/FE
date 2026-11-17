@@ -14,7 +14,7 @@ import { messengerChatTestIds as ids } from "./messenger-chat.contract";
 import { RegenerateIdeasDialog } from "./RegenerateIdeasDialog";
 
 // `ui` 계층(MC-UI19 앞부분): 새 답장 보기 만들기 확인 — 아이콘 없음 · 버튼 둘(cancel / confirm) ·
-// confirm → regenerateIdeas · 열려 있던 보기 패널은 그대로 새 보기(picked 없음) · Cancel · 뒤로.
+// confirm → regenerateIdeas · 열려 있던 보기 패널은 그대로 새 보기 · Cancel · 뒤로.
 
 beforeEach(() => {
   vi.useFakeTimers();
@@ -78,12 +78,10 @@ test("MC-UI19. 화면: confirm이 출처의 regenerateIdeas를 부르고 대화�
   expect(screen.queryByTestId(ids.regenDialog)).toBeNull();
 });
 
-test("MC-UI19. 화면: 보기 패널이 열려 있으면 그대로 새 보기로 바뀌고 고른 표시가 없다", () => {
+test("MC-UI19. 화면: 보기 패널이 열려 있으면 그대로 새 보기로 바뀐다", () => {
   mountChat();
   tapId(ids.ideasButton);
-  tapId(ids.idea(0));
   expect(screen.getByTestId(ids.idea(0)).textContent).toContain(ideaSetA[0].ko);
-  expect(screen.getByTestId(ids.idea(0)).getAttribute("data-state")).toBe("picked");
   tapId(ids.more);
   tapId(ids.moreItem("ideas"));
 

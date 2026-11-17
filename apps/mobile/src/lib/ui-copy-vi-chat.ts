@@ -64,7 +64,7 @@ export const messengerChatVi: MessengerChatCopy = {
     moreOpen: "Thêm, đang mở rộng",
   },
   more: { ideas: "Gợi ý trả lời mới", report: "Báo cáo" },
-  ideas: { typeMyself: "Tự nhập", quote: (text) => `「${text}」` },
+  ideas: { typeMyself: "Tự nhập", send: "Gửi", quote: (text) => `「${text}」` },
   report: {
     title: "Báo cáo cuộc trò chuyện này",
     description: "Chọn điều chưa ổn. Bạn có thể chọn nhiều mục.",

@@ -64,7 +64,7 @@ describe("resolveChatKeyboardHeight (MC-U2)", () => {
 });
 
 const keyboardSlot: ChatSlot = { kind: "keyboard" };
-const ideasSlot: ChatSlot = { kind: "ideas", picked: null };
+const ideasSlot: ChatSlot = { kind: "ideas" };
 const closedSlot: ChatSlot = { kind: "closed" };
 
 const slotHeight = (

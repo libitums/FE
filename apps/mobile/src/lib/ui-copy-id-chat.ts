@@ -65,7 +65,7 @@ export const messengerChatId: MessengerChatCopy = {
     moreOpen: "Lainnya, terbuka",
   },
   more: { ideas: "Ide balasan baru", report: "Laporkan" },
-  ideas: { typeMyself: "Ketik sendiri", quote: (text) => `「${text}」` },
+  ideas: { typeMyself: "Ketik sendiri", send: "Kirim", quote: (text) => `「${text}」` },
   report: {
     title: "Laporkan obrolan ini",
     description: "Pilih apa yang salah. Kamu bisa memilih lebih dari satu.",

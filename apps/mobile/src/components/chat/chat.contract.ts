@@ -61,6 +61,8 @@ export type ChatReplyOptionProps = {
   readonly primary: string;
   readonly lines: readonly string[];
   readonly state: "idle" | "picked";
+  /** 누르면 일어나는 일을 낭독 끝에 붙입니다(예: 「Send」). 없으면 글만 읽습니다. */
+  readonly action?: string;
   readonly testId: string;
   readonly onPick: () => void;
 };

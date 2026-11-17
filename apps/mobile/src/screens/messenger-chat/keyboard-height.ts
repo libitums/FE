@@ -15,7 +15,7 @@ export const CHAT_KEYBOARD_HEIGHTS = {
 export type ChatSlot =
   | { readonly kind: "closed" }
   | { readonly kind: "keyboard" }
-  | { readonly kind: "ideas"; readonly picked: number | null };
+  | { readonly kind: "ideas" };
 export type PhoneFocus = "focused" | "blurred";
 export type ChatSlotContent = "closed" | "learning-keyboard" | "phone-spacer" | "ideas";
 

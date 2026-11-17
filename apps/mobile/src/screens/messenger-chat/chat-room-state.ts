@@ -72,7 +72,7 @@ export type ChatRoomAction =
   | { readonly type: "close-keyboard" }
   | { readonly type: "underlay-settled" }
   | { readonly type: "open-ideas" }
-  | { readonly type: "pick-idea"; readonly index: number; readonly text: string }
+  | { readonly type: "idea-sent" }
   | { readonly type: "type-myself" }
   | { readonly type: "sent" }
   | { readonly type: "open-overlay"; readonly overlay: Exclude<ChatOverlay, { kind: "none" }> }
@@ -144,18 +144,6 @@ function switchKeyboard(state: ChatRoomState, to: ComposerKeyboard): ChatRoomSta
   };
 }
 
-function pickIdea(state: ChatRoomState, index: number, text: string): ChatRoomState {
-  const clamped = clampText(text, CHAT_PLACEHOLDERS.messageMaxLength);
-  return {
-    ...state,
-    text: clamped,
-    keys: keysFromText(clamped),
-    shifted: false,
-    slot: { kind: "ideas", picked: index },
-    inputEpoch: state.inputEpoch + 1,
-  };
-}
-
 function sent(state: ChatRoomState): ChatRoomState {
   return {
     ...state,
@@ -203,9 +191,10 @@ export function chatRoomReducer(state: ChatRoomState, action: ChatRoomAction): C
     case "underlay-settled":
       return { ...state, underlay: "none" };
     case "open-ideas":
-      return { ...state, slot: { kind: "ideas", picked: null } };
-    case "pick-idea":
-      return pickIdea(state, action.index, action.text);
+      return { ...state, slot: { kind: "ideas" } };
+    case "idea-sent":
+      // 보기는 입력 칸을 거치지 않고 보냅니다(2026-11-17) — 판만 접고, 쓰던 글 · 키보드 값은 그대로 둡니다.
+      return { ...state, slot: { kind: "closed" }, underlay: "none", phoneFocus: "blurred" };
     case "type-myself":
       return { ...state, slot: { kind: "keyboard" } };
     case "sent":

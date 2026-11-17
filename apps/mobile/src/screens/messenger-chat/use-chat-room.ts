@@ -59,7 +59,7 @@ export type ChatRoomApi = {
   /** 입력 칸이 잰 휴대폰 키보드 높이(pt/dp)를 받습니다(`usePhoneKeyboardHeight`). */
   readonly measureKeyboard: (height: number) => void;
   readonly dispatch: (action: ChatRoomAction) => void;
-  readonly send: () => void;
+  readonly send: (idea?: string) => void;
 };
 
 const originTestId: Readonly<Record<ChatFocusOrigin, string>> = {
@@ -175,16 +175,17 @@ export function useChatRoom({
     rawDispatch(action);
   }, []);
 
-  const send = useCallback(() => {
+  function sendTurn(idea?: string) {
     const current = stateRef.current;
-    if (!canSend(current.text)) return;
+    if (!canSend(idea ?? current.text)) return;
     if (authorizeRef.current !== undefined && !authorizeRef.current()) return;
     try {
-      source.sendText(roomId, current.text);
+      source.sendText(roomId, idea ?? current.text);
     } catch {
       // 출처 계약은 던지지 않는 것이지만, 던져도 입력 칸 비우기가 끊기지 않게 합니다(device-findings-1 D5 — 출처 호출 뒤에서
       // 끊겨 보낸 글이 입력 칸에 남았습니다).
     }
+    if (idea !== undefined) return rawDispatch({ type: "idea-sent" }); // 답장 보기: 입력 칸을 거치지 않음
     rawDispatch({ type: "sent" });
     // `stateRef`는 렌더 때만 갱신되므로, 같은 렌더 안의 연속 탭이 같은 글을 다시 보내지 않게 비운 상태로 바로 맞춥니다(리뷰 P3-1).
     stateRef.current = { ...current, text: "" };
@@ -194,7 +195,8 @@ export function useChatRoom({
       if (current.slot.kind !== "closed") focusWanted.current = true;
       setRemount((count) => count + 1);
     });
-  }, [source, roomId]);
+  }
+  const send = useCallback((idea?: string) => sendTurn(idea), [source, roomId]);
 
   const phoneReady = state.keyboard === "phone" && state.slot.kind === "keyboard";
   useEffect(() => {

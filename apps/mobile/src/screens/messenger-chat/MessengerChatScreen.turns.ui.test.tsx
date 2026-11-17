@@ -10,7 +10,6 @@ import {
   advance,
   clearBackHandlers,
   fixtureRoom,
-  ideaSetA,
   imageUrlOf,
   KEYS_AN,
   mountChat,
@@ -286,14 +285,12 @@ test("CP-UI8. 서버 방의 엽전 보내기는 앱 지갑에서 빼지 않고 �
 
 // ------------------------------------------------------------------ 관문 · 길
 
-test("CP-UI9. 전구로 보기를 골라 보내도 체험 한 통으로 센다", () => {
+test("CP-UI9. 전구로 보기를 눌러 보내도 체험 한 통으로 센다", () => {
   const env = room();
   mountChatOpen(env);
 
   tapId(ids.ideasButton);
   tapId(ids.idea(0));
-  expect(textOf(ids.display)).toBe(ideaSetA[0].ko);
-  tapId(ids.send);
 
   expect(env.trial.remaining()).toBe(19);
   expect(lineText()).toBe("19 of 20 free messages left");

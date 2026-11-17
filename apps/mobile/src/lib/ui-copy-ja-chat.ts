@@ -64,7 +64,7 @@ export const messengerChatJa: MessengerChatCopy = {
     moreOpen: "その他、展開中",
   },
   more: { ideas: "新しい返信のヒント", report: "通報" },
-  ideas: { typeMyself: "自分で入力", quote: (text) => `「${text}」` },
+  ideas: { typeMyself: "自分で入力", send: "送信", quote: (text) => `「${text}」` },
   report: {
     title: "このチャットを通報",
     description: "問題の内容を選んでください。複数選べます。",
