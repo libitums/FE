@@ -347,7 +347,7 @@ Play Console에 등록된 앱에 맞춘 설정이다. 결정과 버린 대안은
 | `applicationId`(패키지) | `libitum.duru.android` | Play · Firebase 앱 · `adb`/`am`/`pm`의 대상 · Maestro `appId` |
 | 계측 APK | `libitum.duru.android.test` | 러너 `libitum.duru.android.test/androidx.test.runner.AndroidJUnitRunner` |
 | `namespace`(Java 패키지) | `com.libitum.host` — 바꾸지 않았다 | 소스 경로 `app/src/main/java/com/libitum/host/` · 클래스 이름(`-e class com.libitum.host.<Test>`, `…/com.libitum.host.MainActivity`) |
-| `versionCode` · `versionName` | `16` · `1.4.0` | vc15(1.4.0)는 업로드 여부가 불확실해 번호만 올렸다 — 메신저를 회원 모두에게 연 빌드 |
+| `versionCode` · `versionName` | `17` · `1.4.1` | vc16(1.4.0) 뒤 해금 기록 · 사진 보기 · 안전 영역 수정을 담은 패치 출시 |
 
 - **`versionCode`는 손으로 올린다.** Play에 올릴 커밋에서 `app/build.gradle`의 정수를 1 올린다. 빌드 인자로 받지 않는다 — 어느 커밋이 어느 번호인지 저장소가 알아야 한다.
 - **서명은 저장소 밖이다.** `./gradlew bundleRelease`는 서명 없는 `app/build/outputs/bundle/release/app-release.aab`를 만들고, 업로드 키 서명은 사람이 `jarsigner`로 한다.
