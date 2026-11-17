@@ -16,6 +16,7 @@ import {
   greetingFrom,
   historyFrom,
   profileFrom,
+  profileL1From,
 } from "../screens/messenger-chat/companion-parse";
 import { walletOf } from "../screens/messenger-chat/companion-media-parse";
 
@@ -87,6 +88,18 @@ export function createCompanionRemote(deps: CompanionRemoteDeps): ChatRemote {
           p_feedback_mode: null,
           p_reply_suggestions: on,
         }).then((body) => body !== null),
+      // 학습자 언어(2026-11-17) — 서버 l1이 같으면 쓰지 않습니다. 맞추는 동안의 턴 · 사진 요청은 끝난 뒤 나갑니다.
+      syncL1: (l1) => {
+        const synced = (async () => {
+          const stored = profileL1From(await call("/rest/v1/rpc/companion_load_profile", {}));
+          if (stored === l1) return true;
+          const body = { p_birth_year: null, p_age_source: null, p_l1: l1, p_feedback_mode: null };
+          return (await call("/rest/v1/rpc/companion_save_profile", body)) !== null;
+        })();
+        const before = profileSaving;
+        profileSaving = Promise.allSettled([before, synced]);
+        return synced;
+      },
     },
     loadHistory: async (characterId) =>
       historyFrom(

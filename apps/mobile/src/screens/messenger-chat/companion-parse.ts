@@ -221,6 +221,14 @@ export function profileFrom(
   };
 }
 
+/** `companion_load_profile`의 `l1`(2026-11-17) — 문자열이면 그 값, 행 · 칸이 비면 null, 못 읽으면 undefined. */
+export function profileL1From(bodyText: string | null): string | null | undefined {
+  const raw = parse(bodyText);
+  if (raw === null) return bodyText?.trim() === "null" ? null : undefined;
+  const l1 = recordOf(raw)?.["l1"];
+  return typeof l1 === "string" ? l1 : l1 === null || l1 === undefined ? null : undefined;
+}
+
 /** `companion_clear_chat`의 답(ADR-0156) — `{ status: "cleared" | "busy" }`. 틀리면 null. */
 export function clearOutcomeFrom(bodyText: string | null): "cleared" | "busy" | null {
   const status = recordOf(parse(bodyText))?.["status"];
