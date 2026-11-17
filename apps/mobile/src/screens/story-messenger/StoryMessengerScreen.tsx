@@ -2,11 +2,11 @@ import { useRef } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import arrowLeft03 from "@libitums/icons/lynx/arrow-left-03";
-import { BottomSheet } from "@libitums/ui-lynx/bottom-sheet";
 import { Button } from "@libitums/ui-lynx/button";
 import { resolveReducedMotion, useMotion } from "@libitums/ui-lynx/motion";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
 
+import { AppBottomSheet } from "../../components/app-bottom-sheet/AppBottomSheet";
 import { ChatHeader, ChatHeaderSide } from "../../components/chat/ChatHeader";
 import { ChatLog } from "../../components/chat/ChatLog";
 import {
@@ -136,7 +136,7 @@ export function StoryMessengerScreen({
       ) : null}
       <StoryComposer bottomInset={insets.bottom} />
       {state.sheetOpen && state.reply !== null ? (
-        <BottomSheet
+        <AppBottomSheet
           title={copy.replyTitle}
           closeAccessibilityLabel={copy.closeReply}
           dismissible={false}
@@ -156,7 +156,7 @@ export function StoryMessengerScreen({
               />
             ))}
           </view>
-        </BottomSheet>
+        </AppBottomSheet>
       ) : null}
     </view>
   );

@@ -183,6 +183,14 @@ export function BottomSheet(props: BottomSheetProps) {
             ))}
           </view>
         )}
+
+        {contract.bottomInset === 0 ? null : (
+          <view
+            className="ui-lynx-bottom-sheet-inset"
+            data-testid="ui-lynx-bottom-sheet-inset"
+            style={{ height: `${contract.bottomInset}px` }}
+          />
+        )}
       </view>
     </view>
   );

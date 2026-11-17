@@ -1,9 +1,9 @@
 import type { ReactNode } from "@lynx-js/react";
 
-import { BottomSheet } from "@libitums/ui-lynx/bottom-sheet";
 import { Button } from "@libitums/ui-lynx/button";
 import { TextField } from "@libitums/ui-lynx/text-field";
 
+import { AppBottomSheet } from "../../components/app-bottom-sheet/AppBottomSheet";
 import { useUiCopy } from "../../lib/ui-copy";
 import { CheckRow } from "./CheckRow";
 import type { ChatRatingReason } from "./chat-feedback.contract";
@@ -40,7 +40,7 @@ export function RatingSheet({
   const checkedCopy = useUiCopy().messengerChat.report.checked;
   return (
     <view data-testid={ids.sheet}>
-      <BottomSheet
+      <AppBottomSheet
         title={copy.title}
         description={copy.body(name)}
         closeAccessibilityLabel={copy.close}
@@ -80,7 +80,7 @@ export function RatingSheet({
             bindinput={onNote}
           />
         </view>
-      </BottomSheet>
+      </AppBottomSheet>
     </view>
   );
 }

@@ -220,3 +220,23 @@ I lynx: "TBDBG changed-hook {...,"tappableBottomInset":0}"
 - `env(safe-area-inset-*)`에 기대지 않는다 — 규칙 1의 근거(이 호스트에서 0) 그대로다.
 - 탭 루트 · 바텀 시트 · 바닥 고정 층의 수치(D2 · D3)는 바뀌지 않았다. 3버튼에서 자판의 흰 면이 시스템 바 밑까지 깔리는 것은 D2의 바닥 면과 같은 그림이다.
 - ⚠ Android 실기 확인(3버튼 · 제스처)은 아직 없다 — [자판 바닥 붙이기 e2e](../e2e/keyboard-dock.md) KDA1 · KDA2 미실행. 통합 테스트(`App.system-insets` II7 ~ II10)가 수치를 진다.
+
+### ⟨2026-11-17⟩ 바텀 시트는 `AppBottomSheet`가 아래 시스템 바 전체를 비운다 — D3 개정
+
+**D3의 「소비자마다 빈 상자」를 바꾼다.** 위 「다시 볼 조건」의 첫째(`BottomSheet`를 쓰는 화면이 하나 더 생기면)가 열렸다 — 빈 상자를 둔 시트는
+설문 · 로그인 국가 둘뿐이었고, 그 뒤 생긴 생년 · 음성 · 내 모습 · 교정 방식 · 이야기 포인트 · 신고 · 선톡 · 평가 · 다운로드 · 다 깸 · 조립 힌트 ·
+이야기 메신저 시트는 아무것도 비우지 않아 Android 시스템 바가 시트 아래 단추를 가렸다(기기 신고 2026-11-17).
+
+- **ui-lynx `BottomSheet`가 `bottomInset`(pt/dp)을 받는다.** 패널 맨 아래(액션 뒤)에 그 높이의 빈 자리(`ui-lynx-bottom-sheet-inset`)를 두고,
+  없거나 유한한 양수가 아니면 만들지 않는다. 패널 CSS의 죽은 `env(safe-area-inset-bottom)` 항은 걷었다(이 호스트에서 0 — 위 D3의 실측).
+  ui-lynx는 호스트 globalProps를 읽지 않는다 — 값은 소비자가 넘긴다.
+- **앱은 `components/app-bottom-sheet/AppBottomSheet`만 쓴다.** 값은 `lib/safe-area.ts`의 `sheetBottomInsetFrom(globalProps)`:
+  Android 호스트(`tappableBottomInset` 키가 있음)는 `max(safeAreaInsets.bottom, tappableBottomInset)` — 3버튼 48 · **제스처 핸들 24도** 비운다
+  (가로채지는 않지만 단추 아래를 가린다). iOS(키 없음)는 0 — 모양이 수정 전과 같다(홈 인디케이터는 터치를 가로채지 않고 패널 기본 여백 20이 진다).
+- 규칙 테스트 SB-RULE1(`app/app-bottom-sheet-rule.unit.test.ts`): 앱 소스가 ui-lynx의 값 `BottomSheet`를 직접 가져오면 실패한다
+  (스타일 · 타입 · `shouldDismissBottomSheetDrag`는 괜찮다).
+- 설문 · 로그인 국가 시트의 빈 상자(`episode-survey-inset` · `login-screen-country-inset`)는 걷었다 — 시트가 비우므로 겹친다. UC1 ~ UC4b는 새 자리로 옮겼다.
+- 자체 판인 새 친구 시트(`NewFriendSheet`)도 단추 줄 아래 여백을 `16 + sheetBottomInsetFrom`으로 인라인에 준다(CSS `env()` 걷음).
+- 바뀌지 않은 것: 탭 루트(D2), 자판 화면(⟨2026-10-19⟩), 이미 `safeAreaInsets`를 읽는 층(연속 학습 · 티켓 · 무제한 모달, 엽전 상점, 채팅방 판 —
+  `keyboard-dock` 가장자리를 받는다).
+- 테스트: ui-lynx BS-IN1 · BS-IN2, 앱 SB1 ~ SB3 · SB-UI1 · SB-UI1b · SB-UI2 · SB-RULE1 · NF-IN1 · NF-IN2, UC1 ~ UC4b 갱신.

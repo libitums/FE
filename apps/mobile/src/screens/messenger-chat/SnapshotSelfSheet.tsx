@@ -1,7 +1,6 @@
 import type { ReactNode } from "@lynx-js/react";
 
-import { BottomSheet } from "@libitums/ui-lynx/bottom-sheet";
-
+import { AppBottomSheet } from "../../components/app-bottom-sheet/AppBottomSheet";
 import { useUiCopy } from "../../lib/ui-copy";
 import {
   chatAlbumTestIds as ids,
@@ -30,7 +29,7 @@ export function SnapshotSelfSheet({
   const close = useUiCopy().messengerChat.chatSettings.feedback.close;
   return (
     <view data-testid={ids.selfSheet}>
-      <BottomSheet
+      <AppBottomSheet
         title={copy.selfTitle}
         closeAccessibilityLabel={close}
         actions={[{ id: "save", label: copy.save, bindtap: onSave }]}
@@ -53,7 +52,7 @@ export function SnapshotSelfSheet({
             ))}
           </view>
         </view>
-      </BottomSheet>
+      </AppBottomSheet>
     </view>
   );
 }

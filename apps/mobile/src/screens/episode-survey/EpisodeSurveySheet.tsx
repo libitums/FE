@@ -1,7 +1,6 @@
-import { useEffect, useGlobalProps, useState } from "@lynx-js/react";
+import { useEffect, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
-import { BottomSheet } from "@libitums/ui-lynx/bottom-sheet";
 import { Button } from "@libitums/ui-lynx/button";
 import { OptionSelector } from "@libitums/ui-lynx/option-selector";
 import { TextField } from "@libitums/ui-lynx/text-field";
@@ -12,9 +11,9 @@ import {
   feedbackRatings,
   surveyAsksMessage,
 } from "../../lib/feedback-api";
+import { AppBottomSheet } from "../../components/app-bottom-sheet/AppBottomSheet";
 import type { FeedbackRating } from "../../lib/feedback.contract";
 import { announce } from "../../lib/accessibility";
-import { tappableBottomInsetFrom } from "../../lib/safe-area";
 import { useLayerBack } from "../../lib/use-back-handler";
 import { useUiCopy } from "../../lib/ui-copy";
 import { restoreAccessibilityFocus } from "../messenger-chat/chat-input-focus";
@@ -43,9 +42,6 @@ export function EpisodeSurveySheet({
   onSkip,
 }: EpisodeSurveySheetProps): ReactNode {
   const copy = useUiCopy();
-  // 패널 아래 여백의 `env(safe-area-inset-bottom)`은 이 호스트에서 0으로 풀려, Android 3버튼 바가
-  // 건너뛰기 버튼의 아래쪽을 가립니다. 터치를 가로채는 높이만큼 시트가 스스로 비웁니다(iOS · 제스처는 0).
-  const tappableBottom = tappableBottomInsetFrom(useGlobalProps());
   // 1~3점을 고른 뒤의 글 단계입니다. `null`이면 별점 단계.
   const [pending, setPending] = useState<FeedbackRating | null>(null);
   const [message, setMessage] = useState("");
@@ -69,7 +65,7 @@ export function EpisodeSurveySheet({
   // 시스템 뒤로가기 = 보이는 닫는 길과 같은 결과입니다. 설문이 서 있는 동안만 등록됩니다.
   useLayerBack(close);
   return (
-    <BottomSheet
+    <AppBottomSheet
       title={copy.feedback.survey.title}
       description={copy.feedback.survey.description(episodeTitle)}
       closeAccessibilityLabel={copy.feedback.survey.skip}
@@ -136,12 +132,6 @@ export function EpisodeSurveySheet({
           style={{ height: `${keyboardHeight}px`, flexShrink: 0 }}
         />
       ) : null}
-      {keyboardHeight === 0 && tappableBottom > 0 ? (
-        <view
-          data-testid="episode-survey-inset"
-          style={{ height: `${tappableBottom}px`, flexShrink: 0 }}
-        />
-      ) : null}
-    </BottomSheet>
+    </AppBottomSheet>
   );
 }

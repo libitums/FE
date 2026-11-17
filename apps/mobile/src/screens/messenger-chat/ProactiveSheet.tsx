@@ -1,8 +1,7 @@
 import { useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
-import { BottomSheet } from "@libitums/ui-lynx/bottom-sheet";
-
+import { AppBottomSheet } from "../../components/app-bottom-sheet/AppBottomSheet";
 import { useUiCopy } from "../../lib/ui-copy";
 import { PROACTIVE_HOURS } from "./chat-settings-rules";
 import type { ChatProactivePref } from "./chat-source.contract";
@@ -29,7 +28,7 @@ export function ProactiveSheet({ pref, hour, onSave, onClose }: ProactiveSheetPr
   const off = picked === "off";
   return (
     <view data-testid={ids.proactiveSheet}>
-      <BottomSheet
+      <AppBottomSheet
         title={copy.title}
         closeAccessibilityLabel={copy.close}
         actions={[{ id: "save", label: copy.save, bindtap: () => onSave(picked, pickedHour) }]}
@@ -106,7 +105,7 @@ export function ProactiveSheet({ pref, hour, onSave, onClose }: ProactiveSheetPr
             {copy.quietNote}
           </text>
         </view>
-      </BottomSheet>
+      </AppBottomSheet>
     </view>
   );
 }

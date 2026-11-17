@@ -2,8 +2,8 @@ import type { ReactNode } from "@lynx-js/react";
 
 import { color } from "@libitums/design-tokens";
 import lock from "@libitums/icons/lynx/lock";
-import { BottomSheet } from "@libitums/ui-lynx/bottom-sheet";
 
+import { AppBottomSheet } from "../../components/app-bottom-sheet/AppBottomSheet";
 import { useUiCopy } from "../../lib/ui-copy";
 import type { ChatStoryPoint } from "./chat-source.contract";
 import { messengerChatTestIds as ids } from "./messenger-chat.contract";
@@ -92,7 +92,7 @@ export function StoryPointSheet({
   const copy = useUiCopy().messengerChat.storyPoint;
   return (
     <view data-testid={ids.storyPointSheet}>
-      <BottomSheet
+      <AppBottomSheet
         title={copy.title}
         description={copy.description(name)}
         closeAccessibilityLabel={copy.close}
@@ -111,7 +111,7 @@ export function StoryPointSheet({
             />
           ))}
         </view>
-      </BottomSheet>
+      </AppBottomSheet>
     </view>
   );
 }

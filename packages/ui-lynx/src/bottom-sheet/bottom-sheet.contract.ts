@@ -28,6 +28,12 @@ export type BottomSheetProps = {
   readonly dismissible?: boolean;
   readonly motion?: BottomSheetMotion;
   readonly ondismiss: (reason: BottomSheetDismissReason) => void;
+  /**
+   * 패널 맨 아래(액션 뒤)에 비울 높이(pt/dp)입니다 — 아래 시스템 바(Android 3버튼 · 제스처 바)를 피합니다. Lynx에서
+   * `env(safe-area-inset-bottom)`은 0으로 풀려 시트가 스스로 알 수 없어, 호스트 값을 아는 소비자가 넘깁니다(ADR-0044 D3).
+   * 없거나 유한한 양수가 아니면 비우지 않습니다.
+   */
+  readonly bottomInset?: number;
   /** 설명 아래·액션 위에 두는 임의 내용입니다(예: 스크롤 목록). 이 자리는 스스로 스크롤하지
    *  않으므로 스크롤과 가장자리 Fog는 소비자가 함께 둡니다. Fog가 스크롤 밖에 있어야 목록을
    *  따라 움직이지 않습니다. */
@@ -36,6 +42,8 @@ export type BottomSheetProps = {
 
 export type BottomSheetContract = {
   readonly actions: readonly BottomSheetAction[];
+  /** 패널 맨 아래에 비울 높이 — 0이면 빈 자리를 만들지 않습니다. */
+  readonly bottomInset: number;
   readonly className: string;
   readonly closeAccessibilityLabel: string;
   readonly description: string | undefined;
@@ -81,8 +89,12 @@ export function getBottomSheetContract(
   const dismissible = props.dismissible ?? true;
   const draggable = dismissible && (props.draggable ?? true);
 
+  const inset = props.bottomInset;
+  const bottomInset = typeof inset === "number" && Number.isFinite(inset) && inset > 0 ? inset : 0;
+
   return {
     actions,
+    bottomInset,
     className: `ui-lynx-bottom-sheet ui-lynx-bottom-sheet-motion-${motion}`,
     closeAccessibilityLabel,
     description: props.description,

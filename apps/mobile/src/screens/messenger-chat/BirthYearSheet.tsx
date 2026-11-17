@@ -1,7 +1,6 @@
 import type { ReactNode } from "@lynx-js/react";
 
-import { BottomSheet } from "@libitums/ui-lynx/bottom-sheet";
-
+import { AppBottomSheet } from "../../components/app-bottom-sheet/AppBottomSheet";
 import { useUiCopy } from "../../lib/ui-copy";
 import { messengerChatTestIds as ids } from "./messenger-chat.contract";
 
@@ -33,7 +32,7 @@ export function BirthYearSheet({
   const sheet = copy.safety.birthYear;
   return (
     <view data-testid={ids.birthYearSheet}>
-      <BottomSheet
+      <AppBottomSheet
         title={sheet.title}
         closeAccessibilityLabel={copy.storyPoint.close}
         dismissible={dismissible}
@@ -90,7 +89,7 @@ export function BirthYearSheet({
           </scroll-view>
           <text className="chat-birth-year-note">{sheet.skipNote}</text>
         </view>
-      </BottomSheet>
+      </AppBottomSheet>
     </view>
   );
 }

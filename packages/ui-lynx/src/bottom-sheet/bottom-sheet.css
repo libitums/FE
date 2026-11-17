@@ -32,8 +32,9 @@
   position: relative;
   width: 100%;
   max-height: 100%;
-  padding: var(--libitum-spacing-12) var(--libitum-spacing-16)
-    calc(var(--libitum-spacing-20) + env(safe-area-inset-bottom));
+  /* 아래 시스템 바는 `env(safe-area-inset-bottom)`이 아니라 `bottomInset` 빈 자리(`-inset`)가 비웁니다 — Lynx에서 `env()`는
+     0으로 풀립니다(ADR-0044 D3). */
+  padding: var(--libitum-spacing-12) var(--libitum-spacing-16) var(--libitum-spacing-20);
   display: flex;
   flex-direction: column;
   /* FE override(2026-09-21 디자인 반영): 정본의 background.elevated 대신 white.
@@ -44,6 +45,11 @@
   box-shadow: 0 -10px 14px rgba(26, 28, 32, 0.2);
   animation: ui-lynx-bottom-sheet-panel-enter var(--libitum-motion-duration-sheet)
     var(--libitum-motion-easing-enter);
+}
+
+.ui-lynx-bottom-sheet-inset {
+  width: 100%;
+  flex-shrink: 0;
 }
 
 .ui-lynx-bottom-sheet-drag-area {

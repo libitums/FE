@@ -4,8 +4,8 @@ import type { ReactNode } from "@lynx-js/react";
 import { color } from "@libitums/design-tokens";
 import pause from "@libitums/icons/lynx/pause";
 import play from "@libitums/icons/lynx/play";
-import { BottomSheet } from "@libitums/ui-lynx/bottom-sheet";
 
+import { AppBottomSheet } from "../../components/app-bottom-sheet/AppBottomSheet";
 import { playAudio, stopAudio } from "../../lib/audio";
 import { SLOW_PLAYBACK_RATE } from "../../lib/listen-pace";
 import { useUiCopy } from "../../lib/ui-copy";
@@ -49,7 +49,7 @@ export function AlbumVoiceSheet({
   };
   return (
     <view data-testid={ids.voiceSheet}>
-      <BottomSheet
+      <AppBottomSheet
         title={copy.voiceLabel(name, "")}
         closeAccessibilityLabel={copy.close}
         actions={
@@ -86,7 +86,7 @@ export function AlbumVoiceSheet({
           {item.line.en === "" ? null : <text className="chat-album-voice-en">{item.line.en}</text>}
           {item.fromPastChat ? <text className="chat-album-voice-en">{copy.pastChat}</text> : null}
         </view>
-      </BottomSheet>
+      </AppBottomSheet>
     </view>
   );
 }

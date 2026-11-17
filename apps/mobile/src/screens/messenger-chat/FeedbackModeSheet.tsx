@@ -1,7 +1,6 @@
 import type { ReactNode } from "@lynx-js/react";
 
-import { BottomSheet } from "@libitums/ui-lynx/bottom-sheet";
-
+import { AppBottomSheet } from "../../components/app-bottom-sheet/AppBottomSheet";
 import { useUiCopy } from "../../lib/ui-copy";
 import type { ChatFeedbackMode } from "./chat-source.contract";
 import { ChoiceRow } from "./ChoiceRow";
@@ -30,7 +29,7 @@ export function FeedbackModeSheet({
   const copy = useUiCopy().messengerChat.chatSettings.feedback;
   return (
     <view data-testid={ids.feedbackSheet}>
-      <BottomSheet
+      <AppBottomSheet
         title={copy.title}
         closeAccessibilityLabel={copy.close}
         actions={[{ id: "save", label: copy.save, bindtap: onSave }]}
@@ -57,7 +56,7 @@ export function FeedbackModeSheet({
             {copy.note}
           </text>
         </view>
-      </BottomSheet>
+      </AppBottomSheet>
     </view>
   );
 }
