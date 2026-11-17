@@ -12,6 +12,8 @@ export type AutoIdeasInput = {
   readonly busy: boolean;
   readonly text: string;
   readonly ideasOpen: boolean;
+  /** 계정의 추천 답변 설정(ADR-0156) — 끄면 열린 보기 판을 바로 접습니다(빈 판으로 남지 않게). */
+  readonly enabled?: boolean;
   readonly dispatch: (action: ChatRoomAction) => void;
 };
 
@@ -25,7 +27,14 @@ export function shouldAutoOpenIdeas(
   return next !== previous && next !== null && next.length > 0 && text.trim() === "" && !ideasOpen;
 }
 
-export function useAutoIdeas({ ideas, busy, text, ideasOpen, dispatch }: AutoIdeasInput): void {
+export function useAutoIdeas({
+  ideas,
+  busy,
+  text,
+  ideasOpen,
+  enabled = true,
+  dispatch,
+}: AutoIdeasInput): void {
   const seen = useRef(ideas);
   const wasBusy = useRef(busy);
   const latest = useRef({ text, ideasOpen, busy });
@@ -43,4 +52,7 @@ export function useAutoIdeas({ ideas, busy, text, ideasOpen, dispatch }: AutoIde
   useEffect(() => {
     if (busy) wasBusy.current = true;
   }, [busy]);
+  useEffect(() => {
+    if (!enabled && latest.current.ideasOpen) dispatch({ type: "close-keyboard" });
+  }, [enabled, dispatch]);
 }

@@ -97,8 +97,8 @@ export function MessengerChatScreen({
   const tools = useBubbleTools({ roomId, source, thread, announce });
   const guide = useRoomGuide(roomId, thread, guideStore, state.overlay.kind !== "none");
   useAutoIdeas({
-    // 서버 모드만(가짜 출처는 답마다 보기 묶음을 돌립니다) · 방 설정 「보기 자동」을 따릅니다(리뷰 W1).
-    ideas: server && thread.settings.autoIdeas ? thread.ideas : null,
+    ideas: server && thread.settings.autoIdeas ? thread.ideas : null, // 서버 모드 · 방 「보기 자동」(리뷰 W1)
+    enabled: preferences.replyIdeas,
     busy,
     text: state.text,
     ideasOpen: state.slot.kind === "ideas",

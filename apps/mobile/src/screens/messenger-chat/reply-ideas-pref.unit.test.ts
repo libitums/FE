@@ -1,6 +1,6 @@
 import { expect, test, vi } from "vitest";
 
-import { createFixtureSettings } from "./chat-fixture-settings";
+import { createFixtureSettings, settingsMethods } from "./chat-fixture-settings";
 import { chatFixtureSeed } from "./chat-fixture";
 import type { ChatProfileRemote } from "./chat-remote.contract";
 import type { ReplyIdeasStore } from "./reply-ideas-pref";
@@ -86,4 +86,18 @@ test("RI-U4 읽는 동안 학습자가 바꾼 값이 이긴다 · 서버 칸이 
   });
   await flush();
   expect(unknown.preferences().replyIdeas).toBe(false);
+});
+
+test("RI-U5 서버 값이 바꾼 설정은 출처 구독자에게 알리고 방의 보기 캐시를 비운다(열린 방이 바로 다시 그린다)", async () => {
+  const settings = createFixtureSettings(chatFixtureSeed, Date.now, {
+    replyIdeasStore: memoryStore().store,
+    remote: { profile: profile(false).remote },
+  });
+  const notify = vi.fn<() => void>();
+  const room = { threadCache: {} as unknown };
+  settingsMethods(settings, { disposed: () => false, rooms: new Map([["mina", room]]), notify });
+  await flush();
+  expect(settings.preferences().replyIdeas).toBe(false);
+  expect(notify).toHaveBeenCalledTimes(1);
+  expect(room.threadCache).toBeNull();
 });
