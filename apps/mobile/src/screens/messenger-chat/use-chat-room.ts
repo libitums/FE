@@ -177,18 +177,17 @@ export function useChatRoom({
 
   function sendTurn(idea?: string) {
     const current = stateRef.current;
+    if (idea !== undefined && current.slot.kind !== "ideas") return; // 판이 이미 접힘 — 같은 렌더의 연속 탭
     if (!canSend(idea ?? current.text)) return;
     if (authorizeRef.current !== undefined && !authorizeRef.current()) return;
     try {
       source.sendText(roomId, idea ?? current.text);
-    } catch {
-      // 출처 계약은 던지지 않는 것이지만, 던져도 입력 칸 비우기가 끊기지 않게 합니다(device-findings-1 D5 — 출처 호출 뒤에서
-      // 끊겨 보낸 글이 입력 칸에 남았습니다).
-    }
+    } catch {} // 던져도 입력 칸 비우기가 끊기지 않게 합니다(device-findings-1 D5).
+    // `stateRef`는 렌더 때만 갱신되므로, 같은 렌더 안의 연속 탭이 다시 보내지 않게 바로 맞춥니다(리뷰 P3-1).
+    stateRef.current =
+      idea !== undefined ? { ...current, slot: { kind: "closed" } } : { ...current, text: "" };
     if (idea !== undefined) return rawDispatch({ type: "idea-sent" }); // 답장 보기: 입력 칸을 거치지 않음
     rawDispatch({ type: "sent" });
-    // `stateRef`는 렌더 때만 갱신되므로, 같은 렌더 안의 연속 탭이 같은 글을 다시 보내지 않게 비운 상태로 바로 맞춥니다(리뷰 P3-1).
-    stateRef.current = { ...current, text: "" };
     if (current.keyboard !== "phone") return;
     // 입력 칸을 비웁니다. 못 비우면 새로 마운트하고, 새 칸이 그려진 뒤 다시 초점을 줍니다(키보드가 열려 있었을 때만).
     clearPhoneInput(() => {

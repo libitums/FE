@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
-import { cleanup, screen } from "@lynx-js/react/testing-library";
+import { cleanup, fireEvent, screen } from "@lynx-js/react/testing-library";
 
 import * as inputFocus from "./chat-input-focus";
 import { CHAT_PLACEHOLDERS } from "./chat-placeholders";
@@ -54,6 +54,19 @@ test("IS-UI1. 보기를 누르면 그 글을 바로 보내고 입력 칸은 비�
   expect(textOf(ids.display)).not.toContain(ideaSetA[1].ko);
   expect(screen.queryByTestId(ids.ideasPanel)).toBeNull();
   expect(slotContent()).toBe("closed");
+});
+
+test("IS-UI6. 같은 보기를 빠르게 두 번 눌러도(판이 접히기 전 같은 요소) 한 번만 보낸다", () => {
+  const { source } = mountChatOpen({ probe: presenceProbe("absent") });
+  const sendText = vi.spyOn(source, "sendText");
+  tapId(ids.ideasButton);
+  const el = screen.getByTestId(ids.idea(1));
+  const target = el.querySelector('[data-testid="ui-lynx-button"]') ?? el;
+
+  fireEvent.tap(target, {});
+  fireEvent.tap(target, {});
+
+  expect(sendText).toHaveBeenCalledTimes(1);
 });
 
 test("IS-UI2. 휴대폰 모드에서 보기를 보내도 휴대폰 키보드를 다시 올리지 않는다", () => {
