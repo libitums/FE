@@ -147,7 +147,7 @@
   - ⟨2026-11-16⟩ 엔진: 20261206에서 `gpt-image-2.6-flare`로 바꿨다가 20261208에서 `gpt-image-2.5-flare`로 되돌렸다 — 운영 실측에서 이미지
     단계가 14.5 ~ 15.5초로 빨라지지 않았고 이미지 출력 토큰이 343 → 1,132로 늘었다(장당 원가 약 $0.035 → $0.06). 중간 그림도 0장(편집 ·
     Flare에서 스트리밍이 오는지 문서에 없음).
-  - ⟨2026-11-16⟩ `COMPANION_SNAPSHOT_COMPLEXITY`(low · medium · high, 기본 medium, `off`면 보내지 않음 — 엔진 기본 high): 그리기 전 계획 정도.
+  - ⟨2026-11-16⟩ `COMPANION_SNAPSHOT_COMPLEXITY`(low · medium · high, 기본 보내지 않음 — ⟨2026-11-17⟩ `gpt-image-2.5-flare`가 받지 않아 400으로 모든 스냅샷이 실패해 기본을 끔, 2.6에서만 켠다): 그리기 전 계획 정도.
     OpenAI 문서 「높을수록 지연이 늘 수 있다 · 별도 요금 없음」.
 - DB 설정(`companion.settings`): §6의 단가 · 상한(`snapshot_daily_limit` · `voice_daily_limit` · `snapshot_daily_attempts` · `voice_daily_attempts` ·
   `media_failure_streak_limit`), `snapshot_engine` · `snapshot_quality` · `snapshot_aspect` · `voice_model` · `media_pending_minutes`.

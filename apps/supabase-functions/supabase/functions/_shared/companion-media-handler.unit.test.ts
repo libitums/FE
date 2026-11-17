@@ -44,7 +44,7 @@ const env: MediaEnv = {
   snapshotCheck: false,
   snapshotPartialImages: 0,
   snapshotRefs: "all",
-  snapshotComplexity: "medium",
+  snapshotComplexity: null,
   openaiKey: "sk-openai-test",
   elevenKey: "eleven-test",
 };
@@ -1034,7 +1034,7 @@ test("MH21. 스트림 오류 · 거절 — 미리보기를 지우고 닫는다 �
   });
 });
 
-test("MH22. 기준 그림 — COMPANION_SNAPSHOT_REFS=sheet면 표정 시트를 빼고 시트 한 장만 · 환경 읽기(스트리밍 수는 0 ~ 3, 기본 1)", async () => {
+test("MH22. 기준 그림 — COMPANION_SNAPSHOT_REFS=sheet면 표정 시트를 빼고 시트 한 장만 · 환경 읽기(스트리밍 수는 0 ~ 3, 기본 0 · complexity 기본 끔)", async () => {
   envOverrides = { snapshotRefs: "sheet" };
   await run("snapshot");
   expect(
@@ -1061,10 +1061,10 @@ test("MH22. 기준 그림 — COMPANION_SNAPSHOT_REFS=sheet면 표정 시트를 
   });
   expect(read({ COMPANION_SNAPSHOT_PARTIAL_IMAGES: "9" })!.snapshotPartialImages).toBe(3);
   expect(read({ COMPANION_SNAPSHOT_PARTIAL_IMAGES: "two" })!.snapshotPartialImages).toBe(0);
-  // complexity — 기본 medium, off면 보내지 않음, 모르는 값은 기본.
-  expect(read({})!.snapshotComplexity).toBe("medium");
+  // complexity — 기본 보내지 않음(2.5-flare가 400), off · 모르는 값도 보내지 않음.
+  expect(read({})!.snapshotComplexity).toBeNull();
   expect(read({ COMPANION_SNAPSHOT_COMPLEXITY: "LOW" })!.snapshotComplexity).toBe("low");
   expect(read({ COMPANION_SNAPSHOT_COMPLEXITY: "off" })!.snapshotComplexity).toBeNull();
-  expect(read({ COMPANION_SNAPSHOT_COMPLEXITY: "max" })!.snapshotComplexity).toBe("medium");
-  expect(formOf(openaiCalls()[0]!).get("complexity")).toBe("medium");
+  expect(read({ COMPANION_SNAPSHOT_COMPLEXITY: "max" })!.snapshotComplexity).toBeNull();
+  expect(formOf(openaiCalls()[0]!).get("complexity")).toBeNull();
 });
