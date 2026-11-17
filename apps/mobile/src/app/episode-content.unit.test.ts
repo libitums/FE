@@ -43,6 +43,7 @@ function summary(overrides: Partial<RefreshSummary> = {}): RefreshSummary {
     removed: [],
     persisted: false,
     deferred: [],
+    skipped: [],
     translations: [],
     ...overrides,
   };

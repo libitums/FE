@@ -2,7 +2,7 @@ import "background-only";
 
 // 백그라운드 갱신 — 원격 매니페스트 → 바뀐 에피소드만 받기 → 검증 → 캐시. 던지지 않습니다.
 import { contentManifestPathsFor } from "./content-manifest-path";
-import type { AssetTarget } from "./download-policy";
+import type { AssetDecision, AssetTarget } from "./download-policy";
 import { ABSENT_HTTP_CODES } from "./episode-asset-sync";
 import type { AssetDeps } from "./episode-asset-sync";
 import {
@@ -50,6 +50,8 @@ export type RefreshSummary = {
   persisted: boolean;
   /** 받기 정책(`assetPolicy`)이 막아 자산을 건너뛴 편입니다(ADR-0095 D5). 연결이 바뀌면 다음 차례에 받습니다. */
   deferred: string[];
+  /** 미리 받기 창 밖이라 자산을 받지 않은 편입니다(ADR-0157). 열 때 받습니다 — 연결 재확인 대상이 아닙니다. */
+  skipped: string[];
   /** 이번 차례에 새로 받아 저장한 번역 파일(`<언어>/<id>`, ADR-0102 D3)입니다. */
   translations: string[];
 };
@@ -85,7 +87,7 @@ export type RefreshDeps = {
    * 있으면 묶음(공통 · 유닛)마다 자산을 받기 전에 묻습니다 — `false`면 그 묶음은 건너뛰고(편은 `deferred`), 받기를
    * 멈추지 않고 다음 묶음 · 편으로 갑니다(ADR-0095 D5). 없으면 지금처럼 모두 받습니다.
    */
-  assetPolicy?: (id: string, target: AssetTarget) => boolean;
+  assetPolicy?: (id: string, target: AssetTarget) => boolean | AssetDecision;
   /** 번역 파일을 받을 UI 언어(ADR-0102 D3). 없거나 `null`(영어)이면 번역 단계를 건너뜁니다. */
   translationLanguage?: ContentLanguage | null;
 };
@@ -99,6 +101,7 @@ function emptySummary(manifest: RefreshSummary["manifest"], persisted: boolean):
     removed: [],
     persisted,
     deferred: [],
+    skipped: [],
     translations: [],
   };
 }

@@ -12,6 +12,8 @@ import { learningItemGuideSeenStorageKey } from "../../lib/learning-item-guide";
 import { allLearningItemGuidesSeenValue } from "../../lib/learning-item-guide.test-support";
 import { sha256Hex, utf8Bytes } from "../../lib/sha256";
 import type { EpisodeIntroEvent } from "../../screens/episode-intro/episode-intro.contract";
+import { downloadAllowedStorageKey } from "../../lib/download-policy";
+import { resetPrefetchWindowForTests } from "../../lib/prefetch-window";
 
 // 에피소드 콘텐츠 받기 integration 테스트가 함께 쓰는 부팅 · 대역입니다. 대역은 경계뿐입니다 — 가짜 전송
 // (`fetch`) · `NativeModules`(`StorageModule`, 선택 `ContentFileModule`) · Supabase 설정(`vi.stubEnv`).
@@ -124,6 +126,11 @@ export type BootOptions = {
   readonly onEntryEvent?: (event: EntryEvent) => void;
   /** 부팅 전에 둘 호스트 globalProps(`appVersion` 등). 되돌리는 것은 부른 쪽의 몫입니다. */
   readonly globalProps?: Record<string, unknown>;
+  /**
+   * 사용자가 받기를 허락한 편(설정 › 다운로드 · 시트의 「지금 받기」와 같은 저장값). 미리 받기 창(ADR-0157) 밖의 원격 편을
+   * 받는 흐름을 볼 때 씁니다 — 창은 진행 중인 편 + 다음 1편이라 새 사용자에게 뒤 편은 열 때까지 받지 않습니다.
+   */
+  readonly allowEpisodes?: readonly string[];
 };
 
 export type Booted = { readonly urls: string[]; readonly store: Map<string, string> };
@@ -134,6 +141,9 @@ export async function bootContentApp(options: BootOptions): Promise<Booted> {
   store.set(authSessionStorageKey, serializeAuthSession(signedInBootSession));
   store.set(learningItemGuideSeenStorageKey, allLearningItemGuidesSeenValue);
   for (const [key, value] of Object.entries(options.preStore ?? {})) store.set(key, value);
+  if (options.allowEpisodes !== undefined)
+    store.set(downloadAllowedStorageKey, JSON.stringify(options.allowEpisodes));
+  resetPrefetchWindowForTests();
   vi.stubGlobal("NativeModules", {
     StorageModule: {
       get: (key: string) => store.get(key) ?? null,

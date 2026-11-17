@@ -285,6 +285,7 @@ test("[EUI4] 튜토리얼이 아닌 새 에피소드는 스플래시가 기다�
       "episodes/u05-x.json": fresh.text,
     },
     contentFiles: files.module,
+    allowEpisodes: ["u05-x"],
     preStore: seedV1,
     splash: "hold",
   });
@@ -319,6 +320,7 @@ test("[EUI10] 튜토리얼이 아닌 바뀐 에피소드도 스플래시가 기�
   const { store } = await bootContentApp({
     content: { "manifest.json": manifestFor([newEntry]), [`episodes/${other}.json`]: newText },
     contentFiles: files.module,
+    allowEpisodes: [other],
     preStore: {
       [CONTENT_MANIFEST_KEY]: manifestFor([oldEntry]),
       [contentEpisodeKey(other)]: oldText,

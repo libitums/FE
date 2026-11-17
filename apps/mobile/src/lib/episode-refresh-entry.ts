@@ -1,7 +1,7 @@
 import "background-only";
 
 // 갱신 모듈 안쪽 — 에피소드 하나의 본문 · 자산을 분류에 따라 받습니다. 다른 곳에서 쓰지 않습니다.
-import type { AssetTarget } from "./download-policy";
+import type { AssetDecision, AssetTarget } from "./download-policy";
 import { ensureEpisodeAssetGroups } from "./episode-asset-groups-sync";
 import type { EnsureGroupsOutcome } from "./episode-asset-groups-sync";
 import type { AssetDeps } from "./episode-asset-sync";
@@ -96,10 +96,10 @@ async function stagedText(run: PlannedEpisodeRun, entry: ManifestEntry): Promise
 }
 
 function safePolicy(
-  policy: (id: string, target: AssetTarget) => boolean,
+  policy: (id: string, target: AssetTarget) => boolean | AssetDecision,
   id: string,
   target: AssetTarget,
-): boolean {
+): boolean | AssetDecision {
   try {
     return policy(id, target);
   } catch {
@@ -143,7 +143,7 @@ async function ensureAssets(
       },
     },
   );
-  if (outcome === "incomplete" || outcome === "deferred") return outcome;
+  if (outcome === "incomplete" || outcome === "deferred" || outcome === "skipped") return outcome;
   if (done < total) watch?.progressed(entry.id, total, total);
   watch?.ready(entry.id);
   return outcome;
@@ -173,6 +173,11 @@ export async function runPlannedEpisode(
   // 받기 정책이 묶음을 막으면 나머지만 받고 다음 편으로 갑니다 — 멈추지 않습니다(ADR-0095 D5).
   if (outcome === "deferred") {
     run.summary.deferred.push(entry.id);
+    return "continue";
+  }
+  // 미리 받기 창 밖 — 본문만 두고 그림 · 음성은 열 때 받습니다(ADR-0157). 재확인 대상이 아닙니다.
+  if (outcome === "skipped") {
+    run.summary.skipped.push(entry.id);
     return "continue";
   }
   if (outcome === "incomplete") return "stop";

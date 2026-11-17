@@ -58,6 +58,22 @@ export function assetDownloadAllowed(input: AssetDownloadInput): boolean {
   return isDownloadAllowed(input.allowed, input.episodeId, input.target);
 }
 
+/** 받기 판정 — `allow` 받기, `defer` 연결이 바뀌면 받기(재확인 대상), `skip` 미리 받기 창 밖(열 때 받기, ADR-0157). */
+export type AssetDecision = "allow" | "defer" | "skip";
+
+/**
+ * 창을 더한 판정입니다(ADR-0157). 튜토리얼 · 사용자가 허락한 편 · 레슨은 창과 상관없이 받고, 창 밖은 연결과 상관없이
+ * `skip`, 창 안은 지금 정책(`assetDownloadAllowed`)을 따릅니다. `window`가 `null`이면 창 규칙이 없습니다.
+ */
+export function assetDownloadDecision(
+  input: AssetDownloadInput & { readonly window: ReadonlySet<string> | null },
+): AssetDecision {
+  if (input.episodeId === input.tutorialId) return "allow";
+  if (isDownloadAllowed(input.allowed, input.episodeId, input.target)) return "allow";
+  if (input.window !== null && !input.window.has(input.episodeId)) return "skip";
+  return assetDownloadAllowed(input) ? "allow" : "defer";
+}
+
 /** 저장값을 정책으로 읽습니다. 세 값과 정확히 같을 때만 받고, 나머지는 기본값 `ask`입니다. */
 export function mobileDataPolicyFrom(stored: unknown): MobileDataPolicy {
   return mobileDataPolicies.find((policy) => policy === stored) ?? "ask";
