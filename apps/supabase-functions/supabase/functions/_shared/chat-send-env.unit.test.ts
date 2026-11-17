@@ -23,6 +23,7 @@ test("CE1. 필수 값과 기본 모델", () => {
       feedbackModel: defaultCompanionModel,
       translationModel: defaultCompanionModel,
       suggestModel: defaultCompanionModel,
+      replyEffort: "low",
     },
     translation: "every",
   });
@@ -92,4 +93,11 @@ test("CE5. 번역 — 기본 every · off · 모르는 값은 설정 오류, 번
   expect(from({ ...base, COMPANION_SUGGEST_MODEL: "claude-sonnet-5-5" })?.llm).toMatchObject({
     suggestModel: "claude-sonnet-5-5",
   });
+});
+
+test("CE6. 답변 생각 깊이 — 기본 low · medium · 모르는 값은 설정 오류", () => {
+  expect(from({ ...base, COMPANION_REPLY_EFFORT: "medium" })?.llm).toMatchObject({
+    replyEffort: "medium",
+  });
+  expect(from({ ...base, COMPANION_REPLY_EFFORT: "high" })).toBeNull();
 });

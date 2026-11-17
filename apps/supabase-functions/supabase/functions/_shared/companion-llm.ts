@@ -153,8 +153,8 @@ export function anthropicCompanionLlm(
         {
           model: config.model,
           max_tokens: 2000,
-          // 채팅은 짧고 빨라야 합니다 — 생각 깊이를 낮춥니다.
-          output_config: { effort: "low" },
+          // 채팅은 짧고 빨라야 합니다 — 생각 깊이를 낮춥니다(`COMPANION_REPLY_EFFORT`, 기본 low).
+          output_config: { effort: config.replyEffort ?? "low" },
           ...serverFallbackOptions(config.model),
           system: [
             { type: "text", text: stable ?? "", cache_control: { type: "ephemeral" } },
@@ -283,11 +283,13 @@ export function companionLlmFor(env: ChatSendEnv): CompanionLlm {
   return env.llm.kind === "fake" ? fakeCompanionLlm() : anthropicCompanionLlm(env.llm);
 }
 
-/** 모든 단계를 한 모델로 돌리는 계층(`companion-eval`의 모델 바꿔 보기). fake는 모델과 상관없이 가짜입니다. */
-export function companionLlmWithModel(env: ChatSendEnv, model: string): CompanionLlm {
+/** 모든 단계를 한 모델로(`companion-eval`). `…@medium`이면 답변만 그 생각 깊이로. fake는 모델과 상관없이 가짜입니다. */
+export function companionLlmWithModel(env: ChatSendEnv, choice: string): CompanionLlm {
   if (env.llm.kind === "fake") return fakeCompanionLlm();
+  const [model = choice, effort] = choice.split("@");
   return anthropicCompanionLlm({
     ...env.llm,
+    ...(effort === "low" || effort === "medium" ? { replyEffort: effort } : {}),
     model,
     moderationModel: model,
     feedbackModel: model,

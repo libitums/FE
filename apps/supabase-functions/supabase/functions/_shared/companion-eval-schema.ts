@@ -2,8 +2,16 @@
 
 import { z } from "zod";
 
-/** 고를 수 있는 모델. 대시보드가 이 목록으로 선택지를 그린다. */
-export const evalModels = ["claude-haiku-5-5", "claude-sonnet-5-5", "claude-opus-5-5"] as const;
+/**
+ * 고를 수 있는 모델. 대시보드가 이 목록으로 선택지를 그린다. `@medium`은 답변만 생각 깊이 medium으로 돈다(운영 기본 low —
+ * `companionLlmWithModel`). 한 실행에서 low와 견주려고 둔다.
+ */
+export const evalModels = [
+  "claude-haiku-5-5",
+  "claude-haiku-5-5@medium",
+  "claude-sonnet-5-5",
+  "claude-opus-5-5",
+] as const;
 
 export const caseSchema = z.object({
   id: z.string().min(1).max(64),
