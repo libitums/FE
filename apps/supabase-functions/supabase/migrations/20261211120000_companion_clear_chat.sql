@@ -34,7 +34,7 @@ begin
     return jsonb_build_object('status', 'busy');
   end if;
 
-  delete from companion.conversations where user_id = v_user and character_id = p_character_id;
+  delete from companion.conversations where user_id = v_user and character_id = p_character_id and kind = 'companion';
   delete from companion.memories where user_id = v_user and character_id = p_character_id;
   delete from companion.relationships where user_id = v_user and character_id = p_character_id;
   return jsonb_build_object('status', 'cleared');

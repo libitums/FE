@@ -146,11 +146,10 @@ export type MessengerChatCopy = {
     readonly change: string;
     readonly close: string;
   };
-  /** 대화 비우기 확인(ADR-0156). `busy` · `failed`는 못 비웠을 때 설명 자리에 섭니다. */
   readonly clearChat: {
     readonly title: string;
     readonly description: (name: string) => string;
-    readonly busy: string;
+    readonly busy: string; // 대화 비우기(ADR-0156)를 못 했을 때 설명 자리에 섭니다
     readonly failed: string;
     readonly cancel: string;
     readonly confirm: string;
@@ -194,8 +193,7 @@ export type MessengerChatScreenProps = {
   /** 사이드바 줄이 쌓는 화면 — 「What {name} remembers」 인물 기억(ADR-0126) · Album 인물 앨범(ADR-0150, 없으면 무동작). */
   readonly onOpenMemories: (characterId: string, name: string) => void;
   readonly onOpenAlbum?: (roomId: string, name: string) => void;
-  /** 사이드바 My profile — 설정 탭의 User profile(ADR-0156, 없으면 무동작). */
-  readonly onOpenMyProfile?: () => void;
+  readonly onOpenMyProfile?: () => void; // 사이드바 My profile → 설정 탭 User profile(ADR-0156)
   /** 본 첫 입장 안내 기록(2026-11-13) — 기본은 기기 저장소. */
   readonly guideStore?: GuideStore;
 };

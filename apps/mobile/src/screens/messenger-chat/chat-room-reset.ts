@@ -57,7 +57,8 @@ export function roomResetMethods(deps: RoomResetDeps) {
         if (remote.clearChat === undefined) return "failed";
         // 답을 기다리는 동안은 비우지 않습니다 — 서버도 진행 중인 턴이 있으면 「busy」로 거절합니다.
         if (room.pendingReplies > 0) return "busy";
-        const outcome = await remote.clearChat(room.seed.counterpart.id);
+        // 원격 포트는 던지지 않는 계약이지만, 던져도 모달이 멈추지 않게 실패로 돌려줍니다.
+        const outcome = await remote.clearChat(room.seed.counterpart.id).catch(() => null);
         if (outcome !== "cleared") return outcome ?? "failed";
         if (live(roomId) !== room) return "cleared";
       }
