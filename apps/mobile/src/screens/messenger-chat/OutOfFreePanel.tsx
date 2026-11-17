@@ -1,8 +1,6 @@
 import { useEffect, useGlobalProps } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
-import clock from "@libitums/icons/lynx/clock";
-import { color } from "@libitums/design-tokens";
 import { Button } from "@libitums/ui-lynx/button";
 
 import { coinIcon } from "../../components/coin-icon";
@@ -20,7 +18,7 @@ import "./chat-turns.css";
 
 /** 열린 뒤 한 프레임(16 ms)이 지나야 뒤 화면의 낭독 숨김이 풀려 초점을 받을 수 있습니다(a11y C1). */
 const NEXT_FRAME_MS = 16;
-/** 작은 화면(SE 667)에서는 시계 원을 숨겨 세로 예산을 맞춥니다(design 6절). */
+/** 작은 화면(SE 667)에서는 엽전 원을 숨겨 세로 예산을 맞춥니다(design 6절). */
 const COMPACT_HEIGHT = 700;
 const FIXED_KEYS = ["actions"] as const;
 /**
@@ -30,7 +28,7 @@ const FIXED_KEYS = ["actions"] as const;
 export const KEEP_STACK_FONT_SCALE = 2.6;
 
 /**
- * 오늘의 무료 메시지를 다 쓴 판(T3)입니다 — 독(기능 줄 · 입력 · 토글 · 키보드 자리) 전체를 대신합니다.
+ * 체험 인물의 무료 메시지를 다 쓴 판입니다(ADR-0155 — 다 쓰는 순간 한 번) — 독(기능 줄 · 입력 · 토글 · 키보드 자리) 전체를 대신합니다.
  * 판은 모달입니다 — 열리면 제목(dialog 역할 설명)에 접근성 초점이 가고, 뒤 화면(머리 · 로그)은 화면에서 숨깁니다(호출 쪽).
  * 큰 글자에서 넘치지 않게 px 최대 높이를 걸고 아이콘 · 제목 · 본문만 스크롤하며 단추 둘 · 잔액 줄은 스크롤 밖에 고정합니다(접근성 M1). 단추 둘은 Keep chatting(주) · Back to chats입니다.
  * 무제한 티켓은 학습 전용이라 이 판에 Go unlimited는 없습니다(2026-11-10 결정). 요금제 결선이 있으면 대화 요금제 카드 둘이 섭니다(ADR-0144).
@@ -40,7 +38,6 @@ export function OutOfFreePanel({
   total,
   price,
   balance,
-  reset,
   onKeepChatting,
   onBackToChats,
   bottomInset = 0,
@@ -66,14 +63,7 @@ export function OutOfFreePanel({
     return () => clearTimeout(handle);
   }, []);
 
-  // 시간 조각만 굵게 하려고 본문을 앞 · 시간 · 뒤로 쪼갭니다. 문구 함수의 결과에서 시간 글을 찾아 가릅니다.
-  const clockText = copy.reset(reset.hours, reset.minutes);
-  const body = copy.outBody(clockText);
-  const at = body.indexOf(clockText);
-  const pieces =
-    at < 0
-      ? ([body, "", ""] as const)
-      : ([body.slice(0, at), clockText, body.slice(at + clockText.length)] as const);
+  const body = copy.outBody(price);
 
   return (
     <view
@@ -94,8 +84,8 @@ export function OutOfFreePanel({
           bindlayoutchange={budget.onContentLayout}
         >
           {compact ? null : (
-            <view className="chat-out-clock" accessibility-elements-hidden={true}>
-              <svg className="chat-turn-icon-md" content={clock} current-color={color.fg.brand} />
+            <view className="chat-out-icon" accessibility-elements-hidden={true}>
+              <svg className="chat-turn-icon-md" content={coinIcon} />
             </view>
           )}
           <text
@@ -108,9 +98,7 @@ export function OutOfFreePanel({
             {copy.outTitle(total)}
           </text>
           <text className="chat-out-body" accessibility-element={true} accessibility-label={body}>
-            {pieces[0]}
-            {pieces[1] === "" ? null : <text className="chat-out-body-time">{pieces[1]}</text>}
-            {pieces[2]}
+            {body}
           </text>
           {/* Chat Plus · Premium 카드(ADR-0144, 시안 ②) — 스크롤 안에 두어 작은 화면 · 큰 글자에서도 단추 둘은 고정입니다. */}
           {offer === undefined ? null : <ChatPlanOffer offer={offer} />}

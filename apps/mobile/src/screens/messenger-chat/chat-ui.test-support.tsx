@@ -10,15 +10,10 @@ import { act, fireEvent, render, screen, within } from "@lynx-js/react/testing-l
 import { backHandlers } from "../../lib/back-handler";
 import { zeroKeyboardDockEdges, type KeyboardDockEdges } from "../../lib/keyboard-dock";
 import { createFixtureChatSource } from "./chat-fixture-source";
-import type {
-  ChatFixtureRoom,
-  ChatFixtureSeed,
-  ChatSource,
-  ChatTimers,
-} from "./chat-source.contract";
+import type { ChatFixtureRoom, ChatFixtureSeed, ChatSource } from "./chat-source.contract";
 import { createCoinWallet, type SyncedCoinWallet } from "./coin-wallet";
 import type { ChatTier } from "./free-turns";
-import { createTurnLedger, memoryTurnRecordStore, type TurnLedger } from "./turn-ledger";
+import { createTrialStore, type TrialStore } from "./trial-store";
 import { MessengerChatScreen } from "./MessengerChatScreen";
 import { messengerChatTestIds as ids } from "./messenger-chat.contract";
 import type { KeyboardHeightStore, KoreanKeyboardProbe } from "./keyboard-ports";
@@ -88,12 +83,10 @@ export type MountChatOptions = {
   /** 지갑을 직접 만들지 않을 때 쓰는 번 엽전입니다(기본 0). */
   readonly coinBalance?: number;
   readonly learnerName?: string;
-  /** 1.5: 지갑 · 원장 · 등급 · 시계 · 타이머. 등급 기본은 unlimited(1단계 테스트가 턴에 막히지 않게 — spec §15). */
+  /** 지갑 · 체험 남은 수(기본 20) · 등급. 등급 기본은 unlimited(1단계 테스트가 턴에 막히지 않게 — spec §15). */
   readonly wallet?: SyncedCoinWallet;
-  readonly ledger?: TurnLedger;
+  readonly trial?: TrialStore;
   readonly tier?: ChatTier;
-  readonly now?: () => number;
-  readonly timers?: ChatTimers;
   /** 첫 입장 안내 기록(2026-11-13) — 기본은 기기 저장소(테스트에서는 저장소가 없어 안내가 뜨지 않음). */
   readonly guideStore?: GuideStore;
   /** 제품 사용 이벤트를 받을 sink — 주면 결선처럼 이벤트 자리(`ChatEventsContext`)로 감쌉니다. */
@@ -108,10 +101,9 @@ export function mountChat(options: MountChatOptions = {}) {
   const source = options.source ?? makeSource(options.seed);
   const onExit = vi.fn<() => void>();
   const onOpenMemories = vi.fn<(characterId: string, name: string) => void>();
-  const now = options.now ?? (() => Date.now());
   const wallet = options.wallet ?? createCoinWallet({ earned: options.coinBalance ?? 0 });
-  const ledger = options.ledger ?? createTurnLedger({ store: memoryTurnRecordStore(), now });
-  // 화면 props는 spec §7.2 모양(wallet · turns · tier · now)입니다. 스프레드로 넘겨 옛 coinBalance와 새 props가 한 객체에 함께 든다.
+  const trial = options.trial ?? createTrialStore(20);
+  // 화면 props는 wallet · trial · tier입니다(ADR-0155). 스프레드로 넘겨 옛 coinBalance와 새 props가 한 객체에 함께 든다.
   const screenProps = {
     roomId: options.roomId ?? "mina",
     source,
@@ -121,10 +113,8 @@ export function mountChat(options: MountChatOptions = {}) {
     learnerName: options.learnerName ?? "Hana",
     coinBalance: wallet.balance(),
     wallet,
-    turns: ledger,
+    trial,
     tier: options.tier ?? "unlimited",
-    now,
-    timers: options.timers,
     onExit,
     onOpenMemories,
     ...(options.guideStore === undefined ? {} : { guideStore: options.guideStore }),
@@ -139,7 +129,7 @@ export function mountChat(options: MountChatOptions = {}) {
       </ChatEventsContext.Provider>
     ),
   );
-  return { source, onExit, onOpenMemories, view, wallet, ledger };
+  return { source, onExit, onOpenMemories, view, wallet, trial };
 }
 
 /**

@@ -587,14 +587,15 @@ describe.each(["en", "vi", "id", "es", "ja"] as const)(
       );
     });
 
-    test("방 머리의 하루 무료 수 줄이 그 언어의 freeLeft(3, 3)이다", async () => {
+    // 체험 인물이 아닌 방은 첫 통부터 엽전이라(ADR-0155) 머리 줄이 메시지 요금입니다.
+    test("방 머리의 요금 줄이 그 언어의 coinEach(3)이다", async () => {
       const copy = uiCopyFor(language);
       await bootMessenger(0);
 
       tapId("messenger-list-row-owner");
 
       expect(screen.getByTestId("messenger-chat-turn-line")).toHaveTextContent(
-        copy.messengerChat.turns.freeLeft(3, 3),
+        copy.messengerChat.turns.coinEach(3),
       );
     });
 

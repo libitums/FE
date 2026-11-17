@@ -1,13 +1,13 @@
-// 하루 무료 수 표시 · 마지막 무료 띠 · 다 쓴 판 · 엽전 보내기 단추 계약입니다(messenger-chat-1-5 spec §6.2 · §10).
+// 체험 수 표시 · 마지막 무료 띠 · 다 쓴 판 · 엽전 보내기 단추 계약입니다(messenger-chat-1-5 spec §6.2 · §10, 요금은 ADR-0155).
 
 import type { PlanOfferWiring } from "../plans/plans.contract";
-import type { ResetClock, TurnPlan } from "./free-turns";
+import type { TurnPlan } from "./free-turns";
 
 export type SendCost =
   | { readonly kind: "free" }
   | { readonly kind: "coin"; readonly price: number; readonly short: boolean };
-/** unlimited면 아무것도 그리지 않습니다. */
-export type TurnLineProps = { readonly plan: TurnPlan; readonly reset: ResetClock };
+/** unlimited면 아무것도 그리지 않습니다. `used`는 다 쓴 판이 열린 동안 — 엽전 계획이어도 「Free messages used」입니다. */
+export type TurnLineProps = { readonly plan: TurnPlan; readonly used?: boolean };
 export type LastFreeStripProps = { readonly price: number };
 export type CoinSendButtonProps = {
   readonly price: number;
@@ -20,7 +20,6 @@ export type OutOfFreePanelProps = {
   readonly total: number;
   readonly price: number;
   readonly balance: number;
-  readonly reset: ResetClock;
   readonly onKeepChatting: () => void;
   readonly onBackToChats: () => void;
   /** 아래 안전 영역(px)입니다. 기본 0. */

@@ -127,6 +127,15 @@ export function walletBalanceFrom(bodyText: string | null): number | null {
   return sub === null || grant === null || paid === null ? null : sub + grant + paid;
 }
 
+/** `companion_get_wallet` — 잔액(sub + grant + paid)과 체험 인물의 체험 남은 수(ADR-0155). 잔액을 못 읽으면 null, 체험 칸만 틀리면 체험 null. */
+export function walletOf(
+  bodyText: string | null,
+): { readonly balance: number; readonly trialRemaining: number | null } | null {
+  const balance = walletBalanceFrom(bodyText);
+  if (balance === null) return null;
+  return { balance, trialRemaining: count(recordOf(parse(bodyText))?.trialRemaining) };
+}
+
 /** 앨범 한 건 — 결과 칸 + 인물 · 그때의 말(`line {ko, en}`) · 지난 대화. 옛 서버(칸 없음)는 빈 줄 · false. */
 export function albumMediaOf(raw: unknown): RemoteAlbumMedia | null {
   const media = remoteMediaOf(raw);

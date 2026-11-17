@@ -1,16 +1,13 @@
-// 무료 수 원장 · 해금 기록의 기기 저장 접점입니다(messenger-chat-1-5 spec §5.3). lib/storage의 getItem · setItem만 씁니다.
+// 해금 기록 · 내 모습 · 생년의 기기 저장 접점입니다(messenger-chat-1-5 spec §5.3). lib/storage의 getItem · setItem만 씁니다.
 // 첫 읽기 뒤 메모리 캐시로 읽고, 쓰기는 캐시 + 저장소 둘 다 합니다. 실패는 삼키고 이번 실행만 메모리로 갑니다.
 
 import { getItem, setItem } from "../../lib/storage";
-import { parseTurnRecord, type TurnRecord } from "./free-turns";
-import type { TurnRecordStore } from "./turn-ledger";
 import { SNAPSHOT_SELVES, type ChatSnapshotSelf } from "./chat-album.contract";
 import type { SnapshotSelfStore } from "./chat-fixture-album";
 import type { BirthYearStore } from "./chat-fixture-birth-year";
 import type { ChatBirthYear } from "./chat-source.contract";
 import type { KeyboardHeightStore } from "./keyboard-ports";
 
-export const TURN_RECORD_KEY = "libitum.messenger.free-turns";
 export const UNLOCKED_KEY = "libitum.messenger.unlocked";
 /** 사진 속 내 모습(ADR-0150) — `{ <출처 키>: female | male | hidden }`(계정마다). */
 export const SNAPSHOT_SELF_KEY = "libitum.messenger.snapshot-self";
@@ -48,25 +45,6 @@ function writeJson(key: string, value: unknown): void {
   }
 }
 
-function createDeviceTurnRecordStore(): TurnRecordStore {
-  let loaded = false;
-  let cache: TurnRecord | null = null;
-  return {
-    read: () => {
-      if (!loaded) {
-        loaded = true;
-        cache = parseTurnRecord(readJson(TURN_RECORD_KEY));
-      }
-      return cache;
-    },
-    write: (record) => {
-      loaded = true;
-      cache = record;
-      writeJson(TURN_RECORD_KEY, record);
-    },
-  };
-}
-
 function createDeviceUnlockStore(): UnlockStore {
   let cache: Set<string> | null = null;
   const load = (): Set<string> => {
@@ -84,7 +62,6 @@ function createDeviceUnlockStore(): UnlockStore {
   };
 }
 
-export const deviceTurnRecordStore: TurnRecordStore = createDeviceTurnRecordStore();
 export const deviceUnlockStore: UnlockStore = createDeviceUnlockStore();
 
 export function memoryUnlockStore(initial: readonly string[] = []): UnlockStore {

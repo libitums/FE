@@ -28,10 +28,9 @@ afterEach(() => {
 function mount(): void {
   render(
     <OutOfFreePanel
-      total={3}
+      total={20}
       price={10}
       balance={100}
-      reset={{ hours: 5, minutes: 12 }}
       onKeepChatting={vi.fn<() => void>()}
       onBackToChats={vi.fn<() => void>()}
     />,
@@ -51,7 +50,7 @@ test("M1. 아이콘 · 제목 · 본문은 scroll-view 안이고 단추 둘 · �
 
   const scroll = screen.getByTestId(ids.panelScroll);
   expect(scroll.tagName.toLowerCase()).toBe("scroll-view");
-  expect(scroll.textContent).toContain("Today's 3 free messages are used");
+  expect(scroll.textContent).toContain("Your 20 free messages are used");
   expect(scroll.contains(screen.getByTestId(ids.panelKeep))).toBe(false);
   expect(scroll.contains(screen.getByTestId(ids.panelBack))).toBe(false);
   expect(scroll.contains(screen.getByTestId(ids.panelBalance))).toBe(false);

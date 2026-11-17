@@ -243,3 +243,35 @@ describe("프로필 생년", () => {
     expect(order).toEqual(["companion_save_profile", "companion-snapshot"]);
   });
 });
+
+// CP-U10(ADR-0155): 지갑은 `companion_get_wallet`(인자 없음)을 토큰으로 부르고 잔액 · 체험 남은 수를 돌려준다. 실패 · 틀린 응답은 null.
+describe("지갑", () => {
+  test("CP-U10 지갑은 RPC companion_get_wallet을 부르고 잔액 · 체험 남은 수를 푼다", async () => {
+    const env = setup({
+      post: async (build) => {
+        const built = build(config);
+        env.requests.push(built as never);
+        return {
+          ok: true,
+          status: 200,
+          bodyText: JSON.stringify({
+            tier: "free",
+            sub: 0,
+            grant: 40,
+            paid: 2,
+            trialRemaining: 13,
+          }),
+        };
+      },
+    });
+    expect(await env.remote.wallet?.()).toEqual({ balance: 42, trialRemaining: 13 });
+    expect(env.requests.at(-1)?.url).toBe(`${config.url}/rest/v1/rpc/companion_get_wallet`);
+    expect(JSON.parse(env.requests.at(-1)?.init.body ?? "null")).toEqual({});
+  });
+
+  test("CP-U10 로그인이 없거나 실패 응답이면 null, 던지지 않는다", async () => {
+    expect(await setup({ token: async () => null }).remote.wallet?.()).toBeNull();
+    const failed = setup({ post: async () => ({ ok: true, status: 500, bodyText: "{}" }) });
+    expect(await failed.remote.wallet?.()).toBeNull();
+  });
+});

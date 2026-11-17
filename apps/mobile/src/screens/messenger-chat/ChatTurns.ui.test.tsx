@@ -3,70 +3,69 @@ import { cleanup, fireEvent, render, screen } from "@lynx-js/react/testing-libra
 
 import { chatTurnsTestIds as ids } from "./chat-turns.contract";
 import { CoinSendButton, LastFreeStrip, TurnLine } from "./ChatTurns";
-import type { ResetClock, TurnPlan } from "./free-turns";
+import type { TurnPlan } from "./free-turns";
 
-// `ui` 계층(MC2-UI5): 턴 표시 조각 — 머리 줄 글 · tone · 마지막 무료 띠 · 엽전 보내기 단추.
-// 가정(구현자가 따를 것): `turn-line`의 data-plan은 plan.kind(free · last-free · coin — due와 shown 둘 다 coin)이고,
-// tone은 클래스로 갈린다 — 회색(T1) / 주황(T2 · T3 같은 tone) / 황동(T4)이 서로 다른 클래스다.
+// `ui` 계층(MC2-UI5 · CP-UI13): 턴 표시 조각 — 머리 줄 글 · tone · 마지막 무료 띠 · 엽전 보내기 단추. 요금은 서버 규칙(ADR-0155)이라
+// 하루 · 남은 시간 글이 없다. `turn-line`의 data-plan은 plan.kind(trial · last-free · coin)이고, tone은 클래스로 갈린다 —
+// 회색(체험) / 주황(마지막 무료 · 다 씀 — 같은 tone) / 황동(엽전)이 서로 다른 클래스다.
 
 afterEach(cleanup);
 
-const RESET: ResetClock = { hours: 5, minutes: 12 };
 const line = (): HTMLElement => screen.getByTestId(ids.line);
 
-function mountLine(plan: TurnPlan, reset: ResetClock = RESET) {
-  render(<TurnLine plan={plan} reset={reset} />);
+function mountLine(plan: TurnPlan, used = false) {
+  render(<TurnLine plan={plan} used={used} />);
 }
 
-test("MC2-UI5. T1 free: 「N of 3 free messages left today」 · data-plan free", () => {
-  mountLine({ kind: "free", remaining: 2, total: 3 });
+test("CP-UI13. 체험: 「N of 20 free messages left」 · data-plan trial", () => {
+  mountLine({ kind: "trial", remaining: 12, total: 20 });
 
-  expect(line().textContent?.trim()).toBe("2 of 3 free messages left today");
-  expect(line().getAttribute("data-plan")).toBe("free");
+  expect(line().textContent?.trim()).toBe("12 of 20 free messages left");
+  expect(line().getAttribute("data-plan")).toBe("trial");
 });
 
-test("MC2-UI5. T2 last-free: 「Last free message today」", () => {
-  mountLine({ kind: "last-free", total: 3, price: 10 });
+test("CP-UI13. 체험 수를 모르면 「Free trial messages」", () => {
+  mountLine({ kind: "trial", remaining: null, total: 20 });
 
-  expect(line().textContent?.trim()).toBe("Last free message today");
+  expect(line().textContent?.trim()).toBe("Free trial messages");
+});
+
+test("CP-UI13. 마지막 무료: 「Last free message」", () => {
+  mountLine({ kind: "last-free", total: 20, price: 10 });
+
+  expect(line().textContent?.trim()).toBe("Last free message");
   expect(line().getAttribute("data-plan")).toBe("last-free");
 });
 
-test("MC2-UI5. T3 coin · due: 「Free messages used」", () => {
-  mountLine({ kind: "coin", price: 10, outPanel: "due" });
+test("CP-UI13. 엽전 · 판이 열린 동안(used): 「Free messages used」", () => {
+  mountLine({ kind: "coin", price: 10 }, true);
 
   expect(line().textContent?.trim()).toBe("Free messages used");
   expect(line().getAttribute("data-plan")).toBe("coin");
 });
 
-test("MC2-UI5. T4 coin · shown: 가격과 다시 무료까지 시간이 보인다", () => {
-  mountLine({ kind: "coin", price: 10, outPanel: "shown" });
+test("CP-UI13. 엽전: 가격만 보인다 — 다시 무료까지의 시간이 없다", () => {
+  mountLine({ kind: "coin", price: 10 });
 
-  expect(line().textContent?.trim()).toBe("Each message 10 coins · free again in 5h 12m");
-  expect(line().getAttribute("data-plan")).toBe("coin");
+  expect(line().textContent?.trim()).toBe("10 coins per message");
+  expect(line().textContent).not.toContain("free again");
 });
 
-test("MC2-UI5. 시계가 0h 0m이어도 시간 글이 깨지지 않는다", () => {
-  mountLine({ kind: "coin", price: 10, outPanel: "shown" }, { hours: 0, minutes: 0 });
-
-  expect(line().textContent).toContain("free again in 0h 0m");
-});
-
-test("MC2-UI5. tone 클래스: T1 · T2 · T4가 서로 다르고, T2와 T3는 같은 주황 tone이다", () => {
-  mountLine({ kind: "free", remaining: 3, total: 3 });
-  const t1 = line().className;
+test("CP-UI13. tone 클래스: 체험 · 마지막 무료 · 엽전이 서로 다르고, 마지막 무료와 다 씀은 같은 주황 tone이다", () => {
+  mountLine({ kind: "trial", remaining: 3, total: 20 });
+  const trial = line().className;
   cleanup();
-  mountLine({ kind: "last-free", total: 3, price: 10 });
-  const t2 = line().className;
+  mountLine({ kind: "last-free", total: 20, price: 10 });
+  const last = line().className;
   cleanup();
-  mountLine({ kind: "coin", price: 10, outPanel: "due" });
-  const t3 = line().className;
+  mountLine({ kind: "coin", price: 10 }, true);
+  const used = line().className;
   cleanup();
-  mountLine({ kind: "coin", price: 10, outPanel: "shown" });
-  const t4 = line().className;
+  mountLine({ kind: "coin", price: 10 });
+  const coin = line().className;
 
-  expect(new Set([t1, t2, t4]).size).toBe(3);
-  expect(t3).toBe(t2);
+  expect(new Set([trial, last, coin]).size).toBe(3);
+  expect(used).toBe(last);
 });
 
 test("MC2-UI5. unlimited면 아무것도 그리지 않는다", () => {
@@ -76,13 +75,13 @@ test("MC2-UI5. unlimited면 아무것도 그리지 않는다", () => {
 });
 
 test("MC2-UI5. 머리 줄은 접근성 요소이고 낭독은 보이는 글과 같다", () => {
-  mountLine({ kind: "free", remaining: 1, total: 3 });
+  mountLine({ kind: "trial", remaining: 1, total: 20 });
 
   const el = line();
   const labelled = el.hasAttribute("accessibility-label")
     ? el
     : (el.querySelector("[accessibility-label]") ?? el);
-  expect(labelled.getAttribute("accessibility-label")).toBe("1 of 3 free messages left today");
+  expect(labelled.getAttribute("accessibility-label")).toBe("1 of 20 free messages left");
 });
 
 // ------------------------------------------------------------------ 마지막 무료 띠
@@ -144,6 +143,6 @@ test("MC2-UI5. 엽전 보내기: enabled=false면 data-enabled=false이고 탭�
 });
 
 test("F3. 턴 줄은 한 줄로 자른다(text-maxline) — 큰 글자에서 머리가 두 줄로 부풀지 않게", () => {
-  mountLine({ kind: "free", remaining: 2, total: 3 });
+  mountLine({ kind: "trial", remaining: 2, total: 20 });
   expect(line().getAttribute("text-maxline")).toBe("1");
 });

@@ -25,7 +25,11 @@ export type TurnState = {
   readonly crisis: readonly ChatCrisisResource[] | null;
   readonly finished: boolean;
   readonly failure: RemoteSendFailure | null;
+  /** `done`의 서버 지갑(ADR-0155) — 낸 값과 그 뒤 잔액(크레딧이 없는 서버는 null). 틀린 값이면 없음. */
+  readonly wallet: TurnWallet | null;
 };
+
+export type TurnWallet = { readonly creditsSpent: number; readonly balance: number | null };
 
 export const initialTurnState: TurnState = {
   userMessageId: null,
@@ -38,6 +42,7 @@ export const initialTurnState: TurnState = {
   crisis: null,
   finished: false,
   failure: null,
+  wallet: null,
 };
 
 const recordOf = (value: unknown): Record<string, unknown> | null =>
@@ -53,6 +58,15 @@ const dataOf = (text: string): Record<string, unknown> | null => {
 };
 const indexOf = (value: unknown): number | null =>
   typeof value === "number" && Number.isInteger(value) && value >= 0 && value < 64 ? value : null;
+
+const countOf = (value: unknown): number | null =>
+  typeof value === "number" && Number.isInteger(value) && value >= 0 ? value : null;
+const walletOf = (payload: Record<string, unknown>): TurnWallet | null => {
+  const creditsSpent = countOf(payload.creditsSpent);
+  const balance = payload.balance === null ? null : countOf(payload.balance);
+  if (creditsSpent === null || (payload.balance !== null && balance === null)) return null;
+  return { creditsSpent, balance };
+};
 
 const withSegments = (state: TurnState, segments: readonly TurnSegment[]): TurnState => ({
   ...state,
@@ -119,7 +133,7 @@ export function applyTurnEvent(state: TurnState, event: string, data: string): T
       return { ...state, finished: true, failure: { kind: "stream-error", code } };
     }
     case "done":
-      return { ...state, finished: true };
+      return { ...state, finished: true, wallet: walletOf(payload) };
     default:
       return state;
   }

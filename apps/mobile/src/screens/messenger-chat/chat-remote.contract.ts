@@ -48,7 +48,12 @@ export type ChatRemote = {
   readonly media?: ChatMediaRemote;
   /** 학습자 프로필의 생년(ADR-0125 「서버 결선」). 없으면(옛 테스트 원격) 생년은 기기에만 둡니다. */
   readonly profile?: ChatProfileRemote;
+  /** 서버 지갑 `companion_get_wallet`(ADR-0155) — 못 읽으면 null. 없으면(옛 테스트 원격) 지갑을 읽지 않습니다. */
+  readonly wallet?: () => Promise<RemoteWallet | null>;
 };
+
+/** 서버 지갑 — 잔액(sub + grant + paid)과 체험 인물의 체험 남은 수(칸이 없거나 틀리면 null). */
+export type RemoteWallet = { readonly balance: number; readonly trialRemaining: number | null };
 
 /** 서버 프로필 중 앱이 쓰는 칸 — 생년만. 서버는 생년이 없으면 나이 모름(미성년자와 같은 엄격 규칙)으로 봅니다. */
 export type ChatProfileRemote = {

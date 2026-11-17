@@ -35,10 +35,9 @@ function mount(withOffer: boolean) {
   const onKeepChatting = vi.fn<() => void>();
   render(
     <OutOfFreePanel
-      total={3}
+      total={20}
       price={3}
       balance={2}
-      reset={{ hours: 5, minutes: 12 }}
       onKeepChatting={onKeepChatting}
       onBackToChats={() => {}}
       {...(withOffer ? { offer } : {})}
