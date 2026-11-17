@@ -28,7 +28,6 @@ describe("하단 탭 NEW", () => {
     const rooms = [room("duksu"), room("mina", { isNew: true })];
     expect(hasNewFriend(rooms, "open")).toBe(true);
     expect(hasNewFriend(rooms, "sign-in")).toBe(false);
-    expect(hasNewFriend(rooms, "coming-soon")).toBe(false);
     expect(
       hasNewFriend(
         [room("mina", { isNew: true, access: { kind: "locked", unlockEpisode: 3 } })],

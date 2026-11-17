@@ -1,13 +1,13 @@
-// 메신저 탭에 누가 들어오나입니다(ADR-0128) — 컴패니언 서버는 계정 없는 손님을 받지 않고, 결제(M4) 전에는 시험 계정만 받는다.
+// 메신저 탭에 누가 들어오나입니다(ADR-0128) — 컴패니언 서버는 계정 없는 손님을 받지 않는다. 로그인한 회원은 시험 계정이
+// 아니어도 연다(2026-11-17 일반 회원 개방 — 전에는 시험 계정이 아닌 회원에게 「곧 열림」).
 
 import type { AccountState } from "../../lib/guest-session";
 
-/** open = 지금 목록, sign-in = 손님에게 가입 권유, coming-soon = 시험 계정이 아닌 회원에게 「곧 열림」. */
-export type MessengerAccess = "open" | "sign-in" | "coming-soon";
+/** open = 지금 목록, sign-in = 손님 · 로그아웃에게 가입 권유. */
+export type MessengerAccess = "open" | "sign-in";
 
-export function messengerAccessOf(account: AccountState, isTester: boolean): MessengerAccess {
-  if (account !== "signed-in") return "sign-in";
-  return isTester ? "open" : "coming-soon";
+export function messengerAccessOf(account: AccountState): MessengerAccess {
+  return account === "signed-in" ? "open" : "sign-in";
 }
 
 export type MessengerAccessProps = {
@@ -19,7 +19,6 @@ export type MessengerAccessProps = {
 export const messengerAccessTestIds = {
   gate: "messenger-access-gate",
   signIn: "messenger-access-sign-in",
-  journey: "messenger-access-journey",
 } as const;
 
 /** 메신저 문구 표의 `access` 칸입니다. */
@@ -27,6 +26,4 @@ export type MessengerAccessCopy = {
   readonly signInTitle: string;
   readonly signInBody: string;
   readonly signIn: string;
-  readonly comingSoonTitle: string;
-  readonly comingSoonBody: string;
 };

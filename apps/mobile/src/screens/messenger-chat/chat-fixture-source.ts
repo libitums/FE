@@ -196,8 +196,8 @@ export function createFixtureChatSource(options: FixtureChatSourceOptions): Fixt
       : remoteRoomMethods({
           ...{ remote: options.remote, live, changed, now, schedule },
           mediaHooks: options.mediaHooks,
-          openRoomId: () => openRoomId,
-          uuid: () => uuidV4(),
+          ...{ openRoomId: () => openRoomId, uuid: () => uuidV4() },
+          preview: options.previewOnStart === true ? [...rooms.keys()] : [],
         });
   const sendText = remoteRoom?.sendText ?? localSendText;
 

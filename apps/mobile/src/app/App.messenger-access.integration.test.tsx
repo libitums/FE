@@ -21,7 +21,7 @@ import { legacyPassedSeed } from "./test-helpers/progress-seed";
 import { renderSignedInApp } from "./test-helpers/signed-in-app";
 
 // `integration` 계층(MA-I1 ~ I3): 메신저 탭 접근(ADR-0128) — 손님은 가입 권유(단추는 설정 탭 Sign in과 같은 로그인 화면),
-// 시험 계정이 아닌 회원은 「곧 열림」 · 설정 탭 Chats 줄 없음, 시험 계정은 지금 목록 · Chats 줄.
+// 로그인한 회원은 시험 계정이든 아니든 지금 목록 · Chats 줄(2026-11-17 일반 회원 개방).
 
 beforeEach(async () => {
   await resetMessengerChatSource();
@@ -55,20 +55,16 @@ test("MA-I1 손님 — 메신저 탭은 가입 권유이고, 단추는 탭 바 �
   expect(present("login-screen-title")).toBe(true);
 });
 
-test("MA-I2 시험 계정이 아닌 회원 — 곧 열림 · Go to Journey는 여정으로, 설정 탭에 Chats 줄이 없다", async () => {
+test("MA-I2 시험 계정이 아닌 회원 — 지금 목록 · 엽전 칩, 설정 탭에 Chats 줄(2026-11-17 일반 회원 개방)", async () => {
   await renderSignedInApp(<App progressSeed={legacyPassedSeed} />);
   openTab("messenger");
 
-  expect(gate()).toBe("coming-soon");
+  expect(gate()).toBeNull();
+  expect(present("messenger-list-list")).toBe(true);
   expect(present("messenger-list-coins")).toBe(true);
-  fireEvent.tap(
-    within(screen.getByTestId("messenger-access-journey")).getByTestId("ui-lynx-button"),
-    {},
-  );
-  expect(present("journey-map-screen")).toBe(true);
 
   openTab("settings");
-  expect(present("ui-lynx-settings-group-item-chats")).toBe(false);
+  expect(present("ui-lynx-settings-group-item-chats")).toBe(true);
 });
 
 test("MA-I3 시험 계정 — 지금 목록, 설정 탭에 Chats 줄", async () => {

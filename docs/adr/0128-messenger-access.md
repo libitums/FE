@@ -1,6 +1,6 @@
 # ADR-0128 — 메신저 탭 접근: 손님에게 가입 권유 · 시험 계정이 아닌 회원에게 「곧 열림」 · 설정 Chats 줄 숨김
 
-- 상태: **채택 — 1단계(가짜 출처).** 서버 · 분석 · 저장 키 · 호스트 변경 0.
+- 상태: **채택 — 1단계(가짜 출처).** 서버 · 분석 · 저장 키 · 호스트 변경 0. **D1 · D3 개정(2026-11-17)** — 로그인한 회원은 시험 계정이 아니어도 `open`, 「곧 열림」은 지웠다([ADR-0154](0154-messenger-open-to-members.md)).
 - 날짜: 2026-11-12.
 - **사용자 결정**: 결정 문서 8번 「접근 허용」(2026-11-12, [AI 컴패니언 ↔ 메신저 UI 통합 결정](https://claude.ai/artifact/9BTvrL4GfTxvMrAUzwJr1x)) · 시안 https://claude.ai/artifact/6W1qNMcSB7GaUV99qx7zuV — ① 손님 가입 권유 + ② 비시험 회원 「곧 열림」 + 설정 Chats 줄 숨김(탭 자체를 숨기는 안 ③은 버림).
 - 이어받는 결정: [ADR-0085](0085-tester-access.md)(시험 계정 표시 `app_metadata.duru_tester` — 적용 기록), [ADR-0111](0111-guest-entry-without-account.md)(손님 · 설정 Sign in 흐름), [ADR-0113](0113-messenger-chat-ui.md)(메신저 탭), [ADR-0126](0126-messenger-chat-settings.md)(설정 Chats 줄 — 적용 기록).
@@ -58,3 +58,4 @@
 
 ## 재검토 조건
 - M4(결제)로 시험 계정 제한이 풀릴 때(`coming-soon` 제거), PRD O7에서 손님 체험을 열기로 할 때.
+- **2026-11-17 적용** — 결제 전에 사용자 결정으로 일반 회원에게 열었다(`coming-soon` 제거, [ADR-0154](0154-messenger-open-to-members.md)). 손님 가입 권유(D2) · 탭 루트 밖의 길(D3a) · Chats 줄(D4)은 그대로이고 판정만 바뀌었다.

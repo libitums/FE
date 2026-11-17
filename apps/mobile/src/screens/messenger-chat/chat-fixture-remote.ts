@@ -8,6 +8,7 @@ import type { ChatServerControls } from "./chat-delivery.contract";
 import type { ChatMediaHooks } from "./chat-media.contract";
 import { remoteMediaMethods } from "./chat-remote-media";
 import { remoteGreetingMethods } from "./chat-remote-greeting";
+import { previewRemoteRooms } from "./chat-remote-preview";
 import type { ChatRemote, RemoteHistory } from "./chat-remote.contract";
 import type { ChatMessage } from "./chat-source.contract";
 import { renderTurn, withCorrection } from "./chat-remote-notes";
@@ -27,6 +28,7 @@ export type RemoteRoomDeps = {
   readonly schedule: (room: RoomState, ms: number, fn: () => void) => void;
   readonly uuid: () => string;
   readonly mediaHooks?: ChatMediaHooks; // 사진 · 음성(ADR-0146)
+  readonly preview?: readonly string[]; // 만들 때 기록을 미리 읽을 방(다시 켠 뒤 목록 미리보기)
 };
 
 export { uuidV4 } from "./chat-remote-notes";
@@ -72,6 +74,7 @@ export function remoteRoomMethods(deps: RemoteRoomDeps) {
   };
 
   const greeting = remoteGreetingMethods({ remote, live, changed, isOpen });
+  previewRemoteRooms({ remote, live, changed }, deps.preview ?? []);
 
   /** 방을 열 때 — 서버 기록을 읽고, 비어 있으면 첫 인사를 받습니다. 못 받으면 failed(다시 시도 안내). */
   const loadRoom = (roomId: string) => {
