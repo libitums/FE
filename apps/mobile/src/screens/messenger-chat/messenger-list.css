@@ -181,6 +181,12 @@
   color: var(--libitum-color-fg-brand);
 }
 
+/* 아직 메시지가 없는 방의 첫 인사 — 흐린 글(muted와 같은 색, 목록 바탕에서 4.5:1 이상)에 기울임으로 「아직 받지 않은 말」을 보입니다. */
+.messenger-list-preview-greeting {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-style: italic;
+}
+
 /* 안 읽은 수 알약 — 면은 brand-primary입니다(사용자 결정 — 흰 글 3.02:1은 다른 brand-primary 단추와 같은 앱 전체 예외). */
 .messenger-list-unread {
   display: flex;

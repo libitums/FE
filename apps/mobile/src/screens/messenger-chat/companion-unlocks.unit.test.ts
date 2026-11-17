@@ -57,4 +57,11 @@ describe("해금 JSON ↔ 앱 표", () => {
       });
     }
   });
+
+  test("CU-U5 목록의 첫 인사 미리보기는 해금 선톡의 첫 말풍선과 같다 — 기본 인물도", () => {
+    for (const c of characters) {
+      const roster = COMPANION_CHARACTERS.find((r) => r.id === c.id);
+      expect(roster?.firstLine, c.id).toBe(c.firstMessage?.ko[0]);
+    }
+  });
 });

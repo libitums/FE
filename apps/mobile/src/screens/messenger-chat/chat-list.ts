@@ -1,6 +1,7 @@
 // 목록 정렬 · 미리보기 · 안 읽은 수 · 시간입니다(messenger-chat-ui spec §5.6).
 
 import type { ChatRoomSummary, ChatText } from "./chat-source.contract";
+import { COMPANION_CHARACTERS } from "./companion-roster";
 
 export type ChatRowPreview =
   | {
@@ -11,6 +12,8 @@ export type ChatRowPreview =
   | { readonly kind: "text"; readonly from: "me" | "them"; readonly text: ChatText }
   | { readonly kind: "photo" }
   | { readonly kind: "voice"; readonly durationMs: number }
+  /** 아직 메시지가 없는 열린 방 — 그 인물의 첫 인사(방을 열면 실제로 오는 말)를 흐리게 미리 보입니다. */
+  | { readonly kind: "greeting"; readonly text: string }
   | { readonly kind: "empty" };
 
 export type ChatTime =
@@ -34,10 +37,17 @@ export function orderChatRooms(rooms: readonly ChatRoomSummary[]): readonly Chat
     .sort((a, b) => b.updatedAt - a.updatedAt);
 }
 
-/** NEW 줄: isNew이고 열린 방일 때만. */
+/**
+ * NEW 줄: 열린 방이고, 방금 해금돼 아직 열어 보지 않았거나(isNew) 메시지가 아직 없어 첫 인사를 미리 보이는 방(ADR-0113 추가
+ * 2026-11-17). 안 읽은 수 · 탭 NEW(`messenger-guide`)는 isNew만 봅니다 — 첫 인사 줄은 세지 않습니다.
+ */
 export function newBadgeShown(room: ChatRoomSummary): boolean {
-  return room.isNew && room.access.kind === "open";
+  if (room.access.kind !== "open") return false;
+  return room.isNew || chatRowPreview(room).kind === "greeting";
 }
+
+const firstLineOf = (characterId: string): string | null =>
+  COMPANION_CHARACTERS.find((character) => character.id === characterId)?.firstLine ?? null;
 
 /** 잠김 > 활동 > 마지막 메시지 > 비어 있음 순으로 한 줄 미리보기를 고릅니다. */
 export function chatRowPreview(room: ChatRoomSummary): ChatRowPreview {
@@ -46,7 +56,10 @@ export function chatRowPreview(room: ChatRoomSummary): ChatRowPreview {
   }
   if (room.activity !== "idle") return { kind: "activity", activity: room.activity };
   const last = room.lastMessage;
-  if (last === null) return { kind: "empty" };
+  if (last === null) {
+    const greeting = firstLineOf(room.counterpart.id);
+    return greeting === null ? { kind: "empty" } : { kind: "greeting", text: greeting };
+  }
   switch (last.kind) {
     case "text":
       return { kind: "text", from: last.from, text: last.text };

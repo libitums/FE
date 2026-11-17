@@ -184,3 +184,9 @@ ADR-0102 6판(자유 대화 서버 설계)은 브랜치 `docs/adr-0102-messenger
     키보드로 바꿀 때 튐)은 **첫 측정 전 한 번만** 남는다.
   - 호스트 변경은 없다(Android `MainActivity`의 IME 인셋 대신 Lynx 입력 칸이 이미 재는 값을 씀). 테스트 KH-U1 ~ U3 · KH-UI1 ~ UI3.
 
+- ⟨2026-11-17⟩ **추가 — 아직 메시지가 없는 방은 목록에서 첫 인사를 미리 보인다**(**사용자 결정**, 시안 B). 일반 회원 개방(ADR-0154) 뒤 덕수쌤 등 열린 방의 줄이 이름만 있고 미리보기가 비어 탭할 이유가 약했다.
+  - 판정(`chatRowPreview`): 열린 방 · 활동 없음 · `lastMessage === null`이면 그 인물의 첫 인사 `{ kind: "greeting", text }`. 첫 인사는 인물 표의 `firstLine`(정본 해금 JSON `firstMessage` 첫 줄 — 방을 처음 열면 서버가 저장하는 바로 그 말, ADR-0152 D3)이고, 기본 인물(덕수쌤)에게도 있다. 없는 인물 · 마지막이 고지(notice)인 방은 지금처럼 빈 미리보기.
+  - 모양: 흐린 글(`fg-neutral-muted`, muted와 같은 색)에 기울임, 한 줄 말줄임. 시각 칸 없음. 한국어 원문 그대로라 새 번역 문구가 없다.
+  - NEW: 줄의 NEW 알약은 `isNew`(해금 직후, 0117) **또는** 첫 인사 줄이다(`newBadgeShown`). 안 읽은 수 · 탭 NEW(ADR-0139 `messenger-guide`)는 `isNew`만 보고 첫 인사 줄을 세지 않는다. 방을 열어 첫 인사가 저장되면 평소 미리보기로 바뀌고 NEW도 사라진다.
+  - 낭독: 해금 직후 줄은 「New friend」, 첫 인사 줄은 「New greeting」(5개 언어 `list.greetingLabel`)으로 시작하고 이름 · 첫 인사를 읽는다.
+  - 테스트: unit CL-G1 ~ G5 · CU-U5(인물 표 `firstLine` = 해금 JSON 첫 줄), ui CL-UI1 ~ UI3.

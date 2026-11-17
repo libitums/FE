@@ -11,6 +11,7 @@ export const messengerChatVi: MessengerChatCopy = {
     coinsLabel: (count) => `${count} xu, mua thêm`,
     newBadge: "MỚI",
     newFriendLabel: "Bạn mới",
+    greetingLabel: "Lời chào mới",
     emptyTitle: "Chưa có cuộc trò chuyện nào",
     emptyBody: "Hoàn thành một tập, những người bạn đã gặp sẽ nhắn tin cho bạn ở đây.",
     goToJourney: "Đến Hành trình",

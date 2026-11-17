@@ -11,6 +11,7 @@ export const messengerChatId: MessengerChatCopy = {
     coinsLabel: (count) => `${count} koin, tambah koin`,
     newBadge: "BARU",
     newFriendLabel: "Teman baru",
+    greetingLabel: "Sapaan baru",
     emptyTitle: "Belum ada obrolan",
     emptyBody:
       "Selesaikan satu episode, lalu orang-orang yang kamu temui akan mengirim pesan di sini.",

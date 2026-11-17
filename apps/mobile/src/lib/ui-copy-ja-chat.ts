@@ -11,6 +11,7 @@ export const messengerChatJa: MessengerChatCopy = {
     coinsLabel: (count) => `コイン${count}枚、追加する`,
     newBadge: "NEW",
     newFriendLabel: "新しい友だち",
+    greetingLabel: "新しいあいさつ",
     emptyTitle: "まだチャットがありません",
     emptyBody: "エピソードを終えると、出会った人たちがここにメッセージを送ってきます。",
     goToJourney: "ジャーニーへ",

@@ -11,6 +11,7 @@ export const messengerChatEs: MessengerChatCopy = {
     coinsLabel: (count) => `${count} ${count === 1 ? "moneda" : "monedas"}, conseguir más`,
     newBadge: "NUEVO",
     newFriendLabel: "Nuevo amigo",
+    greetingLabel: "Saludo nuevo",
     emptyTitle: "Aún no hay chats",
     emptyBody: "Termina un episodio y las personas que conociste te escribirán aquí.",
     goToJourney: "Ir al Viaje",
