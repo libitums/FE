@@ -191,6 +191,8 @@ ADR-0102 6판(자유 대화 서버 설계)은 브랜치 `docs/adr-0102-messenger
   - 낭독: 해금 직후 줄은 「New friend」, 첫 인사 줄은 「New greeting」(5개 언어 `list.greetingLabel`)으로 시작하고 이름 · 첫 인사를 읽는다.
   - 테스트: unit CL-G1 ~ G5 · CU-U5(인물 표 `firstLine` = 해금 JSON 첫 줄), ui CL-UI1 ~ UI3.
 
+- ⟨2026-11-17⟩ **고침 — 방에 들어오자마자 연 답장 보기 판의 보기가 좁게 섰다**(기기 신고). 보기 스크롤(`<scroll-view>`)은 linear라 자식이 너비를 채우는 것은 스크롤의 너비가 정해졌을 때뿐인데, 너비를 판의 flex 늘이기에 맡겨 첫 배치에서 정해지지 않았고 목록이 글 너비로 줄었다. `.messenger-chat-ideas-scroll` · `.messenger-chat-ideas-list`에 `width: 100%`(다른 화면의 스크롤과 같은 규칙). 테스트 ID1(CSS 문장). ⚠ 레이아웃은 테스트 환경이 그리지 못해 기기에서 확인할 것.
+
 
 ## 추가 (2026-11-17) — 답장 보기를 누르면 바로 보낸다 [사용자]
 

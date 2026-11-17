@@ -74,6 +74,14 @@ describe("D7. 답장 보기 판", () => {
     expect(scroll).toContain("flex: 1 1 0px");
     expect(scroll).toContain("min-height: 0");
   });
+
+  // 기기 점검(사용자, 2026-11-17): 방에 들어오자마자 판을 열면 보기가 글 너비만큼 좁게 섰다. `<scroll-view>`는 linear라
+  // 자식이 너비를 채우는 것은 스크롤의 너비가 정해졌을 때뿐이다(layout/linear-layout.md) — flex 늘이기에 맡긴 너비는 첫
+  // 배치에서 정해지지 않아 목록이 내용 폭으로 줄었다.
+  test("ID1. 보기 스크롤과 목록은 너비를 100%로 정해 첫 배치에서도 판 너비를 채운다", () => {
+    expect(bodyOf(files.chat, ".messenger-chat-ideas-scroll")).toContain("width: 100%");
+    expect(bodyOf(files.chat, ".messenger-chat-ideas-list")).toContain("width: 100%");
+  });
 });
 
 describe("D8. 「…」 메뉴", () => {

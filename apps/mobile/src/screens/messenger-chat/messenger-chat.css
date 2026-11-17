@@ -524,13 +524,17 @@
 }
 
 /* 남은 높이는 퍼센트가 아닌 0px 기준으로 받습니다 — 부모 높이가 확정이 아니면 퍼센트 기준은 내용 높이로 풀려 보기가
-   슬롯 밖으로 넘쳤습니다(device-findings-1 D7). 판 높이는 ReplyIdeasPanel이 px로 직접 줍니다. */
+   슬롯 밖으로 넘쳤습니다(device-findings-1 D7). 판 높이는 ReplyIdeasPanel이 px로 직접 줍니다.
+   너비도 정합니다 — `<scroll-view>`는 linear라 자식이 너비를 채우는 것은 스크롤의 너비가 정해졌을 때뿐이고, flex 늘이기에
+   맡긴 너비는 방에 들어와 처음 판을 열 때 정해지지 않아 보기가 글 너비만큼 좁게 섰습니다(2026-11-17 기기). */
 .messenger-chat-ideas-scroll {
   flex: 1 1 0px;
   min-height: 0;
+  width: 100%;
 }
 
 .messenger-chat-ideas-list {
+  width: 100%;
   display: flex;
   flex-direction: column;
   gap: var(--libitum-spacing-8);
