@@ -107,6 +107,18 @@ export const feedbackVi: FeedbackCopy = {
   survey: {
     title: "Bạn thấy tập này thế nào?",
     messageLabel: "Chúng tôi nên cải thiện điều gì? (không bắt buộc)",
+    reasonsLabel: "Điều gì chưa ổn? Chọn tất cả mục phù hợp.",
+    reasonOption: {
+      "too-hard": "Quá khó",
+      "too-easy": "Quá dễ",
+      audio: "Lỗi âm thanh",
+      unclear: "Khó hiểu",
+      translation: "Lỗi bản dịch",
+      stuck: "Bị kẹt hoặc lỗi app",
+      "too-long": "Quá dài",
+      other: "Khác",
+    },
+    otherAccessibilityLabel: "Khác, mở ô nhập nội dung",
     description: (episodeTitle) =>
       `Bạn đã hoàn thành ${episodeTitle}. Hãy cho chúng tôi biết cảm nhận của bạn.`,
     skip: "Để sau",

@@ -3,6 +3,7 @@
 import type {
   AppReviewModule,
   FeedbackRating,
+  FeedbackReason,
   AppReviewRequestedStorageKey,
   EpisodeSurveyDoneStorageKey,
   FeedbackSubmission,
@@ -15,12 +16,34 @@ export const feedbackRatings: readonly FeedbackRating[] = [1, 2, 3, 4, 5];
 /** 설정 피드백의 글 상한입니다(서버는 1000자까지 받습니다). */
 export const feedbackMessageMaxLength = 500;
 
-/** 에피소드 설문이 글 칸을 여는 가장 높은 별점입니다(1~3점). */
-export const surveyMessageMaxRating: FeedbackRating = 3;
+/** 에피소드 설문이 이유 체크리스트를 여는 가장 높은 별점입니다(1~3점). */
+export const surveyReasonsMaxRating: FeedbackRating = 3;
 
-/** 이 별점이면 에피소드 설문이 바로 끝나지 않고 글 단계로 넘어갑니다. */
-export function surveyAsksMessage(rating: FeedbackRating): boolean {
-  return rating <= surveyMessageMaxRating;
+/** 이 별점이면 에피소드 설문이 바로 끝나지 않고 이유 단계로 넘어갑니다. */
+export function surveyAsksReasons(rating: FeedbackRating): boolean {
+  return rating <= surveyReasonsMaxRating;
+}
+
+/** 이유 체크리스트의 표시 순서입니다. 「Other」가 늘 마지막입니다. */
+export const feedbackReasons: readonly FeedbackReason[] = [
+  "too-hard",
+  "too-easy",
+  "audio",
+  "unclear",
+  "translation",
+  "stuck",
+  "too-long",
+  "other",
+];
+
+/** 고른 id를 보낼 이유로 바꿉니다 — 모르는 id는 버리고, 표시 순서로 · 중복 없이. */
+export function feedbackReasonsOf(ids: readonly string[]): readonly FeedbackReason[] {
+  return feedbackReasons.filter((reason) => ids.includes(reason));
+}
+
+/** 이유 단계에서 보낼 글입니다 — 「Other」를 고르지 않았으면 쓴 글이 있어도 `null`. */
+export function surveyMessageOf(reasons: readonly FeedbackReason[], text: string): string | null {
+  return reasons.includes("other") ? feedbackMessageOf(text) : null;
 }
 
 /** 보낼 글입니다 — 앞뒤 공백을 지우고, 비면 `null`, 상한을 넘으면 자릅니다. */

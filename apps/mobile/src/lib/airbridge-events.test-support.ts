@@ -106,7 +106,13 @@ export const unmappedEvents = [
     episodeCount: "1",
     replacedCount: "1",
   },
-  { name: "episode_survey_answered", episodeId: "tutorial", rating: "4", hasMessage: false },
+  {
+    name: "episode_survey_answered",
+    episodeId: "tutorial",
+    rating: "4",
+    reasons: "",
+    hasMessage: false,
+  },
   { name: "episode_survey_skipped", episodeId: "tutorial" },
   {
     name: "episode_lesson_started",
@@ -262,7 +268,6 @@ export const episodeFinalPassed = {
   correctCount: "2",
   turnCount: "2",
 } as const satisfies AnalyticsEvent;
-
 export const episodeFinalPassedU01 = {
   name: "episode_final_passed",
   episodeId: "u01-water",

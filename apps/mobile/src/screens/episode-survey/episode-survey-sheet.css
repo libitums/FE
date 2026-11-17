@@ -1,5 +1,40 @@
 /* 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). 보기 목록 · 글 칸과 버튼 사이를 띄웁니다. */
+/* 체크리스트만 줄어 스크롤합니다. 내용 높이만큼 서고(flex 기준 auto), 시트가 화면을 넘으면 줄어듭니다. */
+.episode-survey-reasons-scroll {
+  min-height: var(--libitum-spacing-0);
+  flex: 0 1 auto;
+}
+
+.episode-survey-reasons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-8);
+}
+
+/* 이유 질문은 「Other」 글 칸의 라벨과 같은 모양입니다(ui-lynx TextField 라벨). */
+.episode-survey-reasons-label {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-size: var(--libitum-typography-label-l-font-size);
+  font-weight: var(--libitum-typography-label-l-font-weight);
+  line-height: var(--libitum-typography-label-l-line-height);
+  letter-spacing: var(--libitum-typography-label-l-letter-spacing);
+}
+
+.episode-survey-message,
 .episode-survey-send,
 .episode-survey-skip {
   margin-top: var(--libitum-spacing-16);
+  flex-shrink: 0;
+}
+
+/* 이유 단계에서 Send 바로 아래의 Not now는 시트 기본 동작 버튼 사이(ui-lynx actions row-gap)와 같은 8로 붙입니다 —
+   360×640에서 여덟 항목이 한 화면에 들게(기기 확인 2026-11-17). */
+.episode-survey-skip-after-send {
+  margin-top: var(--libitum-spacing-8);
+}
+
+/* 키보드가 선 동안 체크리스트가 내려가면 글 칸이 내용 칸 맨 위라 위 여백을 두지 않습니다. */
+.episode-survey-message-keyboard {
+  margin-top: var(--libitum-spacing-0);
 }

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import { TopBar } from "../components/TopBar";
-import type { FeedbackRating } from "../lib/feedback.contract";
+import type { FeedbackRating, FeedbackReason } from "../lib/feedback.contract";
 import { useUiCopy } from "../lib/ui-copy";
 import type { StatBumpWiring } from "./learning-progress";
 import { CoinShopScreen } from "../screens/coin-shop/CoinShopScreen";
@@ -66,6 +66,7 @@ export type AppHeaderProps = {
   readonly onAnswerEpisodeSurvey?: (
     episodeId: string,
     rating: FeedbackRating,
+    reasons: readonly FeedbackReason[],
     message: string | null,
   ) => void;
   readonly onSkipEpisodeSurvey?: (episodeId: string) => void;
@@ -216,9 +217,9 @@ export function AppHeader({
       {openLayer === "survey" && episodeSurvey !== null ? (
         <EpisodeSurveySheet
           episodeTitle={episodeSurvey.title}
-          onAnswer={(rating, message) => {
+          onAnswer={(rating, reasons, message) => {
             close();
-            onAnswerEpisodeSurvey?.(episodeSurvey.id, rating, message);
+            onAnswerEpisodeSurvey?.(episodeSurvey.id, rating, reasons, message);
           }}
           onSkip={() => {
             close();

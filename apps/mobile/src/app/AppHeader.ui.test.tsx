@@ -211,17 +211,19 @@ test("[AH-S1] 설문이 있으면 설문 시트가 뜨고, 보기를 누르면 �
   expect(screen.getByTestId("episode-survey-options")).toBeInTheDocument();
   fireEvent.tap(screen.getByTestId("ui-lynx-option-selector-item-4"), {});
 
-  expect(onAnswer).toHaveBeenCalledWith("tutorial", 4, null);
+  expect(onAnswer).toHaveBeenCalledWith("tutorial", 4, [], null);
   // 부모가 설문을 비우면(`onEpisodeSurveyClosed`) 다시 뜨지 않습니다.
   rerender(<AppHeader {...fixture()} episodeSurvey={null} onAnswerEpisodeSurvey={onAnswer} />);
   expect(screen.queryByTestId("episode-survey-options")).toBeNull();
 });
 
-test("[AH-S3] 낮은 별점의 글은 Send로 답과 함께 넘어간다", () => {
+test("[AH-S3] 낮은 별점의 이유 · 글은 Send로 답과 함께 넘어간다", () => {
   const onAnswer = vi.fn();
   render(<AppHeader {...fixture()} episodeSurvey={survey} onAnswerEpisodeSurvey={onAnswer} />);
 
   fireEvent.tap(screen.getByTestId("ui-lynx-option-selector-item-2"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-option-selector-item-audio"), {});
+  fireEvent.tap(screen.getByTestId("ui-lynx-option-selector-item-other"), {});
   const input = screen.getByTestId("ui-lynx-text-field-input");
   const EventConstructor = input.ownerDocument.defaultView!.CustomEvent;
   const ref = lynx.createSelectorQuery().select('[data-testid="ui-lynx-text-field-input"]');
@@ -231,7 +233,12 @@ test("[AH-S3] 낮은 별점의 글은 Send로 답과 함께 넘어간다", () =>
   );
   tapInside("episode-survey-send");
 
-  expect(onAnswer).toHaveBeenCalledExactlyOnceWith("tutorial", 2, "More examples, please.");
+  expect(onAnswer).toHaveBeenCalledExactlyOnceWith(
+    "tutorial",
+    2,
+    ["audio", "other"],
+    "More examples, please.",
+  );
   expect(screen.queryByTestId("episode-survey-message")).toBeNull();
 });
 

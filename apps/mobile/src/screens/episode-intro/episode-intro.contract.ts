@@ -62,11 +62,15 @@ export type EpisodeContentRefreshedEvent = {
   readonly failReasons: string;
   readonly persisted: boolean;
 };
-/** 에피소드 끝 설문의 답입니다(ADR-0036). `rating`은 `"1"` … `"5"`. `hasMessage`는 1~3점 글 단계에서 글을 보냈는가입니다(본문은 싣지 않음). */
+/**
+ * 에피소드 끝 설문의 답입니다(ADR-0036). `rating`은 `"1"` … `"5"`. `reasons`는 1~3점 이유 체크리스트에서 고른
+ * `FeedbackReason` id를 표시 순서로 `","` 연결(없으면 `""`), `hasMessage`는 「Other」 글을 보냈는가입니다(본문은 싣지 않음).
+ */
 export type EpisodeSurveyAnsweredEvent = {
   readonly name: "episode_survey_answered";
   readonly episodeId: string;
   readonly rating: string;
+  readonly reasons: string;
   readonly hasMessage: boolean;
 };
 export type EpisodeSurveySkippedEvent = {

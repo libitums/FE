@@ -404,6 +404,7 @@ describe("TU10 설문", () => {
       name: "episode_survey_answered",
       episodeId: U00,
       rating: "5",
+      reasons: "",
       hasMessage: false,
     });
     const submitted = rpcs.filter((rpc) => rpc.name === "submit_feedback");
@@ -412,8 +413,8 @@ describe("TU10 설문", () => {
   });
 });
 
-describe("TU11 낮은 별점 글", () => {
-  test("TU11. u00을 끝내고 2점 → 글 → Send면 서버에 별점 · 글이 가고 이벤트는 글 유무만, 평점 창은 없다", async () => {
+describe("TU11 낮은 별점 이유 · 글", () => {
+  test("TU11. u00을 끝내고 2점 → 이유 · Other 글 → Send면 서버에 별점 · 이유 · 글이 가고 이벤트는 이유와 글 유무만, 평점 창은 없다", async () => {
     const { events, rpcs, requestReview } = await bootTutorialApp({
       progressSeed: { catalogProgress: { [U00]: keysWithout("RP") } },
     });
@@ -442,6 +443,9 @@ describe("TU11 낮은 별점 글", () => {
     await flushAsync();
     expect(rpcs.filter((rpc) => rpc.name === "submit_feedback")).toHaveLength(0);
 
+    for (const reason of ["other", "too-hard"]) {
+      fireEvent.tap(screen.getByTestId(`ui-lynx-option-selector-item-${reason}`), {});
+    }
     const input = screen.getByTestId("ui-lynx-text-field-input");
     const EventConstructor = input.ownerDocument.defaultView!.CustomEvent;
     const ref = lynx.createSelectorQuery().select('[data-testid="ui-lynx-text-field-input"]');
@@ -460,6 +464,7 @@ describe("TU11 낮은 별점 글", () => {
       name: "episode_survey_answered",
       episodeId: U00,
       rating: "2",
+      reasons: "too-hard,other",
       hasMessage: true,
     });
     const submitted = rpcs.filter((rpc) => rpc.name === "submit_feedback");
@@ -468,7 +473,7 @@ describe("TU11 낮은 별점 글", () => {
       p_kind: "episode",
       p_rating: 2,
       p_message: "Too many words at once.",
-      p_context: { episodeId: U00 },
+      p_context: { episodeId: U00, reasons: "too-hard,other" },
     });
     expect(requestReview).not.toHaveBeenCalled();
   });

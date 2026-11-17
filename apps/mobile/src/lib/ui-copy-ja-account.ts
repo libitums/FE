@@ -115,6 +115,18 @@ export const feedbackJa: FeedbackCopy = {
   survey: {
     title: "このエピソードはいかがでしたか？",
     messageLabel: "どこを良くすればいいですか？（任意）",
+    reasonsLabel: "うまくいかなかった点は？（複数選択可）",
+    reasonOption: {
+      "too-hard": "難しすぎる",
+      "too-easy": "簡単すぎる",
+      audio: "音声の問題",
+      unclear: "わかりにくい",
+      translation: "翻訳の問題",
+      stuck: "進めない・不具合",
+      "too-long": "長すぎる",
+      other: "その他",
+    },
+    otherAccessibilityLabel: "その他、入力欄が開きます",
     description: (episodeTitle) => `${episodeTitle}を終えました。感想を聞かせてください。`,
     skip: "あとで",
   },
