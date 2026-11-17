@@ -16,6 +16,7 @@ import {
   greetingFrom,
   historyFrom,
   profileFrom,
+  profileL1From,
 } from "../screens/messenger-chat/companion-parse";
 import { walletOf } from "../screens/messenger-chat/companion-media-parse";
 
@@ -69,14 +70,18 @@ export function createCompanionRemote(deps: CompanionRemoteDeps): ChatRemote {
     profile: {
       load: async () => profileFrom(await call("/rest/v1/rpc/companion_load_profile", {})),
       // 나머지 칸은 null — 그 열을 바꾸지 않습니다. 출처는 학습자가 직접 고른 값(`self`).
+      // 프로필 저장은 차례대로 — 앞선 저장(언어 맞추기 등)이 끝난 뒤 나가고, 턴은 둘 다 기다립니다.
       saveBirthYear: (year) => {
-        const saved = call("/rest/v1/rpc/companion_save_profile", {
-          p_birth_year: year,
-          p_age_source: "self",
-          p_l1: null,
-          p_feedback_mode: null,
-        }).then((body) => body !== null);
-        profileSaving = saved;
+        const before = profileSaving;
+        const saved = before.then(() =>
+          call("/rest/v1/rpc/companion_save_profile", {
+            p_birth_year: year,
+            p_age_source: "self",
+            p_l1: null,
+            p_feedback_mode: null,
+          }).then((body) => body !== null),
+        );
+        profileSaving = Promise.allSettled([before, saved]);
         return saved;
       },
       saveReplySuggestions: (on) =>
@@ -87,6 +92,19 @@ export function createCompanionRemote(deps: CompanionRemoteDeps): ChatRemote {
           p_feedback_mode: null,
           p_reply_suggestions: on,
         }).then((body) => body !== null),
+      // 학습자 언어(2026-11-17) — 서버 l1이 같으면 쓰지 않습니다. 맞추는 동안의 턴 · 사진 요청은 끝난 뒤 나갑니다.
+      syncL1: (l1) => {
+        const before = profileSaving;
+        const synced = (async () => {
+          await before;
+          const stored = profileL1From(await call("/rest/v1/rpc/companion_load_profile", {}));
+          if (stored === l1) return true;
+          const body = { p_birth_year: null, p_age_source: null, p_l1: l1, p_feedback_mode: null };
+          return (await call("/rest/v1/rpc/companion_save_profile", body)) !== null;
+        })();
+        profileSaving = Promise.allSettled([before, synced]);
+        return synced;
+      },
     },
     loadHistory: async (characterId) =>
       historyFrom(

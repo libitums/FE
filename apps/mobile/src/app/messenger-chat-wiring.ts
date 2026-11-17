@@ -10,6 +10,8 @@ import {
 import { loadAuthSession } from "../lib/auth-session";
 import { authUserIdFrom } from "../lib/auth-user-id";
 import { isTesterAccessActive } from "../lib/tester-access";
+import { loadUiLanguage, onUiLanguageSaved } from "../lib/ui-language";
+import { companionL1Sync } from "../screens/messenger-chat/companion-l1-sync";
 import type { ChatMediaHooks } from "../screens/messenger-chat/chat-media.contract";
 import type { ChatRemote } from "../screens/messenger-chat/chat-remote.contract";
 import { companionSeed } from "../screens/messenger-chat/companion-roster";
@@ -69,6 +71,7 @@ let singletonKey = "";
 let mediaHooks: ChatMediaHooks | null = null;
 /** 서버 모드의 원격 포트입니다(ADR-0137). 앱 진입점이 끼우고, 테스트는 끼우지 않아 늘 가짜 출처입니다. */
 let remoteFactory: (() => ChatRemote) | null = null;
+let stopL1Sync: () => void = () => undefined; // 서버 방의 학습자 언어 맞추기(2026-11-17) — 출처와 같이 멈춥니다
 let latestImageUrlOf: ImageUrlOf | null = null;
 let walletSingleton: SyncedCoinWallet | null = null;
 let trialSingleton: TrialStore | null = null;
@@ -176,11 +179,14 @@ export function messengerChatSource(imageUrlOf: ImageUrlOf): ChatSource {
   if (singleton !== null && key !== singletonKey) {
     singleton.dispose();
     singleton = null;
+    stopL1Sync();
     trialSingleton = null; // 체험 수는 계정마다 — 새 출처의 지갑 읽기가 다시 채웁니다
   }
   if (singleton === null) {
     singletonKey = key;
     const remote = key === "fixture" || remoteFactory === null ? null : remoteFactory();
+    // 번역 · 교정 설명이 학습자 화면 언어로 오게 서버 프로필 l1을 맞춥니다(가짜 방은 할 일 없음).
+    stopL1Sync = companionL1Sync(remote?.profile, loadUiLanguage, onUiLanguageSaved);
     singleton = createFixtureChatSource({
       imageUrlOf: (relativePath) => latestImageUrlOf?.(relativePath) ?? null,
       unlocked: [...messengerUnlockStore().read()],
@@ -212,6 +218,7 @@ export function messengerChatSource(imageUrlOf: ImageUrlOf): ChatSource {
 export function resetMessengerChatSourceForTests(seed?: ChatFixtureSeed): void {
   singleton?.dispose();
   singleton = null;
+  stopL1Sync();
   singletonKey = "";
   latestImageUrlOf = null;
   walletSingleton = null;

@@ -222,7 +222,120 @@ describe("프로필 생년", () => {
     expect(await reply("{}", 500)).toBeNull();
   });
 
-  test("SA-U8 생년 저장 중에 연 턴 · 사진 요청은 저장이 끝난 뒤 나간다(서버가 그 순간의 나이로 판정)", async () => {
+  test("SA-U9 학습자 언어 맞추기 — 서버 l1이 비었으면 companion_save_profile에 p_l1만(다른 칸 null)", async () => {
+    const urls: string[] = [];
+    const bodies: unknown[] = [];
+    const { remote } = setup({
+      post: async (build) => {
+        const { url, init } = build(config);
+        urls.push(url.slice(url.lastIndexOf("/") + 1));
+        bodies.push(JSON.parse(init.body ?? "null"));
+        const load = url.endsWith("companion_load_profile");
+        return {
+          ok: true,
+          status: 200,
+          bodyText: load ? JSON.stringify({ birthYear: null, l1: null }) : "",
+        };
+      },
+    });
+    expect(await remote.profile?.syncL1?.("vi")).toBe(true);
+    expect(urls).toEqual(["companion_load_profile", "companion_save_profile"]);
+    expect(bodies[1]).toEqual({
+      p_birth_year: null,
+      p_age_source: null,
+      p_l1: "vi",
+      p_feedback_mode: null,
+    });
+  });
+
+  test("SA-U10 서버 l1이 이미 같으면 저장하지 않는다 · 못 읽으면 저장한다", async () => {
+    const run = async (loadBody: string, loadStatus = 200) => {
+      const urls: string[] = [];
+      const { remote } = setup({
+        post: async (build) => {
+          const { url } = build(config);
+          urls.push(url.slice(url.lastIndexOf("/") + 1));
+          return url.endsWith("companion_load_profile")
+            ? { ok: true, status: loadStatus, bodyText: loadBody }
+            : { ok: true, status: 204, bodyText: "" };
+        },
+      });
+      await remote.profile?.syncL1?.("ja");
+      return urls;
+    };
+    expect(await run(JSON.stringify({ birthYear: 1990, l1: "ja" }))).toEqual([
+      "companion_load_profile",
+    ]);
+    expect(await run(JSON.stringify({ birthYear: 1990, l1: "en" }))).toEqual([
+      "companion_load_profile",
+      "companion_save_profile",
+    ]);
+    expect(await run("{}", 500)).toEqual(["companion_load_profile", "companion_save_profile"]);
+  });
+
+  test("SA-U11 언어를 맞추는 중에 연 턴은 맞춘 뒤에 나간다(첫 답부터 그 언어로)", async () => {
+    let finishSave: (() => void) | null = null;
+    const { remote, stream } = setup({
+      post: async (build) => {
+        const { url } = build(config);
+        if (url.endsWith("companion_save_profile")) {
+          await new Promise<void>((resolve) => {
+            finishSave = resolve;
+          });
+        }
+        const body = url.endsWith("companion_load_profile") ? "null" : "{}";
+        return { ok: true, status: 200, bodyText: body };
+      },
+    });
+    void remote.profile?.syncL1?.("id");
+    remote.openTurn(
+      { characterId: "duksu", text: "x", clientMessageId: "c" },
+      { onOpen: () => undefined, onEvent: () => undefined, onEnd: () => undefined },
+    );
+    await flush();
+    await flush();
+    expect(stream().request).toBeNull();
+    finishSave!();
+    await flush();
+    await flush();
+    expect(stream().request).not.toBeNull();
+  });
+
+  test("SA-U12 프로필 저장은 차례대로 — 언어 맞추기 중의 생년 저장은 그 뒤에 나가고, 턴은 둘 다 끝난 뒤 나간다", async () => {
+    const finishers: (() => void)[] = [];
+    const saves: string[] = [];
+    const { remote, stream } = setup({
+      post: async (build) => {
+        const { url, init } = build(config);
+        if (url.endsWith("companion_save_profile")) {
+          saves.push((init.body ?? "").includes('"p_l1":"vi"') ? "l1" : "birth");
+          await new Promise<void>((resolve) => finishers.push(resolve));
+        }
+        const text = url.endsWith("companion_load_profile") ? "null" : "{}";
+        return { ok: true, status: 200, bodyText: text };
+      },
+    });
+    void remote.profile?.syncL1?.("vi");
+    void remote.profile?.saveBirthYear(1995);
+    remote.openTurn(
+      { characterId: "duksu", text: "x", clientMessageId: "c" },
+      { onOpen: () => undefined, onEvent: () => undefined, onEnd: () => undefined },
+    );
+    await flush();
+    await flush();
+    expect(saves).toEqual(["l1"]);
+    finishers.shift()!();
+    await flush();
+    await flush();
+    expect(saves).toEqual(["l1", "birth"]);
+    expect(stream().request).toBeNull();
+    finishers.shift()!();
+    await flush();
+    await flush();
+    expect(stream().request).not.toBeNull();
+  });
+
+  test("SA-U8생년 저장 중에 연 턴 · 사진 요청은 저장이 끝난 뒤 나간다(서버가 그 순간의 나이로 판정)", async () => {
     let finishSave: (() => void) | null = null;
     const order: string[] = [];
     const { remote, stream } = setup({

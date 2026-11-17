@@ -74,6 +74,11 @@ export type ChatProfileRemote = {
   readonly saveBirthYear: (year: number) => Promise<boolean>;
   /** `companion_save_profile(p_reply_suggestions)`(ADR-0156) — 성공하면 true. 꺼진 계정에는 서버가 칩을 만들지 않습니다. */
   readonly saveReplySuggestions?: (on: boolean) => Promise<boolean>;
+  /**
+   * 학습자 언어(L1, 2026-11-17) — 서버 프로필 `l1`을 읽어 다르거나 비었을 때만 `companion_save_profile(p_l1)`로 씁니다. 맞췄으면
+   * true. 맞추는 동안 연 턴 · 사진 요청은 끝난 뒤 나갑니다(첫 답부터 그 언어로).
+   */
+  readonly syncL1?: (l1: string) => Promise<boolean>;
 };
 
 /** 서버가 보내기를 막은 까닭입니다 — 입력 줄 자리 안내(입력 막힘)와 로그 회색 줄(실패) 둘로 나뉩니다. */
