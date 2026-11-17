@@ -11,7 +11,7 @@ import { PHONE_INPUT_ELEMENT_ID } from "./chat-input-id";
 import { CHAT_PLACEHOLDERS } from "./chat-placeholders";
 import type { ChatRoomState } from "./chat-room-state";
 import { SLOP_BULB, SLOP_ROUND } from "./hit-slop";
-import type { PhoneFocus } from "./keyboard-height";
+import { phoneKeyboardHeightOf, type PhoneFocus } from "./keyboard-height";
 import { messengerChatTestIds as ids } from "./messenger-chat.contract";
 import { CoinSendButton } from "./ChatTurns";
 import type { SendCost } from "./chat-turns.contract";
@@ -32,6 +32,8 @@ export type ComposerFieldProps = {
   readonly onConfirm: () => void;
   /** 키보드가 닫혀 있을 때 입력 칸을 누르면 키보드를 엽니다. */
   readonly onOpenKeyboard: () => void;
+  /** 휴대폰 키보드가 올라오거나 높이가 바뀌면 그 높이(pt/dp)를 알립니다. 내려가면 0입니다. */
+  readonly onPhoneKeyboardHeight?: (height: number) => void;
 };
 export type ComposerRowProps = ComposerFieldProps & {
   readonly ideasDisabled: boolean;
@@ -56,6 +58,7 @@ export function ComposerRow({
   onPhoneFocus,
   onConfirm,
   onOpenKeyboard,
+  onPhoneKeyboardHeight,
 }: ComposerRowProps): ReactNode {
   const phoneFocused = state.keyboard === "phone" && state.phoneFocus === "focused";
   return (
@@ -79,6 +82,7 @@ export function ComposerRow({
           onPhoneFocus={onPhoneFocus}
           onConfirm={onConfirm}
           onOpenKeyboard={onOpenKeyboard}
+          onPhoneKeyboardHeight={onPhoneKeyboardHeight}
         />
       </view>
       {sendCost.kind === "coin" ? (
@@ -138,11 +142,24 @@ export function ComposerField({
   onPhoneFocus,
   onConfirm,
   onOpenKeyboard,
+  onPhoneKeyboardHeight,
 }: ComposerFieldProps): ReactNode {
   const copy = useUiCopy().messengerChat.composer;
   const phoneActive = state.keyboard === "phone" && state.slot.kind === "keyboard";
   const empty = state.text === "";
   const caret = <view className="messenger-chat-caret" accessibility-elements-hidden={true} />;
+  // 실제 키보드 높이(툴바 · 추천 줄 포함)로 자리를 맞춥니다. `keyboardheightchange`는 @lynx-js/types의 input 속성에 없어
+  // ui-lynx TextField처럼 펼침으로 겁니다.
+  const keyboardProps =
+    onPhoneKeyboardHeight === undefined
+      ? {}
+      : {
+          bindkeyboardheightchange: (event: { readonly detail: { readonly height?: unknown } }) => {
+            "background only";
+            const info = typeof SystemInfo === "undefined" ? undefined : SystemInfo;
+            onPhoneKeyboardHeight(phoneKeyboardHeightOf(event.detail.height, info));
+          },
+        };
   return (
     <view
       className="messenger-chat-field"
@@ -203,6 +220,7 @@ export function ComposerField({
           "background only";
           onConfirm();
         }}
+        {...keyboardProps}
       />
     </view>
   );

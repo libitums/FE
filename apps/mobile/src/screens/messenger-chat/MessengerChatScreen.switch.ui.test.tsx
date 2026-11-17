@@ -151,7 +151,7 @@ test("MC-UI14. 자리 높이는 학습 · 휴대폰 · 보기에서 같고 resol
 test("MC-UI14. 저장된 휴대폰 키보드 높이가 있으면 그 값이 자리 높이다", () => {
   mountChatOpen({
     probe: presenceProbe("absent"),
-    store: { read: () => 291 },
+    store: { read: () => 291, write: () => undefined },
     edges: { bottom: 34, left: 0, right: 0 },
   });
 

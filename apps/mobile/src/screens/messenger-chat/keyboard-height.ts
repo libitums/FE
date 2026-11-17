@@ -33,6 +33,25 @@ export function resolveChatKeyboardHeight(input: {
   return Math.max(base, floor);
 }
 
+/**
+ * 입력 칸 `keyboardheightchange`의 `height`를 레이아웃 단위(pt/dp)로 바꿉니다 — ui-lynx TextField와 같은 규칙입니다. Lynx는 화면
+ * 아래 끝에서 키보드 윗변까지(Android 내비게이션 바 · iOS 홈 인디케이터 포함)를 재고, Android는 물리 픽셀이라 `pixelRatio`로
+ * 나눕니다. 유한한 양수가 아니면 0(키보드가 내려감).
+ */
+export function phoneKeyboardHeightOf(
+  height: unknown,
+  info: { readonly platform?: string; readonly pixelRatio?: number } | undefined,
+): number {
+  if (typeof height !== "number" || !Number.isFinite(height) || height <= 0) return 0;
+  const ratio = info?.pixelRatio ?? 0;
+  const layout = info?.platform === "Android" && ratio > 0 ? Math.round(height / ratio) : height;
+  // 밀도를 못 읽어 물리 픽셀이 그대로 오는 등 어긋난 값이 방 전체를 덮지 않게 상한을 둡니다(가장 큰 휴대폰 키보드보다 넉넉히).
+  return Math.min(layout, PHONE_KEYBOARD_MAX);
+}
+
+/** 휴대폰 키보드 높이 상한(pt/dp)입니다. */
+export const PHONE_KEYBOARD_MAX = 480;
+
 function tableHeight(screenHeight: number | null): number {
   const { table, tallest } = CHAT_KEYBOARD_HEIGHTS;
   if (screenHeight === null) return table[0].height;

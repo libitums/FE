@@ -13,3 +13,8 @@ test("MC-U23. 높이 저장 포트는 늘 null이다", () => {
   expect(emptyKeyboardHeightStore.read()).toBeNull();
   expect(emptyKeyboardHeightStore.read()).toBeNull();
 });
+
+test("KH-U1. 빈 높이 저장 포트에 적어도 던지지 않고 여전히 null이다", () => {
+  expect(() => emptyKeyboardHeightStore.write(320)).not.toThrow();
+  expect(emptyKeyboardHeightStore.read()).toBeNull();
+});

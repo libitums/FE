@@ -242,3 +242,32 @@ describe("생년 (BY-U9)", () => {
     expect(deviceBirthYearStore("server:a").read()).toBeNull();
   });
 });
+
+describe("휴대폰 키보드 높이 (KH-U2)", () => {
+  test("KH-U2. 잰 높이를 기기에 적고 다음 실행(새 모듈)에서 읽는다 — 키는 계정이 아니라 기기 하나다", async () => {
+    const { deviceKeyboardHeightStore, KEYBOARD_HEIGHT_KEY } = await freshStores();
+    expect(KEYBOARD_HEIGHT_KEY).toBe("libitum.messenger.keyboard-height");
+    expect(deviceKeyboardHeightStore.read()).toBeNull();
+    deviceKeyboardHeightStore.write(336);
+    expect(storage.setItem).toHaveBeenCalledWith(KEYBOARD_HEIGHT_KEY, "336");
+    expect(deviceKeyboardHeightStore.read()).toBe(336);
+
+    storage.getItem.mockReturnValue("312");
+    const next = await freshStores();
+    expect(next.deviceKeyboardHeightStore.read()).toBe(312);
+  });
+
+  test("KH-U2. 유한한 양수가 아닌 값 · 읽기 실패는 null이고, 0 이하는 적지 않는다", async () => {
+    storage.getItem.mockReturnValue('"tall"');
+    const { deviceKeyboardHeightStore } = await freshStores();
+    expect(deviceKeyboardHeightStore.read()).toBeNull();
+    deviceKeyboardHeightStore.write(0);
+    deviceKeyboardHeightStore.write(Number.NaN);
+    expect(storage.setItem).not.toHaveBeenCalled();
+    storage.getItem.mockImplementation(() => {
+      throw new Error("native module failed");
+    });
+    const failing = await freshStores();
+    expect(failing.deviceKeyboardHeightStore.read()).toBeNull();
+  });
+});

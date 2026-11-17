@@ -16,6 +16,7 @@ import { KeyboardSlot, PhoneKeyboardSpacer } from "./KeyboardSlot";
 import { KeyboardToggleRow } from "./KeyboardToggleRow";
 import { ReplyIdeasPanel } from "./ReplyIdeasPanel";
 import { BlockedComposer } from "./SafetyParts";
+import type { PhoneKeyboardHeight } from "./use-phone-keyboard-height";
 
 import "./messenger-chat.css";
 
@@ -24,8 +25,8 @@ export type ChatRoomDockProps = {
   readonly plan: KeyboardPlan;
   readonly thread: ChatThread;
   readonly edges: KeyboardDockEdges;
-  /** 키보드 자리 높이(바깥 인셋 포함 총높이)입니다. */
-  readonly keyboardHeight: number;
+  /** 키보드 자리 높이(바깥 인셋 포함 총높이)와, 입력 칸이 잰 휴대폰 키보드 높이를 받는 곳입니다. */
+  readonly keyboard: PhoneKeyboardHeight;
   readonly dispatch: (action: ChatRoomAction) => void;
   readonly onSend: () => void;
   /** 보내기 단추 종류(T4면 엽전 보내기)입니다. */
@@ -53,7 +54,7 @@ export function ChatRoomDock({
   plan,
   thread,
   edges,
-  keyboardHeight,
+  keyboard,
   dispatch,
   onSend,
   sendCost,
@@ -66,7 +67,7 @@ export function ChatRoomDock({
     slot: state.slot,
     phoneFocus: state.phoneFocus,
     underlay: state.underlay,
-    height: keyboardHeight,
+    height: keyboard.height,
     bottomInset: edges.bottom,
   });
   const content = chatSlotContent(state);
@@ -142,6 +143,7 @@ export function ChatRoomDock({
           onSend={onSend}
           onPhoneInput={(value) => dispatch({ type: "phone-input", value })}
           onPhoneFocus={(focus) => dispatch({ type: "phone-focus", focus })}
+          onPhoneKeyboardHeight={keyboard.measure}
           onConfirm={onSend}
           onOpenKeyboard={() => dispatch({ type: "open-keyboard" })}
         />

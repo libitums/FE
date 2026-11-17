@@ -270,7 +270,7 @@ export function MessengerChatScreen({
             plan={plan}
             thread={thread}
             edges={edges}
-            keyboardHeight={keyboardHeight}
+            keyboard={{ height: keyboardHeight, measure: room.measureKeyboard }}
             dispatch={dispatch}
             onSend={send}
             sendCost={turn.sendCost}

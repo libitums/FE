@@ -1,11 +1,10 @@
-// 메신저 탭의 두 화면을 결선 값으로 그립니다(messenger-chat-ui spec §7.1). 키보드 포트는 1단계 고정값입니다.
+// 메신저 탭의 두 화면을 결선 값으로 그립니다(messenger-chat-ui spec §7.1). 한국어 자판 탐지는 고정값(모름)이고,
+// 휴대폰 키보드 높이는 입력 칸이 잰 값을 기기에 남깁니다(`deviceKeyboardHeightStore`).
 
 import { keyboardDockEdgesOf } from "../lib/keyboard-dock";
 import { uiCopyFor } from "../lib/ui-copy";
-import {
-  emptyKeyboardHeightStore,
-  unknownKoreanKeyboardProbe,
-} from "../screens/messenger-chat/keyboard-ports";
+import { deviceKeyboardHeightStore } from "../screens/messenger-chat/chat-local-stores";
+import { unknownKoreanKeyboardProbe } from "../screens/messenger-chat/keyboard-ports";
 import { ChatEventsContext } from "../screens/messenger-chat/chat-events";
 import { ChatAlbumScreen } from "../screens/messenger-chat/ChatAlbumScreen";
 import { ChatMemoriesScreen } from "../screens/messenger-chat/ChatMemoriesScreen";
@@ -59,7 +58,7 @@ export function renderMessengerChat(roomId: string, wiring: ScreenWiring) {
         roomId={roomId}
         source={chat.source}
         keyboardProbe={unknownKoreanKeyboardProbe}
-        keyboardHeightStore={emptyKeyboardHeightStore}
+        keyboardHeightStore={deviceKeyboardHeightStore}
         edges={keyboardDockEdgesOf(wiring.safeAreaInsets)}
         learnerName={learnerNameOf(wiring)}
         wallet={chat.wallet}
