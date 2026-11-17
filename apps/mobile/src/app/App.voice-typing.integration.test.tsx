@@ -406,6 +406,7 @@ test("VTI4. 정보 파일은 그 차례의 에피소드 받기(본문 · 자산)
   const { urls, store } = await bootContentApp({
     content: remoteContent,
     contentFiles: files.module,
+    allowEpisodes: ["u04-x"],
   });
   await vi.waitFor(() => expect(files.download).toHaveBeenCalledTimes(1));
   await settle();
@@ -437,6 +438,7 @@ test("VTI4. 정보 파일이 500이어도 원격 에피소드는 같은 실행 �
   const { urls, store } = await bootContentApp({
     content: remoteContent,
     contentFiles: files.module,
+    allowEpisodes: ["u04-x"],
     status: { "audio/manifest.json": 500 },
   });
   await vi.waitFor(() => expect(files.download).toHaveBeenCalledTimes(1));

@@ -15,12 +15,13 @@ import {
   episodeAssetsBytes,
   episodeAssetsCompleteFor,
 } from "../lib/download-usage";
-import type { AssetTarget } from "../lib/download-policy";
+import type { AssetDecision, AssetTarget } from "../lib/download-policy";
 import {
-  assetDownloadAllowed,
+  assetDownloadDecision,
   loadAllowedEpisodes,
   loadMobileDataPolicy,
 } from "../lib/download-policy";
+import { prefetchWindowOf } from "../lib/prefetch-window";
 import { changesAudioTiming, refreshAudioManifest } from "../lib/audio-manifest-refresh";
 import { hostContentStore } from "../lib/episode-cache";
 import { promoteStagedEpisodes } from "../lib/episode-staging";
@@ -58,19 +59,24 @@ export const contentSyncEventName = "contentSyncOpportunity";
  */
 export const deferredRecheckIntervalMs = 60_000;
 
-/** 받기 차례마다 한 번 읽는 정책 — 연결 종류 · 저장된 설정 · 허락한 편. 차례 안에서는 같은 값을 씁니다. */
-function assetPolicyForRound(): (id: string, target: AssetTarget) => boolean {
+/**
+ * 받기 차례마다 한 번 읽는 정책 — 연결 종류 · 저장된 설정 · 허락한 편 · 미리 받기 창(ADR-0157). 차례 안에서는 같은 값을
+ * 씁니다. 진행을 아직 모르면 창은 내장 매니페스트 순서의 앞 편(새 사용자 창)입니다.
+ */
+function assetPolicyForRound(): (id: string, target: AssetTarget) => AssetDecision {
   const network = readNetworkProperties();
   const policy = loadMobileDataPolicy();
   const allowed = loadAllowedEpisodes();
+  const window = prefetchWindowOf(bundledCatalogInput.manifest.episodes.map((entry) => entry.id));
   return (episodeId, target) =>
-    assetDownloadAllowed({
+    assetDownloadDecision({
       network,
       policy,
       allowed,
       episodeId,
       tutorialId: TUTORIAL_EPISODE_ID,
       target,
+      window,
     });
 }
 

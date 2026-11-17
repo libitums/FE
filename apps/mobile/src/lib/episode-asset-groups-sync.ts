@@ -3,7 +3,7 @@ import "background-only";
 // 에피소드 하나의 자산을 「공통 → 유닛(스텝 순)」 묶음으로 받고 묶음마다 받음 표시를 둡니다. 던지지 않습니다.
 // 묶음 안의 받기 · 「서버에 없음」 규칙은 `syncEpisodeAssets` 그대로이고, 편 표시는 모든 묶음이 끝났을 때만 씁니다.
 import type { CatalogUnitKey } from "./catalog-progress";
-import type { AssetTarget } from "./download-policy";
+import type { AssetDecision, AssetTarget } from "./download-policy";
 import {
   contentAssetsKey,
   ensureEpisodeAssets,
@@ -22,16 +22,19 @@ export const contentCommonAssetsKey = (id: string): string => `libitum.content.a
 export const contentUnitAssetsKey = (id: string, unitKey: CatalogUnitKey): string =>
   `libitum.content.assets.${id}.unit.${unitKey}`;
 
-/** `deferred` = 정책이 묶음 하나라도 막아 편 표시를 쓰지 않았다(실패 아님). */
-export type EnsureGroupsOutcome = EnsureOutcome | "deferred";
+/**
+ * `deferred` = 정책이 묶음 하나라도 막아 편 표시를 쓰지 않았다(실패 아님, 연결이 바뀌면 다시). `skipped` = 미리 받기 창
+ * 밖이라 건너뛰었다(ADR-0157 — 열 때 받음, 재확인 대상 아님). 둘 다 있으면 `deferred`입니다.
+ */
+export type EnsureGroupsOutcome = EnsureOutcome | "deferred" | "skipped";
 
 export type AssetGroupSyncOptions = {
   /** 편 표시를 둘 키 — 없으면 `contentAssetsKey(id)`, 스테이징이면 `contentStagedAssetsKey(id)`. */
   readonly markerKey?: string;
   /** 묶음 표시를 쓰는가 — 활성 받기 `"active"`, 스테이징 `"none"`(편 표시만). */
   readonly groupMarkers: "active" | "none";
-  /** 묶음마다 받아도 되는가 — 없으면 전부 허락. 던지면 허락으로 봅니다. */
-  readonly allowed?: (target: AssetTarget) => boolean;
+  /** 묶음마다 받아도 되는가 — 없으면 전부 허락. 던지면 허락으로 봅니다. `false`는 `defer`와 같습니다. */
+  readonly allowed?: (target: AssetTarget) => boolean | AssetDecision;
   /** 경로 하나가 끝날 때마다 — 겹친 경로는 묶음마다 불립니다. */
   readonly onPathSettled?: (path: string) => void;
   readonly now?: () => number;
@@ -46,11 +49,13 @@ type Group = {
   readonly markerKey: string;
 };
 
-function isAllowed(options: AssetGroupSyncOptions, target: AssetTarget): boolean {
+function decisionOf(options: AssetGroupSyncOptions, target: AssetTarget): AssetDecision {
   try {
-    return options.allowed?.(target) ?? true;
+    const decided = options.allowed?.(target) ?? true;
+    if (decided === true) return "allow";
+    return decided === false ? "defer" : decided;
   } catch {
-    return true;
+    return "allow";
   }
 }
 
@@ -90,14 +95,17 @@ export async function ensureEpisodeAssetGroups(
   const received = new Set<string>();
   const seen: AssetDeps = { ...deps, has: (path) => received.has(path) || deps.has(path) };
   let deferred = false;
+  let skipped = false;
   for (const group of groupsOf(entry.id, groups)) {
     // 이미 다 받아 둔 묶음은 받을 것이 없으니 허락을 묻지 않습니다.
-    const blocked =
-      !isAllowed(options, group.target) && !group.paths.every((path) => seen.has(path));
-    if (blocked) {
+    const decision = group.paths.every((path) => seen.has(path))
+      ? "allow"
+      : decisionOf(options, group.target);
+    if (decision !== "allow") {
       // 공통이 막히면 유닛도 받지 않습니다 — 공통이 먼저입니다.
-      if (group.target.kind === "common") return "deferred";
-      deferred = true;
+      if (group.target.kind === "common") return decision === "skip" ? "skipped" : "deferred";
+      if (decision === "skip") skipped = true;
+      else deferred = true;
       continue;
     }
     const marked = active ? readAssetMarkerMissing(store, group.markerKey, entry.sha256) : null;
@@ -112,6 +120,7 @@ export async function ensureEpisodeAssetGroups(
     if (active) markAssetsComplete(store, entry.id, entry.sha256, result.missing, group.markerKey);
   }
   if (deferred) return "deferred";
+  if (skipped) return "skipped";
   return markAssetsComplete(store, entry.id, entry.sha256, [...missing], markerKey, now)
     ? "completed"
     : "incomplete";

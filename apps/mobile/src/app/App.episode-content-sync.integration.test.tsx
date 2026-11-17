@@ -82,7 +82,11 @@ test("[I5] 실행 시작에 한 번, 호스트 신호마다 한 번 더 받기�
 
 test("[I6] 원격 에피소드는 자산을 다 받기 전에는 준비 중이고, 다 받은 순간 같은 실행 안에서 열린다", async () => {
   const files = fileModule({ hold: true });
-  const { store } = await bootContentApp({ content, contentFiles: files.module });
+  const { store } = await bootContentApp({
+    content,
+    contentFiles: files.module,
+    allowEpisodes: ["u04-x"],
+  });
   await vi.waitFor(() => expect(files.download).toHaveBeenCalledTimes(1));
   await settle();
 
@@ -105,7 +109,11 @@ test("[I6] 원격 에피소드는 자산을 다 받기 전에는 준비 중이�
 
 test("[I7] 받는 도중에 신호가 여러 번 와도 끝난 뒤 한 번만 더 돈다", async () => {
   const files = fileModule({ hold: true });
-  const { urls } = await bootContentApp({ content, contentFiles: files.module });
+  const { urls } = await bootContentApp({
+    content,
+    contentFiles: files.module,
+    allowEpisodes: ["u04-x"],
+  });
   await vi.waitFor(() => expect(files.download).toHaveBeenCalledTimes(1));
 
   await emitSync();

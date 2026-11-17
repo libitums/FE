@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "@lynx-js/react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import {
@@ -6,10 +6,15 @@ import {
   loadAllowedEpisodes,
   loadMobileDataPolicy,
 } from "../lib/download-policy";
-import type { CatalogProgress } from "../lib/catalog-progress";
+import { isCatalogEpisodeComplete, type CatalogProgress } from "../lib/catalog-progress";
 import { episodeOpenGate } from "../lib/episode-open-gate";
 import { catalogFreshness, type CatalogFreshness } from "../lib/manifest-check";
 import { readNetworkProperties } from "../lib/network-status";
+import {
+  openEpisodeForPrefetch,
+  prefetchWindowIds,
+  setPrefetchWindow,
+} from "../lib/prefetch-window";
 import { TUTORIAL_EPISODE_ID } from "../lib/tutorial-episode";
 import { AllClearedSheet } from "../screens/download-sheet/AllClearedSheet";
 import { catalogAllCleared } from "../screens/journey-map/catalog-all-cleared";
@@ -84,6 +89,26 @@ export function useDownloadGate(
     if (step.show) setSheet({ kind: "all-cleared" });
   }, [loaded, allCleared, atMapRoot, controls, checkedAt]);
 
+  // 미리 받기 창(ADR-0157)을 진행에서 셉니다 — 편을 끝내 창이 밀리면 받기 차례를 다시 돌려 다음 편을 받습니다.
+  const catalogProgress = catalog.catalogProgress;
+  const windowKey = useMemo(() => {
+    const ready = sections.flatMap((s) => (s.kind === "catalog-ready" ? [s] : []));
+    return prefetchWindowIds(
+      ready.map((s) => s.episodeId),
+      (id) => {
+        const section = ready.find((s) => s.episodeId === id);
+        return section !== undefined
+          ? isCatalogEpisodeComplete(catalogProgress, id, section.completionKeys)
+          : false;
+      },
+    ).join(",");
+  }, [sections, catalogProgress]);
+  useEffect(() => {
+    // 맵 구획이 아직 없으면(콘텐츠를 읽기 전) 창을 정하지 않습니다 — 받기 차례는 새 사용자 창을 씁니다.
+    if (windowKey === "") return;
+    if (setPrefetchWindow(windowKey.split(",")) && loaded) controls?.requestSync();
+  }, [windowKey, loaded, controls]);
+
   const guard = useCallback<DownloadGuard>(
     (target, open) => {
       "background only";
@@ -101,6 +126,9 @@ export function useDownloadGate(
         allowed: isDownloadAllowed(loadAllowedEpisodes(), episodeId, assetTarget),
       });
       if (gate === "open") {
+        // 창 밖 편을 열면 그 편을 이번 실행의 창에 더하고 바로 받습니다 — 받는 대로 그림 · 소리가 채워집니다(ADR-0157).
+        if (!controls.assetsComplete(episodeId, assetTarget) && openEpisodeForPrefetch(episodeId))
+          controls.requestSync();
         open?.();
         return;
       }
