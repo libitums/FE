@@ -37,22 +37,24 @@ export function useAutoIdeas({
 }: AutoIdeasInput): void {
   const seen = useRef(ideas);
   const wasBusy = useRef(busy);
-  const latest = useRef({ text, ideasOpen, busy });
-  latest.current = { text, ideasOpen, busy };
+  const latest = useRef({ text, ideasOpen, busy, enabled });
+  latest.current = { text, ideasOpen, busy, enabled };
   useEffect(() => {
     const previous = seen.current;
     const arrived = latest.current.busy || wasBusy.current;
     seen.current = ideas;
     wasBusy.current = latest.current.busy;
     // 방을 열며 읽은 기록의 보기는 「새로 온」 것이 아닙니다(리뷰 W2).
-    if (!arrived) return;
+    // 추천 답변을 껐으면 새로 온 보기도 열지 않습니다.
+    if (!arrived || !latest.current.enabled) return;
     if (shouldAutoOpenIdeas(previous, ideas, latest.current.text, latest.current.ideasOpen))
       dispatch({ type: "open-ideas" });
   }, [ideas, dispatch]);
   useEffect(() => {
     if (busy) wasBusy.current = true;
   }, [busy]);
+  // 끈 채로 판이 열리면(어느 경로든) 바로 접습니다.
   useEffect(() => {
-    if (!enabled && latest.current.ideasOpen) dispatch({ type: "close-keyboard" });
-  }, [enabled, dispatch]);
+    if (!enabled && ideasOpen) dispatch({ type: "close-keyboard" });
+  }, [enabled, ideasOpen, dispatch]);
 }
