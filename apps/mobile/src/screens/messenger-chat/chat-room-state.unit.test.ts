@@ -89,10 +89,7 @@ describe("키보드 열기 · 닫기 (사용자 결정: 방은 키보드가 닫�
   });
 
   test("닫힌 채로 open-ideas 는 보기 패널을 열고, 보낸 뒤에도 닫힌 채면 닫힌 채로 남는다", () => {
-    expect(run(closedLearning(), { type: "open-ideas" }).slot).toEqual({
-      kind: "ideas",
-      picked: null,
-    });
+    expect(run(closedLearning(), { type: "open-ideas" }).slot).toEqual({ kind: "ideas" });
     const typed = run(learning(), ...keys("ㅇ", "ㅏ"), { type: "close-keyboard" });
     expect(run(typed, { type: "sent" }).slot).toEqual({ kind: "closed" });
     expect(run(learning(), ...keys("ㅇ"), { type: "sent" }).slot).toEqual({ kind: "keyboard" });
@@ -224,33 +221,20 @@ describe("휴대폰으로 바꿀 때 epoch (리뷰 #6)", () => {
 describe("보기 패널 (MC-U9)", () => {
   test("MC-U9. open-ideas 는 보기 슬롯을 열고 키보드 값은 돌아갈 곳으로 남는다", () => {
     const state = run(phone(), { type: "open-ideas" });
-    expect(state.slot).toEqual({ kind: "ideas", picked: null });
+    expect(state.slot).toEqual({ kind: "ideas" });
     expect(state.keyboard).toBe("phone");
   });
 
-  test("MC-U9. pick-idea 는 입력 칸을 채우고 picked를 표시하며 epoch를 올린다", () => {
-    const opened = run(learning(), { type: "open-ideas" });
-    const state = run(opened, { type: "pick-idea", index: 1, text: "물 주세요" });
-    expect(state.text).toBe("물 주세요");
-    expect(state.keys).toEqual(keysFromText("물 주세요"));
-    expect(state.slot).toEqual({ kind: "ideas", picked: 1 });
-    expect(state.inputEpoch).toBe(opened.inputEpoch + 1);
-  });
-
-  test("MC-U9. pick-idea 는 보내지 않는다 — 상태에 새 칸이 생기지 않고 보기 슬롯이 그대로다", () => {
-    const state = run(
-      learning(),
-      { type: "open-ideas" },
-      { type: "pick-idea", index: 0, text: "네" },
-    );
-    expect(Object.keys(state).sort()).toEqual(Object.keys(learning()).sort());
-    expect(state.slot.kind).toBe("ideas");
-  });
-
-  test("MC-U9. 최대 길이를 넘는 보기는 자른다", () => {
-    const max = CHAT_PLACEHOLDERS.messageMaxLength;
-    const state = run(learning(), { type: "pick-idea", index: 0, text: "가".repeat(max + 5) });
-    expect([...state.text]).toHaveLength(max);
+  test("IS-U1. idea-sent 는 판을 접고 입력 칸 · 키 · epoch를 건드리지 않는다(보기는 입력 칸을 거치지 않고 보낸다)", () => {
+    const typed = { ...learning(), text: "안", keys: keysFromText("안") };
+    const opened = run(typed, { type: "open-ideas" });
+    const state = run(opened, { type: "idea-sent" });
+    expect(state.slot).toEqual({ kind: "closed" });
+    expect(state.phoneFocus).toBe("blurred");
+    expect(state.underlay).toBe("none");
+    expect(state.text).toBe("안");
+    expect(state.keys).toEqual(keysFromText("안"));
+    expect(state.inputEpoch).toBe(opened.inputEpoch);
   });
 
   test("MC-U9. type-myself 는 슬롯을 키보드로 돌리고 직전 키보드를 그대로 둔다", () => {
@@ -269,7 +253,7 @@ describe("보낸 뒤 (MC-U10)", () => {
     text: "안녕",
     keys: keysFromText("안녕"),
     shifted: true,
-    slot: { kind: "ideas", picked: 0 },
+    slot: { kind: "ideas" },
     inputEpoch: 4,
   });
 

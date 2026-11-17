@@ -93,15 +93,8 @@ test("D1. 휴대폰 입력에 초점이 가면 입력 칸에 …-composer-pill-f
   expect(pill()?.className).toContain("messenger-chat-composer-pill-focused");
 });
 
-test("D1. 고른 답장 보기에는 chat-reply-option-picked가 달린다(학습 메신저와 공용 면)", () => {
-  mountChatOpen();
-  tapId(ids.ideasButton);
-  expect(classOf(ids.idea(0))).not.toContain("chat-reply-option-picked");
-
-  tapId(ids.idea(0));
-
-  expect(classOf(ids.idea(0))).toContain("chat-reply-option-picked");
-});
+// 「고른 답장 보기」 면(chat-reply-option-picked)은 방에서 없어졌습니다 — 보기를 누르면 바로 보냅니다(2026-11-17). 공용 면의 클래스는
+// 학습 메신저가 계속 쓰며 ChatReplyOption ui 테스트가 지킵니다.
 
 // ---------------------------------------------------------------- D2
 

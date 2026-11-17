@@ -97,6 +97,8 @@ export type MessengerChatCopy = {
   };
   readonly ideas: {
     readonly typeMyself: string;
+    /** 보기 낭독 끝에 붙는 동작 — 누르면 바로 보냅니다(2026-11-17). */
+    readonly send: string;
     readonly quote: (text: string) => string;
   };
   readonly report: {

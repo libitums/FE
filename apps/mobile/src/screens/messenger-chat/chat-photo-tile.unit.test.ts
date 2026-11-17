@@ -82,7 +82,7 @@ test("CV-U4 다시 그리기 확인 · 그 엽전 상점은 닫으면 방(겹침
 test("CV-U5 사진 보기를 열면 키보드 자리 · 보기 판을 접는다(낭독 누름처럼 로그 누름이 없어도)", () => {
   const open = {
     ...initialChatRoomState({ initial: "learning", toggle: "shown" }),
-    slot: { kind: "ideas", picked: null },
+    slot: { kind: "ideas" },
   } as const;
   const next = chatRoomReducer(open, openPhotoAction("m"));
   expect(next.overlay).toEqual({ kind: "photo", messageId: "m" });

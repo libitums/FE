@@ -10,6 +10,7 @@ export function ChatReplyOption({
   primary,
   lines,
   state,
+  action,
   testId,
   onPick,
 }: ChatReplyOptionProps): ReactNode {
@@ -21,7 +22,7 @@ export function ChatReplyOption({
       data-testid={testId}
       data-state={state}
       accessibility-element={true}
-      accessibility-label={chatReplyOptionLabel(primary, lines)}
+      accessibility-label={chatReplyOptionLabel(primary, lines, action)}
       accessibility-traits="button"
       bindtap={() => {
         "background only";

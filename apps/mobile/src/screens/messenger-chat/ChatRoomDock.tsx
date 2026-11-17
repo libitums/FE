@@ -28,7 +28,8 @@ export type ChatRoomDockProps = {
   /** 키보드 자리 높이(바깥 인셋 포함 총높이)와, 입력 칸이 잰 휴대폰 키보드 높이를 받는 곳입니다. */
   readonly keyboard: PhoneKeyboardHeight;
   readonly dispatch: (action: ChatRoomAction) => void;
-  readonly onSend: () => void;
+  /** 입력 칸의 글을 보냅니다. 답장 보기를 누르면 그 글을 줍니다. */
+  readonly onSend: (idea?: string) => void;
   /** 보내기 단추 종류(T4면 엽전 보내기)입니다. */
   readonly sendCost: SendCost;
   /** 입력 줄 바로 위 자리입니다(T2 마지막 무료 띠). 없으면 null. */
@@ -140,11 +141,11 @@ export function ChatRoomDock({
           sendEnabled={canSend(state.text)}
           sendCost={sendCost}
           onIdeas={() => dispatch({ type: ideasOpen ? "type-myself" : "open-ideas" })}
-          onSend={onSend}
+          onSend={() => onSend()}
           onPhoneInput={(value) => dispatch({ type: "phone-input", value })}
           onPhoneFocus={(focus) => dispatch({ type: "phone-focus", focus })}
           onPhoneKeyboardHeight={keyboard.measure}
-          onConfirm={onSend}
+          onConfirm={() => onSend()}
           onOpenKeyboard={() => dispatch({ type: "open-keyboard" })}
         />
         {plan.toggle === "shown" && state.slot.kind !== "closed" ? (
@@ -168,10 +169,9 @@ export function ChatRoomDock({
           <ReplyIdeasPanel
             quote={lastTheirText(thread.messages)}
             ideas={thread.ideas}
-            picked={state.slot.kind === "ideas" ? state.slot.picked : null}
-            onPick={(index) => {
+            onSend={(index) => {
               const idea = thread.ideas[index];
-              if (idea !== undefined) dispatch({ type: "pick-idea", index, text: idea.ko });
+              if (idea !== undefined) onSend(idea.ko);
             }}
             onTypeMyself={() => dispatch({ type: "type-myself" })}
             bottomInset={edges.bottom}
