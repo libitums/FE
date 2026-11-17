@@ -8,7 +8,7 @@ import { Overlay } from "@libitums/ui-lynx/overlay";
 
 import { ChatTextBubble } from "../../components/chat/ChatMessageRow";
 import { screenHeightFrom } from "../../lib/learning-density";
-import { safeAreaInsetsFrom } from "../../lib/safe-area";
+import { safeAreaInsetsFrom, sheetBottomInsetFrom } from "../../lib/safe-area";
 import { useUiCopy } from "../../lib/ui-copy";
 import { newFriendTestIds as ids } from "./new-friend.contract";
 import type { NewFriendSheetProps } from "./new-friend.contract";
@@ -53,7 +53,10 @@ export function NewFriendSheet({
   const still = timeline.face === "still";
   const replyState = replyButtonStateOf(phase);
   // 큰 글자에서 판이 화면 밖으로 넘치지 않게 px 상한을 걸고, 본문만 스크롤합니다(접근성 C1). 띠 · 얼굴 · 단추 줄은 고정입니다.
-  const insets = safeAreaInsetsFrom(useGlobalProps());
+  const globalProps = useGlobalProps();
+  const insets = safeAreaInsetsFrom(globalProps);
+  // 단추 줄 아래 여백 16에 아래 시스템 바(Android 3버튼 · 제스처)를 더합니다 — CSS `env()`는 Lynx에서 0입니다(ADR-0044 D3 개정).
+  const bottomInset = sheetBottomInsetFrom(globalProps);
   const maxHeight = sheetMaxHeightOf({
     screenHeight: screenHeightFrom(typeof SystemInfo === "undefined" ? undefined : SystemInfo),
     insetTop: insets.top,
@@ -228,6 +231,7 @@ export function NewFriendSheet({
         <view
           className="new-friend-actions"
           data-testid={ids.actions}
+          style={{ paddingBottom: `${16 + bottomInset}px` }}
           bindlayoutchange={budget.onFixedLayout("actions")}
         >
           <view

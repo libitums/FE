@@ -19,36 +19,43 @@ function renderSheet() {
   return render(<EpisodeSurveySheet episodeTitle="Tutorial" onAnswer={vi.fn()} onSkip={vi.fn()} />);
 }
 
-test("[UC1] tappableBottomInset 48 → episode-survey-inset 높이 48px, 시트 내용의 마지막 자식(건너뛰기 뒤)", () => {
-  setGlobalProps({ tappableBottomInset: 48 });
+// 2026-11-17: 시트 아래 비우기는 시트마다가 아니라 `AppBottomSheet`가 패널 맨 아래에서 진다(ADR-0044 D3 개정).
+test("[UC1] Android 3버튼(아래 48) → 시트 패널 맨 아래 48 비움, 건너뛰기가 내용의 마지막", () => {
+  setGlobalProps({
+    safeAreaInsets: { top: 0, bottom: 48, left: 0, right: 0 },
+    tappableBottomInset: 48,
+  });
   renderSheet();
 
-  const inset = screen.getByTestId("episode-survey-inset");
+  const inset = screen.getByTestId("ui-lynx-bottom-sheet-inset");
   expect(inset.getAttribute("style")).toMatch(/height:\s*48px/);
-  // 큰 글자 배율로 시트가 넘쳐도 상자가 줄지 않아야 건너뛰기가 시스템 바 쪽으로 내려가지 않습니다.
-  expect(inset.getAttribute("style")).toMatch(/flex-shrink:\s*0/);
-
-  const skip = screen.getByTestId("episode-survey-skip");
-  const content = screen.getByTestId("ui-lynx-bottom-sheet-content");
-  const children = Array.from(content.children);
-  expect(children[children.length - 1]).toBe(inset);
-  expect(children.indexOf(skip)).toBeGreaterThanOrEqual(0);
-  expect(children.indexOf(skip)).toBeLessThan(children.indexOf(inset));
-});
-
-test("[UC2] tappableBottomInset 키 없음(iOS · 제스처) → 상자 없음, 건너뛰기가 마지막", () => {
-  setGlobalProps({ safeAreaInsets: { top: 0, bottom: 34, left: 0, right: 0 } });
-  renderSheet();
-
-  expect(screen.queryByTestId("episode-survey-inset")).toBeNull();
+  // 내용 자리(건너뛰기) 뒤, 패널 맨 아래에 섭니다.
+  const contentBox = screen.getByTestId("ui-lynx-bottom-sheet-content");
+  expect(contentBox.contains(inset)).toBe(false);
+  expect(contentBox.compareDocumentPosition(inset) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   const content = screen.getByTestId("ui-lynx-bottom-sheet-content");
   const children = Array.from(content.children);
   expect(children[children.length - 1]).toBe(screen.getByTestId("episode-survey-skip"));
 });
 
-test("[UC2b] tappableBottomInset 0 → 상자 없음", () => {
-  setGlobalProps({ tappableBottomInset: 0 });
+test("[UC2] iOS(키 없음) → 빈 자리 없음, 건너뛰기가 마지막", () => {
+  setGlobalProps({ safeAreaInsets: { top: 0, bottom: 34, left: 0, right: 0 } });
   renderSheet();
 
-  expect(screen.queryByTestId("episode-survey-inset")).toBeNull();
+  expect(screen.queryByTestId("ui-lynx-bottom-sheet-inset")).toBeNull();
+  const content = screen.getByTestId("ui-lynx-bottom-sheet-content");
+  const children = Array.from(content.children);
+  expect(children[children.length - 1]).toBe(screen.getByTestId("episode-survey-skip"));
+});
+
+test("[UC2b] Android 제스처(아래 24) → 24 비움", () => {
+  setGlobalProps({
+    safeAreaInsets: { top: 0, bottom: 24, left: 0, right: 0 },
+    tappableBottomInset: 0,
+  });
+  renderSheet();
+
+  expect(screen.getByTestId("ui-lynx-bottom-sheet-inset").getAttribute("style")).toMatch(
+    /height:\s*24px/,
+  );
 });

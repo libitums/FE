@@ -40,3 +40,14 @@ export function tappableBottomInsetFrom(globalProps: unknown): number {
   if (typeof globalProps !== "object" || globalProps === null) return 0;
   return edge((globalProps as { tappableBottomInset?: unknown }).tappableBottomInset);
 }
+
+/**
+ * 바텀 시트가 패널 아래에 비울 높이입니다(ADR-0044 D3 개정 2026-11-17). Android 호스트(`tappableBottomInset` 키를 넘김)는 아래
+ * 시스템 바 전체 — 3버튼 48 · 제스처 핸들 24 — 를 비웁니다. 제스처 핸들은 터치를 가로채지 않지만 시트 버튼 아래를 가립니다.
+ * iOS는 0이라 모양이 그대로입니다(홈 인디케이터는 터치를 가로채지 않고 패널 기본 여백 20이 집니다). 던지지 않습니다.
+ */
+export function sheetBottomInsetFrom(globalProps: unknown): number {
+  if (typeof globalProps !== "object" || globalProps === null) return 0;
+  if (!("tappableBottomInset" in globalProps)) return 0;
+  return Math.max(safeAreaInsetsFrom(globalProps).bottom, tappableBottomInsetFrom(globalProps));
+}

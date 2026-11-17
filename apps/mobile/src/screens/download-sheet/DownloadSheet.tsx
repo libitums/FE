@@ -1,8 +1,8 @@
 import type { ReactNode } from "@lynx-js/react";
 
-import { BottomSheet } from "@libitums/ui-lynx/bottom-sheet";
 import type { BottomSheetAction } from "@libitums/ui-lynx/bottom-sheet";
 
+import { AppBottomSheet } from "../../components/app-bottom-sheet/AppBottomSheet";
 import { useUiCopy } from "../../lib/ui-copy";
 import { useLayerBack } from "../../lib/use-back-handler";
 import { catalogUnitNodeTitle } from "../journey-map/catalog-map";
@@ -66,7 +66,7 @@ export function DownloadSheet({
 
   return (
     <view data-testid="download-sheet">
-      <BottomSheet
+      <AppBottomSheet
         title={view.title}
         description={view.description}
         closeAccessibilityLabel={copy.close}
@@ -74,7 +74,7 @@ export function DownloadSheet({
         ondismiss={onClose}
       >
         <DownloadSheetBody state={state} />
-      </BottomSheet>
+      </AppBottomSheet>
     </view>
   );
 }

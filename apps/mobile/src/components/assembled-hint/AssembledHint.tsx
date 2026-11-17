@@ -3,8 +3,8 @@ import type { ReactNode } from "@lynx-js/react";
 
 import { color } from "@libitums/design-tokens";
 import light from "@libitums/icons/lynx/light";
-import { BottomSheet } from "@libitums/ui-lynx/bottom-sheet";
 
+import { AppBottomSheet } from "../app-bottom-sheet/AppBottomSheet";
 import { announce } from "../../lib/accessibility";
 import { playAudio, stopAudio } from "../../lib/audio";
 import { playSound } from "../../lib/sound-effects";
@@ -135,7 +135,7 @@ export function AssembledHintSheet({ hint, state }: AssembledHintSheetProps): Re
   ];
   return (
     <view className="assembled-hint-sheet" data-testid="assembled-hint-sheet">
-      <BottomSheet
+      <AppBottomSheet
         title={copy.title}
         closeAccessibilityLabel={copy.close}
         actions={actions}

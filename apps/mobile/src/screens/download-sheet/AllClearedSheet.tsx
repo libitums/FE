@@ -1,8 +1,7 @@
 import { useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
-import { BottomSheet } from "@libitums/ui-lynx/bottom-sheet";
-
+import { AppBottomSheet } from "../../components/app-bottom-sheet/AppBottomSheet";
 import { useUiCopy } from "../../lib/ui-copy";
 import { useLayerBack } from "../../lib/use-back-handler";
 
@@ -34,7 +33,7 @@ export function AllClearedSheet({
   const [waiting, setWaiting] = useState(false);
   return (
     <view data-testid="all-cleared-sheet">
-      <BottomSheet
+      <AppBottomSheet
         title={text.title}
         description={text.description}
         closeAccessibilityLabel={copy.close}
@@ -61,7 +60,7 @@ export function AllClearedSheet({
             {text.autoNote}
           </text>
         </view>
-      </BottomSheet>
+      </AppBottomSheet>
     </view>
   );
 }

@@ -38,7 +38,9 @@ describe("new-friend.css (MC2-U26)", () => {
     const panel = rules(css).find((rule) => rule.selector === ".new-friend-panel");
     expect(panel?.body).not.toContain("padding-bottom");
     const actions = rules(css).find((rule) => rule.selector === ".new-friend-actions");
-    expect(actions?.body).toContain("env(safe-area-inset-bottom)");
+    // 아래 시스템 바는 CSS `env()`(Lynx에서 0)가 아니라 컴포넌트가 인라인으로 더한다(NF-IN1, ADR-0044 D3 개정 2026-11-17).
+    expect(actions?.body).toContain("padding");
+    expect(actions?.body).not.toContain("env(safe-area-inset-bottom)");
   });
 
   test("MC2-U26. still 클래스(얼굴 · 점)는 animation: none 이다", () => {

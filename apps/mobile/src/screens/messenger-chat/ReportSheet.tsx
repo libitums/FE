@@ -1,7 +1,6 @@
 import type { ReactNode } from "@lynx-js/react";
 
-import { BottomSheet } from "@libitums/ui-lynx/bottom-sheet";
-
+import { AppBottomSheet } from "../../components/app-bottom-sheet/AppBottomSheet";
 import { useUiCopy } from "../../lib/ui-copy";
 import { CheckRow } from "./CheckRow";
 import { canSendReport } from "./chat-rules";
@@ -23,7 +22,7 @@ export function ReportSheet({ reasons, onToggle, onSend, onClose }: ReportSheetP
   const copy = useUiCopy().messengerChat.report;
   return (
     <view data-testid={ids.reportSheet}>
-      <BottomSheet
+      <AppBottomSheet
         title={copy.title}
         description={copy.description}
         closeAccessibilityLabel={copy.close}
@@ -49,7 +48,7 @@ export function ReportSheet({ reasons, onToggle, onSend, onClose }: ReportSheetP
             );
           })}
         </view>
-      </BottomSheet>
+      </AppBottomSheet>
     </view>
   );
 }
