@@ -38,8 +38,11 @@ export function PlansScreen({
   const [period, setPeriod] = useState<PlanPeriod>("monthly");
   const [picked, setPicked] = useState<PlanId | null>(null);
   const { notice, run } = usePlanRequest(text.unavailable);
-  const cardsOf = (of: PlanPeriod) =>
+  const cardsFor = (of: PlanPeriod) =>
     catalog === null ? [] : planCardsFor(catalog, "settings", of, offers, region);
+  // 월 · 연 카드를 한 번씩만 만듭니다 — 연간 할인 줄이 두 기간을 함께 봅니다.
+  const both = { monthly: cardsFor("monthly"), yearly: cardsFor("yearly") };
+  const cardsOf = (of: PlanPeriod) => both[of];
   const cards = cardsOf(period);
   const selectedId = picked ?? initialPlanSelection(cards, focus);
   const selected = cards.find((card) => card.id === selectedId);
