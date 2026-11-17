@@ -1,9 +1,9 @@
-# 출시 빌드 번호 Android 1.4.0 (17) · iOS 1.1.0 (18) — 01
+# 출시 빌드 번호 Android 1.4.1 (17) · iOS 1.1.1 (18) — 01
 
 ## 실행 조건
 
 - 상태: 미측정 — 렌더링 · 메모리 캡처(`performance:capture`)를 돌리지 않았습니다.
-- 기능 PR: Android `versionCode` 16 → 17 · iOS 빌드 17 → 18(버전 이름 1.4.0 · 1.1.0 그대로). 해금 기록 계정별 저장 · 채팅 사진 보기 · 상단 안전 영역 수정을 담은 출시 번호입니다.
+- 기능 PR: Android `versionCode` 16 → 17 · iOS 빌드 17 → 18 · 버전 이름 1.4.0 → 1.4.1 · 1.1.0 → 1.1.1. 해금 기록 계정별 저장 · 채팅 사진 보기 · 상단 안전 영역 수정을 담은 출시 번호입니다.
 - 대상 commit: `main` 위의 `chore/release-vc17-ios18`
 - 기기: 실행하지 않음
 - OS: 실행하지 않음
@@ -17,7 +17,7 @@
 ## 이 변경이 무엇을 건드렸나
 
 - `apps/android/app/build.gradle`의 `versionCode` · `versionName`, 출시 설정 검사 · `ReleaseIdentityTest`의 Play 업로드 기준(15 → 16), README 표, 산출물 검사 정규식.
-- `apps/ios/Host.xcodeproj/project.pbxproj`의 `CURRENT_PROJECT_VERSION`(Debug · Release 두 곳).
+- `apps/ios/Host.xcodeproj/project.pbxproj`의 `CURRENT_PROJECT_VERSION` · `MARKETING_VERSION`(Debug · Release 두 곳).
 - 번들(`main.lynx.bundle`) · 네이티브 코드는 바뀌지 않았습니다.
 
 ## 분석 결과
