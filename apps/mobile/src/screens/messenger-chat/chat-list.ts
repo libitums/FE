@@ -41,9 +41,12 @@ export function orderChatRooms(rooms: readonly ChatRoomSummary[]): readonly Chat
  * NEW 줄: 열린 방이고, 방금 해금돼 아직 열어 보지 않았거나(isNew) 메시지가 아직 없어 첫 인사를 미리 보이는 방(ADR-0113 추가
  * 2026-11-17). 안 읽은 수 · 탭 NEW(`messenger-guide`)는 isNew만 봅니다 — 첫 인사 줄은 세지 않습니다.
  */
-export function newBadgeShown(room: ChatRoomSummary): boolean {
+export function newBadgeShown(
+  room: ChatRoomSummary,
+  preview: ChatRowPreview = chatRowPreview(room),
+): boolean {
   if (room.access.kind !== "open") return false;
-  return room.isNew || chatRowPreview(room).kind === "greeting";
+  return room.isNew || preview.kind === "greeting";
 }
 
 const firstLineOf = (characterId: string): string | null =>

@@ -91,7 +91,7 @@ export function ChatListRow({ room, now, onOpen }: ChatListRowProps): ReactNode 
   const time = locked || room.lastMessage === null ? null : chatTimeOf(room.updatedAt, now);
   const when = time === null ? null : timeText(time, copy);
 
-  const isNew = newBadgeShown(room);
+  const isNew = newBadgeShown(room, preview);
 
   const rowLabel = locked
     ? copy.list.lockedRowLabel(counterpart.name, text)
