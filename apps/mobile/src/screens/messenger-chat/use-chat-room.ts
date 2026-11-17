@@ -227,13 +227,15 @@ export function useChatRoom({
     const previous = previousOverlay.current;
     previousOverlay.current = state.overlay;
     if (previous === state.overlay) return;
-    // Android는 누른 시트 단추가 사라지면 초점을 숨은 <input>으로 옮겨 휴대폰 키보드를 띄웠습니다(ADR-0125 · 0126 기기 확인).
-    // 휴대폰 키보드 모드가 아니면 겹침이 부모로 닫힌 다음 프레임에 그 초점을 내립니다(부모가 사이드바인 시트도 같습니다).
-    const closed = previous.kind !== "none" && state.overlay.kind === overlayParent(previous).kind;
-    const blurOnClose = closed && stateRef.current.keyboard !== "phone";
+    // Android는 사라진 시트 단추의 초점을 숨은 <input>으로 옮겨 키보드를 띄웁니다(ADR-0125 · 0126) — 닫힌 다음 프레임에 내립니다(휴대폰
+    // 모드 제외). 비우기처럼 부모(사이드바)까지 한꺼번에 닫히면 휴대폰 모드여도 내리고 사이드바를 연 자리로 돌립니다(2026-11-17).
+    const parent = overlayParent(previous);
+    const dismissed = parent.kind !== "none" && state.overlay.kind === "none";
+    const closed = previous.kind !== "none" && (state.overlay.kind === parent.kind || dismissed);
+    const blurOnClose = closed && (dismissed || stateRef.current.keyboard !== "phone");
     let call: (() => void) | null = null;
     if (closed) {
-      const origin = focusOriginOf(previous);
+      const origin = focusOriginOf(dismissed ? parent : previous);
       if (origin !== null) call = () => restoreAccessibilityFocus(originTestId[origin]);
     } else if (previous.kind === "none" && state.overlay.kind === "more-menu") {
       // 추천 답변이 꺼졌으면 첫 항목은 Report입니다(ADR-0126 · 0129).
@@ -249,8 +251,7 @@ export function useChatRoom({
     return () => clearTimeout(handle);
   }, [state.overlay]);
 
-  // 시스템 뒤로가기의 단 하나뿐인 주인입니다(리뷰 #8 — 겹침 화면들은 등록하지 않습니다).
-  // 순서: 겹침 → 열린 키보드 · 보기 패널 → (화면의 뒤로가기) 방 나가기.
+  // 시스템 뒤로가기의 단 하나뿐인 주인(리뷰 #8): 겹침 → 열린 키보드 · 보기 패널 → (화면의 뒤로가기) 방 나가기.
   const overlayOpen = state.overlay.kind !== "none";
   const slotOpen = state.slot.kind !== "closed" && !blocked;
   // 입력이 막히면(서버가 방 도중에 막을 수 있다) 열려 있던 키보드 · 보기 판 · 「…」 메뉴를 접습니다 — 독은 상태 줄만 남아
