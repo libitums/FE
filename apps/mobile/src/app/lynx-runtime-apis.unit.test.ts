@@ -55,7 +55,7 @@ export const MISSING: readonly {
   },
   {
     name: "TextEncoder · TextDecoder",
-    pattern: /\bnew\s+Text(En|De)coder\s*\(/,
+    pattern: /\bnew\s+Text(En|De)coder\b/,
     instead: "직접 UTF-8 셈 / 호스트 모듈",
   },
   {
@@ -156,6 +156,7 @@ test("LR2 금지 목록은 호출 꼴을 잡고, 주석 속 이름 · 다른 객
   expect(hits("const copy = structuredClone(state);")).toEqual(["structuredClone"]);
   expect(hits("queueMicrotask(() => flush());")).toEqual(["queueMicrotask"]);
   expect(hits("new TextEncoder().encode(s)")).toEqual(["TextEncoder · TextDecoder"]);
+  expect(hits("const enc = new TextDecoder;")).toEqual(["TextEncoder · TextDecoder"]);
   expect(hits("const raw = atob(b64);")).toEqual(["atob · btoa"]);
   expect(hits("const id = crypto.randomUUID();")).toEqual(["crypto"]);
   expect(hits("const t0 = performance.now();")).toEqual(["performance.now"]);
