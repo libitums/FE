@@ -33,8 +33,11 @@ export type ChatOverlay =
   | { readonly kind: "unsent"; readonly messageId: string }
   | {
       readonly kind: "coin-shop";
-      readonly from: "sidebar" | "ask-photo" | "ask-voice" | "send";
+      readonly from: "sidebar" | "ask-photo" | "ask-voice" | "send" | "photo";
     }
+  /** 방의 사진 보기 · 그 사진의 다시 그리기 확인(ADR-0150 2026-11-17 추가). `messageId`는 사진 줄 id입니다. */
+  | { readonly kind: "photo"; readonly messageId: string }
+  | { readonly kind: "photo-redraw"; readonly messageId: string }
   | { readonly kind: "feedback-mode"; readonly selected: ChatFeedbackMode }
   | {
       readonly kind: "birth-year";
@@ -82,6 +85,12 @@ export type ChatRoomAction =
   | { readonly type: "select-feedback-mode"; readonly mode: ChatFeedbackMode };
 
 const NO_OVERLAY: ChatOverlay = { kind: "none" };
+
+/** 방의 사진 줄을 눌러 사진 보기를 엽니다. */
+export const openPhotoAction = (messageId: string): ChatRoomAction => ({
+  type: "open-overlay",
+  overlay: { kind: "photo", messageId },
+});
 const SIDEBAR: ChatOverlay = { kind: "sidebar" };
 
 export function initialChatRoomState(plan: KeyboardPlan): ChatRoomState {
@@ -202,7 +211,16 @@ export function chatRoomReducer(state: ChatRoomState, action: ChatRoomAction): C
     case "sent":
       return sent(state);
     case "open-overlay":
-      return { ...state, overlay: action.overlay };
+      // 사진 보기는 방 전체를 덮어 보기 판 · 키보드 자리를 접고 엽니다(휴대폰 키보드는 dispatch가 먼저 내립니다).
+      return action.overlay.kind === "photo"
+        ? {
+            ...state,
+            slot: { kind: "closed" },
+            underlay: "none",
+            phoneFocus: "blurred",
+            overlay: action.overlay,
+          }
+        : { ...state, overlay: action.overlay };
     case "close-overlay":
       return { ...state, overlay: overlayParent(state.overlay) };
     case "toggle-report-reason":

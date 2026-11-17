@@ -223,6 +223,8 @@ export const messengerChatTestIds = {
   typing: room("typing"),
   photoPending: room("photo-pending"),
   photo: room("photo"),
+  /** 다 만든 사진의 누름 자리 — 사진 보기를 엽니다(ADR-0150 2026-11-17 추가). */
+  photoOpen: room("photo-open"),
   voicePending: room("voice-pending"),
   voice: room("voice"),
   voicePlay: room("voice-play"),
