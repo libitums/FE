@@ -7,6 +7,7 @@ import { OptionSelector } from "@libitums/ui-lynx/option-selector";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
 
 import type { PlanId } from "../../lib/plans-api";
+import { yearlySavingPercent } from "../../lib/provisional-prices";
 import { useUiCopy } from "../../lib/ui-copy";
 import { useScreenBack } from "../../lib/use-back-handler";
 import { PlanCard } from "./PlanCard";
@@ -29,6 +30,7 @@ export function PlansScreen({
   onSelect,
   onRestore,
   onBack,
+  region = "US",
 }: PlansScreenProps): ReactNode {
   useScreenBack(onBack);
   const copy = useUiCopy();
@@ -36,9 +38,19 @@ export function PlansScreen({
   const [period, setPeriod] = useState<PlanPeriod>("monthly");
   const [picked, setPicked] = useState<PlanId | null>(null);
   const { notice, run } = usePlanRequest(text.unavailable);
-  const cards = catalog === null ? [] : planCardsFor(catalog, "settings", period, offers);
+  const cardsFor = (of: PlanPeriod) =>
+    catalog === null ? [] : planCardsFor(catalog, "settings", of, offers, region);
+  // 월 · 연 카드를 한 번씩만 만듭니다 — 연간 할인 줄이 두 기간을 함께 봅니다.
+  const both = { monthly: cardsFor("monthly"), yearly: cardsFor("yearly") };
+  const cardsOf = (of: PlanPeriod) => both[of];
+  const cards = cardsOf(period);
   const selectedId = picked ?? initialPlanSelection(cards, focus);
   const selected = cards.find((card) => card.id === selectedId);
+  // 연간 할인 줄 — 고른 요금제의 월 · 연 임시 가격으로 셉니다(지역마다 배수가 다름). 스토어 가격이면 일반 문구.
+  const saving = yearlySavingPercent(
+    cardsOf("monthly").find((card) => card.id === selectedId)?.shown ?? null,
+    cardsOf("yearly").find((card) => card.id === selectedId)?.shown ?? null,
+  );
 
   return (
     <view className="plans-screen" data-testid={ids.screen}>
@@ -92,7 +104,7 @@ export function PlansScreen({
                   if (value !== undefined) setPeriod(value);
                 }}
               />
-              <text className="plans-screen-caption">{text.yearlyNote}</text>
+              <text className="plans-screen-caption">{text.yearlyNote(saving)}</text>
               <view className="plans-screen-actions">
                 {selected === undefined ? null : (
                   <view

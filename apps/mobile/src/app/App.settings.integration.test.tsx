@@ -34,7 +34,7 @@ afterEach(() => {
 // ------------------------------------------------------------------------- IT1
 
 // 2026-11-17 일반 회원 개방: 로그인한 회원은 학습 묶음 끝에 「Chats」 줄(ADR-0126)이 선다.
-test("[IT1] 설정 탭을 열면 학습 토글 둘(로마자 · 진동) · Chats와 계정 항목 여덟, 계정 동작 둘이 순서대로 표시된다", async () => {
+test("[IT1] 설정 탭을 열면 학습 토글 둘(로마자 · 진동) · Chats · Plans(요금제 미리보기 2026-11-17)와 계정 항목 여덟, 계정 동작 둘이 순서대로 표시된다", async () => {
   await renderSignedInApp(<App progressSeed={legacyPassedSeed} />);
   openSettingsTab();
 
@@ -46,6 +46,7 @@ test("[IT1] 설정 탭을 열면 학습 토글 둘(로마자 · 진동) · Chats
     "ui-lynx-settings-group-item-show-choice-romanization",
     "ui-lynx-settings-group-item-vibration",
     "ui-lynx-settings-group-item-chats",
+    "ui-lynx-settings-group-item-plans",
     "ui-lynx-settings-group-item-profile",
     "ui-lynx-settings-group-item-learner-profile",
     "ui-lynx-settings-group-item-language",

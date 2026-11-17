@@ -7,6 +7,7 @@ import { Dialog } from "@libitums/ui-lynx/dialog";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
 
 import { coinIcon } from "../../components/coin-icon";
+import { purchaseIntentOf, purchaseRegion, reportPurchaseIntent } from "../../lib/purchase-intent";
 import { safeAreaInsetsFrom } from "../../lib/safe-area";
 import { lightStatusBarIcons } from "../../lib/status-bar-icons";
 import { useLayerBack } from "../../lib/use-back-handler";
@@ -15,8 +16,8 @@ import {
   coinPacks,
   findCoinPack,
   formatCoinCount,
-  formatPrice,
   initialCoinPackId,
+  packPriceOf,
   type CoinPackId,
 } from "./coin-shop";
 import { CoinPackCard } from "./CoinPackCard";
@@ -38,12 +39,15 @@ export type CoinShopScreenProps = {
    * 한 겹침에 층이 둘 올라가지 않게 합니다.
    */
   readonly ownsBack?: boolean;
+  /** 연 자리 — 머리 엽전 칩은 학습(기본), 채팅방 겹침은 대화. 구매 의향 이벤트의 `surface`입니다. */
+  readonly surface?: "learning" | "chat";
 };
 
 export function CoinShopScreen({
   coinBalance,
   onClose,
   ownsBack = true,
+  surface = "learning",
 }: CoinShopScreenProps): ReactNode {
   const copy = useUiCopy();
   const shop = copy.coinShop;
@@ -52,6 +56,9 @@ export function CoinShopScreen({
   const insets = safeAreaInsetsFrom(useGlobalProps());
   const [selectedId, setSelectedId] = useState<CoinPackId>(initialCoinPackId);
   const selected = findCoinPack(selectedId);
+  // 가격 지역은 요금제 결선이 적은 학습자 나라(ADR-0144 추가 2026-11-17).
+  const region = purchaseRegion();
+  const selectedPrice = packPriceOf(selected, region);
   // 결제 준비 중 안내입니다. 이 화면 위에 겹칠 뿐 화면 전환이 아닙니다.
   const [noticeOpen, setNoticeOpen] = useState(false);
 
@@ -61,6 +68,19 @@ export function CoinShopScreen({
   };
   const openNotice = () => {
     "background only";
+    // 결제 전이라 「결제 준비 중」 안내로 끝나도 구매 의향은 남깁니다.
+    reportPurchaseIntent(
+      purchaseIntentOf({
+        surface,
+        placement: "coin_shop",
+        kind: "pack",
+        product: selected.productId,
+        period: "once",
+        shown: selectedPrice,
+        region,
+        preview: true,
+      }),
+    );
     setNoticeOpen(true);
   };
   const closeNotice = () => {
@@ -143,6 +163,7 @@ export function CoinShopScreen({
           <view className="coin-shop-screen-packs">
             {coinPacks.map((pack) => (
               <CoinPackCard
+                region={region}
                 key={pack.id}
                 pack={pack}
                 selected={pack.id === selectedId}
@@ -159,7 +180,7 @@ export function CoinShopScreen({
       >
         <view data-testid="coin-shop-screen-buy">
           <Button
-            label={shop.buy(formatPrice(selected.priceCents))}
+            label={shop.buy(selectedPrice.text)}
             variant="brand"
             size="xl"
             width="fill"

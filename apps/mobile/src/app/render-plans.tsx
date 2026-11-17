@@ -24,6 +24,7 @@ export function renderPlans(
         plans === undefined ? Promise.resolve({ kind: "unavailable" }) : plans.onRestore()
       }
       onBack={plans?.onBack ?? wiring.onExitSettingsStack}
+      region={plans?.region ?? "US"}
     />
   );
 }

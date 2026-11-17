@@ -1,6 +1,7 @@
 import { expect, test, vi } from "vitest";
 import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
+import { resetPurchaseContextForTests, setPurchaseContext } from "../../lib/purchase-intent";
 import { lightStatusBarIcons } from "../../lib/status-bar-icons";
 import { CoinShopScreen } from "./CoinShopScreen";
 
@@ -77,6 +78,33 @@ test("[CS-U4] 사기 → 「결제 준비 중」 안내가 뜨고 뒤쪽은 낭�
 
   expect(screen.queryByTestId("coin-shop-screen-notice")).toBeNull();
   expect(props.onClose).not.toHaveBeenCalled();
+});
+
+test("[CS-PI1] 가격 지역 VN이면 팩 · 버튼이 임시 추천 가격(₫)이고, 사기는 안내와 함께 purchase_intent를 낸다", () => {
+  const events: unknown[] = [];
+  setPurchaseContext({ region: "VN", sink: (event) => events.push(event) });
+  render(<CoinShopScreen {...fixture()} surface="chat" />);
+
+  expect(screen.getByTestId("coin-shop-pack-bundle")).toHaveTextContent("79.000 ₫");
+  expect(screen.getByTestId("coin-shop-screen-buy")).toHaveTextContent("149.000 ₫");
+  fireEvent.tap(buyButton(), {});
+
+  expect(screen.getByTestId("coin-shop-screen-notice")).toBeTruthy();
+  expect(events).toEqual([
+    expect.objectContaining({
+      name: "purchase_intent",
+      surface: "chat",
+      placement: "coin_shop",
+      kind: "pack",
+      product: "duru.coins.1200.v1",
+      period: "once",
+      price: "149000",
+      currency: "VND",
+      country: "VN",
+      preview: true,
+    }),
+  ]);
+  resetPurchaseContextForTests();
 });
 
 test("[CS-U5] 닫기 → onClose", () => {

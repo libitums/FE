@@ -52,7 +52,7 @@ describe("SB-U4 카드", () => {
     ]);
   });
 
-  test("가격은 그 기간 상품의 스토어 가격, 다리가 없으면 null · BEST는 서버 highlight", () => {
+  test("가격은 그 기간 상품의 스토어 가격, 다리가 없으면 임시 추천 가격 · BEST는 서버 highlight", () => {
     const yearly = planCardsFor(catalogV1, "messenger", "yearly", usdOffers);
     expect(yearly.map((card) => [card.id, card.productId, card.price, card.best])).toEqual([
       ["chat_plus", "duru.chatplus.yearly.v1", "$69.90", false],
@@ -64,7 +64,8 @@ describe("SB-U4 카드", () => {
         id: "unlimited_tickets",
         best: false,
         productId: "duru.tickets.monthly.v1",
-        price: null,
+        price: "$3.99",
+        shown: { amount: 3.99, currency: "USD", text: "$3.99" },
         benefits: [{ kind: "unlimited-lessons" }],
       },
     ]);
@@ -95,4 +96,26 @@ test("SB-U6 꺼진 구매 다리 — 열 수 없음, 가격 없음, 구매 · �
     kind: "unavailable",
   });
   expect(await disabledPurchaseBridge.restore()).toEqual({ kind: "unavailable" });
+});
+
+describe("PP-U5 스토어 가격이 없으면 임시 추천 가격(ADR-0144 추가 2026-11-17)", () => {
+  test("스토어 가격이 없으면 지역 임시 가격을 보이고 금액 · 통화를 싣는다", () => {
+    const [tickets] = planCardsFor(catalogV1, "tickets", "monthly", null, "VN");
+    expect(tickets?.price).toBe("49.000 ₫");
+    expect(tickets?.shown).toEqual({ amount: 49000, currency: "VND", text: "49.000 ₫" });
+    const yearly = planCardsFor(catalogV1, "messenger", "yearly", null, "ID");
+    expect(yearly.map((card) => card.price)).toEqual(["Rp 549.000", "Rp 990.000"]);
+  });
+
+  test("스토어 가격이 있으면 언제나 스토어가 이긴다(임시 금액은 싣지 않음)", () => {
+    const [tickets] = planCardsFor(catalogV1, "tickets", "monthly", usdOffers, "VN");
+    const store = usdOffers.find((offer) => offer.productId === tickets?.productId);
+    expect(tickets?.price).toBe(store?.price);
+    expect(tickets?.shown).toBeNull();
+  });
+
+  test("지역을 주지 않으면 미국 달러", () => {
+    const [tickets] = planCardsFor(catalogV1, "tickets", "monthly", null);
+    expect(tickets?.price).toBe("$3.99");
+  });
 });

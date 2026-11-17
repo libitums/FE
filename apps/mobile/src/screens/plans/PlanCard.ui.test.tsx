@@ -10,7 +10,8 @@ import { catalogV1, usdOffers } from "./plans.test-support";
 afterEach(cleanup);
 
 const priced = planCardsFor(catalogV1, "settings", "monthly", usdOffers);
-const unpriced = planCardsFor(catalogV1, "settings", "yearly", null);
+// 스토어 목록에 상품이 없으면(승인 전 등) 가격이 비어 「Price shown in the store」입니다.
+const unpriced = planCardsFor(catalogV1, "settings", "yearly", []);
 
 test("SB-UI1a Premium — 이름 · BEST · 월 가격 · 혜택 셋, 고르면 data-selected와 낭독 Selected", () => {
   const onPress = vi.fn<() => void>();

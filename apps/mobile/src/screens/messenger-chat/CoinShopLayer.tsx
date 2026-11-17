@@ -20,5 +20,12 @@ export function CoinShopLayer({
   onClose,
   ownsBack = true,
 }: CoinShopLayerProps): ReactNode {
-  return <CoinShopScreen coinBalance={coinBalance} onClose={onClose} ownsBack={ownsBack} />;
+  return (
+    <CoinShopScreen
+      coinBalance={coinBalance}
+      onClose={onClose}
+      ownsBack={ownsBack}
+      surface="chat"
+    />
+  );
 }

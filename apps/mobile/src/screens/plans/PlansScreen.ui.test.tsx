@@ -52,7 +52,7 @@ test("SB-UI2a 제목 · 카드 셋(순서) · 처음 고름은 BEST · 주 단�
   expect(selected("premium")).toBe("true");
   expect(selected("chat_plus")).toBe("false");
   expect(screen.getByTestId(ids.continue)).toHaveTextContent("Continue with Premium");
-  expect(screen.getByTestId(ids.screen)).toHaveTextContent("Yearly: 2 months free");
+  expect(screen.getByTestId(ids.screen)).toHaveTextContent("Yearly: pay less per month");
   expect(screen.getByTestId(ids.price("premium"))).toHaveTextContent("$11.99 / month");
 });
 
@@ -73,7 +73,7 @@ test("SB-UI2c Yearly → 가격이 연간으로, Continue → onSelect(premium, 
     tap(ids.continue);
   });
   expect(onSelect).toHaveBeenCalledWith("premium", "yearly", "duru.premium.yearly.v1");
-  expect(screen.getByTestId(ids.notice)).toHaveTextContent("Purchases aren't available yet.");
+  expect(screen.getByTestId(ids.notice)).toHaveTextContent("Payments are coming soon");
 });
 
 test("SB-UI2d Restore → onRestore → 안내", async () => {
@@ -83,7 +83,7 @@ test("SB-UI2d Restore → onRestore → 안내", async () => {
     tap(ids.restore);
   });
   expect(onRestore).toHaveBeenCalledTimes(1);
-  expect(screen.getByTestId(ids.notice)).toHaveTextContent("Purchases aren't available yet.");
+  expect(screen.getByTestId(ids.notice)).toHaveTextContent("Payments are coming soon");
 });
 
 test("SB-UI2e 뒤로 단추 · 시스템 뒤로가기 모두 onBack", () => {

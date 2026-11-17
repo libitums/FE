@@ -4,9 +4,13 @@
 
 import { useEffect, useState } from "@lynx-js/react";
 
+import { sessionNeedsRefresh } from "../lib/account-deletion";
+import { loadAuthSession } from "../lib/auth-session";
 import { emitCompanionEvent } from "../lib/companion-events";
 import { plansFeatureEnabled } from "../lib/plans-flag";
 import { plansClient, type PlanId, type PlansCatalog, type PlansClient } from "../lib/plans-api";
+import { pricingRegionOf, type PricingRegion } from "../lib/provisional-prices";
+import { purchaseIntentOf, setPurchaseContext } from "../lib/purchase-intent";
 import {
   disabledPurchaseBridge,
   type PurchaseBridge,
@@ -21,6 +25,8 @@ import type { NavAction } from "./nav-state";
 
 export type PlansWiring = {
   readonly catalog: PlansCatalog | null;
+  /** 임시 추천 가격의 지역 — 학습자 프로필의 나라(ADR-0144 추가 2026-11-17). */
+  readonly region: PricingRegion;
   readonly offers: readonly StoreOffer[] | null;
   readonly openPlans: (placement: PlanPlacement, focus: PlanId | null) => void;
   readonly onSelect: (
@@ -39,30 +45,58 @@ export type PlansWiring = {
 
 const surfaceOf = (placement: PlanPlacement) => (placement === "messenger" ? "chat" : "learning");
 
+const SESSION_WAITS = 30;
+const SESSION_WAIT_MS = 1000;
+
 export function usePlans(
   signedIn: boolean,
   dispatch: (action: NavAction) => void,
   eventSink: EpisodeIntroEventSink,
+  learner: { readonly learnerRecord: { readonly countryCode: string } | null },
   client: () => PlansClient = plansClient,
   bridge: PurchaseBridge = disabledPurchaseBridge,
 ): PlansWiring | undefined {
   const enabled = plansFeatureEnabled() && signedIn;
+  const region = pricingRegionOf(learner.learnerRecord?.countryCode);
+
+  // 결선 밖에서 열리는 엽전 상점도 같은 지역 · sink로 가격을 고르고 의향을 냅니다.
+  useEffect(() => {
+    setPurchaseContext({ region, sink: eventSink });
+  }, [region, eventSink]);
   const [catalog, setCatalog] = useState<PlansCatalog | null>(null);
   const [offers, setOffers] = useState<readonly StoreOffer[] | null>(null);
 
   useEffect(() => {
     if (!enabled) return;
     let live = true;
-    void client()
-      .catalog()
-      .then((next) => {
-        if (live) setCatalog(next);
+    let waits = 0;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const load = () => {
+      void client()
+        .catalog()
+        .then((next) => {
+          if (live) setCatalog(next);
+        });
+      void bridge.offerings().then((next) => {
+        if (live) setOffers(next);
       });
-    void bridge.offerings().then((next) => {
-      if (live) setOffers(next);
-    });
+    };
+    // 부팅의 세션 갱신이 끝나기 전에 부르면 같은 refresh 토큰으로 갱신을 한 번 더 보내(Auth가 재사용으로 보고 세션을 끊을
+    // 수 있음) — 세션이 아직 만료 직전이면 1초씩 기다렸다가(최대 30번) 읽습니다.
+    const whenFresh = () => {
+      if (!live) return;
+      const session = loadAuthSession();
+      if (session !== null && sessionNeedsRefresh(session, Date.now()) && waits < SESSION_WAITS) {
+        waits += 1;
+        timer = setTimeout(whenFresh, SESSION_WAIT_MS);
+        return;
+      }
+      load();
+    };
+    whenFresh();
     return () => {
       live = false;
+      if (timer !== undefined) clearTimeout(timer);
     };
     // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled]);
@@ -93,7 +127,7 @@ export function usePlans(
     close: () => void,
   ): PlanOfferWiring | undefined => {
     if (catalog === null) return undefined;
-    const cards = planCardsFor(catalog, placement, "monthly", offers);
+    const cards = planCardsFor(catalog, placement, "monthly", offers, region);
     if (cards.length === 0) return undefined;
     return {
       cards,
@@ -110,13 +144,36 @@ export function usePlans(
     };
   };
 
+  // 구매 단추 — 결제를 열 수 없으면(2단계 전) 「곧」 안내로 끝나도 의향은 남깁니다.
+  const intent = (placement: PlanPlacement, plan: PlanId, period: PlanPeriod, product: string) => {
+    const card = (
+      catalog === null ? [] : planCardsFor(catalog, "settings", period, offers, region)
+    ).find((item) => item.id === plan);
+    emitCompanionEvent(
+      eventSink,
+      purchaseIntentOf({
+        surface: surfaceOf(placement),
+        placement,
+        kind: "plan",
+        product,
+        period,
+        shown: card?.shown ?? null,
+        region,
+        preview: !bridge.available,
+      }),
+    );
+  };
+
   return {
     catalog,
+    region,
     offers,
     openPlans,
     onSelect: async (placement, plan, period, productId) => {
       selected(placement, plan, period);
-      return productId === null ? { kind: "unavailable" } : bridge.purchase(productId);
+      if (productId === null) return { kind: "unavailable" };
+      intent(placement, plan, period, productId);
+      return bridge.purchase(productId);
     },
     onRestore: () => bridge.restore(),
     onBack: () => dispatch({ type: "back" }),

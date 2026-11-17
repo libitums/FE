@@ -69,4 +69,5 @@ export type AnalyticsEventName =
   | "first_chat_message_sent"
   | "streak_reward_collected"
   | "plans_viewed"
-  | "plan_selected";
+  | "plan_selected"
+  | "purchase_intent";
