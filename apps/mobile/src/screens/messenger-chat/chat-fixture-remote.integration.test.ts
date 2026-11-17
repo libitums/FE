@@ -436,3 +436,60 @@ describe("해금 선톡", () => {
     expect(mina(source)).toMatchObject({ unread: 0, isNew: true });
   });
 });
+
+describe("목록 미리보기(2026-11-17 일반 회원 개방)", () => {
+  const history: RemoteHistory = {
+    messages: [
+      { id: U1, at: 10, kind: "text", from: "me", text: { ko: "안녕", en: "" } },
+      { id: `${A1}#0`, at: 20, kind: "text", from: "them", text: { ko: "반가워요", en: "Nice" } },
+    ],
+    corrections: {},
+    ideas: null,
+  };
+  const previewSource = (remote: ChatRemote, unlocked: readonly string[] = []) =>
+    createFixtureChatSource({
+      imageUrlOf: () => null,
+      seed: companionSeed(),
+      now: () => 1_000,
+      timers: fakeTimers(),
+      unlocked,
+      remote,
+      previewOnStart: true,
+    });
+
+  test("SS-I14 다시 켠 뒤(previewOnStart) 열린 방마다 기록을 읽어 목록에 마지막 말을 세운다 — 인사는 청하지 않는다", async () => {
+    const loadHistory = vi.fn(async () => history);
+    const greet = vi.fn(async () => null);
+    const source = previewSource(
+      { loadHistory, greet, openTurn: () => ({ cancel: () => undefined }) },
+      ["mina"],
+    );
+    await flush();
+    const rooms = source.snapshot().rooms;
+    expect(rooms.find((room) => room.roomId === "duksu")?.lastMessage?.id).toBe(`${A1}#0`);
+    expect(rooms.find((room) => room.roomId === "mina")?.lastMessage?.id).toBe(`${A1}#0`);
+    // 잠긴 방은 읽지 않는다(열린 방은 덕수쌤 · 미나 둘).
+    expect(loadHistory).toHaveBeenCalledTimes(2);
+    expect(greet).not.toHaveBeenCalled();
+    // 방을 열면 기록을 다시 읽어 합친다 — 같은 줄이 둘이 되지 않는다.
+    source.openRoom("mina");
+    await flush();
+    expect(source.thread("mina")?.messages.map((m) => m.id)).toEqual([U1, `${A1}#0`]);
+  });
+
+  test("SS-I15 기록이 비면 미리보기는 아무것도 바꾸지 않고, 방을 열 때 첫 인사를 청한다", async () => {
+    const loadHistory = vi.fn(async () => ({ messages: [], corrections: {}, ideas: null }));
+    const greet = vi.fn(async () => null);
+    const source = previewSource({
+      loadHistory,
+      greet,
+      openTurn: () => ({ cancel: () => undefined }),
+    });
+    await flush();
+    expect(greet).not.toHaveBeenCalled();
+    source.openRoom("duksu");
+    await flush();
+    await flush();
+    expect(greet).toHaveBeenCalledTimes(1);
+  });
+});

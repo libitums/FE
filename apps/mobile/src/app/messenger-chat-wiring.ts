@@ -150,9 +150,9 @@ export function setMessengerChatRemote(factory: (() => ChatRemote) | null): void
   remoteFactory = factory;
 }
 
-/** 로그인한 시험 계정이면 서버 모드(사용자마다), 아니면 가짜 — 메신저는 시험 계정에게만 열립니다(ADR-0128). */
+/** 로그인한 회원이면 서버 모드(사용자마다), 아니면 가짜 — 2026-11-17부터 시험 계정이 아니어도 엽니다(ADR-0128). */
 function sourceKey(): string {
-  if (remoteFactory === null || testSeed !== undefined || !isTesterAccessActive()) return "fixture";
+  if (remoteFactory === null || testSeed !== undefined) return "fixture";
   const token = loadAuthSession()?.accessToken;
   const userId = token === undefined ? null : authUserIdFrom(token);
   return userId === null ? "fixture" : `server:${userId}`;
@@ -189,7 +189,8 @@ export function messengerChatSource(imageUrlOf: ImageUrlOf): ChatSource {
         ? testSeed === undefined
           ? {}
           : { seed: testSeed }
-        : { seed: companionSeed(), remote, mediaHooks: forwardedMediaHooks }),
+        : // 다시 켠 뒤 목록 미리보기 — 열린 방의 서버 기록을 미리 읽습니다(2026-11-17).
+          { seed: companionSeed(), remote, mediaHooks: forwardedMediaHooks, previewOnStart: true }),
     });
   } else if (replaced) {
     singleton.refreshImages();

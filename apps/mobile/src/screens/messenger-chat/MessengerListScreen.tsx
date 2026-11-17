@@ -120,7 +120,6 @@ export function MessengerListScreen({
           <ChatAccessGate
             access={access}
             onSignIn={onSignIn}
-            onGoToJourney={onGoToJourney}
             faces={ordered
               .filter((room) => room.access.kind === "open")
               .map((room) => [...room.counterpart.name][0] ?? "")

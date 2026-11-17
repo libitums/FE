@@ -158,14 +158,12 @@ test("CP-I6 연령 제한 방이면 열지 않고 목록 + 안내", async () => 
   expect(textOf("chat-list-notice")).toBe("This chat isn't available right now.");
 });
 
-test("CP-I7 시험 계정이 아닌 회원이 선톡 알림을 누르면 방이 아니라 메신저 탭의 「곧 열림」에 선다(ADR-0128 리뷰 W1)", async () => {
+test("CP-I7 시험 계정이 아닌 회원도 선톡 알림을 누르면 그 인물 방이 열린다(2026-11-17 일반 회원 개방)", async () => {
   await renderSignedInApp(<App progressSeed={legacyPassedSeed} />);
   await flush();
   await tapPush({ kind: "companion-chat", characterId: "mina" });
 
-  expect(present("messenger-chat-screen")).toBe(false);
-  expect(present("chat-list-notice")).toBe(false);
-  expect(screen.getByTestId("messenger-access-gate").getAttribute("data-access")).toBe(
-    "coming-soon",
-  );
+  expect(present("messenger-chat-screen")).toBe(true);
+  expect(textOf("messenger-chat-header")).toContain("미나");
+  expect(present("messenger-access-gate")).toBe(false);
 });

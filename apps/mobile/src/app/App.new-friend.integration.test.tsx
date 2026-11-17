@@ -205,23 +205,22 @@ test("MC2-I2. Reply로 연 방에서 뒤로 가면 미나가 목록 맨 위이�
   expect(present(SHEET)).toBe(false);
 });
 
-// ------------------------------------------------------------------ MC2-I6 · 메신저를 쓸 수 없는 계정
+// ------------------------------------------------------------------ MC2-I6 · 시험 계정이 아닌 회원
 
-// 시험 계정이 아닌 회원(ADR-0128 「곧 열림」)은 에피소드를 끝내도 시트가 서지 않는다 — 서면 Reply가 탭 바 없는 안내 화면에
-// 가두었다(2026-11-17 UX 점검). 메신저 탭은 안내(탭 바 있음)로 그대로 선다.
-test("MC2-I6. 시험 계정이 아닌 회원은 에피소드 3을 끝내도 시트가 없고, 메신저 탭은 탭 바가 있는 「곧 열림」 안내다", async () => {
+// 2026-11-17 일반 회원 개방: 시험 계정이 아닌 회원도 메신저가 열려 에피소드를 끝내면 시트가 선다. 메신저 탭은 안내가 아니라
+// 지금 목록이다(시트를 막는 것은 손님 · 로그아웃뿐 — SW-U7).
+test("MC2-I6. 시험 계정이 아닌 회원도 에피소드 3을 끝내면 시트가 서고, 메신저 탭은 안내 없이 목록이다", async () => {
   await bootBeforeFinal(u03, "member");
   playFinal(u03, 3, true);
   await finishEpilogue();
 
   advance(SHEET_APPEAR_MS + SHEET_TYPING_MS + 10_000);
-  expect(present(SHEET)).toBe(false);
-  expect(screen.getByTestId(MAP)).toBeInTheDocument();
+  expect(present(SHEET)).toBe(true);
+  tapId("new-friend-later");
 
   openTab("messenger");
-  expect(screen.getByTestId("messenger-access-gate").getAttribute("data-access")).toBe(
-    "coming-soon",
-  );
+  expect(present("messenger-access-gate")).toBe(false);
+  expect(screen.getByTestId("messenger-list-screen")).toBeInTheDocument();
   expect(isTabSelected("messenger")).toBe(true);
 });
 

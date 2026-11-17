@@ -38,12 +38,11 @@ test("SW-U5 서버 방이 비어 있어도 미나 시트는 인물 표의 첫 �
   expect(model?.name).toBe("미나");
 });
 
-// SW-U7 — 메신저를 쓸 수 없는 계정(손님 · 시험 계정이 아닌 회원, ADR-0128)에는 시트가 서지 않는다. 서면 Reply가 탭 바 없는
+// SW-U7 — 메신저를 쓸 수 없는 계정(손님 · 로그아웃, ADR-0128)에는 시트가 서지 않는다. 서면 Reply가 탭 바 없는
 // 안내 화면에 가둔다(2026-11-17 UX 점검). 방 · 첫 말이 다 있어도 null.
 test("SW-U7 메신저를 쓸 수 없는 계정이면 방 · 첫 말이 있어도 시트 모델이 없다", () => {
   const source = createFixtureChatSource({ imageUrlOf: () => null, seed: companionSeed(), remote });
   expect(newFriendModelOf("mina", wiringOf(source), "open")).not.toBeNull();
-  expect(newFriendModelOf("mina", wiringOf(source), "coming-soon")).toBeNull();
   expect(newFriendModelOf("mina", wiringOf(source), "sign-in")).toBeNull();
 });
 

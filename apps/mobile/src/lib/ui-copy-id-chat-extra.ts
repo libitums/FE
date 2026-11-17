@@ -12,9 +12,6 @@ export const messengerChatExtraId: MessengerChatExtraCopy = {
     signInBody:
       "Buat akun gratis untuk mengobrol dalam bahasa Korea dengan orang-orang dari ceritamu. Progresmu tetap tersimpan.",
     signIn: "Daftar atau masuk",
-    comingSoonTitle: "Obrolan segera hadir",
-    comingSoonBody:
-      "Kami membuka obrolan untuk kelompok kecil dulu. Terus belajar — orang yang kamu temui akan segera bisa mengirim pesan kepadamu.",
   },
   pushNotice: { chatUnavailable: "Obrolan ini sedang tidak tersedia." },
   chatSettings: {

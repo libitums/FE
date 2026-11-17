@@ -12,9 +12,6 @@ export const messengerChatExtraVi: MessengerChatExtraCopy = {
     signInBody:
       "Tạo tài khoản miễn phí để trò chuyện bằng tiếng Hàn với những người trong câu chuyện của bạn. Tiến độ của bạn vẫn được giữ.",
     signIn: "Đăng ký hoặc đăng nhập",
-    comingSoonTitle: "Trò chuyện sắp ra mắt",
-    comingSoonBody:
-      "Chúng tôi mở trò chuyện cho một nhóm nhỏ trước. Hãy tiếp tục học — những người bạn gặp sẽ sớm nhắn tin cho bạn.",
   },
   pushNotice: { chatUnavailable: "Cuộc trò chuyện này hiện không khả dụng." },
   chatSettings: {

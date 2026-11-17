@@ -94,6 +94,8 @@ export type FixtureChatSourceOptions = {
   /** 처음부터 열린 채 시작할 인물 id(재시작 뒤 모습). */
   readonly unlocked?: readonly string[];
   readonly remote?: ChatRemote; // 서버 모드(ADR-0137) — 방 기록 · 첫 인사 · 보내기를 서버에서.
+  /** 서버 모드에서 만들 때 열린 방의 기록을 미리 읽어 목록에 마지막 말을 세웁니다(다시 켠 뒤 모습). 인사는 청하지 않습니다. */
+  readonly previewOnStart?: boolean;
   /** 서버 모드 사진 · 음성(ADR-0146)의 바깥 알림 — 서버 잔액 · 결과 이벤트. */
   readonly mediaHooks?: ChatMediaHooks;
   /** 사진 속 내 모습의 기기 저장(ADR-0150) — 없으면 메모리만(테스트 · 데모). */

@@ -57,7 +57,6 @@ import { guestWiring, type GuestWiring } from "./guest-wiring";
 import type { AccountState } from "../lib/guest-session";
 import { journeyWiring } from "./journey-wiring";
 import { messengerChatWiring, type MessengerChatWiring } from "./messenger-chat-wiring";
-import { isTesterAccessActive } from "../lib/tester-access";
 import { messengerAccessOf } from "../screens/messenger-chat/messenger-access";
 import { pushTargetOpener } from "./push-routing";
 import type { PlansWiring } from "./use-plans";
@@ -194,7 +193,7 @@ export function screenWiring(args: ScreenWiringArgs): ScreenWiring {
       dispatch: args.dispatch,
       notificationEventSink: args.notificationEventSink,
       chatSource: messenger.messengerChat.source,
-      canOpenChats: () => messengerAccessOf(args.accountState, isTesterAccessActive()) === "open",
+      canOpenChats: () => messengerAccessOf(args.accountState) === "open",
     }),
     downloadSettings: downloadSettingsWiring(args.downloadControls, args.downloadCatalog),
     onTapPendingEpisode: () => {},

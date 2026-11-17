@@ -77,7 +77,7 @@ test("[GE5] 비회원의 설정은 계정 묶음 여섯과 「로그인」 한 �
   }
 });
 
-test("[GE5b] 로그인 사용자의 설정은 그대로 여덟 항목과 계정 동작 둘이다(회귀)", async () => {
+test("[GE5b] 로그인 사용자의 설정은 Chats(2026-11-17 일반 회원 개방) · 여덟 항목과 계정 동작 둘이다(회귀)", async () => {
   await renderSignedInApp(<App progressSeed={legacyPassedSeed} />);
   openSettingsTab();
 
@@ -85,6 +85,7 @@ test("[GE5b] 로그인 사용자의 설정은 그대로 여덟 항목과 계정 
     [
       "show-choice-romanization",
       "vibration",
+      "chats",
       "profile",
       "learner-profile",
       "language",

@@ -5,7 +5,7 @@
 | MA-E1 | 손님으로 메신저 탭 | 엽전 칩 없음 · 아바타 셋 · 「Text the people you meet」 · 본문 · 「Sign up or log in」 |
 | MA-E2 | 「Sign up or log in」 | 손님 버튼 없는 로그인 화면(탭 바 없음), 뒤로 = 메신저 탭 |
 | MA-E3 | 손님 설정 탭 | Chats 줄 없음 |
-| MA-E4 | 시험 계정이 아닌 회원 | 「Chats are almost here」 · 엽전 칩 · Go to Journey — 실제 계정 로그인이 필요해 미실행(통합 MA-I2) |
+| MA-E4 | 시험 계정이 아닌 회원 | (2026-11-17 개정, ADR-0154) 지금 목록 · 엽전 칩 · 설정 Chats 줄, 덕수쌤 방에서 서버 답 — 운영 `testers_only = false` 뒤 실제 계정으로 확인 필요(통합 MA-I2) |
 | MA-E5 | 시험 계정 | 지금 목록 · 설정 Chats 줄(ADR-0126 · 0127 기기 확인과 같음) |
 | MA-E6 | 스크린리더 | 제목 · 본문 · 단추 이름이 한 번씩 |
 

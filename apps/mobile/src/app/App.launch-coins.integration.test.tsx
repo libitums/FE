@@ -106,7 +106,7 @@ test("YL-I1 시험 계정: 지급 → 엽전 모달 → 날아간 뒤 채팅 모
   expect(events.find((e) => e.name === "messenger_tab_opened")).toMatchObject({ badge: "first" });
 });
 
-test("YL-I2 시험 계정이 아닌 회원은 엽전 모달만, 이미 받은 보너스(두 번째 지급)는 모달 없음", async () => {
+test("YL-I2 시험 계정이 아닌 회원도 엽전 모달 → 채팅 모달(2026-11-17 일반 회원 개방), 이미 받은 보너스(두 번째 지급)는 모달 없음", async () => {
   await renderSignedInApp(<App progressSeed={legacyPassedSeed} />, {
     ...boot(),
     refreshedAccessToken: memberToken,
@@ -120,7 +120,7 @@ test("YL-I2 시험 계정이 아닌 회원은 엽전 모달만, 이미 받은 �
   });
   vi.useRealTimers();
   expect(present(ids.coins)).toBe(false);
-  expect(present(ids.chat)).toBe(false);
+  expect(present(ids.chat)).toBe(true);
   cleanup();
   claim.result = { learning: 0, bonus: 0, balance: 470 };
   await renderSignedInApp(<App progressSeed={legacyPassedSeed} />, {
