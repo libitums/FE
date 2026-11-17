@@ -18,7 +18,8 @@ export type PlansCopy = {
   readonly monthly: string;
   readonly yearly: string;
   readonly periodLabel: string;
-  readonly yearlyNote: string;
+  /** 연간 할인 줄 — 고른 요금제의 월 ×12 대비 할인율(정수 %). 모르면 null(일반 문구). */
+  readonly yearlyNote: (percent: number | null) => string;
   readonly benefit: {
     readonly unlimitedLessons: string;
     readonly freeMessages: (perDay: number) => string;
@@ -28,6 +29,7 @@ export type PlansCopy = {
   };
   readonly continueWith: (name: string) => string;
   readonly restore: string;
+  /** 구매 · 복원을 아직 열 수 없을 때(결제 준비 중 — ADR-0144 추가 2026-11-17). */
   readonly unavailable: string;
   readonly loadFailed: string;
   readonly settingsRow: string;
@@ -49,7 +51,8 @@ export const plansCopy: Readonly<Record<"en" | "es" | "id" | "ja" | "vi", PlansC
     monthly: "Monthly",
     yearly: "Yearly",
     periodLabel: "Billing period",
-    yearlyNote: "Yearly: 2 months free",
+    yearlyNote: (percent) =>
+      percent === null ? "Yearly: pay less per month" : `Yearly: save ${percent}%`,
     benefit: {
       unlimitedLessons: "Unlimited lessons, no waiting",
       freeMessages: (perDay) => `${n(perDay, "free message", "free messages")} a day`,
@@ -60,7 +63,7 @@ export const plansCopy: Readonly<Record<"en" | "es" | "id" | "ja" | "vi", PlansC
     },
     continueWith: (name) => `Continue with ${name}`,
     restore: "Restore purchases",
-    unavailable: "Purchases aren't available yet. Please check back soon.",
+    unavailable: "Payments are coming soon — we'll let you know when they're ready.",
     loadFailed: "Couldn't load plans. Check your connection and try again.",
     settingsRow: "Plans",
     settingsRowDescription: "Unlimited Tickets · Chat Plus · Premium",
@@ -79,7 +82,8 @@ export const plansCopy: Readonly<Record<"en" | "es" | "id" | "ja" | "vi", PlansC
     monthly: "Mensual",
     yearly: "Anual",
     periodLabel: "Periodo de pago",
-    yearlyNote: "Anual: 2 meses gratis",
+    yearlyNote: (percent) =>
+      percent === null ? "Anual: pagas menos al mes" : `Anual: ahorra un ${percent}%`,
     benefit: {
       unlimitedLessons: "Lecciones ilimitadas, sin esperar",
       freeMessages: (perDay) =>
@@ -91,7 +95,7 @@ export const plansCopy: Readonly<Record<"en" | "es" | "id" | "ja" | "vi", PlansC
     },
     continueWith: (name) => `Continuar con ${name}`,
     restore: "Restaurar compras",
-    unavailable: "Las compras aún no están disponibles. Vuelve pronto.",
+    unavailable: "Los pagos llegarán pronto. Te avisaremos cuando estén listos.",
     loadFailed: "No se pudieron cargar los planes. Revisa tu conexión e inténtalo de nuevo.",
     settingsRow: "Planes",
     settingsRowDescription: "Unlimited Tickets · Chat Plus · Premium",
@@ -110,7 +114,8 @@ export const plansCopy: Readonly<Record<"en" | "es" | "id" | "ja" | "vi", PlansC
     monthly: "Bulanan",
     yearly: "Tahunan",
     periodLabel: "Periode tagihan",
-    yearlyNote: "Tahunan: gratis 2 bulan",
+    yearlyNote: (percent) =>
+      percent === null ? "Tahunan: lebih hemat per bulan" : `Tahunan: hemat ${percent}%`,
     benefit: {
       unlimitedLessons: "Pelajaran tanpa batas, tanpa menunggu",
       freeMessages: (perDay) => `${perDay} pesan gratis per hari`,
@@ -123,7 +128,7 @@ export const plansCopy: Readonly<Record<"en" | "es" | "id" | "ja" | "vi", PlansC
     },
     continueWith: (name) => `Lanjut dengan ${name}`,
     restore: "Pulihkan pembelian",
-    unavailable: "Pembelian belum tersedia. Coba lagi nanti.",
+    unavailable: "Pembayaran segera hadir. Kami akan kabari kalau sudah siap.",
     loadFailed: "Paket tidak bisa dimuat. Periksa koneksimu lalu coba lagi.",
     settingsRow: "Paket",
     settingsRowDescription: "Unlimited Tickets · Chat Plus · Premium",
@@ -142,7 +147,8 @@ export const plansCopy: Readonly<Record<"en" | "es" | "id" | "ja" | "vi", PlansC
     monthly: "月払い",
     yearly: "年払い",
     periodLabel: "支払い期間",
-    yearlyNote: "年払い：2か月分無料",
+    yearlyNote: (percent) =>
+      percent === null ? "年払い：月あたりがお得" : `年払い：${percent}%お得`,
     benefit: {
       unlimitedLessons: "レッスン無制限、待ち時間なし",
       freeMessages: (perDay) => `1日${perDay}通まで無料`,
@@ -153,7 +159,7 @@ export const plansCopy: Readonly<Record<"en" | "es" | "id" | "ja" | "vi", PlansC
     },
     continueWith: (name) => `${name}で続ける`,
     restore: "購入を復元",
-    unavailable: "購入はまだご利用いただけません。もうしばらくお待ちください。",
+    unavailable: "お支払いはもうすぐ始まります。準備ができたらお知らせします。",
     loadFailed: "プランを読み込めませんでした。接続を確認して、もう一度お試しください。",
     settingsRow: "プラン",
     settingsRowDescription: "Unlimited Tickets · Chat Plus · Premium",
@@ -172,7 +178,8 @@ export const plansCopy: Readonly<Record<"en" | "es" | "id" | "ja" | "vi", PlansC
     monthly: "Hằng tháng",
     yearly: "Hằng năm",
     periodLabel: "Kỳ thanh toán",
-    yearlyNote: "Hằng năm: miễn phí 2 tháng",
+    yearlyNote: (percent) =>
+      percent === null ? "Hằng năm: rẻ hơn mỗi tháng" : `Hằng năm: tiết kiệm ${percent}%`,
     benefit: {
       unlimitedLessons: "Bài học không giới hạn, không phải chờ",
       freeMessages: (perDay) => `${perDay} tin nhắn miễn phí mỗi ngày`,
@@ -185,7 +192,7 @@ export const plansCopy: Readonly<Record<"en" | "es" | "id" | "ja" | "vi", PlansC
     },
     continueWith: (name) => `Tiếp tục với ${name}`,
     restore: "Khôi phục giao dịch",
-    unavailable: "Chưa thể mua lúc này. Hãy quay lại sau nhé.",
+    unavailable: "Tính năng thanh toán sắp ra mắt. Chúng mình sẽ báo bạn khi sẵn sàng nhé.",
     loadFailed: "Không tải được các gói. Hãy kiểm tra kết nối rồi thử lại.",
     settingsRow: "Gói",
     settingsRowDescription: "Unlimited Tickets · Chat Plus · Premium",

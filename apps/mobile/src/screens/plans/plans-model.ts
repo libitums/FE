@@ -3,6 +3,11 @@
 // 순서는 서버 sortOrder, BEST는 서버 highlight — 둘 다 앱 업데이트 없이 바뀝니다.
 
 import type { PlanBenefits, PlanId, PlansCatalog } from "../../lib/plans-api";
+import {
+  provisionalPrice,
+  type PricingRegion,
+  type ShownPrice,
+} from "../../lib/provisional-prices";
 import type { StoreOffer } from "../../lib/purchase-bridge";
 
 /** 요금제가 보이는 자리 — 설정 → Plans · 티켓 다 씀 대화상자 · 메신저 무료 다 씀 판. */
@@ -21,8 +26,10 @@ export type PlanCardView = {
   readonly best: boolean;
   /** 이 기간의 스토어 상품 id — 없으면 이 기간에 팔지 않음. */
   readonly productId: string | null;
-  /** 스토어 가격 글 — 다리가 꺼졌거나 못 읽으면 null. */
+  /** 가격 글 — 스토어 가격, 없으면 임시 추천 가격(ADR-0144 추가 2026-11-17), 그것도 없으면 null. */
   readonly price: string | null;
+  /** 임시 추천 가격의 금액 · 통화(구매 의향 이벤트용). 스토어 가격이면 null. */
+  readonly shown: ShownPrice | null;
   readonly benefits: readonly PlanBenefit[];
 };
 
@@ -67,16 +74,22 @@ export function planCardsFor(
   placement: PlanPlacement,
   period: PlanPeriod,
   offers: readonly StoreOffer[] | null,
+  region: PricingRegion = "US",
 ): readonly PlanCardView[] {
   return plansForPlacement(catalog, placement).map((plan) => {
     const productId = plan.products[period];
     const offer =
       productId === null ? undefined : offers?.find((item) => item.productId === productId);
+    // 스토어 가격이 언제나 이깁니다 — 스토어에 닿지 못했을 때(`offers` null)만 임시 추천 가격. 스토어 목록에 그 상품이
+    // 없으면(승인 전 등) 팔 수 없는 상품이라 가격을 비웁니다.
+    const shown =
+      offers !== null || productId === null ? null : provisionalPrice(productId, region);
     return {
       id: plan.id,
       best: plan.highlight,
       productId,
-      price: offer?.price ?? null,
+      price: offer?.price ?? shown?.text ?? null,
+      shown,
       benefits: planBenefitsOf(plan),
     };
   });

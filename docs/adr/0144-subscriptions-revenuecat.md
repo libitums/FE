@@ -102,3 +102,23 @@ DB가 실패하면 500 — RevenueCat이 다시 보낸다. 같은 이벤트 id�
 
 ## 2단계로 넘긴 리뷰 지적
 - 구매 · 복원이 도는 동안 화면에 진행 상태가 없음(#434 리뷰) — 1단계는 비활성 브리지가 곧바로 답해 문제가 없고, 실제 구매를 붙일 때 `use-plans`의 진행 상태를 그림 상태로 올려 단추를 막고 로딩을 보입니다.
+
+## 추가 (2026-11-17) — 결제 전 미리보기 · 임시 추천 가격 · 구매 의향 [사용자]
+
+- 결정: 「일단 추천 방안으로 표시하고 아직 준비 중으로 뜨지만 결제 욕구도 있는지 이벤트 트래킹」. 2단계(네이티브 구매 다리) 전에 요금제를 보인다.
+- **플래그 켬**: `plansFeatureEnabled()` = true. 로그인 사용자에게 설정 → Plans 줄 · 티켓 다 씀 대화상자 카드 · 메신저 무료(체험) 다 씀 판 카드가 선다.
+  손님은 여전히 없음(요금제 RPC가 로그인을 요구하고 구매도 계정에 붙는다 — 손님은 메신저 · 설정에서 가입 권유를 먼저 본다). 실제 결제를 여는
+  것은 구매 다리(`PurchaseBridge.available`)이고 꺼진 다리 그대로다 — Continue · Restore는 「Payments are coming soon — we'll let you know when they're
+  ready.」(5개 언어) 안내 한 줄.
+- **임시 추천 가격**(`lib/provisional-prices.ts`, 한 표): 스토어 가격(offerings)이 없을 때만 보인다 — 스토어에 닿으면(목록이 null 아님) 언제나 스토어가
+  이기고, 목록에 상품이 없으면 가격을 비운다. 나라는 **학습자 프로필의 나라**(`countryCode`, 새 권한 없음) — VN · ID · PH · TH · MY는 그 나라 통화,
+  그 밖 · 모름은 미국 달러. 값은 사용자가 승인한 동남아 시장가 표(2026-11-17 가격 조사), 미국은 1판 그대로. 연간은 지역마다 배수가 달라(동남아 ×8)
+  「Yearly: save N%」를 고른 요금제의 임시 가격으로 센다(스토어 가격이면 「Yearly: pay less per month」). 엽전 상점도 같은 표로 팩 가격을 보인다
+  (상품 id `duru.coins.500/1200/3000.v1`). 엽전 100 팩은 상품 · 그림 · 문구가 없어 넣지 않았다. 2단계가 붙으면 표를 지운다.
+- **구매 의향 이벤트** `purchase_intent { placement: settings | tickets | messenger | coin_shop, kind: plan | pack, product, period: monthly | yearly | once,
+  price, currency, country, preview }` — 요금제 Continue · 엽전 팩 사기를 누를 때. `price`는 보인 임시 가격의 금액(10진 문자열, 스토어 가격이면 빈 문자열),
+  `country`는 가격 지역, `preview` = 결제를 열지 못하고 안내로 끝남. 엽전 상점은 요금제 결선 밖(머리 엽전 칩 · 채팅방 겹침)이라 결선이 적은 지역 · sink를
+  `lib/purchase-intent.ts`에서 읽는다(2단계에서 지움). `plans_viewed` · `plan_selected`는 그대로.
+- 부팅 세션 갱신과 겹치지 않게: 요금제 표 읽기는 세션이 갱신 필요 상태면 1초씩(최대 30번) 기다린다 — 겹치면 같은 refresh 토큰으로 갱신을 두 번 보낸다(IA7).
+- 대가: 운영의 로그인 사용자가 로그인마다 `companion_plans` RPC를 한 번 부른다. 화면의 가격은 스토어 가격이 아니다(세금 포함 추정 표시가) — 2단계 전까지
+  구매가 없으므로 청구와 어긋날 일은 없다. 플래그 하나로 다시 끌 수 있다.

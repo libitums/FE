@@ -1,3 +1,8 @@
+import {
+  provisionalPrice,
+  type PricingRegion,
+  type ShownPrice,
+} from "../../lib/provisional-prices";
 import type { CoinPackId } from "../../lib/ui-copy-sections.contract";
 
 import bigPouchArt from "./assets/big-pouch.webp";
@@ -15,6 +20,8 @@ export type { CoinPackId } from "../../lib/ui-copy-sections.contract";
 
 export type CoinPack = {
   readonly id: CoinPackId;
+  /** 스토어 상품 id(ADR-0144 D4) — 임시 추천 가격 · 구매 의향 이벤트가 씁니다. */
+  readonly productId: string;
   /** 기본 엽전 수입니다. 보너스는 따로 셉니다. */
   readonly coins: number;
   readonly bonusCoins: number;
@@ -30,6 +37,7 @@ export type CoinPack = {
 const coinPacksById: Readonly<Record<CoinPackId, CoinPack>> = {
   bundle: {
     id: "bundle",
+    productId: "duru.coins.500.v1",
     coins: 500,
     bonusCoins: 0,
     priceCents: 499,
@@ -38,6 +46,7 @@ const coinPacksById: Readonly<Record<CoinPackId, CoinPack>> = {
   },
   pouch: {
     id: "pouch",
+    productId: "duru.coins.1200.v1",
     coins: 1000,
     bonusCoins: 200,
     priceCents: 999,
@@ -46,6 +55,7 @@ const coinPacksById: Readonly<Record<CoinPackId, CoinPack>> = {
   },
   big: {
     id: "big",
+    productId: "duru.coins.3000.v1",
     coins: 2000,
     bonusCoins: 1000,
     priceCents: 1999,
@@ -82,4 +92,18 @@ export function formatCoinCount(count: number): string {
 
 export function formatPrice(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`;
+}
+
+/**
+ * 팩의 보이는 가격 — 지역 임시 추천 가격(ADR-0144 추가 2026-11-17)이 있으면 그것, 없으면 센트 상수(미국 달러).
+ * 스토어 가격(2단계)이 붙으면 이 함수가 스토어 값을 받게 됩니다.
+ */
+export function packPriceOf(pack: CoinPack, region: PricingRegion): ShownPrice {
+  return (
+    provisionalPrice(pack.productId, region) ?? {
+      amount: pack.priceCents / 100,
+      currency: "USD",
+      text: formatPrice(pack.priceCents),
+    }
+  );
 }

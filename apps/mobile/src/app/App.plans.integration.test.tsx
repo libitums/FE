@@ -17,6 +17,7 @@ import { catalogV1 } from "../screens/plans/plans.test-support";
 
 const flag = vi.hoisted(() => ({ on: true }));
 const rpc = vi.hoisted(() => ({ catalog: null as unknown, calls: 0 }));
+const learner = vi.hoisted(() => ({ country: null as string | null }));
 vi.mock("../lib/plans-flag", () => ({ plansFeatureEnabled: () => flag.on }));
 vi.mock("../lib/plans-api", async (original) => ({
   ...(await original<typeof import("../lib/plans-api")>()),
@@ -49,6 +50,14 @@ async function boot(): Promise<void> {
       serializeAuthSession({ accessToken: "a", refreshToken: "r", expiresAt: 4_102_444_800_000 }),
     ],
     [learningItemGuideSeenStorageKey, allLearningItemGuidesSeenValue],
+    ...(learner.country === null
+      ? []
+      : ([
+          [
+            "libitum.learner-profile.plans-user",
+            JSON.stringify({ v: 1, name: "Mina", countryCode: learner.country, sync: "synced" }),
+          ],
+        ] as const)),
   ]);
   vi.stubGlobal("NativeModules", {
     StorageModule: {
@@ -88,6 +97,7 @@ beforeEach(() => {
   flag.on = true;
   rpc.catalog = catalogV1;
   rpc.calls = 0;
+  learner.country = null;
   events = [];
 });
 afterEach(() => {
@@ -118,7 +128,7 @@ test("SB-I1 플래그 켬 · 로그인: 설정 → Plans → Premium 고름 → 
   tap("ui-lynx-option-selector-item-yearly");
   tap(ids.continue);
   await flush();
-  expect(screen.getByTestId(ids.notice)).toHaveTextContent("Purchases aren't available yet.");
+  expect(screen.getByTestId(ids.notice)).toHaveTextContent("Payments are coming soon");
   expect(events.filter((e) => e.name === "plan_selected")).toEqual([
     expect.objectContaining({ placement: "settings", plan: "premium", period: "yearly" }),
   ]);
@@ -159,4 +169,36 @@ test("SB-I3 요금제를 못 읽으면(null) Plans 화면은 실패 안내만 �
   await flush();
   expect(screen.getByTestId(ids.empty)).toHaveTextContent("Couldn't load plans.");
   expect(present(ids.continue)).toBe(false);
+});
+
+test("PI-I1 학습자 나라 VN: 임시 추천 가격(₫)을 보이고, Continue는 「곧」 안내 + purchase_intent(가격 · 통화 · 나라)", async () => {
+  learner.country = "VN";
+  await boot();
+  openSettings();
+  await flush();
+  act(
+    () =>
+      void fireEvent.tap(
+        within(screen.getByTestId(planRow)).getByTestId("ui-lynx-settings-cell"),
+        {},
+      ),
+  );
+  await flush();
+  expect(screen.getByTestId(ids.price("premium"))).toHaveTextContent("179.000 ₫ / month");
+  tap(ids.continue);
+  await flush();
+  expect(screen.getByTestId(ids.notice)).toHaveTextContent("Payments are coming soon");
+  expect(events.filter((e) => e.name === "purchase_intent")).toEqual([
+    expect.objectContaining({
+      surface: "learning",
+      placement: "settings",
+      kind: "plan",
+      product: "duru.premium.monthly.v1",
+      period: "monthly",
+      price: "179000",
+      currency: "VND",
+      country: "VN",
+      preview: true,
+    }),
+  ]);
 });

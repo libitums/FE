@@ -96,6 +96,8 @@ export type StreakRewardEvent = Common & {
 /**
  * 요금제(ADR-0144). `placement`는 요금제가 보인 자리 — `surface`(학습 · 대화, D3 공통 속성)와 따로 둡니다.
  * `view`: `offer` = 맥락 카드(티켓 대화상자 · 메신저 판), `compare` = 설정 → Plans 화면. 구매 이벤트는 2단계.
+ * `purchase_intent`(추가 2026-11-17): 구매 단추(요금제 Continue · 엽전 팩 사기)를 누름 — 결제 전에도 의향을 잽니다. `price`는 보인 임시 가격의
+ * 금액(10진 문자열, 스토어 가격이면 빈 문자열), `currency` · `country`(가격 지역 VN · ID · PH · TH · MY · US), `preview` = 「곧」 안내로 끝남.
  */
 export type PlanEvent =
   | (Common & {
@@ -108,6 +110,19 @@ export type PlanEvent =
       readonly placement: "settings" | "tickets" | "messenger";
       readonly plan: "unlimited_tickets" | "chat_plus" | "premium";
       readonly period: "monthly" | "yearly";
+    })
+  | (Common & {
+      readonly name: "purchase_intent";
+      readonly placement: "settings" | "tickets" | "messenger" | "coin_shop";
+      readonly kind: "plan" | "pack";
+      /** 스토어 상품 id(ADR-0144 D4). */
+      readonly product: string;
+      /** 엽전 팩은 `once`. */
+      readonly period: "monthly" | "yearly" | "once";
+      readonly price: string;
+      readonly currency: string;
+      readonly country: string;
+      readonly preview: boolean;
     });
 
 export type CompanionEvent =

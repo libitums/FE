@@ -1,6 +1,7 @@
 // 요금제 화면 · 부품의 계약(ADR-0144). 타입 · testid만 둡니다.
 
 import type { PlanId, PlansCatalog } from "../../lib/plans-api";
+import type { PricingRegion } from "../../lib/provisional-prices";
 import type { PurchaseResult, RestoreResult, StoreOffer } from "../../lib/purchase-bridge";
 import type { PlanCardView, PlanPeriod } from "./plans-model";
 
@@ -19,6 +20,8 @@ export type PlansScreenProps = {
   ) => Promise<PurchaseResult>;
   readonly onRestore: () => Promise<RestoreResult>;
   readonly onBack: () => void;
+  /** 임시 추천 가격의 지역(ADR-0144 추가 2026-11-17) — 스토어 가격이 없을 때만 씁니다. 기본 US. */
+  readonly region?: PricingRegion;
 };
 
 export type PlanCardProps = {

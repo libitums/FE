@@ -1,9 +1,10 @@
 import type { ReactNode } from "@lynx-js/react";
 
+import type { PricingRegion } from "../../lib/provisional-prices";
 import { useUiCopy } from "../../lib/ui-copy";
 import {
   formatCoinCount,
-  formatPrice,
+  packPriceOf,
   totalCoinsOf,
   type CoinPack,
   type CoinPackId,
@@ -17,10 +18,17 @@ import {
 type CoinPackCardProps = {
   readonly pack: CoinPack;
   readonly selected: boolean;
+  /** 임시 추천 가격의 지역 — 없으면 US. */
+  readonly region?: PricingRegion;
   readonly onSelect: (id: CoinPackId) => void;
 };
 
-export function CoinPackCard({ pack, selected, onSelect }: CoinPackCardProps): ReactNode {
+export function CoinPackCard({
+  pack,
+  selected,
+  onSelect,
+  region = "US",
+}: CoinPackCardProps): ReactNode {
   const copy = useUiCopy();
   const shop = copy.coinShop;
   const handleTap = () => {
@@ -28,12 +36,13 @@ export function CoinPackCard({ pack, selected, onSelect }: CoinPackCardProps): R
     onSelect(pack.id);
   };
   const total = totalCoinsOf(pack);
+  const price = packPriceOf(pack, region).text;
   const bonus = pack.bonusCoins > 0 ? shop.bonus(formatCoinCount(pack.bonusCoins)) : null;
   const details = [
     shop.packName[pack.id],
     shop.packAmount(total, formatCoinCount(total)),
     bonus,
-    formatPrice(pack.priceCents),
+    price,
     pack.bestValue ? shop.bestValue : null,
   ]
     .filter(Boolean)
@@ -71,7 +80,7 @@ export function CoinPackCard({ pack, selected, onSelect }: CoinPackCardProps): R
         )}
       </view>
       <view className="coin-shop-pack-side">
-        <text className="coin-shop-pack-price">{formatPrice(pack.priceCents)}</text>
+        <text className="coin-shop-pack-price">{price}</text>
         <view
           className={
             selected ? "coin-shop-pack-radio coin-shop-pack-radio-selected" : "coin-shop-pack-radio"

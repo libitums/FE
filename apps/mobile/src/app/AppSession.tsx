@@ -177,7 +177,7 @@ export function AppSession({
   const atMapRoot = nav.entry.length === 0 && screenNow.name === "journey-map" && !screenLayerOpen;
   const gateNav = downloadSettingsNav(dispatch);
   const downloadGate = useDownloadGate(downloadControls, catalog, atMapRoot, progress, gateNav);
-  const plans = usePlans(accountState === "signed-in", dispatch, episodeIntroEventSink); // ADR-0144
+  const plans = usePlans(accountState === "signed-in", dispatch, episodeIntroEventSink, learner);
   const wiring = withDownloadGate(
     withLearningTickets({ ...screens, plans }, tickets, progress, catalogSections),
     downloadGate,
