@@ -69,7 +69,7 @@ test("AL-UI11 사이드바의 Album 줄은 이야기 시점 다음(5번째)이�
     />,
   );
   const row = screen.getByTestId(ids.sidebarRow);
-  expect(row.getAttribute("data-order")).toBe("4");
+  expect(row.getAttribute("data-order")).toBe("5");
   expect(labelOf(ids.sidebarRow)).toBe("Album, Pictures and voice messages");
   tapId(ids.sidebarRow);
   expect(onAlbum).toHaveBeenCalledTimes(1);

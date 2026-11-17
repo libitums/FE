@@ -3,6 +3,7 @@ import type { ReactNode } from "@lynx-js/react";
 
 import { color } from "@libitums/design-tokens";
 import cross from "@libitums/icons/lynx/cross";
+import { Avatar } from "@libitums/ui-lynx/avatar";
 import { Button } from "@libitums/ui-lynx/button";
 import { useMotion } from "@libitums/ui-lynx/motion";
 import { Overlay } from "@libitums/ui-lynx/overlay";
@@ -49,8 +50,9 @@ export type ChatSettingsSidebarProps = {
   readonly onClose: () => void;
 };
 
-// 채팅 설정 사이드바(O4)입니다. 줄 순서가 고정입니다: ①엽전 ②내 프로필 ③이야기 시점 ④앨범(ADR-0150) ⑤생년 ⑥기억
-// ⑦교정 방식 ⑧추천 답변 ⑨대화 비우기. 상대 프로필 줄은 프로필 화면이 생길 때까지 숨깁니다(ADR-0156 — 그리지 않음).
+// 채팅 설정 사이드바(O4)입니다. 줄 순서가 고정입니다: ①엽전 ②상대 프로필 ③내 프로필 ④이야기 시점 ⑤앨범(ADR-0150)
+// ⑥생년 ⑦기억 ⑧교정 방식 ⑨추천 답변 ⑩대화 비우기. 상대 프로필 줄은 프로필 화면이 생길 때까지 「→」 없이 얼굴 · 이름만
+// 보이고 누를 자리가 없습니다(ADR-0156 정정).
 // 오른쪽에서 밀려 들어오며, 움직임 줄이기면 미는 움직임 클래스를 달지 않아 즉시 서습니다.
 export function ChatSettingsSidebar({
   thread,
@@ -164,7 +166,28 @@ export function ChatSettingsSidebar({
                 </view>
               </view>
             </view>
-            <view className="chat-sidebar-row" data-testid={ids.sidebarMyProfile} data-order="2">
+            <view
+              className="chat-sidebar-row"
+              data-testid={ids.sidebarProfile}
+              data-order="2"
+              accessibility-element={true}
+              accessibility-label={counterpart.name}
+            >
+              <view className="ui-lynx-settings-cell" accessibility-elements-hidden={true}>
+                <Avatar
+                  name={counterpart.name}
+                  size="sm"
+                  accessibility="hidden"
+                  {...(counterpart.avatarUrl === null
+                    ? {}
+                    : { imageSource: counterpart.avatarUrl })}
+                />
+                <view className="ui-lynx-settings-cell-content">
+                  <text className="ui-lynx-settings-cell-title">{counterpart.name}</text>
+                </view>
+              </view>
+            </view>
+            <view className="chat-sidebar-row" data-testid={ids.sidebarMyProfile} data-order="3">
               <SettingsCell
                 trailing="navigation"
                 title={copy.myProfile}
@@ -176,7 +199,7 @@ export function ChatSettingsSidebar({
             <NavRow
               className="chat-sidebar-row"
               testId={ids.sidebarStoryPoint}
-              order={3}
+              order={4}
               title={copy.storyPoint}
               value={storyValue}
               onTap={onStoryPoint}
@@ -184,7 +207,7 @@ export function ChatSettingsSidebar({
             <NavRow
               className="chat-sidebar-row"
               testId={chatAlbumTestIds.sidebarRow}
-              order={4}
+              order={5}
               title={albumCopy.sidebarRow}
               value={albumCopy.sidebarDescription}
               onTap={onAlbum}
@@ -192,7 +215,7 @@ export function ChatSettingsSidebar({
             <NavRow
               className="chat-sidebar-row"
               testId={ids.sidebarBirthYear}
-              order={5}
+              order={6}
               title={yearCopy.sidebar}
               value={yearValue}
               onTap={onBirthYear}
@@ -200,7 +223,7 @@ export function ChatSettingsSidebar({
             <NavRow
               className="chat-sidebar-row"
               testId={chatSettingsTestIds.sidebarMemories}
-              order={6}
+              order={7}
               title={memoryTitle}
               value={memoryValue}
               onTap={onMemories}
@@ -208,12 +231,12 @@ export function ChatSettingsSidebar({
             <NavRow
               className="chat-sidebar-row"
               testId={chatSettingsTestIds.sidebarFeedback}
-              order={7}
+              order={8}
               title={feedbackCopy.sidebar}
               value={feedbackValue}
               onTap={onFeedbackMode}
             />
-            <view className="chat-sidebar-row" data-testid={ids.sidebarReplyIdeas} data-order="8">
+            <view className="chat-sidebar-row" data-testid={ids.sidebarReplyIdeas} data-order="9">
               <SettingsCell
                 trailing="toggle"
                 title={settingsCopy.replyIdeas}
@@ -229,7 +252,7 @@ export function ChatSettingsSidebar({
             id={ids.sidebarClear}
             className="chat-sidebar-delete-button"
             data-testid={ids.sidebarClear}
-            data-order="9"
+            data-order="10"
             accessibility-element={true}
             accessibility-traits="button"
             accessibility-label={copy.clearChat}

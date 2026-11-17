@@ -17,7 +17,7 @@ import { chatAlbumTestIds } from "./chat-album.contract";
 import { chatSettingsTestIds } from "./chat-settings.contract";
 import { messengerChatTestIds as ids } from "./messenger-chat.contract";
 
-// `ui` 계층(MC-UI22): 채팅 설정 사이드바(O4) — 줄 순서 고정(data-order 1~6) · 잔액 · Get coins → 엽전 상점 →
+// `ui` 계층(MC-UI22): 채팅 설정 사이드바(O4) — 줄 순서 고정(data-order 1~10) · 잔액 · Get coins → 엽전 상점 →
 // 닫으면 사이드바 · 기억 · 교정 방식 줄(CS-UI1 · UI2, ADR-0126) · My profile 문장 · 프로필 줄 탭 무동작 ·
 // 움직임 줄이기에서 미는 움직임 없음.
 
@@ -71,6 +71,7 @@ function mountSidebar(thread: ChatThread = threadOf(), reduced = false) {
 
 const orderIds = [
   ids.sidebarCoins,
+  ids.sidebarProfile,
   ids.sidebarMyProfile,
   ids.sidebarStoryPoint,
   chatAlbumTestIds.sidebarRow,
@@ -83,8 +84,8 @@ const orderIds = [
 
 // ⟨ADR-0125⟩ 생년 줄이 이야기 시점 다음 다섯째로 들어왔고, ⟨ADR-0126⟩ 자동 보기 토글 자리에 기억 · 교정 방식 두 줄이 섰다.
 // ⟨ADR-0150⟩ 앨범 줄이 이야기 시점 다음 다섯째로 들어와 뒤 줄이 하나씩 밀렸다.
-// ⟨ADR-0156⟩ 상대 프로필 줄을 숨기고, 추천 답변 토글이 교정 방식 다음에 섰다. 마지막은 Clear chat.
-test("MC-UI22. 아홉 줄이 data-order 1~9로 정해진 순서에 선다(DOM 순서도 같다)", () => {
+// ⟨ADR-0156⟩ 추천 답변 토글이 교정 방식 다음에 섰다. 마지막은 Clear chat. 상대 프로필 줄은 화살표 없이 그대로 둘째다.
+test("MC-UI22. 열 줄이 data-order 1~10으로 정해진 순서에 선다(DOM 순서도 같다)", () => {
   mountSidebar();
 
   const rows = orderIds.map((id) => screen.getByTestId(id));
@@ -98,6 +99,7 @@ test("MC-UI22. 아홉 줄이 data-order 1~9로 정해진 순서에 선다(DOM �
     "7",
     "8",
     "9",
+    "10",
   ]);
   expect(isInDocumentOrder(rows)).toBe(true);
   expect(screen.getByTestId(ids.sidebar).textContent).toContain("Chat settings");
@@ -113,10 +115,16 @@ test("MC-UI22. 엽전 상자는 잔액을 보이고 Get coins가 onGetCoins를 �
   expect(onGetCoins).toHaveBeenCalledTimes(1);
 });
 
-test("CC-UI1. 상대 프로필 줄은 숨는다 · My profile 줄에는 「{상대} calls you 「{내 이름}」」이 든다", () => {
-  mountSidebar();
+test("CC-UI1. 상대 프로필 줄은 얼굴 · 이름만 서고 「→」 · 누를 자리가 없다 · My profile 줄에는 「{상대} calls you 「{내 이름}」」이 든다", () => {
+  const h = mountSidebar();
 
-  expect(screen.queryByTestId(ids.sidebarProfile)).toBeNull();
+  const profile = screen.getByTestId(ids.sidebarProfile);
+  expect(profile.textContent).toContain("미나");
+  expect(profile.querySelector(".ui-lynx-settings-cell-arrow")).toBeNull();
+  expect(profile.querySelector('[accessibility-traits="button"]')).toBeNull();
+  expect(profile.getAttribute("accessibility-traits")).not.toBe("button");
+  fireEvent.tap(profile, {});
+  for (const fn of Object.values(h)) expect(fn).not.toHaveBeenCalled();
   expect(screen.getByTestId(ids.sidebar).textContent?.includes("View profile")).toBe(false);
   expect(screen.getByTestId(ids.sidebarMyProfile).textContent).toContain("My profile");
   expect(screen.getByTestId(ids.sidebarMyProfile).textContent).toContain("미나 calls you 「Hana」");
