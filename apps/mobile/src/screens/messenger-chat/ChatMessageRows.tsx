@@ -40,6 +40,8 @@ export type ChatMessageRowProps = {
   readonly motion: "standard" | "reduced";
   readonly onToggleTool: (messageId: string, tool: BubbleTool) => void;
   readonly feedback: ChatRowFeedback;
+  /** 다 만든 사진을 누르면 사진 보기를 엽니다(사진 줄 id). 없으면 사진은 누를 수 없습니다. */
+  readonly onOpenPhoto?: (messageId: string) => void;
 };
 
 /** 다시 보내기 · 👍 👎 자리와 동작입니다(ADR-0129). 자리는 방에 하나씩 — 마지막 내 글 · 가장 최근 캐릭터 글. */
@@ -79,6 +81,7 @@ function RowBody({
   motion,
   onToggleTool,
   feedback,
+  onOpenPhoto,
 }: Omit<ChatMessageRowProps, "entrance">): ReactNode {
   const { counterpart } = thread;
   const avatar = { name: counterpart.name, imageUrl: counterpart.avatarUrl };
@@ -151,6 +154,7 @@ function RowBody({
             {...(message.aiGenerated === undefined ? {} : { aiGenerated: message.aiGenerated })}
             name={counterpart.name}
             testId={ids.photo}
+            {...(onOpenPhoto === undefined ? {} : { onOpen: () => onOpenPhoto(message.id) })}
           />
         </ChatIncomingRow>
       );

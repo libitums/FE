@@ -114,6 +114,30 @@ export function albumItemsFromLog(messages: readonly ChatMessage[]): readonly Ch
   return items.sort((a, b) => b.createdAt - a.createdAt);
 }
 
+/**
+ * 채팅방 사진 줄 → 사진 보기 칸입니다(2026-11-17 — 방에서 사진을 누르면 앨범과 같은 사진 보기). 같은 메시지의 판은 오래된 것부터,
+ * 칸은 최신입니다. 그 메시지를 다시 그리는 중(방에 자리표시자)이면 remaking. 그림이 없거나(서명 URL 없음) 사진 줄이 아니면 null.
+ */
+export function chatPhotoTile(
+  messages: readonly ChatMessage[],
+  photoId: string,
+): ChatAlbumTile | null {
+  const line = messages.find((message) => message.id === photoId);
+  if (line?.kind !== "photo" || line.imageUrl === null) return null;
+  const id = mediaLineKey(photoId)?.suffix ?? photoId;
+  const photos = albumItemsFromLog(messages).filter((item) => item.kind === "photo");
+  const tapped = photos.find((item) => item.id === id);
+  if (tapped === undefined) return null;
+  const versions = photos
+    .filter((item) => item.messageId === tapped.messageId)
+    .sort((a, b) => a.createdAt - b.createdAt);
+  const remaking = messages.some(
+    (message) =>
+      message.kind === "photo-pending" && mediaLineKey(message.id)?.targetId === tapped.messageId,
+  );
+  return { item: versions[versions.length - 1] ?? tapped, versions, remaking };
+}
+
 /** 첫 Snapshot 요청에서 내 모습을 물어야 하는가(M5) — 고른 적 없고 사진일 때. */
 export function needsSelfAsk(preferences: ChatPreferences, media: ChatMediaKind): boolean {
   return media === "photo" && preferences.snapshotSelf === null;

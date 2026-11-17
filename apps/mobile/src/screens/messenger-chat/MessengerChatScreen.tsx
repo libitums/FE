@@ -27,6 +27,7 @@ import { LastFreeStrip, TurnLine } from "./ChatTurns";
 import { MoreMenu, overlayForMore } from "./MoreMenu";
 import { OutOfFreePanel } from "./OutOfFreePanel";
 import { TRIAL_TOTAL } from "./free-turns";
+import { openPhotoAction } from "./chat-room-state";
 import { chatKeyboardSlotHeight } from "./keyboard-height";
 import {
   messengerChatTestIds as ids,
@@ -216,6 +217,7 @@ export function MessengerChatScreen({
                 motion={motion}
                 onToggleTool={tools.toggle}
                 feedback={feedback}
+                onOpenPhoto={(id) => dispatch(openPhotoAction(id))}
               />
             ))}
             {thread.typing ? (

@@ -29,6 +29,8 @@ export type PhotoBubbleProps = {
   readonly aiGenerated?: boolean;
   readonly name: string;
   readonly testId: string;
+  /** 누르면 사진 보기를 엽니다(ADR-0150 2026-11-17 추가). 그림이 없으면(src null) 누를 수 없습니다. */
+  readonly onOpen?: () => void;
 };
 export type VoicePendingBubbleProps = { readonly name: string; readonly testId: string };
 export type VoiceBubbleProps = {
@@ -94,20 +96,34 @@ const ASPECT_CLASS = {
 } as const;
 
 // 사진 도착 — 가짜는 3:4, 서버 사진은 3:2 · 1:1 + 「AI-generated」(ADR-0146 「앱 연결」). 그림을 못 풀었으면(src null) 같은 크기의 빈 면입니다.
+// `onOpen`이 있고 그림이 있으면 묶음 전체가 단추입니다 — 누르면 사진 보기(앨범과 같은 화면)를 엽니다.
 export function PhotoBubble({
   src,
   aspect,
   aiGenerated,
   name,
   testId,
+  onOpen,
 }: PhotoBubbleProps): ReactNode {
   const chat = useUiCopy().messengerChat;
   const label = chat.room.photoLabel(name);
   const box = aspect === undefined ? "chat-photo-3x4" : ASPECT_CLASS[aspect];
+  const open = src === null ? undefined : onOpen;
   return (
     <view
       accessibility-element={true}
       accessibility-label={aiGenerated === true ? `${label}, ${chat.media.aiLabel}` : label}
+      {...(open === undefined
+        ? {}
+        : {
+            "data-testid": ids.photoOpen,
+            "accessibility-traits": "button",
+            "accessibility-enable-tap": true,
+            bindtap: () => {
+              "background only";
+              open();
+            },
+          })}
     >
       {src === null ? (
         <view className={`${box} messenger-chat-photo-empty`} data-testid={testId} />

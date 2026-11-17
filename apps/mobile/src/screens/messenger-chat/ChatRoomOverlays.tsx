@@ -15,6 +15,7 @@ import { DeleteChatDialog } from "./DeleteChatDialog";
 import { UnsentDialog } from "./ChatDelivery";
 import { FeedbackModeSheet } from "./FeedbackModeSheet";
 import { CoinShopLayer } from "./CoinShopLayer";
+import { ChatPhotoLayer } from "./ChatPhotoLayer";
 import { RatingSheet } from "./RatingSheet";
 import { RegenerateIdeasDialog } from "./RegenerateIdeasDialog";
 import { ReportSheet } from "./ReportSheet";
@@ -213,6 +214,15 @@ export function ChatRoomOverlays({
       );
     case "coin-shop":
       return <CoinShopLayer coinBalance={coinBalance} onClose={close} ownsBack={false} />;
+    case "photo":
+    case "photo-redraw":
+      return (
+        <ChatPhotoLayer
+          step={overlay.kind === "photo" ? "view" : "redraw"}
+          messageId={overlay.messageId}
+          {...{ thread, source, wallet, coinBalance, dispatch }}
+        />
+      );
     case "birth-year":
       return (
         <BirthYearSheet

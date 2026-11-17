@@ -72,3 +72,13 @@
 - 기록 첫 쪽 밖의 옛 메시지를 다시 만들면 결과는 앨범에만 선다. 방 로그에 그 대상이 없어서다. 그 사이 앨범은 「Drawing…」이 곧 걷히고 다시 읽는다.
 - 앨범 칸 수(사이드바 설명 「12 photos · 4 voice messages」)는 RPC가 없어 보이지 않는다. 설명은 고정 문구다.
 - 마이그레이션 `20261203120000`은 운영에 적용하지 않았다(사용자 작업). 적용 전에도 앱은 빈 말 · false로 동작한다.
+
+## 추가 (2026-11-17) — 방에서 사진을 누르면 사진 보기 [사용자]
+
+- 결정: 방의 다 만든 사진(그림이 있는 사진 줄)을 누르면 앨범과 같은 사진 보기(`AlbumPhotoViewer`)가 **방 위 겹침**으로 열린다. 앨범 화면으로 옮겨 가지 않는다 — 앨범을 다시 읽지 않고 바로 열리며, 닫으면 방 그대로다.
+- 칸은 방 로그의 사진 줄로 만든다(`chatPhotoTile` — 앨범의 `albumItemsFromLog`와 같은 칸). 그때의 말 · 판(같은 메시지의 사진들, 오래된 것부터) · 다시 그리는 중(방에 자리표시자)이 앨범과 같다.
+- Redraw도 앨범과 같다: 확인(`RemakeDialog`, 25) → `source.album.remake`. 결과 · 거절은 방에 줄로 선다. 가짜 방은 앱 지갑에서 내고, 모자라면 엽전 상점. 확인 · 상점을 닫으면 방으로 돌아온다(앨범처럼 사진 보기로 돌아가지 않는다).
+- 만드는 중 · 그림 없는(서명 URL 없음) 사진은 누를 자리가 없다. 누름 자리는 묶음 전체이고 낭독은 단추(문구는 기존 사진 말 그대로)다.
+- 열면 키보드 자리 · 보기 판을 접는다(겹침 상태 `photo` · `photo-redraw`). 시스템 뒤로가기는 겹침부터 닫는다(`useChatRoom`이 단 하나의 주인).
+- 닫힌 뒤 낭독 초점은 플랫폼에 맡긴다 — 같은 test-id의 사진이 여럿이라 누른 그 사진을 가리킬 수 없다.
+- 적용: `chat-album-rules.ts`(`chatPhotoTile`), `chat-room-state.ts`(겹침 · `openPhotoAction`), `ChatPhotoLayer.tsx`, `ChatRoomOverlays.tsx`, `ChatMediaBubbles.tsx`(`onOpen`), `ChatMessageRows.tsx`(`onOpenPhoto`). 테스트 CV-U1 ~ U5 · CV-UI1 ~ UI5.

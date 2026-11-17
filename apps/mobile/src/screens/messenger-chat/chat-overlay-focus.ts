@@ -38,7 +38,12 @@ export function focusOriginOf(closing: ChatOverlay): ChatFocusOrigin | null {
       return "sidebar-delete";
     case "unsent":
       return "send";
+    case "photo":
+    case "photo-redraw":
+      // 같은 test-id의 사진이 여럿이라 누른 그 사진을 가리킬 수 없습니다 — 초점은 플랫폼에 맡깁니다.
+      return null;
     case "coin-shop":
+      if (closing.from === "photo") return null;
       if (closing.from === "sidebar") return "sidebar-coins";
       if (closing.from === "send") return "send";
       return closing.from === "ask-photo" ? "snapshot-pill" : "voice-pill";
