@@ -27,7 +27,8 @@
 // - `libitum.session-option.show-choice-romanization` — 보기 로마자 표시 설정, `"on"` | `"off"`(ADR-0108 D3)
 // - `libitum.session-option.vibration` — 판정 진동 설정, `"on"` | `"off"`(ADR-0109 D4)
 // - `libitum.messenger.free-turns` — 그날 쓴 무료 메시지 수 · T3 판 표시 기록(ADR-0117 D7)
-// - `libitum.messenger.unlocked` — 해금한 메신저 인물 id 목록(ADR-0117 D7)
+// - `libitum.messenger.unlocked` — 옛 해금 기록(기기 하나짜리). 처음 읽는 계정이 받고 지운다(ADR-0117 D7 개정)
+// - `libitum.messenger.unlocked-by-account` — 해금한 메신저 인물 id 목록, 계정마다(ADR-0117 D7 개정 2026-11-17)
 // - `libitum.analytics.first-open-day` · `libitum.analytics.milestones` — 기기 첫 실행일 · 낸 첫 경험 마일스톤(ADR-0029 「D3 목적 구분」)
 
 /** 호스트가 `StorageModule`이라는 이름으로 등록합니다. */

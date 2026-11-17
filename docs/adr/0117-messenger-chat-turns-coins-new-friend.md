@@ -80,6 +80,12 @@ ui-lynx dist는 예산 559.0 kB 중 557.8 kB를 쓰고 있어 이 변경도 ui-l
 - `lib/storage`의 `getItem` · `setItem`만 쓰고, 읽기 · 쓰기 · JSON 실패는 삼켜 이번 실행만 메모리로 간다(던지지 않음). 모양이 어긋난 값은 없는 것으로 읽는다(`parseTurnRecord` · `parseUnlocked`). 값은 줄바꿈으로 끝나지 않는다(Android SharedPreferences 끝 줄바꿈 함정과 무관).
 - 기기 범위라 **계정을 바꿔도 이어진다**(무료 수 · 해금). 2단계에서 컴패니언 서버의 하루 무료 수 · 인물 해금 상태가 대신한다.
 - 새 데이터는 기기 밖으로 나가지 않아 개인정보 · 데이터 안전 문서는 바뀌지 않는다.
+- **개정 (2026-11-17, 버그 수정):** 해금 기록은 이제 **계정마다**다 — `libitum.messenger.unlocked-by-account`에 `{ <출처 키>: 인물 id[] }`(출처 키 「fixture」 · 「server:<사용자 id>」, 생년 · 내 모습 저장과 같은 키). 같은 기기에서 탈퇴 뒤 다시 가입한 계정에 앞 계정의 정윤경 · 미나가 열려 있던 것을 고친다.
+  - 옛 `libitum.messenger.unlocked`(기기 하나짜리 배열)는 처음 읽는 계정 하나가 받고 지운다 — 업데이트한 사용자가 연 인물을 잃지 않는다. 그래서 이미 섞인 기기는 그 첫 계정이 옛 목록을 한 번 받는다.
+  - 로그인한 계정은 손님(「fixture」) 때 연 인물을 받고 손님 기록을 지운다(손님 기록을 가입한 계정이 받는 [ADR-0111](0111-guest-entry-without-account.md) 규칙과 같음).
+  - 계정 삭제는 그 계정의 해금 기록만 지운다(`account-wiring` `onDeleteAccount`). 로그아웃은 남겨 같은 계정으로 돌아오면 다시 열린다.
+  - 대화 출처는 출처 키가 바뀌면 새로 만들어지므로(`messengerChatSource`) 새 계정의 해금만 읽는다.
+  - 테스트: UA-U1 ~ U5(`chat-local-stores.unlocks.unit.test.ts`), UA-I1 · UA-I2(`messenger-unlocks-account.integration.test.ts`), MC2-U24 기대값 변경.
 
 ### D8. 메신저에 「Go unlimited」가 없다 — 무제한 티켓은 학습 전용 (컴패니언 통합 결정, 2026-11-10)
 
