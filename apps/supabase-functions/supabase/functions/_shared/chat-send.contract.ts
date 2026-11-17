@@ -36,7 +36,11 @@ export type ChatSendEnvName =
   | "COMPANION_FEEDBACK_MODEL"
   | "COMPANION_TRANSLATION"
   | "COMPANION_TRANSLATION_MODEL"
-  | "COMPANION_SUGGEST_MODEL";
+  | "COMPANION_SUGGEST_MODEL"
+  | "COMPANION_REPLY_EFFORT";
+
+/** 답변의 생각 깊이(`output_config.effort`). 채팅은 짧고 빨라야 해서 low가 기본입니다. */
+export type ReplyEffort = "low" | "medium";
 
 export type ChatSendEnv = {
   readonly supabaseUrl: string;
@@ -58,6 +62,7 @@ export type ChatSendEnv = {
         /** 캐릭터 답의 L1 번역. 기본은 검사 모델. */
         readonly translationModel: string;
         readonly suggestModel?: string; // 추천 답변 칩. 없으면 검사 모델.
+        readonly replyEffort?: ReplyEffort; // 답변의 생각 깊이. 없으면 low.
       }
     | { readonly kind: "fake" };
   /** 캐릭터 답을 학습자 언어로 번역하는가(PRD O9 — 매 메시지 · 탭할 때 중 미정). `every`는 턴마다 SSE `translation`을 보내고 저장, `off`는 번역하지 않는다. */

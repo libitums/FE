@@ -3,7 +3,7 @@ import type { ChatSendEnvFrom, ChatSendEnvName } from "./chat-send.contract.ts";
 /**
  * 모델을 정하지 않으면 쓰는 기본값입니다. 바꿀 때는 `COMPANION_MODEL`(답변) · `COMPANION_FEEDBACK_MODEL`(피드백, 기본은
  * 검사 모델 — 2026-11-10부터) · `COMPANION_MODERATION_MODEL`(검사 · 기억 · 요약, 기본은 답변 모델) · `COMPANION_TRANSLATION_MODEL`(L1 번역,
- * 기본은 검사 모델) · `COMPANION_SUGGEST_MODEL`(추천 답변 칩, 기본은 검사 모델).
+ * 기본은 검사 모델) · `COMPANION_SUGGEST_MODEL`(추천 답변 칩, 기본은 검사 모델). 답변의 생각 깊이는 `COMPANION_REPLY_EFFORT`(low 기본 · medium).
  */
 export const defaultCompanionModel = "claude-opus-5-5";
 
@@ -37,6 +37,8 @@ export const chatSendEnvFrom: ChatSendEnvFrom = (read) => {
     if (apiKey === null) return null;
     const model = value("COMPANION_MODEL") ?? defaultCompanionModel;
     const moderationModel = value("COMPANION_MODERATION_MODEL") ?? model;
+    const replyEffort = value("COMPANION_REPLY_EFFORT") ?? "low";
+    if (replyEffort !== "low" && replyEffort !== "medium") return null;
     llm = {
       kind: "anthropic",
       apiKey,
@@ -46,6 +48,7 @@ export const chatSendEnvFrom: ChatSendEnvFrom = (read) => {
       feedbackModel: value("COMPANION_FEEDBACK_MODEL") ?? moderationModel,
       translationModel: value("COMPANION_TRANSLATION_MODEL") ?? moderationModel,
       suggestModel: value("COMPANION_SUGGEST_MODEL") ?? moderationModel,
+      replyEffort,
     } as const;
   } else {
     return null;

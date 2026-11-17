@@ -105,6 +105,15 @@ test("LL1. 답변은 서버 쪽 대체 모델을 싣는다 — Haiku만 뺀다",
   expect(calls.stream[1]).not.toHaveProperty("fallbacks");
 });
 
+test("LL1b. 답변 생각 깊이 — 기본 low, 설정하면 그 값", async () => {
+  await reply(anthropicCompanionLlm(config));
+  await reply(anthropicCompanionLlm({ ...config, replyEffort: "medium" }));
+  expect(calls.stream.map((params) => params["output_config"])).toEqual([
+    { effort: "low" },
+    { effort: "medium" },
+  ]);
+});
+
 test("LL2. 피드백은 피드백 모델, 검사 · 기억은 검사 모델", async () => {
   const llm = anthropicCompanionLlm(config);
   await llm.feedback({
@@ -220,6 +229,22 @@ test("LL3. 모델 바꿔 보기는 모든 단계를 그 모델로", async () => 
   expect(calls.parse.map((params) => params["model"])).toEqual([
     "claude-opus-5-5",
     "claude-opus-5-5",
+  ]);
+});
+
+test("LL3b. 모델 바꿔 보기의 `@medium`은 답변만 그 생각 깊이로 · 모델 이름에서 뗀다", async () => {
+  const env = {
+    supabaseUrl: "",
+    supabaseAnonKey: "",
+    supabaseServiceRoleKey: "",
+    llm: config,
+    translation: "every",
+  } as const;
+  await reply(companionLlmWithModel(env, "claude-haiku-5-5@medium"));
+  await reply(companionLlmWithModel(env, "claude-haiku-5-5"));
+  expect(calls.stream.map((params) => [params["model"], params["output_config"]])).toEqual([
+    ["claude-haiku-5-5", { effort: "medium" }],
+    ["claude-haiku-5-5", { effort: "low" }],
   ]);
 });
 

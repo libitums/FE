@@ -11,7 +11,7 @@
 ## 맥락
 
 1. **LLM이 하는 일은 여섯 가지로 고정돼 있다** [코드 — `chat-send.contract.ts` `CompanionLlm`]. 답변 스트림(`reply`) · 입력 · 출력 검사(`moderate`) · 피드백 카드(`feedback`) · L1 번역(`translate`) · 기억 추출(`extractMemories`) · 요약(`summarize`). 도구 호출 · 에이전트 루프 · 여러 단계 체인이 없다.
-2. **구조화 출력 · 프롬프트 캐시 · 생각 깊이 · 서버 쪽 대체 모델**을 쓴다 [코드]. 검사 · 피드백 · 번역 · 기억은 zod 스키마로 받는 구조화 출력(`messages.parse` + `zodOutputFormat`), 답변은 시스템 프롬프트 앞부분에 `cache_control`, 모든 호출 `effort: "low"`.
+2. **구조화 출력 · 프롬프트 캐시 · 생각 깊이 · 서버 쪽 대체 모델**을 쓴다 [코드]. 검사 · 피드백 · 번역 · 기억은 zod 스키마로 받는 구조화 출력(`messages.parse` + `zodOutputFormat`), 답변은 시스템 프롬프트 앞부분에 `cache_control`, 모든 호출 `effort: "low"`(답변만 `COMPANION_REPLY_EFFORT`로 medium을 고를 수 있다 — 2026-11-17).
 3. **원가와 지연이 단계마다 다르다** [사용자 — 2026-11-09]. 답변 · 피드백은 품질이, 검사 · 번역 · 기억 · 요약은 속도와 원가가 먼저다.
 4. **키 없이도 화면을 봐야 한다** [코드]. `COMPANION_LLM=fake`면 정해진 답을 내는 구현이 같은 인터페이스로 돈다. 테스트도 이 구현을 쓴다.
 
