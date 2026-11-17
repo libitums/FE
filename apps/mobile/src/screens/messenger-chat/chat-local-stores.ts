@@ -8,6 +8,7 @@ import { SNAPSHOT_SELVES, type ChatSnapshotSelf } from "./chat-album.contract";
 import type { SnapshotSelfStore } from "./chat-fixture-album";
 import type { BirthYearStore } from "./chat-fixture-birth-year";
 import type { ChatBirthYear } from "./chat-source.contract";
+import type { KeyboardHeightStore } from "./keyboard-ports";
 
 export const TURN_RECORD_KEY = "libitum.messenger.free-turns";
 export const UNLOCKED_KEY = "libitum.messenger.unlocked";
@@ -136,6 +137,34 @@ export function deviceBirthYearStore(accountKey: string): BirthYearStore {
     write: (value) => writeJson(BIRTH_YEAR_KEY, { ...all(), [accountKey]: value }),
   };
 }
+
+/** 휴대폰 키보드 높이 — 기기 하나에 하나(계정과 무관). 유한한 양수가 아니면 적힌 것 없음. */
+export const KEYBOARD_HEIGHT_KEY = "libitum.messenger.keyboard-height";
+
+const positiveHeight = (value: unknown): number | null =>
+  typeof value === "number" && Number.isFinite(value) && value > 0 ? value : null;
+
+function createDeviceKeyboardHeightStore(): KeyboardHeightStore {
+  let loaded = false;
+  let cache: number | null = null;
+  return {
+    read: () => {
+      if (!loaded) {
+        loaded = true;
+        cache = positiveHeight(readJson(KEYBOARD_HEIGHT_KEY));
+      }
+      return cache;
+    },
+    write: (height) => {
+      if (positiveHeight(height) === null || height === cache) return;
+      loaded = true;
+      cache = height;
+      writeJson(KEYBOARD_HEIGHT_KEY, height);
+    },
+  };
+}
+
+export const deviceKeyboardHeightStore: KeyboardHeightStore = createDeviceKeyboardHeightStore();
 
 export function memoryBirthYearStore(initial: ChatBirthYear | null = null): BirthYearStore {
   let value = initial;

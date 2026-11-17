@@ -30,13 +30,13 @@ import type {
   ChatSource,
   ChatThread,
 } from "./chat-source.contract";
-import { resolveChatKeyboardHeight } from "./keyboard-height";
 import { keyboardPlanFor, type KeyboardPlan } from "./keyboard-plan";
 import type { KeyboardHeightStore, KoreanKeyboardProbe } from "./keyboard-ports";
 import { chatFeedbackTestIds } from "./chat-feedback.contract";
 import { chatSettingsTestIds } from "./chat-settings.contract";
 import { messengerChatTestIds as ids } from "./messenger-chat.contract";
 import { useChatSnapshot, useChatThread } from "./use-chat-source";
+import { usePhoneKeyboardHeight } from "./use-phone-keyboard-height";
 
 export type UseChatRoomProps = {
   readonly roomId: string;
@@ -56,6 +56,8 @@ export type ChatRoomApi = {
   readonly birthYear: ChatBirthYear;
   readonly preferences: ChatPreferences;
   readonly keyboardHeight: number;
+  /** 입력 칸이 잰 휴대폰 키보드 높이(pt/dp)를 받습니다(`usePhoneKeyboardHeight`). */
+  readonly measureKeyboard: (height: number) => void;
   readonly dispatch: (action: ChatRoomAction) => void;
   readonly send: () => void;
 };
@@ -280,11 +282,7 @@ export function useChatRoom({
           : null,
   );
 
-  const keyboardHeight = resolveChatKeyboardHeight({
-    stored: keyboardHeightStore.read(),
-    screenHeight: screenHeight(),
-    bottomInset: edges.bottom,
-  });
+  const keyboard = usePhoneKeyboardHeight(keyboardHeightStore, screenHeight(), edges.bottom);
 
   return {
     state: remount === 0 ? state : { ...state, inputEpoch: state.inputEpoch + remount },
@@ -292,7 +290,8 @@ export function useChatRoom({
     thread,
     birthYear,
     preferences,
-    keyboardHeight,
+    keyboardHeight: keyboard.height,
+    measureKeyboard: keyboard.measure,
     dispatch,
     send,
   };

@@ -3,6 +3,7 @@ import { describe, expect, test } from "vitest";
 import {
   chatKeyboardSlotHeight,
   chatSlotContent,
+  phoneKeyboardHeightOf,
   resolveChatKeyboardHeight,
   type ChatSlot,
   type PhoneFocus,
@@ -145,5 +146,21 @@ describe("chatSlotContent (MC-U4)", () => {
     expect(chatSlotContent({ keyboard: "phone", underlay: "none", slot: keyboardSlot })).toBe(
       "phone-spacer",
     );
+  });
+});
+
+describe("phoneKeyboardHeightOf (KH-U3)", () => {
+  test("KH-U3. Android는 물리 픽셀을 밀도로 나누고(에뮬레이터 실측 882 = 336dp × 2.625), iOS는 pt 그대로다", () => {
+    expect(phoneKeyboardHeightOf(882, { platform: "Android", pixelRatio: 2.625 })).toBe(336);
+    expect(phoneKeyboardHeightOf(336, { platform: "iOS", pixelRatio: 3 })).toBe(336);
+    // 기기 정보가 없거나 밀도가 이상하면 받은 값 그대로입니다.
+    expect(phoneKeyboardHeightOf(336, undefined)).toBe(336);
+    expect(phoneKeyboardHeightOf(336, { platform: "Android", pixelRatio: 0 })).toBe(336);
+  });
+
+  test("KH-U3. 유한한 양수가 아니면 0(키보드가 내려감)이다", () => {
+    for (const height of [0, -10, Number.NaN, Number.POSITIVE_INFINITY, "336", undefined]) {
+      expect(phoneKeyboardHeightOf(height, { platform: "Android", pixelRatio: 2 })).toBe(0);
+    }
   });
 });

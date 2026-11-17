@@ -172,4 +172,15 @@ ADR-0102 6판(자유 대화 서버 설계)은 브랜치 `docs/adr-0102-messenger
 - ⟨2026-11-11, [ADR-0126](0126-messenger-chat-settings.md)⟩ 대화 출처 포트에 **추가만** 했다 — 목록 스냅숏 `preferences` + `setPreferences`, `memories` · `updateMemory` · `deleteMemory`. 추천 답변을 끄면 모든 방의 `thread.ideas`가 비고, 방마다의 `settings.autoIdeas`는 포트에 남지만 사이드바 토글은 지웠다. 사이드바(O4)는 여섯째 「What {이름} remembers」 · 일곱째 「Correction style」, 지우기는 여덟째. 겹침에 `feedback-mode`(부모는 사이드바) 하나가 더해졌다.
 - ⟨2026-11-12, [ADR-0128](0128-messenger-access.md)⟩ 메신저 탭 목록은 로그인한 시험 계정에게만 선다. 손님은 가입 권유, 시험 계정이 아닌 회원은 「곧 열림」 안내가 목록 자리에 선다(`MessengerListScreenProps`에 `access` · `onSignIn`). 손님에게는 엽전 칩도 없다.
 - ⟨2026-11-13⟩ **잠긴 방은 목록에 줄이 없다 — 해금되면 생긴다**(**사용자 결정** 「아직 해금되지 않은 채팅방은 미리 채팅방 리스트에 띄우지말고 해금되면 생기도록」). `orderChatRooms`가 열린 방만 돌려준다. 위 「잠긴 인물은 맨 뒤 — 흐린 아바타 · 자물쇠 배지 · 열리는 조건 문구, 눌러도 무반응」은 대체됐다. 해금되면 맨 위에 NEW · 안 읽음 1 · 첫 메시지로 서는 것(0117)은 그대로다. 열린 방이 없으면 빈 목록(「No chats yet」 + `Go to Journey`). 잠긴 줄 부품(`ChatListRow`의 잠김 분기 · 문구)은 목록 경로에서 쓰이지 않게 됐다. 테스트 HL-U1 · HL-UI1 · UI2 · HL-I1 · I2.
+- ⟨2026-11-17⟩ **버그 수정 — 휴대폰 키보드 자리가 실제 키보드보다 낮아 입력 줄을 덮었다.** 사용자 보고: Android에서 툴바 · 추천 줄 · 이모지
+  탭이 붙은 키보드가 입력 칸을 조금 가린다(갤럭시 기본 키보드는 괜찮음). 원인은 D5의 표(260 · 300 · 320)를 그대로 쓴 것이다 — 높이
+  저장 포트가 늘 `null`이라 실측이 한 번도 들어가지 않았다. Pixel 8 Gboard만 해도 336dp(ADR-0036 에뮬레이터 실측)로 표의 최대 320을
+  넘는다. Android 버전이 아니라 **키보드 앱 · 설정(툴바 · 한 줄 더 · 높이 조절)** 에 따라 갈린다. iOS도 추천 줄이 있으면 표보다 높다.
+  - D4 · D5의 높이 포트를 채웠다: 입력 칸 `<input>`의 `keyboardheightchange`(Lynx가 화면 아래 끝에서 키보드 윗변까지 잰 값 — Android
+    물리 픽셀은 `pixelRatio`로 나눔, `phoneKeyboardHeightOf`)를 받아 자리 높이로 쓰고, 기기 하나에 하나인 키
+    `libitum.messenger.keyboard-height`(`deviceKeyboardHeightStore`)에 남겨 다음 방부터 첫 자리를 맞춘다. 값이 없을 때만 표를 쓴다.
+    높이가 바뀌면(이모지 탭 · 툴바) 따라 바뀌고, 내려가며 알린 0은 잰 값을 지우지 않는다(`usePhoneKeyboardHeight`).
+  - 학습 키보드 · 보기 판도 같은 높이를 쓰므로 바꿔 끼울 때 점프가 없는 것(D5)은 그대로다 — 이제 그 높이가 실측이다. 알려진 한계 1(휴대폰
+    키보드로 바꿀 때 튐)은 **첫 측정 전 한 번만** 남는다.
+  - 호스트 변경은 없다(Android `MainActivity`의 IME 인셋 대신 Lynx 입력 칸이 이미 재는 값을 씀). 테스트 KH-U1 ~ U3 · KH-UI1 ~ UI3.
 
