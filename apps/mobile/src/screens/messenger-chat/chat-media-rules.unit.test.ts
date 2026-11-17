@@ -239,11 +239,39 @@ describe("로그 줄", () => {
 });
 
 describe("다시 읽기 간격", () => {
-  test("CM-U7a 2 · 3 · 5 · 5 · 10 · 10 · 15초, 그 뒤 30초", () => {
-    expect([0, 1, 2, 3, 4, 5, 6, 7, 20].map(mediaPollDelay)).toEqual([
-      2_000, 3_000, 5_000, 5_000, 10_000, 10_000, 15_000, 30_000, 30_000,
+  // 다시 읽는 시각(시작부터 누적)과, 그 시각에 끝난 일을 처음 보는 시각 · 그때까지 읽은 횟수.
+  const checks = (limit: number) => {
+    const at: number[] = [];
+    for (let step = 0, t = 0; t <= limit; step += 1) {
+      t += mediaPollDelay(step);
+      at.push(t);
+    }
+    return at;
+  };
+  const seen = (doneAt: number) => {
+    const at = checks(MEDIA_POLL_LIMIT_MS);
+    const index = at.findIndex((t) => t >= doneAt);
+    return { at: at[index], requests: index + 1 };
+  };
+
+  test("CM-U7a 끝나는 구간(40초까지)은 2초마다, 그 뒤 5 · 10 · 15초로 늘고 꼬리는 30초", () => {
+    expect([0, 1, 10, 19].map(mediaPollDelay)).toEqual([2_000, 2_000, 2_000, 2_000]);
+    expect([20, 23, 24, 26, 27, 28, 29, 40].map(mediaPollDelay)).toEqual([
+      5_000, 5_000, 10_000, 10_000, 15_000, 15_000, 30_000, 30_000,
     ]);
     expect(MEDIA_POLL_LIMIT_MS).toBe(660_000);
+  });
+
+  test("CM-U7c 서버가 끝낸 뒤 2초 안에 본다 — 음성(4초) · 사진(17초 · 25초 · 40초)", () => {
+    expect(seen(4_000)).toEqual({ at: 4_000, requests: 2 });
+    expect(seen(17_000)).toEqual({ at: 18_000, requests: 9 });
+    expect(seen(25_000).at - 25_000).toBeLessThanOrEqual(2_000);
+    expect(seen(40_000).at).toBe(40_000);
+  });
+
+  test("CM-U7d 오래 걸려도 읽는 횟수는 묶인다 — 60초 24번, 상한(11분)까지 50번 안", () => {
+    expect(seen(60_000)).toEqual({ at: 60_000, requests: 24 });
+    expect(checks(MEDIA_POLL_LIMIT_MS).length).toBeLessThanOrEqual(50);
   });
 
   test("CM-U7b 다음 UTC 자정", () => {

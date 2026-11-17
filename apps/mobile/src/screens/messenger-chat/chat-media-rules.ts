@@ -13,7 +13,17 @@ import type { ChatMediaKind, ChatMessage } from "./chat-source.contract";
 
 /** 앱 쪽 다시 읽기 상한 — 서버 만료(`media_pending_minutes` 기본 10분) + 1분. */
 export const MEDIA_POLL_LIMIT_MS = 660_000;
-const POLL_DELAYS_MS = [2_000, 3_000, 5_000, 5_000, 10_000, 10_000, 15_000] as const;
+/**
+ * 다시 읽기 간격 — 일이 실제로 끝나는 구간은 촘촘히, 그 뒤로 늘립니다. 음성은 3 ~ 5초, 사진은 15 ~ 25초(검사 노드를 돌면 더)에
+ * 끝납니다. 예전 간격(2 · 3 · 5 · 5 · 10 …)은 누적 15초 다음이 25초라 17초에 끝난 사진을 8초 늦게 봤습니다.
+ * 40초까지 2초마다(20번) → 60초까지 5초(4번) → 90초까지 10초(3번) → 120초까지 15초(2번) → 그 뒤 30초.
+ */
+const POLL_DELAYS_MS: readonly number[] = [
+  ...Array<number>(20).fill(2_000),
+  ...Array<number>(4).fill(5_000),
+  ...Array<number>(3).fill(10_000),
+  ...Array<number>(2).fill(15_000),
+];
 const POLL_TAIL_MS = 30_000;
 const DAY_MS = 86_400_000;
 
