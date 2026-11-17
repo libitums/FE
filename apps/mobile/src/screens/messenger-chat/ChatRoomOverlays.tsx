@@ -205,18 +205,20 @@ export function ChatRoomOverlays({
         <ClearChatDialog
           name={thread.counterpart.name}
           failure={overlay.failure}
-          // 비우면 방은 남고(대화만 빔) 겹침을 모두 닫습니다. 못 비우면 대화상자에 까닭이 섭니다.
+          // 비우면 방은 남고(대화만 빔) 겹침을 모두 닫고 키보드 자리도 접습니다 — 빈 방은 키보드가 닫힌 채 첫 인사를 받습니다.
+          // 못 비우면 대화상자에 까닭이 섭니다.
           onConfirm={() => {
-            void source.clearRoom(roomId).then((outcome) =>
-              dispatch(
-                outcome === "cleared"
-                  ? { type: "dismiss-overlays" }
-                  : {
-                      type: "open-overlay",
-                      overlay: { kind: "clear-confirm", failure: outcome },
-                    },
-              ),
-            );
+            void source.clearRoom(roomId).then((outcome) => {
+              if (outcome !== "cleared") {
+                dispatch({
+                  type: "open-overlay",
+                  overlay: { kind: "clear-confirm", failure: outcome },
+                });
+                return;
+              }
+              dispatch({ type: "dismiss-overlays" });
+              dispatch({ type: "close-keyboard" });
+            });
           }}
           onCancel={close}
         />
