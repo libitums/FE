@@ -40,6 +40,9 @@ function isCompactScreen(): boolean {
  * 새 친구 시트(E2) 그리기입니다. 단계(typing · message)와 시간표는 층이 정하고, 이 컴포넌트는 받은 값을 그립니다.
  * 막 탭 · Later · 판 끌어내림은 모두 `onLater`입니다.
  */
+
+/** 단추 줄의 기본 아래 여백(CSS `--libitum-spacing-16`)입니다. */
+const ACTIONS_BOTTOM_PADDING = 16;
 export function NewFriendSheet({
   model,
   phase,
@@ -55,8 +58,9 @@ export function NewFriendSheet({
   // 큰 글자에서 판이 화면 밖으로 넘치지 않게 px 상한을 걸고, 본문만 스크롤합니다(접근성 C1). 띠 · 얼굴 · 단추 줄은 고정입니다.
   const globalProps = useGlobalProps();
   const insets = safeAreaInsetsFrom(globalProps);
-  // 단추 줄 아래 여백 16에 아래 시스템 바(Android 3버튼 · 제스처)를 더합니다 — CSS `env()`는 Lynx에서 0입니다(ADR-0044 D3 개정).
-  const bottomInset = sheetBottomInsetFrom(globalProps);
+  // 단추 줄 아래 여백 16에 아래 시스템 바(Android 3버튼 · 제스처)나 iOS 홈 인디케이터 안전 영역의 남는 몫을 더합니다 — CSS
+  // `env()`는 Lynx에서 0입니다(ADR-0044 D3 개정).
+  const bottomInset = sheetBottomInsetFrom(globalProps, ACTIONS_BOTTOM_PADDING);
   const maxHeight = sheetMaxHeightOf({
     screenHeight: screenHeightFrom(typeof SystemInfo === "undefined" ? undefined : SystemInfo),
     insetTop: insets.top,
@@ -231,7 +235,11 @@ export function NewFriendSheet({
         <view
           className="new-friend-actions"
           data-testid={ids.actions}
-          style={bottomInset > 0 ? { paddingBottom: `${16 + bottomInset}px` } : undefined}
+          style={
+            bottomInset > 0
+              ? { paddingBottom: `${ACTIONS_BOTTOM_PADDING + bottomInset}px` }
+              : undefined
+          }
           bindlayoutchange={budget.onFixedLayout("actions")}
         >
           <view
