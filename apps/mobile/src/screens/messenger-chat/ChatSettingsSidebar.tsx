@@ -39,15 +39,19 @@ export type ChatSettingsSidebarProps = {
   readonly onFeedbackMode: () => void;
   /** 이 인물 앨범(ADR-0150 M1). */
   readonly onAlbum: () => void;
-  readonly onDelete: () => void;
+  /** My profile — 설정 탭의 User profile로(ADR-0156). */
+  readonly onMyProfile: () => void;
+  /** 추천 답변 칩을 보일지(계정 설정 `replyIdeas`, ADR-0156) · 바꾸면 바뀐 값. */
+  readonly replyIdeas: boolean;
+  readonly onReplyIdeas: (on: boolean) => void;
+  /** 대화 비우기 확인을 엽니다(ADR-0156). */
+  readonly onClear: () => void;
   readonly onClose: () => void;
 };
 
-// 탭이 아무 동작도 하지 않는 줄(상대 프로필 · 내 프로필)의 눌림 처리입니다 — 1단계에는 프로필 화면이 없습니다.
-const noop = (): void => undefined;
-
-// 채팅 설정 사이드바(O4)입니다. 줄 순서가 고정입니다: ①엽전 ②상대 프로필 ③내 프로필 ④이야기 시점 ⑤앨범(ADR-0150)
-// ⑥생년 ⑦기억 ⑧교정 방식 ⑨대화 지우기. 오른쪽에서 밀려 들어오며, 움직임 줄이기면 미는 움직임 클래스를 달지 않아 즉시 서습니다.
+// 채팅 설정 사이드바(O4)입니다. 줄 순서가 고정입니다: ①엽전 ②내 프로필 ③이야기 시점 ④앨범(ADR-0150) ⑤생년 ⑥기억
+// ⑦교정 방식 ⑧추천 답변 ⑨대화 비우기. 상대 프로필 줄은 프로필 화면이 생길 때까지 숨깁니다(ADR-0156 — 그리지 않음).
+// 오른쪽에서 밀려 들어오며, 움직임 줄이기면 미는 움직임 클래스를 달지 않아 즉시 서습니다.
 export function ChatSettingsSidebar({
   thread,
   learnerName,
@@ -61,7 +65,10 @@ export function ChatSettingsSidebar({
   feedbackMode,
   onFeedbackMode,
   onAlbum,
-  onDelete,
+  onMyProfile,
+  replyIdeas,
+  onReplyIdeas,
+  onClear,
   onClose,
 }: ChatSettingsSidebarProps): ReactNode {
   const copy = useUiCopy().messengerChat.sidebar;
@@ -96,9 +103,9 @@ export function ChatSettingsSidebar({
     "background only";
     onGetCoins();
   };
-  const handleDelete = () => {
+  const handleClear = () => {
     "background only";
-    onDelete();
+    onClear();
   };
 
   return (
@@ -157,31 +164,19 @@ export function ChatSettingsSidebar({
                 </view>
               </view>
             </view>
-            <view className="chat-sidebar-row" data-testid={ids.sidebarProfile} data-order="2">
-              <SettingsCell
-                trailing="navigation"
-                title={counterpart.name}
-                description={copy.viewProfile}
-                avatar={{
-                  name: counterpart.name,
-                  ...(counterpart.avatarUrl === null ? {} : { imageSource: counterpart.avatarUrl }),
-                }}
-                onNavigate={noop}
-              />
-            </view>
-            <view className="chat-sidebar-row" data-testid={ids.sidebarMyProfile} data-order="3">
+            <view className="chat-sidebar-row" data-testid={ids.sidebarMyProfile} data-order="2">
               <SettingsCell
                 trailing="navigation"
                 title={copy.myProfile}
                 description={copy.calledBy(counterpart.name, learnerName)}
                 avatar={{ name: learnerName }}
-                onNavigate={noop}
+                onNavigate={onMyProfile}
               />
             </view>
             <NavRow
               className="chat-sidebar-row"
               testId={ids.sidebarStoryPoint}
-              order={4}
+              order={3}
               title={copy.storyPoint}
               value={storyValue}
               onTap={onStoryPoint}
@@ -189,7 +184,7 @@ export function ChatSettingsSidebar({
             <NavRow
               className="chat-sidebar-row"
               testId={chatAlbumTestIds.sidebarRow}
-              order={5}
+              order={4}
               title={albumCopy.sidebarRow}
               value={albumCopy.sidebarDescription}
               onTap={onAlbum}
@@ -197,7 +192,7 @@ export function ChatSettingsSidebar({
             <NavRow
               className="chat-sidebar-row"
               testId={ids.sidebarBirthYear}
-              order={6}
+              order={5}
               title={yearCopy.sidebar}
               value={yearValue}
               onTap={onBirthYear}
@@ -205,7 +200,7 @@ export function ChatSettingsSidebar({
             <NavRow
               className="chat-sidebar-row"
               testId={chatSettingsTestIds.sidebarMemories}
-              order={7}
+              order={6}
               title={memoryTitle}
               value={memoryValue}
               onTap={onMemories}
@@ -213,27 +208,36 @@ export function ChatSettingsSidebar({
             <NavRow
               className="chat-sidebar-row"
               testId={chatSettingsTestIds.sidebarFeedback}
-              order={8}
+              order={7}
               title={feedbackCopy.sidebar}
               value={feedbackValue}
               onTap={onFeedbackMode}
             />
+            <view className="chat-sidebar-row" data-testid={ids.sidebarReplyIdeas} data-order="8">
+              <SettingsCell
+                trailing="toggle"
+                title={settingsCopy.replyIdeas}
+                description={settingsCopy.replyIdeasBody}
+                checked={replyIdeas}
+                onChange={onReplyIdeas}
+              />
+            </view>
           </view>
         </scroll-view>
         <view className="chat-sidebar-delete">
           <view
-            id={ids.sidebarDelete}
+            id={ids.sidebarClear}
             className="chat-sidebar-delete-button"
-            data-testid={ids.sidebarDelete}
+            data-testid={ids.sidebarClear}
             data-order="9"
             accessibility-element={true}
             accessibility-traits="button"
-            accessibility-label={copy.deleteChat}
+            accessibility-label={copy.clearChat}
             accessibility-enable-tap={true}
-            bindtap={handleDelete}
+            bindtap={handleClear}
           >
             <text className="chat-sidebar-delete-label" accessibility-elements-hidden={true}>
-              {copy.deleteChat}
+              {copy.clearChat}
             </text>
           </view>
         </view>

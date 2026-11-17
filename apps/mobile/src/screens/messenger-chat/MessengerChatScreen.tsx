@@ -57,6 +57,7 @@ export function MessengerChatScreen({
   onExit,
   onOpenMemories,
   onOpenAlbum,
+  onOpenMyProfile,
   guideStore = deviceGuideStore,
 }: MessengerChatScreenProps): ReactNode {
   const copy = useUiCopy().messengerChat;
@@ -292,8 +293,7 @@ export function MessengerChatScreen({
         coinBalance={coinBalance}
         birthYear={birthYear}
         preferences={preferences}
-        onOpenMemories={onOpenMemories}
-        onOpenAlbum={onOpenAlbum}
+        {...{ onOpenMemories, onOpenAlbum, onOpenMyProfile }}
       />
     </view>
   );

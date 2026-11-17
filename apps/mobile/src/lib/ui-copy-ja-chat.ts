@@ -111,7 +111,7 @@ export const messengerChatJa: MessengerChatCopy = {
     storyPoint: "ストーリーポイント",
     autoIdeas: "返信のヒントを自動で表示",
     autoIdeasDescription: "あなたの番になったら返信のヒントを開きます",
-    deleteChat: "チャットを削除",
+    clearChat: "チャットをリセット",
   },
   storyPoint: {
     title: "ストーリーポイント",
@@ -126,11 +126,14 @@ export const messengerChatJa: MessengerChatCopy = {
     change: "変更",
     close: "閉じる",
   },
-  deleteChat: {
-    title: "このチャットを削除しますか？",
-    description: (name) => `${name}とのチャットが削除されます。`,
+  clearChat: {
+    title: "このチャットをリセットしますか？",
+    description: (name) =>
+      `${name}とのメッセージと、${name}が覚えているあなたのことが消えます。元に戻せません。写真はアルバムに残ります。`,
+    busy: "返信が終わってから、もう一度お試しください。",
+    failed: "リセットできませんでした。接続を確認して、もう一度お試しください。",
     cancel: "キャンセル",
-    confirm: "削除",
+    confirm: "リセット",
   },
   myMessage: {
     meaningButton: "意味を見る",

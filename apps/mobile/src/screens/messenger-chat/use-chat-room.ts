@@ -68,7 +68,7 @@ const originTestId: Readonly<Record<ChatFocusOrigin, string>> = {
   "snapshot-pill": ids.snapshot,
   "voice-pill": ids.snapVoice,
   "sidebar-story-point": ids.sidebarStoryPoint,
-  "sidebar-delete": ids.sidebarDelete,
+  "sidebar-clear": ids.sidebarClear,
   // 엽전 상점을 연 것은 사이드바의 「Get coins」 단추입니다(엽전 상자 전체가 아니라 접근성 요소인 단추에 id가 있습니다).
   "sidebar-coins": ids.sidebarGetCoins,
   // 1.5 초점 되돌림 자리 — 턴 표시 조각의 test-id입니다(spec §10).

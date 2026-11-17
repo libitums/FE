@@ -135,7 +135,7 @@ export type MessengerChatCopy = {
     readonly storyPoint: string;
     readonly autoIdeas: string;
     readonly autoIdeasDescription: string;
-    readonly deleteChat: string;
+    readonly clearChat: string;
   };
   readonly storyPoint: {
     readonly title: string;
@@ -146,9 +146,12 @@ export type MessengerChatCopy = {
     readonly change: string;
     readonly close: string;
   };
-  readonly deleteChat: {
+  /** 대화 비우기 확인(ADR-0156). `busy` · `failed`는 못 비웠을 때 설명 자리에 섭니다. */
+  readonly clearChat: {
     readonly title: string;
     readonly description: (name: string) => string;
+    readonly busy: string;
+    readonly failed: string;
     readonly cancel: string;
     readonly confirm: string;
   };
@@ -191,6 +194,8 @@ export type MessengerChatScreenProps = {
   /** 사이드바 줄이 쌓는 화면 — 「What {name} remembers」 인물 기억(ADR-0126) · Album 인물 앨범(ADR-0150, 없으면 무동작). */
   readonly onOpenMemories: (characterId: string, name: string) => void;
   readonly onOpenAlbum?: (roomId: string, name: string) => void;
+  /** 사이드바 My profile — 설정 탭의 User profile(ADR-0156, 없으면 무동작). */
+  readonly onOpenMyProfile?: () => void;
   /** 본 첫 입장 안내 기록(2026-11-13) — 기본은 기기 저장소. */
   readonly guideStore?: GuideStore;
 };
@@ -254,7 +259,7 @@ export const messengerChatTestIds = {
   reportSheet: room("report"),
   reportReason: (id: ChatReportReasonId): string => room(`report-${id}`),
   regenDialog: room("regen"),
-  deleteDialog: room("delete"),
+  clearDialog: room("clear"),
   askDialog: room("ask"),
   askBalance: room("ask-balance"),
   askConfirm: room("ask-confirm"),
@@ -267,7 +272,8 @@ export const messengerChatTestIds = {
   sidebarMyProfile: room("sidebar-my-profile"),
   sidebarStoryPoint: room("sidebar-story-point"),
   sidebarAutoIdeas: room("sidebar-auto-ideas"),
-  sidebarDelete: room("sidebar-delete"),
+  sidebarClear: room("sidebar-clear"),
+  sidebarReplyIdeas: room("sidebar-reply-ideas"),
   storyPointSheet: room("story-point"),
   storyPointOption: (id: string): string => room(`story-point-${id}`),
   notice: room("notice"),

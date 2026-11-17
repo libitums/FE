@@ -204,13 +204,27 @@ function messagesOf(raw: Json): {
 }
 
 /** `companion_load_profile` 본문 → 생년. 행이 없으면 JSON null(생년 없음), 못 읽거나 틀린 본문이면 null. */
-export function profileFrom(bodyText: string | null): { readonly birthYear: number | null } | null {
+export function profileFrom(
+  bodyText: string | null,
+): { readonly birthYear: number | null; readonly replySuggestions: boolean | null } | null {
   const raw = parse(bodyText);
-  if (raw === null) return bodyText?.trim() === "null" ? { birthYear: null } : null;
+  if (raw === null) {
+    return bodyText?.trim() === "null" ? { birthYear: null, replySuggestions: null } : null;
+  }
   const record = recordOf(raw);
   if (record === null) return null;
   const year = record["birthYear"];
-  return { birthYear: typeof year === "number" && Number.isInteger(year) ? year : null };
+  const replies = record["replySuggestions"];
+  return {
+    birthYear: typeof year === "number" && Number.isInteger(year) ? year : null,
+    replySuggestions: typeof replies === "boolean" ? replies : null,
+  };
+}
+
+/** `companion_clear_chat`의 답(ADR-0156) — `{ status: "cleared" | "busy" }`. 틀리면 null. */
+export function clearOutcomeFrom(bodyText: string | null): "cleared" | "busy" | null {
+  const status = recordOf(parse(bodyText))?.["status"];
+  return status === "cleared" || status === "busy" ? status : null;
 }
 
 export function historyFrom(bodyText: string | null): RemoteHistory | null {

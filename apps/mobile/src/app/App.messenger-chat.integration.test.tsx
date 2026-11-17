@@ -212,37 +212,32 @@ test("MC-I4. 방의 사진 요청 대화상자의 잔액은 앱의 엽전 잔액
   expect(textOf("messenger-chat-ask-balance")).toBe("You have 100 coins");
 });
 
-// ------------------------------------------------------------------ MC-I5 · 지우기 · 빈 목록
+// ------------------------------------------------------------------ MC-I5 · 대화 비우기(ADR-0156) · 빈 목록
 
-async function deleteOpenedRoom(id: string): Promise<void> {
-  openRoom(id);
-  tapRound("messenger-chat-settings");
-  tapId("messenger-chat-sidebar-delete");
-  tapButtonIn("ui-lynx-dialog-action-delete");
-  // 방이 출처에서 사라진 것을 본 화면이 나가는 길을 한 틱 안에서 마칩니다.
-  await act(async () => {
-    await Promise.resolve();
-  });
-}
-
-test("MC-I5. 사이드바 › Delete chat › 확인하면 목록으로 돌아오고 그 줄만 사라진다", async () => {
-  await bootToList();
-
-  await deleteOpenedRoom("guesthouse");
-
-  expect(screen.getByTestId("messenger-list-screen")).toBeInTheDocument();
-  expect(present("messenger-chat-screen")).toBe(false);
-  expect(present(row("guesthouse"))).toBe(false);
-  expect(listRowOrder()).toEqual(["owner"]);
-  expect(screen.getByTestId("ui-lynx-bottom-navigator")).toBeInTheDocument();
-  expect(isTabSelected("messenger")).toBe(true);
-});
-
-test("MC-I5. 지우기 확인을 Cancel하면 방도 줄도 그대로 남는다", async () => {
+test("MC-I5. 사이드바 › Clear chat › 확인하면 방에 그대로 있고 대화만 비며, 목록 줄도 남는다", async () => {
   await bootToList();
   openRoom("guesthouse");
   tapRound("messenger-chat-settings");
-  tapId("messenger-chat-sidebar-delete");
+  tapId("messenger-chat-sidebar-clear");
+  tapButtonIn("ui-lynx-dialog-action-clear");
+  await act(async () => {
+    await Promise.resolve();
+    await Promise.resolve();
+  });
+
+  expect(screen.getByTestId("messenger-chat-screen")).toBeInTheDocument();
+  expect(present("messenger-chat-sidebar")).toBe(false);
+  expect(present("messenger-chat-clear")).toBe(false);
+  leaveRoom();
+  // 줄은 남는다(지난 대화 대신 첫 줄만 남아 순서는 바뀔 수 있다).
+  expect([...listRowOrder()].sort()).toEqual([...INITIAL_ORDER].sort());
+});
+
+test("MC-I5. 비우기 확인을 Cancel하면 방도 줄도 그대로 남는다", async () => {
+  await bootToList();
+  openRoom("guesthouse");
+  tapRound("messenger-chat-settings");
+  tapId("messenger-chat-sidebar-clear");
 
   tapButtonIn("ui-lynx-dialog-action-cancel");
 
@@ -254,7 +249,10 @@ test("MC-I5. 지우기 확인을 Cancel하면 방도 줄도 그대로 남는다"
 test("MC-I5. 열 수 있는 방을 모두 지우면 잠긴 방만 남아 빈 목록이 선다(HL-I1 — 잠긴 방은 줄이 없다)", async () => {
   await bootToList();
 
-  for (const id of ["guesthouse", "owner"]) await deleteOpenedRoom(id);
+  const source = await appChatSource();
+  act(() => {
+    for (const id of ["guesthouse", "owner"]) source?.deleteRoom(id);
+  });
 
   expect(screen.getByTestId("messenger-list-empty")).toBeInTheDocument();
   expect(present(row("mina"))).toBe(false);

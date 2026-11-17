@@ -271,7 +271,10 @@ test("MC-U28. en messengerChat 문구 표본(spec §8)", () => {
   expect(m.askMedia.confirmLabel(30)).toBe("Ask for 30 coins");
   expect(m.askMedia.balance(2)).toBe("You have 2 coins");
   expect(m.sidebar.calledBy("Mina", "Duru")).toBe("Mina calls you 「Duru」");
-  expect(m.deleteChat.description("Mina")).toBe("Your chat with Mina will be removed.");
+  expect(m.clearChat.description("Mina")).toBe(
+    "Your messages with Mina and what Mina remembers about you will be erased. This can't be undone. Photos stay in the album.",
+  );
+  expect(m.sidebar.clearChat).toBe("Clear chat");
   expect(Object.keys(m.report.reasons).sort()).toEqual([
     "hateful",
     "other",

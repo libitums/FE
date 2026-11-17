@@ -316,10 +316,10 @@ const overlayRows: readonly OverlayRow[] = [
     origin: "sidebar-story-point",
   },
   {
-    label: "delete-confirm",
-    overlay: { kind: "delete-confirm" },
+    label: "clear-confirm",
+    overlay: { kind: "clear-confirm", failure: null },
     parent: { kind: "sidebar" },
-    origin: "sidebar-delete",
+    origin: "sidebar-clear",
   },
   {
     label: "coin-shop from sidebar",
@@ -363,9 +363,9 @@ describe("겹침 열기 · 닫기 (MC-U11)", () => {
     const state = run(
       learning(),
       { type: "open-overlay", overlay: { kind: "sidebar" } },
-      { type: "open-overlay", overlay: { kind: "delete-confirm" } },
+      { type: "open-overlay", overlay: { kind: "clear-confirm", failure: null } },
     );
-    expect(state.overlay).toEqual({ kind: "delete-confirm" });
+    expect(state.overlay).toEqual({ kind: "clear-confirm", failure: null });
   });
 
   test("MC-U11. 신고는 사유 없이, 👎 시트는 이유 · 메모 없이 열린다(ADR-0129)", () => {

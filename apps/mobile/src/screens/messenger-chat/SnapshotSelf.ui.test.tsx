@@ -61,12 +61,15 @@ test("AL-UI11 사이드바의 Album 줄은 이야기 시점 다음(5번째)이�
       onMemories={vi.fn<() => void>()}
       onFeedbackMode={vi.fn<() => void>()}
       onAlbum={onAlbum}
-      onDelete={vi.fn<() => void>()}
+      onClear={vi.fn<() => void>()}
+      onMyProfile={vi.fn<() => void>()}
+      replyIdeas={true}
+      onReplyIdeas={vi.fn<(on: boolean) => void>()}
       onClose={vi.fn<() => void>()}
     />,
   );
   const row = screen.getByTestId(ids.sidebarRow);
-  expect(row.getAttribute("data-order")).toBe("5");
+  expect(row.getAttribute("data-order")).toBe("4");
   expect(labelOf(ids.sidebarRow)).toBe("Album, Pictures and voice messages");
   tapId(ids.sidebarRow);
   expect(onAlbum).toHaveBeenCalledTimes(1);

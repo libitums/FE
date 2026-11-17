@@ -112,7 +112,7 @@ export const messengerChatId: MessengerChatCopy = {
     storyPoint: "Titik cerita",
     autoIdeas: "Tampilkan ide balasan otomatis",
     autoIdeasDescription: "Buka ide balasan saat giliranmu membalas",
-    deleteChat: "Hapus obrolan",
+    clearChat: "Bersihkan obrolan",
   },
   storyPoint: {
     title: "Titik cerita",
@@ -127,11 +127,14 @@ export const messengerChatId: MessengerChatCopy = {
     change: "Ubah",
     close: "Tutup",
   },
-  deleteChat: {
-    title: "Hapus obrolan ini?",
-    description: (name) => `Obrolanmu dengan ${name} akan dihapus.`,
+  clearChat: {
+    title: "Bersihkan obrolan ini?",
+    description: (name) =>
+      `Pesanmu dengan ${name} dan hal yang diingat ${name} tentangmu akan dihapus. Ini tidak bisa dibatalkan. Foto tetap ada di album.`,
+    busy: "Tunggu balasan selesai, lalu coba lagi.",
+    failed: "Obrolan gagal dibersihkan. Periksa koneksimu dan coba lagi.",
     cancel: "Batal",
-    confirm: "Hapus",
+    confirm: "Bersihkan",
   },
   myMessage: {
     meaningButton: "Lihat artinya",

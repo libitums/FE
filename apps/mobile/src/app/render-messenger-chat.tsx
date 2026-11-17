@@ -68,6 +68,7 @@ export function renderMessengerChat(roomId: string, wiring: ScreenWiring) {
         onExit={chat.onExitChatRoom}
         onOpenMemories={chat.onOpenMemories}
         onOpenAlbum={chat.onOpenAlbum}
+        onOpenMyProfile={chat.onOpenMyProfile}
       />
     </ChatEventsContext.Provider>
   );

@@ -129,10 +129,10 @@ function trackLayerRegistrations(): () => number {
 test.each([
   ["사이드바", () => tapId(ids.settings)],
   [
-    "채팅 지우기 확인",
+    "대화 비우기 확인",
     () => {
       tapId(ids.settings);
-      tapId(ids.sidebarDelete);
+      tapId(ids.sidebarClear);
     },
   ],
   [
