@@ -32,8 +32,12 @@ function fixedLayerClasses(): { name: string; file: string }[] {
     const css = readFileSync(file, "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
     for (const rule of css.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
       if (!/position:\s*fixed/.test(rule[2] ?? "")) continue;
-      const name = /\.([a-z0-9-]+)/.exec(rule[1] ?? "")?.[1];
-      if (name !== undefined) layers.push({ name, file: relative(SRC, file) });
+      // 쉼표로 나뉜 선택자마다, 실제로 고정되는 요소(마지막 클래스)를 층으로 셉니다(`.a .b`면 `.b`).
+      for (const part of (rule[1] ?? "").split(",")) {
+        const classes = [...part.matchAll(/\.([a-z0-9-]+)/g)].map((match) => match[1]);
+        const name = classes[classes.length - 1];
+        if (name !== undefined) layers.push({ name, file: relative(SRC, file) });
+      }
     }
   }
   return layers;
