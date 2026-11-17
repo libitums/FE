@@ -3,7 +3,9 @@ import { beforeEach, expect, test, vi } from "vitest";
 const submitFeedback = vi.fn(async () => true);
 const markEpisodeSurveyDone = vi.fn();
 const requestAppReviewOnce = vi.fn(() => true);
-vi.mock("../lib/feedback-api", () => ({
+vi.mock("../lib/feedback-api", async (importOriginal) => ({
+  feedbackReasonsOf: (await importOriginal<typeof import("../lib/feedback-api")>())
+    .feedbackReasonsOf,
   submitFeedback,
   markEpisodeSurveyDone,
   requestAppReviewOnce,
@@ -22,11 +24,17 @@ test("[ES1] 답: 기억 → 닫기 → 이벤트 → 서버 피드백, 별점 4 
   const onClosed = vi.fn();
   const wiring = episodeSurveyWiring({ episodeIntroEventSink: (e) => events.push(e), onClosed });
 
-  wiring.onAnswerEpisodeSurvey("tutorial", 4, null);
+  wiring.onAnswerEpisodeSurvey("tutorial", 4, [], null);
   expect(markEpisodeSurveyDone).toHaveBeenCalledWith("tutorial");
   expect(onClosed).toHaveBeenCalledTimes(1);
   expect(events).toEqual([
-    { name: "episode_survey_answered", episodeId: "tutorial", rating: "4", hasMessage: false },
+    {
+      name: "episode_survey_answered",
+      episodeId: "tutorial",
+      rating: "4",
+      reasons: "",
+      hasMessage: false,
+    },
   ]);
   expect(submitFeedback).toHaveBeenCalledWith({
     kind: "episode",
@@ -36,26 +44,32 @@ test("[ES1] 답: 기억 → 닫기 → 이벤트 → 서버 피드백, 별점 4 
   });
   expect(requestAppReviewOnce).toHaveBeenCalledTimes(1);
 
-  wiring.onAnswerEpisodeSurvey("tutorial", 3, null);
+  wiring.onAnswerEpisodeSurvey("tutorial", 3, [], null);
   expect(requestAppReviewOnce).toHaveBeenCalledTimes(1);
 });
 
-test("[ES3] 낮은 별점 + 글: 서버에 글이 가고 이벤트는 글 유무만 싣는다, 평점 창은 없다", () => {
+test("[ES3] 낮은 별점 + 이유 + 글: 서버 context에 이유를 잇고, 이벤트는 이유와 글 유무만 싣는다, 평점 창은 없다", () => {
   const events: unknown[] = [];
   const wiring = episodeSurveyWiring({
     episodeIntroEventSink: (e) => events.push(e),
     onClosed: vi.fn(),
   });
 
-  wiring.onAnswerEpisodeSurvey("u00-tutorial", 2, "Too fast for me.");
+  wiring.onAnswerEpisodeSurvey("u00-tutorial", 2, ["audio", "other"], "Too fast for me.");
   expect(events).toEqual([
-    { name: "episode_survey_answered", episodeId: "u00-tutorial", rating: "2", hasMessage: true },
+    {
+      name: "episode_survey_answered",
+      episodeId: "u00-tutorial",
+      rating: "2",
+      reasons: "audio,other",
+      hasMessage: true,
+    },
   ]);
   expect(submitFeedback).toHaveBeenCalledWith({
     kind: "episode",
     rating: 2,
     message: "Too fast for me.",
-    context: { episodeId: "u00-tutorial" },
+    context: { episodeId: "u00-tutorial", reasons: "audio,other" },
   });
   expect(requestAppReviewOnce).not.toHaveBeenCalled();
 });
@@ -72,4 +86,17 @@ test("[ES2] 건너뛰기: 기억 · 닫기 · 이벤트만, 서버 · 평점 창
   expect(events).toEqual([{ name: "episode_survey_skipped", episodeId: "tutorial" }]);
   expect(submitFeedback).not.toHaveBeenCalled();
   expect(requestAppReviewOnce).not.toHaveBeenCalled();
+});
+
+test("[ES4] 이유가 없으면 context에 reasons를 싣지 않는다", () => {
+  episodeSurveyWiring({
+    episodeIntroEventSink: () => undefined,
+    onClosed: vi.fn(),
+  }).onAnswerEpisodeSurvey("u00-tutorial", 3, [], null);
+  expect(submitFeedback).toHaveBeenCalledWith({
+    kind: "episode",
+    rating: 3,
+    message: null,
+    context: { episodeId: "u00-tutorial" },
+  });
 });

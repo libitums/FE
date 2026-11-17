@@ -7,6 +7,20 @@ export type FeedbackKind = "general" | "episode";
 /** 별점입니다. 1이 가장 낮고 5가 가장 높습니다. */
 export type FeedbackRating = 1 | 2 | 3 | 4 | 5;
 
+/**
+ * 에피소드 설문 1~3점의 이유 체크리스트 항목입니다(ADR-0036 개정 2026-11-17). 서버 `context.reasons` ·
+ * 이벤트 `reasons`에 이 id를 쉼표로 이어 싣습니다 — 바꾸면 집계가 끊깁니다.
+ */
+export type FeedbackReason =
+  | "too-hard"
+  | "too-easy"
+  | "audio"
+  | "unclear"
+  | "translation"
+  | "stuck"
+  | "too-long"
+  | "other";
+
 export type FeedbackSubmission = {
   readonly kind: FeedbackKind;
   readonly rating: FeedbackRating;
@@ -43,8 +57,13 @@ export type FeedbackCopy = {
   /** 에피소드 끝 설문입니다. */
   readonly survey: {
     readonly title: string;
-    /** 1~3점을 고른 뒤 여는 선택 글 칸의 라벨입니다. */
+    /** 1~3점에서 「Other」를 고른 동안 여는 선택 글 칸의 라벨입니다. */
     readonly messageLabel: string;
+    /** 1~3점을 고른 뒤 서는 이유 체크리스트의 질문(그룹 이름)입니다. */
+    readonly reasonsLabel: string;
+    readonly reasonOption: Readonly<Record<FeedbackReason, string>>;
+    /** 「Other」 항목의 접근성 이름입니다 — 고르면 글 칸이 열린다는 것까지 알립니다. */
+    readonly otherAccessibilityLabel: string;
     readonly description: (episodeTitle: string) => string;
     readonly skip: string;
   };

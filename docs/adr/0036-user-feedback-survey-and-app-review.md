@@ -101,3 +101,35 @@
 - 1~3점을 고르면 다음 프레임에 글 칸으로 접근성 초점을 옮기고 고른 별점(「2 · Could be better」)을 낭독한다(접근성 점검 M1).
 - D4(평점 요청 — 4점 이상 뒤)는 그대로다. 게스트 제외 · 튜토리얼에서만 묻기도 그대로다.
 - 수동 절차: [설문 글 단계 e2e](../e2e/episode-survey-low-rating-message.md).
+
+## 적용 기록 ⟨2026-11-17 — 낮은 별점 이유 체크리스트⟩
+
+사용자 결정(2026-11-17): 1~3점을 준 사람에게서 이유를 **체크리스트로** 받는다(설정 화면이 아니라 설문에서). 근거: 운영
+`feedback`(kind `episode`) 1~3점 455건 중 글이 있는 답 0건 — 글 칸만으로는 이유가 모이지 않았다.
+
+- **2026-11-12 글 단계를 대체한다.** 1 · 2 · 3점(`surveyReasonsMaxRating = 3`, 옛 `surveyMessageMaxRating`)을 누르면 같은 시트에
+  이유 질문(「What didn't work well? Pick any that apply.」)과 **두 칸 격자 · 여러 개 선택** 체크리스트가 선다(ui-lynx
+  `OptionSelector` multiple · deferred · grid). 항목과 id(`FeedbackReason`, 표시 순서 고정)는 사용자가 고른 여덟 개다:
+  `too-hard` Too hard · `too-easy` Too easy · `audio` Audio problems · `unclear` Hard to understand · `translation` Translation
+  issues · `stuck` Got stuck or bug · `too-long` Too long · `other` Other. **id를 바꾸면 집계가 끊긴다.**
+- **글 칸은 「Other」를 고른 동안만 선다** — 사용자 결정. Other를 풀면 글 칸이 사라지고 쓴 글은 보내지 않는다
+  (`surveyMessageOf`). 다시 고르면 글 칸은 빈 칸으로 서고 옛 글 · 키보드 높이도 비운다(리뷰 C1 · W1). 키보드 위로 시트를 올리는 규칙은 글 칸이 선 동안 그대로다.
+- Send = 그 별점 + 고른 이유(표시 순서 · 중복 없음, 없어도 됨) + Other 글. 닫는 길은 지금처럼 「그 별점 + 이유 없음 + 글 없음」의
+  답이다(고른 체크도 버린다 — 보내기를 누르지 않은 선택은 답으로 치지 않는다).
+- **서버:** `submit_feedback`의 `p_context`에 `reasons`(id를 `","`로 이음)를 이유가 있을 때만 싣는다. RPC · 표 · 마이그레이션은
+  바뀌지 않는다(`context`는 처음부터 jsonb). 집계: `context->>'reasons'`.
+- **이벤트:** `episode_survey_answered`에 `reasons: string`(같은 연결, 없으면 `""` — 4 · 5점 포함)을 더한다. `hasMessage`는 그대로이며
+  이제 「Other 글을 보냈는가」다. 글 본문은 싣지 않는다.
+- 1~3점을 고르면 다음 프레임에 접근성 초점을 **이유 질문**(머리글, `flatten={false}` · `accessibility-heading` — Android에서 flatten된
+  노드는 초점을 받지 못한다)으로 옮기고 고른 별점을 낭독한다(옛 초점 대상은 글 칸). 「Other」 항목의 접근성 이름은 「Other, opens a
+  text box」(5개 언어)다.
+- **작은 화면 배치(Android 360×640 기기 확인).** 시트의 내용 칸은 스스로 스크롤하지 않고 줄기만 해서, 넘치면 칸들이 겹쳤다. 그래서
+  ① 이유 단계에서는 시트 설명(「You finished …」)을 내리고 질문이 대신한다, ② 체크리스트만 `scroll-view`로 감싸고 글 칸 · Send ·
+  Not now는 줄지 않게 둔다, ③ Send 아래 Not now 간격은 시트 기본 동작 버튼과 같은 8, ④ 키보드가 선 동안은 체크리스트와 Not now를
+  내려 글 칸 · Send가 키보드 위에 들게 한다(닫기 · 뒤로는 그대로). 여덟 항목은 en · es · vi 모두 한 화면에 든다(es는 그래서
+  「Muy difícil」 · 「Mala traducción」 · 「Bloqueo o error」처럼 짧게 둔다).
+- **Android는 키보드가 닫혀도 `keyboardheightchange`로 아래 내비게이션 높이(24)를 보낸다**(기기 로그). 64 이하는 닫힘으로 본다
+  (`KEYBOARD_UP_MIN_HEIGHT`). 옛 글 단계의 `> 0` 판정은 키보드를 닫은 뒤에도 아래 24를 비워 두었다.
+- 설정 「Send feedback」(`kind: general`)은 바뀌지 않는다.
+- 문구: 5개 언어(en · vi · id · es · ja) — 원어민 검수 전.
+- 수동 절차: [설문 이유 · 글 단계 e2e](../e2e/episode-survey-low-rating-message.md) ⟨2026-11-17 개정⟩.

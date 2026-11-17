@@ -118,6 +118,18 @@ export const feedbackEs: FeedbackCopy = {
   survey: {
     title: "¿Qué tal este episodio?",
     messageLabel: "¿Qué podríamos mejorar? (opcional)",
+    reasonsLabel: "¿Qué falló? Puedes elegir varias.",
+    reasonOption: {
+      "too-hard": "Muy difícil",
+      "too-easy": "Muy fácil",
+      audio: "Problemas de audio",
+      unclear: "Difícil de entender",
+      translation: "Mala traducción",
+      stuck: "Bloqueo o error",
+      "too-long": "Muy largo",
+      other: "Otro",
+    },
+    otherAccessibilityLabel: "Otro, abre un cuadro de texto",
     description: (episodeTitle) => `Terminaste ${episodeTitle}. Cuéntanos qué te pareció.`,
     skip: "Ahora no",
   },

@@ -116,6 +116,18 @@ export const feedbackId: FeedbackCopy = {
   survey: {
     title: "Bagaimana episode ini?",
     messageLabel: "Apa yang bisa kami perbaiki? (opsional)",
+    reasonsLabel: "Apa yang kurang? Pilih semua yang sesuai.",
+    reasonOption: {
+      "too-hard": "Terlalu sulit",
+      "too-easy": "Terlalu mudah",
+      audio: "Masalah audio",
+      unclear: "Sulit dipahami",
+      translation: "Masalah terjemahan",
+      stuck: "Macet atau error",
+      "too-long": "Terlalu panjang",
+      other: "Lainnya",
+    },
+    otherAccessibilityLabel: "Lainnya, membuka kolom teks",
     description: (episodeTitle) =>
       `Kamu telah menyelesaikan ${episodeTitle}. Ceritakan pendapat kamu.`,
     skip: "Nanti saja",
