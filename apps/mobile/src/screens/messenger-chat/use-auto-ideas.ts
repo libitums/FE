@@ -12,6 +12,8 @@ export type AutoIdeasInput = {
   readonly busy: boolean;
   readonly text: string;
   readonly ideasOpen: boolean;
+  /** 계정의 추천 답변 설정(ADR-0156) — 끄면 열린 보기 판을 바로 접습니다(빈 판으로 남지 않게). */
+  readonly enabled?: boolean;
   readonly dispatch: (action: ChatRoomAction) => void;
 };
 
@@ -25,22 +27,34 @@ export function shouldAutoOpenIdeas(
   return next !== previous && next !== null && next.length > 0 && text.trim() === "" && !ideasOpen;
 }
 
-export function useAutoIdeas({ ideas, busy, text, ideasOpen, dispatch }: AutoIdeasInput): void {
+export function useAutoIdeas({
+  ideas,
+  busy,
+  text,
+  ideasOpen,
+  enabled = true,
+  dispatch,
+}: AutoIdeasInput): void {
   const seen = useRef(ideas);
   const wasBusy = useRef(busy);
-  const latest = useRef({ text, ideasOpen, busy });
-  latest.current = { text, ideasOpen, busy };
+  const latest = useRef({ text, ideasOpen, busy, enabled });
+  latest.current = { text, ideasOpen, busy, enabled };
   useEffect(() => {
     const previous = seen.current;
     const arrived = latest.current.busy || wasBusy.current;
     seen.current = ideas;
     wasBusy.current = latest.current.busy;
     // 방을 열며 읽은 기록의 보기는 「새로 온」 것이 아닙니다(리뷰 W2).
-    if (!arrived) return;
+    // 추천 답변을 껐으면 새로 온 보기도 열지 않습니다.
+    if (!arrived || !latest.current.enabled) return;
     if (shouldAutoOpenIdeas(previous, ideas, latest.current.text, latest.current.ideasOpen))
       dispatch({ type: "open-ideas" });
   }, [ideas, dispatch]);
   useEffect(() => {
     if (busy) wasBusy.current = true;
   }, [busy]);
+  // 끈 채로 판이 열리면(어느 경로든) 바로 접습니다.
+  useEffect(() => {
+    if (!enabled && ideasOpen) dispatch({ type: "close-keyboard" });
+  }, [enabled, ideasOpen, dispatch]);
 }

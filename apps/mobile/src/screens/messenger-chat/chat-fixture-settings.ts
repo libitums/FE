@@ -34,6 +34,8 @@ export type FixtureSettings = {
   readonly memories: (scope: ChatMemoryScope) => ChatMemoryList;
   readonly updateMemory: (id: string, content: string) => boolean;
   readonly deleteMemory: (id: string) => boolean;
+  /** 학습자가 아닌 쪽(서버 프로필)이 설정을 바꾸면 부를 것 — 출처가 방 캐시를 비우고 알립니다. */
+  readonly onExternalChange: (listener: () => void) => void;
 };
 
 const proactivePrefs: readonly ChatProactivePref[] = ["off", "daily1", "daily2"];
@@ -81,8 +83,11 @@ export function createFixtureSettings(
   const replyIdeas = replyIdeasSync(stores.replyIdeasStore, stores.remote?.profile);
   let preferences = seed.preferences ?? DEFAULT_PREFERENCES;
   if (replyIdeas.initial !== null) preferences = { ...preferences, replyIdeas: replyIdeas.initial };
+  let external: (() => void) | null = null;
   replyIdeas.onLoaded((on) => {
-    if (preferences.replyIdeas !== on) preferences = { ...preferences, replyIdeas: on };
+    if (preferences.replyIdeas === on) return;
+    preferences = { ...preferences, replyIdeas: on };
+    external?.(); // 열린 방 · 설정 화면이 다음 갱신을 기다리지 않고 바로 다시 그립니다.
   });
   let nextId = 1;
   const layers = new Map<string, ChatMemory[]>();
@@ -113,6 +118,9 @@ export function createFixtureSettings(
   };
 
   return {
+    onExternalChange: (listener) => {
+      external = listener;
+    },
     preferences: () => preferences,
     setPreferences: (patch) => {
       const valid = validPatch(patch);
@@ -178,11 +186,17 @@ export function settingsMethods(
   settings: FixtureSettings,
   hooks: SettingsHooks,
 ): Pick<ChatSource, "setPreferences" | "memories" | "updateMemory" | "deleteMemory"> {
+  const invalidate = () => {
+    for (const room of hooks.rooms.values()) room.threadCache = null;
+    hooks.notify();
+  };
+  settings.onExternalChange(() => {
+    if (!hooks.disposed()) invalidate();
+  });
   return {
     setPreferences: (patch) => {
       if (hooks.disposed() || !settings.setPreferences(patch)) return;
-      for (const room of hooks.rooms.values()) room.threadCache = null;
-      hooks.notify();
+      invalidate();
     },
     memories: (scope) => settings.memories(scope),
     updateMemory: (id, content) => {
