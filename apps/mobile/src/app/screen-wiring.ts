@@ -110,6 +110,8 @@ export type ScreenWiring = {
   onToggleSessionOption: (key: SessionOptionKey, value: boolean) => void;
   onSelectNavTarget: (target: SettingsNavTarget) => void;
   onExitSettingsStack: () => void;
+  /** User profile 나가기 — 한 칸 뒤로(설정 첫 화면 · 방 사이드바의 My profile로 연 방, ADR-0156). */
+  onExitProfile: () => void;
   onSubmitFeedback: FeedbackScreenProps["onSubmit"];
   // 진입 흐름 화면의 결선입니다. `entryLanguage`만 App 상태를 그대로 내리고, 나머지는 전이·이벤트·토큰 저장을
   // 여는 콜백입니다(가입 직후 ① 이름 · ② 나라는 `LearnerSignupWiring`).

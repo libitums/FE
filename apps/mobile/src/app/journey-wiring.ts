@@ -110,6 +110,7 @@ export function journeyWiring(args: JourneyWiringArgs) {
       openLegalDocument(target);
     },
     onExitSettingsStack: () => dispatch({ type: "backToRoot" }),
+    onExitProfile: () => dispatch({ type: "back" }),
     // 설정 피드백 보내기입니다(ADR-0036). 성공한 것만 이벤트로 셉니다 — 글은 싣지 않습니다.
     onSubmitFeedback: async (rating: FeedbackRating, message: string): Promise<boolean> => {
       const ok = await submitFeedback({ kind: "general", rating, message, context: {} });

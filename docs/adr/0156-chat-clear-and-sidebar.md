@@ -38,7 +38,7 @@
 
 ### D3. My profile → 설정 탭 User profile
 
-- 사이드바 「My profile」 줄을 누르면 사이드바를 닫고 설정 탭으로 옮겨 User profile 화면(`profile`)을 쌓는다. 뒤로 가면 설정 탭 루트다.
+- 사이드바 「My profile」 줄을 누르면 사이드바를 닫고 설정 탭으로 옮겨 User profile 화면(`profile`)을 쌓는다. 뒤로 가면 설정 탭 루트다. **(2026-11-17 개정: 메신저 스택에 쌓고 뒤로는 그 방 — 아래 「개정」)**
 
 ### D4. 상대 프로필 줄(「덕수쌤 →」) 숨김
 
@@ -75,3 +75,12 @@
   - 문구 5개 언어 `ui-copy-*-chat.ts`(`sidebar.clearChat` · `clearChat`).
 - 테스트: unit CC-U1 ~ U5 · RI-U1 ~ U4, ui CC-UI1 ~ UI8, integration MC-I5(비우기로 고침), 기대값 변경 MC-UI22 · CS-UI 순서 · SnapshotSelf 앨범 줄 순서 · MC-U11 · 포커스 · SA-U7.
 - 배포 순서: 마이그레이션 → 앱. 함수 배포는 없다.
+
+## 개정 (2026-11-17) — D3: My profile은 메신저 스택에 쌓는다
+
+- 기기 보고: 방 › 사이드바 › My profile › 뒤로가 설정 탭 첫 화면에 닿았다. 방에서 연 화면인데 방으로 돌아오지 못했다.
+- 바꾼 것: My profile은 지금(메신저) 스택에 User profile을 쌓는다(탭을 옮기지 않음). User profile의 나가기(보이는 뒤로 · 시스템 뒤로)는
+  **한 칸 뒤로**(`onExitProfile` → `back`)다 — 설정에서 열면 설정 첫 화면, 방에서 열면 그 방. 버린 대안 4가 막혔던 까닭(나가기가 스택을
+  루트로 접어 메신저 목록으로 튐)은 나가기를 한 칸 뒤로 바꾸어 없앴다.
+- 나가기 낭독은 「Back to settings」 대신 「Back」(`common.back`) — 어디서 열어도 맞는 이름.
+- 테스트: unit MP-U1, integration MP-I1(뒤로 단추) · MP-I2(시스템 뒤로), PR2 기대값 변경.
