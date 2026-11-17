@@ -91,6 +91,8 @@ test("KH-UI2. iOS는 pt 그대로 쓰고, 키보드가 내려가며 알린 0은 
   expect(slotHeight()).toBe("336");
 
   keyboardHeight(0);
+  // 같은 높이가 다시 와도(키보드가 다시 오름) 기기에 다시 적지 않는다.
+  keyboardHeight(336);
   expect(write).toHaveBeenCalledTimes(1);
   tapId(ids.ideasButton);
   expect(slotContent()).toBe("ideas");

@@ -21,8 +21,9 @@ export function usePhoneKeyboardHeight(
 ): PhoneKeyboardHeight {
   const [measured, setMeasured] = useState<number | null>(null);
   const measure = (height: number) => {
-    if (!Number.isFinite(height) || height <= 0) return;
+    if (!Number.isFinite(height) || height <= 0 || height === measured) return;
     setMeasured(height);
+    // 같은 높이가 이어 오면(키보드가 오르내릴 때마다) 다시 적지 않습니다 — 바뀐 값만 기기에 씁니다.
     store.write(height);
   };
   const height = resolveChatKeyboardHeight({

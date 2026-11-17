@@ -4,6 +4,7 @@ import {
   chatKeyboardSlotHeight,
   chatSlotContent,
   phoneKeyboardHeightOf,
+  PHONE_KEYBOARD_MAX,
   resolveChatKeyboardHeight,
   type ChatSlot,
   type PhoneFocus,
@@ -156,6 +157,16 @@ describe("phoneKeyboardHeightOf (KH-U3)", () => {
     // 기기 정보가 없거나 밀도가 이상하면 받은 값 그대로입니다.
     expect(phoneKeyboardHeightOf(336, undefined)).toBe(336);
     expect(phoneKeyboardHeightOf(336, { platform: "Android", pixelRatio: 0 })).toBe(336);
+  });
+
+  test("KH-U4. 어긋난 큰 값(밀도를 못 읽은 물리 픽셀 등)은 상한에서 멈춘다", () => {
+    expect(phoneKeyboardHeightOf(945, { platform: "Android", pixelRatio: 0 })).toBe(
+      PHONE_KEYBOARD_MAX,
+    );
+    expect(phoneKeyboardHeightOf(2000, { platform: "iOS", pixelRatio: 3 })).toBe(
+      PHONE_KEYBOARD_MAX,
+    );
+    expect(PHONE_KEYBOARD_MAX).toBeGreaterThanOrEqual(400);
   });
 
   test("KH-U3. 유한한 양수가 아니면 0(키보드가 내려감)이다", () => {

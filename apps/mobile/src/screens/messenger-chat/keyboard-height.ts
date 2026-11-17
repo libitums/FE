@@ -44,8 +44,13 @@ export function phoneKeyboardHeightOf(
 ): number {
   if (typeof height !== "number" || !Number.isFinite(height) || height <= 0) return 0;
   const ratio = info?.pixelRatio ?? 0;
-  return info?.platform === "Android" && ratio > 0 ? Math.round(height / ratio) : height;
+  const layout = info?.platform === "Android" && ratio > 0 ? Math.round(height / ratio) : height;
+  // 밀도를 못 읽어 물리 픽셀이 그대로 오는 등 어긋난 값이 방 전체를 덮지 않게 상한을 둡니다(가장 큰 휴대폰 키보드보다 넉넉히).
+  return Math.min(layout, PHONE_KEYBOARD_MAX);
 }
+
+/** 휴대폰 키보드 높이 상한(pt/dp)입니다. */
+export const PHONE_KEYBOARD_MAX = 480;
 
 function tableHeight(screenHeight: number | null): number {
   const { table, tallest } = CHAT_KEYBOARD_HEIGHTS;
