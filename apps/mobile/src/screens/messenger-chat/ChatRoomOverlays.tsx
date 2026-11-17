@@ -11,7 +11,7 @@ import type {
   ChatThread,
 } from "./chat-source.contract";
 import type { CoinWallet } from "./coin-wallet";
-import { DeleteChatDialog } from "./DeleteChatDialog";
+import { ClearChatDialog } from "./ClearChatDialog";
 import { UnsentDialog } from "./ChatDelivery";
 import { FeedbackModeSheet } from "./FeedbackModeSheet";
 import { CoinShopLayer } from "./CoinShopLayer";
@@ -40,6 +40,8 @@ export type ChatRoomOverlaysProps = {
   readonly onOpenMemories: (characterId: string, name: string) => void;
   /** 인물 앨범 화면을 메신저 스택에 쌓습니다(ADR-0150). */
   readonly onOpenAlbum?: (roomId: string, name: string) => void;
+  /** 사이드바 My profile — 설정 탭의 User profile로 갑니다(ADR-0156, 없으면 무동작). */
+  readonly onOpenMyProfile?: () => void;
 };
 
 // `state.overlay.kind` → 겹침 하나(동시에 둘 없음). 「…」 메뉴는 독 쪽이 그리므로 여기서는 아무것도 그리지 않습니다.
@@ -56,6 +58,7 @@ export function ChatRoomOverlays({
   preferences,
   onOpenMemories,
   onOpenAlbum,
+  onOpenMyProfile,
 }: ChatRoomOverlaysProps): ReactNode {
   const { overlay } = state;
   const { roomId } = thread;
@@ -170,7 +173,15 @@ export function ChatRoomOverlays({
               overlay: { kind: "feedback-mode", selected: preferences.feedbackMode },
             })
           }
-          onDelete={() => dispatch({ type: "open-overlay", overlay: { kind: "delete-confirm" } })}
+          onMyProfile={() => {
+            dispatch({ type: "dismiss-overlays" });
+            onOpenMyProfile?.();
+          }}
+          replyIdeas={preferences.replyIdeas}
+          onReplyIdeas={(on) => source.setPreferences({ replyIdeas: on })}
+          onClear={() =>
+            dispatch({ type: "open-overlay", overlay: { kind: "clear-confirm", failure: null } })
+          }
           onClose={close}
         />
       );
@@ -189,12 +200,24 @@ export function ChatRoomOverlays({
           onClose={close}
         />
       );
-    case "delete-confirm":
+    case "clear-confirm":
       return (
-        <DeleteChatDialog
+        <ClearChatDialog
           name={thread.counterpart.name}
-          // 지우면 방이 사라져 화면이 `onExit`로 나갑니다 — 여기서 겹침을 따로 닫지 않습니다.
-          onConfirm={() => source.deleteRoom(roomId)}
+          failure={overlay.failure}
+          // 비우면 방은 남고(대화만 빔) 겹침을 모두 닫습니다. 못 비우면 대화상자에 까닭이 섭니다.
+          onConfirm={() => {
+            void source.clearRoom(roomId).then((outcome) =>
+              dispatch(
+                outcome === "cleared"
+                  ? { type: "dismiss-overlays" }
+                  : {
+                      type: "open-overlay",
+                      overlay: { kind: "clear-confirm", failure: outcome },
+                    },
+              ),
+            );
+          }}
           onCancel={close}
         />
       );

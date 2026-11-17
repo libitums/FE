@@ -163,6 +163,9 @@ export type ChatMyNotes = {
   readonly meaning: ChatLoad<ChatMeaning>;
   readonly correction: ChatCorrectionNote;
 };
+/** 대화 비우기의 결과입니다(ADR-0156). */
+export type ChatClearOutcome = "cleared" | "busy" | "failed";
+
 export type ChatUnlockResult =
   | { readonly kind: "unlocked"; readonly roomId: string }
   | { readonly kind: "already-open"; readonly roomId: string }
@@ -204,6 +207,11 @@ export type ChatSource = {
   /** 마지막 내 글을 고친 문장으로 다시 보냅니다 — 옛 턴은 로그에서 빠집니다. 규칙을 어기면 무동작(ADR-0129). */
   readonly resendCorrected: (roomId: string, messageId: string) => void;
   readonly deleteRoom: (roomId: string) => void;
+  /**
+   * 대화 비우기(ADR-0156) — 서버 방은 대화 · 그 인물 기억 · 친밀도를 지운 뒤 방을 빈 채로 되돌립니다(목록에 남고, 열려 있으면 첫
+   * 인사를 다시 받습니다). 앱 안 방은 기기에서만 되돌립니다. 답을 기다리는 중이면 `busy`, 못 지우면 `failed`이고 대화는 그대로입니다.
+   */
+  readonly clearRoom: (roomId: string) => Promise<ChatClearOutcome>;
   /** 내 글 · 뜻 idle일 때만: loading → timing.meaningMs 뒤 ready. 그 밖 무동작. */
   readonly requestMeaning: (roomId: string, messageId: string) => void;
   /** 교정 available일 때만: seen = true(즉시), detail idle이면 loading → timing.correctionMs 뒤 ready. */

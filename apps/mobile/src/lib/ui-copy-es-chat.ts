@@ -111,7 +111,7 @@ export const messengerChatEs: MessengerChatCopy = {
     storyPoint: "Punto de la historia",
     autoIdeas: "Mostrar ideas de respuesta automáticamente",
     autoIdeasDescription: "Abre las ideas de respuesta cuando te toca contestar",
-    deleteChat: "Eliminar chat",
+    clearChat: "Vaciar chat",
   },
   storyPoint: {
     title: "Punto de la historia",
@@ -126,11 +126,14 @@ export const messengerChatEs: MessengerChatCopy = {
     change: "Cambiar",
     close: "Cerrar",
   },
-  deleteChat: {
-    title: "¿Eliminar este chat?",
-    description: (name) => `Se eliminará tu chat con ${name}.`,
+  clearChat: {
+    title: "¿Vaciar este chat?",
+    description: (name) =>
+      `Se borrarán tus mensajes con ${name} y lo que ${name} recuerda de ti. No se puede deshacer. Las fotos se quedan en el álbum.`,
+    busy: "Espera a que termine la respuesta y vuelve a intentarlo.",
+    failed: "No se pudo vaciar el chat. Revisa tu conexión y vuelve a intentarlo.",
     cancel: "Cancelar",
-    confirm: "Eliminar",
+    confirm: "Vaciar",
   },
   myMessage: {
     meaningButton: "Ver el significado",

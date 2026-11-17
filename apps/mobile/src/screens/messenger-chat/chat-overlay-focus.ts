@@ -8,7 +8,7 @@ export type ChatFocusOrigin =
   | "snapshot-pill"
   | "voice-pill"
   | "sidebar-story-point"
-  | "sidebar-delete"
+  | "sidebar-clear"
   | "sidebar-coins"
   | "send"
   | "sidebar-birth-year"
@@ -34,8 +34,8 @@ export function focusOriginOf(closing: ChatOverlay): ChatFocusOrigin | null {
       return "settings";
     case "story-point":
       return "sidebar-story-point";
-    case "delete-confirm":
-      return "sidebar-delete";
+    case "clear-confirm":
+      return "sidebar-clear";
     case "unsent":
       return "send";
     case "photo":

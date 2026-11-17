@@ -6,6 +6,8 @@ import {
   SHARED_MEMORY_CAP,
 } from "./chat-settings-rules";
 import type { ChatSnapshotSelf } from "./chat-album.contract";
+import type { ChatProfileRemote } from "./chat-remote.contract";
+import { replyIdeasSync, type ReplyIdeasStore } from "./reply-ideas-pref";
 import type {
   ChatFeedbackMode,
   ChatFixtureSeed,
@@ -67,8 +69,21 @@ const scopeKey = (scope: ChatMemoryScope): string =>
 const capOf = (key: string): number =>
   key === "shared" ? SHARED_MEMORY_CAP : CHARACTER_MEMORY_CAP;
 
-export function createFixtureSettings(seed: ChatFixtureSeed, now: () => number): FixtureSettings {
+export function createFixtureSettings(
+  seed: ChatFixtureSeed,
+  now: () => number,
+  stores: {
+    readonly replyIdeasStore?: ReplyIdeasStore;
+    readonly remote?: { readonly profile?: ChatProfileRemote };
+  } = {},
+): FixtureSettings {
+  // 추천 답변 설정은 기기(계정마다) · 서버 프로필에 남습니다(ADR-0156). 나머지 설정은 다시 켜면 씨앗으로 돌아갑니다.
+  const replyIdeas = replyIdeasSync(stores.replyIdeasStore, stores.remote?.profile);
   let preferences = seed.preferences ?? DEFAULT_PREFERENCES;
+  if (replyIdeas.initial !== null) preferences = { ...preferences, replyIdeas: replyIdeas.initial };
+  replyIdeas.onLoaded((on) => {
+    if (preferences.replyIdeas !== on) preferences = { ...preferences, replyIdeas: on };
+  });
   let nextId = 1;
   const layers = new Map<string, ChatMemory[]>();
   const cache = new Map<string, ChatMemoryList>();
@@ -105,6 +120,9 @@ export function createFixtureSettings(seed: ChatFixtureSeed, now: () => number):
       const changed = (Object.keys(merged) as (keyof ChatPreferences)[]).some(
         (key) => merged[key] !== preferences[key],
       );
+      if (changed && merged.replyIdeas !== preferences.replyIdeas) {
+        replyIdeas.changed(merged.replyIdeas);
+      }
       if (changed) preferences = merged;
       return changed;
     },

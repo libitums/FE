@@ -135,7 +135,7 @@ export type MessengerChatCopy = {
     readonly storyPoint: string;
     readonly autoIdeas: string;
     readonly autoIdeasDescription: string;
-    readonly deleteChat: string;
+    readonly clearChat: string;
   };
   readonly storyPoint: {
     readonly title: string;
@@ -146,9 +146,11 @@ export type MessengerChatCopy = {
     readonly change: string;
     readonly close: string;
   };
-  readonly deleteChat: {
+  readonly clearChat: {
     readonly title: string;
     readonly description: (name: string) => string;
+    readonly busy: string; // 대화 비우기(ADR-0156)를 못 했을 때 설명 자리에 섭니다
+    readonly failed: string;
     readonly cancel: string;
     readonly confirm: string;
   };
@@ -180,17 +182,16 @@ export type MessengerChatScreenProps = {
   readonly keyboardHeightStore: KeyboardHeightStore;
   readonly edges: KeyboardDockEdges;
   readonly learnerName: string;
-  /** 엽전 지갑입니다(spec §5.2 · §7.2). */
-  readonly wallet: CoinWallet;
+  readonly wallet: CoinWallet; // 엽전 지갑(spec §5.2 · §7.2)
   /** 체험 인물의 체험 남은 수입니다(ADR-0155 — 정본은 서버 지갑). */
   readonly trial: TrialStore;
-  /** unlimited면 턴 표시 · 관문이 모두 빠집니다. */
-  readonly tier: ChatTier;
+  readonly tier: ChatTier; // unlimited면 턴 표시 · 관문이 모두 빠집니다
   readonly planOffer?: PlanOfferWiring | undefined; // 무료 다 씀 판의 요금제 카드(ADR-0144) — 플래그가 꺼졌으면 없음.
   readonly onExit: () => void;
   /** 사이드바 줄이 쌓는 화면 — 「What {name} remembers」 인물 기억(ADR-0126) · Album 인물 앨범(ADR-0150, 없으면 무동작). */
   readonly onOpenMemories: (characterId: string, name: string) => void;
   readonly onOpenAlbum?: (roomId: string, name: string) => void;
+  readonly onOpenMyProfile?: () => void; // 사이드바 My profile → 설정 탭 User profile(ADR-0156)
   /** 본 첫 입장 안내 기록(2026-11-13) — 기본은 기기 저장소. */
   readonly guideStore?: GuideStore;
 };
@@ -254,7 +255,7 @@ export const messengerChatTestIds = {
   reportSheet: room("report"),
   reportReason: (id: ChatReportReasonId): string => room(`report-${id}`),
   regenDialog: room("regen"),
-  deleteDialog: room("delete"),
+  clearDialog: room("clear"),
   askDialog: room("ask"),
   askBalance: room("ask-balance"),
   askConfirm: room("ask-confirm"),
@@ -267,7 +268,8 @@ export const messengerChatTestIds = {
   sidebarMyProfile: room("sidebar-my-profile"),
   sidebarStoryPoint: room("sidebar-story-point"),
   sidebarAutoIdeas: room("sidebar-auto-ideas"),
-  sidebarDelete: room("sidebar-delete"),
+  sidebarClear: room("sidebar-clear"),
+  sidebarReplyIdeas: room("sidebar-reply-ideas"),
   storyPointSheet: room("story-point"),
   storyPointOption: (id: string): string => room(`story-point-${id}`),
   notice: room("notice"),

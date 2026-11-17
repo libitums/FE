@@ -29,7 +29,8 @@ export type ChatOverlay =
   | { readonly kind: "ask-media"; readonly media: ChatMediaKind }
   | { readonly kind: "sidebar" }
   | { readonly kind: "story-point"; readonly selected: string }
-  | { readonly kind: "delete-confirm" }
+  /** 대화 비우기 확인(ADR-0156). `failure`는 지난 시도가 못 비운 까닭입니다. */
+  | { readonly kind: "clear-confirm"; readonly failure: "busy" | "failed" | null }
   | { readonly kind: "unsent"; readonly messageId: string }
   | {
       readonly kind: "coin-shop";
@@ -77,6 +78,8 @@ export type ChatRoomAction =
   | { readonly type: "sent" }
   | { readonly type: "open-overlay"; readonly overlay: Exclude<ChatOverlay, { kind: "none" }> }
   | { readonly type: "close-overlay" }
+  /** 겹침을 모두 닫습니다(사이드바로 돌아가지 않음) — 대화를 비운 뒤. */
+  | { readonly type: "dismiss-overlays" }
   | { readonly type: "toggle-report-reason"; readonly id: ChatReportReasonId }
   | { readonly type: "toggle-rate-reason"; readonly reason: ChatRatingReason }
   | { readonly type: "rate-note"; readonly value: string }
@@ -212,6 +215,8 @@ export function chatRoomReducer(state: ChatRoomState, action: ChatRoomAction): C
         : { ...state, overlay: action.overlay };
     case "close-overlay":
       return { ...state, overlay: overlayParent(state.overlay) };
+    case "dismiss-overlays":
+      return { ...state, overlay: NO_OVERLAY };
     case "toggle-report-reason":
       return toggleReason(state, action.id);
     case "toggle-rate-reason":
@@ -247,7 +252,7 @@ export function chatRoomReducer(state: ChatRoomState, action: ChatRoomAction): C
 export function overlayParent(overlay: ChatOverlay): ChatOverlay {
   switch (overlay.kind) {
     case "story-point":
-    case "delete-confirm":
+    case "clear-confirm":
       return SIDEBAR;
     case "coin-shop":
       return overlay.from === "sidebar" ? SIDEBAR : NO_OVERLAY;

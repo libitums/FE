@@ -43,7 +43,9 @@ function handlers() {
     onMemories: vi.fn<() => void>(),
     onFeedbackMode: vi.fn<() => void>(),
     onAlbum: vi.fn<() => void>(),
-    onDelete: vi.fn<() => void>(),
+    onClear: vi.fn<() => void>(),
+    onMyProfile: vi.fn<() => void>(),
+    onReplyIdeas: vi.fn<(on: boolean) => void>(),
     onClose: vi.fn<() => void>(),
     onBirthYear: vi.fn<() => void>(),
   };
@@ -59,6 +61,7 @@ function mountSidebar(thread: ChatThread = threadOf(), reduced = false) {
       birthYear={{ kind: "set", year: 2001 }}
       memories={{ memories: [], count: 50, cap: 50, full: true }}
       feedbackMode="natural"
+      replyIdeas={true}
       {...h}
     />
   );
@@ -68,18 +71,19 @@ function mountSidebar(thread: ChatThread = threadOf(), reduced = false) {
 
 const orderIds = [
   ids.sidebarCoins,
-  ids.sidebarProfile,
   ids.sidebarMyProfile,
   ids.sidebarStoryPoint,
   chatAlbumTestIds.sidebarRow,
   ids.sidebarBirthYear,
   chatSettingsTestIds.sidebarMemories,
   chatSettingsTestIds.sidebarFeedback,
-  ids.sidebarDelete,
+  ids.sidebarReplyIdeas,
+  ids.sidebarClear,
 ] as const;
 
 // ⟨ADR-0125⟩ 생년 줄이 이야기 시점 다음 다섯째로 들어왔고, ⟨ADR-0126⟩ 자동 보기 토글 자리에 기억 · 교정 방식 두 줄이 섰다.
 // ⟨ADR-0150⟩ 앨범 줄이 이야기 시점 다음 다섯째로 들어와 뒤 줄이 하나씩 밀렸다.
+// ⟨ADR-0156⟩ 상대 프로필 줄을 숨기고, 추천 답변 토글이 교정 방식 다음에 섰다. 마지막은 Clear chat.
 test("MC-UI22. 아홉 줄이 data-order 1~9로 정해진 순서에 선다(DOM 순서도 같다)", () => {
   mountSidebar();
 
@@ -109,26 +113,42 @@ test("MC-UI22. 엽전 상자는 잔액을 보이고 Get coins가 onGetCoins를 �
   expect(onGetCoins).toHaveBeenCalledTimes(1);
 });
 
-test("MC-UI22. 상대 프로필 줄에는 이름 · View profile이, My profile 줄에는 「{상대} calls you 「{내 이름}」」이 든다", () => {
+test("CC-UI1. 상대 프로필 줄은 숨는다 · My profile 줄에는 「{상대} calls you 「{내 이름}」」이 든다", () => {
   mountSidebar();
 
-  expect(screen.getByTestId(ids.sidebarProfile).textContent).toContain("미나");
-  expect(screen.getByTestId(ids.sidebarProfile).textContent).toContain("View profile");
+  expect(screen.queryByTestId(ids.sidebarProfile)).toBeNull();
+  expect(screen.getByTestId(ids.sidebar).textContent?.includes("View profile")).toBe(false);
   expect(screen.getByTestId(ids.sidebarMyProfile).textContent).toContain("My profile");
   expect(screen.getByTestId(ids.sidebarMyProfile).textContent).toContain("미나 calls you 「Hana」");
 });
 
-test("MC-UI22. 프로필 두 줄을 탭해도 아무 동작도 일어나지 않는다", () => {
+test("CC-UI2. My profile 줄을 탭하면 onMyProfile(설정 탭의 User profile)만 부른다", () => {
   const h = mountSidebar();
 
-  fireEvent.tap(screen.getByTestId(ids.sidebarProfile), {});
-  fireEvent.tap(screen.getByTestId(ids.sidebarMyProfile), {});
-  for (const id of [ids.sidebarProfile, ids.sidebarMyProfile]) {
-    const inner = screen.getByTestId(id).querySelector('[data-testid="ui-lynx-settings-cell"]');
-    if (inner !== null) fireEvent.tap(inner, {});
-  }
+  const cell = screen
+    .getByTestId(ids.sidebarMyProfile)
+    .querySelector('[data-testid="ui-lynx-settings-cell"]');
+  if (cell === null) throw new Error("settings cell missing");
+  fireEvent.tap(cell, {});
 
-  for (const fn of Object.values(h)) expect(fn).not.toHaveBeenCalled();
+  expect(h.onMyProfile).toHaveBeenCalledTimes(1);
+  for (const [name, fn] of Object.entries(h)) {
+    if (name !== "onMyProfile") expect(fn).not.toHaveBeenCalled();
+  }
+});
+
+test("CC-UI3. 추천 답변 토글은 지금 값을 스위치로 보이고 바꾸면 onReplyIdeas(바뀐 값)다", () => {
+  const { onReplyIdeas } = mountSidebar();
+
+  const row = screen.getByTestId(ids.sidebarReplyIdeas);
+  expect(row.textContent).toContain("Reply ideas");
+  const toggle = row.querySelector('[accessibility-traits="switch"], [data-checked]');
+  expect(toggle).not.toBeNull();
+  tapId(ids.sidebarReplyIdeas);
+  const cell = row.querySelector('[data-testid="ui-lynx-settings-cell"]');
+  if (onReplyIdeas.mock.calls.length === 0 && cell !== null) fireEvent.tap(cell, {});
+
+  expect(onReplyIdeas).toHaveBeenCalledWith(false);
 });
 
 test("MC-UI22. 이야기 시점 줄은 지금 시점 제목을 값으로 보이고 탭하면 onStoryPoint다", () => {
@@ -181,11 +201,12 @@ test("CS-UI2. 자동 보기 토글은 사이드바에 없다(설정 탭 Chats의
   ).toBe(false);
 });
 
-test("MC-UI22. Delete chat은 onDelete, 닫기 단추와 바깥(scrim)은 onClose를 부른다", () => {
-  const { onDelete, onClose } = mountSidebar();
+test("MC-UI22. Clear chat은 onClear, 닫기 단추와 바깥(scrim)은 onClose를 부른다", () => {
+  const { onClear, onClose } = mountSidebar();
 
-  tapId(ids.sidebarDelete);
-  expect(onDelete).toHaveBeenCalledTimes(1);
+  expect(screen.getByTestId(ids.sidebarClear).textContent).toContain("Clear chat");
+  tapId(ids.sidebarClear);
+  expect(onClear).toHaveBeenCalledTimes(1);
   tapId(ids.sidebarClose);
   expect(onClose).toHaveBeenCalledTimes(1);
   fireEvent.tap(screen.getByTestId("ui-lynx-overlay"), {});

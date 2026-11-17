@@ -8,6 +8,7 @@ import { inputBlockOf, seedMessageReader } from "./chat-fixture-safety";
 import { sourceBirthYear } from "./chat-fixture-birth-year";
 import {
   advanceIdeas,
+  clearRoomHandles,
   defaultTimers,
   isOpenAccess,
   MINUTE_MS,
@@ -22,6 +23,7 @@ import { albumSourceMethods } from "./chat-fixture-album";
 import { mediaRequester } from "./chat-fixture-media";
 import { createFixtureNotes } from "./chat-fixture-notes";
 import { remoteRoomMethods, uuidV4 } from "./chat-fixture-remote";
+import { roomResetMethods } from "./chat-room-reset";
 import { CHAT_PLACEHOLDERS } from "./chat-placeholders";
 import type {
   ChatFixtureMessage,
@@ -64,7 +66,7 @@ export function createFixtureChatSource(options: FixtureChatSourceOptions): Fixt
   const fromSeed = seedMessageReader({ now, messageId, photoPaths, resolveUrl });
 
   const rooms = new Map<string, RoomState>();
-  const settings = createFixtureSettings(seed, now);
+  const settings = createFixtureSettings(seed, now, options);
 
   const notify = () => {
     for (const listener of [...listeners]) {
@@ -115,10 +117,7 @@ export function createFixtureChatSource(options: FixtureChatSourceOptions): Fixt
 
   const live = (roomId: string): RoomState | null =>
     disposed ? null : (rooms.get(roomId) ?? null);
-  const clearHandles = (room: RoomState) => {
-    for (const handle of room.handles) timers.clearTimeout(handle);
-    room.handles.clear();
-  };
+  const clearHandles = (room: RoomState) => clearRoomHandles(room, timers);
 
   const notes = createFixtureNotes({ seed, schedule, changed, live });
   const openingOf = (room: RoomState): ChatMessage | null => {
@@ -269,15 +268,16 @@ export function createFixtureChatSource(options: FixtureChatSourceOptions): Fixt
     ...albumSourceMethods({ ...fixtureMedia, settings, settingsApi, options, remoteRoom }),
     report: () => undefined,
     ...feedbackMethods({ live, changed, sendText }),
-    deleteRoom: (roomId) => {
-      const room = live(roomId);
-      if (room === null) return;
-      clearHandles(room);
-      rooms.delete(roomId);
-      if (openRoomId === roomId) openRoomId = null;
-      snapshotCache = null;
-      notify();
-    },
+    ...roomResetMethods({
+      ...{ live, changed, clearHandles, openingOf, remote: options.remote ?? null },
+      ...{ loadRoom: remoteRoom?.loadRoom, isOpen: (roomId) => openRoomId === roomId },
+      forget: (roomId) => {
+        rooms.delete(roomId);
+        if (openRoomId === roomId) openRoomId = null;
+        snapshotCache = null;
+        notify();
+      },
+    }),
     refreshImages: () => {
       snapshotCache = null;
       for (const room of rooms.values()) {

@@ -29,6 +29,7 @@ import { TRIAL_TOTAL, type ChatTier } from "../screens/messenger-chat/free-turns
 import { createTrialStore, type TrialStore } from "../screens/messenger-chat/trial-store";
 import type { EpisodeIntroEventSink } from "../screens/episode-intro/episode-intro.contract";
 import { tabRootActions } from "./nav-reducer";
+import { deviceReplyIdeasStore } from "../screens/messenger-chat/reply-ideas-pref";
 import type { NavAction } from "./nav-state";
 
 export type MessengerChatWiring = {
@@ -52,6 +53,8 @@ export type MessengerChatWiring = {
   readonly onOpenMemories: (characterId: string | null, name: string | null) => void;
   /** 인물 앨범(ADR-0150). */
   readonly onOpenAlbum: (roomId: string, name: string) => void;
+  /** 방 사이드바 My profile — 설정 탭으로 옮겨 User profile을 쌓습니다(ADR-0156). */
+  readonly onOpenMyProfile: () => void;
   readonly onExitChatSettingsStack: () => void;
   /** 목록이 선톡 안내를 받았습니다 — route에서 지웁니다(ADR-0127). */
   readonly onListNoticeShown: () => void;
@@ -188,6 +191,10 @@ export function messengerChatSource(imageUrlOf: ImageUrlOf): ChatSource {
         storeOverride === null && testSeed === undefined
           ? deviceBirthYearStore(key)
           : memoryBirthYearStore(),
+      // 추천 답변 칩 설정(ADR-0156) — 계정마다 기기에 적고 서버 방이면 서버 프로필과 맞춥니다. 테스트는 메모리.
+      ...(storeOverride === null && testSeed === undefined
+        ? { replyIdeasStore: deviceReplyIdeasStore(key) }
+        : {}),
       ...(remote === null
         ? testSeed === undefined
           ? {}
@@ -262,6 +269,10 @@ export function messengerChatWiring(args: MessengerChatWiringArgs): {
           type: "push",
           screen: { name: "chat-album", roomId, characterName: name },
         });
+      },
+      onOpenMyProfile: () => {
+        for (const action of tabRootActions("settings")) args.dispatch(action);
+        args.dispatch({ type: "push", screen: { name: "profile" } });
       },
       onExitChatSettingsStack: () => {
         args.dispatch({ type: "back" });

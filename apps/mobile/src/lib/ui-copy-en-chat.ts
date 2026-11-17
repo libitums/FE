@@ -110,7 +110,7 @@ export const messengerChatEn: MessengerChatCopy = {
     storyPoint: "Story point",
     autoIdeas: "Show reply ideas automatically",
     autoIdeasDescription: "Open reply ideas when it's your turn",
-    deleteChat: "Delete chat",
+    clearChat: "Clear chat",
   },
   storyPoint: {
     title: "Story point",
@@ -125,11 +125,14 @@ export const messengerChatEn: MessengerChatCopy = {
     change: "Change",
     close: "Close",
   },
-  deleteChat: {
-    title: "Delete this chat?",
-    description: (name) => `Your chat with ${name} will be removed.`,
+  clearChat: {
+    title: "Clear this chat?",
+    description: (name) =>
+      `Your messages with ${name} and what ${name} remembers about you will be erased. This can't be undone. Photos stay in the album.`,
+    busy: "Wait for the reply to finish, then try again.",
+    failed: "Couldn't clear the chat. Check your connection and try again.",
     cancel: "Cancel",
-    confirm: "Delete",
+    confirm: "Clear",
   },
   myMessage: {
     meaningButton: "See the meaning",

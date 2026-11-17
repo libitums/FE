@@ -111,7 +111,7 @@ export const messengerChatVi: MessengerChatCopy = {
     storyPoint: "Mốc câu chuyện",
     autoIdeas: "Tự động hiện gợi ý trả lời",
     autoIdeasDescription: "Mở gợi ý trả lời khi đến lượt bạn",
-    deleteChat: "Xóa cuộc trò chuyện",
+    clearChat: "Xóa nội dung trò chuyện",
   },
   storyPoint: {
     title: "Mốc câu chuyện",
@@ -126,9 +126,12 @@ export const messengerChatVi: MessengerChatCopy = {
     change: "Đổi",
     close: "Đóng",
   },
-  deleteChat: {
-    title: "Xóa cuộc trò chuyện này?",
-    description: (name) => `Cuộc trò chuyện của bạn với ${name} sẽ bị xóa.`,
+  clearChat: {
+    title: "Xóa nội dung cuộc trò chuyện?",
+    description: (name) =>
+      `Tin nhắn với ${name} và những gì ${name} nhớ về bạn sẽ bị xóa. Không thể hoàn tác. Ảnh vẫn còn trong album.`,
+    busy: "Hãy đợi câu trả lời xong rồi thử lại.",
+    failed: "Không xóa được. Hãy kiểm tra kết nối rồi thử lại.",
     cancel: "Hủy",
     confirm: "Xóa",
   },

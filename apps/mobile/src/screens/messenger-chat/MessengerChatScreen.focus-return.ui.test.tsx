@@ -75,10 +75,10 @@ const flows: readonly Flow[] = [
     },
   },
   {
-    origin: "sidebar-delete",
+    origin: "sidebar-clear",
     open: () => {
       tapId(ids.settings);
-      tapId(ids.sidebarDelete);
+      tapId(ids.sidebarClear);
     },
     close: () => {
       systemBack();

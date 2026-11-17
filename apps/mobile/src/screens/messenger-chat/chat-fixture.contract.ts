@@ -4,6 +4,7 @@ import type { SnapshotSelfStore } from "./chat-fixture-album";
 import type { BirthYearStore } from "./chat-fixture-birth-year";
 import type { ChatMediaHooks } from "./chat-media.contract";
 import type { ChatRemote } from "./chat-remote.contract";
+import type { ReplyIdeasStore } from "./reply-ideas-pref";
 import type {
   ChatBirthYear,
   ChatCorrection,
@@ -102,4 +103,6 @@ export type FixtureChatSourceOptions = {
   readonly selfStore?: SnapshotSelfStore;
   /** 생년의 기기 저장(ADR-0125) — 없으면 메모리만(테스트 · 데모). */
   readonly birthYearStore?: BirthYearStore;
+  /** 추천 답변 설정의 기기 저장(ADR-0156) — 없으면 메모리만(테스트 · 데모). */
+  readonly replyIdeasStore?: ReplyIdeasStore;
 };

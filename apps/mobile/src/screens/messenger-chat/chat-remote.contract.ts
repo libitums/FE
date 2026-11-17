@@ -50,6 +50,11 @@ export type ChatRemote = {
   readonly profile?: ChatProfileRemote;
   /** 서버 지갑 `companion_get_wallet`(ADR-0155) — 못 읽으면 null. 없으면(옛 테스트 원격) 지갑을 읽지 않습니다. */
   readonly wallet?: () => Promise<RemoteWallet | null>;
+  /**
+   * 대화 비우기 `companion_clear_chat`(ADR-0156) — 대화 · 그 인물 기억 · 친밀도를 지웁니다. 진행 중인 턴이 있으면 `busy`, 못 지우면
+   * null. 없으면(옛 테스트 원격) 서버 방은 비우지 못합니다.
+   */
+  readonly clearChat?: (characterId: string) => Promise<"cleared" | "busy" | null>;
 };
 
 /** 서버 지갑 — 잔액(sub + grant + paid)과 체험 인물의 체험 남은 수(칸이 없거나 틀리면 null). */
@@ -57,10 +62,18 @@ export type RemoteWallet = { readonly balance: number; readonly trialRemaining: 
 
 /** 서버 프로필 중 앱이 쓰는 칸 — 생년만. 서버는 생년이 없으면 나이 모름(미성년자와 같은 엄격 규칙)으로 봅니다. */
 export type ChatProfileRemote = {
-  /** `companion_load_profile` — 프로필 행이 없거나 생년이 비면 `birthYear: null`, 못 읽으면 null. */
-  readonly load: () => Promise<{ readonly birthYear: number | null } | null>;
+  /**
+   * `companion_load_profile` — 프로필 행이 없거나 생년이 비면 `birthYear: null`, 못 읽으면 null. `replySuggestions`는 추천 답변
+   * 칩 설정(ADR-0156, 칸이 없으면 null).
+   */
+  readonly load: () => Promise<{
+    readonly birthYear: number | null;
+    readonly replySuggestions?: boolean | null;
+  } | null>;
   /** `companion_save_profile(p_birth_year, p_age_source = "self")` — 성공하면 true. 건너뜀은 서버에 적을 칸이 없습니다. */
   readonly saveBirthYear: (year: number) => Promise<boolean>;
+  /** `companion_save_profile(p_reply_suggestions)`(ADR-0156) — 성공하면 true. 꺼진 계정에는 서버가 칩을 만들지 않습니다. */
+  readonly saveReplySuggestions?: (on: boolean) => Promise<boolean>;
 };
 
 /** 서버가 보내기를 막은 까닭입니다 — 입력 줄 자리 안내(입력 막힘)와 로그 회색 줄(실패) 둘로 나뉩니다. */
