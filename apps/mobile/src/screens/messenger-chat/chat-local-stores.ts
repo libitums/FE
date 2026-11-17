@@ -1,14 +1,17 @@
-// 해금 기록 · 내 모습 · 생년의 기기 저장 접점입니다(messenger-chat-1-5 spec §5.3). lib/storage의 getItem · setItem만 씁니다.
+// 해금 기록 · 내 모습 · 생년의 기기 저장 접점입니다(모두 계정마다)(messenger-chat-1-5 spec §5.3). lib/storage의 getItem · setItem만 씁니다.
 // 첫 읽기 뒤 메모리 캐시로 읽고, 쓰기는 캐시 + 저장소 둘 다 합니다. 실패는 삼키고 이번 실행만 메모리로 갑니다.
 
-import { getItem, setItem } from "../../lib/storage";
+import { getItem, removeItem, setItem } from "../../lib/storage";
 import { SNAPSHOT_SELVES, type ChatSnapshotSelf } from "./chat-album.contract";
 import type { SnapshotSelfStore } from "./chat-fixture-album";
 import type { BirthYearStore } from "./chat-fixture-birth-year";
 import type { ChatBirthYear } from "./chat-source.contract";
 import type { KeyboardHeightStore } from "./keyboard-ports";
 
+/** 옛 해금 기록 — 기기 하나에 목록 하나였습니다. 처음 읽는 계정이 받고 지웁니다(`deviceUnlockStore`). */
 export const UNLOCKED_KEY = "libitum.messenger.unlocked";
+/** 해금 기록 — `{ <출처 키>: 인물 id[] }`(계정마다). */
+export const UNLOCKED_BY_ACCOUNT_KEY = "libitum.messenger.unlocked-by-account";
 /** 사진 속 내 모습(ADR-0150) — `{ <출처 키>: female | male | hidden }`(계정마다). */
 export const SNAPSHOT_SELF_KEY = "libitum.messenger.snapshot-self";
 /** 생년(ADR-0125) — `{ <출처 키>: { kind: "set", year } | { kind: "skipped" } }`(계정마다). */
@@ -45,10 +48,61 @@ function writeJson(key: string, value: unknown): void {
   }
 }
 
-function createDeviceUnlockStore(): UnlockStore {
+/** 손님 · 로그인 전(가짜 출처)의 계정 키 — 대화 출처 키(`messenger-chat-wiring` `sourceKey`)와 같습니다. */
+export const GUEST_ACCOUNT_KEY = "fixture";
+
+/** 로그인한 회원의 계정 키 — 대화 출처 키 「server:<사용자 id>」와 같습니다. */
+export const serverAccountKey = (userId: string): string => `server:${userId}`;
+
+const unlockMap = (): Record<string, unknown> => {
+  const raw = readJson(UNLOCKED_BY_ACCOUNT_KEY);
+  return typeof raw === "object" && raw !== null && !Array.isArray(raw)
+    ? { ...(raw as Record<string, unknown>) }
+    : {};
+};
+
+function removeKey(key: string): void {
+  try {
+    removeItem(key);
+  } catch {
+    // 지우지 못하면 다음 실행에 다시 옮겨 봅니다.
+  }
+}
+
+/**
+ * 그 계정의 해금 목록입니다. 읽는 김에 두 가지를 옮깁니다 — 한 번 옮기면 다시 일어나지 않습니다.
+ * - 옛 기기 하나짜리 목록(`UNLOCKED_KEY`)은 처음 읽는 계정 하나가 받고 지웁니다(업데이트한 사용자가 연 인물을 잃지 않게).
+ * - 로그인한 계정은 손님 때 연 인물을 받고 손님 기록을 지웁니다(손님 기록을 가입한 계정이 받는 것과 같은 규칙 — ADR-0111).
+ */
+function loadUnlocks(accountKey: string): Set<string> {
+  const map = unlockMap();
+  const ids = new Set(parseUnlocked(map[accountKey]));
+  let moved = false;
+  const legacy = readJson(UNLOCKED_KEY);
+  if (legacy !== null) {
+    for (const id of parseUnlocked(legacy)) ids.add(id);
+    moved = true;
+  }
+  if (accountKey !== GUEST_ACCOUNT_KEY && map[GUEST_ACCOUNT_KEY] !== undefined) {
+    for (const id of parseUnlocked(map[GUEST_ACCOUNT_KEY])) ids.add(id);
+    delete map[GUEST_ACCOUNT_KEY];
+    moved = true;
+  }
+  if (moved) {
+    writeJson(UNLOCKED_BY_ACCOUNT_KEY, { ...map, [accountKey]: [...ids] });
+    if (legacy !== null) removeKey(UNLOCKED_KEY);
+  }
+  return ids;
+}
+
+/**
+ * 기기의 해금 기록 — 계정(출처 키 「fixture」 · 「server:<id>」)마다 따로입니다. 같은 기기에서 탈퇴 뒤 다시 가입한 계정에
+ * 앞 계정이 연 인물이 열려 있던 것(2026-11-17)을 막습니다. 쓰기가 실패하면 이번 실행의 메모리로 계속합니다.
+ */
+export function deviceUnlockStore(accountKey: string): UnlockStore {
   let cache: Set<string> | null = null;
   const load = (): Set<string> => {
-    cache ??= new Set(parseUnlocked(readJson(UNLOCKED_KEY)));
+    cache ??= loadUnlocks(accountKey);
     return cache;
   };
   return {
@@ -57,12 +111,18 @@ function createDeviceUnlockStore(): UnlockStore {
       const ids = load();
       if (characterId === "" || ids.has(characterId)) return;
       ids.add(characterId);
-      writeJson(UNLOCKED_KEY, [...ids]);
+      writeJson(UNLOCKED_BY_ACCOUNT_KEY, { ...unlockMap(), [accountKey]: [...ids] });
     },
   };
 }
 
-export const deviceUnlockStore: UnlockStore = createDeviceUnlockStore();
+/** 계정을 지웠을 때 그 계정의 해금 기록을 지웁니다(다른 계정 · 손님 기록은 그대로). */
+export function forgetDeviceUnlocks(accountKey: string): void {
+  const map = unlockMap();
+  if (map[accountKey] === undefined) return;
+  delete map[accountKey];
+  writeJson(UNLOCKED_BY_ACCOUNT_KEY, map);
+}
 
 export function memoryUnlockStore(initial: readonly string[] = []): UnlockStore {
   const ids = new Set(parseUnlocked(initial));

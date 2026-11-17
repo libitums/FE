@@ -88,33 +88,42 @@ describe("memoryUnlockStore (MC2-U24)", () => {
 });
 
 describe("deviceUnlockStore (MC2-U24)", () => {
-  test("MC2-U24. 저장된 JSON 배열을 읽는다", async () => {
+  // 2026-11-17부터 계정마다 적습니다(UA-U1 ~ U5) — 여기서는 저장 모양 · 오류 처리만 봅니다.
+  const A = "server:a";
+  const map = (value: unknown) => JSON.stringify({ [A]: value });
+
+  test("MC2-U24. 그 계정의 JSON 배열을 읽는다", async () => {
     const { deviceUnlockStore } = await freshStores();
     storage.getItem.mockImplementation((key) =>
-      key === "libitum.messenger.unlocked" ? JSON.stringify(["mina"]) : null,
+      key === "libitum.messenger.unlocked-by-account" ? map(["mina"]) : null,
     );
-    expect([...deviceUnlockStore.read()]).toEqual(["mina"]);
+    expect([...deviceUnlockStore(A).read()]).toEqual(["mina"]);
   });
 
-  test("MC2-U24. add 는 키 libitum.messenger.unlocked 에 JSON 배열을 쓰고 끝 줄바꿈이 없다", async () => {
+  test("MC2-U24. add 는 키 libitum.messenger.unlocked-by-account 에 계정 칸을 쓰고 끝 줄바꿈이 없다", async () => {
     const { deviceUnlockStore } = await freshStores();
-    deviceUnlockStore.add("mina");
+    deviceUnlockStore(A).add("mina");
     expect(storage.setItem).toHaveBeenCalled();
     const [key, value] = storage.setItem.mock.calls.at(-1) ?? [];
-    expect(key).toBe("libitum.messenger.unlocked");
-    expect(JSON.parse(value as string)).toEqual(["mina"]);
+    expect(key).toBe("libitum.messenger.unlocked-by-account");
+    expect(JSON.parse(value as string)).toEqual({ [A]: ["mina"] });
     expect(value).not.toMatch(/\s$/);
   });
 
   test("MC2-U24. 기존 기록에 더한다 — 중복 없이", async () => {
     const { deviceUnlockStore } = await freshStores();
-    storage.getItem.mockReturnValue(JSON.stringify(["mina"]));
-    deviceUnlockStore.add("clerk");
-    deviceUnlockStore.add("clerk");
-    expect(storage.setItem).toHaveBeenCalled();
+    storage.getItem.mockImplementation((key) =>
+      key === "libitum.messenger.unlocked-by-account" ? map(["mina"]) : null,
+    );
+    const unlocks = deviceUnlockStore(A);
+    unlocks.add("clerk");
+    unlocks.add("clerk");
     const [, value] = storage.setItem.mock.calls.at(-1) ?? [];
     expect(typeof value).toBe("string");
-    expect((JSON.parse(value as string) as string[]).sort()).toEqual(["clerk", "mina"]);
+    expect((JSON.parse(value as string) as Record<string, string[]>)[A]?.sort()).toEqual([
+      "clerk",
+      "mina",
+    ]);
   });
 
   test("MC2-U24. 읽기가 던지면 빈 집합이다", async () => {
@@ -122,8 +131,8 @@ describe("deviceUnlockStore (MC2-U24)", () => {
     storage.getItem.mockImplementation(() => {
       throw new Error("native module failed");
     });
-    expect(() => deviceUnlockStore.read()).not.toThrow();
-    expect(deviceUnlockStore.read().size).toBe(0);
+    expect(() => deviceUnlockStore(A).read()).not.toThrow();
+    expect(deviceUnlockStore(A).read().size).toBe(0);
   });
 
   test("MC2-U24. 쓰기가 던져도 삼키고 캐시로 계속한다", async () => {
@@ -131,8 +140,9 @@ describe("deviceUnlockStore (MC2-U24)", () => {
     storage.setItem.mockImplementation(() => {
       throw new Error("quota");
     });
-    expect(() => deviceUnlockStore.add("mina")).not.toThrow();
-    expect(deviceUnlockStore.read().has("mina")).toBe(true);
+    const unlocks = deviceUnlockStore(A);
+    expect(() => unlocks.add("mina")).not.toThrow();
+    expect(unlocks.read().has("mina")).toBe(true);
   });
 });
 

@@ -18,8 +18,10 @@ import {
   deviceBirthYearStore,
   deviceSnapshotSelfStore,
   deviceUnlockStore,
+  GUEST_ACCOUNT_KEY,
   memoryBirthYearStore,
   memorySnapshotSelfStore,
+  serverAccountKey,
   type UnlockStore,
 } from "../screens/messenger-chat/chat-local-stores";
 import { createCoinWallet, type SyncedCoinWallet } from "../screens/messenger-chat/coin-wallet";
@@ -82,9 +84,9 @@ export type TestStores = {
   readonly tier?: ChatTier;
 };
 
-/** 해금 기록 저장입니다 — 앱은 기기 저장, 테스트는 메모리(spec §7.2). */
+/** 해금 기록 저장입니다 — 앱은 지금 계정(출처 키)의 기기 저장, 테스트는 메모리(spec §7.2). */
 export function messengerUnlockStore(): UnlockStore {
-  return storeOverride?.unlock ?? deviceUnlockStore;
+  return storeOverride?.unlock ?? deviceUnlockStore(sourceKey());
 }
 
 const clockNow = (): number => (storeOverride?.now ?? Date.now)();
@@ -152,10 +154,10 @@ export function setMessengerChatRemote(factory: (() => ChatRemote) | null): void
 
 /** 로그인한 회원이면 서버 모드(사용자마다), 아니면 가짜 — 2026-11-17부터 시험 계정이 아니어도 엽니다(ADR-0128). */
 function sourceKey(): string {
-  if (remoteFactory === null || testSeed !== undefined) return "fixture";
+  if (remoteFactory === null || testSeed !== undefined) return GUEST_ACCOUNT_KEY;
   const token = loadAuthSession()?.accessToken;
   const userId = token === undefined ? null : authUserIdFrom(token);
-  return userId === null ? "fixture" : `server:${userId}`;
+  return userId === null ? GUEST_ACCOUNT_KEY : serverAccountKey(userId);
 }
 
 /**
