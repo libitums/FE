@@ -667,6 +667,9 @@ ops-dashboard `docs/admin-contract.md` §A가 정본이다.
   `(reason, ref_id)`로 한 번만, 사람당 ≤ 10,000 · 한 번에 ≤ 1,000명) · 시험 계정 잔액 · 등급 · 초기화 · 정지 · 공개 스위치 · 푸시 대상 · 발송 기록 ·
   `ops_log` · `ops_audit`. 첫 인수는 늘 운영자 로그인(`p_actor`, 비면 `actor_required`). 시험 계정만 되는 조작은 실제 사용자면 예외 대신
   `{ok:false, error:'not_a_tester'}`를 돌려주고 `refused`로 남긴다.
+- 푸시 발송 기록은 `request_id`(화면이 대상 확인 때 한 번 만듦)로 한 번만 열린다 — 같은 요청이 다시 오면 `ops_push_begin`이
+  `{ok:false, error:'already_sent'}`로 거절하고 `refused`로 남긴다(`send-push`는 같은 요청을 두 번 받으면 두 번 보내므로). `send-push`가 끝까지
+  답하지 않은 발송은 `failed`가 아니라 `unknown`(보냈을 수도 있음)으로 끝난다.
 - 기존 함수를 고친다: `companion_grant_credits`는 reason `ops_grant`를 더 받고 reason `operator`는 시험 계정만(`not_a_tester`).
   `companion_set_entitlement`는 시험 계정만 — 부르는 곳이 플레이그라운드(ops-dashboard `companion.py`)뿐이다. 원장 kind에 `revoke`를 더한다(20261129와 같은 목록).
 - 20261129(구독)가 운영에 아직 없어도 적용된다 — `companion.plans` · `plan_entitlements` · `store_events`는 `to_regclass`로 보고 동적 SQL로만 읽으며,

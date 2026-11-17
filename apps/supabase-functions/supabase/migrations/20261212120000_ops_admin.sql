@@ -48,8 +48,11 @@ create table if not exists ops.user_notes (
 create index if not exists user_notes_user_idx on ops.user_notes (user_id, created_at desc);
 
 -- 운영자가 손으로 보낸 푸시(공지 · 시험 발송). FE 자동 캠페인 `push_campaign_sends`와 다른 것이다.
+-- send-push는 같은 요청을 두 번 받으면 두 번 보낸다 — `request_id`(화면이 대상 확인 때 한 번 만듦)가 같은 발송을 한 번만 열게 한다.
+-- `unknown`: send-push가 끝까지 답하지 않았다(시간 초과 · 게이트웨이 오류) — 보냈을 수도 있다.
 create table if not exists ops.push_sends (
   id uuid primary key default gen_random_uuid(),
+  request_id uuid not null unique,
   created_at timestamptz not null default now(),
   actor text not null check (char_length(actor) between 1 and 200),
   audience jsonb not null check (jsonb_typeof(audience) = 'object'),
@@ -58,7 +61,7 @@ create table if not exists ops.push_sends (
   body text not null check (char_length(body) between 1 and 500),
   target jsonb,
   test boolean not null,
-  status text not null default 'sending' check (status in ('sending', 'sent', 'failed')),
+  status text not null default 'sending' check (status in ('sending', 'sent', 'failed', 'unknown')),
   summary jsonb,
   finished_at timestamptz
 );
@@ -992,7 +995,8 @@ end;
 $$;
 
 create or replace function public.ops_push_begin(
-  p_actor text, p_audience jsonb, p_user_count integer, p_title text, p_body text, p_target jsonb, p_test boolean
+  p_actor text, p_audience jsonb, p_user_count integer, p_title text, p_body text, p_target jsonb, p_test boolean,
+  p_request_id uuid
 )
 returns jsonb
 language plpgsql
@@ -1022,16 +1026,28 @@ begin
   if p_test is null then
     raise exception 'invalid_test' using errcode = '22023';
   end if;
-  insert into ops.push_sends (actor, audience, user_count, title, body, target, test)
-  values (v_actor, p_audience, p_user_count, p_title, p_body, p_target, p_test)
+  if p_request_id is null then
+    raise exception 'invalid_request_id' using errcode = '22023';
+  end if;
+  insert into ops.push_sends (request_id, actor, audience, user_count, title, body, target, test)
+  values (p_request_id, v_actor, p_audience, p_user_count, p_title, p_body, p_target, p_test)
+  on conflict (request_id) do nothing
   returning id into v_id;
+  if v_id is null then
+    -- 같은 요청을 다시 보냈다(재시도 · 두 번 누름). send-push를 다시 부르지 않게 거절한다.
+    select id into v_id from ops.push_sends where request_id = p_request_id;
+    perform ops.log(v_actor, 'write', 'push_begin', null,
+      jsonb_build_object('id', v_id, 'requestId', p_request_id, 'error', 'already_sent'), 'refused');
+    return jsonb_build_object('ok', false, 'error', 'already_sent', 'id', v_id);
+  end if;
   -- 한 사람에게 보내면(시험 발송) 그 사람의 운영 기록에 남는다.
   if jsonb_typeof(p_audience->'userIds') = 'array' and jsonb_array_length(p_audience->'userIds') = 1
     and (p_audience->'userIds'->>0) ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' then
     v_target_user := (p_audience->'userIds'->>0)::uuid;
   end if;
   perform ops.log(v_actor, 'write', 'push_begin', v_target_user, jsonb_build_object(
-    'id', v_id, 'test', p_test, 'userCount', p_user_count, 'title', p_title, 'audience', p_audience - 'userIds'));
+    'id', v_id, 'requestId', p_request_id, 'test', p_test, 'userCount', p_user_count, 'title', p_title,
+    'audience', p_audience - 'userIds'));
   return jsonb_build_object('ok', true, 'id', v_id);
 end;
 $$;
@@ -1046,7 +1062,7 @@ declare
   v_actor text := ops.actor(p_actor);
   v_row ops.push_sends;
 begin
-  if p_status is null or p_status not in ('sent', 'failed') then
+  if p_status is null or p_status not in ('sent', 'failed', 'unknown') then
     raise exception 'invalid_status' using errcode = '22023';
   end if;
   select * into v_row from ops.push_sends where id = p_id for update;
@@ -1200,7 +1216,7 @@ revoke all on function public.ops_set_suspension(text, uuid, timestamptz, boolea
 revoke all on function public.ops_settings(text) from public, anon, authenticated;
 revoke all on function public.ops_set_testers_only(text, boolean) from public, anon, authenticated;
 revoke all on function public.ops_push_audience(text, text, uuid[], integer) from public, anon, authenticated;
-revoke all on function public.ops_push_begin(text, jsonb, integer, text, text, jsonb, boolean) from public, anon, authenticated;
+revoke all on function public.ops_push_begin(text, jsonb, integer, text, text, jsonb, boolean, uuid) from public, anon, authenticated;
 revoke all on function public.ops_push_finish(text, uuid, text, jsonb) from public, anon, authenticated;
 revoke all on function public.ops_log(text, text, text, uuid, jsonb) from public, anon, authenticated;
 revoke all on function public.ops_audit(text, text, uuid, bigint, integer) from public, anon, authenticated;
@@ -1222,7 +1238,7 @@ grant execute on function public.ops_set_suspension(text, uuid, timestamptz, boo
 grant execute on function public.ops_settings(text) to service_role;
 grant execute on function public.ops_set_testers_only(text, boolean) to service_role;
 grant execute on function public.ops_push_audience(text, text, uuid[], integer) to service_role;
-grant execute on function public.ops_push_begin(text, jsonb, integer, text, text, jsonb, boolean) to service_role;
+grant execute on function public.ops_push_begin(text, jsonb, integer, text, text, jsonb, boolean, uuid) to service_role;
 grant execute on function public.ops_push_finish(text, uuid, text, jsonb) to service_role;
 grant execute on function public.ops_log(text, text, text, uuid, jsonb) to service_role;
 grant execute on function public.ops_audit(text, text, uuid, bigint, integer) to service_role;

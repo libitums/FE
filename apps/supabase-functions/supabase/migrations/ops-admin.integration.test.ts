@@ -8,6 +8,8 @@ const tester = "00000000-0000-4000-8000-0000000000a1";
 const real = "00000000-0000-4000-8000-0000000000a2";
 const other = "00000000-0000-4000-8000-0000000000a3";
 const nobody = "00000000-0000-4000-8000-0000000000ff";
+const REQUEST_A = "00000000-0000-4000-8000-0000000000a1";
+const REQUEST_B = "00000000-0000-4000-8000-0000000000b2";
 const ACTOR = "komet";
 const DAY = 86_400_000;
 const iso = (offsetMs: number) => new Date(Date.now() + offsetMs).toISOString();
@@ -963,7 +965,7 @@ describe("구독 표가 있는 DB", () => {
     ]);
   });
 
-  test("OA-15 푸시: 대상(all · users · inactive) · begin/finish · 두 번 끝내기 거절", async () => {
+  test("OA-15 푸시: 대상(all · users · inactive) · begin/finish · 두 번 끝내기 거절 · 같은 request_id 두 번 열기 거절 · unknown", async () => {
     await db.admin.query(
       `insert into public.push_devices (token, user_id, environment, last_active_at) values
          ($1, $4, 'production', now()), ($2, $4, 'sandbox', now() - interval '20 days'),
@@ -1028,10 +1030,19 @@ describe("구독 표가 있는 DB", () => {
     const begin = await rpc(
       server,
       "ops_push_begin",
-      [ACTOR, { kind: "users", userIds: [tester] }, 1, "제목", "본문", { screen: "home" }, true],
-      ["", "jsonb", "", "", "", "jsonb"],
+      [ACTOR, { kind: "users", userIds: [tester] }, 1, "제목", "본문", { screen: "home" }, true, REQUEST_A],
+      ["", "jsonb", "", "", "", "jsonb", "", "uuid"],
     );
     expect(begin).toEqual({ ok: true, id: expect.any(String) });
+    // 같은 request_id 로 다시 열면 send-push 를 다시 부르지 않게 거절(기록은 refused).
+    expect(
+      await rpc(
+        server,
+        "ops_push_begin",
+        [ACTOR, { kind: "all" }, 2, "제목", "본문", null, false, REQUEST_A],
+        ["", "jsonb", "", "", "", "jsonb", "", "uuid"],
+      ),
+    ).toEqual({ ok: false, error: "already_sent", id: begin.id });
     expect(
       await rpc(
         server,
@@ -1064,18 +1075,46 @@ describe("구독 표가 있는 DB", () => {
       rpc(
         server,
         "ops_push_begin",
-        [ACTOR, { kind: "all" }, 2, "x".repeat(101), "본문", null, false],
-        ["", "jsonb", "", "", "", "jsonb"],
+        [ACTOR, { kind: "all" }, 2, "x".repeat(101), "본문", null, false, REQUEST_B],
+        ["", "jsonb", "", "", "", "jsonb", "", "uuid"],
       ),
     ).rejects.toThrow(/invalid_title/);
     await expect(
       rpc(
         server,
         "ops_push_begin",
-        [ACTOR, { kind: "all" }, 2, "제목", "", null, false],
-        ["", "jsonb", "", "", "", "jsonb"],
+        [ACTOR, { kind: "all" }, 2, "제목", "", null, false, REQUEST_B],
+        ["", "jsonb", "", "", "", "jsonb", "", "uuid"],
       ),
     ).rejects.toThrow(/invalid_body/);
+    await expect(
+      rpc(
+        server,
+        "ops_push_begin",
+        [ACTOR, { kind: "all" }, 2, "제목", "본문", null, false, null],
+        ["", "jsonb", "", "", "", "jsonb", "", "uuid"],
+      ),
+    ).rejects.toThrow(/invalid_request_id/);
+    // send-push 가 답하지 않은 발송(시간 초과)은 unknown 으로 끝난다 — result 는 error.
+    const timedOut = await rpc(
+      server,
+      "ops_push_begin",
+      [ACTOR, { kind: "all" }, 2, "공지", "본문", null, false, REQUEST_B],
+      ["", "jsonb", "", "", "", "jsonb", "", "uuid"],
+    );
+    expect(timedOut).toEqual({ ok: true, id: expect.any(String) });
+    expect(
+      await rpc(
+        server,
+        "ops_push_finish",
+        [ACTOR, timedOut.id, "unknown", { error: "push_timeout", maybeSent: true }],
+        ["", "", "", "jsonb"],
+      ),
+    ).toEqual({ ok: true });
+    expect(
+      (await db.admin.query("select status, request_id from ops.push_sends where id = $1", [timedOut.id]))
+        .rows[0],
+    ).toEqual({ status: "unknown", request_id: REQUEST_B });
     await expect(
       rpc(server, "ops_push_finish", [ACTOR, begin.id, "sending", {}], ["", "", "", "jsonb"]),
     ).rejects.toThrow(/invalid_status/);
@@ -1085,8 +1124,11 @@ describe("구독 표가 있는 DB", () => {
 
     expect((await auditRows(db)).map((r) => [r.action, r.target_user, r.result])).toEqual([
       ["push_begin", tester, "ok"],
+      ["push_begin", null, "refused"],
       ["push_finish", null, "ok"],
       ["push_finish", null, "refused"],
+      ["push_begin", null, "ok"],
+      ["push_finish", null, "error"],
     ]);
   });
 
