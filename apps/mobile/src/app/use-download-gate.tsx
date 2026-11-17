@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "@lynx-js/react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import {
@@ -90,16 +90,19 @@ export function useDownloadGate(
   }, [loaded, allCleared, atMapRoot, controls, checkedAt]);
 
   // 미리 받기 창(ADR-0157)을 진행에서 셉니다 — 편을 끝내 창이 밀리면 받기 차례를 다시 돌려 다음 편을 받습니다.
-  const windowIds = prefetchWindowIds(
-    sections.flatMap((s) => (s.kind === "catalog-ready" ? [s] : [])).map((s) => s.episodeId),
-    (id) => {
-      const section = sections.find((s) => s.kind === "catalog-ready" && s.episodeId === id);
-      return section?.kind === "catalog-ready"
-        ? isCatalogEpisodeComplete(catalog.catalogProgress, id, section.completionKeys)
-        : false;
-    },
-  );
-  const windowKey = windowIds.join(",");
+  const catalogProgress = catalog.catalogProgress;
+  const windowKey = useMemo(() => {
+    const ready = sections.flatMap((s) => (s.kind === "catalog-ready" ? [s] : []));
+    return prefetchWindowIds(
+      ready.map((s) => s.episodeId),
+      (id) => {
+        const section = ready.find((s) => s.episodeId === id);
+        return section !== undefined
+          ? isCatalogEpisodeComplete(catalogProgress, id, section.completionKeys)
+          : false;
+      },
+    ).join(",");
+  }, [sections, catalogProgress]);
   useEffect(() => {
     // 맵 구획이 아직 없으면(콘텐츠를 읽기 전) 창을 정하지 않습니다 — 받기 차례는 새 사용자 창을 씁니다.
     if (windowKey === "") return;
