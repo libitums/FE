@@ -21,6 +21,15 @@ import {
 import { walletOf } from "../screens/messenger-chat/companion-media-parse";
 
 /** 서버 계약 판(`@libitums/companion-contract`의 CONTRACT_VERSION). 값을 가져오면 zod가 번들에 들어가 숫자만 둡니다. */
+
+// Lynx 배경 스레드(PrimJS)에는 `Promise.allSettled`가 없습니다 — 끝나면(성공 · 실패) 이어지는 약속을 직접 만듭니다.
+// 새 저장은 앞선 저장을 기다린 뒤 나가므로, 새 저장이 끝나는 것만 기다리면 앞선 저장도 끝나 있습니다.
+const settled = (promise: Promise<unknown>): Promise<void> =>
+  promise.then(
+    () => undefined,
+    () => undefined,
+  );
+
 export const COMPANION_CONTRACT_VERSION = 1;
 /** 방을 열 때 읽는 기록 수입니다(최근부터). */
 export const HISTORY_PAGE = 30;
@@ -81,7 +90,7 @@ export function createCompanionRemote(deps: CompanionRemoteDeps): ChatRemote {
             p_feedback_mode: null,
           }).then((body) => body !== null),
         );
-        profileSaving = Promise.allSettled([before, saved]);
+        profileSaving = settled(saved);
         return saved;
       },
       saveReplySuggestions: (on) =>
@@ -102,7 +111,7 @@ export function createCompanionRemote(deps: CompanionRemoteDeps): ChatRemote {
           const body = { p_birth_year: null, p_age_source: null, p_l1: l1, p_feedback_mode: null };
           return (await call("/rest/v1/rpc/companion_save_profile", body)) !== null;
         })();
-        profileSaving = Promise.allSettled([before, synced]);
+        profileSaving = settled(synced);
         return synced;
       },
     },
