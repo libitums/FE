@@ -6,6 +6,7 @@ import {
   learningSessionHeader,
   learningShellArrangement,
   learningShellFlow,
+  learningShellCardScrollMergeBelow,
   learningShellMergeBelow,
   learningShellScene,
   learningShellSceneClasses,
@@ -207,6 +208,16 @@ describe("learningShellFlow", () => {
     ).toBe("split");
   });
 
+  it("[FL7] 카드 스크롤은 떠 있는 버튼 행 몫(72)을 더한 문턱(168) 미만이면 합친다", () => {
+    expect(learningShellCardScrollMergeBelow).toBe(168);
+    const at = (viewportHeight: number, cardScroll?: boolean) =>
+      learningShellFlow({ current: "split", workspaceMode: "scroll", viewportHeight, cardScroll });
+    expect(at(150, true)).toBe("merged");
+    expect(at(168, true)).toBe("split");
+    // 카드 스크롤이 아니면 문턱은 그대로 96입니다.
+    expect(at(150)).toBe("split");
+  });
+
   it("[FL4] 액션 행이 서 있는 모드(scroll)도 78이면 합친다", () => {
     expect(
       learningShellFlow({ current: "split", workspaceMode: "scroll", viewportHeight: 78 }),
@@ -302,9 +313,12 @@ describe("layoutHeightFrom", () => {
 });
 
 describe("learningShellArrangement", () => {
-  it("[AR1] scrollCard면 흐름과 상관없이 card-scroll이다", () => {
+  it("[AR1] scrollCard면 split에서 card-scroll이다", () => {
     expect(learningShellArrangement({ scrollCard: true, flow: "split" })).toBe("card-scroll");
-    expect(learningShellArrangement({ scrollCard: true, flow: "merged" })).toBe("card-scroll");
+  });
+
+  it("[AR4] scrollCard라도 카드 스크롤이 낮아 합쳤으면 merged다 — 지시문까지 한 스크롤", () => {
+    expect(learningShellArrangement({ scrollCard: true, flow: "merged" })).toBe("merged");
   });
 
   it("[AR2] scrollCard가 아니고 merged면 merged다", () => {

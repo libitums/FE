@@ -138,84 +138,96 @@ export function LessonCompleteScreen({
         onStatBumped={onStatBumped}
       />
 
-      <view className="lesson-complete-screen-spacer-top" />
-
-      {/* 판정 표식과 통과 폭죽입니다(`LessonCompleteBadge`) — 장식이고 판정은 아래 제목과 낭독이 말합니다. */}
-      <LessonCompleteBadge verdict={verdict} rewardMotion={rewardMotion} />
-
-      <view
-        className={[
-          "lesson-complete-screen-summary",
-          lessonCompleteRiseClassName(rewardMotion, "summary"),
-        ]
-          .filter(Boolean)
-          .join(" ")}
+      {/* 머리 칩과 아래 버튼 사이의 묶음만 스크롤합니다 — 최대 글자 · 작은 화면에서 제목 · 보상이 화면을 넘으면 버튼이
+          화면 밖으로 밀렸습니다. 스크롤 안에서는 `flex-grow`가 읽히지 않아 안쪽 상자가 하한(100%)으로 남는 세로를 받고
+          두 여백이 그 안에서 2 : 3으로 나눕니다(ADR-0022 D4) — 넘치지 않으면 모양이 그대로입니다. */}
+      <scroll-view
+        className="lesson-complete-screen-scroll"
+        data-testid="lesson-complete-screen-scroll"
+        scroll-orientation="vertical"
+        scroll-bar-enable={false}
       >
-        <text
-          className="lesson-complete-screen-title"
-          data-testid="lesson-complete-screen-title"
-          accessibility-traits="header"
-        >
-          {review === undefined
-            ? lessonCompleteTitle(mistakeCount, verdict, skippedCount, copy)
-            : lessonReviewTitle(verdict, copy)}
-        </text>
-        {/* 연속이 없으면(0일) 알약을 세우지 않습니다 — 「0 Day Streak」은 축하가 아닙니다. */}
-        {streakDays > 0 ? (
+        <view className="lesson-complete-screen-scroll-content">
+          <view className="lesson-complete-screen-spacer-top" />
+
+          {/* 판정 표식과 통과 폭죽입니다(`LessonCompleteBadge`) — 장식이고 판정은 아래 제목과 낭독이 말합니다. */}
+          <LessonCompleteBadge verdict={verdict} rewardMotion={rewardMotion} />
+
           <view
-            className="lesson-complete-screen-streak"
-            data-testid="lesson-complete-screen-streak-pill"
-            accessibility-element={true}
-            accessibility-label={copy.common.count.streakDays(streakDays)}
+            className={[
+              "lesson-complete-screen-summary",
+              lessonCompleteRiseClassName(rewardMotion, "summary"),
+            ]
+              .filter(Boolean)
+              .join(" ")}
           >
-            <svg
-              className="lesson-complete-screen-streak-icon"
-              content={fire}
-              current-color={color.brand.primary}
-            />
-            <text className="lesson-complete-screen-streak-label">
-              {lc.streakLabel(streakDays)}
+            <text
+              className="lesson-complete-screen-title"
+              data-testid="lesson-complete-screen-title"
+              accessibility-traits="header"
+            >
+              {review === undefined
+                ? lessonCompleteTitle(mistakeCount, verdict, skippedCount, copy)
+                : lessonReviewTitle(verdict, copy)}
             </text>
+            {/* 연속이 없으면(0일) 알약을 세우지 않습니다 — 「0 Day Streak」은 축하가 아닙니다. */}
+            {streakDays > 0 ? (
+              <view
+                className="lesson-complete-screen-streak"
+                data-testid="lesson-complete-screen-streak-pill"
+                accessibility-element={true}
+                accessibility-label={copy.common.count.streakDays(streakDays)}
+              >
+                <svg
+                  className="lesson-complete-screen-streak-icon"
+                  content={fire}
+                  current-color={color.brand.primary}
+                />
+                <text className="lesson-complete-screen-streak-label">
+                  {lc.streakLabel(streakDays)}
+                </text>
+              </view>
+            ) : null}
+            <text
+              className="lesson-complete-screen-subtitle"
+              data-testid="lesson-complete-screen-subtitle"
+            >
+              {review === undefined
+                ? lessonCompleteSubtitle(mistakeCount, copy)
+                : lessonReviewSubtitle(review, copy)}
+            </text>
+            {review === undefined ? null : (
+              <LessonCompleteReviewSummary review={review} verdict={verdict} />
+            )}
           </view>
-        ) : null}
-        <text
-          className="lesson-complete-screen-subtitle"
-          data-testid="lesson-complete-screen-subtitle"
-        >
-          {review === undefined
-            ? lessonCompleteSubtitle(mistakeCount, copy)
-            : lessonReviewSubtitle(review, copy)}
-        </text>
-        {review === undefined ? null : (
-          <LessonCompleteReviewSummary review={review} verdict={verdict} />
-        )}
-      </view>
 
-      {/* 보상 카드 줄(엽전 · 등급) — **미통과에서는 아예 서지 않습니다**. 얻지 않은 것을 그리면 화면이 거짓말을
+          {/* 보상 카드 줄(엽전 · 등급) — **미통과에서는 아예 서지 않습니다**. 얻지 않은 것을 그리면 화면이 거짓말을
           합니다. 빈 상자도 두지 않습니다(ADR-0022 D1과 같은 근거). */}
-      {verdict === "failed" ? null : (
-        <LessonCompleteRewards reward={reward} rewardMotion={rewardMotion} />
-      )}
+          {verdict === "failed" ? null : (
+            <LessonCompleteRewards reward={reward} rewardMotion={rewardMotion} />
+          )}
 
-      {/* 무제한이면 남은 장수 줄 자리에 「No ticket used · Unlimited」 알약입니다(ADR-0115). */}
-      {ticketChip?.unlimited === true ? <LessonCompleteUnlimitedLine /> : null}
-      {ticketsLeft === undefined ? null : (
-        <view
-          className="ticket-left-line"
-          data-testid="lesson-complete-tickets"
-          accessibility-element={true}
-          accessibility-label={copy.tickets.ticketsLeft(ticketsLeft)}
-        >
-          <svg
-            className="ticket-left-icon"
-            content={ticketIcon}
-            current-color={color.brand.primary}
-          />
-          <text className="ticket-left-label">{copy.tickets.ticketsLeft(ticketsLeft)}</text>
+          {/* 무제한이면 남은 장수 줄 자리에 「No ticket used · Unlimited」 알약입니다(ADR-0115). */}
+          {ticketChip?.unlimited === true ? <LessonCompleteUnlimitedLine /> : null}
+          {ticketsLeft === undefined ? null : (
+            <view
+              className="ticket-left-line"
+              data-testid="lesson-complete-tickets"
+              accessibility-element={true}
+              accessibility-label={copy.tickets.ticketsLeft(ticketsLeft)}
+            >
+              <svg
+                className="ticket-left-icon"
+                content={ticketIcon}
+                current-color={color.brand.primary}
+              />
+              <text className="ticket-left-label">{copy.tickets.ticketsLeft(ticketsLeft)}</text>
+            </view>
+          )}
+
+          <view className="lesson-complete-screen-spacer" />
         </view>
-      )}
-
-      <view className="lesson-complete-screen-spacer" />
+      </scroll-view>
 
       {coinsFly ? (
         <LessonCompleteCoinFlight

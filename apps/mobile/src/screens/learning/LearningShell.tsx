@@ -100,7 +100,7 @@ export function LearningShell({
   const actionsShown =
     actionButton !== undefined || (actionLabel !== undefined && onAction !== undefined);
   const workspaceMode = learningWorkspaceMode({ scrolls: workspaceScrolls, actionsShown });
-  const { flow, reportViewportHeight } = useLearningShellFlow(workspaceMode);
+  const { flow, reportViewportHeight } = useLearningShellFlow(workspaceMode, scrollCard);
   const arrangement = learningShellArrangement({ scrollCard, flow });
   const actionsInFlow = arrangement !== "split" || actionPlacement === "in-flow";
   useLearningShellScrollReset({

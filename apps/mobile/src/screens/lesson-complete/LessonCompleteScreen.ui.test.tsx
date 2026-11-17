@@ -51,6 +51,20 @@ test("[LCS1] 실수가 없으면 PERFECT 제목과 설명이 서고, 제목은 h
   );
 });
 
+// 최대 글자 · 작은 화면에서 제목 · 보상이 화면을 넘어 아래 버튼(Continue · Try again)이 화면 밖으로 밀리던 것 —
+// 가운데 묶음만 스크롤하고 버튼은 스크롤 밖에 남습니다.
+test("[LCS-FIT1] 제목 · 설명 · 보상은 스크롤 안이고 나가는 버튼 · 다시 하기는 스크롤 밖이다", () => {
+  stubAnnounce();
+  render(<LessonCompleteScreen {...fixture({ verdict: "failed", onRetry: vi.fn() })} />);
+
+  const scroll = screen.getByTestId("lesson-complete-screen-scroll");
+  expect(scroll.tagName.toLowerCase()).toBe("scroll-view");
+  expect(scroll.contains(screen.getByTestId("lesson-complete-screen-title"))).toBe(true);
+  expect(scroll.contains(screen.getByTestId("lesson-complete-screen-subtitle"))).toBe(true);
+  expect(scroll.contains(screen.getByTestId("lesson-complete-screen-retry"))).toBe(false);
+  expect(scroll.contains(screen.getByTestId("lesson-complete-screen-exit"))).toBe(false);
+});
+
 test("[LCS2] 실수가 있으면 같은 틀에 제목 · 설명만 바뀐다", () => {
   render(<LessonCompleteScreen {...fixture({ results: ["correct", "incorrect", "correct"] })} />);
 

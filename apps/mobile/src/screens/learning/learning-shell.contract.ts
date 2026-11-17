@@ -138,12 +138,21 @@ export type LearningShellFlow = "split" | "merged";
 /** 작업 영역 스크롤의 높이가 이 값(레이아웃 px) 미만이면 합칩니다. */
 export const learningShellMergeBelow = 96;
 
+/**
+ * 카드 스크롤(`scrollCard`)의 스크롤 높이가 이 값 미만이면 합칩니다. 카드 스크롤은 아래 버튼 행(56)과 간격(16)이 스크롤
+ * 위에 떠 있어 그만큼이 가려지므로, 보이는 높이로 같은 문턱(96)을 맞추려고 그 몫을 더합니다 — 최대 글자 · 작은 화면에서
+ * 지시문이 스크롤 밖에 고정된 채 카드가 버튼 밑 한 줄로 줄어 풀 수 없던 것(짝 맞추기 · 문화 카드)을 닫습니다.
+ */
+export const learningShellCardScrollMergeBelow = learningShellMergeBelow + 72;
+
 export type LearningShellFlowInput = {
   /** 지금의 흐름입니다. `merged`는 껍데기가 떠날 때까지 되돌아가지 않습니다. */
   readonly current: LearningShellFlow;
   readonly workspaceMode: LearningWorkspaceMode;
-  /** `split`에서 잰 작업 영역 스크롤의 높이입니다(레이아웃 px). */
+  /** `split`에서 잰 작업 영역 스크롤 — 카드 스크롤이면 카드 스크롤 — 의 높이입니다(레이아웃 px). */
   readonly viewportHeight: number;
+  /** 카드 스크롤에서 잰 높이인가입니다. 참이면 문턱이 `learningShellCardScrollMergeBelow`입니다. */
+  readonly cardScroll?: boolean;
 };
 
 /**
@@ -154,11 +163,13 @@ export function learningShellFlow({
   current,
   workspaceMode,
   viewportHeight,
+  cardScroll = false,
 }: LearningShellFlowInput): LearningShellFlow {
   if (current === "merged") return "merged";
   if (workspaceMode === "fixed") return "split";
   if (!Number.isFinite(viewportHeight) || viewportHeight < 0) return "split";
-  return viewportHeight < learningShellMergeBelow ? "merged" : "split";
+  const below = cardScroll ? learningShellCardScrollMergeBelow : learningShellMergeBelow;
+  return viewportHeight < below ? "merged" : "split";
 }
 
 function heightIn(source: unknown): number | undefined {
@@ -186,12 +197,15 @@ export type LearningShellArrangementInput = {
   readonly flow: LearningShellFlow;
 };
 
-/** 몸통의 배치를 정합니다. 말하기(`scrollCard`)는 흐름과 상관없이 카드 스크롤입니다. */
+/**
+ * 몸통의 배치를 정합니다. 말하기(`scrollCard`)는 카드 스크롤이고, 카드 스크롤이 풀 수 없을 만큼 낮아 합쳤으면(`merged`)
+ * 지시문까지 한 스크롤인 합친 흐름입니다.
+ */
 export function learningShellArrangement({
   scrollCard,
   flow,
 }: LearningShellArrangementInput): LearningShellArrangement {
-  if (scrollCard) return "card-scroll";
+  if (scrollCard && flow === "split") return "card-scroll";
   return flow;
 }
 
