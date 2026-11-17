@@ -231,7 +231,7 @@ export function NewFriendSheet({
         <view
           className="new-friend-actions"
           data-testid={ids.actions}
-          style={{ paddingBottom: `${16 + bottomInset}px` }}
+          style={bottomInset > 0 ? { paddingBottom: `${16 + bottomInset}px` } : undefined}
           bindlayoutchange={budget.onFixedLayout("actions")}
         >
           <view

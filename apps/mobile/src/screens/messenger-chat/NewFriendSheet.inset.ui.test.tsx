@@ -51,10 +51,8 @@ test("NF-IN1: Android 3버튼(아래 48) → 단추 줄 아래 여백 16 + 48", 
   );
 });
 
-test("NF-IN2: iOS(키 없음) → 16 그대로", () => {
+test("NF-IN2: iOS(키 없음) → 인라인 여백 없이 CSS 토큰(16) 그대로", () => {
   setGlobalProps({ safeAreaInsets: { top: 62, bottom: 34, left: 0, right: 0 } });
   mount();
-  expect(screen.getByTestId(ids.actions).getAttribute("style") ?? "").toMatch(
-    /padding-bottom:\s*16px/,
-  );
+  expect(screen.getByTestId(ids.actions).getAttribute("style") ?? "").not.toMatch(/padding-bottom/);
 });
