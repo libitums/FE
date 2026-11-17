@@ -12,6 +12,7 @@ import { supabaseConfig } from "./supabase-config";
 import { isSuccessStatus, send, type AuthRequestOutcome } from "./supabase-transport";
 import type { ChatRemote } from "../screens/messenger-chat/chat-remote.contract";
 import { greetingFrom, historyFrom, profileFrom } from "../screens/messenger-chat/companion-parse";
+import { walletOf } from "../screens/messenger-chat/companion-media-parse";
 
 /** 서버 계약 판(`@libitums/companion-contract`의 CONTRACT_VERSION). 값을 가져오면 zod가 번들에 들어가 숫자만 둡니다. */
 export const COMPANION_CONTRACT_VERSION = 1;
@@ -55,6 +56,7 @@ export function createCompanionRemote(deps: CompanionRemoteDeps): ChatRemote {
 
   return {
     media,
+    wallet: async () => walletOf(await call("/rest/v1/rpc/companion_get_wallet", {})),
     profile: {
       load: async () => profileFrom(await call("/rest/v1/rpc/companion_load_profile", {})),
       // 나머지 칸은 null — 그 열을 바꾸지 않습니다. 출처는 학습자가 직접 고른 값(`self`).

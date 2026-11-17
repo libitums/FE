@@ -5,7 +5,6 @@ import { companionRemote } from "../lib/companion-api";
 import { setTesterAccessActive } from "../lib/tester-access";
 import type { EpisodeIntroEvent } from "../screens/episode-intro/episode-intro.contract";
 import { memoryUnlockStore } from "../screens/messenger-chat/chat-local-stores";
-import { memoryTurnRecordStore } from "../screens/messenger-chat/turn-ledger";
 import { App } from "./App";
 import {
   messengerChatSource,
@@ -103,7 +102,6 @@ beforeEach(() => {
   resetMessengerChatSourceForTests();
   setMessengerChatStoresForTests({
     unlock: memoryUnlockStore([]),
-    turns: memoryTurnRecordStore(null),
     now: () => Date.now(),
   });
   setMessengerChatRemote(companionRemote);

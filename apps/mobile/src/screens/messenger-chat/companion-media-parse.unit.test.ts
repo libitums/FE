@@ -6,6 +6,7 @@ import {
   remoteMediaOf,
   signedUrlFrom,
   walletBalanceFrom,
+  walletOf,
 } from "./companion-media-parse";
 
 // `unit` 계층(CM-U1 ~ U3): 사진 · 음성 서버 JSON 해석 · 오류 표(ADR-0146 「앱 연결」).
@@ -177,5 +178,29 @@ describe("서명 URL · 지갑", () => {
     expect(walletBalanceFrom(JSON.stringify({ sub: -1, grant: 0, paid: 0 }))).toBeNull();
     expect(walletBalanceFrom(JSON.stringify({ grant: 0 }))).toBeNull();
     expect(walletBalanceFrom("x")).toBeNull();
+  });
+});
+
+// CP-U6(ADR-0155): `companion_get_wallet` — 잔액(sub + grant + paid)과 체험 남은 수(`trialRemaining`).
+describe("walletOf (CP-U6)", () => {
+  test("CP-U6 잔액 · 체험 남은 수를 함께 읽고, 체험 칸이 없거나 틀리면 체험만 null", () => {
+    expect(walletOf(JSON.stringify({ sub: 0, grant: 5, paid: 10, trialRemaining: 17 }))).toEqual({
+      balance: 15,
+      trialRemaining: 17,
+    });
+    expect(walletOf(JSON.stringify({ sub: 0, grant: 5, paid: 10 }))).toEqual({
+      balance: 15,
+      trialRemaining: null,
+    });
+    expect(walletOf(JSON.stringify({ sub: 0, grant: 5, paid: 10, trialRemaining: -1 }))).toEqual({
+      balance: 15,
+      trialRemaining: null,
+    });
+  });
+
+  test("CP-U6 잔액 칸이 틀리면 지갑 전체가 null", () => {
+    expect(walletOf(JSON.stringify({ grant: 5, paid: 10, trialRemaining: 3 }))).toBeNull();
+    expect(walletOf(null)).toBeNull();
+    expect(walletOf("not json")).toBeNull();
   });
 });

@@ -94,7 +94,10 @@ export type ChatMediaSettled = {
 
 /** 출처 밖으로 내보내는 알림입니다(앱 결선이 머리 엽전 칩 · 제품 이벤트로 잇습니다). */
 export type ChatMediaHooks = {
+  /** 서버 지갑 잔액 — 사진 · 음성 예약 · 결과 뒤, 대화 턴의 `done` 뒤, 서버 출처를 만들 때(ADR-0155). */
   readonly onBalance?: (balance: number) => void;
+  /** 체험 인물의 체험 남은 수(ADR-0155) — 서버 출처를 만들 때 · 체험 인물의 턴 뒤 지갑을 다시 읽어 알립니다. */
+  readonly onTrialRemaining?: (remaining: number) => void;
   readonly onSettled?: (settled: ChatMediaSettled) => void;
 };
 

@@ -5,7 +5,7 @@ import * as inputFocus from "./chat-input-focus";
 import { chatTurnsTestIds as ids } from "./chat-turns.contract";
 import { OutOfFreePanel } from "./OutOfFreePanel";
 
-// `ui` 계층(MC2-UI6): T3 판 — 제목 · 본문(시계) · 단추 둘 순서 · 잔액 줄 · dialog 역할 · 콜백 · 제목 초점 요청(다음 프레임).
+// `ui` 계층(MC2-UI6 · CP-UI14): 체험을 다 쓴 판(ADR-0155) — 제목 · 본문(가격) · 단추 둘 순서 · 잔액 줄 · dialog 역할 · 콜백 · 제목 초점 요청(다음 프레임).
 // 가정(구현자가 따를 것): 초점 요청은 `chat-input-focus.restoreAccessibilityFocus(id)`이고, id를 가진 접근성 요소(제목)가 판 안에 있다.
 
 vi.mock("./chat-input-focus", () => ({
@@ -31,10 +31,9 @@ function mount(over: Partial<{ balance: number; price: number }> = {}) {
   };
   render(
     <OutOfFreePanel
-      total={3}
+      total={20}
       price={over.price ?? 10}
       balance={over.balance ?? 100}
-      reset={{ hours: 5, minutes: 12 }}
       {...handlers}
     />,
   );
@@ -48,14 +47,13 @@ const tap = (testId: string): void => {
 const before = (a: HTMLElement, b: HTMLElement): boolean =>
   (a.compareDocumentPosition(b) & 4) !== 0;
 
-test("MC2-UI6. 제목 · 본문(5h 12m) · 잔액 줄이 서고 판은 dialog 역할이다", () => {
+test("CP-UI14. 제목 · 본문(가격 — 다시 무료까지의 시간 없음) · 잔액 줄이 서고 판은 dialog 역할이다", () => {
   mount();
 
   const panel = screen.getByTestId(ids.panel);
-  expect(panel.textContent).toContain("Today's 3 free messages are used");
-  expect(panel.textContent).toContain(
-    "Keep chatting with coins, or come back in 5h 12m for free ones.",
-  );
+  expect(panel.textContent).toContain("Your 20 free messages are used");
+  expect(panel.textContent).toContain("Keep chatting for 10 coins per message.");
+  expect(panel.textContent).not.toContain("come back");
   expect(screen.getByTestId(ids.panelBalance).textContent?.trim()).toBe("You have 100 coins");
   const dialog = panel.hasAttribute("accessibility-role-description")
     ? panel

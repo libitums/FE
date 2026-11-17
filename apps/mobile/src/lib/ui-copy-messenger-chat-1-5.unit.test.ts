@@ -36,10 +36,10 @@ const REQUIRED_KEYS: readonly string[] = [
   "myMessage.loadingFix",
   "myMessage.better",
   "turns.freeLeft",
+  "turns.trialFree",
   "turns.lastFree",
   "turns.used",
   "turns.coinEach",
-  "turns.reset",
   "turns.strip",
   "turns.outTitle",
   "turns.outBody",
@@ -100,17 +100,17 @@ describe.each(languages)("%s messengerChat (MC2-U25)", (_code, copy) => {
     const has = (text: string, ...parts: string[]) => {
       for (const part of parts) expect(text).toContain(part);
     };
-    has(call("turns", "freeLeft", 2, 3), "2", "3");
-    has(call("turns", "coinEach", 10, "5h 12m"), "10", "5h 12m");
+    has(call("turns", "freeLeft", 2, 20), "2", "20");
+    has(call("turns", "coinEach", 10), "10");
     has(call("turns", "strip", 10), "10");
-    has(call("turns", "outTitle", 3), "3");
-    has(call("turns", "outBody", "5h 12m"), "5h 12m");
+    has(call("turns", "outTitle", 20), "20");
+    has(call("turns", "outBody", 10), "10");
     has(call("turns", "perMessage", 10), "10");
     has(call("turns", "keepChattingLabel", 10), "10");
     has(call("turns", "balance", 100), "100");
     has(call("turns", "coinSendLabel", 10), "10");
     expect(String(m.turns?.coinSendShortLabel ?? "")).not.toBe("");
-    has(call("turns", "reset", 5, 12), "5", "12");
+    expect(String(m.turns?.trialFree ?? "")).not.toBe("");
     has(call("newFriend", "episodeChip", 3), "3");
     has(call("newFriend", "metIn", 3, "Guesthouse"), "3", "Guesthouse");
     has(call("newFriend", "sheetLabel", "Mina"), "Mina");
@@ -138,21 +138,19 @@ describe("en messengerChat 영어 문구 표본 (MC2-U25)", () => {
     expect(m.list?.newFriendLabel).toBe("New friend");
   });
 
-  test("MC2-U25. 턴 문구", () => {
-    expect(fn("turns", "freeLeft")?.(3, 3)).toBe("3 of 3 free messages left today");
-    expect(m.turns?.lastFree).toBe("Last free message today");
+  // CP-U11(ADR-0155): 요금은 서버 규칙 — 체험 수 · 메시지 요금만, 하루 · 다시 무료까지의 시간은 없다.
+  test("MC2-U25 · CP-U11. 턴 문구", () => {
+    expect(fn("turns", "freeLeft")?.(20, 20)).toBe("20 of 20 free messages left");
+    expect(m.turns?.trialFree).toBe("Free trial messages");
+    expect(m.turns?.lastFree).toBe("Last free message");
     expect(m.turns?.used).toBe("Free messages used");
-    expect(fn("turns", "coinEach")?.(10, "5h 12m")).toBe(
-      "Each message 10 coins · free again in 5h 12m",
-    );
-    expect(fn("turns", "reset")?.(5, 12)).toBe("5h 12m");
+    expect(fn("turns", "coinEach")?.(10)).toBe("10 coins per message");
+    expect(m.turns).not.toHaveProperty("reset");
     expect(fn("turns", "strip")?.(10)).toBe("After this, 10 coins per message");
     // 무제한 티켓은 학습 전용입니다 — 메신저 문구에 Go unlimited가 없습니다(2026-11-10 결정).
     expect(m.turns).not.toHaveProperty("goUnlimited");
-    expect(fn("turns", "outTitle")?.(3)).toBe("Today's 3 free messages are used");
-    expect(fn("turns", "outBody")?.("5h 12m")).toBe(
-      "Keep chatting with coins, or come back in 5h 12m for free ones.",
-    );
+    expect(fn("turns", "outTitle")?.(20)).toBe("Your 20 free messages are used");
+    expect(fn("turns", "outBody")?.(10)).toBe("Keep chatting for 10 coins per message.");
     expect(m.turns?.keepChatting).toBe("Keep chatting");
     expect(fn("turns", "perMessage")?.(10)).toBe("10 / message");
     expect(fn("turns", "keepChattingLabel")?.(10)).toBe("Keep chatting, 10 coins per message");

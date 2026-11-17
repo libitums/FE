@@ -77,10 +77,10 @@ const openCard = (index = 0): void => {
 const logText = (): string => screen.getByTestId(roomIds.log).textContent ?? "";
 
 test("CR-I1. 답이 온 마지막 내 글의 카드에 Send corrected가 서고, 누르면 옛 턴이 빠지고 고친 글이 새로 간다", () => {
-  const { ledger } = mountChat({ seed: seed(), tier: "free" });
+  // 다시 보내기도 한 통 — 체험 인물이 아닌 방이라 엽전 3을 냅니다(ADR-0155).
+  const { wallet } = mountChat({ seed: seed(), tier: "free", coinBalance: 10 });
   openCard();
   expect(screen.getByTestId(fb.resend)).toBeTruthy();
-  const used = ledger.usage().used;
 
   tapButtonIn(fb.resend);
 
@@ -88,7 +88,7 @@ test("CR-I1. 답이 온 마지막 내 글의 카드에 Send corrected가 서고,
   expect(logText()).not.toContain("저도요!");
   expect(outgoing()).toHaveLength(1);
   expect(outgoing()[0]?.textContent).toContain("저는 커피를 좋아해요.");
-  expect(ledger.usage().used).toBe(used + 1);
+  expect(wallet.balance()).toBe(7);
   advance(timing.typingDelayMs + timing.replyDelayMs);
   expect(screen.getAllByTestId(roomIds.incoming)).toHaveLength(2);
 });

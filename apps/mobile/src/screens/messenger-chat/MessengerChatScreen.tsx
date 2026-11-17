@@ -26,7 +26,7 @@ import { useChatFeedback } from "./use-chat-feedback";
 import { LastFreeStrip, TurnLine } from "./ChatTurns";
 import { MoreMenu, overlayForMore } from "./MoreMenu";
 import { OutOfFreePanel } from "./OutOfFreePanel";
-import { FREE_TURNS_PER_DAY } from "./free-turns";
+import { TRIAL_TOTAL } from "./free-turns";
 import { chatKeyboardSlotHeight } from "./keyboard-height";
 import {
   messengerChatTestIds as ids,
@@ -50,11 +50,9 @@ export function MessengerChatScreen({
   edges,
   learnerName,
   wallet,
-  turns,
+  trial,
   tier,
   planOffer,
-  now,
-  timers,
   onExit,
   onOpenMemories,
   onOpenAlbum,
@@ -79,11 +77,12 @@ export function MessengerChatScreen({
   // 겹침이 열린 동안 뒤 화면(머리 · 로그 · 독)은 낭독에서 숨습니다. 「…」 메뉴는 독 안의 가벼운 팝업이라 제외합니다.
   const overlayOpen = state.overlay.kind !== "none" && state.overlay.kind !== "more-menu";
   const turn = useChatTurns({
-    ledger: turns,
+    trial,
     wallet,
     tier,
-    now,
-    ...(timers === undefined ? {} : { timers }),
+    characterId: thread?.counterpart.id ?? roomId,
+    // 서버 방은 서버가 엽전을 냅니다(ADR-0155) — 앱 지갑에서 빼지 않습니다.
+    charging: thread !== null && thread.server !== null ? "server" : "local",
     onTopUp: () => dispatch({ type: "open-overlay", overlay: { kind: "coin-shop", from: "send" } }),
     onOutPanelOpen: () => dispatch({ type: "close-keyboard" }),
     muted: overlayOpen,
@@ -160,7 +159,7 @@ export function MessengerChatScreen({
             title={thread.counterpart.name}
             subtitle={
               turn.plan.kind === "unlimited" ? undefined : (
-                <TurnLine plan={turn.plan} reset={turn.reset} />
+                <TurnLine plan={turn.plan} used={turn.panelOpen} />
               )
             }
             insetTop={0}
@@ -254,10 +253,9 @@ export function MessengerChatScreen({
         {turn.panelOpen ? (
           <view style={keyboardDockBodyStyle(edges, "keyboard")}>
             <OutOfFreePanel
-              total={FREE_TURNS_PER_DAY}
+              total={TRIAL_TOTAL}
               price={CHAT_COIN_PRICES.message}
               balance={coinBalance}
-              reset={turn.reset}
               bottomInset={edges.bottom}
               onKeepChatting={turn.keepChatting}
               onBackToChats={exit}

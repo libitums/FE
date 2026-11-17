@@ -18,10 +18,11 @@ import {
 } from "./chat-ui.test-support";
 import { createCoinWallet } from "./coin-wallet";
 import { messengerChatTestIds as ids } from "./messenger-chat.contract";
-import { createTurnLedger, memoryTurnRecordStore } from "./turn-ledger";
+import { TRIAL_CHARACTER_ID } from "./free-turns";
+import { createTrialStore } from "./trial-store";
 
 // `ui` 계층(기기 F2 · 접근성 M2 · M3 · M4 · M9): 방 화면 결선 — 보내면 늘 끝으로 · Keep chatting 뒤 초점 되돌림 · 턴 변화 낭독 ·
-// T3 판이 열린 동안 뒤 화면 숨김 · 엽전이 모자랄 때 보내기 단추 이름.
+// 다 쓴 판이 열린 동안 뒤 화면 숨김 · 엽전이 모자랄 때 보내기 단추 이름. 방은 체험 인물(체험 3통 남음)이다(ADR-0155).
 
 vi.mock("./chat-input-focus", () => ({
   focusPhoneInput: vi.fn<() => void>(),
@@ -41,7 +42,6 @@ const announced = (): string[] =>
 
 beforeEach(() => {
   vi.useFakeTimers();
-  vi.setSystemTime(new Date(2026, 10, 10, 12, 0, 0));
   vi.clearAllMocks();
 });
 afterEach(() => {
@@ -52,12 +52,13 @@ afterEach(() => {
 });
 
 function freeRoom(earned = 100) {
-  const wallet = createCoinWallet({ earned });
-  const ledger = createTurnLedger({
-    store: memoryTurnRecordStore(null),
-    now: () => Date.now(),
-  });
-  return { wallet, ledger, seed: seedOf(fixtureRoom("mina")), tier: "free" as const };
+  return {
+    roomId: TRIAL_CHARACTER_ID,
+    wallet: createCoinWallet({ earned }),
+    trial: createTrialStore(3),
+    seed: seedOf(fixtureRoom(TRIAL_CHARACTER_ID)),
+    tier: "free" as const,
+  };
 }
 function sendFree(): void {
   tapKeys(...KEYS_AN);
@@ -70,7 +71,7 @@ const flushFrame = (): void => {
   });
 };
 const turnAnnouncements = (): string[] =>
-  announced().filter((text) => /left today|Last free|used/.test(text));
+  announced().filter((text) => /messages left|Last free|used/.test(text));
 
 // ------------------------------------------------------------------ F2: 보내면 늘 끝으로
 
@@ -117,21 +118,21 @@ test("M2. Keep chatting으로 판이 닫히면 다음 프레임에 접근성 초
 
 // ------------------------------------------------------------------ M3: 턴 변화 낭독
 
-test("M3. 보내서 「3 → 2」가 되면 새 턴 줄을 한 번, 마지막 무료로 바뀌면 줄 + 띠 문구를 낭독한다", () => {
+test("M3. 보내서 체험이 「3 → 2」가 되면 새 턴 줄을 한 번, 마지막 무료로 바뀌면 줄 + 띠 문구를 낭독한다", () => {
   mountChatOpen(freeRoom());
   expect(turnAnnouncements()).toEqual([]);
 
   sendFree();
-  expect(turnAnnouncements()).toEqual(["2 of 3 free messages left today"]);
+  expect(turnAnnouncements()).toEqual(["2 of 20 free messages left"]);
 
   sendFree();
   expect(turnAnnouncements()).toEqual([
-    "2 of 3 free messages left today",
-    "Last free message today, After this, 3 coins per message",
+    "2 of 20 free messages left",
+    "Last free message, After this, 3 coins per message",
   ]);
 });
 
-test("M3. 판이 열리는 세 번째 보내기는 턴 줄을 낭독하지 않고(제목 초점이 대신), 분이 지나도 낭독하지 않는다", () => {
+test("M3. 판이 열리는 세 번째 보내기는 턴 줄을 낭독하지 않고(제목 초점이 대신), 시간이 지나도 낭독하지 않는다", () => {
   mountChatOpen(freeRoom());
   sendFree();
   sendFree();
@@ -157,7 +158,7 @@ test("M3. 마운트 · 방에 다시 들어올 때는 낭독하지 않는다", (
 
 // ------------------------------------------------------------------ M4: T3 판은 모달
 
-test("M4. T3 판이 열린 동안 머리 · 로그는 낭독에서 숨고, 판은 숨지 않으며, 닫으면 풀린다", () => {
+test("M4. 다 쓴 판이 열린 동안 머리 · 로그는 낭독에서 숨고, 판은 숨지 않으며, 닫으면 풀린다", () => {
   mountChatOpen(freeRoom());
   const hidden = (el: Element | null): boolean => {
     for (let node = el; node !== null; node = node.parentElement) {

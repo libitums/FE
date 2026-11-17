@@ -17,19 +17,14 @@ import type { ChatFixtureSeed, ChatSource } from "../screens/messenger-chat/chat
 import {
   deviceBirthYearStore,
   deviceSnapshotSelfStore,
-  deviceTurnRecordStore,
   deviceUnlockStore,
   memoryBirthYearStore,
   memorySnapshotSelfStore,
   type UnlockStore,
 } from "../screens/messenger-chat/chat-local-stores";
 import { createCoinWallet, type SyncedCoinWallet } from "../screens/messenger-chat/coin-wallet";
-import type { ChatTier } from "../screens/messenger-chat/free-turns";
-import {
-  createTurnLedger,
-  type TurnLedger,
-  type TurnRecordStore,
-} from "../screens/messenger-chat/turn-ledger";
+import { TRIAL_TOTAL, type ChatTier } from "../screens/messenger-chat/free-turns";
+import { createTrialStore, type TrialStore } from "../screens/messenger-chat/trial-store";
 import type { EpisodeIntroEventSink } from "../screens/episode-intro/episode-intro.contract";
 import { tabRootActions } from "./nav-reducer";
 import type { NavAction } from "./nav-state";
@@ -38,8 +33,8 @@ export type MessengerChatWiring = {
   readonly source: ChatSource;
   /** 엽전 지갑입니다 — 번 엽전(앱의 coinCount)을 따라가고 쓴 양은 메모리입니다(spec §5.2). */
   readonly wallet: SyncedCoinWallet;
-  /** 하루 무료 수 원장입니다(모든 인물 합 · 기기 저장 — spec §5.3). */
-  readonly turns: TurnLedger;
+  /** 체험 인물의 체험 남은 수입니다(ADR-0155) — 서버 방은 서버 지갑이 알려 주고, 앱 안 방은 체험 20통에서 셉니다. */
+  readonly trial: TrialStore;
   /** 시험 계정(무제한)이면 unlimited. */
   readonly tier: ChatTier;
   readonly now: () => number;
@@ -71,17 +66,18 @@ let mediaHooks: ChatMediaHooks | null = null;
 let remoteFactory: (() => ChatRemote) | null = null;
 let latestImageUrlOf: ImageUrlOf | null = null;
 let walletSingleton: SyncedCoinWallet | null = null;
-let ledgerSingleton: TurnLedger | null = null;
+let trialSingleton: TrialStore | null = null;
 /** 테스트가 끼우는 메모리 저장 · 가짜 시계입니다(앱은 기기 저장 · `Date.now`). */
 let storeOverride: TestStores | null = null;
 
 export type TestStores = {
   readonly unlock: UnlockStore;
-  readonly turns: TurnRecordStore;
   readonly now: () => number;
+  /** 체험 남은 수의 처음 값입니다. 없으면 앱 안 방의 기본(체험 20통). */
+  readonly trial?: number | null;
   /**
-   * 대화 등급을 고정합니다. 메신저는 시험 계정에게만 열리고(ADR-0128) 시험 계정은 무제한이라, 무료 3통 · 엽전 흐름을 앱 단에서
-   * 보는 테스트는 `free`를 넘깁니다. 없으면 시험 계정 표시로 정합니다.
+   * 대화 등급을 고정합니다. 시험 계정은 무제한이라, 체험 · 엽전 흐름을 앱 단에서 보는 테스트는 `free`를 넘깁니다.
+   * 없으면 시험 계정 표시로 정합니다.
    */
   readonly tier?: ChatTier;
 };
@@ -121,14 +117,16 @@ export function resetMessengerChatWallet(): void {
   walletSingleton?.resetSpent();
 }
 
-function messengerChatLedger(): TurnLedger {
-  if (ledgerSingleton === null) {
-    ledgerSingleton = createTurnLedger({
-      store: storeOverride?.turns ?? deviceTurnRecordStore,
-      now: clockNow,
-    });
-  }
-  return ledgerSingleton;
+/** 체험 남은 수 — 서버 방은 서버 지갑을 읽기 전까지 모름(null), 앱 안 방(가짜 출처)은 체험 20통에서 셉니다. */
+function messengerChatTrial(): TrialStore {
+  trialSingleton ??= createTrialStore(
+    storeOverride?.trial !== undefined
+      ? storeOverride.trial
+      : sourceKey() === "fixture"
+        ? TRIAL_TOTAL
+        : null,
+  );
+  return trialSingleton;
 }
 
 /** 테스트만 씁니다 — 다음에 만들 출처의 씨앗입니다(없으면 앱 기본 씨앗). */
@@ -142,6 +140,8 @@ export function setMessengerMediaHooks(hooks: ChatMediaHooks | null): void {
 /** 출처에 넘기는 알림 — 부를 때마다 지금 등록된 것을 봅니다(출처는 앱 프로세스 싱글턴, 세션은 바뀜). */
 const forwardedMediaHooks: ChatMediaHooks = {
   onBalance: (balance) => mediaHooks?.onBalance?.(balance),
+  // 체험 남은 수(ADR-0155)는 세션이 아니라 이 결선의 체험 저장이 받습니다.
+  onTrialRemaining: (remaining) => messengerChatTrial().set(remaining),
   onSettled: (settled) => mediaHooks?.onSettled?.(settled),
 };
 
@@ -171,6 +171,7 @@ export function messengerChatSource(imageUrlOf: ImageUrlOf): ChatSource {
   if (singleton !== null && key !== singletonKey) {
     singleton.dispose();
     singleton = null;
+    trialSingleton = null; // 체험 수는 계정마다 — 새 출처의 지갑 읽기가 다시 채웁니다
   }
   if (singleton === null) {
     singletonKey = key;
@@ -205,7 +206,7 @@ export function resetMessengerChatSourceForTests(seed?: ChatFixtureSeed): void {
   singletonKey = "";
   latestImageUrlOf = null;
   walletSingleton = null;
-  ledgerSingleton = null;
+  trialSingleton = null;
   storeOverride = null;
   testSeed = seed;
 }
@@ -225,7 +226,7 @@ export function messengerChatWiring(args: MessengerChatWiringArgs): {
     messengerChat: {
       source: messengerChatSource(args.imageUrlOf),
       wallet: messengerChatWallet(args.coinCount ?? 0),
-      turns: messengerChatLedger(),
+      trial: messengerChatTrial(),
       tier: storeOverride?.tier ?? (isTesterAccessActive() ? "unlimited" : "free"),
       now: clockNow,
       eventSink: args.eventSink ?? null,

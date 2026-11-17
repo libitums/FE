@@ -13,15 +13,18 @@ export type MyMessageCopy = {
 };
 
 /** 하루 무료 수 · 엽전 보내기 · 다 쓴 판. */
+/** 요금은 서버 규칙(ADR-0155) — 체험 인물의 체험 수 · 그 밖은 메시지 요금. 하루 · 다시 무료까지의 시간은 없습니다. */
 export type TurnsCopy = {
+  /** 체험 남은 수(체험 인물). */
   readonly freeLeft: (left: number, total: number) => string;
+  /** 체험 남은 수를 아직 모를 때. */
+  readonly trialFree: string;
   readonly lastFree: string;
   readonly used: string;
-  readonly coinEach: (price: number, reset: string) => string;
-  readonly reset: (hours: number, minutes: number) => string;
+  readonly coinEach: (price: number) => string;
   readonly strip: (price: number) => string;
   readonly outTitle: (total: number) => string;
-  readonly outBody: (reset: string) => string;
+  readonly outBody: (price: number) => string;
   readonly keepChatting: string;
   readonly perMessage: (price: number) => string;
   readonly keepChattingLabel: (price: number) => string;

@@ -1,11 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
-import {
-  TURN_RECORD_KEY,
-  UNLOCKED_KEY,
-  memoryUnlockStore,
-  parseUnlocked,
-} from "./chat-local-stores";
+import { UNLOCKED_KEY, memoryUnlockStore, parseUnlocked } from "./chat-local-stores";
 
 // `unit` 계층(MC2-U24): 무료 수 원장 · 해금 기록의 기기 저장 접점(messenger-chat-1-5 spec §5.3).
 // `lib/storage` 를 가짜로 바꾼다. 기기 구현은 모듈 안 캐시를 쥐므로 테스트마다 모듈을 다시 불러온다.
@@ -37,7 +32,6 @@ afterEach(() => {
 
 describe("키 이름 (MC2-U24)", () => {
   test("MC2-U24. 키 이름은 libitum.messenger.* 로 고정이다", () => {
-    expect(TURN_RECORD_KEY).toBe("libitum.messenger.free-turns");
     expect(UNLOCKED_KEY).toBe("libitum.messenger.unlocked");
   });
 });
@@ -90,75 +84,6 @@ describe("memoryUnlockStore (MC2-U24)", () => {
     const b = memoryUnlockStore();
     a.add("mina");
     expect(b.read().has("mina")).toBe(false);
-  });
-});
-
-describe("deviceTurnRecordStore (MC2-U24)", () => {
-  test("MC2-U24. 저장된 JSON 을 읽는다", async () => {
-    const { deviceTurnRecordStore } = await freshStores();
-    storage.getItem.mockImplementation((key) =>
-      key === "libitum.messenger.free-turns"
-        ? JSON.stringify({ day: "2026-11-10", used: 2, outPanel: "due" })
-        : null,
-    );
-    expect(deviceTurnRecordStore.read()).toEqual({ day: "2026-11-10", used: 2, outPanel: "due" });
-  });
-
-  test("MC2-U24. 쓰기는 JSON 이고 키가 맞으며 끝 줄바꿈이 없다", async () => {
-    const { deviceTurnRecordStore } = await freshStores();
-    const record = { day: "2026-11-10", used: 1, outPanel: "shown" } as const;
-    deviceTurnRecordStore.write(record);
-    expect(storage.setItem).toHaveBeenCalledTimes(1);
-    const [key, value] = storage.setItem.mock.calls[0] ?? [];
-    expect(key).toBe("libitum.messenger.free-turns");
-    expect(JSON.parse(value as string)).toEqual(record);
-    expect(value).not.toMatch(/\s$/);
-  });
-
-  test("MC2-U24. JSON 왕복 — 쓴 값을 다시 읽으면 같다", async () => {
-    const { deviceTurnRecordStore } = await freshStores();
-    const record = { day: "2026-11-10", used: 3, outPanel: "shown" } as const;
-    deviceTurnRecordStore.write(record);
-    expect(deviceTurnRecordStore.read()).toEqual(record);
-  });
-
-  test("MC2-U24. 읽기가 던지면 null 이다", async () => {
-    const { deviceTurnRecordStore } = await freshStores();
-    storage.getItem.mockImplementation(() => {
-      throw new Error("native module failed");
-    });
-    expect(() => deviceTurnRecordStore.read()).not.toThrow();
-    expect(deviceTurnRecordStore.read()).toBeNull();
-  });
-
-  test("MC2-U24. 저장된 값이 JSON 이 아니거나 모양이 틀리면 null 이다", async () => {
-    const { deviceTurnRecordStore } = await freshStores();
-    storage.getItem.mockReturnValue("{not json");
-    expect(deviceTurnRecordStore.read()).toBeNull();
-    storage.getItem.mockReturnValue(JSON.stringify({ day: "x", used: -1, outPanel: "?" }));
-    expect(deviceTurnRecordStore.read()).toBeNull();
-  });
-
-  test("MC2-U24. 쓰기가 던져도 삼키고, 이번 실행은 캐시로 계속 읽는다", async () => {
-    const { deviceTurnRecordStore } = await freshStores();
-    storage.setItem.mockImplementation(() => {
-      throw new Error("quota");
-    });
-    const record = { day: "2026-11-10", used: 2, outPanel: "due" } as const;
-    expect(() => deviceTurnRecordStore.write(record)).not.toThrow();
-    storage.getItem.mockReturnValue(null);
-    expect(deviceTurnRecordStore.read()).toEqual(record);
-  });
-
-  test("MC2-U24. 첫 읽기 뒤에는 캐시로 읽는다 — 저장소를 다시 부르지 않는다", async () => {
-    const { deviceTurnRecordStore } = await freshStores();
-    storage.getItem.mockReturnValue(
-      JSON.stringify({ day: "2026-11-10", used: 1, outPanel: "due" }),
-    );
-    deviceTurnRecordStore.read();
-    deviceTurnRecordStore.read();
-    deviceTurnRecordStore.read();
-    expect(storage.getItem).toHaveBeenCalledTimes(1);
   });
 });
 

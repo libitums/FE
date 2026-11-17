@@ -62,10 +62,9 @@ export function renderMessengerChat(roomId: string, wiring: ScreenWiring) {
         edges={keyboardDockEdgesOf(wiring.safeAreaInsets)}
         learnerName={learnerNameOf(wiring)}
         wallet={chat.wallet}
-        turns={chat.turns}
+        trial={chat.trial}
         tier={chat.tier}
         planOffer={wiring.plans?.messengerOffer}
-        now={chat.now}
         onExit={chat.onExitChatRoom}
         onOpenMemories={chat.onOpenMemories}
         onOpenAlbum={chat.onOpenAlbum}

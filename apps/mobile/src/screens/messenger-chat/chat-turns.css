@@ -159,7 +159,7 @@
   padding: var(--libitum-spacing-0) var(--libitum-spacing-20) var(--libitum-spacing-16);
 }
 
-.chat-out-clock {
+.chat-out-icon {
   width: 56px;
   height: 56px;
   margin-bottom: var(--libitum-spacing-12);
@@ -193,11 +193,6 @@
 }
 
 /* 시간 조각만 진하게 굵게(본문 muted 위에서 시간이 눈에 들어오게). */
-.chat-out-body-time {
-  color: var(--libitum-color-fg-neutral);
-  font-weight: var(--libitum-font-weight-bold);
-}
-
 /* Keep chatting — ui-lynx Button xl brand와 같은 높이 · 색(56)이고, 가격 칸이 원판 엽전을 품습니다. */
 .chat-out-keep {
   flex-shrink: 0;

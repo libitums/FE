@@ -1,7 +1,5 @@
-// 출처의 서버 모드입니다(ADR-0137) — 방을 열면 서버 기록을 읽고(비면 첫 인사), 보내기는 서버 턴(SSE)으로 답을 받습니다.
-// 인물이 해금되면 방을 열기 전에 해금 선톡을 받아 둡니다(ADR-0152).
-// 배달 실패(ADR-0138): 서버가 받지 못한 글은 Not sent로 남아 다시 보내고, 받은 뒤 끊긴 답은 기록을 다시 읽어 채웁니다.
-// 기억 · 대화 설정 · 평가 · 사진 · 음성 · 이야기 시점 · 방 지우기는 아직 앱 안에서만 돕니다(2026-11-12 결정). 던지지 않습니다.
+// 출처의 서버 모드입니다(ADR-0137) — 방을 열면 서버 기록을 읽고(비면 첫 인사), 보내기는 서버 턴(SSE)으로 답을 받습니다. 해금 선톡(ADR-0152).
+// 배달 실패(ADR-0138): 받지 못한 글은 Not sent로 남아 다시 보내고, 받은 뒤 끊긴 답은 기록을 다시 읽어 채웁니다. 던지지 않습니다.
 
 import type { RoomState } from "./chat-fixture-room";
 import type { ChatServerControls } from "./chat-delivery.contract";
@@ -9,6 +7,7 @@ import type { ChatMediaHooks } from "./chat-media.contract";
 import { remoteMediaMethods } from "./chat-remote-media";
 import { remoteGreetingMethods } from "./chat-remote-greeting";
 import { previewRemoteRooms } from "./chat-remote-preview";
+import { remoteWalletSync } from "./chat-remote-wallet";
 import type { ChatRemote, RemoteHistory } from "./chat-remote.contract";
 import type { ChatMessage } from "./chat-source.contract";
 import { renderTurn, withCorrection } from "./chat-remote-notes";
@@ -75,6 +74,7 @@ export function remoteRoomMethods(deps: RemoteRoomDeps) {
 
   const greeting = remoteGreetingMethods({ remote, live, changed, isOpen });
   previewRemoteRooms({ remote, live, changed }, deps.preview ?? []);
+  const wallet = remoteWalletSync(remote, deps.mediaHooks); // 엽전은 서버 지갑(ADR-0155)
 
   /** 방을 열 때 — 서버 기록을 읽고, 비어 있으면 첫 인사를 받습니다. 못 받으면 failed(다시 시도 안내). */
   const loadRoom = (roomId: string) => {
@@ -207,6 +207,7 @@ export function remoteRoomMethods(deps: RemoteRoomDeps) {
           if (live(roomId) !== room) return;
           const outcome = turnOutcomeOf(turn, reason, detail, now());
           settle(room, myId, outcome, turn);
+          wallet.afterTurn(characterOf(room), turn.wallet);
           changed(room);
           if (outcome.kind === "ok") sendNextUnsent(room);
         },
@@ -288,7 +289,6 @@ export function remoteRoomMethods(deps: RemoteRoomDeps) {
       if (room !== null && room.access.kind === "open") refresh(room);
     },
   };
-
   return {
     loadRoom,
     greetUnlocked: greeting.greetUnlocked,

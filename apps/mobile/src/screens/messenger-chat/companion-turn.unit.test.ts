@@ -127,4 +127,22 @@ describe("턴 리듀서", () => {
       applyTurnEvent(done, "delta", JSON.stringify({ segment: 0, kind: "speech", text: "x" })),
     ).toBe(done);
   });
+
+  // CP-U5(ADR-0155): `done`의 서버 지갑 — 칩은 이 잔액을 따르고, 낸 값은 서버가 정합니다(회피 턴 0 · 경고 턴 요금).
+  test("CP-U5 done의 creditsSpent · balance를 지갑으로 남기고, balance가 null이면 잔액 없음", () => {
+    const paid = run([start, ["done", { assistantMessageId: A1, creditsSpent: 3, balance: 97 }]]);
+    expect(paid.wallet).toEqual({ creditsSpent: 3, balance: 97 });
+    const unknown = run([
+      start,
+      ["done", { assistantMessageId: A1, creditsSpent: 0, balance: null }],
+    ]);
+    expect(unknown.wallet).toEqual({ creditsSpent: 0, balance: null });
+  });
+
+  test("CP-U5 틀린 값(음수 · 소수 · 글)은 버린다 — 지갑 없음 · 턴은 그대로 끝남", () => {
+    const bad = run([start, ["done", { assistantMessageId: A1, creditsSpent: -3, balance: "97" }]]);
+    expect(bad.finished).toBe(true);
+    expect(bad.wallet).toBeNull();
+    expect(initialTurnState.wallet).toBeNull();
+  });
 });
