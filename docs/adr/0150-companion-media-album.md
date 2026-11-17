@@ -82,3 +82,10 @@
 - 열면 키보드 자리 · 보기 판을 접는다(겹침 상태 `photo` · `photo-redraw`). 시스템 뒤로가기는 겹침부터 닫는다(`useChatRoom`이 단 하나의 주인).
 - 닫힌 뒤 낭독 초점은 플랫폼에 맡긴다 — 같은 test-id의 사진이 여럿이라 누른 그 사진을 가리킬 수 없다.
 - 적용: `chat-album-rules.ts`(`chatPhotoTile`), `chat-room-state.ts`(겹침 · `openPhotoAction`), `ChatPhotoLayer.tsx`, `ChatRoomOverlays.tsx`, `ChatMediaBubbles.tsx`(`onOpen`), `ChatMessageRows.tsx`(`onOpenPhoto`). 테스트 CV-U1 ~ U5 · CV-UI1 ~ UI5.
+
+## 적용 기록 — 2026-11-17 사진 보기 위 안전 영역
+
+- 기기(iPhone 13 mini, 빌드 75451c03): 사진 보기 닫기(✕)가 상태 표시줄 아래(iOS가 터치를 가져가는 자리)에 서서 눌리지 않았다. 사진 보기는 화면 전체를 덮는 층(`position: fixed`)이라 앱 셸의 안전 영역 여백을 받지 못한다.
+- `AlbumPhotoViewer`가 `safeAreaInsetsFrom(useGlobalProps())`로 위 · 아래 · 옆을 스스로 비운다(props는 그대로). 시뮬레이터 13 mini · 15(다이내믹 아일랜드) 전후 확인.
+- 같은 종류를 막는 규칙: fixed 층을 쓰는 컴포넌트는 안전 영역을 읽거나, 위에 누를 것이 없다는 까닭과 함께 면제 목록에 오른다(`app/fixed-layer-safe-area.unit.test.ts`, SA-FIX1). ui-lynx `BottomSheet`는 위 64를 남겨 큰 글자에서 키가 커져도 닫기 단추가 위 안전 영역에 서지 않는다(BS-SA1).
+- 테스트: AV-SA1 · AV-SA2(ui), SA-FIX1(unit), BS-SA1(ui-lynx unit).

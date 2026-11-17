@@ -97,6 +97,16 @@ describe("BottomSheet contract", () => {
     expect(styles).toContain("var(--libitum-motion-easing-enter)");
     expect(styles).toContain("var(--libitum-color-border-strong)");
   });
+
+  test("BS-SA1. 시트는 화면 위 64(가장 높은 상태 표시줄 · 다이내믹 아일랜드 59보다 넉넉히)를 남긴다 — 큰 글자에서 키가 화면만큼 커져도 닫기 단추가 iOS가 터치를 가져가는 위 안전 영역에 서지 않는다", () => {
+    const styles = readFileSync(
+      resolve(process.cwd(), "src/bottom-sheet/bottom-sheet.css"),
+      "utf8",
+    );
+    expect(styles).toMatch(
+      /\.ui-lynx-bottom-sheet\s*\{[^}]*padding-top:\s*var\(--libitum-spacing-64\)/,
+    );
+  });
 });
 
 describe("BottomSheet contract: 컨텍스트 motion", () => {
