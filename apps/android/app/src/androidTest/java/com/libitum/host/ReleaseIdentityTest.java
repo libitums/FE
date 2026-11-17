@@ -17,7 +17,7 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidJUnit4.class)
 public final class ReleaseIdentityTest {
   private static final String PLAY_PACKAGE = "libitum.duru.android";
-  private static final int PLAY_UPLOADED_VERSION_CODE = 15;
+  private static final int PLAY_UPLOADED_VERSION_CODE = 16;
 
   private Context target() {
     return InstrumentationRegistry.getInstrumentation().getTargetContext();
