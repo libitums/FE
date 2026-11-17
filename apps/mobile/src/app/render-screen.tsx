@@ -102,7 +102,7 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
     case "plans":
       return renderPlans(screen, wiring);
     case "profile":
-      return <AccountProfileScreen onExit={wiring.onExitSettingsStack} />;
+      return <AccountProfileScreen onExit={wiring.onExitProfile} />;
     case "learner-profile":
       return renderLearnerProfileSettings(wiring);
     case "download-settings":

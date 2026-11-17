@@ -38,7 +38,7 @@ test("[PR1] 항목이 fixture 순서대로 그려지고 label·value 텍스트�
   }
 });
 
-test("[PR2] 나가기는 동그란 뒤로 버튼이고 접근성 이름이 'Back to settings'다", () => {
+test("[PR2] 나가기는 동그란 뒤로 버튼이고 접근성 이름이 'Back'이다(설정 · 방 어디서 열어도 한 칸 뒤로)", () => {
   render(<ProfileScreen items={items} onExit={vi.fn()} />);
 
   const exit = within(screen.getByTestId("profile-screen-exit")).getByTestId(
@@ -46,7 +46,7 @@ test("[PR2] 나가기는 동그란 뒤로 버튼이고 접근성 이름이 'Back
   );
   expect(exit).toHaveAttribute("accessibility-element", "true");
   expect(exit).toHaveAttribute("accessibility-traits", "button");
-  expect(exit).toHaveAttribute("accessibility-label", "Back to settings");
+  expect(exit).toHaveAttribute("accessibility-label", "Back");
 });
 
 test("[PR3] 나가기 tap → onExit 정확히 1회", () => {
@@ -147,6 +147,6 @@ test("[AC2u-M] 제목 · 항목 이름 · 나가기 이름이 문구표에서 �
   );
   expect(
     within(screen.getByTestId("profile-screen-exit")).getByTestId("ui-lynx-round-button"),
-  ).toHaveAttribute("accessibility-label", "⟦common.backToSettings⟧");
+  ).toHaveAttribute("accessibility-label", "⟦common.back⟧");
   expect(container.textContent).not.toMatch(/[가-힣]/);
 });

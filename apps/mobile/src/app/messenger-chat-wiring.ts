@@ -270,8 +270,8 @@ export function messengerChatWiring(args: MessengerChatWiringArgs): {
           screen: { name: "chat-album", roomId, characterName: name },
         });
       },
+      // 지금(메신저) 스택에 쌓습니다 — 설정 탭으로 옮겨 쌓으면 뒤로가 설정 첫 화면에 닿아 방으로 돌아오지 못했습니다.
       onOpenMyProfile: () => {
-        for (const action of tabRootActions("settings")) args.dispatch(action);
         args.dispatch({ type: "push", screen: { name: "profile" } });
       },
       onExitChatSettingsStack: () => {
