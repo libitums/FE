@@ -240,3 +240,17 @@ I lynx: "TBDBG changed-hook {...,"tappableBottomInset":0}"
 - 바뀌지 않은 것: 탭 루트(D2), 자판 화면(⟨2026-10-19⟩), 이미 `safeAreaInsets`를 읽는 층(연속 학습 · 티켓 · 무제한 모달, 엽전 상점, 채팅방 판 —
   `keyboard-dock` 가장자리를 받는다).
 - 테스트: ui-lynx BS-IN1 · BS-IN2, 앱 SB1 ~ SB3 · SB-UI1 · SB-UI1b · SB-UI2 · SB-RULE1 · NF-IN1 · NF-IN2, UC1 ~ UC4b 갱신.
+
+### ⟨2026-11-18⟩ iOS 바텀 시트 단추를 홈 인디케이터 안전 영역 밖에 둔다 — D3 개정
+
+⟨2026-11-17⟩의 「iOS는 0」을 바꾼다. 바텀 시트 점검(iPhone 17 시뮬레이터)에서 iOS 시트 단추 아래 여백이 패널 기본 20뿐이라, 단추 아래 가장자리가
+홈 인디케이터 안전 영역(아래 34) 안에 섰다. 인디케이터가 터치를 가로채지는 않지만 Apple HIG는 조작부를 아래 안전 영역 밖에 두라고 한다(사용자 결정 2026-11-18).
+
+- `sheetBottomInsetFrom(globalProps, basePadding = 20)`: iOS(`tappableBottomInset` 키 없음)는 `max(0, safeAreaInsets.bottom − basePadding)`을 더 비운다
+  — 아래 34면 14, 홈 인디케이터가 없는 기기(SE, 아래 0)는 0으로 모양이 그대로다. Android 식(`max(bottom, tappable)`)은 바뀌지 않는다.
+- `AppBottomSheet`는 패널 기본 여백 20(`SHEET_PANEL_BOTTOM_PADDING`), 새 친구 시트는 단추 줄 여백 16을 넘긴다 — 새 친구 시트는 아래 34에서 단추 줄
+  아래 여백이 34가 된다. 값이 0이면 지금처럼 CSS 토큰만 쓴다.
+- 이미 `safeAreaInsets`를 직접 읽는 층(엽전 상점, 채팅방 판 · 보기 판 · 엽전 소진 판)은 이 값을 쓰지 않으므로 겹치지 않는다.
+- 대가: 설문 시트처럼 키보드 자리를 콘텐츠 안에 두는 시트는 iOS에서 키보드가 선 동안 키보드 위 틈이 14 늘어난다(인디케이터 몫).
+- 테스트: SB3(아래 34 → 14 · base 16이면 18) · SB4(아래 0 → 0, Android는 base와 무관), SB-UI2(iOS 34 → 빈 자리 14) · SB-UI2b(SE → 빈 자리 없음),
+  NF-IN2(iOS 34 → 단추 줄 아래 34) · NF-IN3(SE → 인라인 없음), UC2 · UC4(iOS 34 → 설문 · 로그인 국가 시트 빈 자리 14).

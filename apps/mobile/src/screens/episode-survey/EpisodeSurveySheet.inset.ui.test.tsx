@@ -38,11 +38,13 @@ test("[UC1] Android 3버튼(아래 48) → 시트 패널 맨 아래 48 비움, �
   expect(children[children.length - 1]).toBe(screen.getByTestId("episode-survey-skip"));
 });
 
-test("[UC2] iOS(키 없음) → 빈 자리 없음, 건너뛰기가 마지막", () => {
+test("[UC2] iOS 홈 인디케이터(아래 34) → 패널 아래 14 비움(ADR-0044 D3 2026-11-18), 건너뛰기가 내용의 마지막", () => {
   setGlobalProps({ safeAreaInsets: { top: 0, bottom: 34, left: 0, right: 0 } });
   renderSheet();
 
-  expect(screen.queryByTestId("ui-lynx-bottom-sheet-inset")).toBeNull();
+  expect(screen.getByTestId("ui-lynx-bottom-sheet-inset").getAttribute("style") ?? "").toMatch(
+    /height:\s*14px/,
+  );
   const content = screen.getByTestId("ui-lynx-bottom-sheet-content");
   const children = Array.from(content.children);
   expect(children[children.length - 1]).toBe(screen.getByTestId("episode-survey-skip"));

@@ -5,7 +5,7 @@ import { newFriendTestIds as ids, type NewFriendModel } from "./new-friend.contr
 import { newFriendTimelineOf } from "./new-friend";
 import { NewFriendSheet } from "./NewFriendSheet";
 
-// `ui` 계층(NF-IN1 · NF-IN2): 새 친구 시트는 ui-lynx 시트가 아닌 자체 판이라, 단추 줄 아래 여백(16)에 아래 시스템 바를
+// `ui` 계층(NF-IN1 ~ NF-IN3): 새 친구 시트는 ui-lynx 시트가 아닌 자체 판이라, 단추 줄 아래 여백(16)에 아래 시스템 바를
 // 스스로 더한다 — `env(safe-area-inset-bottom)`은 Lynx에서 0이라 Android 3버튼 · 제스처 바가 Reply · Later를 가렸다.
 
 function setGlobalProps(value: unknown): void {
@@ -51,8 +51,16 @@ test("NF-IN1: Android 3버튼(아래 48) → 단추 줄 아래 여백 16 + 48", 
   );
 });
 
-test("NF-IN2: iOS(키 없음) → 인라인 여백 없이 CSS 토큰(16) 그대로", () => {
+test("NF-IN2: iOS 홈 인디케이터(아래 34) → 단추 줄 아래 여백이 안전 영역 34를 덮는다", () => {
   setGlobalProps({ safeAreaInsets: { top: 62, bottom: 34, left: 0, right: 0 } });
+  mount();
+  expect(screen.getByTestId(ids.actions).getAttribute("style") ?? "").toMatch(
+    /padding-bottom:\s*34px/,
+  );
+});
+
+test("NF-IN3: iOS 홈 인디케이터 없음(SE, 아래 0) → 인라인 여백 없이 CSS 토큰(16) 그대로", () => {
+  setGlobalProps({ safeAreaInsets: { top: 20, bottom: 0, left: 0, right: 0 } });
   mount();
   expect(screen.getByTestId(ids.actions).getAttribute("style") ?? "").not.toMatch(/padding-bottom/);
 });

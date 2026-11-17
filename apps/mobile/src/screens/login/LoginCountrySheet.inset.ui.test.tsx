@@ -35,11 +35,13 @@ test("[UC3] Android 3버튼(아래 48) → 시트 패널 맨 아래 48 비움, �
   expect(screen.getByTestId("ui-lynx-bottom-sheet-content").children.length).toBe(1);
 });
 
-test("[UC4] iOS(키 없음) → 빈 자리 없음", () => {
+test("[UC4] iOS 홈 인디케이터(아래 34) → 패널 아래 14 비움(ADR-0044 D3 2026-11-18)", () => {
   setGlobalProps({ safeAreaInsets: { top: 0, bottom: 34, left: 0, right: 0 } });
   renderSheet();
 
-  expect(screen.queryByTestId("ui-lynx-bottom-sheet-inset")).toBeNull();
+  expect(screen.getByTestId("ui-lynx-bottom-sheet-inset").getAttribute("style") ?? "").toMatch(
+    /height:\s*14px/,
+  );
   const content = screen.getByTestId("ui-lynx-bottom-sheet-content");
   expect(content.children.length).toBe(1);
 });
