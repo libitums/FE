@@ -12,6 +12,9 @@
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
+  /* 패널(max-height: 100%)이 큰 글자에서 화면만큼 커져도 위 64를 남깁니다 — 닫기 단추가 상태 표시줄 · 노치 · 다이내믹
+     아일랜드(최대 59) 아래, iOS가 터치를 가져가는 자리에 서지 않습니다. 보통 키의 시트는 아래에 붙어 모양이 같습니다. */
+  padding-top: var(--libitum-spacing-64);
 }
 
 .ui-lynx-bottom-sheet-scrim {

@@ -1,10 +1,11 @@
-import { useState } from "@lynx-js/react";
+import { useGlobalProps, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import { color } from "@libitums/design-tokens";
 import cross from "@libitums/icons/lynx/cross";
 import { Button } from "@libitums/ui-lynx/button";
 
+import { safeAreaInsetsFrom } from "../../lib/safe-area";
 import { lightStatusBarIcons } from "../../lib/status-bar-icons";
 import { useUiCopy } from "../../lib/ui-copy";
 import { chatAlbumTestIds as ids, type ChatAlbumTile } from "./chat-album.contract";
@@ -32,6 +33,9 @@ export function AlbumPhotoViewer({
 }: AlbumPhotoViewerProps): ReactNode {
   const chat = useUiCopy().messengerChat;
   const copy = chat.album;
+  // 화면 전체를 덮어(`position: fixed`) 셸의 안전 영역 여백을 받지 못합니다 — 닫기 단추가 상태 표시줄 · 노치 아래(iOS가 터치를
+  // 가져가는 자리)에 서지 않게 스스로 비웁니다(2026-11-17 기기 iPhone 13 mini).
+  const insets = safeAreaInsetsFrom(useGlobalProps());
   const { versions } = tile;
   const [index, setIndex] = useState(versions.length - 1);
   const shown = versions[index] ?? tile.item;
@@ -44,6 +48,12 @@ export function AlbumPhotoViewer({
       data-statusbar={lightStatusBarIcons}
       data-testid={ids.viewer}
       accessibility-role-description="dialog"
+      style={{
+        paddingTop: `${insets.top}px`,
+        paddingBottom: `${insets.bottom}px`,
+        paddingLeft: `${insets.left}px`,
+        paddingRight: `${insets.right}px`,
+      }}
     >
       <view className="chat-album-viewer-head">
         <text className="chat-album-viewer-title" accessibility-traits="header">
