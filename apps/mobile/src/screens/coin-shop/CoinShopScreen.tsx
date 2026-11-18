@@ -75,6 +75,8 @@ export function CoinShopScreen({
   };
   // 결제 시트가 떠 있는 동안 — 사기 단추에 로딩을 보이고 다시 누름을 막습니다.
   const [buying, setBuying] = useState(false);
+  // 결제가 실패했을 때(취소 아님) 버튼 아래 짧은 안내 — 막지 않고, 다시 사면 걷힙니다. 결제 시트의 오류는 스토어가 보입니다.
+  const [failed, setFailed] = useState(false);
   const handleBuy = () => {
     "background only";
     if (buying) return;
@@ -98,10 +100,12 @@ export function CoinShopScreen({
       return;
     }
     setBuying(true);
+    setFailed(false);
     void purchase
       .buy(selected.productId)
       .then((result) => {
         if (result.kind === "unavailable") setNoticeOpen(true);
+        if (result.kind === "failed") setFailed(true);
       })
       .catch(() => undefined)
       .finally(() => setBuying(false));
@@ -212,6 +216,15 @@ export function CoinShopScreen({
             bindtap={handleBuy}
           />
         </view>
+        {failed ? (
+          <text
+            className="coin-shop-screen-store-note"
+            data-testid="coin-shop-screen-failed"
+            accessibility-element={true}
+          >
+            {shop.purchaseFailed}
+          </text>
+        ) : null}
         <text className="coin-shop-screen-store-note">{shop.storeNote}</text>
       </view>
       {noticeOpen ? (

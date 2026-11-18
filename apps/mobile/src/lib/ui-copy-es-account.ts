@@ -166,6 +166,7 @@ export const coinShopEs: CoinShopCopy = {
     title: "Pagos próximamente",
     description: "Aún no se pueden comprar monedas. Vuelve pronto.",
   },
+  purchaseFailed: "La compra no se completó. Inténtalo de nuevo.",
 };
 
 export const downloadSheetEs: DownloadSheetCopy = {
