@@ -2,7 +2,12 @@
 // 학습자 글의 낱말로 목표를 이루고(서버 상태 줄의 흉내), 점수는 PRD §3.7의 식으로 계산합니다. 테스트는 가지를 고릅니다 —
 // 시작 거절(엽전 부족 등) · 채점 실패(한 번 / 늘) · 턴 오류. 서버 구현은 같은 포트(`MissionSource`)로 나중에 붙습니다.
 
-import { buildFakeReport, fakeReplyOf, goalsReachedBy } from "./mission-fake-rules";
+import {
+  buildFakeReport,
+  FAKE_CAFE_SCRIPT,
+  fakeReplyOf,
+  goalsReachedBy,
+} from "./mission-fake-rules";
 import { missionHintExamples, missionListFixture, missionStartFixture } from "./mission-fixture";
 import type {
   MissionFinishResponse,
@@ -48,8 +53,9 @@ const messageIdOf = (play: Play, turn: number, who: "u" | "a"): string =>
 
 export function createFakeMissionSource(options: FakeMissionOptions = {}): MissionSource {
   const schedule = options.schedule ?? defaultSchedule;
-  const later = <T>(value: () => T): Promise<T> =>
-    new Promise((resolve) => schedule(() => resolve(value())));
+  function later<T>(value: () => T): Promise<T> {
+    return new Promise((resolve) => schedule(() => resolve(value())));
+  }
   const list = options.list ?? missionListFixture;
   const plays = new Map<string, Play>();
   let best = list.missions.find((item) => item.id === "u06-cafe")?.best?.totalScore ?? null;
@@ -110,8 +116,9 @@ export function createFakeMissionSource(options: FakeMissionOptions = {}): Missi
         const reply = fakeReplyOf(reached, ended);
         const userMessageId = messageIdOf(play, turn, "u");
         const assistantMessageId = messageIdOf(play, turn, "a");
-        const better = request.text.includes("가지고 가요");
-        if (better) play.corrections.push({ original: "가지고 가요", corrected: "포장이요" });
+        const { better: fix } = FAKE_CAFE_SCRIPT;
+        const better = request.text.includes(fix.from);
+        if (better) play.corrections.push({ original: fix.from, corrected: fix.to });
         queue.push(
           [
             "start",
@@ -133,10 +140,10 @@ export function createFakeMissionSource(options: FakeMissionOptions = {}): Missi
                   status: "ok",
                   kind: "better",
                   original: request.text,
-                  corrected: request.text.replace("가지고 가요", "포장이요"),
+                  corrected: request.text.replace(fix.from, fix.to),
                   items: [],
                   better: null,
-                  meaning: "To go, please.",
+                  meaning: fix.meaning,
                 }
               : {
                   userMessageId,

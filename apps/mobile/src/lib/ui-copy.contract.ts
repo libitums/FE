@@ -13,6 +13,7 @@ import type { LearnerProfileCopy } from "../components/learner-profile.contract"
 import type { TicketsCopy } from "../screens/tickets/tickets.contract";
 import type { PlansCopy } from "./ui-copy-plans";
 import type { RoleplayStoryCopy } from "../screens/roleplay-story/roleplay-story.contract";
+import type { RoleplayMissionCopy } from "./ui-copy-roleplay-mission";
 import type { StoryCallCopy } from "../screens/story-call/story-call.contract";
 import type { StoryIntroCopy } from "../screens/story-intro/story-intro.contract";
 import type { MessengerChatCopy } from "../screens/messenger-chat/messenger-chat.contract";
@@ -115,6 +116,8 @@ export type UiCopy = {
   /** 요금제(ADR-0144) — 설정 → Plans · 맥락 카드. */
   readonly plans: PlansCopy;
   readonly roleplayStory: RoleplayStoryCopy;
+  /** 롤플레이 미션(ADR-0160) — 스위치 뒤. */
+  readonly roleplayMission: RoleplayMissionCopy;
   readonly appUpdate: AppUpdateCopy;
   readonly storyMessenger: StoryMessengerCopy;
   readonly messengerChat: MessengerChatCopy;

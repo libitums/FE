@@ -4,53 +4,61 @@
 import { missionReportFixture, missionStartFixture } from "./mission-fixture";
 import type { MissionEndReason, MissionReport } from "./roleplay-mission.contract";
 
-/** 목표마다 이룬 것으로 볼 낱말(하나라도 들면 이룸). */
-const GOAL_WORDS: Readonly<Record<string, readonly string[]>> = {
-  order: ["주세요", "한 잔", "아메리카노", "라떼", "커피"],
-  pay: ["카드", "현금", "계좌"],
-  stay: ["가지고 가", "포장", "먹고 갈", "마시고 갈", "여기서"],
-  price: ["얼마"],
-};
+type FakeLine = { readonly ko: string; readonly en: string };
 
-/** 목표 표현마다 쓴 것으로 볼 낱말. */
-const EXPRESSION_WORDS: Readonly<Record<string, string>> = {
-  "patt:83586289": "한 잔",
-  "patt:fbe5e354": "얼마",
-};
+/**
+ * 6화의 가짜 대본 — 한국어는 학습 내용(상대역 대사 · 판정 낱말)이라 문구표가 아니라 이 한 선언에 모읍니다
+ * (`devtools/ui-copy-literals/policy.mjs`의 학습 콘텐츠 허용 목록).
+ */
+export const FAKE_CAFE_SCRIPT = {
+  /** 목표마다 이룬 것으로 볼 낱말(하나라도 들면 이룸). */
+  goalWords: {
+    order: ["주세요", "한 잔", "아메리카노", "라떼", "커피"],
+    pay: ["카드", "현금", "계좌"],
+    stay: ["가지고 가", "포장", "먹고 갈", "마시고 갈", "여기서"],
+    price: ["얼마"],
+  } as Readonly<Record<string, readonly string[]>>,
+  /** 목표 표현마다 쓴 것으로 볼 낱말. */
+  expressionWords: { "patt:83586289": "한 잔", "patt:fbe5e354": "얼마" } as Readonly<
+    Record<string, string>
+  >,
+  replies: {
+    order: {
+      ko: "네, 아이스 아메리카노 한 잔이요. 드시고 가세요?",
+      en: "Sure, one iced americano. For here?",
+    },
+    stay: { ko: "알겠습니다. 결제는 어떻게 하시겠어요?", en: "Got it. How would you like to pay?" },
+    pay: { ko: "네, 카드 받았습니다.", en: "Okay, I've got your card." },
+    price: { ko: "오천 원이에요.", en: "It's five thousand won." },
+  } as Readonly<Record<string, FakeLine>>,
+  nudge: { ko: "음료는 뭘로 드릴까요?", en: "What would you like to drink?" },
+  closing: {
+    ko: "감사합니다. 나오면 불러 드릴게요!",
+    en: "Thank you. I'll call you when it's ready!",
+  },
+  timeUp: {
+    ko: "죄송해요, 뒤에 손님이 기다리셔서요. 다음에 또 오세요!",
+    en: "Sorry, there are customers waiting. Please come again!",
+  },
+  /** 「더 자연스러운 말」 교정을 받는 표현과 고친 표현(부록 B). */
+  better: { from: "가지고 가요", to: "포장이요", meaning: "To go, please." },
+  orderRetry: { ko: "아이스 아메리카노 한 잔 주세요.", meaning: "One iced americano, please." },
+} as const;
 
 export function goalsReachedBy(text: string): readonly string[] {
   return missionStartFixture.goals
     .map((goal) => goal.id)
-    .filter((id) => (GOAL_WORDS[id] ?? []).some((word) => text.includes(word)));
+    .filter((id) => (FAKE_CAFE_SCRIPT.goalWords[id] ?? []).some((word) => text.includes(word)));
 }
-
-type FakeLine = { readonly ko: string; readonly en: string };
-
-const REPLIES: Readonly<Record<string, FakeLine>> = {
-  order: {
-    ko: "네, 아이스 아메리카노 한 잔이요. 드시고 가세요?",
-    en: "Sure, one iced americano. For here?",
-  },
-  stay: { ko: "알겠습니다. 결제는 어떻게 하시겠어요?", en: "Got it. How would you like to pay?" },
-  pay: { ko: "네, 카드 받았습니다.", en: "Okay, I've got your card." },
-  price: { ko: "오천 원이에요.", en: "It's five thousand won." },
-};
-const NUDGE: FakeLine = { ko: "음료는 뭘로 드릴까요?", en: "What would you like to drink?" };
-const CLOSING: FakeLine = {
-  ko: "감사합니다. 나오면 불러 드릴게요!",
-  en: "Thank you. I'll call you when it's ready!",
-};
-const TIME_UP: FakeLine = {
-  ko: "죄송해요, 뒤에 손님이 기다리셔서요. 다음에 또 오세요!",
-  en: "Sorry, there are customers waiting. Please come again!",
-};
 
 /** 상대역의 답 — 끝이면 마무리 대사, 아니면 방금 이룬 목표에 맞춘 말, 아무것도 못 이뤘으면 되돌리는 말. */
 export function fakeReplyOf(reached: readonly string[], ended: MissionEndReason | null): FakeLine {
-  if (ended === "goals") return CLOSING;
-  if (ended === "turn_limit") return TIME_UP;
+  if (ended === "goals") return FAKE_CAFE_SCRIPT.closing;
+  if (ended === "turn_limit") return FAKE_CAFE_SCRIPT.timeUp;
   const last = reached[reached.length - 1];
-  return (last === undefined ? undefined : REPLIES[last]) ?? NUDGE;
+  return (
+    (last === undefined ? undefined : FAKE_CAFE_SCRIPT.replies[last]) ?? FAKE_CAFE_SCRIPT.nudge
+  );
 }
 
 /** PRD §3.7의 점수식 — 서버가 계산하는 것을 가짜가 같은 식으로 흉내 냅니다. */
@@ -91,7 +99,9 @@ export function buildFakeReport(play: FakePlayRecord, best: number | null): Miss
   }));
   const expressions = missionReportFixture.expressions.map((entry) => ({
     ...entry,
-    used: play.utterances.some((text) => text.includes(EXPRESSION_WORDS[entry.id] ?? "\u0000")),
+    used: play.utterances.some((text) =>
+      text.includes(FAKE_CAFE_SCRIPT.expressionWords[entry.id] ?? "\u0000"),
+    ),
   }));
   const task = (100 * goals.filter((goal) => goal.done).length) / goals.length;
   const expression =
@@ -103,9 +113,7 @@ export function buildFakeReport(play: FakePlayRecord, best: number | null): Miss
   const retry = expressions
     .filter((entry) => !entry.used)
     .map((entry) =>
-      entry.id === "patt:fbe5e354"
-        ? missionReportFixture.retry[0]
-        : { ko: "아이스 아메리카노 한 잔 주세요.", meaning: "One iced americano, please." },
+      entry.id === "patt:fbe5e354" ? missionReportFixture.retry[0] : FAKE_CAFE_SCRIPT.orderRetry,
     )
     .filter((entry) => entry !== undefined)
     .slice(0, 3);

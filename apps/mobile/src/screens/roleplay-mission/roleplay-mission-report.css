@@ -1,0 +1,142 @@
+/* 롤플레이 미션 — 리포트 화면(ADR-0160 · PRD 부록 B). 시안이 없어 밝은 면 위 세로 목록으로 둡니다 — 머리(결과 · 점수)는
+   레슨 결과 화면의 글꼴 단계, 줄은 설정 목록의 줄 간격을 따릅니다. 아래 단추 묶음은 스크롤 밖에 서서 큰 글자 · 작은
+   기기에서도 화면 밖으로 밀리지 않습니다(ADR-0022). 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1). */
+
+.mission-report-screen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: var(--libitum-color-background-primary);
+}
+
+.mission-report-scroll {
+  flex: 1;
+  min-height: 0;
+}
+
+.mission-report-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-20);
+  padding: var(--libitum-layout-screen-padding-top) var(--libitum-layout-screen-padding-x)
+    var(--libitum-spacing-24);
+}
+
+.mission-report-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-8);
+  padding: var(--libitum-spacing-16) 0;
+}
+
+.mission-report-outcome {
+  color: var(--libitum-color-fg-neutral);
+  text-align: center;
+  font-family: var(--libitum-typography-heading-l-font-family);
+  font-size: var(--libitum-typography-heading-l-font-size);
+  font-weight: var(--libitum-typography-heading-l-font-weight);
+  line-height: var(--libitum-typography-heading-l-line-height);
+}
+
+.mission-report-score {
+  color: var(--libitum-color-fg-brand);
+  font-family: var(--libitum-typography-accent-metric-font-family);
+  font-size: var(--libitum-typography-accent-metric-font-size);
+  font-weight: var(--libitum-typography-accent-metric-font-weight);
+  line-height: var(--libitum-typography-accent-metric-line-height);
+}
+
+.mission-report-best,
+.mission-report-muted {
+  color: var(--libitum-color-fg-neutral-muted);
+  text-align: center;
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: var(--libitum-typography-body-m-font-size);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  line-height: var(--libitum-typography-body-m-line-height);
+}
+
+.mission-report-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-8);
+}
+
+.mission-report-heading {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-s-font-family);
+  font-size: var(--libitum-typography-heading-s-font-size);
+  font-weight: var(--libitum-typography-heading-s-font-weight);
+  line-height: var(--libitum-typography-heading-s-line-height);
+}
+
+.mission-report-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-8);
+  min-height: var(--libitum-spacing-32);
+}
+
+.mission-report-row-text {
+  flex: 1;
+  min-width: 0;
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: var(--libitum-typography-body-m-font-size);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  line-height: var(--libitum-typography-body-m-line-height);
+}
+
+.mission-report-row-value {
+  flex-shrink: 0;
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: var(--libitum-typography-label-m-font-size);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  line-height: var(--libitum-typography-label-m-line-height);
+}
+
+.mission-report-row-value-good {
+  color: var(--libitum-color-feedback-correct-text);
+}
+
+.mission-report-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-4);
+  padding: var(--libitum-spacing-12) var(--libitum-spacing-16);
+  border-radius: var(--libitum-radius-lg);
+  background-color: var(--libitum-color-background-secondary);
+}
+
+.mission-report-ko {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-body-l-font-family);
+  font-size: var(--libitum-typography-body-l-font-size);
+  font-weight: var(--libitum-typography-body-l-font-weight);
+  line-height: var(--libitum-typography-body-l-line-height);
+}
+
+.mission-report-strike {
+  color: var(--libitum-color-fg-neutral-muted);
+  text-decoration: line-through;
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  font-weight: var(--libitum-typography-body-s-font-weight);
+  line-height: var(--libitum-typography-body-s-line-height);
+}
+
+.mission-report-actions {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-8);
+  padding: var(--libitum-spacing-12) var(--libitum-layout-screen-padding-x)
+    var(--libitum-layout-screen-padding-bottom);
+  border-top-width: var(--libitum-stroke-width-thin);
+  border-top-style: solid;
+  border-top-color: var(--libitum-color-gray-300);
+}

@@ -14,12 +14,17 @@ import type {
 } from "./roleplay-list.contract";
 
 export function roleplayFormLabel(form: RoleplayUnitForm, copy: UiCopy): string {
-  return copy.roleplay.form[form];
+  return form === "mission" ? copy.roleplayMission.form : copy.roleplay.form[form];
 }
 
-/** 카드 둘째 줄입니다 — 형태 낱말에 대사 수를 덧붙입니다. */
+/** 카드 둘째 줄입니다 — 형태 낱말에 대사 수(미션은 목표 수 · 최고 기록)를 덧붙입니다. */
 export function roleplayItemSubtitle(item: RoleplayItem, copy: UiCopy): string {
-  return `${roleplayFormLabel(item.form, copy)} · ${copy.roleplayStory.lineCount(item.lineCount)}`;
+  const form = roleplayFormLabel(item.form, copy);
+  if (item.form === "story") return `${form} · ${copy.roleplayStory.lineCount(item.lineCount)}`;
+  const goals = `${form} · ${copy.roleplayMission.goalCount(item.goalCount)}`;
+  return item.bestScore === null
+    ? goals
+    : `${goals} · ${copy.roleplayMission.best(item.bestScore)}`;
 }
 
 // 잠긴 항목은 이름 뒤에 상태를 붙입니다 — 구분자와 낱말은 문구표의 `common.locked`이고

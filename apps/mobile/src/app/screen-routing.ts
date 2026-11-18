@@ -6,9 +6,13 @@ import type { SocialLoginMethod } from "../screens/login/login.contract";
 import type { RoleplayItem } from "../screens/roleplay-list/roleplay-list.contract";
 import type { Screen } from "./nav-state";
 
-// 롤플레이 항목은 본편 에피소드의 이야기 롤플레이 하나입니다. 던지지 않습니다.
-export function roleplayScreenFor(item: RoleplayItem): Extract<Screen, { name: "roleplay-story" }> {
-  return { name: "roleplay-story", episodeId: item.episodeId };
+// 롤플레이 항목은 본편 에피소드의 이야기 롤플레이, 또는 스위치가 켜졌을 때의 미션(ADR-0160)입니다. 던지지 않습니다.
+export function roleplayScreenFor(
+  item: RoleplayItem,
+): Extract<Screen, { name: "roleplay-story" | "roleplay-mission" }> {
+  return item.form === "mission"
+    ? { name: "roleplay-mission", missionId: item.missionId }
+    : { name: "roleplay-story", episodeId: item.episodeId };
 }
 
 // `default` 없는 switch입니다. 수단이 늘면 TS2366으로 섭니다. `phone`만 코드

@@ -49,6 +49,7 @@ import { learnerProfileEn } from "./ui-copy-en-profile";
 import { ticketsEn } from "./ui-copy-en-tickets";
 import { plansCopy } from "./ui-copy-plans";
 import { roleplayStoryEn } from "./ui-copy-en-roleplay-story";
+import { roleplayMissionEn } from "./ui-copy-roleplay-mission";
 import {
   commonEn,
   journeyMapEn,
@@ -112,6 +113,7 @@ export const uiCopyEn: UiCopy = {
   tickets: ticketsEn,
   plans: plansCopy.en,
   roleplayStory: roleplayStoryEn,
+  roleplayMission: roleplayMissionEn,
   appUpdate: appUpdateEn,
   storyMessenger: storyMessengerEn,
   messengerChat: messengerChatEn,

@@ -31,6 +31,7 @@ import {
 } from "./render-messenger-chat";
 import { NewFriendMapHost } from "./render-new-friend";
 import { renderRoleplayStory } from "./render-roleplay-story";
+import { renderRoleplayMission } from "./render-roleplay-mission";
 import { renderPlans } from "./render-plans";
 import type { ScreenWiring } from "./screen-wiring";
 
@@ -164,6 +165,8 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
     case "roleplay-story":
     case "roleplay-story-complete":
       return renderRoleplayStory(screen, wiring);
+    case "roleplay-mission":
+      return renderRoleplayMission(screen, wiring);
     // 비회원이 설정 › 「로그인」으로 여는 로그인 화면입니다(ADR-0111).
     case "guest-login":
       return renderGuestLoginScreen(wiring);

@@ -46,6 +46,8 @@ export const statusBarSurfaceRegistry = {
     "catalog-epilogue": ["CatalogCoverScreen", "EpisodeBannerScreen"],
     // 에피소드 롤플레이 — 미리보기 → 표지 컷(같은 컷 화면) → 말하기 대화. 셋 다 짙은 장면 위입니다.
     "roleplay-story": ["RoleplayPreviewScreen", "CatalogCoverScreen", "RoleplayTalkScreen"],
+    // 롤플레이 미션(ADR-0160) — 미리보기는 짙은 장면, 대화는 위 띠가 짙은 장면입니다. 리포트는 밝은 면이라 표지가 없습니다.
+    "roleplay-mission": ["MissionPreviewScreen", "MissionTalkScreen"],
   },
   /** 표지를 다는 컴포넌트 이름 → 파일(`apps/mobile/src` 기준). */
   componentFiles: {
@@ -57,6 +59,8 @@ export const statusBarSurfaceRegistry = {
     CatalogStoryFinalScreen: "screens/catalog-story-final/CatalogStoryFinalScreen.tsx",
     RoleplayPreviewScreen: "screens/roleplay-story/RoleplayPreviewScreen.tsx",
     RoleplayTalkScreen: "screens/roleplay-story/RoleplayTalkScreen.tsx",
+    MissionPreviewScreen: "screens/roleplay-mission/MissionPreviewScreen.tsx",
+    MissionTalkScreen: "screens/roleplay-mission/MissionTalkScreen.tsx",
     StoryIntroScreen: "screens/story-intro/StoryIntroScreen.tsx",
     StoryCallScreen: "screens/story-call/StoryCallScreen.tsx",
   },

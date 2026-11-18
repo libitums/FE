@@ -1,8 +1,8 @@
 // 롤플레이 목록 화면의 타입 전용 계약입니다 — 구현·JSX를 두지 않습니다.
 // **판별자는 `form`입니다** — 목록이 보이는 것이 곧 형태라서 이름이 그 뜻을 말하게 합니다.
-// 롤플레이 항목은 본편 에피소드의 이야기 롤플레이(`story`) 하나입니다.
+// 롤플레이 항목은 본편 에피소드의 이야기 롤플레이(`story`)와, 스위치가 켜졌을 때 그 아래 서는 미션(`mission`, ADR-0160)입니다.
 
-export type RoleplayUnitForm = "story";
+export type RoleplayUnitForm = "story" | "mission";
 
 /**
  * 본편 에피소드의 롤플레이입니다 — 표지 컷을 보고 최종 테스트의 대사를 말로 주고받습니다(`roleplay-story`).
@@ -19,7 +19,25 @@ export type StoryRoleplayItem = {
   readonly imageUrl: string | null;
 };
 
-export type RoleplayItem = StoryRoleplayItem;
+/**
+ * 에피소드에 묶인 롤플레이 미션입니다(ADR-0160 · PRD §4.1) — 대본 없이 자기 말로 과업을 해내고 채점받습니다(`roleplay-mission`).
+ * 스위치(`ROLEPLAY_MISSION_READY`)가 켜졌을 때만 섭니다. 카드 둘째 줄이 목표 수와 이 미션 최고 기록을 말합니다.
+ * 잠김은 다른 항목처럼 구획이 집니다(그 에피소드를 끝내면 열림 — 서버도 같은 진행 스냅숏으로 판정, PRD §3.2).
+ */
+export type MissionRoleplayItem = {
+  readonly form: "mission";
+  /** `mission-<missionId>` */
+  readonly unitId: `mission-${string}`;
+  readonly episodeId: string;
+  readonly missionId: string;
+  readonly title: string;
+  readonly goalCount: number;
+  /** 이 미션 최고 점수. 해 본 적이 없으면 `null`. */
+  readonly bestScore: number | null;
+  readonly imageUrl: string | null;
+};
+
+export type RoleplayItem = StoryRoleplayItem | MissionRoleplayItem;
 
 /** 에피소드를 가려내는 이름입니다 — 카탈로그 에피소드 id와 같은 값입니다. */
 export type RoleplayEpisodeId = string;

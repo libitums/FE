@@ -35,6 +35,12 @@ export const uiCopyLiteralPolicy = {
     "chat-fixture-corrections.ts#chatFixtureCorrections",
     // 컴패니언 서버 인물 다섯의 이름 — 이야기 속 인물 이름이라 UI 언어를 따르지 않습니다(ADR-0137).
     "companion-roster.ts#COMPANION_CHARACTERS",
+    // 롤플레이 미션 가짜 출처(ADR-0160) — 계약 fixture를 옮긴 미션 값과 6화 가짜 대본(상대역 대사 · 판정 낱말)은 학습 내용입니다.
+    "mission-fixture.ts#missionListFixture",
+    "mission-fixture.ts#missionStartFixture",
+    "mission-fixture.ts#missionHintExamples",
+    "mission-fixture.ts#missionReportFixture",
+    "mission-fake-rules.ts#FAKE_CAFE_SCRIPT",
   ],
   // 아직 옮기지 않은 파일 — 줄어들기만 합니다(위반이 0이 되면 `check.mjs`가 지우라고 실패합니다).
   // `node devtools/ui-copy-literals/check.mjs --print-pending`이 지금 남은 파일을 찍습니다.
