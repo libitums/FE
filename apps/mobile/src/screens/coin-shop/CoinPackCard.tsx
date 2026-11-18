@@ -1,6 +1,7 @@
 import type { ReactNode } from "@lynx-js/react";
 
 import type { PricingRegion } from "../../lib/provisional-prices";
+import type { StoreOffer } from "../../lib/purchase-bridge";
 import { useUiCopy } from "../../lib/ui-copy";
 import {
   formatCoinCount,
@@ -20,6 +21,8 @@ type CoinPackCardProps = {
   readonly selected: boolean;
   /** 임시 추천 가격의 지역 — 없으면 US. */
   readonly region?: PricingRegion;
+  /** 스토어 상품(ADR-0144 2단계) — 있으면 스토어 가격 글이 이깁니다. */
+  readonly offers?: readonly StoreOffer[] | null;
   readonly onSelect: (id: CoinPackId) => void;
 };
 
@@ -28,6 +31,7 @@ export function CoinPackCard({
   selected,
   onSelect,
   region = "US",
+  offers = null,
 }: CoinPackCardProps): ReactNode {
   const copy = useUiCopy();
   const shop = copy.coinShop;
@@ -36,7 +40,7 @@ export function CoinPackCard({
     onSelect(pack.id);
   };
   const total = totalCoinsOf(pack);
-  const price = packPriceOf(pack, region).text;
+  const price = packPriceOf(pack, region, offers).text;
   const bonus = pack.bonusCoins > 0 ? shop.bonus(formatCoinCount(pack.bonusCoins)) : null;
   const details = [
     shop.packName[pack.id],

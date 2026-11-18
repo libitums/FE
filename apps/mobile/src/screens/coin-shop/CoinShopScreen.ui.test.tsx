@@ -1,6 +1,7 @@
 import { expect, test, vi } from "vitest";
-import { fireEvent, render, screen } from "@lynx-js/react/testing-library";
+import { act, fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
+import type { PurchaseResult } from "../../lib/purchase-bridge";
 import { resetPurchaseContextForTests, setPurchaseContext } from "../../lib/purchase-intent";
 import { lightStatusBarIcons } from "../../lib/status-bar-icons";
 import { CoinShopScreen } from "./CoinShopScreen";
@@ -104,6 +105,38 @@ test("[CS-PI1] 가격 지역 VN이면 팩 · 버튼이 임시 추천 가격(₫)
       preview: true,
     }),
   ]);
+  resetPurchaseContextForTests();
+});
+
+test("[CS-B1] 결제를 열 수 있으면 사기 → 그 팩의 스토어 결제(로딩), 안내 없이 끝나고 의향은 preview 거짓", async () => {
+  const events: unknown[] = [];
+  let finish: (result: PurchaseResult) => void = () => {};
+  const buy = vi.fn<(productId: string) => Promise<PurchaseResult>>(
+    () =>
+      new Promise<PurchaseResult>((resolve) => {
+        finish = resolve;
+      }),
+  );
+  setPurchaseContext({ region: "US", sink: (event) => events.push(event), canBuy: true, buy });
+  render(<CoinShopScreen {...fixture()} />);
+
+  await act(async () => {
+    fireEvent.tap(buyButton(), {});
+  });
+  expect(buy).toHaveBeenCalledWith("duru.coins.1200.v1");
+  expect(buyButton().getAttribute("data-loading")).toBe("true");
+  // 도는 동안 다시 눌러도 한 번뿐입니다.
+  await act(async () => {
+    fireEvent.tap(buyButton(), {});
+  });
+  expect(buy).toHaveBeenCalledTimes(1);
+  await act(async () => {
+    finish({ kind: "purchased", productId: "duru.coins.1200.v1" });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  });
+  expect(buyButton().getAttribute("data-loading")).toBe("false");
+  expect(screen.queryByTestId("coin-shop-screen-notice")).toBeNull();
+  expect(events).toEqual([expect.objectContaining({ name: "purchase_intent", preview: false })]);
   resetPurchaseContextForTests();
 });
 

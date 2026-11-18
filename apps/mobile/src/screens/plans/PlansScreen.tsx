@@ -21,7 +21,8 @@ const periods: readonly PlanPeriod[] = ["monthly", "yearly"];
 
 /**
  * 설정 → Plans(ADR-0144, 시안 ③) — 요금제 비교는 이 한 곳입니다. 카드를 눌러 고르고 기간(월 · 연)을 바꾼 뒤 「Continue with …」.
- * 1단계는 구매 다리가 꺼져 있어 계속 · 복원 모두 안내 한 줄로 끝납니다. 같은 요청이 겹치지 않게 진행 중에는 다시 누름을 무시합니다.
+ * 구매 다리가 꺼져 있으면 계속 · 복원 모두 안내 한 줄로 끝납니다. 같은 요청이 겹치지 않게 진행 중에는 다시 누름을 무시하고,
+ * 누른 단추는 로딩 · 다른 단추는 막힘으로 보입니다(ADR-0144 2단계).
  */
 export function PlansScreen({
   catalog,
@@ -37,7 +38,7 @@ export function PlansScreen({
   const text = copy.plans;
   const [period, setPeriod] = useState<PlanPeriod>("monthly");
   const [picked, setPicked] = useState<PlanId | null>(null);
-  const { notice, run } = usePlanRequest(text.unavailable);
+  const { notice, pending, run } = usePlanRequest(text.unavailable);
   const cardsFor = (of: PlanPeriod) =>
     catalog === null ? [] : planCardsFor(catalog, "settings", of, offers, region);
   // 월 · 연 카드를 한 번씩만 만듭니다 — 연간 할인 줄이 두 기간을 함께 봅니다.
@@ -112,7 +113,9 @@ export function PlansScreen({
                     accessibility-element={true}
                     accessibility-traits="button"
                     accessibility-label={text.continueWith(text.names[selected.id])}
-                    bindtap={() => run(() => onSelect(selected.id, period, selected.productId))}
+                    bindtap={() =>
+                      run("purchase", () => onSelect(selected.id, period, selected.productId))
+                    }
                   >
                     <view accessibility-elements-hidden={true}>
                       <Button
@@ -120,6 +123,8 @@ export function PlansScreen({
                         variant="brand"
                         size="xl"
                         width="fill"
+                        disabled={pending === "restore"}
+                        loading={pending === "purchase"}
                       />
                     </view>
                   </view>
@@ -129,10 +134,17 @@ export function PlansScreen({
                   accessibility-element={true}
                   accessibility-traits="button"
                   accessibility-label={text.restore}
-                  bindtap={() => run(onRestore)}
+                  bindtap={() => run("restore", onRestore)}
                 >
                   <view accessibility-elements-hidden={true}>
-                    <Button label={text.restore} variant="text" size="l" width="fill" />
+                    <Button
+                      label={text.restore}
+                      variant="text"
+                      size="l"
+                      width="fill"
+                      disabled={pending === "purchase"}
+                      loading={pending === "restore"}
+                    />
                   </view>
                 </view>
                 {notice === null ? null : (

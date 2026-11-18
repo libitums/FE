@@ -86,6 +86,46 @@ test("SB-UI2d Restore → onRestore → 안내", async () => {
   expect(screen.getByTestId(ids.notice)).toHaveTextContent("Payments are coming soon");
 });
 
+test("SB-UI2g 구매가 도는 동안 계속 단추는 로딩 · 복원은 막힘, 끝나면 풀린다", async () => {
+  let finish: (value: { kind: "cancelled" }) => void = () => {};
+  const { onSelect } = mount({ priced: true });
+  onSelect.mockImplementation(
+    () =>
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+  );
+  await act(async () => {
+    tap(ids.continue);
+  });
+  const buttons = () =>
+    screen.getByTestId(ids.screen).querySelectorAll('[data-testid="ui-lynx-button"]');
+  const flags = () =>
+    Array.from(buttons()).map((el) => [
+      el.getAttribute("data-loading"),
+      el.getAttribute("data-disabled"),
+    ]);
+  expect(flags()).toEqual([
+    ["true", "false"],
+    ["false", "true"],
+  ]);
+  // 도는 동안 다시 눌러도 한 번뿐입니다.
+  await act(async () => {
+    tap(ids.continue);
+    tap(ids.restore);
+  });
+  expect(onSelect).toHaveBeenCalledTimes(1);
+  await act(async () => {
+    finish({ kind: "cancelled" });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  });
+  expect(flags()).toEqual([
+    ["false", "false"],
+    ["false", "false"],
+  ]);
+  expect(screen.queryByTestId(ids.notice)).toBeNull();
+});
+
 test("SB-UI2e 뒤로 단추 · 시스템 뒤로가기 모두 onBack", () => {
   const { onBack } = mount();
   fireEvent.tap(within(screen.getByTestId(ids.back)).getByTestId("ui-lynx-round-button"), {});

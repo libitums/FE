@@ -2,12 +2,14 @@ import { describe, expect, test } from "vitest";
 
 import {
   formatMoney,
+  pricingRegionFor,
   pricingRegionOf,
   provisionalPrice,
+  shownPriceFor,
   yearlySavingPercent,
 } from "./provisional-prices";
 
-// `unit` 계층(PP-U1 ~ U4): 스토어 상품이 붙기 전 요금제 · 엽전 상점의 임시 가격(ADR-0144 추가 2026-11-17).
+// `unit` 계층(PP-U1 ~ U4 · U6 · U7): 요금제 · 엽전 상점의 보이는 가격 — 스토어 상품 가격이 이기고, 없으면 임시 추천 가격(ADR-0144).
 
 describe("provisional prices", () => {
   test("PP-U1 학습자 나라 → 가격 지역: 동남아 다섯 나라는 그 나라, 그 밖 · 모름은 US", () => {
@@ -33,6 +35,7 @@ describe("provisional prices", () => {
       amount: 179000,
       currency: "VND",
       text: "179.000 ₫",
+      source: "provisional",
     });
     expect(provisionalPrice("duru.chatplus.yearly.v1", "ID")?.text).toBe("Rp 549.000");
     expect(provisionalPrice("duru.tickets.monthly.v1", "US")?.text).toBe("$3.99");
@@ -48,8 +51,41 @@ describe("provisional prices", () => {
     const usYearly = provisionalPrice("duru.premium.yearly.v1", "US");
     expect(yearlySavingPercent(usMonthly, usYearly)).toBe(17);
     expect(yearlySavingPercent(null, vnYearly)).toBeNull();
-    const flat = { amount: 10, currency: "USD", text: "$10.00" } as const;
+    const flat = { amount: 10, currency: "USD", text: "$10.00", source: "provisional" } as const;
     expect(yearlySavingPercent(flat, { ...flat, amount: 120, text: "$120.00" })).toBeNull();
     expect(yearlySavingPercent(vnMonthly, usYearly)).toBeNull();
+  });
+
+  test("PP-U6 가격 지역 — 스토어 나라가 있으면 그것(표에 없으면 US), 없을 때만 프로필 나라", () => {
+    expect(pricingRegionFor("VN", "PH")).toBe("VN");
+    expect(pricingRegionFor("KR", "VN")).toBe("US");
+    expect(pricingRegionFor(null, "ID")).toBe("ID");
+    expect(pricingRegionFor(null, null)).toBe("US");
+  });
+
+  test("PP-U7 보이는 가격 — 스토어 상품이 있으면 스토어 글 · 금액, 없으면 그 지역 임시 가격", () => {
+    const offers = [
+      { productId: "duru.coins.500.v1", price: "79.000 ₫", amount: 79000, currency: "VND" },
+    ];
+    expect(shownPriceFor("duru.coins.500.v1", offers, "US")).toEqual({
+      amount: 79000,
+      currency: "VND",
+      text: "79.000 ₫",
+      source: "store",
+    });
+    expect(shownPriceFor("duru.coins.1200.v1", offers, "VN")).toEqual({
+      amount: 149000,
+      currency: "VND",
+      text: "149.000 ₫",
+      source: "provisional",
+    });
+    expect(shownPriceFor("duru.coins.1200.v1", null, "US")?.text).toBe("$9.99");
+    expect(
+      shownPriceFor(
+        "duru.coins.500.v1",
+        [{ productId: "duru.coins.500.v1", price: "$4.99" }],
+        "VN",
+      ),
+    ).toEqual({ amount: null, currency: "", text: "$4.99", source: "store" });
   });
 });

@@ -1,0 +1,87 @@
+// 구매 · 복원 뒤 서버 상태 따라잡기(ADR-0144 2단계) — 등급 · 엽전의 정본은 서버이고, 서버는 RevenueCat 웹훅으로만 바뀝니다.
+// 스토어 결제가 끝난 순간에는 웹훅이 아직 안 닿았을 수 있어, 권한(`companion_entitlements`)과 지갑 잔액을 잠깐(기본 2초 × 5번)
+// 다시 읽고 바뀐 값을 알립니다. 바뀌면 곧바로 멈추고, 끝까지 그대로면 마지막 값을 알리고 끝냅니다(다음 앱 실행 · 화면 진입이 다시 읽음).
+// **던지지 않습니다.**
+
+import type { PlanEntitlements } from "./plans-api";
+
+export type PurchaseRefreshDeps = {
+  readonly entitlements: () => Promise<PlanEntitlements | null>;
+  readonly balance: () => Promise<number | null>;
+  readonly onEntitlements: (next: PlanEntitlements) => void;
+  readonly onBalance: (balance: number) => void;
+  readonly wait: (ms: number) => Promise<void>;
+};
+
+export const REFRESH_ATTEMPTS = 5;
+export const REFRESH_INTERVAL_MS = 2000;
+
+/** 권한이 같은지 — 등급 · 무제한 티켓 · 권한 줄(상품 · 상태 · 만료)로 봅니다. 순수. */
+export function sameEntitlements(a: PlanEntitlements | null, b: PlanEntitlements | null): boolean {
+  if (a === null || b === null) return a === b;
+  if (a.tier !== b.tier || a.unlimitedTickets !== b.unlimitedTickets) return false;
+  if (a.entitlements.length !== b.entitlements.length) return false;
+  return a.entitlements.every((row, index) => {
+    const other = b.entitlements[index];
+    return (
+      other !== undefined &&
+      row.productId === other.productId &&
+      row.status === other.status &&
+      row.expiresAt === other.expiresAt
+    );
+  });
+}
+
+async function safely<T>(read: () => Promise<T | null>): Promise<T | null> {
+  try {
+    return await read();
+  } catch {
+    return null;
+  }
+}
+
+/** 구매 · 복원 전의 값(`before`)과 달라질 때까지 다시 읽습니다. 바뀐 값 · 마지막 값을 알립니다. */
+export async function refreshAfterPurchase(
+  deps: PurchaseRefreshDeps,
+  before: { readonly entitlements: PlanEntitlements | null; readonly balance: number | null },
+  attempts: number = REFRESH_ATTEMPTS,
+): Promise<void> {
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    await deps.wait(REFRESH_INTERVAL_MS);
+    const [entitlements, balance] = await Promise.all([
+      safely(deps.entitlements),
+      safely(deps.balance),
+    ]);
+    const entitlementsMoved =
+      entitlements !== null && !sameEntitlements(entitlements, before.entitlements);
+    const balanceMoved = balance !== null && balance !== before.balance;
+    const last = attempt === attempts - 1;
+    if (entitlements !== null && (entitlementsMoved || last)) deps.onEntitlements(entitlements);
+    if (balance !== null && (balanceMoved || last)) deps.onBalance(balance);
+    if (entitlementsMoved || balanceMoved) return;
+  }
+}
+
+/**
+ * 구매 · 복원 하나를 돌리고, 성공(`purchased` · `restored`)이면 서버 따라잡기를 뒤에서 시작합니다 — 화면은 결과를 곧바로 받습니다.
+ * 결제를 열 수 없으면(`available` 거짓) 그냥 돌립니다. 전의 잔액은 결제 시트를 열기 전에 읽습니다.
+ */
+export async function runWithServerRefresh<T extends { readonly kind: string }>(
+  deps: PurchaseRefreshDeps & {
+    readonly available: boolean;
+    readonly current: PlanEntitlements | null;
+  },
+  task: () => Promise<T>,
+): Promise<T> {
+  if (!deps.available) return task();
+  const balance = await safely(deps.balance);
+  const result = await task();
+  if (result.kind === "purchased" || result.kind === "restored")
+    void refreshAfterPurchase(deps, { entitlements: deps.current, balance });
+  return result;
+}
+
+export const sleep = (ms: number): Promise<void> =>
+  new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });

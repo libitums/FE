@@ -7,7 +7,13 @@ import { Dialog } from "@libitums/ui-lynx/dialog";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
 
 import { coinIcon } from "../../components/coin-icon";
-import { purchaseIntentOf, purchaseRegion, reportPurchaseIntent } from "../../lib/purchase-intent";
+import {
+  purchaseIntentOf,
+  purchasePack,
+  purchaseRegion,
+  purchaseStore,
+  reportPurchaseIntent,
+} from "../../lib/purchase-intent";
 import { safeAreaInsetsFrom } from "../../lib/safe-area";
 import { lightStatusBarIcons } from "../../lib/status-bar-icons";
 import { useLayerBack } from "../../lib/use-back-handler";
@@ -27,8 +33,8 @@ import "./coin-shop-screen.css";
 // 머리 엽전 칩의 「+」를 누르면 뜨는 엽전 상점입니다(ADR-0116 · 시안 「엽전 상점」). 지표 · 티켓 모달과 같은
 // 겹침 레이어라 셸 밖에 떠 바텀 네비게이션까지 덮습니다 — 화면 전환(`Nav`)이 아닙니다.
 //
-// 결제 서비스는 아직 없습니다. 사기 버튼은 「결제 준비 중」 안내를 띄우고 엽전은 늘어나지 않습니다(사용자 결정:
-// 결제 전에도 모두에게 보인다).
+// 사기 버튼은 결제를 열 수 있으면(ADR-0144 2단계 — 결제 플래그 · 스토어 SDK · 로그인) 스토어 결제 시트를 열고, 엽전은 서버가
+// 웹훅을 받아 늘립니다(칩은 결선이 다시 읽어 맞춤). 열 수 없으면 「결제 준비 중」 안내로 끝납니다(결제 전에도 모두에게 보인다).
 
 export type CoinShopScreenProps = {
   /** 지금 가진 엽전 수입니다. */
@@ -58,7 +64,8 @@ export function CoinShopScreen({
   const selected = findCoinPack(selectedId);
   // 가격 지역은 요금제 결선이 적은 학습자 나라(ADR-0144 추가 2026-11-17).
   const region = purchaseRegion();
-  const selectedPrice = packPriceOf(selected, region);
+  const store = purchaseStore();
+  const selectedPrice = packPriceOf(selected, region, store.offers);
   // 결제 준비 중 안내입니다. 이 화면 위에 겹칠 뿐 화면 전환이 아닙니다.
   const [noticeOpen, setNoticeOpen] = useState(false);
 
@@ -66,9 +73,13 @@ export function CoinShopScreen({
     "background only";
     onClose();
   };
-  const openNotice = () => {
+  // 결제 시트가 떠 있는 동안 — 사기 단추에 로딩을 보이고 다시 누름을 막습니다.
+  const [buying, setBuying] = useState(false);
+  const handleBuy = () => {
     "background only";
-    // 결제 전이라 「결제 준비 중」 안내로 끝나도 구매 의향은 남깁니다.
+    if (buying) return;
+    const purchase = purchasePack();
+    // 결제를 열지 못하고 「결제 준비 중」 안내로 끝나도 구매 의향은 남깁니다.
     reportPurchaseIntent(
       purchaseIntentOf({
         surface,
@@ -78,10 +89,22 @@ export function CoinShopScreen({
         period: "once",
         shown: selectedPrice,
         region,
-        preview: true,
+        storefront: store.storefront,
+        preview: !purchase.available,
       }),
     );
-    setNoticeOpen(true);
+    if (!purchase.available) {
+      setNoticeOpen(true);
+      return;
+    }
+    setBuying(true);
+    void purchase
+      .buy(selected.productId)
+      .then((result) => {
+        if (result.kind === "unavailable") setNoticeOpen(true);
+      })
+      .catch(() => undefined)
+      .finally(() => setBuying(false));
   };
   const closeNotice = () => {
     "background only";
@@ -164,6 +187,7 @@ export function CoinShopScreen({
             {coinPacks.map((pack) => (
               <CoinPackCard
                 region={region}
+                offers={store.offers}
                 key={pack.id}
                 pack={pack}
                 selected={pack.id === selectedId}
@@ -184,7 +208,8 @@ export function CoinShopScreen({
             variant="brand"
             size="xl"
             width="fill"
-            bindtap={openNotice}
+            loading={buying}
+            bindtap={handleBuy}
           />
         </view>
         <text className="coin-shop-screen-store-note">{shop.storeNote}</text>
