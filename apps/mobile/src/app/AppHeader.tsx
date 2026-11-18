@@ -5,7 +5,10 @@ import { TopBar } from "../components/TopBar";
 import type { FeedbackRating, FeedbackReason } from "../lib/feedback.contract";
 import { useUiCopy } from "../lib/ui-copy";
 import type { StatBumpWiring } from "./learning-progress";
-import { CoinShopScreen } from "../screens/coin-shop/CoinShopScreen";
+import { PlanChip } from "../components/PlanChip";
+import { SubscriptionToast } from "../components/SubscriptionToast";
+import type { PlanId } from "../lib/plans-api";
+import type { HeaderPlanChip, ShopRequest } from "../screens/coin-shop/shop-model";
 import { EpisodeSurveySheet } from "../screens/episode-survey/EpisodeSurveySheet";
 import { JourneyStatModal } from "../screens/journey-map/JourneyStatModal";
 import type { StreakRewardWiring } from "../screens/journey-map/streak-reward.contract";
@@ -29,7 +32,18 @@ import {
 // `Nav`가 관여하지 않습니다(ADR-0007 D3). 전에는 여정 맵이 지표 모달을 소유했는데,
 // 머리가 셸로 올라오면서 모달도 함께 올라왔습니다.
 
-type AppHeaderLayer = JourneyStatKind | "survey" | "tickets" | "unlimited" | "coins";
+type AppHeaderLayer = JourneyStatKind | "survey" | "tickets" | "unlimited";
+
+/** 머리의 요금제 입구(ADR-0160) — 요금제 결선이 있을 때만. */
+export type HeaderPlans = {
+  /** 둘째 줄 칩 — null이면 줄이 없습니다(여정 지도 밖 탭). */
+  readonly chip: HeaderPlanChip | null;
+  /** 티켓 모달의 「Go unlimited」 줄 가격 — undefined면 줄이 없습니다(표 없음 · 이미 티켓 무제한). */
+  readonly goUnlimited: { readonly price: string | null } | undefined;
+  /** 구독 성공 알림 한 번 — 새로 켜진 요금제. */
+  readonly activated: PlanId | null;
+  readonly onActivatedShown: () => void;
+};
 
 export type AppHeaderProps = {
   readonly streakDays: number;
@@ -86,6 +100,9 @@ export type AppHeaderProps = {
   readonly unlimitedPass?: UnlimitedPass;
   /** 연속 학습 엽전 보상(ADR-0143) — 로그인 사용자만. 연속 학습 모달에만 넘깁니다. */
   readonly streakReward?: StreakRewardWiring;
+  /** 상점을 엽니다(ADR-0160) — 세션 층이 그립니다. 없으면 엽전 칩은 읽기 전용입니다. */
+  readonly onOpenShop?: (request: ShopRequest) => void;
+  readonly plans?: HeaderPlans;
 };
 
 export function AppHeader({
@@ -105,6 +122,8 @@ export function AppHeader({
   tickets,
   unlimitedPass,
   streakReward,
+  onOpenShop,
+  plans,
 }: AppHeaderProps): ReactNode {
   const [openLayer, setOpenLayer] = useState<AppHeaderLayer | null>(null);
   const copy = useUiCopy();
@@ -131,6 +150,8 @@ export function AppHeader({
     [unlimitedOpen, unlimitedPass],
   );
   const ticketModalOpen = openLayer === "tickets";
+  // 구독 성공 알림은 머리가 보일 때만 섭니다 — 레이어가 덮은 동안 4초가 지나가지 않게 합니다.
+  const celebrating = (plans?.activated ?? null) !== null && layer === null && !obscured;
   // 티켓 모달이 떠 있는 동안 1초마다 다시 그리도록 알립니다(카운트다운). 닫히거나 머리가 내려가면 거둡니다.
   useEffect(() => {
     if (!ticketModalOpen) return;
@@ -183,13 +204,31 @@ export function AppHeader({
           ticketCount={tickets?.status.available ?? null}
           ticketsUnlimited={unlimitedPass !== undefined}
           onOpenTickets={() => setOpenLayer(unlimitedPass === undefined ? "tickets" : "unlimited")}
-          onOpenCoins={() => setOpenLayer("coins")}
+          onOpenCoins={
+            onOpenShop === undefined
+              ? undefined
+              : () => onOpenShop({ tab: "coins", placement: "coin_shop", focus: null })
+          }
+          ticketPulse={celebrating && plans?.activated !== "chat_plus"}
           bumps={statBump?.statBumps}
           bumpHeld={layer !== null || obscured || celebrateStreak}
           onBumped={statBump?.onStatBumped}
           ticketDropFrom={tickets?.dropFrom ?? null}
           onTicketDropped={tickets?.onDropped}
         />
+        {/* 둘째 줄 요금제 칩(ADR-0160 시안 A3) — 종 아래 오른쪽. 지도 스크롤 밖 머리 층이라 z-index가 지도 안으로 들어가지 않습니다. */}
+        {plans === undefined || plans.chip === null ? null : (
+          <view className="app-header-plan-row" data-testid="app-header-plan-row">
+            <PlanChip
+              plan={plans.chip}
+              pulse={celebrating}
+              onPress={() => onOpenShop?.({ tab: "plans", placement: "header_chip", focus: null })}
+            />
+          </view>
+        )}
+        {celebrating && plans?.activated != null ? (
+          <SubscriptionToast plan={plans.activated} onDone={plans.onActivatedShown} />
+        ) : null}
       </view>
       {openLayer === "streak" || openLayer === "trophy" ? (
         <JourneyStatModal
@@ -216,6 +255,21 @@ export function AppHeader({
           more={tickets.more}
           onGetMore={tickets.onGetMore}
           onClose={close}
+          {...(plans?.goUnlimited === undefined
+            ? {}
+            : {
+                goUnlimited: {
+                  price: plans.goUnlimited.price,
+                  onPress: () => {
+                    close();
+                    onOpenShop?.({
+                      tab: "plans",
+                      placement: "tickets_chip",
+                      focus: "unlimited_tickets",
+                    });
+                  },
+                },
+              })}
         />
       ) : null}
       {unlimitedView !== null ? (
@@ -225,9 +279,6 @@ export function AppHeader({
           onManageSubscription={manageSubscription}
           onKeepUnlimited={manageSubscription}
         />
-      ) : null}
-      {openLayer === "coins" ? (
-        <CoinShopScreen coinBalance={coinCount ?? 0} onClose={close} />
       ) : null}
       {openLayer === "survey" && episodeSurvey !== null ? (
         <EpisodeSurveySheet

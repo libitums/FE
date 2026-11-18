@@ -105,3 +105,9 @@
   height: var(--libitum-icon-size-md);
   flex-shrink: 0;
 }
+
+/* 무제한 티켓 칩을 감싸 구독 성공 고리(ADR-0160)를 겹칩니다 — 크기는 칩 그대로. */
+.top-bar-chip-host {
+  position: relative;
+  display: flex;
+}
