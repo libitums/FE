@@ -109,3 +109,17 @@ test("PR-U5 runWithServerRefresh — 결제를 못 열면 그냥 돌리고, 취�
   expect(result.kind).toBe("purchased");
   await vi.waitFor(() => expect(bought.onBalance).toHaveBeenCalledWith(600));
 });
+
+test("PR-U6 runWithServerRefresh — 잔액 읽기를 기다리지 않고 결제를 바로 연다", async () => {
+  const slow = deps([free], [100, 600]);
+  let release: () => void = () => {};
+  slow.balance.mockImplementationOnce(
+    () => new Promise<number | null>((resolve) => (release = () => resolve(100))),
+  );
+  const task = vi.fn(async () => ({ kind: "purchased" as const, productId: "duru.coins.500.v1" }));
+  const running = runWithServerRefresh({ ...slow, available: true, current: free }, task);
+  expect(task).toHaveBeenCalledTimes(1);
+  await expect(running).resolves.toMatchObject({ kind: "purchased" });
+  release();
+  await vi.waitFor(() => expect(slow.onBalance).toHaveBeenCalledWith(600));
+});

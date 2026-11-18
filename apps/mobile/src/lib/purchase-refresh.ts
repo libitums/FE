@@ -64,7 +64,7 @@ export async function refreshAfterPurchase(
 
 /**
  * 구매 · 복원 하나를 돌리고, 성공(`purchased` · `restored`)이면 서버 따라잡기를 뒤에서 시작합니다 — 화면은 결과를 곧바로 받습니다.
- * 결제를 열 수 없으면(`available` 거짓) 그냥 돌립니다. 전의 잔액은 결제 시트를 열기 전에 읽습니다.
+ * 결제를 열 수 없으면(`available` 거짓) 그냥 돌립니다. 전의 잔액은 결제 시트와 함께 읽기 시작합니다 — 시트를 늦추지 않습니다.
  */
 export async function runWithServerRefresh<T extends { readonly kind: string }>(
   deps: PurchaseRefreshDeps & {
@@ -74,10 +74,12 @@ export async function runWithServerRefresh<T extends { readonly kind: string }>(
   task: () => Promise<T>,
 ): Promise<T> {
   if (!deps.available) return task();
-  const balance = await safely(deps.balance);
+  const before = safely(deps.balance);
   const result = await task();
   if (result.kind === "purchased" || result.kind === "restored")
-    void refreshAfterPurchase(deps, { entitlements: deps.current, balance });
+    void before.then((balance) =>
+      refreshAfterPurchase(deps, { entitlements: deps.current, balance }),
+    );
   return result;
 }
 
