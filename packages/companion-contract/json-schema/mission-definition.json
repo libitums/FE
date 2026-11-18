@@ -32,7 +32,11 @@
         }
       },
       "required": ["en"],
-      "additionalProperties": false
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 240
+      }
     },
     "scene": {
       "type": "string",
@@ -128,7 +132,11 @@
         }
       },
       "required": ["ko", "roman", "en"],
-      "additionalProperties": false
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 400
+      }
     },
     "goals": {
       "minItems": 1,
@@ -159,7 +167,11 @@
               }
             },
             "required": ["en"],
-            "additionalProperties": false
+            "additionalProperties": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 240
+            }
           },
           "criteria": {
             "type": "string",

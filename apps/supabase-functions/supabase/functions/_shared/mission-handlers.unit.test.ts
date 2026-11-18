@@ -152,12 +152,58 @@ describe("mission-start", () => {
     expect(body).toMatchObject({
       conversationId: conversation,
       charge: { source: "credits", credits: 10 },
-      opening: { ko: cafe.opening.ko, translation: null },
+      // 학습자 언어를 모르면 파일의 영어 글.
+      opening: { ko: cafe.opening.ko, translation: cafe.opening.en },
     });
     expect(calls[0]).toEqual({
       fn: "companion_mission_start",
       args: { p_user_id: user, p_mission_id: "u06-cafe", p_now: "2026-11-19T00:00:00.000Z" },
     });
+  });
+
+  test("MH1b. 학습자 언어 — 캐시가 없으면 번역해 캐시에 남기고, 캐시가 있으면 호출 없이 그것", async () => {
+    const fresh = harness({
+      companion_mission_start: () => ({ ...started, l1: "vi", translation: null }),
+      companion_save_mission_translation: () => ({ saved: true }),
+    });
+    const body = missionStartResponseSchema.parse(
+      await (
+        await createMissionStartHandler(fresh.deps)(
+          post("mission-start", { mission_id: "u06-cafe" }),
+        )
+      ).json(),
+    );
+    expect(body).toMatchObject({ l1: "vi", opening: { translation: `[vi] ${cafe.opening.ko}` } });
+    expect(body.goals[0]?.label["vi"]).toMatch(/^\[vi\] /);
+    expect(fresh.calls.at(-1)).toMatchObject({
+      fn: "companion_save_mission_translation",
+      args: { p_mission_id: "u06-cafe", p_mission_version: 1, p_language: "vi", p_model: "fake" },
+    });
+    const cached = harness(
+      {
+        companion_mission_start: () => ({
+          ...started,
+          l1: "vi",
+          translation: { opening: "Chào", goals: { order: "Gọi món" } },
+        }),
+      },
+      {
+        ...fakeMissionLlm(),
+        translate: async () => {
+          throw new Error("부르면 안 된다");
+        },
+      },
+    );
+    const partial = missionStartResponseSchema.parse(
+      await (
+        await createMissionStartHandler(cached.deps)(
+          post("mission-start", { mission_id: "u06-cafe" }),
+        )
+      ).json(),
+    );
+    // 캐시가 목표 하나뿐이라 나머지를 만들려다 실패 → 시작은 그대로, 영어로(캐시하지 않음).
+    expect(partial.opening.translation).toBe("Chào");
+    expect(cached.calls.map((call) => call.fn)).toEqual(["companion_mission_start"]);
   });
 
   test("MH2. 거절 코드는 1단계 관례대로 — 402 detail · 403 · 404, 모르는 코드는 500", async () => {

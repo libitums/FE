@@ -22,8 +22,15 @@ export const missionGoalIdSchema = z.string().check(z.regex(/^[a-z][a-z0-9_]{0,3
 /** 콘텐츠의 표현 id(`patt:83586289` · `expr:…` · `voca:…`) — 접두사 넷 글자 + 16진 여덟 자리. */
 export const expressionIdSchema = z.string().check(z.regex(/^[a-z]{4}:[0-9a-f]{8}$/));
 
-/** 화면에 보이는 글. 영어는 늘 있고 한국어는 선택입니다(다른 언어는 PRD §9 M6). */
-export const missionLabelSchema = z.object({ en: text(120), ko: z.optional(text(120)) });
+/**
+ * 화면에 보이는 글. 영어는 늘 있고 한국어는 선택입니다. 그 밖의 언어는 BCP 47 태그를 키로 하는 선택 칸입니다(`ja` · `vi` …, PRD §9 M6).
+ * 미션 파일에는 사람이 검수한 번역을 넣고, 서버 응답에는 학습자 언어(`l1`)의 칸이 채워져 옵니다(파일에 없으면 자동 번역 — 검수 전 초안).
+ * 앱은 `label[l1] ?? label.en`을 씁니다.
+ */
+export const missionLabelSchema = z.catchall(
+  z.object({ en: text(120), ko: z.optional(text(120)) }),
+  text(240),
+);
 
 export const missionGoalSchema = z.object({
   id: missionGoalIdSchema,
@@ -60,7 +67,11 @@ export const missionCounterpartSchema = z.object({
   base: z.optional(missionCounterpartBaseSchema),
 });
 
-export const missionOpeningSchema = z.object({ ko: text(200), roman: text(300), en: text(300) });
+/** 진입 대사. 그 밖의 언어는 `missionLabelSchema`처럼 BCP 47 태그를 키로 하는 선택 칸(사람이 검수한 번역). */
+export const missionOpeningSchema = z.catchall(
+  z.object({ ko: text(200), roman: text(300), en: text(300) }),
+  text(400),
+);
 
 const unique = (values: readonly string[]) => new Set(values).size === values.length;
 
@@ -137,6 +148,8 @@ export const missionStartResponseSchema = z.object({
     translation: z.nullable(z.string()),
   }),
   goals: z.array(missionGoalStateSchema),
+  /** 학습자 언어(BCP 47) — `opening.translation`과 목표 글의 `label[l1]`이 이 언어다. 모르면 null(영어). 옛 서버에는 없다. */
+  l1: z.optional(z.nullable(z.string())),
   turnLimit: z.int(),
   turnsLeft: nonNegativeInt,
   hintsLeft: nonNegativeInt,

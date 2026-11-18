@@ -119,6 +119,8 @@ export const missionListItemSchema = z.object({
 export const missionListSchema = z.object({
   missions: z.array(missionListItemSchema),
   price: missionPriceSchema,
+  /** 학습자 언어 — 목표 글의 `label[l1]`이 이 언어다(번역이 준비된 것만). 모르면 null. 옛 서버에는 없다. */
+  l1: z.optional(z.nullable(z.string())),
 });
 
 /** `companion_list_mission_results(p_mission_id)`의 반환 — 지난 리포트 전부(최신이 앞)와 최고 기록. */

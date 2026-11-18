@@ -412,6 +412,72 @@ async function saveScore(
   return saved["report"] as Json;
 }
 
+describe("진입 대사 · 목표 글의 학습자 언어 — 번역 캐시", () => {
+  test("MI7. 시작 두 번에 번역 호출은 한 번 · 목록도 같은 번역 · 미션 판이 오르면 다시 · 다른 언어는 따로", async () => {
+    await db.admin.query("insert into companion.profiles (user_id, l1) values ($1, 'vi')", [
+      learner,
+    ]);
+    await db.admin.query(
+      "select public.companion_grant_credits($1, 'paid', 100, 'purchase', gen_random_uuid()::text, null)",
+      [learner],
+    );
+    const translated: string[] = [];
+    const base = fakeMissionLlm();
+    const llm: CompanionLlm = {
+      ...base,
+      translate: async (request) => {
+        translated.push(request.l1);
+        return base.translate(request);
+      },
+    };
+    const start = async () =>
+      missionStartResponseSchema.parse(
+        await (
+          await createMissionStartHandler(deps(llm))(
+            post("mission-start", { mission_id: "u01-water" }),
+          )
+        ).json(),
+      );
+    const first = await start();
+    expect(first.l1).toBe("vi");
+    expect(first.opening.translation).toBe(`[vi] ${water.opening.ko}`);
+    expect(first.goals[0]?.label).toMatchObject({
+      en: water.goals[0].label.en,
+      vi: expect.stringMatching(/^\[vi\] /),
+    });
+    const second = await start();
+    expect(second.opening.translation).toBe(first.opening.translation);
+    expect(translated).toEqual(["vi"]);
+
+    await signIn(app, learner);
+    const list = missionListSchema.parse(
+      (await app.query("select public.companion_list_missions() as r")).rows[0].r,
+    );
+    expect(list.l1).toBe("vi");
+    expect(list.missions.find((mission) => mission.id === "u01-water")?.goals[0]?.label).toEqual(
+      first.goals[0]?.label,
+    );
+    await app.query("reset role");
+
+    await server.query("select public.companion_upsert_mission($1::jsonb)", [
+      JSON.stringify({ ...water, version: 2 }),
+    ]);
+    await start();
+    expect(translated).toEqual(["vi", "vi"]);
+    await db.admin.query("update companion.profiles set l1 = 'ja' where user_id = $1", [learner]);
+    expect((await start()).opening.translation).toBe(`[ja] ${water.opening.ko}`);
+    expect(translated).toEqual(["vi", "vi", "ja"]);
+    const rows = await db.admin.query(
+      "select mission_version, language from companion.mission_translations where mission_id = 'u01-water' order by 1, 2",
+    );
+    expect(rows.rows).toEqual([
+      { mission_version: 1, language: "vi" },
+      { mission_version: 2, language: "ja" },
+      { mission_version: 2, language: "vi" },
+    ]);
+  });
+});
+
 describe("점수 — SQL save_result와 코어 scoreMission이 같은 값", () => {
   beforeAll(async () => {
     const missions = [

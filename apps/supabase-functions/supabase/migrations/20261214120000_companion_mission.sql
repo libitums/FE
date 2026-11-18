@@ -169,6 +169,20 @@ create table companion.mission_results (
 );
 create index mission_results_user_idx on companion.mission_results (user_id, mission_id, created_at desc);
 
+-- 진입 대사 · 목표 글의 자동 번역 캐시(PRD §9 M6). 미션 × 판 × 학습자 언어마다 한 행 — 판이 오르면 새로 만든다.
+-- 미션 파일에 그 언어의 글이 있으면 그것을 먼저 쓰고(사람이 검수한 번역), 없을 때만 번역 노드로 만들어 여기에 남긴다(검수 전 초안).
+-- translation: { opening: 글 | null, goals: { 목표 id: 글 } }.
+create table companion.mission_translations (
+  mission_id text not null,
+  mission_version integer not null,
+  language text not null check (language ~ '^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})*$'),
+  translation jsonb not null check (jsonb_typeof(translation) = 'object'),
+  model text check (model is null or char_length(model) <= 200),
+  created_at timestamptz not null default now(),
+  primary key (mission_id, mission_version, language),
+  foreign key (mission_id, mission_version) references companion.mission_versions (mission_id, version)
+);
+
 create table companion.mission_usage (
   user_id uuid not null references auth.users (id) on delete cascade,
   day date not null,
@@ -215,6 +229,9 @@ alter table companion.missions enable row level security;
 alter table companion.mission_versions enable row level security;
 alter table companion.mission_results enable row level security;
 alter table companion.mission_usage enable row level security;
+alter table companion.mission_translations enable row level security;
+revoke all on table companion.mission_translations from public, anon, authenticated;
+grant select, insert, update, delete on table companion.mission_translations to service_role;
 revoke all on table companion.missions, companion.mission_versions, companion.mission_results, companion.mission_usage
   from public, anon, authenticated;
 grant select, insert, update, delete on table companion.missions, companion.mission_versions, companion.mission_results,
@@ -508,6 +525,17 @@ returns jsonb language sql stable as $$
   from companion.settings
 $$;
 
+-- 목표 글에 학습자 언어 칸을 채운다 — 파일에 있으면 그대로, 없으면 번역 캐시의 글(있을 때만). en · ko · 언어 모름이면 그대로.
+create function companion.mission_label_in(p_label jsonb, p_goal_id text, p_language text, p_cache jsonb)
+returns jsonb language sql immutable as $$
+  select case
+    when p_language is null or lower(p_language) in ('en', 'ko') or lower(p_language) like 'ko-%' or p_label ? p_language then p_label
+    when jsonb_typeof(p_cache->'goals'->p_goal_id) = 'string' then p_label || jsonb_build_object(p_language, p_cache->'goals'->>p_goal_id)
+    else p_label
+  end
+$$;
+revoke all on function companion.mission_label_in(jsonb, text, text, jsonb) from public;
+
 -- 앱에 보이는 정의의 부분(판정 기준 · 역할 카드 본문 · 예시 대사는 빼고).
 create function companion.mission_card_json(d jsonb)
 returns jsonb language sql immutable as $$
@@ -762,6 +790,11 @@ begin
     'openingMessageId', v_opening,
     'opening', v_def->'opening',
     'persona', (select persona from companion.characters where id = v_character),
+    -- 학습자 언어와 그 언어의 번역 캐시(없으면 null — 서버가 만들어 `companion_save_mission_translation`으로 남긴다).
+    'l1', (select l1 from companion.profiles where user_id = p_user_id),
+    'translation', (select t.translation from companion.mission_translations t
+      where t.mission_id = v_mission.id and t.mission_version = v_mission.version
+        and t.language = (select l1 from companion.profiles where user_id = p_user_id)),
     'payment', v_bill->>'payment',
     'creditsReserved', (v_bill->>'amount')::integer,
     'holdId', v_bill->'holdId',
@@ -1361,6 +1394,29 @@ begin
 end;
 $$;
 
+-- 번역 캐시 저장(서버가 번역 노드로 만든 뒤). 이미 있으면 그대로 둔다(먼저 만든 것이 이긴다). 반환: { saved }.
+create function public.companion_save_mission_translation(
+  p_mission_id text, p_mission_version integer, p_language text, p_translation jsonb, p_model text
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_count integer;
+begin
+  if p_translation is null or jsonb_typeof(p_translation) <> 'object' then
+    raise exception 'invalid translation' using errcode = '22023';
+  end if;
+  insert into companion.mission_translations (mission_id, mission_version, language, translation, model)
+  values (p_mission_id, p_mission_version, p_language, p_translation, left(p_model, 200))
+  on conflict (mission_id, mission_version, language) do nothing;
+  get diagnostics v_count = row_count;
+  return jsonb_build_object('saved', v_count > 0);
+end;
+$$;
+
 -- 방치된 판 닫기(pg_cron). 마지막 메시지 뒤 settings.mission_stale_after가 지난 진행 중인 판 → abandoned · stale, 예약 확정.
 -- 채점이 실패해 값을 이미 돌려준 판(gradingFailed)은 그대로 둔다 — 채점만 다시 부를 수 있다. 닫은 판 수.
 create function public.companion_close_stale_missions(p_now timestamptz)
@@ -1400,6 +1456,7 @@ declare
   v_user uuid := auth.uid();
   s companion.settings;
   v_tester boolean;
+  v_l1 text := (select l1 from companion.profiles where user_id = auth.uid());
 begin
   if v_user is null then
     raise exception 'not authenticated' using errcode = '28000';
@@ -1413,10 +1470,19 @@ begin
   end if;
   return jsonb_build_object(
     'enabled', true,
+    'l1', (select l1 from companion.profiles where user_id = v_user),
     'price', companion.mission_price(v_user, now())
       || jsonb_build_object('freeLeft', (companion.mission_price(v_user, now())->>'freeRemaining')::integer),
     'missions', coalesce((
       select jsonb_agg(companion.mission_card_json(m.definition) || jsonb_build_object(
+        -- 목표 글에 학습자 언어 칸(파일 → 번역 캐시 순서, 둘 다 없으면 영어만).
+        'goals', coalesce((
+          select jsonb_agg(jsonb_build_object('id', g.value->>'id', 'required', (g.value->>'required')::boolean,
+            'label', companion.mission_label_in(g.value->'label', g.value->>'id', v_l1,
+              (select t.translation from companion.mission_translations t
+                where t.mission_id = m.id and t.mission_version = m.version and t.language = v_l1))) order by g.ordinality)
+          from jsonb_array_elements(m.definition->'goals') with ordinality g
+        ), '[]'::jsonb),
         'available', x.reason is null,
         'unavailableReason', x.reason,
         -- 계약 칸: 목록 안(스위치 켬 · 미션 켬)에서 남는 까닭은 episode_locked뿐이라 unlocked = available.
@@ -1588,6 +1654,8 @@ grant execute on function public.companion_mission_close(uuid, uuid, boolean, ti
 grant execute on function public.companion_mission_save_result(uuid, uuid, jsonb, timestamptz) to service_role;
 grant execute on function public.companion_mission_grading_failed(uuid, uuid, timestamptz) to service_role;
 grant execute on function public.companion_close_stale_missions(timestamptz) to service_role;
+revoke all on function public.companion_save_mission_translation(text, integer, text, jsonb, text) from public, anon, authenticated;
+grant execute on function public.companion_save_mission_translation(text, integer, text, jsonb, text) to service_role;
 grant execute on function public.companion_inspect_missions(uuid) to service_role;
 grant execute on function public.companion_inspect_mission(uuid) to service_role;
 

@@ -4,7 +4,14 @@
 //   `companion_mission_start`(판정 · 진행 중이던 판 그만둠 · 대화 행 · 판 단위 예약 · 진입 대사, 한 트랜잭션) → 계약의 응답.
 // 거절은 1단계 관례대로 HTTP 상태 + `{ error, retryable, detail? }`(`mission-http.ts`). LLM은 부르지 않습니다.
 
-import type { ChatSendDeps } from "./chat-send.contract.ts";
+import type { ChatSendDeps, ChatSendEnv } from "./chat-send.contract.ts";
+import { defaultLlmTimeoutMs } from "./chat-send-reply.ts";
+import { validateMission } from "./mission-definition.ts";
+import {
+  localizeMission,
+  type LocalizedMission,
+  type MissionTranslation,
+} from "./mission-localize.ts";
 import { callerUserId } from "./chat-send-http.ts";
 import {
   missionStartRequestSchema,
@@ -38,11 +45,17 @@ export type MissionStartRow = {
   readonly freeRemaining: number;
   readonly balance: number | null;
   readonly abandoned: readonly string[];
+  /** 학습자 언어(프로필)와 그 언어의 번역 캐시(없으면 null). 옛 DB에는 없다. */
+  readonly l1?: string | null;
+  readonly translation?: MissionTranslation | null;
 };
 
 type Rejection = { readonly result: string; readonly detail?: Record<string, unknown> };
 
-export function startResponse(row: MissionStartRow): MissionStartResponse {
+export function startResponse(
+  row: MissionStartRow,
+  localized: Pick<LocalizedMission, "language" | "openingTranslation" | "labels"> | null = null,
+): MissionStartResponse {
   const definition = row.mission.definition;
   return {
     conversationId: row.conversationId,
@@ -54,15 +67,21 @@ export function startResponse(row: MissionStartRow): MissionStartResponse {
       label: definition.counterpart.label,
       characterId: definition.counterpart.characterId ?? null,
     },
-    // 진입 대사의 학습자 언어 번역은 아직 없다 — 앱은 `en`을 쓴다(계약: null이면 en).
+    // 진입 대사 · 목표 글의 학습자 언어(`mission-localize.ts` — 파일 → 캐시 → 번역 노드). 번역이 없으면 null(앱은 en).
     opening: {
       messageId: row.openingMessageId,
       ko: row.opening.ko,
       roman: row.opening.roman ?? "",
       en: row.opening.en ?? "",
-      translation: null,
+      translation: localized?.openingTranslation ?? null,
     },
-    goals: row.state.goals.map(({ id, required, label, done }) => ({ id, required, label, done })),
+    goals: row.state.goals.map(({ id, required, label, done }) => ({
+      id,
+      required,
+      label: localized?.labels[id] ?? label,
+      done,
+    })),
+    l1: localized?.language ?? row.l1 ?? null,
     turnLimit: row.state.turnLimit,
     turnsLeft: row.state.turnsLeft,
     hintsLeft: row.state.hintsLeft,
@@ -111,9 +130,41 @@ export function createMissionStartHandler(
     }
     if (row.result !== "ok") return respond(rejectionResponse(row), row.result);
     const started = row as MissionStartRow;
+    const localized = await localize(deps, env, started);
     return respond(
-      jsonResponse(startResponse(started)),
-      `ok ${started.mission.id} ${started.payment}${caller.playground ? " playground" : ""}`,
+      jsonResponse(startResponse(started, localized)),
+      `ok ${started.mission.id} ${started.payment} l1=${localized?.source ?? "skipped"}${caller.playground ? " playground" : ""}`,
     );
   };
+}
+
+/** 진입 대사 · 목표 글을 학습자 언어로. 새로 만든 번역은 캐시에 남긴다(실패해도 시작은 그대로 — 영어로). */
+async function localize(
+  deps: ChatSendDeps,
+  env: ChatSendEnv,
+  row: MissionStartRow,
+): Promise<LocalizedMission | null> {
+  const definition = validateMission(row.mission.definition);
+  if (!definition.ok || deps.llm === null) return null;
+  const localized = await localizeMission({
+    llm: deps.llm,
+    env,
+    mission: definition.mission,
+    l1: row.l1 ?? null,
+    cached: row.translation ?? null,
+    timeoutMs: deps.translationTimeoutMs,
+    signal: AbortSignal.timeout(deps.llmTimeoutMs ?? defaultLlmTimeoutMs),
+  });
+  if (localized.created !== null && localized.language !== null) {
+    await callRpc(deps.outbound, env, "companion_save_mission_translation", {
+      p_mission_id: row.mission.id,
+      p_mission_version: row.mission.version,
+      p_language: localized.language,
+      p_translation: localized.created,
+      p_model: env.llm.kind === "anthropic" ? env.llm.translationModel : "fake",
+    }).catch(() =>
+      deps.log({ event: "mission_start", status: 200, outcome: "translation_save_failed" }),
+    );
+  }
+  return localized;
 }

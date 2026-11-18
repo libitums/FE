@@ -1,6 +1,6 @@
 {
   "bundleVersion": 1,
-  "generatedAt": "2026-11-18T16:32:16.817Z",
+  "generatedAt": "2026-11-18T17:13:46.221Z",
   "source": {
     "repo": "libitums/FE",
     "commit": "working-tree"
@@ -629,6 +629,10 @@
     },
     "sceneStartUser": null,
     "sceneStart": "진입 대사는 상대역(assistant) 메시지로 대화 맨 앞에 그대로 둔다. 앞에 고정 user 글을 넣지 않는다 — 1단계 첫 인사 · 선톡 뒤 턴과 같다.",
+    "openingTranslation": {
+      "system": "Translate a Korean chat character's message into the language with BCP 47 tag \"{{learner_l1}}\". The lines to translate are a numbered list; each line is \"speech\" (what the character says) or \"action\" / \"narration\" (stage directions). Return \"lines\" with exactly {{count}} strings, one per numbered line, in the same order. Translate naturally in the character's tone, and translate stage directions as short stage directions. No romanization, notes or quotes.\nThe request may start with earlier messages under \"Context\": use them only to get pronouns, who is speaking to whom and the tone right — never translate or include them. It may list \"Names\": write each name the same way every time (keep the character's name as a name; transliterate it, do not translate its meaning) and follow any spelling notes given.",
+      "lines": "1. [speech] 진입 대사(opening.ko) · 이어서 목표마다 [narration] 목표 글(label.ko ?? label.en). 파일에 그 언어 칸이 있으면 그 줄은 빼고, 결과는 미션 × 판 × 언어로 캐시한다."
+    },
     "historyAssistantFormat": "지난 상대역 답은 조각마다 `@{kind} {text}` 한 줄(`@speech …` · `@action …`)을 줄바꿈으로 이은 글. 상태 줄(`@state …`)과 저장된 번역은 넣지 않는다. 학습자 글은 보낸 글 그대로."
   },
   "missions": [

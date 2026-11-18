@@ -5,7 +5,12 @@
 
 import { z } from "zod";
 
-import { feedbackHistoryLimit, feedbackContent, feedbackSystem } from "./companion-llm-prompts.ts";
+import {
+  feedbackHistoryLimit,
+  feedbackContent,
+  feedbackSystem,
+  translationSystem,
+} from "./companion-llm-prompts.ts";
 import { feedbackSchema } from "./companion-llm-schemas.ts";
 import {
   missionBrief,
@@ -160,6 +165,12 @@ export function buildMissionLabBundle(input: MissionLabBundleInput) {
       sceneStartUser: null,
       sceneStart:
         "진입 대사는 상대역(assistant) 메시지로 대화 맨 앞에 그대로 둔다. 앞에 고정 user 글을 넣지 않는다 — 1단계 첫 인사 · 선톡 뒤 턴과 같다.",
+      // 진입 대사 · 목표 글의 학습자 언어(선택 칸) — 서버는 파일 → 캐시 → 1단계 번역 노드 순서로 고른다(`mission-localize.ts`).
+      openingTranslation: {
+        system: translationSystem("{{learner_l1}}", "{{count}}"),
+        lines:
+          "1. [speech] 진입 대사(opening.ko) · 이어서 목표마다 [narration] 목표 글(label.ko ?? label.en). 파일에 그 언어 칸이 있으면 그 줄은 빼고, 결과는 미션 × 판 × 언어로 캐시한다.",
+      },
       historyAssistantFormat:
         "지난 상대역 답은 조각마다 `@{kind} {text}` 한 줄(`@speech …` · `@action …`)을 줄바꿈으로 이은 글. 상태 줄(`@state …`)과 저장된 번역은 넣지 않는다. 학습자 글은 보낸 글 그대로.",
     },

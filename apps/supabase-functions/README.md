@@ -783,6 +783,12 @@ LLM 계층은 `companion-llm-mission.ts`(`missionLlmFor`) — 기존 `CompanionL
   `blocked`로 저장한다(반복 위반 셈은 SQL이 한다).
 - 진실은 SQL이다 — `mission` 이벤트는 `finish_turn`이 돌려준 상태로 쓰고, 코어 `advanceMission`과 어긋나면 로그 `mission_state_mismatch`만 남긴다.
   점수도 `save_result`가 계산하고 코어 `scoreMission`과 어긋나면 `score_mismatch`.
+- 학습자 언어(PRD §9 M6): `mission-start`의 `opening.translation`과 목표의 `label[l1]`, `companion_list_missions`의 목표 `label[l1]`이 학습자 언어
+  (`profiles.l1`)로 나간다. 출처는 미션 파일의 그 언어 칸(검수한 번역) → 번역 캐시 `companion.mission_translations`(미션 × 판 × 언어) → 둘 다 없으면
+  1단계 번역 노드(`startTranslation` — 같은 프롬프트 · `COMPANION_TRANSLATION_MODEL`)로 진입 대사와 목표 글을 한 번에 만들어
+  `companion_save_mission_translation`으로 남긴다(검수 전 초안). `l1`이 영어 · 모름이면 파일의 영어 글, 한국어 · `COMPANION_TRANSLATION=off`면 번역 없음.
+  번역이 실패해도 시작은 막지 않는다(영어로 내고 캐시하지 않아 다음 시작 때 다시). 목록은 캐시만 읽는다(LLM을 부르지 않는다). SSE `mission` 이벤트는
+  목표 id · 달성만 싣는다(글이 없다). 힌트의 `meaning`과 채점의 총평은 프롬프트의 `learner_l1`로 이미 학습자 언어다.
 - 진입 대사는 상대역 메시지로 대화 맨 앞에 그대로 둔다(앞에 고정 user 글 없음, 1단계 첫 인사 뒤 턴과 같음). 지난 상대역 답은 `@speech …` 줄로
   돌려주고 상태 줄 · 번역은 넣지 않는다(`historyMessages`). 실험실 번들의 `prompts.sceneStart` · `historyAssistantFormat`이 같은 설명이다.
 - 오류: 계정 단위 거절은 1단계 표(`PRE_STREAM_ERRORS`), 미션 전용은 계약의 `MISSION_ERRORS` — `mission_not_found` 404 · `mission_closed` ·
