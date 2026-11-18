@@ -260,9 +260,9 @@ test("[IL3] ⭐ 언어 선택의 Continue가 고른 언어를 1회 저장하고,
   expect(events.length).toBeGreaterThan(0);
   // 가입 직후 ② 나라에서 저장 이벤트(`learner_profile_saved`)가, 온보딩에서 스텝 열람 · 시작
   // (ADR-0159)이 진입 sink로 나갑니다.
-  expect(
-    events.every((event) => /^(entry_|learner_profile_|onboarding_)/.test(event.name)),
-  ).toBe(true);
+  expect(events.every((event) => /^(entry_|learner_profile_|onboarding_)/.test(event.name))).toBe(
+    true,
+  );
   // 선택은 저장일 뿐 이벤트가 아니다 — 고르지 않은 흐름과 같은 이벤트가 같은 순서로 난다.
   expect(events).toEqual(controlEvents);
 });

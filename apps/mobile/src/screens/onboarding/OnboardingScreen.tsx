@@ -69,9 +69,9 @@ export function OnboardingScreen({ onComplete, onEvent }: OnboardingScreenProps)
 
   // 스텝은 그 방문에서 처음 보일 때 한 번만 열람으로 셉니다(첫 렌더의 0도 여기서 셉니다).
   useEffect(() => {
-    if (viewed.current.has(step)) return;
+    if (!onEvent || viewed.current.has(step)) return;
     viewed.current.add(step);
-    onEvent?.(onboardingStepViewedEvent(step, arrivedVia.current));
+    onEvent(onboardingStepViewedEvent(step, arrivedVia.current));
   }, [step, onEvent]);
 
   // 손대지 않은 채 서 있으면 다음 스텝으로 갑니다. 스텝이 바뀌거나 손이 닿으면 다시 셉니다.
