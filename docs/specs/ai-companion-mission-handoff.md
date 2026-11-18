@@ -27,6 +27,11 @@
 
 ### 2.1 대시보드 「롤플레이 실험실」 — 미션을 실제로 해 보는 곳
 
+⟨2026-11-19⟩ **맥미니의 운영 대시보드에 올라가 있다** — `http://1-macmini:8800/companion/mission`(tailnet, 컴패니언 섹션 옆 메뉴 「롤플레이 실험실」),
+공개 주소를 켜 두었다면 `https://contents.k-duru.com/companion/mission`. ops-dashboard `main` `a6857de` · dashboards-web `main` `98879dc`.
+키(`COMPANION_LAB_ANTHROPIC_API_KEY`)는 맥미니 `runtime/ops.env`에 이미 있어 **진짜 모델로 돈다(유료)** — 판을 시작할 때 확인란을 한 번 적는다.
+아래의 로컬 미리보기는 키 없이 흐름만 볼 때 쓴다.
+
 운영 DB · 운영 함수를 쓰지 않는다. 대시보드 프로세스가 Anthropic API를 직접 부르고 결과를 `runtime/companion-mission/mission.db`(로컬 sqlite)에 남긴다.
 프롬프트 · 미션 정의 · 점수식은 FE 서버가 쓰는 것을 **번들 파일**(`config/mission-lab-bundle.json`)로 그대로 읽는다.
 
