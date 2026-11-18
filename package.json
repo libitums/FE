@@ -48,6 +48,7 @@
     "test:e2e:android": "pnpm test:e2e:android:host && pnpm test:e2e:android:social && pnpm test:e2e:android:legal && pnpm test:e2e:android:small",
     "test:coverage": "pnpm --filter @libitums/mobile test:coverage && pnpm --filter @libitums/ui-lynx test:coverage",
     "push:console": "node devtools/push-console/server.mjs",
+    "mission:bundle": "UPDATE_MISSION_LAB_BUNDLE=1 pnpm --filter @libitums/supabase-functions exec vitest run mission-bundle.unit.test && pnpm format",
     "size:check": "node devtools/bundle-size/check.mjs",
     "performance:reports:check": "node devtools/performance-report-policy/check.mjs",
     "performance:reports:gate": "node devtools/performance-report-policy/gate.mjs",

@@ -645,6 +645,43 @@ supabase functions serve --no-verify-jwt                                        
 되돌리기: 함수는 `supabase functions delete chat-send` · `companion-proactive` · `companion-eval`, 예약은 `select cron.unschedule('companion-…')`.
 표 · 함수는 `drop schema companion cascade` 뒤 `public.companion_*` 함수를 지운다(다른 기능이 쓰지 않는다).
 
+### 롤플레이 미션 코어 (2단계, ADR-0160)
+
+에피소드 하나에 묶인 짧은 과업 대화의 **순수 층**이다 — DB · 네트워크 · Deno에 닿지 않고, 핸들러(`mission-start` · `chat-send`의 미션 갈래 ·
+`mission-hint` · `mission-finish`)와 SQL은 따로 들어온다. 기획: [PRD](../../docs/specs/ai-companion-mission.md) · [ADR-0160](../../docs/adr/0160-companion-mission.md).
+
+| 파일(`_shared/`) | 하는 일 |
+|---|---|
+| `missions/*.json` | 미션 정의의 **정본**(1판: `u06-cafe` 캐스트 도윤 · `u01-water` 단역 점원). 스크립트가 `companion.missions`로 올린다 — `missions/README.md` |
+| `mission-definition.ts` | `validateMission` · `parseMission`(계약 `missionDefinitionSchema`), 캐스트의 바탕 네 칸 `missionCounterpartBase` |
+| `mission-template.ts` | 「틀 + 채우기」 `fillTemplate` — `{{이름}}` 자리표, 값이 없으면 던진다 |
+| `mission-prompt.ts` | 턴의 시스템 프롬프트 — 고정부 `turnSystemStable` · 가변부 `turnDynamic` · 상태 줄 `missionStateLine` |
+| `mission-state.ts` | 상태 줄 해석 `parseMissionState` · `parseMissionReply`, 전이 `advanceMission`(되돌리지 않는 합치기 · 끝 판정), SSE 값 `missionEventData`, `mission_state jsonb` 왕복 |
+| `mission-score.ts` | 점수식 `scoreMission`(가중치 · 감점은 인자, 반올림 half up) · 기본값 · 힌트 상한 |
+| `mission-grader.ts` | 채점 프롬프트 · `graderSchema` · `normalizeGrade`(턴 ∪ 채점자) · `buildMissionReport` |
+| `mission-hint.ts` | 힌트 목표 고르기 `pickHintGoal` · `hintAvailability` · 프롬프트 · `hintSchema` |
+| `mission-context.ts` | 미션 요약 `missionBrief` · 대화 전문 `missionTranscript` · 교정 요청 `missionFeedbackRequest` |
+| `mission-env.ts` | 모델 이름 `missionModelsFrom` · 출력 토큰 상한 |
+| `mission-bundle.ts` · `mission-fixtures.ts` | 실험실 번들 만들기와 그 사례(단위 테스트와 같은 것) |
+
+계약은 `packages/companion-contract/src/mission.ts` · `mission-report.ts`(정의 · 시작 · 미션 턴 요청 · 힌트 · 끝 · 리포트 · 목록)와
+SSE `mission` 이벤트다. `chat-send` 요청에는 `conversation_id`(선택)가 더해졌고 `character_id`의 뜻은 그대로다.
+
+**실험실 번들** — 대시보드의 「롤플레이 실험실」이 읽는 `apps/supabase-functions/mission-lab-bundle.json`(규격 v1)을 프롬프트 · 미션 파일 ·
+점수식에서 그대로 뽑는다. 프롬프트 · 미션 파일 · 사례를 고치면 다시 만들어 함께 커밋한다(안 하면 `mission-bundle.unit.test.ts`가 실패한다).
+
+```sh
+pnpm mission:bundle   # 번들을 다시 쓰고 pnpm format
+```
+
+**환경 변수**(새로 하나, 값은 비워 둔다 — `supabase/functions/env.example`):
+
+```sh
+COMPANION_MISSION_GRADER_MODEL=   # 미션 채점(상위) 모델 id. 비워 두면 COMPANION_MODEL과 같다
+```
+
+답 · 교정 · 힌트 모델은 컴패니언과 같은 `COMPANION_MODEL` · `COMPANION_FEEDBACK_MODEL` · `COMPANION_SUGGEST_MODEL`을 같은 기본값 사슬로 읽는다.
+
 ## revenuecat-webhook — 구독 · 엽전 팩(ADR-0144)
 
 RevenueCat이 보내는 구독 · 구매 이벤트를 받아 우리 DB(정본)에 반영한다. 인증은 Supabase JWT가 아니라 RevenueCat이 싣는 `Authorization`

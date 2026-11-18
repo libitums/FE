@@ -36,6 +36,7 @@ export {
   translationDataSchema,
   turnEventSchema,
   type NoticeKind,
+  type MissionEventData,
   type RefusalStage,
   type SegmentKind,
   type SpeechLevel,
