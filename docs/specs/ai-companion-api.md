@@ -615,7 +615,7 @@ chat-send 판정 11  reserve_credits(user, client_message_id, amount)   → hold
 | `memories` | `embedding` 열 없음(pgvector 미룸) · `user_edited`(유저가 고침 — 용량 밀어내기에서 지킴) |
 | `moderation_events` | `category` 값에 `profanity`(열은 글자 — 표 변경 없음) |
 
-**1단계에 넣지 않는 위키 초안 표**: `mission_results`(2단계) · `item_attempts` · `user_expressions`(채팅 완료 뒤) ·
+**1단계에 넣지 않는 위키 초안 표**: `mission_results`(2단계 — 모양은 [2단계 PRD](ai-companion-mission.md) §5) · `item_attempts` · `user_expressions`(채팅 완료 뒤) ·
 `roleplay_turn_logs`(별도 FE 작업). 위키 05의 `learner_profiles` 확장은 `profiles`가 대신한다(PRD 비고 3).
 
 **보관**: 대화 보관 기간은 정하지 않는다(O16). 녹음 원본은 받지 않는다.
