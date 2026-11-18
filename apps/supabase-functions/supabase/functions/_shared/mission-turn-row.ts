@@ -2,12 +2,19 @@
 
 import type {
   AgeBand,
+  ChatSendDeps,
+  ChatSendEnv,
+  CompanionLlm,
   FeedbackMode,
   LearningContext,
   PersonaCard,
   Segment,
 } from "./chat-send.contract.ts";
-import type { NoticeKind } from "./companion-contract/index.ts";
+import type { Sink } from "./chat-send-http.ts";
+import type { MissionTurnRequest, NoticeKind } from "./companion-contract/index.ts";
+import type { UsageCollector } from "./companion-usage.ts";
+import type { MissionDefinition } from "./mission-definition.ts";
+import type { MissionProgress } from "./mission-state.ts";
 import type { DbMissionState } from "./mission-http.ts";
 
 /** `companion_mission_begin_turn`의 반환(정상). */
@@ -31,4 +38,21 @@ export type MissionBeginRow = {
     text: string | null;
     segments: readonly Segment[];
   }[];
+};
+
+/** 미션 턴 하나(`runMissionTurn`)가 받는 것. */
+export type MissionTurnContext = {
+  readonly deps: ChatSendDeps;
+  readonly env: ChatSendEnv;
+  readonly llm: CompanionLlm;
+  readonly sink: Sink;
+  readonly body: MissionTurnRequest;
+  readonly userId: string;
+  readonly row: MissionBeginRow;
+  readonly mission: MissionDefinition;
+  /** 이번 턴 앞의 판 상태(DB 값을 코어 모양으로). */
+  readonly progress: MissionProgress;
+  readonly assistantMessageId: string;
+  readonly playground: boolean;
+  readonly usage: UsageCollector;
 };

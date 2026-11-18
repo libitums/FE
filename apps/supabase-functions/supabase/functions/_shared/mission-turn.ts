@@ -7,90 +7,32 @@
 // 저장(`companion_mission_finish_turn`)이 돌려준 판 상태가 진실이고 `mission` 이벤트는 그 값으로 씁니다. 코어 `advanceMission`은 대조용입니다.
 // 이벤트: start → notice* → delta* → correction → translation* → mission → done(creditsSpent 0). 위기면 crisis → done.
 
-import type {
-  ChatSendDeps,
-  ChatSendEnv,
-  CompanionLlm,
-  Feedback,
-  ModerationVerdict,
-  Segment,
-} from "./chat-send.contract.ts";
+import type { Feedback, ModerationVerdict, Segment } from "./chat-send.contract.ts";
 import type { ModerationRecord, TurnStatusName } from "./chat-send-finish.ts";
-import type { Sink } from "./chat-send-http.ts";
-import {
-  defaultFeedbackTimeoutMs,
-  historyFrom,
-  moderateInput,
-  startReply,
-} from "./chat-send-reply.ts";
+import { historyFrom, moderateInput, startReply } from "./chat-send-reply.ts";
 import { applyTranslation, startTranslation, translationContext } from "./chat-send-translate.ts";
 import { outputChecker, recoverReply } from "./chat-send-turn-recover.ts";
 import {
   CONTRACT_VERSION,
   STREAM_ERRORS,
-  type MissionTurnRequest,
   type StreamErrorCode,
 } from "./companion-contract/index.ts";
 import { systemSplit } from "./companion-llm.ts";
-import { emptyFeedback } from "./companion-llm-prompts.ts";
-import { callRpc } from "./companion-rpc.ts";
 import { crisisResourcesFor } from "./companion-safety.ts";
 import type { SegmentDelta } from "./companion-segments.ts";
-import { withUsageMeta, type UsageCollector } from "./companion-usage.ts";
-import { missionFeedbackRequest } from "./mission-context.ts";
-import { missionCounterpartBase, type MissionDefinition } from "./mission-definition.ts";
-import { type DbMissionState } from "./mission-http.ts";
+import { withUsageMeta } from "./companion-usage.ts";
+import { missionCounterpartBase } from "./mission-definition.ts";
+import type { DbMissionState } from "./mission-http.ts";
 import { missionSystemPrompt } from "./mission-prompt.ts";
-import type { MissionBeginRow } from "./mission-turn-row.ts";
-import { advanceMission, parseMissionState, type MissionProgress } from "./mission-state.ts";
+import { advanceMission, parseMissionState } from "./mission-state.ts";
+import { callRpcFinish, startMissionFeedback, type FinishRow } from "./mission-turn-parts.ts";
+import type { MissionTurnContext } from "./mission-turn-row.ts";
+
+export type { MissionTurnContext };
 
 /** 입력 검사에 걸린 미션 턴의 고정 안내 — 미션에는 「성격대로 거절」이 없다. 장면 밖 말이 아니게 짧게 둔다. */
 export const missionBlockedLine =
   "죄송하지만 그 말씀에는 답할 수 없어요. 하던 이야기로 돌아갈까요?";
-
-export type MissionTurnContext = {
-  readonly deps: ChatSendDeps;
-  readonly env: ChatSendEnv;
-  readonly llm: CompanionLlm;
-  readonly sink: Sink;
-  readonly body: MissionTurnRequest;
-  readonly userId: string;
-  readonly row: MissionBeginRow;
-  readonly mission: MissionDefinition;
-  /** 이번 턴 앞의 판 상태(DB 값을 코어 모양으로). */
-  readonly progress: MissionProgress;
-  readonly assistantMessageId: string;
-  readonly playground: boolean;
-  readonly usage: UsageCollector;
-};
-
-type FinishRow = {
-  readonly result: "ok";
-  readonly state: DbMissionState;
-  readonly newlyDone: readonly string[];
-  readonly ended: "goals" | "turn_limit" | null;
-};
-
-/** 교정 — 1단계와 같은 프롬프트 · 제한 시간, 상대는 미션의 호칭과 역할. 실패 · 시간 초과는 `unavailable`. */
-function startMissionFeedback(context: MissionTurnContext, abort: AbortController) {
-  const { deps, llm, body, mission, row } = context;
-  const timeoutMs = deps.feedbackTimeoutMs ?? defaultFeedbackTimeoutMs;
-  const signal = AbortSignal.any([abort.signal, AbortSignal.timeout(timeoutMs)]);
-  const unavailable = emptyFeedback("unavailable", body.text);
-  const request = missionFeedbackRequest(mission, {
-    text: body.text,
-    l1: row.profile.l1,
-    history: historyFrom(row),
-    signal,
-  });
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  return Promise.race([
-    llm.feedback(request).catch(() => unavailable),
-    new Promise<Feedback>((resolve) => {
-      timer = setTimeout(() => resolve(unavailable), timeoutMs);
-    }),
-  ]).finally(() => clearTimeout(timer));
-}
 
 export async function runMissionTurn(context: MissionTurnContext): Promise<string> {
   const { deps, env, llm, sink, body, row, mission } = context;
@@ -292,18 +234,4 @@ export async function runMissionTurn(context: MissionTurnContext): Promise<strin
   sendMission(saved.state, saved.ended);
   done();
   return `complete state=${stateLine}${saved.ended === null ? "" : ` ended=${saved.ended}`}`;
-}
-
-async function callRpcFinish(
-  context: MissionTurnContext,
-  args: Record<string, unknown>,
-): Promise<FinishRow> {
-  const row = await callRpc<FinishRow | { result: string }>(
-    context.deps.outbound,
-    context.env,
-    "companion_mission_finish_turn",
-    { p_user_id: context.userId, ...args, p_now: new Date(context.deps.nowMs()).toISOString() },
-  );
-  if (row.result !== "ok") throw new Error(`mission finish ${row.result}`);
-  return row as FinishRow;
 }

@@ -758,3 +758,42 @@ ops-dashboard `docs/admin-contract.md` §A가 정본이다.
 4. `mission-start` · `mission-finish` · `mission-hint` · 새 `chat-send`를 배포한 뒤 `update companion.settings set missions_enabled = true`(시험 계정 한정은 그대로).
 
 되돌리기: `select cron.unschedule('companion-close-stale-missions')`, 스위치를 끈다. 표 · 칸은 지우지 않는다(판 · 결과가 원장과 이어져 있다).
+
+## 롤플레이 미션 함수 — mission-start · chat-send 미션 갈래 · mission-hint · mission-finish (ADR-0160)
+
+미션 코어(`_shared/mission-*.ts`)와 미션 DB(20261214)를 잇는 Edge Function이다. 1단계와 같은 결 — 런타임 중립 `_shared/*-handler.ts` + 얇은 Deno
+진입 `index.ts`, 인증은 사용자 토큰 또는 플레이그라운드 경로(`Authorization: Bearer <서버 키>` + `x-companion-user-id`), `config.toml`의
+`verify_jwt = false`, 요청마다 로그 한 줄(`mission_start` · `mission_hint` · `mission_finish`, 턴은 `chat_send … mission …`).
+LLM 계층은 `companion-llm-mission.ts`(`missionLlmFor`) — 기존 `CompanionLlm`에 채점(`gradeMission`) · 힌트(`missionHint`)를 더하고,
+가짜(`COMPANION_LLM=fake`)에는 미션 답을 더한다(학습자 말의 `[goal:<id>]` · `[all-goals]` · `[no-state]` · `[bad-state]` · `[off-task]`,
+채점의 `[grader:<id>]` · `[expr:<id>]` · `[grade-fail]`, 힌트의 `[hint-fail]`). 컴패니언 턴은 이 계층을 써도 같은 호출이다.
+
+| 함수 | 요청(snake_case) | 응답(200) | 하는 일 |
+|---|---|---|---|
+| `mission-start` | `{ contract_version, mission_id }` | `missionStartResponseSchema` | `companion_mission_start` — 판정 · 진행 중이던 판 그만둠 · 판 단위 예약 · 진입 대사 |
+| `chat-send` | 1단계 본문 + `conversation_id`(`character_id`는 선택) | SSE `start` · `notice` · `delta` · `correction` · `translation` · `mission` · `done`(`creditsSpent` 0) | `companion_mission_begin_turn` → 입력 검사 → 미션 프롬프트로 답 → 출력 검사(나이 규칙 그대로) · 교정 · 번역 → `companion_mission_finish_turn` |
+| `mission-hint` | `{ contract_version, conversation_id }` | `missionHintResponseSchema` | `companion_mission_take_hint` → 힌트 프롬프트 → `normalizeHint` |
+| `mission-finish` | `{ contract_version, conversation_id, abandon? }` | `missionFinishResponseSchema`(`graded` · `abandoned` · `grading_failed`) | `companion_mission_close` → 채점 → `companion_mission_save_result`, 채점 실패면 `companion_mission_grading_failed` |
+
+- 갈림은 `chat-send-handler.ts`의 한 줄이다 — 본문에 `conversation_id`가 있으면 `mission-turn-handler.ts`, 없으면 지금의 컴패니언 턴 그대로.
+  미션 턴에는 추천 답변 칩 · 기억 추출 · 이야기 · 학습 삽입 지시 · 친밀도가 없다. 입력 차단은 성격대로 거절 대신 고정 안내(`missionBlockedLine`)로 닫고
+  `blocked`로 저장한다(반복 위반 셈은 SQL이 한다).
+- 진실은 SQL이다 — `mission` 이벤트는 `finish_turn`이 돌려준 상태로 쓰고, 코어 `advanceMission`과 어긋나면 로그 `mission_state_mismatch`만 남긴다.
+  점수도 `save_result`가 계산하고 코어 `scoreMission`과 어긋나면 `score_mismatch`.
+- 진입 대사는 상대역 메시지로 대화 맨 앞에 그대로 둔다(앞에 고정 user 글 없음, 1단계 첫 인사 뒤 턴과 같음). 지난 상대역 답은 `@speech …` 줄로
+  돌려주고 상태 줄 · 번역은 넣지 않는다(`historyMessages`). 실험실 번들의 `prompts.sceneStart` · `historyAssistantFormat`이 같은 설명이다.
+- 오류: 계정 단위 거절은 1단계 표(`PRE_STREAM_ERRORS`), 미션 전용은 계약의 `MISSION_ERRORS` — `mission_not_found` 404 · `mission_closed` ·
+  `mission_ended` · `mission_not_ended` · `hint_limit` · `no_goal_left` 409 · `hint_unavailable` 503. **힌트 수는 SQL이 문장을 만들기 전에 센다** —
+  만들기가 실패하면 503(`detail.hintsLeft`)으로 알리지만 그 힌트는 이미 쓴 것이다.
+- `mission-finish`는 몇 번 불러도 같은 결과다(채점이 있으면 그대로). 채점 호출이 실패(시간 초과 · 거절 · 깨진 출력)하면 값을 돌려주고
+  `grading_failed`(`retryable: true`)로 답한다 — 같은 요청을 다시 보내면 채점만 다시 돈다.
+- 환경 변수: 1단계 `chat-send`와 같다. 새 것은 `COMPANION_MISSION_GRADER_MODEL=`(채점 모델 id, 비우면 `COMPANION_MODEL`) 하나 — 힌트는
+  `COMPANION_SUGGEST_MODEL`을 같이 쓴다. 값은 사람이 넣는다.
+- 미션 파일 → 표: `node apps/supabase-functions/scripts/upload-missions.ts`(기본 dry-run — 검증만, 네트워크 없음).
+  실제로 쓰려면 `SUPABASE_URL=… SUPABASE_SERVICE_ROLE_KEY=… node apps/supabase-functions/scripts/upload-missions.ts --write`.
+- 테스트: `_shared/mission-handlers.unit.test.ts`(가짜 fetch + 가짜 LLM), `_shared/mission-server.integration.test.ts`(핸들러를 실제 SQL에 물어
+  한 판을 처음부터 끝까지 · 코어 미션 파일 둘의 upsert · 점수 한 벌 대조 — PostgREST 호출을 pg 질의로 옮기는 가짜 fetch).
+
+**운영 적용과 배포는 사람이 한다. 1단계 마이그레이션 기록이 정리될 때까지 하지 않는다(PRD §0.9).** 정리된 뒤의 순서는 위 「롤플레이 미션 DB」의
+1 ~ 4 그대로다: 마이그레이션 → `upload-missions.ts --write` → cron → 함수 배포(`mission-start` · `mission-hint` · `mission-finish` · `chat-send`)
+→ 스위치 켜기. `chat-send`는 미션 갈래가 들어간 판으로 함께 다시 배포한다 — `conversation_id` 없는 턴은 그대로다.
