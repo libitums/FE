@@ -44,6 +44,7 @@ export function SubscriptionToast({
     <view
       className="subscription-toast"
       data-testid="subscription-toast"
+      flatten={false}
       accessibility-element={true}
       accessibility-label={`${title}, ${body}`}
     >

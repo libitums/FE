@@ -62,8 +62,10 @@ export function PlanCta({ title, detail, disabled, loading, onPress }: PlanCtaPr
       data-testid={ids.continue}
       data-disabled={String(disabled)}
       data-loading={String(loading)}
+      flatten={false}
       accessibility-element={true}
-      accessibility-traits="button"
+      // 막힌 단추는 단추가 아니라 막힘으로 읽힙니다(ui-lynx Button과 같은 계약, ADR-0016 D2 한 값).
+      accessibility-traits={disabled ? "disabled" : "button"}
       accessibility-label={detail === null ? title : `${title}, ${detail}`}
       bindtap={() => {
         "background only";

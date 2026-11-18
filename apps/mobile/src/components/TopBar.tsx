@@ -187,6 +187,8 @@ export function TopBar({
                 className={
                   motion === "reduced" ? "plan-chip-ring" : "plan-chip-ring plan-chip-ring-pulse"
                 }
+                // 고리가 칩 위에 겹쳐 탭을 가로채지 않게 합니다(Lynx 히트 테스트는 뒤 형제부터).
+                user-interaction-enabled={false}
               />
             ) : null}
           </view>

@@ -34,6 +34,7 @@ function TermsLink({
     <text
       className={`plans-terms-link plans-terms-link-${theme}`}
       data-testid={testId}
+      flatten={false}
       accessibility-element={true}
       accessibility-traits="link"
       accessibility-label={label}

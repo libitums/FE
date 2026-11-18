@@ -134,6 +134,7 @@ export function CoinShopScreen({
           <view
             className="coin-shop-screen-balance"
             data-testid="coin-shop-screen-balance"
+            flatten={false}
             accessibility-element={true}
             accessibility-label={shop.balance(coinBalance, formatCoinCount(coinBalance))}
           >

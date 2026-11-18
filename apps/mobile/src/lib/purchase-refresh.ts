@@ -11,6 +11,8 @@ export type PurchaseRefreshDeps = {
   readonly onEntitlements: (next: PlanEntitlements) => void;
   readonly onBalance: (balance: number) => void;
   readonly wait: (ms: number) => Promise<void>;
+  /** 언제 멈추나 — 기본은 권한이나 잔액이 바뀌면. 구독 구매는 권한이 바뀌어야(ADR-0160 성공 알림 — Premium은 엽전이 먼저 닿을 수 있음). */
+  readonly settle?: "any" | "entitlements";
 };
 
 export const REFRESH_ATTEMPTS = 5;
@@ -58,7 +60,7 @@ export async function refreshAfterPurchase(
     const last = attempt === attempts - 1;
     if (entitlements !== null && (entitlementsMoved || last)) deps.onEntitlements(entitlements);
     if (balance !== null && (balanceMoved || last)) deps.onBalance(balance);
-    if (entitlementsMoved || balanceMoved) return;
+    if (entitlementsMoved || (balanceMoved && deps.settle !== "entitlements")) return;
   }
 }
 

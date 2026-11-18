@@ -39,8 +39,9 @@ function TextAction(props: {
       data-testid={testId}
       data-disabled={String(disabled)}
       data-loading={String(loading)}
+      flatten={false}
       accessibility-element={true}
-      accessibility-traits="button"
+      accessibility-traits={disabled ? "disabled" : "button"}
       accessibility-label={label}
       bindtap={() => {
         "background only";
@@ -119,6 +120,7 @@ export function PlansPanel({
           : change === "crossgrade"
             ? shop.change.crossgrade(fromName, toName, store)
             : null;
+  const termsPeriod = selected === undefined && current !== null ? current.period : period;
   const tone = (base: string) => `${base} ${base}-${theme}`;
 
   return (
@@ -210,8 +212,9 @@ export function PlansPanel({
             />
           </view>
           <PlanTerms
-            card={selected ?? cards.find((card) => isCurrentCard(card.id, period, current))}
-            period={period}
+            // 고른 것이 없으면 지금 요금제로 고지를 세웁니다 — 보이는 기간에 지금 카드가 없어도(ADR-0160 D4 · 3.1.2).
+            card={selected ?? both[termsPeriod].find((card) => card.id === current?.id)}
+            period={termsPeriod}
             platform={platform}
             onOpenLegal={onOpenLegal}
             changeLine={changeLine}
@@ -221,6 +224,7 @@ export function PlansPanel({
             <text
               className={tone("plans-panel-notice")}
               data-testid={ids.notice}
+              flatten={false}
               accessibility-element={true}
             >
               {notice}

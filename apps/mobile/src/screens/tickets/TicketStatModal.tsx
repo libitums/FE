@@ -122,6 +122,7 @@ export function TicketStatModal({
         <view
           className="ticket-modal-go-unlimited"
           data-testid="ticket-modal-go-unlimited"
+          flatten={false}
           accessibility-element={true}
           accessibility-traits="button"
           accessibility-label={copy.plans.shop.goUnlimited(goUnlimited.price)}

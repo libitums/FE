@@ -40,5 +40,9 @@ test("PCH2 구독 중이면 주황 칩 — PREMIUM · CHAT+ · TICKETS, 이름�
 
 test("PCH3 구독 성공 직후엔 한 번 반짝임(data-pulse)", () => {
   render(<PlanChip plan="premium" pulse={true} onPress={() => {}} />);
-  expect(screen.getByTestId("header-plan-chip").getAttribute("data-pulse")).toBe("true");
+  const chip = screen.getByTestId("header-plan-chip");
+  expect(chip.getAttribute("data-pulse")).toBe("true");
+  expect(chip.getAttribute("flatten")).toBe("false");
+  // 고리는 탭을 가로채지 않습니다(접근성 점검 Major-4).
+  expect(chip.querySelector('[user-interaction-enabled="false"]')).not.toBeNull();
 });

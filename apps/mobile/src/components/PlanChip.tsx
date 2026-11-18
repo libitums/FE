@@ -41,6 +41,7 @@ export function PlanChip({ plan, pulse, onPress }: PlanChipProps): ReactNode {
       data-plan={plan}
       data-subscribed={String(subscribed)}
       data-pulse={String(pulse)}
+      flatten={false}
       accessibility-element={true}
       accessibility-traits="button"
       accessibility-label={label}
@@ -50,7 +51,10 @@ export function PlanChip({ plan, pulse, onPress }: PlanChipProps): ReactNode {
       }}
     >
       {pulse ? (
-        <view className={alive ? "plan-chip-ring plan-chip-ring-pulse" : "plan-chip-ring"} />
+        <view
+          className={alive ? "plan-chip-ring plan-chip-ring-pulse" : "plan-chip-ring"}
+          user-interaction-enabled={false}
+        />
       ) : null}
       <svg
         className={

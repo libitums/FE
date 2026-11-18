@@ -69,6 +69,10 @@ test("PS2 지금 카드를 눌러도 고름이 옮겨 가지 않는다", () => {
 test("PS3 Premium 구독(S4) — 처음엔 아무것도 고르지 않아 CTA가 막혀 있고, Chat Plus를 고르면 「Switch to Chat Plus · from Dec 18」", async () => {
   const { onSelect } = mount(subscribedTo("premium"));
   expect(cta().getAttribute("data-disabled")).toBe("true");
+  // 접근성 점검 Major-1 · Critical-1: 막힌 단추는 disabled로 읽히고, Android에서 요소가 남습니다.
+  expect(cta().getAttribute("accessibility-traits")).toBe("disabled");
+  expect(cta().getAttribute("flatten")).toBe("false");
+  expect(screen.getByTestId(ids.restore).getAttribute("flatten")).toBe("false");
   expect(cta()).toHaveTextContent("Choose a plan");
   await act(async () => {
     tap(ids.continue);
@@ -76,6 +80,7 @@ test("PS3 Premium 구독(S4) — 처음엔 아무것도 고르지 않아 CTA가 
   expect(onSelect).not.toHaveBeenCalled();
   tap(ids.card("chat_plus"));
   expect(cta().getAttribute("data-disabled")).toBe("false");
+  expect(cta().getAttribute("accessibility-traits")).toBe("button");
   expect(cta()).toHaveTextContent("Switch to Chat Plus");
   expect(cta()).toHaveTextContent("from Dec 18");
   expect(screen.getByTestId(ids.tag("chat_plus"))).toHaveTextContent("Switch · starts Dec 18");
@@ -109,6 +114,12 @@ test("PS5 Unlimited Tickets 구독(S5) — Chat Plus는 「Switch」 태그, Man
     tap(ids.manage);
   });
   expect(onManageSubscription).toHaveBeenCalledWith("duru.tickets.yearly.v1");
+});
+
+test("PS5b Premium 월 구독자가 Yearly로 바꿔 고른 것이 없어도 고지는 지금 요금제로 선다(리뷰 W2)", () => {
+  mount(subscribedTo("premium", "monthly"));
+  tap(ids.yearly);
+  expect(screen.getByTestId(ids.terms)).toHaveTextContent("Premium: $11.99 / month.");
 });
 
 test("PS6 구독이 없으면 Manage subscription이 없고 칩은 Free", () => {

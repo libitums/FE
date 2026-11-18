@@ -14,6 +14,7 @@ export function YourPlanChip({ current }: { readonly current: CurrentPlan | null
     <view
       className="plans-your-plan"
       data-testid={ids.yourPlan}
+      flatten={false}
       accessibility-element={true}
       accessibility-label={shop.yourPlanLabel(plan)}
     >

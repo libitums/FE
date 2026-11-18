@@ -112,7 +112,8 @@ async function boot(): Promise<void> {
               ),
             purchase: (id: string, callback: (payload: unknown) => void) =>
               callback({ status: "purchased", productId: id }),
-            restore: (callback: (payload: unknown) => void) => callback({ status: "failed" }),
+            restore: (callback: (payload: unknown) => void) =>
+              callback({ status: "restored", active: 1 }),
           },
         }),
   });
@@ -275,4 +276,29 @@ test("SH-I6 Plans 탭에서 Unlimited Tickets를 사면 상점이 닫히고, 권
   expect(screen.getByTestId("subscription-toast")).toHaveTextContent("Unlimited Tickets is on");
   expect(screen.getByTestId("header-plan-chip")).toHaveTextContent("TICKETS");
   expect(screen.getByTestId("header-plan-chip").getAttribute("data-pulse")).toBe("true");
+});
+
+test("SH-I7 복원으로 권한이 생기면 칩은 바뀌어도 구독 성공 알림은 없다(리뷰 W1)", async () => {
+  pay.on = true;
+  rpc.entitlements = [free, subscribedTo("unlimited_tickets")];
+  await boot();
+  await flush();
+  tap("header-plan-chip");
+  await act(async () => {
+    fireEvent.tap(screen.getByTestId("plans-restore"), {});
+  });
+  for (let i = 0; i < 4; i += 1) await flush();
+  act(
+    () =>
+      void fireEvent.tap(
+        within(screen.getByTestId("coin-shop-screen-close")).getByTestId("ui-lynx-round-button"),
+        {},
+      ),
+  );
+  act(
+    () =>
+      void fireEvent.tap(screen.getByTestId("first-unit-guide-map"), { eventType: "catchEvent" }),
+  );
+  expect(screen.getByTestId("header-plan-chip")).toHaveTextContent("TICKETS");
+  expect(present("subscription-toast")).toBe(false);
 });

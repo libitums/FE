@@ -29,6 +29,7 @@ export function ShopPromoRow({
     <view
       className="shop-promo"
       data-testid="shop-promo"
+      flatten={false}
       accessibility-element={true}
       accessibility-traits="button"
       accessibility-label={`${line}, ${shop.tabs.plans}`}

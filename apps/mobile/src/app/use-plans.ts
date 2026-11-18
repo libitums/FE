@@ -1,9 +1,7 @@
-// 요금제 결선(ADR-0144) — 기능 플래그가 켜졌고 로그인이면 요금제 표를 한 번 읽고, 설정 → Plans · 티켓 대화상자 · 메신저 판의
-// 결선을 만듭니다. 꺼졌으면 undefined — 그러면 어느 자리도 바뀌지 않고 RPC도 부르지 않습니다(1단계 운영 기본).
-// 구매는 `PurchaseBridge` 한 곳 — 호스트 RevenueCat 다리(2단계, 2026-11-17)가 스토어 상품 · 스토어 나라를 주고, 구매는 결제 플래그가
-// 켜져야 열립니다(꺼졌으면 「곧」 안내). 이벤트는 ADR-0029 D3 공통 속성으로 냅니다.
+// 요금제 결선(ADR-0144 · 상점 입구 ADR-0160) — 플래그가 켜졌고 로그인이면 표를 한 번 읽고 설정 · 상점 · 티켓 · 메신저 결선을 만듭니다.
+// 꺼졌으면 undefined(RPC 없음). 구매는 `PurchaseBridge` 한 곳이고 결제 플래그가 켜져야 열립니다. 이벤트는 ADR-0029 D3 공통 속성.
 
-import { useEffect, useRef, useState } from "@lynx-js/react";
+import { useEffect, useState } from "@lynx-js/react";
 
 import { sessionNeedsRefresh } from "../lib/account-deletion";
 import { loadAuthSession } from "../lib/auth-session";
@@ -32,10 +30,11 @@ import type { UnlimitedPass } from "../lib/unlimited-pass";
 import type { EpisodeIntroEventSink } from "../screens/episode-intro/episode-intro.contract";
 import type { ShopRequest } from "../screens/coin-shop/shop-model";
 import type { ShopPlans } from "../screens/coin-shop/shop-plans";
-import { currentPlanOf, newlyActivePlan, type CurrentPlan } from "../screens/plans/plan-change";
+import { currentPlanOf, type CurrentPlan } from "../screens/plans/plan-change";
 import type { PlanOfferWiring } from "../screens/plans/plans.contract";
 import { planCardsFor, type PlanPeriod, type PlanPlacement } from "../screens/plans/plans-model";
 import { reportServerBalance } from "./messenger-chat-wiring";
+import { usePlanActivation } from "./use-plan-activation";
 import type { NavAction } from "./nav-state";
 import {
   planSelectedEvent,
@@ -72,7 +71,7 @@ export type PlansWiring = {
   readonly shop: ShopPlans;
   /** 티켓 모달의 「Go unlimited」 줄 — Unlimited Tickets 월 가격 글. 표가 없거나 이미 티켓 무제한이면 undefined. */
   readonly goUnlimited: { readonly price: string | null } | undefined;
-  /** 구매 뒤 다시 읽은 권한에 새로 켜진 요금제 — 구독 성공 알림 한 번(T6). 보이면 `onActivatedShown`. */
+  /** 구독 성공 알림 한 번(T6, `usePlanActivation`). 보이면 `onActivatedShown`. */
   readonly activated: PlanId | null;
   readonly onActivatedShown: () => void;
 };
@@ -94,19 +93,17 @@ export function usePlans(
   const [entitlements, setEntitlements] = useState<PlanEntitlements | null>(null);
   const [offers, setOffers] = useState<readonly StoreOffer[] | null>(null);
   const [storefront, setStorefront] = useState<string | null>(null);
-  const [activated, setActivated] = useState<PlanId | null>(null);
-  // 구매가 끝나고 권한을 다시 읽는 동안 — 새로 켜진 요금제를 알림으로 올립니다(복원 · 앱 시작 읽기는 알리지 않음).
-  const awaitingActivation = useRef(false);
-  const latest = useRef<PlanEntitlements | null>(null);
-  // oxlint-disable-next-line react/immutability
-  latest.current = entitlements;
+  const activation = usePlanActivation(entitlements);
   const current = currentPlanOf(entitlements);
   const region = pricingRegionFor(storefront, learner.learnerRecord?.countryCode);
   const bridge = bridgeOf();
   // 서버 권한(정본)을 티켓 · 대화 판정이 읽는 자리에 렌더마다 맞춥니다 — 결제를 열 수 없으면 권한을 읽지 않아 언제나 null(지금과 같음).
   setPlanAccess(enabled && bridge.available ? entitlements : null);
   // 구매 · 복원이 성공하면 웹훅이 서버를 바꿀 때까지 권한 · 잔액을 잠깐 다시 읽습니다(ADR-0144 2단계).
-  function withServerRefresh<T extends { readonly kind: string }>(task: () => Promise<T>) {
+  function withServerRefresh<T extends { readonly kind: string }>(
+    task: () => Promise<T>,
+    settle: "any" | "entitlements" = "any",
+  ) {
     return runWithServerRefresh(
       {
         available: bridge.available,
@@ -114,14 +111,12 @@ export function usePlans(
         entitlements: () => client().entitlements(),
         balance: () => client().balance(),
         onEntitlements: (next) => {
-          const plan = awaitingActivation.current ? newlyActivePlan(latest.current, next) : null;
+          activation.observe(next);
           setEntitlements(next);
-          if (plan === null) return;
-          awaitingActivation.current = false;
-          setActivated(plan);
         },
         onBalance: reportServerBalance,
         wait: sleep,
+        settle,
       },
       task,
     );
@@ -135,7 +130,10 @@ export function usePlans(
       storefront,
       offers,
       canBuy: enabled && bridge.available,
-      buy: (productId) => withServerRefresh(() => bridge.purchase(productId)),
+      buy: (productId) => {
+        activation.disarm();
+        return withServerRefresh(() => bridge.purchase(productId));
+      },
     });
     // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [region, eventSink, storefront, offers, enabled, entitlements]);
@@ -165,8 +163,7 @@ export function usePlans(
         if (live) setStorefront(next);
       });
     };
-    // 부팅의 세션 갱신이 끝나기 전에 부르면 같은 refresh 토큰으로 갱신을 한 번 더 보내(Auth가 재사용으로 보고 세션을 끊을
-    // 수 있음) — 세션이 아직 만료 직전이면 1초씩 기다렸다가(최대 30번) 읽습니다.
+    // 부팅의 세션 갱신 전에 부르면 같은 refresh 토큰을 두 번 보내 세션이 끊길 수 있어 — 만료 직전이면 1초씩(최대 30번) 기다립니다.
     const whenFresh = () => {
       if (!live) return;
       const session = loadAuthSession();
@@ -249,12 +246,15 @@ export function usePlans(
     selected(placement, plan, period);
     if (productId === null) return { kind: "unavailable" };
     intent(placement, plan, period, productId);
-    awaitingActivation.current = true;
-    const result = await withServerRefresh(() => bridge.purchase(productId));
-    if (result.kind !== "purchased") awaitingActivation.current = false;
+    activation.arm();
+    const result = await withServerRefresh(() => bridge.purchase(productId), "entitlements");
+    if (result.kind !== "purchased") activation.disarm();
     return result;
   };
-  const onRestore = () => withServerRefresh(() => bridge.restore());
+  const onRestore = () => {
+    activation.disarm();
+    return withServerRefresh(() => bridge.restore());
+  };
   const ticketsCard =
     catalog === null
       ? undefined
@@ -269,7 +269,7 @@ export function usePlans(
     offers,
     openPlans,
     onSelect,
-    onRestore: () => withServerRefresh(() => bridge.restore()),
+    onRestore,
     onBack: () => dispatch({ type: "back" }),
     ticketsOffer: (close) => offerFor("tickets", close),
     messengerOffer: offerFor("messenger", () => {}),
@@ -293,7 +293,7 @@ export function usePlans(
       ticketsCard === undefined || entitlements?.unlimitedTickets === true
         ? undefined
         : { price: ticketsCard.price },
-    activated,
-    onActivatedShown: () => setActivated(null),
+    activated: activation.activated,
+    onActivatedShown: activation.onActivatedShown,
   };
 }

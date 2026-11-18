@@ -248,7 +248,7 @@ export function AppSession({
           paddingRight: `${shellInsets.right}px`,
         }}
       >
-        <view className="app-content">
+        <view className="app-content" accessibility-elements-hidden={shop.request !== null}>
           {renderAppContent(screenNow, wiring)}
           {/* 탭 루트에서는 전역 머리가 콘텐츠 위에 겹칩니다. */}
           {showsNavigator && appHeaderVisibleOn(screenNow) ? (

@@ -37,6 +37,7 @@ export function PlanPeriodToggle({
             className={on ? "plans-segment plans-segment-on" : "plans-segment"}
             data-testid={ids[id]}
             data-selected={String(on)}
+            flatten={false}
             accessibility-element={true}
             accessibility-traits="button"
             accessibility-label={on ? copy.common.selected(name) : name}
