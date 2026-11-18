@@ -329,7 +329,11 @@ test("MS1. 한 판의 정상 흐름 — 무료 판 시작 → 턴 둘 → 닫기
     best: 73,
     payment: "free_daily",
     creditsSpent: 0,
-    feedback: { retry: ["아메리카노 얼마예요?"], summary: "주문을 잘했어요." },
+    // 다시 해 볼 표현은 { ko, meaning }으로 남긴다(글자만 오면 뜻은 빈 글) — 계약 칸 retry · summary · bestScore도 함께.
+    feedback: { retry: [{ ko: "아메리카노 얼마예요?", meaning: "" }], summary: "주문을 잘했어요." },
+    retry: [{ ko: "아메리카노 얼마예요?", meaning: "" }],
+    summary: "주문을 잘했어요.",
+    bestScore: 73,
   });
   expect((report["goals"] as Json[]).map((g) => [g["id"], g["achieved"], g["byTurn"]])).toEqual([
     ["order", true, true],
@@ -406,7 +410,8 @@ test("MS3. 열림 · 계정 단위 판정 — 스위치 · 시험 계정 · 에�
     result: "not_available",
     detail: { reason: "testers_only" },
   });
-  expect(await listMissions(plain)).toEqual({ enabled: false, price: null, missions: [] });
+  // 스위치에 걸려도 값(price)은 낸다 — 계약 `missionListSchema`.
+  expect(await listMissions(plain)).toMatchObject({ enabled: false, missions: [], price: { freeLeft: 1 } });
   await db.admin.query("update companion.settings set missions_testers_only = false");
   expect(await start(plain, "u06-cafe")).toEqual({
     result: "not_available",

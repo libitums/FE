@@ -70,8 +70,11 @@ begin
   if v_required = 0 then
     return 'goals[].required';
   end if;
+  -- 목표 표현: 미션 파일의 모양 { id, ko, meaning }(계약 `missionTargetExpressionSchema`), 또는 id 글자만.
   if d ? 'targetExpressions' and (jsonb_typeof(d->'targetExpressions') <> 'array'
-    or exists (select 1 from jsonb_array_elements(d->'targetExpressions') e where jsonb_typeof(e.value) <> 'string')) then
+    or exists (select 1 from jsonb_array_elements(d->'targetExpressions') e
+      where not (jsonb_typeof(e.value) = 'string'
+        or (jsonb_typeof(e.value) = 'object' and coalesce(jsonb_typeof(e.value->'id'), '') = 'string')))) then
     return 'targetExpressions';
   end if;
   -- 에피소드 완료 키(앱의 `completionKeys`). 없으면 최종 테스트 하나(`RP` — 앱의 DEFAULT_CATALOG_COMPLETION).
@@ -534,8 +537,10 @@ returns jsonb language sql stable as $$
     'missionVersion', r.mission_version,
     'outcome', r.outcome,
     'endReason', r.end_reason,
+    -- 목표 · 표현 · 다시 해 볼 표현 · 총평 · 최고 기록은 계약 `missionReportSchema`의 칸(done · ko · meaning · retry · summary · bestScore)으로도 낸다.
     'goals', (
-      select coalesce(jsonb_agg(rg.value || jsonb_build_object('label', g.value->'label', 'required', (g.value->>'required')::boolean)
+      select coalesce(jsonb_agg(rg.value || jsonb_build_object('label', g.value->'label', 'required', (g.value->>'required')::boolean,
+        'done', coalesce((rg.value->>'achieved')::boolean, false))
         order by g.ordinality), '[]'::jsonb)
       from jsonb_array_elements(r.goals) rg
       left join lateral (
@@ -543,7 +548,22 @@ returns jsonb language sql stable as $$
         where gg.value->>'id' = rg.value->>'id'
       ) g on true
     ),
-    'expressions', r.expressions,
+    'expressions', (
+      select coalesce(jsonb_agg(re.value || jsonb_build_object(
+        'ko', coalesce(te.value->>'ko', re.value->>'id'), 'meaning', coalesce(te.value->>'meaning', ''))
+        order by re.ordinality), '[]'::jsonb)
+      from jsonb_array_elements(r.expressions) with ordinality re
+      left join lateral (
+        select e.value from jsonb_array_elements(coalesce(v.definition->'targetExpressions', '[]'::jsonb)) e
+        where jsonb_typeof(e.value) = 'object' and e.value->>'id' = re.value->>'id' limit 1
+      ) te on true
+    ),
+    'retry', coalesce((
+      select jsonb_agg(case when jsonb_typeof(x.value) = 'string' then jsonb_build_object('ko', x.value #>> '{}', 'meaning', '')
+        else x.value end order by x.ordinality)
+      from jsonb_array_elements(coalesce(r.feedback->'retry', '[]'::jsonb)) with ordinality x
+    ), '[]'::jsonb),
+    'summary', coalesce(r.feedback->>'summary', ''),
     'taskScore', r.task_score,
     'accuracyScore', r.accuracy_score,
     'expressionScore', r.expression_score,
@@ -554,6 +574,7 @@ returns jsonb language sql stable as $$
     'feedback', r.feedback,
     'corrections', companion.mission_corrections(r.conversation_id),
     'best', (select max(x.total_score) from companion.mission_results x where x.user_id = r.user_id and x.mission_id = r.mission_id),
+    'bestScore', (select max(x.total_score) from companion.mission_results x where x.user_id = r.user_id and x.mission_id = r.mission_id),
     'payment', r.payment,
     'creditsSpent', r.credits_spent,
     'graderModel', r.grader_model,
@@ -1215,23 +1236,30 @@ begin
       ) as evidence
   ) x;
 
-  select coalesce(jsonb_agg(jsonb_build_object('id', t.value, 'used', used) order by t.ordinality), '[]'::jsonb),
+  select coalesce(jsonb_agg(jsonb_build_object('id', t.id, 'used', used) order by t.ordinality), '[]'::jsonb),
     count(*), count(*) filter (where used)
   into v_expressions, v_targets, v_used
-  from jsonb_array_elements_text(coalesce(v_def->'targetExpressions', '[]'::jsonb)) with ordinality t
+  from (
+    select case when jsonb_typeof(e.value) = 'string' then e.value #>> '{}' else e.value->>'id' end as id, e.ordinality
+    from jsonb_array_elements(coalesce(v_def->'targetExpressions', '[]'::jsonb)) with ordinality e
+  ) t
   cross join lateral (
     select coalesce((
       select bool_or(coalesce((r.value->>'used')::boolean, false))
-      from jsonb_array_elements(coalesce(p_result->'expressions', '[]'::jsonb)) r where r.value->>'id' = t.value
+      from jsonb_array_elements(coalesce(p_result->'expressions', '[]'::jsonb)) r where r.value->>'id' = t.id
     ), false) as used
   ) x;
 
+  -- 세부 점수는 정수로 남기되, 최종 점수는 반올림 전의 값으로 계산한다(PRD §3.7의 식 그대로 — 코어 `scoreMission`과 같다).
+  -- 예: 목표 셋 중 하나면 과업 33.33…이고, 33으로 먼저 자르면 최종이 1점 어긋날 수 있다.
   v_task := round(100.0 * v_achieved / v_total_goals);
   v_accuracy := round((p_result->>'accuracy')::numeric);
   v_expression := case when v_targets = 0 then 100 else round(100.0 * v_used / v_targets) end;
   v_hints := coalesce((c.mission_state->>'hints')::integer, 0);
-  v_score := greatest(0, least(100, round(s.mission_weight_task * v_task + s.mission_weight_accuracy * v_accuracy
-    + s.mission_weight_expression * v_expression) - s.mission_hint_penalty * v_hints));
+  v_score := greatest(0, least(100, round(round(s.mission_weight_task * (100.0 * v_achieved / v_total_goals)
+    + s.mission_weight_accuracy * least(100, greatest(0, (p_result->>'accuracy')::numeric))
+    + s.mission_weight_expression * (case when v_targets = 0 then 100 else 100.0 * v_used / v_targets end), 6))
+    - s.mission_hint_penalty * v_hints));
 
   v_hold := companion.mission_live_hold(c.id);
   if v_hold.id is not null then
@@ -1255,9 +1283,17 @@ begin
     c.id, p_user_id, c.mission_id, c.mission_version, case when v_required_missing = 0 then 'success' else 'fail' end, c.end_reason,
     v_goals, v_expressions, v_task, v_accuracy, v_expression, null, v_hints, v_score, companion.mission_weights(),
     jsonb_build_object(
+      -- 다시 해 볼 표현: { ko, meaning }(코어 `normalizeGrade`의 모양). 글자만 오면 뜻은 빈 글.
       'retry', coalesce((
-        select jsonb_agg(x.value) from (
-          select value from jsonb_array_elements(coalesce(p_result->'retry', '[]'::jsonb)) where jsonb_typeof(value) = 'string' limit 3
+        select jsonb_agg(x.item order by x.ordinality) from (
+          select jsonb_build_object(
+              'ko', case when jsonb_typeof(value) = 'string' then value #>> '{}' else value->>'ko' end,
+              'meaning', case when jsonb_typeof(value) = 'object' then coalesce(value->>'meaning', '') else '' end
+            ) as item, ordinality
+          from jsonb_array_elements(coalesce(p_result->'retry', '[]'::jsonb)) with ordinality
+          where (jsonb_typeof(value) = 'string' and value #>> '{}' <> '')
+            or (jsonb_typeof(value) = 'object' and coalesce(value->>'ko', '') <> '')
+          order by ordinality limit 3
         ) x
       ), '[]'::jsonb),
       'summary', case when jsonb_typeof(p_result->'summary') = 'string' then p_result->>'summary' end
@@ -1370,16 +1406,23 @@ begin
   end if;
   select * into s from companion.settings;
   select coalesce(raw_app_meta_data->>'duru_tester' = 'true', false) into v_tester from auth.users where id = v_user;
+  -- 값(price)은 스위치가 꺼져도 낸다 — 계약 `missionListSchema`는 늘 있다. freeLeft = freeRemaining(계약의 이름).
   if not s.missions_enabled or (s.missions_testers_only and not coalesce(v_tester, false)) then
-    return jsonb_build_object('enabled', false, 'price', null, 'missions', '[]'::jsonb);
+    return jsonb_build_object('enabled', false, 'missions', '[]'::jsonb, 'price',
+      companion.mission_price(v_user, now()) || jsonb_build_object('freeLeft', (companion.mission_price(v_user, now())->>'freeRemaining')::integer));
   end if;
   return jsonb_build_object(
     'enabled', true,
-    'price', companion.mission_price(v_user, now()),
+    'price', companion.mission_price(v_user, now())
+      || jsonb_build_object('freeLeft', (companion.mission_price(v_user, now())->>'freeRemaining')::integer),
     'missions', coalesce((
       select jsonb_agg(companion.mission_card_json(m.definition) || jsonb_build_object(
         'available', x.reason is null,
         'unavailableReason', x.reason,
+        -- 계약 칸: 목록 안(스위치 켬 · 미션 켬)에서 남는 까닭은 episode_locked뿐이라 unlocked = available.
+        'unlocked', x.reason is null,
+        'counterpartLabel', m.definition->'counterpart'->>'label',
+        'characterId', m.definition->'counterpart'->>'characterId',
         'best', (
           select jsonb_build_object('totalScore', r.total_score, 'outcome', r.outcome, 'createdAt', companion.mission_ts(r.created_at))
           from companion.mission_results r where r.user_id = v_user and r.mission_id = m.id
@@ -1410,6 +1453,10 @@ begin
     raise exception 'not authenticated' using errcode = '28000';
   end if;
   return jsonb_build_object(
+    -- 계약 `missionResultsSchema`의 칸(missionId · bestScore). p_mission_id가 null이면 missionId도 null(모든 미션).
+    'missionId', p_mission_id,
+    'bestScore', (select max(total_score) from companion.mission_results
+      where user_id = v_user and (p_mission_id is null or mission_id = p_mission_id)),
     'results', coalesce((
       select jsonb_agg(companion.mission_report_json(r) order by r.created_at desc)
       from (
