@@ -1,8 +1,8 @@
 // 하나의 상점 · 구독 입구 문구(ADR-0160) — 상점 탭 · 엽전 탭 아래 요금제 줄 · Plans 카드 줄 · 구독 중 바꿈 · 머리 요금제 칩 · 티켓 모달 줄 ·
 // 구독 성공 알림. 요금제 이름(Unlimited Tickets · Chat Plus · Premium)과 칩의 요금제 글(PREMIUM · CHAT+ · TICKETS)은 스토어 상품명과
-// 같게 모든 언어에서 영어입니다. 날짜는 `Intl` 없이 달 이름 표로 씁니다(Android PrimJS). ja · vi는 `ui-copy-shop-asia.ts`.
+// 같게 모든 언어에서 영어입니다. 날짜는 `Intl` 없이 달 이름 표로 씁니다(Android PrimJS). id · ja · vi는 `ui-copy-shop-asia.ts`.
 
-import { shopCopyJa, shopCopyVi } from "./ui-copy-shop-asia";
+import { shopCopyId, shopCopyJa, shopCopyVi } from "./ui-copy-shop-asia";
 
 type PlanKey = "unlimited_tickets" | "chat_plus" | "premium";
 
@@ -242,71 +242,7 @@ export const shopCopy: Readonly<Record<"en" | "es" | "id" | "ja" | "vi", ShopCop
       },
     },
   },
-  id: {
-    tabsLabel: "Toko",
-    tabs: { coins: "Yeopjeon", plans: "Paket" },
-    yourPlan: "Paketmu",
-    planShort: { free: "Gratis", ...planShort },
-    yourPlanLabel: (plan) => `Paketmu: ${plan}`,
-    promo: {
-      premium: (coins) => `Dapat ${coins} Yeopjeon tiap bulan dengan Premium`,
-      chatPlus: (perDay) => `Terus ngobrol — ${perDay} gratis per hari dengan Chat Plus`,
-      action: "Paket ›",
-    },
-    outOfTickets: "Tiket habis? Belajar tanpa menunggu",
-    headline: {
-      everything: "Semua tanpa batas",
-      chats: (perDay) => `${perDay} chat per hari`,
-      unlimitedChat: "Chat tanpa batas",
-      learn: "Belajar tanpa menunggu",
-    },
-    detail: {
-      everyUnit: "Semua unit, tanpa batas tiket",
-      allFriends: "Semua teman",
-      coinsShort: (coins) => `+${coins} Yeopjeon/bln`,
-      coinsLong: (coins) => `+${coins} Yeopjeon setiap bulan`,
-    },
-    perMonthShort: "/ bln",
-    perYearShort: "/ thn",
-    saving: (percent) => `-${percent}%`,
-    date: (month, day) => `${day} ${idMonths[month] ?? ""}`,
-    current: (date, renews) =>
-      date === null
-        ? "Paket saat ini"
-        : `Paket saat ini · ${renews ? "diperpanjang" : "berakhir"} ${date}`,
-    tag: {
-      upgrade: "Upgrade · mulai sekarang",
-      switchAt: (date) => (date === null ? "Ganti · saat perpanjangan" : `Ganti · mulai ${date}`),
-      switch: "Ganti",
-    },
-    cta: {
-      continueWith: (name) => `Lanjut dengan ${name}`,
-      upgradeTo: (name) => `Upgrade ke ${name}`,
-      switchTo: (name) => `Ganti ke ${name}`,
-      switchPeriod: { monthly: "Ganti ke bulanan", yearly: "Ganti ke tahunan" },
-      from: (date) => (date === null ? "mulai perpanjangan berikutnya" : `mulai ${date}`),
-      pick: "Pilih paket",
-    },
-    change: {
-      upgrade: (from, to, store) =>
-        `Upgrade langsung memindahkanmu dari ${from} ke ${to}; ${store} mengembalikan sisa ${from} yang belum terpakai.`,
-      later: (from, to, date) =>
-        `Kamu tetap memakai ${from} sampai ${date ?? "perpanjangan berikutnya"}, lalu ${to} dimulai.`,
-      crossgrade: (from, to, store) =>
-        `${to} menggantikan ${from}; ${store} menentukan kapan perubahan dimulai dan mengembalikan sisa waktu.`,
-    },
-    chip: { plans: "PAKET", ...chipPlans },
-    goUnlimited: (price) =>
-      price === null ? "Jadi tanpa batas" : `Jadi tanpa batas · ${price}/bln`,
-    activated: {
-      title: (name) => `${name} sudah aktif`,
-      body: {
-        unlimited_tickets: "Mulai pelajaran apa pun tanpa tiket",
-        chat_plus: "Lebih banyak chat tiap hari, dengan semua teman",
-        premium: "Pelajaran dan chat tanpa batas",
-      },
-    },
-  },
+  id: shopCopyId,
   ja: shopCopyJa,
   vi: shopCopyVi,
 };

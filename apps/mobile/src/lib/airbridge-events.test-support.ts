@@ -1,6 +1,6 @@
 // airbridge-events 단위 테스트가 함께 쓰는 입력 표입니다. 계약: ADR-0063.
 import type { AnalyticsEvent, AnalyticsEventName, AnalyticsEventSinks } from "./analytics.contract";
-import { purchaseIntentExample } from "./purchase-intent.test-support";
+import { planEventExamples } from "./purchase-intent.test-support";
 
 /** 계약의 이름 전부입니다 — 손으로 적고 타입에 묶습니다. */
 export const allEventNames = [
@@ -247,33 +247,7 @@ export const unmappedEvents = [
     days: "7",
     amount: "40",
   },
-  {
-    name: "plans_viewed",
-    surface: "learning",
-    daysSinceFirstOpen: "6",
-    placement: "settings",
-    view: "compare",
-    currentPlan: "free",
-  },
-  {
-    name: "plan_selected",
-    surface: "chat",
-    daysSinceFirstOpen: "6",
-    placement: "messenger",
-    plan: "premium",
-    period: "monthly",
-    from: "chat_plus",
-    to: "premium",
-    kind: "upgrade",
-  },
-  purchaseIntentExample,
-  {
-    name: "shop_tab_switched",
-    surface: "learning",
-    daysSinceFirstOpen: "6",
-    from: "coins",
-    to: "plans",
-  },
+  ...planEventExamples,
 ] as const satisfies readonly AnalyticsEvent[];
 
 export const entryCompleted = { name: "entry_completed" } as const satisfies AnalyticsEvent;

@@ -1,9 +1,88 @@
-// 하나의 상점 · 구독 입구 문구(ADR-0160)의 ja · vi 판 — 구조와 규칙은 `ui-copy-shop.ts`가 집니다.
+// 하나의 상점 · 구독 입구 문구(ADR-0160)의 id · ja · vi 판 — 구조와 규칙은 `ui-copy-shop.ts`가 집니다.
 
 import type { ShopCopy } from "./ui-copy-shop";
 
 const planShort = { unlimited_tickets: "Tickets ∞", chat_plus: "Chat Plus", premium: "Premium" };
 const chipPlans = { premium: "PREMIUM", chat_plus: "CHAT+", unlimited_tickets: "TICKETS" };
+const idMonths = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "Mei",
+  "Jun",
+  "Jul",
+  "Agu",
+  "Sep",
+  "Okt",
+  "Nov",
+  "Des",
+];
+
+export const shopCopyId: ShopCopy = {
+  tabsLabel: "Toko",
+  tabs: { coins: "Yeopjeon", plans: "Paket" },
+  yourPlan: "Paketmu",
+  planShort: { free: "Gratis", ...planShort },
+  yourPlanLabel: (plan) => `Paketmu: ${plan}`,
+  promo: {
+    premium: (coins) => `Dapat ${coins} Yeopjeon tiap bulan dengan Premium`,
+    chatPlus: (perDay) => `Terus ngobrol — ${perDay} gratis per hari dengan Chat Plus`,
+    action: "Paket ›",
+  },
+  outOfTickets: "Tiket habis? Belajar tanpa menunggu",
+  headline: {
+    everything: "Semua tanpa batas",
+    chats: (perDay) => `${perDay} chat per hari`,
+    unlimitedChat: "Chat tanpa batas",
+    learn: "Belajar tanpa menunggu",
+  },
+  detail: {
+    everyUnit: "Semua unit, tanpa batas tiket",
+    allFriends: "Semua teman",
+    coinsShort: (coins) => `+${coins} Yeopjeon/bln`,
+    coinsLong: (coins) => `+${coins} Yeopjeon setiap bulan`,
+  },
+  perMonthShort: "/ bln",
+  perYearShort: "/ thn",
+  saving: (percent) => `-${percent}%`,
+  date: (month, day) => `${day} ${idMonths[month] ?? ""}`,
+  current: (date, renews) =>
+    date === null
+      ? "Paket saat ini"
+      : `Paket saat ini · ${renews ? "diperpanjang" : "berakhir"} ${date}`,
+  tag: {
+    upgrade: "Upgrade · mulai sekarang",
+    switchAt: (date) => (date === null ? "Ganti · saat perpanjangan" : `Ganti · mulai ${date}`),
+    switch: "Ganti",
+  },
+  cta: {
+    continueWith: (name) => `Lanjut dengan ${name}`,
+    upgradeTo: (name) => `Upgrade ke ${name}`,
+    switchTo: (name) => `Ganti ke ${name}`,
+    switchPeriod: { monthly: "Ganti ke bulanan", yearly: "Ganti ke tahunan" },
+    from: (date) => (date === null ? "mulai perpanjangan berikutnya" : `mulai ${date}`),
+    pick: "Pilih paket",
+  },
+  change: {
+    upgrade: (from, to, store) =>
+      `Upgrade langsung memindahkanmu dari ${from} ke ${to}; ${store} mengembalikan sisa ${from} yang belum terpakai.`,
+    later: (from, to, date) =>
+      `Kamu tetap memakai ${from} sampai ${date ?? "perpanjangan berikutnya"}, lalu ${to} dimulai.`,
+    crossgrade: (from, to, store) =>
+      `${to} menggantikan ${from}; ${store} menentukan kapan perubahan dimulai dan mengembalikan sisa waktu.`,
+  },
+  chip: { plans: "PAKET", ...chipPlans },
+  goUnlimited: (price) => (price === null ? "Jadi tanpa batas" : `Jadi tanpa batas · ${price}/bln`),
+  activated: {
+    title: (name) => `${name} sudah aktif`,
+    body: {
+      unlimited_tickets: "Mulai pelajaran apa pun tanpa tiket",
+      chat_plus: "Lebih banyak chat tiap hari, dengan semua teman",
+      premium: "Pelajaran dan chat tanpa batas",
+    },
+  },
+};
 
 export const shopCopyJa: ShopCopy = {
   tabsLabel: "ショップ",
