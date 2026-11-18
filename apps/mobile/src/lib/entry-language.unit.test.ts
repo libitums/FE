@@ -24,7 +24,7 @@ test("EL2. initialEntryLanguage가 entryLanguages[0]과 같다", () => {
 
 const allEntryLanguages: readonly EntryLanguage[] = ["en", "vi", "id", "es", "ja", "th", "my"];
 
-test("EL3. 일곱 코드 각각에 대해 entryLanguageLabel이 공백 아닌 문자열이고 넷이 서로 다르다", () => {
+test("EL3. 일곱 코드 각각에 대해 entryLanguageLabel이 공백 아닌 문자열이고 모두가 서로 다르다", () => {
   const labels = allEntryLanguages.map((language) => entryLanguageLabel(language));
 
   for (const label of labels) {
