@@ -110,7 +110,7 @@ function decode(input: unknown): ManifestDecodeResult {
   return { ok: true, manifest };
 }
 
-const TRANSLATION_LANGUAGES: readonly ContentLanguage[] = ["vi", "id", "es", "ja"];
+const TRANSLATION_LANGUAGES: readonly ContentLanguage[] = ["vi", "id", "es", "ja", "th", "my"];
 const SHA256 = /^[0-9a-f]{64}$/;
 
 /** 언어마다 모양이 맞는 항목만 남깁니다 — 틀린 언어 · 모르는 언어는 조용히 버리고, 남는 것이 없으면 키가 없습니다. */

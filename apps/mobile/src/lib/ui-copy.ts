@@ -22,6 +22,9 @@ export const uiCopyCatalog: UiCopyCatalog = {
   id: uiCopyId,
   es: uiCopyEs,
   ja: uiCopyJa,
+  // 이야기 번역 전용 언어 — 화면 문구는 영어 그대로입니다(ADR-0158).
+  th: {},
+  my: {},
 };
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
@@ -62,6 +65,9 @@ function buildTable(language: UiLanguage): UiCopy {
       return uiCopyEs;
     case "ja":
       return uiCopyJa;
+    case "th":
+    case "my":
+      return uiCopyEn;
   }
 }
 
@@ -71,6 +77,8 @@ const tables: Readonly<Record<UiLanguage, UiCopy>> = {
   id: buildTable("id"),
   es: buildTable("es"),
   ja: buildTable("ja"),
+  th: buildTable("th"),
+  my: buildTable("my"),
 };
 
 export const uiCopyFor: UiCopyFor = (language) => tables[language];

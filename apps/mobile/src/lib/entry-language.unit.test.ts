@@ -5,6 +5,7 @@ import {
   entryLanguages,
   initialEntryLanguage,
   isEntryLanguageAvailable,
+  isStoryOnlyLanguage,
   type EntryLanguage,
 } from "./entry-language";
 
@@ -21,9 +22,9 @@ test("EL2. initialEntryLanguage가 entryLanguages[0]과 같다", () => {
   expect(initialEntryLanguage).toBe(entryLanguages[0]);
 });
 
-const allEntryLanguages: readonly EntryLanguage[] = ["en", "vi", "id", "es", "ja"];
+const allEntryLanguages: readonly EntryLanguage[] = ["en", "vi", "id", "es", "ja", "th", "my"];
 
-test("EL3. 다섯 코드 각각에 대해 entryLanguageLabel이 공백 아닌 문자열이고 넷이 서로 다르다", () => {
+test("EL3. 일곱 코드 각각에 대해 entryLanguageLabel이 공백 아닌 문자열이고 넷이 서로 다르다", () => {
   const labels = allEntryLanguages.map((language) => entryLanguageLabel(language));
 
   for (const label of labels) {
@@ -33,13 +34,23 @@ test("EL3. 다섯 코드 각각에 대해 entryLanguageLabel이 공백 아닌 �
 });
 
 // 2026-11-02 베트남어(ADR-0091 D4), 2026-11-03 인도네시아어(ADR-0093), 2026-11-04 스페인어(ADR-0097) · 일본어(ADR-0098)를 연다.
-test("EL4. 다섯 언어 모두 고를 수 있고 initialEntryLanguage가 고를 수 있는 언어다", () => {
+test("EL4. 일곱 언어 모두 고를 수 있고 initialEntryLanguage가 고를 수 있는 언어다", () => {
   expect(allEntryLanguages.filter((language) => isEntryLanguageAvailable(language))).toEqual([
     "en",
     "vi",
     "id",
     "es",
     "ja",
+    "th",
+    "my",
   ]);
   expect(isEntryLanguageAvailable(initialEntryLanguage)).toBe(true);
+});
+
+// 2026-11-18 태국어 · 미얀마어는 이야기 번역만 있는 언어다(ADR-0158) — 화면 문구는 영어 그대로.
+test("EL5. 태국어 · 미얀마어만 이야기 번역 전용이다", () => {
+  expect(allEntryLanguages.filter((language) => isStoryOnlyLanguage(language))).toEqual([
+    "th",
+    "my",
+  ]);
 });
