@@ -69,3 +69,11 @@ test("MT4. 다시 쓰면 같은 항목으로 읽힌다", () => {
   const again = decodeManifest(JSON.parse(encodeManifestText(first.manifest)));
   expect(again).toEqual(first);
 });
+
+test("MT5. 태국어 · 미얀마어 항목도 읽는다(ADR-0158)", () => {
+  expect(
+    Object.keys(
+      entryOf(decodeManifest(wire({ th: ref("th"), my: ref("my") })))?.translations ?? {},
+    ),
+  ).toEqual(["th", "my"]);
+});

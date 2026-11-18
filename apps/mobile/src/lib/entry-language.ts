@@ -6,16 +6,18 @@
 // 2026-09-21 디자인 반영으로 목록이 Intermediate English · Vietnamese · Spanish ·
 // Japanese로 바뀌었고 2026-11-03 Indonesian이 더해졌습니다. 2026-11-04 스페인어 · 일본어까지 열어 다섯 모두 고를 수 있습니다(`isEntryLanguageAvailable`).
 // 옛 목록(ko · en · ja · vi)을 대체합니다.
-export type EntryLanguage = "en" | "vi" | "id" | "es" | "ja";
+export type EntryLanguage = "en" | "vi" | "id" | "es" | "ja" | "th" | "my";
 export type EntryLanguageLabel =
   | "Intermediate English"
   | "Vietnamese"
   | "Indonesian"
   | "Spanish"
-  | "Japanese";
+  | "Japanese"
+  | "Thai · ภาษาไทย"
+  | "Burmese · မြန်မာ";
 
-// 목록의 렌더 순서입니다.
-export const entryLanguages: readonly EntryLanguage[] = ["en", "vi", "id", "es", "ja"];
+// 목록의 렌더 순서입니다. 2026-11-18 태국어 · 미얀마어는 이야기 번역 전용으로 끝에 둡니다(ADR-0158).
+export const entryLanguages: readonly EntryLanguage[] = ["en", "vi", "id", "es", "ja", "th", "my"];
 
 // `entryLanguages[0]`과 같은 값이어야 한다는 성질을 unit이 단언합니다 — 리터럴이
 // 아니라 「목록의 첫 항목」이라는 성질입니다.
@@ -39,6 +41,12 @@ export function entryLanguageLabel(language: EntryLanguage): EntryLanguageLabel 
     case "ja": {
       return "Japanese";
     }
+    case "th": {
+      return "Thai · ภาษาไทย";
+    }
+    case "my": {
+      return "Burmese · မြန်မာ";
+    }
   }
 }
 
@@ -50,8 +58,15 @@ export function isEntryLanguageAvailable(language: EntryLanguage): boolean {
     case "vi":
     case "id":
     case "es":
-    case "ja": {
+    case "ja":
+    case "th":
+    case "my": {
       return true;
     }
   }
+}
+
+// 화면 문구 표가 없고 에피소드 번역만 있는 언어입니다(ADR-0158) — 화면은 영어 표가 채웁니다.
+export function isStoryOnlyLanguage(language: EntryLanguage): boolean {
+  return language === "th" || language === "my";
 }

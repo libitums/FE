@@ -122,6 +122,16 @@ test("UL5e. 일본어 기기 태그는 ja다(ADR-0098)", () => {
   expect(returningUiLanguageFrom(null, "ja-JP")).toBe("ja");
 });
 
+test("UL5f. 태국어 · 미얀마어 기기 태그는 th · my다(ADR-0158)", () => {
+  for (const tag of ["th", "th-TH", "TH_th"]) {
+    expect(uiLanguageFromDeviceTag(tag)).toBe("th");
+  }
+  for (const tag of ["my", "my-MM"]) {
+    expect(uiLanguageFromDeviceTag(tag)).toBe("my");
+  }
+  expect(returningUiLanguageFrom("my", null)).toBe("my");
+});
+
 test("UL5b. 베트남어 기기 태그는 vi다(ADR-0091 D4)", () => {
   for (const tag of ["vi", "vi-VN", "VI_vn"]) {
     expect(uiLanguageFromDeviceTag(tag)).toBe("vi");

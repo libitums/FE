@@ -130,9 +130,17 @@ test("UC3. 입력 둘을 바꾸지 않고 던지지 않는다", () => {
   expect(overrides.common?.count?.coins).toBe(coins);
 });
 
-test("UC4. uiCopyCatalog의 키 집합이 정확히 en · es · id · ja · vi이고 en이 uiCopyEn이다", () => {
-  expect(Object.keys(uiCopyCatalog).sort()).toEqual(["en", "es", "id", "ja", "vi"]);
+test("UC4. uiCopyCatalog의 키 집합이 정확히 en · es · id · ja · my · th · vi이고 en이 uiCopyEn이다", () => {
+  expect(Object.keys(uiCopyCatalog).sort()).toEqual(["en", "es", "id", "ja", "my", "th", "vi"]);
   expect(uiCopyCatalog.en).toBe(uiCopyEn);
+});
+
+// 이야기 번역 전용 언어(ADR-0158) — 화면 문구는 영어 표 그대로입니다.
+test("UC4b. 태국어 · 미얀마어 화면 문구는 영어 표와 같은 객체다", () => {
+  expect(uiCopyCatalog.th).toEqual({});
+  expect(uiCopyCatalog.my).toEqual({});
+  expect(uiCopyFor("th")).toBe(uiCopyEn);
+  expect(uiCopyFor("my")).toBe(uiCopyEn);
 });
 
 test("JS4. specialUnitMap은 빈 덮어쓰기에서 영어로 채워진다", () => {

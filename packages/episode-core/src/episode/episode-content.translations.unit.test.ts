@@ -70,3 +70,9 @@ test("TR7. 인도네시아어 표도 같은 규칙으로 옮긴다(ADR-0093)", (
   expect(result.episode.translations).toEqual({ vi: { water: "nước" }, id: { water: "air" } });
   expect(codes(result).filter((code) => code === "invalid-translation")).toHaveLength(1);
 });
+
+test("TR10. 태국어 · 미얀마어 표도 같은 규칙으로 옮긴다(ADR-0158)", () => {
+  const result = decoded({ th: { water: "น้ำ" }, my: { water: "ရေ" } });
+  expect(result.episode.translations).toEqual({ th: { water: "น้ำ" }, my: { water: "ရေ" } });
+  expect(codes(result)).not.toContain("invalid-translation");
+});
