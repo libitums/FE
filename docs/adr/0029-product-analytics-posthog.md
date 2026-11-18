@@ -517,3 +517,6 @@ sink는 던지지 않는다 — 매핑 · `capture`를 `try`로 감싸 삼킨다
 - **PostHog 프로젝트를 둘 이상 쓸 수 있게 된 때**(요금제 변경) → D13. 개발 프로젝트를 나눌지 본다.
 - **월 이벤트가 PostHog 무료 한도(프로젝트 요금제 기준)에 닿을 때** → 샘플링을 정한다.
 - **사용자 확인 필요의 여섯 항목이 답을 받은 때** → 제자리에서 고치고 `채택`으로 올린다.
+- ⟨2026-11-19 — 추천 친구(ADR-0159). 적용 기록이고 이 ADR의 결정을 바꾸지 않는다⟩ **이벤트 다섯이 더해졌다**(`analytics-event-names.ts` [코드]). sink는 새로 만들지 않았다. 메시지 내용 · 개인 정보는 싣지 않는다.
+  - `friends_strip_shown`(추천 줄이 보임) · `friend_profile_opened { characterId, source }`(프로필 시트를 엶) · `friend_added { characterId }`(친구 추가) · `friend_first_message { characterId }`(그 인물에게 보낸 첫 메시지) · `friend_return { characterId }`(추가한 뒤 7일 안의 다른 날에 방을 엶 — 인물마다 하루 한 번, 기기 메모리로만 센다).
+

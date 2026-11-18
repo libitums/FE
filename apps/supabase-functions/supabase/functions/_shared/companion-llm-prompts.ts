@@ -231,9 +231,20 @@ const refusalTopics: Record<string, string> = {
   personal_info: "personal contact details",
 };
 
-/** 검사 분류 → 거절 지시에 넣는 말. 모르는 분류는 「안전하지 않은 내용」. */
-export const refusalTopic = (category: string): string =>
-  refusalTopics[category] ?? "something unsafe";
+// 완화 수위(open, ADR-0159)에서 걸리는 것 — 키스 · 껴안기는 통과이므로 `romance`는 질투 · 밀어붙이기 · 갑작스러운 스킨십, `sexual`은 노골적 성 묘사다.
+const openRefusalTopics: Record<string, string> = {
+  sexual: "explicit sexual content",
+  romance: "pushy, possessive or out-of-nowhere romantic behaviour",
+};
+
+/** 검사 분류 → 거절 지시에 넣는 말. 모르는 분류는 「안전하지 않은 내용」. 적용 수위가 open이면 로맨스 · 성 분류의 말이 다르다. */
+export const refusalTopic = (
+  category: string,
+  romanceTier: "open" | "standard" = "standard",
+): string =>
+  (romanceTier === "open" ? openRefusalTopics[category] : undefined) ??
+  refusalTopics[category] ??
+  "something unsafe";
 
 /**
  * 거절 답의 이번 답 지시(시스템 프롬프트의 `# For this reply`). 학습자의 걸린 글은 모델에 주지 않고 분류(`topic`)와 단계만 준다 —

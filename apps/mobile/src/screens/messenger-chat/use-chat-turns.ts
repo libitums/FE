@@ -21,8 +21,6 @@ export type UseChatTurnsInput = {
   readonly trial: TrialStore;
   readonly wallet: CoinWallet;
   readonly tier: ChatTier;
-  /** 이 방의 인물 — 체험 인물이면 체험 수를 씁니다. */
-  readonly characterId: string;
   /** 서버 방이면 서버가 엽전을 냅니다 — 앱 지갑에서 빼지 않습니다. */
   readonly charging: "server" | "local";
   /** 엽전이 모자라 상점을 열어야 할 때 부릅니다. */
@@ -57,7 +55,6 @@ export function useChatTurns({
   trial,
   wallet,
   tier,
-  characterId,
   charging,
   onTopUp,
   onOutPanelOpen,
@@ -68,8 +65,8 @@ export function useChatTurns({
   const remaining = useTrialRemaining(trial);
   // 같은 값이면 같은 계획 — 아래 낭독 이펙트가 렌더마다 돌지 않습니다.
   const plan = useMemo(
-    () => turnPlanFor({ tier, characterId, trialRemaining: remaining, price: PRICE }),
-    [tier, characterId, remaining],
+    () => turnPlanFor({ tier, trialRemaining: remaining, price: PRICE }),
+    [tier, remaining],
   );
 
   // 다 쓴 판은 마지막 무료를 보낸 순간(last-free → coin) 한 번 열립니다 — 다 쓴 채 들어온 방은 판 없이 엽전 보내기입니다.
@@ -125,12 +122,7 @@ export function useChatTurns({
   const authorizeSend = useCallback((): boolean => {
     "background only";
     // 한 통마다 최신 체험 수 · 잔액으로 다시 판정합니다(같은 커밋 안의 연속 보내기에도 어긋나지 않게).
-    const latest = turnPlanFor({
-      tier,
-      characterId,
-      trialRemaining: trial.remaining(),
-      price: PRICE,
-    });
+    const latest = turnPlanFor({ tier, trialRemaining: trial.remaining(), price: PRICE });
     const gate = sendGateFor(latest, wallet.balance());
     const sent = (cost: number) =>
       emitCompanionEvent(sink, {
@@ -173,7 +165,7 @@ export function useChatTurns({
         return unreachable;
       }
     }
-  }, [tier, characterId, charging, trial, wallet, onTopUp, sink, roomId]);
+  }, [tier, charging, trial, wallet, onTopUp, sink, roomId]);
 
   const keepChatting = useCallback((): void => {
     "background only";

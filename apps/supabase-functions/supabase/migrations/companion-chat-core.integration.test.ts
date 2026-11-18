@@ -358,7 +358,7 @@ test("CH9. 운영 조회 — 시험 계정 목록 · 대화(내부 상태 · 판
 
 test("CH10. 캐릭터 목록 — 시험 계정 · 티어에 따라 열리고 말투와 마지막 메시지 시각이 붙는다", async () => {
   const before = await app.query("select public.companion_list_characters() as list");
-  // 무료 티어는 체험 캐릭터(덕수쌤)만 열린다(M4).
+  // 무료 티어도 모든 인물이 열린다 — 합산 체험(20261213) 또는 엽전(20261127). 시험 계정에게는 추천 친구도 보인다(friends_mode testers).
   expect(before.rows[0].list[0]).toEqual({
     id: "duksu",
     available: true,
@@ -373,10 +373,14 @@ test("CH10. 캐릭터 목록 — 시험 계정 · 티어에 따라 열리고 말
     ]),
   ).toEqual([
     ["duksu", null],
-    ["yoonkyung", "not_available"],
-    ["mina", "not_available"],
-    ["doyun", "not_available"],
-    ["jaemin", "not_available"],
+    ["yoonkyung", null],
+    ["mina", null],
+    ["doyun", null],
+    ["jaemin", null],
+    ["seoyeon", null],
+    ["haejun", null],
+    ["daeun", null],
+    ["geonwoo", null],
   ]);
   const one = await begin(messageId(1));
   await finish(one.userMessageId, "complete", { assistant: 1 });

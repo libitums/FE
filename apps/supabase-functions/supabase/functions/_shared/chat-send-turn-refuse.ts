@@ -33,6 +33,7 @@ export function turnRefuser(
         persona: input.persona,
         speechLevel: turn.speechLevel,
         ageBand: gate.ageBand,
+        romanceTier: gate.romanceTier,
         history: historyFrom(turn),
         assistantMessageId: context.assistantMessageId,
         meta: { model: llm.model, trial: turn.trial, playground: context.playground },

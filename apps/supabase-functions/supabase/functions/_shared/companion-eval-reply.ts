@@ -26,6 +26,8 @@ import { collectSegments, createSegmentSplitter, type SegmentDelta } from "./com
 export type ReplyEvalCase = {
   readonly text: string;
   readonly ageBand?: "adult" | "minor" | "unknown";
+  /** 적용 로맨스 수위(ADR-0159). 생략하면 standard. */
+  readonly romanceTier?: "open" | "standard";
   readonly l1?: string | null;
   readonly speechLevel?: SpeechLevel | null;
   readonly characterId?: string;
@@ -111,6 +113,7 @@ export async function evalReply(input: {
     persona,
     speechLevel,
     ageBand,
+    romanceTier: item.romanceTier ?? "standard",
     l1: item.l1 ?? null,
     expressions,
     summary: item.summary ?? null,

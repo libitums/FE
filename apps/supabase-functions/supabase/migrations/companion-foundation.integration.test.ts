@@ -97,6 +97,8 @@ test("CF2. 본인이 저장한 프로필을 읽고, 저장한 적 없으면 null
     // 추천 답변 칩(20261118) — 기본 켬.
     replySuggestions: true,
     snapshotSelf: "female",
+    // 성인 확인 동의(20261213) — 기본 없음.
+    adultAck: false,
   });
 });
 
@@ -117,6 +119,8 @@ test("CF3. null인 인수는 그 열을 바꾸지 않는다", async () => {
     // 추천 답변 칩(20261118) — 기본 켬.
     replySuggestions: true,
     snapshotSelf: "female",
+    // 성인 확인 동의(20261213) — 기본 없음.
+    adultAck: false,
   });
 });
 

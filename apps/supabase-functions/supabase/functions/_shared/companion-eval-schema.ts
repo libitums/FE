@@ -17,6 +17,8 @@ export const caseSchema = z.object({
   id: z.string().min(1).max(64),
   text: z.string().min(1).max(2000),
   ageBand: z.enum(["adult", "minor", "unknown"]).optional(),
+  // 검사 · 답장: 적용 로맨스 수위(ADR-0159). 생략하면 standard. 성인이 아니면 open이어도 standard로 돈다(운영과 같다).
+  romanceTier: z.enum(["open", "standard"]).optional(),
   layer: z.enum(["input", "output_sync"]).optional(),
   l1: z.string().min(1).max(35).nullable().optional(),
   // 검사: 출력 검사 때 앞선 유저 메시지. 피드백: 바로 앞 캐릭터 말.

@@ -2,6 +2,7 @@
 
 import type { ChatAlbumCopy, ChatSnapshotSelf } from "./chat-album.contract";
 import type { ChatMediaCopy } from "./chat-media.contract";
+import type { FriendsCopy } from "./chat-friends.contract";
 import type { FeedbackCopy } from "./chat-feedback.contract";
 import type { MessengerAccessCopy } from "./messenger-access";
 /** 캐릭터가 먼저 보내는 메시지의 빈도입니다(ADR-0126). */
@@ -49,6 +50,8 @@ export type MessengerChatExtraCopy = {
   readonly media: ChatMediaCopy;
   /** 앨범 · 내 모습 · 다시 만들기(ADR-0150). */
   readonly album: ChatAlbumCopy;
+  /** 추천 친구 — 추천 줄 · 프로필 시트 · 성인 확인. */
+  readonly friends: FriendsCopy;
   readonly chatSettings: ChatSettingsCopy;
   readonly pushNotice: MessengerListNoticeCopy;
   readonly access: MessengerAccessCopy;

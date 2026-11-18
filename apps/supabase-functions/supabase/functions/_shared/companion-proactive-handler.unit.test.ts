@@ -231,3 +231,34 @@ test("PR5. 쉬는 대화의 기억 마저 뽑기 — 후보마다 묶음이 차�
     outcome: "extracted=1/2",
   });
 });
+
+test("PR6. 선톡도 적용 수위를 싣는다 — open이면 프롬프트 · 출력 검사가 open, 숨긴 친구(allowed 거짓)는 보내지 않는다", async () => {
+  const base = fakeCompanionLlm();
+  const seen: { systems: string[]; tiers: (string | undefined)[] } = { systems: [], tiers: [] };
+  const llm: CompanionLlm = {
+    ...base,
+    async *reply(request) {
+      seen.systems.push(request.system);
+      yield* base.reply(request);
+    },
+    async moderate(request) {
+      seen.tiers.push(request.romanceTier);
+      return base.moderate(request);
+    },
+  };
+  const persona = { name: "권해준", kind: "friend", romanceTier: "open", met: "friend_app" };
+  const open = setup({
+    llm,
+    context: context({ persona, romanceTier: "open", replySuggestions: false }),
+  });
+  expect((await open.call({ ...one, character_id: "haejun" })).outcomes[0]).toMatchObject({
+    result: "sent",
+  });
+  expect(seen.systems[0]).toContain("You may be a couple, say 사랑해");
+  expect(seen.tiers).toEqual(["open"]);
+  const hidden = setup({ context: context({ persona, allowed: false }) });
+  expect((await hidden.call({ ...one, character_id: "haejun" })).outcomes[0]).toMatchObject({
+    result: "not_allowed_for_age",
+  });
+  expect(hidden.save()).toBeUndefined();
+});

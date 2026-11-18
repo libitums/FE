@@ -67,8 +67,9 @@ describe("첫 인사 미리보기 (CL-G1 ~ G5)", () => {
     expect(newBadgeShown(room("duksu", { lastMessage: hello }))).toBe(false);
   });
 
-  test("CL-G5 인물 표의 첫 인사는 다섯 모두에게 있다", () => {
-    for (const id of ["duksu", "yoonkyung", "mina", "doyun", "jaemin"]) {
+  test("CL-G5 인물 표의 첫 인사는 아홉 모두에게 있다(추천 친구 포함)", () => {
+    const ids = ["duksu", "yoonkyung", "mina", "doyun", "jaemin"];
+    for (const id of [...ids, "seoyeon", "haejun", "daeun", "geonwoo"]) {
       expect(firstLine(id), id).not.toBeNull();
     }
   });

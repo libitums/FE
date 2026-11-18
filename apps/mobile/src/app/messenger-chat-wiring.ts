@@ -32,6 +32,8 @@ import { createTrialStore, type TrialStore } from "../screens/messenger-chat/tri
 import type { EpisodeIntroEventSink } from "../screens/episode-intro/episode-intro.contract";
 import { tabRootActions } from "./nav-reducer";
 import { deviceReplyIdeasStore } from "../screens/messenger-chat/reply-ideas-pref";
+import type { FriendStore } from "../screens/messenger-chat/chat-friends.contract";
+import { friendEventSink, friendStoreFor, noteFriendRoomOpened } from "./friend-wiring";
 import type { NavAction } from "./nav-state";
 
 export type MessengerChatWiring = {
@@ -88,6 +90,8 @@ export type TestStores = {
    * 없으면 시험 계정 표시로 정합니다.
    */
   readonly tier?: ChatTier;
+  /** 추천 친구 기록(메모리) — 없으면 빈 메모리 기록입니다. */
+  readonly friends?: FriendStore;
 };
 
 /** 해금 기록 저장입니다 — 앱은 지금 계정(출처 키)의 기기 저장, 테스트는 메모리(spec §7.2). */
@@ -96,6 +100,8 @@ export function messengerUnlockStore(): UnlockStore {
 }
 
 const clockNow = (): number => (storeOverride?.now ?? Date.now)();
+/** 추천 친구 기록 — 지금 계정의 기기 저장(출처 · 이벤트가 같은 객체), 테스트는 메모리. */
+const friendStore = (): FriendStore => friendStoreFor(sourceKey(), storeOverride);
 
 /** 이미 만들어진 대화 출처입니다(없으면 null) — 해금 확정이 출처에도 알릴 때 씁니다. */
 export function currentMessengerChatSource(): FixtureChatSource | null {
@@ -194,7 +200,8 @@ export function messengerChatSource(imageUrlOf: ImageUrlOf): ChatSource {
     stopL1Sync = companionL1Sync(remote?.profile, loadUiLanguage, onUiLanguageSaved);
     singleton = createFixtureChatSource({
       imageUrlOf: (relativePath) => latestImageUrlOf?.(relativePath) ?? null,
-      unlocked: [...messengerUnlockStore().read()],
+      unlocked: [...messengerUnlockStore().read(), ...friendStore().read().keys()],
+      friendStore: friendStore(), // 추천 친구 추가 기록(계정마다)
       // 사진 속 내 모습(ADR-0150) — 계정마다 기기에 적습니다. 테스트는 메모리.
       selfStore: storeOverride === null ? deviceSnapshotSelfStore(key) : memorySnapshotSelfStore(),
       // 생년(ADR-0125) — 계정마다 기기에 적고 서버 방이면 서버 프로필과 맞춥니다. 테스트 씨앗은 씨앗의 생년 그대로.
@@ -250,13 +257,12 @@ export function messengerChatWiring(args: MessengerChatWiringArgs): {
       trial: messengerChatTrial(),
       tier: storeOverride?.tier ?? (isTesterAccessActive() ? "unlimited" : "free"),
       now: clockNow,
-      eventSink: args.eventSink ?? null,
+      eventSink: friendEventSink(args.eventSink ?? null, friendStore()),
       onOpenChatRoom: (roomId) => {
+        noteFriendRoomOpened(roomId, friendStore(), args.eventSink ?? null, clockNow());
         args.dispatch({ type: "push", screen: { name: "messenger-chat", roomId } });
       },
-      onExitChatRoom: () => {
-        args.dispatch({ type: "back" });
-      },
+      onExitChatRoom: () => args.dispatch({ type: "back" }),
       onOpenChatRoomFromNewFriend: (roomId) => {
         for (const action of tabRootActions("messenger")) args.dispatch(action);
         args.dispatch({ type: "push", screen: { name: "messenger-chat", roomId } });
@@ -267,9 +273,7 @@ export function messengerChatWiring(args: MessengerChatWiringArgs): {
         args.dispatch({ type: "backToRoot" });
         for (const action of tabRootActions("journey")) args.dispatch(action);
       },
-      onOpenChatSettings: () => {
-        args.dispatch({ type: "push", screen: { name: "chat-settings" } });
-      },
+      onOpenChatSettings: () => args.dispatch({ type: "push", screen: { name: "chat-settings" } }),
       onOpenMemories: (characterId, name) => {
         args.dispatch({
           type: "push",
@@ -283,15 +287,9 @@ export function messengerChatWiring(args: MessengerChatWiringArgs): {
         });
       },
       // 지금(메신저) 스택에 쌓습니다 — 설정 탭으로 옮겨 쌓으면 뒤로가 설정 첫 화면에 닿아 방으로 돌아오지 못했습니다.
-      onOpenMyProfile: () => {
-        args.dispatch({ type: "push", screen: { name: "profile" } });
-      },
-      onExitChatSettingsStack: () => {
-        args.dispatch({ type: "back" });
-      },
-      onListNoticeShown: () => {
-        args.dispatch({ type: "setListNotice", notice: null });
-      },
+      onOpenMyProfile: () => args.dispatch({ type: "push", screen: { name: "profile" } }),
+      onExitChatSettingsStack: () => args.dispatch({ type: "back" }),
+      onListNoticeShown: () => args.dispatch({ type: "setListNotice", notice: null }),
     },
   };
 }

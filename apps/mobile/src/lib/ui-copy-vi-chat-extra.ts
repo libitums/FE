@@ -3,10 +3,12 @@
 import type { MessengerChatExtraCopy } from "../screens/messenger-chat/chat-settings.contract";
 import { messengerChatMediaVi } from "./ui-copy-vi-chat-media";
 import { messengerChatAlbumVi } from "./ui-copy-vi-chat-album";
+import { messengerChatFriendsVi } from "./ui-copy-vi-chat-friends";
 
 export const messengerChatExtraVi: MessengerChatExtraCopy = {
   media: messengerChatMediaVi,
   album: messengerChatAlbumVi,
+  friends: messengerChatFriendsVi,
   access: {
     signInTitle: "Nhắn tin với những người bạn gặp",
     signInBody:

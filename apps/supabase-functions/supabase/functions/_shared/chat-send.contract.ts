@@ -22,6 +22,9 @@ import type {
   TranslationRequest,
 } from "./companion-steps.contract.ts";
 import type { SuggestRequest, SuggestionDraft } from "./companion-suggest.contract.ts";
+import type { FriendPersonaFields, RomanceTier } from "./companion-friends.contract.ts";
+
+export type { RomanceTier } from "./companion-friends.contract.ts";
 
 // ------------------------------------------------------------------ 환경
 
@@ -87,7 +90,8 @@ export type Segment = {
   readonly translation?: string;
 };
 
-export type PersonaCard = {
+/** 페르소나 카드. 추천 친구 칸(kind · met · 수위 · 배경 …)은 `companion-friends.contract.ts`. */
+export type PersonaCard = FriendPersonaFields & {
   readonly name: string;
   readonly age?: string;
   readonly job?: string;
@@ -133,6 +137,8 @@ export type ModerationRequest = {
    */
   readonly context: string | null;
   readonly ageBand: AgeBand;
+  /** 적용 수위. 없으면 standard. 성인이 아니면 open이어도 standard로 본다(`effectiveRomanceTier`). */
+  readonly romanceTier?: RomanceTier;
   readonly signal: AbortSignal;
 };
 
@@ -210,6 +216,8 @@ export type GateResult =
   | {
       readonly result: "ok";
       readonly ageBand: AgeBand;
+      /** 적용 로맨스 수위(20261213). 옛 DB는 칸이 없다 — standard. */
+      readonly romanceTier?: RomanceTier;
       readonly l1: string | null;
       readonly region: string | null;
       readonly tier: "free" | "premium";

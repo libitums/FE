@@ -23,6 +23,7 @@ import {
   proactiveDirective,
   stateLine,
 } from "./companion-prompt.ts";
+import { companionEvalSets } from "./companion-eval-sets.ts";
 import { callRpc } from "./companion-rpc.ts";
 import { moderationInstruction } from "./companion-safety.ts";
 
@@ -89,6 +90,11 @@ export function promptDocs() {
       input: byAgeBand((ageBand) => moderationInstruction("input", ageBand)),
       output_sync: byAgeBand((ageBand) => moderationInstruction("output_sync", ageBand)),
     },
+    // 완화 수위(open, ADR-0159) — 성인에게만 적용된다(성인이 아니면 위의 연령대 글 그대로).
+    moderationOpen: {
+      input: moderationInstruction("input", "adult", "open"),
+      output_sync: moderationInstruction("output_sync", "adult", "open"),
+    },
     translation: translationSystem(placeholder("l1"), placeholder("segment count")),
     memory: { adult: memorySystem(false), minor: memorySystem(true) },
     summary: summarySystem,
@@ -137,5 +143,7 @@ export async function companionDocs(
     settings,
     inspectAvailable: characters != null && settings != null,
     prompts: promptDocs(),
+    // 고정 평가 세트(추천 친구 페르소나 유지 · 로맨스 수위 경계) — 대시보드가 세트마다 POST로 돌린다.
+    evalSets: companionEvalSets,
   };
 }

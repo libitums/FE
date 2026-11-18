@@ -64,6 +64,9 @@
     "snapshotSelf": {
       "type": "string",
       "enum": ["female", "male", "hidden"]
+    },
+    "adultAck": {
+      "type": "boolean"
     }
   },
   "required": [
@@ -75,7 +78,8 @@
     "proactiveHour",
     "timezone",
     "replySuggestions",
-    "snapshotSelf"
+    "snapshotSelf",
+    "adultAck"
   ],
   "additionalProperties": false
 }

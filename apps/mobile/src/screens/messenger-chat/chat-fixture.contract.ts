@@ -2,6 +2,7 @@
 
 import type { SnapshotSelfStore } from "./chat-fixture-album";
 import type { BirthYearStore } from "./chat-fixture-birth-year";
+import type { FriendStore } from "./chat-friends.contract";
 import type { ChatMediaHooks } from "./chat-media.contract";
 import type { ChatRemote } from "./chat-remote.contract";
 import type { ReplyIdeasStore } from "./reply-ideas-pref";
@@ -92,8 +93,10 @@ export type FixtureChatSourceOptions = {
   readonly seed?: ChatFixtureSeed;
   readonly now?: () => number;
   readonly timers?: ChatTimers;
-  /** 처음부터 열린 채 시작할 인물 id(재시작 뒤 모습). */
+  /** 처음부터 열린 채 시작할 인물 id(재시작 뒤 모습) — 해금한 이야기 인물 · 추가한 추천 친구. */
   readonly unlocked?: readonly string[];
+  /** 추천 친구 추가 기록의 기기 저장(계정마다) — 없으면 메모리만(테스트 · 데모). */
+  readonly friendStore?: FriendStore;
   readonly remote?: ChatRemote; // 서버 모드(ADR-0137) — 방 기록 · 첫 인사 · 보내기를 서버에서.
   /** 서버 모드에서 만들 때 열린 방의 기록을 미리 읽어 목록에 마지막 말을 세웁니다(다시 켠 뒤 모습). 인사는 청하지 않습니다. */
   readonly previewOnStart?: boolean;

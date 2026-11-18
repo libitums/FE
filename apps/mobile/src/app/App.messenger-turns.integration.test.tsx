@@ -83,8 +83,8 @@ function typeAn(): void {
 
 // ------------------------------------------------------------------ 앱 안 방(가짜 출처)
 
-test("CP-I1. 앱 안 방은 첫 통부터 엽전 — 머리 「3 coins per message」 · 엽전 보내기 · 지갑 100 → 97 · 낸 값 3 이벤트", async () => {
-  await resetMessengerChatSource({ tier: "free" });
+test("CP-I1. 공용 체험을 다 쓴 앱 안 방은 엽전 — 머리 「3 coins per message」 · 엽전 보내기 · 지갑 100 → 97 · 낸 값 3 이벤트", async () => {
+  await resetMessengerChatSource({ tier: "free", trial: 0 });
   await boot(100);
   openRoom("owner");
 
@@ -103,7 +103,7 @@ test("CP-I1. 앱 안 방은 첫 통부터 엽전 — 머리 「3 coins per messa
 });
 
 test("CP-I2. 잔액이 모자라면 보내지 않고 엽전 상점이 서며 글은 입력 칸에 남는다", async () => {
-  await resetMessengerChatSource({ tier: "free" });
+  await resetMessengerChatSource({ tier: "free", trial: 0 });
   await boot(2);
   openRoom("owner");
   typeAn();
@@ -201,8 +201,8 @@ test("CP-I4. 서버 방의 체험 인물: 서버 지갑의 체험 수(2)를 보�
   expect(present("messenger-chat-turn-strip")).toBe(true);
 });
 
-test("CP-I5. 서버 방의 그 밖의 인물: 엽전 보내기는 앱 지갑에서 빼지 않고, 턴 done 잔액(37)이 머리 칩으로 간다", async () => {
-  const server = serverRemote([{ balance: 40, trialRemaining: 20 }]);
+test("CP-I5. 서버 방(공용 체험 다 씀): 엽전 보내기는 앱 지갑에서 빼지 않고, 턴 done 잔액(37)이 머리 칩으로 간다", async () => {
+  const server = serverRemote([{ balance: 40, trialRemaining: 0 }]);
   await bootServer(server.remote, 40);
   openRoom("mina");
   await flush();

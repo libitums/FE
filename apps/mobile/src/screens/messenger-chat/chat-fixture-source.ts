@@ -11,10 +11,9 @@ import {
   clearRoomHandles,
   defaultTimers,
   isOpenAccess,
-  MINUTE_MS,
   newRoomState,
   openLockedRoom,
-  replaceMessage,
+  refreshRoomImages,
   summaryOf as roomSummaryOf,
   threadOf as roomThreadOf,
   type RoomState,
@@ -23,11 +22,10 @@ import { albumSourceMethods } from "./chat-fixture-album";
 import { mediaRequester } from "./chat-fixture-media";
 import { createFixtureNotes } from "./chat-fixture-notes";
 import { remoteRoomMethods, uuidV4 } from "./chat-fixture-remote";
+import { createFriendsPort } from "./chat-fixture-friends";
 import { roomResetMethods } from "./chat-room-reset";
 import { CHAT_PLACEHOLDERS } from "./chat-placeholders";
 import type {
-  ChatFixtureMessage,
-  ChatMediaKind,
   ChatMessage,
   ChatSnapshot,
   ChatSource,
@@ -87,6 +85,7 @@ export function createFixtureChatSource(options: FixtureChatSourceOptions): Fixt
       snapshotCache = null;
       notify();
     },
+    (loaded) => friends.profileLoaded(loaded), // 같은 프로필 답의 성인 확인 — 비동기라 아래 친구 포트가 받습니다
   );
 
   const changed = (room: RoomState) => {
@@ -133,8 +132,8 @@ export function createFixtureChatSource(options: FixtureChatSourceOptions): Fixt
     room.notes = notes.seedNotes(roomSeed.messages, messages);
     if (options.remote !== undefined) room.origin = "server";
     rooms.set(roomSeed.roomId, room);
-    // 재시작 뒤 모습: 이미 해금한 인물은 처음부터 열린 채 — opening 한 줄 · 안 읽음 0 · NEW 아님.
-    if (roomSeed.access.kind === "locked" && options.unlocked?.includes(roomSeed.counterpart.id)) {
+    // 재시작 뒤 모습: 이미 해금한(추가한 친구 포함) 인물은 처음부터 열린 채 — opening 한 줄 · 안 읽음 0 · NEW 아님.
+    if (roomSeed.access.kind !== "open" && options.unlocked?.includes(roomSeed.counterpart.id)) {
       openLockedRoom(room, openingOf(room), { isNew: false, unread: false });
     }
   }
@@ -199,6 +198,12 @@ export function createFixtureChatSource(options: FixtureChatSourceOptions): Fixt
           preview: options.previewOnStart === true ? [...rooms.keys()] : [],
         });
   const sendText = remoteRoom?.sendText ?? localSendText;
+  // 추천 친구 — 서버 목록 · 추가(방 열기 · 기기 기록 · 해금 선톡과 같은 첫 말).
+  const friendCtx = { rooms, now, openingOf, changed, notify, disposed: () => disposed };
+  const friends = createFriendsPort({
+    ...{ ...friendCtx, remote: options.remote, store: options.friendStore },
+    ...{ openRoomId: () => openRoomId, greetUnlocked: remoteRoom?.greetUnlocked },
+  });
 
   // 서버 방은 서버 사진 · 음성(ADR-0146 「앱 연결」), 아니면 정해 둔 시간 뒤 픽스처.
   const fixtureMedia = { live, changed, schedule, now, messageId, photoPaths, resolveUrl };
@@ -280,17 +285,10 @@ export function createFixtureChatSource(options: FixtureChatSourceOptions): Fixt
     }),
     refreshImages: () => {
       snapshotCache = null;
-      for (const room of rooms.values()) {
-        room.summaryCache = null;
-        room.threadCache = null;
-        room.messages = room.messages.map((message) =>
-          message.kind === "photo" && message.imageUrl === null
-            ? { ...message, imageUrl: resolveUrl(photoPaths.get(message.id) ?? null) }
-            : message,
-        );
-      }
+      refreshRoomImages(rooms.values(), (id) => resolveUrl(photoPaths.get(id) ?? null));
     },
     server: remoteRoom?.controls ?? null,
+    friends,
     dispose: () => {
       disposed = true;
       for (const room of rooms.values()) clearHandles(room);

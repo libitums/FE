@@ -2,6 +2,7 @@
 // 출처(`chat-fixture-remote.ts`)는 이 포트만 압니다. 어떤 호출도 던지지 않습니다 — 실패는 null · onEnd로 옵니다.
 
 import type { ChatCorrection } from "./chat-feedback.contract";
+import type { ChatFriend } from "./chat-friends.contract";
 import type { ChatMediaRemote } from "./chat-media.contract";
 import type { ChatMessage, ChatReplyIdea } from "./chat-source.contract";
 
@@ -55,6 +56,13 @@ export type ChatRemote = {
    * null. 없으면(옛 테스트 원격) 서버 방은 비우지 못합니다.
    */
   readonly clearChat?: (characterId: string) => Promise<"cleared" | "busy" | null>;
+  /**
+   * 추천 친구 `companion_friends` — 이 학습자에게 보이는 친구만(기능이 꺼졌으면 빈 목록, 미성년자는 open 등급 없음). 못 읽으면
+   * (RPC 없음 · 404 · 오프라인) null — 앱은 친구를 보이지 않습니다. 없으면(옛 테스트 원격) 추천 줄이 서지 않습니다.
+   */
+  readonly friends?: () => Promise<readonly ChatFriend[] | null>;
+  /** 성인 확인 `companion_ack_adult` — 답의 `adultAck`(못 받으면 null). */
+  readonly ackAdult?: () => Promise<boolean | null>;
 };
 
 /** 서버 지갑 — 잔액(sub + grant + paid)과 체험 인물의 체험 남은 수(칸이 없거나 틀리면 null). */
@@ -69,6 +77,8 @@ export type ChatProfileRemote = {
   readonly load: () => Promise<{
     readonly birthYear: number | null;
     readonly replySuggestions?: boolean | null;
+    /** 추천 친구의 성인 확인(open 등급) — 칸이 없으면 null. */
+    readonly adultAck?: boolean | null;
   } | null>;
   /** `companion_save_profile(p_birth_year, p_age_source = "self")` — 성공하면 true. 건너뜀은 서버에 적을 칸이 없습니다. */
   readonly saveBirthYear: (year: number) => Promise<boolean>;

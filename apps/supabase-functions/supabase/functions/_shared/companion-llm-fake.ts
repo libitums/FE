@@ -1,7 +1,7 @@
 // 키 없이 도는 결정적 LLM 계층(`COMPANION_LLM=fake`). 로컬 · 플레이그라운드 화면 확인과 테스트용입니다 — 실제 품질과 무관합니다.
 //
 // 플레이그라운드에서 흐름을 일부러 일으키는 낱말:
-//   「죽고 싶」 · 「자살」 → 위기   「[block]」 · 「섹스」 · 「키스」 → 입력 차단(미성년자는 「사랑해」도)   「[unsafe-reply]」 · 「[swear-reply]」 → 출력 차단
+//   「죽고 싶」 · 「자살」 → 위기   「[block]」 · 「섹스」 · 「키스」 → 입력 차단(미성년자는 「사랑해」도, open은 「키스」 통과)   「[unsafe-reply]」 · 「[swear-reply]」 → 출력 차단
 //   심한 욕 · 모욕(「병신」 · 「ㅂㅅ」 · 「개새끼」 · 욕 + 「너」 · 「you」 — 「fuck you」 · 「putang ina mo」) → 입력 차단(profanity)
 //   가벼운 놀림(「바보」 · 「멍청이」 · 「idiot」 · 「bobo」) → 통과 · 피드백 없음
 //   입력 차단은 그 턴의 반복 위반 수로 단계가 갈린다 — 캐릭터가 성격대로 피함 → 상한을 넘으면 경고 + 차감(`chat-send-refusal.ts`)
@@ -34,7 +34,7 @@ import { fakeJudgement } from "./companion-llm-fake-judge.ts";
 import { fakeMemoryOps } from "./companion-llm-fake-memory.ts";
 import { fakeSuggestions } from "./companion-llm-fake-suggest.ts";
 import { emptyFeedback } from "./companion-llm-prompts.ts";
-import { romanceAllowed } from "./companion-safety.ts";
+import { fakeRomanceVerdict } from "./companion-llm-fake-romance.ts";
 
 // 위기 · 욕 · 모욕 — 학습자 언어가 여럿이라(en · vi · id · ja · es · my · th · tl …) 언어마다 한두 개씩 둔다.
 const crisisWords = [
@@ -53,10 +53,6 @@ const crisisWords = [
   "อยากตาย",
   "သေချင်",
 ];
-// 로맨스 수위선(ADR-0152): 성적인 말과 포옹을 넘는 스킨십은 모든 연령에서 차단, 로맨스 말은 미성년자만 차단.
-const sexualWords = ["[block]", "섹스", "sex"];
-const intimacyWords = ["키스", "뽀뽀", "kiss"];
-const romanceWords = ["사랑해"];
 // 심한 욕 · 모욕(상대를 겨냥). 띄어 쓰거나 숫자 · 별표를 끼운 꼴도 잡게 비교 전에 지운다.
 // 가벼운 놀림(바보 · 멍청이 · idiot · dummy · bobo · tonto · バカ)은 여기 없다 — 통과하고 피드백도 비속어로 치지 않는다.
 const insultWords = [
@@ -170,20 +166,17 @@ export function fakeCompanionLlm(): CompanionLlm {
       if (request.layer === "input" && crisisWords.some((word) => text.includes(word))) {
         return { category: "self_harm", action: "crisis" };
       }
+      // 로맨스 · 성(수위선 · 완화 수위)은 `companion-llm-fake-romance.ts`.
+      const romance = fakeRomanceVerdict(request, text);
       if (request.layer !== "input") {
         if (text.includes("[unsafe]")) return { category: "other_harm", action: "block" };
+        if (romance !== null) return romance;
         // 캐릭터는 가벼운 욕도 쓰지 않는다.
         if (hasInsult(text) || hasMildInsult(text) || swearIn(request.text) !== undefined)
           return { category: "profanity", action: "block" };
         return { category: "safe", action: "allow" };
       }
-      if (sexualWords.some((word) => text.includes(word)))
-        return { category: "sexual", action: "block" };
-      if (
-        intimacyWords.some((word) => text.includes(word)) ||
-        (!romanceAllowed(request.ageBand) && romanceWords.some((word) => text.includes(word)))
-      )
-        return { category: "romance", action: "block" };
+      if (romance !== null) return romance;
       if (hasInsult(text) || (swearIn(request.text) !== undefined && aimed.test(request.text)))
         return { category: "profanity", action: "block" };
       return { category: "safe", action: "allow" };

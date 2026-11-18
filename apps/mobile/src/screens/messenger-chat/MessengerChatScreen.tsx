@@ -1,7 +1,6 @@
 import { useRef } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
-import arrowLeft03 from "@libitums/icons/lynx/arrow-left-03";
 import menu from "@libitums/icons/lynx/menu";
 import { resolveReducedMotion, useMotion } from "@libitums/ui-lynx/motion";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
@@ -39,6 +38,7 @@ import { useChatRoom } from "./use-chat-room";
 import { useChatEntrances } from "./use-chat-entrance";
 import { useChatTurns } from "./use-chat-turns";
 import { useCoinBalance } from "./use-coin-balance";
+import { RoomHeaderStart, useRoomProfile } from "./RoomProfile";
 
 import "./messenger-chat.css";
 
@@ -82,7 +82,6 @@ export function MessengerChatScreen({
     trial,
     wallet,
     tier,
-    characterId: thread?.counterpart.id ?? roomId,
     // 서버 방은 서버가 엽전을 냅니다(ADR-0155) — 앱 지갑에서 빼지 않습니다.
     charging: thread !== null && thread.server !== null ? "server" : "local",
     onTopUp: () => dispatch({ type: "open-overlay", overlay: { kind: "coin-shop", from: "send" } }),
@@ -95,6 +94,7 @@ export function MessengerChatScreen({
   const busy = thread !== null && (thread.typing || thread.awaitingReply);
   serverBusy.current = server && busy;
   const tools = useBubbleTools({ roomId, source, thread, announce });
+  const profile = useRoomProfile(source, thread); // 머리 아바타 → 인물 프로필 시트
   const guide = useRoomGuide(roomId, thread, guideStore, state.overlay.kind !== "none");
   useAutoIdeas({
     ideas: server && thread.settings.autoIdeas ? thread.ideas : null, // 서버 모드 · 방 「보기 자동」(리뷰 W1)
@@ -167,15 +167,9 @@ export function MessengerChatScreen({
             insetTop={0}
             testIds={{ root: ids.header, title: ids.title }}
             start={
-              <ChatHeaderSide testId={ids.back}>
-                <RoundButton
-                  accessibilityLabel={copy.room.back}
-                  icon={arrowLeft03}
-                  variant="neutral"
-                  size="l"
-                  bindtap={exit}
-                />
-              </ChatHeaderSide>
+              <RoomHeaderStart
+                {...{ backLabel: copy.room.back, backTestId: ids.back, onBack: exit, profile }}
+              />
             }
             end={
               <ChatHeaderSide
@@ -295,6 +289,7 @@ export function MessengerChatScreen({
         preferences={preferences}
         {...{ onOpenMemories, onOpenAlbum, onOpenMyProfile }}
       />
+      {profile.sheet}
     </view>
   );
 }

@@ -49,10 +49,10 @@ describe("airbridgeEventFrom", () => {
   });
 
   // ⟨ADR-0146 앱 연결⟩ `chat_media_completed`가 더해져 59 · 57이다.
-  test("AB3. 이름 60개는 표의 58개와 매핑되는 둘로 나뉜다", () => {
+  test("AB3. 이름 65개는 표의 63개와 매핑되는 둘로 나뉜다(추천 친구 다섯 포함)", () => {
     const tableNames = new Set<string>(unmappedEvents.map((e) => e.name));
-    expect(tableNames.size).toBe(58);
-    expect(allEventNames).toHaveLength(60);
+    expect(tableNames.size).toBe(63);
+    expect(allEventNames).toHaveLength(65);
     expect([...tableNames, "entry_completed", "episode_final_passed"].sort()).toEqual(
       [...allEventNames].sort(),
     );
