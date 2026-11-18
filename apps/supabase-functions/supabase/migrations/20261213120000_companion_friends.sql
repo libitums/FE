@@ -869,3 +869,147 @@ on conflict (id) do update set
   active = excluded.active,
   sort_order = excluded.sort_order,
   media = excluded.media;
+
+-- ------------------------------------------------------------------ 운영자(플레이그라운드, service_role · 시험 계정만)
+
+-- 대시보드 플레이그라운드가 시험 계정의 성인 확인 동의를 켜고 끈다(앱 RPC `companion_ack_adult()`는 authenticated라 서버 키로 못 부른다).
+-- 켜기는 생년상 성인일 때만(아니면 바꾸지 않고 `not_adult`), 끄기는 늘 된다. 생년은 기존 `companion_operator_set_profile`
+-- (p_birth_year · p_clear_age)로 바꾼다 — 성인이 아니게 바뀌면 트리거가 동의를 지운다.
+-- `companion_operator_reset`은 동의를 지우지 않는다: 그 함수는 그 인물의 대화 · 관계와 계정의 공유 기억 · 제재 · 고지 · 체험 사용량만
+-- 처음으로 되돌리고 프로필(생년 · l1 …)은 건드리지 않는다(20261111 주석). 동의는 프로필의 동의라 이 함수로 끈다.
+create or replace function public.companion_operator_set_adult_ack(p_user_id uuid, p_ack boolean)
+returns jsonb
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_band text;
+  v_result text := 'ok';
+begin
+  if not exists (select 1 from auth.users where id = p_user_id and raw_app_meta_data->>'duru_tester' = 'true') then
+    raise exception 'not a tester' using errcode = 'P0002';
+  end if;
+  if p_ack is null then
+    raise exception 'p_ack is required' using errcode = '22023';
+  end if;
+  v_band := companion.age_band((select birth_year from companion.profiles where user_id = p_user_id), now());
+  if not p_ack then
+    update companion.profiles set adult_ack_at = null, updated_at = now()
+    where user_id = p_user_id and adult_ack_at is not null;
+  elsif v_band = 'adult' then
+    update companion.profiles set adult_ack_at = now(), updated_at = now() where user_id = p_user_id;
+  else
+    v_result := 'not_adult';
+  end if;
+  return jsonb_build_object(
+    'result', v_result,
+    'adultAck', exists (
+      select 1 from companion.profiles
+      where user_id = p_user_id and adult_ack_at is not null and companion.age_band(birth_year, now()) = 'adult'
+    ),
+    'ageBand', v_band
+  );
+end;
+$$;
+
+-- 시험 계정 목록(20261130 판 + adultAck — 동의가 있고 지금 생년상 성인일 때만 참).
+create or replace function public.companion_inspect_testers()
+returns jsonb
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select coalesce(jsonb_agg(jsonb_build_object(
+    'userId', u.id,
+    'email', u.email,
+    'ageBand', companion.age_band(p.birth_year, now()),
+    'birthYear', p.birth_year,
+    'l1', p.l1,
+    'region', p.last_region,
+    'feedbackMode', p.feedback_mode,
+    'proactivePref', coalesce(p.proactive_pref, 'daily1'),
+    'proactiveHour', p.proactive_hour,
+    'timezone', p.timezone,
+    'replySuggestions', coalesce(p.reply_suggestions, true),
+    'snapshotSelf', coalesce(p.snapshot_self, 'female'),
+    'adultAck', coalesce(p.adult_ack_at is not null and companion.age_band(p.birth_year, now()) = 'adult', false)
+  ) order by u.email), '[]'::jsonb)
+  from auth.users u
+  left join companion.profiles p on p.user_id = u.id
+  where u.raw_app_meta_data->>'duru_tester' = 'true'
+$$;
+
+-- 그 학습자 × 인물의 접근 · 수위 판정(플레이그라운드 상태 패널). 관문 · 시작과 같은 도우미(`friend_hidden` · `romance_tier`)로 계산한다.
+-- romanceReason: open이 아닐 때 첫 까닭(인물 standard → 생년상 성인 아님 → 동의 없음). hiddenReason: 보이지 않을 때의 까닭.
+create or replace function companion.operator_access(p_user_id uuid, p_character_id text, p_now timestamptz)
+returns jsonb language sql stable as $$
+  with s as (select friends_mode from companion.settings),
+  p as (
+    select companion.age_band((select birth_year from companion.profiles where user_id = p_user_id), p_now) as band,
+      coalesce((select adult_ack_at is not null from companion.profiles where user_id = p_user_id), false) as ack
+  ),
+  c as (select persona from companion.characters where id = p_character_id)
+  select jsonb_build_object(
+    'friendsMode', s.friends_mode,
+    'tester', companion.is_tester(p_user_id),
+    'ageBand', p.band,
+    'adultAck', p.ack and p.band = 'adult',
+    'kind', case when c.persona is null then null
+      when c.persona->>'kind' = 'friend' then 'friend' else 'story' end,
+    'personaTier', coalesce(c.persona->>'romanceTier', 'standard'),
+    'romanceTier', companion.romance_tier(p_user_id, coalesce(c.persona, '{}'::jsonb), p_now),
+    'romanceReason', case
+      when companion.romance_tier(p_user_id, coalesce(c.persona, '{}'::jsonb), p_now) = 'open' then null
+      when coalesce(c.persona->>'romanceTier', 'standard') <> 'open' then 'persona_standard'
+      when p.band <> 'adult' then 'not_adult'
+      else 'no_ack' end,
+    'visible', not coalesce(companion.friend_hidden(p_user_id, c.persona, p_now), false),
+    'hiddenReason', case
+      when not coalesce(companion.friend_hidden(p_user_id, c.persona, p_now), false) then null
+      when s.friends_mode = 'off' then 'friends_off'
+      when s.friends_mode = 'testers' and not companion.is_tester(p_user_id) then 'not_tester'
+      else 'minor_open' end
+  )
+  from s cross join p left join c on true
+$$;
+revoke all on function companion.operator_access(uuid, text, timestamptz) from public;
+
+-- 기억 · 관계 · 제재(20261123 판) + access(위 판정).
+create or replace function public.companion_inspect_memory(p_user_id uuid, p_character_id text)
+returns jsonb
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select jsonb_build_object(
+    'memories', coalesce((
+      select jsonb_agg(jsonb_build_object('id', id, 'characterId', character_id, 'kind', kind, 'content', content,
+        'userEdited', user_edited, 'deleted', deleted_at is not null, 'createdAt', created_at,
+        'updatedAt', updated_at, 'deletedAt', deleted_at, 'deletedReason', deleted_reason, 'history', history)
+        order by created_at desc)
+      from companion.memories
+      where user_id = p_user_id and (character_id = p_character_id or character_id is null)
+    ), '[]'::jsonb),
+    'capacity', jsonb_build_object(
+      'character', companion.memory_layer_status(p_user_id, p_character_id),
+      'shared', companion.memory_layer_status(p_user_id, null)
+    ),
+    'summary', (select rolling_summary from companion.conversations
+      where user_id = p_user_id and character_id = p_character_id and kind = 'companion'),
+    'relationship', (select jsonb_build_object('intimacy', intimacy, 'speechLevel', speech_level)
+      from companion.relationships where user_id = p_user_id and character_id = p_character_id),
+    'moderation', (select jsonb_build_object('strikes', strikes, 'blockedUntil', blocked_until)
+      from companion.moderation_state where user_id = p_user_id),
+    'access', companion.operator_access(p_user_id, p_character_id, now())
+  )
+$$;
+
+revoke all on function public.companion_operator_set_adult_ack(uuid, boolean) from public, anon, authenticated;
+revoke all on function public.companion_inspect_testers() from public, anon, authenticated;
+revoke all on function public.companion_inspect_memory(uuid, text) from public, anon, authenticated;
+grant execute on function public.companion_operator_set_adult_ack(uuid, boolean) to service_role;
+grant execute on function public.companion_inspect_testers() to service_role;
+grant execute on function public.companion_inspect_memory(uuid, text) to service_role;

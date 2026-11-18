@@ -1900,4 +1900,19 @@ describe("완화 수위(ADR-0159)", () => {
       ["output_sync", "open"],
     ]);
   });
+  test("CS44. done · 저장 meta에 적용 수위 — 보통 답 · 거절 모두, 성인이 아니면 standard", async () => {
+    const open = await turn({ ageBand: "adult", romanceTier: "open" }, "안녕하세요");
+    expect(open.list.at(-1)).toMatchObject({ event: "done", data: { romanceTier: "open" } });
+    const refused = await turn({ ageBand: "unknown", romanceTier: "open" }, "*볼에 키스한다*");
+    expect(refused.finish).toMatchObject({ p_status: "blocked" });
+    expect(refused.list.at(-1)).toMatchObject({
+      event: "done",
+      data: { romanceTier: "standard", refusal: { stage: "deflect" } },
+    });
+    expect((refused.finish["p_assistant"] as { meta: Record<string, unknown> }).meta).toMatchObject(
+      { romanceTier: "standard" },
+    );
+    const old = await turn({ ageBand: "adult" }, "안녕하세요");
+    expect(old.list.at(-1)).toMatchObject({ event: "done", data: { romanceTier: "standard" } });
+  });
 });

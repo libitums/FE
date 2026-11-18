@@ -419,14 +419,23 @@ ops-dashboard 컴패니언 탭이 부른다. ops-dashboard는 서버에서 돌�
 
 | 함수 | 마일스톤 | 돌려주는 것 |
 |---|---|---|
-| `companion_inspect_testers()` | M1 | 시험 계정 목록(`userId` · `email` · `ageBand` · `l1`) — 플레이그라운드가 고를 계정 |
+| `companion_inspect_testers()` | M1 | 시험 계정 목록(`userId` · `email` · `ageBand` · `l1`) — 플레이그라운드가 고를 계정. ⟨20261213⟩ `adultAck`(성인 확인 동의가 있고 지금 생년상 성인일 때만 참) |
 | `companion_inspect_conversation(p_user_id, p_character_id, p_before, p_limit)` | M1 | 메시지(최신부터) · 각 턴의 판정 기록 · 신고 · 보낸 고지. 커서는 앱용 `companion_list_messages`와 같다 |
 | `companion_inspect_moderation(p_since, p_outcome, p_limit)` | M1 | 기간 안의 판정(차단 · 위기 · 비동기 검사 실패)을 최신부터. `p_outcome`이 null이면 전부 |
 | `companion_inspect_reports(p_since, p_limit)` | M1 | 메시지 신고와 신고된 메시지 앞뒤 턴 |
-| `companion_inspect_memory(p_user_id, p_character_id)` | M3 | 장기 메모리 항목(지운 항목 제외)과 요약 · 용량 `capacity { character, shared }`(2026-11-09) |
+| `companion_inspect_memory(p_user_id, p_character_id)` | M3 | 장기 메모리 항목(지운 항목 제외)과 요약 · 용량 `capacity { character, shared }`(2026-11-09). ⟨20261213⟩ `access { friendsMode, tester, ageBand, adultAck, kind (friend · story · 없는 인물 null), personaTier, romanceTier (적용 수위), romanceReason (open이 아니면 persona_standard → not_adult → no_ack 순의 첫 까닭, open이면 null), visible, hiddenReason (보이지 않으면 friends_off · not_tester · minor_open) }` — 관문과 같은 도우미로 계산 |
 | `companion_inspect_wallet(p_user_id, p_limit)` | M4 | 지갑 잔액 · 최근 원장 · 열린 예약 |
 | `companion_inspect_media(p_user_id, p_limit)` | 2026-11-13 | 스냅샷 · 음성 행 전부(프롬프트 · 판정 · 메타 · 오류 · 예약 상태) · 오늘 수 · 설정. `p_user_id` null이면 모든 유저 |
 | `companion_media_orphans(p_limit)` | 2026-11-13 | 행이 없는 `companion-media` 파일 이름(계정 삭제의 Storage 지우기가 실패한 경우 등) |
+
+⟨20261213 ADR-0159⟩ 운영자 함수(쓰기, service_role 전용 · 시험 계정만 — 아니면 `P0002 not a tester`, `companion_operator_reset`과 같다):
+
+| 함수 | 돌려주는 것 |
+|---|---|
+| `companion_operator_set_adult_ack(p_user_id uuid, p_ack boolean)` | `{ result: ok · not_adult, adultAck, ageBand }`. 켜기(`true`)는 생년상 성인일 때만 지금 시각으로 남기고, 나이 모름 · 미성년자 · 프로필 없음이면 바꾸지 않고 `not_adult`. 끄기(`false`)는 늘 `ok`. `p_ack` null은 `22023`. 앱의 `companion_ack_adult()`는 authenticated라 서버 키로 못 불러 따로 둔다 |
+
+- 생년은 따로 함수를 두지 않는다 — 기존 `companion_operator_set_profile(p_birth_year, p_clear_age …)`로 바꾸고, 성인이 아니게 바뀌면 트리거가 동의도 지운다.
+- `companion_operator_reset`은 동의를 지우지 않는다(그 인물의 대화 · 관계와 계정의 공유 기억 · 제재 · 고지 · 체험 사용량만 — 프로필은 그대로).
 
 - 미성년자 대화도 보인다. 조회 기록을 남길지(누가 언제 어느 유저를 봤나)는 M1 구현 때 정한다 — [제안] `companion.inspect_log`에 남긴다.
 - 반환 모양은 계약 패키지의 `json-schema/`에 함께 싣는다(§8.2).
@@ -458,7 +467,7 @@ data: {"segment":0,"kind":"speech","text":"안녕하세요, "}
 | `state` | M1 | `{ speechLevel, speechLevelChanged, memoryFull }` — `memoryFull`은 턴 시작 때 이 캐릭터 층이 가득 찼는지(PRD §3.9) | 정상 턴에서 정확히 1, `done` 바로 앞 |
 | `crisis` | M1 | `{ resources: [{ name, phone?, url?, hours? }], region }` — 안내 글은 O15 | 위기 턴에서 1, 그 뒤 `done` |
 | `error` | M1 | `{ code, retryable }` | 0 ~ 1, **마지막**(뒤에 `done` 없음) |
-| `done` | M1 | `{ assistantMessageId, creditsSpent, balance }` — `balance`는 M4 전 `null` | 정상 · 위기 턴에서 정확히 1, 마지막 |
+| `done` | M1 | `{ assistantMessageId, creditsSpent, balance }` — `balance`는 M4 전 `null`. ⟨20261213⟩ 선택 칸 `romanceTier`(이번 턴의 적용 수위 `open` · `standard`, 옛 서버는 없음 — 없으면 standard). 저장 meta(턴 · 거절 · 첫 인사 · 선톡)에도 `romanceTier` | 정상 · 위기 턴에서 정확히 1, 마지막 |
 
 **`correction` data**
 

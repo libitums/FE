@@ -26,6 +26,7 @@ import { greetingUserText } from "./companion-prompt.ts";
 import { greetingSystem } from "./companion-greet-system.ts";
 import { generateOpener, openerLearning, openerOutcome, recordOpener } from "./companion-opener.ts";
 import { callRpc } from "./companion-rpc.ts";
+import { effectiveRomanceTier } from "./companion-safety.ts";
 import {
   generateSuggestions,
   type SuggestOutcome,
@@ -221,6 +222,7 @@ export function createGreetHandler(deps: GreetDeps): (request: Request) => Promi
         p_meta: {
           model: llm.model,
           ageBand: context.ageBand,
+          romanceTier: effectiveRomanceTier(context.ageBand, context.romanceTier),
           greeting: source,
           ...(source === "canned" ? { greetingFallback: outcome } : {}),
           translation: translated.status,

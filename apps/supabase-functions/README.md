@@ -691,6 +691,10 @@ ops-dashboard `docs/admin-contract.md` §A가 정본이다.
 - 함수: `companion-safety.ts`(`effectiveRomanceTier` · `outputCheckRequired` · open 검사 선) · `companion-prompt.ts`(친구 소개 · 스토리 밖 · 배경 · 성격 · 사투리 ·
   open 수위선) — open 턴은 답을 출력 검사한 뒤 내보낸다. 스냅샷 그림 규칙 · 추천 답변 칩은 수위로 넓히지 않는다.
 - 평가: `companion-eval`의 `GET ?docs=1`이 `evalSets`(친구 페르소나 유지 · 로맨스 수위 경계, `_shared/companion-eval-sets*.ts`)를 더 준다.
+- 플레이그라운드(운영자, 서버 키 · 시험 계정만): `companion_operator_set_adult_ack(p_user_id, p_ack)` → `{ result: ok · not_adult, adultAck, ageBand }`
+  (켜기는 생년상 성인만). 생년은 기존 `companion_operator_set_profile`. `companion_inspect_testers().adultAck`, `companion_inspect_memory(…).access`
+  (`friendsMode` · `tester` · `ageBand` · `adultAck` · `kind` · `personaTier` · `romanceTier` · `romanceReason` · `visible` · `hiddenReason`).
+  `companion_operator_reset`은 동의를 지우지 않는다. SSE `done`과 저장 meta(첫 인사 · 선톡 · 거절)가 적용 수위 `romanceTier`를 싣는다.
 - 운영에서 친구를 모두에게 열기: `update companion.settings set friends_mode = 'on'`. 끄기: `'off'`(대화 중이던 친구도 `not_available`).
 - 테스트: `migrations/companion-friends.integration.test.ts`(FR1 ~ FR9) · `_shared/companion-friends.unit.test.ts`(FT1 ~ FT9).
 

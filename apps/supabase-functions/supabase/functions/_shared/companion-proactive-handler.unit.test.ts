@@ -262,3 +262,21 @@ test("PR6. 선톡도 적용 수위를 싣는다 — open이면 프롬프트 · �
   });
   expect(hidden.save()).toBeUndefined();
 });
+
+test("PR7. 선톡 저장 meta에 적용 수위 — open은 성인일 때만, 옛 DB(수위 없음)는 standard", async () => {
+  const persona = { name: "권해준", kind: "friend", romanceTier: "open", met: "friend_app" };
+  const cases: [Record<string, unknown>, string][] = [
+    [{ romanceTier: "open" }, "open"],
+    [{ romanceTier: "open", ageBand: "minor" }, "standard"],
+    [{}, "standard"],
+  ];
+  for (const [overrides, expected] of cases) {
+    const run = setup({ context: context({ persona, replySuggestions: false, ...overrides }) });
+    expect((await run.call({ ...one, character_id: "haejun" })).outcomes[0]).toMatchObject({
+      result: "sent",
+    });
+    expect(run.save()!["p_meta"], JSON.stringify(overrides)).toMatchObject({
+      romanceTier: expected,
+    });
+  }
+});

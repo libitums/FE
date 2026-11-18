@@ -84,6 +84,20 @@
   사투리) · 로맨스 수위 경계(검사 20개, 기대 판정 `expect` — 수위 표 open × {성인 + 동의, 동의 없음, 나이 모름, 미성년자}와 standard) · 답장 경계 14개.
   답장 세트의 기대는 채점자에게만 가는 `spoilerNote`다. 케이스는 `romanceTier`를 받는다. 실제 LLM은 대시보드가 부를 때만 돈다.
 
+### D6. 운영자(플레이그라운드) — 동의 켜고 끄기 · 접근 읽기
+
+- 앱의 `companion_ack_adult()`는 authenticated라 대시보드 플레이그라운드(서버 키 + 시험 계정)가 부를 수 없다. 운영자 함수
+  `companion_operator_set_adult_ack(p_user_id, p_ack)`(service_role, 시험 계정만 — 아니면 `P0002`)가 켜고 끈다. 켜기는 앱과 같게 생년상 성인일 때만,
+  아니면 아무것도 바꾸지 않고 `{ result: "not_adult" }`. 반환 `{ result, adultAck, ageBand }`.
+- 생년 함수는 새로 두지 않는다 — 플레이그라운드는 이미 `companion_operator_set_profile`로 생년을 넣고 지운다(성인이 아니게 바뀌면 트리거가 동의를 지운다).
+- 읽기: `companion_inspect_testers()`에 `adultAck`, `companion_inspect_memory(p_user_id, p_character_id)`에 `access`(출시 스위치 · 시험 계정 · 연령대 ·
+  동의 · 인물 종류 · 인물 수위 · 적용 수위 · standard인 까닭 `persona_standard` → `not_adult` → `no_ack` · 보임과 숨긴 까닭 `friends_off` · `not_tester` ·
+  `minor_open`). 관문과 같은 도우미(`friend_hidden` · `romance_tier`)로 계산해 판정과 어긋나지 않는다.
+- **`companion_operator_reset`은 동의를 지우지 않는다**: 그 함수의 뜻은 「그 인물의 대화 · 관계와 계정의 공유 기억 · 제재 · 고지 · 체험 사용량을 처음으로」이고
+  프로필(생년 · l1 …)은 건드리지 않는다(20261111 주석). 동의는 프로필의 동의라 운영자 함수로 따로 끈다.
+- 디버그용으로 적용 수위를 남긴다: SSE `done`에 선택 칸 `romanceTier`(옛 앱은 무시 — 계약 스키마는 선택 칸), 저장 meta는 턴(이미) · 거절 · 첫 인사 · 선톡.
+- 테스트: integration FO1 ~ FO6, unit CS44 · GT12 · PR7.
+
 ## 하지 않은 것
 
 - 에셋 — 프로필 이미지 · 스냅샷 기준 그림 · 목소리(`voiceBrief` · `look`은 브리프만). 그때까지 스냅샷 · 음성은 `not_configured`.

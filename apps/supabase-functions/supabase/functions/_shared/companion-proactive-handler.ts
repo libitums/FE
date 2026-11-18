@@ -8,12 +8,13 @@
 // 뒤 며칠 · 현지 시간대 · 마지막 화제 · 최근 선톡 글 · 답 없는 선톡 수를 싣고, 칩 스위치가 켜져 있으면 칩도 붙인다(20261123).
 // ⚠ 푸시는 아직 보내지 않는다 — `send-push`에 컴패니언 목적지가 없다(API §2.3, M3 남은 일). 앱은 다음 조회 때 메시지 목록에서 본다.
 
-import type { ChatSendDeps, HistoryEntry, PersonaCard, Segment } from "./chat-send.contract.ts";
+import type { ChatSendDeps, HistoryEntry, Segment } from "./chat-send.contract.ts";
 import { startTranslation, translationContext, withTranslations } from "./chat-send-translate.ts";
 import { defaultSuggestionTimeoutMs, suggestionsMeta } from "./chat-send-suggest.ts";
 import type { ReplySuggestion } from "./companion-contract/index.ts";
 import { systemSplit } from "./companion-llm.ts";
 import { flushIdleMemories } from "./companion-memory-flush.ts";
+import type { ProactiveContext } from "./companion-proactive-context.ts";
 import {
   generateOpener,
   openerLearning,
@@ -28,42 +29,15 @@ import {
   timeOfDay,
 } from "./companion-prompt.ts";
 import { callRpc, isServiceKey } from "./companion-rpc.ts";
+import { effectiveRomanceTier } from "./companion-safety.ts";
 import { openerBeat } from "./companion-story.ts";
 import { generateSuggestions, suggestionRecord } from "./companion-suggest-generate.ts";
-import type { ChoiceSet } from "./companion-suggest.contract.ts";
 import { recentSuggestionHistory } from "./companion-suggest-prompts.ts";
 import { bearerTokenFrom } from "./supabase-auth.ts";
 import { createUsageCollector } from "./companion-usage.ts";
 
 const [historyLimit, lastTopicLimit] = [12, 120];
 const uuidShape = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-type ProactiveContext = {
-  persona: PersonaCard;
-  speechLevel: "polite" | "casual" | "slang";
-  summary: string | null;
-  l1: string | null;
-  ageBand: "adult" | "minor" | "unknown";
-  romanceTier?: "open" | "standard"; // 적용 로맨스 수위(20261213). 옛 DB는 없다 — standard.
-  hasConversation: boolean;
-  /** 유저가 한 번이라도 말했는가(20261122). 첫 인사만 있는 대화에는 `force`여도 보내지 않는다. 옛 DB에는 없다. */
-  hasUserMessage?: boolean;
-  allowed: boolean;
-  capReached: boolean;
-  /** 빈도 판정(20261115 · 20261123): off · quiet_hours · hour · daily_cap · gap · spacing · unanswered_limit · backoff, 보내도 되면 null. */
-  skipReason?: string | null;
-  /** 선톡 맥락(20261123). 옛 DB에는 없다. */
-  unanswered?: number;
-  lastUserMessageAt?: string | null;
-  localHour?: number | null;
-  recentProactive?: string[];
-  replySuggestions?: boolean;
-  suggestionsEnabled?: boolean;
-  suggestionDisplayMax?: number;
-  recentChoiceSets?: ChoiceSet[];
-  memories: string[];
-  history: { role: "user" | "assistant"; text: string | null; segments: Segment[] }[];
-} | null;
 
 type Target = { userId: string; characterId: string };
 type Outcome = {
@@ -208,6 +182,7 @@ async function proactiveOne(deps: ChatSendDeps, target: Target, force: boolean):
     p_segments: stored,
     p_meta: {
       model: llm.model,
+      romanceTier: effectiveRomanceTier(context.ageBand, context.romanceTier),
       forced: force,
       ...wouldSkip,
       ...(force ? { playground: true } : {}),

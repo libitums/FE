@@ -1,11 +1,19 @@
 // 턴의 끝: 저장(`companion_finish_turn` — 피드백 · 친밀도 → 말투 · 화제 · 제재 · 예약 확정/해제를 한 트랜잭션)과 그 결과로 쓰는
 // `state` · `done`. 보통 답 · 위기 · 거절 · 실패가 같은 저장과 같은 끝 이벤트를 쓰게 `chat-send-turn.ts`에서 떼어 둡니다.
 
-import type { BegunTurn, ChatSendDeps, ChatSendEnv, Feedback } from "./chat-send.contract.ts";
+import type {
+  AgeBand,
+  BegunTurn,
+  ChatSendDeps,
+  ChatSendEnv,
+  Feedback,
+  RomanceTier,
+} from "./chat-send.contract.ts";
 import type { Sink } from "./chat-send-http.ts";
 import type { AfterTurnInput } from "./companion-after-turn.ts";
 import type { RefusalStage, SpeechLevel } from "./companion-contract/index.ts";
 import { callRpc } from "./companion-rpc.ts";
+import { effectiveRomanceTier } from "./companion-safety.ts";
 import type { SuggestOutcome } from "./companion-suggest-generate.ts";
 import type { ChoiceSet } from "./companion-suggest.contract.ts";
 
@@ -54,7 +62,12 @@ type FinishContext = {
   readonly deps: ChatSendDeps;
   readonly env: ChatSendEnv;
   readonly sink: Sink;
-  readonly gate: { readonly notices: readonly string[] };
+  /** `ageBand` · `romanceTier`는 `done`의 적용 수위(ADR-0159). 없으면 standard. */
+  readonly gate: {
+    readonly notices: readonly string[];
+    readonly ageBand?: AgeBand;
+    readonly romanceTier?: RomanceTier;
+  };
   readonly turn: Pick<BegunTurn, "userMessageId" | "holdId">;
   readonly assistantMessageId: string;
   readonly status: TurnStatus | null;
@@ -98,6 +111,7 @@ export function turnFinisher(context: FinishContext, moderation: readonly Modera
           assistantMessageId: context.assistantMessageId,
           creditsSpent: finished.creditsSpent,
           balance: finished.balance,
+          romanceTier: effectiveRomanceTier(gate.ageBand ?? "unknown", gate.romanceTier),
           ...(refusal === undefined ? {} : { refusal: { stage: refusal } }),
         },
       }),

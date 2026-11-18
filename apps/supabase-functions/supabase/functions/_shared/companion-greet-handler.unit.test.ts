@@ -413,3 +413,19 @@ test("GT11. 적용 수위가 open이면 모델 인사의 프롬프트 · 출력 
   });
   expect(watched.calls.filter((name) => name !== "translate")).toEqual([]);
 });
+
+test("GT12. 저장 meta에 적용 수위 — open은 성인일 때만, 옛 DB(수위 없음)는 standard", async () => {
+  const persona = { name: "차서연", kind: "friend", romanceTier: "open", met: "friend_app" };
+  const cases: [Record<string, unknown>, string][] = [
+    [{ romanceTier: "open" }, "open"],
+    [{ romanceTier: "open", ageBand: "unknown" }, "standard"],
+    [{}, "standard"],
+  ];
+  for (const [overrides, expected] of cases) {
+    const { call, save } = setup({
+      context: context({ persona, replySuggestions: false, ...overrides }),
+    });
+    expect((await call({ character_id: "seoyeon" })).body).toMatchObject({ status: "ok" });
+    expect(save()!.p_meta, JSON.stringify(overrides)).toMatchObject({ romanceTier: expected });
+  }
+});
