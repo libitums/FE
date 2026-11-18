@@ -22,32 +22,44 @@
   flex-shrink: 0;
 }
 
-/* 「Your plan」 카드 — 엽전 탭 「You have」 자리(시안 #FFF0E6 면 · #FFD2B3 테두리). */
+/* 「Your plan」 카드 — 엽전 탭 「You have」 카드(`coin-shop-screen.css`의 `.coin-shop-screen-balance`)와 같은 틀 · 치수입니다. 탭을
+   바꿔도 위 줄 높이(56)와 전환 알약 자리가 움직이지 않게 합니다. 황동 색은 그 파일의 이유를 따릅니다. */
 .plans-your-plan {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   flex-shrink: 0;
-  padding: 6px var(--libitum-spacing-12);
-  border: 1px solid #ffd2b3;
-  border-radius: var(--libitum-radius-md);
-  background-color: var(--libitum-color-brand-reward-disabled-surface);
+  padding: var(--libitum-spacing-8) 14px var(--libitum-spacing-8) 10px;
+  border: 2px solid #f3ddb3;
+  border-radius: 12px;
+  background-color: #fffbf2;
+}
+
+.plans-your-plan-icon {
+  width: 30px;
+  height: 23px;
+}
+
+.plans-your-plan-text {
+  display: flex;
+  flex-direction: column;
+  margin-left: var(--libitum-spacing-8);
 }
 
 .plans-your-plan-label {
-  color: var(--libitum-color-brand-strong);
+  color: #8a5a12;
   font-family: var(--libitum-typography-label-m-font-family);
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
   line-height: 14px;
 }
 
 .plans-your-plan-value {
-  color: var(--libitum-color-gray-950);
+  color: var(--libitum-color-fg-neutral);
   font-family: var(--libitum-typography-label-l-font-family);
-  font-size: 15px;
+  font-size: 18px;
   font-weight: 700;
-  line-height: 20px;
+  line-height: 22px;
 }
 
 /* ---------------------------------------------------------------- 내용 */
@@ -74,11 +86,12 @@
   margin-bottom: 14px;
 }
 
+/* 제목 · 부제는 엽전 탭(`.coin-shop-screen-title` · `-subtitle`)과 같은 글꼴 · 크기 — 탭을 바꿔도 머리가 뛰지 않습니다. */
 .plans-panel-title {
   font-family: var(--libitum-typography-accent-display-font-family);
-  font-size: 28px;
-  font-weight: 700;
-  line-height: 34px;
+  font-size: var(--libitum-typography-accent-display-font-size);
+  font-weight: var(--libitum-typography-accent-display-font-weight);
+  line-height: var(--libitum-typography-accent-display-line-height);
 }
 
 .plans-panel-title-light {
@@ -92,8 +105,9 @@
 .plans-panel-caption {
   margin-top: 2px;
   font-family: var(--libitum-typography-body-m-font-family);
-  font-size: 14px;
-  line-height: 20px;
+  font-size: var(--libitum-typography-body-m-font-size);
+  font-weight: var(--libitum-typography-body-m-font-weight);
+  line-height: var(--libitum-typography-body-m-line-height);
 }
 
 .plans-panel-caption-light {
@@ -101,7 +115,7 @@
 }
 
 .plans-panel-caption-dark {
-  color: #c7cad1;
+  color: var(--libitum-color-gray-500);
 }
 
 /* 티켓 입구 태그(시안 T5b) — 주황 옅은 알약. */
@@ -234,7 +248,7 @@
   align-items: stretch;
   flex-shrink: 0;
   gap: var(--libitum-spacing-8);
-  padding-top: var(--libitum-spacing-12);
+  padding-top: var(--libitum-spacing-16);
 }
 
 /* 두 줄 CTA — 이름 / 가격(시안 P2). 높이 56 이상, 글이 길면 줄마다 한 줄을 지킵니다. */

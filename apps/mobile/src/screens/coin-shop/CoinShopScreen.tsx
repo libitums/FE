@@ -167,7 +167,8 @@ export function CoinShopScreen({
             focus={entry.focus}
             placement={entry.placement}
             theme="dark"
-            bottomInset={insets.bottom}
+            // 엽전 탭 바닥(인셋 + 24)과 같은 높이에서 끝나게 합니다 — 판은 인셋 + 16을 더합니다.
+            bottomInset={insets.bottom + 8}
             onPurchased={onClose}
           />
         </view>
