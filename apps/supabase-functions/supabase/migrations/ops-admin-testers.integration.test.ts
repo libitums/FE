@@ -456,6 +456,7 @@ describe("구독 표가 있는 DB", () => {
       before: false,
       after: true,
       paid: true,
+      removed: { plans: 0, tier: 0 },
     });
     const meta = async (user: string) =>
       (await db.admin.query("select raw_app_meta_data as m from auth.users where id = $1", [user]))
@@ -469,6 +470,7 @@ describe("구독 표가 있는 DB", () => {
       before: true,
       after: false,
       paid: false,
+      removed: { plans: 0, tier: 0 },
     });
     expect(await meta(tester)).toEqual({ provider: "email" });
     expect(await rpc(server, "ops_set_tester", [ACTOR, tester, false])).toMatchObject({
@@ -482,10 +484,88 @@ describe("구독 표가 있는 DB", () => {
     );
     const logs = (await auditRows(db)).filter((l) => l.action === "set_tester");
     expect(logs.map((l) => [l.kind, l.target_user, l.detail, l.result])).toEqual([
-      ["write", real, { before: false, after: true, paid: true }, "ok"],
-      ["write", tester, { before: true, after: false, paid: false }, "ok"],
-      ["write", tester, { before: false, after: false, paid: false }, "ok"],
+      [
+        "write",
+        real,
+        { before: false, after: true, paid: true, removed: { plans: 0, tier: 0 } },
+        "ok",
+      ],
+      [
+        "write",
+        tester,
+        { before: true, after: false, paid: false, removed: { plans: 0, tier: 0 } },
+        "ok",
+      ],
+      [
+        "write",
+        tester,
+        { before: false, after: false, paid: false, removed: { plans: 0, tier: 0 } },
+        "ok",
+      ],
     ]);
+  });
+
+  test("OT-8b 해제는 운영자가 넣은 등급(플랜 ops 행 · 옛 등급 ops_admin · playground)을 지운다 — 스토어 행은 그대로, 엽전 크론도 멈춘다", async () => {
+    await rpc(server, "ops_tester_set_plan", [ACTOR, tester, "premium", true, null]);
+    await rpc(server, "ops_tester_set_tier", [ACTOR, tester, "premium", null]);
+    // 스토어(RevenueCat) 행 — 다른 플랜.
+    await db.admin.query(
+      `insert into companion.plan_entitlements (user_id, entitlement, product_id, store, environment, status, will_renew,
+         period_started_at, expires_at, source_event_id, last_event_at)
+       values ($1, 'chat_plus', 'chat_plus_monthly', 'app_store', 'production', 'active', true,
+         now() - interval '1 day', now() + interval '29 days', 'rc:evt-1', now())`,
+      [tester],
+    );
+    expect(await rpc(server, "ops_set_tester", [ACTOR, tester, false])).toEqual({
+      ok: true,
+      before: true,
+      after: false,
+      paid: false,
+      removed: { plans: 1, tier: 1 },
+    });
+    const plans = (
+      await db.admin.query(
+        "select entitlement, store from companion.plan_entitlements where user_id = $1",
+        [tester],
+      )
+    ).rows;
+    expect(plans).toEqual([{ entitlement: "chat_plus", store: "app_store" }]);
+    expect(
+      (
+        await db.admin.query(
+          "select count(*)::int as n from companion.entitlements where user_id = $1",
+          [tester],
+        )
+      ).rows[0].n,
+    ).toBe(0);
+    // 다른 source(실제 등급)의 옛 등급 행은 그대로.
+    await db.admin.query(
+      "insert into companion.entitlements (user_id, tier, expires_at, source) values ($1, 'premium', null, 'revenuecat')",
+      [real],
+    );
+    await rpc(server, "ops_set_tester", [ACTOR, real, false]);
+    expect(
+      (await db.admin.query("select source from companion.entitlements where user_id = $1", [real]))
+        .rows,
+    ).toEqual([{ source: "revenuecat" }]);
+
+    // 크론(grant_plan_coins)은 이제 스토어 플랜 엽전만 준다.
+    await db.admin.query("select companion.grant_plan_coins($1, now())", [tester]);
+    const coins = (
+      await db.admin.query(
+        "select ref_id from companion.credit_ledger where user_id = $1 and reason = 'plan_coins'",
+        [tester],
+      )
+    ).rows.map((r) => r.ref_id as string);
+    expect(coins).toHaveLength(1);
+    expect(coins[0]).toContain(":chat_plus:");
+    const [log] = (await auditRows(db)).filter((l) => l.action === "set_tester");
+    expect(log!.detail).toEqual({
+      before: true,
+      after: false,
+      paid: false,
+      removed: { plans: 1, tier: 1 },
+    });
   });
 
   test("OT-9 프로필: companion_operator_set_profile와 같은 뜻(null = 그대로 · '' / -1 / clear_age = 지움) · 칸마다 invalid_*", async () => {
@@ -767,6 +847,81 @@ describe("구독 표가 있는 DB", () => {
       active: true,
       expiresAt: expect.any(String),
     });
+  });
+
+  test("OT-12b 스토어 행이 있는 플랜은 켜기 · 끄기 모두 store_plan(refused) · 다시 켜도 활성 운영 행의 기간은 그대로", async () => {
+    // 결제한 사람을 시험 계정으로 바꾼 경우: 취소했지만 만료 전(화면은 꺼짐처럼 보일 수 있음).
+    await db.admin.query(
+      `insert into companion.plan_entitlements (user_id, entitlement, product_id, store, environment, status, will_renew,
+         period_started_at, expires_at, source_event_id, last_event_at)
+       values ($1, 'premium', 'premium_monthly', 'app_store', 'production', 'cancelled', false,
+         now() - interval '3 days', now() + interval '27 days', 'rc:evt-2', now() - interval '1 day')`,
+      [tester],
+    );
+    const before = (
+      await db.admin.query("select * from companion.plan_entitlements where user_id = $1", [tester])
+    ).rows;
+    for (const active of [true, false]) {
+      expect(
+        await rpc(server, "ops_tester_set_plan", [ACTOR, tester, "premium", active, null]),
+      ).toEqual({
+        ok: false,
+        error: "store_plan",
+      });
+    }
+    // store가 비어 있는 행도 스토어 행으로 본다.
+    await db.admin.query(
+      `insert into companion.plan_entitlements (user_id, entitlement, product_id, store, status, source_event_id, last_event_at)
+       values ($1, 'unlimited_tickets', 'tickets', null, 'active', 'rc:evt-3', now())`,
+      [tester],
+    );
+    expect(
+      await rpc(server, "ops_tester_set_plan", [ACTOR, tester, "unlimited_tickets", false, null]),
+    ).toEqual({ ok: false, error: "store_plan" });
+    expect(
+      (
+        await db.admin.query(
+          "select * from companion.plan_entitlements where user_id = $1 and entitlement = 'premium'",
+          [tester],
+        )
+      ).rows,
+    ).toEqual(before);
+    const refused = (await auditRows(db)).filter((l) => l.action === "tester_set_plan");
+    expect(refused.map((l) => [l.result, l.detail.error])).toEqual([
+      ["refused", "store_plan"],
+      ["refused", "store_plan"],
+      ["refused", "store_plan"],
+    ]);
+
+    // 운영 행: 활성일 때 다시 켜면 period_started_at 그대로 → 크론이 첫 달 엽전을 또 주지 않는다.
+    await rpc(server, "ops_tester_set_plan", [ACTOR, tester, "chat_plus", true, null]);
+    const period = async () =>
+      (
+        await db.admin.query(
+          "select period_started_at as p from companion.plan_entitlements where user_id = $1 and entitlement = 'chat_plus'",
+          [tester],
+        )
+      ).rows[0].p as Date;
+    const first = await period();
+    await db.admin.query("select companion.grant_plan_coins($1, now())", [tester]);
+    await rpc(server, "ops_tester_set_plan", [ACTOR, tester, "chat_plus", true, iso(5 * DAY)]);
+    expect((await period()).getTime()).toBe(first.getTime());
+    await db.admin.query("select companion.grant_plan_coins($1, now())", [tester]);
+    const grants = async () =>
+      (
+        await db.admin.query(
+          "select count(*)::int as n from companion.credit_ledger where user_id = $1 and reason = 'plan_coins' and ref_id like '%:chat_plus:%'",
+          [tester],
+        )
+      ).rows[0].n;
+    expect(await grants()).toBe(1);
+    // 끝난 운영 행을 다시 켜면 새 기간.
+    await db.admin.query(
+      "update companion.plan_entitlements set status = 'expired' where user_id = $1 and entitlement = 'chat_plus'",
+      [tester],
+    );
+    await rpc(server, "ops_tester_set_plan", [ACTOR, tester, "chat_plus", true, null]);
+    expect((await period()).getTime()).toBeGreaterThan(first.getTime());
   });
 
   test("OT-13 학습 초기화: 진도 · 학습일을 지우고 수령 지급의 ref_id를 풀어 다시 받게 한다(원장 · 지갑 그대로)", async () => {

@@ -690,10 +690,12 @@ ops-dashboard `docs/admin-contract.md` §A가 정본이다.
 - 바뀌는 것: UserRow에 `paid`(스토어 이벤트가 있거나 원장에 `purchase` · `subscription` 지급 — 시험 계정 잔액 맞추기 `operator`는 세지 않음, 구독 표가
   없으면 원장만) · `ops_user_conversation`이 메시지마다 `segments` · `ops_grant_credits`의 메모가 늘 필수(`invalid_memo`).
 - 새 RPC 10개(합 32개): `ops_search_users`(검색어 · 국가 · 시험 계정 · 티어 · 가입일, `total`) · `ops_countries`(기록 안 함) · `ops_list_testers` ·
-  `ops_tester_state` · `ops_set_tester`(`raw_app_meta_data.duru_tester` 켜기 · 지우기 — 앱은 로그인 토큰에서 읽어 다시 열면 반영) ·
+  `ops_tester_state` · `ops_set_tester`(`raw_app_meta_data.duru_tester` 켜기 · 지우기 — 앱은 로그인 토큰에서 읽어 다시 열면 반영. 해제하면 운영자가
+  넣은 등급 — 플랜의 `ops` · `ops_tester` 행과 옛 등급 source `ops_admin` · `playground` — 도 지우고 `removed:{plans, tier}`로 알린다) ·
   `ops_tester_set_profile`(`companion_operator_set_profile`과 같은 뜻, 칸마다 `invalid_<칸>`, 스냅샷 셀피는 `female` · `male` · `hidden`) ·
   `ops_tester_set_learning_scope` · `ops_tester_set_intimacy`(0 ~ 10000 — 턴은 하한 0만 둔다, 말투는 턴과 같은 문턱으로 다시 계산) ·
-  `ops_tester_set_plan`(`plan_entitlements`에 `ops_tester` · `ops` · sandbox 행, 표가 없으면 `plans_unavailable`) · `ops_tester_reset_learning`.
+  `ops_tester_set_plan`(`plan_entitlements`에 `ops_tester` · `ops` · sandbox 행, 표가 없으면 `plans_unavailable`, 그 플랜에 스토어 행이 있으면
+  켜기 · 끄기 모두 `store_plan`(refused), 다시 켤 때 활성 운영 행의 `period_started_at`은 그대로 — 플랜 엽전이 다시 나가지 않게) · `ops_tester_reset_learning`.
 - **학습 초기화의 코인 수령**: 원장(`credit_ledger`)은 트리거 · 외래 키가 없어 지울 수는 있지만, 지우면 지갑 합 = 원장 합이 깨지고 지급 기록이 사라진다.
   그래서 지우지 않고 수령 지급(reason `learning` · `launch_bonus` · `streak`)의 `ref_id` 끝에 `|reset@<epoch ms>`를 붙인다 — `companion.grant_once`가
   같은 `ref_id`를 찾지 못해 다시 준다. 이미 받은 엽전은 지갑에 남는다(필요하면 잔액 맞추기로 내린다). 앱 기기의 진도는 앱에서 로그아웃해야 지워진다.

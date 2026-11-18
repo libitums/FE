@@ -406,6 +406,10 @@ $$;
 -- ------------------------------------------------------------------ 새 쓰기 RPC
 
 -- 시험 계정 전환 · 해제(`raw_app_meta_data.duru_tester`). 이것이 전환이라 시험 계정 확인이 없다. 앱은 로그인 토큰에서 읽는다.
+-- 해제하면 운영자가 넣은 등급도 지운다 — 구독 플랜의 운영 표시 행(store `ops`, product_id `ops_tester`)과 옛 등급 행
+-- (`companion.entitlements` source `ops_admin` · `playground`). 해제 뒤에는 ops_tester_* 가 not_a_tester로 거절해 패널에서
+-- 지울 수 없고, 남겨 두면 등급이 그대로이고 매일 크론(grant_plan_coins)이 스토어를 보지 않고 플랜 엽전을 계속 준다.
+-- 스토어(RevenueCat) 행은 건드리지 않는다. 지운 수는 `removed:{plans, tier}`로 돌려주고 기록한다(켤 때는 0).
 create or replace function public.ops_set_tester(p_actor text, p_user uuid, p_on boolean)
 returns jsonb
 language plpgsql
@@ -416,6 +420,9 @@ declare
   v_actor text := ops.actor(p_actor);
   v_before boolean;
   v_paid boolean;
+  v_plans integer := 0;
+  v_tier integer := 0;
+  v_removed jsonb;
 begin
   if p_on is null then
     raise exception 'invalid_value' using errcode = '22023';
@@ -428,9 +435,23 @@ begin
     when p_on then coalesce(raw_app_meta_data, '{}'::jsonb) || '{"duru_tester": true}'::jsonb
     else coalesce(raw_app_meta_data, '{}'::jsonb) - 'duru_tester' end
   where id = p_user;
+  if not p_on then
+    if to_regclass('companion.plan_entitlements') is not null then
+      execute $q$
+        with d as (
+          delete from companion.plan_entitlements where user_id = $1 and store = 'ops' and product_id = 'ops_tester' returning 1
+        ) select count(*)::integer from d
+      $q$ into v_plans using p_user;
+    end if;
+    with d as (
+      delete from companion.entitlements where user_id = p_user and source in ('ops_admin', 'playground') returning 1
+    ) select count(*)::integer into v_tier from d;
+  end if;
+  v_removed := jsonb_build_object('plans', v_plans, 'tier', v_tier);
   v_paid := ops.is_paid(p_user);
-  perform ops.log(v_actor, 'write', 'set_tester', p_user, jsonb_build_object('before', v_before, 'after', p_on, 'paid', v_paid));
-  return jsonb_build_object('ok', true, 'before', v_before, 'after', p_on, 'paid', v_paid);
+  perform ops.log(v_actor, 'write', 'set_tester', p_user,
+    jsonb_build_object('before', v_before, 'after', p_on, 'paid', v_paid, 'removed', v_removed));
+  return jsonb_build_object('ok', true, 'before', v_before, 'after', p_on, 'paid', v_paid, 'removed', v_removed);
 end;
 $$;
 
@@ -589,6 +610,10 @@ $$;
 
 -- 구독 플랜(`companion.plan_entitlements`) 켜기 · 끄기. 켜면 운영 표시 행(product_id `ops_tester`, store `ops`, sandbox)으로 upsert,
 -- 끄면 그 플랜 행을 지운다. 20261129 표가 없으면 {ok:false, error:'plans_unavailable'}(refused).
+-- 그 플랜에 스토어 행(store가 `ops`가 아님 — RevenueCat이 넣은 실제 구독, 상태 무관)이 있으면 켜기 · 끄기 모두
+-- {ok:false, error:'store_plan'}(refused) — 덮어쓰거나 지우면 실제 구독 기록이 망가진다.
+-- 다시 켤 때 운영 행이 아직 활성이면 period_started_at을 그대로 둔다 — grant_plan_coins의 ref_id가 그 시각이라,
+-- 바꾸면 다음 크론에 첫 달 엽전을 또 준다. 끝난(만료 · 상태 끝) 운영 행을 다시 켜면 새 기간(now())이다.
 create or replace function public.ops_tester_set_plan(
   p_actor text, p_user uuid, p_entitlement text, p_active boolean, p_expires_at timestamptz default null
 )
@@ -601,6 +626,7 @@ declare
   v_actor text := ops.actor(p_actor);
   v_detail jsonb := jsonb_build_object('entitlement', p_entitlement, 'active', p_active, 'expiresAt', p_expires_at);
   v_known boolean;
+  v_store boolean;
 begin
   if p_entitlement is null or btrim(p_entitlement) = '' then
     raise exception 'invalid_entitlement' using errcode = '22023';
@@ -623,6 +649,12 @@ begin
   if not v_known then
     raise exception 'invalid_entitlement' using errcode = '22023';
   end if;
+  execute 'select exists (select 1 from companion.plan_entitlements where user_id = $1 and entitlement = $2 and store is distinct from ''ops'')'
+    into v_store using p_user, p_entitlement;
+  if v_store then
+    perform ops.log(v_actor, 'write', 'tester_set_plan', p_user, v_detail || '{"error": "store_plan"}'::jsonb, 'refused');
+    return jsonb_build_object('ok', false, 'error', 'store_plan');
+  end if;
   if p_active then
     execute $q$
       insert into companion.plan_entitlements as t (user_id, entitlement, product_id, store, environment, status, will_renew,
@@ -630,12 +662,16 @@ begin
       values ($1, $2, 'ops_tester', 'ops', 'sandbox', 'active', false, now(), $3, null, 'ops:' || gen_random_uuid(), now(), now())
       on conflict (user_id, entitlement) do update set
         product_id = excluded.product_id, store = excluded.store, environment = excluded.environment, status = 'active',
-        will_renew = false, period_started_at = excluded.period_started_at, expires_at = excluded.expires_at,
+        will_renew = false,
+        period_started_at = case when companion.plan_active(t.status, t.expires_at, now()) then t.period_started_at
+          else excluded.period_started_at end,
+        expires_at = excluded.expires_at,
         pending_product_id = null, source_event_id = excluded.source_event_id, last_event_at = excluded.last_event_at,
         updated_at = now()
     $q$ using p_user, p_entitlement, p_expires_at;
   else
-    execute 'delete from companion.plan_entitlements where user_id = $1 and entitlement = $2' using p_user, p_entitlement;
+    execute 'delete from companion.plan_entitlements where user_id = $1 and entitlement = $2 and store = ''ops'''
+      using p_user, p_entitlement;
   end if;
   perform ops.log(v_actor, 'write', 'tester_set_plan', p_user, v_detail);
   return jsonb_build_object('ok', true, 'plans', ops.tester_plans(p_user));
