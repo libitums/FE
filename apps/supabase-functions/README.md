@@ -718,3 +718,43 @@ ops-dashboard `docs/admin-contract.md` §A가 정본이다.
 (20261108 ~ 20261211, 특히 20261112 크레딧 · 20261111 `moderation_state` · `settings`) **뒤에** 적용한다. 20261129보다 번호가 뒤라 20261129를 나중에
 올리면 `db push`에 `--include-all`이 필요하다. 적용 전에는 운영 도구 화면이 「적용 전」(`{deployed:false}`)으로 뜬다. 플레이그라운드는 시험 계정만
 고르므로 바뀌는 것이 없다.
+
+## 롤플레이 미션 DB — 컴패니언 2단계 (20261214)
+
+`migrations/20261214120000_companion_mission.sql`은 [2단계 PRD](../../docs/specs/ai-companion-mission.md) §5 · §6의 DB다
+([ADR-0160](../../docs/adr/0160-companion-mission.md)). 미션 한 판은 `companion.conversations`의 `kind = 'mission'` 한 행(판마다 새 행)이고,
+컴패니언 쪽 SQL의 `kind = 'companion'` 조건 · 캐릭터당 고유 색인은 그대로 둬 미션 행이 기록 · 선톡 · 요약 · 기억 · 대화 비우기 · 첫 인사에
+섞이지 않는다(D2). 턴의 SQL은 미션 전용 함수다 — `companion_begin_turn` · `companion_finish_turn`은 바뀌지 않는다(D3).
+
+- 표: `companion.missions`(최신 정의 · 켜짐) · `mission_versions`(정의의 판마다 — 판은 시작한 판의 정의로 채점) · `mission_results`(세부 점수 ·
+  그때의 가중치 · 받은 값) · `mission_usage`(하루 무료 횟수, UTC 날짜). 기존 표에 더함: `conversations`의 `mission_id` · `mission_version` ·
+  `status`(active · finished · abandoned) · `mission_state` · `ended_at` · `end_reason`(goals · turn_limit · user · stale) — 미션 행은 `character_id`를
+  비울 수 있다(단역). `credit_holds`의 reason `mission` · `conversation_id`. `messages.origin` `mission`(상대역 메시지 — 컴패니언 평가 · 미디어 대상이
+  아니다). `plans.daily_free_missions`(free 1, 나머지는 임시 — M1). `settings`의 `missions_enabled`(기본 false) · `missions_testers_only`(기본 true) ·
+  `mission_cost`(임시 10) · 가중치 셋(0.5 · 0.3 · 0.2) · `mission_hint_penalty`(5) · `mission_hint_limit`(3) · `mission_stale_after`(30분).
+- 서버 RPC(`service_role`, 첫 인수 `p_user_id`): `companion_mission_start` · `companion_mission_begin_turn` · `companion_mission_finish_turn` ·
+  `companion_mission_take_hint` · `companion_mission_close` · `companion_mission_save_result` · `companion_mission_grading_failed`. 그 밖에
+  `companion_upsert_mission(p_definition)`(미션 파일 → 표, 판을 올리지 않은 변경은 거절) · `companion_close_stale_missions(p_now)`(pg_cron) ·
+  운영 조회 `companion_inspect_missions(p_user_id)` · `companion_inspect_mission(p_conversation_id)`.
+- 앱 RPC(`authenticated`): `companion_list_missions()` · `companion_list_mission_results(p_mission_id)`.
+- 판정 · 값의 정책은 `companion.mission_gate` · `mission_price` · `mission_bill` 셋에만 있다(§3.9). 열림 = 스위치 · 시험 계정 한정 · 에피소드 완료
+  (진행 스냅숏 `catalogProgress`에 정의의 `completionKeys`, 없으면 `RP`). 계정 단위(연령 · 일시 차단 · 사용 시간)는 컴패니언 판정과 같은 규칙이다.
+- 값: 시작 때 판 단위로 예약한다(무료 횟수가 남았으면 금액 0, 아니면 정액). 결과 저장 · 그만둠 · 새 판 · 방치는 확정, 채점 실패는 해제(무료 횟수도
+  돌려줌), 채점 다시 시도가 성공하면 다시 받는다(잔액이 모자라면 리포트만). 판 단위 예약은 `companion_release_stale_holds`가 건드리지 않는다
+  (기존 함수 가운데 이것만 다시 정의 — `reason <> 'mission'` 한 줄).
+- 점수는 `companion_mission_save_result`가 계산한다: 과업 = 달성 목표 ÷ 전체(턴 ∪ 채점자) · 목표 표현 = 쓴 것 ÷ 목표 표현(없으면 100) ·
+  최종 = max(0, round(가중치 합) − 감점 × 힌트). 성공 = 필수 목표 모두.
+- 예약 작업: `cron/companion-mission.sql`(방치 판 닫기, 5분마다).
+- 테스트: `migrations/companion-mission.integration.test.ts`(정상 흐름 · 과금 · 열림 · 턴 상한 · 힌트 · 그만둠 · 채점 실패와 다시 시도 · 방치 정리 ·
+  새 판 · 남의 판 · 계정 삭제 · 권한 · 정의 올리기 · 격리 · 운영 조회, 테스트마다 「지갑 잔액의 합 = 원장 delta의 합」).
+
+**운영 적용은 사람이 한다. 1단계 마이그레이션 기록이 정리될 때까지 운영 DB에는 적용하지 않는다(PRD §0.9).** 정리된 뒤의 순서:
+
+1. 앞의 컴패니언 마이그레이션(20261108 ~ 20261212, 특히 20261129 구독 · 20261130 사진 · 음성 예약 사유) **뒤에** 적용한다. `supabase db push --dry-run`으로
+   이 파일만 올라가는지 보고 `supabase db push`, 또는 SQL 편집기에서 본문을 `begin; … commit;`으로 감싸 실행하고
+   `supabase migration repair --status applied 20261214120000`으로 기록한다. 스위치 `missions_enabled`가 기본 false라 적용만으로는 아무것도 열리지 않는다.
+2. 미션 파일을 올리는 스크립트로 `companion_upsert_mission`을 부른다(파일마다 한 번, 다시 불러도 같다).
+3. `cron/companion-mission.sql`을 SQL 편집기에서 한 번 실행한다.
+4. `mission-start` · `mission-finish` · `mission-hint` · 새 `chat-send`를 배포한 뒤 `update companion.settings set missions_enabled = true`(시험 계정 한정은 그대로).
+
+되돌리기: `select cron.unschedule('companion-close-stale-missions')`, 스위치를 끈다. 표 · 칸은 지우지 않는다(판 · 결과가 원장과 이어져 있다).
