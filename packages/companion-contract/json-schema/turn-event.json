@@ -366,6 +366,67 @@
       "properties": {
         "event": {
           "type": "string",
+          "const": "mission"
+        },
+        "id": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "conversationId": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "goals": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]{0,31}$"
+                  },
+                  "done": {
+                    "type": "boolean"
+                  }
+                },
+                "required": ["id", "done"],
+                "additionalProperties": false
+              }
+            },
+            "turnsLeft": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "ended": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "enum": ["goals", "turn_limit"]
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": ["conversationId", "goals", "turnsLeft", "ended"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["event", "id", "data"],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "event": {
+          "type": "string",
           "const": "crisis"
         },
         "id": {

@@ -19,7 +19,12 @@ export const copyDir = join(
 );
 
 // 서버가 쓰지 않는 파일입니다. fixture는 FE 재생용이고, JSON Schema 산출은 Node에서만 돕니다.
-const SERVER_EXCLUDED = new Set(["fixtures.ts", "fixtures-streams.ts", "json-schema.ts"]);
+const SERVER_EXCLUDED = new Set([
+  "fixtures.ts",
+  "fixtures-streams.ts",
+  "fixtures-mission.ts",
+  "json-schema.ts",
+]);
 
 export const GENERATED_HEADER =
   "// 생성 파일입니다 — 고치지 않습니다. 정본은 packages/companion-contract/src이고\n" +

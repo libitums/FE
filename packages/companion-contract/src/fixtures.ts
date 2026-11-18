@@ -5,6 +5,15 @@ import { PRE_STREAM_ERRORS, type PreStreamErrorCode } from "./error-codes";
 import type { CompanionMessage, CompanionMessagesPage, LearningScope } from "./rpc";
 
 export { turnFixtureEvents, turnFixtureText, type TurnFixtureName } from "./fixtures-streams";
+export {
+  missionDefinitionFixture,
+  missionFinishFixtures,
+  missionHintFixture,
+  missionListFixture,
+  missionReportFixture,
+  missionResultsFixture,
+  missionStartFixture,
+} from "./fixtures-mission";
 
 export type PreStreamErrorFixture = { status: number; body: PreStreamErrorBody };
 

@@ -1,0 +1,164 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "missions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "maxLength": 64,
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          },
+          "episodeId": {
+            "type": "string",
+            "maxLength": 64,
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9007199254740991
+          },
+          "title": {
+            "type": "object",
+            "properties": {
+              "en": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120
+              },
+              "ko": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120
+              }
+            },
+            "required": ["en"],
+            "additionalProperties": false
+          },
+          "counterpartLabel": {
+            "type": "string"
+          },
+          "characterId": {
+            "type": ["string", "null"]
+          },
+          "goals": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]{0,31}$"
+                },
+                "required": {
+                  "type": "boolean"
+                },
+                "label": {
+                  "type": "object",
+                  "properties": {
+                    "en": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 120
+                    },
+                    "ko": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 120
+                    }
+                  },
+                  "required": ["en"],
+                  "additionalProperties": false
+                }
+              },
+              "required": ["id", "required", "label"],
+              "additionalProperties": false
+            }
+          },
+          "turnLimit": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "unlocked": {
+            "type": "boolean"
+          },
+          "best": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "totalScore": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "outcome": {
+                    "type": "string",
+                    "enum": ["success", "fail"]
+                  },
+                  "createdAt": {
+                    "type": "string"
+                  }
+                },
+                "required": ["totalScore", "outcome", "createdAt"],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "episodeId",
+          "version",
+          "title",
+          "counterpartLabel",
+          "characterId",
+          "goals",
+          "turnLimit",
+          "unlocked",
+          "best"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "price": {
+      "type": "object",
+      "properties": {
+        "freeLeft": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "cost": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "balance": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": ["freeLeft", "cost", "balance"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["missions", "price"],
+  "additionalProperties": false
+}

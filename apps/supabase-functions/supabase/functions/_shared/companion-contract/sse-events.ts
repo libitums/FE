@@ -1,10 +1,11 @@
 // 생성 파일입니다 — 고치지 않습니다. 정본은 packages/companion-contract/src이고
 // `pnpm --filter @libitums/companion-contract sync:functions`가 다시 씁니다.
-// `chat-send` 스트림의 이벤트 열 종입니다. 한 이벤트는 SSE의 `event` 이름 · `id`(턴 안 0부터) · `data`(JSON)입니다.
+// `chat-send` 스트림의 이벤트 열한 종입니다(`mission`은 미션 턴에만). 한 이벤트는 SSE의 `event` 이름 · `id`(턴 안 0부터) · `data`(JSON)입니다.
 // 친밀도 수치는 어느 이벤트에도 싣지 않습니다 — 유저에게 보이는 관계 결과는 말투 단계뿐입니다.
 import { z } from "zod/mini";
 
 import { streamErrorCodeSchema } from "./error-codes.ts";
+import { missionEndReasonSchema, missionGoalIdSchema } from "./mission.ts";
 import { replySuggestionSchema } from "./suggest.ts";
 
 export const speechLevelSchema = z.enum(["polite", "casual", "slang"]);
@@ -130,6 +131,20 @@ export const doneDataSchema = z.object({
   refusal: z.optional(z.object({ stage: refusalStageSchema })),
 });
 
+/**
+ * 미션 턴(ADR-0160)의 목표 진척입니다 — 미션 턴에만, `state` 자리(답 · 번역 · 교정 뒤, `done` 바로 앞)에 한 번 옵니다. 미션 턴에는
+ * `state` · `suggestions`가 오지 않습니다. 목표는 한 번 달성하면 되돌아가지 않습니다.
+ * - `goals`: 미션 정의의 순서대로 목표마다 달성 여부.
+ * - `turnsLeft`: 남은 학습자 턴. `ended`: 이 턴이 마지막이면 그 까닭(`goals` 성공 · `turn_limit` 실패), 아니면 null —
+ *   null이 아니면 앱은 `mission-finish`를 부른다.
+ */
+export const missionDataSchema = z.object({
+  conversationId: z.uuid(),
+  goals: z.array(z.object({ id: missionGoalIdSchema, done: z.boolean() })),
+  turnsLeft: nonNegativeInt,
+  ended: z.nullable(missionEndReasonSchema),
+});
+
 const eventOf = <Name extends string, Data extends z.ZodMiniType>(event: Name, data: Data) =>
   z.object({ event: z.literal(event), id: nonNegativeInt, data });
 
@@ -141,6 +156,7 @@ export const turnEventSchema = z.discriminatedUnion("event", [
   eventOf("translation", translationDataSchema),
   eventOf("suggestions", suggestionsDataSchema),
   eventOf("state", stateDataSchema),
+  eventOf("mission", missionDataSchema),
   eventOf("crisis", crisisDataSchema),
   eventOf("error", errorDataSchema),
   eventOf("done", doneDataSchema),

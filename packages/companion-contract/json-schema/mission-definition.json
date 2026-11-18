@@ -1,0 +1,218 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "maxLength": 64,
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "episodeId": {
+      "type": "string",
+      "maxLength": 64,
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "title": {
+      "type": "object",
+      "properties": {
+        "en": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "ko": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        }
+      },
+      "required": ["en"],
+      "additionalProperties": false
+    },
+    "scene": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "counterpart": {
+      "type": "object",
+      "properties": {
+        "characterId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "role": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "relation": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "register": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "samples": {
+          "minItems": 1,
+          "maxItems": 8,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          }
+        },
+        "base": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 40
+            },
+            "age": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 40
+            },
+            "job": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "speech": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 300
+            }
+          },
+          "required": ["name"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["label", "role", "relation", "register", "samples"],
+      "additionalProperties": false
+    },
+    "opening": {
+      "type": "object",
+      "properties": {
+        "ko": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "roman": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "en": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        }
+      },
+      "required": ["ko", "roman", "en"],
+      "additionalProperties": false
+    },
+    "goals": {
+      "minItems": 1,
+      "maxItems": 8,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{0,31}$"
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "label": {
+            "type": "object",
+            "properties": {
+              "en": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120
+              },
+              "ko": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120
+              }
+            },
+            "required": ["en"],
+            "additionalProperties": false
+          },
+          "criteria": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          }
+        },
+        "required": ["id", "required", "label", "criteria"],
+        "additionalProperties": false
+      }
+    },
+    "targetExpressions": {
+      "maxItems": 6,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z]{4}:[0-9a-f]{8}$"
+          },
+          "ko": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "meaning": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "required": ["id", "ko", "meaning"],
+        "additionalProperties": false
+      }
+    },
+    "turnLimit": {
+      "type": "integer",
+      "minimum": 3,
+      "maximum": 20
+    }
+  },
+  "required": [
+    "id",
+    "episodeId",
+    "version",
+    "title",
+    "scene",
+    "counterpart",
+    "opening",
+    "goals",
+    "targetExpressions",
+    "turnLimit"
+  ],
+  "additionalProperties": false
+}

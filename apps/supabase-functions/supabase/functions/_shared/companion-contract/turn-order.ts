@@ -72,7 +72,9 @@ export function checkTurnOrder(events: readonly TurnEvent[]): TurnOrderResult {
         corrections += 1;
         if (corrections > 1) return fail("duplicate-correction", index);
         break;
+      // 미션 턴은 `state` 대신 `mission`이 같은 자리(`done` 바로 앞)에 온다.
       case "state":
+      case "mission":
         stateAt = index;
         break;
       // 칩은 답 조각 · 번역이 다 나간 뒤 한 번 — 위기 · 거절 턴에는 없다.

@@ -234,6 +234,29 @@ export const turnFixtureEvents = {
     },
     done(0),
   ]),
+  // 미션 턴(ADR-0160) — 교정 · 번역 뒤 `state` 자리에 `mission`. 차감이 없다(판 단위로 `mission-start`에서 낸다).
+  "turn-mission": numbered([
+    start(),
+    delta(0, "speech", "네, 아이스 아메리카노 한 잔이요. "),
+    delta(0, "speech", "드시고 가세요?"),
+    { event: "translation", data: { segment: 0, text: "Sure, one iced americano. For here?" } },
+    noCorrection,
+    {
+      event: "mission",
+      data: {
+        conversationId: ids.conversation,
+        goals: [
+          { id: "order", done: true },
+          { id: "pay", done: false },
+          { id: "stay", done: false },
+          { id: "price", done: false },
+        ],
+        turnsLeft: 9,
+        ended: null,
+      },
+    },
+    done(0),
+  ]),
   "turn-upstream-error": numbered([
     start(),
     delta(0, "speech", "음, 그건"),
