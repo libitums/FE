@@ -4,17 +4,20 @@ import { Card } from "@libitums/ui-lynx/card";
 import { ChatBubble } from "@libitums/ui-lynx/chat-bubble";
 
 import { useUiCopy } from "../../lib/ui-copy";
-import storyBackground from "../../assets/story/story-background.png";
-import storyCharacter from "../../assets/story/story-character.png";
+import storyBackground from "../../assets/onboarding/convenience-store-alley.webp";
+import storyCharacter from "../../assets/onboarding/doyun.webp";
 
 import "./onboarding-story-cards.css";
 
-/** 온보딩 첫 스텝의 카드 둘(배경 그림 카드, 대화 카드)을 그립니다. 상태를 갖지 않습니다. */
+/**
+ * 온보딩 첫 스텝의 카드 둘(배경 그림 카드, 대화 카드)을 그립니다. 상태를 갖지 않습니다.
+ * 배경은 에피소드 1 편의점 앞 골목, 인물은 도윤입니다(ADR-0159).
+ */
 // 카드 속 대화의 한국어 대사입니다 — 학습 콘텐츠라 UI 언어를 따르지 않습니다(한글 리터럴 검사의 허용 선언).
 const onboardingStoryMessages = {
-  welcome: "어서 오세요! 찾으시는 거 있으세요?",
-  sunscreen: "선크림 있어요?",
-  thisWay: "네, 이쪽으로 오세요.",
+  atStore: "저 지금 편의점 앞이에요. 뭐 마실래요?",
+  water: "물 한 병 사 주세요!",
+  onMyWay: "좋아요. 금방 갈게요!",
 } as const;
 
 export function OnboardingStoryCards(): ReactNode {
@@ -43,7 +46,7 @@ export function OnboardingStoryCards(): ReactNode {
         <image className="onboarding-screen-hero-character" src={storyCharacter} mode="aspectFit" />
       </view>
 
-      {/* 둘째 카드: 상대 → 나 → 상대 순의 대화 버블 셋입니다. 문구는 임시입니다. */}
+      {/* 둘째 카드: 도윤 → 나 → 도윤 순의 대화 버블 셋입니다. */}
       <view
         className="onboarding-screen-card-slot onboarding-screen-chat"
         data-testid="onboarding-screen-chat"
@@ -53,9 +56,9 @@ export function OnboardingStoryCards(): ReactNode {
             <view className="onboarding-screen-chat-list">
               <ChatBubble
                 direction="incoming"
-                speaker={chat.staff}
-                message={onboardingStoryMessages.welcome}
-                translation={chat.welcome}
+                speaker={chat.friend}
+                message={onboardingStoryMessages.atStore}
+                translation={chat.atStore}
                 size="s"
                 contentLanguage="learning"
                 languageTag="ko"
@@ -63,17 +66,17 @@ export function OnboardingStoryCards(): ReactNode {
               <ChatBubble
                 direction="outgoing"
                 speaker={copy.common.me}
-                message={onboardingStoryMessages.sunscreen}
-                translation={chat.sunscreen}
+                message={onboardingStoryMessages.water}
+                translation={chat.water}
                 size="s"
                 contentLanguage="learning"
                 languageTag="ko"
               />
               <ChatBubble
                 direction="incoming"
-                speaker={chat.staff}
-                message={onboardingStoryMessages.thisWay}
-                translation={chat.thisWay}
+                speaker={chat.friend}
+                message={onboardingStoryMessages.onMyWay}
+                translation={chat.onMyWay}
                 size="s"
                 contentLanguage="learning"
                 languageTag="ko"

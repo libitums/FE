@@ -7,6 +7,8 @@ export const allEventNames = [
   "entry_screen_viewed",
   "entry_login_method_selected",
   "entry_completed",
+  "onboarding_step_viewed",
+  "onboarding_started",
   "entry_returning_learner_entered",
   "notifications_opened",
   "notification_item_tapped",
@@ -69,6 +71,8 @@ export const allEventNames = [
 /** 매핑되는 둘(`entry_completed` · `episode_final_passed`)을 뺀 이름마다 최소 이벤트 하나입니다. */
 export const unmappedEvents = [
   { name: "entry_screen_viewed", screen: "onboarding" },
+  { name: "onboarding_step_viewed", step: "1", via: "start" },
+  { name: "onboarding_started", step: "2", autoAdvanced: true },
   { name: "entry_login_method_selected", method: "phone" },
   { name: "entry_login_method_selected", method: "guest" },
   { name: "entry_returning_learner_entered", method: "google" },
@@ -261,7 +265,6 @@ export const unmappedEvents = [
 ] as const satisfies readonly AnalyticsEvent[];
 
 export const entryCompleted = { name: "entry_completed" } as const satisfies AnalyticsEvent;
-
 export const episodeFinalPassed = {
   name: "episode_final_passed",
   episodeId: "u00-tutorial",
@@ -269,12 +272,9 @@ export const episodeFinalPassed = {
   turnCount: "2",
 } as const satisfies AnalyticsEvent;
 export const episodeFinalPassedU01 = {
-  name: "episode_final_passed",
+  ...episodeFinalPassed,
   episodeId: "u01-water",
-  correctCount: "2",
-  turnCount: "2",
 } as const satisfies AnalyticsEvent;
-
 /** 지운 여덟 이름의 옛 이벤트입니다 — 어떤 출처로 들어와도 매핑은 null이어야 합니다. 계약 타입에는 이제 없어 단언으로 좁힙니다. */
 export const retiredSpecialUnitEvents = [
   { name: "messenger_unit_completed", unitId: "appointment-confirmation", entrySource: "journey" },

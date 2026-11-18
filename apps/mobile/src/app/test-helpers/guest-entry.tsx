@@ -216,7 +216,7 @@ export const settingsCell = (id: string): HTMLElement =>
   );
 
 export function completeOnboarding(): void {
-  for (let step = 0; step < 3; step += 1) tapButtonIn("onboarding-screen-next");
+  tapButtonIn("onboarding-screen-start");
 }
 
 /** 설정 목록의 항목 testid를 위에서 아래로 읽습니다. */

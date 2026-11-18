@@ -1,5 +1,5 @@
-/* `OnboardingScreen` 골격(머리 · 스크롤 · 진행 점 · 제목/본문 · 다음 버튼)의 시각
-   값을 소유합니다. 카드 영역 셋의 값은 각각 `onboarding-story-cards.css` ·
+/* `OnboardingScreen` 골격(머리 · 스크롤 · 진행 점 · 제목/본문 · 시작 버튼)의 시각
+   값을 소유합니다(시작 버튼 행 포함). 카드 영역 셋의 값은 각각 `onboarding-story-cards.css` ·
    `onboarding-quiz-cards.css` · `onboarding-unit-card.css`가 집니다.
 
    2026-09-21 디자인 반영: 스크롤 안에 카드 영역 → (32) → 페이지 표시 · 제목 · 본문이 서고,
@@ -35,13 +35,13 @@
 
 /* 카드 영역과 텍스트 묶음(페이지 표시부터) 사이는 layout-gap-section(32)입니다.
    72로 두면 본문이 화면 아래로 밀려나 32로 줄였습니다.
-   위쪽 48은 첫 카드에서 튀어나오는 인물이 스크롤 영역 위 끝에 잘리지 않게 비워
-   둔 자리입니다. */
+   위쪽 80은 첫 카드에서 튀어나오는 인물(도윤, 카드보다 80 큼)이 스크롤 영역 위 끝에
+   잘리지 않게 비워 둔 자리입니다(ADR-0159). */
 .onboarding-screen-content {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  padding-top: var(--libitum-spacing-48);
+  padding-top: var(--libitum-spacing-80);
   overflow: visible;
   gap: var(--libitum-layout-gap-section);
 }
@@ -106,7 +106,7 @@
 
 /* 버튼 모양은 ui-lynx Button(neutral · xl(56) · hug)이 집니다. 이 행은 자리만
    잡습니다 — 내용 폭 버튼을 가로 가운데에 둡니다. */
-.onboarding-screen-next {
+.onboarding-screen-start {
   display: flex;
   flex-direction: row;
   justify-content: center;

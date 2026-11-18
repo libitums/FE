@@ -1,7 +1,6 @@
 // 진입 흐름 콜백을 만듭니다. 토큰 저장·진입 이벤트·전이가 여기 모입니다.
 
 import type { Dispatch, SetStateAction } from "@lynx-js/react";
-
 import type { AnalyticsUser } from "../lib/analytics-user.contract";
 import { refreshAuthSession, requestPhoneOtp, verifyPhoneOtp } from "../lib/api-client";
 import { appUpdateDecision, loadStoredAppPolicy } from "../lib/app-policy";
@@ -26,7 +25,7 @@ import {
   entryReturningLearnerEnteredEvent,
   entryScreenViewedEvent,
 } from "../lib/entry-flow";
-import type { EntryEventSink, EntryLoginMethod } from "../lib/entry-flow";
+import type { EntryEventSink, EntryLoginMethod, OnboardingEvent } from "../lib/entry-flow";
 import type { EntryLanguage } from "../lib/entry-language";
 import { learnerProfileSavedEvent, sameLearnerProfile } from "../lib/learner-profile";
 import type { LearnerProfilePort, LearnerProfileRecord } from "../lib/learner-profile.contract";
@@ -175,7 +174,8 @@ export function entryWiring({
         }
       }
     },
-    // 온보딩 완료 → 로그인 열람 → push. 온보딩은 기능을 맛보는 카드뿐이라 넘길 값이 없습니다.
+    // 온보딩 스텝 열람 · 시작은 진입 sink로, 완료(어느 스텝의 Get started든)는 로그인 열람 → push(ADR-0159).
+    onOnboardingEvent: (event: OnboardingEvent) => entryEventSink?.(event),
     onOnboardingComplete: () => {
       entryEventSink?.(entryScreenViewedEvent("login"));
       dispatch({ type: "push", screen: { name: "login" } });

@@ -9,6 +9,8 @@ export type AnalyticsEventName =
   | "entry_screen_viewed"
   | "entry_login_method_selected"
   | "entry_completed"
+  | "onboarding_step_viewed"
+  | "onboarding_started"
   | "entry_returning_learner_entered"
   | "app_update_required_shown"
   | "notifications_opened"

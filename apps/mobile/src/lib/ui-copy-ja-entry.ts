@@ -28,14 +28,13 @@ export const onboardingJa: OnboardingScreenCopy = {
       body: "毎日の短いユニットで、すきま時間に学習。\n1つたった5分でクリアできます。",
     },
   },
-  next: "次へ",
   getStarted: "はじめる",
   progress: (ordinal, total) => `ステップ ${ordinal} / ${total}`,
   storyChat: {
-    staff: "店員",
-    welcome: "いらっしゃいませ！何かお探しですか？",
-    sunscreen: "日焼け止めはありますか？",
-    thisWay: "はい、こちらへどうぞ。",
+    friend: "ドユン",
+    atStore: "今コンビニの前にいます。何か飲みますか？",
+    water: "お水を1本お願いします！",
+    onMyWay: "わかりました。すぐ行きます！",
   },
   quiz: { replay: "もう一度再生", stop: "停止", play: "再生" },
   unit: {

@@ -288,15 +288,7 @@ test("[HT-E1] 제목 축 닫힌 집합이 진입 상태 여덟 각각에서 계�
   expect(headingAxis(container)).toEqual(["onboarding-screen-title"]);
 
   fireEvent.tap(
-    within(screen.getByTestId("onboarding-screen-next")).getByTestId("ui-lynx-button"),
-    {},
-  );
-  fireEvent.tap(
-    within(screen.getByTestId("onboarding-screen-next")).getByTestId("ui-lynx-button"),
-    {},
-  );
-  fireEvent.tap(
-    within(screen.getByTestId("onboarding-screen-next")).getByTestId("ui-lynx-button"),
+    within(screen.getByTestId("onboarding-screen-start")).getByTestId("ui-lynx-button"),
     {},
   );
 

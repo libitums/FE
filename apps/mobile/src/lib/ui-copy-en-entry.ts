@@ -25,14 +25,13 @@ export const onboardingEn: OnboardingScreenCopy = {
       body: "Short daily units fit into your day.\nClear one in just five minutes.",
     },
   },
-  next: "Next",
   getStarted: "Get started",
   progress: (ordinal, total) => `Step ${ordinal} of ${total}`,
   storyChat: {
-    staff: "Staff",
-    welcome: "Welcome! Are you looking for anything?",
-    sunscreen: "Do you have sunscreen?",
-    thisWay: "Yes, come this way.",
+    friend: "Doyun",
+    atStore: "I'm at the convenience store. Want a drink?",
+    water: "A bottle of water, please!",
+    onMyWay: "Okay. I'll be right there!",
   },
   quiz: { replay: "Replay", stop: "Stop", play: "Play" },
   unit: {

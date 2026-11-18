@@ -130,7 +130,7 @@ export async function runEntryFlow(
   render(<App phoneSignIn="visible" {...sinks} />);
   await passSplash();
   // 온보딩은 세 스텝이고, 가입 직후 ① 이름 · ② 나라를 지나 언어 선택에 섭니다(ADR-0059 D7 2026-10-20).
-  for (let step = 0; step < 3; step++) tapButton("onboarding-screen-next");
+  tapButton("onboarding-screen-start");
   tapButton("login-screen-method-apple");
   await advance(0);
   passLearnerSignup();

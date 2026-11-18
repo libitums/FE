@@ -34,7 +34,7 @@ import type { JourneyStats, ProgressWiringArgs, StatBumpWiring } from "./learnin
 import type { JourneyMapProgressLoad } from "../screens/journey-map/journey-map-load.contract";
 import type { AnalyticsUser } from "../lib/analytics-user.contract";
 import type { LegalDocument } from "../lib/legal-document.contract";
-import type { EntryEventSink } from "../lib/entry-flow";
+import type { EntryEventSink, OnboardingEvent } from "../lib/entry-flow";
 import type { EntryLanguage } from "../lib/entry-language";
 import type { SocialSignInOutcome } from "../lib/social-sign-in.contract";
 import type { PhoneSignInVisibility, SocialLoginMethod } from "../screens/login/login.contract";
@@ -123,6 +123,7 @@ export type ScreenWiring = {
   readonly visibleSocialMethods: () => readonly SocialLoginMethod[];
   onSplashTimeout: () => void;
   onOnboardingComplete: () => void;
+  onOnboardingEvent: (event: OnboardingEvent) => void;
   onSelectSocialLoginMethod: (method: SocialLoginMethod) => Promise<SocialSignInOutcome>;
   onRequestPhoneOtp: (phone: PhoneNumber) => Promise<PhoneOtpRequestResult>;
   onResendPhoneOtp: (phone: PhoneNumber) => Promise<PhoneOtpRequestResult>;
