@@ -1,6 +1,7 @@
 // 미션 LLM 계층(ADR-0160) — 기존 `CompanionLlm`에 채점(`gradeMission`) · 힌트(`missionHint`)를 더하고, 가짜 계층에는 미션 답(상태 줄)을
 // 더합니다. 기존 메서드는 그대로 넘깁니다 — 컴패니언 턴은 이 계층을 써도 같은 호출이 됩니다(가짜 답은 미션 시스템 프롬프트일 때만 갈린다).
-// 모델: 채점은 `COMPANION_MISSION_GRADER_MODEL`(없으면 답 모델), 힌트는 추천 답변 칩 모델(`missionModelsFrom`).
+// 모델(`missionModelsFrom` — 컴패니언 설정을 물려받지 않음): 답 `COMPANION_MISSION_MODEL` · 채점 `COMPANION_MISSION_GRADER_MODEL`(기본 Sonnet),
+// 교정 `COMPANION_MISSION_FEEDBACK_MODEL` · 힌트 `COMPANION_MISSION_HINT_MODEL`(기본 Haiku). 미션 턴은 `missionTurn` 계층을 쓴다.
 
 import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
@@ -13,7 +14,7 @@ import type {
   LlmUsage,
   ReplyRequest,
 } from "./chat-send.contract.ts";
-import { companionLlmFor } from "./companion-llm.ts";
+import { anthropicCompanionLlm, companionLlmFor } from "./companion-llm.ts";
 import { fakeCompanionLlm } from "./companion-llm-fake.ts";
 import { graderSchema, graderSystem, type GraderDraft } from "./mission-grader.ts";
 import { hintSchema, hintSystem, type HintDraft } from "./mission-hint.ts";
@@ -66,8 +67,16 @@ export function anthropicMissionLlm(
       throw new MissionLlmUnavailable(String(response.stop_reason));
     return response.parsed_output as T;
   }
+  // 미션 턴의 답 · 교정만 미션 모델(기본 Sonnet · Haiku). 검사 · 번역 모델과 생각 깊이 · Haiku 분기(`serverFallbackOptions`)는
+  // 컴패니언 계층 그대로 — 같은 구현에 모델 이름만 바꿔 넘긴다.
+  const missionTurn = anthropicCompanionLlm(
+    { ...config, model: models.turnModel, feedbackModel: models.feedbackModel },
+    onUsage,
+    client,
+  );
   return {
     ...base,
+    missionTurn,
     graderModel: models.graderModel,
     gradeMission: async (request) =>
       sameGrader(

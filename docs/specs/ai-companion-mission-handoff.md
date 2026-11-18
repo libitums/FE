@@ -79,14 +79,16 @@ COMPANION_MISSION_BUNDLE=               # 절대 경로 또는 저장소 기준 
 ### 3.2 FE 서버 — Edge Function 비밀 값 (`supabase/functions/env.example`에 견본이 있다)
 
 ```sh
-# 미션 채점(상위) 모델. 비우면 COMPANION_MODEL과 같다
-COMPANION_MISSION_GRADER_MODEL=         # 예: claude-opus-5-5
-# 아래는 1단계에서 이미 쓰는 것 — 미션도 같은 값을 읽는다
+# 미션 모델 — 컴패니언의 모델 설정(COMPANION_MODEL 등)을 물려받지 않는다. 비우면 코드 기본값
+COMPANION_MISSION_MODEL=                # 상대역 답 모델 id. 비우면 claude-sonnet-5-5
+COMPANION_MISSION_GRADER_MODEL=         # 채점 모델 id. 비우면 claude-sonnet-5-5
+COMPANION_MISSION_FEEDBACK_MODEL=       # 교정 모델 id. 비우면 claude-haiku-5-5
+COMPANION_MISSION_HINT_MODEL=           # 힌트 모델 id. 비우면 claude-haiku-5-5
+# 아래는 1단계에서 이미 쓰는 것 — 미션 턴의 입력 · 출력 검사와 번역은 이 값을 그대로 읽는다
 ANTHROPIC_API_KEY=                      # sk-ant-…
 COMPANION_LLM=                          # anthropic | fake
-COMPANION_MODEL=                        # 답 모델 id
-COMPANION_FEEDBACK_MODEL=               # 교정 모델 id
-COMPANION_SUGGEST_MODEL=                # 힌트가 같이 쓰는 모델 id
+COMPANION_MODERATION_MODEL=             # 검사 모델 id
+COMPANION_TRANSLATION_MODEL=            # 번역 모델 id
 ```
 
 미션 파일을 표로 올릴 때(사람이, 운영 적용 때 한 번):
@@ -114,7 +116,7 @@ DEEPGRAM_API_KEY=
 급한 순서대로 적었다. ◆는 다음 작업을 막는 것이다.
 
 ### 4.1 실험실을 진짜 모델로 처음 돌릴 때
-1. ◆ **어떤 모델로 볼 것인가.** 번들의 기본값은 코드 기본값이라 답 · 교정 · 힌트 · 채점 넷 모두 `claude-opus-5-5`다. 운영 컴패니언이 실제로 쓰는 모델과 같은지 확인하고, 실험실 화면에서 판마다 바꿀 수 있다.
+1. ◆ **어떤 모델로 볼 것인가.** 번들의 기본값은 코드 기본값이다 — 답 · 채점은 `claude-sonnet-5-5`, 교정 · 힌트는 `claude-haiku-5-5`(2026-11-19 사용자 결정, 컴패니언의 Opus 설정을 물려받지 않는다). 실험실 화면에서 판마다 바꿀 수 있다.
 2. ◆ **첫 호출이 통하는지.** 서버는 대화를 상대역의 진입 대사(assistant 메시지)로 시작한다(1단계의 첫 인사 뒤 턴과 같은 방식). 진짜 API 호출로는 아무도 확인하지 못했다 — 400이 나면 오류 본문이 화면에 그대로 뜬다. 그때는 진입 대사 앞에 고정 user 글을 넣는 쪽으로 서버(코어의 `sceneStartUser`)와 번들을 같이 바꾼다.
 3. Opus 5.5는 「도구 강제 호출」을 받지 않아 실험실이 우회(자동 선택 + 「도구로만 답하라」)를 쓴다. 도구 호출이 빠지는 경우가 있는지 본다.
 4. 예상 원가는 생각 토큰을 셈에 넣지 않아 실제보다 낮게 나올 수 있다. 시나리오 세트 한 번에 $0.7 ~ 1.4로 추정했다.
@@ -129,7 +131,7 @@ DEEPGRAM_API_KEY=
 ### 4.3 값 (PRD §9)
 10. **M1** 하루 무료 미션 횟수와 엽전 정액 — 임시값: free 1 · `unlimited_tickets` 1 · `chat_plus` 3 · `premium` 5, 정액 10엽전.
 11. **M2** 턴 상한 — 6화 10, 1화 8. **M3** 가중치 50 · 30 · 20, 힌트 −5, 힌트 3번.
-12. **M5** 채점 모델. **M8** 방치된 판을 닫는 시간 30분.
+12. **M5** 채점 모델 — 기본 Sonnet 5.5로 정함(2026-11-19 사용자). **M8** 방치된 판을 닫는 시간 30분.
 13. **M6** 진입 대사 · 목표 글의 번역 — 지금 시작 응답의 번역은 비어 있다.
 14. **M7** 미션의 대화 시간을 사용 시간 상한에 세고, 미션의 입력 차단을 같은 반복 위반 셈에 더했다 — 그대로 둘지.
 

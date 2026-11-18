@@ -78,7 +78,8 @@ export async function handleMissionTurn(deps: ChatSendDeps, request: Request): P
   const context: MissionTurnContext = {
     deps,
     env,
-    llm: llm.withUsage?.(usage.record) ?? llm,
+    // 미션 턴은 답 · 교정이 미션 모델인 계층(`missionTurn`)을 쓴다. 가짜 계층은 그대로.
+    llm: (llm.missionTurn ?? llm).withUsage?.(usage.record) ?? llm.missionTurn ?? llm,
     sink,
     body,
     userId: caller.userId,

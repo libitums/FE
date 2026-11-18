@@ -15,7 +15,10 @@ import {
 import { missionCounterpartBase, type MissionDefinition } from "./mission-definition.ts";
 import {
   missionGraderMaxTokens,
+  missionFeedbackModelEnv,
   missionGraderModelEnv,
+  missionHintModelEnv,
+  missionTurnModelEnv,
   missionModelsFrom,
   missionTurnMaxTokens,
 } from "./mission-env.ts";
@@ -115,9 +118,9 @@ export function buildMissionLabBundle(input: MissionLabBundleInput) {
       graderMaxTokens: missionGraderMaxTokens,
       // 서버가 이 값을 읽는 환경 변수(운영 값은 여기 없다 — 코드의 기본값만).
       env: {
-        turnModel: "COMPANION_MODEL",
-        feedbackModel: "COMPANION_FEEDBACK_MODEL",
-        hintModel: "COMPANION_SUGGEST_MODEL",
+        turnModel: missionTurnModelEnv,
+        feedbackModel: missionFeedbackModelEnv,
+        hintModel: missionHintModelEnv,
         graderModel: missionGraderModelEnv,
       },
     },

@@ -674,13 +674,16 @@ SSE `mission` 이벤트다. `chat-send` 요청에는 `conversation_id`(선택)�
 pnpm mission:bundle   # 번들을 다시 쓰고 pnpm format
 ```
 
-**환경 변수**(새로 하나, 값은 비워 둔다 — `supabase/functions/env.example`):
+**환경 변수**(새로 넷, 값은 비워 둔다 — `supabase/functions/env.example`). 컴패니언의 모델 설정을 물려받지 않는다(2026-11-19 사용자 결정):
 
 ```sh
-COMPANION_MISSION_GRADER_MODEL=   # 미션 채점(상위) 모델 id. 비워 두면 COMPANION_MODEL과 같다
+COMPANION_MISSION_MODEL=            # 상대역 답 모델 id. 비워 두면 claude-sonnet-5-5
+COMPANION_MISSION_GRADER_MODEL=     # 채점 모델 id. 비워 두면 claude-sonnet-5-5
+COMPANION_MISSION_FEEDBACK_MODEL=   # 교정 모델 id. 비워 두면 claude-haiku-5-5
+COMPANION_MISSION_HINT_MODEL=       # 힌트 모델 id. 비워 두면 claude-haiku-5-5
 ```
 
-답 · 교정 · 힌트 모델은 컴패니언과 같은 `COMPANION_MODEL` · `COMPANION_FEEDBACK_MODEL` · `COMPANION_SUGGEST_MODEL`을 같은 기본값 사슬로 읽는다.
+미션 턴의 입력 · 출력 검사와 번역만 컴패니언의 `COMPANION_MODERATION_MODEL` · `COMPANION_TRANSLATION_MODEL`을 그대로 쓴다.
 
 ## revenuecat-webhook — 구독 · 엽전 팩(ADR-0144)
 
@@ -787,8 +790,11 @@ LLM 계층은 `companion-llm-mission.ts`(`missionLlmFor`) — 기존 `CompanionL
   만들기가 실패하면 503(`detail.hintsLeft`)으로 알리지만 그 힌트는 이미 쓴 것이다.
 - `mission-finish`는 몇 번 불러도 같은 결과다(채점이 있으면 그대로). 채점 호출이 실패(시간 초과 · 거절 · 깨진 출력)하면 값을 돌려주고
   `grading_failed`(`retryable: true`)로 답한다 — 같은 요청을 다시 보내면 채점만 다시 돈다.
-- 환경 변수: 1단계 `chat-send`와 같다. 새 것은 `COMPANION_MISSION_GRADER_MODEL=`(채점 모델 id, 비우면 `COMPANION_MODEL`) 하나 — 힌트는
-  `COMPANION_SUGGEST_MODEL`을 같이 쓴다. 값은 사람이 넣는다.
+- 모델(2026-11-19 사용자 결정): 미션은 컴패니언의 모델 설정을 물려받지 않는다 — `COMPANION_MISSION_MODEL=`(상대역 답, 비우면 `claude-sonnet-5-5`) ·
+  `COMPANION_MISSION_GRADER_MODEL=`(채점, 비우면 `claude-sonnet-5-5`) · `COMPANION_MISSION_FEEDBACK_MODEL=`(교정, 비우면 `claude-haiku-5-5`) ·
+  `COMPANION_MISSION_HINT_MODEL=`(힌트, 비우면 `claude-haiku-5-5`). 미션 턴의 입력 · 출력 검사와 번역은 컴패니언 설정(`COMPANION_MODERATION_MODEL` ·
+  `COMPANION_TRANSLATION_MODEL`) 그대로다. 미션 턴은 계층의 `missionTurn`(답 · 교정만 미션 모델, 생각 깊이 · Haiku 분기는 1단계 구현 그대로)을 쓴다.
+  나머지 환경 값은 1단계 `chat-send`와 같고, 값은 사람이 넣는다.
 - 미션 파일 → 표: `node apps/supabase-functions/scripts/upload-missions.ts`(기본 dry-run — 검증만, 네트워크 없음).
   실제로 쓰려면 `SUPABASE_URL=… SUPABASE_SERVICE_ROLE_KEY=… node apps/supabase-functions/scripts/upload-missions.ts --write`.
 - 테스트: `_shared/mission-handlers.unit.test.ts`(가짜 fetch + 가짜 LLM), `_shared/mission-server.integration.test.ts`(핸들러를 실제 SQL에 물어

@@ -1,21 +1,21 @@
 {
   "bundleVersion": 1,
-  "generatedAt": "2026-11-18T15:38:48.664Z",
+  "generatedAt": "2026-11-18T16:32:16.817Z",
   "source": {
     "repo": "libitums/FE",
     "commit": "working-tree"
   },
   "defaults": {
-    "turnModel": "claude-opus-5-5",
-    "feedbackModel": "claude-opus-5-5",
-    "hintModel": "claude-opus-5-5",
-    "graderModel": "claude-opus-5-5",
+    "turnModel": "claude-sonnet-5-5",
+    "feedbackModel": "claude-haiku-5-5",
+    "hintModel": "claude-haiku-5-5",
+    "graderModel": "claude-sonnet-5-5",
     "turnMaxTokens": 2000,
     "graderMaxTokens": 2000,
     "env": {
-      "turnModel": "COMPANION_MODEL",
-      "feedbackModel": "COMPANION_FEEDBACK_MODEL",
-      "hintModel": "COMPANION_SUGGEST_MODEL",
+      "turnModel": "COMPANION_MISSION_MODEL",
+      "feedbackModel": "COMPANION_MISSION_FEEDBACK_MODEL",
+      "hintModel": "COMPANION_MISSION_HINT_MODEL",
       "graderModel": "COMPANION_MISSION_GRADER_MODEL"
     }
   },

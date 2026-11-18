@@ -201,10 +201,10 @@ export type CompanionLlm = {
   suggest(request: SuggestRequest): Promise<SuggestionDraft[]>;
   /** 평가 전용 — 캐릭터 답장 하나를 축마다 채점합니다(`companion-eval` reply). 없으면(테스트 대역) 채점하지 않습니다. */
   judgeReply?(request: ReplyJudgeRequest): Promise<ReplyJudgement>;
-  /** 미션 채점 · 힌트(ADR-0160)와 채점 모델 이름 — 미션 계층(`companion-llm-mission.ts`)만 있다. */
   gradeMission?(request: MissionLlm.MissionLlmRequest): Promise<MissionLlm.MissionGraderDraft>;
   missionHint?(request: MissionLlm.MissionLlmRequest): Promise<MissionLlm.MissionHintDraft>;
   readonly graderModel?: string;
+  readonly missionTurn?: CompanionLlm;
   /** 호출마다 사용량을 `record`로 넘기는 같은 계층 — 턴마다 감싸 모은다. 없으면(테스트 대역) 모으지 않는다. */
   withUsage?(record: (usage: LlmUsage) => void): CompanionLlm;
 };
