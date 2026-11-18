@@ -107,7 +107,7 @@ export function CoinShopScreen({
         if (result.kind === "unavailable") setNoticeOpen(true);
         if (result.kind === "failed") setFailed(true);
       })
-      .catch(() => undefined)
+      .catch(() => setFailed(true))
       .finally(() => setBuying(false));
   };
   const closeNotice = () => {
