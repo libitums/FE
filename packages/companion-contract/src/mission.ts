@@ -4,6 +4,7 @@
 import { z } from "zod/mini";
 
 import { chatSendRequestSchema } from "./chat-send";
+import { preStreamErrorCodeSchema } from "./error-codes";
 
 /** 학습자 턴 상한의 허용 범위입니다(PRD §9 M2 — 초안 8 ~ 10). */
 export const MISSION_TURN_LIMIT_MIN = 3;
@@ -169,6 +170,38 @@ export const missionHintResponseSchema = z.object({
   hintsLeft: nonNegativeInt,
 });
 
+// ------------------------------------------------------------------ 미션 함수의 오류
+
+/**
+ * 미션 함수(`mission-start` · `mission-hint` · `mission-finish`)와 미션 턴의 `chat-send`가 스트림 전에 내는 미션 전용 오류입니다.
+ * 계정 단위 거절(`not_available` · `insufficient_credits` · `age_restricted` …)은 1단계 표(`PRE_STREAM_ERRORS`)를 그대로 씁니다.
+ * - `mission_not_found`: 판이 없음 · 남의 판 · 컴패니언 대화 · 없는 미션.
+ * - `mission_closed`: 이미 닫힌 판(그만둠 · 채점 끝). `mission_ended`: 끝난 판(목표 · 턴 상한) — 앱은 `mission-finish`를 부른다.
+ * - `mission_not_ended`: 끝나지 않은 판을 채점하려 함(그만두려면 `abandon: true`).
+ * - `hint_limit` · `no_goal_left`: 힌트를 줄 수 없음. `hint_unavailable`: 힌트 문장 만들기가 실패(힌트 수는 이미 셌다).
+ */
+export const MISSION_ERRORS = {
+  mission_not_found: { status: 404, retryable: false },
+  mission_closed: { status: 409, retryable: false },
+  mission_ended: { status: 409, retryable: false },
+  mission_not_ended: { status: 409, retryable: false },
+  hint_limit: { status: 409, retryable: false },
+  no_goal_left: { status: 409, retryable: false },
+  hint_unavailable: { status: 503, retryable: true },
+} as const;
+
+export type MissionErrorCode = keyof typeof MISSION_ERRORS;
+
+const missionErrorCodes = Object.keys(MISSION_ERRORS) as [MissionErrorCode, ...MissionErrorCode[]];
+
+/** 미션 함수의 오류 본문 — 1단계 오류 본문과 같은 모양에 미션 코드를 더한 것. */
+export const missionErrorBodySchema = z.object({
+  error: z.union([preStreamErrorCodeSchema, z.enum(missionErrorCodes)]),
+  retryable: z.boolean(),
+  detail: z.optional(z.record(z.string(), z.unknown())),
+});
+
+export type MissionErrorBody = z.infer<typeof missionErrorBodySchema>;
 export type MissionEndReason = z.infer<typeof missionEndReasonSchema>;
 export type MissionOutcome = z.infer<typeof missionOutcomeSchema>;
 export type MissionGoalState = z.infer<typeof missionGoalStateSchema>;

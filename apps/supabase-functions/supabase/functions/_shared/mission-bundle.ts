@@ -153,6 +153,12 @@ export function buildMissionLabBundle(input: MissionLabBundleInput) {
         schema: z.toJSONSchema(graderSchema),
       },
       transcriptLine: transcriptLineTemplates,
+      // 대화 기록의 모양(서버 `historyMessages`와 같게) — 실험실이 같은 메시지 목록을 만들게 적어 둔 칸.
+      sceneStartUser: null,
+      sceneStart:
+        "진입 대사는 상대역(assistant) 메시지로 대화 맨 앞에 그대로 둔다. 앞에 고정 user 글을 넣지 않는다 — 1단계 첫 인사 · 선톡 뒤 턴과 같다.",
+      historyAssistantFormat:
+        "지난 상대역 답은 조각마다 `@{kind} {text}` 한 줄(`@speech …` · `@action …`)을 줄바꿈으로 이은 글. 상태 줄(`@state …`)과 저장된 번역은 넣지 않는다. 학습자 글은 보낸 글 그대로.",
     },
     missions: input.missions.map(missionEntry),
   };

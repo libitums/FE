@@ -19,8 +19,14 @@ import type { LearningTarget } from "./companion-learning.ts";
 import { recoveryDirective, refusalTopic } from "./companion-llm-prompts.ts";
 import { segmentsToPlain } from "./companion-segments.ts";
 
+/** 검사 · 다시 만들기가 읽는 턴 값만(미션 턴도 같이 쓴다). */
+type CheckContext = Pick<TurnContext, "deps" | "llm"> & {
+  readonly body: { readonly text: string };
+  readonly gate: { readonly ageBand: TurnContext["gate"]["ageBand"] };
+};
+
 /** 동기 출력 검사 — 결과를 검사 목록에 더합니다. 검사 실패는 거부(턴이 `upstream_unavailable`로). */
-export function outputChecker(context: TurnContext, moderation: ModerationRecord[]) {
+export function outputChecker(context: CheckContext, moderation: ModerationRecord[]) {
   const { deps, llm, body, gate } = context;
   return async (segments: readonly Segment[]): Promise<ModerationVerdict> => {
     const output = await llm.moderate({
@@ -77,7 +83,7 @@ export function startFollowUps(
 
 /** 걸린 분류로 화제를 돌린 답을 한 번 만들고 다시 검사합니다. 통과한 답(내보내기 전)만 돌려주고, 아니면 null. */
 export async function recoverReply(
-  context: TurnContext,
+  context: CheckContext,
   input: {
     readonly history: HistoryEntry[];
     readonly system: string;

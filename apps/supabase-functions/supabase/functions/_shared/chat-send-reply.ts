@@ -64,6 +64,8 @@ export function startReply(
   let live: ((delta: SegmentDelta) => void) | null = null;
   let firstDeltaMs: number | null = null;
   let state: TurnState | null = null;
+  // 상태 줄의 글자 그대로 — 미션 턴이 미션 모양으로 다시 읽는다(`parseMissionState`). 컴패니언 턴은 쓰지 않는다.
+  let stateText: string | null = null;
   const started = context.deps.nowMs();
 
   const push = (items: SegmentDelta[]) => {
@@ -92,6 +94,7 @@ export function startReply(
     }
     push(splitter.end());
     state = splitter.state();
+    stateText = splitter.stateText();
   };
 
   const done = (async () => {
@@ -113,6 +116,7 @@ export function startReply(
       firstDeltaMs,
       totalMs: context.deps.nowMs() - started,
       state: state as TurnState | null,
+      stateText: stateText as string | null,
     };
   })();
   // 결과를 아무도 기다리지 않는 경로(위기 · 차단으로 버림)에서 처리되지 않은 거부가 되지 않게 합니다.

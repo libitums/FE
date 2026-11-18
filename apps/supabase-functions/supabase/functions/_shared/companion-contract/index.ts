@@ -129,6 +129,7 @@ export {
   type SnapshotSelf,
 } from "./media.ts";
 export {
+  MISSION_ERRORS,
   MISSION_TURN_LIMIT_MAX,
   MISSION_TURN_LIMIT_MIN,
   expressionIdSchema,
@@ -150,8 +151,11 @@ export {
   missionStartResponseSchema,
   missionTargetExpressionSchema,
   missionTurnRequestSchema,
+  missionErrorBodySchema,
   type MissionCounterpartBase,
   type MissionDefinition,
+  type MissionErrorBody,
+  type MissionErrorCode,
   type MissionEndReason,
   type MissionGoal,
   type MissionGoalState,
