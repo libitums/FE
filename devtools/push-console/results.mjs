@@ -4,6 +4,7 @@
 // - opened   T ~ T+창 안에 앱 이벤트가 하나라도 있음 (PostHog — 키가 없으면 null)
 // - tapped   T ~ T+창 안에 push_notification_opened (PostHog — 대조군은 0이 정상)
 // - studied  현지 날짜로 T의 날 ~ T+창의 날 사이에 학습한 날이 있음 (learning_days)
+// - updated  T ~ T+창 안에 목표 빌드 이상의 앱 이벤트 (PostHog · 업데이트 캠페인만 — D13)
 // - since    지금까지 T 뒤에 앱을 연 적이 있음 (push_devices.last_active_at — 창 없음)
 
 import { localClock } from "./segments.mjs";
@@ -62,6 +63,8 @@ export function campaignResults(campaign, observations, nowMs) {
   const groups = { sent: [], control: [] };
   for (const recipient of campaign.recipients) groups[recipient.group]?.push(recipient);
   const hasPosthog = observations.posthog !== null;
+  // 목표 빌드를 적어 보낸 캠페인(업데이트 세그먼트)만 「업데이트함」을 잽니다.
+  const hasUpdate = hasPosthog && Boolean(campaign.filter?.targetBuilds);
 
   const rateOf = (rows, test) => ({ hits: rows.filter(test).length, n: rows.length });
   const startDay = (row) => localClock(sentAt, row.timeZone ?? "UTC").date;
@@ -78,6 +81,7 @@ export function campaignResults(campaign, observations, nowMs) {
       const tests = {
         opened: hasPosthog ? (row) => within(ph(row).firstEventMs, sentAt, to) : null,
         tapped: hasPosthog ? (row) => within(ph(row).firstTapMs, sentAt, to) : null,
+        updated: hasUpdate ? (row) => within(ph(row).firstUpdatedMs, sentAt, to) : null,
         studied: (row) =>
           studiedBetween(
             observations.learningDays.get(row.userId),

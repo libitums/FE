@@ -56,6 +56,12 @@ export const SEGMENTS = [
     hint: "끝낸 단계 뒤 예고 문구가 있다(튜토리얼 레슨 1부터) · 문구는 단계별 예고 파일",
   },
   {
+    id: "update-available",
+    kind: "overlay",
+    label: "앱을 올리지 않음",
+    hint: "PostHog에서 마지막으로 본 빌드가 목표 빌드보다 낮다(D13) · 문구 {store} = Google Play · App Store",
+  },
+  {
     id: "streak-at-risk",
     kind: "overlay",
     label: "스트릭이 끊기기 직전",
@@ -297,7 +303,7 @@ export function cleanName(name) {
 }
 
 /**
- * 문구 자리표시를 채웁니다 — `{name}` `{episode}` `{character}` `{streak}` `{steps}`.
+ * 문구 자리표시를 채웁니다 — `{name}` `{episode}` `{character}` `{streak}` `{steps}` `{store}`.
  * 이름이 없으면 `{name}`과 붙은 쉼표 · 「さん」을 함께 지우고 첫 글자를 대문자로 올립니다.
  */
 export function renderCopy(template, vars) {
@@ -322,6 +328,7 @@ export function renderCopy(template, vars) {
     .replaceAll("{episode}", String(vars.episode ?? ""))
     .replaceAll("{streak}", String(vars.streak ?? ""))
     .replaceAll("{steps}", String(vars.steps ?? ""))
+    .replaceAll("{store}", String(vars.store ?? ""))
     .trim();
 }
 

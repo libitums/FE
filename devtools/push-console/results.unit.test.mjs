@@ -247,3 +247,28 @@ test("PC-R6. 변형마다 대조군과 비교하고, B는 A와 바로 비교한�
   assert.deepEqual(pooled.headToHead[0].counts, { sent: 8, control: 8 });
   assert.deepEqual(poolResults([result, single]).variants, []);
 });
+
+test("PC-R7. 업데이트 캠페인 — 창 안에 목표 빌드 이벤트가 있으면 「업데이트함」, 목표가 없으면 지표 없음", () => {
+  const update = { ...campaign, filter: { targetBuilds: { android: 23, ios: null } } };
+  const posthog = new Map([
+    ["a", { firstEventMs: SENT_AT + HOUR, firstTapMs: null, firstUpdatedMs: SENT_AT + 3 * HOUR }],
+    ["b", { firstEventMs: SENT_AT + HOUR, firstTapMs: null, firstUpdatedMs: SENT_AT + 50 * HOUR }],
+    ["x", { firstEventMs: null, firstTapMs: null, firstUpdatedMs: SENT_AT + 10 * HOUR }],
+  ]);
+  const observations = { posthog, learningDays: new Map(), lastActiveNow: new Map() };
+  const result = campaignResults(update, observations, SENT_AT + 80 * HOUR);
+  const metric = (hours) =>
+    result.metrics.find((row) => row.metric === "updated" && row.hours === hours);
+  assert.deepEqual(metric(24).sent, { hits: 1, n: 4 });
+  assert.deepEqual(metric(24).control, { hits: 1, n: 2 });
+  assert.deepEqual(metric(72).sent, { hits: 2, n: 4 });
+
+  const plain = campaignResults(campaign, observations, SENT_AT + 80 * HOUR);
+  assert.ok(!plain.metrics.some((row) => row.metric === "updated"));
+  const noPosthog = campaignResults(
+    update,
+    { ...observations, posthog: null },
+    SENT_AT + 80 * HOUR,
+  );
+  assert.ok(!noPosthog.metrics.some((row) => row.metric === "updated"));
+});

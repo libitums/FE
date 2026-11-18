@@ -6,6 +6,8 @@ import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import path from "node:path";
 
+import { appVersionsFrom, updatedCondition } from "./update.mjs";
+
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** 기록 · 설정 폴더입니다. 저장소 밖이라 워크트리가 달라도 같은 기록을 봅니다. */
@@ -183,48 +185,97 @@ export function hogqlTimeMs(value) {
   return Number.isFinite(ms) && ms > 0 ? ms : null;
 }
 
+/** HogQL 한 번 — `results` 배열(없거나 모양이 틀리면 빈 배열)입니다. */
+async function hogql(config, query, fetchImpl) {
+  const response = await fetchImpl(
+    `${config.posthogHost}/api/projects/${config.posthogProjectId}/query/`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${config.posthogPersonalApiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ query: { kind: "HogQLQuery", query } }),
+    },
+  );
+  if (!response.ok) throw new Error(`PostHog 질의 실패 ${response.status}`);
+  const data = await response.json();
+  return Array.isArray(data?.results) ? data.results : [];
+}
+
+/**
+ * uuid만 남겨 300명씩 `'id','id'` 목록으로 자릅니다(질의에 다른 글자가 들어가지 않게).
+ * 묶음 질의에는 `LIMIT 1000`을 꼭 적습니다 — HogQL API는 LIMIT이 없으면 100행에서 말없이 자릅니다.
+ */
+function idChunks(userIds) {
+  const ids = userIds.filter((id) => UUID.test(id));
+  const chunks = [];
+  for (let start = 0; start < ids.length; start += 300)
+    chunks.push(
+      ids
+        .slice(start, start + 300)
+        .map((id) => `'${id}'`)
+        .join(","),
+    );
+  return chunks;
+}
+
 /**
  * 발송 뒤 72시간 동안 사람마다 첫 앱 이벤트 · 첫 알림 누름입니다. 키가 없으면 `null`.
+ * `targetBuilds`를 주면(업데이트 캠페인 — D13) 첫 「목표 빌드 이상」 이벤트(`firstUpdatedMs`)도 읽습니다.
  * PostHog distinct_id = Supabase 사용자 id(ADR-0127 D4).
  */
-export async function posthogReturns(config, userIds, sentAtMs, { fetchImpl = fetch } = {}) {
+export async function posthogReturns(
+  config,
+  userIds,
+  sentAtMs,
+  { fetchImpl = fetch, targetBuilds = null } = {},
+) {
   if (!config.posthogPersonalApiKey || !config.posthogProjectId) return null;
-  const ids = userIds.filter((id) => UUID.test(id));
   const from = Math.floor(sentAtMs / 1000);
   const to = from + 72 * 3600;
+  const updated = targetBuilds ? updatedCondition(targetBuilds) : null;
   const result = new Map();
-  for (let start = 0; start < ids.length; start += 300) {
-    const list = ids
-      .slice(start, start + 300)
-      .map((id) => `'${id}'`)
-      .join(",");
+  for (const list of idChunks(userIds)) {
     const query =
-      "SELECT distinct_id, min(timestamp), minIf(timestamp, event = 'push_notification_opened') FROM events " +
+      "SELECT distinct_id, min(timestamp), minIf(timestamp, event = 'push_notification_opened')" +
+      (updated ? `, minIf(timestamp, ${updated})` : "") +
+      " FROM events " +
       `WHERE distinct_id IN (${list}) AND timestamp > fromUnixTimestamp(${from}) AND timestamp <= fromUnixTimestamp(${to}) ` +
-      "AND properties.environment = 'production' AND NOT startsWith(event, '$') GROUP BY distinct_id";
-    const response = await fetchImpl(
-      `${config.posthogHost}/api/projects/${config.posthogProjectId}/query/`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${config.posthogPersonalApiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ query: { kind: "HogQLQuery", query } }),
-      },
-    );
-    if (!response.ok) throw new Error(`PostHog 질의 실패 ${response.status}`);
-    const data = await response.json();
-    const results = Array.isArray(data?.results) ? data.results : [];
-    for (const [id, first, tap] of results) {
+      "AND properties.environment = 'production' AND NOT startsWith(event, '$') GROUP BY distinct_id LIMIT 1000";
+    for (const [id, first, tap, update] of await hogql(config, query, fetchImpl)) {
       const tapMs = hogqlTimeMs(tap);
       result.set(id, {
         firstEventMs: hogqlTimeMs(first),
         firstTapMs: tapMs !== null && tapMs > sentAtMs ? tapMs : null,
+        ...(updated ? { firstUpdatedMs: hogqlTimeMs(update) } : {}),
       });
     }
   }
   return result;
+}
+
+/**
+ * 사람마다 PostHog에서 본 마지막 앱 정보(플랫폼 · 빌드 · 버전) — 지난 60일, 운영 이벤트만입니다(D13).
+ * 키가 없으면 `null`(업데이트 세그먼트를 쓸 수 없음). distinct_id = Supabase 사용자 id.
+ */
+export async function posthogAppVersions(
+  config,
+  userIds,
+  { fetchImpl = fetch, nowMs = Date.now() } = {},
+) {
+  if (!config.posthogPersonalApiKey || !config.posthogProjectId) return null;
+  const since = Math.floor(nowMs / 1000) - 60 * 24 * 3600;
+  const rows = [];
+  for (const list of idChunks(userIds)) {
+    const query =
+      "SELECT distinct_id, argMax(properties.platform, timestamp), argMax(properties.appBuild, timestamp), " +
+      "argMax(properties.appVersion, timestamp), max(timestamp) FROM events " +
+      `WHERE distinct_id IN (${list}) AND timestamp > fromUnixTimestamp(${since}) ` +
+      "AND properties.environment = 'production' AND properties.appBuild IS NOT NULL GROUP BY distinct_id LIMIT 1000";
+    rows.push(...(await hogql(config, query, fetchImpl)));
+  }
+  return appVersionsFrom(rows);
 }
 
 // ------------------------------------------------------------------ 캠페인 기록

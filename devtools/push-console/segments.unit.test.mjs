@@ -196,3 +196,11 @@ test("PC-S11. {character} — 인물 이름을 넣고, 없으면 「{character}:
   assert.equal(variantIndexOf("series:x", "u7", 2), variantIndexOf("series:x", "u7", 2));
   assert.equal(variantIndexOf("series:x", "u7", 1), 0);
 });
+
+test("PC-S12. {store} — 사람의 플랫폼 스토어 이름을 넣고, 없으면 지운다", () => {
+  assert.equal(
+    renderCopy("Update Duru on {store}.", { store: "Google Play" }),
+    "Update Duru on Google Play.",
+  );
+  assert.equal(renderCopy("Update on {store}", {}), "Update on");
+});

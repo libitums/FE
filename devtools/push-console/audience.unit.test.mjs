@@ -265,3 +265,57 @@ test("PC-A10. 문구가 비어 있어도 messageFor는 던지지 않는다(리�
   assert.deepEqual(messageFor(learner, undefined), { lang: "en", title: "", body: "" });
   assert.deepEqual(messageFor(learner, {}), { lang: "en", title: "", body: "" });
 });
+
+test("PC-A11. 업데이트 세그먼트 — PostHog 마지막 빌드가 목표보다 낮은 사람만, 문구에 플랫폼 스토어", () => {
+  const versions = new Map([
+    [id(1), { platform: "android", appBuild: 14, appVersion: "1.3.0", seenMs: NOW }],
+    [id(2), { platform: "android", appBuild: 23, appVersion: "1.4.1", seenMs: NOW }],
+    [id(3), { platform: "ios", appBuild: 15, appVersion: "1.0.0", seenMs: NOW }],
+  ]);
+  const learners = buildLearners({
+    devices: [1, 2, 3, 5].map((n) => ({ user_id: id(n), last_active_at: iso(NOW - 30 * HOUR) })),
+    profiles: [{ user_id: id(1), name: "Ana", country_code: "PH" }],
+    progress: [],
+    days: [],
+    testers: new Set(),
+    catalog,
+    nowMs: NOW,
+    versions,
+  });
+  const ana = learners.find((row) => row.userId === id(1));
+  assert.equal(ana.platform, "android");
+  assert.equal(ana.appBuild, 14);
+  assert.equal(ana.appVersion, "1.3.0");
+  const unseen = learners.find((row) => row.userId === id(5));
+  assert.equal(unseen.platform, null);
+  assert.equal(unseen.appBuild, null);
+
+  const pick = (targetBuilds) =>
+    selectAudience(
+      learners,
+      { segment: "update-available", targetBuilds },
+      { nowMs: NOW, lastConsoleSendMs: new Map() },
+    ).eligible.map((row) => row.userId);
+  // 기본 목표(Android 23만) — 1.3.0 Android만. 본 적 없는 사람 · 이미 올린 사람 · iOS는 빠진다.
+  assert.deepEqual(pick(undefined), [id(1)]);
+  assert.deepEqual(pick({ android: 23, ios: 24 }).sort(), [id(1), id(3)]);
+
+  const copy = {
+    en: { title: "New in Duru", body: "{name}, update Duru on {store}." },
+  };
+  assert.equal(messageFor(ana, copy).body, "Ana, update Duru on Google Play.");
+  const ios = learners.find((row) => row.userId === id(3));
+  assert.equal(messageFor(ios, copy).body, "Update Duru on App Store.");
+
+  const [row] = planRecipients({
+    campaignId: "series:u",
+    eligible: [ana],
+    holdoutPercent: 0,
+    copy,
+  });
+  assert.equal(row.platform, "android");
+  assert.equal(row.appBuild, 14);
+
+  const summary = summarize(learners, SEGMENTS).find((entry) => entry.id === "update-available");
+  assert.equal(summary.total, 1);
+});
