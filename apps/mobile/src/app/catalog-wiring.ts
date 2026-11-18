@@ -12,7 +12,7 @@ import { withCatalogStory } from "./catalog-story-wiring";
 import type { CatalogStoryWiring } from "./catalog-story-wiring";
 import type { CatalogListenWiring, CatalogListenWiringArgs } from "./catalog-listen-wiring";
 import { roleplayStoryWiring } from "./roleplay-story-wiring";
-import type { RoleplayStoryWiring } from "./roleplay-story-wiring";
+import type { RoleplayStoryWiring, RoleplayStoryWiringArgs } from "./roleplay-story-wiring";
 
 export type CatalogWiring = CatalogCoverWiring &
   CatalogLessonWiring &
@@ -22,7 +22,9 @@ export type CatalogWiring = CatalogCoverWiring &
   CatalogItemReportWiring;
 export type CatalogWiringArgs = CatalogCoverWiringArgs &
   CatalogLessonWiringArgs &
-  CatalogListenWiringArgs;
+  CatalogListenWiringArgs &
+  // 턴 로그가 플랫폼 · 앱 버전을 싣습니다(ADR-0161).
+  Pick<RoleplayStoryWiringArgs, "appVersion">;
 
 export function catalogWiring(args: CatalogWiringArgs): CatalogWiring {
   return {

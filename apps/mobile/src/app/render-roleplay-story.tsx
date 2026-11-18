@@ -50,6 +50,7 @@ export function renderRoleplayStory(screen: RoleplayStoryScreen, wiring: ScreenW
         wiring.onFinishRoleplayStory(episodeId, results, skippedCount)
       }
       onExit={wiring.onExitRoleplayStory}
+      onTurnLog={(log) => wiring.onRoleplayTurnLog(episodeId, log)}
     />
   );
 }

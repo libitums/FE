@@ -15,6 +15,7 @@ import type {
   SaveLearningProgressPath,
 } from "./learning-progress.contract";
 import type { SubmitFeedbackPath } from "./feedback.contract";
+import type { LogRoleplayTurnsPath } from "./roleplay-turn-log.contract";
 import type { LoadLearnerProfilePath, SaveLearnerProfilePath } from "./learner-profile.contract";
 import { isSuccessStatus, send } from "./supabase-transport";
 
@@ -26,7 +27,8 @@ type RpcPath =
   | LearningStreakPath
   | SubmitFeedbackPath
   | LoadLearnerProfilePath
-  | SaveLearnerProfilePath;
+  | SaveLearnerProfilePath
+  | LogRoleplayTurnsPath;
 
 export function learningRpcRequest(
   config: SupabaseConfig,
