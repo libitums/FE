@@ -5,9 +5,20 @@
 import type { PlanBenefits, PlanId, PlansCatalog } from "../../lib/plans-api";
 import { shownPriceFor, type PricingRegion, type ShownPrice } from "../../lib/provisional-prices";
 import type { StoreOffer } from "../../lib/purchase-bridge";
+import type { CurrentPlan } from "./plan-change";
 
-/** 요금제가 보이는 자리 — 설정 → Plans · 티켓 다 씀 대화상자 · 메신저 무료 다 씀 판. */
-export type PlanPlacement = "settings" | "tickets" | "messenger";
+/**
+ * 요금제가 보이는 자리 — 설정 → Plans · 티켓 다 씀 대화상자 · 메신저 무료 다 씀 판, 그리고 상점 Plans 탭의 입구(ADR-0160):
+ * 머리 요금제 칩 · 엽전 탭(줄 · 탭 전환) · 대화 전송에서 연 상점 · 티켓 모달의 Go unlimited. 카드 묶음은 앞 셋만 다르고 나머지는 설정과 같습니다.
+ */
+export type PlanPlacement =
+  | "settings"
+  | "tickets"
+  | "messenger"
+  | "header_chip"
+  | "coin_shop"
+  | "chat_send"
+  | "tickets_chip";
 export type PlanPeriod = "monthly" | "yearly";
 
 export type PlanBenefit =
@@ -38,6 +49,10 @@ export function plansForPlacement(
   const fits = (plan: PlanBenefits): boolean => {
     switch (placement) {
       case "settings":
+      case "header_chip":
+      case "coin_shop":
+      case "chat_send":
+      case "tickets_chip":
         return true;
       case "tickets":
         return plan.unlimitedTickets && plan.chatRank === null;
@@ -91,7 +106,67 @@ export function planCardsFor(
 export function initialPlanSelection(
   cards: readonly PlanCardView[],
   focus: PlanId | null,
+  current: CurrentPlan | null = null,
 ): PlanId | null {
-  if (focus !== null && cards.some((card) => card.id === focus)) return focus;
-  return (cards.find((card) => card.best) ?? cards[0])?.id ?? null;
+  const has = (id: PlanId | null) => id !== null && cards.some((card) => card.id === id);
+  if (current === null) {
+    if (has(focus)) return focus;
+    return (cards.find((card) => card.best) ?? cards[0])?.id ?? null;
+  }
+  // 구독 중(ADR-0160): 지금 요금제가 아닌 focus → 위 등급 Premium → 없음(CTA는 고를 때까지 막힘).
+  if (has(focus) && focus !== current.id) return focus;
+  return current.id !== "premium" && has("premium") ? "premium" : null;
+}
+
+/** 이 기간의 이 카드가 지금 가진 구독인가 — 같은 요금제라도 다른 기간이면 바꿀 수 있습니다. */
+export function isCurrentCard(
+  id: PlanId,
+  period: PlanPeriod,
+  current: CurrentPlan | null,
+): boolean {
+  return current !== null && current.id === id && current.period === period;
+}
+
+/** 가격 글자 단계 — 긴 통화(₫ · Rp)는 한 단계 작게(15 → 13). 글은 스토어가 준 그대로이고 길이만 봅니다. */
+export function priceSizeOf(price: string | null): "regular" | "compact" {
+  return price !== null && price.length >= 10 ? "compact" : "regular";
+}
+
+export type PlanHeadline =
+  | { readonly kind: "everything" }
+  | { readonly kind: "chats"; readonly perDay: number }
+  | { readonly kind: "unlimited-chat" }
+  | { readonly kind: "learn" };
+
+export type PlanDetail =
+  | { readonly kind: "every-unit" }
+  | { readonly kind: "all-friends" }
+  | { readonly kind: "coins"; readonly coins: number };
+
+/** 카드의 큰 제목 한 줄과 작은 세부 줄(시안 S2). */
+export function planCardLinesOf(benefits: readonly PlanBenefit[]): {
+  readonly headline: PlanHeadline;
+  readonly details: readonly PlanDetail[];
+} {
+  const lessons = benefits.some((benefit) => benefit.kind === "unlimited-lessons");
+  const unlimitedChat = benefits.some((benefit) => benefit.kind === "unlimited-chat");
+  const free = benefits.find(
+    (benefit): benefit is Extract<PlanBenefit, { kind: "free-messages" }> =>
+      benefit.kind === "free-messages",
+  );
+  const details: PlanDetail[] = [];
+  if (lessons && !unlimitedChat && free === undefined) details.push({ kind: "every-unit" });
+  if (benefits.some((benefit) => benefit.kind === "all-characters"))
+    details.push({ kind: "all-friends" });
+  for (const benefit of benefits)
+    if (benefit.kind === "monthly-coins") details.push({ kind: "coins", coins: benefit.coins });
+  const headline: PlanHeadline =
+    lessons && unlimitedChat
+      ? { kind: "everything" }
+      : free !== undefined
+        ? { kind: "chats", perDay: free.perDay }
+        : unlimitedChat
+          ? { kind: "unlimited-chat" }
+          : { kind: "learn" };
+  return { headline, details };
 }

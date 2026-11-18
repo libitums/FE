@@ -72,4 +72,5 @@ export type AnalyticsEventName =
   | "streak_reward_collected"
   | "plans_viewed"
   | "plan_selected"
-  | "purchase_intent";
+  | "purchase_intent"
+  | "shop_tab_switched";
