@@ -13,6 +13,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
       AirbridgeEvents.start(config)
     }
 
+    // RevenueCat 구매 SDK(ADR-0144 2단계). 키가 없으면 한 줄도 부르지 않는다. 사용자 id는 로그인 뒤 JS가 맞춘다.
+    if let config = PurchasesConfig.fromBundle() {
+      PurchasesSDK.start(config)
+    }
+
     // WebP 디코더는 Podfile에 들어 있지만(LynxService/Image) 등록하지 않으면 쓰이지 않는다.
     // 등록이 없으면 `<image>`가 WebP를 받아 캐시까지 해 놓고 **아무것도 그리지 않는다** —
     // 오류 이벤트도 없다. Explorer는 이 등록을 스스로 하므로 개발 루프에서는 드러나지 않는다.

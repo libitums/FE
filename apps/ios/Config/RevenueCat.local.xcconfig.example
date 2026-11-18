@@ -1,0 +1,3 @@
+// 이 파일을 RevenueCat.local.xcconfig로 복사해 값을 채운다(추적하지 않는다). 값을 바꾸면 다시 빌드한다.
+// 키는 RevenueCat 대시보드 [Project settings] > [API keys]의 App Store 앱 **공개 SDK 키**(appl_로 시작)다 — Secret API 키가 아니다.
+REVENUECAT_API_KEY =

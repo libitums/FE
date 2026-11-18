@@ -26,6 +26,9 @@ target 'Host' do
   # 정확 버전이다(ADR-0012 D4). restricted 변형과 함께 설치하지 않는다.
   pod 'airbridge-ios-sdk', '4.12.0'
 
+  # 스토어 결제 · 영수증 · 구독 상태는 RevenueCat(ADR-0144 D1). 정확 버전이다(ADR-0012 D4). 키가 없으면 시작하지 않는다.
+  pod 'RevenueCat', '5.99.2'
+
   target 'HostTests' do
     inherit! :search_paths
   end

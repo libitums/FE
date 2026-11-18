@@ -66,6 +66,7 @@ PODS:
     - PrimJS/quickjs
   - PrimJS/quickjs (4.0.0):
     - PrimJS/log
+  - RevenueCat (5.99.2)
   - SDWebImage (5.21.7):
     - SDWebImage/Core (= 5.21.7)
   - SDWebImage/Core (5.21.7)
@@ -128,6 +129,7 @@ DEPENDENCIES:
   - LynxService/Log (from `podspecs/LynxService.podspec.json`)
   - PrimJS/napi (= 4.0.0)
   - PrimJS/quickjs (= 4.0.0)
+  - RevenueCat (= 5.99.2)
   - SDWebImage (= 5.21.7)
   - SDWebImageWebPCoder (= 0.11.0)
   - XElement (= 4.0.1)
@@ -142,6 +144,7 @@ SPEC REPOS:
     - LynxTextra
     - MJRefresh
     - PrimJS
+    - RevenueCat
     - SDWebImage
     - SDWebImageWebPCoder
     - ServalMarkdown
@@ -162,12 +165,13 @@ SPEC CHECKSUMS:
   LynxTextra: a3104e6a60e6ed844396d849fc04cfee00548ea5
   MJRefresh: ff9e531227924c84ce459338414550a05d2aea78
   PrimJS: f048efc0923e73cde312466a110516f56b70834d
+  RevenueCat: 1e9e9e41d12d719a53f7f82d453eecf69239e64d
   SDWebImage: e9fc87c1aab89a8ab1bbd74eba378c6f53be8abf
   SDWebImageWebPCoder: 295a6573c512f54ad2dd58098e64e17dcf008499
   ServalMarkdown: 4e0401818bc34bbb7659270e2df775119ccc029f
   ServalSVG: 19bf88f72dae928c28a744c9b91475a3691ded42
   XElement: f1f022652fbc5e109e7d4d66299493bfd1a74b31
 
-PODFILE CHECKSUM: c834132e27d9d9d6330cbc9e3b571dbe7807f1c4
+PODFILE CHECKSUM: 8c156791d4992e5493feef3fce0e267379fcdbcb
 
 COCOAPODS: 1.17.0
