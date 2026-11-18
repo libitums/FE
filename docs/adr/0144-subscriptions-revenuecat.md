@@ -144,5 +144,27 @@ DB가 실패하면 500 — RevenueCat이 다시 보낸다. 같은 이벤트 id�
   권한은 결제를 열 수 있을 때만 읽는다(결제 전에는 로그인마다 RPC를 늘리지 않음). 웹훅이 10초 안에 안 닿으면 다음 화면 진입 · 실행이 따라잡는다.
 - **엽전 상점**: 결선 밖이라 `purchase-intent`의 구매 맥락(`purchasePack`)으로 같은 다리 · 같은 서버 따라잡기를 쓴다. 실패 · 취소는 안내 없이 끝난다
   (스토어 시트가 결제 오류를 스스로 보임). 결제를 열 수 없으면 지금처럼 「결제 준비 중」.
-- **아직 아님(후속)**: `PlansWiring.entitlements`를 화면에 쓰기(「지금 요금제」 표시 · 무제한 티켓을 서버 권한으로) — 이번에는 상태만 둔다.
+- ~~**아직 아님(후속)**: `PlansWiring.entitlements`를 화면에 쓰기(「지금 요금제」 표시 · 무제한 티켓을 서버 권한으로) — 이번에는 상태만 둔다.~~
+  → 아래 「2단계 후속」에서 붙음.
   RevenueCat SDK의 실행 시 offerings 미리 받기는 대시보드에 offering이 없으면 오류 로그를 남긴다(동작에는 영향 없음).
+
+## 2단계 후속 (2026-11-18) — 구독 고지 · 구독 관리 · 서버 권한 화면 반영 · 엽전 실패 안내 [사용자: 「③ 1 ~ 4 진행」]
+
+- **구독 고지(App Store 심사 지침 3.1.2 · Play 구독 정책)**: 요금제 화면의 구매 단추 아래 `PlanTerms` — 고른 요금제 이름 · 가격과 기간(카드와 같은 글:
+  스토어 가격, 없으면 임시 추천 가격 · 「스토어에서」) · 결제 계정(App Store · Google Play, 모르면 일반 이름) · 자동 갱신 · 24시간 전 해지 · 해지 자리,
+  이용약관 · 개인정보처리방침 링크(`LegalDocumentModule` — 설정과 같은 주소). 다섯 언어(`ui-copy-plans-terms.ts`), th · my는 영어(ADR-0158).
+  무료 체험이 없어 체험 문장은 두지 않는다 — 생기면 더한다. 구독 구매가 시작되는 자리는 요금제 화면 하나다(맥락 카드는 이 화면을 연다).
+  「Restore purchases」는 이미 요금제 화면에 있다.
+- **구독 관리**: 새 호스트 메서드 없이 `ExternalLinkModule`(https만)로 스토어 화면을 연다 — iOS `https://apps.apple.com/account/subscriptions`,
+  Android `https://play.google.com/store/account/subscriptions?sku=<구독 id>&package=libitum.duru.android`(`lib/manage-subscription.ts`).
+  자리: 머리 무제한 모달(ADR-0115)의 「Manage subscription」 · 곧 끝남의 「Keep unlimited」(갱신을 다시 켜는 곳이 스토어), 요금제 화면의 지금 요금제.
+- **서버 권한을 화면에(D2)**: `lib/plan-access.ts`가 권한을 모듈 값으로 들고(요금제 결선이 렌더마다 맞춤 — `tester-access.ts`와 같은 방식),
+  - 티켓: `ticketsUnlimited()` = 시험 계정 ∨ 권한 `unlimitedTickets` → 티켓 비용 0 · 머리 칩 무제한 · 결과 화면 남은 장수 줄 없음 · 다음 유닛 ∞ 태그.
+    **잠금(유닛 열림)은 그대로** — 시험 계정만 푼다.
+  - 대화: `chatUnlimited()` = 시험 계정 ∨ 등급 premium → 앱 관문 열림. **Chat Plus는 지금처럼 free 관문**이다 — 하루 무료 30통은 서버가 세고 앱은 남은 수를
+    모른다(차감은 서버가 맞게 함). 앱 표시를 맞추려면 서버가 남은 무료 수를 지갑에 실어야 한다(후속).
+  - 무제한 모달: 티켓 무제한 권한의 만료 · 갱신으로 구독 판(시작 시각은 서버가 주지 않아 기간 30 · 365일만큼 앞으로 셈 — 「since」 날짜뿐).
+  - 요금제 화면: 지금 요금제 카드에 「Current plan」 배지, 그 요금제를 고르면 계속 대신 「Manage subscription」, 다른 요금제를 고른 동안에는 고지 아래 링크.
+  - 결제를 열 수 없으면(지금 운영) 권한을 읽지 않아 모두 지금과 같다(RPC 늘지 않음).
+- **엽전 상점 실패 안내**: 결제가 `failed`면(취소 아님) 사기 단추 아래 한 줄(막지 않음, 다시 사면 걷힘). 스토어 시트의 오류는 그대로 스토어가 보인다.
+
