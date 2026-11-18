@@ -719,3 +719,20 @@ UserRow · 대화 · 지급이 1차 모양으로 돌아가니, 그때는 이 파
 **운영 적용은 사람이 한다.** 20261213 **뒤에** 적용한다. SQL 편집기에서 `begin; … commit;`으로 감싸 실행하고
 `supabase migration repair --status applied 20261214120000`. 다시 적용해도 같다. 20261213을 이 파일 뒤에 다시 적용하면 옛 인수 꼴 함수가 함께 남아
 이름만으로 부를 때 `is not unique`가 나니, 그때는 이 파일도 다시 적용한다.
+
+### 판정 메시지 (20261215)
+
+`migrations/20261215120000_ops_admin_moderation.sql`. 계약은 ops-dashboard `docs/admin-contract.md` §F.
+
+- 새 RPC `ops_user_moderation(p_actor, p_user, p_limit 기본 50(1~200), p_before)` — 사용자 상세 「신고 · 판정」에서 판정마다 어떤 메시지였는지 본다.
+  `{items: [{id, at, stage, category, action, messageId, characterId, message, reply}], hasMore}` 최신순, `allow`는 뺀다(타임라인과 같다).
+- 턴 저장 RPC는 판정을 사용자 메시지에 단다. `message`는 그 사용자 메시지(`{id, role, text(2000자에서 자름), status, at}`),
+  `reply`는 그 턴의 캐릭터 답(`reply_to`가 그 메시지인 답 중 가장 늦은 것, `{id, status, hidden, segments, at}`). 판정이 캐릭터 답에 달려 있으면
+  `reply`가 그 답이고 `message`는 `reply_to`로 찾는다. 메시지가 없으면 null.
+- 한 턴의 판정은 같은 시각에 들어간다. `p_before`(쪽 마지막 `at`)로 넘길 때 갈라지지 않게 쪽 끝 시각과 같은 판정은 다 넣는다(그래서 `limit`보다 많을 수 있다).
+- 열람 기록 `view` · `user_moderation`, detail `{limit, before?}`. 메시지 내용을 보니 대화 열람(`user_conversation`)처럼 남긴다.
+- 테스트: `migrations/ops-admin-moderation.integration.test.ts`.
+
+**운영 적용은 사람이 한다.** 20261214 **뒤에** 적용한다(실제로 기대는 것은 20261212의 `ops` 도우미뿐이다). SQL 편집기에서 `begin; … commit;`으로 감싸 실행하고
+`supabase migration repair --status applied 20261215120000`. 다시 적용해도 같다(`create or replace`). 이 파일이 없으면 ops_admin은 판정 목록을
+메시지 없이 옛 모양으로 보이고 「DB 업데이트(20261215) 뒤에 보입니다」로 알린다.
