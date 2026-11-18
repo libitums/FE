@@ -87,6 +87,18 @@
 - 미리보기: `{"dryRun": true}`(선택 `atMs`)로 부르면 기록 · 발송 없이 수와 예시만 준다.
 - 끄기: `select cron.unschedule('push-campaigns-hourly');`
 
+### D13. 앱을 올리지 않은 사람에게 업데이트 안내 — 세그먼트 `update-available` (사용자 요청 2026-11-18)
+- 근거: 채팅은 Android 1.4.1 · iOS 1.1.1부터인데, 지난 14일 활성의 대부분이 Android 1.3.0이다(푸시를 받을 수 있는 회원 3,323명 중 2,621명이 1.3.0).
+  옛 앱에는 「선택 업데이트」 안내가 없고(ADR-0086은 강제만), 알림을 눌러도 옛 앱이 열린다 — 그래서 문구가 스토어(`{store}`)로 직접 안내한다. 강제 업데이트는 쓰지 않는다.
+- 누구에게: 기기 있는 회원 중 **PostHog에서 마지막으로 본 빌드**(지난 60일 운영 이벤트, `platform` · `appBuild` — ADR-0110)가 **목표 빌드보다 낮은** 사람.
+  서버(`push_devices`)는 앱 버전을 모르므로 버전은 PostHog에서만 온다 — 키가 없으면 세그먼트를 쓸 수 없고(대상 계산이 거절), PostHog에서 못 본 사람(2026-11-18 기준 587명 — 11-06 전부터 안 연 사람 등)은 뺀다.
+- 목표 빌드: 플랫폼마다 콘솔에서 적는다. 처음 값 Android **23**(1.4.1 스토어 빌드) · iOS **비움**(1.1.1이 App Store에 오르면 그 빌드를 적는다). 비운 플랫폼은 대상이 아니다. 목표는 캠페인 `filter.targetBuilds`에 남는다.
+- 문구: A = 새 기능 안내(「New in Duru: chat in Korean 💬」 + 스토어에서 올리기), B = 캐릭터 톤(하던 이야기의 인물이 「이제 저랑 대화할 수 있어요 💬」). 여섯 언어. `{store}` = Google Play · App Store(그 사람 플랫폼, 모르면 Google Play).
+  기본 조건: 쉰 시간 0 ~ 30일 · 현지 18 ~ 21시 · 대조군 30%. 다른 세그먼트와 사람이 겹친다 — 쉬는 시간 · 다시 돌아오기 겹침 규칙은 그대로.
+- 결과: 지표 「업데이트함」(24 · 72시간) = 발송 뒤 창 안에 목표 빌드 이상의 앱 이벤트가 있음 — 보낸 그룹 vs 대조군, B − A. 목표를 적은 캠페인만 잰다.
+- 함께 고침: HogQL API는 `LIMIT`이 없으면 **100행에서 말없이 자른다** — 300명씩 묻는 결과 질의(`posthogReturns`)도 묶음마다 100명까지만 「앱 열기 · 알림 누름」을 읽고 있었다.
+  묶음 질의마다 `LIMIT 1000`을 적는다(PC-IO9). **11-18 전 캠페인의 「앱 열기 · 알림 누름」은 실제보다 낮게 집계됐다**(300명 넘는 캠페인만, 보낸 그룹 · 대조군 같은 비율로 잘려 차이 방향은 대체로 유지). 결과 탭을 다시 열면 다시 계산된다(학습한 날 · since는 PostHog를 쓰지 않아 영향 없음).
+
 ## 버린 대안
 1. **관리 웹을 서버(Vercel · Edge Function)에 띄우기** — 로그인 · 권한 · 비밀 보관이 더 필요하다(U2).
 2. **PostHog 기능 플래그 · 실험으로 배정** — 발송이 서버 밖이라 배정을 콘솔이 하는 편이 단순하다. 플래그 노출 이벤트도 필요 없다.
@@ -100,7 +112,7 @@
 - 영어 외 기본 문구는 원어민 확인 전 초안이다.
 
 ## 테스트
-- unit PC-S1 ~ S11(`segments.unit.test.mjs`) · PC-A1 ~ A10(`audience.unit.test.mjs`) · PC-RC1 ~ RC7(`recommend.unit.test.mjs`) · PC-R1 ~ R6(`results.unit.test.mjs`) · PC-IO1 ~ IO6(`sources.unit.test.mjs`) · PC-ST1 ~ ST8(`story.unit.test.mjs`) · PC-AU1(`auto.unit.test.mjs`); 서버 자동(D12) PCA1 ~ PCA3(`push-campaign-plan.unit.test.ts`) · PCH1 ~ PCH2(`push-campaigns-handler.unit.test.ts`) · PCM1 ~ PCM3(`push-campaigns.integration.test.ts`) — `pnpm test:push-console`(`test:rest`에 포함).
+- unit PC-S1 ~ S12(`segments.unit.test.mjs`) · PC-A1 ~ A11(`audience.unit.test.mjs`) · PC-U1 ~ U5(`update.unit.test.mjs`) · PC-RC1 ~ RC7(`recommend.unit.test.mjs`) · PC-R1 ~ R7(`results.unit.test.mjs`) · PC-IO1 ~ IO9(`sources.unit.test.mjs`) · PC-ST1 ~ ST8(`story.unit.test.mjs`) · PC-AU1(`auto.unit.test.mjs`); 서버 자동(D12) PCA1 ~ PCA3(`push-campaign-plan.unit.test.ts`) · PCH1 ~ PCH2(`push-campaigns-handler.unit.test.ts`) · PCM1 ~ PCM3(`push-campaigns.integration.test.ts`) — `pnpm test:push-console`(`test:rest`에 포함).
 - 운영 데이터 읽기 확인: 콘솔을 띄워 세그먼트 수 · 대상 계산 · 미리보기를 봤다(발송 없음).
 
 ## 재검토 조건
