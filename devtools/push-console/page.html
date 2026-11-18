@@ -1170,9 +1170,13 @@
         $("#update-row").hidden = !updating;
         $("#f-target-android").value = state.defaults.targetBuilds?.android ?? "";
         $("#f-target-ios").value = state.defaults.targetBuilds?.ios ?? "";
-        if (updating && !state.versions?.loaded)
-          $("#update-note").textContent =
-            `앱 버전을 읽지 못했어요 — ${state.versions?.error ?? "데이터를 다시 읽어 주세요."}`;
+        const note = $("#update-note");
+        note.dataset.html ??= note.innerHTML;
+        const failed = updating && !state.versions?.loaded;
+        note.classList.toggle("error-text", failed);
+        if (failed)
+          note.textContent = `앱 버전을 읽지 못했어요 — ${state.versions?.error ?? "데이터를 다시 읽어 주세요."}`;
+        else note.innerHTML = note.dataset.html;
         setHoldout(filter.holdoutPercent ?? 30);
         variants = [
           {

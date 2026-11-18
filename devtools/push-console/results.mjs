@@ -64,7 +64,8 @@ export function campaignResults(campaign, observations, nowMs) {
   for (const recipient of campaign.recipients) groups[recipient.group]?.push(recipient);
   const hasPosthog = observations.posthog !== null;
   // 목표 빌드를 적어 보낸 캠페인(업데이트 세그먼트)만 「업데이트함」을 잽니다.
-  const hasUpdate = hasPosthog && Boolean(campaign.filter?.targetBuilds);
+  const targets = campaign.filter?.targetBuilds;
+  const hasUpdate = hasPosthog && (targets?.android != null || targets?.ios != null);
 
   const rateOf = (rows, test) => ({ hits: rows.filter(test).length, n: rows.length });
   const startDay = (row) => localClock(sentAt, row.timeZone ?? "UTC").date;

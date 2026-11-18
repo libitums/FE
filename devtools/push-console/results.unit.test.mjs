@@ -271,4 +271,10 @@ test("PC-R7. 업데이트 캠페인 — 창 안에 목표 빌드 이벤트가 �
     SENT_AT + 80 * HOUR,
   );
   assert.ok(!noPosthog.metrics.some((row) => row.metric === "updated"));
+  const noTargets = campaignResults(
+    { ...campaign, filter: { targetBuilds: { android: null, ios: null } } },
+    observations,
+    SENT_AT + 80 * HOUR,
+  );
+  assert.ok(!noTargets.metrics.some((row) => row.metric === "updated"));
 });
