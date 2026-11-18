@@ -253,7 +253,7 @@ SQL 편집기에서 `update companion.settings set trial_limit = 30;`처럼 바�
 `duru_tester` 계정만 쓴다.
 
 **아직 없는 것** — 선톡 푸시(`send-push`에 컴패니언 목적지 필요 — 메시지는 저장된다) · 성인 턴의 사후 출력 검사 작업 · 의미 검색(pgvector — 임베딩 모델 미정이라 최근 기억을 넣는다) ·
-결제(영수증 검증 · 웹 결제 — 결제 작업이 `companion_grant_credits` · `companion_set_entitlement`를 부른다) · 스포일러 게이트(해금 에피소드 밖 서사 차단은 프롬프트 지시만).
+결제(영수증 검증 · 웹 결제 — 결제 작업이 `companion_grant_credits`를 부른다. 구독 등급은 `plan_entitlements`(웹훅)이고, `companion_set_entitlement`는 20261212부터 시험 계정만 받는다) · 스포일러 게이트(해금 에피소드 밖 서사 차단은 프롬프트 지시만).
 
 **턴 비용 · 지난 대화(20261120).**
 
@@ -655,3 +655,29 @@ RevenueCat이 보내는 구독 · 구매 이벤트를 받아 우리 DB(정본)�
 - 계약: `_shared/revenuecat-webhook.contract.ts`. 처리기 `_shared/revenuecat-webhook-handler.ts`(401 · 405 · 400 · 500 재시도 · 200 outcome).
 - 배포: `supabase functions deploy revenuecat-webhook` → 비밀 두 개 → RevenueCat 대시보드 Webhook URL · 헤더 값 → 「Send test event」로 `recorded` 확인.
 - 연간 구독의 매달 엽전: `cron/subscriptions.sql`(하루 한 번). 준비 목록 전체는 [스토어 준비](../../docs/subscriptions-store-setup.md).
+
+## 운영 도구 RPC — ops 스키마 (20261212)
+
+`migrations/20261212120000_ops_admin.sql`은 ops-dashboard의 운영 도구(`ops_admin`, tailnet 전용)가 서버 키로 부르는 RPC다. 계약은
+ops-dashboard `docs/admin-contract.md` §A가 정본이다.
+
+- 표: `ops.audit_log`(열람 · 쓰기 · 내보내기 기록) · `ops.user_notes`(운영자 메모) · `ops.push_sends`(손으로 보낸 푸시 — 자동 캠페인
+  `push_campaign_sends`와 다르다). `anon` · `authenticated` · `service_role` 모두 표 권한이 없고 `public.ops_*` RPC(`service_role`만)로만 읽고 쓴다.
+- RPC 22개: 찾기 · 목록 · 붙여 넣기 해석 · 상세 · 대화 · 기억 · 미디어 · 타임라인(부르면 `kind='view'` 기록), 메모 · 엽전 지급(`ops_grant`,
+  `(reason, ref_id)`로 한 번만, 사람당 ≤ 10,000 · 한 번에 ≤ 1,000명) · 시험 계정 잔액 · 등급 · 초기화 · 정지 · 공개 스위치 · 푸시 대상 · 발송 기록 ·
+  `ops_log` · `ops_audit`. 첫 인수는 늘 운영자 로그인(`p_actor`, 비면 `actor_required`). 시험 계정만 되는 조작은 실제 사용자면 예외 대신
+  `{ok:false, error:'not_a_tester'}`를 돌려주고 `refused`로 남긴다.
+- 푸시 발송 기록은 `request_id`(화면이 대상 확인 때 한 번 만듦)로 한 번만 열린다 — 같은 요청이 다시 오면 `ops_push_begin`이
+  `{ok:false, error:'already_sent'}`로 거절하고 `refused`로 남긴다(`send-push`는 같은 요청을 두 번 받으면 두 번 보내므로). `send-push`가 끝까지
+  답하지 않은 발송은 `failed`가 아니라 `unknown`(보냈을 수도 있음)으로 끝난다.
+- 기존 함수를 고친다: `companion_grant_credits`는 reason `ops_grant`를 더 받고 reason `operator`는 시험 계정만(`not_a_tester`).
+  `companion_set_entitlement`는 시험 계정만 — 부르는 곳이 플레이그라운드(ops-dashboard `companion.py`)뿐이다. 원장 kind에 `revoke`를 더한다(20261129와 같은 목록).
+- 20261129(구독)가 운영에 아직 없어도 적용된다 — `companion.plans` · `plan_entitlements` · `store_events`는 `to_regclass`로 보고 동적 SQL로만 읽으며,
+  없으면 상세의 그 칸이 `null`이다. 다시 적용해도 같다(`if not exists` · `create or replace`).
+- 테스트: `migrations/ops-admin.integration.test.ts`(구독 표가 있을 때 · 지운 뒤 다시 적용했을 때 둘 다).
+
+**운영 적용은 사람이 한다.** PR 리뷰 뒤 `supabase db push --dry-run`으로 이 파일만 올라가는지 보고 `supabase db push`, 또는 SQL 편집기에서
+본문을 `begin; … commit;`으로 감싸 실행한다(그 뒤 `supabase migration repair --status applied 20261212120000`). 앞의 컴패니언 · 크레딧 마이그레이션
+(20261108 ~ 20261211, 특히 20261112 크레딧 · 20261111 `moderation_state` · `settings`) **뒤에** 적용한다. 20261129보다 번호가 뒤라 20261129를 나중에
+올리면 `db push`에 `--include-all`이 필요하다. 적용 전에는 운영 도구 화면이 「적용 전」(`{deployed:false}`)으로 뜬다. 플레이그라운드는 시험 계정만
+고르므로 바뀌는 것이 없다.
