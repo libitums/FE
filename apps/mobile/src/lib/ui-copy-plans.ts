@@ -4,6 +4,7 @@
 
 import { n } from "./ui-copy-en-plural";
 import { planTermsCopy, type PlanTermsCopy } from "./ui-copy-plans-terms";
+import { shopCopy, type ShopCopy } from "./ui-copy-shop";
 
 export type PlanNameKey = "unlimited_tickets" | "chat_plus" | "premium";
 
@@ -40,12 +41,14 @@ export type PlansCopy = {
   readonly selected: string;
   /** 구독 고지 · 지금 요금제 · 구독 관리(ADR-0144 2단계 후속). */
   readonly terms: PlanTermsCopy;
+  /** 하나의 상점 · 구독 입구(ADR-0160). */
+  readonly shop: ShopCopy;
 };
 
 export const plansCopy: Readonly<Record<"en" | "es" | "id" | "ja" | "vi", PlansCopy>> = {
   en: {
     title: "Plans",
-    subtitle: "Pick what helps you learn more.",
+    subtitle: "Learn and chat without limits",
     names: { unlimited_tickets: "Unlimited Tickets", chat_plus: "Chat Plus", premium: "Premium" },
     best: "BEST",
     perMonth: (price) => `${price} / month`,
@@ -74,10 +77,11 @@ export const plansCopy: Readonly<Record<"en" | "es" | "id" | "ja" | "vi", PlansC
     compare: "Compare plans",
     selected: "Selected",
     terms: planTermsCopy.en,
+    shop: shopCopy.en,
   },
   es: {
     title: "Planes",
-    subtitle: "Elige lo que te ayude a aprender más.",
+    subtitle: "Aprende y chatea sin límites",
     names: { unlimited_tickets: "Unlimited Tickets", chat_plus: "Chat Plus", premium: "Premium" },
     best: "MEJOR",
     perMonth: (price) => `${price} / mes`,
@@ -107,10 +111,11 @@ export const plansCopy: Readonly<Record<"en" | "es" | "id" | "ja" | "vi", PlansC
     compare: "Comparar planes",
     selected: "Seleccionado",
     terms: planTermsCopy.es,
+    shop: shopCopy.es,
   },
   id: {
     title: "Paket",
-    subtitle: "Pilih yang membantumu belajar lebih banyak.",
+    subtitle: "Belajar dan ngobrol tanpa batas",
     names: { unlimited_tickets: "Unlimited Tickets", chat_plus: "Chat Plus", premium: "Premium" },
     best: "TERBAIK",
     perMonth: (price) => `${price} / bulan`,
@@ -141,10 +146,11 @@ export const plansCopy: Readonly<Record<"en" | "es" | "id" | "ja" | "vi", PlansC
     compare: "Bandingkan paket",
     selected: "Dipilih",
     terms: planTermsCopy.id,
+    shop: shopCopy.id,
   },
   ja: {
     title: "プラン",
-    subtitle: "学びを広げるプランを選びましょう。",
+    subtitle: "学びもチャットも無制限に",
     names: { unlimited_tickets: "Unlimited Tickets", chat_plus: "Chat Plus", premium: "Premium" },
     best: "おすすめ",
     perMonth: (price) => `${price} / 月`,
@@ -173,10 +179,11 @@ export const plansCopy: Readonly<Record<"en" | "es" | "id" | "ja" | "vi", PlansC
     compare: "プランを比較",
     selected: "選択中",
     terms: planTermsCopy.ja,
+    shop: shopCopy.ja,
   },
   vi: {
     title: "Gói",
-    subtitle: "Chọn gói giúp bạn học nhiều hơn.",
+    subtitle: "Học và trò chuyện không giới hạn",
     names: { unlimited_tickets: "Unlimited Tickets", chat_plus: "Chat Plus", premium: "Premium" },
     best: "TỐT NHẤT",
     perMonth: (price) => `${price} / tháng`,
@@ -207,5 +214,6 @@ export const plansCopy: Readonly<Record<"en" | "es" | "id" | "ja" | "vi", PlansC
     compare: "So sánh các gói",
     selected: "Đã chọn",
     terms: planTermsCopy.vi,
+    shop: shopCopy.vi,
   },
 };

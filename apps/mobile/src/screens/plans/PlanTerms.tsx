@@ -14,22 +14,25 @@ export type PlanTermsProps = {
   readonly period: PlanPeriod;
   readonly platform: AppPlatform | null;
   readonly onOpenLegal?: (document: LegalDocument) => void;
-  /** 지금 요금제가 있고 다른 요금제를 고른 동안의 「Manage subscription」 링크. 없으면 링크를 세우지 않습니다. */
-  readonly onManage?: () => void;
+  /** 구독 중 바꿈의 문장(ADR-0160) — 고지 앞에 섭니다. 없으면 null. */
+  readonly changeLine?: string | null;
+  readonly theme?: "light" | "dark";
 };
 
 function TermsLink({
   testId,
   label,
+  theme,
   onTap,
 }: {
   readonly testId: string;
   readonly label: string;
+  readonly theme: "light" | "dark";
   readonly onTap: () => void;
 }): ReactNode {
   return (
     <text
-      className="plans-terms-link"
+      className={`plans-terms-link plans-terms-link-${theme}`}
       data-testid={testId}
       accessibility-element={true}
       accessibility-traits="link"
@@ -53,7 +56,8 @@ export function PlanTerms({
   period,
   platform,
   onOpenLegal,
-  onManage,
+  changeLine = null,
+  theme = "light",
 }: PlanTermsProps): ReactNode {
   const copy = useUiCopy().plans;
   const terms = copy.terms;
@@ -67,8 +71,11 @@ export function PlanTerms({
 
   return (
     <view className="plans-terms" data-testid={ids.terms}>
+      {changeLine === null ? null : (
+        <text className={`plans-terms-text plans-terms-text-${theme}`}>{changeLine}</text>
+      )}
       {card === undefined ? null : (
-        <text className="plans-terms-text">
+        <text className={`plans-terms-text plans-terms-text-${theme}`}>
           {terms.disclosure(copy.names[card.id], price, store)}
         </text>
       )}
@@ -76,20 +83,19 @@ export function PlanTerms({
         <TermsLink
           testId={ids.termsOfUse}
           label={terms.termsOfUse}
+          theme={theme}
           onTap={() => onOpenLegal?.("terms-of-use")}
         />
-        <text className="plans-terms-text" accessibility-element={false}>
+        <text className={`plans-terms-text plans-terms-text-${theme}`} accessibility-element={false}>
           ·
         </text>
         <TermsLink
           testId={ids.privacyPolicy}
           label={terms.privacyPolicy}
+          theme={theme}
           onTap={() => onOpenLegal?.("privacy-policy")}
         />
       </view>
-      {onManage === undefined ? null : (
-        <TermsLink testId={ids.manage} label={terms.manage} onTap={onManage} />
-      )}
     </view>
   );
 }

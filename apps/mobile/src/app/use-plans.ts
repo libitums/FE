@@ -3,7 +3,7 @@
 // 구매는 `PurchaseBridge` 한 곳 — 호스트 RevenueCat 다리(2단계, 2026-11-17)가 스토어 상품 · 스토어 나라를 주고, 구매는 결제 플래그가
 // 켜져야 열립니다(꺼졌으면 「곧」 안내). 이벤트는 ADR-0029 D3 공통 속성으로 냅니다.
 
-import { useEffect, useState } from "@lynx-js/react";
+import { useEffect, useRef, useState } from "@lynx-js/react";
 
 import { sessionNeedsRefresh } from "../lib/account-deletion";
 import { loadAuthSession } from "../lib/auth-session";
@@ -30,10 +30,19 @@ import type {
 import { plansCopy } from "../lib/ui-copy-plans";
 import type { UnlimitedPass } from "../lib/unlimited-pass";
 import type { EpisodeIntroEventSink } from "../screens/episode-intro/episode-intro.contract";
+import type { ShopRequest } from "../screens/coin-shop/shop-model";
+import type { ShopPlans } from "../screens/coin-shop/shop-plans";
+import { currentPlanOf, newlyActivePlan, type CurrentPlan } from "../screens/plans/plan-change";
 import type { PlanOfferWiring } from "../screens/plans/plans.contract";
 import { planCardsFor, type PlanPeriod, type PlanPlacement } from "../screens/plans/plans-model";
 import { reportServerBalance } from "./messenger-chat-wiring";
 import type { NavAction } from "./nav-state";
+import {
+  planSelectedEvent,
+  planSurfaceOf,
+  plansViewedEvent,
+  shopTabSwitchedEvent,
+} from "./plans-events";
 
 export type PlansWiring = {
   readonly catalog: PlansCatalog | null;
@@ -57,9 +66,16 @@ export type PlansWiring = {
   readonly messengerOffer: PlanOfferWiring | undefined;
   /** 티켓 무제한 구독이면 머리 칩의 무제한 모달 구독 판(ADR-0115 · ADR-0144). 아니면 undefined. */
   readonly unlimitedPass: UnlimitedPass | undefined;
+  /** 지금 요금제(서버 권한에서 등급 높은 것, ADR-0160) — 머리 칩 · 상점 칩 · 바꿈의 기준. */
+  readonly current: CurrentPlan | null;
+  /** 상점 Plans 탭의 결선(`ShopPlansContext`). */
+  readonly shop: ShopPlans;
+  /** 티켓 모달의 「Go unlimited」 줄 — Unlimited Tickets 월 가격 글. 표가 없거나 이미 티켓 무제한이면 undefined. */
+  readonly goUnlimited: { readonly price: string | null } | undefined;
+  /** 구매 뒤 다시 읽은 권한에 새로 켜진 요금제 — 구독 성공 알림 한 번(T6). 보이면 `onActivatedShown`. */
+  readonly activated: PlanId | null;
+  readonly onActivatedShown: () => void;
 };
-
-const surfaceOf = (placement: PlanPlacement) => (placement === "messenger" ? "chat" : "learning");
 
 const SESSION_WAITS = 30;
 const SESSION_WAIT_MS = 1000;
@@ -69,6 +85,7 @@ export function usePlans(
   dispatch: (action: NavAction) => void,
   eventSink: EpisodeIntroEventSink,
   learner: { readonly learnerRecord: { readonly countryCode: string } | null },
+  openShop: (request: ShopRequest) => void = () => {},
   client: () => PlansClient = plansClient,
   bridgeOf: () => PurchaseBridge = nativePurchaseBridge,
 ): PlansWiring | undefined {
@@ -77,6 +94,13 @@ export function usePlans(
   const [entitlements, setEntitlements] = useState<PlanEntitlements | null>(null);
   const [offers, setOffers] = useState<readonly StoreOffer[] | null>(null);
   const [storefront, setStorefront] = useState<string | null>(null);
+  const [activated, setActivated] = useState<PlanId | null>(null);
+  // 구매가 끝나고 권한을 다시 읽는 동안 — 새로 켜진 요금제를 알림으로 올립니다(복원 · 앱 시작 읽기는 알리지 않음).
+  const awaitingActivation = useRef(false);
+  const latest = useRef<PlanEntitlements | null>(null);
+  // oxlint-disable-next-line react/immutability
+  latest.current = entitlements;
+  const current = currentPlanOf(entitlements);
   const region = pricingRegionFor(storefront, learner.learnerRecord?.countryCode);
   const bridge = bridgeOf();
   // 서버 권한(정본)을 티켓 · 대화 판정이 읽는 자리에 렌더마다 맞춥니다 — 결제를 열 수 없으면 권한을 읽지 않아 언제나 null(지금과 같음).
@@ -89,7 +113,13 @@ export function usePlans(
         current: entitlements,
         entitlements: () => client().entitlements(),
         balance: () => client().balance(),
-        onEntitlements: setEntitlements,
+        onEntitlements: (next) => {
+          const plan = awaitingActivation.current ? newlyActivePlan(latest.current, next) : null;
+          setEntitlements(next);
+          if (plan === null) return;
+          awaitingActivation.current = false;
+          setActivated(plan);
+        },
         onBalance: reportServerBalance,
         wait: sleep,
       },
@@ -158,21 +188,12 @@ export function usePlans(
   if (!enabled) return undefined;
 
   const viewed = (placement: PlanPlacement, view: "offer" | "compare") =>
-    emitCompanionEvent(eventSink, {
-      name: "plans_viewed",
-      surface: surfaceOf(placement),
-      placement,
-      view,
-    });
+    emitCompanionEvent(eventSink, plansViewedEvent(placement, view, current));
   const selected = (placement: PlanPlacement, plan: PlanId, period: PlanPeriod) =>
-    emitCompanionEvent(eventSink, {
-      name: "plan_selected",
-      surface: surfaceOf(placement),
-      placement,
-      plan,
-      period,
-    });
+    emitCompanionEvent(eventSink, planSelectedEvent(placement, plan, period, current));
+  // 설정만 화면(밝은 판)이고, 나머지 입구는 상점 Plans 탭(ADR-0160) — 상점이 탭을 보일 때 plans_viewed를 냅니다.
   const openPlans = (placement: PlanPlacement, focus: PlanId | null) => {
+    if (placement !== "settings") return openShop({ tab: "plans", placement, focus });
     viewed(placement, "compare");
     dispatch({ type: "push", screen: { name: "plans", placement, focus } });
   };
@@ -206,7 +227,7 @@ export function usePlans(
     emitCompanionEvent(
       eventSink,
       purchaseIntentOf({
-        surface: surfaceOf(placement),
+        surface: planSurfaceOf(placement),
         placement,
         kind: "plan",
         product,
@@ -219,18 +240,35 @@ export function usePlans(
     );
   };
 
+  const onSelect = async (
+    placement: PlanPlacement,
+    plan: PlanId,
+    period: PlanPeriod,
+    productId: string | null,
+  ): Promise<PurchaseResult> => {
+    selected(placement, plan, period);
+    if (productId === null) return { kind: "unavailable" };
+    intent(placement, plan, period, productId);
+    awaitingActivation.current = true;
+    const result = await withServerRefresh(() => bridge.purchase(productId));
+    if (result.kind !== "purchased") awaitingActivation.current = false;
+    return result;
+  };
+  const onRestore = () => withServerRefresh(() => bridge.restore());
+  const ticketsCard =
+    catalog === null
+      ? undefined
+      : planCardsFor(catalog, "tickets", "monthly", offers, region).find(
+          (card) => card.id === "unlimited_tickets",
+        );
+
   return {
     catalog,
     entitlements,
     region,
     offers,
     openPlans,
-    onSelect: async (placement, plan, period, productId) => {
-      selected(placement, plan, period);
-      if (productId === null) return { kind: "unavailable" };
-      intent(placement, plan, period, productId);
-      return withServerRefresh(() => bridge.purchase(productId));
-    },
+    onSelect,
     onRestore: () => withServerRefresh(() => bridge.restore()),
     onBack: () => dispatch({ type: "back" }),
     ticketsOffer: (close) => offerFor("tickets", close),
@@ -239,5 +277,23 @@ export function usePlans(
     unlimitedPass: bridge.available
       ? subscriptionUnlimitedPass(entitlements, (plan) => plansCopy.en.names[plan])
       : undefined,
+    current,
+    shop: {
+      catalog,
+      offers,
+      region,
+      current: entitlements,
+      onSelect,
+      onRestore,
+      onViewed: (placement) => viewed(placement, "compare"),
+      onTabSwitched: (from, to, surface) =>
+        emitCompanionEvent(eventSink, shopTabSwitchedEvent(from, to, surface)),
+    },
+    goUnlimited:
+      ticketsCard === undefined || entitlements?.unlimitedTickets === true
+        ? undefined
+        : { price: ticketsCard.price },
+    activated,
+    onActivatedShown: () => setActivated(null),
   };
 }
