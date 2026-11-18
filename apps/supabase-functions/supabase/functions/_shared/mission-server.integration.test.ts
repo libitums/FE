@@ -122,7 +122,9 @@ beforeAll(async () => {
   await server.query("set role service_role");
   app = await db.connect();
   for (const definition of [cafe, water])
-    await server.query("select public.companion_upsert_mission($1::jsonb)", [JSON.stringify(definition)]);
+    await server.query("select public.companion_upsert_mission($1::jsonb)", [
+      JSON.stringify(definition),
+    ]);
 }, 90_000);
 afterAll(async () => {
   await db?.close();
@@ -245,8 +247,18 @@ describe("한 판 — 핸들러 + 실제 SQL", () => {
       graderModel: "fake",
     });
     expect(graded.report.expressions).toEqual([
-      { id: "patt:83586289", ko: "{음료} 한 잔 주세요.", meaning: "Please give me one {drink}.", used: true },
-      { id: "patt:fbe5e354", ko: "{명사} 얼마예요?", meaning: "How much is/are the {N}?", used: false },
+      {
+        id: "patt:83586289",
+        ko: "{음료} 한 잔 주세요.",
+        meaning: "Please give me one {drink}.",
+        used: true,
+      },
+      {
+        id: "patt:fbe5e354",
+        ko: "{명사} 얼마예요?",
+        meaning: "How much is/are the {N}?",
+        used: false,
+      },
     ]);
     expect(graded.report.retry).toEqual([
       { ko: "아메리카노 얼마예요?", meaning: "How much is an americano?" },
@@ -353,15 +365,21 @@ const scoreMission4 = (id: string, targets: number) => ({
 });
 
 /** 판을 시작해 SQL로 바로 끝난 상태를 만들고(턴 생략) 채점 결과를 저장한다. */
-async function saveScore(missionId: string, input: {
-  goals: readonly { id: string; done: boolean }[];
-  accuracy: number;
-  used: number;
-  targets: readonly string[];
-  hints: number;
-}) {
+async function saveScore(
+  missionId: string,
+  input: {
+    goals: readonly { id: string; done: boolean }[];
+    accuracy: number;
+    used: number;
+    targets: readonly string[];
+    hints: number;
+  },
+) {
   const started = (
-    await server.query("select public.companion_mission_start($1, $2, now()) as r", [learner, missionId])
+    await server.query("select public.companion_mission_start($1, $2, now()) as r", [
+      learner,
+      missionId,
+    ])
   ).rows[0].r as Json;
   expect(started["result"]).toBe("ok");
   const id = started["conversationId"] as string;
@@ -371,18 +389,24 @@ async function saveScore(missionId: string, input: {
     [id, input.hints],
   );
   const saved = (
-    await server.query("select public.companion_mission_save_result($1, $2, $3::jsonb, now()) as r", [
-      learner,
-      id,
-      JSON.stringify({
-        goals: input.goals.map((goal) => ({ id: goal.id, achieved: goal.done })),
-        accuracy: input.accuracy,
-        expressions: input.targets.map((target, index) => ({ id: target, used: index < input.used })),
-        retry: [],
-        summary: "",
-        graderModel: "test",
-      }),
-    ])
+    await server.query(
+      "select public.companion_mission_save_result($1, $2, $3::jsonb, now()) as r",
+      [
+        learner,
+        id,
+        JSON.stringify({
+          goals: input.goals.map((goal) => ({ id: goal.id, achieved: goal.done })),
+          accuracy: input.accuracy,
+          expressions: input.targets.map((target, index) => ({
+            id: target,
+            used: index < input.used,
+          })),
+          retry: [],
+          summary: "",
+          graderModel: "test",
+        }),
+      ],
+    )
   ).rows[0].r as Json;
   expect(saved["result"]).toBe("graded");
   return saved["report"] as Json;
@@ -432,8 +456,20 @@ describe("점수 — SQL save_result와 코어 scoreMission이 같은 값", () =
       required: goal.required,
       done: index < 2,
     }));
-    const report = await saveScore("score-g3", { goals, accuracy: 80, used: 0, targets: [], hints: 0 });
-    const core = scoreMission({ goals, accuracy: 80, expressionsUsed: 0, expressionsTotal: 0, hintsUsed: 0 });
+    const report = await saveScore("score-g3", {
+      goals,
+      accuracy: 80,
+      used: 0,
+      targets: [],
+      hints: 0,
+    });
+    const core = scoreMission({
+      goals,
+      accuracy: 80,
+      expressionsUsed: 0,
+      expressionsTotal: 0,
+      hintsUsed: 0,
+    });
     expect(core.total).toBe(77);
     expect(report["totalScore"]).toBe(core.total);
     expect(report["taskScore"]).toBe(67);

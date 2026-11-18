@@ -411,7 +411,11 @@ test("MS3. 열림 · 계정 단위 판정 — 스위치 · 시험 계정 · 에�
     detail: { reason: "testers_only" },
   });
   // 스위치에 걸려도 값(price)은 낸다 — 계약 `missionListSchema`.
-  expect(await listMissions(plain)).toMatchObject({ enabled: false, missions: [], price: { freeLeft: 1 } });
+  expect(await listMissions(plain)).toMatchObject({
+    enabled: false,
+    missions: [],
+    price: { freeLeft: 1 },
+  });
   await db.admin.query("update companion.settings set missions_testers_only = false");
   expect(await start(plain, "u06-cafe")).toEqual({
     result: "not_available",

@@ -8,10 +8,7 @@
 import type { ChatSendDeps, PersonaCard, Segment } from "./chat-send.contract.ts";
 import { callerUserId } from "./chat-send-http.ts";
 import { defaultLlmTimeoutMs, historyFrom } from "./chat-send-reply.ts";
-import {
-  missionHintRequestSchema,
-  type MissionHintResponse,
-} from "./companion-contract/index.ts";
+import { missionHintRequestSchema, type MissionHintResponse } from "./companion-contract/index.ts";
 import { callRpc } from "./companion-rpc.ts";
 import { missionBrief, missionTranscript, transcriptFromHistory } from "./mission-context.ts";
 import { validateMission } from "./mission-definition.ts";
@@ -64,10 +61,15 @@ export function createMissionHintHandler(
 
     let taken: HintRow | Rejection;
     try {
-      taken = await callRpc<HintRow | Rejection>(deps.outbound, env, "companion_mission_take_hint", {
-        p_user_id: caller.userId,
-        p_conversation_id: checked.body.conversation_id,
-      });
+      taken = await callRpc<HintRow | Rejection>(
+        deps.outbound,
+        env,
+        "companion_mission_take_hint",
+        {
+          p_user_id: caller.userId,
+          p_conversation_id: checked.body.conversation_id,
+        },
+      );
     } catch {
       return respond(missionErrorResponse("internal_error"), "take_failed");
     }
@@ -101,7 +103,11 @@ export function createMissionHintHandler(
         missionErrorResponse("hint_unavailable", { hintsLeft: row.state.hintsLeft }),
         "generation_failed_counted",
       );
-    const body: MissionHintResponse = { goalId: row.goalId, ...hint, hintsLeft: row.state.hintsLeft };
+    const body: MissionHintResponse = {
+      goalId: row.goalId,
+      ...hint,
+      hintsLeft: row.state.hintsLeft,
+    };
     return respond(jsonResponse(body), `ok ${row.goalId}`);
   };
 }
