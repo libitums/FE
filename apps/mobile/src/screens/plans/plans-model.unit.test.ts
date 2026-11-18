@@ -65,12 +65,12 @@ describe("SB-U4 카드", () => {
         best: false,
         productId: "duru.tickets.monthly.v1",
         price: "$3.99",
-        shown: { amount: 3.99, currency: "USD", text: "$3.99" },
+        shown: { amount: 3.99, currency: "USD", text: "$3.99", source: "provisional" },
         benefits: [{ kind: "unlimited-lessons" }],
       },
     ]);
-    // 가격 목록에 그 상품이 없으면(스토어에서 아직 승인 전 등) 가격만 없다.
-    expect(planCardsFor(catalogV1, "tickets", "monthly", [])[0]?.price).toBeNull();
+    // 가격 목록에 그 상품이 없으면(스토어에서 아직 승인 전 등) 임시 추천 가격으로 물러선다(ADR-0144 2단계 2026-11-17).
+    expect(planCardsFor(catalogV1, "tickets", "monthly", [])[0]?.price).toBe("$3.99");
   });
 });
 
@@ -102,16 +102,22 @@ describe("PP-U5 스토어 가격이 없으면 임시 추천 가격(ADR-0144 추�
   test("스토어 가격이 없으면 지역 임시 가격을 보이고 금액 · 통화를 싣는다", () => {
     const [tickets] = planCardsFor(catalogV1, "tickets", "monthly", null, "VN");
     expect(tickets?.price).toBe("49.000 ₫");
-    expect(tickets?.shown).toEqual({ amount: 49000, currency: "VND", text: "49.000 ₫" });
+    expect(tickets?.shown).toEqual({
+      amount: 49000,
+      currency: "VND",
+      text: "49.000 ₫",
+      source: "provisional",
+    });
     const yearly = planCardsFor(catalogV1, "messenger", "yearly", null, "ID");
     expect(yearly.map((card) => card.price)).toEqual(["Rp 549.000", "Rp 990.000"]);
   });
 
-  test("스토어 가격이 있으면 언제나 스토어가 이긴다(임시 금액은 싣지 않음)", () => {
+  test("스토어 가격이 있으면 언제나 스토어가 이긴다(출처 store, 글은 스토어 값)", () => {
     const [tickets] = planCardsFor(catalogV1, "tickets", "monthly", usdOffers, "VN");
     const store = usdOffers.find((offer) => offer.productId === tickets?.productId);
     expect(tickets?.price).toBe(store?.price);
-    expect(tickets?.shown).toBeNull();
+    expect(tickets?.shown?.source).toBe("store");
+    expect(tickets?.shown?.text).toBe(store?.price);
   });
 
   test("지역을 주지 않으면 미국 달러", () => {

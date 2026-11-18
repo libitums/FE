@@ -76,6 +76,11 @@ final class ViewController: UIViewController {
       if AirbridgeEvents.isStarted {
         config.register(AirbridgeEventsModule.self)
       }
+      // 스토어 상품 · 구매 · 복원(ADR-0144 2단계). **공개 SDK 키가 있어 SDK가 시작된 빌드에서만** 등록한다 —
+      // 없으면 JS의 다리는 꺼진 다리와 같고, 요금제 화면은 임시 추천 가격을 보인다.
+      if PurchasesSDK.isStarted {
+        config.register(PurchasesModule.self)
+      }
       builder.config = config
       // Release 번들의 `/static/…` 이미지를 앱 번들 파일로 푼다(TemplateProvider.swift).
       // 이미지 서비스는 generic resource fetcher가 켜져 있을 때만 `shouldRedirectUrl`을

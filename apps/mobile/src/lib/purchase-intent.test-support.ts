@@ -12,5 +12,6 @@ export const purchaseIntentExample = {
   price: "179000",
   currency: "VND",
   country: "VN",
+  priceSource: "provisional",
   preview: true,
 } as const satisfies AnalyticsEvent;

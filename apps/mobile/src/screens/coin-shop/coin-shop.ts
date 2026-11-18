@@ -1,8 +1,5 @@
-import {
-  provisionalPrice,
-  type PricingRegion,
-  type ShownPrice,
-} from "../../lib/provisional-prices";
+import { shownPriceFor, type PricingRegion, type ShownPrice } from "../../lib/provisional-prices";
+import type { StoreOffer } from "../../lib/purchase-bridge";
 import type { CoinPackId } from "../../lib/ui-copy-sections.contract";
 
 import bigPouchArt from "./assets/big-pouch.webp";
@@ -95,15 +92,20 @@ export function formatPrice(cents: number): string {
 }
 
 /**
- * 팩의 보이는 가격 — 지역 임시 추천 가격(ADR-0144 추가 2026-11-17)이 있으면 그것, 없으면 센트 상수(미국 달러).
- * 스토어 가격(2단계)이 붙으면 이 함수가 스토어 값을 받게 됩니다.
+ * 팩의 보이는 가격 — 스토어 상품 가격(ADR-0144 2단계)이 있으면 그것, 없으면 지역 임시 추천 가격(추가 2026-11-17), 그것도 없으면
+ * 센트 상수(미국 달러).
  */
-export function packPriceOf(pack: CoinPack, region: PricingRegion): ShownPrice {
+export function packPriceOf(
+  pack: CoinPack,
+  region: PricingRegion,
+  offers: readonly StoreOffer[] | null = null,
+): ShownPrice {
   return (
-    provisionalPrice(pack.productId, region) ?? {
+    shownPriceFor(pack.productId, offers, region) ?? {
       amount: pack.priceCents / 100,
       currency: "USD",
       text: formatPrice(pack.priceCents),
+      source: "provisional",
     }
   );
 }

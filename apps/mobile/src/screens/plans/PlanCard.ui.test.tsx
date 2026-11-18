@@ -10,8 +10,13 @@ import { catalogV1, usdOffers } from "./plans.test-support";
 afterEach(cleanup);
 
 const priced = planCardsFor(catalogV1, "settings", "monthly", usdOffers);
-// 스토어 목록에 상품이 없으면(승인 전 등) 가격이 비어 「Price shown in the store」입니다.
-const unpriced = planCardsFor(catalogV1, "settings", "yearly", []);
+// 가격이 비면(스토어에도 임시 가격표에도 없는 상품) 「Price shown in the store」입니다. 스토어 목록에 없는 상품은 임시 가격으로
+// 물러서므로(ADR-0144 2단계 2026-11-17) 가격 없는 카드는 직접 비웁니다.
+const unpriced = planCardsFor(catalogV1, "settings", "yearly", []).map((card) => ({
+  ...card,
+  price: null,
+  shown: null,
+}));
 
 test("SB-UI1a Premium — 이름 · BEST · 월 가격 · 혜택 셋, 고르면 data-selected와 낭독 Selected", () => {
   const onPress = vi.fn<() => void>();

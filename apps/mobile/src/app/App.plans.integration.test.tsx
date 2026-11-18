@@ -18,7 +18,18 @@ import { catalogV1 } from "../screens/plans/plans.test-support";
 const flag = vi.hoisted(() => ({ on: true }));
 const rpc = vi.hoisted(() => ({ catalog: null as unknown, calls: 0 }));
 const learner = vi.hoisted(() => ({ country: null as string | null }));
-vi.mock("../lib/plans-flag", () => ({ plansFeatureEnabled: () => flag.on }));
+// 호스트 구매 모듈(RevenueCat, ADR-0144 2단계) — null이면 SDK 키가 없는 빌드(모듈 없음).
+const host = vi.hoisted(() => ({
+  purchases: null as null | {
+    storefront: string | null;
+    products: readonly Record<string, unknown>[];
+    configured: string[]; // 사용자 맞춤(configure)은 PU-U1 · U2가 본다 — 동기화 기억이 모듈 수명이라 여기서는 세지 않는다
+  },
+}));
+vi.mock("../lib/plans-flag", () => ({
+  plansFeatureEnabled: () => flag.on,
+  purchasesEnabled: () => false,
+}));
 vi.mock("../lib/plans-api", async (original) => ({
   ...(await original<typeof import("../lib/plans-api")>()),
   plansClient: () => ({
@@ -59,12 +70,35 @@ async function boot(): Promise<void> {
           ],
         ] as const)),
   ]);
+  const purchases = host.purchases;
   vi.stubGlobal("NativeModules", {
     StorageModule: {
       get: (key: string) => store.get(key) ?? null,
       set: (key: string, value: string) => void store.set(key, value),
       remove: (key: string) => void store.delete(key),
     },
+    ...(purchases === null
+      ? {}
+      : {
+          PurchasesModule: {
+            configure: (userId: string, callback: (payload: unknown) => void) => {
+              purchases.configured.push(userId);
+              callback({ status: "ok" });
+            },
+            signOut: (callback: (payload: unknown) => void) => callback({ status: "ok" }),
+            offerings: (callback: (payload: unknown) => void) =>
+              callback({ status: "ok", products: purchases.products }),
+            storefront: (callback: (payload: unknown) => void) =>
+              callback(
+                purchases.storefront === null
+                  ? { status: "failed" }
+                  : { status: "ok", country: purchases.storefront },
+              ),
+            purchase: (_id: string, callback: (payload: unknown) => void) =>
+              callback({ status: "failed" }),
+            restore: (callback: (payload: unknown) => void) => callback({ status: "failed" }),
+          },
+        }),
   });
   vi.stubEnv("PUBLIC_SUPABASE_URL", "https://test.supabase.co");
   vi.stubEnv("PUBLIC_SUPABASE_ANON_KEY", "test-anon-key");
@@ -98,6 +132,7 @@ beforeEach(() => {
   rpc.catalog = catalogV1;
   rpc.calls = 0;
   learner.country = null;
+  host.purchases = null;
   events = [];
 });
 afterEach(() => {
@@ -198,7 +233,65 @@ test("PI-I1 학습자 나라 VN: 임시 추천 가격(₫)을 보이고, Continu
       price: "179000",
       currency: "VND",
       country: "VN",
+      priceSource: "provisional",
       preview: true,
     }),
+  ]);
+});
+
+async function openPlansScreen(): Promise<void> {
+  await boot();
+  openSettings();
+  await flush();
+  act(
+    () =>
+      void fireEvent.tap(
+        within(screen.getByTestId(planRow)).getByTestId("ui-lynx-settings-cell"),
+        {},
+      ),
+  );
+  await flush();
+}
+
+test("PI-I2 스토어 상품이 있으면 스토어 가격 글을 보이고, 의향은 스토어 금액 · 통화 · 스토어 나라(프로필 나라가 아님)", async () => {
+  learner.country = "PH";
+  host.purchases = {
+    storefront: "VNM",
+    products: [
+      {
+        productId: "duru.premium.monthly.v1:monthly",
+        price: "₫179,000",
+        amount: 179000,
+        currency: "VND",
+      },
+    ],
+    configured: [],
+  };
+  await openPlansScreen();
+  expect(screen.getByTestId(ids.price("premium"))).toHaveTextContent("₫179,000 / month");
+  tap(ids.continue);
+  await flush();
+  expect(screen.getByTestId(ids.notice)).toHaveTextContent("Payments are coming soon");
+  expect(events.filter((e) => e.name === "purchase_intent")).toEqual([
+    expect.objectContaining({
+      product: "duru.premium.monthly.v1",
+      price: "179000",
+      currency: "VND",
+      country: "VN",
+      priceSource: "store",
+      preview: true,
+    }),
+  ]);
+});
+
+test("PI-I3 스토어 목록에 상품이 없으면(승인 전) 스토어 나라의 임시 가격으로 물러선다", async () => {
+  learner.country = "PH";
+  host.purchases = { storefront: "IDN", products: [], configured: [] };
+  await openPlansScreen();
+  expect(screen.getByTestId(ids.price("premium"))).toHaveTextContent("Rp 119.000 / month");
+  tap(ids.continue);
+  await flush();
+  expect(events.filter((e) => e.name === "purchase_intent")).toEqual([
+    expect.objectContaining({ currency: "IDR", country: "ID", priceSource: "provisional" }),
   ]);
 });

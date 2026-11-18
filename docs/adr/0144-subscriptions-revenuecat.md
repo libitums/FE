@@ -1,6 +1,7 @@
 # ADR-0144 — 구독 · 엽전 팩: RevenueCat + 서버 정본 (1단계)
 
-- 상태: **채택 — 1단계(서버 표 · 웹훅 · 앱 화면, 기능 플래그 꺼짐). 서버 마이그레이션 운영 적용 전. 2단계(네이티브 다리 · 스토어 상품) 대기.**
+- 상태: **채택 — 1단계(서버 표 · 웹훅 · 앱 화면) · 결제 전 미리보기(2026-11-17) · 2단계 네이티브 다리(2026-11-18, 결제 플래그 꺼짐).
+  스토어 상품 · RevenueCat 설정 · 웹훅 배포 · 샌드박스 확인 뒤 `purchasesEnabled()`를 켠다.**
 - 날짜: 2026-11-14.
 - **사용자 결정(2026-11-14)**
   - 스토어 결제(iOS StoreKit · Google Play Billing) · 영수증 검증 · 권한 · 웹훅 · Airbridge 연동은 **RevenueCat**. 엽전 잔액과 요금제 등급의 정본은
@@ -101,7 +102,8 @@ DB가 실패하면 500 — RevenueCat이 다시 보낸다. 같은 이벤트 id�
 7. 웹훅 함수는 원문을 저장하지 않는다(구독자 속성 · 이메일 등 개인정보) — 디버깅은 RevenueCat 대시보드의 이벤트 기록으로 한다.
 
 ## 2단계로 넘긴 리뷰 지적
-- 구매 · 복원이 도는 동안 화면에 진행 상태가 없음(#434 리뷰) — 1단계는 비활성 브리지가 곧바로 답해 문제가 없고, 실제 구매를 붙일 때 `use-plans`의 진행 상태를 그림 상태로 올려 단추를 막고 로딩을 보입니다.
+- 구매 · 복원이 도는 동안 화면에 진행 상태가 없음(#434 리뷰) — **2단계에서 처리**: `use-plan-request`가 도는 요청(`purchase` · `restore`)을 그림
+  상태로 올려 누른 단추는 로딩, 다른 단추는 막힘. 엽전 상점의 사기 단추도 결제 시트가 떠 있는 동안 로딩이고 다시 누름을 무시한다.
 
 ## 추가 (2026-11-17) — 결제 전 미리보기 · 임시 추천 가격 · 구매 의향 [사용자]
 
@@ -122,3 +124,25 @@ DB가 실패하면 500 — RevenueCat이 다시 보낸다. 같은 이벤트 id�
 - 부팅 세션 갱신과 겹치지 않게: 요금제 표 읽기는 세션이 갱신 필요 상태면 1초씩(최대 30번) 기다린다 — 겹치면 같은 refresh 토큰으로 갱신을 두 번 보낸다(IA7).
 - 대가: 운영의 로그인 사용자가 로그인마다 `companion_plans` RPC를 한 번 부른다. 화면의 가격은 스토어 가격이 아니다(세금 포함 추정 표시가) — 2단계 전까지
   구매가 없으므로 청구와 어긋날 일은 없다. 플래그 하나로 다시 끌 수 있다.
+
+## 2단계 (2026-11-18) — 네이티브 구매 다리 [사용자: 「엽전 팩 + 구독 둘 다」 · RevenueCat 유지]
+
+- **SDK · 버전(정확 고정, ADR-0012 D4)**: iOS pod `RevenueCat` 5.99.2(StoreKit 2) · Android `com.revenuecat.purchases:purchases` 10.30.1
+  (Play Billing 8.3.0 — Play의 Billing 8 요구 충족). 11.x 줄은 나온 지 3주가 안 되어 쓰지 않았다.
+- **키(공개 SDK 키, 비밀 아님 · 그래도 추적 안 함)**: iOS `apps/ios/Config/RevenueCat.local.xcconfig`의 `REVENUECAT_API_KEY`
+  → `RevenueCat.xcconfig` → Info.plist `RevenueCatAPIKey`. 프로젝트 기본 xcconfig는 새 `Config/Host.xcconfig`(Airbridge · RevenueCat 둘을 모음)다.
+  Android `apps/android/app/revenuecat.properties` → `BuildConfig.REVENUECAT_API_KEY`. 둘 다 `/release-build` 값 파일 목록에 있다.
+  **키가 비면 SDK를 한 줄도 부르지 않고 `PurchasesModule`도 등록하지 않는다** — 앱은 1단계 미리보기와 같다.
+- **호스트 모듈 `PurchasesModule`(iOS · Android 같은 모양)**: `configure(userId)`(logIn) · `signOut`(logOut, 익명이면 그냥 ok) ·
+  `offerings`(D4 상품 아홉의 스토어 가격 글 · 금액 · 통화 — offering이 아니라 상품 id로 직접 읽음) · `storefront`(스토어 나라) ·
+  `purchase(productId)` · `restore`. 답은 콜백 하나 `{status, …}`. Android 구독 id는 `id:base`로 나가고 JS가 앞부분만 쓴다. iOS 스토어 나라는 세 글자라
+  JS가 가격 지역 다섯 나라 · 미국만 두 글자로 맞춘다.
+- **결제 스위치는 하나**: `lib/plans-flag.ts`의 `purchasesEnabled()` — **지금 false**. 꺼진 동안에도 키가 있으면 스토어 가격 · 나라는 읽어 보인다
+  (가격 표시가 임시 추천 가격 → 스토어 값). 구매 · 복원 단추는 「곧」 안내 + 구매 의향(`preview: true`).
+- **구매 뒤**: 등급 · 엽전 정본은 서버(웹훅)라, 성공(`purchased` · `restored`) 뒤 `companion_entitlements` · `companion_get_wallet`을 2초 × 5번
+  다시 읽어 바뀌면 멈춘다(`lib/purchase-refresh.ts`). 잔액은 머리 엽전 칩(엽전 출시 결선의 서버 잔액)으로, 권한은 `PlansWiring.entitlements`로 간다.
+  권한은 결제를 열 수 있을 때만 읽는다(결제 전에는 로그인마다 RPC를 늘리지 않음). 웹훅이 10초 안에 안 닿으면 다음 화면 진입 · 실행이 따라잡는다.
+- **엽전 상점**: 결선 밖이라 `purchase-intent`의 구매 맥락(`purchasePack`)으로 같은 다리 · 같은 서버 따라잡기를 쓴다. 실패 · 취소는 안내 없이 끝난다
+  (스토어 시트가 결제 오류를 스스로 보임). 결제를 열 수 없으면 지금처럼 「결제 준비 중」.
+- **아직 아님(후속)**: `PlansWiring.entitlements`를 화면에 쓰기(「지금 요금제」 표시 · 무제한 티켓을 서버 권한으로) — 이번에는 상태만 둔다.
+  RevenueCat SDK의 실행 시 offerings 미리 받기는 대시보드에 offering이 없으면 오류 로그를 남긴다(동작에는 영향 없음).

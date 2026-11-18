@@ -6,6 +6,7 @@ import type { HttpRequestInit, SupabaseConfig } from "./auth-session.contract";
 import { bearerHeaders } from "./auth-request";
 import { currentAccessToken } from "./progress-api";
 import { isSuccessStatus, send, type AuthRequestOutcome } from "./supabase-transport";
+import { walletBalanceFrom } from "../screens/messenger-chat/companion-media-parse";
 
 export const planIds = ["unlimited_tickets", "chat_plus", "premium"] as const;
 export type PlanId = (typeof planIds)[number];
@@ -65,6 +66,8 @@ export type PlansClientDeps = {
 export type PlansClient = {
   readonly catalog: () => Promise<PlansCatalog | null>;
   readonly entitlements: () => Promise<PlanEntitlements | null>;
+  /** 지갑 잔액(sub + grant + paid) — 구매 뒤 웹훅이 닿았는지 볼 때 씁니다. 못 읽으면 null. */
+  readonly balance: () => Promise<number | null>;
 };
 
 type Raw = Record<string, unknown>;
@@ -209,6 +212,7 @@ export function createPlansClient(deps: PlansClientDeps): PlansClient {
   return {
     catalog: () => call("companion_plans", plansCatalogFrom),
     entitlements: () => call("companion_entitlements", planEntitlementsFrom),
+    balance: () => call("companion_get_wallet", walletBalanceFrom),
   };
 }
 

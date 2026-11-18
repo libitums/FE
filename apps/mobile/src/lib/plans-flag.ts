@@ -5,3 +5,11 @@
 export function plansFeatureEnabled(): boolean {
   return true;
 }
+
+/**
+ * 실제 결제(구매 · 복원)를 여는 플래그(ADR-0144 2단계, 2026-11-17) — **꺼짐**. 호스트 구매 다리(RevenueCat)가 있어도 상품 · 스토어 가격만
+ * 읽고, 구매 단추는 「곧」 안내 + 구매 의향으로 끝납니다. 스토어 상품 · RevenueCat 설정을 마치고 샌드박스 결제를 확인한 뒤 켭니다.
+ */
+export function purchasesEnabled(): boolean {
+  return false;
+}

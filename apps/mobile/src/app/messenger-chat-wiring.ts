@@ -145,6 +145,11 @@ export function setMessengerMediaHooks(hooks: ChatMediaHooks | null): void {
   mediaHooks = hooks;
 }
 
+/** 구매 뒤 다시 읽은 서버 지갑 잔액을 머리 엽전 칩에 알립니다(ADR-0144 2단계) — 세션이 등록한 알림이 없으면 버립니다. */
+export function reportServerBalance(balance: number): void {
+  mediaHooks?.onBalance?.(balance);
+}
+
 /** 출처에 넘기는 알림 — 부를 때마다 지금 등록된 것을 봅니다(출처는 앱 프로세스 싱글턴, 세션은 바뀜). */
 const forwardedMediaHooks: ChatMediaHooks = {
   onBalance: (balance) => mediaHooks?.onBalance?.(balance),
