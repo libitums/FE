@@ -1,0 +1,54 @@
+{
+  "_note": "단가 표입니다. 계약 · 요금제마다 다르므로 모르는 값은 null로 둡니다(null이면 예상 비용이 「미정」으로 나옵니다). unit은 hour · minute · request · per15s(요청마다 15초 단위로 올림) 중 하나. 값을 채울 때 source의 요금 페이지와 확인한 날짜를 note에 적으세요.",
+  "currency": "USD",
+  "vendors": {
+    "azure-pron": {
+      "unit": "hour",
+      "price": null,
+      "source": "https://azure.microsoft.com/pricing/details/cognitive-services/speech-services/",
+      "note": "발음 평가가 일반 STT와 같은 단가인지 미확인"
+    },
+    "azure-stt": {
+      "unit": "hour",
+      "price": null,
+      "source": "https://azure.microsoft.com/pricing/details/cognitive-services/speech-services/",
+      "note": ""
+    },
+    "speechsuper-pron": {
+      "unit": "request",
+      "price": null,
+      "source": "https://www.speechsuper.com/ (영업 문의)",
+      "note": "공개 단가 없음 — 견적 필요"
+    },
+    "clova-pron": {
+      "unit": "per15s",
+      "price": null,
+      "source": "https://www.ncloud.com/product/aiService/clovaSpeech",
+      "note": "응답 quota가 15초 단위라 per15s로 둠 — 과금 단위 미확인, 통화는 KRW일 수 있음"
+    },
+    "clova-stt": {
+      "unit": "per15s",
+      "price": null,
+      "source": "https://www.ncloud.com/product/aiService/clovaSpeech",
+      "note": "clova-pron과 같은 호출(assessment만 끔)"
+    },
+    "elevenlabs-stt": {
+      "unit": "hour",
+      "price": null,
+      "source": "https://elevenlabs.io/pricing/api",
+      "note": ""
+    },
+    "openai-stt": {
+      "unit": "minute",
+      "price": null,
+      "source": "https://openai.com/api/pricing/",
+      "note": "모델(gpt-4o-transcribe · gpt-4o-mini-transcribe · whisper-1)마다 다름"
+    },
+    "deepgram-stt": {
+      "unit": "minute",
+      "price": null,
+      "source": "https://deepgram.com/pricing",
+      "note": "mip_opt_out=true는 단가가 다를 수 있음(문서: 요금 영향 확인 권고)"
+    }
+  }
+}

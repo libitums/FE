@@ -1,0 +1,35 @@
+{
+  "_note": "추정으로 채운 기본 매핑입니다. 「교육용 한국어 음성 데이터」의 라벨을 받은 뒤 실제 칸 이름으로 확인 · 수정이 필요합니다(받은 데이터로 확인 필요). 칸 하나에 후보 경로를 여럿 적으면 앞에서부터 처음 값이 있는 것을 씁니다. 경로는 점으로 잇고 배열 첨자는 숫자로 적습니다(예: \"scores.0.value\").",
+  "records": null,
+  "fields": {
+    "id": ["fileName", "file_name", "audio.fileName", "id"],
+    "audio": ["fileName", "file_name", "audio.fileName", "audioPath"],
+    "referenceText": ["script", "scriptText", "sentence", "text.script", "prompt"],
+    "transcript": ["transcription", "transcript", "text.transcription", "utterance"],
+    "pronunciation": [
+      "evaluation.pronunciation",
+      "score.pronunciation",
+      "pronunciationScore",
+      "발음숙련도"
+    ],
+    "fluency": ["evaluation.fluency", "score.fluency", "fluencyScore", "유창성"],
+    "comprehensibility": [
+      "evaluation.comprehensibility",
+      "score.comprehensibility",
+      "comprehensibilityScore",
+      "이해가능도"
+    ],
+    "speakerId": ["speaker.id", "speakerId", "speaker_id"],
+    "l1": ["speaker.nativeLanguage", "speaker.motherTongue", "nativeLanguage", "모국어"],
+    "proficiency": ["speaker.level", "speaker.proficiency", "proficiency", "숙련도"],
+    "type": ["utteranceType", "type", "category", "발화유형"],
+    "durationSec": ["audio.duration", "duration", "playTime"]
+  },
+  "typeValues": {
+    "read": ["read", "낭독", "읽기", "낭독발화"],
+    "free": ["free", "자유", "자유발화", "대화", "spontaneous"]
+  },
+  "audioExtension": ".wav",
+  "transcriptStrip": [],
+  "_transcriptStripNote": "전사 표기 규칙(잡음 표시 · 이중 전사 등)을 지우는 정규식 목록입니다. 받은 데이터의 전사 규칙을 보고 채우세요(예: \"\\\\([A-Z]+\\\\)\")."
+}
