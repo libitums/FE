@@ -802,6 +802,32 @@
               <label class="t-label-l" for="f-segment">세그먼트</label>
               <div class="field-box"><select id="f-segment"></select></div>
             </div>
+            <div id="update-row" hidden>
+              <div class="row">
+                <div class="field">
+                  <label class="t-label-l" for="f-target-android">Android 목표 빌드</label>
+                  <div class="field-box">
+                    <input
+                      id="f-target-android"
+                      type="number"
+                      min="1"
+                      placeholder="비우면 Android 제외"
+                    />
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="t-label-l" for="f-target-ios">iOS 목표 빌드</label>
+                  <div class="field-box">
+                    <input id="f-target-ios" type="number" min="1" placeholder="비우면 iOS 제외" />
+                  </div>
+                </div>
+              </div>
+              <p class="t-body-s muted" style="margin: 0" id="update-note">
+                PostHog에서 마지막으로 본 빌드가 목표보다 낮은 사람만 받아요. 스토어에 그 빌드가
+                올라간 플랫폼만 적어 주세요 — 알림을 눌러도 옛 앱이 열리니 문구에서
+                스토어(<code>{store}</code>)로 안내해요.
+              </p>
+            </div>
             <div class="row">
               <div class="field">
                 <label class="t-label-l" for="f-min">쉰 시간 최소</label>
@@ -1063,7 +1089,10 @@
           `${when(state.loadedAtMs)}에 읽음 · 학습자 ${state.learners.toLocaleString()}명 · 시험 계정 ${state.testersExcluded}명 뺌 · ` +
           (state.posthog
             ? "PostHog 연결됨"
-            : "PostHog 키 없음 — 앱 열기 · 알림 누름은 재지 않아요");
+            : "PostHog 키 없음 — 앱 열기 · 알림 누름은 재지 않아요") +
+          (state.versions?.loaded
+            ? ` · 앱 버전 ${state.versions.users.toLocaleString()}명`
+            : " · 앱 버전 모름(업데이트 세그먼트 못 씀)");
         $("#segments-note").textContent =
           "알림을 허용해 기기가 등록된 회원만 셉니다. 비회원은 받을 수 없어요. 진행 단계는 사람마다 하나이고, 「스트릭이 끊기기 직전」은 겹쳐서 붙어요.";
         $("#segments-body").innerHTML = state.segments
@@ -1136,6 +1165,18 @@
         $("#f-from").value = filter.localHours?.[0] ?? 18;
         $("#f-to").value = filter.localHours?.[1] ?? 21;
         syncHoursRow();
+        // 업데이트 세그먼트(D13) — 목표 빌드 칸을 처음 값으로 채웁니다.
+        const updating = segment === "update-available";
+        $("#update-row").hidden = !updating;
+        $("#f-target-android").value = state.defaults.targetBuilds?.android ?? "";
+        $("#f-target-ios").value = state.defaults.targetBuilds?.ios ?? "";
+        const note = $("#update-note");
+        note.dataset.html ??= note.innerHTML;
+        const failed = updating && !state.versions?.loaded;
+        note.classList.toggle("error-text", failed);
+        if (failed)
+          note.textContent = `앱 버전을 읽지 못했어요 — ${state.versions?.error ?? "데이터를 다시 읽어 주세요."}`;
+        else note.innerHTML = note.dataset.html;
         setHoldout(filter.holdoutPercent ?? 30);
         variants = [
           {
@@ -1224,6 +1265,14 @@
           cooldownHours: Number($("#f-cooldown").value || 0),
           excludeReengagement: $("#f-reeng").checked,
           holdoutPercent: holdout,
+          ...($("#f-segment").value === "update-available"
+            ? {
+                targetBuilds: {
+                  android: $("#f-target-android").value,
+                  ios: $("#f-target-ios").value,
+                },
+              }
+            : {}),
           copy: copyOut,
           variants: (abOn() ? variants : variants.slice(0, 1)).map((variant) => ({
             label: variant.label,
@@ -1291,7 +1340,7 @@
           const cards = result.samples
             .map(
               (sample) => `<div class="notice">
-                <div class="app t-caption"><b>DURU</b><span class="subtle">${sample.variant ? `${esc(sample.variant.toUpperCase())} · ` : ""}${sample.storyStep ? `${esc(sample.storyStep)} 뒤 · ` : ""}${esc(sample.lang)} · ${esc(sample.country ?? "?")} 현지 ${sample.localHour ?? "?"}시 · ${sample.idleHours}시간 쉼</span></div>
+                <div class="app t-caption"><b>DURU</b><span class="subtle">${sample.variant ? `${esc(sample.variant.toUpperCase())} · ` : ""}${sample.storyStep ? `${esc(sample.storyStep)} 뒤 · ` : ""}${sample.appBuild ? `${esc(sample.platform)} ${esc(sample.appVersion ?? "")}(${sample.appBuild}) · ` : ""}${esc(sample.lang)} · ${esc(sample.country ?? "?")} 현지 ${sample.localHour ?? "?"}시 · ${sample.idleHours}시간 쉼</span></div>
                 <div class="t-label-l">${esc(sample.title)}</div><div class="t-body-m muted">${esc(sample.body)}</div>
               </div>`,
             )
@@ -1599,6 +1648,7 @@
         opened: "앱 열기",
         tapped: "알림 누름",
         studied: "학습한 날",
+        updated: "업데이트함",
         since: "지금까지 앱을 연 적",
       };
 
@@ -1641,7 +1691,8 @@
           hooks ? variant.label : `${variant.id.toUpperCase()} ${variant.label}`;
         const key = (metric) =>
           (metric.metric === "studied" && metric.hours === 72) ||
-          (metric.metric === "opened" && metric.hours === 24);
+          (metric.metric === "opened" && metric.hours === 24) ||
+          (metric.metric === "updated" && metric.hours === 72);
         const label = (prefix, metric) => ({
           ...metric,
           labelOverride: `${prefix} · ${METRIC_LABELS[metric.metric]}${metric.hours ? ` ${metric.hours}시간` : ""}`,
@@ -1901,6 +1952,8 @@
         "#f-reeng",
         "#f-name",
         "#f-series",
+        "#f-target-android",
+        "#f-target-ios",
       ]) {
         $(id).addEventListener("input", resetPreview);
       }

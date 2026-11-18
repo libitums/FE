@@ -5,6 +5,7 @@ import {
   firstJsonArray,
   hogqlTimeMs,
   lastConsoleSends,
+  posthogAppVersions,
   posthogReturns,
   supabaseClient,
 } from "./sources.mjs";
@@ -112,4 +113,82 @@ test("PC-IO6. PostHog 응답에 results가 없거나 배열이 아니면 빈 결
     );
     assert.equal(result.size, 0);
   }
+});
+
+test("PC-IO7. 앱 버전 — 키가 없으면 null, 있으면 uuid만 300명씩 묻고 마지막 플랫폼 · 빌드를 읽는다", async () => {
+  assert.equal(
+    await posthogAppVersions({ posthogPersonalApiKey: null, posthogProjectId: "1" }, ["x"]),
+    null,
+  );
+  const ids = Array.from(
+    { length: 301 },
+    (_, n) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`,
+  );
+  const queries = [];
+  const fetchImpl = async (_url, init) => {
+    const query = JSON.parse(init.body).query.query;
+    queries.push(query);
+    return {
+      ok: true,
+      json: async () => ({
+        results:
+          queries.length === 1 ? [[ids[0], "android", "14", "1.3.0", "2026-11-17T10:00:00"]] : [],
+      }),
+    };
+  };
+  const result = await posthogAppVersions(
+    { posthogPersonalApiKey: "p", posthogProjectId: "1", posthogHost: "https://ph" },
+    [...ids, "bad'); DROP"],
+    { fetchImpl, nowMs: Date.UTC(2026, 10, 18) },
+  );
+  assert.equal(queries.length, 2);
+  assert.ok(queries.every((query) => !query.includes("DROP")));
+  assert.match(queries[0], /argMax\(properties\.appBuild, timestamp\)/);
+  assert.deepEqual(result.get(ids[0]), {
+    platform: "android",
+    appBuild: 14,
+    appVersion: "1.3.0",
+    seenMs: Date.UTC(2026, 10, 17, 10),
+  });
+});
+
+test("PC-IO8. 목표 빌드를 주면 사람마다 발송 뒤 첫 「목표 빌드 이상」 이벤트도 읽는다", async () => {
+  const id = "00000000-0000-4000-8000-000000000001";
+  let sentQuery = "";
+  const fetchImpl = async (_url, init) => {
+    sentQuery = JSON.parse(init.body).query.query;
+    return {
+      ok: true,
+      json: async () => ({
+        results: [[id, "2026-11-12T12:00:00", null, "2026-11-12T13:00:00"]],
+      }),
+    };
+  };
+  const result = await posthogReturns(
+    { posthogPersonalApiKey: "p", posthogProjectId: "1", posthogHost: "https://ph" },
+    [id],
+    Date.UTC(2026, 10, 12, 11),
+    { fetchImpl, targetBuilds: { android: 23, ios: null } },
+  );
+  assert.match(sentQuery, /minIf\(timestamp, \(properties\.platform = 'android'/);
+  assert.deepEqual(result.get(id), {
+    firstEventMs: Date.UTC(2026, 10, 12, 12),
+    firstTapMs: null,
+    firstUpdatedMs: Date.UTC(2026, 10, 12, 13),
+  });
+});
+
+test("PC-IO9. HogQL은 LIMIT이 없으면 100행에서 잘린다 — 300명 묶음 질의마다 LIMIT을 적는다(앱 열기 · 앱 버전)", async () => {
+  const queries = [];
+  const fetchImpl = async (_url, init) => {
+    queries.push(JSON.parse(init.body).query.query);
+    return { ok: true, json: async () => ({ results: [] }) };
+  };
+  const config = { posthogPersonalApiKey: "p", posthogProjectId: "1", posthogHost: "https://ph" };
+  const ids = ["00000000-0000-4000-8000-000000000001"];
+  await posthogReturns(config, ids, 0, { fetchImpl });
+  await posthogReturns(config, ids, 0, { fetchImpl, targetBuilds: { android: 23, ios: null } });
+  await posthogAppVersions(config, ids, { fetchImpl });
+  assert.equal(queries.length, 3);
+  for (const query of queries) assert.match(query, /GROUP BY distinct_id LIMIT 1000$/);
 });

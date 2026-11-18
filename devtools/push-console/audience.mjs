@@ -14,6 +14,7 @@ import {
   variantIndexOf,
 } from "./segments.mjs";
 import { storyLanguageFor, storyMessage, storyOptions, storyStepOf } from "./story.mjs";
+import { DEFAULT_TARGET_BUILDS, needsUpdate, storeNameFor, UPDATE_SEGMENT } from "./update.mjs";
 
 const HOUR_MS = 60 * 60 * 1000;
 
@@ -28,6 +29,7 @@ const HOUR_MS = 60 * 60 * 1000;
  *   catalog: ReturnType<typeof import("./segments.mjs").episodeCatalog>,
  *   nowMs: number,
  *   story?: ReturnType<typeof import("./story.mjs").storyPack> | null,
+ *   versions?: ReadonlyMap<string, { platform: string, appBuild: number, appVersion: string | null }> | null,
  * }} input
  */
 export function buildLearners({
@@ -39,6 +41,7 @@ export function buildLearners({
   catalog,
   nowMs,
   story = null,
+  versions = null,
 }) {
   const lastActive = new Map();
   for (const device of devices) {
@@ -82,18 +85,24 @@ export function buildLearners({
       // 단계별 예고 — 예고 파일에 그 자리 문구가 있을 때만입니다.
       story: storyOptions(story?.units, storyPlace).length > 0 ? storyPlace : null,
       storyLang: storyLanguageFor(country),
+      // 앱 버전(D13) — PostHog에서 본 마지막 이벤트입니다. 본 적 없으면 null(업데이트 대상이 아님).
+      platform: versions?.get(userId)?.platform ?? null,
+      appBuild: versions?.get(userId)?.appBuild ?? null,
+      appVersion: versions?.get(userId)?.appVersion ?? null,
     });
   }
   return learners;
 }
 
-/** 세그먼트에 드는지만 봅니다(필터 전). */
-export const inSegment = (learner, segment) =>
+/** 세그먼트에 드는지만 봅니다(필터 전). 업데이트 세그먼트는 목표 빌드(없으면 처음 값)로 봅니다. */
+export const inSegment = (learner, segment, targetBuilds = DEFAULT_TARGET_BUILDS) =>
   segment === "streak-at-risk"
     ? learner.atRisk
     : segment === "story-next"
       ? learner.story !== null && learner.story !== undefined
-      : learner.segment === segment;
+      : segment === UPDATE_SEGMENT
+        ? needsUpdate(learner, targetBuilds)
+        : learner.segment === segment;
 
 /**
  * 캠페인 조건으로 대상을 고릅니다. 빠진 이유를 셉니다.
@@ -103,6 +112,7 @@ export const inSegment = (learner, segment) =>
  *   localHours?: [number, number] | null,
  *   excludeReengagement?: boolean,
  *   cooldownHours?: number,
+ *   targetBuilds?: { android: number | null, ios: number | null },
  * }} filter
  * @param {{ nowMs: number, lastConsoleSendMs: ReadonlyMap<string, number> }} context
  */
@@ -122,7 +132,7 @@ export function selectAudience(learners, filter, { nowMs, lastConsoleSendMs }) {
   const hourCandidates = [];
 
   for (const learner of learners) {
-    if (!inSegment(learner, filter.segment)) continue;
+    if (!inSegment(learner, filter.segment, filter.targetBuilds ?? DEFAULT_TARGET_BUILDS)) continue;
     inSegmentCount += 1;
     if (learner.idleHours < minIdle || (maxIdle !== null && learner.idleHours > maxIdle)) {
       excluded.idle += 1;
@@ -185,6 +195,8 @@ export function messageFor(learner, copy) {
     character: learner.character ?? "",
     streak: learner.streak,
     steps: learner.remainingSteps,
+    // 플랫폼을 모르면(시험 발송 등) Google Play — 기기 대부분이 Android입니다.
+    store: storeNameFor(learner.platform),
   };
   return {
     lang: copy?.[learner.lang]?.title ? learner.lang : "en",
@@ -288,6 +300,8 @@ export function planRecipients({ campaignId, eligible, holdoutPercent, copy, var
         segment: learner.segment,
         episodeId: learner.episodeId,
         streak: learner.streak,
+        platform: learner.platform ?? null,
+        appBuild: learner.appBuild ?? null,
         lang: message.lang,
         timeZone: learner.timeZone,
         localDate: learner.localDate,

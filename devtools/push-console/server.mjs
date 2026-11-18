@@ -32,6 +32,12 @@ import {
   validateRecommendations,
 } from "./recommend.mjs";
 import { autoCampaignsFrom } from "./auto.mjs";
+import {
+  DEFAULT_TARGET_BUILDS,
+  normalizeTargets,
+  targetsProblems,
+  UPDATE_SEGMENT,
+} from "./update.mjs";
 import { campaignResults, poolResults, seriesOf } from "./results.mjs";
 import { storyContentProblems, storyMessage, storyPack } from "./story.mjs";
 import {
@@ -47,6 +53,7 @@ import {
   loadCampaigns,
   loadConfig,
   loadStoryFiles,
+  posthogAppVersions,
   posthogReturns,
   saveCampaign,
   serviceRoleKey,
@@ -147,6 +154,24 @@ let autoCampaigns = [];
 const allCampaigns = () =>
   [...loadCampaigns(), ...autoCampaigns].sort((a, b) => b.sentAtMs - a.sentAtMs);
 
+// 앱 버전(D13) — 기기 있는 회원의 마지막 빌드를 PostHog에서 읽습니다. 키가 없거나 실패하면 업데이트 세그먼트만 비웁니다.
+let versionStatus = { loaded: false, users: 0, error: null };
+async function loadVersions(devices) {
+  const ids = [...new Set(devices.map((row) => row.user_id))];
+  try {
+    const versions = await posthogAppVersions(config, ids);
+    versionStatus =
+      versions === null
+        ? { loaded: false, users: 0, error: "PostHog 키가 없어 앱 버전을 모릅니다." }
+        : { loaded: true, users: versions.size, error: null };
+    return versions;
+  } catch (error) {
+    console.error(String(error));
+    versionStatus = { loaded: false, users: 0, error: String(error) };
+    return null;
+  }
+}
+
 let snapshot = null;
 async function refresh() {
   await loadStory();
@@ -160,6 +185,7 @@ async function refresh() {
     supabase.testerIds(),
     supabase.autoSends(sinceDay),
   ]);
+  const versions = await loadVersions(devices);
   const everyone = buildLearners({
     devices,
     profiles,
@@ -169,6 +195,7 @@ async function refresh() {
     catalog,
     nowMs,
     story,
+    versions,
   });
   const timeZoneOf = new Map(everyone.map((row) => [row.userId, row.timeZone]));
   autoCampaigns = autoCampaignsFrom(autoRows, (userId) => timeZoneOf.get(userId) ?? null);
@@ -193,6 +220,15 @@ function audienceFor(input) {
     excludeReengagement: input.excludeReengagement !== false,
     cooldownHours: Number(input.cooldownHours ?? 24),
   };
+  if (input.segment === UPDATE_SEGMENT) {
+    if (!versionStatus.loaded)
+      throw new Error(
+        `앱 버전을 읽지 못해 업데이트 세그먼트를 쓸 수 없어요 — ${versionStatus.error ?? "새로 고침 후 다시 해 주세요."}`,
+      );
+    filter.targetBuilds = normalizeTargets(input.targetBuilds);
+    const problems = targetsProblems(filter.targetBuilds);
+    if (problems.length > 0) throw new Error(problems.join(" "));
+  }
   const holdoutPercent = Math.min(90, Math.max(0, Number(input.holdoutPercent ?? 20)));
   const selection = selectAudience(snapshot.learners, filter, {
     nowMs,
@@ -313,7 +349,9 @@ async function resultsFor(id) {
   const [devices, days, posthog] = await Promise.all([
     supabase.devices(),
     supabase.days(sinceDay),
-    posthogReturns(config, [...ids], campaign.sentAtMs).catch((error) => {
+    posthogReturns(config, [...ids], campaign.sentAtMs, {
+      targetBuilds: campaign.filter?.targetBuilds ?? null,
+    }).catch((error) => {
       console.error(String(error));
       return null;
     }),
@@ -589,7 +627,13 @@ const server = createServer(async (request, response) => {
         testersExcluded: snapshot.testers,
         posthog: Boolean(config.posthogPersonalApiKey && config.posthogProjectId),
         segments: summarize(snapshot.learners, SEGMENTS),
-        defaults: { copy: DEFAULT_COPY, copyB: DEFAULT_COPY_B, filters: DEFAULT_FILTERS },
+        defaults: {
+          copy: DEFAULT_COPY,
+          copyB: DEFAULT_COPY_B,
+          filters: DEFAULT_FILTERS,
+          targetBuilds: DEFAULT_TARGET_BUILDS,
+        },
+        versions: versionStatus,
         languages: LANGUAGES,
         story: storyStatus,
         campaigns: allCampaigns().map(summaryOf),
@@ -670,6 +714,9 @@ const server = createServer(async (request, response) => {
           episode: learner.episodeTitle,
           storyStep: row.storyStep ?? null,
           streak: learner.streak,
+          platform: learner.platform,
+          appVersion: learner.appVersion,
+          appBuild: learner.appBuild,
           title: row.title,
           body: row.body,
         });

@@ -1,5 +1,6 @@
 // 세그먼트별 기본 문구입니다. 콘솔에서 고쳐 보낼 수 있고, 보낸 문구는 캠페인 기록에 남습니다.
-// 자리표시: {name} 학습자 이름(없으면 지워짐) · {episode} 에피소드 영어 제목 · {streak} 연속 일수 · {steps} 남은 단계 수.
+// 자리표시: {name} 학습자 이름(없으면 지워짐) · {episode} 에피소드 영어 제목 · {streak} 연속 일수 · {steps} 남은 단계 수 ·
+// {store} 그 사람 플랫폼의 스토어 이름(Google Play · App Store — 업데이트 세그먼트).
 // 영어 외 언어는 초안입니다 — 처음 보내기 전에 원어민 확인을 권합니다.
 
 /** @type {Record<string, Record<string, { title: string, body: string }>>} */
@@ -115,6 +116,33 @@ export const DEFAULT_COPY = {
       body: "{name}, replay a favorite episode in a few minutes.",
     },
   },
+  // 앱을 올리지 않은 사람(D13) — 새 기능(채팅)을 알리고 스토어에서 올리라고만 합니다. 알림을 눌러도 옛 앱이 열려요.
+  "update-available": {
+    en: {
+      title: "New in Duru: chat in Korean 💬",
+      body: "{name}, talk with the characters from your story. Update Duru on {store} to start.",
+    },
+    vi: {
+      title: "Mới trên Duru: trò chuyện bằng tiếng Hàn 💬",
+      body: "{name}, trò chuyện với các nhân vật trong câu chuyện của bạn. Cập nhật Duru trên {store} để bắt đầu.",
+    },
+    id: {
+      title: "Baru di Duru: ngobrol dalam bahasa Korea 💬",
+      body: "{name}, ngobrol dengan tokoh dari ceritamu. Perbarui Duru di {store} untuk mulai.",
+    },
+    ms: {
+      title: "Baharu di Duru: bersembang dalam bahasa Korea 💬",
+      body: "{name}, bersembang dengan watak dari cerita anda. Kemas kini Duru di {store} untuk bermula.",
+    },
+    es: {
+      title: "Nuevo en Duru: chatea en coreano 💬",
+      body: "{name}, habla con los personajes de tu historia. Actualiza Duru en {store} para empezar.",
+    },
+    ja: {
+      title: "Duruの新機能：韓国語でチャット 💬",
+      body: "{name}さん、ストーリーの登場人物とおしゃべりできます。{store}でDuruをアップデートして始めましょう。",
+    },
+  },
   "streak-at-risk": {
     en: {
       title: "Keep your {streak}-day streak",
@@ -186,6 +214,13 @@ export const DEFAULT_FILTERS = {
     localHours: [18, 22],
     holdoutPercent: 30,
   },
+  // 업데이트(D13) — 매일 쓰는 사람도 대상이라 쉰 시간 하한이 없습니다. 한 달 넘게 안 연 사람은 빼 둡니다.
+  "update-available": {
+    minIdleHours: 0,
+    maxIdleHours: 24 * 30,
+    localHours: [18, 21],
+    holdoutPercent: 30,
+  },
   "streak-at-risk": {
     minIdleHours: 0,
     maxIdleHours: null,
@@ -240,6 +275,33 @@ export const DEFAULT_COPY_B = {
     en: {
       title: "{character}: 또 만나요 🙂",
       body: "{name}, replay a favorite episode in a few minutes.",
+    },
+  },
+  // 업데이트(D13) — 하던 이야기의 인물이 「이제 저랑 대화할 수 있어요」라고 말을 겁니다.
+  "update-available": {
+    en: {
+      title: "{character}: 이제 저랑 대화할 수 있어요 💬",
+      body: "{name}, update Duru on {store} to chat with me in Korean.",
+    },
+    vi: {
+      title: "{character}: 이제 저랑 대화할 수 있어요 💬",
+      body: "{name}, cập nhật Duru trên {store} để trò chuyện với mình bằng tiếng Hàn nhé.",
+    },
+    id: {
+      title: "{character}: 이제 저랑 대화할 수 있어요 💬",
+      body: "{name}, perbarui Duru di {store} untuk ngobrol denganku dalam bahasa Korea.",
+    },
+    ms: {
+      title: "{character}: 이제 저랑 대화할 수 있어요 💬",
+      body: "{name}, kemas kini Duru di {store} untuk bersembang dengan saya dalam bahasa Korea.",
+    },
+    es: {
+      title: "{character}: 이제 저랑 대화할 수 있어요 💬",
+      body: "{name}, actualiza Duru en {store} para chatear conmigo en coreano.",
+    },
+    ja: {
+      title: "{character}: 이제 저랑 대화할 수 있어요 💬",
+      body: "{name}さん、{store}でDuruをアップデートして、韓国語で私とおしゃべりしましょう。",
     },
   },
   "streak-at-risk": {
