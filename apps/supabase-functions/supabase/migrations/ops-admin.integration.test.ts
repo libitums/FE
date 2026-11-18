@@ -1030,7 +1030,16 @@ describe("구독 표가 있는 DB", () => {
     const begin = await rpc(
       server,
       "ops_push_begin",
-      [ACTOR, { kind: "users", userIds: [tester] }, 1, "제목", "본문", { screen: "home" }, true, REQUEST_A],
+      [
+        ACTOR,
+        { kind: "users", userIds: [tester] },
+        1,
+        "제목",
+        "본문",
+        { screen: "home" },
+        true,
+        REQUEST_A,
+      ],
       ["", "jsonb", "", "", "", "jsonb", "", "uuid"],
     );
     expect(begin).toEqual({ ok: true, id: expect.any(String) });
@@ -1112,8 +1121,11 @@ describe("구독 표가 있는 DB", () => {
       ),
     ).toEqual({ ok: true });
     expect(
-      (await db.admin.query("select status, request_id from ops.push_sends where id = $1", [timedOut.id]))
-        .rows[0],
+      (
+        await db.admin.query("select status, request_id from ops.push_sends where id = $1", [
+          timedOut.id,
+        ])
+      ).rows[0],
     ).toEqual({ status: "unknown", request_id: REQUEST_B });
     await expect(
       rpc(server, "ops_push_finish", [ACTOR, begin.id, "sending", {}], ["", "", "", "jsonb"]),
