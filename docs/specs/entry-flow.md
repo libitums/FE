@@ -134,7 +134,7 @@ App (app/App.tsx)                                  ← 유일한 결선 자리. 
 | 화면 | 머리 | 액션 행 | 나가는 수단 | 상태 |
 |---|---|---|---|---|
 | 스플래시 | 없음 | 없음 | 없음 — **자동 전이**(⟨2026-10-20⟩ 로고 끝 · 갱신이 있으면 최대 3초 더) | 없음 — ⟨2026-10-20⟩ 갱신 게이지의 뷰는 App 루트가 context로 내린다(화면 상태 아님) |
-| 온보딩 | 진행 점 | `다음` / 마지막은 `시작하기` | 없음 | `step` — 화면 로컬 |
+| 온보딩 | 진행 점 | ~~`다음` / 마지막은 `시작하기`~~ ⟨2026-11-18, ADR-0159⟩ 모든 스텝 `Get started`(곧바로 로그인) · 스텝은 밀기 · 4초 자동 넘김 | 없음 | `step` — 화면 로컬 |
 | 로그인 | 제목 | **없음** — 수단이 넷이라 하나만 고정할 수 없다 | 없음 | 국가 · 전화번호 입력값 · 요청 상태 **하나**(`idle` · `requesting` · `failed`, 뒤의 둘은 어느 수단의 것인지 싣는다) — 화면 로컬 |
 | 코드 검증 | 나가기 + 제목 | `확인` | **`로그인으로`** | 여섯 칸의 원값 · 카운트다운 · 요청 상태(`idle` · `verifying` · `resending` · `failed`) — 화면 로컬 |
 | 언어 선택 | 제목 | `다음` | 없음 | 고른 언어 — **App** |
@@ -309,6 +309,8 @@ App (app/App.tsx)                                  ← 유일한 결선 자리. 
 | `entry_screen_viewed` | `screen`(**스플래시를 뺀 다섯**) | 그 화면을 여는 전이의 `dispatch` 직전 1회 | **스플래시** · 코드 검증에서 `로그인으로`로 돌아갈 때 · 온보딩 `step` 전환(같은 화면이다) |
 | `entry_login_method_selected` | `method`(넷) | ~~소셜: 수단 tap → 토큰 저장·전이 직전 1회.~~ **소셜: 교환이 성공해 세션을 저장한 뒤 · 전이 직전 1회**(2026-09-29). **전화번호: OTP 요청이 성공한 순간 1회**(2026-09-29) | 전화번호를 입력만 할 때 · **OTP 요청이 실패할 때**(실패한 시도를 세지 않는다 — 두 번째에 성공해도 1회다) · 재전송 · **소셜 버튼을 누르기만 했을 때 · 인증 창을 닫았을 때 · 소셜 실패** |
 | `entry_completed` | 없음 | **여정 입장**의 진행 tap → `enterApp` 직전 1회 | **토큰 분기로 바로 들어가는 재방문**(완주가 아니다) · ⟨2026-10-18⟩ **기존 회원의 바로 맵 진입**(여정 입장을 지나지 않는다) |
+| ⟨2026-11-18⟩ `onboarding_step_viewed` | `step`(1 · 2 · 3) · `via`(start · auto · swipe · back) | 스텝이 그 방문에서 처음 보일 때 1회(ADR-0159) | 이미 본 스텝으로 돌아올 때 |
+| ⟨2026-11-18⟩ `onboarding_started` | `step` · `autoAdvanced` | 「Get started」 tap → 로그인 열람 직전 1회 | 시스템 뒤로가기로 떠날 때 |
 | ⟨2026-10-18⟩ `entry_returning_learner_entered` | `method`(넷) | 기존 회원 판정이 맵으로 끝난 로그인에서 UI 언어 저장 뒤 · `enterApp` 직전 1회 | 신규 흐름(판정 실패 · 시간 초과 포함) · 세션 갱신 부팅 · 로그인 실패 · 취소 |
 
 - ⭐ **스플래시가 타입에서 배제돼 있다.** 이 저장소의 이벤트는 **전이를 일으키는 핸들러**가 내는데
@@ -330,7 +332,7 @@ App (app/App.tsx)                                  ← 유일한 결선 자리. 
 | 화면 | 이름 형태 |
 |---|---|
 | 스플래시 | `splash-screen-scroll` · `splash-screen-service-name` · `splash-screen-tagline` |
-| 온보딩 | `onboarding-screen` · `-scroll` · `-title` · `-body` · `-next` · `-progress` · `-progress-dot-<step>` |
+| 온보딩 | `onboarding-screen` · `-scroll` · `-pager` · `-title` · `-body` · ~~`-next`~~ `-start`(ADR-0159) · `-progress` · `-progress-dot-<step>` |
 | 로그인 | `login-screen-scroll` · `-title` · `-header` · `-country` · `-phone-field` · `-legal` · `login-screen-method-<수단>` · **`login-screen-error`**(`failed`에서만) |
 | 코드 검증 | `verification-code-screen-scroll` · `-title` · `-exit` · `-description` · `-phone` · `-timer` · `-resend` · `-input` · `-submit` · **`verification-code-screen-error`**(`failed`에서만) |
 | 언어 선택 | `language-select-screen-scroll` · `-title` · `-next` · `language-select-option[-label|-mark]-<언어>` |
