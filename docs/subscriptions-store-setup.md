@@ -46,7 +46,8 @@
 |---|---|---|
 | `REVENUECAT_WEBHOOK_AUTH` | Supabase Edge Function 비밀(운영 · 개발 각각) | RevenueCat 웹훅의 Authorization 헤더 값과 같은 문자열 |
 | `REVENUECAT_ACCEPT_SANDBOX` | Supabase Edge Function 비밀 | 개발(QA) 프로젝트만 `true`. 운영은 비워 둠 |
-| RevenueCat 공개 SDK 키(iOS · Android) | 2단계 호스트 빌드 값(`.env.local` · 릴리스 값 파일) — 이름은 2단계에서 정함 | 앱이 SDK를 여는 키 |
+| RevenueCat 공개 SDK 키 — iOS(`appl_…`) | `apps/ios/Config/RevenueCat.local.xcconfig`의 `REVENUECAT_API_KEY`(추적 안 함, `.example` 참조) → Info.plist `RevenueCatAPIKey` | 앱이 SDK를 여는 키. 비면 SDK · 구매 모듈 없음 |
+| RevenueCat 공개 SDK 키 — Android(`goog_…`) | `apps/android/app/revenuecat.properties`의 `REVENUECAT_API_KEY`(추적 안 함, `.example` 참조) → `BuildConfig.REVENUECAT_API_KEY` | 같음. 릴리스 빌드도 이 두 파일을 메인 체크아웃에서 복사한다(`/release-build` 값 파일 목록) |
 | App Store In-App Purchase Key(.p8) · Issuer ID · Key ID | RevenueCat 대시보드만 | 영수증 · 서버 알림 |
 | Play 서비스 계정 JSON | RevenueCat 대시보드만 | Play 영수증 · RTDN |
 | Airbridge 앱 이름 · API 토큰 | RevenueCat 대시보드 Airbridge 통합 | 매출 이벤트 전달 |
@@ -57,7 +58,15 @@
 3. 연간 구독의 매달 엽전: `cron/subscriptions.sql`을 SQL 편집기에서 한 번 실행(하루 한 번 `companion_grant_due_plan_coins`).
 4. RevenueCat 대시보드에서 「Send test event」 → 함수 로그 `revenuecat_webhook` · `companion.store_events`에 TEST 행(outcome `recorded`).
 
-## 5. 2단계 앱 일(참고)
-- iOS · Android 호스트에 RevenueCat SDK + `PurchaseBridge` 네이티브 모듈(`configure` · `offerings` · `purchase` · `restore`).
-- `plansFeatureEnabled()` 켜기(또는 원격 플래그로 바꾸기) · 구매 이벤트 · 무제한 티켓 · 대화 등급을 앱에 반영(`companion_entitlements`).
-- 엽전 상점(CoinShop) 팩 카드를 상품 id · 스토어 가격에 잇기.
+## 5. 2단계 앱 일 — 붙음(2026-11-18), 결제 플래그만 꺼짐
+- iOS(`RevenueCat` pod 5.99.2) · Android(`com.revenuecat.purchases:purchases` 10.30.1, Play Billing 8.3) 호스트에 SDK + `PurchasesModule`
+  (`configure` · `signOut` · `offerings` · `storefront` · `purchase` · `restore`). 키가 있을 때만 SDK를 시작하고 모듈을 등록한다.
+- 요금제 화면 · 엽전 상점이 같은 다리로 산다. 구매 · 복원 중에는 단추 로딩 · 막힘. 성공하면 권한 · 지갑 잔액을 2초 × 5번 다시 읽는다(웹훅 대기).
+- **실제 결제를 여는 스위치는 하나** — `apps/mobile/src/lib/plans-flag.ts`의 `purchasesEnabled()`. 아래 6의 샌드박스 확인 뒤 `true`로 바꾼다.
+  꺼진 동안에도 키가 있으면 스토어 가격 · 스토어 나라는 읽는다(가격 표시가 스토어 값).
+
+## 6. 켜기 전 샌드박스 확인
+1. 위 1 ~ 4 완료(상품 · RevenueCat · 웹훅 · 서버). `purchasesEnabled()`를 로컬에서만 `true`로 바꿔 빌드.
+2. iOS: 샌드박스 Apple 계정 · Android: 라이선스 테스터 계정으로 각 상품 한 번씩 — 요금제 카드에 스토어 가격, 구매 시트, 취소(안내 없음), 성공 뒤 칩 · 권한.
+3. `companion.store_events`에 이벤트 · `companion.plan_entitlements` · 지갑 원장 확인. 복원 · 환불(샌드박스) · 업그레이드(PRODUCT_CHANGE) 한 번씩.
+4. 통과하면 `purchasesEnabled()` = true PR.
