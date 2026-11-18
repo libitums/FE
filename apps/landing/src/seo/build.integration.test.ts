@@ -147,6 +147,14 @@ function headingLevels(document: Document): number[] {
   );
 }
 
+// 법률 문서(ADR-0159) — 영어 기준본과 한국어 번역본입니다.
+const legalPages = [
+  { file: "privacy/index.html", path: "/privacy/", language: "en" },
+  { file: "terms/index.html", path: "/terms/", language: "en" },
+  { file: "ko/privacy/index.html", path: "/ko/privacy/", language: "ko" },
+  { file: "ko/terms/index.html", path: "/ko/terms/", language: "ko" },
+];
+
 describe("빌드 A — SITE_URL 있음", () => {
   let build: BuildResult;
   beforeAll(() => {
@@ -257,6 +265,45 @@ describe("빌드 A — SITE_URL 있음", () => {
     const locs = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]);
     expect(locs.sort()).toEqual([...languagePaths].sort());
     expect(sitemap).not.toContain("404");
+  });
+
+  it("I-A8b 법률 문서 — 언어판 넷이 색인되고 canonical · hreflang이 자기 묶음을 가리킨다", () => {
+    for (const { file, path, language } of legalPages) {
+      const document = page(build, file);
+      expect(document.documentElement.getAttribute("lang")).toBe(language);
+      expect(attr(document, 'meta[name="robots"]', "content").join()).not.toContain("noindex");
+      expect(attr(document, "link[rel=canonical]", "href")).toEqual([origin + path]);
+      const id = path.includes("privacy") ? "privacy" : "terms";
+      expect(attr(document, "link[rel=alternate][hreflang]", "href")).toEqual([
+        `${origin}/${id}/`,
+        `${origin}/ko/${id}/`,
+        `${origin}/${id}/`,
+      ]);
+      expect(texts(document, "h1")).toHaveLength(1);
+    }
+  });
+
+  it("I-A8c 법률 문서는 sitemap에 없고, 번역본이 없는 언어의 주소는 만들지 않는다", () => {
+    const index = read(build, "sitemap-index.xml");
+    const target = /<loc>([^<]+)<\/loc>/.exec(index)?.[1];
+    const sitemap = read(build, new URL(target as string).pathname.replace(/^\//, ""));
+    expect(sitemap).not.toMatch(/privacy|terms/);
+    for (const language of ["vi", "id", "ms", "es", "ja"]) {
+      expect(has(build, `${language}/privacy/index.html`)).toBe(false);
+      expect(has(build, `${language}/terms/index.html`)).toBe(false);
+    }
+  });
+
+  it("I-A8d 푸터의 약관 · 개인정보 링크가 지어진 문서를 가리킨다", () => {
+    for (const { file, legal } of [
+      { file: "index.html", legal: ["/terms/", "/privacy/"] },
+      { file: "ko/index.html", legal: ["/ko/terms/", "/ko/privacy/"] },
+      { file: "ja/index.html", legal: ["/terms/", "/privacy/"] },
+    ]) {
+      const hrefs = attr(page(build, file), '[data-testid="footer-legal"] a', "href");
+      expect(hrefs).toEqual(legal);
+      for (const href of hrefs) expect(has(build, `${href.slice(1)}index.html`)).toBe(true);
+    }
   });
 
   it("I-A9 llms.txt의 머리 · 요약 · 링크", () => {
@@ -528,6 +575,15 @@ describe("빌드 B — SITE_URL 없음", () => {
       ]) {
         expect(document.querySelectorAll(selector), `${file} ${selector}`).toHaveLength(0);
       }
+    }
+  });
+
+  it("I-B2b 법률 문서도 canonical · hreflang 없이 지어진다", () => {
+    for (const { file } of legalPages) {
+      const document = page(build, file);
+      expect(attr(document, "link[rel=canonical]", "href")).toEqual([]);
+      expect(attr(document, "link[rel=alternate][hreflang]", "href")).toEqual([]);
+      expect(texts(document, "h1")).toHaveLength(1);
     }
   });
 
