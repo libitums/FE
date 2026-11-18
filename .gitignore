@@ -59,6 +59,9 @@ apps/ios/Config/*.local.xcconfig
 apps/android/app/*.properties
 apps/ios/Config/Airbridge.local.xcconfig
 apps/android/app/airbridge.properties
+# RevenueCat 공개 SDK 키 파일 — 값은 추적하지 않는다(docs/adr/0144-subscriptions-revenuecat.md 2단계)
+apps/ios/Config/RevenueCat.local.xcconfig
+apps/android/app/revenuecat.properties
 
 # vitest 샤드 blob (CI의 Tests 잡이 합친다)
 blob-reports/

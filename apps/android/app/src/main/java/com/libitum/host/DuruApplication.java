@@ -19,5 +19,7 @@ public final class DuruApplication extends Application {
     LynxEnv.inst().init(this, null, null, null);
     DuruFirebaseMessagingService.createChannel(this);
     AirbridgeEvents.start(this, AirbridgeEventsConfig.from(BuildConfig.AIRBRIDGE_APP_NAME, BuildConfig.AIRBRIDGE_SDK_TOKEN));
+    // RevenueCat 구매 SDK(ADR-0144 2단계). 키가 없으면 한 줄도 부르지 않는다.
+    PurchasesSdk.start(this, PurchasesConfig.from(BuildConfig.REVENUECAT_API_KEY));
   }
 }

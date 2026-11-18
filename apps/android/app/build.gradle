@@ -57,6 +57,17 @@ def airbridgeValue = { String key ->
   (airbridgeProperties.getProperty(key) ?: '').trim().replace('\\', '\\\\').replace('"', '\\"')
 }
 
+// RevenueCat 공개 SDK 키는 추적하지 않는 revenuecat.properties에서 읽는다(ADR-0144 2단계). 없거나 비어 있으면 빈 문자열이고,
+// 그때 호스트는 SDK를 건드리지 않고 구매 모듈도 등록하지 않는다(PurchasesConfig).
+def revenueCatProperties = new Properties()
+def revenueCatPropertiesFile = file('revenuecat.properties')
+if (revenueCatPropertiesFile.exists()) {
+  revenueCatPropertiesFile.withInputStream { revenueCatProperties.load(it) }
+}
+def revenueCatValue = { String key ->
+  (revenueCatProperties.getProperty(key) ?: '').trim().replace('\\', '\\\\').replace('"', '\\"')
+}
+
 android {
   namespace 'com.libitum.host'
   compileSdk 36
@@ -74,6 +85,7 @@ android {
     buildConfigField 'String', 'SENTRY_PROGUARD_UUID', '""'
     buildConfigField 'String', 'AIRBRIDGE_APP_NAME', "\"${airbridgeValue('AIRBRIDGE_APP_NAME')}\""
     buildConfigField 'String', 'AIRBRIDGE_SDK_TOKEN', "\"${airbridgeValue('AIRBRIDGE_SDK_TOKEN')}\""
+    buildConfigField 'String', 'REVENUECAT_API_KEY', "\"${revenueCatValue('REVENUECAT_API_KEY')}\""
   }
 
   buildTypes {
@@ -146,6 +158,8 @@ dependencies {
   implementation 'androidx.core:core:1.15.0'
   implementation 'com.google.android.play:review:2.0.2'
   implementation 'io.airbridge:sdk-android:4.12.0'
+  // 스토어 결제 · 영수증 · 구독 상태(ADR-0144 D1). 정확 버전 — Play Billing 8을 싣는 줄이다. 키가 없으면 시작하지 않는다.
+  implementation 'com.revenuecat.purchases:purchases:10.30.1'
   implementation platform('com.google.firebase:firebase-bom:34.19.0')
   implementation 'com.google.firebase:firebase-messaging'
   implementation 'io.sentry:sentry-android-core:8.60.0'
