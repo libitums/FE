@@ -3,6 +3,7 @@
 // 엽전은 「Yeopjeon」(ADR-0116 — 화면 문구에 한글을 쓰지 않음). 혜택 숫자는 서버 표에서 오므로 문구는 함수입니다.
 
 import { n } from "./ui-copy-en-plural";
+import { planTermsCopy, type PlanTermsCopy } from "./ui-copy-plans-terms";
 
 export type PlanNameKey = "unlimited_tickets" | "chat_plus" | "premium";
 
@@ -37,6 +38,8 @@ export type PlansCopy = {
   readonly goUnlimited: string;
   readonly compare: string;
   readonly selected: string;
+  /** 구독 고지 · 지금 요금제 · 구독 관리(ADR-0144 2단계 후속). */
+  readonly terms: PlanTermsCopy;
 };
 
 export const plansCopy: Readonly<Record<"en" | "es" | "id" | "ja" | "vi", PlansCopy>> = {
@@ -70,6 +73,7 @@ export const plansCopy: Readonly<Record<"en" | "es" | "id" | "ja" | "vi", PlansC
     goUnlimited: "Go unlimited",
     compare: "Compare plans",
     selected: "Selected",
+    terms: planTermsCopy.en,
   },
   es: {
     title: "Planes",
@@ -102,6 +106,7 @@ export const plansCopy: Readonly<Record<"en" | "es" | "id" | "ja" | "vi", PlansC
     goUnlimited: "Pasar a ilimitado",
     compare: "Comparar planes",
     selected: "Seleccionado",
+    terms: planTermsCopy.es,
   },
   id: {
     title: "Paket",
@@ -135,6 +140,7 @@ export const plansCopy: Readonly<Record<"en" | "es" | "id" | "ja" | "vi", PlansC
     goUnlimited: "Jadi tanpa batas",
     compare: "Bandingkan paket",
     selected: "Dipilih",
+    terms: planTermsCopy.id,
   },
   ja: {
     title: "プラン",
@@ -166,6 +172,7 @@ export const plansCopy: Readonly<Record<"en" | "es" | "id" | "ja" | "vi", PlansC
     goUnlimited: "無制限にする",
     compare: "プランを比較",
     selected: "選択中",
+    terms: planTermsCopy.ja,
   },
   vi: {
     title: "Gói",
@@ -199,5 +206,6 @@ export const plansCopy: Readonly<Record<"en" | "es" | "id" | "ja" | "vi", PlansC
     goUnlimited: "Dùng không giới hạn",
     compare: "So sánh các gói",
     selected: "Đã chọn",
+    terms: planTermsCopy.vi,
   },
 };

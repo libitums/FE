@@ -151,3 +151,42 @@
   gap: var(--libitum-spacing-8);
   margin-top: var(--libitum-spacing-12);
 }
+
+/* 지금 요금제 배지 — BEST(주황)와 구별되게 짙은 무채색(ADR-0144 2단계 후속). */
+.plan-card-badge-current {
+  background: var(--libitum-color-gray-900);
+}
+
+/* 구독 고지 — 구매 단추 아래 작은 글 · 이용약관 · 개인정보처리방침 링크(App Store 3.1.2). */
+.plans-terms {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-8);
+}
+
+.plans-terms-text,
+.plans-terms-link {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-weight: var(--libitum-typography-body-s-font-weight);
+  font-size: var(--libitum-typography-body-s-font-size);
+  line-height: var(--libitum-typography-body-s-line-height);
+}
+
+.plans-terms-text {
+  text-align: center;
+}
+
+.plans-terms-links {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: var(--libitum-spacing-8);
+}
+
+.plans-terms-link {
+  color: var(--libitum-color-fg-neutral);
+  text-decoration: underline;
+  padding: var(--libitum-spacing-8) var(--libitum-spacing-4);
+}
