@@ -53,11 +53,15 @@ export function PlanChip({ plan, pulse, onPress }: PlanChipProps): ReactNode {
         <view className={alive ? "plan-chip-ring plan-chip-ring-pulse" : "plan-chip-ring"} />
       ) : null}
       <svg
-        className={plan === "unlimited_tickets" ? "plan-chip-icon plan-chip-icon-wide" : "plan-chip-icon"}
+        className={
+          plan === "unlimited_tickets" ? "plan-chip-icon plan-chip-icon-wide" : "plan-chip-icon"
+        }
         content={icons[plan]}
         current-color={subscribed ? color.white : color.brand.primary}
       />
-      <text className={subscribed ? "plan-chip-label plan-chip-label-subscribed" : "plan-chip-label"}>
+      <text
+        className={subscribed ? "plan-chip-label plan-chip-label-subscribed" : "plan-chip-label"}
+      >
         {copy.shop.chip[plan]}
       </text>
     </view>

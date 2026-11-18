@@ -71,9 +71,48 @@ export type ShopCopy = {
 
 const planShort = { unlimited_tickets: "Tickets ∞", chat_plus: "Chat Plus", premium: "Premium" };
 const chipPlans = { premium: "PREMIUM", chat_plus: "CHAT+", unlimited_tickets: "TICKETS" };
-const enMonths = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-const esMonths = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sept", "oct", "nov", "dic"];
-const idMonths = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+const enMonths = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
+const esMonths = [
+  "ene",
+  "feb",
+  "mar",
+  "abr",
+  "may",
+  "jun",
+  "jul",
+  "ago",
+  "sept",
+  "oct",
+  "nov",
+  "dic",
+];
+const idMonths = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "Mei",
+  "Jun",
+  "Jul",
+  "Agu",
+  "Sep",
+  "Okt",
+  "Nov",
+  "Des",
+];
 
 export const shopCopy: Readonly<Record<"en" | "es" | "id" | "ja" | "vi", ShopCopy>> = {
   en: {
@@ -167,7 +206,9 @@ export const shopCopy: Readonly<Record<"en" | "es" | "id" | "ja" | "vi", ShopCop
     saving: (percent) => `-${percent}%`,
     date: (month, day) => `${day} ${esMonths[month] ?? ""}`,
     current: (date, renews) =>
-      date === null ? "Plan actual" : `Plan actual · ${renews ? "se renueva el" : "termina el"} ${date}`,
+      date === null
+        ? "Plan actual"
+        : `Plan actual · ${renews ? "se renueva el" : "termina el"} ${date}`,
     tag: {
       upgrade: "Mejora · empieza ya",
       switchAt: (date) => (date === null ? "Cambio · al renovar" : `Cambio · desde el ${date}`),

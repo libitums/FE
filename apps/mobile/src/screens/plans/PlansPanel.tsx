@@ -10,12 +10,7 @@ import { PlanCta, planCtaText } from "./PlanCta";
 import { PlanPeriodToggle } from "./PlanPeriodToggle";
 import { PlanTerms } from "./PlanTerms";
 import { currentPlanOf, dateParts, planChangeOf, type PlanChange } from "./plan-change";
-import {
-  initialPlanSelection,
-  isCurrentCard,
-  planCardsFor,
-  type PlanPeriod,
-} from "./plans-model";
+import { initialPlanSelection, isCurrentCard, planCardsFor, type PlanPeriod } from "./plans-model";
 import { plansTestIds as ids, type PlansPanelProps } from "./plans.contract";
 import { usePlanRequest } from "./use-plan-request";
 
@@ -128,7 +123,11 @@ export function PlansPanel({
 
   return (
     <view className="plans-panel">
-      <scroll-view className="plans-panel-scroll" scroll-orientation="vertical" scroll-bar-enable={false}>
+      <scroll-view
+        className="plans-panel-scroll"
+        scroll-orientation="vertical"
+        scroll-bar-enable={false}
+      >
         <view className="plans-panel-body">
           <view className="plans-panel-heading">
             <text className={tone("plans-panel-title")} accessibility-traits="header">
@@ -211,7 +210,7 @@ export function PlansPanel({
             />
           </view>
           <PlanTerms
-            card={selected}
+            card={selected ?? cards.find((card) => isCurrentCard(card.id, period, current))}
             period={period}
             platform={platform}
             onOpenLegal={onOpenLegal}

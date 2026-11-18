@@ -11,7 +11,13 @@ import {
   reportPurchaseIntent,
 } from "../../lib/purchase-intent";
 import { useUiCopy } from "../../lib/ui-copy";
-import { coinPacks, findCoinPack, initialCoinPackId, packPriceOf, type CoinPackId } from "./coin-shop";
+import {
+  coinPacks,
+  findCoinPack,
+  initialCoinPackId,
+  packPriceOf,
+  type CoinPackId,
+} from "./coin-shop";
 import { CoinPackCard } from "./CoinPackCard";
 import type { ShopPromo } from "./shop-model";
 import { ShopPromoRow } from "./ShopPromoRow";

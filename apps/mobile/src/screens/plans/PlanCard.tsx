@@ -121,7 +121,9 @@ export function PlanCard({
     <view
       className={className}
       data-testid={testId}
-      {...(selected === undefined ? {} : { "data-selected": String(selected === true && !isCurrent) })}
+      {...(selected === undefined
+        ? {}
+        : { "data-selected": String(selected === true && !isCurrent) })}
       data-current={String(isCurrent)}
       data-best={String(card.best)}
       flatten={false}
@@ -145,7 +147,11 @@ export function PlanCard({
         <text className="plan-card-name">{name}</text>
         <text className="plan-card-headline">{headlineText(lines.headline, text)}</text>
         {detail === null ? null : (
-          <text className={detail.accent ? "plan-card-detail plan-card-detail-accent" : "plan-card-detail"}>
+          <text
+            className={
+              detail.accent ? "plan-card-detail plan-card-detail-accent" : "plan-card-detail"
+            }
+          >
             {detail.text}
           </text>
         )}

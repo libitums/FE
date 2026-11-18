@@ -28,7 +28,9 @@ export function periodOfProduct(productId: string): PlanPeriod {
 /** 권한 줄 중 등급 높은 요금제 — 칩 · 「지금」 카드 · 바꿈의 기준입니다. 순수. */
 export function currentPlanOf(entitlements: PlanEntitlements | null): CurrentPlan | null {
   const rows = entitlements?.entitlements ?? [];
-  const row = order.map((id) => rows.find((item) => item.id === id)).find((item) => item !== undefined);
+  const row = order
+    .map((id) => rows.find((item) => item.id === id))
+    .find((item) => item !== undefined);
   if (row === undefined) return null;
   return {
     id: row.id,
@@ -39,7 +41,11 @@ export function currentPlanOf(entitlements: PlanEntitlements | null): CurrentPla
   };
 }
 
-export function planChangeOf(current: CurrentPlan | null, to: PlanId, period: PlanPeriod): PlanChange {
+export function planChangeOf(
+  current: CurrentPlan | null,
+  to: PlanId,
+  period: PlanPeriod,
+): PlanChange {
   if (current === null) return "new";
   if (current.id === to) return current.period === period ? "same" : "period";
   const from = levels[current.id];
@@ -54,7 +60,9 @@ export function planChangeKind(change: PlanChange): PlanChangeKind {
 }
 
 /** 기기 시각의 달(0~11) · 날 — 「renews Dec 18」의 재료. 문구가 달 이름을 고릅니다. */
-export function dateParts(iso: string | null): { readonly month: number; readonly day: number } | null {
+export function dateParts(
+  iso: string | null,
+): { readonly month: number; readonly day: number } | null {
   if (iso === null) return null;
   const ms = Date.parse(iso);
   if (!Number.isFinite(ms)) return null;

@@ -24,7 +24,10 @@ describe("SM1 엽전 탭 아래 한 줄", () => {
       plan: "premium",
       coins: 800,
     });
-    expect(shopPromoOf(null, plan("chat_plus"), catalogV1)).toEqual({ plan: "premium", coins: 800 });
+    expect(shopPromoOf(null, plan("chat_plus"), catalogV1)).toEqual({
+      plan: "premium",
+      coins: 800,
+    });
     expect(shopPromoOf("send", plan("unlimited_tickets"), catalogV1)).toEqual({
       plan: "chat_plus",
       perDay: 30,

@@ -48,7 +48,11 @@ export function SubscriptionToast({
       accessibility-label={`${title}, ${body}`}
     >
       <view className="subscription-toast-badge">
-        <svg className="subscription-toast-icon" content={icons[plan]} current-color={color.white} />
+        <svg
+          className="subscription-toast-icon"
+          content={icons[plan]}
+          current-color={color.white}
+        />
       </view>
       <view className="subscription-toast-text">
         <text className="subscription-toast-title">{title}</text>

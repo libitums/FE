@@ -105,9 +105,9 @@ test("ST6 Plans 탭으로 열리면(티켓 모달) Unlimited Tickets를 고르�
   const plans = plansWith();
   mount(plans, { initialTab: "plans", placement: "tickets_chip", focus: "unlimited_tickets" });
   expect(screen.getByTestId("shop-tab-plans").getAttribute("data-selected")).toBe("true");
-  expect(
-    screen.getByTestId("plans-card-unlimited_tickets").getAttribute("data-selected"),
-  ).toBe("true");
+  expect(screen.getByTestId("plans-card-unlimited_tickets").getAttribute("data-selected")).toBe(
+    "true",
+  );
   expect(screen.getByTestId("plans-tickets-tag")).toHaveTextContent(
     "Out of tickets? Learn without waiting",
   );

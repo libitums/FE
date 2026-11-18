@@ -86,7 +86,10 @@ export function PlanTerms({
           theme={theme}
           onTap={() => onOpenLegal?.("terms-of-use")}
         />
-        <text className={`plans-terms-text plans-terms-text-${theme}`} accessibility-element={false}>
+        <text
+          className={`plans-terms-text plans-terms-text-${theme}`}
+          accessibility-element={false}
+        >
           ·
         </text>
         <TermsLink

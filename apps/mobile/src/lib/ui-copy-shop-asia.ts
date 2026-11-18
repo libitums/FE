@@ -51,8 +51,7 @@ export const shopCopyJa: ShopCopy = {
   change: {
     upgrade: (from, to, store) =>
       `アップグレードすると${from}からすぐ${to}に切り替わり、${from}の未使用分は${store}が精算します。`,
-    later: (from, to, date) =>
-      `${date ?? "次の更新"}まで${from}を使え、その後${to}が始まります。`,
+    later: (from, to, date) => `${date ?? "次の更新"}まで${from}を使え、その後${to}が始まります。`,
     crossgrade: (from, to, store) =>
       `${to}が${from}に代わります。開始時期と未使用分の精算は${store}が決めます。`,
   },
