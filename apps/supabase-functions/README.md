@@ -704,3 +704,18 @@ ops-dashboard `docs/admin-contract.md` §A가 정본이다.
 **운영 적용은 사람이 한다.** 20261212 **뒤에** 적용한다. SQL 편집기에서 본문을 `begin; … commit;`으로 감싸 실행하고
 `supabase migration repair --status applied 20261213120000`. 다시 적용해도 같다(`create or replace`). 20261212를 이 파일 뒤에 다시 적용하면
 UserRow · 대화 · 지급이 1차 모양으로 돌아가니, 그때는 이 파일도 다시 적용한다. ops_admin 2차(시험 계정 페이지)는 이 파일이 있어야 뜬다.
+
+### 정렬 — 「전체」 사용자 둘러보기 (20261214)
+
+`migrations/20261214120000_ops_admin_sort.sql`. 계약은 ops-dashboard `docs/admin-contract.md` §E-A `ops_search_users`.
+
+- `ops_search_users`에 `p_sort`(`created_at` · `last_sign_in_at` · `email` · `balance` · `country`, 기본 `created_at`) · `p_dir`(`asc` · `desc`, 기본 `desc`).
+  목록 밖 값은 `invalid_sort` · `invalid_dir`. 빈 값은 늘 뒤, 같은 값은 id 순, email은 대소문자 무시, 잔액은 지갑이 없으면 0. 열람 기록 detail에는
+  기본 정렬이 아닐 때만 `sort` · `dir`.
+- 인수 꼴이 바뀌어 옛 함수를 `drop` 하고 새로 만든다. 새 인수는 기본값이 있어 옛 호출도 그대로 된다 — ops_admin은 기본 정렬이면 `p_sort` · `p_dir`을
+  보내지 않고, 이 파일이 없어 함수를 못 찾으면 정렬 없이 다시 불러 「DB 업데이트 뒤에 됩니다」로 알린다.
+- 테스트: `migrations/ops-admin-sort.integration.test.ts`.
+
+**운영 적용은 사람이 한다.** 20261213 **뒤에** 적용한다. SQL 편집기에서 `begin; … commit;`으로 감싸 실행하고
+`supabase migration repair --status applied 20261214120000`. 다시 적용해도 같다. 20261213을 이 파일 뒤에 다시 적용하면 옛 인수 꼴 함수가 함께 남아
+이름만으로 부를 때 `is not unique`가 나니, 그때는 이 파일도 다시 적용한다.
