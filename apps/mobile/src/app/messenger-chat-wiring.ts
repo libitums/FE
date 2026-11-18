@@ -9,7 +9,7 @@ import {
 } from "../screens/messenger-chat/chat-fixture-source";
 import { loadAuthSession } from "../lib/auth-session";
 import { authUserIdFrom } from "../lib/auth-user-id";
-import { isTesterAccessActive } from "../lib/tester-access";
+import { chatUnlimited } from "../lib/unlimited-tickets";
 import { loadUiLanguage, onUiLanguageSaved } from "../lib/ui-language";
 import { companionL1Sync } from "../screens/messenger-chat/companion-l1-sync";
 import type { ChatMediaHooks } from "../screens/messenger-chat/chat-media.contract";
@@ -248,7 +248,7 @@ export function messengerChatWiring(args: MessengerChatWiringArgs): {
       source: messengerChatSource(args.imageUrlOf),
       wallet: messengerChatWallet(args.coinCount ?? 0),
       trial: messengerChatTrial(),
-      tier: storeOverride?.tier ?? (isTesterAccessActive() ? "unlimited" : "free"),
+      tier: storeOverride?.tier ?? (chatUnlimited() ? "unlimited" : "free"),
       now: clockNow,
       eventSink: args.eventSink ?? null,
       onOpenChatRoom: (roomId) => {

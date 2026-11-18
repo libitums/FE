@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "@lynx-js/react";
+import { useEffect, useGlobalProps, useMemo, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import { TopBar } from "../components/TopBar";
@@ -11,6 +11,8 @@ import { JourneyStatModal } from "../screens/journey-map/JourneyStatModal";
 import type { StreakRewardWiring } from "../screens/journey-map/streak-reward.contract";
 import { TicketStatModal } from "../screens/tickets/TicketStatModal";
 import { UnlimitedTicketModal } from "../screens/tickets/UnlimitedTicketModal";
+import { appVersionFrom } from "../lib/app-version";
+import { openManageSubscription } from "../lib/manage-subscription";
 import { unlimitedPassView } from "../lib/unlimited-pass";
 import type { UnlimitedPass } from "../lib/unlimited-pass";
 import type { TicketHeaderWiring } from "./use-learning-tickets";
@@ -111,6 +113,14 @@ export function AppHeader({
   // 않으면서 머리만 낭독에서 가려진 채 남지 않게 합니다.
   const layer = openLayer === "unlimited" && unlimitedPass === undefined ? null : openLayer;
   const unlimitedOpen = layer === "unlimited";
+  // 구독 판의 「Manage subscription」 · 「Keep unlimited」 — 해지 · 갱신은 스토어 몫이라 그 구독 관리 화면을 엽니다(ADR-0144).
+  const platform = appVersionFrom(useGlobalProps())?.platform ?? null;
+  const manageSubscription =
+    unlimitedPass?.kind === "subscription"
+      ? () => {
+          openManageSubscription(platform, unlimitedPass.productId ?? null);
+        }
+      : undefined;
   // 모달의 모양은 열릴 때(그리고 무제한 상태가 바뀔 때) 한 번 셉니다 — 렌더마다 `Date.now()`로 새 객체를 만들면 머리가
   // 다시 그려질 때마다 모달도 다시 그려집니다. 남은 날은 하루 단위라 모달이 떠 있는 동안 다시 셀 필요가 없습니다.
   const unlimitedView = useMemo(
@@ -209,7 +219,12 @@ export function AppHeader({
         />
       ) : null}
       {unlimitedView !== null ? (
-        <UnlimitedTicketModal view={unlimitedView} onClose={close} />
+        <UnlimitedTicketModal
+          view={unlimitedView}
+          onClose={close}
+          onManageSubscription={manageSubscription}
+          onKeepUnlimited={manageSubscription}
+        />
       ) : null}
       {openLayer === "coins" ? (
         <CoinShopScreen coinBalance={coinCount ?? 0} onClose={close} />
