@@ -40,6 +40,16 @@ export const messengerChatSuggestedEs: SuggestedFriendsCopy = {
     confirm: "Me parece bien",
     decline: "Solo amigos por ahora",
   },
+  profile: {
+    openProfile: (name) => `${name}, ver perfil`,
+    voice: {
+      hear: "Escuchar voz",
+      pause: "Pausar",
+      resume: "Continuar",
+      unavailable: "Muestra de voz no disponible",
+      label: (name) => `Escuchar la voz de ${name}`,
+    },
+  },
   directory: {
     title: "Buscar amigos",
     back: "Atrás",

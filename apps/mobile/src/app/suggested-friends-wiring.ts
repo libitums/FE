@@ -21,6 +21,7 @@ import type {
 import type { EarlyAccessRemote } from "../screens/messenger-chat/early-access-parse";
 import {
   currentMessengerChatSource,
+  messengerContentUrlOf,
   messengerUnlockStore,
   reportServerBalance,
   sourceKey,
@@ -130,6 +131,7 @@ export function suggestedFriendsPort(): SuggestedFriendsPort {
     offers: earlyFactory === null ? null : async () => (await earlyAccessRemote()?.offers()) ?? [],
     // 추천 친구(ADR-0164) — 서버 포트가 끼워진 앱에서만. 손님 · 시험 계정이 아닌 회원은 빈 목록이라 일반 인물이 없습니다.
     ...(earlyFactory === null ? {} : { visibleFriends, adultAck: adultAckPort }),
+    mediaUrlOf: messengerContentUrlOf, // 목소리 견본 주소(ADR-0164 앱 추가 2026-11-20) — 정적 파일, 서버 호출 없음
   };
   return cachedPort;
 }
@@ -147,6 +149,7 @@ export function guestSuggestedFriendsPort(): SuggestedFriendsPort {
     add: addSuggestedFriend,
     earlyAccess: null,
     offers: null,
+    mediaUrlOf: messengerContentUrlOf,
   };
   return guestPort;
 }

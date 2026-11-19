@@ -20,6 +20,8 @@ import { deviceGuideStore } from "./messenger-guide";
 import type { GuestGateProps } from "./messenger-access";
 import { useRoomGuide } from "./use-room-guide";
 import { useGuestGate } from "./use-guest-gate";
+import { useRoomProfile } from "./use-room-profile";
+import type { SuggestedFriendsProps } from "./suggested-friends.contract";
 import { ChatHistoryFailed, ChatRecoveryRow } from "./ChatDelivery";
 import { useChatFeedback } from "./use-chat-feedback";
 import { LastFreeStrip } from "./ChatTurns";
@@ -59,7 +61,8 @@ export function MessengerChatScreen({
   onOpenMyProfile,
   guideStore = deviceGuideStore,
   onSignInRequired = null,
-}: MessengerChatScreenProps & GuestGateProps): ReactNode {
+  friends,
+}: MessengerChatScreenProps & GuestGateProps & SuggestedFriendsProps): ReactNode {
   const copy = useUiCopy().messengerChat;
   const coinBalance = useCoinBalance(wallet);
   // 보내기 관문(턴 · 엽전)은 useChatTurns가 지고 방의 dispatch가 필요해 — 서로를 기다리지 않게 방이 관문을 참조로 부릅니다.
@@ -77,10 +80,13 @@ export function MessengerChatScreen({
     authorizeSend: () => !serverBusy.current && gate.current(),
   });
   const { state, plan, thread, birthYear, preferences, keyboardHeight, send } = room;
+  const profile = useRoomProfile({ port: friends, source, thread }); // 머리 이름 → 읽기 전용 프로필(ADR-0164 앱 추가)
   const dispatch = useMemo(() => guest.guard(room.dispatch), [room.dispatch, guest.active]);
   // 겹침이 열린 동안 뒤 화면(머리 · 로그 · 독)은 낭독에서 숨습니다. 「…」 메뉴는 독 안의 가벼운 팝업이라 제외합니다.
   const overlayOpen =
-    guest.open || (state.overlay.kind !== "none" && state.overlay.kind !== "more-menu");
+    guest.open ||
+    profile.open ||
+    (state.overlay.kind !== "none" && state.overlay.kind !== "more-menu");
   const turn = useChatTurns({
     trial,
     wallet,
@@ -165,6 +171,7 @@ export function MessengerChatScreen({
             used={turn.panelOpen}
             onBack={exit}
             onMenu={() => dispatch({ type: "open-overlay", overlay: { kind: "sidebar" } })}
+            titleTap={profile.titleTap}
           />
           <ChatLog
             testId={ids.log}
@@ -269,6 +276,7 @@ export function MessengerChatScreen({
         {...{ onOpenMemories, onOpenAlbum, onOpenMyProfile }}
       />
       {guest.layer}
+      {profile.layer}
     </view>
   );
 }

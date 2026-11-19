@@ -11,6 +11,21 @@ export const suggestedFriendEventExamples = [
     kind: "general",
     from: "row",
   },
+  // 대화방 머리에서 연 읽기 전용 프로필 · 목소리 견본(ADR-0164 앱 추가 2026-11-20).
+  {
+    name: "suggested_friend_opened",
+    surface: "chat",
+    daysSinceFirstOpen: "3",
+    characterId: "mina",
+    kind: "story",
+    from: "room",
+  },
+  {
+    name: "friend_voice_sample_played",
+    surface: "chat",
+    daysSinceFirstOpen: "3",
+    characterId: "daeun",
+  },
   {
     name: "suggested_friend_added",
     surface: "chat",

@@ -5,6 +5,7 @@ import menu from "@libitums/icons/lynx/menu";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
 
 import { ChatHeader, ChatHeaderSide } from "../../components/chat/ChatHeader";
+import type { ChatHeaderProps } from "../../components/chat/chat.contract";
 import { useUiCopy } from "../../lib/ui-copy";
 import { TurnLine } from "./ChatTurns";
 import type { TurnPlan } from "./free-turns";
@@ -17,6 +18,8 @@ export type ChatRoomHeaderProps = {
   readonly used: boolean;
   readonly onBack: () => void;
   readonly onMenu: () => void;
+  /** 상대 이름을 누르면 읽기 전용 프로필(ADR-0164 앱 추가 2026-11-20) — 없으면 지금처럼 글자만. 새 단추는 없습니다. */
+  readonly titleTap?: ChatHeaderProps["titleTap"];
 };
 
 // 방 머리 — 뒤로 · 상대 이름(+ 턴 줄) · 메뉴(사이드바). `MessengerChatScreen`에서 떼어 냈습니다(300줄).
@@ -26,6 +29,7 @@ export function ChatRoomHeader({
   used,
   onBack,
   onMenu,
+  titleTap,
 }: ChatRoomHeaderProps): ReactNode {
   const copy = useUiCopy().messengerChat.room;
   return (
@@ -34,6 +38,7 @@ export function ChatRoomHeader({
       subtitle={plan.kind === "unlimited" ? undefined : <TurnLine plan={plan} used={used} />}
       insetTop={0}
       testIds={{ root: ids.header, title: ids.title }}
+      titleTap={titleTap}
       start={
         <ChatHeaderSide testId={ids.back}>
           <RoundButton

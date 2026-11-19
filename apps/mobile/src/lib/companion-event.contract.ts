@@ -59,13 +59,18 @@ export type CompanionUnlockEvent =
  */
 export type SuggestedFriendEvent =
   | (Common & { readonly name: "suggested_friend_viewed"; readonly count: string })
-  /** 프로필 시트를 열었음(ADR-0164 「분석 이벤트」) — 줄 · 친구 찾기 어디서 열었는지. PostHog만(Airbridge 매핑 없음). */
+  /**
+   * 프로필 시트를 열었음(ADR-0164 「분석 이벤트」) — 줄 · 친구 찾기 어디서 열었는지. PostHog만(Airbridge 매핑 없음). `room` = 대화방 머리
+   * 이름을 눌러 읽기 전용으로 엶(ADR-0164 앱 추가 2026-11-20).
+   */
   | (Common & {
       readonly name: "suggested_friend_opened";
       readonly characterId: string;
       readonly kind: "story" | "general";
-      readonly from: "row" | "directory";
+      readonly from: "row" | "directory" | "room";
     })
+  /** 프로필 시트의 목소리 견본을 새로 틀었음(ADR-0164 앱 추가 2026-11-20) — 이어 듣기 · 실패는 세지 않음. PostHog만. */
+  | (Common & { readonly name: "friend_voice_sample_played"; readonly characterId: string })
   | (Common & {
       readonly name: "suggested_friend_added";
       readonly characterId: string;

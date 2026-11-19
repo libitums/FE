@@ -151,3 +151,88 @@ test("SS5. 첫 말 뜻풀이는 화면 언어(ja) 칸, 한국어는 그대로", 
   expect(opening).toContain("こんにちは！カフェ・クルリムのドユンです。");
   expect(opening).not.toContain("Hi! It's Doyun");
 });
+
+// SS6 ~ SS8 — ADR-0164 앱 추가(2026-11-20): AI 표시 줄(두 모드) · 목소리 견본(누를 때만, 못 읽으면 조용한 한 줄) · 읽기 전용(Close만).
+const withVoice = (
+  character = general("daeun", { name: "송다은" }),
+): SuggestedFriendSheetModel => ({
+  ...addable(character),
+  voiceUrl: "https://cdn.test/content/audio/companion/daeun-intro.mp3",
+});
+
+test("SS6. AI 표시 줄 — 방의 AI 고지 문구 그대로, 추가 · 잠김 · 읽기 전용 모두", () => {
+  mount(addable());
+  expect(screen.getByTestId(ids.sheetAi).textContent).toBe(
+    "한도윤 is an AI character. Replies are written by AI.",
+  );
+  cleanup();
+  mount({ character: doyun, avatarUrl: null, status: "locked", offer: null });
+  expect(screen.getByTestId(ids.sheetAi)).toBeInTheDocument();
+  cleanup();
+  render(
+    <SuggestedFriendSheet
+      model={addable()}
+      now={NOW}
+      readOnly
+      onStart={vi.fn()}
+      onEarly={vi.fn()}
+      onClose={vi.fn()}
+    />,
+  );
+  expect(screen.getByTestId(ids.sheetAi)).toBeInTheDocument();
+});
+
+test("SS7. 견본 주소가 있으면 Hear voice 하나(저절로 틀지 않음), 없거나 잠김이면 없다", () => {
+  mount(withVoice());
+  const voice = screen.getByTestId(ids.sheetVoice);
+  expect(voice.getAttribute("data-playback")).toBe("idle");
+  expect(voice.getAttribute("accessibility-label")).toBe("Hear 송다은's voice");
+  expect(voice.textContent).toContain("Hear voice");
+  expect(screen.queryByTestId(ids.sheetVoiceNote)).toBeNull();
+  cleanup();
+  mount(addable());
+  expect(screen.queryByTestId(ids.sheetVoice)).toBeNull();
+  cleanup();
+  mount({ ...withVoice(), status: "locked" });
+  expect(screen.queryByTestId(ids.sheetVoice)).toBeNull();
+});
+
+test("SS7. 재생 모듈이 없으면 눌러도 조용한 unavailable 한 줄 — 재생 이벤트 없음", () => {
+  const onVoicePlayed = vi.fn();
+  render(
+    <SuggestedFriendSheet
+      model={withVoice()}
+      now={NOW}
+      onStart={vi.fn()}
+      onEarly={vi.fn()}
+      onClose={vi.fn()}
+      onVoicePlayed={onVoicePlayed}
+    />,
+  );
+  tapId(ids.sheetVoice);
+  expect(screen.getByTestId(ids.sheetVoice).getAttribute("data-playback")).toBe("error");
+  expect(screen.getByTestId(ids.sheetVoiceNote).textContent).toBe("Voice sample unavailable");
+  expect(onVoicePlayed).not.toHaveBeenCalled();
+});
+
+test("SS8. 읽기 전용 — Start chatting · Chat now · Not now 없이 Close만, Close · 뒤로가기 = onClose", () => {
+  const onClose = vi.fn();
+  render(
+    <SuggestedFriendSheet
+      model={{ ...withVoice(), offer: { price: 100, endsAt: null } }}
+      now={NOW}
+      readOnly
+      onStart={vi.fn()}
+      onEarly={vi.fn()}
+      onClose={onClose}
+    />,
+  );
+  expect(screen.queryByTestId(ids.sheetStart)).toBeNull();
+  expect(screen.queryByTestId(ids.sheetEarly)).toBeNull();
+  expect(screen.queryByTestId(ids.sheetLater)).toBeNull();
+  expect(screen.getByTestId(ids.sheetClose).textContent).toContain("Close");
+  expect(screen.getByTestId(ids.sheetVoice)).toBeInTheDocument();
+  tapId(ids.sheetClose);
+  expect(systemBack()).toBe(true);
+  expect(onClose).toHaveBeenCalledTimes(2);
+});

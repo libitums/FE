@@ -34,6 +34,16 @@ export const messengerChatSuggestedJa: SuggestedFriendsCopy = {
     confirm: "いいね",
     decline: "今は友だちのままで",
   },
+  profile: {
+    openProfile: (name) => `${name}、プロフィールを見る`,
+    voice: {
+      hear: "声を聞く",
+      pause: "一時停止",
+      resume: "再開",
+      unavailable: "ボイスサンプルを再生できません",
+      label: (name) => `${name}の声を聞く`,
+    },
+  },
   directory: {
     title: "友だちを探す",
     back: "戻る",

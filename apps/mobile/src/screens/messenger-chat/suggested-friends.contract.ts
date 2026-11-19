@@ -47,6 +47,23 @@ export type SuggestedFriendsCopy = {
     readonly confirm: string;
     readonly decline: string;
   };
+  /**
+   * 프로필 시트 추가분(ADR-0164 앱 추가 2026-11-20) — 목소리 견본 단추 · 대화방 머리 이름의 낭독. 닫기는 `common.close`, AI 표시 줄은
+   * 대화방 AI 고지(`safety.notice.aiDisclosure`)를 그대로 씁니다.
+   */
+  readonly profile: {
+    /** 대화방 머리 이름의 낭독 — 누르면 프로필이 열립니다. */
+    readonly openProfile: (name: string) => string;
+    readonly voice: {
+      readonly hear: string;
+      readonly pause: string;
+      readonly resume: string;
+      /** 파일을 못 읽음 · 재생 모듈 없음 — 조용한 한 줄. */
+      readonly unavailable: string;
+      /** 단추 낭독 — 「<이름>의 목소리 듣기」. */
+      readonly label: (name: string) => string;
+    };
+  };
   readonly directory: {
     readonly title: string;
     readonly back: string;
@@ -75,6 +92,8 @@ export type SuggestedFriendSheetModel = {
   readonly avatarUrl: string | null;
   readonly status: "addable" | "locked";
   readonly offer: SuggestedFriend["offer"];
+  /** 목소리 견본 주소(ADR-0164 앱 추가 2026-11-20) — 없거나 null이면 견본 단추가 없습니다. */
+  readonly voiceUrl?: string | null;
 };
 
 export type SuggestedFriendSheetProps = {
@@ -83,6 +102,10 @@ export type SuggestedFriendSheetProps = {
   readonly onStart: () => void;
   readonly onEarly: () => void;
   readonly onClose: () => void;
+  /** 대화방 머리에서 연 읽기 전용(ADR-0164 앱 추가 2026-11-20) — 추가 · 먼저 만나기 단추 없이 Close만. */
+  readonly readOnly?: boolean;
+  /** 견본을 새로 틀었을 때(분석 `friend_voice_sample_played`). */
+  readonly onVoicePlayed?: () => void;
 };
 
 /** 「Get closer」 시트(ADR-0164 D4) — Sounds good = 동의 후 추가, Just friends for now = 동의 없이 추가, 막 탭 · 뒤로가기 = 닫기만. */
@@ -135,6 +158,10 @@ export const suggestedFriendsTestIds = {
   sheetEarly: sf("sheet-early"),
   sheetLimited: sf("sheet-limited"),
   sheetLater: sf("sheet-later"),
+  sheetAi: sf("sheet-ai"),
+  sheetVoice: sf("sheet-voice"),
+  sheetVoiceNote: sf("sheet-voice-note"),
+  sheetClose: sf("sheet-close"),
   toast: sf("toast"),
   adultAck: sf("adult-ack"),
   adultAckConfirm: sf("adult-ack-confirm"),

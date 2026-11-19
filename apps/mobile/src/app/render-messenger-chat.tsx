@@ -76,6 +76,8 @@ export function renderMessengerChat(roomId: string, wiring: ScreenWiring) {
         onOpenMemories={chat.onOpenMemories}
         onOpenAlbum={chat.onOpenAlbum}
         onOpenMyProfile={chat.onOpenMyProfile}
+        // 머리 이름 → 읽기 전용 프로필(ADR-0164 앱 추가 2026-11-20) — 목록과 같은 포트(비회원은 앱 인물 표만).
+        friends={access === "preview" ? guestSuggestedFriendsPort() : suggestedFriendsPort()}
       />
     </ChatEventsContext.Provider>
   );

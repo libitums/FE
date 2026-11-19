@@ -54,6 +54,8 @@ const entryOf = (source: FriendSource): FriendRosterEntry => ({
   earlyAccess: null,
   romanceTier: source.romanceTier,
   gender: source.gender,
+  // 목소리 견본(ADR-0164 앱 추가 2026-11-20) — 버킷에 미리 올린 소개 말, 서버 호출 · 엽전 없음.
+  voiceSamplePath: `content/audio/companion/${source.id}-intro.mp3`,
   firstLine: source.first.ko[0] ?? null,
 });
 

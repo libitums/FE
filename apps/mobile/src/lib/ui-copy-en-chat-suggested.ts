@@ -37,6 +37,16 @@ export const messengerChatSuggestedEn: SuggestedFriendsCopy = {
     confirm: "Sounds good",
     decline: "Just friends for now",
   },
+  profile: {
+    openProfile: (name) => `${name}, view profile`,
+    voice: {
+      hear: "Hear voice",
+      pause: "Pause",
+      resume: "Resume",
+      unavailable: "Voice sample unavailable",
+      label: (name) => `Hear ${name}'s voice`,
+    },
+  },
   directory: {
     title: "Find friends",
     back: "Back",

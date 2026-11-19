@@ -12,6 +12,11 @@ export type ChatHeaderProps = {
   readonly end: ReactNode | null;
   /** 제목 아래 한 줄 자리입니다. 없으면 DOM이 바뀌지 않습니다(messenger-chat-1-5 spec §3.2). */
   readonly subtitle?: ReactNode;
+  /**
+   * 제목을 누르면 할 일(메신저 방 → 인물 프로필, ADR-0164 앱 추가 2026-11-20). 있으면 같은 제목 글이 버튼으로도 읽히고(`label`) 자리 ·
+   * 모양은 그대로입니다. 없으면 DOM이 바뀌지 않습니다(학습 메신저).
+   */
+  readonly titleTap?: { readonly label: string; readonly onTap: () => void };
 };
 export type ChatHeaderSideProps = {
   readonly testId?: string;

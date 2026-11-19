@@ -1,5 +1,5 @@
 import { afterEach, expect, test } from "vitest";
-import { cleanup, render, screen, within } from "@lynx-js/react/testing-library";
+import { cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { ChatHeader, ChatHeaderSide } from "./ChatHeader";
 import { realChildren } from "../../lib/dom.test-support";
@@ -142,4 +142,38 @@ test("F3. 부제가 있을 때만 제목이 한 줄로 잘린다(text-maxline) �
   cleanup();
   mountWithSubtitle(false);
   expect(screen.getByTestId("x-title").hasAttribute("text-maxline")).toBe(false);
+});
+
+// ⟨ADR-0164 앱 추가 2026-11-20⟩ 누를 수 있는 제목(메신저 방 → 인물 프로필) — 같은 제목 글이 버튼으로도 읽히고, 감싸는 칸이 없어 배치가
+// 그대로다(옆 칸 둘 · 제목 test-id · 부제 한 줄 자르기).
+test("MC-UI2. titleTap이 있으면 제목 글이 button,header · 낭독 이름 · 탭 → onTap, 배치는 그대로", () => {
+  let taps = 0;
+  render(
+    <ChatHeader
+      title="차서연"
+      insetTop={0}
+      testIds={testIds}
+      start={<ChatHeaderSide testId="x-back" />}
+      end={null}
+      subtitle={<text>20 free</text>}
+      titleTap={{ label: "차서연, view profile", onTap: () => (taps += 1) }}
+    />,
+  );
+  const title = screen.getByTestId("x-title");
+  expect(title.textContent).toBe("차서연");
+  expect(title.getAttribute("accessibility-traits")).toBe("button,header");
+  expect(title.getAttribute("accessibility-label")).toBe("차서연, view profile");
+  expect(title.getAttribute("text-maxline")).toBe("1");
+  expect(title.parentElement?.className).toBe("chat-title-stack");
+  const row = screen.getByTestId("x-header").querySelector(".chat-header-row");
+  expect(row?.querySelectorAll(".chat-header-side")).toHaveLength(2);
+  fireEvent.tap(title, {});
+  expect(taps).toBe(1);
+});
+
+test("MC-UI2. titleTap이 없으면 낭독 이름 · 탭 속성이 없다(학습 메신저 그대로)", () => {
+  mount();
+  const title = screen.getByTestId("x-title");
+  expect(title.hasAttribute("accessibility-label")).toBe(false);
+  expect(title.hasAttribute("accessibility-enable-tap")).toBe(false);
 });

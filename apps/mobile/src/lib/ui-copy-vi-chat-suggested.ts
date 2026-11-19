@@ -37,6 +37,16 @@ export const messengerChatSuggestedVi: SuggestedFriendsCopy = {
     confirm: "Nghe hay đấy",
     decline: "Cứ làm bạn trước đã",
   },
+  profile: {
+    openProfile: (name) => `${name}, xem hồ sơ`,
+    voice: {
+      hear: "Nghe giọng",
+      pause: "Tạm dừng",
+      resume: "Tiếp tục",
+      unavailable: "Không phát được giọng mẫu",
+      label: (name) => `Nghe giọng của ${name}`,
+    },
+  },
   directory: {
     title: "Tìm bạn",
     back: "Quay lại",

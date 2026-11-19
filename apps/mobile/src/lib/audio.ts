@@ -102,6 +102,19 @@ function nativeModule(): AudioPlaybackModule | undefined {
 // 초기값이 0이고 어떤 콜백도 0으로 태어나지 않습니다 — 첫 재생이 이미 1입니다.
 let currentGeneration = 0;
 
+// **새 재생이 시작될 때 듣는 쪽입니다**(ADR-0164 앱 추가 2026-11-20). 새 `play`가 앞 재생을 대체하므로(D3) 앞 재생의 주인이
+// 「밀려났다」를 알 길이 이것뿐입니다(앞 재생의 `onFinished`는 세대로 버려집니다). 호스트 메서드가 아니라 JS 안의 알림이고
+// 재생 중인지 답하지 않으므로 위 제외 목록(재생 상태 조회)을 넓히지 않습니다.
+const startListeners = new Set<() => void>();
+
+/** 어느 화면이든 `playAudio`가 호스트에 재생을 넘길 때마다 부릅니다(모듈이 없으면 부르지 않음). 돌려준 함수로 끊습니다. */
+export function onAudioStarted(listener: () => void): () => void {
+  startListeners.add(listener);
+  return () => {
+    startListeners.delete(listener);
+  };
+}
+
 /**
  * 호스트에 이 모듈이 있는가입니다. 없으면 `false`이고 부수효과가 없습니다.
  *
@@ -137,6 +150,7 @@ export function playAudio(
 
   currentGeneration += 1;
   const generation = currentGeneration;
+  for (const listener of [...startListeners]) listener();
 
   // **`stop`을 먼저 부르지 않습니다.** 새 `play`가 이전 것을 대체합니다(ADR-0017 D3)
   // — 여기서 멈추면 대체 규약을 우회하는 셈이라, 네이티브 `stop`이 두 번 불리게

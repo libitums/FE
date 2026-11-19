@@ -12,10 +12,15 @@ export function ChatHeader({
   start,
   end,
   subtitle,
+  titleTap,
 }: ChatHeaderProps): ReactNode {
   // 부제가 있으면 제목은 한 줄로 자릅니다(`text-maxline` + 말줄임) — 가장 큰 글자에서 제목 · 부제가 네 줄이 되어 화면 40%를 먹었습니다(기기 F3).
   // 묶음 안 제목은 `flex: 1`(basis 0)을 쓰지 않습니다 — 세로 묶음에서 높이 0으로 접혀 부제와 겹쳤습니다(기기 F1).
   const titleClass = subtitle === undefined ? "chat-title" : "chat-title chat-title-stacked";
+  const handleTitleTap = () => {
+    "background only";
+    titleTap?.onTap();
+  };
   const titleText = (
     <text
       className={titleClass}
@@ -23,8 +28,12 @@ export function ChatHeader({
       // Android는 접근성 요소로 세우지 않은 글을 납작하게 펴 트리에서 지웁니다 — 화면 제목이 읽히게 세웁니다(ADR-0126 기기 확인).
       flatten={false}
       accessibility-element={true}
-      accessibility-traits="header"
+      accessibility-traits={titleTap === undefined ? "header" : "button,header"}
       text-maxline={subtitle === undefined ? undefined : "1"}
+      // 누를 수 있는 제목(ADR-0164 앱 추가) — 같은 글에 탭 · 낭독 이름만 더합니다. 감싸는 칸을 두지 않아 머리 배치가 그대로입니다.
+      accessibility-label={titleTap?.label}
+      accessibility-enable-tap={titleTap === undefined ? undefined : true}
+      bindtap={titleTap === undefined ? undefined : handleTitleTap}
     >
       {title}
     </text>

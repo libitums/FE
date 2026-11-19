@@ -38,6 +38,16 @@ export const messengerChatSuggestedId: SuggestedFriendsCopy = {
     confirm: "Kedengarannya bagus",
     decline: "Teman dulu saja",
   },
+  profile: {
+    openProfile: (name) => `${name}, lihat profil`,
+    voice: {
+      hear: "Dengar suara",
+      pause: "Jeda",
+      resume: "Lanjutkan",
+      unavailable: "Contoh suara tidak tersedia",
+      label: (name) => `Dengar suara ${name}`,
+    },
+  },
   directory: {
     title: "Cari teman",
     back: "Kembali",

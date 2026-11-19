@@ -13,6 +13,7 @@ import { createFixtureChatSource } from "./chat-fixture-source";
 import type { ChatFixtureRoom, ChatFixtureSeed, ChatSource } from "./chat-source.contract";
 import { createCoinWallet, type SyncedCoinWallet } from "./coin-wallet";
 import type { ChatTier } from "./free-turns";
+import type { SuggestedFriendsPort } from "./friend-catalog.contract";
 import { createTrialStore, type TrialStore } from "./trial-store";
 import { MessengerChatScreen } from "./MessengerChatScreen";
 import { messengerChatTestIds as ids } from "./messenger-chat.contract";
@@ -93,6 +94,8 @@ export type MountChatOptions = {
   readonly eventSink?: EpisodeIntroEventSink;
   /** 비회원 방(ADR-0166) — 주면 보내기 같은 계정 동작이 로그인 권유가 됩니다. */
   readonly onSignInRequired?: () => void;
+  /** 추천 친구 포트(ADR-0164 앱 추가) — 주면 머리 이름이 읽기 전용 프로필 입구가 됩니다. */
+  readonly friends?: SuggestedFriendsPort;
 };
 
 export function presenceProbe(presence: "present" | "absent" | "unknown"): KoreanKeyboardProbe {
@@ -121,6 +124,7 @@ export function mountChat(options: MountChatOptions = {}) {
     onOpenMemories,
     ...(options.guideStore === undefined ? {} : { guideStore: options.guideStore }),
     onSignInRequired: options.onSignInRequired ?? null,
+    ...(options.friends === undefined ? {} : { friends: options.friends }),
   };
   const room = <MessengerChatScreen {...screenProps} />;
   const view = render(

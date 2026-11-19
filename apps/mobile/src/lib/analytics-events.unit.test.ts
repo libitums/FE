@@ -216,10 +216,12 @@ describe("AN1 분석 계약의 크기", () => {
   // ⟨ADR-0063 2026-11-19⟩ 엽전 팩 결제 `pack_purchased`가 더해져 73이다.
   // ⟨ADR-0164⟩ 추천 친구 프로필 열기 `suggested_friend_opened`가 더해져 74다(PostHog만).
   // ⟨ADR-0166⟩ 비회원 로그인 권유 `chat_sign_in_prompt_closed`가 더해져 75다.
-  test("AN1. 이벤트 이름은 75개이고 지운 여덟이 없다", () => {
+  // ⟨ADR-0164 앱 추가 2026-11-20⟩ 프로필 목소리 견본 `friend_voice_sample_played`가 더해져 76이다(PostHog만).
+  test("AN1. 이벤트 이름은 76개이고 지운 여덟이 없다", () => {
     const source = readFileSync(resolve(process.cwd(), "src/lib/analytics-event-names.ts"), "utf8");
     const names = [...source.matchAll(/^\s+\| "([a-z_]+)"/gm)].map((match) => match[1]);
-    expect(names).toHaveLength(75);
+    expect(names).toHaveLength(76);
+    expect(names).toContain("friend_voice_sample_played");
     expect(names).toContain("chat_sign_in_prompt_closed");
     expect(names).toContain("suggested_friend_opened");
     expect(names).toContain("pack_purchased");

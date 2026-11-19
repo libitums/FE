@@ -431,6 +431,9 @@ sink는 던지지 않는다 — 매핑 · `capture`를 `try`로 감싸 삼킨다
   - ⟨2026-11-19 — 비회원 메신저(ADR-0166). 적용 기록⟩ **`chat_sign_in_prompt_closed { trigger: send | media | menu | coins | add_friend, choice: sign_in | later }`**
     (공통 속성 둘 포함, `surface: chat`) — 비회원 「로그인 필요」 대화상자를 닫을 때 한 번(`screens/messenger-chat/use-guest-gate.tsx`). 뜬 수 = 이 이벤트 수,
     로그인으로 넘어간 비율 = `choice: sign_in` 비율, 로그인 성공은 `entry_login_method_selected`. 이름이 74 → 75개, Airbridge 매핑 없음.
+  - ⟨2026-11-20 — 프로필 시트 추가(ADR-0164 앱 추가). 적용 기록⟩ **`friend_voice_sample_played { characterId }`**(공통 속성 둘 포함, `surface: chat`) —
+    프로필 시트의 목소리 견본을 새로 틀 때 한 번(이어 듣기 · 실패는 세지 않음, `screens/messenger-chat/use-voice-sample.ts`). `suggested_friend_opened`의 `from`에
+    `room`(대화방 머리 이름으로 연 읽기 전용 프로필)이 더해졌다 — 같은 이벤트라 퍼널은 그대로, 방 입구만 `from = room`으로 거른다. 이름이 75 → 76개, Airbridge 매핑 없음.
 
   #### D3 목적 구분 — 쓰는 법
 

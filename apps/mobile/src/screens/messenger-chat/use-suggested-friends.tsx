@@ -13,6 +13,7 @@ import type {
   VisibleFriend,
 } from "./friend-catalog.contract";
 import { directoryChipsOf, directoryOf } from "./friend-directory";
+import { voicePlayedEvent, withVoiceUrl } from "./friend-profile";
 import type { DirectoryFilter, DirectoryRow } from "./friend-directory";
 import { FriendDirectoryScreen } from "./FriendDirectoryScreen";
 import type { SuggestedFriendSheetModel } from "./suggested-friends.contract";
@@ -172,7 +173,7 @@ export function useSuggestedFriends({
       kind: model.character.kind,
       from,
     });
-    setSheet({ model, from });
+    setSheet({ model: withVoiceUrl(model, port?.mediaUrlOf), from }); // 목소리 견본 주소(ADR-0164 앱 추가 2026-11-20)
   };
 
   function handleStart() {
@@ -272,6 +273,7 @@ export function useSuggestedFriends({
             onStart={handleStart}
             onEarly={handleEarly}
             onClose={() => setSheet(null)}
+            onVoicePlayed={() => emit(voicePlayedEvent(sheet.model.character.id))}
           />
         )}
         {ack.layer}

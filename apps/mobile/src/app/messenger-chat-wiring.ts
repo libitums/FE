@@ -73,6 +73,8 @@ let mediaHooks: ChatMediaHooks | null = null;
 let remoteFactory: (() => ChatRemote) | null = null;
 let stopL1Sync: () => void = () => undefined; // 서버 방의 학습자 언어 맞추기(2026-11-17) — 출처와 같이 멈춥니다
 let latestImageUrlOf: ImageUrlOf | null = null;
+/** 콘텐츠 경로 → 주소(아바타와 같은 최신 해석기) — 대화 출처 · 추천 친구 목소리 견본(ADR-0164 앱 추가 2026-11-20)이 씁니다. */
+export const messengerContentUrlOf: ImageUrlOf = (path) => latestImageUrlOf?.(path) ?? null;
 let walletSingleton: SyncedCoinWallet | null = null;
 let trialSingleton: TrialStore | null = null;
 /** 테스트가 끼우는 메모리 저장 · 가짜 시계입니다(앱은 기기 저장 · `Date.now`). */
@@ -196,7 +198,7 @@ export function messengerChatSource(imageUrlOf: ImageUrlOf): ChatSource {
     // 번역 · 교정 설명이 학습자 화면 언어로 오게 서버 프로필 l1을 맞춥니다(가짜 방은 할 일 없음).
     stopL1Sync = companionL1Sync(remote?.profile, loadUiLanguage, onUiLanguageSaved);
     singleton = createFixtureChatSource({
-      imageUrlOf: (relativePath) => latestImageUrlOf?.(relativePath) ?? null,
+      imageUrlOf: messengerContentUrlOf,
       unlocked: [...messengerUnlockStore().read()],
       // 사진 속 내 모습(ADR-0150) — 계정마다 기기에 적습니다. 테스트는 메모리.
       selfStore: storeOverride === null ? deviceSnapshotSelfStore(key) : memorySnapshotSelfStore(),

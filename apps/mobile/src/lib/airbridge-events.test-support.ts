@@ -74,6 +74,7 @@ export const allEventNames = [
   "suggested_friend_added",
   "early_access_tapped",
   "early_access_completed",
+  "friend_voice_sample_played",
   "pack_purchased",
 ] as const satisfies readonly AnalyticsEventName[];
 

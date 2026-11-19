@@ -59,6 +59,8 @@ export type FriendProfile = {
   readonly romanceTier?: RomanceTier;
   /** 문구의 대명사(she · he)를 고릅니다. 없으면 대명사 없는 문구. */
   readonly gender?: "female" | "male";
+  /** 목소리 견본 — 미리 만든 정적 파일의 버킷 상대 경로(ADR-0164 앱 추가 2026-11-20). 없거나 null이면 시트에 견본 단추가 없습니다. */
+  readonly voiceSamplePath?: string | null;
 };
 
 export type FriendCatalog = {
@@ -98,4 +100,6 @@ export type SuggestedFriendsPort = {
   readonly visibleFriends?: () => Promise<readonly VisibleFriend[] | null>;
   /** 성인 확인(ADR-0164 D4) — 없으면 묻지 않습니다. */
   readonly adultAck?: AdultAckPort;
+  /** 콘텐츠 경로 → 주소(아바타 그림과 같은 해석기) — 목소리 견본 주소(ADR-0164 앱 추가 2026-11-20). 없으면 견본 단추가 없습니다. */
+  readonly mediaUrlOf?: (path: string) => string | null;
 };

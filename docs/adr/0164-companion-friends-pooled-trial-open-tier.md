@@ -173,3 +173,15 @@
   인물 표 `sheetOpening`이 `{ ko } & LocalizedLine`이 되어 이야기 인물 넷 · 추천 친구 넷의 es · id · ja · vi를 갖고(정본 JSON은 ko · en만 — 소개 · 직업과 같이 다른
   언어는 앱 표가 정본, 단위 테스트 FA4), 시트가 `localizedLine`으로 고른다(th · my는 en). 서버가 저장한 첫 말은 서버가 학습자 언어로 번역해 붙이므로 그대로다.
 
+- ⟨2026-11-20 앱 추가 — 프로필 시트 셋. 브랜치 `hyesungKomet/profile-voice`, 기존 구조 그대로 덧붙임⟩
+  - **목소리 견본**: 인물 칸 `voiceSamplePath`(선택) — 추천 친구 넷은 `content/audio/companion/<id>-intro.mp3`, 이야기 다섯은 null. 시트 본문 첫 줄에 단추 하나
+    (Hear voice ↔ Pause · Resume, 못 읽으면 조용한 「unavailable」 한 줄) — 주 단추 줄(고정)을 밀지 않는다. 저절로 틀지 않고, 시트가 닫히면 멈추고, 다른 소리가
+    시작되면 처음으로 돌아간다(`lib/audio.ts`에 JS 안 알림 `onAudioStarted`만 더함 — 호스트 메서드는 그대로). 재생은 말풍선 음성과 같은 호스트 모듈, 주소는 아바타와
+    같은 해석기(받아 둔 파일 → 원격, 포트 `mediaUrlOf`). 서버 호출 · 엽전 없음. 상태 기계 `voice-sample.ts`. **한계**: 호스트 `done`이 끝남 · 실패를 가르지 않아
+    500ms 안에 온 끝만 실패로 본다 — 늦게 실패하는 원격(시간 초과)은 「끝남」으로 보인다.
+  - **방에서 프로필**: 열린 방이면 아홉 모두, 머리의 상대 이름(같은 글, 감싸는 칸 없음 — 배치 그대로)을 누르면 같은 시트를 읽기 전용(Close만 — 추가 · 먼저 만나기 ·
+    Get closer 없음)으로 연다. 잠긴 방 · 카탈로그에 없는 인물은 이름을 누를 수 없다(새 노출 없음). 낭독은 「<이름>, view profile」.
+  - **AI 표시**: 두 모드 모두 시트 본문 끝에 방의 AI 고지(`safety.notice.aiDisclosure`)를 그대로 한 줄 — 새 문구 없음.
+  - **분석**: `suggested_friend_opened`의 `from`에 `room`, 새 이벤트 `friend_voice_sample_played { characterId }`(새로 틀 때만, PostHog만 — ADR-0029 기록).
+  - **확인하지 못한 것**: 앱 typecheck · UI 테스트(`SuggestedFriendSheet` · `ChatHeader` · `MessengerChatScreen.profile`) · 빌드 · 화면 · 기기 재생(사내 패키지 인증
+    없음) — 순수 로직 테스트만 돌렸다. 버킷에 견본 mp3 넷이 올라가 있는지도 보지 않았다(없으면 「unavailable」).

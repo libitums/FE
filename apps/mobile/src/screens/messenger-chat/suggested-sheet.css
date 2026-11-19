@@ -164,6 +164,23 @@
   background-color: var(--libitum-color-brand-secondary);
 }
 
+/* 목소리 견본(ADR-0164 앱 추가 2026-11-20) — 본문 첫 줄, 단추 하나 + 못 읽음 한 줄. */
+.suggested-sheet-voice {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-4);
+}
+
+.suggested-sheet-voice-note,
+.suggested-sheet-ai {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+  text-align: center;
+}
+
 /* 잠김 안내 줄 — 회색 면. */
 .suggested-sheet-info {
   align-self: stretch;

@@ -33,6 +33,7 @@ const storyProfile = (mbti: string, intro: FriendProfile["intro"]) =>
     category: null,
     earlyAccess: null,
     romanceTier: "standard",
+    voiceSamplePath: null, // 목소리 견본은 추천 친구 넷만(ADR-0164 앱 추가 2026-11-20)
   }) as const;
 
 export const COMPANION_CHARACTERS: readonly CompanionCharacter[] = [

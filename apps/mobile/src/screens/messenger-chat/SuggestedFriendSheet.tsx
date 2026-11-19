@@ -18,6 +18,7 @@ import { sheetMaxHeightOf } from "./scroll-budget";
 import type { SuggestedFriendsCopy, SuggestedFriendSheetProps } from "./suggested-friends.contract";
 import { suggestedFriendsTestIds as ids } from "./suggested-friends.contract";
 import { localizedLine, offerBadgeOf } from "./suggested-friends";
+import { FriendVoiceSample } from "./FriendVoiceSample";
 import type { EarlyAccessOffer } from "./friend-catalog.contract";
 import { useScrollBudget } from "./use-scroll-budget";
 
@@ -51,6 +52,7 @@ function limitedText(offer: EarlyAccessOffer, now: number, copy: SuggestedFriend
 /**
  * 추천 친구 프로필 시트(R2 · R4 · R6, ADR-0162). 추가 가능이면 소개 · 태그 · 첫 말 · Start chatting, 잠김이면 만날 회차 · 안내 줄과
  * (먼저 만나기 제안이 있을 때만) Chat now. 막 탭 · Not now · 끌어내림 · 시스템 뒤로가기는 모두 `onClose`입니다.
+ * ADR-0164 앱 추가(2026-11-20): 목소리 견본(본문 첫 줄) · AI 표시 줄(두 모드), `readOnly`(대화방 머리에서 엶)는 Close만.
  */
 export function SuggestedFriendSheet({
   model,
@@ -58,8 +60,11 @@ export function SuggestedFriendSheet({
   onStart,
   onEarly,
   onClose,
+  readOnly = false,
+  onVoicePlayed,
 }: SuggestedFriendSheetProps): ReactNode {
-  const copy = useUiCopy().messengerChat.suggested;
+  const ui = useUiCopy();
+  const copy = ui.messengerChat.suggested;
   const { character, offer } = model;
   const locked = model.status === "locked";
   const still = useMotion() === "reduced";
@@ -163,6 +168,13 @@ export function SuggestedFriendSheet({
           catchtouchend={budget.scrollable ? holdTouch : undefined}
         >
           <view className="suggested-sheet-body" bindlayoutchange={budget.onContentLayout}>
+            {!locked && (model.voiceUrl ?? null) !== null ? (
+              <FriendVoiceSample
+                name={character.name}
+                url={model.voiceUrl ?? ""}
+                onPlayed={onVoicePlayed}
+              />
+            ) : null}
             {!locked && character.tags.length > 0 ? (
               <view
                 className="suggested-sheet-tags"
@@ -203,6 +215,14 @@ export function SuggestedFriendSheet({
                 </text>
               </view>
             ) : null}
+            <text
+              className="suggested-sheet-ai"
+              data-testid={ids.sheetAi}
+              flatten={false}
+              accessibility-element={true}
+            >
+              {ui.messengerChat.safety.notice.aiDisclosure(character.name)}
+            </text>
           </view>
         </scroll-view>
 
@@ -215,7 +235,7 @@ export function SuggestedFriendSheet({
           }
           bindlayoutchange={budget.onFixedLayout("actions")}
         >
-          {!locked ? (
+          {readOnly ? null : !locked ? (
             <view data-testid={ids.sheetStart}>
               <Button
                 label={copy.startChatting}
@@ -256,8 +276,14 @@ export function SuggestedFriendSheet({
               </view>
             </view>
           )}
-          <view data-testid={ids.sheetLater}>
-            <Button label={copy.notNow} variant="text" size="l" width="fill" bindtap={onClose} />
+          <view data-testid={readOnly ? ids.sheetClose : ids.sheetLater}>
+            <Button
+              label={readOnly ? ui.common.close : copy.notNow}
+              variant="text"
+              size="l"
+              width="fill"
+              bindtap={onClose}
+            />
           </view>
         </view>
       </view>
