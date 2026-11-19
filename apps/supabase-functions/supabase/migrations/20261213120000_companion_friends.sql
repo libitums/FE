@@ -794,7 +794,7 @@ insert into companion.characters (id, bible_version, persona, active, sort_order
     }
   }$json$::jsonb, true, 5, $json${
     "refSlugs": ["seoyeon"], "voiceId": null,
-    "look": "Korean woman, 28. Sharp cat-like eyes, straight brows, small mole under the left eye. Black shoulder-length hair with a blunt cut, one side tucked behind the ear. Slim; fine-line tattoos (flowers, a small cat) on the left forearm. Oversized black shirt with rolled sleeves over a white tank top, wide grey trousers, silver ear cuffs, thin rings. Default expression: a half-smile, one eyebrow slightly raised, looking straight at the viewer. Default pose: relaxed, weight on one leg, a drawing pen in one hand. Tattoos stay small and line-only. No cigarettes, no alcohol, no revealing clothing."
+    "look": "Korean woman, 28. Strikingly pretty in a cool, sharp way. Slim oval face with a defined jawline. Long, slightly upturned cat-like eyes with dark irises and clean eyeliner; straight, well-defined brows; a small mole under the left eye. Straight nose, lips with a clear outline and a muted rose tint. Fair, cool-toned skin. Jet-black hair in a blunt shoulder-length bob, parted to one side, the left side tucked behind the ear. Slim build, long neck, long fingers. A few small fine-line tattoos on the left forearm (a sprig of flowers, a tiny cat outline). Two thin silver ear cuffs on the left ear, thin silver rings. Oversized black cotton shirt worn open with the sleeves rolled to the elbow, over a plain white tank top tucked into high-waisted wide charcoal-grey trousers. Black leather low boots. Everything matte, no patterns. Tattoos stay small, thin-lined and only on the left forearm. No cigarettes, no alcohol, no piercings other than the ear cuffs. No cleavage, no bare midriff, no tight or revealing clothing."
   }$json$::jsonb),
   ('haejun', 'friends@2026-11-19', $json${
     "kind": "friend", "name": "권해준", "age": "31세", "job": "LP 바 사장", "mbti": "ESFJ",
@@ -817,7 +817,7 @@ insert into companion.characters (id, bible_version, persona, active, sort_order
     }
   }$json$::jsonb, true, 6, $json${
     "refSlugs": ["haejun"], "voiceId": null,
-    "look": "Korean man, 31. Soft downturned eyes, thick brows, a warm easy smile with a dimple on the right cheek. Dark brown medium-length hair pushed back loosely, light stubble shadow. Tall, broad shoulders, guitarist's hands. Dark navy open-collar shirt over a white T-shirt, sleeves pushed up, charcoal apron tied at the waist, a thin leather bracelet. Default expression: a gentle closed-mouth smile, eyes slightly crinkled. Default pose: leaning on a counter, holding a vinyl record sleeve. No alcohol bottles or glasses in hand. No cigarettes."
+    "look": "Korean man, 31. Handsome in a warm, grown-up way. Soft oval face with a firm jaw. Gentle, slightly downturned eyes with dark brown irises and faint smile lines at the corners; thick natural brows. A dimple on the right cheek when he smiles. Light warm-tan skin, clean-shaven. Dark brown wavy hair, long enough to tuck behind the ears and reach the nape, pushed back loosely from the forehead with a few strands falling forward. Tall, broad shoulders, relaxed posture, large hands with long fingers. A thin brown leather bracelet on the left wrist. Deep navy open-collar shirt with the sleeves pushed up to the forearms, worn open over a cream crew-neck T-shirt. Dark brown straight trousers, brown leather shoes. Soft, slightly worn-in fabrics. No bottles, glasses or any alcohol. No cigarettes. No instrument in hand. No beard or stubble. No apron."
   }$json$::jsonb),
   ('daeun', 'friends@2026-11-19', $json${
     "kind": "friend", "name": "송다은", "age": "23세", "job": "대학생 (컴퓨터공학과 3학년)", "mbti": "INFP",
@@ -839,7 +839,7 @@ insert into companion.characters (id, bible_version, persona, active, sort_order
     }
   }$json$::jsonb, true, 7, $json${
     "refSlugs": ["daeun"], "voiceId": null,
-    "look": "Korean woman, 23. Round bright eyes, soft round face, slight blush. Long dark brown hair in a loose low ponytail with wispy bangs, round thin-frame glasses pushed up on the head. Cream oversized hoodie with a small game-controller pin, pleated grey skirt, white sneakers, a tote bag with keyrings. Default expression: a wide open smile, eyes sparkling. Default pose: holding a phone with both hands near the chest, leaning forward a little. Looks clearly adult (a university student), not a schoolgirl; no school uniform. No real brand or idol logos."
+    "look": "Korean woman, 23, clearly an adult university student. Cute and bright rather than glamorous. Soft round face with a small chin. Big round eyes with warm brown irises and a visible sparkle; soft arched brows; a light natural blush on the cheeks. Small nose, lips with a soft pink tint. Fair warm-toned skin. Long dark brown hair tied in a loose low ponytail over one shoulder, with wispy see-through bangs and two loose face-framing strands. Round thin gold-wire glasses. Petite, slim build. A small star-shaped hairpin above the right temple. Cream oversized hoodie with slightly long sleeves that cover part of the hands, light-wash wide-leg jeans, white chunky sneakers. One small lilac enamel pin on the chest. She must look like an adult woman in her twenties, never a child or a schoolgirl: no school uniform, no pleated mini skirt, no childish proportions. No real brand, game or idol logos. Glasses always on."
   }$json$::jsonb),
   ('geonwoo', 'friends@2026-11-19', $json${
     "kind": "friend", "name": "임건우", "age": "24세", "job": "대학생 (경영학과 2학년, 복학생)", "mbti": "ESTP",
@@ -861,7 +861,7 @@ insert into companion.characters (id, bible_version, persona, active, sort_order
     }
   }$json$::jsonb, true, 8, $json${
     "refSlugs": ["geonwoo"], "voiceId": null,
-    "look": "Korean man, 24. Bright narrow eyes that curve when smiling, sun-tanned skin, a wide grin. Short black two-block hair, slightly messy. Athletic runner's build. Light grey zip-up track jacket over a white T-shirt, black jogger pants, running shoes, a sports watch. Default expression: a big toothy grin. Default pose: one hand giving a thumbs-up, the other holding a paper cup of tteokbokki. No military uniform. No brand logos."
+    "look": "Korean man, 24. Good-looking in a fresh, sporty way. Lean face with a clean jawline. Narrow eyes that curve into crescents when he smiles, dark irises; straight thick brows. Sun-tanned healthy skin. A wide, slightly lopsided grin showing his upper teeth. Short black two-block haircut, the top a little tousled and falling over the forehead. Athletic, lean runner's build with a straight back. A black sports watch on the left wrist. Light grey zip-up track jacket, half unzipped over a plain white T-shirt, with a thin orange stripe down each sleeve. Black jogger pants, white running shoes with orange accents. No military uniform or dog tags. No brand logos or text on clothing. No food or cups in hand."
   }$json$::jsonb)
 on conflict (id) do update set
   bible_version = excluded.bible_version,

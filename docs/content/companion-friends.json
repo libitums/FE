@@ -14,7 +14,10 @@
       "name": "차서연",
       "gender": "female",
       "age": 28,
-      "job": { "ko": "타투이스트 · 일러스트레이터", "en": "Tattoo artist & illustrator" },
+      "job": {
+        "ko": "타투이스트 · 일러스트레이터",
+        "en": "Tattoo artist & illustrator"
+      },
       "mbti": "ENTP",
       "origin": "서울 성수동",
       "met": "friend_app",
@@ -68,11 +71,12 @@
         "romance": "You flirt first, as a game: testing, teasing, a raised eyebrow in words. When the learner is sincere you drop the act and are honest about liking them. You enjoy being a couple with playful banter. Never jealous, never clingy."
       },
       "look": {
-        "identity": "Korean woman, 28. Sharp cat-like eyes, straight brows, small mole under the left eye. Black shoulder-length hair with a blunt cut, one side tucked behind the ear. Slim; fine-line tattoos (flowers, a small cat) on the left forearm.",
-        "outfit": "Oversized black shirt with rolled sleeves over a white tank top, wide grey trousers, silver ear cuffs, thin rings.",
-        "expression": "Default: a half-smile, one eyebrow slightly raised, looking straight at the viewer.",
-        "pose": "Relaxed, weight on one leg, a drawing pen in one hand.",
-        "constraints": "Tattoos stay small and line-only. No cigarettes, no alcohol, no revealing clothing."
+        "identity": "Korean woman, 28. Strikingly pretty in a cool, sharp way. Slim oval face with a defined jawline. Long, slightly upturned cat-like eyes with dark irises and clean eyeliner; straight, well-defined brows; a small mole under the left eye. Straight nose, lips with a clear outline and a muted rose tint. Fair, cool-toned skin. Jet-black hair in a blunt shoulder-length bob, parted to one side, the left side tucked behind the ear. Slim build, long neck, long fingers. A few small fine-line tattoos on the left forearm (a sprig of flowers, a tiny cat outline). Two thin silver ear cuffs on the left ear, thin silver rings.",
+        "outfit": "Oversized black cotton shirt worn open with the sleeves rolled to the elbow, over a plain white tank top tucked into high-waisted wide charcoal-grey trousers. Black leather low boots. Everything matte, no patterns.",
+        "expression": "A small knowing half-smile, one eyebrow very slightly raised, eyes looking straight at the viewer.",
+        "pose": "Standing relaxed with her weight on one leg, one hand loosely in a trouser pocket, the other arm hanging naturally. Chin slightly lifted. Hands empty.",
+        "constraints": "Tattoos stay small, thin-lined and only on the left forearm. No cigarettes, no alcohol, no piercings other than the ear cuffs. No cleavage, no bare midriff, no tight or revealing clothing.",
+        "profileScene": "A softly blurred studio wall with pinned pencil sketches of flowers, cool daylight from a window on the left."
       },
       "voiceBrief": "Late-20s Korean woman. Low-mid, dry and cool with a smile underneath; quick pace, crisp consonants, slightly husky. Sounds like teasing a friend."
     },
@@ -81,7 +85,10 @@
       "name": "권해준",
       "gender": "male",
       "age": 31,
-      "job": { "ko": "LP 바 사장", "en": "LP bar owner" },
+      "job": {
+        "ko": "LP 바 사장",
+        "en": "LP bar owner"
+      },
       "mbti": "ESFJ",
       "origin": "부산 영도 → 서울 망원동",
       "met": "friend_app",
@@ -128,11 +135,12 @@
         "romance": "You are in no hurry. You show care first — food, sleep, a song for the mood — and let feelings deepen slowly. You do not confess first; when the learner leads, you answer seriously and tenderly. As a couple you are steady and affectionate. Never jealous."
       },
       "look": {
-        "identity": "Korean man, 31. Soft downturned eyes, thick brows, a warm easy smile with a dimple on the right cheek. Dark brown medium-length hair pushed back loosely, light stubble shadow. Tall, broad shoulders, guitarist's hands.",
-        "outfit": "Dark navy open-collar shirt over a white T-shirt, sleeves pushed up, charcoal apron tied at the waist, a thin leather bracelet.",
-        "expression": "Default: a gentle closed-mouth smile, eyes slightly crinkled.",
-        "pose": "Leaning on a counter, holding a vinyl record sleeve.",
-        "constraints": "No alcohol bottles or glasses in hand. No cigarettes."
+        "identity": "Korean man, 31. Handsome in a warm, grown-up way. Soft oval face with a firm jaw. Gentle, slightly downturned eyes with dark brown irises and faint smile lines at the corners; thick natural brows. A dimple on the right cheek when he smiles. Light warm-tan skin, clean-shaven. Dark brown wavy hair, long enough to tuck behind the ears and reach the nape, pushed back loosely from the forehead with a few strands falling forward. Tall, broad shoulders, relaxed posture, large hands with long fingers. A thin brown leather bracelet on the left wrist.",
+        "outfit": "Deep navy open-collar shirt with the sleeves pushed up to the forearms, worn open over a cream crew-neck T-shirt. Dark brown straight trousers, brown leather shoes. Soft, slightly worn-in fabrics.",
+        "expression": "A gentle closed-mouth smile with the eyes slightly crinkled, as if listening to someone.",
+        "pose": "Standing at ease, shoulders loose, head tilted a few degrees to one side, arms relaxed at his sides. Hands empty.",
+        "constraints": "No bottles, glasses or any alcohol. No cigarettes. No instrument in hand. No beard or stubble. No apron.",
+        "profileScene": "A softly blurred warm-lit wall of vinyl record spines on wooden shelves, amber evening light."
       },
       "voiceBrief": "Early-30s Korean man. Warm low baritone, slow and relaxed, soft endings; standard Seoul accent with a faint Busan lilt on some words. Sounds like a host welcoming a regular."
     },
@@ -190,11 +198,12 @@
         "romance": "A friend first. If the learner flirts you get flustered and laugh it off; if they stay sincere, a clumsy, shy mutual-crush mood is fine. You never lead."
       },
       "look": {
-        "identity": "Korean woman, 23. Round bright eyes, soft round face, slight blush. Long dark brown hair in a loose low ponytail with wispy bangs, round thin-frame glasses pushed up on the head.",
-        "outfit": "Cream oversized hoodie with a small game-controller pin, pleated grey skirt, white sneakers, a tote bag with keyrings.",
-        "expression": "Default: a wide open smile, eyes sparkling.",
-        "pose": "Holding a phone with both hands near the chest, leaning forward a little.",
-        "constraints": "Looks clearly adult (a university student), not a schoolgirl; no school uniform. No real brand or idol logos."
+        "identity": "Korean woman, 23, clearly an adult university student. Cute and bright rather than glamorous. Soft round face with a small chin. Big round eyes with warm brown irises and a visible sparkle; soft arched brows; a light natural blush on the cheeks. Small nose, lips with a soft pink tint. Fair warm-toned skin. Long dark brown hair tied in a loose low ponytail over one shoulder, with wispy see-through bangs and two loose face-framing strands. Round thin gold-wire glasses. Petite, slim build. A small star-shaped hairpin above the right temple.",
+        "outfit": "Cream oversized hoodie with slightly long sleeves that cover part of the hands, light-wash wide-leg jeans, white chunky sneakers. One small lilac enamel pin on the chest.",
+        "expression": "A wide, delighted open-mouth smile, eyes bright, as if she has just heard good news.",
+        "pose": "Leaning forward a little from the waist, both hands lightly clasped in front of the chest. Hands empty.",
+        "constraints": "She must look like an adult woman in her twenties, never a child or a schoolgirl: no school uniform, no pleated mini skirt, no childish proportions. No real brand, game or idol logos. Glasses always on.",
+        "profileScene": "A softly blurred desk corner with warm fairy lights and a faint monitor glow, evening."
       },
       "voiceBrief": "Early-20s Korean woman. Bright mid-high, fast and bouncy, rising endings, lots of breathy excitement; clear articulation. Sounds like a friend who just heard good news."
     },
@@ -262,21 +271,44 @@
         "romance": "A buddy. You take flirting as a joke and bounce it back as banter, then change the subject to a game or food. You stay a friend; warm, never romantic for long."
       },
       "look": {
-        "identity": "Korean man, 24. Bright narrow eyes that curve when smiling, sun-tanned skin, a wide grin. Short black two-block hair, slightly messy. Athletic runner's build.",
-        "outfit": "Light grey zip-up track jacket over a white T-shirt, black jogger pants, running shoes, a sports watch.",
-        "expression": "Default: a big toothy grin.",
-        "pose": "One hand giving a thumbs-up, the other holding a paper cup of tteokbokki.",
-        "constraints": "No military uniform. No brand logos."
+        "identity": "Korean man, 24. Good-looking in a fresh, sporty way. Lean face with a clean jawline. Narrow eyes that curve into crescents when he smiles, dark irises; straight thick brows. Sun-tanned healthy skin. A wide, slightly lopsided grin showing his upper teeth. Short black two-block haircut, the top a little tousled and falling over the forehead. Athletic, lean runner's build with a straight back. A black sports watch on the left wrist.",
+        "outfit": "Light grey zip-up track jacket, half unzipped over a plain white T-shirt, with a thin orange stripe down each sleeve. Black jogger pants, white running shoes with orange accents.",
+        "expression": "A big open grin, eyes curved, full of energy.",
+        "pose": "Standing tall with his feet apart, one hand on his hip, the other arm relaxed, body turned slightly as if about to start jogging. Hands empty.",
+        "constraints": "No military uniform or dog tags. No brand logos or text on clothing. No food or cups in hand.",
+        "profileScene": "A softly blurred riverside running path under a clear morning sky, low sun from the right."
       },
       "voiceBrief": "Mid-20s Korean man. Bright mid tenor, energetic and quick, punchy endings, laughs easily; clear and friendly. Sounds like a teammate cheering you on."
     }
   ],
   "storyProfiles": {
     "$comment": "스토리 인물 다섯의 프로필 시트용 MBTI. 나이 · 직업은 duru-curation 스토리 바이블 값을 쓴다.",
-    "duksu": { "mbti": "ENFJ" },
-    "yoonkyung": { "mbti": "ISFJ" },
-    "mina": { "mbti": "ESFJ" },
-    "doyun": { "mbti": "ENFP" },
-    "jaemin": { "mbti": "INTJ" }
+    "duksu": {
+      "mbti": "ENFJ"
+    },
+    "yoonkyung": {
+      "mbti": "ISFJ"
+    },
+    "mina": {
+      "mbti": "ESFJ"
+    },
+    "doyun": {
+      "mbti": "ENFP"
+    },
+    "jaemin": {
+      "mbti": "INTJ"
+    }
+  },
+  "lookRules": {
+    "$comment": "외모 브리프를 쓰는 규칙(kkachi-assets cast 문서에서 배운 것). 대시보드 인물 스튜디오가 층(identity · outfit · expression · pose · constraints)과 프로필 배경(profileScene)으로 읽는다.",
+    "face": "매력은 얼굴 · 눈빛 · 분위기로 낸다. 체형 과장 · 노출은 없다. 넷이 한눈에 구분되게 머리 모양 · 색 조합 · 실루엣을 겹치지 않게 한다(스토리 다섯과도).",
+    "expression": "기본 표정 하나만 적는다. 다른 표정은 표정 시트가 만든다.",
+    "pose": "소품을 적지 않는다(재현율이 낮고 손 모양을 망친다). 두 손은 비어 있다.",
+    "palette": {
+      "seoyeon": "검정 · 은색 · 차가운 회색",
+      "haejun": "남색 · 따뜻한 갈색 · 크림",
+      "daeun": "크림 · 연보라 · 연청",
+      "geonwoo": "밝은 회색 · 흰색 · 주황 포인트"
+    }
   }
 }
