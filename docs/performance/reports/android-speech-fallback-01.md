@@ -6,6 +6,7 @@
 - 기능 변경: Android 호스트가 ko-KR 모델이 없는 온디바이스 인식기 대신 네트워크 인식기로 한 번 다시 시도한다(시작 전 확인 · 실행 중 언어 오류). 결과 · 측정 이벤트에 오류 코드 · 되돌아감 · 한국어 팩 상태를 싣는다([ADR-0017](../../adr/0017-host-native-capabilities-and-audio.md) 2026-11-19 적용 기록).
 - 대상 commit: `fix/android-speech-fallback` 브랜치 HEAD
 - 기기: 렌더 측정 기기 없음(번들 크기만). 호스트 동작은 Android 37 에뮬레이터(Pixel_8 AVD, Play 이미지, 오디오 없음)에서 계측 테스트로 확인했다 — 아래 「제한 사항」
+- OS: 해당 없음(번들 산출물). 호스트 계측은 Android 17(API 37) 에뮬레이터
 - Lynx SDK: 4.0.1
 - 빌드: `pnpm --filter @libitums/mobile build` 산출 `apps/mobile/dist/main.lynx.bundle`(`.env.local` 없음, CI와 같음)
 - 측정 일시: 2026-11-19
