@@ -202,6 +202,9 @@ export function renderJourneyMap(wiring: ScreenWiring, active: boolean) {
             ? {}
             : { onCheckNew: wiring.onCheckNewStories }),
           coverImageUrlOf: wiring.episodeContent.imageUrlOf,
+          ...(wiring.catalogCoverDownloads === undefined
+            ? {}
+            : { coverDownloads: wiring.catalogCoverDownloads }),
         }}
       />
     </NewFriendMapHost>
