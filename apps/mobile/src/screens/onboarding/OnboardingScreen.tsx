@@ -2,26 +2,27 @@ import { useEffect, useRef, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 import type { TouchEvent } from "@lynx-js/types";
 
-import arrowLeft from "@libitums/icons/lynx/arrow-left-03";
 import arrowRight from "@libitums/icons/lynx/arrow-right";
 import { Button } from "@libitums/ui-lynx/button";
 import { resolveReducedMotion, useMotion } from "@libitums/ui-lynx/motion";
 import { PageIndicator } from "@libitums/ui-lynx/page-indicator";
-import { RoundButton } from "@libitums/ui-lynx/round-button";
 import { playSound } from "../../lib/sound-effects";
 import { useUiCopy } from "../../lib/ui-copy";
 import { useScreenBack } from "../../lib/use-back-handler";
+import { layoutHeightFrom } from "../learning/learning-shell.contract";
 
 import {
   onboardingAutoAdvanceMs,
   onboardingAutoAdvanceStep,
   onboardingCopy,
+  onboardingStageHeight,
   onboardingStartedEvent,
   onboardingStepViewedEvent,
   onboardingSteps,
   onboardingSwipeStep,
   previousOnboardingStep,
 } from "./onboarding";
+import { onboardingScrollId, onboardingTextId } from "./onboarding.contract";
 import { OnboardingQuizCards } from "./OnboardingQuizCards";
 import { OnboardingStoryCards } from "./OnboardingStoryCards";
 import { OnboardingUnitCard } from "./OnboardingUnitCard";
@@ -57,6 +58,24 @@ export function OnboardingScreen({ onComplete, onEvent }: OnboardingScreenProps)
   const autoAdvanced = useRef(false);
   const swipeStart = useRef<OnboardingSwipePoint | undefined>(undefined);
   const swiped = useRef(false);
+
+  // 스크롤 영역과 묶음(페이지 표시 · 제목 · 본문)의 잰 높이입니다 — 카드 영역 높이의 입력입니다.
+  // 스텝마다 문구 높이가 달라 카드 영역도 스텝마다 다시 맞춥니다(카드가 스텝마다 통째로 갈립니다).
+  const [viewport, setViewport] = useState<number | undefined>(undefined);
+  const [textHeight, setTextHeight] = useState<number | undefined>(undefined);
+  const stageHeight = onboardingStageHeight({ viewport, text: textHeight });
+
+  const handleViewportLayout = (event: unknown) => {
+    "background only";
+    const height = layoutHeightFrom(event);
+    if (height !== undefined) setViewport(height);
+  };
+
+  const handleTextLayout = (event: unknown) => {
+    "background only";
+    const height = layoutHeightFrom(event);
+    if (height !== undefined) setTextHeight(height);
+  };
 
   // 다음에 보일 스텝이 어떤 길로 왔는지입니다 — 열람 이벤트가 읽습니다.
   const arrivedVia = useRef<OnboardingStepVia>("start");
@@ -125,26 +144,17 @@ export function OnboardingScreen({ onComplete, onEvent }: OnboardingScreenProps)
 
   return (
     <view className="onboarding-screen" data-testid="onboarding-screen" data-step={step}>
-      {/* 2026-09-21 디자인 반영: 좌상단 뒤로가기(RoundButton · neutral)입니다. 첫
-          스텝에는 돌아갈 곳이 없어 버튼을 두지 않지만, 행 높이는 남겨 스텝 사이에
-          레이아웃이 튀지 않게 합니다. */}
-      <view className="onboarding-screen-header" data-testid="onboarding-screen-header">
-        {previous === null ? null : (
-          <RoundButton
-            accessibilityLabel={uiCopy.common.back}
-            icon={arrowLeft}
-            variant="neutral"
-            size="xl"
-            bindtap={handleBack}
-          />
-        )}
-      </view>
+      {/* 좌상단 뒤로 버튼은 두지 않습니다(사용자 결정 2026-11-19 — 밀기 · 자동 넘김으로 충분). 돌아가기는
+          오른쪽으로 밀기와 시스템 뒤로가기가 맡습니다. 행 높이는 위 여백으로 남겨 레이아웃을 바꾸지 않습니다. */}
+      <view className="onboarding-screen-header" data-testid="onboarding-screen-header" />
 
       <scroll-view
+        id={onboardingScrollId}
         className="onboarding-screen-scroll"
         data-testid="onboarding-screen-scroll"
         scroll-orientation="vertical"
         scroll-bar-enable={false}
+        bindlayoutchange={handleViewportLayout}
       >
         <view
           className="onboarding-screen-content"
@@ -157,17 +167,27 @@ export function OnboardingScreen({ onComplete, onEvent }: OnboardingScreenProps)
               하나입니다. 카드가 스텝을 떠나며 언마운트되면 재생·칠하기·완료 표시
               상태도 함께 사라집니다 — 되돌아왔을 때 처음부터 다시 보이는 것은 이
               언마운트 때문입니다. */}
-          {step === 2 ? (
-            <OnboardingUnitCard />
-          ) : step === 1 ? (
-            <OnboardingQuizCards />
-          ) : (
-            <OnboardingStoryCards />
-          )}
+          <view
+            className="onboarding-screen-stage"
+            data-testid="onboarding-screen-stage"
+            style={{ height: `${stageHeight}px` }}
+          >
+            {step === 2 ? (
+              <OnboardingUnitCard />
+            ) : step === 1 ? (
+              <OnboardingQuizCards />
+            ) : (
+              <OnboardingStoryCards />
+            )}
+          </view>
 
           {/* 페이지 표시 · 제목 · 본문 묶음입니다. 카드와의 간격(32)은 content의 gap이
               집니다. */}
-          <view className="onboarding-screen-text">
+          <view
+            id={onboardingTextId}
+            className="onboarding-screen-text"
+            bindlayoutchange={handleTextLayout}
+          >
             {/* 진행 래퍼가 보조기술 이름을 집니다. 안의 PageIndicator는 그림만
                 맡습니다. */}
             <view
