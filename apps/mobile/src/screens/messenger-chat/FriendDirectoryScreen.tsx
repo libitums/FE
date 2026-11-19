@@ -112,8 +112,12 @@ function DirectoryRowView({
       className={added ? "friend-directory-row friend-directory-row-added" : "friend-directory-row"}
       data-testid={ids.row(character.id)}
       accessibility-element={true}
-      accessibility-label={actionLabel(row, all.directory)}
+      accessibility-label={[actionLabel(row, all.directory), sub]
+        .filter((part) => part !== "")
+        .join(", ")}
       accessibility-traits={added ? undefined : "button"}
+      accessibility-enable-tap={!added}
+      flatten={false}
       bindtap={handleTap}
     >
       <view className={locked ? "friend-directory-face-dim" : "friend-directory-face"}>
@@ -212,20 +216,26 @@ export function FriendDirectoryScreen({
             return (
               <view
                 key={key}
-                className={
-                  on ? "friend-directory-chip friend-directory-chip-on" : "friend-directory-chip"
-                }
+                className="friend-directory-chip-hit"
                 data-testid={ids.chip(key)}
                 data-selected={on ? "true" : "false"}
                 accessibility-element={true}
                 accessibility-traits="button"
+                accessibility-enable-tap={true}
+                flatten={false}
                 accessibility-label={copy.chipLabel(chipText(chip), on)}
                 bindtap={() => {
                   "background only";
                   onFilter(chip);
                 }}
               >
-                <text className="friend-directory-chip-text">{chipText(chip)}</text>
+                <view
+                  className={
+                    on ? "friend-directory-chip friend-directory-chip-on" : "friend-directory-chip"
+                  }
+                >
+                  <text className="friend-directory-chip-text">{chipText(chip)}</text>
+                </view>
               </view>
             );
           })}

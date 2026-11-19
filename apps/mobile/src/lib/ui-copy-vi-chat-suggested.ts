@@ -19,6 +19,8 @@ export const messengerChatSuggestedVi: SuggestedFriendsCopy = {
   meetIn: (episode) => `Bạn sẽ gặp ở tập ${episode}`,
   lockedInfo: (name) => `Hoàn thành câu chuyện để trao đổi số — ${name} sẽ nhắn trước.`,
   chatNow: (price) => `Nhắn ngay · ${price}`,
+  earlyButtonLabel: (price, left) =>
+    `Nhắn ngay với ${price} đồng, ưu đãi giới hạn${left === null ? "" : `, còn ${left.days} ngày ${left.hours} giờ`}`,
   launchSpecial: (name) => `Ưu đãi ra mắt · gặp ${name} sớm`,
   limited: "GIỚI HẠN",
   limitedUntil: (days, hours) => `GIỚI HẠN · ${days} ngày ${hours} giờ`,

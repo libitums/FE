@@ -20,6 +20,8 @@ export const messengerChatSuggestedId: SuggestedFriendsCopy = {
   lockedInfo: (name) =>
     `Selesaikan ceritanya untuk bertukar nomor — ${name} akan mengirim pesan duluan.`,
   chatNow: (price) => `Chat sekarang · ${price}`,
+  earlyButtonLabel: (price, left) =>
+    `Chat sekarang dengan ${price} koin, penawaran terbatas${left === null ? "" : `, sisa ${left.days} hari ${left.hours} jam`}`,
   launchSpecial: (name) => `Spesial peluncuran · kenalan dengan ${name} lebih awal`,
   limited: "TERBATAS",
   limitedUntil: (days, hours) => `TERBATAS · ${days}h ${hours}j`,

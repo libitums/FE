@@ -82,6 +82,17 @@ test("FD1. 줄 탭 → onOpen(그 줄), Added 줄은 열지 않는다", () => {
   expect(onOpen).toHaveBeenCalledTimes(1);
 });
 
+test("FD1. 줄 · 칩은 TalkBack에서 누를 수 있고(enable-tap), Added 줄은 누를 수 없다", () => {
+  mount();
+  expect(screen.getByTestId(ids.row("g1")).getAttribute("accessibility-enable-tap")).toBe("true");
+  expect(screen.getByTestId(ids.row("duksu")).getAttribute("accessibility-enable-tap")).toBe(
+    "false",
+  );
+  expect(screen.getByTestId(ids.chip("story")).getAttribute("accessibility-enable-tap")).toBe(
+    "true",
+  );
+});
+
 test("FD1. 칩 탭 → onFilter, 뒤로 · 시스템 뒤로가기 → onBack", () => {
   const { onFilter, onBack } = mount();
   fireEvent.tap(screen.getByTestId(ids.chip("story")), {});

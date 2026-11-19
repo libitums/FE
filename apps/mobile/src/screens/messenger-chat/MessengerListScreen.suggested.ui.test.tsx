@@ -50,19 +50,29 @@ const seed = () =>
     fixtureRoom("boss", { counterpart: { id: "boss", name: "사장님", avatarPath: null } }),
   );
 
-function portFor(source: ChatSource): SuggestedFriendsPort {
+function portFor(
+  source: ChatSource,
+  early: SuggestedFriendsPort["earlyAccess"] = null,
+): SuggestedFriendsPort {
   return {
     catalog: () =>
       catalogOf([
-        friend("mina", { name: "미나", unlockEpisode: 3 }),
+        friend("mina", {
+          name: "미나",
+          unlockEpisode: 3,
+          earlyAccess: { price: 100, endsAt: null },
+        }),
         general("clerk", { name: "점원", intro: { en: "Works at the mart" } }),
       ]),
     add: (id) => (source.unlockCharacter(id).kind === "unlocked" ? "added" : "already"),
-    earlyAccess: null,
+    earlyAccess: early,
   };
 }
 
-function mount(access: "open" | "sign-in" = "open") {
+function mount(
+  access: "open" | "sign-in" = "open",
+  early: SuggestedFriendsPort["earlyAccess"] = null,
+) {
   const source = makeSource(seed());
   const sink = vi.fn();
   const onLayerChange = vi.fn<(open: boolean) => void>();
@@ -78,7 +88,7 @@ function mount(access: "open" | "sign-in" = "open") {
         onNoticeShown={vi.fn()}
         access={access}
         onSignIn={vi.fn()}
-        friends={portFor(source)}
+        friends={portFor(source, early)}
       />
     </ChatEventsContext.Provider>,
   );
@@ -159,4 +169,20 @@ test("ML1. 추천할 사람이 없으면 줄이 없다", () => {
 test("ML2. 손님(가입 안내)에게는 줄이 없다", () => {
   mount("sign-in");
   expect(screen.queryByTestId(ids.row)).toBeNull();
+});
+
+test("ML3. 먼저 만나기에서 엽전이 모자라면 상점이 열리고, 그동안 목록 · 친구 찾기가 낭독에서 가려지며 전역 머리 가림이 풀리지 않는다", async () => {
+  const early = vi.fn(async () => ({ kind: "short", shortBy: 40 }) as const);
+  const { onLayerChange } = mount("open", early);
+  fireEvent.tap(screen.getByTestId(ids.seeAll), {});
+  fireEvent.tap(screen.getByTestId(dir.row("mina")), {});
+  tapId(ids.sheetEarly);
+  await act(async () => {
+    await Promise.resolve();
+  });
+  expect(early).toHaveBeenCalledWith("mina");
+  expect(screen.getByTestId("coin-shop-screen")).toBeTruthy();
+  expect(screen.queryByTestId(ids.sheet)).toBeNull();
+  expect(screen.getByTestId(dir.screen).getAttribute("accessibility-elements-hidden")).toBe("true");
+  expect(onLayerChange).toHaveBeenLastCalledWith(true);
 });

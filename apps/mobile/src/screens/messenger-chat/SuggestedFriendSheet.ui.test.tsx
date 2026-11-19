@@ -93,6 +93,10 @@ test("SS3. 잠김 + 제안(끝 시각 없음): Chat now · 100, LIMITED만, 둘�
     "Launch special · meet 한도윤 early",
   );
   expect(screen.getByTestId(ids.sheetLimited).textContent).toBe("LIMITED");
+  // 값의 단위 · 한정 여부도 낭독된다.
+  expect(screen.getByTestId(ids.sheetEarly).getAttribute("accessibility-label")).toBe(
+    "Chat now for 100 coins, limited offer",
+  );
   tapId(ids.sheetEarly);
   expect(onEarly).toHaveBeenCalledTimes(1);
 });

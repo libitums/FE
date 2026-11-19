@@ -19,6 +19,8 @@ export const messengerChatSuggestedEn: SuggestedFriendsCopy = {
   meetIn: (episode) => `You'll meet in Episode ${episode}`,
   lockedInfo: (name) => `Finish the story to swap numbers — ${name} texts first.`,
   chatNow: (price) => `Chat now · ${price}`,
+  earlyButtonLabel: (price, left) =>
+    `Chat now for ${price} coins, limited offer${left === null ? "" : `, ${left.days} days ${left.hours} hours left`}`,
   launchSpecial: (name) => `Launch special · meet ${name} early`,
   limited: "LIMITED",
   limitedUntil: (days, hours) => `LIMITED · ${days}d ${hours}h`,

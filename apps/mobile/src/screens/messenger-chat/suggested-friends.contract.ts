@@ -24,6 +24,11 @@ export type SuggestedFriendsCopy = {
   readonly meetIn: (episode: number) => string;
   readonly lockedInfo: (name: string) => string;
   readonly chatNow: (price: number) => string;
+  /** 먼저 만나기 단추의 낭독 이름 — 값(엽전) · 한정 · 남은 기간(있을 때만). */
+  readonly earlyButtonLabel: (
+    price: number,
+    left: { readonly days: number; readonly hours: number } | null,
+  ) => string;
   readonly launchSpecial: (name: string) => string;
   readonly limited: string;
   readonly limitedUntil: (days: number, hours: number) => string;

@@ -41,6 +41,13 @@
   padding: var(--libitum-spacing-8) var(--libitum-layout-screen-padding-x);
 }
 
+/* 누름 상자는 44(터치 기준) — 보이는 알약은 그 안에서 32입니다. */
+.friend-directory-chip-hit {
+  display: flex;
+  align-items: center;
+  min-height: calc(var(--libitum-spacing-40) + var(--libitum-spacing-4));
+}
+
 .friend-directory-chip {
   display: flex;
   align-items: center;

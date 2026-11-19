@@ -147,7 +147,7 @@
 }
 
 .suggested-sheet-tag-text {
-  color: var(--libitum-color-gray-700);
+  color: var(--libitum-color-fg-neutral-muted);
   font-family: var(--libitum-typography-label-m-font-family);
   font-weight: var(--libitum-font-weight-semi-bold);
   font-size: var(--libitum-typography-label-m-font-size);
@@ -203,6 +203,7 @@
   position: absolute;
   top: var(--libitum-spacing-0);
   right: var(--libitum-spacing-12);
+  max-width: 50%;
   padding: var(--libitum-spacing-2) var(--libitum-spacing-8);
   border-width: 2px;
   border-style: solid;

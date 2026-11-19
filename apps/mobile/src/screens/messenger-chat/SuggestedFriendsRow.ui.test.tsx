@@ -72,6 +72,15 @@ test("SR1. 낭독 라벨 — 새 친구 · 만날 회차 · 먼저 만나기", (
   );
 });
 
+test("SR1. 아바타 · See all은 Android TalkBack에서도 누를 수 있다(enable-tap · flatten false — ADR-0125 D3)", () => {
+  mount();
+  for (const id of [ids.avatar("g1"), ids.seeAll]) {
+    const el = screen.getByTestId(id);
+    expect(el.getAttribute("accessibility-enable-tap"), id).toBe("true");
+    expect(el.getAttribute("flatten"), id).toBe("false");
+  }
+});
+
 test("SR1. 아바타 탭 → onOpen(그 인물), See all 탭 → onSeeAll", () => {
   const { onOpen, onSeeAll } = mount();
   fireEvent.tap(screen.getByTestId(ids.avatar("jaemin")), {});

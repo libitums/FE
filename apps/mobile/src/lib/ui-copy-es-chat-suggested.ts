@@ -20,6 +20,8 @@ export const messengerChatSuggestedEs: SuggestedFriendsCopy = {
   lockedInfo: (name) =>
     `Termina la historia para intercambiar números: ${name} te escribirá primero.`,
   chatNow: (price) => `Chatear ya · ${price}`,
+  earlyButtonLabel: (price, left) =>
+    `Chatear ya por ${price} monedas, oferta limitada${left === null ? "" : `, quedan ${left.days} días y ${left.hours} horas`}`,
   launchSpecial: (name) => `Especial de lanzamiento · conoce antes a ${name}`,
   limited: "LIMITADO",
   limitedUntil: (days, hours) => `LIMITADO · ${days} d ${hours} h`,

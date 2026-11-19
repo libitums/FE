@@ -20,6 +20,8 @@ export const messengerChatSuggestedJa: SuggestedFriendsCopy = {
   lockedInfo: (name) =>
     `ストーリーを終えると連絡先を交換できます。${name}から先にメッセージが届きます。`,
   chatNow: (price) => `今すぐチャット · ${price}`,
+  earlyButtonLabel: (price, left) =>
+    `${price}枚で今すぐチャット、期間限定${left === null ? "" : `、残り${left.days}日${left.hours}時間`}`,
   launchSpecial: (name) => `リリース記念 · ${name}に先に会える`,
   limited: "期間限定",
   limitedUntil: (days, hours) => `期間限定 · 残り${days}日${hours}時間`,

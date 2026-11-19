@@ -25,11 +25,11 @@
   line-height: var(--libitum-typography-label-l-line-height);
 }
 
-/* See all — 글자만이지만 누름 면은 터치 높이(32 + 위아래 여백)입니다. */
+/* See all — 글자만이지만 누름 면은 터치 높이 44입니다. */
 .suggested-row-see-all {
   display: flex;
   align-items: center;
-  min-height: var(--libitum-spacing-32);
+  min-height: calc(var(--libitum-spacing-40) + var(--libitum-spacing-4));
   padding: 0 var(--libitum-spacing-4);
 }
 
@@ -127,6 +127,7 @@
 .suggested-tag {
   display: flex;
   align-items: center;
+  max-width: 100%;
   padding: var(--libitum-spacing-2) var(--libitum-spacing-6);
   border-radius: var(--libitum-radius-full);
   background-color: var(--libitum-color-gray-900);
@@ -139,6 +140,8 @@
   font-size: var(--libitum-typography-label-s-font-size);
   line-height: var(--libitum-typography-label-s-line-height);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* 줄과 채팅 목록을 가르는 선. */

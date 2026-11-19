@@ -43,6 +43,8 @@ function SuggestedAvatar({
       accessibility-element={true}
       accessibility-label={labelOf(friend, copy)}
       accessibility-traits="button"
+      accessibility-enable-tap={true}
+      flatten={false}
       bindtap={handleTap}
     >
       <view className={locked ? "suggested-ring suggested-ring-locked" : "suggested-ring"}>
@@ -115,6 +117,8 @@ export function SuggestedFriendsRow({
           accessibility-element={true}
           accessibility-label={copy.seeAllLabel}
           accessibility-traits="button"
+          accessibility-enable-tap={true}
+          flatten={false}
           bindtap={handleSeeAll}
         >
           <text className="suggested-row-see-all-text">{copy.seeAll}</text>

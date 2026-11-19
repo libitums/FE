@@ -23,7 +23,7 @@ export type SuggestedFriendsUi = {
   readonly row: ReactNode;
   /** 시트 · 친구 찾기 · 토스트 — 스크롤 밖에 둡니다. */
   readonly layers: ReactNode;
-  /** 시트나 친구 찾기가 떠 있는가(뒤 목록을 낭독에서 가림). */
+  /** 시트나 친구 찾기가 떠 있는가 — 목록 화면이 다른 겹침과 합쳐 한 번만 바깥에 알립니다. */
   readonly layerOpen: boolean;
 };
 
@@ -49,12 +49,13 @@ const modelOfRow = (row: DirectoryRow): SuggestedFriendSheetModel => ({
 export function useSuggestedFriends({
   port,
   rooms,
-  onLayerChange,
+  covered,
   onShortOfCoins,
 }: {
   readonly port: SuggestedFriendsPort | undefined;
   readonly rooms: readonly ChatRoomSummary[];
-  readonly onLayerChange: (open: boolean) => void;
+  /** 엽전 상점이 위에 떠 있는가 — 그동안 친구 찾기를 낭독에서 가립니다. */
+  readonly covered: boolean;
   readonly onShortOfCoins: () => void;
 }): SuggestedFriendsUi {
   const copy = useUiCopy().messengerChat.suggested;
@@ -65,8 +66,6 @@ export function useSuggestedFriends({
   const [toast, setToast] = useState<SuggestedFriendToastValue | null>(null);
   const toastKey = useRef(0);
   const viewedSent = useRef(false);
-  const layerRef = useRef(onLayerChange);
-  layerRef.current = onLayerChange;
 
   const catalog = port?.catalog() ?? null;
   const now = Date.now();
@@ -86,12 +85,6 @@ export function useSuggestedFriends({
     viewedSent.current = true;
     emit({ name: "suggested_friend_viewed", surface: "chat", count: String(row.length) });
   }, [row.length]);
-
-  useEffect(() => {
-    if (!layerOpen) return undefined;
-    layerRef.current(true);
-    return () => layerRef.current(false);
-  }, [layerOpen]);
 
   const showToast = (text: string, model: SuggestedFriendSheetModel) => {
     toastKey.current += 1;
@@ -170,7 +163,7 @@ export function useSuggestedFriends({
       <>
         {directory === null || catalog === null ? null : (
           <FriendDirectoryScreen
-            covered={sheet !== null}
+            covered={sheet !== null || covered}
             chips={directoryChipsOf(catalog)}
             filter={filter}
             story={directory.story}

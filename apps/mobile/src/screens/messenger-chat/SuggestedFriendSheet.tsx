@@ -37,6 +37,12 @@ function holdTouch(): void {
   "background only";
 }
 
+// 단추 · 배지 · 둘째 줄을 한 이름으로 읽습니다 — 값의 단위(엽전)와 남은 기간이 그림에만 있지 않게.
+function earlyLabel(offer: EarlyAccessOffer, now: number, copy: SuggestedFriendsCopy): string {
+  const badge = offerBadgeOf(offer, now);
+  return copy.earlyButtonLabel(offer.price, badge.kind === "limited" ? null : badge);
+}
+
 function limitedText(offer: EarlyAccessOffer, now: number, copy: SuggestedFriendsCopy): string {
   const badge = offerBadgeOf(offer, now);
   return badge.kind === "limited" ? copy.limited : copy.limitedUntil(badge.days, badge.hours);
@@ -137,7 +143,12 @@ export function SuggestedFriendSheet({
             ) : null}
           </view>
           {sub === null ? null : (
-            <text className="suggested-sheet-sub" data-testid={ids.sheetIntro}>
+            <text
+              className="suggested-sheet-sub"
+              data-testid={ids.sheetIntro}
+              flatten={false}
+              accessibility-element={true}
+            >
               {sub}
             </text>
           )}
@@ -153,7 +164,15 @@ export function SuggestedFriendSheet({
         >
           <view className="suggested-sheet-body" bindlayoutchange={budget.onContentLayout}>
             {!locked && character.tags.length > 0 ? (
-              <view className="suggested-sheet-tags" data-testid={ids.sheetTags}>
+              <view
+                className="suggested-sheet-tags"
+                data-testid={ids.sheetTags}
+                flatten={false}
+                accessibility-element={true}
+                accessibility-label={character.tags
+                  .map((tag) => localizedLine(tag, copy.language))
+                  .join(", ")}
+              >
                 {character.tags.map((tag) => (
                   <view key={tag.en} className="suggested-sheet-tag">
                     <text className="suggested-sheet-tag-text">
@@ -175,7 +194,13 @@ export function SuggestedFriendSheet({
             ) : null}
             {locked ? (
               <view className="suggested-sheet-info" data-testid={ids.sheetInfo}>
-                <text className="suggested-sheet-info-text">{copy.lockedInfo(character.name)}</text>
+                <text
+                  className="suggested-sheet-info-text"
+                  flatten={false}
+                  accessibility-element={true}
+                >
+                  {copy.lockedInfo(character.name)}
+                </text>
               </view>
             ) : null}
           </view>
@@ -201,7 +226,16 @@ export function SuggestedFriendSheet({
               />
             </view>
           ) : offer === null ? null : (
-            <view className="suggested-sheet-early" data-testid={ids.sheetEarly}>
+            <view
+              className="suggested-sheet-early"
+              data-testid={ids.sheetEarly}
+              flatten={false}
+              accessibility-element={true}
+              accessibility-traits="button"
+              accessibility-enable-tap={true}
+              accessibility-label={earlyLabel(offer, now, copy)}
+              bindtap={onEarly}
+            >
               <Button
                 label={copy.chatNow(offer.price)}
                 variant="brand"
@@ -209,7 +243,6 @@ export function SuggestedFriendSheet({
                 width="fill"
                 icon={coinIcon}
                 iconPosition="leading"
-                bindtap={onEarly}
               />
               <text className="suggested-sheet-early-note">
                 {copy.launchSpecial(character.name)}
