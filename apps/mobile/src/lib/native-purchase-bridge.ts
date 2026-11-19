@@ -81,9 +81,13 @@ function purchaseResultFrom(payload: unknown, requested: string): PurchaseResult
   switch (record?.["status"]) {
     case "purchased": {
       const id = record["productId"];
+      const transaction = record["transactionId"];
       return {
         kind: "purchased",
         productId: typeof id === "string" ? baseProductId(id) : requested,
+        ...(typeof transaction === "string" && transaction !== ""
+          ? { transactionId: transaction }
+          : {}),
       };
     }
     case "cancelled":

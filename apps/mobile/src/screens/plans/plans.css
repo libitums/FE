@@ -22,6 +22,15 @@
   flex-shrink: 0;
 }
 
+/* 구매 뒤 확인 대기 알약의 자리(ADR-0163) — 뒤로 단추와 「Your plan」 카드 사이 빈 칸. 줄 높이는 그대로입니다. */
+.plans-screen-pill {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  align-items: center;
+  margin: 0 var(--libitum-spacing-8);
+}
+
 /* 「Your plan」 카드 — 엽전 탭 「You have」 카드(`coin-shop-screen.css`의 `.coin-shop-screen-balance`)와 같은 틀 · 치수입니다. 탭을
    바꿔도 위 줄 높이(56)와 전환 알약 자리가 움직이지 않게 합니다. 황동 색은 그 파일의 이유를 따릅니다. */
 .plans-your-plan {

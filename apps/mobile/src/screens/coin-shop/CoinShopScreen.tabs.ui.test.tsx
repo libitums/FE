@@ -122,7 +122,8 @@ test("ST7 Premium 구독자는 줄이 없고, Plans 탭 칩은 Premium", () => {
   expect(screen.getByTestId("plans-your-plan")).toHaveTextContent("Premium");
 });
 
-test("ST8 Plans 탭에서 구매가 끝나면(purchased) 상점이 닫히고, 선택은 자리를 실어 넘긴다", async () => {
+// ADR-0163 D3: 결제가 끝나도(purchased) 상점은 서버가 바뀔 때까지 열려 있습니다(닫힘은 CoinShopScreen.pending CP-6).
+test("ST8 Plans 탭에서 구매가 끝나도(purchased) 상점은 곧바로 닫히지 않고, 선택은 자리를 실어 넘긴다", async () => {
   const plans = plansWith();
   plans.onSelect.mockResolvedValue({ kind: "purchased", productId: "duru.premium.monthly.v1" });
   const onClose = mount(plans, { initialTab: "plans", placement: "header_chip", focus: null });
@@ -135,7 +136,7 @@ test("ST8 Plans 탭에서 구매가 끝나면(purchased) 상점이 닫히고, �
     "monthly",
     "duru.premium.monthly.v1",
   );
-  expect(onClose).toHaveBeenCalledTimes(1);
+  expect(onClose).not.toHaveBeenCalled();
 });
 
 test("ST9 탭 묶음은 낭독 이름이 있고 고른 탭은 selected로 읽힌다", () => {

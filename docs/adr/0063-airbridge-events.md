@@ -436,8 +436,32 @@ PR에서 wiki를 고친다」 규약이고 PR 작성자가 손으로 한다. 이
 
 이 ADR의 범위 밖이던 「결제 · 인앱 구매 추적」의 자리가 정해졌다 — 결정은 [ADR-0144](0144-subscriptions-revenuecat.md) 「Airbridge 기기 id」.
 
-- 구매 · 갱신 · 환불 이벤트는 **RevenueCat → Airbridge 서버 연동**이 보낸다. 앱의 Airbridge SDK는 구매 이벤트를 **보내지 않는다**
+- 구독 구매 · 갱신 · 환불 이벤트는 **RevenueCat → Airbridge 서버 연동**이 보낸다. 앱의 Airbridge SDK는 구독 이벤트를 **보내지 않는다**(엽전 팩은 아래 「엽전 팩 결제 Order Complete」 — 서버 연동이 Airbridge에 남기지 않아 앱이 보낸다)
   (`startInAppPurchaseTracking` · `trackStoreInAppPurchaseEvent` 호출 0, D7 매핑에 구매 없음) — 둘 다 보내면 같은 구매가 두 번 집계된다.
 - 호스트는 Airbridge 기기 id(`fetchDeviceUUID`)를 RevenueCat 고객에 건다(`PurchasesAttribution`). 이 ADR의 「값이 없으면 SDK 호출 0」 · 「시험 계정은
   추적을 멈춤」(ADR-0085 D4)을 그대로 따른다. 「확인하지 못한 것」 9(인앱 구매 자동 추적 기본값)는 SDK 4.12.0에서 자동 추적이
   `startInAppPurchaseTracking`을 불러야 켜지는 것으로 읽힌다(공개 API) — 부르지 않는다.
+
+## 적용 기록 ⟨2026-11-19 — 엽전 팩 결제 Order Complete⟩
+
+결정은 **사용자 승인**(2026-11-19). RevenueCat → Airbridge 서버 연동은 구독 이벤트(Subscribe · Unsubscribe)를 보내지만, 엽전 팩(NON_RENEWING_PURCHASE)은
+Airbridge 실시간 로그에 한 건도 오지 않았다(샌드박스 기기, RevenueCat 쪽은 Sent 200). RevenueCat에는 그 이름을 바꿀 설정이 없다. 그래서 **엽전 팩만 앱이 보낸다.**
+
+- **D7 매핑에 한 줄을 더했다**:
+
+  | 제품 이벤트 | 조건 | Airbridge 카테고리 | 시맨틱 속성 |
+  |---|---|---|---|
+  | `pack_purchased`(새 제품 이벤트, PostHog에도 감) | 스토어 금액 · 통화를 앎 | `airbridge.ecommerce.order.completed`(`AirbridgeCategory.ORDER_COMPLETED`) | `value`(스토어 금액, 수) · `currency` · `transactionID`(스토어 거래 id, 있을 때만) · `products` = `[{ productID, name(= 상품 id), price, quantity: 1, currency }]` |
+  | `pack_purchased` | 금액 · 통화 모름(스토어 상품 못 읽음) | 보내지 않는다 | — |
+
+  - 언제: 엽전 상점에서 스토어가 `purchased`로 답한 때 **한 번**(`CoinShopPanel` → `reportPackPurchased`). 서버 확인 대기(ADR-0163)와 상관없이 결제 시점이다.
+  - **구독은 보내지 않는다** — RevenueCat 서버 연동이 보낸다(두 번 세지 않게). 복원도 보내지 않는다.
+  - 금액은 `offerings`가 준 스토어 상품 금액(`StoreOffer.amount`)이고, 임시 추천 가격은 쓰지 않는다. 통화는 대문자 ISO 코드.
+  - 거래 id: iOS RevenueCat `StoreTransaction.transactionIdentifier`, Android `getOrderId()`(없으면 `getPurchaseToken()`). 호스트 구매 답에 `transactionId`로 더했다.
+  - 시험 계정(ADR-0085 D4)은 다른 이벤트와 같이 호스트의 `stopTracking`이 막는다.
+- **와이어 값을 두 SDK에서 확인했다**(4.12.0): `airbridge.ecommerce.order.completed` · `value` · `currency` · `transactionID` · `products` · `productID` · `name` ·
+  `price` · `quantity` [Android `AirbridgeEventNamesTest` N-A3 · iOS `AirbridgeEventsTests` N-I4].
+- **호스트 경계가 넓어졌다(D11)** — 시맨틱 속성이 문자열만이던 것을 문자열 · 수 · 상품 줄 배열(줄 안도 문자열 · 수)까지 넘긴다
+  (iOS `AirbridgeEventsModule.semanticAttributes(from:)`, Android `AirbridgeEventAttributes.semantic`). 불리언 · 중첩 맵은 여전히 버린다.
+  **옛 호스트**(이 변경 전 빌드)에 새 번들이 실리면 수 · 배열이 버려져 Order Complete가 금액 없이 간다 — 스토어 빌드를 새로 내야 매출이 잡힌다.
+- 이벤트 이름 수: 제품 이벤트 73(AN1), Airbridge로 가는 것은 셋(AB3).

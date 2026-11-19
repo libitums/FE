@@ -16,6 +16,17 @@ export const purchaseIntentExample = {
   preview: true,
 } as const satisfies AnalyticsEvent;
 
+/** 엽전 팩 결제 성공(ADR-0063 · ADR-0144) — 스토어 금액 · 통화 · 거래 id. Airbridge Order Complete로 나갑니다. */
+export const packPurchasedExample = {
+  name: "pack_purchased",
+  surface: "learning",
+  daysSinceFirstOpen: "6",
+  product: "duru.coins.1200.v1",
+  price: "4.99",
+  currency: "USD",
+  transactionId: "2000000812345678",
+} as const satisfies AnalyticsEvent;
+
 /** 요금제 이벤트 견본 — 보기 · 고름 · 구매 의향 · 상점 탭 전환(ADR-0160). */
 export const planEventExamples = [
   {

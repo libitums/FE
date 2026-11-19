@@ -169,6 +169,18 @@ export type PlanEvent =
       readonly priceSource: "store" | "provisional" | "";
       readonly preview: boolean;
     })
+  /**
+   * 엽전 팩 결제 성공(ADR-0063 2026-11-19) — 스토어가 `purchased`로 답한 때 한 번. `price`는 스토어 상품 금액(10진 문자열, 모르면 빈 문자열 —
+   * 임시 추천 가격은 싣지 않음), `transactionId`는 스토어 거래 id(모르면 빈 문자열). Airbridge Order Complete로도 나갑니다 — 구독은
+   * RevenueCat 서버 연동이 보내므로 이 이벤트가 없습니다.
+   */
+  | (Common & {
+      readonly name: "pack_purchased";
+      readonly product: string;
+      readonly price: string;
+      readonly currency: string;
+      readonly transactionId: string;
+    })
   /** 하나의 상점(ADR-0160)의 탭 전환 — 위 전환 · 엽전 탭 아래 요금제 줄. */
   | (Common & {
       readonly name: "shop_tab_switched";

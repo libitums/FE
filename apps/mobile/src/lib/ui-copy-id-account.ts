@@ -166,6 +166,13 @@ export const coinShopId: CoinShopCopy = {
     description: "Pembelian koin belum tersedia. Silakan cek kembali nanti.",
   },
   purchaseFailed: "Pembelian tidak berhasil. Coba lagi.",
+  purchaseWait: {
+    confirming: "Mengonfirmasi pembelianmu…",
+    late: "Pembelianmu aman. Sebentar lagi akan muncul.",
+    added: (_count, display) => `+${display} koin ditambahkan`,
+    adding: "Menambahkan ke dompetmu",
+    updating: "Memperbarui",
+  },
 };
 
 export const downloadSheetId: DownloadSheetCopy = {

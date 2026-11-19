@@ -164,6 +164,13 @@ export const coinShopJa: CoinShopCopy = {
     description: "コインの購入はまだご利用いただけません。もうしばらくお待ちください。",
   },
   purchaseFailed: "購入を完了できませんでした。もう一度お試しください。",
+  purchaseWait: {
+    confirming: "購入を確認しています…",
+    late: "購入は完了しています。まもなく反映されます。",
+    added: (_count, display) => `コイン${display}枚を追加しました`,
+    adding: "ウォレットに追加中",
+    updating: "更新中",
+  },
 };
 
 export const downloadSheetJa: DownloadSheetCopy = {

@@ -149,7 +149,7 @@ enum AirbridgeEvents {
   }
 
   /// 시작되지 않았거나 카테고리가 비면 아무것도 하지 않는다(이중 방어). 속성이 비면 속성 없는 오버로드를 쓴다.
-  static func track(_ category: String, semanticAttributes: [String: String]) {
+  static func track(_ category: String, semanticAttributes: [String: Any]) {
     guard isStarted, !category.isEmpty else { return }
     if semanticAttributes.isEmpty {
       Airbridge.trackEvent(category: category)
