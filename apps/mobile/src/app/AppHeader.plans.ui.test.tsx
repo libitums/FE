@@ -89,7 +89,10 @@ test("AHP4 티켓 모달의 Go unlimited → 모달이 닫히고 Unlimited Ticke
 
 test("AHP5 구독 성공 — 둘째 줄 아래 알림 · 칩 반짝임, 4초 뒤 onActivatedShown", () => {
   vi.useFakeTimers();
-  const { onActivatedShown } = mount({ chip: "unlimited_tickets", activated: "unlimited_tickets" });
+  const { onActivatedShown } = mount({
+    chip: "unlimited_tickets",
+    activated: { plan: "unlimited_tickets", scheduled: null },
+  });
   expect(screen.getByTestId("subscription-toast")).toHaveTextContent("Unlimited Tickets is on");
   expect(screen.getByTestId("header-plan-chip").getAttribute("data-pulse")).toBe("true");
   act(() => {

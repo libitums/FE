@@ -1,11 +1,14 @@
 import { describe, expect, test } from "vitest";
 
 import type { PlanEntitlement, PlanEntitlements } from "../../lib/plans-api";
+import { catalogV1 } from "./plans.test-support";
 import {
   currentPlanOf,
   dateParts,
   newlyActivePlan,
   periodOfProduct,
+  planActivationOf,
+  scheduledChangeOf,
   planChangeKind,
   planChangeOf,
   type CurrentPlan,
@@ -108,5 +111,122 @@ describe("PC6 새로 켜진 요금제", () => {
     expect(newlyActivePlan(one, one)).toBeNull();
     expect(newlyActivePlan(one, owned())).toBeNull();
     expect(newlyActivePlan(one, null)).toBeNull();
+  });
+});
+
+// 2026-11-19 샌드박스 실측: Premium → Unlimited Tickets 내림은 Premium 기간 끝(07:28:45)으로 미뤄지고, Premium 줄에
+// pendingProductId가 붙고 Tickets 줄은 그 시각부터 시작하는 활성 줄로 먼저 생깼다.
+const boundary = "2026-11-19T07:28:45.000Z";
+const pendingPremium = {
+  ...row("premium", "duru.premium.monthly.v1", boundary),
+  pendingProductId: "duru.tickets.monthly.v1",
+};
+const ticketsNext = row("unlimited_tickets", "duru.tickets.monthly.v1", "2026-11-19T07:33:45.000Z");
+
+describe("PC7 미뤄진 바꿈", () => {
+  test("지금 요금제 줄의 pending — 권한 줄에서 요금제를 찾는다", () => {
+    expect(scheduledChangeOf(owned(pendingPremium, ticketsNext))).toEqual({
+      from: "premium",
+      to: "unlimited_tickets",
+      period: "monthly",
+      at: boundary,
+    });
+  });
+  test("다음 요금제 줄이 아직 없으면(웹훅 전) 요금표의 상품으로 찾는다 · Play 기본요금제 꼬리도", () => {
+    expect(scheduledChangeOf(owned(pendingPremium), catalogV1)?.to).toBe("unlimited_tickets");
+    const play = { ...pendingPremium, pendingProductId: "duru.chatplus.yearly.v1:yearly" };
+    expect(scheduledChangeOf(owned(play), catalogV1)).toEqual({
+      from: "premium",
+      to: "chat_plus",
+      period: "yearly",
+      at: boundary,
+    });
+  });
+  test("같은 요금제의 기간 바꿈", () => {
+    const yearly = { ...pendingPremium, pendingProductId: "duru.premium.yearly.v1" };
+    expect(scheduledChangeOf(owned(yearly), catalogV1)).toEqual({
+      from: "premium",
+      to: "premium",
+      period: "yearly",
+      at: boundary,
+    });
+  });
+  test("pending이 없거나(옛 서버) · 지금 상품과 같거나 · 모르는 상품이면 null", () => {
+    expect(scheduledChangeOf(null, catalogV1)).toBeNull();
+    expect(
+      scheduledChangeOf(owned(row("premium", "duru.premium.monthly.v1")), catalogV1),
+    ).toBeNull();
+    const same = { ...pendingPremium, pendingProductId: "duru.premium.monthly.v1" };
+    expect(scheduledChangeOf(owned(same), catalogV1)).toBeNull();
+    const unknown = { ...pendingPremium, pendingProductId: "duru.gold.monthly.v1" };
+    expect(scheduledChangeOf(owned(unknown), catalogV1)).toBeNull();
+    expect(scheduledChangeOf(owned(pendingPremium), null)).toBeNull();
+  });
+  test("올림은 미뤄지지 않는다 — 옛 줄(Chat Plus)의 pending은 지금 요금제(Premium)가 아니라 보지 않는다", () => {
+    const oldChat = {
+      ...row("chat_plus", "duru.chatplus.monthly.v1", boundary),
+      pendingProductId: "duru.premium.monthly.v1",
+    };
+    expect(
+      scheduledChangeOf(owned(oldChat, row("premium", "duru.premium.monthly.v1")), catalogV1),
+    ).toBeNull();
+  });
+});
+
+describe("PC8 구독 성공 알림의 대상", () => {
+  test("새 요금제가 지금 요금제의 미뤄진 바꿈이면 그 바꿈을 함께 — 「켜짐」이 아니라 「언제부터」", () => {
+    expect(planActivationOf(owned(pendingPremium), owned(pendingPremium, ticketsNext))).toEqual({
+      plan: "unlimited_tickets",
+      scheduled: { from: "premium", to: "unlimited_tickets", period: "monthly", at: boundary },
+    });
+  });
+  test("곧바로 켜진 요금제(올림 · 새 구독)는 scheduled null", () => {
+    expect(planActivationOf(null, owned(row("premium", "b")))).toEqual({
+      plan: "premium",
+      scheduled: null,
+    });
+    const oldChat = {
+      ...row("chat_plus", "c", boundary),
+      pendingProductId: "duru.premium.monthly.v1",
+    };
+    expect(
+      planActivationOf(owned(oldChat), owned(oldChat, row("premium", "duru.premium.monthly.v1"))),
+    ).toEqual({ plan: "premium", scheduled: null });
+  });
+  test("새 요금제가 없으면 null", () => {
+    expect(planActivationOf(owned(pendingPremium), owned(pendingPremium))).toBeNull();
+  });
+});
+
+// 2026-11-19 07:53 기기 확인: Unlimited Tickets → Premium 올림(곧바로) 뒤 Premium → Tickets 내림(미뤄짐). Tickets 줄은 올림 전부터 활성이라
+// 내림 뒤 「새로 생긴 요금제」가 없었고, 옛 Tickets 줄에는 올림의 pending(=Premium)이 남아 있었다.
+const premiumNow = row("premium", "duru.premium.monthly.v1", boundary);
+const staleTickets = {
+  ...row("unlimited_tickets", "duru.tickets.monthly.v1", boundary),
+  pendingProductId: "duru.premium.monthly.v1",
+};
+
+describe("PC9 올림 뒤 내림(새 줄 없이 pending만 생김)", () => {
+  test("지금 요금제에 미뤄진 바꿈이 새로 생기면 그 바꿈으로 알림 — 새 요금제 줄이 없어도", () => {
+    expect(
+      planActivationOf(owned(staleTickets, premiumNow), owned(staleTickets, pendingPremium)),
+    ).toEqual({
+      plan: "unlimited_tickets",
+      scheduled: { from: "premium", to: "unlimited_tickets", period: "monthly", at: boundary },
+    });
+  });
+  test("같은 미뤄진 바꿈이 이미 있었으면 다시 알리지 않는다", () => {
+    expect(
+      planActivationOf(owned(staleTickets, pendingPremium), owned(staleTickets, pendingPremium)),
+    ).toBeNull();
+  });
+  test("지금보다 위 등급으로의 pending(곧바로 바뀌는 올림의 흔적)은 미뤄진 바꿈이 아니다", () => {
+    const chatToPremium = {
+      ...row("chat_plus", "duru.chatplus.monthly.v1", boundary),
+      pendingProductId: "duru.premium.monthly.v1",
+    };
+    expect(scheduledChangeOf(owned(chatToPremium), catalogV1)).toBeNull();
+    // 옛 Tickets 줄의 pending(=Premium, 지금 요금제)은 보지 않는다.
+    expect(scheduledChangeOf(owned(staleTickets, premiumNow), catalogV1)).toBeNull();
   });
 });

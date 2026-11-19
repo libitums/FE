@@ -1,8 +1,11 @@
-import { afterEach, expect, test } from "vitest";
+import { afterEach, describe, expect, test } from "vitest";
 
 import type { PlanEntitlement, PlanEntitlements } from "./plans-api";
 import {
+  BOUNDARY_MARGIN_MS,
+  MAX_TIMER_MS,
   currentPlanIds,
+  entitlementsRefreshDelay,
   planChatTier,
   planUnlimitedTickets,
   setPlanAccess,
@@ -87,4 +90,41 @@ test("PA4 무제한 판 — 티켓 무제한 권한의 만료 · 갱신으로 �
     entitlements: [{ ...premiumRow, expiresAt: null }],
   };
   expect(subscriptionUnlimitedPass(noExpiry, label)).toBeUndefined();
+});
+
+describe("PA5 만료 경계에서 다시 읽기(2026-11-19 내림 뒤 칩이 PREMIUM에 남음)", () => {
+  const now = Date.parse("2026-11-19T07:28:00.000Z");
+  const rowAt = (id: PlanEntitlement["id"], expiresAt: string | null): PlanEntitlement => ({
+    ...premiumRow,
+    id,
+    expiresAt,
+  });
+  const of = (...rows: PlanEntitlement[]): PlanEntitlements => ({ ...premium, entitlements: rows });
+  test("가장 가까운 만료 + 여유", () => {
+    const entitlements = of(
+      rowAt("unlimited_tickets", "2026-11-19T07:33:45.000Z"),
+      rowAt("premium", "2026-11-19T07:28:45.000Z"),
+    );
+    expect(entitlementsRefreshDelay(entitlements, now)).toBe(45_000 + BOUNDARY_MARGIN_MS);
+  });
+  test("지난 만료 · 만료 없음 · 틀린 시각은 건너뛰고, 남은 것이 없으면 null", () => {
+    expect(entitlementsRefreshDelay(null, now)).toBeNull();
+    expect(entitlementsRefreshDelay(of(), now)).toBeNull();
+    expect(
+      entitlementsRefreshDelay(of(rowAt("premium", null), rowAt("chat_plus", "x")), now),
+    ).toBeNull();
+    expect(
+      entitlementsRefreshDelay(of(rowAt("premium", "2026-11-19T07:27:00.000Z")), now),
+    ).toBeNull();
+    const mixed = of(
+      rowAt("premium", "2026-11-19T07:27:00.000Z"),
+      rowAt("chat_plus", "2026-11-19T07:29:00.000Z"),
+    );
+    expect(entitlementsRefreshDelay(mixed, now)).toBe(60_000 + BOUNDARY_MARGIN_MS);
+  });
+  test("먼 만료(연간)는 타이머 상한으로 자른다 — 넘기면 곧바로 불림", () => {
+    expect(entitlementsRefreshDelay(of(rowAt("premium", "2027-11-19T07:28:00.000Z")), now)).toBe(
+      MAX_TIMER_MS,
+    );
+  });
 });

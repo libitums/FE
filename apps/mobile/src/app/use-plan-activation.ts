@@ -3,9 +3,9 @@
 
 import { useRef, useState } from "@lynx-js/react";
 
-import type { PlanEntitlements, PlanId } from "../lib/plans-api";
+import type { PlanEntitlements } from "../lib/plans-api";
 import { REFRESH_ATTEMPTS, REFRESH_INTERVAL_MS } from "../lib/purchase-refresh";
-import { newlyActivePlan } from "../screens/plans/plan-change";
+import { planActivationOf, type PlanActivation } from "../screens/plans/plan-change";
 
 /** 구매 뒤 알림을 기다리는 창 — 서버 따라잡기(2초 × 5) + 여유. */
 export const ACTIVATION_WINDOW_MS = REFRESH_ATTEMPTS * REFRESH_INTERVAL_MS + 2000;
@@ -30,13 +30,13 @@ export function usePlanActivation(
   entitlements: PlanEntitlements | null,
   now: () => number = Date.now,
 ): {
-  readonly activated: PlanId | null;
+  readonly activated: PlanActivation | null;
   readonly onActivatedShown: () => void;
   readonly arm: () => void;
   readonly disarm: () => void;
   readonly observe: (next: PlanEntitlements) => void;
 } {
-  const [activated, setActivated] = useState<PlanId | null>(null);
+  const [activated, setActivated] = useState<PlanActivation | null>(null);
   const until = useRef(0);
   // 따라잡기 콜백은 구매 때의 렌더에 묶이므로 지금 권한은 ref로 읽습니다.
   const latest = useRef<PlanEntitlements | null>(null);
@@ -53,10 +53,11 @@ export function usePlanActivation(
     },
     observe: (next) => {
       if (now() >= until.current) return;
-      const plan = newlyActivePlan(latest.current, next);
-      if (plan === null) return;
+      // 미뤄진 내림이면 「켜짐」이 아니라 「언제부터」를 알립니다(scheduled).
+      const activation = planActivationOf(latest.current, next);
+      if (activation === null) return;
       until.current = 0;
-      setActivated(plan);
+      setActivated(activation);
     },
   };
 }

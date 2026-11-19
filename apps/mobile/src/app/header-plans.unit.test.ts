@@ -26,11 +26,11 @@ test("HP1 결선 없음 → undefined, 지도 밖 → 칩 null, 지도 → 구�
       expiresAt: null,
       willRenew: true,
     },
-    activated: "premium",
+    activated: { plan: "premium", scheduled: null },
   });
   expect(headerPlansOf(premium, true)).toMatchObject({
     chip: "premium",
-    activated: "premium",
+    activated: { plan: "premium", scheduled: null },
     goUnlimited: { price: "$3.99" },
   });
 });

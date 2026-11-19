@@ -58,3 +58,21 @@ export function subscriptionUnlimitedPass(
     productId: row.productId,
   };
 }
+
+/** 만료 경계 뒤 여유 — 서버가 `now()`로 권한을 거르므로 경계를 조금 넘겨 읽습니다(기기 · 서버 시각 차). */
+export const BOUNDARY_MARGIN_MS = 2000;
+/** setTimeout의 가장 긴 지연(2^31 - 1) — 넘기면 곧바로 불립니다. */
+export const MAX_TIMER_MS = 2_147_483_647;
+
+/** 가장 가까운 만료(지금 뒤) + 여유까지의 지연 — 다시 읽을 때. 만료가 없으면 null. 순수. */
+export function entitlementsRefreshDelay(
+  entitlements: PlanEntitlements | null,
+  nowMs: number,
+): number | null {
+  let soonest: number | null = null;
+  for (const row of entitlements?.entitlements ?? []) {
+    const at = row.expiresAt === null ? NaN : Date.parse(row.expiresAt);
+    if (Number.isFinite(at) && at > nowMs && (soonest === null || at < soonest)) soonest = at;
+  }
+  return soonest === null ? null : Math.min(soonest - nowMs + BOUNDARY_MARGIN_MS, MAX_TIMER_MS);
+}

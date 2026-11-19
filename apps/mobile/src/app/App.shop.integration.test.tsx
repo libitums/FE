@@ -302,3 +302,37 @@ test("SH-I7 복원으로 권한이 생기면 칩은 바뀌어도 구독 성공 �
   expect(screen.getByTestId("header-plan-chip")).toHaveTextContent("TICKETS");
   expect(present("subscription-toast")).toBe(false);
 });
+
+test("SH-I8 올림 뒤 내림(2026-11-19 07:53 기기) — 새 요금제 줄 없이 pending만 생겨도 「starts 날짜」 알림 한 번, 칩은 PREMIUM", async () => {
+  pay.on = true;
+  const premium = subscribedTo("premium");
+  const [premiumRow] = premium.entitlements;
+  const staleTickets = {
+    ...subscribedTo("unlimited_tickets").entitlements[0]!,
+    pendingProductId: "duru.premium.monthly.v1",
+  };
+  const before = { ...premium, entitlements: [staleTickets, premiumRow!] };
+  const after = {
+    ...premium,
+    entitlements: [staleTickets, { ...premiumRow!, pendingProductId: "duru.tickets.monthly.v1" }],
+  };
+  rpc.entitlements = [before, before, after];
+  await boot();
+  await flush();
+  expect(screen.getByTestId("header-plan-chip")).toHaveTextContent("PREMIUM");
+  tap("header-plan-chip");
+  tap("plans-card-unlimited_tickets");
+  await act(async () => {
+    fireEvent.tap(screen.getByTestId("plans-continue"), {});
+  });
+  for (let i = 0; i < 4; i += 1) await flush();
+  expect(present("coin-shop-screen")).toBe(false);
+  act(
+    () =>
+      void fireEvent.tap(screen.getByTestId("first-unit-guide-map"), { eventType: "catchEvent" }),
+  );
+  const toast = screen.getByTestId("subscription-toast");
+  expect(toast).toHaveTextContent("Unlimited Tickets starts Dec 18");
+  expect(toast).toHaveTextContent("You keep Premium until then");
+  expect(screen.getByTestId("header-plan-chip")).toHaveTextContent("PREMIUM");
+});

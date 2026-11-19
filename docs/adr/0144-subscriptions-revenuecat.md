@@ -204,3 +204,26 @@ DB가 실패하면 500 — RevenueCat이 다시 보낸다. 같은 이벤트 id�
   사용자 확인([iOS 프라이버시](../ios-privacy.md) 「RevenueCat → Airbridge」).
 - **확인 남음(기기)**: 새 사용자로 샌드박스 구매 → RevenueCat 고객 화면 속성에 `$airbridgeDeviceId`(· `$idfv` · `$ip`)가 보이고, Airbridge 실시간 로그에
   RevenueCat 발 구매 이벤트가 그 기기로 찍히는지. 샌드박스 이벤트 전송 여부는 위 「위험 · 대가」 2.
+
+## 미뤄진 바꿈 · 만료 경계 (2026-11-19) — 샌드박스 Premium → Unlimited Tickets 내림 [버그]
+
+- **증상**: 같은 구독 그룹 안 내림 · 같은 수준 바꿈은 스토어가 지금 기간 끝으로 미룬다. 웹훅(PRODUCT_CHANGE)은 지금 줄의 `pending_product_id`에
+  다음 상품을 적고, 다음 요금제 줄은 기간 끝에 시작하는 활성 줄로 먼저 생긴다. 앱은 ① 미뤄졌다는 것을 몰라 아무 안내가 없었고(구독 성공 알림이
+  「Unlimited Tickets is on」을 띄울 수 있었음), ② 권한을 화면 진입 · 구매 뒤에만 읽어 만료를 넘긴 세션의 머리 칩이 PREMIUM에 남았다.
+- **서버**: `companion_entitlements()`가 줄마다 `pendingProductId`(없으면 null)를 더 싣는다(`20261214120000_companion_entitlements_pending.sql`).
+  다른 키 · 거르기 · 권한은 그대로라 옛 앱은 무시한다. 앱은 키가 없거나 틀려도 줄을 버리지 않는다(옛 서버).
+- **앱 — 안내**: 지금 요금제 줄의 pending을 권한 줄(먼저 생긴 다음 요금제 줄) · 요금표 상품에서 요금제로 읽는다(`scheduledChangeOf`). 올림은 곧바로
+  바뀌어 지금 요금제가 이미 새 것이라 걸리지 않는다. Plans 지금 카드 한 줄이 「Current plan · Tickets ∞ from Dec 18」, 구독 성공 알림이
+  「Unlimited Tickets starts Dec 18 / You keep Premium until then」(다섯 언어).
+- **앱 — 경계 다시 읽기**: 가장 가까운 활성 만료 + 2초(서버 `now()` 거르기 · 시각 차)에 한 번, 앱이 앞으로 올 때(`contentSyncOpportunity`) 한 번
+  권한을 다시 읽는다(`use-server-entitlements.ts`). 실패(null)면 지금 값을 둔다. 타이머 상한(2^31 - 1 ms)으로 자른다. 결제를 열 수 없으면 읽지 않는다.
+- **디자인**: 새 토큰 · 요소 · CSS 없음. 지금 카드의 기존 한 줄(`plans-card-*-current`, 「renews 날짜」 자리)과 토스트의 두 줄 틀(제목 · 본문)을
+  그대로 쓰고 글만 바꾼다. 요금제 글은 칩과 같은 짧은 이름(`planShort`, 「Tickets ∞」)이라 긴 언어에서도 카드 한 줄을 크게 넘기지 않는다.
+- 구매 뒤 따라잡기는 pending만 바뀌어도 「바뀜」으로 보고 멈춘다(`sameEntitlements`).
+- **올림 뒤 내림(2026-11-19 07:53 기기 확인)**: Tickets → Premium 올림 뒤 Premium → Tickets 내림은 Tickets 줄이 올림 전부터 활성이라 「새로 생긴
+  요금제」가 없어 알림이 뜨지 않았다. 알림은 새 요금제 줄이 없어도 지금 요금제에 미뤄진 바꿈이 새로 생기면 뜬다(`planActivationOf`). 지금보다 위 등급으로의
+  pending(곧바로 바뀌는 올림의 흔적)은 미뤄진 바꿈으로 보지 않는다.
+- **서버 — 곧바로 바뀐 옛 줄**: 올림의 PRODUCT_CHANGE를 pending으로만 적어 옛 Tickets 줄이 원래 만료까지 활성 · pending=Premium으로 남았다. RevenueCat
+  PRODUCT_CHANGE의 `expiration_at_ms`는 옛 상품의 만료다 — 곧바로 바뀌면 바뀐 시각, 미뤄지면 기간 끝(운영 store_events 10건으로 확인). 그 값으로 줄의 만료를
+  앞당기기만 한다(`20261215120000_companion_product_change_expiry.sql`, `companion_apply_store_event`의 한 줄).
+- **남은 것**: 미뤄진 바꿈의 대상 카드에 다시 사는 CTA(「Switch to … from 날짜」)가 그대로 보인다 — 스토어가 같은 바꿈을 다시 받는지는 확인하지 않았다.

@@ -7,7 +7,7 @@ import { useUiCopy } from "../lib/ui-copy";
 import type { StatBumpWiring } from "./learning-progress";
 import { PlanChip } from "../components/PlanChip";
 import { SubscriptionToast } from "../components/SubscriptionToast";
-import type { PlanId } from "../lib/plans-api";
+import type { PlanActivation } from "../screens/plans/plan-change";
 import type { HeaderPlanChip, ShopRequest } from "../screens/coin-shop/shop-model";
 import { EpisodeSurveySheet } from "../screens/episode-survey/EpisodeSurveySheet";
 import { JourneyStatModal } from "../screens/journey-map/JourneyStatModal";
@@ -40,8 +40,8 @@ export type HeaderPlans = {
   readonly chip: HeaderPlanChip | null;
   /** 티켓 모달의 「Go unlimited」 줄 가격 — undefined면 줄이 없습니다(표 없음 · 이미 티켓 무제한). */
   readonly goUnlimited: { readonly price: string | null } | undefined;
-  /** 구독 성공 알림 한 번 — 새로 켜진 요금제. */
-  readonly activated: PlanId | null;
+  /** 구독 성공 알림 한 번 — 새로 켜진 요금제(미뤄진 내림이면 scheduled). */
+  readonly activated: PlanActivation | null;
   readonly onActivatedShown: () => void;
 };
 
@@ -209,7 +209,7 @@ export function AppHeader({
               ? undefined
               : () => onOpenShop({ tab: "coins", placement: "coin_shop", focus: null })
           }
-          ticketPulse={celebrating && plans?.activated !== "chat_plus"}
+          ticketPulse={celebrating && plans?.activated?.plan !== "chat_plus"}
           bumps={statBump?.statBumps}
           bumpHeld={layer !== null || obscured || celebrateStreak}
           onBumped={statBump?.onStatBumped}
@@ -227,7 +227,7 @@ export function AppHeader({
           </view>
         )}
         {celebrating && plans?.activated != null ? (
-          <SubscriptionToast plan={plans.activated} onDone={plans.onActivatedShown} />
+          <SubscriptionToast activation={plans.activated} onDone={plans.onActivatedShown} />
         ) : null}
       </view>
       {openLayer === "streak" || openLayer === "trophy" ? (
