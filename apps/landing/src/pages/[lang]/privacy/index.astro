@@ -1,0 +1,20 @@
+---
+import LegalPage from "../../../components/LegalPage.astro";
+import type { LegalLanguage } from "../../../legal/legal.contract";
+import { legalDefaultLanguage, legalLanguages } from "../../../legal/legal-paths";
+
+// 기준본(영어)은 src/pages/privacy/index.astro(`/privacy/`)가 그리고, 번역본이 있는 언어만 여기서 `/<코드>/privacy/`로 나옵니다.
+export function getStaticPaths() {
+  return legalLanguages
+    .filter((language) => language !== legalDefaultLanguage)
+    .map((language) => ({ params: { lang: language }, props: { language } }));
+}
+
+interface Props {
+  language: LegalLanguage;
+}
+
+const { language } = Astro.props;
+---
+
+<LegalPage id="privacy" language={language} />

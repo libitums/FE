@@ -1,0 +1,16 @@
+---
+import type { LegalTextProps } from "./landing.contract";
+
+type Props = LegalTextProps;
+
+const { text } = Astro.props;
+const spans = typeof text === "string" ? [text] : text;
+// 바깥 주소로 가는 링크만 `rel`을 답니다. 사이트 안(`/…`) · 메일(`mailto:`) 링크는 그대로입니다.
+const relOf = (href: string) => (href.startsWith("https://") ? "noopener noreferrer" : undefined);
+---
+
+{
+  spans.map((span) =>
+    typeof span === "string" ? span : <a href={span.href} rel={relOf(span.href)}>{span.label}</a>,
+  )
+}
