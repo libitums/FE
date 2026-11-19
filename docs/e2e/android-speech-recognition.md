@@ -17,6 +17,26 @@
 API가 보장하지 않는다. `stop`은 마지막 결과를 최대 3초 기다린다. 종료 콜백은 한 번만
 보내며, 부분 결과를 받은 뒤 오류가 나면 텍스트도 함께 보낸다.
 
+⟨2026-11-19⟩ **온디바이스 인식기에 ko-KR 모델이 없으면 네트워크 인식기로 한 번 다시
+시도한다.** `isOnDeviceRecognitionAvailable`은 온디바이스 서비스가 있다는 뜻일 뿐 한국어
+모델이 깔렸다는 뜻이 아니다. API 33 이상은 시작 전에 `checkRecognitionSupport`로 묻고
+(최대 1초, 답은 앱이 떠 있는 동안 기억 — 「받는 중」은 다음에 다시 묻는다), 한국어가
+`installed`가 아니면 곧바로 기본 인식기로 간다(`fallback: pack-missing`). 확인하지 못했거나
+API 31 · 32이면 온디바이스로 시작하고, `ERROR_LANGUAGE_NOT_SUPPORTED`(12) ·
+`ERROR_LANGUAGE_UNAVAILABLE`(13)이 오거나 시작 1.5초 안에 글자 없이
+`ERROR_SERVER`(4) · `ERROR_CLIENT`(5) · `ERROR_SERVER_DISCONNECTED`(11)가 오면
+기본 인식기로 다시 시도한다(`fallback: on-device-error`, `fallbackErrorCode`). 사용자가
+이미 `stop`을 눌렀으면 다시 시도하지 않는다. 다시 시도해도 세션은 하나라 콜백은 한 번이고,
+결과는 `requiresOnDevice: false` · `onDevice: not-guaranteed`를 싣는다. 결과에는
+`koreanPack`(`installed` · `downloading` · `available` · `unsupported` · `unknown`)도 실린다.
+
+같은 날 메서드 둘이 더해졌다 — `getKoreanPack(callback)`(`{ koreanPack }`)과
+`downloadKoreanPack(callback)`(`{ status: completed | scheduled | requested | failed |
+unsupported, errorCode }`, 한 번; API 34 이상은 진행률을 전역 이벤트
+`speechKoreanPackProgress`(인자 `[0~100]`)로 보낸다, API 33은 시스템에 맡기기만 해서
+`requested`). 내려받기를 권하는 화면은 아직 없다 — 사용자 동의 화면이 선 뒤에만 부른다.
+iOS 호스트에는 두 메서드가 없고 JS 접점이 `"unavailable"`을 돌려준다.
+
 Android `onRmsChanged`는 PCM 샘플을 주지 않는다. `level`·`peakLevel`·
 `averageLevel`은 인식 서비스가 제공한 dB 값을 `0...1`로 변환한 **근사치**이고,
 `bufferCount`는 `onBufferReceived`가 실제로 준 버퍼만 센다. 인식 서비스에 따라
@@ -55,3 +75,24 @@ Maestro는 모의 로그인·진행 데이터로 `Say Your Hello` 말하기 화�
   처리 여부를 검증할 수 없다. 음성 인식 서비스와 한국어 모델이 있는 전용 실기 또는
   Google Play 이미지에서 **마이크 허용·거부**, `안녕하세요` 전사, 정지 후 한 번의
   콜백, 백그라운드 중단, 온디바이스 보장 필드를 확인해야 한다.
+
+### 한국어 팩 없음 → 네트워크로 되돌아감 ⟨2026-11-19⟩
+
+- Android 37 Play 이미지 에뮬레이터(Pixel_8 AVD, `-read-only -no-audio`), 계측
+  `SpeechRecognitionModuleTest` 5건 통과(2건은 기기 조건으로 건너뜀). 이 이미지는
+  `koreanPack: available`(한국어 모델 없음)이다.
+  - 되돌아감을 끈 빌드: `status=recognition-failed errorCode=13 fallback=none
+    requiresOnDevice=true` — **실사용자의 `unavailable:failed`와 같은 결말이 재현됐다.**
+  - 시작 전 확인만 끈 빌드: `fallback=on-device-error fallbackErrorCode=13
+    requiresOnDevice=false`, 콜백 1회(실행 중 되돌아감 경로).
+  - 이 변경: `fallback=pack-missing koreanPack=available requiresOnDevice=false
+    onDevice=not-guaranteed`, 콜백 1회. 오디오가 없는 에뮬레이터라 기본 인식기는
+    `ERROR_NO_MATCH`(7)로 끝났다 — 전사는 확인하지 않았다.
+- **사람이 할 확인(실기)**: 한국어 오프라인 팩이 없는 Android 13+ 폰(설정 → 시스템 →
+  언어 → 음성 인식 · 기기 내 인식에서 한국어가 「다운로드」로 보이는 상태)에 이 빌드를
+  깔고 낱말 말하기에서 정답을 말한다. 들림 판정이 서야 하고, PostHog
+  `episode_item_answered`에 `speechFallback: pack-missing` · `speechKoreanPack:
+  available` · `speechErrorCode: "0"`이 실려야 한다. 기본 인식기가 오프라인에서 어떻게
+  끝나는지(오류 코드)는 확인하지 않았다 — 비행기 모드로 한 번 말해 `speechErrorCode`를 기록한다.
+- 내려받기(`downloadKoreanPack`)는 화면이 없어 실기에서 부르지 않았다 — 동의 화면 작업에서
+  API 33 · 34+ 각각 확인한다.

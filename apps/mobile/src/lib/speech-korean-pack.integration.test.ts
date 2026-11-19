@@ -22,7 +22,9 @@ function stubHost(methods: Record<string, unknown>): void {
 }
 
 test("KPI1. Android 호스트의 팩 상태가 그대로 오고, available이면 내려받기를 권한다", () => {
-  stubHost({ getKoreanPack: (callback: (payload: unknown) => void) => callback({ koreanPack: "available" }) });
+  stubHost({
+    getKoreanPack: (callback: (payload: unknown) => void) => callback({ koreanPack: "available" }),
+  });
   const packs: SpeechKoreanPack[] = [];
 
   expect(getSpeechKoreanPack((pack) => packs.push(pack))).toBe("requested");

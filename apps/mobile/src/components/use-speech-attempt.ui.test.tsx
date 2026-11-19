@@ -45,7 +45,11 @@ test("UH1. start 한 번에 권한 확인 1회 → 시작 1회 → 들은 글자
   expect(host.calls.request).toBe(1);
   expect(host.calls.start).toBe(1);
   expect(onOutcome).toHaveBeenCalledTimes(1);
-  expect(onOutcome).toHaveBeenCalledWith({ kind: "heard", text: "카드", diagnostic: noFallback(0) });
+  expect(onOutcome).toHaveBeenCalledWith({
+    kind: "heard",
+    text: "카드",
+    diagnostic: noFallback(0),
+  });
 });
 
 test.each([

@@ -22,7 +22,12 @@ export interface SpeechRecognitionModule {
  * `installed` 깔림 · `downloading` 받는 중 · `available` 받을 수 있음 · `unsupported` 기기 안 인식이 한국어를 못 함
  * (또는 기기 안 인식기가 아예 없음) · `unknown` 물을 수 없음(Android 12 이하 · 확인 실패 · iOS).
  */
-export type SpeechKoreanPack = "installed" | "downloading" | "available" | "unsupported" | "unknown";
+export type SpeechKoreanPack =
+  | "installed"
+  | "downloading"
+  | "available"
+  | "unsupported"
+  | "unknown";
 
 /**
  * 온디바이스 인식기를 버리고 네트워크 인식기로 한 번 다시 시도했는가, 했다면 왜인가입니다.

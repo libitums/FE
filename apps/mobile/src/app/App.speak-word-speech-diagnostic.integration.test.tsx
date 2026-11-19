@@ -1,7 +1,14 @@
 import { afterEach, expect, test } from "vitest";
 import { fireEvent, screen } from "@lynx-js/react/testing-library";
 
-import { boot, lessonPlan, resetApp, tapId, tapNode, u01 } from "./test-helpers/episode-format-harness";
+import {
+  boot,
+  lessonPlan,
+  resetApp,
+  tapId,
+  tapNode,
+  u01,
+} from "./test-helpers/episode-format-harness";
 import { solveActivity } from "./test-helpers/episode-format-solvers";
 
 // `integration` 계층: 앱 전체를 걸어, Android 호스트(대역)가 낸 인식 실패의 오류 코드 · 한국어 팩 · 되돌아감이
@@ -62,11 +69,14 @@ test("ISD2. 네트워크로 되돌아가 들은 정답은 pack-missing · availa
   const activity = plan.activities.find((candidate) => candidate.form === "speak-word");
   if (activity?.form !== "speak-word") throw new Error("no speak-word activity");
   const answer = activity.questions[0]?.answers[0] ?? "";
-  const { events } = await boot({ [u01]: beforeS6 }, { speech: { granted: true, heard: () => answer } });
+  const { events } = await boot(
+    { [u01]: beforeS6 },
+    { speech: { granted: true, heard: () => answer } },
+  );
   // 들림 페이로드에도 Android 키를 싣도록 대역의 start를 감쌉니다 — 되돌아간 세션의 모양입니다.
-  const host = (NativeModules as Record<string, { start: (a: unknown, c: (p: unknown) => void) => void }>)[
-    "SpeechRecognitionModule"
-  ];
+  const host = (
+    NativeModules as Record<string, { start: (a: unknown, c: (p: unknown) => void) => void }>
+  )["SpeechRecognitionModule"];
   if (host === undefined) throw new Error("no speech host");
   const start = host.start;
   host.start = (args, callback) =>

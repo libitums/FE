@@ -13,9 +13,9 @@ const diagnostic: SpeechDiagnostic = {
 
 describe("speechDiagnosticField", () => {
   test("ID1. 인식기가 결과를 올린 국면은 진단을 speech로 싣는다", () => {
-    expect(
-      speechDiagnosticField({ kind: "unavailable", reason: "failed", diagnostic }),
-    ).toEqual({ speech: diagnostic });
+    expect(speechDiagnosticField({ kind: "unavailable", reason: "failed", diagnostic })).toEqual({
+      speech: diagnostic,
+    });
     expect(speechDiagnosticField({ kind: "heard", text: "카드", diagnostic })).toEqual({
       speech: diagnostic,
     });

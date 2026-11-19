@@ -1,6 +1,10 @@
 import { describe, expect, test } from "vitest";
 
-import { koreanPackDownloadResult, koreanPackOfferOf, speechKoreanPack } from "./speech-korean-pack";
+import {
+  koreanPackDownloadResult,
+  koreanPackOfferOf,
+  speechKoreanPack,
+} from "./speech-korean-pack";
 import type { SpeechKoreanPack } from "./speech-recognition-types";
 
 // `unit` 계층: 한국어 팩 상태 · 내려받기 결말 페이로드 파서와 「내려받기를 권할지」 판정의 입출력만 봅니다.

@@ -90,7 +90,9 @@ function nativeModule(): SpeechRecognitionModule | undefined {
 }
 
 /** 한국어 팩 상태를 묻습니다. 메서드가 없는 호스트면 `"unavailable"`이고 콜백은 오지 않습니다. */
-export function getSpeechKoreanPack(onPack: (pack: SpeechKoreanPack) => void): SpeechRequestOutcome {
+export function getSpeechKoreanPack(
+  onPack: (pack: SpeechKoreanPack) => void,
+): SpeechRequestOutcome {
   const host = nativeModule();
   if (host === undefined || typeof host.getKoreanPack !== "function") {
     return "unavailable";
