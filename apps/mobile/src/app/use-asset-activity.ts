@@ -1,5 +1,6 @@
 import { useCallback, useState } from "@lynx-js/react";
 
+import { percentOf } from "./cover-download-state";
 import type { AssetActivity } from "./cover-download-state";
 
 export type AssetActivityState = {
@@ -10,9 +11,6 @@ export type AssetActivityState = {
   readonly setSyncing: (syncing: boolean) => void;
   readonly onAssetProgress: (episodeId: string, done: number, total: number) => void;
 };
-
-const percentOf = (activity: AssetActivity): number =>
-  activity.total <= 0 ? 0 : Math.floor((activity.done * 100) / activity.total);
 
 /**
  * 표지 받기 표시(ADR-0165)가 읽는 받기 진행입니다. 파일마다 알림이 오지만 같은 편 · 같은 퍼센트면 상태를 바꾸지 않아

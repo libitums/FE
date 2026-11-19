@@ -77,9 +77,10 @@ function readSource(): CatalogSourceText {
   // 없는 편은 본문만으로 엽니다 — 창 밖 편은 자산을 열 때 받으므로(ADR-0157 D3) 기다리면 버킷에 있는 편이 「준비
   // 중」으로 남습니다. 파일 모듈이 없으면(Explorer · 옛 호스트) 받을 수 없으니 모두 본문만으로 엽니다.
   if (!contentFilesAvailable()) return { ...readCachedSource(hostContentStore, ids), translations };
+  const bundled = new Set(bundledIds);
   const keep = (id: string): boolean => {
     const entry = remoteEntries.find((candidate) => candidate.id === id);
-    if (entry === undefined || !bundledIds.includes(id)) return true;
+    if (entry === undefined || !bundled.has(id)) return true;
     return isAssetsComplete(hostContentStore, id, entry.sha256);
   };
   return { ...readCachedSource(hostContentStore, ids, keep), translations };

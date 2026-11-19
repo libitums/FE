@@ -53,20 +53,17 @@ export function SpecialUnitMapItem({
       }
     >
       <MapUnitStage targetId={sheetTargetId ?? null} {...(markId === undefined ? {} : { markId })}>
-        {[
-          <SpecialUnit
-            key="unit"
-            id={unitId}
-            accessibilityLabel={specialUnitMapAccessibilityLabel(
-              accessibilityName,
-              copy.specialUnitMap,
-            )}
-            status={unitStatus}
-            bindtap={handleSelect}
-            {...(icon === undefined ? {} : { icon })}
-          />,
-          ring ?? null,
-        ]}
+        <SpecialUnit
+          id={unitId}
+          accessibilityLabel={specialUnitMapAccessibilityLabel(
+            accessibilityName,
+            copy.specialUnitMap,
+          )}
+          status={unitStatus}
+          bindtap={handleSelect}
+          {...(icon === undefined ? {} : { icon })}
+        />
+        {ring ?? null}
       </MapUnitStage>
       <view
         className={`journey-special-unit-label journey-special-unit-label-${specialUnitLabelToneOf(unitStatus)}`}

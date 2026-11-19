@@ -57,7 +57,8 @@ export function coverDownloadStateOf(input: CoverDownloadInput): CoverDownloadSt
   return { kind: "getting-ready", percent: mine === null ? 0 : percentOf(mine) };
 }
 
-function percentOf(activity: AssetActivity): number {
+/** 받기 진행 퍼센트 — 다 받기 전엔 99를 넘지 않습니다. */
+export function percentOf(activity: AssetActivity): number {
   if (activity.total <= 0) return 0;
   return Math.min(99, Math.max(0, Math.floor((activity.done * 100) / activity.total)));
 }
