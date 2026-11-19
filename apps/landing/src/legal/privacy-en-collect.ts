@@ -41,7 +41,7 @@ export const privacyCollectEn: LegalSection = {
         "We store the messages you send, the characters' replies, the corrections and translations attached to them, and any ratings or reports you give.",
         'We store short notes about what you have told a character ("memories") and summaries of earlier conversation, so that the character can stay consistent over time.',
         "We store the results of automated safety checks on messages (the category of concern and the action taken) and how long you chat each day, so that we can keep chats safe and show break reminders.",
-        "We store pictures and voice messages that a character makes at your request (where offered).",
+        "We store pictures and voice messages that a character makes at your request.",
         "Please do not share sensitive personal information in chats, such as health or financial details or other people's personal information.",
       ],
     },
@@ -49,7 +49,7 @@ export const privacyCollectEn: LegalSection = {
     {
       kind: "list",
       items: [
-        "If you buy a subscription or coins (where offered), the payment is processed by Apple or Google. We do not receive your card details.",
+        "If you buy a subscription or Yeopjeon coins, the payment is processed by Apple or Google. We do not receive your card details.",
         "We receive the product you bought, the time of purchase, the status of your subscription, and a transaction identifier.",
       ],
     },

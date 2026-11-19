@@ -44,7 +44,7 @@ export interface LegalDocument {
   description: string;
   /** 시행일 줄의 이름입니다(`Effective date`). */
   effectiveLabel: string;
-  /** 그 언어로 쓴 시행일입니다(`November 25, 2026`). */
+  /** 그 언어로 쓴 시행일입니다(`November 20, 2026`). */
   effectiveDate: string;
   /** 기계가 읽는 시행일(`YYYY-MM-DD`)입니다. 같은 문서의 모든 언어판이 같은 값입니다. */
   effectiveIso: string;

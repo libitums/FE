@@ -4,7 +4,7 @@ import { privacyProvidersEn } from "./privacy-en-providers";
 import { legalMail as mail } from "./legal-contact";
 
 /** 개인정보 처리방침의 시행일입니다. 모든 언어판이 이 값을 씁니다. */
-export const privacyEffectiveIso = "2026-11-25";
+export const privacyEffectiveIso = "2026-11-20";
 
 // 개인정보 처리방침(영어 · 기준본)입니다. 내용을 바꾸면 `privacy-ko.ts`를 같은 PR에서 맞추고 시행일을 올립니다.
 export const privacyEn: LegalDocument = {
@@ -14,7 +14,7 @@ export const privacyEn: LegalDocument = {
   description:
     "How Duru, a Korean learning app, collects, uses, shares, and keeps personal information.",
   effectiveLabel: "Effective date",
-  effectiveDate: "November 25, 2026",
+  effectiveDate: "November 20, 2026",
   effectiveIso: privacyEffectiveIso,
   translationNote: "",
   intro: [
@@ -69,12 +69,12 @@ export const privacyEn: LegalDocument = {
           kind: "list",
           items: [
             "Account information, profile information, learning records, and feedback: until you delete your account.",
-            "Chats, memories, and safety check records: until you clear the chat in the App (where available) or delete your account.",
+            "Chats, memories, and safety check records: until you clear the chat in the App or delete your account.",
             "Pictures and voice messages made in chats: until you delete your account.",
             "Purchase records: until you delete your account, unless the law requires us to keep them longer.",
             "Notification tokens: until you sign out on that device, the token stops working, or you delete your account. Turning off notifications in your device settings stops delivery but does not by itself delete the token.",
-            "Usage information: kept for up to 1 year after it is collected. After that it is no longer used for analysis.",
-            "Error reports: kept for up to 90 days.",
+            "Usage information: usage events are deleted automatically 1 year after they are collected. The analytics profile that groups those events under your user ID is not deleted automatically; it is kept until you ask us to delete it.",
+            "Error reports: deleted automatically by our error-reporting provider within 90 days after they are received.",
             "Website visit information: kept for up to 14 months after it is collected.",
             "Text recognized in the web trial: deleted automatically 90 days after it is saved.",
             "Pre-registration email: until we send the launch notice and for up to 6 months after that, or until you ask us to delete it.",
