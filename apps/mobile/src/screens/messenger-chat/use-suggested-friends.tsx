@@ -138,7 +138,11 @@ export function useSuggestedFriends({
         if (result.kind === "short") return onShortOfCoins();
         return showToast(copy.addFailed(character.name), open.model);
       })
-      .catch(() => showToast(copy.addFailed(character.name), open.model));
+      .catch(() => {
+        // 실패 · 모자람과 같이 시트를 닫고 알립니다(리뷰 W1).
+        setSheet(null);
+        showToast(copy.addFailed(character.name), open.model);
+      });
   }
 
   const categoryLabel = (id: string): string => {
