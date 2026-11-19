@@ -16,7 +16,7 @@
 
 ## 이 변경이 무엇을 건드렸나
 
-- `apps/mobile/src/screens/messenger-chat/messenger-guide.ts` — 순수 판정 `suggestedRowShown` 하나.
+- `apps/mobile/src/screens/messenger-chat/messenger-guide.ts` — 순수 판정 `isSuggestedRowShown` 하나.
 - `apps/mobile/src/screens/messenger-chat/MessengerListScreen.tsx` — 안내가 떠 있으면 목록 스크롤 안의 추천 줄 자리에 null.
 
 ## 분석 결과
