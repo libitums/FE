@@ -120,14 +120,15 @@
         ]
       },
       "look": {
-        "identity": "Korean woman, 28. Strikingly beautiful in a cool, confident, slightly dangerous way. Slim face with high cheekbones and a sharp, clean jawline. Long narrow eyes with upturned outer corners, dark irises and a heavy-lidded, knowing gaze; straight dark brows with a slight arch. A small mole beside the outer corner of the left eye. Straight nose, well-defined lips in a muted red. Pale, cool-toned skin. Jet-black hair in a layered bob that ends between the chin and the shoulders, centre-parted, slightly tousled, one side tucked behind the ear and a few strands falling across the cheek. Slim build with a long neck and straight shoulders. Small fine-line tattoos on the forearm: a four-pointed sparkle star and a thin orbit-like curved line. A silver ear cuff on the upper ear and a small silver hoop in the lobe.",
-        "outfit": "Oversized black button-up shirt worn open and slipping a little off the shoulders, sleeves pushed up to the elbows, over a white ribbed tank top with a modest round neckline, tucked into high-waisted wide charcoal pleated trousers with a black leather belt and a square silver buckle. Everything matte, no patterns.",
+        "identity": "Korean woman, 28. Strikingly beautiful in a cool, confident, slightly dangerous way. Slim face with high cheekbones and a sharp, clean jawline. Long narrow eyes with upturned outer corners, dark irises and a heavy-lidded, knowing gaze; straight dark brows with a slight arch. A small mole under the outer corner of the left eye. Straight nose, well-defined lips in a muted red. Pale, cool-toned skin. Jet-black hair in a layered bob that ends between the chin and the shoulders, centre-parted, slightly tousled, one side tucked behind the ear. Tall and slim with a long neck, a narrow waist, a full bust and long legs. Small fine-line tattoos on the forearm: a four-pointed sparkle star and a thin orbit-like curved line. A silver ear cuff on the upper ear and a small silver hoop in the lobe.",
+        "outfit": "Oversized black button-up shirt worn open and slipping off the shoulders, sleeves pushed up to the elbows, over a fitted white ribbed cropped tank top with a low scoop neckline; a strip of bare midriff shows above the trousers. Wide charcoal pleated trousers with a black leather belt and a square silver buckle. Chunky black leather loafers. Everything matte, no patterns.",
         "expression": "A closed-mouth smirk with one corner of the mouth higher, chin slightly lowered, eyes looking up at the viewer from under the lashes.",
         "pose": "Leaning one shoulder back against a wall with her weight on one hip, one hand in a trouser pocket, the other arm hanging loosely. Head tilted a few degrees. Hands empty.",
-        "constraints": "Tattoos stay small, thin-lined and only on the forearm. No cigarettes, no alcohol, no other piercings. The tank top covers the chest and the waist: no cleavage, no bare midriff, no tight or see-through fabric, no body emphasis.",
+        "constraints": "Tattoos stay small, thin-lined and only on the forearm.",
         "profileScene": "A bare concrete wall with soft diagonal window-frame shadows across it, cool grey daylight."
       },
-      "voiceBrief": "Late-20s Korean woman. Low-mid, dry and cool with a smile underneath; quick pace, crisp consonants, slightly husky. Sounds like teasing a friend."
+      "voiceBrief": "Late-20s Korean woman. Low-mid, dry and cool with a smile underneath; quick pace, crisp consonants, slightly husky. Sounds like teasing a friend.",
+      "voiceId": "CWm9F3GUmYN8uz8dJcTA"
     },
     {
       "id": "haejun",
@@ -237,14 +238,15 @@
         ]
       },
       "look": {
-        "identity": "Korean man, 31. Handsome in a warm, grown-up way. Soft oval face with a firm jaw. Gentle, slightly downturned eyes with dark brown irises and faint smile lines at the corners; thick natural brows. A dimple on the right cheek when he smiles. Light warm-tan skin, clean-shaven. Dark brown wavy hair, long enough to tuck behind the ears and reach the nape, pushed back loosely from the forehead with a few strands falling forward. Tall, broad shoulders, relaxed posture, large hands with long fingers. A thin brown leather bracelet on the left wrist.",
-        "outfit": "Deep navy open-collar shirt with the sleeves pushed up to the forearms, worn open over a cream crew-neck T-shirt. Dark brown straight trousers, brown leather shoes. Soft, slightly worn-in fabrics.",
+        "identity": "Korean man, 31. Handsome in a warm, grown-up way. Soft oval face with a firm jaw. Gentle, slightly downturned eyes with dark brown irises; thick natural brows. A small mole on the right cheek and a dimple when he smiles. Light warm-tan skin, clean-shaven. Dark brown wavy hair, medium length, parted off-centre and falling loosely over the forehead and ears, reaching the nape. Tall with broad shoulders, a lean build and large hands with long fingers. A brown leather bracelet on the left wrist.",
+        "outfit": "Deep navy button-up shirt with a brown contrast collar, worn open with the sleeves rolled to the elbows, over a cream crew-neck T-shirt. Brown straight trousers and dark brown leather penny loafers. Soft, slightly worn-in fabrics.",
         "expression": "A gentle closed-mouth smile with the eyes slightly crinkled, as if listening to someone.",
         "pose": "Standing at ease, shoulders loose, head tilted a few degrees to one side, arms relaxed at his sides. Hands empty.",
-        "constraints": "No bottles, glasses or any alcohol. No cigarettes. No instrument in hand. No beard or stubble. No apron.",
+        "constraints": "",
         "profileScene": "A softly blurred warm-lit wall of vinyl record spines on wooden shelves, amber evening light."
       },
-      "voiceBrief": "Early-30s Korean man. Warm low baritone, slow and relaxed, soft endings; standard Seoul accent with a faint Busan lilt on some words. Sounds like a host welcoming a regular."
+      "voiceBrief": "Early-30s Korean man. Warm low baritone, slow and relaxed, soft endings; standard Seoul accent with a faint Busan lilt on some words. Sounds like a host welcoming a regular.",
+      "voiceId": "mJyWu2KRFhJX5zsGaF5s"
     },
     {
       "id": "daeun",
@@ -350,14 +352,15 @@
         ]
       },
       "look": {
-        "identity": "Korean woman, 23, clearly an adult university student. Adorable, warm and soft rather than glamorous. Soft round face with full cheeks and a small chin. Big round eyes with warm brown irises, thick lashes and a bright sparkle; soft arched brows. A strong rosy blush across both cheeks. Small nose, full pink lips. Fair warm-toned skin. Long, voluminous wavy hair in a dark brown with a plum-red tint, worn loose well past the shoulders, with full side-swept bangs that brush the eyebrows. A soft, gently rounded build. A thin silver necklace with a tiny bow pendant.",
-        "outfit": "Oversized chunky cream cable-knit cardigan with a wide ribbed collar and sleeves long enough to cover half the hands, worn open over a plain white crew-neck T-shirt, with light-wash blue jeans. White sneakers.",
+        "identity": "Korean woman, 23, clearly an adult university student. Adorable, warm and soft. Soft round face with full cheeks and a small chin. Big round eyes with warm brown irises, thick lashes and a bright sparkle; soft arched brows. A rosy blush across both cheeks. Small nose, full pink lips. Fair warm-toned skin. Long, voluminous wavy chestnut-brown hair worn loose well past the shoulders, with full side-swept bangs that brush the eyebrows. A soft, curvy build with a full bust. A thin silver necklace with a tiny bow pendant.",
+        "outfit": "Oversized chunky cream cable-knit cardigan with a wide ribbed collar and long sleeves that cover half the hands, worn open and slipping off one shoulder, over a fitted white T-shirt with a low scoop neckline. Light-wash blue jeans, white sneakers. Often carries a black backpack with a white bunny plush keyring.",
         "expression": "A big, delighted open-mouth smile with the eyes curved and shining, cheeks flushed.",
         "pose": "Head tilted to one side, shoulders slightly raised in a happy shrug, arms folded lightly in front of the chest with both hands tucked into the long cardigan sleeves. Hands empty.",
-        "constraints": "She must look like an adult woman in her twenties, never a child or a schoolgirl: no school uniform, no childish proportions. The T-shirt has a high crew neckline: no cleavage, no body emphasis. No glasses. No real university, brand, game or idol names or logos, and no readable text anywhere.",
+        "constraints": "She must look like an adult woman in her twenties, never a child or a schoolgirl: no school uniform, no childish proportions.",
         "profileScene": "A softly blurred university campus in spring: pale stone building with ivy and pink cherry blossoms, warm pastel daylight, no signs or banners."
       },
-      "voiceBrief": "Early-20s Korean woman. Bright mid-high, fast and bouncy, rising endings, lots of breathy excitement; clear articulation. Sounds like a friend who just heard good news."
+      "voiceBrief": "Early-20s Korean woman. Bright mid-high, fast and bouncy, rising endings, lots of breathy excitement; clear articulation. Sounds like a friend who just heard good news.",
+      "voiceId": "jCmXpvRzefYTd42Z167f"
     },
     {
       "id": "geonwoo",
@@ -474,14 +477,15 @@
         ]
       },
       "look": {
-        "identity": "Korean man, 24. Good-looking in a fresh, sporty way. Lean face with a clean jawline. Narrow eyes that curve into crescents when he smiles, dark irises; straight thick brows. Sun-tanned healthy skin. A wide, slightly lopsided grin showing his upper teeth. Short black two-block haircut, the top a little tousled and falling over the forehead. Athletic, lean runner's build with a straight back. A black sports watch on the left wrist.",
-        "outfit": "Light grey zip-up track jacket, half unzipped over a plain white T-shirt, with a thin orange stripe down each sleeve. Black jogger pants, white running shoes with orange accents.",
+        "identity": "Korean man, 24. Good-looking in a fresh, sporty way. Lean face with a clean jawline. Narrow eyes that curve when he smiles, dark irises; straight thick brows. A small mole on the right cheek. Sun-tanned healthy skin. A wide, slightly lopsided grin showing his upper teeth. Short dark brown hair, tousled on top with bangs falling over the forehead, shorter at the sides. Athletic build with broad shoulders and strong, defined arms. A black sports watch on the left wrist.",
+        "outfit": "Fitted black short-sleeve running T-shirt with small reflective strips, under a black running vest with a chest strap and orange zipper pulls. Black running shorts or joggers, running shoes with orange accents.",
         "expression": "A big open grin, eyes curved, full of energy.",
         "pose": "Standing tall with his feet apart, one hand on his hip, the other arm relaxed, body turned slightly as if about to start jogging. Hands empty.",
         "constraints": "No military uniform or dog tags. No brand logos or text on clothing. No food or cups in hand.",
         "profileScene": "A softly blurred riverside running path under a clear morning sky, low sun from the right."
       },
-      "voiceBrief": "Mid-20s Korean man. Bright mid tenor, energetic and quick, punchy endings, laughs easily; clear and friendly. Sounds like a teammate cheering you on."
+      "voiceBrief": "Mid-20s Korean man. Bright mid tenor, energetic and quick, punchy endings, laughs easily; clear and friendly. Sounds like a teammate cheering you on.",
+      "voiceId": "xKhEv04MyhAMd5Vl86Lv"
     }
   ],
   "storyProfiles": {
@@ -504,15 +508,16 @@
   },
   "lookRules": {
     "$comment": "외모 브리프를 쓰는 규칙(kkachi-assets cast 문서에서 배운 것). 대시보드 인물 스튜디오가 층(identity · outfit · expression · pose · constraints)과 프로필 배경(profileScene)으로 읽는다.",
-    "face": "매력은 얼굴 · 눈빛 · 분위기로 낸다. 체형 과장 · 노출은 없다. 넷이 한눈에 구분되게 머리 모양 · 색 조합 · 실루엣을 겹치지 않게 한다(스토리 다섯과도).",
+    "face": "매력은 얼굴 · 눈빛 · 분위기 · 체형으로 낸다. 넷이 한눈에 구분되게 머리 모양 · 색 조합 · 실루엣을 겹치지 않게 한다(스토리 다섯과도).",
     "expression": "기본 표정 하나만 적는다. 다른 표정은 표정 시트가 만든다.",
     "pose": "소품을 적지 않는다(재현율이 낮고 손 모양을 망친다). 두 손은 비어 있다.",
     "palette": {
       "seoyeon": "검정 · 은색 · 콘크리트 회색",
-      "haejun": "남색 · 따뜻한 갈색 · 크림",
+      "haejun": "남색 · 갈색 · 크림",
       "daeun": "크림 · 연보라 · 자줏빛 갈색 · 벚꽃 분홍",
-      "geonwoo": "밝은 회색 · 흰색 · 주황 포인트"
+      "geonwoo": "검정 · 주황 포인트"
     },
-    "references": "차서연 · 송다은은 사용자가 준 참고 그림(2026-11-19)의 분위기 · 머리 · 옷 · 배경을 따랐다. 참고 그림의 가슴골 · 허리 노출 · 실제 대학 이름은 옮기지 않았다(제약 층)."
-  }
+    "references": "look의 identity · outfit · constraints는 인물 스튜디오에서 채택한 그림(2026-11-19, <id>-ref.png)에 맞춘 것이다 — 글과 그림이 다르면 그림이 맞다. 체형 · 옷의 노출을 막던 제약 문장은 사용자 결정으로 뺐다(스튜디오의 제약도 사용자가 고쳤다). 스냅샷 프롬프트 노드의 안전 규칙(성적 내용 · 선정적 자세 없음)은 그대로다."
+  },
+  "voiceRules": "voiceId는 인물 스튜디오에서 고른 ElevenLabs 목소리다(2026-11-19). 서버 media.voiceId와 같아야 한다(테스트가 맞춘다)."
 }

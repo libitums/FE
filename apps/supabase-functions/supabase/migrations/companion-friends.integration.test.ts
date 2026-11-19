@@ -21,6 +21,7 @@ type Friend = {
   maxSpeechLevel: string;
   firstMessage: { ko: string[]; en: string[] };
   look: { identity: string };
+  voiceId: string;
   persona: Record<
     "history" | "values" | "people" | "goals" | "likes" | "dislikes" | "hooks",
     string[]
@@ -146,7 +147,7 @@ test("FR1. 페르소나 넷이 companion-friends.json과 같다 — 이름 · �
     expect(row.active).toBe(true);
     expect(row.sort_order).toBeGreaterThan(4);
     expect(row.media.refSlugs).toEqual([friend.id]);
-    expect(row.media.voiceId).toBeNull();
+    expect(row.media.voiceId).toBe(friend.voiceId);
     expect((row.media.look as string).startsWith(friend.look.identity), friend.id).toBe(true);
     for (const key of ["role", "speech", "romance"])
       expect((row.persona[key] as string).length, `${friend.id} ${key}`).toBeGreaterThan(20);
