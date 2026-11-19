@@ -1,12 +1,7 @@
--- 제안 — 적용하지 않는다(ADR-0162 D5). migrations 폴더 밖에 둔다: `supabase db push`가 집어 가지 않게.
--- 받아들이면 번호를 새로 매겨 apps/supabase-functions/supabase/migrations/로 옮기고, 통합 테스트(postgres.test-support)를 함께 쓴다.
---
--- 엽전 먼저 만나기: 아직 이야기에서 못 만난 인물을 엽전으로 먼저 연다. 서버는 해금을 판정하지 않으므로(앱이 unlockCharacter + 해금 저장)
+-- 엽전 먼저 만나기(ADR-0162 D5) — 아직 이야기에서 못 만난 인물을 엽전으로 먼저 연다. 서버는 해금을 판정하지 않으므로
 -- 이 RPC는 「값을 치렀다」는 기록과 차감만 맡고, 방 열기 · 첫 인사는 지금처럼 앱이 한다(companion-greet trigger unlock).
---
--- 1. 운영 값: 제안(인물 · 값 · 끝 시각)은 표 하나 — 운영 도구가 켜고 끈다.
--- 2. 원장: kind에 'spend'를 더한다(지금은 grant · reserve · settle · release · expire). reason = 'early_access', ref_id = 사용자:인물.
--- 3. 멱등: (사용자, 인물)마다 한 번. 두 번 불리면 already(차감 없음).
+-- 제안 원본 docs/specs/suggested-friends-early-access.sql에서 옮김 — 원장 kind 검사에 운영의 'revoke'를 남긴다(2026-11-19).
+-- 사용자 결정 2026-11-19: 이야기 인물 넷(정윤경 · 미나 · 한도윤 · 서재민) 모두 100엽전, 마감 없음.
 
 create table companion.early_access_offers (
   character_id text primary key references companion.characters (id) on delete cascade,
@@ -15,6 +10,7 @@ create table companion.early_access_offers (
   active boolean not null default true,
   created_at timestamptz not null default now()
 );
+alter table companion.early_access_offers enable row level security;
 
 create table companion.early_access_unlocks (
   user_id uuid not null references auth.users (id) on delete cascade,
@@ -27,7 +23,7 @@ alter table companion.early_access_unlocks enable row level security;
 
 alter table companion.credit_ledger drop constraint credit_ledger_kind_check;
 alter table companion.credit_ledger add constraint credit_ledger_kind_check
-  check (kind in ('grant', 'reserve', 'settle', 'release', 'expire', 'spend'));
+  check (kind in ('grant', 'reserve', 'settle', 'release', 'expire', 'revoke', 'spend'));
 
 -- 돌려주는 값: { result: 'unlocked' | 'already' | 'short' | 'no_offer', shortBy?, wallet }
 create or replace function public.companion_unlock_early(p_character_id text)
@@ -52,11 +48,12 @@ begin
   if v_offer.character_id is null then
     return jsonb_build_object('result', 'no_offer');
   end if;
+  -- 지갑을 먼저 잠근다 — 같은 사람이 두 번 눌러도 둘째는 첫째가 끝난 뒤 「already」를 본다.
+  perform companion.lock_wallet(v_user);
   if exists (select 1 from companion.early_access_unlocks where user_id = v_user and character_id = p_character_id) then
     return jsonb_build_object('result', 'already', 'wallet', companion.wallet_json(v_user, now()));
   end if;
 
-  perform companion.lock_wallet(v_user);
   select * into v_wallet from companion.credit_wallets where user_id = v_user;
   if coalesce(v_wallet.sub_balance, 0) + coalesce(v_wallet.grant_balance, 0) + coalesce(v_wallet.paid_balance, 0) < v_offer.price then
     return jsonb_build_object(
@@ -102,3 +99,7 @@ as $$
 $$;
 revoke all on function public.companion_early_access_offers() from public, anon;
 grant execute on function public.companion_early_access_offers() to authenticated;
+
+insert into companion.early_access_offers (character_id, price, ends_at)
+values ('yoonkyung', 100, null), ('mina', 100, null), ('doyun', 100, null), ('jaemin', 100, null)
+on conflict (character_id) do nothing;
