@@ -1,4 +1,4 @@
-import { useEffect, useGlobalProps, useRef, useState } from "@lynx-js/react";
+import { useEffect, useGlobalProps, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import cross from "@libitums/icons/lynx/cross";
@@ -87,15 +87,15 @@ export function CoinShopScreen({
   const coinsUpdating = chipUpdating(wait, "coins");
   const shownBalance = useCountUp(coinBalance);
   const balanceLabel = shop.balance(coinBalance, formatCoinCount(coinBalance));
-  // 이 상점이 구독 대기를 본 뒤에만 닫습니다 — 이미 끝난 대기(done) 위에 새로 연 상점이 곧바로 닫히지 않게.
-  const sawPlanWait = useRef(false);
+  // 이 상점에서 구독 결제가 끝났을 때만 닫습니다 — 다른 자리(설정)의 대기가 끝난 위에 새로 연 상점이 곧바로 닫히지 않게. 웹훅이 이미 닿아
+  // 대기가 한 번에 done이 되어도(그리는 사이 waiting을 못 봄) 결제가 끝났다는 표시로 닫힙니다. 늦으면(late) 열린 채 안내를 봅니다.
+  const [planBought, setPlanBought] = useState(false);
   useEffect(() => {
-    if (wait.phase === "waiting" && wait.target === "plan") sawPlanWait.current = true;
-    if (wait.phase !== "done" || wait.target !== "plan" || !sawPlanWait.current) return;
-    sawPlanWait.current = false;
-    if (showPlans) onClose();
+    if (!planBought || wait.phase === "waiting" || wait.phase === "idle") return;
+    setPlanBought(false);
+    if (wait.phase === "done" && wait.target === "plan") onClose();
     // oxlint-disable-next-line react-hooks/exhaustive-deps
-  }, [wait]);
+  }, [wait, planBought]);
 
   // Plans 탭으로 열렸으면 처음 한 번 보기 이벤트(탭을 바꿀 때는 아래 `switchTo`가 냅니다).
   useEffect(() => {
@@ -203,6 +203,7 @@ export function CoinShopScreen({
             theme="dark"
             // 엽전 탭 바닥(인셋 + 24)과 같은 높이에서 끝나게 합니다 — 판은 인셋 + 16을 더합니다.
             bottomInset={insets.bottom + 8}
+            onPurchased={() => setPlanBought(true)}
           />
         </view>
       ) : (

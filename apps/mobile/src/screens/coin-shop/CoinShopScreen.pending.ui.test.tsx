@@ -27,7 +27,10 @@ function plansWith(wait: PurchaseWait): ShopPlans {
     offers: usdOffers,
     current: null,
     wait,
-    onSelect: vi.fn<ShopPlans["onSelect"]>(async () => ({ kind: "unavailable" })),
+    onSelect: vi.fn<ShopPlans["onSelect"]>(async () => ({
+      kind: "purchased",
+      productId: "duru.premium.monthly.v1",
+    })),
     onRestore: vi.fn<ShopPlans["onRestore"]>(async () => ({ kind: "unavailable" })),
     onViewed: vi.fn<ShopPlans["onViewed"]>(),
     onTabSwitched: vi.fn<ShopPlans["onTabSwitched"]>(),
@@ -122,22 +125,38 @@ test("CP-5 움직임 줄이기 — 새 값이 곧바로", () => {
   expect(screen.getByTestId("coin-shop-screen-balance-value")).toHaveTextContent("1,320");
 });
 
-test("CP-6 구독이 서버에 닿으면(done plan) 상점이 닫히고, 늦으면(late) 열린 채 조용한 안내", () => {
+const buyPlan = async () => {
+  await act(async () => {
+    fireEvent.tap(screen.getByTestId("plans-continue"), {});
+  });
+};
+
+test("CP-6 이 상점에서 산 구독이 서버에 닿으면(done plan) 닫히고, 늦으면(late) 열린 채 조용한 안내", async () => {
   const onClose = vi.fn<() => void>();
-  const view = render(shop(planWaiting, { initialTab: "plans" }, onClose));
-  expect(onClose).not.toHaveBeenCalled();
-  view.rerender(shop({ phase: "late", target: "plan" }, { initialTab: "plans" }, onClose));
+  const plans = { initialTab: "plans" as const };
+  // 결선은 결제가 끝나면 먼저 대기(waiting)로 두고, 그 뒤 화면이 결과(purchased)를 받습니다.
+  const view = render(shop(planWaiting, plans, onClose));
+  await buyPlan();
+  view.rerender(shop({ phase: "late", target: "plan" }, plans, onClose));
   expect(onClose).not.toHaveBeenCalled();
   expect(screen.getByTestId("purchase-pill")).toHaveTextContent(
     "Your purchase is safe. It'll appear shortly.",
   );
   expect(present("plans-your-plan-updating")).toBe(false);
-  view.rerender(shop(planWaiting, { initialTab: "plans" }, onClose));
-  view.rerender(
-    shop({ phase: "done", target: "plan", coins: null }, { initialTab: "plans" }, onClose),
-  );
+  view.rerender(shop(planWaiting, plans, onClose));
+  await buyPlan();
+  // 웹훅이 이미 닿아 그리는 사이 곧바로 done이어도 닫힙니다.
+  view.rerender(shop({ phase: "done", target: "plan", coins: null }, plans, onClose));
   expect(onClose).toHaveBeenCalledTimes(1);
   expect(present("purchase-pill")).toBe(false);
+});
+
+test("CP-6b 다른 자리(설정)의 구독 대기가 끝나도, 이 상점에서 산 것이 아니면 닫히지 않는다", () => {
+  const onClose = vi.fn<() => void>();
+  const plans = { initialTab: "plans" as const };
+  const view = render(shop(planWaiting, plans, onClose));
+  view.rerender(shop({ phase: "done", target: "plan", coins: null }, plans, onClose));
+  expect(onClose).not.toHaveBeenCalled();
 });
 
 test("CP-7 엽전 탭에서 산 팩이 끝나도(done coins) 상점은 열려 있다", () => {
