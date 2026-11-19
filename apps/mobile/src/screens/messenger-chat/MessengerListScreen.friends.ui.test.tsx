@@ -178,6 +178,18 @@ test("MF3. open 친구 · 성인 · 동의 없음 → Get closer 시트, Sounds 
   ]);
 });
 
+test("MF6. 프로필을 읽는 동안 프로필 시트는 그대로이고, Get closer가 설 때 닫힌다(빈 화면 없음)", async () => {
+  await mount();
+  fireEvent.tap(screen.getByTestId(ids.avatar("seoyeon")), {});
+  tapId(ids.sheetStart);
+  // 서버 프로필을 아직 읽는 중 — 프로필 시트가 남아 있어야 합니다.
+  expect(screen.getByTestId(ids.sheet)).toBeInTheDocument();
+  expect(screen.queryByTestId(ids.adultAck)).toBeNull();
+  await settle();
+  expect(screen.queryByTestId(ids.sheet)).toBeNull();
+  expect(screen.getByTestId(ids.adultAck)).toBeInTheDocument();
+});
+
 test("MF3. Just friends for now면 동의를 부르지 않고 추가하고, 물었다고 적는다", async () => {
   const { adultAck } = await mount();
   await start("seoyeon");

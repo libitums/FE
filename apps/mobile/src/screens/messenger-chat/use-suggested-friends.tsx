@@ -182,9 +182,9 @@ export function useSuggestedFriends({
       setSheet(null);
       if (result === "unknown") showToast(copy.addFailed(open.model.character.name), open.model);
     };
-    // 수위 open 친구는 「Get closer」 시트를 먼저 물을 수 있습니다(ADR-0164 D4) — 물으면 프로필 시트가 닫히고 그 시트가 섭니다.
-    if (open.model.character.romanceTier === "open") setSheet(null);
-    ack.begin(open.model.character, open.model.avatarUrl, add);
+    // 수위 open 친구는 「Get closer」 시트를 먼저 물을 수 있습니다(ADR-0164 D4) — 그 시트가 설 때만 프로필 시트를 닫습니다
+    // (서버 프로필을 읽는 동안 빈 화면이 생기지 않게).
+    ack.begin(open.model.character, open.model.avatarUrl, add, () => setSheet(null));
   }
 
   function handleEarly() {

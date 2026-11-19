@@ -17,8 +17,16 @@ type Pending = {
 };
 
 export type AdultAckFlow = {
-  /** 추가하기 전에 부릅니다 — 물을 필요가 없으면 `proceed`를 곧바로(또는 프로필을 읽은 뒤) 부릅니다. */
-  readonly begin: (character: FriendProfile, avatarUrl: string | null, proceed: () => void) => void;
+  /**
+   * 추가하기 전에 부릅니다 — 물을 필요가 없으면 `proceed`를 곧바로(또는 프로필을 읽은 뒤) 부릅니다.
+   * `onShow`는 시트가 실제로 설 때만 불립니다 — 프로필을 읽는 동안 앞 화면(프로필 시트)을 닫지 않게(빈 화면 없음).
+   */
+  readonly begin: (
+    character: FriendProfile,
+    avatarUrl: string | null,
+    proceed: () => void,
+    onShow?: () => void,
+  ) => void;
   readonly layer: ReactNode;
   readonly open: boolean;
 };
@@ -26,7 +34,12 @@ export type AdultAckFlow = {
 export function useAdultAck(port: AdultAckPort | undefined): AdultAckFlow {
   const [pending, setPending] = useState<Pending | null>(null);
 
-  function begin(character: FriendProfile, avatarUrl: string | null, proceed: () => void): void {
+  function begin(
+    character: FriendProfile,
+    avatarUrl: string | null,
+    proceed: () => void,
+    onShow?: () => void,
+  ): void {
     "background only";
     // 수위 open 인물이 아니거나 이미 물은 계정은 프로필을 읽지 않고 곧바로 추가합니다.
     if (port === undefined || character.romanceTier !== "open" || port.asked()) return proceed();
@@ -36,6 +49,7 @@ export function useAdultAck(port: AdultAckPort | undefined): AdultAckFlow {
       .then((state) => {
         if (!shouldAskAdultAck({ romanceTier: character.romanceTier, state, asked: port.asked() }))
           return proceed();
+        onShow?.();
         return setPending({ character, avatarUrl, proceed });
       });
   }
