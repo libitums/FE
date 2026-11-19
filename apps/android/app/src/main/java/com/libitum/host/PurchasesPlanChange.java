@@ -53,6 +53,7 @@ final class PurchasesPlanChange {
     return replaced;
   }
 
+  /** 수준표 — JS `screens/plans/plan-change.ts`의 `levels`와 같아야 한다(한쪽을 바꾸면 다른 쪽도). */
   private static int level(String id) {
     return id != null && id.startsWith("duru.premium.") ? 2 : 1;
   }

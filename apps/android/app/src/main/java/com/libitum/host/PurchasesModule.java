@@ -9,6 +9,7 @@ import com.lynx.jsbridge.LynxModule;
 import com.lynx.react.bridge.Callback;
 import com.lynx.react.bridge.JavaOnlyArray;
 import com.lynx.react.bridge.JavaOnlyMap;
+import com.revenuecat.purchases.CacheFetchPolicy;
 import com.revenuecat.purchases.CustomerInfo;
 import com.revenuecat.purchases.PurchaseParams;
 import com.revenuecat.purchases.Purchases;
@@ -21,7 +22,7 @@ import com.revenuecat.purchases.interfaces.GetStorefrontCallback;
 import com.revenuecat.purchases.interfaces.LogInCallback;
 import com.revenuecat.purchases.interfaces.PurchaseCallback;
 import com.revenuecat.purchases.interfaces.ReceiveCustomerInfoCallback;
-import com.revenuecat.purchases.models.GoogleReplacementMode;
+import com.revenuecat.purchases.models.StoreReplacementMode;
 import com.revenuecat.purchases.models.Price;
 import com.revenuecat.purchases.models.StoreProduct;
 import com.revenuecat.purchases.models.StoreTransaction;
@@ -154,7 +155,8 @@ public final class PurchasesModule extends LynxModule {
           return;
         }
         // Play에는 구독 그룹이 없다 — 지금 Play 구독이 있으면 바꿈으로 산다(겹쳐 둘이 되지 않게). 모르면 사지 않는다.
-        Purchases.getSharedInstance().getCustomerInfo(new ReceiveCustomerInfoCallback() {
+        // 캐시가 아니라 지금 값 — 몇 분 전 다른 기기에서 산 Play 구독도 바꿀 대상으로 잡는다(겹침 방지가 네트워크 한 번보다 무겁다).
+        Purchases.getSharedInstance().getCustomerInfo(CacheFetchPolicy.FETCH_CURRENT, new ReceiveCustomerInfoCallback() {
           @Override public void onReceived(CustomerInfo info) {
             String old = PurchasesPlanChange.replacedProductId(productId, activePlaySubscriptions(info));
             mainHandler.post(() -> launch(product, old, callback));
@@ -193,7 +195,7 @@ public final class PurchasesModule extends LynxModule {
       // 올림 · 같은 기간 같은 수준은 곧바로(새 가격을 지금 받고 남은 기간은 Play가 시간으로 얹음), 내림 · 기간 바꿈은 다음 갱신.
       boolean now = PurchasesPlanChange.timingOf(oldProductId, product.getId()) == PurchasesPlanChange.Timing.IMMEDIATE;
       params.oldProductId(oldProductId)
-          .googleReplacementMode(now ? GoogleReplacementMode.CHARGE_FULL_PRICE : GoogleReplacementMode.DEFERRED);
+          .replacementMode(now ? StoreReplacementMode.CHARGE_FULL_PRICE : StoreReplacementMode.DEFERRED);
     }
     Purchases.getSharedInstance().purchase(
         params.build(),

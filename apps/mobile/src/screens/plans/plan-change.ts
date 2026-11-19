@@ -16,7 +16,7 @@ export type CurrentPlan = {
 export type PlanChange = "new" | "upgrade" | "downgrade" | "crossgrade" | "period" | "same";
 export type PlanChangeKind = "new" | "upgrade" | "downgrade" | "crossgrade";
 
-/** 스토어 구독 그룹의 수준 — 숫자가 클수록 위. */
+/** 스토어 구독 그룹의 수준 — 숫자가 클수록 위. Android 호스트 `PurchasesPlanChange.level`이 같은 표를 듭니다(함께 고침). */
 const levels: Readonly<Record<PlanId, number>> = { premium: 2, chat_plus: 1, unlimited_tickets: 1 };
 /** 같은 수준이면 이 순서가 먼저입니다(지금 요금제 · 새로 켜진 요금제). */
 const order: readonly PlanId[] = ["premium", "chat_plus", "unlimited_tickets"];

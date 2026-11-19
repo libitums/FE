@@ -262,5 +262,7 @@ DB가 실패하면 500 — RevenueCat이 다시 보낸다. 같은 이벤트 id�
   `revenuecat.properties` · 라이선스 테스터. 기기 확인은 [e2e — Android 결제](../e2e/android-purchases.md)(미실행).
 - **출시 보류는 그대로**: 결제 스위치는 공용이다. Play 준비 전에 Android를 내야 하면 키 파일 없이 짓는다(미리보기). `/release-build`는 Android 키의
   `goog_` 접두를 개수로 확인한다.
-- **위험 · 대가**: `DEFERRED` 바꿈에서 RevenueCat 구매 콜백이 어떤 거래로 끝나는지는 샌드박스로 확인한다(AP-E7) — 콜백이 오류로 끝나면 앱은
-  「실패」를 보이지만 바꿈은 예약된다. `CHARGE_FULL_PRICE`는 남은 기간을 시간으로 얹는다(iOS는 남은 값을 환불) — 정산 방식은 미결정(설정 목록 D-4).
+- **위험 · 대가**: `DEFERRED` 바꿈의 RevenueCat 구매 콜백은 **옛 구독의 거래**로 끝난다(SDK 10.30.1 `PurchasesOrchestrator.startProductChange`
+  바이트코드 확인) — 답의 `productId`는 새 상품, `transactionId`는 옛 구독의 주문 id다. Order Complete는 엽전 팩만 보내 영향이 없다.
+  실제 시트 · 웹훅 순서는 샌드박스로 확인한다(AP-E7). 구독을 살 때 고객 정보는 캐시가 아니라 지금 값(`FETCH_CURRENT`)으로 읽는다 —
+  네트워크가 없으면 사지 않는다. `CHARGE_FULL_PRICE`는 남은 기간을 시간으로 얹는다(iOS는 남은 값을 환불) — 정산 방식은 미결정(설정 목록 D-4).
