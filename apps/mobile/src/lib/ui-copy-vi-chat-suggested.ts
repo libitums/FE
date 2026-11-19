@@ -7,7 +7,6 @@ export const messengerChatSuggestedVi: SuggestedFriendsCopy = {
   rowTitle: "Làm quen bạn mới",
   seeAll: "Xem tất cả",
   seeAllLabel: "Xem tất cả bạn bè",
-  earlyTag: (price) => `SỚM · ${price}`,
   newLabel: (name) => `${name}, bạn mới`,
   lockedLabel: (name, episode) => `${name}, gặp ở tập ${episode}`,
   earlyLabel: (name, episode, price) =>

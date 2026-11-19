@@ -78,9 +78,9 @@ async function tapChatNow() {
   await flush();
 }
 
-test("ML4. 서버 제안이 줄 · 시트에 얹힌다 — EARLY · 100, Chat now · 100, LIMITED(끝 시각 없음)", async () => {
+test("ML4. 서버 제안이 시트에 얹힌다 — Chat now · 100, LIMITED(끝 시각 없음). 줄에는 꼬리표가 없다", async () => {
   await mount(async () => ({ kind: "unlocked" }));
-  expect(screen.getByTestId(ids.early("mina")).textContent).toBe("EARLY · 100");
+  expect(screen.getByTestId(ids.row).textContent).not.toContain("EARLY");
   fireEvent.tap(screen.getByTestId(ids.avatar("mina")), {});
   expect(screen.getByTestId(ids.sheetEarly).textContent).toContain("Chat now · 100");
   expect(screen.getByTestId(ids.sheetLimited).textContent).toBe("LIMITED");

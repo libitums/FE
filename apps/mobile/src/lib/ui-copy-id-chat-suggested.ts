@@ -7,7 +7,6 @@ export const messengerChatSuggestedId: SuggestedFriendsCopy = {
   rowTitle: "Kenalan dengan teman baru",
   seeAll: "Lihat semua",
   seeAllLabel: "Lihat semua teman",
-  earlyTag: (price) => `LEBIH AWAL · ${price}`,
   newLabel: (name) => `${name}, teman baru`,
   lockedLabel: (name, episode) => `${name}, bertemu di Episode ${episode}`,
   earlyLabel: (name, episode, price) =>

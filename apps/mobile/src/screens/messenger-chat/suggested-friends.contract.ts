@@ -11,8 +11,6 @@ export type SuggestedFriendsCopy = {
   readonly rowTitle: string;
   readonly seeAll: string;
   readonly seeAllLabel: string;
-  /** 줄 아바타 아래 검은 꼬리표 — 「EARLY · 100」. */
-  readonly earlyTag: (price: number) => string;
   readonly newLabel: (name: string) => string;
   readonly lockedLabel: (name: string, episode: number) => string;
   readonly earlyLabel: (name: string, episode: number, price: number) => string;
@@ -102,7 +100,6 @@ export const suggestedFriendsTestIds = {
   title: sf("title"),
   seeAll: sf("see-all"),
   avatar: (id: string) => sf(`avatar-${id}`),
-  early: (id: string) => sf(`early-${id}`),
   sheet: sf("sheet"),
   sheetName: sf("sheet-name"),
   sheetIntro: sf("sheet-intro"),

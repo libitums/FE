@@ -76,7 +76,6 @@ test("SFI1. 일반 인물 Start chatting → 목록 맨 위 NEW 줄 · 해금 �
 test("SFI2. 잠긴 미나 → 잠긴 시트, 운영에서는 먼저 만나기가 꺼져 Chat now가 없다", async () => {
   await renderTesterApp(<App progressSeed={legacyPassedSeed} />);
   openTab("messenger");
-  expect(present(ids.early("mina"))).toBe(false);
   fireEvent.tap(screen.getByTestId(ids.avatar("mina")), {});
   expect(screen.getByTestId(ids.sheetIntro).textContent).toBe("You'll meet in Episode 3");
   expect(present(ids.sheetEarly)).toBe(false);
@@ -112,7 +111,6 @@ test("SFI4. 서버 포트가 끼워지면 제안이 줄에 서고, Chat now · 1
   await act(async () => {
     await Promise.resolve();
   });
-  expect(screen.getByTestId(ids.early("mina")).textContent).toBe("EARLY · 100");
   fireEvent.tap(screen.getByTestId(ids.avatar("mina")), {});
   tapId(ids.sheetEarly);
   await act(async () => {

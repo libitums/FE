@@ -71,15 +71,6 @@ function SuggestedAvatar({
       >
         {character.name}
       </text>
-      {friend.offer === null ? null : (
-        <view
-          className="suggested-tag"
-          data-testid={ids.early(character.id)}
-          accessibility-elements-hidden={true}
-        >
-          <text className="suggested-tag-text">{copy.earlyTag(friend.offer.price)}</text>
-        </view>
-      )}
     </view>
   );
 }

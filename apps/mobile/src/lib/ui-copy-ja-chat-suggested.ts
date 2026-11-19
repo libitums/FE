@@ -7,7 +7,6 @@ export const messengerChatSuggestedJa: SuggestedFriendsCopy = {
   rowTitle: "新しい友だちに会おう",
   seeAll: "すべて見る",
   seeAllLabel: "友だちをすべて見る",
-  earlyTag: (price) => `先行 · ${price}`,
   newLabel: (name) => `${name}、新しい友だち`,
   lockedLabel: (name, episode) => `${name}、エピソード${episode}で出会えます`,
   earlyLabel: (name, episode, price) =>

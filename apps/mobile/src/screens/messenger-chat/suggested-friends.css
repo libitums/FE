@@ -123,27 +123,6 @@
   color: var(--libitum-color-fg-neutral-muted);
 }
 
-/* EARLY · LIMITED 꼬리표 — 검은 알약 · 흰 글. */
-.suggested-tag {
-  display: flex;
-  align-items: center;
-  max-width: 100%;
-  padding: var(--libitum-spacing-2) var(--libitum-spacing-6);
-  border-radius: var(--libitum-radius-full);
-  background-color: var(--libitum-color-gray-900);
-}
-
-.suggested-tag-text {
-  color: var(--libitum-color-white);
-  font-family: var(--libitum-typography-label-s-font-family);
-  font-weight: var(--libitum-font-weight-bold);
-  font-size: var(--libitum-typography-label-s-font-size);
-  line-height: var(--libitum-typography-label-s-line-height);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 /* 줄과 채팅 목록을 가르는 선. */
 .suggested-divider {
   height: 1px;

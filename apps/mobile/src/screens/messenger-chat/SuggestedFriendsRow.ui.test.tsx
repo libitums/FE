@@ -50,13 +50,11 @@ test("SR1. 제목 · See all · 아바타 셋이 카탈로그 순서로 서고 �
   expect(scroll?.getAttribute("scroll-orientation")).toBe("horizontal");
 });
 
-test("SR1. 추가 가능 = addable(+ 배지), 잠김 = locked, EARLY 꼬리표는 제안이 있는 인물만", () => {
+test("SR1. 추가 가능 = addable(+ 배지), 잠김 = locked — 채팅 목록 줄에는 EARLY 꼬리표가 없다(2026-11-19)", () => {
   mount();
   expect(screen.getByTestId(ids.avatar("g1")).getAttribute("data-state")).toBe("addable");
   expect(screen.getByTestId(ids.avatar("jaemin")).getAttribute("data-state")).toBe("locked");
-  expect(screen.getByTestId(ids.early("jaemin")).textContent).toBe("EARLY · 100");
-  expect(screen.queryByTestId(ids.early("mina"))).toBeNull();
-  expect(screen.queryByTestId(ids.early("g1"))).toBeNull();
+  expect(screen.getByTestId(ids.row).textContent).not.toContain("EARLY");
 });
 
 test("SR1. 낭독 라벨 — 새 친구 · 만날 회차 · 먼저 만나기", () => {

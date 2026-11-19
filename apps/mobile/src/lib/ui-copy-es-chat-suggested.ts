@@ -7,7 +7,6 @@ export const messengerChatSuggestedEs: SuggestedFriendsCopy = {
   rowTitle: "Conoce nuevos amigos",
   seeAll: "Ver todos",
   seeAllLabel: "Ver todos los amigos",
-  earlyTag: (price) => `ANTES · ${price}`,
   newLabel: (name) => `${name}, nueva amistad`,
   lockedLabel: (name, episode) => `${name}, se conocerán en el episodio ${episode}`,
   earlyLabel: (name, episode, price) =>
