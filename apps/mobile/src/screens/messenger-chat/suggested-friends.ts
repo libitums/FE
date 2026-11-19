@@ -2,6 +2,7 @@
 
 import type { ChatRoomSummary } from "./chat-source.contract";
 import type {
+  EarlyAccessListing,
   EarlyAccessOffer,
   FriendCatalog,
   FriendProfile,
@@ -115,4 +116,21 @@ export function suggestedRowOf(
   max: number = SUGGESTED_ROW_MAX,
 ): readonly SuggestedFriend[] {
   return list.slice(0, max);
+}
+
+/** 서버 제안을 카탈로그 인물의 `earlyAccess`에 얹습니다 — 목록에 없는 인물은 그대로. */
+export function catalogWithOffers(
+  catalog: FriendCatalog,
+  offers: readonly EarlyAccessListing[],
+): FriendCatalog {
+  if (offers.length === 0) return catalog;
+  return {
+    ...catalog,
+    characters: catalog.characters.map((character) => {
+      const offer = offers.find((candidate) => candidate.characterId === character.id);
+      return offer === undefined
+        ? character
+        : { ...character, earlyAccess: { price: offer.price, endsAt: offer.endsAt } };
+    }),
+  };
 }

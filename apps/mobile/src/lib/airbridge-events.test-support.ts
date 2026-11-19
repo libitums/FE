@@ -71,6 +71,7 @@ export const allEventNames = [
   "suggested_friend_viewed",
   "suggested_friend_added",
   "early_access_tapped",
+  "early_access_completed",
 ] as const satisfies readonly AnalyticsEventName[];
 
 /** 매핑되는 둘(`entry_completed` · `episode_final_passed`)을 뺀 이름마다 최소 이벤트 하나입니다. */

@@ -6,12 +6,17 @@ import type { ReactNode } from "@lynx-js/react";
 import { useUiCopy } from "../../lib/ui-copy";
 import { useChatEvents } from "./chat-events";
 import type { ChatRoomSummary } from "./chat-source.contract";
-import type { SuggestedFriendsPort } from "./friend-catalog.contract";
+import type { EarlyAccessListing, SuggestedFriendsPort } from "./friend-catalog.contract";
 import { directoryChipsOf, directoryOf } from "./friend-directory";
 import type { DirectoryFilter, DirectoryRow } from "./friend-directory";
 import { FriendDirectoryScreen } from "./FriendDirectoryScreen";
 import type { SuggestedFriendSheetModel } from "./suggested-friends.contract";
-import { localizedLine, suggestedFriendsOf, suggestedRowOf } from "./suggested-friends";
+import {
+  catalogWithOffers,
+  localizedLine,
+  suggestedFriendsOf,
+  suggestedRowOf,
+} from "./suggested-friends";
 import type { SuggestedFriend } from "./suggested-friends";
 import { SuggestedFriendSheet } from "./SuggestedFriendSheet";
 import { SuggestedFriendsRow } from "./SuggestedFriendsRow";
@@ -66,8 +71,25 @@ export function useSuggestedFriends({
   const [toast, setToast] = useState<SuggestedFriendToastValue | null>(null);
   const toastKey = useRef(0);
   const viewedSent = useRef(false);
+  const [offers, setOffers] = useState<readonly EarlyAccessListing[]>([]);
 
-  const catalog = port?.catalog() ?? null;
+  // 서버 제안(ADR-0162 D5)은 목록 마운트마다 한 번 읽어 카탈로그에 얹습니다 — 못 읽으면 제안 없음.
+  const loadOffers = port?.offers ?? null;
+  useEffect(() => {
+    if (loadOffers === null) return undefined;
+    let live = true;
+    void loadOffers()
+      .then((list) => {
+        if (live) setOffers(list);
+      })
+      .catch(() => undefined);
+    return () => {
+      live = false;
+    };
+  }, [loadOffers]);
+
+  const base = port?.catalog() ?? null;
+  const catalog = base === null ? null : catalogWithOffers(base, offers);
   const now = Date.now();
   const input = {
     catalog: catalog ?? { characters: [], categories: [] },
@@ -128,21 +150,26 @@ export function useSuggestedFriends({
       price: String(open.model.offer?.price ?? 0),
       from: open.from,
     });
+    const completed = (outcome: "unlocked" | "short" | "failed") =>
+      emit({ name: "early_access_completed", surface: "chat", characterId: character.id, outcome });
+    // 실패(제안 없음 · 오류)는 시트를 그대로 두고 실패 줄만 — 다시 누를 수 있게.
+    const failed = () => {
+      completed("failed");
+      showToast(copy.addFailed(character.name), open.model);
+    };
     void run(character.id)
       .then((result) => {
-        if (result.kind === "unlocked") {
-          port.add(character.id);
-          return added(open, "early");
+        if (result.kind === "failed") return failed();
+        completed(result.kind);
+        if (result.kind === "short") {
+          setSheet(null);
+          return onShortOfCoins();
         }
-        setSheet(null);
-        if (result.kind === "short") return onShortOfCoins();
-        return showToast(copy.addFailed(character.name), open.model);
+        // 값을 치렀으니 기존 추가 길(방 열기 · 첫 인사 · 해금 저장)을 탑니다.
+        port.add(character.id);
+        return added(open, "early");
       })
-      .catch(() => {
-        // 실패 · 모자람과 같이 시트를 닫고 알립니다(리뷰 W1).
-        setSheet(null);
-        showToast(copy.addFailed(character.name), open.model);
-      });
+      .catch(failed);
   }
 
   const categoryLabel = (id: string): string => {

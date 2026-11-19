@@ -1,4 +1,4 @@
-# ADR-0162: 추천 친구 줄 · 친구 찾기 — 인물 카탈로그 포트 · 먼저 만나기는 꺼진 채
+# ADR-0162: 추천 친구 줄 · 친구 찾기 — 인물 카탈로그 포트 · 엽전 먼저 만나기
 
 - 상태: **채택** (2026-11-19)
 - 날짜: 2026-11-19
@@ -38,14 +38,22 @@
   「Start chatting」은 해금과 같은 길로 연다. 일반 인물을 늘릴 때는 서버 `companion.characters`에 같은 id의 행(페르소나 · `unlockLines`)이 있어야 한다 —
   없으면 첫 인사가 `character_not_found`로 실패한다(앱 방은 열리고 서버 인사만 빠짐).
 
-### D5. 추가는 실제, 먼저 만나기(엽전 100)는 꺼진 채
+### D5. 추가는 실제, 먼저 만나기(엽전 100)는 서버 RPC — 2026-11-19 적용
 - **추가**(`add`) = `source.unlockCharacter(id)`(잠긴 방 열기 · NEW 줄 · 서버 방이면 `companion-greet` trigger `unlock`으로 첫 인사) + 해금 저장(`messengerUnlockStore().add`).
   서버가 해금을 판정하지 않으므로 「방 열고 인사」가 곧 추가다 — 새 서버 코드가 필요 없다.
-- **먼저 만나기**는 서버 RPC가 없다. 결선의 `EARLY_ACCESS`가 `null`이라 **운영에서 꺼져 있다** — 줄의 「EARLY · 100」 꼬리표, 시트의 「Chat now」 단추,
-  친구 찾기의 🪙 알약이 서지 않고, 잠긴 이야기 인물은 안내 줄 + 「Not now」만 보인다(가짜 결제가 나가지 않는다). 오늘 카탈로그에도 제안 데이터가 없다.
-- 제안: 마이그레이션 + RPC 계약은 [docs/specs/suggested-friends-early-access.md](../specs/suggested-friends-early-access.md) · 같은 이름의 `.sql`(**적용 안 함 ·
-  migrations 폴더 밖**). RPC가 생기면 `EARLY_ACCESS`에 그 호출을 넣는 것 하나로 켜진다.
-- **가짜 카운트다운 금지**: 배지는 끝 시각(`endsAt`)이 있을 때만 「LIMITED · 2d 14h」, 없으면 「LIMITED」만.
+- **먼저 만나기** — 마이그레이션 `20261213120000_companion_early_access.sql`(**사용자 승인 · 2026-11-19 운영 적용**, schema_migrations 20261213120000):
+  - 표 `companion.early_access_offers`(인물 · 값 · 끝 시각 · 켬) · `companion.early_access_unlocks`(사용자 · 인물마다 한 번) — 둘 다 RLS 켬(직접 읽기 없음).
+  - `companion_early_access_offers()` → 켜진 제안 `[{ characterId, price, endsAt | null }]`.
+  - `companion_unlock_early(p_character_id)` → `unlocked | already | short(shortBy) | no_offer` + 지갑. 지갑을 **먼저 잠근 뒤** already를 본다(두 번 눌러도 한 번만
+    빠짐). 구독분 → 지급분 → 구매분 순서로 빼고 원장에 `kind = 'spend'`, `reason = 'early_access'`. 원장 kind 검사는 운영의 `'revoke'`를 남기고 `'spend'`를 더했다.
+  - 두 RPC 모두 authenticated만. **제안 값(사용자 결정 2026-11-19)**: 정윤경 · 미나 · 한도윤 · 서재민 넷 모두 100엽전, 마감 없음.
+- 앱: `ChatRemote.earlyAccess`(`companion-api.ts`)가 두 RPC를 부르고 `early-access-parse.ts`가 응답을 푼다. 진입점(`index.tsx`)이 `setEarlyAccessRemote`로 같은 서버
+  포트 공장을 끼우고(처음 쓸 때 만듦), 목록 화면이 마운트마다 제안을 한 번 읽어 카탈로그 인물의 `earlyAccess`에 얹는다(`catalogWithOffers`).
+  - 「Chat now · 100」 → `companion_unlock_early` → `unlocked` · `already`: 돌려받은 지갑 잔액으로 머리 엽전 칩을 맞추고 **기존 추가 길**(방 열기 · 첫 인사 · 해금 저장).
+    `short`: 시트를 닫고 엽전 상점. `no_offer` · 오류: **시트를 그대로 두고** 실패 줄(「Couldn't add <이름>. Try again.」).
+  - 손님 · 가짜 출처는 제안 목록이 비어 단추가 서지 않는다.
+- 제안 원본 `docs/specs/suggested-friends-early-access.md`는 이 마이그레이션으로 대체됐다(.sql 제안 파일은 지웠다).
+- **가짜 카운트다운 금지**: 배지는 끝 시각(`endsAt`)이 있을 때만 「LIMITED · 2d 14h」, 없으면 「LIMITED」만 — 지금 제안은 모두 마감이 없어 「LIMITED」다.
 
 ### D6. 화면
 - R1 줄: 목록 스크롤 안 맨 위(머리 아래), 제목 「Meet new friends」 · 「See all」, Avatar lg + 고리(추가 가능 = 브랜드 · 「+」 배지, 잠김 = 회색 · 자물쇠 배지).
@@ -57,16 +65,17 @@
 - R5 친구 찾기: 전체 화면 층(뒤로 화살표 · 시스템 뒤로), 칩 All · From your story · 일반 인물이 쓰는 카테고리, FROM YOUR STORY(Chat → 🪙 → 잠김 회차 → Added) ·
   NEW FRIENDS(Chat → Added), 꼬리 「More friends are on the way」. 층 순서는 친구 찾기(floating) < 시트(sheet) < 토스트(toast).
 
-### D7. 제품 이벤트 셋(ADR-0029 「D3 목적 구분」)
+### D7. 제품 이벤트 넷(ADR-0029 「D3 목적 구분」)
 - `suggested_friend_viewed { count }` — 줄이 처음 보일 때 목록 마운트당 한 번.
 - `suggested_friend_added { characterId, kind, from: row | directory, via: free | early }`.
-- `early_access_tapped { characterId, price, from }` — 「Chat now」를 누름(결제 전 의향). 지금은 단추가 없어 나지 않는다.
-- 분석 이름 68 → **71**, Airbridge 이름 63 → 66 · 매핑 없는 표 61 → 64(셋 다 Airbridge로 보내지 않음).
+- `early_access_tapped { characterId, price, from }` — 「Chat now」를 누름(결제 전 의향).
+- `early_access_completed { characterId, outcome: unlocked | short | failed }` — RPC가 끝난 뒤 한 번(`chat_media_completed`와 같은 모양, 2026-11-19 추가).
+- 분석 이름 68 → **72**, Airbridge 이름 63 → 67 · 매핑 없는 표 61 → 65(넷 다 Airbridge로 보내지 않음).
 
 ## 버린 대안
 
 - **잠긴 방 대신 새 접근 종류(`hidden`)**: `ChatRoomAccess`를 넓히면 잠김을 보는 모든 분기가 바뀐다. 일반 인물의 방은 「에피소드 0으로 잠김」으로 같은 길을 탄다.
-- **먼저 만나기를 앱 지갑에서 빼고 방을 열기**: 엽전 정본은 서버 지갑이다(ADR-0155). 앱만 빼면 서버와 어긋나고 되돌릴 길이 없다 — 꺼 둔다.
+- **먼저 만나기를 앱 지갑에서 빼고 방을 열기**: 엽전 정본은 서버 지갑이다(ADR-0155). 앱만 빼면 서버와 어긋나고 되돌릴 길이 없다 — 서버 RPC로 뺀다.
 - **친구 찾기를 탭 스택 route로**: nav 상태 · 뒤로 규칙이 늘어난다. 목록 화면 위 층(엽전 상점과 같은 방식)으로 충분하다.
 - **카운트다운 자리값**: 데이터가 없는 시각을 보이면 가짜 긴급성이다 — 금지.
 
@@ -81,5 +90,5 @@
 
 - unit: `suggested-friends.unit.test.ts`(SF-U1 ~ U7 · CS-U1) · `friend-directory.unit.test.ts`(FD-U1 ~ U3) · 분석 이름 수(AN1 · AB3).
 - ui: `SuggestedFriendsRow` · `SuggestedFriendSheet` · `FriendDirectoryScreen` · `MessengerListScreen.suggested`.
-- integration: `App.suggested-friends.integration.test.tsx`(SFI1 ~ SFI3).
+- integration: `App.suggested-friends.integration.test.tsx`(SFI1 ~ SFI4) · SQL `companion-early-access.integration.test.ts`(EA1 ~ EA6).
 - e2e: [docs/e2e/suggested-friends.md](../e2e/suggested-friends.md)(기기 절차, 미실행).

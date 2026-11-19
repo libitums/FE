@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
-import { cleanup, fireEvent, screen } from "@lynx-js/react/testing-library";
+import { act, cleanup, fireEvent, screen } from "@lynx-js/react/testing-library";
 
 import { COMPANION_CATALOG } from "../screens/messenger-chat/companion-roster";
 import {
@@ -8,7 +8,8 @@ import {
 } from "../screens/messenger-chat/suggested-friends.contract";
 import { App } from "./App";
 import { messengerUnlockStore } from "./messenger-chat-wiring";
-import { setFriendCatalogForTests } from "./suggested-friends-wiring";
+import type { ChatRemote } from "../screens/messenger-chat/chat-remote.contract";
+import { setEarlyAccessRemote, setFriendCatalogForTests } from "./suggested-friends-wiring";
 import {
   openTab,
   present,
@@ -46,6 +47,7 @@ beforeEach(async () => {
 });
 afterEach(() => {
   setFriendCatalogForTests(null);
+  setEarlyAccessRemote(null);
   cleanup();
   (lynx as unknown as { __globalProps: unknown }).__globalProps = undefined;
   vi.useRealTimers();
@@ -92,4 +94,33 @@ test("SFI3. See all → 친구 찾기, 시스템 뒤로가기로 목록에 돌�
   pressSystemBack();
   expect(present(dir.screen)).toBe(false);
   expect(present(ids.row)).toBe(true);
+});
+
+test("SFI4. 서버 포트가 끼워지면 제안이 줄에 서고, Chat now · 100이 RPC를 부른 뒤 해금과 같은 길로 방을 연다", async () => {
+  const unlock = vi.fn(async () => ({ result: "unlocked", shortBy: null, balance: 220 }) as const);
+  setEarlyAccessRemote(
+    () =>
+      ({
+        earlyAccess: {
+          offers: async () => [{ characterId: "mina", price: 100, endsAt: null }],
+          unlock,
+        },
+      }) as unknown as ChatRemote,
+  );
+  await renderTesterApp(<App progressSeed={legacyPassedSeed} />);
+  openTab("messenger");
+  await act(async () => {
+    await Promise.resolve();
+  });
+  expect(screen.getByTestId(ids.early("mina")).textContent).toBe("EARLY · 100");
+  fireEvent.tap(screen.getByTestId(ids.avatar("mina")), {});
+  tapId(ids.sheetEarly);
+  await act(async () => {
+    await Promise.resolve();
+    await Promise.resolve();
+  });
+  expect(unlock).toHaveBeenCalledWith("mina");
+  expect(present("messenger-list-row-mina-new")).toBe(true);
+  expect(messengerUnlockStore().read().has("mina")).toBe(true);
+  expect(screen.getByTestId(ids.toast).textContent).toContain("미나 added to your chats");
 });

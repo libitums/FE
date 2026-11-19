@@ -20,4 +20,11 @@ export const suggestedFriendEventExamples = [
     price: "100",
     from: "directory",
   },
+  {
+    name: "early_access_completed",
+    surface: "chat",
+    daysSinceFirstOpen: "3",
+    characterId: "jaemin",
+    outcome: "short",
+  },
 ] as const satisfies readonly AnalyticsEvent[];

@@ -36,6 +36,13 @@ export type FriendCatalog = {
   readonly categories: readonly FriendCategory[];
 };
 
+/** 서버가 켠 먼저 만나기 제안 한 줄(`companion_early_access_offers`) — 카탈로그 인물의 `earlyAccess`를 채웁니다. */
+export type EarlyAccessListing = {
+  readonly characterId: string;
+  readonly price: number;
+  readonly endsAt: number | null;
+};
+
 export type AddFriendResult = "added" | "already" | "unknown";
 
 export type EarlyAccessResult =
@@ -52,4 +59,6 @@ export type SuggestedFriendsPort = {
   readonly earlyAccess: ((characterId: string) => Promise<EarlyAccessResult>) | null;
   /** 이 에피소드를 끝냈는가 — 해금 규칙을 채웠지만 아직 추가하지 않은 스토리 인물. 없으면 모두 거짓. */
   readonly metEpisode?: (episodeId: string) => boolean;
+  /** 서버의 켜진 제안 — 목록 화면이 한 번 읽어 카탈로그에 얹습니다. 없으면(가짜 출처 · 손님) 제안이 없습니다. */
+  readonly offers?: (() => Promise<readonly EarlyAccessListing[]>) | null;
 };

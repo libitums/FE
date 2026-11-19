@@ -71,6 +71,12 @@ export type SuggestedFriendEvent =
       readonly characterId: string;
       readonly price: string;
       readonly from: "row" | "directory";
+    })
+  /** 먼저 만나기 RPC가 끝났습니다(ADR-0162 D5) — 누른 뒤 한 번. unlocked = 이미 산 인물(already) 포함, failed = 제안 없음 · 오류. */
+  | (Common & {
+      readonly name: "early_access_completed";
+      readonly characterId: string;
+      readonly outcome: "unlocked" | "short" | "failed";
     });
 
 /** 메신저 보내기 · 엽전(ADR-0140 단가). */

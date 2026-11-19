@@ -1,4 +1,8 @@
-# 엽전 먼저 만나기 — 서버 계약 제안 (적용 안 함)
+# 엽전 먼저 만나기 — 서버 계약 제안 (대체됨)
+
+> ⟨2026-11-19 대체⟩ 이 제안은 마이그레이션 [`20261213120000_companion_early_access.sql`](../../apps/supabase-functions/supabase/migrations/20261213120000_companion_early_access.sql)로
+> 운영에 적용됐다(사용자 승인). 고친 점: 원장 kind 검사에 운영의 `'revoke'`를 남김, 제안 표에도 RLS, 지갑 잠금을 already 확인 앞으로. 제안 값은 이야기 인물
+> 넷 · 100 · 마감 없음. 앱 연결은 끝났다 — [ADR-0162](../adr/0162-suggested-friends.md) D5. 아래는 기록이고, 제안 .sql 파일은 지웠다.
 
 [ADR-0162](../adr/0162-suggested-friends.md) D5의 제안이다. **원격 DB에 적용하지 않았고 migrations 폴더에도 넣지 않았다** — SQL은
 [suggested-friends-early-access.sql](suggested-friends-early-access.sql). 받아들이면 새 번호로 migrations에 옮기고 통합 테스트를 쓴다.
