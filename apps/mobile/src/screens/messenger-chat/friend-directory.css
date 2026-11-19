@@ -1,0 +1,202 @@
+/* 친구 찾기(R5) — 전체 화면 층. 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1).
+   시트(z-sheet)가 이 층 위에 서야 해서 floating입니다. 스크롤 안에는 z-index가 없습니다 — 배지는 문서 순서로 위. */
+
+.friend-directory {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: var(--libitum-elevation-z-floating);
+  display: flex;
+  flex-direction: column;
+  background-color: var(--libitum-color-background-primary);
+}
+
+.friend-directory-head {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-8);
+  padding: var(--libitum-spacing-8) var(--libitum-spacing-12);
+}
+
+.friend-directory-title {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-m-font-family);
+  font-weight: var(--libitum-typography-heading-m-font-weight);
+  font-size: var(--libitum-typography-heading-m-font-size);
+  line-height: var(--libitum-typography-heading-m-line-height);
+}
+
+.friend-directory-chips-scroll {
+  flex-shrink: 0;
+  width: 100%;
+}
+
+.friend-directory-chips {
+  display: flex;
+  flex-direction: row;
+  gap: var(--libitum-spacing-8);
+  padding: var(--libitum-spacing-8) var(--libitum-layout-screen-padding-x);
+}
+
+.friend-directory-chip {
+  display: flex;
+  align-items: center;
+  min-height: var(--libitum-spacing-32);
+  padding: var(--libitum-spacing-4) var(--libitum-spacing-16);
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--libitum-color-border-default);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-white);
+}
+
+.friend-directory-chip-on {
+  border-color: var(--libitum-color-gray-900);
+  background-color: var(--libitum-color-gray-900);
+}
+
+.friend-directory-chip-text {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-weight: var(--libitum-font-weight-semi-bold);
+  font-size: var(--libitum-typography-label-l-font-size);
+  line-height: var(--libitum-typography-label-l-line-height);
+  white-space: nowrap;
+}
+
+.friend-directory-chip-on .friend-directory-chip-text {
+  color: var(--libitum-color-white);
+}
+
+.friend-directory-scroll {
+  flex: 1;
+}
+
+.friend-directory-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.friend-directory-section {
+  padding: var(--libitum-spacing-16) var(--libitum-layout-screen-padding-x) var(--libitum-spacing-6);
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-weight: var(--libitum-font-weight-bold);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+}
+
+.friend-directory-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-12);
+  min-height: calc(var(--libitum-spacing-64) + var(--libitum-spacing-8));
+  padding: 0 var(--libitum-layout-screen-padding-x);
+}
+
+.friend-directory-row:active {
+  background: var(--libitum-color-gray-100);
+}
+
+.friend-directory-row-added:active {
+  background: transparent;
+}
+
+.friend-directory-face-dim {
+  display: flex;
+  opacity: var(--libitum-opacity-45);
+}
+
+.friend-directory-face {
+  display: flex;
+}
+
+.friend-directory-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-2);
+}
+
+.friend-directory-name-line {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-6);
+}
+
+.friend-directory-name {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-body-l-font-family);
+  font-weight: var(--libitum-font-weight-bold);
+  font-size: var(--libitum-typography-body-l-font-size);
+  line-height: var(--libitum-typography-body-l-line-height);
+}
+
+.friend-directory-sub {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: var(--libitum-typography-body-m-font-size);
+  line-height: var(--libitum-typography-body-m-line-height);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 줄 오른쪽 동작 알약 — Chat · 먼저 만나기는 브랜드 면, Added · 잠김은 회색 면. */
+.friend-directory-action {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-4);
+  min-height: calc(var(--libitum-spacing-32) + var(--libitum-spacing-4));
+  padding: 0 var(--libitum-spacing-12);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-brand-primary);
+}
+
+.friend-directory-action-muted {
+  background-color: var(--libitum-color-gray-100);
+}
+
+.friend-directory-action-text {
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-weight: var(--libitum-font-weight-bold);
+  font-size: var(--libitum-typography-label-l-font-size);
+  line-height: var(--libitum-typography-label-l-line-height);
+}
+
+.friend-directory-action-muted .friend-directory-action-text {
+  color: var(--libitum-color-fg-neutral-muted);
+}
+
+.friend-directory-action-icon {
+  width: var(--libitum-spacing-16);
+  height: var(--libitum-spacing-16);
+}
+
+/* 먼저 만나기 알약 위 LIMITED 배지 — 스크롤 안이라 z-index 없이 문서 순서로 위. */
+.friend-directory-limited {
+  position: absolute;
+  top: calc(var(--libitum-spacing-8) * -1);
+  right: calc(var(--libitum-spacing-4) * -1);
+  padding: 0 var(--libitum-spacing-6);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-gray-900);
+}
+
+/* 꼬리 줄 — 점선 원 + 안내. */
+.friend-directory-more-ring {
+  width: var(--libitum-spacing-48);
+  height: var(--libitum-spacing-48);
+  border-width: 2px;
+  border-style: dashed;
+  border-color: var(--libitum-color-gray-300);
+  border-radius: var(--libitum-radius-full);
+}

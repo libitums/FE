@@ -3,10 +3,12 @@
 import type { MessengerChatExtraCopy } from "../screens/messenger-chat/chat-settings.contract";
 import { messengerChatMediaEs } from "./ui-copy-es-chat-media";
 import { messengerChatAlbumEs } from "./ui-copy-es-chat-album";
+import { messengerChatSuggestedEs } from "./ui-copy-es-chat-suggested";
 
 export const messengerChatExtraEs: MessengerChatExtraCopy = {
   media: messengerChatMediaEs,
   album: messengerChatAlbumEs,
+  suggested: messengerChatSuggestedEs,
   access: {
     signInTitle: "Escríbeles a las personas de tus historias",
     signInBody:

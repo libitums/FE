@@ -1,0 +1,174 @@
+/* 추천 친구 줄(R1) · 토스트(R3) — 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1).
+   줄은 목록 스크롤 안에 있어 z-index를 쓰지 않습니다 — 배지는 문서 순서로 아바타 위에 그립니다(ADR-0022).
+   화면 지역 상수(토큰 없음): 고리 3 · 고리 틈 2(시안 실측). */
+
+.suggested-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-8);
+  padding-top: var(--libitum-spacing-8);
+}
+
+.suggested-row-head {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--libitum-layout-screen-padding-x);
+}
+
+.suggested-row-title {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-weight: var(--libitum-font-weight-bold);
+  font-size: var(--libitum-typography-label-l-font-size);
+  line-height: var(--libitum-typography-label-l-line-height);
+}
+
+/* See all — 글자만이지만 누름 면은 터치 높이(32 + 위아래 여백)입니다. */
+.suggested-row-see-all {
+  display: flex;
+  align-items: center;
+  min-height: var(--libitum-spacing-32);
+  padding: 0 var(--libitum-spacing-4);
+}
+
+.suggested-row-see-all-text {
+  color: var(--libitum-color-fg-brand);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-weight: var(--libitum-font-weight-bold);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+}
+
+.suggested-row-scroll {
+  width: 100%;
+}
+
+.suggested-row-track {
+  display: flex;
+  flex-direction: row;
+  gap: var(--libitum-spacing-12);
+  padding: var(--libitum-spacing-4) var(--libitum-layout-screen-padding-x);
+}
+
+/* 아바타 한 칸 — 고리 + 이름 (+ 꼬리표). 폭은 고리 지름 + 여유입니다. */
+.suggested-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-6);
+  width: calc(var(--libitum-spacing-64) + var(--libitum-spacing-12));
+}
+
+.suggested-ring {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  border-width: 3px;
+  border-style: solid;
+  border-radius: var(--libitum-radius-full);
+  border-color: var(--libitum-color-brand-primary);
+}
+
+.suggested-ring-locked {
+  border-color: var(--libitum-color-gray-200);
+}
+
+.suggested-face-dim {
+  display: flex;
+  opacity: var(--libitum-opacity-90);
+}
+
+/* 오른쪽 아래 배지 — 「+」(gray-900) · 자물쇠(gray-700). 테두리는 바탕색으로 고리와 가릅니다. */
+.suggested-badge {
+  position: absolute;
+  right: calc(var(--libitum-spacing-2) * -1);
+  bottom: calc(var(--libitum-spacing-2) * -1);
+  width: var(--libitum-spacing-24);
+  height: var(--libitum-spacing-24);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-width: 2px;
+  border-style: solid;
+  border-color: var(--libitum-color-background-primary);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-gray-900);
+}
+
+.suggested-badge-locked {
+  background-color: var(--libitum-color-gray-700);
+}
+
+.suggested-badge-icon {
+  width: var(--libitum-spacing-12);
+  height: var(--libitum-spacing-12);
+}
+
+.suggested-name {
+  max-width: 100%;
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-weight: var(--libitum-font-weight-semi-bold);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.suggested-name-locked {
+  color: var(--libitum-color-fg-neutral-muted);
+}
+
+/* EARLY · LIMITED 꼬리표 — 검은 알약 · 흰 글. */
+.suggested-tag {
+  display: flex;
+  align-items: center;
+  padding: var(--libitum-spacing-2) var(--libitum-spacing-6);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-gray-900);
+}
+
+.suggested-tag-text {
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-label-s-font-family);
+  font-weight: var(--libitum-font-weight-bold);
+  font-size: var(--libitum-typography-label-s-font-size);
+  line-height: var(--libitum-typography-label-s-line-height);
+  white-space: nowrap;
+}
+
+/* 줄과 채팅 목록을 가르는 선. */
+.suggested-divider {
+  height: 1px;
+  margin: var(--libitum-spacing-8) var(--libitum-layout-screen-padding-x) 0;
+  background-color: var(--libitum-color-gray-100);
+}
+
+/* 추가 토스트(R3) — 목록 안내 줄과 같은 자리 · 색, 아바타 하나. 친구 찾기 층 위에도 서야 해서 토스트 층입니다(스크롤 밖). */
+.suggested-toast {
+  position: absolute;
+  left: var(--libitum-spacing-16);
+  right: var(--libitum-spacing-16);
+  bottom: calc(var(--libitum-spacing-64) + var(--libitum-spacing-4) + var(--libitum-spacing-12));
+  z-index: var(--libitum-elevation-z-toast);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-12);
+  padding: var(--libitum-spacing-12) var(--libitum-spacing-16);
+  border-radius: var(--libitum-radius-lg);
+  background-color: var(--libitum-color-gray-900);
+}
+
+.suggested-toast-text {
+  flex: 1;
+  color: var(--libitum-color-fg-neutral-inverted);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-weight: var(--libitum-font-weight-semi-bold);
+  font-size: var(--libitum-typography-body-m-font-size);
+  line-height: var(--libitum-typography-body-m-line-height);
+}

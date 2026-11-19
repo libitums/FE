@@ -15,8 +15,10 @@ import { deviceGuideStore, GUIDE_ROOM_ID } from "./messenger-guide";
 import { orderChatRooms } from "./chat-list";
 import { messengerListTestIds as ids } from "./messenger-chat.contract";
 import type { MessengerListScreenProps } from "./messenger-chat.contract";
+import type { SuggestedFriendsProps } from "./suggested-friends.contract";
 import { useChatSnapshot } from "./use-chat-source";
 import { useCoinBalance } from "./use-coin-balance";
+import { useSuggestedFriends } from "./use-suggested-friends";
 
 import "./messenger-list.css";
 
@@ -35,7 +37,8 @@ export function MessengerListScreen({
   access,
   onSignIn,
   guideStore = deviceGuideStore,
-}: MessengerListScreenProps): ReactNode {
+  friends,
+}: MessengerListScreenProps & SuggestedFriendsProps): ReactNode {
   const copy = useUiCopy().messengerChat.list;
   const { rooms } = useChatSnapshot(source);
   // 잔액 = 앱의 보유 엽전 − 이번 실행에서 쓴 양. 방에서 엽전을 쓰고 돌아오면 칩이 따라갑니다.
@@ -83,6 +86,13 @@ export function MessengerListScreen({
     setCoinShopOpen(false);
     onLayerChange(false);
   }
+  // 추천 친구 줄 · 시트 · 친구 찾기(ADR-0162) — 엽전이 모자라면 상점을 엽니다.
+  const suggested = useSuggestedFriends({
+    port: access === "open" ? friends : undefined,
+    rooms,
+    onLayerChange,
+    onShortOfCoins: openCoinShop,
+  });
 
   const ordered = orderChatRooms(rooms);
   // 시각 표기의 기준은 그릴 때마다 읽습니다(상태로 두면 목록이 바뀔 때마다 두 번 그려집니다 — 리뷰 #10).
@@ -93,7 +103,7 @@ export function MessengerListScreen({
       {/* 겹침이 떠 있는 동안 뒤 화면을 낭독에서 숨깁니다(ADR-0016 D9). */}
       <view
         className="messenger-list-content"
-        accessibility-elements-hidden={coinShopOpen || guideShown}
+        accessibility-elements-hidden={coinShopOpen || guideShown || suggested.layerOpen}
       >
         <view className="messenger-list-header" data-testid={ids.header}>
           <text
@@ -135,6 +145,7 @@ export function MessengerListScreen({
             scroll-bar-enable={false}
           >
             <view className="messenger-list-list" data-testid={ids.list}>
+              {suggested.row}
               {ordered.map((room) => (
                 <ChatListRow key={room.roomId} room={room} now={now} onOpen={onOpenRoom} />
               ))}
@@ -143,6 +154,7 @@ export function MessengerListScreen({
         )}
       </view>
       <ChatListNotice notice={notice} onNoticeShown={onNoticeShown} />
+      {suggested.layers}
       {coinShopOpen ? <CoinShopLayer coinBalance={coinBalance} onClose={closeCoinShop} /> : null}
       {guideShown && guideRoom !== undefined ? (
         <MessengerListGuide

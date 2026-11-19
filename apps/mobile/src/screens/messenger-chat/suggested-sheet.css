@@ -1,0 +1,221 @@
+/* 추천 친구 프로필 시트(R2 · R4 · R6) — 토큰은 CSS 커스텀 프로퍼티로만 소비합니다(ADR-0014 D1).
+   새 친구 시트(new-friend.css)와 같은 판 · 막 · 들어옴입니다. 상태는 클래스 변형으로 표시합니다(속성 선택자 없음). */
+
+.suggested-sheet {
+  position: fixed;
+  top: var(--libitum-spacing-0);
+  right: var(--libitum-spacing-0);
+  bottom: var(--libitum-spacing-0);
+  left: var(--libitum-spacing-0);
+  z-index: var(--libitum-elevation-z-sheet);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+/* 막은 absolute입니다 — fixed 안의 fixed는 Lynx에서 화면 일부만 덮습니다. */
+.suggested-sheet .ui-lynx-overlay {
+  position: absolute;
+  top: var(--libitum-spacing-0);
+  right: var(--libitum-spacing-0);
+  bottom: var(--libitum-spacing-0);
+  left: var(--libitum-spacing-0);
+  z-index: 0;
+}
+
+.suggested-sheet-panel {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: var(--libitum-color-white);
+  border-top-left-radius: var(--libitum-radius-xl);
+  border-top-right-radius: var(--libitum-radius-xl);
+  box-shadow: 0 -10px 14px rgba(26, 28, 32, 0.2);
+  animation: suggested-sheet-enter var(--libitum-motion-duration-sheet)
+    var(--libitum-motion-easing-enter) both;
+}
+
+.suggested-sheet-panel-still {
+  animation: none;
+}
+
+@keyframes suggested-sheet-enter {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* 고정 위쪽 — 손잡이 · 얼굴 · 이름 · 한 줄. */
+.suggested-sheet-top {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  gap: var(--libitum-spacing-8);
+  padding: var(--libitum-spacing-12) var(--libitum-spacing-24) var(--libitum-spacing-8);
+}
+
+.suggested-sheet-handle {
+  width: var(--libitum-spacing-40);
+  height: var(--libitum-spacing-6);
+  margin-bottom: var(--libitum-spacing-8);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-gray-300);
+}
+
+.suggested-sheet-face {
+  position: relative;
+  display: flex;
+}
+
+/* 잠김 얼굴의 자물쇠 배지 — 판 흰 면과 테두리로 가릅니다(스크롤 밖 — 문서 순서로 위). */
+.suggested-sheet-lock {
+  position: absolute;
+  right: var(--libitum-spacing-0);
+  bottom: var(--libitum-spacing-0);
+  width: var(--libitum-spacing-32);
+  height: var(--libitum-spacing-32);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-width: 3px;
+  border-style: solid;
+  border-color: var(--libitum-color-white);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-gray-700);
+}
+
+.suggested-sheet-lock-icon {
+  width: var(--libitum-spacing-16);
+  height: var(--libitum-spacing-16);
+}
+
+.suggested-sheet-title {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--libitum-spacing-6);
+}
+
+.suggested-sheet-name {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-heading-m-font-family);
+  font-weight: var(--libitum-typography-heading-m-font-weight);
+  font-size: var(--libitum-typography-heading-m-font-size);
+  line-height: var(--libitum-typography-heading-m-line-height);
+}
+
+.suggested-sheet-sub {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: var(--libitum-typography-body-m-font-size);
+  line-height: var(--libitum-typography-body-m-line-height);
+  text-align: center;
+}
+
+.suggested-sheet-scroll {
+  flex-shrink: 0;
+  width: 100%;
+}
+
+.suggested-sheet-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-12);
+  padding: var(--libitum-spacing-4) var(--libitum-spacing-24) var(--libitum-spacing-16);
+}
+
+.suggested-sheet-tags {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--libitum-spacing-8);
+}
+
+.suggested-sheet-tag {
+  padding: var(--libitum-spacing-4) var(--libitum-spacing-12);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-gray-100);
+}
+
+.suggested-sheet-tag-text {
+  color: var(--libitum-color-gray-700);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-weight: var(--libitum-font-weight-semi-bold);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+}
+
+/* 첫 말 칸 — 연한 브랜드 면 위 받은 말풍선. */
+.suggested-sheet-opening {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  padding: var(--libitum-spacing-12);
+  border-radius: var(--libitum-radius-lg);
+  background-color: var(--libitum-color-brand-secondary);
+}
+
+/* 잠김 안내 줄 — 회색 면. */
+.suggested-sheet-info {
+  align-self: stretch;
+  padding: var(--libitum-spacing-12) var(--libitum-spacing-16);
+  border-radius: var(--libitum-radius-lg);
+  background-color: var(--libitum-color-gray-100);
+}
+
+.suggested-sheet-info-text {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: var(--libitum-typography-body-m-font-size);
+  line-height: var(--libitum-typography-body-m-line-height);
+}
+
+/* 단추 줄 — 스크롤 밖 고정. 아래 여백(16 + 아래 시스템 바)은 화면이 인라인으로 줍니다 — `env()`는 Lynx에서 0입니다. */
+.suggested-sheet-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  flex-shrink: 0;
+  gap: var(--libitum-spacing-8);
+  padding: var(--libitum-spacing-0) var(--libitum-spacing-24) var(--libitum-spacing-16);
+}
+
+/* 먼저 만나기 — 주 단추 위 오른쪽에 LIMITED 배지를 겹칩니다(스크롤 밖 — 문서 순서로 위). */
+.suggested-sheet-early {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--libitum-spacing-4);
+  padding-top: var(--libitum-spacing-8);
+}
+
+.suggested-sheet-limited {
+  position: absolute;
+  top: var(--libitum-spacing-0);
+  right: var(--libitum-spacing-12);
+  padding: var(--libitum-spacing-2) var(--libitum-spacing-8);
+  border-width: 2px;
+  border-style: solid;
+  border-color: var(--libitum-color-white);
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-gray-900);
+}
+
+.suggested-sheet-early-note {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-weight: var(--libitum-font-weight-semi-bold);
+  font-size: var(--libitum-typography-label-m-font-size);
+  line-height: var(--libitum-typography-label-m-line-height);
+  text-align: center;
+}
