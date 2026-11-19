@@ -30,12 +30,15 @@ final class PurchasesAttribution {
 
   /** 앱 시작 뒤 · 로그인(logIn) 뒤에 부른다. Airbridge 기기 id는 비동기로 받는다 — 부르는 스레드를 막지 않는다. 던지지 않는다. */
   static void linkAirbridgeDevice(Context context) {
-    if (!isLinkable(context)) return;
+    if (context == null) return;
+    // 콜백이 늦게 와도 Activity를 붙잡지 않게 application context만 들고 간다.
+    final Context appContext = context.getApplicationContext();
+    if (!isLinkable(appContext)) return;
     try {
       Airbridge.fetchDeviceUUID(
           raw -> {
             String id = deviceId(raw);
-            if (id == null || !isLinkable(context)) return;
+            if (id == null || !isLinkable(appContext)) return;
             try {
               // 이 id를 걸면 SDK가 광고 ID · IP도 함께 모은다 — 문서대로 한 번 더 부른다.
               Purchases.getSharedInstance().setAirbridgeDeviceID(id);
