@@ -67,14 +67,15 @@
   flex: 1;
 }
 
-/* 인물: 바닥을 카드 아래 끝에 맞추고 카드보다 48 크게 그려 위로 튀어나오게
-   합니다. 원본 540×810(2:3) 비율을 지킵니다. */
+/* 인물(도윤): 바닥을 카드 아래 끝에 맞추고 카드보다 80 크게 그려 머리가 위로 튀어나오게
+   합니다. 오른쪽의 편의점과 겹치지 않게 골목 쪽(왼쪽)에 둡니다. 그림은 전신 컷의 윗부분
+   (417×819)만 잘라 넣었습니다 — 아래 끝이 카드 아래 끝과 맞습니다. */
 .onboarding-screen-hero-character {
   position: absolute;
-  right: var(--libitum-spacing-16);
+  left: var(--libitum-spacing-16);
   bottom: 0;
-  height: calc(100% + var(--libitum-spacing-48));
-  aspect-ratio: 540 / 810;
+  height: calc(100% + var(--libitum-spacing-80));
+  aspect-ratio: 417 / 819;
   /* Card가 elevation z-default(1)로 떠 있어 그보다 한 단계 위에 둡니다. */
   z-index: var(--libitum-elevation-z-sticky);
 }

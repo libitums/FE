@@ -154,7 +154,7 @@ export const tapButtonIn = (id: string): void =>
 export const present = (id: string): boolean => screen.queryByTestId(id) !== null;
 
 export function completeOnboarding(): void {
-  for (let step = 0; step < 3; step += 1) tapButtonIn("onboarding-screen-next");
+  tapButtonIn("onboarding-screen-start");
 }
 
 function dispatchInput(selector: string, value: string): void {

@@ -391,15 +391,13 @@ function tapResend(): void {
   );
 }
 
-// 온보딩 세 스텝을 끝까지 넘깁니다(0→1→2→onComplete). `onboarding-screen-next`는
-// 스텝마다 같은 testid입니다 — 세 번 누르면 로그인에 닿습니다. 이름 · 나라는 가입 직후 화면이 묻습니다.
+// 온보딩의 「Get started」는 어느 스텝에서든 곧바로 로그인입니다(ADR-0159). 이름 · 나라는 가입 직후
+// 화면이 묻습니다.
 function completeOnboarding(): void {
-  for (let step = 0; step < 3; step += 1) {
-    fireEvent.tap(
-      within(screen.getByTestId("onboarding-screen-next")).getByTestId("ui-lynx-button"),
-      {},
-    );
-  }
+  fireEvent.tap(
+    within(screen.getByTestId("onboarding-screen-start")).getByTestId("ui-lynx-button"),
+    {},
+  );
 }
 
 function selectLoginMethod(method: EntryLoginMethod): void {
@@ -1200,6 +1198,15 @@ test("[IE13] entry_screen_viewed가 화면 일곱에 대해 각 전이 직전 1�
     "journey-entry",
   ]);
   expect(viewedScreens).not.toContain("splash");
+  // 온보딩은 첫 스텝 열람 → 곧바로 시작(ADR-0159), 그다음이 로그인 열람입니다.
+  expect(events.filter((event) => event.name.startsWith("onboarding_"))).toEqual([
+    { name: "onboarding_step_viewed", step: "1", via: "start" },
+    { name: "onboarding_started", step: "1", autoAdvanced: false },
+  ]);
+  const loginViewed = events.findIndex(
+    (event) => event.name === "entry_screen_viewed" && event.screen === "login",
+  );
+  expect(events.findIndex((event) => event.name === "onboarding_started")).toBe(loginViewed - 1);
 });
 
 // ⚠ 「세션 재실행 경로에서 0회」는 부재·무동작을 재는 칸입니다 — (b)에서 먼저

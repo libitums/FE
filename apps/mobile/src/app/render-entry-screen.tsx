@@ -47,7 +47,12 @@ export function renderEntryScreen(screen: EntryScreen, wiring: ScreenWiring) {
     case "update-required":
       return <UpdateRequiredScreen onUpdate={wiring.onOpenAppStore} />;
     case "onboarding":
-      return <OnboardingScreen onComplete={wiring.onOnboardingComplete} />;
+      return (
+        <OnboardingScreen
+          onComplete={wiring.onOnboardingComplete}
+          onEvent={wiring.onOnboardingEvent}
+        />
+      );
     case "login":
       return (
         <LoginScreen

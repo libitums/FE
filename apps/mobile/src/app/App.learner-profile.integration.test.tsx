@@ -334,12 +334,9 @@ function saveInSettings(name: string, code: string): void {
 const openJourney = (): void =>
   void fireEvent.tap(screen.getByTestId("ui-lynx-bottom-navigator-item-journey"), {});
 
-const tapNext = (): void => tapButtonIn("onboarding-screen-next");
-/** 온보딩 세 스텝을 넘겨 로그인에 섭니다. */
+/** 온보딩의 「Get started」로 로그인에 섭니다(ADR-0159 — 어느 스텝에서든). */
 function completeOnboarding(): void {
-  tapNext();
-  tapNext();
-  tapNext();
+  tapButtonIn("onboarding-screen-start");
 }
 
 /** 로그인 뒤 ① 이름 또는 맵 — 서버 진행이 있는 계정은 ① · ② · 언어 선택 없이 맵으로 갑니다. */

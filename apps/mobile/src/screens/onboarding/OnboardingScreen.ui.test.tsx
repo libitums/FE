@@ -1,24 +1,32 @@
 import { describe, expect, it, vi } from "vitest";
 import { act, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
+import { MotionProvider } from "@libitums/ui-lynx/motion";
 import { uiCopyEn } from "../../lib/ui-copy-en";
-import { onboardingActionLabel, onboardingSteps } from "./onboarding";
+import { onboardingAutoAdvanceMs } from "./onboarding";
 import { OnboardingScreen } from "./OnboardingScreen";
 
-// `ui` 계층: 실제 컴포넌트를 렌더하고 스텝 진행·진행 점·액션 라벨을 봅니다 (ADR-0006 D4).
-// `step`은 화면 로컬 상태입니다 — 전이 없이 이 컴포넌트 안에서만 돕니다.
+// `ui` 계층: 실제 컴포넌트를 렌더하고 스텝 진행(밀기 · 자동 넘김)·진행 점·시작 버튼을 봅니다
+// (ADR-0006 D4, ADR-0159). `step`은 화면 로컬 상태입니다 — 전이 없이 이 컴포넌트 안에서만 돕니다.
 //
-// 제목·본문(`onboardingCopy`의 결과)은 자리표입니다 — 공백 아님·서로 다름만
-// 봅니다. 액션 라벨(`onboardingActionLabel`의 결과)은 임시가 아닙니다 — 문자열을
-// 그대로 단언합니다.
+// 제목·본문(`onboardingCopy`의 결과)은 자리표입니다 — 공백 아님·서로 다름만 봅니다.
 
-// 액션은 `onboarding-screen-next` 행 안의 ui-lynx Button입니다(2026-09-21 디자인 반영).
+// 시작 버튼은 `onboarding-screen-start` 행 안의 ui-lynx Button입니다 — 모든 스텝에 같습니다.
 function actionButton() {
-  return within(screen.getByTestId("onboarding-screen-next")).getByTestId("ui-lynx-button");
+  return within(screen.getByTestId("onboarding-screen-start")).getByTestId("ui-lynx-button");
 }
 
+// 카드 영역을 왼쪽으로 밀어 다음 스텝으로 갑니다.
 function next() {
-  fireEvent.tap(actionButton(), {});
+  const pager = screen.getByTestId("onboarding-screen-pager");
+  fireEvent.touchstart(pager, { touches: [{ pageX: 300, pageY: 200 }] });
+  fireEvent.touchmove(pager, { touches: [{ pageX: 220, pageY: 204 }] });
+}
+
+function swipeBack() {
+  const pager = screen.getByTestId("onboarding-screen-pager");
+  fireEvent.touchstart(pager, { touches: [{ pageX: 100, pageY: 200 }] });
+  fireEvent.touchmove(pager, { touches: [{ pageX: 180, pageY: 204 }] });
 }
 
 describe("OnboardingScreen", () => {
@@ -83,30 +91,27 @@ describe("OnboardingScreen", () => {
     expect(currentPage()).toBe("3");
   });
 
-  it("[OB-U5] 마지막 스텝 전에는 onComplete가 0회, 마지막에서 1회다", () => {
-    const onComplete = vi.fn();
-    render(<OnboardingScreen onComplete={onComplete} />);
-
-    next(); // 0 → 1
-    expect(onComplete).not.toHaveBeenCalled();
-    next(); // 1 → 2
-    expect(onComplete).not.toHaveBeenCalled();
-    next(); // 2 → 완료
-    expect(onComplete).toHaveBeenCalledTimes(1);
+  it("[OB-U5] 어느 스텝에서든 Get started를 누르면 곧바로 onComplete 1회다", () => {
+    const first = vi.fn();
+    render(<OnboardingScreen onComplete={first} />);
+    fireEvent.tap(actionButton(), {});
+    expect(first).toHaveBeenCalledTimes(1);
   });
 
-  it("[OB-U6] 액션 라벨이 마지막에서 갈린다(Next → Get started)", () => {
+  it("[OB-U6] 버튼 문구가 모든 스텝에서 Get started이고, 오른쪽으로 밀면 한 칸 돌아간다", () => {
     render(<OnboardingScreen onComplete={vi.fn()} />);
-    const action = screen.getByTestId("onboarding-screen-next");
+    const action = screen.getByTestId("onboarding-screen-start");
+    const root = screen.getByTestId("onboarding-screen");
 
-    expect(action).toHaveTextContent(onboardingActionLabel(0, uiCopyEn.onboarding));
+    expect(action).toHaveTextContent(uiCopyEn.onboarding.getStarted);
     next();
-    expect(action).toHaveTextContent(onboardingActionLabel(1, uiCopyEn.onboarding));
+    expect(action).toHaveTextContent(uiCopyEn.onboarding.getStarted);
     next();
-    expect(action).toHaveTextContent(onboardingActionLabel(2, uiCopyEn.onboarding));
-    expect(onboardingActionLabel(2, uiCopyEn.onboarding)).not.toBe(
-      onboardingActionLabel(0, uiCopyEn.onboarding),
-    );
+    expect(action).toHaveTextContent(uiCopyEn.onboarding.getStarted);
+    next(); // 마지막에서 더 밀어도 그대로입니다(돌지 않음).
+    expect(root).toHaveAttribute("data-step", "2");
+    swipeBack();
+    expect(root).toHaveAttribute("data-step", "1");
   });
 
   // OB-U7 — 진행 래퍼에 이름 있는 accessibility-element가 실재하고, 그 이름이
@@ -124,10 +129,7 @@ describe("OnboardingScreen", () => {
 
     const action = actionButton();
     expect(action).toHaveAttribute("accessibility-element", "true");
-    expect(action).toHaveAttribute(
-      "accessibility-label",
-      onboardingActionLabel(0, uiCopyEn.onboarding),
-    );
+    expect(action).toHaveAttribute("accessibility-label", uiCopyEn.onboarding.getStarted);
     expect(action).toHaveAttribute("accessibility-traits", "button");
 
     next();
@@ -174,8 +176,9 @@ describe("OnboardingScreen", () => {
       });
       expect(filled()).toBe("1");
 
+      // 자동 넘김(4초)보다 짧게 — 재생(8칸 × 350ms)이 끝나고도 한 칸 남게 둡니다.
       act(() => {
-        vi.advanceTimersByTime(350 * 12);
+        vi.advanceTimersByTime(350 * 9);
       });
       // "선크림 있어요?" — 띄어쓰기·물음표까지 8칸.
       expect(filled()).toBe("8");
@@ -287,6 +290,100 @@ describe("OnboardingScreen", () => {
       expect(filled()).toBe("0");
       expect(roundButton("Play")).toBeDefined();
       expect(roundButton("Stop")).toBeUndefined();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  // OB-U14 — 손대지 않으면 스텝이 스스로 넘어가고 마지막에서 멈춥니다(ADR-0159).
+  it("[OB-U14] 손대지 않으면 일정 시간마다 다음 스텝으로 가고, 마지막에서 멈추며 onComplete는 0회다", () => {
+    vi.useFakeTimers();
+    try {
+      const onComplete = vi.fn();
+      render(<OnboardingScreen onComplete={onComplete} />);
+      const root = screen.getByTestId("onboarding-screen");
+      act(() => {
+        vi.advanceTimersByTime(onboardingAutoAdvanceMs - 100);
+      });
+      expect(root).toHaveAttribute("data-step", "0");
+      act(() => {
+        vi.advanceTimersByTime(100);
+      });
+      expect(root).toHaveAttribute("data-step", "1");
+      act(() => {
+        vi.advanceTimersByTime(onboardingAutoAdvanceMs * 3);
+      });
+      expect(root).toHaveAttribute("data-step", "2");
+      expect(onComplete).not.toHaveBeenCalled();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  // OB-U15 — 손이 닿으면 자동 넘김 시계가 처음부터 다시 셉니다.
+  it("[OB-U15] 화면에 손이 닿으면 자동 넘김을 처음부터 다시 센다", () => {
+    vi.useFakeTimers();
+    try {
+      render(<OnboardingScreen onComplete={vi.fn()} />);
+      const root = screen.getByTestId("onboarding-screen");
+      act(() => {
+        vi.advanceTimersByTime(onboardingAutoAdvanceMs - 500);
+      });
+      fireEvent.touchstart(screen.getByTestId("onboarding-screen-pager"), {
+        touches: [{ pageX: 100, pageY: 100 }],
+      });
+      act(() => {
+        vi.advanceTimersByTime(onboardingAutoAdvanceMs - 500);
+      });
+      expect(root).toHaveAttribute("data-step", "0");
+      act(() => {
+        vi.advanceTimersByTime(500);
+      });
+      expect(root).toHaveAttribute("data-step", "1");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  // OB-U16 — 동작 줄이기를 켠 사람에게는 스스로 넘기지 않습니다(밀기는 그대로).
+  it("[OB-U16] 동작 줄이기면 자동으로 넘어가지 않고 밀기로만 간다", () => {
+    vi.useFakeTimers();
+    try {
+      render(
+        <MotionProvider motion="reduced">
+          <OnboardingScreen onComplete={vi.fn()} />
+        </MotionProvider>,
+      );
+      const root = screen.getByTestId("onboarding-screen");
+      act(() => {
+        vi.advanceTimersByTime(onboardingAutoAdvanceMs * 3);
+      });
+      expect(root).toHaveAttribute("data-step", "0");
+      next();
+      expect(root).toHaveAttribute("data-step", "1");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  // OB-U17 — 스텝 열람(처음 보인 때 한 번)과 시작 이벤트(ADR-0159).
+  it("[OB-U17] 스텝마다 처음 보일 때 한 번 열람을, Get started에 시작을 낸다", () => {
+    vi.useFakeTimers();
+    try {
+      const events: unknown[] = [];
+      render(<OnboardingScreen onComplete={vi.fn()} onEvent={(event) => events.push(event)} />);
+      act(() => {
+        vi.advanceTimersByTime(onboardingAutoAdvanceMs);
+      });
+      next(); // 1 → 2 (밀기)
+      swipeBack(); // 2 → 1 — 이미 본 스텝이라 열람을 다시 내지 않습니다.
+      fireEvent.tap(actionButton(), {});
+      expect(events).toEqual([
+        { name: "onboarding_step_viewed", step: "1", via: "start" },
+        { name: "onboarding_step_viewed", step: "2", via: "auto" },
+        { name: "onboarding_step_viewed", step: "3", via: "swipe" },
+        { name: "onboarding_started", step: "2", autoAdvanced: true },
+      ]);
     } finally {
       vi.useRealTimers();
     }
