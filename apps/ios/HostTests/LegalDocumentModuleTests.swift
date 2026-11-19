@@ -13,6 +13,9 @@ final class LegalDocumentModuleTests: XCTestCase {
     XCTAssertEqual(privacy?.scheme, "https")
     XCTAssertEqual(terms?.scheme, "https")
     XCTAssertNotEqual(privacy, terms)
+    // 우리 도메인 랜딩의 영어 기준본이다(ADR-0167).
+    XCTAssertEqual(privacy?.absoluteString, "https://k-duru.com/privacy/")
+    XCTAssertEqual(terms?.absoluteString, "https://k-duru.com/terms/")
     XCTAssertEqual(Set(LegalDocumentURL.table.keys), ["privacy-policy", "terms-of-use"])
   }
 
