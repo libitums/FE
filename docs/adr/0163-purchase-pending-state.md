@@ -82,3 +82,22 @@ testid: `purchase-pill`(`data-kind`) · `purchase-pill-spinner` · `coin-shop-sc
 - 구독 구매 뒤 상점이 서버가 바뀔 때까지 열려 있다(최대 60초). 사용자가 먼저 닫으면 머리 칩 스켈레톤이 기다림을 잇는다.
 - 머리 엽전 칩은 오름 없이 스켈레톤 → 새 값이다(상점 「You have」만 오른다).
 - 60초 동안 권한 · 잔액 RPC가 최대 10번씩 나간다(전에는 5번).
+
+## 리뷰 · 접근성 점검 반영 (2026-11-19)
+
+- 상점 닫힘은 「이 상점에서 구독 결제가 `purchased`로 끝났다」는 표시(`planBought`)와 대기 `done`이 함께일 때다. 대기가 그리는 사이 곧바로 done이 되어도(웹훅이 이미 닿음)
+  닫히고, 설정에서 산 구독의 대기가 끝난 위에 새로 연 상점은 닫히지 않는다(CP-6 · CP-6b).
+- 접근성 자가 점검(문서 단계 전): 알약은 `accessibility-element` + 이름 + 뜰 때 · 글이 바뀔 때 낭독 한 번, 누를 것이 없어 `user-interaction-enabled={false}`.
+  스켈레톤 칩은 이름 앞 「Updating」 · 막대는 낭독에서 빠짐. 스피너 · 반짝임은 움직임 줄이기에서 멈춤. 「Adding to your wallet」은 팩 카드 이름에 붙음.
+  지적(Minor): 알약 글 12px · 짙은 판 흰 글 / #2E323B 대비 12.9 : 1, 밝은 판 fg-neutral / gray-100은 토큰 조합(AA 이상). 늦음 안내가 6초 뒤 사라지는 것은
+  낭독 사용자에게 짧을 수 있다 — 낭독은 뜰 때 한 번 되므로 받아들인다. Critical 없음.
+
+## 적용 기록
+
+- ⟨2026-11-19⟩ 브랜치 `feat/purchase-pending-state`(로컬, `fix/plan-chip-pending-change` fdcc73f2 위에 쌓음)
+  - 순수: `lib/purchase-refresh.ts` · `lib/purchase-wait.ts` · `app/header-plans.ts` · `app/use-plan-activation.ts`(창)
+  - 상태: `app/use-purchase-wait.ts` · `app/use-plans.ts` · `lib/use-count-up.ts`
+  - 화면: `components/PurchasePill.tsx` · `components/SkeletonValue.tsx` · `CoinShopScreen` · `CoinShopPanel` · `CoinPackCard` · `PlansScreen` · `YourPlanChip` · `PlanChip` · `StatChip` · `TopBar` · `AppHeader`
+  - 문구: `coinShop.purchaseWait`(다섯 언어 — es · id · ja · vi는 에이전트 번역, 출시 전 원어민 확인)
+  - 같은 브랜치에 엽전 팩 결제 Airbridge Order Complete(사용자 승인 2026-11-19) — [ADR-0063 적용 기록 2026-11-19](0063-airbridge-events.md).
+  - 기기 확인은 [e2e](../e2e/purchase-pending.md)(미실행).

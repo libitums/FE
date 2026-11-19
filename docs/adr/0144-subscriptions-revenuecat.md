@@ -227,3 +227,10 @@ DB가 실패하면 500 — RevenueCat이 다시 보낸다. 같은 이벤트 id�
   PRODUCT_CHANGE의 `expiration_at_ms`는 옛 상품의 만료다 — 곧바로 바뀌면 바뀐 시각, 미뤄지면 기간 끝(운영 store_events 10건으로 확인). 그 값으로 줄의 만료를
   앞당기기만 한다(`20261215120000_companion_product_change_expiry.sql`, `companion_apply_store_event`의 한 줄).
 - **남은 것**: 미뤄진 바꿈의 대상 카드에 다시 사는 CTA(「Switch to … from 날짜」)가 그대로 보인다 — 스토어가 같은 바꿈을 다시 받는지는 확인하지 않았다.
+
+## 추가 ⟨2026-11-19 — 구매 뒤 확인 대기 · 엽전 팩 Order Complete⟩
+
+- 서버 따라잡기 일정이 2초 × 5에서 **1 · 2 · 2 · 3 · 5 · 5 · 7 · 10 · 10 · 15초(합 60초)**로 바뀌었고, 그 동안 화면이 확인 대기를 보인다 — [ADR-0163](0163-purchase-pending-state.md).
+  엽전 팩은 잔액이 바뀌어야(`settle: "balance"`), 구독은 권한이 바뀌어야 멈춘다. 구독 성공 알림 창도 같은 기한(60초 + 2초)이다.
+- RevenueCat → Airbridge 연동은 엽전 팩(NON_RENEWING_PURCHASE)을 보내지 않는다(2026-11-19 실시간 로그 확인). **엽전 팩만 앱이 Airbridge Order Complete로 보낸다** —
+  [ADR-0063 적용 기록 2026-11-19](0063-airbridge-events.md). 구독은 지금처럼 RevenueCat이 보낸다. 호스트 구매 답에 스토어 거래 id(`transactionId`)를 더했다.
