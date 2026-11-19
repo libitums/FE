@@ -1,6 +1,6 @@
 # ADR-0164: 추천 친구 · 합산 체험 · 완화 수위 · 출시 스위치
 
-- 상태: **채택 — 서버 구현**(마이그레이션 · 함수 · 계약). **앱 화면은 이 브랜치에 없다 — 앱 담당(세현님)이 만든다**(아래 「앱 인계」). (2026-11-19)
+- 상태: **채택 — 서버 구현**(마이그레이션 · 함수 · 계약) · **앱 구현**(아래 「앱 인계 › 앱 구현」, 브랜치 feat/companion-friends-app). (2026-11-19)
 - 날짜: 2026-11-19
 - **사용자 결정** (2026-11-19, 기획 확정 — PRD [§3.1](../specs/ai-companion.md) 「추천 친구」):
   - 초반에 덕수쌤(교육적인 인물)만 대화할 수 있는 것이 참여의 병목이다. 재미 · 몰입에 충실한 스토리 밖 인물 넷을 채팅 목록의 추천 줄에 둔다.
@@ -149,4 +149,24 @@
 - **성인 확인**: open 친구 + 생년상 성인 + 프로필 `adultAck`가 false일 때 한 번 동의를 받고 `companion_ack_adult()`를 부른다. 나이 모름 학습자에게는 창도 안내도 없다.
 - **합산 체험**: 무료 체험 20턴이 인물을 가리지 않는다. 지금 앱은 덕수쌤만 무료로 보고 다른 인물의 엽전을 먼저 빼서 보여 준다 — 앱이 고치기 전까지 화면의 엽전 표시가 서버와 어긋날 수 있다(서버 차감이 맞다).
 - **프로필 시트 · AI 표시 · 분석 이벤트**(추천 줄 노출 · 프로필 열기 · 친구 추가 · 첫 메시지 · 7일 내 재방문)는 기획 결정이고 구현은 앱 몫이다.
+
+### 앱 구현 ⟨2026-11-19, 브랜치 feat/companion-friends-app — iOS 1.2.0⟩
+
+- **보이는 친구**: 앱 인물 표 `companion-friends-roster.ts`(이 파일의 정본과 같음 — 단위 테스트 FA1 · FA2가 JSON을 읽어 맞춤). 카탈로그 = 이야기 다섯 + 친구 넷,
+  서버 방 씨앗에 친구 방(에피소드 없는 잠긴 방). 추천 줄 · 친구 찾기는 `companion_friends()`가 준 친구만 서버 순서로 세우고(`catalogWithVisibleFriends`), 읽기 전 ·
+  못 읽음 · 빈 목록이면 친구가 없다(시험 계정이 아닌 회원 · 손님). 얼굴 그림은 콘텐츠 버킷 `content/images/profiles/<id>-casual.webp` — 없으면 아바타 자리표시.
+- **프로필 시트**: 소개 = `bio`, 태그 = 직업 · 나이 · MBTI(이야기 다섯은 MBTI 하나), 첫 말 = `firstMessage` 두 줄. 직업 · 소개의 es · id · ja · vi는 앱 표에서 번역했다.
+- **친구 추가**: 무료 · 무제한, 기존 해금 길 그대로(기기 해금 저장 계정별 + `companion-greet` trigger unlock).
+- **성인 확인 = 「Get closer」 시트**(디자인 B1 SoftSheet, 사용자 결정 2026-11-19): 판정 `shouldAskAdultAck` — 인물 수위 open + 서버 프로필 생년상 성인(`ageBandOf`,
+  서버 `age_band`와 같은 경계) + `adultAck` 없음 + 이 계정에 아직 묻지 않음. `Sounds good` → 물었다고 적고 `companion_ack_adult()` 뒤 추가(실패해도 추가 — standard로
+  대화, 오류 화면 없음). `Just friends for now` → 물었다고 적고 동의 없이 추가(서버가 standard). 막 탭 · 뒤로가기 → 닫기만(추가 안 함 · 표시 안 함). 물었는지는 기기에
+  계정마다(`libitum.messenger.adult-ack-asked`). **문구 규칙(사용자 결정)**: 어느 언어에서도 로맨스 · 성인 · 18+ · 생년을 말하지 않는다(단위 테스트 AA-U1).
+  나이 모름 · 미성년자에게는 시트도 안내도 없다.
+- **합산 체험**: `turnPlanFor`가 인물을 보지 않는다 — 체험이 남았으면 어느 방이든 무료, 다 쓰면 어느 방이든 첫 통부터 엽전(`TRIAL_CHARACTER_ID` 삭제). 서버 지갑은
+  체험이 남았거나 수를 모르는 동안의 모든 턴 뒤에 다시 읽는다(전에는 덕수쌤 턴만).
+- **분석**: `suggested_friend_opened { characterId, kind, from }`만 더했다(PostHog만, Airbridge 매핑 없음). 줄 노출 = `suggested_friend_viewed`, 친구 추가 =
+  `suggested_friend_added`, 첫 메시지 = `chat_message_sent` · `first_chat_message_sent`(characterId), 7일 내 재방문 = `chat_message_sent`의 사람 · 인물별 날짜.
+- 기기 절차: [docs/e2e/companion-friends.md](../e2e/companion-friends.md)(미실행).
+- **후속(다음 판, 사용자 결정 2026-11-19 — 이번에 만들지 않음)**: 대화 설정에 open 친구만의 인물별 줄 「How close」(Closer · Just friends, 시안 C1 · C2). Just friends →
+  Closer는 `companion_ack_adult()`로 되고, Closer → Just friends는 학습자가 부를 동의 철회 RPC가 새로 필요하다(지금은 운영자 함수 `companion_operator_set_adult_ack`뿐).
 

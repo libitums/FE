@@ -93,3 +93,12 @@
 - ui: `SuggestedFriendsRow` · `SuggestedFriendSheet` · `FriendDirectoryScreen` · `MessengerListScreen.suggested`.
 - integration: `App.suggested-friends.integration.test.tsx`(SFI1 ~ SFI4) · SQL `companion-early-access.integration.test.ts`(EA1 ~ EA6).
 - e2e: [docs/e2e/suggested-friends.md](../e2e/suggested-friends.md)(기기 절차, 미실행).
+
+## 추가 ⟨2026-11-19, ADR-0164 앱 인계⟩
+
+- 일반 인물의 첫 실데이터가 들어왔다 — 추천 친구 넷(차서연 · 권해준 · 송다은 · 임건우, 앱 인물 표 `companion-friends-roster.ts`, 정본 `docs/content/companion-friends.json`).
+  카탈로그 = 이야기 다섯 + 친구 넷이고, 서버 방 씨앗에 친구 방이 에피소드 없는 잠긴 방(0)으로 선다(D4 그대로).
+- 포트에 `visibleFriends`(`companion_friends()`)가 더해졌다 — 있으면 일반 인물은 서버가 보인 것만 서버 순서로 선다(읽기 전 · 못 읽음 = 없음). 가짜 출처 · 테스트는 포트에
+  없어 카탈로그 그대로.
+- 프로필 시트 태그 = 직업 · 나이 · MBTI(친구), MBTI 하나(이야기 다섯, `storyProfiles`). 시트를 열면 `suggested_friend_opened`(PostHog만).
+- 수위 open 친구의 `Start chatting`은 「Get closer」 시트를 먼저 물을 수 있다(ADR-0164 D4 · 앱 인계).
