@@ -97,6 +97,6 @@ export const deviceGuideStore: GuideStore = { unseen: guideUnseen, markSeen: mar
  * 추천 친구 줄(ADR-0162)을 목록 위에 세울지. 떠 있는 덕수쌤 줄은 위치를 재지 않고 원본 첫 줄 자리(머리 바로 아래)에 서므로
  * (ADR-0139 D2), 목록 안내가 떠 있는 동안 추천 줄이 끼면 원본 줄이 밀려 어긋납니다.
  */
-export function suggestedRowShown(_input: { readonly listGuideShown: boolean }): boolean {
-  return true;
+export function suggestedRowShown(input: { readonly listGuideShown: boolean }): boolean {
+  return !input.listGuideShown;
 }
