@@ -121,19 +121,23 @@ export function pickLearnerName(
   return pool[index] ?? "";
 }
 
+/** 나라 이름을 따로 가진 화면 언어 — 자산은 영어 이름과 같은 칸을 뺍니다(그때는 영어 이름, 관사 없이). */
+const LOCAL_NAME_LANGUAGES: readonly string[] = ["es", "id", "ja", "vi"];
+
 /**
- * 문장에 서는 세 표기입니다 - `en` 칸은 뜻 줄(번역 줄)의 나라 이름이라 화면 언어의 이름이고(2026-11-19), 이름이 없는 언어(en · th · my)는
- * 영어 이름에 관사가 붙습니다. 나라 표(백그라운드 전용)를 값으로 들이지 않고도 쓰입니다.
+ * 문장에 서는 세 표기입니다 - `en` 칸은 뜻 줄(번역 줄)의 나라 이름이라 화면 언어의 이름이고(2026-11-19), 영어 관사는 영어 문장(en · th ·
+ * my — UI가 영어인 언어)에만 붙습니다. 나라 표(백그라운드 전용)를 값으로 들이지 않고도 쓰입니다.
  */
 export function learnerCountryTextOf(country: LearnerCountry, language = "en"): LearnerCountryText {
-  const local = (country.names as Readonly<Record<string, string | undefined>> | undefined)?.[
-    language
-  ];
+  const local = LOCAL_NAME_LANGUAGES.includes(language)
+    ? ((country.names as Readonly<Record<string, string | undefined>> | undefined)?.[language] ??
+      country.en)
+    : null;
   return {
     ko: country.ko,
     roman: country.roman,
     en:
-      local !== undefined && local !== ""
+      local !== null
         ? local
         : country.article === undefined
           ? country.en

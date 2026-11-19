@@ -17,28 +17,38 @@ function countryOf(code: string): LearnerCountry {
   return found;
 }
 
+// 영어 이름과 같은 칸은 자산에서 뺍니다(번들 절약) — 그 언어 문장에는 영어 이름이 관사 없이 섭니다.
+const nameIn = (country: LearnerCountry, language: string): string =>
+  learnerCountryTextOf(country, language).en;
+
 describe("LP-L1 나라 이름이 모든 화면 언어에 있다", () => {
-  test.each(LANGUAGES)("%s — 199개 모두 비지 않았다", (language) => {
+  test.each(LANGUAGES)("%s — 199개 모두 이름이 서고 관사가 붙지 않는다", (language) => {
     for (const country of learnerCountries) {
-      expect(country.names?.[language] ?? "", `${country.code} ${language}`).not.toBe("");
+      expect(nameIn(country, language), `${country.code} ${language}`).not.toBe("");
+      expect(nameIn(country, language), `${country.code} ${language}`).not.toMatch(/^the /);
+    }
+  });
+
+  test("일본어는 199개 모두 자기 이름(라틴 글자 그대로인 나라 없음)", () => {
+    for (const country of learnerCountries) {
+      expect(country.names?.ja ?? "", country.code).not.toBe("");
     }
   });
 
   test("짧은 이름 정책 — CLDR의 긴 꼴(특별행정구 · 괄호 · 도시 이름)을 쓰지 않는다", () => {
-    expect(countryOf("VN").names).toEqual({
-      es: "Vietnam",
-      id: "Vietnam",
-      ja: "ベトナム",
-      vi: "Việt Nam",
-    });
-    expect(countryOf("HK").names?.ja).toBe("香港");
-    expect(countryOf("MM").names?.es).toBe("Myanmar");
-    expect(countryOf("CD").names?.vi).toBe("Cộng hòa Dân chủ Congo");
+    expect(LANGUAGES.map((language) => nameIn(countryOf("VN"), language))).toEqual([
+      "Vietnam",
+      "Vietnam",
+      "ベトナム",
+      "Việt Nam",
+    ]);
+    expect(nameIn(countryOf("BS"), "es")).toBe("Bahamas");
+    expect(nameIn(countryOf("HK"), "ja")).toBe("香港");
+    expect(nameIn(countryOf("MM"), "es")).toBe("Myanmar");
+    expect(nameIn(countryOf("CD"), "vi")).toBe("Cộng hòa Dân chủ Congo");
     for (const country of learnerCountries) {
       for (const language of LANGUAGES) {
-        expect(country.names?.[language] ?? "", `${country.code} ${language}`).not.toMatch(
-          /[()]| - /,
-        );
+        expect(nameIn(country, language), `${country.code} ${language}`).not.toMatch(/[()]| - /);
       }
     }
   });
