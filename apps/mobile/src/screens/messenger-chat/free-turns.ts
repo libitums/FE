@@ -1,8 +1,7 @@
-// 대화 한 통의 요금 계획 · 보내기 관문입니다 — 순수. 요금은 서버 규칙을 따릅니다(ADR-0155): 체험 인물(덕수쌤)은 체험 20통이 무료이고,
-// 그 밖의 인물은 첫 통부터 메시지 요금입니다. 하루 무료 수는 없습니다(서버에 없는 앱만의 규칙이었습니다).
+// 대화 한 통의 요금 계획 · 보내기 관문입니다 — 순수. 요금은 서버 규칙을 따릅니다(ADR-0155): 무료 체험 20통은 인물을 가리지 않는
+// 합산이라(ADR-0164 D3) 남았으면 어느 인물이든 무료, 다 쓰면 어느 인물이든 첫 통부터 메시지 요금입니다. 하루 무료 수는 없습니다.
 
-/** 서버 `companion.settings.trial_character` · `trial_limit`과 같은 값입니다(지갑은 남은 수만 줍니다). */
-export const TRIAL_CHARACTER_ID = "duksu";
+/** 서버 `companion.settings.trial_limit`과 같은 값입니다(지갑은 합산 남은 수만 줍니다). */
 export const TRIAL_TOTAL = 20;
 
 export type ChatTier = "free" | "unlimited";
@@ -20,13 +19,11 @@ export type SendGate =
 
 export function turnPlanFor(input: {
   readonly tier: ChatTier;
-  readonly characterId: string;
   readonly trialRemaining: number | null;
   readonly price: number;
 }): TurnPlan {
-  const { tier, characterId, trialRemaining, price } = input;
+  const { tier, trialRemaining, price } = input;
   if (tier === "unlimited") return { kind: "unlimited" };
-  if (characterId !== TRIAL_CHARACTER_ID) return { kind: "coin", price };
   if (trialRemaining === null) return { kind: "trial", remaining: null, total: TRIAL_TOTAL };
   if (trialRemaining <= 0) return { kind: "coin", price };
   if (trialRemaining === 1) return { kind: "last-free", total: TRIAL_TOTAL, price };
