@@ -2,7 +2,6 @@ package com.libitum.host;
 
 import android.Manifest;
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -13,33 +12,53 @@ import android.os.Looper;
 import android.os.SystemClock;
 import android.provider.Settings;
 import android.speech.RecognitionListener;
-import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import com.lynx.react.bridge.Callback;
 import com.lynx.react.bridge.JavaOnlyMap;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executor;
 
-/** Owns microphone permission and one Android speech recognizer on the main thread. */
+/**
+ * Owns microphone permission and one Android speech recognizer on the main thread.
+ *
+ * <p>An on-device request whose recognizer cannot do ko-KR (its model is missing, known up front on
+ * API 33+ or from a language error at runtime) is retried once on the network recognizer. The retry
+ * keeps the same session, so the callback still fires exactly once and the result discloses
+ * {@code requiresOnDevice=false} with the fallback reason (ADR-0017, 2026-11-19).
+ */
 final class SpeechRecognitionController {
   private static final int MICROPHONE_REQUEST = 701;
   private static final long FINALIZE_TIMEOUT_MS = 3000;
-  private static final String LOCALE = "ko-KR";
+  private static final long PACK_CHECK_TIMEOUT_MS = 1000;
+  private static final String LOCALE = SpeechModelSupport.LOCALE;
   private static final String ERROR_DOMAIN = "android.speech.SpeechRecognizer";
   private static final String PERMISSION_PREF = "microphone-requested";
 
+  /** Where download progress goes; MainActivity forwards it as a global event. */
+  interface ProgressSink {
+    void send(int percent);
+  }
+
   private final Activity activity;
   private final Handler main = new Handler(Looper.getMainLooper());
+  private final Executor mainExecutor = command -> main.post(command);
   private final List<Callback> pendingPermissions = new ArrayList<>();
   private Active active;
+  /** Last answered pack check; null until asked. A pack that is downloading is asked again. */
+  private String cachedPack;
+  private SpeechRecognizer downloader;
+  private ProgressSink progressSink;
 
   private static final class Active {
     final SpeechRecognitionSession session;
-    final SpeechRecognizer recognizer;
     final Callback callback;
+    SpeechRecognizer recognizer;
     String text = "";
     boolean isFinal;
     boolean stopping;
+    boolean checking;
+    long listeningSinceMs;
 
     Active(SpeechRecognitionSession session, SpeechRecognizer recognizer, Callback callback) {
       this.session = session;
@@ -49,6 +68,8 @@ final class SpeechRecognitionController {
   }
 
   SpeechRecognitionController(Activity activity) { this.activity = activity; }
+
+  void setProgressSink(ProgressSink sink) { progressSink = sink; }
 
   void getStatus(Callback callback) {
     main.post(() -> callback.invoke(statusPayload()));
@@ -104,6 +125,11 @@ final class SpeechRecognitionController {
       Active current = active;
       if (current == null || current.stopping) return;
       current.stopping = true;
+      if (current.checking) {
+        finish(current, "recognition-failed", SpeechRecognizer.ERROR_CLIENT,
+            "Stopped before listening");
+        return;
+      }
       try {
         current.recognizer.stopListening();
       } catch (RuntimeException error) {
@@ -130,7 +156,79 @@ final class SpeechRecognitionController {
       if (current != null) finish(current, "recognition-failed", SpeechRecognizer.ERROR_CLIENT,
           "Host was destroyed");
       settlePermissions();
+      releaseDownloader();
       main.removeCallbacksAndMessages(null);
+    });
+  }
+
+  /** Answers the on-device ko-KR pack status: unsupported without an on-device service, unknown below 33. */
+  void getKoreanPack(Callback callback) {
+    main.post(() -> {
+      if (!onDeviceAvailable()) {
+        callback.invoke(packPayload(SpeechRecognitionRoute.PACK_UNSUPPORTED));
+        return;
+      }
+      if (Build.VERSION.SDK_INT < 33 || active != null) {
+        callback.invoke(packPayload(cachedPack == null ? SpeechRecognitionRoute.PACK_UNKNOWN
+            : cachedPack));
+        return;
+      }
+      SpeechRecognizer probe;
+      try {
+        probe = SpeechModelSupport.createOnDevice(activity);
+      } catch (RuntimeException error) {
+        callback.invoke(packPayload(SpeechRecognitionRoute.PACK_UNKNOWN));
+        return;
+      }
+      boolean[] settled = { false };
+      SpeechModelSupport.PackCallback settle = pack -> {
+        if (settled[0]) return;
+        settled[0] = true;
+        release(probe);
+        rememberPack(pack);
+        callback.invoke(packPayload(pack));
+      };
+      main.postDelayed(() -> settle.onPack(SpeechRecognitionRoute.PACK_UNKNOWN),
+          PACK_CHECK_TIMEOUT_MS);
+      try {
+        SpeechModelSupport.checkKoreanPack(probe, mainExecutor, settle);
+      } catch (RuntimeException error) {
+        settle.onPack(SpeechRecognitionRoute.PACK_UNKNOWN);
+      }
+    });
+  }
+
+  /** Hands the ko-KR model download to the system (API 33+); the callback fires exactly once. */
+  void downloadKoreanPack(Callback callback) {
+    main.post(() -> {
+      if (Build.VERSION.SDK_INT < 33 || !onDeviceAvailable()) {
+        callback.invoke(downloadPayload("unsupported", 0));
+        return;
+      }
+      releaseDownloader();
+      boolean[] settled = { false };
+      SpeechModelSupport.DownloadCallback listener = new SpeechModelSupport.DownloadCallback() {
+        @Override public void onProgress(int percent) {
+          ProgressSink sink = progressSink;
+          if (!settled[0] && sink != null) sink.send(percent);
+        }
+
+        @Override public void onDone(String status, int errorCode) {
+          if (settled[0]) return;
+          settled[0] = true;
+          // Ask again next time; only a finished download is known to be installed.
+          cachedPack = "completed".equals(status) ? SpeechRecognitionRoute.PACK_INSTALLED : null;
+          // API 33 cannot report an outcome, so its recognizer stays until the next request.
+          if (!"requested".equals(status)) releaseDownloader();
+          callback.invoke(downloadPayload(status, errorCode));
+        }
+      };
+      try {
+        downloader = SpeechModelSupport.createOnDevice(activity);
+        SpeechModelSupport.downloadKoreanPack(downloader, mainExecutor, listener);
+      } catch (RuntimeException error) {
+        listener.onDone("failed", SpeechRecognizer.ERROR_CLIENT);
+      }
     });
   }
 
@@ -144,55 +242,123 @@ final class SpeechRecognitionController {
       return;
     }
     boolean supportsOnDevice = onDeviceAvailable();
-    if (!recognizerAvailable() && !supportsOnDevice) {
+    boolean networkAvailable = recognizerAvailable();
+    if (!networkAvailable && !supportsOnDevice) {
       callback.invoke(resultPayload("recognizer-unavailable", null, 0, ""));
       return;
     }
     SpeechRecognitionSession session = new SpeechRecognitionSession(
         requestedOnDevice, supportsOnDevice, SystemClock.elapsedRealtime());
+    session.observeKoreanPack(cachedPack);
+    // A pack already known to be missing goes straight to the network recognizer.
+    if (session.requiresOnDevice() && networkAvailable
+        && SpeechRecognitionRoute.fallBackBeforeStart(cachedPack)) {
+      session.fallBackToNetwork(SpeechRecognitionRoute.FALLBACK_PACK_MISSING, 0);
+    }
     SpeechRecognizer recognizer = null;
     try {
       // Match iOS: request on-device by default, but disclose an unavailable guarantee
       // in the result rather than silently claiming one for the platform recognizer.
       recognizer = session.requiresOnDevice()
-          ? Api31Impl.createOnDeviceSpeechRecognizer(activity)
+          ? SpeechModelSupport.createOnDevice(activity)
           : SpeechRecognizer.createSpeechRecognizer(activity);
       Active current = new Active(session, recognizer, callback);
       active = current;
-      recognizer.setRecognitionListener(listener(current));
-      Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-      intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-      intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, LOCALE);
-      intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true);
-      recognizer.startListening(intent);
+      if (session.requiresOnDevice() && networkAvailable && cachedPack == null
+          && Build.VERSION.SDK_INT >= 33) {
+        checkThenListen(current);
+        return;
+      }
+      listen(current);
     } catch (RuntimeException error) {
       String status = error instanceof SecurityException ? "permission-denied"
           : "recognizer-unavailable";
       if (active != null && active.session == session) {
         finish(active, status, SpeechRecognizer.ERROR_CLIENT, error.getMessage());
       } else {
-        if (recognizer != null) {
-          try { recognizer.destroy(); } catch (RuntimeException ignored) { }
-        }
+        release(recognizer);
         callback.invoke(resultPayload(status, session, null,
             SpeechRecognizer.ERROR_CLIENT, error.getMessage()));
       }
     }
   }
 
-  private RecognitionListener listener(Active current) {
+  /** Asks the on-device recognizer for ko-KR before listening; an unanswered check keeps it on-device. */
+  private void checkThenListen(Active current) {
+    current.checking = true;
+    SpeechModelSupport.PackCallback after = pack -> {
+      if (active != current || !current.checking) return;
+      current.checking = false;
+      rememberPack(pack);
+      current.session.observeKoreanPack(pack);
+      if (SpeechRecognitionRoute.fallBackBeforeStart(pack)
+          && switchToNetwork(current, SpeechRecognitionRoute.FALLBACK_PACK_MISSING, 0)) {
+        return;
+      }
+      listen(current);
+    };
+    main.postDelayed(() -> after.onPack(SpeechRecognitionRoute.PACK_UNKNOWN), PACK_CHECK_TIMEOUT_MS);
+    try {
+      SpeechModelSupport.checkKoreanPack(current.recognizer, mainExecutor, after);
+    } catch (RuntimeException error) {
+      after.onPack(SpeechRecognitionRoute.PACK_UNKNOWN);
+    }
+  }
+
+  private void listen(Active current) {
+    try {
+      SpeechRecognizer recognizer = current.recognizer;
+      recognizer.setRecognitionListener(listener(current, recognizer));
+      current.listeningSinceMs = SystemClock.elapsedRealtime();
+      recognizer.startListening(SpeechModelSupport.recognizerIntent());
+    } catch (RuntimeException error) {
+      String status = error instanceof SecurityException ? "permission-denied"
+          : "recognizer-unavailable";
+      finish(current, status, SpeechRecognizer.ERROR_CLIENT, error.getMessage());
+    }
+  }
+
+  /**
+   * Retries this request once on the network recognizer. False when it cannot (already retried,
+   * not on-device, or no network recognizer); the caller then settles the original outcome.
+   */
+  private boolean switchToNetwork(Active current, String reason, int errorCode) {
+    if (!recognizerAvailable() || !current.session.fallBackToNetwork(reason, errorCode)) return false;
+    SpeechRecognizer previous = current.recognizer;
+    try { previous.cancel(); } catch (RuntimeException ignored) { }
+    release(previous);
+    try {
+      current.recognizer = SpeechRecognizer.createSpeechRecognizer(activity);
+    } catch (RuntimeException error) {
+      finish(current, "recognizer-unavailable", SpeechRecognizer.ERROR_CLIENT, error.getMessage());
+      return true;
+    }
+    listen(current);
+    return true;
+  }
+
+  private RecognitionListener listener(Active current, SpeechRecognizer recognizer) {
     return new RecognitionListener() {
+      // A replaced recognizer's late callbacks belong to no one.
+      private boolean live() { return active == current && current.recognizer == recognizer; }
+
       @Override public void onReadyForSpeech(Bundle params) { }
       @Override public void onBeginningOfSpeech() { }
       @Override public void onRmsChanged(float rmsDb) {
-        if (active == current) current.session.observeLevel(rmsDb);
+        if (live()) current.session.observeLevel(rmsDb);
       }
       @Override public void onBufferReceived(byte[] buffer) {
-        if (active == current && buffer != null && buffer.length > 0) current.session.observeBuffer();
+        if (live() && buffer != null && buffer.length > 0) current.session.observeBuffer();
       }
       @Override public void onEndOfSpeech() { }
       @Override public void onError(int error) {
-        if (active != current) return;
+        if (!live()) return;
+        long listeningMs = SystemClock.elapsedRealtime() - current.listeningSinceMs;
+        if (current.session.requiresOnDevice() && !current.stopping
+            && SpeechRecognitionRoute.fallBackOnError(error, listeningMs, !current.text.isEmpty())
+            && switchToNetwork(current, SpeechRecognitionRoute.FALLBACK_ON_DEVICE_ERROR, error)) {
+          return;
+        }
         String status = error == SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS
             ? "permission-denied" : error == SpeechRecognizer.ERROR_AUDIO
             ? "audio-failed" : error == SpeechRecognizer.ERROR_RECOGNIZER_BUSY
@@ -201,13 +367,13 @@ final class SpeechRecognitionController {
         finish(current, status, error, "Recognition error " + error);
       }
       @Override public void onResults(Bundle results) {
-        if (active != current) return;
+        if (!live()) return;
         updateText(current, results);
         current.isFinal = true;
         finish(current, "recognized", 0, "");
       }
       @Override public void onPartialResults(Bundle partialResults) {
-        if (active == current) updateText(current, partialResults);
+        if (live()) updateText(current, partialResults);
       }
       @Override public void onEvent(int eventType, Bundle params) { }
     };
@@ -224,9 +390,24 @@ final class SpeechRecognitionController {
   private void finish(Active current, String status, int errorCode, String errorMessage) {
     if (active != current || !current.session.finish()) return;
     active = null;
+    current.checking = false;
     try { current.recognizer.cancel(); } catch (RuntimeException ignored) { }
-    try { current.recognizer.destroy(); } catch (RuntimeException ignored) { }
+    release(current.recognizer);
     current.callback.invoke(resultPayload(status, current, errorCode, errorMessage));
+  }
+
+  private void rememberPack(String pack) {
+    cachedPack = SpeechRecognitionRoute.PACK_DOWNLOADING.equals(pack) ? null : pack;
+  }
+
+  private static void release(SpeechRecognizer recognizer) {
+    if (recognizer == null) return;
+    try { recognizer.destroy(); } catch (RuntimeException ignored) { }
+  }
+
+  private void releaseDownloader() {
+    release(downloader);
+    downloader = null;
   }
 
   private void settlePermissions() {
@@ -249,7 +430,7 @@ final class SpeechRecognitionController {
   }
 
   private boolean onDeviceAvailable() {
-    return Build.VERSION.SDK_INT >= 31 && Api31Impl.isOnDeviceRecognitionAvailable(activity);
+    return SpeechModelSupport.onDeviceAvailable(activity);
   }
 
   private JavaOnlyMap statusPayload() {
@@ -265,6 +446,19 @@ final class SpeechRecognitionController {
     payload.putInt("bufferCount", current == null ? 0 : current.session.bufferCount());
     payload.putDouble("level", current == null ? 0 : current.session.level());
     payload.putDouble("peakLevel", current == null ? 0 : current.session.peakLevel());
+    return payload;
+  }
+
+  private static JavaOnlyMap packPayload(String pack) {
+    JavaOnlyMap payload = new JavaOnlyMap();
+    payload.putString("koreanPack", pack);
+    return payload;
+  }
+
+  private static JavaOnlyMap downloadPayload(String status, int errorCode) {
+    JavaOnlyMap payload = new JavaOnlyMap();
+    payload.putString("status", status);
+    payload.putInt("errorCode", errorCode);
     return payload;
   }
 
@@ -294,17 +488,12 @@ final class SpeechRecognitionController {
     payload.putString("errorDomain", errorCode == 0 ? "" : ERROR_DOMAIN);
     payload.putInt("errorCode", errorCode);
     payload.putString("errorMessage", errorMessage == null ? "" : errorMessage);
+    String pack = session != null ? session.koreanPack()
+        : cachedPack == null ? SpeechRecognitionRoute.PACK_UNKNOWN : cachedPack;
+    payload.putString("koreanPack", pack);
+    payload.putString("fallback", session == null ? SpeechRecognitionRoute.FALLBACK_NONE
+        : session.fallback());
+    payload.putInt("fallbackErrorCode", session == null ? 0 : session.fallbackErrorCode());
     return payload;
-  }
-
-  /** Keeps API 31 methods out of the controller's pre-31 bytecode path. */
-  private static final class Api31Impl {
-    static SpeechRecognizer createOnDeviceSpeechRecognizer(Context context) {
-      return SpeechRecognizer.createOnDeviceSpeechRecognizer(context);
-    }
-
-    static boolean isOnDeviceRecognitionAvailable(Context context) {
-      return SpeechRecognizer.isOnDeviceRecognitionAvailable(context);
-    }
   }
 }

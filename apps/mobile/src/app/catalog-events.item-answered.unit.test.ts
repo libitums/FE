@@ -130,3 +130,45 @@ describe("itemAnsweredEventOf — 힌트 (ADR-0153)", () => {
     expect(itemAnsweredEventOf("u00-tutorial", "S1", ref, report)).not.toHaveProperty("hintUsed");
   });
 });
+
+describe("itemAnsweredEventOf — 말하기 인식 진단", () => {
+  const ref = { itemId: "S5-01", itemType: "SPEAK_WORD" } as const;
+
+  test("IE10. 인식 진단은 오류 코드(10진 문자열) · 되돌아감 · 한국어 팩으로 실린다", () => {
+    expect(
+      itemAnsweredEventOf("u01-mina", "S5", ref, {
+        questionIndex: 0,
+        outcome: "skipped",
+        density: "regular",
+        skipReason: "unavailable:failed",
+        speech: { errorCode: 13, fallback: "on-device-error", koreanPack: "available" },
+      }),
+    ).toMatchObject({
+      result: "skipped",
+      skipReason: "unavailable:failed",
+      speechErrorCode: "13",
+      speechFallback: "on-device-error",
+      speechKoreanPack: "available",
+    });
+    expect(
+      itemAnsweredEventOf("u01-mina", "S5", ref, {
+        questionIndex: 0,
+        outcome: "correct",
+        density: "regular",
+        speech: { errorCode: 0, fallback: "pack-missing", koreanPack: "available" },
+      }),
+    ).toMatchObject({ result: "correct", speechErrorCode: "0", speechFallback: "pack-missing" });
+  });
+
+  test("IE11. 진단이 없으면 speech 키가 하나도 없다", () => {
+    const event = itemAnsweredEventOf("u01-mina", "S5", ref, {
+      questionIndex: 0,
+      outcome: "skipped",
+      density: "regular",
+      skipReason: "user",
+    });
+    expect(event).not.toHaveProperty("speechErrorCode");
+    expect(event).not.toHaveProperty("speechFallback");
+    expect(event).not.toHaveProperty("speechKoreanPack");
+  });
+});

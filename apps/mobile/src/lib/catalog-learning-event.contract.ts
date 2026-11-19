@@ -6,6 +6,7 @@ import type { ItemAnswerOutcome, ItemSkipReason, ScoredItemType } from "./item-a
 import type { LearningDensity } from "./learning-density";
 import type { ListenPace } from "./listen-pace";
 import type { ListenItemResult, ListenItemType } from "./question-audio";
+import type { SpeechFallback, SpeechKoreanPack } from "./speech-recognition-types";
 
 export type CatalogUnitRole = "lesson" | "final";
 
@@ -83,6 +84,12 @@ export type EpisodeItemAnsweredEvent = {
   readonly skipReason?: ItemSkipReason;
   /** 판정 전에 쓴 힌트입니다 — `listen`(정답 듣기) · `show`(정답 보기). 안 썼으면 없습니다(ADR-0153). */
   readonly hintUsed?: "listen" | "show";
+  /** 말하기 문항: 인식기 오류 코드(10진 문자열, 오류 없음은 `"0"`). 인식기가 결과를 올렸을 때만입니다. */
+  readonly speechErrorCode?: string;
+  /** 말하기 문항: 네트워크 인식기로 되돌아갔는가 — `none` · `pack-missing` · `on-device-error`. */
+  readonly speechFallback?: SpeechFallback;
+  /** 말하기 문항: 그 세션이 본 기기 안 한국어 팩 상태입니다. */
+  readonly speechKoreanPack?: SpeechKoreanPack;
 };
 
 export type CatalogLearningEvent =

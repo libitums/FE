@@ -23,6 +23,38 @@ public final class SpeechRecognitionSessionTest {
     assertEquals(0, session.durationMs(100));
   }
 
+  @Test public void fallbackDropsTheOnDeviceGuaranteeExactlyOnce() {
+    SpeechRecognitionSession session = new SpeechRecognitionSession(true, true, 0);
+    assertEquals("none", session.fallback());
+    assertEquals(0, session.fallbackErrorCode());
+    assertTrue(session.fallBackToNetwork("on-device-error", 13));
+    assertFalse(session.requiresOnDevice());
+    assertTrue(session.requestedOnDevice);
+    assertTrue(session.supportsOnDevice);
+    assertEquals("on-device-error", session.fallback());
+    assertEquals(13, session.fallbackErrorCode());
+    assertFalse(session.fallBackToNetwork("pack-missing", 0));
+    assertEquals("on-device-error", session.fallback());
+  }
+
+  @Test public void onlyAnOnDeviceSessionCanFallBack() {
+    SpeechRecognitionSession network = new SpeechRecognitionSession(false, true, 0);
+    assertFalse(network.fallBackToNetwork("pack-missing", 0));
+    assertEquals("none", network.fallback());
+    SpeechRecognitionSession finished = new SpeechRecognitionSession(true, true, 0);
+    finished.finish();
+    assertFalse(finished.fallBackToNetwork("on-device-error", 12));
+  }
+
+  @Test public void koreanPackIsUnknownUntilObserved() {
+    SpeechRecognitionSession session = new SpeechRecognitionSession(true, true, 0);
+    assertEquals("unknown", session.koreanPack());
+    session.observeKoreanPack("available");
+    assertEquals("available", session.koreanPack());
+    session.observeKoreanPack(null);
+    assertEquals("available", session.koreanPack());
+  }
+
   @Test public void levelsAndBuffersRemainFiniteAndBounded() {
     SpeechRecognitionSession session = new SpeechRecognitionSession(false, true, 0);
     session.observeLevel(-20);

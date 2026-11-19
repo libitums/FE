@@ -10,7 +10,27 @@ export interface SpeechRecognitionModule {
   stop(): void;
   /** 이 앱의 시스템 설정(마이크 · 음성 인식 권한) 화면을 엽니다. 이 메서드가 없는 옛 호스트가 있어 선택입니다. */
   openSettings?(): void;
+  /** 기기 안 한국어 인식 팩의 상태를 묻습니다(Android만 — iOS · 옛 호스트에는 없습니다). */
+  getKoreanPack?(callback: (payload: unknown) => void): void;
+  /** 한국어 인식 팩 내려받기를 시스템에 맡깁니다(Android 13+). 결말은 콜백 한 번, 진행은 전역 이벤트입니다. */
+  downloadKoreanPack?(callback: (payload: unknown) => void): void;
 }
+
+/**
+ * 기기 안(온디바이스) 한국어 인식 팩의 상태입니다. Android 13+만 물을 수 있습니다.
+ *
+ * `installed` 깔림 · `downloading` 받는 중 · `available` 받을 수 있음 · `unsupported` 기기 안 인식이 한국어를 못 함
+ * (또는 기기 안 인식기가 아예 없음) · `unknown` 물을 수 없음(Android 12 이하 · 확인 실패 · iOS).
+ */
+export type SpeechKoreanPack = "installed" | "downloading" | "available" | "unsupported" | "unknown";
+
+/**
+ * 온디바이스 인식기를 버리고 네트워크 인식기로 한 번 다시 시도했는가, 했다면 왜인가입니다.
+ *
+ * `none` 그대로 · `pack-missing` 시작 전 확인에서 한국어 팩이 없었음 · `on-device-error` 온디바이스 인식기가
+ * 언어 오류(또는 시작 직후 실패)를 냈음. 되돌아간 세션의 온디바이스 축은 `not-guaranteed`입니다.
+ */
+export type SpeechFallback = "none" | "pack-missing" | "on-device-error";
 
 /**
  * 권한 하나의 상태입니다.
@@ -103,6 +123,11 @@ export type SpeechResult = {
   readonly errorDomain: string;
   readonly errorCode: number;
   readonly errorMessage: string;
+  /** 이 세션이 본 한국어 팩 상태입니다. 묻지 않았으면 `unknown`입니다. */
+  readonly koreanPack: SpeechKoreanPack;
+  readonly fallback: SpeechFallback;
+  /** `on-device-error`로 되돌아가게 한 온디바이스 오류 코드입니다. 그 밖에는 0입니다. */
+  readonly fallbackErrorCode: number;
 };
 
 /** `start`에 넘길 것입니다. 네이티브가 읽는 키가 이것뿐입니다. */
