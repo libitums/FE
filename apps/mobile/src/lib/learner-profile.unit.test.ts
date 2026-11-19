@@ -219,7 +219,10 @@ describe("noLearnerProfilePort", () => {
     expect(noLearnerProfilePort.search("ko")).toEqual([]);
     expect(noLearnerProfilePort.search("")).toEqual([]);
     expect(noLearnerProfilePort.byCode("KR")).toBeNull();
-    expect(noLearnerProfilePort.previewOf("Emma", null)).toEqual({ kind: "example", lines: [] });
+    expect(noLearnerProfilePort.previewOf("Emma", null, "en")).toEqual({
+      kind: "example",
+      lines: [],
+    });
     expect(noLearnerProfilePort.randomName(null)).toBe("");
   });
 });

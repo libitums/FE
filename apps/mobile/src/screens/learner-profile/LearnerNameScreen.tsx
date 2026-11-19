@@ -39,7 +39,7 @@ export function LearnerNameScreen({
   const checked = learnerNameFrom(name);
   const issue = checked.ok ? null : checked.issue;
   const shownIssue = issue === null || (issue === "empty" && !noticed) ? null : issue;
-  const preview = port.previewOf(checked.ok ? checked.name : null, null);
+  const preview = port.previewOf(checked.ok ? checked.name : null, null, copy.language);
 
   function handleShuffle() {
     playSound("button");

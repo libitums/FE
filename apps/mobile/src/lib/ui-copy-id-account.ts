@@ -147,6 +147,7 @@ export const profileId: ProfileCopy = {
 };
 
 export const coinShopId: CoinShopCopy = {
+  digitSeparator: ".",
   title: "Yeopjeon",
   subtitle: "Koin kuningan Korea kuno",
   balanceLabel: "Kamu punya",

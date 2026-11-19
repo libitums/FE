@@ -47,10 +47,8 @@ describe("FA1 추천 친구 넷이 정본과 같다", () => {
       expect(friend?.unlockEpisodeId).toBeNull();
       expect(friend?.earlyAccess).toBeNull();
       expect(friend?.intro?.en).toBe(f.bio.en);
-      expect(friend?.sheetOpening).toEqual({
-        ko: f.firstMessage.ko.join(" "),
-        en: f.firstMessage.en.join(" "),
-      });
+      expect(friend?.sheetOpening?.ko).toBe(f.firstMessage.ko.join(" "));
+      expect(friend?.sheetOpening?.en).toBe(f.firstMessage.en.join(" "));
       expect(friend?.firstLine).toBe(f.firstMessage.ko[0]);
       expect(tagTexts(id, "en")).toEqual([f.job.en, `${f.age} years old`, f.mbti]);
       expect(tagTexts(id, "ja")[1]).toBe(`${f.age}歳`);
@@ -65,6 +63,23 @@ describe("FA1 추천 친구 넷이 정본과 같다", () => {
       }
     }
   });
+});
+
+// FA4 — 시트 첫 말의 뜻풀이도 화면 언어로 선다(2026-11-19 l10n 점검: es · id · ja · vi 학습자가 영어 뜻풀이를 봤다).
+// 정본 JSON은 ko · en만 가지므로(소개 · 직업과 같이) 다른 언어 칸은 앱 표가 정본입니다. 영어를 베껴 두지 않습니다.
+describe("FA4 시트 첫 말의 뜻풀이가 모든 화면 언어에 있다", () => {
+  const withOpening = COMPANION_CATALOG.characters.filter((c) => c.sheetOpening !== null);
+  test.each(withOpening.map((c) => [c.id, c] as const))(
+    "%s — es · id · ja · vi 칸이 있고 영어와 다르다",
+    (_id, character) => {
+      const opening = character.sheetOpening;
+      for (const language of ["es", "id", "ja", "vi"] as const) {
+        const line = opening?.[language] ?? "";
+        expect(line, language).not.toBe("");
+        expect(line, language).not.toBe(opening?.en);
+      }
+    },
+  );
 });
 
 describe("FA2 이야기 인물 다섯의 MBTI(storyProfiles)", () => {

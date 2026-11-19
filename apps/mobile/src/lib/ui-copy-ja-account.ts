@@ -145,6 +145,7 @@ export const profileJa: ProfileCopy = {
 };
 
 export const coinShopJa: CoinShopCopy = {
+  digitSeparator: ",",
   title: "Yeopjeon",
   subtitle: "朝鮮の昔の真鍮の銭",
   balanceLabel: "所持",

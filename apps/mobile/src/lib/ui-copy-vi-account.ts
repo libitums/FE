@@ -138,6 +138,7 @@ export const profileVi: ProfileCopy = {
 };
 
 export const coinShopVi: CoinShopCopy = {
+  digitSeparator: ".",
   title: "Yeopjeon",
   subtitle: "Đồng xu đồng thau cổ của Hàn Quốc",
   balanceLabel: "Bạn có",

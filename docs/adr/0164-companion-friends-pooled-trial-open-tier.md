@@ -169,4 +169,7 @@
 - 기기 절차: [docs/e2e/companion-friends.md](../e2e/companion-friends.md)(미실행).
 - **후속(다음 판, 사용자 결정 2026-11-19 — 이번에 만들지 않음)**: 대화 설정에 open 친구만의 인물별 줄 「How close」(Closer · Just friends, 시안 C1 · C2). Just friends →
   Closer는 `companion_ack_adult()`로 되고, Closer → Just friends는 학습자가 부를 동의 철회 RPC가 새로 필요하다(지금은 운영자 함수 `companion_operator_set_adult_ack`뿐).
+- ⟨2026-11-19 l10n 점검⟩ **시트 첫 말의 뜻풀이도 화면 언어**: 추천 친구 시트 · 새 친구 시트(서버 방이 비어 인물 표로 설 때)의 한국어 첫 말 아래 뜻풀이가 늘 영어였다.
+  인물 표 `sheetOpening`이 `{ ko } & LocalizedLine`이 되어 이야기 인물 넷 · 추천 친구 넷의 es · id · ja · vi를 갖고(정본 JSON은 ko · en만 — 소개 · 직업과 같이 다른
+  언어는 앱 표가 정본, 단위 테스트 FA4), 시트가 `localizedLine`으로 고른다(th · my는 en). 서버가 저장한 첫 말은 서버가 학습자 언어로 번역해 붙이므로 그대로다.
 

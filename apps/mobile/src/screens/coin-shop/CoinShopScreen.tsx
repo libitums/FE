@@ -86,7 +86,7 @@ export function CoinShopScreen({
   const pill = pillOf(wait);
   const coinsUpdating = chipUpdating(wait, "coins");
   const shownBalance = useCountUp(coinBalance);
-  const balanceLabel = shop.balance(coinBalance, formatCoinCount(coinBalance));
+  const balanceLabel = shop.balance(coinBalance, formatCoinCount(coinBalance, shop.digitSeparator));
   // 이 상점에서 구독 결제가 끝났을 때만 닫습니다 — 다른 자리(설정)의 대기가 끝난 위에 새로 연 상점이 곧바로 닫히지 않게. 웹훅이 이미 닿아
   // 대기가 한 번에 done이 되어도(그리는 사이 waiting을 못 봄) 결제가 끝났다는 표시로 닫힙니다. 늦으면(late) 열린 채 안내를 봅니다.
   const [planBought, setPlanBought] = useState(false);
@@ -178,7 +178,7 @@ export function CoinShopScreen({
                   className="coin-shop-screen-balance-value"
                   data-testid="coin-shop-screen-balance-value"
                 >
-                  {formatCoinCount(shownBalance)}
+                  {formatCoinCount(shownBalance, shop.digitSeparator)}
                 </text>
               )}
             </view>

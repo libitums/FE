@@ -4,6 +4,7 @@
 import type { LearnerProfileCopy } from "../components/learner-profile.contract";
 
 export const learnerProfileId: LearnerProfileCopy = {
+  language: "id",
   nameLabel: "Nama kamu",
   nameIssue: {
     empty: "Masukkan nama kamu.",

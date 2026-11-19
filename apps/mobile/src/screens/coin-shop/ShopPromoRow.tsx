@@ -20,10 +20,11 @@ export function ShopPromoRow({
   readonly promo: ShopPromo;
   readonly onPress: () => void;
 }): ReactNode {
-  const shop = useUiCopy().plans.shop;
+  const copy = useUiCopy();
+  const shop = copy.plans.shop;
   const line =
     promo.plan === "premium"
-      ? shop.promo.premium(formatCoinCount(promo.coins))
+      ? shop.promo.premium(formatCoinCount(promo.coins, copy.coinShop.digitSeparator))
       : shop.promo.chatPlus(promo.perDay);
   return (
     <view

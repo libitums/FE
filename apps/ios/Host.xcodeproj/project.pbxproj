@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1A10C0DE0000000000000001 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 1A10C0DE0000000000000002 /* InfoPlist.strings */; };
 		D0A5C0F1000000000000000B /* ContentSyncSignalTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A5C0F1000000000000000A /* ContentSyncSignalTests.swift */; };
 		D0A5C0F10000000000000009 /* ContentFileStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A5C0F10000000000000008 /* ContentFileStoreTests.swift */; };
 		D0A5C0F10000000000000007 /* ContentSyncSignal.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A5C0F10000000000000006 /* ContentSyncSignal.swift */; };
@@ -86,6 +87,11 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		1A10C0DE0000000000000003 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		1A10C0DE0000000000000004 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		1A10C0DE0000000000000005 /* id */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = id; path = id.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		1A10C0DE0000000000000006 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		1A10C0DE0000000000000007 /* vi */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = vi; path = vi.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		D0A5C0F1000000000000000A /* ContentSyncSignalTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentSyncSignalTests.swift; sourceTree = "<group>"; };
 		D0A5C0F10000000000000008 /* ContentFileStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentFileStoreTests.swift; sourceTree = "<group>"; };
 		D0A5C0F10000000000000006 /* ContentSyncSignal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentSyncSignal.swift; sourceTree = "<group>"; };
@@ -236,6 +242,7 @@
 				2B94A3DC2D66149800608980 /* fonts */,
 				2B94A3D32D6613740060892C /* LaunchScreen.storyboard */,
 				2B94A3D62D6613740060892C /* Info.plist */,
+				1A10C0DE0000000000000002 /* InfoPlist.strings */,
 				A030C0DE0000000000000011 /* PrivacyInfo.xcprivacy */,
 				2B94A3DC2D6614980060892C /* TemplateProvider.swift */,
 				2B94A3DC2D6614980060892D /* StorageModule.swift */,
@@ -386,6 +393,10 @@
 			knownRegions = (
 				en,
 				Base,
+				es,
+				id,
+				ja,
+				vi,
 			);
 			mainGroup = 2B94A3BC2D6613730060892C;
 			productRefGroup = 2B94A3C62D6613730060892C /* Products */;
@@ -412,6 +423,7 @@
 				2B94A3D22D6613740060892C /* Assets.xcassets in Resources */,
 				2B94A3D52D6613740060892C /* Base in Resources */,
 				2B94A3D02D6613730060892C /* Base in Resources */,
+				1A10C0DE0000000000000001 /* InfoPlist.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -594,6 +606,18 @@
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
+		1A10C0DE0000000000000002 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				1A10C0DE0000000000000003 /* en */,
+				1A10C0DE0000000000000004 /* es */,
+				1A10C0DE0000000000000005 /* id */,
+				1A10C0DE0000000000000006 /* ja */,
+				1A10C0DE0000000000000007 /* vi */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
 		2B94A3CE2D6613730060892C /* Main.storyboard */ = {
 			isa = PBXVariantGroup;
 			children = (

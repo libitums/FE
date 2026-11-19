@@ -8,6 +8,7 @@ import {
 } from "@lynx-js/react";
 
 import { refreshAppPolicy } from "../lib/app-policy-refresh";
+import { syncCountryNames } from "../lib/country-names-refresh";
 import { measureTask } from "../lib/perf-probe";
 import {
   downloadedAssetBytes,
@@ -185,6 +186,8 @@ export function useEpisodeContentRefresh(sink: EpisodeIntroEventSink): EpisodeCo
       // 앱 정책(최소 빌드)은 에피소드보다 먼저, 작게 한 번 받습니다 — 스플래시가 나가기 전에 저장소에 있어야
       // 그 실행에서 판정합니다(ADR-0086). 결과는 스플래시가 나가는 순간 저장소에서 읽습니다.
       await refreshAppPolicy({ fetchText: fetchContentText, store: hostContentStore });
+      // 나라 이름 표(ADR-0059 개정) — 첫 차례 넷, 그 뒤 없는 지금 언어만. 기다리지 않고, 없으면 영어 이름.
+      void syncCountryNames({ fetchText: fetchContentText, store: hostContentStore });
       setSyncing(true);
       const summary = await refreshEpisodeCatalog({
         fetchText: fetchContentText,

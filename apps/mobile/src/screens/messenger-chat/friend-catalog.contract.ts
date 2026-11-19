@@ -49,8 +49,11 @@ export type FriendProfile = {
   readonly intro: LocalizedLine | null;
   readonly tags: readonly LocalizedLine[];
   readonly category: string | null;
-  /** 첫 말(ko · en) — 시트의 말풍선입니다. 없으면 말풍선을 그리지 않습니다. */
-  readonly sheetOpening: { readonly ko: string; readonly en: string } | null;
+  /**
+   * 첫 말 — 시트의 말풍선입니다. 한국어 아래 뜻풀이는 화면 언어 칸(`localizedLine`), 없는 언어는 en. 없으면 말풍선을 그리지 않습니다.
+   * 대화방의 같은 말은 서버가 학습자 언어로 번역해 붙입니다 — 시트만 앱이 가진 표입니다.
+   */
+  readonly sheetOpening: ({ readonly ko: string } & LocalizedLine) | null;
   readonly earlyAccess: EarlyAccessOffer | null;
   /** 인물의 로맨스 수위(ADR-0164) — 서버의 보이는 친구 목록이 덮어씁니다. 없으면 standard. */
   readonly romanceTier?: RomanceTier;
