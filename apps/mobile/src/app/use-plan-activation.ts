@@ -10,6 +10,22 @@ import { newlyActivePlan } from "../screens/plans/plan-change";
 /** 구매 뒤 알림을 기다리는 창 — 서버 따라잡기(2초 × 5) + 여유. */
 export const ACTIVATION_WINDOW_MS = REFRESH_ATTEMPTS * REFRESH_INTERVAL_MS + 2000;
 
+/**
+ * 구독 결제 하나를 감쌉니다 — 창은 결제가 `purchased`로 끝난 뒤에 엽니다. 단추를 누를 때 열면 결제 시트에서 승인하는 시간
+ * (2026-11-19 샌드박스 실측 11초)이 창을 먹어, 웹훅이 닿았을 때 창이 이미 닫혀 있습니다. 누를 때는 앞 창을 닫아 둡니다.
+ */
+export function armOnPurchased<T extends { readonly kind: string }>(
+  activation: { readonly arm: () => void; readonly disarm: () => void },
+  purchase: () => Promise<T>,
+): () => Promise<T> {
+  return async () => {
+    activation.disarm();
+    const result = await purchase();
+    if (result.kind === "purchased") activation.arm();
+    return result;
+  };
+}
+
 export function usePlanActivation(
   entitlements: PlanEntitlements | null,
   now: () => number = Date.now,

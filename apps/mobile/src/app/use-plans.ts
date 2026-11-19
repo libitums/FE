@@ -34,7 +34,7 @@ import { currentPlanOf, type CurrentPlan } from "../screens/plans/plan-change";
 import type { PlanOfferWiring } from "../screens/plans/plans.contract";
 import { planCardsFor, type PlanPeriod, type PlanPlacement } from "../screens/plans/plans-model";
 import { reportServerBalance } from "./messenger-chat-wiring";
-import { usePlanActivation } from "./use-plan-activation";
+import { armOnPurchased, usePlanActivation } from "./use-plan-activation";
 import type { NavAction } from "./nav-state";
 import {
   planSelectedEvent,
@@ -246,10 +246,10 @@ export function usePlans(
     selected(placement, plan, period);
     if (productId === null) return { kind: "unavailable" };
     intent(placement, plan, period, productId);
-    activation.arm();
-    const result = await withServerRefresh(() => bridge.purchase(productId), "entitlements");
-    if (result.kind !== "purchased") activation.disarm();
-    return result;
+    return withServerRefresh(
+      armOnPurchased(activation, () => bridge.purchase(productId)),
+      "entitlements",
+    );
   };
   const onRestore = () => {
     activation.disarm();
