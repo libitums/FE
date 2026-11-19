@@ -2,6 +2,7 @@
 // 이름은 학습 내용(인물 이름)이라 한글 그대로 둡니다(ui-copy 정책 허용 선언).
 
 import type { ChatFixtureRoom, ChatFixtureSeed } from "./chat-source.contract";
+import { COMPANION_FRIENDS } from "./companion-friends-roster";
 import type { FriendCatalog, FriendProfile } from "./friend-catalog.contract";
 
 /**
@@ -20,9 +21,19 @@ export type CompanionCharacter = FriendProfile & {
 
 const profile = (name: string) => `content/images/profiles/${name}.webp`;
 
-/** 이야기 인물의 카탈로그 칸 — 태그 · 카테고리 없음, 먼저 만나기 제안 없음(운영에 가짜 제안을 싣지 않습니다, ADR-0162). */
-const storyProfile = (intro: FriendProfile["intro"]) =>
-  ({ kind: "story", intro, tags: [], category: null, earlyAccess: null }) as const;
+/**
+ * 이야기 인물의 카탈로그 칸 — 태그는 MBTI 하나(정본 `docs/content/companion-friends.json`의 `storyProfiles`, ADR-0164), 카테고리 없음,
+ * 먼저 만나기 제안 없음(운영에 가짜 제안을 싣지 않습니다, ADR-0162). 수위는 다섯 모두 standard입니다.
+ */
+const storyProfile = (mbti: string, intro: FriendProfile["intro"]) =>
+  ({
+    kind: "story",
+    intro,
+    tags: [{ en: mbti }],
+    category: null,
+    earlyAccess: null,
+    romanceTier: "standard",
+  }) as const;
 
 export const COMPANION_CHARACTERS: readonly CompanionCharacter[] = [
   {
@@ -33,7 +44,7 @@ export const COMPANION_CHARACTERS: readonly CompanionCharacter[] = [
     unlockEpisode: null,
     sheetOpening: null,
     firstLine: "안녕하세요! 덕수쌤이에요.",
-    ...storyProfile({
+    ...storyProfile("ENFJ", {
       en: "Your Korean teacher",
       es: "Tu profesor de coreano",
       id: "Guru bahasa Korea-mu",
@@ -52,7 +63,7 @@ export const COMPANION_CHARACTERS: readonly CompanionCharacter[] = [
       en: "Did you get here okay? This is Jung Yoonkyung from Ikseon Guesthouse.",
     },
     firstLine: "잘 도착했어요? 익선 게스트하우스 정윤경이에요.",
-    ...storyProfile({
+    ...storyProfile("ISFJ", {
       en: "Owner of Ikseon Guesthouse",
       es: "Dueña de Ikseon Guesthouse",
       id: "Pemilik Ikseon Guesthouse",
@@ -68,7 +79,7 @@ export const COMPANION_CHARACTERS: readonly CompanionCharacter[] = [
     unlockEpisode: 3,
     sheetOpening: { ko: "안녕하세요! 같은 방 미나예요.", en: "Hi! It's Mina, your roommate." },
     firstLine: "안녕하세요! 같은 방 미나예요.",
-    ...storyProfile({
+    ...storyProfile("ESFJ", {
       en: "Your roommate at the guesthouse",
       es: "Tu compañera de cuarto en el hostal",
       id: "Teman sekamarmu di guesthouse",
@@ -87,7 +98,7 @@ export const COMPANION_CHARACTERS: readonly CompanionCharacter[] = [
       en: "Hi! It's Doyun from Cafe Kkeullim.",
     },
     firstLine: "안녕하세요! 카페 끌림 도윤이에요.",
-    ...storyProfile({
+    ...storyProfile("ENFP", {
       en: "Met at Cafe Kkeullim",
       es: "Lo conociste en Cafe Kkeullim",
       id: "Bertemu di Cafe Kkeullim",
@@ -106,7 +117,7 @@ export const COMPANION_CHARACTERS: readonly CompanionCharacter[] = [
       en: "It's Seo Jaemin.",
     },
     firstLine: "서재민이에요.",
-    ...storyProfile({
+    ...storyProfile("INTJ", {
       en: "Met by the guesthouse alley",
       es: "Lo conociste junto al callejón del hostal",
       id: "Bertemu di gang dekat guesthouse",
@@ -137,15 +148,21 @@ const roomOf = (character: CompanionCharacter): ChatFixtureRoom => ({
   voiceLine: { durationMs: 3000, text: { ko: "", en: "" } },
 });
 
-/** 지금의 친구 카탈로그 — 이야기 인물 다섯, 카테고리 없음. 서버 인물 목록이 생기면 포트가 그것으로 바꿉니다(ADR-0162). */
+/** 앱이 아는 인물 전부 — 이야기 인물 다섯 + 추천 친구 넷(ADR-0164). 서버 방 씨앗 · 카탈로그 · 목록 첫 줄이 씁니다. */
+export const COMPANION_ROSTER: readonly CompanionCharacter[] = [
+  ...COMPANION_CHARACTERS,
+  ...COMPANION_FRIENDS,
+];
+
+/** 지금의 친구 카탈로그 — 이야기 인물 다섯 + 추천 친구 넷, 카테고리 없음. 보이는 친구는 서버가 정합니다(ADR-0164 D2). */
 export const COMPANION_CATALOG: FriendCatalog = {
-  characters: COMPANION_CHARACTERS,
+  characters: COMPANION_ROSTER,
   categories: [],
 };
 
 /** 서버 모드 출처의 씨앗입니다 — 대화는 서버가 주므로 방은 비어 있고 정해 둔 답이 없습니다. */
 export function companionSeed(
-  characters: readonly CompanionCharacter[] = COMPANION_CHARACTERS,
+  characters: readonly CompanionCharacter[] = COMPANION_ROSTER,
 ): ChatFixtureSeed {
   return { rooms: characters.map(roomOf) };
 }

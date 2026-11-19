@@ -1,7 +1,7 @@
 // 목록 정렬 · 미리보기 · 안 읽은 수 · 시간입니다(messenger-chat-ui spec §5.6).
 
 import type { ChatRoomSummary, ChatText } from "./chat-source.contract";
-import { COMPANION_CHARACTERS } from "./companion-roster";
+import { COMPANION_ROSTER } from "./companion-roster";
 
 export type ChatRowPreview =
   | {
@@ -50,7 +50,7 @@ export function newBadgeShown(
 }
 
 const firstLineOf = (characterId: string): string | null =>
-  COMPANION_CHARACTERS.find((character) => character.id === characterId)?.firstLine ?? null;
+  COMPANION_ROSTER.find((character) => character.id === characterId)?.firstLine ?? null;
 
 /** 잠김 > 활동 > 마지막 메시지 > 비어 있음 순으로 한 줄 미리보기를 고릅니다. */
 export function chatRowPreview(room: ChatRoomSummary): ChatRowPreview {

@@ -76,6 +76,7 @@ export type AnalyticsEventName =
   | "pack_purchased"
   | "shop_tab_switched"
   | "suggested_friend_viewed"
+  | "suggested_friend_opened"
   | "suggested_friend_added"
   | "early_access_tapped"
   | "early_access_completed";

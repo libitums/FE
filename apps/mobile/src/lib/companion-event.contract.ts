@@ -59,6 +59,13 @@ export type CompanionUnlockEvent =
  */
 export type SuggestedFriendEvent =
   | (Common & { readonly name: "suggested_friend_viewed"; readonly count: string })
+  /** 프로필 시트를 열었음(ADR-0164 「분석 이벤트」) — 줄 · 친구 찾기 어디서 열었는지. PostHog만(Airbridge 매핑 없음). */
+  | (Common & {
+      readonly name: "suggested_friend_opened";
+      readonly characterId: string;
+      readonly kind: "story" | "general";
+      readonly from: "row" | "directory";
+    })
   | (Common & {
       readonly name: "suggested_friend_added";
       readonly characterId: string;

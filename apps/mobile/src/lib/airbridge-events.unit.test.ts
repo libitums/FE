@@ -54,10 +54,11 @@ describe("airbridgeEventFrom", () => {
   // ⟨ADR-0162⟩ 추천 친구 이벤트 셋이 더해져 66 · 64다.
   // ⟨ADR-0162 D5⟩ `early_access_completed`가 더해져 67 · 65다.
   // ⟨ADR-0063 2026-11-19⟩ 엽전 팩 결제 `pack_purchased`가 더해져 68이고, 매핑되는 것은 셋이다(표는 65 그대로).
-  test("AB3. 이름 68개는 표의 65개와 매핑되는 셋으로 나뉜다", () => {
+  // ⟨ADR-0164⟩ 추천 친구 프로필 열기 `suggested_friend_opened`가 더해져 69 · 66이다(Airbridge로 나가지 않음 — PostHog만).
+  test("AB3. 이름 69개는 표의 66개와 매핑되는 셋으로 나뉜다", () => {
     const tableNames = new Set<string>(unmappedEvents.map((e) => e.name));
-    expect(tableNames.size).toBe(65);
-    expect(allEventNames).toHaveLength(68);
+    expect(tableNames.size).toBe(66);
+    expect(allEventNames).toHaveLength(69);
     expect(
       [...tableNames, "entry_completed", "episode_final_passed", "pack_purchased"].sort(),
     ).toEqual([...allEventNames].sort());

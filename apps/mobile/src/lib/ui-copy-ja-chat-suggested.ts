@@ -26,6 +26,14 @@ export const messengerChatSuggestedJa: SuggestedFriendsCopy = {
   limitedUntil: (days, hours) => `期間限定 · 残り${days}日${hours}時間`,
   added: (name) => `${name}をチャットに追加しました`,
   addFailed: (name) => `${name}を追加できませんでした。もう一度お試しください。`,
+  adultAck: {
+    title: (name) => `${name}ともっと仲良くなる？`,
+    body: () => "少しずつ知り合っていく相手のように、もっとあたたかく親しく話してくれます。",
+    safe: "いつもやさしく、礼儀正しく。露骨な内容は一切ありません。",
+    casual: () => "あとで気軽な感じに戻したくなったら、そう伝えるだけでOK。",
+    confirm: "いいね",
+    decline: "今は友だちのままで",
+  },
   directory: {
     title: "友だちを探す",
     back: "戻る",

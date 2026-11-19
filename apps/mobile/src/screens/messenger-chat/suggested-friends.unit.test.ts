@@ -139,17 +139,20 @@ describe("SF-U7 friendStatusOf · 오늘 카탈로그", () => {
     expect(friendStatusOf(friend("l"), room("l", false))).toBe("locked");
   });
 
-  test("오늘 카탈로그는 이야기 인물 다섯 · 카테고리 없음 · 먼저 만나기 제안 없음 · 소개는 다섯 언어", () => {
-    expect(COMPANION_CATALOG.characters.map((c) => c.id)).toEqual([
-      "duksu",
-      "yoonkyung",
-      "mina",
-      "doyun",
-      "jaemin",
+  test("오늘 카탈로그는 이야기 인물 다섯 + 추천 친구 넷(ADR-0164) · 카테고리 없음 · 먼저 만나기 제안 없음 · 소개는 다섯 언어", () => {
+    expect(COMPANION_CATALOG.characters.map((c) => [c.id, c.kind])).toEqual([
+      ["duksu", "story"],
+      ["yoonkyung", "story"],
+      ["mina", "story"],
+      ["doyun", "story"],
+      ["jaemin", "story"],
+      ["seoyeon", "general"],
+      ["haejun", "general"],
+      ["daeun", "general"],
+      ["geonwoo", "general"],
     ]);
     expect(COMPANION_CATALOG.categories).toEqual([]);
     for (const c of COMPANION_CATALOG.characters) {
-      expect(c.kind, c.id).toBe("story");
       expect(c.earlyAccess, c.id).toBeNull();
       expect(Object.keys(c.intro ?? {}).sort(), c.id).toEqual(["en", "es", "id", "ja", "vi"]);
     }

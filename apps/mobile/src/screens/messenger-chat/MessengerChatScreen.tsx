@@ -82,7 +82,6 @@ export function MessengerChatScreen({
     trial,
     wallet,
     tier,
-    characterId: thread?.counterpart.id ?? roomId,
     // 서버 방은 서버가 엽전을 냅니다(ADR-0155) — 앱 지갑에서 빼지 않습니다.
     charging: thread !== null && thread.server !== null ? "server" : "local",
     onTopUp: () => dispatch({ type: "open-overlay", overlay: { kind: "coin-shop", from: "send" } }),

@@ -340,6 +340,11 @@ describe("인물 표", () => {
       ["mina", "mina", { kind: "locked", unlockEpisode: 3 }],
       ["doyun", "doyun", { kind: "locked", unlockEpisode: 12 }],
       ["jaemin", "jaemin", { kind: "locked", unlockEpisode: 17 }],
+      // 추천 친구 넷(ADR-0164) — 에피소드 없는 잠긴 방, 추가로 엽니다.
+      ["seoyeon", "seoyeon", { kind: "locked", unlockEpisode: 0 }],
+      ["haejun", "haejun", { kind: "locked", unlockEpisode: 0 }],
+      ["daeun", "daeun", { kind: "locked", unlockEpisode: 0 }],
+      ["geonwoo", "geonwoo", { kind: "locked", unlockEpisode: 0 }],
     ]);
     for (const room of seed.rooms) {
       expect(room.messages).toEqual([]);

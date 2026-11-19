@@ -25,6 +25,18 @@ export const messengerChatSuggestedEn: SuggestedFriendsCopy = {
   limitedUntil: (days, hours) => `LIMITED · ${days}d ${hours}h`,
   added: (name) => `${name} added to your chats`,
   addFailed: (name) => `Couldn't add ${name}. Try again.`,
+  adultAck: {
+    title: (name) => `Get closer with ${name}?`,
+    body: (gender) =>
+      gender === null
+        ? "Chats can be warmer and more personal, like with someone you're getting to know."
+        : `${gender === "female" ? "She" : "He"} can be warmer and more personal with you, like someone you're getting to know.`,
+    safe: "Always kind and respectful. Never anything explicit.",
+    casual: (gender) =>
+      `Want to keep it casual later? ${gender === null ? "Just say so." : `Just tell ${gender === "female" ? "her" : "him"}.`}`,
+    confirm: "Sounds good",
+    decline: "Just friends for now",
+  },
   directory: {
     title: "Find friends",
     back: "Back",

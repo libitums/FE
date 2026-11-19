@@ -567,7 +567,8 @@ describe.each(["en", "vi", "id", "es", "ja"] as const)(
   "[MC2-I9] 저장된 언어가 %s인 설치의 메신저 1.5 문구",
   (language) => {
     async function bootMessenger(coins: number): Promise<void> {
-      await resetMessengerChatSource({ tier: "free" });
+      // 합산 체험을 다 쓴 계정(ADR-0164 D3) — 방 머리 줄이 메시지 요금입니다.
+      await resetMessengerChatSource({ tier: "free", trial: 0 });
       const storage = sessionStorageWith({ [uiLanguageStorageKey]: language });
       await renderTesterApp(<App progressSeed={legacyPassedSeedWithCoins(coins)} />, {
         storageModule: storage.module,
@@ -586,7 +587,7 @@ describe.each(["en", "vi", "id", "es", "ja"] as const)(
       );
     });
 
-    // 체험 인물이 아닌 방은 첫 통부터 엽전이라(ADR-0155) 머리 줄이 메시지 요금입니다.
+    // 체험을 다 쓰면 어느 방이든 첫 통부터 엽전이라(ADR-0155 · ADR-0164) 머리 줄이 메시지 요금입니다.
     test("방 머리의 요금 줄이 그 언어의 coinEach(3)이다", async () => {
       const copy = uiCopyFor(language);
       await bootMessenger(0);

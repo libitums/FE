@@ -1,6 +1,9 @@
 // 추천 친구 줄 · 프로필 시트 · 친구 찾기 화면 계약입니다(ADR-0162) — 문구표 · props · test-id.
 
 import type { FriendProfile, SuggestedFriendsPort } from "./friend-catalog.contract";
+
+/** 문구의 대명사 — 인물 데이터의 `gender`, 없으면 null. */
+export type FriendGender = "female" | "male" | null;
 import type { DirectoryFilter, DirectoryRow } from "./friend-directory";
 import type { SuggestedFriend } from "./suggested-friends";
 
@@ -32,6 +35,18 @@ export type SuggestedFriendsCopy = {
   readonly limitedUntil: (days: number, hours: number) => string;
   readonly added: (name: string) => string;
   readonly addFailed: (name: string) => string;
+  /**
+   * 「Get closer」 시트(ADR-0164 D4, 디자인 B1 SoftSheet). 문구 규칙(사용자 결정 2026-11-19): 어느 언어에서도 로맨스 · 성인 · 18+ ·
+   * 생년을 말하지 않습니다. `gender`는 인물 데이터의 대명사(없으면 대명사 없는 문구).
+   */
+  readonly adultAck: {
+    readonly title: (name: string) => string;
+    readonly body: (gender: FriendGender) => string;
+    readonly safe: string;
+    readonly casual: (gender: FriendGender) => string;
+    readonly confirm: string;
+    readonly decline: string;
+  };
   readonly directory: {
     readonly title: string;
     readonly back: string;
@@ -67,6 +82,16 @@ export type SuggestedFriendSheetProps = {
   readonly now: number;
   readonly onStart: () => void;
   readonly onEarly: () => void;
+  readonly onClose: () => void;
+};
+
+/** 「Get closer」 시트(ADR-0164 D4) — Sounds good = 동의 후 추가, Just friends for now = 동의 없이 추가, 막 탭 · 뒤로가기 = 닫기만. */
+export type AdultAckSheetProps = {
+  readonly name: string;
+  readonly avatarUrl: string | null;
+  readonly gender: FriendGender;
+  readonly onConfirm: () => void;
+  readonly onDecline: () => void;
   readonly onClose: () => void;
 };
 
@@ -111,6 +136,9 @@ export const suggestedFriendsTestIds = {
   sheetLimited: sf("sheet-limited"),
   sheetLater: sf("sheet-later"),
   toast: sf("toast"),
+  adultAck: sf("adult-ack"),
+  adultAckConfirm: sf("adult-ack-confirm"),
+  adultAckDecline: sf("adult-ack-decline"),
 } as const;
 
 export const friendDirectoryTestIds = {

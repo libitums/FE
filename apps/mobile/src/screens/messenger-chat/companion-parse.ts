@@ -203,13 +203,20 @@ function messagesOf(raw: Json): {
   return { messages, corrections, ideas };
 }
 
-/** `companion_load_profile` 본문 → 생년. 행이 없으면 JSON null(생년 없음), 못 읽거나 틀린 본문이면 null. */
-export function profileFrom(
-  bodyText: string | null,
-): { readonly birthYear: number | null; readonly replySuggestions: boolean | null } | null {
+/**
+ * `companion_load_profile` 본문 → 생년 · 추천 답변 설정 · 성인 확인 동의(ADR-0164, 칸이 없으면 false). 행이 없으면 JSON null(생년
+ * 없음), 못 읽거나 틀린 본문이면 null.
+ */
+export function profileFrom(bodyText: string | null): {
+  readonly birthYear: number | null;
+  readonly replySuggestions: boolean | null;
+  readonly adultAck: boolean;
+} | null {
   const raw = parse(bodyText);
   if (raw === null) {
-    return bodyText?.trim() === "null" ? { birthYear: null, replySuggestions: null } : null;
+    return bodyText?.trim() === "null"
+      ? { birthYear: null, replySuggestions: null, adultAck: false }
+      : null;
   }
   const record = recordOf(raw);
   if (record === null) return null;
@@ -218,6 +225,7 @@ export function profileFrom(
   return {
     birthYear: typeof year === "number" && Number.isInteger(year) ? year : null,
     replySuggestions: typeof replies === "boolean" ? replies : null,
+    adultAck: record["adultAck"] === true,
   };
 }
 
