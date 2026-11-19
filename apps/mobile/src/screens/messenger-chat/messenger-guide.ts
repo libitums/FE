@@ -23,7 +23,7 @@ export function messengerTabBadge(input: { visited: boolean; newFriend: boolean 
 
 /** 열 수 있는 계정의 열린 방 가운데 아직 안 연 새 친구(isNew)가 있나 — 손님 · 시험 계정 아님은 방을 못 열어 늘 false. */
 export function hasNewFriend(rooms: readonly ChatRoomSummary[], access: MessengerAccess): boolean {
-  return access === "open" && rooms.some((room) => room.isNew && room.access.kind === "open");
+  return access !== "sign-in" && rooms.some((room) => room.isNew && room.access.kind === "open");
 }
 
 export function guideSteps(input: { mediaReady: boolean }): readonly GuideStep[] {

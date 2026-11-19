@@ -166,3 +166,21 @@ export function companionSeed(
 ): ChatFixtureSeed {
   return { rooms: characters.map(roomOf) };
 }
+
+/** 첫 말 — 시트 첫 말과 같은 문장이면 그 영어 뜻을 같이 싣습니다(없으면 빈 뜻). */
+const openingOf = (character: CompanionCharacter, firstLine: string) => ({
+  ko: firstLine,
+  en: character.sheetOpening?.ko === firstLine ? character.sheetOpening.en : "",
+});
+
+/** 비회원 출처의 씨앗입니다(ADR-0166) — 회원과 같은 방, 첫 인사 첫 줄을 열 때 놓을 첫 말로. 서버 요청 없이 앱 안에서만. */
+export function guestCompanionSeed(
+  characters: readonly CompanionCharacter[] = COMPANION_ROSTER,
+): ChatFixtureSeed {
+  return {
+    rooms: characters.map((character) => ({
+      ...roomOf(character),
+      ...(character.firstLine === null ? {} : { opening: openingOf(character, character.firstLine) }),
+    })),
+  };
+}

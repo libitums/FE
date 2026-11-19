@@ -69,7 +69,7 @@ export function newFriendModelOf(
   wiring: ModelWiring,
   access: MessengerAccess,
 ): NewFriendModel | null {
-  if (access !== "open") return null;
+  if (access === "sign-in") return null; // 비회원 미리보기(ADR-0166)는 회원과 같은 목록이라 Reply가 열 방이 있습니다
   const entry = CHARACTER_UNLOCKS.find((candidate) => candidate.characterId === characterId);
   if (entry === undefined) return null;
   const thread = wiring.messengerChat.source.thread(entry.roomId);

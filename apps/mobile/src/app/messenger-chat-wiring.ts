@@ -14,7 +14,8 @@ import { loadUiLanguage, onUiLanguageSaved } from "../lib/ui-language";
 import { companionL1Sync } from "../screens/messenger-chat/companion-l1-sync";
 import type { ChatMediaHooks } from "../screens/messenger-chat/chat-media.contract";
 import type { ChatRemote } from "../screens/messenger-chat/chat-remote.contract";
-import { companionSeed } from "../screens/messenger-chat/companion-roster";
+import { companionSeed, guestCompanionSeed } from "../screens/messenger-chat/companion-roster";
+import { GUEST_PREVIEW_MODE, isGuestPreview } from "./guest-preview";
 import type { ChatFixtureSeed, ChatSource } from "../screens/messenger-chat/chat-source.contract";
 import {
   deviceBirthYearStore,
@@ -65,8 +66,7 @@ export type MessengerChatWiring = {
 type ImageUrlOf = (relativePath: string) => string | null;
 
 let singleton: FixtureChatSource | null = null;
-/** 지금 출처의 모드 — 「fixture」 또는 「server:<사용자 id>」. 바뀌면 출처를 새로 만듭니다(계정 전환 · 시험 표시). */
-let singletonKey = "";
+let singletonKey = ""; // 출처 모드 — fixture · guest-preview · server:<id>, 바뀌면 출처를 새로(계정 전환 · 시험 표시)
 /** 서버 사진 · 음성의 바깥 알림(ADR-0146 「앱 연결」) — 앱 세션이 등록합니다(머리 엽전 칩 · 제품 이벤트). 출처는 이 등록부를 부릅니다. */
 let mediaHooks: ChatMediaHooks | null = null;
 /** 서버 모드의 원격 포트입니다(ADR-0137). 앱 진입점이 끼우고, 테스트는 끼우지 않아 늘 가짜 출처입니다. */
@@ -181,14 +181,17 @@ export function messengerChatSource(imageUrlOf: ImageUrlOf): ChatSource {
   const replaced = latestImageUrlOf !== null && latestImageUrlOf !== imageUrlOf;
   latestImageUrlOf = imageUrlOf;
   const key = sourceKey();
-  if (singleton !== null && key !== singletonKey) {
+  // 비회원 미리보기(ADR-0166) — 회원과 같은 인물 방을 서버 없이. 회원 · 테스트 씨앗과 출처를 나눠 계정이 바뀌면 새로 만듭니다.
+  const guest = key === GUEST_ACCOUNT_KEY && testSeed === undefined && isGuestPreview();
+  const mode = guest ? GUEST_PREVIEW_MODE : key;
+  if (singleton !== null && mode !== singletonKey) {
     singleton.dispose();
     singleton = null;
     stopL1Sync();
     trialSingleton = null; // 체험 수는 계정마다 — 새 출처의 지갑 읽기가 다시 채웁니다
   }
   if (singleton === null) {
-    singletonKey = key;
+    singletonKey = mode;
     const remote = key === "fixture" || remoteFactory === null ? null : remoteFactory();
     // 번역 · 교정 설명이 학습자 화면 언어로 오게 서버 프로필 l1을 맞춥니다(가짜 방은 할 일 없음).
     stopL1Sync = companionL1Sync(remote?.profile, loadUiLanguage, onUiLanguageSaved);
@@ -208,7 +211,7 @@ export function messengerChatSource(imageUrlOf: ImageUrlOf): ChatSource {
         : {}),
       ...(remote === null
         ? testSeed === undefined
-          ? {}
+          ? guest ? { seed: guestCompanionSeed(), greetOnOpen: true } : {}
           : { seed: testSeed }
         : // 다시 켠 뒤 목록 미리보기 — 열린 방의 서버 기록을 미리 읽습니다(2026-11-17).
           { seed: companionSeed(), remote, mediaHooks: forwardedMediaHooks, previewOnStart: true }),

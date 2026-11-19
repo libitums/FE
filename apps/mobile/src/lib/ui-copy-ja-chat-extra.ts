@@ -14,6 +14,10 @@ export const messengerChatExtraJa: MessengerChatExtraCopy = {
     signInBody:
       "無料アカウントを作ると、ストーリーで出会った人たちと韓国語でチャットできます。これまでの進み具合も引き継がれます。",
     signIn: "登録またはログイン",
+    promptTitle: "メッセージを送るにはログインが必要です",
+    promptBody:
+      "無料アカウントを作ると、ストーリーで出会った人たちとチャットできます。これまでの進み具合も引き継がれます。",
+    promptLater: "今はしない",
   },
   pushNotice: { chatUnavailable: "このチャットは今は開けません。" },
   chatSettings: {
