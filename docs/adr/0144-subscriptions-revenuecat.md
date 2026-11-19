@@ -220,4 +220,10 @@ DB가 실패하면 500 — RevenueCat이 다시 보낸다. 같은 이벤트 id�
 - **디자인**: 새 토큰 · 요소 · CSS 없음. 지금 카드의 기존 한 줄(`plans-card-*-current`, 「renews 날짜」 자리)과 토스트의 두 줄 틀(제목 · 본문)을
   그대로 쓰고 글만 바꾼다. 요금제 글은 칩과 같은 짧은 이름(`planShort`, 「Tickets ∞」)이라 긴 언어에서도 카드 한 줄을 크게 넘기지 않는다.
 - 구매 뒤 따라잡기는 pending만 바뀌어도 「바뀜」으로 보고 멈춘다(`sameEntitlements`).
+- **올림 뒤 내림(2026-11-19 07:53 기기 확인)**: Tickets → Premium 올림 뒤 Premium → Tickets 내림은 Tickets 줄이 올림 전부터 활성이라 「새로 생긴
+  요금제」가 없어 알림이 뜨지 않았다. 알림은 새 요금제 줄이 없어도 지금 요금제에 미뤄진 바꿈이 새로 생기면 뜬다(`planActivationOf`). 지금보다 위 등급으로의
+  pending(곧바로 바뀌는 올림의 흔적)은 미뤄진 바꿈으로 보지 않는다.
+- **서버 — 곧바로 바뀐 옛 줄**: 올림의 PRODUCT_CHANGE를 pending으로만 적어 옛 Tickets 줄이 원래 만료까지 활성 · pending=Premium으로 남았다. RevenueCat
+  PRODUCT_CHANGE의 `expiration_at_ms`는 옛 상품의 만료다 — 곧바로 바뀌면 바뀐 시각, 미뤄지면 기간 끝(운영 store_events 10건으로 확인). 그 값으로 줄의 만료를
+  앞당기기만 한다(`20261215120000_companion_product_change_expiry.sql`, `companion_apply_store_event`의 한 줄).
 - **남은 것**: 미뤄진 바꿈의 대상 카드에 다시 사는 CTA(「Switch to … from 날짜」)가 그대로 보인다 — 스토어가 같은 바꿈을 다시 받는지는 확인하지 않았다.

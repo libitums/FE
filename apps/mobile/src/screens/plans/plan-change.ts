@@ -111,21 +111,26 @@ export function scheduledChangeOf(
     rows.find((item) => item.id !== current.id && baseProduct(item.productId) === base)?.id ??
     catalog?.plans.find((plan) => plan.products.monthly === base || plan.products.yearly === base)
       ?.id;
-  if (to === undefined) return null;
+  // 위 등급으로의 pending은 곧바로 바뀌는 올림의 흔적이라 미뤄진 바꿈이 아닙니다(2026-11-19 07:53 기기 확인).
+  if (to === undefined || levels[to] > levels[current.id]) return null;
   const period = periodOfProduct(pending);
   if (to === current.id && period === current.period) return null;
   return { from: current.id, to, period, at: current.expiresAt };
 }
 
-/** 구독 성공 알림의 대상 — 새로 생긴 요금제와, 그것이 다음 갱신으로 미뤄졌으면 그 바꿈. */
+/** 구독 성공 알림의 대상 — 새로 생긴 요금제와, 그것이 다음 갱신으로 미뤄졌으면 그 바꿈(새로 생긴 미뤄진 바꿈만 있어도). */
 export type PlanActivation = { readonly plan: PlanId; readonly scheduled: ScheduledChange | null };
 
 export function planActivationOf(
   before: PlanEntitlements | null,
   after: PlanEntitlements | null,
 ): PlanActivation | null {
-  const plan = newlyActivePlan(before, after);
-  if (plan === null) return null;
   const scheduled = scheduledChangeOf(after);
-  return { plan, scheduled: scheduled?.to === plan ? scheduled : null };
+  const plan = newlyActivePlan(before, after);
+  if (plan !== null) return { plan, scheduled: scheduled?.to === plan ? scheduled : null };
+  // 다음 요금제 줄이 이미 활성이었으면(올림 뒤 내림) 새 줄 없이 지금 줄에 pending만 생깁니다 — 그 바꿈이 새로 생겼으면 알립니다.
+  const had = scheduledChangeOf(before);
+  if (scheduled === null || (had?.to === scheduled.to && had.period === scheduled.period))
+    return null;
+  return { plan: scheduled.to, scheduled };
 }

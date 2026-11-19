@@ -25,8 +25,8 @@
 
 ## 분석 결과
 
-- 번들(`pnpm --filter @libitums/mobile build`, .env.local 없음): `main.lynx.bundle` 5,241,451 B(origin/main c3a80f8b) → 5,247,424 B, **+5,973 B**.
-  천장 5,327,000 B(ADR-0149) 안 — 남은 여유 79,576 B. 천장은 올리지 않았다. 늘어난 몫은 다섯 언어 문구 · 미뤄진 바꿈 읽기 · 다시 읽기 훅이다.
+- 번들(`pnpm --filter @libitums/mobile build`, .env.local 없음): `main.lynx.bundle` 5,241,451 B(origin/main c3a80f8b) → 5,247,836 B, **+6,385 B**(올림 뒤 내림 알림 보강 포함, 02c402d1 대비 +412 B).
+  천장 5,327,000 B(ADR-0149) 안 — 남은 여유 79,164 B. 천장은 올리지 않았다. 늘어난 몫은 다섯 언어 문구 · 미뤄진 바꿈 읽기 · 다시 읽기 훅이다.
 
 ## 해석
 

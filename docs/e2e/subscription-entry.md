@@ -21,3 +21,4 @@
 | SE-E11 | VoiceOver · TalkBack | 탭 「Yeopjeon, selected」 · 칩 「Plans」/「Your plan: Premium」 · 지금 카드는 단추로 읽히지 않음 · 막힌 CTA · 알림 낭독 | 미실행 |
 | SE-E12 | Premium 구독 중 Plans에서 Unlimited Tickets로 내림(샌드박스, 운영 DB에 `20261214120000` 적용 뒤) | 상점 닫힘 → 알림 「Unlimited Tickets starts 날짜 / You keep Premium until then」(「is on」 아님) · 칩 PREMIUM 그대로 · 다시 Plans → Premium 회색 카드 「Current plan · Tickets ∞ from 날짜」 | 미실행 |
 | SE-E13 | SE-E12 뒤 앱을 켠 채 Premium 만료(샌드박스 월간 5분)를 넘김 | 만료 2초쯤 뒤 머리 칩이 PREMIUM → TICKETS · 티켓 칩 ∞ 그대로 · 앱을 내렸다 올려도 같은 값. 마이그레이션 전 서버여도 칩은 바뀐다(카드 줄 · 알림만 옛 글) | 미실행 |
+| SE-E14 | Unlimited Tickets 구독 중 Premium으로 올림 → 바로 Tickets로 내림(운영 DB에 `20261215120000` 적용 뒤) | 올림: 「Premium is on」 · 칩 PREMIUM. 내림: 상점 닫힘 → 「Unlimited Tickets starts 날짜 / You keep Premium until then」 한 번 · 칩 PREMIUM · Plans Premium 카드 「Current plan · Tickets ∞ from 날짜」. 운영 `plan_entitlements`에서 Tickets 줄 만료가 올림 시각으로 앞당겨졌는지 | 미실행 |
