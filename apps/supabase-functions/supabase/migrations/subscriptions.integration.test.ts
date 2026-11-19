@@ -354,3 +354,32 @@ test("SB-S12 혜택 표를 고치면 바로 따른다 — Chat Plus 무료 30 �
   await turnsToday(5, true);
   expect(await begin()).toMatchObject({ result: "ok", creditsReserved: 3 });
 });
+
+test("SB-S13 companion_entitlements() — 미뤄진 바꿈(pendingProductId)을 그 줄에 싣는다(2026-11-19 Premium → Unlimited Tickets)", async () => {
+  await apply("activate", { productId: "duru.premium.monthly.v1", expiresAt: iso(60_000) });
+  await apply("product_change", {
+    productId: "duru.premium.monthly.v1",
+    newProductId: "duru.tickets.monthly.v1",
+  });
+  await apply("activate", {
+    productId: "duru.tickets.monthly.v1",
+    purchasedAt: iso(60_000),
+    expiresAt: iso(30 * DAY),
+  });
+  const mine = (await app.query("select public.companion_entitlements() as e")).rows[0].e;
+  const byId = Object.fromEntries(
+    mine.entitlements.map((e: { id: string }) => [e.id, e] as const),
+  ) as Record<string, Record<string, unknown>>;
+  expect(byId["premium"]).toMatchObject({ pendingProductId: "duru.tickets.monthly.v1" });
+  expect(byId["unlimited_tickets"]).toMatchObject({ pendingProductId: null });
+  // 기존 키는 그대로 — 옛 앱이 그대로 읽는다.
+  expect(Object.keys(byId["premium"] ?? {}).sort()).toEqual([
+    "expiresAt",
+    "id",
+    "pendingProductId",
+    "productId",
+    "status",
+    "store",
+    "willRenew",
+  ]);
+});
