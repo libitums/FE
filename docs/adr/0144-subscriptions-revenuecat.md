@@ -235,3 +235,32 @@ DB가 실패하면 500 — RevenueCat이 다시 보낸다. 같은 이벤트 id�
   엽전 팩은 잔액이 바뀌어야(`settle: "balance"`), 구독은 권한이 바뀌어야 멈춘다. 구독 성공 알림 창도 같은 기한(60초 + 2초)이다.
 - RevenueCat → Airbridge 연동은 엽전 팩(NON_RENEWING_PURCHASE)을 보내지 않는다(2026-11-19 실시간 로그 확인). **엽전 팩만 앱이 Airbridge Order Complete로 보낸다** —
   [ADR-0063 적용 기록 2026-11-19](0063-airbridge-events.md). 구독은 지금처럼 RevenueCat이 보낸다. 호스트 구매 답에 스토어 거래 id(`transactionId`)를 더했다.
+
+## Android 결제 준비 (2026-11-20) — iOS 1.2.0과 같은 상품 · 같은 동작 [사용자: 「Play 상품이 살아나면 바로 낼 수 있게」]
+
+- **배경**: 2단계(#490)가 Android에도 같은 `PurchasesModule` · SDK(10.30.1, Play Billing 8.3)를 넣었고, #504 기기 id · #506 미뤄진 바꿈 ·
+  #507 확인 대기 · Order Complete는 JS · 서버라 플랫폼과 상관없다. Android 출시는 Play 상품이 없어 보류 중이다(2026-11-19 사용자 결정).
+  남은 빈틈은 **Play가 App Store와 다르게 움직이는 곳 셋**이었다.
+- **D4 매핑 유지**: Play 정기 결제 id = iOS 상품 id, 기본 요금제 하나(`base`) → RevenueCat Play 상품 id `duru.premium.monthly.v1:base`.
+  버린 안: 요금제마다 정기 결제 하나 + `monthly` · `yearly` 기본 요금제 둘(`duru.premium:monthly`) — Google 권장 모양이지만 앞부분이 같아져 앱이
+  기간을 잃고(`baseProductId`), 서버 `store_products` · 웹훅 · iOS id 표를 모두 바꿔야 한다. 대가: Play 콘솔에 정기 결제가 여섯이다.
+- **① 구독 바꿈(빈틈 — 겹침)**: Play에는 구독 그룹이 없어 다른 구독을 그냥 사면 **구독이 둘**이 된다(두 번 청구). 호스트가 구독을 살 때
+  RevenueCat 고객 정보의 **활성 Play 구독**을 `oldProductId`로 넘긴다(`PurchasesPlanChange`, 순수 · JVM 시험). 시점은 iOS 그룹과 같게 — 수준표는
+  ADR-0160 `plan-change.ts`(Premium 위, Chat Plus · Tickets 같은 수준): 위로 · 같은 수준 같은 기간 = 곧바로(`CHARGE_FULL_PRICE`), 아래로 · 기간 바꿈 =
+  다음 갱신(`DEFERRED`). 고객 정보를 못 읽으면 사지 않는다(`failed`). App Store 구독은 Play가 바꿀 수 없어 대상에서 뺀다(다른 스토어 겹침은 미결정).
+  JS 계약 · iOS는 그대로다 — 수준표가 Java에 한 벌 더 있다(대가, 두 곳을 같이 고친다).
+- **② 보류 결제(빈틈 — 거짓 실패)**: Play는 현금 · 편의점 같은 느린 결제를 `PaymentPendingError`로 끝낸다(동남아 주력 시장에서 흔함). 지금은
+  `failed`라 엽전 상점이 「결제 실패」 줄을 보였다 — 다시 사면 두 번 낸다. 호스트가 `pending`으로 답하고(`PurchasesStatus`), JS는 취소처럼 조용히
+  끝낸다(실패 줄 · 확인 대기 · Order Complete 없음, 새 문구 없음). 결제가 끝나면 RevenueCat → 웹훅이 지갑 · 권한을 바꾸고 다음 화면 진입 · 실행이
+  따라잡는다. iOS(Ask to Buy)는 그대로 `failed`다 — 맞출지는 다음 iOS 판에서.
+- **③ 키 판정**: Android 키는 `goog_`로 시작할 때만 SDK를 연다(`PurchasesConfig`). iOS 키를 잘못 넣으면 모든 구매가 실패하고, 비밀 키(`sk_`)는 앱에
+  들어가면 안 된다. 아니면 미리보기로 물러선다.
+- **이미 맞는 것(코드 그대로)**: 상품 · 가격 읽기(`:base` 꼬리 뗌) · 스토어 나라(두 글자) · 엽전 팩 소모(RevenueCat Consumable) · 거래 id = Play
+  `orderId`(없으면 토큰) · Airbridge 상품 줄(`AirbridgeEventAttributes`) · 기기 id · 미뤄진 바꿈(`pendingProductId`의 꼬리 뗌) · 복원 ·
+  Manage subscription(Play 구독 화면 `sku` · `package`) · 결제 권한(`com.android.vending.BILLING`, Billing 라이브러리 매니페스트가 합침).
+- **수동 일**: [Android 결제 수동 설정 목록](../android-purchases-setup.md) — Play 상품 · 가격 · 유예 · 서비스 계정 · RTDN · RevenueCat Google 앱 ·
+  `revenuecat.properties` · 라이선스 테스터. 기기 확인은 [e2e — Android 결제](../e2e/android-purchases.md)(미실행).
+- **출시 보류는 그대로**: 결제 스위치는 공용이다. Play 준비 전에 Android를 내야 하면 키 파일 없이 짓는다(미리보기). `/release-build`는 Android 키의
+  `goog_` 접두를 개수로 확인한다.
+- **위험 · 대가**: `DEFERRED` 바꿈에서 RevenueCat 구매 콜백이 어떤 거래로 끝나는지는 샌드박스로 확인한다(AP-E7) — 콜백이 오류로 끝나면 앱은
+  「실패」를 보이지만 바꿈은 예약된다. `CHARGE_FULL_PRICE`는 남은 기간을 시간으로 얹는다(iOS는 남은 값을 환불) — 정산 방식은 미결정(설정 목록 D-4).

@@ -22,6 +22,7 @@
   각 상품에 현지화 표시 이름(영어 이름 그대로 — Unlimited Tickets · Chat Plus · Premium) · 설명 · 심사용 스크린샷이 필요합니다.
 - **Google Play**: 「정기 결제」 여섯 — **정기 결제 id = 위 상품 id**, 기본 요금제(base plan) 하나씩(id 예: `base`, 자동 갱신, 기간 1개월 / 1년).
   RevenueCat은 Play 구독을 `duru.premium.monthly.v1:base`처럼 보내고, 서버는 `:` 앞부분으로 찾습니다. 엽전 팩 셋은 「인앱 상품」(관리형, 소모 처리는 SDK).
+  Play 쪽 단계별 목록(가격 · 유예 · 서비스 계정 · RTDN · 키 파일 · 라이선스 테스터)은 [Android 결제 수동 설정 목록](android-purchases-setup.md)(2026-11-20).
 - 가격을 바꿀 때는 같은 id로 스토어에서 바꿉니다. 기간 · 종류를 바꾸거나 기존 구독자를 옛 가격에 남기려면 `.v2` 새 id + 서버 `store_products` 행 추가
   (옛 행은 지우지 말고 `active = false`) — ADR-0144 D5.
 
@@ -47,7 +48,7 @@
 | `REVENUECAT_WEBHOOK_AUTH` | Supabase Edge Function 비밀(운영 · 개발 각각) | RevenueCat 웹훅의 Authorization 헤더 값과 같은 문자열 |
 | `REVENUECAT_ACCEPT_SANDBOX` | Supabase Edge Function 비밀 | 개발(QA) 프로젝트만 `true`. 운영은 비워 둠 |
 | RevenueCat 공개 SDK 키 — iOS(`appl_…`) | `apps/ios/Config/RevenueCat.local.xcconfig`의 `REVENUECAT_API_KEY`(추적 안 함, `.example` 참조) → Info.plist `RevenueCatAPIKey` | 앱이 SDK를 여는 키. 비면 SDK · 구매 모듈 없음 |
-| RevenueCat 공개 SDK 키 — Android(`goog_…`) | `apps/android/app/revenuecat.properties`의 `REVENUECAT_API_KEY`(추적 안 함, `.example` 참조) → `BuildConfig.REVENUECAT_API_KEY` | 같음. 릴리스 빌드도 이 두 파일을 메인 체크아웃에서 복사한다(`/release-build` 값 파일 목록) |
+| RevenueCat 공개 SDK 키 — Android(`goog_…`) | `apps/android/app/revenuecat.properties`의 `REVENUECAT_API_KEY`(추적 안 함, `.example` 참조) → `BuildConfig.REVENUECAT_API_KEY` | 같음 — `goog_`로 시작하지 않으면 SDK를 열지 않는다(2026-11-20). 릴리스 빌드도 이 두 파일을 메인 체크아웃에서 복사한다(`/release-build` 값 파일 목록) |
 | App Store In-App Purchase Key(.p8) · Issuer ID · Key ID | RevenueCat 대시보드만 | 영수증 · 서버 알림 |
 | Play 서비스 계정 JSON | RevenueCat 대시보드만 | Play 영수증 · RTDN |
 | Airbridge 앱 이름 · API 토큰 | RevenueCat 대시보드 Airbridge 통합 | 매출 이벤트 전달 |
