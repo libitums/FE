@@ -56,6 +56,7 @@ export type OnboardingTestId =
   | "onboarding-screen-body"
   | "onboarding-screen-start"
   | "onboarding-screen-pager"
+  | "onboarding-screen-stage"
   | "onboarding-screen-progress"
   | "onboarding-screen-cards"
   | "onboarding-screen-header"
@@ -63,3 +64,7 @@ export type OnboardingTestId =
   | "onboarding-screen-chat"
   | "onboarding-screen-stack"
   | "onboarding-screen-unit";
+
+/** 높이를 재는 두 요소의 id입니다 — 스크롤 영역과 페이지 표시 · 제목 · 본문 묶음(카드 영역 높이의 입력). */
+export const onboardingScrollId = "onboarding-screen-scroll";
+export const onboardingTextId = "onboarding-screen-text";

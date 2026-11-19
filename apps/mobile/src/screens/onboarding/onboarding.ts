@@ -98,3 +98,32 @@ export function onboardingStartedEvent(
 ): OnboardingStartedEvent {
   return { name: "onboarding_started", step: stepNumber(step), autoAdvanced };
 }
+
+/** 카드 영역의 디자인 높이입니다(2026-09-21 디자인 — 400). 화면이 넉넉하면 이 값 그대로입니다. */
+export const onboardingStageMaxHeight = 400;
+
+/**
+ * 카드 영역이 더 줄지 않는 높이입니다. 기본 글자 크기에서는 SE(3세대)도 이 위(254)라 닿지 않고, 큰 글자에서만
+ * 닿습니다 — 그때는 카드보다 제목 · 본문이 먼저라 낮게 둡니다. 묶음이 이만큼도 못 남기는 가장 큰 글자에서는
+ * 나머지를 스크롤이 받습니다(ADR-0022 D1).
+ */
+export const onboardingStageMinHeight = 120;
+
+// 카드 영역 위 여백(spacing-80 — 튀어나온 도윤 몫)과 카드 ↔ 묶음 간격(layout-gap-section 32)입니다.
+// `onboarding-screen.css`의 `.onboarding-screen-content`와 같은 값이어야 합니다.
+const stageChrome = 80 + 32;
+
+/**
+ * 카드 영역의 높이입니다 — 스크롤 영역의 높이(`viewport`)와 페이지 표시 · 제목 · 본문 묶음의
+ * 높이(`text`)를 받아, 묶음이 스크롤 없이 시작 버튼 위에 다 보이게 카드 영역을 줄입니다
+ * (2026-11-19 iPhone 13 mini에서 본문이 잘림). 디자인 높이 400을 넘지 않고 하한 아래로 줄지 않습니다.
+ * 아직 재지 못했으면 400입니다. 순수.
+ */
+export function onboardingStageHeight(fit: {
+  readonly viewport: number | undefined;
+  readonly text: number | undefined;
+}): number {
+  if (fit.viewport === undefined || fit.text === undefined) return onboardingStageMaxHeight;
+  const room = Math.floor(fit.viewport - stageChrome - fit.text);
+  return Math.min(onboardingStageMaxHeight, Math.max(onboardingStageMinHeight, room));
+}

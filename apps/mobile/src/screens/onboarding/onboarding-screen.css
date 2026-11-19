@@ -46,6 +46,16 @@
   gap: var(--libitum-layout-gap-section);
 }
 
+/* 카드 영역입니다. 높이는 화면이 재서 정합니다(`onboardingStageHeight` — 디자인 400, 화면이 낮으면
+   묶음이 버튼 위에 다 보이도록 줄어듭니다). 스텝마다 갈리는 카드 셋은 이 높이를 채웁니다. 튀어나오는
+   인물이 잘리지 않게 자르지 않습니다. */
+.onboarding-screen-stage {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
 /* 페이지 표시 · 제목 · 본문 묶음입니다. 가로 가운데 정렬입니다. */
 .onboarding-screen-text {
   display: flex;
