@@ -19,6 +19,7 @@ import { nativePurchaseBridge } from "../lib/native-purchase-bridge";
 import { pricingRegionFor, type PricingRegion } from "../lib/provisional-prices";
 import { purchaseIntentOf, setPurchaseContext } from "../lib/purchase-intent";
 import { runWithServerRefresh, sleep } from "../lib/purchase-refresh";
+import { idleWait, type PurchaseWait } from "../lib/purchase-wait";
 import type {
   PurchaseBridge,
   PurchaseResult,
@@ -75,6 +76,8 @@ export type PlansWiring = {
   /** 구독 성공 알림 한 번(T6, `usePlanActivation`) — 미뤄진 내림이면 scheduled. 보이면 `onActivatedShown`. */
   readonly activated: PlanActivation | null;
   readonly onActivatedShown: () => void;
+  /** 구매 뒤 서버 확인 대기(ADR-0163) — 상점 · 설정 Plans · 머리 칩이 읽습니다. */
+  readonly wait: PurchaseWait;
 };
 
 const SESSION_WAITS = 30;
@@ -295,5 +298,6 @@ export function usePlans(
         : { price: ticketsCard.price },
     activated: activation.activated,
     onActivatedShown: activation.onActivatedShown,
+    wait: idleWait,
   };
 }

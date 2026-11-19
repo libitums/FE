@@ -43,6 +43,8 @@ export type HeaderPlans = {
   /** 구독 성공 알림 한 번 — 새로 켜진 요금제(미뤄진 내림이면 scheduled). */
   readonly activated: PlanActivation | null;
   readonly onActivatedShown: () => void;
+  /** 구매 뒤 서버 확인 대기(ADR-0163) — 바뀔 칩은 값 대신 스켈레톤입니다. */
+  readonly updating?: { readonly coins: boolean; readonly plan: boolean };
 };
 
 export type AppHeaderProps = {

@@ -3,6 +3,7 @@
 import type { AppPlatform } from "../../lib/app-version";
 import type { LegalDocument } from "../../lib/legal-document.contract";
 import type { PlanEntitlements, PlanId, PlansCatalog } from "../../lib/plans-api";
+import type { PurchaseWait } from "../../lib/purchase-wait";
 import type { PricingRegion } from "../../lib/provisional-prices";
 import type { PurchaseResult, RestoreResult, StoreOffer } from "../../lib/purchase-bridge";
 import type { PlanCardView, PlanPeriod, PlanPlacement } from "./plans-model";
@@ -29,6 +30,8 @@ export type PlansData = {
   readonly onManageSubscription?: (productId: string | null) => void;
   /** 고지의 이용약관 · 개인정보처리방침 링크. */
   readonly onOpenLegal?: (document: LegalDocument) => void;
+  /** 구매 뒤 서버 확인 대기(ADR-0163) — 위 알약 · 「Your plan」 스켈레톤. 없으면 idle. */
+  readonly wait?: PurchaseWait;
 };
 
 /** 설정 → Plans 화면 — 밝은 판(시안 L1). */

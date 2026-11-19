@@ -4,11 +4,14 @@
 import { useRef, useState } from "@lynx-js/react";
 
 import type { PlanEntitlements } from "../lib/plans-api";
-import { REFRESH_ATTEMPTS, REFRESH_INTERVAL_MS } from "../lib/purchase-refresh";
+import { REFRESH_DEADLINE_MS } from "../lib/purchase-refresh";
 import { planActivationOf, type PlanActivation } from "../screens/plans/plan-change";
 
-/** 구매 뒤 알림을 기다리는 창 — 서버 따라잡기(2초 × 5) + 여유. */
-export const ACTIVATION_WINDOW_MS = REFRESH_ATTEMPTS * REFRESH_INTERVAL_MS + 2000;
+/**
+ * 구매 뒤 알림을 기다리는 창 — 서버 따라잡기 일정의 합(60초, ADR-0163 D1) + 여유. 옛 창(2초 × 5 + 2초)은 내림의 PRODUCT_CHANGE 웹훅이
+ * 늦게 닿으면(2026-11-19 기기) 이미 닫혀 알림이 뜨지 않았습니다. 일정과 창은 한 출처입니다.
+ */
+export const ACTIVATION_WINDOW_MS = REFRESH_DEADLINE_MS + 2000;
 
 /**
  * 구독 결제 하나를 감쌉니다 — 창은 결제가 `purchased`로 끝난 뒤에 엽니다. 단추를 누를 때 열면 결제 시트에서 승인하는 시간
