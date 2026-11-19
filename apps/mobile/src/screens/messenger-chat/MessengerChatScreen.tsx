@@ -1,12 +1,9 @@
-import { useRef } from "@lynx-js/react";
+import { useMemo, useRef } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
-import arrowLeft03 from "@libitums/icons/lynx/arrow-left-03";
-import menu from "@libitums/icons/lynx/menu";
 import { resolveReducedMotion, useMotion } from "@libitums/ui-lynx/motion";
-import { RoundButton } from "@libitums/ui-lynx/round-button";
 
-import { ChatHeader, ChatHeaderSide } from "../../components/chat/ChatHeader";
+import { ChatRoomHeader } from "./ChatRoomHeader";
 import { ChatLog } from "../../components/chat/ChatLog";
 import { ChatTypingRow } from "../../components/chat/ChatTypingRow";
 import { announce } from "../../lib/accessibility";
@@ -20,10 +17,12 @@ import { ChatRoomOverlays } from "./ChatRoomOverlays";
 import { useAutoIdeas } from "./use-auto-ideas";
 import { guideTargetClass, MessengerRoomGuide } from "./MessengerGuide";
 import { deviceGuideStore } from "./messenger-guide";
+import type { GuestGateProps } from "./messenger-access";
 import { useRoomGuide } from "./use-room-guide";
+import { useGuestGate } from "./use-guest-gate";
 import { ChatHistoryFailed, ChatRecoveryRow } from "./ChatDelivery";
 import { useChatFeedback } from "./use-chat-feedback";
-import { LastFreeStrip, TurnLine } from "./ChatTurns";
+import { LastFreeStrip } from "./ChatTurns";
 import { MoreMenu, overlayForMore } from "./MoreMenu";
 import { OutOfFreePanel } from "./OutOfFreePanel";
 import { TRIAL_TOTAL } from "./free-turns";
@@ -59,13 +58,15 @@ export function MessengerChatScreen({
   onOpenAlbum,
   onOpenMyProfile,
   guideStore = deviceGuideStore,
-}: MessengerChatScreenProps): ReactNode {
+  onSignInRequired = null,
+}: MessengerChatScreenProps & GuestGateProps): ReactNode {
   const copy = useUiCopy().messengerChat;
   const coinBalance = useCoinBalance(wallet);
   // 보내기 관문(턴 · 엽전)은 useChatTurns가 지고 방의 dispatch가 필요해 — 서로를 기다리지 않게 방이 관문을 참조로 부릅니다.
   const gate = useRef<() => boolean>(() => true);
   // 서버 모드는 답을 기다리는 동안 다시 보내지 않습니다 — 서버가 409 turn_in_progress로 거절해 로그 순서가 섞였습니다(리뷰 W3).
   const serverBusy = useRef(false);
+  const guest = useGuestGate(onSignInRequired); // 비회원 — 보내기 · 계정 동작은 로그인 권유(ADR-0166)
   const room = useChatRoom({
     roomId,
     source,
@@ -75,9 +76,11 @@ export function MessengerChatScreen({
     onExit,
     authorizeSend: () => !serverBusy.current && gate.current(),
   });
-  const { state, plan, thread, birthYear, preferences, keyboardHeight, dispatch, send } = room;
+  const { state, plan, thread, birthYear, preferences, keyboardHeight, send } = room;
+  const dispatch = useMemo(() => guest.guard(room.dispatch), [room.dispatch, guest.active]);
   // 겹침이 열린 동안 뒤 화면(머리 · 로그 · 독)은 낭독에서 숨습니다. 「…」 메뉴는 독 안의 가벼운 팝업이라 제외합니다.
-  const overlayOpen = state.overlay.kind !== "none" && state.overlay.kind !== "more-menu";
+  const overlayOpen =
+    guest.open || (state.overlay.kind !== "none" && state.overlay.kind !== "more-menu");
   const turn = useChatTurns({
     trial,
     wallet,
@@ -88,7 +91,7 @@ export function MessengerChatScreen({
     onOutPanelOpen: () => dispatch({ type: "close-keyboard" }),
     muted: overlayOpen,
   });
-  gate.current = turn.authorizeSend;
+  gate.current = guest.authorize(turn.authorizeSend, () => dispatch({ type: "close-keyboard" }));
   const server = thread !== null && thread.server !== null;
   // 답 · 첫 인사를 기다리는 중 — 이때 온 말만 「새로 도착」으로 봅니다(방을 열며 읽은 기록은 아님, 리뷰 W2 · W4).
   const busy = thread !== null && (thread.typing || thread.awaitingReply);
@@ -108,7 +111,7 @@ export function MessengerChatScreen({
     source,
     thread,
     dispatch,
-    authorizeSend: turn.authorizeSend,
+    authorizeSend: gate.current,
   });
   const motion = resolveReducedMotion(undefined, useMotion()) ? "reduced" : "standard";
   const entrances = useChatEntrances(thread?.messages ?? null, motion);
@@ -156,41 +159,12 @@ export function MessengerChatScreen({
           style={keyboardDockBodyStyle(edges, "keyboard")}
           accessibility-elements-hidden={turn.panelOpen ? true : undefined}
         >
-          <ChatHeader
-            title={thread.counterpart.name}
-            subtitle={
-              turn.plan.kind === "unlimited" ? undefined : (
-                <TurnLine plan={turn.plan} used={turn.panelOpen} />
-              )
-            }
-            insetTop={0}
-            testIds={{ root: ids.header, title: ids.title }}
-            start={
-              <ChatHeaderSide testId={ids.back}>
-                <RoundButton
-                  accessibilityLabel={copy.room.back}
-                  icon={arrowLeft03}
-                  variant="neutral"
-                  size="l"
-                  bindtap={exit}
-                />
-              </ChatHeaderSide>
-            }
-            end={
-              <ChatHeaderSide
-                testId={ids.settings}
-                id={ids.settings}
-                accessibilityLabel={copy.room.settings}
-                onTap={() => dispatch({ type: "open-overlay", overlay: { kind: "sidebar" } })}
-              >
-                <RoundButton
-                  accessibilityLabel={copy.room.settings}
-                  icon={menu}
-                  variant="neutral"
-                  size="l"
-                />
-              </ChatHeaderSide>
-            }
+          <ChatRoomHeader
+            name={thread.counterpart.name}
+            plan={turn.plan}
+            used={turn.panelOpen}
+            onBack={exit}
+            onMenu={() => dispatch({ type: "open-overlay", overlay: { kind: "sidebar" } })}
           />
           <ChatLog
             testId={ids.log}
@@ -294,6 +268,7 @@ export function MessengerChatScreen({
         preferences={preferences}
         {...{ onOpenMemories, onOpenAlbum, onOpenMyProfile }}
       />
+      {guest.layer}
     </view>
   );
 }

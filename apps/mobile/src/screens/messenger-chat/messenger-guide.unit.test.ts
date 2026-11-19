@@ -42,6 +42,10 @@ describe("하단 탭 NEW", () => {
     ).toBe(false);
     expect(hasNewFriend([room("duksu")], "open")).toBe(false);
   });
+
+  test("MG-U1b 비회원 미리보기(preview)도 회원처럼 새 친구 NEW를 센다(ADR-0166)", () => {
+    expect(hasNewFriend([room("duksu"), room("mina", { isNew: true })], "preview")).toBe(true);
+  });
 });
 
 describe("코치마크 단계 · 기록", () => {

@@ -133,3 +133,20 @@ export function suggestedFriendsPort(): SuggestedFriendsPort {
   };
   return cachedPort;
 }
+
+let guestPort: SuggestedFriendsPort | null = null;
+
+/**
+ * 비회원 미리보기(ADR-0166)의 포트입니다 — 앱 인물 표만, 서버 RPC 0(제안 · 먼저 만나기 · 보이는 친구 · 성인 확인 없음). 보이는
+ * 친구를 거르지 않는 것은 서버 규칙의 「나이 모름」과 같습니다(미성년자만 open 수위를 숨김, ADR-0164). 추가는 화면이 로그인 권유로
+ * 막으므로 `add`는 부르지 않지만, 계약을 지키려 회원과 같은 함수를 둡니다.
+ */
+export function guestSuggestedFriendsPort(): SuggestedFriendsPort {
+  guestPort ??= {
+    catalog: () => catalogOverride ?? COMPANION_CATALOG,
+    add: addSuggestedFriend,
+    earlyAccess: null,
+    offers: null,
+  };
+  return guestPort;
+}

@@ -35,4 +35,12 @@ export const suggestedFriendEventExamples = [
     characterId: "jaemin",
     outcome: "short",
   },
+  // 비회원 로그인 권유(ADR-0166) — 같은 메신저 목록 · 방에서 납니다.
+  {
+    name: "chat_sign_in_prompt_closed",
+    surface: "chat",
+    daysSinceFirstOpen: "0",
+    trigger: "send",
+    choice: "sign_in",
+  },
 ] as const satisfies readonly AnalyticsEvent[];

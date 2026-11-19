@@ -14,6 +14,10 @@ export const messengerChatExtraEn: MessengerChatExtraCopy = {
     signInBody:
       "Create a free account to chat in Korean with the people from your stories. Your progress so far comes with you.",
     signIn: "Sign up or log in",
+    promptTitle: "Sign in to send messages",
+    promptBody:
+      "Create a free account to chat with the people from your stories. Your progress so far comes with you.",
+    promptLater: "Not now",
   },
   pushNotice: { chatUnavailable: "This chat isn't available right now." },
   chatSettings: {

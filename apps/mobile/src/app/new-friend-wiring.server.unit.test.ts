@@ -46,6 +46,12 @@ test("SW-U7 메신저를 쓸 수 없는 계정이면 방 · 첫 말이 있어도
   expect(newFriendModelOf("mina", wiringOf(source), "sign-in")).toBeNull();
 });
 
+// SW-U8 — 비회원 미리보기(ADR-0166)는 회원과 같은 목록이라 Reply가 열 방이 있습니다 — 시트가 섭니다.
+test("SW-U8 비회원 미리보기(preview)면 새 친구 시트 모델이 선다", () => {
+  const source = createFixtureChatSource({ imageUrlOf: () => null, seed: companionSeed() });
+  expect(newFriendModelOf("mina", wiringOf(source), "preview")?.name).toBe("미나");
+});
+
 describe("인물 표", () => {
   test("SW-U6 해금되는 인물은 모두 시트 첫 말이 있다(처음부터 열린 덕수쌤만 없음)", async () => {
     const { COMPANION_CHARACTERS } = await import("../screens/messenger-chat/companion-roster");

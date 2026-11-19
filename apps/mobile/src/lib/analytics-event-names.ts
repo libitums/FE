@@ -62,6 +62,7 @@ export type AnalyticsEventName =
   | "messenger_tab_opened"
   | "companion_unlocked"
   | "new_friend_sheet_closed"
+  | "chat_sign_in_prompt_closed"
   | "chat_message_sent"
   | "chat_media_requested"
   | "chat_media_completed"

@@ -195,8 +195,19 @@ export type PlanEvent =
       readonly to: "coins" | "plans";
     });
 
+/**
+ * 비회원 로그인 권유(ADR-0166) — 메신저 목록 · 방의 「로그인 필요」 대화상자를 닫을 때 한 번. `trigger`는 권유가 뜬 자리,
+ * `choice`는 sign_in(로그인 화면으로) · later(닫기 · 뒤로).
+ */
+export type GuestPromptEvent = Common & {
+  readonly name: "chat_sign_in_prompt_closed";
+  readonly trigger: "send" | "media" | "menu" | "coins" | "add_friend";
+  readonly choice: "sign_in" | "later";
+};
+
 export type CompanionEvent =
   | LaunchEvent
+  | GuestPromptEvent
   | StreakRewardEvent
   | PlanEvent
   | MessengerGuideEvent

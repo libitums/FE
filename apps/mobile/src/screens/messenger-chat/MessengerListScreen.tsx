@@ -19,6 +19,8 @@ import type { SuggestedFriendsProps } from "./suggested-friends.contract";
 import { useChatSnapshot } from "./use-chat-source";
 import { useCoinBalance } from "./use-coin-balance";
 import { useSuggestedFriends } from "./use-suggested-friends";
+import { useGuestGate } from "./use-guest-gate";
+import { canBrowseChats } from "./messenger-access";
 
 import "./messenger-list.css";
 
@@ -47,7 +49,9 @@ export function MessengerListScreen({
   // 첫 입장 안내(덕수쌤 줄만 떠 있는 오버레이) — 덕수쌤 방이 있는 메신저(서버 모드)에서 한 번.
   const [guideUnseen, setGuideUnseen] = useState(() => guideStore.unseen("list"));
   const guideRoom = rooms.find((r) => r.roomId === GUIDE_ROOM_ID && r.access.kind === "open");
-  const guideShown = access === "open" && guideUnseen && guideRoom !== undefined;
+  const guideShown = canBrowseChats(access) && guideUnseen && guideRoom !== undefined;
+  // 비회원 미리보기(ADR-0166) — 엽전 칩 · 추천 친구 추가는 로그인 권유.
+  const guest = useGuestGate(access === "preview" ? onSignIn : null);
   const { emit } = useChatEvents();
   const endGuide = (outcome: "done" | "skipped") => {
     emit({ name: "messenger_guide_finished", surface: "chat", part: "list", outcome });
@@ -66,7 +70,8 @@ export function MessengerListScreen({
   }
   // 추천 친구 줄 · 시트 · 친구 찾기(ADR-0162) — 엽전이 모자라면 상점을 엽니다(그동안 친구 찾기는 낭독에서 가려짐).
   const suggested = useSuggestedFriends({
-    port: access === "open" ? friends : undefined,
+    port: canBrowseChats(access) ? friends : undefined,
+    onBlocked: guest.active ? () => guest.prompt("add_friend") : undefined,
     rooms,
     covered: coinShopOpen,
     onShortOfCoins: openCoinShop,
@@ -75,7 +80,7 @@ export function MessengerListScreen({
   // 겹침(엽전 상점 · 첫 입장 안내 · 추천 친구 시트 · 친구 찾기)을 합친 값 하나만, 바뀔 때 바깥에 알립니다 — 겹침끼리 바뀌는 사이에
   // 닫힘이 끼어 전역 머리가 다시 읽히지 않게(접근성 리뷰 W3). 마운트 때의 첫 false는 보내지 않고, 열린 채 화면이 내려가면 닫힘을
   // 한 번 더 알립니다(전역 머리가 가려진 채 남지 않게 — `useScreenLayer`와 같은 목적).
-  const layerOpen = coinShopOpen || guideShown || suggested.layerOpen;
+  const layerOpen = coinShopOpen || guideShown || suggested.layerOpen || guest.open;
   const onLayerChangeRef = useRef(onLayerChange);
   const sentRef = useRef(false);
   useEffect(() => {
@@ -118,11 +123,11 @@ export function MessengerListScreen({
               testId={ids.coins}
               surface="white"
               height="touch-target"
-              onTap={openCoinShop}
+              onTap={() => guest.prompt("coins") || openCoinShop()}
             />
           )}
         </view>
-        {access !== "open" ? (
+        {!canBrowseChats(access) ? (
           <ChatAccessGate
             access={access}
             onSignIn={onSignIn}
@@ -152,6 +157,7 @@ export function MessengerListScreen({
       </view>
       <ChatListNotice notice={notice} onNoticeShown={onNoticeShown} />
       {suggested.layers}
+      {guest.layer}
       {coinShopOpen ? <CoinShopLayer coinBalance={coinBalance} onClose={closeCoinShop} /> : null}
       {guideShown && guideRoom !== undefined ? (
         <MessengerListGuide
