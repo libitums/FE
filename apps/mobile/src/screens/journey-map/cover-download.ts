@@ -50,5 +50,5 @@ const RING_STROKE = 6;
 
 const round = (value: number): number => Math.round(value * 100) / 100;
 
-/** 고리 지름(px) — 표지 노드(124)에 둘레 여백을 둡니다. */
-export const COVER_RING_SIZE = 144;
+/** 고리 지름(px) — 표지 노드 상자(124)를 2px 바깥에서 두릅니다. 더 크면 아래 라벨에 겹칩니다. */
+export const COVER_RING_SIZE = 128;
