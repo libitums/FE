@@ -11,7 +11,7 @@ import { ChatListRow } from "./ChatListRow";
 import { CoinShopLayer } from "./CoinShopLayer";
 import { MessengerListGuide } from "./MessengerGuide";
 import { useChatEvents } from "./chat-events";
-import { deviceGuideStore, GUIDE_ROOM_ID } from "./messenger-guide";
+import { deviceGuideStore, GUIDE_ROOM_ID, isSuggestedRowShown } from "./messenger-guide";
 import { orderChatRooms } from "./chat-list";
 import { messengerListTestIds as ids } from "./messenger-chat.contract";
 import type { MessengerListScreenProps } from "./messenger-chat.contract";
@@ -141,7 +141,8 @@ export function MessengerListScreen({
             scroll-bar-enable={false}
           >
             <view className="messenger-list-list" data-testid={ids.list}>
-              {suggested.row}
+              {/* 안내 중에는 추천 줄을 빼 원본 첫 줄이 떠 있는 덕수쌤 줄 자리에 섭니다. */}
+              {isSuggestedRowShown(guideShown) ? suggested.row : null}
               {ordered.map((room) => (
                 <ChatListRow key={room.roomId} room={room} now={now} onOpen={onOpenRoom} />
               ))}
