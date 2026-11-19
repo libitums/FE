@@ -73,12 +73,14 @@ function readSource(): CatalogSourceText {
   const ids = [...bundledIds, ...cachedIds.filter((id) => !bundledIds.includes(id))];
   // 원격 항목이 적은 언어의 저장 번역 파일도 함께 읽습니다(ADR-0102) — 카탈로그가 그 언어 표를 바꿉니다.
   const translations = readCachedTranslations(hostContentStore, remoteEntries);
-  // 파일 모듈이 있으면 원격 에피소드는 자산까지 갖춘 뒤에만 엽니다. 없으면(Explorer · 옛 호스트) 받을 수 없으니
-  // 지금처럼 본문만으로 엽니다.
+  // 파일 모듈이 있으면 내장본이 있는 원격 에피소드는 자산까지 갖춘 뒤에 원격본으로 엽니다(그 전엔 내장본). 내장본이
+  // 없는 편은 본문만으로 엽니다 — 창 밖 편은 자산을 열 때 받으므로(ADR-0157 D3) 기다리면 버킷에 있는 편이 「준비
+  // 중」으로 남습니다. 파일 모듈이 없으면(Explorer · 옛 호스트) 받을 수 없으니 모두 본문만으로 엽니다.
   if (!contentFilesAvailable()) return { ...readCachedSource(hostContentStore, ids), translations };
   const keep = (id: string): boolean => {
     const entry = remoteEntries.find((candidate) => candidate.id === id);
-    return entry === undefined || isAssetsComplete(hostContentStore, id, entry.sha256);
+    if (entry === undefined || !bundledIds.includes(id)) return true;
+    return isAssetsComplete(hostContentStore, id, entry.sha256);
   };
   return { ...readCachedSource(hostContentStore, ids, keep), translations };
 }

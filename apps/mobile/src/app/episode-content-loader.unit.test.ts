@@ -221,21 +221,38 @@ describe("loadEpisodeContent", () => {
     );
   });
 
-  test("EL9. 파일 모듈이 있으면 원격 에피소드는 자산 완료 표시가 그 본문 sha와 맞을 때만 ready다", async () => {
+  test("EL9. 파일 모듈이 있어도 내장본이 없는 원격 편은 본문이 맞으면 자산 전에도 ready다 (ADR-0157 D3 정정)", async () => {
     vi.stubGlobal("NativeModules", {
       ...(NativeModules as Record<string, unknown>),
       ContentFileModule: { download: vi.fn(), fileUrl: () => "" },
     });
     const { loadEpisodeContent } = await freshLoader();
     store.set(CONTENT_MANIFEST_KEY, remoteManifestText);
-    store.set(contentEpisodeKey("u04-x"), episodeText);
 
+    // 본문이 아직 없으면 받는 중(pending)입니다.
     expect(loadEpisodeContent().catalog[4]?.status).toBe("pending");
-    store.set(
-      "libitum.content.assets.u04-x",
-      JSON.stringify({ sha256: sha256Hex(utf8Bytes(episodeText)), missing: [] }),
-    );
-    expect(loadEpisodeContent().catalog[4]?.status).toBe("ready");
+    store.set(contentEpisodeKey("u04-x"), episodeText);
+    expect(loadEpisodeContent().catalog[4]).toMatchObject({ status: "ready", source: "cache" });
+  });
+
+  test("EL9b. 내장본이 있는 원격 편은 자산 완료 표시가 그 본문 sha와 맞을 때까지 내장본으로 연다", async () => {
+    vi.stubGlobal("NativeModules", {
+      ...(NativeModules as Record<string, unknown>),
+      ContentFileModule: { download: vi.fn(), fileUrl: () => "" },
+    });
+    const { loadEpisodeContent } = await freshLoader();
+    const text = minimalEpisodeText("u01-water");
+    const sha256 = sha256Hex(utf8Bytes(text));
+    const entry = { id: "u01-water", order: 1, title: "물", schema: "delivery-2" };
+    const wire = { ...entry, version: "2099-01-01.1", sha256, bytes: utf8Bytes(text).length };
+    const manifest = { schema: "manifest-1", generated_at: "2026-10-13T00:00:00Z" };
+    const episodes = [{ ...wire, url: "episodes/u01-water.json" }];
+    store.set(CONTENT_MANIFEST_KEY, JSON.stringify({ ...manifest, episodes }));
+    store.set(contentEpisodeKey("u01-water"), text);
+
+    expect(loadEpisodeContent().catalog[1]).toMatchObject({ status: "ready", source: "bundled" });
+    store.set("libitum.content.assets.u01-water", JSON.stringify({ sha256, missing: [] }));
+    expect(loadEpisodeContent().catalog[1]).toMatchObject({ status: "ready", source: "cache" });
   });
 
   test("BI4. 파일 모듈이 없어도 내장 그림 주소가 서고, 받기 포트는 내장 그림을 이미 가진 것으로 답한다", async () => {
