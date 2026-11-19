@@ -1,12 +1,12 @@
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { cleanup, fireEvent, render, screen } from "@lynx-js/react/testing-library";
+import { act, cleanup, fireEvent, render, screen } from "@lynx-js/react/testing-library";
 
 import { createFixtureChatSource } from "./chat-fixture-source";
 import { fakeTimers } from "./chat-fixture-timers.test-support";
 import { clearBackHandlers } from "./chat-ui.test-support";
 import { createCoinWallet } from "./coin-wallet";
 import { COMPANION_CATALOG, companionSeed } from "./companion-roster";
-import type { SuggestedFriendsPort } from "./friend-catalog.contract";
+import type { SuggestedFriendsPort, VisibleFriend } from "./friend-catalog.contract";
 import {
   messengerChatTestIds as ids,
   messengerListTestIds as list,
@@ -78,6 +78,24 @@ describe("목록 안내 × 추천 친구 줄", () => {
     fireEvent.tap(screen.getByTestId(ids.guideListSkip), { eventType: "catchEvent" });
     expect(screen.queryByTestId(ids.guideList)).toBeNull();
     expect(firstListChild()).toBe(suggested.row);
+  });
+
+  test("MG-UI6 시험 계정 — 서버 추천 친구가 안내가 뜬 뒤에 도착해도 안내 중에는 추천 줄이 서지 않는다", async () => {
+    let arrive: (list: readonly VisibleFriend[]) => void = () => undefined;
+    const visibleFriends = () =>
+      new Promise<readonly VisibleFriend[] | null>((resolve) => {
+        arrive = resolve;
+      });
+    mountList(memoryStore(), { ...port, visibleFriends });
+    await act(async () => {
+      arrive([{ id: "seoyeon", romanceTier: "open" }]);
+      await Promise.resolve();
+    });
+    expect(screen.queryByTestId(suggested.row)).toBeNull();
+    expect(firstListChild()).toBe(list.row("duksu"));
+    fireEvent.tap(screen.getByTestId(ids.guideListSkip), { eventType: "catchEvent" });
+    expect(firstListChild()).toBe(suggested.row);
+    expect(screen.getByTestId(suggested.avatar("seoyeon"))).toBeTruthy();
   });
 
   test("MG-UI6 추천이 없으면(포트 없음) 안내는 그대로 서고 원본 맨 위는 덕수쌤 줄", () => {
