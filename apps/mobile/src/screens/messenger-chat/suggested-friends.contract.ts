@@ -82,6 +82,8 @@ export type FriendDirectoryScreenProps = {
   readonly onFilter: (filter: DirectoryFilter) => void;
   readonly onOpen: (row: DirectoryRow) => void;
   readonly onBack: () => void;
+  /** 위에 시트가 떠 있는가 — 그동안 이 화면을 낭독에서 가립니다(ADR-0016 D9). */
+  readonly covered?: boolean;
 };
 
 /** 목록 화면이 받는 추천 친구 포트입니다(없으면 줄이 없음 — 테스트 · 옛 결선). */

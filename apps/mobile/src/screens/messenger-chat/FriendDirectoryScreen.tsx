@@ -153,6 +153,7 @@ export function FriendDirectoryScreen({
   onFilter,
   onOpen,
   onBack,
+  covered = false,
 }: FriendDirectoryScreenProps): ReactNode {
   const all = useUiCopy().messengerChat.suggested;
   const copy = all.directory;
@@ -173,6 +174,7 @@ export function FriendDirectoryScreen({
       className="friend-directory"
       data-testid={ids.screen}
       event-through={false}
+      accessibility-elements-hidden={covered}
       style={{
         paddingTop: `${insets.top}px`,
         paddingLeft: `${insets.left}px`,

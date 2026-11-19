@@ -139,6 +139,8 @@ test("ML1. See all → 친구 찾기, 거기서 Chat → 시트 → Start chatti
   fireEvent.tap(screen.getByTestId(ids.seeAll), {});
   expect(screen.getByTestId(dir.screen)).toBeInTheDocument();
   fireEvent.tap(screen.getByTestId(dir.row("clerk")), {});
+  // 시트가 위에 선 동안 친구 찾기는 낭독에서 가려진다.
+  expect(screen.getByTestId(dir.screen).getAttribute("accessibility-elements-hidden")).toBe("true");
   tapId(ids.sheetStart);
   expect(screen.getByTestId(dir.action("clerk")).textContent).toBe("Added");
   tapId(dir.back);

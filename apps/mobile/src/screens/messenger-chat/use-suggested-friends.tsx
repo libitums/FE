@@ -170,6 +170,7 @@ export function useSuggestedFriends({
       <>
         {directory === null || catalog === null ? null : (
           <FriendDirectoryScreen
+            covered={sheet !== null}
             chips={directoryChipsOf(catalog)}
             filter={filter}
             story={directory.story}
