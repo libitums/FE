@@ -132,7 +132,9 @@ test("PR-U6 runWithServerRefresh — 잔액 읽기를 기다리지 않고 결제
 });
 
 test("PR-U7 일정 — 1 · 2 · 2 · 3 · 5 · 5 · 7 · 10 · 10 · 15초, 합 60초를 차례로 기다린다", async () => {
-  expect(REFRESH_SCHEDULE_MS).toEqual([1000, 2000, 2000, 3000, 5000, 5000, 7000, 10000, 10000, 15000]);
+  expect(REFRESH_SCHEDULE_MS).toEqual([
+    1000, 2000, 2000, 3000, 5000, 5000, 7000, 10000, 10000, 15000,
+  ]);
   expect(REFRESH_DEADLINE_MS).toBe(60_000);
   const d = deps([free], [100]);
   await refreshAfterPurchase(d, { entitlements: free, balance: 100 });
@@ -179,7 +181,11 @@ test("PR-U10 runWithServerRefresh — 성공이면 onWaiting 한 번 뒤 onSettl
   };
   await runWithServerRefresh(bought, async () => ({ kind: "purchased" as const }));
   await vi.waitFor(() => expect(bought.onSettled).toHaveBeenCalledTimes(1));
-  expect(bought.onSettled).toHaveBeenCalledWith({ reflected: true, balanceBefore: 100, balance: 600 });
+  expect(bought.onSettled).toHaveBeenCalledWith({
+    reflected: true,
+    balanceBefore: 100,
+    balance: 600,
+  });
   expect(order).toEqual(["waiting", "settled"]);
 
   const cancelled = {

@@ -4,10 +4,12 @@ import type { ReactNode } from "@lynx-js/react";
 import { Button } from "@libitums/ui-lynx/button";
 
 import {
+  packPurchasedOf,
   purchaseIntentOf,
   purchasePack,
   purchaseRegion,
   purchaseStore,
+  reportPackPurchased,
   reportPurchaseIntent,
 } from "../../lib/purchase-intent";
 import { idleWait, packAdding, type PurchaseWait } from "../../lib/purchase-wait";
@@ -91,6 +93,16 @@ export function CoinShopPanel({
     void purchase
       .buy(selected.productId)
       .then((result) => {
+        // 엽전 팩 결제 성공 한 번 — PostHog와 Airbridge Order Complete(ADR-0063). 구독은 RevenueCat이 보내 여기 없습니다.
+        if (result.kind === "purchased")
+          reportPackPurchased(
+            packPurchasedOf({
+              surface,
+              productId: selected.productId,
+              offers: store.offers,
+              transactionId: result.transactionId ?? null,
+            }),
+          );
         if (result.kind === "unavailable") onUnavailable();
         if (result.kind === "failed") setFailed(true);
       })

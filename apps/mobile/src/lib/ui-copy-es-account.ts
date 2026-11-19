@@ -170,8 +170,7 @@ export const coinShopEs: CoinShopCopy = {
   purchaseWait: {
     confirming: "Confirmando tu compra…",
     late: "Tu compra está a salvo. Aparecerá en breve.",
-    added: (count, display) =>
-      `+${display} ${count === 1 ? "moneda añadida" : "monedas añadidas"}`,
+    added: (count, display) => `+${display} ${count === 1 ? "moneda añadida" : "monedas añadidas"}`,
     adding: "Añadiendo a tu cartera",
     updating: "Actualizando",
   },

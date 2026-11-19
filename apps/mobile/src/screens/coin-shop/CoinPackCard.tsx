@@ -92,7 +92,9 @@ export function CoinPackCard({
           >
             <view
               className={
-                still ? "coin-shop-pack-adding-spinner" : "coin-shop-pack-adding-spinner coin-shop-pack-adding-spin"
+                still
+                  ? "coin-shop-pack-adding-spinner"
+                  : "coin-shop-pack-adding-spinner coin-shop-pack-adding-spin"
               }
             />
             <text className="coin-shop-pack-bonus-label">{shop.purchaseWait.adding}</text>

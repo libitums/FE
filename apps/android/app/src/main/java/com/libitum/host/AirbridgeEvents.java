@@ -108,7 +108,7 @@ final class AirbridgeEvents {
     }
   }
 
-  static void track(String category, Map<String, String> attributes) {
+  static void track(String category, Map<String, Object> attributes) {
     if (!started() || category == null || category.isEmpty()) return;
     try {
       if (attributes == null || attributes.isEmpty()) {

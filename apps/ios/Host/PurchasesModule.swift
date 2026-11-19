@@ -123,8 +123,12 @@ final class PurchasesModule: NSObject, LynxModule {
       Purchases.shared.purchase(product: product) { transaction, _, error, cancelled in
         if cancelled {
           callback(["status": "cancelled"])
-        } else if error == nil, transaction != nil {
-          callback(["status": "purchased", "productId": product.productIdentifier])
+        } else if error == nil, let transaction {
+          // 거래 id — JS가 Airbridge Order Complete의 transactionID로 실어 중복을 막는다(ADR-0063 2026-11-19).
+          callback([
+            "status": "purchased", "productId": product.productIdentifier,
+            "transactionId": transaction.transactionIdentifier,
+          ])
         } else {
           callback(["status": "failed"])
         }

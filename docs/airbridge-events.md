@@ -105,6 +105,8 @@ grep -c 'AIRBRIDGE_APP_NAME = "";' apps/android/app/build/generated/source/build
 | Install · Open(앱 실행) · 세션 | 설치 뒤 첫 실행 · 앱이 전경으로 올 때 | SDK 자동 |
 | `airbridge.user.signup` (가입 완료) — 속성 없음 | 진입 흐름 끝의 「여정 시작하기」 | 앱 |
 | `airbridge.achieveLevel` (에피소드 최종 통과) — `level`(에피소드 id, 예: `u00-tutorial` · `u01-water`) · `label`(`episode_final`) | 에피소드의 최종 테스트를 통과할 때(`episode_final_passed`) — 신규 사용자의 첫 건이 튜토리얼 u00 완료 | 앱 |
+| `airbridge.ecommerce.order.completed` (Order Complete, 엽전 팩 결제) — `value`(스토어 금액) · `currency` · `transactionID` · `products`(상품 id · 가격 · 수량 1) | 엽전 상점에서 스토어 결제가 끝날 때 한 번(`pack_purchased`, 2026-11-19). 스토어 금액을 모르면 보내지 않음 | 앱 |
+| Subscribe · Unsubscribe 등 구독 매출 | 구독 결제 · 갱신 · 해지 | RevenueCat 서버 연동(앱은 보내지 않음) |
 
 ⟨2026-10-21 — [ADR-0081](adr/0081-tutorial-as-catalog-episode.md) D9, 사용자 결정⟩ **`achieveLevel`의 뜻이 바뀌었다** — 이전에는 「여정의 메신저 유닛을 처음 끝낼 때 · 비주얼 노벨 유닛이 끝날 때」(`level` = 유닛 ID · `label` = `messenger` | `visual_novel`)였고, 그 화면이 옛 튜토리얼과 함께 지워져 한 건도 나지 않게 됐다. **매체 쪽 전환 이름 · 값 매핑이 옛 `messenger` · `visual_novel` 라벨을 쓰고 있으면 대시보드에서 `episode_final`로 고친다**(아래 「대시보드에서 할 일」 9 — 사용자 몫).
 

@@ -32,9 +32,7 @@ export function YourPlanChip({
       data-testid={ids.yourPlan}
       flatten={false}
       accessibility-element={true}
-      accessibility-label={
-        updating ? `${copy.coinShop.purchaseWait.updating}, ${label}` : label
-      }
+      accessibility-label={updating ? `${copy.coinShop.purchaseWait.updating}, ${label}` : label}
     >
       <svg
         className="plans-your-plan-icon"

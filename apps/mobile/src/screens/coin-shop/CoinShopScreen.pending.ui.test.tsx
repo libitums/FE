@@ -114,9 +114,7 @@ test("CP-4 서버가 엽전을 넣으면 「You have」가 옛 값에서 새 값
 });
 
 test("CP-5 움직임 줄이기 — 새 값이 곧바로", () => {
-  const view = render(
-    <MotionProvider motion="reduced">{shop(coinsWaiting)}</MotionProvider>,
-  );
+  const view = render(<MotionProvider motion="reduced">{shop(coinsWaiting)}</MotionProvider>);
   view.rerender(
     <MotionProvider motion="reduced">
       {shop({ phase: "done", target: "coins", coins: 1200 }, { coinBalance: 1320 })}
@@ -162,7 +160,9 @@ test("CP-6b 다른 자리(설정)의 구독 대기가 끝나도, 이 상점에�
 test("CP-7 엽전 탭에서 산 팩이 끝나도(done coins) 상점은 열려 있다", () => {
   const onClose = vi.fn<() => void>();
   const view = render(shop(coinsWaiting, {}, onClose));
-  view.rerender(shop({ phase: "done", target: "coins", coins: 1200 }, { coinBalance: 1320 }, onClose));
+  view.rerender(
+    shop({ phase: "done", target: "coins", coins: 1200 }, { coinBalance: 1320 }, onClose),
+  );
   fireEvent.tap(screen.getByTestId("coin-shop-pack-big"), {});
   expect(onClose).not.toHaveBeenCalled();
 });

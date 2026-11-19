@@ -2,6 +2,7 @@ import { describe, expect, test, vi } from "vitest";
 
 import type { AnalyticsEvent, AnalyticsEventSinks } from "./analytics.contract";
 import { airbridgeEventFrom, withAirbridgeEvents } from "./airbridge-events";
+import { packPurchasedExample } from "./purchase-intent.test-support";
 import {
   allEventNames,
   entryCompleted,
@@ -52,13 +53,43 @@ describe("airbridgeEventFrom", () => {
   // ⟨ADR-0159⟩ 온보딩 이벤트 둘이 더해져 62 · 60이다. ⟨ADR-0160⟩ `shop_tab_switched`가 더해져 63 · 61이다.
   // ⟨ADR-0162⟩ 추천 친구 이벤트 셋이 더해져 66 · 64다.
   // ⟨ADR-0162 D5⟩ `early_access_completed`가 더해져 67 · 65다.
-  test("AB3. 이름 67개는 표의 65개와 매핑되는 둘로 나뉜다", () => {
+  // ⟨ADR-0063 2026-11-19⟩ 엽전 팩 결제 `pack_purchased`가 더해져 68이고, 매핑되는 것은 셋이다(표는 65 그대로).
+  test("AB3. 이름 68개는 표의 65개와 매핑되는 셋으로 나뉜다", () => {
     const tableNames = new Set<string>(unmappedEvents.map((e) => e.name));
     expect(tableNames.size).toBe(65);
-    expect(allEventNames).toHaveLength(67);
-    expect([...tableNames, "entry_completed", "episode_final_passed"].sort()).toEqual(
-      [...allEventNames].sort(),
-    );
+    expect(allEventNames).toHaveLength(68);
+    expect(
+      [...tableNames, "entry_completed", "episode_final_passed", "pack_purchased"].sort(),
+    ).toEqual([...allEventNames].sort());
+  });
+
+  test("AB4. pack_purchased는 Order Complete { value · currency · transactionID · products[1] }이다", () => {
+    expect(airbridgeEventFrom(packPurchasedExample)).toStrictEqual({
+      category: "airbridge.ecommerce.order.completed",
+      semanticAttributes: {
+        value: 4.99,
+        currency: "USD",
+        transactionID: "2000000812345678",
+        products: [
+          {
+            productID: "duru.coins.1200.v1",
+            name: "duru.coins.1200.v1",
+            price: 4.99,
+            quantity: 1,
+            currency: "USD",
+          },
+        ],
+      },
+    });
+  });
+
+  test("AB5. 스토어 금액 · 통화를 모르면 보내지 않고, 거래 id가 없으면 그 속성만 뺀다", () => {
+    expect(airbridgeEventFrom({ ...packPurchasedExample, price: "" })).toBeNull();
+    expect(airbridgeEventFrom({ ...packPurchasedExample, price: "abc" })).toBeNull();
+    expect(airbridgeEventFrom({ ...packPurchasedExample, currency: "" })).toBeNull();
+    const noId = airbridgeEventFrom({ ...packPurchasedExample, transactionId: "" });
+    expect(noId?.category).toBe("airbridge.ecommerce.order.completed");
+    expect(Object.keys(noId?.semanticAttributes ?? {})).toEqual(["value", "currency", "products"]);
   });
 
   test.each(unmappedEvents.map((e) => [e.name, e] as const))(

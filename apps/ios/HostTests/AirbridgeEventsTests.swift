@@ -145,25 +145,34 @@ final class AirbridgeEventsTests: XCTestCase {
       "Allow tracking so we can measure which ads helped you find Duru. We never sell your data.")
   }
 
-  // N-I3: 문자열 값만 남긴다.
-  func testNI3StringAttributesKeepOnlyStrings() {
+  // N-I3: 문자열 · 수(불리언 아님) · 상품 줄 배열만 남긴다(2026-11-19 Order Complete).
+  func testNI3SemanticAttributesKeepStringsNumbersAndProductRows() {
     let attributes: [String: Any] = [
       "level": "appointment-confirmation",
-      "label": "messenger",
       "count": 3,
       "ratio": 0.5,
       "flag": true,
       "nested": ["inner": "x"],
+      "products": [
+        ["productID": "duru.coins.1200.v1", "price": 4.99, "quantity": 1, "flag": false],
+        "not-a-row",
+      ],
     ]
 
-    XCTAssertEqual(
-      AirbridgeEventsModule.stringAttributes(from: attributes),
-      ["level": "appointment-confirmation", "label": "messenger"]
-    )
+    let result = AirbridgeEventsModule.semanticAttributes(from: attributes)
+
+    XCTAssertEqual(Set(result.keys), ["level", "count", "ratio", "products"])
+    XCTAssertEqual(result["level"] as? String, "appointment-confirmation")
+    XCTAssertEqual(result["count"] as? Double, 3)
+    XCTAssertEqual(result["ratio"] as? Double, 0.5)
+    let rows = result["products"] as? [[String: Any]]
+    XCTAssertEqual(rows?.count, 1)
+    XCTAssertEqual(Set(rows?.first?.keys ?? [:].keys), ["productID", "price", "quantity"])
+    XCTAssertEqual(rows?.first?["price"] as? Double, 4.99)
   }
 
   func testNI3EmptyAttributesYieldAnEmptyDictionary() {
-    XCTAssertEqual(AirbridgeEventsModule.stringAttributes(from: [:]), [:])
+    XCTAssertTrue(AirbridgeEventsModule.semanticAttributes(from: [:]).isEmpty)
   }
 
   // N-I4: JS 계약의 와이어 값 넷이 SDK 상수와 같다. 다르면 계약을 정정한다.
@@ -172,6 +181,17 @@ final class AirbridgeEventsTests: XCTestCase {
     XCTAssertEqual(AirbridgeCategory.ACHIEVE_LEVEL, "airbridge.achieveLevel")
     XCTAssertEqual(AirbridgeAttribute.LEVEL, "level")
     XCTAssertEqual(AirbridgeAttribute.LABEL, "label")
+    // 2026-11-19 엽전 팩 결제 Order Complete.
+    XCTAssertEqual(AirbridgeCategory.ORDER_COMPLETED, "airbridge.ecommerce.order.completed")
+    XCTAssertEqual(AirbridgeAttribute.VALUE, "value")
+    XCTAssertEqual(AirbridgeAttribute.CURRENCY, "currency")
+    XCTAssertEqual(AirbridgeAttribute.TRANSACTION_ID, "transactionID")
+    XCTAssertEqual(AirbridgeAttribute.PRODUCTS, "products")
+    XCTAssertEqual(AirbridgeAttribute.PRODUCT_ID, "productID")
+    XCTAssertEqual(AirbridgeAttribute.PRODUCT_NAME, "name")
+    XCTAssertEqual(AirbridgeAttribute.PRODUCT_PRICE, "price")
+    XCTAssertEqual(AirbridgeAttribute.PRODUCT_QUANTITY, "quantity")
+    XCTAssertEqual(AirbridgeAttribute.PRODUCT_CURRENCY, "currency")
   }
 
   // N-I5: 테스트 호스트 앱의 시작 여부가 번들 값 유무와 같다. 값 없는 빌드에서는 false여야 한다.
