@@ -1,4 +1,4 @@
-// 친구 찾기(R5)의 줄 하나와 오른쪽 동작 알약입니다(ADR-0162). 판정은 `friend-directory`가 집니다.
+// 친구 찾기(R5)의 줄 하나와 오른쪽 동작 알약입니다(ADR-0162). 판정은 친구 찾기 순수 모듈(friend-directory.ts)이 집니다.
 
 import type { ReactNode } from "@lynx-js/react";
 import lock from "@libitums/icons/lynx/lock";
