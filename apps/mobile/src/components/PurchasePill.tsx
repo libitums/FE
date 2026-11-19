@@ -23,14 +23,15 @@ export type PurchasePillProps = {
  * polite 상태를 낭독 한 번으로 대신). 누를 것이 없어 단추가 아닙니다.
  */
 export function PurchasePill({ pill, theme }: PurchasePillProps): ReactNode {
-  const copy = useUiCopy().coinShop.purchaseWait;
+  const coinShop = useUiCopy().coinShop;
+  const copy = coinShop.purchaseWait;
   const still = useMotion() === "reduced";
   const text =
     pill.kind === "waiting"
       ? copy.confirming
       : pill.kind === "late"
         ? copy.late
-        : copy.added(pill.coins, formatCoinCount(pill.coins));
+        : copy.added(pill.coins, formatCoinCount(pill.coins, coinShop.digitSeparator));
   useEffect(() => {
     announce(text);
   }, [text]);

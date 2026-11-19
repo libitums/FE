@@ -51,16 +51,17 @@ function headlineText(headline: PlanHeadline, copy: PlansCopy): string {
 function detailText(
   details: readonly PlanDetail[],
   copy: PlansCopy,
+  digits: string,
 ): { readonly text: string; readonly accent: boolean } | null {
   const only = details.length === 1 ? details[0] : undefined;
   if (only?.kind === "coins")
-    return { text: copy.shop.detail.coinsLong(formatCoinCount(only.coins)), accent: true };
+    return { text: copy.shop.detail.coinsLong(formatCoinCount(only.coins, digits)), accent: true };
   const parts = details.map((detail) =>
     detail.kind === "every-unit"
       ? copy.shop.detail.everyUnit
       : detail.kind === "all-friends"
         ? copy.shop.detail.allFriends
-        : copy.shop.detail.coinsShort(formatCoinCount(detail.coins)),
+        : copy.shop.detail.coinsShort(formatCoinCount(detail.coins, digits)),
   );
   return parts.length === 0 ? null : { text: parts.join(" · "), accent: false };
 }
@@ -95,7 +96,7 @@ export function PlanCard({
         ? text.perMonth(card.price)
         : text.perYear(card.price);
   const lines = planCardLinesOf(card.benefits);
-  const detail = detailText(lines.details, text);
+  const detail = detailText(lines.details, text, copy.coinShop.digitSeparator);
   const isCurrent = current !== undefined;
   const best = card.best && !isCurrent;
   const bordered = isCurrent ? false : (selected ?? card.best);

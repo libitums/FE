@@ -269,6 +269,8 @@ export type ProfileCopy = {
 export type CoinPackId = "bundle" | "pouch" | "big";
 
 export type CoinShopCopy = {
+  /** 엽전 수의 세 자리 묶음 기호(`formatCoinCount`) — 그 언어의 관례(es · id · vi 「.」, en · ja 「,」). */
+  readonly digitSeparator: string;
   readonly title: string;
   readonly subtitle: string;
   /** 보유 카드의 작은 머리말입니다. 카드 낭독은 `balance`입니다. */

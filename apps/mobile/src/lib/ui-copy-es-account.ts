@@ -148,6 +148,7 @@ export const profileEs: ProfileCopy = {
 };
 
 export const coinShopEs: CoinShopCopy = {
+  digitSeparator: ".",
   title: "Yeopjeon",
   subtitle: "Antiguas monedas coreanas de latón",
   balanceLabel: "Tienes",

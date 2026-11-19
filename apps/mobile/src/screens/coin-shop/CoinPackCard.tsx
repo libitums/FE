@@ -47,10 +47,11 @@ export function CoinPackCard({
   };
   const total = totalCoinsOf(pack);
   const price = packPriceOf(pack, region, offers).text;
-  const bonus = pack.bonusCoins > 0 ? shop.bonus(formatCoinCount(pack.bonusCoins)) : null;
+  const bonus =
+    pack.bonusCoins > 0 ? shop.bonus(formatCoinCount(pack.bonusCoins, shop.digitSeparator)) : null;
   const details = [
     shop.packName[pack.id],
-    shop.packAmount(total, formatCoinCount(total)),
+    shop.packAmount(total, formatCoinCount(total, shop.digitSeparator)),
     bonus,
     price,
     pack.bestValue ? shop.bestValue : null,
@@ -81,7 +82,9 @@ export function CoinPackCard({
         <text className="coin-shop-pack-name">{shop.packName[pack.id]}</text>
         {/* 숫자와 단위는 크기가 다른 한 줄이라 안쪽 `<text>`로 잇습니다 — 기준선이 맞습니다. */}
         <text className="coin-shop-pack-amount">
-          <text className="coin-shop-pack-coins">{formatCoinCount(total)}</text>
+          <text className="coin-shop-pack-coins">
+            {formatCoinCount(total, shop.digitSeparator)}
+          </text>
           <text className="coin-shop-pack-unit">{` ${shop.coinsUnit}`}</text>
         </text>
         {/* 산 뒤 서버가 엽전을 넣는 동안 보너스 자리(없으면 그 줄)에 「Adding」 — 카드 최소 높이 100 안이라 커지지 않습니다(ADR-0163). */}

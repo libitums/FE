@@ -137,6 +137,7 @@ export const profileEn: ProfileCopy = {
 };
 
 export const coinShopEn: CoinShopCopy = {
+  digitSeparator: ",",
   title: "Yeopjeon",
   subtitle: "Old Korean brass coins",
   balanceLabel: "You have",
