@@ -128,6 +128,8 @@ export const doneDataSchema = z.object({
   creditsSpent: nonNegativeInt,
   balance: z.nullable(nonNegativeInt),
   refusal: z.optional(z.object({ stage: refusalStageSchema })),
+  /** 이번 턴의 적용 로맨스 수위(ADR-0164, 20261216 뒤 서버). 옛 서버는 보내지 않는다 — 없으면 standard로 본다. */
+  romanceTier: z.optional(z.enum(["open", "standard"])),
 });
 
 const eventOf = <Name extends string, Data extends z.ZodMiniType>(event: Name, data: Data) =>

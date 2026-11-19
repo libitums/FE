@@ -486,6 +486,10 @@
               },
               "required": ["stage"],
               "additionalProperties": false
+            },
+            "romanceTier": {
+              "type": "string",
+              "enum": ["open", "standard"]
             }
           },
           "required": ["assistantMessageId", "creditsSpent", "balance"],

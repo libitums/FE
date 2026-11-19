@@ -9,6 +9,7 @@ import { historyFrom } from "./chat-send-reply.ts";
 import { systemSplit } from "./companion-llm.ts";
 import type { RefusalStage } from "./companion-llm-prompts.ts";
 import { companionSystemPrompt, type PromptInput } from "./companion-prompt.ts";
+import { effectiveRomanceTier } from "./companion-safety.ts";
 
 export function turnRefuser(
   context: TurnContext,
@@ -33,9 +34,15 @@ export function turnRefuser(
         persona: input.persona,
         speechLevel: turn.speechLevel,
         ageBand: gate.ageBand,
+        romanceTier: gate.romanceTier,
         history: historyFrom(turn),
         assistantMessageId: context.assistantMessageId,
-        meta: { model: llm.model, trial: turn.trial, playground: context.playground },
+        meta: {
+          model: llm.model,
+          romanceTier: effectiveRomanceTier(gate.ageBand, gate.romanceTier),
+          trial: turn.trial,
+          playground: context.playground,
+        },
       },
       {
         systemWith: (directive) => {

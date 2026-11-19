@@ -203,7 +203,12 @@ test("SB-S4 Premium — 차감 0, 공정 사용 200턴에 usage_time_limit fair_
   expect(capped.detail).toMatchObject({ limit: "fair_use" });
 });
 
-test("SB-S5 무료 사용자는 지금 그대로 — 체험 밖 잔액 0이면 insufficient_credits, 있으면 3 차감", async () => {
+test("SB-S5 무료 사용자는 지금 그대로 — 합산 체험을 다 쓰고 잔액 0이면 insufficient_credits, 있으면 3 차감", async () => {
+  // 체험은 모든 인물이 함께 쓴다(20261216) — 덕수쌤에게 다 쓰면 윤경도 엽전이다.
+  await db.admin.query(
+    "insert into companion.trial_usage (user_id, character_id, used) select $1, 'duksu', trial_limit from companion.settings",
+    [user],
+  );
   expect(await gate()).toEqual({
     result: "insufficient_credits",
     detail: { required: 3, balance: 0 },

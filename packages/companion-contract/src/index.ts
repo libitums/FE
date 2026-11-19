@@ -52,7 +52,9 @@ export { checkTurnOrder, type TurnOrderResult, type TurnOrderViolation } from ".
 export {
   ageSourceSchema,
   characterAvailabilitySchema,
+  companionAckAdultResponseSchema,
   companionCharacterSchema,
+  companionFriendsResponseSchema,
   companionMemoryListSchema,
   companionMemorySchema,
   companionMessageSchema,
@@ -65,8 +67,11 @@ export {
   messageRatingSchema,
   proactivePrefSchema,
   ratingReasonSchema,
+  romanceTierSchema,
   segmentSchema,
+  type CompanionAckAdultResponse,
   type CompanionCharacter,
+  type CompanionFriendsResponse,
   type CompanionMemory,
   type CompanionMemoryList,
   type CompanionMessage,
@@ -79,6 +84,7 @@ export {
   type MessageRating,
   type ProactivePref,
   type RatingReason,
+  type RomanceTier,
 } from "./rpc";
 export {
   companionSuggestRequestSchema,

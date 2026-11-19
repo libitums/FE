@@ -54,6 +54,11 @@ export type SuggestContext =
   | {
       readonly result: "ok";
       readonly ageBand: AgeBand;
+      /**
+       * 적용 로맨스 수위(20261216, ADR-0164). 칩은 쓰지 않는다 — 칩은 학습자 입에 넣는 말이라 수위를 넓히지 않고 늘 standard 규칙이다
+       * (ADR-0152 D1). 옛 DB에는 없습니다.
+       */
+      readonly romanceTier?: "open" | "standard";
       readonly l1: string | null;
       readonly replySuggestions: boolean;
       /** 운영의 전체 끄기(`settings.suggestions_enabled`, 20261122). 옛 DB에는 없습니다(켜짐으로 봅니다). */
