@@ -123,6 +123,18 @@
   color: var(--libitum-color-fg-neutral-muted);
 }
 
+/* LIMITED 배지 글(시트 · 친구 찾기 알약이 함께 씀) — 검은 알약 위 흰 글. */
+.suggested-tag-text {
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-label-s-font-family);
+  font-weight: var(--libitum-font-weight-bold);
+  font-size: var(--libitum-typography-label-s-font-size);
+  line-height: var(--libitum-typography-label-s-line-height);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* 줄과 채팅 목록을 가르는 선. */
 .suggested-divider {
   height: 1px;
