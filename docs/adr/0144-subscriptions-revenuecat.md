@@ -180,3 +180,27 @@ DB가 실패하면 500 — RevenueCat이 다시 보낸다. 같은 이벤트 id�
 - ⚠ **운영 프로젝트에 `REVENUECAT_ACCEPT_SANDBOX=true`가 켜져 있다**(위 「운영은 `sandbox_ignored`」와 다름). 샌드박스 구매가 운영 계정에 권한 · 엽전을
   준다 — 심사관 구매(샌드박스)가 반영되어야 해서 심사가 끝날 때까지 켜 두고, 출시 뒤 끌지는 사용자 결정으로 남긴다.
 - 구독 성공 알림 창은 결제 시트가 `purchased`로 끝난 뒤에 연다(`armOnPurchased`) — 단추를 누를 때 열면 시트 승인 시간(실측 11초)이 12초 창을 먹었다.
+
+## Airbridge 기기 id (2026-11-19) — 구매 이벤트를 광고 클릭에 잇기 [사용자: RevenueCat → Airbridge → Meta 구매 최적화]
+
+- **왜**: RevenueCat 대시보드의 Airbridge 서버 연동은 이미 켜져 있다(구매 · 갱신 · 환불을 RevenueCat이 Airbridge로 보냄). 그 서버 이벤트를 Airbridge가
+  설치 · 광고 클릭에 귀속하려면 RevenueCat 고객에 **Airbridge 기기 id(`$airbridgeDeviceId`)**가 있어야 한다. 호스트가 이를 넘기지 않아 Meta 앱 캠페인이
+  구매로 최적화할 신호가 기기에 붙지 않았다.
+- **무엇(iOS · Android 같은 모양, 새 `PurchasesAttribution`)**: Airbridge SDK의 `fetchDeviceUUID`(비동기 — 부르는 스레드를 막지 않음)로 기기 id를 받아
+  `setAirbridgeDeviceID(id)` → `collectDeviceIdentifiers()`(RevenueCat 문서 순서. iOS는 `Purchases.shared.attribution`, Android는 `Purchases.getSharedInstance()`).
+  SDK 5.99.2 · 10.30.1 · Airbridge 4.12.0의 공개 API를 소스 · 바이트코드로 확인했다.
+  - 부르는 때: ① 앱 시작(두 SDK 시작 직후 — 익명 · 비회원 고객) ② `PurchasesModule.configure`의 `logIn` 성공 뒤(기존 계정으로 들어오면 익명 때 값이
+    따라오지 않는다 — RevenueCat app user id = Supabase user id = Airbridge `setUserID`). ③ iOS만: 추적 허용(ATT) 대화상자에 **허용**으로 답한 뒤
+    `collectDeviceIdentifiers()`를 한 번 더(`$idfa` 갱신 — RevenueCat 문서 권고).
+  - **조건(순수 판정 `shouldLink`)**: RevenueCat 키로 SDK가 섰고 **그리고** Airbridge 값으로 SDK가 섰고 **그리고** 이 기기에서 추적을 멈추지 않았을 때
+    (시험 계정 — ADR-0085 D4의 `trackingStopped` 표시)만. 하나라도 아니면 두 SDK를 한 줄도 부르지 않는다 — 값 없이 나간 출시 빌드도 그대로 동작한다.
+    기기 id가 비거나 공백이 섞이면(`deviceId`) 걸지 않는다. Android는 SDK 호출을 `RuntimeException | LinkageError`로 감싼다.
+  - **ATT**: 이 경로는 대화상자를 띄우지 않는다. RevenueCat은 `ASIdentifierManager`를 읽기만 해서, 허용하지 않은 기기에는 IDFA가 실리지 않는다
+    (IDFV · IP는 실린다 — 아래 개인정보).
+- **이중 집계 없음**: 앱의 Airbridge SDK는 구매 이벤트를 보내지 않는다 — `startInAppPurchaseTracking` · `trackStoreInAppPurchaseEvent`를 부르지 않고,
+  JS 매핑(ADR-0063 D7)에도 구매 카테고리가 없다. 구매는 **RevenueCat 서버 연동 하나만** 보낸다. 앱에서 구매 이벤트를 더하려면 이 줄을 먼저 고친다.
+- **개인정보**: RevenueCat이 고객 속성으로 Airbridge 기기 id · IDFV · IP(iOS, 허용 시 IDFA) · 광고 ID · IP(Android)를 받아 Airbridge로 넘긴다. App Store
+  응답의 「기기 ID — 개발자 광고 · 추적 예」(ADR-0079)에 이미 들어 있는 범위다. 처리방침의 수탁자 목록에 RevenueCat의 광고 측정 전달을 적을지는
+  사용자 확인([iOS 프라이버시](../ios-privacy.md) 「RevenueCat → Airbridge」).
+- **확인 남음(기기)**: 새 사용자로 샌드박스 구매 → RevenueCat 고객 화면 속성에 `$airbridgeDeviceId`(· `$idfv` · `$ip`)가 보이고, Airbridge 실시간 로그에
+  RevenueCat 발 구매 이벤트가 그 기기로 찍히는지. 샌드박스 이벤트 전송 여부는 위 「위험 · 대가」 2.
