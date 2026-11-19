@@ -418,7 +418,7 @@ type TurnView = { readonly hint: string; readonly bank: string };
 function walkFinalTurns(): TurnView[] {
   const views: TurnView[] = [];
   const total = Number(
-    /of (\d+)/.exec(screen.getByTestId("catalog-final-screen-progress").textContent ?? "")?.[1],
+    /(\d+)\D*$/.exec(screen.getByTestId("catalog-final-screen-progress").textContent ?? "")?.[1],
   );
   for (let turn = 0; turn < total; turn += 1) {
     const bank = screen.getByTestId("catalog-final-screen-bank");
@@ -674,6 +674,29 @@ test("P5c. (AC5) 다른 기기에서 저장한 값은 캐시 없이 로그인해
 
   expect(views.map((view) => view.bank).join("|")).toContain("한국에서");
   expect(views.map((view) => view.bank).join("|")).toContain("Mina");
+});
+
+// P5e — 번역 줄의 `{나라}`는 화면 언어의 나라 이름입니다(2026-11-19 l10n 점검: 베트남어 번역 줄에 「Vietnam」이 섰다). 시험용 고정
+// 내장본(vitest.setup의 `episode-bundled` 대역)에는 번역표가 없어 문장은 영어로 남고, 자리에 선 나라 이름만 봅니다 — 운영 내장본 ·
+// 버킷 번역에서는 「Tôi đến từ {나라}.」에 같은 이름이 섭니다.
+test("P5e. 베트남어 화면이면 u03 최종의 번역 줄 {나라}에 Việt Nam이 선다", async () => {
+  await boot({
+    progress: toFinalOfU03,
+    preStore: {
+      "libitum.ui.language": "vi",
+      [profileCacheKey]: JSON.stringify({ v: 1, name: "Minh", countryCode: "VN", sync: "synced" }),
+    },
+    server: { profile: { name: "Minh", countryCode: "VN" } },
+  });
+  await vi.waitFor(() => expect(present("journey-map-screen")).toBe(true));
+
+  tapNode(u03, "RP");
+  const hints = walkFinalTurns()
+    .map((view) => view.hint)
+    .join("|");
+
+  expect(hints).toContain("Việt Nam.");
+  expect(hints).not.toContain("Vietnam");
 });
 
 test("P5d. (AC5) 조회 · 저장이 전부 연결 실패여도 캐시 값으로 서고 조회는 한 번뿐이다", async () => {

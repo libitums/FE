@@ -55,6 +55,8 @@ export type LearnerProfileForm = {
 };
 
 export type LearnerProfileCopy = {
+  /** 이 표의 언어 — 미리보기 뜻 줄의 문장 틀 · 나라 이름 칸을 고릅니다(2026-11-19). */
+  readonly language: string;
   readonly nameLabel: string;
   readonly nameIssue: Readonly<Record<LearnerNameIssue, string>>;
   readonly countryLabel: string;

@@ -121,11 +121,22 @@ export function pickLearnerName(
   return pool[index] ?? "";
 }
 
-/** 문장에 서는 세 표기입니다 - 관사가 있으면 `en` 앞에 붙습니다. 나라 표(백그라운드 전용)를 값으로 들이지 않고도 쓰입니다. */
-export function learnerCountryTextOf(country: LearnerCountry): LearnerCountryText {
+/**
+ * 문장에 서는 세 표기입니다 - `en` 칸은 뜻 줄(번역 줄)의 나라 이름이라 화면 언어의 이름이고(2026-11-19), 이름이 없는 언어(en · th · my)는
+ * 영어 이름에 관사가 붙습니다. 나라 표(백그라운드 전용)를 값으로 들이지 않고도 쓰입니다.
+ */
+export function learnerCountryTextOf(country: LearnerCountry, language = "en"): LearnerCountryText {
+  const local = (country.names as Readonly<Record<string, string | undefined>> | undefined)?.[
+    language
+  ];
   return {
     ko: country.ko,
     roman: country.roman,
-    en: country.article === undefined ? country.en : `${country.article} ${country.en}`,
+    en:
+      local !== undefined && local !== ""
+        ? local
+        : country.article === undefined
+          ? country.en
+          : `${country.article} ${country.en}`,
   };
 }

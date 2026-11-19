@@ -38,35 +38,46 @@ type ProfileState = {
   /** 동기화 객체가 선 뒤인가입니다 — 아니면 기기에만 있는 값(손님 칸)입니다. */
   readonly signedIn: boolean;
   readonly port: LearnerProfilePort;
-  readonly fill: LearnerProfile;
 };
 
 const firstState: ProfileState = {
   entry: null,
   signedIn: false,
   port: noLearnerProfilePort,
-  fill: noLearnerProfile,
 };
 
-// 같은 (값, 포트)에는 같은 치환 프로필 참조를 냅니다 - 저장이 돌려준 참조와 다음 렌더의 참조가 같아야 합니다.
+// 같은 (값, 포트, 언어)에는 같은 치환 프로필 참조를 냅니다 - 저장이 돌려준 참조와 다음 렌더의 참조가 같아야 합니다.
 let lastFill: {
   record: LearnerProfileRecord;
   port: LearnerProfilePort;
+  language: string;
   fill: LearnerProfile;
 } | null = null;
 
-function fillFor(record: LearnerProfileRecord | null, port: LearnerProfilePort): LearnerProfile {
+function fillFor(
+  record: LearnerProfileRecord | null,
+  port: LearnerProfilePort,
+  language: string,
+): LearnerProfile {
   if (record === null) return noLearnerProfile;
-  if (lastFill !== null && lastFill.port === port && sameLearnerProfile(lastFill.record, record)) {
+  if (
+    lastFill !== null &&
+    lastFill.port === port &&
+    lastFill.language === language &&
+    sameLearnerProfile(lastFill.record, record)
+  ) {
     return lastFill.fill;
   }
-  const fill = learnerFillOf(record, port);
-  lastFill = { record, port, fill };
+  const fill = learnerFillOf(record, port, language);
+  lastFill = { record, port, language, fill };
   return fill;
 }
 
-export function useLearnerProfile(): LearnerProfileValues & LearnerProfileControls {
+/** `language`는 번역 언어(= 화면 언어) — 레슨 번역 줄의 `{나라}`가 그 언어의 나라 이름으로 섭니다(2026-11-19). */
+export function useLearnerProfile(language: string): LearnerProfileValues & LearnerProfileControls {
   const [state, setState] = useState<ProfileState>(firstState);
+  const languageRef = useRef(language);
+  languageRef.current = language;
   const sync = useRef<LearnerProfileSync | null>(null);
   // 포트는 마운트 효과가 백그라운드에서 닫습니다 - 저장이 같은 포트로 치환 프로필을 만들도록 ref에도 둡니다.
   const port = useRef<LearnerProfilePort>(noLearnerProfilePort);
@@ -84,7 +95,6 @@ export function useLearnerProfile(): LearnerProfileValues & LearnerProfileContro
         ...previous,
         entry: same ? previous.entry : entry,
         signedIn: true,
-        fill: fillFor(entry?.record ?? null, previous.port),
       };
     });
   };
@@ -102,7 +112,6 @@ export function useLearnerProfile(): LearnerProfileValues & LearnerProfileContro
         ...previous,
         entry,
         port: learnerProfilePort,
-        fill: fillFor(entry?.record ?? null, learnerProfilePort),
       };
     });
     return () => sync.current?.dispose();
@@ -111,7 +120,7 @@ export function useLearnerProfile(): LearnerProfileValues & LearnerProfileContro
 
   const saveLearnerProfile = (record: LearnerProfileRecord): LearnerProfile => {
     "background only";
-    const fill = fillFor(record, port.current);
+    const fill = fillFor(record, port.current, languageRef.current);
     const current = sync.current;
     if (current !== null && progressUserId() === current.userId) {
       current.save(record);
@@ -121,7 +130,6 @@ export function useLearnerProfile(): LearnerProfileValues & LearnerProfileContro
     setState((previous) => ({
       ...previous,
       entry: { record, sync: "pending" },
-      fill: fillFor(record, previous.port),
     }));
     return fill;
   };
@@ -138,7 +146,7 @@ export function useLearnerProfile(): LearnerProfileValues & LearnerProfileContro
   };
 
   return {
-    learnerFill: state.fill,
+    learnerFill: fillFor(state.entry?.record ?? null, state.port, language),
     learnerRecord: state.entry?.record ?? null,
     learnerSync: state.signedIn && state.entry !== null ? state.entry.sync : "none",
     learnerPort: state.port,

@@ -52,7 +52,15 @@ export type LearnerCountry = {
   readonly article?: "the";
   /** 검색 전용 다른 이름들(접힌 소문자). */
   readonly aliases?: readonly string[];
+  /**
+   * 화면 언어별 이름(CLDR, 2026-11-19) — 미리보기 뜻 줄 · 레슨 번역 줄의 `{나라}`에 섭니다. 고르기 목록 · 검색은 영어 이름 그대로입니다
+   * (ADR-0059 D4). 칸이 없는 언어(en · th · my)는 `en`(+ 관사).
+   */
+  readonly names?: Readonly<Partial<Record<LearnerCountryLanguage, string>>>;
 };
+
+/** 나라 이름 · 미리보기 문장을 따로 가진 화면 언어입니다. */
+export type LearnerCountryLanguage = "es" | "id" | "ja" | "vi";
 
 /** 미리보기 상자의 내용입니다. `example`은 견본 이름으로 만든 한 쌍, `yours`는 입력한 값으로 만든 한두 쌍입니다. */
 export type LearnerProfilePreview = {
@@ -65,10 +73,11 @@ export type LearnerProfilePort = {
   /** 빈 질의면 전체(영어 이름 순). */
   readonly search: (query: string) => readonly LearnerCountry[];
   readonly byCode: (code: string) => LearnerCountry | null;
-  /** `name`은 검증을 지난 값 또는 `null`입니다. */
+  /** `name`은 검증을 지난 값 또는 `null`입니다. 뜻 줄(`en`)은 `language`의 문장 · 나라 이름이고, 없는 언어는 영어입니다. */
   readonly previewOf: (
     name: string | null,
     country: LearnerCountry | null,
+    language: string,
   ) => LearnerProfilePreview;
   /** 이름 칸에 미리 채울 무작위 이름입니다 — `previous`와 다른 값을 고릅니다. 자산이 닫히기 전이면 빈 문자열. */
   readonly randomName: (previous: string | null) => string;
