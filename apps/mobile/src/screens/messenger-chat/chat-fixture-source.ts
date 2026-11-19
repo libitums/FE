@@ -24,7 +24,7 @@ import { mediaRequester } from "./chat-fixture-media";
 import { createFixtureNotes } from "./chat-fixture-notes";
 import { remoteRoomMethods, uuidV4 } from "./chat-fixture-remote";
 import { roomResetMethods } from "./chat-room-reset";
-import { CHAT_PLACEHOLDERS } from "./chat-placeholders";
+import { localSender } from "./chat-fixture-local-send";
 import type {
   ChatFixtureMessage,
   ChatMediaKind,
@@ -44,7 +44,6 @@ export function createFixtureChatSource(options: FixtureChatSourceOptions): Fixt
   const now = options.now ?? Date.now;
   const timers = options.timers ?? defaultTimers;
   const { imageUrlOf } = options;
-  const timing = CHAT_PLACEHOLDERS.timing;
 
   const listeners = new Set<() => void>();
   let disposed = false;
@@ -152,40 +151,18 @@ export function createFixtureChatSource(options: FixtureChatSourceOptions): Fixt
     return { kind: "unlocked", roomId };
   };
 
-  const localSendText = (roomId: string, text: string) => {
-    const room = live(roomId);
-    const trimmed = text.trim();
-    if (room === null || !isOpenAccess(room) || trimmed === "") return;
-    const sentId = messageId();
-    room.messages = [
-      ...room.messages,
-      { id: sentId, at: now(), kind: "text", from: "me", text: { ko: trimmed, en: "" } },
-    ];
-    room.pendingReplies += 1;
+  const localSendText = localSender({
+    ...{ live, now, messageId, changed, schedule },
+    openRoomId: () => openRoomId,
+    onReplyArrived: notes.onReplyArrived,
+  });
+
+  // 비회원 미리보기(ADR-0166): 서버 없이 열린 빈 방을 열면 그 방의 첫 말을 놓습니다.
+  const greetLocally = (room: RoomState) => {
+    const opening = room.messages.length === 0 && isOpenAccess(room) ? openingOf(room) : null;
+    if (opening === null) return;
+    room.messages = [opening];
     changed(room);
-    schedule(room, timing.typingDelayMs, () => {
-      room.typing = true;
-      changed(room);
-      schedule(room, timing.replyDelayMs, () => {
-        room.pendingReplies -= 1;
-        room.typing = room.pendingReplies > 0;
-        const replies = room.seed.cannedReplies;
-        if (replies.length > 0) {
-          const reply = replies[room.replyIndex % replies.length];
-          room.replyIndex += 1;
-          if (reply !== undefined) {
-            room.messages = [
-              ...room.messages,
-              { id: messageId(), at: now(), kind: "text", from: "them", text: reply },
-            ];
-            if (openRoomId !== room.seed.roomId) room.unread += 1;
-            notes.onReplyArrived(room, sentId);
-          }
-        }
-        advanceIdeas(room);
-        changed(room);
-      });
-    });
   };
 
   // 서버 모드(ADR-0137): 방을 열면 기록 · 첫 인사, 보내기는 서버 턴. 없으면 정해 둔 답.
@@ -231,6 +208,7 @@ export function createFixtureChatSource(options: FixtureChatSourceOptions): Fixt
       if (room === null) return;
       openRoomId = roomId;
       remoteRoom?.loadRoom(roomId);
+      if (remoteRoom === null && options.greetOnOpen === true) greetLocally(room);
       if (room.unread === 0 && !room.isNew) return;
       room.unread = 0;
       room.isNew = false;

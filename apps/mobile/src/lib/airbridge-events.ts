@@ -16,9 +16,33 @@ function mapEvent(event: AnalyticsEvent): AirbridgeEvent | null {
         category: "airbridge.achieveLevel",
         semanticAttributes: { level: event.episodeId, label: "episode_final" },
       };
+    case "pack_purchased":
+      return orderCompleted(event.product, event.price, event.currency, event.transactionId);
     default:
       return null;
   }
+}
+
+// 엽전 팩 결제 → Order Complete. 스토어 금액 · 통화를 모르면 보내지 않습니다(금액 없는 매출은 광고 최적화를 흐립니다).
+function orderCompleted(
+  product: string,
+  price: string,
+  currency: string,
+  transactionId: string,
+): AirbridgeEvent | null {
+  const value = Number(price);
+  if (price === "" || !Number.isFinite(value) || currency === "") return null;
+  // ISO 4217은 대문자 — 스토어 · 호스트가 소문자로 줘도 맞춰 보냅니다.
+  const code = currency.toUpperCase();
+  return {
+    category: "airbridge.ecommerce.order.completed",
+    semanticAttributes: {
+      value,
+      currency: code,
+      ...(transactionId === "" ? {} : { transactionID: transactionId }),
+      products: [{ productID: product, name: product, price: value, quantity: 1, currency: code }],
+    },
+  };
 }
 
 export const airbridgeEventFrom: AirbridgeEventFrom = mapEvent;

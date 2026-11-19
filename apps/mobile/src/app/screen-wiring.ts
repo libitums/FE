@@ -7,6 +7,7 @@ import {
   visibleSocialLoginMethodsFor,
 } from "../screens/login/login";
 import type { CatalogFreshness } from "../lib/manifest-check";
+import type { CoverDownloads } from "../screens/journey-map/catalog-map.contract";
 import { downloadSettingsWiring } from "./download-wiring";
 import type { DownloadCatalogInput } from "./download-progress";
 import type { DownloadControls, DownloadSettingsWiring } from "./download-wiring";
@@ -34,7 +35,7 @@ import type { JourneyStats, ProgressWiringArgs, StatBumpWiring } from "./learnin
 import type { JourneyMapProgressLoad } from "../screens/journey-map/journey-map-load.contract";
 import type { AnalyticsUser } from "../lib/analytics-user.contract";
 import type { LegalDocument } from "../lib/legal-document.contract";
-import type { EntryEventSink } from "../lib/entry-flow";
+import type { EntryEventSink, OnboardingEvent } from "../lib/entry-flow";
 import type { EntryLanguage } from "../lib/entry-language";
 import type { SocialSignInOutcome } from "../lib/social-sign-in.contract";
 import type { PhoneSignInVisibility, SocialLoginMethod } from "../screens/login/login.contract";
@@ -75,6 +76,8 @@ export type ScreenWiring = {
   onTapPendingEpisode: (episodeId: string) => void;
   /** 맨 끝 카드의 목록 확인 신선도 · 「새 이야기 확인」(ADR-0095 D9) — 받기 문지기가 채웁니다. */
   catalogFreshness?: CatalogFreshness;
+  /** 사용자 차례인 편의 표지 받기 표시(ADR-0165) — 받기 문지기가 채웁니다. */
+  catalogCoverDownloads?: CoverDownloads;
   onCheckNewStories?: () => void;
   journeyMapProgressLoad: JourneyMapProgressLoad;
   /** 옛 튜토리얼 최종 테스트를 통과한 기록이 있는가 — 튜토리얼 다음 구획의 문 입력입니다. */
@@ -123,6 +126,7 @@ export type ScreenWiring = {
   readonly visibleSocialMethods: () => readonly SocialLoginMethod[];
   onSplashTimeout: () => void;
   onOnboardingComplete: () => void;
+  onOnboardingEvent: (event: OnboardingEvent) => void;
   onSelectSocialLoginMethod: (method: SocialLoginMethod) => Promise<SocialSignInOutcome>;
   onRequestPhoneOtp: (phone: PhoneNumber) => Promise<PhoneOtpRequestResult>;
   onResendPhoneOtp: (phone: PhoneNumber) => Promise<PhoneOtpRequestResult>;

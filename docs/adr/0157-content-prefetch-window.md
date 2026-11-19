@@ -46,3 +46,4 @@
 ## 적용 기록
 - ⟨2026-11-17⟩ `lib/prefetch-window.ts`(창 · 세션 상태), `lib/download-policy.ts` `assetDownloadDecision` · `AssetDecision`, `lib/episode-asset-groups-sync.ts` 결과 `skipped`, `lib/episode-refresh(-entry).ts` 요약 `skipped`, `app/use-episode-content-refresh.ts`(차례마다 창 읽기), `app/use-download-gate.tsx`(진행 → 창 · 열 때 창에 더하기). 테스트 unit PW1 ~ PW6 · DW1 ~ DW5 · PR1 ~ PR3, integration PW-I1 · PW-I2. 원격 편 받기 흐름을 보는 기존 integration(I6 · I7 · EUI4 · EUI10 · VTI4)은 허락 목록(`allowEpisodes`)으로 그 편을 받게 해 같은 흐름을 본다.
 - 예상 효과(레벨 4 매니페스트 `assets_bytes` 기준, [추정]): 새 설치 자산 ≈ 61 MB → u00 + u01 ≈ 5 MB(+ 본문 ≈ 3.7 MB) — 새 설치당 ≈ 86% 감소.
+- ⟨2026-11-19⟩ [ADR-0165](0165-bucket-episodes-not-coming-soon.md)가 D3를 바꿨다. 창 밖 원격 편도 내장본이 없으면 본문만으로 보통 편으로 선다(「준비 중」 카드가 아님). 자산은 열 때 받는다는 것은 그대로다. D1의 「준비 중 편도 맵 순서에 든다」를 코드(`catalogPrefetchWindowOf`)에 맞췄다. PW-I1 · PW-I2는 새 계약으로 바뀌었고 PW-I3(요금 연결의 「Tap to download」 → 시트)이 더해졌다.

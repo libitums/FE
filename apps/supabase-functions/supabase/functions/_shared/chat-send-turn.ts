@@ -40,7 +40,11 @@ import { STREAM_ERRORS, type StreamErrorCode } from "./companion-contract/index.
 import { systemSplit } from "./companion-llm.ts";
 import { companionSystemPrompt, type PromptInput } from "./companion-prompt.ts";
 import { eligibleBeats, pickStory } from "./companion-story.ts";
-import { crisisResourcesFor } from "./companion-safety.ts";
+import {
+  crisisResourcesFor,
+  effectiveRomanceTier,
+  outputCheckRequired,
+} from "./companion-safety.ts";
 import type { SegmentDelta } from "./companion-segments.ts";
 import { withUsageMeta } from "./companion-usage.ts";
 
@@ -49,6 +53,8 @@ export type { TurnContext };
 export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
   const { deps, env, llm, sink, body, gate, turn } = context;
   const ageBand: AgeBand = gate.ageBand;
+  const romanceTier = effectiveRomanceTier(ageBand, gate.romanceTier); // 적용 수위(ADR-0164)
+  const checkOutput = outputCheckRequired(ageBand, romanceTier);
   const moderation: ModerationRecord[] = [];
   const persona: PersonaCard = turn.persona ?? { name: body.character_id };
   const topicState = topicStateFrom(turn.topicState);
@@ -83,6 +89,7 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
     // 이번 턴 지시는 시스템 프롬프트가 아니라 답 요청의 `directive`로 — 시스템 · 지난 대화의 캐시를 깨지 않는다.
     directive: null,
     story: story.text,
+    romanceTier,
   };
   const prompt = companionSystemPrompt(promptInput);
   const withUsage = (assistant: Record<string, unknown>) => withUsageMeta(assistant, context.usage);
@@ -122,7 +129,7 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
 
   let input: ModerationVerdict;
   try {
-    input = await moderateInput(llm, body.text, history, ageBand, abort.signal);
+    input = await moderateInput(llm, body.text, history, ageBand, abort.signal, romanceTier);
   } catch {
     return fail("upstream_unavailable", "failed");
   }
@@ -152,8 +159,8 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
   }
 
   const sendDelta = (delta: SegmentDelta) => sink.send({ event: "delta", data: delta });
-  // 성인은 받는 대로(사후 검사 작업은 아직 없다), 미성년자 · 나이 모름은 출력 검사 뒤에.
-  if (ageBand === "adult") {
+  // 성인 standard는 받는 대로(사후 검사 작업은 아직 없다), 미성년자 · 나이 모름 · 완화 수위(open)는 출력 검사 뒤에.
+  if (!checkOutput) {
     reply.goLive(sendDelta);
     void feedback.then(sendCorrection);
   }
@@ -170,7 +177,7 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
   let follow = startFollowUps(context, followInput, result.segments);
   let recovered: string | null = null;
 
-  if (ageBand !== "adult") {
+  if (checkOutput) {
     const check = outputChecker(context, moderation);
     let output: ModerationVerdict;
     try {
@@ -226,6 +233,7 @@ export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
         meta: {
           model: llm.model,
           ageBand,
+          romanceTier,
           firstDeltaMs: result.firstDeltaMs,
           totalMs: result.totalMs,
           branch: branch.action,

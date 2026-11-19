@@ -48,9 +48,12 @@ import { withoutTesterEvents, withoutTesterIdentify } from "../lib/tester-tracki
 import { companionRemote } from "../lib/companion-api";
 import { App } from "./App";
 import { setMessengerChatRemote } from "./messenger-chat-wiring";
+import { setEarlyAccessRemote } from "./suggested-friends-wiring";
 
 // 메신저 서버 모드(ADR-0137) — 로그인한 시험 계정의 대화는 컴패니언 서버로. 테스트는 이 진입점을 지나지 않아 가짜 출처입니다.
 setMessengerChatRemote(companionRemote);
+// 엽전 먼저 만나기(ADR-0162 D5) — 같은 서버 포트의 RPC 둘. 포트는 처음 쓸 때(배경 스레드) 만듭니다.
+setEarlyAccessRemote(companionRemote);
 // 기기 첫 실행일을 한 번 적습니다(ADR-0029 「D3 목적 구분」의 `daysSinceFirstOpen`). 저장소는 배경 스레드에서만 만집니다.
 if (__BACKGROUND__) noteFirstOpen();
 

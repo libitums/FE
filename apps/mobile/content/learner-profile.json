@@ -1,8 +1,8 @@
 {
   "preview": {
     "sampleName": "Emma",
-    "name": { "ko": "{이름}(으)로 예약했어요.", "en": "I booked under {이름}." },
-    "country": { "ko": "저는 {나라}에서 왔어요.", "en": "I'm from {나라}." }
+    "name": { "ko": "{이름}(으)로 예약했어요.", "en": "I booked under {이름}.", "es": "Reservé a nombre de {이름}.", "id": "Saya memesan atas nama {이름}.", "ja": "{이름}の名前で予約しました。", "vi": "Tôi đã đặt chỗ dưới tên {이름}." },
+    "country": { "ko": "저는 {나라}에서 왔어요.", "en": "I'm from {나라}.", "es": "Soy de {나라}.", "id": "Saya dari {나라}.", "ja": "{나라}から来ました。", "vi": "Tôi đến từ {나라}." }
   },
   "randomNames": ["Emma", "Leo", "Mai", "Lucas", "Yuki", "Mia", "Noah", "Lina", "Omar", "Sofia", "Kai", "Hana", "Ivan", "Nora", "Tom", "Ana", "Sam", "Lea", "Max", "Aya", "Ben", "Zoe", "Raj", "Elif", "Diego", "Amara", "Felix", "Nina", "Hugo", "Lily", "Jun", "Sara", "Ali", "Ella", "Theo", "Rosa", "Minh", "Chloe", "Luca", "Ines"],
   "countries": [

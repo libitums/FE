@@ -80,11 +80,11 @@ export function totalCoinsOf(pack: CoinPack): number {
   return pack.coins + pack.bonusCoins;
 }
 
-// 세 자리마다 쉼표를 찍습니다. `toLocaleString`을 쓰지 않습니다 — Lynx 백그라운드 런타임에 `Intl`이 있다고 기댈
-// 수 없습니다.
-export function formatCoinCount(count: number): string {
+// 세 자리마다 묶음 기호를 찍습니다 — 화면은 문구표의 `coinShop.digitSeparator`(en · ja 「,」, es · id · vi 「.」)를 넘깁니다.
+// `toLocaleString`을 쓰지 않습니다 — Lynx 백그라운드 런타임에 `Intl`이 있다고 기댈 수 없습니다.
+export function formatCoinCount(count: number, separator = ","): string {
   const whole = Math.max(0, Math.trunc(count));
-  return String(whole).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return String(whole).replace(/\B(?=(\d{3})+(?!\d))/g, separator);
 }
 
 export function formatPrice(cents: number): string {

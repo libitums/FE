@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "friends": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "romanceTier": {
+            "type": "string",
+            "enum": ["open", "standard"]
+          }
+        },
+        "required": ["id", "romanceTier"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": ["friends"],
+  "additionalProperties": false
+}

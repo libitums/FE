@@ -138,6 +138,7 @@ export const profileVi: ProfileCopy = {
 };
 
 export const coinShopVi: CoinShopCopy = {
+  digitSeparator: ".",
   title: "Yeopjeon",
   subtitle: "Đồng xu đồng thau cổ của Hàn Quốc",
   balanceLabel: "Bạn có",
@@ -155,6 +156,14 @@ export const coinShopVi: CoinShopCopy = {
   notice: {
     title: "Sắp có thanh toán",
     description: "Hiện chưa thể mua xu. Vui lòng quay lại sau.",
+  },
+  purchaseFailed: "Giao dịch chưa thành công. Vui lòng thử lại.",
+  purchaseWait: {
+    confirming: "Đang xác nhận giao dịch…",
+    late: "Giao dịch của bạn vẫn an toàn. Sẽ hiện ra trong giây lát.",
+    added: (_count, display) => `Đã thêm ${display} xu`,
+    adding: "Đang thêm vào ví",
+    updating: "Đang cập nhật",
   },
 };
 

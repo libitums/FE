@@ -1,12 +1,15 @@
 // airbridge-events 단위 테스트가 함께 쓰는 입력 표입니다. 계약: ADR-0063.
 import type { AnalyticsEvent, AnalyticsEventName, AnalyticsEventSinks } from "./analytics.contract";
-import { purchaseIntentExample } from "./purchase-intent.test-support";
+import { planEventExamples } from "./purchase-intent.test-support";
+import { suggestedFriendEventExamples } from "./suggested-friend-events.test-support";
 
 /** 계약의 이름 전부입니다 — 손으로 적고 타입에 묶습니다. */
 export const allEventNames = [
   "entry_screen_viewed",
   "entry_login_method_selected",
   "entry_completed",
+  "onboarding_step_viewed",
+  "onboarding_started",
   "entry_returning_learner_entered",
   "notifications_opened",
   "notification_item_tapped",
@@ -53,6 +56,7 @@ export const allEventNames = [
   "messenger_tab_opened",
   "companion_unlocked",
   "new_friend_sheet_closed",
+  "chat_sign_in_prompt_closed",
   "chat_message_sent",
   "chat_media_requested",
   "chat_media_completed",
@@ -64,11 +68,20 @@ export const allEventNames = [
   "plans_viewed",
   "plan_selected",
   "purchase_intent",
+  "shop_tab_switched",
+  "suggested_friend_viewed",
+  "suggested_friend_opened",
+  "suggested_friend_added",
+  "early_access_tapped",
+  "early_access_completed",
+  "pack_purchased",
 ] as const satisfies readonly AnalyticsEventName[];
 
 /** 매핑되는 둘(`entry_completed` · `episode_final_passed`)을 뺀 이름마다 최소 이벤트 하나입니다. */
 export const unmappedEvents = [
   { name: "entry_screen_viewed", screen: "onboarding" },
+  { name: "onboarding_step_viewed", step: "1", via: "start" },
+  { name: "onboarding_started", step: "2", autoAdvanced: true },
   { name: "entry_login_method_selected", method: "phone" },
   { name: "entry_login_method_selected", method: "guest" },
   { name: "entry_returning_learner_entered", method: "google" },
@@ -242,26 +255,11 @@ export const unmappedEvents = [
     days: "7",
     amount: "40",
   },
-  {
-    name: "plans_viewed",
-    surface: "learning",
-    daysSinceFirstOpen: "6",
-    placement: "settings",
-    view: "compare",
-  },
-  {
-    name: "plan_selected",
-    surface: "chat",
-    daysSinceFirstOpen: "6",
-    placement: "messenger",
-    plan: "premium",
-    period: "monthly",
-  },
-  purchaseIntentExample,
+  ...planEventExamples,
+  ...suggestedFriendEventExamples,
 ] as const satisfies readonly AnalyticsEvent[];
 
 export const entryCompleted = { name: "entry_completed" } as const satisfies AnalyticsEvent;
-
 export const episodeFinalPassed = {
   name: "episode_final_passed",
   episodeId: "u00-tutorial",
@@ -269,12 +267,9 @@ export const episodeFinalPassed = {
   turnCount: "2",
 } as const satisfies AnalyticsEvent;
 export const episodeFinalPassedU01 = {
-  name: "episode_final_passed",
+  ...episodeFinalPassed,
   episodeId: "u01-water",
-  correctCount: "2",
-  turnCount: "2",
 } as const satisfies AnalyticsEvent;
-
 /** 지운 여덟 이름의 옛 이벤트입니다 — 어떤 출처로 들어와도 매핑은 null이어야 합니다. 계약 타입에는 이제 없어 단언으로 좁힙니다. */
 export const retiredSpecialUnitEvents = [
   { name: "messenger_unit_completed", unitId: "appointment-confirmation", entrySource: "journey" },

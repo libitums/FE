@@ -39,7 +39,7 @@ export interface NotFoundProps {
   language: Language;
 }
 
-/** `components/LegalPage.astro` — 법률 문서 한 편의 한 언어판입니다(ADR-0159). */
+/** `components/LegalPage.astro` — 법률 문서 한 편의 한 언어판입니다(ADR-0167). */
 export interface LegalPageProps {
   id: LegalDocumentId;
   /** 본문이 있는 언어입니다. 사이트 언어 코드와 같아 머리 · 꼬리 문구도 이 언어로 섭니다. */

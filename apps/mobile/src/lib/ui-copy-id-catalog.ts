@@ -57,6 +57,11 @@ export const catalogMapId: CatalogMapCopy = {
     staleBody: "Sambungkan ke internet untuk mengecek episode baru.",
     checkNew: "Cek cerita baru",
   },
+  coverDownload: {
+    gettingReady: (percent) => `Menyiapkan · ${percent}%`,
+    tapToDownload: (size) =>
+      size === null ? "Ketuk untuk mengunduh" : `Ketuk untuk mengunduh · ${size}`,
+  },
 };
 
 export const catalogCoverId: CatalogCoverCopy = {

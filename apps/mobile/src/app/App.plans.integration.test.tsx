@@ -158,14 +158,26 @@ test("SB-I1 플래그 켬 · 로그인: 설정 → Plans → Premium 고름 → 
   expect(present(ids.screen)).toBe(true);
   expect(screen.getByTestId(ids.card("premium")).getAttribute("data-selected")).toBe("true");
   expect(events.filter((e) => e.name === "plans_viewed")).toEqual([
-    expect.objectContaining({ placement: "settings", view: "compare", surface: "learning" }),
+    expect.objectContaining({
+      placement: "settings",
+      view: "compare",
+      surface: "learning",
+      currentPlan: "free",
+    }),
   ]);
-  tap("ui-lynx-option-selector-item-yearly");
+  tap(ids.yearly);
   tap(ids.continue);
   await flush();
   expect(screen.getByTestId(ids.notice)).toHaveTextContent("Payments are coming soon");
   expect(events.filter((e) => e.name === "plan_selected")).toEqual([
-    expect.objectContaining({ placement: "settings", plan: "premium", period: "yearly" }),
+    expect.objectContaining({
+      placement: "settings",
+      plan: "premium",
+      period: "yearly",
+      from: "free",
+      to: "premium",
+      kind: "new",
+    }),
   ]);
   act(
     () =>
@@ -219,7 +231,7 @@ test("PI-I1 학습자 나라 VN: 임시 추천 가격(₫)을 보이고, Continu
       ),
   );
   await flush();
-  expect(screen.getByTestId(ids.price("premium"))).toHaveTextContent("179.000 ₫ / month");
+  expect(screen.getByTestId(ids.price("premium"))).toHaveTextContent("179.000 ₫");
   tap(ids.continue);
   await flush();
   expect(screen.getByTestId(ids.notice)).toHaveTextContent("Payments are coming soon");
@@ -268,7 +280,7 @@ test("PI-I2 스토어 상품이 있으면 스토어 가격 글을 보이고, 의
     configured: [],
   };
   await openPlansScreen();
-  expect(screen.getByTestId(ids.price("premium"))).toHaveTextContent("₫179,000 / month");
+  expect(screen.getByTestId(ids.price("premium"))).toHaveTextContent("₫179,000");
   tap(ids.continue);
   await flush();
   expect(screen.getByTestId(ids.notice)).toHaveTextContent("Payments are coming soon");
@@ -288,7 +300,7 @@ test("PI-I3 스토어 목록에 상품이 없으면(승인 전) 스토어 나라
   learner.country = "PH";
   host.purchases = { storefront: "IDN", products: [], configured: [] };
   await openPlansScreen();
-  expect(screen.getByTestId(ids.price("premium"))).toHaveTextContent("Rp 119.000 / month");
+  expect(screen.getByTestId(ids.price("premium"))).toHaveTextContent("Rp 119.000");
   tap(ids.continue);
   await flush();
   expect(events.filter((e) => e.name === "purchase_intent")).toEqual([

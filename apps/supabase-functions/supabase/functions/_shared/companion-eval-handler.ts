@@ -156,6 +156,7 @@ function runCase(
         text: item.text,
         context: item.context ?? null,
         ageBand: item.ageBand ?? "adult",
+        romanceTier: item.romanceTier ?? "standard",
         signal,
       }),
     );

@@ -105,4 +105,9 @@ export type FixtureChatSourceOptions = {
   readonly birthYearStore?: BirthYearStore;
   /** 추천 답변 설정의 기기 저장(ADR-0156) — 없으면 메모리만(테스트 · 데모). */
   readonly replyIdeasStore?: ReplyIdeasStore;
+  /**
+   * 서버 없는 출처에서 열린 빈 방을 열면 그 방의 `opening`을 첫 인사로 놓습니다(비회원 미리보기, ADR-0166). 서버 모드는 서버가
+   * 첫 인사를 주므로 보지 않습니다.
+   */
+  readonly greetOnOpen?: boolean;
 };

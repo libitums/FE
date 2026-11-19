@@ -3,15 +3,21 @@
 import type { MessengerChatExtraCopy } from "../screens/messenger-chat/chat-settings.contract";
 import { messengerChatMediaId } from "./ui-copy-id-chat-media";
 import { messengerChatAlbumId } from "./ui-copy-id-chat-album";
+import { messengerChatSuggestedId } from "./ui-copy-id-chat-suggested";
 
 export const messengerChatExtraId: MessengerChatExtraCopy = {
   media: messengerChatMediaId,
   album: messengerChatAlbumId,
+  suggested: messengerChatSuggestedId,
   access: {
     signInTitle: "Kirim pesan ke orang yang kamu temui",
     signInBody:
       "Buat akun gratis untuk mengobrol dalam bahasa Korea dengan orang-orang dari ceritamu. Progresmu tetap tersimpan.",
     signIn: "Daftar atau masuk",
+    promptTitle: "Masuk untuk mengirim pesan",
+    promptBody:
+      "Buat akun gratis untuk mengobrol dengan orang-orang dari ceritamu. Progresmu tetap tersimpan.",
+    promptLater: "Nanti saja",
   },
   pushNotice: { chatUnavailable: "Obrolan ini sedang tidak tersedia." },
   chatSettings: {

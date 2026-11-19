@@ -96,9 +96,16 @@ function advanceSplash(): void {
   });
 }
 
+// 카드 영역을 왼쪽으로 밀어 다음 스텝으로 갑니다(ADR-0159 — 다음 버튼 없음).
 function onboardingNext(): void {
+  const pager = screen.getByTestId("onboarding-screen-pager");
+  fireEvent.touchstart(pager, { touches: [{ pageX: 300, pageY: 200 }] });
+  fireEvent.touchmove(pager, { touches: [{ pageX: 220, pageY: 204 }] });
+}
+
+function onboardingStart(): void {
   fireEvent.tap(
-    within(screen.getByTestId("onboarding-screen-next")).getByTestId("ui-lynx-button"),
+    within(screen.getByTestId("onboarding-screen-start")).getByTestId("ui-lynx-button"),
     {},
   );
 }
@@ -306,9 +313,7 @@ test("[IB14] 온보딩 둘째 스텝은 앞 스텝으로, 로그인은 온보딩
   const onSecondStep = pressBack();
   expect(screen.getByTestId("onboarding-screen")).toHaveAttribute("data-step", "0");
 
-  onboardingNext();
-  onboardingNext();
-  onboardingNext();
+  onboardingStart();
   expect(screen.getByTestId("login-screen-title")).toBeInTheDocument();
 
   const onLogin = pressBack();

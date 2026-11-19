@@ -147,7 +147,7 @@ function headingLevels(document: Document): number[] {
   );
 }
 
-// 법률 문서(ADR-0159) — 영어 기준본과 한국어 번역본입니다.
+// 법률 문서(ADR-0167) — 영어 기준본과 한국어 번역본입니다.
 const legalPages = [
   { file: "privacy/index.html", path: "/privacy/", language: "en" },
   { file: "terms/index.html", path: "/terms/", language: "en" },

@@ -6,6 +6,7 @@ import "background-only";
 import assetJson from "../../content/learner-profile.json";
 import type {
   LearnerCountry,
+  LearnerCountryLanguage,
   LearnerProfilePort,
   LearnerProfilePreview,
 } from "./learner-profile.contract";
@@ -14,7 +15,10 @@ import { fillPlaceholders } from "./placeholder-fill";
 
 export { learnerCountryTextOf };
 
-type PreviewTemplate = { readonly ko: string; readonly en: string };
+/** 문장 틀 — ko · en은 반드시, 화면 언어(es · id · ja · vi)는 뜻 줄의 그 언어 꼴입니다(2026-11-19). */
+type PreviewTemplate = { readonly ko: string; readonly en: string } & Readonly<
+  Partial<Record<LearnerCountryLanguage, string>>
+>;
 type Asset = {
   readonly sampleName: string;
   readonly name: PreviewTemplate;
@@ -25,12 +29,27 @@ type Asset = {
 
 const isText = (value: unknown): value is string => typeof value === "string" && value !== "";
 
+const LOCAL_LANGUAGES: readonly LearnerCountryLanguage[] = ["es", "id", "ja", "vi"];
+
+/** 화면 언어마다 하나씩 — 값이 글자인 칸만 남깁니다. */
+function localTextsOf(
+  pick: (language: LearnerCountryLanguage) => unknown,
+): Partial<Record<LearnerCountryLanguage, string>> {
+  const out: Partial<Record<LearnerCountryLanguage, string>> = {};
+  for (const language of LOCAL_LANGUAGES) {
+    const text = pick(language);
+    if (isText(text)) out[language] = text;
+  }
+  return out;
+}
+
 function templateFrom(raw: unknown): PreviewTemplate {
-  const { ko, en } = (raw ?? {}) as { ko?: unknown; en?: unknown };
+  const fields = (raw ?? {}) as Readonly<Record<string, unknown>>;
+  const { ko, en } = fields;
   if (!isText(ko) || !isText(en)) {
     throw new Error("learner profile asset: invalid preview template");
   }
-  return { ko, en };
+  return { ko, en, ...localTextsOf((language) => fields[language]) };
 }
 
 /** `[code, ko, roman, en]` 또는 `[…, 0 | 1, "별칭|별칭"]` 한 행입니다. */
@@ -154,7 +173,12 @@ export function searchLearnerCountries(
 export function learnerProfilePreviewOf(
   name: string | null,
   country: LearnerCountry | null,
+  language = "en",
 ): LearnerProfilePreview {
+  // 뜻 줄은 화면 언어의 문장 틀 — 틀이 없는 언어(en · th · my)는 영어입니다.
+  const local = LOCAL_LANGUAGES.find((candidate) => candidate === language);
+  const meaningOf = (template: PreviewTemplate): string =>
+    (local === undefined ? undefined : template[local]) ?? template.en;
   if (name === null && country === null) {
     const profile = { name: asset.sampleName };
     return {
@@ -162,21 +186,21 @@ export function learnerProfilePreviewOf(
       lines: [
         {
           ko: fillPlaceholders(asset.name.ko, profile, "ko"),
-          en: fillPlaceholders(asset.name.en, profile, "en"),
+          en: fillPlaceholders(meaningOf(asset.name), profile, "en"),
         },
       ],
     };
   }
   const profile = {
     ...(name === null ? {} : { name }),
-    ...(country === null ? {} : { country: learnerCountryTextOf(country) }),
+    ...(country === null ? {} : { country: learnerCountryTextOf(country, language) }),
   };
   const lines = [
     ...(name === null ? [] : [asset.name]),
     ...(country === null ? [] : [asset.country]),
   ].map((template) => ({
     ko: fillPlaceholders(template.ko, profile, "ko"),
-    en: fillPlaceholders(template.en, profile, "en"),
+    en: fillPlaceholders(meaningOf(template), profile, "en"),
   }));
   return { kind: "yours", lines };
 }

@@ -48,6 +48,8 @@ export type PlanEntitlement = {
   readonly status: "active" | "cancelled" | "billing_issue";
   readonly willRenew: boolean;
   readonly expiresAt: string | null;
+  /** 다음 갱신 때 바뀔 상품(스토어가 내림 · 같은 수준 바꿈을 기간 끝으로 미룸). 옛 서버는 보내지 않아 없습니다. */
+  readonly pendingProductId?: string;
 };
 
 export type PlanEntitlements = {
@@ -178,7 +180,10 @@ function entitlementFrom(raw: unknown): PlanEntitlement | "skip" | null {
   if (typeof productId !== "string" || expiresAt === undefined || status === undefined) return null;
   if (typeof raw["willRenew"] !== "boolean") return null;
   if (!isPlanId(raw["id"])) return "skip";
-  return { id: raw["id"], productId, status, willRenew: raw["willRenew"], expiresAt };
+  const row = { id: raw["id"], productId, status, willRenew: raw["willRenew"], expiresAt };
+  // 미뤄진 바꿈은 덧붙임이라 없거나(옛 서버) 틀려도 줄을 버리지 않습니다.
+  const pending = textOrNull(raw["pendingProductId"]);
+  return typeof pending === "string" ? { ...row, pendingProductId: pending } : row;
 }
 
 export function planEntitlementsFrom(bodyText: string | null): PlanEntitlements | null {

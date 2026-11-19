@@ -1,4 +1,4 @@
-/* 법률 문서(개인정보 처리방침 · 이용약관) — `components/LegalPage.astro`만 씁니다(ADR-0159). */
+/* 법률 문서(개인정보 처리방침 · 이용약관) — `components/LegalPage.astro`만 씁니다(ADR-0167). */
 .legal {
   margin-top: var(--header-height);
   padding-block: clamp(48px, 7vw, 96px);

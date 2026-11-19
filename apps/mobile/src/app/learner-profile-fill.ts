@@ -6,14 +6,18 @@ import { learnerCountryTextOf } from "../lib/learner-profile";
 import type { LearnerProfile } from "../lib/placeholder-fill";
 import { noLearnerProfile } from "./catalog-cover-wiring";
 
-/** 기록이 없으면 `noLearnerProfile` 그 참조입니다. 나라가 표에 없으면 나라 키가 빠집니다. */
+/**
+ * 기록이 없으면 `noLearnerProfile` 그 참조입니다. 나라가 표에 없으면 나라 키가 빠집니다. `language`는 번역 언어(= 화면 언어, ADR-0158)
+ * — 레슨 번역 줄의 `{나라}`가 그 언어의 나라 이름으로 섭니다(2026-11-19).
+ */
 export function learnerFillOf(
   record: LearnerProfileRecord | null,
   port: LearnerProfilePort,
+  language: string,
 ): LearnerProfile {
   if (record === null) return noLearnerProfile;
   const country = port.byCode(record.countryCode);
   return country === null
     ? { name: record.name }
-    : { name: record.name, country: learnerCountryTextOf(country) };
+    : { name: record.name, country: learnerCountryTextOf(country, language) };
 }

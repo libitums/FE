@@ -3,15 +3,21 @@
 import type { MessengerChatExtraCopy } from "../screens/messenger-chat/chat-settings.contract";
 import { messengerChatMediaVi } from "./ui-copy-vi-chat-media";
 import { messengerChatAlbumVi } from "./ui-copy-vi-chat-album";
+import { messengerChatSuggestedVi } from "./ui-copy-vi-chat-suggested";
 
 export const messengerChatExtraVi: MessengerChatExtraCopy = {
   media: messengerChatMediaVi,
   album: messengerChatAlbumVi,
+  suggested: messengerChatSuggestedVi,
   access: {
     signInTitle: "Nhắn tin với những người bạn gặp",
     signInBody:
       "Tạo tài khoản miễn phí để trò chuyện bằng tiếng Hàn với những người trong câu chuyện của bạn. Tiến độ của bạn vẫn được giữ.",
     signIn: "Đăng ký hoặc đăng nhập",
+    promptTitle: "Đăng nhập để gửi tin nhắn",
+    promptBody:
+      "Tạo tài khoản miễn phí để trò chuyện với những người trong câu chuyện của bạn. Tiến độ của bạn vẫn được giữ.",
+    promptLater: "Để sau",
   },
   pushNotice: { chatUnavailable: "Cuộc trò chuyện này hiện không khả dụng." },
   chatSettings: {

@@ -29,6 +29,7 @@ import {
   renderMessengerList,
   messengerAccessFor,
 } from "./render-messenger-chat";
+import { canBrowseChats } from "../screens/messenger-chat/messenger-access";
 import { NewFriendMapHost } from "./render-new-friend";
 import { renderRoleplayStory } from "./render-roleplay-story";
 import { renderPlans } from "./render-plans";
@@ -55,8 +56,12 @@ export function renderScreen(screen: Screen, wiring: ScreenWiring) {
     case "chat-settings":
     case "chat-memories":
     case "chat-album": {
-      if (messengerAccessFor(wiring) !== "open") return renderMessengerList(wiring, null);
-      if (screen.name === "messenger-chat") return renderMessengerChat(screen.roomId, wiring);
+      // 비회원 미리보기(ADR-0166)는 방까지 — 대화 설정 · 기억 · 앨범은 회원만(방 메뉴가 권유로 막음).
+      const access = messengerAccessFor(wiring);
+      if (screen.name === "messenger-chat" && canBrowseChats(access))
+        return renderMessengerChat(screen.roomId, wiring);
+      if (access !== "open" || screen.name === "messenger-chat")
+        return renderMessengerList(wiring, null);
       if (screen.name === "chat-settings") return renderChatSettings(wiring);
       if (screen.name === "chat-album")
         return renderChatAlbum(screen.roomId, screen.characterName, wiring);
@@ -202,6 +207,9 @@ export function renderJourneyMap(wiring: ScreenWiring, active: boolean) {
             ? {}
             : { onCheckNew: wiring.onCheckNewStories }),
           coverImageUrlOf: wiring.episodeContent.imageUrlOf,
+          ...(wiring.catalogCoverDownloads === undefined
+            ? {}
+            : { coverDownloads: wiring.catalogCoverDownloads }),
         }}
       />
     </NewFriendMapHost>

@@ -5,26 +5,21 @@ import { OnboardingScreen } from "./OnboardingScreen";
 
 afterEach(() => vi.unstubAllGlobals());
 
-test("온보딩의 다음·뒤로·시작 버튼은 탭마다 가벼운 버튼음을 낸다", () => {
+// 뒤로 버튼은 없앴다(2026-11-19) — 시작 버튼만 탭 소리를 내고, 밀기는 소리가 없다.
+test("온보딩의 시작 버튼은 가벼운 버튼음을 내고, 밀기는 소리가 없다", () => {
   const sounds: string[] = [];
   vi.stubGlobal("NativeModules", {
     SoundEffectsModule: { play: (id: string) => sounds.push(id), stopRing: () => {} },
   });
   render(<OnboardingScreen onComplete={() => sounds.push("complete")} />);
 
-  const next = () =>
-    fireEvent.tap(
-      within(screen.getByTestId("onboarding-screen-next")).getByTestId("ui-lynx-button"),
-      {},
-    );
-  next();
+  const pager = screen.getByTestId("onboarding-screen-pager");
+  fireEvent.touchstart(pager, { touches: [{ pageX: 300, pageY: 200 }] });
+  fireEvent.touchmove(pager, { touches: [{ pageX: 220, pageY: 204 }] });
   fireEvent.tap(
-    within(screen.getByTestId("onboarding-screen-header")).getByTestId("ui-lynx-round-button"),
+    within(screen.getByTestId("onboarding-screen-start")).getByTestId("ui-lynx-button"),
     {},
   );
-  next();
-  next();
-  next();
 
-  expect(sounds).toEqual(["button", "button", "button", "button", "button", "complete"]);
+  expect(sounds).toEqual(["button", "complete"]);
 });

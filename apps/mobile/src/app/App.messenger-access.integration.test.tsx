@@ -34,7 +34,8 @@ afterEach(() => {
 const gate = (): string | null =>
   screen.queryByTestId("messenger-access-gate")?.getAttribute("data-access") ?? null;
 
-test("MA-I1 손님 — 메신저 탭은 가입 권유이고, 단추는 탭 바 없는 로그인 화면을 연다", async () => {
+// ⟨ADR-0166⟩ 비회원은 가입 권유 안내 대신 회원과 같은 목록을 보고, 계정 동작(여기서는 엽전 칩)이 「로그인 필요」 대화상자를 띄운다.
+test("MA-I1 손님 — 메신저 탭은 회원과 같은 목록이고, 권유 대화상자의 주 단추가 탭 바 없는 로그인 화면을 연다", async () => {
   const host = installGuestHost({
     store: new Map([
       [guestMarkerKey, "1"],
@@ -44,11 +45,14 @@ test("MA-I1 손님 — 메신저 탭은 가입 권유이고, 단추는 탭 바 �
   await renderGuestApp(host, { platform: "ios" });
   openTab("messenger");
 
-  expect(gate()).toBe("sign-in");
-  expect(present("messenger-list-list")).toBe(false);
-  expect(present("messenger-list-coins")).toBe(false);
+  expect(gate()).toBeNull();
+  expect(present("messenger-list-list")).toBe(true);
+  expect(present("messenger-list-coins")).toBe(true);
+  fireEvent.tap(screen.getByTestId("messenger-list-coins"), {});
+  await flush();
+  expect(present("messenger-sign-in-prompt")).toBe(true);
   fireEvent.tap(
-    within(screen.getByTestId("messenger-access-sign-in")).getByTestId("ui-lynx-button"),
+    within(screen.getByTestId("ui-lynx-dialog-action-sign-in")).getByTestId("ui-lynx-button"),
     {},
   );
   await flush();

@@ -1,19 +1,26 @@
 import type { ReactNode } from "@lynx-js/react";
+import { color } from "@libitums/design-tokens";
 
 import { useUiCopy } from "../../lib/ui-copy";
 import { CATALOG_INTRO_KEY } from "../../lib/catalog-progress";
 import { catalogCoverAccessibilityLabel } from "./catalog-map";
 import { catalogMarkDomId } from "./map-footprints";
 import type { CatalogCoverMapItemProps } from "./catalog-map.contract";
+import { coverDownloadLabelOf, coverProgressRingSvg } from "./cover-download";
 
 import { SpecialUnitMapItem } from "./SpecialUnitMapItem";
 
 import "./catalog-cover-illustration.css";
+import "./cover-download.css";
+
+const ringColors = { track: color.border.disabled, arc: color.brand.primary };
 
 // 카탈로그 에피소드의 표지 노드입니다. 잠김이면 고름을 올리지 않습니다 — 가드는
 // `SpecialUnitMapItem`이 집니다. 첫 유닛 안내는 합성으로 답니다 — `layer="guide"`로 들리고 말풍선은 자식으로 붙습니다.
 // 라벨은 제목 한 줄(「Intro」)입니다 — 다른 스페셜 노드도 같습니다. 일러스트(`illustration`)가 있으면 노드 뒤에 깝니다 — 노드 자리는 그대로이고
 // 일러스트만 왼쪽(짝수 에피소드) · 오른쪽(홀수) 위로 물러납니다(ADR-0099). 장식이라 낭독 요소가 아닙니다.
+// 받기 표시(`download`, ADR-0165)가 있으면 라벨 자리에 그 문구가 서고 낭독 이름 뒤에도 붙습니다. 받는 중이면 노드 둘레에
+// 진행 고리(장식)를 겹칩니다.
 export function CatalogCoverMapItem({
   episodeId,
   ordinal,
@@ -22,14 +29,31 @@ export function CatalogCoverMapItem({
   layer = "map",
   children,
   illustration = null,
+  download = { kind: "none" },
 }: CatalogCoverMapItemProps): ReactNode {
   const copy = useUiCopy();
+  const downloadLabel = coverDownloadLabelOf(download, copy.catalogMap);
+  const name = catalogCoverAccessibilityLabel(ordinal, copy);
 
   const item = (
     <SpecialUnitMapItem
       unitId={`catalog-cover-${episodeId}`}
-      title={copy.catalogMap.coverTitle}
-      accessibilityName={catalogCoverAccessibilityLabel(ordinal, copy)}
+      title={downloadLabel ?? copy.catalogMap.coverTitle}
+      accessibilityName={downloadLabel === null ? name : `${name}, ${downloadLabel}`}
+      {...(download.kind === "getting-ready"
+        ? {
+            ring: (
+              <svg
+                key="ring"
+                className="catalog-cover-ring"
+                data-testid={`catalog-cover-ring-${episodeId}`}
+                content={coverProgressRingSvg(download.percent, ringColors)}
+                user-interaction-enabled={false}
+                accessibility-element={false}
+              />
+            ),
+          }
+        : {})}
       status={status}
       layer={layer}
       markId={catalogMarkDomId(episodeId, CATALOG_INTRO_KEY)}

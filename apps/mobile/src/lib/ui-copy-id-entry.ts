@@ -27,14 +27,13 @@ export const onboardingId: OnboardingScreenCopy = {
       body: "Unit harian yang singkat cocok dengan harimu.\nSelesaikan satu unit hanya dalam lima menit.",
     },
   },
-  next: "Berikutnya",
   getStarted: "Mulai",
   progress: (ordinal, total) => `Langkah ${ordinal} dari ${total}`,
   storyChat: {
-    staff: "Staf",
-    welcome: "Selamat datang! Sedang mencari sesuatu?",
-    sunscreen: "Apakah ada tabir surya?",
-    thisWay: "Ada, lewat sini.",
+    friend: "Doyun",
+    atStore: "Aku lagi di depan minimarket. Mau minum apa?",
+    water: "Tolong belikan sebotol air!",
+    onMyWay: "Oke. Aku segera ke sana!",
   },
   quiz: { replay: "Putar ulang", stop: "Berhenti", play: "Putar" },
   unit: {

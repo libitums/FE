@@ -40,9 +40,11 @@ public final class PurchasesModule extends LynxModule {
 
   private final Handler mainHandler = new Handler(Looper.getMainLooper());
   private final WeakReference<Activity> activityRef;
+  private final Context appContext;
 
   public PurchasesModule(Context context, Object param) {
     super(context);
+    appContext = context == null ? null : context.getApplicationContext();
     activityRef = new WeakReference<>(param instanceof Activity ? (Activity) param : null);
   }
 
@@ -53,6 +55,8 @@ public final class PurchasesModule extends LynxModule {
     }
     Purchases.getSharedInstance().logIn(userId, new LogInCallback() {
       @Override public void onReceived(CustomerInfo info, boolean created) {
+        // 로그인한 고객에도 Airbridge 기기 id를 건다 — 기존 계정으로 들어오면 익명 때 건 값이 따라오지 않는다.
+        PurchasesAttribution.linkAirbridgeDevice(appContext);
         callback.invoke(status("ok"));
       }
 
@@ -159,6 +163,12 @@ public final class PurchasesModule extends LynxModule {
           @Override public void onCompleted(StoreTransaction transaction, CustomerInfo info) {
             JavaOnlyMap payload = status("purchased");
             payload.putString("productId", product.getId());
+            // 거래 id — JS가 Airbridge Order Complete의 transactionID로 실어 중복을 막는다(ADR-0063 2026-11-19).
+            String transactionId = transaction.getOrderId();
+            if (transactionId == null || transactionId.isEmpty()) transactionId = transaction.getPurchaseToken();
+            if (transactionId != null && !transactionId.isEmpty()) {
+              payload.putString("transactionId", transactionId);
+            }
             callback.invoke(payload);
           }
 

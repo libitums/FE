@@ -18,7 +18,6 @@ import {
 } from "./chat-ui.test-support";
 import { createCoinWallet } from "./coin-wallet";
 import { messengerChatTestIds as ids } from "./messenger-chat.contract";
-import { TRIAL_CHARACTER_ID } from "./free-turns";
 import { createTrialStore } from "./trial-store";
 
 // `ui` 계층(기기 F2 · 접근성 M2 · M3 · M4 · M9): 방 화면 결선 — 보내면 늘 끝으로 · Keep chatting 뒤 초점 되돌림 · 턴 변화 낭독 ·
@@ -53,10 +52,10 @@ afterEach(() => {
 
 function freeRoom(earned = 100) {
   return {
-    roomId: TRIAL_CHARACTER_ID,
+    roomId: "duksu",
     wallet: createCoinWallet({ earned }),
     trial: createTrialStore(3),
-    seed: seedOf(fixtureRoom(TRIAL_CHARACTER_ID)),
+    seed: seedOf(fixtureRoom("duksu")),
     tier: "free" as const,
   };
 }

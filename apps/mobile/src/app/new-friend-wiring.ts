@@ -9,6 +9,7 @@ import type { CatalogMapSection } from "../screens/journey-map/catalog-map.contr
 import { COMPANION_CHARACTERS } from "../screens/messenger-chat/companion-roster";
 import { CHARACTER_UNLOCKS, characterUnlockFor } from "../screens/messenger-chat/new-friend";
 import type { MessengerAccess } from "../screens/messenger-chat/messenger-access";
+import { localizedLine } from "../screens/messenger-chat/suggested-friends";
 import type { NewFriendModel } from "../screens/messenger-chat/new-friend.contract";
 import { currentMessengerChatSource, messengerUnlockStore } from "./messenger-chat-wiring";
 import { rememberNewFriend } from "./new-friend-pending";
@@ -68,18 +69,23 @@ export function newFriendModelOf(
   characterId: string,
   wiring: ModelWiring,
   access: MessengerAccess,
+  /** 화면 문구의 언어(`suggested.language`) — 인물 표로 서는 뜻풀이 칸을 고릅니다. */
+  language: string,
 ): NewFriendModel | null {
-  if (access !== "open") return null;
+  if (access === "sign-in") return null; // 비회원 미리보기(ADR-0166)는 회원과 같은 목록이라 Reply가 열 방이 있습니다
   const entry = CHARACTER_UNLOCKS.find((candidate) => candidate.characterId === characterId);
   if (entry === undefined) return null;
   const thread = wiring.messengerChat.source.thread(entry.roomId);
-  // 서버 방(ADR-0137)은 열기 전엔 비어 있어 인물 표의 첫 말로 시트를 세웁니다.
+  // 서버 방(ADR-0137)은 열기 전엔 비어 있어 인물 표의 첫 말로 시트를 세웁니다. 뜻풀이는 화면 언어 칸입니다(서버가 저장한 첫 말은
+  // 서버가 학습자 언어로 번역해 붙입니다 — 2026-11-19 l10n 점검 전에는 표의 영어가 늘 섰습니다).
   const fromRoster = COMPANION_CHARACTERS.find((c) => c.id === characterId)?.sheetOpening ?? null;
+  const rosterText =
+    fromRoster === null ? null : { ko: fromRoster.ko, en: localizedLine(fromRoster, language) };
   const opening =
     thread?.messages.find((message) => message.kind === "text" && message.from === "them") ??
-    (fromRoster === null
+    (rosterText === null
       ? undefined
-      : ({ id: "sheet", at: 0, kind: "text", from: "them", text: fromRoster } as const));
+      : ({ id: "sheet", at: 0, kind: "text", from: "them", text: rosterText } as const));
   const section = wiring.catalogSections.find(
     (candidate) => candidate.kind === "catalog-ready" && candidate.episodeId === entry.episodeId,
   );

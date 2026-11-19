@@ -49,7 +49,7 @@ export default defineConfig({
     ? [
         sitemap({
           // 웹 체험판(`/try/` · `/<코드>/try/`)은 검색 대상이 아닙니다(noindex).
-          // 법률 문서(`/privacy/` · `/terms/` · `/ko/…`)는 색인은 되지만 sitemap에는 싣지 않습니다 — 언어별 홈만 싣습니다(ADR-0159).
+          // 법률 문서(`/privacy/` · `/terms/` · `/ko/…`)는 색인은 되지만 sitemap에는 싣지 않습니다 — 언어별 홈만 싣습니다(ADR-0167).
           filter: (page) => !/\/(try|privacy|terms)\/$/.test(new URL(page).pathname),
           i18n: {
             defaultLocale: defaultLanguage,

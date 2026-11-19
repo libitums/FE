@@ -5,7 +5,7 @@ import { legalPathFor } from "./legal-paths";
 /** 이용약관의 시행일입니다. 모든 언어판이 이 값을 씁니다. */
 export const termsEffectiveIso = "2026-09-30";
 
-// 이용약관(영어 · 기준본)입니다. 2026-09-30 시행본을 Notion에서 그대로 옮겼습니다(ADR-0159 — 내용은 바꾸지 않았습니다).
+// 이용약관(영어 · 기준본)입니다. 2026-09-30 시행본을 Notion에서 그대로 옮겼습니다(ADR-0167 — 내용은 바꾸지 않았습니다).
 // 내용을 바꾸면 `terms-ko.ts`를 같은 PR에서 맞추고 시행일을 올립니다.
 export const termsEn: LegalDocument = {
   id: "terms",

@@ -187,3 +187,33 @@ test("NP-U7 호스트가 답하지 않거나 던지면 상품 · 나라는 null�
   expect(await offers).toBeNull();
   expect(await country).toBeNull();
 });
+
+test("NP-U8 구매 답의 거래 id(transactionId)를 싣고, 없거나 비었으면 뺀다 — Airbridge Order Complete 중복 제거(ADR-0063)", async () => {
+  const withId = createNativePurchaseBridge(
+    () =>
+      fakeModule({
+        purchase: {
+          status: "purchased",
+          productId: "duru.coins.1200.v1",
+          transactionId: "2000000812345678",
+        },
+      }),
+    () => true,
+  );
+  expect(await withId.purchase("duru.coins.1200.v1")).toEqual({
+    kind: "purchased",
+    productId: "duru.coins.1200.v1",
+    transactionId: "2000000812345678",
+  });
+  const blank = createNativePurchaseBridge(
+    () =>
+      fakeModule({
+        purchase: { status: "purchased", productId: "duru.coins.1200.v1", transactionId: "" },
+      }),
+    () => true,
+  );
+  expect(await blank.purchase("duru.coins.1200.v1")).toEqual({
+    kind: "purchased",
+    productId: "duru.coins.1200.v1",
+  });
+});

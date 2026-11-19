@@ -6,6 +6,7 @@ import { color } from "@libitums/design-tokens";
 import { useMotion } from "@libitums/ui-lynx/motion";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
 
+import { infinityIcon } from "../../components/infinity-icon";
 import { ticketIcon } from "../../components/ticket-icon";
 import { ticketCapacity, ticketClock } from "../../lib/learning-tickets";
 import type { TicketSlot, TicketStatus } from "../../lib/learning-tickets";
@@ -29,6 +30,8 @@ export type TicketStatModalProps = {
   readonly more: TicketMoreResult;
   readonly onGetMore: () => void;
   readonly onClose: () => void;
+  /** 「∞ Go unlimited · 가격/mo」 줄(ADR-0160 · 시안 T1b) — 요금제 결선이 있을 때만. 가격을 모르면 null. */
+  readonly goUnlimited?: { readonly price: string | null; readonly onPress: () => void };
 };
 
 function slotTime(slot: TicketSlot, readyLabel: string): string {
@@ -40,6 +43,7 @@ export function TicketStatModal({
   more,
   onGetMore,
   onClose,
+  goUnlimited,
 }: TicketStatModalProps): ReactNode {
   const insets = safeAreaInsetsFrom(useGlobalProps());
   const alive = useMotion() === "standard";
@@ -113,6 +117,30 @@ export function TicketStatModal({
           </view>
         )}
       </view>
+
+      {goUnlimited === undefined ? null : (
+        <view
+          className="ticket-modal-go-unlimited"
+          data-testid="ticket-modal-go-unlimited"
+          flatten={false}
+          accessibility-element={true}
+          accessibility-traits="button"
+          accessibility-label={copy.plans.shop.goUnlimited(goUnlimited.price)}
+          bindtap={() => {
+            "background only";
+            goUnlimited.onPress();
+          }}
+        >
+          <svg
+            className="ticket-modal-go-unlimited-icon"
+            content={infinityIcon}
+            current-color={color.brand.secondary}
+          />
+          <text className="ticket-modal-go-unlimited-label">
+            {copy.plans.shop.goUnlimited(goUnlimited.price)}
+          </text>
+        </view>
+      )}
 
       <view className="journey-stat-modal-spacer" />
 

@@ -4,7 +4,9 @@ import { z } from "zod/mini";
 
 import { chatSendRequestSchema, preStreamErrorBodySchema } from "./chat-send";
 import {
+  companionAckAdultResponseSchema,
   companionCharacterSchema,
+  companionFriendsResponseSchema,
   companionMemoryListSchema,
   companionMemorySchema,
   companionMessagesPageSchema,
@@ -32,6 +34,8 @@ const schemas = {
   "companion-memory": companionMemorySchema,
   "companion-memories": companionMemoryListSchema,
   "companion-wallet": companionWalletSchema,
+  "companion-friends": companionFriendsResponseSchema,
+  "companion-ack-adult": companionAckAdultResponseSchema,
   "companion-learning-scope": learningScopeSchema,
   "companion-suggest-request": companionSuggestRequestSchema,
   "companion-suggest-response": companionSuggestResponseSchema,

@@ -7,7 +7,7 @@ type Props = FooterProps;
 
 const { language, t, variant = "landing" } = Astro.props;
 const home = variant === "page" ? pathFor(language) : "#top";
-// 법률 문서는 우리 주소에 있습니다(ADR-0159). 번역본이 없는 언어는 영어 기준본으로 갑니다.
+// 법률 문서는 우리 주소에 있습니다(ADR-0167). 번역본이 없는 언어는 영어 기준본으로 갑니다.
 const legalLanguage = legalLanguageFor(language);
 const legalLabels = { terms: t.footerTerms, privacy: t.footerPrivacy };
 ---

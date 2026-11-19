@@ -1,0 +1,78 @@
+/* 하나의 상점(ADR-0160 · 시안 S1 · S2) — 위 줄(닫기 · 칩) · 탭 · 엽전 탭 아래 요금제 줄. 짙은 바탕 위 회색(#2E323B 면 ·
+   #FFB98A 주황 글, 대비 8.0 : 1)은 색 토큰 패키지에 없는 시안 값입니다. 탭 알약은 `plans.css`의 묶음을 씁니다. */
+
+.coin-shop-screen-top {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  padding: var(--libitum-layout-screen-padding-top) var(--libitum-spacing-20) 0;
+}
+
+/* 구매 뒤 확인 대기 알약의 자리(ADR-0163) — 닫기와 오른쪽 칩 사이 빈 칸. 위 줄 높이(칩 56)는 그대로입니다. */
+.coin-shop-screen-pill {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  align-items: center;
+  margin: 0 var(--libitum-spacing-8);
+}
+
+.shop-tabs {
+  flex-shrink: 0;
+  margin: 14px var(--libitum-spacing-20) 0;
+}
+
+.shop-tab-icon {
+  width: 18px;
+  height: 18px;
+  margin-right: 6px;
+}
+
+.shop-tab-icon-crown {
+  width: 16px;
+  height: 12px;
+}
+
+.coin-shop-screen-plans {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 14px var(--libitum-spacing-20) 0;
+}
+
+.shop-promo {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-top: var(--libitum-spacing-4);
+  padding: 10px var(--libitum-spacing-12);
+  border-radius: var(--libitum-radius-md);
+  background-color: #2e323b;
+}
+
+.shop-promo-icon {
+  width: 18px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.shop-promo-text {
+  flex: 1;
+  margin: 0 10px;
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 18px;
+}
+
+.shop-promo-action {
+  flex-shrink: 0;
+  color: #ffb98a;
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 18px;
+}

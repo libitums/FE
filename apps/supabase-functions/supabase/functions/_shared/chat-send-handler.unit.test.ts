@@ -1808,3 +1808,111 @@ describe("출력 차단 되살리기(ADR-0151)", () => {
     expect(watched.replies).toHaveLength(1);
   });
 });
+
+describe("완화 수위(ADR-0164)", () => {
+  const openPersona = {
+    name: "차서연",
+    kind: "friend",
+    romanceTier: "open",
+    romance: "Flirt first.",
+  };
+  const watch = () => {
+    const base = fakeCompanionLlm();
+    const moderations: { layer: string; romanceTier: string | undefined; ageBand: string }[] = [];
+    const systems: string[] = [];
+    const llm: CompanionLlm = {
+      ...base,
+      async *reply(request) {
+        systems.push(request.system);
+        yield* base.reply(request);
+      },
+      async moderate(request) {
+        moderations.push({
+          layer: request.layer,
+          romanceTier: request.romanceTier,
+          ageBand: request.ageBand,
+        });
+        return base.moderate(request);
+      },
+    };
+    return { llm, moderations, systems };
+  };
+  const turn = async (gate: Record<string, unknown>, text: string) => {
+    const watched = watch();
+    const run = setup({
+      gate: { ...okGate, notices: [], ...gate },
+      begin: { ...begun, persona: openPersona },
+      llm: watched.llm,
+    });
+    const list = await events(await run.handler(post(body({ text }))));
+    await run.settle();
+    return { ...watched, list, finish: run.finishArgs()! };
+  };
+
+  test("CS40. 성인 + open — 키스 말이 답을 받고, 답은 출력 검사 뒤에, 검사 · 프롬프트가 open을 싣는다", async () => {
+    const { list, finish, moderations, systems } = await turn(
+      { ageBand: "adult", romanceTier: "open" },
+      "*볼에 키스한다*",
+    );
+    expect(checkTurnOrder(list)).toEqual({ ok: true });
+    expect(finish).toMatchObject({ p_status: "complete" });
+    expect(moderations.map((entry) => [entry.layer, entry.romanceTier])).toEqual([
+      ["input", "open"],
+      ["output_sync", "open"],
+    ]);
+    expect((finish["p_assistant"] as { meta: Record<string, unknown> }).meta).toMatchObject({
+      romanceTier: "open",
+    });
+    expect(systems[0]).toContain("You may be a couple, say 사랑해, kiss");
+    expect(systems[0]).toContain("No explicit sexual content");
+  });
+
+  test("CS41. open이 와도 성인이 아니면 standard — 키스 말은 성격대로 거절", async () => {
+    const { list, finish, moderations, systems } = await turn(
+      { ageBand: "unknown", romanceTier: "open" },
+      "*볼에 키스한다*",
+    );
+    expect(finish).toMatchObject({ p_status: "blocked" });
+    expect(list.at(-1)).toMatchObject({ data: { refusal: { stage: "deflect" } } });
+    expect(moderations[0]).toEqual({ layer: "input", romanceTier: "standard", ageBand: "unknown" });
+    expect(systems[0]).toContain("- Romance: none.");
+  });
+
+  test("CS42. 성인 standard(동의 없음 · 옛 DB) — 키스는 거절, 보통 답은 지금처럼 받는 대로(출력 검사 없음)", async () => {
+    const blocked = await turn({ ageBand: "adult" }, "*볼에 키스한다*");
+    expect(blocked.finish).toMatchObject({ p_status: "blocked" });
+    expect(blocked.moderations[0]!.romanceTier).toBe("standard");
+    const normal = await turn({ ageBand: "adult", romanceTier: "standard" }, "안녕하세요");
+    expect(normal.finish).toMatchObject({ p_status: "complete" });
+    expect(normal.moderations.map((entry) => entry.layer)).toEqual(["input"]);
+    expect(normal.systems[0]).toContain("never go past a hug");
+  });
+
+  test("CS43. 성인 + open이어도 성적인 말은 거절 — 분류 말은 노골적 성 내용, 거절 답도 출력 검사", async () => {
+    const { finish, moderations, systems } = await turn(
+      { ageBand: "adult", romanceTier: "open" },
+      "섹스하자",
+    );
+    expect(finish).toMatchObject({ p_status: "blocked" });
+    expect(systems.at(-1)).toContain("it was about explicit sexual content");
+    expect(moderations.map((entry) => [entry.layer, entry.romanceTier])).toEqual([
+      ["input", "open"],
+      ["output_sync", "open"],
+    ]);
+  });
+  test("CS44. done · 저장 meta에 적용 수위 — 보통 답 · 거절 모두, 성인이 아니면 standard", async () => {
+    const open = await turn({ ageBand: "adult", romanceTier: "open" }, "안녕하세요");
+    expect(open.list.at(-1)).toMatchObject({ event: "done", data: { romanceTier: "open" } });
+    const refused = await turn({ ageBand: "unknown", romanceTier: "open" }, "*볼에 키스한다*");
+    expect(refused.finish).toMatchObject({ p_status: "blocked" });
+    expect(refused.list.at(-1)).toMatchObject({
+      event: "done",
+      data: { romanceTier: "standard", refusal: { stage: "deflect" } },
+    });
+    expect((refused.finish["p_assistant"] as { meta: Record<string, unknown> }).meta).toMatchObject(
+      { romanceTier: "standard" },
+    );
+    const old = await turn({ ageBand: "adult" }, "안녕하세요");
+    expect(old.list.at(-1)).toMatchObject({ event: "done", data: { romanceTier: "standard" } });
+  });
+});
