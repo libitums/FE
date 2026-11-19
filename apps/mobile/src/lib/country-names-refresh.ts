@@ -72,7 +72,7 @@ let launched = false;
 
 /**
  * 받기 차례 하나의 나라 이름 표 받기(2026-11-19 — 오프라인에서 언어를 바꿔도 이름이 있게). 실행의 첫 차례는 지금 언어와 상관없이
- * es · id · ja · vi 넷을 차례로 받아 새것 · 바뀐 것을 저장합니다(파일이 작습니다). 그 뒤 차례 — 언어를 바꿔 저장했을 때 · 호스트
+ * es · id · ja · vi 넷을 함께 받아 새것 · 바뀐 것을 저장합니다(파일이 작습니다). 그 뒤 차례 — 언어를 바꿔 저장했을 때 · 호스트
  * 신호 — 는 지금 언어의 표가 기기에 없을 때만 그 하나를 받습니다. 던지지 않습니다.
  */
 export async function syncCountryNames(
@@ -80,11 +80,10 @@ export async function syncCountryNames(
 ): Promise<readonly CountryNamesRefresh[]> {
   if (!launched) {
     launched = true;
-    const results: CountryNamesRefresh[] = [];
-    for (const language of COUNTRY_NAME_LANGUAGES) {
-      results.push(await refreshCountryNames({ ...deps, language }));
-    }
-    return results;
+    // 넷을 함께 받습니다 — `refreshCountryNames`는 던지지 않아 하나가 실패해도 나머지가 섭니다.
+    return Promise.all(
+      COUNTRY_NAME_LANGUAGES.map((language) => refreshCountryNames({ ...deps, language })),
+    );
   }
   const language = deps.language ?? loadUiLanguage();
   if (!COUNTRY_NAME_LANGUAGES.includes(language)) return ["skipped"];
