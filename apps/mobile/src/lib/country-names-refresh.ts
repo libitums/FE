@@ -66,3 +66,33 @@ export async function refreshCountryNames(
   rememberCountryNames(language, reply.text);
   return "updated";
 }
+
+// 이 실행에서 네 언어를 한 번 받았는가 — 실행마다 처음 한 번입니다(앱 프로세스 단위).
+let launched = false;
+
+/**
+ * 받기 차례 하나의 나라 이름 표 받기(2026-11-19 — 오프라인에서 언어를 바꿔도 이름이 있게). 실행의 첫 차례는 지금 언어와 상관없이
+ * es · id · ja · vi 넷을 차례로 받아 새것 · 바뀐 것을 저장합니다(파일이 작습니다). 그 뒤 차례 — 언어를 바꿔 저장했을 때 · 호스트
+ * 신호 — 는 지금 언어의 표가 기기에 없을 때만 그 하나를 받습니다. 던지지 않습니다.
+ */
+export async function syncCountryNames(
+  deps: CountryNamesRefreshDeps,
+): Promise<readonly CountryNamesRefresh[]> {
+  if (!launched) {
+    launched = true;
+    const results: CountryNamesRefresh[] = [];
+    for (const language of COUNTRY_NAME_LANGUAGES) {
+      results.push(await refreshCountryNames({ ...deps, language }));
+    }
+    return results;
+  }
+  const language = deps.language ?? loadUiLanguage();
+  if (!COUNTRY_NAME_LANGUAGES.includes(language)) return ["skipped"];
+  if (safeGet(deps.store, countryNamesKey(language)) !== null) return ["unchanged"];
+  return [await refreshCountryNames({ ...deps, language })];
+}
+
+/** 테스트 · 세션 초기화용입니다. */
+export function resetCountryNamesSync(): void {
+  launched = false;
+}

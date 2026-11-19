@@ -6,7 +6,11 @@ import {
   forgetCountryNames,
   storedCountryNames,
 } from "./country-names";
-import { refreshCountryNames } from "./country-names-refresh";
+import {
+  refreshCountryNames,
+  resetCountryNamesSync,
+  syncCountryNames,
+} from "./country-names-refresh";
 import { fakeFetch, fakeStore, ok } from "./episode-refresh.test-support";
 import type { Reply } from "./episode-refresh.test-support";
 
@@ -99,5 +103,58 @@ describe("refreshCountryNames", () => {
       );
       expect(base.calls).toEqual([]);
     }
+  });
+});
+
+// CN6 ~ CN8 — 받기 차례의 범위(2026-11-19 사용자 우려: 오프라인에서 언어를 바꿔도 이름이 있게). 실행의 첫 차례는 네 언어를 모두 받고,
+// 그 뒤 차례(언어를 바꿔 저장했을 때 · 호스트 신호)는 지금 언어의 표가 기기에 없을 때만 그 하나를 받습니다.
+const bodyOf = (language: string): string =>
+  JSON.stringify({ schema: "country-names-1", language, names: { VN: `VN-${language}` } });
+const allFiles = () =>
+  fakeFetch(
+    Object.fromEntries(
+      ["es", "id", "ja", "vi"].map((language) => [
+        countryNamesPath(language),
+        ok(bodyOf(language)),
+      ]),
+    ),
+  );
+
+describe("syncCountryNames", () => {
+  afterEach(resetCountryNamesSync);
+
+  test("CN6. 실행의 첫 차례는 지금 언어와 상관없이 es · id · ja · vi 넷을 받아 저장한다", async () => {
+    const files = allFiles();
+    const { store, data } = fakeStore();
+    await syncCountryNames({ fetchText: files.fetchText, store, language: "en" });
+    expect([...files.calls].sort()).toEqual([
+      "country-names/es.json",
+      "country-names/id.json",
+      "country-names/ja.json",
+      "country-names/vi.json",
+    ]);
+    for (const language of ["es", "id", "ja", "vi"]) {
+      expect(data.get(countryNamesKey(language))).toBe(bodyOf(language));
+    }
+  });
+
+  test("CN7. 그 뒤 차례는 지금 언어의 표가 기기에 있으면 받지 않는다", async () => {
+    const { store } = fakeStore({ [countryNamesKey("ja")]: bodyOf("ja") });
+    await syncCountryNames({ fetchText: allFiles().fetchText, store, language: "en" });
+    const later = allFiles();
+    await syncCountryNames({ fetchText: later.fetchText, store, language: "ja" });
+    expect(later.calls).toEqual([]);
+  });
+
+  test("CN8. 첫 차례가 오프라인이었으면 언어를 바꾼 차례에 그 언어 하나를 받는다", async () => {
+    const { store, data } = fakeStore();
+    const offline = fakeFetch({});
+    await syncCountryNames({ fetchText: offline.fetchText, store, language: "vi" });
+    expect(data.size).toBe(0);
+    const online = allFiles();
+    await syncCountryNames({ fetchText: online.fetchText, store, language: "ja" });
+    expect(online.calls).toEqual(["country-names/ja.json"]);
+    expect(data.get(countryNamesKey("ja"))).toBe(bodyOf("ja"));
+    expect(storedCountryNames("ja")).toEqual({ VN: "VN-ja" });
   });
 });

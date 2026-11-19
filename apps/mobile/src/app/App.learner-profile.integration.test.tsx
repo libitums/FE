@@ -16,6 +16,8 @@ import {
 } from "./test-helpers/content-requests";
 import { authSessionStorageKey, serializeAuthSession } from "../lib/auth-session";
 import { countryNamesKey, forgetCountryNames } from "../lib/country-names";
+import { resetCountryNamesSync } from "../lib/country-names-refresh";
+import { saveUiLanguage } from "../lib/ui-language";
 import { entrySplashDurationMs } from "../lib/entry-flow";
 import { bundledCatalogInput } from "../lib/episode-bundled";
 import { buildEpisodeCatalog } from "../lib/episode-catalog";
@@ -276,6 +278,7 @@ afterEach(() => {
   cleanup();
   resetPushWiringForTests();
   forgetCountryNames();
+  resetCountryNamesSync();
   vi.useRealTimers();
   vi.unstubAllGlobals();
   vi.unstubAllEnvs();
@@ -707,17 +710,24 @@ const finalHints = (): string =>
     .map((view) => view.hint)
     .join("|");
 
-test("P5e. 베트남어 화면이면 받아 둔 나라 이름 표로 u03 최종의 번역 줄 {나라}에 Việt Nam이 선다", async () => {
-  const viNames = readFileSync(
-    resolve(process.cwd(), "../../docs/content/country-names/vi.json"),
-    "utf8",
-  );
-  const { store } = await boot({
-    ...vietnameseLearner,
-    content: { "country-names/vi.json": viNames },
-  });
+const countryNamesFile = (language: string): string =>
+  readFileSync(resolve(process.cwd(), `../../docs/content/country-names/${language}.json`), "utf8");
+const allCountryNames = Object.fromEntries(
+  ["es", "id", "ja", "vi"].map((language) => [
+    `country-names/${language}.json`,
+    countryNamesFile(language),
+  ]),
+);
+
+test("P5e. 실행 시작에 네 언어 표를 모두 받아 두고, 베트남어 화면의 u03 번역 줄 {나라}에 Việt Nam이 선다", async () => {
+  const { store } = await boot({ ...vietnameseLearner, content: allCountryNames });
   await vi.waitFor(() => expect(present("journey-map-screen")).toBe(true));
-  await vi.waitFor(() => expect(store.get(countryNamesKey("vi"))).toBe(viNames));
+  // 오프라인에서 언어를 바꿔도 이름이 있도록 지금 언어(vi) 밖의 셋도 받습니다(2026-11-19).
+  for (const language of ["es", "id", "ja", "vi"]) {
+    await vi.waitFor(() =>
+      expect(store.get(countryNamesKey(language))).toBe(countryNamesFile(language)),
+    );
+  }
 
   tapNode(u03, "RP");
   const hints = finalHints();
@@ -735,6 +745,22 @@ test("P5f. 버킷에 표가 없으면(받기 실패) 번역 줄 {나라}는 영�
 
   expect(store.has(countryNamesKey("vi"))).toBe(false);
   expect(finalHints()).toContain("Vietnam.");
+});
+
+test("P5g. 시작 때 못 받았으면(오프라인) 세션 중 언어를 바꾼 순간 그 언어 표 하나를 받는다", async () => {
+  const content: Record<string, string> = {};
+  const { store } = await boot({ ...vietnameseLearner, content });
+  await vi.waitFor(() => expect(present("journey-map-screen")).toBe(true));
+  await flush();
+  expect(store.has(countryNamesKey("vi"))).toBe(false);
+
+  Object.assign(content, allCountryNames);
+  await act(async () => {
+    saveUiLanguage("ja");
+  });
+
+  await vi.waitFor(() => expect(store.get(countryNamesKey("ja"))).toBe(countryNamesFile("ja")));
+  expect(store.has(countryNamesKey("vi"))).toBe(false);
 });
 
 test("P5d. (AC5) 조회 · 저장이 전부 연결 실패여도 캐시 값으로 서고 조회는 한 번뿐이다", async () => {
