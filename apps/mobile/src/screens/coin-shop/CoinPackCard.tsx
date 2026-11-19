@@ -1,5 +1,7 @@
 import type { ReactNode } from "@lynx-js/react";
 
+import { useMotion } from "@libitums/ui-lynx/motion";
+
 import type { PricingRegion } from "../../lib/provisional-prices";
 import type { StoreOffer } from "../../lib/purchase-bridge";
 import { useUiCopy } from "../../lib/ui-copy";
@@ -24,6 +26,8 @@ type CoinPackCardProps = {
   /** 스토어 상품(ADR-0144 2단계) — 있으면 스토어 가격 글이 이깁니다. */
   readonly offers?: readonly StoreOffer[] | null;
   readonly onSelect: (id: CoinPackId) => void;
+  /** 이 팩을 산 뒤 서버가 엽전을 넣는 중(ADR-0163) — 보너스 자리에 「Adding to your wallet」. */
+  readonly adding?: boolean;
 };
 
 export function CoinPackCard({
@@ -32,9 +36,11 @@ export function CoinPackCard({
   onSelect,
   region = "US",
   offers = null,
+  adding = false,
 }: CoinPackCardProps): ReactNode {
   const copy = useUiCopy();
   const shop = copy.coinShop;
+  const still = useMotion() === "reduced";
   const handleTap = () => {
     "background only";
     onSelect(pack.id);
@@ -48,6 +54,7 @@ export function CoinPackCard({
     bonus,
     price,
     pack.bestValue ? shop.bestValue : null,
+    adding ? shop.purchaseWait.adding : null,
   ]
     .filter(Boolean)
     .join(", ");
@@ -77,7 +84,20 @@ export function CoinPackCard({
           <text className="coin-shop-pack-coins">{formatCoinCount(total)}</text>
           <text className="coin-shop-pack-unit">{` ${shop.coinsUnit}`}</text>
         </text>
-        {bonus === null ? null : (
+        {/* 산 뒤 서버가 엽전을 넣는 동안 보너스 자리(없으면 그 줄)에 「Adding」 — 카드 최소 높이 100 안이라 커지지 않습니다(ADR-0163). */}
+        {adding ? (
+          <view
+            className="coin-shop-pack-bonus coin-shop-pack-adding"
+            data-testid={`coin-shop-pack-${pack.id}-adding`}
+          >
+            <view
+              className={
+                still ? "coin-shop-pack-adding-spinner" : "coin-shop-pack-adding-spinner coin-shop-pack-adding-spin"
+              }
+            />
+            <text className="coin-shop-pack-bonus-label">{shop.purchaseWait.adding}</text>
+          </view>
+        ) : bonus === null ? null : (
           <view className="coin-shop-pack-bonus">
             <text className="coin-shop-pack-bonus-label">{bonus}</text>
           </view>

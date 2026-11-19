@@ -7,8 +7,10 @@ import { useUiCopy } from "../lib/ui-copy";
 import type { StatBumpWiring } from "./learning-progress";
 import { PlanChip } from "../components/PlanChip";
 import { SubscriptionToast } from "../components/SubscriptionToast";
-import type { PlanActivation } from "../screens/plans/plan-change";
-import type { HeaderPlanChip, ShopRequest } from "../screens/coin-shop/shop-model";
+import type { ShopRequest } from "../screens/coin-shop/shop-model";
+import type { HeaderPlans } from "./header-plans";
+
+export type { HeaderPlans } from "./header-plans";
 import { EpisodeSurveySheet } from "../screens/episode-survey/EpisodeSurveySheet";
 import { JourneyStatModal } from "../screens/journey-map/JourneyStatModal";
 import type { StreakRewardWiring } from "../screens/journey-map/streak-reward.contract";
@@ -33,19 +35,6 @@ import {
 // 머리가 셸로 올라오면서 모달도 함께 올라왔습니다.
 
 type AppHeaderLayer = JourneyStatKind | "survey" | "tickets" | "unlimited";
-
-/** 머리의 요금제 입구(ADR-0160) — 요금제 결선이 있을 때만. */
-export type HeaderPlans = {
-  /** 둘째 줄 칩 — null이면 줄이 없습니다(여정 지도 밖 탭). */
-  readonly chip: HeaderPlanChip | null;
-  /** 티켓 모달의 「Go unlimited」 줄 가격 — undefined면 줄이 없습니다(표 없음 · 이미 티켓 무제한). */
-  readonly goUnlimited: { readonly price: string | null } | undefined;
-  /** 구독 성공 알림 한 번 — 새로 켜진 요금제(미뤄진 내림이면 scheduled). */
-  readonly activated: PlanActivation | null;
-  readonly onActivatedShown: () => void;
-  /** 구매 뒤 서버 확인 대기(ADR-0163) — 바뀔 칩은 값 대신 스켈레톤입니다. */
-  readonly updating?: { readonly coins: boolean; readonly plan: boolean };
-};
 
 export type AppHeaderProps = {
   readonly streakDays: number;
@@ -217,6 +206,7 @@ export function AppHeader({
           onBumped={statBump?.onStatBumped}
           ticketDropFrom={tickets?.dropFrom ?? null}
           onTicketDropped={tickets?.onDropped}
+          coinUpdating={plans?.updating?.coins ?? false}
         />
         {/* 둘째 줄 요금제 칩(ADR-0160 시안 A3) — 종 아래 오른쪽. 지도 스크롤 밖 머리 층이라 z-index가 지도 안으로 들어가지 않습니다. */}
         {plans === undefined || plans.chip === null ? null : (
@@ -224,6 +214,7 @@ export function AppHeader({
             <PlanChip
               plan={plans.chip}
               pulse={celebrating}
+              updating={plans.updating?.plan ?? false}
               onPress={() => onOpenShop?.({ tab: "plans", placement: "header_chip", focus: null })}
             />
           </view>

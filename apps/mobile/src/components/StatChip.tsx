@@ -14,6 +14,8 @@ import { statChipClassName } from "./stat-chip-class";
 import { ticketIcon } from "./ticket-icon";
 import type { StatChipHeight, StatChipSurface } from "./stat-chip-class";
 
+import { SkeletonValue } from "./SkeletonValue";
+
 import "./stat-chip.css";
 import "./stat-chip-motion.css";
 
@@ -103,6 +105,8 @@ export type StatChipProps = {
    * 한 버튼이라 「+」는 따로 누르는 자리가 아니고 낭독에서도 빠집니다 — 이름은 `accessibilityLabel`이 답니다.
    */
   readonly plus?: boolean;
+  /** 구매 뒤 서버 확인 대기(ADR-0163) — 값 대신 스켈레톤, 이름 앞에 「Updating」. */
+  readonly updating?: boolean;
 };
 
 export function StatChip({
@@ -123,6 +127,7 @@ export function StatChip({
   pulseKey = 0,
   iconId,
   plus = false,
+  updating = false,
 }: StatChipProps): ReactNode {
   const motion = useMotion();
   const start = statBumpStart(bumpFrom, value);
@@ -233,7 +238,9 @@ export function StatChip({
             ))
           : null}
       </view>
-      {drop !== null && dropPhase !== "done" ? (
+      {updating ? (
+        <SkeletonValue width={28} lineHeight={20} testId={`${testId}-updating`} />
+      ) : drop !== null && dropPhase !== "done" ? (
         !dropping ? (
           <text className={valueClass}>{formatValue(drop)}</text>
         ) : motion === "reduced" ? (

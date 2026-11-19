@@ -1,4 +1,4 @@
-import { useEffect, useGlobalProps, useState } from "@lynx-js/react";
+import { useEffect, useGlobalProps, useRef, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import cross from "@libitums/icons/lynx/cross";
@@ -6,10 +6,14 @@ import { Dialog } from "@libitums/ui-lynx/dialog";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
 
 import { coinIcon } from "../../components/coin-icon";
+import { PurchasePill } from "../../components/PurchasePill";
+import { SkeletonValue } from "../../components/SkeletonValue";
 import type { PlanId } from "../../lib/plans-api";
+import { chipUpdating, idleWait, pillOf } from "../../lib/purchase-wait";
 import { safeAreaInsetsFrom } from "../../lib/safe-area";
 import { lightStatusBarIcons } from "../../lib/status-bar-icons";
 import { useLayerBack } from "../../lib/use-back-handler";
+import { useCountUp } from "../../lib/use-count-up";
 import { useUiCopy } from "../../lib/ui-copy";
 import { PlansPanel } from "../plans/PlansPanel";
 import { YourPlanChip } from "../plans/YourPlanChip";
@@ -77,6 +81,21 @@ export function CoinShopScreen({
   const current = currentPlanOf(plans?.current ?? null);
   const promo = plans === undefined ? null : shopPromoOf(from, current, plans.catalog);
   const showPlans = plans !== undefined && tab === "plans";
+  // 구매 뒤 서버 확인 대기(ADR-0163) — 위 알약 · 바뀔 칩 스켈레톤 · 잔액 오름. 구독은 서버에 닿으면 상점을 닫아 머리 아래 알림이 곧바로 뜹니다.
+  const wait = plans?.wait ?? idleWait;
+  const pill = pillOf(wait);
+  const coinsUpdating = chipUpdating(wait, "coins");
+  const shownBalance = useCountUp(coinBalance);
+  const balanceLabel = shop.balance(coinBalance, formatCoinCount(coinBalance));
+  // 이 상점이 구독 대기를 본 뒤에만 닫습니다 — 이미 끝난 대기(done) 위에 새로 연 상점이 곧바로 닫히지 않게.
+  const sawPlanWait = useRef(false);
+  useEffect(() => {
+    if (wait.phase === "waiting" && wait.target === "plan") sawPlanWait.current = true;
+    if (wait.phase !== "done" || wait.target !== "plan" || !sawPlanWait.current) return;
+    sawPlanWait.current = false;
+    if (showPlans) onClose();
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
+  }, [wait]);
 
   // Plans 탭으로 열렸으면 처음 한 번 보기 이벤트(탭을 바꿀 때는 아래 `switchTo`가 냅니다).
   useEffect(() => {
@@ -128,25 +147,40 @@ export function CoinShopScreen({
             bindtap={handleClose}
           />
         </view>
+        {pill === null ? null : (
+          <view className="coin-shop-screen-pill">
+            <PurchasePill pill={pill} theme="dark" />
+          </view>
+        )}
         {showPlans ? (
-          <YourPlanChip current={current} />
+          <YourPlanChip current={current} updating={chipUpdating(wait, "plan")} />
         ) : (
           <view
             className="coin-shop-screen-balance"
             data-testid="coin-shop-screen-balance"
             flatten={false}
             accessibility-element={true}
-            accessibility-label={shop.balance(coinBalance, formatCoinCount(coinBalance))}
+            accessibility-label={
+              coinsUpdating ? `${shop.purchaseWait.updating}, ${balanceLabel}` : balanceLabel
+            }
           >
             <svg className="coin-shop-screen-balance-icon" content={coinIcon} />
             <view className="coin-shop-screen-balance-text">
               <text className="coin-shop-screen-balance-label">{shop.balanceLabel}</text>
-              <text
-                className="coin-shop-screen-balance-value"
-                data-testid="coin-shop-screen-balance-value"
-              >
-                {formatCoinCount(coinBalance)}
-              </text>
+              {coinsUpdating ? (
+                <SkeletonValue
+                  width={56}
+                  lineHeight={22}
+                  testId="coin-shop-screen-balance-updating"
+                />
+              ) : (
+                <text
+                  className="coin-shop-screen-balance-value"
+                  data-testid="coin-shop-screen-balance-value"
+                >
+                  {formatCoinCount(shownBalance)}
+                </text>
+              )}
             </view>
           </view>
         )}
@@ -169,7 +203,6 @@ export function CoinShopScreen({
             theme="dark"
             // 엽전 탭 바닥(인셋 + 24)과 같은 높이에서 끝나게 합니다 — 판은 인셋 + 16을 더합니다.
             bottomInset={insets.bottom + 8}
-            onPurchased={onClose}
           />
         </view>
       ) : (
@@ -180,6 +213,7 @@ export function CoinShopScreen({
           onUnavailable={() => setNoticeOpen(true)}
           promo={promo}
           onPromo={() => switchTo("plans", promo?.plan ?? null)}
+          wait={wait}
         />
       )}
       {noticeOpen ? (

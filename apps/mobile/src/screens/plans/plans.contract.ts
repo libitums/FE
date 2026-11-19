@@ -82,6 +82,7 @@ export const plansTestIds = {
   card: (id: PlanId) => `plans-card-${id}`,
   price: (id: PlanId) => `plans-card-${id}-price`,
   yourPlan: "plans-your-plan",
+  yourPlanUpdating: "plans-your-plan-updating",
   ticketsTag: "plans-tickets-tag",
   tag: (id: PlanId) => `plans-card-${id}-tag`,
   monthly: "plans-period-monthly",

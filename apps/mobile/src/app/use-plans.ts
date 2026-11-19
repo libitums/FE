@@ -18,8 +18,7 @@ import {
 import { nativePurchaseBridge } from "../lib/native-purchase-bridge";
 import { pricingRegionFor, type PricingRegion } from "../lib/provisional-prices";
 import { purchaseIntentOf, setPurchaseContext } from "../lib/purchase-intent";
-import { runWithServerRefresh, sleep } from "../lib/purchase-refresh";
-import { idleWait, type PurchaseWait } from "../lib/purchase-wait";
+import type { PurchaseWait } from "../lib/purchase-wait";
 import type {
   PurchaseBridge,
   PurchaseResult,
@@ -34,8 +33,8 @@ import type { ShopPlans } from "../screens/coin-shop/shop-plans";
 import { currentPlanOf, type CurrentPlan, type PlanActivation } from "../screens/plans/plan-change";
 import type { PlanOfferWiring } from "../screens/plans/plans.contract";
 import { planCardsFor, type PlanPeriod, type PlanPlacement } from "../screens/plans/plans-model";
-import { reportServerBalance } from "./messenger-chat-wiring";
 import { armOnPurchased, usePlanActivation } from "./use-plan-activation";
+import { usePurchaseWait } from "./use-purchase-wait";
 import { useServerEntitlements } from "./use-server-entitlements";
 import type { NavAction } from "./nav-state";
 import {
@@ -47,7 +46,7 @@ import {
 
 export type PlansWiring = {
   readonly catalog: PlansCatalog | null;
-  /** 내 권한(서버 정본) — 읽기 전 · 실패면 null. 구매 · 복원 뒤 웹훅이 닿을 때까지 잠깐 다시 읽습니다. */
+  /** 내 권한(서버 정본) — 읽기 전 · 실패면 null. 구매 · 복원 뒤 웹훅이 닿을 때까지 다시 읽습니다(최대 60초, ADR-0163). */
   readonly entitlements: PlanEntitlements | null;
   /** 임시 추천 가격의 지역 — 스토어 계정 나라, 모르면 학습자 프로필의 나라(ADR-0144 2단계 2026-11-17). */
   readonly region: PricingRegion;
@@ -107,28 +106,16 @@ export function usePlans(
   const region = pricingRegionFor(storefront, learner.learnerRecord?.countryCode);
   // 서버 권한(정본)을 티켓 · 대화 판정이 읽는 자리에 렌더마다 맞춥니다 — 결제를 열 수 없으면 권한을 읽지 않아 언제나 null(지금과 같음).
   setPlanAccess(enabled && bridge.available ? entitlements : null);
-  // 구매 · 복원이 성공하면 웹훅이 서버를 바꿀 때까지 권한 · 잔액을 잠깐 다시 읽습니다(ADR-0144 2단계).
-  function withServerRefresh<T extends { readonly kind: string }>(
-    task: () => Promise<T>,
-    settle: "any" | "entitlements" = "any",
-  ) {
-    return runWithServerRefresh(
-      {
-        available: bridge.available,
-        current: entitlements,
-        entitlements: () => client().entitlements(),
-        balance: () => client().balance(),
-        onEntitlements: (next) => {
-          activation.observe(next);
-          setEntitlements(next);
-        },
-        onBalance: reportServerBalance,
-        wait: sleep,
-        settle,
-      },
-      task,
-    );
-  }
+  // 구매 · 복원이 성공하면 웹훅이 서버를 바꿀 때까지 권한 · 잔액을 다시 읽고, 그 동안 화면은 확인 대기를 보입니다(ADR-0144 2단계 · ADR-0163).
+  const refresh = usePurchaseWait({
+    available: bridge.available,
+    current: entitlements,
+    client,
+    onEntitlements: (next) => {
+      activation.observe(next);
+      setEntitlements(next);
+    },
+  });
 
   // 결선 밖에서 열리는 엽전 상점도 같은 지역 · 스토어 상품 · sink로 가격을 고르고 의향을 내며, 같은 다리로 삽니다.
   useEffect(() => {
@@ -140,7 +127,7 @@ export function usePlans(
       canBuy: enabled && bridge.available,
       buy: (productId) => {
         activation.disarm();
-        return withServerRefresh(() => bridge.purchase(productId));
+        return refresh.run(() => bridge.purchase(productId), "balance", productId);
       },
     });
     // oxlint-disable-next-line react-hooks/exhaustive-deps
@@ -249,14 +236,15 @@ export function usePlans(
     selected(placement, plan, period);
     if (productId === null) return { kind: "unavailable" };
     intent(placement, plan, period, productId);
-    return withServerRefresh(
+    return refresh.run(
       armOnPurchased(activation, () => bridge.purchase(productId)),
       "entitlements",
+      productId,
     );
   };
   const onRestore = () => {
     activation.disarm();
-    return withServerRefresh(() => bridge.restore());
+    return refresh.run(() => bridge.restore());
   };
   const ticketsCard =
     catalog === null
@@ -286,6 +274,7 @@ export function usePlans(
       offers,
       region,
       current: entitlements,
+      wait: refresh.wait,
       onSelect,
       onRestore,
       onViewed: (placement) => viewed(placement, "compare"),
@@ -298,6 +287,6 @@ export function usePlans(
         : { price: ticketsCard.price },
     activated: activation.activated,
     onActivatedShown: activation.onActivatedShown,
-    wait: idleWait,
+    wait: refresh.wait,
   };
 }

@@ -10,6 +10,7 @@ import {
   purchaseStore,
   reportPurchaseIntent,
 } from "../../lib/purchase-intent";
+import { idleWait, packAdding, type PurchaseWait } from "../../lib/purchase-wait";
 import { useUiCopy } from "../../lib/ui-copy";
 import {
   coinPacks,
@@ -35,6 +36,8 @@ export type CoinShopPanelProps = {
   /** 팩 아래 요금제 한 줄(ADR-0160) — 없으면 줄 없음. */
   readonly promo: ShopPromo | null;
   readonly onPromo: () => void;
+  /** 구매 뒤 서버 확인 대기(ADR-0163) — 산 팩 카드에 「Adding to your wallet」. */
+  readonly wait?: PurchaseWait;
 };
 
 /**
@@ -48,6 +51,7 @@ export function CoinShopPanel({
   onUnavailable,
   promo,
   onPromo,
+  wait = idleWait,
 }: CoinShopPanelProps): ReactNode {
   const shop = useUiCopy().coinShop;
   const [selectedId, setSelectedId] = useState<CoinPackId>(initialCoinPackId);
@@ -121,6 +125,7 @@ export function CoinShopPanel({
                 key={pack.id}
                 pack={pack}
                 selected={pack.id === selectedId}
+                adding={packAdding(wait, pack.productId)}
                 onSelect={setSelectedId}
               />
             ))}

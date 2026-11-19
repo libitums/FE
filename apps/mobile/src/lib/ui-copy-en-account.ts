@@ -156,6 +156,13 @@ export const coinShopEn: CoinShopCopy = {
     description: "Coin purchases aren't available yet. Please check back soon.",
   },
   purchaseFailed: "The purchase didn't go through. Please try again.",
+  purchaseWait: {
+    confirming: "Confirming your purchase…",
+    late: "Your purchase is safe. It'll appear shortly.",
+    added: (count, display) => `+${display} ${count === 1 ? "coin" : "coins"} added`,
+    adding: "Adding to your wallet",
+    updating: "Updating",
+  },
 };
 
 export const downloadSheetEn: DownloadSheetCopy = {

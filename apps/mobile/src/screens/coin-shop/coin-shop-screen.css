@@ -189,6 +189,39 @@
   line-height: 14px;
 }
 
+/* 「Adding to your wallet」 — 보너스 알약과 같은 면 · 글, 앞에 작은 스피너(ADR-0163). */
+.coin-shop-pack-adding {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.coin-shop-pack-adding-spinner {
+  width: 10px;
+  height: 10px;
+  margin-right: var(--libitum-spacing-4);
+  border-width: var(--libitum-stroke-width-regular);
+  border-style: solid;
+  border-color: #8a5a12;
+  border-top-color: transparent;
+  border-radius: var(--libitum-radius-full);
+}
+
+/* 움직임 줄이기에서는 이 클래스를 달지 않아 고리만 섭니다. */
+.coin-shop-pack-adding-spin {
+  animation: coin-shop-pack-adding-spin var(--libitum-motion-duration-spinner)
+    var(--libitum-motion-easing-linear) infinite;
+}
+
+@keyframes coin-shop-pack-adding-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .coin-shop-pack-side {
   display: flex;
   flex-direction: column;
