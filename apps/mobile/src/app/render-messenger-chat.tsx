@@ -17,6 +17,7 @@ import {
   type MessengerAccess,
 } from "../screens/messenger-chat/messenger-access";
 import type { ScreenWiring } from "./screen-wiring";
+import { suggestedFriendsPort } from "./suggested-friends-wiring";
 
 /** 메신저 탭 접근(ADR-0128) — 계정 상태로만 정합니다(2026-11-17부터 시험 계정 표시는 보지 않습니다). */
 export function messengerAccessFor(wiring: ScreenWiring): MessengerAccess {
@@ -43,6 +44,7 @@ export function renderMessengerList(wiring: ScreenWiring, notice: MessengerListN
         onNoticeShown={chat.onListNoticeShown}
         access={messengerAccessFor(wiring)}
         onSignIn={wiring.onSignIn}
+        friends={suggestedFriendsPort()}
       />
     </ChatEventsContext.Provider>
   );
