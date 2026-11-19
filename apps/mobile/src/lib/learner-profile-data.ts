@@ -52,18 +52,14 @@ function templateFrom(raw: unknown): PreviewTemplate {
   return { ko, en, ...localTextsOf((language) => fields[language]) };
 }
 
-/** `[code, ko, roman, en]` 또는 `[…, 0 | 1, "별칭|별칭"]` 한 행 + 화면 언어별 이름(`countryNames`)입니다. */
-function countryFrom(row: unknown, localNames: unknown): LearnerCountry {
+/** `[code, ko, roman, en]` 또는 `[…, 0 | 1, "별칭|별칭"]` 한 행입니다. */
+function countryFrom(row: unknown): LearnerCountry {
   const cells = Array.isArray(row) ? (row as unknown[]) : [];
   const [code, ko, roman, en, article, aliases] = cells;
   if (!isText(code) || !isText(ko) || !isText(roman) || !isText(en)) {
     throw new Error(`learner profile asset: invalid country row ${JSON.stringify(row)}`);
   }
   const names = isText(aliases) ? aliases.split("|") : [];
-  const byLanguage = (localNames ?? {}) as Readonly<Record<string, unknown>>;
-  const local = localTextsOf(
-    (language) => (byLanguage[language] as Readonly<Record<string, unknown>> | undefined)?.[code],
-  );
   return {
     code,
     ko,
@@ -71,18 +67,16 @@ function countryFrom(row: unknown, localNames: unknown): LearnerCountry {
     en,
     ...(article === 1 ? { article: "the" as const } : {}),
     ...(names.length > 0 ? { aliases: names } : {}),
-    names: local,
   };
 }
 
 // 내장 자산은 코드와 함께 배포되는 데이터라, 디코드 실패는 빌드 시점 결함입니다. 런타임 무예외 원칙의
 // 예외로 모듈 평가에서 던집니다(`episode-bundled.ts`의 매니페스트와 같습니다).
 function assetFrom(raw: unknown): Asset {
-  const { preview, countries, randomNames, countryNames } = (raw ?? {}) as {
+  const { preview, countries, randomNames } = (raw ?? {}) as {
     preview?: unknown;
     countries?: unknown;
     randomNames?: unknown;
-    countryNames?: unknown;
   };
   const { sampleName, name, country } = (preview ?? {}) as {
     sampleName?: unknown;
@@ -105,7 +99,7 @@ function assetFrom(raw: unknown): Asset {
     sampleName,
     name: templateFrom(name),
     country: templateFrom(country),
-    countries: (countries as unknown[]).map((row) => countryFrom(row, countryNames)),
+    countries: (countries as unknown[]).map(countryFrom),
     randomNames: names,
   };
 }

@@ -3,6 +3,8 @@
 
 import { useEffect, useRef, useState } from "@lynx-js/react";
 
+import { storedCountryNames } from "../lib/country-names";
+import type { CountryNameTable } from "../lib/country-names";
 import { readGuestLearnerProfile, writeGuestLearnerProfile } from "../lib/learner-profile-cache";
 import { learnerProfilePort } from "../lib/learner-profile-data";
 import { noLearnerProfilePort, sameLearnerProfile } from "../lib/learner-profile";
@@ -51,6 +53,7 @@ let lastFill: {
   record: LearnerProfileRecord;
   port: LearnerProfilePort;
   language: string;
+  names: CountryNameTable | null;
   fill: LearnerProfile;
 } | null = null;
 
@@ -60,8 +63,11 @@ function fillFor(
   language: string,
 ): LearnerProfile {
   if (record === null) return noLearnerProfile;
+  // 나라 이름 표는 받기가 끝나면 바뀝니다 — 같은 표(참조)일 때만 앞 치환 프로필을 다시 씁니다.
+  const names = storedCountryNames(language);
   if (
     lastFill !== null &&
+    lastFill.names === names &&
     lastFill.port === port &&
     lastFill.language === language &&
     sameLearnerProfile(lastFill.record, record)
@@ -69,7 +75,7 @@ function fillFor(
     return lastFill.fill;
   }
   const fill = learnerFillOf(record, port, language);
-  lastFill = { record, port, language, fill };
+  lastFill = { record, port, language, names, fill };
   return fill;
 }
 

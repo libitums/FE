@@ -52,14 +52,9 @@ export type LearnerCountry = {
   readonly article?: "the";
   /** 검색 전용 다른 이름들(접힌 소문자). */
   readonly aliases?: readonly string[];
-  /**
-   * 화면 언어별 이름(CLDR, 2026-11-19) — 미리보기 뜻 줄 · 레슨 번역 줄의 `{나라}`에 섭니다. 고르기 목록 · 검색은 영어 이름 그대로입니다
-   * (ADR-0059 D4). 칸이 없는 언어(en · th · my)는 `en`(+ 관사).
-   */
-  readonly names?: Readonly<Partial<Record<LearnerCountryLanguage, string>>>;
 };
 
-/** 나라 이름 · 미리보기 문장을 따로 가진 화면 언어입니다. */
+/** 미리보기 문장 틀을 따로 가진 화면 언어입니다(나라 이름 표는 버킷에서 받습니다 — `country-names.ts`). */
 export type LearnerCountryLanguage = "es" | "id" | "ja" | "vi";
 
 /** 미리보기 상자의 내용입니다. `example`은 견본 이름으로 만든 한 쌍, `yours`는 입력한 값으로 만든 한두 쌍입니다. */

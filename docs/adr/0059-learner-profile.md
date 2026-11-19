@@ -235,12 +235,18 @@
 
 - **문제**: es · id · ja · vi 학습자에게 미리보기 상자(가입 ① · ② · 설정)의 뜻 줄이 늘 영어(`I booked under …` · `I'm from …`)였고, 레슨 번역 줄의 `{나라}`
   (u03 「Tôi đến từ {나라}.」)에도 영어 이름(`Vietnam`)이 섰다 — D6의 영어 줄 = 영어 이름 규칙이 번역 언어를 몰랐다.
-- **결정**: 자산에 `preview.name` · `preview.country`의 es · id · ja · vi 틀과 `countryNames.{es,id,ja,vi}`(199 × 4)를 더한다. 이름은 CLDR(Node ICU
-  `Intl.DisplayNames`, 2026-11-19)에서 만들고 D4의 짧은 이름 정책에 맞게 아홉 나라를 손봤다(HK · MO · CD · CG · PS · MM · CI · GB(id) · US(ja) — 「특별행정구」 ·
-  괄호 · 도시 구분 꼴을 뺌). 앱은 `Intl`을 쓰지 않는다(Android PrimJS). 뜻 줄(`en` 스크립트)의 나라 = 그 언어 이름, 이름이 없는 언어(en · th · my)는 영어 + 관사.
-  ko · 로마자 줄과 받침 판정은 그대로.
+- **결정**: 자산에 `preview.name` · `preview.country`의 es · id · ja · vi 틀을 더한다. 나라 이름(199 × 4)은 CLDR(Node ICU `Intl.DisplayNames`,
+  2026-11-19)에서 만들고 D4의 짧은 이름 정책에 맞게 아홉 나라를 손봤다(HK · MO · CD · CG · PS · MM · CI · GB(id) · US(ja) — 「특별행정구」 · 괄호 · 도시 구분 꼴을 뺌).
+  앱은 `Intl`을 쓰지 않는다(Android PrimJS). 뜻 줄(`en` 스크립트)의 나라 = 그 언어 이름, 이름이 없는 언어(en · th · my)는 영어 + 관사. ko · 로마자 줄과 받침 판정은 그대로.
+- **나라 이름 표는 번들 밖 — 콘텐츠 버킷 파일** ⟨같은 날, 사용자 결정 「A」⟩: 처음엔 자산(`countryNames`)에 실었으나 #513(+7.1 kB)과 합치면 번들 천장
+  5,327,000 B를 넘어(천장은 올리지 않는다) 표를 버킷 `country-names/<언어>.json`(`country-names-1`, 원본 `docs/content/country-names/`)으로 옮겼다.
+  받기는 `app-policy.json`과 같은 규칙(`country-names-refresh.ts` — 실행 시작 받기 차례마다 지금 UI 언어 파일 하나, 기다리지 않음, 형식 검증 뒤 기기 저장,
+  400 · 404면 저장본 삭제)이고, 읽기는 `country-names.ts`(언어마다 한 번 저장소에서 읽어 기억, 받기가 새 원문을 두면 바로 바꿈). **받기 전 · 실패 · 오프라인이면
+  영어 이름**이 선다 — 영어 밖 문장에는 관사 없이(`Tôi đến từ United States.`). 치환 프로필 메모는 표 참조가 바뀌면 다시 만든다. 계약 · 올리는 법은
+  [JSON 계약 부록 H](../specs/episode-content-json-contract.md).
 - **언어의 출처**: 미리보기는 문구표 `learnerProfile.language`, 레슨 치환 프로필은 세션의 화면 언어(`useLearnerProfile(entryLanguage)` = 번역 언어, ADR-0158).
 - **하지 않은 것**: 고르기 목록 · 검색 · A–Z 바 · 설정 줄의 나라 이름은 영어 그대로(D4 — 화면이 「search by English name」을 말하고, 일본어 등에는 A–Z 묶음이 없다).
   바꾸려면 목록 묶음 · 검색 키를 언어별로 다시 정해야 한다(재검토 조건 6).
-- 영어 이름과 같은 칸(es 78 · id 109 · vi 139)은 자산에서 뺀다 — 그 언어 문장에는 영어 이름이 **관사 없이** 선다(관사는 영어 문장에만).
-- 번들: 이 l10n 점검 전체로 `main.lynx.bundle` +17,486 B(origin/main f0e4519f 기준 5,306,729 → 5,324,215, 천장 5,327,000 — 여유 2,785 B). 테스트 LP-L1 ~ L4 · LP-U1 ~ U3 · P5e.
+- **남은 일(사람)**: 버킷에 `country-names/{es,id,ja,vi}.json` 넷을 올린다(부록 H의 명령, 공개 URL sha256 대조). 올리기 전에는 모든 언어에서 영어 이름이 선다.
+- 번들: 이 l10n 점검 전체로 `main.lynx.bundle` +9,980 B(origin/main 8ec8ff7d 기준 5,313,855 → 5,323,835, 천장 5,327,000 — 여유 3,165 B).
+  테스트 LP-L1 ~ L5 · CN1 ~ CN5 · LP-U1 ~ U4 · P5e · P5f.
