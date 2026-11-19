@@ -10,6 +10,15 @@
   padding: var(--libitum-layout-screen-padding-top) var(--libitum-spacing-20) 0;
 }
 
+/* 구매 뒤 확인 대기 알약의 자리(ADR-0163) — 닫기와 오른쪽 칩 사이 빈 칸. 위 줄 높이(칩 56)는 그대로입니다. */
+.coin-shop-screen-pill {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  align-items: center;
+  margin: 0 var(--libitum-spacing-8);
+}
+
 .shop-tabs {
   flex-shrink: 0;
   margin: 14px var(--libitum-spacing-20) 0;

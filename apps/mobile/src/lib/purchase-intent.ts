@@ -39,6 +39,29 @@ export function purchaseIntentOf(input: {
   };
 }
 
+type PackPurchasedInput = Extract<CompanionEventInput, { readonly name: "pack_purchased" }>;
+
+/** 엽전 팩 결제 성공 이벤트(ADR-0063 2026-11-19) — 금액 · 통화는 스토어 상품에서만(모르면 빈 문자열). 순수. */
+export function packPurchasedOf(input: {
+  readonly surface: PackPurchasedInput["surface"];
+  readonly productId: string;
+  readonly offers: readonly StoreOffer[] | null;
+  readonly transactionId: string | null;
+}): PackPurchasedInput {
+  const offer = input.offers?.find((item) => item.productId === input.productId);
+  const amount = offer?.amount ?? null;
+  const currency = offer?.currency ?? null;
+  const known = amount !== null && currency !== null;
+  return {
+    name: "pack_purchased",
+    surface: input.surface,
+    product: input.productId,
+    price: known ? String(amount) : "",
+    currency: known ? currency : "",
+    transactionId: input.transactionId ?? "",
+  };
+}
+
 let region: PricingRegion = "US";
 let sink: EpisodeIntroEventSink = null;
 let storefront: string | null = null;
@@ -88,6 +111,11 @@ export function purchaseStore(): {
 
 /** 결선 밖(엽전 상점)의 구매 의향 — sink가 없으면 아무것도 하지 않습니다. */
 export function reportPurchaseIntent(event: PurchaseIntentInput): void {
+  emitCompanionEvent(sink, event);
+}
+
+/** 결선 밖(엽전 상점)의 엽전 팩 결제 성공 — sink가 없으면 아무것도 하지 않습니다. */
+export function reportPackPurchased(event: PackPurchasedInput): void {
   emitCompanionEvent(sink, event);
 }
 

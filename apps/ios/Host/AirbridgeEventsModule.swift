@@ -5,7 +5,7 @@ import Foundation
 ///
 /// **설정이 있는 빌드에서만 등록된다**(`ViewController`가 `AirbridgeEvents.isStarted`를 본다).
 /// 카테고리 허용 목록은 호스트에 두지 않는다 — JS의 순수 매핑 하나가 정본이다.
-/// 받은 맵에서 문자열 값만 SDK에 넘기고 그 밖의 타입은 버린다. 응답 · 콜백이 없다.
+/// 받은 맵에서 문자열 · 수 · 상품 줄 배열(Order Complete, 2026-11-19)만 SDK에 넘기고 그 밖의 타입은 버린다. 응답 · 콜백이 없다.
 @objc(AirbridgeEventsModule)
 final class AirbridgeEventsModule: NSObject, LynxModule {
   @objc static var name: String { "AirbridgeEventsModule" }
@@ -27,7 +27,7 @@ final class AirbridgeEventsModule: NSObject, LynxModule {
   /// JS가 `semanticAttributes`를 빼거나 `null`로 넘겨도 브리지에서 죽지 않게 옵셔널로 받는다(Android와 같다).
   @objc func trackEvent(_ category: String, semanticAttributes: [String: Any]?) {
     AirbridgeEvents.track(
-      category, semanticAttributes: Self.stringAttributes(from: semanticAttributes ?? [:]))
+      category, semanticAttributes: Self.semanticAttributes(from: semanticAttributes ?? [:]))
   }
 
   /// 여정 맵에 들어설 때 JS가 부른다(ADR-0079 D2). 아직 정하지 않은 때만 시스템 대화상자가 뜬다. 응답이 없다.
@@ -55,8 +55,26 @@ final class AirbridgeEventsModule: NSObject, LynxModule {
     AirbridgeEvents.clearUser()
   }
 
-  /// 문자열 값만 남긴다. 순수.
-  static func stringAttributes(from attributes: [String: Any]) -> [String: String] {
-    attributes.compactMapValues { $0 as? String }
+  /// 문자열 · 수(불리언 아님) · 상품 줄 배열만 남긴다. 상품 줄 안도 문자열 · 수만. 순수.
+  static func semanticAttributes(from attributes: [String: Any]) -> [String: Any] {
+    attributes.compactMapValues { value -> Any? in
+      if let rows = value as? [Any] {
+        return rows.compactMap { ($0 as? [String: Any]).map(scalars(from:)) }
+      }
+      return scalar(value)
+    }
+  }
+
+  private static func scalars(from row: [String: Any]) -> [String: Any] {
+    row.compactMapValues(scalar)
+  }
+
+  /// 문자열이거나, 불리언이 아닌 수면 그대로. Lynx는 JS 수를 NSNumber로, 불리언을 CFBoolean NSNumber로 넘긴다.
+  private static func scalar(_ value: Any) -> Any? {
+    if let text = value as? String { return text }
+    if let number = value as? NSNumber, CFGetTypeID(number) != CFBooleanGetTypeID() {
+      return number.doubleValue
+    }
+    return nil
   }
 }

@@ -13,7 +13,12 @@ export type StoreOffer = {
 export type PurchaseResult =
   | { readonly kind: "unavailable" }
   | { readonly kind: "cancelled" }
-  | { readonly kind: "purchased"; readonly productId: string }
+  | {
+      readonly kind: "purchased";
+      readonly productId: string;
+      /** 스토어 거래 id(iOS transactionIdentifier · Play orderId) — 옛 호스트 · 모르면 없음(ADR-0063 Order Complete 중복 제거). */
+      readonly transactionId?: string;
+    }
   | { readonly kind: "failed" };
 
 export type RestoreResult =

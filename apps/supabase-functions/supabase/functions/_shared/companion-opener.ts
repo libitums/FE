@@ -105,7 +105,7 @@ export async function generateOpener(
     readonly history?: readonly HistoryEntry[];
     readonly userText: string;
     readonly ageBand: AgeBand;
-    /** 적용 수위(ADR-0163). 출력 검사가 그 수위의 선으로 본다. 없으면 standard. */
+    /** 적용 수위(ADR-0164). 출력 검사가 그 수위의 선으로 본다. 없으면 standard. */
     readonly romanceTier?: RomanceTier;
     readonly timeoutMs: number;
   },

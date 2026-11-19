@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 import { afterAll, beforeAll, beforeEach, expect, test } from "vitest";
 import { signIn, startTestDatabase } from "./postgres.test-support";
 
-// 20261216(ADR-0163): 추천 친구 넷 · 출시 스위치 · 합산 체험 · 완화 수위(open) · 성인 확인 동의.
+// 20261216(ADR-0164): 추천 친구 넷 · 출시 스위치 · 합산 체험 · 완화 수위(open) · 성인 확인 동의.
 const tester = "00000000-0000-4000-8000-000000000001";
 const member = "00000000-0000-4000-8000-000000000002";
 const migration = new URL("./20261216120000_companion_friends.sql", import.meta.url);

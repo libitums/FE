@@ -163,6 +163,12 @@ public final class PurchasesModule extends LynxModule {
           @Override public void onCompleted(StoreTransaction transaction, CustomerInfo info) {
             JavaOnlyMap payload = status("purchased");
             payload.putString("productId", product.getId());
+            // 거래 id — JS가 Airbridge Order Complete의 transactionID로 실어 중복을 막는다(ADR-0063 2026-11-19).
+            String transactionId = transaction.getOrderId();
+            if (transactionId == null || transactionId.isEmpty()) transactionId = transaction.getPurchaseToken();
+            if (transactionId != null && !transactionId.isEmpty()) {
+              payload.putString("transactionId", transactionId);
+            }
             callback.invoke(payload);
           }
 

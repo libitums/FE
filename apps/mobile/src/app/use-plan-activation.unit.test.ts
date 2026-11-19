@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { armOnPurchased } from "./use-plan-activation";
+import { REFRESH_DEADLINE_MS } from "../lib/purchase-refresh";
+import { ACTIVATION_WINDOW_MS, armOnPurchased } from "./use-plan-activation";
 
 function activationSpy() {
   const calls: string[] = [];
@@ -38,4 +39,11 @@ describe("armOnPurchased", () => {
       expect(activation.calls).toEqual(["disarm"]);
     },
   );
+});
+
+describe("ACTIVATION_WINDOW_MS (ADR-0163 D1)", () => {
+  it("follows the server catch-up deadline — one schedule, not the old 2 s × 5", () => {
+    expect(ACTIVATION_WINDOW_MS).toBe(REFRESH_DEADLINE_MS + 2000);
+    expect(ACTIVATION_WINDOW_MS).toBeGreaterThanOrEqual(60_000);
+  });
 });

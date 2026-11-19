@@ -682,7 +682,7 @@ ops-dashboard `docs/admin-contract.md` §A가 정본이다.
 올리면 `db push`에 `--include-all`이 필요하다. 적용 전에는 운영 도구 화면이 「적용 전」(`{deployed:false}`)으로 뜬다. 플레이그라운드는 시험 계정만
 고르므로 바뀌는 것이 없다.
 
-## 추천 친구 · 합산 체험 · 완화 수위 (20261216, ADR-0163)
+## 추천 친구 · 합산 체험 · 완화 수위 (20261216, ADR-0164)
 
 `migrations/20261216120000_companion_friends.sql` — 스토리 밖 추천 친구 넷(정본 `docs/content/companion-friends.json`), 출시 스위치
 `companion.settings.friends_mode`(`off` · `testers` 기본 · `on`), 무료 체험을 모든 인물 합산으로, 완화 수위(open — 인물 open + 생년상 성인 + 성인 확인 동의
@@ -701,3 +701,8 @@ ops-dashboard `docs/admin-contract.md` §A가 정본이다.
 **배포 순서**: 이 마이그레이션(20261212 **뒤**, 다시 적용해도 같다) → `chat-send` · `companion-greet` · `companion-proactive` · `companion-suggest` · `companion-eval` ·
 `companion-snapshot` → 앱. 함수를 먼저 올리면 판정에 `romanceTier`가 없어 모두 standard로 돈다(안전한 쪽). 에셋(기준 그림 `seoyeon-ref.png` 등 · 목소리
 `voiceId`)은 아직 없어 친구의 스냅샷 · 음성은 `not_configured`다 — 에셋을 올린 뒤 `companion.characters.media`를 채운다.
+
+## AI 대화 나이 하한 만 14세 (20261217)
+
+`migrations/20261217120000_companion_age_floor_14.sql` — `companion.turn_gate_base`의 하한을 13 → 14로 올린다(한국 개인정보보호법 · 처리방침 7절).
+정의를 통째로 다시 쓰지 않고 지금 정의에서 하한 한 줄만 바꾼다(운영 정의가 저장소와 어긋난 적이 있어). 이미 14면 아무것도 하지 않는다. [CH2]

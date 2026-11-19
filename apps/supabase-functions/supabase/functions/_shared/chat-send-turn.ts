@@ -53,7 +53,7 @@ export type { TurnContext };
 export async function runTurn(context: TurnContext): Promise<TurnOutcome> {
   const { deps, env, llm, sink, body, gate, turn } = context;
   const ageBand: AgeBand = gate.ageBand;
-  const romanceTier = effectiveRomanceTier(ageBand, gate.romanceTier); // 적용 수위(ADR-0163)
+  const romanceTier = effectiveRomanceTier(ageBand, gate.romanceTier); // 적용 수위(ADR-0164)
   const checkOutput = outputCheckRequired(ageBand, romanceTier);
   const moderation: ModerationRecord[] = [];
   const persona: PersonaCard = turn.persona ?? { name: body.character_id };

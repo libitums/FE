@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, beforeEach, expect, test } from "vitest";
 import { signIn, startTestDatabase } from "./postgres.test-support";
 
-// 20261216(ADR-0163 「운영자」): 플레이그라운드가 시험 계정의 성인 확인 동의를 켜고 끄고(`companion_operator_set_adult_ack`),
+// 20261216(ADR-0164 「운영자」): 플레이그라운드가 시험 계정의 성인 확인 동의를 켜고 끄고(`companion_operator_set_adult_ack`),
 // 시험 계정 목록 · 기억 읽기(`companion_inspect_testers` · `companion_inspect_memory`)에서 동의 · 접근 · 적용 수위를 본다.
 const tester = "00000000-0000-4000-8000-000000000001";
 const member = "00000000-0000-4000-8000-000000000002";

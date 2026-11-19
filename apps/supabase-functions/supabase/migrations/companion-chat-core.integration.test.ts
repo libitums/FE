@@ -152,6 +152,21 @@ test("CH2. 판정 — 시험 계정 · 캐릭터 · 연령", async () => {
     result: "age_restricted",
     detail: { reason: "guardian_consent_required" },
   });
+  // 하한은 만 14세(한국 개인정보보호법 · 처리방침 7절, 20261217) — 생년상 13세도 막고, 14세는 연다.
+  const thisYear = new Date(now).getUTCFullYear();
+  await db.admin.query("update companion.profiles set birth_year = $2 where user_id = $1", [
+    tester,
+    thisYear - 13,
+  ]);
+  expect(await gate(messageId(1))).toEqual({
+    result: "age_restricted",
+    detail: { reason: "guardian_consent_required" },
+  });
+  await db.admin.query("update companion.profiles set birth_year = $2 where user_id = $1", [
+    tester,
+    thisYear - 14,
+  ]);
+  expect(await gate(messageId(1))).toMatchObject({ result: "ok", ageBand: "minor" });
   await db.admin.query("update companion.profiles set birth_year = 1990 where user_id = $1", [
     tester,
   ]);
@@ -320,7 +335,7 @@ test("CH9. 운영 조회 — 시험 계정 목록 · 대화(내부 상태 · 판
       timezone: null,
       replySuggestions: true,
       snapshotSelf: "female",
-      adultAck: false, // 20261216(ADR-0163)
+      adultAck: false, // 20261216(ADR-0164)
     },
   ]);
 

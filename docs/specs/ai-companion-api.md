@@ -257,7 +257,7 @@ state 앞). 첫 인사(`companion-greet`) · 선톡(20261123)에도 붙는다. �
 - `POST { kind: "moderation" | "feedback" | "translation" | "suggestions" | "learning" | "reply", model?, judgeModel?, cases }`(케이스 1 ~ 20) → 운영과 같은 프롬프트로 케이스마다 결과.
 - `reply`(2026-11-14): 운영 페르소나 카드로 만든 답장 + 채점 노드의 축 판정(페르소나 · 말투 · 스포일러 · 학습자 수준 · 자연스러움 · 안전 · 지시가 있으면 학습 표현). 채점 모델 기본 `claude-opus-5-5`, 스포일러 메모는 채점자에게만. 모양은 함수 README 「companion-eval」.
 - `?docs=1`의 `prompts`에 `refusal { deflect, warn, userText }` · `suggestions`, `models`에 `suggest`가 있다.
-- ⟨2026-11-19 ADR-0163⟩ 케이스에 `romanceTier`(`open` · `standard`, 기본 standard — 성인이 아니면 open이어도 standard로 돈다)가 있다(검사 · 답장). `?docs=1`에
+- ⟨2026-11-19 ADR-0164⟩ 케이스에 `romanceTier`(`open` · `standard`, 기본 standard — 성인이 아니면 open이어도 standard로 돈다)가 있다(검사 · 답장). `?docs=1`에
   `prompts.moderationOpen { input, output_sync }`와 고정 평가 세트 `evalSets: [{ id, title, kind, cases, expect? }]`(추천 친구 넷의 페르소나 유지 10개씩 ·
   로맨스 수위 경계 — 검사 세트는 케이스마다 기대 판정 `expect`)가 더 있다. 대시보드가 세트마다 `POST`로 돌린다.
 
@@ -358,7 +358,7 @@ PostgREST(Supabase가 DB 함수를 `/rest/v1/rpc/<이름>` URL로 열어 주는 
   (PRD §3.9). 계약 `companionMemoryListSchema` · `json-schema/companion-memories.json`. `companion_update_memory`가 `user_edited`를 켠다.
 - ⟨2026-11-13⟩ 학습자 모습: `companion_save_profile`에 `p_snapshot_self`(`female` · `male` · `hidden`, 기본값 `null` — 옛 호출은 그대로).
   `companion_load_profile`이 `snapshotSelf`(기본 `female`)를 더 돌려준다. 운영자 `companion_operator_set_profile`도 같은 인수, `companion_inspect_testers`가 보여 준다.
-- ⟨2026-11-19 ADR-0163⟩ 추천 친구 · 완화 수위: `companion_load_profile`이 `adultAck`(성인 확인 동의가 있고 지금 생년상 성인일 때만 참)를 더 돌려준다.
+- ⟨2026-11-19 ADR-0164⟩ 추천 친구 · 완화 수위: `companion_load_profile`이 `adultAck`(성인 확인 동의가 있고 지금 생년상 성인일 때만 참)를 더 돌려준다.
   `companion_friends()`는 출시 스위치 `settings.friends_mode`(`off` 빈 목록 · `testers` 시험 계정만(기본) · `on` 모두)와 연령(생년으로 미성년자면 open 친구 없음)을
   따르고, 앱 전체가 시험 계정 전용(`testers_only`)인데 시험 계정이 아니면 빈 목록이다. 보이지 않는 친구는 `chat-send` · `companion-greet` · `companion-suggest` ·
   스냅샷 · 음성에서 `not_available`이고 `companion_list_characters`에 오지 않는다. 친구 추가는 무료 · 무제한이고 추가한 상태는 앱이 쥔다.
@@ -428,7 +428,7 @@ ops-dashboard 컴패니언 탭이 부른다. ops-dashboard는 서버에서 돌�
 | `companion_inspect_media(p_user_id, p_limit)` | 2026-11-13 | 스냅샷 · 음성 행 전부(프롬프트 · 판정 · 메타 · 오류 · 예약 상태) · 오늘 수 · 설정. `p_user_id` null이면 모든 유저 |
 | `companion_media_orphans(p_limit)` | 2026-11-13 | 행이 없는 `companion-media` 파일 이름(계정 삭제의 Storage 지우기가 실패한 경우 등) |
 
-⟨20261216 ADR-0163⟩ 운영자 함수(쓰기, service_role 전용 · 시험 계정만 — 아니면 `P0002 not a tester`, `companion_operator_reset`과 같다):
+⟨20261216 ADR-0164⟩ 운영자 함수(쓰기, service_role 전용 · 시험 계정만 — 아니면 `P0002 not a tester`, `companion_operator_reset`과 같다):
 
 | 함수 | 돌려주는 것 |
 |---|---|
@@ -738,7 +738,7 @@ FE가 네트워크 없이 재생한다. **파일이 아니라 TS 모듈**이다(
 | 판정 10 · 11 → 12(저장) | 체험 · 크레딧 예약과 유저 메시지 저장을 `companion_begin_turn` 한 트랜잭션에. 확정 · 해제도 `companion_finish_turn` 안에서 | RPC 왕복을 줄이고, 예약만 남고 메시지가 없는 상태를 없앤다 |
 | 후처리는 pgmq 큐 + `companion-job-worker` | 턴이 끝난 뒤 같은 요청에서 `waitUntil`로 기억 추출 · 요약 | MVP. 재시도가 필요해지면 큐로 옮긴다. 성인 사후 출력 검사는 아직 없다 — **2026-11-09 결정: 미룸**(PRD §3.11 · O21) |
 | 장기 메모리 의미 검색은 pgvector | 최근 기억 N개(`memory_prompt_limit`)를 넣는다 | 임베딩 모델 미정(C). `embedding` 열은 모델을 고른 뒤 더한다 — **2026-11-09 결정: 미룸**. 용량 상한 `memory_cap` · `shared_memory_cap`(PRD §3.9) |
-| 티어 | `free` · `premium` 둘. 무료는 체험 캐릭터(덕수쌤)만 — 체험을 다 쓰면 크레딧이 있을 때만 이어진다 → 20261127 엽전이 있으면 모든 인물, 20261216 체험도 모든 인물 합산(ADR-0163) | O2 · O3 전 초안 |
+| 티어 | `free` · `premium` 둘. 무료는 체험 캐릭터(덕수쌤)만 — 체험을 다 쓰면 크레딧이 있을 때만 이어진다 → 20261127 엽전이 있으면 모든 인물, 20261216 체험도 모든 인물 합산(ADR-0164) | O2 · O3 전 초안 |
 | 말투 단계 상한 | 페르소나의 `maxSpeechLevel`(bible.yaml register에서): 윤경 · 재민 · 덕수쌤 polite, 도윤 casual, 미나 slang | bible이 「끝까지 존댓말」을 정한 인물이 있다 |
 | 선톡 푸시 | 메시지만 저장. 푸시는 `send-push` 목적지 추가 뒤 | §2.3 그대로 M3 남은 일 — 세현님 인계(§2.3.1) |
 | 반복 위반 단계(회피 → 경고 → 차단) | 입력 차단만 세어 창(24시간) 안 3회면 30분 차단. 경고 이벤트는 없다(회피는 페르소나 프롬프트) | 계약에 경고 이벤트가 없다. 회피 · 경고는 **페르소나 거절**로 만들었다(§2.1 · `done.refusal`) |

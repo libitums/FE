@@ -1,0 +1,49 @@
+/* 칩 값의 스켈레톤(ADR-0163 · docs/design/purchase-pending.md). 너비 · 높이는 컴포넌트가 값 글 자리에 맞춰 인라인으로 줍니다.
+   빛 띠는 메신저 사진 스켈레톤(`messenger-chat.css`의 `.messenger-chat-shimmer`)과 같은 값입니다. */
+
+.skeleton-value {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.skeleton-value-bar {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--libitum-radius-full);
+}
+
+.skeleton-value-bar-neutral {
+  background-color: var(--libitum-color-gray-300);
+}
+
+/* 주황 면(구독 중 요금제 칩) 위 — 흰 막대를 반쯤 비춥니다. */
+.skeleton-value-bar-inverse {
+  background-color: rgba(255, 255, 255, 0.45);
+}
+
+.skeleton-value-shimmer {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 60%;
+  opacity: var(--libitum-opacity-45);
+  background-image: linear-gradient(
+    90deg,
+    transparent,
+    var(--libitum-color-white) 50%,
+    transparent
+  );
+  animation: skeleton-value-sweep var(--libitum-motion-duration-d9)
+    var(--libitum-motion-easing-linear) infinite;
+}
+
+@keyframes skeleton-value-sweep {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(260%);
+  }
+}

@@ -1,4 +1,4 @@
--- AI 컴패니언 — 추천 친구 · 합산 체험 · 완화 수위 · 출시 스위치 (ADR-0163).
+-- AI 컴패니언 — 추천 친구 · 합산 체험 · 완화 수위 · 출시 스위치 (ADR-0164).
 --
 -- 1. 추천 친구: 스토리 밖 공식 페르소나 넷(서연 · 해준 · 다은 · 건우, `persona.kind = 'friend'`). 정본은 `docs/content/companion-friends.json`
 --    (통합 테스트가 이름 · 선톡 줄 · 수위 · MBTI를 맞춘다). 스토리 다섯에는 `mbti` · `romanceTier = standard`를 더한다.
@@ -24,7 +24,7 @@ alter table companion.settings
 alter table companion.profiles add column if not exists adult_ack_at timestamptz;
 
 comment on column companion.settings.trial_character is
-  '쓰지 않는다(20261216 ADR-0163) — 체험은 모든 인물이 합산해 trial_limit통을 쓴다.';
+  '쓰지 않는다(20261216 ADR-0164) — 체험은 모든 인물이 합산해 trial_limit통을 쓴다.';
 
 -- ------------------------------------------------------------------ 내부 도우미 (companion 스키마, 노출 안 됨)
 
@@ -152,7 +152,7 @@ begin
   if not found then
     return jsonb_build_object('result', 'not_available');
   end if;
-  -- 추천 친구: 출시 스위치 · 시험 계정 · 미성년자의 open 친구(ADR-0163).
+  -- 추천 친구: 출시 스위치 · 시험 계정 · 미성년자의 open 친구(ADR-0164).
   if companion.friend_hidden(p_user_id, v_persona, p_now) then
     return jsonb_build_object('result', 'not_available');
   end if;
@@ -234,7 +234,7 @@ begin
   return jsonb_build_object(
     'result', 'ok',
     'ageBand', v_band,
-    -- 실제로 적용하는 로맨스 수위(ADR-0163) — open은 인물 open · 생년상 성인 · 성인 확인 동의가 모두 있을 때만.
+    -- 실제로 적용하는 로맨스 수위(ADR-0164) — open은 인물 open · 생년상 성인 · 성인 확인 동의가 모두 있을 때만.
     'romanceTier', companion.romance_tier(p_user_id, v_persona, p_now),
     'l1', v_profile.l1,
     'region', v_region,

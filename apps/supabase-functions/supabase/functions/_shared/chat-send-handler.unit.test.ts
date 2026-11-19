@@ -1809,7 +1809,7 @@ describe("출력 차단 되살리기(ADR-0151)", () => {
   });
 });
 
-describe("완화 수위(ADR-0163)", () => {
+describe("완화 수위(ADR-0164)", () => {
   const openPersona = {
     name: "차서연",
     kind: "friend",

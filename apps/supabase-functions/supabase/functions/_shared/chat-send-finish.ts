@@ -62,7 +62,7 @@ type FinishContext = {
   readonly deps: ChatSendDeps;
   readonly env: ChatSendEnv;
   readonly sink: Sink;
-  /** `ageBand` · `romanceTier`는 `done`의 적용 수위(ADR-0163). 없으면 standard. */
+  /** `ageBand` · `romanceTier`는 `done`의 적용 수위(ADR-0164). 없으면 standard. */
   readonly gate: {
     readonly notices: readonly string[];
     readonly ageBand?: AgeBand;

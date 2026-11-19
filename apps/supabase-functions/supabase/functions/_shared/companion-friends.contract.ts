@@ -1,4 +1,4 @@
-// 추천 친구 · 완화 수위(ADR-0163)의 서버 쪽 어휘 — 페르소나 카드(`chat-send.contract.ts`의 `PersonaCard`)에 더하는 칸.
+// 추천 친구 · 완화 수위(ADR-0164)의 서버 쪽 어휘 — 페르소나 카드(`chat-send.contract.ts`의 `PersonaCard`)에 더하는 칸.
 
 /** 로맨스 수위. open은 인물 open · 생년상 성인 · 성인 확인 동의가 모두 있을 때만 — 서버(SQL)가 정하고 코드가 한 번 더 막는다. */
 export type RomanceTier = "open" | "standard";

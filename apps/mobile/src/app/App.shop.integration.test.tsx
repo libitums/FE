@@ -257,7 +257,8 @@ test("SH-I6 Plans 탭에서 Unlimited Tickets를 사면 상점이 닫히고, 권
   await act(async () => {
     fireEvent.tap(screen.getByTestId("plans-continue"), {});
   });
-  for (let i = 0; i < 4; i += 1) await flush();
+  // 상점은 결제 직후가 아니라 서버 권한이 바뀐 뒤 닫힙니다(ADR-0163 D3) — 따라잡기가 끝날 만큼 비웁니다.
+  for (let i = 0; i < 12; i += 1) await flush();
   expect(present("coin-shop-screen")).toBe(false);
   expect(named("plan_selected")).toEqual([
     expect.objectContaining({
@@ -325,7 +326,8 @@ test("SH-I8 올림 뒤 내림(2026-11-19 07:53 기기) — 새 요금제 줄 없
   await act(async () => {
     fireEvent.tap(screen.getByTestId("plans-continue"), {});
   });
-  for (let i = 0; i < 4; i += 1) await flush();
+  // 상점은 결제 직후가 아니라 서버 권한이 바뀐 뒤 닫힙니다(ADR-0163 D3) — 따라잡기가 끝날 만큼 비웁니다.
+  for (let i = 0; i < 12; i += 1) await flush();
   expect(present("coin-shop-screen")).toBe(false);
   act(
     () =>

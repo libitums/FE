@@ -197,8 +197,9 @@ DB가 실패하면 500 — RevenueCat이 다시 보낸다. 같은 이벤트 id�
     기기 id가 비거나 공백이 섞이면(`deviceId`) 걸지 않는다. Android는 SDK 호출을 `RuntimeException | LinkageError`로 감싼다.
   - **ATT**: 이 경로는 대화상자를 띄우지 않는다. RevenueCat은 `ASIdentifierManager`를 읽기만 해서, 허용하지 않은 기기에는 IDFA가 실리지 않는다
     (IDFV · IP는 실린다 — 아래 개인정보).
-- **이중 집계 없음**: 앱의 Airbridge SDK는 구매 이벤트를 보내지 않는다 — `startInAppPurchaseTracking` · `trackStoreInAppPurchaseEvent`를 부르지 않고,
-  JS 매핑(ADR-0063 D7)에도 구매 카테고리가 없다. 구매는 **RevenueCat 서버 연동 하나만** 보낸다. 앱에서 구매 이벤트를 더하려면 이 줄을 먼저 고친다.
+- **이중 집계 없음**: 앱의 Airbridge SDK는 구독 이벤트를 보내지 않는다 — `startInAppPurchaseTracking` · `trackStoreInAppPurchaseEvent`를 부르지 않는다.
+  구독은 **RevenueCat 서버 연동 하나만** 보낸다. 예외는 엽전 팩 하나다 — 서버 연동이 NON_RENEWING_PURCHASE를 Airbridge에 남기지 않아 앱이
+  Order Complete로 보낸다(2026-11-19, ADR-0063 「엽전 팩 결제 Order Complete」). 앱에서 다른 구매 이벤트를 더하려면 이 줄을 먼저 고친다.
 - **개인정보**: RevenueCat이 고객 속성으로 Airbridge 기기 id · IDFV · IP(iOS, 허용 시 IDFA) · 광고 ID · IP(Android)를 받아 Airbridge로 넘긴다. App Store
   응답의 「기기 ID — 개발자 광고 · 추적 예」(ADR-0079)에 이미 들어 있는 범위다. 처리방침의 수탁자 목록에 RevenueCat의 광고 측정 전달을 적을지는
   사용자 확인([iOS 프라이버시](../ios-privacy.md) 「RevenueCat → Airbridge」).
@@ -227,3 +228,10 @@ DB가 실패하면 500 — RevenueCat이 다시 보낸다. 같은 이벤트 id�
   PRODUCT_CHANGE의 `expiration_at_ms`는 옛 상품의 만료다 — 곧바로 바뀌면 바뀐 시각, 미뤄지면 기간 끝(운영 store_events 10건으로 확인). 그 값으로 줄의 만료를
   앞당기기만 한다(`20261215120000_companion_product_change_expiry.sql`, `companion_apply_store_event`의 한 줄).
 - **남은 것**: 미뤄진 바꿈의 대상 카드에 다시 사는 CTA(「Switch to … from 날짜」)가 그대로 보인다 — 스토어가 같은 바꿈을 다시 받는지는 확인하지 않았다.
+
+## 추가 ⟨2026-11-19 — 구매 뒤 확인 대기 · 엽전 팩 Order Complete⟩
+
+- 서버 따라잡기 일정이 2초 × 5에서 **1 · 2 · 2 · 3 · 5 · 5 · 7 · 10 · 10 · 15초(합 60초)**로 바뀌었고, 그 동안 화면이 확인 대기를 보인다 — [ADR-0163](0163-purchase-pending-state.md).
+  엽전 팩은 잔액이 바뀌어야(`settle: "balance"`), 구독은 권한이 바뀌어야 멈춘다. 구독 성공 알림 창도 같은 기한(60초 + 2초)이다.
+- RevenueCat → Airbridge 연동은 엽전 팩(NON_RENEWING_PURCHASE)을 보내지 않는다(2026-11-19 실시간 로그 확인). **엽전 팩만 앱이 Airbridge Order Complete로 보낸다** —
+  [ADR-0063 적용 기록 2026-11-19](0063-airbridge-events.md). 구독은 지금처럼 RevenueCat이 보낸다. 호스트 구매 답에 스토어 거래 id(`transactionId`)를 더했다.

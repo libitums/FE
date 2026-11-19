@@ -53,6 +53,8 @@ export type TopBarProps = {
   readonly onTicketDropped?: () => void;
   /** 구독 성공 직후(ADR-0160) — 무제한 티켓 칩 둘레 고리가 한 번 반짝입니다. */
   readonly ticketPulse?: boolean;
+  /** 구매 뒤 서버 확인 대기(ADR-0163) — 엽전 칩 값이 스켈레톤입니다. */
+  readonly coinUpdating?: boolean;
 };
 
 export function TopBar({
@@ -72,6 +74,7 @@ export function TopBar({
   ticketDropFrom = null,
   onTicketDropped,
   ticketPulse = false,
+  coinUpdating = false,
 }: TopBarProps): ReactNode {
   const copy = useUiCopy();
   const motion = useMotion();
@@ -213,9 +216,10 @@ export function TopBar({
             value={coinCount}
             formatValue={statChipText}
             accessibilityLabel={
-              onOpenCoins === undefined
+              (coinUpdating ? `${copy.coinShop.purchaseWait.updating}, ` : "") +
+              (onOpenCoins === undefined
                 ? copy.common.count.coins(coinCount)
-                : copy.coinShop.openShop(coinCount)
+                : copy.coinShop.openShop(coinCount))
             }
             testId="top-bar-coins"
             iconId={topBarCoinIconId}
@@ -223,6 +227,7 @@ export function TopBar({
             height="touch-target"
             onTap={onOpenCoins === undefined ? undefined : handleOpenCoins}
             plus={onOpenCoins !== undefined && coinPlus}
+            updating={coinUpdating}
           />
         )}
       </view>
