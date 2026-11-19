@@ -61,6 +61,10 @@ export const COMPANION_CHARACTERS: readonly CompanionCharacter[] = [
     sheetOpening: {
       ko: "잘 도착했어요? 익선 게스트하우스 정윤경이에요.",
       en: "Did you get here okay? This is Jung Yoonkyung from Ikseon Guesthouse.",
+      es: "¿Llegó bien? Soy Jung Yoonkyung, de Ikseon Guesthouse.",
+      id: "Sudah sampai dengan selamat? Saya Jung Yoonkyung dari Ikseon Guesthouse.",
+      ja: "無事に着きましたか？益善ゲストハウスのチョン・ユンギョンです。",
+      vi: "Bạn đến nơi an toàn chứ? Tôi là Jung Yoonkyung ở nhà nghỉ Ikseon.",
     },
     firstLine: "잘 도착했어요? 익선 게스트하우스 정윤경이에요.",
     ...storyProfile("ISFJ", {
@@ -77,7 +81,14 @@ export const COMPANION_CHARACTERS: readonly CompanionCharacter[] = [
     avatarPath: profile("mina-casual"),
     unlockEpisodeId: "u03-mina",
     unlockEpisode: 3,
-    sheetOpening: { ko: "안녕하세요! 같은 방 미나예요.", en: "Hi! It's Mina, your roommate." },
+    sheetOpening: {
+      ko: "안녕하세요! 같은 방 미나예요.",
+      en: "Hi! It's Mina, your roommate.",
+      es: "¡Hola! Soy Mina, tu compañera de cuarto.",
+      id: "Hai! Aku Mina, teman sekamarmu.",
+      ja: "こんにちは！同じ部屋のミナです。",
+      vi: "Chào bạn! Mình là Mina, bạn cùng phòng.",
+    },
     firstLine: "안녕하세요! 같은 방 미나예요.",
     ...storyProfile("ESFJ", {
       en: "Your roommate at the guesthouse",
@@ -96,6 +107,10 @@ export const COMPANION_CHARACTERS: readonly CompanionCharacter[] = [
     sheetOpening: {
       ko: "안녕하세요! 카페 끌림 도윤이에요.",
       en: "Hi! It's Doyun from Cafe Kkeullim.",
+      es: "¡Hola! Soy Doyun, de Cafe Kkeullim.",
+      id: "Hai! Ini Doyun dari Cafe Kkeullim.",
+      ja: "こんにちは！カフェ・クルリムのドユンです。",
+      vi: "Chào bạn! Mình là Doyun ở quán cà phê Kkeullim.",
     },
     firstLine: "안녕하세요! 카페 끌림 도윤이에요.",
     ...storyProfile("ENFP", {
@@ -115,6 +130,10 @@ export const COMPANION_CHARACTERS: readonly CompanionCharacter[] = [
     sheetOpening: {
       ko: "서재민이에요.",
       en: "It's Seo Jaemin.",
+      es: "Soy Seo Jaemin.",
+      id: "Ini Seo Jaemin.",
+      ja: "ソ・ジェミンです。",
+      vi: "Tôi là Seo Jaemin.",
     },
     firstLine: "서재민이에요.",
     ...storyProfile("INTJ", {

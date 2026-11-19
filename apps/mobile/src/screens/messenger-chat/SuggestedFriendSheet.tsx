@@ -188,7 +188,7 @@ export function SuggestedFriendSheet({
                   direction="incoming"
                   speaker={character.name}
                   message={character.sheetOpening.ko}
-                  translation={character.sheetOpening.en}
+                  translation={localizedLine(character.sheetOpening, copy.language)}
                 />
               </view>
             ) : null}

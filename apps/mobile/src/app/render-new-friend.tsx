@@ -9,6 +9,7 @@ import { useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import { emitCompanionEvent } from "../lib/companion-events";
+import { useUiCopy } from "../lib/ui-copy";
 import { NewFriendLayer } from "../screens/messenger-chat/NewFriendLayer";
 import type { NewFriendModel } from "../screens/messenger-chat/new-friend.contract";
 import { takeNewFriend } from "./new-friend-pending";
@@ -25,11 +26,12 @@ export type NewFriendMapHostProps = {
 
 export function NewFriendMapHost({ wiring, active, children }: NewFriendMapHostProps): ReactNode {
   // 모델을 못 만들면(이름 · 얼굴 · 첫 메시지 등이 없음) 시트 없이 맵만 둡니다 — 해금은 이미 됐고 목록에 NEW 줄이 남습니다.
+  const language = useUiCopy().messengerChat.suggested.language;
   const [model] = useState<NewFriendModel | null>(() => {
     const characterId = takeNewFriend();
     return characterId === null
       ? null
-      : newFriendModelOf(characterId, wiring, messengerAccessFor(wiring));
+      : newFriendModelOf(characterId, wiring, messengerAccessFor(wiring), language);
   });
   if (model === null) return children;
   const closed = (choice: "reply" | "later") =>

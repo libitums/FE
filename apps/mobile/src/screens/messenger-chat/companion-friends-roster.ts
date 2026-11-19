@@ -25,8 +25,13 @@ type FriendSource = {
   readonly romanceTier: "open" | "standard";
   readonly job: LocalizedLine;
   readonly bio: LocalizedLine;
-  readonly first: { readonly ko: readonly string[]; readonly en: readonly string[] };
+  /** 첫 말 — ko · en은 정본 JSON, es · id · ja · vi는 시트 뜻풀이(정본 JSON에 없어 이 표가 정본, 2026-11-19). */
+  readonly first: Readonly<Record<"ko" | "en" | "es" | "id" | "ja" | "vi", readonly string[]>>;
 };
+
+/** 말풍선 여러 개를 시트의 한 줄로 — 일본어는 띄우지 않습니다. */
+const joined = (lines: readonly string[], language: string) =>
+  lines.join(language === "ja" ? "" : " ");
 
 const entryOf = (source: FriendSource): FriendRosterEntry => ({
   id: source.id,
@@ -38,7 +43,14 @@ const entryOf = (source: FriendSource): FriendRosterEntry => ({
   intro: source.bio,
   tags: [source.job, ageTag(source.age), { en: source.mbti }],
   category: null,
-  sheetOpening: { ko: source.first.ko.join(" "), en: source.first.en.join(" ") },
+  sheetOpening: {
+    ko: joined(source.first.ko, "ko"),
+    en: joined(source.first.en, "en"),
+    es: joined(source.first.es, "es"),
+    id: joined(source.first.id, "id"),
+    ja: joined(source.first.ja, "ja"),
+    vi: joined(source.first.vi, "vi"),
+  },
   earlyAccess: null,
   romanceTier: source.romanceTier,
   gender: source.gender,
@@ -71,6 +83,10 @@ export const COMPANION_FRIENDS: readonly FriendRosterEntry[] = [
     first: {
       ko: ["안녕하세요, 차서연이에요.", "한국엔 왜 왔어요? 궁금해요."],
       en: ["Hi, I'm Cha Seoyeon.", "What brought you to Korea? I'm curious."],
+      es: ["Hola, soy Cha Seoyeon.", "¿Qué te trajo a Corea? Tengo curiosidad."],
+      id: ["Hai, aku Cha Seoyeon.", "Kenapa kamu datang ke Korea? Aku penasaran."],
+      ja: ["こんにちは、チャ・ソヨンです。", "どうして韓国に来たんですか？気になります。"],
+      vi: ["Chào bạn, mình là Cha Seoyeon.", "Sao bạn lại đến Hàn Quốc? Mình tò mò ghê."],
     },
   }),
   entryOf({
@@ -97,6 +113,16 @@ export const COMPANION_FRIENDS: readonly FriendRosterEntry[] = [
     first: {
       ko: ["안녕하세요, 권해준이에요.", "한국 노래 좋아해요? 좋아하는 가수 있어요?"],
       en: ["Hi, I'm Kwon Haejun.", "Do you like Korean music? Any favourite singer?"],
+      es: [
+        "Hola, soy Kwon Haejun.",
+        "¿Te gusta la música coreana? ¿Tienes algún cantante favorito?",
+      ],
+      id: ["Hai, aku Kwon Haejun.", "Kamu suka lagu Korea? Ada penyanyi favorit?"],
+      ja: ["こんにちは、クォン・ヘジュンです。", "韓国の歌は好きですか？好きな歌手はいますか？"],
+      vi: [
+        "Chào bạn, mình là Kwon Haejun.",
+        "Bạn có thích nhạc Hàn không? Có ca sĩ nào bạn thích không?",
+      ],
     },
   }),
   entryOf({
@@ -123,6 +149,16 @@ export const COMPANION_FRIENDS: readonly FriendRosterEntry[] = [
     first: {
       ko: ["안녕하세요! 송다은이에요.", "어느 나라에서 왔어요? 저 외국인 친구 처음이에요!"],
       en: ["Hello! I'm Song Daeun.", "Where are you from? You're my first foreign friend!"],
+      es: ["¡Hola! Soy Song Daeun.", "¿De dónde eres? ¡Eres mi primer amigo extranjero!"],
+      id: ["Halo! Aku Song Daeun.", "Kamu dari negara mana? Kamu teman asing pertamaku!"],
+      ja: [
+        "こんにちは！ソン・ダウンです。",
+        "どこの国から来たんですか？外国人の友だち、初めてなんです！",
+      ],
+      vi: [
+        "Xin chào! Mình là Song Daeun.",
+        "Bạn đến từ nước nào vậy? Bạn là người bạn nước ngoài đầu tiên của mình đó!",
+      ],
     },
   }),
   entryOf({
@@ -151,6 +187,16 @@ export const COMPANION_FRIENDS: readonly FriendRosterEntry[] = [
       en: [
         "Hello! I'm Lim Geonwoo.",
         "What Korean food do you like? I'll tell you the good places.",
+      ],
+      es: ["¡Hola! Soy Lim Geonwoo.", "¿Qué comida coreana te gusta? Te digo los mejores sitios."],
+      id: [
+        "Halo! Aku Lim Geonwoo.",
+        "Suka makanan Korea apa? Nanti kukasih tahu tempat makan yang enak.",
+      ],
+      ja: ["こんにちは！イム・ゴヌです。", "韓国料理は何が好きですか？おいしいお店、教えますよ。"],
+      vi: [
+        "Xin chào! Mình là Lim Geonwoo.",
+        "Bạn thích món Hàn nào? Mình sẽ chỉ cho bạn mấy quán ngon.",
       ],
     },
   }),

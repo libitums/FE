@@ -1,6 +1,7 @@
 import { afterEach, expect, test, vi } from "vitest";
 import { cleanup, render, screen } from "@lynx-js/react/testing-library";
 
+import { UiCopyContext, uiCopyFor } from "../../lib/ui-copy";
 import { clearBackHandlers, systemBack, tapId } from "./chat-ui.test-support";
 import { suggestedFriendsTestIds as ids } from "./suggested-friends.contract";
 import type { SuggestedFriendSheetModel } from "./suggested-friends.contract";
@@ -119,4 +120,34 @@ test("SS4. 단추 줄 아래 여백 = 16 + 아래 시스템 바(Android 3버튼 
   mount(addable());
   const actions = screen.getByTestId(ids.sheetLater).parentElement;
   expect(actions?.getAttribute("style") ?? "").toMatch(/padding-bottom:\s*64px/);
+});
+
+// SS5 — 첫 말의 뜻풀이는 화면 언어 칸입니다(2026-11-19 l10n 점검: 일본어 화면에 영어 뜻풀이가 섰다). 칸이 없는 언어는 en.
+test("SS5. 첫 말 뜻풀이는 화면 언어(ja) 칸, 한국어는 그대로", () => {
+  const ja = friend("doyun", {
+    name: "한도윤",
+    unlockEpisode: 12,
+    intro: { en: "Met at Cafe Kkeullim" },
+    tags: [],
+    sheetOpening: {
+      ko: "안녕하세요! 카페 끌림 도윤이에요.",
+      en: "Hi! It's Doyun from Cafe Kkeullim.",
+      ja: "こんにちは！カフェ・クルリムのドユンです。",
+    },
+  });
+  render(
+    <UiCopyContext.Provider value={uiCopyFor("ja")}>
+      <SuggestedFriendSheet
+        model={addable(ja)}
+        now={NOW}
+        onStart={vi.fn()}
+        onEarly={vi.fn()}
+        onClose={vi.fn()}
+      />
+    </UiCopyContext.Provider>,
+  );
+  const opening = screen.getByTestId(ids.sheetOpening).textContent ?? "";
+  expect(opening).toContain("안녕하세요! 카페 끌림 도윤이에요.");
+  expect(opening).toContain("こんにちは！カフェ・クルリムのドユンです。");
+  expect(opening).not.toContain("Hi! It's Doyun");
 });
