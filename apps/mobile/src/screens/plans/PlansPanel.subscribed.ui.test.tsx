@@ -128,3 +128,20 @@ test("PS6 구독이 없으면 Manage subscription이 없고 칩은 Free", () => 
   expect(screen.getByTestId(ids.yourPlan)).toHaveTextContent("Free");
   expect(cta()).toHaveTextContent("Continue with Premium");
 });
+
+test("PS7 미뤄진 내림(2026-11-19 Premium → Unlimited Tickets) — 지금 카드 한 줄이 바뀔 요금제와 날짜를 쓴다", () => {
+  const premium = subscribedTo("premium");
+  const [row] = premium.entitlements;
+  mount({ ...premium, entitlements: [{ ...row!, pendingProductId: "duru.tickets.monthly.v1" }] });
+  expect(screen.getByTestId(ids.currentBadge("premium"))).toHaveTextContent(
+    "Current plan · Tickets ∞ from Dec 18",
+  );
+  expect(screen.getByTestId(ids.currentBadge("premium"))).not.toHaveTextContent("renews");
+});
+
+test("PS8 옛 서버(pendingProductId 없음)면 지금처럼 갱신 날짜", () => {
+  mount(subscribedTo("premium"));
+  expect(screen.getByTestId(ids.currentBadge("premium"))).toHaveTextContent(
+    "Current plan · renews Dec 18",
+  );
+});

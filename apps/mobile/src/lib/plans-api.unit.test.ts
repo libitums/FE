@@ -73,6 +73,40 @@ describe("SB-U1 응답", () => {
   });
 });
 
+describe("SB-U3 미뤄진 바꿈(pendingProductId)", () => {
+  const raw = (extra: Record<string, unknown>) => ({
+    tier: "premium",
+    unlimitedTickets: true,
+    entitlements: [
+      {
+        id: "premium",
+        productId: "duru.premium.monthly.v1",
+        store: "APP_STORE",
+        status: "active",
+        willRenew: true,
+        expiresAt: "2026-11-19T07:28:45+00:00",
+        ...extra,
+      },
+    ],
+  });
+  test("있으면 읽는다 — 2026-11-19 Premium → Unlimited Tickets 내림", () => {
+    const parsed = planEntitlementsFrom(body(raw({ pendingProductId: "duru.tickets.monthly.v1" })));
+    expect(parsed?.entitlements[0]?.pendingProductId).toBe("duru.tickets.monthly.v1");
+  });
+  test("옛 서버(필드 없음) · null · 틀린 값이면 빼고 나머지는 산다", () => {
+    for (const extra of [
+      {},
+      { pendingProductId: null },
+      { pendingProductId: 3 },
+      { pendingProductId: "" },
+    ]) {
+      const parsed = planEntitlementsFrom(body(raw(extra)));
+      expect(parsed?.entitlements).toHaveLength(1);
+      expect(parsed?.entitlements[0]).not.toHaveProperty("pendingProductId");
+    }
+  });
+});
+
 describe("SB-U2 요청", () => {
   test("두 RPC를 토큰으로 부르고, 로그인 없음 · 실패 · 던짐은 null", async () => {
     const calls: { url: string; body: unknown; auth: string | undefined }[] = [];

@@ -18,7 +18,7 @@ export type PurchaseRefreshDeps = {
 export const REFRESH_ATTEMPTS = 5;
 export const REFRESH_INTERVAL_MS = 2000;
 
-/** 권한이 같은지 — 등급 · 무제한 티켓 · 권한 줄(상품 · 상태 · 만료)로 봅니다. 순수. */
+/** 권한이 같은지 — 등급 · 무제한 티켓 · 권한 줄(상품 · 상태 · 만료 · 미뤄진 바꿈)로 봅니다. 순수. */
 export function sameEntitlements(a: PlanEntitlements | null, b: PlanEntitlements | null): boolean {
   if (a === null || b === null) return a === b;
   if (a.tier !== b.tier || a.unlimitedTickets !== b.unlimitedTickets) return false;
@@ -29,7 +29,8 @@ export function sameEntitlements(a: PlanEntitlements | null, b: PlanEntitlements
       other !== undefined &&
       row.productId === other.productId &&
       row.status === other.status &&
-      row.expiresAt === other.expiresAt
+      row.expiresAt === other.expiresAt &&
+      row.pendingProductId === other.pendingProductId
     );
   });
 }

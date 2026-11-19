@@ -41,6 +41,8 @@ export type ShopCopy = {
   readonly date: (month: number, day: number) => string;
   /** 지금 카드 — 날짜를 모르면 「Current plan」만. 갱신하지 않으면 끝나는 날. */
   readonly current: (date: string | null, renews: boolean) => string;
+  /** 지금 카드 — 다음 갱신으로 미뤄진 바꿈(내림 · 같은 수준). `plan`은 칩 글(planShort). 날짜를 모르면 「갱신 때」. 카드 알약 한 줄이라 짧게 — 「Current plan · Tickets ∞ from Dec 18」. */
+  readonly scheduled: (plan: string, date: string | null) => string;
   readonly tag: {
     readonly upgrade: string;
     readonly switchAt: (date: string | null) => string;
@@ -65,6 +67,9 @@ export type ShopCopy = {
   readonly goUnlimited: (price: string | null) => string;
   readonly activated: {
     readonly title: (name: string) => string;
+    /** 미뤄진 바꿈의 알림 — 「Unlimited Tickets starts Dec 18」 · 「You keep Premium until then」. */
+    readonly startsAt: (name: string, date: string | null) => string;
+    readonly keep: (from: string) => string;
     readonly body: Readonly<Record<PlanKey, string>>;
   };
 };
@@ -145,6 +150,8 @@ export const shopCopy: Readonly<Record<"en" | "es" | "id" | "ja" | "vi", ShopCop
     date: (month, day) => `${enMonths[month] ?? ""} ${day}`,
     current: (date, renews) =>
       date === null ? "Current plan" : `Current plan · ${renews ? "renews" : "ends"} ${date}`,
+    scheduled: (plan, date) =>
+      date === null ? `Current plan · ${plan} at renewal` : `Current plan · ${plan} from ${date}`,
     tag: {
       upgrade: "Upgrade · starts now",
       switchAt: (date) => (date === null ? "Switch · at renewal" : `Switch · starts ${date}`),
@@ -169,6 +176,9 @@ export const shopCopy: Readonly<Record<"en" | "es" | "id" | "ja" | "vi", ShopCop
     chip: { plans: "PLANS", ...chipPlans },
     goUnlimited: (price) => (price === null ? "Go unlimited" : `Go unlimited · ${price}/mo`),
     activated: {
+      startsAt: (name, date) =>
+        date === null ? `${name} starts at renewal` : `${name} starts ${date}`,
+      keep: (from) => `You keep ${from} until then`,
       title: (name) => `${name} is on`,
       body: {
         unlimited_tickets: "Start any lesson without a ticket",
@@ -209,6 +219,8 @@ export const shopCopy: Readonly<Record<"en" | "es" | "id" | "ja" | "vi", ShopCop
       date === null
         ? "Plan actual"
         : `Plan actual · ${renews ? "se renueva el" : "termina el"} ${date}`,
+    scheduled: (plan, date) =>
+      date === null ? `Plan actual · ${plan} al renovar` : `Plan actual · ${plan} desde el ${date}`,
     tag: {
       upgrade: "Mejora · empieza ya",
       switchAt: (date) => (date === null ? "Cambio · al renovar" : `Cambio · desde el ${date}`),
@@ -234,6 +246,9 @@ export const shopCopy: Readonly<Record<"en" | "es" | "id" | "ja" | "vi", ShopCop
     goUnlimited: (price) =>
       price === null ? "Pasar a ilimitado" : `Pasar a ilimitado · ${price}/mes`,
     activated: {
+      startsAt: (name, date) =>
+        date === null ? `${name} empieza al renovar` : `${name} empieza el ${date}`,
+      keep: (from) => `Mantienes ${from} hasta entonces`,
       title: (name) => `${name} está activo`,
       body: {
         unlimited_tickets: "Empieza cualquier lección sin ticket",

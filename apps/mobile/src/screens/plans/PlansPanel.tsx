@@ -9,7 +9,13 @@ import { PlanCard } from "./PlanCard";
 import { PlanCta, planCtaText } from "./PlanCta";
 import { PlanPeriodToggle } from "./PlanPeriodToggle";
 import { PlanTerms, PlanTermsLine } from "./PlanTerms";
-import { currentPlanOf, dateParts, planChangeOf, type PlanChange } from "./plan-change";
+import {
+  currentPlanOf,
+  dateParts,
+  planChangeOf,
+  scheduledChangeOf,
+  type PlanChange,
+} from "./plan-change";
 import { initialPlanSelection, isCurrentCard, planCardsFor, type PlanPeriod } from "./plans-model";
 import { plansTestIds as ids, type PlansPanelProps } from "./plans.contract";
 import { usePlanRequest } from "./use-plan-request";
@@ -121,6 +127,17 @@ export function PlansPanel({
             ? shop.change.crossgrade(fromName, toName, store)
             : null;
   const termsPeriod = selected === undefined && current !== null ? current.period : period;
+  // 다음 갱신으로 미뤄진 바꿈(2026-11-19 Premium → Unlimited Tickets) — 지금 카드 한 줄이 「renews」 대신 바뀔 요금제를 씁니다.
+  const scheduled = scheduledChangeOf(entitlements, catalog);
+  const currentLine =
+    scheduled === null
+      ? shop.current(date, current?.willRenew ?? true)
+      : shop.scheduled(
+          scheduled.to === scheduled.from
+            ? `${shop.planShort[scheduled.to]} (${text[scheduled.period]})`
+            : shop.planShort[scheduled.to],
+          date,
+        );
   const tone = (base: string) => `${base} ${base}-${theme}`;
 
   return (
@@ -163,7 +180,7 @@ export function PlansPanel({
                     period={period}
                     testId={ids.card(card.id)}
                     selected={card.id === selectedId}
-                    {...(mine ? { current: shop.current(date, current?.willRenew ?? true) } : {})}
+                    {...(mine ? { current: currentLine } : {})}
                     {...(mine || current === null
                       ? {}
                       : { tag: tagOf(planChangeOf(current, card.id, period), date, text) })}

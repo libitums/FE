@@ -51,6 +51,10 @@ export const shopCopyId: ShopCopy = {
     date === null
       ? "Paket saat ini"
       : `Paket saat ini · ${renews ? "diperpanjang" : "berakhir"} ${date}`,
+  scheduled: (plan, date) =>
+    date === null
+      ? `Paket saat ini · ${plan} saat perpanjangan`
+      : `Paket saat ini · ${plan} mulai ${date}`,
   tag: {
     upgrade: "Upgrade · mulai sekarang",
     switchAt: (date) => (date === null ? "Ganti · saat perpanjangan" : `Ganti · mulai ${date}`),
@@ -75,6 +79,9 @@ export const shopCopyId: ShopCopy = {
   chip: { plans: "PAKET", ...chipPlans },
   goUnlimited: (price) => (price === null ? "Jadi tanpa batas" : `Jadi tanpa batas · ${price}/bln`),
   activated: {
+    startsAt: (name, date) =>
+      date === null ? `${name} mulai saat perpanjangan` : `${name} mulai ${date}`,
+    keep: (from) => `Kamu tetap memakai ${from} sampai saat itu`,
     title: (name) => `${name} sudah aktif`,
     body: {
       unlimited_tickets: "Mulai pelajaran apa pun tanpa tiket",
@@ -114,6 +121,8 @@ export const shopCopyJa: ShopCopy = {
   date: (month, day) => `${month + 1}月${day}日`,
   current: (date, renews) =>
     date === null ? "現在のプラン" : `現在のプラン · ${date}に${renews ? "更新" : "終了"}`,
+  scheduled: (plan, date) =>
+    date === null ? `現在のプラン · 次の更新から${plan}` : `現在のプラン · ${date}から${plan}`,
   tag: {
     upgrade: "アップグレード · すぐ開始",
     switchAt: (date) => (date === null ? "変更 · 次の更新から" : `変更 · ${date}から`),
@@ -137,6 +146,8 @@ export const shopCopyJa: ShopCopy = {
   chip: { plans: "プラン", ...chipPlans },
   goUnlimited: (price) => (price === null ? "無制限にする" : `無制限にする · ${price}/月`),
   activated: {
+    startsAt: (name, date) => (date === null ? `${name}は次の更新から` : `${name}は${date}から`),
+    keep: (from) => `それまで${from}を使えます`,
     title: (name) => `${name}が有効になりました`,
     body: {
       unlimited_tickets: "チケットなしでどのレッスンも始められます",
@@ -176,6 +187,8 @@ export const shopCopyVi: ShopCopy = {
   date: (month, day) => `${day} thg ${month + 1}`,
   current: (date, renews) =>
     date === null ? "Gói hiện tại" : `Gói hiện tại · ${renews ? "gia hạn" : "kết thúc"} ${date}`,
+  scheduled: (plan, date) =>
+    date === null ? `Gói hiện tại · ${plan} khi gia hạn` : `Gói hiện tại · ${plan} từ ${date}`,
   tag: {
     upgrade: "Nâng cấp · bắt đầu ngay",
     switchAt: (date) => (date === null ? "Đổi · khi gia hạn" : `Đổi · từ ${date}`),
@@ -201,6 +214,9 @@ export const shopCopyVi: ShopCopy = {
   goUnlimited: (price) =>
     price === null ? "Dùng không giới hạn" : `Dùng không giới hạn · ${price}/tháng`,
   activated: {
+    startsAt: (name, date) =>
+      date === null ? `${name} bắt đầu khi gia hạn` : `${name} bắt đầu từ ${date}`,
+    keep: (from) => `Bạn vẫn dùng ${from} đến lúc đó`,
     title: (name) => `${name} đã bật`,
     body: {
       unlimited_tickets: "Bắt đầu bài học bất kỳ mà không cần vé",
