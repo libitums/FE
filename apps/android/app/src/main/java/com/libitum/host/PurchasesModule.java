@@ -13,22 +13,29 @@ import com.revenuecat.purchases.CustomerInfo;
 import com.revenuecat.purchases.PurchaseParams;
 import com.revenuecat.purchases.Purchases;
 import com.revenuecat.purchases.PurchasesError;
+import com.revenuecat.purchases.PurchasesErrorCode;
+import com.revenuecat.purchases.Store;
+import com.revenuecat.purchases.SubscriptionInfo;
 import com.revenuecat.purchases.interfaces.GetStoreProductsCallback;
 import com.revenuecat.purchases.interfaces.GetStorefrontCallback;
 import com.revenuecat.purchases.interfaces.LogInCallback;
 import com.revenuecat.purchases.interfaces.PurchaseCallback;
 import com.revenuecat.purchases.interfaces.ReceiveCustomerInfoCallback;
+import com.revenuecat.purchases.models.GoogleReplacementMode;
 import com.revenuecat.purchases.models.Price;
 import com.revenuecat.purchases.models.StoreProduct;
 import com.revenuecat.purchases.models.StoreTransaction;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 스토어 상품 · 스토어 나라 · 구매 · 복원을 JS에 여는 호스트 모듈이다(ADR-0144 D7 2단계). **SDK가 시작된 빌드에서만** 등록한다
  * (`PurchasesSdk.configure`). 모든 동작은 콜백 하나로 답한다(`{ status, … }`) — iOS `PurchasesModule.swift`와 같은 모양.
  * Play 구독 상품 id는 `구독id:기본요금제id`로 나가고, JS가 앞부분만 쓴다. 구매 · 복원을 열지는 JS의 결제 플래그가 정한다.
+ * iOS와 다른 점(ADR-0144 「Android 결제 준비」): 구독은 지금 Play 구독을 바꿈으로 산다(`PurchasesPlanChange`), 보류 결제는 `pending`.
  */
 public final class PurchasesModule extends LynxModule {
   /** 앱이 파는 상품 id(ADR-0144 D4). 스토어 목록은 이 id로만 읽는다. */
@@ -141,8 +148,22 @@ public final class PurchasesModule extends LynxModule {
     Purchases.getSharedInstance().getProducts(Arrays.asList(productId), new GetStoreProductsCallback() {
       @Override public void onReceived(List<StoreProduct> products) {
         StoreProduct product = products.isEmpty() ? null : products.get(0);
-        // 결제 시트는 화면 위의 활동이 연다 — 메인 스레드에서, 활동이 살아 있을 때만.
-        mainHandler.post(() -> launch(product, callback));
+        if (!PurchasesPlanChange.isSubscription(productId)) {
+          // 결제 시트는 화면 위의 활동이 연다 — 메인 스레드에서, 활동이 살아 있을 때만.
+          mainHandler.post(() -> launch(product, null, callback));
+          return;
+        }
+        // Play에는 구독 그룹이 없다 — 지금 Play 구독이 있으면 바꿈으로 산다(겹쳐 둘이 되지 않게). 모르면 사지 않는다.
+        Purchases.getSharedInstance().getCustomerInfo(new ReceiveCustomerInfoCallback() {
+          @Override public void onReceived(CustomerInfo info) {
+            String old = PurchasesPlanChange.replacedProductId(productId, activePlaySubscriptions(info));
+            mainHandler.post(() -> launch(product, old, callback));
+          }
+
+          @Override public void onError(PurchasesError error) {
+            callback.invoke(status("failed"));
+          }
+        });
       }
 
       @Override public void onError(PurchasesError error) {
@@ -151,14 +172,31 @@ public final class PurchasesModule extends LynxModule {
     });
   }
 
-  private void launch(StoreProduct product, Callback callback) {
+  /** 이 고객의 활성 Play 구독 상품 id(App Store 등 다른 스토어 구독은 Play가 바꿀 수 없어 뺀다). */
+  private static List<String> activePlaySubscriptions(CustomerInfo info) {
+    List<String> ids = new ArrayList<>();
+    for (Map.Entry<String, SubscriptionInfo> entry : info.getSubscriptionsByProductIdentifier().entrySet()) {
+      SubscriptionInfo subscription = entry.getValue();
+      if (subscription.isActive() && subscription.getStore() == Store.PLAY_STORE) ids.add(entry.getKey());
+    }
+    return ids;
+  }
+
+  private void launch(StoreProduct product, String oldProductId, Callback callback) {
     Activity activity = activityRef.get();
     if (product == null || activity == null || activity.isFinishing() || activity.isDestroyed()) {
       callback.invoke(status("failed"));
       return;
     }
+    PurchaseParams.Builder params = new PurchaseParams.Builder(activity, product);
+    if (oldProductId != null) {
+      // 올림 · 같은 기간 같은 수준은 곧바로(새 가격을 지금 받고 남은 기간은 Play가 시간으로 얹음), 내림 · 기간 바꿈은 다음 갱신.
+      boolean now = PurchasesPlanChange.timingOf(oldProductId, product.getId()) == PurchasesPlanChange.Timing.IMMEDIATE;
+      params.oldProductId(oldProductId)
+          .googleReplacementMode(now ? GoogleReplacementMode.CHARGE_FULL_PRICE : GoogleReplacementMode.DEFERRED);
+    }
     Purchases.getSharedInstance().purchase(
-        new PurchaseParams.Builder(activity, product).build(),
+        params.build(),
         new PurchaseCallback() {
           @Override public void onCompleted(StoreTransaction transaction, CustomerInfo info) {
             JavaOnlyMap payload = status("purchased");
@@ -173,7 +211,8 @@ public final class PurchasesModule extends LynxModule {
           }
 
           @Override public void onError(PurchasesError error, boolean userCancelled) {
-            callback.invoke(status(userCancelled ? "cancelled" : "failed"));
+            boolean pending = error != null && error.getCode() == PurchasesErrorCode.PaymentPendingError;
+            callback.invoke(status(PurchasesStatus.ofError(userCancelled, pending)));
           }
         });
   }

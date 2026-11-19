@@ -2,9 +2,12 @@ package com.libitum.host;
 
 import java.util.regex.Pattern;
 
-/** RevenueCat 공개 SDK 키의 순수 판정(ADR-0144 2단계). 공백 없는 한 덩어리일 때만 선다. */
+/**
+ * RevenueCat 공개 SDK 키의 순수 판정(ADR-0144 2단계). Play 공개 SDK 키(`goog_`로 시작)이고 공백 없는 한 덩어리일 때만 선다 —
+ * iOS 키(`appl_`)를 잘못 넣으면 구매가 모두 실패하고, 비밀 키(`sk_`)는 앱에 들어가면 안 된다(Android 결제 준비 2026-11-20).
+ */
 public final class PurchasesConfig {
-  private static final Pattern KEY = Pattern.compile("^\\S+$");
+  private static final Pattern KEY = Pattern.compile("^goog_\\S+$");
 
   private final String apiKey;
 

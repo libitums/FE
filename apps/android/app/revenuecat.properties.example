@@ -1,4 +1,5 @@
 # RevenueCat 공개 SDK 키(ADR-0144 2단계). 이 파일을 revenuecat.properties로 복사해 채운다(revenuecat.properties는 추적하지 않는다).
 # 비어 있으면 SDK를 시작하지 않고 구매 모듈도 등록하지 않는다 — 앱은 지금과 똑같이 동작한다(요금제는 임시 추천 가격).
 # 값은 RevenueCat 대시보드 [Project settings] > [API keys]의 Play Store 앱 공개 SDK 키(goog_로 시작)다 — Secret API 키가 아니다.
+# goog_로 시작하지 않는 값(iOS appl_ · 비밀 sk_ 등)은 호스트가 받지 않는다(PurchasesConfig). 설정 순서: docs/android-purchases-setup.md.
 REVENUECAT_API_KEY=
