@@ -80,7 +80,7 @@ test("[I5] 실행 시작에 한 번, 호스트 신호마다 한 번 더 받기�
   expect(manifestCount(urls)).toBe(3);
 });
 
-test("[I6] 원격 에피소드는 자산을 다 받기 전에는 준비 중이고, 다 받은 순간 같은 실행 안에서 열린다", async () => {
+test("[I6] 내장본이 없는 원격 에피소드는 자산을 받는 동안에도 본문으로 서고(준비 중 아님, ADR-0165), 자산은 끝까지 받는다", async () => {
   const files = fileModule({ hold: true });
   const { store } = await bootContentApp({
     content,
@@ -95,7 +95,8 @@ test("[I6] 원격 에피소드는 자산을 다 받기 전에는 준비 중이�
     "images/u04-x/c.jpg",
     expect.any(Function),
   );
-  expect(screen.queryByTestId("catalog-section-u04-x")).toBeNull();
+  expect(screen.queryByTestId("catalog-pending-u04-x")).toBeNull();
+  expect(screen.getByTestId("catalog-section-u04-x")).toBeInTheDocument();
   expect(store.has(contentAssetsKey("u04-x"))).toBe(false);
 
   await act(async () => {

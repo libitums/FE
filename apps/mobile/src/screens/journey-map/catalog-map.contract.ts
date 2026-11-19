@@ -63,6 +63,18 @@ export type CatalogUnavailableSection = {
 
 export type CatalogMapSection = CatalogReadySection | CatalogUnavailableSection;
 
+/**
+ * 사용자 차례(열림 · 미완료)인 편의 표지 받기 표시입니다(ADR-0165). `getting-ready`는 받는 중(고리 + 「Getting ready ·
+ * n%」), `tap-to-download`는 저절로 받지 않을 때(요금 연결 · 오프라인 · 실패 — 「Tap to download」). 잠긴 편은 늘 `none`.
+ */
+export type CoverDownloadState =
+  | { readonly kind: "none" }
+  | { readonly kind: "getting-ready"; readonly percent: number }
+  | { readonly kind: "tap-to-download"; readonly bytes: number | null };
+
+/** 편 id → 표지 받기 표시. 없는 id는 `none`입니다. */
+export type CoverDownloads = Readonly<Record<string, CoverDownloadState>>;
+
 export type CatalogGate = {
   /** 옛 튜토리얼 최종 테스트를 통과한 기록이 있는가 — 사용자 기록의 사실(파생 입력)입니다. */
   readonly legacyTutorialPassed: boolean;
@@ -115,6 +127,8 @@ export type JourneyMapCatalogProps = {
   readonly onCheckNew?: () => void;
   /** 방금 끝낸 유닛(맵 마운트 때 한 번 읽은 기억) — 그 다음 구간 발자국만 등장 모션. 없으면 null. */
   readonly clearedUnit?: MapClearedUnit | null;
+  /** 표지 받기 표시(ADR-0165). 없으면 모두 `none`. */
+  readonly coverDownloads?: CoverDownloads;
 };
 
 /** 열린 노드를 눌렀을 때 — 탭의 세로 좌표는 유닛을 재기 전까지 말풍선이 설 어림 자리입니다. */
@@ -140,6 +154,7 @@ export type CatalogMapSectionsProps = {
   readonly onCheckNew?: () => void;
   readonly coverImageUrlOf?: (relativePath: string) => string | null;
   readonly clearedUnit?: MapClearedUnit | null;
+  readonly coverDownloads?: CoverDownloads;
 };
 
 export type CatalogEpisodeSectionProps = {
@@ -155,6 +170,8 @@ export type CatalogEpisodeSectionProps = {
   readonly onSelectUnit: CatalogUnitSelect;
   readonly coverImageUrlOf?: (relativePath: string) => string | null;
   readonly clearedUnit?: MapClearedUnit | null;
+  /** 표지 받기 표시(ADR-0165). 없으면 `none`. */
+  readonly coverDownload?: CoverDownloadState;
 };
 
 export type CatalogUnavailableSectionProps = {
@@ -172,6 +189,8 @@ export type CatalogCoverMapItemProps = {
   readonly children?: ReactNode;
   /** 노드 뒤 일러스트. 없거나 null이면 노드만 섭니다. */
   readonly illustration?: CatalogCoverIllustration | null;
+  /** 받기 표시 — 받는 중이면 고리와 「Getting ready · n%」, 받아야 하면 「Tap to download」. 없으면 `none`. */
+  readonly download?: CoverDownloadState;
 };
 
 export type FirstUnitMapTooltipProps = {
@@ -230,6 +249,11 @@ export type CatalogMapCopy = {
     readonly staleTitle: string;
     readonly staleBody: string;
     readonly checkNew: string;
+  };
+  /** 사용자 차례인 편의 표지 라벨(ADR-0165) — 받는 중 · 받아야 함. `size`는 `12.3 MB` 꼴이고 모르면 `null`입니다. */
+  readonly coverDownload: {
+    readonly gettingReady: (percent: number) => string;
+    readonly tapToDownload: (size: string | null) => string;
   };
 };
 

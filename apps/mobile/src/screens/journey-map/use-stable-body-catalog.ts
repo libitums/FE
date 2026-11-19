@@ -22,6 +22,7 @@ export function useStableBodyCatalog(catalog: JourneyMapCatalogProps): JourneyMa
   const progress = useSameContent(catalog.progress);
   const ticketUnits = useSameContent(catalog.ticketUnits);
   const freshness = useSameContent(catalog.freshness);
+  const coverDownloads = useSameContent(catalog.coverDownloads);
   const hasCover = catalog.coverImageUrlOf !== undefined;
   const hasItemCount = catalog.unitItemCountOf !== undefined;
   const hasPending = catalog.onTapPending !== undefined;
@@ -49,6 +50,7 @@ export function useStableBodyCatalog(catalog: JourneyMapCatalogProps): JourneyMa
       ...(freshness === undefined ? {} : { freshness }),
       ...(hasCheckNew ? { onCheckNew: () => latest.current.onCheckNew?.() } : {}),
       ...(catalog.clearedUnit === undefined ? {} : { clearedUnit: catalog.clearedUnit }),
+      ...(coverDownloads === undefined ? {} : { coverDownloads }),
     }),
     // 콜백은 최신을 가리키므로 의존에 넣지 않습니다 — 데이터와 「있는가」만 봅니다.
     // oxlint-disable-next-line react-hooks/exhaustive-deps
@@ -58,6 +60,7 @@ export function useStableBodyCatalog(catalog: JourneyMapCatalogProps): JourneyMa
       ticketUnits,
       catalog.legacyTutorialPassed,
       freshness,
+      coverDownloads,
       catalog.clearedUnit,
       hasCover,
       hasItemCount,
