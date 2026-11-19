@@ -129,7 +129,7 @@ Footer 링크의 `rel`을 지우면 UI-FO2가 `expected '' to contain 'noopener'
 5. 번역본 언어를 더하려면 검수한 번역으로 `privacy-<코드>*.ts` · `terms-<코드>.ts`를 만들고 `legal.contract.ts`의 `LegalLanguage` · `legal-paths.ts`의
    `legalLanguages` · `documents.ts`에 올린다. 주소 · 언어판 링크 · hreflang · 그 언어의 푸터 링크가 목록을 따라 늘어난다.
 
-앱(iOS · Android)이 여는 주소는 호스트 빌드에 고정돼 있고 **아직 Notion이다**(ADR-0033 D1 · ADR-0167 D5). 주소를 바꾸는 PR 전까지는 Notion의
+앱(iOS · Android)이 여는 주소는 호스트 빌드에 고정돼 있고 **아직 Notion이다**(ADR-0033 D1 · ADR-0167 D5). 주소를 바꾸는 PR(#515, iOS 1.2.0 (26)부터) 전까지는 Notion의
 두 페이지를 여기 본문과 같게 유지한다.
 
 ## 언어 더하기

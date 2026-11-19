@@ -52,6 +52,7 @@
   - 12절 Apple과 Google — Apple만 적던 9절을 넓힘(App Store로 받은 경우 Apple이 제3자 수익자).
   - 「앱은 개발 중입니다」를 뺐다. 가격은 적지 않는다(스토어가 정본, ADR-0144 D2).
 - 앱(iOS `LegalDocumentModule.swift` · Android `LegalDocumentUrls.java`)은 호스트 빌드에 주소를 고정한다(ADR-0033 D1). 랜딩이 배포되기 전에 앱 주소를 바꾸면 새 빌드가 없는 페이지를 연다. 그래서 순서는 **① 이 PR(랜딩) 배포 → ② Notion 두 페이지를 새 본문으로 맞추거나 새 주소를 안내 → ③ 호스트 주소 · e2e 문서 · 스토어 등록 주소를 바꾸는 PR**이다. ③ 전까지 옛 빌드는 Notion을 연다 — Notion 본문을 그때까지 같은 내용으로 유지해야 한다.
+- ⟨2026-11-20⟩ ③의 호스트 주소 PR은 #515다 — `https://k-duru.com/privacy/` · `https://k-duru.com/terms/`(영어 기준본, 앱 화면 언어에 ko가 없어 언어별 주소 없음), iOS 1.2.0 (26)부터. 이 PR 머지 · 랜딩 배포 뒤에 머지한다.
 
 ## 버린 대안
 1. **Notion에 두고 본문만 고친다** — 다음 기능에서 같은 일이 되풀이된다. 이력도 남지 않는다.
