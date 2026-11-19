@@ -138,21 +138,22 @@ describe("OnboardingScreen", () => {
     expect(nameAtStep1).not.toBe(nameAtStep0);
   });
 
-  // OB-U8 — 2026-09-21 디자인 반영: 좌상단 뒤로가기입니다.
-  it("[OB-U8] 첫 스텝에는 뒤로가기가 없고, 다음 스텝부터 누르면 한 칸 돌아간다", () => {
+  // OB-U8 — 2026-11-19 사용자 결정: 밀기 · 자동 넘김이 있어 좌상단 뒤로 버튼은 어느 스텝에도 없다.
+  // 돌아가기는 오른쪽으로 밀기와 시스템 뒤로가기(US19)가 맡는다.
+  it("[OB-U8] 어느 스텝에도 뒤로 버튼이 없고, 오른쪽으로 밀면 한 칸 돌아간다", () => {
     render(<OnboardingScreen onComplete={vi.fn()} />);
     const root = screen.getByTestId("onboarding-screen");
     const header = screen.getByTestId("onboarding-screen-header");
 
     expect(within(header).queryByTestId("ui-lynx-round-button")).toBeNull();
-
     next();
-    const back = within(header).getByTestId("ui-lynx-round-button");
-    expect(back).toHaveAttribute("accessibility-label", "Back");
-
-    fireEvent.tap(back, {});
-    expect(root).toHaveAttribute("data-step", "0");
+    expect(root).toHaveAttribute("data-step", "1");
     expect(within(header).queryByTestId("ui-lynx-round-button")).toBeNull();
+    next();
+    expect(within(header).queryByTestId("ui-lynx-round-button")).toBeNull();
+
+    swipeBack();
+    expect(root).toHaveAttribute("data-step", "1");
   });
 
   // OB-U9 — 2026-09-21 디자인 반영: 둘째 스텝 듣기 카드의 글자 칠하기입니다.
@@ -285,7 +286,7 @@ describe("OnboardingScreen", () => {
       act(() => {
         vi.advanceTimersByTime(350 * 3);
       });
-      fireEvent.tap(roundButton("Back")!, {}); // 2 → 1
+      swipeBack(); // 2 → 1
 
       expect(filled()).toBe("0");
       expect(roundButton("Play")).toBeDefined();
