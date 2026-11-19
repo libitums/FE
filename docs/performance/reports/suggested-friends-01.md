@@ -25,7 +25,8 @@
 
 ## 분석 결과
 
-- 번들(`pnpm size:check`, .env.local 없음): 결과는 보고(handback)에 적은 값 — 천장 5,327,000 B(ADR-0149)는 올리지 않았다.
+- 번들(`pnpm --filter @libitums/mobile build`, .env.local 없음): `main.lynx.bundle` 5,151,128 B(origin/main 67f9281b) → 5,236,058 B, **+84,930 B**.
+  천장 5,327,000 B(ADR-0149) 안 — 남은 여유 90,942 B. 천장은 올리지 않았다. 늘어난 몫은 줄 · 시트 · 친구 찾기 · 토스트 컴포넌트(두 스레드에 실림)와 다섯 언어 문구다.
 
 ## 해석
 
