@@ -383,3 +383,36 @@ test("SB-S13 companion_entitlements() — 미뤄진 바꿈(pendingProductId)을 
     "willRenew",
   ]);
 });
+
+// 2026-11-19 07:53 운영 실측: 올림(곧바로)의 PRODUCT_CHANGE는 옛 상품 만료를 바뀐 시각으로 앞당겨 싣고(07:53:45), 미뤄진 내림은 기간 끝 그대로 싣는다.
+const entitlementRows = async () =>
+  (
+    (await app.query("select public.companion_entitlements() as e")).rows[0].e as {
+      entitlements: { id: string; expiresAt: string | null; pendingProductId: string | null }[];
+    }
+  ).entitlements;
+
+test("SB-S14 곧바로 올림 — PRODUCT_CHANGE의 만료로 옛 줄을 끝내 옛 Tickets 줄이 pending=Premium으로 남지 않는다", async () => {
+  await apply("activate", { productId: "duru.tickets.monthly.v1", expiresAt: iso(30 * DAY) });
+  await apply("product_change", {
+    productId: "duru.tickets.monthly.v1",
+    newProductId: "duru.premium.monthly.v1",
+    expiresAt: iso(-1000),
+  });
+  await apply("activate", { productId: "duru.premium.monthly.v1", expiresAt: iso(30 * DAY) });
+  expect((await entitlementRows()).map((e) => e.id)).toEqual(["premium"]);
+  expect(await tier()).toBe("premium");
+});
+
+test("SB-S15 미뤄진 내림 — 만료는 그대로(기간 끝), pending만 적는다 · 더 늦은 만료로 늘리지 않는다", async () => {
+  const end = iso(60_000);
+  await apply("activate", { productId: "duru.premium.monthly.v1", expiresAt: end });
+  await apply("product_change", {
+    productId: "duru.premium.monthly.v1",
+    newProductId: "duru.tickets.monthly.v1",
+    expiresAt: iso(30 * DAY),
+  });
+  const [premiumRow] = await entitlementRows();
+  expect(premiumRow).toMatchObject({ id: "premium", pendingProductId: "duru.tickets.monthly.v1" });
+  expect(Date.parse(premiumRow!.expiresAt!)).toBe(Date.parse(end));
+});
