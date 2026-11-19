@@ -16,4 +16,11 @@ export type FriendPersonaFields = {
   readonly background?: readonly string[];
   readonly personality?: readonly string[];
   readonly dialect?: string;
+  /** 속 이야기(성장 과정 · 가치관 · 주변 사람 · 고민과 목표 · 좋아하는 것 · 싫어하는 것) — 한꺼번에 늘어놓지 않고 대화가 닿을 때 하나씩. */
+  readonly history?: readonly string[];
+  readonly values?: readonly string[];
+  readonly people?: readonly string[];
+  readonly goals?: readonly string[];
+  readonly likes?: readonly string[];
+  readonly dislikes?: readonly string[];
 };

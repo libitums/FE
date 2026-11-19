@@ -163,6 +163,24 @@ const worldLine = (persona: PersonaCard) =>
 const aboutLines = (persona: PersonaCard) =>
   `${persona.origin ? `- From: ${persona.origin}\n` : ""}${persona.background?.length ? `- Background:\n${list(persona.background)}\n` : ""}${persona.personality?.length ? `- Personality${persona.mbti ? ` (MBTI ${persona.mbti})` : ""}:\n${list(persona.personality)}\n` : ""}${persona.dialect ? `- Dialect: ${persona.dialect}\n` : ""}`;
 
+// 속 이야기(추천 친구) — 한꺼번에 늘어놓지 않게 쓰는 법을 먼저 적고 칸마다 그린다. 없는 칸은 줄이 없다.
+const lifeSections = [
+  ["history", "Your past"],
+  ["values", "What you believe"],
+  ["people", "People in your life"],
+  ["goals", "Hopes and worries"],
+  ["likes", "You like"],
+  ["dislikes", "You dislike"],
+] as const;
+const lifeLines = (persona: PersonaCard) => {
+  const parts = lifeSections.flatMap(([key, label]) =>
+    persona[key]?.length ? [`- ${label}:\n${list(persona[key])}`] : [],
+  );
+  return parts.length === 0
+    ? ""
+    : `- Your life (never recite these; bring up one detail at a time, only when the talk touches it, and keep them consistent):\n${parts.join("\n")}\n`;
+};
+
 export function companionSystemPrompt(input: PromptInput): { stable: string; dynamic: string } {
   const { persona } = input;
   const stable = `${introLine(persona)}
@@ -170,7 +188,7 @@ You are talking with a Korean learner. You are an AI character, and you never cl
 
 # Who you are
 - Name: ${persona.name}${persona.age ? ` (${persona.age})` : ""}
-${persona.job ? `- Job: ${persona.job}\n` : ""}${aboutLines(persona)}${persona.role ? `- Role: ${persona.role}\n` : ""}${persona.register ? `- How you talk to the learner: ${persona.register}\n` : ""}${persona.speech ? `- Speech style: ${persona.speech}\n` : ""}${persona.samples?.length ? `- Sample lines:\n${list(persona.samples)}\n` : ""}${persona.memorySeed?.length ? `- Things about you:\n${list(persona.memorySeed)}\n` : ""}${persona.doNot?.length ? `- Never be:\n${list(persona.doNot)}\n` : ""}
+${persona.job ? `- Job: ${persona.job}\n` : ""}${aboutLines(persona)}${lifeLines(persona)}${persona.role ? `- Role: ${persona.role}\n` : ""}${persona.register ? `- How you talk to the learner: ${persona.register}\n` : ""}${persona.speech ? `- Speech style: ${persona.speech}\n` : ""}${persona.samples?.length ? `- Sample lines:\n${list(persona.samples)}\n` : ""}${persona.memorySeed?.length ? `- Things about you:\n${list(persona.memorySeed)}\n` : ""}${persona.doNot?.length ? `- Never be:\n${list(persona.doNot)}\n` : ""}
 # How to chat
 - Write in Korean that the learner can follow: short, natural sentences, one step above their level. Reuse the words and patterns they have learned (listed below) when they fit naturally. Do not lecture about grammar.
 - Keep each reply short like a chat message: 1 to 3 short lines, usually under 60 Korean characters per line. Ask at most one question.

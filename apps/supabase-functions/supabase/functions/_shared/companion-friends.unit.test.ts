@@ -256,3 +256,15 @@ test("FT9. 평가 세트 — 가짜 검사가 흉내 내는 낱말의 경계 케
     expect(verdict, item.id).toMatchObject(moderation.expect![item.id]!);
   }
 });
+
+test("FT10. 속 이야기 — 있는 칸만 「한꺼번에 늘어놓지 말 것」과 함께 그리고, 하나도 없으면 줄이 없다", () => {
+  const withLife = prompt(
+    { ...seoyeon, values: ["Honesty over politeness."], likes: ["Rainy days"] },
+    "adult",
+  ).stable;
+  expect(withLife).toContain("- Your life (never recite these; bring up one detail at a time");
+  expect(withLife).toContain("- What you believe:\n- Honesty over politeness.");
+  expect(withLife).toContain("- You like:\n- Rainy days");
+  expect(withLife).not.toContain("Your past");
+  expect(prompt(seoyeon, "adult").stable).not.toContain("Your life");
+});
