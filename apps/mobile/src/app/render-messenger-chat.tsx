@@ -17,7 +17,7 @@ import {
   type MessengerAccess,
 } from "../screens/messenger-chat/messenger-access";
 import type { ScreenWiring } from "./screen-wiring";
-import { suggestedFriendsPort } from "./suggested-friends-wiring";
+import { guestSuggestedFriendsPort, suggestedFriendsPort } from "./suggested-friends-wiring";
 
 /** 메신저 탭 접근(ADR-0128) — 계정 상태로만 정합니다(2026-11-17부터 시험 계정 표시는 보지 않습니다). */
 export function messengerAccessFor(wiring: ScreenWiring): MessengerAccess {
@@ -32,6 +32,7 @@ function learnerNameOf(wiring: ScreenWiring): string {
 
 export function renderMessengerList(wiring: ScreenWiring, notice: MessengerListNotice | null) {
   const chat = wiring.messengerChat;
+  const access = messengerAccessFor(wiring);
   return (
     <ChatEventsContext.Provider value={{ sink: chat.eventSink, roomId: null }}>
       <MessengerListScreen
@@ -42,9 +43,10 @@ export function renderMessengerList(wiring: ScreenWiring, notice: MessengerListN
         onLayerChange={wiring.onScreenLayerChange}
         notice={notice}
         onNoticeShown={chat.onListNoticeShown}
-        access={messengerAccessFor(wiring)}
+        access={access}
         onSignIn={wiring.onSignIn}
-        friends={suggestedFriendsPort()}
+        // 비회원 미리보기(ADR-0166)는 앱 인물 표만 — 서버 RPC 0.
+        friends={access === "preview" ? guestSuggestedFriendsPort() : suggestedFriendsPort()}
       />
     </ChatEventsContext.Provider>
   );
@@ -52,11 +54,14 @@ export function renderMessengerList(wiring: ScreenWiring, notice: MessengerListN
 
 export function renderMessengerChat(roomId: string, wiring: ScreenWiring) {
   const chat = wiring.messengerChat;
+  const access = messengerAccessFor(wiring);
   return (
     <ChatEventsContext.Provider value={{ sink: chat.eventSink, roomId }}>
-      {/* 방마다 새로 섭니다 — 같은 자리에서 다른 방으로 바뀌어도 앞 방의 말풍선 도구 · 입력 · 턴 상태가 남지 않습니다. */}
+      {/* 방마다 새로 섭니다 — 같은 자리에서 다른 방으로 바뀌어도 앞 방의 말풍선 도구 · 입력 · 턴 상태가 남지 않습니다. 비회원이
+          로그인하고 같은 방으로 돌아오면(ADR-0166) 접근이 바뀌어 회원 출처로 새로 섭니다. */}
       <MessengerChatScreen
-        key={roomId}
+        key={`${roomId}:${access}`}
+        onSignInRequired={access === "preview" ? wiring.onSignIn : null}
         roomId={roomId}
         source={chat.source}
         keyboardProbe={unknownKoreanKeyboardProbe}
