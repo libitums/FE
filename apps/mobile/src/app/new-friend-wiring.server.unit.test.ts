@@ -49,7 +49,7 @@ test("SW-U7 메신저를 쓸 수 없는 계정이면 방 · 첫 말이 있어도
 // SW-U8 — 비회원 미리보기(ADR-0166)는 회원과 같은 목록이라 Reply가 열 방이 있습니다 — 시트가 섭니다.
 test("SW-U8 비회원 미리보기(preview)면 새 친구 시트 모델이 선다", () => {
   const source = createFixtureChatSource({ imageUrlOf: () => null, seed: companionSeed() });
-  expect(newFriendModelOf("mina", wiringOf(source), "preview")?.name).toBe("미나");
+  expect(newFriendModelOf("mina", wiringOf(source), "preview", "en")?.name).toBe("미나");
 });
 
 describe("인물 표", () => {
@@ -60,13 +60,13 @@ describe("인물 표", () => {
   });
 });
 
-// SW-U8 — 서버 방이 비어 인물 표로 서는 시트의 뜻풀이는 화면 언어입니다(2026-11-19 l10n 점검 — 전에는 늘 영어). 서버가 저장한
+// SW-U9 — 서버 방이 비어 인물 표로 서는 시트의 뜻풀이는 화면 언어입니다(2026-11-19 l10n 점검 — 전에는 늘 영어). 서버가 저장한
 // 첫 말이 있으면 그 번역(서버가 학습자 언어로 붙임)이 그대로 섭니다.
 test.each([
   ["vi", "Chào bạn! Mình là Mina, bạn cùng phòng."],
   ["ja", "こんにちは！同じ部屋のミナです。"],
   ["en", "Hi! It's Mina, your roommate."],
-] as const)("SW-U8 인물 표로 서는 시트 뜻풀이가 화면 언어(%s)다", (language, expected) => {
+] as const)("SW-U9 인물 표로 서는 시트 뜻풀이가 화면 언어(%s)다", (language, expected) => {
   const source = createFixtureChatSource({ imageUrlOf: () => null, seed: companionSeed(), remote });
   const model = newFriendModelOf("mina", wiringOf(source), "open", language);
   expect(model?.opening).toEqual({ ko: "안녕하세요! 같은 방 미나예요.", en: expected });
