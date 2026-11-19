@@ -67,6 +67,9 @@ export const allEventNames = [
   "plan_selected",
   "purchase_intent",
   "shop_tab_switched",
+  "suggested_friend_viewed",
+  "suggested_friend_added",
+  "early_access_tapped",
 ] as const satisfies readonly AnalyticsEventName[];
 
 /** 매핑되는 둘(`entry_completed` · `episode_final_passed`)을 뺀 이름마다 최소 이벤트 하나입니다. */
@@ -200,6 +203,24 @@ export const unmappedEvents = [
     daysSinceFirstOpen: "3",
     characterId: "mina",
     choice: "reply",
+  },
+  { name: "suggested_friend_viewed", surface: "chat", daysSinceFirstOpen: "3", count: "2" },
+  {
+    name: "suggested_friend_added",
+    surface: "chat",
+    daysSinceFirstOpen: "3",
+    characterId: "doyun",
+    kind: "story",
+    from: "row",
+    via: "free",
+  },
+  {
+    name: "early_access_tapped",
+    surface: "chat",
+    daysSinceFirstOpen: "3",
+    characterId: "jaemin",
+    price: "100",
+    from: "directory",
   },
   {
     name: "chat_message_sent",

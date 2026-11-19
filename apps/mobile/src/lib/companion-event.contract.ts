@@ -53,6 +53,26 @@ export type CompanionUnlockEvent =
       readonly choice: "reply" | "later";
     });
 
+/**
+ * 추천 친구 줄 · 친구 찾기(ADR-0162). `viewed`: 줄이 처음 보일 때 목록 마운트당 한 번(보인 수). `added`: 방을 열었음 —
+ * `via` free = Start chatting, early = 엽전 먼저 만나기. `early_access_tapped`: 「Chat now」 단추를 누름(결제 전 의향).
+ */
+export type SuggestedFriendEvent =
+  | (Common & { readonly name: "suggested_friend_viewed"; readonly count: string })
+  | (Common & {
+      readonly name: "suggested_friend_added";
+      readonly characterId: string;
+      readonly kind: "story" | "general";
+      readonly from: "row" | "directory";
+      readonly via: "free" | "early";
+    })
+  | (Common & {
+      readonly name: "early_access_tapped";
+      readonly characterId: string;
+      readonly price: string;
+      readonly from: "row" | "directory";
+    });
+
 /** 메신저 보내기 · 엽전(ADR-0140 단가). */
 export type ChatCoinEvent =
   | (Common & {
@@ -156,6 +176,7 @@ export type CompanionEvent =
   | PlanEvent
   | MessengerGuideEvent
   | CompanionUnlockEvent
+  | SuggestedFriendEvent
   | ChatCoinEvent
   | SurfaceUsageEvent;
 

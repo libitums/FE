@@ -24,7 +24,10 @@ export function LaunchChatStep({
   readonly onStart: () => void;
 }): ReactNode {
   const snapshot = useChatSnapshot(wiring.messengerChat.source);
-  const cast: readonly LaunchCastMember[] = COMPANION_CHARACTERS.map((character) => {
+  // 이야기 인물만 — 일반 인물(ADR-0162)은 이야기에서 만나는 사람이 아닙니다.
+  const cast: readonly LaunchCastMember[] = COMPANION_CHARACTERS.filter(
+    (character) => character.kind === "story",
+  ).map((character) => {
     const room = snapshot.rooms.find((r) => r.roomId === character.id);
     return {
       name: character.name,
