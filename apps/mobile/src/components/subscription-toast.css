@@ -1,0 +1,51 @@
+/* 구독 성공 알림(ADR-0160 · 시안 T6b) — 짙은 면(gray-900) · 주황 동그라미 · 흰 제목 · 옅은 회색 본문(gray-400, 대비 10 : 1). */
+
+.subscription-toast {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-top: var(--libitum-spacing-12);
+  padding: var(--libitum-spacing-12) 14px;
+  border-radius: var(--libitum-radius-lg);
+  background-color: var(--libitum-color-gray-900);
+  box-shadow: 0 6px 20px rgba(26, 28, 32, 0.25);
+}
+
+.subscription-toast-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: var(--libitum-radius-full);
+  background-color: var(--libitum-color-brand-primary);
+}
+
+.subscription-toast-icon {
+  width: 22px;
+  height: 18px;
+}
+
+.subscription-toast-text {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  margin-left: var(--libitum-spacing-12);
+}
+
+.subscription-toast-title {
+  color: var(--libitum-color-white);
+  font-family: var(--libitum-typography-label-l-font-family);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 20px;
+}
+
+.subscription-toast-body {
+  margin-top: 2px;
+  color: var(--libitum-color-gray-400);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: 12px;
+  line-height: 16px;
+}

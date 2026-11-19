@@ -52,8 +52,10 @@ test("SB-UI2a 제목 · 카드 셋(순서) · 처음 고름은 BEST · 주 단�
   expect(selected("premium")).toBe("true");
   expect(selected("chat_plus")).toBe("false");
   expect(screen.getByTestId(ids.continue)).toHaveTextContent("Continue with Premium");
-  expect(screen.getByTestId(ids.screen)).toHaveTextContent("Yearly: pay less per month");
-  expect(screen.getByTestId(ids.price("premium"))).toHaveTextContent("$11.99 / month");
+  expect(screen.getByTestId(ids.continue)).toHaveTextContent("$11.99 / month");
+  expect(screen.getByTestId(ids.yearly)).toHaveTextContent("Yearly");
+  expect(screen.getByTestId(ids.price("premium"))).toHaveTextContent("$11.99");
+  expect(screen.getByTestId(ids.price("premium"))).toHaveTextContent("/ mo");
 });
 
 test("SB-UI2b focus면 그 요금제를 처음 고르고, 카드를 누르면 고름이 옮겨 간다", () => {
@@ -67,8 +69,9 @@ test("SB-UI2b focus면 그 요금제를 처음 고르고, 카드를 누르면 �
 
 test("SB-UI2c Yearly → 가격이 연간으로, Continue → onSelect(premium, yearly, 상품) → 안내", async () => {
   const { onSelect } = mount({ priced: true });
-  tap("ui-lynx-option-selector-item-yearly");
-  expect(screen.getByTestId(ids.price("premium"))).toHaveTextContent("$119.90 / year");
+  tap(ids.yearly);
+  expect(screen.getByTestId(ids.price("premium"))).toHaveTextContent("$119.90");
+  expect(screen.getByTestId(ids.price("premium"))).toHaveTextContent("/ yr");
   await act(async () => {
     tap(ids.continue);
   });
@@ -86,7 +89,7 @@ test("SB-UI2d Restore → onRestore → 안내", async () => {
   expect(screen.getByTestId(ids.notice)).toHaveTextContent("Payments are coming soon");
 });
 
-test("SB-UI2g 구매가 도는 동안 계속 단추는 로딩 · 복원은 막힘, 끝나면 풀린다", async () => {
+test("SB-UI2g 구매가 도는 동안 계속 단추는 로딩 · 복원은 막힘, 끝나면 풀린다(ADR-0160 두 줄 CTA)", async () => {
   let finish: (value: { kind: "cancelled" }) => void = () => {};
   const { onSelect } = mount({ priced: true });
   onSelect.mockImplementation(
@@ -98,17 +101,11 @@ test("SB-UI2g 구매가 도는 동안 계속 단추는 로딩 · 복원은 막�
   await act(async () => {
     tap(ids.continue);
   });
-  const buttons = () =>
-    screen.getByTestId(ids.screen).querySelectorAll('[data-testid="ui-lynx-button"]');
-  const flags = () =>
-    Array.from(buttons()).map((el) => [
-      el.getAttribute("data-loading"),
-      el.getAttribute("data-disabled"),
-    ]);
-  expect(flags()).toEqual([
-    ["true", "false"],
-    ["false", "true"],
-  ]);
+  const flags = () => [
+    screen.getByTestId(ids.continue).getAttribute("data-loading"),
+    screen.getByTestId(ids.restore).getAttribute("data-disabled"),
+  ];
+  expect(flags()).toEqual(["true", "true"]);
   // 도는 동안 다시 눌러도 한 번뿐입니다.
   await act(async () => {
     tap(ids.continue);
@@ -119,10 +116,7 @@ test("SB-UI2g 구매가 도는 동안 계속 단추는 로딩 · 복원은 막�
     finish({ kind: "cancelled" });
     await new Promise((resolve) => setTimeout(resolve, 0));
   });
-  expect(flags()).toEqual([
-    ["false", "false"],
-    ["false", "false"],
-  ]);
+  expect(flags()).toEqual(["false", "false"]);
   expect(screen.queryByTestId(ids.notice)).toBeNull();
 });
 

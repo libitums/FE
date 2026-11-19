@@ -18,13 +18,6 @@
   background-color: #1e1a1f;
 }
 
-.coin-shop-screen-close {
-  display: flex;
-  flex-direction: row;
-  padding: var(--libitum-layout-screen-padding-top) var(--libitum-spacing-20) 0;
-  flex-shrink: 0;
-}
-
 .coin-shop-screen-scroll {
   flex: 1;
 }
@@ -32,15 +25,7 @@
 .coin-shop-screen-body {
   display: flex;
   flex-direction: column;
-  padding: var(--libitum-spacing-16) var(--libitum-spacing-20) var(--libitum-spacing-24);
-}
-
-/* 머리 — 제목 둘(왼쪽)과 보유 카드(오른쪽)입니다. */
-.coin-shop-screen-head {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
+  padding: 14px var(--libitum-spacing-20) var(--libitum-spacing-24);
 }
 
 .coin-shop-screen-titles {
@@ -105,29 +90,6 @@
   font-size: 18px;
   font-weight: 700;
   line-height: 22px;
-}
-
-.coin-shop-screen-pick {
-  display: flex;
-  flex-direction: column;
-  padding-top: 26px;
-}
-
-.coin-shop-screen-pick-title {
-  color: var(--libitum-color-gray-50);
-  font-family: var(--libitum-typography-label-l-font-family);
-  font-size: 18px;
-  font-weight: 700;
-  line-height: 24px;
-}
-
-.coin-shop-screen-pick-caption {
-  margin-top: var(--libitum-spacing-4);
-  color: var(--libitum-color-gray-500);
-  font-family: var(--libitum-typography-body-m-font-family);
-  font-size: var(--libitum-typography-body-m-font-size);
-  font-weight: var(--libitum-typography-body-m-font-weight);
-  line-height: var(--libitum-typography-body-m-line-height);
 }
 
 /* 카드 줄 — 배지가 카드 위로 12 걸치므로 첫 카드 위를 그만큼 띄웁니다. */

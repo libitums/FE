@@ -210,12 +210,14 @@ describe("AN1 분석 계약의 크기", () => {
   // ⟨ADR-0144⟩ 요금제 `plans_viewed` · `plan_selected`가 더해져 63이다.
   // ⟨ADR-0146 앱 연결⟩ 사진 · 음성 결과 `chat_media_completed`가 더해져 64다.
   // ⟨ADR-0159⟩ 온보딩 `onboarding_step_viewed` · `onboarding_started`가 더해져 67이다.
-  test("AN1. 이벤트 이름은 67개이고 지운 여덟이 없다", () => {
+  // ⟨ADR-0160⟩ 하나의 상점 탭 전환 `shop_tab_switched`가 더해져 68이다.
+  test("AN1. 이벤트 이름은 68개이고 지운 여덟이 없다", () => {
     const source = readFileSync(resolve(process.cwd(), "src/lib/analytics-event-names.ts"), "utf8");
     const names = [...source.matchAll(/^\s+\| "([a-z_]+)"/gm)].map((match) => match[1]);
-    expect(names).toHaveLength(67);
+    expect(names).toHaveLength(68);
     expect(names).toContain("onboarding_step_viewed");
     expect(names).toContain("onboarding_started");
+    expect(names).toContain("shop_tab_switched");
     expect(names).toContain("chat_media_completed");
     expect(names).toContain("plans_viewed");
     expect(names).toContain("plan_selected");

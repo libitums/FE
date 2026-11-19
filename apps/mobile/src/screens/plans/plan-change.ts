@@ -1,0 +1,81 @@
+// 지금 요금제와 바꿈의 순수 규칙(ADR-0160 · ADR-0144) — 구독 중 Plans의 「지금」 카드 · CTA 문구 · plan_selected의 kind ·
+// 구독 성공 알림이 여기서 갈립니다. 등급은 스토어 구독 그룹의 수준과 같게 둡니다 — Premium이 위, Unlimited Tickets와 Chat Plus는
+// 서로를 품지 않아 같은 수준(바꿈 = crossgrade)입니다. `Intl` 없이 날짜를 셉니다(Android PrimJS, ADR-0149 대가 · LR1).
+
+import type { PlanEntitlements, PlanId } from "../../lib/plans-api";
+import type { PlanPeriod } from "./plans-model";
+
+export type CurrentPlan = {
+  readonly id: PlanId;
+  readonly period: PlanPeriod;
+  readonly productId: string;
+  readonly expiresAt: string | null;
+  readonly willRenew: boolean;
+};
+
+export type PlanChange = "new" | "upgrade" | "downgrade" | "crossgrade" | "period" | "same";
+export type PlanChangeKind = "new" | "upgrade" | "downgrade" | "crossgrade";
+
+/** 스토어 구독 그룹의 수준 — 숫자가 클수록 위. */
+const levels: Readonly<Record<PlanId, number>> = { premium: 2, chat_plus: 1, unlimited_tickets: 1 };
+/** 같은 수준이면 이 순서가 먼저입니다(지금 요금제 · 새로 켜진 요금제). */
+const order: readonly PlanId[] = ["premium", "chat_plus", "unlimited_tickets"];
+
+export function periodOfProduct(productId: string): PlanPeriod {
+  return productId.includes(".yearly.") ? "yearly" : "monthly";
+}
+
+/** 권한 줄 중 등급 높은 요금제 — 칩 · 「지금」 카드 · 바꿈의 기준입니다. 순수. */
+export function currentPlanOf(entitlements: PlanEntitlements | null): CurrentPlan | null {
+  const rows = entitlements?.entitlements ?? [];
+  const row = order
+    .map((id) => rows.find((item) => item.id === id))
+    .find((item) => item !== undefined);
+  if (row === undefined) return null;
+  return {
+    id: row.id,
+    period: periodOfProduct(row.productId),
+    productId: row.productId,
+    expiresAt: row.expiresAt,
+    willRenew: row.willRenew,
+  };
+}
+
+export function planChangeOf(
+  current: CurrentPlan | null,
+  to: PlanId,
+  period: PlanPeriod,
+): PlanChange {
+  if (current === null) return "new";
+  if (current.id === to) return current.period === period ? "same" : "period";
+  const from = levels[current.id];
+  const next = levels[to];
+  if (next > from) return "upgrade";
+  return next < from ? "downgrade" : "crossgrade";
+}
+
+/** plan_selected의 kind — 기간만 바꿈은 스토어에서 같은 수준의 바꿈이라 crossgrade로 묶습니다. */
+export function planChangeKind(change: PlanChange): PlanChangeKind {
+  return change === "period" || change === "same" ? "crossgrade" : change;
+}
+
+/** 기기 시각의 달(0~11) · 날 — 「renews Dec 18」의 재료. 문구가 달 이름을 고릅니다. */
+export function dateParts(
+  iso: string | null,
+): { readonly month: number; readonly day: number } | null {
+  if (iso === null) return null;
+  const ms = Date.parse(iso);
+  if (!Number.isFinite(ms)) return null;
+  const date = new Date(ms);
+  return { month: date.getMonth(), day: date.getDate() };
+}
+
+/** 구매 뒤 다시 읽은 권한에 새로 생긴 요금제 — 구독 성공 알림의 대상입니다. */
+export function newlyActivePlan(
+  before: PlanEntitlements | null,
+  after: PlanEntitlements | null,
+): PlanId | null {
+  const had = (before?.entitlements ?? []).map((row) => row.id);
+  const now = (after?.entitlements ?? []).map((row) => row.id);
+  return order.find((id) => now.includes(id) && !had.includes(id)) ?? null;
+}

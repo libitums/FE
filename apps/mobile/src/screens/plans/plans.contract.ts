@@ -5,23 +5,20 @@ import type { LegalDocument } from "../../lib/legal-document.contract";
 import type { PlanEntitlements, PlanId, PlansCatalog } from "../../lib/plans-api";
 import type { PricingRegion } from "../../lib/provisional-prices";
 import type { PurchaseResult, RestoreResult, StoreOffer } from "../../lib/purchase-bridge";
-import type { PlanCardView, PlanPeriod } from "./plans-model";
+import type { PlanCardView, PlanPeriod, PlanPlacement } from "./plans-model";
 
-/** 설정 → Plans 화면. 결선이 데이터 · 다리를 쥐고, 화면은 고름 · 기간 · 안내만 집니다. */
-export type PlansScreenProps = {
+/** Plans 내용(설정 → Plans · 상점 Plans 탭, ADR-0160)이 받는 데이터와 동작 — 결선이 쥐고, 내용은 고름 · 기간 · 안내만 집니다. */
+export type PlansData = {
   /** null = 아직 못 읽었거나 실패 — 실패 안내를 보입니다. */
   readonly catalog: PlansCatalog | null;
   /** 스토어 가격 — 다리가 꺼졌으면 null(가격 자리에 「스토어에서」). */
   readonly offers: readonly StoreOffer[] | null;
-  /** 맥락 입구에서 왔으면 그 요금제를 처음 고릅니다. 없으면 BEST. */
-  readonly focus: PlanId | null;
   readonly onSelect: (
     plan: PlanId,
     period: PlanPeriod,
     productId: string | null,
   ) => Promise<PurchaseResult>;
   readonly onRestore: () => Promise<RestoreResult>;
-  readonly onBack: () => void;
   /** 임시 추천 가격의 지역(ADR-0144 추가 2026-11-17) — 스토어 가격이 없을 때만 씁니다. 기본 US. */
   readonly region?: PricingRegion;
   /** 내 권한(서버 정본, ADR-0144 D2) — 「지금 요금제」 배지 · 구독 관리. 결제를 열 수 없으면 null. */
@@ -34,14 +31,35 @@ export type PlansScreenProps = {
   readonly onOpenLegal?: (document: LegalDocument) => void;
 };
 
+/** 설정 → Plans 화면 — 밝은 판(시안 L1). */
+export type PlansScreenProps = PlansData & {
+  /** 맥락 입구에서 왔으면 그 요금제를 처음 고릅니다. 없으면 BEST(구독 중이면 위 등급). */
+  readonly focus: PlanId | null;
+  readonly onBack: () => void;
+};
+
+/** Plans 내용 — 설정(밝은 판)과 상점 Plans 탭(어두운 판)이 함께 씁니다. */
+export type PlansPanelProps = PlansData & {
+  readonly focus: PlanId | null;
+  /** 들어온 자리 — 티켓 입구면 「Out of tickets?」 태그. */
+  readonly placement: PlanPlacement;
+  readonly theme: "light" | "dark";
+  /** 바닥 단추 아래 여백(홈 인디케이터). */
+  readonly bottomInset?: number;
+  /** 구매가 끝나면(purchased) — 상점은 닫힙니다. */
+  readonly onPurchased?: () => void;
+};
+
 export type PlanCardProps = {
   readonly card: PlanCardView;
   readonly period: PlanPeriod;
   readonly testId: string;
-  /** 고른 카드 — 테두리 · 낭독 「Selected」. 맥락 카드는 고름이 없습니다(undefined). */
+  /** 고른 카드 — 테두리 · 라디오 · 낭독 「Selected」. 맥락 카드는 고름이 없습니다(undefined). */
   readonly selected?: boolean;
-  /** 지금 가진 요금제 — 「Current plan」 배지(설정 화면만). */
-  readonly current?: boolean;
+  /** 지금 가진 구독(같은 기간) — 「Current plan · renews …」 글. 있으면 고를 수 없는 회색 카드입니다(ADR-0160). */
+  readonly current?: string;
+  /** 구독 중 다른 카드의 바꿈 태그 — 「Upgrade · starts now」 · 「Switch · starts Dec 18」. */
+  readonly tag?: string;
   readonly onPress: () => void;
 };
 
@@ -60,12 +78,16 @@ export const plansTestIds = {
   back: "plans-screen-back",
   card: (id: PlanId) => `plans-card-${id}`,
   price: (id: PlanId) => `plans-card-${id}-price`,
+  yourPlan: "plans-your-plan",
+  ticketsTag: "plans-tickets-tag",
+  tag: (id: PlanId) => `plans-card-${id}-tag`,
   monthly: "plans-period-monthly",
   yearly: "plans-period-yearly",
   continue: "plans-continue",
   restore: "plans-restore",
   notice: "plans-notice",
   terms: "plans-terms",
+  termsLine: "plans-terms-line",
   termsOfUse: "plans-terms-of-use",
   privacyPolicy: "plans-privacy-policy",
   currentBadge: (id: PlanId) => `plans-card-${id}-current`,

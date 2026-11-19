@@ -57,13 +57,13 @@ function mount(
 const tap = (testId: string) => fireEvent.tap(screen.getByTestId(testId), {});
 const terms = () => screen.getByTestId(ids.terms);
 
-test("SB-UT1 계속 단추 아래 고지 — 고른 요금제 이름 · 가격/기간 · 자동 갱신 · 24시간 전 해지 · 스토어 이름", () => {
+test("SB-UT1 고지 전문 — 고른 요금제 이름 · 가격/기간 · 자동 갱신 · 24시간 전 해지 · 스토어 이름", () => {
   mount({ platform: "ios" });
   expect(terms()).toHaveTextContent("Premium: $11.99 / month.");
   expect(terms()).toHaveTextContent("renews automatically");
   expect(terms()).toHaveTextContent("at least 24 hours before");
   expect(terms()).toHaveTextContent("App Store");
-  tap("ui-lynx-option-selector-item-yearly");
+  tap(ids.yearly);
   expect(terms()).toHaveTextContent("Premium: $119.90 / year.");
   tap(ids.card("chat_plus"));
   expect(terms()).toHaveTextContent("Chat Plus: $69.90 / year.");
@@ -88,18 +88,29 @@ test("SB-UT3 이용약관 · 개인정보처리방침은 눌러 열 수 있는 �
   expect(onOpenLegal.mock.calls).toEqual([["terms-of-use"], ["privacy-policy"]]);
 });
 
-test("SB-UT4 지금 요금제(서버 권한) — 그 카드에 「Current plan」, 고르면 계속 대신 Manage subscription(그 상품)", async () => {
+test("SB-UT5 바닥에는 계속 단추 · 한 줄 고지 · 링크만 남고, 고지 전문 · Restore는 카드 아래 스크롤에 선다(2026-11-19)", () => {
+  mount();
+  const line = screen.getByTestId(ids.termsLine);
+  expect(line).toHaveTextContent("Renews automatically. Cancel anytime.");
+  expect(line).toContainElement(screen.getByTestId(ids.termsOfUse));
+  expect(line).toContainElement(screen.getByTestId(ids.privacyPolicy));
+  expect(line.closest("scroll-view")).toBeNull();
+  expect(terms().closest("scroll-view")).not.toBeNull();
+  expect(screen.getByTestId(ids.restore).closest("scroll-view")).not.toBeNull();
+});
+
+test("SB-UT4 지금 요금제(서버 권한) — 그 카드에 「Current plan」, 처음엔 고름 없음(CTA 막힘), Manage subscription은 그 상품 (ADR-0160)", async () => {
   const { onManageSubscription, onSelect } = mount({ current: premiumNow });
   expect(screen.getByTestId(ids.currentBadge("premium"))).toHaveTextContent("Current plan");
   expect(screen.queryByTestId(ids.currentBadge("chat_plus"))).toBeNull();
-  expect(screen.queryByTestId(ids.continue)).toBeNull();
+  expect(screen.getByTestId(ids.continue).getAttribute("data-disabled")).toBe("true");
   await act(async () => {
     tap(ids.manage);
   });
   expect(onManageSubscription).toHaveBeenCalledWith("duru.premium.monthly.v1");
   expect(onSelect).not.toHaveBeenCalled();
   tap(ids.card("chat_plus"));
-  expect(screen.getByTestId(ids.continue)).toHaveTextContent("Continue with Chat Plus");
-  // 다른 요금제를 고른 동안에도 구독 관리는 링크로 남습니다.
+  expect(screen.getByTestId(ids.continue)).toHaveTextContent("Switch to Chat Plus");
+  // 다른 요금제를 고른 동안에도 구독 관리는 Restore 옆에 남습니다.
   expect(screen.getByTestId(ids.manage)).toBeTruthy();
 });

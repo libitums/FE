@@ -184,7 +184,8 @@ test("SB-E1 결제를 열 수 있고 서버 권한이 Premium이면 — 머리 �
   await openPlans();
   expect(screen.getByTestId(ids.currentBadge("premium"))).toHaveTextContent("Current plan");
   expect(present(ids.manage)).toBe(true);
-  expect(present(ids.continue)).toBe(false);
+  // 구독 중(ADR-0160): Premium이면 고를 위 등급이 없어 CTA가 막혀 있고, 고지는 지금 요금제로 섭니다.
+  expect(screen.getByTestId(ids.continue).getAttribute("data-disabled")).toBe("true");
   expect(screen.getByTestId(ids.terms)).toHaveTextContent("renews automatically");
 });
 
