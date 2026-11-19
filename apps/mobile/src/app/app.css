@@ -44,6 +44,14 @@
   z-index: var(--libitum-elevation-z-sheet);
 }
 
+/* 둘째 줄 요금제 칩(ADR-0160 시안 A3) — 종 아래 오른쪽, 첫 줄 아래 8. 머리 층 안이라 지도 스크롤 안에 z-index를 두지 않습니다. */
+.app-header-plan-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  margin-top: var(--libitum-spacing-8);
+}
+
 .app-navigator {
   /* 바텀 네비게이션을 콘텐츠 위에 겹칩니다. 흐름에 두면 바 위쪽 모서리 밖이 언제나
      셸 배경이라 바의 라운드가 드러나지 않습니다 — 콘텐츠가 그 밑으로 지나가야 모서리가

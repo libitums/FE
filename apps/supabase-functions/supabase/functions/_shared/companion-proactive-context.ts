@@ -9,7 +9,7 @@ export type ProactiveContext = {
   summary: string | null;
   l1: string | null;
   ageBand: "adult" | "minor" | "unknown";
-  romanceTier?: "open" | "standard"; // 적용 로맨스 수위(20261213). 옛 DB는 없다 — standard.
+  romanceTier?: "open" | "standard"; // 적용 로맨스 수위(20261216). 옛 DB는 없다 — standard.
   hasConversation: boolean;
   /** 유저가 한 번이라도 말했는가(20261122). 첫 인사만 있는 대화에는 `force`여도 보내지 않는다. 옛 DB에는 없다. */
   hasUserMessage?: boolean;

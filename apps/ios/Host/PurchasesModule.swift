@@ -66,6 +66,8 @@ final class PurchasesModule: NSObject, LynxModule {
       return
     }
     Purchases.shared.logIn(userId) { _, _, error in
+      // 로그인한 고객에도 Airbridge 기기 id를 건다 — 기존 계정으로 들어오면 익명 때 건 값이 따라오지 않는다.
+      if error == nil { PurchasesAttribution.linkAirbridgeDevice() }
       callback(["status": error == nil ? "ok" : "failed"])
     }
   }

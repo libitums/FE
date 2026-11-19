@@ -1,4 +1,4 @@
-// 추천 친구 페르소나 유지 — 다은 · 건우(ADR-0159). 메모는 채점자에게만 간다(`spoilerNote`).
+// 추천 친구 페르소나 유지 — 다은 · 건우(ADR-0163). 메모는 채점자에게만 간다(`spoilerNote`).
 
 import { replySet, type EvalSet } from "./companion-eval-set-shape.ts";
 

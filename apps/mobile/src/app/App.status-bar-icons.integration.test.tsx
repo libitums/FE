@@ -94,10 +94,8 @@ function advanceSplash(): void {
 }
 
 function completeOnboarding(): void {
-  // 온보딩 세 스텝 — `onboarding-screen-next`는 스텝마다 같은 testid입니다.
-  tapButtonIn("onboarding-screen-next");
-  tapButtonIn("onboarding-screen-next");
-  tapButtonIn("onboarding-screen-next");
+  // 온보딩의 「Get started」는 어느 스텝에서든 곧바로 로그인입니다(ADR-0159).
+  tapButtonIn("onboarding-screen-start");
 }
 
 async function flush(): Promise<void> {
@@ -166,7 +164,7 @@ test("[IS1] 부팅(스플래시) → 온보딩 → 로그인: 표지 0 · 0 · 0
   expect(markers()).toBe(0);
 
   advanceSplash();
-  expect(screen.getByTestId("onboarding-screen-next")).toBeInTheDocument();
+  expect(screen.getByTestId("onboarding-screen-start")).toBeInTheDocument();
   expect(markers()).toBe(0);
 
   completeOnboarding();

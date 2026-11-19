@@ -3,7 +3,7 @@
 // ADR-0085 대가 1)를 읽어 무제한이면 `"unlimited"`입니다(ADR-0115).
 
 import { catalogUnitTicketCost } from "../lib/catalog-ticket-cost";
-import { isTesterAccessActive } from "../lib/tester-access";
+import { ticketsUnlimited } from "../lib/unlimited-tickets";
 import type { CatalogProgress, CatalogUnitKey } from "../lib/catalog-progress";
 import type { CatalogStartSource } from "../lib/catalog-learning-event.contract";
 import type { LessonCompleteNext } from "../screens/lesson-complete/LessonCompleteNextActions";
@@ -56,8 +56,8 @@ export function catalogResultNextOf(
   return {
     next: {
       kind: next.kind,
-      // 시험 계정은 무제한이라 숫자 대신 무한 기호 태그입니다(ADR-0115).
-      ticketCost: isTesterAccessActive()
+      // 시험 계정 · 티켓 무제한 구독은 숫자 대신 무한 기호 태그입니다(ADR-0115 · ADR-0144).
+      ticketCost: ticketsUnlimited()
         ? "unlimited"
         : catalogUnitTicketCost(
             input.catalogProgress,

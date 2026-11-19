@@ -165,6 +165,7 @@ export const coinShopId: CoinShopCopy = {
     title: "Pembayaran segera hadir",
     description: "Pembelian koin belum tersedia. Silakan cek kembali nanti.",
   },
+  purchaseFailed: "Pembelian tidak berhasil. Coba lagi.",
 };
 
 export const downloadSheetId: DownloadSheetCopy = {

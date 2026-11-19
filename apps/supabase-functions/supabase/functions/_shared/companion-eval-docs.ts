@@ -90,7 +90,7 @@ export function promptDocs() {
       input: byAgeBand((ageBand) => moderationInstruction("input", ageBand)),
       output_sync: byAgeBand((ageBand) => moderationInstruction("output_sync", ageBand)),
     },
-    // 완화 수위(open, ADR-0159) — 성인에게만 적용된다(성인이 아니면 위의 연령대 글 그대로).
+    // 완화 수위(open, ADR-0163) — 성인에게만 적용된다(성인이 아니면 위의 연령대 글 그대로).
     moderationOpen: {
       input: moderationInstruction("input", "adult", "open"),
       output_sync: moderationInstruction("output_sync", "adult", "open"),

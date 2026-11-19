@@ -153,3 +153,32 @@ test("[CS-U5] 닫기 → onClose", () => {
 
   expect(props.onClose).toHaveBeenCalledTimes(1);
 });
+
+test("[CS-B2] 결제가 실패하면 버튼 아래 짧은 안내(막지 않음) — 취소면 아무것도 없고, 다시 사면 안내가 걷힌다", async () => {
+  const results: PurchaseResult[] = [
+    { kind: "cancelled" },
+    { kind: "failed" },
+    { kind: "cancelled" },
+  ];
+  const buy = vi.fn<(productId: string) => Promise<PurchaseResult>>(
+    async () => results.shift() ?? { kind: "cancelled" },
+  );
+  setPurchaseContext({ region: "US", sink: () => {}, canBuy: true, buy });
+  render(<CoinShopScreen {...fixture()} />);
+  const tapBuy = () =>
+    act(async () => {
+      fireEvent.tap(buyButton(), {});
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+
+  await tapBuy();
+  expect(screen.queryByTestId("coin-shop-screen-failed")).toBeNull();
+  await tapBuy();
+  expect(screen.getByTestId("coin-shop-screen-failed")).toHaveTextContent(
+    "The purchase didn't go through",
+  );
+  expect(screen.queryByTestId("coin-shop-screen-notice")).toBeNull();
+  await tapBuy();
+  expect(screen.queryByTestId("coin-shop-screen-failed")).toBeNull();
+  resetPurchaseContextForTests();
+});

@@ -11,12 +11,14 @@ export type PurchaseRefreshDeps = {
   readonly onEntitlements: (next: PlanEntitlements) => void;
   readonly onBalance: (balance: number) => void;
   readonly wait: (ms: number) => Promise<void>;
+  /** 언제 멈추나 — 기본은 권한이나 잔액이 바뀌면. 구독 구매는 권한이 바뀌어야(ADR-0160 성공 알림 — Premium은 엽전이 먼저 닿을 수 있음). */
+  readonly settle?: "any" | "entitlements";
 };
 
 export const REFRESH_ATTEMPTS = 5;
 export const REFRESH_INTERVAL_MS = 2000;
 
-/** 권한이 같은지 — 등급 · 무제한 티켓 · 권한 줄(상품 · 상태 · 만료)로 봅니다. 순수. */
+/** 권한이 같은지 — 등급 · 무제한 티켓 · 권한 줄(상품 · 상태 · 만료 · 미뤄진 바꿈)로 봅니다. 순수. */
 export function sameEntitlements(a: PlanEntitlements | null, b: PlanEntitlements | null): boolean {
   if (a === null || b === null) return a === b;
   if (a.tier !== b.tier || a.unlimitedTickets !== b.unlimitedTickets) return false;
@@ -27,7 +29,8 @@ export function sameEntitlements(a: PlanEntitlements | null, b: PlanEntitlements
       other !== undefined &&
       row.productId === other.productId &&
       row.status === other.status &&
-      row.expiresAt === other.expiresAt
+      row.expiresAt === other.expiresAt &&
+      row.pendingProductId === other.pendingProductId
     );
   });
 }
@@ -58,7 +61,7 @@ export async function refreshAfterPurchase(
     const last = attempt === attempts - 1;
     if (entitlements !== null && (entitlementsMoved || last)) deps.onEntitlements(entitlements);
     if (balance !== null && (balanceMoved || last)) deps.onBalance(balance);
-    if (entitlementsMoved || balanceMoved) return;
+    if (entitlementsMoved || (balanceMoved && deps.settle !== "entitlements")) return;
   }
 }
 

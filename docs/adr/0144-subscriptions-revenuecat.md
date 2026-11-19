@@ -144,5 +144,86 @@ DB가 실패하면 500 — RevenueCat이 다시 보낸다. 같은 이벤트 id�
   권한은 결제를 열 수 있을 때만 읽는다(결제 전에는 로그인마다 RPC를 늘리지 않음). 웹훅이 10초 안에 안 닿으면 다음 화면 진입 · 실행이 따라잡는다.
 - **엽전 상점**: 결선 밖이라 `purchase-intent`의 구매 맥락(`purchasePack`)으로 같은 다리 · 같은 서버 따라잡기를 쓴다. 실패 · 취소는 안내 없이 끝난다
   (스토어 시트가 결제 오류를 스스로 보임). 결제를 열 수 없으면 지금처럼 「결제 준비 중」.
-- **아직 아님(후속)**: `PlansWiring.entitlements`를 화면에 쓰기(「지금 요금제」 표시 · 무제한 티켓을 서버 권한으로) — 이번에는 상태만 둔다.
+- ~~**아직 아님(후속)**: `PlansWiring.entitlements`를 화면에 쓰기(「지금 요금제」 표시 · 무제한 티켓을 서버 권한으로) — 이번에는 상태만 둔다.~~
+  → 아래 「2단계 후속」에서 붙음.
   RevenueCat SDK의 실행 시 offerings 미리 받기는 대시보드에 offering이 없으면 오류 로그를 남긴다(동작에는 영향 없음).
+
+## 2단계 후속 (2026-11-18) — 구독 고지 · 구독 관리 · 서버 권한 화면 반영 · 엽전 실패 안내 [사용자: 「③ 1 ~ 4 진행」]
+
+- **구독 고지(App Store 심사 지침 3.1.2 · Play 구독 정책)**: 요금제 화면의 구매 단추 아래 `PlanTerms` — 고른 요금제 이름 · 가격과 기간(카드와 같은 글:
+  스토어 가격, 없으면 임시 추천 가격 · 「스토어에서」) · 결제 계정(App Store · Google Play, 모르면 일반 이름) · 자동 갱신 · 24시간 전 해지 · 해지 자리,
+  이용약관 · 개인정보처리방침 링크(`LegalDocumentModule` — 설정과 같은 주소). 다섯 언어(`ui-copy-plans-terms.ts`), th · my는 영어(ADR-0158).
+  무료 체험이 없어 체험 문장은 두지 않는다 — 생기면 더한다. 구독 구매가 시작되는 자리는 요금제 화면 하나다(맥락 카드는 이 화면을 연다).
+  「Restore purchases」는 이미 요금제 화면에 있다.
+- **구독 관리**: 새 호스트 메서드 없이 `ExternalLinkModule`(https만)로 스토어 화면을 연다 — iOS `https://apps.apple.com/account/subscriptions`,
+  Android `https://play.google.com/store/account/subscriptions?sku=<구독 id>&package=libitum.duru.android`(`lib/manage-subscription.ts`).
+  자리: 머리 무제한 모달(ADR-0115)의 「Manage subscription」 · 곧 끝남의 「Keep unlimited」(갱신을 다시 켜는 곳이 스토어), 요금제 화면의 지금 요금제.
+- **서버 권한을 화면에(D2)**: `lib/plan-access.ts`가 권한을 모듈 값으로 들고(요금제 결선이 렌더마다 맞춤 — `tester-access.ts`와 같은 방식),
+  - 티켓: `ticketsUnlimited()` = 시험 계정 ∨ 권한 `unlimitedTickets` → 티켓 비용 0 · 머리 칩 무제한 · 결과 화면 남은 장수 줄 없음 · 다음 유닛 ∞ 태그.
+    **잠금(유닛 열림)은 그대로** — 시험 계정만 푼다.
+  - 대화: `chatUnlimited()` = 시험 계정 ∨ 등급 premium → 앱 관문 열림. **Chat Plus는 지금처럼 free 관문**이다 — 하루 무료 30통은 서버가 세고 앱은 남은 수를
+    모른다(차감은 서버가 맞게 함). 앱 표시를 맞추려면 서버가 남은 무료 수를 지갑에 실어야 한다(후속).
+  - 무제한 모달: 티켓 무제한 권한의 만료 · 갱신으로 구독 판(시작 시각은 서버가 주지 않아 기간 30 · 365일만큼 앞으로 셈 — 「since」 날짜뿐).
+  - 요금제 화면: 지금 요금제 카드에 「Current plan」 배지, 그 요금제를 고르면 계속 대신 「Manage subscription」, 다른 요금제를 고른 동안에는 고지 아래 링크.
+  - 결제를 열 수 없으면(지금 운영) 권한을 읽지 않아 모두 지금과 같다(RPC 늘지 않음).
+- **엽전 상점 실패 안내**: 결제가 `failed`면(취소 아님) 사기 단추 아래 한 줄(막지 않음, 다시 사면 걷힘). 스토어 시트의 오류는 그대로 스토어가 보인다.
+
+## 구독 입구 (2026-11-18) — [ADR-0160](0160-subscription-entry-one-shop.md)
+
+- 요금제의 입구가 하나의 상점(엽전 | Plans 탭) · 머리 둘째 줄 칩 · 티켓 모달 줄로 넓어졌다. 설정 → Plans만 화면으로 남는다.
+- 구독 중 Plans(지금 카드 · 올림/내림 CTA · Manage subscription 위치)와 긴 통화 배치는 ADR-0160 D4 · D5가 정한다. 위 「지금 요금제 카드를 고르면 계속 대신 Manage subscription」은 ADR-0160 D4로 바뀌었다.
+
+## 결제 켬 (2026-11-19)
+
+- `purchasesEnabled()`를 켰다. 유료 앱 계약 · 은행 · 세금 양식이 활성화된 뒤 iPhone 13 mini 샌드박스에서 엽전 500 · 3,000 팩과 Unlimited Tickets 월간을
+  사서, RevenueCat 웹훅이 결제 확정 2~4초 뒤 서버 지갑(`coins_granted`) · 권한(`activated`)을 바꾸고 앱이 다음 다시 읽기에서 반영하는 것을 확인했다.
+- ⚠ **운영 프로젝트에 `REVENUECAT_ACCEPT_SANDBOX=true`가 켜져 있다**(위 「운영은 `sandbox_ignored`」와 다름). 샌드박스 구매가 운영 계정에 권한 · 엽전을
+  준다 — 심사관 구매(샌드박스)가 반영되어야 해서 심사가 끝날 때까지 켜 두고, 출시 뒤 끌지는 사용자 결정으로 남긴다.
+- 구독 성공 알림 창은 결제 시트가 `purchased`로 끝난 뒤에 연다(`armOnPurchased`) — 단추를 누를 때 열면 시트 승인 시간(실측 11초)이 12초 창을 먹었다.
+
+## Airbridge 기기 id (2026-11-19) — 구매 이벤트를 광고 클릭에 잇기 [사용자: RevenueCat → Airbridge → Meta 구매 최적화]
+
+- **왜**: RevenueCat 대시보드의 Airbridge 서버 연동은 이미 켜져 있다(구매 · 갱신 · 환불을 RevenueCat이 Airbridge로 보냄). 그 서버 이벤트를 Airbridge가
+  설치 · 광고 클릭에 귀속하려면 RevenueCat 고객에 **Airbridge 기기 id(`$airbridgeDeviceId`)**가 있어야 한다. 호스트가 이를 넘기지 않아 Meta 앱 캠페인이
+  구매로 최적화할 신호가 기기에 붙지 않았다.
+- **무엇(iOS · Android 같은 모양, 새 `PurchasesAttribution`)**: Airbridge SDK의 `fetchDeviceUUID`(비동기 — 부르는 스레드를 막지 않음)로 기기 id를 받아
+  `setAirbridgeDeviceID(id)` → `collectDeviceIdentifiers()`(RevenueCat 문서 순서. iOS는 `Purchases.shared.attribution`, Android는 `Purchases.getSharedInstance()`).
+  SDK 5.99.2 · 10.30.1 · Airbridge 4.12.0의 공개 API를 소스 · 바이트코드로 확인했다.
+  - 부르는 때: ① 앱 시작(두 SDK 시작 직후 — 익명 · 비회원 고객) ② `PurchasesModule.configure`의 `logIn` 성공 뒤(기존 계정으로 들어오면 익명 때 값이
+    따라오지 않는다 — RevenueCat app user id = Supabase user id = Airbridge `setUserID`). ③ iOS만: 추적 허용(ATT) 대화상자에 **허용**으로 답한 뒤
+    `collectDeviceIdentifiers()`를 한 번 더(`$idfa` 갱신 — RevenueCat 문서 권고).
+  - **조건(순수 판정 `shouldLink`)**: RevenueCat 키로 SDK가 섰고 **그리고** Airbridge 값으로 SDK가 섰고 **그리고** 이 기기에서 추적을 멈추지 않았을 때
+    (시험 계정 — ADR-0085 D4의 `trackingStopped` 표시)만. 하나라도 아니면 두 SDK를 한 줄도 부르지 않는다 — 값 없이 나간 출시 빌드도 그대로 동작한다.
+    기기 id가 비거나 공백이 섞이면(`deviceId`) 걸지 않는다. Android는 SDK 호출을 `RuntimeException | LinkageError`로 감싼다.
+  - **ATT**: 이 경로는 대화상자를 띄우지 않는다. RevenueCat은 `ASIdentifierManager`를 읽기만 해서, 허용하지 않은 기기에는 IDFA가 실리지 않는다
+    (IDFV · IP는 실린다 — 아래 개인정보).
+- **이중 집계 없음**: 앱의 Airbridge SDK는 구매 이벤트를 보내지 않는다 — `startInAppPurchaseTracking` · `trackStoreInAppPurchaseEvent`를 부르지 않고,
+  JS 매핑(ADR-0063 D7)에도 구매 카테고리가 없다. 구매는 **RevenueCat 서버 연동 하나만** 보낸다. 앱에서 구매 이벤트를 더하려면 이 줄을 먼저 고친다.
+- **개인정보**: RevenueCat이 고객 속성으로 Airbridge 기기 id · IDFV · IP(iOS, 허용 시 IDFA) · 광고 ID · IP(Android)를 받아 Airbridge로 넘긴다. App Store
+  응답의 「기기 ID — 개발자 광고 · 추적 예」(ADR-0079)에 이미 들어 있는 범위다. 처리방침의 수탁자 목록에 RevenueCat의 광고 측정 전달을 적을지는
+  사용자 확인([iOS 프라이버시](../ios-privacy.md) 「RevenueCat → Airbridge」).
+- **확인 남음(기기)**: 새 사용자로 샌드박스 구매 → RevenueCat 고객 화면 속성에 `$airbridgeDeviceId`(· `$idfv` · `$ip`)가 보이고, Airbridge 실시간 로그에
+  RevenueCat 발 구매 이벤트가 그 기기로 찍히는지. 샌드박스 이벤트 전송 여부는 위 「위험 · 대가」 2.
+
+## 미뤄진 바꿈 · 만료 경계 (2026-11-19) — 샌드박스 Premium → Unlimited Tickets 내림 [버그]
+
+- **증상**: 같은 구독 그룹 안 내림 · 같은 수준 바꿈은 스토어가 지금 기간 끝으로 미룬다. 웹훅(PRODUCT_CHANGE)은 지금 줄의 `pending_product_id`에
+  다음 상품을 적고, 다음 요금제 줄은 기간 끝에 시작하는 활성 줄로 먼저 생긴다. 앱은 ① 미뤄졌다는 것을 몰라 아무 안내가 없었고(구독 성공 알림이
+  「Unlimited Tickets is on」을 띄울 수 있었음), ② 권한을 화면 진입 · 구매 뒤에만 읽어 만료를 넘긴 세션의 머리 칩이 PREMIUM에 남았다.
+- **서버**: `companion_entitlements()`가 줄마다 `pendingProductId`(없으면 null)를 더 싣는다(`20261214120000_companion_entitlements_pending.sql`).
+  다른 키 · 거르기 · 권한은 그대로라 옛 앱은 무시한다. 앱은 키가 없거나 틀려도 줄을 버리지 않는다(옛 서버).
+- **앱 — 안내**: 지금 요금제 줄의 pending을 권한 줄(먼저 생긴 다음 요금제 줄) · 요금표 상품에서 요금제로 읽는다(`scheduledChangeOf`). 올림은 곧바로
+  바뀌어 지금 요금제가 이미 새 것이라 걸리지 않는다. Plans 지금 카드 한 줄이 「Current plan · Tickets ∞ from Dec 18」, 구독 성공 알림이
+  「Unlimited Tickets starts Dec 18 / You keep Premium until then」(다섯 언어).
+- **앱 — 경계 다시 읽기**: 가장 가까운 활성 만료 + 2초(서버 `now()` 거르기 · 시각 차)에 한 번, 앱이 앞으로 올 때(`contentSyncOpportunity`) 한 번
+  권한을 다시 읽는다(`use-server-entitlements.ts`). 실패(null)면 지금 값을 둔다. 타이머 상한(2^31 - 1 ms)으로 자른다. 결제를 열 수 없으면 읽지 않는다.
+- **디자인**: 새 토큰 · 요소 · CSS 없음. 지금 카드의 기존 한 줄(`plans-card-*-current`, 「renews 날짜」 자리)과 토스트의 두 줄 틀(제목 · 본문)을
+  그대로 쓰고 글만 바꾼다. 요금제 글은 칩과 같은 짧은 이름(`planShort`, 「Tickets ∞」)이라 긴 언어에서도 카드 한 줄을 크게 넘기지 않는다.
+- 구매 뒤 따라잡기는 pending만 바뀌어도 「바뀜」으로 보고 멈춘다(`sameEntitlements`).
+- **올림 뒤 내림(2026-11-19 07:53 기기 확인)**: Tickets → Premium 올림 뒤 Premium → Tickets 내림은 Tickets 줄이 올림 전부터 활성이라 「새로 생긴
+  요금제」가 없어 알림이 뜨지 않았다. 알림은 새 요금제 줄이 없어도 지금 요금제에 미뤄진 바꿈이 새로 생기면 뜬다(`planActivationOf`). 지금보다 위 등급으로의
+  pending(곧바로 바뀌는 올림의 흔적)은 미뤄진 바꿈으로 보지 않는다.
+- **서버 — 곧바로 바뀐 옛 줄**: 올림의 PRODUCT_CHANGE를 pending으로만 적어 옛 Tickets 줄이 원래 만료까지 활성 · pending=Premium으로 남았다. RevenueCat
+  PRODUCT_CHANGE의 `expiration_at_ms`는 옛 상품의 만료다 — 곧바로 바뀌면 바뀐 시각, 미뤄지면 기간 끝(운영 store_events 10건으로 확인). 그 값으로 줄의 만료를
+  앞당기기만 한다(`20261215120000_companion_product_change_expiry.sql`, `companion_apply_store_event`의 한 줄).
+- **남은 것**: 미뤄진 바꿈의 대상 카드에 다시 사는 CTA(「Switch to … from 날짜」)가 그대로 보인다 — 스토어가 같은 바꿈을 다시 받는지는 확인하지 않았다.

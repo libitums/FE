@@ -1,40 +1,33 @@
-import { useGlobalProps, useState } from "@lynx-js/react";
+import { useEffect, useGlobalProps, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import cross from "@libitums/icons/lynx/cross";
-import { Button } from "@libitums/ui-lynx/button";
 import { Dialog } from "@libitums/ui-lynx/dialog";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
 
 import { coinIcon } from "../../components/coin-icon";
-import {
-  purchaseIntentOf,
-  purchasePack,
-  purchaseRegion,
-  purchaseStore,
-  reportPurchaseIntent,
-} from "../../lib/purchase-intent";
+import type { PlanId } from "../../lib/plans-api";
 import { safeAreaInsetsFrom } from "../../lib/safe-area";
 import { lightStatusBarIcons } from "../../lib/status-bar-icons";
 import { useLayerBack } from "../../lib/use-back-handler";
 import { useUiCopy } from "../../lib/ui-copy";
-import {
-  coinPacks,
-  findCoinPack,
-  formatCoinCount,
-  initialCoinPackId,
-  packPriceOf,
-  type CoinPackId,
-} from "./coin-shop";
-import { CoinPackCard } from "./CoinPackCard";
+import { PlansPanel } from "../plans/PlansPanel";
+import { YourPlanChip } from "../plans/YourPlanChip";
+import { currentPlanOf } from "../plans/plan-change";
+import type { PlanPlacement } from "../plans/plans-model";
+import { formatCoinCount } from "./coin-shop";
+import { CoinShopPanel } from "./CoinShopPanel";
+import { shopPromoOf, type ShopFrom, type ShopTab } from "./shop-model";
+import { useShopPlans } from "./shop-plans";
+import { ShopTabs } from "./ShopTabs";
 
 import "./coin-shop-screen.css";
+import "./shop.css";
 
-// 머리 엽전 칩의 「+」를 누르면 뜨는 엽전 상점입니다(ADR-0116 · 시안 「엽전 상점」). 지표 · 티켓 모달과 같은
-// 겹침 레이어라 셸 밖에 떠 바텀 네비게이션까지 덮습니다 — 화면 전환(`Nav`)이 아닙니다.
-//
-// 사기 버튼은 결제를 열 수 있으면(ADR-0144 2단계 — 결제 플래그 · 스토어 SDK · 로그인) 스토어 결제 시트를 열고, 엽전은 서버가
-// 웹훅을 받아 늘립니다(칩은 결선이 다시 읽어 맞춤). 열 수 없으면 「결제 준비 중」 안내로 끝납니다(결제 전에도 모두에게 보인다).
+// 하나의 상점(ADR-0116 · ADR-0160 시안 S1 · S2) — 엽전 | Plans 두 탭의 짙은 겹침 레이어입니다. 지표 · 티켓 모달과 같은 겹침이라 셸 밖에
+// 떠 바텀 네비게이션까지 덮습니다 — 화면 전환(`Nav`)이 아닙니다. 입구가 첫 탭을 정하고(엽전 칩 · 대화 엽전 부족 → 엽전, 요금제 칩 ·
+// 티켓 흐름 → Plans), 오른쪽 위 칩이 탭을 따라 「You have」 · 「Your plan」으로 바뀝니다. 요금제 결선(`ShopPlansContext`)이 없으면
+// (플래그 꺼짐 · 로그아웃) 탭 · 요금제 줄 없이 엽전만 보입니다.
 
 export type CoinShopScreenProps = {
   /** 지금 가진 엽전 수입니다. */
@@ -45,8 +38,15 @@ export type CoinShopScreenProps = {
    * 한 겹침에 층이 둘 올라가지 않게 합니다.
    */
   readonly ownsBack?: boolean;
-  /** 연 자리 — 머리 엽전 칩은 학습(기본), 채팅방 겹침은 대화. 구매 의향 이벤트의 `surface`입니다. */
+  /** 연 자리 — 머리 엽전 칩은 학습(기본), 채팅방 겹침은 대화. 구매 의향 · 탭 전환 이벤트의 `surface`입니다. */
   readonly surface?: "learning" | "chat";
+  /** 처음 탭(기본 엽전). 요금제 결선이 없으면 언제나 엽전입니다. */
+  readonly initialTab?: ShopTab;
+  /** Plans 탭으로 열렸을 때의 지표 자리 · 처음 고를 요금제. */
+  readonly placement?: PlanPlacement;
+  readonly focus?: PlanId | null;
+  /** 대화 동작 — 메시지 전송에서 엽전이 모자라 열렸으면 send(요금제 줄이 Chat Plus). */
+  readonly from?: ShopFrom;
 };
 
 export function CoinShopScreen({
@@ -54,57 +54,49 @@ export function CoinShopScreen({
   onClose,
   ownsBack = true,
   surface = "learning",
+  initialTab = "coins",
+  placement = "coin_shop",
+  focus = null,
+  from = null,
 }: CoinShopScreenProps): ReactNode {
   const copy = useUiCopy();
   const shop = copy.coinShop;
+  const plans = useShopPlans();
   const noticeActions = [{ id: "close", label: copy.common.ok }] as const;
   // 이 레이어는 셸 밖(`position: fixed`)이라 셸의 safe area 여백을 받지 못합니다 — 스스로 읽습니다.
   const insets = safeAreaInsetsFrom(useGlobalProps());
-  const [selectedId, setSelectedId] = useState<CoinPackId>(initialCoinPackId);
-  const selected = findCoinPack(selectedId);
-  // 가격 지역은 요금제 결선이 적은 학습자 나라(ADR-0144 추가 2026-11-17).
-  const region = purchaseRegion();
-  const store = purchaseStore();
-  const selectedPrice = packPriceOf(selected, region, store.offers);
+  const [tab, setTab] = useState<ShopTab>(plans === undefined ? "coins" : initialTab);
+  // 엽전 탭에서 넘어오면 자리는 엽전 상점(대화 전송이면 chat_send)입니다.
+  const shopPlacement: PlanPlacement = from === "send" ? "chat_send" : "coin_shop";
+  const [entry, setEntry] = useState({
+    placement: initialTab === "plans" ? placement : shopPlacement,
+    focus: initialTab === "plans" ? focus : null,
+  });
   // 결제 준비 중 안내입니다. 이 화면 위에 겹칠 뿐 화면 전환이 아닙니다.
   const [noticeOpen, setNoticeOpen] = useState(false);
+  const current = currentPlanOf(plans?.current ?? null);
+  const promo = plans === undefined ? null : shopPromoOf(from, current, plans.catalog);
+  const showPlans = plans !== undefined && tab === "plans";
 
+  // Plans 탭으로 열렸으면 처음 한 번 보기 이벤트(탭을 바꿀 때는 아래 `switchTo`가 냅니다).
+  useEffect(() => {
+    if (plans !== undefined && tab === "plans") plans.onViewed(entry.placement);
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const switchTo = (next: ShopTab, pick: PlanId | null = null) => {
+    "background only";
+    if (plans === undefined || next === tab) return;
+    plans.onTabSwitched(tab, next, surface);
+    if (next === "plans") {
+      setEntry({ placement: shopPlacement, focus: pick });
+      plans.onViewed(shopPlacement);
+    }
+    setTab(next);
+  };
   const handleClose = () => {
     "background only";
     onClose();
-  };
-  // 결제 시트가 떠 있는 동안 — 사기 단추에 로딩을 보이고 다시 누름을 막습니다.
-  const [buying, setBuying] = useState(false);
-  const handleBuy = () => {
-    "background only";
-    if (buying) return;
-    const purchase = purchasePack();
-    // 결제를 열지 못하고 「결제 준비 중」 안내로 끝나도 구매 의향은 남깁니다.
-    reportPurchaseIntent(
-      purchaseIntentOf({
-        surface,
-        placement: "coin_shop",
-        kind: "pack",
-        product: selected.productId,
-        period: "once",
-        shown: selectedPrice,
-        region,
-        storefront: store.storefront,
-        preview: !purchase.available,
-      }),
-    );
-    if (!purchase.available) {
-      setNoticeOpen(true);
-      return;
-    }
-    setBuying(true);
-    void purchase
-      .buy(selected.productId)
-      .then((result) => {
-        if (result.kind === "unavailable") setNoticeOpen(true);
-      })
-      .catch(() => undefined)
-      .finally(() => setBuying(false));
   };
   const closeNotice = () => {
     "background only";
@@ -127,93 +119,69 @@ export function CoinShopScreen({
       }}
     >
       {/* 안내가 떠 있는 동안 뒤쪽을 낭독에서 가립니다(ADR-0016 D9). */}
-      <view
-        className="coin-shop-screen-close"
-        data-testid="coin-shop-screen-close"
-        accessibility-elements-hidden={noticeOpen}
-      >
-        <RoundButton
-          icon={cross}
-          size="l"
-          accessibilityLabel={copy.common.close}
-          bindtap={handleClose}
-        />
-      </view>
-      <scroll-view
-        className="coin-shop-screen-scroll"
-        scroll-orientation="vertical"
-        scroll-bar-enable={false}
-        accessibility-elements-hidden={noticeOpen}
-      >
-        <view className="coin-shop-screen-body">
-          <view className="coin-shop-screen-head">
-            <view className="coin-shop-screen-titles">
-              <text
-                className="coin-shop-screen-title"
-                accessibility-element={true}
-                accessibility-traits="header"
-              >
-                {shop.title}
-              </text>
-              <text className="coin-shop-screen-subtitle">{shop.subtitle}</text>
-            </view>
-            <view
-              className="coin-shop-screen-balance"
-              data-testid="coin-shop-screen-balance"
-              accessibility-element={true}
-              accessibility-label={shop.balance(coinBalance, formatCoinCount(coinBalance))}
-            >
-              <svg className="coin-shop-screen-balance-icon" content={coinIcon} />
-              <view className="coin-shop-screen-balance-text">
-                <text className="coin-shop-screen-balance-label">{shop.balanceLabel}</text>
-                <text
-                  className="coin-shop-screen-balance-value"
-                  data-testid="coin-shop-screen-balance-value"
-                >
-                  {formatCoinCount(coinBalance)}
-                </text>
-              </view>
-            </view>
-          </view>
-
-          <view className="coin-shop-screen-pick">
-            <text className="coin-shop-screen-pick-title" accessibility-traits="header">
-              {shop.pickTitle}
-            </text>
-            <text className="coin-shop-screen-pick-caption">{shop.pickCaption}</text>
-          </view>
-
-          <view className="coin-shop-screen-packs">
-            {coinPacks.map((pack) => (
-              <CoinPackCard
-                region={region}
-                offers={store.offers}
-                key={pack.id}
-                pack={pack}
-                selected={pack.id === selectedId}
-                onSelect={setSelectedId}
-              />
-            ))}
-          </view>
-        </view>
-      </scroll-view>
-      <view
-        className="coin-shop-screen-footer"
-        style={{ paddingBottom: `${insets.bottom + 24}px` }}
-        accessibility-elements-hidden={noticeOpen}
-      >
-        <view data-testid="coin-shop-screen-buy">
-          <Button
-            label={shop.buy(selectedPrice.text)}
-            variant="brand"
-            size="xl"
-            width="fill"
-            loading={buying}
-            bindtap={handleBuy}
+      <view className="coin-shop-screen-top" accessibility-elements-hidden={noticeOpen}>
+        <view data-testid="coin-shop-screen-close" accessibility-elements-hidden={noticeOpen}>
+          <RoundButton
+            icon={cross}
+            size="l"
+            accessibilityLabel={copy.common.close}
+            bindtap={handleClose}
           />
         </view>
-        <text className="coin-shop-screen-store-note">{shop.storeNote}</text>
+        {showPlans ? (
+          <YourPlanChip current={current} />
+        ) : (
+          <view
+            className="coin-shop-screen-balance"
+            data-testid="coin-shop-screen-balance"
+            flatten={false}
+            accessibility-element={true}
+            accessibility-label={shop.balance(coinBalance, formatCoinCount(coinBalance))}
+          >
+            <svg className="coin-shop-screen-balance-icon" content={coinIcon} />
+            <view className="coin-shop-screen-balance-text">
+              <text className="coin-shop-screen-balance-label">{shop.balanceLabel}</text>
+              <text
+                className="coin-shop-screen-balance-value"
+                data-testid="coin-shop-screen-balance-value"
+              >
+                {formatCoinCount(coinBalance)}
+              </text>
+            </view>
+          </view>
+        )}
       </view>
+      {plans === undefined ? null : (
+        <view accessibility-elements-hidden={noticeOpen}>
+          <ShopTabs tab={tab} onChange={(next) => switchTo(next)} />
+        </view>
+      )}
+      {showPlans ? (
+        <view className="coin-shop-screen-plans">
+          <PlansPanel
+            key={`${entry.placement}:${entry.focus ?? ""}`}
+            {...plans}
+            onSelect={(plan, period, productId) =>
+              plans.onSelect(entry.placement, plan, period, productId)
+            }
+            focus={entry.focus}
+            placement={entry.placement}
+            theme="dark"
+            // 엽전 탭 바닥(인셋 + 24)과 같은 높이에서 끝나게 합니다 — 판은 인셋 + 16을 더합니다.
+            bottomInset={insets.bottom + 8}
+            onPurchased={onClose}
+          />
+        </view>
+      ) : (
+        <CoinShopPanel
+          surface={surface}
+          bottomInset={insets.bottom}
+          obscured={noticeOpen}
+          onUnavailable={() => setNoticeOpen(true)}
+          promo={promo}
+          onPromo={() => switchTo("plans", promo?.plan ?? null)}
+        />
+      )}
       {noticeOpen ? (
         <view data-testid="coin-shop-screen-notice">
           <Dialog

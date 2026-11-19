@@ -320,7 +320,7 @@ test("CH9. 운영 조회 — 시험 계정 목록 · 대화(내부 상태 · 판
       timezone: null,
       replySuggestions: true,
       snapshotSelf: "female",
-      adultAck: false, // 20261213(ADR-0159)
+      adultAck: false, // 20261216(ADR-0163)
     },
   ]);
 
@@ -359,7 +359,7 @@ test("CH9. 운영 조회 — 시험 계정 목록 · 대화(내부 상태 · 판
 
 test("CH10. 캐릭터 목록 — 시험 계정 · 티어에 따라 열리고 말투와 마지막 메시지 시각이 붙는다", async () => {
   const before = await app.query("select public.companion_list_characters() as list");
-  // 무료 티어도 모든 인물이 열린다 — 합산 체험(20261213) 또는 엽전(20261127). 시험 계정에게는 추천 친구도 보인다(friends_mode testers).
+  // 무료 티어도 모든 인물이 열린다 — 합산 체험(20261216) 또는 엽전(20261127). 시험 계정에게는 추천 친구도 보인다(friends_mode testers).
   expect(before.rows[0].list[0]).toEqual({
     id: "duksu",
     available: true,

@@ -1,6 +1,7 @@
 // 메신저 출처가 컴패니언 서버에 닿는 포트입니다(ADR-0137). 서버 JSON은 순수 해석기(`companion-parse.ts`)가 앱 모양으로 풀고,
 // 출처(`chat-fixture-remote.ts`)는 이 포트만 압니다. 어떤 호출도 던지지 않습니다 — 실패는 null · onEnd로 옵니다.
 
+import type { EarlyAccessRemote } from "./early-access-parse";
 import type { ChatCorrection } from "./chat-feedback.contract";
 import type { ChatMediaRemote } from "./chat-media.contract";
 import type { ChatMessage, ChatReplyIdea } from "./chat-source.contract";
@@ -55,6 +56,8 @@ export type ChatRemote = {
    * null. 없으면(옛 테스트 원격) 서버 방은 비우지 못합니다.
    */
   readonly clearChat?: (characterId: string) => Promise<"cleared" | "busy" | null>;
+  /** 엽전 먼저 만나기(20261213, ADR-0162 D5) — 제안 목록 · 열기. 없으면(옛 테스트 원격) 꺼짐. */
+  readonly earlyAccess?: EarlyAccessRemote;
 };
 
 /** 서버 지갑 — 잔액(sub + grant + paid)과 체험 인물의 체험 남은 수(칸이 없거나 틀리면 null). */

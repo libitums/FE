@@ -55,6 +55,12 @@ test("PR-U1 같은 권한 판정 — 등급 · 무제한 · 줄(상품 · 상태
     entitlements: [{ ...premium.entitlements[0]!, expiresAt: "2027-01-18T00:00:00Z" }],
   };
   expect(sameEntitlements(premium, later)).toBe(false);
+  // 내림 · 같은 수준 바꿈은 지금 줄에 pending만 붙습니다 — 그것도 바뀐 것으로 봐야 따라잡기가 멈춥니다.
+  const pending = {
+    ...premium,
+    entitlements: [{ ...premium.entitlements[0]!, pendingProductId: "duru.tickets.monthly.v1" }],
+  };
+  expect(sameEntitlements(premium, pending)).toBe(false);
 });
 
 test("PR-U2 엽전 팩 — 잔액이 오르면 그 값을 알리고 바로 멈춘다", async () => {

@@ -1,4 +1,4 @@
-# ADR-0159: 추천 친구 · 합산 체험 · 완화 수위 · 출시 스위치
+# ADR-0163: 추천 친구 · 합산 체험 · 완화 수위 · 출시 스위치
 
 - 상태: **채택 — 서버 구현**(마이그레이션 · 함수 · 계약). **앱 화면은 이 브랜치에 없다 — 앱 담당(세현님)이 만든다**(아래 「앱 인계」). (2026-11-19)
 - 날짜: 2026-11-19
@@ -124,7 +124,7 @@
 
 ## 구현
 
-- DB: 마이그레이션 `20261213120000_companion_friends.sql` — `settings.friends_mode` · `profiles.adult_ack_at` · 도우미(`companion.is_tester` · `friend_hidden` ·
+- DB: 마이그레이션 `20261216120000_companion_friends.sql` — `settings.friends_mode` · `profiles.adult_ack_at` · 도우미(`companion.is_tester` · `friend_hidden` ·
   `romance_tier` · `trial_left` · 동의 지우기 트리거) · `turn_gate_base` · `begin_turn_base` · `wallet_json` · `companion_list_characters` · `companion_friends` ·
   `companion_ack_adult` · `companion_load_profile` · 첫 인사 · 칩 · 선톡 맥락 · 선톡 후보 · 페르소나 넷 + 스토리 다섯 `mbti`.
 - 함수(`_shared`): `companion-safety.ts`(`effectiveRomanceTier` · `outputCheckRequired` · open 검사 규칙) · `companion-prompt.ts`(친구 소개 · 세계 줄 · 배경 · 성격 ·

@@ -53,6 +53,32 @@ export type CompanionUnlockEvent =
       readonly choice: "reply" | "later";
     });
 
+/**
+ * 추천 친구 줄 · 친구 찾기(ADR-0162). `viewed`: 줄이 처음 보일 때 목록 마운트당 한 번(보인 수). `added`: 방을 열었음 —
+ * `via` free = Start chatting, early = 엽전 먼저 만나기. `early_access_tapped`: 「Chat now」 단추를 누름(결제 전 의향).
+ */
+export type SuggestedFriendEvent =
+  | (Common & { readonly name: "suggested_friend_viewed"; readonly count: string })
+  | (Common & {
+      readonly name: "suggested_friend_added";
+      readonly characterId: string;
+      readonly kind: "story" | "general";
+      readonly from: "row" | "directory";
+      readonly via: "free" | "early";
+    })
+  | (Common & {
+      readonly name: "early_access_tapped";
+      readonly characterId: string;
+      readonly price: string;
+      readonly from: "row" | "directory";
+    })
+  /** 먼저 만나기 RPC가 끝났습니다(ADR-0162 D5) — 누른 뒤 한 번. unlocked = 이미 산 인물(already) 포함, failed = 제안 없음 · 오류. */
+  | (Common & {
+      readonly name: "early_access_completed";
+      readonly characterId: string;
+      readonly outcome: "unlocked" | "short" | "failed";
+    });
+
 /** 메신저 보내기 · 엽전(ADR-0140 단가). */
 export type ChatCoinEvent =
   | (Common & {
@@ -93,9 +119,20 @@ export type StreakRewardEvent = Common & {
   readonly amount: string;
 };
 
+/** 요금제가 보인 자리(ADR-0144 · 상점 입구 ADR-0160) — `PlanPlacement`와 같은 값입니다. */
+type PlanEventPlacement =
+  | "settings"
+  | "tickets"
+  | "messenger"
+  | "header_chip"
+  | "coin_shop"
+  | "chat_send"
+  | "tickets_chip";
+type PlanEventId = "unlimited_tickets" | "chat_plus" | "premium";
+
 /**
  * 요금제(ADR-0144). `placement`는 요금제가 보인 자리 — `surface`(학습 · 대화, D3 공통 속성)와 따로 둡니다.
- * `view`: `offer` = 맥락 카드(티켓 대화상자 · 메신저 판), `compare` = 설정 → Plans 화면. 구매 이벤트는 2단계.
+ * `view`: `offer` = 맥락 카드(티켓 대화상자 · 메신저 판), `compare` = 설정 → Plans 화면 · 상점 Plans 탭. 구매 이벤트는 2단계.
  * `purchase_intent`(추가 2026-11-17): 구매 단추(요금제 Continue · 엽전 팩 사기)를 누름 — 결제 전에도 의향을 잽니다. `price`는 보인 가격의
  * 금액(10진 문자열, 스토어가 금액을 주지 않았으면 빈 문자열), `currency`, `country`(스토어 계정 나라, 모르면 가격 지역 VN · ID · PH · TH · MY · US),
  * `priceSource`(store = 스토어 상품 가격 · provisional = 임시 추천 가격, 2단계 2026-11-17), `preview` = 「곧」 안내로 끝남.
@@ -103,18 +140,24 @@ export type StreakRewardEvent = Common & {
 export type PlanEvent =
   | (Common & {
       readonly name: "plans_viewed";
-      readonly placement: "settings" | "tickets" | "messenger";
+      readonly placement: PlanEventPlacement;
       readonly view: "offer" | "compare";
+      /** 보던 사람의 지금 요금제(ADR-0160) — 구독이 없으면 free. */
+      readonly currentPlan: "free" | PlanEventId;
     })
   | (Common & {
       readonly name: "plan_selected";
-      readonly placement: "settings" | "tickets" | "messenger";
-      readonly plan: "unlimited_tickets" | "chat_plus" | "premium";
+      readonly placement: PlanEventPlacement;
+      readonly plan: PlanEventId;
       readonly period: "monthly" | "yearly";
+      /** 바꿈(ADR-0160): 지금 요금제(없으면 free) → 고른 요금제, 종류(구독 없음 new · 같은 수준 · 기간만은 crossgrade). */
+      readonly from: "free" | PlanEventId;
+      readonly to: PlanEventId;
+      readonly kind: "new" | "upgrade" | "downgrade" | "crossgrade";
     })
   | (Common & {
       readonly name: "purchase_intent";
-      readonly placement: "settings" | "tickets" | "messenger" | "coin_shop";
+      readonly placement: PlanEventPlacement;
       readonly kind: "plan" | "pack";
       /** 스토어 상품 id(ADR-0144 D4). */
       readonly product: string;
@@ -125,6 +168,12 @@ export type PlanEvent =
       readonly country: string;
       readonly priceSource: "store" | "provisional" | "";
       readonly preview: boolean;
+    })
+  /** 하나의 상점(ADR-0160)의 탭 전환 — 위 전환 · 엽전 탭 아래 요금제 줄. */
+  | (Common & {
+      readonly name: "shop_tab_switched";
+      readonly from: "coins" | "plans";
+      readonly to: "coins" | "plans";
     });
 
 export type CompanionEvent =
@@ -133,6 +182,7 @@ export type CompanionEvent =
   | PlanEvent
   | MessengerGuideEvent
   | CompanionUnlockEvent
+  | SuggestedFriendEvent
   | ChatCoinEvent
   | SurfaceUsageEvent;
 

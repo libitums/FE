@@ -15,7 +15,7 @@ import {
 } from "./companion-safety.ts";
 import { checkSystem, promptSystem } from "./companion-snapshot-prompts.ts";
 
-// 추천 친구 · 완화 수위(ADR-0159). 수위 표: open 인물 × {성인 + 동의(open), 성인 동의 없음(standard), 나이 모름, 미성년자}와 standard 인물.
+// 추천 친구 · 완화 수위(ADR-0163). 수위 표: open 인물 × {성인 + 동의(open), 성인 동의 없음(standard), 나이 모름, 미성년자}와 standard 인물.
 const seoyeon: PersonaCard = {
   name: "차서연",
   kind: "friend",

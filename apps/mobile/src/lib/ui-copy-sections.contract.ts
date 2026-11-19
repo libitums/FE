@@ -287,6 +287,8 @@ export type CoinShopCopy = {
   /** 머리 엽전 칩이 상점을 여는 버튼일 때의 이름입니다. */
   readonly openShop: (count: number) => string;
   readonly notice: { readonly title: string; readonly description: string };
+  /** 결제가 실패했을 때(취소 아님) 사기 버튼 아래 한 줄입니다. */
+  readonly purchaseFailed: string;
 };
 
 export type { LearningReviewCopy, LessonCompleteReviewCopy } from "./ui-copy-review.contract";

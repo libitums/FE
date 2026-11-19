@@ -204,7 +204,7 @@ test("SB-S4 Premium — 차감 0, 공정 사용 200턴에 usage_time_limit fair_
 });
 
 test("SB-S5 무료 사용자는 지금 그대로 — 합산 체험을 다 쓰고 잔액 0이면 insufficient_credits, 있으면 3 차감", async () => {
-  // 체험은 모든 인물이 함께 쓴다(20261213) — 덕수쌤에게 다 쓰면 윤경도 엽전이다.
+  // 체험은 모든 인물이 함께 쓴다(20261216) — 덕수쌤에게 다 쓰면 윤경도 엽전이다.
   await db.admin.query(
     "insert into companion.trial_usage (user_id, character_id, used) select $1, 'duksu', trial_limit from companion.settings",
     [user],
@@ -358,4 +358,66 @@ test("SB-S12 혜택 표를 고치면 바로 따른다 — Chat Plus 무료 30 �
   await db.admin.query("update companion.plans set daily_free_messages = 5 where id = 'chat_plus'");
   await turnsToday(5, true);
   expect(await begin()).toMatchObject({ result: "ok", creditsReserved: 3 });
+});
+
+test("SB-S13 companion_entitlements() — 미뤄진 바꿈(pendingProductId)을 그 줄에 싣는다(2026-11-19 Premium → Unlimited Tickets)", async () => {
+  await apply("activate", { productId: "duru.premium.monthly.v1", expiresAt: iso(60_000) });
+  await apply("product_change", {
+    productId: "duru.premium.monthly.v1",
+    newProductId: "duru.tickets.monthly.v1",
+  });
+  await apply("activate", {
+    productId: "duru.tickets.monthly.v1",
+    purchasedAt: iso(60_000),
+    expiresAt: iso(30 * DAY),
+  });
+  const mine = (await app.query("select public.companion_entitlements() as e")).rows[0].e;
+  const byId = Object.fromEntries(
+    mine.entitlements.map((e: { id: string }) => [e.id, e] as const),
+  ) as Record<string, Record<string, unknown>>;
+  expect(byId["premium"]).toMatchObject({ pendingProductId: "duru.tickets.monthly.v1" });
+  expect(byId["unlimited_tickets"]).toMatchObject({ pendingProductId: null });
+  // 기존 키는 그대로 — 옛 앱이 그대로 읽는다.
+  expect(Object.keys(byId["premium"] ?? {}).sort()).toEqual([
+    "expiresAt",
+    "id",
+    "pendingProductId",
+    "productId",
+    "status",
+    "store",
+    "willRenew",
+  ]);
+});
+
+// 2026-11-19 07:53 운영 실측: 올림(곧바로)의 PRODUCT_CHANGE는 옛 상품 만료를 바뀐 시각으로 앞당겨 싣고(07:53:45), 미뤄진 내림은 기간 끝 그대로 싣는다.
+const entitlementRows = async () =>
+  (
+    (await app.query("select public.companion_entitlements() as e")).rows[0].e as {
+      entitlements: { id: string; expiresAt: string | null; pendingProductId: string | null }[];
+    }
+  ).entitlements;
+
+test("SB-S14 곧바로 올림 — PRODUCT_CHANGE의 만료로 옛 줄을 끝내 옛 Tickets 줄이 pending=Premium으로 남지 않는다", async () => {
+  await apply("activate", { productId: "duru.tickets.monthly.v1", expiresAt: iso(30 * DAY) });
+  await apply("product_change", {
+    productId: "duru.tickets.monthly.v1",
+    newProductId: "duru.premium.monthly.v1",
+    expiresAt: iso(-1000),
+  });
+  await apply("activate", { productId: "duru.premium.monthly.v1", expiresAt: iso(30 * DAY) });
+  expect((await entitlementRows()).map((e) => e.id)).toEqual(["premium"]);
+  expect(await tier()).toBe("premium");
+});
+
+test("SB-S15 미뤄진 내림 — 만료는 그대로(기간 끝), pending만 적는다 · 더 늦은 만료로 늘리지 않는다", async () => {
+  const end = iso(60_000);
+  await apply("activate", { productId: "duru.premium.monthly.v1", expiresAt: end });
+  await apply("product_change", {
+    productId: "duru.premium.monthly.v1",
+    newProductId: "duru.tickets.monthly.v1",
+    expiresAt: iso(30 * DAY),
+  });
+  const [premiumRow] = await entitlementRows();
+  expect(premiumRow).toMatchObject({ id: "premium", pendingProductId: "duru.tickets.monthly.v1" });
+  expect(Date.parse(premiumRow!.expiresAt!)).toBe(Date.parse(end));
 });

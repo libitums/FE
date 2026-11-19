@@ -77,6 +77,24 @@ export type AppUpdateRequiredEvent = {
   readonly minBuild: string;
 };
 
+/** 온보딩 스텝이 처음 보인 길 — 첫 화면 · 자동 넘김 · 밀기 · 뒤로(버튼 · 시스템 뒤로)(ADR-0159). */
+export type OnboardingStepVia = "start" | "auto" | "swipe" | "back";
+/** 온보딩 스텝 번호(1부터) — 분석 속성은 문자열 · 불리언뿐입니다. */
+export type OnboardingStepNumber = "1" | "2" | "3";
+/** 온보딩 스텝이 그 방문에서 처음 보였습니다 — 같은 스텝을 다시 보면 내지 않습니다. */
+export type OnboardingStepViewedEvent = {
+  readonly name: "onboarding_step_viewed";
+  readonly step: OnboardingStepNumber;
+  readonly via: OnboardingStepVia;
+};
+/** 「Get started」를 눌렀습니다 — 누른 스텝과 그 전에 자동 넘김이 있었는지입니다. */
+export type OnboardingStartedEvent = {
+  readonly name: "onboarding_started";
+  readonly step: OnboardingStepNumber;
+  readonly autoAdvanced: boolean;
+};
+export type OnboardingEvent = OnboardingStepViewedEvent | OnboardingStartedEvent;
+
 export type EntryEvent =
   | EntryScreenViewedEvent
   | EntryLoginMethodSelectedEvent
@@ -88,7 +106,9 @@ export type EntryEvent =
   // 로그인 화면의 방침 · 약관 링크입니다(ADR-0033). 설정 sink와 같은 모양입니다.
   | LegalDocumentOpenedEvent
   // 가입 직후 ② 나라에서의 저장입니다. 값(이름 · 나라)은 싣지 않습니다.
-  | LearnerProfileSavedEvent;
+  | LearnerProfileSavedEvent
+  // 온보딩 스텝 열람 · 「Get started」(ADR-0159).
+  | OnboardingEvent;
 export type EntryEventSink = ((event: EntryEvent) => void) | null;
 export type EntryAppProps = { readonly entryEventSink?: EntryEventSink };
 

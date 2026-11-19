@@ -231,7 +231,7 @@ const refusalTopics: Record<string, string> = {
   personal_info: "personal contact details",
 };
 
-// 완화 수위(open, ADR-0159)에서 걸리는 것 — 키스 · 껴안기는 통과이므로 `romance`는 질투 · 밀어붙이기 · 갑작스러운 스킨십, `sexual`은 노골적 성 묘사다.
+// 완화 수위(open, ADR-0163)에서 걸리는 것 — 키스 · 껴안기는 통과이므로 `romance`는 질투 · 밀어붙이기 · 갑작스러운 스킨십, `sexual`은 노골적 성 묘사다.
 const openRefusalTopics: Record<string, string> = {
   sexual: "explicit sexual content",
   romance: "pushy, possessive or out-of-nowhere romantic behaviour",

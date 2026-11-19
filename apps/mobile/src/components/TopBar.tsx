@@ -14,6 +14,8 @@ import { UnlimitedTicketChip } from "./UnlimitedTicketChip";
 import { hasTopBarNotificationsShade, topBarNotificationsClassName } from "./top-bar-press";
 
 import "./top-bar.css";
+import "./plan-chip.css";
+import "./plan-chip-motion.css";
 
 // 화면들이 함께 쓰는 상단 줄입니다 — 왼쪽에 연속 학습 · 트로피 · 학습 티켓 · 엽전, 오른쪽에 알림 버튼.
 // 엽전 칩은 상점을 여는 버튼입니다(ADR-0116 D7). 화면 제목은 여기 없습니다. 여정 맵에서는
@@ -49,6 +51,8 @@ export type TopBarProps = {
   /** 학습 티켓을 쓰기 전 장수입니다(시안 E4). 티켓 칩이 그 값에서 지금 값으로 한 번 줄어듭니다. */
   readonly ticketDropFrom?: number | null;
   readonly onTicketDropped?: () => void;
+  /** 구독 성공 직후(ADR-0160) — 무제한 티켓 칩 둘레 고리가 한 번 반짝입니다. */
+  readonly ticketPulse?: boolean;
 };
 
 export function TopBar({
@@ -67,6 +71,7 @@ export function TopBar({
   onBumped,
   ticketDropFrom = null,
   onTicketDropped,
+  ticketPulse = false,
 }: TopBarProps): ReactNode {
   const copy = useUiCopy();
   const motion = useMotion();
@@ -170,12 +175,23 @@ export function TopBar({
         {/* 학습 티켓은 숫자만 섭니다(시안 E1). 오르지는 않고, 새 레슨에 한 장을 쓴 순간 한 번 줄어듭니다(시안 E4).
             무제한(ADR-0115)이면 숫자 대신 무제한 칩이 서고, 누르면 무제한 모달을 엽니다(ADR-0085 D3 개정). */}
         {ticketCount === null ? null : ticketsUnlimited ? (
-          <UnlimitedTicketChip
-            testId="top-bar-tickets"
-            accessibilityLabel={copy.tickets.unlimited}
-            height="touch-target"
-            onTap={onOpenTickets === undefined ? undefined : handleOpenTickets}
-          />
+          <view className="top-bar-chip-host" data-pulse={String(ticketPulse)}>
+            <UnlimitedTicketChip
+              testId="top-bar-tickets"
+              accessibilityLabel={copy.tickets.unlimited}
+              height="touch-target"
+              onTap={onOpenTickets === undefined ? undefined : handleOpenTickets}
+            />
+            {ticketPulse ? (
+              <view
+                className={
+                  motion === "reduced" ? "plan-chip-ring" : "plan-chip-ring plan-chip-ring-pulse"
+                }
+                // 고리가 칩 위에 겹쳐 탭을 가로채지 않게 합니다(Lynx 히트 테스트는 뒤 형제부터).
+                user-interaction-enabled={false}
+              />
+            ) : null}
+          </view>
         ) : (
           <StatChip
             tone="ticket"

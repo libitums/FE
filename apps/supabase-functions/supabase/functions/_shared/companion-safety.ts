@@ -49,7 +49,7 @@ export const moderationCategories = [
 export const romanceAllowed = (ageBand: AgeBand): boolean => ageBand === "adult";
 
 /**
- * 적용 로맨스 수위(ADR-0159). 서버(SQL `companion.romance_tier`)가 인물 open · 생년상 성인 · 성인 확인 동의를 보고 정한 값을 받되,
+ * 적용 로맨스 수위(ADR-0163). 서버(SQL `companion.romance_tier`)가 인물 open · 생년상 성인 · 성인 확인 동의를 보고 정한 값을 받되,
  * 성인이 아니면 무엇이 와도 standard다 — 한 번 더 막는다. 값이 없으면(옛 DB) standard.
  */
 export const effectiveRomanceTier = (
@@ -59,14 +59,14 @@ export const effectiveRomanceTier = (
 
 /**
  * 캐릭터 답을 내보내기 전에 동기 출력 검사를 하는가 — 미성년자 · 나이 모름, 그리고 완화 수위(open) 턴. open은 말과 행동이 더 멀리 가므로
- * 노골적 성 묘사가 새지 않게 답을 검사한 뒤 내보낸다(ADR-0159). 그 밖의 성인 standard는 받는 대로.
+ * 노골적 성 묘사가 새지 않게 답을 검사한 뒤 내보낸다(ADR-0163). 그 밖의 성인 standard는 받는 대로.
  */
 export const outputCheckRequired = (
   ageBand: AgeBand,
   tier: RomanceTier | null | undefined,
 ): boolean => ageBand !== "adult" || effectiveRomanceTier(ageBand, tier) === "open";
 
-// 완화 수위(ADR-0159): 연인 관계 · 사랑해 · 키스 · 껴안기 · 기대기 · 설레거나 은근한(노골적이지 않은) 분위기까지 말과 행동으로 통과.
+// 완화 수위(ADR-0163): 연인 관계 · 사랑해 · 키스 · 껴안기 · 기대기 · 설레거나 은근한(노골적이지 않은) 분위기까지 말과 행동으로 통과.
 // 성행위 · 벗기 · 몸이나 흥분의 노골적 묘사 · 음담패설은 모두에게 차단(`sexual`). 질투 · 집착 · 밀어붙이기 · 갑작스러운 스킨십 시작은 캐릭터
 // 답에서 차단(`romance`) — 학습자의 말에는 적용하지 않는다.
 function openRomanceRule(layer: ModerationLayer): string {

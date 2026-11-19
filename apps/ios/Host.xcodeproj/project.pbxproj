@@ -71,6 +71,8 @@
 		4C1D0C5E0A1F2B3C4DCE0002 /* AirbridgeEvents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C1D0C5E0A1F2B3C4DBE0002 /* AirbridgeEvents.swift */; };
 		4C1D0C5E0A1F2B3C4DCE0003 /* AirbridgeEventsModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C1D0C5E0A1F2B3C4DBE0003 /* AirbridgeEventsModule.swift */; };
 		9E5C0A1A2F0000010000A001 /* PurchasesModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E5C0A1A2F0000010000A002 /* PurchasesModule.swift */; };
+		9E5C0A1A2F0000010000B001 /* PurchasesAttribution.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E5C0A1A2F0000010000B002 /* PurchasesAttribution.swift */; };
+		9E5C0A1A2F0000010000B003 /* PurchasesAttributionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E5C0A1A2F0000010000B004 /* PurchasesAttributionTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -159,6 +161,8 @@
 		4C1D0C5E0A1F2B3C4DBE0004 /* Airbridge.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Airbridge.xcconfig; sourceTree = "<group>"; };
 		4C1D0C5E0A1F2B3C4DBE0006 /* Airbridge.local.xcconfig.example */ = {isa = PBXFileReference; lastKnownFileType = text; path = Airbridge.local.xcconfig.example; sourceTree = "<group>"; };
 		9E5C0A1A2F0000010000A002 /* PurchasesModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesModule.swift; sourceTree = "<group>"; };
+		9E5C0A1A2F0000010000B002 /* PurchasesAttribution.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesAttribution.swift; sourceTree = "<group>"; };
+		9E5C0A1A2F0000010000B004 /* PurchasesAttributionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesAttributionTests.swift; sourceTree = "<group>"; };
 		9E5C0A1A2F0000010000A003 /* Host.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Host.xcconfig; sourceTree = "<group>"; };
 		9E5C0A1A2F0000010000A004 /* RevenueCat.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = RevenueCat.xcconfig; sourceTree = "<group>"; };
 		9E5C0A1A2F0000010000A005 /* RevenueCat.local.xcconfig.example */ = {isa = PBXFileReference; lastKnownFileType = text; path = RevenueCat.local.xcconfig.example; sourceTree = "<group>"; };
@@ -261,6 +265,7 @@
 				7C1D0A872E1000010087AB02 /* ChatStreamModule.swift */,
 				7C1D0A882E1000010088AB02 /* ExternalLinkModule.swift */,
 				9E5C0A1A2F0000010000A002 /* PurchasesModule.swift */,
+				9E5C0A1A2F0000010000B002 /* PurchasesAttribution.swift */,
 				7C1D0A862E1000010086AA02 /* AppVersion.swift */,
 				2B94A3DE2D6614DC0060892C /* Host-Bridging-Header.h */,
 			);
@@ -285,6 +290,7 @@
 				7C1D0A862E1000010086AA06 /* AppVersionTests.swift */,
 				4C1D0C5E0A1F2B3C4DBE0000 /* PushNotificationModuleTests.swift */,
 				4C1D0C5E0A1F2B3C4DBE0001 /* AirbridgeEventsTests.swift */,
+				9E5C0A1A2F0000010000B004 /* PurchasesAttributionTests.swift */,
 				4C1D0C5E0A1F2B3C4DFE0000 /* AppReviewModuleTests.swift */,
 				2B94A3DC2D66149800608944 /* SpeechRecognitionModuleTests.swift */,
 				A030C0DE0000000000000003 /* RecordingAudioSessionTests.swift */,
@@ -539,6 +545,7 @@
 				7C1D0A872E1000010087AB01 /* ChatStreamModule.swift in Sources */,
 				7C1D0A882E1000010088AB01 /* ExternalLinkModule.swift in Sources */,
 				9E5C0A1A2F0000010000A001 /* PurchasesModule.swift in Sources */,
+				9E5C0A1A2F0000010000B001 /* PurchasesAttribution.swift in Sources */,
 				7C1D0A862E1000010086AA01 /* AppVersion.swift in Sources */,
 				2B94A3CD2D6613730060892C /* ViewController.swift in Sources */,
 				2B94A3C92D6613730060892C /* AppDelegate.swift in Sources */,
@@ -560,6 +567,7 @@
 				7C1D0A862E1000010086AA05 /* AppVersionTests.swift in Sources */,
 				4C1D0C5E0A1F2B3C4DCE0000 /* PushNotificationModuleTests.swift in Sources */,
 				4C1D0C5E0A1F2B3C4DCE0001 /* AirbridgeEventsTests.swift in Sources */,
+				9E5C0A1A2F0000010000B003 /* PurchasesAttributionTests.swift in Sources */,
 				4C1D0C5E0A1F2B3C4E0E0000 /* AppReviewModuleTests.swift in Sources */,
 				2B94A3DD2D66149800608931 /* CompletionAnnouncementModuleTests.swift in Sources */,
 				D0A500000000000000000003 /* SoundEffectsModuleTests.swift in Sources */,
@@ -734,7 +742,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Host/Host.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 24;
+				CURRENT_PROJECT_VERSION = 25;
 				DEVELOPMENT_TEAM = 7SJJT6G6JK;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -745,12 +753,12 @@
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.1;
+				MARKETING_VERSION = 1.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.libitum.host;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -786,7 +794,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Host/Host.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 24;
+				CURRENT_PROJECT_VERSION = 25;
 				DEVELOPMENT_TEAM = 7SJJT6G6JK;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -797,12 +805,12 @@
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.1;
+				MARKETING_VERSION = 1.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.libitum.host;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;

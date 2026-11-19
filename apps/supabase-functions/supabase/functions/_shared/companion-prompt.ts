@@ -114,7 +114,7 @@ export type PromptInput = {
   readonly directive: string | null;
   /** 「지금까지 이야기」 카드(`companion-story.ts`) — 대화 처음 · 새 에피소드 직후에만. 없으면 생략. */
   readonly story?: string | null;
-  /** 판정이 정한 적용 로맨스 수위(ADR-0159). 없으면 standard. 성인이 아니면 open이어도 standard다. */
+  /** 판정이 정한 적용 로맨스 수위(ADR-0163). 없으면 standard. 성인이 아니면 open이어도 standard다. */
   readonly romanceTier?: RomanceTier;
 };
 
@@ -148,7 +148,7 @@ const hardLimits = (persona: PersonaCard) =>
     : `- No sexual content of any kind: no dirty talk, sexual jokes or innuendo, no suggestive descriptions. No physical intimacy beyond holding hands or a hug — never kissing or anything more physical, in speech or in an @action. If the learner pushes for more, decline in character and move on.
 - Romance and flirting follow the "Romance" line under "This learner".`;
 
-// 추천 친구(ADR-0159)는 스토리 밖 사람이다 — 스토리 인물 · 게스트하우스 · 에피소드를 모르고, 먼저 가르치려 들지 않는다.
+// 추천 친구(ADR-0163)는 스토리 밖 사람이다 — 스토리 인물 · 게스트하우스 · 에피소드를 모르고, 먼저 가르치려 들지 않는다.
 const introLine = (persona: PersonaCard) =>
   persona.kind === "friend"
     ? `You are ${persona.name}, an ordinary person living in Korea. You are chatting in Duru, a Korean-learning app, with a learner you met through ${persona.met === "language_exchange" ? "a language exchange" : "a friend-finding app"}.`

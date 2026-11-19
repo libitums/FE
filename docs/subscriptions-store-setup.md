@@ -65,8 +65,12 @@
 - **실제 결제를 여는 스위치는 하나** — `apps/mobile/src/lib/plans-flag.ts`의 `purchasesEnabled()`. 아래 6의 샌드박스 확인 뒤 `true`로 바꾼다.
   꺼진 동안에도 키가 있으면 스토어 가격 · 스토어 나라는 읽는다(가격 표시가 스토어 값).
 
+- 2단계 후속(2026-11-18): 요금제 화면에 구독 고지(가격 · 기간 · 자동 갱신 · 해지 · 이용약관 · 개인정보처리방침) · 지금 요금제 배지 · 구독 관리(스토어 화면),
+  서버 권한이 티켓 무제한 · Premium 대화 관문을 연다(ADR-0144 「2단계 후속」). App Store Connect 앱 설명 · 「이용약관(EULA)」 자리에도 이용약관 링크를 둔다.
+
 ## 6. 켜기 전 샌드박스 확인
 1. 위 1 ~ 4 완료(상품 · RevenueCat · 웹훅 · 서버). `purchasesEnabled()`를 로컬에서만 `true`로 바꿔 빌드.
 2. iOS: 샌드박스 Apple 계정 · Android: 라이선스 테스터 계정으로 각 상품 한 번씩 — 요금제 카드에 스토어 가격, 구매 시트, 취소(안내 없음), 성공 뒤 칩 · 권한.
+   구독 뒤 요금제 화면 「Current plan」 · 「Manage subscription」이 스토어 구독 화면을 여는지, 머리 티켓 칩이 무제한인지(Unlimited Tickets · Premium).
 3. `companion.store_events`에 이벤트 · `companion.plan_entitlements` · 지갑 원장 확인. 복원 · 환불(샌드박스) · 업그레이드(PRODUCT_CHANGE) 한 번씩.
 4. 통과하면 `purchasesEnabled()` = true PR.

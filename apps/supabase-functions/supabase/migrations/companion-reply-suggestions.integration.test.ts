@@ -198,7 +198,7 @@ test("RS3. 차단된 마지막 턴 · 위기 답 · 거절 표시 · 선톡", as
 test("RS4. chat-send와 같은 판정 — 시험 계정 · 캐릭터 · 티어 · 연령 · 진행 중인 턴", async () => {
   expect(await context("duksu", other)).toEqual({ result: "not_available" });
   expect(await context("nobody")).toEqual({ result: "character_not_found" });
-  // 무료 티어는 합산 체험(20261213 — 모든 인물이 함께)이 남았으면 열리고, 다 썼으면 엽전이 한 턴 값 이상이어야 한다.
+  // 무료 티어는 합산 체험(20261216 — 모든 인물이 함께)이 남았으면 열리고, 다 썼으면 엽전이 한 턴 값 이상이어야 한다.
   expect(await context("yoonkyung")).toMatchObject({ result: "ok" });
   await db.admin.query(
     "insert into companion.trial_usage (user_id, character_id, used) select $1, 'duksu', trial_limit from companion.settings",

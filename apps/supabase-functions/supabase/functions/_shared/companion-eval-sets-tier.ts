@@ -1,4 +1,4 @@
-// 로맨스 수위 경계(ADR-0159) — 검사 세트(기대 판정)와 답장 세트(채점자 메모). 수위 표: open 인물 × {성인 + 동의, 성인 동의 없음
+// 로맨스 수위 경계(ADR-0163) — 검사 세트(기대 판정)와 답장 세트(채점자 메모). 수위 표: open 인물 × {성인 + 동의, 성인 동의 없음
 // (= standard), 나이 모름, 미성년자}와 standard 인물. `romanceTier`는 판정이 정한 적용 수위 — 성인이 아니면 open이어도 standard로 돈다.
 
 import type { EvalCase } from "./companion-eval-schema.ts";

@@ -1,6 +1,5 @@
 import { useEffect, useGlobalProps, useReducer, useState } from "@lynx-js/react";
 
-import { FirstUnitGuideProvider } from "../components/first-unit-guide";
 import { announce } from "../lib/accessibility";
 import type { AnswerResult } from "../lib/answer-result";
 import { loadUiLanguage } from "../lib/ui-language";
@@ -8,7 +7,7 @@ import { appShellClassName } from "./app-shell-class";
 import type { EntryLanguage } from "../lib/entry-language";
 import { appVersionFrom } from "../lib/app-version";
 import { safeAreaInsetsFrom, tappableBottomInsetFrom } from "../lib/safe-area";
-import { UiCopyContext, uiCopyFor } from "../lib/ui-copy";
+import { uiCopyFor } from "../lib/ui-copy";
 import { initialListenPace, type ListenPace } from "../lib/listen-pace";
 import { useSessionOptions } from "./use-session-options";
 import type { NotificationItem } from "../screens/notifications/notifications.contract";
@@ -17,7 +16,6 @@ import { AppHeader } from "./AppHeader";
 import { guestUnlimitedPass } from "../lib/unlimited-pass";
 import { AppNavigator } from "./AppNavigator";
 import { useMessengerTabBadge } from "./use-messenger-tab-badge";
-import { ErrorBoundary } from "./ErrorBoundary";
 import { currentScreen, navReducer, showsTabNavigator, tabRootActions } from "./nav-reducer";
 import { shellBottomLayout } from "./shell-bottom-layout";
 import { notificationList } from "./app-content";
@@ -51,6 +49,9 @@ import { useDownloadGate, withDownloadGate } from "./use-download-gate";
 import { useLearningTickets } from "./use-learning-tickets";
 import { useTesterAccess } from "./use-tester-access";
 import { usePlans } from "./use-plans";
+import { useShop } from "./use-shop";
+import { SessionProviders } from "./session-providers";
+import { headerPlansOf } from "./header-plans";
 import type { AppProgressSeed, AppProps } from "./app-props";
 import type { AppSessionControl } from "./leave-app.contract";
 import type { CatalogReviewItem } from "./catalog-review";
@@ -103,13 +104,11 @@ export function AppSession({
     chipShown: showsTabNavigator(nav),
   });
   const { catalogProgress, setCatalogProgress } = progress;
-  // 남아 있는 알림입니다. 지운 알림은 세션 동안만 빠집니다 — **영속하지 않습니다**
-  // (ADR-0007 D1). 앱을 다시 켜면 `notificationList`로 돌아갑니다.
+  // 남아 있는 알림 — 지운 알림은 세션 동안만 빠집니다(영속하지 않음, ADR-0007 D1).
   const [notifications, setNotifications] = useState<readonly NotificationItem[]>(notificationList);
   const sessionWiring = useSessionOptions();
-  // 한 유닛의 활동들이 지나오며 쌓는 결과입니다. 유닛 하나가 활동 여럿을 잇고 평가는 마지막에 한 번만 돌므로,
-  // 그때까지의 정오를 여기 모읍니다(catalog-lesson-wiring.ts). 건너뛴 문항 수도 같은 자리 · 같은 모양입니다 —
-  // 둘이 함께 만들어지고 함께 버려져야 수가 새지 않습니다.
+  // 한 유닛의 활동들이 쌓는 결과 — 평가는 마지막에 한 번이라 정오를 여기 모읍니다(catalog-lesson-wiring.ts).
+  // 건너뛴 문항 수도 같은 자리입니다 — 둘이 함께 만들어지고 함께 버려져야 수가 새지 않습니다.
   const [pendingResults, setPendingResults] = useState<readonly AnswerResult[]>([]);
   const [pendingSkippedCount, setPendingSkippedCount] = useState(0);
   // 첫 시도에 틀린 채점 문항입니다 — 마지막 활동 뒤 다시 풀기 줄이 됩니다(catalog-lesson-finish.ts). 위 둘과 함께 버립니다.
@@ -117,8 +116,7 @@ export function AppSession({
   // 「천천히」는 레슨 하나 동안만 이어집니다 — 시작 · 나가기 · 끝에서 되돌립니다(저장하지 않음).
   const [listenPace, setListenPace] = useState<ListenPace>(initialListenPace);
   const finishGuard = useCatalogFinishGuard();
-  // 탭 루트 화면 안에 겹침 레이어가 떠 있는가입니다. 화면이 알려 오고(`onScreenLayerChange`) 전역 머리가 그 동안
-  // 낭독에서 빠집니다. 화면이 내려가면 화면이 스스로 `false`를 알립니다.
+  // 탭 루트 화면 안 겹침 레이어 — 화면이 알려 오고(`onScreenLayerChange`) 그 동안 전역 머리가 낭독에서 빠집니다.
   const [screenLayerOpen, setScreenLayerOpen] = useState(false);
 
   // 롤플레이 구획 — 본편 에피소드마다 하나, 진행에서 파생합니다(roleplay-sections.ts).
@@ -177,7 +175,10 @@ export function AppSession({
   const atMapRoot = nav.entry.length === 0 && screenNow.name === "journey-map" && !screenLayerOpen;
   const gateNav = downloadSettingsNav(dispatch);
   const downloadGate = useDownloadGate(downloadControls, catalog, atMapRoot, progress, gateNav);
-  const plans = usePlans(accountState === "signed-in", dispatch, episodeIntroEventSink, learner);
+  const shop = useShop(); // 하나의 상점(ADR-0160) — 머리 · 티켓 · 메신저 입구가 엽니다
+  const signedIn = accountState === "signed-in";
+  const plans = usePlans(signedIn, dispatch, episodeIntroEventSink, learner, shop.open);
+  const covered = screenLayerOpen || shop.request !== null;
   const wiring = withDownloadGate(
     withLearningTickets({ ...screens, plans }, tickets, progress, catalogSections),
     downloadGate,
@@ -185,9 +186,6 @@ export function AppSession({
   const messengerTabBadge = useMessengerTabBadge(wiring, nav.tab); // 하단 탭 NEW(2026-11-13)
   useSurfaceSessions(nav.entry.length === 0 ? nav.tab : null, episodeIntroEventSink); // D3 목적 구분
 
-  // 셸이 가장자리 여백을 잡고 배경을 칠합니다(자판 화면은 위만 — shell-edges.ts). 스플래시만 브랜드색.
-  // 아래쪽만 예외입니다 — 바가 서면 셸은 터치를 가로채는 시스템 바만큼(`tappableBottomInset`,
-  // Android 3버튼)만 비우고 탭 바 묶음이 그 밑을 덧댑니다. iOS · 제스처는 0입니다.
   // 누른 서버 푸시는 앱 구간에 들어선 뒤에 엽니다(ADR-0034).
   useOpenedPush(nav.entry.length === 0, wiring.onOpenPushTarget);
   // Airbridge 딥링크 · 지연 딥링크도 앱 구간에 들어선 뒤에 그 탭을 엽니다(ADR-0080).
@@ -219,7 +217,8 @@ export function AppSession({
     onStartChatting: () => dispatch({ type: "switchTab", tab: "messenger" }),
   });
   useMessengerWalletSync(notices.coinCount ?? screens.coinCount); // 메신저 지갑 = 머리 칩(ADR-0146)
-  // 셸 여백: 그림 화면 0 · 여정 맵 위 0 · 자판 화면 위만 — 비운 쪽은 화면이 잡습니다(`shell-edges`).
+  // 셸 여백: 그림 화면 0 · 여정 맵 위 0 · 자판 화면 위만 — 비운 쪽은 화면이 잡습니다(`shell-edges`). 스플래시만 브랜드색.
+  // 아래쪽은 바가 서면 시스템 바만큼(`tappableBottomInset`, Android 3버튼)만 비우고 탭 바 묶음이 덧댑니다.
   const shellInsets = shellInsetsOf(screenNow, insets, wiring);
   const bottomLayout = shellBottomLayout({
     showsNavigator,
@@ -228,73 +227,74 @@ export function AppSession({
   });
 
   return (
-    <UiCopyContext.Provider value={uiCopyFor(entryLanguage)}>
-      <FirstUnitGuideProvider
-        enabled={firstUnitGuideEnabled({
-          hasLoadedProgress: progress.hasLoadedProgress,
-          legacyTutorial: progress.legacyTutorial,
-          catalogProgress,
-        })}
+    <SessionProviders
+      language={entryLanguage}
+      guideEnabled={firstUnitGuideEnabled({
+        hasLoadedProgress: progress.hasLoadedProgress,
+        legacyTutorial: progress.legacyTutorial,
+        catalogProgress,
+      })}
+      {...{ plans, shop }}
+      coinBalance={notices.coinCount ?? 0}
+      platform={appVersion?.platform ?? null}
+    >
+      <view
+        className={appShellClassName(screenNow.name === "splash", entryLanguage)}
+        data-testid="app-shell"
+        style={{
+          paddingTop: `${shellInsets.top}px`,
+          paddingBottom: `${bottomLayout.shellPaddingBottom}px`,
+          paddingLeft: `${shellInsets.left}px`,
+          paddingRight: `${shellInsets.right}px`,
+        }}
       >
-        <ErrorBoundary>
-          <view
-            className={appShellClassName(screenNow.name === "splash", entryLanguage)}
-            data-testid="app-shell"
-            style={{
-              paddingTop: `${shellInsets.top}px`,
-              paddingBottom: `${bottomLayout.shellPaddingBottom}px`,
-              paddingLeft: `${shellInsets.left}px`,
-              paddingRight: `${shellInsets.right}px`,
+        <view className="app-content" accessibility-elements-hidden={shop.request !== null}>
+          {renderAppContent(screenNow, wiring)}
+          {/* 탭 루트에서는 전역 머리가 콘텐츠 위에 겹칩니다. */}
+          {showsNavigator && appHeaderVisibleOn(screenNow) ? (
+            <AppHeader
+              top={shellHeaderTop(screenNow, insets)}
+              streakDays={progress.streakDays}
+              trophyCount={progress.headerTrophyCount}
+              coinCount={notices.coinCount}
+              streakReward={notices.streakReward}
+              celebrateStreak={progress.streakCelebration}
+              onStreakCelebrated={progress.onStreakCelebrated}
+              statBump={progress.wiring}
+              tickets={tickets.header}
+              unlimitedPass={testerAccess ? guestUnlimitedPass : plans?.unlimitedPass}
+              episodeSurvey={progress.episodeSurvey}
+              {...episodeSurveyWiring({
+                episodeIntroEventSink,
+                onClosed: progress.onEpisodeSurveyClosed,
+              })}
+              obscured={covered}
+              onOpenNotifications={wiring.onOpenNotifications}
+              onOpenShop={shop.open}
+              plans={headerPlansOf(plans, screenNow.name === "journey-map")}
+            />
+          ) : null}
+        </view>
+        {/* 로그인 뒤 탭 루트에만 바를 겹칩니다. 하단 여백은 각 화면이 집니다. */}
+        {showsNavigator ? (
+          <AppNavigator
+            tab={nav.tab}
+            badges={messengerTabBadge}
+            obscured={covered}
+            floorHeight={bottomLayout.navigatorFloorHeight}
+            onSelectTab={(tab) => {
+              // 탭이 실제로 설정으로 바뀔 때만 `settings_opened` — 같은 탭 재탭은 열람이 아닙니다.
+              if (tab === "settings" && nav.tab !== "settings")
+                settingsEventSink?.({ name: "settings_opened" });
+              dispatch({ type: "switchTab", tab });
             }}
-          >
-            <view className="app-content">
-              {renderAppContent(screenNow, wiring)}
-              {/* 탭 루트에서는 전역 머리가 콘텐츠 위에 겹칩니다. */}
-              {showsNavigator && appHeaderVisibleOn(screenNow) ? (
-                <AppHeader
-                  top={shellHeaderTop(screenNow, insets)}
-                  streakDays={progress.streakDays}
-                  trophyCount={progress.headerTrophyCount}
-                  coinCount={notices.coinCount}
-                  streakReward={notices.streakReward}
-                  celebrateStreak={progress.streakCelebration}
-                  onStreakCelebrated={progress.onStreakCelebrated}
-                  statBump={progress.wiring}
-                  tickets={tickets.header}
-                  unlimitedPass={testerAccess ? guestUnlimitedPass : undefined}
-                  episodeSurvey={progress.episodeSurvey}
-                  {...episodeSurveyWiring({
-                    episodeIntroEventSink,
-                    onClosed: progress.onEpisodeSurveyClosed,
-                  })}
-                  obscured={screenLayerOpen}
-                  onOpenNotifications={wiring.onOpenNotifications}
-                />
-              ) : null}
-            </view>
-            {/* 로그인 뒤 탭 루트에만 바를 겹칩니다. 하단 여백은 각 화면이 집니다. */}
-            {showsNavigator ? (
-              <AppNavigator
-                tab={nav.tab}
-                badges={messengerTabBadge}
-                obscured={screenLayerOpen}
-                floorHeight={bottomLayout.navigatorFloorHeight}
-                onSelectTab={(tab) => {
-                  // 탭이 실제로 설정으로 바뀔 때만 `settings_opened`가 섭니다 —
-                  // 이미 그 탭인 무동작 재탭을 열람으로 세지 않습니다.
-                  if (tab === "settings" && nav.tab !== "settings")
-                    settingsEventSink?.({ name: "settings_opened" });
-                  dispatch({ type: "switchTab", tab });
-                }}
-              />
-            ) : null}
-            {/* 티켓 없이 새 레슨을 열려 하면 어느 화면 위에서든 가운데 대화상자가 뜹니다(시안 E6m · 요금제 카드 ADR-0144). */}
-            <OutOfTicketsLayer dialog={tickets.outOfTickets} offerFor={plans?.ticketsOffer} />
-            {downloadGate.layer}
-            {notices.layer}
-          </view>
-        </ErrorBoundary>
-      </FirstUnitGuideProvider>
-    </UiCopyContext.Provider>
+          />
+        ) : null}
+        {/* 티켓 없이 새 레슨을 열려 하면 어느 화면 위에서든 가운데 대화상자가 뜹니다(시안 E6m · 요금제 카드 ADR-0144). */}
+        <OutOfTicketsLayer dialog={tickets.outOfTickets} offerFor={plans?.ticketsOffer} />
+        {downloadGate.layer}
+        {notices.layer}
+      </view>
+    </SessionProviders>
   );
 }

@@ -242,7 +242,14 @@ export function ChatRoomOverlays({
         />
       );
     case "coin-shop":
-      return <CoinShopLayer coinBalance={coinBalance} onClose={close} ownsBack={false} />;
+      return (
+        <CoinShopLayer
+          coinBalance={coinBalance}
+          onClose={close}
+          ownsBack={false}
+          from={overlay.from === "send" ? "send" : null}
+        />
+      );
     case "photo":
     case "photo-redraw":
       return (

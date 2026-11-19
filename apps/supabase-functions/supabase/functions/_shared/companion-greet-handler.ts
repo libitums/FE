@@ -56,7 +56,7 @@ type GreetContext =
   | {
       readonly result: "ok";
       readonly ageBand: "adult" | "minor" | "unknown";
-      /** 적용 로맨스 수위(20261213). 옛 DB는 칸이 없다 — standard. 칩은 수위를 바꾸지 않는다. */
+      /** 적용 로맨스 수위(20261216). 옛 DB는 칸이 없다 — standard. 칩은 수위를 바꾸지 않는다. */
       readonly romanceTier?: "open" | "standard";
       readonly l1: string | null;
       readonly feedbackMode: "separate" | "natural" | "prefix";

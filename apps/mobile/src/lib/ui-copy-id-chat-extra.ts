@@ -3,10 +3,12 @@
 import type { MessengerChatExtraCopy } from "../screens/messenger-chat/chat-settings.contract";
 import { messengerChatMediaId } from "./ui-copy-id-chat-media";
 import { messengerChatAlbumId } from "./ui-copy-id-chat-album";
+import { messengerChatSuggestedId } from "./ui-copy-id-chat-suggested";
 
 export const messengerChatExtraId: MessengerChatExtraCopy = {
   media: messengerChatMediaId,
   album: messengerChatAlbumId,
+  suggested: messengerChatSuggestedId,
   access: {
     signInTitle: "Kirim pesan ke orang yang kamu temui",
     signInBody:

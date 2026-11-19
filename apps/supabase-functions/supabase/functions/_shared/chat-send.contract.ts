@@ -216,7 +216,7 @@ export type GateResult =
   | {
       readonly result: "ok";
       readonly ageBand: AgeBand;
-      /** 적용 로맨스 수위(20261213). 옛 DB는 칸이 없다 — standard. */
+      /** 적용 로맨스 수위(20261216). 옛 DB는 칸이 없다 — standard. */
       readonly romanceTier?: RomanceTier;
       readonly l1: string | null;
       readonly region: string | null;

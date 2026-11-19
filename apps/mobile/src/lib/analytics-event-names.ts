@@ -9,6 +9,8 @@ export type AnalyticsEventName =
   | "entry_screen_viewed"
   | "entry_login_method_selected"
   | "entry_completed"
+  | "onboarding_step_viewed"
+  | "onboarding_started"
   | "entry_returning_learner_entered"
   | "app_update_required_shown"
   | "notifications_opened"
@@ -70,4 +72,9 @@ export type AnalyticsEventName =
   | "streak_reward_collected"
   | "plans_viewed"
   | "plan_selected"
-  | "purchase_intent";
+  | "purchase_intent"
+  | "shop_tab_switched"
+  | "suggested_friend_viewed"
+  | "suggested_friend_added"
+  | "early_access_tapped"
+  | "early_access_completed";

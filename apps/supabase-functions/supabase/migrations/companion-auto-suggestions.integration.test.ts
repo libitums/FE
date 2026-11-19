@@ -48,7 +48,7 @@ test("AS1. 판정이 칩 스위치를 돌려준다 — 프로필이 없으면 �
   expect(await gate()).toEqual({
     result: "ok",
     ageBand: "unknown",
-    // 적용 로맨스 수위(20261213) — 덕수쌤은 standard 인물.
+    // 적용 로맨스 수위(20261216) — 덕수쌤은 standard 인물.
     romanceTier: "standard",
     l1: null,
     region: null,

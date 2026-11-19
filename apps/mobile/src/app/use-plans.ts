@@ -1,13 +1,12 @@
-// 요금제 결선(ADR-0144) — 기능 플래그가 켜졌고 로그인이면 요금제 표를 한 번 읽고, 설정 → Plans · 티켓 대화상자 · 메신저 판의
-// 결선을 만듭니다. 꺼졌으면 undefined — 그러면 어느 자리도 바뀌지 않고 RPC도 부르지 않습니다(1단계 운영 기본).
-// 구매는 `PurchaseBridge` 한 곳 — 호스트 RevenueCat 다리(2단계, 2026-11-17)가 스토어 상품 · 스토어 나라를 주고, 구매는 결제 플래그가
-// 켜져야 열립니다(꺼졌으면 「곧」 안내). 이벤트는 ADR-0029 D3 공통 속성으로 냅니다.
+// 요금제 결선(ADR-0144 · 상점 입구 ADR-0160) — 플래그가 켜졌고 로그인이면 표를 한 번 읽고 설정 · 상점 · 티켓 · 메신저 결선을 만듭니다.
+// 꺼졌으면 undefined(RPC 없음). 구매는 `PurchaseBridge` 한 곳이고 결제 플래그가 켜져야 열립니다. 이벤트는 ADR-0029 D3 공통 속성.
 
 import { useEffect, useState } from "@lynx-js/react";
 
 import { sessionNeedsRefresh } from "../lib/account-deletion";
 import { loadAuthSession } from "../lib/auth-session";
 import { emitCompanionEvent } from "../lib/companion-events";
+import { setPlanAccess, subscriptionUnlimitedPass } from "../lib/plan-access";
 import { plansFeatureEnabled } from "../lib/plans-flag";
 import {
   plansClient,
@@ -26,11 +25,24 @@ import type {
   RestoreResult,
   StoreOffer,
 } from "../lib/purchase-bridge";
+import { plansCopy } from "../lib/ui-copy-plans";
+import type { UnlimitedPass } from "../lib/unlimited-pass";
 import type { EpisodeIntroEventSink } from "../screens/episode-intro/episode-intro.contract";
+import type { ShopRequest } from "../screens/coin-shop/shop-model";
+import type { ShopPlans } from "../screens/coin-shop/shop-plans";
+import { currentPlanOf, type CurrentPlan, type PlanActivation } from "../screens/plans/plan-change";
 import type { PlanOfferWiring } from "../screens/plans/plans.contract";
 import { planCardsFor, type PlanPeriod, type PlanPlacement } from "../screens/plans/plans-model";
 import { reportServerBalance } from "./messenger-chat-wiring";
+import { armOnPurchased, usePlanActivation } from "./use-plan-activation";
+import { useServerEntitlements } from "./use-server-entitlements";
 import type { NavAction } from "./nav-state";
+import {
+  planSelectedEvent,
+  planSurfaceOf,
+  plansViewedEvent,
+  shopTabSwitchedEvent,
+} from "./plans-events";
 
 export type PlansWiring = {
   readonly catalog: PlansCatalog | null;
@@ -52,9 +64,18 @@ export type PlansWiring = {
   readonly ticketsOffer: (close: () => void) => PlanOfferWiring | undefined;
   /** 메신저 무료 다 씀 판 카드. 표를 못 읽었으면 undefined. */
   readonly messengerOffer: PlanOfferWiring | undefined;
+  /** 티켓 무제한 구독이면 머리 칩의 무제한 모달 구독 판(ADR-0115 · ADR-0144). 아니면 undefined. */
+  readonly unlimitedPass: UnlimitedPass | undefined;
+  /** 지금 요금제(서버 권한에서 등급 높은 것, ADR-0160) — 머리 칩 · 상점 칩 · 바꿈의 기준. */
+  readonly current: CurrentPlan | null;
+  /** 상점 Plans 탭의 결선(`ShopPlansContext`). */
+  readonly shop: ShopPlans;
+  /** 티켓 모달의 「Go unlimited」 줄 — Unlimited Tickets 월 가격 글. 표가 없거나 이미 티켓 무제한이면 undefined. */
+  readonly goUnlimited: { readonly price: string | null } | undefined;
+  /** 구독 성공 알림 한 번(T6, `usePlanActivation`) — 미뤄진 내림이면 scheduled. 보이면 `onActivatedShown`. */
+  readonly activated: PlanActivation | null;
+  readonly onActivatedShown: () => void;
 };
-
-const surfaceOf = (placement: PlanPlacement) => (placement === "messenger" ? "chat" : "learning");
 
 const SESSION_WAITS = 30;
 const SESSION_WAIT_MS = 1000;
@@ -64,27 +85,43 @@ export function usePlans(
   dispatch: (action: NavAction) => void,
   eventSink: EpisodeIntroEventSink,
   learner: { readonly learnerRecord: { readonly countryCode: string } | null },
+  openShop: (request: ShopRequest) => void = () => {},
   client: () => PlansClient = plansClient,
   bridgeOf: () => PurchaseBridge = nativePurchaseBridge,
 ): PlansWiring | undefined {
   const enabled = plansFeatureEnabled() && signedIn;
   const [catalog, setCatalog] = useState<PlansCatalog | null>(null);
-  const [entitlements, setEntitlements] = useState<PlanEntitlements | null>(null);
+  const bridge = bridgeOf();
+  // 내 권한 — 화면 진입 · 구매 뒤, 그리고 만료 경계 · 앱이 앞으로 올 때 다시 읽습니다(미뤄진 내림이 칩에 늦게 닿지 않게).
+  const [entitlements, setEntitlements, rereadEntitlements] = useServerEntitlements(
+    enabled && bridge.available,
+    client,
+  );
   const [offers, setOffers] = useState<readonly StoreOffer[] | null>(null);
   const [storefront, setStorefront] = useState<string | null>(null);
+  const activation = usePlanActivation(entitlements);
+  const current = currentPlanOf(entitlements);
   const region = pricingRegionFor(storefront, learner.learnerRecord?.countryCode);
-  const bridge = bridgeOf();
+  // 서버 권한(정본)을 티켓 · 대화 판정이 읽는 자리에 렌더마다 맞춥니다 — 결제를 열 수 없으면 권한을 읽지 않아 언제나 null(지금과 같음).
+  setPlanAccess(enabled && bridge.available ? entitlements : null);
   // 구매 · 복원이 성공하면 웹훅이 서버를 바꿀 때까지 권한 · 잔액을 잠깐 다시 읽습니다(ADR-0144 2단계).
-  function withServerRefresh<T extends { readonly kind: string }>(task: () => Promise<T>) {
+  function withServerRefresh<T extends { readonly kind: string }>(
+    task: () => Promise<T>,
+    settle: "any" | "entitlements" = "any",
+  ) {
     return runWithServerRefresh(
       {
         available: bridge.available,
         current: entitlements,
         entitlements: () => client().entitlements(),
         balance: () => client().balance(),
-        onEntitlements: setEntitlements,
+        onEntitlements: (next) => {
+          activation.observe(next);
+          setEntitlements(next);
+        },
         onBalance: reportServerBalance,
         wait: sleep,
+        settle,
       },
       task,
     );
@@ -98,7 +135,10 @@ export function usePlans(
       storefront,
       offers,
       canBuy: enabled && bridge.available,
-      buy: (productId) => withServerRefresh(() => bridge.purchase(productId)),
+      buy: (productId) => {
+        activation.disarm();
+        return withServerRefresh(() => bridge.purchase(productId));
+      },
     });
     // oxlint-disable-next-line react-hooks/exhaustive-deps
   }, [region, eventSink, storefront, offers, enabled, entitlements]);
@@ -115,12 +155,7 @@ export function usePlans(
           if (live) setCatalog(next);
         });
       // 내 권한은 결제를 열 수 있을 때만 읽습니다 — 결제 전에는 구독이 없어 로그인마다 RPC를 하나 더 부를 까닭이 없습니다.
-      if (bridgeOf().available)
-        void client()
-          .entitlements()
-          .then((next) => {
-            if (live) setEntitlements(next);
-          });
+      rereadEntitlements();
       void bridge.offerings().then((next) => {
         if (live) setOffers(next);
       });
@@ -128,8 +163,7 @@ export function usePlans(
         if (live) setStorefront(next);
       });
     };
-    // 부팅의 세션 갱신이 끝나기 전에 부르면 같은 refresh 토큰으로 갱신을 한 번 더 보내(Auth가 재사용으로 보고 세션을 끊을
-    // 수 있음) — 세션이 아직 만료 직전이면 1초씩 기다렸다가(최대 30번) 읽습니다.
+    // 부팅의 세션 갱신 전에 부르면 같은 refresh 토큰을 두 번 보내 세션이 끊길 수 있어 — 만료 직전이면 1초씩(최대 30번) 기다립니다.
     const whenFresh = () => {
       if (!live) return;
       const session = loadAuthSession();
@@ -151,21 +185,12 @@ export function usePlans(
   if (!enabled) return undefined;
 
   const viewed = (placement: PlanPlacement, view: "offer" | "compare") =>
-    emitCompanionEvent(eventSink, {
-      name: "plans_viewed",
-      surface: surfaceOf(placement),
-      placement,
-      view,
-    });
+    emitCompanionEvent(eventSink, plansViewedEvent(placement, view, current));
   const selected = (placement: PlanPlacement, plan: PlanId, period: PlanPeriod) =>
-    emitCompanionEvent(eventSink, {
-      name: "plan_selected",
-      surface: surfaceOf(placement),
-      placement,
-      plan,
-      period,
-    });
+    emitCompanionEvent(eventSink, planSelectedEvent(placement, plan, period, current));
+  // 설정만 화면(밝은 판)이고, 나머지 입구는 상점 Plans 탭(ADR-0160) — 상점이 탭을 보일 때 plans_viewed를 냅니다.
   const openPlans = (placement: PlanPlacement, focus: PlanId | null) => {
+    if (placement !== "settings") return openShop({ tab: "plans", placement, focus });
     viewed(placement, "compare");
     dispatch({ type: "push", screen: { name: "plans", placement, focus } });
   };
@@ -199,7 +224,7 @@ export function usePlans(
     emitCompanionEvent(
       eventSink,
       purchaseIntentOf({
-        surface: surfaceOf(placement),
+        surface: planSurfaceOf(placement),
         placement,
         kind: "plan",
         product,
@@ -212,21 +237,63 @@ export function usePlans(
     );
   };
 
+  const onSelect = async (
+    placement: PlanPlacement,
+    plan: PlanId,
+    period: PlanPeriod,
+    productId: string | null,
+  ): Promise<PurchaseResult> => {
+    selected(placement, plan, period);
+    if (productId === null) return { kind: "unavailable" };
+    intent(placement, plan, period, productId);
+    return withServerRefresh(
+      armOnPurchased(activation, () => bridge.purchase(productId)),
+      "entitlements",
+    );
+  };
+  const onRestore = () => {
+    activation.disarm();
+    return withServerRefresh(() => bridge.restore());
+  };
+  const ticketsCard =
+    catalog === null
+      ? undefined
+      : planCardsFor(catalog, "tickets", "monthly", offers, region).find(
+          (card) => card.id === "unlimited_tickets",
+        );
+
   return {
     catalog,
     entitlements,
     region,
     offers,
     openPlans,
-    onSelect: async (placement, plan, period, productId) => {
-      selected(placement, plan, period);
-      if (productId === null) return { kind: "unavailable" };
-      intent(placement, plan, period, productId);
-      return withServerRefresh(() => bridge.purchase(productId));
-    },
-    onRestore: () => withServerRefresh(() => bridge.restore()),
+    onSelect,
+    onRestore,
     onBack: () => dispatch({ type: "back" }),
     ticketsOffer: (close) => offerFor("tickets", close),
     messengerOffer: offerFor("messenger", () => {}),
+    // 요금제 이름은 스토어 상품명과 같아 모든 언어에서 영어입니다(`ui-copy-plans`).
+    unlimitedPass: bridge.available
+      ? subscriptionUnlimitedPass(entitlements, (plan) => plansCopy.en.names[plan])
+      : undefined,
+    current,
+    shop: {
+      catalog,
+      offers,
+      region,
+      current: entitlements,
+      onSelect,
+      onRestore,
+      onViewed: (placement) => viewed(placement, "compare"),
+      onTabSwitched: (from, to, surface) =>
+        emitCompanionEvent(eventSink, shopTabSwitchedEvent(from, to, surface)),
+    },
+    goUnlimited:
+      ticketsCard === undefined || entitlements?.unlimitedTickets === true
+        ? undefined
+        : { price: ticketsCard.price },
+    activated: activation.activated,
+    onActivatedShown: activation.onActivatedShown,
   };
 }
