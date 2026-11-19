@@ -8,7 +8,10 @@ import { createCoinWallet } from "./coin-wallet";
 import { COMPANION_CATALOG, guestCompanionSeed } from "./companion-roster";
 import type { SuggestedFriendsPort } from "./friend-catalog.contract";
 import { messengerAccessTestIds as access } from "./messenger-access";
-import { messengerChatTestIds as room, messengerListTestIds as list } from "./messenger-chat.contract";
+import {
+  messengerChatTestIds as room,
+  messengerListTestIds as list,
+} from "./messenger-chat.contract";
 import type { GuidePart, GuideStore } from "./messenger-guide";
 import { MessengerListScreen } from "./MessengerListScreen";
 import { suggestedFriendsTestIds as sf } from "./suggested-friends.contract";

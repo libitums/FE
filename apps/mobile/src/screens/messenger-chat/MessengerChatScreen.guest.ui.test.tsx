@@ -28,8 +28,7 @@ afterEach(() => {
 });
 
 const prompt = () => screen.queryByTestId(access.prompt);
-const tapAction = (id: "sign-in" | "later") =>
-  tapButtonIn(`ui-lynx-dialog-action-${id}`);
+const tapAction = (id: "sign-in" | "later") => tapButtonIn(`ui-lynx-dialog-action-${id}`);
 
 test("GC-U1 비회원이 글을 써서 보내면 대화상자가 서고, 출처로 보내지 않으며 내 줄도 없다", () => {
   const onSignInRequired = vi.fn();

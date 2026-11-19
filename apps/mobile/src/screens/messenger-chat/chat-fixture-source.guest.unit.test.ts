@@ -58,7 +58,9 @@ describe("열 때 첫 인사(greetOnOpen)", () => {
     const open = orderChatRooms(source.snapshot().rooms).map((room) => room.roomId);
     expect(open).toContain("yoonkyung");
     expect(open).not.toContain("mina");
-    expect(textsOf(source, "yoonkyung")).toEqual(["잘 도착했어요? 익선 게스트하우스 정윤경이에요."]);
+    expect(textsOf(source, "yoonkyung")).toEqual([
+      "잘 도착했어요? 익선 게스트하우스 정윤경이에요.",
+    ]);
   });
 
   test("GS-U5 greetOnOpen이 없으면(기존 가짜 출처) 열어도 빈 방 그대로", () => {

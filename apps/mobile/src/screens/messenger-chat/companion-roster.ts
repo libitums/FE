@@ -180,7 +180,9 @@ export function guestCompanionSeed(
   return {
     rooms: characters.map((character) => ({
       ...roomOf(character),
-      ...(character.firstLine === null ? {} : { opening: openingOf(character, character.firstLine) }),
+      ...(character.firstLine === null
+        ? {}
+        : { opening: openingOf(character, character.firstLine) }),
     })),
   };
 }

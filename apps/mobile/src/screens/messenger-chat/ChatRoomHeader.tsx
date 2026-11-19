@@ -20,7 +20,13 @@ export type ChatRoomHeaderProps = {
 };
 
 // 방 머리 — 뒤로 · 상대 이름(+ 턴 줄) · 메뉴(사이드바). `MessengerChatScreen`에서 떼어 냈습니다(300줄).
-export function ChatRoomHeader({ name, plan, used, onBack, onMenu }: ChatRoomHeaderProps): ReactNode {
+export function ChatRoomHeader({
+  name,
+  plan,
+  used,
+  onBack,
+  onMenu,
+}: ChatRoomHeaderProps): ReactNode {
   const copy = useUiCopy().messengerChat.room;
   return (
     <ChatHeader

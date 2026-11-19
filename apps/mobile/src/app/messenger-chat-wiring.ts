@@ -14,8 +14,8 @@ import { loadUiLanguage, onUiLanguageSaved } from "../lib/ui-language";
 import { companionL1Sync } from "../screens/messenger-chat/companion-l1-sync";
 import type { ChatMediaHooks } from "../screens/messenger-chat/chat-media.contract";
 import type { ChatRemote } from "../screens/messenger-chat/chat-remote.contract";
-import { companionSeed, guestCompanionSeed } from "../screens/messenger-chat/companion-roster";
-import { GUEST_PREVIEW_MODE, isGuestPreview } from "./guest-preview";
+import { companionSeed } from "../screens/messenger-chat/companion-roster";
+import { GUEST_PREVIEW_MODE, isGuestPreview, localSeedOptions } from "./guest-preview";
 import type { ChatFixtureSeed, ChatSource } from "../screens/messenger-chat/chat-source.contract";
 import {
   deviceBirthYearStore,
@@ -210,9 +210,7 @@ export function messengerChatSource(imageUrlOf: ImageUrlOf): ChatSource {
         ? { replyIdeasStore: deviceReplyIdeasStore(key) }
         : {}),
       ...(remote === null
-        ? testSeed === undefined
-          ? guest ? { seed: guestCompanionSeed(), greetOnOpen: true } : {}
-          : { seed: testSeed }
+        ? localSeedOptions(testSeed, guest)
         : // 다시 켠 뒤 목록 미리보기 — 열린 방의 서버 기록을 미리 읽습니다(2026-11-17).
           { seed: companionSeed(), remote, mediaHooks: forwardedMediaHooks, previewOnStart: true }),
     });

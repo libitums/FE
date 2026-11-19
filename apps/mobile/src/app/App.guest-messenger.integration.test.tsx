@@ -4,9 +4,7 @@ import { cleanup, fireEvent, screen } from "@lynx-js/react/testing-library";
 import { learningItemGuideSeenStorageKey } from "../lib/learning-item-guide";
 import { allLearningItemGuidesSeenValue } from "../lib/learning-item-guide.test-support";
 import { memoryUnlockStore } from "../screens/messenger-chat/chat-local-stores";
-import {
-  messengerAccessTestIds as access,
-} from "../screens/messenger-chat/messenger-access";
+import { messengerAccessTestIds as access } from "../screens/messenger-chat/messenger-access";
 import {
   messengerChatTestIds as room,
   messengerListTestIds as list,
@@ -62,7 +60,7 @@ async function bootGuest(unlocked: readonly string[] = []) {
 const skipGuide = () =>
   void fireEvent.tap(screen.getByTestId(room.guideListSkip), { eventType: "catchEvent" });
 
-const companionRequests =(host: { requests: readonly { url: string }[] }) =>
+const companionRequests = (host: { requests: readonly { url: string }[] }) =>
   host.requests.filter((request) => request.url.includes("companion"));
 
 test("GM1 비회원 메신저 탭 = 회원과 같은 목록 — 덕수쌤 첫 입장 안내, 건너뛰면 덕수쌤 줄 · 추천 친구 줄, 데모 방 · 가입 권유 없음, 서버 요청 0", async () => {
