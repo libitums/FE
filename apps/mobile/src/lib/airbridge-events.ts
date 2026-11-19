@@ -32,13 +32,15 @@ function orderCompleted(
 ): AirbridgeEvent | null {
   const value = Number(price);
   if (price === "" || !Number.isFinite(value) || currency === "") return null;
+  // ISO 4217은 대문자 — 스토어 · 호스트가 소문자로 줘도 맞춰 보냅니다.
+  const code = currency.toUpperCase();
   return {
     category: "airbridge.ecommerce.order.completed",
     semanticAttributes: {
       value,
-      currency,
+      currency: code,
       ...(transactionId === "" ? {} : { transactionID: transactionId }),
-      products: [{ productID: product, name: product, price: value, quantity: 1, currency }],
+      products: [{ productID: product, name: product, price: value, quantity: 1, currency: code }],
     },
   };
 }

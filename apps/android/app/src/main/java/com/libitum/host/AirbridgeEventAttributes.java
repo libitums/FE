@@ -38,6 +38,7 @@ final class AirbridgeEventAttributes {
     for (int index = 0; index < array.size(); index++) {
       if (array.getType(index) != ReadableType.Map) continue;
       ReadableMap row = array.getMap(index);
+      if (row == null) continue;
       Map<String, Object> kept = new HashMap<>();
       ReadableMapKeySetIterator keys = row.keySetIterator();
       while (keys.hasNextKey()) {

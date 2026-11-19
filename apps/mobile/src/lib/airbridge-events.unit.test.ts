@@ -92,6 +92,14 @@ describe("airbridgeEventFrom", () => {
     expect(Object.keys(noId?.semanticAttributes ?? {})).toEqual(["value", "currency", "products"]);
   });
 
+  test("AB6. 통화 코드는 대문자 ISO로 맞춰 보낸다(스토어가 소문자로 줘도)", () => {
+    const event = airbridgeEventFrom({ ...packPurchasedExample, currency: "vnd" });
+    expect(event?.semanticAttributes).toMatchObject({
+      currency: "VND",
+      products: [expect.objectContaining({ currency: "VND" })],
+    });
+  });
+
   test.each(unmappedEvents.map((e) => [e.name, e] as const))(
     "AB3. %s는 null이다",
     (_name, event) => {
