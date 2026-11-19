@@ -27,7 +27,14 @@ export function planBenefitText(benefit: PlanBenefit, copy: PlansCopy): string {
  * 요금제 카드(시안 `.plan`) — 이름 · BEST 배지 · 가격(스토어 가격이 없으면 안내) · 혜택 줄. 카드 전체가 단추 하나이고 낭독은
  * 한 요소로 묶습니다(Android는 `flatten={false}`여야 요소가 남습니다). 설정 화면은 고름(`selected`)을, 맥락 카드는 BEST를 테두리로 보입니다.
  */
-export function PlanCard({ card, period, testId, selected, onPress }: PlanCardProps): ReactNode {
+export function PlanCard({
+  card,
+  period,
+  testId,
+  selected,
+  current,
+  onPress,
+}: PlanCardProps): ReactNode {
   const copy = useUiCopy().plans;
   const name = copy.names[card.id];
   const price =
@@ -37,7 +44,13 @@ export function PlanCard({ card, period, testId, selected, onPress }: PlanCardPr
         ? copy.perMonth(card.price)
         : copy.perYear(card.price);
   const benefits = card.benefits.map((benefit) => planBenefitText(benefit, copy));
-  const label = [name, card.best ? copy.best : null, price, ...benefits]
+  const label = [
+    name,
+    current === true ? copy.terms.current : null,
+    card.best ? copy.best : null,
+    price,
+    ...benefits,
+  ]
     .concat(selected === true ? [copy.selected] : [])
     .filter((part): part is string => part !== null)
     .join(", ");
@@ -60,7 +73,14 @@ export function PlanCard({ card, period, testId, selected, onPress }: PlanCardPr
     >
       <view className="plan-card-head">
         <text className="plan-card-name">{name}</text>
-        {card.best ? (
+        {current === true ? (
+          <view
+            className="plan-card-badge plan-card-badge-current"
+            data-testid={`${testId}-current`}
+          >
+            <text className="plan-card-badge-label">{copy.terms.current}</text>
+          </view>
+        ) : card.best ? (
           <view className="plan-card-badge">
             <text className="plan-card-badge-label">{copy.best}</text>
           </view>

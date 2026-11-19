@@ -156,6 +156,7 @@ export const coinShopVi: CoinShopCopy = {
     title: "Sắp có thanh toán",
     description: "Hiện chưa thể mua xu. Vui lòng quay lại sau.",
   },
+  purchaseFailed: "Giao dịch chưa thành công. Vui lòng thử lại.",
 };
 
 export const downloadSheetVi: DownloadSheetCopy = {

@@ -8,6 +8,7 @@ import { useEffect, useState } from "@lynx-js/react";
 import { sessionNeedsRefresh } from "../lib/account-deletion";
 import { loadAuthSession } from "../lib/auth-session";
 import { emitCompanionEvent } from "../lib/companion-events";
+import { setPlanAccess, subscriptionUnlimitedPass } from "../lib/plan-access";
 import { plansFeatureEnabled } from "../lib/plans-flag";
 import {
   plansClient,
@@ -26,6 +27,8 @@ import type {
   RestoreResult,
   StoreOffer,
 } from "../lib/purchase-bridge";
+import { plansCopy } from "../lib/ui-copy-plans";
+import type { UnlimitedPass } from "../lib/unlimited-pass";
 import type { EpisodeIntroEventSink } from "../screens/episode-intro/episode-intro.contract";
 import type { PlanOfferWiring } from "../screens/plans/plans.contract";
 import { planCardsFor, type PlanPeriod, type PlanPlacement } from "../screens/plans/plans-model";
@@ -52,6 +55,8 @@ export type PlansWiring = {
   readonly ticketsOffer: (close: () => void) => PlanOfferWiring | undefined;
   /** 메신저 무료 다 씀 판 카드. 표를 못 읽었으면 undefined. */
   readonly messengerOffer: PlanOfferWiring | undefined;
+  /** 티켓 무제한 구독이면 머리 칩의 무제한 모달 구독 판(ADR-0115 · ADR-0144). 아니면 undefined. */
+  readonly unlimitedPass: UnlimitedPass | undefined;
 };
 
 const surfaceOf = (placement: PlanPlacement) => (placement === "messenger" ? "chat" : "learning");
@@ -74,6 +79,8 @@ export function usePlans(
   const [storefront, setStorefront] = useState<string | null>(null);
   const region = pricingRegionFor(storefront, learner.learnerRecord?.countryCode);
   const bridge = bridgeOf();
+  // 서버 권한(정본)을 티켓 · 대화 판정이 읽는 자리에 렌더마다 맞춥니다 — 결제를 열 수 없으면 권한을 읽지 않아 언제나 null(지금과 같음).
+  setPlanAccess(enabled && bridge.available ? entitlements : null);
   // 구매 · 복원이 성공하면 웹훅이 서버를 바꿀 때까지 권한 · 잔액을 잠깐 다시 읽습니다(ADR-0144 2단계).
   function withServerRefresh<T extends { readonly kind: string }>(task: () => Promise<T>) {
     return runWithServerRefresh(
@@ -228,5 +235,9 @@ export function usePlans(
     onBack: () => dispatch({ type: "back" }),
     ticketsOffer: (close) => offerFor("tickets", close),
     messengerOffer: offerFor("messenger", () => {}),
+    // 요금제 이름은 스토어 상품명과 같아 모든 언어에서 영어입니다(`ui-copy-plans`).
+    unlimitedPass: bridge.available
+      ? subscriptionUnlimitedPass(entitlements, (plan) => plansCopy.en.names[plan])
+      : undefined,
   };
 }

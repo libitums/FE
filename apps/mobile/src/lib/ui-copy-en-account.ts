@@ -155,6 +155,7 @@ export const coinShopEn: CoinShopCopy = {
     title: "Payment coming soon",
     description: "Coin purchases aren't available yet. Please check back soon.",
   },
+  purchaseFailed: "The purchase didn't go through. Please try again.",
 };
 
 export const downloadSheetEn: DownloadSheetCopy = {

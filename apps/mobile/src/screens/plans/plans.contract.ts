@@ -1,6 +1,8 @@
 // 요금제 화면 · 부품의 계약(ADR-0144). 타입 · testid만 둡니다.
 
-import type { PlanId, PlansCatalog } from "../../lib/plans-api";
+import type { AppPlatform } from "../../lib/app-version";
+import type { LegalDocument } from "../../lib/legal-document.contract";
+import type { PlanEntitlements, PlanId, PlansCatalog } from "../../lib/plans-api";
 import type { PricingRegion } from "../../lib/provisional-prices";
 import type { PurchaseResult, RestoreResult, StoreOffer } from "../../lib/purchase-bridge";
 import type { PlanCardView, PlanPeriod } from "./plans-model";
@@ -22,6 +24,14 @@ export type PlansScreenProps = {
   readonly onBack: () => void;
   /** 임시 추천 가격의 지역(ADR-0144 추가 2026-11-17) — 스토어 가격이 없을 때만 씁니다. 기본 US. */
   readonly region?: PricingRegion;
+  /** 내 권한(서버 정본, ADR-0144 D2) — 「지금 요금제」 배지 · 구독 관리. 결제를 열 수 없으면 null. */
+  readonly current?: PlanEntitlements | null;
+  /** 고지의 스토어 이름(App Store · Google Play). 모르면 일반 이름. */
+  readonly platform?: AppPlatform | null;
+  /** 스토어 구독 관리를 엽니다 — 지금 요금제의 상품(Play가 그 구독을 고름). */
+  readonly onManageSubscription?: (productId: string | null) => void;
+  /** 고지의 이용약관 · 개인정보처리방침 링크. */
+  readonly onOpenLegal?: (document: LegalDocument) => void;
 };
 
 export type PlanCardProps = {
@@ -30,6 +40,8 @@ export type PlanCardProps = {
   readonly testId: string;
   /** 고른 카드 — 테두리 · 낭독 「Selected」. 맥락 카드는 고름이 없습니다(undefined). */
   readonly selected?: boolean;
+  /** 지금 가진 요금제 — 「Current plan」 배지(설정 화면만). */
+  readonly current?: boolean;
   readonly onPress: () => void;
 };
 
@@ -53,6 +65,11 @@ export const plansTestIds = {
   continue: "plans-continue",
   restore: "plans-restore",
   notice: "plans-notice",
+  terms: "plans-terms",
+  termsOfUse: "plans-terms-of-use",
+  privacyPolicy: "plans-privacy-policy",
+  currentBadge: (id: PlanId) => `plans-card-${id}-current`,
+  manage: "plans-manage",
   empty: "plans-empty",
   offer: "plan-offer",
   offerCard: (id: PlanId) => `plan-offer-card-${id}`,

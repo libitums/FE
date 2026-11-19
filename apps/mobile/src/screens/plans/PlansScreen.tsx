@@ -6,11 +6,13 @@ import { Button } from "@libitums/ui-lynx/button";
 import { OptionSelector } from "@libitums/ui-lynx/option-selector";
 import { RoundButton } from "@libitums/ui-lynx/round-button";
 
+import { currentPlanIds } from "../../lib/plan-access";
 import type { PlanId } from "../../lib/plans-api";
 import { yearlySavingPercent } from "../../lib/provisional-prices";
 import { useUiCopy } from "../../lib/ui-copy";
 import { useScreenBack } from "../../lib/use-back-handler";
 import { PlanCard } from "./PlanCard";
+import { PlanTerms } from "./PlanTerms";
 import { initialPlanSelection, planCardsFor, type PlanPeriod } from "./plans-model";
 import { plansTestIds as ids, type PlansScreenProps } from "./plans.contract";
 import { usePlanRequest } from "./use-plan-request";
@@ -32,6 +34,10 @@ export function PlansScreen({
   onRestore,
   onBack,
   region = "US",
+  current = null,
+  platform = null,
+  onManageSubscription,
+  onOpenLegal,
 }: PlansScreenProps): ReactNode {
   useScreenBack(onBack);
   const copy = useUiCopy();
@@ -47,6 +53,11 @@ export function PlansScreen({
   const cards = cardsOf(period);
   const selectedId = picked ?? initialPlanSelection(cards, focus);
   const selected = cards.find((card) => card.id === selectedId);
+  // 지금 요금제(서버 권한) — 그 카드에 배지, 고르면 계속 대신 구독 관리(해지 · 바꿈은 스토어 몫).
+  const owned = currentPlanIds(current);
+  const ownedProduct = (id: PlanId | undefined) => owned.find((row) => row.id === id)?.productId;
+  const selectedOwned = ownedProduct(selected?.id);
+  const manage = () => onManageSubscription?.(selectedOwned ?? owned[0]?.productId ?? null);
   // 연간 할인 줄 — 고른 요금제의 월 · 연 임시 가격으로 셉니다(지역마다 배수가 다름). 스토어 가격이면 일반 문구.
   const saving = yearlySavingPercent(
     cardsOf("monthly").find((card) => card.id === selectedId)?.shown ?? null,
@@ -89,6 +100,7 @@ export function PlansScreen({
                   period={period}
                   testId={ids.card(card.id)}
                   selected={card.id === selectedId}
+                  current={ownedProduct(card.id) !== undefined}
                   onPress={() => setPicked(card.id)}
                 />
               ))}
@@ -107,7 +119,19 @@ export function PlansScreen({
               />
               <text className="plans-screen-caption">{text.yearlyNote(saving)}</text>
               <view className="plans-screen-actions">
-                {selected === undefined ? null : (
+                {selectedOwned !== undefined ? (
+                  <view
+                    data-testid={ids.manage}
+                    accessibility-element={true}
+                    accessibility-traits="button"
+                    accessibility-label={text.terms.manage}
+                    bindtap={manage}
+                  >
+                    <view accessibility-elements-hidden={true}>
+                      <Button label={text.terms.manage} variant="brand" size="xl" width="fill" />
+                    </view>
+                  </view>
+                ) : selected === undefined ? null : (
                   <view
                     data-testid={ids.continue}
                     accessibility-element={true}
@@ -147,6 +171,13 @@ export function PlansScreen({
                     />
                   </view>
                 </view>
+                <PlanTerms
+                  card={selected}
+                  period={period}
+                  platform={platform}
+                  onOpenLegal={onOpenLegal}
+                  onManage={owned.length > 0 && selectedOwned === undefined ? manage : undefined}
+                />
                 {notice === null ? null : (
                   <text
                     className="plans-screen-notice"

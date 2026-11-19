@@ -163,6 +163,7 @@ export const coinShopJa: CoinShopCopy = {
     title: "お支払いは近日公開",
     description: "コインの購入はまだご利用いただけません。もうしばらくお待ちください。",
   },
+  purchaseFailed: "購入を完了できませんでした。もう一度お試しください。",
 };
 
 export const downloadSheetJa: DownloadSheetCopy = {

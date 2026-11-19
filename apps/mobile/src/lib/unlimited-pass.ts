@@ -11,6 +11,8 @@ export type UnlimitedPass =
       readonly autoRenews: boolean;
       /** 요금제 이름(스토어 상품 이름)입니다. 없으면 알약을 세우지 않습니다. */
       readonly planLabel?: string;
+      /** 스토어 상품 id — 「Manage subscription」이 Play 구독 화면에서 이 구독을 고릅니다. */
+      readonly productId?: string;
     };
 
 /** 기기 지역 시간의 달력 날짜입니다. `month`는 1~12. */
