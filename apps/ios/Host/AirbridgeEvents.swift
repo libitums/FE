@@ -102,7 +102,9 @@ enum AirbridgeEvents {
     case .waitForActive:
       promptTrackingAuthorizationWhenActive(retriesLeft: retriesLeft)
     case .request:
-      Airbridge.requestTrackingAuthorization { _ in
+      Airbridge.requestTrackingAuthorization { status in
+        // 허용했으면 RevenueCat 고객의 IDFA를 채운다(대화상자를 띄우지 않는다 — 이미 답한 뒤다).
+        PurchasesAttribution.collectAfterTrackingDecision(status)
         DispatchQueue.main.async {
           // 대화상자를 못 띄운 채 돌아오면 상태가 그대로 `notDetermined`다 — 다음 활성화에 한 번 더.
           guard retriesLeft > 0, Airbridge.trackingAuthorizationStatus() == .notDetermined else { return }

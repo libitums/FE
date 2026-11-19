@@ -431,3 +431,13 @@ PR에서 wiki를 고친다」 규약이고 PR 작성자가 손으로 한다. 이
 - **D9 전달 sink는 `entryEventSink` · `episodeIntroEventSink` 둘**이다(`withAirbridgeEvents`) — `messengerEventSink` · `visualNovelEventSink`가 지워졌고, 카탈로그 학습 이벤트(`episode_final_passed`)는 `episodeIntroEventSink`로 나간다.
 - 와이어 값 넷(`airbridge.user.signup` · `airbridge.achieveLevel` · `level` · `label`)은 그대로다 — 호스트 · SDK 변경 0.
 - **매체 쪽 전환 설정이 옛 `messenger` · `visual_novel` 라벨을 쓰고 있으면 대시보드 갱신이 필요하다** — 사용자 몫([Airbridge 이벤트](../airbridge-events.md)).
+
+## 적용 기록 ⟨2026-11-19 — 구매 이벤트는 RevenueCat 서버 연동⟩
+
+이 ADR의 범위 밖이던 「결제 · 인앱 구매 추적」의 자리가 정해졌다 — 결정은 [ADR-0144](0144-subscriptions-revenuecat.md) 「Airbridge 기기 id」.
+
+- 구매 · 갱신 · 환불 이벤트는 **RevenueCat → Airbridge 서버 연동**이 보낸다. 앱의 Airbridge SDK는 구매 이벤트를 **보내지 않는다**
+  (`startInAppPurchaseTracking` · `trackStoreInAppPurchaseEvent` 호출 0, D7 매핑에 구매 없음) — 둘 다 보내면 같은 구매가 두 번 집계된다.
+- 호스트는 Airbridge 기기 id(`fetchDeviceUUID`)를 RevenueCat 고객에 건다(`PurchasesAttribution`). 이 ADR의 「값이 없으면 SDK 호출 0」 · 「시험 계정은
+  추적을 멈춤」(ADR-0085 D4)을 그대로 따른다. 「확인하지 못한 것」 9(인앱 구매 자동 추적 기본값)는 SDK 4.12.0에서 자동 추적이
+  `startInAppPurchaseTracking`을 불러야 켜지는 것으로 읽힌다(공개 API) — 부르지 않는다.

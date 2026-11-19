@@ -67,6 +67,15 @@ final class AirbridgeEvents {
     builder.registerModule("AirbridgeEventsModule", AirbridgeEventsModule.class);
   }
 
+  /** ADR-0085 D4: 이 기기에서 추적을 멈춰 두었는지(시험 계정). 읽지 못하면 멈춘 것으로 본다. */
+  static boolean trackingStopped(Context context) {
+    try {
+      return prefs(context).getBoolean(TRACKING_STOPPED_KEY, false);
+    } catch (RuntimeException ignored) {
+      return true;
+    }
+  }
+
   /** ADR-0085 D4: 추적을 켜거나 멈추고 그 값을 기억한다. 시작되지 않은 빌드에서는 아무것도 하지 않는다. */
   static void setTrackingEnabled(Context context, boolean enabled) {
     if (!started()) return;
