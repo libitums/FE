@@ -4,6 +4,14 @@ import type { AnalyticsEvent } from "./analytics.contract";
 export const suggestedFriendEventExamples = [
   { name: "suggested_friend_viewed", surface: "chat", daysSinceFirstOpen: "3", count: "2" },
   {
+    name: "suggested_friend_opened",
+    surface: "chat",
+    daysSinceFirstOpen: "3",
+    characterId: "seoyeon",
+    kind: "general",
+    from: "row",
+  },
+  {
     name: "suggested_friend_added",
     surface: "chat",
     daysSinceFirstOpen: "3",

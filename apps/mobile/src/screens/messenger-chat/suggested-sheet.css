@@ -220,3 +220,39 @@
   line-height: var(--libitum-typography-label-m-line-height);
   text-align: center;
 }
+
+/* 「Get closer」 시트(ADR-0164 D4, 디자인 B1) — 프로필 시트와 같은 판 · 머리, 가운데 정렬 제목과 회색 안내 칸 두 줄. */
+.adult-ack-title {
+  text-align: center;
+}
+
+.adult-ack-info {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  gap: var(--libitum-spacing-8);
+  padding: var(--libitum-spacing-12) var(--libitum-spacing-16);
+  border-radius: var(--libitum-radius-lg);
+  background-color: var(--libitum-color-gray-100);
+}
+
+.adult-ack-row {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: var(--libitum-spacing-8);
+}
+
+.adult-ack-icon {
+  flex-shrink: 0;
+  width: var(--libitum-spacing-20);
+  height: var(--libitum-spacing-20);
+}
+
+.adult-ack-row-text {
+  flex: 1;
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-body-m-font-family);
+  font-size: var(--libitum-typography-body-m-font-size);
+  line-height: var(--libitum-typography-body-m-line-height);
+}

@@ -164,7 +164,7 @@ export function setMessengerChatRemote(factory: (() => ChatRemote) | null): void
 }
 
 /** 로그인한 회원이면 서버 모드(사용자마다), 아니면 가짜 — 2026-11-17부터 시험 계정이 아니어도 엽니다(ADR-0128). */
-function sourceKey(): string {
+export function sourceKey(): string {
   if (remoteFactory === null || testSeed !== undefined) return GUEST_ACCOUNT_KEY;
   const token = loadAuthSession()?.accessToken;
   const userId = token === undefined ? null : authUserIdFrom(token);

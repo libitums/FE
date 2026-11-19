@@ -25,6 +25,18 @@ export const messengerChatSuggestedVi: SuggestedFriendsCopy = {
   limitedUntil: (days, hours) => `GIỚI HẠN · ${days} ngày ${hours} giờ`,
   added: (name) => `Đã thêm ${name} vào trò chuyện`,
   addFailed: (name) => `Không thêm được ${name}. Hãy thử lại.`,
+  adultAck: {
+    title: (name) => `Thân thiết hơn với ${name}?`,
+    body: (gender) =>
+      gender === null
+        ? "Cuộc trò chuyện có thể ấm áp và gần gũi hơn, như với một người bạn đang dần tìm hiểu."
+        : `${gender === "female" ? "Cô ấy" : "Anh ấy"} có thể ấm áp và gần gũi hơn với bạn, như một người bạn đang dần tìm hiểu.`,
+    safe: "Luôn tử tế và tôn trọng. Không bao giờ có nội dung lộ liễu.",
+    casual: (gender) =>
+      `Muốn giữ nhẹ nhàng sau này? ${gender === null ? "Chỉ cần nói ra." : `Chỉ cần nói với ${gender === "female" ? "cô ấy" : "anh ấy"}.`}`,
+    confirm: "Nghe hay đấy",
+    decline: "Cứ làm bạn trước đã",
+  },
   directory: {
     title: "Tìm bạn",
     back: "Quay lại",

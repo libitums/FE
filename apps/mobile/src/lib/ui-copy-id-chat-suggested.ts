@@ -26,6 +26,18 @@ export const messengerChatSuggestedId: SuggestedFriendsCopy = {
   limitedUntil: (days, hours) => `TERBATAS · ${days}h ${hours}j`,
   added: (name) => `${name} ditambahkan ke chat kamu`,
   addFailed: (name) => `Gagal menambahkan ${name}. Coba lagi.`,
+  adultAck: {
+    title: (name) => `Mau lebih dekat dengan ${name}?`,
+    body: (gender) =>
+      gender === null
+        ? "Obrolan bisa lebih hangat dan personal, seperti dengan seseorang yang sedang kamu kenal."
+        : "Dia bisa lebih hangat dan personal denganmu, seperti seseorang yang sedang kamu kenal.",
+    safe: "Selalu ramah dan sopan. Tidak pernah ada yang eksplisit.",
+    casual: (gender) =>
+      `Mau tetap santai nanti? ${gender === null ? "Bilang saja." : "Bilang saja padanya."}`,
+    confirm: "Kedengarannya bagus",
+    decline: "Teman dulu saja",
+  },
   directory: {
     title: "Cari teman",
     back: "Kembali",

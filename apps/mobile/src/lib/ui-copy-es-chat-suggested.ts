@@ -26,6 +26,20 @@ export const messengerChatSuggestedEs: SuggestedFriendsCopy = {
   limitedUntil: (days, hours) => `LIMITADO · ${days} d ${hours} h`,
   added: (name) => `${name} se agregó a tus chats`,
   addFailed: (name) => `No se pudo agregar a ${name}. Inténtalo de nuevo.`,
+  adultAck: {
+    title: (name) => `¿Quieres acercarte más a ${name}?`,
+    body: (gender) =>
+      gender === null
+        ? "La charla puede ser más cálida y cercana, como con alguien a quien estás conociendo."
+        : gender === "female"
+          ? "Puede ser más cálida y cercana contigo, como alguien a quien estás conociendo."
+          : "Puede ser más cálido y cercano contigo, como alguien a quien estás conociendo.",
+    safe: "Siempre con amabilidad y respeto. Nunca nada explícito.",
+    casual: (gender) =>
+      `¿Prefieres algo más tranquilo después? ${gender === null ? "Solo dilo." : "Solo díselo."}`,
+    confirm: "Me parece bien",
+    decline: "Solo amigos por ahora",
+  },
   directory: {
     title: "Buscar amigos",
     back: "Atrás",
