@@ -62,12 +62,15 @@ export function useSuggestedFriends({
   rooms,
   covered,
   onShortOfCoins,
+  onBlocked,
 }: {
   readonly port: SuggestedFriendsPort | undefined;
   readonly rooms: readonly ChatRoomSummary[];
   /** 엽전 상점이 위에 떠 있는가 — 그동안 친구 찾기를 낭독에서 가립니다. */
   readonly covered: boolean;
   readonly onShortOfCoins: () => void;
+  /** 비회원(ADR-0166) — 「Start chatting」이 추가 대신 시트를 닫고 이것(로그인 권유)을 부릅니다. */
+  readonly onBlocked?: (() => void) | undefined;
 }): SuggestedFriendsUi {
   const copy = useUiCopy().messengerChat.suggested;
   const { emit } = useChatEvents();
@@ -175,6 +178,10 @@ export function useSuggestedFriends({
   function handleStart() {
     "background only";
     if (sheet === null || port === undefined) return;
+    if (onBlocked !== undefined) {
+      setSheet(null);
+      return onBlocked();
+    }
     const open = sheet;
     const add = () => {
       const result = port.add(open.model.character.id);

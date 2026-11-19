@@ -15,7 +15,7 @@ export function messengerAccessOf(account: AccountState): MessengerAccess {
 }
 
 /** 목록 · 방을 그릴 수 있는가 — open · preview(ADR-0166). */
-export function canBrowseChats(access: MessengerAccess): boolean {
+export function canBrowseChats(access: MessengerAccess): access is "open" | "preview" {
   return access !== "sign-in";
 }
 
@@ -24,6 +24,9 @@ export type MessengerAccessProps = {
   /** 손님의 「Sign up or log in」 — 설정 탭 Sign in과 같은 흐름. */
   readonly onSignIn: () => void;
 };
+
+/** 방 화면이 받는 비회원 권유 길(ADR-0166) — null · 없음이면 회원(그대로 보냄). */
+export type GuestGateProps = { readonly onSignInRequired?: (() => void) | null };
 
 export const messengerAccessTestIds = {
   gate: "messenger-access-gate",
