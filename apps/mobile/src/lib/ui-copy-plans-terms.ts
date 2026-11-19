@@ -7,6 +7,8 @@ export type PlanStoreKey = "ios" | "android" | "unknown";
 export type PlanTermsCopy = {
   /** `price`는 「$11.99 / month」 같은 가격 · 기간 글(없으면 「스토어에서」 안내), `store`는 `stores`의 이름. */
   readonly disclosure: (name: string, price: string, store: string) => string;
+  /** 구매 단추 바로 아래 한 줄 — 자동 갱신 · 해지. 전체 고지(`disclosure`)는 카드 아래 스크롤에 섭니다(2026-11-19). */
+  readonly short: string;
   readonly stores: Readonly<Record<PlanStoreKey, string>>;
   readonly termsOfUse: string;
   readonly privacyPolicy: string;
@@ -18,6 +20,7 @@ export const planTermsCopy: Readonly<Record<"en" | "es" | "id" | "ja" | "vi", Pl
   en: {
     disclosure: (name, price, store) =>
       `${name}: ${price}. Payment is charged to your ${store} account. Your subscription renews automatically at the same price unless you cancel at least 24 hours before the current period ends. Manage or cancel anytime in your ${store} account settings.`,
+    short: "Renews automatically. Cancel anytime.",
     stores: { ios: "App Store", android: "Google Play", unknown: "app store" },
     termsOfUse: "Terms of Use",
     privacyPolicy: "Privacy Policy",
@@ -27,6 +30,7 @@ export const planTermsCopy: Readonly<Record<"en" | "es" | "id" | "ja" | "vi", Pl
   es: {
     disclosure: (name, price, store) =>
       `${name}: ${price}. El pago se carga a tu cuenta de ${store}. La suscripción se renueva automáticamente al mismo precio, salvo que la canceles al menos 24 horas antes de que termine el periodo actual. Puedes gestionarla o cancelarla cuando quieras en los ajustes de tu cuenta de ${store}.`,
+    short: "Se renueva automáticamente. Cancela cuando quieras.",
     stores: { ios: "App Store", android: "Google Play", unknown: "la tienda de apps" },
     termsOfUse: "Términos de uso",
     privacyPolicy: "Política de privacidad",
@@ -36,6 +40,7 @@ export const planTermsCopy: Readonly<Record<"en" | "es" | "id" | "ja" | "vi", Pl
   id: {
     disclosure: (name, price, store) =>
       `${name}: ${price}. Pembayaran ditagihkan ke akun ${store} kamu. Langganan diperpanjang otomatis dengan harga yang sama kecuali kamu membatalkannya paling lambat 24 jam sebelum periode saat ini berakhir. Kelola atau batalkan kapan saja di pengaturan akun ${store} kamu.`,
+    short: "Diperpanjang otomatis. Batalkan kapan saja.",
     stores: { ios: "App Store", android: "Google Play", unknown: "toko aplikasi" },
     termsOfUse: "Ketentuan Penggunaan",
     privacyPolicy: "Kebijakan Privasi",
@@ -45,6 +50,7 @@ export const planTermsCopy: Readonly<Record<"en" | "es" | "id" | "ja" | "vi", Pl
   ja: {
     disclosure: (name, price, store) =>
       `${name}：${price}。お支払いは${store}のアカウントに請求されます。現在の期間が終わる24時間前までに解約しない限り、同じ料金で自動更新されます。管理・解約は${store}のアカウント設定からいつでもできます。`,
+    short: "自動更新されます。いつでも解約できます。",
     stores: { ios: "App Store", android: "Google Play", unknown: "アプリストア" },
     termsOfUse: "利用規約",
     privacyPolicy: "プライバシーポリシー",
@@ -54,6 +60,7 @@ export const planTermsCopy: Readonly<Record<"en" | "es" | "id" | "ja" | "vi", Pl
   vi: {
     disclosure: (name, price, store) =>
       `${name}: ${price}. Khoản thanh toán được tính vào tài khoản ${store} của bạn. Gói đăng ký tự động gia hạn với cùng mức giá trừ khi bạn hủy ít nhất 24 giờ trước khi kỳ hiện tại kết thúc. Bạn có thể quản lý hoặc hủy bất cứ lúc nào trong phần cài đặt tài khoản ${store}.`,
+    short: "Tự động gia hạn. Hủy bất cứ lúc nào.",
     stores: { ios: "App Store", android: "Google Play", unknown: "cửa hàng ứng dụng" },
     termsOfUse: "Điều khoản sử dụng",
     privacyPolicy: "Chính sách quyền riêng tư",

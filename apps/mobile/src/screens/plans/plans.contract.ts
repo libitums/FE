@@ -87,6 +87,7 @@ export const plansTestIds = {
   restore: "plans-restore",
   notice: "plans-notice",
   terms: "plans-terms",
+  termsLine: "plans-terms-line",
   termsOfUse: "plans-terms-of-use",
   privacyPolicy: "plans-privacy-policy",
   currentBadge: (id: PlanId) => `plans-card-${id}-current`,

@@ -8,7 +8,7 @@ import type { PlansCopy } from "../../lib/ui-copy-plans";
 import { PlanCard } from "./PlanCard";
 import { PlanCta, planCtaText } from "./PlanCta";
 import { PlanPeriodToggle } from "./PlanPeriodToggle";
-import { PlanTerms } from "./PlanTerms";
+import { PlanTerms, PlanTermsLine } from "./PlanTerms";
 import { currentPlanOf, dateParts, planChangeOf, type PlanChange } from "./plan-change";
 import { initialPlanSelection, isCurrentCard, planCardsFor, type PlanPeriod } from "./plans-model";
 import { plansTestIds as ids, type PlansPanelProps } from "./plans.contract";
@@ -173,6 +173,36 @@ export function PlansPanel({
               })}
             </view>
           )}
+          {catalog === null ? null : (
+            <view className="plans-panel-more">
+              <view className="plans-panel-actions">
+                {current === null ? null : (
+                  <TextAction
+                    testId={ids.manage}
+                    label={text.terms.manage}
+                    className={tone("plans-text-action-manage")}
+                    onTap={() => onManageSubscription?.(current.productId)}
+                  />
+                )}
+                <TextAction
+                  testId={ids.restore}
+                  label={text.restore}
+                  className={tone("plans-text-action-label")}
+                  disabled={pending === "purchase"}
+                  loading={pending === "restore"}
+                  onTap={() => run("restore", onRestore)}
+                />
+              </view>
+              <PlanTerms
+                // 고른 것이 없으면 지금 요금제로 고지를 세웁니다 — 보이는 기간에 지금 카드가 없어도(ADR-0160 D4 · 3.1.2).
+                card={selected ?? both[termsPeriod].find((card) => card.id === current?.id)}
+                period={termsPeriod}
+                platform={platform}
+                changeLine={changeLine}
+                theme={theme}
+              />
+            </view>
+          )}
         </view>
       </scroll-view>
       {catalog === null ? null : (
@@ -193,33 +223,7 @@ export function PlansPanel({
               );
             }}
           />
-          <view className="plans-panel-actions">
-            {current === null ? null : (
-              <TextAction
-                testId={ids.manage}
-                label={text.terms.manage}
-                className={tone("plans-text-action-manage")}
-                onTap={() => onManageSubscription?.(current.productId)}
-              />
-            )}
-            <TextAction
-              testId={ids.restore}
-              label={text.restore}
-              className={tone("plans-text-action-label")}
-              disabled={pending === "purchase"}
-              loading={pending === "restore"}
-              onTap={() => run("restore", onRestore)}
-            />
-          </view>
-          <PlanTerms
-            // 고른 것이 없으면 지금 요금제로 고지를 세웁니다 — 보이는 기간에 지금 카드가 없어도(ADR-0160 D4 · 3.1.2).
-            card={selected ?? both[termsPeriod].find((card) => card.id === current?.id)}
-            period={termsPeriod}
-            platform={platform}
-            onOpenLegal={onOpenLegal}
-            changeLine={changeLine}
-            theme={theme}
-          />
+          <PlanTermsLine onOpenLegal={onOpenLegal} theme={theme} />
           {notice === null ? null : (
             <text
               className={tone("plans-panel-notice")}

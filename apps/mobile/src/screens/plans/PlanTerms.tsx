@@ -49,14 +49,14 @@ function TermsLink({
 }
 
 /**
- * 구독 구매 단추 아래의 고지(App Store 3.1.2 · Play 구독 정책) — 고른 요금제 이름 · 가격과 기간 · 결제 계정 · 자동 갱신 ·
- * 24시간 전 해지 · 해지 자리, 그리고 이용약관 · 개인정보처리방침 링크. 가격은 카드와 같은 글(스토어 가격, 없으면 임시 가격 · 안내)입니다.
+ * 구독 고지 전문(App Store 3.1.2 · Play 구독 정책) — 고른 요금제 이름 · 가격과 기간 · 결제 계정 · 자동 갱신 · 24시간 전 해지 ·
+ * 해지 자리. 가격은 카드와 같은 글(스토어 가격, 없으면 임시 가격 · 안내)입니다. 카드 아래 스크롤에 서고(2026-11-19 — 고정
+ * 바닥이 카드를 좁혀서), 구매 단추 바로 아래에는 `PlanTermsLine` 한 줄과 링크가 남습니다.
  */
 export function PlanTerms({
   card,
   period,
   platform,
-  onOpenLegal,
   changeLine = null,
   theme = "light",
 }: PlanTermsProps): ReactNode {
@@ -80,7 +80,21 @@ export function PlanTerms({
           {terms.disclosure(copy.names[card.id], price, store)}
         </text>
       )}
-      <view className="plans-terms-links">
+    </view>
+  );
+}
+
+/** 구매 단추 바로 아래 한 줄 — 자동 갱신 · 해지 요약과 이용약관 · 개인정보처리방침 링크. 가격 · 기간은 단추 둘째 줄이 말합니다. */
+export function PlanTermsLine({
+  onOpenLegal,
+  theme = "light",
+}: Pick<PlanTermsProps, "onOpenLegal" | "theme">): ReactNode {
+  const terms = useUiCopy().plans.terms;
+  return (
+    <view className="plans-terms-links" data-testid={ids.termsLine}>
+      <text className={`plans-terms-text plans-terms-text-${theme}`}>{terms.short}</text>
+      {/* 두 링크는 한 덩어리 — 좁으면 함께 다음 줄로 넘어갑니다. */}
+      <view className="plans-terms-link-pair">
         <TermsLink
           testId={ids.termsOfUse}
           label={terms.termsOfUse}
