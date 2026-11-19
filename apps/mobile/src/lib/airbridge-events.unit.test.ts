@@ -50,10 +50,12 @@ describe("airbridgeEventFrom", () => {
 
   // ⟨ADR-0146 앱 연결⟩ `chat_media_completed`가 더해져 59 · 57이다.
   // ⟨ADR-0159⟩ 온보딩 이벤트 둘이 더해져 62 · 60이다. ⟨ADR-0160⟩ `shop_tab_switched`가 더해져 63 · 61이다.
-  test("AB3. 이름 63개는 표의 61개와 매핑되는 둘로 나뉜다", () => {
+  // ⟨ADR-0162⟩ 추천 친구 이벤트 셋이 더해져 66 · 64다.
+  // ⟨ADR-0162 D5⟩ `early_access_completed`가 더해져 67 · 65다.
+  test("AB3. 이름 67개는 표의 65개와 매핑되는 둘로 나뉜다", () => {
     const tableNames = new Set<string>(unmappedEvents.map((e) => e.name));
-    expect(tableNames.size).toBe(61);
-    expect(allEventNames).toHaveLength(63);
+    expect(tableNames.size).toBe(65);
+    expect(allEventNames).toHaveLength(67);
     expect([...tableNames, "entry_completed", "episode_final_passed"].sort()).toEqual(
       [...allEventNames].sort(),
     );

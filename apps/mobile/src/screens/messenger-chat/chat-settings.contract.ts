@@ -4,6 +4,7 @@ import type { ChatAlbumCopy, ChatSnapshotSelf } from "./chat-album.contract";
 import type { ChatMediaCopy } from "./chat-media.contract";
 import type { FeedbackCopy } from "./chat-feedback.contract";
 import type { MessengerAccessCopy } from "./messenger-access";
+import type { SuggestedFriendsCopy } from "./suggested-friends.contract";
 /** 캐릭터가 먼저 보내는 메시지의 빈도입니다(ADR-0126). */
 export type ChatProactivePref = "off" | "daily1" | "daily2";
 /** 교정 방식입니다 — 카드만 · 답 안에서 자연스럽게 · 먼저 짚고. 카드는 셋 모두 옵니다. */
@@ -49,6 +50,8 @@ export type MessengerChatExtraCopy = {
   readonly media: ChatMediaCopy;
   /** 앨범 · 내 모습 · 다시 만들기(ADR-0150). */
   readonly album: ChatAlbumCopy;
+  /** 추천 친구 줄 · 프로필 시트 · 친구 찾기(ADR-0162). */
+  readonly suggested: SuggestedFriendsCopy;
   readonly chatSettings: ChatSettingsCopy;
   readonly pushNotice: MessengerListNoticeCopy;
   readonly access: MessengerAccessCopy;
