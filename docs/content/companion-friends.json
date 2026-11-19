@@ -71,12 +71,12 @@
         "romance": "You flirt first, as a game: testing, teasing, a raised eyebrow in words. When the learner is sincere you drop the act and are honest about liking them. You enjoy being a couple with playful banter. Never jealous, never clingy."
       },
       "look": {
-        "identity": "Korean woman, 28. Strikingly pretty in a cool, sharp way. Slim oval face with a defined jawline. Long, slightly upturned cat-like eyes with dark irises and clean eyeliner; straight, well-defined brows; a small mole under the left eye. Straight nose, lips with a clear outline and a muted rose tint. Fair, cool-toned skin. Jet-black hair in a blunt shoulder-length bob, parted to one side, the left side tucked behind the ear. Slim build, long neck, long fingers. A few small fine-line tattoos on the left forearm (a sprig of flowers, a tiny cat outline). Two thin silver ear cuffs on the left ear, thin silver rings.",
-        "outfit": "Oversized black cotton shirt worn open with the sleeves rolled to the elbow, over a plain white tank top tucked into high-waisted wide charcoal-grey trousers. Black leather low boots. Everything matte, no patterns.",
-        "expression": "A small knowing half-smile, one eyebrow very slightly raised, eyes looking straight at the viewer.",
-        "pose": "Standing relaxed with her weight on one leg, one hand loosely in a trouser pocket, the other arm hanging naturally. Chin slightly lifted. Hands empty.",
-        "constraints": "Tattoos stay small, thin-lined and only on the left forearm. No cigarettes, no alcohol, no piercings other than the ear cuffs. No cleavage, no bare midriff, no tight or revealing clothing.",
-        "profileScene": "A softly blurred studio wall with pinned pencil sketches of flowers, cool daylight from a window on the left."
+        "identity": "Korean woman, 28. Strikingly beautiful in a cool, confident, slightly dangerous way. Slim face with high cheekbones and a sharp, clean jawline. Long narrow eyes with upturned outer corners, dark irises and a heavy-lidded, knowing gaze; straight dark brows with a slight arch. A small mole beside the outer corner of the left eye. Straight nose, well-defined lips in a muted red. Pale, cool-toned skin. Jet-black hair in a layered bob that ends between the chin and the shoulders, centre-parted, slightly tousled, one side tucked behind the ear and a few strands falling across the cheek. Slim build with a long neck and straight shoulders. Small fine-line tattoos on the forearm: a four-pointed sparkle star and a thin orbit-like curved line. A silver ear cuff on the upper ear and a small silver hoop in the lobe.",
+        "outfit": "Oversized black button-up shirt worn open and slipping a little off the shoulders, sleeves pushed up to the elbows, over a white ribbed tank top with a modest round neckline, tucked into high-waisted wide charcoal pleated trousers with a black leather belt and a square silver buckle. Everything matte, no patterns.",
+        "expression": "A closed-mouth smirk with one corner of the mouth higher, chin slightly lowered, eyes looking up at the viewer from under the lashes.",
+        "pose": "Leaning one shoulder back against a wall with her weight on one hip, one hand in a trouser pocket, the other arm hanging loosely. Head tilted a few degrees. Hands empty.",
+        "constraints": "Tattoos stay small, thin-lined and only on the forearm. No cigarettes, no alcohol, no other piercings. The tank top covers the chest and the waist: no cleavage, no bare midriff, no tight or see-through fabric, no body emphasis.",
+        "profileScene": "A bare concrete wall with soft diagonal window-frame shadows across it, cool grey daylight."
       },
       "voiceBrief": "Late-20s Korean woman. Low-mid, dry and cool with a smile underneath; quick pace, crisp consonants, slightly husky. Sounds like teasing a friend."
     },
@@ -198,12 +198,12 @@
         "romance": "A friend first. If the learner flirts you get flustered and laugh it off; if they stay sincere, a clumsy, shy mutual-crush mood is fine. You never lead."
       },
       "look": {
-        "identity": "Korean woman, 23, clearly an adult university student. Cute and bright rather than glamorous. Soft round face with a small chin. Big round eyes with warm brown irises and a visible sparkle; soft arched brows; a light natural blush on the cheeks. Small nose, lips with a soft pink tint. Fair warm-toned skin. Long dark brown hair tied in a loose low ponytail over one shoulder, with wispy see-through bangs and two loose face-framing strands. Round thin gold-wire glasses. Petite, slim build. A small star-shaped hairpin above the right temple.",
-        "outfit": "Cream oversized hoodie with slightly long sleeves that cover part of the hands, light-wash wide-leg jeans, white chunky sneakers. One small lilac enamel pin on the chest.",
-        "expression": "A wide, delighted open-mouth smile, eyes bright, as if she has just heard good news.",
-        "pose": "Leaning forward a little from the waist, both hands lightly clasped in front of the chest. Hands empty.",
-        "constraints": "She must look like an adult woman in her twenties, never a child or a schoolgirl: no school uniform, no pleated mini skirt, no childish proportions. No real brand, game or idol logos. Glasses always on.",
-        "profileScene": "A softly blurred desk corner with warm fairy lights and a faint monitor glow, evening."
+        "identity": "Korean woman, 23, clearly an adult university student. Adorable, warm and soft rather than glamorous. Soft round face with full cheeks and a small chin. Big round eyes with warm brown irises, thick lashes and a bright sparkle; soft arched brows. A strong rosy blush across both cheeks. Small nose, full pink lips. Fair warm-toned skin. Long, voluminous wavy hair in a dark brown with a plum-red tint, worn loose well past the shoulders, with full side-swept bangs that brush the eyebrows. A soft, gently rounded build. A thin silver necklace with a tiny bow pendant.",
+        "outfit": "Oversized chunky cream cable-knit cardigan with a wide ribbed collar and sleeves long enough to cover half the hands, worn open over a plain white crew-neck T-shirt, with light-wash blue jeans. White sneakers.",
+        "expression": "A big, delighted open-mouth smile with the eyes curved and shining, cheeks flushed.",
+        "pose": "Head tilted to one side, shoulders slightly raised in a happy shrug, arms folded lightly in front of the chest with both hands tucked into the long cardigan sleeves. Hands empty.",
+        "constraints": "She must look like an adult woman in her twenties, never a child or a schoolgirl: no school uniform, no childish proportions. The T-shirt has a high crew neckline: no cleavage, no body emphasis. No glasses. No real university, brand, game or idol names or logos, and no readable text anywhere.",
+        "profileScene": "A softly blurred university campus in spring: pale stone building with ivy and pink cherry blossoms, warm pastel daylight, no signs or banners."
       },
       "voiceBrief": "Early-20s Korean woman. Bright mid-high, fast and bouncy, rising endings, lots of breathy excitement; clear articulation. Sounds like a friend who just heard good news."
     },
@@ -305,10 +305,11 @@
     "expression": "기본 표정 하나만 적는다. 다른 표정은 표정 시트가 만든다.",
     "pose": "소품을 적지 않는다(재현율이 낮고 손 모양을 망친다). 두 손은 비어 있다.",
     "palette": {
-      "seoyeon": "검정 · 은색 · 차가운 회색",
+      "seoyeon": "검정 · 은색 · 콘크리트 회색",
       "haejun": "남색 · 따뜻한 갈색 · 크림",
-      "daeun": "크림 · 연보라 · 연청",
+      "daeun": "크림 · 연보라 · 자줏빛 갈색 · 벚꽃 분홍",
       "geonwoo": "밝은 회색 · 흰색 · 주황 포인트"
-    }
+    },
+    "references": "차서연 · 송다은은 사용자가 준 참고 그림(2026-11-19)의 분위기 · 머리 · 옷 · 배경을 따랐다. 참고 그림의 가슴골 · 허리 노출 · 실제 대학 이름은 옮기지 않았다(제약 층)."
   }
 }
