@@ -63,7 +63,8 @@ export function offerOf(
   enabled: boolean,
   now: number,
 ): EarlyAccessOffer | null {
-  const offer = character.earlyAccess;
+  // 타입상 null이지만 서버 카탈로그가 칸을 빠뜨려도 넘어지지 않게 경계에서 null로 접습니다(리뷰 #503).
+  const offer = character.earlyAccess ?? null;
   if (!enabled || offer === null || character.kind !== "story") return null;
   if (character.unlockEpisodeId === null) return null;
   if (offer.endsAt !== null && offer.endsAt <= now) return null;

@@ -31,7 +31,7 @@ const flush = async () => {
   });
 };
 
-async function mount(result: () => Promise<EarlyAccessResult>) {
+async function mount(result: () => Promise<EarlyAccessResult>, add?: SuggestedFriendsPort["add"]) {
   const source = makeSource(
     seedOf(
       fixtureRoom("mina", {
@@ -43,14 +43,16 @@ async function mount(result: () => Promise<EarlyAccessResult>) {
     ),
   );
   const early = vi.fn<(id: string) => Promise<EarlyAccessResult>>(result);
-  const port: SuggestedFriendsPort = {
+  const offers = vi.fn(async () => [{ characterId: "mina", price: 100, endsAt: null }]);
+  // 부를 때마다 새 포트 객체 · 새 함수 — 부모가 다시 그릴 때마다 결선이 포트를 새로 지어도 제안은 한 번만 읽어야 한다(리뷰 #503).
+  const portOf = (): SuggestedFriendsPort => ({
     catalog: () => catalogOf([friend("mina", { name: "미나", unlockEpisode: 3 })]),
-    add: (id) => (source.unlockCharacter(id).kind === "unlocked" ? "added" : "already"),
+    add: add ?? ((id) => (source.unlockCharacter(id).kind === "unlocked" ? "added" : "already")),
     earlyAccess: early,
-    offers: async () => [{ characterId: "mina", price: 100, endsAt: null }],
-  };
+    offers: () => offers(),
+  });
   const sink = vi.fn();
-  render(
+  const tree = () => (
     <ChatEventsContext.Provider value={{ sink, roomId: null }}>
       <MessengerListScreen
         source={source}
@@ -62,14 +64,19 @@ async function mount(result: () => Promise<EarlyAccessResult>) {
         onNoticeShown={vi.fn()}
         access="open"
         onSignIn={vi.fn()}
-        friends={port}
+        friends={portOf()}
       />
-    </ChatEventsContext.Provider>,
+    </ChatEventsContext.Provider>
   );
+  const view = render(tree());
   await flush();
   const events = (name: string) =>
     sink.mock.calls.map(([event]) => event as { name: string }).filter((e) => e.name === name);
-  return { early, events };
+  const rerender = async () => {
+    view.rerender(tree());
+    await flush();
+  };
+  return { early, events, offers, rerender };
 }
 
 async function tapChatNow() {
@@ -121,4 +128,23 @@ test("ML6. 요청이 던져도 같다(시트 그대로 · 실패 줄)", async ()
   await tapChatNow();
   expect(screen.getByTestId(ids.sheet)).toBeInTheDocument();
   expect(screen.getByTestId(ids.toast)).toBeInTheDocument();
+});
+
+test("ML7. 제안은 목록 마운트당 한 번만 읽는다 — 부모가 새 포트로 다시 그려도 다시 부르지 않는다", async () => {
+  const { offers, rerender } = await mount(async () => ({ kind: "unlocked" }));
+  await rerender();
+  await rerender();
+  expect(offers).toHaveBeenCalledTimes(1);
+  expect(screen.getByTestId(ids.avatar("mina"))).toBeInTheDocument();
+});
+
+test("ML8. 값은 치렀는데 방을 못 열면(add unknown) 성공 토스트 · added 대신 실패 줄, 시트는 그대로", async () => {
+  const { events } = await mount(
+    async () => ({ kind: "unlocked" }),
+    () => "unknown",
+  );
+  await tapChatNow();
+  expect(screen.getByTestId(ids.sheet)).toBeInTheDocument();
+  expect(screen.getByTestId(ids.toast).textContent).toContain("Couldn't add 미나. Try again.");
+  expect(events("suggested_friend_added")).toEqual([]);
 });

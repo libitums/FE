@@ -504,12 +504,24 @@ test("SM11: statusBarSurfaceRegistry matches the contract (six routes, eight CSS
     "screens/messenger-chat/chat-album.css",
     // 메신저 채팅방 겹침(ADR-0113) — 밝은 아이콘 표지가 아니다.
     "screens/messenger-chat/chat-overlays.css",
+    // 친구 찾기 층(ADR-0162) — 밝은 앱 바탕, 표지 없음.
+    "screens/messenger-chat/friend-directory.css",
     // 메신저 첫 입장 목록 안내(ADR-0139) — 기본 스크림, 표지 없음.
     "screens/messenger-chat/messenger-guide.css",
     // 메신저 새 친구 시트(ADR-0117) — 기본 스크림, 표지 없음.
     "screens/messenger-chat/new-friend.css",
+    // 추천 친구 프로필 시트(ADR-0162) — 기본 스크림, 표지 없음.
+    "screens/messenger-chat/suggested-sheet.css",
     "screens/tickets/tickets.css",
   ]);
+  assert.match(
+    JSON.stringify(fixedLayers["screens/messenger-chat/suggested-sheet.css"]),
+    /default-scrim/,
+  );
+  assert.match(
+    JSON.stringify(fixedLayers["screens/messenger-chat/friend-directory.css"]),
+    /default-scrim/,
+  );
   const layerText = (path) => JSON.stringify(fixedLayers[path]);
   // 학습 티켓(ADR-0075) — 모달은 지표 모달의 표지를 함께 달고, 대화상자는 기본 스크림이라 표지가 없다.
   assert.match(layerText("screens/journey-map/journey-stat-modal.css"), /TicketStatModal/);

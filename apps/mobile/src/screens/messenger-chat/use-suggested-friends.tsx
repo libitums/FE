@@ -74,8 +74,13 @@ export function useSuggestedFriends({
   const [offers, setOffers] = useState<readonly EarlyAccessListing[]>([]);
 
   // 서버 제안(ADR-0162 D5)은 목록 마운트마다 한 번 읽어 카탈로그에 얹습니다 — 못 읽으면 제안 없음.
-  const loadOffers = port?.offers ?? null;
+  // 포트 객체가 렌더마다 바뀌어도 다시 부르지 않게, 마운트 때 한 번 그때의 함수를 씁니다(리뷰 #503).
+  const loadOffersRef = useRef(port?.offers ?? null);
+  loadOffersRef.current = port?.offers ?? null;
+  // 손님 → 회원처럼 읽을 길이 새로 생길 때만 다시 읽습니다.
+  const hasLoader = loadOffersRef.current !== null;
   useEffect(() => {
+    const loadOffers = loadOffersRef.current;
     if (loadOffers === null) return undefined;
     let live = true;
     void loadOffers()
@@ -86,7 +91,7 @@ export function useSuggestedFriends({
     return () => {
       live = false;
     };
-  }, [loadOffers]);
+  }, [hasLoader]);
 
   const base = port?.catalog() ?? null;
   const catalog = base === null ? null : catalogWithOffers(base, offers);
@@ -165,8 +170,11 @@ export function useSuggestedFriends({
           setSheet(null);
           return onShortOfCoins();
         }
-        // 값을 치렀으니 기존 추가 길(방 열기 · 첫 인사 · 해금 저장)을 탑니다.
-        port.add(character.id);
+        // 값을 치렀으니 기존 추가 길(방 열기 · 첫 인사 · 해금 저장)을 탑니다. 방이 없으면(unknown) 성공으로 보이지 않고 실패 줄 —
+        // 시트가 남아 다시 누르면 서버가 already로 두 번 빼지 않습니다(리뷰 #503).
+        if (port.add(character.id) === "unknown") {
+          return showToast(copy.addFailed(character.name), open.model);
+        }
         return added(open, "early");
       })
       .catch(failed);

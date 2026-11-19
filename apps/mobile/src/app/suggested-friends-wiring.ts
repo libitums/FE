@@ -24,6 +24,7 @@ let catalogOverride: FriendCatalog | null = null;
 export function setEarlyAccessRemote(factory: (() => ChatRemote) | null): void {
   earlyFactory = factory;
   earlyRemote = null;
+  cachedPort = null;
 }
 
 let earlyFactory: (() => ChatRemote) | null = null;
@@ -49,6 +50,7 @@ async function unlockEarly(characterId: string): Promise<EarlyAccessResult> {
 /** 테스트가 일반 인물이 든 카탈로그를 끼웁니다(null = 앱 카탈로그). */
 export function setFriendCatalogForTests(catalog: FriendCatalog | null): void {
   catalogOverride = catalog;
+  cachedPort = null;
 }
 
 /** 방을 열고(첫 인사) 해금 기록을 남깁니다. 출처에 그 인물의 방이 없으면 unknown. */
@@ -61,12 +63,20 @@ export function addSuggestedFriend(characterId: string): AddFriendResult {
   return result.kind === "unlocked" ? "added" : "already";
 }
 
+let cachedPort: SuggestedFriendsPort | null = null;
+
+/**
+ * 목록 결선이 렌더마다 부릅니다 — 설정이 같으면 **같은 객체 · 같은 함수**를 돌려줍니다(리뷰 #503: 새 `offers` 함수가 렌더마다
+ * 효과를 다시 돌려 제안 RPC를 거듭 불렀습니다).
+ */
 export function suggestedFriendsPort(): SuggestedFriendsPort {
-  return {
+  if (cachedPort !== null) return cachedPort;
+  cachedPort = {
     catalog: () => catalogOverride ?? COMPANION_CATALOG,
     add: addSuggestedFriend,
     // 먼저 만나기(ADR-0162 D5, 2026-11-19 적용) — 서버 포트가 끼워진 앱(진입점)에서만 켜집니다. 손님은 제안 목록이 비어 단추가 없습니다.
     earlyAccess: earlyFactory === null ? null : unlockEarly,
     offers: earlyFactory === null ? null : async () => (await earlyAccessRemote()?.offers()) ?? [],
   };
+  return cachedPort;
 }

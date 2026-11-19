@@ -64,3 +64,12 @@ test("SW-U3 열기 결과 — unlocked · already는 열림, short는 모자란 
   });
   expect(await run(null)).toEqual({ kind: "failed" });
 });
+
+test("SW-U4 포트는 같은 설정이면 같은 객체 · 같은 함수다 — 렌더마다 새로 지어 제안을 다시 읽지 않게(리뷰 #503)", () => {
+  remoteWith(null);
+  const first = suggestedFriendsPort();
+  expect(suggestedFriendsPort()).toBe(first);
+  expect(suggestedFriendsPort().offers).toBe(first.offers);
+  setEarlyAccessRemote(null);
+  expect(suggestedFriendsPort()).not.toBe(first);
+});
