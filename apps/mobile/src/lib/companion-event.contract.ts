@@ -53,22 +53,6 @@ export type CompanionUnlockEvent =
       readonly choice: "reply" | "later";
     });
 
-/**
- * 추천 친구(스토리 밖 인물 넷). 인물 id만 싣습니다 — 메시지 본문 · 개인정보는 없습니다. `friend_profile_opened`는 아홉 인물 모두의
- * 프로필 시트(`source` = 연 자리), `friend_first_message`는 추가한 친구에게 보낸 첫 글(계정 · 기기당 한 번), `friend_return`은 추가한
- * 날 뒤 7일 안의 다른 날에 그 방을 연 것(하루 한 번)입니다.
- */
-export type FriendEvent =
-  | (Common & { readonly name: "friends_strip_shown"; readonly count: string })
-  | (Common & {
-      readonly name: "friend_profile_opened";
-      readonly characterId: string;
-      readonly source: "strip" | "list" | "room";
-    })
-  | (Common & { readonly name: "friend_added"; readonly characterId: string })
-  | (Common & { readonly name: "friend_first_message"; readonly characterId: string })
-  | (Common & { readonly name: "friend_return"; readonly characterId: string });
-
 /** 메신저 보내기 · 엽전(ADR-0140 단가). */
 export type ChatCoinEvent =
   | (Common & {
@@ -149,7 +133,6 @@ export type CompanionEvent =
   | PlanEvent
   | MessengerGuideEvent
   | CompanionUnlockEvent
-  | FriendEvent
   | ChatCoinEvent
   | SurfaceUsageEvent;
 

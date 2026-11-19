@@ -204,11 +204,9 @@ function messagesOf(raw: Json): {
 }
 
 /** `companion_load_profile` 본문 → 생년. 행이 없으면 JSON null(생년 없음), 못 읽거나 틀린 본문이면 null. */
-export function profileFrom(bodyText: string | null): {
-  readonly birthYear: number | null;
-  readonly replySuggestions: boolean | null;
-  readonly adultAck?: boolean | null;
-} | null {
+export function profileFrom(
+  bodyText: string | null,
+): { readonly birthYear: number | null; readonly replySuggestions: boolean | null } | null {
   const raw = parse(bodyText);
   if (raw === null) {
     return bodyText?.trim() === "null" ? { birthYear: null, replySuggestions: null } : null;
@@ -217,11 +215,9 @@ export function profileFrom(bodyText: string | null): {
   if (record === null) return null;
   const year = record["birthYear"];
   const replies = record["replySuggestions"];
-  const ack = record["adultAck"]; // 추천 친구 성인 확인 — 칸이 있을 때만 싣습니다(옛 서버는 칸 없음)
   return {
     birthYear: typeof year === "number" && Number.isInteger(year) ? year : null,
     replySuggestions: typeof replies === "boolean" ? replies : null,
-    ...(typeof ack === "boolean" ? { adultAck: ack } : {}),
   };
 }
 

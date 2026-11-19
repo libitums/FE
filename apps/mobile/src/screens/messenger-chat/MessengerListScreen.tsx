@@ -17,7 +17,6 @@ import { messengerListTestIds as ids } from "./messenger-chat.contract";
 import type { MessengerListScreenProps } from "./messenger-chat.contract";
 import { useChatSnapshot } from "./use-chat-source";
 import { useCoinBalance } from "./use-coin-balance";
-import { useFriendsUi } from "./use-friends-ui";
 
 import "./messenger-list.css";
 
@@ -38,7 +37,7 @@ export function MessengerListScreen({
   guideStore = deviceGuideStore,
 }: MessengerListScreenProps): ReactNode {
   const copy = useUiCopy().messengerChat.list;
-  const { rooms, birthYear } = useChatSnapshot(source);
+  const { rooms } = useChatSnapshot(source);
   // 잔액 = 앱의 보유 엽전 − 이번 실행에서 쓴 양. 방에서 엽전을 쓰고 돌아오면 칩이 따라갑니다.
   const coinBalance = useCoinBalance(wallet);
   const [coinShopOpen, setCoinShopOpen] = useState(false);
@@ -47,8 +46,6 @@ export function MessengerListScreen({
   const guideRoom = rooms.find((r) => r.roomId === GUIDE_ROOM_ID && r.access.kind === "open");
   const guideShown = access === "open" && guideUnseen && guideRoom !== undefined;
   const { emit } = useChatEvents();
-  // 추천 친구 — 줄은 목록 맨 위, 프로필 시트 · 성인 확인은 겹침. 첫 입장 안내가 먼저입니다(ADR-0139).
-  const friends = useFriendsUi({ source, rooms, birthYear, active: !guideShown, onLayerChange });
   const endGuide = (outcome: "done" | "skipped") => {
     emit({ name: "messenger_guide_finished", surface: "chat", part: "list", outcome });
     guideStore.markSeen("list");
@@ -96,7 +93,7 @@ export function MessengerListScreen({
       {/* 겹침이 떠 있는 동안 뒤 화면을 낭독에서 숨깁니다(ADR-0016 D9). */}
       <view
         className="messenger-list-content"
-        accessibility-elements-hidden={coinShopOpen || guideShown || friends.layerOpen}
+        accessibility-elements-hidden={coinShopOpen || guideShown}
       >
         <view className="messenger-list-header" data-testid={ids.header}>
           <text
@@ -138,15 +135,8 @@ export function MessengerListScreen({
             scroll-bar-enable={false}
           >
             <view className="messenger-list-list" data-testid={ids.list}>
-              {friends.strip}
               {ordered.map((room) => (
-                <ChatListRow
-                  key={room.roomId}
-                  room={room}
-                  now={now}
-                  onOpen={onOpenRoom}
-                  onOpenProfile={(roomId) => friends.openProfile(roomId, "list")}
-                />
+                <ChatListRow key={room.roomId} room={room} now={now} onOpen={onOpenRoom} />
               ))}
             </view>
           </scroll-view>
@@ -154,7 +144,6 @@ export function MessengerListScreen({
       </view>
       <ChatListNotice notice={notice} onNoticeShown={onNoticeShown} />
       {coinShopOpen ? <CoinShopLayer coinBalance={coinBalance} onClose={closeCoinShop} /> : null}
-      {friends.layer}
       {guideShown && guideRoom !== undefined ? (
         <MessengerListGuide
           room={guideRoom}

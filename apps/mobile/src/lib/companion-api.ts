@@ -19,7 +19,6 @@ import {
   profileL1From,
 } from "../screens/messenger-chat/companion-parse";
 import { walletOf } from "../screens/messenger-chat/companion-media-parse";
-import { adultAckFrom, friendsFrom } from "../screens/messenger-chat/companion-friends-parse";
 
 /** 서버 계약 판(`@libitums/companion-contract`의 CONTRACT_VERSION). 값을 가져오면 zod가 번들에 들어가 숫자만 둡니다. */
 
@@ -77,9 +76,6 @@ export function createCompanionRemote(deps: CompanionRemoteDeps): ChatRemote {
       clearOutcomeFrom(
         await call("/rest/v1/rpc/companion_clear_chat", { p_character_id: characterId }),
       ),
-    // 추천 친구(서버가 보이게 한 친구만) · 성인 확인 — 없는 RPC(404) · 오프라인은 null이고 앱은 친구를 보이지 않습니다.
-    friends: async () => friendsFrom(await call("/rest/v1/rpc/companion_friends", {})),
-    ackAdult: async () => adultAckFrom(await call("/rest/v1/rpc/companion_ack_adult", {})),
     profile: {
       load: async () => profileFrom(await call("/rest/v1/rpc/companion_load_profile", {})),
       // 나머지 칸은 null — 그 열을 바꾸지 않습니다. 출처는 학습자가 직접 고른 값(`self`).

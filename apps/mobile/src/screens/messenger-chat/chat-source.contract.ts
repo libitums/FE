@@ -87,11 +87,9 @@ export type {
   ChatProactivePref,
 };
 
-/** addable = 추천 친구를 아직 추가하지 않음(목록에 없고 추천 줄에 섭니다, ADR-0117 추가). */
 export type ChatRoomAccess =
   | { readonly kind: "open" }
-  | { readonly kind: "locked"; readonly unlockEpisode: number }
-  | { readonly kind: "addable" };
+  | { readonly kind: "locked"; readonly unlockEpisode: number };
 export type ChatRoomActivity = "idle" | "typing" | "sending-photo" | "recording-voice";
 
 export type ChatRoomSummary = {
@@ -149,7 +147,6 @@ import type { ChatSendFailureNotice } from "./chat-remote.contract";
 import type { ChatServerControls, ChatServerRoom } from "./chat-delivery.contract";
 import type { ChatMediaNoticeLine, ChatPhotoBody } from "./chat-media.contract"; // 서버 사진 · 음성(ADR-0146)
 import type { ChatAlbumPort } from "./chat-album.contract"; // 앨범(ADR-0150)
-import type { ChatFriendsPort } from "./chat-friends.contract"; // 추천 친구
 export type { ChatCorrection, ChatCorrectionChange, ChatRating };
 export type ChatLoad<T> =
   | { readonly status: "idle" }
@@ -233,7 +230,6 @@ export type ChatSource = {
   /** 앨범 · 다시 만들기(ADR-0150). */
   readonly album: ChatAlbumPort;
   readonly server: ChatServerControls | null; // 서버 모드의 배달 조작(ADR-0138) — 가짜 출처는 null.
-  readonly friends?: ChatFriendsPort; // 추천 친구(보이는 친구 · 추가 · 성인 확인) — 없으면 추천 줄이 서지 않습니다.
   readonly dispose: () => void; // 걸린 타이머 전부 해제 · 구독 해제.
 };
 

@@ -3,12 +3,10 @@
 import type { MessengerChatExtraCopy } from "../screens/messenger-chat/chat-settings.contract";
 import { messengerChatMediaEs } from "./ui-copy-es-chat-media";
 import { messengerChatAlbumEs } from "./ui-copy-es-chat-album";
-import { messengerChatFriendsEs } from "./ui-copy-es-chat-friends";
 
 export const messengerChatExtraEs: MessengerChatExtraCopy = {
   media: messengerChatMediaEs,
   album: messengerChatAlbumEs,
-  friends: messengerChatFriendsEs,
   access: {
     signInTitle: "Escríbeles a las personas de tus historias",
     signInBody:

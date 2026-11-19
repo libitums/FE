@@ -171,6 +171,10 @@ const lifeSections = [
   ["goals", "Hopes and worries"],
   ["likes", "You like"],
   ["dislikes", "You dislike"],
+  [
+    "hooks",
+    "Korea through your eyes (the learner is a foreigner: share one as your own story, never as a lecture, then ask how it is in their country)",
+  ],
 ] as const;
 const lifeLines = (persona: PersonaCard) => {
   const parts = lifeSections.flatMap(([key, label]) =>

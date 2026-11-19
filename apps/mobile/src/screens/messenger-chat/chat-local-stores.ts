@@ -31,7 +31,7 @@ export function parseUnlocked(raw: unknown): readonly string[] {
   return [...new Set(ids)];
 }
 
-export function readJson(key: string): unknown {
+function readJson(key: string): unknown {
   try {
     const text = getItem(key);
     return text === null ? null : (JSON.parse(text) as unknown);
@@ -40,7 +40,7 @@ export function readJson(key: string): unknown {
   }
 }
 
-export function writeJson(key: string, value: unknown): void {
+function writeJson(key: string, value: unknown): void {
   try {
     setItem(key, JSON.stringify(value));
   } catch {

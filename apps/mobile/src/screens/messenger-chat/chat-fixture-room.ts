@@ -131,22 +131,6 @@ export function openLockedRoom(
   room.isNew = fresh.isNew;
 }
 
-/** 그림 주소를 다시 풉니다 — 못 푼(null) 사진 줄만 새 해석기로, 캐시는 비웁니다(가짜 출처 `refreshImages`). */
-export function refreshRoomImages(
-  rooms: Iterable<RoomState>,
-  photoUrlOf: (messageId: string) => string | null,
-): void {
-  for (const room of rooms) {
-    room.summaryCache = null;
-    room.threadCache = null;
-    room.messages = room.messages.map((message) =>
-      message.kind === "photo" && message.imageUrl === null
-        ? { ...message, imageUrl: photoUrlOf(message.id) }
-        : message,
-    );
-  }
-}
-
 export function summaryOf(
   room: RoomState,
   resolveUrl: (path: string | null) => string | null,

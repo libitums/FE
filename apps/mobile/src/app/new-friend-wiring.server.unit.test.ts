@@ -47,11 +47,9 @@ test("SW-U7 메신저를 쓸 수 없는 계정이면 방 · 첫 말이 있어도
 });
 
 describe("인물 표", () => {
-  test("SW-U6 해금되는 인물은 모두 시트 첫 말이 있다(처음부터 열린 덕수쌤만 없음 · 추천 친구는 첫 말이 있다)", async () => {
+  test("SW-U6 해금되는 인물은 모두 시트 첫 말이 있다(처음부터 열린 덕수쌤만 없음)", async () => {
     const { COMPANION_CHARACTERS } = await import("../screens/messenger-chat/companion-roster");
-    for (const c of COMPANION_CHARACTERS.filter((r) => r.kind === "story"))
+    for (const c of COMPANION_CHARACTERS)
       expect(c.sheetOpening === null).toBe(c.unlockEpisodeId === null);
-    for (const c of COMPANION_CHARACTERS.filter((r) => r.kind === "friend"))
-      expect(c.sheetOpening, c.id).not.toBeNull();
   });
 });

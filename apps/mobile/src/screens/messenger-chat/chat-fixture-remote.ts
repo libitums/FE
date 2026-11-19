@@ -207,7 +207,7 @@ export function remoteRoomMethods(deps: RemoteRoomDeps) {
           if (live(roomId) !== room) return;
           const outcome = turnOutcomeOf(turn, reason, detail, now());
           settle(room, myId, outcome, turn);
-          wallet.afterTurn(turn.wallet);
+          wallet.afterTurn(characterOf(room), turn.wallet);
           changed(room);
           if (outcome.kind === "ok") sendNextUnsent(room);
         },

@@ -5,7 +5,6 @@ import { authUserIdFrom } from "../lib/auth-user-id";
 import { clearGuestSession, loadGuestSession } from "../lib/guest-session";
 import { clearLearnerProfileCache } from "../lib/learner-profile-cache";
 import { forgetDeviceUnlocks, serverAccountKey } from "../screens/messenger-chat/chat-local-stores";
-import { forgetDeviceFriends } from "../screens/messenger-chat/friend-store";
 import { clearPendingLearningDays } from "./pending-learning-days";
 import { clearCachedProgress } from "./cached-learning-progress";
 import { clearPendingProgress } from "./pending-learning-progress";
@@ -74,9 +73,8 @@ export function accountWiring({
           clearCachedProgress(userId);
           clearPendingLearningDays(userId);
           clearLearnerProfileCache(userId);
-          // 메신저 해금 · 추천 친구 기록도 그 계정 것만 지웁니다 — 같은 기기의 다음 계정에 열린 인물이 남지 않게(2026-11-17).
+          // 메신저 해금 기록도 그 계정 것만 지웁니다 — 같은 기기의 다음 계정에 열린 인물이 남지 않게(2026-11-17).
           forgetDeviceUnlocks(serverAccountKey(userId));
-          forgetDeviceFriends(serverAccountKey(userId));
         }
         leave("deleted");
       }

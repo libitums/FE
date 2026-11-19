@@ -12,8 +12,6 @@ import { ChatListNewBadge } from "./ChatListNewBadge";
 import type { ChatRowPreview, ChatTime } from "./chat-list";
 import { voiceDurationLabel } from "./chat-rules";
 import type { ChatRoomSummary } from "./chat-source.contract";
-import { friendsTestIds } from "./chat-friends.contract";
-import { profileOpensFrom } from "./companion-friends";
 
 import "./messenger-list.css";
 
@@ -22,8 +20,6 @@ export type ChatListRowProps = {
   /** 시간 표기 기준 시각(epoch ms)입니다. */
   readonly now: number;
   readonly onOpen: (roomId: string) => void;
-  /** 아바타를 누르면 프로필 시트(열린 방 · 인물 표의 인물만). 없으면 아바타도 줄 탭입니다. */
-  readonly onOpenProfile?: (roomId: string) => void;
 };
 
 type PreviewTone = "activity" | "unread" | "muted" | "greeting";
@@ -77,7 +73,7 @@ function timeText(time: ChatTime, copy: MessengerChatCopy): string {
 }
 
 /** 채팅 목록의 한 줄입니다. 열린 줄만 버튼이고, 잠긴 줄은 조건을 읽어 주기만 합니다. */
-export function ChatListRow({ room, now, onOpen, onOpenProfile }: ChatListRowProps): ReactNode {
+export function ChatListRow({ room, now, onOpen }: ChatListRowProps): ReactNode {
   const copy = useUiCopy().messengerChat;
   const { counterpart } = room;
   const locked = room.access.kind === "locked";
@@ -112,16 +108,6 @@ export function ChatListRow({ room, now, onOpen, onOpenProfile }: ChatListRowPro
       ? `${copy.list.greetingLabel}, ${rowLabel}`
       : rowLabel;
 
-  // 아바타 탭은 줄 탭으로 번지지 않습니다(catchtap). 낭독은 줄 하나라 프로필은 방 머리 아바타 단추로도 엽니다.
-  const profileTap =
-    onOpenProfile !== undefined && profileOpensFrom(room)
-      ? () => {
-          "background only";
-          playSound("button");
-          onOpenProfile(room.roomId);
-        }
-      : undefined;
-
   function handleTap() {
     "background only";
     if (locked) return;
@@ -141,11 +127,7 @@ export function ChatListRow({ room, now, onOpen, onOpenProfile }: ChatListRowPro
       bindtap={locked ? undefined : handleTap}
     >
       <view className="messenger-list-avatar">
-        <view
-          className={locked ? "messenger-list-avatar-dim" : "messenger-list-avatar-face"}
-          data-testid={friendsTestIds.rowAvatar(room.roomId)}
-          catchtap={profileTap}
-        >
+        <view className={locked ? "messenger-list-avatar-dim" : "messenger-list-avatar-face"}>
           <Avatar
             imageSource={counterpart.avatarUrl ?? undefined}
             name={counterpart.name}

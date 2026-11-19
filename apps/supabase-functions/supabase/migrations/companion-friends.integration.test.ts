@@ -21,7 +21,10 @@ type Friend = {
   maxSpeechLevel: string;
   firstMessage: { ko: string[]; en: string[] };
   look: { identity: string };
-  persona: Record<"history" | "values" | "people" | "goals" | "likes" | "dislikes", string[]>;
+  persona: Record<
+    "history" | "values" | "people" | "goals" | "likes" | "dislikes" | "hooks",
+    string[]
+  >;
 };
 
 let db: Awaited<ReturnType<typeof startTestDatabase>>;
@@ -149,7 +152,15 @@ test("FR1. 페르소나 넷이 companion-friends.json과 같다 — 이름 · �
       expect((row.persona[key] as string).length, `${friend.id} ${key}`).toBeGreaterThan(20);
     for (const key of ["samples", "doNot", "background", "personality", "topics"])
       expect(row.persona[key].length, `${friend.id} ${key}`).toBeGreaterThan(2);
-    for (const key of ["history", "values", "people", "goals", "likes", "dislikes"] as const)
+    for (const key of [
+      "history",
+      "values",
+      "people",
+      "goals",
+      "likes",
+      "dislikes",
+      "hooks",
+    ] as const)
       expect(row.persona[key], `${friend.id} ${key}`).toEqual(friend.persona[key]);
   }
   expect(byId.get("haejun")!.persona.dialect).toContain("Busan");

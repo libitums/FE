@@ -22,8 +22,6 @@ export type BirthYearDeps = {
   /** 값이 바뀌면 부릅니다(출처가 스냅샷을 비우고 알립니다). */
   readonly onChange: () => void;
   readonly disposed: () => boolean;
-  /** 서버 프로필을 읽었을 때 — 같은 답의 다른 칸(추천 친구 성인 확인)을 받는 쪽입니다. */
-  readonly onProfile?: (loaded: { readonly adultAck?: boolean | null }) => void;
 };
 
 function readStored(store: BirthYearStore | undefined): ChatBirthYear | null {
@@ -49,10 +47,9 @@ export function sourceBirthYear(
   },
   disposed: () => boolean,
   onChange: () => void,
-  onProfile?: BirthYearDeps["onProfile"],
 ): BirthYearState {
   const { birthYearStore: store, remote } = options;
-  return birthYearState({ seed, store, profile: remote?.profile, onChange, disposed, onProfile });
+  return birthYearState({ seed, store, profile: remote?.profile, onChange, disposed });
 }
 
 export function birthYearState(deps: BirthYearDeps): BirthYearState {
@@ -74,9 +71,7 @@ export function birthYearState(deps: BirthYearDeps): BirthYearState {
   void profile
     ?.load()
     .then((loaded) => {
-      if (deps.disposed() || loaded === null) return;
-      deps.onProfile?.(loaded);
-      if (picked) return;
+      if (deps.disposed() || picked || loaded === null) return;
       if (loaded.birthYear === null) {
         if (value.kind === "set") send(value.year);
         return;

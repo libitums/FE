@@ -39,8 +39,9 @@ export const companionProfileSchema = z.object({
   /**
    * 성인 확인 동의(20261213, ADR-0159) — 동의가 있고 지금 생년상 성인일 때만 참. 동의는 `companion_ack_adult()`. 생년이 성인이 아니게
    * 바뀌면 서버가 동의를 지운다. 완화 수위(open) 친구는 이것과 생년상 성인이 모두 있어야 완화 수위로 대화한다.
+   * 선택 칸이다 — 마이그레이션(20261213) 전 서버와 이 칸을 모르는 옛 앱이 깨지지 않게(없으면 false로 읽는다).
    */
-  adultAck: z.boolean(),
+  adultAck: z.optional(z.boolean()),
 });
 
 /** 인물의 로맨스 수위(ADR-0159). `open`은 인물의 성격이고, 실제 적용은 서버가 학습자(생년상 성인 + 성인 확인 동의)로 정한다. */

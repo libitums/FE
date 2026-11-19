@@ -1,7 +1,6 @@
 // airbridge-events 단위 테스트가 함께 쓰는 입력 표입니다. 계약: ADR-0063.
 import type { AnalyticsEvent, AnalyticsEventName, AnalyticsEventSinks } from "./analytics.contract";
 import { purchaseIntentExample } from "./purchase-intent.test-support";
-import { friendEventExamples, friendEventNames } from "./airbridge-events-more.test-support";
 
 /** 계약의 이름 전부입니다 — 손으로 적고 타입에 묶습니다. */
 export const allEventNames = [
@@ -54,7 +53,6 @@ export const allEventNames = [
   "messenger_tab_opened",
   "companion_unlocked",
   "new_friend_sheet_closed",
-  ...friendEventNames,
   "chat_message_sent",
   "chat_media_requested",
   "chat_media_completed",
@@ -260,7 +258,6 @@ export const unmappedEvents = [
     period: "monthly",
   },
   purchaseIntentExample,
-  ...friendEventExamples,
 ] as const satisfies readonly AnalyticsEvent[];
 
 export const entryCompleted = { name: "entry_completed" } as const satisfies AnalyticsEvent;
@@ -278,7 +275,21 @@ export const episodeFinalPassedU01 = {
   turnCount: "2",
 } as const satisfies AnalyticsEvent;
 
-export { retiredSpecialUnitEvents } from "./airbridge-events-more.test-support";
+/** 지운 여덟 이름의 옛 이벤트입니다 — 어떤 출처로 들어와도 매핑은 null이어야 합니다. 계약 타입에는 이제 없어 단언으로 좁힙니다. */
+export const retiredSpecialUnitEvents = [
+  { name: "messenger_unit_completed", unitId: "appointment-confirmation", entrySource: "journey" },
+  { name: "messenger_unit_completed", unitId: "appointment-confirmation", entrySource: "roleplay" },
+  {
+    name: "visual_novel_unit_completed",
+    unitId: "cafe-arrival-visual-novel",
+    entrySource: "journey",
+  },
+  {
+    name: "visual_novel_unit_completed",
+    unitId: "cafe-arrival-visual-novel",
+    entrySource: "roleplay",
+  },
+] as unknown as readonly AnalyticsEvent[];
 
 /** 분석 sink 넷이 모두 비어 있는 묶음입니다. */
 export const nullSinks = {

@@ -325,17 +325,13 @@ describe("보내기 실패", () => {
 });
 
 describe("인물 표", () => {
-  test("SS-U9 서버 인물 아홉 — 이야기 다섯(덕수쌤만 처음부터 열림, 나머지는 에피소드 완료 해금) · 추천 친구 넷(추가 전 addable) · 방 id = 인물 id", () => {
+  test("SS-U9 서버 인물 다섯 — 덕수쌤만 처음부터 열림, 나머지는 에피소드 완료 해금(해금 JSON) · 방 id = 인물 id", () => {
     expect(COMPANION_CHARACTERS.map((c) => c.id)).toEqual([
       "duksu",
       "yoonkyung",
       "mina",
       "doyun",
       "jaemin",
-      "seoyeon",
-      "haejun",
-      "daeun",
-      "geonwoo",
     ]);
     const seed = companionSeed();
     expect(seed.rooms.map((r) => [r.roomId, r.counterpart.id, r.access])).toEqual([
@@ -344,10 +340,6 @@ describe("인물 표", () => {
       ["mina", "mina", { kind: "locked", unlockEpisode: 3 }],
       ["doyun", "doyun", { kind: "locked", unlockEpisode: 12 }],
       ["jaemin", "jaemin", { kind: "locked", unlockEpisode: 17 }],
-      ["seoyeon", "seoyeon", { kind: "addable" }],
-      ["haejun", "haejun", { kind: "addable" }],
-      ["daeun", "daeun", { kind: "addable" }],
-      ["geonwoo", "geonwoo", { kind: "addable" }],
     ]);
     for (const room of seed.rooms) {
       expect(room.messages).toEqual([]);

@@ -23,4 +23,6 @@ export type FriendPersonaFields = {
   readonly goals?: readonly string[];
   readonly likes?: readonly string[];
   readonly dislikes?: readonly string[];
+  /** 외국인 학습자가 흥미로워할 한국 이야기 — 자기 얘기로 하나 꺼내고 학습자 나라는 어떤지 되묻는다. */
+  readonly hooks?: readonly string[];
 };

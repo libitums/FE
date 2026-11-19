@@ -3,12 +3,10 @@
 import type { MessengerChatExtraCopy } from "../screens/messenger-chat/chat-settings.contract";
 import { messengerChatMediaEn } from "./ui-copy-en-chat-media";
 import { messengerChatAlbumEn } from "./ui-copy-en-chat-album";
-import { messengerChatFriendsEn } from "./ui-copy-en-chat-friends";
 
 export const messengerChatExtraEn: MessengerChatExtraCopy = {
   media: messengerChatMediaEn,
   album: messengerChatAlbumEn,
-  friends: messengerChatFriendsEn,
   access: {
     signInTitle: "Text the people you meet",
     signInBody:

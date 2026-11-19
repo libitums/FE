@@ -195,22 +195,10 @@ test("CP-UI5. 체험을 이미 다 쓴 채 들어오면 판 없이 바로 엽전
   expect(lineText()).toBe("3 coins per message");
 });
 
-// ------------------------------------------------------------------ 그 밖의 인물(공용 체험)
+// ------------------------------------------------------------------ 그 밖의 인물
 
-test("CP-UI6. 공용 체험 — 덕수쌤이 아닌 방도 체험이 남았으면 무료로 보내고 체험이 하나 준다", () => {
-  const env = room({ character: "other", trial: 20 });
-  mountChatOpen(env);
-
-  expect(lineText()).toBe("20 of 20 free messages left");
-  expect(screen.getByTestId(ids.send)).toBeTruthy();
-  expect(screen.queryByTestId(turnIds.coinSend)).toBeNull();
-  sendFree();
-  expect(env.trial.remaining()).toBe(19);
-  expect(env.wallet.balance()).toBe(100);
-});
-
-test("CP-UI6. 체험을 다 쓴 채 들어온 방은 첫 통부터 엽전 보내기 — 판 · 띠가 없다", () => {
-  mountChatOpen(room({ character: "other", trial: 0 }));
+test("CP-UI6. 체험 인물이 아닌 방은 첫 통부터 엽전 보내기 — 체험이 남아 있어도 판 · 띠가 없다", () => {
+  mountChatOpen(room({ character: "other", trial: 20 }));
 
   expect(lineText()).toBe("3 coins per message");
   expect(screen.getByTestId(turnIds.coinSend)).toBeTruthy();
@@ -219,19 +207,19 @@ test("CP-UI6. 체험을 다 쓴 채 들어온 방은 첫 통부터 엽전 보내
   expect(screen.queryByTestId(turnIds.panel)).toBeNull();
 });
 
-test("CP-UI6. 앱 안 방(가짜 출처)의 엽전 보내기는 지갑 −3 · 체험은 그대로(0)", () => {
-  const env = room({ character: "other", trial: 0 });
+test("CP-UI6. 앱 안 방(가짜 출처)의 엽전 보내기는 지갑 −3 · 체험은 그대로", () => {
+  const env = room({ character: "other", trial: 20 });
   mountChatOpen(env);
 
   sendCoin();
 
   expect(env.wallet.balance()).toBe(97);
-  expect(env.trial.remaining()).toBe(0);
+  expect(env.trial.remaining()).toBe(20);
   expect(outgoingCount()).toBe(1);
 });
 
 test("CP-UI7. 잔액이 딱 3이면 보내고 0이 된다(경계)", () => {
-  const env = room({ character: "other", trial: 0, earned: 3 });
+  const env = room({ character: "other", earned: 3 });
   mountChatOpen(env);
 
   sendCoin();
@@ -242,7 +230,7 @@ test("CP-UI7. 잔액이 딱 3이면 보내고 0이 된다(경계)", () => {
 });
 
 test("CP-UI7. 잔액이 모자라면 보내지 않고 엽전 상점이 열리며 글은 남는다", () => {
-  const env = room({ character: "other", trial: 0, earned: 2 });
+  const env = room({ character: "other", earned: 2 });
   mountChatOpen(env);
   tapKeys(...KEYS_AN);
 
@@ -255,7 +243,7 @@ test("CP-UI7. 잔액이 모자라면 보내지 않고 엽전 상점이 열리며
 });
 
 test("CP-UI7. 상점을 닫으면 방으로 돌아오고 접근성 초점이 엽전 보내기 단추로 간다", () => {
-  mountChatOpen(room({ character: "other", trial: 0, earned: 2 }));
+  mountChatOpen(room({ character: "other", earned: 2 }));
   tapKeys(...KEYS_AN);
   tapId(turnIds.coinSend);
 
@@ -278,7 +266,7 @@ test("CP-UI8. 서버 방의 엽전 보내기는 앱 지갑에서 빼지 않고 �
     greet: async () => null,
     openTurn,
   };
-  const env = room({ character: "other", trial: 0 });
+  const env = room({ character: "other" });
   const source = createFixtureChatSource({
     imageUrlOf,
     seed: env.seed,
