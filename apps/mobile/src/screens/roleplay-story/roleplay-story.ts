@@ -6,6 +6,7 @@ import type { CatalogCuts } from "../catalog-cover/catalog-cover.contract";
 import type {
   RoleplayTalkAction,
   RoleplayTalkState,
+  RoleplayTurnLogEntry,
   SpeechReadiness,
 } from "./roleplay-story.contract";
 
@@ -18,13 +19,34 @@ export const initialRoleplayTalkState: RoleplayTalkState = {
   unavailableReason: null,
   results: [],
   skippedCount: 0,
+  log: [],
 };
 
-const nextTurn = (state: RoleplayTalkState, results: readonly AnswerResult[], skipped: number) => ({
+// 턴 로그 한 줄을 더합니다(ADR-0161). 번호는 그 턴에 이미 쌓인 줄 수 + 1입니다.
+const logged = (
+  state: RoleplayTalkState,
+  entry: Pick<RoleplayTurnLogEntry, "outcome" | "reason" | "heard" | "verdict">,
+): readonly RoleplayTurnLogEntry[] => [
+  ...state.log,
+  {
+    turnIndex: state.turnIndex,
+    attempt: state.log.filter((row) => row.turnIndex === state.turnIndex).length + 1,
+    hintShown: state.hintShown,
+    ...entry,
+  },
+];
+
+const nextTurn = (
+  state: RoleplayTalkState,
+  results: readonly AnswerResult[],
+  skipped: number,
+  log: readonly RoleplayTurnLogEntry[],
+) => ({
   ...initialRoleplayTalkState,
   turnIndex: state.turnIndex + 1,
   results,
   skippedCount: state.skippedCount + skipped,
+  log,
 });
 
 // 변화가 없으면 같은 참조를 돌려줍니다 — 늦게 온 인식 결과 · 두 번 누른 버튼이 상태를 흔들지 않습니다.
@@ -39,11 +61,32 @@ export function roleplayTalkReducer(
         : state;
     case "heard":
       return state.phase === "listening"
-        ? { ...state, phase: "heard", heard: action.text, verdict: action.verdict }
+        ? {
+            ...state,
+            phase: "heard",
+            heard: action.text,
+            verdict: action.verdict,
+            log: logged(state, {
+              outcome: "heard",
+              reason: null,
+              heard: action.text,
+              verdict: action.verdict,
+            }),
+          }
         : state;
     case "unavailable":
       return state.phase === "listening" || state.phase === "ready"
-        ? { ...state, phase: "unavailable", unavailableReason: action.reason }
+        ? {
+            ...state,
+            phase: "unavailable",
+            unavailableReason: action.reason,
+            log: logged(state, {
+              outcome: "unavailable",
+              reason: action.reason,
+              heard: null,
+              verdict: null,
+            }),
+          }
         : state;
     case "hint":
       return state.hintShown ? state : { ...state, hintShown: true };
@@ -54,11 +97,18 @@ export function roleplayTalkReducer(
         : state;
     case "next":
       return state.phase === "heard" && state.verdict !== null
-        ? nextTurn(state, [...state.results, state.verdict], 0)
+        ? nextTurn(state, [...state.results, state.verdict], 0, state.log)
         : state;
     // 말할 수 없음 · 인식 불가 — 판정 없이 넘깁니다. 듣는 중에는 받지 않습니다.
     case "skip":
-      return state.phase === "listening" ? state : nextTurn(state, state.results, 1);
+      return state.phase === "listening"
+        ? state
+        : nextTurn(
+            state,
+            state.results,
+            1,
+            logged(state, { outcome: "skipped", reason: null, heard: null, verdict: null }),
+          );
   }
 }
 

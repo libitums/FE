@@ -117,3 +117,71 @@ test("[RS10] 시작 전 말하기 준비 — 묻지 않음은 ask, 거부 · 제
   expect(speechReadinessOf(status("restricted", "granted"))).toBe("blocked");
   expect(speechReadinessOf(status("granted", "granted", false))).toBe("unsupported");
 });
+
+test("[RS11] 턴 로그 — 들음 · 들을 수 없음 · 넘김이 턴과 기록 번호를 달고 차례로 쌓인다", () => {
+  let state = roleplayTalkReducer(initialRoleplayTalkState, { type: "start" });
+  state = roleplayTalkReducer(state, { type: "heard", text: "아", verdict: "incorrect" });
+  state = roleplayTalkReducer(state, { type: "retry" });
+  state = roleplayTalkReducer(state, { type: "hint" });
+  state = roleplayTalkReducer(state, { type: "start" });
+  state = roleplayTalkReducer(state, { type: "heard", text: "", verdict: "correct" });
+  state = roleplayTalkReducer(state, { type: "next" });
+  state = roleplayTalkReducer(state, { type: "start" });
+  state = roleplayTalkReducer(state, { type: "unavailable", reason: "dictation-off" });
+  state = roleplayTalkReducer(state, { type: "skip" });
+  expect(state.turnIndex).toBe(2);
+  expect(state.log).toEqual([
+    {
+      turnIndex: 0,
+      attempt: 1,
+      outcome: "heard",
+      reason: null,
+      heard: "아",
+      verdict: "incorrect",
+      hintShown: false,
+    },
+    {
+      turnIndex: 0,
+      attempt: 2,
+      outcome: "heard",
+      reason: null,
+      heard: "",
+      verdict: "correct",
+      hintShown: true,
+    },
+    {
+      turnIndex: 1,
+      attempt: 1,
+      outcome: "unavailable",
+      reason: "dictation-off",
+      heard: null,
+      verdict: null,
+      hintShown: false,
+    },
+    {
+      turnIndex: 1,
+      attempt: 2,
+      outcome: "skipped",
+      reason: null,
+      heard: null,
+      verdict: null,
+      hintShown: false,
+    },
+  ]);
+});
+
+test("[RS12] 턴 로그 — 받지 않는 동작은 줄을 더하지 않는다", () => {
+  const late = roleplayTalkReducer(initialRoleplayTalkState, {
+    type: "heard",
+    text: "네",
+    verdict: "correct",
+  });
+  expect(late.log).toEqual([]);
+  const listening = roleplayTalkReducer(initialRoleplayTalkState, { type: "start" });
+  expect(roleplayTalkReducer(listening, { type: "skip" }).log).toEqual([]);
+  const heard = roleplayTalkReducer(listening, { type: "heard", text: "네", verdict: "correct" });
+  expect(roleplayTalkReducer(heard, { type: "unavailable", reason: "failed" }).log).toHaveLength(1);
+  // 다시 말하기 · 힌트 · 다음은 그 자체로 줄을 더하지 않는다.
+  expect(roleplayTalkReducer(heard, { type: "hint" }).log).toHaveLength(1);
+  expect(roleplayTalkReducer(heard, { type: "next" }).log).toHaveLength(1);
+});

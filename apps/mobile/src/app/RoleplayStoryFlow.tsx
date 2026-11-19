@@ -19,6 +19,7 @@ import { speechReadinessOf } from "../screens/roleplay-story/roleplay-story";
 import type {
   RoleplaySpeechNotice,
   RoleplaySpeechNoticeAction,
+  RoleplayTurnLogEntry,
 } from "../screens/roleplay-story/roleplay-story.contract";
 import type { RoleplayStoryModel } from "./roleplay-story-model";
 
@@ -29,6 +30,8 @@ export type RoleplayStoryFlowProps = {
   readonly model: RoleplayStoryModel;
   readonly onFinish: (results: readonly AnswerResult[], skippedCount: number) => void;
   readonly onExit: () => void;
+  /** 이 판의 턴 로그(ADR-0161) — 대화 화면이 끝나거나 나갈 때 한 번 올립니다. */
+  readonly onTurnLog?: (log: readonly RoleplayTurnLogEntry[]) => void;
 };
 
 export function RoleplayStoryFlow({
@@ -36,6 +39,7 @@ export function RoleplayStoryFlow({
   model,
   onFinish,
   onExit,
+  onTurnLog,
 }: RoleplayStoryFlowProps): ReactNode {
   const [stage, setStage] = useState<Stage>("preview");
   const [notice, setNotice] = useState<RoleplaySpeechNotice | null>(null);
@@ -110,6 +114,7 @@ export function RoleplayStoryFlow({
       wildcards={model.wildcards}
       onFinish={onFinish}
       onExit={onExit}
+      {...(onTurnLog === undefined ? {} : { onTurnLog })}
     />
   );
 }

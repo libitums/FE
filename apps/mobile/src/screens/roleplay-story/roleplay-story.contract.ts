@@ -23,6 +23,31 @@ export type RoleplayTalkState = {
   /** 넘긴 턴의 판정입니다. 건너뛴 턴은 싣지 않습니다(인식 불가 · 말할 수 없음을 오답으로 접지 않습니다). */
   readonly results: readonly AnswerResult[];
   readonly skippedCount: number;
+  /** 이 판에서 일어난 말하기 시도의 기록입니다(ADR-0161). 턴이 바뀌어도 이어 쌓입니다. */
+  readonly log: readonly RoleplayTurnLogEntry[];
+};
+
+/** 턴 로그의 결과 — 들음 · 들을 수 없음 · 말하지 않고 넘김. */
+export type RoleplayTurnLogOutcome = "heard" | "unavailable" | "skipped";
+
+/**
+ * 말하기 시도 하나(또는 넘김 하나)의 기록입니다(ADR-0161). 음성은 없고 인식기가 낸 글자뿐입니다.
+ * 서버로 보내는 모양은 `lib/roleplay-turn-log-api.ts`가 만듭니다.
+ */
+export type RoleplayTurnLogEntry = {
+  /** 0부터 세는 턴 번호입니다. */
+  readonly turnIndex: number;
+  /** 그 턴 안에서 1부터 세는 기록 번호입니다(다시 말하기 · 실패 뒤 넘김이 뒤 번호를 받습니다). */
+  readonly attempt: number;
+  readonly outcome: RoleplayTurnLogOutcome;
+  /** `unavailable`에서만 값이 있습니다. */
+  readonly reason: SpeechUnavailableReason | null;
+  /** `heard`에서만 값이 있습니다. 빈 글자(듣고도 못 읽음)도 그대로 둡니다. */
+  readonly heard: string | null;
+  /** `heard`에서만 값이 있습니다. */
+  readonly verdict: AnswerResult | null;
+  /** 그 시점에 힌트를 펼친 상태였는가입니다. */
+  readonly hintShown: boolean;
 };
 
 export type RoleplayTalkAction =
@@ -71,6 +96,11 @@ export type RoleplayTalkScreenProps = {
   /** 마지막 턴 뒤 — 한 번만 부릅니다. */
   readonly onFinish: (results: readonly AnswerResult[], skippedCount: number) => void;
   readonly onExit: () => void;
+  /**
+   * 이 판의 턴 로그입니다(ADR-0161) — 끝까지 마쳤을 때 또는 중간에 나갈 때 **한 번만**, 기록이 있을 때만 부릅니다.
+   * `onFinish` · `onExit`보다 먼저 부릅니다.
+   */
+  readonly onTurnLog?: (log: readonly RoleplayTurnLogEntry[]) => void;
 };
 
 /** 에피소드 롤플레이의 분석 이벤트입니다 — 열림과 끝까지 마침. 대사 · 들은 문장은 싣지 않습니다(ADR-0029 D14). */

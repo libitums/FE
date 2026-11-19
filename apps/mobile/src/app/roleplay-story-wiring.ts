@@ -4,6 +4,9 @@
 import type { Dispatch } from "@lynx-js/react";
 
 import type { AnswerResult } from "../lib/answer-result";
+import type { AppVersion } from "../lib/app-version";
+import { submitRoleplayTurnLog } from "../lib/roleplay-turn-log-api";
+import type { RoleplayTurnLogEntry } from "../screens/roleplay-story/roleplay-story.contract";
 import type { EpisodeIntroEventSink } from "../screens/episode-intro/episode-intro.contract";
 import type { NavAction } from "./nav-state";
 
@@ -15,11 +18,15 @@ export type RoleplayStoryWiring = {
     skippedCount: number,
   ) => void;
   readonly onRetryRoleplayStory: (episodeId: string) => void;
+  /** 한 판의 턴 로그를 서버에 남깁니다(ADR-0161). 기다리지 않고, 실패해도 화면에 영향이 없습니다. */
+  readonly onRoleplayTurnLog: (episodeId: string, log: readonly RoleplayTurnLogEntry[]) => void;
 };
 
 export type RoleplayStoryWiringArgs = {
   readonly dispatch: Dispatch<NavAction>;
   readonly episodeIntroEventSink: EpisodeIntroEventSink;
+  /** 호스트가 알려 준 앱 버전 — 없으면(Explorer · 테스트) 턴 로그를 보내지 않습니다. */
+  readonly appVersion?: AppVersion | null;
 };
 
 export function roleplayStoryWiring(args: RoleplayStoryWiringArgs): RoleplayStoryWiring {
@@ -42,5 +49,9 @@ export function roleplayStoryWiring(args: RoleplayStoryWiringArgs): RoleplayStor
     },
     onRetryRoleplayStory: (episodeId) =>
       dispatch({ type: "replace", screen: { name: "roleplay-story", episodeId } }),
+    onRoleplayTurnLog: (episodeId, log) => {
+      "background only";
+      void submitRoleplayTurnLog({ episodeId, log, appVersion: args.appVersion ?? null });
+    },
   };
 }
