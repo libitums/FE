@@ -40,7 +40,7 @@ export function MessengerListScreen({
   friends,
 }: MessengerListScreenProps & SuggestedFriendsProps): ReactNode {
   const copy = useUiCopy().messengerChat.list;
-  const { rooms } = useChatSnapshot(source);
+  const { rooms, birthYear } = useChatSnapshot(source);
   // 잔액 = 앱의 보유 엽전 − 이번 실행에서 쓴 양. 방에서 엽전을 쓰고 돌아오면 칩이 따라갑니다.
   const coinBalance = useCoinBalance(wallet);
   const [coinShopOpen, setCoinShopOpen] = useState(false);
@@ -68,6 +68,7 @@ export function MessengerListScreen({
   const suggested = useSuggestedFriends({
     port: access === "open" ? friends : undefined,
     rooms,
+    birthYear,
     covered: coinShopOpen,
     onShortOfCoins: openCoinShop,
   });

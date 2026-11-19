@@ -16,6 +16,7 @@ export function friend(id: string, patch: Partial<FriendProfile> = {}): FriendPr
     category: null,
     sheetOpening: { ko: "안녕하세요", en: "Hello" },
     earlyAccess: null,
+    profile: { age: null, job: null, mbti: null, voiceSamplePath: null },
     ...patch,
   };
 }

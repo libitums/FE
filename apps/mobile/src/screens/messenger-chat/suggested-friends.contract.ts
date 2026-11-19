@@ -1,6 +1,7 @@
 // 추천 친구 줄 · 프로필 시트 · 친구 찾기 화면 계약입니다(ADR-0162) — 문구표 · props · test-id.
 
 import type { FriendProfile, SuggestedFriendsPort } from "./friend-catalog.contract";
+import type { FriendProfileCopy } from "./friend-profile.contract";
 import type { DirectoryFilter, DirectoryRow } from "./friend-directory";
 import type { SuggestedFriend } from "./suggested-friends";
 
@@ -32,6 +33,8 @@ export type SuggestedFriendsCopy = {
   readonly limitedUntil: (days: number, hours: number) => string;
   readonly added: (name: string) => string;
   readonly addFailed: (name: string) => string;
+  /** 사실 줄 · 목소리 견본 · 방 프로필 · 성인 확인(ADR-0162 2026-11-19 추가). */
+  readonly profile: FriendProfileCopy;
   readonly directory: {
     readonly title: string;
     readonly back: string;
@@ -60,6 +63,10 @@ export type SuggestedFriendSheetModel = {
   readonly avatarUrl: string | null;
   readonly status: "addable" | "locked";
   readonly offer: SuggestedFriend["offer"];
+  /** suggest = 추천 줄 · 친구 찾기(추가 단추), profile = 방 머리에서 연 읽기 전용(닫기만). 없으면 suggest. */
+  readonly mode?: "suggest" | "profile";
+  /** 목소리 견본 주소 — null · 없음이면 견본 단추가 서지 않습니다. */
+  readonly voiceUrl?: string | null;
 };
 
 export type SuggestedFriendSheetProps = {
@@ -68,6 +75,10 @@ export type SuggestedFriendSheetProps = {
   readonly onStart: () => void;
   readonly onEarly: () => void;
   readonly onClose: () => void;
+  /** 견본 재생이 시작됨(이어 듣기는 아님) — 분석 `friend_voice_sample_played`. */
+  readonly onVoicePlayed?: () => void;
+  /** 시스템 뒤로가기를 시트가 등록하는가 — 방은 `useChatRoom`이 단 하나의 주인이라 false(리뷰 #8). 없으면 참. */
+  readonly ownBack?: boolean;
 };
 
 export type SuggestedFriendsRowProps = {

@@ -12,23 +12,46 @@ export function ChatHeader({
   start,
   end,
   subtitle,
+  titleTap,
 }: ChatHeaderProps): ReactNode {
   // 부제가 있으면 제목은 한 줄로 자릅니다(`text-maxline` + 말줄임) — 가장 큰 글자에서 제목 · 부제가 네 줄이 되어 화면 40%를 먹었습니다(기기 F3).
   // 묶음 안 제목은 `flex: 1`(basis 0)을 쓰지 않습니다 — 세로 묶음에서 높이 0으로 접혀 부제와 겹쳤습니다(기기 F1).
-  const titleClass = subtitle === undefined ? "chat-title" : "chat-title chat-title-stacked";
+  const stacked = subtitle !== undefined || titleTap !== undefined;
+  const titleClass = stacked ? "chat-title chat-title-stacked" : "chat-title";
   const titleText = (
     <text
       className={titleClass}
       data-testid={testIds.title}
       // Android는 접근성 요소로 세우지 않은 글을 납작하게 펴 트리에서 지웁니다 — 화면 제목이 읽히게 세웁니다(ADR-0126 기기 확인).
       flatten={false}
-      accessibility-element={true}
-      accessibility-traits="header"
-      text-maxline={subtitle === undefined ? undefined : "1"}
+      accessibility-element={titleTap === undefined ? true : undefined}
+      accessibility-traits={titleTap === undefined ? "header" : undefined}
+      text-maxline={stacked ? "1" : undefined}
     >
       {title}
     </text>
   );
+  // 누를 수 있는 제목 — 묶음 칸(가운데 정렬)은 그대로 두고 제목 글만 버튼으로 감쌉니다. 부제(턴 줄)는 누르는 자리에 넣지 않습니다.
+  const titleNode =
+    titleTap === undefined ? (
+      titleText
+    ) : (
+      <view
+        className="chat-title-tap"
+        data-testid={titleTap.testId}
+        flatten={false}
+        accessibility-element={true}
+        accessibility-traits="button"
+        accessibility-label={titleTap.label}
+        accessibility-enable-tap={true}
+        bindtap={() => {
+          "background only";
+          titleTap.onTap();
+        }}
+      >
+        {titleText}
+      </view>
+    );
   return (
     <view
       className="chat-header"
@@ -37,13 +60,13 @@ export function ChatHeader({
     >
       <view className="chat-header-row">
         {start}
-        {subtitle === undefined ? (
-          titleText
-        ) : (
+        {stacked ? (
           <view className="chat-title-stack">
-            {titleText}
+            {titleNode}
             {subtitle}
           </view>
+        ) : (
+          titleText
         )}
         {end ?? <ChatHeaderSide />}
       </view>

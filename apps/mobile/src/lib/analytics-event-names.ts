@@ -77,4 +77,6 @@ export type AnalyticsEventName =
   | "suggested_friend_viewed"
   | "suggested_friend_added"
   | "early_access_tapped"
-  | "early_access_completed";
+  | "early_access_completed"
+  | "friend_profile_opened"
+  | "friend_voice_sample_played";

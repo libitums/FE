@@ -26,6 +26,29 @@ export const messengerChatSuggestedEs: SuggestedFriendsCopy = {
   limitedUntil: (days, hours) => `LIMITADO · ${days} d ${hours} h`,
   added: (name) => `${name} se agregó a tus chats`,
   addFailed: (name) => `No se pudo agregar a ${name}. Inténtalo de nuevo.`,
+  profile: {
+    age: (years) => `${years} años`,
+    ageDecade: (decade) => `Unos ${decade}`,
+    ageRange: (from, to) => `${from}–${to} años`,
+    facts: (parts) => parts.join(" · "),
+    close: "Cerrar",
+    openProfile: (name) => `${name}, ver perfil`,
+    voice: {
+      hear: "Escuchar voz",
+      pause: "Pausar",
+      resume: "Continuar",
+      loading: "Cargando…",
+      unavailable: "Muestra de voz no disponible",
+      label: (name) => `Escuchar la voz de ${name}`,
+    },
+    adult: {
+      title: "Antes de agregar a esta persona",
+      body: (name) =>
+        `${name} puede hablar en un tono romántico, como de pareja. Confirma que eres mayor de edad.`,
+      confirm: "Soy mayor de edad",
+      cancel: "Omitir",
+    },
+  },
   directory: {
     title: "Buscar amigos",
     back: "Atrás",

@@ -26,6 +26,29 @@ export const messengerChatSuggestedJa: SuggestedFriendsCopy = {
   limitedUntil: (days, hours) => `期間限定 · 残り${days}日${hours}時間`,
   added: (name) => `${name}をチャットに追加しました`,
   addFailed: (name) => `${name}を追加できませんでした。もう一度お試しください。`,
+  profile: {
+    age: (years) => `${years}歳`,
+    ageDecade: (decade) => `${decade}代`,
+    ageRange: (from, to) => `${from}〜${to}歳`,
+    facts: (parts) => parts.join(" · "),
+    close: "閉じる",
+    openProfile: (name) => `${name}、プロフィールを見る`,
+    voice: {
+      hear: "声を聞く",
+      pause: "一時停止",
+      resume: "再開",
+      loading: "読み込み中…",
+      unavailable: "ボイスサンプルを再生できません",
+      label: (name) => `${name}の声を聞く`,
+    },
+    adult: {
+      title: "友達に追加する前に",
+      body: (name) =>
+        `${name}は恋人のようなロマンチックな話し方をすることがあります。成人であることを確認してください。`,
+      confirm: "成人です",
+      cancel: "スキップ",
+    },
+  },
   directory: {
     title: "友だちを探す",
     back: "戻る",

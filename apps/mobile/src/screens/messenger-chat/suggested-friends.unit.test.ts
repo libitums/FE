@@ -139,17 +139,21 @@ describe("SF-U7 friendStatusOf · 오늘 카탈로그", () => {
     expect(friendStatusOf(friend("l"), room("l", false))).toBe("locked");
   });
 
-  test("오늘 카탈로그는 이야기 인물 다섯 · 카테고리 없음 · 먼저 만나기 제안 없음 · 소개는 다섯 언어", () => {
-    expect(COMPANION_CATALOG.characters.map((c) => c.id)).toEqual([
-      "duksu",
-      "yoonkyung",
-      "mina",
-      "doyun",
-      "jaemin",
+  // ⟨ADR-0162 2026-11-19⟩ 일반 인물 넷(추천 친구)이 더해졌다 — 서버가 보이게 한 학습자에게만 선다(friend-visibility).
+  test("오늘 카탈로그는 이야기 다섯 + 일반 넷 · 카테고리 없음 · 먼저 만나기 제안 없음 · 소개는 다섯 언어", () => {
+    expect(COMPANION_CATALOG.characters.map((c) => [c.id, c.kind])).toEqual([
+      ["duksu", "story"],
+      ["yoonkyung", "story"],
+      ["mina", "story"],
+      ["doyun", "story"],
+      ["jaemin", "story"],
+      ["seoyeon", "general"],
+      ["haejun", "general"],
+      ["daeun", "general"],
+      ["geonwoo", "general"],
     ]);
     expect(COMPANION_CATALOG.categories).toEqual([]);
     for (const c of COMPANION_CATALOG.characters) {
-      expect(c.kind, c.id).toBe("story");
       expect(c.earlyAccess, c.id).toBeNull();
       expect(Object.keys(c.intro ?? {}).sort(), c.id).toEqual(["en", "es", "id", "ja", "vi"]);
     }

@@ -2,6 +2,7 @@ import { afterEach, expect, test, vi } from "vitest";
 import { cleanup, render, screen } from "@lynx-js/react/testing-library";
 
 import { clearBackHandlers, systemBack, tapId } from "./chat-ui.test-support";
+import { friendProfileTestIds as profileIds } from "./friend-profile.contract";
 import { suggestedFriendsTestIds as ids } from "./suggested-friends.contract";
 import type { SuggestedFriendSheetModel } from "./suggested-friends.contract";
 import { SuggestedFriendSheet } from "./SuggestedFriendSheet";
@@ -119,4 +120,92 @@ test("SS4. 단추 줄 아래 여백 = 16 + 아래 시스템 바(Android 3버튼 
   mount(addable());
   const actions = screen.getByTestId(ids.sheetLater).parentElement;
   expect(actions?.getAttribute("style") ?? "").toMatch(/padding-bottom:\s*64px/);
+});
+
+// ⟨ADR-0162 2026-11-19⟩ 사실 줄 · AI 표시 · 목소리 견본 · 읽기 전용 프로필(SS5 ~ SS8).
+const seoyeon = general("seoyeon", {
+  name: "차서연",
+  intro: { en: "I do tattoos in Seongsu." },
+  profile: {
+    age: 28,
+    job: { en: "Tattoo artist & illustrator" },
+    mbti: "ENTP",
+    voiceSamplePath: "content/audio/companion/seoyeon-intro.mp3",
+  },
+});
+
+test("SS5. 사실 줄(나이 · 직업 · MBTI)과 AI 표시 — 잠김이면 사실 줄이 없다", () => {
+  mount(addable(seoyeon));
+  expect(screen.getByTestId(profileIds.facts).textContent).toBe(
+    "Age 28 · Tattoo artist & illustrator · ENTP",
+  );
+  expect(screen.getByTestId(profileIds.ai).textContent).toBe(
+    "차서연 is an AI character. Replies are written by AI.",
+  );
+  cleanup();
+  mount({ character: doyun, avatarUrl: null, status: "locked", offer: null });
+  expect(screen.queryByTestId(profileIds.facts)).toBeNull();
+});
+
+test("SS6. 견본 단추는 주소가 있을 때만, 저절로 틀지 않고, 재생 모듈이 없으면 조용한 「unavailable」 줄", () => {
+  mount(addable(seoyeon));
+  expect(screen.queryByTestId(profileIds.voice)).toBeNull();
+  cleanup();
+  const onVoicePlayed = vi.fn<() => void>();
+  render(
+    <SuggestedFriendSheet
+      model={{ ...addable(seoyeon), voiceUrl: "https://cdn/seoyeon-intro.mp3" }}
+      now={NOW}
+      onStart={vi.fn<() => void>()}
+      onEarly={vi.fn<() => void>()}
+      onClose={vi.fn<() => void>()}
+      onVoicePlayed={onVoicePlayed}
+    />,
+  );
+  const voice = screen.getByTestId(profileIds.voice);
+  expect(voice.getAttribute("data-playback")).toBe("idle");
+  expect(voice.getAttribute("accessibility-label")).toBe("Hear 차서연's voice");
+  tapId(profileIds.voice);
+  // ui 환경에는 `NativeModules`가 없어 재생이 「unavailable」로 끝난다.
+  expect(screen.getByTestId(profileIds.voice).getAttribute("data-playback")).toBe("error");
+  expect(screen.getByTestId(profileIds.voiceNote).textContent).toBe("Voice sample unavailable");
+  expect(onVoicePlayed).not.toHaveBeenCalled();
+});
+
+test("SS7. 읽기 전용 프로필(방 머리): 첫 말 · Start chatting · Not now가 없고 Close만 — 사실 줄 · 소개 · 견본은 있다", () => {
+  const onClose = vi.fn<() => void>();
+  render(
+    <SuggestedFriendSheet
+      model={{ ...addable(seoyeon), mode: "profile", voiceUrl: "https://cdn/s.mp3" }}
+      now={NOW}
+      onStart={vi.fn<() => void>()}
+      onEarly={vi.fn<() => void>()}
+      onClose={onClose}
+      ownBack={false}
+    />,
+  );
+  expect(screen.queryByTestId(ids.sheetOpening)).toBeNull();
+  expect(screen.queryByTestId(ids.sheetStart)).toBeNull();
+  expect(screen.queryByTestId(ids.sheetLater)).toBeNull();
+  expect(screen.getByTestId(ids.sheetIntro).textContent).toBe("I do tattoos in Seongsu.");
+  expect(screen.getByTestId(profileIds.facts)).toBeInTheDocument();
+  expect(screen.getByTestId(profileIds.voice)).toBeInTheDocument();
+  tapId(profileIds.close);
+  expect(onClose).toHaveBeenCalledTimes(1);
+});
+
+test("SS8. 방에서 연 시트는 시스템 뒤로가기를 등록하지 않는다(방이 단 하나의 주인)", () => {
+  const onClose = vi.fn<() => void>();
+  render(
+    <SuggestedFriendSheet
+      model={{ ...addable(seoyeon), mode: "profile" }}
+      now={NOW}
+      onStart={vi.fn<() => void>()}
+      onEarly={vi.fn<() => void>()}
+      onClose={onClose}
+      ownBack={false}
+    />,
+  );
+  expect(systemBack()).toBe(false);
+  expect(onClose).not.toHaveBeenCalled();
 });

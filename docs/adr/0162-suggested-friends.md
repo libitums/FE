@@ -93,3 +93,34 @@
 - ui: `SuggestedFriendsRow` · `SuggestedFriendSheet` · `FriendDirectoryScreen` · `MessengerListScreen.suggested`.
 - integration: `App.suggested-friends.integration.test.tsx`(SFI1 ~ SFI4) · SQL `companion-early-access.integration.test.ts`(EA1 ~ EA6).
 - e2e: [docs/e2e/suggested-friends.md](../e2e/suggested-friends.md)(기기 절차, 미실행).
+
+## 추가 ⟨2026-11-19⟩ 인물 프로필 — 추천 친구 넷 · 서버 보임 · 사실 줄 · 목소리 견본 · 방 머리 · 성인 확인
+
+이 ADR의 결정(D1 ~ D7)을 바꾸지 않고 넓힌다. 서버 쪽은 [ADR-0163](0163-companion-friends-pooled-trial-open-tier.md)(「앱 인계」)이 정했다.
+
+- **일반 인물 넷이 카탈로그에 든다**(D4 그대로): 차서연 · 권해준 · 송다은 · 임건우(`companion-friends-roster.ts` → `COMPANION_CHARACTERS` 뒤).
+  `kind: general` · 해금 규칙 없음 · 카테고리 없음 · 제안 없음, 방은 에피소드 없는 잠긴 방(0). 첫 말(`sheetOpening` · `firstLine`) = `firstMessage`
+  첫 줄, 소개 = `bio.en` + es · id · ja · vi 번역, 태그 셋(직업 · 취향, 다섯 언어). 그림 `content/images/profiles/<id>-casual.webp`(사람이 올림 — 없으면
+  아바타 자리값). 정본은 `docs/content/companion-friends.json`이고 단위 테스트 CF-U1 ~ U5가 맞춘다. ui-copy 검사 허용 선언에 `GENERAL_FRIENDS`를 더했다.
+- **서버 보임 = 교집합**: 포트 `visibleFriends`(`companion_friends`)가 준 목록과 카탈로그 둘 다에 있는 일반 인물만 줄 · 친구 찾기에 선다
+  (`friend-visibility.ts`). 받기 전 · RPC 없음(404) · 오류 · 오프라인 · 서버 포트 없음(손님 · 가짜 출처)이면 일반 인물이 없다. 이야기 인물은 상관없다.
+  포트에 칸이 없으면(옛 결선 · 화면 테스트) 거르지 않는다 — 운영 결선은 늘 칸을 둔다. 목록은 마운트마다 한 번 읽는다(제안과 같은 `usePortLoad`).
+- **사실 줄 · 목소리 견본**: `FriendProfile.profile = { age, job, mbti, voiceSamplePath }`. 넷은 JSON, 이야기 다섯의 MBTI는 `storyProfiles`, 나이 · 직업은
+  duru-curation 스토리 바이블(덕수쌤 「30대」 → `"30s"`, 미나 「25~26」 → `"25-26"`). 견본은 넷만 `content/audio/companion/<id>-intro.mp3`, 다섯은 null.
+  시트는 이름 아래 사실 줄(있는 조각만 — `profileFactsOf`), 본문 아래 견본 단추(주소가 있을 때만)와 AI 표시(방 고지 `aiDisclosure`와 같은 말).
+  잠긴 이야기 인물은 사실 줄 · 견본이 없다(이야기를 앞질러 알리지 않게). 견본은 말풍선 음성과 같은 `lib/audio.ts`로 튼다 — 정적 주소를 그대로 받아
+  접점을 넓히지 않았다. 누를 때만 틀고, 시트가 닫히면 멈추고, 못 틀면 조용한 한 줄(`voice-sample.ts` 상태 기계). 서버 호출 · 엽전이 없다.
+- **방 머리 → 읽기 전용 프로필**: 새 단추 없이 머리 제목(인물 이름)을 누르면 같은 시트를 `mode: profile`로 연다(열린 방이면 아홉 모두,
+  `roomProfileModelOf`). 첫 말 · 추가 · 먼저 만나기 단추가 없고 닫기만. 방 겹침 `profile`이라 뒤로가기 · 낭독 가림은 `useChatRoom`이 맡는다(시트는
+  뒤로가기를 등록하지 않음). 제목은 버튼으로 읽힌다(「<이름>, view profile」). 닫힌 뒤 초점은 지금은 플랫폼에 맡긴다.
+- **성인 확인**(ADR-0163 D4): 일반 · 서버 수위 open · 생년상 성인(올해 − 생년 ≥ 18, 서버 `age_band`와 같은 선) · 프로필 `adultAck`가 참이 아님 — 넷이
+  모두 맞을 때만 추가 앞에 한 번 확인 창(앱의 `Dialog`). 확인은 `companion_ack_adult`를 부르고(추가를 막지 않음), 취소도 추가한다. 나이 모름은 창도
+  안내도 없다. 판정은 `adult-ack.ts`(진리표 120칸 테스트 AA-U2). 동의는 그때 프로필을 한 번 더 읽어 본다(`companion_load_profile.adultAck`).
+- **이벤트**: `friend_profile_opened { characterId, source: row | directory | room }` · `friend_voice_sample_played { characterId }` — 이름 72 → 74
+  ([ADR-0029](0029-product-analytics-posthog.md) 2026-11-19 기록).
+- **확인**: unit CF-U1 ~ U5 · FV-U1 ~ U6 · AA-U1 ~ U3 · FP-U1 ~ U6 · VS-U1 ~ U7 · FE-U1 ~ U2 · FR-P1 ~ P4 · SW-U4 ~ U6(이 기계에서 돌림). ui SS5 ~ SS8 ·
+  MC-UI2(제목 누름) · AA-UI1 ~ UI2 · MP1 ~ MP4 · MCP1 ~ MCP3, integration SFI1 ~ SFI4(보이는 친구 끼움)는 **돌리지 못했다**.
+- **이 기계에서 확인하지 못한 것**: 사내 패키지 인증이 없어 앱 typecheck · ui · integration 테스트 · 빌드 · 번들 크기 · 화면 · 기기 소리 재생을 하지 못했다
+  (순수 모듈만 vitest · tsc로 봤다). 성능 보고서는 미측정(`docs/performance/reports/friend-profile-01.md`).
+- **대가**: 호스트 재생 모듈은 「불러오기 실패」를 따로 알리지 않는다 — 파일이 없을 때 완료 콜백이 곧바로 오면 단추는 「끝남」으로 보일 수 있다
+  (`unavailable`은 모듈이 없을 때만). 다른 소리가 호스트를 가져가도 견본 단추는 그 사실을 모른다(시트가 떠 있는 동안 다른 재생 입구는 없다).

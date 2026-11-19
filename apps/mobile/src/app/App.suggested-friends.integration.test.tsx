@@ -9,7 +9,11 @@ import {
 import { App } from "./App";
 import { messengerUnlockStore } from "./messenger-chat-wiring";
 import type { ChatRemote } from "../screens/messenger-chat/chat-remote.contract";
-import { setEarlyAccessRemote, setFriendCatalogForTests } from "./suggested-friends-wiring";
+import {
+  setEarlyAccessRemote,
+  setFriendCatalogForTests,
+  setVisibleFriendsForTests,
+} from "./suggested-friends-wiring";
 import {
   openTab,
   present,
@@ -36,6 +40,7 @@ const clerk = {
   category: null,
   sheetOpening: null,
   earlyAccess: null,
+  profile: { age: null, job: null, mbti: null, voiceSamplePath: null },
 } as const;
 
 beforeEach(async () => {
@@ -44,9 +49,12 @@ beforeEach(async () => {
     characters: [...COMPANION_CATALOG.characters, clerk],
     categories: [],
   });
+  // 서버가 보이게 한 일반 인물(ADR-0163 D2) — 점원만. 카탈로그의 추천 친구 넷은 이 목록에 없어 서지 않는다.
+  setVisibleFriendsForTests([{ id: "clerk", romanceTier: "standard" }]);
 });
 afterEach(() => {
   setFriendCatalogForTests(null);
+  setVisibleFriendsForTests(undefined);
   setEarlyAccessRemote(null);
   cleanup();
   (lynx as unknown as { __globalProps: unknown }).__globalProps = undefined;
@@ -61,6 +69,7 @@ const rowAvatars = (): (string | null)[] =>
 test("SFI1. 일반 인물 Start chatting → 목록 맨 위 NEW 줄 · 해금 저장 · 줄에서 빠짐 · 토스트", async () => {
   await renderTesterApp(<App progressSeed={legacyPassedSeed} />);
   openTab("messenger");
+  await act(async () => {}); // 보이는 친구 목록(약속)을 받습니다
   expect(rowAvatars()).toEqual([ids.avatar("clerk"), ids.avatar("mina")]);
 
   fireEvent.tap(screen.getByTestId(ids.avatar("clerk")), {});
@@ -76,6 +85,7 @@ test("SFI1. 일반 인물 Start chatting → 목록 맨 위 NEW 줄 · 해금 �
 test("SFI2. 잠긴 미나 → 잠긴 시트, 운영에서는 먼저 만나기가 꺼져 Chat now가 없다", async () => {
   await renderTesterApp(<App progressSeed={legacyPassedSeed} />);
   openTab("messenger");
+  await act(async () => {}); // 보이는 친구 목록(약속)을 받습니다
   fireEvent.tap(screen.getByTestId(ids.avatar("mina")), {});
   expect(screen.getByTestId(ids.sheetIntro).textContent).toBe("You'll meet in Episode 3");
   expect(present(ids.sheetEarly)).toBe(false);
@@ -87,6 +97,7 @@ test("SFI2. 잠긴 미나 → 잠긴 시트, 운영에서는 먼저 만나기가
 test("SFI3. See all → 친구 찾기, 시스템 뒤로가기로 목록에 돌아온다", async () => {
   await renderTesterApp(<App progressSeed={legacyPassedSeed} />);
   openTab("messenger");
+  await act(async () => {}); // 보이는 친구 목록(약속)을 받습니다
   fireEvent.tap(screen.getByTestId(ids.seeAll), {});
   expect(present(dir.screen)).toBe(true);
   expect(screen.getByTestId(dir.action("mina")).getAttribute("data-action")).toBe("locked");
@@ -108,6 +119,7 @@ test("SFI4. 서버 포트가 끼워지면 제안이 줄에 서고, Chat now · 1
   );
   await renderTesterApp(<App progressSeed={legacyPassedSeed} />);
   openTab("messenger");
+  await act(async () => {}); // 보이는 친구 목록(약속)을 받습니다
   await act(async () => {
     await Promise.resolve();
   });

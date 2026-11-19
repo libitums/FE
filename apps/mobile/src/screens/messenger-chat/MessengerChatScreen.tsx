@@ -1,12 +1,8 @@
 import { useRef } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
-import arrowLeft03 from "@libitums/icons/lynx/arrow-left-03";
-import menu from "@libitums/icons/lynx/menu";
 import { resolveReducedMotion, useMotion } from "@libitums/ui-lynx/motion";
-import { RoundButton } from "@libitums/ui-lynx/round-button";
 
-import { ChatHeader, ChatHeaderSide } from "../../components/chat/ChatHeader";
 import { ChatLog } from "../../components/chat/ChatLog";
 import { ChatTypingRow } from "../../components/chat/ChatTypingRow";
 import { announce } from "../../lib/accessibility";
@@ -16,6 +12,7 @@ import { useScreenBack } from "../../lib/use-back-handler";
 import { CHAT_COIN_PRICES } from "./chat-coins";
 import { ChatMessageRow } from "./ChatMessageRows";
 import { ChatRoomDock } from "./ChatRoomDock";
+import { ChatRoomHeader } from "./ChatRoomHeader";
 import { ChatRoomOverlays } from "./ChatRoomOverlays";
 import { useAutoIdeas } from "./use-auto-ideas";
 import { guideTargetClass, MessengerRoomGuide } from "./MessengerGuide";
@@ -23,7 +20,7 @@ import { deviceGuideStore } from "./messenger-guide";
 import { useRoomGuide } from "./use-room-guide";
 import { ChatHistoryFailed, ChatRecoveryRow } from "./ChatDelivery";
 import { useChatFeedback } from "./use-chat-feedback";
-import { LastFreeStrip, TurnLine } from "./ChatTurns";
+import { LastFreeStrip } from "./ChatTurns";
 import { MoreMenu, overlayForMore } from "./MoreMenu";
 import { OutOfFreePanel } from "./OutOfFreePanel";
 import { TRIAL_TOTAL } from "./free-turns";
@@ -39,6 +36,8 @@ import { useChatRoom } from "./use-chat-room";
 import { useChatEntrances } from "./use-chat-entrance";
 import { useChatTurns } from "./use-chat-turns";
 import { useCoinBalance } from "./use-coin-balance";
+import { useRoomProfile } from "./use-room-profile";
+import type { SuggestedFriendsProps } from "./suggested-friends.contract";
 
 import "./messenger-chat.css";
 
@@ -59,7 +58,8 @@ export function MessengerChatScreen({
   onOpenAlbum,
   onOpenMyProfile,
   guideStore = deviceGuideStore,
-}: MessengerChatScreenProps): ReactNode {
+  friends,
+}: MessengerChatScreenProps & SuggestedFriendsProps): ReactNode {
   const copy = useUiCopy().messengerChat;
   const coinBalance = useCoinBalance(wallet);
   // 보내기 관문(턴 · 엽전)은 useChatTurns가 지고 방의 dispatch가 필요해 — 서로를 기다리지 않게 방이 관문을 참조로 부릅니다.
@@ -111,6 +111,14 @@ export function MessengerChatScreen({
     dispatch,
     authorizeSend: turn.authorizeSend,
   });
+  // 머리 제목 → 인물 프로필(읽기 전용, ADR-0162 2026-11-19 추가).
+  const profile = useRoomProfile({
+    port: friends,
+    source,
+    thread,
+    open: state.overlay.kind === "profile",
+    dispatch,
+  });
   const motion = resolveReducedMotion(undefined, useMotion()) ? "reduced" : "standard";
   const entrances = useChatEntrances(thread?.messages ?? null, motion);
 
@@ -157,41 +165,13 @@ export function MessengerChatScreen({
           style={keyboardDockBodyStyle(edges, "keyboard")}
           accessibility-elements-hidden={turn.panelOpen ? true : undefined}
         >
-          <ChatHeader
-            title={thread.counterpart.name}
-            subtitle={
-              turn.plan.kind === "unlimited" ? undefined : (
-                <TurnLine plan={turn.plan} used={turn.panelOpen} />
-              )
-            }
-            insetTop={0}
-            testIds={{ root: ids.header, title: ids.title }}
-            start={
-              <ChatHeaderSide testId={ids.back}>
-                <RoundButton
-                  accessibilityLabel={copy.room.back}
-                  icon={arrowLeft03}
-                  variant="neutral"
-                  size="l"
-                  bindtap={exit}
-                />
-              </ChatHeaderSide>
-            }
-            end={
-              <ChatHeaderSide
-                testId={ids.settings}
-                id={ids.settings}
-                accessibilityLabel={copy.room.settings}
-                onTap={() => dispatch({ type: "open-overlay", overlay: { kind: "sidebar" } })}
-              >
-                <RoundButton
-                  accessibilityLabel={copy.room.settings}
-                  icon={menu}
-                  variant="neutral"
-                  size="l"
-                />
-              </ChatHeaderSide>
-            }
+          <ChatRoomHeader
+            name={thread.counterpart.name}
+            plan={turn.plan}
+            panelOpen={turn.panelOpen}
+            titleTap={profile.titleTap}
+            onBack={exit}
+            onSettings={() => dispatch({ type: "open-overlay", overlay: { kind: "sidebar" } })}
           />
           <ChatLog
             testId={ids.log}
@@ -295,6 +275,7 @@ export function MessengerChatScreen({
         preferences={preferences}
         {...{ onOpenMemories, onOpenAlbum, onOpenMyProfile }}
       />
+      {profile.layer}
     </view>
   );
 }

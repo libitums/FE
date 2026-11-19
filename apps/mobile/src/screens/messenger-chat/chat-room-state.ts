@@ -40,6 +40,8 @@ export type ChatOverlay =
   | { readonly kind: "photo"; readonly messageId: string }
   | { readonly kind: "photo-redraw"; readonly messageId: string }
   | { readonly kind: "feedback-mode"; readonly selected: ChatFeedbackMode }
+  /** 머리 제목을 눌러 연 인물 프로필(읽기 전용, ADR-0162 2026-11-19 추가). */
+  | { readonly kind: "profile" }
   | {
       readonly kind: "birth-year";
       readonly selected: number | null;

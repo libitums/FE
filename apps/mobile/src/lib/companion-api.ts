@@ -20,6 +20,10 @@ import {
 } from "../screens/messenger-chat/companion-parse";
 import { walletOf } from "../screens/messenger-chat/companion-media-parse";
 import { earlyOffersFrom, earlyUnlockFrom } from "../screens/messenger-chat/early-access-parse";
+import {
+  adultAckFrom,
+  visibleFriendsFrom,
+} from "../screens/messenger-chat/companion-friends-parse";
 
 /** 서버 계약 판(`@libitums/companion-contract`의 CONTRACT_VERSION). 값을 가져오면 zod가 번들에 들어가 숫자만 둡니다. */
 
@@ -81,6 +85,11 @@ export function createCompanionRemote(deps: CompanionRemoteDeps): ChatRemote {
         earlyUnlockFrom(
           await call("/rest/v1/rpc/companion_unlock_early", { p_character_id: characterId }),
         ),
+    },
+    // 추천 친구(20261216, ADR-0163 D2 · D4) — RPC가 없으면(404) 두 답 모두 null: 일반 인물 없음 · 동의 못 남김.
+    friends: {
+      list: async () => visibleFriendsFrom(await call("/rest/v1/rpc/companion_friends", {})),
+      ackAdult: async () => adultAckFrom(await call("/rest/v1/rpc/companion_ack_adult", {})),
     },
     clearChat: async (characterId) =>
       clearOutcomeFrom(

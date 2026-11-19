@@ -25,6 +25,29 @@ export const messengerChatSuggestedVi: SuggestedFriendsCopy = {
   limitedUntil: (days, hours) => `GIỚI HẠN · ${days} ngày ${hours} giờ`,
   added: (name) => `Đã thêm ${name} vào trò chuyện`,
   addFailed: (name) => `Không thêm được ${name}. Hãy thử lại.`,
+  profile: {
+    age: (years) => `${years} tuổi`,
+    ageDecade: (decade) => `Ngoài ${decade}`,
+    ageRange: (from, to) => `${from}–${to} tuổi`,
+    facts: (parts) => parts.join(" · "),
+    close: "Đóng",
+    openProfile: (name) => `${name}, xem hồ sơ`,
+    voice: {
+      hear: "Nghe giọng",
+      pause: "Tạm dừng",
+      resume: "Tiếp tục",
+      loading: "Đang tải…",
+      unavailable: "Không phát được giọng mẫu",
+      label: (name) => `Nghe giọng của ${name}`,
+    },
+    adult: {
+      title: "Trước khi thêm người bạn này",
+      body: (name) =>
+        `${name} có thể nói chuyện với giọng lãng mạn như người yêu. Hãy xác nhận bạn đã đủ tuổi trưởng thành.`,
+      confirm: "Tôi đã trưởng thành",
+      cancel: "Bỏ qua",
+    },
+  },
   directory: {
     title: "Tìm bạn",
     back: "Quay lại",

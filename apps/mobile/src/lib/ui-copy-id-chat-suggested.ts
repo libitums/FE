@@ -26,6 +26,29 @@ export const messengerChatSuggestedId: SuggestedFriendsCopy = {
   limitedUntil: (days, hours) => `TERBATAS · ${days}h ${hours}j`,
   added: (name) => `${name} ditambahkan ke chat kamu`,
   addFailed: (name) => `Gagal menambahkan ${name}. Coba lagi.`,
+  profile: {
+    age: (years) => `${years} tahun`,
+    ageDecade: (decade) => `${decade}-an`,
+    ageRange: (from, to) => `${from}–${to} tahun`,
+    facts: (parts) => parts.join(" · "),
+    close: "Tutup",
+    openProfile: (name) => `${name}, lihat profil`,
+    voice: {
+      hear: "Dengar suara",
+      pause: "Jeda",
+      resume: "Lanjutkan",
+      loading: "Memuat…",
+      unavailable: "Contoh suara tidak tersedia",
+      label: (name) => `Dengar suara ${name}`,
+    },
+    adult: {
+      title: "Sebelum menambahkan teman ini",
+      body: (name) =>
+        `${name} mungkin berbicara dengan nada romantis seperti pasangan. Pastikan kamu sudah dewasa.`,
+      confirm: "Saya sudah dewasa",
+      cancel: "Lewati",
+    },
+  },
   directory: {
     title: "Cari teman",
     back: "Kembali",

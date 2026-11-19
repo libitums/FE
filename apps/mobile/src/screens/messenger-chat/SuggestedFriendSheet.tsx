@@ -4,21 +4,20 @@ import lock from "@libitums/icons/lynx/lock";
 import { color } from "@libitums/design-tokens";
 import { Avatar } from "@libitums/ui-lynx/avatar";
 import { shouldDismissBottomSheetDrag } from "@libitums/ui-lynx/bottom-sheet";
-import { Button } from "@libitums/ui-lynx/button";
 import { useMotion } from "@libitums/ui-lynx/motion";
 import { Overlay } from "@libitums/ui-lynx/overlay";
 
 import { ChatTextBubble } from "../../components/chat/ChatMessageRow";
-import { coinIcon } from "../../components/coin-icon";
 import { screenHeightFrom } from "../../lib/learning-density";
 import { safeAreaInsetsFrom, sheetBottomInsetFrom } from "../../lib/safe-area";
 import { useUiCopy } from "../../lib/ui-copy";
 import { useLayerBack } from "../../lib/use-back-handler";
 import { sheetMaxHeightOf } from "./scroll-budget";
-import type { SuggestedFriendsCopy, SuggestedFriendSheetProps } from "./suggested-friends.contract";
+import type { SuggestedFriendSheetProps } from "./suggested-friends.contract";
 import { suggestedFriendsTestIds as ids } from "./suggested-friends.contract";
-import { localizedLine, offerBadgeOf } from "./suggested-friends";
-import type { EarlyAccessOffer } from "./friend-catalog.contract";
+import { localizedLine } from "./suggested-friends";
+import { FriendFactsLine, FriendProfileExtras } from "./FriendProfileParts";
+import { SuggestedSheetActions } from "./SuggestedSheetActions";
 import { useScrollBudget } from "./use-scroll-budget";
 
 import "../../components/chat/chat.css";
@@ -37,20 +36,11 @@ function holdTouch(): void {
   "background only";
 }
 
-// 단추 · 배지 · 둘째 줄을 한 이름으로 읽습니다 — 값의 단위(엽전)와 남은 기간이 그림에만 있지 않게.
-function earlyLabel(offer: EarlyAccessOffer, now: number, copy: SuggestedFriendsCopy): string {
-  const badge = offerBadgeOf(offer, now);
-  return copy.earlyButtonLabel(offer.price, badge.kind === "limited" ? null : badge);
-}
-
-function limitedText(offer: EarlyAccessOffer, now: number, copy: SuggestedFriendsCopy): string {
-  const badge = offerBadgeOf(offer, now);
-  return badge.kind === "limited" ? copy.limited : copy.limitedUntil(badge.days, badge.hours);
-}
-
 /**
  * 추천 친구 프로필 시트(R2 · R4 · R6, ADR-0162). 추가 가능이면 소개 · 태그 · 첫 말 · Start chatting, 잠김이면 만날 회차 · 안내 줄과
  * (먼저 만나기 제안이 있을 때만) Chat now. 막 탭 · Not now · 끌어내림 · 시스템 뒤로가기는 모두 `onClose`입니다.
+ * ⟨2026-11-19⟩ 추가 가능 · 읽기 전용이면 사실 줄(나이 · 직업 · MBTI) · 목소리 견본 · AI 표시. 읽기 전용(`mode: profile`, 방 머리)은
+ * 첫 말 · 추가 단추 없이 닫기만 둡니다.
  */
 export function SuggestedFriendSheet({
   model,
@@ -58,9 +48,12 @@ export function SuggestedFriendSheet({
   onStart,
   onEarly,
   onClose,
+  onVoicePlayed,
+  ownBack = true,
 }: SuggestedFriendSheetProps): ReactNode {
   const copy = useUiCopy().messengerChat.suggested;
   const { character, offer } = model;
+  const mode = model.mode ?? "suggest";
   const locked = model.status === "locked";
   const still = useMotion() === "reduced";
   const dragStartY = useRef<number | null>(null);
@@ -73,7 +66,7 @@ export function SuggestedFriendSheet({
   const budget = useScrollBudget(maxHeight, FIXED_KEYS);
   // 아래 시스템 바 · 홈 인디케이터 몫(ADR-0044 D3 개정) — CSS `env()`는 Lynx에서 0입니다.
   const bottomInset = sheetBottomInsetFrom(globalProps, ACTIONS_BOTTOM_PADDING);
-  useLayerBack(onClose);
+  useLayerBack(ownBack ? onClose : null);
 
   const handleDragStart = (event: PanelTouchEvent): void => {
     "background only";
@@ -142,6 +135,7 @@ export function SuggestedFriendSheet({
               </view>
             ) : null}
           </view>
+          {locked ? null : <FriendFactsLine character={character} />}
           {sub === null ? null : (
             <text
               className="suggested-sheet-sub"
@@ -182,7 +176,7 @@ export function SuggestedFriendSheet({
                 ))}
               </view>
             ) : null}
-            {!locked && character.sheetOpening !== null ? (
+            {!locked && mode === "suggest" && character.sheetOpening !== null ? (
               <view className="suggested-sheet-opening" data-testid={ids.sheetOpening}>
                 <ChatTextBubble
                   direction="incoming"
@@ -203,6 +197,11 @@ export function SuggestedFriendSheet({
                 </text>
               </view>
             ) : null}
+            <FriendProfileExtras
+              character={character}
+              voiceUrl={locked ? null : (model.voiceUrl ?? null)}
+              {...(onVoicePlayed === undefined ? {} : { onVoicePlayed })}
+            />
           </view>
         </scroll-view>
 
@@ -215,50 +214,16 @@ export function SuggestedFriendSheet({
           }
           bindlayoutchange={budget.onFixedLayout("actions")}
         >
-          {!locked ? (
-            <view data-testid={ids.sheetStart}>
-              <Button
-                label={copy.startChatting}
-                variant="brand"
-                size="xl"
-                width="fill"
-                bindtap={onStart}
-              />
-            </view>
-          ) : offer === null ? null : (
-            <view
-              className="suggested-sheet-early"
-              data-testid={ids.sheetEarly}
-              flatten={false}
-              accessibility-element={true}
-              accessibility-traits="button"
-              accessibility-enable-tap={true}
-              accessibility-label={earlyLabel(offer, now, copy)}
-              bindtap={onEarly}
-            >
-              <Button
-                label={copy.chatNow(offer.price)}
-                variant="brand"
-                size="xl"
-                width="fill"
-                icon={coinIcon}
-                iconPosition="leading"
-              />
-              <text className="suggested-sheet-early-note">
-                {copy.launchSpecial(character.name)}
-              </text>
-              <view
-                className="suggested-sheet-limited"
-                data-testid={ids.sheetLimited}
-                accessibility-elements-hidden={true}
-              >
-                <text className="suggested-tag-text">{limitedText(offer, now, copy)}</text>
-              </view>
-            </view>
-          )}
-          <view data-testid={ids.sheetLater}>
-            <Button label={copy.notNow} variant="text" size="l" width="fill" bindtap={onClose} />
-          </view>
+          <SuggestedSheetActions
+            name={character.name}
+            mode={mode}
+            locked={locked}
+            offer={offer}
+            now={now}
+            onStart={onStart}
+            onEarly={onEarly}
+            onClose={onClose}
+          />
         </view>
       </view>
     </view>

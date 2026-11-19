@@ -69,6 +69,7 @@ export function ChatRoomOverlays({
   switch (overlay.kind) {
     case "none":
     case "more-menu":
+    case "profile": // 머리 프로필은 방 화면이 그립니다(use-room-profile)
       return null;
     case "report":
       return (

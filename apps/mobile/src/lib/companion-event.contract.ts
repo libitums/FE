@@ -77,7 +77,15 @@ export type SuggestedFriendEvent =
       readonly name: "early_access_completed";
       readonly characterId: string;
       readonly outcome: "unlocked" | "short" | "failed";
-    });
+    })
+  /** 프로필 시트를 열었음(ADR-0162 2026-11-19 추가) — 추천 줄 · 친구 찾기 · 방 머리. */
+  | (Common & {
+      readonly name: "friend_profile_opened";
+      readonly characterId: string;
+      readonly source: "row" | "directory" | "room";
+    })
+  /** 목소리 견본 재생이 시작됨 — 이어 듣기는 세지 않습니다. 서버 호출 · 엽전 없음. */
+  | (Common & { readonly name: "friend_voice_sample_played"; readonly characterId: string });
 
 /** 메신저 보내기 · 엽전(ADR-0140 단가). */
 export type ChatCoinEvent =

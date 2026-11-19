@@ -1,5 +1,5 @@
 import { afterEach, expect, test } from "vitest";
-import { cleanup, render, screen, within } from "@lynx-js/react/testing-library";
+import { cleanup, fireEvent, render, screen, within } from "@lynx-js/react/testing-library";
 
 import { ChatHeader, ChatHeaderSide } from "./ChatHeader";
 import { realChildren } from "../../lib/dom.test-support";
@@ -142,4 +142,25 @@ test("F3. 부제가 있을 때만 제목이 한 줄로 잘린다(text-maxline) �
   cleanup();
   mountWithSubtitle(false);
   expect(screen.getByTestId("x-title").hasAttribute("text-maxline")).toBe(false);
+});
+
+// ⟨ADR-0162 2026-11-19⟩ 누를 수 있는 제목(메신저 방 → 인물 프로필) — 제목 글은 그대로, 감싼 칸이 버튼 하나로 읽힌다.
+test("MC-UI2. titleTap이 있으면 제목이 버튼(낭독 이름)이 되고, 누르면 onTap — 옆 칸 · 제목 test-id는 그대로", () => {
+  let taps = 0;
+  render(
+    <ChatHeader
+      title="차서연"
+      insetTop={0}
+      testIds={testIds}
+      start={<ChatHeaderSide testId="x-back" />}
+      end={null}
+      titleTap={{ label: "차서연, view profile", onTap: () => (taps += 1), testId: "x-title-tap" }}
+    />,
+  );
+  const tap = screen.getByTestId("x-title-tap");
+  expect(tap.getAttribute("accessibility-traits")).toBe("button");
+  expect(tap.getAttribute("accessibility-label")).toBe("차서연, view profile");
+  expect(within(tap).getByTestId("x-title").textContent).toBe("차서연");
+  fireEvent.tap(tap, {});
+  expect(taps).toBe(1);
 });

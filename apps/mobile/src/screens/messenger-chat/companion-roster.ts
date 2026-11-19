@@ -2,7 +2,8 @@
 // 이름은 학습 내용(인물 이름)이라 한글 그대로 둡니다(ui-copy 정책 허용 선언).
 
 import type { ChatFixtureRoom, ChatFixtureSeed } from "./chat-source.contract";
-import type { FriendCatalog, FriendProfile } from "./friend-catalog.contract";
+import type { FriendCatalog, FriendFacts, FriendProfile } from "./friend-catalog.contract";
+import { GENERAL_FRIENDS } from "./companion-friends-roster";
 
 /**
  * 인물 한 명 — 친구 카탈로그의 모양(ADR-0162: 종류 · 소개 · 태그 · 카테고리 · 먼저 만나기)에 목록 미리보기 첫 줄을 더합니다.
@@ -20,10 +21,22 @@ export type CompanionCharacter = FriendProfile & {
 
 const profile = (name: string) => `content/images/profiles/${name}.webp`;
 
-/** 이야기 인물의 카탈로그 칸 — 태그 · 카테고리 없음, 먼저 만나기 제안 없음(운영에 가짜 제안을 싣지 않습니다, ADR-0162). */
-const storyProfile = (intro: FriendProfile["intro"]) =>
-  ({ kind: "story", intro, tags: [], category: null, earlyAccess: null }) as const;
+/**
+ * 이야기 인물의 카탈로그 칸 — 태그 · 카테고리 없음, 먼저 만나기 제안 없음(운영에 가짜 제안을 싣지 않습니다, ADR-0162).
+ * 사실 줄(ADR-0162 2026-11-19 추가): MBTI는 `docs/content/companion-friends.json`의 `storyProfiles`, 나이 · 직업은 duru-curation 스토리
+ * 바이블(`worlds/backpack/bible.yaml`) 값입니다. 목소리 견본은 아직 없습니다(null).
+ */
+const storyProfile = (intro: FriendProfile["intro"], facts: Omit<FriendFacts, "voiceSamplePath">) =>
+  ({
+    kind: "story",
+    intro,
+    tags: [],
+    category: null,
+    earlyAccess: null,
+    profile: { ...facts, voiceSamplePath: null },
+  }) as const;
 
+/** 이야기 다섯 → 일반 인물 넷(추천 친구, ADR-0163). 일반 인물은 서버가 보이게 한 학습자의 추천 줄 · 친구 찾기에만 섭니다. */
 export const COMPANION_CHARACTERS: readonly CompanionCharacter[] = [
   {
     id: "duksu",
@@ -33,13 +46,26 @@ export const COMPANION_CHARACTERS: readonly CompanionCharacter[] = [
     unlockEpisode: null,
     sheetOpening: null,
     firstLine: "안녕하세요! 덕수쌤이에요.",
-    ...storyProfile({
-      en: "Your Korean teacher",
-      es: "Tu profesor de coreano",
-      id: "Guru bahasa Korea-mu",
-      ja: "あなたの韓国語の先生",
-      vi: "Thầy dạy tiếng Hàn của bạn",
-    }),
+    ...storyProfile(
+      {
+        en: "Your Korean teacher",
+        es: "Tu profesor de coreano",
+        id: "Guru bahasa Korea-mu",
+        ja: "あなたの韓国語の先生",
+        vi: "Thầy dạy tiếng Hàn của bạn",
+      },
+      {
+        age: "30s",
+        job: {
+          en: "Korean teacher",
+          es: "Profesor de coreano",
+          id: "Guru bahasa Korea",
+          ja: "韓国語の先生",
+          vi: "Giáo viên tiếng Hàn",
+        },
+        mbti: "ENFJ",
+      },
+    ),
   },
   {
     id: "yoonkyung",
@@ -52,13 +78,26 @@ export const COMPANION_CHARACTERS: readonly CompanionCharacter[] = [
       en: "Did you get here okay? This is Jung Yoonkyung from Ikseon Guesthouse.",
     },
     firstLine: "잘 도착했어요? 익선 게스트하우스 정윤경이에요.",
-    ...storyProfile({
-      en: "Owner of Ikseon Guesthouse",
-      es: "Dueña de Ikseon Guesthouse",
-      id: "Pemilik Ikseon Guesthouse",
-      ja: "益善ゲストハウスのオーナー",
-      vi: "Chủ nhà nghỉ Ikseon",
-    }),
+    ...storyProfile(
+      {
+        en: "Owner of Ikseon Guesthouse",
+        es: "Dueña de Ikseon Guesthouse",
+        id: "Pemilik Ikseon Guesthouse",
+        ja: "益善ゲストハウスのオーナー",
+        vi: "Chủ nhà nghỉ Ikseon",
+      },
+      {
+        age: 69,
+        job: {
+          en: "Runs Ikseon Guesthouse",
+          es: "Lleva Ikseon Guesthouse",
+          id: "Pengelola Ikseon Guesthouse",
+          ja: "益善ゲストハウスの運営",
+          vi: "Chủ nhà nghỉ Ikseon",
+        },
+        mbti: "ISFJ",
+      },
+    ),
   },
   {
     id: "mina",
@@ -68,13 +107,26 @@ export const COMPANION_CHARACTERS: readonly CompanionCharacter[] = [
     unlockEpisode: 3,
     sheetOpening: { ko: "안녕하세요! 같은 방 미나예요.", en: "Hi! It's Mina, your roommate." },
     firstLine: "안녕하세요! 같은 방 미나예요.",
-    ...storyProfile({
-      en: "Your roommate at the guesthouse",
-      es: "Tu compañera de cuarto en el hostal",
-      id: "Teman sekamarmu di guesthouse",
-      ja: "ゲストハウスのルームメイト",
-      vi: "Bạn cùng phòng ở nhà nghỉ",
-    }),
+    ...storyProfile(
+      {
+        en: "Your roommate at the guesthouse",
+        es: "Tu compañera de cuarto en el hostal",
+        id: "Teman sekamarmu di guesthouse",
+        ja: "ゲストハウスのルームメイト",
+        vi: "Bạn cùng phòng ở nhà nghỉ",
+      },
+      {
+        age: "25-26",
+        job: {
+          en: "Backpacker from Switzerland",
+          es: "Mochilera de Suiza",
+          id: "Backpacker dari Swiss",
+          ja: "スイスから来たバックパッカー",
+          vi: "Dân phượt đến từ Thụy Sĩ",
+        },
+        mbti: "ESFJ",
+      },
+    ),
   },
   {
     id: "doyun",
@@ -87,13 +139,26 @@ export const COMPANION_CHARACTERS: readonly CompanionCharacter[] = [
       en: "Hi! It's Doyun from Cafe Kkeullim.",
     },
     firstLine: "안녕하세요! 카페 끌림 도윤이에요.",
-    ...storyProfile({
-      en: "Met at Cafe Kkeullim",
-      es: "Lo conociste en Cafe Kkeullim",
-      id: "Bertemu di Cafe Kkeullim",
-      ja: "カフェ・クルリムで出会った",
-      vi: "Gặp ở quán cà phê Kkeullim",
-    }),
+    ...storyProfile(
+      {
+        en: "Met at Cafe Kkeullim",
+        es: "Lo conociste en Cafe Kkeullim",
+        id: "Bertemu di Cafe Kkeullim",
+        ja: "カフェ・クルリムで出会った",
+        vi: "Gặp ở quán cà phê Kkeullim",
+      },
+      {
+        age: 22,
+        job: {
+          en: "Café part-timer & idol trainee",
+          es: "Trabaja en un café y es aprendiz de idol",
+          id: "Pekerja paruh waktu kafe & trainee idol",
+          ja: "カフェのアルバイト・アイドル練習生",
+          vi: "Làm thêm ở quán cà phê & thực tập sinh idol",
+        },
+        mbti: "ENFP",
+      },
+    ),
   },
   {
     id: "jaemin",
@@ -106,14 +171,28 @@ export const COMPANION_CHARACTERS: readonly CompanionCharacter[] = [
       en: "It's Seo Jaemin.",
     },
     firstLine: "서재민이에요.",
-    ...storyProfile({
-      en: "Met by the guesthouse alley",
-      es: "Lo conociste junto al callejón del hostal",
-      id: "Bertemu di gang dekat guesthouse",
-      ja: "ゲストハウスの路地で出会った",
-      vi: "Gặp ở con hẻm gần nhà nghỉ",
-    }),
+    ...storyProfile(
+      {
+        en: "Met by the guesthouse alley",
+        es: "Lo conociste junto al callejón del hostal",
+        id: "Bertemu di gang dekat guesthouse",
+        ja: "ゲストハウスの路地で出会った",
+        vi: "Gặp ở con hẻm gần nhà nghỉ",
+      },
+      {
+        age: 29,
+        job: {
+          en: "B2B sales at a tech company",
+          es: "Ventas B2B en una empresa tecnológica",
+          id: "Sales B2B di perusahaan teknologi",
+          ja: "IT企業のB2B営業",
+          vi: "Kinh doanh B2B ở công ty công nghệ",
+        },
+        mbti: "INTJ",
+      },
+    ),
   },
+  ...GENERAL_FRIENDS,
 ];
 
 const roomOf = (character: CompanionCharacter): ChatFixtureRoom => ({
@@ -137,7 +216,7 @@ const roomOf = (character: CompanionCharacter): ChatFixtureRoom => ({
   voiceLine: { durationMs: 3000, text: { ko: "", en: "" } },
 });
 
-/** 지금의 친구 카탈로그 — 이야기 인물 다섯, 카테고리 없음. 서버 인물 목록이 생기면 포트가 그것으로 바꿉니다(ADR-0162). */
+/** 지금의 친구 카탈로그 — 이야기 인물 다섯 + 일반 인물 넷, 카테고리 없음. 서버 인물 목록이 생기면 포트가 그것으로 바꿉니다(ADR-0162). */
 export const COMPANION_CATALOG: FriendCatalog = {
   characters: COMPANION_CHARACTERS,
   categories: [],

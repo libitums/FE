@@ -1,15 +1,24 @@
 // 목록 화면의 추천 친구 상태(ADR-0162) — 줄 · 시트 · 친구 찾기 · 토스트 · 이벤트를 한곳에서 잇습니다. 판정은 순수 모듈이 집니다.
+// ⟨2026-11-19⟩ 일반 인물은 서버가 보이게 한 친구만(ADR-0163 D2), open 친구 추가 앞에 성인 확인(D4), 시트 열기 · 견본 이벤트.
 
 import { useEffect, useRef, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import { useUiCopy } from "../../lib/ui-copy";
 import { useChatEvents } from "./chat-events";
-import type { ChatRoomSummary } from "./chat-source.contract";
-import type { EarlyAccessListing, SuggestedFriendsPort } from "./friend-catalog.contract";
+import type { ChatBirthYear, ChatRoomSummary } from "./chat-source.contract";
+import type {
+  EarlyAccessListing,
+  FriendProfile,
+  SuggestedFriendsPort,
+  VisibleFriend,
+} from "./friend-catalog.contract";
 import { directoryChipsOf, directoryOf } from "./friend-directory";
 import type { DirectoryFilter, DirectoryRow } from "./friend-directory";
 import { FriendDirectoryScreen } from "./FriendDirectoryScreen";
+import { voiceUrlOf } from "./friend-profile";
+import { profileOpenedEvent, voicePlayedEvent } from "./friend-profile-events";
+import { catalogVisibleTo, friendGateOf, romanceTierOf } from "./friend-visibility";
 import type { SuggestedFriendSheetModel } from "./suggested-friends.contract";
 import {
   catalogWithOffers,
@@ -22,6 +31,8 @@ import { SuggestedFriendSheet } from "./SuggestedFriendSheet";
 import { SuggestedFriendsRow } from "./SuggestedFriendsRow";
 import { SuggestedFriendToast } from "./SuggestedFriendToast";
 import type { SuggestedFriendToastValue } from "./SuggestedFriendToast";
+import { useAdultAck } from "./use-adult-ack";
+import { usePortLoad } from "./use-port-load";
 
 export type SuggestedFriendsUi = {
   /** 목록 위에 설 줄 — 추천이 없거나 포트가 없으면 null(줄을 숨김, ADR-0162 D3). */
@@ -37,28 +48,40 @@ type OpenSheet = { readonly model: SuggestedFriendSheetModel; readonly from: Fro
 
 const ALL: DirectoryFilter = { kind: "all" };
 
-const modelOfFriend = (friend: SuggestedFriend): SuggestedFriendSheetModel => ({
+type MediaUrlOf = SuggestedFriendsPort["mediaUrlOf"];
+
+const voiceOf = (character: FriendProfile, mediaUrlOf: MediaUrlOf) =>
+  voiceUrlOf(character.profile, mediaUrlOf);
+
+const modelOfFriend = (friend: SuggestedFriend, media: MediaUrlOf): SuggestedFriendSheetModel => ({
   character: friend.character,
   avatarUrl: friend.room.counterpart.avatarUrl,
   status: friend.status,
   offer: friend.offer,
+  voiceUrl: voiceOf(friend.character, media),
 });
 
-const modelOfRow = (row: DirectoryRow): SuggestedFriendSheetModel => ({
+const modelOfRow = (row: DirectoryRow, media: MediaUrlOf): SuggestedFriendSheetModel => ({
   character: row.character,
   avatarUrl: row.room.counterpart.avatarUrl,
   status: row.action === "chat" ? "addable" : "locked",
   offer: row.offer,
+  voiceUrl: voiceOf(row.character, media),
 });
+
+const NO_OFFERS: readonly EarlyAccessListing[] = [];
 
 export function useSuggestedFriends({
   port,
   rooms,
+  birthYear,
   covered,
   onShortOfCoins,
 }: {
   readonly port: SuggestedFriendsPort | undefined;
   readonly rooms: readonly ChatRoomSummary[];
+  /** 생년(ADR-0125) — open 친구 추가 앞의 성인 확인만 봅니다. */
+  readonly birthYear: ChatBirthYear;
   /** 엽전 상점이 위에 떠 있는가 — 그동안 친구 찾기를 낭독에서 가립니다. */
   readonly covered: boolean;
   readonly onShortOfCoins: () => void;
@@ -71,30 +94,21 @@ export function useSuggestedFriends({
   const [toast, setToast] = useState<SuggestedFriendToastValue | null>(null);
   const toastKey = useRef(0);
   const viewedSent = useRef(false);
-  const [offers, setOffers] = useState<readonly EarlyAccessListing[]>([]);
-
   // 서버 제안(ADR-0162 D5)은 목록 마운트마다 한 번 읽어 카탈로그에 얹습니다 — 못 읽으면 제안 없음.
-  // 포트 객체가 렌더마다 바뀌어도 다시 부르지 않게, 마운트 때 한 번 그때의 함수를 씁니다(리뷰 #503).
-  const loadOffersRef = useRef(port?.offers ?? null);
-  loadOffersRef.current = port?.offers ?? null;
-  // 손님 → 회원처럼 읽을 길이 새로 생길 때만 다시 읽습니다.
-  const hasLoader = loadOffersRef.current !== null;
-  useEffect(() => {
-    const loadOffers = loadOffersRef.current;
-    if (loadOffers === null) return undefined;
-    let live = true;
-    void loadOffers()
-      .then((list) => {
-        if (live) setOffers(list);
-      })
-      .catch(() => undefined);
-    return () => {
-      live = false;
-    };
-  }, [hasLoader]);
+  const offers = usePortLoad(port?.offers ?? null, NO_OFFERS).value;
+  // 보이는 일반 인물(ADR-0163 D2) — 받기 전 · 못 받음이면 일반 인물이 없습니다. 이야기 인물은 그대로.
+  const visibleLoader = port?.visibleFriends;
+  const visible = usePortLoad<readonly VisibleFriend[] | null>(visibleLoader ?? null, null);
+  const gate = friendGateOf(
+    visibleLoader === undefined ? "absent" : visibleLoader === null ? "off" : "on",
+    visible.done,
+    visible.value,
+  );
+  const adult = useAdultAck({ port, birthYear, tierOf: (id) => romanceTierOf(gate, id) });
+  const media = port?.mediaUrlOf;
 
   const base = port?.catalog() ?? null;
-  const catalog = base === null ? null : catalogWithOffers(base, offers);
+  const catalog = base === null ? null : catalogVisibleTo(catalogWithOffers(base, offers), gate);
   const now = Date.now();
   const input = {
     catalog: catalog ?? { characters: [], categories: [] },
@@ -104,7 +118,7 @@ export function useSuggestedFriends({
     ...(port?.metEpisode === undefined ? {} : { metEpisode: port.metEpisode }),
   };
   const row = suggestedRowOf(suggestedFriendsOf(input));
-  const layerOpen = sheet !== null || directoryOpen;
+  const layerOpen = sheet !== null || directoryOpen || adult.open;
 
   // 줄이 처음 보일 때 목록 마운트당 한 번(제품 이벤트 — 효과에서 보냄).
   useEffect(() => {
@@ -133,13 +147,23 @@ export function useSuggestedFriends({
     showToast(copy.added(character.name), open.model);
   };
 
+  const openSheet = (model: SuggestedFriendSheetModel, from: From) => {
+    emit(profileOpenedEvent(model.character.id, from));
+    setSheet({ model, from });
+  };
+
   function handleStart() {
     "background only";
     if (sheet === null || port === undefined) return;
-    const result = port.add(sheet.model.character.id);
-    if (result === "added") return added(sheet, "free");
-    setSheet(null);
-    if (result === "unknown") showToast(copy.addFailed(sheet.model.character.name), sheet.model);
+    const open = sheet;
+    // open 친구는 성인 확인 뒤에(확인 · 취소 모두 추가, ADR-0163 D4). 창이 필요 없으면 곧바로.
+    adult.request(open.model.character, () => {
+      const result = port.add(open.model.character.id);
+      if (result === "added") return added(open, "free");
+      setSheet(null);
+      if (result === "unknown") showToast(copy.addFailed(open.model.character.name), open.model);
+      return undefined;
+    });
   }
 
   function handleEarly() {
@@ -191,7 +215,7 @@ export function useSuggestedFriends({
       port === undefined || row.length === 0 ? null : (
         <SuggestedFriendsRow
           friends={row}
-          onOpen={(friend) => setSheet({ model: modelOfFriend(friend), from: "row" })}
+          onOpen={(friend) => openSheet(modelOfFriend(friend, media), "row")}
           onSeeAll={() => {
             setFilter(ALL);
             setDirectoryOpen(true);
@@ -209,7 +233,7 @@ export function useSuggestedFriends({
             general={directory.general}
             categoryLabel={categoryLabel}
             onFilter={setFilter}
-            onOpen={(open) => setSheet({ model: modelOfRow(open), from: "directory" })}
+            onOpen={(open) => openSheet(modelOfRow(open, media), "directory")}
             onBack={() => setDirectoryOpen(false)}
           />
         )}
@@ -220,8 +244,10 @@ export function useSuggestedFriends({
             onStart={handleStart}
             onEarly={handleEarly}
             onClose={() => setSheet(null)}
+            onVoicePlayed={() => emit(voicePlayedEvent(sheet.model.character.id))}
           />
         )}
+        {adult.dialog}
         <SuggestedFriendToast value={toast} />
       </>
     ),

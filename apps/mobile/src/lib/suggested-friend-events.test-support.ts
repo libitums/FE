@@ -27,4 +27,17 @@ export const suggestedFriendEventExamples = [
     characterId: "jaemin",
     outcome: "short",
   },
+  {
+    name: "friend_profile_opened",
+    surface: "chat",
+    daysSinceFirstOpen: "3",
+    characterId: "seoyeon",
+    source: "room",
+  },
+  {
+    name: "friend_voice_sample_played",
+    surface: "chat",
+    daysSinceFirstOpen: "3",
+    characterId: "haejun",
+  },
 ] as const satisfies readonly AnalyticsEvent[];

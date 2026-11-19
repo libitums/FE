@@ -1,6 +1,7 @@
 // ui 테스트 지원 — 자유 대화 화면 테스트가 함께 쓰는 씨앗 · 출처 · 마운트 · 이벤트 도우미입니다.
 // 제품 코드는 이 파일을 import하지 않습니다. 한국어 대화 내용은 테스트 데이터입니다.
 
+import type { SuggestedFriendsPort } from "./friend-catalog.contract";
 import type { EpisodeIntroEventSink } from "../episode-intro/episode-intro.contract";
 import { ChatEventsContext } from "./chat-events";
 import type { GuideStore } from "./messenger-guide";
@@ -91,6 +92,8 @@ export type MountChatOptions = {
   readonly guideStore?: GuideStore;
   /** 제품 사용 이벤트를 받을 sink — 주면 결선처럼 이벤트 자리(`ChatEventsContext`)로 감쌉니다. */
   readonly eventSink?: EpisodeIntroEventSink;
+  /** 추천 친구 포트(ADR-0162) — 주면 머리 제목이 인물 프로필 입구가 됩니다. */
+  readonly friends?: SuggestedFriendsPort;
 };
 
 export function presenceProbe(presence: "present" | "absent" | "unknown"): KoreanKeyboardProbe {
@@ -118,6 +121,7 @@ export function mountChat(options: MountChatOptions = {}) {
     onExit,
     onOpenMemories,
     ...(options.guideStore === undefined ? {} : { guideStore: options.guideStore }),
+    ...(options.friends === undefined ? {} : { friends: options.friends }),
   };
   const room = <MessengerChatScreen {...screenProps} />;
   const view = render(

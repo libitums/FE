@@ -71,6 +71,7 @@ export function renderMessengerChat(roomId: string, wiring: ScreenWiring) {
         onOpenMemories={chat.onOpenMemories}
         onOpenAlbum={chat.onOpenAlbum}
         onOpenMyProfile={chat.onOpenMyProfile}
+        friends={suggestedFriendsPort()}
       />
     </ChatEventsContext.Provider>
   );

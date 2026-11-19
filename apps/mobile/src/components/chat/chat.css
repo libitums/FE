@@ -49,6 +49,14 @@
   text-overflow: ellipsis;
 }
 
+/* 누를 수 있는 제목(메신저 방 → 인물 프로필, ADR-0162 2026-11-19 추가) — 묶음 안에서 글 폭만큼, 넘치면 말줄임. */
+.chat-title-tap {
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 .chat-log {
   flex: 1;
 }

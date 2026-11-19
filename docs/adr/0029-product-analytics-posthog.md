@@ -506,6 +506,10 @@ sink는 던지지 않는다 — 매핑 · `capture`를 `try`로 감싸 삼킨다
 - ⟨2026-11-18 — ADR-0159⟩ 온보딩 이벤트 둘을 더한다(진입 sink): `onboarding_step_viewed { step, via }`(스텝이 그 방문에서 처음
   보일 때 1회) · `onboarding_started { step, autoAdvanced }`(「Get started」). 「Next」가 없어져 온보딩 → 로그인이 한 번의 탭이 됐다 —
   `entry_screen_viewed(onboarding)` → `(login)` 전환율의 해석이 이날 바뀐다. GitHub wiki 이벤트 사전은 저장소 밖이라 따로 고친다.
+- ⟨2026-11-19 — ADR-0162 「인물 프로필」 추가⟩ 메신저 sink(`ChatEventsContext`)에 이벤트 둘을 더한다: `friend_profile_opened { characterId, source:
+  row | directory | room }`(프로필 시트를 연 때 한 번) · `friend_voice_sample_played { characterId }`(목소리 견본 재생이 새로 시작된 때 — 이어 듣기는
+  세지 않음). 같은 뜻의 이벤트가 없었다(`profile_opened`는 설정 탭의 내 프로필). 이름 72 → **74**(`analytics-event-names.ts`), Airbridge 이름 67 → 69 ·
+  매핑 없는 표 65 → 67(둘 다 Airbridge로 보내지 않음). 타입 정본은 `lib/companion-event.contract.ts`의 `SuggestedFriendEvent`.
 
 ## 재검토 조건
 

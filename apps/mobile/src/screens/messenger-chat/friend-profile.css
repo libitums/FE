@@ -1,0 +1,34 @@
+/* 인물 프로필의 사실 줄 · 목소리 견본 · AI 표시(ADR-0162 2026-11-19 추가). 시트(`suggested-sheet.css`) 안에 놓입니다. */
+
+.friend-profile-facts {
+  color: var(--libitum-color-fg-neutral);
+  font-family: var(--libitum-typography-label-m-font-family);
+  font-size: var(--libitum-typography-label-m-font-size);
+  font-weight: var(--libitum-typography-label-m-font-weight);
+  line-height: var(--libitum-typography-label-m-line-height);
+  text-align: center;
+}
+
+.friend-profile-extras {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-8);
+  width: 100%;
+}
+
+.friend-profile-voice {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--libitum-spacing-4);
+}
+
+.friend-profile-voice-note,
+.friend-profile-ai {
+  color: var(--libitum-color-fg-neutral-muted);
+  font-family: var(--libitum-typography-body-s-font-family);
+  font-size: var(--libitum-typography-body-s-font-size);
+  line-height: var(--libitum-typography-body-s-line-height);
+  text-align: center;
+}
