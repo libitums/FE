@@ -59,12 +59,11 @@ final class LegalDocumentModule: NSObject, LynxModule {
 }
 
 /// 문서 이름 → 주소 표다 — 순수, `HostTests`가 잰다. 주소를 바꾸면 여기 한 곳만 고친다.
+/// 2026-11-20부터 우리 도메인 랜딩의 영어 기준본(ADR-0167). 앱 화면 언어 중 번역본(ko)이 있는 언어가 없어 언어별 주소를 두지 않는다.
 enum LegalDocumentURL {
   static let table: [String: String] = [
-    "privacy-policy":
-      "https://gregarious-pharaoh-bb6.notion.site/DURU-Privacy-Policy-3eb0c2540c01802cad91cc0430552402",
-    "terms-of-use":
-      "https://gregarious-pharaoh-bb6.notion.site/DURU-Term-of-Use-3eb0c2540c0180ef9072f0b447b3b468",
+    "privacy-policy": "https://k-duru.com/privacy/",
+    "terms-of-use": "https://k-duru.com/terms/",
   ]
 
   static func url(for document: Any?) -> URL? {
