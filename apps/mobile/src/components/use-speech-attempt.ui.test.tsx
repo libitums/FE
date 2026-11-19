@@ -21,6 +21,10 @@ afterEach(() => {
 
 let control: SpeechAttemptControl;
 
+// 인식기가 결과를 올린 결말의 진단입니다 — 이 대역은 팩 · 되돌아감 키가 없는 호스트(iOS 모양)입니다.
+const noFallback = (errorCode: number) =>
+  ({ errorCode, fallback: "none", koreanPack: "unknown" }) as const;
+
 function Harness(props: { readonly onOutcome: (outcome: SpeechAttemptOutcome) => void }): null {
   control = useSpeechAttempt(props.onOutcome);
   return null;
@@ -41,7 +45,7 @@ test("UH1. start 한 번에 권한 확인 1회 → 시작 1회 → 들은 글자
   expect(host.calls.request).toBe(1);
   expect(host.calls.start).toBe(1);
   expect(onOutcome).toHaveBeenCalledTimes(1);
-  expect(onOutcome).toHaveBeenCalledWith({ kind: "heard", text: "카드" });
+  expect(onOutcome).toHaveBeenCalledWith({ kind: "heard", text: "카드", diagnostic: noFallback(0) });
 });
 
 test.each([
@@ -76,7 +80,11 @@ test("UH4a. 받아쓰기 꺼짐 결과는 dictation-off로 올라온다", () => 
 
   act(() => control.start());
 
-  expect(onOutcome).toHaveBeenCalledWith({ kind: "unavailable", reason: "dictation-off" });
+  expect(onOutcome).toHaveBeenCalledWith({
+    kind: "unavailable",
+    reason: "dictation-off",
+    diagnostic: noFallback(201),
+  });
 });
 
 test("UH4b. 오디오 실패는 failed로 올라온다", () => {
@@ -85,7 +93,11 @@ test("UH4b. 오디오 실패는 failed로 올라온다", () => {
 
   act(() => control.start());
 
-  expect(onOutcome).toHaveBeenCalledWith({ kind: "unavailable", reason: "failed" });
+  expect(onOutcome).toHaveBeenCalledWith({
+    kind: "unavailable",
+    reason: "failed",
+    diagnostic: noFallback(0),
+  });
 });
 
 test("UH4c. stop은 호스트 모듈의 stop을 한 번 부른다", () => {
@@ -124,5 +136,5 @@ test("UH5b. 렌더 사이에 onOutcome이 바뀌면 늦게 온 결과는 새 함
 
   expect(first).toHaveBeenCalledTimes(0);
   expect(second).toHaveBeenCalledTimes(1);
-  expect(second).toHaveBeenCalledWith({ kind: "heard", text: "카드" });
+  expect(second).toHaveBeenCalledWith({ kind: "heard", text: "카드", diagnostic: noFallback(0) });
 });

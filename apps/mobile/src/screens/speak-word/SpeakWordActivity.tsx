@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useReducer, useRef } from "@lynx-js/react";
-import { speechSkipReasonOf } from "../../lib/item-answer";
+import { speechItemReportOf } from "../../lib/item-answer";
 import type { ReactNode } from "@lynx-js/react";
 
 import { Button } from "@libitums/ui-lynx/button";
@@ -87,7 +87,7 @@ export function SpeakWordActivity({
   // 마이크가 켜진 동안의 화면 낭독은 인식기에 그대로 들어갑니다.
   useEffect(() => {
     if (result !== null && question != null) {
-      onItemAnswered?.({ questionIndex: state.questionIndex, outcome: result, density });
+      onItemAnswered?.(speechItemReportOf(state.questionIndex, result, density, phase));
       announce(speakWordResultAnnouncement(question, result, copy));
     } else if (phase.kind === "unavailable") {
       const content = dictationOff ? copy.speaking.dictationDisabled : hint;
@@ -126,12 +126,7 @@ export function SpeakWordActivity({
         attempt.stop();
         return;
       case "skip":
-        onItemAnswered?.({
-          questionIndex: state.questionIndex,
-          outcome: "skipped",
-          density,
-          skipReason: speechSkipReasonOf(phase),
-        });
+        onItemAnswered?.(speechItemReportOf(state.questionIndex, "skipped", density, phase));
         // 레슨 중간 활동의 마지막 문항이면 완료 카드 없이 곧바로 결과를 올립니다.
         if (handsOff) finish([...state.heard, null]);
         else dispatch({ type: "skip" });

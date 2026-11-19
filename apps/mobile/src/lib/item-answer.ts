@@ -79,6 +79,22 @@ export function speechDiagnosticField(phase: SpeechAttemptPhase): {
   return phase.diagnostic === undefined ? {} : { speech: phase.diagnostic };
 }
 
+/** 말하기 문항의 보고입니다 — 건너뜀이면 까닭을, 인식기가 결과를 올렸으면 진단을 함께 싣습니다. */
+export function speechItemReportOf(
+  questionIndex: number,
+  outcome: ItemAnswerOutcome,
+  density: LearningDensity,
+  phase: SpeechAttemptPhase,
+): ItemAnswerReport {
+  return {
+    questionIndex,
+    outcome,
+    density,
+    ...(outcome === "skipped" ? { skipReason: speechSkipReasonOf(phase) } : {}),
+    ...speechDiagnosticField(phase),
+  };
+}
+
 export type ItemAnswerReporter = (report: ItemAnswerReport) => void;
 
 export type ScoredItemType = Extract<
