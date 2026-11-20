@@ -60,7 +60,21 @@ export default defineConfig(({ command }): Config => {
       // `useGlobalProps`가 받아 다시 그리게 합니다. 기본값('reactive')에서는 갱신이 와도
       // 다시 그려지지 않고 다음 상태 변경에야 새 값이 보였습니다(기기 확인, N9).
       // 앱의 globalProps 읽기는 전부 `useGlobalProps`입니다(`lynx.__globalProps` 직접 읽기 없음).
-      pluginReactLynx({ globalPropsMode: "event", extractStr: true }),
+      //
+      // `extractStr`는 켜지 않습니다(ADR-0169 D8 개정). 설치된 ReactLynx에서 이 옵션은 `__EXTRACT_STR__`만
+      // 정의하고, 런타임 main-thread `processData`가 읽는 `__EXTRACT_STR_IDENT_FLAG__`는 어떤 플러그인도
+      // 정의하지 않아 실행마다 ReferenceError가 났습니다. 문자열을 실제로 뽑는 단계도 오픈소스 빌드에는 없습니다.
+      pluginReactLynx({ globalPropsMode: "event" }),
     ],
+    tools: {
+      // `extractStr`가 번들을 약 103 kB 줄이던 몫은 이 한 가지였습니다: `.json`을 `JSON.parse('…')` 문자열이
+      // 아니라 객체 리터럴로 내는 플러그인 규칙(`react:json-parse`, `JSONParse: false`)을 main-thread에만이
+      // 아니라 background에도 겁니다. 플러그인이 `extractStr`일 때 하던 일과 같습니다
+      // (`@lynx-js/react-rsbuild-plugin` `applyGenerator`). 플러그인을 올릴 때 규칙 이름이 그대로인지 확인합니다 —
+      // `src/app/lynx-build-config.integration.test.ts`가 최종 설정에서 이 규칙을 검사합니다.
+      bundlerChain(chain) {
+        chain.module.rule("react:json-parse").delete("issuerLayer");
+      },
+    },
   };
 });

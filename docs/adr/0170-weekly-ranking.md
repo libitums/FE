@@ -47,6 +47,8 @@
   th · my 문구가 든 main 위에서 ADR-0169 5,749,897 B → 이 브랜치 **5,835,141 B**(+85,244 B, `.env.local` 없는 설정).
   앞 천장 5,705,000 B는 넘고, **사용자 결정(「a + b」)으로 올린 천장 5,850,000 B**([ADR-0149](0149-bundle-size-ceiling-and-report.md) 개정 2) 안이다(14,859 B 남음).
   화면 lazy 로딩은 따로 조사한다.
+- ⟨2026-11-20 개정 2⟩ `extractStr`는 기기에서 `__EXTRACT_STR_IDENT_FLAG__` ReferenceError를 내 꺼졌다. 같은 크기는 JSON 생성 규칙으로 유지한다
+  ([ADR-0169](0169-more-menu-letters-wordbook.md) D8 개정). 리뷰의 W3(기기 확인)은 이 개정으로 닫힌다.
 
 ### D8. 분석
 - `ranking_opened{board, source, view}` · `ranking_board_switched{from, to}` · `ranking_own_row_viewed{board, rank, score}` ·
@@ -68,7 +70,7 @@
 
 ## 리뷰 (2026-11-20)
 - review 에이전트: **PASS(조건부)**. 고침: W1 같은 사용자 배정 경합(진도 저장이 롤백될 수 있었음 — 사용자 단위 잠금 + on conflict, WR-D11), W2 숨기기 사본이 계정 단위가 아님(RK-U11).
-  남김: W3 `extractStr` 기기 확인, W4 e2e(서버 적용 뒤), S1 실패한 턴에서 센 단어가 남음(주 1번이라 부풀지 않음), S2 마이그레이션 전 유닛이 스냅숏에서 빠졌다 다시 오면 한 번 더 셀 수 있음, S3 방 줄 순위는 방을 연 때 값.
+  남김: W3 `extractStr` 기기 확인(⟨2026-11-20⟩ 닫힘 — 오류가 나 꺼짐, ADR-0169 D8 개정), W4 e2e(서버 적용 뒤), S1 실패한 턴에서 센 단어가 남음(주 1번이라 부풀지 않음), S2 마이그레이션 전 유닛이 스냅숏에서 빠졌다 다시 오면 한 번 더 셀 수 있음, S3 방 줄 순위는 방을 연 때 값.
 - accessibility 에이전트: Critical 4(Android `flatten`) · 대비 · 얻은 단어 한 줄 낭독 · 내 줄 You를 고침(RK-UI10 · CW-UI4). 남김: 상태 안내 낭독(announce), 숨기기 저장 실패 안내, 머리 글 요소화.
 
 ## 테스트

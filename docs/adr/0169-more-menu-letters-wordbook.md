@@ -76,9 +76,22 @@ daysSinceFirstOpen(영역 이벤트와 같은 방식, `emitCompanionEvent`). 이
   판정 = feedback-correct/incorrect(-surface · -text). 보드의 파랑(복습)은 토큰이 없어 **Review 칩 = feedback-warning-surface + warning-text**, 짙은 단추 = fg-neutral 면으로 바꿨다.
   메뉴 카드 radius-lg · shadow-s3 · 움직임 d4 · enter(움직임 줄이기면 없음).
 
-### D8. 번들 — `extractStr` 켬
+### D8. 번들 — `extractStr` 켬(⟨2026-11-20 개정⟩ 끔 — JSON 생성 규칙만 유지, 아래)
 
 - ReactLynx `extractStr: true`(두 스레드가 같은 문자열 리터럴을 나눠 씀). 앱 전체에서 약 103 kB가 줄었다. 그래도 천장 아래로 내려가지 않는다(아래).
+- ⟨2026-11-20 개정 — `extractStr` 끔, 같은 크기는 JSON 규칙으로⟩ 기기에서 실행할 때마다 main-thread가
+  `ReferenceError: __EXTRACT_STR_IDENT_FLAG__ is not defined`를 냈다(iOS 시뮬레이터 · Android `assembleBundled` 에뮬레이터 둘 다, 실행마다 2번 —
+  Lynx가 `onErrorOccurred` 1101로 호스트에 넘기고 Android는 크래시 보고 예산을 쓴다).
+  - **원인**: 설치된 `@lynx-js/react` 0.125.0 런타임(`runtime/lib/core/lynx-data-processors.js` 61-67행)은 `__EXTRACT_STR__`가 참이면
+    `__EXTRACT_STR_IDENT_FLAG__`를 읽는데, `@lynx-js/react-webpack-plugin` 0.11.1(`ReactWebpackPlugin.js` 219행)은 `__EXTRACT_STR__`만 정의하고
+    그 이름은 어떤 패키지도 정의하지 않는다. 그 읽기가 `processData`의 try/catch 밖이라 네이티브 호출로 그대로 올라간다.
+    오픈소스 빌드에는 문자열을 실제로 뽑는 단계도 없다 — 켠 번들과 이 개정의 번들(끔 + JSON 규칙)의 JS 차이는 이 `processData` 분기 하나뿐이었다(문구 · 화면 동일).
+  - **103 kB의 정체**: `@lynx-js/react-rsbuild-plugin` 0.19.1 `applyGenerator`가 `extractStr`일 때 `.json`을 `JSON.parse('…')` 대신 객체 리터럴로 내는
+    규칙(`react:json-parse`, `JSONParse: false`)을 main-thread만이 아니라 background에도 건다. 문자열 공유가 아니라 이 JSON 생성 방식이 크기를 줄였다.
+  - **결정**: `extractStr`를 끄고 `tools.bundlerChain`에서 `react:json-parse`의 `issuerLayer`를 지워 같은 규칙만 유지한다.
+    `main.lynx.bundle` 5,835,191 → 5,835,126 B(−65 B, .env.local 없는 설정). 끄기만 하면 5,938,132 B(+102,941 B)로 천장 5,850,000 B를 넘는다.
+    검사: unit XS-U1 ~ U3(`lynx-config.unit.test.ts`), integration XS-I1 · I2(`lynx-build-config.integration.test.ts`), e2e `docs/e2e/extract-str-flag.md`.
+  - 업스트림이 식별자를 정의하거나 런타임이 읽지 않게 되면 XS-U3가 깨진다 — 그때 `extractStr`를 다시 볼 수 있다.
 
 ## 소리 파일(올려야 할 것)
 
