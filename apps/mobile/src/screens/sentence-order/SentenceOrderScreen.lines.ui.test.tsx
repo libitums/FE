@@ -88,7 +88,8 @@ function mount(
 }
 
 describe("LISTEN_BUILD — 줄 배치", () => {
-  test("SO7. 무대는 카드 없이 서고 위 줄은 재생 → 로마자 → 다시 듣기 · Slow 순이다", () => {
+  test("SO7. 무대는 카드 없이 서고 위 줄은 재생 → 다시 듣기 · Slow만이다 — 로마자는 위 줄에 서지 않는다", () => {
+    // QA 2026-11-20(s03-l2-2): 재생 단추 옆에 로마자가 몰려 섰습니다. 로마자는 판정 뒤 정답 공개(SO-R)로 옮겼습니다.
     const { container } = mount([listenBuild]);
 
     expect(
@@ -97,19 +98,17 @@ describe("LISTEN_BUILD — 줄 배치", () => {
     expect(
       testIdOrder(container, [
         "sentence-order-listen-playback",
-        "sentence-order-reading",
         "sentence-order-listen-replay",
         "sentence-order-listen-slow",
       ]),
     ).toEqual([
       "sentence-order-listen-playback",
-      "sentence-order-reading",
       "sentence-order-listen-replay",
       "sentence-order-listen-slow",
     ]);
-    expect(screen.getByTestId("sentence-order-reading")).toHaveTextContent(
-      "annyeonghaseyo! hangugeun cheoeumiseyo?",
-    );
+    expect(
+      within(screen.getByTestId("sentence-order-header")).queryByTestId("sentence-order-reading"),
+    ).toBeNull();
     expect(listenButtonIn("sentence-order-listen-playback")).toHaveClass("ui-lynx-round-button-xl");
     expect(listenButtonIn("sentence-order-listen-replay")).toHaveClass("ui-lynx-round-button-l");
   });
@@ -235,6 +234,75 @@ describe("LISTEN_BUILD — 줄 배치", () => {
       // 놓은 타일을 놓은 순서대로 공백으로 이은 글자입니다(UA2).
       selectedAnswer: "안녕하세요! 한국은 처음이세요?",
     });
+  });
+});
+
+// QA 2026-11-20(위키 QA 3번, u00 S2-02): 틀린 뒤 로마자만 서고 정답 한글 문장 · 뜻이 없었습니다. 판정 뒤에는 타자 입력 ·
+// 음절 조립과 같은 정답 상자(`AnswerReveal`, 「Answer: …」)와 그 아래 로마자(보기 로마자 설정) · 뜻이 섭니다.
+describe("LISTEN_BUILD — 판정 뒤 정답 공개 (SO-R)", () => {
+  const withMeaning: SentenceOrderQuestion = {
+    ...listenBuild,
+    meaning: "Hello! Is this your first time in Korea?",
+  };
+
+  test("SO-R4. 틀리게 놓고 Check하면 정답 상자 · 로마자 · 뜻이 답 줄 아래에 선다", () => {
+    const { container } = mount([withMeaning]);
+    expect(screen.queryByTestId("sentence-order-reveal")).toBeNull();
+    place([4, 3]);
+    tapAction("Check");
+
+    expect(screen.getByTestId("sentence-order-reveal")).toHaveTextContent(
+      "Answer: 안녕하세요! 한국은 처음이세요?",
+    );
+    expect(screen.getByTestId("sentence-order-reading")).toHaveTextContent(
+      "annyeonghaseyo! hangugeun cheoeumiseyo?",
+    );
+    expect(screen.getByTestId("sentence-order-reveal-meaning")).toHaveTextContent(
+      "Hello! Is this your first time in Korea?",
+    );
+    expect(
+      testIdOrder(container, [
+        "sentence-order-lines",
+        "sentence-order-reveal",
+        "sentence-order-reading",
+        "sentence-order-reveal-meaning",
+        "sentence-order-screen-bank",
+      ]),
+    ).toEqual([
+      "sentence-order-lines",
+      "sentence-order-reveal",
+      "sentence-order-reading",
+      "sentence-order-reveal-meaning",
+      "sentence-order-screen-bank",
+    ]);
+  });
+
+  test("SO-R5. 보기 로마자 설정이 꺼지면 정답 상자 · 뜻만 서고 로마자는 없다", () => {
+    const { lesson } = lessonAudioStub();
+    render(
+      <SentenceOrderActivity
+        questions={[withMeaning]}
+        onExit={() => {}}
+        onFinish={() => {}}
+        lessonAudio={lesson}
+        choiceRomanization="hidden"
+      />,
+    );
+    place([4]);
+    tapAction("Check");
+
+    expect(screen.getByTestId("sentence-order-reveal")).toBeInTheDocument();
+    expect(screen.queryByTestId("sentence-order-reading")).toBeNull();
+    expect(screen.getByTestId("sentence-order-reveal-meaning")).toBeInTheDocument();
+  });
+
+  test("SO-R6. 맞아도 정답 상자가 선다(타자 입력 · 음절 조립과 같은 규칙)", () => {
+    mount([withMeaning]);
+    place([0, 1, 2]);
+    tapAction("Check");
+    expect(screen.getByTestId("sentence-order-reveal")).toHaveTextContent(
+      "Answer: 안녕하세요! 한국은 처음이세요?",
+    );
   });
 });
 
