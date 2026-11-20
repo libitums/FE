@@ -25,7 +25,7 @@
 
 ### D3. 숨기기
 - 설정 「Hide me from ranking」. 숨긴 사람은 기록은 쌓지만 남의 목록 · 그룹 수 · 보상에서 빠지고, 자기 순위 탭은 「You're hidden」 + Show me.
-- 정본은 서버(`ranking_set_hidden`), 설정 줄은 기기 사본(`libitum.ranking.hidden`)으로 선다 — 설정을 열 때마다 서버를 부르지 않는다. 보드를 읽을 때 사본을 고친다.
+- 정본은 서버(`ranking_set_hidden`), 설정 줄은 계정별 기기 사본(`libitum.ranking.hidden.<userId>`)으로 선다 — 설정을 열 때마다 서버를 부르지 않는다. 보드를 읽을 때 사본을 고친다.
 
 ### D4. 상위 3 보상 — 설정, 기본 꺼짐
 - `ranking.settings.reward_enabled = false` · `reward_amount = 30`(시안의 예시 — **사용자 미결정**). 켜면 주 정산(`ranking_settle_week`, 월 00:05 UTC 예약)이
@@ -41,7 +41,7 @@
 
 ### D7. 번들 — `extractStr`
 - 기능만으로 `.lynx.bundle` +73,857 B(5,399,880 B)라 천장(5,327,000 B)을 넘었다. 천장은 올리지 않고 ReactLynx `extractStr: true`(두 스레드의 같은 문자열을
-  한 번만 싣기)를 켰다 — 앱 전체 -102,933 B, 결과 5,296,947 B(main 대비 -29,076 B). **기기(iOS · Android) 확인이 남았다** — 문제가 있으면 이 줄만 되돌리고
+  한 번만 싣기)를 켰다 — 앱 전체 -102,933 B, 결과 5,297,854 B(main 대비 -28,169 B, 접근성 · 리뷰 반영 뒤). **기기(iOS · Android) 확인이 남았다** — 문제가 있으면 이 줄만 되돌리고
   기능을 줄이거나 천장을 사용자가 정한다.
 
 ### D8. 분석
@@ -62,6 +62,11 @@
 ## 열린 결정(사용자)
 - 보상 액수 · 켤지(D4), 주 시간대(UTC 월요일 — 지역 자정이 아님), 그룹 크기(25 · 30)와 구간, 다시 통과 규칙(평생 한 번), 유닛 범위(S · CULT · RP).
 
+## 리뷰 (2026-11-20)
+- review 에이전트: **PASS(조건부)**. 고침: W1 같은 사용자 배정 경합(진도 저장이 롤백될 수 있었음 — 사용자 단위 잠금 + on conflict, WR-D11), W2 숨기기 사본이 계정 단위가 아님(RK-U11).
+  남김: W3 `extractStr` 기기 확인, W4 e2e(서버 적용 뒤), S1 실패한 턴에서 센 단어가 남음(주 1번이라 부풀지 않음), S2 마이그레이션 전 유닛이 스냅숏에서 빠졌다 다시 오면 한 번 더 셀 수 있음, S3 방 줄 순위는 방을 연 때 값.
+- accessibility 에이전트: Critical 4(Android `flatten`) · 대비 · 얻은 단어 한 줄 낭독 · 내 줄 You를 고침(RK-UI10 · CW-UI4). 남김: 상태 안내 낭독(announce), 숨기기 저장 실패 안내, 머리 글 요소화.
+
 ## 테스트
-- unit RK-U1 ~ U10 · CW-U1 ~ U3 · 서버 CWS-U1 ~ U6 · CWS-H1 · H2, db WR-D1 ~ D10, ui RK-UI1 ~ UI9 · CW-UI1 ~ UI3 · ST-UI · BN-UI, integration RK-I1 ~ I5.
+- unit RK-U1 ~ U11 · CW-U1 ~ U3 · 서버 CWS-U1 ~ U6 · CWS-H1 · H2, db WR-D1 ~ D11, ui RK-UI1 ~ UI10 · CW-UI1 ~ UI4 · ST-UI · BN-UI, integration RK-I1 ~ I5.
 - e2e: [수동 절차](../e2e/weekly-ranking.md) — 서버 적용 뒤. [성능 기록](../performance/reports/weekly-ranking-01.md).
