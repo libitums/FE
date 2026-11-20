@@ -1,9 +1,9 @@
 // 친구 카탈로그 · 추천 친구 포트의 계약입니다(ADR-0162). 지금은 앱의 인물 표(`companion-roster.ts`)가 채우고, 서버 인물 목록이
 // 생기면 같은 포트를 서버판이 채웁니다 — 화면 · 순수 함수는 이 타입에만 기댑니다.
 
-/** 언어별 한 줄입니다. `en`은 반드시 있고, 없는 언어는 `en`을 씁니다(th · my는 늘 en — ADR-0158). */
+/** 언어별 한 줄입니다. `en`은 반드시 있고, 없는 언어는 `en`을 씁니다(th · my는 2026-11-20부터 자기 칸 — ADR-0158 개정). */
 export type LocalizedLine = { readonly en: string } & Partial<
-  Readonly<Record<"es" | "id" | "ja" | "vi", string>>
+  Readonly<Record<"es" | "id" | "ja" | "vi" | "th" | "my", string>>
 >;
 
 /** 이야기에서 만나는 인물(`story`) · 이야기 밖에서 새로 만나는 인물(`general`). */

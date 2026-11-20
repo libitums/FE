@@ -14,6 +14,8 @@ import { uiCopyEn } from "./ui-copy-en";
 import { uiCopyEs } from "./ui-copy-es";
 import { uiCopyId } from "./ui-copy-id";
 import { uiCopyJa } from "./ui-copy-ja";
+import { uiCopyMy } from "./ui-copy-my";
+import { uiCopyTh } from "./ui-copy-th";
 import { uiCopyVi } from "./ui-copy-vi";
 
 export const uiCopyCatalog: UiCopyCatalog = {
@@ -22,9 +24,9 @@ export const uiCopyCatalog: UiCopyCatalog = {
   id: uiCopyId,
   es: uiCopyEs,
   ja: uiCopyJa,
-  // 이야기 번역 전용 언어 — 화면 문구는 영어 그대로입니다(ADR-0158).
-  th: {},
-  my: {},
+  // 2026-11-20 태국어 · 미얀마어도 완전한 표입니다(ADR-0158 개정 — 화면 문구를 번들에 싣고 천장을 올림, ADR-0149 개정).
+  th: uiCopyTh,
+  my: uiCopyMy,
 };
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
@@ -50,7 +52,7 @@ export const uiCopyWithOverrides: UiCopyWithOverrides = (base, overrides) =>
   merge(base, overrides) as UiCopy;
 
 // 언어마다 한 번 지어 두는 표입니다 — 같은 언어면 늘 같은 객체라 Provider 값이 렌더마다 바뀌지 않습니다.
-// 다섯 언어 모두 완전한 표라 그대로 돌려줍니다(ADR-0091 D3 · 0093 · 0097 · 0098). 빈 덮어쓰기를 영어로 채우는
+// 일곱 언어 모두 완전한 표라 그대로 돌려줍니다(ADR-0091 D3 · 0093 · 0097 · 0098 · 0158 개정). 빈 덮어쓰기를 영어로 채우는
 // 병합은 `uiCopyWithOverrides`가 지고, 덮어쓰기만 가진 언어를 다시 둘 때 여기서 부릅니다.
 // `default` 없는 switch — 언어가 늘면 TS2366으로 섭니다.
 function buildTable(language: UiLanguage): UiCopy {
@@ -66,8 +68,9 @@ function buildTable(language: UiLanguage): UiCopy {
     case "ja":
       return uiCopyJa;
     case "th":
+      return uiCopyTh;
     case "my":
-      return uiCopyEn;
+      return uiCopyMy;
   }
 }
 

@@ -56,10 +56,10 @@ describe("FA1 추천 친구 넷이 정본과 같다", () => {
     },
   );
 
-  test("모든 언어 칸(es · id · ja · vi)이 소개 · 직업에 있다", () => {
+  test("모든 언어 칸(es · id · ja · vi · th · my)이 소개 · 직업에 있다", () => {
     for (const friend of COMPANION_FRIENDS) {
       for (const line of [friend.intro, friend.tags[0]]) {
-        expect(Object.keys(line ?? {}).sort()).toEqual(["en", "es", "id", "ja", "vi"]);
+        expect(Object.keys(line ?? {}).sort()).toEqual(["en", "es", "id", "ja", "my", "th", "vi"]);
       }
     }
   });
@@ -70,13 +70,27 @@ describe("FA1 추천 친구 넷이 정본과 같다", () => {
 describe("FA4 시트 첫 말의 뜻풀이가 모든 화면 언어에 있다", () => {
   const withOpening = COMPANION_CATALOG.characters.filter((c) => c.sheetOpening !== null);
   test.each(withOpening.map((c) => [c.id, c] as const))(
-    "%s — es · id · ja · vi 칸이 있고 영어와 다르다",
+    "%s — es · id · ja · vi · th · my 칸이 있고 영어와 다르다",
     (_id, character) => {
       const opening = character.sheetOpening;
-      for (const language of ["es", "id", "ja", "vi"] as const) {
+      for (const language of ["es", "id", "ja", "vi", "th", "my"] as const) {
         const line = opening?.[language] ?? "";
         expect(line, language).not.toBe("");
         expect(line, language).not.toBe(opening?.en);
+      }
+    },
+  );
+});
+
+// FA5 — 2026-11-20 태국어 · 미얀마어 화면(ADR-0158 개정): 소개 · 태그(직업 · 나이)도 vi 칸이 있는 줄이면 th · my 칸이 있고 그 문자다.
+describe("FA5 인물 소개 · 태그의 th · my 칸", () => {
+  test.each(COMPANION_CATALOG.characters.map((c) => [c.id, c] as const))(
+    "%s — vi가 있는 줄마다 th(타이 문자) · my(미얀마 문자)",
+    (_id, character) => {
+      for (const line of [character.intro, ...character.tags]) {
+        if (line === null || line.vi === undefined) continue;
+        expect(line.th ?? "", `${line.en} th`).toMatch(/[\u0E00-\u0E7F]/u);
+        expect(line.my ?? "", `${line.en} my`).toMatch(/[\u1000-\u104F]/u);
       }
     },
   );

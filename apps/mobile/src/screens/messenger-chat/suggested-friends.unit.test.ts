@@ -126,6 +126,8 @@ test("SF-U6 localizedLine — 그 언어 칸, 없으면 en", () => {
   expect(localizedLine(line, "ja")).toBe("こんにちは");
   expect(localizedLine(line, "vi")).toBe("Hello");
   expect(localizedLine(line, "th")).toBe("Hello");
+  expect(localizedLine({ ...line, th: "สวัสดี", my: "မင်္ဂလာပါ" }, "th")).toBe("สวัสดี");
+  expect(localizedLine({ ...line, th: "สวัสดี", my: "မင်္ဂလာပါ" }, "my")).toBe("မင်္ဂလာပါ");
 });
 
 describe("SF-U7 friendStatusOf · 오늘 카탈로그", () => {
@@ -139,7 +141,7 @@ describe("SF-U7 friendStatusOf · 오늘 카탈로그", () => {
     expect(friendStatusOf(friend("l"), room("l", false))).toBe("locked");
   });
 
-  test("오늘 카탈로그는 이야기 인물 다섯 + 추천 친구 넷(ADR-0164) · 카테고리 없음 · 먼저 만나기 제안 없음 · 소개는 다섯 언어", () => {
+  test("오늘 카탈로그는 이야기 인물 다섯 + 추천 친구 넷(ADR-0164) · 카테고리 없음 · 먼저 만나기 제안 없음 · 소개는 일곱 언어(th · my 2026-11-20)", () => {
     expect(COMPANION_CATALOG.characters.map((c) => [c.id, c.kind])).toEqual([
       ["duksu", "story"],
       ["yoonkyung", "story"],
@@ -154,7 +156,15 @@ describe("SF-U7 friendStatusOf · 오늘 카탈로그", () => {
     expect(COMPANION_CATALOG.categories).toEqual([]);
     for (const c of COMPANION_CATALOG.characters) {
       expect(c.earlyAccess, c.id).toBeNull();
-      expect(Object.keys(c.intro ?? {}).sort(), c.id).toEqual(["en", "es", "id", "ja", "vi"]);
+      expect(Object.keys(c.intro ?? {}).sort(), c.id).toEqual([
+        "en",
+        "es",
+        "id",
+        "ja",
+        "my",
+        "th",
+        "vi",
+      ]);
     }
   });
 });

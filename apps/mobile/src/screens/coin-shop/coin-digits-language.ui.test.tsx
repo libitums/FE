@@ -31,3 +31,20 @@ test("CD-U2. 인도네시아어 알약 · 일본어 알약 — 각 언어의 묶
   inLanguage("ja", <PurchasePill pill={{ kind: "added", coins: 3000 }} theme="dark" />);
   expect(screen.getByTestId("purchase-pill").textContent).toContain("3,000");
 });
+
+test("CD-U3. 태국어 · 미얀마어 상점 — 보유 1,240 · 팩 1,200(쉼표 묶음), 팩 카드 글은 영어가 아니다(ADR-0158 개정)", () => {
+  inLanguage("en", <CoinShopScreen coinBalance={1240} onClose={vi.fn()} />);
+  const englishPacks = screen
+    .getAllByTestId(/^coin-shop-pack-/)
+    .map((node) => node.textContent ?? "");
+  cleanup();
+  for (const language of ["th", "my"] as const) {
+    inLanguage(language, <CoinShopScreen coinBalance={1240} onClose={vi.fn()} />);
+    const balance = screen.getByTestId("coin-shop-screen-balance").textContent ?? "";
+    expect(balance, language).toContain("1,240");
+    const packs = screen.getAllByTestId(/^coin-shop-pack-/).map((node) => node.textContent ?? "");
+    expect(packs.join("|"), language).toContain("1,200");
+    expect(packs, language).not.toEqual(englishPacks);
+    cleanup();
+  }
+});

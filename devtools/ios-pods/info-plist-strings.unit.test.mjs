@@ -1,5 +1,5 @@
-// `unit` 계층(IL1 ~ IL3): iOS 시스템 대화상자 문구(추적 허용 안내, `NSUserTrackingUsageDescription`)가 앱의 화면 언어 다섯
-// (en · es · id · ja · vi)으로 있다 — ADR-0091 D6이 미뤘던 것을 2026-11-19 l10n 점검에서 연다. 시스템 대화상자는 앱 UI 언어가 아니라
+// `unit` 계층(IL1 ~ IL3): iOS 시스템 대화상자 문구(추적 허용 안내, `NSUserTrackingUsageDescription`)가 앱의 화면 언어 일곱
+// (en · es · id · ja · vi · th · my — th · my는 2026-11-20 ADR-0158 개정)으로 있다 — ADR-0091 D6이 미뤘던 것을 2026-11-19 l10n 점검에서 연다. 시스템 대화상자는 앱 UI 언어가 아니라
 // 기기 언어를 따르므로, 그 언어의 `InfoPlist.strings`가 프로젝트에 등록돼 번들에 들어가야 합니다. macOS 없이 PR에서 봅니다.
 // (iOS 프로젝트 파일 점검이라 Podfile 점검과 같은 자리에 둡니다 — `pnpm test:ios-pods`.)
 
@@ -11,7 +11,7 @@ import { fileURLToPath } from "node:url";
 const path = (relative) => fileURLToPath(new URL(`../../${relative}`, import.meta.url));
 const read = (relative) => readFileSync(path(relative), "utf8");
 
-const LANGUAGES = ["en", "es", "id", "ja", "vi"];
+const LANGUAGES = ["en", "es", "id", "ja", "vi", "th", "my"];
 const KEY = "NSUserTrackingUsageDescription";
 const pbxproj = read("apps/ios/Host.xcodeproj/project.pbxproj");
 
@@ -23,7 +23,7 @@ function stringsValue(text, key) {
 
 const fileOf = (language) => `apps/ios/Host/${language}.lproj/InfoPlist.strings`;
 
-test("IL1. 다섯 언어 모두 추적 허용 안내가 있고, 영어 밖 언어는 영어를 베끼지 않았다", () => {
+test("IL1. 일곱 언어 모두 추적 허용 안내가 있고, 영어 밖 언어는 영어를 베끼지 않았다", () => {
   const plist = read("apps/ios/Host/Info.plist");
   const base = plist.match(new RegExp(`<key>${KEY}</key>\\s*<string>([^<]*)</string>`))?.[1];
   assert.ok(base, "Info.plist에 기본(영어) 문구가 없습니다");
@@ -36,7 +36,7 @@ test("IL1. 다섯 언어 모두 추적 허용 안내가 있고, 영어 밖 언�
   }
 });
 
-test("IL2. 프로젝트 지역 목록에 다섯 언어가 있다", () => {
+test("IL2. 프로젝트 지역 목록에 일곱 언어가 있다", () => {
   const regions = pbxproj.match(/knownRegions = \(([^)]*)\);/)?.[1] ?? "";
   const listed = regions
     .split(",")
@@ -46,7 +46,7 @@ test("IL2. 프로젝트 지역 목록에 다섯 언어가 있다", () => {
     assert.ok(listed.includes(language), `knownRegions에 ${language}가 없습니다`);
 });
 
-test("IL3. InfoPlist.strings 묶음이 다섯 언어 파일을 갖고 Host 앱의 리소스 단계에 든다", () => {
+test("IL3. InfoPlist.strings 묶음이 일곱 언어 파일을 갖고 Host 앱의 리소스 단계에 든다", () => {
   const group = pbxproj.match(
     /(\w{24}) \/\* InfoPlist\.strings \*\/ = \{\s*isa = PBXVariantGroup;\s*children = \(([^)]*)\);/,
   );
