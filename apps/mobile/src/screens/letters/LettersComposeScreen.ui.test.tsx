@@ -262,3 +262,36 @@ test("CS16. 소리 파일이 아직 없으면(업로드 전) 조용히 넘어가
   expect(onAnswered).toHaveBeenCalledExactlyOnceWith(1, "가", true);
   expect(action()).toHaveAttribute("accessibility-label", "Next");
 });
+
+test("CS17. 결과 칸 이름에 합친 글자와 그 로마자(틀린 조합도 무엇을 만들었는지 낭독)", () => {
+  mount();
+  expect(slot("r")).toHaveAttribute("accessibility-label", "Syllable, empty");
+  pick("ㄱ");
+  pick("ㅓ");
+  expect(slot("r").getAttribute("accessibility-label")).toMatch(/거, geo$/);
+});
+
+test("CS18. 틈 안에 결선이 포트를 새로 만들어 다시 그려도 틈은 다시 시작되지 않고 새 포트로 한 번", () => {
+  vi.useFakeTimers();
+  const first = vi.fn<(source: string) => void>();
+  const second = vi.fn<(source: string) => void>();
+  const ui = (play: (source: string) => void) => (
+    <LettersComposeScreen
+      romanization="shown"
+      sound={{ sourceOf: (s) => `src:${s}`, play }}
+      onExit={() => {}}
+    />
+  );
+  const { rerender } = render(ui(first));
+  pick("ㄱ");
+  pick("ㅏ");
+  act(() => {
+    vi.advanceTimersByTime(COMPOSE_ECHO_DELAY_MS / 2);
+  });
+  rerender(ui(second));
+  act(() => {
+    vi.advanceTimersByTime(COMPOSE_ECHO_DELAY_MS / 2);
+  });
+  expect(first).not.toHaveBeenCalled();
+  expect(second).toHaveBeenCalledExactlyOnceWith("src:가");
+});

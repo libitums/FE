@@ -15,7 +15,8 @@ import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve, sep } from "node:path";
+import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 
 import { LETTER_SOUND_SYLLABLES, letterAudioIdOf } from "../../apps/mobile/src/lib/letters/jamo.ts";
@@ -107,11 +108,13 @@ function encode(raw, target) {
   // 1) 앞뒤 무음을 자르고 0.12 s씩 덧댄 모노 44.1 kHz WAV, 2) 최고점을 −1.5 dBFS로, 3) AAC 80 kbps m4a.
   const trimmed = `${target}.trim.wav`;
   const trim = [
+    // 스테레오 입력(녹음 · 웹 파일)도 먼저 모노로 — adelay가 한 채널만 늦추지 않게.
+    "aformat=channel_layouts=mono",
     `silenceremove=start_periods=1:start_threshold=${SILENCE}:start_silence=0.02`,
     "areverse",
     `silenceremove=start_periods=1:start_threshold=${SILENCE}:start_silence=0.02`,
     "areverse",
-    `adelay=${Math.round(PAD_S * 1000)}`,
+    `adelay=${Math.round(PAD_S * 1000)}:all=1`,
     `apad=pad_dur=${PAD_S}`,
   ].join(",");
   runStderr("ffmpeg", [
@@ -175,6 +178,12 @@ const entries = letterSoundEntries(LETTER_SOUND_SYLLABLES, letterAudioIdOf).filt
   (entry) => only === null || only.has(entry.file.replace(/\.m4a$/, "")),
 );
 const out = values.out;
+// say 엔진 파일은 배포할 수 없습니다(ADR-0172 D3) — 커밋되지 않게 저장소 밖에만 씁니다.
+const repoRoot = resolve(fileURLToPath(new URL("../..", import.meta.url)));
+if (engine === "say" && (resolve(out) + sep).startsWith(repoRoot + sep)) {
+  console.error("--engine say는 저장소 밖 폴더에만 씁니다(배포 불가 음성, 커밋 금지)");
+  process.exit(2);
+}
 mkdirSync(join(out, "audio", "letters"), { recursive: true });
 const work = mkdtempSync(join(tmpdir(), "letters-audio-"));
 const files = [];

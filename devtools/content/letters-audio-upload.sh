@@ -6,7 +6,8 @@
 #   BUCKET=content-test bash devtools/content/letters-audio-upload.sh <폴더>   # 시험 버킷(ADR-0087)
 #
 # 순서(계약 13절과 같음): sha256 확인 → 소리 파일(POST · x-upsert · 1년 캐시) → 공개 주소에서 sha256 다시 확인 →
-# 지금의 audio/manifest.json을 받아 letters 항목만 더함 → 정보 파일(POST · x-upsert · 60 s 캐시) → 공개 주소로 확인.
+# 그 직후 지금의 audio/manifest.json을 받아 letters 항목만 더함 → 정보 파일(POST · x-upsert · 60 s 캐시) → 공개 주소로 확인.
+# 운영 버킷에는 SOURCE.txt가 있고 say 엔진이 아닌 폴더만 올립니다.
 # service_role 키는 `supabase projects api-keys`에서 셸 변수로만 받습니다 — 출력 · 파일에 남기지 않습니다.
 set -euo pipefail
 
@@ -28,18 +29,24 @@ echo "1) sha256 확인"
 COUNT="$(wc -l < "$OUT/SHA256SUMS" | tr -d ' ')"
 echo "   파일 ${COUNT}개 OK"
 
-echo "2) 지금의 음성 정보 파일 받기 · 합치기"
-curl -fsS "${BASE}/public/${BUCKET}/audio/manifest.json?letters=$(date +%s)" -o "$OUT/manifest.live.json"
-node "$HERE/letters-audio-merge.mjs" --live "$OUT/manifest.live.json" \
-  --timings "$OUT/letters-audio-timings.json" --out "$OUT/manifest.merged.json"
+merge_live() {
+  curl -fsS "${BASE}/public/${BUCKET}/audio/manifest.json?letters=$(date +%s)" -o "$OUT/manifest.live.json"
+  node "$HERE/letters-audio-merge.mjs" --live "$OUT/manifest.live.json" \
+    --timings "$OUT/letters-audio-timings.json" --out "$OUT/manifest.merged.json"
+}
 
 if [ "${DRY_RUN:-0}" = 1 ]; then
+  echo "2) (DRY_RUN) 지금의 음성 정보 파일 받기 · 합치기"
+  merge_live
   echo "DRY_RUN — 올리지 않았습니다. 올릴 것: ${COUNT}개 + audio/manifest.json → ${BUCKET}"
   exit 0
 fi
 
-if grep -q "macOS say" "$OUT/SOURCE.txt" 2>/dev/null && [ "$BUCKET" = content ]; then
-  echo "say 엔진(기기 확인용) 파일은 운영 버킷에 올리지 않습니다" >&2; exit 1
+if [ "$BUCKET" = content ]; then
+  [ -f "$OUT/SOURCE.txt" ] || { echo "SOURCE.txt가 없습니다 — 만든 방법을 모르는 파일은 운영 버킷에 올리지 않습니다" >&2; exit 1; }
+  if grep -q "macOS say" "$OUT/SOURCE.txt"; then
+    echo "say 엔진(기기 확인용) 파일은 운영 버킷에 올리지 않습니다" >&2; exit 1
+  fi
 fi
 command -v supabase >/dev/null || { echo "supabase CLI 없음" >&2; exit 1; }
 SERVICE_KEY="$(supabase projects api-keys --project-ref "$REF" -o json \
@@ -47,10 +54,11 @@ SERVICE_KEY="$(supabase projects api-keys --project-ref "$REF" -o json \
 [ -n "$SERVICE_KEY" ] || { echo "service_role 키를 못 받았습니다" >&2; exit 1; }
 
 upload() { # <버킷 상대 경로> <로컬 파일> <content-type> <cache-control>
-  curl -fsS -o /dev/null -X POST "${BASE}/${BUCKET}/$1" \
-    -H "Authorization: Bearer ${SERVICE_KEY}" -H "apikey: ${SERVICE_KEY}" \
-    -H "x-upsert: true" -H "content-type: $3" -H "cache-control: $4" \
-    --data-binary "@$2"
+  # 키는 명령줄 인자가 아니라 stdin 설정으로 넘깁니다(ps에 보이지 않게).
+  printf 'header = "Authorization: Bearer %s"\nheader = "apikey: %s"\n' "$SERVICE_KEY" "$SERVICE_KEY" |
+    curl -fsS -o /dev/null --config - -X POST "${BASE}/${BUCKET}/$1" \
+      -H "x-upsert: true" -H "content-type: $3" -H "cache-control: $4" \
+      --data-binary "@$2"
 }
 public_sha() { curl -fsS "${BASE}/public/${BUCKET}/$1?v=$2" | shasum -a 256 | cut -d' ' -f1; }
 
@@ -63,7 +71,8 @@ while read -r sha path; do
   echo "   $path OK"
 done < "$OUT/SHA256SUMS"
 
-echo "4) 음성 정보 파일 올리기 · 확인"
+echo "4) 지금의 음성 정보 파일 받기 · letters 항목 합치기 · 올리기 · 확인"
+merge_live
 upload "audio/manifest.json" "$OUT/manifest.merged.json" "application/json" "max-age=60"
 want="$(shasum -a 256 "$OUT/manifest.merged.json" | cut -d' ' -f1)"
 got="$(public_sha "audio/manifest.json" "$STAMP")"

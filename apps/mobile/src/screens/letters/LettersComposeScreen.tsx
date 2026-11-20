@@ -249,7 +249,7 @@ export function LettersComposeScreen({
                   data-testid={ids.composeSlot("r")}
                   accessibility-element={true}
                   flatten={false}
-                  accessibility-label={`${copy.resultSlot}, ${merged === "" ? copy.emptySlot : merged}`}
+                  accessibility-label={`${copy.resultSlot}, ${merged === "" ? copy.emptySlot : merged}${merged === "" ? "" : `, ${jamoTileRomanOf(state.consonant ?? "")}${jamoTileRomanOf(state.vowel ?? "")}`}`}
                 >
                   {merged === "" ? null : (
                     <>

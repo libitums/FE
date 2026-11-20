@@ -51,7 +51,7 @@ ADR-0169의 기본값(조정자 결정)을 근거와 함께 확정한다.
 |---|---|---|---|
 | A. ElevenLabs API | 레슨과 같은 계정의 목소리(voice id를 사용자가 고름) | 이미 있는 계정 키를 환경 변수로만 — 41회 짧은 요청 | `ELEVENLABS_API_KEY=… ELEVENLABS_VOICE_ID=… node devtools/content/letters-audio-build.mjs --engine elevenlabs --out devtools/content/letters-audio` |
 | B. 웹에서 내려받기 · 사람 녹음 | 아무 목소리 | 파일 41개를 `<로마자>.(mp3\|wav\|m4a\|aiff)`로 한 폴더에 | `node devtools/content/letters-audio-build.mjs --engine clips --from <폴더> --out devtools/content/letters-audio` |
-| C. macOS `say`(Yuna) | 시스템 음성 | **배포 불가** — Apple 소프트웨어 사용권은 시스템 음성을 개인 · 비상업 용도로만 허락한다 | `--engine say` — 기기 확인용, 업로드 스크립트가 운영 버킷이면 거부 |
+| C. macOS `say`(Yuna) | 시스템 음성 | **배포 불가** — Apple 소프트웨어 사용권은 시스템 음성을 개인 · 비상업 용도로만 허락한다 | `--engine say --out <저장소 밖 폴더>` — 기기 확인용. 도구가 저장소 안 출력을 거부하고, 업로드 스크립트가 운영 버킷이면 거부 |
 
 - 낭독 글자는 음절 하나다(「가」). 단독 자모를 넘기지 않는다(D2).
 - C로 만든 41개는 이 브랜치의 기기 확인에만 썼고 커밋하지 않았다.
@@ -70,7 +70,8 @@ ADR-0169의 기본값(조정자 결정)을 근거와 함께 확정한다.
   (`x-upsert: true` · `cache-control: max-age=31536000` · `audio/mp4`) → 공개 주소의 sha256 대조 → 지금의 `audio/manifest.json`을 받아 letters 항목만 더함
   (`letters-audio-merge.mjs`, 다른 항목 · 순서 그대로, `generated_at`만 새 시각, 2칸 들여쓰기 + 끝 줄바꿈) → 정보 파일 `POST`(`max-age=60`) → 공개 주소 대조.
   **파일 먼저, 정보 파일 마지막**(계약 13절) — 정보 파일이 먼저 서면 앱이 없는 파일을 틀려 한다.
-- service_role 키는 `supabase projects api-keys`에서 셸 변수로만 받는다. `DRY_RUN=1`은 키 없이 검사 · 합친 파일만 만든다. `BUCKET=content-test`로 시험 버킷.
+- 운영 버킷에는 `SOURCE.txt`가 있고 say 엔진이 아닌 폴더만 올린다. 받은 원문 · 합친 판(`manifest.live.json` · `manifest.merged.json`)은 gitignore.
+- service_role 키는 `supabase projects api-keys`에서 셸 변수로만 받고, curl에는 명령줄 인자가 아니라 stdin 설정으로 넘긴다(`ps`에 보이지 않음). `DRY_RUN=1`은 키 없이 검사 · 합친 파일만 만든다. `BUCKET=content-test`로 시험 버킷.
 - 정보 파일을 저장소에 미리 만들어 두지 않는 이유: 버킷의 정보 파일은 콘텐츠를 올릴 때마다 바뀐다(2026-11-20 현재 1,879항목). 미리 만든 파일로 덮으면 그 사이 올라온 항목이 사라진다.
 - 올린 뒤에는 앱 업데이트 없이 다음 정보 파일 갱신 때 소리가 난다(ADR-0169 D2).
 
@@ -93,13 +94,15 @@ ADR-0169의 기본값(조정자 결정)을 근거와 함께 확정한다.
 
 - 소리 파일이 아직 없다 — 목소리를 고르고(D3) 만들고 올리기 전까지 사용자에게 바뀐 것이 없다.
 - VoiceOver · TalkBack이 판정(「Correct」)을 낭독하는 동안 0.9 s 뒤 음절이 겹칠 수 있다. 정보 손실은 없다(결과 칸에 글자가 선다).
+- 틀린 조합의 소리가 없어져, 스크린리더 사용자는 무엇을 만들었는지를 결과 칸에서 읽는다 — 그래서 결과 칸 이름에 합친 글자와 로마자를 붙였다(「Syllable, 거, geo」, ui CS17).
+  판정 낭독 자체에 「You made 거」를 붙이는 것은 새 문구(7개 언어)가 필요해 후속으로 남긴다(접근성 감사 Minor).
 - 0.9 s는 효과음 파일에 묶인 값이다. 효과음을 바꾸면 CQ17과 함께 다시 잰다.
 - 오프라인에서는 소리가 나지 않는다(ADR-0060 D1 — 받아 두지 않음). 받아 둔 레슨 파일과 같은 `content-files/audio/letters/` 경로에 파일이 있으면 그것을 먼저 쓴다.
 
 ## 확인
 
 - unit: `jamo.unit.test.ts` JM11 · JM12, `compose-quiz.unit.test.ts` CQ14 ~ CQ17, `devtools/content/letters-audio.unit.test.mjs` LAU1 ~ LAU7.
-- ui: `LettersComposeScreen.ui.test.tsx` CS3(개정) · CS11 ~ CS16.
+- ui: `LettersComposeScreen.ui.test.tsx` CS3(개정) · CS11 ~ CS18(CS17 결과 칸 이름 · CS18 틈 동안 포트가 바뀌어도 틈 유지).
 - integration: `App.letters-audio.integration.test.tsx` LAI1 ~ LAI4(받아 둔 정보 파일 → 로더 → 결선 → 화면 → 재생 모듈, 주소는 실제 해석기).
 - e2e: [수동 절차](../e2e/letters-audio.md) — iOS 시뮬레이터 · Android `assembleBundled` 에뮬레이터, 검증용 say 파일을 기기의 받아 둔 파일 자리에 두고.
 - 업로드 도구: `DRY_RUN=1`으로 운영 정보 파일(1,879항목)을 받아 합쳐 1,920항목 · 바뀐 줄은 `generated_at`과 letters 41항목뿐임을 확인.
