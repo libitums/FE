@@ -2,7 +2,7 @@
 // (다른 안내 · 대화상자 뒤, `ready`) 그 신호를 한 번 꺼내 이유를 정합니다. 띄워도 되면(`canRecommendLetters`) 레슨 완료 연출(발자국)이
 // 끝나기를 `delayMs` 기다렸다가 대화상자를 세웁니다. 문턱은 `lettersRecommendConfig` 하나가 집니다.
 
-import { useEffect, useState } from "@lynx-js/react";
+import { useEffect, useRef, useState } from "@lynx-js/react";
 import type { ReactNode } from "@lynx-js/react";
 
 import {
@@ -31,6 +31,9 @@ export function useLettersRecommend(input: {
   const { trail, more, ready } = input;
   const [pending, setPending] = useState<LettersRecommendReason | null>(null);
   const [shown, setShown] = useState<LettersRecommendReason | null>(null);
+  // 타이머가 끝날 때 그때의 결선을 씁니다 — `more`는 렌더마다 새로 지어지지만 의존성에 넣으면 타이머가 매번 다시 시작합니다(리뷰).
+  const moreRef = useRef(more);
+  moreRef.current = more;
 
   // 한가해지면 끝난 레슨의 신호를 꺼내 이유로 바꿉니다(띄우지 않을 이유면 버립니다).
   useEffect(() => {
@@ -52,7 +55,7 @@ export function useLettersRecommend(input: {
       if (!canRecommendLetters(record, todayLocal())) return;
       saveLettersRecord(withShown(record, todayLocal()));
       setShown(reason);
-      more.emit({ name: "letters_recommend_shown", reason });
+      moreRef.current.emit({ name: "letters_recommend_shown", reason });
     }, lettersRecommendConfig.delayMs);
     return () => clearTimeout(timer);
   }, [ready, pending]);
