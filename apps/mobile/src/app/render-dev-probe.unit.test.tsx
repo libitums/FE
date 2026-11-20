@@ -1,5 +1,5 @@
 import { readFileSync, readdirSync } from "node:fs";
-import { join, relative } from "node:path";
+import { join, relative, sep } from "node:path";
 
 import { afterEach, describe, expect, test, vi } from "vitest";
 
@@ -48,11 +48,13 @@ describe("DP-U 탐침 route는 __DEV__에서만 화면을 그린다", () => {
   });
 });
 
+// `src` 기준 상대 경로를 `/`로 맞춰 돌려줍니다 — Windows의 `\` 구분자에서도 아래 경로 정규식과
+// 기대값이 같은 글자로 맞습니다.
 function productionSources(dir: string): string[] {
   return readdirSync(dir, { withFileTypes: true, recursive: true })
     .filter((entry) => entry.isFile() && /\.tsx?$/.test(entry.name))
     .filter((entry) => !/\.test\.tsx?$/.test(entry.name) && !/test-support/.test(entry.name))
-    .map((entry) => join(entry.parentPath, entry.name));
+    .map((entry) => relative(dir, join(entry.parentPath, entry.name)).split(sep).join("/"));
 }
 
 const probeScreenImport = /from\s+["'][^"']*screens\/(handwriting|speech)-probe\//;
@@ -60,9 +62,10 @@ const probeScreenImport = /from\s+["'][^"']*screens\/(handwriting|speech)-probe\
 describe("DP-S 탐침 import는 dev 전용 모듈 하나에만 있다", () => {
   test("DP-S1. 탐침 폴더 밖에서 탐침 화면을 import하는 제품 파일은 render-dev-probe.tsx 하나다", () => {
     const importers = productionSources(srcDir)
-      .filter((file) => !/screens\/(handwriting|speech)-probe\//.test(file))
-      .filter((file) => probeScreenImport.test(withoutComments(readFileSync(file, "utf8"))))
-      .map((file) => relative(srcDir, file));
+      .filter((file) => !/^screens\/(handwriting|speech)-probe\//.test(file))
+      .filter((file) =>
+        probeScreenImport.test(withoutComments(readFileSync(join(srcDir, file), "utf8"))),
+      );
 
     expect(importers).toEqual(["app/render-dev-probe.tsx"]);
   });
