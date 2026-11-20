@@ -169,10 +169,14 @@ export function orderingStats(episode) {
       )
         stats.cardThenQuiz += 1;
       if (ref !== null) {
-        const later = flat.findIndex(
-          (entry, at) =>
-            at > position && !nonQuiz.has(entry.item?.type) && refOf(entry.item) === ref,
-        );
+        // 카드 뒤부터만 찾습니다(앞부분을 매번 다시 훑지 않게).
+        let later = -1;
+        for (let at = position + 1; at < flat.length; at += 1) {
+          if (!nonQuiz.has(flat[at].item?.type) && refOf(flat[at].item) === ref) {
+            later = at;
+            break;
+          }
+        }
         if (later !== -1) gaps.push(later - position);
         if (later !== -1 && flat[later].stepIndex === stepIndex)
           stats.maxGapInStep = Math.max(stats.maxGapInStep, later - position);
