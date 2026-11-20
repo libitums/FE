@@ -357,3 +357,33 @@ describe("bottom-navigator.css", () => {
     );
   });
 });
+
+// `unit` 계층: 동그라미 동작 항목(`variant: "action"`, FE ADR-0168) — 면 · 아이콘 색 · 선택 표시의 계약.
+
+const actionIcon = '<svg viewBox="0 0 24 24"><path fill="currentColor" /></svg>';
+const actionItems: readonly BottomNavigatorItem[] = [
+  { id: "journey", accessibilityLabel: "Journey", icon: actionIcon },
+  { id: "roleplay", accessibilityLabel: "Roleplay", icon: actionIcon },
+  { id: "more", accessibilityLabel: "More", icon: actionIcon, variant: "action" },
+];
+
+test("BA1. 동작 항목은 action 클래스 · 흰 아이콘(선택이 아니어도)", () => {
+  const more = getBottomNavigatorContract({ items: actionItems, selectedId: "journey" }).items[2]!;
+  expect(more.className).toBe("ui-lynx-bottom-navigator-item ui-lynx-bottom-navigator-item-action");
+  expect(more.iconColor).toBe(color.fg["neutral-inverted"]);
+  expect(more.pressedIconColor).toBe(color.fg["neutral-inverted"]);
+});
+
+test("BA2. 선택된 동작 항목은 selected 클래스가 함께 붙고(고리) 낭독은 「, selected」", () => {
+  const more = getBottomNavigatorContract({ items: actionItems, selectedId: "more" }).items[2]!;
+  expect(more.className).toBe(
+    "ui-lynx-bottom-navigator-item ui-lynx-bottom-navigator-item-selected ui-lynx-bottom-navigator-item-action",
+  );
+  expect(more.accessibilityLabel).toBe("More, selected");
+});
+
+test("BA3. 보통 항목은 그대로", () => {
+  const journey = getBottomNavigatorContract({ items: actionItems, selectedId: "more" }).items[0]!;
+  expect(journey.className).toBe("ui-lynx-bottom-navigator-item");
+  expect(journey.iconColor).toBe(color.gray["500"]);
+});

@@ -32,6 +32,11 @@ type BottomNavigatorItemBase = {
    * 무관한 렌더까지 같은 이름으로 실려 측정이 섞입니다.
    */
   readonly timingFlag?: string;
+  /**
+   * `action`은 바 끝의 동그라미 동작 단추입니다(FE ADR-0168 더보기) — 알약 대신 48 brand 동그라미 · 흰 아이콘이고, 선택되면
+   * 알약이 아니라 바탕색 틈 + brand 고리로 표시합니다. 없으면 보통 탭입니다.
+   */
+  readonly variant?: "action";
 };
 
 export type BottomNavigatorEnabledItem = BottomNavigatorItemBase & {
@@ -158,6 +163,7 @@ export function getBottomNavigatorContract(props: BottomNavigatorProps): BottomN
       "ui-lynx-bottom-navigator-item",
       selected ? "ui-lynx-bottom-navigator-item-selected" : undefined,
       disabled ? "ui-lynx-bottom-navigator-item-disabled" : undefined,
+      item.variant === "action" ? "ui-lynx-bottom-navigator-item-action" : undefined,
     ]
       .filter((value): value is string => value !== undefined)
       .join(" ");
@@ -165,14 +171,16 @@ export function getBottomNavigatorContract(props: BottomNavigatorProps): BottomN
     // WCAG 1.4.11이 요구하는 3:1에 못 미칩니다 — 디자인을 그대로 따르기로 한
     // 결정이며(2026-09-25), 라벨이 없어 글자로 보완할 길도 없습니다. 선택은 흰
     // 아이콘 대 주황 알약으로 3.02:1이라 이 기준을 넘깁니다.
+    // 동작 항목(`action`)은 늘 brand 동그라미 위 흰 아이콘입니다.
+    const onSurface = selected || item.variant === "action";
     const iconColor = disabled
       ? color.fg.disabled
-      : selected
+      : onSurface
         ? color.fg["neutral-inverted"]
         : color.gray["500"];
     const pressedIconColor = disabled
       ? color.fg.disabled
-      : selected
+      : onSurface
         ? color.fg["neutral-inverted"]
         : color.fg["neutral-muted"];
     const enabledPosition = enabledIndexes.indexOf(index);

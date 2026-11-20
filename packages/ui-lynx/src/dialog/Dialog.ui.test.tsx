@@ -255,3 +255,21 @@ describe("Dialog motion 컨텍스트", () => {
     expect(bindmotionend).toHaveBeenCalledTimes(1);
   });
 });
+
+describe("그림 자리(children, FE ADR-0168)", () => {
+  test("children을 주면 제목 위 media 자리에 그리고, 없으면 자리 자체가 없다", () => {
+    const { rerender } = render(
+      <Dialog title="Title" actions={[{ id: "ok", label: "OK" }]} bindaction={() => {}}>
+        <text data-testid="art">art</text>
+      </Dialog>,
+    );
+    const media = screen.getByTestId("ui-lynx-dialog-media");
+    expect(media.contains(screen.getByTestId("art"))).toBe(true);
+    const container = screen.getByTestId("ui-lynx-dialog-container");
+    expect(container.contains(media)).toBe(true);
+    const title = screen.getByTestId("ui-lynx-dialog-title");
+    expect(media.compareDocumentPosition(title) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    rerender(<Dialog title="Title" actions={[{ id: "ok", label: "OK" }]} bindaction={() => {}} />);
+    expect(screen.queryByTestId("ui-lynx-dialog-media")).toBeNull();
+  });
+});

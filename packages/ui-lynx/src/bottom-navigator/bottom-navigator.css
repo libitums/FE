@@ -160,3 +160,44 @@
   letter-spacing: var(--libitum-typography-label-s-letter-spacing);
   white-space: nowrap;
 }
+
+/* 동작 항목(`variant: "action"`, FE ADR-0168 더보기) — 항목 상자(64 × 48)는 그대로 두고 면만 48 brand 동그라미입니다. 선택 탭의
+   알약과 갈리도록 그림자 s2를 둡니다. 누르면 brand-strong. 선택되면 알약 대신 바 바탕색 틈 3 + brand 고리 2(시안 C) — 모양이
+   바뀌어 색만으로 상태를 전하지 않습니다(WCAG 1.4.1). */
+.ui-lynx-bottom-navigator-item-action .ui-lynx-bottom-navigator-surface {
+  width: var(--libitum-spacing-48);
+  background-color: var(--libitum-color-brand-primary);
+  box-shadow: var(--libitum-elevation-shadow-s2);
+}
+
+.ui-lynx-bottom-navigator-item-action:active .ui-lynx-bottom-navigator-surface {
+  background-color: var(--libitum-color-brand-strong);
+}
+
+.ui-lynx-bottom-navigator-item-action.ui-lynx-bottom-navigator-item-selected
+  .ui-lynx-bottom-navigator-surface {
+  box-shadow:
+    0 0 0 3px var(--libitum-color-background-primary),
+    0 0 0 5px var(--libitum-color-brand-primary);
+}
+
+.ui-lynx-bottom-navigator-item-action .ui-lynx-bottom-navigator-icon-pressed {
+  display: none;
+}
+
+.ui-lynx-bottom-navigator-item-action:active .ui-lynx-bottom-navigator-icon-default {
+  display: flex;
+}
+
+/* 항목이 다섯이면(FE 시안 RankingTab — 랭킹 탭이 더해질 때) 고정 간격 대신 바 폭에 고르게 놓습니다: 항목 56 · 양끝 맞춤.
+   64 × 5 + 간격이 375 · 390 화면을 넘기 때문입니다. 넷 이하는 위 규칙 그대로입니다. */
+.ui-lynx-bottom-navigator-items-5 {
+  width: 100%;
+  gap: 0;
+  justify-content: space-between;
+}
+
+.ui-lynx-bottom-navigator-items-5 .ui-lynx-bottom-navigator-item {
+  width: calc(var(--libitum-spacing-48) + var(--libitum-spacing-8));
+  flex-shrink: 0;
+}

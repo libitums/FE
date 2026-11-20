@@ -142,3 +142,10 @@
   animation-duration: var(--libitum-motion-duration-d2);
   animation-timing-function: var(--libitum-motion-easing-linear);
 }
+
+/* 제목 위 그림 자리(FE ADR-0168) — 가운데 정렬, 아래 제목과의 간격은 컨테이너 gap이 집니다. */
+.ui-lynx-dialog-media {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
