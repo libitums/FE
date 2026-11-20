@@ -60,8 +60,8 @@ export const ticketsTh: TicketsCopy = {
     nextTicketIn: "ตั๋วใบถัดไปในอีก",
     slotsLabel: (available, total, nextClock) =>
       nextClock === null
-        ? `พร้อมใช้ ${String(available)}/${String(total)} ตั๋ว`
-        : `พร้อมใช้ ${String(available)}/${String(total)} ตั๋ว ตั๋วใบถัดไปในอีก ${nextClock}`,
+        ? `ตั๋วพร้อมใช้ ${String(available)} จาก ${String(total)} ใบ`
+        : `ตั๋วพร้อมใช้ ${String(available)} จาก ${String(total)} ใบ, ใบถัดไปในอีก ${nextClock}`,
     slotReady: "พร้อม",
     message: "แต่ละบทเรียนใช้ตั๋วหนึ่งใบ\nตั๋วที่ใช้แล้วจะคืนมาเมื่อผ่านไป 1 ชั่วโมง",
   },

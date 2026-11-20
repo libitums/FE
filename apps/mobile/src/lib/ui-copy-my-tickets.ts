@@ -47,8 +47,8 @@ export const ticketsMy: TicketsCopy = {
     nextTicketIn: "နောက်လက်မှတ် ရရန်",
     slotsLabel: (available, total, nextClock) =>
       nextClock === null
-        ? `လက်မှတ် ${String(available)}/${String(total)} အသင့်`
-        : `လက်မှတ် ${String(available)}/${String(total)} အသင့်။ နောက်လက်မှတ် ${nextClock} အတွင်း`,
+        ? `လက်မှတ် ${String(total)} စောင်အနက် ${String(available)} စောင် အသင့်`
+        : `လက်မှတ် ${String(total)} စောင်အနက် ${String(available)} စောင် အသင့်။ နောက်လက်မှတ် ${nextClock} အတွင်း`,
     slotReady: "အသင့်",
     message: "သင်ခန်းစာတစ်ခုလျှင် လက်မှတ်တစ်စောင် သုံးပါသည်။\nသုံးပြီးသော လက်မှတ်သည် 1 နာရီအကြာတွင် ပြန်ရပါမည်။",
   },

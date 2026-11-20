@@ -62,7 +62,7 @@ export const shellMy: ShellCopy = {
   tabs: {
     journey: "ခရီးစဉ်",
     roleplay: "သရုပ်ဆောင်",
-    messenger: "မက်ဆေ့ချ်",
+    messenger: "ချတ်",
     settings: "ဆက်တင်",
   },
   tabNew: { badge: "အသစ်", spoken: "အသစ်" },
@@ -76,7 +76,7 @@ export const journeyMapMy: JourneyMapCopy = {
   activityProgressLabel: (completed, total) => `လုပ်ဆောင်ချက် ${total} ခုအနက် ${completed} ခု ပြီးပါပြီ`,
   // 설명 줄: 끝의 마침표를 떼고, 번호는 두 자리로 채웁니다.
   episodeUnitLabel: (episodeLabel, unit) =>
-    `${String(episodeLabel).replace(/\.$/, "")}၊ အပိုင်းခွဲ ${String(unit).padStart(2, "0")}`,
+    `${String(episodeLabel).replace(/[.။]$/, "")}၊ အပိုင်းခွဲ ${String(unit).padStart(2, "0")}`,
   statModal: {
     streakHero: (days) => `${days} ရက် ဆက်တိုက်`,
     episodesClearedHero: (count) => `အပိုင်း ${count} ခု ပြီးပါပြီ`,

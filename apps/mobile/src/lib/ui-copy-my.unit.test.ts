@@ -45,6 +45,16 @@ test("TM-U10. 엽전 수의 세 자리 묶음 기호는 쉼표다", () => {
   expect(uiCopyMy.learnerProfile.language).toBe("my");
 });
 
+test("TM-U12. 맵 머리 이름은 에피소드 이름 끝의 ။를 떼고 이어 붙인다 — 마침표 · 쉼표가 겹치지 않는다(접근성 점검 2026-11-20)", () => {
+  const label = uiCopyMy.journeyMap.episodeUnitLabel(uiCopyMy.catalogMap.episodeLabel(3), 1);
+  expect(label).toBe("အပိုင်း 3၊ အပိုင်းခွဲ 01");
+});
+
+test("TM-U13. 티켓 칸 낭독은 분수(2/3) 대신 「3장 중 2장」 꼴이다(th · my)", () => {
+  expect(uiCopyMy.tickets.modal.slotsLabel(2, 3, null)).not.toContain("/");
+  expect(uiCopyFor("th").tickets.modal.slotsLabel(2, 3, "12:00")).not.toContain("/");
+});
+
 test("TM-U11. my messengerChat 의 키 집합이 영어와 같고 함수 키가 빈 문자열을 내지 않으며 한글이 없다", () => {
   expect(messengerChatKeyPaths(uiCopyMy)).toEqual(messengerChatKeyPaths(uiCopyEn));
   expect(messengerChatProblems(uiCopyMy, uiCopyEn)).toEqual([]);
