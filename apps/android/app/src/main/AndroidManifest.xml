@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
   <uses-permission android:name="android.permission.INTERNET" />
+  <!-- 세로 고정(screenOrientation="portrait")이 세로 화면 하드웨어를 필수로 끌어와 태블릿 · 데스크톱 · XR에서 설치가 막히지 않게 선택 사항으로 둔다(Play 검토 차단 2026-11-20). -->
+  <uses-feature android:name="android.hardware.screen.portrait" android:required="false" />
   <!-- 기본 네트워크가 끊김 → 연결로 바뀔 때 에피소드 받기를 깨운다(ConnectivityManager 콜백). -->
   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
   <!-- Airbridge 광고 측정(Android 설치 귀속)이 쓰는 광고 ID. Play Console의 광고 ID 선언이 따라야 한다. -->
