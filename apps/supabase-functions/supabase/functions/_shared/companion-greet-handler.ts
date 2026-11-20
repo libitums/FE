@@ -26,7 +26,7 @@ import { greetingUserText } from "./companion-prompt.ts";
 import { greetingSystem } from "./companion-greet-system.ts";
 import { generateOpener, openerLearning, openerOutcome, recordOpener } from "./companion-opener.ts";
 import { callRpc } from "./companion-rpc.ts";
-import { effectiveRomanceTier } from "./companion-safety.ts";
+import { effectiveRomanceTier, offeredRomanceLine, romanceLine } from "./companion-safety.ts";
 import {
   generateSuggestions,
   type SuggestOutcome,
@@ -147,6 +147,7 @@ export function createGreetHandler(deps: GreetDeps): (request: Request) => Promi
     const usage = createUsageCollector();
     const llm = baseLlm.withUsage?.(usage.record) ?? baseLlm;
     const persona: GreetingPersona = context.persona ?? { name: body.character_id };
+    const romance = romanceLine(context.ageBand, context.romanceTier, persona, context.speechLevel);
     const timeoutMs = deps.greetTimeoutMs ?? defaultGreetTimeoutMs;
     const scripted =
       body.trigger === "unlock" || (persona.unlockLines ?? []).some((line) => line.trim() !== "");
@@ -161,7 +162,7 @@ export function createGreetHandler(deps: GreetDeps): (request: Request) => Promi
           system: greetingSystem(body.character_id, persona, context, learning),
           userText: greetingUserText,
           ageBand: context.ageBand,
-          romanceTier: context.romanceTier,
+          romanceLine: romance,
           timeoutMs,
         });
     const { outcome } = made;
@@ -199,6 +200,7 @@ export function createGreetHandler(deps: GreetDeps): (request: Request) => Promi
             request: {
               character: { name: persona.name, role: persona.role ?? null },
               speechLevel: context.speechLevel,
+              romanceLine: offeredRomanceLine(romance, persona),
               l1: context.l1,
               history: recentSuggestionHistory([{ role: "assistant", segments }]),
             },
@@ -223,6 +225,7 @@ export function createGreetHandler(deps: GreetDeps): (request: Request) => Promi
           model: llm.model,
           ageBand: context.ageBand,
           romanceTier: effectiveRomanceTier(context.ageBand, context.romanceTier),
+          romanceLine: romance,
           greeting: source,
           ...(source === "canned" ? { greetingFallback: outcome } : {}),
           translation: translated.status,

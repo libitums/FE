@@ -7,6 +7,7 @@ import type {
   CompanionLlm,
   FeedbackHistoryEntry,
   PersonaCard,
+  RomanceLine,
   Segment,
 } from "./chat-send.contract.ts";
 import type { ReplySuggestion, SpeechLevel } from "./companion-contract/index.ts";
@@ -24,6 +25,11 @@ export type SuggestRequest = {
   readonly character: { readonly name: string; readonly role: string | null };
   /** 지금 관계의 말투 단계. 모르면 null(해요체로 둡니다). */
   readonly speechLevel: SpeechLevel | null;
+  /**
+   * 적용 로맨스 선(ADR-0168) — 칩도 답 · 검사와 같은 선을 따른다(로맨스 후보는 셋 중 하나까지, hug · kiss · close는 학습자가 먼저 분위기를
+   * 냈을 때만). 없으면 none(로맨스 없음 — 옛 동작).
+   */
+  readonly romanceLine?: RomanceLine;
   /** 뜻을 쓸 언어(BCP 47). 없으면 영어, 한국어면 뜻을 비웁니다. */
   readonly l1: string | null;
   /** 최근 대화(오래된 것부터). 마지막이 캐릭터 말입니다. */
@@ -54,10 +60,7 @@ export type SuggestContext =
   | {
       readonly result: "ok";
       readonly ageBand: AgeBand;
-      /**
-       * 적용 로맨스 수위(20261216, ADR-0164). 칩은 쓰지 않는다 — 칩은 학습자 입에 넣는 말이라 수위를 넓히지 않고 늘 standard 규칙이다
-       * (ADR-0152 D1). 옛 DB에는 없습니다.
-       */
+      /** 적용 로맨스 수위(20261216, ADR-0164). 페르소나 · 말투 단계와 함께 칩의 로맨스 선을 정한다(ADR-0168). 옛 DB에는 없습니다. */
       readonly romanceTier?: "open" | "standard";
       readonly l1: string | null;
       readonly replySuggestions: boolean;
