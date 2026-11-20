@@ -16,4 +16,4 @@
 | PP-E7 | VoiceOver | 알약이 뜰 때 「Confirming your purchase…」 한 번 · 바뀔 때 다시 · 칩 「Updating, You have …」 · 팩 카드 이름 끝 「Adding to your wallet」 | 미실행 |
 | PP-E8 | 동작 줄이기 | 스피너 · 반짝임 멈춤(고리 · 막대만) · 잔액은 오르지 않고 곧바로 새 값 | 미실행 |
 | PP-E9 | Airbridge 대시보드 › Real-time Logs(앱 이벤트), 이 기기 | PP-E1 뒤 **Order Complete**(`airbridge.ecommerce.order.completed`) 한 건 — value = 스토어 가격(예 4.99) · currency(USD 등) · transactionID · products[0].productID `duru.coins.1200.v1` · quantity 1. PP-E4 구독은 앱 Order Complete가 **없고** RevenueCat의 Subscribe만 | 미실행 |
-| PP-E10 | Android(출시 보류 중 — 상품 설정 뒤) | PP-E1 · PP-E9와 같음(거래 id는 Play orderId) | 미실행 |
+| PP-E10 | Android(출시 보류 중 — 상품 설정 뒤) | PP-E1 · PP-E9와 같음(거래 id는 Play orderId). Android만의 바꿈 · 보류 결제는 [Android 결제](android-purchases.md) AP-E1 ~ AP-E13 | 미실행 |
