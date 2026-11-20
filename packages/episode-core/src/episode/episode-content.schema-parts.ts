@@ -36,6 +36,12 @@ export const correctFeedbackSchema = z.object({
   correct: z.object({ ko: z.string(), en: optionalString }),
 });
 
+/**
+ * 정답 음성 id만 싣는 해설 — 콘텐츠 수준 5(ADR-0172)부터 정답 뒤 음성 유형의 음성 id가 `stimulus.audio_url` 대신 여기로
+ * 옵니다. 다른 키는 읽지 않습니다.
+ */
+export const answerAudioFeedbackSchema = z.optional(z.object({ audio_url: optionalString }));
+
 /** 대답 고르기의 해설 — 맞힘 줄과, 있으면 틀림 줄 · 틀린 보기 id. */
 export const choiceFeedbackSchema = z.object({
   correct: z.object({ ko: z.string(), en: optionalString }),

@@ -7,6 +7,7 @@
 // zod가 메인 스레드 번들에 실리지 않습니다.
 import { z } from "zod/mini";
 import {
+  answerAudioFeedbackSchema,
   correctFeedbackSchema,
   itemCommon,
   optionalString,
@@ -107,6 +108,7 @@ const itemSchema = z.discriminatedUnion("type", [
     prompt: promptSchema,
     stimulus: stimulusSchema,
     options: optionsSchema,
+    feedback: answerAudioFeedbackSchema,
   }),
   z.object({
     ...itemCommon,
@@ -115,6 +117,7 @@ const itemSchema = z.discriminatedUnion("type", [
     stimulus: z.optional(stimulusSchema),
     tiles: z.array(textSchema),
     answers: z.array(textSchema),
+    feedback: answerAudioFeedbackSchema,
   }),
   z.object({
     ...itemCommon,
@@ -151,6 +154,7 @@ const itemSchema = z.discriminatedUnion("type", [
     prompt: promptSchema,
     stimulus: z.optional(stimulusSchema),
     answers: z.array(textSchema),
+    feedback: answerAudioFeedbackSchema,
   }),
   z.object({
     ...itemCommon,

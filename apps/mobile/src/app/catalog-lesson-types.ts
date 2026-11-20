@@ -14,6 +14,7 @@ import type { SyllableBuildQuestion } from "../screens/syllable-build/syllable-b
 import type { TypingQuestion } from "../screens/typing/typing.contract";
 import type { VocabCardQuestion } from "../screens/vocab-card/vocab-card.contract";
 import type { WordChoiceQuestion } from "../screens/word-choice/word-choice-questions";
+import type { RecordedAudioOf } from "./catalog-recorded-audio";
 
 export type { NonEmpty };
 
@@ -102,6 +103,10 @@ export type CatalogLessonItemPort = CatalogItemPort & {
   readonly audioUrlOf: CatalogAudioUrlOf;
   /** 이 문화 확인에 짝지어진 문화 카드입니다. 없으면(포트가 모르면) 장면 없이 선다. */
   readonly cultureCardOf?: (itemId: string) => CultureCardItem | null;
+  /** 정답 한국어 원문 → 이 에피소드의 녹음 id(ADR-0172). 없으면(포트가 모르면) 문항 자신의 음성만 씁니다. */
+  readonly recordedAudioOf?: RecordedAudioOf;
+  /** 음성 id → 말소리 길이(ms, 음성 정보 파일). 모르면 `null` — 저절로 넘어가는 틈에 씁니다(ADR-0172). */
+  readonly audioSpeechMsOf?: (audioId: string) => number | null;
 };
 
 /** 활동 안 문항 하나가 어느 콘텐츠 문항인지 가리킵니다(측정에 씁니다). */
