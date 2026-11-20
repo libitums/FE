@@ -1,10 +1,13 @@
 import { describe, expect, test } from "vitest";
 
+import { LETTER_SOUND_SYLLABLES, composeSyllable } from "../../lib/letters/jamo";
 import {
+  COMPOSE_ECHO_DELAY_MS,
   COMPOSE_ROUNDS,
   COMPOSE_TILES,
   composeReducer,
   composeSlotStateOf,
+  composeEchoOf,
   composeVerdictOf,
   initialComposeState,
   type ComposeAction,
@@ -114,5 +117,44 @@ describe("판정", () => {
   test("CQ13. 틀린 판정에서 Next는 먹지 않는다(다음은 맞힌 뒤에만)", () => {
     const judged = run({ type: "pick", letter: "ㄱ" }, { type: "pick", letter: "ㅓ" });
     expect(composeReducer(judged, { type: "next" })).toBe(judged);
+  });
+});
+
+describe("정답 뒤 음절 소리(ADR-0172)", () => {
+  const pick = (letter: string): ComposeAction => ({ type: "pick", letter });
+
+  test("CQ14. 맞힌 판정이면 그 라운드의 음절, 판정 전 · 틀림은 null", () => {
+    expect(composeEchoOf(initialComposeState)).toBeNull();
+    expect(composeEchoOf(run(pick("ㄱ")))).toBeNull();
+    expect(composeEchoOf(run(pick("ㄱ"), pick("ㅓ")))).toBeNull();
+    expect(composeEchoOf(run(pick("ㄱ"), pick("ㅏ")))).toBe("가");
+    expect(
+      composeEchoOf(run(pick("ㄱ"), pick("ㅏ"), { type: "next" }, pick("ㄴ"), pick("ㅓ"))),
+    ).toBe("너");
+  });
+
+  test("CQ15. 틀린 뒤 다시 맞히면 음절, 완료 상태는 null", () => {
+    expect(
+      composeEchoOf(run(pick("ㄱ"), pick("ㅓ"), { type: "retry" }, pick("ㄱ"), pick("ㅏ"))),
+    ).toBe("가");
+    const done = run(
+      ...COMPOSE_ROUNDS.flatMap((round): ComposeAction[] => [
+        pick(round.consonant),
+        pick(round.vowel),
+        { type: "next" },
+      ]),
+    );
+    expect(done.done).toBe(true);
+    expect(composeEchoOf(done)).toBeNull();
+  });
+
+  test("CQ16. 라운드 음절은 모두 소리 파일 목록에 있다", () => {
+    for (const round of COMPOSE_ROUNDS)
+      expect(LETTER_SOUND_SYLLABLES).toContain(composeSyllable(round.consonant, round.vowel));
+  });
+
+  test("CQ17. 틈은 정답 효과음의 들리는 길이(0.89 s)보다 길고 1초를 넘지 않는다", () => {
+    expect(COMPOSE_ECHO_DELAY_MS).toBeGreaterThanOrEqual(890);
+    expect(COMPOSE_ECHO_DELAY_MS).toBeLessThanOrEqual(1000);
   });
 });

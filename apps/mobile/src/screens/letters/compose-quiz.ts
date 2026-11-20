@@ -1,7 +1,7 @@
 // 합치기 퀴즈(ㄱ + ㅏ = 가)의 순수 상태입니다(ADR-0169). 음절 조립 형식 — 자음 칸 · 모음 칸이 다 차면 곧바로 판정하고,
 // 맞으면 Next(마지막은 Done), 틀리면 Try again(칸을 비우고 같은 라운드)입니다. 한글은 배우는 내용입니다.
 
-import { isJamoConsonant } from "../../lib/letters/jamo";
+import { composeSyllable, isJamoConsonant } from "../../lib/letters/jamo";
 
 export type ComposeRound = {
   readonly consonant: string;
@@ -107,4 +107,17 @@ export function composeReducer(state: ComposeState, action: ComposeAction): Comp
       };
     }
   }
+}
+
+/**
+ * 정답 효과음(`correct_answer`) 뒤에 만든 음절을 들려 주기까지의 틈(ms, ADR-0172). 효과음 파일은 2.04 s지만 들리는 소리는
+ * 0.89 s에서 끝납니다(−45 dB 무음 검출) — 그 뒤에 음절이 나야 둘이 겹치지 않습니다.
+ */
+export const COMPOSE_ECHO_DELAY_MS = 900;
+
+/** 이 상태에서 들려 줄 음절 — 맞힌 판정이면 그 라운드의 음절, 그 밖(판정 전 · 틀림 · 완료)은 null. */
+export function composeEchoOf(state: ComposeState): string | null {
+  const round = COMPOSE_ROUNDS[state.round];
+  if (state.done || round === undefined || composeVerdictOf(state) !== "correct") return null;
+  return composeSyllable(round.consonant, round.vowel);
 }
